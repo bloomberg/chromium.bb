@@ -10,8 +10,6 @@
 #include <map>
 #include <memory>
 
-#include <VideoToolbox/VideoToolbox.h>
-
 #include "base/containers/queue.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
@@ -19,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "media/base/media_log.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
@@ -26,9 +25,16 @@
 #include "media/video/h264_poc.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image_io_surface.h"
 
+// This must be included after gl_bindings.h, or the various GL headers on the
+// system and in the source tree will conflict with each other.
+#include <VideoToolbox/VideoToolbox.h>
+
 namespace media {
+class VP9ConfigChangeDetector;
+class VP9SuperFrameBitstreamFilter;
 
 // Preload VideoToolbox libraries, needed for sandbox warmup.
 MEDIA_GPU_EXPORT bool InitializeVideoToolbox();
@@ -38,7 +44,8 @@ MEDIA_GPU_EXPORT bool InitializeVideoToolbox();
 class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
                                  public base::trace_event::MemoryDumpProvider {
  public:
-  VTVideoDecodeAccelerator(const BindGLImageCallback& bind_image_cb,
+  VTVideoDecodeAccelerator(const GpuVideoDecodeGLClient& gl_client_,
+                           const gpu::GpuDriverBugWorkarounds& workarounds,
                            MediaLog* media_log);
 
   ~VTVideoDecodeAccelerator() override;
@@ -58,6 +65,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
       const base::WeakPtr<Client>& decode_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
       override;
+  bool SupportsSharedImagePictureBuffers() const override;
 
   // MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -68,7 +76,8 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
               OSStatus status,
               CVImageBufferRef image_buffer);
 
-  static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
+  static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles(
+      const gpu::GpuDriverBugWorkarounds& workarounds);
 
  private:
   // Logged to UMA, so never reuse values. Make sure to update
@@ -128,16 +137,26 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   };
 
   struct PictureInfo {
+    // A PictureInfo that specifies no texture IDs will be used for shared
+    // images.
+    PictureInfo();
     PictureInfo(uint32_t client_texture_id, uint32_t service_texture_id);
     ~PictureInfo();
 
+    // If true, then |scoped_shared_image| is used and |client_texture_id| and
+    // |service_texture_id| are not used.
+    const bool uses_shared_images;
+
     // Information about the currently bound image, for OnMemoryDump().
     scoped_refptr<gl::GLImageIOSurface> gl_image;
-    int32_t bitstream_id;
+    int32_t bitstream_id = 0;
 
     // Texture IDs for the image buffer.
-    const uint32_t client_texture_id;
-    const uint32_t service_texture_id;
+    const uint32_t client_texture_id = 0;
+    const uint32_t service_texture_id = 0;
+
+    // The shared image holder that will be passed to the client.
+    scoped_refptr<Picture::ScopedSharedImage> scoped_shared_image;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(PictureInfo);
@@ -162,6 +181,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
 
   // |frame| is owned by |pending_frames_|.
   void DecodeTask(scoped_refptr<DecoderBuffer> buffer, Frame* frame);
+  void DecodeTaskVp9(scoped_refptr<DecoderBuffer> buffer, Frame* frame);
   void DecodeDone(Frame* frame);
 
   //
@@ -188,13 +208,15 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   // These methods returns true if a task was completed, false otherwise.
   bool ProcessTaskQueue();
   bool ProcessReorderQueue();
+  bool ProcessOutputQueue();
   bool ProcessFrame(const Frame& frame);
   bool SendFrame(const Frame& frame);
 
   //
   // GPU thread state.
   //
-  BindGLImageCallback bind_image_cb_;
+  const GpuVideoDecodeGLClient gl_client_;
+  const gpu::GpuDriverBugWorkarounds workarounds_;
   MediaLog* media_log_;
 
   VideoDecodeAccelerator::Client* client_ = nullptr;
@@ -212,6 +234,13 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
                       std::vector<std::unique_ptr<Frame>>,
                       FrameOrder>
       reorder_queue_;
+
+  // Queue of decoded frames in presentation order. Used by codecs which don't
+  // require reordering (VP9 only at the moment).
+  std::deque<std::unique_ptr<Frame>> output_queue_;
+
+  std::unique_ptr<VP9ConfigChangeDetector> cc_detector_;
+  std::unique_ptr<VP9SuperFrameBitstreamFilter> vp9_bsf_;
 
   // Size of assigned picture buffers.
   gfx::Size picture_size_;
@@ -257,6 +286,9 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   std::vector<uint8_t> configured_sps_;
   std::vector<uint8_t> configured_spsext_;
   std::vector<uint8_t> configured_pps_;
+
+  Config config_;
+  VideoCodec codec_;
 
   // Visible rect the decoder is configured to use.
   gfx::Size configured_size_;

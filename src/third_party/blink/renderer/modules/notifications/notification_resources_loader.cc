@@ -102,7 +102,7 @@ void NotificationResourcesLoader::Stop() {
     icon_loader->Stop();
 }
 
-void NotificationResourcesLoader::Trace(Visitor* visitor) {
+void NotificationResourcesLoader::Trace(Visitor* visitor) const {
   visitor->Trace(icon_loaders_);
 }
 
@@ -117,7 +117,7 @@ void NotificationResourcesLoader::LoadIcon(
   }
 
   ResourceRequest resource_request(url);
-  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
+  resource_request.SetRequestContext(mojom::blink::RequestContextType::IMAGE);
   resource_request.SetRequestDestination(
       network::mojom::RequestDestination::kImage);
   resource_request.SetPriority(ResourceLoadPriority::kMedium);

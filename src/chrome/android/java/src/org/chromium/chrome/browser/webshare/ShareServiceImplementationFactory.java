@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.webshare;
 
+import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.share.ChromeShareExtras;
+import org.chromium.chrome.browser.share.ShareDelegateImpl.ShareOrigin;
+import org.chromium.components.browser_ui.share.ShareParams;
+import org.chromium.components.browser_ui.webshare.ShareServiceImpl;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.services.service_manager.InterfaceFactory;
 import org.chromium.webshare.mojom.ShareService;
@@ -20,6 +25,21 @@ public class ShareServiceImplementationFactory implements InterfaceFactory<Share
 
     @Override
     public ShareService createImpl() {
-        return new ShareServiceImpl(mWebContents);
+        ShareServiceImpl.WebShareDelegate delegate = new ShareServiceImpl.WebShareDelegate() {
+            @Override
+            public boolean canShare() {
+                return mWebContents.getTopLevelNativeWindow().getActivity() != null;
+            }
+
+            @Override
+            public void share(ShareParams params) {
+                ChromeActivity<?> activity =
+                        (ChromeActivity<?>) params.getWindow().getActivity().get();
+                activity.getShareDelegateSupplier().get().share(
+                        params, new ChromeShareExtras.Builder().build(), ShareOrigin.WEBSHARE_API);
+            }
+        };
+
+        return new ShareServiceImpl(mWebContents, delegate);
     }
 }

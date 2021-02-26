@@ -184,6 +184,13 @@ Polymer({
     this.networkConfig_.getDeviceStateList().then(response => {
       const devices = response.result;
       this.deviceState_ = devices.find(device => device.type == type) || null;
+      if (!this.deviceState_) {
+        // If the device type associated with the current network has been
+        // removed (e.g., due to unplugging a Cellular dongle), the details
+        // dialog, if visible, displays controls which are no longer
+        // functional. If this case occurs, close the dialog.
+        this.close_();
+      }
     });
   },
 
@@ -527,17 +534,15 @@ Polymer({
       fields.push(
           'cellular.activationState', 'cellular.servingOperator.name',
           'cellular.roamingState');
-      if (this.managedProperties_.restrictedConnectivity) {
-        fields.push('restrictedConnectivity');
-      }
+    }
+    if (OncMojo.isRestrictedConnectivity(this.managedProperties_.portalState)) {
+      fields.push('portalState');
+    }
+    if (type == chromeos.networkConfig.mojom.NetworkType.kCellular) {
       fields.push(
           'cellular.homeProvider.name', 'cellular.meid', 'cellular.esn',
           'cellular.iccid', 'cellular.imei', 'cellular.imsi', 'cellular.mdn',
           'cellular.min');
-    } else if (type == chromeos.networkConfig.mojom.NetworkType.kWiFi) {
-      if (this.managedProperties_.restrictedConnectivity) {
-        fields.push('restrictedConnectivity');
-      }
     }
     return fields;
   },

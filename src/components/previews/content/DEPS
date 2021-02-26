@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/blacklist/opt_out_blacklist",
+  "+components/blocklist/opt_out_blocklist",
   "+components/data_reduction_proxy/core/browser",
   "+components/data_reduction_proxy/core/common",
   "+components/keyed_service",
@@ -12,4 +12,5 @@ include_rules = [
   "+content/public/test",
   "+net",
   "+services/network",
+  "+third_party/blink/public/common",
 ]

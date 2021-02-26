@@ -1,7 +1,9 @@
-import { TestLoader } from '../framework/loader.js';
-import { LiveTestCaseResult, Logger } from '../framework/logger.js';
-import { makeQueryString } from '../framework/url_query.js';
+import { DefaultTestFileLoader } from '../framework/file_loader.js';
+import { Logger } from '../framework/logging/logger.js';
+import { parseQuery } from '../framework/query/parseQuery.js';
+import { TestTreeLeaf } from '../framework/tree.js';
 import { AsyncMutex } from '../framework/util/async_mutex.js';
+import { assert } from '../framework/util/util.js';
 
 import { optionEnabled } from './helper/options.js';
 import { TestWorker } from './helper/test_worker.js';
@@ -12,54 +14,50 @@ declare interface WptTestObject {
 }
 // Implements the wpt-embedded test runner (see also: wpt/cts.html).
 
-declare function async_test(f: (this: WptTestObject) => Promise<void>, name: string): void;
+declare function async_test(f: (this: WptTestObject) => void, name: string): void;
 
 (async () => {
-  const loader = new TestLoader();
-  const files = await loader.loadTestsFromQuery(window.location.search);
+  const loader = new DefaultTestFileLoader();
+  const qs = new URLSearchParams(window.location.search).getAll('q');
+  assert(qs.length === 1, 'currently, there must be exactly one ?q=');
+  const testcases = await loader.loadCases(parseQuery(qs[0]));
 
-  const worker = optionEnabled('worker') ? new TestWorker() : undefined;
+  await addWPTTests(testcases);
+})();
 
-  const log = new Logger();
+// Note: `async_test`s must ALL be added within the same task. This function *must not* be async.
+function addWPTTests(testcases: IterableIterator<TestTreeLeaf>): Promise<Logger> {
+  const worker = optionEnabled('worker') ? new TestWorker(false) : undefined;
+
+  const log = new Logger(false);
   const mutex = new AsyncMutex();
   const running: Array<Promise<void>> = [];
 
-  for (const f of files) {
-    if (!('g' in f.spec)) {
-      continue;
-    }
+  for (const testcase of testcases) {
+    const name = testcase.query.toString();
+    const wpt_fn = function (this: WptTestObject): void {
+      const p = mutex.with(async () => {
+        const [rec, res] = log.record(name);
+        if (worker) {
+          await worker.run(rec, name);
+        } else {
+          await testcase.run(rec);
+        }
 
-    const [rec] = log.record(f.id);
-    for (const t of f.spec.g.iterate(rec)) {
-      const name = makeQueryString(f.id, t.id);
-
-      // Note: apparently, async_tests must ALL be added within the same task.
-      async_test(function(this: WptTestObject): Promise<void> {
-        const p = mutex.with(async () => {
-          let r: LiveTestCaseResult;
-          if (worker) {
-            r = await worker.run(name);
-            t.injectResult(r);
-          } else {
-            r = await t.run();
+        this.step(() => {
+          // Unfortunately, it seems not possible to surface any logs for warn/skip.
+          if (res.status === 'fail') {
+            throw (res.logs || []).map(s => s.toJSON()).join('\n\n');
           }
-
-          this.step(() => {
-            // Unfortunately, it seems not possible to surface any logs for warn/skip.
-            if (r.status === 'fail') {
-              throw (r.logs || []).map(s => s.toJSON()).join('\n\n');
-            }
-          });
-          this.done();
         });
+        this.done();
+      });
 
-        running.push(p);
-        return p;
-      }, name);
-    }
+      running.push(p);
+    };
+
+    async_test(wpt_fn, name);
   }
 
-  await Promise.all(running);
-  const resultsElem = document.getElementById('results') as HTMLElement;
-  resultsElem.textContent = log.asJSON(2);
-})();
+  return Promise.all(running).then(() => log);
+}

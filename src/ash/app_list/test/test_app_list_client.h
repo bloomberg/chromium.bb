@@ -33,8 +33,7 @@ class TestAppListClient : public AppListClient {
                         int suggestion_index,
                         bool launch_as_default) override {}
   void InvokeSearchResultAction(const std::string& result_id,
-                                int action_index,
-                                int event_flags) override;
+                                int action_index) override;
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
@@ -48,19 +47,13 @@ class TestAppListClient : public AppListClient {
                            GetContextMenuModelCallback callback) override;
   void OnAppListVisibilityWillChange(bool visible) override {}
   void OnAppListVisibilityChanged(bool visible) override {}
-  void OnFolderCreated(int profile_id,
-                       std::unique_ptr<AppListItemMetadata> item) override {}
-  void OnFolderDeleted(int profile_id,
-                       std::unique_ptr<AppListItemMetadata> item) override {}
+  void OnItemAdded(int profile_id,
+                   std::unique_ptr<AppListItemMetadata> item) override {}
   void OnItemUpdated(int profile_id,
                      std::unique_ptr<AppListItemMetadata> item) override {}
-  void OnPageBreakItemAdded(int profile_id,
-                            const std::string& id,
-                            const syncer::StringOrdinal& position) override {}
+  void OnFolderDeleted(int profile_id,
+                       std::unique_ptr<AppListItemMetadata> item) override {}
   void OnPageBreakItemDeleted(int profile_id, const std::string& id) override {}
-  void GetNavigableContentsFactory(
-      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
-      override {}
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override {}
   void OnQuickSettingsChanged(

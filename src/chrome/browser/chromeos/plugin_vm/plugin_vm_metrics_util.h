@@ -13,10 +13,6 @@ extern const char kPluginVmImageDownloadedSizeHistogram[];
 extern const char kPluginVmLaunchResultHistogram[];
 extern const char kPluginVmSetupResultHistogram[];
 extern const char kPluginVmDlcUseResultHistogram[];
-// Histogram for recording successful setup time.
-// When error occurs and user hits retry button in setup dialog - time between
-// pressing retry button and setup being finished is recorded.
-extern const char kPluginVmSetupTimeHistogram[];
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -44,7 +40,7 @@ enum class PluginVmSetupResult {
   kVmAlreadyExists = 8,
   kUserCancelledCheckingForExistingVm = 9,
   // kErrorInsufficientDiskSpace = 10,
-  kUserCancelledLowDiskSpace = 11,
+  // kUserCancelledLowDiskSpace = 11,
   kUserCancelledCheckingDiskSpace = 12,
   // Failure reasons are broken down in PluginVm.SetupFailureReason.
   kError = 13,

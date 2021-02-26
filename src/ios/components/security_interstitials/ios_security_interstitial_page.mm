@@ -69,9 +69,6 @@ void IOSSecurityInterstitialPage::Show() {
 
 std::string IOSSecurityInterstitialPage::GetHtmlContents() const {
   base::DictionaryValue load_time_data;
-  load_time_data.SetBoolean(
-      "committed_interstitials_enabled",
-      base::FeatureList::IsEnabled(web::features::kSSLCommittedInterstitials));
   // Interstitial pages on iOS get reloaded to prevent loading from cache, since
   // loading from cache breaks JavaScript commands. Set as |load_time_data|
   // for safety.
@@ -85,6 +82,10 @@ std::string IOSSecurityInterstitialPage::GetHtmlContents() const {
           IDR_SECURITY_INTERSTITIAL_HTML);
   webui::AppendWebUiCssTextDefaults(&html);
   return webui::GetI18nTemplateHtml(html, &load_time_data);
+}
+
+bool IOSSecurityInterstitialPage::ShouldDisplayURL() const {
+  return true;
 }
 
 base::string16 IOSSecurityInterstitialPage::GetFormattedHostName() const {

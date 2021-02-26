@@ -416,7 +416,7 @@ static void dump_table(const char *zTab, FILE *out){
   const char *zSep;         /* Separator string */
   Str ins;                  /* Beginning of the INSERT statement */
 
-  pStmt = db_prepare("SELECT sql FROM aux.sqlite_master WHERE name=%Q", zTab);
+  pStmt = db_prepare("SELECT sql FROM aux.sqlite_schema WHERE name=%Q", zTab);
   if( SQLITE_ROW==sqlite3_step(pStmt) ){
     fprintf(out, "%s;\n", sqlite3_column_text(pStmt,0));
   }
@@ -466,13 +466,14 @@ static void dump_table(const char *zTab, FILE *out){
     sqlite3_finalize(pStmt);
     strFree(&ins);
   } /* endif !g.bSchemaOnly */
-  pStmt = db_prepare("SELECT sql FROM aux.sqlite_master"
+  pStmt = db_prepare("SELECT sql FROM aux.sqlite_schema"
                      " WHERE type='index' AND tbl_name=%Q AND sql IS NOT NULL",
                      zTab);
   while( SQLITE_ROW==sqlite3_step(pStmt) ){
     fprintf(out, "%s;\n", sqlite3_column_text(pStmt,0));
   }
   sqlite3_finalize(pStmt);
+  sqlite3_free(zId);
 }
 
 
@@ -639,10 +640,10 @@ static void diff_one_table(const char *zTab, FILE *out){
 
   /* Drop indexes that are missing in the destination */
   pStmt = db_prepare(
-    "SELECT name FROM main.sqlite_master"
+    "SELECT name FROM main.sqlite_schema"
     " WHERE type='index' AND tbl_name=%Q"
     "   AND sql IS NOT NULL"
-    "   AND sql NOT IN (SELECT sql FROM aux.sqlite_master"
+    "   AND sql NOT IN (SELECT sql FROM aux.sqlite_schema"
     "                    WHERE type='index' AND tbl_name=%Q"
     "                      AND sql IS NOT NULL)",
     zTab, zTab);
@@ -700,10 +701,10 @@ static void diff_one_table(const char *zTab, FILE *out){
 
   /* Create indexes that are missing in the source */
   pStmt = db_prepare(
-    "SELECT sql FROM aux.sqlite_master"
+    "SELECT sql FROM aux.sqlite_schema"
     " WHERE type='index' AND tbl_name=%Q"
     "   AND sql IS NOT NULL"
-    "   AND sql NOT IN (SELECT sql FROM main.sqlite_master"
+    "   AND sql NOT IN (SELECT sql FROM main.sqlite_schema"
     "                    WHERE type='index' AND tbl_name=%Q"
     "                      AND sql IS NOT NULL)",
     zTab, zTab);
@@ -728,7 +729,7 @@ end_diff_one_table:
 */
 static void checkSchemasMatch(const char *zTab){
   sqlite3_stmt *pStmt = db_prepare(
-      "SELECT A.sql=B.sql FROM main.sqlite_master A, aux.sqlite_master B"
+      "SELECT A.sql=B.sql FROM main.sqlite_schema A, aux.sqlite_schema B"
       " WHERE A.name=%Q AND B.name=%Q", zTab, zTab
   );
   if( SQLITE_ROW==sqlite3_step(pStmt) ){
@@ -1544,6 +1545,7 @@ static void changeset_one_table(const char *zTab, FILE *out){
 
   /* Check that the schemas of the two tables match. Exit early otherwise. */
   checkSchemasMatch(zTab);
+  strInit(&sql);
 
   pStmt = db_prepare("PRAGMA main.table_info=%Q", zTab);
   while( SQLITE_ROW==sqlite3_step(pStmt) ){
@@ -1565,7 +1567,6 @@ static void changeset_one_table(const char *zTab, FILE *out){
   }
   sqlite3_finalize(pStmt);
   if( nPk==0 ) goto end_changeset_one_table; 
-  strInit(&sql);
   if( nCol>nPk ){
     strPrintf(&sql, "SELECT %d", SQLITE_UPDATE);
     for(i=0; i<nCol; i++){
@@ -1707,6 +1708,8 @@ end_changeset_one_table:
   sqlite3_free(azCol);
   sqlite3_free(aiPk);
   sqlite3_free(zId);
+  sqlite3_free(aiFlg);
+  strFree(&sql);
 }
 
 /*
@@ -1757,7 +1760,7 @@ const char *gobble_token(const char *zIn, char *zBuf, int nBuf){
 **   module_name(SQL)
 **
 ** The only argument should be an SQL statement of the type that may appear
-** in the sqlite_master table. If the statement is a "CREATE VIRTUAL TABLE"
+** in the sqlite_schema table. If the statement is a "CREATE VIRTUAL TABLE"
 ** statement, then the value returned is the name of the module that it
 ** uses. Otherwise, if the statement is not a CVT, NULL is returned.
 */
@@ -1816,32 +1819,32 @@ const char *all_tables_sql(){
     assert( rc==SQLITE_OK );
   
     return 
-      "SELECT name FROM main.sqlite_master\n"
+      "SELECT name FROM main.sqlite_schema\n"
       " WHERE type='table' AND (\n"
       "    module_name(sql) IS NULL OR \n"
       "    module_name(sql) IN (SELECT module FROM temp.tblmap)\n"
       " ) AND name NOT IN (\n"
       "  SELECT a.name || b.postfix \n"
-        "FROM main.sqlite_master AS a, temp.tblmap AS b \n"
+        "FROM main.sqlite_schema AS a, temp.tblmap AS b \n"
         "WHERE module_name(a.sql) = b.module\n" 
       " )\n"
       "UNION \n"
-      "SELECT name FROM aux.sqlite_master\n"
+      "SELECT name FROM aux.sqlite_schema\n"
       " WHERE type='table' AND (\n"
       "    module_name(sql) IS NULL OR \n"
       "    module_name(sql) IN (SELECT module FROM temp.tblmap)\n"
       " ) AND name NOT IN (\n"
       "  SELECT a.name || b.postfix \n"
-        "FROM aux.sqlite_master AS a, temp.tblmap AS b \n"
+        "FROM aux.sqlite_schema AS a, temp.tblmap AS b \n"
         "WHERE module_name(a.sql) = b.module\n" 
       " )\n"
       " ORDER BY name";
   }else{
     return
-      "SELECT name FROM main.sqlite_master\n"
+      "SELECT name FROM main.sqlite_schema\n"
       " WHERE type='table' AND sql NOT LIKE 'CREATE VIRTUAL%%'\n"
       " UNION\n"
-      "SELECT name FROM aux.sqlite_master\n"
+      "SELECT name FROM aux.sqlite_schema\n"
       " WHERE type='table' AND sql NOT LIKE 'CREATE VIRTUAL%%'\n"
       " ORDER BY name";
   }
@@ -1955,7 +1958,7 @@ int main(int argc, char **argv){
   if( rc ){
     cmdlineError("cannot open database file \"%s\"", zDb1);
   }
-  rc = sqlite3_exec(g.db, "SELECT * FROM sqlite_master", 0, 0, &zErrMsg);
+  rc = sqlite3_exec(g.db, "SELECT * FROM sqlite_schema", 0, 0, &zErrMsg);
   if( rc || zErrMsg ){
     cmdlineError("\"%s\" does not appear to be a valid SQLite database", zDb1);
   }
@@ -1971,10 +1974,12 @@ int main(int argc, char **argv){
 #endif
   zSql = sqlite3_mprintf("ATTACH %Q as aux;", zDb2);
   rc = sqlite3_exec(g.db, zSql, 0, 0, &zErrMsg);
+  sqlite3_free(zSql);
+  zSql = 0;
   if( rc || zErrMsg ){
     cmdlineError("cannot attach database \"%s\"", zDb2);
   }
-  rc = sqlite3_exec(g.db, "SELECT * FROM aux.sqlite_master", 0, 0, &zErrMsg);
+  rc = sqlite3_exec(g.db, "SELECT * FROM aux.sqlite_schema", 0, 0, &zErrMsg);
   if( rc || zErrMsg ){
     cmdlineError("\"%s\" does not appear to be a valid SQLite database", zDb2);
   }

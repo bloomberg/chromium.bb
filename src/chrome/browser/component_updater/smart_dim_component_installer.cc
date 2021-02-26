@@ -16,8 +16,8 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/version.h"
-#include "chrome/browser/chromeos/power/ml/smart_dim/download_worker.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/metrics.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -39,7 +39,7 @@ const base::FilePath::CharType kSmartDimModelFileName[] =
 const base::FilePath::CharType kSmartDimMetaJsonFileName[] =
     FILE_PATH_LITERAL("smart_dim_meta.json");
 
-const char kDefaultVersion[] = "2019.11.12.0";
+const char kDefaultVersion[] = "20200601.0";
 
 constexpr base::FeatureParam<std::string> kVersion{
     &chromeos::features::kSmartDimExperimentalComponent,
@@ -130,9 +130,8 @@ void SmartDimComponentInstallerPolicy::ComponentReady(
   DVLOG(1) << "Component ready, version " << version.GetString() << " in "
            << install_dir.value();
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &ReadComponentFiles, install_dir.Append(kSmartDimMetaJsonFileName),
           install_dir.Append(kSmartDimFeaturePreprocessorConfigFileName),

@@ -83,8 +83,8 @@ void ShowPrompt() {
 // Returns true if the default browser prompt should be shown if Chrome is not
 // the user's default browser.
 bool ShouldShowDefaultBrowserPrompt(Profile* profile) {
-  // Do not show the prompt if the "suppress_default_browser_prompt_for_version"
-  // master preference is set to the current version.
+  // Do not show the prompt if "suppress_default_browser_prompt_for_version" in
+  // the initial preferences is set to the current version.
   const std::string disable_version_string =
       g_browser_process->local_state()->GetString(
           prefs::kBrowserSuppressDefaultBrowserPrompt);
@@ -158,10 +158,10 @@ void ShowDefaultBrowserPrompt(Profile* profile) {
   }
 
   scoped_refptr<shell_integration::DefaultBrowserWorker>(
-      new shell_integration::DefaultBrowserWorker(
-          base::Bind(&OnCheckIsDefaultBrowserFinished, profile->GetPath(),
-                     ShouldShowDefaultBrowserPrompt(profile))))
-      ->StartCheckIsDefault();
+      new shell_integration::DefaultBrowserWorker())
+      ->StartCheckIsDefault(
+          base::BindOnce(&OnCheckIsDefaultBrowserFinished, profile->GetPath(),
+                         ShouldShowDefaultBrowserPrompt(profile)));
 }
 
 void DefaultBrowserPromptDeclined(Profile* profile) {

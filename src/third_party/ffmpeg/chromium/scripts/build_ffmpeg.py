@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import collections
 import functools
+import glob
 import optparse
 import os
 import platform
@@ -38,7 +39,7 @@ ARCH_MAP = {
         'ia32', 'x64', 'mipsel', 'mips64el', 'noasm-x64', 'arm', 'arm-neon',
         'arm64'
     ],
-    'mac': ['x64'],
+    'mac': ['x64', 'arm64'],
     'win': ['ia32', 'x64', 'arm64'],
 }
 
@@ -67,9 +68,19 @@ Platform specific build notes:
       build/linux/sysroot_scripts/install-sysroot.py --arch=mips64el
 
   mac:
-    Script must be run on OSX.  Additionally, ensure the Chromium (not Apple)
-    version of clang is in the path; usually found under
+    Script must be run on Linux or macOS.  Additionally, ensure the Chromium
+    (not Apple) version of clang is in the path; usually found under
     src/third_party/llvm-build/Release+Asserts/bin
+
+    The arm64 version has to be built with an SDK that can build mac/arm64
+    binaries -- currently Xcode 12 beta and its included 11.0 SDK. You must
+    pass --enable-cross-compile to be able to build ffmpeg for mac/arm64 on an
+    Intel Mac. On a Mac, run like so:
+        PATH=$PWD/../../third_party/llvm-build/Release+Asserts/bin:$PATH \
+        SDKROOT=/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.0.sdk \
+        chromium/scripts/build_ffmpeg.py mac arm64 -- --enable-cross-compile
+
+    On Linux, the normal robosushi flow will work for arm64.
 
   win:
     Script may be run unders Linux or Windows; if cross-compiling you will need
@@ -310,42 +321,62 @@ def SetupWindowsCrossCompileToolchain(target_arch):
       new_args += ['--extra-ldflags=-libpath:' + flags[k]]
   return new_args
 
-def SetupMacCrossCompileToolchain():
+def SetupMacCrossCompileToolchain(target_arch):
   # First compute the various SDK paths.
   mac_min_ver = '10.10'
-  developer_dir =  os.path.join(CHROMIUM_ROOT_DIR, 'build', 'win_files',
-          'Xcode.app', 'Contents', 'Developer')
-  sdk_dir = os.path.join(developer_dir, 'Platforms', 'MacOSX.platform',
-          'Developer', 'SDKs', 'MacOSX' + mac_min_ver + '.sdk')
+  if target_arch == 'x64':
+    developer_dir =  os.path.join(CHROMIUM_ROOT_DIR, 'build', 'mac_files',
+            'xcode_binaries', 'Contents', 'Developer')
+    sdk_dir = os.path.join(developer_dir, 'Platforms', 'MacOSX.platform',
+            'Developer', 'SDKs', 'MacOSX.sdk')
+    target_triple = 'x86_64-apple-macosx'
+  elif target_arch == 'arm64':
+    # TODO: Once the 11.0 SDK is out of beta, it should be used for both
+    # arm64 and intel builds.
+    developer_dir =  os.path.join(CHROMIUM_ROOT_DIR, 'build', 'mac_files',
+            'xcode_binaries', 'Contents', 'Developer')
+    sdk_dir = os.path.join(developer_dir, 'Platforms', 'MacOSX.platform',
+            'Developer', 'SDKs', 'MacOSX11.0.sdk')
+    target_triple = 'arm64-apple-macosx'
+  else:
+    raise Exception("unknown arch " + target_arch)
 
   # We're guessing about the right sdk path, so warn if we don't find it.
   if not os.path.exists(sdk_dir):
+      print (sdk_dir)
       raise Exception("Can't find the mac sdk.  Please see crbug.com/841826")
 
   frameworks_dir = os.path.join(sdk_dir, "System", "Library", "Frameworks")
   libs_dir = os.path.join(sdk_dir, "usr", "lib")
 
-  # ld64.lld is a symlink to clang's ld
   new_args = [
       '--enable-cross-compile',
       '--cc=clang',
+      # This is replaced with fake_linker.py further down. We need a real linker
+      # at configure time for a few configure checks. These checks only link
+      # very basic programs, so it's ok to use ld64.lld, even though it's not
+      # generally production quality.
       '--ld=ld64.lld',
       '--nm=llvm-nm',
       '--ar=llvm-ar',
       '--target-os=darwin',
 
-      '--extra-cflags=--target=i686-apple-darwin-macho',
+      '--extra-cflags=--target=' + target_triple,
       '--extra-cflags=-F' + frameworks_dir,
       '--extra-cflags=-mmacosx-version-min=' + mac_min_ver
   ]
+
+  # We need to pass -nostdinc so that clang does not pick up linux headers,
+  # but then it also can't find its own headers like stddef.h. So tell it
+  # where to look for those headers.
+  clang_dir = glob.glob(os.path.join(CHROMIUM_ROOT_DIR, 'third_party',
+      'llvm-build', 'Release+Asserts', 'lib', 'clang', '*', 'include'))[0]
 
   new_args += [
       '--extra-cflags=-fblocks',
       '--extra-cflags=-nostdinc',
       '--extra-cflags=-isystem%s/usr/include' % sdk_dir,
-      '--extra-cflags=-isystem%s/usr/include/c++/4.2.1' % sdk_dir,
-      '--extra-cflags=-isystem%s/Toolchains/XcodeDefault.xctoolchain'
-      '/usr/lib/clang/8.1.0/include/' % developer_dir,
+      '--extra-cflags=-isystem' + clang_dir,
       '--extra-ldflags=-syslibroot', '--extra-ldflags=' + sdk_dir,
       '--extra-ldflags=' + '-L' + libs_dir,
       '--extra-ldflags=-lSystem',
@@ -826,14 +857,15 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
       return 1
 
     if host_os != 'mac':
-      configure_flags['Common'].extend(SetupMacCrossCompileToolchain())
+      configure_flags['Common'].extend(
+              SetupMacCrossCompileToolchain(target_arch))
     else:
-      # Mac dylib building resolves external symbols. We need to explicitly
-      # include -lopus to point to the system libopus so we can build
-      # libavcodec.XX.dylib.A
-      # For cross-compiling, this doesn't work, and doesn't seem to be needed.
+      # ffmpeg links against Chromium's libopus, which isn't built when this
+      # script runs. Suppress all undefined symbols (which matches the default
+      # on Linux), to get things to build. This also requires opting in to
+      # flat namespaces.
       configure_flags['Common'].extend([
-          '--extra-libs=-lopus',
+          '--extra-ldflags=-Wl,-flat_namespace -Wl,-undefined,warning',
       ])
 
     if target_arch == 'x64':
@@ -841,6 +873,12 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
           '--arch=x86_64',
           '--extra-cflags=-m64',
           '--extra-ldflags=-m64',
+      ])
+    elif target_arch == 'arm64':
+      configure_flags['Common'].extend([
+          '--arch=arm64',
+          '--extra-cflags=-arch arm64',
+          '--extra-ldflags=-arch arm64',
       ])
     else:
       print(

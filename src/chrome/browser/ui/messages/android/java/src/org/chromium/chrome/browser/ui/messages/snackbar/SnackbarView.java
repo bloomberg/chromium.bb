@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.SurfaceView;
@@ -205,8 +206,25 @@ public class SnackbarView {
      * the mMessageView content description is read aloud if accessibility is enabled.
      */
     public void announceforAccessibility() {
-        mMessageView.announceForAccessibility(mMessageView.getContentDescription() + " "
-                + mContainerView.getResources().getString(R.string.bottom_bar_screen_position));
+        StringBuilder accessibilityText = new StringBuilder(mMessageView.getContentDescription());
+        if (mActionButtonView.getContentDescription() != null) {
+            accessibilityText.append(". ")
+                    .append(mActionButtonView.getContentDescription())
+                    .append(". ")
+                    .append(mContainerView.getResources().getString(
+                            R.string.bottom_bar_screen_position));
+        }
+
+        mMessageView.announceForAccessibility(accessibilityText);
+    }
+
+    /**
+     * Sends an accessibility event to mContainerView announcing that an action was taken based on
+     * the action button being pressed.  May do nothing if no announcement was specified.
+     */
+    public void announceActionForAccessibility() {
+        if (TextUtils.isEmpty(mSnackbar.getActionAccessibilityAnnouncement())) return;
+        mContainerView.announceForAccessibility(mSnackbar.getActionAccessibilityAnnouncement());
     }
 
     /**
@@ -233,8 +251,8 @@ public class SnackbarView {
     private static int getBackgroundColor(View view, Snackbar snackbar) {
         // Themes are used first.
         if (snackbar.getTheme() == Snackbar.Theme.GOOGLE) {
-            return ApiCompatibilityUtils.getColor(view.getResources(),
-                    org.chromium.components.browser_ui.styles.R.color.default_control_color_active);
+            return ApiCompatibilityUtils.getColor(
+                    view.getResources(), R.color.default_control_color_active);
         }
 
         assert snackbar.getTheme() == Snackbar.Theme.BASIC;
@@ -243,12 +261,12 @@ public class SnackbarView {
         }
 
         return ApiCompatibilityUtils.getColor(
-                view.getResources(), org.chromium.ui.R.color.snackbar_background_color);
+                view.getResources(), R.color.snackbar_background_color);
     }
 
     private static int getTextAppearance(Snackbar snackbar) {
         if (snackbar.getTheme() == Snackbar.Theme.GOOGLE) {
-            return org.chromium.ui.R.style.TextAppearance_TextMedium_Primary_Inverse;
+            return R.style.TextAppearance_TextMedium_Primary_Inverse;
         }
 
         assert snackbar.getTheme() == Snackbar.Theme.BASIC;
@@ -256,16 +274,16 @@ public class SnackbarView {
             return snackbar.getTextAppearance();
         }
 
-        return org.chromium.ui.R.style.TextAppearance_TextMedium_Primary;
+        return R.style.TextAppearance_TextMedium_Primary;
     }
 
     private static int getButtonTextAppearance(Snackbar snackbar) {
         if (snackbar.getTheme() == Snackbar.Theme.GOOGLE) {
-            return org.chromium.ui.R.style.TextAppearance_Button_Text_Filled;
+            return R.style.TextAppearance_Button_Text_Filled;
         }
 
         assert snackbar.getTheme() == Snackbar.Theme.BASIC;
-        return org.chromium.ui.R.style.TextButton;
+        return R.style.TextButton;
     }
 
     private boolean updateInternal(Snackbar snackbar, boolean animate) {
@@ -274,7 +292,6 @@ public class SnackbarView {
         mMessageView.setMaxLines(snackbar.getSingleLine() ? 1 : MAX_LINES);
         mMessageView.setTemplate(snackbar.getTemplateText());
         setViewText(mMessageView, snackbar.getText(), animate);
-        String actionText = snackbar.getActionText();
 
         ApiCompatibilityUtils.setTextAppearance(mMessageView, getTextAppearance(snackbar));
         ApiCompatibilityUtils.setTextAppearance(
@@ -291,8 +308,9 @@ public class SnackbarView {
             mSnackbarView.setBackgroundColor(backgroundColor);
         }
 
-        if (actionText != null) {
+        if (snackbar.getActionText() != null) {
             mActionButtonView.setVisibility(View.VISIBLE);
+            mActionButtonView.setContentDescription(snackbar.getActionText());
             setViewText(mActionButtonView, snackbar.getActionText(), animate);
         } else {
             mActionButtonView.setVisibility(View.GONE);

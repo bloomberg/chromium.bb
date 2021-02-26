@@ -33,8 +33,6 @@ enum class ModuleGraphLevel;
 class CORE_EXPORT ModuleScriptLoader final
     : public GarbageCollected<ModuleScriptLoader>,
       public ModuleScriptFetcher::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(ModuleScriptLoader);
-
   enum class State {
     kInitial,
     // FetchParameters is being processed, and ModuleScriptLoader hasn't
@@ -67,7 +65,7 @@ class CORE_EXPORT ModuleScriptLoader final
   bool IsInitialState() const { return state_ == State::kInitial; }
   bool HasFinished() const { return state_ == State::kFinished; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   friend class WorkletModuleResponsesMapTest;
 

@@ -20,18 +20,21 @@ namespace quic {
 std::unique_ptr<QuicSpdyClientBase> QuicEpollClientFactory::CreateClient(
     std::string host_for_handshake,
     std::string host_for_lookup,
+    int address_family_for_lookup,
     uint16_t port,
     ParsedQuicVersionVector versions,
+    const QuicConfig& config,
     std::unique_ptr<ProofVerifier> verifier) {
-  QuicSocketAddress addr =
-      tools::LookupAddress(host_for_lookup, quiche::QuicheStrCat(port));
+  QuicSocketAddress addr = tools::LookupAddress(
+      address_family_for_lookup, host_for_lookup, quiche::QuicheStrCat(port));
   if (!addr.IsInitialized()) {
     QUIC_LOG(ERROR) << "Unable to resolve address: " << host_for_lookup;
     return nullptr;
   }
   QuicServerId server_id(host_for_handshake, port, false);
-  return std::make_unique<QuicClient>(addr, server_id, versions, &epoll_server_,
-                                      std::move(verifier));
+  return std::make_unique<QuicClient>(addr, server_id, versions, config,
+                                      &epoll_server_, std::move(verifier),
+                                      nullptr);
 }
 
 }  // namespace quic

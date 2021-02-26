@@ -5,10 +5,10 @@
 #include "components/browsing_data/content/cookie_helper.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/time/time.h"
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/storage_partition.h"

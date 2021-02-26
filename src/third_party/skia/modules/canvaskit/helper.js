@@ -17,6 +17,21 @@ CanvasKit.Color = function(r, g, b, a) {
   return CanvasKit.Color4f(clamp(r)/255, clamp(g)/255, clamp(b)/255, a);
 }
 
+// Constructs a Color as a 32 bit unsigned integer, with 8 bits assigned to each channel.
+// Channels are expected to be between 0 and 255 and will be clamped as such.
+CanvasKit.ColorAsInt = function(r, g, b, a) {
+  // default to opaque
+  if (a === undefined) {
+      a = 255;
+  }
+  // This is consistent with how Skia represents colors in C++, as an unsigned int.
+  // This is also consistent with how Flutter represents colors:
+  // https://github.com/flutter/engine/blob/243bb59c7179a7e701ce478080d6ce990710ae73/lib/web_ui/lib/src/ui/painting.dart#L50
+  return (((clamp(a) << 24) | (clamp(r) << 16) | (clamp(g) << 8) | (clamp(b) << 0)
+   & 0xFFFFFFF) // This truncates the unsigned to 32 bits and signals to JS engines they can
+                // represent the number with an int instead of a double.
+    >>> 0);     // This makes the value an unsigned int.
+}
 // Construct a 4-float color.
 // Opaque if opacity is omitted.
 CanvasKit.Color4f = function(r, g, b, a) {
@@ -28,31 +43,31 @@ CanvasKit.Color4f = function(r, g, b, a) {
 
 // Color constants use property getters to prevent other code from accidentally
 // changing them.
-Object.defineProperty(CanvasKit, "TRANSPARENT", {
+Object.defineProperty(CanvasKit, 'TRANSPARENT', {
     get: function() { return CanvasKit.Color4f(0, 0, 0, 0); }
 });
-Object.defineProperty(CanvasKit, "BLACK", {
+Object.defineProperty(CanvasKit, 'BLACK', {
     get: function() { return CanvasKit.Color4f(0, 0, 0, 1); }
 });
-Object.defineProperty(CanvasKit, "WHITE", {
+Object.defineProperty(CanvasKit, 'WHITE', {
     get: function() { return CanvasKit.Color4f(1, 1, 1, 1); }
 });
-Object.defineProperty(CanvasKit, "RED", {
+Object.defineProperty(CanvasKit, 'RED', {
     get: function() { return CanvasKit.Color4f(1, 0, 0, 1); }
 });
-Object.defineProperty(CanvasKit, "GREEN", {
+Object.defineProperty(CanvasKit, 'GREEN', {
     get: function() { return CanvasKit.Color4f(0, 1, 0, 1); }
 });
-Object.defineProperty(CanvasKit, "BLUE", {
+Object.defineProperty(CanvasKit, 'BLUE', {
     get: function() { return CanvasKit.Color4f(0, 0, 1, 1); }
 });
-Object.defineProperty(CanvasKit, "YELLOW", {
+Object.defineProperty(CanvasKit, 'YELLOW', {
     get: function() { return CanvasKit.Color4f(1, 1, 0, 1); }
 });
-Object.defineProperty(CanvasKit, "CYAN", {
+Object.defineProperty(CanvasKit, 'CYAN', {
     get: function() { return CanvasKit.Color4f(0, 1, 1, 1); }
 });
-Object.defineProperty(CanvasKit, "MAGENTA", {
+Object.defineProperty(CanvasKit, 'MAGENTA', {
     get: function() { return CanvasKit.Color4f(1, 0, 1, 1); }
 });
 
@@ -123,7 +138,7 @@ CanvasKit.parseColorString = function(colorStr, colorMap) {
       return nc;
     }
   }
-  SkDebug('unrecognized color ' + colorStr);
+  Debug('unrecognized color ' + colorStr);
   return CanvasKit.BLACK;
 }
 
@@ -138,6 +153,23 @@ function isCanvasKitColor(ob) {
 function toUint32Color(c) {
   return ((clamp(c[3]*255) << 24) | (clamp(c[0]*255) << 16) | (clamp(c[1]*255) << 8) | (clamp(c[2]*255) << 0)) >>> 0;
 }
+// Accepts various colors representations and converts them to an array of int colors.
+// Does not handle builders.
+function assureIntColors(arr) {
+  if (arr instanceof Float32Array) {
+    var count = Math.floor(arr.length / 4);
+    var result = new Uint32Array(count);
+    for (var i = 0; i < count; i ++) {
+      result[i] = toUint32Color(arr.slice(i*4, (i+1)*4));
+    }
+    return result;
+  } else if (arr instanceof Uint32Array) {
+    return arr;
+  } else if (arr instanceof Array && arr[0] instanceof Float32Array) {
+    return arr.map(toUint32Color);
+  }
+}
+
 function uIntColorToCanvasKitColor(c) {
     return CanvasKit.Color(
      (c >> 16) & 0xFF,
@@ -175,19 +207,19 @@ function degreesToRadians(deg) {
 
 // See https://stackoverflow.com/a/31090240
 // This contraption keeps closure from minifying away the check
-// if btoa is defined *and* prevents runtime "btoa" or "window" is not defined.
+// if btoa is defined *and* prevents runtime 'btoa' or 'window' is not defined.
 // Defined outside any scopes to make it available in all files.
-var isNode = !(new Function("try {return this===window;}catch(e){ return false;}")());
+var isNode = !(new Function('try {return this===window;}catch(e){ return false;}')());
 
 function almostEqual(floata, floatb) {
   return Math.abs(floata - floatb) < 0.00001;
 }
 
-
 var nullptr = 0; // emscripten doesn't like to take null as uintptr_t
 
 // arr can be a normal JS array or a TypedArray
-// dest is something like CanvasKit.HEAPF32
+// dest is a string like 'HEAPU32' that specifies the type the src array
+// should be copied into.
 // ptr can be optionally provided if the memory was already allocated.
 function copy1dArray(arr, dest, ptr) {
   if (!arr || !arr.length) {
@@ -197,8 +229,9 @@ function copy1dArray(arr, dest, ptr) {
   if (arr['_ck']) {
     return arr.byteOffset;
   }
+  var bytesPerElement = CanvasKit[dest].BYTES_PER_ELEMENT;
   if (!ptr) {
-    ptr = CanvasKit._malloc(arr.length * dest.BYTES_PER_ELEMENT);
+    ptr = CanvasKit._malloc(arr.length * bytesPerElement);
   }
   // In c++ terms, the WASM heap is a uint8_t*, a long buffer/array of single
   // byte elements. When we run _malloc, we always get an offset/pointer into
@@ -209,7 +242,10 @@ function copy1dArray(arr, dest, ptr) {
   // Concretely, we need to convert ptr to go from an index into a 1-byte-wide
   // buffer to an index into a 4-byte-wide buffer (in the case of HEAPF32)
   // and thus we divide ptr by 4.
-  dest.set(arr, ptr / dest.BYTES_PER_ELEMENT);
+  // It is important to make sure we are grabbing the freshest view of the
+  // memory possible because if we call _malloc and the heap needs to grow,
+  // the TypedArrayView will no longer be valid.
+  CanvasKit[dest].set(arr, ptr / bytesPerElement);
   return ptr;
 }
 
@@ -217,15 +253,19 @@ function copy1dArray(arr, dest, ptr) {
 //     inside themselves). A common use case is points.
 // dest is something like CanvasKit.HEAPF32
 // ptr can be optionally provided if the memory was already allocated.
+// TODO(kjlubick): Remove 2d arrays - everything should be flat.
 function copy2dArray(arr, dest, ptr) {
   if (!arr || !arr.length) {
     return nullptr;
   }
+  var bytesPerElement = CanvasKit[dest].BYTES_PER_ELEMENT;
   if (!ptr) {
-    ptr = CanvasKit._malloc(arr.length * arr[0].length * dest.BYTES_PER_ELEMENT);
+    ptr = CanvasKit._malloc(arr.length * arr[0].length * bytesPerElement);
   }
+  // Make sure we have a fresh view of the heap after we malloc.
+  dest = CanvasKit[dest];
   var idx = 0;
-  var adjustedPtr = ptr / dest.BYTES_PER_ELEMENT;
+  var adjustedPtr = ptr / bytesPerElement;
   for (var r = 0; r < arr.length; r++) {
     for (var c = 0; c < arr[0].length; c++) {
       dest[adjustedPtr + idx] = arr[r][c];
@@ -235,31 +275,40 @@ function copy2dArray(arr, dest, ptr) {
   return ptr;
 }
 
-// arr should be a non-jagged 3d JS array (TypedArrays can't be nested
-//     inside themselves.)
-// dest is something like CanvasKit.HEAPF32
-// ptr can be optionally provided if the memory was already allocated.
-function copy3dArray(arr, dest, ptr) {
-  if (!arr || !arr.length || !arr[0].length) {
-    return nullptr;
+// Copies an array of colors to wasm, returning an object with the pointer
+// and info necessary to use the copied colors.
+// Accepts either a flat Float32Array, flat Uint32Array or Array of Float32Arrays.
+// If color is an object that was allocated with CanvasKit.Malloc, its pointer is
+// returned and no extra copy is performed.
+// Array of Float32Arrays is deprecated and planned to be removed, prefer flat
+// Float32Array
+// TODO(nifong): have this accept color builders.
+function copyFlexibleColorArray(colors) {
+  var result = {
+    colorPtr: nullptr,
+    count: colors.length,
+    colorType: CanvasKit.ColorType.RGBA_F32,
   }
-  if (!ptr) {
-    ptr = CanvasKit._malloc(arr.length * arr[0].length * arr[0][0].length * dest.BYTES_PER_ELEMENT);
+  if (colors instanceof Float32Array) {
+    result.colorPtr = copy1dArray(colors, 'HEAPF32');
+    result.count = colors.length / 4;
+
+  } else if (colors instanceof Uint32Array) {
+    result.colorPtr = copy1dArray(colors, 'HEAPU32');
+    result.colorType = CanvasKit.ColorType.RGBA_8888;
+
+  } else if (colors instanceof Array && colors[0] instanceof Float32Array) {
+    result.colorPtr = copy2dArray(colors, 'HEAPF32');
+  } else {
+    throw('Invalid argument to copyFlexibleColorArray, Not a color array '+typeof(colors));
   }
-  var idx = 0;
-  var adjustedPtr = ptr / dest.BYTES_PER_ELEMENT;
-  for (var x = 0; x < arr.length; x++) {
-    for (var y = 0; y < arr[0].length; y++) {
-      for (var z = 0; z < arr[0][0].length; z++) {
-        dest[adjustedPtr + idx] = arr[x][y][z];
-        idx++;
-      }
-    }
-  }
-  return ptr;
+  return result;
 }
 
 var defaultPerspective = Float32Array.of(0, 0, 1);
+
+var _scratch3x3MatrixPtr = nullptr;
+var _scratch3x3Matrix;  // the result from CanvasKit.Malloc
 
 // Copies the given DOMMatrix/Array/TypedArray to the CanvasKit heap and
 // returns a pointer to the memory. This memory is a float* of length 9.
@@ -271,95 +320,177 @@ function copy3x3MatrixToWasm(matr) {
   if (!matr) {
     return nullptr;
   }
-  var mPtr = CanvasKit._malloc(9 * 4); // 9 matrix scalars, each at 4 bytes.
+
   if (matr.length) {
     // TODO(kjlubick): Downsample a 16 length (4x4 matrix)
     if (matr.length !== 6 && matr.length !== 9) {
       throw 'invalid matrix size';
     }
-    // This should be an array or typed array.
-    // have to divide the pointer by 4 to "cast" it from bytes to float.
-    CanvasKit.HEAPF32.set(matr, mPtr / 4);
+    // matr should be an array or typed array.
+    var mPtr = copy1dArray(matr, 'HEAPF32', _scratch3x3MatrixPtr);
     if (matr.length === 6) {
-        CanvasKit.HEAPF32.set(defaultPerspective, 6 + mPtr / 4);
+      // Overwrite the last 3 floats with the default perspective. The divide
+      // by 4 casts the pointer into a float pointer.
+      CanvasKit.HEAPF32.set(defaultPerspective, 6 + mPtr / 4);
     }
-  } else {
-    // Try as if it's a DOMMatrix. Reminder that DOMMatrix is column-major.
-    var floats = Float32Array.of(
-           matr.m11, matr.m21, matr.m41,
-           matr.m12, matr.m22, matr.m42,
-           matr.m14, matr.m24, matr.m44);
-     // have to divide the pointer by 4 to "cast" it from bytes to float.
-    CanvasKit.HEAPF32.set(floats, mPtr / 4);
+    return mPtr;
   }
-  return mPtr;
+  var wasm3x3Matrix = _scratch3x3Matrix['toTypedArray']();
+  // Try as if it's a DOMMatrix. Reminder that DOMMatrix is column-major.
+  wasm3x3Matrix[0] = matr.m11;
+  wasm3x3Matrix[1] = matr.m21;
+  wasm3x3Matrix[2] = matr.m41;
+
+  wasm3x3Matrix[3] = matr.m12;
+  wasm3x3Matrix[4] = matr.m22;
+  wasm3x3Matrix[5] = matr.m42;
+
+  wasm3x3Matrix[6] = matr.m14;
+  wasm3x3Matrix[7] = matr.m24;
+  wasm3x3Matrix[8] = matr.m44;
+  return _scratch3x3MatrixPtr;
 }
+
+var _scratch4x4MatrixPtr = nullptr;
+var _scratch4x4Matrix; // the result from CanvasKit.Malloc
 
 function copy4x4MatrixToWasm(matr) {
   if (!matr) {
     return nullptr;
   }
-  var mPtr = CanvasKit._malloc(16 * 4); // 9 matrix scalars, each at 4 bytes.
+  var wasm4x4Matrix = _scratch4x4Matrix['toTypedArray']();
   if (matr.length) {
     if (matr.length !== 16 && matr.length !== 6 && matr.length !== 9) {
       throw 'invalid matrix size';
     }
     if (matr.length === 16) {
-      // This should be an array or typed array.
-      // have to divide the pointer by 4 to "cast" it from bytes to float.
-      CanvasKit.HEAPF32.set(matr, mPtr / 4);
-    } else {
-      // Upscale the row-major 3x3 or 3x2 matrix into a 4x4 row-major matrix
-      // TODO(skbug.com/10108) This will need to change when we convert our
-      //   JS 4x4 to be column-major.
-      var floats = Float32Array.of(
-           matr[0], matr[1], 0, matr[2],
-           matr[3], matr[4], 0, matr[5],
-                 0,       0, 0,       0,
-           matr[6], matr[7], 0, matr[8]);
-      if (matr.length === 6) {
-        // fix perspective for the 3x2 case (from above, they will be undefined).
-        floats[4*3+0]=0;
-        floats[4*3+1]=0;
-        floats[4*3+3]=1;
-      }
-      CanvasKit.HEAPF32.set(floats, mPtr / 4);
+      // matr should be an array or typed array.
+      return copy1dArray(matr, 'HEAPF32', _scratch4x4MatrixPtr);
     }
-  } else {
-    // Try as if it's a DOMMatrix. Reminder that DOMMatrix is column-major.
-    // TODO(skbug.com/10108) use toFloat32Array().
-    var floats = Float32Array.of(
-           matr.m11, matr.m21, matr.m31, matr.m41,
-           matr.m12, matr.m22, matr.m32, matr.m42,
-           matr.m13, matr.m23, matr.m33, matr.m43,
-           matr.m14, matr.m24, matr.m34, matr.m44);
-     // have to divide the pointer by 4 to "cast" it from bytes to float.
-    CanvasKit.HEAPF32.set(floats, mPtr / 4);
+    // Upscale the row-major 3x3 or 3x2 matrix into a 4x4 row-major matrix
+    // TODO(skbug.com/10108) This will need to change when we convert our
+    //   JS 4x4 to be column-major.
+    // When upscaling, we need to overwrite the 3rd column and the 3rd row with
+    // 0s. It's easiest to just do that with a fill command.
+    wasm4x4Matrix.fill(0);
+    wasm4x4Matrix[0] = matr[0];
+    wasm4x4Matrix[1] = matr[1];
+    // skip col 2
+    wasm4x4Matrix[3] = matr[2];
+
+    wasm4x4Matrix[4] = matr[3];
+    wasm4x4Matrix[5] = matr[4];
+    // skip col 2
+    wasm4x4Matrix[7] = matr[5];
+
+    // skip row 2
+
+    wasm4x4Matrix[12] = matr[6];
+    wasm4x4Matrix[13] = matr[7];
+    // skip col 2
+    wasm4x4Matrix[15] = matr[8];
+
+    if (matr.length === 6) {
+      // fix perspective for the 3x2 case (from above, they will be undefined).
+      wasm4x4Matrix[12]=0;
+      wasm4x4Matrix[13]=0;
+      wasm4x4Matrix[15]=1;
+    }
+    return _scratch4x4MatrixPtr;
   }
-  return mPtr;
+  // Try as if it's a DOMMatrix. Reminder that DOMMatrix is column-major.
+  wasm4x4Matrix[0] = matr.m11;
+  wasm4x4Matrix[1] = matr.m21;
+  wasm4x4Matrix[2] = matr.m31;
+  wasm4x4Matrix[3] = matr.m41;
+
+  wasm4x4Matrix[4] = matr.m12;
+  wasm4x4Matrix[5] = matr.m22;
+  wasm4x4Matrix[6] = matr.m32;
+  wasm4x4Matrix[7] = matr.m42;
+
+  wasm4x4Matrix[8] = matr.m13;
+  wasm4x4Matrix[9] = matr.m23;
+  wasm4x4Matrix[10] = matr.m33;
+  wasm4x4Matrix[11] = matr.m43;
+
+  wasm4x4Matrix[12] = matr.m14;
+  wasm4x4Matrix[13] = matr.m24;
+  wasm4x4Matrix[14] = matr.m34;
+  wasm4x4Matrix[15] = matr.m44;
+  return _scratch4x4MatrixPtr;
 }
 
-// copies a 4x4 matrix at the given pointer into a JS array.
+// copies a 4x4 matrix at the given pointer into a JS array. It is the caller's
+// responsibility to free the matrPtr if needed.
 function copy4x4MatrixFromWasm(matrPtr) {
-  // read them out into an array. TODO(kjlubick): If we change SkMatrix to be
+  // read them out into an array. TODO(kjlubick): If we change Matrix to be
   // typedArrays, then we should return a typed array here too.
   var rv = new Array(16);
   for (var i = 0; i < 16; i++) {
-    rv[i] = CanvasKit.HEAPF32[matrPtr/4 + i]; // divide by 4 to "cast" to float.
+    rv[i] = CanvasKit.HEAPF32[matrPtr/4 + i]; // divide by 4 to cast to float.
   }
-  CanvasKit._free(matrPtr);
   return rv;
+}
+
+var _scratchColorPtr = nullptr;
+var _scratchColor; // the result from CanvasKit.Malloc
+
+function copyColorToWasm(color4f, ptr) {
+  return copy1dArray(color4f, 'HEAPF32', ptr || _scratchColorPtr);
+}
+
+function copyColorComponentsToWasm(r, g, b, a) {
+  var colors = _scratchColor['toTypedArray']();
+  colors[0] = r;
+  colors[1] = g;
+  colors[2] = b;
+  colors[3] = a;
+  return _scratchColorPtr;
+}
+
+function copyColorToWasmNoScratch(color4f) {
+  // TODO(kjlubick): accept 4 floats or int color
+  return copy1dArray(color4f, 'HEAPF32');
 }
 
 // copies the four floats at the given pointer in a js Float32Array
 function copyColorFromWasm(colorPtr) {
   var rv = new Float32Array(4);
   for (var i = 0; i < 4; i++) {
-    rv[i] = CanvasKit.HEAPF32[colorPtr/4 + i]; // divide by 4 to "cast" to float.
+    rv[i] = CanvasKit.HEAPF32[colorPtr/4 + i]; // divide by 4 to cast to float.
   }
-  CanvasKit._free(colorPtr);
   return rv;
-} 
+}
+
+// These will be initialized after loading.
+var _scratchRect;
+var _scratchRectPtr = nullptr;
+
+var _scratchRect2;
+var _scratchRect2Ptr = nullptr;
+
+function copyRectToWasm(fourFloats, ptr) {
+  return copy1dArray(fourFloats, 'HEAPF32', ptr || _scratchRectPtr);
+}
+
+var _scratchIRect;
+var _scratchIRectPtr = nullptr;
+function copyIRectToWasm(fourInts, ptr) {
+  return copy1dArray(fourInts, 'HEAP32', ptr || _scratchIRectPtr);
+}
+
+// These will be initialized after loading.
+var _scratchRRect;
+var _scratchRRectPtr = nullptr;
+
+var _scratchRRect2;
+var _scratchRRect2Ptr = nullptr;
+
+
+function copyRRectToWasm(twelveFloats, ptr) {
+  return copy1dArray(twelveFloats, 'HEAPF32', ptr || _scratchRRectPtr);
+}
 
 // Caching the Float32Arrays can save having to reallocate them
 // over and over again.
@@ -377,6 +508,7 @@ var Float32ArrayCache = {};
 //   [CanvasKit.LINE_VERB, 30, 40],
 //   [CanvasKit.QUAD_VERB, 20, 50, 45, 60],
 // ];
+// TODO(kjlubick) remove this and Float32ArrayCache (superceded by Malloc).
 function loadCmdsTypedArray(arr) {
   var len = 0;
   for (var r = 0; r < arr.length; r++) {
@@ -400,7 +532,7 @@ function loadCmdsTypedArray(arr) {
     }
   }
 
-  var ptr = copy1dArray(ta, CanvasKit.HEAPF32);
+  var ptr = copy1dArray(ta, 'HEAPF32');
   return [ptr, len];
 }
 
@@ -428,6 +560,8 @@ function saveBytesToFile(bytes, fileName) {
     });
   }
 }
+
+// TODO(kjlubick) remove Builders - no longer needed now that Malloc is a thing.
 /**
  * Generic helper for dealing with an array of four floats.
  */
@@ -449,7 +583,7 @@ CanvasKit.FourFloatArrayHelper = function() {
  */
 CanvasKit.FourFloatArrayHelper.prototype.push = function(f1, f2, f3, f4) {
   if (this._ptr) {
-    SkDebug('Cannot push more points - already built');
+    Debug('Cannot push more points - already built');
     return;
   }
   this._floats.push(f1, f2, f3, f4);
@@ -461,7 +595,7 @@ CanvasKit.FourFloatArrayHelper.prototype.push = function(f1, f2, f3, f4) {
  */
 CanvasKit.FourFloatArrayHelper.prototype.set = function(idx, f1, f2, f3, f4) {
   if (idx < 0 || idx >= this._floats.length/4) {
-    SkDebug('Cannot set index ' + idx + ', it is out of range', this._floats.length/4);
+    Debug('Cannot set index ' + idx + ', it is out of range', this._floats.length/4);
     return;
   }
   idx *= 4;
@@ -490,7 +624,7 @@ CanvasKit.FourFloatArrayHelper.prototype.build = function() {
   if (this._ptr) {
     return this._ptr;
   }
-  this._ptr = copy1dArray(this._floats, CanvasKit.HEAPF32);
+  this._ptr = copy1dArray(this._floats, 'HEAPF32');
   return this._ptr;
 }
 
@@ -528,7 +662,7 @@ CanvasKit.OneUIntArrayHelper = function() {
  */
 CanvasKit.OneUIntArrayHelper.prototype.push = function(u) {
   if (this._ptr) {
-    SkDebug('Cannot push more points - already built');
+    Debug('Cannot push more points - already built');
     return;
   }
   this._uints.push(u);
@@ -540,7 +674,7 @@ CanvasKit.OneUIntArrayHelper.prototype.push = function(u) {
  */
 CanvasKit.OneUIntArrayHelper.prototype.set = function(idx, u) {
   if (idx < 0 || idx >= this._uints.length) {
-    SkDebug('Cannot set index ' + idx + ', it is out of range', this._uints.length);
+    Debug('Cannot set index ' + idx + ', it is out of range', this._uints.length);
     return;
   }
   idx *= 4;
@@ -563,7 +697,7 @@ CanvasKit.OneUIntArrayHelper.prototype.build = function() {
   if (this._ptr) {
     return this._ptr;
   }
-  this._ptr = copy1dArray(this._uints, CanvasKit.HEAPU32);
+  this._ptr = copy1dArray(this._uints, 'HEAPU32');
   return this._ptr;
 }
 
@@ -581,7 +715,7 @@ CanvasKit.OneUIntArrayHelper.prototype.delete = function() {
 }
 
 /**
- * Helper for building an array of SkRects (which are just structs
+ * Helper for building an array of Rects (which are just structs
  * of 4 floats).
  *
  * It can be more performant to use this helper, as
@@ -592,7 +726,7 @@ CanvasKit.OneUIntArrayHelper.prototype.delete = function() {
  *
  * Input points are taken as left, top, right, bottom
  */
-CanvasKit.SkRectBuilder = CanvasKit.FourFloatArrayHelper;
+CanvasKit.RectBuilder = CanvasKit.FourFloatArrayHelper;
 /**
  * Helper for building an array of RSXForms (which are just structs
  * of 4 floats).
@@ -614,7 +748,7 @@ CanvasKit.SkRectBuilder = CanvasKit.FourFloatArrayHelper;
 CanvasKit.RSXFormBuilder = CanvasKit.FourFloatArrayHelper;
 
 /**
- * Helper for building an array of SkColor
+ * Helper for building an array of Color
  *
  * It can be more performant to use this helper, as
  * the C++-side array is only allocated once (on the first call)
@@ -622,7 +756,7 @@ CanvasKit.RSXFormBuilder = CanvasKit.FourFloatArrayHelper;
  * the C++-side array, avoiding having to re-allocate (and free)
  * the array every time.
  */
-CanvasKit.SkColorBuilder = CanvasKit.OneUIntArrayHelper;
+CanvasKit.ColorBuilder = CanvasKit.OneUIntArrayHelper;
 
 /**
  * Malloc returns a TypedArray backed by the C++ memory of the
@@ -630,20 +764,64 @@ CanvasKit.SkColorBuilder = CanvasKit.OneUIntArrayHelper;
  * can manage memory and initialize values properly. When used
  * correctly, it can save copying of data between JS and C++.
  * When used incorrectly, it can lead to memory leaks.
+ * Any memory allocated by CanvasKit.Malloc needs to be released with CanvasKit.Free.
  *
- * const ta = CanvasKit.Malloc(Float32Array, 20);
+ * const mObj = CanvasKit.Malloc(Float32Array, 20);
+ * Get a TypedArray view around the malloc'd memory (this does not copy anything).
+ * const ta = mObj.toTypedArray();
  * // store data into ta
- * const cf = CanvasKit.SkColorFilter.MakeMatrix(ta);
- * // MakeMatrix cleans up the ptr automatically.
+ * const cf = CanvasKit.ColorFilter.MakeMatrix(ta); // mObj could also be used.
+ *
+ * // eventually...
+ * CanvasKit.Free(mObj);
  *
  * @param {TypedArray} typedArray - constructor for the typedArray.
- * @param {number} len - number of elements to store.
+ * @param {number} len - number of *elements* to store.
  */
 CanvasKit.Malloc = function(typedArray, len) {
   var byteLen = len * typedArray.BYTES_PER_ELEMENT;
   var ptr = CanvasKit._malloc(byteLen);
-  var ta = new typedArray(CanvasKit.HEAPU8.buffer, ptr, len);
-  // add a marker that this was allocated in C++ land
-  ta['_ck'] = true;
-  return ta;
+  return {
+    '_ck': true,
+    'length': len,
+    'byteOffset': ptr,
+    typedArray: null,
+    'subarray': function(start, end) {
+      var sa = this['toTypedArray']().subarray(start, end);
+      sa['_ck'] = true;
+      return sa;
+    },
+    'toTypedArray': function() {
+      // Check if the previously allocated array is still usable.
+      // If it's falsey, then we haven't created an array yet.
+      // If it's empty, then WASM resized memory and emptied the array.
+      if (this.typedArray && this.typedArray.length) {
+        return this.typedArray;
+      }
+      this.typedArray = new typedArray(CanvasKit.HEAPU8.buffer, ptr, len);
+      // add a marker that this was allocated in C++ land
+      this.typedArray['_ck'] = true;
+      return this.typedArray;
+    },
+  };
+};
+
+/**
+ * Free frees the memory returned by Malloc.
+ * Any memory allocated by CanvasKit.Malloc needs to be released with CanvasKit.Free.
+ */
+CanvasKit.Free = function(mallocObj) {
+  CanvasKit._free(mallocObj['byteOffset']);
+  mallocObj['byteOffset'] = nullptr;
+  // Set these to null to make sure the TypedArrays can be garbage collected.
+  mallocObj['toTypedArray'] = null;
+  mallocObj.typedArray = null;
+};
+
+// This helper will free the given pointer unless the provided array is one
+// that was returned by CanvasKit.Malloc.
+function freeArraysThatAreNotMallocedByUsers(ptr, arr) {
+  if (arr && !arr['_ck']) {
+    CanvasKit._free(ptr);
+  }
 }

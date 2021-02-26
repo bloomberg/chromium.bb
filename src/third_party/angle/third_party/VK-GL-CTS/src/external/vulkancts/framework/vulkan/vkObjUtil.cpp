@@ -392,7 +392,7 @@ Move<VkRenderPass> makeRenderPass (const DeviceInterface&				vk,
 	const bool								hasColor							= colorFormat != VK_FORMAT_UNDEFINED;
 	const bool								hasDepthStencil						= depthStencilFormat != VK_FORMAT_UNDEFINED;
 	const VkImageLayout						initialLayoutColor					= loadOperation == VK_ATTACHMENT_LOAD_OP_LOAD ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
-	const VkImageLayout						initialLayoutDepthStencil			= loadOperation == VK_ATTACHMENT_LOAD_OP_LOAD ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
+	const VkImageLayout						initialLayoutDepthStencil			= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 	const VkAttachmentDescription			colorAttachmentDescription			=
 	{
@@ -586,7 +586,7 @@ Move<VkFramebuffer> makeFramebuffer (const DeviceInterface&	vk,
 									 const VkDevice			device,
 									 const VkRenderPass		renderPass,
 									 const deUint32			attachmentCount,
-									 const VkImageView*		colorAttachments,
+									 const VkImageView*		attachmentsArray,
 									 const deUint32			width,
 									 const deUint32			height,
 									 const deUint32			layers)
@@ -598,7 +598,7 @@ Move<VkFramebuffer> makeFramebuffer (const DeviceInterface&	vk,
 		(VkFramebufferCreateFlags)0,				// VkFramebufferCreateFlags	flags;
 		renderPass,									// VkRenderPass				renderPass;
 		attachmentCount,							// uint32_t					attachmentCount;
-		colorAttachments,							// const VkImageView*		pAttachments;
+		attachmentsArray,							// const VkImageView*		pAttachments;
 		width,										// uint32_t					width;
 		height,										// uint32_t					height;
 		layers,										// uint32_t					layers;

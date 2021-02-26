@@ -71,7 +71,7 @@ protected:
         }
     }
 
-    virtual Click* onFindClickHandler(SkScalar x, SkScalar y, skui::ModifierKey) override {
+    Click* onFindClickHandler(SkScalar x, SkScalar y, skui::ModifierKey) override {
         return fRect.contains(SkScalarRoundToInt(x),
                               SkScalarRoundToInt(y)) ? new Click() : nullptr;
     }
@@ -85,6 +85,6 @@ protected:
 private:
     SkIRect fRect;
 
-    typedef Sample INHERITED;
+    using INHERITED = Sample;
 };
 DEF_SAMPLE( return new MixerView; )

@@ -28,7 +28,7 @@
 class SkRecord : public SkRefCnt {
 public:
     SkRecord() = default;
-    ~SkRecord();
+    ~SkRecord() override;
 
     // Returns the number of canvas commands in this SkRecord.
     int count() const { return fCount; }
@@ -81,19 +81,6 @@ public:
 
         Destroyer destroyer;
         this->mutate(i, destroyer);
-
-        return fRecords[i].set(this->allocCommand<T>());
-    }
-
-    // Replace the i-th command with a new command of type T.
-    // You are expected to placement new an object of type T onto this pointer.
-    // You must show proof that you've already adopted the existing command.
-    template <typename T, typename Existing>
-    T* replace(int i, const SkRecords::Adopted<Existing>& proofOfAdoption) {
-        SkASSERT(i < this->count());
-
-        SkASSERT(Existing::kType == fRecords[i].type());
-        SkASSERT(proofOfAdoption == fRecords[i].ptr());
 
         return fRecords[i].set(this->allocCommand<T>());
     }

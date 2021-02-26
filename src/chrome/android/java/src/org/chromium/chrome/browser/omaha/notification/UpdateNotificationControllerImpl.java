@@ -11,41 +11,37 @@ import static org.chromium.chrome.browser.omaha.UpdateConfigs.isUpdateNotificati
 import static org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState.INLINE_UPDATE_AVAILABLE;
 import static org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState.UPDATE_AVAILABLE;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateStatus;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * Class supports to build and to send update notification every three weeks if new Chrome version
@@ -67,17 +63,21 @@ public class UpdateNotificationControllerImpl implements UpdateNotificationContr
         processUpdateStatus();
     };
 
-    private ChromeActivity mActivity;
+    private Activity mActivity;
+    private ActivityLifecycleDispatcher mActivityLifecycle;
     private boolean mShouldStartInlineUpdate;
     private @Nullable UpdateStatus mUpdateStatus;
 
     /**
-     * @param activity A {@link ChromeActivity} instance the notification will be shown in.
+     * @param activity Activity the notification will be shown in.
+     * @param lifecycleDispatcher Lifecycle of an Activity the notification will be shown in.
      */
-    public UpdateNotificationControllerImpl(ChromeActivity activity) {
+    public UpdateNotificationControllerImpl(
+            Activity activity, ActivityLifecycleDispatcher lifecycleDispatcher) {
         mActivity = activity;
+        mActivityLifecycle = lifecycleDispatcher;
         UpdateStatusProvider.getInstance().addObserver(mObserver);
-        mActivity.getLifecycleDispatcher().register(this);
+        mActivityLifecycle.register(this);
     }
 
     // UpdateNotificationController implementation.
@@ -92,7 +92,8 @@ public class UpdateNotificationControllerImpl implements UpdateNotificationContr
     @Override
     public void destroy() {
         UpdateStatusProvider.getInstance().removeObserver(mObserver);
-        mActivity.getLifecycleDispatcher().unregister(this);
+        mActivityLifecycle.unregister(this);
+        mActivityLifecycle = null;
         mActivity = null;
     }
 
@@ -121,9 +122,9 @@ public class UpdateNotificationControllerImpl implements UpdateNotificationContr
     private void scheduleUpdateNotification() {
         if (!shouldPushNotification()) return;
 
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(true,
                                 ChromeChannelDefinitions.ChannelId.UPDATES, null,
                                 new NotificationMetadata(
                                         NotificationUmaTracker.SystemNotificationType.UPDATES,
@@ -135,7 +136,7 @@ public class UpdateNotificationControllerImpl implements UpdateNotificationContr
                         .setContentText(getUpdateNotificationTextBody());
 
         builder.setContentIntent(createContentIntent(mUpdateStatus));
-        ChromeNotification notification = builder.buildChromeNotification();
+        NotificationWrapper notification = builder.buildNotificationWrapper();
         NotificationManagerProxy notificationManager = new NotificationManagerProxyImpl(mActivity);
         notificationManager.notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
@@ -172,28 +173,12 @@ public class UpdateNotificationControllerImpl implements UpdateNotificationContr
      * A receiver that try to build the intent to launch Chrome activity.
      */
     public static final class UpdateNotificationReceiver extends BroadcastReceiver {
-        /**
-         * Tracks various launch events when the user interacts with an update notification.
-         * Used in UMA, append values only and map to GoogleUpdateNotificationLaunchEvent in
-         * enums.xml.
-         */
-        @IntDef({LaunchEvent.START, LaunchEvent.START_ACTIVITY_FAILED})
-        @Retention(RetentionPolicy.SOURCE)
-        public @interface LaunchEvent {
-            int START = 0;
-            int START_ACTIVITY_FAILED = 1;
-            int NUM_ENTRIES = 2;
-        }
-
         // BroadcastReceiver implementation.
         @Override
         public void onReceive(Context context, Intent intent) {
             final BrowserParts parts = new EmptyBrowserParts() {
                 @Override
                 public void finishNativeInitialization() {
-                    RecordHistogram.recordEnumeratedHistogram(
-                            "GoogleUpdate.Notification.LaunchEvent", LaunchEvent.START,
-                            LaunchEvent.NUM_ENTRIES);
                     try {
                         int state = intent.getIntExtra(UPDATE_NOTIFICATION_STATE_EXTRA,
                                 UpdateStatusProvider.UpdateState.NONE);
@@ -202,9 +187,6 @@ public class UpdateNotificationControllerImpl implements UpdateNotificationContr
                         // If it takes too long to load native library, we may fail to start
                         // activity.
                         Log.e(TAG, "Failed to start activity in background.", e);
-                        RecordHistogram.recordEnumeratedHistogram(
-                                "GoogleUpdate.Notification.LaunchEvent",
-                                LaunchEvent.START_ACTIVITY_FAILED, LaunchEvent.NUM_ENTRIES);
                     }
                 }
             };

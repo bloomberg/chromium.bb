@@ -20,7 +20,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/safe_browsing/content/base_ui_manager.h"
 #include "components/safe_browsing/content/browser/threat_details_cache.h"
@@ -190,6 +189,8 @@ CSBRR::SafeBrowsingUrlApiType GetUrlApiTypeForThreatSource(
       return CSBRR::PVER4_NATIVE;
     case safe_browsing::ThreatSource::REMOTE:
       return CSBRR::ANDROID_SAFETYNET;
+    case safe_browsing::ThreatSource::REAL_TIME_CHECK:
+      return CSBRR::REAL_TIME;
     case safe_browsing::ThreatSource::UNKNOWN:
     case safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION:
     case safe_browsing::ThreatSource::PASSWORD_PROTECTION_SERVICE:
@@ -384,6 +385,7 @@ ThreatDetails::ThreatDetails(
     : content::WebContentsObserver(web_contents),
       url_loader_factory_(url_loader_factory),
       ui_manager_(ui_manager),
+      browser_context_(web_contents->GetBrowserContext()),
       resource_(resource),
       referrer_chain_provider_(referrer_chain_provider),
       cache_result_(false),
@@ -849,13 +851,13 @@ void ThreatDetails::OnCacheCollectionReady() {
     return;
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&WebUIInfoSingleton::AddToCSBRRsSent,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),
                      std::move(report_)));
 
-  ui_manager_->SendSerializedThreatDetails(serialized);
+  ui_manager_->SendSerializedThreatDetails(browser_context_, serialized);
 
   AllDone();
 }
@@ -877,8 +879,8 @@ void ThreatDetails::MaybeFillReferrerChain() {
 
 void ThreatDetails::AllDone() {
   is_all_done_ = true;
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(done_callback_),
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(done_callback_),
                                 base::Unretained(web_contents())));
 }
 

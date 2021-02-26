@@ -54,14 +54,16 @@ class HTMLTreeBuilder final : public GarbageCollected<HTMLTreeBuilder> {
   HTMLTreeBuilder(HTMLDocumentParser*,
                   Document&,
                   ParserContentPolicy,
-                  const HTMLParserOptions&);
+                  const HTMLParserOptions&,
+                  bool allow_shadow_root);
   HTMLTreeBuilder(HTMLDocumentParser*,
                   DocumentFragment*,
                   Element* context_element,
                   ParserContentPolicy,
-                  const HTMLParserOptions&);
+                  const HTMLParserOptions&,
+                  bool allow_shadow_root);
   ~HTMLTreeBuilder();
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   const HTMLElementStack* OpenElements() const { return tree_.OpenElements(); }
 
@@ -216,7 +218,7 @@ class HTMLTreeBuilder final : public GarbageCollected<HTMLTreeBuilder> {
       return context_element_stack_item_.Get();
     }
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     Member<DocumentFragment> fragment_;
@@ -245,6 +247,8 @@ class HTMLTreeBuilder final : public GarbageCollected<HTMLTreeBuilder> {
   StringBuilder pending_table_characters_;
 
   bool should_skip_leading_newline_;
+
+  const bool allow_shadow_root_;
 
   // We access parser because HTML5 spec requires that we be able to change the
   // state of the tokenizer from within parser actions. We also need it to track

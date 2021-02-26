@@ -50,8 +50,6 @@ class RTCSessionDescriptionPlatform;
 class RTCSessionDescriptionRequestImpl final
     : public RTCSessionDescriptionRequest,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(RTCSessionDescriptionRequestImpl);
-
  public:
   static RTCSessionDescriptionRequestImpl* Create(
       ExecutionContext*,
@@ -73,7 +71,7 @@ class RTCSessionDescriptionRequestImpl final
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void Clear();

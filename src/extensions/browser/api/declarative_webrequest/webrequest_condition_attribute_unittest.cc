@@ -16,6 +16,7 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "net/http/http_util.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -71,8 +72,6 @@ TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
 TEST(WebRequestConditionAttributeTest, ResourceType) {
   std::string error;
   base::ListValue resource_types;
-  // The 'sub_frame' value is chosen arbitrarily, so as the corresponding
-  // blink::mojom::ResourceType is not 0, the default value.
   resource_types.AppendString("sub_frame");
 
   scoped_refptr<const WebRequestConditionAttribute> attribute =
@@ -83,15 +82,13 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   EXPECT_EQ(std::string(keys::kResourceTypeKey), attribute->GetName());
 
   WebRequestInfoInitParams ok_params;
-  ok_params.type = blink::mojom::ResourceType::kSubFrame;
   ok_params.web_request_type = WebRequestResourceType::SUB_FRAME;
   WebRequestInfo request_ok_info(std::move(ok_params));
   EXPECT_TRUE(attribute->IsFulfilled(
       WebRequestData(&request_ok_info, ON_BEFORE_REQUEST)));
 
   WebRequestInfoInitParams fail_params;
-  ok_params.type = blink::mojom::ResourceType::kMainFrame;
-  ok_params.web_request_type = WebRequestResourceType::MAIN_FRAME;
+  fail_params.web_request_type = WebRequestResourceType::MAIN_FRAME;
   WebRequestInfo request_fail_info(std::move(fail_params));
   EXPECT_FALSE(attribute->IsFulfilled(
       WebRequestData(&request_fail_info, ON_BEFORE_REQUEST)));
@@ -146,66 +143,6 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
       &request_info, ON_HEADERS_RECEIVED, response_headers.get())));
   EXPECT_EQ(std::string(keys::kExcludeContentTypeKey),
             attribute_unexcluded->GetName());
-}
-
-// Testing WebRequestConditionAttributeThirdParty.
-TEST(WebRequestConditionAttributeTest, ThirdParty) {
-  std::string error;
-  const Value value_true(true);
-  // This attribute matches only third party requests.
-  scoped_refptr<const WebRequestConditionAttribute> third_party_attribute =
-      WebRequestConditionAttribute::Create(keys::kThirdPartyKey,
-                                           &value_true,
-                                           &error);
-  ASSERT_EQ("", error);
-  ASSERT_TRUE(third_party_attribute.get());
-  EXPECT_EQ(std::string(keys::kThirdPartyKey),
-            third_party_attribute->GetName());
-  const Value value_false(false);
-  // This attribute matches only first party requests.
-  scoped_refptr<const WebRequestConditionAttribute> first_party_attribute =
-      WebRequestConditionAttribute::Create(keys::kThirdPartyKey,
-                                           &value_false,
-                                           &error);
-  ASSERT_EQ("", error);
-  ASSERT_TRUE(first_party_attribute.get());
-  EXPECT_EQ(std::string(keys::kThirdPartyKey),
-            first_party_attribute->GetName());
-
-  const GURL url_a("http://a.com");
-  const GURL url_b("http://b.com");
-
-  for (unsigned int i = 1; i <= kLastActiveStage; i <<= 1) {
-    if (!(kActiveStages & i))
-      continue;
-    const RequestStage stage = static_cast<RequestStage>(i);
-    WebRequestInfoInitParams empty_params;
-    empty_params.url = url_a;
-    empty_params.site_for_cookies = net::SiteForCookies();
-    WebRequestInfo request_info1(std::move(empty_params));
-    EXPECT_TRUE(third_party_attribute->IsFulfilled(
-        WebRequestData(&request_info1, stage)));
-    EXPECT_FALSE(first_party_attribute->IsFulfilled(
-        WebRequestData(&request_info1, stage)));
-
-    WebRequestInfoInitParams b_params;
-    b_params.url = url_a;
-    b_params.site_for_cookies = net::SiteForCookies::FromUrl(url_b);
-    WebRequestInfo request_info2(std::move(b_params));
-    EXPECT_TRUE(third_party_attribute->IsFulfilled(
-        WebRequestData(&request_info2, stage)));
-    EXPECT_FALSE(first_party_attribute->IsFulfilled(
-        WebRequestData(&request_info2, stage)));
-
-    WebRequestInfoInitParams a_params;
-    a_params.url = url_a;
-    a_params.site_for_cookies = net::SiteForCookies::FromUrl(url_a);
-    WebRequestInfo request_info3(std::move(a_params));
-    EXPECT_FALSE(third_party_attribute->IsFulfilled(
-        WebRequestData(&request_info3, stage)));
-    EXPECT_TRUE(first_party_attribute->IsFulfilled(
-        WebRequestData(&request_info3, stage)));
-  }
 }
 
 // Testing WebRequestConditionAttributeStages. This iterates over all stages,

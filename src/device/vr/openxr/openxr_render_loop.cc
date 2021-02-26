@@ -16,9 +16,15 @@ namespace device {
 
 OpenXrRenderLoop::OpenXrRenderLoop(
     base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
-        on_display_info_changed)
+        on_display_info_changed,
+    XrInstance instance,
+    const OpenXrExtensionHelper& extension_helper)
     : XRCompositorCommon(),
-      on_display_info_changed_(std::move(on_display_info_changed)) {}
+      instance_(instance),
+      extension_helper_(extension_helper),
+      on_display_info_changed_(std::move(on_display_info_changed)) {
+  DCHECK(instance_ != XR_NULL_HANDLE);
+}
 
 OpenXrRenderLoop::~OpenXrRenderLoop() {
   Stop();
@@ -54,21 +60,14 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
       frame_data->pose->position = position;
   }
 
+  UpdateStageParameters();
+
   bool updated_eye_parameters = UpdateEyeParameters();
 
   if (updated_eye_parameters) {
     frame_data->left_eye = current_display_info_->left_eye.Clone();
     frame_data->right_eye = current_display_info_->right_eye.Clone();
-  }
 
-  bool updated_stage_parameters = UpdateStageParameters();
-  if (updated_stage_parameters) {
-    frame_data->stage_parameters_updated = true;
-    frame_data->stage_parameters =
-        current_display_info_->stage_parameters.Clone();
-  }
-
-  if (updated_eye_parameters || updated_stage_parameters) {
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(on_display_info_changed_,
                                   current_display_info_.Clone()));
@@ -78,6 +77,7 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
 }
 
 bool OpenXrRenderLoop::StartRuntime() {
+  DCHECK(instance_ != XR_NULL_HANDLE);
   DCHECK(!openxr_);
   DCHECK(!input_helper_);
   DCHECK(!current_display_info_);
@@ -86,17 +86,18 @@ bool OpenXrRenderLoop::StartRuntime() {
   // openxr_ so that the local unique_ptr cleans up the object if starting
   // a session fails. openxr_ is set later in this method once we know
   // starting the session succeeds.
-  std::unique_ptr<OpenXrApiWrapper> openxr = OpenXrApiWrapper::Create();
+  std::unique_ptr<OpenXrApiWrapper> openxr =
+      OpenXrApiWrapper::Create(instance_);
   if (!openxr)
     return false;
 
   texture_helper_.SetUseBGRA(true);
   LUID luid;
-  if (XR_FAILED(openxr->GetLuid(&luid)) ||
+  if (XR_FAILED(openxr->GetLuid(&luid, extension_helper_)) ||
       !texture_helper_.SetAdapterLUID(luid) ||
       !texture_helper_.EnsureInitialized() ||
-      XR_FAILED(
-          openxr->InitSession(texture_helper_.GetDevice(), &input_helper_))) {
+      XR_FAILED(openxr->InitSession(texture_helper_.GetDevice(), &input_helper_,
+                                    extension_helper_))) {
     texture_helper_.Reset();
     return false;
   }
@@ -124,6 +125,20 @@ void OpenXrRenderLoop::StopRuntime() {
   openxr_ = nullptr;
   current_display_info_ = nullptr;
   texture_helper_.Reset();
+}
+
+device::mojom::XREnvironmentBlendMode OpenXrRenderLoop::GetEnvironmentBlendMode(
+    device::mojom::XRSessionMode session_mode) {
+  return openxr_->PickEnvironmentBlendModeForSession(session_mode);
+}
+
+device::mojom::XRInteractionMode OpenXrRenderLoop::GetInteractionMode(
+    device::mojom::XRSessionMode session_mode) {
+  return device::mojom::XRInteractionMode::kWorldSpace;
+}
+
+bool OpenXrRenderLoop::CanEnableAntiAliasing() const {
+  return openxr_->CanEnableAntiAliasing();
 }
 
 void OpenXrRenderLoop::OnSessionStart() {
@@ -161,8 +176,6 @@ void OpenXrRenderLoop::InitializeDisplayInfo() {
     current_display_info_->right_eye = mojom::VREyeParameters::New();
     current_display_info_->left_eye = mojom::VREyeParameters::New();
   }
-
-  current_display_info_->id = device::mojom::XRDeviceId::OPENXR_DEVICE_ID;
 
   gfx::Size view_size = openxr_->GetViewSize();
   current_display_info_->left_eye->render_width = view_size.width();
@@ -237,36 +250,21 @@ bool OpenXrRenderLoop::UpdateEye(const XrView& view_head,
   return changed;
 }
 
-bool OpenXrRenderLoop::UpdateStageParameters() {
-  bool changed = false;
+void OpenXrRenderLoop::UpdateStageParameters() {
   XrExtent2Df stage_bounds;
   gfx::Transform local_from_stage;
   if (openxr_->GetStageParameters(&stage_bounds, &local_from_stage)) {
-    if (!current_display_info_->stage_parameters) {
-      current_display_info_->stage_parameters = mojom::VRStageParameters::New();
-      changed = true;
-    }
-
-    if (current_stage_bounds_.width != stage_bounds.width ||
-        current_stage_bounds_.height != stage_bounds.height) {
-      current_display_info_->stage_parameters->bounds =
-          vr_utils::GetStageBoundsFromSize(stage_bounds.width,
-                                           stage_bounds.height);
-      changed = true;
-    }
-
-    if (current_display_info_->stage_parameters->standing_transform !=
-        local_from_stage) {
-      current_display_info_->stage_parameters->standing_transform =
-          local_from_stage;
-      changed = true;
-    }
-  } else if (current_display_info_->stage_parameters) {
-    current_display_info_->stage_parameters = nullptr;
-    changed = true;
+    mojom::VRStageParametersPtr stage_parameters =
+        mojom::VRStageParameters::New();
+    // mojo_from_local is identity, as is stage_from_floor, so we can directly
+    // assign local_from_stage and mojo_from_floor.
+    stage_parameters->mojo_from_floor = local_from_stage;
+    stage_parameters->bounds = vr_utils::GetStageBoundsFromSize(
+        stage_bounds.width, stage_bounds.height);
+    SetStageParameters(std::move(stage_parameters));
+  } else {
+    SetStageParameters(nullptr);
   }
-
-  return changed;
 }
 
 }  // namespace device

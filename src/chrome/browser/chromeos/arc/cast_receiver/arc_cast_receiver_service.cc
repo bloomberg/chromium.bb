@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,14 +66,15 @@ ArcCastReceiverService::ArcCastReceiverService(content::BrowserContext* context,
   // because we own |pref_change_registrar_|.
   pref_change_registrar_->Add(
       prefs::kCastReceiverEnabled,
-      base::Bind(&ArcCastReceiverService::OnCastReceiverEnabledChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&ArcCastReceiverService::OnCastReceiverEnabledChanged,
+                          base::Unretained(this)));
 
   receiver_name_subscription_ =
       chromeos::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kCastReceiverName,
-          base::Bind(&ArcCastReceiverService::OnCastReceiverNameChanged,
-                     base::Unretained(this)));
+          base::BindRepeating(
+              &ArcCastReceiverService::OnCastReceiverNameChanged,
+              base::Unretained(this)));
 }
 
 ArcCastReceiverService::~ArcCastReceiverService() {

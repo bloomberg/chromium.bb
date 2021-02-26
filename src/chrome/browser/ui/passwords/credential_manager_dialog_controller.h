@@ -14,15 +14,16 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "ui/gfx/range/range.h"
 
-namespace autofill {
+namespace password_manager {
 struct PasswordForm;
-}
+}  // namespace password_manager
 
 // An interface used by the password dialog (the account chooser) for setting
 // and retrieving the state.
 class CredentialManagerDialogController : public PasswordBaseDialogController {
  public:
-  using FormsVector = std::vector<std::unique_ptr<autofill::PasswordForm>>;
+  using FormsVector =
+      std::vector<std::unique_ptr<password_manager::PasswordForm>>;
 
   // Returns forms from the password database for the current site.
   virtual const FormsVector& GetLocalForms() const = 0;
@@ -44,7 +45,7 @@ class CredentialManagerDialogController : public PasswordBaseDialogController {
 
   // Called when the user chooses a credential.
   virtual void OnChooseCredentials(
-      const autofill::PasswordForm& password_form,
+      const password_manager::PasswordForm& password_form,
       password_manager::CredentialType credential_type) = 0;
 
   // Called when the user clicks "Sign in" in the account chooser.

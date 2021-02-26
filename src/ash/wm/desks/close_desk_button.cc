@@ -9,54 +9,28 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/style/ash_color_provider.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/color_utils.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/rect_based_targeting_utils.h"
-#include "ui/views/style/platform_style.h"
 
 namespace ash {
 
-namespace {
-
-// The corner radius of the background of the close icon.
-constexpr int kCornerRadius = CloseDeskButton::kCloseButtonSize / 2;
-
-// The color of the close icon.
-constexpr SkColor kIconColor = gfx::kGoogleGrey200;
-
-}  // namespace
-
-CloseDeskButton::CloseDeskButton(views::ButtonListener* listener)
-    : ImageButton(listener) {
+CloseDeskButton::CloseDeskButton(PressedCallback callback)
+    : ImageButton(std::move(callback)) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  SkColor icon_background_color = AshColorProvider::Get()->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kTransparent80,
-      AshColorProvider::AshColorMode::kDark);
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kDesksCloseDeskButtonIcon, kIconColor));
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
-  SetBackground(
-      CreateBackgroundFromPainter(views::Painter::CreateSolidRoundRectPainter(
-          icon_background_color, kCornerRadius)));
   SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
 
-  AshColorProvider::RippleAttributes ripple_attributes =
-      AshColorProvider::Get()->GetRippleAttributes(icon_background_color);
-  highlight_opacity_ = ripple_attributes.highlight_opacity;
-  inkdrop_base_color_ = ripple_attributes.base_color;
-
   SetInkDropMode(InkDropMode::ON);
-  set_has_ink_drop_action_on_click(true);
-  set_ink_drop_visible_opacity(ripple_attributes.inkdrop_opacity);
+  SetHasInkDropActionOnClick(true);
   SetFocusPainter(nullptr);
+  SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
@@ -71,7 +45,7 @@ const char* CloseDeskButton::GetClassName() const {
 
 std::unique_ptr<views::InkDrop> CloseDeskButton::CreateInkDrop() {
   auto ink_drop = CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
+  ink_drop->SetShowHighlightOnFocus(false);
   return std::move(ink_drop);
 }
 
@@ -85,6 +59,18 @@ CloseDeskButton::CreateInkDropHighlight() const {
 
 SkColor CloseDeskButton::GetInkDropBaseColor() const {
   return inkdrop_base_color_;
+}
+
+void CloseDeskButton::OnThemeChanged() {
+  views::ImageButton::OnThemeChanged();
+  AshColorProvider* color_provider = AshColorProvider::Get();
+  color_provider->DecorateCloseButton(this, kCloseButtonSize, kCloseButtonIcon);
+
+  auto ripple_attributes =
+      color_provider->GetRippleAttributes(background()->get_color());
+  highlight_opacity_ = ripple_attributes.highlight_opacity;
+  inkdrop_base_color_ = ripple_attributes.base_color;
+  SetInkDropVisibleOpacity(ripple_attributes.inkdrop_opacity);
 }
 
 bool CloseDeskButton::DoesIntersectRect(const views::View* target,

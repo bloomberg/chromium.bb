@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
@@ -257,7 +258,7 @@ void getExpectedColorAndMask(GLenum src_internal_format,
 
       setColor(adjusted_color[0], adjusted_color[1], adjusted_color[2],
                alpha_value, expected_color);
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
       // The alpha channel values for LUMINANCE_ALPHA source don't work OK
       // on Mac or Linux, so skip comparison of those, see crbug.com/926579
       setColor(1, 1, 1, src_internal_format != GL_LUMINANCE_ALPHA,
@@ -470,7 +471,7 @@ class GLCopyTextureCHROMIUMTest
     glBindTexture(source_target, textures_[0]);
     glTexParameteri(source_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(source_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // TODO(qiankun.miao@intel.com): Remove this workaround for Mac OSX, once
     // integer texture rendering bug is fixed on Mac OSX: crbug.com/679639.
     glTexImage2D(source_target, 0, src_format_type.internal_format,
@@ -501,7 +502,7 @@ class GLCopyTextureCHROMIUMTest
                        dest_format_type.type, nullptr);
         }
       }
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       // TODO(qiankun.miao@intel.com): Remove this workaround for Mac OSX, once
       // framebuffer complete bug is fixed on Mac OSX: crbug.com/678526.
       glTexImage2D(dest_target, 0, dest_format_type.internal_format,
@@ -603,13 +604,7 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
     GLManager::Options options;
     options.context_type = CONTEXT_TYPE_OPENGLES3;
     options.size = gfx::Size(64, 64);
-    GpuDriverBugWorkarounds workarounds;
-#if defined(OS_MACOSX)
-    // Sampling of seamless integer cube map texture has bug on Intel GEN7 gpus
-    // on Mac OSX, see crbug.com/658930.
-    workarounds.disable_texture_cube_map_seamless = true;
-#endif
-    gl_.InitializeWithWorkarounds(options, workarounds);
+    gl_.Initialize(options);
 
     width_ = 8;
     height_ = 8;
@@ -642,7 +637,8 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
 
   bool ShouldSkipNorm16() const {
     DCHECK(!ShouldSkipTest());
-#if (defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)) && \
+#if (defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
+     defined(OS_CHROMEOS)) &&                                   \
     (defined(ARCH_CPU_X86) || defined(ARCH_CPU_X86_64))
     // Make sure it's tested; it is safe to assume that the flag is always true
     // on desktop.
@@ -654,7 +650,7 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
 
   bool ShouldSkipRGBA16ToRGB10A2() const {
     DCHECK(!ShouldSkipTest());
-#if (defined(OS_MACOSX) || defined(OS_LINUX)) && \
+#if (defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
     (defined(ARCH_CPU_X86) || defined(ARCH_CPU_X86_64))
     // // TODO(crbug.com/1046873): Fails on mac and linux intel.
     return true;
@@ -675,6 +671,15 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
         GLTestHelper::HasExtension("GL_EXT_texture_type_2_10_10_10_REV");
     EXPECT_TRUE(supports_rgb10_a2);
     return !supports_rgb10_a2;
+  }
+
+  bool IsMacArm64() const {
+    DCHECK(!ShouldSkipTest());
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM_FAMILY)
+    return true;
+#else
+    return false;
+#endif
   }
 };
 
@@ -737,6 +742,10 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, BigTexture) {
 TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
   if (ShouldSkipTest())
     return;
+  if (IsMacArm64()) {
+    LOG(INFO) << "TODO(crbug.com/1135372): fails on Apple DTK. Skipping.";
+    return;
+  }
   if (gl_.gpu_preferences().use_passthrough_cmd_decoder) {
     // TODO(geofflang): anglebug.com/1932
     LOG(INFO)

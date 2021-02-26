@@ -523,4 +523,55 @@ describe('StringUtilities', () => {
       assert.strictEqual(output, 'Foo bar baz');
     });
   });
+
+  describe('removeURLFragment', () => {
+    it('removes the URL fragment if found', () => {
+      const input = 'http://www.example.com/foo.html#blah';
+      assert.strictEqual(StringUtilities.removeURLFragment(input), 'http://www.example.com/foo.html');
+    });
+
+    it('returns the same string if there is no fragment', () => {
+      const input = 'http://www.example.com/foo.html';
+      assert.strictEqual(StringUtilities.removeURLFragment(input), input);
+    });
+
+    it('does not strip query parameters', () => {
+      const input = 'http://www.example.com/foo.html?x=1#blah';
+      assert.strictEqual(StringUtilities.removeURLFragment(input), 'http://www.example.com/foo.html?x=1');
+    });
+  });
+  describe('filterRegex', () => {
+    it('should do nothing for single non-special character', () => {
+      const regex = StringUtilities.filterRegex('f');
+      assert.strictEqual(regex.toString(), '/f/i');
+    });
+
+    it('should prepend [^\\0 ]* patterns for following characters', () => {
+      const regex = StringUtilities.filterRegex('bar');
+      assert.strictEqual(regex.toString(), '/b[^\\0a]*a[^\\0r]*r/i');
+    });
+
+    it('should espace special characters', () => {
+      const regex = StringUtilities.filterRegex('{?}');
+      assert.strictEqual(regex.toString(), '/\\{[^\\0\\?]*\\?[^\\0\\}]*\\}/i');
+    });
+  });
+
+  describe('createSearchRegex', () => {
+    it('returns a case sensitive regex if the call states it is case sensitive', () => {
+      const regex = StringUtilities.createSearchRegex('foo', true, false);
+      assert.strictEqual(regex.ignoreCase, false);
+      assert.strictEqual(regex.source, 'foo');
+    });
+
+    it('creates a regex from plain text if the given input is not already a regex', () => {
+      const regex = StringUtilities.createSearchRegex('[foo]', false, false);
+      assert.strictEqual(regex.source, '\\[foo\\]');
+    });
+
+    it('leaves the input be if it is already a regex', () => {
+      const regex = StringUtilities.createSearchRegex('[foo]', false, true);
+      assert.strictEqual(regex.source, '[foo]');
+    });
+  });
 });

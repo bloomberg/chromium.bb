@@ -4,17 +4,15 @@
 
 #include "ios/chrome/browser/crash_report/crash_reporter_breadcrumb_observer.h"
 
+#include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer_bridge.h"
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#include "ios/chrome/browser/crash_report/crash_reporter_breadcrumb_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-// The breadcrumbs size cannot be larger than the maximum length of a single
-// Breakpad product data value (currently 2550 bytes).
-const NSUInteger kMaxBreadcrumbsDataLength = 1530;
 
 @interface CrashReporterBreadcrumbObserver () {
   // Map associating the observed BreadcrumbManager with the corresponding
@@ -33,6 +31,10 @@ const NSUInteger kMaxBreadcrumbsDataLength = 1530;
   // in order to reduce overall memory usage.
   NSMutableString* _breadcrumbs;
 }
+
+// Updates the breadcrumbs stored in the crash log.
+- (void)updateBreadcrumbEventsCrashKey;
+
 @end
 
 @implementation CrashReporterBreadcrumbObserver
@@ -76,13 +78,17 @@ const NSUInteger kMaxBreadcrumbsDataLength = 1530;
   _breadcrumbManagerServiceObservers[breadcrumbManagerService] = nullptr;
 }
 
-#pragma mark - BreadcrumbManagerObserving protocol
+- (void)setPreviousSessionEvents:(const std::vector<std::string>&)events {
+  for (auto event_it = events.rbegin(); event_it != events.rend(); ++event_it) {
+    NSString* event = base::SysUTF8ToNSString(*event_it);
+    NSString* eventWithSeperator = [NSString stringWithFormat:@"%@\n", event];
+    [_breadcrumbs appendString:eventWithSeperator];
+  }
 
-- (void)breadcrumbManager:(BreadcrumbManager*)manager
-              didAddEvent:(NSString*)event {
-  NSString* eventWithSeperator = [NSString stringWithFormat:@"%@\n", event];
-  [_breadcrumbs insertString:eventWithSeperator atIndex:0];
+  [self updateBreadcrumbEventsCrashKey];
+}
 
+- (void)updateBreadcrumbEventsCrashKey {
   if (_breadcrumbs.length > kMaxBreadcrumbsDataLength) {
     NSRange trimRange =
         NSMakeRange(kMaxBreadcrumbsDataLength,
@@ -91,6 +97,16 @@ const NSUInteger kMaxBreadcrumbsDataLength = 1530;
   }
 
   crash_keys::SetBreadcrumbEvents(_breadcrumbs);
+}
+
+#pragma mark - BreadcrumbManagerObserving protocol
+
+- (void)breadcrumbManager:(BreadcrumbManager*)manager
+              didAddEvent:(NSString*)event {
+  NSString* eventWithSeperator = [NSString stringWithFormat:@"%@\n", event];
+  [_breadcrumbs insertString:eventWithSeperator atIndex:0];
+
+  [self updateBreadcrumbEventsCrashKey];
 }
 
 @end

@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title></title>
+    <title>WebGPU CTS</title>
     <link
       id="favicon"
       rel="shortcut icon"
@@ -11,9 +11,6 @@
     <link rel="stylesheet" href="third_party/normalize.min.css" />
     <script src="third_party/jquery/jquery-3.3.1.min.js"></script>
     <style>
-      html {
-        overflow-x: hidden;
-      }
       body {
         font-family: monospace;
         min-width: 400px;
@@ -39,10 +36,15 @@
       .nodeheader {
         display: flex;
         width: 100%;
-        padding: 1px 2px 1px 1px;
+        padding: 0px 2px 0px 1px;
       }
-      .noderun,
+      .nodeheader:hover {
+        background: rgba(0, 0, 0, 0.1);
+      }
+      .subtreerun,
+      .leafrun,
       .nodelink,
+      .collapsebtn,
       .testcaselogbtn {
         display: inline-block;
         flex-shrink: 0;
@@ -54,18 +56,22 @@
         border: 1px solid #888;
       }
       @media (pointer: fine) {
-        .noderun,
+        .subtreerun,
+        .leafrun,
         .nodelink,
+        .collapsebtn,
         .testcaselogbtn {
           flex-basis: 24px;
           border-radius: 4px;
           width: 24px;
-          height: 24px;
+          height: 18px;
         }
       }
       @media (pointer: coarse) {
-        .noderun,
+        .subtreerun,
+        .leafrun,
         .nodelink,
+        .collapsebtn,
         .testcaselogbtn {
           flex-basis: 36px;
           border-radius: 6px;
@@ -73,7 +79,10 @@
           height: 36px;
         }
       }
-      .noderun {
+      .subtreerun {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJAQMAAADaX5RTAAAABlBMVEUAAAAAAAClZ7nPAAAAAXRSTlMAQObYZgAAAB5JREFUCNdjOMDAsIGBoYeBoZmBoaEBRPaARQ4wAABTfwX/l/WQvgAAAABJRU5ErkJggg==);
+      }
+      .leafrun {
         background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAANklEQVQoU2NkYGD4zwABjFAagwJJwBTBJDEUY1OEoRifIrhiYhSBHYvuJnSHM5LtJry+wxlOAGPTCQmAB/WwAAAAAElFTkSuQmCC);
       }
       .nodelink {
@@ -82,17 +91,21 @@
       .nodetitle {
         flex: 10 0 4em;
       }
-      .nodename {
-        user-select: all;
-        word-break: break-word;
-      }
-      @media only screen and (max-width: 600px) {
-        /* TODO: make the uninteresting part of the name be really small or something, such that it gets
-         * auto selected but doesn't take space. */
+      .nodequery {
+        position: absolute;
+        left: 220px;
+
+        background: transparent;
+        border: none;
+        padding: 2px;
+        margin: 0 0.5em;
+        width: calc(100vw - 360px);
       }
       .nodedescription {
         margin: 0;
         color: gray;
+        white-space: pre-wrap;
+        font-size: 80%;
       }
 
       /* tree nodes which are subtrees */
@@ -101,7 +114,20 @@
         margin: 0px;
         border-width: 1px 0 0 1px;
         border-style: solid;
-        border-color: gray;
+        border-color: #ddd;
+      }
+      .subtree:hover {
+        border-left-color: #000;
+      }
+      .subtree.multifile > .subtreechildren > .subtree.multitest,
+      .subtree.multifile > .subtreechildren > .subtree.multicase {
+        border-width: 2px 0 0 1px;
+        border-color: #55f;
+      }
+      .subtree.multitest > .subtreechildren > .subtree.multicase,
+      .subtree.multitest > .subtreechildren > .testcase {
+        border-width: 2px 0 0 1px;
+        border-color: #bbf;
       }
       .subtreechildren {
         margin-left: 6px;
@@ -113,10 +139,10 @@
         border-width: 1px 0 0 1px;
         border-style: solid;
         border-color: gray;
-        background: white;
+        background: #bbb;
       }
       .testcase[data-status='fail'] {
-        background: #fcc;
+        background: #fdd;
       }
       .testcase[data-status='warn'] {
         background: #ffb;
@@ -125,7 +151,7 @@
         background: #cfc;
       }
       .testcase[data-status='skip'] {
-        background: #ccc;
+        background: #eee;
       }
       .testcasetime {
         white-space: nowrap;
@@ -172,20 +198,26 @@
           margin-left: 2px;
           width: calc(100% - 2px);
         }
+        .nodequery {
+          position: relative;
+          left: 0;
+          width: 100%;
+        }
       }
     </style>
-    <script>
-      if (!window.location.search) {
-        window.location += '?runnow=0&worker=0&debug=0&q=webgpu:';
-      }
-    </script>
   </head>
   <body>
     <h1>WebGPU Conformance Test Suite</h1>
+    <p>
+      <input type=button id=expandall value="Expand All (slow!)">
+    </p>
 
     <div id="info"></div>
     <div id="resultsVis"></div>
-    <textarea id="resultsJSON"></textarea>
+
+    <p>
+      <input type="button" id="copyResultsJSON" value="Copy results as JSON">
+    </p>
 
     <script type="module" src="../out/common/runtime/standalone.js"></script>
   </body>

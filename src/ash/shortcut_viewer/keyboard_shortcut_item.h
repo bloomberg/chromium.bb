@@ -9,6 +9,7 @@
 
 #include "ash/shortcut_viewer/ksv_export.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace keyboard_shortcut_viewer {
@@ -56,7 +57,7 @@ struct KSV_EXPORT KeyboardShortcutItem {
   KeyboardShortcutItem(
       const std::vector<ShortcutCategory>& categories,
       int description_message_id,
-      int shortcut_message_id,
+      base::Optional<int> shortcut_message_id,
       const std::vector<AcceleratorId>& accelerator_ids = {},
       const std::vector<ui::KeyboardCode>& shortcut_key_codes = {});
   explicit KeyboardShortcutItem(const KeyboardShortcutItem& other);
@@ -70,7 +71,9 @@ struct KSV_EXPORT KeyboardShortcutItem {
 
   // Id of the message template resource used to list the keys making up the
   // shortcut.
-  int shortcut_message_id;
+  // If missing, automatically determine the ID based on the number of
+  // `shortcut_key_codes`.
+  base::Optional<int> shortcut_message_id;
 
   // Multiple accelerators can be mapped to the same KeyboardShortcutItem.
   // |shortcut_key_codes| could be auto-generated from |accelerator_ids| to
@@ -88,14 +91,15 @@ struct KSV_EXPORT KeyboardShortcutItem {
   //     the |shortcut_key_codes|.
   //  4. For ksv items not in the two accelerator_tables, we will provide the
   //     |shortcut_key_codes| and |accelerator_ids| will be empty.
+  // As of writing, this vector never has more than 1 accelerator in it.
   std::vector<AcceleratorId> accelerator_ids;
 
   // The VKEY codes of the key and each modifier comprising the shortcut. These
   // are translated to text or icons representing each key, and substituted into
   // the shortcut-message template string, to display to the user.
-  // For example of shortcut "Alt + left arrow", |shortcut_key_codes| will be
-  // {ui::VKEY_LMENU, ui::VKEY_LEFT}. ui::VKEY_LMENU indicates to display a text
-  // "Alt" and ui::VKEY_LEFT insidcates to display an icon of "left arrow".
+  // For example, for the shortcut "Alt + left arrow", |shortcut_key_codes| will
+  // be {ui::VKEY_LMENU, ui::VKEY_UNKNOWN, ui::VKEY_LEFT} representing "Alt",
+  // the separator and a left arrow respectively.
   // Note that the modifier is converted to ui::KeyboardCode so that there is
   // only one enum type to deal with.
   std::vector<ui::KeyboardCode> shortcut_key_codes;

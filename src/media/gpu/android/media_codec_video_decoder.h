@@ -16,6 +16,8 @@
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/android/media_crypto_context.h"
 #include "media/base/android_overlay_mojo_factory.h"
+#include "media/base/callback_registry.h"
+#include "media/base/cdm_context.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
@@ -58,11 +60,14 @@ struct PendingDecode {
 // playbacks that need them.
 // TODO: Lazy initialization should be handled at a higher layer of the media
 // stack for both simplicity and cross platform support.
-class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
+class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final : public VideoDecoder {
  public:
   static std::vector<SupportedVideoDecoderConfig> GetSupportedConfigs();
 
-  MediaCodecVideoDecoder(
+  ~MediaCodecVideoDecoder() override;
+  static void DestroyAsync(std::unique_ptr<MediaCodecVideoDecoder>);
+
+  static std::unique_ptr<VideoDecoder> Create(
       const gpu::GpuPreferences& gpu_preferences,
       const gpu::GpuFeatureInfo& gpu_feature_info,
       std::unique_ptr<MediaLog> media_log,
@@ -87,9 +92,20 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
 
- protected:
-  // Protected for testing.
-  ~MediaCodecVideoDecoder() override;
+ private:
+  // The test has access for PumpCodec() and the constructor.
+  friend class MediaCodecVideoDecoderTest;
+
+  MediaCodecVideoDecoder(
+      const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuFeatureInfo& gpu_feature_info,
+      std::unique_ptr<MediaLog> media_log,
+      DeviceInfo* device_info,
+      CodecAllocator* codec_allocator,
+      std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
+      AndroidOverlayMojoFactoryCB overlay_factory_cb,
+      RequestOverlayInfoCB request_overlay_info_cb,
+      std::unique_ptr<VideoFrameFactory> video_frame_factory);
 
   // Set up |cdm_context| as part of initialization.  Guarantees that |init_cb|
   // will be called depending on the outcome, though not necessarily before this
@@ -101,11 +117,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   void OnMediaCryptoReady(InitCB init_cb,
                           JavaObjectPtr media_crypto,
                           bool requires_secure_video_codec);
-
- private:
-  // The test has access for PumpCodec().
-  friend class MediaCodecVideoDecoderTest;
-  friend class base::DeleteHelper<MediaCodecVideoDecoder>;
 
   enum class State {
     // Initializing resources required to create a codec.
@@ -124,17 +135,14 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
 
   enum class DrainType { kForReset, kForDestroy };
 
-  // Starts teardown.
-  void Destroy() override;
-
   // Finishes initialization.
   void StartLazyInit();
   void OnVideoFrameFactoryInitialized(
       scoped_refptr<gpu::TextureOwner> texture_owner);
 
-  // Resets |waiting_for_key_| to false, indicating that MediaCodec might now
-  // accept buffers.
-  void OnKeyAdded();
+  // Callback for the CDM to notify |this|. Resets |waiting_for_key_| to false,
+  // indicating that MediaCodec might now accept buffers.
+  void OnCdmContextEvent(CdmContext::Event event);
 
   // Updates |surface_chooser_| with the new overlay info.
   void OnOverlayInfoChanged(const OverlayInfo& overlay_info);
@@ -230,7 +238,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
 
   // Whether we've seen MediaCodec return MEDIA_CODEC_NO_KEY indicating that
   // the corresponding key was not set yet, and MediaCodec will not accept
-  // buffers until OnKeyAdded() is called.
+  // buffers until OnCdmContextEvent() is called with kHasAdditionalUsableKey.
   bool waiting_for_key_ = false;
 
   // The reason for the current drain operation if any.
@@ -301,9 +309,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   // Owned by CDM which is external to this decoder.
   MediaCryptoContext* media_crypto_context_ = nullptr;
 
-  // MediaDrmBridge requires registration/unregistration of the player, this
-  // registration id is used for this.
-  int cdm_registration_id_ = 0;
+  // To keep the CdmContext event callback registered.
+  std::unique_ptr<CallbackRegistration> event_cb_registration_;
 
   // Do we need a hw-secure codec?
   bool requires_secure_codec_ = false;
@@ -326,6 +333,11 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
 
   // Optional crypto object from the Cdm.
   base::android::ScopedJavaGlobalRef<jobject> media_crypto_;
+
+  // For A/B power testing, this causes all non-L1 content to avoid overlays.
+  // This is only for A/B power testing, and can be removed after that.
+  // See https://crbug.com/1081346 .
+  bool allow_nonsecure_overlays_ = true;
 
   base::WeakPtrFactory<MediaCodecVideoDecoder> weak_factory_{this};
   base::WeakPtrFactory<MediaCodecVideoDecoder> codec_allocator_weak_factory_{

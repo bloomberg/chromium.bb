@@ -89,6 +89,7 @@ SpdySessionPool::SpdySessionPool(
     int session_max_queued_capped_frames,
     const spdy::SettingsMap& initial_settings,
     const base::Optional<GreasedHttp2Frame>& greased_http2_frame,
+    bool http2_end_stream_with_data_frame,
     SpdySessionPool::TimeFunc time_func,
     NetworkQualityEstimator* network_quality_estimator)
     : http_server_properties_(http_server_properties),
@@ -105,6 +106,7 @@ SpdySessionPool::SpdySessionPool(
       session_max_queued_capped_frames_(session_max_queued_capped_frames),
       initial_settings_(initial_settings),
       greased_http2_frame_(greased_http2_frame),
+      http2_end_stream_with_data_frame_(http2_end_stream_with_data_frame),
       time_func_(time_func),
       push_delegate_(nullptr),
       network_quality_estimator_(network_quality_estimator) {
@@ -274,15 +276,11 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
       // It shouldn't be in the aliases table if it doesn't exist!
       DCHECK(available_session_it != available_sessions_.end());
 
-      // This session can be reused only if the proxy and privacy settings
-      // match, as well as the NetworkIsolationKey.
-      if (!(alias_key.proxy_server() == key.proxy_server()) ||
-          !(alias_key.privacy_mode() == key.privacy_mode()) ||
-          !(alias_key.is_proxy_session() == key.is_proxy_session()) ||
-          !(alias_key.network_isolation_key() == key.network_isolation_key()) ||
-          !(alias_key.disable_secure_dns() == key.disable_secure_dns())) {
+      SpdySessionKey::CompareForAliasingResult compare_result =
+          alias_key.CompareForAliasing(key);
+      // Keys must be aliasable.
+      if (!compare_result.is_potentially_aliasable)
         continue;
-      }
 
       if (is_websocket && !available_session_it->second->support_websocket())
         continue;
@@ -304,7 +302,7 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
       bool adding_pooled_alias = true;
 
       // If socket tags differ, see if session's socket tag can be changed.
-      if (alias_key.socket_tag() != key.socket_tag()) {
+      if (!compare_result.is_socket_tag_match) {
         SpdySessionKey old_key = available_session->spdy_session_key();
         SpdySessionKey new_key(old_key.host_port_pair(), old_key.proxy_server(),
                                old_key.privacy_mode(),
@@ -421,9 +419,8 @@ void SpdySessionPool::CloseCurrentSessions(Error error) {
                              false /* idle_only */);
 }
 
-void SpdySessionPool::CloseCurrentIdleSessions() {
-  CloseCurrentSessionsHelper(ERR_ABORTED, "Closing idle sessions.",
-                             true /* idle_only */);
+void SpdySessionPool::CloseCurrentIdleSessions(const std::string& description) {
+  CloseCurrentSessionsHelper(ERR_ABORTED, description, true /* idle_only */);
 }
 
 void SpdySessionPool::CloseAllSessions() {
@@ -670,8 +667,8 @@ std::unique_ptr<SpdySession> SpdySessionPool::CreateSession(
       enable_ping_based_connection_checking_, is_http2_enabled_,
       is_quic_enabled_, is_trusted_proxy, session_max_recv_window_size_,
       session_max_queued_capped_frames_, initial_settings_,
-      greased_http2_frame_, time_func_, push_delegate_,
-      network_quality_estimator_, net_log);
+      greased_http2_frame_, http2_end_stream_with_data_frame_, time_func_,
+      push_delegate_, network_quality_estimator_, net_log);
 }
 
 base::WeakPtr<SpdySession> SpdySessionPool::InsertSession(

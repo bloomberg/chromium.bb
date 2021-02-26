@@ -5,9 +5,9 @@
 import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
-import("//build/config/jumbo.gni")
 import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/linux/pangocairo/pangocairo.gni")
+import("//build/config/ozone.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/util/branding.gni")
@@ -15,7 +15,6 @@ import("//components/system_media_controls/linux/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//ui/base/ui_features.gni")
-import("//ui/ozone/ozone.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -23,12 +22,6 @@ if (is_android) {
 } else if (is_mac) {
   import("//build/config/mac/rules.gni")
 }
-
-# Reset sources_assignment_filter for the BUILD.gn file to prevent
-# regression during the migration of Chromium away from the feature.
-# See docs/no_sources_assignment_filter.md for more information.
-# TODO(crbug.com/1018739): remove this when migration is done.
-set_sources_assignment_filter([])
 
 build_ime = !is_ios
 
@@ -87,15 +80,12 @@ source_set("hit_test") {
   }
 }
 
-jumbo_component("base") {
+component("base") {
   output_name = "ui_base"
 
   sources = [
     "class_property.cc",
     "class_property.h",
-    "cursor/cursor_loader.h",
-    "cursor/cursor_lookup.cc",
-    "cursor/cursor_lookup.h",
     "default_style.h",
     "device_form_factor.h",
     "device_form_factor_desktop.cc",
@@ -106,6 +96,8 @@ jumbo_component("base") {
     "dragdrop/os_exchange_data.h",
     "dragdrop/os_exchange_data_provider_factory.cc",
     "dragdrop/os_exchange_data_provider_factory.h",
+    "ime/utf_offset.cc",
+    "ime/utf_offset.h",
     "l10n/formatter.cc",
     "l10n/formatter.h",
     "l10n/l10n_font_util.cc",
@@ -122,6 +114,11 @@ jumbo_component("base") {
     "models/combobox_model.cc",
     "models/combobox_model.h",
     "models/combobox_model_observer.h",
+    "models/dialog_model.cc",
+    "models/dialog_model.h",
+    "models/dialog_model_field.cc",
+    "models/dialog_model_field.h",
+    "models/dialog_model_host.h",
     "models/image_model.cc",
     "models/image_model.h",
     "models/list_model.h",
@@ -149,16 +146,15 @@ jumbo_component("base") {
     "page_transition_types.h",
     "pointer/touch_ui_controller.cc",
     "pointer/touch_ui_controller.h",
+    "resource/allowlist.h",
     "resource/resource_bundle.cc",
     "resource/resource_bundle.h",
-    "resource/whitelist.h",
     "scoped_visibility_tracker.cc",
     "scoped_visibility_tracker.h",
     "template_expressions.cc",
     "template_expressions.h",
     "theme_provider.cc",
     "theme_provider.h",
-    "ui_base_export.h",
     "ui_base_exports.cc",
     "ui_base_paths.cc",
     "ui_base_paths.h",
@@ -177,6 +173,8 @@ jumbo_component("base") {
     "window_open_disposition.cc",
     "window_open_disposition.h",
   ]
+
+  libs = []
 
   if (is_android) {
     sources += [
@@ -207,6 +205,8 @@ jumbo_component("base") {
       "win/accessibility_misc_utils.cc",
       "win/accessibility_misc_utils.h",
       "win/atl_module.h",
+      "win/event_creation_utils.cc",
+      "win/event_creation_utils.h",
       "win/foreground_helper.cc",
       "win/foreground_helper.h",
       "win/hidden_window.cc",
@@ -223,6 +223,8 @@ jumbo_component("base") {
       "win/message_box_win.h",
       "win/mouse_wheel_util.cc",
       "win/mouse_wheel_util.h",
+      "win/power_setting_change_listener.cc",
+      "win/power_setting_change_listener.h",
       "win/scoped_ole_initializer.cc",
       "win/scoped_ole_initializer.h",
       "win/session_change_observer.cc",
@@ -233,6 +235,11 @@ jumbo_component("base") {
       "win/touch_input.h",
       "win/window_event_target.cc",
       "win/window_event_target.h",
+    ]
+    ldflags = [ "/DELAYLOAD:dwmapi.dll" ]
+    libs += [
+      "dwmapi.lib",
+      "wtsapi32.lib",
     ]
   }
 
@@ -304,10 +311,6 @@ jumbo_component("base") {
     ]
   }
 
-  if (is_posix) {
-    sources += [ "l10n/l10n_util_posix.cc" ]
-  }
-
   if (is_ios) {
     sources += [
       "device_form_factor_ios.mm",
@@ -333,8 +336,6 @@ jumbo_component("base") {
       "accelerators/system_media_controls_media_keys_listener.h",
       "base_window.cc",
       "base_window.h",
-      "cursor/cursor_util.cc",
-      "cursor/cursor_util.h",
       "emoji/emoji_panel_helper.h",
       "pointer/pointer_device.h",
       "pointer/pointer_device_util.cc",
@@ -349,7 +350,7 @@ jumbo_component("base") {
       "user_activity/user_activity_observer.h",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [
         "accelerators/menu_label_accelerator_util_linux.cc",
         "accelerators/menu_label_accelerator_util_linux.h",
@@ -399,7 +400,7 @@ jumbo_component("base") {
     sources += [ "pointer/pointer_device_android.cc" ]
   } else if (is_ios) {
     sources += [ "pointer/pointer_device_ios.cc" ]
-  } else if (is_linux) {
+  } else if (is_linux || is_chromeos) {
     sources += [ "pointer/pointer_device_linux.cc" ]
   } else {
     # Empty implementation for all other cases.
@@ -408,15 +409,12 @@ jumbo_component("base") {
   }
 
   if (is_fuchsia) {
-    sources += [
-      "l10n/l10n_util_posix.cc",
-      "resource/resource_bundle_fuchsia.cc",
-    ]
+    sources += [ "resource/resource_bundle_fuchsia.cc" ]
   }
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  defines = [ "UI_BASE_IMPLEMENTATION" ]
+  defines = [ "IS_UI_BASE_IMPL" ]
 
   public_deps = [
     ":buildflags",
@@ -425,15 +423,16 @@ jumbo_component("base") {
     ":ui_data_pack",
     "//base",
     "//skia",
-    "//ui/base/cursor",
-    "//ui/base/cursor/mojom:cursor_type",
+    "//third_party/abseil-cpp:absl",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
   deps = [
     "//base:base_static",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//base/util/type_safety:type_safety",
     "//net",
     "//third_party/brotli:dec",
     "//third_party/icu",
@@ -445,7 +444,8 @@ jumbo_component("base") {
     "//ui/display",
     "//ui/events",
     "//ui/events/devices",
-    "//ui/resources",
+    "//ui/resources:webui_generated_resources_grd",
+    "//ui/resources:webui_resources_grd",
     "//ui/strings",
     "//url",
   ]
@@ -479,7 +479,7 @@ jumbo_component("base") {
     deps += [ "//ui/events" ]
   }
 
-  if (is_desktop_linux && (use_x11 || ozone_platform_x11)) {
+  if ((is_linux || is_chromeos) && (use_x11 || ozone_platform_x11)) {
     public_deps += [ "//ui/base/x" ]
 
     # X11 drag and drop wants to use common drag and drop types.
@@ -494,8 +494,6 @@ jumbo_component("base") {
 
   if (use_x11 && use_aura) {
     sources += [
-      "cursor/cursor_loader_x11.cc",
-      "cursor/cursor_loader_x11.h",
       "x/selection_requestor.cc",
       "x/selection_requestor.h",
     ]
@@ -513,20 +511,12 @@ jumbo_component("base") {
     }
   }
 
-  if (use_aura && is_linux) {
+  if (use_aura && (is_linux || is_chromeos)) {
     sources += [ "resource/resource_bundle_auralinux.cc" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//third_party/fontconfig" ]
-  }
-
-  if (is_desktop_linux) {
-    sources += [
-      "cursor/cursor_theme_manager_linux.cc",
-      "cursor/cursor_theme_manager_linux.h",
-      "cursor/cursor_theme_manager_linux_observer.h",
-    ]
   }
 
   if (use_glib) {
@@ -538,10 +528,10 @@ jumbo_component("base") {
     ]
   }
 
-  if (is_chromeos || (use_aura && is_linux && !use_x11)) {
+  if (is_chromeos || (use_aura && is_linux)) {
     sources += [
-      "dragdrop/os_exchange_data_provider_aura.cc",
-      "dragdrop/os_exchange_data_provider_aura.h",
+      "dragdrop/os_exchange_data_provider_non_backed.cc",
+      "dragdrop/os_exchange_data_provider_non_backed.h",
     ]
   }
 
@@ -549,43 +539,17 @@ jumbo_component("base") {
     deps += [ "//ui/base/clipboard" ]
   }
 
-  libs = []
-  if (is_win) {
-    sources += [
-      "cursor/cursor_loader_win.cc",
-      "cursor/cursor_loader_win.h",
+  if (!use_aura) {
+    sources -= [
+      "view_prop.cc",
+      "view_prop.h",
     ]
-    deps += [ "//third_party/wtl" ]
-    cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()),
-                            # which is uninteresting.
-
-    ldflags = [
-      "/DELAYLOAD:d2d1.dll",
-      "/DELAYLOAD:d3d10_1.dll",
-      "/DELAYLOAD:dwmapi.dll",
-    ]
-    libs += [
-      "d2d1.lib",
-      "d3d10_1.lib",
-      "dwmapi.lib",
-      "d2d1.lib",
-      "dwmapi.lib",
-      "oleacc.lib",
-      "wtsapi32.lib",
-    ]
-  } else {
-    if (!use_aura) {
-      sources -= [
-        "view_prop.cc",
-        "view_prop.h",
-      ]
-    }
   }
 
   if (is_mac) {
     deps += [ "//third_party/mozilla" ]
 
-    libs += [
+    frameworks = [
       "Accelerate.framework",
       "AppKit.framework",
       "QuartzCore.framework",
@@ -593,20 +557,6 @@ jumbo_component("base") {
       "Carbon.framework",
       "CoreVideo.framework",
       "Foundation.framework",
-    ]
-  }
-
-  if (use_ozone) {
-    sources += [
-      "cursor/cursor_loader_ozone.cc",
-      "cursor/cursor_loader_ozone.h",
-      "cursor/ozone/bitmap_cursor_factory_ozone.cc",
-      "cursor/ozone/bitmap_cursor_factory_ozone.h",
-    ]
-
-    deps += [
-      "//ui/events/ozone/layout",
-      "//ui/ozone:ozone_base",
     ]
   }
 
@@ -637,16 +587,6 @@ jumbo_component("base") {
     ]
   }
 
-  if (use_aura) {
-    # Cursor
-    sources += [
-      "cursor/cursors_aura.cc",
-      "cursor/cursors_aura.h",
-      "cursor/image_cursors.cc",
-      "cursor/image_cursors.h",
-    ]
-  }
-
   if (is_android || is_ios) {
     sources -= [ "device_form_factor_desktop.cc" ]
   }
@@ -672,6 +612,8 @@ component("data_exchange") {
     "//ui/gfx/geometry",
     "//url",
   ]
+
+  public_deps = [ "//ui/base/data_transfer_policy" ]
 }
 
 component("features") {
@@ -687,18 +629,23 @@ component("features") {
   deps = [
     ":buildflags",
     "//base",
+    "//build:chromeos_buildflags",
   ]
 }
 
+# TODO(crbug.com/1091985): Support CrOS.
 if (is_win || is_mac || (is_linux && !is_chromeos)) {
-  jumbo_static_library("pixel_diff_test_support") {
+  static_library("pixel_diff_test_support") {
     testonly = true
     sources = [
+      "test/skia_gold_matching_algorithm.cc",
+      "test/skia_gold_matching_algorithm.h",
       "test/skia_gold_pixel_diff.cc",
       "test/skia_gold_pixel_diff.h",
     ]
     deps = [
       "//base",
+      "//base/test:test_config",
       "//testing/gtest",
       "//ui/gfx",
       "//ui/snapshot",
@@ -727,7 +674,7 @@ if (!is_ios) {
   }
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "resource/mock_resource_bundle_delegate.cc",
@@ -822,13 +769,6 @@ jumbo_static_library("test_support") {
       "ime/dummy_text_input_client.h",
     ]
 
-    if (is_win) {
-      sources += [
-        "ime/win/mock_tsf_bridge.cc",
-        "ime/win/mock_tsf_bridge.h",
-      ]
-    }
-
     deps += [
       "//ui/base/ime",
       "//ui/events",
@@ -841,13 +781,13 @@ jumbo_static_library("test_support") {
 
   if (is_chromeos) {
     sources += [
-      "ime/chromeos/input_method_whitelist.cc",
-      "ime/chromeos/input_method_whitelist.h",
+      "ime/chromeos/input_method_allowlist.cc",
+      "ime/chromeos/input_method_allowlist.h",
       "ime/chromeos/mock_input_method_manager.cc",
       "ime/chromeos/mock_input_method_manager.h",
     ]
     deps += [
-      # Generates a header used by input_method_whitelist.cc
+      # Generates a header used by input_method_allowlist.cc
       "//chromeos/ime:gencode",
       "//ui/base/ime/chromeos",
     ]
@@ -913,8 +853,11 @@ if (is_ios) {
 }
 
 test("ui_base_unittests") {
+  use_xvfb = use_xvfb_in_this_config
+
   sources = [
     "class_property_unittest.cc",
+    "ime/utf_offset_unittest.cc",
     "l10n/l10n_util_unittest.cc",
     "l10n/time_format_unittest.cc",
     "layout_unittest.cc",
@@ -922,6 +865,18 @@ test("ui_base_unittests") {
     "models/simple_menu_model_unittest.cc",
     "models/tree_node_iterator_unittest.cc",
     "pointer/touch_ui_controller_unittest.cc",
+    "prediction/empty_filter_unittests.cc",
+    "prediction/input_filter_unittest_helpers.cc",
+    "prediction/input_filter_unittest_helpers.h",
+    "prediction/input_predictor_unittest_helpers.cc",
+    "prediction/input_predictor_unittest_helpers.h",
+    "prediction/kalman_predictor_unittest.cc",
+    "prediction/least_squares_predictor_unittest.cc",
+    "prediction/linear_predictor_unittest.cc",
+    "prediction/linear_resampling_unittest.cc",
+    "prediction/one_euro_filter_unittests.cc",
+    "prediction/prediction_metrics_handler_unittest.cc",
+    "prediction/prediction_unittest_helpers.h",
     "resource/data_pack_literal.cc",
     "resource/data_pack_literal.h",
     "resource/data_pack_unittest.cc",
@@ -969,6 +924,8 @@ test("ui_base_unittests") {
     "//ui/base:ui_data_pack",
     "//ui/base/clipboard:clipboard_test",
     "//ui/base/clipboard:clipboard_types",
+    "//ui/base/cursor:unittests",
+    "//ui/base/prediction:prediction",
     "//ui/display",
     "//ui/events:events_base",
     "//ui/events:test_support",
@@ -999,20 +956,15 @@ test("ui_base_unittests") {
       "accelerators/accelerator_unittest.cc",
       "accelerators/menu_label_accelerator_util_unittest.cc",
       "accelerators/system_media_controls_media_keys_listener_unittest.cc",
-      "cursor/cursor_unittest.cc",
-      "cursor/cursor_util_unittest.cc",
       "models/list_model_unittest.cc",
       "models/list_selection_model_unittest.cc",
       "models/tree_node_model_unittest.cc",
       "text/bytes_formatting_unittest.cc",
       "webui/web_ui_util_unittest.cc",
     ]
-    deps += [
-      "//components/system_media_controls:test_support",
-      "//ui/base/cursor/mojom:cursor_type",
-    ]
+    deps += [ "//components/system_media_controls:test_support" ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources +=
           [ "accelerators/menu_label_accelerator_util_linux_unittest.cc" ]
     }
@@ -1033,8 +985,12 @@ test("ui_base_unittests") {
     }
   }
 
+  # TODO(crbug.com/1091985): Support CrOS.
   if (is_win || is_mac || (is_linux && !is_chromeos)) {
-    sources += [ "test/skia_gold_pixel_diff_unittest.cc" ]
+    sources += [
+      "test/skia_gold_matching_algorithm_unittest.cc",
+      "test/skia_gold_pixel_diff_unittest.cc",
+    ]
     deps += [ ":pixel_diff_test_support" ]
   }
 
@@ -1114,23 +1070,9 @@ test("ui_base_unittests") {
   if (is_win) {
     sources += [
       "dragdrop/os_exchange_data_win_unittest.cc",
+      "view_prop_unittest.cc",
       "win/hwnd_subclass_unittest.cc",
     ]
-
-    ldflags = [
-      "/DELAYLOAD:d2d1.dll",
-      "/DELAYLOAD:d3d10_1.dll",
-    ]
-    libs = [
-      "d2d1.lib",
-      "d3d10_1.lib",
-      "imm32.lib",
-      "oleacc.lib",
-    ]
-  }
-
-  if (is_win) {
-    sources += [ "view_prop_unittest.cc" ]
   }
 
   if (is_android) {
@@ -1146,6 +1088,7 @@ test("ui_base_unittests") {
 
   if (use_x11) {
     deps += [
+      "//ui/base/x:unittests",
       "//ui/events/platform/x11",
       "//ui/gfx/x",
     ]
@@ -1173,13 +1116,14 @@ test("ui_base_unittests") {
       "dragdrop/os_exchange_data_provider_x11_unittest.cc",
       "x/selection_requestor_unittest.cc",
     ]
+    deps += [ "//ui/gfx/x:unit_test" ]
   }
 
   if (is_chromeos) {
     deps += [ "//ui/events:dom_keycode_converter" ]
   }
 
-  if (is_android || is_linux || is_mac || is_win || is_fuchsia) {
+  if (is_android || is_linux || is_chromeos || is_mac || is_win || is_fuchsia) {
     # TODO(brettw): We should be able to depend on //ui/resources:ui_test_pak
     # instead of depending directly on the non-test .pak files, but depending
     # on ui_test_pak seems to have no effect.
@@ -1192,7 +1136,7 @@ test("ui_base_unittests") {
       "//ui/resources:ui_test_pak",  # TODO(brettw): this does nothing.
     ]
   }
-  if (is_linux || is_win || is_fuchsia) {
+  if (is_linux || is_chromeos || is_win || is_fuchsia) {
     data += [
       # TODO(brettw): Remove these two lines.
       "$root_out_dir/ui/en-US.pak",
@@ -1228,7 +1172,7 @@ if (is_win) {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   # This source set defines linux wm role names and must not have any external
   # dependencies and be kept as minimal as possible.
   source_set("wm_role_names") {

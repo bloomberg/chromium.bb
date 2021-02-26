@@ -98,7 +98,7 @@ std::vector<wasm_addr_t> WasmModuleDebug::GetCallStack(
       case StackFrame::WASM: {
         // A standard frame may include many summarized frames, due to inlining.
         std::vector<FrameSummary> frames;
-        StandardFrame::cast(frame)->Summarize(&frames);
+        CommonFrame::cast(frame)->Summarize(&frames);
         for (size_t i = frames.size(); i-- != 0;) {
           int offset = 0;
           Handle<Script> script;
@@ -156,7 +156,7 @@ std::vector<FrameSummary> WasmModuleDebug::FindWasmFrame(
       case StackFrame::WASM: {
         // A standard frame may include many summarized frames, due to inlining.
         std::vector<FrameSummary> frames;
-        StandardFrame::cast(frame)->Summarize(&frames);
+        CommonFrame::cast(frame)->Summarize(&frames);
         const size_t frame_count = frames.size();
         DCHECK_GT(frame_count, 0);
 
@@ -371,9 +371,8 @@ bool WasmModuleDebug::GetWasmValue(const wasm::WasmValue& wasm_value,
       return StoreValue(wasm_value.to_s128(), buffer, buffer_size, size);
 
     case wasm::kWasmStmt.kind():
-    case wasm::kWasmAnyRef.kind():
+    case wasm::kWasmExternRef.kind():
     case wasm::kWasmFuncRef.kind():
-    case wasm::kWasmNullRef.kind():
     case wasm::kWasmExnRef.kind():
     case wasm::kWasmBottom.kind():
     default:

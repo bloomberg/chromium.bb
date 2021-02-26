@@ -9,23 +9,9 @@ source_set("input_monitor") {
 
   sources = [
     "local_hotkey_input_monitor.h",
-    "local_hotkey_input_monitor_chromeos.cc",
-    "local_hotkey_input_monitor_mac.mm",
-    "local_hotkey_input_monitor_win.cc",
-    "local_hotkey_input_monitor_x11.cc",
     "local_input_monitor.cc",
-    "local_input_monitor_win.cc",
-    "local_input_monitor_win.h",
     "local_keyboard_input_monitor.h",
-    "local_keyboard_input_monitor_chromeos.cc",
-    "local_keyboard_input_monitor_mac.mm",
-    "local_keyboard_input_monitor_win.cc",
-    "local_keyboard_input_monitor_x11.cc",
-    "local_mouse_input_monitor_mac.mm",
-    "local_mouse_input_monitor_win.cc",
-    "local_mouse_input_monitor_x11.cc",
     "local_pointer_input_monitor.h",
-    "local_pointer_input_monitor_chromeos.cc",
   ]
 
   deps = [
@@ -39,14 +25,37 @@ source_set("input_monitor") {
   }
 
   if (is_mac) {
+    sources += [
+      "local_hotkey_input_monitor_mac.mm",
+      "local_keyboard_input_monitor_mac.mm",
+      "local_mouse_input_monitor_mac.mm",
+    ]
     deps += [ "//third_party/google_toolbox_for_mac" ]
   }
 
-  if (!use_x11 || (is_chromeos && !use_ozone)) {
-    sources -= [
+  if (use_x11 && (!is_chromeos || use_ozone)) {
+    sources += [
       "local_hotkey_input_monitor_x11.cc",
       "local_keyboard_input_monitor_x11.cc",
       "local_mouse_input_monitor_x11.cc",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "local_hotkey_input_monitor_win.cc",
+      "local_input_monitor_win.cc",
+      "local_input_monitor_win.h",
+      "local_keyboard_input_monitor_win.cc",
+      "local_mouse_input_monitor_win.cc",
+    ]
+  }
+
+  if (is_chromeos) {
+    sources += [
+      "local_hotkey_input_monitor_chromeos.cc",
+      "local_keyboard_input_monitor_chromeos.cc",
+      "local_pointer_input_monitor_chromeos.cc",
     ]
   }
 }

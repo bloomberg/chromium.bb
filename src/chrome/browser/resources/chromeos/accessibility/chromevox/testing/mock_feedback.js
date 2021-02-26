@@ -265,12 +265,12 @@ MockFeedback = class {
     Array.prototype.forEach.call(arguments, function(text) {
       this.pendingActions_.push({
         perform: function() {
-          if (this.pendingUtterances_.length == 0) {
+          if (this.pendingUtterances_.length === 0) {
             return false;
           }
           if (MockFeedback.matchAndConsume_(
                   text, {}, this.pendingUtterances_)) {
-            throw new Error('Got disallowed utterance "' + text + '".');
+            throw new Error('Got denied utterance "' + text + '".');
           }
           return true;
         }.bind(this),
@@ -371,11 +371,20 @@ MockFeedback = class {
    * When all expectations are satisfied and registered callbacks called,
    * the finish callbcak, if any, is called.
    * This function may only be called once.
+   * @return {!Promise} Mandatory to await on if used in async functions.
    */
   replay() {
     assertFalse(this.replaying_);
     this.replaying_ = true;
+
+    const promise = new Promise((resolve, reject) => {
+      this.resolve_ = resolve;
+      this.reject_ = reject;
+    });
+
     this.process_();
+
+    return promise;
   }
 
   /**
@@ -443,11 +452,12 @@ MockFeedback = class {
           break;
         }
       }
-      if (this.pendingActions_.length == 0) {
+      if (this.pendingActions_.length === 0) {
         if (this.finishedCallback_) {
           this.finishedCallback_();
           this.finishedCallback_ = null;
         }
+        this.resolve_();
       } else {
         // If there are pending actions and no matching feedback for a few
         // seconds, log the pending state to ease debugging.
@@ -456,6 +466,9 @@ MockFeedback = class {
               window.setTimeout(this.logPendingState_.bind(this), 2000);
         }
       }
+    } catch (e) {
+      this.reject_(e);
+      throw e;
     } finally {
       this.inProcess_ = false;
     }
@@ -505,18 +518,18 @@ MockFeedback = class {
       let i, candidate;
       for (i = 0; candidate = pending[i]; ++i) {
         let candidateText = candidate.text;
-        if (typeof (candidateText) != 'string') {
+        if (typeof (candidateText) !== 'string') {
           candidateText = candidateText.toString();
         }
 
         if (text === candidateText ||
             (text instanceof RegExp && text.test(candidateText)) ||
-            (typeof (text) == 'function' && text(candidate))) {
+            (typeof (text) === 'function' && text(candidate))) {
           let matched = true;
           for (const prop in props) {
             if (candidate[prop] !== props[prop] &&
                 (!candidate.properties ||
-                 candidate.properties[prop] != props[prop])) {
+                 candidate.properties[prop] !== props[prop])) {
               matched = false;
               break;
             }

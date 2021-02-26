@@ -76,9 +76,10 @@ bool LocationIconView::IsBubbleShowing() const {
 }
 
 bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
-  delegate_->OnLocationIconPressed(event);
-
   IconLabelBubbleView::OnMousePressed(event);
+  delegate_->OnLocationIconPressed(event);
+  // Since OnLocationIconPressed() runs a nested message loop on Linux, |this|
+  // may be deleted by now.
   return true;
 }
 
@@ -208,16 +209,16 @@ void LocationIconView::UpdateIcon() {
   // Cancel any previous outstanding icon requests, as they are now outdated.
   icon_fetch_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  gfx::ImageSkia icon = delegate_->GetLocationIcon(
+  ui::ImageModel icon = delegate_->GetLocationIcon(
       base::BindOnce(&LocationIconView::OnIconFetched,
                      icon_fetch_weak_ptr_factory_.GetWeakPtr()));
-  if (!icon.isNull())
-    SetImage(icon);
+  if (!icon.IsEmpty())
+    SetImageModel(icon);
 }
 
 void LocationIconView::OnIconFetched(const gfx::Image& image) {
   DCHECK(!image.IsEmpty());
-  SetImage(image.AsImageSkia());
+  SetImageModel(ui::ImageModel::FromImage(image));
 }
 
 void LocationIconView::Update(bool suppress_animations) {
@@ -248,7 +249,7 @@ void LocationIconView::Update(bool suppress_animations) {
     } else {
       SetInkDropMode(InkDropMode::ON);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
       SetFocusBehavior(FocusBehavior::ALWAYS);

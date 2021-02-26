@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
@@ -96,9 +97,10 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
           gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
       // Make a mailbox for export of the GpuMemoryBuffer to the display
       // compositor.
-      backing_->mailbox = sii->CreateSharedImage(gpu_memory_buffer_.get(),
-                                                 gpu_memory_buffer_manager_,
-                                                 resource_color_space_, usage);
+      backing_->mailbox = sii->CreateSharedImage(
+          gpu_memory_buffer_.get(), gpu_memory_buffer_manager_,
+          resource_color_space_, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+          usage);
     } else {
       sii->UpdateSharedImage(backing_->returned_sync_token, backing_->mailbox);
     }
@@ -145,6 +147,8 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
         /*gpu_compositing=*/true, playback_settings);
     gpu_memory_buffer_->Unmap();
   }
+
+  bool SupportsBackgroundThreadPriority() const override { return true; }
 
  private:
   // This field may only be used on the compositor thread.

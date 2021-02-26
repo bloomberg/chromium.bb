@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "src/base/macros.h"
 #include "src/base/optional.h"
@@ -20,18 +21,23 @@ class SharedMemoryStatistics;
 
 namespace internal {
 
+class BasicMemoryChunk;
 class Isolate;
 class Page;
 class ReadOnlyArtifacts;
-class ReadOnlyDeserializer;
+class ReadOnlyPage;
 class ReadOnlySpace;
+class SharedReadOnlySpace;
+class SnapshotData;
 
 // This class transparently manages read-only space, roots and cache creation
 // and destruction.
-class ReadOnlyHeap final {
+class ReadOnlyHeap {
  public:
   static constexpr size_t kEntriesCount =
       static_cast<size_t>(RootIndex::kReadOnlyRootsCount);
+
+  virtual ~ReadOnlyHeap() = default;
 
   // If necessary creates read-only heap and initializes its artifacts (if the
   // deserializer is provided). Then attaches the read-only heap to the isolate.
@@ -41,7 +47,8 @@ class ReadOnlyHeap final {
   // V8_SHARED_RO_HEAP is enabled, a lock will be held until that method is
   // called.
   // TODO(v8:7464): Ideally we'd create this without needing a heap.
-  static void SetUp(Isolate* isolate, ReadOnlyDeserializer* des);
+  static void SetUp(Isolate* isolate, SnapshotData* read_only_snapshot_data,
+                    bool can_rehash);
   // Indicates that the isolate has been set up and all read-only space objects
   // have been created and will not be written to. This should only be called if
   // a deserializer was not previously provided to Setup. When V8_SHARED_RO_HEAP
@@ -49,7 +56,7 @@ class ReadOnlyHeap final {
   void OnCreateHeapObjectsComplete(Isolate* isolate);
   // Indicates that the current isolate no longer requires the read-only heap
   // and it may be safely disposed of.
-  void OnHeapTearDown();
+  virtual void OnHeapTearDown(Heap* heap);
   // If the read-only heap is shared, then populate |statistics| with its stats,
   // otherwise the read-only heap stats are set to 0.
   static void PopulateReadOnlySpaceStatistics(
@@ -74,13 +81,30 @@ class ReadOnlyHeap final {
 
   ReadOnlySpace* read_only_space() const { return read_only_space_; }
 
- private:
-  // Creates a new read-only heap and attaches it to the provided isolate.
-  static ReadOnlyHeap* CreateAndAttachToIsolate(
+  // Returns whether the ReadOnlySpace will actually be shared taking into
+  // account whether shared memory is available with pointer compression.
+  static bool IsReadOnlySpaceShared() {
+    return V8_SHARED_RO_HEAP_BOOL &&
+           (!COMPRESS_POINTERS_BOOL || IsSharedMemoryAvailable());
+  }
+
+  virtual void InitializeIsolateRoots(Isolate* isolate) {}
+  virtual void InitializeFromIsolateRoots(Isolate* isolate) {}
+  virtual bool IsOwnedByIsolate() { return true; }
+
+ protected:
+  friend class ReadOnlyArtifacts;
+  friend class PointerCompressedReadOnlyArtifacts;
+
+  // Creates a new read-only heap and attaches it to the provided isolate. Only
+  // used the first time when creating a ReadOnlyHeap for sharing.
+  static ReadOnlyHeap* CreateInitalHeapForBootstrapping(
       Isolate* isolate, std::shared_ptr<ReadOnlyArtifacts> artifacts);
   // Runs the read-only deserializer and calls InitFromIsolate to complete
   // read-only heap initialization.
-  void DeseralizeIntoIsolate(Isolate* isolate, ReadOnlyDeserializer* des);
+  void DeseralizeIntoIsolate(Isolate* isolate,
+                             SnapshotData* read_only_snapshot_data,
+                             bool can_rehash);
   // Initializes read-only heap from an already set-up isolate, copying
   // read-only roots from the isolate. This then seals the space off from
   // further writes, marks it as read-only and detaches it from the heap
@@ -91,19 +115,31 @@ class ReadOnlyHeap final {
   ReadOnlySpace* read_only_space_ = nullptr;
   std::vector<Object> read_only_object_cache_;
 
-#ifdef V8_SHARED_RO_HEAP
-#ifdef DEBUG
-  // The checksum of the blob the read-only heap was deserialized from, if any.
-  base::Optional<uint32_t> read_only_blob_checksum_;
-#endif  // DEBUG
-
-  Address read_only_roots_[kEntriesCount];
-
-  V8_EXPORT_PRIVATE static ReadOnlyHeap* shared_ro_heap_;
-#endif  // V8_SHARED_RO_HEAP
+  // Returns whether shared memory can be allocated and then remapped to
+  // additional addresses.
+  static bool IsSharedMemoryAvailable();
 
   explicit ReadOnlyHeap(ReadOnlySpace* ro_space) : read_only_space_(ro_space) {}
+  ReadOnlyHeap(ReadOnlyHeap* ro_heap, ReadOnlySpace* ro_space);
+
   DISALLOW_COPY_AND_ASSIGN(ReadOnlyHeap);
+};
+
+// This is used without pointer compression when there is just a single
+// ReadOnlyHeap object shared between all Isolates.
+class SoleReadOnlyHeap : public ReadOnlyHeap {
+ public:
+  void InitializeIsolateRoots(Isolate* isolate) override;
+  void InitializeFromIsolateRoots(Isolate* isolate) override;
+  void OnHeapTearDown(Heap* heap) override;
+  bool IsOwnedByIsolate() override { return false; }
+
+ private:
+  friend class ReadOnlyHeap;
+
+  explicit SoleReadOnlyHeap(ReadOnlySpace* ro_space) : ReadOnlyHeap(ro_space) {}
+  Address read_only_roots_[kEntriesCount];
+  V8_EXPORT_PRIVATE static SoleReadOnlyHeap* shared_ro_heap_;
 };
 
 // This class enables iterating over all read-only heap objects.
@@ -116,7 +152,7 @@ class V8_EXPORT_PRIVATE ReadOnlyHeapObjectIterator {
 
  private:
   ReadOnlySpace* const ro_space_;
-  Page* current_page_;
+  std::vector<ReadOnlyPage*>::const_iterator current_page_;
   Address current_addr_;
 };
 

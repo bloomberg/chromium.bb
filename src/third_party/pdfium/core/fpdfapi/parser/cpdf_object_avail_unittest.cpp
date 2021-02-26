@@ -17,14 +17,13 @@
 #include "core/fxcrt/fx_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/invalid_seekable_read_stream.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/notreached.h"
 
 namespace {
 
 class TestReadValidator final : public CPDF_ReadValidator {
  public:
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
+  CONSTRUCT_VIA_MAKE_RETAIN;
 
   void SimulateReadError() { ReadBlockAtOffset(nullptr, 0, 1); }
 

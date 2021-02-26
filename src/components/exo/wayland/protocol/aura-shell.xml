@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zaura_shell" version="9">
+  <interface name="zaura_shell" version="12">
     <description summary="aura_shell">
       The global interface exposing aura shell capabilities is used to
       instantiate an interface extension for a wl_surface object.
@@ -66,9 +66,26 @@
       <arg name="output" type="object" interface="wl_output"
 	   summary="the output"/>
     </request>
+
+    <!-- Version 11 additions -->
+
+    <enum name="layout_mode">
+      <description summary="the layout mode">
+        Specifies the server's window layout mode.
+      </description>
+      <entry name="windowed" value="1" summary="multiple windows"/>
+      <entry name="tablet" value="2" summary="restricted mode for tablet"/>
+    </enum>
+
+    <event name="layout_mode" since="11">
+      <description summary="sends the layout_mode">
+        Sends the layout_mode used by the server.
+      </description>
+      <arg name="layout_mode" type="uint" summary="layout_mode enum"/>
+    </event>
   </interface>
 
-  <interface name="zaura_surface" version="9">
+  <interface name="zaura_surface" version="12">
     <description summary="aura shell interface to a wl_surface">
       An additional interface to a wl_surface object, which allows the
       client to access aura shell specific functionality for surface.
@@ -134,6 +151,7 @@
 
     <request name="set_client_surface_id" since="7">
       <description summary="set the client surface ID of this surface">
+	Deprecated. Please use set_client_surface_str_id instead.
 	Set the identifier of the surface assigned by the client.
       </description>
       <arg name="client_surface_id" type="int" />
@@ -195,6 +213,45 @@
 	and are more likely to be honoured.
       </description>
     </request>
+
+    <!-- Version 10 additions -->
+
+    <enum name="fullscreen_mode">
+      <description
+        summary="Specifies the behavior of the surface in fullscreen.">
+          Possible windowing system behaviors if this surface were to go
+          fullscreen.
+      </description>
+      <entry
+        name="immersive"
+        value="0"
+        summary="user can access system UIs such as the shelf and window frame
+          by pointing to, or swiping over, the screen edge"/>
+      <entry
+        name="plain"
+        value="1"
+        summary="user cannot access system UIs using mouse/touches"/>
+    </enum>
+
+    <request name="set_fullscreen_mode" since="10">
+      <description summary="Sets the behavior of the surface in fullscreen.">
+        Suggests how the windowing system should behave if this surface were
+        to go fullscreen. Does not make the surface fullscreen.
+
+        Typically the default mode is "immersive".
+      </description>
+      <arg name="mode" type="uint" enum="fullscreen_mode"/>
+    </request>
+
+    <!-- Version 12 additions -->
+
+    <request name="set_client_surface_str_id" since="12">
+      <description summary="set the client surface ID of this surface">
+        Set the identifier of the surface assigned by the client.
+      </description>
+      <arg name="client_surface_id" type="string" />
+    </request>
+
   </interface>
 
   <interface name="zaura_output" version="6">

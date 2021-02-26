@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/updater/mac/managed_preference_policy_manager_impl.h"
+#include "chrome/updater/policy_manager.h"
 
 namespace updater {
 
@@ -32,9 +33,8 @@ class ManagedPreferencePolicyManager : public PolicyManagerInterface {
   bool IsManaged() const override;
 
   bool GetLastCheckPeriodMinutes(int* minutes) const override;
-  bool GetUpdatesSuppressedTimes(int* start_hour,
-                                 int* start_min,
-                                 int* duration_min) const override;
+  bool GetUpdatesSuppressedTimes(
+      UpdatesSuppressedTimes* suppressed_times) const override;
   bool GetDownloadPreferenceGroupPolicy(
       std::string* download_preference) const override;
   bool GetPackageCacheSizeLimitMBytes(int* cache_size_limit) const override;
@@ -52,6 +52,8 @@ class ManagedPreferencePolicyManager : public PolicyManagerInterface {
   bool GetProxyMode(std::string* proxy_mode) const override;
   bool GetProxyPacUrl(std::string* proxy_pac_url) const override;
   bool GetProxyServer(std::string* proxy_server) const override;
+  bool GetTargetChannel(const std::string& app_id,
+                        std::string* channel) const override;
 
  private:
   base::scoped_nsobject<CRUManagedPreferencePolicyManager> impl_;
@@ -79,15 +81,9 @@ bool ManagedPreferencePolicyManager::GetLastCheckPeriodMinutes(
 }
 
 bool ManagedPreferencePolicyManager::GetUpdatesSuppressedTimes(
-    int* start_hour,
-    int* start_min,
-    int* duration_min) const {
-  CRUUpdatesSuppressed updatesSuppressed = [impl_ updatesSuppressed];
-  *start_hour = updatesSuppressed.start_hour;
-  *start_min = updatesSuppressed.start_minute;
-  *duration_min = updatesSuppressed.duration_minute;
-  return *start_hour != kPolicyNotSet || *start_min != kPolicyNotSet ||
-         *duration_min != kPolicyNotSet;
+    UpdatesSuppressedTimes* suppressed_times) const {
+  *suppressed_times = [impl_ updatesSuppressed];
+  return suppressed_times->valid();
 }
 
 bool ManagedPreferencePolicyManager::GetDownloadPreferenceGroupPolicy(
@@ -182,6 +178,18 @@ bool ManagedPreferencePolicyManager::GetProxyServer(
   NSString* value = [impl_ proxyServer];
   if (value) {
     *proxy_server = base::SysNSStringToUTF8(value);
+    return true;
+  }
+
+  return false;
+}
+
+bool ManagedPreferencePolicyManager::GetTargetChannel(
+    const std::string& app_id,
+    std::string* channel) const {
+  NSString* value = [impl_ targetChannel:base::SysUTF8ToNSString(app_id)];
+  if (value) {
+    *channel = base::SysNSStringToUTF8(value);
     return true;
   }
 

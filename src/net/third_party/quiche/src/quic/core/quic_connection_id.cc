@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <string>
 
+#include "absl/strings/escaping.h"
 #include "third_party/boringssl/src/include/openssl/siphash.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
@@ -17,8 +18,8 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "net/third_party/quiche/src/common/quiche_endian.h"
 
 namespace quic {
 
@@ -50,7 +51,12 @@ class QuicConnectionIdHasher {
 
 }  // namespace
 
-QuicConnectionId::QuicConnectionId() : QuicConnectionId(nullptr, 0) {}
+QuicConnectionId::QuicConnectionId() : QuicConnectionId(nullptr, 0) {
+  static_assert(offsetof(QuicConnectionId, padding_) ==
+                    offsetof(QuicConnectionId, length_),
+                "bad offset");
+  static_assert(sizeof(QuicConnectionId) <= 16, "bad size");
+}
 
 QuicConnectionId::QuicConnectionId(const char* data, uint8_t length) {
   length_ = length;
@@ -139,7 +145,7 @@ std::string QuicConnectionId::ToString() const {
   if (IsEmpty()) {
     return std::string("0");
   }
-  return quiche::QuicheTextUtils::HexEncode(data(), length_);
+  return absl::BytesToHexString(absl::string_view(data(), length_));
 }
 
 std::ostream& operator<<(std::ostream& os, const QuicConnectionId& v) {

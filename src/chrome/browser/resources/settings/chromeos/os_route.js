@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+// #import '../constants/routes.mojom-lite.js';
+
+// #import {OsSettingsRoutes} from './os_settings_routes.m.js';
+// #import {Route, Router} from '../router.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
 cr.define('settings', function() {
   /**
    * @param {!settings.Route} parent
@@ -74,6 +81,11 @@ cr.define('settings', function() {
       r.SMART_LOCK = createSubpage(
           r.MULTIDEVICE_FEATURES, mojom.SMART_LOCK_SUBPAGE_PATH,
           Subpage.kSmartLock);
+      if (loadTimeData.getBoolean('nearbySharingFeatureFlag')) {
+        r.NEARBY_SHARE = createSubpage(
+            r.MULTIDEVICE, mojom.NEARBY_SHARE_SUBPAGE_PATH,
+            Subpage.kNearbyShare);
+      }
     }
 
     // People section.
@@ -98,12 +110,13 @@ cr.define('settings', function() {
           r.OS_PEOPLE, mojom.SECURITY_AND_SIGN_IN_SUBPAGE_PATH,
           Subpage.kSecurityAndSignIn);
       r.FINGERPRINT = createSubpage(
-          r.LOCK_SCREEN, mojom.FINGERPRINT_SUBPATH_PATH, Subpage.kFingerprint);
+          r.LOCK_SCREEN, mojom.FINGERPRINT_SUBPAGE_PATH, Subpage.kFingerprint);
       r.ACCOUNTS = createSubpage(
           r.OS_PEOPLE, mojom.MANAGE_OTHER_PEOPLE_SUBPAGE_PATH,
           Subpage.kManageOtherPeople);
       r.KERBEROS_ACCOUNTS = createSubpage(
-          r.OS_PEOPLE, mojom.KERBEROS_SUBPAGE_PATH, Subpage.kKerberos);
+          r.OS_PEOPLE, mojom.KERBEROS_ACCOUNTS_SUBPAGE_PATH,
+          Subpage.kKerberosAccounts);
     }
 
     // Device section.
@@ -122,8 +135,6 @@ cr.define('settings', function() {
     r.EXTERNAL_STORAGE_PREFERENCES = createSubpage(
         r.STORAGE, mojom.EXTERNAL_STORAGE_SUBPAGE_PATH,
         Subpage.kExternalStorage);
-    r.DOWNLOADED_CONTENT =
-        createSubpage(r.STORAGE, mojom.DLC_SUBPAGE_PATH, Subpage.kStorage);
     r.POWER = createSubpage(r.DEVICE, mojom.POWER_SUBPAGE_PATH, Subpage.kPower);
 
     // Personalization section.
@@ -137,6 +148,12 @@ cr.define('settings', function() {
       r.AMBIENT_MODE = createSubpage(
           r.PERSONALIZATION, mojom.AMBIENT_MODE_SUBPAGE_PATH,
           Subpage.kAmbientMode);
+      // Note: AMBIENT_MODE_PHOTOS is a special case because it includes several
+      // subpages, one per topic source. Default to
+      // kAmbientModeGooglePhotosAlbum subpage.
+      r.AMBIENT_MODE_PHOTOS = createSubpage(
+          r.AMBIENT_MODE, 'ambientMode/photos',
+          Subpage.kAmbientModeGooglePhotosAlbum);
     }
 
     // Search and Assistant section.
@@ -163,6 +180,9 @@ cr.define('settings', function() {
       r.APP_MANAGEMENT_PLUGIN_VM_SHARED_PATHS = createSubpage(
           r.APP_MANAGEMENT, mojom.PLUGIN_VM_SHARED_PATHS_SUBPAGE_PATH,
           Subpage.kPluginVmSharedPaths);
+      r.APP_MANAGEMENT_PLUGIN_VM_SHARED_USB_DEVICES = createSubpage(
+          r.APP_MANAGEMENT, mojom.PLUGIN_VM_USB_PREFERENCES_SUBPAGE_PATH,
+          Subpage.kPluginVmUsbPreferences);
     }
 
     // Crostini section.
@@ -191,12 +211,6 @@ cr.define('settings', function() {
       r.CROSTINI_PORT_FORWARDING = createSubpage(
           r.CROSTINI_DETAILS, mojom.CROSTINI_PORT_FORWARDING_SUBPAGE_PATH,
           Subpage.kCrostiniPortForwarding);
-      if (loadTimeData.valueExists('showCrostiniDiskResize') &&
-          loadTimeData.getBoolean('showCrostiniDiskResize')) {
-        r.CROSTINI_DISK_RESIZE = createSubpage(
-            r.CROSTINI_DETAILS, mojom.CROSTINI_DISK_RESIZE_SUBPAGE_PATH,
-            Subpage.kCrostiniDiskResize);
-      }
     }
 
     // Date and Time section.
@@ -214,14 +228,31 @@ cr.define('settings', function() {
     r.OS_LANGUAGES = createSection(
         r.ADVANCED, mojom.LANGUAGES_AND_INPUT_SECTION_PATH,
         Section.kLanguagesAndInput);
-    r.OS_LANGUAGES_DETAILS = createSubpage(
-        r.OS_LANGUAGES, mojom.LANGUAGES_AND_INPUT_DETAILS_SUBPAGE_PATH,
-        Subpage.kLanguagesAndInputDetails);
-    r.OS_LANGUAGES_INPUT_METHODS = createSubpage(
-        r.OS_LANGUAGES_DETAILS, mojom.MANAGE_INPUT_METHODS_SUBPAGE_PATH,
-        Subpage.kManageInputMethods);
+    if (loadTimeData.getBoolean('enableLanguageSettingsV2')) {
+      r.OS_LANGUAGES_LANGUAGES = createSubpage(
+          r.OS_LANGUAGES, mojom.LANGUAGES_SUBPAGE_PATH, Subpage.kLanguages);
+      r.OS_LANGUAGES_INPUT = createSubpage(
+          r.OS_LANGUAGES, mojom.INPUT_SUBPAGE_PATH, Subpage.kInput);
+      r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
+          r.OS_LANGUAGES_INPUT, mojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
+          Subpage.kInputMethodOptions);
+      r.OS_LANGUAGES_EDIT_DICTIONARY = createSubpage(
+          r.OS_LANGUAGES_INPUT, mojom.EDIT_DICTIONARY_SUBPAGE_PATH,
+          Subpage.kEditDictionary);
+    } else {
+      r.OS_LANGUAGES_DETAILS = createSubpage(
+          r.OS_LANGUAGES, mojom.LANGUAGES_AND_INPUT_DETAILS_SUBPAGE_PATH,
+          Subpage.kLanguagesAndInputDetails);
+      r.OS_LANGUAGES_INPUT_METHODS = createSubpage(
+          r.OS_LANGUAGES_DETAILS, mojom.MANAGE_INPUT_METHODS_SUBPAGE_PATH,
+          Subpage.kManageInputMethods);
+      r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
+          r.OS_LANGUAGES_DETAILS, mojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
+          Subpage.kInputMethodOptions);
+    }
     r.OS_LANGUAGES_SMART_INPUTS = createSubpage(
-        r.OS_LANGUAGES, mojom.SMART_INPUTS_SUBAGE_PATH, Subpage.kSmartInputs);
+        r.OS_LANGUAGES, mojom.SMART_INPUTS_SUBPAGE_PATH, Subpage.kSmartInputs);
+
 
     // Files section.
     if (!loadTimeData.getBoolean('isGuest')) {
@@ -248,11 +279,9 @@ cr.define('settings', function() {
     r.MANAGE_TTS_SETTINGS = createSubpage(
         r.MANAGE_ACCESSIBILITY, mojom.TEXT_TO_SPEECH_SUBPAGE_PATH,
         Subpage.kTextToSpeech);
-    if (loadTimeData.getBoolean('showExperimentalAccessibilitySwitchAccess')) {
-      r.MANAGE_SWITCH_ACCESS_SETTINGS = createSubpage(
-          r.MANAGE_ACCESSIBILITY, mojom.SWITCH_ACCESS_OPTIONS_SUBPAGE_PATH,
-          Subpage.kSwitchAccessOptions);
-    }
+    r.MANAGE_SWITCH_ACCESS_SETTINGS = createSubpage(
+        r.MANAGE_ACCESSIBILITY, mojom.SWITCH_ACCESS_OPTIONS_SUBPAGE_PATH,
+        Subpage.kSwitchAccessOptions);
     r.MANAGE_CAPTION_SETTINGS = createSubpage(
         r.MANAGE_ACCESSIBILITY, mojom.CAPTIONS_SUBPAGE_PATH, Subpage.kCaptions);
 
@@ -301,7 +330,7 @@ cr.define('settings', function() {
 
   // TODO(dpapad): Change to 'get routes() {}' in export when we fix a bug in
   // ChromePass that limits the syntax of what can be returned from cr.define().
-  const routes = /** @type {!OsSettingsRoutes} */ (
+  /* #export */ const routes = /** @type {!OsSettingsRoutes} */ (
       settings.Router.getInstance().getRoutes());
 
   // #cr_define_end

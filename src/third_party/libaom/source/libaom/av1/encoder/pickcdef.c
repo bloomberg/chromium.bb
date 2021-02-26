@@ -12,41 +12,81 @@
 #include <math.h>
 #include <string.h>
 
+#include "config/aom_dsp_rtcd.h"
 #include "config/aom_scale_rtcd.h"
 
 #include "aom/aom_integer.h"
 #include "aom_ports/system_state.h"
 #include "av1/common/av1_common_int.h"
-#include "av1/common/cdef.h"
 #include "av1/common/reconinter.h"
 #include "av1/encoder/encoder.h"
+#include "av1/encoder/pickcdef.h"
 
 #define REDUCED_PRI_STRENGTHS_LVL1 8
 #define REDUCED_PRI_STRENGTHS_LVL2 5
+#define REDUCED_SEC_STRENGTHS_LVL3 2
+#define REDUCED_PRI_STRENGTHS_LVL4 2
 
 #define REDUCED_TOTAL_STRENGTHS_LVL1 \
   (REDUCED_PRI_STRENGTHS_LVL1 * CDEF_SEC_STRENGTHS)
 #define REDUCED_TOTAL_STRENGTHS_LVL2 \
   (REDUCED_PRI_STRENGTHS_LVL2 * CDEF_SEC_STRENGTHS)
+#define REDUCED_TOTAL_STRENGTHS_LVL3 \
+  (REDUCED_PRI_STRENGTHS_LVL2 * REDUCED_SEC_STRENGTHS_LVL3)
+#define REDUCED_TOTAL_STRENGTHS_LVL4 \
+  (REDUCED_PRI_STRENGTHS_LVL4 * REDUCED_SEC_STRENGTHS_LVL3)
 #define TOTAL_STRENGTHS (CDEF_PRI_STRENGTHS * CDEF_SEC_STRENGTHS)
 
-static const int priconv_lvl1[REDUCED_TOTAL_STRENGTHS_LVL1] = { 0, 1, 2,  3,
-                                                                5, 7, 10, 13 };
-static const int priconv_lvl2[REDUCED_TOTAL_STRENGTHS_LVL2] = { 0, 2, 4, 8,
-                                                                14 };
+static const int priconv_lvl1[REDUCED_PRI_STRENGTHS_LVL1] = { 0, 1, 2,  3,
+                                                              5, 7, 10, 13 };
+static const int priconv_lvl2[REDUCED_PRI_STRENGTHS_LVL2] = { 0, 2, 4, 8, 14 };
+static const int priconv_lvl4[REDUCED_PRI_STRENGTHS_LVL4] = { 0, 11 };
+static const int secconv_lvl3[REDUCED_SEC_STRENGTHS_LVL3] = { 0, 2 };
 static const int nb_cdef_strengths[CDEF_PICK_METHODS] = {
-  TOTAL_STRENGTHS, REDUCED_TOTAL_STRENGTHS_LVL1, REDUCED_TOTAL_STRENGTHS_LVL2,
+  TOTAL_STRENGTHS,
+  REDUCED_TOTAL_STRENGTHS_LVL1,
+  REDUCED_TOTAL_STRENGTHS_LVL2,
+  REDUCED_TOTAL_STRENGTHS_LVL3,
+  REDUCED_TOTAL_STRENGTHS_LVL4,
   TOTAL_STRENGTHS
 };
 
-// Get primary strength value for the given index and search method
-static INLINE int get_pri_strength(CDEF_PICK_METHOD pick_method, int pri_idx) {
+// Get primary and secondary filter strength for the given strength index and
+// search method
+static INLINE void get_cdef_filter_strengths(CDEF_PICK_METHOD pick_method,
+                                             int *pri_strength,
+                                             int *sec_strength,
+                                             int strength_idx) {
+  const int tot_sec_filter = (pick_method >= CDEF_FAST_SEARCH_LVL3)
+                                 ? REDUCED_SEC_STRENGTHS_LVL3
+                                 : CDEF_SEC_STRENGTHS;
+  const int pri_idx = strength_idx / tot_sec_filter;
+  const int sec_idx = strength_idx % tot_sec_filter;
+  *pri_strength = pri_idx;
+  *sec_strength = sec_idx;
+  if (pick_method == CDEF_FULL_SEARCH) return;
+
   switch (pick_method) {
-    case CDEF_FAST_SEARCH_LVL1: return priconv_lvl1[pri_idx];
-    case CDEF_FAST_SEARCH_LVL2: return priconv_lvl2[pri_idx];
-    default: assert(0 && "Invalid CDEF primary index"); return -1;
+    case CDEF_FAST_SEARCH_LVL1: *pri_strength = priconv_lvl1[pri_idx]; break;
+    case CDEF_FAST_SEARCH_LVL2: *pri_strength = priconv_lvl2[pri_idx]; break;
+    case CDEF_FAST_SEARCH_LVL3:
+      *pri_strength = priconv_lvl2[pri_idx];
+      *sec_strength = secconv_lvl3[sec_idx];
+      break;
+    case CDEF_FAST_SEARCH_LVL4:
+      *pri_strength = priconv_lvl4[pri_idx];
+      *sec_strength = secconv_lvl3[sec_idx];
+      break;
+    default: assert(0 && "Invalid CDEF search method");
   }
 }
+
+// Store CDEF filter strength calculated from strength index for given search
+// method
+#define STORE_CDEF_FILTER_STRENGTH(cdef_strength, pick_method, strength_idx) \
+  get_cdef_filter_strengths((pick_method), &pri_strength, &sec_strength,     \
+                            (strength_idx));                                 \
+  cdef_strength = pri_strength * CDEF_SEC_STRENGTHS + sec_strength;
 
 /* Search for the best strength to add as an option, knowing we
    already selected nb_strengths options. */
@@ -141,8 +181,8 @@ static uint64_t joint_strength_search(int *best_lev, int nb_strengths,
                                       int sb_count,
                                       CDEF_PICK_METHOD pick_method) {
   uint64_t best_tot_mse;
-  int fast = (pick_method == CDEF_FAST_SEARCH_LVL1 ||
-              pick_method == CDEF_FAST_SEARCH_LVL2);
+  int fast = (pick_method >= CDEF_FAST_SEARCH_LVL1 &&
+              pick_method <= CDEF_FAST_SEARCH_LVL4);
   int i;
   best_tot_mse = (uint64_t)1 << 63;
   /* Greedy search: add one strength options at a time. */
@@ -198,6 +238,7 @@ typedef uint64_t (*compute_cdef_dist_t)(void *dst, int dstride, uint16_t *src,
                                         BLOCK_SIZE bsize, int coeff_shift,
                                         int row, int col);
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static void copy_sb16_16_highbd(uint16_t *dst, int dstride, const void *src,
                                 int src_voffset, int src_hoffset, int sstride,
                                 int vsize, int hsize) {
@@ -207,6 +248,7 @@ static void copy_sb16_16_highbd(uint16_t *dst, int dstride, const void *src,
   for (r = 0; r < vsize; r++)
     memcpy(dst + r * dstride, base + r * sstride, hsize * sizeof(*base));
 }
+#endif
 
 static void copy_sb16_16(uint16_t *dst, int dstride, const void *src,
                          int src_voffset, int src_hoffset, int sstride,
@@ -219,33 +261,6 @@ static void copy_sb16_16(uint16_t *dst, int dstride, const void *src,
       dst[r * dstride + c] = (uint16_t)base[r * sstride + c];
 }
 
-static INLINE uint64_t mse_wxh_16bit_highbd(uint16_t *dst, int dstride,
-                                            uint16_t *src, int sstride, int w,
-                                            int h) {
-  uint64_t sum = 0;
-  int i, j;
-  for (i = 0; i < h; i++) {
-    for (j = 0; j < w; j++) {
-      int e = dst[i * dstride + j] - src[i * sstride + j];
-      sum += e * e;
-    }
-  }
-  return sum;
-}
-
-static INLINE uint64_t mse_wxh_16bit(uint8_t *dst, int dstride, uint16_t *src,
-                                     int sstride, int w, int h) {
-  uint64_t sum = 0;
-  int i, j;
-  for (i = 0; i < h; i++) {
-    for (j = 0; j < w; j++) {
-      int e = (uint16_t)dst[i * dstride + j] - src[i * sstride + j];
-      sum += e * e;
-    }
-  }
-  return sum;
-}
-
 static INLINE void init_src_params(int *src_stride, int *width, int *height,
                                    int *width_log2, int *height_log2,
                                    BLOCK_SIZE bsize) {
@@ -255,7 +270,7 @@ static INLINE void init_src_params(int *src_stride, int *width, int *height,
   *width_log2 = MI_SIZE_LOG2 + mi_size_wide_log2[bsize];
   *height_log2 = MI_SIZE_LOG2 + mi_size_wide_log2[bsize];
 }
-
+#if CONFIG_AV1_HIGHBITDEPTH
 /* Compute MSE only on the blocks we filtered. */
 static uint64_t compute_cdef_dist_highbd(void *dst, int dstride, uint16_t *src,
                                          cdef_list *dlist, int cdef_count,
@@ -273,13 +288,13 @@ static uint64_t compute_cdef_dist_highbd(void *dst, int dstride, uint16_t *src,
   for (bi = 0; bi < cdef_count; bi++) {
     by = dlist[bi].by;
     bx = dlist[bi].bx;
-    sum += mse_wxh_16bit_highbd(
+    sum += aom_mse_wxh_16bit_highbd(
         &dst_buff[(by << height_log2) * dstride + (bx << width_log2)], dstride,
         &src[bi << (height_log2 + width_log2)], src_stride, width, height);
   }
   return sum >> 2 * coeff_shift;
 }
-
+#endif
 static uint64_t compute_cdef_dist(void *dst, int dstride, uint16_t *src,
                                   cdef_list *dlist, int cdef_count,
                                   BLOCK_SIZE bsize, int coeff_shift, int row,
@@ -296,7 +311,7 @@ static uint64_t compute_cdef_dist(void *dst, int dstride, uint16_t *src,
   for (bi = 0; bi < cdef_count; bi++) {
     by = dlist[bi].by;
     bx = dlist[bi].bx;
-    sum += mse_wxh_16bit(
+    sum += aom_mse_wxh_16bit(
         &dst_buff[(by << height_log2) * dstride + (bx << width_log2)], dstride,
         &src[bi << (height_log2 + width_log2)], src_stride, width, height);
   }
@@ -375,8 +390,9 @@ static void pick_cdef_from_qp(AV1_COMMON *const cm) {
   }
 }
 
-void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
-                     AV1_COMMON *cm, MACROBLOCKD *xd, int pick_method,
+void av1_cdef_search(const YV12_BUFFER_CONFIG *frame,
+                     const YV12_BUFFER_CONFIG *ref, AV1_COMMON *cm,
+                     MACROBLOCKD *xd, CDEF_PICK_METHOD pick_method,
                      int rdmult) {
   if (pick_method == CDEF_PICK_FROM_Q) {
     pick_cdef_from_qp(cm);
@@ -391,8 +407,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   const int nhfb = (mi_params->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   int *sb_index = aom_malloc(nvfb * nhfb * sizeof(*sb_index));
   const int damping = 3 + (cm->quant_params.base_qindex >> 6);
-  const int fast = (pick_method == CDEF_FAST_SEARCH_LVL1 ||
-                    pick_method == CDEF_FAST_SEARCH_LVL2);
+  const int fast = (pick_method >= CDEF_FAST_SEARCH_LVL1 &&
+                    pick_method <= CDEF_FAST_SEARCH_LVL4);
   const int total_strengths = nb_cdef_strengths[pick_method];
   DECLARE_ALIGNED(32, uint16_t, tmp_dst[1 << (MAX_SB_SIZE_LOG2 * 2)]);
   const int num_planes = av1_num_planes(cm);
@@ -421,7 +437,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
 
   copy_fn_t copy_fn;
   compute_cdef_dist_t compute_cdef_dist_fn;
-
+#if CONFIG_AV1_HIGHBITDEPTH
   if (cm->seq_params.use_highbitdepth) {
     copy_fn = copy_sb16_16_highbd;
     compute_cdef_dist_fn = compute_cdef_dist_highbd;
@@ -429,6 +445,10 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     copy_fn = copy_sb16_16;
     compute_cdef_dist_fn = compute_cdef_dist;
   }
+#else
+  copy_fn = copy_sb16_16;
+  compute_cdef_dist_fn = compute_cdef_dist;
+#endif
 
   DECLARE_ALIGNED(32, uint16_t, inbuf[CDEF_INBUF_SIZE]);
   uint16_t *const in = inbuf + CDEF_VBORDER * CDEF_BSTRIDE + CDEF_HBORDER;
@@ -444,9 +464,9 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
           mi_params->mi_grid_base[MI_SIZE_64X64 * fbr * mi_params->mi_stride +
                                   MI_SIZE_64X64 * fbc];
       if (((fbc & 1) &&
-           (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_128X64)) ||
+           (mbmi->bsize == BLOCK_128X128 || mbmi->bsize == BLOCK_128X64)) ||
           ((fbr & 1) &&
-           (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_64X128)))
+           (mbmi->bsize == BLOCK_128X128 || mbmi->bsize == BLOCK_64X128)))
         continue;
 
       int nhb = AOMMIN(MI_SIZE_64X64, mi_params->mi_cols - MI_SIZE_64X64 * fbc);
@@ -454,9 +474,9 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       int hb_step = 1;
       int vb_step = 1;
       BLOCK_SIZE bs;
-      if (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_128X64 ||
-          mbmi->sb_type == BLOCK_64X128) {
-        bs = mbmi->sb_type;
+      if (mbmi->bsize == BLOCK_128X128 || mbmi->bsize == BLOCK_128X64 ||
+          mbmi->bsize == BLOCK_64X128) {
+        bs = mbmi->bsize;
         if (bs == BLOCK_128X128 || bs == BLOCK_128X64) {
           nhb =
               AOMMIN(MI_SIZE_128X128, mi_params->mi_cols - MI_SIZE_64X64 * fbc);
@@ -489,9 +509,9 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
         const int row = fbr * MI_SIZE_64X64 << mi_high_l2[pli];
         const int col = fbc * MI_SIZE_64X64 << mi_wide_l2[pli];
         for (int gi = 0; gi < total_strengths; gi++) {
-          int pri_strength = gi / CDEF_SEC_STRENGTHS;
-          if (fast) pri_strength = get_pri_strength(pick_method, pri_strength);
-          const int sec_strength = gi % CDEF_SEC_STRENGTHS;
+          int pri_strength, sec_strength;
+          get_cdef_filter_strengths(pick_method, &pri_strength, &sec_strength,
+                                    gi);
           copy_fn(&in[(-yoff * CDEF_BSTRIDE - xoff)], CDEF_BSTRIDE,
                   xd->plane[pli].dst.buf, row - yoff, col - xoff,
                   xd->plane[pli].dst.stride, ysize, xsize);
@@ -567,15 +587,12 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     for (int j = 0; j < cdef_info->nb_cdef_strengths; j++) {
       const int luma_strength = cdef_info->cdef_strengths[j];
       const int chroma_strength = cdef_info->cdef_uv_strengths[j];
-      int pri_strength;
-      pri_strength =
-          get_pri_strength(pick_method, luma_strength / CDEF_SEC_STRENGTHS);
-      cdef_info->cdef_strengths[j] = pri_strength * CDEF_SEC_STRENGTHS +
-                                     (luma_strength % CDEF_SEC_STRENGTHS);
-      pri_strength =
-          get_pri_strength(pick_method, chroma_strength / CDEF_SEC_STRENGTHS);
-      cdef_info->cdef_uv_strengths[j] = pri_strength * CDEF_SEC_STRENGTHS +
-                                        (chroma_strength % CDEF_SEC_STRENGTHS);
+      int pri_strength, sec_strength;
+
+      STORE_CDEF_FILTER_STRENGTH(cdef_info->cdef_strengths[j], pick_method,
+                                 luma_strength);
+      STORE_CDEF_FILTER_STRENGTH(cdef_info->cdef_uv_strengths[j], pick_method,
+                                 chroma_strength);
     }
   }
 

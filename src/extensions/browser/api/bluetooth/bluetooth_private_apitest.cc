@@ -22,7 +22,6 @@
 #include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using base::test::RunClosure;
 using base::test::RunOnceClosure;
 using device::BluetoothDiscoveryFilter;
 using device::BluetoothUUID;
@@ -66,7 +65,7 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kWhitelistedExtensionID, kTestExtensionId);
+        switches::kAllowlistedExtensionID, kTestExtensionId);
     mock_adapter_ = new NiceMock<MockBluetoothAdapter>();
     event_router()->SetAdapterForTest(mock_adapter_.get());
     mock_device_.reset(new NiceMock<MockBluetoothDevice>(
@@ -80,25 +79,25 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
     return BluetoothAPI::Get(browser()->profile())->event_router();
   }
 
-  void SetName(const std::string& name, const base::Closure& callback) {
+  void SetName(const std::string& name, base::OnceClosure callback) {
     adapter_name_ = name;
-    callback.Run();
+    std::move(callback).Run();
   }
 
-  void SetPowered(bool powered, const base::Closure& callback) {
+  void SetPowered(bool powered, base::OnceClosure callback) {
     adapter_powered_ = powered;
-    callback.Run();
+    std::move(callback).Run();
   }
 
-  void ForgetDevice(const base::Closure& callback) {
+  void ForgetDevice(base::OnceClosure callback) {
     mock_device_.reset();
     event_router()->SetAdapterForTest(nullptr);
-    callback.Run();
+    std::move(callback).Run();
   }
 
-  void SetDiscoverable(bool discoverable, const base::Closure& callback) {
+  void SetDiscoverable(bool discoverable, base::OnceClosure callback) {
     adapter_discoverable_ = discoverable;
-    callback.Run();
+    std::move(callback).Run();
   }
 
   void DispatchPairingEvent(bt_private::PairingEventType pairing_event_type) {
@@ -234,15 +233,15 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DisconnectAll) {
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_device_, Disconnect(_, _))
       .Times(3)
-      .WillOnce(RunClosure<1>())
-      .WillOnce(RunClosure<1>())
-      .WillOnce(RunClosure<0>());
+      .WillOnce(RunOnceClosure<1>())
+      .WillOnce(RunOnceClosure<1>())
+      .WillOnce(RunOnceClosure<0>());
   ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/disconnect"))
       << message_;
 }
 
 // Device::Forget not implemented on OSX.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, ForgetDevice) {
   EXPECT_CALL(*mock_device_, Forget(_, _))
       .WillOnce(

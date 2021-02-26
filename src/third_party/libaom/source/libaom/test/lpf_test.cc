@@ -165,11 +165,15 @@ void call_dualfilter(uint8_t *s, DUAL_LOOP_PARAM, int bd, dual_loop_op_t op) {
 
 #if CONFIG_AV1_HIGHBITDEPTH
 typedef LoopTestParam<hbdloop_op_t, hbdloop_param_t> Loop8Test6Param_hbd;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Loop8Test6Param_hbd);
 typedef LoopTestParam<hbddual_loop_op_t, hbddual_loop_param_t>
     Loop8Test9Param_hbd;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Loop8Test9Param_hbd);
 #endif
 typedef LoopTestParam<loop_op_t, loop_param_t> Loop8Test6Param_lbd;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Loop8Test6Param_lbd);
 typedef LoopTestParam<dual_loop_op_t, dual_loop_param_t> Loop8Test9Param_lbd;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Loop8Test9Param_lbd);
 
 #define OPCHECK(a, b)                                                          \
   ACMRandom rnd(ACMRandom::DeterministicSeed());                               \

@@ -59,7 +59,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
   // Reports a set of memory metrics to UMA.
 
   const ProcessData& browser = *ChromeBrowser();
-  int extension_count = 0;
   int renderer_count = 0;
   for (size_t index = 0; index < browser.processes.size(); index++) {
     int num_open_fds = browser.processes[index].num_open_fds;
@@ -87,7 +86,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
               UMA_HISTOGRAM_COUNTS_10000("Memory.Extension.OpenFDs",
                                          num_open_fds);
             }
-            extension_count++;
             continue;
           case ProcessMemoryInformation::RENDERER_CHROME:
             if (num_open_fds != -1)
@@ -162,16 +160,17 @@ void MetricsMemoryDetails::UpdateHistograms() {
 #if defined(OS_CHROMEOS)
   // Chrome OS exposes system-wide graphics driver memory which has historically
   // been a source of leak/bloat.
-  base::SystemMemoryInfoKB meminfo;
-  if (base::GetSystemMemoryInfo(&meminfo) && meminfo.gem_size != -1)
-    UMA_HISTOGRAM_MEMORY_MB("Memory.Graphics", meminfo.gem_size / 1024 / 1024);
+  base::GraphicsMemoryInfoKB meminfo;
+  if (base::GetGraphicsMemoryInfo(&meminfo)) {
+    UMA_HISTOGRAM_MEMORY_MB("Memory.Graphics",
+                            meminfo.gpu_memory_size / 1024 / 1024);
+  }
 #endif
 
   UpdateSiteIsolationMetrics();
 
   UMA_HISTOGRAM_COUNTS_100("Memory.ProcessCount",
                            static_cast<int>(browser.processes.size()));
-  UMA_HISTOGRAM_COUNTS_100("Memory.ExtensionProcessCount", extension_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.RendererProcessCount", renderer_count);
 
   size_t initialized_and_not_dead_rphs, all_rphs;
@@ -209,7 +208,7 @@ void MetricsMemoryDetails::UpdateSiteIsolationMetrics() {
 
     // If this is a RVH for a subframe; skip it to avoid double-counting the
     // WebContents.
-    if (rvh != contents->GetRenderViewHost())
+    if (rvh != contents->GetMainFrame()->GetRenderViewHost())
       continue;
 
     // The rest of this block will happen only once per WebContents.

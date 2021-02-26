@@ -15,8 +15,10 @@
 #ifndef DAWNNATIVE_QUEUE_H_
 #define DAWNNATIVE_QUEUE_H_
 
+#include "common/SerialQueue.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
+#include "dawn_native/IntegerTypes.h"
 #include "dawn_native/ObjectBase.h"
 
 #include "dawn_native/dawn_platform.h"
@@ -25,23 +27,74 @@ namespace dawn_native {
 
     class QueueBase : public ObjectBase {
       public:
-        QueueBase(DeviceBase* device);
+        struct TaskInFlight {
+            virtual ~TaskInFlight();
+            virtual void Finish() = 0;
+        };
 
         static QueueBase* MakeError(DeviceBase* device);
+        ~QueueBase() override;
 
         // Dawn API
         void Submit(uint32_t commandCount, CommandBufferBase* const* commands);
         void Signal(Fence* fence, uint64_t signalValue);
         Fence* CreateFence(const FenceDescriptor* descriptor);
+        void WriteBuffer(BufferBase* buffer, uint64_t bufferOffset, const void* data, size_t size);
+        void WriteTexture(const TextureCopyView* destination,
+                          const void* data,
+                          size_t dataSize,
+                          const TextureDataLayout* dataLayout,
+                          const Extent3D* writeSize);
+        void CopyTextureForBrowser(const TextureCopyView* source,
+                                   const TextureCopyView* destination,
+                                   const Extent3D* copySize);
 
-      private:
+        void TrackTask(std::unique_ptr<TaskInFlight> task, ExecutionSerial serial);
+        void Tick(ExecutionSerial finishedSerial);
+
+      protected:
+        QueueBase(DeviceBase* device);
         QueueBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
-        virtual MaybeError SubmitImpl(uint32_t commandCount, CommandBufferBase* const* commands);
+      private:
+        MaybeError WriteBufferInternal(BufferBase* buffer,
+                                       uint64_t bufferOffset,
+                                       const void* data,
+                                       size_t size);
+        MaybeError WriteTextureInternal(const TextureCopyView* destination,
+                                        const void* data,
+                                        size_t dataSize,
+                                        const TextureDataLayout* dataLayout,
+                                        const Extent3D* writeSize);
+        MaybeError CopyTextureForBrowserInternal(const TextureCopyView* source,
+                                                 const TextureCopyView* destination,
+                                                 const Extent3D* copySize);
 
-        MaybeError ValidateSubmit(uint32_t commandCount, CommandBufferBase* const* commands);
-        MaybeError ValidateSignal(const Fence* fence, uint64_t signalValue);
-        MaybeError ValidateCreateFence(const FenceDescriptor* descriptor);
+        virtual MaybeError SubmitImpl(uint32_t commandCount,
+                                      CommandBufferBase* const* commands) = 0;
+        virtual MaybeError WriteBufferImpl(BufferBase* buffer,
+                                           uint64_t bufferOffset,
+                                           const void* data,
+                                           size_t size);
+        virtual MaybeError WriteTextureImpl(const TextureCopyView& destination,
+                                            const void* data,
+                                            const TextureDataLayout& dataLayout,
+                                            const Extent3D& writeSize);
+
+        MaybeError ValidateSubmit(uint32_t commandCount, CommandBufferBase* const* commands) const;
+        MaybeError ValidateSignal(const Fence* fence, FenceAPISerial signalValue) const;
+        MaybeError ValidateCreateFence(const FenceDescriptor* descriptor) const;
+        MaybeError ValidateWriteBuffer(const BufferBase* buffer,
+                                       uint64_t bufferOffset,
+                                       size_t size) const;
+        MaybeError ValidateWriteTexture(const TextureCopyView* destination,
+                                        size_t dataSize,
+                                        const TextureDataLayout* dataLayout,
+                                        const Extent3D* writeSize) const;
+
+        void SubmitInternal(uint32_t commandCount, CommandBufferBase* const* commands);
+
+        SerialQueue<ExecutionSerial, std::unique_ptr<TaskInFlight>> mTasksInFlight;
     };
 
 }  // namespace dawn_native

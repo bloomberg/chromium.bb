@@ -50,6 +50,9 @@ export class IDBDatabaseView extends UI.Widget.VBox {
     this._model = model;
     const databaseName = database ? database.databaseId.name : ls`Loading…`;
 
+    /** @type {!Database} */
+    this._database;
+
     this._reportView = new UI.ReportView.ReportView(databaseName);
     this._reportView.show(this.contentElement);
 
@@ -74,8 +77,11 @@ export class IDBDatabaseView extends UI.Widget.VBox {
 
   _refreshDatabase() {
     this._securityOriginElement.textContent = this._database.databaseId.securityOrigin;
-    this._versionElement.textContent = this._database.version;
-    this._objectStoreCountElement.textContent = Object.keys(this._database.objectStores).length;
+    if (this._versionElement) {
+      this._versionElement.textContent = this._database.version.toString();
+    }
+
+    this._objectStoreCountElement.textContent = this._database.objectStores.size.toString();
   }
 
   _refreshDatabaseButtonClicked() {
@@ -115,11 +121,11 @@ export class IDBDataView extends UI.View.SimpleView {
    * @param {!DatabaseId} databaseId
    * @param {!ObjectStore} objectStore
    * @param {?Index} index
-   * @param {function()} refreshObjectStoreCallback
+   * @param {function():void} refreshObjectStoreCallback
    */
   constructor(model, databaseId, objectStore, index, refreshObjectStoreCallback) {
     super(Common.UIString.UIString('IDB'));
-    this.registerRequiredCSS('resources/indexedDBViews.css');
+    this.registerRequiredCSS('resources/indexedDBViews.css', {enableLegacyPatching: true});
 
     this._model = model;
     this._databaseId = databaseId;
@@ -153,37 +159,87 @@ export class IDBDataView extends UI.View.SimpleView {
     this._skipCount = 0;
 
     this.update(objectStore, index);
+    /** @type {!Array.<!Entry>} */
     this._entries = [];
+
+    /** @type {!ObjectStore} */
+    this._objectStore;
+
+    /** @type {?Index} */
+    this._index;
+
+    /** @type {!UI.Toolbar.ToolbarInput} */
+    this._keyInput;
+
+    /** @type {!DataGrid.DataGrid.DataGridImpl<*>} */
+    this._dataGrid;
+
+    /** @type {number} */
+    this._lastPageSize;
+
+    /** @type {number} */
+    this._lastSkipCount;
+
+    /** @type {!UI.Toolbar.ToolbarButton} */
+    this._pageBackButton;
+
+    /** @type {!UI.Toolbar.ToolbarButton} */
+    this._pageForwardButton;
   }
 
   /**
-   * @return {!DataGrid.DataGrid.DataGridImpl}
+   * @return {!DataGrid.DataGrid.DataGridImpl<*>}
    */
   _createDataGrid() {
-    const keyPath = this._isIndex ? this._index.keyPath : this._objectStore.keyPath;
+    const keyPath = this._isIndex && this._index ? this._index.keyPath : this._objectStore.keyPath;
 
     const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([]);
-    columns.push({id: 'number', title: Common.UIString.UIString('#'), sortable: false, width: '50px'});
-    columns.push({
+
+    // Create column defaults so that we avoid repetition below.
+    const columnDefaults = {
+      title: undefined,
+      titleDOMFragment: undefined,
+      sortable: false,
+      sort: undefined,
+      align: undefined,
+      width: undefined,
+      fixedWidth: undefined,
+      editable: undefined,
+      nonSelectable: undefined,
+      longText: undefined,
+      disclosure: undefined,
+      weight: undefined,
+      allowInSortByEvenWhenHidden: undefined,
+      dataType: undefined,
+      defaultWeight: undefined
+    };
+
+    columns.push(/** @type {!DataGrid.DataGrid.ColumnDescriptor} */ (
+        {...columnDefaults, id: 'number', title: ls`#`, sortable: false, width: '50px'}));
+    columns.push(/** @type {!DataGrid.DataGrid.ColumnDescriptor} */ ({
+      ...columnDefaults,
       id: 'key',
-      titleDOMFragment: this._keyColumnHeaderFragment(Common.UIString.UIString('Key'), keyPath),
+      titleDOMFragment: this._keyColumnHeaderFragment(ls`Key`, keyPath),
       sortable: false
-    });
+    }));
     if (this._isIndex) {
-      columns.push({
+      columns.push(/** @type {!DataGrid.DataGrid.ColumnDescriptor} */ ({
+        ...columnDefaults,
         id: 'primaryKey',
-        titleDOMFragment:
-            this._keyColumnHeaderFragment(Common.UIString.UIString('Primary key'), this._objectStore.keyPath),
+        titleDOMFragment: this._keyColumnHeaderFragment(ls`Primary key`, this._objectStore.keyPath),
         sortable: false
-      });
+      }));
     }
-    columns.push({id: 'value', title: Common.UIString.UIString('Value'), sortable: false});
+    const title = ls`Value`;
+    columns.push(
+        /** @type {!DataGrid.DataGrid.ColumnDescriptor} */ ({...columnDefaults, id: 'value', title, sortable: false}));
 
     const dataGrid = new DataGrid.DataGrid.DataGridImpl({
       displayName: ls`Indexed DB`,
       columns,
       deleteCallback: this._deleteButtonClicked.bind(this),
-      refreshCallback: this._updateData.bind(this, true)
+      refreshCallback: this._updateData.bind(this, true),
+      editCallback: undefined
     });
     dataGrid.setStriped(true);
     dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, event => this._updateToolbarEnablement(), this);
@@ -196,27 +252,27 @@ export class IDBDataView extends UI.View.SimpleView {
    * @return {!DocumentFragment}
    */
   _keyColumnHeaderFragment(prefix, keyPath) {
-    const keyColumnHeaderFragment = createDocumentFragment();
-    keyColumnHeaderFragment.createTextChild(prefix);
+    const keyColumnHeaderFragment = document.createDocumentFragment();
+    UI.UIUtils.createTextChild(keyColumnHeaderFragment, prefix);
     if (keyPath === null) {
       return keyColumnHeaderFragment;
     }
 
-    keyColumnHeaderFragment.createTextChild(' (' + Common.UIString.UIString('Key path: '));
+    UI.UIUtils.createTextChild(keyColumnHeaderFragment, ' (' + Common.UIString.UIString('Key path: '));
     if (Array.isArray(keyPath)) {
-      keyColumnHeaderFragment.createTextChild('[');
+      UI.UIUtils.createTextChild(keyColumnHeaderFragment, '[');
       for (let i = 0; i < keyPath.length; ++i) {
         if (i !== 0) {
-          keyColumnHeaderFragment.createTextChild(', ');
+          UI.UIUtils.createTextChild(keyColumnHeaderFragment, ', ');
         }
         keyColumnHeaderFragment.appendChild(this._keyPathStringFragment(keyPath[i]));
       }
-      keyColumnHeaderFragment.createTextChild(']');
+      UI.UIUtils.createTextChild(keyColumnHeaderFragment, ']');
     } else {
       const keyPathString = /** @type {string} */ (keyPath);
       keyColumnHeaderFragment.appendChild(this._keyPathStringFragment(keyPathString));
     }
-    keyColumnHeaderFragment.createTextChild(')');
+    UI.UIUtils.createTextChild(keyColumnHeaderFragment, ')');
     return keyColumnHeaderFragment;
   }
 
@@ -225,11 +281,11 @@ export class IDBDataView extends UI.View.SimpleView {
    * @return {!DocumentFragment}
    */
   _keyPathStringFragment(keyPathString) {
-    const keyPathStringFragment = createDocumentFragment();
-    keyPathStringFragment.createTextChild('"');
+    const keyPathStringFragment = document.createDocumentFragment();
+    UI.UIUtils.createTextChild(keyPathStringFragment, '"');
     const keyPathSpan = keyPathStringFragment.createChild('span', 'source-code indexed-db-key-path');
     keyPathSpan.textContent = keyPathString;
-    keyPathStringFragment.createTextChild('"');
+    UI.UIUtils.createTextChild(keyPathStringFragment, '"');
     return keyPathStringFragment;
   }
 
@@ -280,15 +336,21 @@ export class IDBDataView extends UI.View.SimpleView {
 
   /**
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
-   * @param {!DataGrid.DataGrid.DataGridNode} gridNode
+   * @param {!DataGrid.DataGrid.DataGridNode<*>} gridNode
    */
   _populateContextMenu(contextMenu, gridNode) {
     const node = /** @type {!IDBDataGridNode} */ (gridNode);
     if (node.valueObjectPresentation) {
       contextMenu.revealSection().appendItem(ls`Expand Recursively`, () => {
+        if (!node.valueObjectPresentation) {
+          return;
+        }
         node.valueObjectPresentation.objectTreeElement().expandRecursively();
       });
       contextMenu.revealSection().appendItem(ls`Collapse`, () => {
+        if (!node.valueObjectPresentation) {
+          return;
+        }
         node.valueObjectPresentation.objectTreeElement().collapse();
       });
     }
@@ -389,7 +451,7 @@ export class IDBDataView extends UI.View.SimpleView {
     }
 
     const idbKeyRange = key ? window.IDBKeyRange.lowerBound(key) : null;
-    if (this._isIndex) {
+    if (this._isIndex && this._index) {
       this._model.loadIndexData(
           this._databaseId, this._objectStore.name, this._index.name, idbKeyRange, skipCount, pageSize,
           callback.bind(this));
@@ -449,7 +511,7 @@ export class IDBDataView extends UI.View.SimpleView {
   }
 
   /**
-   * @param {?DataGrid.DataGrid.DataGridNode} node
+   * @param {?DataGrid.DataGrid.DataGridNode<*>} node
    */
   async _deleteButtonClicked(node) {
     if (!node) {
@@ -476,6 +538,7 @@ export class IDBDataView extends UI.View.SimpleView {
 }
 
 /**
+ * @extends DataGrid.DataGrid.DataGridNode<*>
  * @unrestricted
  */
 export class IDBDataGridNode extends DataGrid.DataGrid.DataGridNode {
@@ -491,7 +554,8 @@ export class IDBDataGridNode extends DataGrid.DataGrid.DataGridNode {
 
   /**
    * @override
-   * @return {!Element}
+   * @param {string} columnIdentifier
+   * @return {!HTMLElement}
    */
   createCell(columnIdentifier) {
     const cell = super.createCell(columnIdentifier);

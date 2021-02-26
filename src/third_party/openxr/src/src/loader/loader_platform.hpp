@@ -1,6 +1,8 @@
-// Copyright (c) 2017-2019 The Khronos Group Inc.
+// Copyright (c) 2017-2020 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -114,7 +116,7 @@ static inline int32_t xr_snprintf(char *result_buffer, size_t buffer_size, const
 
 #endif
 
-static std::string DescribeError(uint32_t code, bool prefixErrorCode = true) {
+static inline std::string DescribeError(uint32_t code, bool prefixErrorCode = true) {
     std::string str;
 
     if (prefixErrorCode) {
@@ -140,7 +142,7 @@ static std::string DescribeError(uint32_t code, bool prefixErrorCode = true) {
 
 // Dynamic Loading:
 typedef HMODULE LoaderPlatformLibraryHandle;
-static LoaderPlatformLibraryHandle LoaderPlatformLibraryOpen(const std::string &path) {
+static inline LoaderPlatformLibraryHandle LoaderPlatformLibraryOpen(const std::string &path) {
     const std::wstring pathW = utf8_to_wide(path);
 
     // Try loading the library the original way first.
@@ -158,7 +160,7 @@ static LoaderPlatformLibraryHandle LoaderPlatformLibraryOpen(const std::string &
     return handle;
 }
 
-static std::string LoaderPlatformLibraryOpenError(const std::string &path) {
+static inline std::string LoaderPlatformLibraryOpenError(const std::string &path) {
     std::stringstream ss;
     const DWORD dwLastError = GetLastError();
     const std::string strError = DescribeError(dwLastError);
@@ -166,15 +168,15 @@ static std::string LoaderPlatformLibraryOpenError(const std::string &path) {
     return ss.str();
 }
 
-static void LoaderPlatformLibraryClose(LoaderPlatformLibraryHandle library) { FreeLibrary(library); }
+static inline void LoaderPlatformLibraryClose(LoaderPlatformLibraryHandle library) { FreeLibrary(library); }
 
-static void *LoaderPlatformLibraryGetProcAddr(LoaderPlatformLibraryHandle library, const std::string &name) {
+static inline void *LoaderPlatformLibraryGetProcAddr(LoaderPlatformLibraryHandle library, const std::string &name) {
     assert(library);
     assert(name.size() > 0);
-    return GetProcAddress(library, name.c_str());
+    return reinterpret_cast<void *>(GetProcAddress(library, name.c_str()));
 }
 
-static std::string LoaderPlatformLibraryGetProcAddrAddrError(const std::string &name) {
+static inline std::string LoaderPlatformLibraryGetProcAddrAddrError(const std::string &name) {
     std::stringstream ss;
     ss << "Failed to find function " << name << " in dynamic library";
     return ss.str();

@@ -63,13 +63,11 @@
     "ui",
     "host"
   ],
-  "scripts": [],
   "modules": [
-    "help.js",
-    "help-legacy.js",
-    "HelpImpl.js",
-    "ReleaseNoteView.js",
-    "ReleaseNoteText.js"
+    "help-legacy.js"
+  ],
+  "skip_compilation": [
+    "help-legacy.js"
   ],
   "resources": [
     "releaseNote.css"

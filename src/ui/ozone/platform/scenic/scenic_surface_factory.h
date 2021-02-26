@@ -47,8 +47,7 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
   std::unique_ptr<PlatformWindowSurface> CreatePlatformWindowSurface(
       gfx::AcceleratedWidget widget) override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
-      gfx::AcceleratedWidget widget,
-      scoped_refptr<base::SequencedTaskRunner> task_runner) override;
+      gfx::AcceleratedWidget widget) override;
   scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
       gfx::AcceleratedWidget widget,
       VkDevice vk_device,
@@ -86,10 +85,10 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
   ScenicSurface* GetSurface(gfx::AcceleratedWidget widget)
       LOCKS_EXCLUDED(surface_lock_);
 
- private:
   // Creates a new scenic session on any thread.
   scenic::SessionPtrAndListenerRequest CreateScenicSession();
 
+ private:
   // Links a surface to its parent window in the host process.
   void AttachSurfaceToWindow(
       gfx::AcceleratedWidget window,

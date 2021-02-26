@@ -52,7 +52,7 @@
 
 namespace google_breakpad {
 
-bool ModuleComparer::Compare(const string &symbol_data) {
+bool ModuleComparer::Compare(const string& symbol_data) {
   scoped_ptr<BasicModule> basic_module(new BasicModule("test_module"));
   scoped_ptr<FastModule> fast_module(new FastModule("test_module"));
 
@@ -284,7 +284,7 @@ bool ModuleComparer::CompareCRM(
     while (iter1 != basic_crm->map_->end()
         && iter2 != fast_crm->map_.end()) {
       ASSERT_TRUE(iter1->first == iter2.GetKey());
-      StaticContainedRangeMap<MemAddr, char> *child =
+      StaticContainedRangeMap<MemAddr, char>* child =
           new StaticContainedRangeMap<MemAddr, char>(
               reinterpret_cast<const char*>(iter2.GetValuePtr()));
       ASSERT_TRUE(CompareCRM(iter1->second, child));

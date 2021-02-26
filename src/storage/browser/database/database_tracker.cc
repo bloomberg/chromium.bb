@@ -22,6 +22,7 @@
 #include "storage/browser/database/database_quota_client.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/database/databases_table.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/database/database_identifier.h"
@@ -101,7 +102,8 @@ DatabaseTracker::DatabaseTracker(const base::FilePath& profile_path,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(
-        base::MakeRefCounted<DatabaseQuotaClient>(this));
+        base::MakeRefCounted<DatabaseQuotaClient>(this),
+        QuotaClientType::kDatabase, {blink::mojom::StorageType::kTemporary});
   }
 }
 
@@ -422,8 +424,8 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
     base::FilePath new_file = new_origin_dir.Append(database.BaseName());
     base::Move(database, new_file);
   }
-  base::DeleteFileRecursively(origin_dir);
-  base::DeleteFileRecursively(new_origin_dir);  // Might fail on windows.
+  base::DeletePathRecursively(origin_dir);
+  base::DeletePathRecursively(new_origin_dir);  // Might fail on windows.
 
   if (is_off_the_record_) {
     off_the_record_origin_directories_.erase(origin_identifier);
@@ -483,7 +485,7 @@ bool DatabaseTracker::LazyInit() {
           kTemporaryDirectoryPattern);
       for (base::FilePath directory = directories.Next(); !directory.empty();
            directory = directories.Next()) {
-        base::DeleteFileRecursively(directory);
+        base::DeletePathRecursively(directory);
       }
     }
 
@@ -498,7 +500,7 @@ bool DatabaseTracker::LazyInit() {
         (!db_->Open(kTrackerDatabaseFullPath) ||
          !sql::MetaTable::DoesTableExist(db_.get()))) {
       db_->Close();
-      if (!base::DeleteFileRecursively(db_dir_))
+      if (!base::DeletePathRecursively(db_dir_))
         return false;
     }
 
@@ -843,7 +845,7 @@ void DatabaseTracker::DeleteOffTheRecordDBDirectory() {
   base::FilePath off_the_record_db_dir =
       profile_path_.Append(kOffTheRecordDatabaseDirectoryName);
   if (base::DirectoryExists(off_the_record_db_dir))
-    base::DeleteFileRecursively(off_the_record_db_dir);
+    base::DeletePathRecursively(off_the_record_db_dir);
 }
 
 void DatabaseTracker::ClearSessionOnlyOrigins() {

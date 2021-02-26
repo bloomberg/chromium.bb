@@ -75,9 +75,9 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
   constexpr int kRoundBitsVertical =
-      is_compound ? kInterRoundBitsCompoundVertical
-                  : (bitdepth == 12) ? kInterRoundBitsVertical12bpp
-                                     : kInterRoundBitsVertical;
+      is_compound        ? kInterRoundBitsCompoundVertical
+      : (bitdepth == 12) ? kInterRoundBitsVertical12bpp
+                         : kInterRoundBitsVertical;
 
   // Only used for 8bpp. Allows for keeping the first pass intermediates within
   // uint16_t. With 10/12bpp the intermediate value will always require int32_t.

@@ -58,43 +58,43 @@ PerProfileWorkerTaskTracker::~PerProfileWorkerTaskTracker() {
     worker_task_provider_->OnWorkerTaskRemoved(kv.second.get());
 }
 
-void PerProfileWorkerTaskTracker::OnWorkerStarted(
-    content::DedicatedWorkerId dedicated_worker_id,
+void PerProfileWorkerTaskTracker::OnWorkerCreated(
+    const blink::DedicatedWorkerToken& worker_token,
     int worker_process_id,
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
-  CreateWorkerTask(dedicated_worker_id, Task::Type::DEDICATED_WORKER,
+  CreateWorkerTask(worker_token, Task::Type::DEDICATED_WORKER,
                    worker_process_id, &dedicated_worker_tasks_);
 }
 
-void PerProfileWorkerTaskTracker::OnBeforeWorkerTerminated(
-    content::DedicatedWorkerId dedicated_worker_id,
+void PerProfileWorkerTaskTracker::OnBeforeWorkerDestroyed(
+    const blink::DedicatedWorkerToken& worker_token,
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
-  DeleteWorkerTask(dedicated_worker_id, &dedicated_worker_tasks_);
+  DeleteWorkerTask(worker_token, &dedicated_worker_tasks_);
 }
 
 void PerProfileWorkerTaskTracker::OnFinalResponseURLDetermined(
-    content::DedicatedWorkerId dedicated_worker_id,
+    const blink::DedicatedWorkerToken& worker_token,
     const GURL& url) {
-  SetWorkerTaskScriptUrl(dedicated_worker_id, url, &dedicated_worker_tasks_);
+  SetWorkerTaskScriptUrl(worker_token, url, &dedicated_worker_tasks_);
 }
 
-void PerProfileWorkerTaskTracker::OnWorkerStarted(
-    content::SharedWorkerId shared_worker_id,
+void PerProfileWorkerTaskTracker::OnWorkerCreated(
+    const blink::SharedWorkerToken& shared_worker_token,
     int worker_process_id,
     const base::UnguessableToken& dev_tools_token) {
-  CreateWorkerTask(shared_worker_id, Task::Type::SHARED_WORKER,
+  CreateWorkerTask(shared_worker_token, Task::Type::SHARED_WORKER,
                    worker_process_id, &shared_worker_tasks_);
 }
 
-void PerProfileWorkerTaskTracker::OnBeforeWorkerTerminated(
-    content::SharedWorkerId shared_worker_id) {
-  DeleteWorkerTask(shared_worker_id, &shared_worker_tasks_);
+void PerProfileWorkerTaskTracker::OnBeforeWorkerDestroyed(
+    const blink::SharedWorkerToken& shared_worker_token) {
+  DeleteWorkerTask(shared_worker_token, &shared_worker_tasks_);
 }
 
 void PerProfileWorkerTaskTracker::OnFinalResponseURLDetermined(
-    content::SharedWorkerId shared_worker_id,
+    const blink::SharedWorkerToken& shared_worker_token,
     const GURL& url) {
-  SetWorkerTaskScriptUrl(shared_worker_id, url, &shared_worker_tasks_);
+  SetWorkerTaskScriptUrl(shared_worker_token, url, &shared_worker_tasks_);
 }
 
 void PerProfileWorkerTaskTracker::OnVersionStartedRunning(

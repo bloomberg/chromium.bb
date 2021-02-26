@@ -10,22 +10,23 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/media_router/ui_media_sink.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_helper.h"
-#include "chrome/common/media_router/issue.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/media_router/common/issue.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/controls/color_tracking_icon_view.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/throbber.h"
-#include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/layout_provider.h"
 #include "ui/views/vector_icons.h"
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -36,58 +37,10 @@ namespace media_router {
 
 namespace {
 
-// A view that represents the primary icon for a sink issue. This class is used
-// to ensure its color is kept in sync with current theme.
-class SinkIssueIconView : public views::ImageView {
- public:
-  SinkIssueIconView() {
-    SetBorder(views::CreateEmptyBorder(kPrimaryIconBorder));
-  }
-  ~SinkIssueIconView() override = default;
-
-  // views::ImageView:
-  void OnThemeChanged() override {
-    views::ImageView::OnThemeChanged();
-    const SkColor icon_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_DefaultIconColor);
-    SetImage(gfx::CreateVectorIcon(::vector_icons::kInfoOutlineIcon,
-                                   kPrimaryIconSize, icon_color));
-  }
-};
-
 gfx::ImageSkia CreateSinkIcon(SinkIconType icon_type, bool enabled = true) {
-  const gfx::VectorIcon* vector_icon;
-  switch (icon_type) {
-    case SinkIconType::CAST_AUDIO_GROUP:
-      vector_icon = &kSpeakerGroupIcon;
-      break;
-    case SinkIconType::CAST_AUDIO:
-      vector_icon = &kSpeakerIcon;
-      break;
-    case SinkIconType::EDUCATION:
-      vector_icon = &kCastForEducationIcon;
-      break;
-    case SinkIconType::WIRED_DISPLAY:
-      vector_icon = &kInputIcon;
-      break;
-// Use proprietary icons only in Chrome builds. The default TV icon is used
-// instead for these sink types in Chromium builds.
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    case SinkIconType::MEETING:
-      vector_icon = &vector_icons::kMeetIcon;
-      break;
-    case SinkIconType::HANGOUT:
-      vector_icon = &vector_icons::kHangoutIcon;
-      break;
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    case SinkIconType::CAST:
-    case SinkIconType::GENERIC:
-    default:
-      vector_icon = &kTvIcon;
-      break;
-  }
   SkColor icon_color = enabled ? gfx::kChromeIconGrey : gfx::kGoogleGrey500;
-  return gfx::CreateVectorIcon(*vector_icon, kPrimaryIconSize, icon_color);
+  return gfx::CreateVectorIcon(*CastDialogSinkButton::GetVectorIcon(icon_type),
+                               kPrimaryIconSize, icon_color);
 }
 
 gfx::ImageSkia CreateDisabledSinkIcon(SinkIconType icon_type) {
@@ -102,22 +55,25 @@ std::unique_ptr<views::ImageView> CreatePrimaryIconView(
   return icon_view;
 }
 
-std::unique_ptr<views::View> CreatePrimaryIconForSink(
-    CastDialogSinkButton* sink_button,
-    views::ButtonListener* button_listener,
-    const UIMediaSink& sink,
-    int button_tag) {
+std::unique_ptr<views::View> CreatePrimaryIconForSink(const UIMediaSink& sink) {
   // The stop button has the highest priority, and the issue icon comes second.
   if (sink.state == UIMediaSinkState::CONNECTED) {
     return CreatePrimaryIconView(gfx::CreateVectorIcon(
         kGenericStopIcon, kPrimaryIconSize, gfx::kGoogleBlue500));
   } else if (sink.issue) {
-    return std::make_unique<SinkIssueIconView>();
+    auto icon = std::make_unique<views::ColorTrackingIconView>(
+        ::vector_icons::kInfoOutlineIcon, kPrimaryIconSize);
+    icon->SetBorder(views::CreateEmptyBorder(kPrimaryIconBorder));
+    return icon;
   } else if (sink.state == UIMediaSinkState::CONNECTING ||
              sink.state == UIMediaSinkState::DISCONNECTING) {
     return CreateThrobber();
   }
   return CreatePrimaryIconView(CreateSinkIcon(sink.icon_type));
+}
+
+bool IsIncompatibleDialSink(const UIMediaSink& sink) {
+  return sink.provider == MediaRouteProviderId::DIAL && sink.cast_modes.empty();
 }
 
 base::string16 GetStatusTextForSink(const UIMediaSink& sink) {
@@ -141,18 +97,14 @@ base::string16 GetStatusTextForSink(const UIMediaSink& sink) {
 
 }  // namespace
 
-CastDialogSinkButton::CastDialogSinkButton(
-    views::ButtonListener* button_listener,
-    const UIMediaSink& sink,
-    int button_tag)
-    : HoverButton(
-          button_listener,
-          CreatePrimaryIconForSink(this, button_listener, sink, button_tag),
-          sink.friendly_name,
-          GetStatusTextForSink(sink),
-          /** secondary_icon_view */ nullptr),
+CastDialogSinkButton::CastDialogSinkButton(PressedCallback callback,
+                                           const UIMediaSink& sink)
+    : HoverButton(std::move(callback),
+                  CreatePrimaryIconForSink(sink),
+                  sink.friendly_name,
+                  GetStatusTextForSink(sink),
+                  /** secondary_icon_view */ nullptr),
       sink_(sink) {
-  set_tag(button_tag);
   SetEnabled(sink.state == UIMediaSinkState::AVAILABLE ||
              sink.state == UIMediaSinkState::CONNECTED);
 }
@@ -207,8 +159,13 @@ void CastDialogSinkButton::OnEnabledChanged() {
         ->SetImage(CreateSinkIcon(sink_.icon_type));
   } else {
     SetTitleTextStyle(views::style::STYLE_DISABLED, background_color);
-    OverrideStatusText(
-        l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SOURCE_NOT_SUPPORTED));
+    if (IsIncompatibleDialSink(sink_)) {
+      OverrideStatusText(
+          l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_AVAILABLE_SPECIFIC_SITES));
+    } else {
+      OverrideStatusText(
+          l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SOURCE_NOT_SUPPORTED));
+    }
     static_cast<views::ImageView*>(icon_view())
         ->SetImage(CreateDisabledSinkIcon(sink_.icon_type));
   }
@@ -247,6 +204,42 @@ void CastDialogSinkButton::OnFocus() {
 void CastDialogSinkButton::OnBlur() {
   if (sink_.state == UIMediaSinkState::CONNECTED)
     RestoreStatusText();
+}
+
+// static
+const gfx::VectorIcon* CastDialogSinkButton::GetVectorIcon(
+    SinkIconType icon_type) {
+  const gfx::VectorIcon* vector_icon;
+  switch (icon_type) {
+    case SinkIconType::CAST_AUDIO_GROUP:
+      vector_icon = &kSpeakerGroupIcon;
+      break;
+    case SinkIconType::CAST_AUDIO:
+      vector_icon = &kSpeakerIcon;
+      break;
+    case SinkIconType::EDUCATION:
+      vector_icon = &kCastForEducationIcon;
+      break;
+    case SinkIconType::WIRED_DISPLAY:
+      vector_icon = &kInputIcon;
+      break;
+// Use proprietary icons only in Chrome builds. The default TV icon is used
+// instead for these sink types in Chromium builds.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    case SinkIconType::MEETING:
+      vector_icon = &vector_icons::kMeetIcon;
+      break;
+    case SinkIconType::HANGOUT:
+      vector_icon = &vector_icons::kHangoutIcon;
+      break;
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    case SinkIconType::CAST:
+    case SinkIconType::GENERIC:
+    default:
+      vector_icon = &kTvIcon;
+      break;
+  }
+  return vector_icon;
 }
 
 }  // namespace media_router

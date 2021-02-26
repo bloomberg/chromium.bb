@@ -12,7 +12,6 @@
 
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/display/display.h"
@@ -39,7 +38,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   ~WorkspaceWindowResizer() override;
 
-  static WorkspaceWindowResizer* Create(
+  static std::unique_ptr<WorkspaceWindowResizer> Create(
       WindowState* window_state,
       const std::vector<aura::Window*>& attached_windows);
 
@@ -54,6 +53,8 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   WorkspaceWindowResizer(WindowState* window_state,
                          const std::vector<aura::Window*>& attached_windows);
+  WorkspaceWindowResizer(const WorkspaceWindowResizer&) = delete;
+  WorkspaceWindowResizer& operator=(const WorkspaceWindowResizer&) = delete;
 
   // Lays out the attached windows. |bounds| is the bounds of the main window.
   void LayoutAttachedWindows(gfx::Rect* bounds);
@@ -144,13 +145,13 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // Returns true if |bounds_in_parent| are valid bounds for snapped state type
   // |snapped_type|.
-  bool AreBoundsValidSnappedBounds(WindowStateType snapped_type,
+  bool AreBoundsValidSnappedBounds(chromeos::WindowStateType snapped_type,
                                    const gfx::Rect& bounds_in_parent) const;
 
   // Sets |window|'s state type to |new_state_type|. Called after the drag has
   // been completed for fling/swipe gestures.
   void SetWindowStateTypeFromGesture(aura::Window* window,
-                                     WindowStateType new_state_type);
+                                     chromeos::WindowStateType new_state_type);
 
   // Start/End drag for attached windows if there is any.
   void StartDragForAttachedWindows();
@@ -214,14 +215,17 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // The window bounds when the drag was started. When a window is minimized,
   // maximized or snapped via a swipe/fling gesture, the restore bounds should
-  // be set to the bounds of the window when the drag was started.
-  gfx::Rect pre_drag_window_bounds_;
+  // be set to the bounds of the window when the drag was started. If the window
+  // started with restore bounds (snapped/maximized), those will be used
+  // instead.
+  gfx::Rect restore_bounds_for_gesture_;
+
+  // Presentation time recorder for tab dragging in clamshell mode.
+  std::unique_ptr<PresentationTimeRecorder> tab_dragging_recorder_;
 
   // Used to determine if this has been deleted during a drag such as when a tab
   // gets dragged into another browser window.
   base::WeakPtrFactory<WorkspaceWindowResizer> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };
 
 }  // namespace ash

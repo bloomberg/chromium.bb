@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -10,6 +11,7 @@ import {AccessibilityModel, AccessibilityNode} from './AccessibilityModel.js';  
 import {AXNodeSubPane} from './AccessibilityNodeView.js';
 import {ARIAAttributesPane} from './ARIAAttributesView.js';
 import {AXBreadcrumbsPane} from './AXBreadcrumbsPane.js';
+import {SourceOrderPane} from './SourceOrderView.js';
 
 /**
  * @unrestricted
@@ -17,6 +19,7 @@ import {AXBreadcrumbsPane} from './AXBreadcrumbsPane.js';
 export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget {
   constructor() {
     super();
+    this._sourceOrderViewerExperimentEnabled = Root.Runtime.experiments.isEnabled('sourceOrderViewer');
     this._node = null;
     this._axNode = null;
     this._skipNextPullNode = false;
@@ -27,8 +30,12 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
     this._sidebarPaneStack.showView(this._ariaSubPane);
     this._axNodeSubPane = new AXNodeSubPane();
     this._sidebarPaneStack.showView(this._axNodeSubPane);
+    if (this._sourceOrderViewerExperimentEnabled) {
+      this._sourceOrderSubPane = new SourceOrderPane();
+      this._sidebarPaneStack.showView(this._sourceOrderSubPane);
+    }
     this._sidebarPaneStack.widget().show(this.element);
-    self.UI.context.addFlavorChangeListener(SDK.DOMModel.DOMNode, this._pullNode, this);
+    UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this._pullNode, this);
     this._pullNode();
   }
 
@@ -83,21 +90,26 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
   /**
    * @override
    * @protected
-   * @return {!Promise.<?>}
+   * @return {!Promise.<void>}
    */
-  doUpdate() {
+  async doUpdate() {
     const node = this.node();
     this._axNodeSubPane.setNode(node);
     this._ariaSubPane.setNode(node);
     this._breadcrumbsSubPane.setNode(node);
+    if (this._sourceOrderViewerExperimentEnabled && this._sourceOrderSubPane) {
+      this._sourceOrderSubPane.setNodeAsync(node);
+    }
     if (!node) {
-      return Promise.resolve();
+      return;
     }
     const accessibilityModel = node.domModel().target().model(AccessibilityModel);
+    if (!accessibilityModel) {
+      return;
+    }
     accessibilityModel.clear();
-    return accessibilityModel.requestPartialAXTree(node).then(() => {
-      this.accessibilityNodeCallback(accessibilityModel.axNodeForDOMNode(node));
-    });
+    await accessibilityModel.requestPartialAXTree(node);
+    this.accessibilityNodeCallback(accessibilityModel.axNodeForDOMNode(node));
   }
 
   /**
@@ -138,7 +150,7 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
       this._skipNextPullNode = false;
       return;
     }
-    this.setNode(self.UI.context.flavor(SDK.DOMModel.DOMNode));
+    this.setNode(UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode));
   }
 
   /**

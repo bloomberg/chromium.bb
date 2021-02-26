@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -18,7 +18,6 @@
 #include "components/sync/engine/engine_components_factory.h"
 #include "components/sync/engine/fake_model_type_connector.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
-#include "components/sync/syncable/directory.h"
 
 class GURL;
 
@@ -32,22 +31,9 @@ FakeSyncManager::FakeSyncManager(ModelTypeSet initial_sync_ended_types,
       initial_sync_ended_types_(initial_sync_ended_types),
       progress_marker_types_(progress_marker_types),
       configure_fail_types_(configure_fail_types),
-      last_configure_reason_(CONFIGURE_REASON_UNKNOWN),
-      num_invalidations_received_(0) {}
+      last_configure_reason_(CONFIGURE_REASON_UNKNOWN) {}
 
 FakeSyncManager::~FakeSyncManager() {}
-
-ModelTypeSet FakeSyncManager::GetAndResetPurgedTypes() {
-  ModelTypeSet purged_types = purged_types_;
-  purged_types_.Clear();
-  return purged_types;
-}
-
-ModelTypeSet FakeSyncManager::GetAndResetUnappliedTypes() {
-  ModelTypeSet unapplied_types = unapplied_types_;
-  unapplied_types_.Clear();
-  return unapplied_types;
-}
 
 ModelTypeSet FakeSyncManager::GetAndResetDownloadedTypes() {
   ModelTypeSet downloaded_types = downloaded_types_;
@@ -61,8 +47,13 @@ ConfigureReason FakeSyncManager::GetAndResetConfigureReason() {
   return reason;
 }
 
-int FakeSyncManager::GetInvalidationCount() const {
-  return num_invalidations_received_;
+int FakeSyncManager::GetInvalidationCount(ModelType type) const {
+  auto it = num_invalidations_received_.find(type);
+  if (it == num_invalidations_received_.end()) {
+    return 0;
+  } else {
+    return it->second;
+  }
 }
 
 void FakeSyncManager::WaitForSyncThread() {
@@ -77,13 +68,6 @@ void FakeSyncManager::WaitForSyncThread() {
 
 void FakeSyncManager::Init(InitArgs* args) {
   sync_task_runner_ = base::SequencedTaskRunnerHandle::Get();
-  PurgePartiallySyncedTypes();
-
-  test_user_share_.SetUp();
-  UserShare* share = test_user_share_.user_share();
-  for (ModelType type : initial_sync_ended_types_) {
-    TestUserShare::CreateRoot(type, share);
-  }
 
   for (auto& observer : observers_) {
     observer.OnInitializationComplete(WeakHandle<JsBackend>(),
@@ -96,38 +80,8 @@ ModelTypeSet FakeSyncManager::InitialSyncEndedTypes() {
   return initial_sync_ended_types_;
 }
 
-ModelTypeSet FakeSyncManager::GetTypesWithEmptyProgressMarkerToken(
-    ModelTypeSet types) {
-  ModelTypeSet empty_types = types;
-  empty_types.RemoveAll(progress_marker_types_);
-  return empty_types;
-}
-
-void FakeSyncManager::PurgePartiallySyncedTypes() {
-  ModelTypeSet partial_types;
-  for (ModelType type : progress_marker_types_) {
-    if (!initial_sync_ended_types_.Has(type))
-      partial_types.Put(type);
-  }
-  progress_marker_types_.RemoveAll(partial_types);
-  purged_types_.PutAll(partial_types);
-}
-
-void FakeSyncManager::PurgeDisabledTypes(ModelTypeSet to_purge,
-                                         ModelTypeSet to_journal,
-                                         ModelTypeSet to_unapply) {
-  // Simulate cleaning up disabled types.
-  // TODO(sync): consider only cleaning those types that were recently disabled,
-  // if this isn't the first cleanup, which more accurately reflects the
-  // behavior of the real cleanup logic.
-  GetUserShare()->directory->PurgeEntriesWithTypeIn(to_purge, to_journal,
-                                                    to_unapply);
-  purged_types_.PutAll(to_purge);
-  unapplied_types_.PutAll(to_unapply);
-  // Types from |to_unapply| should retain their server data and progress
-  // markers.
-  initial_sync_ended_types_.RemoveAll(Difference(to_purge, to_unapply));
-  progress_marker_types_.RemoveAll(Difference(to_purge, to_unapply));
+ModelTypeSet FakeSyncManager::GetEnabledTypes() {
+  return progress_marker_types_;
 }
 
 void FakeSyncManager::UpdateCredentials(const SyncCredentials& credentials) {
@@ -157,15 +111,6 @@ void FakeSyncManager::ConfigureSyncer(ConfigureReason reason,
   DVLOG(1) << "Faking configuration. Downloading: "
            << ModelTypeSetToString(success_types);
 
-  // Update our fake directory by clearing and fake-downloading as necessary.
-  UserShare* share = GetUserShare();
-  for (ModelType type : success_types) {
-    // We must be careful to not create the same root node twice.
-    if (!initial_sync_ended_types_.Has(type)) {
-      TestUserShare::CreateRoot(type, share);
-    }
-  }
-
   // Now simulate the actual configuration for those types that successfully
   // download + apply.
   progress_marker_types_.PutAll(success_types);
@@ -183,17 +128,8 @@ void FakeSyncManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FakeSyncManager::SaveChanges() {
-  // Do nothing.
-}
-
 void FakeSyncManager::ShutdownOnSyncThread() {
   DCHECK(sync_task_runner_->RunsTasksInCurrentSequence());
-  test_user_share_.TearDown();
-}
-
-UserShare* FakeSyncManager::GetUserShare() {
-  return test_user_share_.user_share();
 }
 
 ModelTypeConnector* FakeSyncManager::GetModelTypeConnector() {
@@ -206,12 +142,11 @@ FakeSyncManager::GetModelTypeConnectorProxy() {
 }
 
 std::string FakeSyncManager::cache_guid() {
-  return test_user_share_.user_share()->directory->cache_guid();
+  return "fake_cache_guid";
 }
 
 std::string FakeSyncManager::birthday() {
-  NOTIMPLEMENTED();
-  return std::string();
+  return "fake_birthday";
 }
 
 std::string FakeSyncManager::bag_of_chips() {
@@ -237,23 +172,10 @@ void FakeSyncManager::RefreshTypes(ModelTypeSet types) {
   last_refresh_request_types_ = types;
 }
 
-void FakeSyncManager::RegisterDirectoryTypeDebugInfoObserver(
-    TypeDebugInfoObserver* observer) {}
-
-void FakeSyncManager::UnregisterDirectoryTypeDebugInfoObserver(
-    TypeDebugInfoObserver* observer) {}
-
-bool FakeSyncManager::HasDirectoryTypeDebugInfoObserver(
-    TypeDebugInfoObserver* observer) {
-  return false;
-}
-
-void FakeSyncManager::RequestEmitDebugInfo() {}
-
 void FakeSyncManager::OnIncomingInvalidation(
     ModelType type,
     std::unique_ptr<InvalidationInterface> invalidation) {
-  num_invalidations_received_++;
+  num_invalidations_received_[type]++;
 }
 
 ModelTypeSet FakeSyncManager::GetLastRefreshRequestTypes() {
@@ -267,12 +189,12 @@ void FakeSyncManager::SetInvalidatorEnabled(bool invalidator_enabled) {
 void FakeSyncManager::OnCookieJarChanged(bool account_mismatch,
                                          bool empty_jar) {}
 
-void FakeSyncManager::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
+void FakeSyncManager::UpdateInvalidationClientId(const std::string&) {
   NOTIMPLEMENTED();
 }
 
-void FakeSyncManager::UpdateInvalidationClientId(const std::string&) {
-  NOTIMPLEMENTED();
+void FakeSyncManager::UpdateSingleClientStatus(bool single_client) {
+  // Do nothing.
 }
 
 }  // namespace syncer

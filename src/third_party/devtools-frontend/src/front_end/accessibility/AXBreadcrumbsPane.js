@@ -30,6 +30,7 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
 
     this._collapsingBreadcrumbId = -1;
 
+    /** @type {?AXBreadcrumb} */
     this._hoveredBreadcrumb = null;
     this._rootElement = this.element.createChild('div', 'ax-breadcrumbs');
 
@@ -39,7 +40,7 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
     this._rootElement.addEventListener('click', this._onClick.bind(this), false);
     this._rootElement.addEventListener('contextmenu', this._contextMenuEventFired.bind(this), false);
     this._rootElement.addEventListener('focusout', this._onFocusOut.bind(this), false);
-    this.registerRequiredCSS('accessibility/axBreadcrumbs.css');
+    this.registerRequiredCSS('accessibility/axBreadcrumbs.css', {enableLegacyPatching: true});
   }
 
   /**
@@ -68,6 +69,9 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
     }
 
     const ancestorChain = [];
+    /**
+     * @type {?AccessibilityNode}
+     */
     let ancestor = axNode;
     while (ancestor) {
       ancestorChain.push(ancestor);
@@ -90,7 +94,9 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
     }
 
     this._inspectedNodeBreadcrumb = breadcrumb;
-    this._inspectedNodeBreadcrumb.setPreselected(true, hadFocus);
+    if (this._inspectedNodeBreadcrumb) {
+      this._inspectedNodeBreadcrumb.setPreselected(true, hadFocus);
+    }
 
     this._setPreselectedBreadcrumb(this._inspectedNodeBreadcrumb);
 
@@ -109,10 +115,12 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
       }
     }
 
-    for (const child of axNode.children()) {
-      append(this._inspectedNodeBreadcrumb, child, depth);
-      if (child.backendDOMNodeId() === this._collapsingBreadcrumbId) {
-        this._setPreselectedBreadcrumb(this._inspectedNodeBreadcrumb.lastChild());
+    if (this._inspectedNodeBreadcrumb) {
+      for (const child of axNode.children()) {
+        append(this._inspectedNodeBreadcrumb, child, depth);
+        if (child.backendDOMNodeId() === this._collapsingBreadcrumbId) {
+          this._setPreselectedBreadcrumb(this._inspectedNodeBreadcrumb.lastChild());
+        }
       }
     }
     this._collapsingBreadcrumbId = -1;
@@ -129,35 +137,37 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
    * @param {!Event} event
    */
   _onKeyDown(event) {
-    if (!this._preselectedBreadcrumb) {
+    const preselectedBreadcrumb = this._preselectedBreadcrumb;
+    if (!preselectedBreadcrumb) {
       return;
     }
-    if (!event.composedPath().some(element => element === this._preselectedBreadcrumb.element())) {
+    const keyboardEvent = /** @type {!KeyboardEvent} */ (event);
+    if (!keyboardEvent.composedPath().some(element => element === preselectedBreadcrumb.element())) {
       return;
     }
-    if (event.shiftKey || event.metaKey || event.ctrlKey) {
+    if (keyboardEvent.shiftKey || keyboardEvent.metaKey || keyboardEvent.ctrlKey) {
       return;
     }
 
     let handled = false;
-    if (event.key === 'ArrowUp' && !event.altKey) {
+    if (keyboardEvent.key === 'ArrowUp' && !keyboardEvent.altKey) {
       handled = this._preselectPrevious();
-    } else if ((event.key === 'ArrowDown') && !event.altKey) {
+    } else if ((keyboardEvent.key === 'ArrowDown') && !keyboardEvent.altKey) {
       handled = this._preselectNext();
-    } else if (event.key === 'ArrowLeft' && !event.altKey) {
-      if (this._preselectedBreadcrumb.hasExpandedChildren()) {
-        this._collapseBreadcrumb(this._preselectedBreadcrumb);
+    } else if (keyboardEvent.key === 'ArrowLeft' && !keyboardEvent.altKey) {
+      if (preselectedBreadcrumb.hasExpandedChildren()) {
+        this._collapseBreadcrumb(preselectedBreadcrumb);
       } else {
         handled = this._preselectParent();
       }
-    } else if ((isEnterKey(event) ||
-                (event.key === 'ArrowRight' && !event.altKey &&
-                 this._preselectedBreadcrumb.axNode().hasOnlyUnloadedChildren()))) {
-      handled = this._inspectDOMNode(this._preselectedBreadcrumb.axNode());
+    } else if ((isEnterKey(keyboardEvent) ||
+                (keyboardEvent.key === 'ArrowRight' && !keyboardEvent.altKey &&
+                 preselectedBreadcrumb.axNode().hasOnlyUnloadedChildren()))) {
+      handled = this._inspectDOMNode(preselectedBreadcrumb.axNode());
     }
 
     if (handled) {
-      event.consume(true);
+      keyboardEvent.consume(true);
     }
   }
 
@@ -165,6 +175,9 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
    * @return {boolean}
    */
   _preselectPrevious() {
+    if (!this._preselectedBreadcrumb) {
+      return false;
+    }
     const previousBreadcrumb = this._preselectedBreadcrumb.previousBreadcrumb();
     if (!previousBreadcrumb) {
       return false;
@@ -177,6 +190,9 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
    * @return {boolean}
    */
   _preselectNext() {
+    if (!this._preselectedBreadcrumb) {
+      return false;
+    }
     const nextBreadcrumb = this._preselectedBreadcrumb.nextBreadcrumb();
     if (!nextBreadcrumb) {
       return false;
@@ -189,6 +205,9 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
    * @return {boolean}
    */
   _preselectParent() {
+    if (!this._preselectedBreadcrumb) {
+      return false;
+    }
     const parentBreadcrumb = this._preselectedBreadcrumb.parentBreadcrumb();
     if (!parentBreadcrumb) {
       return false;
@@ -214,7 +233,9 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
     } else {
       this._preselectedBreadcrumb = this._inspectedNodeBreadcrumb;
     }
-    this._preselectedBreadcrumb.setPreselected(true, hadFocus);
+    if (this._preselectedBreadcrumb) {
+      this._preselectedBreadcrumb.setPreselected(true, hadFocus);
+    }
     if (!breadcrumb && hadFocus) {
       SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     }
@@ -227,8 +248,14 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
     if (!breadcrumb.parentBreadcrumb()) {
       return;
     }
-    this._collapsingBreadcrumbId = breadcrumb.axNode().backendDOMNodeId();
-    this._inspectDOMNode(breadcrumb.parentBreadcrumb().axNode());
+    const backendNodeId = breadcrumb.axNode().backendDOMNodeId();
+    if (backendNodeId !== null) {
+      this._collapsingBreadcrumbId = backendNodeId;
+    }
+    const parentBreadcrumb = breadcrumb.parentBreadcrumb();
+    if (parentBreadcrumb) {
+      this._inspectDOMNode(parentBreadcrumb.axNode());
+    }
   }
 
   /**
@@ -242,13 +269,17 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
    * @param {!Event} event
    */
   _onMouseMove(event) {
-    const breadcrumbElement = event.target.enclosingNodeOrSelfWithClass('ax-breadcrumb');
+    const target = /** @type {?Element} */ (event.target);
+    if (!target) {
+      return;
+    }
+    const breadcrumbElement = target.enclosingNodeOrSelfWithClass('ax-breadcrumb');
     if (!breadcrumbElement) {
       this._setHoveredBreadcrumb(null);
       return;
     }
-    const breadcrumb = breadcrumbElement.breadcrumb;
-    if (!breadcrumb.isDOMNode()) {
+    const breadcrumb = elementsToAXBreadcrumb.get(breadcrumbElement);
+    if (!breadcrumb || !breadcrumb.isDOMNode()) {
       return;
     }
     this._setHoveredBreadcrumb(breadcrumb);
@@ -268,12 +299,19 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
    * @param {!Event} event
    */
   _onClick(event) {
-    const breadcrumbElement = event.target.enclosingNodeOrSelfWithClass('ax-breadcrumb');
+    const target = /** @type {?Element} */ (event.target);
+    if (!target) {
+      return;
+    }
+    const breadcrumbElement = target.enclosingNodeOrSelfWithClass('ax-breadcrumb');
     if (!breadcrumbElement) {
       this._setHoveredBreadcrumb(null);
       return;
     }
-    const breadcrumb = breadcrumbElement.breadcrumb;
+    const breadcrumb = elementsToAXBreadcrumb.get(breadcrumbElement);
+    if (!breadcrumb) {
+      return;
+    }
     if (breadcrumb.inspected()) {
       // This will collapse and preselect/focus the breadcrumb.
       this._collapseBreadcrumb(breadcrumb);
@@ -297,12 +335,12 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
     if (this._hoveredBreadcrumb) {
       this._hoveredBreadcrumb.setHovered(false);
     }
-
+    const node = this.node();
     if (breadcrumb) {
       breadcrumb.setHovered(true);
-    } else if (this.node()) {
+    } else if (node && node.id) {
       // Highlight and scroll into view the currently inspected node.
-      this.node().domModel().overlayModel().nodeHighlightRequested(this.node().id);
+      node.domModel().overlayModel().nodeHighlightRequested({nodeId: node.id});
     }
 
     this._hoveredBreadcrumb = breadcrumb;
@@ -317,10 +355,13 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
       return false;
     }
 
-    axNode.deferredDOMNode().resolve(domNode => {
-      this._axSidebarView.setNode(domNode, true /* fromAXTree */);
-      Common.Revealer.reveal(domNode, true /* omitFocus */);
-    });
+    const deferredNode = axNode.deferredDOMNode();
+    if (deferredNode) {
+      deferredNode.resolve(domNode => {
+        this._axSidebarView.setNode(domNode, true /* fromAXTree */);
+        Common.Revealer.reveal(domNode, true /* omitFocus */);
+      });
+    }
 
     return true;
   }
@@ -329,19 +370,32 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
    * @param {!Event} event
    */
   _contextMenuEventFired(event) {
-    const breadcrumbElement = event.target.enclosingNodeOrSelfWithClass('ax-breadcrumb');
+    const target = /** @type {?Element} */ (event.target);
+    if (!target) {
+      return;
+    }
+    const breadcrumbElement = target.enclosingNodeOrSelfWithClass('ax-breadcrumb');
     if (!breadcrumbElement) {
       return;
     }
 
-    const axNode = breadcrumbElement.breadcrumb.axNode();
+    const breadcrumb = elementsToAXBreadcrumb.get(breadcrumbElement);
+    if (!breadcrumb) {
+      return;
+    }
+
+    const axNode = breadcrumb.axNode();
     if (!axNode.isDOMNode() || !axNode.deferredDOMNode()) {
       return;
     }
 
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.viewSection().appendItem(ls`Scroll into view`, () => {
-      axNode.deferredDOMNode().resolvePromise().then(domNode => {
+      const deferredNode = axNode.deferredDOMNode();
+      if (!deferredNode) {
+        return;
+      }
+      deferredNode.resolvePromise().then(domNode => {
         if (!domNode) {
           return;
         }
@@ -349,10 +403,18 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
       });
     });
 
-    contextMenu.appendApplicableItems(axNode.deferredDOMNode());
+    const deferredNode = axNode.deferredDOMNode();
+    if (deferredNode) {
+      contextMenu.appendApplicableItems(deferredNode);
+    }
     contextMenu.show();
   }
 }
+
+/**
+ * @type {!WeakMap<!Element, !AXBreadcrumb>}
+ */
+const elementsToAXBreadcrumb = new WeakMap();
 
 export class AXBreadcrumb {
   /**
@@ -366,7 +428,7 @@ export class AXBreadcrumb {
 
     this._element = document.createElement('div');
     this._element.classList.add('ax-breadcrumb');
-    this._element.breadcrumb = this;
+    elementsToAXBreadcrumb.set(this._element, this);
 
     this._nodeElement = document.createElement('div');
     this._nodeElement.classList.add('ax-node');
@@ -387,7 +449,7 @@ export class AXBreadcrumb {
     UI.ARIAUtils.markAsGroup(this._childrenGroupElement);
     this._element.appendChild(this._childrenGroupElement);
 
-    /** @type !Array<!AXBreadcrumb> */
+    /** @type {!Array<!AXBreadcrumb>} */
     this._children = [];
     this._hovered = false;
     this._preselected = false;
@@ -402,9 +464,10 @@ export class AXBreadcrumb {
       this._appendIgnoredNodeElement();
     } else {
       this._appendRoleElement(this._axNode.role());
-      if (this._axNode.name() && this._axNode.name().value) {
+      const axNodeName = this._axNode.name();
+      if (axNodeName && axNodeName.value) {
         this._nodeWrapper.createChild('span', 'separator').textContent = '\xA0';
-        this._appendNameElement(/** @type {string} */ (this._axNode.name().value));
+        this._appendNameElement(/** @type {string} */ (axNodeName.value));
       }
     }
 
@@ -419,17 +482,17 @@ export class AXBreadcrumb {
   }
 
   /**
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   element() {
-    return this._element;
+    return /** @type {!HTMLElement} */ (this._element);
   }
 
   /**
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   nodeElement() {
-    return this._nodeElement;
+    return /** @type {!HTMLElement} */ (this._nodeElement);
   }
 
   /**
@@ -472,9 +535,9 @@ export class AXBreadcrumb {
     this._preselected = preselected;
     this._nodeElement.classList.toggle('preselected', preselected);
     if (preselected) {
-      this._nodeElement.setAttribute('tabIndex', 0);
+      this._nodeElement.tabIndex = 0;
     } else {
-      this._nodeElement.setAttribute('tabIndex', -1);
+      this._nodeElement.tabIndex = -1;
     }
     if (this._preselected) {
       if (selectedByUser) {
@@ -533,7 +596,7 @@ export class AXBreadcrumb {
     }
     const nextSibling = this.element().nextSibling;
     if (nextSibling) {
-      return nextSibling.breadcrumb;
+      return elementsToAXBreadcrumb.get(/** @type {!HTMLElement} */ (nextSibling)) || null;
     }
     return null;
   }
@@ -544,7 +607,7 @@ export class AXBreadcrumb {
   previousBreadcrumb() {
     const previousSibling = this.element().previousSibling;
     if (previousSibling) {
-      return previousSibling.breadcrumb;
+      return elementsToAXBreadcrumb.get(/** @type {!HTMLElement} */ (previousSibling)) || null;
     }
 
     return this._parent;
@@ -562,7 +625,7 @@ export class AXBreadcrumb {
    * @param {string} name
    */
   _appendNameElement(name) {
-    const nameElement = createElement('span');
+    const nameElement = document.createElement('span');
     nameElement.textContent = '"' + name + '"';
     nameElement.classList.add('ax-readable-string');
     this._nodeWrapper.appendChild(nameElement);

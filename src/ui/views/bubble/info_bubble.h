@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_BUBBLE_INFO_BUBBLE_H_
 #define UI_VIEWS_BUBBLE_INFO_BUBBLE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -13,9 +15,10 @@
 namespace views {
 
 class InfoBubbleFrame;
+class Label;
 
 // Class to create and manage an information bubble for errors or tooltips.
-class InfoBubble : public BubbleDialogDelegateView {
+class VIEWS_EXPORT InfoBubble : public BubbleDialogDelegateView {
  public:
   METADATA_HEADER(InfoBubble);
 
@@ -29,7 +32,8 @@ class InfoBubble : public BubbleDialogDelegateView {
   void Hide();
 
   // BubbleDialogDelegateView:
-  NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
+  std::unique_ptr<NonClientFrameView> CreateNonClientFrameView(
+      Widget* widget) override;
   gfx::Size CalculatePreferredSize() const override;
   void OnWidgetDestroyed(Widget* widget) override;
   void OnWidgetBoundsChanged(Widget* widget,
@@ -42,6 +46,8 @@ class InfoBubble : public BubbleDialogDelegateView {
     preferred_width_ = preferred_width;
   }
 
+  const Label* label_for_testing() const { return label_; }
+
  private:
   // Updates the position of the bubble.
   void UpdatePosition();
@@ -49,6 +55,7 @@ class InfoBubble : public BubbleDialogDelegateView {
   Widget* widget_;          // Weak, may be NULL.
   View* const anchor_;      // Weak.
   InfoBubbleFrame* frame_;  // Weak, owned by widget.
+  Label* label_;
 
   // The width this bubble prefers to be. Default is 0 (no preference).
   int preferred_width_;

@@ -40,17 +40,14 @@ EphemeralProvider::~EphemeralProvider() {}
 
 std::unique_ptr<RuleIterator> EphemeralProvider::GetRuleIterator(
     ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier,
     bool incognito) const {
-  return content_settings_rules_.GetRuleIterator(content_type,
-                                                 resource_identifier, nullptr);
+  return content_settings_rules_.GetRuleIterator(content_type, nullptr);
 }
 
 bool EphemeralProvider::SetWebsiteSetting(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier,
     std::unique_ptr<base::Value>&& in_value,
     const ContentSettingConstraints& /*constraint*/) {
   DCHECK(CalledOnValidThread());
@@ -64,28 +61,24 @@ bool EphemeralProvider::SetWebsiteSetting(
   // specific sites/origins defined by the |primary_pattern| and the
   // |secondary_pattern|. Default settings are handled by the DefaultProvider.
   if (primary_pattern == ContentSettingsPattern::Wildcard() &&
-      secondary_pattern == ContentSettingsPattern::Wildcard() &&
-      resource_identifier.empty()) {
+      secondary_pattern == ContentSettingsPattern::Wildcard()) {
     return false;
   }
 
   std::unique_ptr<base::Value> value(std::move(in_value));
   if (value) {
     content_settings_rules_.SetValue(
-        primary_pattern, secondary_pattern, content_type, resource_identifier,
+        primary_pattern, secondary_pattern, content_type,
         store_last_modified_ ? clock_->Now() : base::Time(), std::move(*value),
         {});
-    NotifyObservers(primary_pattern, secondary_pattern, content_type,
-                    resource_identifier);
+    NotifyObservers(primary_pattern, secondary_pattern, content_type);
   } else {
     // If the value exists, delete it.
     if (content_settings_rules_.GetLastModified(
-            primary_pattern, secondary_pattern, content_type,
-            resource_identifier) != base::Time()) {
+            primary_pattern, secondary_pattern, content_type) != base::Time()) {
       content_settings_rules_.DeleteValue(primary_pattern, secondary_pattern,
-                                          content_type, resource_identifier);
-      NotifyObservers(primary_pattern, secondary_pattern, content_type,
-                      resource_identifier);
+                                          content_type);
+      NotifyObservers(primary_pattern, secondary_pattern, content_type);
     }
   }
   return true;
@@ -94,34 +87,25 @@ bool EphemeralProvider::SetWebsiteSetting(
 base::Time EphemeralProvider::GetWebsiteSettingLastModified(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier) {
+    ContentSettingsType content_type) {
   DCHECK(CalledOnValidThread());
 
   return content_settings_rules_.GetLastModified(
-      primary_pattern, secondary_pattern, content_type, resource_identifier);
+      primary_pattern, secondary_pattern, content_type);
 }
 
 void EphemeralProvider::ClearAllContentSettingsRules(
     ContentSettingsType content_type) {
   DCHECK(CalledOnValidThread());
 
-  // Get all resource identifiers for this |content_type|.
-  std::set<ResourceIdentifier> resource_identifiers;
-  for (OriginIdentifierValueMap::EntryMap::const_iterator entry =
-           content_settings_rules_.begin();
-       entry != content_settings_rules_.end(); entry++) {
-    if (entry->first.content_type == content_type)
-      resource_identifiers.insert(entry->first.resource_identifier);
-  }
+  if (content_settings_rules_.find(content_type) ==
+      content_settings_rules_.end())
+    return;
 
-  for (const ResourceIdentifier& resource_identifier : resource_identifiers)
-    content_settings_rules_.DeleteValues(content_type, resource_identifier);
+  content_settings_rules_.DeleteValues(content_type);
 
-  if (!resource_identifiers.empty()) {
-    NotifyObservers(ContentSettingsPattern(), ContentSettingsPattern(),
-                    content_type, ResourceIdentifier());
-  }
+  NotifyObservers(ContentSettingsPattern(), ContentSettingsPattern(),
+                  content_type);
 }
 
 void EphemeralProvider::ShutdownOnUIThread() {

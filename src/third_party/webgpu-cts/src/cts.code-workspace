@@ -1,0 +1,52 @@
+// Note: VS Code's setting precedence is `.vscode/` > `cts.code-workspace` > global user settings.
+{
+  "folders": [{ "path": "." }],
+  "settings": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.detectIndentation": false,
+    "editor.rulers": [100],
+    "editor.tabSize": 2,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "files.exclude": {
+      "*.tmp.txt": true,
+      ".gitignore": true,
+      ".travis.yml": true,
+      ".tscache": true,
+      "deploy_key.enc": true,
+      "node_modules": true,
+      "out": true,
+      "out-wpt": true,
+      "package-lock.json": true
+    },
+    // Configure VSCode to use the right style when automatically adding imports on autocomplete.
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "typescript.preferences.importModuleSpecifierEnding": "js",
+    "typescript.preferences.quoteStyle": "single"
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "type": "grunt",
+        "task": "test",
+        "problemMatcher": [],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "type": "grunt",
+        "task": "pre",
+        "problemMatcher": []
+      },
+      {
+        "type": "grunt",
+        "task": "check",
+        "problemMatcher": ["$tsc"]
+      }
+    ]
+  }
+}

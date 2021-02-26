@@ -14,7 +14,6 @@
 #include "core/fpdfapi/page/cpdf_pattern.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "core/fxcrt/unowned_ptr.h"
 
 // Values used in PDFs except for |kInvalidShading| and |kMaxShading|.
 // Do not change.
@@ -38,9 +37,7 @@ class CPDF_Object;
 
 class CPDF_ShadingPattern final : public CPDF_Pattern {
  public:
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
-
+  CONSTRUCT_VIA_MAKE_RETAIN;
   ~CPDF_ShadingPattern() override;
 
   // CPDF_Pattern:

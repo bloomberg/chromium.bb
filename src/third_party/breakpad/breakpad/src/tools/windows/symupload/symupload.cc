@@ -73,7 +73,7 @@ using google_breakpad::WindowsStringUtils;
 
 // Extracts the file version information for the given filename,
 // as a string, for example, "1.2.3.4".  Returns true on success.
-static bool GetFileVersionString(const wchar_t *filename, wstring *version) {
+static bool GetFileVersionString(const wchar_t* filename, wstring* version) {
   DWORD handle;
   DWORD version_size = GetFileVersionInfoSize(filename, &handle);
   if (version_size < sizeof(VS_FIXEDFILEINFO)) {
@@ -85,7 +85,7 @@ static bool GetFileVersionString(const wchar_t *filename, wstring *version) {
     return false;
   }
 
-  void *file_info_buffer = NULL;
+  void* file_info_buffer = NULL;
   unsigned int file_info_length;
   if (!VerQueryValue(&version_info[0], L"\\",
                      &file_info_buffer, &file_info_length)) {
@@ -95,7 +95,7 @@ static bool GetFileVersionString(const wchar_t *filename, wstring *version) {
   // The maximum value of each version component is 65535 (0xffff),
   // so the max length is 24, including the terminating null.
   wchar_t ver_string[24];
-  VS_FIXEDFILEINFO *file_info =
+  VS_FIXEDFILEINFO* file_info =
     reinterpret_cast<VS_FIXEDFILEINFO*>(file_info_buffer);
   swprintf(ver_string, sizeof(ver_string) / sizeof(ver_string[0]),
            L"%d.%d.%d.%d",
@@ -114,9 +114,9 @@ static bool GetFileVersionString(const wchar_t *filename, wstring *version) {
 // Creates a new temporary file and writes the symbol data from the given
 // exe/dll file to it.  Returns the path to the temp file in temp_file_path
 // and information about the pdb in pdb_info.
-static bool DumpSymbolsToTempFile(const wchar_t *file,
-                                  wstring *temp_file_path,
-                                  PDBModuleInfo *pdb_info) {
+static bool DumpSymbolsToTempFile(const wchar_t* file,
+                                  wstring* temp_file_path,
+                                  PDBModuleInfo* pdb_info) {
   google_breakpad::PDBSourceLineWriter writer;
   // Use EXE_FILE to get information out of the exe/dll in addition to the
   // pdb.  The name and version number of the exe/dll are of value, and
@@ -135,7 +135,7 @@ static bool DumpSymbolsToTempFile(const wchar_t *file,
     return false;
   }
 
-  FILE *temp_file = NULL;
+  FILE* temp_file = NULL;
 #if _MSC_VER >= 1400  // MSVC 2005/8
   if (_wfopen_s(&temp_file, temp_filename, L"w") != 0)
 #else  // _MSC_VER >= 1400
@@ -270,9 +270,9 @@ __declspec(noreturn) void printUsageAndExit() {
   exit(0);
 }
 
-int wmain(int argc, wchar_t *argv[]) {
-  const wchar_t *module;
-  const wchar_t *product = nullptr;
+int wmain(int argc, wchar_t* argv[]) {
+  const wchar_t* module;
+  const wchar_t* product = nullptr;
   int timeout = -1;
   int currentarg = 1;
   bool use_sym_upload_v2 = false;

@@ -17,7 +17,6 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -103,8 +102,8 @@ void QueueTask(std::unique_ptr<AfterStartupTask> queued_task) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     // Posted with USER_VISIBLE priority to avoid this becoming an after startup
     // task itself.
-    base::PostTask(FROM_HERE,
-                   {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+    content::GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+        ->PostTask(FROM_HERE,
                    base::BindOnce(QueueTask, std::move(queued_task)));
     return;
   }
@@ -120,7 +119,8 @@ void QueueTask(std::unique_ptr<AfterStartupTask> queued_task) {
 
 void SetBrowserStartupIsComplete() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
   // Process::Current().CreationTime() is not available on all platforms.
   const base::Time process_creation_time =
       base::Process::Current().CreationTime();
@@ -128,7 +128,8 @@ void SetBrowserStartupIsComplete() {
     UMA_HISTOGRAM_LONG_TIMES("Startup.AfterStartupTaskDelayedUntilTime",
                              base::Time::Now() - process_creation_time);
   }
-#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+#endif  // defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
   UMA_HISTOGRAM_COUNTS_10000("Startup.AfterStartupTaskCount",
                              g_after_startup_tasks.Get().size());
   g_startup_complete_flag.Get().Set();
@@ -227,10 +228,11 @@ void StartupObserver::Start() {
   delay = base::TimeDelta::FromMinutes(kLongerDelayMins);
 #endif  // !defined(OS_ANDROID)
 
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
-                        base::BindOnce(&StartupObserver::OnFailsafeTimeout,
-                                       weak_factory_.GetWeakPtr()),
-                        delay);
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&StartupObserver::OnFailsafeTimeout,
+                     weak_factory_.GetWeakPtr()),
+      delay);
 }
 
 }  // namespace

@@ -17,6 +17,7 @@
 #include "ui/base/clipboard/clipboard_format_type.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
+#include "ui/base/data_transfer_policy/data_transfer_policy_controller.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/dragdrop/file_info/file_info.h"
 #include "url/gurl.h"
@@ -193,7 +194,8 @@ bool OSExchangeDataProviderMac::GetString(base::string16* data) const {
   // There was no NSString, check for an NSURL.
   GURL url;
   base::string16 title;
-  bool result = GetURLAndTitle(DO_NOT_CONVERT_FILENAMES, &url, &title);
+  bool result = GetURLAndTitle(FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES,
+                               &url, &title);
   if (result)
     *data = base::UTF8ToUTF16(url.spec());
 
@@ -218,7 +220,8 @@ bool OSExchangeDataProviderMac::GetURLAndTitle(FilenameToURLPolicy policy,
   // the trailing slashes off of paths and always returns the last path element
   // as the title whereas no path conversion nor title is wanted.
   base::FilePath path;
-  if (policy != DO_NOT_CONVERT_FILENAMES && GetFilename(&path)) {
+  if (policy != FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES &&
+      GetFilename(&path)) {
     NSURL* fileUrl =
         [NSURL fileURLWithPath:base::SysUTF8ToNSString(path.value())];
     *url =
@@ -333,6 +336,13 @@ NSArray* OSExchangeDataProviderMac::SupportedPasteboardTypes() {
     NSStringPboardType, NSHTMLPboardType, NSRTFPboardType,
     NSFilenamesPboardType, kWebCustomDataPboardType, NSPasteboardTypeString
   ];
+}
+
+void OSExchangeDataProviderMac::SetSource(
+    std::unique_ptr<DataTransferEndpoint> data_source) {}
+
+DataTransferEndpoint* OSExchangeDataProviderMac::GetSource() const {
+  return nullptr;
 }
 
 }  // namespace ui

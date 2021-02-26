@@ -20,15 +20,16 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.UserData;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.dom_distiller.TabDistillabilityProvider.DistillabilityObserver;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.infobar.ReaderModeInfoBar;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -202,8 +203,9 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
         }
 
         // Make sure there is a WebContentsObserver on this tab's WebContents.
-        if (mWebContentsObserver == null) mWebContentsObserver = createWebContentsObserver();
-
+        if (mWebContentsObserver == null && mTab.getWebContents() != null) {
+            mWebContentsObserver = createWebContentsObserver();
+        }
         tryShowingInfoBar();
     }
 
@@ -318,10 +320,10 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
 
                 if (mIsDestroyed) return;
 
-                mDistillerUrl = navigation.getUrl();
-                if (DomDistillerUrlUtils.isDistilledPage(navigation.getUrl())) {
+                mDistillerUrl = navigation.getUrlString();
+                if (DomDistillerUrlUtils.isDistilledPage(navigation.getUrlString())) {
                     mDistillationStatus = DistillationStatus.STARTED;
-                    mReaderModePageUrl = navigation.getUrl();
+                    mReaderModePageUrl = navigation.getUrlString();
                 }
             }
 
@@ -345,7 +347,7 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
                 if (mIsDestroyed) return;
 
                 mDistillationStatus = DistillationStatus.POSSIBLE;
-                if (!TextUtils.equals(navigation.getUrl(),
+                if (!TextUtils.equals(navigation.getUrlString(),
                             DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(
                                     mReaderModePageUrl))) {
                     mDistillationStatus = DistillationStatus.NOT_POSSIBLE;
@@ -432,20 +434,29 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
         // See the long history of the issue in https://crbug.com/825765, https://crbug.com/853686,
         // https://crbug.com/861618, https://crbug.com/922388.
         // TODO(pshmakov): find a proper solution instead of this workaround.
-        getFullscreenManager().getBrowserVisibilityDelegate().showControlsTransient();
+        getBrowserControlsVisibilityManager()
+                .getBrowserVisibilityDelegate()
+                .showControlsTransient();
 
         DomDistillerTabUtils.distillCurrentPageAndView(webContents);
     }
 
-    private ChromeFullscreenManager getFullscreenManager() {
-        // TODO(1069815): Remove this ChromeActivity cast once NightModeStateProvider is
+    private BrowserControlsVisibilityManager getBrowserControlsVisibilityManager() {
+        // TODO(1069815): Remove this ChromeActivity cast once BrowserControlsManager is
+        //                accessible via another mechanism.
+        ChromeActivity activity = (ChromeActivity) TabUtils.getActivity(mTab);
+        return activity.getBrowserControlsManager();
+    }
+
+    private FullscreenManager getFullscreenManager() {
+        // TODO(1069815): Remove this ChromeActivity cast once FullscreenManager is
         //                accessible via another mechanism.
         ChromeActivity activity = (ChromeActivity) TabUtils.getActivity(mTab);
         return activity.getFullscreenManager();
     }
 
     private NightModeStateProvider getNightModeStateProvider() {
-        // TODO(1069815): Remove this ChromeActivity cast once ChromeFullscreenManager is
+        // TODO(1069815): Remove this ChromeActivity cast once NightModeStateProvider is
         //                accessible via another mechanism.
         ChromeActivity activity = (ChromeActivity) TabUtils.getActivity(mTab);
         return activity.getNightModeStateProvider();
@@ -499,9 +510,9 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
             // Make sure the page didn't navigate while waiting for a response.
             if (!tab.getUrlString().equals(mDistillerUrl)) return;
 
-            boolean excludedMobileFriendly =
-                    DomDistillerTabUtils.shouldExcludeMobileFriendly() && isMobileOptimized;
-            if (isDistillable && !excludedMobileFriendly) {
+            if (isDistillable
+                    && !(isMobileOptimized
+                            && DomDistillerTabUtils.shouldExcludeMobileFriendly(tabToObserve))) {
                 mDistillationStatus = DistillationStatus.POSSIBLE;
                 tryShowingInfoBar();
             } else {

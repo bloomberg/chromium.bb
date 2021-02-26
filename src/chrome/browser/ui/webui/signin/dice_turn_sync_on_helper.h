@@ -21,6 +21,7 @@
 #include "components/signin/public/identity_manager/account_info.h"
 
 class Browser;
+class DiceSignedInProfileCreator;
 
 namespace signin {
 class IdentityManager;
@@ -65,6 +66,8 @@ class DiceTurnSyncOnHelper
     virtual ~Delegate() {}
 
     // Shows a login error to the user.
+    // TODO(crbug.com/1133189): Replace `error_message` with an enum as
+    // different types of UI are shown for different actions.
     virtual void ShowLoginError(const std::string& email,
                                 const std::string& error_message) = 0;
 
@@ -87,11 +90,36 @@ class DiceTurnSyncOnHelper
         base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
             callback) = 0;
 
+    // Shows a confirmation screen offering to stay signed-in or to signout.
+    // |callback| must be called.
+    // TODO(crbug.com/1126913): Use a new enum for this callback with only
+    // values that make sense here (stay signed-in / signout).
+    virtual void ShowSyncDisabledConfirmation(
+        base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
+            callback) = 0;
+
     // Opens the Sync settings page.
     virtual void ShowSyncSettings() = 0;
 
     // Informs the delegate that the flow is switching to a new profile.
     virtual void SwitchToProfile(Profile* new_profile) = 0;
+
+   protected:
+    // Shows the login error with `error_message` and `email` for `browser`.
+    // This helper is static because in some cases it needs to be called
+    // after this object gets destroyed.
+    static void ShowLoginErrorForBrowser(const std::string& email,
+                                         const std::string& error_message,
+                                         Browser* browser);
+
+    // Shows the enterprise account confirmation dialog with `email` for
+    // `browser` and returns the result via `callback`. This helper is static
+    // because in some cases it needs to be called after this object gets
+    // destroyed.
+    static void ShowEnterpriseAccountConfirmationForBrowser(
+        const std::string& email,
+        DiceTurnSyncOnHelper::SigninChoiceCallback callback,
+        Browser* browser);
   };
 
   // Create a helper that turns sync on for an account that is already present
@@ -171,12 +199,8 @@ class DiceTurnSyncOnHelper
   // in-progress auth credentials currently stored in this object.
   void CreateNewSignedInProfile();
 
-  // Callback invoked once a profile is created, so we can transfer the
-  // credentials.
-  void OnNewProfileCreated(Profile* new_profile, Profile::CreateStatus status);
-
-  // Callback invoked once the token service is ready for the new profile.
-  void OnNewProfileTokensLoaded(Profile* new_profile);
+  // Called when the new profile is created.
+  void OnNewSignedInProfileCreated(Profile* new_profile);
 
   // Returns the SyncService, or nullptr if sync is not allowed.
   syncer::SyncService* GetSyncService();
@@ -230,6 +254,7 @@ class DiceTurnSyncOnHelper
   base::ScopedClosureRunner scoped_callback_runner_;
 
   std::unique_ptr<SyncStartupTracker> sync_startup_tracker_;
+  std::unique_ptr<DiceSignedInProfileCreator> dice_signed_in_profile_creator_;
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       shutdown_subscription_;
 

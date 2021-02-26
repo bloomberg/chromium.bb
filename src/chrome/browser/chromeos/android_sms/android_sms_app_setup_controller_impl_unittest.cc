@@ -77,14 +77,14 @@ class FakeCookieManager : public network::TestCookieManager {
               !std::get<2>(params).exclude_httponly());
     EXPECT_EQ(expect_same_site_context,
               std::get<2>(params).same_site_cookie_context());
-    net::CanonicalCookie::CookieInclusionStatus status;
+    net::CookieAccessResult access_result;
 
     if (!success) {
-      status.AddExclusionReason(
-          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
+      access_result.status.AddExclusionReason(
+          net::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
     }
 
-    std::move(std::get<3>(params)).Run(status);
+    std::move(std::get<3>(params)).Run(access_result);
   }
 
   void InvokePendingDeleteCookiesCallback(
@@ -395,7 +395,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     std::unique_ptr<base::Value> notification_settings_value =
         host_content_settings_map_->GetWebsiteSetting(
             url, GURL() /* top_level_url */, ContentSettingsType::NOTIFICATIONS,
-            content_settings::ResourceIdentifier(), nullptr);
+            nullptr);
     return static_cast<ContentSetting>(notification_settings_value->GetInt());
   }
 

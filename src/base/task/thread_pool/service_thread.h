@@ -6,7 +6,6 @@
 #define BASE_TASK_THREAD_POOL_SERVICE_THREAD_H_
 
 #include "base/base_export.h"
-#include "base/macros.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -25,14 +24,14 @@ class TaskTracker;
 class BASE_EXPORT ServiceThread : public Thread {
  public:
   // Constructs a ServiceThread which will record heartbeat metrics. This
-  // includes metrics recorded through |report_heartbeat_metrics_callback|,
-  // in addition to latency metrics through |task_tracker| if non-null. In that
+  // includes latency metrics through |task_tracker| if non-null. In that
   // case, this ServiceThread will assume a registered ThreadPool instance
   // and that |task_tracker| will outlive this ServiceThread.
-  explicit ServiceThread(const TaskTracker* task_tracker,
-                         RepeatingClosure report_heartbeat_metrics_callback);
+  explicit ServiceThread(const TaskTracker* task_tracker);
 
-  ~ServiceThread() override;
+  ServiceThread(const ServiceThread&) = delete;
+  ServiceThread& operator=(const ServiceThread&) = delete;
+  ~ServiceThread() override = default;
 
   // Overrides the default interval at which |heartbeat_latency_timer_| fires.
   // Call this with a |heartbeat| of zero to undo the override.
@@ -44,8 +43,6 @@ class BASE_EXPORT ServiceThread : public Thread {
   void Init() override;
   void Run(RunLoop* run_loop) override;
 
-  void ReportHeartbeatMetrics() const;
-
   // Kicks off a single async task which will record a histogram on the latency
   // of a randomly chosen set of TaskTraits.
   void PerformHeartbeatLatencyReport() const;
@@ -56,10 +53,6 @@ class BASE_EXPORT ServiceThread : public Thread {
   // from any execution sequence. This is done on the service thread to avoid
   // all external dependencies (even main thread).
   base::RepeatingTimer heartbeat_metrics_timer_;
-
-  RepeatingClosure report_heartbeat_metrics_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceThread);
 };
 
 }  // namespace internal

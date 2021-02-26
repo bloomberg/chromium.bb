@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -178,14 +178,14 @@ class SessionOpeningDelegate : public SpdyStream::Delegate {
   void OnHeadersSent() override {}
 
   void OnHeadersReceived(
-      const spdy::SpdyHeaderBlock& response_headers,
-      const spdy::SpdyHeaderBlock* pushed_request_headers) override {}
+      const spdy::Http2HeaderBlock& response_headers,
+      const spdy::Http2HeaderBlock* pushed_request_headers) override {}
 
   void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override {}
 
   void OnDataSent() override {}
 
-  void OnTrailers(const spdy::SpdyHeaderBlock& trailers) override {}
+  void OnTrailers(const spdy::Http2HeaderBlock& trailers) override {}
 
   void OnClose(int status) override {
     ignore_result(CreateFakeSpdySession(spdy_session_pool_, key_));
@@ -250,6 +250,7 @@ TEST_F(SpdySessionPoolTest, CloseCurrentSessions) {
 }
 
 TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
+  const std::string close_session_description = "Closing idle sessions.";
   MockConnect connect_data(SYNCHRONOUS, OK);
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
@@ -318,7 +319,7 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   EXPECT_TRUE(session3->IsAvailable());
 
   // Should not do anything, all are active
-  spdy_session_pool_->CloseCurrentIdleSessions();
+  spdy_session_pool_->CloseCurrentIdleSessions(close_session_description);
   EXPECT_TRUE(session1->is_active());
   EXPECT_TRUE(session1->IsAvailable());
   EXPECT_TRUE(session2->is_active());
@@ -340,7 +341,7 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   EXPECT_TRUE(session3->IsAvailable());
 
   // Should close session 1 and 3, 2 should be left open
-  spdy_session_pool_->CloseCurrentIdleSessions();
+  spdy_session_pool_->CloseCurrentIdleSessions(close_session_description);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(session1);
@@ -349,7 +350,7 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   EXPECT_FALSE(session3);
 
   // Should not do anything
-  spdy_session_pool_->CloseCurrentIdleSessions();
+  spdy_session_pool_->CloseCurrentIdleSessions(close_session_description);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(session2->is_active());
@@ -364,7 +365,7 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   EXPECT_TRUE(session2->IsAvailable());
 
   // This should close session 2
-  spdy_session_pool_->CloseCurrentIdleSessions();
+  spdy_session_pool_->CloseCurrentIdleSessions(close_session_description);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(session2);
@@ -582,7 +583,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
 
       // Test that calling CloseIdleSessions, does not cause a crash.
       // http://crbug.com/181400
-      spdy_session_pool_->CloseCurrentIdleSessions();
+      spdy_session_pool_->CloseCurrentIdleSessions("Closing idle sessions.");
       base::RunLoop().RunUntilIdle();
 
       // Verify spdy_session and spdy_session1 are closed.
@@ -860,7 +861,8 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   test::StreamDelegateDoNothing delegateA(spdy_streamA);
   spdy_streamA->SetDelegate(&delegateA);
 
-  spdy::SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(urlA.spec()));
+  spdy::Http2HeaderBlock headers(
+      spdy_util.ConstructGetHeaderBlock(urlA.spec()));
   spdy_streamA->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
 
   base::RunLoop().RunUntilIdle();  // Allow headers to write.
@@ -974,7 +976,7 @@ TEST_F(SpdySessionPoolTest, HandleIPAddressChangeThenShutdown) {
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
-  spdy::SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
+  spdy::Http2HeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
   spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
 
   base::RunLoop().RunUntilIdle();
@@ -1032,7 +1034,7 @@ TEST_F(SpdySessionPoolTest, HandleGracefulGoawayThenShutdown) {
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
-  spdy::SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
+  spdy::Http2HeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
   spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
 
   // Send headers.
@@ -1190,7 +1192,7 @@ TEST_F(SpdySessionPoolTest, IPConnectionPoolingWithWebSockets) {
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
-  spdy::SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
+  spdy::Http2HeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
   spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
 
   base::RunLoop().RunUntilIdle();

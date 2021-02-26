@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_TEXT_OFFSET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_TEXT_OFFSET_H_
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
@@ -23,10 +23,20 @@ struct CORE_EXPORT NGTextOffset {
   }
 
   void AssertValid() const { DCHECK_GE(end, start); }
+  void AssertNotEmpty() const { DCHECK_GT(end, start); }
+
+  bool operator==(const NGTextOffset& other) const {
+    return start == other.start && end == other.end;
+  }
+  bool operator!=(const NGTextOffset& other) const {
+    return !operator==(other);
+  }
 
   unsigned start;
   unsigned end;
 };
+
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGTextOffset&);
 
 }  // namespace blink
 

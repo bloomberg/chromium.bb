@@ -36,13 +36,14 @@ class TranslateEventProto;
 
 namespace translate {
 
+class TranslateMetricsLogger;
+
 extern const char kDefaultTranslateRankerModelURL[];
 
 // Features used to enable ranker query, enforcement and logging. Note that
 // enabling enforcement implies (forces) enabling queries.
 extern const base::Feature kTranslateRankerQuery;
 extern const base::Feature kTranslateRankerEnforcement;
-extern const base::Feature kTranslateRankerAutoBlacklistOverride;
 extern const base::Feature kTranslateRankerPreviousLanguageMatchesOverride;
 
 struct TranslateRankerFeatures {
@@ -99,7 +100,8 @@ class TranslateRankerImpl : public TranslateRanker {
   void EnableLogging(bool value) override;
   uint32_t GetModelVersion() const override;
   bool ShouldOfferTranslation(
-      metrics::TranslateEventProto* translate_event) override;
+      metrics::TranslateEventProto* translate_event,
+      TranslateMetricsLogger* translate_metrics_logger) override;
   void FlushTranslateEvents(
       std::vector<metrics::TranslateEventProto>* events) override;
   void RecordTranslateEvent(
@@ -142,7 +144,7 @@ class TranslateRankerImpl : public TranslateRanker {
   std::unique_ptr<assist_ranker::RankerModel> model_;
 
   // Tracks whether or not translate event logging is enabled.
-  bool is_logging_enabled_ = true;
+  bool is_uma_logging_enabled_ = true;
 
   // Tracks whether or not translate ranker querying is enabled.
   bool is_query_enabled_ = true;
@@ -150,10 +152,6 @@ class TranslateRankerImpl : public TranslateRanker {
   // Tracks whether or not translate ranker enforcement is enabled. Note that
   // that also enables the code paths for translate ranker querying.
   bool is_enforcement_enabled_ = true;
-
-  // When set to true, overrides UI suppression caused by auto blacklist in
-  // bubble UI.
-  bool is_auto_blacklist_override_enabled_ = false;
 
   // When set to true, overrides UI suppression when previous language
   // matches current language in bubble UI.

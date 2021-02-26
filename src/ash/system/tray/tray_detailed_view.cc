@@ -13,7 +13,6 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/containers/adapters.h"
@@ -87,8 +86,9 @@ class ScrollContentsView : public views::View {
       gfx::Rect clip_rect = gfx::Rect(paint_info.paint_recording_size()) -
                             paint_info.offset_from_parent();
       gfx::Insets clip_insets(sticky_header_height, 0, 0, 0);
-      clip_rect.Inset(clip_insets.Scale(paint_info.paint_recording_scale_x(),
-                                        paint_info.paint_recording_scale_y()));
+      clip_rect.Inset(gfx::ScaleToFlooredInsets(
+          clip_insets, paint_info.paint_recording_scale_x(),
+          paint_info.paint_recording_scale_y()));
       clip_recorder.ClipRect(clip_rect);
       for (auto* child : children()) {
         if (child->GetID() != VIEW_ID_STICKY_HEADER && !child->layer())
@@ -242,10 +242,10 @@ class ScrollContentsView : public views::View {
     gfx::Canvas* canvas = recorder.canvas();
     cc::PaintFlags flags;
     gfx::ShadowValues shadow;
-    shadow.emplace_back(gfx::Vector2d(0, kShadowOffsetY), kShadowBlur,
-                        AshColorProvider::Get()->GetContentLayerColor(
-                            AshColorProvider::ContentLayerType::kSeparator,
-                            AshColorProvider::AshColorMode::kDark));
+    shadow.emplace_back(
+        gfx::Vector2d(0, kShadowOffsetY), kShadowBlur,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kSeparatorColor));
     flags.setLooper(gfx::CreateShadowDrawLooper(shadow));
     flags.setAntiAlias(true);
     canvas->ClipRect(shadowed_area, SkClipOp::kDifference);
@@ -270,7 +270,7 @@ class ScrollContentsView : public views::View {
 TrayDetailedView::TrayDetailedView(DetailedViewDelegate* delegate)
     : delegate_(delegate) {
   box_layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
+      views::BoxLayout::Orientation::kVertical, kUnifiedDetailedViewPadding));
   SetBackground(views::CreateSolidBackground(
       delegate_->GetBackgroundColor().value_or(SK_ColorTRANSPARENT)));
 }
@@ -281,22 +281,13 @@ void TrayDetailedView::OnViewClicked(views::View* sender) {
   HandleViewClicked(sender);
 }
 
-void TrayDetailedView::ButtonPressed(views::Button* sender,
-                                     const ui::Event& event) {
-  if (sender == back_button_) {
-    TransitionToMainView();
-    return;
-  }
-
-  HandleButtonPressed(sender, event);
-}
-
 void TrayDetailedView::CreateTitleRow(int string_id) {
   DCHECK(!tri_view_);
 
   tri_view_ = delegate_->CreateTitleRow(string_id);
 
-  back_button_ = delegate_->CreateBackButton(this);
+  back_button_ = delegate_->CreateBackButton(base::BindRepeating(
+      &TrayDetailedView::TransitionToMainView, base::Unretained(this)));
   tri_view_->AddView(TriView::Container::START, back_button_);
 
   AddChildViewAt(tri_view_, 0);
@@ -372,9 +363,10 @@ void TrayDetailedView::SetupConnectedScrollListItem(
         IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
   }
 
-  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::CAPTION);
-  style.set_color_style(TrayPopupItemStyle::ColorStyle::CONNECTED);
-  style.SetupLabel(view->sub_text_label());
+  view->sub_text_label()->SetAutoColorReadabilityEnabled(false);
+  view->sub_text_label()->SetEnabledColor(
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextColorPositive));
 }
 
 void TrayDetailedView::SetupConnectingScrollListItem(HoverHighlightView* view) {
@@ -389,17 +381,19 @@ TriView* TrayDetailedView::AddScrollListSubHeader(const gfx::VectorIcon& icon,
   TriView* header = TrayPopupUtils::CreateSubHeaderRowView(true);
   TrayPopupUtils::ConfigureAsStickyHeader(header);
 
+  auto* color_provider = AshColorProvider::Get();
   views::Label* label = TrayPopupUtils::CreateDefaultLabel();
   label->SetText(l10n_util::GetStringUTF16(text_id));
-  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
-  style.SetupLabel(label);
+  label->SetEnabledColor(color_provider->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
+  TrayPopupUtils::SetLabelFontList(label,
+                                   TrayPopupUtils::FontStyle::kSubHeader);
   header->AddView(TriView::Container::CENTER, label);
 
   views::ImageView* image_view = TrayPopupUtils::CreateMainImageView();
   image_view->SetImage(gfx::CreateVectorIcon(
-      icon, AshColorProvider::Get()->GetContentLayerColor(
-                AshColorProvider::ContentLayerType::kIconPrimary,
-                AshColorProvider::AshColorMode::kDark)));
+      icon, color_provider->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kIconColorPrimary)));
   header->AddView(TriView::Container::START, image_view);
 
   scroll_content_->AddChildView(header);
@@ -431,8 +425,7 @@ void TrayDetailedView::ShowProgress(double value, bool visible) {
     progress_bar_->SetVisible(false);
     progress_bar_->SetForegroundColor(
         AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kProminentIconButton,
-            AshColorProvider::AshColorMode::kDark));
+            AshColorProvider::ContentLayerType::kIconColorProminent));
   }
 
   progress_bar_->SetValue(value);
@@ -440,17 +433,23 @@ void TrayDetailedView::ShowProgress(double value, bool visible) {
   children()[size_t{kTitleRowSeparatorIndex}]->SetVisible(!visible);
 }
 
-views::Button* TrayDetailedView::CreateInfoButton(int info_accessible_name_id) {
-  return delegate_->CreateInfoButton(this, info_accessible_name_id);
+views::Button* TrayDetailedView::CreateInfoButton(
+    views::Button::PressedCallback callback,
+    int info_accessible_name_id) {
+  return delegate_->CreateInfoButton(std::move(callback),
+                                     info_accessible_name_id);
 }
 
 views::Button* TrayDetailedView::CreateSettingsButton(
+    views::Button::PressedCallback callback,
     int setting_accessible_name_id) {
-  return delegate_->CreateSettingsButton(this, setting_accessible_name_id);
+  return delegate_->CreateSettingsButton(std::move(callback),
+                                         setting_accessible_name_id);
 }
 
-views::Button* TrayDetailedView::CreateHelpButton() {
-  return delegate_->CreateHelpButton(this);
+views::Button* TrayDetailedView::CreateHelpButton(
+    views::Button::PressedCallback callback) {
+  return delegate_->CreateHelpButton(std::move(callback));
 }
 
 views::Separator* TrayDetailedView::CreateListSubHeaderSeparator() {
@@ -458,11 +457,6 @@ views::Separator* TrayDetailedView::CreateListSubHeaderSeparator() {
 }
 
 void TrayDetailedView::HandleViewClicked(views::View* view) {
-  NOTREACHED();
-}
-
-void TrayDetailedView::HandleButtonPressed(views::Button* sender,
-                                           const ui::Event& event) {
   NOTREACHED();
 }
 

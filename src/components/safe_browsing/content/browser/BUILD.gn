@@ -3,9 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 
-jumbo_source_set("browser") {
+source_set("browser") {
   sources = [
     "browser_url_loader_throttle.cc",
     "browser_url_loader_throttle.h",
@@ -33,7 +32,7 @@ jumbo_source_set("browser") {
     "//components/safe_browsing/core/common:common",
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/realtime:policy_engine",
-    "//components/safe_browsing/core/realtime:url_lookup_service",
+    "//components/safe_browsing/core/realtime:url_lookup_service_base",
     "//components/safe_browsing/core/web_ui:constants",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/core:unsafe_resource",

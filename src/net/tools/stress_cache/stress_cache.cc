@@ -19,7 +19,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/files/file_path.h"
@@ -402,7 +402,7 @@ int main(int argc, const char* argv[]) {
     return MasterCode();
 
   logging::ScopedLogAssertHandler scoped_assert_handler(
-      base::Bind(CrashHandler));
+      base::BindRepeating(CrashHandler));
 
 #if defined(OS_WIN)
   logging::LogEventProvider::Initialize(kStressCacheTraceProviderName);

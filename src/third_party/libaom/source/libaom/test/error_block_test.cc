@@ -67,6 +67,7 @@ class ErrorBlockTest : public ::testing::TestWithParam<ErrorBlockParam> {
   ErrorBlockFunc error_block_op_;
   ErrorBlockFunc ref_error_block_op_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ErrorBlockTest);
 
 TEST_P(ErrorBlockTest, OperationCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());

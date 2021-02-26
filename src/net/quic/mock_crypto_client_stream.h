@@ -33,6 +33,11 @@ class MockCryptoClientStream : public quic::QuicCryptoClientStream,
     // not confirm the handshake.
     ZERO_RTT,
 
+    // ASYNC_ZERO_RTT indicates that 0-RTT setup will be completed
+    // asynchronously. This is possible in TLS. Tests need to call
+    // NotifySessionZeroRttComplete() to setup 0-RTT encryption.
+    ASYNC_ZERO_RTT,
+
     // COLD_START indicates that CryptoConnect will neither establish encryption
     // nor confirm the handshake.
     COLD_START,
@@ -66,9 +71,17 @@ class MockCryptoClientStream : public quic::QuicCryptoClientStream,
       const override;
   quic::CryptoMessageParser* crypto_message_parser() override;
   void OnOneRttPacketAcknowledged() override;
+  bool EarlyDataAccepted() const override;
+  // Override QuicCryptoClientStream::SetServerApplicationStateForResumption()
+  // to avoid tripping over the DCHECK on handshaker state.
+  void SetServerApplicationStateForResumption(
+      std::unique_ptr<quic::ApplicationState> application_state) override {}
 
   // Notify session that 1-RTT key is available.
   void NotifySessionOneRttKeyAvailable();
+
+  // Notify session that 0-RTT setup is complete.
+  void NotifySessionZeroRttComplete();
 
   static quic::CryptoHandshakeMessage GetDummyCHLOMessage();
 

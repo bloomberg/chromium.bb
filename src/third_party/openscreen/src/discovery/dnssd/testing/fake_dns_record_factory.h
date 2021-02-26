@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include <chrono>  // NOLINT
+#include <chrono>
 
 #include "discovery/dnssd/impl/constants.h"
 #include "discovery/mdns/mdns_records.h"

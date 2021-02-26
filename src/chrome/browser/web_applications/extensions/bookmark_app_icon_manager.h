@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_ICON_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_ICON_MANAGER_H_
 
+#include <vector>
+
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 
 class Profile;
 
@@ -17,33 +20,46 @@ namespace extensions {
 class BookmarkAppIconManager : public web_app::AppIconManager {
  public:
   explicit BookmarkAppIconManager(Profile* profile);
+  BookmarkAppIconManager(const BookmarkAppIconManager&) = delete;
+  BookmarkAppIconManager& operator=(const BookmarkAppIconManager&) = delete;
   ~BookmarkAppIconManager() override;
 
   // AppIconManager:
-  bool HasIcons(
+  void Start() override;
+  void Shutdown() override;
+  bool HasIcons(const web_app::AppId& app_id,
+                IconPurpose purpose,
+                const SortedSizesPx& icon_sizes_in_px) const override;
+  base::Optional<IconSizeAndPurpose> FindIconMatchBigger(
       const web_app::AppId& app_id,
-      const std::vector<SquareSizePx>& icon_sizes_in_px) const override;
+      const std::vector<IconPurpose>& purposes,
+      SquareSizePx min_size) const override;
   bool HasSmallestIcon(const web_app::AppId& app_id,
-                       SquareSizePx icon_size_in_px) const override;
+                       const std::vector<IconPurpose>& purposes,
+                       SquareSizePx min_size) const override;
   void ReadIcons(const web_app::AppId& app_id,
-                 const std::vector<SquareSizePx>& icon_sizes_in_px,
+                 IconPurpose purpose,
+                 const SortedSizesPx& icon_sizes_in_px,
                  ReadIconsCallback callback) const override;
   void ReadAllIcons(const web_app::AppId& app_id,
-                    ReadIconsCallback callback) const override;
-  void ReadAllShortcutIcons(const web_app::AppId& app_id,
-                            ReadShortcutIconsCallback callback) const override;
+                    ReadIconBitmapsCallback callback) const override;
+  void ReadAllShortcutsMenuIcons(
+      const web_app::AppId& app_id,
+      ReadShortcutsMenuIconsCallback callback) const override;
   void ReadSmallestIcon(const web_app::AppId& app_id,
+                        const std::vector<IconPurpose>& purposes,
                         SquareSizePx icon_size_in_px,
-                        ReadIconCallback callback) const override;
+                        ReadIconWithPurposeCallback callback) const override;
   void ReadSmallestCompressedIcon(
       const web_app::AppId& app_id,
+      const std::vector<IconPurpose>& purposes,
       SquareSizePx icon_size_in_px,
-      ReadCompressedIconCallback callback) const override;
+      ReadCompressedIconWithPurposeCallback callback) const override;
+  SkBitmap GetFavicon(const web_app::AppId& app_id) const override;
 
  private:
   Profile* const profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkAppIconManager);
 };
 
 }  // namespace extensions

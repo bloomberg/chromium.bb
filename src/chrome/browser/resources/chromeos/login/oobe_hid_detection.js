@@ -20,7 +20,7 @@ const CONNECTION = {
 };
 
 Polymer({
-  is: 'hid-detection',
+  is: 'hid-detection-element',
 
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
@@ -133,7 +133,6 @@ Polymer({
   ready() {
     this.initializeLoginScreen('HIDDetectionScreen', {
       resetAllowed: false,
-      enableDebuggingAllowed: true,
     });
   },
 

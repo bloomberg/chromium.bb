@@ -26,7 +26,7 @@ import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
 public class AddressAccessorySheetCoordinator extends AccessorySheetTabCoordinator {
     private final AccessorySheetTabModel mModel = new AccessorySheetTabModel();
     private final AccessorySheetTabMediator mMediator = new AccessorySheetTabMediator(mModel,
-            AccessoryTabType.ADDRESSES, Type.ADDRESS_INFO, AccessoryAction.MANAGE_ADDRESSES);
+            AccessoryTabType.ADDRESSES, Type.ADDRESS_INFO, AccessoryAction.MANAGE_ADDRESSES, null);
 
     /**
      * Creates the address tab.
@@ -36,7 +36,7 @@ public class AddressAccessorySheetCoordinator extends AccessorySheetTabCoordinat
     public AddressAccessorySheetCoordinator(
             Context context, @Nullable RecyclerView.OnScrollListener scrollListener) {
         super(context.getString(R.string.address_accessory_sheet_title),
-                IconProvider.getIcon(context, R.drawable.permission_location),
+                IconProvider.getIcon(context, R.drawable.ic_permission_location_outline),
                 context.getString(R.string.address_accessory_sheet_toggle),
                 context.getString(R.string.address_accessory_sheet_opened),
                 R.layout.address_accessory_sheet, AccessoryTabType.ADDRESSES, scrollListener);

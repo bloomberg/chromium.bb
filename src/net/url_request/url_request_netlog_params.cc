@@ -40,7 +40,7 @@ base::Value NetLogURLRequestStartParams(
   dict.SetStringKey("url", url.possibly_invalid_spec());
   dict.SetStringKey("method", method);
   dict.SetIntKey("load_flags", load_flags);
-  dict.SetIntKey("privacy_mode", privacy_mode == PRIVACY_MODE_ENABLED);
+  dict.SetStringKey("privacy_mode", PrivacyModeToDebugString(privacy_mode));
   dict.SetStringKey("network_isolation_key",
                     network_isolation_key.ToDebugString());
   dict.SetStringKey("site_for_cookies", site_for_cookies.ToDebugString());

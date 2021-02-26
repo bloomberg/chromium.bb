@@ -4,26 +4,27 @@
 
 /**
  * Turn a dictionary received from postMessage into a key event.
- *
  * @param {Object} dict A dictionary representing the key event.
- * @return {!Event} A key event.
+ * @return {!KeyboardEvent} A key event.
  */
 export function DeserializeKeyEvent(dict) {
-  const e = document.createEvent('Event');
-  e.initEvent('keydown', true, true);
-  e.keyCode = dict.keyCode;
-  e.code = dict.code;
-  e.shiftKey = dict.shiftKey;
-  e.ctrlKey = dict.ctrlKey;
-  e.altKey = dict.altKey;
-  e.metaKey = dict.metaKey;
+  const e = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: dict.key,
+    code: dict.code,
+    keyCode: dict.keyCode,
+    shiftKey: dict.shiftKey,
+    ctrlKey: dict.ctrlKey,
+    altKey: dict.altKey,
+    metaKey: dict.metaKey,
+  });
   e.fromScriptingAPI = true;
   return e;
 }
 
 /**
  * Turn a key event into a dictionary which can be sent over postMessage.
- *
  * @param {Event} event A key event.
  * @return {Object} A dictionary representing the key event.
  */
@@ -31,6 +32,7 @@ export function SerializeKeyEvent(event) {
   return {
     keyCode: event.keyCode,
     code: event.code,
+    key: event.key,
     shiftKey: event.shiftKey,
     ctrlKey: event.ctrlKey,
     altKey: event.altKey,
@@ -49,11 +51,8 @@ export const LoadState = {
   FAILED: 'failed'
 };
 
-/**
- * Create a new PDFScriptingAPI. This provides a scripting interface to
- * the PDF viewer so that it can be customized by things like print preview.
- *
- */
+// Provides a scripting interface to the PDF viewer so that it can be customized
+// by things like print preview.
 export class PDFScriptingAPI {
   /**
    * @param {Window} window the window of the page containing the pdf viewer.
@@ -72,6 +71,9 @@ export class PDFScriptingAPI {
 
     /** @private {Function} */
     this.selectedTextCallback_;
+
+    /** @private {Function} */
+    this.thumbnailCallback_;
 
     /** @private {Function} */
     this.keyEventCallback_;
@@ -121,6 +123,19 @@ export class PDFScriptingAPI {
           }
           break;
         }
+        case 'getThumbnailReply': {
+          const data =
+              /**
+               * @type {{imageData: !ArrayBuffer, width: number,
+               *         height: number}}
+               */
+              (event.data);
+          if (this.thumbnailCallback_) {
+            this.thumbnailCallback_(data);
+            this.thumbnailCallback_ = null;
+          }
+          break;
+        }
         case 'sendKeyEvent':
           if (this.keyEventCallback_) {
             this.keyEventCallback_(DeserializeKeyEvent(event.data.keyEvent));
@@ -134,7 +149,6 @@ export class PDFScriptingAPI {
    * Send a message to the extension. If messages try to get sent before there
    * is a plugin element set, then we queue them up and send them later (this
    * can happen in print preview).
-   *
    * @param {Object} message The message to send.
    * @private
    */
@@ -149,7 +163,6 @@ export class PDFScriptingAPI {
   /**
    * Sets the plugin element containing the PDF viewer. The element will usually
    * be passed into the PDFScriptingAPI constructor but may also be set later.
-   *
    * @param {Object} plugin the plugin element containing the PDF viewer.
    */
   setPlugin(plugin) {
@@ -168,7 +181,6 @@ export class PDFScriptingAPI {
 
   /**
    * Sets the callback which will be run when the PDF viewport changes.
-   *
    * @param {Function} callback the callback to be called.
    */
   setViewportChangedCallback(callback) {
@@ -198,7 +210,6 @@ export class PDFScriptingAPI {
 
   /**
    * Resets the PDF viewer into print preview mode.
-   *
    * @param {string} url the url of the PDF to load.
    * @param {boolean} grayscale whether or not to display the PDF in grayscale.
    * @param {Array<number>} pageNumbers an array of the page numbers.
@@ -215,16 +226,13 @@ export class PDFScriptingAPI {
     });
   }
 
-  /**
-   * Hide the toolbars after a delay.
-   */
+  /** Hide the toolbars after a delay. */
   hideToolbars() {
     this.sendMessage_({type: 'hideToolbars'});
   }
 
   /**
    * Load a page into the document while in print preview mode.
-   *
    * @param {string} url the url of the pdf page to load.
    * @param {number} index the index of the page to load.
    */
@@ -248,7 +256,6 @@ export class PDFScriptingAPI {
   /**
    * Get the selected text in the document. The callback will be called with the
    * text that is selected. May only be called after document load.
-   *
    * @param {Function} callback a callback to be called with the selected text.
    * @return {boolean} true if the function is successful, false if there is an
    *     outstanding request for selected text that has not been answered.
@@ -263,15 +270,32 @@ export class PDFScriptingAPI {
   }
 
   /**
-   * Print the document. May only be called after document load.
+   * Get the thumbnail data for a page. The data will be passed to a callback.
+   * May only be called after document loaded.
+   * @param {number} page the page number.
+   * @param {Function} callback a callback to be called with the thumbnail data.
+   * @return {boolean} true if the function is successful, false if there is an
+   *     outstanding request for thumbnail data that has not been answered.
    */
+  getThumbnail(page, callback) {
+    if (this.thumbnailCallback_) {
+      return false;
+    }
+    this.thumbnailCallback_ = callback;
+    this.sendMessage_({
+      type: 'getThumbnail',
+      page: page,
+    });
+    return true;
+  }
+
+  /** Print the document. May only be called after document load. */
   print() {
     this.sendMessage_({type: 'print'});
   }
 
   /**
    * Send a key event to the extension.
-   *
    * @param {Event} keyEvent the key event to send to the extension.
    */
   sendKeyEvent(keyEvent) {
@@ -293,7 +317,6 @@ export class PDFScriptingAPI {
  * iframe which is navigated to the PDF viewer extension and 2) a scripting
  * interface which provides access to various features of the viewer for use
  * by print preview and accessibility.
- *
  * @param {string} src the source URL of the PDF to load initially.
  * @param {string} baseUrl the base URL of the PDF viewer
  * @return {!HTMLIFrameElement} the iframe element containing the PDF viewer.

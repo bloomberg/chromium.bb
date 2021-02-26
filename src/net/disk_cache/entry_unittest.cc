@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -1556,7 +1556,7 @@ TEST_F(DiskCacheEntryTest, MissingData) {
 
   disk_cache::Addr address(0x80000001);
   base::FilePath name = cache_impl_->GetFileName(address);
-  EXPECT_TRUE(base::DeleteFile(name, false));
+  EXPECT_TRUE(base::DeleteFile(name));
 
   // Attempt to read the data.
   ASSERT_THAT(OpenEntry(key, &entry), IsOk());
@@ -2974,7 +2974,6 @@ bool DiskCacheEntryTest::SimpleCacheMakeBadChecksumEntry(const std::string& key,
 }
 
 TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
-  base::HistogramTester histogram_tester;
   SetSimpleCacheMode();
   InitCache();
 
@@ -2994,14 +2993,10 @@ TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
       base::MakeRefCounted<net::IOBuffer>(kLargeSize);
   EXPECT_EQ(net::ERR_CACHE_CHECKSUM_MISMATCH,
             ReadData(entry, 1, 0, read_buffer.get(), kLargeSize));
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadResult",
-      disk_cache::READ_RESULT_SYNC_CHECKSUM_FAILURE, 1);
 }
 
 // Tests that an entry that has had an IO error occur can still be Doomed().
 TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
-  base::HistogramTester histogram_tester;
   SetSimpleCacheMode();
   InitCache();
 
@@ -3020,9 +3015,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
       base::MakeRefCounted<net::IOBuffer>(kLargeSize);
   EXPECT_EQ(net::ERR_CACHE_CHECKSUM_MISMATCH,
             ReadData(entry, 1, 0, read_buffer.get(), kLargeSize));
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadResult",
-      disk_cache::READ_RESULT_SYNC_CHECKSUM_FAILURE, 1);
   entry->Doom();  // Should not crash.
 }
 
@@ -3727,9 +3719,9 @@ TEST_F(DiskCacheEntryTest, SimpleCacheDoomCreateOptimistic) {
       base::MakeRefCounted<net::IOBuffer>(kSize);
   CacheTestFillBuffer(buf_1->data(), kSize, false);
 
-  EXPECT_EQ(kSize, WriteData(entry2, /* stream_index = */ 1, /* offset = */ 0,
+  EXPECT_EQ(kSize, WriteData(entry2, /* index = */ 1, /* offset = */ 0,
                              buf_1.get(), kSize, /* truncate = */ false));
-  EXPECT_EQ(kSize, ReadData(entry2, /* stream_index = */ 1, /* offset = */ 0,
+  EXPECT_EQ(kSize, ReadData(entry2, /* index = */ 1, /* offset = */ 0,
                             buf_2.get(), kSize));
 
   doom_callback.WaitForResult();
@@ -5296,24 +5288,24 @@ void DiskCacheEntryTest::TruncateBackwards() {
   scoped_refptr<net::IOBuffer> read_buf =
       base::MakeRefCounted<net::IOBuffer>(kBigSize);
 
-  ASSERT_EQ(kSmallSize, WriteData(entry, /* stream_index = */ 0,
+  ASSERT_EQ(kSmallSize, WriteData(entry, /* index = */ 0,
                                   /* offset = */ kBigSize, buffer.get(),
                                   /* size = */ kSmallSize,
                                   /* truncate = */ false));
   memset(read_buf->data(), 0, kBigSize);
-  ASSERT_EQ(kSmallSize, ReadData(entry, /* stream_index = */ 0,
+  ASSERT_EQ(kSmallSize, ReadData(entry, /* index = */ 0,
                                  /* offset = */ kBigSize, read_buf.get(),
                                  /* size = */ kSmallSize));
   EXPECT_EQ(0, memcmp(read_buf->data(), buffer->data(), kSmallSize));
 
   // A partly overlapping truncate before the previous write.
   ASSERT_EQ(kBigSize,
-            WriteData(entry, /* stream_index = */ 0,
+            WriteData(entry, /* index = */ 0,
                       /* offset = */ 3, buffer.get(), /* size = */ kBigSize,
                       /* truncate = */ true));
   memset(read_buf->data(), 0, kBigSize);
   ASSERT_EQ(kBigSize,
-            ReadData(entry, /* stream_index = */ 0,
+            ReadData(entry, /* index = */ 0,
                      /* offset = */ 3, read_buf.get(), /* size = */ kBigSize));
   EXPECT_EQ(0, memcmp(read_buf->data(), buffer->data(), kBigSize));
   EXPECT_EQ(kBigSize + 3, entry->GetDataSize(0));
@@ -5353,15 +5345,15 @@ void DiskCacheEntryTest::ZeroWriteBackwards() {
   // Offset here needs to be > blockfile's kMaxBlockSize to hit
   // https://crbug.com/946538, as writes close to beginning are handled
   // specially.
-  EXPECT_EQ(0, WriteData(entry, /* stream_index = */ 0,
+  EXPECT_EQ(0, WriteData(entry, /* index = */ 0,
                          /* offset = */ 17000, buffer.get(),
                          /* size = */ 0, /* truncate = */ true));
 
-  EXPECT_EQ(0, WriteData(entry, /* stream_index = */ 0,
+  EXPECT_EQ(0, WriteData(entry, /* index = */ 0,
                          /* offset = */ 0, buffer.get(),
                          /* size = */ 0, /* truncate = */ false));
 
-  EXPECT_EQ(kSize, ReadData(entry, /* stream_index = */ 0,
+  EXPECT_EQ(kSize, ReadData(entry, /* index = */ 0,
                             /* offset = */ 0, buffer.get(),
                             /* size = */ kSize));
   for (int i = 0; i < kSize; ++i) {
@@ -5540,22 +5532,17 @@ class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {
   }
 
   void SetupFullAndTrailerPrefetch(int full_size,
-                                   bool trailer_hint,
                                    int trailer_speculative_size) {
     std::map<std::string, std::string> params;
     params[disk_cache::kSimpleCacheFullPrefetchBytesParam] =
         base::NumberToString(full_size);
-    params[disk_cache::kSimpleCacheTrailerPrefetchHintParam] =
-        trailer_hint ? "true" : "false";
     params[disk_cache::kSimpleCacheTrailerPrefetchSpeculativeBytesParam] =
         base::NumberToString(trailer_speculative_size);
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         disk_cache::kSimpleCachePrefetchExperiment, params);
   }
 
-  void SetupFullPrefetch(int size) {
-    SetupFullAndTrailerPrefetch(size, false, 0);
-  }
+  void SetupFullPrefetch(int size) { SetupFullAndTrailerPrefetch(size, 0); }
 
   void InitCacheAndCreateEntry(const std::string& key) {
     SetSimpleCacheMode();
@@ -5597,12 +5584,21 @@ class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {
     entry->Close();
   }
 
-  void TryRead(const std::string& key) {
+  void TryRead(const std::string& key, bool expect_preread_stream1) {
     disk_cache::Entry* entry = nullptr;
     ASSERT_THAT(OpenEntry(key, &entry), IsOk());
     scoped_refptr<net::IOBuffer> read_buf =
         base::MakeRefCounted<net::IOBuffer>(kEntrySize);
-    EXPECT_EQ(kEntrySize, ReadData(entry, 1, 0, read_buf.get(), kEntrySize));
+    net::TestCompletionCallback cb;
+    int rv = entry->ReadData(1, 0, read_buf.get(), kEntrySize, cb.callback());
+
+    // if preload happened, sync reply is expected.
+    if (expect_preread_stream1)
+      EXPECT_EQ(kEntrySize, rv);
+    else
+      EXPECT_EQ(net::ERR_IO_PENDING, rv);
+    rv = cb.GetResult(rv);
+    EXPECT_EQ(kEntrySize, rv);
     EXPECT_EQ(0, memcmp(read_buf->data(), payload_->data(), kEntrySize));
     entry->Close();
   }
@@ -5618,12 +5614,10 @@ TEST_F(DiskCacheSimplePrefetchTest, NoPrefetch) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_NONE, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
 }
 
 TEST_F(DiskCacheSimplePrefetchTest, YesPrefetch) {
@@ -5632,12 +5626,10 @@ TEST_F(DiskCacheSimplePrefetchTest, YesPrefetch) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", true, 1);
 }
 
 TEST_F(DiskCacheSimplePrefetchTest, YesPrefetchNoRead) {
@@ -5653,12 +5645,6 @@ TEST_F(DiskCacheSimplePrefetchTest, YesPrefetchNoRead) {
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
-  // Have to use GetHistogramSamplesSinceCreation here since it's the only
-  // API that handles the cases where the histogram hasn't even been created.
-  std::unique_ptr<base::HistogramSamples> samples(
-      histogram_tester.GetHistogramSamplesSinceCreation(
-          "SimpleCache.Http.ReadStream1FromPrefetched"));
-  EXPECT_EQ(0, samples->TotalCount());
 }
 
 // This makes sure we detect checksum error on entry that's small enough to be
@@ -5685,11 +5671,8 @@ TEST_F(DiskCacheSimplePrefetchTest, ChecksumNoPrefetch) {
   SetupFullPrefetch(0);
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
-  // Expect 2 CRCs --- stream 0 and stream 1.
-  histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFHasCrc",
-                                      true, 2);
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFResult",
                                       disk_cache::CHECK_EOF_RESULT_SUCCESS, 2);
 }
@@ -5700,14 +5683,8 @@ TEST_F(DiskCacheSimplePrefetchTest, NoChecksumNoPrefetch) {
   SetupFullPrefetch(0);
   const char kKey[] = "a key";
   InitCacheAndCreateEntryWithNoCrc(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
-  // Stream 0 has CRC, stream 1 doesn't.
-  histogram_tester.ExpectBucketCount("SimpleCache.Http.SyncCheckEOFHasCrc",
-                                     true, 1);
-  histogram_tester.ExpectBucketCount("SimpleCache.Http.SyncCheckEOFHasCrc",
-                                     false, 1);
-  // EOF check is recorded even if there is no CRC there.
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFResult",
                                       disk_cache::CHECK_EOF_RESULT_SUCCESS, 2);
 }
@@ -5718,11 +5695,8 @@ TEST_F(DiskCacheSimplePrefetchTest, ChecksumPrefetch) {
   SetupFullPrefetch(2 * kEntrySize);
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
-  // Expect 2 CRCs --- stream 0 and stream 1.
-  histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFHasCrc",
-                                      true, 2);
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFResult",
                                       disk_cache::CHECK_EOF_RESULT_SUCCESS, 2);
 }
@@ -5733,13 +5707,8 @@ TEST_F(DiskCacheSimplePrefetchTest, NoChecksumPrefetch) {
   SetupFullPrefetch(2 * kEntrySize);
   const char kKey[] = "a key";
   InitCacheAndCreateEntryWithNoCrc(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
-  // Stream 0 has CRC, stream 1 doesn't.
-  histogram_tester.ExpectBucketCount("SimpleCache.Http.SyncCheckEOFHasCrc",
-                                     true, 1);
-  histogram_tester.ExpectBucketCount("SimpleCache.Http.SyncCheckEOFHasCrc",
-                                     false, 1);
   // EOF check is recorded even if there is no CRC there.
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFResult",
                                       disk_cache::CHECK_EOF_RESULT_SUCCESS, 2);
@@ -5765,240 +5734,119 @@ TEST_F(DiskCacheSimplePrefetchTest, PrefetchReadsSync) {
   entry->Close();
 }
 
-TEST_F(DiskCacheSimplePrefetchTest, NoFullNoHintNoSpeculative) {
+TEST_F(DiskCacheSimplePrefetchTest, NoFullNoSpeculative) {
   base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(0, false, 0);
+  SetupFullAndTrailerPrefetch(0, 0);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_NONE, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerPrefetchSize",
                                     0);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerSize", 1);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
 }
 
-TEST_F(DiskCacheSimplePrefetchTest, NoFullYesHintNoSpeculative) {
+TEST_F(DiskCacheSimplePrefetchTest, NoFullSmallSpeculative) {
   base::HistogramTester histogram_tester;
-  // Trailer prefetch hint should do nothing outside of APP_CACHE mode.
-  SetupFullAndTrailerPrefetch(0, true, 0);
+  SetupFullAndTrailerPrefetch(0, kEntrySize / 2);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
-
-  histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
-                                      disk_cache::OPEN_PREFETCH_NONE, 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerPrefetchSize",
-                                    0);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerSize", 1);
-  histogram_tester.ExpectTotalCount(
-      "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
-}
-
-TEST_F(DiskCacheSimplePrefetchTest, NoFullNoHintSmallSpeculative) {
-  base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(0, false, kEntrySize / 2);
-
-  const char kKey[] = "a key";
-  InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerPrefetchSize",
                                     1);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerSize", 1);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
 }
 
-TEST_F(DiskCacheSimplePrefetchTest, NoFullNoHintLargeSpeculative) {
+TEST_F(DiskCacheSimplePrefetchTest, NoFullLargeSpeculative) {
   base::HistogramTester histogram_tester;
   // A large speculative trailer prefetch that exceeds the entry file
   // size should effectively trigger full prefetch behavior.
-  SetupFullAndTrailerPrefetch(0, false, kEntrySize * 2);
+  SetupFullAndTrailerPrefetch(0, kEntrySize * 2);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerPrefetchSize",
                                     0);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerSize", 1);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", true, 1);
 }
 
-TEST_F(DiskCacheSimplePrefetchTest, NoFullYesHintSmallSpeculative) {
+TEST_F(DiskCacheSimplePrefetchTest, SmallFullNoSpeculative) {
   base::HistogramTester histogram_tester;
-  // Trailer prefetch hint should do nothing outside of APP_CACHE mode.
-  SetupFullAndTrailerPrefetch(0, true, kEntrySize / 2);
+  SetupFullAndTrailerPrefetch(kEntrySize / 2, 0);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
-
-  histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
-                                      disk_cache::OPEN_PREFETCH_TRAILER, 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerPrefetchSize",
-                                    1);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerSize", 1);
-  histogram_tester.ExpectTotalCount(
-      "SimpleCache.Http.EntryTrailerPrefetchDelta", 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
-}
-
-TEST_F(DiskCacheSimplePrefetchTest, NoFullYesHintLargeSpeculative) {
-  base::HistogramTester histogram_tester;
-  // Trailer prefetch hint should do nothing outside of APP_CACHE mode.
-  SetupFullAndTrailerPrefetch(0, true, kEntrySize * 2);
-
-  const char kKey[] = "a key";
-  InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
-
-  histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
-                                      disk_cache::OPEN_PREFETCH_FULL, 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerPrefetchSize",
-                                    0);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerSize", 1);
-  histogram_tester.ExpectTotalCount(
-      "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", true, 1);
-}
-
-TEST_F(DiskCacheSimplePrefetchTest, SmallFullNoHintNoSpeculative) {
-  base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(kEntrySize / 2, false, 0);
-
-  const char kKey[] = "a key";
-  InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_NONE, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerPrefetchSize",
                                     0);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerSize", 1);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
 }
 
-TEST_F(DiskCacheSimplePrefetchTest, LargeFullNoHintNoSpeculative) {
+TEST_F(DiskCacheSimplePrefetchTest, LargeFullNoSpeculative) {
   base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(kEntrySize * 2, false, 0);
+  SetupFullAndTrailerPrefetch(kEntrySize * 2, 0);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerPrefetchSize",
                                     0);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerSize", 1);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", true, 1);
 }
 
-TEST_F(DiskCacheSimplePrefetchTest, SmallFullYesHintNoSpeculative) {
+TEST_F(DiskCacheSimplePrefetchTest, SmallFullSmallSpeculative) {
   base::HistogramTester histogram_tester;
-  // Trailer prefetch hint should do nothing outside of APP_CACHE mode.
-  SetupFullAndTrailerPrefetch(kEntrySize / 2, true, 0);
+  SetupFullAndTrailerPrefetch(kEntrySize / 2, kEntrySize / 2);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
-
-  histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
-                                      disk_cache::OPEN_PREFETCH_NONE, 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerPrefetchSize",
-                                    0);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerSize", 1);
-  histogram_tester.ExpectTotalCount(
-      "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
-}
-
-TEST_F(DiskCacheSimplePrefetchTest, LargeFullYesHintNoSpeculative) {
-  base::HistogramTester histogram_tester;
-  // Trailer prefetch hint should do nothing outside of APP_CACHE mode.
-  SetupFullAndTrailerPrefetch(kEntrySize * 2, true, 0);
-
-  const char kKey[] = "a key";
-  InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
-
-  histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
-                                      disk_cache::OPEN_PREFETCH_FULL, 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerPrefetchSize",
-                                    0);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerSize", 1);
-  histogram_tester.ExpectTotalCount(
-      "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", true, 1);
-}
-
-TEST_F(DiskCacheSimplePrefetchTest, SmallFullNoHintSmallSpeculative) {
-  base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(kEntrySize / 2, false, kEntrySize / 2);
-
-  const char kKey[] = "a key";
-  InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerPrefetchSize",
                                     1);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerSize", 1);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
 }
 
-TEST_F(DiskCacheSimplePrefetchTest, LargeFullNoHintSmallSpeculative) {
+TEST_F(DiskCacheSimplePrefetchTest, LargeFullSmallSpeculative) {
   base::HistogramTester histogram_tester;
   // Full prefetch takes precedence over a trailer speculative prefetch.
-  SetupFullAndTrailerPrefetch(kEntrySize * 2, false, kEntrySize / 2);
+  SetupFullAndTrailerPrefetch(kEntrySize * 2, kEntrySize / 2);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerPrefetchSize",
                                     0);
-  histogram_tester.ExpectTotalCount("SimpleCache.Http.EntryTrailerSize", 1);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", true, 1);
 }
 
 class DiskCacheSimpleAppCachePrefetchTest : public DiskCacheSimplePrefetchTest {
@@ -6007,237 +5855,119 @@ class DiskCacheSimpleAppCachePrefetchTest : public DiskCacheSimplePrefetchTest {
   net::CacheType SimpleCacheType() const override { return net::APP_CACHE; }
 };
 
-TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullNoHintNoSpeculative) {
+TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullNoSpeculative) {
   base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(0, false, 0);
+  SetupFullAndTrailerPrefetch(0, 0);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
-
-  histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
-                                      disk_cache::OPEN_PREFETCH_NONE, 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchSize",
-                                    0);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerSize", 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchDelta",
-                                    0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
-}
-
-TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullYesHintNoSpeculative) {
-  base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(0, true, 0);
-
-  const char kKey[] = "a key";
-  InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchSize",
                                     1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerSize", 1);
   histogram_tester.ExpectUniqueSample(
       "SimpleCache.App.EntryTrailerPrefetchDelta", 0, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
 }
 
-TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullNoHintSmallSpeculative) {
+TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullSmallSpeculative) {
   base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(0, false, kEntrySize / 2);
+  SetupFullAndTrailerPrefetch(0, kEntrySize / 2);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchSize",
                                     1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerSize", 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchDelta",
-                                    1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
-}
-
-TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullNoHintLargeSpeculative) {
-  base::HistogramTester histogram_tester;
-  // A large speculative trailer prefetch that exceeds the entry file
-  // size should effectively trigger full prefetch behavior.
-  SetupFullAndTrailerPrefetch(0, false, kEntrySize * 2);
-
-  const char kKey[] = "a key";
-  InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
-
-  histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
-                                      disk_cache::OPEN_PREFETCH_FULL, 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchSize",
-                                    0);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerSize", 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchDelta",
-                                    0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", true, 1);
-}
-
-TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullYesHintSmallSpeculative) {
-  base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(0, true, kEntrySize / 2);
-
-  const char kKey[] = "a key";
-  InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
-
-  histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
-                                      disk_cache::OPEN_PREFETCH_TRAILER, 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchSize",
-                                    1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerSize", 1);
   histogram_tester.ExpectUniqueSample(
       "SimpleCache.App.EntryTrailerPrefetchDelta", 0, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
 }
 
-TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullYesHintLargeSpeculative) {
+TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullLargeSpeculative) {
   base::HistogramTester histogram_tester;
   // Even though the speculative trailer prefetch size is larger than the
   // file size, the hint should take precedence and still perform a limited
   // trailer prefetch.
-  SetupFullAndTrailerPrefetch(0, true, kEntrySize * 2);
+  SetupFullAndTrailerPrefetch(0, kEntrySize * 2);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchSize",
                                     1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerSize", 1);
   histogram_tester.ExpectUniqueSample(
       "SimpleCache.App.EntryTrailerPrefetchDelta", 0, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
 }
 
-TEST_F(DiskCacheSimpleAppCachePrefetchTest, SmallFullNoHintNoSpeculative) {
+TEST_F(DiskCacheSimpleAppCachePrefetchTest, SmallFullNoSpeculative) {
   base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(kEntrySize / 2, false, 0);
+  SetupFullAndTrailerPrefetch(kEntrySize / 2, 0);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
-
-  histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
-                                      disk_cache::OPEN_PREFETCH_NONE, 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchSize",
-                                    0);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerSize", 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchDelta",
-                                    0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
-}
-
-TEST_F(DiskCacheSimpleAppCachePrefetchTest, LargeFullNoHintNoSpeculative) {
-  base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(kEntrySize * 2, false, 0);
-
-  const char kKey[] = "a key";
-  InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
-
-  histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
-                                      disk_cache::OPEN_PREFETCH_FULL, 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchSize",
-                                    0);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerSize", 1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchDelta",
-                                    0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", true, 1);
-}
-
-TEST_F(DiskCacheSimpleAppCachePrefetchTest, SmallFullYesHintNoSpeculative) {
-  base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(kEntrySize / 2, true, 0);
-
-  const char kKey[] = "a key";
-  InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchSize",
                                     1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerSize", 1);
   histogram_tester.ExpectUniqueSample(
       "SimpleCache.App.EntryTrailerPrefetchDelta", 0, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
 }
 
-TEST_F(DiskCacheSimpleAppCachePrefetchTest, LargeFullYesHintNoSpeculative) {
+TEST_F(DiskCacheSimpleAppCachePrefetchTest, LargeFullNoSpeculative) {
   base::HistogramTester histogram_tester;
   // Full prefetch takes precedence over a trailer hint prefetch.
-  SetupFullAndTrailerPrefetch(kEntrySize * 2, true, 0);
+  SetupFullAndTrailerPrefetch(kEntrySize * 2, 0);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchSize",
                                     0);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerSize", 1);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchDelta",
                                     0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", true, 1);
 }
 
-TEST_F(DiskCacheSimpleAppCachePrefetchTest, SmallFullNoHintSmallSpeculative) {
+TEST_F(DiskCacheSimpleAppCachePrefetchTest, SmallFullSmallSpeculative) {
   base::HistogramTester histogram_tester;
-  SetupFullAndTrailerPrefetch(kEntrySize / 2, false, kEntrySize / 2);
+  SetupFullAndTrailerPrefetch(kEntrySize / 2, kEntrySize / 2);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchSize",
                                     1);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerSize", 1);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchDelta",
                                     1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
 }
 
-TEST_F(DiskCacheSimpleAppCachePrefetchTest, LargeFullNoHintSmallSpeculative) {
+TEST_F(DiskCacheSimpleAppCachePrefetchTest, LargeFullSmallSpeculative) {
   base::HistogramTester histogram_tester;
   // Full prefetch takes precedence over a trailer speculative prefetch.
-  SetupFullAndTrailerPrefetch(kEntrySize * 2, false, kEntrySize / 2);
+  SetupFullAndTrailerPrefetch(kEntrySize * 2, kEntrySize / 2);
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchSize",
                                     0);
-  histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerSize", 1);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchDelta",
                                     0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", true, 1);
 }

@@ -6,231 +6,146 @@
   "collationUCAData": "implicithan",
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/source/data/locales/reslocal.mk?rcl=797b7c
+// Includes the items from GENRB_ALIAS_SOURCE and GENRB_SOURCE
   "localeFilter": {
+    "filterType": "language",
     "whitelist": [
 // Need to explicitly add "root"
       "root",
-// # All aliases (to not be included under 'installed'), but not including root.
-// GENRB_ALIAS_SOURCE = $(GENRB_SYNTHETIC_ALIAS)\
-// zh_CN.txt zh_TW.txt zh_HK.txt zh_SG.txt\
-// no.txt in.txt iw.txt tl.txt sh.txt
-      "zh_CN","zh_TW","zh_HK","zh_SG",
-      "no","in","iw","tl","sh",
-// # Ordinary resources
-// GENRB_SOURCE =\
-// .......
-      "am",
-      "ar","ar_001","ar_AE","ar_BH","ar_DJ",
-      "ar_DZ","ar_EG","ar_EH","ar_ER","ar_IL",
-      "ar_IQ","ar_JO","ar_KM","ar_KW","ar_LB",
-      "ar_LY","ar_MA","ar_MR","ar_OM","ar_PS",
-      "ar_QA","ar_SA","ar_SD","ar_SO","ar_SS",
-      "ar_SY","ar_TD","ar_TN","ar_YE",
-      "bg",
-      "bn",
-      "ca",
-      "cs",
-      "da",
-      "de","de_AT","de_BE","de_CH","de_IT","de_LI","de_LU",
-      "el",
-      "en","en_001","en_150","en_AG","en_AI","en_AS",
-      "en_AT","en_AU","en_BB","en_BE","en_BI",
-      "en_BM","en_BS","en_BW","en_BZ","en_CA",
-      "en_CC","en_CH","en_CK","en_CM","en_CX",
-      "en_CY","en_DE","en_DG","en_DK","en_DM",
-      "en_ER","en_FI","en_FJ","en_FK","en_FM",
-      "en_GB","en_GD","en_GG","en_GH","en_GI",
-      "en_GM","en_GU","en_GY","en_HK","en_IE",
-      "en_IL","en_IM","en_IN","en_IO","en_JE",
-      "en_JM","en_KE","en_KI","en_KN","en_KY",
-      "en_LC","en_LR","en_LS","en_MG","en_MH",
-      "en_MO","en_MP","en_MS","en_MT","en_MU",
-      "en_MW","en_MY","en_NA","en_NF","en_NG",
-      "en_NL","en_NR","en_NU","en_NZ","en_PG",
-      "en_PH","en_PK","en_PN","en_PR","en_PW",
-      "en_RW","en_SB","en_SC","en_SD","en_SE",
-      "en_SG","en_SH","en_SI","en_SL","en_SS",
-      "en_SX","en_SZ","en_TC","en_TK","en_TO",
-      "en_TT","en_TV","en_TZ","en_UG","en_UM",
-      "en_US","en_US_POSIX","en_VC","en_VG","en_VI",
-      "en_VU","en_WS","en_ZA","en_ZM","en_ZW",
-      "es","es_ES","es_419","es_AR","es_MX","es_US",
-      "es_BO","es_BR","es_BZ","es_CL","es_CO","es_CR","es_CU",
-      "es_DO","es_EA","es_EC","es_GQ","es_GT","es_HN","es_IC",
-      "es_NI","es_PA","es_PE","es_PH","es_PR","es_PY","es_SV",
-      "es_UY","es_VE",
-      "et",
-      "fa",
-      "fi",
-      "fil",
-      "fr","fr_BE","fr_BF","fr_BI",
-      "fr_BJ","fr_BL","fr_CA","fr_CD","fr_CF",
-      "fr_CG","fr_CH","fr_CI","fr_CM","fr_DJ",
-      "fr_DZ","fr_FR","fr_GA","fr_GF","fr_GN",
-      "fr_GP","fr_GQ","fr_HT","fr_KM","fr_LU",
-      "fr_MA","fr_MC","fr_MF","fr_MG","fr_ML",
-      "fr_MQ","fr_MR","fr_MU","fr_NC","fr_NE",
-      "fr_PF","fr_PM","fr_RE","fr_RW","fr_SC",
-      "fr_SN","fr_SY","fr_TD","fr_TG","fr_TN",
-      "fr_VU","fr_WF","fr_YT",
-      "gu",
-      "he",
-      "hi",
-      "hr",
-      "hr_BA",
-      "hu",
-      "id",
-      "it","it_CH",
-      "ja",
-      "kn",
-      "ko",
-      "lt",
-      "lv",
-      "ml",
-      "mr",
-      "ms",
-      "nb",
-      "nl","nl_AW","nl_BE","nl_BQ","nl_CW","nl_NL",
-      "nl_SR","nl_SX",
-      "pl",
-      "pt","pt_AO","pt_BR","pt_CH","pt_CV",
-      "pt_GQ","pt_GW","pt_LU","pt_MO","pt_MZ",
-      "pt_PT","pt_ST","pt_TL",
-      "ro",
-      "ru","ru_BY","ru_KG","ru_KZ","ru_MD","ru_RU","ru_UA",
-      "sk",
-      "sl",
-      "sr","sr_BA","sr_CS","sr_ME","sr_RS","sr_XK",
-      "sr_Cyrl","sr_Cyrl_BA","sr_Cyrl_CS","sr_Cyrl_ME",
-      "sr_Cyrl_RS","sr_Cyrl_XK",
-      "sr_Latn","sr_Latn_BA","sr_Latn_CS","sr_Latn_ME",
-      "sr_Latn_RS","sr_Latn_XK",
-      "sv",
-      "sw","sw_CD","sw_KE",
-      "ta",
-      "te",
-      "th",
-      "tr",
-      "uk",
-      "vi",
-      "zh","zh_Hans","zh_Hans_CN","zh_Hans_SG",
-      "zh_Hant","zh_Hant_TW","zh_Hant_HK",
+
       "af",
       "ak",
+      "am",
       "an",
+      "ar",
       "ast",
       "az",
       "be",
       "bem",
+      "bg",
+      "bn",
       "br",
       "bs",
+      "ca",
       "ckb",
+      "cs",
       "cy",
+      "da",
+      "de",
       "ee",
+      "el",
+      "en",
       "eo",
+      "es",
+      "et",
       "eu",
+      "fa",
+      "fi",
+      "fil",
       "fo",
+      "fr",
       "ga",
       "gl",
+      "gu",
       "ha",
       "haw",
+      "he",
+      "hi",
+      "hr",
+      "hu",
       "hy",
+      "id",
       "ig",
+      "in",
       "is",
+      "it",
+      "iw",
+      "ja",
       "ka",
       "kk",
       "km",
+      "kn",
+      "ko",
       "ku",
       "ky",
       "lg",
       "ln",
       "lo",
+      "lt",
+      "lv",
       "mfe",
       "mg",
       "mk",
+      "ml",
       "mn",
-      "mo","ro_MD",
+      "mo",
+      "mr",
+      "ms",
       "mt",
       "my",
+      "nb",
       "ne",
+      "nl",
       "nn",
+      "no",
       "nyn",
       "om",
       "or",
       "pa",
+      "pl",
       "ps",
+      "pt",
       "rm",
       "rn",
+      "ro",
+      "ru",
       "rw",
+      "sh",
       "si",
+      "sk",
+      "sl",
       "sn",
       "so",
       "sq",
+      "sr",
+      "sv",
+      "sw",
+      "ta",
+      "te",
       "tg",
+      "th",
       "ti",
+      "tl",
       "to",
+      "tr",
+      "uk",
       "ur",
       "uz",
+      "vi",
       "wa",
       "yo",
+      "zh",
       "zu"
     ]
   },
   "featureFilters": {
-// Based on the ICU63 version of
-// https://cs.chromium.org/chromium/src/third_party/icu/source/data/brkitr/brklocal.mk?rcl=797b7c
-// # List of dictionary files (dict).
-// BRK_DICT_SOURCE = burmesedict.txt cjdict.txt khmerdict.txt laodict.txt\
-//  thaidict.txt
     "brkitr_dictionaries": {
-      "whitelist": [
-        "burmesedict",
+      "blacklist": [
 // Filtered by android/brkitr.patch        "cjdict",
-        "khmerdict",
-        "laodict",
-        "thaidict"
+        "cjdict"
       ]
     },
-// # List of break iterator files (brk).
-// BRK_SOURCE = char.txt line.txt line_loose.txt line_loose_cj.txt\
-//  line_normal.txt line_normal_cj.txt sent.txt sent_el.txt title.txt\
-//  word.txt
     "brkitr_rules": {
-      "whitelist": [
-        "char",
-        "line",
-        "line_loose",
-        "line_loose_cj",
-        "line_normal",
-        "line_normal_cj",
-        "sent",
-        "sent_el",
+      "blacklist": [
+// Exclude line_cj till we upgrade to 68.1 due to size impact.
+        "line_cj",
         "title",
-        "word",
-// Added by android/brkitr.patch
-        "word_ja"
+        "word_POSIX"
       ]
     },
-// # Ordinary resources
-// BRK_RES_SOURCE = de.txt el.txt en.txt en_US.txt\
-//  es.txt fr.txt it.txt ja.txt\
-//  pt.txt ru.txt zh.txt zh_Hant.txt
     "brkitr_tree": {
-      "whitelist": [
-// Need to explicitly add "root"
-	"root",
-        "de",
-        "el",
-        "en",
-        "en_US",
-        "es",
-        "fr",
-        "it",
-        "ja",
-        "pt",
-        "ru",
-        "zh",
-        "zh_Hant"
+      "blacklist": [
+	"en_US_POSIX"
       ]
     },
 // Based on the ICU63 version of
@@ -275,272 +190,130 @@
     },
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/source/data/curr/reslocal.mk?rcl=797b7c
+// Includes the items from CURR_ALIAS_SOURCE and CURR_SOURCE
+// Removed locales per cast/patch_locale.sh:
+// "bn", "et", "gu", "kn", "ml", "mr", "ms", "ta", "te"
     "curr_tree": {
+      "filterType": "language",
       "whitelist": [
 // Need to explicitly add "root"
 	"root",
-// # All aliases (to not be included under 'installed'), but not including root.
-// CURR_ALIAS_SOURCE = $(CURR_SYNTHETIC_ALIAS)\
-//  zh_CN.txt zh_TW.txt zh_HK.txt zh_MO.txt zh_SG.txt\
-//  mo.txt no.txt in.txt iw.txt tl.txt ar_SA.txt
-        "zh_CN", "zh_TW", "zh_HK", "zh_MO", "zh_SG",
-        "mo", "no", "in", "iw", "tl", "ar_SA",
-// # Ordinary resources
-// CURR_SOURCE =\
-//  ...
-        "am",
-        "ar", "ar_AE", "ar_DJ", "ar_ER", "ar_KM",
-        "ar_LB", "ar_SO", "ar_SS",
-        "bg",
-// cast/patch_locale.sh remove        "bn",
-        "ca",
-        "cs",
-        "da",
-        "de", "de_CH", "de_LI", "de_LU",
-        "el",
-        "en", "en_001", "en_150",
-        "en_AU", "en_CA", "en_GB", "en_HK", "en_IN", "en_NG", "en_NZ", "en_SG", "en_ZA",
-        "en_AG", "en_AI", "en_AT", "en_BB", "en_BE", "en_BI", "en_BM", "en_BS", "en_BW",
-        "en_BZ", "en_CC", "en_CH", "en_CK", "en_CM", "en_CX", "en_CY", "en_DE", "en_DG",
-        "en_DK", "en_DM", "en_ER", "en_FI", "en_FJ", "en_FK", "en_FM", "en_GD", "en_GG",
-        "en_GH", "en_GI", "en_GM", "en_GY", "en_IE", "en_IL", "en_IM", "en_IO", "en_JE",
-        "en_JM", "en_KE", "en_KI", "en_KN", "en_KY", "en_LC", "en_LR", "en_LS", "en_MG",
-        "en_MO", "en_MS", "en_MT", "en_MU", "en_MW", "en_MY", "en_NA", "en_NF", "en_NH",
-        "en_NL", "en_NR", "en_NU", "en_PG", "en_PH", "en_PK", "en_PN", "en_PW", "en_RH",
-        "en_RW", "en_SB", "en_SC", "en_SD", "en_SE", "en_SH", "en_SI", "en_SL", "en_SS",
-        "en_SX", "en_SZ", "en_TC", "en_TK", "en_TO", "en_TT", "en_TV", "en_TZ", "en_UG",
-        "en_VC", "en_VG", "en_VU", "en_WS", "en_ZM", "en_ZW",
-        "es", "es_419", "es_AR", "es_BO", "es_BR", "es_BZ", "es_CL",
-        "es_CO", "es_CR", "es_CU", "es_DO", "es_EC", "es_GQ", "es_GT",
-        "es_HN", "es_MX", "es_NI", "es_PA", "es_PE", "es_PH", "es_PR",
-        "es_PY", "es_SV", "es_US", "es_UY", "es_VE",
-// cast/patch_locale.sh remove        "et",
-        "fa",
-        "fi",
-        "fil",
-        "fr", "fr_CA",
-        "fr_BI", "fr_CD", "fr_DJ", "fr_DZ", "fr_GN", "fr_HT",
-        "fr_KM", "fr_LU", "fr_MG", "fr_MR", "fr_MU", "fr_RW",
-        "fr_SC", "fr_SY", "fr_TN", "fr_VU",
-// cast/patch_locale.sh remove        "gu",
-        "he",
-        "hi",
-        "hr",
-        "hr_BA",
-        "hu",
-        "id",
-        "it",
-        "ja",
-// cast/patch_locale.sh remove        "kn",
-        "ko",
-        "lt",
-        "lv",
-// cast/patch_locale.sh remove        "ml",
-// cast/patch_locale.sh remove        "mr",
-// cast/patch_locale.sh remove        "ms",
-        "nb",
-        "nl",
-        "pl",
-        "pt", "pt_PT",
-        "pt_AO", "pt_CV", "pt_LU", "pt_MO", "pt_MZ", "pt_ST",
-        "ro", "ro_MD",
-        "ru",
-        "sk",
-        "sl",
-        "sr", "sr_BA", "sr_CS", "sr_ME", "sr_RS", "sr_XK",
-        "sr_Cyrl", "sr_Cyrl_BA", "sr_Cyrl_CS", "sr_Cyrl_RS", "sr_Cyrl_XK",
-        "sr_Latn", "sr_Latn_BA", "sr_Latn_CS", "sr_Latn_ME", "sr_Latn_RS",
-        "sv",
-        "sw", "sw_CD", "sw_UG",
-// cast/patch_locale.sh remove        "ta",
-// cast/patch_locale.sh remove        "te",
-        "th",
-        "tr",
-        "uk",
-        "vi",
-        "zh",
-        "zh_Hans", "zh_Hans_CN", "zh_Hans_SG", "zh_Hans_HK", "zh_Hans_MO",
-        "zh_Hant", "zh_Hant_TW", "zh_Hant_HK", "zh_Hant_MO"
-      ]
-    },
-// Based on the ICU63 version of
-// https://cs.chromium.org/chromium/src/third_party/icu/source/data/coll/collocal.mk?rcl=797b7c
-    "coll_tree": {
-      "whitelist": [
-// Need to explicitly add "root"
-	"root",
-// # Aliases which do not have a corresponding xx.xml file (see icu-config.xml & build.xml)
-// COLLATION_SYNTHETIC_ALIAS = ...
-        "de_", "de__PHONEBOOK", "es_", "es__TRADITIONAL",
-        "he_IL", "id_ID", "in", "in_ID", "iw",
-        "iw_IL", "mo", "nb_NO", "no", "no_NO",
-        "ro_MD", "sh",
-        "sh_BA", "sh_CS", "sh_YU", "sr_BA", "sr_Cyrl",
-        "sr_Cyrl_BA", "sr_Cyrl_ME", "sr_Cyrl_RS", "sr_Latn_BA", "sr_Latn_RS",
-        "sr_ME", "sr_RS",
-        "zh_CN", "zh_HK", "zh_Hans", "zh_Hans_CN", "zh_Hans_SG",
-        "zh_Hant_HK", "zh_Hant_MO", "zh_Hant_TW", "zh_MO", "zh_SG",
-        "zh_TW",
-// # Ordinary resources
-// COLLATION_SOURCE = ...
-        "am", "ar",
-        "bg",
-// cast/patch_locale.sh remove        "bn",
-	"ca",
-        "cs",
-        "da", "de", "de_AT",
-        "el", "en", "en_US", "es",
-// cast/patch_locale.sh remove        "et",
-        "fa", "fi", "fil",
-        "fr", "fr_CA",
-// cast/patch_locale.sh remove        "gu",
-        "he", "hi", "hr", "hu",
-        "id", "it",
-        "ja",
-// cast/patch_locale.sh remove        "kn",
-	"ko",
-        "lt", "lv",
-// cast/patch_locale.sh remove        "ml", "mr", "ms",
-        "nb", "nn",
-        "pl", "pt",
-        "ro", "ru",
-        "sk", "sl", "sr", "sr_Latn", "sv", "sw",
-// cast/patch_locale.sh remove        "ta", "te",
-	"th", "tr",
-        "uk",
-        "vi",
-        "zh", "zh_Hant"
-      ]
-    },
-// Based on the ICU63 version of
-// https://cs.chromium.org/chromium/src/third_party/icu/source/data/lang/reslocal.mk?rcl=797b7c
-    "lang_tree": {
-      "whitelist": [
-// Need to explicitly add "root"
-	"root",
-// # All aliases (to not be included under 'installed'), but not including root.
-// LANG_ALIAS_SOURCE = $(LANG_SYNTHETIC_ALIAS)\
-//  zh_CN.txt zh_TW.txt zh_HK.txt zh_SG.txt\
-//  no.txt in.txt iw.txt tl.txt sh.txt
-        "zh_CN", "zh_TW", "zh_HK", "zh_SG",
-        "no", "in", "iw", "tl", "sh",
-// # Ordinary resources
-// LANG_SOURCE =\
-//  ...
+
         "am",
         "ar",
-	"ar_SA", "ar_LY", "ar_EG",
         "bg",
-        "bn",
         "ca",
         "cs",
         "da",
         "de",
-	"de_AT", "de_CH",
         "el",
-        "en", "en_GB",
-	"en_CA", "en_AU", "en_IN", "en_001", "en_NZ",
-        "es", "es_419",
-        "et",
+        "en",
+        "es",
         "fa",
         "fi",
         "fil",
         "fr",
-	"fr_CA", "fr_CH",
-        "gu",
         "he",
         "hi",
         "hr",
         "hu",
         "id",
+        "in",
         "it",
+        "iw",
         "ja",
-        "kn",
         "ko",
         "lt",
         "lv",
-        "ml",
-        "mr",
-        "ms",
+        "mo",
         "nb",
         "nl",
+        "no",
         "pl",
-        "pt", "pt_PT",
+        "pt",
         "ro",
         "ru",
+        "sh",
         "sk",
         "sl",
         "sr",
         "sv",
         "sw",
-        "ta",
-        "te",
         "th",
+        "tl",
         "tr",
         "uk",
         "vi",
-        "zh", "zh_Hans", "zh_Hans_CN", "zh_Hans_SG",
-        "zh_Hant", "zh_Hant_TW", "zh_Hant_HK",
-        "af",
-        "ak",
-        "an",
-        "ast",
-        "az",
-        "be",
-        "bem",
-        "br",
-        "bs",
-        "ckb",
-        "cy",
-        "ee",
-        "eo",
-        "eu",
-        "fo",
-        "ga",
-        "gl",
-        "ha",
-        "haw",
-        "hy",
-        "ig",
-        "is",
-        "ka",
-        "kk",
-        "km",
-        "ku",
-        "ky",
-        "lg",
-        "ln",
-        "lo",
-        "mfe",
-        "mg",
-        "mk",
-        "mn",
-        "mo", "ro_MD",
-        "mt",
-        "my",
-        "ne",
-        "nn",
-        "nyn",
-        "om",
-        "or",
-        "pa",
-        "ps",
-        "rm",
-        "rn",
-        "rw",
-        "si",
-        "sn",
-        "so",
-        "sq",
-        "sr_Latn",
-        "tg",
-        "ti",
-        "to",
-        "ur",
-        "uz",
-        "wa",
-        "yo",
-        "zu"
+        "zh"
+      ]
+    },
+// Based on the ICU63 version of
+// https://cs.chromium.org/chromium/src/third_party/icu/source/data/coll/collocal.mk?rcl=797b7c
+// Includes the items from COLLATION_SYNTHETIC_ALIAS and COLLATION_SOURCE
+// Removed locales per cast/patch_locale.sh:
+// "bn", "et", "gu", "kn", "ml", "mr", "ms", "ta", "te"
+    "coll_tree": {
+      "filterType": "union",
+      "unionOf": [
+        {
+          "whitelist": [
+            "en",
+            "en_US"
+          ]
+        },
+        {
+          "filterType": "language",
+          "whitelist": [
+// Need to explicitly add "root"
+    	    "root",
+
+            "am",
+            "ar",
+            "bg",
+            "ca",
+            "cs",
+            "da",
+            "de",
+            "el",
+            "es",
+            "fa",
+            "fi",
+            "fil",
+            "fr",
+            "he",
+            "hi",
+            "hr",
+            "hu",
+            "id",
+            "in",
+            "it",
+            "iw",
+            "ja",
+            "ko",
+            "lt",
+            "lv",
+            "mo",
+            "nb",
+            "nl",
+            "no",
+            "pl",
+            "pt",
+            "ro",
+            "ru",
+            "sh",
+            "sk",
+            "sl",
+            "sr",
+            "sv",
+            "sw",
+            "th",
+            "tl",
+            "tr",
+            "uk",
+            "vi",
+            "zh"
+          ]
+        }
       ]
     },
 // Based on the ICU63 version of
@@ -565,174 +338,126 @@
     },
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/source/data/sprep/spreplocal.mk?rcl=797b7c
-    "stringprep": {
-      "filterType": "exclude"
-    },
-// Based on the ICU63 version of
-// https://cs.chromium.org/chromium/src/third_party/icu/source/data/translit/trnslocal.mk?rcl=797b7c
-    "translit": {
-      "whitelist": [
-// Need to explicitly add "root"
-	"root"
-      ]
-    },
+    "stringprep": { "filterType": "exclude" },
+    "translit": { "filterType": "exclude" },
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/source/data/unit/reslocal.mk?rcl=797b7c
+// Includes the items from UNIT_ALIAS_SOURCE and UNIT_SOURCE
+// Removed locales per cast/patch_locale.sh:
+// "bn", "et", "gu", "kn", "ml", "mr", "ms", "ta", "te"
     "unit_tree": {
+      "filterType": "language",
       "whitelist": [
 // Need to explicitly add "root"
 	"root",
-// # All aliases (to not be included under 'installed'), but not including root.
-// UNIT_ALIAS_SOURCE = $(UNIT_SYNTHETIC_ALIAS)\
-//  zh_CN.txt zh_TW.txt zh_HK.txt zh_SG.txt\
-//  no.txt in.txt iw.txt tl.txt sh.txt
-        "zh_CN", "zh_TW", "zh_HK", "zh_SG",
-        "no", "in", "iw", "tl", "sh",
-// # Ordinary resources
-// UNIT_SOURCE =\
+
         "am",
         "ar",
         "bg",
-// cast/patch_locale.sh remove        "bn",
-        "ca",
-        "cs",
-        "da",
-        "de", "de_CH",
-        "el",
-        "en", "en_001", "en_150",
-        "en_AU", "en_CA", "en_GB", "en_IN", "en_NZ", "en_ZA",
-        "en_AG", "en_AI", "en_AT", "en_BB", "en_BE", "en_BM",
-        "en_BS", "en_BW", "en_BZ", "en_CC", "en_CH", "en_CK",
-        "en_CM", "en_CX", "en_CY", "en_DE", "en_DG", "en_DK",
-        "en_DM", "en_ER", "en_FI", "en_FJ", "en_FK", "en_FM",
-        "en_GD", "en_GG", "en_GH", "en_GI", "en_GM", "en_GY",
-        "en_HK", "en_IE", "en_IL", "en_IM", "en_IO",
-        "en_JE", "en_JM", "en_KE", "en_KI", "en_KN", "en_KY",
-        "en_LC", "en_LR", "en_LS", "en_MG", "en_MO", "en_MS",
-        "en_MT", "en_MU", "en_MW", "en_MY", "en_NA", "en_NF",
-        "en_NG", "en_NH", "en_NL", "en_NR", "en_NU", "en_PG",
-        "en_PH", "en_PK", "en_PN", "en_PW", "en_RH", "en_RW",
-        "en_SB", "en_SC", "en_SD", "en_SE", "en_SG", "en_SH",
-        "en_SI", "en_SL", "en_SS", "en_SX", "en_SZ", "en_TC",
-        "en_TK", "en_TO", "en_TT", "en_TV", "en_TZ", "en_UG",
-        "en_VC", "en_VG", "en_VU", "en_WS", "en_ZM", "en_ZW",
-        "es", "es_419", "es_AR", "es_MX", "es_US",
-        "es_BO", "es_BR", "es_BZ", "es_CL", "es_CO", "es_CR",
-        "es_CU", "es_DO", "es_EC", "es_GT", "es_HN", "es_NI",
-        "es_PA", "es_PE", "es_PR", "es_PY", "es_SV", "es_UY", "es_VE",
-// cast/patch_locale.sh remove        "et",
-        "fa",
-        "fi",
-        "fil",
-        "fr", "fr_CA", "fr_HT",
-// cast/patch_locale.sh remove        "gu",
-        "he",
-        "hi",
-        "hr",
-        "hu",
-        "id",
-        "it",
-        "ja",
-// cast/patch_locale.sh remove        "kn",
-        "ko",
-        "lt",
-        "lv",
-// cast/patch_locale.sh remove        "ml",
-// cast/patch_locale.sh remove        "mr",
-// cast/patch_locale.sh remove        "ms",
-        "nb",
-        "nl",
-        "pl",
-        "pt", "pt_PT",
-        "pt_AO", "pt_CH", "pt_CV", "pt_GQ", "pt_GW", "pt_LU",
-        "pt_MO", "pt_MZ", "pt_ST", "pt_TL",
-        "ro", "ro_MD",
-        "ru",
-        "sk",
-        "sl",
-        "sr", "sr_BA", "sr_CS", "sr_ME", "sr_RS", "sr_XK",
-        "sr_Cyrl", "sr_Cyrl_BA", "sr_Cyrl_CS", "sr_Cyrl_RS", "sr_Cyrl_XK",
-        "sr_Latn", "sr_Latn_BA", "sr_Latn_CS", "sr_Latn_ME", "sr_Latn_RS",
-        "sv",
-        "sw",
-// cast/patch_locale.sh remove        "ta",
-// cast/patch_locale.sh remove        "te",
-        "th",
-        "tr",
-        "uk",
-        "vi",
-        "zh", "zh_Hans", "zh_Hans_CN", "zh_Hans_SG",
-        "zh_Hant", "zh_Hant_TW", "zh_Hant_HK", "zh_Hant_MO"
-      ]
-    },
-// Based on the ICU63 version of
-// https://cs.chromium.org/chromium/src/third_party/icu/source/data/zone/reslocal.mk?rcl=797b7c
-    "zone_tree": {
-      "whitelist": [
-// Need to explicitly add "root"
-	"root",
-// Need to explicitly add "tzdbNames"
-	"tzdbNames",
-// # All aliases (to not be included under 'installed'), but not including root.
-// ZONE_ALIAS_SOURCE = $(ZONE_SYNTHETIC_ALIAS)\
-//  zh_CN.txt zh_TW.txt zh_HK.txt zh_SG",
-//  no.txt in.txt iw.txt
-        "zh_CN", "zh_TW", "zh_HK", "zh_SG",
-        "no", "in", "iw",
-// # Ordinary resources
-// ZONE_SOURCE =\
-//  ...
-        "am",
-        "ar",
-        "bg",
-// cast/patch_locale.sh remove        "bn",
         "ca",
         "cs",
         "da",
         "de",
         "el",
-        "en", "en_001", "en_150",
-        "en_AU", "en_CA", "en_GB", "en_IN", "en_NZ", "en_ZA",
-        "es", "es_419", "es_MX", "es_AR", "es_US",
-// cast/patch_locale.sh remove        "et",
+        "en",
+        "es",
         "fa",
         "fi",
         "fil",
-        "fr", "fr_CA",
-// cast/patch_locale.sh remove        "gu",
+        "fr",
         "he",
         "hi",
         "hr",
         "hu",
         "id",
+        "in",
         "it",
+        "iw",
         "ja",
-// cast/patch_locale.sh remove        "kn",
         "ko",
         "lt",
         "lv",
-// cast/patch_locale.sh remove        "ml",
-// cast/patch_locale.sh remove        "mr",
-// cast/patch_locale.sh remove        "ms",
+        "mo",
         "nb",
         "nl",
+        "no",
         "pl",
-        "pt", "pt_PT",
+        "pt",
         "ro",
         "ru",
+        "sh",
         "sk",
         "sl",
         "sr",
         "sv",
         "sw",
-// cast/patch_locale.sh remove        "ta",
-// cast/patch_locale.sh remove        "te",
         "th",
+        "tl",
         "tr",
         "uk",
         "vi",
-        "zh", "zh_Hans", "zh_Hans_CN", "zh_Hans_SG",
-        "zh_Hant", "zh_Hant_TW", "zh_Hant_HK"
+        "zh"
+      ]
+    },
+// Based on the ICU63 version of
+// https://cs.chromium.org/chromium/src/third_party/icu/source/data/zone/reslocal.mk?rcl=797b7c
+// Includes the items from ZONE_ALIAS_SOURCE and ZONE_SOURCE
+// Removed locales per cast/patch_locale.sh:
+// "bn", "et", "gu", "kn", "ml", "mr", "ms", "ta", "te"
+    "zone_tree": {
+      "filterType": "language",
+      "whitelist": [
+// Need to explicitly add "root"
+	"root",
+// Need to explicitly add "tzdbNames"
+	"tzdbNames",
+
+        "am",
+        "ar",
+        "bg",
+        "ca",
+        "cs",
+        "da",
+        "de",
+        "el",
+        "en",
+        "es",
+        "fa",
+        "fi",
+        "fil",
+        "fr",
+        "he",
+        "hi",
+        "hr",
+        "hu",
+        "id",
+        "in",
+        "it",
+        "iw",
+        "ja",
+        "ko",
+        "lt",
+        "lv",
+        "mo",
+        "nb",
+        "nl",
+        "no",
+        "pl",
+        "pt",
+        "ro",
+        "ru",
+        "sh",
+        "sk",
+        "sl",
+        "sr",
+        "sv",
+        "sw",
+        "th",
+        "tl",
+        "tr",
+        "uk",
+        "vi",
+        "zh"
       ]
     },
 // Based on
@@ -996,19 +721,6 @@
         "+/*/*/liter-per-kilometer",
         "+/*/*/mile-per-gallon",
         "+/*/compound"
-      ]
-    },
-// Based on
-// https://cs.chromium.org/chromium/src/third_party/icu/source/data/translit/root_subset.txt?rcl=797b7c
-    {
-      "categories": [
-        "translit"
-      ],
-      "rules": [
-        "-/*",
-// Need to leave an empty RuleBasedTransliteratorIDs
-	"+/RuleBasedTransliteratorIDs",
-        "-/RuleBasedTransliteratorIDs/*"
       ]
     },
 // # Remove exemplar cities in timezone data.
@@ -1492,7 +1204,11 @@
       ],
       "files": {
         "whitelist": [
-// Created by diff scripts/chrome_ui_languages.list scripts/accept_lang.list|egrep "^>"|egrep -v "#"|cut -c3-10
+// 1. Created by diff scripts/chrome_ui_languages.list scripts/accept_lang.list|egrep "^>"|egrep -v "#"|cut -c3-10
+// 2. Add EXTRA_LANGUAGES="bn et gu kn ml mr ms ta te" per
+//    https://cs.chromium.org/chromium/src/third_party/icu/cast/patch_locale.sh?rcl=797b7c
+//    # Chrome on Android is not localized to the following languages and we
+//    # have to minimize the locale data for them.
           "ach",
           "af",
           "ak",
@@ -1503,6 +1219,7 @@
           "be",
           "bem",
           "bh",
+          "bn",
           "br",
           "bs",
           "ccp",
@@ -1514,6 +1231,7 @@
           "cy",
           "ee",
           "eo",
+          "et",
           "eu",
           "fo",
           "fy",
@@ -1522,6 +1240,7 @@
           "gd",
           "gl",
           "gn",
+          "gu",
           "ha",
           "haw",
           "hmn",
@@ -1536,6 +1255,7 @@
           "kg",
           "kk",
           "km",
+          "kn",
           "kri",
           "ku",
           "ky",
@@ -1550,8 +1270,10 @@
           "mg",
           "mi",
           "mk",
+          "ml",
           "mn",
-          "mo",
+          "mr",
+          "ms",
           "mt",
           "my",
           "ne",
@@ -1572,7 +1294,6 @@
           "rn",
           "rw",
           "sd",
-          "sh",
           "si",
           "sm",
           "sn",
@@ -1580,10 +1301,11 @@
           "sq",
           "st",
           "su",
+          "ta",
+          "te",
           "tg",
           "ti",
           "tk",
-          "tl",
           "tn",
           "to",
           "tt",
@@ -1598,21 +1320,7 @@
           "xx",
           "yi",
           "yo",
-          "zu",
-// The following is added based on
-// https://cs.chromium.org/chromium/src/third_party/icu/cast/patch_locale.sh?rcl=797b7c
-// # Chrome on Android is not localized to the following languages and we
-// # have to minimize the locale data for them.
-// EXTRA_LANGUAGES="bn et gu kn ml mr ms ta te"
-	  "bn",
-	  "et",
-	  "gu",
-	  "kn",
-	  "ml",
-	  "mr",
-	  "ms",
-	  "ta",
-	  "te"
+          "zu"
 	]
       },
       "rules": [

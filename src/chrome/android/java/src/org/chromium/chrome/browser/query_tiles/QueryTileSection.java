@@ -11,7 +11,6 @@ import android.view.ViewGroup.LayoutParams;
 
 import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
@@ -19,6 +18,7 @@ import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.ntp.search.SearchBoxChipDelegate;
 import org.chromium.chrome.browser.ntp.search.SearchBoxCoordinator;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.browser_ui.util.GlobalDiscardableReferencePool;
 import org.chromium.components.browser_ui.widget.R;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTile;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinator;
@@ -60,6 +60,7 @@ public class QueryTileSection {
     private ImageFetcher mImageFetcher;
     private Integer mTileWidth;
     private float mAnimationPercent;
+    private boolean mNeedReload = true;
 
     /**
      * Represents the information needed to launch a search query when clicking on a tile.
@@ -91,7 +92,7 @@ public class QueryTileSection {
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         mImageFetcher =
                 ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
-                        GlobalDiscardableReferencePool.getReferencePool());
+                        profile, GlobalDiscardableReferencePool.getReferencePool());
         mSearchBoxCoordinator.addVoiceSearchButtonClickListener(v -> reloadTiles());
         reloadTiles();
     }
@@ -110,18 +111,29 @@ public class QueryTileSection {
      * Called to clear the state and reload the top level tiles. Any chip selected will be cleared.
      */
     public void reloadTiles() {
-        mTileProvider.getQueryTiles(this::setTiles);
+        if (!mNeedReload) {
+            // No tile changes, just refresh the display.
+            mTileCoordinator.refreshTiles();
+            return;
+        }
+        // TODO(qinmin): don't return all tiles, just return the top-level tiles.
+        mTileProvider.getQueryTiles(null, this::setTiles);
         mSearchBoxCoordinator.setChipText(null);
+        mNeedReload = false;
     }
 
     private void onTileClicked(ImageTile tile) {
         QueryTile queryTile = (QueryTile) tile;
         mTileUmaLogger.recordTileClicked(queryTile);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.QUERY_TILES_LOCAL_ORDERING)) {
+            mTileProvider.onTileClicked(queryTile.id);
+        }
 
+        // TODO(qinmin): make isLastLevelTile a member variable of ImageTile.
         boolean isLastLevelTile = queryTile.children.isEmpty();
         if (isLastLevelTile) {
             if (QueryTileUtils.isQueryEditingEnabled()) {
-                mSearchBoxCoordinator.setSearchText(queryTile.queryText);
+                mSearchBoxCoordinator.setSearchText(queryTile.queryText, true);
             } else {
                 mSubmitQueryCallback.onResult(
                         new QueryInfo(queryTile.queryText, queryTile.searchParams));
@@ -129,7 +141,8 @@ public class QueryTileSection {
             return;
         }
 
-        setTiles(queryTile.children);
+        mNeedReload = true;
+        mTileProvider.getQueryTiles(tile.id, this::setTiles);
         showQueryChip(queryTile);
     }
 

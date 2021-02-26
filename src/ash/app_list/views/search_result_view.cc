@@ -17,6 +17,7 @@
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
+#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -44,14 +45,8 @@ constexpr int kActionButtonRightMargin = 8;
 constexpr int kTitleLineHeight = 20;
 constexpr int kDetailsLineHeight = 16;
 
-// Matched text color.
-constexpr SkColor kMatchedTextColor = gfx::kGoogleGrey900;
-// Default text color.
-constexpr SkColor kDefaultTextColor = gfx::kGoogleGrey700;
 // URL color.
 constexpr SkColor kUrlColor = gfx::kGoogleBlue600;
-// Row selected color, Google Grey 8%.
-constexpr SkColor kRowHighlightedColor = SkColorSetA(gfx::kGoogleGrey900, 0x14);
 // Search result border color.
 constexpr SkColor kResultBorderColor = SkColorSetARGB(0xFF, 0xE5, 0xE5, 0xE5);
 
@@ -67,6 +62,8 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
                                    AppListViewDelegate* view_delegate)
     : list_view_(list_view), view_delegate_(view_delegate) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
+  SetCallback(base::BindRepeating(&SearchResultView::OnButtonPressed,
+                                  base::Unretained(this)));
 
   icon_ = AddChildView(std::make_unique<views::ImageView>());
   display_icon_ = AddChildView(std::make_unique<views::ImageView>());
@@ -75,13 +72,13 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
       AddChildView(std::make_unique<SearchResultActionsView>(this));
   set_actions_view(actions_view);
 
-  icon_->set_can_process_events_within_subtree(false);
-  display_icon_->set_can_process_events_within_subtree(false);
+  icon_->SetCanProcessEventsWithinSubtree(false);
+  display_icon_->SetCanProcessEventsWithinSubtree(false);
   SetDisplayIcon(gfx::ImageSkia());
-  badge_icon_->set_can_process_events_within_subtree(false);
+  badge_icon_->SetCanProcessEventsWithinSubtree(false);
 
   set_context_menu_controller(this);
-  set_notify_enter_exit_on_child(true);
+  SetNotifyEnterExitOnChild(true);
 }
 
 SearchResultView::~SearchResultView() = default;
@@ -122,15 +119,16 @@ void SearchResultView::CreateTitleRenderText() {
   // When result is an omnibox non-url search, the matched tag indicates
   // proposed query. For all other cases, the matched tag indicates typed search
   // query.
-  render_text->SetColor(result()->is_omnibox_search() ? kDefaultTextColor
-                                                      : kMatchedTextColor);
+  render_text->SetColor(AppListColorProvider::Get()->GetSearchBoxTextColor(
+      kDeprecatedSearchBoxTextDefaultColor));
   const SearchResult::Tags& tags = result()->title_tags();
   for (const auto& tag : tags) {
     if (tag.styles & SearchResult::Tag::URL) {
       render_text->ApplyColor(kUrlColor, tag.range);
     } else if (tag.styles & SearchResult::Tag::MATCH) {
       render_text->ApplyColor(
-          result()->is_omnibox_search() ? kMatchedTextColor : kDefaultTextColor,
+          AppListColorProvider::Get()->GetSearchBoxTextColor(
+              kDeprecatedSearchBoxTextDefaultColor),
           tag.range);
     }
   }
@@ -148,7 +146,8 @@ void SearchResultView::CreateDetailsRenderText() {
   render_text->SetText(result()->details());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   render_text->SetFontList(rb.GetFontList(ui::ResourceBundle::BaseFont));
-  render_text->SetColor(kDefaultTextColor);
+  render_text->SetColor(AppListColorProvider::Get()->GetSearchBoxTextColor(
+      kDeprecatedSearchBoxTextDefaultColor));
   const SearchResult::Tags& tags = result()->details_tags();
   for (const auto& tag : tags) {
     if (tag.styles & SearchResult::Tag::URL)
@@ -157,10 +156,10 @@ void SearchResultView::CreateDetailsRenderText() {
   details_text_ = std::move(render_text);
 }
 
-void SearchResultView::OnQueryRemovalAccepted(int event_flags, bool accepted) {
+void SearchResultView::OnQueryRemovalAccepted(bool accepted) {
   if (accepted) {
     list_view_->SearchResultActionActivated(
-        this, OmniBoxZeroStateAction::kRemoveSuggestion, event_flags);
+        this, OmniBoxZeroStateAction::kRemoveSuggestion);
   }
 
   if (confirm_remove_by_long_press_) {
@@ -230,8 +229,7 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
     case ui::VKEY_RETURN:
       if (actions_view()->HasSelectedAction()) {
         OnSearchResultActionActivated(static_cast<OmniBoxZeroStateAction>(
-                                          actions_view()->GetSelectedAction()),
-                                      event.flags());
+            actions_view()->GetSelectedAction()));
       } else {
         list_view_->SearchResultActivated(this, event.flags(),
                                           false /* by_button_press */);
@@ -240,8 +238,7 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
     case ui::VKEY_DELETE:
     case ui::VKEY_BROWSER_BACK:
       // Allows alt+(back or delete) to trigger the 'remove result' dialog.
-      OnSearchResultActionActivated(OmniBoxZeroStateAction::kRemoveSuggestion,
-                                    event.flags());
+      OnSearchResultActionActivated(OmniBoxZeroStateAction::kRemoveSuggestion);
       return true;
     default:
       return false;
@@ -270,13 +267,16 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
 
   // Set solid color background to avoid broken text. See crbug.com/746563.
   // This should be drawn before selected color which is semi-transparent.
-  canvas->FillRect(text_bounds,
-                   AppListConfig::instance().card_background_color());
+  canvas->FillRect(
+      text_bounds,
+      AppListColorProvider::Get()->GetSearchBoxCardBackgroundColor());
 
   // Possibly call FillRect a second time (these colours are partially
   // transparent, so the previous FillRect is not redundant).
   if (selected() && !actions_view()->HasSelectedAction()) {
-    canvas->FillRect(content_rect, kRowHighlightedColor);
+    canvas->FillRect(
+        content_rect,
+        AppListColorProvider::Get()->GetSearchResultViewHighlightColor());
   }
 
   gfx::Rect border_bottom = gfx::SubtractRects(rect, content_rect);
@@ -339,11 +339,10 @@ void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
       if (actions_view()->IsValidActionIndex(
               OmniBoxZeroStateAction::kRemoveSuggestion)) {
         ScrollRectToVisible(GetLocalBounds());
-        NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
         SetSelected(true, base::nullopt);
         confirm_remove_by_long_press_ = true;
-        OnSearchResultActionActivated(OmniBoxZeroStateAction::kRemoveSuggestion,
-                                      event->flags());
+        OnSearchResultActionActivated(
+            OmniBoxZeroStateAction::kRemoveSuggestion);
         event->SetHandled();
       }
       break;
@@ -352,13 +351,6 @@ void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
   }
   if (!event->handled())
     Button::OnGestureEvent(event);
-}
-
-void SearchResultView::ButtonPressed(views::Button* sender,
-                                     const ui::Event& event) {
-  DCHECK(sender == this);
-  list_view_->SearchResultActivated(this, event.flags(),
-                                    true /* by_button_press */);
 }
 
 void SearchResultView::OnMetadataChanged() {
@@ -389,6 +381,11 @@ void SearchResultView::OnMetadataChanged() {
                                       : SearchResult::Actions());
 }
 
+void SearchResultView::OnButtonPressed(const ui::Event& event) {
+  list_view_->SearchResultActivated(this, event.flags(),
+                                    true /* by_button_press */);
+}
+
 void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
                                     views::ImageView* const icon,
                                     const int icon_dimension) {
@@ -399,8 +396,7 @@ void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
   icon->SetImage(image);
 }
 
-void SearchResultView::OnSearchResultActionActivated(size_t index,
-                                                     int event_flags) {
+void SearchResultView::OnSearchResultActionActivated(size_t index) {
   // |result()| could be nullptr when result list is changing.
   if (!result())
     return;
@@ -416,7 +412,7 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
       auto dialog = std::make_unique<RemoveQueryConfirmationDialog>(
           result()->title(),
           base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
-                         weak_ptr_factory_.GetWeakPtr(), event_flags));
+                         weak_ptr_factory_.GetWeakPtr()));
       list_view_->app_list_main_view()
           ->contents_view()
           ->search_results_page_view()
@@ -424,7 +420,7 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
     } else if (button_action == OmniBoxZeroStateAction::kAppendSuggestion) {
       RecordZeroStateSearchResultUserActionHistogram(
           ZeroStateSearchResultUserActionType::kAppendResult);
-      list_view_->SearchResultActionActivated(this, index, event_flags);
+      list_view_->SearchResultActionActivated(this, index);
     }
   }
 }

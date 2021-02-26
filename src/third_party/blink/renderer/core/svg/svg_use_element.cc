@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/dom/xml_document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_transformable_container.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_g_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
@@ -91,7 +92,7 @@ SVGUseElement::SVGUseElement(Document& document)
 
 SVGUseElement::~SVGUseElement() = default;
 
-void SVGUseElement::Trace(Visitor* visitor) {
+void SVGUseElement::Trace(Visitor* visitor) const {
   visitor->Trace(cache_entry_);
   visitor->Trace(x_);
   visitor->Trace(y_);
@@ -561,8 +562,8 @@ bool SVGUseElement::SelfHasRelativeLengths() const {
 
 FloatRect SVGUseElement::GetBBox() {
   DCHECK(GetLayoutObject());
-  LayoutSVGTransformableContainer& transformable_container =
-      ToLayoutSVGTransformableContainer(*GetLayoutObject());
+  auto& transformable_container =
+      To<LayoutSVGTransformableContainer>(*GetLayoutObject());
   // Don't apply the additional translation if the oBB is invalid.
   if (!transformable_container.IsObjectBoundingBoxValid())
     return FloatRect();

@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -119,7 +119,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const std::string& hosted_domain);
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
   virtual void MaybeStartProtectedPasswordEntryRequest(
       content::WebContents* web_contents,
       const GURL& main_frame_url,
@@ -130,7 +130,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       bool password_field_exists);
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+#if defined(PASSWORD_REUSE_WARNING_ENABLED)
   // Records a Chrome Sync event that sync password reuse was detected.
   virtual void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) = 0;
@@ -170,7 +170,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void ReportPasswordChanged() = 0;
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+#if defined(PASSWORD_REUSE_WARNING_ENABLED)
   virtual void UpdateSecurityState(safe_browsing::SBThreatType threat_type,
                                    ReusedPasswordAccountType password_type,
                                    content::WebContents* web_contents) = 0;
@@ -208,9 +208,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // If |url| matches Safe Browsing whitelist domains, password protection
   // change password URL, or password protection login URLs in the enterprise
   // policy.
-  virtual bool IsURLWhitelistedForPasswordEntry(
-      const GURL& url,
-      RequestOutcome* reason) const = 0;
+  virtual bool IsURLWhitelistedForPasswordEntry(const GURL& url) const = 0;
 
   // Persist the phished saved password credential in the "compromised
   // credentials" table. Calls the password store to add a row for each
@@ -300,14 +298,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   friend class PasswordProtectionRequest;
 
   // Chrome can send password protection ping if it is allowed by for the
-  // |trigger_type| and if Safe Browsing can compute reputation of
-  // |main_frame_url| (e.g. Safe Browsing is not able to compute reputation of a
-  // private IP or a local host). Update |reason| if sending ping is not
-  // allowed. |password_type| is used for UMA metric recording.
+  // |trigger_type| and |password_type| and if Safe Browsing can compute
+  // reputation of |main_frame_url| (e.g. Safe Browsing is not able to compute
+  // reputation of a private IP or a local host).
   bool CanSendPing(LoginReputationClientRequest::TriggerType trigger_type,
                    const GURL& main_frame_url,
-                   ReusedPasswordAccountType password_type,
-                   RequestOutcome* reason);
+                   ReusedPasswordAccountType password_type);
 
   // Called by a PasswordProtectionRequest instance when it finishes to remove
   // itself from |requests_|.
@@ -364,10 +360,14 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   virtual bool IsIncognito() = 0;
 
+  virtual bool IsUserMBBOptedIn() = 0;
+
+  virtual bool IsInPasswordAlertMode(
+      ReusedPasswordAccountType password_type) = 0;
+
   virtual bool IsPingingEnabled(
       LoginReputationClientRequest::TriggerType trigger_type,
-      ReusedPasswordAccountType password_type,
-      RequestOutcome* reason) = 0;
+      ReusedPasswordAccountType password_type) = 0;
 
   virtual bool IsHistorySyncEnabled() = 0;
 
@@ -394,7 +394,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual bool IsUnderAdvancedProtection() = 0;
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+  // If Safe browsing endpoint is not enabled in the country.
+  virtual bool IsInExcludedCountry() = 0;
+
+#if defined(PASSWORD_REUSE_WARNING_ENABLED)
   // Records a Chrome Sync event for the result of the URL reputation lookup
   // if the user enters their sync password on a website.
   virtual void MaybeLogPasswordReuseLookupEvent(
@@ -408,10 +411,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   bool IsModalWarningShowingInWebContents(content::WebContents* web_contents);
 
   // Determines if we should show chrome://reset-password interstitial based on
-  // previous request outcome, the reused |password_type| and the
-  // |main_frame_url|.
-  virtual bool CanShowInterstitial(RequestOutcome reason,
-                                   ReusedPasswordAccountType password_type,
+  // the reused |password_type| and the |main_frame_url|.
+  virtual bool CanShowInterstitial(ReusedPasswordAccountType password_type,
                                    const GURL& main_frame_url) = 0;
 #endif
 
@@ -421,6 +422,18 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // |NOT_SIGNED_IN|.
   virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
   GetSyncAccountType() const = 0;
+
+  // Get information about Delayed Warnings and Omnibox URL display experiments.
+  // This information is sent in PhishGuard pings.
+  virtual LoginReputationClientRequest::UrlDisplayExperiment
+  GetUrlDisplayExperiment() const = 0;
+
+  // Returns the reason why a ping is not sent based on the |trigger_type|,
+  // |url| and |password_type|. Crash if |CanSendPing| is true.
+  virtual RequestOutcome GetPingNotSentReason(
+      LoginReputationClientRequest::TriggerType trigger_type,
+      const GURL& url,
+      ReusedPasswordAccountType password_type) = 0;
 
   const std::list<std::string>& common_spoofed_domains() const {
     return common_spoofed_domains_;
@@ -467,7 +480,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   // Get the content area size of current browsing window.
   virtual gfx::Size GetCurrentContentAreaSize() const = 0;
+#endif
 
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   // Binds the |phishing_detector| to the appropriate interface, as provided by
   // |provider|.
   virtual void GetPhishingDetector(
@@ -507,8 +522,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // dialog.
   std::list<std::string> common_spoofed_domains_;
 
-  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_{this};
+  base::ScopedObservation<history::HistoryService,
+                          history::HistoryServiceObserver>
+      history_service_observation_{this};
 
   // Weakptr can only cancel task if it is posted to the same thread. Therefore,
   // we need CancelableTaskTracker to cancel tasks posted to IO thread.

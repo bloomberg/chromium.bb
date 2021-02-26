@@ -8,18 +8,23 @@ import android.app.Activity;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.FeatureList;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.DeferredStartupHandler;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -27,7 +32,7 @@ import java.util.concurrent.TimeoutException;
  * Custom ActivityTestRule for all instrumentation tests that require a {@link CustomTabActivity}.
  */
 public class CustomTabActivityTestRule extends ChromeActivityTestRule<CustomTabActivity> {
-    protected static final long STARTUP_TIMEOUT_MS = 5L * 1000;
+    protected static final long STARTUP_TIMEOUT_MS = ScalableTimeout.scaleTimeout(5L * 1000);
     protected static final long LONG_TIMEOUT_MS = 10L * 1000;
     private static int sCustomTabId;
 
@@ -50,6 +55,10 @@ public class CustomTabActivityTestRule extends ChromeActivityTestRule<CustomTabA
 
     @Override
     public void startActivityCompletely(Intent intent) {
+        if (!FeatureList.hasTestFeatures()) {
+            FeatureList.setTestFeatures(
+                    Collections.singletonMap(ChromeFeatureList.SHARE_BY_DEFAULT_IN_CCT, true));
+        }
         putCustomTabIdInIntent(intent);
         int currentIntentId = getCustomTabIdFromIntent(intent);
 
@@ -75,13 +84,11 @@ public class CustomTabActivityTestRule extends ChromeActivityTestRule<CustomTabA
      * initialized.
      */
     public void startCustomTabActivityWithIntent(Intent intent) {
+        DeferredStartupHandler.setExpectingActivityStartupForTesting();
         startActivityCompletely(intent);
         waitForActivityNativeInitializationComplete();
-        CriteriaHelper.pollUiThread(new Criteria("Tab never selected/initialized.") {
-            @Override
-            public boolean isSatisfied() {
-                return getActivity().getActivityTab() != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(getActivity().getActivityTab(), Matchers.notNullValue());
         });
         final Tab tab = getActivity().getActivityTab();
         final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
@@ -99,10 +106,9 @@ public class CustomTabActivityTestRule extends ChromeActivityTestRule<CustomTabA
         } catch (TimeoutException e) {
             Assert.fail();
         }
-        CriteriaHelper.pollUiThread(
-                DeferredStartupHandler.getInstance()::isDeferredStartupCompleteForApp,
-                "Deferred startup never completed", STARTUP_TIMEOUT_MS,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        Assert.assertTrue("Deferred startup never completed",
+                DeferredStartupHandler.waitForDeferredStartupCompleteForTesting(
+                        STARTUP_TIMEOUT_MS));
         Assert.assertNotNull(tab);
         Assert.assertNotNull(tab.getView());
         Assert.assertTrue(TabTestUtils.isCustomTab(tab));

@@ -11,13 +11,13 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "content/common/pepper_file_util.h"
-#include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/thunk/thunk.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
@@ -238,7 +238,8 @@ void* ImageDataSimpleBackend::Map() {
     skia_bitmap_.setPixels(shm_mapping_.memory());
     // Our platform bitmaps are set to opaque by default, which we don't want.
     skia_bitmap_.setAlphaType(kPremul_SkAlphaType);
-    skia_canvas_ = std::make_unique<SkCanvas>(skia_bitmap_);
+    skia_canvas_ = std::make_unique<SkCanvas>(
+        skia_bitmap_, skia::LegacyDisplayGlobals::GetSkSurfaceProps());
   }
   return skia_bitmap_.isNull() ? nullptr : skia_bitmap_.getAddr32(0, 0);
 }

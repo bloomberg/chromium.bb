@@ -5,6 +5,7 @@
 // Custom binding for the fileManagerPrivate API.
 
 // Natives
+var blobNatives = requireNative('blob_natives');
 var fileManagerPrivateNatives = requireNative('file_manager_private');
 
 // Internals
@@ -117,6 +118,64 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.getMimeType(url, callback);
   });
 
+  apiFunctions.setHandleRequest('getContentMimeType',
+      function(fileEntry, callback) {
+    fileEntry.file(blob => {
+      var blobUUID = blobNatives.GetBlobUuid(blob);
+
+      if (!blob || !blob.size) {
+        callback(undefined);
+        return;
+      }
+
+      var onGetContentMimeType = function(blob, mimeType) {
+        callback(mimeType ? mimeType : undefined);
+      }.bind(this, blob);  // Bind a blob reference: crbug.com/415792#c12
+
+      fileManagerPrivateInternal.getContentMimeType(
+          blobUUID, onGetContentMimeType);
+    }, (error) => {
+      var errorUUID = '';
+
+      var onGetContentMimeType = function() {
+        chrome.runtime.lastError.DOMError = /** @type {!DOMError} */ (error);
+        callback(undefined);
+      }.bind(this);
+
+      fileManagerPrivateInternal.getContentMimeType(
+          errorUUID, onGetContentMimeType);
+    });
+  });
+
+  apiFunctions.setHandleRequest('getContentMetadata',
+      function(fileEntry, mimeType, includeImages, callback) {
+    fileEntry.file(blob => {
+      var blobUUID = blobNatives.GetBlobUuid(blob);
+
+      if (!blob || !blob.size) {
+        callback(undefined);
+        return;
+      }
+
+      var onGetContentMetadata = function(blob, metadata) {
+        callback(metadata ? metadata : undefined);
+      }.bind(this, blob);  // Bind a blob reference: crbug.com/415792#c12
+
+      fileManagerPrivateInternal.getContentMetadata(
+          blobUUID, mimeType, !!includeImages, onGetContentMetadata);
+    }, (error) => {
+      var errorUUID = '';
+
+      var onGetContentMetadata = function() {
+        chrome.runtime.lastError.DOMError = /** @type {!DOMError} */ (error);
+        callback(undefined);
+      }.bind(this);
+
+      fileManagerPrivateInternal.getContentMetadata(
+          errorUUID, mimeType, false, onGetContentMetadata);
+    });
+  });
+
   apiFunctions.setHandleRequest('pinDriveFile', function(entry, pin, callback) {
     var url = getEntryURL(entry);
     fileManagerPrivateInternal.pinDriveFile(url, pin, callback);
@@ -149,6 +208,12 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('getDownloadUrl', function(entry, callback) {
     var url = getEntryURL(entry);
     fileManagerPrivateInternal.getDownloadUrl(url, callback);
+  });
+
+  apiFunctions.setHandleRequest('copyImageToClipboard', function(
+        entry, callback) {
+    var url = getEntryURL(entry);
+    fileManagerPrivateInternal.copyImageToClipboard(url, callback);
   });
 
   apiFunctions.setHandleRequest('startCopy', function(
@@ -231,10 +296,23 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.installLinuxPackage(url, callback);
   });
 
-  apiFunctions.setHandleRequest('getThumbnail', function(
+  apiFunctions.setHandleRequest('getDriveThumbnail', function(
         entry, cropToSquare, callback) {
     var url = getEntryURL(entry);
-    fileManagerPrivateInternal.getThumbnail(url, cropToSquare, callback);
+    fileManagerPrivateInternal.getDriveThumbnail(url, cropToSquare, callback);
+  });
+
+  apiFunctions.setHandleRequest('getPdfThumbnail', function(
+        entry, width, height, callback) {
+    var url = getEntryURL(entry);
+    fileManagerPrivateInternal.getPdfThumbnail(url, width, height, callback);
+  });
+
+  apiFunctions.setHandleRequest('getArcDocumentsProviderThumbnail', function(
+        entry, widthHint, heightHint, callback) {
+    var url = getEntryURL(entry);
+    fileManagerPrivateInternal.getArcDocumentsProviderThumbnail(
+        url, widthHint, heightHint, callback);
   });
 
   apiFunctions.setCustomCallback('searchFiles',
@@ -259,6 +337,29 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     const url = getEntryURL(entry);
     fileManagerPrivateInternal.importCrostiniImage(url);
   });
+
+  apiFunctions.setHandleRequest(
+      'sharesheetHasTargets', function(entries, callback) {
+        var urls = entries.map(function(entry) {
+          return getEntryURL(entry);
+        });
+        fileManagerPrivateInternal.sharesheetHasTargets(urls, callback);
+      });
+
+  apiFunctions.setHandleRequest(
+      'invokeSharesheet', function(entries, callback) {
+        var urls = entries.map(function(entry) {
+          return getEntryURL(entry);
+        });
+        fileManagerPrivateInternal.invokeSharesheet(urls, callback);
+      });
+
+  apiFunctions.setHandleRequest(
+      'toggleAddedToHoldingSpace', function(entries, added, callback) {
+        const urls = entries.map(entry => getEntryURL(entry));
+        fileManagerPrivateInternal.toggleAddedToHoldingSpace(
+            urls, added, callback);
+      });
 });
 
 bindingUtil.registerEventArgumentMassager(

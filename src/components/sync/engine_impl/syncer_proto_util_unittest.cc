@@ -17,7 +17,6 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync/test/engine/mock_connection_manager.h"
-#include "components/sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -111,21 +110,18 @@ TEST(SyncerProtoUtil, NameExtractionTwoNames) {
 class SyncerProtoUtilTest : public testing::Test {
  public:
   void SetUp() override {
-    dir_maker_.SetUp();
     context_ = std::make_unique<SyncCycleContext>(
         /*connection_manager=*/nullptr,
-        /*directory=*/dir_maker_.directory(),
         /*extensions_activity=*/nullptr,
         /*listeners=*/std::vector<SyncEngineEventListener*>(),
         /*debug_info_getter=*/nullptr,
         /*model_type_registry=*/nullptr,
         /*invalidator_client_id=*/"",
+        /*cache_guid=*/"",
         /*birthday=*/"",
         /*bag_of_chips=*/"",
         /*poll_internal=*/base::TimeDelta::FromSeconds(1));
   }
-
-  void TearDown() override { dir_maker_.TearDown(); }
 
   SyncCycleContext* context() { return context_.get(); }
 
@@ -139,7 +135,6 @@ class SyncerProtoUtilTest : public testing::Test {
 
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  TestDirectorySetterUpper dir_maker_;
   std::unique_ptr<SyncCycleContext> context_;
 };
 
@@ -219,27 +214,25 @@ TEST_F(SyncerProtoUtilTest, VerifyEncryptionObsolete) {
 
 class DummyConnectionManager : public ServerConnectionManager {
  public:
-  DummyConnectionManager() : send_error_(false) {}
+  DummyConnectionManager() = default;
 
-  bool PostBufferToPath(const std::string& buffer_in,
-                        const std::string& path,
-                        const std::string& access_token,
-                        std::string* buffer_out,
-                        HttpResponse* response) override {
+  HttpResponse PostBuffer(const std::string& buffer_in,
+                          const std::string& access_token,
+                          std::string* buffer_out) override {
     if (send_error_) {
-      return false;
+      return HttpResponse::ForIoError();
     }
 
     sync_pb::ClientToServerResponse client_to_server_response;
     client_to_server_response.SerializeToString(buffer_out);
 
-    return true;
+    return HttpResponse::ForSuccess();
   }
 
   void set_send_error(bool send) { send_error_ = send; }
 
  private:
-  bool send_error_;
+  bool send_error_ = false;
 };
 
 TEST_F(SyncerProtoUtilTest, PostAndProcessHeaders) {

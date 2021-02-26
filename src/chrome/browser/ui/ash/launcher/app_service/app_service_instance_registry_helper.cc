@@ -22,9 +22,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/services/app_service/public/cpp/instance_update.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/cpp/instance_update.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "ui/wm/core/window_util.h"
@@ -38,15 +37,11 @@ AppServiceInstanceRegistryHelper::AppServiceInstanceRegistryHelper(
       launcher_controller_helper_(std::make_unique<LauncherControllerHelper>(
           controller->owner()->profile())) {
   DCHECK(controller_);
-  DCHECK(proxy_);
 }
 
 AppServiceInstanceRegistryHelper::~AppServiceInstanceRegistryHelper() = default;
 
 void AppServiceInstanceRegistryHelper::ActiveUserChanged() {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    return;
-
   proxy_ = apps::AppServiceProxyFactory::GetForProfile(
       ProfileManager::GetActiveUserProfile());
 }
@@ -59,9 +54,6 @@ void AppServiceInstanceRegistryHelper::AdditionalUserAddedToSession(
 void AppServiceInstanceRegistryHelper::OnActiveTabChanged(
     content::WebContents* old_contents,
     content::WebContents* new_contents) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    return;
-
   if (old_contents) {
     auto* window = old_contents->GetNativeView();
 
@@ -116,18 +108,12 @@ void AppServiceInstanceRegistryHelper::OnActiveTabChanged(
 void AppServiceInstanceRegistryHelper::OnTabReplaced(
     content::WebContents* old_contents,
     content::WebContents* new_contents) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    return;
-
   OnTabClosing(old_contents);
   OnTabInserted(new_contents);
 }
 
 void AppServiceInstanceRegistryHelper::OnTabInserted(
     content::WebContents* contents) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    return;
-
   std::string app_id = GetAppId(contents);
   aura::Window* window = GetWindow(contents);
 
@@ -147,14 +133,16 @@ void AppServiceInstanceRegistryHelper::OnTabInserted(
   UpdateTabWindow(app_id, window);
   apps::InstanceState state = static_cast<apps::InstanceState>(
       apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+
+  // Observe the tab, because when the system is shutdown or some other cases,
+  // the window could be destroyed without calling OnTabClosing. So observe the
+  // tab to get the notify when the window is destroyed.
+  controller_->ObserveWindow(window);
   OnInstances(app_id, window, std::string(), state);
 }
 
 void AppServiceInstanceRegistryHelper::OnTabClosing(
     content::WebContents* contents) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    return;
-
   aura::Window* window = GetWindow(contents);
 
   // When the tab is closed, if the window does not exists in the AppService
@@ -195,8 +183,16 @@ void AppServiceInstanceRegistryHelper::OnInstances(const std::string& app_id,
                                                    aura::Window* window,
                                                    const std::string& launch_id,
                                                    apps::InstanceState state) {
-  if (app_id.empty())
+  if (app_id.empty() || !window)
     return;
+
+  // If the window is not observed, this means the window is being destroyed. In
+  // this case, don't add the instance because we might keep the record for the
+  // destroyed window, which could cause crash.
+  if (state != apps::InstanceState::kDestroyed &&
+      !controller_->IsObservingWindow(window)) {
+    state = apps::InstanceState::kDestroyed;
+  }
 
   std::unique_ptr<apps::Instance> instance =
       std::make_unique<apps::Instance>(app_id, window);
@@ -224,9 +220,6 @@ void AppServiceInstanceRegistryHelper::OnInstances(const std::string& app_id,
 
 void AppServiceInstanceRegistryHelper::OnSetShelfIDForBrowserWindowContents(
     content::WebContents* contents) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    return;
-
   aura::Window* window = GetWindow(contents);
   if (!window || !window->GetToplevelWindow())
     return;
@@ -267,12 +260,15 @@ void AppServiceInstanceRegistryHelper::OnWindowVisibilityChanged(
     // state for the tab window to keep one instance for the Web app.
     auto windows = GetWindows(shelf_id.app_id);
     for (auto* it : windows) {
-      if (it->GetToplevelWindow() != window)
+      auto tab_it = tab_window_to_browser_window_.find(it);
+      if (tab_it == tab_window_to_browser_window_.end() ||
+          tab_it->second != window) {
         continue;
+      }
 
       // When the user drags a tab to a new browser, or to an other browser, the
-      // top window could be changed, so the relation for the tap window and the
-      // browser window.
+      // top window could be changed, so update the relation for the tap window
+      // and the browser window.
       UpdateTabWindow(shelf_id.app_id, it);
 
       apps::InstanceState state = CalculateVisibilityState(it, visible);
@@ -337,8 +333,12 @@ void AppServiceInstanceRegistryHelper::SetWindowActivated(
     Browser* browser = chrome::FindBrowserWithWindow(window);
     if (!browser)
       return;
+
     content::WebContents* contents =
         browser->tab_strip_model()->GetActiveWebContents();
+    if (!contents)
+      return;
+
     apps::InstanceState state = static_cast<apps::InstanceState>(
         apps::InstanceState::kStarted | apps::InstanceState::kRunning |
         apps::InstanceState::kActive | apps::InstanceState::kVisible);

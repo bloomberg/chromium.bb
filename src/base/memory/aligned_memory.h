@@ -11,8 +11,8 @@
 #include <type_traits>
 
 #include "base/base_export.h"
-#include "base/compiler_specific.h"
-#include "base/logging.h"
+#include "base/bits.h"
+#include "base/check.h"
 #include "base/process/process_metrics.h"
 #include "build/build_config.h"
 
@@ -57,22 +57,25 @@ struct AlignedFreeDeleter {
   }
 };
 
-#ifndef __has_builtin
-#define __has_builtin(x) 0  // Compatibility with non-clang compilers.
+#ifdef __has_builtin
+#define SUPPORTS_BUILTIN_IS_ALIGNED (__has_builtin(__builtin_is_aligned))
+#else
+#define SUPPORTS_BUILTIN_IS_ALIGNED 0
 #endif
 
 inline bool IsAligned(uintptr_t val, size_t alignment) {
   // If the compiler supports builtin alignment checks prefer them.
-#if __has_builtin(__builtin_is_aligned)
+#if SUPPORTS_BUILTIN_IS_ALIGNED
   return __builtin_is_aligned(val, alignment);
 #else
-  DCHECK(!((alignment - 1) & alignment))
-      << alignment << " is not a power of two";
+  DCHECK(bits::IsPowerOfTwo(alignment)) << alignment << " is not a power of 2";
   return (val & (alignment - 1)) == 0;
 #endif
 }
 
-inline bool IsAligned(void* val, size_t alignment) {
+#undef SUPPORTS_BUILTIN_IS_ALIGNED
+
+inline bool IsAligned(const void* val, size_t alignment) {
   return IsAligned(reinterpret_cast<uintptr_t>(val), alignment);
 }
 
@@ -80,7 +83,7 @@ template <typename Type>
 inline bool IsPageAligned(Type val) {
   static_assert(std::is_integral<Type>::value || std::is_pointer<Type>::value,
                 "Integral or pointer type required");
-  return base::IsAligned(val, base::GetPageSize());
+  return IsAligned(val, GetPageSize());
 }
 
 }  // namespace base

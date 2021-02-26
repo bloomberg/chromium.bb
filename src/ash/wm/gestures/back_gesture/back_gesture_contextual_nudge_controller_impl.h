@@ -7,9 +7,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/back_gesture_contextual_nudge_controller.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
-#include "ash/session/session_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -91,11 +91,15 @@ class ASH_EXPORT BackGestureContextualNudgeControllerImpl
   // whether the controller should attempt to show it immediately, or wait for a
   // window navigation (this should be set if monitoring is updated due to a
   // user action rather than a timer callback).
+  // Dismiss nudge metrics should be recorded before calling
+  // UpdateWindowMonitoring.
   void UpdateWindowMonitoring(bool can_show_nudge_immediately);
 
   // Callback function to be called after nudge animation is cancelled or
-  // completed.
-  void OnNudgeAnimationFinished();
+  // completed. |animation_completed| is true when the nudge animation has
+  // completed (i.e., finishes the entire animation sequence, which includes
+  // sliding in, bouncing and sliding out animation.)
+  void OnNudgeAnimationFinished(bool animation_completed);
 
   // Do necessary cleanup when |this| is destroyed or system is shutdown.
   void DoCleanUp();

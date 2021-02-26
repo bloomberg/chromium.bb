@@ -78,7 +78,7 @@ class ScopedLogIn {
         identity_test_env_(identity_test_env),
         account_id_(account_id) {
     PreventAccessToDBus();
-    RunSanityChecks(user_type);
+    RunValidityChecks(user_type);
     AddUser(user_type);
 
     fake_user_manager_->LoginUser(account_id_);
@@ -109,15 +109,15 @@ class ScopedLogIn {
     }
   }
 
-  // Run sanity checks ensuring the account id is valid for the given user type.
-  // If these checks go off your test is testing something that can not happen.
-  void RunSanityChecks(user_manager::UserType user_type) const {
+  // Run validity checks ensuring the account id is valid for the given user
+  // type. If these checks go off your test is testing something that can not
+  // happen.
+  void RunValidityChecks(user_manager::UserType user_type) const {
     switch (user_type) {
       case user_manager::USER_TYPE_REGULAR:
       case user_manager::USER_TYPE_CHILD:
         EXPECT_TRUE(IsGaiaAccount());
         return;
-      case user_manager::USER_TYPE_SUPERVISED:
       case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
       case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
       case user_manager::USER_TYPE_KIOSK_APP:
@@ -130,6 +130,7 @@ class ScopedLogIn {
         EXPECT_EQ(account_id_, fake_user_manager_->GetGuestAccountId());
         return;
       case user_manager::NUM_USER_TYPES:
+      case user_manager::USER_TYPE_SUPERVISED:
         NOTREACHED();
     }
   }
@@ -141,9 +142,6 @@ class ScopedLogIn {
         return;
       case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
         fake_user_manager_->AddActiveDirectoryUser(account_id_);
-        return;
-      case user_manager::USER_TYPE_SUPERVISED:
-        fake_user_manager_->AddSupervisedUser(account_id_);
         return;
       case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
         fake_user_manager_->AddPublicAccountUser(account_id_);
@@ -163,6 +161,7 @@ class ScopedLogIn {
       case user_manager::USER_TYPE_GUEST:
         fake_user_manager_->AddGuestUser();
         return;
+      case user_manager::USER_TYPE_SUPERVISED:
       case user_manager::NUM_USER_TYPES:
         NOTREACHED();
     }
@@ -279,18 +278,6 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_SecondaryUser) {
 
   EXPECT_EQ(
       chromeos::assistant::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER,
-      IsAssistantAllowedForProfile(profile()));
-}
-
-TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_SupervisedUser) {
-  ScopedLogIn login(GetFakeUserManager(), identity_test_env(),
-                    GetNonGaiaUserAccountId(profile()),
-                    user_manager::USER_TYPE_SUPERVISED);
-
-  profile()->SetSupervisedUserId("foo");
-
-  EXPECT_EQ(
-      chromeos::assistant::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER,
       IsAssistantAllowedForProfile(profile()));
 }
 

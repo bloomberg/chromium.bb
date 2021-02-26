@@ -194,7 +194,6 @@ class FileTransferController {
     chrome.fileManagerPrivate.enableExternalFileScheme();
   }
 
-
   /**
    * @param {!cr.ui.List} list Items in the list will be draggable.
    * @private
@@ -287,6 +286,23 @@ class FileTransferController {
         !this.selectionHandler_.isAvailable());
     this.appendUriList_(
         clipboardData, this.selectionHandler_.selection.entries);
+    if (util.isCopyImageEnabled()) {
+      const entries = this.selectionHandler_.selection.entries;
+      if (entries.length == 1 && FileType.isImage(entries[0])) {
+        // We are using setTimeout to ensure that the previous copy commands
+        // execute successfully, so we can append our image to the system
+        // clipboard at the end of the event loop.
+        setTimeout(() => {
+          chrome.fileManagerPrivate.copyImageToClipboard(entries[0],
+            () => {
+              if (chrome.runtime.lastError) {
+                console.error(chrome.runtime.lastError.message);
+                return;
+              }
+          });
+        });
+      }
+    }
   }
 
   /**
@@ -698,6 +714,41 @@ class FileTransferController {
   }
 
   /**
+   * Renders a drag-and-drop thumbnail. TODO(files-ng): remove renderThumbnail_
+   * and its strings, preloadedThumbnailImagePromise_, constants, etc.
+   *
+   * @return {!HTMLElement} Thumbnail element.
+   * @private
+   */
+  renderThumbnailFilesNg_() {
+    const entry = this.selectionHandler_.selection.entries[0];
+    const index = this.selectionHandler_.selection.indexes[0];
+    const items = this.selectionHandler_.selection.entries.length;
+
+    const container = /** @type {!HTMLElement} */ (
+        this.document_.body.querySelector('#drag-container'));
+    const multiple = items > 1 ? 'block' : 'none';
+    container.innerHTML = `
+      <div class='drag-box drag-multiple' style='display:${multiple}'></div>
+      <div class='drag-box drag-contents'>
+        <div class='detail-icon'></div><div class='label'>${entry.name}</div>
+      </div>
+      <div class='drag-bubble' style='display:${multiple}'>${items}</div>
+    `;
+
+    const icon = container.querySelector('.detail-icon');
+    const thumbnail = this.listContainer_.currentView.getThumbnail(index);
+    if (thumbnail) {
+      icon.style.backgroundImage = thumbnail.style.backgroundImage;
+      icon.style.backgroundSize = 'cover';
+    } else {
+      icon.setAttribute('file-type-icon', FileType.getIcon(entry));
+    }
+
+    return container;
+  }
+
+  /**
    * @param {!cr.ui.List} list Drop target list
    * @param {!Event} event A dragstart event of DOM.
    * @private
@@ -732,34 +783,43 @@ class FileTransferController {
       return;
     }
 
-    const dt = /** @type {DragEvent} */ (event).dataTransfer;
+    const dataTransfer = /** @type {DragEvent} */ (event).dataTransfer;
+
     const canCopy = this.canCopyOrDrag();
     const canCut = this.canCutOrDrag();
     if (canCopy || canCut) {
       if (canCopy && canCut) {
-        this.cutOrCopy_(dt, 'all');
+        this.cutOrCopy_(dataTransfer, 'all');
       } else if (canCopy) {
-        this.cutOrCopy_(dt, 'copyLink');
+        this.cutOrCopy_(dataTransfer, 'copyLink');
       } else {
-        this.cutOrCopy_(dt, 'move');
+        this.cutOrCopy_(dataTransfer, 'move');
       }
     } else {
       event.preventDefault();
       return;
     }
 
-    const dragThumbnail = this.renderThumbnail_();
-    let yOffset = 0;
-    // Position the drag image above the start point for touch intiated drag.
-    if (this.touching_) {
-      const thumbNailExtent = dragThumbnail.getBoundingClientRect();
-      yOffset = thumbNailExtent.height;
+    const thumbnail = {element: null, x: 0, y: 0};
+
+    if (util.isFilesNg()) {
+      thumbnail.element = this.renderThumbnailFilesNg_();
+      if (this.document_.querySelector(':root[dir=rtl]')) {
+        thumbnail.x = thumbnail.element.clientWidth * window.devicePixelRatio;
+      }
+    } else {
+      thumbnail.element = this.renderThumbnail_();
+      // Move drag image above the start point for touch initiated drags.
+      if (this.touching_) {
+        thumbnail.y = thumbnail.element.getBoundingClientRect().height;
+      }
     }
-    dt.setDragImage(dragThumbnail, 0, yOffset);
+
+    dataTransfer.setDragImage(thumbnail.element, thumbnail.x, thumbnail.y);
 
     window[DRAG_AND_DROP_GLOBAL_DATA] = {
-      sourceRootURL: dt.getData('fs/sourceRootURL'),
-      missingFileContents: dt.getData('fs/missingFileContents')
+      sourceRootURL: dataTransfer.getData('fs/sourceRootURL'),
+      missingFileContents: dataTransfer.getData('fs/missingFileContents'),
     };
   }
 
@@ -792,14 +852,22 @@ class FileTransferController {
     if (!entry && !onlyIntoDirectories) {
       entry = this.directoryModel_.getCurrentDirEntry();
     }
+
     const effectAndLabel =
         this.selectDropEffect_(event, this.getDragAndDropGlobalData_(), entry);
     event.dataTransfer.dropEffect = effectAndLabel.getDropEffect();
     event.preventDefault();
-    const label = effectAndLabel.getLabel();
+
+    if (util.isFilesNg()) {
+      return;
+    }
+
+    // TODO(files-ng): the #drop-label is not used in files-ng, remove this
+    // code and update the effectAndLabel class to remove its label code.
     if (!this.dropLabel_) {
       this.dropLabel_ = document.querySelector('div#drop-label');
     }
+    const label = effectAndLabel.getLabel();
     if (label) {
       this.dropLabel_.innerText = label;
       this.dropLabel_.style.left = event.pageX + 'px';
@@ -818,10 +886,12 @@ class FileTransferController {
    */
   onDragEnterFileList_(list, event) {
     event.preventDefault();  // Required to prevent the cursor flicker.
+
     this.lastEnteredTarget_ = event.target;
     let item = list.getListItemAncestor(
         /** @type {HTMLElement} */ (event.target));
     item = item && list.isItem(item) ? item : null;
+
     if (item === this.dropTarget_) {
       return;
     }
@@ -841,6 +911,12 @@ class FileTransferController {
    */
   onDragEnterTree_(tree, event) {
     event.preventDefault();  // Required to prevent the cursor flicker.
+
+    if (!event.relatedTarget) {
+      event.dataTransfer.dropEffect = 'move';
+      return;
+    }
+
     this.lastEnteredTarget_ = event.target;
     let item = event.target;
     while (item && !(item instanceof cr.ui.TreeItem)) {
@@ -875,6 +951,8 @@ class FileTransferController {
       this.clearDropTarget_();
       this.lastEnteredTarget_ = null;
     }
+
+    // TODO(files-ng): dropLabel_ is not used in files-ng, remove it.
     if (this.dropLabel_) {
       this.dropLabel_.style.display = 'none';
     }
@@ -935,28 +1013,51 @@ class FileTransferController {
 
     // Set the new drop target.
     this.dropTarget_ = domElement;
-
     if (!domElement || !destinationEntry.isDirectory) {
       return;
     }
 
-    if (this.selectionHandler_.selection.entries.find(element => {
-          return util.isSameEntry(element, destinationEntry);
-        })) {
+    assert(destinationEntry.isDirectory);
+
+    // Assume the destination directory won't accept this drop.
+    domElement.classList.remove('accepts');
+    domElement.classList.add('denies');
+
+    // Disallow dropping a directory on itself.
+    const entries = this.selectionHandler_.selection.entries;
+    for (let i = 0; i < entries.length; i++) {
+      if (util.isSameEntry(entries[i], destinationEntry)) {
+        return;
+      }
+    }
+
+    this.destinationEntry_ = destinationEntry;
+
+    // Add accept classes if the directory can accept this drop.
+    if (this.canPasteOrDrop_(clipboardData, destinationEntry)) {
+      domElement.classList.remove('denies');
+      domElement.classList.add('accepts');
+    }
+
+    // Change directory immediately if it's a fake entry for Crostini.
+    if (destinationEntry.rootType === VolumeManagerCommon.RootType.CROSTINI) {
+      this.changeToDropTargetDirectory_();
       return;
     }
 
-    // Add accept class if the domElement can accept the drag.
-    domElement.classList.add('accepts');
-    this.destinationEntry_ = destinationEntry;
+    // Change to the directory after the drag target hover time out.
+    const navigate = this.changeToDropTargetDirectory_.bind(this);
+    this.navigateTimer_ = setTimeout(navigate, this.dragTargetHoverTime_());
+  }
 
-    // Change directory immediately for crostini, otherwise start timer.
-    if (destinationEntry.rootType === VolumeManagerCommon.RootType.CROSTINI) {
-      this.changeToDropTargetDirectory_();
-    } else {
-      this.navigateTimer_ =
-          setTimeout(this.changeToDropTargetDirectory_.bind(this), 2000);
-    }
+  /**
+   * Return the drag target hover time in milliseconds.
+   *
+   * @private
+   * @return {number}
+   */
+  dragTargetHoverTime_() {
+    return window.IN_TEST ? 500 : 2000;
   }
 
   /**
@@ -984,12 +1085,14 @@ class FileTransferController {
    * @private
    */
   clearDropTarget_() {
-    if (this.dropTarget_ && this.dropTarget_.classList.contains('accepts')) {
-      this.dropTarget_.classList.remove('accepts');
+    if (this.dropTarget_) {
+      this.dropTarget_.classList.remove('accepts', 'denies');
     }
+
     this.dropTarget_ = null;
     this.destinationEntry_ = null;
-    if (this.navigateTimer_ !== undefined) {
+
+    if (this.navigateTimer_) {
       clearTimeout(this.navigateTimer_);
       this.navigateTimer_ = 0;
     }
@@ -1137,7 +1240,8 @@ class FileTransferController {
   }
 
   /**
-   * @return {boolean} Returns true if the current directory is not read only.
+   * @return {boolean} Returns true if the current directory is not read only,
+   *     or any of the selected entries isn't read-only.
    * @public
    */
   canCutOrDrag() {
@@ -1152,6 +1256,13 @@ class FileTransferController {
     if (metadata.some(item => item.canDelete === false)) {
       return false;
     }
+
+    for (let i = 0; i < entries.length; i++) {
+      if (util.isNonModifiable(this.volumeManager_, entries[i])) {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -1211,18 +1322,22 @@ class FileTransferController {
     if (!clipboardData) {
       return false;
     }
+
     if (!destinationEntry) {
       return false;
     }
+
     const destinationLocationInfo =
         this.volumeManager_.getLocationInfo(destinationEntry);
     if (!destinationLocationInfo || destinationLocationInfo.isReadOnly) {
       return false;
     }
+
     if (destinationLocationInfo.volumeInfo &&
         destinationLocationInfo.volumeInfo.error) {
       return false;
     }
+
     if (!clipboardData.types || clipboardData.types.indexOf('fs/tag') === -1) {
       return false;  // Unsupported type of content.
     }
@@ -1643,7 +1758,6 @@ FileTransferController.PastePlan = class {
     return [];
   }
 };
-
 
 /**
  * Converts list of urls to list of Entries with granting R/W permissions to

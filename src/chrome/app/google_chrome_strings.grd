@@ -214,9 +214,6 @@ chromium_strings.grd. -->
           Chrome OS
         </message>
       </if>
-      <message name="IDS_SHORT_PRODUCT_LOGO_ALT_TEXT" desc="Alt text for the Chrome logo image.">
-        Chrome logo
-      </message>
       <message name="IDS_PRODUCT_LOGO_ENTERPRISE_ALT_TEXT" desc="Alt text for the Chrome Enterprise logo image.">
         Chrome Enterprise logo
       </message>
@@ -225,9 +222,16 @@ chromium_strings.grd. -->
           New window
         </message>
       </if>
-      <message name="IDS_TASK_MANAGER_TITLE" desc="The title of the Task Manager window">
-        Task Manager - Google Chrome
-      </message>
+      <if expr="is_macosx or chromeos">
+        <message name="IDS_TASK_MANAGER_TITLE" desc="The title of the Task Manager window">
+          Task Manager
+        </message>
+      </if>
+      <if expr="not is_macosx and not chromeos">
+        <message name="IDS_TASK_MANAGER_TITLE" desc="The title of the Task Manager window">
+          Task Manager - Google Chrome
+        </message>
+      </if>
       <message name="IDS_SESSION_CRASHED_VIEW_UMA_OPTIN" desc="Text besides the checkbox to let users optin to UMA in the restore from previous crash bubble.">
         Help make Google Chrome better by sending crash reports and <ph name="UMA_LINK">$1<ex>usage statistics</ex></ph> to Google
       </message>
@@ -295,9 +299,12 @@ chromium_strings.grd. -->
       <message name="IDS_ABOUT_TERMS_OF_SERVICE" desc="The terms of service label in the About box.">
         Terms of Service
       </message>
+      <message name="IDS_CPU_X86_SSE2_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the computer they are using will soon be or is already unsupported.">
+        This computer will soon stop receiving Google Chrome updates because its hardware is no longer supported.
+      </message>
       <if expr="is_macosx">
-        <message name="IDS_MAC_10_9_OBSOLETE_NOW" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the OS version they are using is no longer supported.">
-          This computer will no longer receive Google Chrome updates because Mac OS X 10.9 is no longer supported.
+        <message name="IDS_MAC_10_10_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the OS version they are using will soon be or is already unsupported.">
+          To get future Google Chrome updates, you'll need OS X 10.11 or later. This computer is using OS X 10.10.
         </message>
       </if>
       <if expr="is_win">
@@ -314,6 +321,16 @@ chromium_strings.grd. -->
           Google Chrome is unresponsive. Relaunch now?
         </message>
       </if>
+      <!-- Sharing messages -->
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES" desc="The label to be shown as a help text of the dialog when user click on a phone number, if there are no phones to choose from.">
+        To send a number from here to your Android phone, sign in to Chrome on both devices.
+      </message>
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES_ORIGIN" desc="The label to be shown as a help text of the dialog when user click on a phone number, if there are no phones to choose from.">
+        To send a number from <ph name="ORIGIN">$1<ex>www.google.com</ex></ph> to your Android phone, sign in to Chrome on both devices.
+      </message>
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_DEVICE_NOT_FOUND" desc="The text to be shown on the dialog when an error occurred because the device is not synced.">
+        Make sure you are signed in to Chrome on your <ph name="TARGET_DEVICE_NAME">$1<ex>Pixel XL</ex></ph> and then try sending again.
+      </message>
       <!-- Uninstall messages -->
       <if expr="is_win">
         <message name="IDS_UNINSTALL_CLOSE_APP" desc="Message to user when uninstall detects other app instance running">
@@ -330,7 +347,7 @@ chromium_strings.grd. -->
         Make Google Chrome the default browser
       </message>
       <if expr="chromeos">
-        <message name="IDS_EXTERNAL_PROTOCOL_TITLE" desc="External Protocol Dialog Title">
+        <message name="IDS_EXTERNAL_PROTOCOL_NO_HANDLER_TITLE" desc="External Protocol Dialog Title">
           Google Chrome OS can't open this page.
         </message>
       </if>
@@ -704,6 +721,16 @@ Google Chrome is unable to recover your settings.
         </message>
       </if>
 
+      <!-- Dice Web Signin Interception Bubble-->
+      <if expr="not chromeos and not is_android">
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_TITLE" desc="Title of the web signin interception bubble">
+          Create your own profile in Chrome?
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_CONSUMER_BUBBLE_DESC" desc="Body of the web signin interception bubble when the new account is managed and the existing account is personal">
+          To separate personal and <ph name="NEW_USER">$1<ex>example.com</ex></ph> browsing, create a new profile in Chrome
+        </message>
+      </if>
+
       <!-- Chrome Cleanup prompt -->
       <if expr="is_win">
         <message name="IDS_CHROME_CLEANUP_PROMPT_EXPLANATION" desc="Description in the Chrome Cleanup dialog that Chrome browser shows when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Appears under the title asking 'Remove harmful software?' Actor is Chrome; we are asking, Do you want Chrome to remove harmful software? 'it' is harmful software. User has the option of clicking 'Remove' to proceed with a cleanup, or 'Details' to see more details. The description is also shown on the Chrome Cleanup section of the Settings page, under 'Remove harmful software' title. Preferrably, the translation for this string should parallel IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_CURRENTLY_REMOVING.">
@@ -964,9 +991,6 @@ Google Chrome is unable to recover your settings.
       </message>
 
       <!-- User menu errors -->
-      <message name="IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE" desc="Message of the out-of-date Chrome client error in the header of desktop user menu.">
-        Chrome is out of date
-      </message>
       <message name="IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON" desc="Button in the header of desktop user menu that prompts the user to update Chrome to fix the out-of-date Chrome client error.">
         Update Chrome
       </message>
@@ -1150,6 +1174,41 @@ Google Chrome is unable to recover your settings.
         </message>
         <message name="IDS_EXTENSION_ENABLE_BLOCKED_BY_PARENT_PROMPT_MESSAGE" desc="Text for the dialog indicating that a parent has blocked extensions and apps.">
          Your parent has turned off "Permissions for sites, apps and extensions" for Chrome. Enabling this <ph name="EXTENSION_TYPE_PARAMETER">$1<ex>extension</ex></ph> is not allowed.
+        </message>
+      </if>
+
+      <!-- Profile Picker -->
+      <if expr="not chromeos and not is_android">
+        <message name="IDS_PROFILE_PICKER_MAIN_VIEW_TITLE" desc="Profile picker main view title">
+          Who's using Chrome?
+        </message>
+        <message name="IDS_PROFILE_PICKER_MAIN_VIEW_SUBTITLE" desc="Profile picker main view subtitle">
+          Use different profiles in Chrome to separate work and personal browsing, or for different people who use this device
+        </message>
+        <message name="IDS_PROFILE_PICKER_REMOVE_WARNING_SIGNED_IN_PROFILE" desc="Remove warning message shown for signed in profiles shown when the user selects remove from the 3 dotted menu">
+          This will permanently delete your browsing data from this device. To recover the data, sign in to Chrome as
+        </message>
+        <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_PROFILE_TYPE_CHOICE_TITLE" desc="Profile picker profile type choice title">
+          Set up your new Chrome profile
+        </message>
+        <message name="IDS_PROFILE_PICKER_ASK_ON_STARTUP" desc="Text for the checkbox on the profile picker main view">
+          Ask when Chrome opens
+        </message>
+      </if>
+
+      <!-- Rosetta installation for protected media -->
+      <if expr="is_macosx">
+        <message name="IDS_ROSETTA_INSTALL_TITLE"
+                   desc="Title of the 'do you want to install Rosetta' dialog. Used when there is a page title.">
+          To enable Chrome to play protected media, you need to install Rosetta. Do you want to install it now?
+        </message>
+        <message name="IDS_ROSETTA_INSTALL_BODY"
+                   desc="Body text of the 'do you want to install Rosetta' dialog.">
+          Rosetta enables Chrome to play the protected media on this page.
+        </message>
+        <message name="IDS_ROSETTA_INSTALL_RESTART_DIALOG"
+                   desc="Title text of the dialog once Rosetta is installed.">
+          To use Rosetta to play protected media, you must restart Chrome.
         </message>
       </if>
     </messages>

@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -104,14 +105,14 @@ void ImageInputType::HandleDOMActivateEvent(Event& event) {
   event.SetDefaultHandled();
 }
 
-bool ImageInputType::TypeShouldForceLegacyLayout() const {
-  return true;
-}
-
 LayoutObject* ImageInputType::CreateLayoutObject(const ComputedStyle& style,
                                                  LegacyLayout legacy) const {
-  if (use_fallback_content_)
+  if (use_fallback_content_) {
+    if (style.Display() == EDisplay::kInline)
+      return new LayoutInline(&GetElement());
+
     return LayoutObjectFactory::CreateBlockFlow(GetElement(), style, legacy);
+  }
   LayoutImage* image = new LayoutImage(&GetElement());
   image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
   return image;
@@ -155,7 +156,7 @@ void ImageInputType::OnAttachWithLayoutObject() {
 
   HTMLImageLoader& image_loader = GetElement().EnsureImageLoader();
   LayoutImageResource* image_resource =
-      ToLayoutImage(layout_object)->ImageResource();
+      To<LayoutImage>(layout_object)->ImageResource();
   image_resource->SetImageResource(image_loader.GetContent());
 }
 

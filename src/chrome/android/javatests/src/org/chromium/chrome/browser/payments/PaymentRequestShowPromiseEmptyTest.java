@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -43,8 +43,8 @@ public class PaymentRequestShowPromiseEmptyTest implements MainActivityStartCall
     @Override
     public void onMainActivityStarted() throws TimeoutException {
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://example.com", true,
-                "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US",
-                "650-253-0000", "", "en-US"));
+                "" /* honorific prefix */, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles",
+                "", "90291", "", "US", "650-253-0000", "", "en-US"));
     }
 
     @Test

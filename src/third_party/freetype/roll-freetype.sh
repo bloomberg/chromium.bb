@@ -9,7 +9,7 @@ rolldeps() {
 addtrybots() {
   STEP="add trybots" &&
   OLD_MSG=$(git show -s --format=%B HEAD) &&
-  git commit --amend -m"$OLD_MSG" -m"CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_chromium_msan_rel_ng"
+  git commit --amend -m"$OLD_MSG" -m"Cq-Include-Trybots: luci.chromium.try:linux_chromium_msan_rel_ng"
 }
 
 addotherprojectbugs() {
@@ -38,10 +38,10 @@ mergeinclude() {
   previousrev &&
   STEP="merge ${INCLUDE}: check for merge conflicts" &&
   TMPFILE=$(mktemp) &&
-  git -C third_party/freetype/src/ cat-file blob ${PREVIOUS_FREETYPE_REV}:include/freetype/config/${INCLUDE} >> ${TMPFILE} &&
-  git merge-file third_party/freetype/include/freetype-custom-config/${INCLUDE} ${TMPFILE} third_party/freetype/src/include/freetype/config/${INCLUDE} &&
+  git -C third_party/freetype/src/ cat-file blob ${PREVIOUS_FREETYPE_REV}:include/${INCLUDE} >> ${TMPFILE} &&
+  git merge-file third_party/freetype/include/freetype-custom/${INCLUDE} ${TMPFILE} third_party/freetype/src/include/${INCLUDE} &&
   rm ${TMPFILE} &&
-  git add third_party/freetype/include/freetype-custom-config/${INCLUDE}
+  git add third_party/freetype/include/freetype-custom/${INCLUDE}
 }
 
 checkmodules() {
@@ -59,8 +59,8 @@ rolldeps "$@" &&
 addtrybots &&
 addotherprojectbugs &&
 updatereadme &&
-mergeinclude ftoption.h &&
-mergeinclude ftconfig.h &&
+mergeinclude "freetype/config/ftoption.h" &&
+mergeinclude "freetype/config/public-macros.h" &&
 checkmodules &&
 commit ||
 { echo "Failed step ${STEP}"; exit 1; }

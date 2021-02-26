@@ -50,7 +50,7 @@ TEST(MediaQuerySetTest, Basic) {
       {"not screen and (color)", nullptr},
       {"only screen and (color)", nullptr},
       {"screen and (color), projection and (color)", nullptr},
-      {"aural and (device-aspect-ratio: 16/9)", nullptr},
+      {"aural and (device-aspect-ratio: 16 / 9)", nullptr},
       {"speech and (min-device-width: 800px)", nullptr},
       {"example", nullptr},
       {"screen and (max-weight: 3kg) and (color), (monochrome)",
@@ -59,16 +59,15 @@ TEST(MediaQuerySetTest, Basic) {
       {"(example, all,), speech", "not all, speech"},
       {"&test, screen", "not all, screen"},
       {"print and (min-width: 25cm)", nullptr},
-      {"screen and (min-width: 400px) and (max-width: 700px)",
-       "screen and (max-width: 700px) and (min-width: 400px)"},
+      {"screen and (min-width: 400px) and (max-width: 700px)", nullptr},
       {"screen and (device-width: 800px)", nullptr},
       {"screen and (device-height: 60em)", nullptr},
       {"screen and (device-height: 60rem)", nullptr},
       {"screen and (device-height: 60ch)", nullptr},
-      {"screen and (device-aspect-ratio: 16/9)", nullptr},
+      {"screen and (device-aspect-ratio: 16 / 9)", nullptr},
       {"(device-aspect-ratio: 16.0/9.0)", "not all"},
-      {"(device-aspect-ratio: 16/ 9)", "(device-aspect-ratio: 16/9)"},
-      {"(device-aspect-ratio: 16/\r9)", "(device-aspect-ratio: 16/9)"},
+      {"(device-aspect-ratio: 16/ 9)", "(device-aspect-ratio: 16 / 9)"},
+      {"(device-aspect-ratio: 16/\r9)", "(device-aspect-ratio: 16 / 9)"},
       {"all and (color)", "(color)"},
       {"all and (min-color: 1)", "(min-color: 1)"},
       {"all and (min-color: 1.0)", "not all"},
@@ -191,7 +190,6 @@ TEST(MediaQuerySetTest, Basic) {
 }
 
 TEST(MediaQuerySetTest, BehindRuntimeFlag) {
-  ScopedMediaQueryShapeForTest shape_flag(false);
   ScopedForcedColorsForTest forced_colors_flag(false);
   ScopedMediaQueryNavigationControlsForTest navigation_controls_flag(false);
   ScopedCSSFoldablesForTest foldables_flag(false);
@@ -199,7 +197,6 @@ TEST(MediaQuerySetTest, BehindRuntimeFlag) {
   // The first string represents the input string, the second string represents
   // the output string.
   MediaQuerySetTestCase test_cases[] = {
-      {"(shape)", "not all"},
       {"(forced-colors)", "not all"},
       {"(navigation-controls)", "not all"},
       {"(screen-spanning)", "not all"},

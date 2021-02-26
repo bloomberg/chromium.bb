@@ -4,6 +4,8 @@
 
 #include "cc/test/test_layer_tree_host_base.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
@@ -73,9 +75,9 @@ std::unique_ptr<FakeLayerTreeHostImpl> TestLayerTreeHostBase::TakeHostImpl() {
 
 void TestLayerTreeHostBase::SetupDefaultTrees(const gfx::Size& layer_bounds) {
   scoped_refptr<FakeRasterSource> pending_raster_source =
-      FakeRasterSource::CreateFilled(layer_bounds);
+      FakeRasterSource::CreateFilledWithText(layer_bounds);
   scoped_refptr<FakeRasterSource> active_raster_source =
-      FakeRasterSource::CreateFilled(layer_bounds);
+      FakeRasterSource::CreateFilledWithText(layer_bounds);
 
   SetupTrees(std::move(pending_raster_source), std::move(active_raster_source));
 }
@@ -119,6 +121,8 @@ void TestLayerTreeHostBase::SetupPendingTree(
     auto* page_scale_layer = AddLayer<LayerImpl>(pending_tree);
     pending_layer_ = AddLayer<FakePictureLayerImpl>(pending_tree);
     pending_layer_->SetDrawsContent(true);
+    // LCD-text tests require the layer to be initially opaque.
+    pending_layer_->SetContentsOpaque(true);
 
     pending_tree->SetElementIdsForTesting();
     SetupRootProperties(pending_root);

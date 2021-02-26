@@ -8,8 +8,9 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.support.test.filters.SmallTest;
 import android.util.SparseArray;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,7 +29,8 @@ import java.util.Locale;
 /** Tests that translations work correctly for Java strings inside bundles. */
 @RunWith(WebLayerJUnit4ClassRunner.class)
 public class BundleLanguageTest {
-    private static final String WEBLAYER_SPECIFIC_STRING = "string/geolocation_permission_title";
+    private static final String WEBLAYER_SPECIFIC_STRING =
+            "string/infobar_missing_location_permission_text";
     private static final String SHARED_STRING = "string/color_picker_dialog_title";
 
     @Rule
@@ -36,11 +38,13 @@ public class BundleLanguageTest {
             new InstrumentationActivityTestRule();
 
     private Context mRemoteContext;
+    private Context mWebLayerContext;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
         mRemoteContext = TestWebLayer.getRemoteContext(activity.getApplicationContext());
+        mWebLayerContext = TestWebLayer.getWebLayerContext(activity.getApplicationContext());
     }
 
     @Test
@@ -79,11 +83,11 @@ public class BundleLanguageTest {
     @SmallTest
     public void testBasePackageIdCorrect() throws Exception {
         AssetManager assetManager = createEmptyAssetManager();
-        addAssetPath(assetManager, mRemoteContext.getApplicationInfo().sourceDir);
+        addAssetPath(assetManager, mWebLayerContext.getApplicationInfo().sourceDir);
         SparseArray<String> packageIds = getPackageIds(assetManager);
         Assert.assertEquals(2, packageIds.size());
         Assert.assertEquals(packageIds.get(1), "android");
-        Assert.assertEquals(packageIds.get(2), mRemoteContext.getPackageName());
+        Assert.assertEquals(packageIds.get(2), mWebLayerContext.getPackageName());
     }
 
     /** Tests that locale splits only have resources from the hardcoded locale package ID. */
@@ -91,14 +95,14 @@ public class BundleLanguageTest {
     @SmallTest
     public void testLocalePackageIdCorrect() throws Exception {
         AssetManager assetManager = createEmptyAssetManager();
-        for (String path : mRemoteContext.getApplicationInfo().splitSourceDirs) {
+        for (String path : mWebLayerContext.getApplicationInfo().splitSourceDirs) {
             addAssetPath(assetManager, path);
         }
         SparseArray<String> packageIds = getPackageIds(assetManager);
         Assert.assertEquals(2, packageIds.size());
         Assert.assertEquals(packageIds.get(1), "android");
         Assert.assertEquals(packageIds.get(ResourceUtil.REQUIRED_PACKAGE_IDENTIFIER),
-                mRemoteContext.getPackageName() + "_translations");
+                mWebLayerContext.getPackageName() + "_translations");
     }
 
     private String getStringForLocale(String name, String locale) {
@@ -106,7 +110,8 @@ public class BundleLanguageTest {
         Configuration config = resources.getConfiguration();
         config.setLocale(new Locale(locale));
         resources.updateConfiguration(config, resources.getDisplayMetrics());
-        return resources.getString(ResourceUtil.getIdentifier(mRemoteContext, name));
+        return resources.getString(ResourceUtil.getIdentifier(
+                mRemoteContext, name, mWebLayerContext.getPackageName()));
     }
 
     private static AssetManager createEmptyAssetManager() throws ReflectiveOperationException {

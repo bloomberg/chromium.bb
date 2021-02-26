@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import("//base/allocator/allocator.gni")
+import("//build/apple/tweak_info_plist.gni")
 import("//build/config/features.gni")
 import("//build/config/ios/rules.gni")
-import("//build/mac/tweak_info_plist.gni")
 import("//ios/chrome/features.gni")
 import("//rlz/buildflags/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -52,8 +52,6 @@ source_set("browser") {
     "ios_chrome_field_trials.h",
     "ios_chrome_io_thread.h",
     "ios_chrome_io_thread.mm",
-    "ios_first_run_field_trials.cc",
-    "ios_first_run_field_trials.h",
     "notification_promo.cc",
     "notification_promo.h",
   ]
@@ -100,16 +98,13 @@ source_set("browser") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/complex_tasks",
     "//ios/chrome/browser/download",
-    "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/itunes_urls",
-    "//ios/chrome/browser/signin:feature_flags",
-    "//ios/chrome/browser/ssl:feature_flags",
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/first_run:field_trial",
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/omnibox",
-    "//ios/chrome/browser/ui/toolbar/public:feature_flags",
     "//ios/chrome/browser/ui/toolbar_container:feature_flags",
     "//ios/chrome/browser/web:feature_flags",
     "//ios/chrome/common",
@@ -135,7 +130,7 @@ source_set("browser") {
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/browser_state",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("utils") {
@@ -154,7 +149,6 @@ source_set("utils") {
     "//components/password_manager/core/common",
     "//components/variations",
     "//ios/chrome/browser/browsing_data:feature_flags",
-    "//ios/chrome/browser/passwords:feature_flags",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/infobars:feature_flags",
   ]
@@ -171,7 +165,7 @@ source_set("chrome_url_constants") {
     "//base",
     "//ios/components/webui:url_constants",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("pref_names") {
@@ -185,8 +179,8 @@ source_set("pref_names") {
 source_set("browser_impl") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "application_context_impl.cc",
     "application_context_impl.h",
+    "application_context_impl.mm",
     "ios_chrome_main_parts.h",
     "ios_chrome_main_parts.mm",
   ]
@@ -270,6 +264,9 @@ tweak_info_plist("experimental_info_plist") {
   info_plists = [ "resources/Settings.bundle/Experimental.plist" ]
   if (ios_enable_metrickit) {
     info_plists += [ "resources/Settings.bundle/ExperimentalMetricKit.plist" ]
+  }
+  if (ios_enable_sandbox_dump) {
+    info_plists += [ "resources/Settings.bundle/ExperimentalSandboxDump.plist" ]
   }
   info_plists += [
     "resources/Settings.bundle/ExperimentalFlags.plist",

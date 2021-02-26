@@ -26,7 +26,8 @@ class SerialIoHandlerWin : public SerialIoHandler,
   void CancelReadImpl() override;
   void CancelWriteImpl() override;
   bool ConfigurePortImpl() override;
-  bool Flush() const override;
+  void Flush(mojom::SerialPortFlushMode mode) const override;
+  void Drain() override;
   mojom::SerialPortControlSignalsPtr GetControlSignals() const override;
   bool SetControlSignals(
       const mojom::SerialHostControlSignals& control_signals) override;
@@ -47,24 +48,14 @@ class SerialIoHandlerWin : public SerialIoHandler,
                      DWORD bytes_transfered,
                      DWORD error) override;
 
-  void OnDeviceRemoved(const base::string16& device_path);
-
-  // Context used for asynchronous WaitCommEvent calls.
-  std::unique_ptr<base::MessagePumpForIO::IOContext> comm_context_;
+  void ClearPendingError();
+  void OnDeviceRemoved(const std::wstring& device_path);
 
   // Context used for overlapped reads.
   std::unique_ptr<base::MessagePumpForIO::IOContext> read_context_;
 
   // Context used for overlapped writes.
   std::unique_ptr<base::MessagePumpForIO::IOContext> write_context_;
-
-  // Asynchronous event mask state
-  DWORD event_mask_ = 0;
-
-  // Indicates if a pending read is waiting on initial data arrival via
-  // WaitCommEvent, as opposed to waiting on actual ReadFile completion
-  // after a corresponding WaitCommEvent has completed.
-  bool is_comm_pending_ = false;
 
   // The helper lives on the UI thread and holds a weak reference back to the
   // handler that owns it.

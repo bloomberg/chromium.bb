@@ -17,41 +17,49 @@ from dashboard.common import utils
 
 class MockIssueTrackerService(object):
   """A fake version of IssueTrackerService that returns expected data."""
+
   def __init__(self, http=None):
     pass
 
   @classmethod
-  def List(cls, *unused_args, **unused_kwargs):
-    return {'items': [
-        {
-            'id': 12345,
-            'summary': '5% regression in bot/suite/x at 10000:20000',
-            'state': 'open',
-            'status': 'New',
-            'author': {'name': 'exam...@google.com'},
-        },
-        {
-            'id': 13579,
-            'summary': '1% regression in bot/suite/y at 10000:20000',
-            'state': 'closed',
-            'status': 'WontFix',
-            'author': {'name': 'exam...@google.com'},
-        },
-    ]}
+  def List(cls, project='chromium', *unused_args, **unused_kwargs):
+    del project
+    return {
+        'items': [
+            {
+                'id': 12345,
+                'summary': '5% regression in bot/suite/x at 10000:20000',
+                'state': 'open',
+                'status': 'New',
+                'author': {
+                    'name': 'exam...@google.com'
+                },
+            },
+            {
+                'id': 13579,
+                'summary': '1% regression in bot/suite/y at 10000:20000',
+                'state': 'closed',
+                'status': 'WontFix',
+                'author': {
+                    'name': 'exam...@google.com'
+                },
+            },
+        ]
+    }
 
   @classmethod
-  def GetIssue(cls, _):
+  def GetIssue(cls, bug_id, project='chromium'):
+    del bug_id
+    del project
     return {
-        'cc': [
-            {
-                'kind': 'monorail#issuePerson',
-                'htmlLink': 'https://bugs.chromium.org/u/1253971105',
-                'name': 'user@chromium.org',
-            }, {
-                'kind': 'monorail#issuePerson',
-                'name': 'hello@world.org',
-            }
-        ],
+        'cc': [{
+            'kind': 'monorail#issuePerson',
+            'htmlLink': 'https://bugs.chromium.org/u/1253971105',
+            'name': 'user@chromium.org',
+        }, {
+            'kind': 'monorail#issuePerson',
+            'name': 'hello@world.org',
+        }],
         'labels': [
             'Type-Bug',
             'Pri-3',
@@ -80,7 +88,8 @@ class MockIssueTrackerService(object):
     }
 
   @classmethod
-  def GetIssueComments(cls, _):
+  def GetIssueComments(cls, _, project='chromium'):
+    del project
     return [{
         'content': 'Comment one',
         'published': '2017-06-28T04:42:55',
@@ -96,13 +105,17 @@ class BugsTest(testing_common.TestCase):
 
   def setUp(self):
     super(BugsTest, self).setUp()
-    self.SetUpApp([(r'/api/bugs/(.*)', bugs.BugsHandler)])
+    self.SetUpApp([
+        (r'/api/bugs/p/(.+)/(.+)', bugs.BugsWithProjectHandler),
+        (r'/api/bugs/(.*)', bugs.BugsHandler),
+    ])
+
     # Add a fake issue tracker service that we can get call values from.
     self.original_service = bugs.issue_tracker_service.IssueTrackerService
     bugs.issue_tracker_service = mock.MagicMock()
     self.service = MockIssueTrackerService
     bugs.issue_tracker_service.IssueTrackerService = self.service
-    self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_WHITELIST[0])
+    self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_ALLOWLIST[0])
 
   def tearDown(self):
     super(BugsTest, self).tearDown()
@@ -122,10 +135,31 @@ class BugsTest(testing_common.TestCase):
     self.assertEqual('owner@chromium.org', bug.get('owner'))
     self.assertEqual('2017-06-28T01:26:53', bug.get('published'))
     self.assertEqual('2018-03-01T16:16:22', bug.get('updated'))
+    self.assertEqual('chromium', bug.get('projectId'))
     self.assertEqual(2, len(bug.get('comments')))
     self.assertEqual('Comment two', bug.get('comments')[1].get('content'))
-    self.assertEqual(
-        'author-two@chromium.org', bug.get('comments')[1].get('author'))
+    self.assertEqual('author-two@chromium.org',
+                     bug.get('comments')[1].get('author'))
+
+  @mock.patch.object(utils, 'ServiceAccountHttp', mock.MagicMock())
+  def testPost_WithAlternateUrlWorksWithProjects(self):
+    self.SetCurrentUserOAuth(testing_common.INTERNAL_USER)
+    response = self.Post('/api/bugs/p/chromium/123456?include_comments=true')
+    bug = self.GetJsonValue(response, 'bug')
+    self.assertEqual('The bug title', bug.get('summary'))
+    self.assertEqual(2, len(bug.get('cc')))
+    self.assertEqual('hello@world.org', bug.get('cc')[1])
+    self.assertEqual('Fixed', bug.get('status'))
+    self.assertEqual('closed', bug.get('state'))
+    self.assertEqual('author@chromium.org', bug.get('author'))
+    self.assertEqual('owner@chromium.org', bug.get('owner'))
+    self.assertEqual('2017-06-28T01:26:53', bug.get('published'))
+    self.assertEqual('2018-03-01T16:16:22', bug.get('updated'))
+    self.assertEqual('chromium', bug.get('projectId'))
+    self.assertEqual(2, len(bug.get('comments')))
+    self.assertEqual('Comment two', bug.get('comments')[1].get('content'))
+    self.assertEqual('author-two@chromium.org',
+                     bug.get('comments')[1].get('author'))
 
   @mock.patch.object(utils, 'ServiceAccountHttp', mock.MagicMock())
   def testPost_WithValidBugButNoComments(self):
@@ -138,8 +172,8 @@ class BugsTest(testing_common.TestCase):
   @mock.patch.object(utils, 'ServiceAccountHttp', mock.MagicMock())
   def testPost_Recent(self):
     self.SetCurrentUserOAuth(testing_common.INTERNAL_USER)
-    self.assertEqual(MockIssueTrackerService.List()['items'], self.GetJsonValue(
-        self.Post('/api/bugs/recent'), 'bugs'))
+    self.assertEqual(MockIssueTrackerService.List()['items'],
+                     self.GetJsonValue(self.Post('/api/bugs/recent'), 'bugs'))
 
   @mock.patch.object(utils, 'ServiceAccountHttp', mock.MagicMock())
   def testPost_WithInvalidBugIdParameter_ShowsError(self):

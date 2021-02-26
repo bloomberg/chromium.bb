@@ -624,9 +624,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefPersist) {
   ASSERT_FLOAT_EQ(kScale, fontSize / oldFontSize);
 }
 
-// Disabled for flakes, crbug.com/1064776.
-IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       DISABLED_UISetsPrefs) {
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, UISetsPrefs) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -638,7 +636,12 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   view_url = url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme,
                                                    original_url, "Title");
   ViewSingleDistilledPage(view_url, "text/html");
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
+
+  // Wait for all currently executing scripts to finish. Otherwise, the
+  // distiller object used to send the prefs to the browser from the JavaScript
+  // may not exist, causing test flakiness.
+  base::RunLoop().RunUntilIdle();
 
   DistilledPagePrefs* distilled_page_prefs =
       DomDistillerServiceFactory::GetForBrowserContext(browser()->profile())
@@ -646,14 +649,14 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
 
   // Verify that the initial preferences aren't the same as those set below.
   ExpectBodyHasThemeAndFont(contents, "light", "sans-serif");
+  std::string initial_font_size;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(contents, kGetFontSize,
+                                                     &initial_font_size));
+  EXPECT_EQ(initial_font_size, "16px");
   EXPECT_NE(mojom::Theme::kDark, distilled_page_prefs->GetTheme());
   EXPECT_NE(mojom::FontFamily::kMonospace,
             distilled_page_prefs->GetFontFamily());
-
-  // Wait for all currently executing scripts to finish. Otherwise, the
-  // distiller object used to send the prefs to the browser from the JavaScript
-  // may not exist, causing test flakiness.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_NE(3.0, distilled_page_prefs->GetFontScaling());
 
   // 'Click' the associated UI elements for changing each preference.
   const std::string script = R"(
@@ -676,6 +679,9 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
         document.querySelector(
             '#font-family-selection option[value="monospace"]')
           .dispatchEvent(new Event("change", { bubbles: true }));
+        const slider = document.getElementById('font-size-selection');
+        slider.value = 9;
+        slider.dispatchEvent(new Event("input", {bubbles: true}));
       })();)";
   content::DOMMessageQueue queue(contents);
   std::string result;
@@ -687,7 +693,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   PrefChangeObserver observer;
   while (distilled_page_prefs->GetTheme() != mojom::Theme::kDark ||
          mojom::FontFamily::kMonospace !=
-             distilled_page_prefs->GetFontFamily()) {
+             distilled_page_prefs->GetFontFamily() ||
+         3.0f != distilled_page_prefs->GetFontScaling()) {
     observer.WaitForChange(distilled_page_prefs);
   }
 }

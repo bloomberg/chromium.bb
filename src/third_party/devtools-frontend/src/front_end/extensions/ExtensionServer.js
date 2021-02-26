@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
@@ -37,11 +40,13 @@ import * as ProtocolClient from '../protocol_client/protocol_client.js';  // esl
 import * as Root from '../root/root.js';                                  // eslint-disable-line no-unused-vars
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
+import * as ThemeSupport from '../theme_support/theme_support.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
 
 import {ExtensionButton, ExtensionPanel, ExtensionSidebarPane} from './ExtensionPanel.js';
 import {ExtensionTraceProvider, TracingSession} from './ExtensionTraceProvider.js';  // eslint-disable-line no-unused-vars
+import {LanguageExtensionEndpoint} from './LanguageExtensionEndpoint.js';
 
 const extensionOriginSymbol = Symbol('extensionOrigin');
 
@@ -50,12 +55,16 @@ const kAllowedOrigins = [
   'chrome://new-tab-page',
 ].map(url => (new URL(url)).origin);
 
+/** @type {?ExtensionServer} */
+let extensionServerInstance;
+
 /**
  * @unrestricted
  */
 export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @suppressGlobalPropertiesCheck
+   * @private
    */
   constructor() {
     super();
@@ -107,6 +116,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     this._registerHandler(commands.OpenResource, this._onOpenResource.bind(this));
     this._registerHandler(commands.Unsubscribe, this._onUnsubscribe.bind(this));
     this._registerHandler(commands.UpdateButton, this._onUpdateButton.bind(this));
+    this._registerHandler(commands.RegisterLanguageExtensionPlugin, this._registerLanguageExtensionEndpoint.bind(this));
     window.addEventListener('message', this._onWindowMessage.bind(this), false);  // Only for main window.
 
     /** @suppress {checkTypes} */
@@ -119,7 +129,22 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.SetInspectedTabId, this._setInspectedTabId, this);
 
+    this._languageExtensionRequests = new Map();
+    /** @type {!Array<!LanguageExtensionEndpoint>} */
+    this._languageExtensionEndpoints = [];
     this._initExtensions();
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!extensionServerInstance || forceNew) {
+      extensionServerInstance = new ExtensionServer();
+    }
+
+    return extensionServerInstance;
   }
 
   initializeExtensions() {
@@ -162,6 +187,23 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
    */
   notifyButtonClicked(identifier) {
     this._postNotification(Extensions.extensionAPI.Events.ButtonClicked + identifier);
+  }
+
+  _registerLanguageExtensionEndpoint(message, shared_port) {
+    if (!Root.Runtime.experiments.isEnabled('wasmDWARFDebugging')) {
+      return this._status.E_FAILED('WebAssembly DWARF support needs to be enabled to use this extension');
+    }
+
+    const {pluginName, port, supportedScriptTypes: {language, symbol_types}} = message;
+    const symbol_types_array = /** @type !Array<string> */
+        (Array.isArray(symbol_types) && symbol_types.every(e => typeof e === 'string') ? symbol_types : []);
+    const extension = new LanguageExtensionEndpoint(pluginName, {language, symbol_types: symbol_types_array}, port);
+    this._languageExtensionEndpoints.push(extension);
+    this.dispatchEventToListeners(Events.LanguageExtensionEndpointAdded, extension);
+  }
+
+  get languageExtensionEndpoints() {
+    return this._languageExtensionEndpoints;
   }
 
   _inspectedURLChanged(event) {
@@ -283,11 +325,11 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     styleSheet.textContent = message.styleSheet;
     document.head.appendChild(styleSheet);
 
-    self.UI.themeSupport.addCustomStylesheet(message.styleSheet);
+    ThemeSupport.ThemeSupport.instance().addCustomStylesheet(message.styleSheet);
     // Add to all the shadow roots that have already been created
     for (let node = document.body; node; node = node.traverseNextNode(document.body)) {
       if (node instanceof ShadowRoot) {
-        self.UI.themeSupport.injectCustomStyleSheets(node);
+        ThemeSupport.ThemeSupport.instance().injectCustomStyleSheets(node);
       }
     }
   }
@@ -296,7 +338,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     const id = message.id;
     // The ids are generated on the client API side and must be unique, so the check below
     // shouldn't be hit unless someone is bypassing the API.
-    if (id in this._clientObjects || self.UI.inspectorView.hasPanel(id)) {
+    if (id in this._clientObjects || UI.InspectorView.InspectorView.instance().hasPanel(id)) {
       return this._status.E_EXISTS(id);
     }
 
@@ -306,7 +348,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     const panelView =
         new ExtensionServerPanelView(persistentId, message.title, new ExtensionPanel(this, persistentId, id, page));
     this._clientObjects[id] = panelView;
-    self.UI.inspectorView.addPanel(panelView);
+    UI.InspectorView.InspectorView.instance().addPanel(panelView);
     return this._status.OK();
   }
 
@@ -316,7 +358,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     if (panelView && panelView instanceof ExtensionServerPanelView) {
       panelViewId = panelView.viewId();
     }
-    self.UI.inspectorView.showPanel(panelViewId);
+    UI.InspectorView.InspectorView.instance().showPanel(panelViewId);
   }
 
   _onCreateToolbarButton(message, port) {
@@ -434,7 +476,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
       return this._status.OK();
     }
 
-    const request = self.SDK.networkLog.requestForURL(message.url);
+    const request = SDK.NetworkLog.NetworkLog.instance().requestForURL(message.url);
     if (request) {
       Common.Revealer.reveal(request);
       return this._status.OK();
@@ -494,7 +536,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   async _onGetHAR() {
-    const requests = self.SDK.networkLog.requests();
+    const requests = SDK.NetworkLog.NetworkLog.instance().requests();
     const harLog = await SDK.HARLog.HARLog.build(requests);
     for (let i = 0; i < harLog.entries.length; ++i) {
       harLog.entries[i]._requestId = this._requestId(requests[i]);
@@ -676,14 +718,16 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
      * @this {ExtensionServer}
      */
     function onElementsSubscriptionStarted() {
-      self.UI.context.addFlavorChangeListener(SDK.DOMModel.DOMNode, this._notifyElementsSelectionChanged, this);
+      UI.Context.Context.instance().addFlavorChangeListener(
+          SDK.DOMModel.DOMNode, this._notifyElementsSelectionChanged, this);
     }
 
     /**
      * @this {ExtensionServer}
      */
     function onElementsSubscriptionStopped() {
-      self.UI.context.removeFlavorChangeListener(SDK.DOMModel.DOMNode, this._notifyElementsSelectionChanged, this);
+      UI.Context.Context.instance().removeFlavorChangeListener(
+          SDK.DOMModel.DOMNode, this._notifyElementsSelectionChanged, this);
     }
 
     this._registerSubscriptionHandler(
@@ -759,8 +803,9 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         // See ExtensionAPI.js for details.
         const injectedAPI = self.buildExtensionAPIInjectedScript(
             /** @type {!{startPage: string, name: string, exposeExperimentalAPIs: boolean}} */ (extensionInfo),
-            this._inspectedTabId, self.UI.themeSupport.themeName(), self.UI.shortcutRegistry.globalShortcutKeys(),
-            self.Extensions.extensionServer['_extensionAPITestHook']);
+            this._inspectedTabId, ThemeSupport.ThemeSupport.instance().themeName(),
+            UI.ShortcutRegistry.ShortcutRegistry.instance().globalShortcutKeys(),
+            ExtensionServer.instance()['_extensionAPITestHook']);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.setInjectedScriptForOrigin(
             extensionOrigin, injectedAPI);
         const name = extensionInfo.name || `Extension ${extensionOrigin}`;
@@ -768,6 +813,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
       }
       const iframe = createElement('iframe');
       iframe.src = startPage;
+      iframe.dataset.devtoolsExtension = extensionInfo.name;
       iframe.style.display = 'none';
       document.body.appendChild(iframe);  // Only for main window.
     } catch (e) {
@@ -1045,7 +1091,8 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
 /** @enum {symbol} */
 export const Events = {
   SidebarPaneAdded: Symbol('SidebarPaneAdded'),
-  TraceProviderAdded: Symbol('TraceProviderAdded')
+  TraceProviderAdded: Symbol('TraceProviderAdded'),
+  LanguageExtensionEndpointAdded: Symbol('LanguageExtensionEndpointAdded')
 };
 
 /**

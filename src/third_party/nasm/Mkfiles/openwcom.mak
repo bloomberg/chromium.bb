@@ -14,13 +14,13 @@ mandir      = $(prefix)\man
 
 CC      = *wcl386
 DEBUG       =
-CFLAGS      = -zq -6 -ox -wx -ze -fpi $(DEBUG)
+CFLAGS      = -zq -6 -ox -wx -wcd=124 -ze -fpi $(DEBUG)
 BUILD_CFLAGS    = $(CFLAGS) $(%TARGET_CFLAGS)
 INTERNAL_CFLAGS = -I$(srcdir) -I. -I$(srcdir)\include -I$(srcdir)\x86 -Ix86 -I$(srcdir)\asm -Iasm -I$(srcdir)\disasm -I$(srcdir)\output
 ALL_CFLAGS  = $(BUILD_CFLAGS) $(INTERNAL_CFLAGS)
 LD      = *wlink
 LDEBUG      =
-LDFLAGS     = op quiet $(%TARGET_LFLAGS) $(LDEBUG)
+LDFLAGS     = op q $(%TARGET_LFLAGS) $(LDEBUG)
 LIBS        =
 STRIP       = wstrip
 
@@ -57,11 +57,12 @@ LIBOBJ = stdlib\snprintf.$(O) stdlib\vsnprintf.$(O) stdlib\strlcpy.$(O) &
 	stdlib\strnlen.$(O) stdlib\strrchrnul.$(O) &
 	&
 	nasmlib\ver.$(O) &
-	nasmlib\crc64.$(O) nasmlib\malloc.$(O) &
-	nasmlib\md5c.$(O) nasmlib\string.$(O) &
+	nasmlib\alloc.$(O) nasmlib\asprintf.$(O) nasmlib\errfile.$(O) &
+	nasmlib\crc64.$(O) nasmlib\md5c.$(O) &
+	nasmlib\string.$(O) nasmlib\nctype.$(O) &
 	nasmlib\file.$(O) nasmlib\mmap.$(O) nasmlib\ilog2.$(O) &
 	nasmlib\realpath.$(O) nasmlib\path.$(O) &
-	nasmlib\filename.$(O) nasmlib\srcfile.$(O) &
+	nasmlib\filename.$(O) nasmlib\rlimit.$(O) &
 	nasmlib\zerobuf.$(O) nasmlib\readnum.$(O) nasmlib\bsi.$(O) &
 	nasmlib\rbtree.$(O) nasmlib\hashtbl.$(O) &
 	nasmlib\raa.$(O) nasmlib\saa.$(O) &
@@ -74,8 +75,8 @@ LIBOBJ = stdlib\snprintf.$(O) stdlib\vsnprintf.$(O) stdlib\strlcpy.$(O) &
 	x86\regs.$(O) x86\regvals.$(O) x86\regflags.$(O) x86\regdis.$(O) &
 	x86\disp8.$(O) x86\iflag.$(O) &
 	&
-	asm\error.$(O) &
-	asm\float.$(O) &
+	asm\error.$(O) asm\warnings.$(O) &
+	asm\floats.$(O) &
 	asm\directiv.$(O) asm\directbl.$(O) &
 	asm\pragma.$(O) &
 	asm\assemble.$(O) asm\labels.$(O) asm\parser.$(O) &
@@ -86,11 +87,10 @@ LIBOBJ = stdlib\snprintf.$(O) stdlib\vsnprintf.$(O) stdlib\strlcpy.$(O) &
 	asm\segalloc.$(O) &
 	asm\preproc-nop.$(O) &
 	asm\rdstrnum.$(O) &
-	&
+	asm\srcfile.$(O) &
 	macros\macros.$(O) &
 	&
 	output\outform.$(O) output\outlib.$(O) output\legacy.$(O) &
-	output\strtbl.$(O) &
 	output\nulldbg.$(O) output\nullout.$(O) &
 	output\outbin.$(O) output\outaout.$(O) output\outcoff.$(O) &
 	output\outelf.$(O) &
@@ -150,15 +150,21 @@ nasm.lib: $(LIBOBJ)
 # have Perl just to recompile NASM from the distribution.
 
 # Perl-generated source files
-PERLREQ = x86\insnsb.c x86\insnsa.c x86\insnsd.c x86\insnsi.h x86\insnsn.c &
+PERLREQ = config\unconfig.h &
+	  x86\insnsb.c x86\insnsa.c x86\insnsd.c x86\insnsi.h x86\insnsn.c &
 	  x86\regs.c x86\regs.h x86\regflags.c x86\regdis.c x86\regdis.h &
 	  x86\regvals.c asm\tokhash.c asm\tokens.h asm\pptok.h asm\pptok.c &
 	  x86\iflag.c x86\iflaggen.h &
 	  macros\macros.c &
 	  asm\pptok.ph asm\directbl.c asm\directiv.h &
+	  asm\warnings.c include\warnings.h doc\warnings.src &
 	  version.h version.mac version.mak nsis\version.nsh
 
-INSDEP = x86\insns.dat x86\insns.pl x86\insns-iflags.ph
+INSDEP = x86\insns.dat x86\insns.pl x86\insns-iflags.ph x86\iflags.ph
+
+config\unconfig.h: config\config.h.in
+	$(RUNPERL) $(srcdir)\tools\unconfig.pl &
+		'$(srcdir)' config\config.h.in config\unconfig.h
 
 x86\iflag.c: $(INSDEP)
 	$(RUNPERL) $(srcdir)\x86\insns.pl -fc &
@@ -224,6 +230,23 @@ x86\regs.h: x86\regs.dat x86\regs.pl
 	$(RUNPERL) $(srcdir)\x86\regs.pl h &
 		$(srcdir)\x86\regs.dat > x86\regs.h
 
+# Extract warnings from source code. Since this depends on
+# ALL the source files, this is only done on demand.
+WARNFILES = asm\warnings.c include\warnings.h doc\warnings.src
+
+warnings:
+	$(RM_F) $(WARNFILES)
+	$(MAKE) $(WARNFILES)
+
+asm\warnings.c: asm\warnings.pl
+	$(RUNPERL) $(srcdir)\asm\warnings.pl c asm\warnings.c $(srcdir)
+
+include\warnings.h: asm\warnings.pl
+	$(RUNPERL) $(srcdir)\asm\warnings.pl h include\warnings.h $(srcdir)
+
+doc\warnings.src: asm\warnings.pl
+	$(RUNPERL) $(srcdir)\asm\warnings.pl doc doc\warnings.src $(srcdir)
+
 # Assembler token hash
 asm\tokhash.c: x86\insns.dat x86\regs.dat asm\tokens.dat asm\tokhash.pl &
 	perllib\phash.ph
@@ -264,8 +287,6 @@ perlreq: $(PERLREQ) .SYMBOLIC
 #-- Begin NSIS Rules --#
 # Edit in Makefile.in, not here!
 
-# NSIS is not built except by explicit request, as it only applies to
-# Windows platforms
 nsis\arch.nsh: nsis\getpearch.pl nasm$(X)
 	$(PERL) $(srcdir)\nsis\getpearch.pl nasm$(X) > nsis\arch.nsh
 

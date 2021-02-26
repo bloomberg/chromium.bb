@@ -11,8 +11,8 @@ static_library("discovery") {
     "//base:i18n",
     "//chrome/app:generated_resources",
     "//chrome/common:constants",
-    "//chrome/common/media_router:router",
     "//components/cast_channel",
+    "//components/media_router/common",
     "//components/version_info",
     "//content/public/browser",
     "//content/public/common",
@@ -71,7 +71,7 @@ static_library("discovery") {
     "media_sink_discovery_metrics.h",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "discovery_network_list_wifi_linux.cc" ]
   }
 
@@ -81,7 +81,7 @@ static_library("discovery") {
 
   if (is_mac) {
     sources += [ "discovery_network_list_wifi_mac.mm" ]
-    libs = [ "CoreWLAN.framework" ]
+    frameworks = [ "CoreWLAN.framework" ]
   }
 
   if (is_win) {

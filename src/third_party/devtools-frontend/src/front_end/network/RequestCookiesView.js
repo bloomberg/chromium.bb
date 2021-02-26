@@ -39,7 +39,7 @@ export class RequestCookiesView extends UI.Widget.Widget {
    */
   constructor(request) {
     super();
-    this.registerRequiredCSS('network/requestCookiesView.css');
+    this.registerRequiredCSS('network/requestCookiesView.css', {enableLegacyPatching: true});
     this.element.classList.add('request-cookies-view');
 
     /** @type {!SDK.NetworkRequest.NetworkRequest} */
@@ -55,9 +55,9 @@ export class RequestCookiesView extends UI.Widget.Widget {
     titleText.textContent = ls`Request Cookies`;
     titleText.title = ls`Cookies that were sent to the server in the 'cookie' header of the request`;
 
-    const requestCookiesCheckbox = UI.SettingsUI.createSettingCheckbox(
+    const requestCookiesCheckbox = /** @type {!UI.UIUtils.CheckboxLabel} */ (UI.SettingsUI.createSettingCheckbox(
         ls`show filtered out request cookies`, this._showFilteredOutCookiesSetting,
-        /* omitParagraphElement */ true);
+        /* omitParagraphElement */ true));
     requestCookiesCheckbox.checkboxElement.addEventListener('change', () => {
       this._refreshRequestCookiesView();
     });
@@ -122,6 +122,7 @@ export class RequestCookiesView extends UI.Widget.Widget {
     const malformedResponseCookies = [];
 
     if (this._request.responseCookies.length) {
+      /** @type {!Array<?string>} */
       const blockedCookieLines = this._request.blockedResponseCookies().map(blockedCookie => blockedCookie.cookieLine);
       responseCookies = this._request.responseCookies.filter(cookie => {
         // remove the regular cookies that would overlap with blocked cookies
@@ -135,13 +136,16 @@ export class RequestCookiesView extends UI.Widget.Widget {
 
       for (const blockedCookie of this._request.blockedResponseCookies()) {
         const parsedCookies = SDK.CookieParser.CookieParser.parseSetCookie(blockedCookie.cookieLine);
-        if (!parsedCookies.length ||
+        if (parsedCookies && !parsedCookies.length ||
             blockedCookie.blockedReasons.includes(Protocol.Network.SetCookieBlockedReason.SyntaxError)) {
           malformedResponseCookies.push(blockedCookie);
           continue;
         }
 
-        const cookie = blockedCookie.cookie || parsedCookies[0];
+        let cookie = blockedCookie.cookie;
+        if (!cookie && parsedCookies) {
+          cookie = parsedCookies[0];
+        }
         if (cookie) {
           responseCookieToBlockedReasons.set(cookie, blockedCookie.blockedReasons.map(blockedReason => {
             return {
@@ -207,7 +211,7 @@ export class RequestCookiesView extends UI.Widget.Widget {
         const listItem = this._malformedResponseCookiesList.createChild('span', 'cookie-line source-code');
         const icon = UI.Icon.Icon.create('smallicon-error', 'cookie-warning-icon');
         listItem.appendChild(icon);
-        listItem.createTextChild(malformedCookie.cookieLine);
+        UI.UIUtils.createTextChild(listItem, malformedCookie.cookieLine);
         listItem.title =
             SDK.NetworkRequest.setCookieBlockedReasonToUiString(Protocol.Network.SetCookieBlockedReason.SyntaxError);
       }

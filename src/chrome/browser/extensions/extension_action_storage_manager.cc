@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
+#include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/state_store.h"
@@ -233,7 +233,6 @@ void ExtensionActionStorageManager::OnExtensionActionUpdated(
   // is null. We only persist the default settings to disk, since per-tab
   // settings can't be persisted across browser sessions.
   bool for_default_tab = !web_contents;
-  // TODO(devlin): We should probably persist for TYPE_ACTION as well.
   if (browser_context_ == browser_context &&
       extension_action->action_type() == ActionInfo::TYPE_BROWSER &&
       for_default_tab) {

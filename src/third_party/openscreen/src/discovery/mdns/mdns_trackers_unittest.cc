@@ -22,8 +22,7 @@ namespace discovery {
 namespace {
 
 constexpr Clock::duration kOneSecond =
-    std::chrono::duration_cast<Clock::duration>(std::chrono::seconds(1));
-
+    Clock::to_duration(std::chrono::seconds(1));
 }
 
 using testing::_;
@@ -130,8 +129,7 @@ class MdnsTrackerTest : public testing::Test {
     constexpr double kTtlFractions[] = {0.83, 0.88, 0.93, 0.98, 1.00};
     Clock::duration time_passed{0};
     for (double fraction : kTtlFractions) {
-      Clock::duration time_till_refresh =
-          std::chrono::duration_cast<Clock::duration>(ttl * fraction);
+      Clock::duration time_till_refresh = Clock::to_duration(ttl * fraction);
       Clock::duration delta = time_till_refresh - time_passed;
       time_passed = time_till_refresh;
       clock_.Advance(delta);
@@ -251,8 +249,7 @@ TEST_F(MdnsTrackerTest, RecordTrackerSendsMessage) {
         return Error::None();
       });
 
-  clock_.Advance(
-      std::chrono::duration_cast<Clock::duration>(a_record_.ttl() * 0.83));
+  clock_.Advance(Clock::to_duration(a_record_.ttl() * 0.83));
 }
 
 TEST_F(MdnsTrackerTest, RecordTrackerNoQueryAfterDestruction) {
@@ -274,8 +271,7 @@ TEST_F(MdnsTrackerTest, RecordTrackerUpdateResetsTtl) {
   expiration_called_ = false;
   std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
   // Advance time by 60% of record's TTL
-  Clock::duration advance_time =
-      std::chrono::duration_cast<Clock::duration>(a_record_.ttl() * 0.6);
+  Clock::duration advance_time = Clock::to_duration(a_record_.ttl() * 0.6);
   clock_.Advance(advance_time);
   // Now update the record, this must reset expiration time
   EXPECT_EQ(tracker->Update(a_record_).value(),
@@ -317,17 +313,17 @@ TEST_F(MdnsTrackerTest, RecordTrackerExpirationCallbackAfterGoodbye) {
   std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
   MdnsRecord goodbye_record(a_record_.name(), a_record_.dns_type(),
                             a_record_.dns_class(), a_record_.record_type(),
-                            std::chrono::seconds{0}, a_record_.rdata());
+                            std::chrono::seconds(0), a_record_.rdata());
 
   // After a goodbye record is received, expiration is schedule in a second.
   EXPECT_EQ(tracker->Update(goodbye_record).value(),
             MdnsRecordTracker::UpdateType::kGoodbye);
 
   // Advance clock to just before the expiration time of 1 second.
-  clock_.Advance(std::chrono::microseconds{999999});
+  clock_.Advance(std::chrono::microseconds(999999));
   EXPECT_FALSE(expiration_called_);
   // Advance clock to exactly the expiration time.
-  clock_.Advance(std::chrono::microseconds{1});
+  clock_.Advance(std::chrono::microseconds(1));
   EXPECT_TRUE(expiration_called_);
 }
 
@@ -356,7 +352,7 @@ TEST_F(MdnsTrackerTest, RecordTrackerInvalidPositiveRecordUpdate) {
   // RDATA must match the old RDATA for goodbye records
   MdnsRecord invalid_rdata(a_record_.name(), a_record_.dns_type(),
                            a_record_.dns_class(), a_record_.record_type(),
-                           std::chrono::seconds{0},
+                           std::chrono::seconds(0),
                            ARecordRdata(IPAddress{172, 0, 0, 2}));
   EXPECT_EQ(tracker->Update(invalid_rdata).error(),
             Error::Code::kParameterInvalid);
@@ -420,7 +416,7 @@ TEST_F(MdnsTrackerTest, RecordTrackerUpdateNegativeResponseWithPositive) {
   tracker = CreateRecordTracker(nsec_record_, DnsType::kA);
   MdnsRecord aaaa_record(a_record_.name(), DnsType::kAAAA,
                          a_record_.dns_class(), a_record_.record_type(),
-                         std::chrono::seconds{0},
+                         std::chrono::seconds(0),
                          AAAARecordRdata(IPAddress{0, 0, 0, 0, 0, 0, 0, 1}));
   result = tracker->Update(aaaa_record);
   EXPECT_TRUE(result.is_error());

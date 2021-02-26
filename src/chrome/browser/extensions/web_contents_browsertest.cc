@@ -23,7 +23,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
+#include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 
 namespace extensions {
 namespace {
@@ -96,6 +99,89 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       GetActiveWebContents(browser()), "testTabsAPI()", &result));
   EXPECT_TRUE(result);
+}
+
+// Ensure that platform app frames can't be loaded in a tab even on a redirect.
+// Regression test for crbug.com/1110551.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabNavigationToPlatformApp) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("platform_apps").AppendASCII("minimal"));
+  ASSERT_TRUE(extension);
+
+  const GURL test_cases[] = {extension->GetResourceURL("main.html"),
+                             BackgroundInfo::GetBackgroundURL(extension)};
+  for (const GURL& app_url : test_cases) {
+    GURL redirect_to_platform_app =
+        embedded_test_server()->GetURL("/server-redirect?" + app_url.spec());
+    content::WebContents* web_contents = GetActiveWebContents(browser());
+    content::TestNavigationObserver observer(web_contents,
+                                             net::ERR_BLOCKED_BY_CLIENT);
+    ui_test_utils::NavigateToURL(browser(), redirect_to_platform_app);
+    observer.Wait();
+    EXPECT_FALSE(observer.last_navigation_succeeded());
+  }
+}
+
+// Ensure that the extension's background page can't be navigated away.
+// Regression test for crbug.com/1130083.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BackgroundPageNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("common").AppendASCII("background_page"));
+  ASSERT_TRUE(extension);
+
+  ExtensionHost* host =
+      ProcessManager::Get(profile())->GetBackgroundHostForExtension(
+          extension->id());
+  ASSERT_TRUE(host);
+
+  content::WebContents* background_contents = host->web_contents();
+
+  // Navigation to a different url should be disallowed.
+  {
+    GURL target_url = embedded_test_server()->GetURL("/body1.html");
+    content::TestNavigationManager navigation_observer(background_contents,
+                                                       target_url);
+    constexpr char kScript[] = "window.location.href = '%s'";
+    ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
+        extension->id(),
+        base::StringPrintf(kScript, target_url.spec().c_str())));
+    navigation_observer.WaitForNavigationFinished();
+    EXPECT_FALSE(navigation_observer.was_committed());
+    EXPECT_EQ(extension->GetResourceURL("background.html"),
+              background_contents->GetLastCommittedURL());
+  }
+
+  // A same-document navigation is still permitted.
+  {
+    GURL target_url = extension->GetResourceURL("background.html#fragment");
+    content::TestNavigationManager navigation_observer(background_contents,
+                                                       target_url);
+    constexpr char kScript[] = "window.location.href = '%s'";
+    ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
+        extension->id(),
+        base::StringPrintf(kScript, target_url.spec().c_str())));
+    navigation_observer.WaitForNavigationFinished();
+    EXPECT_TRUE(navigation_observer.was_committed());
+    EXPECT_EQ(target_url, background_contents->GetLastCommittedURL());
+  }
+
+  // Another same-document navigation case.
+  {
+    GURL target_url = extension->GetResourceURL("bar.html");
+    content::TestNavigationManager navigation_observer(background_contents,
+                                                       target_url);
+    constexpr char kScript[] = "history.pushState({}, '', '%s')";
+    ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
+        extension->id(),
+        base::StringPrintf(kScript, target_url.spec().c_str())));
+    navigation_observer.WaitForNavigationFinished();
+    EXPECT_TRUE(navigation_observer.was_committed());
+    EXPECT_EQ(target_url, background_contents->GetLastCommittedURL());
+  }
 }
 
 // Test that we correctly set up the ExtensionNavigationUIData for each

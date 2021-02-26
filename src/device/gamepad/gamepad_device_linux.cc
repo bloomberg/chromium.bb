@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/chromeos_buildflags.h"
 #include "device/gamepad/dualshock4_controller.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/hid_haptic_gamepad.h"
@@ -25,9 +26,9 @@
 #include "device/gamepad/xbox_hid_controller.h"
 #include "device/udev_linux/udev.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_ASH)
 
 namespace device {
 
@@ -197,6 +198,40 @@ uint16_t HexStringToUInt16WithDefault(base::StringPiece input,
   return static_cast<uint16_t>(out);
 }
 
+#if BUILDFLAG(IS_ASH)
+void OnOpenPathSuccess(
+    chromeos::PermissionBrokerClient::OpenPathCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> polling_runner,
+    base::ScopedFD fd) {
+  polling_runner->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(callback), std::move(fd)));
+}
+
+void OnOpenPathError(
+    chromeos::PermissionBrokerClient::OpenPathCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> polling_runner,
+    const std::string& error_name,
+    const std::string& error_message) {
+  polling_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), base::ScopedFD()));
+}
+
+void OpenPathWithPermissionBroker(
+    const std::string& path,
+    chromeos::PermissionBrokerClient::OpenPathCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> polling_runner) {
+  auto* client = chromeos::PermissionBrokerClient::Get();
+  DCHECK(client) << "Could not get permission broker client.";
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+  auto success_callback =
+      base::BindOnce(&OnOpenPathSuccess, copyable_callback, polling_runner);
+  auto error_callback =
+      base::BindOnce(&OnOpenPathError, copyable_callback, polling_runner);
+  client->OpenPath(path, std::move(success_callback),
+                   std::move(error_callback));
+}
+#endif  // BUILDFLAG(IS_ASH)
+
 }  // namespace
 
 GamepadDeviceLinux::GamepadDeviceLinux(
@@ -250,6 +285,12 @@ void GamepadDeviceLinux::ReadPadState(Gamepad* pad) {
       pad_updated = true;
   }
 
+  // Mark used buttons.
+  for (size_t button_index = 0; button_index < Gamepad::kButtonsLengthCap;
+       ++button_index) {
+    pad->buttons[button_index].used = button_indices_used_[button_index];
+  }
+
   if (pad_updated)
     pad->timestamp = GamepadDataFetcher::CurrentTimeInMicroseconds();
 }
@@ -272,6 +313,7 @@ bool GamepadDeviceLinux::ReadJoydevState(Gamepad* pad) {
         continue;
 
       pad->axes[item] = event.value / kMaxLinuxAxisValue;
+      pad->axes_used |= 1 << item;
 
       if (item >= pad->axes_length)
         pad->axes_length = item + 1;
@@ -280,6 +322,7 @@ bool GamepadDeviceLinux::ReadJoydevState(Gamepad* pad) {
       if (item >= Gamepad::kButtonsLengthCap)
         continue;
 
+      pad->buttons[item].used = true;
       pad->buttons[item].pressed = event.value;
       pad->buttons[item].value = event.value ? 1.0 : 0.0;
 
@@ -519,7 +562,7 @@ void GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info,
 
   auto fd = base::ScopedFD(open(pad_info.path.c_str(), O_RDWR | O_NONBLOCK));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   // If we failed to open the device it may be due to insufficient permissions.
   // Try again using the PermissionBrokerClient.
   if (!fd.is_valid()) {
@@ -530,12 +573,11 @@ void GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info,
                        weak_factory_.GetWeakPtr(), std::move(callback));
     dbus_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&GamepadDeviceLinux::OpenPathWithPermissionBroker,
-                       weak_factory_.GetWeakPtr(), pad_info.path,
-                       std::move(open_path_callback)));
+        base::BindOnce(&OpenPathWithPermissionBroker, pad_info.path,
+                       std::move(open_path_callback), polling_runner_));
     return;
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_ASH)
 
   OnOpenHidrawNodeComplete(std::move(callback), std::move(fd));
 }
@@ -601,40 +643,6 @@ void GamepadDeviceLinux::CloseHidrawNode() {
   hidraw_fd_.reset();
 }
 
-#if defined(OS_CHROMEOS)
-void GamepadDeviceLinux::OpenPathWithPermissionBroker(
-    const std::string& path,
-    OpenPathCallback callback) {
-  DCHECK(dbus_runner_->RunsTasksInCurrentSequence());
-  auto* client = chromeos::PermissionBrokerClient::Get();
-  DCHECK(client) << "Could not get permission broker client.";
-  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
-  auto success_callback =
-      base::BindOnce(&GamepadDeviceLinux::OnOpenPathSuccess,
-                     weak_factory_.GetWeakPtr(), copyable_callback);
-  auto error_callback =
-      base::BindOnce(&GamepadDeviceLinux::OnOpenPathError,
-                     weak_factory_.GetWeakPtr(), copyable_callback);
-  client->OpenPath(path, std::move(success_callback),
-                   std::move(error_callback));
-}
-
-void GamepadDeviceLinux::OnOpenPathSuccess(OpenPathCallback callback,
-                                           base::ScopedFD fd) {
-  DCHECK(dbus_runner_->RunsTasksInCurrentSequence());
-  polling_runner_->PostTask(FROM_HERE,
-                            base::BindOnce(std::move(callback), std::move(fd)));
-}
-
-void GamepadDeviceLinux::OnOpenPathError(OpenPathCallback callback,
-                                         const std::string& error_name,
-                                         const std::string& error_message) {
-  DCHECK(dbus_runner_->RunsTasksInCurrentSequence());
-  polling_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), base::ScopedFD()));
-}
-#endif
-
 void GamepadDeviceLinux::SetVibration(double strong_magnitude,
                                       double weak_magnitude) {
   DCHECK(polling_runner_->RunsTasksInCurrentSequence());
@@ -696,6 +704,7 @@ void GamepadDeviceLinux::SetZeroVibration() {
 }
 
 base::WeakPtr<AbstractHapticGamepad> GamepadDeviceLinux::GetWeakPtr() {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   return weak_factory_.GetWeakPtr();
 }
 

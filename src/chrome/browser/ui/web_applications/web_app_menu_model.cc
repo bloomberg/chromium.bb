@@ -14,6 +14,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/base/accelerators/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
 #include "url/gurl.h"
@@ -42,16 +43,20 @@ void WebAppMenuModel::ExecuteCommand(int command_id, int event_flags) {
 }
 
 void WebAppMenuModel::Build() {
+  // TODO(crbug.com/897302): Expose UI for user opt out and reenable for the Run
+  // on OS Login feature.
+
   if (CreateActionToolbarOverflowMenu())
     AddSeparator(ui::UPPER_SEPARATOR);
   AddItemWithStringId(IDC_WEB_APP_MENU_APP_INFO,
                       IDS_APP_CONTEXT_MENU_SHOW_INFO);
   int app_info_index = GetItemCount() - 1;
-  SetMinorText(app_info_index, web_app::AppBrowserController::FormatUrlOrigin(
-                                   browser()
-                                       ->tab_strip_model()
-                                       ->GetActiveWebContents()
-                                       ->GetVisibleURL()));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  if (web_contents) {
+    SetMinorText(app_info_index, web_app::AppBrowserController::FormatUrlOrigin(
+                                     web_contents->GetVisibleURL()));
+  }
   SetMinorIcon(app_info_index,
                ui::ImageModel::FromVectorIcon(
                    browser()->location_bar_model()->GetVectorIcon()));
@@ -66,11 +71,11 @@ void WebAppMenuModel::Build() {
   DCHECK(browser()->app_controller());
   if (browser()->app_controller()->IsInstalled()) {
     AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItem(
-        kUninstallAppCommandId,
-        l10n_util::GetStringFUTF16(
-            IDS_UNINSTALL_FROM_OS_LAUNCH_SURFACE,
-            base::UTF8ToUTF16(browser()->app_controller()->GetAppShortName())));
+    AddItem(kUninstallAppCommandId,
+            l10n_util::GetStringFUTF16(
+                IDS_UNINSTALL_FROM_OS_LAUNCH_SURFACE,
+                ui::EscapeMenuLabelAmpersands(
+                    browser()->app_controller()->GetAppShortName())));
   }
 #endif  // !defined(OS_CHROMEOS)
   AddSeparator(ui::LOWER_SEPARATOR);

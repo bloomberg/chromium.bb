@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chromeos/login/auth/login_performer.h"
 #include "components/account_id/account_id.h"
@@ -18,6 +19,8 @@
 class Profile;
 
 namespace chromeos {
+
+enum class KioskAppType;
 
 // KioskProfileLoader loads a special profile for a given app. It first
 // attempts to login for the app's generated user id. If the login is
@@ -29,12 +32,14 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
    public:
     virtual void OnProfileLoaded(Profile* profile) = 0;
     virtual void OnProfileLoadFailed(KioskAppLaunchError::Error error) = 0;
+    virtual void OnOldEncryptionDetected(const UserContext& user_context) = 0;
 
    protected:
     virtual ~Delegate() {}
   };
 
   KioskProfileLoader(const AccountId& app_account_id,
+                     KioskAppType app_type,
                      bool use_guest_mount,
                      Delegate* delegate);
 
@@ -52,14 +57,16 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
   // LoginPerformer::Delegate overrides:
   void OnAuthSuccess(const UserContext& user_context) override;
   void OnAuthFailure(const AuthFailure& error) override;
-  void WhiteListCheckFailed(const std::string& email) override;
+  void AllowlistCheckFailed(const std::string& email) override;
   void PolicyLoadFailed() override;
-  void SetAuthFlowOffline(bool offline) override;
+  void OnOldEncryptionDetected(const UserContext& user_context,
+                               bool has_incomplete_migration) override;
 
   // UserSessionManagerDelegate implementation:
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
 
   const AccountId account_id_;
+  const KioskAppType app_type_;
   bool use_guest_mount_;
   Delegate* delegate_;
   std::unique_ptr<CryptohomedChecker> cryptohomed_checker_;

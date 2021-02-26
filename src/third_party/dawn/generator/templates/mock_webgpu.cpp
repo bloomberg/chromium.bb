@@ -76,24 +76,17 @@ bool ProcTableAsClass::DevicePopErrorScope(WGPUDevice self,
     return OnDevicePopErrorScopeCallback(self, callback, userdata);
 }
 
-void ProcTableAsClass::BufferMapReadAsync(WGPUBuffer self,
-                                          WGPUBufferMapReadCallback callback,
-                                          void* userdata) {
+void ProcTableAsClass::BufferMapAsync(WGPUBuffer self,
+                                      WGPUMapModeFlags mode,
+                                      size_t offset,
+                                      size_t size,
+                                      WGPUBufferMapCallback callback,
+                                      void* userdata) {
     auto object = reinterpret_cast<ProcTableAsClass::Object*>(self);
-    object->mapReadCallback = callback;
+    object->mapAsyncCallback = callback;
     object->userdata = userdata;
 
-    OnBufferMapReadAsyncCallback(self, callback, userdata);
-}
-
-void ProcTableAsClass::BufferMapWriteAsync(WGPUBuffer self,
-                                           WGPUBufferMapWriteCallback callback,
-                                           void* userdata) {
-    auto object = reinterpret_cast<ProcTableAsClass::Object*>(self);
-    object->mapWriteCallback = callback;
-    object->userdata = userdata;
-
-    OnBufferMapWriteAsyncCallback(self, callback, userdata);
+    OnBufferMapAsyncCallback(self, callback, userdata);
 }
 
 void ProcTableAsClass::FenceOnCompletion(WGPUFence self,
@@ -105,6 +98,30 @@ void ProcTableAsClass::FenceOnCompletion(WGPUFence self,
     object->userdata = userdata;
 
     OnFenceOnCompletionCallback(self, value, callback, userdata);
+}
+
+void ProcTableAsClass::DeviceCreateReadyComputePipeline(
+    WGPUDevice self,
+    WGPUComputePipelineDescriptor const * descriptor,
+    WGPUCreateReadyComputePipelineCallback callback,
+    void* userdata) {
+    auto object = reinterpret_cast<ProcTableAsClass::Object*>(self);
+    object->createReadyComputePipelineCallback = callback;
+    object->userdata = userdata;
+
+    OnDeviceCreateReadyComputePipelineCallback(self, descriptor, callback, userdata);
+}
+
+void ProcTableAsClass::DeviceCreateReadyRenderPipeline(
+    WGPUDevice self,
+    WGPURenderPipelineDescriptor const * descriptor,
+    WGPUCreateReadyRenderPipelineCallback callback,
+    void* userdata) {
+    auto object = reinterpret_cast<ProcTableAsClass::Object*>(self);
+    object->createReadyRenderPipelineCallback = callback;
+    object->userdata = userdata;
+
+    OnDeviceCreateReadyRenderPipelineCallback(self, descriptor, callback, userdata);
 }
 
 void ProcTableAsClass::CallDeviceErrorCallback(WGPUDevice device,
@@ -119,26 +136,31 @@ void ProcTableAsClass::CallDeviceLostCallback(WGPUDevice device, const char* mes
     object->deviceLostCallback(message, object->userdata);
 }
 
-void ProcTableAsClass::CallMapReadCallback(WGPUBuffer buffer,
-                                           WGPUBufferMapAsyncStatus status,
-                                           const void* data,
-                                           uint64_t dataLength) {
+void ProcTableAsClass::CallMapAsyncCallback(WGPUBuffer buffer, WGPUBufferMapAsyncStatus status) {
     auto object = reinterpret_cast<ProcTableAsClass::Object*>(buffer);
-    object->mapReadCallback(status, data, dataLength, object->userdata);
-}
-
-void ProcTableAsClass::CallMapWriteCallback(WGPUBuffer buffer,
-                                            WGPUBufferMapAsyncStatus status,
-                                            void* data,
-                                            uint64_t dataLength) {
-    auto object = reinterpret_cast<ProcTableAsClass::Object*>(buffer);
-    object->mapWriteCallback(status, data, dataLength, object->userdata);
+    object->mapAsyncCallback(status, object->userdata);
 }
 
 void ProcTableAsClass::CallFenceOnCompletionCallback(WGPUFence fence,
                                                      WGPUFenceCompletionStatus status) {
     auto object = reinterpret_cast<ProcTableAsClass::Object*>(fence);
     object->fenceOnCompletionCallback(status, object->userdata);
+}
+
+void ProcTableAsClass::CallDeviceCreateReadyComputePipelineCallback(WGPUDevice device,
+                                                                    WGPUCreateReadyPipelineStatus status,
+                                                                    WGPUComputePipeline pipeline,
+                                                                    const char* message) {
+    auto object = reinterpret_cast<ProcTableAsClass::Object*>(device);
+    object->createReadyComputePipelineCallback(status, pipeline, message, object->userdata);
+}
+
+void ProcTableAsClass::CallDeviceCreateReadyRenderPipelineCallback(WGPUDevice device,
+                                                                   WGPUCreateReadyPipelineStatus status,
+                                                                   WGPURenderPipeline pipeline,
+                                                                   const char* message) {
+    auto object = reinterpret_cast<ProcTableAsClass::Object*>(device);
+    object->createReadyRenderPipelineCallback(status, pipeline, message, object->userdata);
 }
 
 {% for type in by_category["object"] %}

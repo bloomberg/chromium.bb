@@ -28,6 +28,10 @@ class CrashesDOMHandler;
 class FlashDOMHandler;
 }
 
+#if defined(OS_CHROMEOS)
+class ChromeCameraAppUIDelegate;
+#endif  // defined(OS_CHROMEOS)
+
 namespace domain_reliability {
 class DomainReliabilityServiceFactory;
 }
@@ -88,7 +92,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ChromeBrowserFieldTrials;
   // For ClangPGO.
   friend class ChromeBrowserMainExtraPartsMetrics;
-  // For StackSamplingConfiguration.
+  // For ThreadProfilerConfiguration.
   friend class ChromeBrowserMainParts;
   friend class ChromeContentBrowserClient;
   friend class ChromeMetricsServicesManagerClient;
@@ -99,7 +103,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class extensions::FileManagerPrivateIsUMAEnabledFunction;
   friend void ChangeMetricsReportingStateWithReply(
       bool,
-      const OnMetricsReportingCallbackType&);
+      OnMetricsReportingCallbackType);
   friend void ApplyMetricsReportingPolicy();
   friend class heap_profiling::BackgroundProfilingTriggers;
   friend class settings::MetricsReportingHandler;
@@ -116,6 +120,12 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class NavigationMetricsRecorder;
   friend class ChromeBrowserMainExtraPartsGpu;
   friend class Browser;
+  friend class OptimizationGuideKeyedService;
+  friend class WebUITabStripFieldTrial;
+
+#if defined(OS_CHROMEOS)
+  friend class ChromeCameraAppUIDelegate;
+#endif  // defined(OS_CHROMEOS)
 
   // Testing related friends.
   friend class first_run::FirstRunMasterPrefsVariationsSeedTest;
@@ -145,21 +155,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   // details.
   static bool RegisterSyntheticFieldTrial(base::StringPiece trial_name,
                                           base::StringPiece group_name);
-
-  // Calls MetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial() with
-  // g_browser_process->metrics_service(). See that function's declaration for
-  // details.
-  static bool RegisterSyntheticMultiGroupFieldTrial(
-      base::StringPiece trial_name,
-      const std::vector<uint32_t>& group_name_hashes);
-
-  // Calls
-  // metrics::MetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameHash()
-  // with g_browser_process->metrics_service(). See that function's declaration
-  // for details.
-  static bool RegisterSyntheticFieldTrialWithNameHash(
-      uint32_t trial_name_hash,
-      base::StringPiece group_name);
 
   // Cover for function of same name in MetricsServiceAccssor. See
   // ChromeMetricsServiceAccessor for details.

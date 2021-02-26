@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -42,10 +43,8 @@ PromptForScanningModalDialog::PromptForScanningModalDialog(
     content::WebContents* web_contents,
     const base::string16& filename,
     base::OnceClosure accept_callback,
-    base::OnceClosure open_now_callback)
-    : web_contents_(web_contents),
-      filename_(filename),
-      open_now_callback_(std::move(open_now_callback)) {
+    base::OnceClosure open_now_callback) {
+  SetTitle(IDS_DEEP_SCANNING_INFO_DIALOG_TITLE);
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_ACCEPT_BUTTON));
@@ -53,9 +52,15 @@ PromptForScanningModalDialog::PromptForScanningModalDialog(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_CANCEL_BUTTON));
   SetAcceptCallback(std::move(accept_callback));
-  open_now_button_ = SetExtraView(views::MdTextButton::Create(
-      this, l10n_util::GetStringUTF16(
-                IDS_DEEP_SCANNING_INFO_DIALOG_OPEN_NOW_BUTTON)));
+  SetExtraView(std::make_unique<views::MdTextButton>(
+      base::BindRepeating(
+          [](PromptForScanningModalDialog* dialog) {
+            std::move(dialog->open_now_callback_).Run();
+            dialog->CancelDialog();
+          },
+          base::Unretained(this)),
+      l10n_util::GetStringUTF16(
+          IDS_DEEP_SCANNING_INFO_DIALOG_OPEN_NOW_BUTTON)));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -74,16 +79,26 @@ PromptForScanningModalDialog::PromptForScanningModalDialog(
   base::string16 message_text = base::ReplaceStringPlaceholders(
       base::ASCIIToUTF16("$1 $2"),
       {l10n_util::GetStringFUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_MESSAGE,
-                                  filename_),
+                                  filename),
        l10n_util::GetStringUTF16(IDS_LEARN_MORE)},
       &offsets);
 
   // Add the message label.
-  auto label = std::make_unique<views::StyledLabel>(message_text, this);
+  auto label = std::make_unique<views::StyledLabel>();
+  label->SetText(message_text);
 
   gfx::Range learn_more_range(offsets[1], message_text.length());
   views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
+      views::StyledLabel::RangeStyleInfo::CreateForLink(base::BindRepeating(
+          [](content::WebContents* web_contents, const ui::Event& event) {
+            web_contents->OpenURL(content::OpenURLParams(
+                GURL(chrome::kAdvancedProtectionDownloadLearnMoreURL),
+                content::Referrer(),
+                ui::DispositionFromEventFlags(
+                    event.flags(), WindowOpenDisposition::NEW_FOREGROUND_TAB),
+                ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false));
+          },
+          web_contents));
   label->AddStyleRange(learn_more_range, link_style);
 
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -103,30 +118,8 @@ bool PromptForScanningModalDialog::ShouldShowCloseButton() const {
   return false;
 }
 
-base::string16 PromptForScanningModalDialog::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_TITLE);
-}
-
 ui::ModalType PromptForScanningModalDialog::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
-}
-
-void PromptForScanningModalDialog::ButtonPressed(views::Button* sender,
-                                                 const ui::Event& event) {
-  if (sender == open_now_button_) {
-    std::move(open_now_callback_).Run();
-    CancelDialog();
-  }
-}
-
-void PromptForScanningModalDialog::StyledLabelLinkClicked(
-    views::StyledLabel* label,
-    const gfx::Range& range,
-    int event_flags) {
-  web_contents_->OpenURL(content::OpenURLParams(
-      GURL(chrome::kAdvancedProtectionDownloadLearnMoreURL),
-      content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false));
 }
 
 }  // namespace safe_browsing

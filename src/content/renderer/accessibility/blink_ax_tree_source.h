@@ -11,11 +11,12 @@
 #include <string>
 
 #include "base/optional.h"
-#include "content/common/ax_content_node_data.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_source.h"
 
 namespace content {
@@ -37,10 +38,9 @@ class ScopedFreezeBlinkAXTreeSource {
   DISALLOW_COPY_AND_ASSIGN(ScopedFreezeBlinkAXTreeSource);
 };
 
-class BlinkAXTreeSource
-    : public ui::AXTreeSource<blink::WebAXObject,
-                              AXContentNodeData,
-                              AXContentTreeData> {
+class CONTENT_EXPORT BlinkAXTreeSource
+    : public ui::
+          AXTreeSource<blink::WebAXObject, ui::AXNodeData, ui::AXTreeData> {
  public:
   BlinkAXTreeSource(RenderFrameImpl* render_frame, ui::AXMode mode);
   ~BlinkAXTreeSource() override;
@@ -91,14 +91,18 @@ class BlinkAXTreeSource
   bool ShouldLoadInlineTextBoxes(const blink::WebAXObject& obj) const;
   void SetLoadInlineTextBoxesForId(int32_t id);
 
-  // Call this to enable populating the DOMNodeID for each node. This is
-  // currently only used for accessible PDF exporting. Warning, this is totally
-  // unrelated to the accessibility node ID, or the ID attribute for an HTML
-  // element.
-  void EnableDOMNodeIDs();
+  void PopulateAXRelativeBounds(blink::WebAXObject obj,
+                                ui::AXRelativeBounds* bounds,
+                                bool* clips_children = nullptr) const;
+
+  // Cached bounding boxes.
+  bool HasCachedBoundingBox(int32_t id) const;
+  const ui::AXRelativeBounds& GetCachedBoundingBox(int32_t id) const;
+  void SetCachedBoundingBox(int32_t id, const ui::AXRelativeBounds& bounds);
+  size_t GetCachedBoundingBoxCount() const;
 
   // AXTreeSource implementation.
-  bool GetTreeData(AXContentTreeData* tree_data) const override;
+  bool GetTreeData(ui::AXTreeData* tree_data) const override;
   blink::WebAXObject GetRoot() const override;
   blink::WebAXObject GetFromId(int32_t id) const override;
   int32_t GetId(blink::WebAXObject node) const override;
@@ -107,13 +111,14 @@ class BlinkAXTreeSource
       std::vector<blink::WebAXObject>* out_children) const override;
   blink::WebAXObject GetParent(blink::WebAXObject node) const override;
   void SerializeNode(blink::WebAXObject node,
-                     AXContentNodeData* out_data) const override;
+                     ui::AXNodeData* out_data) const override;
   bool IsIgnored(blink::WebAXObject node) const override;
   bool IsValid(blink::WebAXObject node) const override;
   bool IsEqual(blink::WebAXObject node1,
                blink::WebAXObject node2) const override;
   blink::WebAXObject GetNull() const override;
   std::string GetDebugString(blink::WebAXObject node) const override;
+  void SerializerClearedNode(int32_t node_id) override;
 
   blink::WebDocument GetMainDocument() const;
 
@@ -131,6 +136,33 @@ class BlinkAXTreeSource
     return focus_;
   }
 
+  void SerializeBoundingBoxAttributes(blink::WebAXObject src,
+                                      ui::AXNodeData* dst) const;
+  void SerializeSparseAttributes(blink::WebAXObject src,
+                                 ui::AXNodeData* dst) const;
+  void SerializeNameAndDescriptionAttributes(blink::WebAXObject src,
+                                             ui::AXNodeData* dst) const;
+  void SerializeInlineTextBoxAttributes(blink::WebAXObject src,
+                                        ui::AXNodeData* dst) const;
+  void SerializeMarkerAttributes(blink::WebAXObject src,
+                                 ui::AXNodeData* dst) const;
+  void SerializeLiveRegionAttributes(blink::WebAXObject src,
+                                     ui::AXNodeData* dst) const;
+  void SerializeListAttributes(blink::WebAXObject src,
+                               ui::AXNodeData* dst) const;
+  void SerializeScrollAttributes(blink::WebAXObject src,
+                                 ui::AXNodeData* dst) const;
+  void SerializeChooserPopupAttributes(blink::WebAXObject src,
+                                       ui::AXNodeData* dst) const;
+  void SerializeOtherScreenReaderAttributes(blink::WebAXObject src,
+                                            ui::AXNodeData* dst) const;
+  void SerializeElementAttributes(blink::WebAXObject src,
+                                  blink::WebElement element,
+                                  ui::AXNodeData* dst) const;
+  void SerializeHTMLAttributes(blink::WebAXObject src,
+                               blink::WebElement element,
+                               ui::AXNodeData* dst) const;
+
   blink::WebAXObject ComputeRoot() const;
 
   // Max length for attributes such as aria-label.
@@ -139,13 +171,12 @@ class BlinkAXTreeSource
   // Length of War and Peace (http://www.gutenberg.org/files/2600/2600-0.txt).
   static const uint32_t kMaxStaticTextLength = 3227574;
   void TruncateAndAddStringAttribute(
-      AXContentNodeData* dst,
+      ui::AXNodeData* dst,
       ax::mojom::StringAttribute attribute,
       const std::string& value,
       uint32_t max_len = kMaxStringAttributeLength) const;
 
-  void AddImageAnnotations(blink::WebAXObject& src,
-                           AXContentNodeData* dst) const;
+  void AddImageAnnotations(blink::WebAXObject& src, ui::AXNodeData* dst) const;
 
   RenderFrameImpl* render_frame_;
 
@@ -156,11 +187,6 @@ class BlinkAXTreeSource
 
   // A set of IDs for which we should always load inline text boxes.
   std::set<int32_t> load_inline_text_boxes_ids_;
-
-  // Whether we should store Blink DOMNodeIds in the accessibility tree.
-  // Warning, this is totally unrelated to the accessibility node ID, or the ID
-  // attribute for an HTML element.
-  bool enable_dom_node_ids_ = false;
 
   // The ID of the object to fetch image data for.
   int image_data_node_id_ = -1;
@@ -179,6 +205,9 @@ class BlinkAXTreeSource
   // Used to ensure that the tutor message that explains to screen reader users
   // how to turn on automatic image labels is provided only once.
   mutable base::Optional<int32_t> first_unlabeled_image_id_ = base::nullopt;
+
+  // Current bounding box of every object, so we can detect when it moves.
+  mutable std::unordered_map<int, ui::AXRelativeBounds> cached_bounding_boxes_;
 
   // These are updated when calling |Freeze|.
   bool frozen_ = false;

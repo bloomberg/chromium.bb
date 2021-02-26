@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/svg/svg_use_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -28,14 +29,14 @@ TEST_F(SVGUseElementTest, InstanceInvalidatedWhenNonAttachedTargetRemoved) {
         </unknown>
     </svg>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
+  UpdateAllLifecyclePhasesForTest();
 
   // Remove #target.
   ASSERT_TRUE(GetDocument().getElementById("target"));
   GetDocument().getElementById("target")->remove();
 
   // This should cause a rebuild of the <use> shadow tree.
-  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
+  UpdateAllLifecyclePhasesForTest();
 
   // There should be no instance for #target anymore, since that element was
   // removed.
@@ -57,7 +58,7 @@ TEST_F(SVGUseElementTest,
       </textPath>
     </svg>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
+  UpdateAllLifecyclePhasesForTest();
 
   // Move #target in the document (leaving it still "connected").
   Element* target = GetDocument().getElementById("target");
@@ -65,7 +66,7 @@ TEST_F(SVGUseElementTest,
   GetDocument().body()->appendChild(target);
 
   // This should cause a rebuild of the <use> shadow tree.
-  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
+  UpdateAllLifecyclePhasesForTest();
 
   // There should be no instance for #target anymore, since that element was
   // removed.
@@ -84,7 +85,7 @@ TEST_F(SVGUseElementTest, NullInstanceRootWhenNotConnectedToDocument) {
       <use id="target" href="#r"/>
     </svg>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
+  UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<SVGUseElement>(GetDocument().getElementById("target"));
   ASSERT_TRUE(target);
@@ -104,7 +105,7 @@ TEST_F(SVGUseElementTest, NullInstanceRootWhenConnectedToInactiveDocument) {
       <use id="target" href="#r"/>
     </svg>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
+  UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<SVGUseElement>(GetDocument().getElementById("target"));
   ASSERT_TRUE(target);
@@ -126,7 +127,7 @@ TEST_F(SVGUseElementTest, NullInstanceRootWhenShadowTreePendingRebuild) {
       <use id="target" href="#r"/>
     </svg>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
+  UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<SVGUseElement>(GetDocument().getElementById("target"));
   ASSERT_TRUE(target);

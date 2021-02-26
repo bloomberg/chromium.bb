@@ -29,7 +29,9 @@
 namespace ui {
 
 class WaylandConnection;
+class WaylandSubsurface;
 class WaylandWindow;
+class WaylandSurface;
 
 // This is an internal helper representation of a wayland buffer object, which
 // the GPU process creates when CreateBuffer is called. It's used for
@@ -81,7 +83,15 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   // WaylandWindowObserver implements:
   void OnWindowAdded(WaylandWindow* window) override;
   void OnWindowRemoved(WaylandWindow* window) override;
+  void OnWindowConfigured(WaylandWindow* window) override;
+  void OnSubsurfaceAdded(WaylandWindow* window,
+                         WaylandSubsurface* subsurface) override;
+  void OnSubsurfaceRemoved(WaylandWindow* window,
+                           WaylandSubsurface* subsurface) override;
 
+  // Start allowing attaching buffers to |surface|, same as
+  // OnWindowConfigured(), but for WaylandSurface.
+  void SetSurfaceConfigured(WaylandSurface* surface);
   void SetTerminateGpuCallback(
       base::OnceCallback<void(std::string)> terminate_gpu_cb);
 
@@ -136,25 +146,52 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   void CommitBuffer(gfx::AcceleratedWidget widget,
                     uint32_t buffer_id,
                     const gfx::Rect& damage_region) override;
+  // Called by the GPU and asks to configure the surface/subsurfaces and attach
+  // wl_buffers to WaylandWindow with the specified |widget|. Calls OnSubmission
+  // and OnPresentation on successful swap and pixels presented.
+  void CommitOverlays(
+      gfx::AcceleratedWidget widget,
+      std::vector<ui::ozone::mojom::WaylandOverlayConfigPtr> overlays) override;
+
+  // Called by the WaylandWindow and asks to attach a wl_buffer with a
+  // |buffer_id| to a WaylandSurface.
+  // Calls OnSubmission and OnPresentation on successful swap and pixels
+  // presented.
+  // |wait_for_frame_callback| instructs that a surface should wait for previous
+  // wl_frame_callback. This is primarily used for sync wl_subsurfaces case
+  // where buffer updates within a frame should be seen together. A root_surface
+  // commit will move an entire wl_surface tree from pending state to ready
+  // state. This root_surface commit must wait for wl_frame_callback, such that
+  // in effect all other surface updates wait for this wl_frame_callback, too.
+  bool CommitBufferInternal(WaylandSurface* wayland_surface,
+                            uint32_t buffer_id,
+                            const gfx::Rect& damage_region,
+                            bool wait_for_frame_callback = true);
+
+  // Does a wl_surface commit without attaching any buffers. This commit will
+  // still wait for previous wl_frame_callback. Similar to above but for
+  // commits that do not change the root_surface.
+  bool CommitWithoutBufferInternal(WaylandSurface* wayland_surface,
+                                   bool wait_for_frame_callback = true);
 
   // When a surface is hidden, the client may want to detach the buffer attached
-  // to the surface backed by |widget| to ensure Wayland does not present those
-  // contents and do not composite in a wrong way. Otherwise, users may see the
-  // contents of a hidden surface on their screens.
-  void ResetSurfaceContents(gfx::AcceleratedWidget widget);
+  // to the surface to ensure Wayland does not present those contents and do not
+  // composite in a wrong way. Otherwise, users may see the contents of a hidden
+  // surface on their screens.
+  void ResetSurfaceContents(WaylandSurface* wayland_surface);
 
   // Returns the anonymously created WaylandBuffer.
   std::unique_ptr<WaylandBuffer> PassAnonymousWlBuffer(uint32_t buffer_id);
 
  private:
   // This is an internal representation of a real surface, which holds a pointer
-  // to WaylandWindow. Also, this object holds buffers, frame callbacks and
-  // presentation callbacks for that window's surface.
+  // to WaylandSurface. Also, this object holds buffers, frame callbacks and
+  // presentation callbacks for that surface.
   class Surface;
 
   bool CreateBuffer(const gfx::Size& size, uint32_t buffer_id);
 
-  Surface* GetSurface(gfx::AcceleratedWidget widget) const;
+  Surface* GetSurface(WaylandSurface* wayland_surface) const;
 
   // Validates data sent from GPU. If invalid, returns false and sets an error
   // message to |error_message_|.
@@ -191,7 +228,14 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
 
   bool DestroyAnonymousBuffer(uint32_t buffer_id);
 
-  base::flat_map<gfx::AcceleratedWidget, std::unique_ptr<Surface>> surfaces_;
+  base::flat_map<WaylandSurface*, std::unique_ptr<Surface>> surfaces_;
+
+  // When a WaylandWindow/WaylandSubsurface is removed, its corresponding
+  // Surface may still have an un-released buffer and un-acked presentation.
+  // Thus, we keep removed surfaces in the graveyard. It's safe to delete them
+  // when all of the Surface's buffers are destroyed because buffer destruction
+  // is deferred till after buffers are released and presentations are acked.
+  std::list<std::unique_ptr<Surface>> surface_graveyard_;
 
   // Set when invalid data is received from the GPU process.
   std::string error_message_;
@@ -208,8 +252,13 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   base::OnceCallback<void(std::string)> terminate_gpu_cb_;
 
   // Contains anonymous buffers aka buffers that are not attached to any of the
-  // existing surfaces and that will be mapped to surfaces later.  Typically
-  // created when CreateAnonymousImage is called on the gpu process side.
+  // existing surfaces and that will be mapped to surfaces later.
+  // Typically created when CreateAnonymousImage is called on the gpu process
+  // side.
+  // We assume that a buffer_id/wl_buffer will never be used on multiple
+  // wl_surfaces so we never re-map buffers to surfaces. If we ever need to use
+  // the same buffer for 2 surfaces at the same time, create multiple wl_buffers
+  // referencing the same dmabuf or underlying storage.
   base::flat_map<uint32_t, std::unique_ptr<WaylandBuffer>> anonymous_buffers_;
 
   base::WeakPtrFactory<WaylandBufferManagerHost> weak_factory_;

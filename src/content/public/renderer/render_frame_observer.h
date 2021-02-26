@@ -9,16 +9,17 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/public/common/previews_state.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
@@ -38,7 +39,7 @@ class WebElement;
 class WebFormElement;
 class WebString;
 class WebWorkerFetchContext;
-}
+}  // namespace blink
 
 namespace network {
 struct URLLoaderCompletionStatus;
@@ -56,7 +57,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
                                            public IPC::Sender {
  public:
   // A subclass can use this to delete itself. If it does not, the subclass must
-  // always null-check each call to render_frame() becase the RenderFrame can
+  // always null-check each call to render_frame() because the RenderFrame can
   // go away at any time.
   virtual void OnDestruct() = 0;
 
@@ -102,12 +103,16 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) {}
 
+  // Called when a RenderFrame's page lifecycle state gets updated.
+  virtual void DidSetPageLifecycleState() {}
+
   // These match the Blink API notifications
   virtual void DidCreateNewDocument() {}
   virtual void DidCreateDocumentElement() {}
   // TODO(dgozman): replace next two methods with DidFinishNavigation.
-  virtual void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                        ui::PageTransition transition) {}
+  // DidCommitProvisionalLoad is only called for new-document navigations.
+  // Use DidFinishSameDocumentNavigation for same-document navigations.
+  virtual void DidCommitProvisionalLoad(ui::PageTransition transition) {}
   virtual void DidFailProvisionalLoad() {}
   virtual void DidFinishLoad() {}
   virtual void DidFinishDocumentLoad() {}
@@ -124,10 +129,23 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors) {}
 
+  // Called when same-document navigation finishes.
+  // This is the only callback for same-document navigations,
+  // DidStartNavigation and ReadyToCommitNavigation are not called.
+  //
+  // Same-document navigation is typically initiated by an anchor click
+  // (that usually results in the page scrolling to the anchor) or a
+  // history web API manipulation.
+  //
+  // However, it could be some rare case like user changing #hash in the url
+  // bar or history restore for subframe or anything else that was classified
+  // as same-document.
+  virtual void DidFinishSameDocumentNavigation() {}
+
   // Called when this frame has been detached from the view. This *will* be
   // called for child frames when a parent frame is detached. Since the frame is
   // already detached from the DOM at this time, it should not be inspected.
-  virtual void FrameDetached() {}
+  virtual void WillDetach() {}
 
   // Called when we receive a console message from Blink for which we requested
   // extra details (like the stack trace). |message| is the error message,
@@ -153,6 +171,9 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
 
   // Notifications When an input delay data becomes available.
   virtual void DidObserveInputDelay(base::TimeDelta input_delay) {}
+
+  // Notification When the First Scroll Delay becomes available.
+  virtual void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) {}
 
   // Notifications when a cpu timing update becomes available, when a frame
   // has performed at least 100ms of tasks.
@@ -202,7 +223,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
       int request_id,
       const network::mojom::URLResponseHead& response_head,
       network::mojom::RequestDestination request_destination,
-      PreviewsState previews_state) {}
+      blink::PreviewsState previews_state) {}
   virtual void DidCompleteResponse(
       int request_id,
       const network::URLLoaderCompletionStatus& status) {}
@@ -239,8 +260,8 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Called when a worker fetch context will be created.
   virtual void WillCreateWorkerFetchContext(blink::WebWorkerFetchContext*) {}
 
-  // Called when a frame's intersection with the root frame changes.
-  virtual void OnMainFrameDocumentIntersectionChanged(
+  // Called when a frame's intersection with the main frame changes.
+  virtual void OnMainFrameIntersectionChanged(
       const blink::WebRect& intersect_rect) {}
 
   // Called to give the embedder an opportunity to bind an interface request
@@ -256,6 +277,15 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual bool OnAssociatedInterfaceRequestForFrame(
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle);
+
+  // Called when a page's mobile friendliness changed.
+  virtual void OnMobileFriendlinessChanged(const blink::MobileFriendliness&) {}
+
+  // The smoothness metrics is shared over shared-memory. The interested
+  // observer should invalidate |shared_memory| (by std::move()'ing it), and
+  // return true. All other observers should return false (default).
+  virtual bool SetUpSmoothnessReporting(
+      base::ReadOnlySharedMemoryRegion& shared_memory);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

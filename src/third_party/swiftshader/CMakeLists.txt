@@ -89,6 +89,10 @@ find_library(XCB xcb)
 if(SWIFTSHADER_BUILD_WSI_WAYLAND)
     find_library(WAYLAND wayland-client)
 endif(SWIFTSHADER_BUILD_WSI_WAYLAND)
+if(SWIFTSHADER_BUILD_WSI_DIRECTFB)
+    find_library(DIRECTFB directfb)
+    find_path(DIRECTFB_INCLUDE_DIR directfb/directfb.h)
+endif(SWIFTSHADER_BUILD_WSI_DIRECTFB)
 
 ###########################################################
 # Options
@@ -116,6 +120,7 @@ option_if_not_defined(SWIFTSHADER_BUILD_GLESv2 "Build the OpenGL ES 2 library" T
 option_if_not_defined(SWIFTSHADER_BUILD_GLES_CM "Build the OpenGL ES 1.1 library" TRUE)
 option_if_not_defined(SWIFTSHADER_BUILD_VULKAN "Build the Vulkan library" TRUE)
 option_if_not_defined(SWIFTSHADER_BUILD_WSI_WAYLAND "Build the Wayland WSI support" FALSE)
+option_if_not_defined(SWIFTSHADER_BUILD_WSI_DIRECTFB "Build the DirectFB WSI support" FALSE)
 option_if_not_defined(SWIFTSHADER_BUILD_PVR "Build the PowerVR examples" TRUE)
 option_if_not_defined(SWIFTSHADER_GET_PVR "Check out the PowerVR submodule" FALSE)
 option_if_not_defined(SWIFTSHADER_BUILD_ANGLE "Build angle" FALSE)
@@ -160,6 +165,15 @@ set_property(CACHE SWIFTSHADER_LLVM_VERSION PROPERTY STRINGS "10.0")
 # Set to one of the rr::Optimization::Level enum values.
 set(REACTOR_DEFAULT_OPT_LEVEL "Default" CACHE STRING "Reactor default optimization level")
 set_property(CACHE REACTOR_DEFAULT_OPT_LEVEL PROPERTY STRINGS "None" "Less" "Default" "Aggressive")
+
+# Enable instrumentation of Reactor routines for MemorySanitizer builds (LLVM backend).
+# TODO(b/155148722): Remove when unconditionally instrumenting for all build systems.
+set(REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION TRUE)
+
+if(NOT DEFINED SWIFTSHADER_LOGGING_LEVEL)
+    set(SWIFTSHADER_LOGGING_LEVEL "Info" CACHE STRING "SwiftShader logging level")
+    set_property(CACHE SWIFTSHADER_LOGGING_LEVEL PROPERTY STRINGS "Verbose" "Debug" "Info" "Warn" "Error" "Fatal" "Disabled")
+endif()
 
 # LLVM disallows calling cmake . from the main LLVM dir, the reason is that
 # it builds header files that could overwrite the orignal ones. Here we
@@ -329,8 +343,10 @@ endmacro()
 macro(set_linker_flag FLAG)
     if(${ARGC} GREATER 1)
         set(CMAKE_EXE_LINKER_FLAGS_${ARGV1} "${CMAKE_EXE_LINKER_FLAGS_${ARGV1}} ${FLAG}")
+        set(CMAKE_SHARED_LINKER_FLAGS_${ARGV1} "${CMAKE_EXE_LINKER_FLAGS_${ARGV1}} ${FLAG}")
     else()
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${FLAG}")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${FLAG}")
     endif()
 endmacro()
 
@@ -498,8 +514,22 @@ else()
     set_cpp_flag("-fomit-frame-pointer" RELEASE)
 
     if(SWIFTSHADER_MSAN)
+        if(NOT DEFINED ENV{SWIFTSHADER_MSAN_INSTRUMENTED_LIBCXX_PATH})
+            message(FATAL_ERROR " \n"
+                    " MemorySanitizer usage requires an instrumented build of libc++.\n"
+                    " Set the SWIFTSHADER_MSAN_INSTRUMENTED_LIBCXX_PATH environment variable to the\n"
+                    " build output path. See\n"
+                    " https://github.com/google/sanitizers/wiki/MemorySanitizerLibcxxHowTo#instrumented-libc\n"
+                    " for details on how to build an MSan instrumented libc++.")
+        endif()
+
         set_cpp_flag("-fsanitize=memory")
         set_linker_flag("-fsanitize=memory")
+        set_cpp_flag("-stdlib=libc++")
+        set_linker_flag("-L$ENV{SWIFTSHADER_MSAN_INSTRUMENTED_LIBCXX_PATH}/lib")
+        set_cpp_flag("-I$ENV{SWIFTSHADER_MSAN_INSTRUMENTED_LIBCXX_PATH}/include")
+        set_cpp_flag("-I$ENV{SWIFTSHADER_MSAN_INSTRUMENTED_LIBCXX_PATH}/include/c++/v1")
+        set_linker_flag("-Wl,-rpath,$ENV{SWIFTSHADER_MSAN_INSTRUMENTED_LIBCXX_PATH}/lib")
     elseif(SWIFTSHADER_ASAN)
         set_cpp_flag("-fsanitize=address")
         set_linker_flag("-fsanitize=address")
@@ -548,6 +578,10 @@ if(REACTOR_DEFAULT_OPT_LEVEL)
     list(APPEND SWIFTSHADER_COMPILE_OPTIONS "-DREACTOR_DEFAULT_OPT_LEVEL=${REACTOR_DEFAULT_OPT_LEVEL}")
 endif()
 
+if(DEFINED SWIFTSHADER_LOGGING_LEVEL)
+    list(APPEND SWIFTSHADER_COMPILE_OPTIONS "-DSWIFTSHADER_LOGGING_LEVEL=${SWIFTSHADER_LOGGING_LEVEL}")
+endif()
+
 if(WIN32)
     add_definitions(-DWINVER=0x501 -DNOMINMAX -DSTRICT)
     set(CMAKE_FIND_LIBRARY_PREFIXES ${CMAKE_FIND_LIBRARY_PREFIXES} "" "lib")
@@ -577,12 +611,15 @@ endif()
 # LLVM
 ###########################################################
 add_subdirectory(${THIRD_PARTY_DIR}/llvm-${SWIFTSHADER_LLVM_VERSION} EXCLUDE_FROM_ALL)
+set_target_properties(llvm PROPERTIES FOLDER "third_party")
 
 ###########################################################
 # Subzero
 ###########################################################
 add_subdirectory(${THIRD_PARTY_DIR}/llvm-subzero EXCLUDE_FROM_ALL)
 add_subdirectory(${THIRD_PARTY_DIR}/subzero EXCLUDE_FROM_ALL)
+set_target_properties(llvm-subzero PROPERTIES FOLDER "third_party")
+set_target_properties(subzero PROPERTIES FOLDER "third_party")
 
 ###########################################################
 # marl
@@ -590,6 +627,7 @@ add_subdirectory(${THIRD_PARTY_DIR}/subzero EXCLUDE_FROM_ALL)
 if(BUILD_MARL)
     set(MARL_THIRD_PARTY_DIR ${THIRD_PARTY_DIR})
     add_subdirectory(${THIRD_PARTY_DIR}/marl)
+    set_target_properties(marl PROPERTIES FOLDER "third_party")
 endif()
 
 if(MARL_THREAD_SAFETY_ANALYSIS_SUPPORTED)
@@ -609,6 +647,7 @@ endif()
 ###########################################################
 if(SWIFTSHADER_ENABLE_ASTC)
     add_subdirectory(${THIRD_PARTY_DIR}/astc-encoder)
+    set_target_properties(astc-encoder PROPERTIES FOLDER "third_party")
 endif()
 
 ###########################################################
@@ -621,6 +660,10 @@ if(SWIFTSHADER_BUILD_TESTS)
     # gtest finds python, which picks python 2 first, if present.
     # We need to undo this so that SPIR-V can later find python3.
     unset(PYTHON_EXECUTABLE CACHE)
+    set_target_properties(gmock PROPERTIES FOLDER "third_party")
+    set_target_properties(gmock_main PROPERTIES FOLDER "third_party")
+    set_target_properties(gtest PROPERTIES FOLDER "third_party")
+    set_target_properties(gtest_main PROPERTIES FOLDER "third_party")
 endif()
 
 ###########################################################
@@ -638,6 +681,10 @@ elseif(LINUX)
     if(SWIFTSHADER_BUILD_WSI_WAYLAND)
         list(APPEND OS_LIBS "${WAYLAND}")
     endif(SWIFTSHADER_BUILD_WSI_WAYLAND)
+    if(SWIFTSHADER_BUILD_WSI_DIRECTFB)
+        list(APPEND OS_LIBS "${DIRECTFB}")
+        include_directories(${DIRECTFB_INCLUDE_DIR}/directfb)
+    endif(SWIFTSHADER_BUILD_WSI_DIRECTFB)
 elseif(FUCHSIA)
     set(OS_LIBS zircon)
 elseif(APPLE)
@@ -723,6 +770,11 @@ if(SWIFTSHADER_BUILD_VULKAN)
                 target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_WAYLAND_KHR")
             endif()
         endif(SWIFTSHADER_BUILD_WSI_WAYLAND)
+        if(SWIFTSHADER_BUILD_WSI_DIRECTFB)
+            if(DIRECTFB AND DIRECTFB_INCLUDE_DIR)
+                target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_DIRECTFB_EXT")
+            endif()
+        endif(SWIFTSHADER_BUILD_WSI_DIRECTFB)
     elseif(APPLE)
         target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_MACOS_MVK")
     elseif(FUCHSIA)
@@ -901,6 +953,8 @@ if(SWIFTSHADER_BUILD_BENCHMARKS)
     if (NOT TARGET benchmark::benchmark)
         set(BENCHMARK_ENABLE_TESTING FALSE CACHE BOOL FALSE FORCE)
         add_subdirectory(${THIRD_PARTY_DIR}/benchmark)
+        set_target_properties(benchmark PROPERTIES FOLDER "third_party")
+        set_target_properties(benchmark_main PROPERTIES FOLDER "third_party")
     endif()
 
     if (NOT TARGET glslang)

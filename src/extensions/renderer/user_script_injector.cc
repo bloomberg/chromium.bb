@@ -144,6 +144,14 @@ base::Optional<CSSOrigin> UserScriptInjector::GetCssOrigin() const {
   return base::nullopt;
 }
 
+bool UserScriptInjector::IsRemovingCSS() const {
+  return false;
+}
+
+bool UserScriptInjector::IsAddingCSS() const {
+  return script_ && !script_->css_scripts().empty();
+}
+
 const base::Optional<std::string> UserScriptInjector::GetInjectionKey() const {
   return base::nullopt;
 }
@@ -156,7 +164,7 @@ bool UserScriptInjector::ShouldInjectJs(
          ShouldInjectScripts(script_->js_scripts(), executing_scripts);
 }
 
-bool UserScriptInjector::ShouldInjectCss(
+bool UserScriptInjector::ShouldInjectOrRemoveCss(
     UserScript::RunLocation run_location,
     const std::set<std::string>& injected_stylesheets) const {
   return script_ && run_location == UserScript::DOCUMENT_START &&
@@ -201,8 +209,10 @@ PermissionsData::PageAccess UserScriptInjector::CanExecuteOnFrame(
                    : PermissionsData::PageAccess::kDenied;
   }
 
-  GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
-      web_frame, web_frame->GetDocument().Url(), script_->match_about_blank());
+  GURL effective_document_url =
+      ScriptContext::GetEffectiveDocumentURLForInjection(
+          web_frame, web_frame->GetDocument().Url(),
+          script_->match_origin_as_fallback());
 
   return injection_host->CanExecuteOnFrame(
       effective_document_url,

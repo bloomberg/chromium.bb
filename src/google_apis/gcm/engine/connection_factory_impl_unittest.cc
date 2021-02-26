@@ -24,6 +24,7 @@
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -292,6 +293,8 @@ class ConnectionFactoryImplTest
     return login_request.client_event();
   }
 
+  base::RunLoop* GetRunLoop() { return run_loop_.get(); }
+
  private:
   void GetProxyResolvingSocketFactory(
       mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
@@ -329,6 +332,10 @@ ConnectionFactoryImplTest::ConnectionFactoryImplTest()
       network_service_(network::NetworkService::CreateForTesting()) {
   network::mojom::NetworkContextParamsPtr params =
       network::mojom::NetworkContextParams::New();
+  // Use a dummy CertVerifier that always passes cert verification, since
+  // these unittests don't need to test CertVerifier behavior.
+  params->cert_verifier_params =
+      network::FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
   // Use a fixed proxy config, to avoid dependencies on local network
   // configuration.
   params->initial_proxy_config = net::ProxyConfigWithAnnotation::CreateDirect();
@@ -509,7 +516,7 @@ TEST_F(ConnectionFactoryImplTest, CanarySucceedsRetryDuringLogin) {
 
   // Pump the loop, to ensure the pending backoff retry has no effect.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      FROM_HERE, GetRunLoop()->QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(1));
   WaitForConnections();
 }

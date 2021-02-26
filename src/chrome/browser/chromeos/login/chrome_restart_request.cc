@@ -47,9 +47,11 @@
 #include "media/base/media_switches.h"
 #include "media/capture/capture_switches.h"
 #include "media/media_buildflags.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
@@ -67,10 +69,10 @@ namespace {
 // Increase logging level for Guest mode to avoid INFO messages in logs.
 const char kGuestModeLoggingLevel[] = "1";
 
-// Derives the new command line from |base_command_line| by doing the following:
+// Derives the new command line from `base_command_line` by doing the following:
 // - Forward a given switches list to new command;
 // - Set start url if given;
-// - Append/override switches using |new_switches|;
+// - Append/override switches using `new_switches`;
 void DeriveCommandLine(const GURL& start_url,
                        const base::CommandLine& base_command_line,
                        const base::DictionaryValue& new_switches,
@@ -78,13 +80,12 @@ void DeriveCommandLine(const GURL& start_url,
   DCHECK_NE(&base_command_line, command_line);
 
   static const char* const kForwardSwitches[] = {
-    service_manager::switches::kDisableGpuSandbox,
-    service_manager::switches::kDisableSeccompFilterSandbox,
-    service_manager::switches::kDisableSetuidSandbox,
-    service_manager::switches::kGpuSandboxAllowSysVShm,
-    service_manager::switches::kGpuSandboxFailuresFatal,
-    service_manager::switches::kNoSandbox,
-    ::switches::kBlinkSettings,
+    sandbox::policy::switches::kDisableGpuSandbox,
+    sandbox::policy::switches::kDisableSeccompFilterSandbox,
+    sandbox::policy::switches::kDisableSetuidSandbox,
+    sandbox::policy::switches::kGpuSandboxAllowSysVShm,
+    sandbox::policy::switches::kGpuSandboxFailuresFatal,
+    sandbox::policy::switches::kNoSandbox,
     ::switches::kDisable2dCanvasImageChromium,
     ::switches::kDisableAccelerated2dCanvas,
     ::switches::kDisableAcceleratedMjpegDecode,
@@ -95,51 +96,35 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kDisableGpuMemoryBufferVideoFrames,
     ::switches::kDisableGpuShaderDiskCache,
     ::switches::kUseCmdDecoder,
+    ::switches::kUseANGLE,
     ::switches::kDisableGpuWatchdog,
     ::switches::kDisableGpuCompositing,
     ::switches::kDisableGpuRasterization,
-    ::switches::kDisableLowResTiling,
     ::switches::kDisableOopRasterization,
-    ::switches::kDisablePartialRaster,
     ::switches::kDisablePepper3DImageChromium,
-    ::switches::kDisablePreferCompositingToLCDText,
-    ::switches::kDisableRGBA4444Textures,
-    ::switches::kDisableThreadedScrolling,
     ::switches::kDisableTouchDragDrop,
     ::switches::kDisableVideoCaptureUseGpuMemoryBuffer,
     ::switches::kDisableYUVImageDecoding,
-    ::switches::kDisableZeroCopy,
     ::switches::kEnableBlinkFeatures,
     ::switches::kEnableGpuMemoryBufferVideoFrames,
     ::switches::kEnableGpuRasterization,
     ::switches::kEnableLogging,
-    ::switches::kEnableLowResTiling,
     ::switches::kEnableNativeGpuMemoryBuffers,
     ::switches::kEnableOopRasterization,
-    ::switches::kEnablePreferCompositingToLCDText,
-    ::switches::kEnableRGBA4444Textures,
     ::switches::kEnableTouchDragDrop,
     ::switches::kEnableUnifiedDesktop,
-    ::switches::kEnableUseHDRTransferFunction,
     ::switches::kEnableUseZoomForDSF,
     ::switches::kEnableViewport,
-    ::switches::kEnableZeroCopy,
     ::switches::kEnableHardwareOverlays,
     ::switches::kEdgeTouchFiltering,
-#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    ::switches::kForceDisableNewAcceleratedVideoDecoder,
-#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     ::switches::kHostWindowBounds,
     ::switches::kMainFrameResizesAreOrientationChanges,
     ::switches::kForceDeviceScaleFactor,
     ::switches::kForceGpuMemAvailableMb,
-    ::switches::kGpuRasterizationMSAASampleCount,
     ::switches::kGpuStartupDialog,
     ::switches::kGpuSandboxStartEarly,
     ::switches::kNumRasterThreads,
-    ::switches::kPpapiFlashArgs,
-    ::switches::kPpapiFlashPath,
-    ::switches::kPpapiFlashVersion,
+    ::switches::kPlatformDisallowsChromeOSDirectVideoDecoder,
     ::switches::kPpapiInProcess,
     ::switches::kRemoteDebuggingPort,
     ::switches::kRendererStartupDialog,
@@ -164,6 +149,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kDisableWebRtcHWDecoding,
     ::switches::kDisableWebRtcHWEncoding,
     ::switches::kOzonePlatform,
+    ash::switches::kAshClearFastInkBuffer,
     ash::switches::kAshEnableTabletMode,
     ash::switches::kAshEnableWaylandServer,
     ash::switches::kAshForceEnableStylusTools,
@@ -172,6 +158,20 @@ void DeriveCommandLine(const GURL& start_url,
     ash::switches::kAuraLegacyPowerButton,
     ash::switches::kEnableDimShelf,
     ash::switches::kShowTaps,
+    blink::switches::kBlinkSettings,
+    blink::switches::kDarkModeSettings,
+    blink::switches::kDisableLowResTiling,
+    blink::switches::kDisablePartialRaster,
+    blink::switches::kDisablePreferCompositingToLCDText,
+    blink::switches::kDisableRGBA4444Textures,
+    blink::switches::kDisableThreadedScrolling,
+    blink::switches::kDisableZeroCopy,
+    blink::switches::kEnableLowResTiling,
+    blink::switches::kEnablePreferCompositingToLCDText,
+    blink::switches::kEnableRGBA4444Textures,
+    blink::switches::kEnableRasterSideDarkModeForImages,
+    blink::switches::kEnableZeroCopy,
+    blink::switches::kGpuRasterizationMSAASampleCount,
     chromeos::switches::kDefaultWallpaperLarge,
     chromeos::switches::kDefaultWallpaperSmall,
     chromeos::switches::kGuestWallpaperLarge,
@@ -227,7 +227,7 @@ void DeriveCommandLine(const GURL& start_url,
   }
 }
 
-// Adds whitelisted features to |out_command_line| if they are enabled in the
+// Adds allowlisted features to `out_command_line` if they are enabled in the
 // current session.
 void DeriveEnabledFeatures(base::CommandLine* out_command_line) {
   static const base::Feature* kForwardEnabledFeatures[] = {

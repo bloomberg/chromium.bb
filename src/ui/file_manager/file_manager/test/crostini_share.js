@@ -7,20 +7,17 @@ const shareBase = {
   vmNameTermina: 'termina',
   vmNameSelectorLinux: 'linux',
   toastSharedTextLinux: '1 folder shared with Linux',
-  toastActionTextLinux: 'Manage Linux sharing',
+  toastActionTextLinux: 'Manage',
   enumUmaShareWithLinux: 12,
   enumUmaManageLinuxSharing: 13,
   // Params for 'Share with Plugin VM'.
   vmNamePluginVm: 'PvmDefault',
   vmNameSelectorPluginVm: 'plugin-vm',
-  toastSharedTextPluginVm: '1 folder shared with Plugin VM',
-  toastActionTextPluginVm: 'Manage Plugin VM sharing',
+  toastSharedTextPluginVm: '1 folder shared with Parallels Desktop',
+  toastActionTextPluginVm: 'Manage',
   enumUmaShareWithPluginVm: 16,
   enumUmaManagePluginVmSharing: 17,
 };
-
-const crostiniShare = {};
-const pluginVmShare = {};
 
 // Right click clickTarget, ensure menuVisible is shown,
 // Click menuTarget, ensure dialog is shown with expectedText.
@@ -61,23 +58,18 @@ shareBase.testSharePaths = async (
   const shareWith = '#file-context-menu [command="#' + share + '"]';
   const menuShareWithDirTree = '#directory-tree-context-menu:not([hidden]) ' +
       '[command="#' + share + '"]:not([hidden]):not([disabled])';
-  const menuNoShareWithDirTree = '#directory-tree-context-menu:not([hidden]) ' +
-      '[command="#' + share + '"][hidden][disabled="disabled"]';
   const shareWithDirTree =
       '#directory-tree-context-menu [command="#' + share + '"]';
   const photos = '#file-list [file-name="photos"]';
   const myFilesDirTree = '#directory-tree [root-type-icon="my_files"]';
-  const removableRoot = '#directory-tree [volume-type-icon="removable"]';
-  const menuShareWithVolumeRoot = '#roots-context-menu:not([hidden]) ' +
-      '[command="#' + share + '"]:not([hidden]):not([disabled])';
-  const shareWithVolumeRoot = '#roots-context-menu [command="#' + share + '"]';
-  const fakeLinuxFiles = '#directory-tree [root-type-icon="crostini"]';
-  const googleDrive = '#directory-tree .tree-item [volume-type-icon="drive"]';
   const menuHidden = '#file-context-menu[hidden]';
-  const androidRoot = '#directory-tree [volume-type-icon="android_files"]';
-
-  const shareLabel = {'termina': 'Linux apps', 'PvmDefault': 'Plugin VM'};
-  const givePermission = `Give ${shareLabel[vmName]} permission to modify `;
+  const shareLabel = {
+    'termina': 'Linux apps',
+    'PvmDefault': 'Parallels Desktop'
+  };
+  const givePermission = `Give ${shareLabel[vmName]} permission to access `;
+  const shareMessageShown = '#files-message:not([hidden])';
+  const shareMessageHidden = '#files-message[hidden]';
 
   const oldSharePaths = chrome.fileManagerPrivate.sharePathsWithCrostini;
   let sharePathsCalled = false;
@@ -142,13 +134,19 @@ shareBase.testSharePaths = async (
   // Share should persist when right-click > Share with <VM>.
   assertTrue(sharePathsPersist);
   // Validate UMAs.
-  assertEquals(1, chrome.metricsPrivate.smallCounts_.length);
-  assertArrayEquals(
-      ['FileBrowser.CrostiniSharedPaths.Depth.Downloads', 1],
-      chrome.metricsPrivate.smallCounts_[0]);
   const lastEnumUma = chrome.metricsPrivate.values_.pop();
   assertEquals('FileBrowser.MenuItemSelected', lastEnumUma[0].metricName);
   assertEquals(enumUma, lastEnumUma[1]);
+
+  // Click 'photos directory and ensure share message is shown.
+  assertTrue(test.fakeMouseDoubleClick(photos), 'click photos');
+  await test.waitForElement(shareMessageShown);
+
+  // Go back to 'My files' and ensure message is not shown.
+  assertTrue(test.fakeMouseDoubleClick(myFilesDirTree), 'click My files');
+  await test.waitForFiles(test.TestEntryInfo.getExpectedRows(
+      test.BASIC_MY_FILES_ENTRY_SET_WITH_LINUX_FILES));
+  await test.waitForElement(shareMessageHidden);
 
   // Dispatch unshare event which is normally initiated when the user
   // manages shared paths in the settings page.
@@ -179,6 +177,104 @@ shareBase.testSharePaths = async (
       test.fakeMouseRightClick('#file-list [file-name="hello.txt"]'),
       'right-click hello.txt');
   await test.waitForElement(menuNoShareWith);
+
+
+  // Restore fmp.*.
+  chrome.fileManagerPrivate.sharePathsWithCrostini = oldSharePaths;
+  // Restore Crostini.unregisterSharedPath.
+  fileManager.crostini.unregisterSharedPath = oldCrostiniUnregister;
+  done();
+};
+
+const createMockFilesAppToast = () => {
+  const toast = document.querySelector('#toast');
+
+  if (!toast.shadowRoot) {
+    toast.attachShadow({mode: 'open'});
+  }
+  toast.shadowRoot.innerHTML = `
+    <div class="container" id="container" hidden>
+      <div class="text" id="text" hidden></div>
+      <cr-button class="action" id="action" hidden></cr-button>
+    </div>
+  `;
+
+  toast.visible = false;
+
+  toast.show = (message, action) => {
+    const host = document.querySelector('#toast');
+
+    if (typeof message === 'string') {
+      const text = host.shadowRoot.querySelector('#text');
+      text.innerText = message;
+      text.hidden = false;
+    } else {
+      assertTrue(false, 'Invalid <files-toast> message');
+      return;
+    }
+
+    if (action && action.text && action.callback) {
+      const button = host.shadowRoot.querySelector('#action');
+      button.innerText = action.text;
+      button.hidden = false;
+    } else {
+      assertTrue(false, 'Invalid <files-toast> action');
+      return;
+    }
+
+    console.log('Toasted ' + message);
+    const container = host.shadowRoot.querySelector('#container');
+    container.hidden = false;
+    host.visible = true;
+  };
+};
+
+const crostiniShare = {};
+const pluginVmShare = {};
+
+crostiniShare.testSharePaths = done => {
+  createMockFilesAppToast();
+  shareBase.testSharePaths(
+      shareBase.vmNameTermina, shareBase.vmNameSelectorLinux,
+      shareBase.toastSharedTextLinux, shareBase.toastActionTextLinux,
+      shareBase.enumUmaShareWithLinux, done);
+};
+
+pluginVmShare.testSharePaths = done => {
+  createMockFilesAppToast();
+  shareBase.testSharePaths(
+      shareBase.vmNamePluginVm, shareBase.vmNameSelectorPluginVm,
+      shareBase.toastSharedTextPluginVm, shareBase.toastActionTextPluginVm,
+      shareBase.enumUmaShareWithPluginVm, done);
+};
+
+// Verify share for other volumes.
+shareBase.testShareVolumes = async (vmName, vmNameSelector, done) => {
+  const share = 'share-with-' + vmNameSelector;
+  const manage = 'manage-' + vmNameSelector + '-sharing';
+  const menuNoShareWith = '#file-context-menu:not([hidden]) ' +
+      '[command="#' + share + '"][hidden][disabled="disabled"]';
+  const menuShareWith = '#file-context-menu:not([hidden]) ' +
+      '[command="#' + share + '"]:not([hidden]):not([disabled])';
+  const removableRoot = '#directory-tree [volume-type-icon="removable"]';
+  const menuShareWithVolumeRoot = '#roots-context-menu:not([hidden]) ' +
+      '[command="#' + share + '"]:not([hidden]):not([disabled])';
+  const menuNoShareWithDirTree = '#directory-tree-context-menu:not([hidden]) ' +
+      '[command="#' + share + '"][hidden][disabled="disabled"]';
+  const shareWithVolumeRoot = '#roots-context-menu [command="#' + share + '"]';
+  const fakeLinuxFiles = '#directory-tree [root-type-icon="crostini"]';
+  const googleDrive = '#directory-tree .tree-item [volume-type-icon="drive"]';
+  const photos = '#file-list [file-name="photos"]';
+  const androidRoot = '#directory-tree [volume-type-icon="android_files"]';
+  const shareLabel = {
+    'termina': 'Linux apps',
+    'PvmDefault': 'Parallels Desktop'
+  };
+  const givePermission = `Give ${shareLabel[vmName]} permission to access `;
+
+  chrome.fileManagerPrivate.mountCrostiniDelay_ = 0;
+
+  await test.setupAndWaitUntilReady();
 
   // Verify share for removable root.
   test.mountRemovable();
@@ -241,29 +337,23 @@ shareBase.testSharePaths = async (
   await test.waitForElement(menuShareWith);
 
   // Reset Linux files and Play files back to unmounted.
+  chrome.fileManagerPrivate.removeMount('android_files');
   chrome.fileManagerPrivate.removeMount('crostini');
   await test.waitForElement(fakeLinuxFiles);
-  chrome.fileManagerPrivate.removeMount('android_files');
-
-  // Restore fmp.*.
-  chrome.fileManagerPrivate.sharePathsWithCrostini = oldSharePaths;
-  // Restore Crostini.unregisterSharedPath.
-  fileManager.crostini.unregisterSharedPath = oldCrostiniUnregister;
   done();
 };
 
-crostiniShare.testSharePaths = done => {
-  shareBase.testSharePaths(
-      shareBase.vmNameTermina, shareBase.vmNameSelectorLinux,
-      shareBase.toastSharedTextLinux, shareBase.toastActionTextLinux,
-      shareBase.enumUmaShareWithLinux, done);
+const crostiniShareVolumes = {};
+const pluginVmShareVolumes = {};
+
+crostiniShareVolumes.testShareVolumes = done => {
+  shareBase.testShareVolumes(
+      shareBase.vmNameTermina, shareBase.vmNameSelectorLinux, done);
 };
 
-pluginVmShare.testSharePaths = done => {
-  shareBase.testSharePaths(
-      shareBase.vmNamePluginVm, shareBase.vmNameSelectorPluginVm,
-      shareBase.toastSharedTextPluginVm, shareBase.toastActionTextPluginVm,
-      shareBase.enumUmaShareWithPluginVm, done);
+pluginVmShareVolumes.testShareVolumes = done => {
+  shareBase.testShareVolumes(
+      shareBase.vmNamePluginVm, shareBase.vmNameSelectorPluginVm, done);
 };
 
 // Verify gear menu 'Manage ? sharing'.
@@ -306,13 +396,16 @@ shareBase.testGearMenuManage =
   done();
 };
 
-crostiniShare.testGearMenuManageLinuxSharing = done => {
+const crostiniShareManage = {};
+const pluginVmShareManage = {};
+
+crostiniShareManage.testGearMenuManageLinuxSharing = done => {
   shareBase.testGearMenuManage(
       shareBase.vmNameTermina, shareBase.vmNameSelectorLinux,
       shareBase.enumUmaManageLinuxSharing, done);
 };
 
-pluginVmShare.testGearMenuManagePluginVmSharing = done => {
+pluginVmShareManage.testGearMenuManagePluginVmSharing = done => {
   shareBase.testGearMenuManage(
       shareBase.vmNamePluginVm, shareBase.vmNameSelectorPluginVm,
       shareBase.enumUmaManagePluginVmSharing, done);

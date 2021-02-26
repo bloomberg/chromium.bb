@@ -20,10 +20,12 @@
 
 namespace U_ICU_NAMESPACE {
 class Locale;
-}
+}  // namespace U_ICU_NAMESPACE
 
 namespace v8 {
 namespace internal {
+
+#include "torque-generated/src/objects/js-locale-tq.inc"
 
 class JSLocale : public TorqueGeneratedJSLocale<JSLocale, JSObject> {
  public:

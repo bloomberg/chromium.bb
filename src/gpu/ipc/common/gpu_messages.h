@@ -31,6 +31,8 @@
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence_handle.h"
@@ -38,13 +40,14 @@
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gpu_preference.h"
 #include "url/ipc/url_param_traits.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/mac/io_surface.h"
 #endif
@@ -76,6 +79,8 @@ IPC_STRUCT_BEGIN(GpuCommandBufferMsg_CreateImage_Params)
   IPC_STRUCT_MEMBER(uint64_t, image_release_count)
 IPC_STRUCT_END()
 
+IPC_ENUM_TRAITS_MAX_VALUE(GrSurfaceOrigin, kBottomLeft_GrSurfaceOrigin)
+
 IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSharedImage_Params)
   IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox)
   IPC_STRUCT_MEMBER(viz::ResourceFormat, format)
@@ -83,6 +88,8 @@ IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSharedImage_Params)
   IPC_STRUCT_MEMBER(gfx::ColorSpace, color_space)
   IPC_STRUCT_MEMBER(uint32_t, usage)
   IPC_STRUCT_MEMBER(uint32_t, release_id)
+  IPC_STRUCT_MEMBER(GrSurfaceOrigin, surface_origin)
+  IPC_STRUCT_MEMBER(SkAlphaType, alpha_type)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSharedImageWithData_Params)
@@ -95,6 +102,8 @@ IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSharedImageWithData_Params)
   IPC_STRUCT_MEMBER(uint32_t, pixel_data_offset)
   IPC_STRUCT_MEMBER(uint32_t, pixel_data_size)
   IPC_STRUCT_MEMBER(bool, done_with_shm)
+  IPC_STRUCT_MEMBER(GrSurfaceOrigin, surface_origin)
+  IPC_STRUCT_MEMBER(SkAlphaType, alpha_type)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuChannelMsg_CreateGMBSharedImage_Params)
@@ -105,6 +114,8 @@ IPC_STRUCT_BEGIN(GpuChannelMsg_CreateGMBSharedImage_Params)
   IPC_STRUCT_MEMBER(gfx::ColorSpace, color_space)
   IPC_STRUCT_MEMBER(uint32_t, usage)
   IPC_STRUCT_MEMBER(uint32_t, release_id)
+  IPC_STRUCT_MEMBER(GrSurfaceOrigin, surface_origin)
+  IPC_STRUCT_MEMBER(SkAlphaType, alpha_type)
 IPC_STRUCT_END()
 
 #if defined(OS_WIN)
@@ -116,6 +127,8 @@ IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSwapChain_Params)
   IPC_STRUCT_MEMBER(gfx::ColorSpace, color_space)
   IPC_STRUCT_MEMBER(uint32_t, usage)
   IPC_STRUCT_MEMBER(uint32_t, release_id)
+  IPC_STRUCT_MEMBER(GrSurfaceOrigin, surface_origin)
+  IPC_STRUCT_MEMBER(SkAlphaType, alpha_type)
 IPC_STRUCT_END()
 #endif  // OS_WIN
 
@@ -180,6 +193,13 @@ IPC_MESSAGE_ROUTED3(GpuChannelMsg_UpdateSharedImage,
                     gpu::Mailbox /* id */,
                     uint32_t /* release_id */,
                     gfx::GpuFenceHandle /* in_fence_handle */)
+#if defined(OS_ANDROID)
+IPC_MESSAGE_ROUTED4(GpuChannelMsg_CreateSharedImageWithAHB,
+                    gpu::Mailbox /* out id */,
+                    gpu::Mailbox /* in id */,
+                    uint32_t /* usage */,
+                    uint32_t /* release_id */)
+#endif
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_DestroySharedImage, gpu::Mailbox /* id */)
 #if defined(OS_WIN)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateSwapChain,
@@ -189,9 +209,12 @@ IPC_MESSAGE_ROUTED2(GpuChannelMsg_PresentSwapChain,
                     uint32_t /* release_id */)
 #endif  // OS_WIN
 #if defined(OS_FUCHSIA)
-IPC_MESSAGE_ROUTED2(GpuChannelMsg_RegisterSysmemBufferCollection,
+IPC_MESSAGE_ROUTED5(GpuChannelMsg_RegisterSysmemBufferCollection,
                     gfx::SysmemBufferCollectionId /* id */,
-                    zx::channel /* token */)
+                    zx::channel /* token */,
+                    gfx::BufferFormat /* format */,
+                    gfx::BufferUsage /* usage */,
+                    bool /* register_with_image_pipe */)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_ReleaseSysmemBufferCollection,
                     gfx::SysmemBufferCollectionId /* id */)
 #endif  // OS_FUCHSIA

@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "components/version_info/channel.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
@@ -28,7 +27,6 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/url_pattern.h"
@@ -96,7 +94,7 @@ class RulesetManagerTest : public DNRTestBase {
                                                   &expected_checksum));
 
     std::vector<std::unique_ptr<RulesetMatcher>> matchers(1);
-    EXPECT_EQ(RulesetMatcher::kLoadSuccess,
+    EXPECT_EQ(LoadRulesetResult::kSuccess,
               RulesetMatcher::CreateVerifiedMatcher(
                   std::move(sources[0]), expected_checksum, &matchers[0]));
 
@@ -458,22 +456,18 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
 
 // Test that the correct modifyHeaders actions are returned for each extension.
 TEST_P(RulesetManagerTest, ModifyHeaders) {
-  // TODO(crbug.com/947591): Remove the channel override once implementation of
-  // modifyHeaders action is complete.
-  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
-
   const Extension* extension_1 = nullptr;
   const Extension* extension_2 = nullptr;
 
-  // Add an extension which removes the "header1" and "header2" headers.
+  // Add an extension which removes "header1" and sets "header2".
   {
     std::unique_ptr<CompositeMatcher> matcher;
     TestRule rule = CreateGenericRule();
     rule.condition->url_filter = std::string("*");
     rule.action->type = std::string("modifyHeaders");
-    rule.action->request_headers =
-        std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove"),
-                                     TestHeaderInfo("header2", "remove")});
+    rule.action->request_headers = std::vector<TestHeaderInfo>(
+        {TestHeaderInfo("header1", "remove", base::nullopt),
+         TestHeaderInfo("header2", "set", "value2")});
 
     ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
         {rule}, "test extension", &matcher, {URLPattern::kAllUrlsPattern}));
@@ -481,16 +475,16 @@ TEST_P(RulesetManagerTest, ModifyHeaders) {
     manager()->AddRuleset(extension_1->id(), std::move(matcher));
   }
 
-  // Add another extension which removes the "header1" and "header3" headers.
+  // Add another extension which removes "header1" and appends "header3".
   {
     std::unique_ptr<CompositeMatcher> matcher;
     TestRule rule = CreateGenericRule();
     rule.condition->url_filter = std::string("*");
     rule.action->type = std::string("modifyHeaders");
-    rule.action->request_headers =
-        std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove")});
-    rule.action->response_headers =
-        std::vector<TestHeaderInfo>({TestHeaderInfo("header3", "remove")});
+    rule.action->request_headers = std::vector<TestHeaderInfo>(
+        {TestHeaderInfo("header1", "remove", base::nullopt)});
+    rule.action->response_headers = std::vector<TestHeaderInfo>(
+        {TestHeaderInfo("header3", "append", "value3")});
 
     ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
         {rule}, "test extension 2", &matcher, {URLPattern::kAllUrlsPattern}));
@@ -509,18 +503,20 @@ TEST_P(RulesetManagerTest, ModifyHeaders) {
   RequestAction expected_action_1 = CreateRequestActionForTesting(
       RequestActionType::MODIFY_HEADERS, kMinValidID, kDefaultPriority,
       kMinValidStaticRulesetID, extension_2->id());
-  expected_action_1.request_headers_to_modify = {
-      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE)};
-  expected_action_1.response_headers_to_modify = {
-      RequestAction::HeaderInfo("header3", dnr_api::HEADER_OPERATION_REMOVE)};
+  expected_action_1.request_headers_to_modify = {RequestAction::HeaderInfo(
+      "header1", dnr_api::HEADER_OPERATION_REMOVE, base::nullopt)};
+  expected_action_1.response_headers_to_modify = {RequestAction::HeaderInfo(
+      "header3", dnr_api::HEADER_OPERATION_APPEND, "value3")};
 
   // Create the expected RequestAction for |extension_1|.
   RequestAction expected_action_2 = CreateRequestActionForTesting(
       RequestActionType::MODIFY_HEADERS, kMinValidID, kDefaultPriority,
       kMinValidStaticRulesetID, extension_1->id());
   expected_action_2.request_headers_to_modify = {
-      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE),
-      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_REMOVE)};
+      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE,
+                                base::nullopt),
+      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_SET,
+                                "value2")};
 
   // Verify that the list of actions is sorted in descending order of extension
   // priority.
@@ -533,18 +529,14 @@ TEST_P(RulesetManagerTest, ModifyHeaders) {
 // Test that an extension's modify header rules are applied on a request only if
 // it has host permissions for the request.
 TEST_P(RulesetManagerTest, ModifyHeaders_HostPermissions) {
-  // TODO(crbug.com/947591): Remove the channel override once implementation of
-  // modifyHeaders action is complete.
-  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
-
   // Add an extension which removes the "header1" header with host permissions
   // for example.com.
   std::unique_ptr<CompositeMatcher> matcher;
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string("*");
   rule.action->type = std::string("modifyHeaders");
-  rule.action->request_headers =
-      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove")});
+  rule.action->request_headers = std::vector<TestHeaderInfo>(
+      {TestHeaderInfo("header1", "remove", base::nullopt)});
 
   ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
       {rule}, "test extension", &matcher, {"*://example.com/*"}));
@@ -561,8 +553,8 @@ TEST_P(RulesetManagerTest, ModifyHeaders_HostPermissions) {
     RequestAction expected_action = CreateRequestActionForTesting(
         RequestActionType::MODIFY_HEADERS, kMinValidID, kDefaultPriority,
         kMinValidStaticRulesetID, extension->id());
-    expected_action.request_headers_to_modify = {
-        RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE)};
+    expected_action.request_headers_to_modify = {RequestAction::HeaderInfo(
+        "header1", dnr_api::HEADER_OPERATION_REMOVE, base::nullopt)};
 
     EXPECT_THAT(actual_actions, ::testing::ElementsAre(::testing::Eq(
                                     ::testing::ByRef(expected_action))));

@@ -21,22 +21,23 @@ import org.chromium.base.LocaleUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
-import org.chromium.chrome.browser.notifications.chime.ChimeSession;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
-import org.chromium.chrome.browser.share.ShareImageFileUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.translate.TranslateBridge;
+import org.chromium.components.browser_ui.share.ShareImageFileUtils;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.base.ResourceBundle;
 
 import java.util.Locale;
@@ -138,7 +139,7 @@ public class ChromeActivitySessionTracker {
         updateAcceptLanguages();
         mVariationsSession.start();
         mPowerBroadcastReceiver.onForegroundSessionStart();
-        ChimeSession.start();
+        AppHooks.get().getChimeDelegate().startSession();
 
         // Track the ratio of Chrome startups that are caused by notification clicks.
         // TODO(johnme): Add other reasons (and switch to recordEnumeratedHistogram).
@@ -236,13 +237,14 @@ public class ChromeActivitySessionTracker {
                 Settings.System.getInt(ContextUtils.getApplicationContext().getContentResolver(),
                         Settings.System.TEXT_SHOW_PASSWORD, 1)
                 == 1;
-        if (PrefServiceBridge.getInstance().getBoolean(Pref.WEBKIT_PASSWORD_ECHO_ENABLED)
+        if (UserPrefs.get(Profile.getLastUsedRegularProfile())
+                        .getBoolean(Pref.WEB_KIT_PASSWORD_ECHO_ENABLED)
                 == systemEnabled) {
             return;
         }
 
-        PrefServiceBridge.getInstance().setBoolean(
-                Pref.WEBKIT_PASSWORD_ECHO_ENABLED, systemEnabled);
+        UserPrefs.get(Profile.getLastUsedRegularProfile())
+                .setBoolean(Pref.WEB_KIT_PASSWORD_ECHO_ENABLED, systemEnabled);
     }
 
     /**

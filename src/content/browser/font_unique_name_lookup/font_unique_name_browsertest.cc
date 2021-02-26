@@ -65,7 +65,7 @@ const char* kExpectedFontFamilyNames[] = {"AndroidClock",
                                           "Roboto Condensed",
                                           "Roboto Condensed",
                                           "Roboto"};
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 const char* kExpectedFontFamilyNames[] = {"Ahem",
                                           "Arimo",
                                           "Arimo",
@@ -92,7 +92,7 @@ const char* kExpectedFontFamilyNames[] = {"Ahem",
                                           "Tinos",
                                           "Mukti Narrow",
                                           "Tinos"};
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 const char* kExpectedFontFamilyNames[] = {"American Typewriter",
                                           "Arial Narrow",
                                           "Baskerville",

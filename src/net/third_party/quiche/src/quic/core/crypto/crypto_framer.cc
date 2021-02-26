@@ -7,15 +7,15 @@
 #include <string>
 #include <utility>
 
+#include "absl/base/attributes.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_fallthrough.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/quiche_endian.h"
 
 namespace quic {
 
@@ -60,7 +60,7 @@ CryptoFramer::~CryptoFramer() {}
 
 // static
 std::unique_ptr<CryptoHandshakeMessage> CryptoFramer::ParseMessage(
-    quiche::QuicheStringPiece in) {
+    absl::string_view in) {
   OneShotVisitor visitor;
   CryptoFramer framer;
 
@@ -81,12 +81,12 @@ const std::string& CryptoFramer::error_detail() const {
   return error_detail_;
 }
 
-bool CryptoFramer::ProcessInput(quiche::QuicheStringPiece input,
+bool CryptoFramer::ProcessInput(absl::string_view input,
                                 EncryptionLevel /*level*/) {
   return ProcessInput(input);
 }
 
-bool CryptoFramer::ProcessInput(quiche::QuicheStringPiece input) {
+bool CryptoFramer::ProcessInput(absl::string_view input) {
   DCHECK_EQ(QUIC_NO_ERROR, error_);
   if (error_ != QUIC_NO_ERROR) {
     return false;
@@ -121,7 +121,7 @@ void CryptoFramer::ForceHandshake() {
   QuicDataReader reader(buffer_.data(), buffer_.length(),
                         quiche::HOST_BYTE_ORDER);
   for (const std::pair<QuicTag, size_t>& item : tags_and_lengths_) {
-    quiche::QuicheStringPiece value;
+    absl::string_view value;
     if (reader.BytesRemaining() < item.second) {
       break;
     }
@@ -243,7 +243,7 @@ void CryptoFramer::Clear() {
   state_ = STATE_READING_TAG;
 }
 
-QuicErrorCode CryptoFramer::Process(quiche::QuicheStringPiece input) {
+QuicErrorCode CryptoFramer::Process(absl::string_view input) {
   // Add this data to the buffer.
   buffer_.append(input.data(), input.length());
   QuicDataReader reader(buffer_.data(), buffer_.length(),
@@ -258,7 +258,7 @@ QuicErrorCode CryptoFramer::Process(quiche::QuicheStringPiece input) {
       reader.ReadTag(&message_tag);
       message_.set_tag(message_tag);
       state_ = STATE_READING_NUM_ENTRIES;
-      QUIC_FALLTHROUGH_INTENDED;
+      ABSL_FALLTHROUGH_INTENDED;
     case STATE_READING_NUM_ENTRIES:
       if (reader.BytesRemaining() < kNumEntriesSize + sizeof(uint16_t)) {
         break;
@@ -274,7 +274,7 @@ QuicErrorCode CryptoFramer::Process(quiche::QuicheStringPiece input) {
       tags_and_lengths_.reserve(num_entries_);
       state_ = STATE_READING_TAGS_AND_LENGTHS;
       values_len_ = 0;
-      QUIC_FALLTHROUGH_INTENDED;
+      ABSL_FALLTHROUGH_INTENDED;
     case STATE_READING_TAGS_AND_LENGTHS: {
       if (reader.BytesRemaining() <
           num_entries_ * (kQuicTagSize + kCryptoEndOffsetSize)) {
@@ -308,7 +308,7 @@ QuicErrorCode CryptoFramer::Process(quiche::QuicheStringPiece input) {
       }
       values_len_ = last_end_offset;
       state_ = STATE_READING_VALUES;
-      QUIC_FALLTHROUGH_INTENDED;
+      ABSL_FALLTHROUGH_INTENDED;
     }
     case STATE_READING_VALUES:
       if (reader.BytesRemaining() < values_len_) {
@@ -319,7 +319,7 @@ QuicErrorCode CryptoFramer::Process(quiche::QuicheStringPiece input) {
                         << values_len_ - reader.BytesRemaining() << " bytes.";
       }
       for (const std::pair<QuicTag, size_t>& item : tags_and_lengths_) {
-        quiche::QuicheStringPiece value;
+        absl::string_view value;
         if (!reader.ReadStringPiece(&value, item.second)) {
           DCHECK(process_truncated_messages_);
           // Store an empty value.

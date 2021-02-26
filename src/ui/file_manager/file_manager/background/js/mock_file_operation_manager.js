@@ -93,6 +93,8 @@ class MockFileOperationManager extends cr.EventTarget {
 
   hasQueuedTasks() {}
   filterSameDirectoryEntry() {}
+  willUseTrash() {}
   deleteEntries() {}
+  restoreDeleted() {}
   zipSelection() {}
 }

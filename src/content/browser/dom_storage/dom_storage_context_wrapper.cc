@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -94,8 +94,8 @@ class DOMStorageContextWrapper::StoragePolicyObserver
     if (!context_wrapper_)
       return;
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DOMStorageContextWrapper::OnStoragePolicyChanged,
                        context_wrapper_));
   }
@@ -127,9 +127,10 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
     StoragePartitionImpl* partition,
     storage::SpecialStoragePolicy* special_storage_policy)
     : partition_(partition), storage_policy_(special_storage_policy) {
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE,
       base::BindRepeating(&DOMStorageContextWrapper::OnMemoryPressure,
-                          base::Unretained(this))));
+                          base::Unretained(this)));
 
   MaybeBindSessionStorageControl();
   MaybeBindLocalStorageControl();

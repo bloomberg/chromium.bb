@@ -65,7 +65,7 @@ ElementSequenceOrByteStringDoubleOrStringRecord::ElementSequenceOrByteStringDoub
 ElementSequenceOrByteStringDoubleOrStringRecord::~ElementSequenceOrByteStringDoubleOrStringRecord() = default;
 ElementSequenceOrByteStringDoubleOrStringRecord& ElementSequenceOrByteStringDoubleOrStringRecord::operator=(const ElementSequenceOrByteStringDoubleOrStringRecord&) = default;
 
-void ElementSequenceOrByteStringDoubleOrStringRecord::Trace(Visitor* visitor) {
+void ElementSequenceOrByteStringDoubleOrStringRecord::Trace(Visitor* visitor) const {
   visitor->Trace(byte_string_double_or_string_record_);
   visitor->Trace(element_sequence_);
 }
@@ -88,7 +88,7 @@ void V8ElementSequenceOrByteStringDoubleOrStringRecord::ToImpl(
     if (exception_state.HadException())
       return;
     if (!script_iterator.IsNull()) {
-      HeapVector<Member<Element>> cpp_value = NativeValueTraits<IDLSequence<Element>>::NativeValue(isolate, std::move(script_iterator), exception_state);
+      HeapVector<Member<Element>> cpp_value{ NativeValueTraits<IDLSequence<Element>>::NativeValue(isolate, std::move(script_iterator), exception_state) };
       if (exception_state.HadException())
         return;
       impl.SetElementSequence(cpp_value);
@@ -97,7 +97,7 @@ void V8ElementSequenceOrByteStringDoubleOrStringRecord::ToImpl(
   }
 
   if (v8_value->IsObject()) {
-    HeapVector<std::pair<String, DoubleOrString>> cpp_value = NativeValueTraits<IDLRecord<IDLByteString, DoubleOrString>>::NativeValue(isolate, v8_value, exception_state);
+    HeapVector<std::pair<String, DoubleOrString>> cpp_value{ NativeValueTraits<IDLRecord<IDLByteString, DoubleOrString>>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetByteStringDoubleOrStringRecord(cpp_value);

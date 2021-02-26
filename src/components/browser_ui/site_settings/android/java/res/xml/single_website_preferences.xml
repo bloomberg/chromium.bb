@@ -7,11 +7,16 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <org.chromium.components.browser_ui.settings.TextMessagePreference
+        android:key="page_description"
+        app:iconSpaceReserved="false"
+        android:summary="@string/website_settings_permissions_description"/>
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:key="os_permissions_warning" />
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:key="os_permissions_warning_extra" />
     <Preference
+        android:selectable="false"
         android:key="os_permissions_warning_divider"
         android:layout="@layout/divider_preference" />
     <org.chromium.components.browser_ui.settings.TextMessagePreference
@@ -20,6 +25,7 @@
         android:icon="@drawable/btn_info"
         app:iconTint="@color/default_icon_color" />
     <Preference
+        android:selectable="false"
         android:key="intrusive_ads_info_divider"
         android:layout="@layout/divider_preference" />
     <PreferenceCategory
@@ -77,8 +83,9 @@
         android:key="vr_permission_list" />
     <ListPreference
         android:key="ar_permission_list" />
+    <ListPreference
+        android:key="idle_detection_permission_list" />
 
     <org.chromium.components.browser_ui.settings.ButtonPreference
-        android:key="reset_site_button"
-        android:title="@string/website_reset" />
+        android:key="reset_site_button" />
 </PreferenceScreen>

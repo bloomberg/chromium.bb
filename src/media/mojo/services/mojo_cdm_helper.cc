@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/mojo_cdm_helper.h"
 
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "media/base/cdm_context.h"
 #include "media/cdm/cdm_helpers.h"
@@ -35,6 +36,15 @@ cdm::FileIO* MojoCdmHelper::CreateCdmFileIO(cdm::FileIOClient* client) {
 
   cdm_file_io_set_.push_back(std::move(mojo_cdm_file_io));
   return cdm_file_io;
+}
+
+url::Origin MojoCdmHelper::GetCdmOrigin() {
+  url::Origin cdm_origin;
+  // Since the CDM is created asynchronously, by the time this function is
+  // called, the render frame host in the browser process may already be gone.
+  // It's safe to ignore the error since the origin is used for crash reporting.
+  ignore_result(frame_interfaces_->GetCdmOrigin(&cdm_origin));
+  return cdm_origin;
 }
 
 cdm::Buffer* MojoCdmHelper::CreateCdmBuffer(size_t capacity) {

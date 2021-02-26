@@ -8,8 +8,8 @@
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
 #include "third_party/blink/renderer/core/css/css_syntax_definition.h"
+#include "third_party/blink/renderer/core/css/cssom/css_paint_worklet_input.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_deferred_image.h"
-#include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -163,8 +163,8 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
       Vector<std::unique_ptr<CrossThreadStyleValue>>
           cross_thread_input_arguments;
       BuildInputArgumentValues(cross_thread_input_arguments);
-      scoped_refptr<PaintWorkletInput> input =
-          base::MakeRefCounted<PaintWorkletInput>(
+      scoped_refptr<CSSPaintWorkletInput> input =
+          base::MakeRefCounted<CSSPaintWorkletInput>(
               GetName(), target_size, zoom, device_scale_factor,
               generator.WorkletId(), std::move(style_data.value()),
               std::move(cross_thread_input_arguments),
@@ -210,7 +210,7 @@ bool CSSPaintValue::ParseInputArguments(const Document& document) {
   for (wtf_size_t i = 0; i < argument_variable_data_.size(); ++i) {
     // If we are parsing a paint() function, we must be a secure context.
     DCHECK_EQ(SecureContextMode::kSecureContext,
-              document.GetSecureContextMode());
+              document.GetExecutionContext()->GetSecureContextMode());
     const CSSValue* parsed_value = argument_variable_data_[i]->ParseForSyntax(
         input_argument_types[i], SecureContextMode::kSecureContext);
     if (!parsed_value) {

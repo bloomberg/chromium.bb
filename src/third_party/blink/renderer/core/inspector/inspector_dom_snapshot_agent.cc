@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_dom_snapshot_agent.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
@@ -41,6 +40,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "v8/include/v8-inspector.h"
 
 namespace blink {
@@ -65,9 +65,9 @@ std::unique_ptr<protocol::Array<double>> BuildRectForLayout(const int x,
 
 Document* GetEmbeddedDocument(PaintLayer* layer) {
   // Documents are embedded on their own PaintLayer via a LayoutEmbeddedContent.
-  if (layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
-    FrameView* frame_view =
-        ToLayoutEmbeddedContent(layer->GetLayoutObject()).ChildFrameView();
+  if (auto* embedded =
+          DynamicTo<LayoutEmbeddedContent>(layer->GetLayoutObject())) {
+    FrameView* frame_view = embedded->ChildFrameView();
     if (auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view))
       return local_frame_view->GetFrame().GetDocument();
   }
@@ -94,29 +94,6 @@ std::unique_ptr<protocol::DOMSnapshot::RareBooleanData> BooleanData() {
       .build();
 }
 
-String GetOriginUrlFast(int max_stack_depth) {
-  static const v8::StackTrace::StackTraceOptions stackTraceOptions =
-      static_cast<v8::StackTrace::StackTraceOptions>(v8::StackTrace::kDetailed);
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  DCHECK(isolate);
-
-  v8::Local<v8::StackTrace> v8StackTrace = v8::StackTrace::CurrentStackTrace(
-      isolate, max_stack_depth, stackTraceOptions);
-  if (v8StackTrace.IsEmpty())
-    return String();
-  for (int i = 0, frame_count = v8StackTrace->GetFrameCount(); i < frame_count;
-       ++i) {
-    v8::Local<v8::StackFrame> frame = v8StackTrace->GetFrame(isolate, i);
-    if (frame.IsEmpty())
-      continue;
-    v8::Local<v8::String> script_name = frame->GetScriptNameOrSourceURL();
-    if (script_name.IsEmpty() || !script_name->Length())
-      continue;
-    return ToCoreString(script_name);
-  }
-  return String();
-}
-
 String GetOriginUrl(const Node* node) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   ThreadDebugger* debugger = ThreadDebugger::From(isolate);
@@ -124,10 +101,10 @@ String GetOriginUrl(const Node* node) {
     return String();
   v8::HandleScope handleScope(isolate);
   // Try not getting the entire stack first.
-  String url = GetOriginUrlFast(/* maxStackSize=*/5);
+  String url = GetCurrentScriptUrl(/* maxStackSize=*/5);
   if (!url.IsEmpty())
     return url;
-  url = GetOriginUrlFast(/* maxStackSize=*/200);
+  url = GetCurrentScriptUrl(/* maxStackSize=*/200);
   if (!url.IsEmpty())
     return url;
   // If we did not get anything from the sync stack, let's try the slow
@@ -317,13 +294,14 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
       protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>();
 
   css_property_filter_ = std::make_unique<CSSPropertyFilter>();
-  // Look up the CSSPropertyIDs for each entry in |computed_styles|.
-  for (String& entry : *computed_styles) {
-    CSSPropertyID property_id = cssPropertyID(main_window, entry);
-    if (property_id == CSSPropertyID::kInvalid)
-      continue;
-    css_property_filter_->emplace_back(std::move(entry),
-                                       std::move(property_id));
+  // Resolve all property names to CSSProperty references.
+  for (String& property_name : *computed_styles) {
+    const CSSPropertyID id =
+        unresolvedCSSPropertyID(main_window, property_name);
+    if (id == CSSPropertyID::kInvalid || id == CSSPropertyID::kVariable)
+      return Response::InvalidParams("invalid CSS property");
+    const auto& property = CSSProperty::Get(resolveCSSPropertyID(id));
+    css_property_filter_->push_back(&property);
   }
 
   if (include_paint_order.fromMaybe(false)) {
@@ -350,6 +328,8 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   string_table_.clear();
   document_order_map_.clear();
   documents_.reset();
+  css_value_cache_.clear();
+  style_cache_.clear();
   return Response::Success();
 }
 
@@ -396,7 +376,7 @@ void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
   // order was calculated, since layout trees were already updated during
   // TraversePaintLayerTree().
   if (!paint_order_map_)
-    document->UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
+    document->UpdateStyleAndLayoutTreeForSubtree(document);
 
   DocumentType* doc_type = document->doctype();
 
@@ -643,7 +623,7 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
     }
   }
 
-  if (layout_object->Style() && layout_object->Style()->IsStackingContext())
+  if (layout_object->IsStackingContext())
     SetRare(layout_tree_snapshot->getStackingContexts(), layout_index);
 
   if (paint_order_map_) {
@@ -653,8 +633,9 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
     layout_tree_snapshot->getPaintOrders(nullptr)->emplace_back(paint_order);
   }
 
-  String text = layout_object->IsText() ? ToLayoutText(layout_object)->GetText()
-                                        : String();
+  String text = layout_object->IsText()
+                    ? To<LayoutText>(layout_object)->GetText()
+                    : String();
   layout_tree_snapshot->getText()->emplace_back(AddString(text));
 
   if (node->GetPseudoId()) {
@@ -671,7 +652,7 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
   if (!layout_object->IsText())
     return layout_index;
 
-  LayoutText* layout_text = ToLayoutText(layout_object);
+  auto* layout_text = To<LayoutText>(layout_object);
   Vector<LayoutText::TextBoxInfo> text_boxes = layout_text->GetTextBoxInfo();
   if (text_boxes.IsEmpty())
     return layout_index;
@@ -690,12 +671,37 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
 
 std::unique_ptr<protocol::Array<int>>
 InspectorDOMSnapshotAgent::BuildStylesForNode(Node* node) {
-  auto* computed_style_info =
-      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
+  DCHECK(
+      !node->GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
+          *node, true /* ignore_adjacent_style */));
   auto result = std::make_unique<protocol::Array<int>>();
-  for (const auto& pair : *css_property_filter_) {
-    String value = computed_style_info->GetPropertyValue(pair.second);
-    result->emplace_back(AddString(value));
+  auto* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return result;
+  const ComputedStyle* style = node->EnsureComputedStyle(kPseudoIdNone);
+  if (!style)
+    return result;
+  auto cached_style = style_cache_.find(style);
+  if (cached_style != style_cache_.end())
+    return std::make_unique<protocol::Array<int>>(*cached_style->value);
+  style_cache_.insert(style, result.get());
+  result->reserve(css_property_filter_->size());
+  for (const auto* property : *css_property_filter_) {
+    const CSSValue* value = property->CSSValueFromComputedStyle(
+        *style, layout_object, /* allow_visited_style= */ true);
+    if (!value) {
+      result->emplace_back(-1);
+      continue;
+    }
+    int index;
+    auto it = css_value_cache_.find(value);
+    if (it == css_value_cache_.end()) {
+      index = AddString(value->CssText());
+      css_value_cache_.insert(value, index);
+    } else {
+      index = it->value;
+    }
+    result->emplace_back(index);
   }
   return result;
 }
@@ -714,7 +720,7 @@ void InspectorDOMSnapshotAgent::TraversePaintLayerTree(
     PaintOrderMap* paint_order_map) {
   // Update layout before traversal of document so that we inspect a
   // current and consistent state of all trees.
-  document->UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
+  document->UpdateStyleAndLayoutTreeForSubtree(document);
 
   PaintLayer* root_layer = document->GetLayoutView()->Layer();
   // LayoutView requires a PaintLayer.
@@ -744,10 +750,11 @@ void InspectorDOMSnapshotAgent::VisitPaintLayer(
     VisitPaintLayer(child_layer, paint_order_map);
 }
 
-void InspectorDOMSnapshotAgent::Trace(Visitor* visitor) {
+void InspectorDOMSnapshotAgent::Trace(Visitor* visitor) const {
   visitor->Trace(inspected_frames_);
   visitor->Trace(dom_debugger_agent_);
   visitor->Trace(document_order_map_);
+  visitor->Trace(css_value_cache_);
   InspectorBaseAgent::Trace(visitor);
 }
 

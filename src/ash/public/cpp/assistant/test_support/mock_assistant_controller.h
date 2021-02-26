@@ -29,13 +29,14 @@ class MockAssistantController : public AssistantController {
               (const GURL& url, bool in_background, bool from_server),
               (override));
 
+  MOCK_METHOD(void, OpenAssistantSettings, (), (override));
+
   MOCK_METHOD(base::WeakPtr<AssistantController>, GetWeakPtr, (), (override));
 
-  MOCK_METHOD(
-      void,
-      SetAssistant,
-      (mojo::PendingRemote<chromeos::assistant::mojom::Assistant> assistant),
-      (override));
+  MOCK_METHOD(void,
+              SetAssistant,
+              (chromeos::assistant::Assistant * assistant),
+              (override));
 
   MOCK_METHOD(void, StartSpeakerIdEnrollmentFlow, (), (override));
 

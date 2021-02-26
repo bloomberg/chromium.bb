@@ -38,8 +38,8 @@ source_set("coordinators") {
     "//ios/chrome/browser/ui/infobars/banners",
     "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/infobars/modals",
+    "//ios/chrome/browser/ui/infobars/modals:public",
     "//ios/chrome/browser/ui/infobars/presentation",
-    "//ios/chrome/browser/ui/toolbar/public:feature_flags",
     "//ios/chrome/browser/ui/util",
     "//ui/base",
   ]
@@ -69,6 +69,7 @@ source_set("translate") {
     "//components/metrics",
     "//components/strings:components_strings_grit",
     "//components/translate/core/browser",
+    "//components/translate/core/common",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/translate:public",

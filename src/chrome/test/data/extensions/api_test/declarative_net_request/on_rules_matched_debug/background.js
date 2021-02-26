@@ -26,15 +26,8 @@ function getServerURL(host) {
   return `http://${host}:${testServerPort}/`;
 }
 
-function addRuleMatchedListener() {
-  chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(
-      onRuleMatchedDebugCallback);
-}
-
-function removeRuleMatchedListener() {
+function resetMatchedRules() {
   matchedRules = [];
-  chrome.declarativeNetRequest.onRuleMatchedDebug.removeListener(
-      onRuleMatchedDebugCallback);
 }
 
 function verifyExpectedRuleInfo(expectedRuleInfo) {
@@ -49,17 +42,30 @@ function verifyExpectedRuleInfo(expectedRuleInfo) {
 }
 
 var tests = [
+  function setup() {
+    chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(
+        onRuleMatchedDebugCallback);
+
+    // This test was known to flake as reported in crbug.com/1029233 due to a
+    // race condition where a request was sent and a declarative rule was
+    // matched before the onRuleMatchedDebug listener was properly added.
+    // Sending the request after waiting for a round trip should fix the
+    // flakiness.
+    chrome.test.waitForRoundTrip('msg', chrome.test.succeed);
+  },
+
   function testDynamicRule() {
-    const ruleIdsToRemove = [];
+    resetMatchedRules();
+
     const rule = {
       id: 1,
       priority: 1,
       condition: {urlFilter: 'def', 'resourceTypes': ['main_frame']},
       action: {type: 'block'},
     };
-    addRuleMatchedListener();
+
     chrome.declarativeNetRequest.updateDynamicRules(
-        ruleIdsToRemove, [rule], function() {
+        {addRules: [rule]}, function() {
           chrome.test.assertNoLastError();
           const url = getServerURL('def.com');
           navigateTab(url, url, (tab) => {
@@ -79,16 +85,14 @@ var tests = [
               }
             };
             verifyExpectedRuleInfo(expectedRuleInfo);
-            removeRuleMatchedListener();
             chrome.test.succeed();
           });
         });
   },
+
   function testBlockRule() {
-    addRuleMatchedListener();
-    // TODO(crbug.com/1029233): Can adding the listener race with the network
-    // request such that when the browser receives the network request, the
-    // listener is not added?
+    resetMatchedRules();
+
     const url = getServerURL('abc.com');
     navigateTab(url, url, (tab) => {
       const expectedRuleInfo = {
@@ -104,7 +108,6 @@ var tests = [
         rule: {ruleId: 1, rulesetId: 'rules1'}
       };
       verifyExpectedRuleInfo(expectedRuleInfo);
-      removeRuleMatchedListener();
       chrome.test.succeed();
     });
   },
@@ -112,46 +115,42 @@ var tests = [
   // Ensure that requests that don't originate from a tab (such as those from
   // the extension background page) trigger the listener.
   function testBackgroundPageRequest() {
-    addRuleMatchedListener();
+    function listenOnce(target, callback) {
+      let innerCallback = function(info) {
+        target.removeListener(innerCallback);
+        callback(info);
+      };
+      target.addListener(innerCallback);
+    }
 
-    const url = getServerURL('abc.com');
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', url);
+    listenOnce(
+        chrome.declarativeNetRequest.onRuleMatchedDebug,
+        function(fetchPromise, info) {
+          fetchPromise.then(function(response) {
+            chrome.test.fail('Request should be blocked by rule with ID 1');
+          }).catch(function(error) {
+            chrome.test.assertEq(1, info.rule.ruleId);
+            chrome.test.assertEq('rules1', info.rule.rulesetId);
 
-    xhr.onload = () => {
-      removeRuleMatchedListener();
-      chrome.test.fail('Request should be blocked by rule with ID 1');
-    };
-
-    // The request from the background page to abc.com should be blocked.
-    xhr.onerror = () => {
-      chrome.test.assertEq(1, matchedRules.length);
-      const matchedRule = matchedRules[0];
-      chrome.test.assertEq(1, matchedRule.rule.ruleId);
-      chrome.test.assertEq('rules1', matchedRule.rule.rulesetId);
-
-      // Tab ID should be -1 since this request was made from a background page.
-      chrome.test.assertEq(-1, matchedRule.request.tabId);
-
-      removeRuleMatchedListener();
-      chrome.test.succeed();
-    };
-
-    xhr.send();
+            // Tab ID should be -1 since this request was made from a background
+            // page.
+            chrome.test.assertEq(-1, info.request.tabId);
+            chrome.test.succeed();
+          });
+        }.bind(null, fetch(getServerURL('abc.com'), {method: 'GET'})));
   },
 
   function testNoRuleMatched() {
-    addRuleMatchedListener();
+    resetMatchedRules();
     const url = getServerURL('nomatch.com');
     navigateTab(url, url, (tab) => {
       chrome.test.assertEq(0, matchedRules.length);
-      removeRuleMatchedListener();
       chrome.test.succeed();
     });
   },
 
   function testAllowRule() {
-    addRuleMatchedListener();
+    resetMatchedRules();
 
     const url = getServerURL('abcde.com');
     navigateTab(url, url, (tab) => {
@@ -162,13 +161,12 @@ var tests = [
       chrome.test.assertEq(4, matchedRule.rule.ruleId);
       chrome.test.assertEq('rules2', matchedRule.rule.rulesetId);
 
-      removeRuleMatchedListener();
       chrome.test.succeed();
     });
   },
 
   function testMultipleRules() {
-    addRuleMatchedListener();
+    resetMatchedRules();
 
     // redir1.com --> redir2.com --> abc.com (blocked)
     // 3 rules are matched from the above sequence of actions.
@@ -186,7 +184,6 @@ var tests = [
             expectedMatches[i].rulesetId, matchedRules[i].rule.rulesetId);
       }
 
-      removeRuleMatchedListener();
       chrome.test.succeed();
     });
   }

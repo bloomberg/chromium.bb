@@ -28,6 +28,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/no_destructor.h"
@@ -43,17 +44,6 @@
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
-
-namespace {
-
-// The transform applied to an overview item when animating to or from the home
-// launcher.
-const gfx::Transform& GetShiftTransform() {
-  static const base::NoDestructor<gfx::Transform> matrix(1, 0, 0, 1, 0, -100);
-  return *matrix;
-}
-
-}  // namespace
 
 bool CanCoverAvailableWorkspace(aura::Window* window) {
   SplitViewController* split_view_controller = SplitViewController::Get(window);
@@ -96,32 +86,19 @@ bool ShouldAnimateWallpaper(aura::Window* root_window) {
   return true;
 }
 
-void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
-                                      OverviewAnimationType animation_type,
-                                      bool slide,
-                                      bool observe) {
+void FadeInWidgetToOverview(views::Widget* widget,
+                            OverviewAnimationType animation_type,
+                            bool observe) {
   aura::Window* window = widget->GetNativeWindow();
-  if (window->layer()->GetTargetOpacity() == 1.f && !slide)
+  if (window->layer()->GetTargetOpacity() == 1.f)
     return;
 
   gfx::Transform original_transform = window->transform();
-  if (slide) {
-    // Translate the window up before sliding down to |original_transform|.
-    gfx::Transform new_transform = original_transform;
-    new_transform.ConcatTransform(GetShiftTransform());
-    if (window->layer()->GetTargetOpacity() == 1.f &&
-        window->layer()->GetTargetTransform() == new_transform) {
-      return;
-    }
-    window->SetTransform(new_transform);
-  }
 
   // Fade in the widget from its current opacity.
   ScopedOverviewAnimationSettings scoped_overview_animation_settings(
       animation_type, window);
   window->layer()->SetOpacity(1.0f);
-  if (slide)
-    window->SetTransform(original_transform);
 
   if (observe) {
     auto enter_observer = std::make_unique<EnterAnimationObserver>();
@@ -131,9 +108,8 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
   }
 }
 
-void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
-                                      OverviewAnimationType animation_type,
-                                      bool slide) {
+void FadeOutWidgetFromOverview(std::unique_ptr<views::Widget> widget,
+                               OverviewAnimationType animation_type) {
   // The overview controller may be nullptr on shutdown.
   OverviewController* controller = Shell::Get()->overview_controller();
   if (!controller) {
@@ -154,12 +130,6 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
   animation_settings.AddObserver(observer.get());
   controller->AddExitAnimationObserver(std::move(observer));
   widget_ptr->SetOpacity(0.f);
-
-  if (slide) {
-    gfx::Transform new_transform = widget_ptr->GetNativeWindow()->transform();
-    new_transform.ConcatTransform(GetShiftTransform());
-    widget_ptr->GetNativeWindow()->SetTransform(new_transform);
-  }
 }
 
 void ImmediatelyCloseWidgetOnExit(std::unique_ptr<views::Widget> widget) {
@@ -169,48 +139,10 @@ void ImmediatelyCloseWidgetOnExit(std::unique_ptr<views::Widget> widget) {
   widget.reset();
 }
 
-WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(
-    aura::Window* window) {
-  auto hide_predicate = [](aura::Window* window) {
-    return window->GetProperty(kHideInOverviewKey);
-  };
-  return GetTransientTreeIterator(window, base::BindRepeating(hide_predicate));
-}
-
-gfx::RectF GetTransformedBounds(aura::Window* transformed_window,
-                                int top_inset) {
-  gfx::RectF bounds;
-  for (auto* window : GetVisibleTransientTreeIterator(transformed_window)) {
-    // Ignore other window types when computing bounding box of overview target
-    // item.
-    if (window != transformed_window &&
-        window->type() != aura::client::WINDOW_TYPE_NORMAL) {
-      continue;
-    }
-    gfx::RectF window_bounds(window->GetTargetBounds());
-    gfx::Transform new_transform =
-        TransformAboutPivot(gfx::ToRoundedPoint(window_bounds.origin()),
-                            window->layer()->GetTargetTransform());
-    new_transform.TransformRect(&window_bounds);
-
-    // The preview title is shown above the preview window. Hide the window
-    // header for apps or browser windows with no tabs (web apps) to avoid
-    // showing both the window header and the preview title.
-    if (top_inset > 0) {
-      gfx::RectF header_bounds(window_bounds);
-      header_bounds.set_height(top_inset);
-      new_transform.TransformRect(&header_bounds);
-      window_bounds.Inset(0, header_bounds.height(), 0, 0);
-    }
-    ::wm::TranslateRectToScreen(window->parent(), &window_bounds);
-    bounds.Union(window_bounds);
-  }
-  return bounds;
-}
-
 gfx::RectF GetTargetBoundsInScreen(aura::Window* window) {
   gfx::RectF bounds;
-  for (auto* window_iter : GetVisibleTransientTreeIterator(window)) {
+  for (auto* window_iter :
+       window_util::GetVisibleTransientTreeIterator(window)) {
     // Ignore other window types when computing bounding box of overview target
     // item.
     if (window_iter != window &&
@@ -226,7 +158,8 @@ gfx::RectF GetTargetBoundsInScreen(aura::Window* window) {
 
 void SetTransform(aura::Window* window, const gfx::Transform& transform) {
   gfx::PointF target_origin(GetTargetBoundsInScreen(window).origin());
-  for (auto* window_iter : GetVisibleTransientTreeIterator(window)) {
+  for (auto* window_iter :
+       window_util::GetVisibleTransientTreeIterator(window)) {
     aura::Window* parent_window = window_iter->parent();
     gfx::RectF original_bounds(window_iter->GetTargetBounds());
     ::wm::TranslateRectToScreen(parent_window, &original_bounds);
@@ -236,20 +169,6 @@ void SetTransform(aura::Window* window, const gfx::Transform& transform) {
                             transform);
     window_iter->SetTransform(new_transform);
   }
-}
-
-bool IsSlidingOutOverviewFromShelf() {
-  if (!Shell::Get()->overview_controller()->InOverviewSession())
-    return false;
-
-  if (Shell::Get()
-          ->home_screen_controller()
-          ->home_launcher_gesture_handler()
-          ->mode() == HomeLauncherGestureHandler::Mode::kSlideUpToShow) {
-    return true;
-  }
-
-  return false;
 }
 
 void MaximizeIfSnapped(aura::Window* window) {
@@ -340,7 +259,8 @@ gfx::Rect GetGridBoundsInScreen(
       // Use the default hotseat size here to avoid the possible re-layout
       // due to the update in HotseatWidget::is_forced_dense_.
       const int hotseat_bottom_inset =
-          ShelfConfig::Get()->GetHotseatSize(/*force_dense=*/false) +
+          ShelfConfig::Get()->GetHotseatSize(
+              /*density=*/HotseatDensity::kNormal) +
           ShelfConfig::Get()->hotseat_bottom_padding();
 
       bounds.Inset(0, 0, 0, hotseat_bottom_inset);

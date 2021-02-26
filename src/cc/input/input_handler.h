@@ -35,10 +35,10 @@ class LatencyInfo;
 
 namespace cc {
 
-class EventMetrics;
+class CompositorDelegateForInput;
 class ScrollElasticityHelper;
 
-enum PointerResultType { kUnhandled = 0, kScrollbarScroll };
+enum class PointerResultType { kUnhandled = 0, kScrollbarScroll };
 
 // These enum values are reported in UMA. So these values should never be
 // removed or changed.
@@ -50,13 +50,14 @@ enum class ScrollBeginThreadState {
 };
 
 struct CC_EXPORT InputHandlerPointerResult {
-  InputHandlerPointerResult();
+  InputHandlerPointerResult() = default;
   // Tells what type of processing occurred in the input handler as a result of
   // the pointer event.
-  PointerResultType type;
+  PointerResultType type = PointerResultType::kUnhandled;
 
   // Tells what scroll_units should be used.
-  ui::ScrollGranularity scroll_units;
+  ui::ScrollGranularity scroll_units =
+      ui::ScrollGranularity::kScrollByPrecisePixel;
 
   // If the input handler processed the event as a scrollbar scroll, it will
   // return a gfx::ScrollOffset that produces the necessary scroll. However,
@@ -73,11 +74,11 @@ struct CC_EXPORT InputHandlerPointerResult {
 };
 
 struct CC_EXPORT InputHandlerScrollResult {
-  InputHandlerScrollResult();
+  InputHandlerScrollResult() = default;
   // Did any layer scroll as a result this ScrollUpdate call?
-  bool did_scroll;
+  bool did_scroll = false;
   // Was any of the scroll delta argument to this ScrollUpdate call not used?
-  bool did_overscroll_root;
+  bool did_overscroll_root = false;
   // The total overscroll that has been accumulated by all ScrollUpdate calls
   // that have had overscroll since the last ScrollBegin call. This resets upon
   // a ScrollUpdate with no overscroll.
@@ -119,15 +120,59 @@ class CC_EXPORT InputHandlerClient {
   InputHandlerClient() = default;
 };
 
-// The InputHandler is a way for the embedders to interact with the impl thread
-// side of the compositor implementation. There is one InputHandler per
-// LayerTreeHost. To use the input handler, implement the InputHanderClient
-// interface and bind it to the handler on the compositor thread.
+// Data passed from the input handler to the main thread.  Used to notify the
+// main thread about changes that have occurred as a result of input since the
+// last commit.
+struct InputHandlerCommitData {
+  // Defined in threaded_input_handler.cc to avoid inlining since flat_set has
+  // non-trivial size destructor.
+  InputHandlerCommitData();
+  ~InputHandlerCommitData();
+
+  // Unconsumed scroll delta since the last commit.
+  gfx::Vector2dF overscroll_delta;
+
+  // Elements that have scroll snapped to a new target since the last commit.
+  base::flat_set<ElementId> updated_snapped_elements;
+
+  // If a scroll was active at any point since the last commit, this will
+  // identify the scroller (even if it has since ended).
+  ElementId last_latched_scroller;
+
+  // True if a scroll gesture has ended since the last commit.
+  bool scroll_gesture_did_end = false;
+
+  // The following bits are set if a gesture of any type was started since
+  // the last commit.
+  bool has_pinch_zoomed = false;
+  bool has_scrolled_by_wheel = false;
+  bool has_scrolled_by_touch = false;
+  bool has_scrolled_by_precisiontouchpad = false;
+};
+
+// The InputHandler interface is a way for the embedders to interact with the
+// input system running on the compositor thread. Each instance of a compositor
+// (i.e. a LayerTreeHostImpl) is associated with one InputHandler instance. The
+// InputHandler sits in between the embedder (the UI compositor or Blink) and
+// the compositor (LayerTreeHostImpl); as such, it must be bound to both.
+//
+// To use the input handler, instantiate it by passing in the compositor's
+// CompositorDelegateForInput to the Create factory method. The compositor
+// assumes ownership of the InputHandler and will bind itself. Then, implement
+// the InputHandlerClient interface and bind it to the handler by calling
+// BindToClient on the input handler. This should all be done on the
+// input-handling thread (i.e. the "compositor" thread if one exists).
 class CC_EXPORT InputHandler {
  public:
+  // Creates an instance of the InputHandler and binds it to the layer tree
+  // delegate. The delegate owns the InputHandler so their lifetimes
+  // are tied together, hence, this returns a WeakPtr.
+  static base::WeakPtr<InputHandler> Create(
+      CompositorDelegateForInput& compositor_delegate);
+
   // Note these are used in a histogram. Do not reorder or delete existing
   // entries.
-  enum ScrollThread {
+  enum class ScrollThread {
     SCROLL_ON_MAIN_THREAD = 0,
     SCROLL_ON_IMPL_THREAD,
     SCROLL_IGNORED,
@@ -139,17 +184,25 @@ class CC_EXPORT InputHandler {
   InputHandler& operator=(const InputHandler&) = delete;
 
   struct ScrollStatus {
-    ScrollStatus()
-        : thread(SCROLL_ON_IMPL_THREAD),
-          main_thread_scrolling_reasons(
-              MainThreadScrollingReason::kNotScrollingOnMain),
-          bubble(false) {}
+    ScrollStatus() = default;
     ScrollStatus(ScrollThread thread, uint32_t main_thread_scrolling_reasons)
         : thread(thread),
           main_thread_scrolling_reasons(main_thread_scrolling_reasons) {}
-    ScrollThread thread;
-    uint32_t main_thread_scrolling_reasons;
-    bool bubble;
+    ScrollStatus(ScrollThread thread,
+                 uint32_t main_thread_scrolling_reasons,
+                 bool needs_main_thread_hit_test)
+        : thread(thread),
+          main_thread_scrolling_reasons(main_thread_scrolling_reasons),
+          needs_main_thread_hit_test(needs_main_thread_hit_test) {}
+    ScrollThread thread = ScrollThread::SCROLL_ON_IMPL_THREAD;
+    uint32_t main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNotScrollingOnMain;
+    bool bubble = false;
+
+    // Used only in scroll unification. Tells the caller that the input handler
+    // detected a case where it cannot reliably target a scroll node and needs
+    // the main thread to perform a hit test.
+    bool needs_main_thread_hit_test = false;
   };
 
   enum class TouchStartOrMoveEventListenerType {
@@ -157,6 +210,8 @@ class CC_EXPORT InputHandler {
     HANDLER,
     HANDLER_ON_SCROLLING_LAYER
   };
+
+  virtual base::WeakPtr<InputHandler> AsWeakPtr() const = 0;
 
   // Binds a client to this handler to receive notifications. Only one client
   // can be bound to an InputHandler. The client must live at least until the
@@ -199,7 +254,7 @@ class CC_EXPORT InputHandler {
   // returned SCROLL_STARTED. No-op if ScrollBegin wasn't called or didn't
   // result in a successful scroll latch. Snap to a snap position if
   // |should_snap| is true.
-  virtual void ScrollEnd(bool should_snap) = 0;
+  virtual void ScrollEnd(bool should_snap = false) = 0;
 
   // Called to notify every time scroll-begin/end is attempted by an input
   // event.
@@ -217,7 +272,7 @@ class CC_EXPORT InputHandler {
       const gfx::PointF& mouse_position) = 0;
   virtual void MouseLeave() = 0;
 
-  // Returns frame_element_id from the layer hit by the given point.
+  // Returns visible_frame_element_id from the layer hit by the given point.
   // If the hit test failed, an invalid element ID is returned.
   virtual ElementId FindFrameElementIdAtPoint(
       const gfx::PointF& mouse_position) = 0;
@@ -256,7 +311,7 @@ class CC_EXPORT InputHandler {
   // suppress scrolling by consuming touch events that started at
   // |viewport_point|, and whether |viewport_point| is on the currently
   // scrolling layer.
-  // |out_touch_action| is assigned the whitelisted touch action for the
+  // |out_touch_action| is assigned the allowed touch action for the
   // |viewport_point|. In the case there are no touch handlers or touch action
   // regions, |out_touch_action| is assigned TouchAction::kAuto since the
   // default touch action is auto.
@@ -272,13 +327,18 @@ class CC_EXPORT InputHandler {
   virtual std::unique_ptr<SwapPromiseMonitor>
   CreateLatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency) = 0;
 
-  // During the lifetime of the returned EventsMetricsManager::ScopedMonitor, if
-  // SetNeedsOneBeginImplFrame() or SetNeedsRedraw() are called on
-  // LayerTreeHostImpl or a scroll animation is updated, |event_metrics| will be
-  // saved for reporting event latency metrics. It is allowed to pass nullptr as
-  // |event_metrics| in which case the return value would also be nullptr.
+  // Returns a new instance of `EventsMetricsManager::ScopedMonitor` to monitor
+  // the scope of handling an event. If `done_callback` is not a null callback,
+  // it will be called when the scope ends. If During the lifetime of the scoped
+  // monitor, `SetNeedsOneBeginImplFrame()` or `SetNeedsRedraw()` are called on
+  // `LayerTreeHostImpl` or a scroll animation is updated, the callback will be
+  // called in the end with `handled` argument set to true, denoting that the
+  // event was handled and the client should return `EventMetrics` associated
+  // with the event if it is interested in reporting event latency metrics for
+  // it.
   virtual std::unique_ptr<EventsMetricsManager::ScopedMonitor>
-  GetScopedEventMetricsMonitor(std::unique_ptr<EventMetrics> event_metrics) = 0;
+  GetScopedEventMetricsMonitor(
+      EventsMetricsManager::ScopedMonitor::DoneCallback done_callback) = 0;
 
   virtual ScrollElasticityHelper* CreateScrollElasticityHelper() = 0;
 
@@ -311,8 +371,8 @@ class CC_EXPORT InputHandler {
   virtual void NotifyInputEvent() = 0;
 
  protected:
-  InputHandler() = default;
   virtual ~InputHandler() = default;
+  InputHandler() = default;
 };
 
 }  // namespace cc

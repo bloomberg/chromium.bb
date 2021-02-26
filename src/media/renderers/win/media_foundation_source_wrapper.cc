@@ -22,19 +22,15 @@ MediaFoundationSourceWrapper::~MediaFoundationSourceWrapper() {
     return;
 
   // Notify |cdm_proxy_| of last Key IDs.
-  std::vector<GUID> key_ids(StreamCount());
   for (uint32_t stream_id = 0; stream_id < StreamCount(); stream_id++) {
-    key_ids[stream_id] = media_streams_[stream_id]->GetLastKeyId();
+    HRESULT hr = cdm_proxy_->SetLastKeyId(
+        stream_id, media_streams_[stream_id]->GetLastKeyId());
+    DLOG_IF(ERROR, FAILED(hr))
+        << "Failed to notify CDM proxy of last Key IDs: " << PrintHr(hr);
   }
-
-  HRESULT hr = cdm_proxy_->SetLastKeyIds(playback_element_id_, key_ids.data(),
-                                         key_ids.size());
-  DLOG_IF(ERROR, FAILED(hr))
-      << "Failed to notify CDM proxy of last Key IDs: " << PrintHr(hr);
 }
 
 HRESULT MediaFoundationSourceWrapper::RuntimeClassInitialize(
-    uint64_t playback_element_id,
     MediaResource* media_resource,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   DVLOG_FUNC(1);
@@ -57,7 +53,6 @@ HRESULT MediaFoundationSourceWrapper::RuntimeClassInitialize(
   }
 
   RETURN_IF_FAILED(MFCreateEventQueue(&mf_media_event_queue_));
-  playback_element_id_ = playback_element_id;
   return S_OK;
 }
 
@@ -355,8 +350,7 @@ HRESULT MediaFoundationSourceWrapper::GetInputTrustAuthority(
 
   // Use |nullptr| for content init_data and |0| for its size.
   RETURN_IF_FAILED(cdm_proxy_->GetInputTrustAuthority(
-      playback_element_id_, stream_id, StreamCount(), nullptr, 0, riid,
-      object_out));
+      stream_id, StreamCount(), nullptr, 0, riid, object_out));
   return S_OK;
 }
 
@@ -520,7 +514,7 @@ void MediaFoundationSourceWrapper::SetCdmProxy(IMFCdmProxy* cdm_proxy) {
   DCHECK(!cdm_proxy_);
   cdm_proxy_ = cdm_proxy;
 
-  HRESULT hr = cdm_proxy_->RefreshTrustedInput(playback_element_id_);
+  HRESULT hr = cdm_proxy_->RefreshTrustedInput();
   DLOG_IF(ERROR, FAILED(hr))
       << "Failed to refresh trusted input: " << PrintHr(hr);
 }

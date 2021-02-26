@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
@@ -78,7 +79,7 @@ SVGMaskElement::SVGMaskElement(Document& document)
   AddToPropertyMap(mask_content_units_);
 }
 
-void SVGMaskElement::Trace(Visitor* visitor) {
+void SVGMaskElement::Trace(Visitor* visitor) const {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);
@@ -129,8 +130,7 @@ void SVGMaskElement::SvgAttributeChanged(const QualifiedName& attr_name) {
       UpdateRelativeLengthsInformation();
     }
 
-    LayoutSVGResourceContainer* layout_object =
-        ToLayoutSVGResourceContainer(GetLayoutObject());
+    auto* layout_object = To<LayoutSVGResourceContainer>(GetLayoutObject());
     if (layout_object)
       layout_object->InvalidateCacheAndMarkForLayout();
 

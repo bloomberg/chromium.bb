@@ -32,7 +32,7 @@ static const int kMaxTestDelay = 40;
 
 namespace {
 
-class MockMessageHandler : public rtc::MessageHandler {
+class MockMessageHandler : public rtc::MessageHandlerAutoCleanup {
  public:
   MOCK_METHOD1(OnMessage, void(rtc::Message* msg));
 };
@@ -80,9 +80,7 @@ class ThreadWrapperTest : public testing::Test {
   }
 
  protected:
-  ThreadWrapperTest()
-      : thread_(NULL) {
-  }
+  ThreadWrapperTest() : thread_(nullptr) {}
 
   void SetUp() override {
     JingleThreadWrapper::EnsureForCurrentMessageLoop();

@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "gpu/vulkan/buildflags.h"
-#include "ui/gfx/x/x11.h"
-#include "ui/gfx/x/x11_types.h"
+#include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_egl_x11_gles2.h"
 #include "ui/ozone/common/egl_util.h"
@@ -43,7 +43,8 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
           base::MakeRefCounted<GLSurfaceEglReadbackX11>(window));
     } else {
       return gl::InitializeGLSurface(
-          base::MakeRefCounted<gl::NativeViewGLSurfaceEGLX11GLES2>(window));
+          base::MakeRefCounted<gl::NativeViewGLSurfaceEGLX11GLES2>(
+              static_cast<x11::Window>(window)));
     }
   }
 
@@ -56,8 +57,8 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
  protected:
   // GLOzoneEGL:
   gl::EGLDisplayPlatform GetNativeDisplay() override {
-    return gl::EGLDisplayPlatform(
-        reinterpret_cast<EGLNativeDisplayType>(gfx::GetXDisplay()));
+    return gl::EGLDisplayPlatform(reinterpret_cast<EGLNativeDisplayType>(
+        x11::Connection::Get()->GetXlibDisplay().display()));
   }
 
   bool LoadGLES2Bindings(gl::GLImplementation implementation) override {
@@ -72,11 +73,13 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
 
 }  // namespace
 
-X11SurfaceFactory::X11SurfaceFactory()
+X11SurfaceFactory::X11SurfaceFactory(
+    std::unique_ptr<x11::Connection> connection)
     : glx_implementation_(std::make_unique<GLOzoneGLX>()),
-      egl_implementation_(std::make_unique<GLOzoneEGLX11>()) {}
+      egl_implementation_(std::make_unique<GLOzoneEGLX11>()),
+      connection_(std::move(connection)) {}
 
-X11SurfaceFactory::~X11SurfaceFactory() {}
+X11SurfaceFactory::~X11SurfaceFactory() = default;
 
 std::vector<gl::GLImplementation>
 X11SurfaceFactory::GetAllowedGLImplementations() {
@@ -106,9 +109,16 @@ X11SurfaceFactory::CreateVulkanImplementation(bool allow_protected_memory,
 #endif
 
 std::unique_ptr<SurfaceOzoneCanvas> X11SurfaceFactory::CreateCanvasForWidget(
-    gfx::AcceleratedWidget widget,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  return std::make_unique<X11CanvasSurface>(widget, std::move(task_runner));
+    gfx::AcceleratedWidget widget) {
+  // X11SoftwareBitmapPresenter (created via X11CanvasSurface) requres a
+  // Connection TLS instance and a PlatformEventSource.
+  if (connection_) {
+    auto* connection = connection_.get();
+    x11::Connection::Set(std::move(connection_));
+    connection->platform_event_source =
+        std::make_unique<X11EventSource>(connection);
+  }
+  return std::make_unique<X11CanvasSurface>(widget);
 }
 
 }  // namespace ui

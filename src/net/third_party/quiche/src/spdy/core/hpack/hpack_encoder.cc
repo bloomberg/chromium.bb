@@ -8,6 +8,7 @@
 #include <limits>
 #include <utility>
 
+#include "net/third_party/quiche/src/http2/hpack/huffman/hpack_huffman_encoder.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_header_table.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_huffman_table.h"
@@ -57,12 +58,10 @@ class HpackEncoder::RepresentationIterator {
 namespace {
 
 // The default header listener.
-void NoOpListener(quiche::QuicheStringPiece /*name*/,
-                  quiche::QuicheStringPiece /*value*/) {}
+void NoOpListener(absl::string_view /*name*/, absl::string_view /*value*/) {}
 
 // The default HPACK indexing policy.
-bool DefaultPolicy(quiche::QuicheStringPiece name,
-                   quiche::QuicheStringPiece /* value */) {
+bool DefaultPolicy(absl::string_view name, absl::string_view /* value */) {
   if (name.empty()) {
     return false;
   }
@@ -77,14 +76,16 @@ bool DefaultPolicy(quiche::QuicheStringPiece name,
 
 }  // namespace
 
-HpackEncoder::HpackEncoder(const HpackHuffmanTable& table)
+HpackEncoder::HpackEncoder()
     : output_stream_(),
-      huffman_table_(table),
+      huffman_table_(ObtainHpackHuffmanTable()),
       min_table_size_setting_received_(std::numeric_limits<size_t>::max()),
       listener_(NoOpListener),
       should_index_(DefaultPolicy),
       enable_compression_(true),
-      should_emit_table_size_(false) {}
+      should_emit_table_size_(false),
+      use_fast_huffman_encoder_(
+          GetSpdyReloadableFlag(http2_use_fast_huffman_encoder)) {}
 
 HpackEncoder::~HpackEncoder() = default;
 
@@ -176,16 +177,9 @@ void HpackEncoder::EmitNonIndexedLiteral(const Representation& representation,
   SPDY_DVLOG(2) << "Emitting nonindexed literal: (" << representation.first
                 << ", " << representation.second << ")";
   output_stream_.AppendPrefix(kLiteralNoIndexOpcode);
-  if (GetSpdyReloadableFlag(spdy_hpack_use_indexed_name)) {
-    SPDY_CODE_COUNT(spdy_hpack_use_indexed_name);
-    const HpackEntry* name_entry =
-        header_table_.GetByName(representation.first);
-    if (enable_compression && name_entry != nullptr) {
-      output_stream_.AppendUint32(header_table_.IndexOf(name_entry));
-    } else {
-      output_stream_.AppendUint32(0);
-      EmitString(representation.first);
-    }
+  const HpackEntry* name_entry = header_table_.GetByName(representation.first);
+  if (enable_compression && name_entry != nullptr) {
+    output_stream_.AppendUint32(header_table_.IndexOf(name_entry));
   } else {
     output_stream_.AppendUint32(0);
     EmitString(representation.first);
@@ -204,15 +198,24 @@ void HpackEncoder::EmitLiteral(const Representation& representation) {
   EmitString(representation.second);
 }
 
-void HpackEncoder::EmitString(quiche::QuicheStringPiece str) {
+void HpackEncoder::EmitString(absl::string_view str) {
   size_t encoded_size =
-      enable_compression_ ? huffman_table_.EncodedSize(str) : str.size();
+      enable_compression_
+          ? (use_fast_huffman_encoder_ ? http2::HuffmanSize(str)
+                                       : huffman_table_.EncodedSize(str))
+          : str.size();
   if (encoded_size < str.size()) {
     SPDY_DVLOG(2) << "Emitted Huffman-encoded string of length "
                   << encoded_size;
     output_stream_.AppendPrefix(kStringLiteralHuffmanEncoded);
     output_stream_.AppendUint32(encoded_size);
-    huffman_table_.EncodeString(str, &output_stream_);
+    if (use_fast_huffman_encoder_) {
+      SPDY_CODE_COUNT(http2_use_fast_huffman_encoder);
+      http2::HuffmanEncodeFast(str, encoded_size,
+                               output_stream_.MutableString());
+    } else {
+      huffman_table_.EncodeString(str, &output_stream_);
+    }
   } else {
     SPDY_DVLOG(2) << "Emitted literal string of length " << str.size();
     output_stream_.AppendPrefix(kStringLiteralIdentityEncoded);
@@ -245,21 +248,19 @@ void HpackEncoder::CookieToCrumbs(const Representation& cookie,
   // See Section 8.1.2.5. "Compressing the Cookie Header Field" in the HTTP/2
   // specification at https://tools.ietf.org/html/draft-ietf-httpbis-http2-14.
   // Cookie values are split into individually-encoded HPACK representations.
-  quiche::QuicheStringPiece cookie_value = cookie.second;
+  absl::string_view cookie_value = cookie.second;
   // Consume leading and trailing whitespace if present.
-  quiche::QuicheStringPiece::size_type first =
-      cookie_value.find_first_not_of(" \t");
-  quiche::QuicheStringPiece::size_type last =
-      cookie_value.find_last_not_of(" \t");
-  if (first == quiche::QuicheStringPiece::npos) {
-    cookie_value = quiche::QuicheStringPiece();
+  absl::string_view::size_type first = cookie_value.find_first_not_of(" \t");
+  absl::string_view::size_type last = cookie_value.find_last_not_of(" \t");
+  if (first == absl::string_view::npos) {
+    cookie_value = absl::string_view();
   } else {
     cookie_value = cookie_value.substr(first, (last - first) + 1);
   }
   for (size_t pos = 0;;) {
     size_t end = cookie_value.find(";", pos);
 
-    if (end == quiche::QuicheStringPiece::npos) {
+    if (end == absl::string_view::npos) {
       out->push_back(std::make_pair(cookie.first, cookie_value.substr(pos)));
       break;
     }
@@ -279,12 +280,12 @@ void HpackEncoder::DecomposeRepresentation(const Representation& header_field,
                                            Representations* out) {
   size_t pos = 0;
   size_t end = 0;
-  while (end != quiche::QuicheStringPiece::npos) {
+  while (end != absl::string_view::npos) {
     end = header_field.second.find('\0', pos);
     out->push_back(std::make_pair(
         header_field.first,
         header_field.second.substr(
-            pos, end == quiche::QuicheStringPiece::npos ? end : end - pos)));
+            pos, end == absl::string_view::npos ? end : end - pos)));
     pos = end + 1;
   }
 }

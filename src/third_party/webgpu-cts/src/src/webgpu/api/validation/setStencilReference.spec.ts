@@ -2,8 +2,8 @@ export const description = `
 setStencilReference validation tests.
 `;
 
-import { poptions } from '../../../common/framework/params.js';
-import { TestGroup } from '../../../common/framework/test_group.js';
+import { poptions } from '../../../common/framework/params_builder.js';
+import { makeTestGroup } from '../../../common/framework/test_group.js';
 
 import { ValidationTest } from './validation_test.js';
 
@@ -27,14 +27,16 @@ class F extends ValidationTest {
   }
 }
 
-export const g = new TestGroup(F);
+export const g = makeTestGroup(F);
 
-g.test('use of setStencilReference', t => {
-  const { reference } = t.params;
+g.test('use_of_setStencilReference')
+  .params(poptions('reference', [0, 0xffffffff]))
+  .fn(t => {
+    const { reference } = t.params;
 
-  const commandEncoder = t.device.createCommandEncoder();
-  const renderPass = t.beginRenderPass(commandEncoder);
-  renderPass.setStencilReference(reference);
-  renderPass.endPass();
-  commandEncoder.finish();
-}).params(poptions('reference', [0, 0xffffffff]));
+    const commandEncoder = t.device.createCommandEncoder();
+    const renderPass = t.beginRenderPass(commandEncoder);
+    renderPass.setStencilReference(reference);
+    renderPass.endPass();
+    commandEncoder.finish();
+  });

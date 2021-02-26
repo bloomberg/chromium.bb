@@ -10,13 +10,12 @@
 #include "base/hash/sha1.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
-#include "components/sync/engine/non_blocking_sync_common.h"
+#include "components/sync/engine/commit_and_get_updates_types.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 
 namespace syncer {
@@ -138,6 +137,8 @@ bool ProcessorEntity::IsUnsynced() const {
   return metadata_.sequence_number() > metadata_.acked_sequence_number();
 }
 
+// TODO(crbug.com/1137817): simplify the API and consider changing
+// RequiresCommitRequest() with IsUnsynced().
 bool ProcessorEntity::RequiresCommitRequest() const {
   return metadata_.sequence_number() > commit_requested_sequence_number_;
 }
@@ -244,7 +245,7 @@ bool ProcessorEntity::Delete() {
   //  - Original centity was committed to server, but client crashed before
   //    receiving response.
   //  - Entity was deleted while client was offline.
-  // Correct behavior is to send tombstone anyway, but directory based
+  // Correct behavior is to send tombstone anyway, but the legacy Directory
   // implementation doesn't and it is unclear how server will react to such
   // tombstones. Change the behavior to always sending tombstone after
   // experimenting with server.
@@ -280,8 +281,7 @@ void ProcessorEntity::InitializeCommitRequestData(CommitRequestData* request) {
 }
 
 void ProcessorEntity::ReceiveCommitResponse(const CommitResponseData& data,
-                                            bool commit_only,
-                                            ModelType type_for_uma) {
+                                            bool commit_only) {
   DCHECK_EQ(metadata_.client_tag_hash(), data.client_tag_hash.value());
   DCHECK_GT(data.sequence_number, metadata_.acked_sequence_number());
   // Version is not valid for commit only types, as it's stripped before being
@@ -314,15 +314,6 @@ void ProcessorEntity::ReceiveCommitResponse(const CommitResponseData& data,
       commit_data_->id = metadata_.server_id();
     }
   }
-
-  // |unsynced_time_| can be null if the commit spanned a browser restart,
-  // since we don't currently persist this field. In such cases, we assume
-  // it takes longer than 3 minutes (saturation bucket).
-  base::UmaHistogramMediumTimes(std::string("Sync.CommitLatency.") +
-                                    ModelTypeToHistogramSuffix(type_for_uma),
-                                unsynced_time_.is_null()
-                                    ? base::TimeDelta::Max()
-                                    : base::Time::Now() - unsynced_time_);
 }
 
 void ProcessorEntity::ClearTransientSyncState() {

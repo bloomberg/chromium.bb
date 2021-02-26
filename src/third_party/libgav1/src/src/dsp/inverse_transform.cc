@@ -34,6 +34,10 @@ namespace {
 
 constexpr uint8_t kTransformColumnShift = 4;
 
+#if defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION)
+#undef LIBGAV1_ENABLE_TRANSFORM_RANGE_CHECK
+#endif
+
 int32_t RangeCheckValue(int32_t value, int8_t range) {
 #if defined(LIBGAV1_ENABLE_TRANSFORM_RANGE_CHECK) && \
     LIBGAV1_ENABLE_TRANSFORM_RANGE_CHECK

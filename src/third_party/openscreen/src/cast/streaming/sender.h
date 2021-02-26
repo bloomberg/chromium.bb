@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include <array>
-#include <chrono>  // NOLINT
+#include <chrono>
 #include <vector>
 
 #include "absl/types/span.h"
@@ -21,6 +21,7 @@
 #include "cast/streaming/rtp_time.h"
 #include "cast/streaming/sender_packet_router.h"
 #include "cast/streaming/sender_report_builder.h"
+#include "cast/streaming/session_config.h"
 #include "platform/api/time.h"
 #include "util/yet_another_bit_vector.h"
 
@@ -28,7 +29,6 @@ namespace openscreen {
 namespace cast {
 
 class Environment;
-struct SessionConfig;
 
 // The Cast Streaming Sender, a peer corresponding to some Cast Streaming
 // Receiver at the other end of a network link. See class level comments for
@@ -116,11 +116,12 @@ class Sender final : public SenderPacketRouter::Sender,
   // Sender. It is simply passed along to a Receiver in the RTP packet stream.
   Sender(Environment* environment,
          SenderPacketRouter* packet_router,
-         const SessionConfig& config,
+         SessionConfig config,
          RtpPayloadType rtp_payload_type);
 
   ~Sender() final;
 
+  const SessionConfig& config() const { return config_; }
   Ssrc ssrc() const { return rtcp_session_.sender_ssrc(); }
   int rtp_timebase() const { return rtp_timebase_; }
 
@@ -251,6 +252,7 @@ class Sender final : public SenderPacketRouter::Sender,
                             pending_frames_.size()];
   }
 
+  const SessionConfig config_;
   SenderPacketRouter* const packet_router_;
   RtcpSession rtcp_session_;
   CompoundRtcpParser rtcp_parser_;

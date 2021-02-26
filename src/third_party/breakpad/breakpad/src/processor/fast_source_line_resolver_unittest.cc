@@ -94,15 +94,15 @@ class TestCodeModule : public CodeModule {
 class MockMemoryRegion: public MemoryRegion {
   uint64_t GetBase() const { return 0x10000; }
   uint32_t GetSize() const { return 0x01000; }
-  bool GetMemoryAtAddress(uint64_t address, uint8_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint8_t* value) const {
     *value = address & 0xff;
     return true;
   }
-  bool GetMemoryAtAddress(uint64_t address, uint16_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint16_t* value) const {
     *value = address & 0xffff;
     return true;
   }
-  bool GetMemoryAtAddress(uint64_t address, uint32_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint32_t* value) const {
     switch (address) {
       case 0x10008: *value = 0x98ecadc3; break;  // saved %ebx
       case 0x1000c: *value = 0x878f7524; break;  // saved %esi
@@ -113,7 +113,7 @@ class MockMemoryRegion: public MemoryRegion {
     }
     return true;
   }
-  bool GetMemoryAtAddress(uint64_t address, uint64_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint64_t* value) const {
     *value = address;
     return true;
   }
@@ -127,9 +127,9 @@ class MockMemoryRegion: public MemoryRegion {
 // EXPECTED's.) Also verify that ACTUAL has associations for ".ra" and
 // ".cfa".
 static bool VerifyRegisters(
-    const char *file, int line,
-    const CFIFrameInfo::RegisterValueMap<uint32_t> &expected,
-    const CFIFrameInfo::RegisterValueMap<uint32_t> &actual) {
+    const char* file, int line,
+    const CFIFrameInfo::RegisterValueMap<uint32_t>& expected,
+    const CFIFrameInfo::RegisterValueMap<uint32_t>& actual) {
   CFIFrameInfo::RegisterValueMap<uint32_t>::const_iterator a;
   a = actual.find(".cfa");
   if (a == actual.end())
@@ -158,7 +158,7 @@ static bool VerifyRegisters(
   return true;
 }
 
-static bool VerifyEmpty(const StackFrame &frame) {
+static bool VerifyEmpty(const StackFrame& frame) {
   if (frame.function_name.empty() &&
       frame.source_file_name.empty() &&
       frame.source_line == 0)
@@ -166,7 +166,7 @@ static bool VerifyEmpty(const StackFrame &frame) {
   return false;
 }
 
-static void ClearSourceLineInfo(StackFrame *frame) {
+static void ClearSourceLineInfo(StackFrame* frame) {
   frame->function_name.clear();
   frame->module = NULL;
   frame->source_file_name.clear();
@@ -467,7 +467,7 @@ TEST_F(TestFastSourceLineResolver, TestUnload) {
 }
 
 TEST_F(TestFastSourceLineResolver, CompareModule) {
-  char *symbol_data;
+  char* symbol_data;
   size_t symbol_data_size;
   string symbol_data_string;
   string filename;
@@ -486,7 +486,7 @@ TEST_F(TestFastSourceLineResolver, CompareModule) {
 
 }  // namespace
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

@@ -71,9 +71,9 @@ void HpackFuzzUtil::InitializeGeneratorContext(GeneratorContext* context) {
 }
 
 // static
-SpdyHeaderBlock HpackFuzzUtil::NextGeneratedHeaderSet(
+Http2HeaderBlock HpackFuzzUtil::NextGeneratedHeaderSet(
     GeneratorContext* context) {
-  SpdyHeaderBlock headers;
+  Http2HeaderBlock headers;
 
   size_t header_count =
       1 + SampleExponential(kHeaderCountMean, kHeaderCountMax);
@@ -107,8 +107,7 @@ size_t HpackFuzzUtil::SampleExponential(size_t mean, size_t sanity_bound) {
 }
 
 // static
-bool HpackFuzzUtil::NextHeaderBlock(Input* input,
-                                    quiche::QuicheStringPiece* out) {
+bool HpackFuzzUtil::NextHeaderBlock(Input* input, absl::string_view* out) {
   // ClusterFuzz may truncate input files if the fuzzer ran out of allocated
   // disk space. Be tolerant of these.
   CHECK_LE(input->offset, input->input.size());
@@ -123,7 +122,7 @@ bool HpackFuzzUtil::NextHeaderBlock(Input* input,
   if (input->remaining() < length) {
     return false;
   }
-  *out = quiche::QuicheStringPiece(input->ptr(), length);
+  *out = absl::string_view(input->ptr(), length);
   input->offset += length;
   return true;
 }
@@ -137,15 +136,14 @@ std::string HpackFuzzUtil::HeaderBlockPrefix(size_t block_size) {
 // static
 void HpackFuzzUtil::InitializeFuzzerContext(FuzzerContext* context) {
   context->first_stage = std::make_unique<HpackDecoderAdapter>();
-  context->second_stage =
-      std::make_unique<HpackEncoder>(ObtainHpackHuffmanTable());
+  context->second_stage = std::make_unique<HpackEncoder>();
   context->third_stage = std::make_unique<HpackDecoderAdapter>();
 }
 
 // static
 bool HpackFuzzUtil::RunHeaderBlockThroughFuzzerStages(
     FuzzerContext* context,
-    quiche::QuicheStringPiece input_block) {
+    absl::string_view input_block) {
   // First stage: Decode the input header block. This may fail on invalid input.
   if (!context->first_stage->HandleControlFrameHeadersData(
           input_block.data(), input_block.size())) {

@@ -11,7 +11,6 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "base/command_line.h"');
 GEN('#include "chrome/test/data/webui/history_ui_browsertest.h"');
 GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "services/network/public/cpp/features.h"');
 
 const HistoryBrowserTest = class extends PolymerTest {
   /** @override */
@@ -25,11 +24,6 @@ const HistoryBrowserTest = class extends PolymerTest {
       '//third_party/mocha/mocha.js',
       '//chrome/test/data/webui/mocha_adapter.js',
     ];
-  }
-
-  /** @override */
-  get featureList() {
-    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 };
 
@@ -181,7 +175,8 @@ var HistoryMetricsTest = class extends HistoryBrowserTest {
   }
 };
 
-TEST_F('HistoryMetricsTest', 'All', function() {
+// TODO(https://crbug.com/1000573): Re-enable once flakiness is fixed.
+TEST_F('HistoryMetricsTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -250,7 +245,7 @@ var HistorySupervisedUserTest = class extends HistoryBrowserTest {
   }
 };
 
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_AllSupervised DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_AllSupervised All');

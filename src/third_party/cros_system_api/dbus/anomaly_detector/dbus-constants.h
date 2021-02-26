@@ -14,6 +14,7 @@ const char kAnomalyEventServiceInterface[] =
 
 const char kAnomalyEventSignalName[] = "AnomalyEvent";
 const char kAnomalyGuestFileCorruptionSignalName[] = "GuestFileCorruption";
+const char kAnomalyVmKernelLogMethod[] = "VmKernelLog";
 
 }  // namespace anomaly_detector
 

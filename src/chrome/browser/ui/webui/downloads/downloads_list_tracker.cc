@@ -9,15 +9,13 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/unicodestring.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/value_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_query.h"
@@ -333,6 +331,8 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
   DCHECK(state);
 
   file_value->danger_type = danger_type;
+  file_value->is_dangerous = download_item->IsDangerous();
+  file_value->is_mixed_content = download_item->IsMixedContent();
   file_value->last_reason_text = base::UTF16ToUTF8(last_reason_text);
   file_value->percent = percent;
   file_value->progress_status_text = base::UTF16ToUTF8(progress_status_text);

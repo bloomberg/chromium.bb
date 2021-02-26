@@ -16,6 +16,9 @@ class FeedServiceBridge {
  public:
   static std::string GetLanguageTag();
   static DisplayMetrics GetDisplayMetrics();
+  static void ClearAll();
+  static bool IsEnabled();
+  static void PrefetchImage(const GURL& url);
 };
 
 }  // namespace feed

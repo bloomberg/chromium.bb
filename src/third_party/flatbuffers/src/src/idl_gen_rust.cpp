@@ -23,11 +23,6 @@
 
 namespace flatbuffers {
 
-static std::string GeneratedFileName(const std::string &path,
-                                     const std::string &file_name) {
-  return path + file_name + "_generated.rs";
-}
-
 // Convert a camelCaseIdentifier or CamelCaseIdentifier to a
 // snake_case_indentifier.
 std::string MakeSnakeCase(const std::string &in) {
@@ -188,7 +183,7 @@ class RustGenerator : public BaseGenerator {
  public:
   RustGenerator(const Parser &parser, const std::string &path,
                 const std::string &file_name)
-      : BaseGenerator(parser, path, file_name, "", "::"),
+      : BaseGenerator(parser, path, file_name, "", "::", "rs"),
         cur_name_space_(nullptr) {
     const char *keywords[] = {
       // list taken from:
@@ -292,7 +287,7 @@ class RustGenerator : public BaseGenerator {
     }
     if (cur_name_space_) SetNameSpace(nullptr);
 
-    const auto file_path = GeneratedFileName(path_, file_name_);
+    const auto file_path = GeneratedFileName(path_, file_name_, parser_.opts);
     const auto final_code = code_.ToString();
     return SaveFile(file_path.c_str(), final_code, false);
   }
@@ -457,12 +452,12 @@ class RustGenerator : public BaseGenerator {
     // clang-format off
     static const char * const ctypename[] = {
     #define FLATBUFFERS_TD(ENUM, IDLTYPE, CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, \
-                           RTYPE, KTYPE) \
-            #RTYPE,
-        FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
+                           RTYPE, ...) \
+      #RTYPE,
+      FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
     #undef FLATBUFFERS_TD
-      // clang-format on
     };
+    // clang-format on
 
     if (type.enum_def) { return WrapInNameSpace(*type.enum_def); }
     return ctypename[type.base_type];
@@ -476,15 +471,15 @@ class RustGenerator : public BaseGenerator {
       FLATBUFFERS_ASSERT(false && "precondition failed in GetEnumTypeForDecl");
     }
 
-    static const char *ctypename[] = {
     // clang-format off
+    static const char *ctypename[] = {
     #define FLATBUFFERS_TD(ENUM, IDLTYPE, CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, \
-                           RTYPE, KTYPE) \
-            #RTYPE,
-        FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
+                           RTYPE, ...) \
+      #RTYPE,
+      FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
     #undef FLATBUFFERS_TD
-      // clang-format on
     };
+    // clang-format on
 
     // Enums can be bools, but their Rust representation must be a u8, as used
     // in the repr attribute (#[repr(bool)] is an invalid attribute).
@@ -558,9 +553,9 @@ class RustGenerator : public BaseGenerator {
     code_.SetValue("ENUM_MAX_BASE_VALUE", enum_def.ToString(*maxv));
 
     // Generate enum constants, and impls for Follow, EndianScalar, and Push.
-    code_ += "const ENUM_MIN_{{ENUM_NAME_CAPS}}: {{BASE_TYPE}} = \\";
+    code_ += "pub const ENUM_MIN_{{ENUM_NAME_CAPS}}: {{BASE_TYPE}} = \\";
     code_ += "{{ENUM_MIN_BASE_VALUE}};";
-    code_ += "const ENUM_MAX_{{ENUM_NAME_CAPS}}: {{BASE_TYPE}} = \\";
+    code_ += "pub const ENUM_MAX_{{ENUM_NAME_CAPS}}: {{BASE_TYPE}} = \\";
     code_ += "{{ENUM_MAX_BASE_VALUE}};";
     code_ += "";
     code_ += "impl<'a> flatbuffers::Follow<'a> for {{ENUM_NAME}} {";
@@ -600,7 +595,7 @@ class RustGenerator : public BaseGenerator {
     // Generate an array of all enumeration values.
     auto num_fields = NumToString(enum_def.size());
     code_ += "#[allow(non_camel_case_types)]";
-    code_ += "const ENUM_VALUES_{{ENUM_NAME_CAPS}}:[{{ENUM_NAME}}; " +
+    code_ += "pub const ENUM_VALUES_{{ENUM_NAME_CAPS}}:[{{ENUM_NAME}}; " +
              num_fields + "] = [";
     for (auto it = enum_def.Vals().begin(); it != enum_def.Vals().end(); ++it) {
       const auto &ev = **it;
@@ -621,7 +616,7 @@ class RustGenerator : public BaseGenerator {
     static const uint64_t kMaxSparseness = 5;
     if (range / static_cast<uint64_t>(enum_def.size()) < kMaxSparseness) {
       code_ += "#[allow(non_camel_case_types)]";
-      code_ += "const ENUM_NAMES_{{ENUM_NAME_CAPS}}:[&'static str; " +
+      code_ += "pub const ENUM_NAMES_{{ENUM_NAME_CAPS}}:[&'static str; " +
                NumToString(range + 1) + "] = [";
 
       auto val = enum_def.Vals().front();
@@ -1132,6 +1127,16 @@ class RustGenerator : public BaseGenerator {
     }
   }
 
+  // Generates a fully-qualified name getter for use with --gen-name-strings
+  void GenFullyQualifiedNameGetter(const StructDef &struct_def,
+                                   const std::string &name) {
+    code_ += "    pub const fn get_fully_qualified_name() -> &'static str {";
+    code_ += "        \"" +
+             struct_def.defined_namespace->GetFullyQualifiedName(name) + "\"";
+    code_ += "    }";
+    code_ += "";
+  }
+
   // Generate an accessor struct, builder struct, and create function for a
   // table.
   void GenTable(const StructDef &struct_def) {
@@ -1162,6 +1167,11 @@ class RustGenerator : public BaseGenerator {
     code_ += "}";
     code_ += "";
     code_ += "impl<'a> {{STRUCT_NAME}}<'a> {";
+
+    if (parser_.opts.generate_name_strings) {
+      GenFullyQualifiedNameGetter(struct_def, struct_def.name);
+    }
+
     code_ += "    #[inline]";
     code_ +=
         "    pub fn init_from_table(table: flatbuffers::Table<'a>) -> "
@@ -1305,6 +1315,7 @@ class RustGenerator : public BaseGenerator {
       auto u = field.value.type.enum_def;
 
       code_.SetValue("FIELD_NAME", Name(field));
+      code_.SetValue("FIELD_TYPE_FIELD_NAME", field.name);
 
       for (auto u_it = u->Vals().begin(); u_it != u->Vals().end(); ++u_it) {
         auto &ev = **u_it;
@@ -1325,8 +1336,20 @@ class RustGenerator : public BaseGenerator {
         code_ +=
             "  pub fn {{FIELD_NAME}}_as_{{U_ELEMENT_NAME}}(&self) -> "
             "Option<{{U_ELEMENT_TABLE_TYPE}}<'a>> {";
+        // If the user defined schemas name a field that clashes with a
+        // language reserved word, flatc will try to escape the field name by
+        // appending an underscore. This works well for most cases, except
+        // one. When generating union accessors (and referring to them
+        // internally within the code generated here), an extra underscore
+        // will be appended to the name, causing build failures.
+        //
+        // This only happens when unions have members that overlap with
+        // language reserved words.
+        //
+        // To avoid this problem the type field name is used unescaped here:
         code_ +=
-            "    if self.{{FIELD_NAME}}_type() == {{U_ELEMENT_ENUM_TYPE}} {";
+            "    if self.{{FIELD_TYPE_FIELD_NAME}}_type() == "
+            "{{U_ELEMENT_ENUM_TYPE}} {";
         code_ +=
             "      self.{{FIELD_NAME}}().map(|u| "
             "{{U_ELEMENT_TABLE_TYPE}}::init_from_table(u))";
@@ -1720,6 +1743,10 @@ class RustGenerator : public BaseGenerator {
     code_ += "    }";
     code_ += "  }";
 
+    if (parser_.opts.generate_name_strings) {
+      GenFullyQualifiedNameGetter(struct_def, struct_def.name);
+    }
+
     // Generate accessor methods for the struct.
     for (auto it = struct_def.fields.vec.begin();
          it != struct_def.fields.vec.end(); ++it) {
@@ -1751,6 +1778,14 @@ class RustGenerator : public BaseGenerator {
   void GenNamespaceImports(const int white_spaces) {
     std::string indent = std::string(white_spaces, ' ');
     code_ += "";
+    for (auto it = parser_.included_files_.begin();
+         it != parser_.included_files_.end(); ++it) {
+      if (it->second.empty()) continue;
+      auto noext = flatbuffers::StripExtension(it->second);
+      auto basename = flatbuffers::StripPath(noext);
+
+      code_ += indent + "use crate::" + basename + "_generated::*;";
+    }
     code_ += indent + "use std::mem;";
     code_ += indent + "use std::cmp::Ordering;";
     code_ += "";
@@ -1814,7 +1849,9 @@ std::string RustMakeRule(const Parser &parser, const std::string &path,
                          const std::string &file_name) {
   std::string filebase =
       flatbuffers::StripPath(flatbuffers::StripExtension(file_name));
-  std::string make_rule = GeneratedFileName(path, filebase) + ": ";
+  rust::RustGenerator generator(parser, path, file_name);
+  std::string make_rule =
+      generator.GeneratedFileName(path, filebase, parser.opts) + ": ";
 
   auto included_files = parser.GetIncludedFilesRecursive(file_name);
   for (auto it = included_files.begin(); it != included_files.end(); ++it) {
@@ -1832,3 +1869,10 @@ std::string RustMakeRule(const Parser &parser, const std::string &path,
 // TODO(rw): Generated code should generate endian-safe Debug impls.
 // TODO(rw): Generated code could use a Rust-only enum type to access unions,
 //           instead of making the user use _type() to manually switch.
+// TODO(maxburke): There should be test schemas added that use language
+//           keywords as fields of structs, tables, unions, enums, to make sure
+//           that internal code generated references escaped names correctly.
+// TODO(maxburke): We should see if there is a more flexible way of resolving
+//           module paths for use declarations. Right now if schemas refer to
+//           other flatbuffer files, the include paths in emitted Rust bindings
+//           are crate-relative which may undesirable.

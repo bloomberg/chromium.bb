@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/net/network_diagnostics/network_diagnostics.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 
 namespace chromeos {
 namespace network_diagnostics {
@@ -28,6 +28,9 @@ class NetworkDiagnosticsRoutine {
   };
 
   NetworkDiagnosticsRoutine();
+  NetworkDiagnosticsRoutine(const NetworkDiagnosticsRoutine&) = delete;
+  NetworkDiagnosticsRoutine& operator=(const NetworkDiagnosticsRoutine&) =
+      delete;
   virtual ~NetworkDiagnosticsRoutine();
 
   // Determines whether this test is capable of being run.
@@ -49,8 +52,6 @@ class NetworkDiagnosticsRoutine {
  private:
   RoutineResult routine_result_;
   friend class NetworkDiagnosticsRoutineTest;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkDiagnosticsRoutine);
 };
 
 }  // namespace network_diagnostics

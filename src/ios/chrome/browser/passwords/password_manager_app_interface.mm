@@ -6,8 +6,8 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -35,13 +35,13 @@
   }
 
   // Store a PasswordForm representing a PasswordCredential.
-  autofill::PasswordForm passwordCredentialForm;
+  password_manager::PasswordForm passwordCredentialForm;
   passwordCredentialForm.username_value = base::SysNSStringToUTF16(username);
   passwordCredentialForm.password_value = base::SysNSStringToUTF16(password);
-  passwordCredentialForm.origin =
+  passwordCredentialForm.url =
       chrome_test_util::GetCurrentWebState()->GetLastCommittedURL().GetOrigin();
-  passwordCredentialForm.signon_realm = passwordCredentialForm.origin.spec();
-  passwordCredentialForm.scheme = autofill::PasswordForm::Scheme::kHtml;
+  passwordCredentialForm.signon_realm = passwordCredentialForm.url.spec();
+  passwordCredentialForm.scheme = password_manager::PasswordForm::Scheme::kHtml;
   passwordStore->AddLogin(passwordCredentialForm);
 
   return nil;
@@ -55,7 +55,7 @@
           .get();
   // Remove credentials stored during executing the test.
   passwordStore->RemoveLoginsCreatedBetween(base::Time(), base::Time::Now(),
-                                            base::Closure());
+                                            base::OnceClosure());
 }
 
 + (void)getCredentialsInTabAtIndex:(int)index {

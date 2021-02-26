@@ -15,19 +15,19 @@ namespace mojom {
 class InterfaceFactory;
 }
 
-class MojoDecoderFactory : public DecoderFactory {
+class MojoDecoderFactory final : public DecoderFactory {
  public:
   explicit MojoDecoderFactory(
       media::mojom::InterfaceFactory* interface_factory);
   ~MojoDecoderFactory() final;
 
   void CreateAudioDecoders(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       MediaLog* media_log,
       std::vector<std::unique_ptr<AudioDecoder>>* audio_decoders) final;
 
   void CreateVideoDecoders(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       GpuVideoAcceleratorFactories* gpu_factories,
       MediaLog* media_log,
       RequestOverlayInfoCB request_overlay_info_cb,

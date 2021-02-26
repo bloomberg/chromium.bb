@@ -439,6 +439,7 @@ Full list of parameters for the `cts-runner` binary:
 --type=[esN[M]|glNM] Conformance test run type. Choose from
 					 ES: es2, es3, es31, es32
 					 GL: gl30, gl31, gl32, gl33, gl40, gl41, gl42, gl43, gl44, gl45, gl46
+--waivers=[path]     Path to xml file containing waived tests
 --logdir=[path]      Destination directory for log files
 --summary            Print summary without running the tests
 --verbose            Print out and log more information
@@ -461,6 +462,8 @@ the logs. Images will be embedded as PNG data into the`.qpa` log files.
 See Section [Test Logs](#test-logs) for instructions on how to view the images.
 
 To direct logs to a directory, add `--logdir=[path]` parameter.
+
+To specify waived tests, add `--waivers=[path]` parameter.
 
 **NOTE**: Due to the lack of support for run-time selection of API context in the
 Khronos Confidential CTS, a conformance run may fail if it is executed for an API
@@ -494,6 +497,10 @@ string extra. See the following example:
 
 	am start -n org.khronos.gl_cts/org.khronos.cts.ES32Activity -e logdir "/sdcard/logs" -e summary "true"
 
+Waivers can be specified by supplying a `waivers` string extra. See the following example:
+
+	am start -n org.khronos.gl_cts/org.khronos.cts.ES32Activity -e logdir "/sdcard/logs" -e waivers "/sdcard/waivers.xml"
+
 **NOTE**: Supplying a `summary` = `"true"` string extra will result in the `cts-run-summary.xml` file
 being written out but no tests will be executed.
 
@@ -507,7 +514,7 @@ In addition to the detailed `*.qpa` output files, the Android port of the CTS
 logs a summary of the test run, including the pass/fail status of each test.
 This summary can be viewed using the Android *logcat* utility.
 
-See Section [Running Subsets](#running-subsets) above for details on command
+See Section [Running Subsets](#running-subsets) below for details on command
 line parameters.
 
 ### Running Subsets
@@ -634,7 +641,7 @@ Full list of parameters for the `glcts` binary:
     Enable or disable logging of result images
     default: 'enable'
 
-  --deqp-log-shaders=[enable|disable]
+  --deqp-log-shader-sources=[enable|disable]
     Enable or disable logging of shaders
     default: 'enable'
 
@@ -656,6 +663,9 @@ Full list of parameters for the `glcts` binary:
 
   --deqp-egl-config-name=<value>
     Legacy name for --deqp-gl-config-name
+
+  --deqp-waiver-file=<value>
+    Path to xml file containing waived tests
 ```
 
 ### Understanding the Results

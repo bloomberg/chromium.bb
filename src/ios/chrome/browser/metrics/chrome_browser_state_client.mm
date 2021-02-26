@@ -6,6 +6,7 @@
 
 #include "components/network_time/network_time_tracker.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
@@ -41,9 +42,22 @@ syncer::SyncService* ChromeBrowserStateClient::GetSyncService() {
           ->GetOriginalChromeBrowserState());
 }
 
+PrefService* ChromeBrowserStateClient::GetPrefService() {
+  // Get PrefService from BrowserState that was the last to be used. Will create
+  // a new BrowserState if no BrowserState exists.
+  return GetApplicationContext()
+      ->GetChromeBrowserStateManager()
+      ->GetLastUsedBrowserState()
+      ->GetOriginalChromeBrowserState()
+      ->GetPrefs();
+}
+
 int ChromeBrowserStateClient::GetNumberOfProfilesOnDisk() {
   // Return 1 because there should be only one Profile available.
-  return 1;
+  return GetApplicationContext()
+      ->GetChromeBrowserStateManager()
+      ->GetBrowserStateInfoCache()
+      ->GetNumberOfBrowserStates();
 }
 
 }  //  namespace metrics

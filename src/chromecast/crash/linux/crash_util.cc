@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chromecast/base/path_utils.h"
@@ -112,7 +113,7 @@ bool CrashUtil::RequestUploadCrashDump(
 
   // In case the file is still in $TEMP, remove it. Note that DeleteFile() will
   // return true if |existing_minidump_path| has already been moved.
-  if (!base::DeleteFile(base::FilePath(existing_minidump_path), false)) {
+  if (!base::DeleteFile(base::FilePath(existing_minidump_path))) {
     LOG(ERROR) << "Unable to delete temp minidump file "
                << existing_minidump_path;
     success = false;

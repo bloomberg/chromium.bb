@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -24,6 +25,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/ukm/scheme_constants.h"
 #include "components/ukm/ukm_pref_names.h"
+#include "components/ukm/ukm_recorder_impl.h"
 #include "components/ukm/ukm_rotation_scheduler.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
@@ -111,6 +113,7 @@ void PurgeExtensionDataFromUnsentLogStore(
     const std::string& compressed_log_data =
         ukm_log_store->GetLogAtIndex(index);
     std::string uncompressed_log_data;
+    // TODO(crbug/1086910): Use the utilities in log_decoder.h instead.
     const bool uncompress_successful = compression::GzipUncompress(
         compressed_log_data, &uncompressed_log_data);
     DCHECK(uncompress_successful);
@@ -151,12 +154,13 @@ void PurgeExtensionDataFromUnsentLogStore(
         },
         report.entries(), report.mutable_entries());
 
-    std::string reserialized_log_data;
-    report.SerializeToString(&reserialized_log_data);
+    std::string reserialized_log_data =
+        UkmService::SerializeReportProtoToString(&report);
 
     // Replace the compressed log in the store by its filtered version.
     const std::string old_compressed_log_data =
-        ukm_log_store->ReplaceLogAtIndex(index, reserialized_log_data);
+        ukm_log_store->ReplaceLogAtIndex(index, reserialized_log_data,
+                                         base::nullopt);
 
     // Reached here only if extensions were found in the log, so data should now
     // be different after filtering.
@@ -170,21 +174,42 @@ void PurgeExtensionDataFromUnsentLogStore(
 const base::Feature UkmService::kReportUserNoisedUserBirthYearAndGender = {
     "UkmReportNoisedUserBirthYearAndGender", base::FEATURE_ENABLED_BY_DEFAULT};
 
+bool UkmService::LogCanBeParsed(const std::string& serialized_data) {
+  Report report;
+  bool report_parse_successful = report.ParseFromString(serialized_data);
+  if (!report_parse_successful)
+    return false;
+  // Make sure the reserialized log from this |report| matches the input
+  // |serialized_data|.
+  std::string reserialized_from_report;
+  report.SerializeToString(&reserialized_from_report);
+  return reserialized_from_report == serialized_data;
+}
+
+std::string UkmService::SerializeReportProtoToString(Report* report) {
+  std::string serialized_full_log;
+  report->SerializeToString(&serialized_full_log);
+
+  // This allows catching errors with bad UKM serialization we've seen before
+  // that would otherwise only be noticed on the server.
+  DCHECK(UkmService::LogCanBeParsed(serialized_full_log));
+  return serialized_full_log;
+}
+
 UkmService::UkmService(PrefService* pref_service,
                        metrics::MetricsServiceClient* client,
-                       bool restrict_to_whitelist_entries,
                        std::unique_ptr<metrics::UkmDemographicMetricsProvider>
                            demographics_provider)
     : pref_service_(pref_service),
-      restrict_to_whitelist_entries_(restrict_to_whitelist_entries),
+      // We only need to restrict to whitelisted Entries if metrics reporting is
+      // not forced.
+      restrict_to_whitelist_entries_(!client->IsMetricsReportingForceEnabled()),
       client_(client),
       demographics_provider_(std::move(demographics_provider)),
       reporting_service_(client, pref_service) {
   DCHECK(pref_service_);
   DCHECK(client_);
-  DCHECK(demographics_provider_);
   DVLOG(1) << "UkmService::Constructor";
-
   reporting_service_.Initialize();
 
   base::RepeatingClosure rotate_callback = base::BindRepeating(
@@ -287,7 +312,7 @@ void UkmService::Flush() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (initialize_complete_)
     BuildAndStoreLog();
-  reporting_service_.ukm_log_store()->PersistUnsentLogs();
+  reporting_service_.ukm_log_store()->TrimAndPersistUnsentLogs();
 }
 
 void UkmService::Purge() {
@@ -337,8 +362,8 @@ void UkmService::RegisterPrefs(PrefRegistrySimple* registry) {
 void UkmService::StartInitTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "UkmService::StartInitTask";
-  metrics_providers_.AsyncInit(base::Bind(&UkmService::FinishedInitTask,
-                                          self_ptr_factory_.GetWeakPtr()));
+  metrics_providers_.AsyncInit(base::BindOnce(&UkmService::FinishedInitTask,
+                                              self_ptr_factory_.GetWeakPtr()));
 }
 
 void UkmService::FinishedInitTask() {
@@ -361,8 +386,10 @@ void UkmService::RotateLog() {
 }
 
 void UkmService::AddSyncedUserNoiseBirthYearAndGenderToReport(Report* report) {
-  if (!base::FeatureList::IsEnabled(kReportUserNoisedUserBirthYearAndGender))
+  if (!base::FeatureList::IsEnabled(kReportUserNoisedUserBirthYearAndGender) ||
+      !demographics_provider_) {
     return;
+  }
 
   demographics_provider_->ProvideSyncedUserNoisedBirthYearAndGenderToReport(
       report);
@@ -383,6 +410,12 @@ void UkmService::BuildAndStoreLog() {
   report.set_session_id(session_id_);
   report.set_report_id(++report_count_);
 
+  const auto product = static_cast<metrics::ChromeUserMetricsExtension_Product>(
+      client_->GetProduct());
+  // Only set the product if it differs from the default value.
+  if (product != report.product())
+    report.set_product(product);
+
   StoreRecordingsInReport(&report);
 
   metrics::MetricsLog::RecordCoreSystemProfile(client_,
@@ -393,9 +426,9 @@ void UkmService::BuildAndStoreLog() {
 
   AddSyncedUserNoiseBirthYearAndGenderToReport(&report);
 
-  std::string serialized_log;
-  report.SerializeToString(&serialized_log);
-  reporting_service_.ukm_log_store()->StoreLog(serialized_log);
+  std::string serialized_log =
+      UkmService::SerializeReportProtoToString(&report);
+  reporting_service_.ukm_log_store()->StoreLog(serialized_log, base::nullopt);
 }
 
 bool UkmService::ShouldRestrictToWhitelistedEntries() const {

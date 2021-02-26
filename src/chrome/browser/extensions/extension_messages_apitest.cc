@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/crx_file/id_util.h"
@@ -236,7 +235,7 @@ class ExternallyConnectableMessagingTest : public MessagingApiTest {
                                            const char* message = NULL) {
     content::RenderFrameHost* frame = content::FrameMatchingPredicate(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        base::Bind(&content::FrameIsChildOfMainFrame));
+        base::BindRepeating(&content::FrameIsChildOfMainFrame));
     return CanConnectAndSendMessagesToFrame(frame, extension, message);
   }
 
@@ -261,7 +260,7 @@ class ExternallyConnectableMessagingTest : public MessagingApiTest {
   testing::AssertionResult AreAnyNonWebApisDefinedForIFrame() {
     content::RenderFrameHost* frame = content::FrameMatchingPredicate(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        base::Bind(&content::FrameIsChildOfMainFrame));
+        base::BindRepeating(&content::FrameIsChildOfMainFrame));
     return AreAnyNonWebApisDefinedForFrame(frame);
   }
 
@@ -728,7 +727,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   ASSERT_TRUE(app->is_platform_app());
 
   Browser* incognito_browser = OpenURLOffTheRecord(
-      profile()->GetOffTheRecordProfile(), chromium_org_url());
+      profile()->GetPrimaryOTRProfile(), chromium_org_url());
   content::RenderFrameHost* incognito_frame = incognito_browser->
       tab_strip_model()->GetActiveWebContents()->GetMainFrame();
 
@@ -762,7 +761,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_FALSE(util::IsIncognitoEnabled(extension->id(), profile()));
 
   Browser* incognito_browser = OpenURLOffTheRecord(
-      profile()->GetOffTheRecordProfile(), chromium_org_url());
+      profile()->GetPrimaryOTRProfile(), chromium_org_url());
   content::RenderFrameHost* incognito_frame =
       incognito_browser->tab_strip_model()
           ->GetActiveWebContents()
@@ -790,10 +789,10 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   // Allowing the extension in incognito mode loads the extension in the
   // incognito renderer, allowing it to receive connections.
   TestExtensionRegistryObserver observer(
-      ExtensionRegistry::Get(profile()->GetOffTheRecordProfile()),
+      ExtensionRegistry::Get(profile()->GetPrimaryOTRProfile()),
       extension->id());
   util::SetIsIncognitoEnabled(extension->id(),
-                              profile()->GetOffTheRecordProfile(), true);
+                              profile()->GetPrimaryOTRProfile(), true);
   scoped_refptr<const Extension> loaded_extension =
       observer.WaitForExtensionLoaded();
   EXPECT_EQ(OK, CanConnectAndSendMessagesToFrame(
@@ -812,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   ASSERT_TRUE(app->is_platform_app());
 
   Browser* incognito_browser = OpenURLOffTheRecord(
-      profile()->GetOffTheRecordProfile(), chromium_org_url());
+      profile()->GetPrimaryOTRProfile(), chromium_org_url());
   content::RenderFrameHost* incognito_frame =
       incognito_browser->tab_strip_model()
           ->GetActiveWebContents()
@@ -842,7 +841,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   ASSERT_TRUE(app->is_platform_app());
 
   Browser* incognito_browser = OpenURLOffTheRecord(
-      profile()->GetOffTheRecordProfile(), chromium_org_url());
+      profile()->GetPrimaryOTRProfile(), chromium_org_url());
   content::RenderFrameHost* incognito_frame = incognito_browser->
       tab_strip_model()->GetActiveWebContents()->GetMainFrame();
 
@@ -879,7 +878,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
 
   // Open an incognito browser with two tabs displaying "chromium.org".
   Browser* incognito_browser = OpenURLOffTheRecord(
-      profile()->GetOffTheRecordProfile(), chromium_org_url());
+      profile()->GetPrimaryOTRProfile(), chromium_org_url());
   content::RenderFrameHost* incognito_frame1 =
       incognito_browser->tab_strip_model()
           ->GetActiveWebContents()
@@ -887,7 +886,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   InfoBarService* infobar_service1 = InfoBarService::FromWebContents(
       incognito_browser->tab_strip_model()->GetActiveWebContents());
 
-  CHECK(OpenURLOffTheRecord(profile()->GetOffTheRecordProfile(),
+  CHECK(OpenURLOffTheRecord(profile()->GetPrimaryOTRProfile(),
                             chromium_org_url()) == incognito_browser);
   content::RenderFrameHost* incognito_frame2 =
       incognito_browser->tab_strip_model()
@@ -948,7 +947,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_FALSE(util::IsIncognitoEnabled(extension->id(), profile()));
 
   Browser* incognito_browser = OpenURLOffTheRecord(
-      profile()->GetOffTheRecordProfile(), chromium_org_url());
+      profile()->GetPrimaryOTRProfile(), chromium_org_url());
   content::RenderFrameHost* incognito_frame =
       incognito_browser->tab_strip_model()
           ->GetActiveWebContents()
@@ -969,10 +968,10 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   // incognito renderer, causing the chrome.runtime bindings to be generated in
   // the renderer and allowing the extension to receive connections.
   TestExtensionRegistryObserver observer(
-      ExtensionRegistry::Get(profile()->GetOffTheRecordProfile()),
+      ExtensionRegistry::Get(profile()->GetPrimaryOTRProfile()),
       extension->id());
   util::SetIsIncognitoEnabled(extension->id(),
-                              profile()->GetOffTheRecordProfile(), true);
+                              profile()->GetPrimaryOTRProfile(), true);
   scoped_refptr<const Extension> loaded_extension =
       observer.WaitForExtensionLoaded();
   EXPECT_EQ(OK, CanConnectAndSendMessagesToFrame(

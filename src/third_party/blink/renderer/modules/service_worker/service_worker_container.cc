@@ -201,7 +201,7 @@ void ServiceWorkerContainer::ContextDestroyed() {
   controller_ = nullptr;
 }
 
-void ServiceWorkerContainer::Trace(Visitor* visitor) {
+void ServiceWorkerContainer::Trace(Visitor* visitor) const {
   visitor->Trace(controller_);
   visitor->Trace(ready_);
   visitor->Trace(dom_content_loaded_observer_);
@@ -280,10 +280,10 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   }
 
   KURL scope_url;
-  if (options->scope().IsNull())
-    scope_url = KURL(script_url, "./");
-  else
+  if (options->hasScope())
     scope_url = execution_context->CompleteURL(options->scope());
+  else
+    scope_url = KURL(script_url, "./");
   scope_url.RemoveFragmentIdentifier();
 
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
@@ -329,10 +329,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 
   ContentSecurityPolicy* csp = execution_context->GetContentSecurityPolicy();
   if (csp) {
-    if (!csp->AllowRequestWithoutIntegrity(
-            mojom::RequestContextType::SERVICE_WORKER,
-            network::mojom::RequestDestination::kServiceWorker, script_url) ||
-        !csp->AllowWorkerContextFromSource(script_url)) {
+    if (!csp->AllowWorkerContextFromSource(script_url)) {
       callbacks->OnError(WebServiceWorkerError(
           mojom::blink::ServiceWorkerErrorType::kSecurity,
           String(
@@ -345,7 +342,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 
   mojom::ServiceWorkerUpdateViaCache update_via_cache =
       ParseUpdateViaCache(options->updateViaCache());
-  base::Optional<mojom::ScriptType> script_type =
+  base::Optional<mojom::blink::ScriptType> script_type =
       Script::ParseScriptType(options->type());
   DCHECK(script_type);
 
@@ -495,9 +492,6 @@ void ServiceWorkerContainer::SetController(
     MaybeRecordThirdPartyServiceWorkerUsage(GetExecutionContext());
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kServiceWorkerControlledPage);
-    GetExecutionContext()->GetScheduler()->RegisterStickyFeature(
-        SchedulingPolicy::Feature::kServiceWorkerControlledPage,
-        {SchedulingPolicy::RecordMetricsForBackForwardCache()});
   }
   if (should_notify_controller_change)
     DispatchEvent(*Event::Create(event_type_names::kControllerchange));
@@ -585,9 +579,10 @@ ServiceWorkerContainer::GetOrCreateServiceWorkerRegistration(
     return registration;
   }
 
+  const int64_t registration_id = info.registration_id;
   registration = MakeGarbageCollected<ServiceWorkerRegistration>(
       GetSupplementable()->GetExecutionContext(), std::move(info));
-  service_worker_registration_objects_.Set(info.registration_id, registration);
+  service_worker_registration_objects_.Set(registration_id, registration);
   return registration;
 }
 
@@ -597,9 +592,10 @@ ServiceWorker* ServiceWorkerContainer::GetOrCreateServiceWorker(
     return nullptr;
   ServiceWorker* worker = service_worker_objects_.at(info.version_id);
   if (!worker) {
+    const int64_t version_id = info.version_id;
     worker = ServiceWorker::Create(GetSupplementable()->GetExecutionContext(),
                                    std::move(info));
-    service_worker_objects_.Set(info.version_id, worker);
+    service_worker_objects_.Set(version_id, worker);
   }
   return worker;
 }
@@ -633,7 +629,8 @@ void ServiceWorkerContainer::DispatchMessageEvent(
     TransferableMessage message) {
   DCHECK(is_client_message_queue_enabled_);
 
-  auto msg = ToBlinkTransferableMessage(std::move(message));
+  auto msg =
+      BlinkTransferableMessage::FromTransferableMessage(std::move(message));
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*GetExecutionContext(), std::move(msg.ports));
   ServiceWorker* service_worker =

@@ -11,9 +11,10 @@
 #include "android_webview/browser/gfx/output_surface_provider_webview.h"
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/frame_timing_details_map.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
-#include "components/viz/common/surfaces/local_surface_id_allocation.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_client.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -54,10 +55,6 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   void AddChildId(const viz::SurfaceId& child_id);
   void RemoveChildId(const viz::SurfaceId& child_id);
-  bool is_using_vulkan() const {
-    return output_surface_provider_.shared_context_state() &&
-           output_surface_provider_.shared_context_state()->GrContextIsVulkan();
-  }
 
  private:
   friend class base::RefCounted<SurfacesInstance>;
@@ -67,8 +64,9 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   // viz::DisplayClient overrides.
   void DisplayOutputSurfaceLost() override;
-  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              viz::RenderPassList* render_passes) override {}
+  void DisplayWillDrawAndSwap(
+      bool will_draw_and_swap,
+      viz::AggregatedRenderPassList* render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override {}
@@ -108,7 +106,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
       parent_local_surface_id_allocator_;
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
 
-  viz::LocalSurfaceIdAllocation root_id_allocation_;
+  viz::LocalSurfaceId root_local_surface_id_;
   float device_scale_factor_ = 1.0f;
   std::vector<viz::SurfaceId> child_ids_;
   viz::FrameTokenGenerator next_frame_token_;

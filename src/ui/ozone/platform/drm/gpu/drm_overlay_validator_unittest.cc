@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_overlay_validator.h"
 
 #include <drm_fourcc.h>
+#include <xf86drm.h>
 
 #include <memory>
 #include <utility>
@@ -29,9 +30,9 @@
 
 namespace {
 
-// Mode of size 6x4.
-const drmModeModeInfo kDefaultMode = {0, 6, 0, 0, 0, 0, 4,     0,
-                                      0, 0, 0, 0, 0, 0, {'\0'}};
+// Mode of size 12x8.
+const drmModeModeInfo kDefaultMode = {0, 12, 0, 0, 0, 0, 8,     0,
+                                      0, 0,  0, 0, 0, 0, {'\0'}};
 
 const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 constexpr uint32_t kCrtcIdBase = 1;
@@ -75,6 +76,22 @@ class DrmOverlayValidatorTest : public testing::Test {
     auto gbm_buffer =
         drm_->gbm_device()->CreateBuffer(format, size, GBM_BO_USE_SCANOUT);
     return ui::DrmFramebuffer::AddFramebuffer(drm_, gbm_buffer.get(), size);
+  }
+
+  bool ModesetController(ui::HardwareDisplayController* controller) {
+    ui::CommitRequest commit_request;
+
+    ui::DrmOverlayPlane plane(CreateBuffer(), nullptr);
+
+    controller->GetModesetProps(&commit_request, plane, kDefaultMode);
+    ui::CommitRequest request_for_update = commit_request;
+    bool status = drm_->plane_manager()->Commit(std::move(commit_request),
+                                                DRM_MODE_ATOMIC_ALLOW_MODESET);
+    controller->UpdateState(
+        /*enable_requested=*/true,
+        ui::DrmOverlayPlane::GetPrimaryPlane(request_for_update[0].overlays()));
+
+    return status;
   }
 
  protected:
@@ -213,8 +230,11 @@ void DrmOverlayValidatorTest::InitDrmStatesAndControllers(
 void DrmOverlayValidatorTest::SetupControllers() {
   screen_manager_ = std::make_unique<ui::ScreenManager>();
   screen_manager_->AddDisplayController(drm_, kCrtcIdBase, kConnectorIdBase);
-  screen_manager_->ConfigureDisplayController(
-      drm_, kCrtcIdBase, kConnectorIdBase, gfx::Point(), kDefaultMode);
+  std::vector<ui::ScreenManager::ControllerConfigParams> controllers_to_enable;
+  controllers_to_enable.emplace_back(
+      1 /*display_id*/, drm_, kCrtcIdBase, kConnectorIdBase, gfx::Point(),
+      std::make_unique<drmModeModeInfo>(kDefaultMode));
+  screen_manager_->ConfigureDisplayControllers(controllers_to_enable);
 
   drm_device_manager_ = std::make_unique<ui::DrmDeviceManager>(nullptr);
 
@@ -416,12 +436,9 @@ TEST_F(DrmOverlayValidatorTest,
   InitDrmStatesAndControllers(crtc_states);
 
   ui::HardwareDisplayController* controller = window_->GetController();
-  controller->AddCrtc(
-      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-
-  EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
+  controller->AddCrtc(std::make_unique<ui::CrtcController>(
+      drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1));
+  EXPECT_TRUE(ModesetController(controller));
 
   gfx::RectF crop_rect = gfx::RectF(0, 0, 0.5, 0.5);
   overlay_params_.back().buffer_size = overlay_rect_.size();
@@ -462,12 +479,9 @@ TEST_F(DrmOverlayValidatorTest,
   InitDrmStatesAndControllers(crtc_states);
 
   ui::HardwareDisplayController* controller = window_->GetController();
-  controller->AddCrtc(
-      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-
-  EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
+  controller->AddCrtc(std::make_unique<ui::CrtcController>(
+      drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1));
+  EXPECT_TRUE(ModesetController(controller));
 
   gfx::RectF crop_rect = gfx::RectF(0, 0, 0.5, 0.5);
   overlay_params_.back().buffer_size = overlay_rect_.size();
@@ -505,12 +519,9 @@ TEST_F(DrmOverlayValidatorTest,
   InitDrmStatesAndControllers(crtc_states);
 
   ui::HardwareDisplayController* controller = window_->GetController();
-  controller->AddCrtc(
-      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-
-  EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
+  controller->AddCrtc(std::make_unique<ui::CrtcController>(
+      drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1));
+  EXPECT_TRUE(ModesetController(controller));
 
   gfx::RectF crop_rect = gfx::RectF(0, 0, 0.5, 0.5);
   overlay_params_.back().buffer_size = overlay_rect_.size();
@@ -548,11 +559,9 @@ TEST_F(DrmOverlayValidatorTest, OptimalFormatXRGB_MirroredControllers) {
   InitDrmStatesAndControllers(crtc_states);
 
   ui::HardwareDisplayController* controller = window_->GetController();
-  controller->AddCrtc(
-      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
+  controller->AddCrtc(std::make_unique<ui::CrtcController>(
+      drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1));
+  EXPECT_TRUE(ModesetController(controller));
 
   overlay_params_.back().buffer_size = overlay_rect_.size();
   overlay_params_.back().display_rect = gfx::RectF(overlay_rect_);
@@ -585,11 +594,9 @@ TEST_F(DrmOverlayValidatorTest,
   InitDrmStatesAndControllers(crtc_states);
 
   ui::HardwareDisplayController* controller = window_->GetController();
-  controller->AddCrtc(
-      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
+  controller->AddCrtc(std::make_unique<ui::CrtcController>(
+      drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1));
+  EXPECT_TRUE(ModesetController(controller));
 
   overlay_params_.back().buffer_size = overlay_rect_.size();
   overlay_params_.back().display_rect = gfx::RectF(overlay_rect_);
@@ -621,11 +628,9 @@ TEST_F(DrmOverlayValidatorTest,
   InitDrmStatesAndControllers(crtc_states);
 
   ui::HardwareDisplayController* controller = window_->GetController();
-  controller->AddCrtc(
-      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-  EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
+  controller->AddCrtc(std::make_unique<ui::CrtcController>(
+      drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1));
+  EXPECT_TRUE(ModesetController(controller));
 
   overlay_params_.back().buffer_size = overlay_rect_.size();
   overlay_params_.back().display_rect = gfx::RectF(overlay_rect_);

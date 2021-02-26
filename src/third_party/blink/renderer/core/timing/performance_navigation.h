@@ -38,7 +38,6 @@
 
 namespace blink {
 
-class LocalFrame;
 class ScriptState;
 class ScriptValue;
 
@@ -46,10 +45,9 @@ class ScriptValue;
 class CORE_EXPORT PerformanceNavigation final : public ScriptWrappable,
                                                 public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PerformanceNavigation);
 
  public:
-  explicit PerformanceNavigation(LocalFrame*);
+  explicit PerformanceNavigation(ExecutionContext*);
 
   enum PerformanceNavigationType {
     kTypeNavigate,
@@ -63,7 +61,7 @@ class CORE_EXPORT PerformanceNavigation final : public ScriptWrappable,
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 };
 
 }  // namespace blink

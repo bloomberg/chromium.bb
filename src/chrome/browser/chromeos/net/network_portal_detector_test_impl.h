@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -24,7 +25,8 @@ class NetworkPortalDetectorTestImpl : public NetworkPortalDetector {
 
   void SetDefaultNetworkForTesting(const std::string& guid);
   void SetDetectionResultsForTesting(const std::string& guid,
-                                     const CaptivePortalState& state);
+                                     CaptivePortalStatus status,
+                                     int response_code);
   void NotifyObserversForTesting();
 
   // Returns the GUID of the network the detector considers to be default.
@@ -38,11 +40,10 @@ class NetworkPortalDetectorTestImpl : public NetworkPortalDetector {
   void AddObserver(Observer* observer) override;
   void AddAndFireObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  CaptivePortalState GetCaptivePortalState(
-      const std::string& service_path) override;
+  CaptivePortalStatus GetCaptivePortalStatus() override;
   bool IsEnabled() override;
   void Enable(bool start_detection) override;
-  bool StartPortalDetection(bool force) override;
+  void StartPortalDetection() override;
   void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
 
   PortalDetectorStrategy::StrategyId strategy_id() const {
@@ -54,12 +55,9 @@ class NetworkPortalDetectorTestImpl : public NetworkPortalDetector {
   }
 
  private:
-  using NetworkId = std::string;
-  using CaptivePortalStateMap = std::map<NetworkId, CaptivePortalState>;
-
   base::ObserverList<Observer>::Unchecked observers_;
   std::unique_ptr<NetworkState> default_network_;
-  CaptivePortalStateMap portal_state_map_;
+  std::map<std::string, CaptivePortalStatus> portal_status_map_;
   PortalDetectorStrategy::StrategyId strategy_id_;
 
   // Set when StartPortalDetection() is called - it will be reset when observers

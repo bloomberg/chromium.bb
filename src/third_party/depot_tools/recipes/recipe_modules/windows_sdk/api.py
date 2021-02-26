@@ -5,7 +5,8 @@
 """The `windows_sdk` module provides safe functions to access a hermetic
 Microsoft Visual Studio installation.
 
-Available only to Google-run bots."""
+Available only to Google-run bots.
+"""
 
 import collections
 from contextlib import contextmanager
@@ -25,15 +26,15 @@ class WindowsSDKApi(recipe_api.RecipeApi):
 
   @contextmanager
   def __call__(self, path=None, version=None, enabled=True, target_arch='x64'):
-    """Setups the SDK environment when enabled.
+    """Sets up the SDK environment when enabled.
 
     Args:
-      path (path): Path to a directory where to install the SDK
+      * path (path): Path to a directory where to install the SDK
         (default is '[CACHE]/windows_sdk')
-      version (str): CIPD version of the SDK
+      * version (str): CIPD version of the SDK
         (default is set via $infra/windows_sdk.version property)
-      enabled (bool): Whether the SDK should be used or not.
-      target_arch (str): 'x86' or 'x64'.
+      * enabled (bool): Whether the SDK should be used or not.
+      * target_arch (str): 'x86' or 'x64'.
 
     Yields:
       If enabled, yields SDKPaths object with paths to well-known roots within
@@ -72,8 +73,8 @@ class WindowsSDKApi(recipe_api.RecipeApi):
     Returns the directory where the SDK package has been installed.
 
     Args:
-      path (path): Path to a directory.
-      version (str): CIPD instance ID, tag or ref.
+      * path (path): Path to a directory.
+      * version (str): CIPD instance ID, tag or ref.
     """
     with self.m.context(infra_steps=True):
       pkgs = self.m.cipd.EnsureFile()
@@ -87,8 +88,8 @@ class WindowsSDKApi(recipe_api.RecipeApi):
     Returns environment and environment prefixes.
 
     Args:
-      sdk_dir (path): Path to a directory containing the SDK.
-      target_arch (str): 'x86' or 'x64'
+      * sdk_dir (path): Path to a directory containing the SDK.
+      * target_arch (str): 'x86' or 'x64'
     """
     env = {}
     env_prefixes = {}

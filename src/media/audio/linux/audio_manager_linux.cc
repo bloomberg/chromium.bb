@@ -5,16 +5,22 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/chromeos_buildflags.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/base/media_switches.h"
 
 #if defined(USE_ALSA)
 #include "media/audio/alsa/audio_manager_alsa.h"
 #endif
-#if defined(USE_CRAS)
+
+#if defined(USE_CRAS) && BUILDFLAG(IS_ASH)
+#include "media/audio/cras/audio_manager_chromeos.h"
+#elif defined(USE_CRAS)
 #include "media/audio/cras/audio_manager_cras.h"
 #endif
+
 #if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/audio_manager_pulse.h"
 #include "media/audio/pulse/pulse_util.h"
@@ -42,10 +48,15 @@ std::unique_ptr<media::AudioManager> CreateAudioManager(
 #if defined(USE_CRAS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
     UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kCras, kAudioIOMax + 1);
+#if BUILDFLAG(IS_ASH)
+    return std::make_unique<AudioManagerChromeOS>(std::move(audio_thread),
+                                                  audio_log_factory);
+#else
     return std::make_unique<AudioManagerCras>(std::move(audio_thread),
-                                              audio_log_factory);
-  }
+                                                   audio_log_factory);
 #endif
+  }
+#endif // defined(USE_CRAS)
 
 #if defined(USE_PULSEAUDIO)
   pa_threaded_mainloop* pa_mainloop = nullptr;

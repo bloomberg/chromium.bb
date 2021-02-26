@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
@@ -138,10 +137,10 @@ class MODULES_EXPORT RTCRtpSenderImpl : public blink::RTCRtpSenderPlatform {
   uintptr_t Id() const override;
   rtc::scoped_refptr<webrtc::DtlsTransportInterface> DtlsTransport() override;
   webrtc::DtlsTransportInformation DtlsTransportInformation() override;
-  blink::WebMediaStreamTrack Track() const override;
+  MediaStreamComponent* Track() const override;
   Vector<String> StreamIds() const override;
-  void ReplaceTrack(blink::WebMediaStreamTrack with_track,
-                    blink::RTCVoidRequest* request) override;
+  void ReplaceTrack(MediaStreamComponent* with_track,
+                    RTCVoidRequest* request) override;
   std::unique_ptr<blink::RtcDtmfSenderHandler> GetDtmfSender() const override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
   void SetParameters(Vector<webrtc::RtpEncodingParameters>,
@@ -159,7 +158,7 @@ class MODULES_EXPORT RTCRtpSenderImpl : public blink::RTCRtpSenderPlatform {
   // top of this, which returns the result in a callback instead. Allows doing
   // ReplaceTrack() without having a blink::RTCVoidRequest, which can only be
   // constructed inside of blink.
-  void ReplaceTrack(blink::WebMediaStreamTrack with_track,
+  void ReplaceTrack(MediaStreamComponent* with_track,
                     base::OnceCallback<void(bool)> callback);
   bool RemoveFromPeerConnection(webrtc::PeerConnectionInterface* pc);
 
@@ -185,7 +184,8 @@ class MODULES_EXPORT RTCRtpSenderOnlyTransceiver
   std::unique_ptr<RTCRtpReceiverPlatform> Receiver() const override;
   bool Stopped() const override;
   webrtc::RtpTransceiverDirection Direction() const override;
-  void SetDirection(webrtc::RtpTransceiverDirection direction) override;
+  webrtc::RTCError SetDirection(
+      webrtc::RtpTransceiverDirection direction) override;
   base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection()
       const override;
   base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()

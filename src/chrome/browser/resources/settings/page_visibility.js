@@ -16,7 +16,6 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
  *   languages: (boolean|undefined),
  *   onStartup: (boolean|undefined),
  *   people: (boolean|undefined),
- *   printing: (boolean|undefined),
  *   privacy: (boolean|undefined|PrivacyPageVisibility),
  *   reset: (boolean|undefined),
  * }}
@@ -48,12 +47,15 @@ export let PrivacyPageVisibility;
 export let pageVisibility;
 
 if (loadTimeData.getBoolean('isGuest')) {
+  const isEphemeralGuestProfile =
+      loadTimeData.getBoolean('isEphemeralGuestProfile');
+
   // "if not chromeos" and "if chromeos" in two completely separate blocks
   // to work around closure compiler.
   // <if expr="not chromeos">
   pageVisibility = {
-    autofill: false,
-    people: false,
+    autofill: isEphemeralGuestProfile,
+    people: isEphemeralGuestProfile,
     privacy: false,
     onStartup: false,
     reset: false,
@@ -62,7 +64,6 @@ if (loadTimeData.getBoolean('isGuest')) {
     defaultBrowser: false,
     advancedSettings: false,
     extensions: false,
-    printing: false,
     languages: false,
   };
   // </if>
@@ -87,7 +88,6 @@ if (loadTimeData.getBoolean('isGuest')) {
     downloads: true,
     a11y: true,
     extensions: false,
-    printing: true,
     languages: true,
   };
   // </if>
@@ -115,7 +115,6 @@ if (loadTimeData.getBoolean('isGuest')) {
     downloads: true,
     a11y: true,
     extensions: true,
-    printing: true,
     languages: true,
   };
   // </if>

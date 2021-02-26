@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as Formatter from '../formatter/formatter.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
@@ -17,7 +21,7 @@ export class JavaScriptAutocomplete {
     this._expressionCache = new Map();
     SDK.ConsoleModel.ConsoleModel.instance().addEventListener(
         SDK.ConsoleModel.Events.CommandEvaluated, this._clearCache, this);
-    self.UI.context.addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this._clearCache, this);
+    UI.Context.Context.instance().addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this._clearCache, this);
     SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this._clearCache, this);
     SDK.SDKModel.TargetManager.instance().addModelListener(
@@ -51,7 +55,7 @@ export class JavaScriptAutocomplete {
     if (!functionCall) {
       return null;
     }
-    const executionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
+    const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
     if (!executionContext) {
       return null;
     }
@@ -88,7 +92,7 @@ export class JavaScriptAutocomplete {
       return (result && !result.exceptionDetails && result.object) ? result.object : null;
     }, functionCall.functionName);
     executionContext.runtimeModel.releaseObjectGroup('argumentsHint');
-    if (!args.length || (args.length === 1 && !args[0].length)) {
+    if (!args.length || (args.length === 1 && (!args[0] || !args[0].length))) {
       return null;
     }
     return {args, argumentIndex: functionCall.argumentIndex};
@@ -129,7 +133,8 @@ export class JavaScriptAutocomplete {
         return clippedArgs;
       }
     }
-    const javaScriptMetadata = await self.runtime.extension(Common.JavaScriptMetaData.JavaScriptMetaData).instance();
+    const javaScriptMetadata =
+        await Root.Runtime.Runtime.instance().extension(Common.JavaScriptMetaData.JavaScriptMetaData).instance();
 
     const name = /^function ([^(]*)\(/.exec(description)[1] || parsedFunctionName;
     if (!name) {
@@ -140,6 +145,9 @@ export class JavaScriptAutocomplete {
       return uniqueSignatures;
     }
     const receiverObj = await receiverObjGetter();
+    if (!receiverObj) {
+      return [];
+    }
     const className = receiverObj.className;
     if (javaScriptMetadata.signaturesForInstanceMethod(name, className)) {
       return javaScriptMetadata.signaturesForInstanceMethod(name, className);
@@ -200,7 +208,7 @@ export class JavaScriptAutocomplete {
    */
   async _mapCompletions(text, query) {
     const mapMatch = text.match(/\.\s*(get|set|delete)\s*\(\s*$/);
-    const executionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
+    const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
     if (!executionContext || !mapMatch) {
       return [];
     }
@@ -309,12 +317,15 @@ export class JavaScriptAutocomplete {
    * @return {!Promise<!UI.SuggestBox.Suggestions>}
    */
   async _completionsForExpression(fullText, query, force) {
-    const executionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
+    const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
     if (!executionContext) {
       return [];
     }
     let expression;
-    if (fullText.endsWith('.') || fullText.endsWith('[')) {
+    if (fullText.endsWith('?.')) {
+      expression = await Formatter.FormatterWorkerPool.formatterWorkerPool().findLastExpression(
+          fullText.substring(0, fullText.length - 2));
+    } else if (fullText.endsWith('.') || fullText.endsWith('[')) {
       expression = await Formatter.FormatterWorkerPool.formatterWorkerPool().findLastExpression(
           fullText.substring(0, fullText.length - 1));
     }
@@ -668,7 +679,7 @@ export class JavaScriptAutocomplete {
    * @return {!Promise<boolean>}
    */
   static async isExpressionComplete(expression) {
-    const currentExecutionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
+    const currentExecutionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
     if (!currentExecutionContext) {
       return true;
     }
@@ -778,10 +789,10 @@ export class JavaScriptAutocompleteConfig {
         if (i === argumentIndex || (i < argumentIndex && args[i].startsWith('...'))) {
           argumentsElement.appendChild(UI.Fragment.html`<b>${args[i]}</b>`);
         } else {
-          argumentsElement.createTextChild(args[i]);
+          UI.UIUtils.createTextChild(argumentsElement, args[i]);
         }
         if (i < args.length - 1) {
-          argumentsElement.createTextChild(', ');
+          UI.UIUtils.createTextChild(argumentsElement, ', ');
         }
       }
       tooltip.appendChild(UI.Fragment.html`<div class='source-code'>\u0192(${argumentsElement})</div>`);

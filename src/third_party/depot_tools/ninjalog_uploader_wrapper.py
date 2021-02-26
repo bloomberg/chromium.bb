@@ -5,8 +5,10 @@
 
 from __future__ import print_function
 
-import os
 import json
+import os
+import platform
+import subprocess
 import sys
 
 import ninjalog_uploader
@@ -19,30 +21,30 @@ VERSION = 2
 
 
 def LoadConfig():
-    if os.path.isfile(CONFIG):
-        with open(CONFIG, 'rb') as f:
-            config = json.load(f)
-            if config['version'] == VERSION:
-                config['countdown'] = max(0, config['countdown'] - 1)
-                return config
+  if os.path.isfile(CONFIG):
+    with open(CONFIG, 'rb') as f:
+      config = json.load(f)
+      if config['version'] == VERSION:
+        config['countdown'] = max(0, config['countdown'] - 1)
+        return config
 
-    return {
-        'is-googler': ninjalog_uploader.IsGoogler(
-            'chromium-build-stats.appspot.com'),
-        'countdown': 10,
-        'version': VERSION,
-    }
+  return {
+      'is-googler':
+      ninjalog_uploader.IsGoogler('chromium-build-stats.appspot.com'),
+      'countdown': 10,
+      'version': VERSION,
+  }
 
 
 def SaveConfig(config):
-    with open(CONFIG, 'wb') as f:
-        json.dump(config, f)
+  with open(CONFIG, 'wb') as f:
+    json.dump(config, f)
 
 
 def ShowMessage(countdown):
-    whitelisted = '\n'.join(['  * %s' % config for config in
-                             ninjalog_uploader.WHITELISTED_CONFIGS])
-    print("""
+  whitelisted = '\n'.join(
+      ['  * %s' % config for config in ninjalog_uploader.WHITELISTED_CONFIGS])
+  print("""
 Your ninjalog will be uploaded to build stats server. The uploaded log will be
 used to analyze user side build performance.
 
@@ -73,46 +75,51 @@ You can find a more detailed explanation in
 
 
 def main():
-    config = LoadConfig()
+  config = LoadConfig()
 
-    if len(sys.argv) == 2 and sys.argv[1] == 'opt-in':
-        config['opt-in'] = True
-        config['countdown'] = 0
-        SaveConfig(config)
-        print('ninjalog upload is opted in.')
-        return 0
+  if len(sys.argv) == 2 and sys.argv[1] == 'opt-in':
+    config['opt-in'] = True
+    config['countdown'] = 0
+    SaveConfig(config)
+    print('ninjalog upload is opted in.')
+    return 0
 
-    if len(sys.argv) == 2 and sys.argv[1] == 'opt-out':
-        config['opt-in'] = False
-        SaveConfig(config)
-        print('ninjalog upload is opted out.')
-        return 0
+  if len(sys.argv) == 2 and sys.argv[1] == 'opt-out':
+    config['opt-in'] = False
+    SaveConfig(config)
+    print('ninjalog upload is opted out.')
+    return 0
 
-    if 'opt-in' in config and not config['opt-in']:
-        # Upload is opted out.
-        return 0
+  if 'opt-in' in config and not config['opt-in']:
+    # Upload is opted out.
+    return 0
 
-    if not config.get("is-googler", False):
-        # Not googler.
-        return 0
+  if not config.get("is-googler", False):
+    # Not googler.
+    return 0
 
-    if config.get("countdown", 0) > 0:
-        # Need to show message.
-        ShowMessage(config["countdown"])
-        # Only save config if something has meaningfully changed.
-        SaveConfig(config)
-        return 0
+  if config.get("countdown", 0) > 0:
+    # Need to show message.
+    ShowMessage(config["countdown"])
+    # Only save config if something has meaningfully changed.
+    SaveConfig(config)
+    return 0
 
-    if len(sys.argv) == 1:
-        # dry-run for debugging.
-        print("upload ninjalog dry-run")
-        return 0
+  if len(sys.argv) == 1:
+    # dry-run for debugging.
+    print("upload ninjalog dry-run")
+    return 0
 
-    # Run upload script without wait.
-    devnull = open(os.devnull, "w")
-    subprocess2.Popen(['vpython', UPLOADER] + sys.argv[1:],
-                      stdout=devnull, stderr=devnull)
+  # Run upload script without wait.
+  devnull = open(os.devnull, "w")
+  creationnflags = 0
+  if platform.system() == 'Windows':
+    creationnflags = subprocess.CREATE_NEW_PROCESS_GROUP
+  subprocess2.Popen(['vpython', UPLOADER] + sys.argv[1:],
+                    stdout=devnull,
+                    stderr=devnull,
+                    creationflags=creationnflags)
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+  sys.exit(main())

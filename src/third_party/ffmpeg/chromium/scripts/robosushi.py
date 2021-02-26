@@ -19,6 +19,7 @@
 import getopt
 import os
 import sys
+from subprocess import check_output
 
 import robo_branch
 from robo_lib import log
@@ -119,6 +120,11 @@ steps = {
       { "desc": "Try a test deps roll against the sushi (not master) branch",
         "do_fn": robo_branch.TryFakeDepsRoll },
 
+  # Some things you probably don't need unless you're debugging.
+  "download_mac_sdk":
+      { "desc": "Try to download the mac SDK, if needed.",
+        "do_fn": robo_setup.FetchMacSDKs },
+
   # Roll-up for --auto-merge
   "auto-merge":
       { "do_fn": lambda cfg : RunSteps(cfg, [ "create_sushi_branch",
@@ -167,11 +173,12 @@ def main(argv):
            "prompt",
            "setup",
            "test",
-           "build",
+           "build-gn",
            "patches",
            "auto-merge",
            "step=",
            "list",
+           "dev-merge",
           ])
 
   for opt, arg in parsed:
@@ -213,6 +220,12 @@ def main(argv):
       RunSteps(robo_configuration, arg.split(","))
     elif opt == "--list":
       ListSteps()
+    elif opt == "--dev-merge":
+      # Use HEAD rather than origin/master, so that local robosushi changes
+      # are part of the merge.  Only useful for testing those changes.
+      new_merge_base = check_output(["git", "log", "--format=%H", "-1"]).strip()
+      log("Using %s as new origin merge base for testing" % new_merge_base)
+      robo_configuration.override_origin_merge_base(new_merge_base)
     else:
       raise Exception("Unknown option '%s'" % opt);
 

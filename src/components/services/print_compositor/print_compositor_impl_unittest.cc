@@ -34,10 +34,11 @@ class MockPrintCompositorImpl : public PrintCompositorImpl {
   MOCK_METHOD2(OnFulfillRequest, void(uint64_t, int));
 
  protected:
-  void FulfillRequest(base::ReadOnlySharedMemoryMapping serialized_content,
+  void FulfillRequest(base::span<const uint8_t> serialized_content,
                       const ContentToFrameMap& subframe_content_map,
                       CompositeToPdfCallback callback) override {
-    const auto* data = serialized_content.GetMemoryAs<const TestRequestData>();
+    const auto* data =
+        reinterpret_cast<const TestRequestData*>(serialized_content.data());
     OnFulfillRequest(data->frame_guid, data->page_num);
   }
 };
@@ -57,10 +58,11 @@ class MockCompletionPrintCompositorImpl : public PrintCompositorImpl {
 
  protected:
   mojom::PrintCompositor::Status CompositeToPdf(
-      base::ReadOnlySharedMemoryMapping shared_mem,
+      base::span<const uint8_t> serialized_content,
       const ContentToFrameMap& subframe_content_map,
       base::ReadOnlySharedMemoryRegion* region) override {
-    const auto* data = shared_mem.GetMemoryAs<const TestRequestData>();
+    const auto* data =
+        reinterpret_cast<const TestRequestData*>(serialized_content.data());
     if (docinfo_)
       docinfo_->pages_written++;
     OnCompositeToPdf(data->frame_guid, data->page_num);
@@ -334,10 +336,10 @@ TEST_F(PrintCompositorImplTest, MultiRequestsDepOrder) {
   testing::Mock::VerifyAndClearExpectations(&impl);
 
   // When frame 3 and 2 become available, the pending requests should be
-  // satisfied, thus be fulfilled in order.
+  // satisfied, thus be fulfilled in page order.
   testing::Sequence order;
-  EXPECT_CALL(impl, OnFulfillRequest(1, 1)).Times(1).InSequence(order);
   EXPECT_CALL(impl, OnFulfillRequest(1, 0)).Times(1).InSequence(order);
+  EXPECT_CALL(impl, OnFulfillRequest(1, 1)).Times(1).InSequence(order);
   impl.AddSubframeContent(3, CreateTestData(3, -1), ContentToFrameMap());
   impl.AddSubframeContent(2, CreateTestData(2, -1), ContentToFrameMap());
 }

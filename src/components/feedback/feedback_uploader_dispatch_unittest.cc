@@ -11,11 +11,11 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "components/feedback/feedback_uploader_factory.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "net/http/http_util.h"
@@ -34,9 +34,27 @@ constexpr base::TimeDelta kTestRetryDelay =
 constexpr char kFeedbackPostUrl[] =
     "https://www.google.com/tools/feedback/chrome/__submit";
 
-void QueueReport(FeedbackUploader* uploader, const std::string& report_data) {
-  uploader->QueueReport(std::make_unique<std::string>(report_data));
+void QueueReport(FeedbackUploader* uploader,
+                 const std::string& report_data,
+                 bool has_email = true) {
+  uploader->QueueReport(std::make_unique<std::string>(report_data), has_email);
 }
+
+// Stand-in for the FeedbackUploaderChrome class that adds a fake bearer token
+// to the request.
+class MockFeedbackUploaderChrome : public FeedbackUploader {
+ public:
+  MockFeedbackUploaderChrome(
+      content::BrowserContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : FeedbackUploader(context, task_runner) {}
+
+  void AppendExtraHeadersToUploadRequest(
+      network::ResourceRequest* resource_request) override {
+    resource_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
+                                        "Bearer abcdefg");
+  }
+};
 
 }  // namespace
 
@@ -59,7 +77,7 @@ class FeedbackUploaderDispatchTest : public ::testing::Test {
                               const std::string& group_name,
                               int variation_id) {
     variations::AssociateGoogleVariationID(
-        variations::GOOGLE_WEB_PROPERTIES, trial_name, group_name,
+        variations::GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, trial_name, group_name,
         static_cast<variations::VariationID>(variation_id));
     base::FieldTrialList::CreateFieldTrial(trial_name, group_name)->group();
   }
@@ -87,7 +105,7 @@ TEST_F(FeedbackUploaderDispatchTest, VariationHeaders) {
   // Register a trial and variation id, so that there is data in variations
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
   CreateFieldTrialWithId("Test", "Group1", 123);
 
   FeedbackUploader uploader(
@@ -103,7 +121,37 @@ TEST_F(FeedbackUploaderDispatchTest, VariationHeaders) {
   QueueReport(&uploader, "test");
   base::RunLoop().RunUntilIdle();
 
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
+}
+
+// Test that the bearer token is present if there is an email address present in
+// the report.
+TEST_F(FeedbackUploaderDispatchTest, BearerTokenWithEmail) {
+  MockFeedbackUploaderChrome uploader(
+      context(), FeedbackUploaderFactory::CreateUploaderTaskRunner());
+  uploader.set_url_loader_factory_for_test(shared_url_loader_factory());
+
+  test_url_loader_factory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        EXPECT_TRUE(request.headers.HasHeader("Authorization"));
+      }));
+
+  QueueReport(&uploader, "test", /*has_email=*/true);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(FeedbackUploaderDispatchTest, BearerTokenNoEmail) {
+  MockFeedbackUploaderChrome uploader(
+      context(), FeedbackUploaderFactory::CreateUploaderTaskRunner());
+  uploader.set_url_loader_factory_for_test(shared_url_loader_factory());
+
+  test_url_loader_factory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        EXPECT_FALSE(request.headers.HasHeader("Authorization"));
+      }));
+
+  QueueReport(&uploader, "test", /*has_email=*/false);
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(FeedbackUploaderDispatchTest, 204Response) {

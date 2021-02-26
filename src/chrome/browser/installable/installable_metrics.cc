@@ -36,7 +36,8 @@ bool InstallableMetrics::IsReportableInstallSource(WebappInstallSource source) {
          source == WebappInstallSource::EXTERNAL_DEFAULT ||
          source == WebappInstallSource::EXTERNAL_POLICY ||
          source == WebappInstallSource::SYSTEM_DEFAULT ||
-         source == WebappInstallSource::OMNIBOX_INSTALL_ICON;
+         source == WebappInstallSource::OMNIBOX_INSTALL_ICON ||
+         source == WebappInstallSource::MENU_CREATE_SHORTCUT;
 }
 
 // static
@@ -63,7 +64,50 @@ WebappInstallSource InstallableMetrics::GetInstallSource(
     case InstallTrigger::MENU:
       return is_custom_tab ? WebappInstallSource::MENU_CUSTOM_TAB
                            : WebappInstallSource::MENU_BROWSER_TAB;
+    // Create shortcut does not exist on Android, so it doesn't apply to custom
+    // tab.
+    case InstallTrigger::CREATE_SHORTCUT:
+      DCHECK(!is_custom_tab);
+      return WebappInstallSource::MENU_CREATE_SHORTCUT;
   }
   NOTREACHED();
   return WebappInstallSource::COUNT;
+}
+
+// static
+void InstallableMetrics::RecordCheckServiceWorkerTime(base::TimeDelta time) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Webapp.CheckServiceWorker.Time", time);
+}
+
+// static
+void InstallableMetrics::RecordCheckServiceWorkerStatus(
+    ServiceWorkerOfflineCapability status) {
+  UMA_HISTOGRAM_ENUMERATION("Webapp.CheckServiceWorker.Status", status);
+}
+
+// static
+ServiceWorkerOfflineCapability
+    InstallableMetrics::ConvertFromServiceWorkerCapability(
+        content::ServiceWorkerCapability capability) {
+  switch (capability) {
+    case content::ServiceWorkerCapability::SERVICE_WORKER_WITH_FETCH_HANDLER:
+      return ServiceWorkerOfflineCapability::kServiceWorkerWithOfflineSupport;
+    case content::ServiceWorkerCapability::SERVICE_WORKER_NO_FETCH_HANDLER:
+      return ServiceWorkerOfflineCapability::kServiceWorkerNoFetchHandler;
+    case content::ServiceWorkerCapability::NO_SERVICE_WORKER:
+      return ServiceWorkerOfflineCapability::kNoServiceWorker;
+  }
+  NOTREACHED();
+}
+
+// static
+ServiceWorkerOfflineCapability InstallableMetrics::ConvertFromOfflineCapability(
+    content::OfflineCapability capability) {
+  switch (capability) {
+    case content::OfflineCapability::kSupported:
+      return ServiceWorkerOfflineCapability::kServiceWorkerWithOfflineSupport;
+    case content::OfflineCapability::kUnsupported:
+      return ServiceWorkerOfflineCapability::kServiceWorkerNoOfflineSupport;
+  }
+  NOTREACHED();
 }

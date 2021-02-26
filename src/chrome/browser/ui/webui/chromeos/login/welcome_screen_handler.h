@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace base {
@@ -33,20 +34,22 @@ class WelcomeView {
   // Hides the contents of the screen.
   virtual void Hide() = 0;
 
-  // Binds |screen| to the view.
+  // Binds `screen` to the view.
   virtual void Bind(WelcomeScreen* screen) = 0;
 
   // Unbinds model from the view.
   virtual void Unbind() = 0;
-
-  // Stops demo mode detection.
-  virtual void StopDemoModeDetection() = 0;
 
   // Reloads localized contents.
   virtual void ReloadLocalizedContent() = 0;
 
   // Change the current input method.
   virtual void SetInputMethodId(const std::string& input_method_id) = 0;
+
+  // Shows dialog to confirm starting Demo mode.
+  virtual void ShowDemoModeConfirmationDialog() = 0;
+  virtual void ShowEditRequisitionDialog(const std::string& requisition) = 0;
+  virtual void ShowRemoraRequisitionDialog() = 0;
 };
 
 // WebUI implementation of WelcomeScreenView. It is used to interact with
@@ -64,9 +67,11 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   void Hide() override;
   void Bind(WelcomeScreen* screen) override;
   void Unbind() override;
-  void StopDemoModeDetection() override;
   void ReloadLocalizedContent() override;
   void SetInputMethodId(const std::string& input_method_id) override;
+  void ShowDemoModeConfirmationDialog() override;
+  void ShowEditRequisitionDialog(const std::string& requisition) override;
+  void ShowRemoraRequisitionDialog() override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(
@@ -80,6 +85,21 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   void HandleSetLocaleId(const std::string& locale_id);
   void HandleSetInputMethodId(const std::string& input_method_id);
   void HandleSetTimezoneId(const std::string& timezone_id);
+  void HandleEnableLargeCursor(bool enabled);
+  void HandleEnableHighContrast(bool enabled);
+  void HandleEnableVirtualKeyboard(bool enabled);
+  void HandleEnableScreenMagnifier(bool enabled);
+  void HandleEnableSpokenFeedback(bool /* enabled */);
+  void HandleEnableSelectToSpeak(bool /* enabled */);
+  void HandleEnableDockedMagnifier(bool /* enabled */);
+  void HandleSetDeviceRequisition(const std::string& requisition);
+
+  // Notification of a change in the accessibility settings.
+  void OnAccessibilityStatusChanged(
+      const AccessibilityStatusEventDetails& details);
+
+  // Updates a11y menu state based on the current a11y features state(on/off).
+  void UpdateA11yState();
 
   // Returns available timezones. Caller gets the ownership.
   static std::unique_ptr<base::ListValue> GetTimezoneList();
@@ -89,6 +109,8 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;
+
+  std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(WelcomeScreenHandler);
 };

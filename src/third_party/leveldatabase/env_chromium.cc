@@ -9,13 +9,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,6 +24,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time_override.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -30,6 +33,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/services/storage/public/cpp/filesystem/file_error_or.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
 #include "third_party/leveldatabase/chromium_logger.h"
@@ -451,7 +455,7 @@ Options::Options() {
 //
 // Currently log reuse is an experimental feature in leveldb. More info at:
 // https://github.com/google/leveldb/commit/251ebf5dc70129ad3
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   // Reusing logs on Chrome OS resulted in an unacceptably high leveldb
   // corruption rate (at least for Indexed DB). More info at
   // https://crbug.com/460568
@@ -699,13 +703,8 @@ ChromiumEnv::ChromiumEnv(const std::string& name)
 
 ChromiumEnv::ChromiumEnv(const std::string& name,
                          std::unique_ptr<storage::FilesystemProxy> filesystem)
-    : filesystem_(std::move(filesystem)),
-      name_(name),
-      bgsignal_(&mu_),
-      started_bgthread_(false) {
+    : filesystem_(std::move(filesystem)), name_(name) {
   DCHECK(filesystem_);
-
-  bgsignal_.declare_only_used_while_idle();
 
   size_t max_open_files = base::GetMaxFds();
   if (base::FeatureList::IsEnabled(kLevelDBFileHandleEviction) &&
@@ -784,7 +783,7 @@ void ChromiumEnv::RemoveBackupFiles(const FilePath& dir) {
 
   for (const auto& path : result.value()) {
     if (path.Extension() == FILE_PATH_LITERAL(".bak"))
-      histogram->AddBoolean(filesystem_->RemoveFile(path));
+      histogram->AddBoolean(filesystem_->DeleteFile(path));
   }
 }
 
@@ -818,7 +817,7 @@ Status ChromiumEnv::GetChildren(const std::string& dir,
 Status ChromiumEnv::RemoveFile(const std::string& fname) {
   Status result;
   FilePath fname_filepath = FilePath::FromUTF8Unsafe(fname);
-  if (!filesystem_->RemoveFile(fname_filepath)) {
+  if (!filesystem_->DeleteFile(fname_filepath)) {
     result = MakeIOError(fname, "Could not delete file.", kRemoveFile);
   }
   return result;
@@ -838,7 +837,7 @@ Status ChromiumEnv::CreateDir(const std::string& name) {
 
 Status ChromiumEnv::RemoveDir(const std::string& name) {
   Status result;
-  if (!filesystem_->RemoveDirectory(FilePath::FromUTF8Unsafe(name))) {
+  if (!filesystem_->DeleteFile(FilePath::FromUTF8Unsafe(name))) {
     result = MakeIOError(name, "Could not delete directory.", kRemoveDir);
   }
   return result;
@@ -1040,46 +1039,13 @@ class Thread : public base::PlatformThread::Delegate {
 };
 
 void ChromiumEnv::Schedule(ScheduleFunc* function, void* arg) {
-  mu_.Acquire();
-
-  // Start background thread if necessary
-  if (!started_bgthread_) {
-    started_bgthread_ = true;
-    StartThread(&ChromiumEnv::BGThreadWrapper, this);
-  }
-
-  // If the queue is currently empty, the background thread may currently be
-  // waiting.
-  if (queue_.empty()) {
-    bgsignal_.Signal();
-  }
-
-  // Add to priority queue
-  queue_.push_back(BGItem());
-  queue_.back().function = function;
-  queue_.back().arg = arg;
-
-  mu_.Release();
-}
-
-void ChromiumEnv::BGThread() {
-  base::PlatformThread::SetName(name_.c_str());
-
-  while (true) {
-    // Wait until there is an item that is ready to run
-    mu_.Acquire();
-    while (queue_.empty()) {
-      bgsignal_.Wait();
-    }
-
-    void (*function)(void*) = queue_.front().function;
-    void* arg = queue_.front().arg;
-    queue_.pop_front();
-
-    mu_.Release();
-    TRACE_EVENT0("leveldb", "ChromiumEnv::BGThread-Task");
-    (*function)(arg);
-  }
+  // The BLOCK_SHUTDOWN is required to avoid shutdown hangs. The scheduled
+  // tasks may be blocking foreground threads waiting for their completions.
+  // see: https://crbug.com/1086185.
+  base::ThreadPool::PostTask(FROM_HERE,
+                             {base::MayBlock(), base::WithBaseSyncPrimitives(),
+                              base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                             base::BindOnce(function, arg));
 }
 
 void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {

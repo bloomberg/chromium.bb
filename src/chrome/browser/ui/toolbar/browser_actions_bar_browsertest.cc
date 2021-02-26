@@ -8,14 +8,13 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -40,6 +39,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_action.h"
+#include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
@@ -91,17 +91,19 @@ class BlockedActionWaiter
 // BrowserActionsBarBrowserTest:
 
 BrowserActionsBarBrowserTest::BrowserActionsBarBrowserTest()
-    : toolbar_model_(nullptr) {
-  // This suite relies on behavior specific to ToolbarActionsBar. See
-  // ExtensionsMenuViewBrowserTest and ExtensionsMenuViewUnitTest for new tests.
-  feature_list_.InitAndDisableFeature(features::kExtensionsToolbarMenu);
-}
+    : toolbar_model_(nullptr) {}
 
 BrowserActionsBarBrowserTest::~BrowserActionsBarBrowserTest() {
 }
 
 void BrowserActionsBarBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
+  // Note: The ScopedFeatureList needs to be instantiated before the rest of
+  // set up happens.
+  // This suite relies on behavior specific to ToolbarActionsBar. See
+  // ExtensionsMenuViewBrowserTest and ExtensionsMenuViewUnitTest for new tests.
+  feature_list_.InitAndDisableFeature(features::kExtensionsToolbarMenu);
+
   extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
   ToolbarActionsBar::disable_animations_for_testing_ = true;
 }

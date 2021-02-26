@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/printed_document.h"
 
 #if defined(OS_WIN)
@@ -84,7 +85,7 @@ PrintJob::~PrintJob() {
 
 void PrintJob::Initialize(std::unique_ptr<PrinterQuery> query,
                           const base::string16& name,
-                          int page_count) {
+                          uint32_t page_count) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!worker_);
   DCHECK(!is_job_pending_);
@@ -97,7 +98,7 @@ void PrintJob::Initialize(std::unique_ptr<PrinterQuery> query,
 #if defined(OS_WIN)
   pdf_page_mapping_ = PageRange::GetPages(settings->ranges());
   if (pdf_page_mapping_.empty()) {
-    for (int i = 0; i < page_count; i++)
+    for (uint32_t i = 0; i < page_count; i++)
       pdf_page_mapping_.push_back(i);
   }
 #endif
@@ -114,12 +115,13 @@ void PrintJob::Initialize(std::unique_ptr<PrinterQuery> query,
 
 #if defined(OS_WIN)
 // static
-std::vector<int> PrintJob::GetFullPageMapping(const std::vector<int>& pages,
-                                              int total_page_count) {
-  std::vector<int> mapping(total_page_count, -1);
-  for (int page_number : pages) {
+std::vector<uint32_t> PrintJob::GetFullPageMapping(
+    const std::vector<uint32_t>& pages,
+    uint32_t total_page_count) {
+  std::vector<uint32_t> mapping(total_page_count, kInvalidPageIndex);
+  for (uint32_t page_number : pages) {
     // Make sure the page is in range.
-    if (page_number >= 0 && page_number < total_page_count)
+    if (page_number < total_page_count)
       mapping[page_number] = page_number;
   }
   return mapping;
@@ -248,8 +250,8 @@ bool PrintJob::FlushJob(base::TimeDelta timeout) {
 
   base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
   quit_closure_ = loop.QuitClosure();
-  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                        loop.QuitClosure(), timeout);
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, loop.QuitClosure(), timeout);
 
   loop.Run();
 
@@ -318,13 +320,13 @@ class PrintJob::PdfConversionState {
       converter_.reset();
   }
 
-  void set_page_count(int page_count) { page_count_ = page_count; }
+  void set_page_count(uint32_t page_count) { page_count_ = page_count; }
   const gfx::Size& page_size() const { return page_size_; }
   const gfx::Rect& content_area() const { return content_area_; }
 
  private:
-  int page_count_;
-  int current_page_;
+  uint32_t page_count_;
+  uint32_t current_page_;
   int pages_in_progress_;
   gfx::Size page_size_;
   gfx::Rect content_area_;
@@ -372,13 +374,13 @@ void PrintJob::StartPdfToEmfConversion(
 
   PdfRenderSettings render_settings(
       content_area, gfx::Point(0, 0), settings.dpi_size(),
-      /*autorotate=*/true, settings.color() == COLOR, mode);
+      /*autorotate=*/true, settings.color() == mojom::ColorModel::kColor, mode);
   pdf_conversion_state_->Start(
       bytes, render_settings,
       base::BindOnce(&PrintJob::OnPdfConversionStarted, this));
 }
 
-void PrintJob::OnPdfConversionStarted(int page_count) {
+void PrintJob::OnPdfConversionStarted(uint32_t page_count) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (page_count <= 0) {
@@ -393,13 +395,13 @@ void PrintJob::OnPdfConversionStarted(int page_count) {
       base::BindRepeating(&PrintJob::OnPdfPageConverted, this));
 }
 
-void PrintJob::OnPdfPageConverted(int page_number,
+void PrintJob::OnPdfPageConverted(uint32_t page_number,
                                   float scale_factor,
                                   std::unique_ptr<MetafilePlayer> metafile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(pdf_conversion_state_);
-  if (!document_ || !metafile || page_number < 0 ||
-      static_cast<size_t>(page_number) >= pdf_page_mapping_.size()) {
+  if (!document_ || !metafile || page_number == kInvalidPageIndex ||
+      page_number >= pdf_page_mapping_.size()) {
     // Be sure to live long enough.
     scoped_refptr<PrintJob> handle(this);
     pdf_conversion_state_.reset();
@@ -409,7 +411,7 @@ void PrintJob::OnPdfPageConverted(int page_number,
 
   // Add the page to the document if it is one of the pages requested by the
   // user. If it is not, ignore it.
-  if (pdf_page_mapping_[page_number] != -1) {
+  if (pdf_page_mapping_[page_number] != kInvalidPageIndex) {
     // Update the rendered document. It will send notifications to the listener.
     document_->SetPage(pdf_page_mapping_[page_number], std::move(metafile),
                        scale_factor, pdf_conversion_state_->page_size(),
@@ -450,7 +452,7 @@ void PrintJob::StartPdfToPostScriptConversion(
   const PrintSettings& settings = document()->settings();
   PdfRenderSettings render_settings(
       content_area, physical_offsets, settings.dpi_size(),
-      /*autorotate=*/true, settings.color() == COLOR,
+      /*autorotate=*/true, settings.color() == mojom::ColorModel::kColor,
       ps_level2 ? PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2
                 : PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3);
   pdf_conversion_state_->Start(
@@ -515,8 +517,8 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
     }
     case JobEventDetails::DOC_DONE: {
       // This will call Stop() and broadcast a JOB_DONE message.
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&PrintJob::OnDocumentDone, this));
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&PrintJob::OnDocumentDone, this));
       break;
     }
 #if defined(OS_WIN)
@@ -573,9 +575,8 @@ void PrintJob::ControlledWorkerShutdown() {
   // Delay shutdown until the worker terminates.  We want this code path
   // to wait on the thread to quit before continuing.
   if (worker_->IsRunning()) {
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&PrintJob::ControlledWorkerShutdown, this),
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE, base::BindOnce(&PrintJob::ControlledWorkerShutdown, this),
         base::TimeDelta::FromMilliseconds(100));
     return;
   }

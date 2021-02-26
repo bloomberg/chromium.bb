@@ -5,6 +5,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -21,6 +22,12 @@
 
 @implementation LegacyPageInfoTestCase
 
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_disabled.push_back(kPageInfoRefactoring);
+  return config;
+}
+
 // Tests that rotating the device will automatically dismiss the page info view.
 - (void)testShowPageInfoAndDismissOnDeviceRotation {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
@@ -30,8 +37,7 @@
   }
 
   if ([[UIDevice currentDevice] orientation] != UIDeviceOrientationPortrait) {
-    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-                                        error:nil];
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
   }
 
   [ChromeEarlGrey loadURL:GURL("https://invalid")];
@@ -48,8 +54,8 @@
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kPageInfoViewAccessibilityIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeRight
-                                      error:nil];
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeRight
+                                error:nil];
 
   // Expect that the page info view has disappeared.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(

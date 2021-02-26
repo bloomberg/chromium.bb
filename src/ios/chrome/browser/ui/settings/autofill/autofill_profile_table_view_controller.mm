@@ -6,6 +6,8 @@
 
 #include "base/check.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -20,8 +22,11 @@
 #import "ios/chrome/browser/ui/settings/autofill/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
@@ -29,6 +34,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -44,6 +50,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAutofillAddressSwitch = kItemTypeEnumZero,
+  ItemTypeAutofillAddressManaged,
   ItemTypeAddress,
   ItemTypeHeader,
   ItemTypeFooter,
@@ -53,7 +60,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - AutofillProfileTableViewController
 
-@interface AutofillProfileTableViewController () <PersonalDataManagerObserver> {
+@interface AutofillProfileTableViewController () <
+    PersonalDataManagerObserver,
+    PopoverLabelViewControllerDelegate> {
   autofill::PersonalDataManager* _personalDataManager;
 
   ChromeBrowserState* _browserState;
@@ -111,8 +120,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewModel* model = self.tableViewModel;
 
   [model addSectionWithIdentifier:SectionIdentifierSwitches];
-  [model addItem:[self addressSwitchItem]
-      toSectionWithIdentifier:SectionIdentifierSwitches];
+
+  if (base::FeatureList::IsEnabled(kEnableIOSManagedSettingsUI) &&
+      _browserState->GetPrefs()->IsManagedPreference(
+          autofill::prefs::kAutofillProfileEnabled)) {
+    [model addItem:[self managedAddressItem]
+        toSectionWithIdentifier:SectionIdentifierSwitches];
+  } else {
+    [model addItem:[self addressSwitchItem]
+        toSectionWithIdentifier:SectionIdentifierSwitches];
+  }
+
   [model setFooter:[self addressSwitchFooter]
       forSectionWithIdentifier:SectionIdentifierSwitches];
 
@@ -144,8 +162,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switchItem.text =
       l10n_util::GetNSString(IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL);
   switchItem.on = [self isAutofillProfileEnabled];
-  switchItem.accessibilityIdentifier = @"addressItem_switch";
+  switchItem.accessibilityIdentifier = kAutofillAddressSwitchViewId;
   return switchItem;
+}
+
+- (TableViewInfoButtonItem*)managedAddressItem {
+  TableViewInfoButtonItem* managedAddressItem = [[TableViewInfoButtonItem alloc]
+      initWithType:ItemTypeAutofillAddressManaged];
+  managedAddressItem.text =
+      l10n_util::GetNSString(IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL);
+  // The status could only be off when the pref is managed.
+  managedAddressItem.statusText = l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
+  managedAddressItem.accessibilityHint =
+      l10n_util::GetNSString(IDS_IOS_TOGGLE_SETTING_MANAGED_ACCESSIBILITY_HINT);
+  managedAddressItem.accessibilityIdentifier = kAutofillAddressManagedViewId;
+  return managedAddressItem;
 }
 
 - (TableViewHeaderFooterItem*)addressSwitchFooter {
@@ -192,6 +223,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)localProfilesExist {
   return !_personalDataManager->GetProfiles().empty();
+}
+
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileAddressesSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileAddressesSettingsBack"));
 }
 
 #pragma mark - SettingsRootTableViewController
@@ -260,6 +301,27 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
+#pragma mark - Actions
+
+// Called when the user clicks on the information button of the managed
+// setting's UI. Shows a textual bubble with the information of the enterprise.
+- (void)didTapManagedUIInfoButton:(UIButton*)buttonView {
+  EnterpriseInfoPopoverViewController* bubbleViewController =
+      [[EnterpriseInfoPopoverViewController alloc] initWithEnterpriseName:nil];
+  bubbleViewController.delegate = self;
+  [self presentViewController:bubbleViewController animated:YES completion:nil];
+
+  // Disable the button when showing the bubble.
+  buttonView.enabled = NO;
+
+  // Set the anchor and arrow direction of the bubble.
+  bubbleViewController.popoverPresentationController.sourceView = buttonView;
+  bubbleViewController.popoverPresentationController.sourceRect =
+      buttonView.bounds;
+  bubbleViewController.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionAny;
+}
+
 #pragma mark - UITableViewDataSource
 
 - (BOOL)tableView:(UITableView*)tableView
@@ -287,14 +349,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UITableViewCell* cell = [super tableView:tableView
                      cellForRowAtIndexPath:indexPath];
 
-  ItemType itemType = static_cast<ItemType>(
-      [self.tableViewModel itemTypeForIndexPath:indexPath]);
-  if (itemType == ItemTypeAutofillAddressSwitch) {
-    SettingsSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
-    [switchCell.switchView addTarget:self
-                              action:@selector(autofillAddressSwitchChanged:)
-                    forControlEvents:UIControlEventValueChanged];
+  switch (static_cast<ItemType>(
+      [self.tableViewModel itemTypeForIndexPath:indexPath])) {
+    case ItemTypeAddress:
+    case ItemTypeHeader:
+    case ItemTypeFooter:
+      break;
+    case ItemTypeAutofillAddressSwitch: {
+      SettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+      [switchCell.switchView addTarget:self
+                                action:@selector(autofillAddressSwitchChanged:)
+                      forControlEvents:UIControlEventValueChanged];
+      break;
+    }
+    case ItemTypeAutofillAddressManaged: {
+      TableViewInfoButtonCell* managedCell =
+          base::mac::ObjCCastStrict<TableViewInfoButtonCell>(cell);
+      [managedCell.trailingButton
+                 addTarget:self
+                    action:@selector(didTapManagedUIInfoButton:)
+          forControlEvents:UIControlEventTouchUpInside];
+      break;
+    }
   }
 
   return cell;
@@ -425,6 +502,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   } else {
     _deletionInProgress = NO;
   }
+}
+
+#pragma mark - PopoverLabelViewControllerDelegate
+
+- (void)didTapLinkURL:(NSURL*)URL {
+  GURL convertedURL = net::GURLWithNSURL(URL);
+  [self view:nil didTapLinkURL:convertedURL];
 }
 
 @end

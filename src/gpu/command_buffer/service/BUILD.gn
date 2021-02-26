@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
 import("//skia/features.gni")
@@ -26,9 +25,9 @@ group("gles2") {
 }
 
 if (is_component_build) {
-  link_target_type = "jumbo_source_set"
+  link_target_type = "source_set"
 } else {
-  link_target_type = "jumbo_static_library"
+  link_target_type = "static_library"
 }
 target(link_target_type, "service_sources") {
   # External code should depend on this via //gpu/command_buffer/service above
@@ -51,6 +50,7 @@ target(link_target_type, "service_sources") {
     "image_manager.cc",
     "image_manager.h",
     "mailbox_manager.h",
+    "memory_tracking.cc",
     "memory_tracking.h",
     "scheduler.cc",
     "scheduler.h",
@@ -227,6 +227,12 @@ target(link_target_type, "gles2_sources") {
     "shared_image_backing_factory.h",
     "shared_image_backing_factory_gl_texture.cc",
     "shared_image_backing_factory_gl_texture.h",
+    "shared_image_backing_gl_common.cc",
+    "shared_image_backing_gl_common.h",
+    "shared_image_backing_gl_image.cc",
+    "shared_image_backing_gl_image.h",
+    "shared_image_backing_gl_texture.cc",
+    "shared_image_backing_gl_texture.h",
     "shared_image_factory.cc",
     "shared_image_factory.h",
     "shared_image_manager.cc",
@@ -235,6 +241,8 @@ target(link_target_type, "gles2_sources") {
     "shared_image_representation.h",
     "shared_image_representation_skia_gl.cc",
     "shared_image_representation_skia_gl.h",
+    "shared_memory_region_wrapper.cc",
+    "shared_memory_region_wrapper.h",
     "skia_utils.cc",
     "skia_utils.h",
     "texture_definition.cc",
@@ -297,6 +305,8 @@ target(link_target_type, "gles2_sources") {
     ":service",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//build:chromecast_buildflags",
+    "//build:chromeos_buildflags",
     "//components/crash/core/common",
     "//components/viz/common:resource_format_utils",
     "//gpu/command_buffer/client",
@@ -319,7 +329,10 @@ target(link_target_type, "gles2_sources") {
   ]
 
   if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//ui/base:features",
+      "//ui/ozone",
+    ]
   }
 
   if (enable_vulkan) {
@@ -328,14 +341,20 @@ target(link_target_type, "gles2_sources") {
       "//gpu/vulkan",
     ]
 
-    if (is_linux || is_fuchsia || is_android || is_win) {
+    if (is_linux || is_chromeos || is_fuchsia || is_android || is_win) {
       sources += [
+        "external_semaphore.cc",
+        "external_semaphore.h",
+        "external_semaphore_pool.cc",
+        "external_semaphore_pool.h",
         "external_vk_image_backing.cc",
         "external_vk_image_backing.h",
         "external_vk_image_factory.cc",
         "external_vk_image_factory.h",
         "external_vk_image_gl_representation.cc",
         "external_vk_image_gl_representation.h",
+        "external_vk_image_overlay_representation.cc",
+        "external_vk_image_overlay_representation.h",
         "external_vk_image_skia_representation.cc",
         "external_vk_image_skia_representation.h",
       ]
@@ -352,7 +371,7 @@ target(link_target_type, "gles2_sources") {
       ]
     }
 
-    if (is_linux && use_dawn) {
+    if ((is_linux || is_chromeos) && use_dawn) {
       sources += [
         "external_vk_image_dawn_representation.cc",
         "external_vk_image_dawn_representation.h",
@@ -365,10 +384,16 @@ target(link_target_type, "gles2_sources") {
         "shared_image_representation_dawn_ozone.h",
       ]
     }
+    if (use_x11) {
+      deps += [ "//ui/base:features" ]
+    }
   }
 
   if (use_dawn) {
-    deps += [ "//third_party/dawn/src/dawn_native" ]
+    deps += [
+      "//third_party/dawn/src/dawn_native",
+      "//third_party/dawn/src/dawn_platform",
+    ]
   }
 
   if (is_mac) {
@@ -379,7 +404,7 @@ target(link_target_type, "gles2_sources") {
     ]
 
     # Required by gles2_cmd_decoder.cc on Mac.
-    libs = [
+    frameworks = [
       "Cocoa.framework",
       "IOSurface.framework",
       "Metal.framework",
@@ -406,12 +431,20 @@ target(link_target_type, "gles2_sources") {
       "ahardwarebuffer_utils.h",
       "image_reader_gl_owner.cc",
       "image_reader_gl_owner.h",
+      "shared_image_backing_android.cc",
+      "shared_image_backing_android.h",
       "shared_image_backing_egl_image.cc",
       "shared_image_backing_egl_image.h",
       "shared_image_backing_factory_ahardwarebuffer.cc",
       "shared_image_backing_factory_ahardwarebuffer.h",
+      "shared_image_backing_scoped_hardware_buffer_fence_sync.cc",
+      "shared_image_backing_scoped_hardware_buffer_fence_sync.h",
       "shared_image_batch_access_manager.cc",
       "shared_image_batch_access_manager.h",
+      "shared_image_representation_gl_texture_android.cc",
+      "shared_image_representation_gl_texture_android.h",
+      "shared_image_representation_skia_vk_android.cc",
+      "shared_image_representation_skia_vk_android.h",
       "shared_image_video.cc",
       "shared_image_video.h",
       "stream_texture_shared_image_interface.h",
@@ -420,6 +453,8 @@ target(link_target_type, "gles2_sources") {
       "texture_owner.cc",
       "texture_owner.h",
     ]
+
+    deps += [ "//base" ]
 
     # TODO(cblume): http://crbug.com/911313
     # Abstract out the platform specific defines. Right now we need the android
@@ -452,7 +487,7 @@ proto_library("disk_cache_proto") {
 }
 
 if (is_android) {
-  jumbo_static_library("android_texture_owner_test_support") {
+  static_library("android_texture_owner_test_support") {
     testonly = true
     sources = [
       "mock_abstract_texture.cc",
@@ -486,7 +521,6 @@ if (is_android) {
       ":gles2",
       "//base/test:test_support",
       "//gpu:test_support",
-      "//media/base:base",
       "//testing/gmock",
       "//testing/gtest",
       "//ui/gl",

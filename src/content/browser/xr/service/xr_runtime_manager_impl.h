@@ -18,9 +18,11 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "content/browser/xr/service/browser_xr_runtime_impl.h"
 #include "content/browser/xr/service/vr_service_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/xr_integration_client.h"
 #include "content/public/browser/xr_runtime_manager.h"
 #include "device/vr/public/mojom/vr_service.mojom-forward.h"
@@ -33,7 +35,8 @@ class XRRuntimeManagerTest;
 // instances.
 class CONTENT_EXPORT XRRuntimeManagerImpl
     : public XRRuntimeManager,
-      public base::RefCounted<XRRuntimeManagerImpl> {
+      public base::RefCounted<XRRuntimeManagerImpl>,
+      public content::GpuDataManagerObserver {
  public:
   friend base::RefCounted<XRRuntimeManagerImpl>;
   static constexpr auto kRefCountPreference =
@@ -48,6 +51,10 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
   // the built-in set of providers.
   // The singleton will persist until all pointers have been dropped.
   static scoped_refptr<XRRuntimeManagerImpl> GetOrCreateInstance();
+
+  // Returns the WebContents currently being displayed in a WebXR Immersive
+  // Session, if any, null otherwise.
+  static content::WebContents* GetImmersiveSessionWebContents();
 
   // Adds a listener for runtime manager events. XRRuntimeManagerImpl does not
   // own this object.
@@ -72,6 +79,11 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
   void SupportsSession(
       device::mojom::XRSessionOptionsPtr options,
       device::mojom::VRService::SupportsSessionCallback callback);
+
+  void MakeXrCompatible();
+
+  // content::GpuDataManagerObserver
+  void OnGpuInfoUpdate() override;
 
   // XRRuntimeManager implementation
   BrowserXRRuntimeImpl* GetRuntime(device::mojom::XRDeviceId id) override;
@@ -99,8 +111,11 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
 
   void AddRuntime(device::mojom::XRDeviceId id,
                   device::mojom::VRDisplayInfoPtr info,
+                  device::mojom::XRDeviceDataPtr device_data,
                   mojo::PendingRemote<device::mojom::XRRuntime> runtime);
   void RemoveRuntime(device::mojom::XRDeviceId id);
+
+  bool IsInitializedOnCompatibleAdapter(BrowserXRRuntimeImpl* runtime);
 
   // Gets the system default immersive-vr runtime if available.
   BrowserXRRuntimeImpl* GetImmersiveVrRuntime();
@@ -119,6 +134,11 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
 
   bool providers_initialized_ = false;
   size_t num_initialized_providers_ = 0;
+
+  bool xr_compatible_restarted_gpu_ = false;
+#if defined(OS_WIN)
+  LUID default_gpu_ = {0, 0};
+#endif
 
   std::set<VRServiceImpl*> services_;
 

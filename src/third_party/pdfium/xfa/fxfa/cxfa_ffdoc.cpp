@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <vector>
 
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
@@ -20,9 +19,13 @@
 #include "core/fxcrt/xml/cfx_xmldocument.h"
 #include "core/fxcrt/xml/cfx_xmlelement.h"
 #include "core/fxcrt/xml/cfx_xmlnode.h"
+#include "core/fxcrt/xml/cfx_xmlparser.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "fxjs/xfa/cjx_object.h"
+#include "third_party/base/check.h"
 #include "third_party/base/ptr_util.h"
+#include "v8/include/cppgc/allocation.h"
+#include "v8/include/cppgc/heap.h"
 #include "xfa/fgas/font/cfgas_pdffontmgr.h"
 #include "xfa/fwl/cfwl_notedriver.h"
 #include "xfa/fxfa/cxfa_ffapp.h"
@@ -35,7 +38,7 @@
 #include "xfa/fxfa/parser/cxfa_acrobat7.h"
 #include "xfa/fxfa/parser/cxfa_dataexporter.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
-#include "xfa/fxfa/parser/cxfa_document_parser.h"
+#include "xfa/fxfa/parser/cxfa_document_builder.h"
 #include "xfa/fxfa/parser/cxfa_dynamicrender.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 
@@ -50,96 +53,189 @@ FX_IMAGEDIB_AND_DPI::FX_IMAGEDIB_AND_DPI(const RetainPtr<CFX_DIBBase>& pDib,
 
 FX_IMAGEDIB_AND_DPI::~FX_IMAGEDIB_AND_DPI() = default;
 
-// static
-std::unique_ptr<CXFA_FFDoc> CXFA_FFDoc::CreateAndOpen(
-    CXFA_FFApp* pApp,
-    IXFA_DocEnvironment* pDocEnvironment,
-    CPDF_Document* pPDFDoc,
-    const RetainPtr<IFX_SeekableStream>& stream) {
-  ASSERT(pApp);
-  ASSERT(pDocEnvironment);
-  ASSERT(pPDFDoc);
-
-  // Use WrapUnique() to keep constructor private.
-  auto result =
-      pdfium::WrapUnique(new CXFA_FFDoc(pApp, pDocEnvironment, pPDFDoc));
-  if (!result->OpenDoc(stream))
-    return nullptr;
-
-  return result;
-}
-
 CXFA_FFDoc::CXFA_FFDoc(CXFA_FFApp* pApp,
                        IXFA_DocEnvironment* pDocEnvironment,
-                       CPDF_Document* pPDFDoc)
+                       CPDF_Document* pPDFDoc,
+                       cppgc::Heap* pHeap)
     : m_pDocEnvironment(pDocEnvironment),
-      m_pApp(pApp),
       m_pPDFDoc(pPDFDoc),
-      m_pNotify(pdfium::MakeUnique<CXFA_FFNotify>(this)),
-      m_pDocument(pdfium::MakeUnique<CXFA_Document>(
-          m_pNotify.get(),
-          pdfium::MakeUnique<CXFA_LayoutProcessor>())) {}
+      m_pHeap(pHeap),
+      m_pApp(pApp),
+      m_pNotify(cppgc::MakeGarbageCollected<CXFA_FFNotify>(
+          pHeap->GetAllocationHandle(),
+          this)),
+      m_pDocument(cppgc::MakeGarbageCollected<CXFA_Document>(
+          pHeap->GetAllocationHandle(),
+          m_pNotify,
+          pHeap,
+          cppgc::MakeGarbageCollected<CXFA_LayoutProcessor>(
+              pHeap->GetAllocationHandle(),
+              pHeap))) {}
 
-CXFA_FFDoc::~CXFA_FFDoc() {
-  if (m_DocView) {
+CXFA_FFDoc::~CXFA_FFDoc() = default;
+
+void CXFA_FFDoc::PreFinalize() {
+  if (m_DocView)
     m_DocView->RunDocClose();
-    m_DocView.reset();
-  }
+
   if (m_pDocument)
     m_pDocument->ClearLayoutData();
-
-  m_pDocument.reset();
-  m_pXMLDoc.reset();
-  m_pNotify.reset();
-  m_pPDFFontMgr.reset();
-  m_HashToDibDpiMap.clear();
-  m_pApp->ClearEventTargets();
 }
 
-bool CXFA_FFDoc::ParseDoc(const RetainPtr<IFX_SeekableStream>& stream) {
-  CXFA_DocumentParser parser(m_pDocument.get());
-  bool parsed = parser.Parse(stream, XFA_PacketType::Xdp);
+void CXFA_FFDoc::Trace(cppgc::Visitor* visitor) const {
+  visitor->Trace(m_pApp);
+  visitor->Trace(m_pNotify);
+  visitor->Trace(m_pDocument);
+  visitor->Trace(m_DocView);
+}
 
-  // We have to set the XML document before we return so that we can clean
-  // up in the OpenDoc method. If we don't, the XMLDocument will get free'd
-  // when this method returns and UnownedPtrs get unhappy.
-  m_pXMLDoc = parser.GetXMLDoc();
-
-  if (!parsed)
+bool CXFA_FFDoc::BuildDoc(CFX_XMLDocument* pXML) {
+  if (!pXML)
     return false;
 
-  m_pDocument->SetRoot(parser.GetRootNode());
+  CXFA_DocumentBuilder builder(m_pDocument);
+  if (!builder.BuildDocument(pXML, XFA_PacketType::Xdp))
+    return false;
+
+  m_pDocument->SetRoot(builder.GetRootNode());
   return true;
 }
 
 CXFA_FFDocView* CXFA_FFDoc::CreateDocView() {
-  if (!m_DocView)
-    m_DocView = pdfium::MakeUnique<CXFA_FFDocView>(this);
+  if (!m_DocView) {
+    m_DocView = cppgc::MakeGarbageCollected<CXFA_FFDocView>(
+        m_pHeap->GetAllocationHandle(), this);
+  }
+  return m_DocView;
+}
 
-  return m_DocView.get();
+void CXFA_FFDoc::SetChangeMark() {
+  m_pDocEnvironment->SetChangeMark(this);
+}
+
+void CXFA_FFDoc::InvalidateRect(CXFA_FFPageView* pPageView,
+                                const CFX_RectF& rt) {
+  m_pDocEnvironment->InvalidateRect(pPageView, rt);
+}
+
+void CXFA_FFDoc::DisplayCaret(CXFA_FFWidget* hWidget,
+                              bool bVisible,
+                              const CFX_RectF* pRtAnchor) {
+  return m_pDocEnvironment->DisplayCaret(hWidget, bVisible, pRtAnchor);
+}
+
+bool CXFA_FFDoc::GetPopupPos(CXFA_FFWidget* hWidget,
+                             float fMinPopup,
+                             float fMaxPopup,
+                             const CFX_RectF& rtAnchor,
+                             CFX_RectF* pPopupRect) const {
+  return m_pDocEnvironment->GetPopupPos(hWidget, fMinPopup, fMaxPopup, rtAnchor,
+                                        pPopupRect);
+}
+
+bool CXFA_FFDoc::PopupMenu(CXFA_FFWidget* hWidget, const CFX_PointF& ptPopup) {
+  return m_pDocEnvironment->PopupMenu(hWidget, ptPopup);
+}
+
+void CXFA_FFDoc::PageViewEvent(CXFA_FFPageView* pPageView, uint32_t dwFlags) {
+  m_pDocEnvironment->PageViewEvent(pPageView, dwFlags);
+}
+
+void CXFA_FFDoc::WidgetPostAdd(CXFA_FFWidget* hWidget) {
+  m_pDocEnvironment->WidgetPostAdd(hWidget);
+}
+
+void CXFA_FFDoc::WidgetPreRemove(CXFA_FFWidget* hWidget) {
+  m_pDocEnvironment->WidgetPreRemove(hWidget);
+}
+
+int32_t CXFA_FFDoc::CountPages() const {
+  return m_pDocEnvironment->CountPages(this);
+}
+
+int32_t CXFA_FFDoc::GetCurrentPage() const {
+  return m_pDocEnvironment->GetCurrentPage(this);
+}
+
+void CXFA_FFDoc::SetCurrentPage(int32_t iCurPage) {
+  m_pDocEnvironment->SetCurrentPage(this, iCurPage);
+}
+
+bool CXFA_FFDoc::IsCalculationsEnabled() const {
+  return m_pDocEnvironment->IsCalculationsEnabled(this);
+}
+
+void CXFA_FFDoc::SetCalculationsEnabled(bool bEnabled) {
+  return m_pDocEnvironment->SetCalculationsEnabled(this, bEnabled);
+}
+
+WideString CXFA_FFDoc::GetTitle() const {
+  return m_pDocEnvironment->GetTitle(this);
+}
+
+void CXFA_FFDoc::SetTitle(const WideString& wsTitle) {
+  m_pDocEnvironment->SetTitle(this, wsTitle);
+}
+
+void CXFA_FFDoc::ExportData(const WideString& wsFilePath, bool bXDP) {
+  m_pDocEnvironment->ExportData(this, wsFilePath, bXDP);
+}
+
+void CXFA_FFDoc::GotoURL(const WideString& bsURL) {
+  m_pDocEnvironment->GotoURL(this, bsURL);
+}
+
+bool CXFA_FFDoc::IsValidationsEnabled() const {
+  return m_pDocEnvironment->IsValidationsEnabled(this);
+}
+
+void CXFA_FFDoc::SetValidationsEnabled(bool bEnabled) {
+  m_pDocEnvironment->SetValidationsEnabled(this, bEnabled);
+}
+
+void CXFA_FFDoc::SetFocusWidget(CXFA_FFWidget* hWidget) {
+  m_pDocEnvironment->SetFocusWidget(this, hWidget);
+}
+
+void CXFA_FFDoc::Print(int32_t nStartPage,
+                       int32_t nEndPage,
+                       uint32_t dwOptions) {
+  m_pDocEnvironment->Print(this, nStartPage, nEndPage, dwOptions);
+}
+
+FX_ARGB CXFA_FFDoc::GetHighlightColor() const {
+  return m_pDocEnvironment->GetHighlightColor(this);
+}
+
+IJS_Runtime* CXFA_FFDoc::GetIJSRuntime() const {
+  return m_pDocEnvironment->GetIJSRuntime(this);
+}
+
+CFX_XMLDocument* CXFA_FFDoc::GetXMLDocument() const {
+  return m_pDocEnvironment->GetXMLDoc();
+}
+
+RetainPtr<IFX_SeekableReadStream> CXFA_FFDoc::OpenLinkedFile(
+    const WideString& wsLink) {
+  return m_pDocEnvironment->OpenLinkedFile(this, wsLink);
 }
 
 CXFA_FFDocView* CXFA_FFDoc::GetDocView(CXFA_LayoutProcessor* pLayout) {
-  return m_DocView && m_DocView->GetXFALayout() == pLayout ? m_DocView.get()
-                                                           : nullptr;
+  return m_DocView && m_DocView->GetLayoutProcessor() == pLayout ? m_DocView
+                                                                 : nullptr;
 }
 
 CXFA_FFDocView* CXFA_FFDoc::GetDocView() {
-  return m_DocView.get();
+  return m_DocView;
 }
 
-bool CXFA_FFDoc::OpenDoc(const RetainPtr<IFX_SeekableStream>& stream) {
-  if (!ParseDoc(stream))
-    return false;
-
-  CFGAS_FontMgr* mgr = GetApp()->GetFDEFontMgr();
-  if (!mgr)
+bool CXFA_FFDoc::OpenDoc(CFX_XMLDocument* pXML) {
+  if (!BuildDoc(pXML))
     return false;
 
   // At this point we've got an XFA document and we want to always return
   // true to signify the load succeeded.
-  m_pPDFFontMgr = pdfium::MakeUnique<CFGAS_PDFFontMgr>(GetPDFDoc(), mgr);
-
+  m_pPDFFontMgr = std::make_unique<CFGAS_PDFFontMgr>(GetPDFDoc());
   m_FormType = FormType::kXFAForeground;
   CXFA_Node* pConfig = ToNode(m_pDocument->GetXFAObject(XFA_HASHCODE_Config));
   if (!pConfig)
@@ -214,7 +310,7 @@ RetainPtr<CFX_DIBitmap> CXFA_FFDoc::GetPDFNamedImage(WideStringView wsName,
 
 bool CXFA_FFDoc::SavePackage(CXFA_Node* pNode,
                              const RetainPtr<IFX_SeekableStream>& pFile) {
-  ASSERT(pNode || GetXFADoc()->GetRoot());
+  DCHECK(pNode || GetXFADoc()->GetRoot());
 
   CXFA_DataExporter exporter;
   return exporter.Export(pFile, pNode ? pNode : GetXFADoc()->GetRoot());

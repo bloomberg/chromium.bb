@@ -32,11 +32,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/unguessable_token.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLAssembleInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -525,7 +526,7 @@ bool ClientBase::Init(const InitParams& params) {
         nullptr,
         [](void* ctx, const char name[]) { return eglGetProcAddress(name); });
     DCHECK(native_interface);
-    gr_context_ = GrContext::MakeGL(std::move(native_interface));
+    gr_context_ = GrDirectContext::MakeGL(std::move(native_interface));
     DCHECK(gr_context_);
 
 #if defined(USE_VULKAN)
@@ -884,10 +885,11 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
       return nullptr;
     }
 
+    SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
     buffer->sk_surface = SkSurface::MakeRasterDirect(
         SkImageInfo::Make(size.width(), size.height(), kColorType,
                           kOpaque_SkAlphaType),
-        mapped_data, stride);
+        mapped_data, stride, &props);
     DCHECK(buffer->sk_surface);
   }
 
@@ -916,6 +918,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
 
     buffer->params.reset(
         zwp_linux_dmabuf_v1_create_params(globals_.linux_dmabuf.get()));
+    uint64_t modifier = gbm_bo_get_modifier(buffer->bo.get());
     for (size_t i = 0;
          i < static_cast<size_t>(gbm_bo_get_plane_count(buffer->bo.get()));
          ++i) {
@@ -923,7 +926,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
       uint32_t stride = gbm_bo_get_stride_for_plane(buffer->bo.get(), i);
       uint32_t offset = gbm_bo_get_offset(buffer->bo.get(), i);
       zwp_linux_buffer_params_v1_add(buffer->params.get(), fd.get(), i, offset,
-                                     stride, 0, 0);
+                                     stride, modifier >> 32, modifier);
     }
     uint32_t flags = 0;
     if (y_invert)
@@ -948,6 +951,10 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
         gbm_bo_get_stride_for_plane(buffer->bo.get(), 0),
         EGL_DMA_BUF_PLANE0_OFFSET_EXT,
         0,
+        EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT,
+        modifier,
+        EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT,
+        modifier >> 32,
         EGL_NONE};
     EGLImageKHR image = eglCreateImageKHR(
         eglGetCurrentDisplay(), EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT,
@@ -968,7 +975,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     texture_info.fFormat = kSizedInternalFormat;
     GrBackendTexture backend_texture(size.width(), size.height(),
                                      GrMipMapped::kNo, texture_info);
-    buffer->sk_surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
+    buffer->sk_surface = SkSurface::MakeFromBackendTexture(
         gr_context_.get(), backend_texture, kTopLeft_GrSurfaceOrigin,
         /* sampleCnt */ 0, kColorType, /* colorSpace */ nullptr,
         /* props */ nullptr);

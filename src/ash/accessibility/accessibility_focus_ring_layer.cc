@@ -12,6 +12,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -98,6 +99,7 @@ void AccessibilityFocusRingLayer::Set(const AccessibilityFocusRing& ring) {
   gfx::Rect bounds = ring.GetBounds();
   display::Display display =
       display::Screen::GetScreen()->GetDisplayMatching(bounds);
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display.id());
 
   if (SkColorGetA(background_color_) > 0) {
     bounds = display.bounds();
@@ -105,7 +107,7 @@ void AccessibilityFocusRingLayer::Set(const AccessibilityFocusRing& ring) {
     int inset = kGradientWidth;
     bounds.Inset(-inset, -inset, -inset, -inset);
   }
-  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display.id());
+  ::wm::ConvertRectFromScreen(root_window, &bounds);
   CreateOrUpdateLayer(root_window, "AccessibilityFocusRing", bounds);
 }
 
@@ -178,7 +180,7 @@ void AccessibilityFocusRingLayer::DrawDashedFocusRing(
   // To keep the dashes properly lined up, we will draw the outside line first,
   // and cover it with the inner line.
   flags.setColor(secondary_color_);
-  flags.setStrokeWidth(2 * kDefaultStrokeWidth);
+  flags.setStrokeWidth(3 * kDefaultStrokeWidth);
 
   path = MakePath(ring_, 0, offset);
   recorder.canvas()->DrawPath(path, flags);

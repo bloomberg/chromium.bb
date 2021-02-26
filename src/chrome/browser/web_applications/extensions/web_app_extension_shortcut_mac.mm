@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
@@ -57,11 +57,13 @@ class Latch : public base::RefCountedThreadSafe<
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
 
+  Latch(const Latch&) = delete;
+  Latch& operator=(const Latch&) = delete;
+
   ~Latch() { std::move(callback_).Run(); }
 
   base::OnceClosure callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(Latch);
 };
 
 }  // namespace

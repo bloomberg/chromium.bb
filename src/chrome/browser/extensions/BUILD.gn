@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
+import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
@@ -15,16 +17,6 @@ assert(enable_extensions)
 
 static_library("extensions") {
   sources = [
-    # TODO These references to files in //chrome/browser/ should either be
-    # moved to the browser target or the files moved to this directory.
-    "../accessibility/accessibility_extension_api.cc",
-    "../accessibility/accessibility_extension_api.h",
-    "../ui/app_icon_loader.cc",
-    "../ui/app_icon_loader.h",
-    "../ui/toolbar/toolbar_actions_model.cc",
-    "../ui/toolbar/toolbar_actions_model.h",
-    "../ui/toolbar/toolbar_actions_model_factory.cc",
-    "../ui/toolbar/toolbar_actions_model_factory.h",
     "active_install_data.cc",
     "active_install_data.h",
     "active_tab_permission_granter.cc",
@@ -164,8 +156,6 @@ static_library("extensions") {
     "api/extension_action/extension_page_actions_api_constants.h",
     "api/feedback_private/chrome_feedback_private_delegate.cc",
     "api/feedback_private/chrome_feedback_private_delegate.h",
-    "api/file_handlers/non_native_file_system_delegate_chromeos.cc",
-    "api/file_handlers/non_native_file_system_delegate_chromeos.h",
     "api/file_system/chrome_file_system_delegate.cc",
     "api/file_system/chrome_file_system_delegate.h",
     "api/file_system/file_entry_picker.cc",
@@ -186,10 +176,14 @@ static_library("extensions") {
     "api/identity/gaia_web_auth_flow.h",
     "api/identity/identity_api.cc",
     "api/identity/identity_api.h",
+    "api/identity/identity_clear_all_cached_auth_tokens_function.cc",
+    "api/identity/identity_clear_all_cached_auth_tokens_function.h",
     "api/identity/identity_constants.cc",
     "api/identity/identity_constants.h",
     "api/identity/identity_get_accounts_function.cc",
     "api/identity/identity_get_accounts_function.h",
+    "api/identity/identity_get_auth_token_error.cc",
+    "api/identity/identity_get_auth_token_error.h",
     "api/identity/identity_get_auth_token_function.cc",
     "api/identity/identity_get_auth_token_function.h",
     "api/identity/identity_get_profile_user_info_function.cc",
@@ -202,6 +196,8 @@ static_library("extensions") {
     "api/identity/identity_private_api.h",
     "api/identity/identity_remove_cached_auth_token_function.cc",
     "api/identity/identity_remove_cached_auth_token_function.h",
+    "api/identity/identity_token_cache.cc",
+    "api/identity/identity_token_cache.h",
     "api/identity/web_auth_flow.cc",
     "api/identity/web_auth_flow.h",
     "api/idltest/idltest_api.cc",
@@ -216,14 +212,10 @@ static_library("extensions") {
     "api/image_writer_private/image_writer_utility_client.h",
     "api/image_writer_private/operation.cc",
     "api/image_writer_private/operation.h",
-    "api/image_writer_private/operation_chromeos.cc",
     "api/image_writer_private/operation_manager.cc",
     "api/image_writer_private/operation_manager.h",
     "api/image_writer_private/removable_storage_provider.cc",
     "api/image_writer_private/removable_storage_provider.h",
-    "api/image_writer_private/removable_storage_provider_chromeos.cc",
-    "api/image_writer_private/removable_storage_provider_mac.cc",
-    "api/image_writer_private/removable_storage_provider_win.cc",
     "api/image_writer_private/unzip_helper.cc",
     "api/image_writer_private/unzip_helper.h",
     "api/image_writer_private/write_from_file_operation.cc",
@@ -256,8 +248,6 @@ static_library("extensions") {
     "api/metrics_private/chrome_metrics_private_delegate.h",
     "api/module/module.cc",
     "api/module/module.h",
-    "api/networking_private/networking_private_ui_delegate_chromeos.cc",
-    "api/networking_private/networking_private_ui_delegate_chromeos.h",
     "api/networking_private/networking_private_ui_delegate_factory_impl.cc",
     "api/networking_private/networking_private_ui_delegate_factory_impl.h",
     "api/notifications/extension_notification_display_helper.cc",
@@ -299,6 +289,8 @@ static_library("extensions") {
     "api/preference/preference_api_constants.h",
     "api/preference/preference_helpers.cc",
     "api/preference/preference_helpers.h",
+    "api/processes/processes_api.cc",
+    "api/processes/processes_api.h",
     "api/proxy/proxy_api.cc",
     "api/proxy/proxy_api.h",
     "api/proxy/proxy_api_constants.cc",
@@ -317,6 +309,10 @@ static_library("extensions") {
     "api/safe_browsing_private/safe_browsing_private_event_router_factory.h",
     "api/safe_browsing_private/safe_browsing_util.cc",
     "api/safe_browsing_private/safe_browsing_util.h",
+    "api/scripting/scripting_api.cc",
+    "api/scripting/scripting_api.h",
+    "api/search/search_api.cc",
+    "api/search/search_api.h",
     "api/sessions/session_id.cc",
     "api/sessions/session_id.h",
     "api/sessions/sessions_api.cc",
@@ -381,6 +377,12 @@ static_library("extensions") {
     "api/tab_capture/tab_capture_api.h",
     "api/tab_capture/tab_capture_registry.cc",
     "api/tab_capture/tab_capture_registry.h",
+    "api/tab_groups/tab_groups_api.cc",
+    "api/tab_groups/tab_groups_api.h",
+    "api/tab_groups/tab_groups_constants.cc",
+    "api/tab_groups/tab_groups_constants.h",
+    "api/tab_groups/tab_groups_util.cc",
+    "api/tab_groups/tab_groups_util.h",
     "api/tabs/app_base_window.cc",
     "api/tabs/app_base_window.h",
     "api/tabs/app_window_controller.cc",
@@ -392,7 +394,6 @@ static_library("extensions") {
     "api/tabs/tabs_event_router.cc",
     "api/tabs/tabs_event_router.h",
     "api/tabs/tabs_util.h",
-    "api/tabs/tabs_util_chromeos.cc",
     "api/tabs/tabs_windows_api.cc",
     "api/tabs/tabs_windows_api.h",
     "api/tabs/windows_event_router.cc",
@@ -421,14 +422,14 @@ static_library("extensions") {
     "api/webstore_private/extension_install_status.h",
     "api/webstore_private/webstore_private_api.cc",
     "api/webstore_private/webstore_private_api.h",
-    "blacklist.cc",
-    "blacklist.h",
-    "blacklist_check.cc",
-    "blacklist_check.h",
-    "blacklist_factory.cc",
-    "blacklist_factory.h",
-    "blacklist_state_fetcher.cc",
-    "blacklist_state_fetcher.h",
+    "blocklist.cc",
+    "blocklist.h",
+    "blocklist_check.cc",
+    "blocklist_check.h",
+    "blocklist_factory.cc",
+    "blocklist_factory.h",
+    "blocklist_state_fetcher.cc",
+    "blocklist_state_fetcher.h",
     "browser_context_keyed_service_factories.cc",
     "browser_context_keyed_service_factories.h",
     "browser_extension_window_controller.cc",
@@ -476,10 +477,8 @@ static_library("extensions") {
     "chrome_url_request_util.h",
     "chrome_zipfile_installer.cc",
     "chrome_zipfile_installer.h",
-    "clipboard_extension_helper_chromeos.cc",
-    "clipboard_extension_helper_chromeos.h",
-    "component_extensions_whitelist/whitelist.cc",
-    "component_extensions_whitelist/whitelist.h",
+    "component_extensions_allowlist/allowlist.cc",
+    "component_extensions_allowlist/allowlist.h",
     "component_loader.cc",
     "component_loader.h",
     "context_menu_matcher.cc",
@@ -506,16 +505,12 @@ static_library("extensions") {
     "event_router_forwarder.h",
     "extension_action_icon_factory.cc",
     "extension_action_icon_factory.h",
-    "extension_action_manager.cc",
-    "extension_action_manager.h",
     "extension_action_runner.cc",
     "extension_action_runner.h",
     "extension_action_storage_manager.cc",
     "extension_action_storage_manager.h",
     "extension_assets_manager.cc",
     "extension_assets_manager.h",
-    "extension_assets_manager_chromeos.cc",
-    "extension_assets_manager_chromeos.h",
     "extension_browser_window_helper.cc",
     "extension_browser_window_helper.h",
     "extension_checkup.cc",
@@ -533,8 +528,6 @@ static_library("extensions") {
     "extension_error_ui_default.h",
     "extension_garbage_collector.cc",
     "extension_garbage_collector.h",
-    "extension_garbage_collector_chromeos.cc",
-    "extension_garbage_collector_chromeos.h",
     "extension_garbage_collector_factory.cc",
     "extension_garbage_collector_factory.h",
     "extension_gcm_app_handler.cc",
@@ -608,22 +601,16 @@ static_library("extensions") {
     "external_pref_loader.h",
     "external_provider_impl.cc",
     "external_provider_impl.h",
-    "external_registry_loader_win.cc",
-    "external_registry_loader_win.h",
-    "forced_extensions/installation_metrics.cc",
-    "forced_extensions/installation_metrics.h",
-    "forced_extensions/installation_reporter.cc",
-    "forced_extensions/installation_reporter.h",
-    "forced_extensions/installation_reporter_factory.cc",
-    "forced_extensions/installation_reporter_factory.h",
-    "forced_extensions/installation_tracker.cc",
-    "forced_extensions/installation_tracker.h",
+    "forced_extensions/force_installed_metrics.cc",
+    "forced_extensions/force_installed_metrics.h",
+    "forced_extensions/force_installed_tracker.cc",
+    "forced_extensions/force_installed_tracker.h",
+    "forced_extensions/install_stage_tracker.cc",
+    "forced_extensions/install_stage_tracker.h",
+    "forced_extensions/install_stage_tracker_factory.cc",
+    "forced_extensions/install_stage_tracker_factory.h",
     "global_shortcut_listener.cc",
     "global_shortcut_listener.h",
-    "global_shortcut_listener_mac.h",
-    "global_shortcut_listener_mac.mm",
-    "global_shortcut_listener_win.cc",
-    "global_shortcut_listener_win.h",
     "install_gate.h",
     "install_observer.cc",
     "install_observer.h",
@@ -645,6 +632,8 @@ static_library("extensions") {
     "launch_util.h",
     "load_error_reporter.cc",
     "load_error_reporter.h",
+    "media_router_extension_access_logger_impl.cc",
+    "media_router_extension_access_logger_impl.h",
     "menu_manager.cc",
     "menu_manager.h",
     "menu_manager_factory.cc",
@@ -690,12 +679,6 @@ static_library("extensions") {
     "sync_bundle.cc",
     "sync_bundle.h",
     "system_display/display_info_provider.h",
-    "system_display/display_info_provider_chromeos.cc",
-    "system_display/display_info_provider_chromeos.h",
-    "system_display/display_info_provider_mac.cc",
-    "system_display/display_info_provider_mac.h",
-    "system_display/display_info_provider_win.cc",
-    "system_display/display_info_provider_win.h",
     "tab_helper.cc",
     "tab_helper.h",
     "theme_installed_infobar_delegate.cc",
@@ -751,7 +734,7 @@ static_library("extensions") {
     # Lots of APIs use headers from the list above.
     "//chrome/browser/extensions/api:api_registration",
 
-    # TODO(loyso): Remove this circular dependency. http://crbug.com/876576.
+    # TODO(crbug.com/1065748): Remove this circular dependency.
     "//chrome/browser/web_applications/extensions",
 
     # TODO(crbug/925153): Remove this circular dependency.
@@ -767,10 +750,11 @@ static_library("extensions") {
     "//chrome/browser/extensions/api:api_registration",
     "//chrome/common",
     "//chrome/common/extensions/api",
+    "//components/omnibox/browser",
     "//components/safe_browsing/core:csd_proto",
-    "//components/safe_browsing/core:webprotect_proto",
     "//components/safe_browsing/core/db:util",
     "//components/signin/core/browser",
+    "//components/translate/content/browser",
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
   ]
@@ -778,6 +762,7 @@ static_library("extensions") {
     "//apps",
     "//base/util/values:values_util",
     "//build:branding_buildflags",
+    "//build:chromeos_buildflags",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",
@@ -789,18 +774,20 @@ static_library("extensions") {
     "//chrome/browser:ntp_background_proto",
     "//chrome/browser:theme_properties",
     "//chrome/browser/devtools",
-    "//chrome/browser/engagement:mojo_bindings",
     "//chrome/browser/image_decoder",
     "//chrome/browser/media/router",
     "//chrome/browser/media/router/discovery",
     "//chrome/browser/resource_coordinator:intervention_policy_database_proto",
     "//chrome/browser/resource_coordinator:mojo_bindings",
     "//chrome/browser/safe_browsing",
+    "//chrome/browser/web_applications",
     "//chrome/browser/web_applications/components",
+    "//components/site_engagement/core/mojom:mojo_bindings",
+
+    # TODO(crbug.com/1065748): Remove this dependency:
     "//chrome/browser/web_applications/extensions",
     "//chrome/common/extensions/api:extensions_features",
     "//chrome/common/safe_browsing:proto",
-    "//chrome/services/app_service/public/mojom",
     "//chrome/services/removable_storage_writer/public/mojom",
     "//components/autofill/content/browser",
     "//components/bookmarks/browser",
@@ -817,6 +804,7 @@ static_library("extensions") {
     "//components/download/public/common:public",
     "//components/drive",
     "//components/embedder_support",
+    "//components/enterprise",
     "//components/favicon/content",
     "//components/feedback",
     "//components/gcm_driver",
@@ -830,7 +818,7 @@ static_library("extensions") {
     "//components/nacl/common:buildflags",
     "//components/navigation_interception",
     "//components/net_log",
-    "//components/omnibox/browser",
+    "//components/no_state_prefetch/browser",
     "//components/onc",
     "//components/page_load_metrics/browser:browser",
     "//components/password_manager/core/browser",
@@ -853,6 +841,7 @@ static_library("extensions") {
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/safe_browsing/core/db:database_manager",
     "//components/search_engines",
+    "//components/services/app_service/public/mojom",
     "//components/services/patch/content",
     "//components/services/unzip/content",
     "//components/services/unzip/public/cpp",
@@ -864,6 +853,7 @@ static_library("extensions") {
     "//components/sync",
     "//components/sync_preferences",
     "//components/sync_sessions",
+    "//components/tab_groups",
     "//components/translate/content/browser",
     "//components/translate/core/browser",
     "//components/translate/core/common",
@@ -871,6 +861,7 @@ static_library("extensions") {
     "//components/unified_consent",
     "//components/update_client",
     "//components/update_client:common_impl",
+    "//components/url_formatter",
     "//components/url_matcher",
     "//components/user_prefs",
     "//components/vector_icons",
@@ -897,6 +888,7 @@ static_library("extensions") {
     "//services/audio/public/cpp",
     "//services/data_decoder/public/cpp",
     "//services/device/public/mojom",
+    "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
@@ -907,7 +899,6 @@ static_library("extensions") {
     "//storage/common",
     "//third_party/blink/public:resources",
     "//third_party/blink/public:scaled_resources",
-    "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/libaddressinput:util",
@@ -918,6 +909,7 @@ static_library("extensions") {
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base/clipboard",
+    "//ui/base/dragdrop/mojom:mojom_shared",
     "//ui/base/ime",
     "//ui/display/manager",
     "//ui/gfx",
@@ -941,20 +933,40 @@ static_library("extensions") {
     deps += [ "//components/autofill_assistant/browser" ]
   }
 
+  if (chromeos_is_browser_only || is_chromeos) {
+    sources += [ "api/enterprise_platform_keys/enterprise_platform_keys_api.h" ]
+    deps += [ "//chromeos/crosapi/mojom" ]
+    if (chromeos_is_browser_only) {
+      sources += [
+        "api/enterprise_platform_keys/enterprise_platform_keys_api_lacros.cc",
+        "api/enterprise_platform_keys/enterprise_platform_keys_api_lacros.h",
+      ]
+      deps += [ "//chromeos/lacros" ]
+    }
+  }
+
   if (is_chromeos) {
     sources += [
       "api/certificate_provider/certificate_provider_api.cc",
       "api/certificate_provider/certificate_provider_api.h",
+      "api/crash_report_private/crash_report_private_api.cc",
+      "api/crash_report_private/crash_report_private_api.h",
       "api/enterprise_device_attributes/enterprise_device_attributes_api.cc",
       "api/enterprise_device_attributes/enterprise_device_attributes_api.h",
-      "api/enterprise_platform_keys/enterprise_platform_keys_api.cc",
-      "api/enterprise_platform_keys/enterprise_platform_keys_api.h",
+      "api/enterprise_networking_attributes/enterprise_networking_attributes_api.cc",
+      "api/enterprise_networking_attributes/enterprise_networking_attributes_api.h",
+      "api/enterprise_platform_keys/enterprise_platform_keys_api_ash.cc",
+      "api/enterprise_platform_keys/enterprise_platform_keys_api_ash.h",
       "api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.cc",
       "api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h",
+      "api/file_handlers/non_native_file_system_delegate_chromeos.cc",
+      "api/file_handlers/non_native_file_system_delegate_chromeos.h",
       "api/file_system/consent_provider.cc",
       "api/file_system/consent_provider.h",
       "api/file_system/request_file_system_notification.cc",
       "api/file_system/request_file_system_notification.h",
+      "api/image_writer_private/operation_chromeos.cc",
+      "api/image_writer_private/removable_storage_provider_chromeos.cc",
       "api/input_ime/input_ime_api.cc",
       "api/input_ime/input_ime_api.h",
       "api/input_ime/input_ime_api_chromeos.cc",
@@ -968,6 +980,8 @@ static_library("extensions") {
       "api/networking_cast_private/chrome_networking_cast_private_delegate.h",
       "api/networking_cast_private/networking_cast_private_api.cc",
       "api/networking_cast_private/networking_cast_private_api.h",
+      "api/networking_private/networking_private_ui_delegate_chromeos.cc",
+      "api/networking_private/networking_private_ui_delegate_chromeos.h",
       "api/platform_keys/platform_keys_api.cc",
       "api/platform_keys/platform_keys_api.h",
       "api/platform_keys/verify_trust_api.cc",
@@ -978,6 +992,7 @@ static_library("extensions") {
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h",
       "api/settings_private/generated_time_zone_pref_base.cc",
       "api/settings_private/generated_time_zone_pref_base.h",
+      "api/tabs/tabs_util_chromeos.cc",
       "api/terminal/crostini_startup_status.cc",
       "api/terminal/crostini_startup_status.h",
       "api/terminal/terminal_extension_helper.cc",
@@ -988,6 +1003,14 @@ static_library("extensions") {
       "api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h",
       "api/vpn_provider/vpn_service_factory.cc",
       "chrome_kiosk_delegate_chromeos.cc",
+      "clipboard_extension_helper_chromeos.cc",
+      "clipboard_extension_helper_chromeos.h",
+      "extension_assets_manager_chromeos.cc",
+      "extension_assets_manager_chromeos.h",
+      "extension_garbage_collector_chromeos.cc",
+      "extension_garbage_collector_chromeos.h",
+      "system_display/display_info_provider_chromeos.cc",
+      "system_display/display_info_provider_chromeos.h",
       "updater/chromeos_extension_cache_delegate.cc",
       "updater/chromeos_extension_cache_delegate.h",
       "updater/extension_cache_impl.cc",
@@ -1004,11 +1027,17 @@ static_library("extensions") {
       "//ash/keyboard/ui:resources_grit_grit",
       "//ash/public/cpp",
       "//chrome/browser/chromeos/crostini:crostini_installer_types_mojom",
-      "//chrome/browser/resources/chromeos/camera:chrome_camera_app",
+      "//chrome/browser/devtools",
+      "//chrome/browser/nearby_sharing/common",
       "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",
       "//chromeos",
       "//chromeos/attestation",
+      "//chromeos/components/camera_app_ui",
+      "//chromeos/components/camera_app_ui:mojo_bindings",
+      "//chromeos/components/camera_app_ui/resources:chrome_camera_app",
+      "//chromeos/components/chromebox_for_meetings/buildflags",
       "//chromeos/components/proximity_auth",
+      "//chromeos/components/remote_apps/mojom",
       "//chromeos/constants",
       "//chromeos/cryptohome",
       "//chromeos/dbus",
@@ -1023,12 +1052,14 @@ static_library("extensions") {
       "//chromeos/services/machine_learning/public/cpp",
       "//chromeos/services/machine_learning/public/mojom",
       "//chromeos/services/media_perception/public/mojom",
+      "//chromeos/services/tts/public/mojom",
       "//chromeos/settings",
       "//chromeos/system",
       "//chromeos/tpm",
+      "//chromeos/ui/base",
       "//components/arc",
-      "//components/chromeos_camera:camera_app_helper",
       "//components/constrained_window",
+      "//components/crash/content/browser/error_reporting",
       "//components/drive",
       "//components/user_manager",
       "//media/capture:capture_lib",
@@ -1040,44 +1071,54 @@ static_library("extensions") {
       "//ui/base/ime/chromeos",
       "//ui/chromeos",
       "//ui/chromeos/events",
-      "//ui/file_manager",
+      "//ui/file_manager:file_manager_gen_resources",
+      "//ui/file_manager:resources",
       "//ui/ozone",
       "//ui/views",
     ]
     if (enable_nacl) {
       deps += [ "//chrome/browser/resources/chromeos/zip_archiver" ]
     }
+    if (is_cfm) {
+      deps += [
+        "//chromeos/services/chromebox_for_meetings/public/cpp",
+        "//chromeos/services/chromebox_for_meetings/public/mojom",
+      ]
+    }
   } else {
+    assert(!is_chromeos)
     sources += [
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.cc",
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.h",
       "api/enterprise_reporting_private/device_info_fetcher.cc",
       "api/enterprise_reporting_private/device_info_fetcher.h",
-      "api/enterprise_reporting_private/device_info_fetcher_linux.cc",
-      "api/enterprise_reporting_private/device_info_fetcher_linux.h",
-      "api/enterprise_reporting_private/device_info_fetcher_mac.h",
-      "api/enterprise_reporting_private/device_info_fetcher_mac.mm",
-      "api/enterprise_reporting_private/device_info_fetcher_win.cc",
-      "api/enterprise_reporting_private/device_info_fetcher_win.h",
       "api/enterprise_reporting_private/enterprise_reporting_private_api.cc",
       "api/enterprise_reporting_private/enterprise_reporting_private_api.h",
-      "api/enterprise_reporting_private/prefs.cc",
-      "api/enterprise_reporting_private/prefs.h",
+      "api/enterprise_reporting_private/keychain_data_helper_mac.h",
+      "api/enterprise_reporting_private/keychain_data_helper_mac.mm",
       "api/image_writer_private/operation_nonchromeos.cc",
-      "api/image_writer_private/removable_storage_provider_linux.cc",
       "api/messaging/native_message_process_host.cc",
       "api/messaging/native_message_process_host.h",
       "api/messaging/native_messaging_launch_from_native.cc",
       "api/messaging/native_messaging_launch_from_native.h",
       "api/messaging/native_process_launcher.cc",
       "api/messaging/native_process_launcher.h",
-      "api/messaging/native_process_launcher_win.cc",
       "api/tabs/tabs_util.cc",
       "chrome_kiosk_delegate.cc",
       "default_apps.cc",
       "default_apps.h",
     ]
-    deps += [ "//components/keep_alive_registry" ]
+    deps += [
+      "//components/enterprise",
+      "//components/keep_alive_registry",
+    ]
+    if (is_linux || is_chromeos) {
+      sources += [
+        "api/enterprise_reporting_private/device_info_fetcher_linux.cc",
+        "api/enterprise_reporting_private/device_info_fetcher_linux.h",
+        "api/image_writer_private/removable_storage_provider_linux.cc",
+      ]
+    }
     if (is_posix) {
       sources += [ "api/messaging/native_process_launcher_posix.cc" ]
     }
@@ -1098,7 +1139,19 @@ static_library("extensions") {
     ]
   }
 
-  if (is_linux) {
+  if (is_mac) {
+    sources += [
+      "api/enterprise_reporting_private/device_info_fetcher_mac.h",
+      "api/enterprise_reporting_private/device_info_fetcher_mac.mm",
+      "api/image_writer_private/removable_storage_provider_mac.cc",
+      "global_shortcut_listener_mac.h",
+      "global_shortcut_listener_mac.mm",
+      "system_display/display_info_provider_mac.cc",
+      "system_display/display_info_provider_mac.h",
+    ]
+  }
+
+  if (is_linux || is_chromeos) {
     deps += [ "//third_party/fontconfig" ]
 
     if (use_dbus) {
@@ -1115,13 +1168,6 @@ static_library("extensions") {
         "//ui/events/platform/x11",
       ]
     }
-  }
-
-  if (!is_android) {
-    sources += [
-      "api/processes/processes_api.cc",
-      "api/processes/processes_api.h",
-    ]
   }
 
   if (is_win || is_mac) {
@@ -1145,6 +1191,18 @@ static_library("extensions") {
   }
 
   if (is_win) {
+    sources += [
+      "api/enterprise_reporting_private/device_info_fetcher_win.cc",
+      "api/enterprise_reporting_private/device_info_fetcher_win.h",
+      "api/image_writer_private/removable_storage_provider_win.cc",
+      "api/messaging/native_process_launcher_win.cc",
+      "external_registry_loader_win.cc",
+      "external_registry_loader_win.h",
+      "global_shortcut_listener_win.cc",
+      "global_shortcut_listener_win.h",
+      "system_display/display_info_provider_win.cc",
+      "system_display/display_info_provider_win.h",
+    ]
     deps += [
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
@@ -1157,17 +1215,6 @@ static_library("extensions") {
     sources += [
       "system_display/display_info_provider_aura.cc",
       "system_display/display_info_provider_aura.h",
-    ]
-  }
-
-  if (is_win || (is_linux && !is_chromeos)) {
-    sources += [
-      "api/input_ime/input_ime_api.cc",
-      "api/input_ime/input_ime_api.h",
-      "api/input_ime/input_ime_api_nonchromeos.cc",
-      "api/input_ime/input_ime_api_nonchromeos.h",
-      "api/input_ime/input_ime_event_router_base.cc",
-      "api/input_ime/input_ime_event_router_base.h",
     ]
   }
 
@@ -1220,8 +1267,24 @@ static_library("extensions") {
       "api/braille_display_private/brlapi_keycode_map.cc",
       "api/braille_display_private/brlapi_keycode_map.h",
     ]
-    deps += [ "//build/linux/libbrlapi" ]
+    deps += [ "//third_party/libbrlapi" ]
   } else {
     sources += [ "api/braille_display_private/braille_controller_stub.cc" ]
   }
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "external_testing_loader.cc",
+    "external_testing_loader.h",
+  ]
+
+  deps = [
+    ":extensions",
+    "//base",
+    "//content/public/browser",
+    "//extensions/browser:test_support",
+  ]
 }

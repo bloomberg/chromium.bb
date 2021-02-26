@@ -26,14 +26,12 @@
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "media/mojo/services/mojo_renderer_service.h"
 #include "media/renderers/video_overlay_factory.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 using ::base::test::RunCallback;
 using ::base::test::RunOnceCallback;
@@ -64,11 +62,7 @@ void WaitFor(base::TimeDelta duration) {
 
 class MojoRendererTest : public ::testing::Test {
  public:
-  MojoRendererTest()
-      : mojo_cdm_service_(
-            std::make_unique<MojoCdmService>(&cdm_factory_,
-                                             &mojo_cdm_service_context_)),
-        cdm_receiver_(mojo_cdm_service_.get()) {
+  MojoRendererTest() {
     std::unique_ptr<StrictMock<MockRenderer>> mock_renderer(
         new StrictMock<MockRenderer>());
     mock_renderer_ = mock_renderer.get();
@@ -138,6 +132,7 @@ class MojoRendererTest : public ::testing::Test {
 
   void Initialize() {
     CreateAudioStream();
+    EXPECT_CALL(*mock_renderer_, SetVolume(1));
     EXPECT_CALL(*mock_renderer_, OnInitialize(_, _, _))
         .WillOnce(DoAll(SaveArg<1>(&remote_renderer_client_),
                         RunOnceCallback<2>(PIPELINE_OK)));
@@ -173,21 +168,20 @@ class MojoRendererTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void OnCdmCreated(mojom::CdmPromiseResultPtr result,
-                    int cdm_id,
-                    mojo::PendingRemote<mojom::Decryptor> decryptor) {
-    EXPECT_TRUE(result->success);
-    EXPECT_NE(CdmContext::kInvalidCdmId, cdm_id);
-    cdm_context_.set_cdm_id(cdm_id);
+  void OnCdmServiceCreated(std::unique_ptr<MojoCdmService> cdm_service,
+                           mojo::PendingRemote<mojom::Decryptor> decryptor,
+                           const std::string& error_message) {
+    EXPECT_TRUE(!!cdm_service);
+    cdm_context_.set_cdm_id(base::OptionalOrNullptr(cdm_service->cdm_id()));
+    mojo_cdm_service_ = std::move(cdm_service);
   }
 
   void CreateCdm() {
-    cdm_receiver_.Bind(cdm_remote_.BindNewPipeAndPassReceiver());
-    cdm_remote_->Initialize(kClearKeyKeySystem,
-                            url::Origin::Create(GURL("https://www.test.com")),
-                            CdmConfig(),
-                            base::BindOnce(&MojoRendererTest::OnCdmCreated,
-                                           base::Unretained(this)));
+    MojoCdmService::Create(
+        &cdm_factory_, &mojo_cdm_service_context_, kClearKeyKeySystem,
+        CdmConfig(),
+        base::BindOnce(&MojoRendererTest::OnCdmServiceCreated,
+                       base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -223,7 +217,6 @@ class MojoRendererTest : public ::testing::Test {
   MojoCdmServiceContext mojo_cdm_service_context_;
   DefaultCdmFactory cdm_factory_;
   std::unique_ptr<MojoCdmService> mojo_cdm_service_;
-  mojo::Receiver<mojom::ContentDecryptionModule> cdm_receiver_;
 
   // Service side mocks and helpers.
   StrictMock<MockRenderer>* mock_renderer_;
@@ -311,7 +304,8 @@ TEST_F(MojoRendererTest, SetCdm_InvalidCdmId) {
 
 TEST_F(MojoRendererTest, SetCdm_NonExistCdmId) {
   Initialize();
-  cdm_context_.set_cdm_id(1);
+  auto cdm_id = base::UnguessableToken::Create();
+  cdm_context_.set_cdm_id(&cdm_id);
   SetCdmAndExpect(false);
 }
 

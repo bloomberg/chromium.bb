@@ -35,7 +35,8 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
     kBadLogo = 3,
     kBadUserIdentifier = 4,
     kBadResetReason = 5,
-    kMaxValue = kBadResetReason,
+    kBadSafeSearchResult = 6,
+    kMaxValue = kBadSafeSearchResult,
   };
 
  private:
@@ -64,7 +65,8 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
       const std::vector<media_feeds::mojom::MediaImagePtr>& logos,
       const media_feeds::mojom::UserIdentifier* user_identifier,
       const std::string& display_name,
-      const int item_safe_count);
+      const int item_safe_count,
+      const std::string& cookie_name_filter);
 
   // Returns the feed rows in the database.
   std::vector<media_feeds::mojom::MediaFeedPtr> GetRows(
@@ -84,15 +86,33 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
   // Deletes the feed with |feed_id| and returns a boolean if it was successful.
   bool Delete(const int64_t feed_id);
 
-  // Returns the origin of the feed.
-  base::Optional<url::Origin> GetOrigin(const int64_t feed_id);
-
   // Returns the fetch details for the feed.
   base::Optional<MediaHistoryKeyedService::MediaFeedFetchDetails>
   GetFetchDetails(const int64_t feed_id);
 
   // Clears the reset reason for a feed and returns a boolean if it was saved.
   bool ClearResetReason(const int64_t feed_id);
+
+  // Returns the cookie name filter for |feed_id| or an empty string.
+  std::string GetCookieNameFilter(const int64_t feed_id);
+
+  // Gets the feed for |origin|'s subdomains.
+  std::set<int64_t> GetFeedsForOriginSubdomain(const url::Origin& origin);
+
+  // Gets the feed for |origin|.
+  base::Optional<int64_t> GetFeedForOrigin(const url::Origin& origin);
+
+  // Returns all the media feeds that have an unknown safe search result.
+  MediaHistoryKeyedService::PendingSafeSearchCheckList
+  GetPendingSafeSearchCheckItems();
+
+  // Stores the safe search result for |feed_id| and returns true if successful.
+  bool StoreSafeSearchResult(int64_t feed_id,
+                             media_feeds::mojom::SafeSearchResult result);
+
+  // Updates the user status and returns true if successful.
+  bool UpdateFeedUserStatus(const int64_t feed_id,
+                            media_feeds::mojom::FeedUserStatus status);
 };
 
 }  // namespace media_history

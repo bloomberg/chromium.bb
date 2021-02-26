@@ -330,7 +330,8 @@ void SMILTimeContainer::SetPresentationTime(SMILTime new_presentation_time) {
   // yield the same value.
   max_presentation_time_ = SMILTime::Latest() - SMILTime::Epsilon();
   presentation_time_ = ClampPresentationTime(new_presentation_time);
-  if (AnimationPolicy() != kImageAnimationPolicyAnimateOnce)
+  if (AnimationPolicy() !=
+      mojom::blink::ImageAnimationPolicy::kImageAnimationPolicyAnimateOnce)
     return;
   const SMILTime kAnimationPolicyOnceDuration = SMILTime::FromSecondsD(3);
   max_presentation_time_ =
@@ -410,15 +411,17 @@ void SMILTimeContainer::WakeupTimerFired(TimerBase*) {
   }
 }
 
-ImageAnimationPolicy SMILTimeContainer::AnimationPolicy() const {
+mojom::blink::ImageAnimationPolicy SMILTimeContainer::AnimationPolicy() const {
   const Settings* settings = GetDocument().GetSettings();
-  return settings ? settings->GetImageAnimationPolicy()
-                  : kImageAnimationPolicyAllowed;
+  return settings
+             ? settings->GetImageAnimationPolicy()
+             : mojom::blink::ImageAnimationPolicy::kImageAnimationPolicyAllowed;
 }
 
 bool SMILTimeContainer::AnimationsDisabled() const {
-  return !GetDocument().IsActive() ||
-         AnimationPolicy() == kImageAnimationPolicyNoAnimation;
+  return !GetDocument().IsActive() || AnimationPolicy() ==
+                                          mojom::blink::ImageAnimationPolicy::
+                                              kImageAnimationPolicyNoAnimation;
 }
 
 void SMILTimeContainer::UpdateDocumentOrderIndexes() {
@@ -445,6 +448,12 @@ void SMILTimeContainer::ServiceOnNextFrame() {
 }
 
 void SMILTimeContainer::ServiceAnimations() {
+  // If a synchronization is pending, we can flush it now.
+  if (frame_scheduling_state_ == kSynchronizeAnimations) {
+    DCHECK(wakeup_timer_.IsActive());
+    wakeup_timer_.Stop();
+    frame_scheduling_state_ = kAnimationFrame;
+  }
   if (frame_scheduling_state_ != kAnimationFrame)
     return;
   frame_scheduling_state_ = kIdle;
@@ -598,7 +607,7 @@ void SMILTimeContainer::AdvanceFrameForTesting() {
   SetElapsed(Elapsed() + kFrameDuration);
 }
 
-void SMILTimeContainer::Trace(Visitor* visitor) {
+void SMILTimeContainer::Trace(Visitor* visitor) const {
   visitor->Trace(animated_targets_);
   visitor->Trace(priority_queue_);
   visitor->Trace(owner_svg_element_);

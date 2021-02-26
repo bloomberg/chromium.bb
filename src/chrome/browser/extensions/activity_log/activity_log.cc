@@ -27,14 +27,14 @@
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/no_state_prefetch/browser/prerender_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,8 +45,10 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/mojom/renderer.mojom.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
@@ -361,7 +363,7 @@ void LogApiActivity(content::BrowserContext* browser_context,
                     const base::ListValue& args,
                     Action::ActionType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (ActivityLogAPI::IsExtensionWhitelisted(extension_id))
+  if (ActivityLogAPI::IsExtensionAllowlisted(extension_id))
     return;
 
   ActivityLog* activity_log = SafeGetActivityLog(browser_context);
@@ -400,7 +402,7 @@ void LogWebRequestActivity(content::BrowserContext* browser_context,
                            const std::string& api_call,
                            std::unique_ptr<base::DictionaryValue> details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (ActivityLogAPI::IsExtensionWhitelisted(extension_id))
+  if (ActivityLogAPI::IsExtensionAllowlisted(extension_id))
     return;
 
   ActivityLog* activity_log = SafeGetActivityLog(browser_context);
@@ -460,7 +462,7 @@ ActivityLog* ActivityLog::GetInstance(content::BrowserContext* context) {
 
 // Use GetInstance instead of directly creating an ActivityLog.
 ActivityLog::ActivityLog(content::BrowserContext* context)
-    : database_policy_(NULL),
+    : database_policy_(nullptr),
       database_policy_type_(ActivityLogPolicy::POLICY_INVALID),
       profile_(Profile::FromBrowserContext(context)),
       extension_system_(ExtensionSystem::Get(context)),
@@ -563,7 +565,7 @@ void ActivityLog::SetHasListeners(bool has_listeners) {
 
 void ActivityLog::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
-  if (!ActivityLogAPI::IsExtensionWhitelisted(extension->id()))
+  if (!ActivityLogAPI::IsExtensionAllowlisted(extension->id()))
     return;
 
   ++active_consumers_;
@@ -578,7 +580,7 @@ void ActivityLog::OnExtensionLoaded(content::BrowserContext* browser_context,
 void ActivityLog::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
                                       UnloadedExtensionReason reason) {
-  if (!ActivityLogAPI::IsExtensionWhitelisted(extension->id()))
+  if (!ActivityLogAPI::IsExtensionAllowlisted(extension->id()))
     return;
   --active_consumers_;
 
@@ -594,7 +596,7 @@ void ActivityLog::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     extensions::UninstallReason reason) {
-  if (ActivityLogAPI::IsExtensionWhitelisted(extension->id()) &&
+  if (ActivityLogAPI::IsExtensionAllowlisted(extension->id()) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityLogging) &&
       active_consumers_ == 0) {
@@ -651,7 +653,7 @@ bool ActivityLog::ShouldLog(const std::string& extension_id) const {
   // Do not log for activities from the browser/WebUI, which is indicated by an
   // empty extension ID.
   return is_active_ && !extension_id.empty() &&
-         !ActivityLogAPI::IsExtensionWhitelisted(extension_id);
+         !ActivityLogAPI::IsExtensionAllowlisted(extension_id);
 }
 
 void ActivityLog::OnScriptsExecuted(content::WebContents* web_contents,
@@ -663,7 +665,7 @@ void ActivityLog::OnScriptsExecuted(content::WebContents* web_contents,
   for (auto it = extension_ids.begin(); it != extension_ids.end(); ++it) {
     const Extension* extension =
         registry->GetExtensionById(it->first, ExtensionRegistry::ENABLED);
-    if (!extension || ActivityLogAPI::IsExtensionWhitelisted(extension->id()))
+    if (!extension || ActivityLogAPI::IsExtensionAllowlisted(extension->id()))
       continue;
 
     // If OnScriptsExecuted is fired because of tabs.executeScript, the list
@@ -682,7 +684,7 @@ void ActivityLog::OnScriptsExecuted(content::WebContents* web_contents,
       const prerender::PrerenderManager* prerender_manager =
           prerender::PrerenderManagerFactory::GetForBrowserContext(profile_);
       if (prerender_manager &&
-          prerender_manager->IsWebContentsPrerendering(web_contents, NULL))
+          prerender_manager->IsWebContentsPrerendering(web_contents))
         action->mutable_other()->SetBoolean(constants::kActionPrerender, true);
       for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
         action->mutable_args()->AppendString(*it2);
@@ -785,9 +787,14 @@ void ActivityLog::CheckActive(bool use_cached) {
            content::RenderProcessHost::AllHostsIterator());
        !iter.IsAtEnd(); iter.Advance()) {
     content::RenderProcessHost* host = iter.GetCurrentValue();
-    if (profile_->IsSameProfile(
+    if (host->IsInitializedAndNotDead() &&
+        profile_->IsSameOrParent(
             Profile::FromBrowserContext(host->GetBrowserContext()))) {
-      host->Send(new ExtensionMsg_SetActivityLoggingEnabled(is_active_));
+      mojom::Renderer* renderer =
+          RendererStartupHelperFactory::GetForBrowserContext(
+              host->GetBrowserContext())
+              ->GetRenderer(host);
+      renderer->SetActivityLoggingEnabled(is_active_);
     }
   }
 }

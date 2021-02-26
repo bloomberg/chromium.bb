@@ -60,8 +60,13 @@ class PasswordsPrivateEventRouter : public KeyedService {
   // Notifies listeners about a change to the information about compromised
   // credentials.
   void OnCompromisedCredentialsChanged(
-      std::vector<api::passwords_private::CompromisedCredential>
+      std::vector<api::passwords_private::InsecureCredential>
           compromised_credentials);
+
+  // Notifies listeners about a change to the information about weak
+  // credentials.
+  void OnWeakCredentialsChanged(
+      std::vector<api::passwords_private::InsecureCredential> weak_credentials);
 
   // Notifies listeners about a change to the status of the password check.
   void OnPasswordCheckStatusChanged(

@@ -248,6 +248,17 @@ enum {
   MAX_REFS
 } UENUM1BYTE(THR_MODES_SUB8X8);
 
+enum {
+  FULL_TXFM_RD,
+  LOW_TXFM_RD,
+} UENUM1BYTE(TXFM_RD_MODEL);
+
+enum {
+  USE_FULL_RD = 0,
+  USE_FAST_RD,
+  USE_LARGESTALL,
+} UENUM1BYTE(TX_SIZE_SEARCH_METHOD);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

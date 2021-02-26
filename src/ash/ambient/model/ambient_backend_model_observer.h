@@ -15,12 +15,22 @@ namespace ash {
 class ASH_PUBLIC_EXPORT AmbientBackendModelObserver
     : public base::CheckedObserver {
  public:
+  // Invoked when |topics| has been changed.
+  virtual void OnTopicsChanged() {}
+
   // Invoked when prev/current/next images changed.
-  virtual void OnImagesChanged() = 0;
+  virtual void OnImagesChanged() {}
+
+  // Invoked when enough images are loaded in memory to start ambient mode.
+  virtual void OnImagesReady() {}
+
+  // Invoked when fetching images has failed and not enough images are present
+  // to start ambient mode.
+  virtual void OnImagesFailed() {}
 
   // Invoked when the weather info (condition icon or temperature) stored in the
   // model has been updated.
-  virtual void OnWeatherInfoUpdated() = 0;
+  virtual void OnWeatherInfoUpdated() {}
 
  protected:
   ~AmbientBackendModelObserver() override = default;

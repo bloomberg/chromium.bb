@@ -99,9 +99,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
     UseCounter::Count(window, WebFeature::kFileAccessedSharedWorker);
   }
 
-  KURL script_url = ResolveURL(
-      context, url, exception_state, mojom::RequestContextType::SHARED_WORKER,
-      network::mojom::RequestDestination::kSharedWorker);
+  KURL script_url = ResolveURL(context, url, exception_state);
   if (script_url.IsEmpty())
     return nullptr;
 
@@ -124,7 +122,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
       return nullptr;
     }
     options->name = worker_options->name();
-    base::Optional<mojom::ScriptType> type_result =
+    base::Optional<mojom::blink::ScriptType> type_result =
         Script::ParseScriptType(worker_options->type());
     DCHECK(type_result);
     options->type = type_result.value();
@@ -143,7 +141,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
 
   SharedWorkerClientHolder::From(*window)->Connect(
       worker, std::move(remote_port), script_url, std::move(blob_url_token),
-      std::move(options));
+      std::move(options), context->UkmSourceID());
 
   return worker;
 }
@@ -161,7 +159,7 @@ bool SharedWorker::HasPendingActivity() const {
 void SharedWorker::ContextLifecycleStateChanged(
     mojom::FrameLifecycleState state) {}
 
-void SharedWorker::Trace(Visitor* visitor) {
+void SharedWorker::Trace(Visitor* visitor) const {
   visitor->Trace(port_);
   AbstractWorker::Trace(visitor);
   Supplementable<SharedWorker>::Trace(visitor);

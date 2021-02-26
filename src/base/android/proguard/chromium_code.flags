@@ -18,6 +18,7 @@
 -keep @interface org.chromium.base.annotations.DoNotInline
 -keep @interface org.chromium.base.annotations.RemovableInRelease
 -keep @interface org.chromium.base.annotations.UsedByReflection
+-keep @interface org.chromium.base.annotations.IdentifierNameString
 
 # Android support library annotations will get converted to androidx ones
 # which we want to keep.
@@ -34,13 +35,13 @@
 -keep @org.chromium.base.annotations.UsedByReflection class ** {}
 
 # Keeps for method level annotations.
--keepclasseswithmembers,allowaccessmodification class ** {
+-keepclasseswithmembers class ** {
   @org.chromium.base.annotations.AccessedByNative <fields>;
 }
--keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class ** {
+-keepclasseswithmembers,includedescriptorclasses class ** {
   @org.chromium.base.annotations.CalledByNative <methods>;
 }
--keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class ** {
+-keepclasseswithmembers,includedescriptorclasses class ** {
   @org.chromium.base.annotations.CalledByNativeUnchecked <methods>;
 }
 -keepclasseswithmembers class ** {
@@ -70,11 +71,14 @@
 
 # Never inline classes or methods with this annotation, but allow shrinking and
 # obfuscation.
--keep,allowobfuscation,allowoptimization @org.chromium.base.annotations.DoNotInline class ** {
-  <methods>;
+-if @org.chromium.base.annotations.DoNotInline class * {
+    *** *(...);
 }
--keepclassmembers,allowobfuscation,allowoptimization class ** {
-  @org.chromium.base.annotations.DoNotInline <methods>;
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
+}
+-keepclassmembers,allowobfuscation class * {
+   @org.chromium.base.annotations.DoNotInline <methods>;
 }
 
 # Keep all CREATOR fields within Parcelable that are kept.
@@ -93,4 +97,9 @@
 # for the reason for this. Also, see http://crbug.com/248037.
 -keepclassmembers enum org.chromium.** {
     public static **[] values();
+}
+
+# Mark members annotated with IdentifierNameString as identifier name strings
+-identifiernamestring class * {
+    @org.chromium.base.annotations.IdentifierNameString *;
 }

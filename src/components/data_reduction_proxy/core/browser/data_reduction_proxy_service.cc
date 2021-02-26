@@ -84,6 +84,7 @@ DataReductionProxyService::DataReductionProxyService(
       channel_(channel),
       save_data_savings_estimate_dict_(
           GetSaveDataSavingsPercentEstimateFromFieldTrial()) {
+  DCHECK(data_use_measurement_);
   DCHECK(settings);
   DCHECK(network_quality_tracker_);
   DCHECK(network_connection_tracker_);
@@ -295,12 +296,6 @@ void DataReductionProxyService::UpdatePrefetchProxyHosts(
 
 void DataReductionProxyService::OnProxyConfigUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void DataReductionProxyService::SetIgnoreLongTermBlackListRules(
-    bool ignore_long_term_black_list_rules) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  settings_->SetIgnoreLongTermBlackListRules(ignore_long_term_black_list_rules);
 }
 
 void DataReductionProxyService::AddCustomProxyConfigClient(

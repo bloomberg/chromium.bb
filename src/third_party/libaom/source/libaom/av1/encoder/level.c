@@ -1072,9 +1072,6 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
 
   aom_clear_system_state();
   const double compression_ratio = av1_get_compression_ratio(cm, size);
-  const double total_time_encoded =
-      (cpi->time_stamps.prev_end_seen - cpi->time_stamps.first_ever) /
-      (double)TICKS_PER_SEC;
 
   const int temporal_layer_id = cm->temporal_layer_id;
   const int spatial_layer_id = cm->spatial_layer_id;
@@ -1131,7 +1128,9 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
           show_frame ? count_frames(buffer, TICKS_PER_SEC) : 0;
       scan_past_frames(buffer, encoded_frames_in_last_second, level_spec,
                        level_stats);
-      level_stats->total_time_encoded = total_time_encoded;
+      level_stats->total_time_encoded +=
+          (cpi->time_stamps.prev_end_seen - cpi->time_stamps.prev_start_seen) /
+          (double)TICKS_PER_SEC;
     }
 
     DECODER_MODEL *const decoder_models = level_info->decoder_models;

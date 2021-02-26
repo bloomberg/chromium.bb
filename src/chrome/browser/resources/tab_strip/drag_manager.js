@@ -9,7 +9,8 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {isTabElement, TabElement} from './tab.js';
 import {isTabGroupElement, TabGroupElement} from './tab_group.js';
-import {TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
+import {TabStripEmbedderProxy, TabStripEmbedderProxyImpl} from './tab_strip_embedder_proxy.js';
+import {TabData, TabNetworkState, TabsApiProxy, TabsApiProxyImpl} from './tabs_api_proxy.js';
 
 /** @const {number} */
 export const PLACEHOLDER_TAB_ID = -1;
@@ -100,6 +101,16 @@ class DragSession {
     /** @const {!TabElement|!TabGroupElement} */
     this.element_ = element;
 
+    /**
+     * Flag indicating if during the drag session, the element has at least
+     * moved once.
+     * @private {boolean}
+     */
+    this.hasMoved_ = false;
+
+    /** @private {!Object<{x: number, y: number}>} */
+    this.lastPoint_ = {x: 0, y: 0};
+
     /** @const {number} */
     this.srcIndex = srcIndex;
 
@@ -107,7 +118,10 @@ class DragSession {
     this.srcGroup = srcGroup;
 
     /** @private @const {!TabsApiProxy} */
-    this.tabsProxy_ = TabsApiProxy.getInstance();
+    this.tabsProxy_ = TabsApiProxyImpl.getInstance();
+
+    /** @private {!TabStripEmbedderProxy} */
+    this.tabStripEmbedderProxy_ = TabStripEmbedderProxyImpl.getInstance();
   }
 
   /**
@@ -210,7 +224,8 @@ class DragSession {
     return dstIndex;
   }
 
-  cancel() {
+  /** @param {!DragEvent} event */
+  cancel(event) {
     if (this.isDraggingPlaceholder()) {
       this.element_.remove();
       return;
@@ -225,7 +240,21 @@ class DragSession {
           this.element_.tab.pinned, this.srcGroup);
     }
 
+    if (this.element_.isDraggedOut() &&
+        event.dataTransfer.dropEffect === 'move') {
+      // The element was dragged out of the current tab strip and was dropped
+      // into a new window. In this case, do not mark the element as no longer
+      // being dragged out. The element needs to be kept hidden, and will be
+      // automatically removed from the DOM with the next tab-removed event.
+      return;
+    }
+
     this.element_.setDragging(false);
+    this.element_.setDraggedOut(false);
+
+    if (event.type === 'dragend') {
+      this.maybeShowTabContextMenu_();
+    }
   }
 
   /** @return {boolean} */
@@ -277,6 +306,21 @@ class DragSession {
     }
 
     this.element_.setDragging(false);
+    this.element_.setDraggedOut(false);
+
+    this.maybeShowTabContextMenu_();
+  }
+
+  /** @private */
+  maybeShowTabContextMenu_() {
+    if (!isTabElement(this.element_) || this.hasMoved_) {
+      return;
+    }
+
+    // If the user was dragging a tab and the tab has not ever been moved,
+    // show a context menu instead.
+    this.tabStripEmbedderProxy_.showTabContextMenu(
+        this.element_.tab.id, this.lastPoint_.x, this.lastPoint_.y);
   }
 
   /**
@@ -294,8 +338,9 @@ class DragSession {
 
   /** @param {!DragEvent} event */
   start(event) {
+    this.lastPoint_ = {x: event.clientX, y: event.clientY};
     event.dataTransfer.effectAllowed = 'move';
-    const draggedItemRect = this.element_.getBoundingClientRect();
+    const draggedItemRect = event.composedPath()[0].getBoundingClientRect();
     this.element_.setDragging(true);
 
     const dragImage = this.element_.getDragImage();
@@ -311,14 +356,26 @@ class DragSession {
     verticalOffset = 25;
     // </if>
 
-    const xDiffFromCenter =
-        event.clientX - draggedItemRect.left - (draggedItemRect.width / 2);
-    const yDiffFromCenter = event.clientY - draggedItemRect.top -
-        verticalOffset - (draggedItemRect.height / 2);
+    const eventXPercentage =
+        (event.clientX - draggedItemRect.left) / draggedItemRect.width;
+    const eventYPercentage =
+        (event.clientY - draggedItemRect.top) / draggedItemRect.height;
 
-    event.dataTransfer.setDragImage(
-        dragImage, (dragImageRect.width / 2 + xDiffFromCenter / scaleFactor),
-        (dragImageRect.height / 2 + yDiffFromCenter / scaleFactor));
+    // First, align the top-left corner of the drag image's center element
+    // to the event's coordinates.
+    const dragImageCenterRect =
+        this.element_.getDragImageCenter().getBoundingClientRect();
+    let xOffset = (dragImageCenterRect.left - dragImageRect.left) * scaleFactor;
+    let yOffset = (dragImageCenterRect.top - dragImageRect.top) * scaleFactor;
+
+    // Then, offset the drag image again by using the event's coordinates
+    // within the dragged item itself so that the drag image appears positioned
+    // as closely as its state before dragging.
+    xOffset += dragImageCenterRect.width * eventXPercentage;
+    yOffset += dragImageCenterRect.height * eventYPercentage;
+    yOffset -= verticalOffset;
+
+    event.dataTransfer.setDragImage(dragImage, xOffset, yOffset);
 
     if (isTabElement(this.element_)) {
       event.dataTransfer.setData(
@@ -336,7 +393,16 @@ class DragSession {
 
   /** @param {!DragEvent} event */
   update(event) {
+    this.lastPoint_ = {x: event.clientX, y: event.clientY};
+
+    if (event.type === 'dragleave') {
+      this.element_.setDraggedOut(true);
+      this.hasMoved_ = true;
+      return;
+    }
+
     event.dataTransfer.dropEffect = 'move';
+    this.element_.setDraggedOut(false);
     if (isTabGroupElement(this.element_)) {
       this.updateForTabGroupElement_(event);
     } else if (isTabElement(this.element_)) {
@@ -359,22 +425,25 @@ class DragSession {
 
     const dragOverTabElement =
         /** @type {!TabElement|undefined} */ (composedPath.find(isTabElement));
-    if (dragOverTabElement && !dragOverTabElement.tab.pinned) {
+    if (dragOverTabElement && !dragOverTabElement.tab.pinned &&
+        dragOverTabElement.isValidDragOverTarget) {
       let dragOverIndex = this.delegate_.getIndexOfTab(dragOverTabElement);
       dragOverIndex +=
           this.shouldOffsetIndexForGroup_(dragOverTabElement) ? 1 : 0;
       this.delegate_.placeTabGroupElement(tabGroupElement, dragOverIndex);
+      this.hasMoved_ = true;
       return;
     }
 
     const dragOverGroupElement = /** @type {!TabGroupElement|undefined} */ (
         composedPath.find(isTabGroupElement));
-    if (dragOverGroupElement) {
+    if (dragOverGroupElement && dragOverGroupElement.isValidDragOverTarget) {
       let dragOverIndex = this.delegate_.getIndexOfTab(
           /** @type {!TabElement} */ (dragOverGroupElement.firstElementChild));
       dragOverIndex +=
           this.shouldOffsetIndexForGroup_(dragOverGroupElement) ? 1 : 0;
       this.delegate_.placeTabGroupElement(tabGroupElement, dragOverIndex);
+      this.hasMoved_ = true;
     }
   }
 
@@ -388,8 +457,9 @@ class DragSession {
     const dragOverTabElement =
         /** @type {?TabElement} */ (composedPath.find(isTabElement));
     if (dragOverTabElement &&
-        dragOverTabElement.tab.pinned !== tabElement.tab.pinned) {
-      // Can only drag between the same pinned states.
+        (dragOverTabElement.tab.pinned !== tabElement.tab.pinned ||
+         !dragOverTabElement.isValidDragOverTarget)) {
+      // Can only drag between the same pinned states and valid TabElements.
       return;
     }
 
@@ -401,15 +471,18 @@ class DragSession {
     const dragOverTabGroup =
         /** @type {?TabGroupElement} */ (composedPath.find(isTabGroupElement));
     if (dragOverTabGroup &&
-        dragOverTabGroup.dataset.groupId !== previousGroupId) {
+        dragOverTabGroup.dataset.groupId !== previousGroupId &&
+        dragOverTabGroup.isValidDragOverTarget) {
       this.delegate_.placeTabElement(
           tabElement, this.dstIndex, false, dragOverTabGroup.dataset.groupId);
+      this.hasMoved_ = true;
       return;
     }
 
     if (!dragOverTabGroup && previousGroupId) {
       this.delegate_.placeTabElement(
           tabElement, this.dstIndex, false, undefined);
+      this.hasMoved_ = true;
       return;
     }
 
@@ -420,6 +493,7 @@ class DragSession {
     const dragOverIndex = this.delegate_.getIndexOfTab(dragOverTabElement);
     this.delegate_.placeTabElement(
         tabElement, dragOverIndex, tabElement.tab.pinned, previousGroupId);
+    this.hasMoved_ = true;
   }
 }
 
@@ -433,17 +507,21 @@ export class DragManager {
     this.dragSession_ = null;
 
     /** @private {!TabsApiProxy} */
-    this.tabsProxy_ = TabsApiProxy.getInstance();
+    this.tabsProxy_ = TabsApiProxyImpl.getInstance();
   }
 
-  /** @private */
-  onDragLeave_() {
-    if (this.dragSession_ && !this.dragSession_.isDraggingPlaceholder()) {
+  /**
+   * @param {!DragEvent} event
+   * @private
+   */
+  onDragLeave_(event) {
+    if (this.dragSession_ && this.dragSession_.isDraggingPlaceholder()) {
+      this.dragSession_.cancel(event);
+      this.dragSession_ = null;
       return;
     }
 
-    this.dragSession_.cancel();
-    this.dragSession_ = null;
+    this.dragSession_.update(event);
   }
 
   /** @param {!DragEvent} event */
@@ -478,13 +556,16 @@ export class DragManager {
       return;
     }
 
-    this.dragSession_.cancel();
+    this.dragSession_.cancel(event);
     this.dragSession_ = null;
   }
 
   /** @param {!DragEvent} event */
   onDragEnter_(event) {
     if (this.dragSession_) {
+      // TODO(crbug.com/843556): Do not update the drag session on dragenter.
+      // An incorrect event target on dragenter causes tabs to move around
+      // erroneously.
       return;
     }
 
@@ -509,8 +590,9 @@ export class DragManager {
     this.delegate_.addEventListener(
         'dragend', e => this.onDragEnd_(/** @type {!DragEvent} */ (e)));
     this.delegate_.addEventListener(
-        'dragenter', (e) => this.onDragEnter_(/** @type {!DragEvent} */ (e)));
-    this.delegate_.addEventListener('dragleave', () => this.onDragLeave_());
+        'dragenter', e => this.onDragEnter_(/** @type {!DragEvent} */ (e)));
+    this.delegate_.addEventListener(
+        'dragleave', e => this.onDragLeave_(/** @type {!DragEvent} */ (e)));
     this.delegate_.addEventListener(
         'dragover', e => this.onDragOver_(/** @type {!DragEvent} */ (e)));
     this.delegate_.addEventListener(

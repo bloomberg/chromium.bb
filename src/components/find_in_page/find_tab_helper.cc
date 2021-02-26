@@ -11,9 +11,7 @@
 #include "build/build_config.h"
 #include "components/find_in_page/find_result_observer.h"
 #include "components/find_in_page/find_types.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
@@ -27,7 +25,7 @@ namespace find_in_page {
 int FindTabHelper::find_request_id_counter_ = -1;
 
 FindTabHelper::FindTabHelper(WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
+    : web_contents_(web_contents),
       current_find_request_id_(find_request_id_counter_++),
       current_find_session_id_(current_find_request_id_) {}
 
@@ -47,54 +45,49 @@ void FindTabHelper::RemoveObserver(FindResultObserver* observer) {
 void FindTabHelper::StartFinding(base::string16 search_string,
                                  bool forward_direction,
                                  bool case_sensitive,
+                                 bool find_match,
                                  bool run_synchronously_for_testing) {
   // Remove the carriage return character, which generally isn't in web content.
   const base::char16 kInvalidChars[] = {'\r', 0};
   base::RemoveChars(search_string, kInvalidChars, &search_string);
 
-  // If search_string is empty, it means FindNext was pressed with a keyboard
-  // shortcut so unless we have something to search for we return early.
-  if (search_string.empty() && find_text_.empty()) {
-    search_string = GetInitialSearchText();
-
-    if (search_string.empty())
-      return;
-  }
-
-  // Keep track of the previous search.
-  previous_find_text_ = find_text_;
-
-  // This is a FindNext operation if we are searching for the same text again,
-  // or if the passed in search text is empty (FindNext keyboard shortcut). The
-  // exception to this is if the Find was aborted (then we don't want FindNext
-  // because the highlighting has been cleared and we need it to reappear). We
-  // therefore treat FindNext after an aborted Find operation as a full fledged
-  // Find.
-  bool find_next = (find_text_ == search_string || search_string.empty()) &&
-                   (last_search_case_sensitive_ == case_sensitive) &&
-                   !find_op_aborted_;
-
-  current_find_request_id_ = find_request_id_counter_++;
-  if (!find_next)
-    current_find_session_id_ = current_find_request_id_;
-
-  if (!search_string.empty())
-    find_text_ = search_string;
-  last_search_case_sensitive_ = case_sensitive;
-
-  find_op_aborted_ = false;
-
   // Keep track of what the last search was across the tabs.
   if (delegate_)
-    delegate_->SetLastSearchText(find_text_);
+    delegate_->SetLastSearchText(search_string);
+
+  if (search_string.empty()) {
+    StopFinding(find_in_page::SelectionAction::kClear);
+    for (auto& observer : observers_)
+      observer.OnFindEmptyText(web_contents_);
+    return;
+  }
+
+  bool new_session = find_text_ != search_string ||
+                     (last_search_case_sensitive_ != case_sensitive) ||
+                     find_op_aborted_;
+
+  // Continuing here would just find the same results, potentially causing
+  // some flicker in the highlighting.
+  if (!new_session && !find_match)
+    return;
+
+  current_find_request_id_ = find_request_id_counter_++;
+  if (new_session)
+    current_find_session_id_ = current_find_request_id_;
+
+  previous_find_text_ = find_text_;
+  find_text_ = search_string;
+  last_search_case_sensitive_ = case_sensitive;
+  find_op_aborted_ = false;
+  should_find_match_ = find_match;
 
   auto options = blink::mojom::FindOptions::New();
   options->forward = forward_direction;
   options->match_case = case_sensitive;
-  options->find_next = find_next;
+  options->new_session = new_session;
+  options->find_match = find_match;
   options->run_synchronously_for_testing = run_synchronously_for_testing;
-  web_contents()->Find(current_find_request_id_, find_text_,
-                       std::move(options));
+  web_contents_->Find(current_find_request_id_, find_text_, std::move(options));
 }
 
 void FindTabHelper::StopFinding(SelectionAction selection_action) {
@@ -112,6 +105,7 @@ void FindTabHelper::StopFinding(SelectionAction selection_action) {
   last_completed_find_text_.clear();
   find_op_aborted_ = true;
   last_search_result_ = FindNotificationDetails();
+  should_find_match_ = false;
 
   content::StopFindAction action;
   switch (selection_action) {
@@ -128,11 +122,11 @@ void FindTabHelper::StopFinding(SelectionAction selection_action) {
       NOTREACHED();
       action = content::STOP_FIND_ACTION_KEEP_SELECTION;
   }
-  web_contents()->StopFinding(action);
+  web_contents_->StopFinding(action);
 }
 
 void FindTabHelper::ActivateFindInPageResultForAccessibility() {
-  web_contents()->GetMainFrame()->ActivateFindInPageResultForAccessibility(
+  web_contents_->GetMainFrame()->ActivateFindInPageResultForAccessibility(
       current_find_request_id_);
 }
 
@@ -148,13 +142,13 @@ base::string16 FindTabHelper::GetInitialSearchText() {
 #if defined(OS_ANDROID)
 void FindTabHelper::ActivateNearestFindResult(float x, float y) {
   if (!find_op_aborted_ && !find_text_.empty()) {
-    web_contents()->ActivateNearestFindResult(x, y);
+    web_contents_->ActivateNearestFindResult(x, y);
   }
 }
 
 void FindTabHelper::RequestFindMatchRects(int current_version) {
   if (!find_op_aborted_ && !find_text_.empty())
-    web_contents()->RequestFindMatchRects(current_version);
+    web_contents_->RequestFindMatchRects(current_version);
 }
 #endif
 
@@ -184,7 +178,7 @@ void FindTabHelper::HandleFindReply(int request_id,
         FindNotificationDetails(request_id, number_of_matches, selection,
                                 active_match_ordinal, final_update);
     for (auto& observer : observers_)
-      observer.OnFindResultAvailable(web_contents());
+      observer.OnFindResultAvailable(web_contents_);
   }
 }
 

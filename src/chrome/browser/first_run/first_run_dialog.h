@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 
 // Hide this function on platforms where the dialog does not exist.
-#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_MAC) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 
 class Profile;
 
@@ -26,6 +26,6 @@ base::OnceClosure& GetBeforeShowFirstRunDialogHookForTesting();
 
 }  // namespace first_run
 
-#endif  // OS_MACOSX || DESKTOP_LINUX
+#endif  // OS_MAC || DESKTOP_LINUX
 
 #endif  // CHROME_BROWSER_FIRST_RUN_FIRST_RUN_DIALOG_H_

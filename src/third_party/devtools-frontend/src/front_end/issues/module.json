@@ -7,8 +7,7 @@
       "title": "Issues",
       "order": 100,
       "persistence": "closeable",
-      "className": "Issues.IssuesPane",
-      "experiment": "issuesPane"
+      "className": "Issues.IssuesPane"
     },
     {
       "type": "@Common.Revealer",
@@ -29,15 +28,28 @@
     "network",
     "browser_sdk"
   ],
-  "scripts": [],
   "modules": [
-    "issues.js",
-    "issues-legacy.js",
-    "IssuesPane.js",
-    "IssueRevealer.js",
-    "IssueAggregator.js"
+    "issues-legacy.js"
+  ],
+  "skip_compilation": [
+    "issues-legacy.js"
   ],
   "resources": [
+    "descriptions/CoepCoopSandboxedIframeCannotNavigateToCoopPage.md",
+    "descriptions/CoepCorpNotSameSite.md",
+    "descriptions/CoepCorpNotSameOriginAfterDefaultedToSameOriginByCoep.md",
+    "descriptions/CoepCorpNotSameOrigin.md",
+    "descriptions/CoepFrameResourceNeedsCoepHeader.md",
+    "descriptions/cspEvalViolation.md",
+    "descriptions/cspInlineViolation.md",
+    "descriptions/cspURLViolation.md",
+    "descriptions/cspTrustedTypesSinkViolation.md",
+    "descriptions/cspTrustedTypesPolicyViolation.md",
+    "descriptions/mixedContent.md",
+    "descriptions/SameSiteUnspecifiedLaxAllowUnsafeRead.md",
+    "descriptions/SameSiteUnspecifiedLaxAllowUnsafeSet.md",
+    "descriptions/SameSiteUnspecifiedTreatedAsLaxRead.md",
+    "descriptions/SameSiteUnspecifiedTreatedAsLaxSet.md",
     "issuesPane.css",
     "issuesTree.css"
   ]

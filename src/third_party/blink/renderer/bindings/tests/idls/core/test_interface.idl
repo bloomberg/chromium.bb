@@ -96,7 +96,7 @@ typedef [StringContext=TrustedScriptURL] USVString TrustedScriptURLString;
     void alwaysExposedMethod();
     [Exposed=Worker] void workerExposedMethod();
     [Exposed=Window] void windowExposedMethod();
-    [Exposed=Window,RuntimeEnabled=TestFeature] void originTrialWindowExposedMethod();
+    [Exposed=Window,RuntimeEnabled=OriginTrialFeature] void originTrialWindowExposedMethod();
 
     static void alwaysExposedStaticMethod();
     [Exposed=Worker] static void workerExposedStaticMethod();
@@ -112,7 +112,7 @@ typedef [StringContext=TrustedScriptURL] USVString TrustedScriptURLString;
     [Exposed=Window, RuntimeEnabled=RuntimeFeature] void overloadMethodWithExposedAndRuntimeEnabledFlag(DOMString string);
     [Exposed=Window, RuntimeEnabled=RuntimeFeature2] void overloadMethodWithExposedAndRuntimeEnabledFlag(Window window);
 
-    [Exposed(Window FeatureName, Worker FeatureName2)] void methodWithExposedHavingRuntimeEnabldFlag();
+    [Exposed(Window FeatureName, Worker FeatureName2)] void methodWithExposedHavingRuntimeEnabledFlag();
 
     [Exposed=(Window,ServiceWorker)] void windowAndServiceWorkerExposedMethod();
 
@@ -129,7 +129,7 @@ typedef [StringContext=TrustedScriptURL] USVString TrustedScriptURLString;
 
     iterable<ByteString, long>;
 
-    [LenientThis] attribute any lenientThisAttribute;
+    [LegacyLenientThis] attribute any lenientThisAttribute;
 
     [Affects=Nothing] void sideEffectFreeMethod();
     [Affects=Nothing] attribute boolean attributeWithSideEffectFreeGetter;

@@ -9,7 +9,7 @@
 }
 
 .perfmon-pane.suspended {
-  opacity: 0.4;
+  opacity: 40%;
   pointer-events: none;
 }
 
@@ -55,7 +55,7 @@
   background-color: #f8f8f8;
 }
 
-.perfmon-indicator[data-keyboard-focus="true"]:focus {
+.perfmon-indicator:focus-visible {
   background-color: #f8f8f8;
 }
 
@@ -82,5 +82,5 @@
 }
 
 .perfmon-indicator:not(.active) .perfmon-indicator-value {
-  opacity: 0;
+  opacity: 0%;
 }

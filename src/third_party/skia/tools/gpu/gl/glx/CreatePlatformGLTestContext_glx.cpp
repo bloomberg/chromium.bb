@@ -87,7 +87,7 @@ static Display* get_display() {
     };
     static std::unique_ptr<AutoDisplay> ad;
     static SkOnce once;
-    once([] { ad.reset(new AutoDisplay{}); });
+    once([] { ad = std::make_unique<AutoDisplay>(); });
     return ad->display();
 }
 
@@ -205,7 +205,7 @@ GLXGLTestContext::GLXGLTestContext(GrGLStandard forcedGpuAPI, GLXGLTestContext* 
     if (!gluCheckExtension(reinterpret_cast<const GLubyte*>("GLX_ARB_create_context"),
                            reinterpret_cast<const GLubyte*>(glxExts))) {
         if (kGLES_GrGLStandard != forcedGpuAPI) {
-            fContext = glXCreateNewContext(fDisplay, bestFbc, GLX_RGBA_TYPE, 0, True);
+            fContext = glXCreateNewContext(fDisplay, bestFbc, GLX_RGBA_TYPE, nullptr, True);
         }
     } else {
         if (kGLES_GrGLStandard == forcedGpuAPI) {

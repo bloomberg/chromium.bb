@@ -18,6 +18,8 @@
 #include "common/SerialQueue.h"
 #include "common/vulkan_platform.h"
 #include "dawn_native/Error.h"
+#include "dawn_native/IntegerTypes.h"
+#include "dawn_native/PooledResourceMemoryAllocator.h"
 #include "dawn_native/ResourceMemoryAllocation.h"
 
 #include <memory>
@@ -36,7 +38,9 @@ namespace dawn_native { namespace vulkan {
                                                          bool mappable);
         void Deallocate(ResourceMemoryAllocation* allocation);
 
-        void Tick(Serial completedSerial);
+        void DestroyPool();
+
+        void Tick(ExecutionSerial completedSerial);
 
         int FindBestTypeIndex(VkMemoryRequirements requirements, bool mappable);
 
@@ -46,7 +50,7 @@ namespace dawn_native { namespace vulkan {
         class SingleTypeAllocator;
         std::vector<std::unique_ptr<SingleTypeAllocator>> mAllocatorsPerType;
 
-        SerialQueue<ResourceMemoryAllocation> mSubAllocationsToDelete;
+        SerialQueue<ExecutionSerial, ResourceMemoryAllocation> mSubAllocationsToDelete;
     };
 
 }}  // namespace dawn_native::vulkan

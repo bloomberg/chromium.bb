@@ -47,19 +47,19 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ImeKeyboard {
   }
 
   // Sets the current keyboard layout again. We have to call the function every
-  // time when "XI_HierarchyChanged" XInput2 event is sent to Chrome. See
-  // xinput_hierarchy_changed_event_listener.h for details.
+  // time when "x11::Input::HierarchyEvent::opcode" XInput2 event is sent to
+  // Chrome. See xinput_hierarchy_changed_event_listener.h for details.
   virtual bool ReapplyCurrentKeyboardLayout() = 0;
 
   // Updates keyboard LEDs on all keyboards.
   // XKB asymmetrically propagates keyboard modifier indicator state changes to
   // slave keyboards. If the state change is initiated from a client to the
-  // "core/master keyboard", XKB changes global state and pushes an indication
-  // change down to all keyboards. If the state change is initiated by one slave
+  // "core keyboard", XKB changes global state and pushes an indication change
+  // down to all keyboards. If the state change is initiated by one slave
   // (physical) keyboard, it changes global state but only pushes an indicator
   // state change down to that one keyboard.
   // This function changes LEDs on all keyboards by explicitly updating the
-  // core/master keyboard.
+  // core keyboard.
   virtual void ReapplyCurrentModifierLockStatus() = 0;
 
   // Disables the num lock.

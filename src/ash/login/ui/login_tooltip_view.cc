@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,10 +19,6 @@ namespace ash {
 
 namespace {
 
-// Horizontal and vertical padding of login tooltip view.
-constexpr int kHorizontalPaddingLoginTooltipViewDp = 8;
-constexpr int kVerticalPaddingLoginTooltipViewDp = 8;
-
 // The size of the info icon in the tooltip view.
 constexpr int kInfoIconSizeDp = 20;
 
@@ -33,11 +29,13 @@ LoginTooltipView::LoginTooltipView(const base::string16& message,
     : LoginBaseBubbleView(anchor_view) {
   views::ImageView* info_icon = new views::ImageView();
   info_icon->SetPreferredSize(gfx::Size(kInfoIconSizeDp, kInfoIconSizeDp));
-  info_icon->SetImage(gfx::CreateVectorIcon(views::kInfoIcon, SK_ColorWHITE));
+  info_icon->SetImage(gfx::CreateVectorIcon(
+      views::kInfoIcon,
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kIconColorPrimary)));
   AddChildView(info_icon);
 
-  label_ =
-      login_views_utils::CreateBubbleLabel(message, gfx::kGoogleGrey200, this);
+  label_ = login_views_utils::CreateBubbleLabel(message, this);
   AddChildView(label_);
 }
 
@@ -49,12 +47,6 @@ void LoginTooltipView::SetText(const base::string16& message) {
 
 void LoginTooltipView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTooltip;
-}
-
-gfx::Point LoginTooltipView::CalculatePosition() {
-  return CalculatePositionUsingDefaultStrategy(
-      PositioningStrategy::kShowOnLeftSideOrRightSide,
-      kHorizontalPaddingLoginTooltipViewDp, kVerticalPaddingLoginTooltipViewDp);
 }
 
 }  // namespace ash

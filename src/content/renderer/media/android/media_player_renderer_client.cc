@@ -67,12 +67,6 @@ void MediaPlayerRendererClient::Initialize(
           weak_factory_.GetWeakPtr(), media_resource));
 }
 
-void MediaPlayerRendererClient::SetCdm(media::CdmContext* cdm_context,
-                                       media::CdmAttachedCB cdm_attached_cb) {
-  // MediaPlayerRenderer does not support encrypted media.
-  NOTREACHED();
-}
-
 void MediaPlayerRendererClient::OnStreamTextureWrapperInitialized(
     media::MediaResource* media_resource,
     bool success) {

@@ -4,7 +4,10 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 
+#include <memory>
+
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_device.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 
 namespace ui {
@@ -19,16 +22,23 @@ WaylandDataDeviceManager::WaylandDataDeviceManager(
 
 WaylandDataDeviceManager::~WaylandDataDeviceManager() = default;
 
-wl_data_device* WaylandDataDeviceManager::GetDevice() {
+WaylandDataDevice* WaylandDataDeviceManager::GetDevice() {
   DCHECK(connection_->seat());
-  return wl_data_device_manager_get_data_device(device_manager_.get(),
-                                                connection_->seat());
+  if (!device_) {
+    device_ = std::make_unique<WaylandDataDevice>(
+        connection_, wl_data_device_manager_get_data_device(
+                         device_manager_.get(), connection_->seat()));
+  }
+  DCHECK(device_);
+  return device_.get();
 }
 
-std::unique_ptr<WaylandDataSource> WaylandDataDeviceManager::CreateSource() {
+std::unique_ptr<WaylandDataSource> WaylandDataDeviceManager::CreateSource(
+    WaylandDataSource::Delegate* delegate) {
   wl_data_source* data_source =
       wl_data_device_manager_create_data_source(device_manager_.get());
-  return std::make_unique<WaylandDataSource>(data_source, connection_);
+  return std::make_unique<WaylandDataSource>(data_source, connection_,
+                                             delegate);
 }
 
 }  // namespace ui

@@ -17,9 +17,10 @@
 #include "net/base/request_priority.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/http/http_request_headers.h"
-#include "net/url_request/url_request.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/optional_trust_token_params.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
@@ -53,6 +54,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
     bool disable_secure_dns = false;
     bool has_user_activation = false;
     mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer;
+    mojom::ClientSecurityStatePtr client_security_state;
   };
 
   ResourceRequest();
@@ -70,11 +72,14 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   net::SiteForCookies site_for_cookies;
   bool force_ignore_site_for_cookies = false;
   bool update_first_party_url_on_redirect = false;
+
+  // SECURITY NOTE: |request_initiator| is a security-sensitive field.  Please
+  // consult the doc comment for |request_initiator| in url_loader.mojom.
   base::Optional<url::Origin> request_initiator;
+
   base::Optional<url::Origin> isolated_world_origin;
   GURL referrer;
-  net::URLRequest::ReferrerPolicy referrer_policy =
-      net::URLRequest::NEVER_CLEAR_REFERRER;
+  net::ReferrerPolicy referrer_policy = net::ReferrerPolicy::NEVER_CLEAR;
   net::HttpRequestHeaders headers;
   net::HttpRequestHeaders cors_exempt_headers;
   int load_flags = 0;
@@ -111,7 +116,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   net::HttpRequestHeaders custom_proxy_post_cache_headers;
   base::Optional<base::UnguessableToken> fetch_window_id;
   base::Optional<std::string> devtools_request_id;
+  base::Optional<std::string> devtools_stack_id;
   bool is_signed_exchange_prefetch_cache_enabled = false;
+  bool is_fetch_like_api = false;
   bool obey_origin_policy = false;
   base::Optional<base::UnguessableToken> recursive_prefetch_token;
   base::Optional<TrustedParams> trusted_params;
@@ -123,7 +130,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
 
 // This does not accept |kDefault| referrer policy.
 COMPONENT_EXPORT(NETWORK_CPP_BASE)
-net::URLRequest::ReferrerPolicy ReferrerPolicyForUrlRequest(
+net::ReferrerPolicy ReferrerPolicyForUrlRequest(
     mojom::ReferrerPolicy referrer_policy);
 
 }  // namespace network

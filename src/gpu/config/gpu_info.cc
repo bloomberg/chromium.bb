@@ -5,14 +5,15 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_util.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <GLES2/gl2.h>
 #include <GLES2/gl2extchromium.h>
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 namespace {
 
@@ -111,18 +112,6 @@ void EnumerateImageDecodeAcceleratorSupportedProfile(
 }
 
 #if defined(OS_WIN)
-void EnumerateDx12VulkanVersionInfo(const gpu::Dx12VulkanVersionInfo& info,
-                                    gpu::GPUInfo::Enumerator* enumerator) {
-  enumerator->BeginDx12VulkanVersionInfo();
-  enumerator->AddBool("supportsDx12", info.supports_dx12);
-  enumerator->AddBool("supportsVulkan", info.supports_vulkan);
-  enumerator->AddString("dx12FeatureLevel",
-                        gpu::D3DFeatureLevelToString(info.d3d12_feature_level));
-  enumerator->AddString("vulkanVersion",
-                        gpu::VulkanVersionToString(info.vulkan_version));
-  enumerator->EndDx12VulkanVersionInfo();
-}
-
 void EnumerateOverlayInfo(const gpu::OverlayInfo& info,
                           gpu::GPUInfo::Enumerator* enumerator) {
   enumerator->BeginOverlayInfo();
@@ -155,7 +144,7 @@ const char* OverlaySupportToString(gpu::OverlaySupport support) {
 }
 #endif  // OS_WIN
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 GPU_EXPORT bool ValidateMacOSSpecificTextureTarget(int target) {
   switch (target) {
     case GL_TEXTURE_2D:
@@ -166,7 +155,7 @@ GPU_EXPORT bool ValidateMacOSSpecificTextureTarget(int target) {
       return false;
   }
 }
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 VideoDecodeAcceleratorCapabilities::VideoDecodeAcceleratorCapabilities()
     : flags(0) {}
@@ -217,9 +206,9 @@ GPUInfo::GPUInfo()
       sandboxed(false),
       in_process_gpu(true),
       passthrough_cmd_decoder(false),
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       macos_specific_texture_target(gpu::GetPlatformSpecificTextureTarget()),
-#endif  // OS_MACOSX
+#endif  // OS_MAC
       jpeg_decode_accelerator_supported(false),
       oop_rasterization_supported(false),
       subpixel_font_rendering(true) {
@@ -275,12 +264,13 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool in_process_gpu;
     bool passthrough_cmd_decoder;
     bool can_support_threaded_texture_mailbox;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     uint32_t macos_specific_texture_target;
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 #if defined(OS_WIN)
     DxDiagNode dx_diagnostics;
-    Dx12VulkanVersionInfo dx12_vulkan_version_info;
+    uint32_t d3d12_feature_level;
+    uint32_t vulkan_version;
     OverlayInfo overlay_info;
 #endif
 
@@ -339,14 +329,19 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddBool("passthroughCmdDecoder", passthrough_cmd_decoder);
   enumerator->AddBool("canSupportThreadedTextureMailbox",
                       can_support_threaded_texture_mailbox);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   enumerator->AddInt("macOSSpecificTextureTarget",
                      macos_specific_texture_target);
-#endif  // OS_MACOSX
+#endif  // OS_MAC
   // TODO(kbr): add dx_diagnostics on Windows.
 #if defined(OS_WIN)
   EnumerateOverlayInfo(overlay_info, enumerator);
-  EnumerateDx12VulkanVersionInfo(dx12_vulkan_version_info, enumerator);
+  enumerator->AddBool("supportsDx12", d3d12_feature_level != 0);
+  enumerator->AddBool("supportsVulkan", vulkan_version != 0);
+  enumerator->AddString("dx12FeatureLevel",
+                        gpu::D3DFeatureLevelToString(d3d12_feature_level));
+  enumerator->AddString("vulkanVersion",
+                        gpu::VulkanVersionToString(vulkan_version));
 #endif
   enumerator->AddInt("videoDecodeAcceleratorFlags",
                      video_decode_accelerator_capabilities.flags);

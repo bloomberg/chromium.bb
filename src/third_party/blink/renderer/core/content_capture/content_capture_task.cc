@@ -4,11 +4,16 @@
 
 #include "third_party/blink/renderer/core/content_capture/content_capture_task.h"
 
+#include <cmath>
+
 #include "base/auto_reset.h"
+#include "base/feature_list.h"
 #include "cc/trees/layer_tree_host.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_content_holder.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -18,12 +23,38 @@
 
 namespace blink {
 
+ContentCaptureTask::TaskDelay::TaskDelay(
+    const base::TimeDelta& task_short_delay,
+    const base::TimeDelta& task_long_delay)
+    : task_short_delay_(task_short_delay), task_long_delay_(task_long_delay) {}
+
+base::TimeDelta ContentCaptureTask::TaskDelay::ResetAndGetInitialDelay() {
+  delay_exponent_ = 0;
+  return task_short_delay_;
+}
+
+base::TimeDelta ContentCaptureTask::TaskDelay::GetNextTaskDelay() const {
+  return base::TimeDelta::FromMilliseconds(task_short_delay_.InMilliseconds() *
+                                           (1 << delay_exponent_));
+}
+
+void ContentCaptureTask::TaskDelay::IncreaseDelayExponent() {
+  // Increases the delay up to 128s.
+  if (delay_exponent_ < 8)
+    ++delay_exponent_;
+}
+
 ContentCaptureTask::ContentCaptureTask(LocalFrame& local_frame_root,
                                        TaskSession& task_session)
     : local_frame_root_(&local_frame_root), task_session_(&task_session) {
+  base::TimeDelta task_short_delay;
+  base::TimeDelta task_long_delay;
+
   local_frame_root.Client()
       ->GetWebContentCaptureClient()
-      ->GetTaskTimingParameters(task_short_delay_, task_long_delay_);
+      ->GetTaskTimingParameters(task_short_delay, task_long_delay);
+  task_delay_ = std::make_unique<TaskDelay>(task_short_delay, task_long_delay);
+
   // The histogram is all about time, just disable it if high resolution isn't
   // supported.
   if (base::TimeTicks::IsHighResolution()) {
@@ -36,14 +67,15 @@ ContentCaptureTask::ContentCaptureTask(LocalFrame& local_frame_root,
   }
 }
 
-ContentCaptureTask::~ContentCaptureTask() {}
+ContentCaptureTask::~ContentCaptureTask() = default;
 
 void ContentCaptureTask::Shutdown() {
   DCHECK(local_frame_root_);
   local_frame_root_ = nullptr;
+  CancelTask();
 }
 
-bool ContentCaptureTask::CaptureContent(Vector<cc::NodeId>& data) {
+bool ContentCaptureTask::CaptureContent(Vector<cc::NodeInfo>& data) {
   if (captured_content_for_testing_) {
     data = captured_content_for_testing_.value();
     return true;
@@ -53,7 +85,7 @@ bool ContentCaptureTask::CaptureContent(Vector<cc::NodeId>& data) {
   if (const auto* root_frame_view = local_frame_root_->View()) {
     if (const auto* cc_layer = root_frame_view->RootCcLayer()) {
       if (auto* layer_tree_host = cc_layer->layer_tree_host()) {
-        std::vector<cc::NodeId> content;
+        std::vector<cc::NodeInfo> content;
         if (layer_tree_host->CaptureContent(&content)) {
           for (auto c : content)
             data.push_back(std::move(c));
@@ -68,14 +100,14 @@ bool ContentCaptureTask::CaptureContent(Vector<cc::NodeId>& data) {
 
 bool ContentCaptureTask::CaptureContent() {
   DCHECK(task_session_);
-  Vector<cc::NodeId> buffer;
+  Vector<cc::NodeInfo> buffer;
   if (histogram_reporter_)
     histogram_reporter_->OnCaptureContentStarted();
   bool result = CaptureContent(buffer);
-  if (histogram_reporter_)
-    histogram_reporter_->OnCaptureContentEnded(buffer.size());
   if (!buffer.IsEmpty())
     task_session_->SetCapturedContent(buffer);
+  if (histogram_reporter_)
+    histogram_reporter_->OnCaptureContentEnded(buffer.size());
   return result;
 }
 
@@ -93,14 +125,14 @@ void ContentCaptureTask::SendContent(
   // Only send changed content after the new content was sent.
   bool sending_changed_content = !doc_session.HasUnsentCapturedContent();
   while (content_batch.size() < kBatchSize) {
-    Node* node;
+    ContentHolder* holder;
     if (sending_changed_content)
-      node = doc_session.GetNextChangedNode();
+      holder = doc_session.GetNextChangedNode();
     else
-      node = doc_session.GetNextUnsentNode();
-    if (!node)
+      holder = doc_session.GetNextUnsentNode();
+    if (!holder)
       break;
-    content_batch.emplace_back(WebContentHolder(*node));
+    content_batch.emplace_back(WebContentHolder(*holder));
   }
   if (!content_batch.empty()) {
     if (sending_changed_content) {
@@ -196,25 +228,44 @@ bool ContentCaptureTask::RunInternal() {
 
 void ContentCaptureTask::Run(TimerBase*) {
   TRACE_EVENT0("content_capture", "RunTask");
-  if (!RunInternal()) {
+  task_delay_->IncreaseDelayExponent();
+  if (histogram_reporter_)
+    histogram_reporter_->OnTaskRun();
+  bool completed = RunInternal();
+  if (!completed) {
     ScheduleInternal(ScheduleReason::kRetryTask);
+  }
+  if (histogram_reporter_ &&
+      (completed || task_state_ == TaskState::kCaptureContent)) {
+    // The current capture session ends if the task indicates it completed or
+    // is about to capture the new changes.
+    histogram_reporter_->OnAllCapturedContentSent();
+  }
+}
+
+base::TimeDelta ContentCaptureTask::GetAndAdjustDelay(ScheduleReason reason) {
+  bool user_activated_delay_enabled =
+      base::FeatureList::IsEnabled(features::kContentCaptureUserActivatedDelay);
+  switch (reason) {
+    case ScheduleReason::kFirstContentChange:
+    case ScheduleReason::kScrolling:
+    case ScheduleReason::kRetryTask:
+      return user_activated_delay_enabled
+                 ? task_delay_->ResetAndGetInitialDelay()
+                 : task_delay_->task_short_delay();
+    case ScheduleReason::kUserActivatedContentChange:
+      return user_activated_delay_enabled
+                 ? task_delay_->ResetAndGetInitialDelay()
+                 : task_delay_->task_long_delay();
+    case ScheduleReason::kNonUserActivatedContentChange:
+      return user_activated_delay_enabled ? task_delay_->GetNextTaskDelay()
+                                          : task_delay_->task_long_delay();
   }
 }
 
 void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
   DCHECK(local_frame_root_);
-
-  base::TimeDelta delay;
-  switch (reason) {
-    case ScheduleReason::kFirstContentChange:
-    case ScheduleReason::kScrolling:
-    case ScheduleReason::kRetryTask:
-      delay = task_short_delay_;
-      break;
-    case ScheduleReason::kContentChange:
-      delay = task_long_delay_;
-      break;
-  }
+  base::TimeDelta delay = GetAndAdjustDelay(reason);
 
   // Return if the current task is about to run soon.
   if (delay_task_ && delay_task_->IsActive() &&
@@ -235,6 +286,10 @@ void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
   delay_task_->StartOneShot(delay, FROM_HERE);
   TRACE_EVENT_INSTANT1("content_capture", "ScheduleTask",
                        TRACE_EVENT_SCOPE_THREAD, "reason", reason);
+  if (histogram_reporter_) {
+    histogram_reporter_->OnTaskScheduled(/* record_task_delay = */ reason !=
+                                         ScheduleReason::kRetryTask);
+  }
 }
 
 void ContentCaptureTask::Schedule(ScheduleReason reason) {
@@ -252,6 +307,10 @@ bool ContentCaptureTask::ShouldPause() {
   return ThreadScheduler::Current()->ShouldYieldForHighPriorityWork();
 }
 
+void ContentCaptureTask::CancelTask() {
+  if (delay_task_ && delay_task_->IsActive())
+    delay_task_->Stop();
+}
 void ContentCaptureTask::ClearDocumentSessionsForTesting() {
   task_session_->ClearDocumentSessionsForTesting();
 }
@@ -263,11 +322,10 @@ base::TimeDelta ContentCaptureTask::GetTaskNextFireIntervalForTesting() const {
 }
 
 void ContentCaptureTask::CancelTaskForTesting() {
-  if (delay_task_ && delay_task_->IsActive())
-    delay_task_->Stop();
+  CancelTask();
 }
 
-void ContentCaptureTask::Trace(Visitor* visitor) {
+void ContentCaptureTask::Trace(Visitor* visitor) const {
   visitor->Trace(local_frame_root_);
   visitor->Trace(task_session_);
 }

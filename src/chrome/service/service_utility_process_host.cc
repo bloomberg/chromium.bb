@@ -46,10 +46,10 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/emf_win.h"
+#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/switches.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_types.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/sandbox/switches.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace {
@@ -91,8 +91,8 @@ class ServiceSandboxedProcessLauncherDelegate
     return true;
   }
 
-  service_manager::SandboxType GetSandboxType() override {
-    return service_manager::SandboxType::kUtility;
+  sandbox::policy::SandboxType GetSandboxType() override {
+    return sandbox::policy::SandboxType::kPdfConversion;
   }
 
  private:
@@ -232,7 +232,7 @@ ServiceUtilityProcessHost::ServiceUtilityProcessHost(
 
 ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {
   // We need to kill the child process when the host dies.
-  process_.Terminate(service_manager::RESULT_CODE_NORMAL_EXIT, false);
+  process_.Terminate(content::RESULT_CODE_NORMAL_EXIT, false);
 }
 
 bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
@@ -328,6 +328,7 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
     switches::kVModule,
 #if defined(OS_WIN)
     switches::kDisableHighResTimer,
+    switches::kRaiseTimerFrequency,
 #endif
   };
   cmd_line->CopySwitchesFrom(service_command_line, kForwardSwitches,
@@ -340,7 +341,12 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
     base::HandlesToInheritVector handles;
     channel.PrepareToPassRemoteEndpoint(&handles, cmd_line);
 
+    // Need to call SetCommandLineFlagsForSandboxType() here, as this process
+    // launch path bypasses content::UtilityProcessHost::StartProcess().
     ServiceSandboxedProcessLauncherDelegate delegate;
+    sandbox::policy::SetCommandLineFlagsForSandboxType(
+        cmd_line, delegate.GetSandboxType());
+
     base::Process process;
     sandbox::ResultCode result = content::StartSandboxedProcess(
         &delegate, cmd_line, handles, &process);
@@ -356,7 +362,7 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
     mojo::NamedPlatformChannel channel(options);
     channel.PassServerNameOnCommandLine(cmd_line);
 
-    cmd_line->AppendSwitch(service_manager::switches::kNoSandbox);
+    cmd_line->AppendSwitch(sandbox::policy::switches::kNoSandbox);
     process_ = base::LaunchProcess(*cmd_line, base::LaunchOptions());
     mojo::OutgoingInvitation::Send(std::move(mojo_invitation),
                                    process_.Handle(),

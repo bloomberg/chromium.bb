@@ -5,6 +5,7 @@
 import("//build/util/process_version.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//chrome/updater/branding.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 # This target builds the updater executable, its installer, and unittests.
@@ -12,7 +13,15 @@ group("win") {
   deps = [
     ":updater",
     "//chrome/updater/win/installer:installer",
+    "//chrome/updater/win/signing",
   ]
+}
+
+config("wrl_strict") {
+  # This definition is used in <wrl/module.h> to specify that only COM
+  # support is provided by WRL, and thus, avoid a dependency on WinRT, which
+  # is not available in Windows 7.
+  defines = [ "__WRL_CLASSIC_COM_STRICT__" ]
 }
 
 executable("updater") {
@@ -24,7 +33,7 @@ executable("updater") {
   configs += [ "//build/config/win:windowed" ]
 
   deps = [
-    ":install_app",
+    ":app_install_controller",
     ":lib",
     ":version_resources",
     "//build/win:default_exe_manifest",
@@ -52,32 +61,6 @@ process_version_rc_template("version_resources") {
   output = "$target_gen_dir/updater_exe.rc"
 }
 
-source_set("base") {
-  sources = [
-    "scoped_handle.h",
-    "task_scheduler.cc",
-    "task_scheduler.h",
-    "user_info.cc",
-    "user_info.h",
-    "util.cc",
-    "util.h",
-  ]
-
-  defines = [ "SECURITY_WIN32" ]
-
-  deps = [
-    ":constants",
-    "//base",
-    "//chrome/updater:base",
-    "//chrome/updater:version_header",
-  ]
-
-  libs = [
-    "secur32.lib",
-    "taskschd.lib",
-  ]
-}
-
 source_set("constants") {
   sources = [
     "constants.cc",
@@ -93,6 +76,10 @@ source_set("constants") {
 source_set("lib") {
   sources = [
     "action_handler.cc",
+    "control_service_proxy.cc",
+    "control_service_proxy.h",
+    "group_policy_manager.cc",
+    "group_policy_manager.h",
     "net/net_util.cc",
     "net/net_util.h",
     "net/network.h",
@@ -100,29 +87,49 @@ source_set("lib") {
     "net/network_fetcher.h",
     "net/network_winhttp.cc",
     "net/network_winhttp.h",
+    "net/proxy_configuration.cc",
+    "net/proxy_configuration.h",
+    "net/proxy_info.cc",
+    "net/proxy_info.h",
     "net/scoped_hinternet.h",
+    "net/scoped_winttp_proxy_info.h",
+    "scoped_handle.h",
+    "scoped_impersonation.cc",
+    "scoped_impersonation.h",
     "setup/setup.cc",
     "setup/setup.h",
     "setup/setup_util.cc",
     "setup/setup_util.h",
     "setup/uninstall.cc",
     "setup/uninstall.h",
-    "update_service_out_of_process.cc",
-    "update_service_out_of_process.h",
+    "task_scheduler.cc",
+    "task_scheduler.h",
+    "update_service_proxy.cc",
+    "update_service_proxy.h",
+    "user_info.cc",
+    "user_info.h",
+    "util.cc",
+    "util.h",
   ]
 
-  libs = [ "winhttp.lib" ]
-
   configs -= [ "//build/config/win:winver" ]
-  configs += [ "//chrome/updater/server/win:winver" ]
+  configs += [ "//chrome/updater/app/server/win:winver" ]
+
+  defines = [ "SECURITY_WIN32" ]
+
+  libs = [
+    "secur32.lib",
+    "taskschd.lib",
+    "winhttp.lib",
+  ]
 
   deps = [
-    ":base",
     ":constants",
     "//base",
     "//chrome/installer/util:with_no_strings",
     "//chrome/updater:base",
-    "//chrome/updater/server/win:updater_idl_idl",
+    "//chrome/updater:version_header",
+    "//chrome/updater/app/server/win:updater_idl_idl",
     "//components/update_client",
     "//url:url",
   ]
@@ -142,49 +149,79 @@ source_set("install_progress_observer") {
 # dependency of ATL in the UI so ATL headers are not visible in the
 # compilation units outside the UI itself.
 # TODO(sorin): https://crbug.com/1014311
-source_set("install_app") {
-  sources = [
-    "install_app.cc",
-    "install_app.h",
-  ]
+source_set("app_install_controller") {
+  if (is_win) {
+    visibility = [ "//chrome/updater/win/*" ]
+    allow_circular_includes_from = [ "//chrome/updater:lib" ]
 
-  deps = [
-    ":install_progress_observer",
-    ":lib",
-    "//base",
-    "//base:i18n",
-    "//chrome/updater:base",
-    "//chrome/updater:lib",
-    "//chrome/updater:version_header",
-    "//chrome/updater/win/ui",
-    "//components/prefs",
-    "//components/update_client",
-  ]
-  allow_circular_includes_from = [ "//chrome/updater:lib" ]
+    cflags_cc = [ "-Wno-missing-braces" ]
 
-  cflags_cc = [ "-Wno-missing-braces" ]
+    sources = [ "app_install_controller.cc" ]
+
+    deps = [
+      ":install_progress_observer",
+      ":lib",
+      "//base",
+      "//base:i18n",
+      "//chrome/updater:base",
+      "//chrome/updater:lib",
+      "//chrome/updater:version_header",
+      "//chrome/updater/win/ui",
+    ]
+  }
 }
 
-# Tests built into Chrome's unit_tests.exe.
+source_set("tag_extractor") {
+  public = [ "tag_extractor.h" ]
+
+  sources = [
+    "tag_extractor.cc",
+    "tag_extractor_impl.h",
+  ]
+
+  friend = [
+    ":updater_tests",
+    ":updater_fuzzer",
+  ]
+
+  # In the future, we want to rely on the base numerics headers and
+  # PeImageReader directly, but right now that isn't possible due to the
+  # visibility of the lib, so we depend on the entire base temporarily.
+  deps = [ "//base" ]
+}
+
 source_set("updater_tests") {
   testonly = true
 
   sources = [
+    "group_policy_manager_unittest.cc",
     "net/network_unittest.cc",
+    "net/proxy_configuration_unittest.cc",
+    "net/proxy_info_unittest.cc",
+    "tag_extractor_unittest.cc",
     "util_unittest.cc",
   ]
 
   deps = [
-    ":base",
-    ":install_app",
+    ":app_install_controller",
+    ":constants",
     ":lib",
+    ":tag_extractor",
     "//base/test:test_support",
     "//testing/gtest",
+    "//url:url",
   ]
 
   data_deps = [
     ":updater_unittests",
     "//chrome/updater/win/installer:installer_unittest",
+  ]
+
+  data = [
+    "../test/data/signed.exe",
+    "../test/data/signed.exe.gz",
+    "../test/data/tagged_encode_utf8.exe",
+    "../test/data/tagged_magic_utf16.exe",
   ]
 }
 
@@ -200,8 +237,7 @@ test("updater_unittests") {
   ]
 
   deps = [
-    ":base",
-    ":install_app",
+    ":app_install_controller",
     ":lib",
     "//base",
     "//base/test:test_support",
@@ -212,4 +248,12 @@ test("updater_unittests") {
   ]
 
   data = [ "//chrome/updater/test/data/updater.runtime_deps" ]
+}
+
+fuzzer_test("updater_fuzzer") {
+  sources = [ "tag_extractor_fuzzer.cc" ]
+
+  deps = [ ":tag_extractor" ]
+
+  seed_corpus = "../test/data/tag_extractor_corpus/"
 }

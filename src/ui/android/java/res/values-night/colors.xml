@@ -8,7 +8,7 @@
     <color name="default_text_color">@color/default_text_color_light</color>
     <color name="default_text_color_inverse">@color/default_text_color_dark</color>
     <color name="default_text_color_secondary">@color/default_text_color_secondary_light</color>
-    <color name="default_text_color_tertiary">@color/default_text_color_tertiary_light</color>
+    <color name="default_text_color_disabled">@color/default_text_color_disabled_light</color>
     <color name="default_text_color_link">@color/default_text_color_link_light</color>
     <color name="default_text_color_link_disabled">@color/default_text_color_link_disabled_light</color>
     <color name="default_text_color_error">@color/default_text_color_error_light</color>
@@ -40,6 +40,7 @@
     <color name="ripple_color_blue">@color/ripple_color_blue_light</color>
 
     <!-- Colors used for Widgets (checkboxes, switches, buttons, etc)-->
+    <color name="default_control_color_normal">@color/default_control_color_normal_dark</color>
     <color name="default_control_color_active">@color/default_control_color_active_dark</color>
 
     <!-- Chip colors -->
@@ -65,6 +66,9 @@
         @color/circular_progress_icon_color_small_large_dark
     </color>
 
+    <!-- Incognito icon colors -->
+    <color name="incognito_icon_filled_bg_color">@color/incognito_icon_filled_bg_color_light</color>
+
     <!-- Other colors -->
     <color name="default_red">@color/default_red_light</color>
     <color name="default_green">@color/default_green_light</color>
@@ -74,4 +78,7 @@
     <color name="omnibox_bg_color">@color/omnibox_bg_color_dark</color>
     <color name="image_loading_color">@color/image_loading_color_light</color>
     <color name="promo_illustration_bg_color">@color/promo_illustration_bg_color_dark</color>
+    <color name="preference_highlighted_bg_color">@color/preference_highlighted_bg_color_light</color>
+    <color name="menu_chip_background_color">@color/menu_chip_background_color_light</color>
+    <color name="menu_chip_background_color_disabled">@color/menu_chip_background_color_disabled_light</color>
 </resources>

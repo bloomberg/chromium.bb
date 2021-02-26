@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
@@ -13,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -20,7 +22,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/mock_widget_impl.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -139,7 +140,8 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
   MockRenderProcessHostFactory process_host_factory;
   RenderProcessHost* process_host =
       process_host_factory.CreateRenderProcessHost(&browser_context, nullptr);
-
+  auto agent_scheduling_group_host =
+      std::make_unique<AgentSchedulingGroupHost>(*process_host);
   // Populates |g_supported_scale_factors|.
   std::vector<ui::ScaleFactor> supported_factors;
   supported_factors.push_back(ui::SCALE_FACTOR_100P);
@@ -147,13 +149,8 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
 
   @autoreleasepool {
     int32_t routing_id = process_host->GetNextRoutingID();
-    mojo::PendingRemote<mojom::Widget> widget;
-    std::unique_ptr<MockWidgetImpl> widget_impl =
-        std::make_unique<MockWidgetImpl>(
-            widget.InitWithNewPipeAndPassReceiver());
-
     RenderWidgetHostImpl* render_widget = new RenderWidgetHostImpl(
-        &delegate, process_host, routing_id, std::move(widget),
+        &delegate, *agent_scheduling_group_host, routing_id,
         /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
 
     ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
@@ -185,7 +182,7 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
     // The |render_widget|'s process needs to be deleted within |message_loop|.
     delete render_widget;
   }
-
+  process_host->Cleanup();
   ui::WindowResizeHelperMac::Get()->ShutdownForTests();
 }
 

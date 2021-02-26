@@ -7,11 +7,12 @@
 #include <memory>
 #include <string>
 
+#include "absl/base/macros.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 #include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
 
@@ -202,12 +203,12 @@ namespace test {
 // DecryptWithNonce wraps the |Decrypt| method of |decrypter| to allow passing
 // in an nonce and also to allocate the buffer needed for the plaintext.
 QuicData* DecryptWithNonce(Aes128Gcm12Decrypter* decrypter,
-                           quiche::QuicheStringPiece nonce,
-                           quiche::QuicheStringPiece associated_data,
-                           quiche::QuicheStringPiece ciphertext) {
+                           absl::string_view nonce,
+                           absl::string_view associated_data,
+                           absl::string_view ciphertext) {
   uint64_t packet_number;
-  quiche::QuicheStringPiece nonce_prefix(nonce.data(),
-                                         nonce.size() - sizeof(packet_number));
+  absl::string_view nonce_prefix(nonce.data(),
+                                 nonce.size() - sizeof(packet_number));
   decrypter->SetNoncePrefix(nonce_prefix);
   memcpy(&packet_number, nonce.data() + nonce_prefix.size(),
          sizeof(packet_number));
@@ -225,7 +226,7 @@ QuicData* DecryptWithNonce(Aes128Gcm12Decrypter* decrypter,
 class Aes128Gcm12DecrypterTest : public QuicTest {};
 
 TEST_F(Aes128Gcm12DecrypterTest, Decrypt) {
-  for (size_t i = 0; i < QUICHE_ARRAYSIZE(test_group_array); i++) {
+  for (size_t i = 0; i < ABSL_ARRAYSIZE(test_group_array); i++) {
     SCOPED_TRACE(i);
     const TestVector* test_vectors = test_group_array[i];
     const TestGroupInfo& test_info = test_group_info[i];
@@ -234,14 +235,14 @@ TEST_F(Aes128Gcm12DecrypterTest, Decrypt) {
       bool has_pt = test_vectors[j].pt;
 
       // Decode the test vector.
-      std::string key = quiche::QuicheTextUtils::HexDecode(test_vectors[j].key);
-      std::string iv = quiche::QuicheTextUtils::HexDecode(test_vectors[j].iv);
-      std::string ct = quiche::QuicheTextUtils::HexDecode(test_vectors[j].ct);
-      std::string aad = quiche::QuicheTextUtils::HexDecode(test_vectors[j].aad);
-      std::string tag = quiche::QuicheTextUtils::HexDecode(test_vectors[j].tag);
+      std::string key = absl::HexStringToBytes(test_vectors[j].key);
+      std::string iv = absl::HexStringToBytes(test_vectors[j].iv);
+      std::string ct = absl::HexStringToBytes(test_vectors[j].ct);
+      std::string aad = absl::HexStringToBytes(test_vectors[j].aad);
+      std::string tag = absl::HexStringToBytes(test_vectors[j].tag);
       std::string pt;
       if (has_pt) {
-        pt = quiche::QuicheTextUtils::HexDecode(test_vectors[j].pt);
+        pt = absl::HexStringToBytes(test_vectors[j].pt);
       }
 
       // The test vector's lengths should look sane. Note that the lengths
@@ -270,7 +271,7 @@ TEST_F(Aes128Gcm12DecrypterTest, Decrypt) {
           // This deliberately tests that the decrypter can
           // handle an AAD that is set to nullptr, as opposed
           // to a zero-length, non-nullptr pointer.
-          aad.length() ? aad : quiche::QuicheStringPiece(), ciphertext));
+          aad.length() ? aad : absl::string_view(), ciphertext));
       if (!decrypted) {
         EXPECT_FALSE(has_pt);
         continue;

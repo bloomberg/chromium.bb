@@ -21,8 +21,8 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
@@ -213,15 +213,6 @@ BrowserDMTokenStorage::StoreTask BrowserDMTokenStorageWin::SaveDMTokenTask(
 scoped_refptr<base::TaskRunner>
 BrowserDMTokenStorageWin::SaveDMTokenTaskRunner() {
   return com_sta_task_runner_;
-}
-
-// static
-BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
-  if (storage_for_testing_)
-    return storage_for_testing_;
-
-  static base::NoDestructor<BrowserDMTokenStorageWin> storage;
-  return storage.get();
 }
 
 BrowserDMTokenStorageWin::BrowserDMTokenStorageWin()

@@ -13,6 +13,8 @@ constexpr char ContentCaptureTaskHistogramReporter::kCaptureContentTime[];
 constexpr char ContentCaptureTaskHistogramReporter::kCaptureContentDelayTime[];
 constexpr char ContentCaptureTaskHistogramReporter::kSendContentTime[];
 constexpr char ContentCaptureTaskHistogramReporter::kSentContentCount[];
+constexpr char ContentCaptureTaskHistogramReporter::kTaskDelayInMs[];
+constexpr char ContentCaptureTaskHistogramReporter::kTaskRunsPerCapture[];
 
 ContentCaptureTaskHistogramReporter::ContentCaptureTaskHistogramReporter()
     : capture_content_delay_time_histogram_(kCaptureContentDelayTime,
@@ -21,7 +23,9 @@ ContentCaptureTaskHistogramReporter::ContentCaptureTaskHistogramReporter()
                                             50),
       capture_content_time_histogram_(kCaptureContentTime, 0, 50000, 50),
       send_content_time_histogram_(kSendContentTime, 0, 50000, 50),
-      sent_content_count_histogram_(kSentContentCount, 0, 10000, 50) {}
+      sent_content_count_histogram_(kSentContentCount, 0, 10000, 50),
+      task_delay_time_in_ms_histogram_(kTaskDelayInMs, 1, 128000, 100),
+      task_runs_per_capture_histogram_(kTaskRunsPerCapture, 0, 100, 50) {}
 
 ContentCaptureTaskHistogramReporter::~ContentCaptureTaskHistogramReporter() =
     default;
@@ -30,6 +34,22 @@ void ContentCaptureTaskHistogramReporter::OnContentChanged() {
   if (content_change_time_)
     return;
   content_change_time_ = base::TimeTicks::Now();
+}
+
+void ContentCaptureTaskHistogramReporter::OnTaskScheduled(
+    bool record_task_delay) {
+  // Always save the latest schedule time.
+  task_scheduled_time_ =
+      record_task_delay ? base::TimeTicks::Now() : base::TimeTicks();
+}
+
+void ContentCaptureTaskHistogramReporter::OnTaskRun() {
+  if (!task_scheduled_time_.is_null()) {
+    task_delay_time_in_ms_histogram_.CountMilliseconds(base::TimeTicks::Now() -
+                                                       task_scheduled_time_);
+    task_scheduled_time_ = base::TimeTicks();
+  }
+  task_runs_per_capture_++;
 }
 
 void ContentCaptureTaskHistogramReporter::OnCaptureContentStarted() {
@@ -68,6 +88,11 @@ void ContentCaptureTaskHistogramReporter::OnSendContentEnded(
     return;
   send_content_time_histogram_.CountMicroseconds(now -
                                                  send_content_start_time_);
+}
+
+void ContentCaptureTaskHistogramReporter::OnAllCapturedContentSent() {
+  task_runs_per_capture_histogram_.Count(task_runs_per_capture_);
+  task_runs_per_capture_ = 0;
 }
 
 void ContentCaptureTaskHistogramReporter::RecordsSentContentCountPerDocument(

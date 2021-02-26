@@ -4,21 +4,14 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
+import("//build/config/ozone.gni")
 import("//build/config/ui.gni")
 import("//components/vector_icons/vector_icons.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
-import("//ui/ozone/ozone.gni")
 import("//ui/views/features.gni")
 
 assert(toolkit_views)
-
-# Reset sources_assignment_filter for the BUILD.gn file to prevent
-# regression during the migration of Chromium away from the feature.
-# See docs/no_sources_assignment_filter.md for more information.
-# TODO(crbug.com/1018739): remove this when migration is done.
-set_sources_assignment_filter([])
 
 config("flags") {
   defines = [ "TOOLKIT_VIEWS=1" ]
@@ -27,7 +20,7 @@ config("flags") {
 aggregate_vector_icons("views_vector_icons") {
   icon_directory = "vector_icons"
 
-  icons = [
+  sources = [
     "checkbox_active.icon",
     "checkbox_normal.icon",
     "close.icon",
@@ -59,7 +52,7 @@ buildflag_header("buildflags") {
   flags = [ "ENABLE_DESKTOP_AURA=$enable_desktop_aura" ]
 }
 
-jumbo_component("views") {
+component("views") {
   all_dependent_configs = [ ":flags" ]
 
   public = [
@@ -101,6 +94,7 @@ jumbo_component("views") {
     "border.h",
     "bubble/bubble_border.h",
     "bubble/bubble_dialog_delegate_view.h",
+    "bubble/bubble_dialog_model_host.h",
     "bubble/bubble_frame_view.h",
     "bubble/info_bubble.h",
     "bubble/tooltip_icon.h",
@@ -110,7 +104,6 @@ jumbo_component("views") {
     "controls/button/button.h",
     "controls/button/button_controller.h",
     "controls/button/button_controller_delegate.h",
-    "controls/button/button_observer.h",
     "controls/button/checkbox.h",
     "controls/button/image_button.h",
     "controls/button/image_button_factory.h",
@@ -121,11 +114,10 @@ jumbo_component("views") {
     "controls/button/menu_button_controller.h",
     "controls/button/radio_button.h",
     "controls/button/toggle_button.h",
+    "controls/color_tracking_icon_view.h",
     "controls/combobox/combobox.h",
-    "controls/combobox/combobox_listener.h",
     "controls/combobox/combobox_util.h",
     "controls/editable_combobox/editable_combobox.h",
-    "controls/editable_combobox/editable_combobox_listener.h",
     "controls/focus_ring.h",
     "controls/focusable_border.h",
     "controls/highlight_path_generator.h",
@@ -150,6 +142,7 @@ jumbo_component("views") {
     "controls/menu/menu_scroll_view_container.h",
     "controls/menu/menu_separator.h",
     "controls/menu/menu_types.h",
+    "controls/menu/new_badge.h",
     "controls/menu/submenu_view.h",
     "controls/message_box_view.h",
     "controls/native/native_view_host.h",
@@ -169,7 +162,6 @@ jumbo_component("views") {
     "controls/separator.h",
     "controls/slider.h",
     "controls/styled_label.h",
-    "controls/styled_label_listener.h",
     "controls/tabbed_pane/tabbed_pane.h",
     "controls/tabbed_pane/tabbed_pane_listener.h",
     "controls/table/table_grouper.h",
@@ -198,9 +190,11 @@ jumbo_component("views") {
     "input_event_activation_protector.h",
     "layout/animating_layout_manager.h",
     "layout/box_layout.h",
+    "layout/box_layout_view.h",
     "layout/fill_layout.h",
     "layout/flex_layout.h",
     "layout/flex_layout_types.h",
+    "layout/flex_layout_view.h",
     "layout/grid_layout.h",
     "layout/layout_manager.h",
     "layout/layout_manager_base.h",
@@ -216,6 +210,8 @@ jumbo_component("views") {
     "metadata/metadata_types.h",
     "metadata/property_metadata.h",
     "metadata/type_conversion.h",
+    "metadata/view_factory.h",
+    "metadata/view_factory_internal.h",
     "metrics.h",
     "mouse_constants.h",
     "mouse_watcher.h",
@@ -241,6 +237,7 @@ jumbo_component("views") {
     "view_targeter.h",
     "view_targeter_delegate.h",
     "view_tracker.h",
+    "view_utils.h",
     "views_delegate.h",
     "views_export.h",
     "views_features.h",
@@ -255,6 +252,7 @@ jumbo_component("views") {
     "widget/root_view.h",
     "widget/root_view_targeter.h",
     "widget/tooltip_manager.h",
+    "widget/unique_widget_ptr.h",
     "widget/widget.h",
     "widget/widget_delegate.h",
     "widget/widget_deletion_observer.h",
@@ -314,6 +312,7 @@ jumbo_component("views") {
     "border.cc",
     "bubble/bubble_border.cc",
     "bubble/bubble_dialog_delegate_view.cc",
+    "bubble/bubble_dialog_model_host.cc",
     "bubble/bubble_frame_view.cc",
     "bubble/footnote_container_view.cc",
     "bubble/info_bubble.cc",
@@ -332,8 +331,11 @@ jumbo_component("views") {
     "controls/button/menu_button_controller.cc",
     "controls/button/radio_button.cc",
     "controls/button/toggle_button.cc",
+    "controls/color_tracking_icon_view.cc",
     "controls/combobox/combobox.cc",
     "controls/combobox/combobox_util.cc",
+    "controls/combobox/empty_combobox_model.cc",
+    "controls/combobox/empty_combobox_model.h",
     "controls/editable_combobox/editable_combobox.cc",
     "controls/focus_ring.cc",
     "controls/focusable_border.cc",
@@ -354,6 +356,7 @@ jumbo_component("views") {
     "controls/menu/menu_runner_impl_adapter.cc",
     "controls/menu/menu_scroll_view_container.cc",
     "controls/menu/menu_separator.cc",
+    "controls/menu/new_badge.cc",
     "controls/menu/submenu_view.cc",
     "controls/message_box_view.cc",
     "controls/native/native_view_host.cc",
@@ -380,7 +383,6 @@ jumbo_component("views") {
     "controls/tree/tree_view.cc",
     "controls/tree/tree_view_controller.cc",
     "controls/tree/tree_view_drawing_provider.cc",
-    "controls/views_text_services_context_menu.cc",
     "controls/views_text_services_context_menu_base.cc",
     "controls/views_text_services_context_menu_base.h",
     "debug_utils.cc",
@@ -393,9 +395,11 @@ jumbo_component("views") {
     "input_event_activation_protector.cc",
     "layout/animating_layout_manager.cc",
     "layout/box_layout.cc",
+    "layout/box_layout_view.cc",
     "layout/fill_layout.cc",
     "layout/flex_layout.cc",
     "layout/flex_layout_types.cc",
+    "layout/flex_layout_view.cc",
     "layout/grid_layout.cc",
     "layout/layout_manager.cc",
     "layout/layout_manager_base.cc",
@@ -407,6 +411,7 @@ jumbo_component("views") {
     "metadata/metadata_cache.cc",
     "metadata/metadata_types.cc",
     "metadata/type_conversion.cc",
+    "metadata/view_factory_internal.cc",
     "metrics.cc",
     "mouse_watcher.cc",
     "mouse_watcher_view_host.cc",
@@ -437,6 +442,7 @@ jumbo_component("views") {
     "widget/root_view.cc",
     "widget/root_view_targeter.cc",
     "widget/tooltip_manager.cc",
+    "widget/unique_widget_ptr.cc",
     "widget/widget.cc",
     "widget/widget_aura_utils.cc",
     "widget/widget_delegate.cc",
@@ -478,12 +484,14 @@ jumbo_component("views") {
   deps = [
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//build:chromeos_buildflags",
     "//cc/paint",
     "//mojo/public/cpp/bindings",
     "//skia",
     "//third_party/icu",
     "//ui/accessibility",
     "//ui/base/clipboard",
+    "//ui/base/dragdrop/mojom:mojom_shared",
     "//ui/display",
     "//ui/latency",
     "//ui/native_theme",
@@ -502,7 +510,8 @@ jumbo_component("views") {
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base/clipboard",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
+    "//ui/base/dragdrop/mojom:mojom_headers",
     "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/display",
@@ -513,19 +522,21 @@ jumbo_component("views") {
     "//ui/gfx/animation",
     "//ui/gfx/geometry",
     "//ui/views/resources",
+    "//ui/views/window/vector_icons",
   ]
 
   if (use_x11) {
     deps += [ "//ui/display/util" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     public += [ "color_chooser/color_chooser_view.h" ]
     sources += [ "color_chooser/color_chooser_view.cc" ]
   }
 
   if (is_linux && !is_chromeos) {
     sources -= [ "window/window_button_order_provider.cc" ]
+    public_deps += [ "//ui/base/cursor:theme_manager" ]
     deps += [
       "//ui/base/ime/linux",
       "//ui/shell_dialogs",
@@ -587,7 +598,6 @@ jumbo_component("views") {
       "widget/native_widget_mac.mm",
       "widget/widget_utils_mac.mm",
     ]
-    sources -= [ "controls/views_text_services_context_menu.cc" ]
     public_deps += [ "//components/remote_cocoa/common:mojo" ]
     deps += [
       "//components/crash/core/common",
@@ -596,7 +606,7 @@ jumbo_component("views") {
       "//ui/accelerated_widget_mac",
       "//ui/events:dom_keycode_converter",
     ]
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "CoreGraphics.framework",
       "Foundation.framework",
@@ -723,7 +733,7 @@ jumbo_component("views") {
       "//ui/aura",
       "//ui/events",
       "//ui/platform_window",
-      "//ui/platform_window/platform_window_handler",
+      "//ui/platform_window/wm",
       "//ui/touch_selection",
       "//ui/wm",
       "//ui/wm/public",
@@ -750,22 +760,17 @@ jumbo_component("views") {
         "widget/desktop_aura/desktop_screen_position_client.cc",
         "widget/desktop_aura/desktop_window_tree_host.cc",
       ]
-      public_deps += [ "//ui/base/cursor/mojom:cursor_type" ]
+      public_deps += [
+        "//ui/base/cursor",
+        "//ui/base/cursor/mojom:cursor_type",
+      ]
       if (use_x11) {
         public_deps += [
           "//ui/base/x",
           "//ui/platform_window/x11",
         ]
-        public += [
-          "widget/desktop_aura/desktop_drag_drop_client_aurax11.h",
-          "widget/desktop_aura/desktop_screen_x11.h",
-          "widget/desktop_aura/desktop_window_tree_host_x11.h",
-        ]
-        sources += [
-          "widget/desktop_aura/desktop_drag_drop_client_aurax11.cc",
-          "widget/desktop_aura/desktop_screen_x11.cc",
-          "widget/desktop_aura/desktop_window_tree_host_x11.cc",
-        ]
+        public += [ "widget/desktop_aura/desktop_screen_x11.h" ]
+        sources += [ "widget/desktop_aura/desktop_screen_x11.cc" ]
       } else if (is_win) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_win.h" ]
         sources += [
@@ -777,37 +782,33 @@ jumbo_component("views") {
           "widget/desktop_aura/desktop_window_tree_host_win.cc",
         ]
         deps += [ "//ui/events:dom_keyboard_layout" ]
-      } else if (use_ozone) {
-        public += [ "widget/desktop_aura/desktop_screen_ozone.h" ]
-        sources += [
-          "widget/desktop_aura/desktop_drag_drop_client_ozone.cc",
-          "widget/desktop_aura/desktop_drag_drop_client_ozone.h",
-          "widget/desktop_aura/desktop_screen_ozone.cc",
-        ]
       }
-      if (is_linux) {
+      if (use_ozone) {
+        public += [ "widget/desktop_aura/desktop_screen_ozone.h" ]
+        sources += [ "widget/desktop_aura/desktop_screen_ozone.cc" ]
+      }
+      if (is_linux || is_chromeos) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_linux.h" ]
         sources += [
           "style/platform_style_linux.cc",
+          "widget/desktop_aura/desktop_screen_linux.cc",
           "widget/desktop_aura/desktop_window_tree_host_linux.cc",
           "widget/desktop_aura/window_event_filter_linux.cc",
           "widget/desktop_aura/window_event_filter_linux.h",
         ]
-        deps += [
-          "//ui/base:hit_test",
-          "//ui/platform_window/extensions",
-        ]
+        deps += [ "//ui/base:hit_test" ]
       }
-      if (is_linux || is_fuchsia) {
+      if (is_linux || is_chromeos || is_fuchsia) {
         public += [
           "widget/desktop_aura/desktop_window_tree_host_platform.h",
           "widget/desktop_aura/window_move_client_platform.h",
         ]
         sources += [
+          "widget/desktop_aura/desktop_drag_drop_client_ozone.cc",
+          "widget/desktop_aura/desktop_drag_drop_client_ozone.h",
           "widget/desktop_aura/desktop_window_tree_host_platform.cc",
           "widget/desktop_aura/window_move_client_platform.cc",
         ]
-        deps += [ "//ui/platform_window/extensions" ]
       }
       if (use_atk) {
         sources += [
@@ -858,7 +859,7 @@ jumbo_component("views") {
   }
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "animation/test/flood_fill_ink_drop_ripple_test_api.cc",
@@ -887,6 +888,8 @@ jumbo_source_set("test_support") {
     "controls/textfield/textfield_test_api.h",
     "layout/animating_layout_manager_test_util.cc",
     "layout/animating_layout_manager_test_util.h",
+    "test/ax_event_counter.cc",
+    "test/ax_event_counter.h",
     "test/button_test_api.cc",
     "test/button_test_api.h",
     "test/capture_tracking_view.cc",
@@ -894,6 +897,8 @@ jumbo_source_set("test_support") {
     "test/combobox_test_api.cc",
     "test/combobox_test_api.h",
     "test/desktop_test_views_delegate.h",
+    "test/dialog_test.cc",
+    "test/dialog_test.h",
     "test/focus_manager_test.cc",
     "test/focus_manager_test.h",
     "test/layout_test_utils.cc",
@@ -917,6 +922,10 @@ jumbo_source_set("test_support") {
     "test/test_views_delegate.h",
     "test/test_widget_observer.cc",
     "test/test_widget_observer.h",
+    "test/view_metadata_test_utils.cc",
+    "test/view_metadata_test_utils.h",
+    "test/views_drawing_test_utils.cc",
+    "test/views_drawing_test_utils.h",
     "test/views_test_base.cc",
     "test/views_test_base.h",
     "test/views_test_helper.cc",
@@ -937,6 +946,7 @@ jumbo_source_set("test_support") {
       "test/event_generator_delegate_mac.mm",
       "test/scoped_views_test_helper_cocoa.mm",
       "test/test_views_delegate_mac.mm",
+      "test/views_test_base_mac.mm",
       "test/views_test_helper_mac.h",
       "test/views_test_helper_mac.mm",
       "test/widget_test_mac.mm",
@@ -1000,13 +1010,12 @@ jumbo_source_set("test_support") {
     ]
     if (use_x11) {
       sources += [
-        "test/desktop_screen_x11_test_api.cc",
-        "test/desktop_screen_x11_test_api.h",
         "test/test_desktop_screen_x11.cc",
         "test/test_desktop_screen_x11.h",
         "test/ui_controls_factory_desktop_aurax11.cc",
         "test/ui_controls_factory_desktop_aurax11.h",
       ]
+      deps += [ "//ui/base/x:test_support" ]
     }
   }
   if (use_x11) {
@@ -1016,12 +1025,24 @@ jumbo_source_set("test_support") {
       "//ui/gfx/x",
     ]
   }
-  if (ozone_platform_x11) {
-    deps += [ "//ui/base/x" ]
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
+  if (use_ozone && is_linux && enable_desktop_aura) {
+    sources += [
+      "test/test_desktop_screen_ozone.cc",
+      "test/test_desktop_screen_ozone.h",
+      "test/ui_controls_factory_desktop_aura_ozone.cc",
+      "test/ui_controls_factory_desktop_aura_ozone.h",
+    ]
+    deps += [ "//ui/ozone:ui_test_support" ]
   }
 }
 
 test("views_unittests") {
+  use_xvfb = use_xvfb_in_this_config
+
   sources = [
     "accessible_pane_view_unittest.cc",
     "animation/bounds_animator_unittest.cc",
@@ -1030,22 +1051,29 @@ test("views_unittests") {
     "animation/ink_drop_highlight_unittest.cc",
     "animation/ink_drop_host_view_unittest.cc",
     "animation/ink_drop_impl_unittest.cc",
+    "animation/ink_drop_mask_unittest.cc",
     "animation/ink_drop_ripple_unittest.cc",
     "animation/ink_drop_unittest.cc",
     "animation/installable_ink_drop_animator_unittest.cc",
+    "animation/installable_ink_drop_painter_unittest.cc",
     "animation/installable_ink_drop_unittest.cc",
     "animation/slide_out_controller_unittest.cc",
     "animation/square_ink_drop_ripple_unittest.cc",
     "border_unittest.cc",
     "bubble/bubble_border_unittest.cc",
     "bubble/bubble_dialog_delegate_view_unittest.cc",
+    "bubble/bubble_dialog_model_host_unittest.cc",
     "bubble/bubble_frame_view_unittest.cc",
+    "bubble/info_bubble_unittest.cc",
+    "controls/base_control_test_widget.cc",
+    "controls/base_control_test_widget.h",
     "controls/button/button_unittest.cc",
     "controls/button/checkbox_unittest.cc",
     "controls/button/image_button_factory_unittest.cc",
     "controls/button/image_button_unittest.cc",
     "controls/button/label_button_label_unittest.cc",
     "controls/button/label_button_unittest.cc",
+    "controls/button/md_text_button_unittest.cc",
     "controls/button/menu_button_unittest.cc",
     "controls/button/radio_button_unittest.cc",
     "controls/button/toggle_button_unittest.cc",
@@ -1053,13 +1081,16 @@ test("views_unittests") {
     "controls/editable_combobox/editable_combobox_unittest.cc",
     "controls/image_view_unittest.cc",
     "controls/label_unittest.cc",
+    "controls/link_unittest.cc",
     "controls/menu/menu_controller_unittest.cc",
     "controls/menu/menu_item_view_unittest.cc",
     "controls/menu/menu_model_adapter_unittest.cc",
     "controls/menu/menu_runner_unittest.cc",
+    "controls/menu/menu_separator_unittest.cc",
     "controls/menu/submenu_view_unittest.cc",
     "controls/menu/test_menu_item_view.cc",
     "controls/menu/test_menu_item_view.h",
+    "controls/message_box_view_unittest.cc",
     "controls/native/native_view_host_test_base.cc",
     "controls/native/native_view_host_test_base.h",
     "controls/native/native_view_host_unittest.cc",
@@ -1067,6 +1098,7 @@ test("views_unittests") {
     "controls/progress_bar_unittest.cc",
     "controls/resize_area_unittest.cc",
     "controls/scroll_view_unittest.cc",
+    "controls/scrollbar/base_scroll_bar_button_unittest.cc",
     "controls/scrollbar/scrollbar_unittest.cc",
     "controls/separator_unittest.cc",
     "controls/slider_unittest.cc",
@@ -1084,16 +1116,21 @@ test("views_unittests") {
     "focus/focus_traversal_unittest.cc",
     "layout/animating_layout_manager_unittest.cc",
     "layout/box_layout_unittest.cc",
+    "layout/box_layout_view_unittest.cc",
+    "layout/composite_layout_tests.cc",
     "layout/fill_layout_unittest.cc",
     "layout/flex_layout_unittest.cc",
+    "layout/flex_layout_view_unittest.cc",
     "layout/grid_layout_unittest.cc",
     "layout/layout_manager_base_unittest.cc",
     "layout/normalized_geometry_unittest.cc",
     "layout/proposed_layout_unittest.cc",
     "metadata/metadata_unittest.cc",
     "metadata/type_conversion_unittest.cc",
+    "metadata/view_factory_unittest.cc",
     "paint_info_unittest.cc",
     "rect_based_targeting_utils_unittest.cc",
+    "repeat_controller_unittest.cc",
     "run_all_unittests_main.cc",
     "selection_controller_unittest.cc",
     "test/widget_test_unittest.cc",
@@ -1105,6 +1142,8 @@ test("views_unittests") {
     "widget/any_widget_observer_unittest.cc",
     "widget/native_widget_unittest.cc",
     "widget/root_view_unittest.cc",
+    "widget/unique_widget_ptr_unittest.cc",
+    "widget/widget_delegate_unittest.cc",
     "widget/widget_unittest.cc",
     "window/custom_frame_view_unittest.cc",
     "window/dialog_client_view_unittest.cc",
@@ -1129,6 +1168,7 @@ test("views_unittests") {
     "//components/viz/common",
     "//mojo/core/embedder",
     "//skia",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",
     "//ui/accessibility",
@@ -1136,8 +1176,10 @@ test("views_unittests") {
     "//ui/base:test_support",
     "//ui/base/clipboard",
     "//ui/base/clipboard:clipboard_test_support",
+    "//ui/base/dragdrop/mojom:mojom_shared",
     "//ui/base/ime/init",
     "//ui/compositor:test_support",
+    "//ui/display:test_support",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/events:test_support",
@@ -1147,7 +1189,7 @@ test("views_unittests") {
     "//ui/gl:test_support",
     "//ui/native_theme",
     "//ui/native_theme:test_support",
-    "//ui/platform_window/platform_window_handler",
+    "//ui/platform_window/wm",
     "//ui/resources",
     "//ui/resources:ui_test_pak",
     "//ui/strings",
@@ -1220,6 +1262,7 @@ test("views_unittests") {
 
   if (use_aura) {
     sources += [
+      "accessibility/accessibility_alert_window_unittest.cc",
       "accessibility/ax_aura_obj_cache_unittest.cc",
       "accessibility/ax_tree_source_views_unittest.cc",
       "controls/native/native_view_host_aura_unittest.cc",
@@ -1266,18 +1309,22 @@ test("views_unittests") {
       ]
       if (use_x11) {
         sources += [
-          "widget/desktop_aura/desktop_drag_drop_client_aurax11_unittest.cc",
           "widget/desktop_aura/desktop_screen_x11_unittest.cc",
-          "widget/desktop_aura/desktop_window_tree_host_x11_unittest.cc",
+          "widget/desktop_aura/x11_drag_drop_client_unittest.cc",
         ]
         deps += [ "//ui/base/x:test_support" ]
       }
-      if (is_linux || is_fuchsia) {
+      if (is_linux || is_chromeos || is_fuchsia) {
         sources += [
           "widget/desktop_aura/desktop_window_tree_host_platform_unittest.cc",
         ]
+        if (is_linux || is_chromeos) {
+          sources += [
+            "widget/desktop_aura/desktop_window_tree_host_linux_unittest.cc",
+          ]
+        }
       }
-      if (use_ozone) {
+      if (use_ozone || use_x11) {
         sources +=
             [ "widget/desktop_aura/desktop_drag_drop_client_ozone_unittest.cc" ]
         deps += [ "//ui/platform_window" ]
@@ -1285,7 +1332,7 @@ test("views_unittests") {
     }
   }
 
-  if (is_desktop_linux && use_ozone) {
+  if (is_linux && use_ozone) {
     data_deps +=
         [ "//testing/buildbot/filters:linux_ozone_views_unittests_filters" ]
   }
@@ -1298,6 +1345,10 @@ test("views_unittests") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
+  }
+
+  if (is_linux || is_chromeos) {
+    sources += [ "color_chooser/color_chooser_unittest.cc" ]
   }
 }
 
@@ -1351,22 +1402,27 @@ source_set("views_interactive_ui_tests") {
       "//ui/wm/public",
     ]
 
-    if (is_desktop_linux) {
+    if (is_linux) {
       sources += [ "widget/desktop_aura/desktop_window_tree_host_linux_interactive_uitest.cc" ]
     }
 
     deps += [
       "//ui/events/platform",
       "//ui/platform_window",
-      "//ui/platform_window/platform_window_handler",
+      "//ui/platform_window/wm",
     ]
   }
 
   if (use_x11) {
     sources += [
-      "widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc",
       "widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
     ]
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+    }
+  }
+
+  if (use_x11 || ozone_platform_x11) {
     deps += [
       "//ui/base/x:test_support",
       "//ui/events/platform/x11:x11",

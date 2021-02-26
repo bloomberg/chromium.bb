@@ -10,7 +10,7 @@
 #include "build/branding_buildflags.h"
 #include "build/buildflag.h"
 #include "chrome/browser/ui/passwords/account_avatar_fetcher.h"
-#include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/style/typography.h"
 
@@ -22,22 +22,22 @@ namespace network {
 namespace mojom {
 class URLLoaderFactory;
 }
-}
+}  // namespace network
 
 namespace views {
 class ImageView;
 class Label;
-}
+}  // namespace views
 
 // CredentialsItemView represents a credential view in the account chooser
 // bubble.
 class CredentialsItemView : public AccountAvatarFetcherDelegate,
                             public views::Button {
  public:
-  CredentialsItemView(views::ButtonListener* button_listener,
+  CredentialsItemView(PressedCallback callback,
                       const base::string16& upper_text,
                       const base::string16& lower_text,
-                      const autofill::PasswordForm* form,
+                      const password_manager::PasswordForm* form,
                       network::mojom::URLLoaderFactory* loader_factory,
                       int upper_text_style = views::style::STYLE_PRIMARY,
                       int lower_text_style = views::style::STYLE_SECONDARY);
@@ -45,9 +45,7 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
 
   // If |store| is kAccountStore and the build is official, adds a G logo icon
   // to the view. If |store| is kProfileStore, removes any existing icon.
-  void SetStoreIndicatorIcon(autofill::PasswordForm::Store store);
-
-  const autofill::PasswordForm* form() const { return form_; }
+  void SetStoreIndicatorIcon(password_manager::PasswordForm::Store store);
 
   // AccountAvatarFetcherDelegate:
   void UpdateAvatar(const gfx::ImageSkia& image) override;
@@ -58,15 +56,11 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
   // views::View:
   void OnPaintBackground(gfx::Canvas* canvas) override;
 
-  const autofill::PasswordForm* form_;
-
   views::ImageView* image_view_;
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Optional right-aligned icon to distinguish account store credentials and
   // profile store ones.
   views::ImageView* store_indicator_icon_view_ = nullptr;
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   views::Label* upper_label_ = nullptr;
   views::Label* lower_label_ = nullptr;

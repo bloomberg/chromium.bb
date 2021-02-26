@@ -121,7 +121,7 @@ Polymer({
       return false;
     }
 
-    return this.model.enforcement ==
+    return this.model.enforcement ===
         chrome.settingsPrivate.Enforcement.ENFORCED ||
         !(this.readOnlyList || !!this.model.embeddingOrigin);
   },
@@ -135,7 +135,7 @@ Polymer({
       return false;
     }
 
-    return this.model.enforcement ==
+    return this.model.enforcement ===
         chrome.settingsPrivate.Enforcement.ENFORCED ||
         this.readOnlyList || !!this.model.embeddingOrigin;
   },
@@ -162,7 +162,7 @@ Polymer({
   computeDisplayName_() {
     if (this.model.embeddingOrigin &&
         this.model.category === ContentSettingsTypes.COOKIES &&
-        this.model.origin.trim() == SITE_EXCEPTION_WILDCARD) {
+        this.model.origin.trim() === SITE_EXCEPTION_WILDCARD) {
       return this.model.embeddingOrigin;
     }
     return this.model.displayName;
@@ -177,16 +177,21 @@ Polymer({
   computeSiteDescription_() {
     let description = '';
 
-    if (this.model.embeddingOrigin) {
+    if (this.model.isEmbargoed) {
+      assert(
+          !this.model.embeddingOrigin,
+          'Embedding origin should be empty for embargoed origin.');
+      description = loadTimeData.getString('siteSettingsSourceEmbargo');
+    } else if (this.model.embeddingOrigin) {
       if (this.model.category === ContentSettingsTypes.COOKIES &&
-          this.model.origin.trim() == SITE_EXCEPTION_WILDCARD) {
+          this.model.origin.trim() === SITE_EXCEPTION_WILDCARD) {
         description = loadTimeData.getString(
             'siteSettingsCookiesThirdPartyExceptionLabel');
       } else {
         description = loadTimeData.getStringF(
             'embeddedOnHost', this.sanitizePort(this.model.embeddingOrigin));
       }
-    } else if (this.category == ContentSettingsTypes.GEOLOCATION) {
+    } else if (this.category === ContentSettingsTypes.GEOLOCATION) {
       description = loadTimeData.getString('embeddedOnAnyHost');
     }
 
@@ -205,7 +210,7 @@ Polymer({
    * @private
    */
   computeShowPolicyPrefIndicator_() {
-    return this.model.enforcement ==
+    return this.model.enforcement ===
         chrome.settingsPrivate.Enforcement.ENFORCED &&
         !!this.model.controlledBy;
   },
@@ -213,7 +218,7 @@ Polymer({
   /** @private */
   onResetButtonTap_() {
     // Use the appropriate method to reset a chooser exception.
-    if (this.chooserType !== ChooserType.NONE && this.chooserObject != null) {
+    if (this.chooserType !== ChooserType.NONE && this.chooserObject !== null) {
       this.browserProxy.resetChooserExceptionForSite(
           this.chooserType, this.model.origin, this.model.embeddingOrigin,
           this.chooserObject);
@@ -246,5 +251,18 @@ Polymer({
     this.browserProxy.isOriginValid(this.model.origin).then((valid) => {
       this.allowNavigateToSiteDetail_ = valid;
     });
+  },
+
+  /**
+   * Returns the appropriate class name for styling purposes. It could be empty
+   * or 'discarded' for discarded content setting patterns.
+   * Patterns like `*://*.google.com:443/* are no longer supported for Plugin
+   * content settings.
+   * @param {boolean} isDiscarded Whether the exception is discarded
+   * @return {string}
+   * @private
+   */
+  getClassForSiteListEntry_(isDiscarded) {
+    return isDiscarded ? 'discarded' : '';
   }
 });

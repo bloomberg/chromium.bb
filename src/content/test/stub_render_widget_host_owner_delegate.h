@@ -12,7 +12,6 @@ namespace content {
 class StubRenderWidgetHostOwnerDelegate : public RenderWidgetHostOwnerDelegate {
  public:
   void RenderWidgetDidInit() override {}
-  void RenderWidgetDidClose() override {}
   void RenderWidgetDidFirstVisuallyNonEmptyPaint() override {}
   void RenderWidgetGotFocus() override {}
   void RenderWidgetLostFocus() override {}
@@ -21,14 +20,10 @@ class StubRenderWidgetHostOwnerDelegate : public RenderWidgetHostOwnerDelegate {
   bool MayRenderWidgetForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) override;
   bool ShouldContributePriorityToProcess() override;
-  void RequestSetBounds(const gfx::Rect& bounds) override {}
   void SetBackgroundOpaque(bool opaque) override {}
   bool IsMainFrameActive() override;
   bool IsNeverComposited() override;
-  WebPreferences GetWebkitPreferencesForWidget() override;
-  FrameTreeNode* GetFocusedFrame() override;
-  void ShowContextMenu(RenderFrameHost* render_frame_host,
-                       const ContextMenuParams& params) override {}
+  blink::web_pref::WebPreferences GetWebkitPreferencesForWidget() override;
 };
 
 }  // namespace content

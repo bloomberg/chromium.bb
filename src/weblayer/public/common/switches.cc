@@ -7,7 +7,16 @@
 namespace weblayer {
 namespace switches {
 
+// Disable auto-reload of error pages.
+const char kDisableAutoReload[] = "disable-auto-reload";
+
+// Enable auto-reload of error pages.
+const char kEnableAutoReload[] = "enable-auto-reload";
+
 // Makes WebLayer Shell use the given path for its data directory.
+// NOTE: If changing this value, change the corresponding Java-side value in
+// WebLayerBrowserTestsActivity.java#getUserDataDirectoryCommandLineSwitch() to
+// match.
 const char kWebLayerUserDataDir[] = "weblayer-user-data-dir";
 
 }  // namespace switches

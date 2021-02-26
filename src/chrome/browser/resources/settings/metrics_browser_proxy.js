@@ -33,8 +33,14 @@ export const PrivacyElementInteractions = {
   COOKIES_THIRD: 11,
   COOKIES_BLOCK: 12,
   COOKIES_SESSION: 13,
+  SITE_DATA_REMOVE_ALL: 14,
+  SITE_DATA_REMOVE_FILTERED: 15,
+  SITE_DATA_REMOVE_SITE: 16,
+  COOKIE_DETAILS_REMOVE_ALL: 17,
+  COOKIE_DETAILS_REMOVE_ITEM: 18,
+  SITE_DETAILS_CLEAR_DATA: 19,
   // Leave this at the end.
-  COUNT: 14,
+  COUNT: 20,
 };
 
 /**
@@ -53,8 +59,36 @@ export const SafetyCheckInteractions = {
   SAFETY_CHECK_PASSWORDS_MANAGE: 2,
   SAFETY_CHECK_SAFE_BROWSING_MANAGE: 3,
   SAFETY_CHECK_EXTENSIONS_REVIEW: 4,
+  SAFETY_CHECK_CHROME_CLEANER_REBOOT: 5,
+  SAFETY_CHECK_CHROME_CLEANER_REVIEW_INFECTED_STATE: 6,
+  SAFETY_CHECK_PASSWORDS_MANAGE_THROUGH_CARET_NAVIGATION: 7,
+  SAFETY_CHECK_SAFE_BROWSING_MANAGE_THROUGH_CARET_NAVIGATION: 8,
+  SAFETY_CHECK_EXTENSIONS_REVIEW_THROUGH_CARET_NAVIGATION: 9,
+  SAFETY_CHECK_CHROME_CLEANER_CARET_NAVIGATION: 10,
   // Leave this at the end.
-  COUNT: 5,
+  COUNT: 11,
+};
+
+/**
+ * Contains all safe browsing interactions.
+ *
+ * These values are persisted to logs. Entries should not be renumbered and
+ * numeric values should never be reused.
+ *
+ * Must be kept in sync with the UserAction in safe_browsing_settings_metrics.h.
+ * @enum {number}
+ */
+export const SafeBrowsingInteractions = {
+  SAFE_BROWSING_SHOWED: 0,
+  SAFE_BROWSING_ENHANCED_PROTECTION_CLICKED: 1,
+  SAFE_BROWSING_STANDARD_PROTECTION_CLICKED: 2,
+  SAFE_BROWSING_DISABLE_SAFE_BROWSING_CLICKED: 3,
+  SAFE_BROWSING_ENHANCED_PROTECTION_EXPAND_ARROW_CLICKED: 4,
+  SAFE_BROWSING_STANDARD_PROTECTION_EXPAND_ARROW_CLICKED: 5,
+  SAFE_BROWSING_DISABLE_SAFE_BROWSING_DIALOG_CONFIRMED: 6,
+  SAFE_BROWSING_DISABLE_SAFE_BROWSING_DIALOG_DENIED: 7,
+  // Leave this at the end.
+  COUNT: 8,
 };
 
 /** @interface */
@@ -79,6 +113,13 @@ export class MetricsBrowserProxy {
    * @param {!PrivacyElementInteractions} interaction
    */
   recordSettingsPageHistogram(interaction) {}
+
+  /**
+   * Helper function that calls recordHistogram for the
+   * SafeBrowsing.Settings.UserAction histogram
+   * @param {!SafeBrowsingInteractions} interaction
+   */
+  recordSafeBrowsingInteractionHistogram(interaction) {}
 }
 
 /**
@@ -103,6 +144,16 @@ export class MetricsBrowserProxyImpl {
     chrome.send('metricsHandler:recordInHistogram', [
       'Settings.PrivacyElementInteractions', interaction,
       PrivacyElementInteractions.COUNT
+    ]);
+  }
+
+  /** @override*/
+  recordSafeBrowsingInteractionHistogram(interaction) {
+    // TODO(crbug.com/1124491): Set the correct suffix for
+    // SafeBrowsing.Settings.UserAction. Use the .Default suffix for now.
+    chrome.send('metricsHandler:recordInHistogram', [
+      'SafeBrowsing.Settings.UserAction.Default', interaction,
+      SafeBrowsingInteractions.COUNT
     ]);
   }
 }

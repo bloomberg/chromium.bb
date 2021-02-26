@@ -10,7 +10,6 @@ import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.view.ContextThemeWrapper;
 import android.view.Display;
 import android.view.Menu;
@@ -61,11 +60,6 @@ class AppMenuHandlerImpl
     private Integer mHighlightMenuId;
 
     /**
-     *  Whether the highlighted item should use a circle highlight or not.
-     */
-    private boolean mCircleHighlight;
-
-    /**
      * Constructs an AppMenuHandlerImpl object.
      * @param delegate Delegate used to check the desired AppMenu properties on show.
      * @param appMenuDelegate The AppMenuDelegate to handle menu item selection.
@@ -114,15 +108,14 @@ class AppMenuHandlerImpl
 
     @Override
     public void clearMenuHighlight() {
-        setMenuHighlight(null, false);
+        setMenuHighlight(null);
     }
 
     @Override
-    public void setMenuHighlight(Integer highlightItemId, boolean circleHighlight) {
+    public void setMenuHighlight(Integer highlightItemId) {
         if (mHighlightMenuId == null && highlightItemId == null) return;
         if (mHighlightMenuId != null && mHighlightMenuId.equals(highlightItemId)) return;
         mHighlightMenuId = highlightItemId;
-        mCircleHighlight = circleHighlight;
         boolean highlighting = mHighlightMenuId != null;
         for (AppMenuObserver observer : mObservers) observer.onMenuHighlightChanged(highlighting);
     }
@@ -136,14 +129,13 @@ class AppMenuHandlerImpl
      *                      dragging down on the menu button, this should be true. Note that if
      *                      anchorView is null, this must be false since we no longer support
      *                      hardware menu button dragging.
-     * @param showFromBottom Whether the menu should be shown from the bottom up.
      * @return              True, if the menu is shown, false, if menu is not shown, example
      *                      reasons: the menu is not yet available to be shown, or the menu is
      *                      already showing.
      */
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint("ResourceType")
-    boolean showAppMenu(View anchorView, boolean startDragging, boolean showFromBottom) {
+    boolean showAppMenu(View anchorView, boolean startDragging) {
         if (!shouldShowAppMenu() || isAppMenuShowing()) return false;
 
         TextBubble.dismissBubbles();
@@ -165,6 +157,14 @@ class AppMenuHandlerImpl
             isByPermanentButton = true;
         }
 
+        // If the anchor view used to show the popup or the activity's decor view is not attached
+        // to window, we don't show the app menu because the window manager might have revoked
+        // the window token for this activity. See https://crbug.com/1105831.
+        if (!mDecorView.isAttachedToWindow() || !anchorView.isAttachedToWindow()
+                || !anchorView.getRootView().isAttachedToWindow()) {
+            return false;
+        }
+
         assert !(isByPermanentButton && startDragging);
 
         if (mMenu == null) {
@@ -180,14 +180,12 @@ class AppMenuHandlerImpl
                 new ContextThemeWrapper(context, R.style.OverflowMenuThemeOverlay);
 
         if (mAppMenu == null) {
-            TypedArray a = wrapper.obtainStyledAttributes(new int[] {
-                    android.R.attr.listPreferredItemHeightSmall, android.R.attr.listDivider});
+            TypedArray a = wrapper.obtainStyledAttributes(
+                    new int[] {android.R.attr.listPreferredItemHeightSmall});
             int itemRowHeight = a.getDimensionPixelSize(0, 0);
-            Drawable itemDivider = a.getDrawable(1);
-            int itemDividerHeight = itemDivider != null ? itemDivider.getIntrinsicHeight() : 0;
             a.recycle();
-            mAppMenu = new AppMenu(
-                    mMenu, itemRowHeight, itemDividerHeight, this, context.getResources());
+            mAppMenu = new AppMenu(mMenu, itemRowHeight, this, context.getResources(),
+                    mDelegate.shouldShowIconBeforeItem());
             mAppMenuDragHelper = new AppMenuDragHelper(context, mAppMenu, itemRowHeight);
         }
 
@@ -214,8 +212,8 @@ class AppMenuHandlerImpl
             headerResourceId = mDelegate.getHeaderResourceId();
         }
         mAppMenu.show(wrapper, anchorView, isByPermanentButton, rotation, appRect, pt.y,
-                footerResourceId, headerResourceId, mHighlightMenuId, mCircleHighlight,
-                showFromBottom, mDelegate.getCustomViewBinders());
+                footerResourceId, headerResourceId, mDelegate.getGroupDividerId(), mHighlightMenuId,
+                mDelegate.getCustomViewBinders());
         mAppMenuDragHelper.onShow(startDragging);
         clearMenuHighlight();
         RecordUserAction.record("MobileMenuShow");
@@ -350,5 +348,17 @@ class AppMenuHandlerImpl
     @VisibleForTesting
     AppMenuPropertiesDelegate getDelegateForTests() {
         return mDelegate;
+    }
+
+    /**
+     * Record the user selections if users make selected similar MenuItems.
+     *
+     * @param previousMenuItemId The previous selected MenuItem Id.
+     * @param currentMenuItemId The current selected MenuItem Id.
+     * @return Whether the selections is recorded.
+     */
+    boolean recordAppMenuSimilarSelectionIfNeeded(int previousMenuItemId, int currentMenuItemId) {
+        return mDelegate.recordAppMenuSimilarSelectionIfNeeded(
+                previousMenuItemId, currentMenuItemId);
     }
 }

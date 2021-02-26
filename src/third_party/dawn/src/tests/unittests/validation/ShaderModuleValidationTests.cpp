@@ -20,8 +20,7 @@
 
 #include <sstream>
 
-class ShaderModuleValidationTest : public ValidationTest {
-};
+class ShaderModuleValidationTest : public ValidationTest {};
 
 // Test case with a simpler shader that should successfully be created
 TEST_F(ShaderModuleValidationTest, CreationSuccess) {
@@ -100,11 +99,10 @@ TEST_F(ShaderModuleValidationTest, FragmentOutputLocationExceedsMaxColorAttachme
     std::ostringstream stream;
     stream << R"(#version 450
               layout(location = )"
-           << kMaxColorAttachments << R"() out vec4 fragColor;
+           << static_cast<unsigned>(kMaxColorAttachments) << R"() out vec4 fragColor;
               void main() {
                   fragColor = vec4(0.0, 1.0, 0.0, 1.0);
               })";
-
     ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment,
                                                   stream.str().c_str()));
 }
@@ -112,6 +110,18 @@ TEST_F(ShaderModuleValidationTest, FragmentOutputLocationExceedsMaxColorAttachme
 // Test that it is invalid to create a shader module with no chained descriptor. (It must be
 // WGSL or SPIRV, not empty)
 TEST_F(ShaderModuleValidationTest, NoChainedDescriptor) {
-  wgpu::ShaderModuleDescriptor desc = {};
-  ASSERT_DEVICE_ERROR(device.CreateShaderModule(&desc));
+    wgpu::ShaderModuleDescriptor desc = {};
+    ASSERT_DEVICE_ERROR(device.CreateShaderModule(&desc));
+}
+
+// Test that it is not allowed to use combined texture and sampler.
+TEST_F(ShaderModuleValidationTest, CombinedTextureAndSampler) {
+    const char* shader = R"(
+        #version 450
+        layout (set = 0, binding = 0) uniform sampler2D texture;
+        void main() {
+        })";
+
+    ASSERT_DEVICE_ERROR(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, shader));
 }

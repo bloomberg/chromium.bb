@@ -9,6 +9,7 @@
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
+#include "clang/ASTMatchers/ASTMatchersMacros.h"
 
 using namespace clang::ast_matchers;
 
@@ -42,7 +43,7 @@ class UniquePtrGarbageCollectedMatcher : public MatchFinder::MatchCallback {
     match_finder.addDynamicMatcher(make_unique_matcher, this);
   }
 
-  void run(const MatchFinder::MatchResult& result) {
+  void run(const MatchFinder::MatchResult& result) override {
     auto* bad_use = result.Nodes.getNodeAs<clang::Expr>("bad");
     auto* bad_function = result.Nodes.getNodeAs<clang::FunctionDecl>("badfunc");
     auto* gc_type = result.Nodes.getNodeAs<clang::CXXRecordDecl>("gctype");
@@ -72,7 +73,7 @@ class OptionalGarbageCollectedMatcher : public MatchFinder::MatchCallback {
     match_finder.addDynamicMatcher(optional_construction, this);
   }
 
-  void run(const MatchFinder::MatchResult& result) {
+  void run(const MatchFinder::MatchResult& result) override {
     auto* bad_use = result.Nodes.getNodeAs<clang::Expr>("bad");
     auto* optional = result.Nodes.getNodeAs<clang::CXXRecordDecl>("optional");
     auto* gc_type = result.Nodes.getNodeAs<clang::CXXRecordDecl>("gctype");
@@ -83,56 +84,54 @@ class OptionalGarbageCollectedMatcher : public MatchFinder::MatchCallback {
   DiagnosticsReporter& diagnostics_;
 };
 
-class MissingMixinMarker : public MatchFinder::MatchCallback {
+// For the absl::variant checker, we need to match the inside of a variadic
+// template class, which doesn't seem easy with the built-in matchers: define a
+// custom matcher to go through the template parameter list.
+AST_MATCHER_P(clang::TemplateArgument,
+              parameterPackHasAnyElement,
+              // Clang exports other instantiations of Matcher via
+              // using-declarations in public headers, e.g. `using TypeMatcher =
+              // Matcher<QualType>`.
+              //
+              // Once https://reviews.llvm.org/D89920, a Clang patch adding a
+              // similar alias for template arguments, lands, this can be
+              // changed to TemplateArgumentMatcher and won't need to use the
+              // internal namespace any longer.
+              clang::ast_matchers::internal::Matcher<clang::TemplateArgument>,
+              InnerMatcher) {
+  if (Node.getKind() != clang::TemplateArgument::Pack)
+    return false;
+  return llvm::any_of(Node.pack_elements(),
+                      [&](const clang::TemplateArgument& Arg) {
+                        return InnerMatcher.matches(Arg, Finder, Builder);
+                      });
+}
+
+class VariantGarbageCollectedMatcher : public MatchFinder::MatchCallback {
  public:
-  explicit MissingMixinMarker(DiagnosticsReporter& diagnostics)
+  explicit VariantGarbageCollectedMatcher(DiagnosticsReporter& diagnostics)
       : diagnostics_(diagnostics) {}
 
   void Register(MatchFinder& match_finder) {
-    auto class_missing_mixin_marker = cxxRecordDecl(
-        decl().bind("bad_class"),
-        // Definition of a garbage-collected class
-        isDefinition(),
-        isDerivedFrom(cxxRecordDecl(decl().bind("gc_base_class"),
-                                    hasName("::blink::GarbageCollected"))),
-        // ...which derives some mixin...
-        isDerivedFrom(cxxRecordDecl(decl().bind("mixin_base_class"),
-                                    hasName("::blink::GarbageCollectedMixin"))),
-        // ...and doesn't use USING_GARBAGE_COLLECTED_MIXIN
-        unless(anyOf(isSameOrDerivedFrom(has(typedefNameDecl(
-                         hasName("HasUsingGarbageCollectedMixinMacro")))),
-                     isSameOrDerivedFrom(has(
-                         fieldDecl(hasName("mixin_constructor_marker_")))))),
-        // ...and might end up actually being constructed
-        unless(hasMethod(isPure())), unless(matchesName("::SameSizeAs")));
-    match_finder.addDynamicMatcher(class_missing_mixin_marker, this);
+    // Matches any constructed absl::variant where a template argument is
+    // known to refer to a garbage-collected type.
+    auto variant_construction =
+        cxxConstructExpr(
+            hasDeclaration(cxxConstructorDecl(
+                ofClass(classTemplateSpecializationDecl(
+                            hasName("::absl::variant"),
+                            hasAnyTemplateArgument(parameterPackHasAnyElement(
+                                refersToType(GarbageCollectedType()))))
+                            .bind("variant")))))
+            .bind("bad");
+    match_finder.addDynamicMatcher(variant_construction, this);
   }
 
-  void run(const MatchFinder::MatchResult& result) {
-    auto* bad_class = result.Nodes.getNodeAs<clang::CXXRecordDecl>("bad_class");
-    auto* gc_base_class =
-        result.Nodes.getNodeAs<clang::CXXRecordDecl>("gc_base_class");
-    auto* mixin_base_class =
-        result.Nodes.getNodeAs<clang::CXXRecordDecl>("mixin_base_class");
-
-    clang::CXXBasePaths paths;
-    if (!bad_class->isDerivedFrom(mixin_base_class, paths))
-      return;
-    const auto& path = paths.front();
-
-    // It's most useful to describe the most derived "mixin" class (i.e. which
-    // does not derive the concrete GarbageCollected base).
-    auto mixin_it = std::find_if(
-        path.begin(), path.end(),
-        [gc_base_class](const clang::CXXBasePathElement& path_element) {
-          return !path_element.Class->isDerivedFrom(gc_base_class);
-        });
-    const clang::CXXRecordDecl* mixin_class = mixin_it->Class;
-    diagnostics_.MissingMixinMarker(bad_class, mixin_class, path.begin()->Base);
-
-    ++mixin_it;
-    for (auto it = path.begin() + 1; it != mixin_it; ++it)
-      diagnostics_.MissingMixinMarkerNote(it->Base);
+  void run(const MatchFinder::MatchResult& result) override {
+    auto* bad_use = result.Nodes.getNodeAs<clang::Expr>("bad");
+    auto* variant = result.Nodes.getNodeAs<clang::CXXRecordDecl>("variant");
+    auto* gc_type = result.Nodes.getNodeAs<clang::CXXRecordDecl>("gctype");
+    diagnostics_.VariantUsedWithGC(bad_use, variant, gc_type);
   }
 
  private:
@@ -151,8 +150,8 @@ void FindBadPatterns(clang::ASTContext& ast_context,
   OptionalGarbageCollectedMatcher optional_gc(diagnostics);
   optional_gc.Register(match_finder);
 
-  MissingMixinMarker missing_mixin_marker(diagnostics);
-  missing_mixin_marker.Register(match_finder);
+  VariantGarbageCollectedMatcher variant_gc(diagnostics);
+  variant_gc.Register(match_finder);
 
   match_finder.matchAST(ast_context);
 }

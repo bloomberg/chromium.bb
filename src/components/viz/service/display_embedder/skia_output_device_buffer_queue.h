@@ -5,41 +5,42 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_BUFFER_QUEUE_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_BUFFER_QUEUE_H_
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/cancelable_callback.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "components/viz/service/display_embedder/output_presenter.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "components/viz/service/viz_service_export.h"
-#include "gpu/command_buffer/service/shared_image_factory.h"
-
-namespace gl {
-class GLSurface;
-}  // namespace gl
+#include "gpu/command_buffer/common/mailbox.h"
 
 namespace viz {
 
 class SkiaOutputSurfaceDependency;
 
-class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
-    : public SkiaOutputDevice {
+class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
  public:
+  class OverlayData;
+
   SkiaOutputDeviceBufferQueue(
-      scoped_refptr<gl::GLSurface> gl_surface,
+      std::unique_ptr<OutputPresenter> presenter,
       SkiaOutputSurfaceDependency* deps,
-      gpu::MemoryTracker* memory_tracker,
-      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback);
-  SkiaOutputDeviceBufferQueue(
-      scoped_refptr<gl::GLSurface> gl_surface,
-      SkiaOutputSurfaceDependency* deps,
+      gpu::SharedImageRepresentationFactory* representation_factory,
       gpu::MemoryTracker* memory_tracker,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-      uint32_t shared_image_usage);
+      bool needs_background_image);
+
   ~SkiaOutputDeviceBufferQueue() override;
 
-  static std::unique_ptr<SkiaOutputDeviceBufferQueue> Create(
-      SkiaOutputSurfaceDependency* deps,
-      gpu::MemoryTracker* memory_tracker,
-      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback);
+  SkiaOutputDeviceBufferQueue(const SkiaOutputDeviceBufferQueue&) = delete;
+  SkiaOutputDeviceBufferQueue& operator=(const SkiaOutputDeviceBufferQueue&) =
+      delete;
 
+  // SkiaOutputDevice overrides.
+  void Submit(bool sync_cpu, base::OnceClosure callback) override;
   void SwapBuffers(BufferPresentedCallback feedback,
                    std::vector<ui::LatencyInfo> latency_info) override;
   void PostSubBuffer(const gfx::Rect& rect,
@@ -55,74 +56,84 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   SkSurface* BeginPaint(
       std::vector<GrBackendSemaphore>* end_semaphores) override;
   void EndPaint() override;
-  bool supports_alpha() { return true; }
 
   bool IsPrimaryPlaneOverlay() const override;
   void SchedulePrimaryPlane(
-      const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane)
+      const base::Optional<
+          OverlayProcessorInterface::OutputSurfaceOverlayPlane>& plane)
       override;
   void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays) override;
 
-  gl::GLSurface* gl_surface() { return gl_surface_.get(); }
-
  private:
   friend class SkiaOutputDeviceBufferQueueTest;
-  class Image;
-  class OverlayData;
 
   using CancelableSwapCompletionCallback =
-      base::CancelableOnceCallback<void(gfx::SwapResult,
-                                        std::unique_ptr<gfx::GpuFence>)>;
+      base::CancelableOnceCallback<void(gfx::SwapCompletionResult)>;
 
-  Image* GetNextImage();
-  void PageFlipComplete(Image* image);
+  OutputPresenter::Image* GetNextImage();
+  void PageFlipComplete(OutputPresenter::Image* image);
   void FreeAllSurfaces();
-  // Used as callback for SwapBuff ersAsync and PostSubBufferAsync to finish
+  // Used as callback for SwapBuffersAsync and PostSubBufferAsync to finish
   // operation
   void DoFinishSwapBuffers(const gfx::Size& size,
                            std::vector<ui::LatencyInfo> latency_info,
-                           const base::WeakPtr<Image>& image,
-                           std::vector<OverlayData> overlays,
-                           gfx::SwapResult result,
-                           std::unique_ptr<gfx::GpuFence> gpu_fence);
+                           const base::WeakPtr<OutputPresenter::Image>& image,
+                           std::vector<gpu::Mailbox> overlay_mailboxes,
+                           gfx::SwapCompletionResult result);
+
+  gfx::Size GetSwapBuffersSize();
+
+  std::unique_ptr<OutputPresenter> presenter_;
 
   SkiaOutputSurfaceDependency* const dependency_;
-  scoped_refptr<gl::GLSurface> gl_surface_;
-  const bool supports_async_swap_;
+  gpu::SharedImageRepresentationFactory* const representation_factory_;
   // Format of images
   gfx::ColorSpace color_space_;
   gfx::Size image_size_;
-  ResourceFormat image_format_;
+  gfx::OverlayTransform overlay_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
 
   // All allocated images.
-  std::vector<std::unique_ptr<Image>> images_;
+  std::vector<std::unique_ptr<OutputPresenter::Image>> images_;
   // This image is currently used by Skia as RenderTarget. This may be nullptr
   // if there is no drawing for the current frame or if allocation failed.
-  Image* current_image_ = nullptr;
+  OutputPresenter::Image* current_image_ = nullptr;
   // The last image submitted for presenting.
-  Image* submitted_image_ = nullptr;
+  OutputPresenter::Image* submitted_image_ = nullptr;
   // The image currently on the screen, if any.
-  Image* displayed_image_ = nullptr;
+  OutputPresenter::Image* displayed_image_ = nullptr;
   // These are free for use, and are not nullptr.
-  base::circular_deque<Image*> available_images_;
+  base::circular_deque<OutputPresenter::Image*> available_images_;
   // These cancelable callbacks bind images that have been scheduled to display
   // but are not displayed yet. This deque will be cleared when represented
   // frames are destroyed. Use CancelableOnceCallback to prevent resources
   // from being destructed outside SkiaOutputDeviceBufferQueue life span.
   base::circular_deque<std::unique_ptr<CancelableSwapCompletionCallback>>
       swap_completion_callbacks_;
-  // Scheduled overlays for the next SwapBuffers call.
-  std::vector<OverlayData> pending_overlays_;
-  // Committed overlays for the last SwapBuffers call.
-  std::vector<OverlayData> committed_overlays_;
+  // Mailboxes of scheduled overlays for the next SwapBuffers call.
+  std::vector<gpu::Mailbox> pending_overlay_mailboxes_;
+  // Mailboxes of committed overlays for the last SwapBuffers call.
+  std::vector<gpu::Mailbox> committed_overlay_mailboxes_;
 
-  // Shared Image factories
-  gpu::SharedImageFactory shared_image_factory_;
-  std::unique_ptr<gpu::SharedImageRepresentationFactory>
-      shared_image_representation_factory_;
-  uint32_t shared_image_usage_;
+  class OverlayDataComparator {
+   public:
+    using is_transparent = void;
+    bool operator()(const OverlayData& lhs, const OverlayData& rhs) const;
+    bool operator()(const OverlayData& lhs, const gpu::Mailbox& rhs) const;
+    bool operator()(const gpu::Mailbox& lhs, const OverlayData& rhs) const;
+  };
+  // A set for all overlays. The set uses overlay_data.mailbox() as the unique
+  // key.
+  base::flat_set<OverlayData, OverlayDataComparator> overlays_;
 
-  DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceBufferQueue);
+  // Set to true if no image is to be used for the primary plane of this frame.
+  bool current_frame_has_no_primary_plane_ = false;
+  // Whether the platform needs an occluded background image. Wayland needs it
+  // for opaque accelerated widgets and event wiring.
+  bool needs_background_image_ = false;
+  // A 4x4 small image that will be scaled to cover an opaque region.
+  std::unique_ptr<OutputPresenter::Image> background_image_ = nullptr;
+  // Set to true if background has been scheduled in a frame.
+  bool background_image_is_scheduled_ = false;
 };
 
 }  // namespace viz

@@ -35,6 +35,32 @@ def _MergeAPIArgumentParser(*args, **kwargs):
       '--per-cl-coverage',
       action='store_true',
       help='set to indicate that this is a per-CL coverage build')
+  # TODO(crbug.com/1077304) - migrate this to sparse=False as default, and have
+  # --sparse to set sparse
+  parser.add_argument(
+      '--no-sparse',
+      action='store_false',
+      dest='sparse',
+      help='run llvm-profdata without the sparse flag.')
+  # TODO(crbug.com/1077304) - The intended behaviour is to default sparse to
+  # false. --no-sparse above was added as a workaround, and will be removed.
+  # This is being introduced now in support of the migration to intended
+  # behavior. Ordering of args matters here, as the default is set by the former
+  # (sparse defaults to False because of ordering. See unit tests for details)
+  parser.add_argument(
+      '--sparse',
+      action='store_true',
+      dest='sparse',
+      help='run llvm-profdata with the sparse flag.')
+  # (crbug.com/1091310) - IR PGO is incompatible with the initial conversion
+  # of .profraw -> .profdata that's run to detect validation errors.
+  # Introducing a bypass flag that'll merge all .profraw directly to .profdata
+  parser.add_argument(
+      '--skip-validation',
+      action='store_true',
+      help='skip validation for good raw profile data. this will pass all '
+           'raw profiles found to llvm-profdata to be merged. only applicable '
+           'when input extension is .profraw.')
   return parser
 
 
@@ -47,7 +73,9 @@ def main():
   invalid_profiles, counter_overflows = coverage_merger.merge_profiles(
       params.task_output_dir,
       os.path.join(params.profdata_dir, output_prodata_filename), '.profraw',
-      params.llvm_profdata)
+      params.llvm_profdata,
+      sparse=params.sparse,
+      skip_validation=params.skip_validation)
 
   # At the moment counter overflows overlap with invalid profiles, but this is
   # not guaranteed to remain the case indefinitely. To avoid future conflicts

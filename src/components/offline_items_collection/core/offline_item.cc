@@ -4,8 +4,12 @@
 
 #include "components/offline_items_collection/core/offline_item.h"
 
+#include <utility>
+
 namespace offline_items_collection {
 
+// -----------------------------------------------------------------------------
+// ContentId.
 ContentId::ContentId() = default;
 
 ContentId::ContentId(const ContentId& other) = default;
@@ -26,6 +30,26 @@ bool ContentId::operator<(const ContentId& content_id) const {
          std::tie(content_id.name_space, content_id.id);
 }
 
+// -----------------------------------------------------------------------------
+// OfflineItemSchedule.
+OfflineItemSchedule::OfflineItemSchedule(bool only_on_wifi,
+                                         base::Optional<base::Time> start_time)
+    : only_on_wifi(only_on_wifi), start_time(std::move(start_time)) {}
+
+OfflineItemSchedule::OfflineItemSchedule(const OfflineItemSchedule& other) =
+    default;
+
+OfflineItemSchedule& OfflineItemSchedule::operator=(
+    const OfflineItemSchedule& other) = default;
+
+OfflineItemSchedule::~OfflineItemSchedule() = default;
+
+bool OfflineItemSchedule::operator==(const OfflineItemSchedule& other) const {
+  return only_on_wifi == other.only_on_wifi && start_time == other.start_time;
+}
+
+// -----------------------------------------------------------------------------
+// OfflineItem.
 OfflineItem::Progress::Progress()
     : value(0), unit(OfflineItemProgressUnit::BYTES) {}
 
@@ -61,6 +85,8 @@ OfflineItem::OfflineItem()
       is_dangerous(false) {}
 
 OfflineItem::OfflineItem(const OfflineItem& other) = default;
+
+OfflineItem& OfflineItem::operator=(const OfflineItem& other) = default;
 
 OfflineItem::OfflineItem(const ContentId& id) : OfflineItem() {
   this->id = id;
@@ -98,7 +124,8 @@ bool OfflineItem::operator==(const OfflineItem& offline_item) const {
          received_bytes == offline_item.received_bytes &&
          progress == offline_item.progress &&
          time_remaining_ms == offline_item.time_remaining_ms &&
-         is_dangerous == offline_item.is_dangerous;
+         is_dangerous == offline_item.is_dangerous &&
+         schedule == offline_item.schedule;
 }
 
 OfflineItemVisuals::OfflineItemVisuals() = default;

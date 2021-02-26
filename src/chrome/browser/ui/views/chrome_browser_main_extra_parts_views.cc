@@ -10,17 +10,20 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/ui/commander/commander.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "chrome/browser/ui/views/devtools_process_observer.h"
+#include "chrome/browser/ui/views/media_router/media_router_dialog_controller_views.h"
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/media_router/browser/media_router_dialog_controller.h"
 #include "components/ui_devtools/connector_delegate.h"
 #include "components/ui_devtools/switches.h"
 #include "components/ui_devtools/views/devtools_server_util.h"
 #include "content/public/browser/tracing_service.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 
 #if defined(USE_AURA)
 #include "base/run_loop.h"
@@ -99,6 +102,19 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
         devtools_server_->tracing_agent());
   }
 
+  media_router::MediaRouterDialogController::SetGetOrCreate(
+      base::BindRepeating([](content::WebContents* web_contents) {
+        DCHECK(web_contents);
+        media_router::MediaRouterDialogController* controller = nullptr;
+        // This call does nothing if the controller already exists.
+        media_router::MediaRouterDialogControllerViews::CreateForWebContents(
+            web_contents);
+        controller =
+            media_router::MediaRouterDialogControllerViews::FromWebContents(
+                web_contents);
+        return controller;
+      }));
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // On the Linux desktop, we want to prevent the user from logging in as root,
   // so that we don't destroy the profile. Now that we have some minimal ui
@@ -115,7 +131,7 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(service_manager::switches::kNoSandbox))
+  if (command_line.HasSwitch(sandbox::policy::switches::kNoSandbox))
     return;
 
   base::string16 title = l10n_util::GetStringFUTF16(
@@ -137,6 +153,8 @@ void ChromeBrowserMainExtraPartsViews::PostBrowserStart() {
   relaunch_notification_controller_ =
       std::make_unique<RelaunchNotificationController>(
           UpgradeDetector::GetInstance());
+  if (commander::IsEnabled())
+    commander::Commander::Get()->Initialize();
 }
 
 void ChromeBrowserMainExtraPartsViews::PostMainMessageLoopRun() {

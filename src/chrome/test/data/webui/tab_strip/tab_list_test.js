@@ -5,22 +5,29 @@
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {setScrollAnimationEnabledForTesting} from 'chrome://tab-strip/tab_list.js';
-import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
-import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
+import {TabElement} from 'chrome://tab-strip/tab.js';
+import {TabGroupElement} from 'chrome://tab-strip/tab_group.js';
+import {setScrollAnimationEnabledForTesting, TabListElement} from 'chrome://tab-strip/tab_list.js';
+import {TabStripEmbedderProxyImpl} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
+import {TabData, TabsApiProxyImpl} from 'chrome://tab-strip/tabs_api_proxy.js';
 
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 import {eventToPromise} from '../test_util.m.js';
 
 import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
 suite('TabList', () => {
-  let callbackRouter;
-  let optionsCalled;
+  /** @type {!TabListElement} */
   let tabList;
+
+  /** @type {!TestTabStripEmbedderProxy} */
   let testTabStripEmbedderProxy;
+
+  /** @type {!TestTabsApiProxy} */
   let testTabsApiProxy;
 
+  /** @type {!Array<!TabData>} */
   const tabs = [
     {
       active: true,
@@ -48,38 +55,52 @@ suite('TabList', () => {
     },
   ];
 
+  /**
+   * @param {!TabData} tab
+   * @param {number} index
+   */
   function pinTabAt(tab, index) {
     const changeInfo = {index: index, pinned: true};
     const updatedTab = Object.assign({}, tab, changeInfo);
     webUIListenerCallback('tab-updated', updatedTab);
   }
 
+  /**
+   * @param {!TabData} tab
+   * @param {number} index
+   */
   function unpinTabAt(tab, index) {
     const changeInfo = {index: index, pinned: false};
     const updatedTab = Object.assign({}, tab, changeInfo);
     webUIListenerCallback('tab-updated', updatedTab);
   }
 
+  /** @return {!NodeList<!TabElement>} */
   function getUnpinnedTabs() {
-    return tabList.shadowRoot.querySelectorAll('#unpinnedTabs tabstrip-tab');
+    return /** @type {!NodeList<!TabElement>} */ (
+        tabList.shadowRoot.querySelectorAll('#unpinnedTabs tabstrip-tab'));
   }
 
+  /** @return {!NodeList<!TabElement>} */
   function getPinnedTabs() {
-    return tabList.shadowRoot.querySelectorAll('#pinnedTabs tabstrip-tab');
+    return /** @type {!NodeList<!TabElement>} */ (
+        tabList.shadowRoot.querySelectorAll('#pinnedTabs tabstrip-tab'));
   }
 
+  /** @return {!NodeList<!TabGroupElement>} */
   function getTabGroups() {
-    return tabList.shadowRoot.querySelectorAll('tabstrip-tab-group');
+    return /** @type {!NodeList<!TabGroupElement>} */ (
+        tabList.shadowRoot.querySelectorAll('tabstrip-tab-group'));
   }
 
   setup(() => {
+    document.documentElement.dir = 'ltr';
     document.body.innerHTML = '';
     document.body.style.margin = 0;
 
     testTabsApiProxy = new TestTabsApiProxy();
     testTabsApiProxy.setTabs(tabs);
-    TabsApiProxy.instance_ = testTabsApiProxy;
-    callbackRouter = testTabsApiProxy.callbackRouter;
+    TabsApiProxyImpl.instance_ = testTabsApiProxy;
 
     testTabStripEmbedderProxy = new TestTabStripEmbedderProxy();
     testTabStripEmbedderProxy.setColors({
@@ -91,11 +112,12 @@ suite('TabList', () => {
       '--width': '150px',
     });
     testTabStripEmbedderProxy.setVisible(true);
-    TabStripEmbedderProxy.instance_ = testTabStripEmbedderProxy;
+    TabStripEmbedderProxyImpl.instance_ = testTabStripEmbedderProxy;
 
     setScrollAnimationEnabledForTesting(false);
 
-    tabList = document.createElement('tabstrip-tab-list');
+    tabList = /** @type {!TabListElement} */ (
+        document.createElement('tabstrip-tab-list'));
     document.body.appendChild(tabList);
 
     return testTabsApiProxy.whenCalled('getTabs');
@@ -224,17 +246,20 @@ suite('TabList', () => {
   });
 
   test('PlacesTabElement', () => {
-    const pinnedTab = document.createElement('tabstrip-tab');
+    const pinnedTab =
+        /** @type {!TabElement} */ (document.createElement('tabstrip-tab'));
     tabList.placeTabElement(pinnedTab, 0, true, undefined);
     assertEquals(pinnedTab, getPinnedTabs()[0]);
 
-    const unpinnedUngroupedTab = document.createElement('tabstrip-tab');
+    const unpinnedUngroupedTab =
+        /** @type {!TabElement} */ (document.createElement('tabstrip-tab'));
     tabList.placeTabElement(unpinnedUngroupedTab, 1, false, undefined);
     let unpinnedTabs = getUnpinnedTabs();
     assertEquals(4, unpinnedTabs.length);
     assertEquals(unpinnedUngroupedTab, unpinnedTabs[0]);
 
-    const groupedTab = document.createElement('tabstrip-tab');
+    const groupedTab =
+        /** @type {!TabElement} */ (document.createElement('tabstrip-tab'));
     tabList.placeTabElement(groupedTab, 1, false, 'group0');
     unpinnedTabs = getUnpinnedTabs();
     assertEquals(5, unpinnedTabs.length);
@@ -242,8 +267,148 @@ suite('TabList', () => {
     assertEquals('TABSTRIP-TAB-GROUP', groupedTab.parentElement.tagName);
   });
 
+  /**
+   * @param {!Element} element
+   * @param {number} horizontalScale
+   * @param {number} verticalScale
+   */
+  function testPlaceElementAnimationParams(
+      element, horizontalScale, verticalScale) {
+    const animations = element.getAnimations();
+    assertEquals(1, animations.length);
+    assertEquals('running', animations[0].playState);
+    assertEquals(120, animations[0].effect.getTiming().duration);
+    assertEquals('ease-out', animations[0].effect.getTiming().easing);
+
+    const keyframes = animations[0].effect.getKeyframes();
+    const horizontalTabSpacingVars =
+        '(var(--tabstrip-tab-width) + var(--tabstrip-tab-spacing))';
+    const verticalTabSpacingVars =
+        '(var(--tabstrip-tab-height) + var(--tabstrip-tab-spacing))';
+    assertEquals(2, keyframes.length);
+    assertEquals(
+        `translate(calc(${horizontalScale} * ${
+            horizontalTabSpacingVars}), calc(${verticalScale} * ${
+            verticalTabSpacingVars}))`,
+        keyframes[0].transform);
+    assertEquals('translate(0px, 0px)', keyframes[1].transform);
+  }
+
+  /**
+   * This function should be called once per test since the animations finishing
+   * and being included in the getAnimations() calls can cause flaky tests.
+   * @param {number} indexToMove
+   * @param {number} newIndex
+   * @param {number} direction, the direction the moved tab should animate.
+   *     +1 if moving right, -1 if moving left
+   */
+  async function testPlaceTabElementAnimation(
+      indexToMove, newIndex, direction) {
+    await tabList.animationPromises;
+    let unpinnedTabs = getUnpinnedTabs();
+
+    const movedTab = unpinnedTabs[indexToMove];
+    tabList.placeTabElement(movedTab, newIndex, false, undefined);
+    testPlaceElementAnimationParams(
+        movedTab, -1 * direction * Math.abs(newIndex - indexToMove), 0);
+
+    Array.from(unpinnedTabs)
+        .filter(tabElement => tabElement !== movedTab)
+        .forEach(
+            tabElement =>
+                testPlaceElementAnimationParams(tabElement, direction, 0));
+  }
+
+  test('PlaceTabElementAnimatesTabMovedTowardsStart', () => {
+    return testPlaceTabElementAnimation(tabs.length - 1, 0, -1);
+  });
+
+  test('PlaceTabElementAnimatesTabMovedTowardsStartRTL', () => {
+    document.documentElement.dir = 'rtl';
+    return testPlaceTabElementAnimation(tabs.length - 1, 0, 1);
+  });
+
+  test('PlaceTabElementAnimatesTabMovedTowardsEnd', () => {
+    return testPlaceTabElementAnimation(0, tabs.length - 1, 1);
+  });
+
+  test('PlaceTabElementAnimatesTabMovedTowardsEndRTL', () => {
+    document.documentElement.dir = 'rtl';
+    return testPlaceTabElementAnimation(0, tabs.length - 1, -1);
+  });
+
+  test('PlacePinnedTabElementAnimatesTabsWithinSameColumn', async () => {
+    tabs.forEach(pinTabAt);
+    await tabList.animationPromises;
+
+    // Test moving a tab within the same column. If a tab is moved from index 0
+    // to index 2, it should move vertically down 2 places. Tabs at index 1 and
+    // index 2 should move up 1 space.
+    const pinnedTabs = getPinnedTabs();
+    tabList.placeTabElement(pinnedTabs[0], 2, /*pinned=*/ true);
+    await Promise.all([
+      testPlaceElementAnimationParams(pinnedTabs[0], 0, -2),
+      testPlaceElementAnimationParams(pinnedTabs[1], 0, 1),
+      testPlaceElementAnimationParams(pinnedTabs[2], 0, 1),
+    ]);
+  });
+
+  test(
+      'PlacePinnedTabElementAnimatesTabsAcrossColumnsToHigherIndex',
+      async () => {
+        tabs.forEach(pinTabAt);
+        for (let i = 0; i < 4; i++) {
+          webUIListenerCallback('tab-created', {
+            active: false,
+            alertStates: [],
+            id: tabs.length + i,
+            index: tabs.length + i,
+            pinned: true,
+            title: 'Pinned tab',
+          });
+        }
+        await tabList.animationPromises;
+
+        const pinnedTabs = getPinnedTabs();
+        tabList.placeTabElement(pinnedTabs[2], 6, /*pinned=*/ true);
+        await Promise.all([
+          testPlaceElementAnimationParams(pinnedTabs[2], -2, 2),
+          testPlaceElementAnimationParams(pinnedTabs[3], 1, -2),
+          testPlaceElementAnimationParams(pinnedTabs[4], 0, 1),
+          testPlaceElementAnimationParams(pinnedTabs[5], 0, 1),
+          testPlaceElementAnimationParams(pinnedTabs[6], 1, -2),
+        ]);
+      });
+
+  test(
+      'PlacePinnedTabElementAnimatesTabsAcrossColumnsToLowerIndex',
+      async () => {
+        tabs.forEach(pinTabAt);
+        for (let i = 0; i < 4; i++) {
+          webUIListenerCallback('tab-created', {
+            active: false,
+            alertStates: [],
+            id: tabs.length + i,
+            index: tabs.length + i,
+            pinned: true,
+            title: 'Pinned tab',
+          });
+        }
+        await tabList.animationPromises;
+
+        const pinnedTabs = getPinnedTabs();
+        tabList.placeTabElement(pinnedTabs[3], 0, /*pinned=*/ true);
+        await Promise.all([
+          testPlaceElementAnimationParams(pinnedTabs[3], 1, 0),
+          testPlaceElementAnimationParams(pinnedTabs[2], -1, 2),
+          testPlaceElementAnimationParams(pinnedTabs[1], 0, -1),
+          testPlaceElementAnimationParams(pinnedTabs[0], 0, -1),
+        ]);
+      });
+
   test('PlacesTabGroupElement', () => {
-    const tabGroupElement = document.createElement('tabstrip-tab-group');
+    const tabGroupElement = /** @type {!TabGroupElement} */ (
+        document.createElement('tabstrip-tab-group'));
     tabList.placeTabGroupElement(tabGroupElement, 2);
 
     const tabGroupElements = getTabGroups();
@@ -252,6 +417,72 @@ suite('TabList', () => {
 
     // Group was inserted at index 2, so it should come after the 2nd tab.
     assertEquals(getUnpinnedTabs()[1], tabGroupElement.previousElementSibling);
+  });
+
+  /**
+   * @param {number} indexToGroup
+   * @param {number} newIndex
+   * @param {number} direction
+   */
+  async function testPlaceTabGroupElementAnimation(
+      indexToGroup, newIndex, direction) {
+    await tabList.animationPromises;
+
+    // Group the tab at indexToGroup.
+    const unpinnedTabs = getUnpinnedTabs();
+    const tabToGroup = unpinnedTabs[indexToGroup];
+    webUIListenerCallback(
+        'tab-group-state-changed', tabToGroup.tab.id, indexToGroup, 'group0');
+
+    const groupElement =
+        /** @type {!TabGroupElement} */ (tabToGroup.parentElement);
+    tabList.placeTabGroupElement(groupElement, newIndex);
+    testPlaceElementAnimationParams(
+        groupElement, -1 * direction * Math.abs(newIndex - indexToGroup), 0);
+
+    // Test animations on all the other tabs.
+    Array.from(getUnpinnedTabs())
+        .filter(tabElement => tabElement.parentElement !== groupElement)
+        .forEach(
+            tabElement =>
+                testPlaceElementAnimationParams(tabElement, direction, 0));
+  }
+
+  test('PlaceTabGroupElementAnimatesTabGroupMovedTowardsStart', () => {
+    return testPlaceTabGroupElementAnimation(tabs.length - 1, 0, -1);
+  });
+
+  test('PlaceTabGroupElementAnimatesTabGroupMovedTowardsStartRTL', () => {
+    document.documentElement.dir = 'rtl';
+    return testPlaceTabGroupElementAnimation(tabs.length - 1, 0, 1);
+  });
+
+  test('PlaceTabGroupElementAnimatesTabGroupMovedTowardsEnd', () => {
+    return testPlaceTabGroupElementAnimation(0, tabs.length - 1, 1);
+  });
+
+  test('PlaceTabGroupElementAnimatesTabGroupMovedTowardsEndRTL', () => {
+    document.documentElement.dir = 'rtl';
+    return testPlaceTabGroupElementAnimation(0, tabs.length - 1, -1);
+  });
+
+  test('PlaceTabGroupElementAnimationWithMultipleTabs', async () => {
+    await tabList.animationPromises;
+
+    // Group all tabs except for the first one.
+    const ungroupedTab = getUnpinnedTabs()[0];
+    tabs.slice(1).forEach(tab => {
+      webUIListenerCallback(
+          'tab-group-state-changed', tab.id, tab.index, 'group0');
+    });
+
+    // Move the group to index 0.
+    const tabGroup = getTabGroups()[0];
+    tabList.placeTabGroupElement(tabGroup, 0);
+
+    // Both the TabElement and TabGroupElement should move by a scale of 1.
+    testPlaceElementAnimationParams(tabGroup, 1, 0);
+    testPlaceElementAnimationParams(ungroupedTab, -1, 0);
   });
 
   test('AddNewTabGroup', () => {
@@ -387,16 +618,6 @@ suite('TabList', () => {
     assertEquals(tabGroup.children.length, 2);
     assertEquals(tabGroup.children[0].tab.id, precedingTabInGroup.id);
     assertEquals(tabGroup.children[1].tab.id, originalTabInGroup.id);
-  });
-
-  test('HandleReplacedGroupId', () => {
-    webUIListenerCallback(
-        'tab-group-state-changed', tabs[1].id, tabs[1].index, 'oldGroupId');
-    const group = getTabGroups()[0];
-    assertEquals('oldGroupId', group.dataset.groupId);
-
-    webUIListenerCallback('tab-group-id-replaced', 'oldGroupId', 'newGroupId');
-    assertEquals('newGroupId', group.dataset.groupId);
   });
 
   test('removes a tab when tab is removed from current window', async () => {

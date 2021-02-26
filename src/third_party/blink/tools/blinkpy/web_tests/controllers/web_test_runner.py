@@ -58,12 +58,13 @@ class TestRunInterruptedException(Exception):
 
 class WebTestRunner(object):
     def __init__(self, options, port, printer, results_directory,
-                 test_is_slow_fn):
+                 test_is_slow_fn, result_sink):
         self._options = options
         self._port = port
         self._printer = printer
         self._results_directory = results_directory
         self._test_is_slow = test_is_slow_fn
+        self._test_result_sink = result_sink
         self._sharder = Sharder(self._port.split_test,
                                 self._options.max_locked_shards)
         self._filesystem = self._port.host.filesystem
@@ -90,7 +91,9 @@ class WebTestRunner(object):
 
         test_run_results = TestRunResults(
             self._expectations,
-            len(test_inputs) + len(tests_to_skip))
+            len(test_inputs) + len(tests_to_skip),
+            self._test_result_sink,
+        )
         self._current_run_results = test_run_results
         self._printer.num_tests = len(test_inputs)
         self._printer.num_completed = 0
@@ -349,10 +352,16 @@ class Worker(object):
         if self._driver:
             # When tracing we need to go through the standard shutdown path to
             # ensure that the trace is recorded properly.
-            if any(i in ['--trace-startup', '--trace-shutdown']
-                   for i in self._options.additional_driver_flag):
+            tracing_enabled = self._port.get_option(
+                'enable_tracing') is not None or any(
+                    flag.startswith(tracing_command) for tracing_command in
+                    ['--trace-startup', '--trace-shutdown']
+                    for flag in self._options.additional_driver_flag)
+
+            if tracing_enabled:
                 _log.debug('%s waiting %d seconds for %s driver to shutdown',
-                           self._name, self._port.driver_stop_timeout(), label)
+                           self._name, self._port.driver_stop_timeout(),
+                           self._name)
                 self._driver.stop(
                     timeout_secs=self._port.driver_stop_timeout())
                 return

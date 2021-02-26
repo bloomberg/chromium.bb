@@ -86,7 +86,7 @@ void SupervisedUserNavigationObserver::UpdateMainFrameFilteringStatus(
 }
 
 void SupervisedUserNavigationObserver::DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->HasCommitted())
     return;
 
@@ -108,13 +108,15 @@ void SupervisedUserNavigationObserver::DidFinishNavigation(
     auto* render_frame_host = web_contents()->GetMainFrame();
     int process_id = render_frame_host->GetProcess()->GetID();
     int routing_id = render_frame_host->GetRoutingID();
-
+    bool skip_manual_parent_filter =
+        url_filter_->ShouldSkipParentManualAllowlistFiltering(web_contents());
     url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
         web_contents()->GetLastCommittedURL(),
         base::BindOnce(
             &SupervisedUserNavigationObserver::URLFilterCheckCallback,
             weak_ptr_factory_.GetWeakPtr(), navigation_handle->GetURL(),
-            process_id, routing_id));
+            process_id, routing_id),
+        skip_manual_parent_filter);
   }
 }
 
@@ -149,13 +151,15 @@ void SupervisedUserNavigationObserver::OnURLFilterChanged() {
   auto* main_frame = web_contents()->GetMainFrame();
   int main_frame_process_id = main_frame->GetProcess()->GetID();
   int routing_id = main_frame->GetRoutingID();
-
+  bool skip_manual_parent_filter =
+      url_filter_->ShouldSkipParentManualAllowlistFiltering(web_contents());
   url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
       web_contents()->GetLastCommittedURL(),
       base::BindOnce(&SupervisedUserNavigationObserver::URLFilterCheckCallback,
                      weak_ptr_factory_.GetWeakPtr(),
                      web_contents()->GetLastCommittedURL(),
-                     main_frame_process_id, routing_id));
+                     main_frame_process_id, routing_id),
+      skip_manual_parent_filter);
 
   MaybeUpdateRequestedHosts();
 
@@ -191,9 +195,11 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
   // show the user the same thing that the custodian will see on the dashboard
   // (where it gets via a different mechanism unrelated to history).
   history::HistoryAddPageArgs add_page_args(
-      url, timestamp, history::ContextIDForWebContents(web_contents()), 0, url,
-      history::RedirectList(), ui::PAGE_TRANSITION_BLOCKED, false,
-      history::SOURCE_BROWSED, false, true);
+      url, timestamp, history::ContextIDForWebContents(web_contents()),
+      /*nav_entry_id=*/0, /*referrer=*/url, history::RedirectList(),
+      ui::PAGE_TRANSITION_BLOCKED, /*hidden=*/false, history::SOURCE_BROWSED,
+      /*did_replace_entry=*/false, /*consider_for_ntp_most_visited=*/true,
+      /*publicly_routable=*/false);
 
   // Add the entry to the history database.
   Profile* profile =
@@ -285,9 +291,8 @@ void SupervisedUserNavigationObserver::FilterRenderFrame(
     return;
 
   const GURL& last_committed_url = render_frame_host->GetLastCommittedURL();
-
-  url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
-      web_contents()->GetLastCommittedURL(),
+  url_filter_->GetFilteringBehaviorForSubFrameURLWithAsyncChecks(
+      last_committed_url, web_contents()->GetLastCommittedURL(),
       base::BindOnce(&SupervisedUserNavigationObserver::URLFilterCheckCallback,
                      weak_ptr_factory_.GetWeakPtr(), last_committed_url,
                      render_frame_host->GetProcess()->GetID(),

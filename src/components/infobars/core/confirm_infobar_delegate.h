@@ -6,6 +6,7 @@
 #define COMPONENTS_INFOBARS_CORE_CONFIRM_INFOBAR_DELEGATE_H_
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "ui/gfx/text_constants.h"
@@ -35,6 +36,10 @@ class ConfirmInfoBarDelegate : public infobars::InfoBarDelegate {
   // Returns the InfoBar type to be displayed for the InfoBar.
   InfoBarAutomationType GetInfoBarAutomationType() const override;
 
+  // Returns the title string to be displayed for the InfoBar.
+  // Defaults to having not title. Currently only used on iOS.
+  virtual base::string16 GetTitleText() const;
+
   // Returns the message string to be displayed for the InfoBar.
   virtual base::string16 GetMessageText() const = 0;
 
@@ -52,6 +57,12 @@ class ConfirmInfoBarDelegate : public infobars::InfoBarDelegate {
   // Returns whether or not the OK button will trigger a UAC elevation prompt on
   // Windows.
   virtual bool OKButtonTriggersUACPrompt() const;
+
+#if defined(OS_IOS)
+  // Returns whether or not a tint should be applied to the icon background.
+  // Defaults to true.
+  virtual bool UseIconBackgroundTint() const;
+#endif
 
   // Called when the OK button is pressed. If this function returns true, the
   // infobar is then immediately closed. Subclasses MUST NOT return true if in

@@ -156,7 +156,7 @@ std::string FixupHomedir(const std::string& text) {
 // user foobar's home directory.  Officially, we should use getpwent(),
 // but that is a nasty blocking call.
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   static const char kHome[] = "/Users/";
 #else
   static const char kHome[] = "/home/";
@@ -394,6 +394,9 @@ bool GetValidScheme(const std::string& text,
 
   // We need to fix up the segmentation for "www.example.com:/".  For this
   // case, we guess that schemes with a "." are not actually schemes.
+  //
+  // Note: This logic deviates from GURL, where "www.example.com:" would be
+  // parsed as having "www.example.com" as the scheme with an empty hostname.
   if (canon_scheme->find('.') != std::string::npos)
     return false;
 

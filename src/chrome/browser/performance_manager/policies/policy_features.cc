@@ -8,8 +8,9 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/allocator/buildflags.h"
 #endif
 
@@ -27,11 +28,35 @@ const base::Feature kEmptyWorkingSet{"EmptyWorkingSet",
 const base::Feature kTrimOnMemoryPressure{"TrimOnMemoryPressure",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kTrimArcOnMemoryPressure{"TrimArcOnMemoryPressure",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kTrimOnFreeze{"TrimOnFreeze",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<int> kGraphWalkBackoffTimeSec = {
     &kTrimOnMemoryPressure, "GraphWalkBackoffTimeSec", 180};
+
+const base::FeatureParam<int> kArcProcessListFetchBackoffTimeSec = {
+    &kTrimArcOnMemoryPressure, "ArcProcessListFetchBackoffTimeSec", 180};
+
+const base::FeatureParam<int> kArcProcessTrimBackoffTimeSec = {
+    &kTrimArcOnMemoryPressure, "ArcProcessTrimBackoffTimeSec", 1800};
+
+const base::FeatureParam<bool> kTrimArcAppProcesses = {
+    &kTrimArcOnMemoryPressure, "ArcTrimAppProcesses", true};
+
+const base::FeatureParam<bool> kTrimArcSystemProcesses = {
+    &kTrimArcOnMemoryPressure, "ArcTrimSystemProcesses", true};
+
+const base::FeatureParam<bool> kTrimArcAggressive = {
+    &kTrimArcOnMemoryPressure, "ArcTrimAggressive", false};
+
+const base::FeatureParam<int> kArcMaxProcessesPerTrim = {
+    &kTrimArcOnMemoryPressure, "ArcMaxProcessesPerTrim", -1};
+
+const base::FeatureParam<int> kArcProcessInactivityTimeSec = {
+    &kTrimArcOnMemoryPressure, "ArcProcessInactivityTimeSec", 300};
 
 // Specifies the minimum amount of time a parent frame node must be invisible
 // before considering the process node for working set trim.
@@ -55,18 +80,32 @@ TrimOnMemoryPressureParams TrimOnMemoryPressureParams::GetParams() {
       base::TimeDelta::FromSeconds(kNodeInvisibileTimeSec.Get());
   params.node_trim_backoff_time =
       base::TimeDelta::FromSeconds(kNodeTrimBackoffTimeSec.Get());
+
+  params.arc_process_trim_backoff_time =
+      base::TimeDelta::FromSeconds(kArcProcessTrimBackoffTimeSec.Get());
+  params.arc_process_list_fetch_backoff_time =
+      base::TimeDelta::FromSeconds(kArcProcessListFetchBackoffTimeSec.Get());
+  params.trim_arc_system_processes = kTrimArcSystemProcesses.Get();
+  params.trim_arc_app_processes = kTrimArcAppProcesses.Get();
+  params.trim_arc_aggressive = kTrimArcAggressive.Get();
+  params.arc_max_number_processes_per_trim = kArcMaxProcessesPerTrim.Get();
+
+  const int arc_inactivity_time = kArcProcessInactivityTimeSec.Get();
+  if (arc_inactivity_time > 0) {
+    params.arc_process_inactivity_time =
+        base::TimeDelta::FromSeconds(arc_inactivity_time);
+  } else {
+    // This causes us to ignore the last activity time if it was not configured.
+    params.arc_process_inactivity_time = base::TimeDelta::Min();
+  }
   return params;
 }
-
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_LINUX)
 
 #if BUILDFLAG(USE_TCMALLOC)
 // This flag will allow the browser process to adjust the tcmalloc tunables to
 // balance performance and memory utilization.
 const base::Feature kDynamicTcmallocTuning{"DynamicTcmallocTuning",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The time between attempting to update tcmalloc tunables.
 const base::FeatureParam<int> kDynamicTuningTimeSec = {
@@ -78,23 +117,43 @@ const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec = {
     &kDynamicTcmallocTuning, "DynamicTcmallocScaleInvisibleTimeSec", -1};
 #endif  // BUILDFLAG(USE_TCMALLOC)
 
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
 const base::Feature kPageFreezingFromPerformanceManager{
     "PageFreezingFromPerformanceManager", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUrgentDiscardingFromPerformanceManager{
-    "UrgentDiscardingFromPerformanceManager",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "UrgentDiscardingFromPerformanceManager",
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_LINUX)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
+
+UrgentDiscardingParams::UrgentDiscardingParams() = default;
+UrgentDiscardingParams::UrgentDiscardingParams(
+    const UrgentDiscardingParams& rhs) = default;
+UrgentDiscardingParams::~UrgentDiscardingParams() = default;
+
+constexpr base::FeatureParam<int> UrgentDiscardingParams::kDiscardStrategy;
+
+// static
+UrgentDiscardingParams UrgentDiscardingParams::GetParams() {
+  UrgentDiscardingParams params = {};
+  params.discard_strategy_ = static_cast<DiscardStrategy>(
+      UrgentDiscardingParams::kDiscardStrategy.Get());
+  return params;
+}
 
 const base::Feature kBackgroundTabLoadingFromPerformanceManager{
     "BackgroundTabLoadingFromPerformanceManager",
     base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
-const base::Feature kHighPMFMemoryPressureSignals{
-    "HighPMFMemoryPressureSignals", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kHighPMFDiscardPolicy{"HighPMFDiscardPolicy",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 }  // namespace features
 }  // namespace performance_manager

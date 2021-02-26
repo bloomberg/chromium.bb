@@ -5,11 +5,13 @@
 package org.chromium.chrome.browser.gesturenav;
 
 import android.graphics.Bitmap;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 import android.widget.ListView;
 
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
+
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,6 +20,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -25,14 +29,15 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.gesturenav.NavigationSheetMediator.ItemProperties;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
+import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.test.mock.MockNavigationController;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.test.util.UiRestriction;
@@ -52,9 +57,14 @@ public class NavigationSheetTest {
     private static final int NAVIGATION_INDEX_1 = 1;
     private static final int NAVIGATION_INDEX_2 = 5;
 
+    private BottomSheetController mBottomSheetController;
+
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
+        mBottomSheetController = mActivityTestRule.getActivity()
+                                         .getRootUiCoordinatorForTesting()
+                                         .getBottomSheetController();
     }
 
     private static class TestNavigationEntry extends NavigationEntry {
@@ -109,6 +119,12 @@ public class NavigationSheetTest {
         }
     }
 
+    private NavigationSheet getNavigationSheet() {
+        RootUiCoordinator coordinator =
+                mActivityTestRule.getActivity().getRootUiCoordinatorForTesting();
+        return ((TabbedRootUiCoordinator) coordinator).getNavigationSheetForTesting();
+    }
+
     @Test
     @MediumTest
     public void testFaviconFetching() throws ExecutionException {
@@ -116,14 +132,11 @@ public class NavigationSheetTest {
         NavigationSheetCoordinator sheet = (NavigationSheetCoordinator) showPopup(controller);
         ListView listview = sheet.getContentView().findViewById(R.id.navigation_entries);
 
-        CriteriaHelper.pollUiThread(new Criteria("All favicons did not get updated.") {
-            @Override
-            public boolean isSatisfied() {
-                for (int i = 0; i < controller.mHistory.getEntryCount(); i++) {
-                    ListItem item = (ListItem) listview.getAdapter().getItem(i);
-                    if (item.model.get(ItemProperties.ICON) == null) return false;
-                }
-                return true;
+        CriteriaHelper.pollUiThread(() -> {
+            for (int i = 0; i < controller.mHistory.getEntryCount(); i++) {
+                ListItem item = (ListItem) listview.getAdapter().getItem(i);
+                Criteria.checkThat(i + "th element", item.model.get(ItemProperties.ICON),
+                        Matchers.notNullValue());
             }
         });
     }
@@ -141,17 +154,16 @@ public class NavigationSheetTest {
         ThreadUtils.runOnUiThreadBlocking(() -> listview.getChildAt(1).callOnClick());
 
         CriteriaHelper.pollUiThread(sheet::isHidden);
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(NAVIGATION_INDEX_2, () -> controller.mNavigatedIndex));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(controller.mNavigatedIndex, Matchers.is(NAVIGATION_INDEX_2));
+        });
     }
 
     @Test
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @CommandLineFlags.Add({"enable-features=OverscrollHistoryNavigation<GestureNavigation",
-            "force-fieldtrials=GestureNavigation/Enabled",
-            "force-fieldtrial-params=GestureNavigation.Enabled:"
-                    + "overscroll_history_navigation_bottom_sheet/true"})
+            "force-fieldtrials=GestureNavigation/Enabled"})
     public void
     testLongPressBackTriggering() {
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
@@ -161,16 +173,14 @@ public class NavigationSheetTest {
         CriteriaHelper.pollUiThread(activity::hasPendingNavigationRunnableForTesting);
 
         // Wait for the long press timeout to trigger and show the navigation popup.
-        CriteriaHelper.pollUiThread(() -> activity.getNavigationSheetForTesting() != null);
+        CriteriaHelper.pollUiThread(() -> getNavigationSheet() != null);
     }
 
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @CommandLineFlags.Add({"enable-features=OverscrollHistoryNavigation<GestureNavigation",
-            "force-fieldtrials=GestureNavigation/Enabled",
-            "force-fieldtrial-params=GestureNavigation.Enabled:"
-                    + "overscroll_history_navigation_bottom_sheet/true"})
+            "force-fieldtrials=GestureNavigation/Enabled"})
     public void
     testLongPressBackTriggering_Cancellation() throws ExecutionException {
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
@@ -186,16 +196,14 @@ public class NavigationSheetTest {
         CriteriaHelper.pollUiThread(() -> !activity.hasPendingNavigationRunnableForTesting());
 
         // Ensure no navigation popup is showing.
-        Assert.assertNull(
-                TestThreadUtils.runOnUiThreadBlocking(activity::getNavigationSheetForTesting));
+        Assert.assertNull(TestThreadUtils.runOnUiThreadBlocking(this::getNavigationSheet));
     }
 
     private NavigationSheet showPopup(NavigationController controller) throws ExecutionException {
         return TestThreadUtils.runOnUiThreadBlocking(() -> {
             Tab tab = mActivityTestRule.getActivity().getActivityTabProvider().get();
-            NavigationSheet navigationSheet =
-                    NavigationSheet.create(tab.getContentView(), mActivityTestRule.getActivity(),
-                            mActivityTestRule.getActivity()::getBottomSheetController);
+            NavigationSheet navigationSheet = NavigationSheet.create(tab.getContentView(),
+                    mActivityTestRule.getActivity(), () -> mBottomSheetController);
             navigationSheet.setDelegate(new TestSheetDelegate(controller));
             navigationSheet.startAndExpand(false, false);
             return navigationSheet;

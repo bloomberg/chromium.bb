@@ -1,5 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+// License & terms of use: http://www.unicode.org/copyright.html
+// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
 bn{
     Countries{
         001{"পৃথিবী"}
@@ -310,5 +311,4 @@ bn{
         SZ{"সোয়াজিল্যান্ড"}
         TL{"পূর্ব তিমুর"}
     }
-    Version{"37"}
 }

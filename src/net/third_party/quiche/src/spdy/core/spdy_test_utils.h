@@ -9,16 +9,14 @@
 #include <cstdint>
 #include <string>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_headers_handler_interface.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_bug_tracker.h"
 
 namespace spdy {
 
-inline bool operator==(quiche::QuicheStringPiece x,
-                       const SpdyHeaderBlock::ValueProxy& y) {
+inline bool operator==(absl::string_view x,
+                       const Http2HeaderBlock::ValueProxy& y) {
   return y.operator==(x);
 }
 
@@ -38,34 +36,6 @@ void CompareCharArraysWithHexError(const std::string& description,
 void SetFrameFlags(SpdySerializedFrame* frame, uint8_t flags);
 
 void SetFrameLength(SpdySerializedFrame* frame, size_t length);
-
-// A test implementation of SpdyHeadersHandlerInterface that correctly
-// reconstructs multiple header values for the same name.
-class TestHeadersHandler : public SpdyHeadersHandlerInterface {
- public:
-  TestHeadersHandler() {}
-  TestHeadersHandler(const TestHeadersHandler&) = delete;
-  TestHeadersHandler& operator=(const TestHeadersHandler&) = delete;
-
-  void OnHeaderBlockStart() override;
-
-  void OnHeader(quiche::QuicheStringPiece name,
-                quiche::QuicheStringPiece value) override;
-
-  void OnHeaderBlockEnd(size_t header_bytes_parsed,
-                        size_t compressed_header_bytes_parsed) override;
-
-  const SpdyHeaderBlock& decoded_block() const { return block_; }
-  size_t header_bytes_parsed() const { return header_bytes_parsed_; }
-  size_t compressed_header_bytes_parsed() const {
-    return compressed_header_bytes_parsed_;
-  }
-
- private:
-  SpdyHeaderBlock block_;
-  size_t header_bytes_parsed_ = 0;
-  size_t compressed_header_bytes_parsed_ = 0;
-};
 
 }  // namespace test
 }  // namespace spdy

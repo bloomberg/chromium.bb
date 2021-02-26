@@ -70,7 +70,11 @@ void ChromeTracingDelegate::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 ChromeTracingDelegate::ChromeTracingDelegate() : incognito_launched_(false) {
-  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  // Ensure that this code is called on the UI thread, except for
+  // tests where a UI thread might not have been initialized at this point.
+  DCHECK(
+      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI) ||
+      !content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI));
 #if !defined(OS_ANDROID)
   BrowserList::AddObserver(this);
 #else
@@ -208,7 +212,7 @@ bool ChromeTracingDelegate::IsAllowedToBeginBackgroundScenario(
   if (!ProfileAllowsScenario(config, PROFILE_NOT_REQUIRED))
     return false;
 
-  if (requires_anonymized_data && chrome::IsIncognitoSessionActive())
+  if (requires_anonymized_data && chrome::IsOffTheRecordSessionActive())
     return false;
 
   return true;
@@ -218,7 +222,7 @@ bool ChromeTracingDelegate::IsAllowedToEndBackgroundScenario(
     const content::BackgroundTracingConfig& config,
     bool requires_anonymized_data) {
   if (requires_anonymized_data &&
-      (incognito_launched_ || chrome::IsIncognitoSessionActive())) {
+      (incognito_launched_ || chrome::IsOffTheRecordSessionActive())) {
     RecordDisallowedMetric(
         TracingFinalizationDisallowedReason::kIncognitoLaunched);
     return false;

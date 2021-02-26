@@ -15,6 +15,7 @@
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/google/core/common/google_util.h"
 #include "components/search_engines/android/jni_headers/TemplateUrlService_jni.h"
@@ -111,10 +112,10 @@ jboolean
 TemplateUrlServiceAndroid::IsSearchResultsPageFromDefaultSearchProvider(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& jurl) {
-  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
+    const base::android::JavaParamRef<jobject>& jurl) {
+  std::unique_ptr<GURL> url = url::GURLAndroid::ToNativeGURL(env, jurl);
   return template_url_service_->IsSearchResultsPageFromDefaultSearchProvider(
-      url);
+      *url);
 }
 
 void TemplateUrlServiceAndroid::OnTemplateURLServiceLoaded() {

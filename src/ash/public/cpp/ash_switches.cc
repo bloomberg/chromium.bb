@@ -20,10 +20,9 @@ constexpr base::TimeDelta kAshContextualNudgesMaxInterval =
 namespace ash {
 namespace switches {
 
-// Indicates the current color mode of ash.
-const char kAshColorMode[] = "ash-color-mode";
-const char kAshColorModeDark[] = "dark";
-const char kAshColorModeLight[] = "light";
+// Clear the fast ink buffer upon creation. This is needed on some devices that
+// do not zero out new buffers.
+const char kAshClearFastInkBuffer[] = "ash-clear-fast-ink-buffer";
 
 // Force the pointer (cursor) position to be kept inside root windows.
 const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
@@ -47,10 +46,6 @@ const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
 // set.
 const char kAshDisableTouchExplorationMode[] =
     "ash-disable-touch-exploration-mode";
-
-// Enables Backbutton on frame for v1 apps.
-// TODO(oshima): Remove this once the feature is launched. crbug.com/749713.
-const char kAshEnableV1AppBackButton[] = "ash-enable-v1-app-back-button";
 
 // Enable cursor motion blur.
 const char kAshEnableCursorMotionBlur[] = "ash-enable-cursor-motion-blur";
@@ -127,6 +122,9 @@ const char kEnableDimShelf[] = "enable-dim-shelf";
 // screen off) is used even if the device is in laptop mode.
 const char kForceTabletPowerButton[] = "force-tablet-power-button";
 
+// Sets the throttle fps for compositor frame submission.
+const char kFrameThrottleFps[] = "frame-throttle-fps";
+
 // Whether this device has an internal stylus.
 const char kHasInternalStylus[] = "has-internal-stylus";
 
@@ -170,6 +168,11 @@ bool ContextualNudgesResetShownCount() {
 
 bool IsUsingShelfAutoDim() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableDimShelf);
+}
+
+bool ShouldClearFastInkBuffer() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kAshClearFastInkBuffer);
 }
 
 }  // namespace switches

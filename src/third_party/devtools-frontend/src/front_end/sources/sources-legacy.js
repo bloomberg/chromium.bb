@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+
 import * as SourcesModule from './sources.js';
 
 self.Sources = self.Sources || {};
@@ -26,7 +28,6 @@ Sources.CSSPlugin.SwatchBookmark = SourcesModule.CSSPlugin.SwatchBookmark;
 /** @constructor */
 Sources.CallStackSidebarPane = SourcesModule.CallStackSidebarPane.CallStackSidebarPane;
 
-Sources.CallStackSidebarPane._debuggerCallFrameSymbol = SourcesModule.CallStackSidebarPane.debuggerCallFrameSymbol;
 Sources.CallStackSidebarPane._elementSymbol = SourcesModule.CallStackSidebarPane.elementSymbol;
 Sources.CallStackSidebarPane._defaultMaxAsyncStackChainDepth =
     SourcesModule.CallStackSidebarPane.defaultMaxAsyncStackChainDepth;
@@ -90,14 +91,8 @@ Sources.InplaceFormatterEditorAction = SourcesModule.InplaceFormatterEditorActio
 Sources.JavaScriptBreakpointsSidebarPane =
     SourcesModule.JavaScriptBreakpointsSidebarPane.JavaScriptBreakpointsSidebarPane;
 
-Sources.JavaScriptBreakpointsSidebarPane._locationSymbol =
-    SourcesModule.JavaScriptBreakpointsSidebarPane.locationSymbol;
-Sources.JavaScriptBreakpointsSidebarPane._checkboxLabelSymbol =
-    SourcesModule.JavaScriptBreakpointsSidebarPane.checkboxLabelSymbol;
-Sources.JavaScriptBreakpointsSidebarPane._snippetElementSymbol =
-    SourcesModule.JavaScriptBreakpointsSidebarPane.snippetElementSymbol;
-Sources.JavaScriptBreakpointsSidebarPane._breakpointLocationsSymbol =
-    SourcesModule.JavaScriptBreakpointsSidebarPane.breakpointLocationsSymbol;
+Sources.JavaScriptBreakpointsSidebarPane.retrieveLocationForElement =
+    SourcesModule.JavaScriptBreakpointsSidebarPane.retrieveLocationForElement;
 
 /** @constructor */
 Sources.JavaScriptCompilerPlugin = SourcesModule.JavaScriptCompilerPlugin.JavaScriptCompilerPlugin;
@@ -156,21 +151,18 @@ Sources.SearchSourcesView = SourcesModule.SearchSourcesView.SearchSourcesView;
 Sources.SearchSourcesView.ActionDelegate = SourcesModule.SearchSourcesView.ActionDelegate;
 
 /** @constructor */
-Sources.SimpleHistoryManager = SourcesModule.SimpleHistoryManager.SimpleHistoryManager;
-
-/** @interface */
-Sources.HistoryEntry = SourcesModule.SimpleHistoryManager.HistoryEntry;
-
-/** @constructor */
 Sources.SnippetsPlugin = SourcesModule.SnippetsPlugin.SnippetsPlugin;
 
 Sources.SourceMapNamesResolver = {};
 
-// Tests can override this global symbol and therefore can't be exported
-Sources.SourceMapNamesResolver._scopeResolvedForTest = function() {};
+Sources.SourceMapNamesResolver.setScopeResolvedForTest = SourcesModule.SourceMapNamesResolver.setScopeResolvedForTest;
 
-Sources.SourceMapNamesResolver._cachedMapSymbol = SourcesModule.SourceMapNamesResolver.cachedMapSymbol;
-Sources.SourceMapNamesResolver._cachedIdentifiersSymbol = SourcesModule.SourceMapNamesResolver.cachedIdentifiersSymbol;
+// Tests can override this global symbol and therefore can't be exported
+Object.defineProperty(Sources.SourceMapNamesResolver, '_scopeResolvedForTest', {
+  get: SourcesModule.SourceMapNamesResolver.getScopeResolvedForTest,
+  set: SourcesModule.SourceMapNamesResolver.setScopeResolvedForTest,
+});
+
 Sources.SourceMapNamesResolver._scopeIdentifiers = SourcesModule.SourceMapNamesResolver.scopeIdentifiers;
 Sources.SourceMapNamesResolver._resolveScope = SourcesModule.SourceMapNamesResolver.resolveScope;
 Sources.SourceMapNamesResolver._allVariablesInCallFrame = SourcesModule.SourceMapNamesResolver.allVariablesInCallFrame;
@@ -278,10 +270,6 @@ Sources.ThreadsSidebarPane = SourcesModule.ThreadsSidebarPane.ThreadsSidebarPane
 
 /** @constructor */
 Sources.UISourceCodeFrame = SourcesModule.UISourceCodeFrame.UISourceCodeFrame;
-
-Sources.UISourceCodeFrame._iconClassPerLevel = SourcesModule.UISourceCodeFrame.iconClassPerLevel;
-Sources.UISourceCodeFrame._bubbleTypePerLevel = SourcesModule.UISourceCodeFrame.bubbleTypePerLevel;
-Sources.UISourceCodeFrame._lineClassPerLevel = SourcesModule.UISourceCodeFrame.lineClassPerLevel;
 
 /** @constructor */
 Sources.UISourceCodeFrame.RowMessage = SourcesModule.UISourceCodeFrame.RowMessage;

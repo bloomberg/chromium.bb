@@ -6,17 +6,17 @@
 
 #include <cstdint>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
+#include "absl/base/macros.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_endianness_util.h"
+#include "net/third_party/quiche/src/common/quiche_endian.h"
 
 namespace spdy {
 
 TEST(SpdyFrameReaderTest, ReadUInt16) {
   // Frame data in network byte order.
   const uint16_t kFrameData[] = {
-      SpdyHostToNet16(1),
-      SpdyHostToNet16(1 << 15),
+      quiche::QuicheEndian::HostToNet16(1),
+      quiche::QuicheEndian::HostToNet16(1 << 15),
   };
 
   SpdyFrameReader frame_reader(reinterpret_cast<const char*>(kFrameData),
@@ -36,12 +36,12 @@ TEST(SpdyFrameReaderTest, ReadUInt16) {
 TEST(SpdyFrameReaderTest, ReadUInt32) {
   // Frame data in network byte order.
   const uint32_t kFrameData[] = {
-      SpdyHostToNet32(1),
-      SpdyHostToNet32(0x80000000),
+      quiche::QuicheEndian::HostToNet32(1),
+      quiche::QuicheEndian::HostToNet32(0x80000000),
   };
 
   SpdyFrameReader frame_reader(reinterpret_cast<const char*>(kFrameData),
-                               QUICHE_ARRAYSIZE(kFrameData) * sizeof(uint32_t));
+                               ABSL_ARRAYSIZE(kFrameData) * sizeof(uint32_t));
   EXPECT_FALSE(frame_reader.IsDoneReading());
 
   uint32_t uint32_val;
@@ -64,10 +64,10 @@ TEST(SpdyFrameReaderTest, ReadStringPiece16) {
       0x20, 0x31, 0x2c, 0x20, 0x32, 0x2c, 0x20, 0x33,  // "Testing, 1, 2, 3"
   };
 
-  SpdyFrameReader frame_reader(kFrameData, QUICHE_ARRAYSIZE(kFrameData));
+  SpdyFrameReader frame_reader(kFrameData, ABSL_ARRAYSIZE(kFrameData));
   EXPECT_FALSE(frame_reader.IsDoneReading());
 
-  quiche::QuicheStringPiece stringpiece_val;
+  absl::string_view stringpiece_val;
   EXPECT_TRUE(frame_reader.ReadStringPiece16(&stringpiece_val));
   EXPECT_FALSE(frame_reader.IsDoneReading());
   EXPECT_EQ(0, stringpiece_val.compare("Hi"));
@@ -87,10 +87,10 @@ TEST(SpdyFrameReaderTest, ReadStringPiece32) {
       0x20, 0x34, 0x2c, 0x20, 0x35, 0x2c, 0x20, 0x36,  // "Testing, 4, 5, 6"
   };
 
-  SpdyFrameReader frame_reader(kFrameData, QUICHE_ARRAYSIZE(kFrameData));
+  SpdyFrameReader frame_reader(kFrameData, ABSL_ARRAYSIZE(kFrameData));
   EXPECT_FALSE(frame_reader.IsDoneReading());
 
-  quiche::QuicheStringPiece stringpiece_val;
+  absl::string_view stringpiece_val;
   EXPECT_TRUE(frame_reader.ReadStringPiece32(&stringpiece_val));
   EXPECT_FALSE(frame_reader.IsDoneReading());
   EXPECT_EQ(0, stringpiece_val.compare("foo"));
@@ -106,7 +106,7 @@ TEST(SpdyFrameReaderTest, ReadUInt16WithBufferTooSmall) {
       0x00,  // part of a uint16_t
   };
 
-  SpdyFrameReader frame_reader(kFrameData, QUICHE_ARRAYSIZE(kFrameData));
+  SpdyFrameReader frame_reader(kFrameData, ABSL_ARRAYSIZE(kFrameData));
   EXPECT_FALSE(frame_reader.IsDoneReading());
 
   uint16_t uint16_val;
@@ -119,7 +119,7 @@ TEST(SpdyFrameReaderTest, ReadUInt32WithBufferTooSmall) {
       0x00, 0x00, 0x00,  // part of a uint32_t
   };
 
-  SpdyFrameReader frame_reader(kFrameData, QUICHE_ARRAYSIZE(kFrameData));
+  SpdyFrameReader frame_reader(kFrameData, ABSL_ARRAYSIZE(kFrameData));
   EXPECT_FALSE(frame_reader.IsDoneReading());
 
   uint32_t uint32_val;
@@ -139,10 +139,10 @@ TEST(SpdyFrameReaderTest, ReadStringPiece16WithBufferTooSmall) {
       0x48, 0x69,  // "Hi"
   };
 
-  SpdyFrameReader frame_reader(kFrameData, QUICHE_ARRAYSIZE(kFrameData));
+  SpdyFrameReader frame_reader(kFrameData, ABSL_ARRAYSIZE(kFrameData));
   EXPECT_FALSE(frame_reader.IsDoneReading());
 
-  quiche::QuicheStringPiece stringpiece_val;
+  absl::string_view stringpiece_val;
   EXPECT_FALSE(frame_reader.ReadStringPiece16(&stringpiece_val));
 
   // Also make sure that trying to read a uint16_t, which technically could
@@ -158,10 +158,10 @@ TEST(SpdyFrameReaderTest, ReadStringPiece16WithBufferWayTooSmall) {
       0x00,  // part of a uint16_t
   };
 
-  SpdyFrameReader frame_reader(kFrameData, QUICHE_ARRAYSIZE(kFrameData));
+  SpdyFrameReader frame_reader(kFrameData, ABSL_ARRAYSIZE(kFrameData));
   EXPECT_FALSE(frame_reader.IsDoneReading());
 
-  quiche::QuicheStringPiece stringpiece_val;
+  absl::string_view stringpiece_val;
   EXPECT_FALSE(frame_reader.ReadStringPiece16(&stringpiece_val));
 
   // Also make sure that trying to read a uint16_t, which technically could
@@ -178,10 +178,10 @@ TEST(SpdyFrameReaderTest, ReadStringPiece32WithBufferTooSmall) {
       0x48, 0x69,              // "Hi"
   };
 
-  SpdyFrameReader frame_reader(kFrameData, QUICHE_ARRAYSIZE(kFrameData));
+  SpdyFrameReader frame_reader(kFrameData, ABSL_ARRAYSIZE(kFrameData));
   EXPECT_FALSE(frame_reader.IsDoneReading());
 
-  quiche::QuicheStringPiece stringpiece_val;
+  absl::string_view stringpiece_val;
   EXPECT_FALSE(frame_reader.ReadStringPiece32(&stringpiece_val));
 
   // Also make sure that trying to read a uint16_t, which technically could
@@ -197,10 +197,10 @@ TEST(SpdyFrameReaderTest, ReadStringPiece32WithBufferWayTooSmall) {
       0x00, 0x00, 0x00,  // part of a uint32_t
   };
 
-  SpdyFrameReader frame_reader(kFrameData, QUICHE_ARRAYSIZE(kFrameData));
+  SpdyFrameReader frame_reader(kFrameData, ABSL_ARRAYSIZE(kFrameData));
   EXPECT_FALSE(frame_reader.IsDoneReading());
 
-  quiche::QuicheStringPiece stringpiece_val;
+  absl::string_view stringpiece_val;
   EXPECT_FALSE(frame_reader.ReadStringPiece32(&stringpiece_val));
 
   // Also make sure that trying to read a uint16_t, which technically could
@@ -216,18 +216,18 @@ TEST(SpdyFrameReaderTest, ReadBytes) {
       0x48, 0x69,        // "Hi"
   };
 
-  SpdyFrameReader frame_reader(kFrameData, QUICHE_ARRAYSIZE(kFrameData));
+  SpdyFrameReader frame_reader(kFrameData, ABSL_ARRAYSIZE(kFrameData));
   EXPECT_FALSE(frame_reader.IsDoneReading());
 
   char dest1[3] = {};
-  EXPECT_TRUE(frame_reader.ReadBytes(&dest1, QUICHE_ARRAYSIZE(dest1)));
+  EXPECT_TRUE(frame_reader.ReadBytes(&dest1, ABSL_ARRAYSIZE(dest1)));
   EXPECT_FALSE(frame_reader.IsDoneReading());
-  EXPECT_EQ("foo", quiche::QuicheStringPiece(dest1, QUICHE_ARRAYSIZE(dest1)));
+  EXPECT_EQ("foo", absl::string_view(dest1, ABSL_ARRAYSIZE(dest1)));
 
   char dest2[2] = {};
-  EXPECT_TRUE(frame_reader.ReadBytes(&dest2, QUICHE_ARRAYSIZE(dest2)));
+  EXPECT_TRUE(frame_reader.ReadBytes(&dest2, ABSL_ARRAYSIZE(dest2)));
   EXPECT_TRUE(frame_reader.IsDoneReading());
-  EXPECT_EQ("Hi", quiche::QuicheStringPiece(dest2, QUICHE_ARRAYSIZE(dest2)));
+  EXPECT_EQ("Hi", absl::string_view(dest2, ABSL_ARRAYSIZE(dest2)));
 }
 
 TEST(SpdyFrameReaderTest, ReadBytesWithBufferTooSmall) {
@@ -236,11 +236,11 @@ TEST(SpdyFrameReaderTest, ReadBytesWithBufferTooSmall) {
       0x01,
   };
 
-  SpdyFrameReader frame_reader(kFrameData, QUICHE_ARRAYSIZE(kFrameData));
+  SpdyFrameReader frame_reader(kFrameData, ABSL_ARRAYSIZE(kFrameData));
   EXPECT_FALSE(frame_reader.IsDoneReading());
 
-  char dest[QUICHE_ARRAYSIZE(kFrameData) + 2] = {};
-  EXPECT_FALSE(frame_reader.ReadBytes(&dest, QUICHE_ARRAYSIZE(kFrameData) + 1));
+  char dest[ABSL_ARRAYSIZE(kFrameData) + 2] = {};
+  EXPECT_FALSE(frame_reader.ReadBytes(&dest, ABSL_ARRAYSIZE(kFrameData) + 1));
   EXPECT_STREQ("", dest);
 }
 

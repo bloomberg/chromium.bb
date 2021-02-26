@@ -110,9 +110,14 @@ Format::Format()
       vkImageFormat(VK_FORMAT_UNDEFINED),
       actualBufferFormatID(angle::FormatID::NONE),
       vkBufferFormat(VK_FORMAT_UNDEFINED),
+      actualCompressedBufferFormatID(angle::FormatID::NONE),
+      vkCompressedBufferFormat(VK_FORMAT_UNDEFINED),
       imageInitializerFunction(nullptr),
       textureLoadFunctions(),
+      vertexLoadFunction(nullptr),
+      compressedVertexLoadFunction(nullptr),
       vertexLoadRequiresConversion(false),
+      compressedVertexLoadRequiresConversion(false),
       vkBufferFormatIsPacked(false),
       vkFormatIsInt(false),
       vkFormatIsUnsigned(false)
@@ -145,17 +150,34 @@ void Format::initImageFallback(RendererVk *renderer, const ImageFormatInitInfo *
     imageInitializerFunction = info[i].initializer;
 }
 
-void Format::initBufferFallback(RendererVk *renderer, const BufferFormatInitInfo *info, int numInfo)
+void Format::initBufferFallback(RendererVk *renderer,
+                                const BufferFormatInitInfo *info,
+                                int numInfo,
+                                int compressedStartIndex)
 {
-    size_t skip = renderer->getFeatures().forceFallbackFormat.enabled ? 1 : 0;
-    int i       = FindSupportedFormat(renderer, info, skip, static_cast<uint32_t>(numInfo),
-                                HasFullBufferFormatSupport);
+    {
+        size_t skip = renderer->getFeatures().forceFallbackFormat.enabled ? 1 : 0;
+        int i       = FindSupportedFormat(renderer, info, skip, compressedStartIndex,
+                                    HasFullBufferFormatSupport);
 
-    actualBufferFormatID         = info[i].format;
-    vkBufferFormat               = info[i].vkFormat;
-    vkBufferFormatIsPacked       = info[i].vkFormatIsPacked;
-    vertexLoadFunction           = info[i].vertexLoadFunction;
-    vertexLoadRequiresConversion = info[i].vertexLoadRequiresConversion;
+        actualBufferFormatID         = info[i].format;
+        vkBufferFormat               = info[i].vkFormat;
+        vkBufferFormatIsPacked       = info[i].vkFormatIsPacked;
+        vertexLoadFunction           = info[i].vertexLoadFunction;
+        vertexLoadRequiresConversion = info[i].vertexLoadRequiresConversion;
+    }
+
+    if (compressedStartIndex < numInfo)
+    {
+        int i = FindSupportedFormat(renderer, info, compressedStartIndex, numInfo,
+                                    HasFullBufferFormatSupport);
+
+        actualCompressedBufferFormatID         = info[i].format;
+        vkCompressedBufferFormat               = info[i].vkFormat;
+        vkCompressedBufferFormatIsPacked       = info[i].vkFormatIsPacked;
+        compressedVertexLoadFunction           = info[i].vertexLoadFunction;
+        compressedVertexLoadRequiresConversion = info[i].vertexLoadRequiresConversion;
+    }
 }
 
 size_t Format::getImageCopyBufferAlignment() const
@@ -187,6 +209,13 @@ size_t Format::getImageCopyBufferAlignment() const
     const size_t alignment  = multiplier * texelSize;
 
     return alignment;
+}
+
+size_t Format::getValidImageCopyBufferAlignment() const
+{
+    constexpr size_t kMinimumAlignment = 16;
+    return (intendedFormatID == angle::FormatID::NONE) ? kMinimumAlignment
+                                                       : getImageCopyBufferAlignment();
 }
 
 bool Format::hasEmulatedImageChannels() const
@@ -284,9 +313,24 @@ bool HasFullTextureFormatSupport(RendererVk *renderer, VkFormat vkFormat)
     constexpr uint32_t kBitsColor = VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
                                     VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT |
                                     VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT;
+
+    // In OpenGL ES, all renderable formats except 32-bit floating-point support blending.
+    // 32-bit floating-point case validation is handled by ANGLE's frontend.
+    uint32_t kBitsColorFull = kBitsColor;
+    switch (vkFormat)
+    {
+        case VK_FORMAT_R32_SFLOAT:
+        case VK_FORMAT_R32G32_SFLOAT:
+        case VK_FORMAT_R32G32B32A32_SFLOAT:
+            break;
+        default:
+            kBitsColorFull |= VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT;
+            break;
+    }
+
     constexpr uint32_t kBitsDepth = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-    return renderer->hasImageFormatFeatureBits(vkFormat, kBitsColor) ||
+    return renderer->hasImageFormatFeatureBits(vkFormat, kBitsColorFull) ||
            renderer->hasImageFormatFeatureBits(vkFormat, kBitsDepth);
 }
 
@@ -310,9 +354,9 @@ bool HasNonRenderableTextureFormatSupport(RendererVk *renderer, VkFormat vkForma
            renderer->hasImageFormatFeatureBits(vkFormat, kBitsDepth);
 }
 
-size_t GetVertexInputAlignment(const vk::Format &format)
+size_t GetVertexInputAlignment(const vk::Format &format, bool compressed)
 {
-    const angle::Format &bufferFormat = format.actualBufferFormat();
+    const angle::Format &bufferFormat = format.actualBufferFormat(compressed);
     size_t pixelBytes                 = bufferFormat.pixelBytes;
     return format.vkBufferFormatIsPacked ? pixelBytes : (pixelBytes / bufferFormat.channelCount);
 }
@@ -334,22 +378,22 @@ GLenum GetSwizzleStateComponent(const gl::SwizzleState &swizzleState, GLenum com
     }
 }
 
-// Places the swizzle obtained by applying second after first into out.
-void ComposeSwizzleState(const gl::SwizzleState &first,
-                         const gl::SwizzleState &second,
-                         gl::SwizzleState *out)
+gl::SwizzleState ApplySwizzle(const gl::SwizzleState &formatSwizzle,
+                              const gl::SwizzleState &toApply)
 {
-    out->swizzleRed   = GetSwizzleStateComponent(first, second.swizzleRed);
-    out->swizzleGreen = GetSwizzleStateComponent(first, second.swizzleGreen);
-    out->swizzleBlue  = GetSwizzleStateComponent(first, second.swizzleBlue);
-    out->swizzleAlpha = GetSwizzleStateComponent(first, second.swizzleAlpha);
+    gl::SwizzleState result;
+
+    result.swizzleRed   = GetSwizzleStateComponent(formatSwizzle, toApply.swizzleRed);
+    result.swizzleGreen = GetSwizzleStateComponent(formatSwizzle, toApply.swizzleGreen);
+    result.swizzleBlue  = GetSwizzleStateComponent(formatSwizzle, toApply.swizzleBlue);
+    result.swizzleAlpha = GetSwizzleStateComponent(formatSwizzle, toApply.swizzleAlpha);
+
+    return result;
 }
 
-void MapSwizzleState(const ContextVk *contextVk,
-                     const vk::Format &format,
-                     const bool sized,
-                     const gl::SwizzleState &swizzleState,
-                     gl::SwizzleState *swizzleStateOut)
+gl::SwizzleState GetFormatSwizzle(const ContextVk *contextVk,
+                                  const vk::Format &format,
+                                  const bool sized)
 {
     const angle::Format &angleFormat = format.intendedFormat();
 
@@ -377,13 +421,12 @@ void MapSwizzleState(const ContextVk *contextVk,
     {
         if (angleFormat.hasDepthOrStencilBits())
         {
-            bool hasRed = angleFormat.depthBits > 0;
             // In OES_depth_texture/ARB_depth_texture, depth
             // textures are treated as luminance.
             // If the internalformat was not sized, use OES_depth_texture behavior
-            bool hasGB = hasRed && !sized;
+            bool hasGB = (angleFormat.depthBits > 0) && !sized;
 
-            internalSwizzle.swizzleRed   = hasRed ? GL_RED : GL_ZERO;
+            internalSwizzle.swizzleRed   = GL_RED;
             internalSwizzle.swizzleGreen = hasGB ? GL_RED : GL_ZERO;
             internalSwizzle.swizzleBlue  = hasGB ? GL_RED : GL_ZERO;
             internalSwizzle.swizzleAlpha = GL_ONE;
@@ -401,6 +444,7 @@ void MapSwizzleState(const ContextVk *contextVk,
             }
         }
     }
-    ComposeSwizzleState(internalSwizzle, swizzleState, swizzleStateOut);
+
+    return internalSwizzle;
 }
 }  // namespace rx

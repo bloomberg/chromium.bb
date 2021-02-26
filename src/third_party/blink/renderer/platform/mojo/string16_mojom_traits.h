@@ -6,11 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_STRING16_MOJOM_TRAITS_H_
 
 #include "base/containers/span.h"
-#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/mojom/base/string16.mojom-blink.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace mojo_base {
 class BigBuffer;

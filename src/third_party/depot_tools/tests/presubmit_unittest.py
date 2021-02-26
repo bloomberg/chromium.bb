@@ -161,6 +161,7 @@ index fe3de7b..54ae6e1 100755
     class FakeChange(object):
       def __init__(self, obj):
         self._root = obj.fake_root_dir
+        self.issue = 0
       def RepositoryRoot(self):
         return self._root
 
@@ -179,6 +180,7 @@ index fe3de7b..54ae6e1 100755
     mock.patch('os.path.isfile').start()
     mock.patch('os.remove').start()
     mock.patch('presubmit_support._parse_files').start()
+    mock.patch('presubmit_support.rdb_wrapper.setup_rdb').start()
     mock.patch('presubmit_support.sigint_handler').start()
     mock.patch('presubmit_support.time_time', return_value=0).start()
     mock.patch('presubmit_support.warn').start()
@@ -524,6 +526,20 @@ class PresubmitUnittest(PresubmitTestsBase):
       '  return "foo"',
       fake_presubmit)
 
+    self.assertFalse(executer.ExecPresubmitScript(
+      'def CheckChangeOnCommit(input_api, output_api):\n'
+      '  results = []\n'
+      '  results.extend(input_api.canned_checks.CheckChangeHasBugField(\n'
+      '    input_api, output_api))\n'
+      '  results.extend(input_api.canned_checks.CheckChangeHasNoUnwantedTags(\n'
+      '    input_api, output_api))\n'
+      '  results.extend(input_api.canned_checks.CheckChangeHasDescription(\n'
+      '    input_api, output_api))\n'
+      '  return results\n',
+    fake_presubmit))
+
+    presubmit.rdb_wrapper.setup_rdb.assert_called()
+
     self.assertRaises(presubmit.PresubmitFailure,
       executer.ExecPresubmitScript,
       'def CheckChangeOnCommit(input_api, output_api):\n'
@@ -540,7 +556,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     executer = presubmit.PresubmitExecuter(
         self.fake_change, False, None, False)
 
-    self.assertEqual((), executer.ExecPresubmitScript(
+    self.assertEqual([], executer.ExecPresubmitScript(
       ('def CheckChangeOnUpload(input_api, output_api):\n'
        '  if len(input_api._named_temporary_files):\n'
        '    return (output_api.PresubmitError("!!"),)\n'
@@ -949,25 +965,27 @@ def CheckChangeOnCommit(input_api, output_api):
         presubmit.main(
             ['--root', self.fake_root_dir, 'random_file.txt', '--post_upload']))
 
-  @mock.patch(
-      'presubmit_support.ListRelevantPresubmitFiles',
-      return_value=['PRESUBMIT.py'])
+  @mock.patch('presubmit_support.ListRelevantPresubmitFiles')
   def testMainUnversioned(self, *_mocks):
     gclient_utils.FileRead.return_value = ''
     scm.determine_scm.return_value = None
+    presubmit.ListRelevantPresubmitFiles.return_value = [
+        os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    ]
 
     self.assertEqual(
         0,
         presubmit.main(['--root', self.fake_root_dir, 'random_file.txt']))
 
-  @mock.patch(
-      'presubmit_support.ListRelevantPresubmitFiles',
-      return_value=['PRESUBMIT.py'])
+  @mock.patch('presubmit_support.ListRelevantPresubmitFiles')
   def testMainUnversionedChecksFail(self, *_mocks):
     gclient_utils.FileRead.return_value = (
         'def CheckChangeOnUpload(input_api, output_api):\n'
         '  return [output_api.PresubmitError("!!")]\n')
     scm.determine_scm.return_value = None
+    presubmit.ListRelevantPresubmitFiles.return_value = [
+        os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    ]
 
     self.assertEqual(
         1,
@@ -1241,8 +1259,8 @@ class InputApiUnittest(PresubmitTestsBase):
     self.assertEqual(got_files[4].LocalPath(), presubmit.normpath(files[4][1]))
     self.assertEqual(got_files[5].LocalPath(), presubmit.normpath(files[5][1]))
     self.assertEqual(got_files[6].LocalPath(), presubmit.normpath(files[6][1]))
-    # Ignores weird because of whitelist, third_party because of blacklist,
-    # binary isn't a text file and beingdeleted doesn't exist. The rest is
+    # Ignores weird because of check_list, third_party because of skip_list,
+    # binary isn't a text file and being deleted doesn't exist. The rest is
     # outside foo/.
     rhs_lines = [x for x in input_api.RightHandSideLines(None)]
     self.assertEqual(len(rhs_lines), 14)
@@ -1298,7 +1316,7 @@ class InputApiUnittest(PresubmitTestsBase):
     self.assertEqual(got_files[2].LocalPath(), presubmit.normpath(files[5][1]))
     self.assertEqual(got_files[3].LocalPath(), presubmit.normpath(files[7][1]))
 
-  def testDefaultWhiteListBlackListFilters(self):
+  def testDefaultFilesToCheckFilesToSkipFilters(self):
     def f(x):
       return presubmit.AffectedFile(x, 'M', self.fake_root_dir, None)
     files = [
@@ -1376,8 +1394,6 @@ class InputApiUnittest(PresubmitTestsBase):
     input_api = presubmit.InputApi(
         self.fake_change, './PRESUBMIT.py', False, None, False)
 
-    self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 24)
-    self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 12)
     for item in files:
       results = list(filter(input_api.FilterSourceFile, item[0]))
       for i in range(len(results)):
@@ -1387,6 +1403,48 @@ class InputApiUnittest(PresubmitTestsBase):
       self.assertEqual(sorted([f.LocalPath().replace(os.sep, '/')
                                 for f in results]),
                         sorted(item[1]))
+
+  def testDefaultOverrides(self):
+    input_api = presubmit.InputApi(
+        self.fake_change, './PRESUBMIT.py', False, None, False)
+    self.assertEqual(len(input_api.DEFAULT_FILES_TO_CHECK), 24)
+    self.assertEqual(len(input_api.DEFAULT_FILES_TO_SKIP), 12)
+    self.assertEqual(
+        input_api.DEFAULT_FILES_TO_CHECK, input_api.DEFAULT_WHITE_LIST)
+    self.assertEqual(
+        input_api.DEFAULT_FILES_TO_CHECK, input_api.DEFAULT_ALLOW_LIST)
+    self.assertEqual(
+        input_api.DEFAULT_FILES_TO_SKIP, input_api.DEFAULT_BLACK_LIST)
+    self.assertEqual(
+        input_api.DEFAULT_FILES_TO_SKIP, input_api.DEFAULT_BLOCK_LIST)
+
+    input_api.DEFAULT_FILES_TO_CHECK = (r'.+\.c$',)
+    input_api.DEFAULT_FILES_TO_SKIP = (r'.+\.patch$', r'.+\.diff')
+    self.assertEqual(len(input_api.DEFAULT_FILES_TO_CHECK), 1)
+    self.assertEqual(len(input_api.DEFAULT_FILES_TO_SKIP), 2)
+    self.assertEqual(
+        input_api.DEFAULT_FILES_TO_CHECK, input_api.DEFAULT_WHITE_LIST)
+    self.assertEqual(
+        input_api.DEFAULT_FILES_TO_CHECK, input_api.DEFAULT_ALLOW_LIST)
+    self.assertEqual(
+        input_api.DEFAULT_FILES_TO_SKIP, input_api.DEFAULT_BLACK_LIST)
+    self.assertEqual(
+        input_api.DEFAULT_FILES_TO_SKIP, input_api.DEFAULT_BLOCK_LIST)
+
+    # Test backward compatiblity of setting old property names
+    # TODO(https://crbug.com/1098562): Remove once no longer used
+    input_api.DEFAULT_WHITE_LIST = ()
+    input_api.DEFAULT_BLACK_LIST = ()
+    self.assertEqual(len(input_api.DEFAULT_FILES_TO_CHECK), 0)
+    self.assertEqual(len(input_api.DEFAULT_FILES_TO_SKIP), 0)
+    self.assertEqual(
+        input_api.DEFAULT_FILES_TO_CHECK, input_api.DEFAULT_WHITE_LIST)
+    self.assertEqual(
+        input_api.DEFAULT_FILES_TO_CHECK, input_api.DEFAULT_ALLOW_LIST)
+    self.assertEqual(
+        input_api.DEFAULT_FILES_TO_SKIP, input_api.DEFAULT_BLACK_LIST)
+    self.assertEqual(
+        input_api.DEFAULT_FILES_TO_SKIP, input_api.DEFAULT_BLOCK_LIST)
 
   def testCustomFilter(self):
     def FilterSourceFile(affected_file):
@@ -1409,8 +1467,8 @@ class InputApiUnittest(PresubmitTestsBase):
     self.assertEqual(got_files[1].LocalPath(), 'eeabee')
 
   def testLambdaFilter(self):
-    white_list = presubmit.InputApi.DEFAULT_BLACK_LIST + (r".*?a.*?",)
-    black_list = [r".*?b.*?"]
+    files_to_check = presubmit.InputApi.DEFAULT_FILES_TO_SKIP + (r".*?a.*?",)
+    files_to_skip = [r".*?b.*?"]
     files = [('A', 'eeaee'), ('M', 'eeabee'), ('M', 'eebcee'), ('M', 'eecaee')]
     known_files = [
       os.path.join(self.fake_root_dir, item)
@@ -1423,7 +1481,7 @@ class InputApiUnittest(PresubmitTestsBase):
         change, './PRESUBMIT.py', False, None, False)
     # Sample usage of overriding the default white and black lists.
     got_files = input_api.AffectedSourceFiles(
-        lambda x: input_api.FilterSourceFile(x, white_list, black_list))
+        lambda x: input_api.FilterSourceFile(x, files_to_check, files_to_skip))
     self.assertEqual(len(got_files), 2)
     self.assertEqual(got_files[0].LocalPath(), 'eeaee')
     self.assertEqual(got_files[1].LocalPath(), 'eecaee')
@@ -2148,6 +2206,12 @@ the current line as well!
                     'foo.js', "// We should import something long, eh?",
                     'foo.js', presubmit.OutputApi.PresubmitPromptWarning)
 
+  def testCannedCheckTSLongImports(self):
+    check = lambda x, y, _: presubmit_canned_checks.CheckLongLines(x, y, 10)
+    self.ContentTest(check, "import {Name, otherName} from './dir/file';",
+                    'foo.ts', "// We should import something long, eh?",
+                    'foo.ts', presubmit.OutputApi.PresubmitPromptWarning)
+
   def testCannedCheckObjCExceptionLongLines(self):
     check = lambda x, y, _: presubmit_canned_checks.CheckLongLines(x, y, 80)
     self.ContentTest(check, '#import ' + 'A ' * 150, 'foo.mm',
@@ -2469,18 +2533,77 @@ the current line as well!
     self.assertEqual(results[0].__class__,
         presubmit.OutputApi.PresubmitNotifyResult)
 
-  def GetInputApiWithOWNERS(self, owners_content):
-    affected_file = mock.MagicMock(presubmit.GitAffectedFile)
-    affected_file.LocalPath = lambda: 'OWNERS'
-    affected_file.Action = lambda: 'M'
-
+  def GetInputApiWithFiles(self, files):
     change = mock.MagicMock(presubmit.Change)
-    change.AffectedFiles = lambda **_: [affected_file]
+    change.AffectedFiles = lambda *a, **kw: (
+        presubmit.Change.AffectedFiles(change, *a, **kw))
+    change._affected_files = []
+    for path, (action, _) in files.items():
+      affected_file = mock.MagicMock(presubmit.GitAffectedFile)
+      affected_file.AbsoluteLocalPath.return_value = path
+      affected_file.LocalPath.return_value = path
+      affected_file.Action.return_value = action
+      change._affected_files.append(affected_file)
 
     input_api = self.MockInputApi(None, False)
     input_api.change = change
+    input_api.ReadFile = lambda path: files[path][1]
+    input_api.basename = os.path.basename
+    input_api.is_windows = sys.platform.startswith('win')
 
-    os.path.exists = lambda _: True
+    os.path.exists = lambda path: path in files and files[path][0] != 'D'
+    os.path.isfile = os.path.exists
+
+    return input_api
+
+  def testCheckDirMetadataFormat(self):
+    input_api = self.GetInputApiWithFiles({
+        'DIR_METADATA': ('M', ''),
+        'a/DIR_METADATA': ('M', ''),
+        'a/b/OWNERS': ('M', ''),
+        'c/DIR_METADATA': ('D', ''),
+        'd/unrelated': ('M', ''),
+    })
+
+    dirmd_bin = 'dirmd.bat' if input_api.is_windows else 'dirmd'
+    expected_cmd = [
+        dirmd_bin, 'validate', 'DIR_METADATA', 'a/DIR_METADATA', 'a/b/OWNERS']
+
+    commands = presubmit_canned_checks.CheckDirMetadataFormat(
+        input_api, presubmit.OutputApi)
+    self.assertEqual(1, len(commands))
+    self.assertEqual(expected_cmd, commands[0].cmd)
+
+  def testCheckOwnersDirMetadataExclusiveWorks(self):
+    input_api = self.GetInputApiWithFiles({
+        'only-owners/OWNERS': ('M', '# COMPONENT: Monorail>Component'),
+        'only-dir-metadata/DIR_METADATA': ('M', ''),
+        'owners-has-no-metadata/DIR_METADATA': ('M', ''),
+        'owners-has-no-metadata/OWNERS': ('M', 'no-metadata'),
+        'deleted-owners/OWNERS': ('D', None),
+        'deleted-owners/DIR_METADATA': ('M', ''),
+        'deleted-dir-metadata/OWNERS': ('M', '# COMPONENT: Monorail>Component'),
+        'deleted-dir-metadata/DIR_METADATA': ('D', None),
+        'non-metadata-comment/OWNERS': ('M', '# WARNING: something.'),
+        'non-metadata-comment/DIR_METADATA': ('M', ''),
+    })
+    self.assertEqual(
+        [],
+        presubmit_canned_checks.CheckOwnersDirMetadataExclusive(
+            input_api, presubmit.OutputApi))
+
+  def testCheckOwnersDirMetadataExclusiveFails(self):
+    input_api = self.GetInputApiWithFiles({
+      'DIR_METADATA': ('M', ''),
+      'OWNERS': ('M', '# COMPONENT: Monorail>Component'),
+    })
+    results = presubmit_canned_checks.CheckOwnersDirMetadataExclusive(
+        input_api, presubmit.OutputApi)
+    self.assertEqual(1, len(results))
+    self.assertIsInstance(results[0], presubmit.OutputApi.PresubmitError)
+
+  def GetInputApiWithOWNERS(self, owners_content):
+    input_api = self.GetInputApiWithFiles({'OWNERS': ('M', owners_content)})
 
     owners_file = StringIO(owners_content)
     fopen = lambda *args: owners_file
@@ -2624,6 +2747,60 @@ the current line as well!
                         'other than john@example.com\n')
 
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),
+        is_committing=False,
+        response=response,
+        expected_output='')
+
+  def testCannedCheckOwners_BotCommit(self):
+    response = {
+      "owner": {"email": "john@example.com"},
+      "labels": {"Bot-Commit": {
+        u'all': [
+          {
+            u'email': u'bot@example.com',
+            u'value': 1
+          },
+        ],
+        u'approved': {u'email': u'bot@example.org'},
+        u'default_value': 0,
+        u'values': {u' 0': u'No score',
+                    u'+1': u'Looks good to me'},
+      }},
+      "reviewers": {"REVIEWER": [{u'email': u'bot@example.com'}]},
+    }
+    self.AssertOwnersWorks(approvers=set(),
+        response=response,
+        is_committing=True,
+        expected_output='')
+
+    self.AssertOwnersWorks(approvers=set(),
+        is_committing=False,
+        response=response,
+        expected_output='')
+
+  def testCannedCheckOwners_OwnersOverride(self):
+    response = {
+      "owner": {"email": "john@example.com"},
+      "labels": {"Owners-Override": {
+        u'all': [
+          {
+            u'email': u'sheriff@example.com',
+            u'value': 1
+          },
+        ],
+        u'approved': {u'email': u'sheriff@example.org'},
+        u'default_value': 0,
+        u'values': {u' 0': u'No score',
+                    u'+1': u'Looks good to me'},
+      }},
+      "reviewers": {"REVIEWER": [{u'email': u'sheriff@example.com'}]},
+    }
+    self.AssertOwnersWorks(approvers=set(),
+        response=response,
+        is_committing=True,
+        expected_output='')
+
+    self.AssertOwnersWorks(approvers=set(),
         is_committing=False,
         response=response,
         expected_output='')
@@ -3140,8 +3317,8 @@ the current line as well!
         input_api,
         presubmit.OutputApi,
         'random_directory',
-        whitelist=['^a$', '^b$'],
-        blacklist=['a'])
+        files_to_check=['^a$', '^b$'],
+        files_to_skip=['a'])
     self.assertEqual(1, len(results))
     self.assertEqual(
         presubmit.OutputApi.PresubmitNotifyResult, results[0].__class__)

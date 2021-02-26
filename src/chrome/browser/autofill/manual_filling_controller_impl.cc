@@ -15,10 +15,12 @@
 #include "chrome/browser/password_manager/android/password_accessory_metrics_util.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/credential_cache.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/web_contents.h"
 
 using autofill::AccessoryAction;
@@ -108,6 +110,8 @@ void ManualFillingControllerImpl::OnAutomaticGenerationStatusChanged(
 void ManualFillingControllerImpl::RefreshSuggestions(
     const AccessorySheetData& accessory_sheet_data) {
   view_->OnItemsAvailable(accessory_sheet_data);
+  available_sheets_.insert_or_assign(GetSourceForTab(accessory_sheet_data),
+                                     accessory_sheet_data);
   UpdateSourceAvailability(GetSourceForTab(accessory_sheet_data),
                            !accessory_sheet_data.user_info_list().empty());
 }
@@ -240,7 +244,9 @@ bool ManualFillingControllerImpl::ShouldShowAccessory() const {
           autofill::features::kAutofillManualFallbackAndroid)) {
     return focused_field_type_ == FocusedFieldType::kFillablePasswordField ||
            (focused_field_type_ == FocusedFieldType::kFillableUsernameField &&
-            available_sources_.contains(FillingSource::PASSWORD_FALLBACKS));
+            (base::FeatureList::IsEnabled(
+                 password_manager::features::kFillingPasswordsFromAnyOrigin) ||
+             available_sources_.contains(FillingSource::PASSWORD_FALLBACKS)));
   }
   switch (focused_field_type_) {
     // Always show on password fields to provide management and generation.
@@ -250,7 +256,9 @@ bool ManualFillingControllerImpl::ShouldShowAccessory() const {
     // If there are suggestions, show on usual form fields.
     case FocusedFieldType::kFillableUsernameField:
     case FocusedFieldType::kFillableNonSearchField:
-      return !available_sources_.empty();
+      return !available_sources_.empty() ||
+             base::FeatureList::IsEnabled(
+                 password_manager::features::kFillingPasswordsFromAnyOrigin);
 
     // Even if there are suggestions, don't show on search fields and textareas.
     case FocusedFieldType::kFillableSearchField:
@@ -268,6 +276,11 @@ bool ManualFillingControllerImpl::ShouldShowAccessory() const {
 
 void ManualFillingControllerImpl::UpdateVisibility() {
   if (ShouldShowAccessory()) {
+    for (const FillingSource& source : available_sources_) {
+      if (!available_sheets_.contains(source))
+        continue;
+      view_->OnItemsAvailable(available_sheets_.find(source)->second);
+    }
     view_->ShowWhenKeyboardIsVisible();
   } else {
     view_->Hide();
@@ -297,6 +310,7 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
   switch (action) {
     case AccessoryAction::GENERATE_PASSWORD_MANUAL:
     case AccessoryAction::MANAGE_PASSWORDS:
+    case AccessoryAction::USE_OTHER_PASSWORD:
     case AccessoryAction::GENERATE_PASSWORD_AUTOMATIC:
     case AccessoryAction::TOGGLE_SAVE_PASSWORDS:
       return GetPasswordController();

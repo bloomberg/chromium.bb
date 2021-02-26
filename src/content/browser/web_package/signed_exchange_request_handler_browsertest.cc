@@ -11,13 +11,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
-#include "content/browser/frame_host/navigation_request.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
+#include "content/browser/renderer_host/navigation_request.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
@@ -31,6 +32,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
@@ -43,24 +45,30 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/content_cert_verifier_browser_test.h"
+#include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/signed_exchange_browser_test_helper.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "net/base/features.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/transport_security_state.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_interceptor.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -137,6 +145,7 @@ class MockContentBrowserClient final : public ContentBrowserClient {
   std::string GetAcceptLangs(BrowserContext* context) override {
     return accept_langs_;
   }
+
   void SetAcceptLangs(const std::string langs) { accept_langs_ = langs; }
 
  private:
@@ -261,9 +270,10 @@ class SignedExchangeRequestHandlerBrowserTestBase
 
   const base::HistogramTester histogram_tester_;
 
+  MockContentBrowserClient client_;
+
  private:
   ContentBrowserClient* original_client_ = nullptr;
-  MockContentBrowserClient client_;
 
   base::test::ScopedFeatureList feature_list_;
   SignedExchangeBrowserTestHelper sxg_test_helper_;
@@ -334,8 +344,11 @@ class SignedExchangeRequestHandlerBrowserTest
 
   void WaitUntilSXGIsCached(const GURL& url) {
     scoped_refptr<PrefetchedSignedExchangeCache> cache =
-        static_cast<RenderFrameHostImpl*>(
-            shell()->web_contents()->GetRenderViewHost()->GetMainFrame())
+        static_cast<RenderFrameHostImpl*>(shell()
+                                              ->web_contents()
+                                              ->GetMainFrame()
+                                              ->GetRenderViewHost()
+                                              ->GetMainFrame())
             ->EnsurePrefetchedSignedExchangeCache();
 
     if (cache->GetExchanges().find(url) != cache->GetExchanges().end())
@@ -1025,7 +1038,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
                                           register_sw_script, &result));
   // serviceWorker.register() fails because the document URL of
-  // ServiceWorkerProviderHost is empty.
+  // ServiceWorkerHost is empty.
   EXPECT_FALSE(result);
 }
 
@@ -1385,5 +1398,404 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
 INSTANTIATE_TEST_SUITE_P(SignedExchangeAcceptHeaderBrowserTest,
                          SignedExchangeAcceptHeaderBrowserTest,
                          testing::Bool());
+
+class SignedExchangeExpectCTReportBrowserTest
+    : public SignedExchangeRequestHandlerBrowserTest {
+ public:
+  SignedExchangeExpectCTReportBrowserTest() {
+    feature_list_.InitWithFeatures(
+        // enabled_features
+        {net::TransportSecurityState::kDynamicExpectCTFeature,
+         net::features::kPartitionExpectCTStateByNetworkIsolationKey,
+         // These last two are not strictly necessary, but make this test more
+         // robust against enabling NetworkIsolationKeys everywhere.
+         net::features::kPartitionConnectionsByNetworkIsolationKey,
+         net::features::kPartitionSSLSessionsByNetworkIsolationKey},
+        // disabled_features
+        {});
+    ShellContentBrowserClient::set_enable_expect_ct_for_testing(true);
+  }
+
+  ~SignedExchangeExpectCTReportBrowserTest() override {
+    ShellContentBrowserClient::set_enable_expect_ct_for_testing(false);
+  }
+
+  void SetUpOnMainThread() override {
+    SignedExchangeRequestHandlerBrowserTestBase::SetUpOnMainThread();
+
+    // Make all attempts to connect to the domain the SXG is for fail with a DNS
+    // error. Without this, they're fail with ERR_NOT_IMPLEMENTED. Making
+    // requests fail with ERR_NAME_NOT_RESOLVED instead better matches what
+    // happens in production.
+    host_resolver()->AddSimulatedFailure("test.example.org");
+
+    host_resolver()->AddRule("prefetch-origin.test", "127.0.0.1");
+
+    // Set up callbacks for two requests for reports - first for the preflight,
+    // second for the actual request. Both use the same path.
+    preflight_response_ =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            &report_server_, kReportPathPrefix,
+            true /* relative_url_is_prefix */);
+    report_response_ =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            &report_server_, kReportPathPrefix,
+            true /* relative_url_is_prefix */);
+    ASSERT_TRUE(report_server_.Start());
+
+    // Set up certificate for the report server.
+    net::CertVerifyResult ssl_server_result;
+    ssl_server_result.verified_cert = report_server_.GetCertificate();
+    ssl_server_result.is_issued_by_known_root = false;
+    ssl_server_result.policy_compliance =
+        net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
+    mock_cert_verifier()->AddResultForCert(report_server_.GetCertificate(),
+                                           ssl_server_result, net::OK);
+
+    // Make the MockCertVerifier treat the signed exchange's certificate
+    // "prime256v1-sha256.public.pem" as valid for "test.example.org", but
+    // issued by a known root, which should cause a CT failure.
+    scoped_refptr<net::X509Certificate> original_cert =
+        SignedExchangeBrowserTestHelper::LoadCertificate();
+    net::CertVerifyResult dummy_result;
+    dummy_result.verified_cert = original_cert;
+    dummy_result.cert_status = net::OK;
+    dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+    dummy_result.ocsp_result.revocation_status =
+        net::OCSPRevocationStatus::GOOD;
+    dummy_result.is_issued_by_known_root = true;
+    mock_cert_verifier()->AddResultForCertAndHost(
+        original_cert, "test.example.org", dummy_result, net::OK);
+    InstallMockCertChainInterceptor();
+
+    // Set up server used to serve the signed exchange.
+    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    // All tests fetch or prefetch the signed exchange for use in a main frame
+    // load. This being the case, The NetworkIsolationKey used to load top-level
+    // signed exchanges (and thus used to check for Expect-CT information) is
+    // the NetworkIsolationKey of the site that serves the signed exchange, not
+    // the origin of the resource the signed exchange contains. Set up reports
+    // for both NetworkIsolationKeys, so can catch the wrong one being used for
+    // the report or the case NIKs are being ignored.
+
+    url::Origin correct_report_origin =
+        url::Origin::Create(embedded_test_server()->base_url());
+    net::NetworkIsolationKey correct_network_isolation_key(
+        correct_report_origin, correct_report_origin);
+    SetExpectCtUrl("test.example.org", correct_report_uri(),
+                   correct_network_isolation_key);
+
+    url::Origin incorrect_report_origin =
+        url::Origin::Create(sxg_validity_url());
+    net::NetworkIsolationKey incorrect_network_isolation_key(
+        incorrect_report_origin, incorrect_report_origin);
+    SetExpectCtUrl("test.example.org", incorrect_sxg_validity_report_uri(),
+                   incorrect_network_isolation_key);
+  }
+
+  void SetExpectCtUrl(const std::string& domain,
+                      const GURL& report_uri,
+                      const net::NetworkIsolationKey& network_isolation_key) {
+    base::RunLoop run_loop;
+    network::mojom::NetworkContext* network_context =
+        BrowserContext::GetDefaultStoragePartition(
+            shell()->web_contents()->GetBrowserContext())
+            ->GetNetworkContext();
+    network_context->AddExpectCT(
+        domain, base::Time::Now() + base::TimeDelta::FromDays(1) /* expiry */,
+        true /* enforce */, report_uri, network_isolation_key,
+        base::BindLambdaForTesting([&](bool success) {
+          EXPECT_TRUE(success);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+
+  void ValidateCtReport() {
+    // The CT failure should have generated a report. Wait for the preflight
+    // request, and respond to it.
+    preflight_response_->WaitForRequest();
+    EXPECT_EQ(correct_report_uri(),
+              preflight_response_->http_request()->GetURL());
+    EXPECT_EQ(net::test_server::METHOD_OPTIONS,
+              preflight_response_->http_request()->method);
+    preflight_response_->Send(
+        "HTTP/1.1 200 OK\r\n"
+        "Access-Control-Allow-Origin: null\r\n"
+        "Access-Control-Allow-Methods: post\r\n"
+        "Access-Control-Allow-Headers: content-type\r\n\r\n");
+    preflight_response_->Done();
+
+    // Responding to the preflight allows the report itself to be sent. Check
+    // that request as well. No need to respond to it.
+    report_response_->WaitForRequest();
+    EXPECT_EQ(correct_report_uri(), report_response_->http_request()->GetURL());
+    EXPECT_EQ(net::test_server::METHOD_POST,
+              report_response_->http_request()->method);
+  }
+
+  net::test_server::EmbeddedTestServer* report_server() {
+    return &report_server_;
+  }
+
+  const GURL sxg_url() const {
+    return embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
+  }
+
+  // The URL the SXG resource claims to be for.
+  static GURL sxg_validity_url() {
+    return GURL("https://test.example.org/test/");
+  }
+
+  GURL other_incorrect_report_uri() const {
+    return report_server_.GetURL(kOtherIncorrectReportPath);
+  }
+
+ private:
+  // Prefix used for all reports.
+  const char* kReportPathPrefix = "/report/";
+  // Prefix used for reports made using correct NetworkIsolationKey.
+  const char* kCorrectReportPath = "/report/correct-nik";
+  // Prefix used for reports made using sxg_url_validity_url()'s
+  // NetworkIsolationKey, which is not correct.
+  const char* kIncorrectSxgValidityReportPath =
+      "/report/incorrect-sxg-validity-nik";
+  // Prefix used for reports made using another incorrect NetworkIsolationKey,
+  // set by the test.
+  const char* kOtherIncorrectReportPath = "/report/other-incorrect-nik";
+
+  // URI used for reports that use the correct NetworkIsolationKey for the
+  // report.
+  GURL correct_report_uri() const {
+    return report_server_.GetURL(kCorrectReportPath);
+  }
+
+  // URI used for reports that incorrectly use the the SXG
+  GURL incorrect_sxg_validity_report_uri() const {
+    return report_server_.GetURL(kIncorrectSxgValidityReportPath);
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+
+  // Server to send reports to.
+  net::test_server::EmbeddedTestServer report_server_{
+      net::test_server::EmbeddedTestServer::TYPE_HTTPS};
+
+  // Interceptors used for CT violation report preflight and report HTTP
+  // requests.
+  std::unique_ptr<net::test_server::ControllableHttpResponse>
+      preflight_response_;
+  std::unique_ptr<net::test_server::ControllableHttpResponse> report_response_;
+};
+
+// Test that a report is send when a signed exchange fails a CT check and a
+// matching Expect-CT header was previously received.
+IN_PROC_BROWSER_TEST_P(SignedExchangeExpectCTReportBrowserTest,
+                       CTFailureSendsExpectCTReport) {
+  if (UsePrefetch()) {
+    MaybeTriggerPrefetchSXG(sxg_url(), false /* expect_success */);
+  } else {
+    // Try to navigate to the signed exchange.  The signed exchange fails the
+    // certificate transparency check. That results in trying to load the
+    // resource the SXG refers to directly, which should fail with
+    // ERR_NAME_NOT_RESOLVED.
+    NavigationHandleObserver observer(shell()->web_contents(), sxg_url());
+    EXPECT_FALSE(NavigateToURL(shell(), sxg_url()));
+    EXPECT_EQ(sxg_validity_url(), shell()->web_contents()->GetURL());
+    EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, observer.net_error_code());
+  }
+
+  ValidateCtReport();
+}
+
+// Test that a report is send when a signed exchange fails a CT check and a
+// matching Expect-CT header was previously received.
+IN_PROC_BROWSER_TEST_P(SignedExchangeExpectCTReportBrowserTest,
+                       CrossOriginPrefetch) {
+  if (!UsePrefetch())
+    return;
+
+  // Hostname used to prefetch the signed exchange. The signed exchange is
+  // fetched from 127.0.0.1.
+  const char kPrefetcherHost[] = "prefetch-origin.test";
+
+  // Set up reports for the kPrefetcherHost's NetworkIsolationKey. This NIK
+  // should not be used by the request for the signed exchange, so use an
+  // incorrect reporting URL. This will make the test give a more useful error
+  // on failure, instead of just hanging.
+  url::Origin other_incorrect_report_origin =
+      url::Origin::Create(embedded_test_server()->GetURL(kPrefetcherHost, "/"));
+  net::NetworkIsolationKey other_incorrect_network_isolation_key(
+      other_incorrect_report_origin, other_incorrect_report_origin);
+  SetExpectCtUrl("test.example.org", other_incorrect_report_uri(),
+                 other_incorrect_network_isolation_key);
+
+  const GURL prefetch_html_url = embedded_test_server()->GetURL(
+      kPrefetcherHost,
+      std::string("/sxg/prefetch-document.html#") + sxg_url().spec());
+  base::string16 expected_title = base::ASCIIToUTF16("FAIL");
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  EXPECT_TRUE(NavigateToURL(shell(), prefetch_html_url));
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  ValidateCtReport();
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SignedExchangeExpectCTReportBrowserTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
+
+#if BUILDFLAG(ENABLE_REPORTING)
+
+class SignedExchangeReportingBrowserTest
+    : public SignedExchangeRequestHandlerBrowserTest {
+ public:
+  SignedExchangeReportingBrowserTest() {
+    feature_list_.InitWithFeatures(
+        // enabled_features
+        {net::features::kPartitionNelAndReportingByNetworkIsolationKey,
+         // These last two are not strictly necessary, but make this test more
+         // robust against enabling NetworkIsolationKeys everywhere.
+         net::features::kPartitionConnectionsByNetworkIsolationKey,
+         net::features::kPartitionSSLSessionsByNetworkIsolationKey},
+        // disabled_features
+        {});
+  }
+
+  ~SignedExchangeReportingBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    SignedExchangeRequestHandlerBrowserTestBase::SetUpOnMainThread();
+
+    // Make all attempts to connect to the domain the SXG is for fail with a DNS
+    // error. Without this, they're fail with ERR_NOT_IMPLEMENTED. Making
+    // requests fail with ERR_NAME_NOT_RESOLVED instead better matches what
+    // happens in production.
+    host_resolver()->AddSimulatedFailure("test.example.org");
+
+    host_resolver()->AddRule("prefetch-origin.test", "127.0.0.1");
+
+    // Set up certificate for the report server.
+    net::CertVerifyResult ssl_server_result;
+    ssl_server_result.verified_cert = ssl_server_.GetCertificate();
+    ssl_server_result.is_issued_by_known_root = false;
+    ssl_server_result.policy_compliance =
+        net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
+    mock_cert_verifier()->AddResultForCert(ssl_server_.GetCertificate(),
+                                           ssl_server_result, net::OK);
+
+    // Make the MockCertVerifier treat the signed exchange's certificate
+    // "prime256v1-sha256.public.pem" as invalid for "test.example.org", which
+    // should generate a report.
+    scoped_refptr<net::X509Certificate> original_cert =
+        SignedExchangeBrowserTestHelper::LoadCertificate();
+    net::CertVerifyResult dummy_result;
+    dummy_result.cert_status = net::CERT_STATUS_AUTHORITY_INVALID;
+    dummy_result.verified_cert = original_cert;
+    mock_cert_verifier()->AddResultForCertAndHost(
+        original_cert, "test.example.org", dummy_result, net::OK);
+    InstallMockCertChainInterceptor();
+
+    learn_report_to_response_ =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            &ssl_server_, kLearnReportToPath);
+    report_response_ =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            &ssl_server_, kReportPath);
+
+    // Set up server used to serve the signed exchange.
+    ssl_server_.ServeFilesFromSourceDirectory("content/test/data");
+    EXPECT_TRUE(ssl_server_.Start());
+  }
+
+  const GURL sxg_url() const {
+    return ssl_server_.GetURL("/sxg/test.example.org_test.sxg");
+  }
+
+  // The URL the SXG resource claims to be for.
+  static GURL sxg_validity_url() {
+    return GURL("https://test.example.org/test/");
+  }
+
+ protected:
+  const char* kLearnReportToPath = "/report-to";
+  const char* kReportPath = "/report";
+
+  base::test::ScopedFeatureList feature_list_;
+
+  // This server both serves the signed exchange and receives the report for the
+  // certificate error.
+  net::test_server::EmbeddedTestServer ssl_server_{
+      net::test_server::EmbeddedTestServer::TYPE_HTTPS};
+
+  std::unique_ptr<net::test_server::ControllableHttpResponse>
+      learn_report_to_response_;
+  std::unique_ptr<net::test_server::ControllableHttpResponse> report_response_;
+};
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeReportingBrowserTest,
+                       CertErrorSendsReport) {
+  GURL report_url = ssl_server_.GetURL(kReportPath);
+
+  // Get Report-To and NEL information for the server that serves the signed
+  // exchange. The same site is also used for the NetworkIsolationKey. This
+  // should result in sending a report to that server a request for that signed
+  // exchange fails with a certificate error.
+  {
+    GURL learn_report_to_url = ssl_server_.GetURL(kLearnReportToPath);
+    TestNavigationObserver same_tab_observer(shell()->web_contents(),
+                                             1 /* number_of_navigations */);
+    NavigationController::LoadURLParams params(learn_report_to_url);
+    params.transition_type = ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    shell()->web_contents()->GetController().LoadURLWithParams(params);
+    learn_report_to_response_->WaitForRequest();
+    learn_report_to_response_->Send("HTTP/1.1 200 OK\r\n");
+    learn_report_to_response_->Send("Report-To: {\"endpoints\":[{\"url\":\"" +
+                                    report_url.spec() +
+                                    "\"}],\"max_age\":86400}\r\n");
+    learn_report_to_response_->Send(
+        "NEL: {\"report_to\":\"default\",\"max_age\":86400}\r\n");
+    learn_report_to_response_->Send("\r\n");
+    learn_report_to_response_->Done();
+    same_tab_observer.Wait();
+  }
+
+  if (UsePrefetch()) {
+    // Matches MaybeTriggerPrefetchSXG(), but uses |ssl_server_| instead of
+    // embedded_test_server().
+    const GURL prefetch_html_url = ssl_server_.GetURL(
+        std::string("/sxg/prefetch.html#") + sxg_url().spec());
+    base::string16 expected_title = base::ASCIIToUTF16("FAIL");
+    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+    EXPECT_TRUE(NavigateToURL(shell(), prefetch_html_url));
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  } else {
+    // Try to navigate to the signed exchange. The signed exchange fails due
+    // to the bad certificate. That results in trying to load the
+    // resource the SXG refers to directly, which should fail with
+    // ERR_NAME_NOT_RESOLVED.
+    NavigationHandleObserver observer(shell()->web_contents(), sxg_url());
+    EXPECT_FALSE(NavigateToURL(shell(), sxg_url()));
+    EXPECT_EQ(sxg_validity_url(), shell()->web_contents()->GetURL());
+    EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, observer.net_error_code());
+  }
+
+  // Check that a report was received.
+  report_response_->WaitForRequest();
+  EXPECT_EQ(report_url, report_response_->http_request()->GetURL());
+  EXPECT_EQ(net::test_server::METHOD_POST,
+            report_response_->http_request()->method);
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SignedExchangeReportingBrowserTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
+
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 }  // namespace content

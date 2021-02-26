@@ -8,7 +8,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/android/content_jni_headers/CaptioningController_jni.h"
-#include "content/public/common/web_preferences.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -89,10 +89,7 @@ void CaptioningController::SetTextTrackSettings(
     const JavaParamRef<jstring>& textTrackTextColor,
     const JavaParamRef<jstring>& textTrackTextShadow,
     const JavaParamRef<jstring>& textTrackTextSize) {
-  auto web_prefs = web_contents()
-                       ->GetMainFrame()
-                       ->GetRenderViewHost()
-                       ->GetWebkitPreferences();
+  auto web_prefs = web_contents()->GetOrCreateWebPreferences();
   web_prefs.text_tracks_enabled = textTracksEnabled;
   web_prefs.text_track_background_color =
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackBackgroundColor));
@@ -108,8 +105,7 @@ void CaptioningController::SetTextTrackSettings(
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackTextShadow));
   web_prefs.text_track_text_size =
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackTextSize));
-  web_contents()->GetMainFrame()->GetRenderViewHost()->UpdateWebkitPreferences(
-      web_prefs);
+  web_contents()->SetWebPreferences(web_prefs);
 }
 
 jlong JNI_CaptioningController_Init(

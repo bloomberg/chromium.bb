@@ -12,10 +12,11 @@
 #include <type_traits>
 
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/containers/stack_container.h"
 #include "base/debug/alias.h"
-#include "base/logging.h"
 #include "base/memory/aligned_memory.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/node_id.h"
@@ -48,6 +49,7 @@ class CC_PAINT_EXPORT ThreadsafeMatrix : public SkMatrix {
   explicit ThreadsafeMatrix(const SkMatrix& matrix) : SkMatrix(matrix) {
     (void)getType();
   }
+  ThreadsafeMatrix() { (void)getType(); }
 };
 
 class CC_PAINT_EXPORT ThreadsafePath : public SkPath {
@@ -56,6 +58,13 @@ class CC_PAINT_EXPORT ThreadsafePath : public SkPath {
     updateBoundsCache();
   }
   ThreadsafePath() { updateBoundsCache(); }
+};
+
+class CC_PAINT_EXPORT SharedImageProvider {
+ public:
+  virtual ~SharedImageProvider() = default;
+  virtual sk_sp<SkImage> OpenSharedImageForRead(
+      const gpu::Mailbox& mailbox) = 0;
 };
 
 // See PaintOp::Serialize/Deserialize for comments.  Derived Serialize types
@@ -124,6 +133,7 @@ struct CC_PAINT_EXPORT PlaybackParams {
   SkMatrix original_ctm;
   CustomDataRasterCallback custom_callback;
   DidDrawOpCallback did_draw_op_callback;
+  base::Optional<bool> save_layer_alpha_should_preserve_lcd_text;
 };
 
 class CC_PAINT_EXPORT PaintOp {
@@ -177,6 +187,13 @@ class CC_PAINT_EXPORT PaintOp {
     // The flags to use when serializing this op. This can be used to override
     // the flags serialized with the op. Valid only for PaintOpWithFlags.
     const PaintFlags* flags_to_serialize = nullptr;
+
+    // TODO(crbug.com/1096123): Cleanup after study completion.
+    //
+    // If true, perform serializaion in a way that avoids serializing transient
+    // members, such as IDs, so that a stable digest can be calculated. This
+    // means that serialized output can't be deserialized correctly.
+    bool for_identifiability_study = false;
   };
 
   struct CC_PAINT_EXPORT DeserializeOptions {
@@ -184,7 +201,8 @@ class CC_PAINT_EXPORT PaintOp {
                        ServicePaintCache* paint_cache,
                        SkStrikeClient* strike_client,
                        std::vector<uint8_t>* scratch_buffer,
-                       bool is_privileged);
+                       bool is_privileged,
+                       SharedImageProvider* shared_image_provider);
     TransferCacheDeserializeHelper* transfer_cache = nullptr;
     ServicePaintCache* paint_cache = nullptr;
     SkStrikeClient* strike_client = nullptr;
@@ -195,6 +213,7 @@ class CC_PAINT_EXPORT PaintOp {
     // True if the deserialization is happening on a privileged gpu channel.
     // e.g. in the case of UI.
     bool is_privileged = false;
+    SharedImageProvider* shared_image_provider = nullptr;
   };
 
   // Indicates how PaintImages are serialized.
@@ -202,7 +221,8 @@ class CC_PAINT_EXPORT PaintOp {
     kNoImage,
     kImageData,
     kTransferCacheEntry,
-    kLastType = kTransferCacheEntry
+    kMailbox,
+    kLastType = kMailbox
   };
 
   // Subclasses should provide a static Serialize() method called from here.
@@ -252,6 +272,11 @@ class CC_PAINT_EXPORT PaintOp {
   int CountSlowPathsFromFlags() const { return 0; }
 
   bool HasNonAAPaint() const { return false; }
+  bool HasDrawTextOps() const { return false; }
+  bool HasSaveLayerAlphaOps() const { return false; }
+  // Returns true if effects are present that would break LCD text or be broken
+  // by the flags for SaveLayerAlpha to preserving LCD text.
+  bool HasEffectsPreventingLCDTextForSaveLayerAlpha() const { return false; }
 
   bool HasDiscardableImages() const { return false; }
   bool HasDiscardableImagesFromFlags() const { return false; }
@@ -401,6 +426,9 @@ class CC_PAINT_EXPORT ClipRectOp final : public PaintOp {
   SkRect rect;
   SkClipOp op;
   bool antialias;
+
+ private:
+  ClipRectOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT ClipRRectOp final : public PaintOp {
@@ -419,6 +447,9 @@ class CC_PAINT_EXPORT ClipRRectOp final : public PaintOp {
   SkRRect rrect;
   SkClipOp op;
   bool antialias;
+
+ private:
+  ClipRRectOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT ConcatOp final : public PaintOp {
@@ -433,6 +464,9 @@ class CC_PAINT_EXPORT ConcatOp final : public PaintOp {
   HAS_SERIALIZATION_FUNCTIONS();
 
   ThreadsafeMatrix matrix;
+
+ private:
+  ConcatOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT CustomDataOp final : public PaintOp {
@@ -448,6 +482,9 @@ class CC_PAINT_EXPORT CustomDataOp final : public PaintOp {
 
   // Stores user defined id as a placeholder op.
   uint32_t id;
+
+ private:
+  CustomDataOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT DrawColorOp final : public PaintOp {
@@ -465,6 +502,9 @@ class CC_PAINT_EXPORT DrawColorOp final : public PaintOp {
 
   SkColor color;
   SkBlendMode mode;
+
+ private:
+  DrawColorOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT DrawDRRectOp final : public PaintOpWithFlags {
@@ -534,7 +574,7 @@ class CC_PAINT_EXPORT DrawImageRectOp final : public PaintOpWithFlags {
                   const SkRect& src,
                   const SkRect& dst,
                   const PaintFlags* flags,
-                  PaintCanvas::SrcRectConstraint constraint);
+                  SkCanvas::SrcRectConstraint constraint);
   ~DrawImageRectOp();
   static void RasterWithFlags(const DrawImageRectOp* op,
                               const PaintFlags* flags,
@@ -552,7 +592,7 @@ class CC_PAINT_EXPORT DrawImageRectOp final : public PaintOpWithFlags {
   PaintImage image;
   SkRect src;
   SkRect dst;
-  PaintCanvas::SrcRectConstraint constraint;
+  SkCanvas::SrcRectConstraint constraint;
 
  private:
   DrawImageRectOp();
@@ -672,6 +712,9 @@ class CC_PAINT_EXPORT DrawRecordOp final : public PaintOp {
   bool HasDiscardableImages() const;
   int CountSlowPaths() const;
   bool HasNonAAPaint() const;
+  bool HasDrawTextOps() const;
+  bool HasSaveLayerAlphaOps() const;
+  bool HasEffectsPreventingLCDTextForSaveLayerAlpha() const;
   HAS_SERIALIZATION_FUNCTIONS();
 
   sk_sp<const PaintRecord> record;
@@ -759,6 +802,7 @@ class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
                               SkCanvas* canvas,
                               const PlaybackParams& params);
   bool IsValid() const { return flags.IsValid(); }
+  bool HasDrawTextOps() const { return true; }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
   HAS_SERIALIZATION_FUNCTIONS();
 
@@ -808,6 +852,9 @@ class CC_PAINT_EXPORT RotateOp final : public PaintOp {
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkScalar degrees;
+
+ private:
+  RotateOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT SaveOp final : public PaintOp {
@@ -835,6 +882,10 @@ class CC_PAINT_EXPORT SaveLayerOp final : public PaintOpWithFlags {
   bool IsValid() const { return flags.IsValid() && IsValidOrUnsetRect(bounds); }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
   bool HasNonAAPaint() const { return false; }
+  // We simply assume any effects (or even no effects -- just starting an empty
+  // transparent layer) would break LCD text or be broken by the flags for
+  // SaveLayerAlpha to preserve LCD text.
+  bool HasEffectsPreventingLCDTextForSaveLayerAlpha() const { return true; }
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect bounds;
@@ -853,10 +904,14 @@ class CC_PAINT_EXPORT SaveLayerAlphaOp final : public PaintOp {
                      const PlaybackParams& params);
   bool IsValid() const { return IsValidOrUnsetRect(bounds); }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
+  bool HasSaveLayerAlphaOps() const { return true; }
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect bounds;
   uint8_t alpha;
+
+ private:
+  SaveLayerAlphaOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT ScaleOp final : public PaintOp {
@@ -896,6 +951,9 @@ class CC_PAINT_EXPORT SetMatrixOp final : public PaintOp {
   HAS_SERIALIZATION_FUNCTIONS();
 
   ThreadsafeMatrix matrix;
+
+ private:
+  SetMatrixOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT SetNodeIdOp final : public PaintOp {
@@ -910,6 +968,9 @@ class CC_PAINT_EXPORT SetNodeIdOp final : public PaintOp {
   HAS_SERIALIZATION_FUNCTIONS();
 
   int node_id;
+
+ private:
+  SetNodeIdOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT TranslateOp final : public PaintOp {
@@ -925,6 +986,9 @@ class CC_PAINT_EXPORT TranslateOp final : public PaintOp {
 
   SkScalar dx;
   SkScalar dy;
+
+ private:
+  TranslateOp() : PaintOp(kType) {}
 };
 
 #undef HAS_SERIALIZATION_FUNCTIONS
@@ -984,6 +1048,16 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   int numSlowPaths() const { return num_slow_paths_; }
   bool HasNonAAPaint() const { return has_non_aa_paint_; }
   bool HasDiscardableImages() const { return has_discardable_images_; }
+
+  bool has_draw_ops() const { return has_draw_ops_; }
+  bool has_draw_text_ops() const { return has_draw_text_ops_; }
+  bool has_save_layer_alpha_ops() const { return has_save_layer_alpha_ops_; }
+  bool has_effects_preventing_lcd_text_for_save_layer_alpha() const {
+    return has_effects_preventing_lcd_text_for_save_layer_alpha_;
+  }
+
+  bool NeedsAdditionalInvalidationForLCDText(
+      const PaintOpBuffer& old_buffer) const;
 
   bool operator==(const PaintOpBuffer& other) const;
   bool operator!=(const PaintOpBuffer& other) const {
@@ -1047,6 +1121,12 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
     subrecord_bytes_used_ += op->AdditionalBytesUsed();
     subrecord_op_count_ += op->AdditionalOpCount();
+
+    has_draw_ops_ |= op->IsDrawOp();
+    has_draw_text_ops_ |= op->HasDrawTextOps();
+    has_save_layer_alpha_ops_ |= op->HasSaveLayerAlphaOps();
+    has_effects_preventing_lcd_text_for_save_layer_alpha_ |=
+        op->HasEffectsPreventingLCDTextForSaveLayerAlpha();
   }
 
   template <typename T>
@@ -1263,15 +1343,19 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   size_t reserved_ = 0;
   size_t op_count_ = 0;
 
-  // Record paths for veto-to-msaa for gpu raster.
-  int num_slow_paths_ = 0;
   // Record additional bytes used by referenced sub-records and display lists.
   size_t subrecord_bytes_used_ = 0;
   // Record total op count of referenced sub-record and display lists.
   size_t subrecord_op_count_ = 0;
+  // Record paths for veto-to-msaa for gpu raster.
+  int num_slow_paths_ = 0;
 
   bool has_non_aa_paint_ : 1;
   bool has_discardable_images_ : 1;
+  bool has_draw_ops_ : 1;
+  bool has_draw_text_ops_ : 1;
+  bool has_save_layer_alpha_ops_ : 1;
+  bool has_effects_preventing_lcd_text_for_save_layer_alpha_ : 1;
 };
 
 }  // namespace cc

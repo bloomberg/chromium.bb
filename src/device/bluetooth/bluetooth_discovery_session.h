@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -34,7 +34,7 @@ namespace device {
 class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
  public:
   // The ErrorCallback is used by methods to asynchronously report errors.
-  typedef base::Closure ErrorCallback;
+  using ErrorCallback = base::OnceClosure;
 
   enum SessionStatus {
     // Just added to the adapter.
@@ -47,12 +47,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
     INACTIVE
   };
 
-  // Destructor automatically terminates the discovery session. If this
-  // results in a call to the underlying system to stop device discovery
-  // (i.e. this instance represents the last active discovery session),
-  // the call may not always succeed. To be notified of such failures,
-  // users are highly encouraged to call BluetoothDiscoverySession::Stop,
-  // instead of relying on the destructor.
+  // Terminates the discovery session. If this is the last active discovery
+  // session, a call to the underlying system to stop device discovery is made.
+  // Users may call BluetoothDiscoverySession::Stop() if they need to observe
+  // the result of that operation, but this is usually unnecessary.
   virtual ~BluetoothDiscoverySession();
 
   // Returns true if the session is active, false otherwise. If false, the
@@ -63,15 +61,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
   // discovery continues.
   virtual bool IsActive() const;
 
-  // Requests this discovery session instance to stop. If this instance is
-  // active, the session will stop. On success, |callback| is called and
-  // on error |error_callback| is called. After a successful invocation, the
-  // adapter may or may not stop device discovery, depending on whether or not
-  // other active discovery sessions are present. Users are highly encouraged
-  // to call this method to end a discovery session, instead of relying on the
-  // destructor, so that they can be notified of the result via the callback
-  // arguments.
-  virtual void Stop(base::Closure callback = base::DoNothing(),
+  // Requests this discovery session instance to stop. If this is the last
+  // active discovery session, a call to the underlying system to stop device
+  // discovery is made, and |error_callback| will be invoked if such a call
+  // fails. Typically, users can ignore this and simply destroy the instance
+  // instead of calling Stop().
+  virtual void Stop(base::OnceClosure callback = base::DoNothing(),
                     ErrorCallback error_callback = base::DoNothing());
 
   virtual const BluetoothDiscoveryFilter* GetDiscoveryFilter() const;
@@ -100,12 +95,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
   // exists when this callback executes. Always invokes |success_callback|.
   static void OnDiscoverySessionRemoved(
       base::WeakPtr<BluetoothDiscoverySession> session,
-      const base::Closure& deactivate_discovery_session,
-      const base::Closure& success_callback);
+      base::OnceClosure deactivate_discovery_session,
+      base::OnceClosure success_callback);
 
   static void OnDiscoverySessionRemovalFailed(
       base::WeakPtr<BluetoothDiscoverySession> session,
-      const base::Closure& error_callback,
+      base::OnceClosure error_callback,
       UMABluetoothDiscoverySessionOutcome outcome);
 
   // Deactivate discovery session object after

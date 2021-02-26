@@ -29,6 +29,8 @@ class ContentAutofillDriverFactory : public AutofillDriverFactory,
                                      public content::WebContentsObserver,
                                      public base::SupportsUserData::Data {
  public:
+  static const char kContentAutofillDriverFactoryWebContentsUserDataKey[];
+
   ContentAutofillDriverFactory(
       content::WebContents* web_contents,
       AutofillClient* client,
@@ -64,11 +66,13 @@ class ContentAutofillDriverFactory : public AutofillDriverFactory,
 
   // content::WebContentsObserver:
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
-
-  static const char kContentAutofillDriverFactoryWebContentsUserDataKey[];
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
  private:
   std::string app_locale_;

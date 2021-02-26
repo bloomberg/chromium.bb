@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
@@ -29,16 +29,17 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/webui/version_ui.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/cloud/message_util.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
@@ -68,6 +69,8 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -91,7 +94,7 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -111,7 +114,6 @@
 
 #include "chrome/browser/google/google_update_policy_fetcher_win.h"
 #include "chrome/install_static/install_util.h"
-#include "components/update_client/updater_state.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -447,13 +449,14 @@ class UpdaterStatusProvider : public PolicyStatusProvider {
  public:
   UpdaterStatusProvider();
   ~UpdaterStatusProvider() override = default;
+  void SetUpdaterStatus(std::unique_ptr<GoogleUpdateState> status);
   void GetStatus(base::DictionaryValue* dict) override;
 
  private:
   static std::string FetchActiveDirectoryDomain();
   void OnDomainReceived(std::string domain);
 
-  std::string version_;
+  std::unique_ptr<GoogleUpdateState> updater_status_;
   std::string domain_;
   base::WeakPtrFactory<UpdaterStatusProvider> weak_factory_{this};
 };
@@ -564,6 +567,9 @@ void MachineLevelUserCloudPolicyStatusProvider::GetStatus(
               refresh_scheduler ? refresh_scheduler->GetActualRefreshDelay()
                                 : policy::CloudPolicyRefreshScheduler::
                                       kDefaultRefreshDelayMs)));
+  dict->SetBoolean(
+      "policiesPushAvailable",
+      refresh_scheduler ? refresh_scheduler->invalidations_available() : false);
 
   if (dmTokenStorage) {
     dict->SetString("enrollmentToken",
@@ -733,12 +739,6 @@ void DeviceActiveDirectoryPolicyStatusProvider::GetStatus(
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 UpdaterStatusProvider::UpdaterStatusProvider() {
-  auto state =
-      update_client::UpdaterState::GetState(install_static::IsSystemInstall());
-  const auto& version = state->find("version");
-  if (version != state->end())
-    version_ = version->second;
-
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(),
@@ -748,11 +748,24 @@ UpdaterStatusProvider::UpdaterStatusProvider() {
                      weak_factory_.GetWeakPtr()));
 }
 
+void UpdaterStatusProvider::SetUpdaterStatus(
+    std::unique_ptr<GoogleUpdateState> status) {
+  updater_status_ = std::move(status);
+  NotifyStatusChange();
+}
+
 void UpdaterStatusProvider::GetStatus(base::DictionaryValue* dict) {
-  if (!version_.empty())
-    dict->SetString("version", version_);
   if (!domain_.empty())
-    dict->SetString("domain", domain_);
+    dict->SetStringKey("domain", domain_);
+  if (!updater_status_)
+    return;
+  if (!updater_status_->version.empty())
+    dict->SetStringKey("version", updater_status_->version);
+  if (!updater_status_->last_checked_time.is_null()) {
+    dict->SetStringKey(
+        "timeSinceLastRefresh",
+        GetTimeSinceLastRefreshString(updater_status_->last_checked_time));
+  }
 }
 
 // static
@@ -774,7 +787,8 @@ void UpdaterStatusProvider::OnDomainReceived(std::string domain) {
   domain_ = std::move(domain);
   NotifyStatusChange();
 }
-#endif
+
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 PolicyUIHandler::PolicyUIHandler() {}
 
@@ -810,6 +824,7 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       {"levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED},
       {"error", IDS_POLICY_LABEL_ERROR},
       {"deprecated", IDS_POLICY_LABEL_DEPRECATED},
+      {"future", IDS_POLICY_LABEL_FUTURE},
       {"ignored", IDS_POLICY_LABEL_IGNORED},
       {"notSpecified", IDS_POLICY_NOT_SPECIFIED},
       {"ok", IDS_POLICY_OK},
@@ -819,6 +834,7 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       {"unknown", IDS_POLICY_UNKNOWN},
       {"unset", IDS_POLICY_UNSET},
       {"value", IDS_POLICY_LABEL_VALUE},
+      {"sourceDefault", IDS_POLICY_SOURCE_DEFAULT},
   };
   AddLocalizedStringsBulk(source, kStrings);
 
@@ -888,15 +904,7 @@ void PolicyUIHandler::RegisterMessages() {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  updater_status_provider_ = std::make_unique<UpdaterStatusProvider>();
-  base::PostTaskAndReplyWithResult(
-      base::ThreadPool::CreateCOMSTATaskRunner(
-          {base::TaskPriority::USER_BLOCKING,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()})
-          .get(),
-      FROM_HERE, base::BindOnce(&GetGoogleUpdatePolicies),
-      base::BindOnce(&PolicyUIHandler::SetUpdaterPolicies,
-                     weak_factory_.GetWeakPtr()));
+  ReloadUpdaterPoliciesAndState();
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   if (!user_status_provider_.get())
@@ -938,6 +946,10 @@ void PolicyUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "reloadPolicies",
       base::BindRepeating(&PolicyUIHandler::HandleReloadPolicies,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "copyPoliciesJSON",
+      base::BindRepeating(&PolicyUIHandler::HandleCopyPoliciesJson,
                           base::Unretained(this)));
 }
 
@@ -1174,17 +1186,22 @@ void PolicyUIHandler::HandleReloadPolicies(const base::ListValue* args) {
     }
   }
 #endif
+
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  ReloadUpdaterPoliciesAndState();
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
   GetPolicyService()->RefreshPolicies(base::BindOnce(
       &PolicyUIHandler::OnRefreshPoliciesDone, weak_factory_.GetWeakPtr()));
 }
 
-void DoWritePoliciesToJSONFile(const base::FilePath& path,
-                               const std::string& data) {
-  base::WriteFile(path, data.c_str(), data.size());
+void PolicyUIHandler::HandleCopyPoliciesJson(const base::ListValue* args) {
+  std::string policies_json = GetPoliciesAsJson();
+  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+  scw.WriteText(base::UTF8ToUTF16(policies_json));
 }
 
-void PolicyUIHandler::WritePoliciesToJSONFile(
-    const base::FilePath& path) const {
+std::string PolicyUIHandler::GetPoliciesAsJson() const {
   auto client = std::make_unique<policy::ChromePolicyConversionsClient>(
       web_ui()->GetWebContents()->GetBrowserContext());
   base::Value dict =
@@ -1211,9 +1228,7 @@ void PolicyUIHandler::WritePoliciesToJSONFile(
                                    : IDS_VERSION_UI_UNOFFICIAL)
           .c_str(),
       (channel_name.empty() ? "" : " " + channel_name).c_str(),
-      l10n_util::GetStringUTF8(sizeof(void*) == 8 ? IDS_VERSION_UI_64BIT
-                                                  : IDS_VERSION_UI_32BIT)
-          .c_str(),
+      l10n_util::GetStringUTF8(VersionUI::VersionProcessorVariation()).c_str(),
       cohort_name.c_str());
   chrome_metadata.SetKey("version", base::Value(version));
 
@@ -1221,7 +1236,7 @@ void PolicyUIHandler::WritePoliciesToJSONFile(
   chrome_metadata.SetKey("platform",
                          base::Value(chromeos::version_loader::GetVersion(
                              chromeos::version_loader::VERSION_FULL)));
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   chrome_metadata.SetKey("OS", base::Value(base::mac::GetOSDisplayName()));
 #else
   std::string os = version_info::GetOSType();
@@ -1241,6 +1256,17 @@ void PolicyUIHandler::WritePoliciesToJSONFile(
   base::JSONWriter::WriteWithOptions(
       dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_policies);
 
+  return json_policies;
+}
+
+void DoWritePoliciesToJSONFile(const base::FilePath& path,
+                               const std::string& data) {
+  base::WriteFile(path, data.c_str(), data.size());
+}
+
+void PolicyUIHandler::WritePoliciesToJSONFile(
+    const base::FilePath& path) const {
+  std::string json_policies = GetPoliciesAsJson();
   base::ThreadPool::PostTask(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
@@ -1269,12 +1295,28 @@ void PolicyUIHandler::SendPolicies() {
 }
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-void PolicyUIHandler::SetUpdaterPolicies(
-    std::unique_ptr<policy::PolicyMap> updater_policies) {
-  updater_policies_ = std::move(updater_policies);
+void PolicyUIHandler::SetUpdaterPoliciesAndState(
+    std::unique_ptr<GoogleUpdatePoliciesAndState> updater_policies_and_state) {
+  updater_policies_ = std::move(updater_policies_and_state->policies);
+  static_cast<UpdaterStatusProvider*>(updater_status_provider_.get())
+      ->SetUpdaterStatus(std::move(updater_policies_and_state->state));
   if (updater_policies_)
     SendPolicies();
 }
+
+void PolicyUIHandler::ReloadUpdaterPoliciesAndState() {
+  if (!updater_status_provider_)
+    updater_status_provider_ = std::make_unique<UpdaterStatusProvider>();
+  base::PostTaskAndReplyWithResult(
+      base::ThreadPool::CreateCOMSTATaskRunner(
+          {base::TaskPriority::USER_BLOCKING,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()})
+          .get(),
+      FROM_HERE, base::BindOnce(&GetGoogleUpdatePoliciesAndState),
+      base::BindOnce(&PolicyUIHandler::SetUpdaterPoliciesAndState,
+                     weak_factory_.GetWeakPtr()));
+}
+
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 void PolicyUIHandler::OnRefreshPoliciesDone() {

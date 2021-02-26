@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/core/animation/effect_model.h"
+#include "third_party/blink/renderer/core/animation/keyframe.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
@@ -47,6 +48,7 @@ class CompositorAnimation;
 class Element;
 class KeyframeEffectModelBase;
 class PaintArtifactCompositor;
+class SVGElement;
 
 class CORE_EXPORT CompositorAnimations {
   STATIC_ONLY(CompositorAnimations);
@@ -92,11 +94,14 @@ class CORE_EXPORT CompositorAnimations {
     kMultipleTransformAnimationsOnSameTarget = 1 << 14,
     kMixedKeyframeValueTypes = 1 << 15,
 
+    // Cases where the scroll timeline source is not composited.
+    kTimelineSourceHasInvalidCompositingState = 1 << 16,
+
     // The maximum number of flags in this enum (excluding itself). New flags
     // should increment this number but it should never be decremented because
     // the values are used in UMA histograms. It should also be noted that it
     // excludes the kNoFailure value.
-    kFailureReasonCount = 16,
+    kFailureReasonCount = 17,
   };
 
   static FailureReasons CheckCanStartAnimationOnCompositor(
@@ -105,7 +110,8 @@ class CORE_EXPORT CompositorAnimations {
       const Animation*,
       const EffectModel&,
       const PaintArtifactCompositor*,
-      double animation_playback_rate);
+      double animation_playback_rate,
+      PropertyHandleSet* unsupported_properties = nullptr);
   static void CancelIncompatibleAnimationsOnCompositor(const Element&,
                                                        const Animation&,
                                                        const EffectModel&);
@@ -122,11 +128,13 @@ class CORE_EXPORT CompositorAnimations {
       double animation_playback_rate);
   static void CancelAnimationOnCompositor(const Element&,
                                           CompositorAnimation*,
-                                          int id);
+                                          int id,
+                                          const EffectModel& model);
   static void PauseAnimationForTestingOnCompositor(const Element&,
                                                    const Animation&,
                                                    int id,
-                                                   base::TimeDelta pause_time);
+                                                   base::TimeDelta pause_time,
+                                                   const EffectModel&);
 
   static void AttachCompositedLayers(Element&, CompositorAnimation*);
 
@@ -158,6 +166,10 @@ class CORE_EXPORT CompositorAnimations {
   static CompositorElementIdNamespace CompositorElementNamespaceForProperty(
       CSSPropertyID property);
 
+  static bool CheckUsesCompositedScrolling(Node* target);
+
+  static bool CanStartTransformAnimationOnCompositorForSVG(const SVGElement&);
+
  private:
   static FailureReasons CheckCanStartEffectOnCompositor(
       const Timing&,
@@ -165,8 +177,15 @@ class CORE_EXPORT CompositorAnimations {
       const Animation*,
       const EffectModel&,
       const PaintArtifactCompositor*,
-      double animation_playback_rate);
-  static FailureReasons CheckCanStartElementOnCompositor(const Element&);
+      double animation_playback_rate,
+      PropertyHandleSet* unsupported_properties = nullptr);
+  static FailureReasons CheckCanStartElementOnCompositor(
+      const Element& element,
+      const EffectModel& model);
+  static FailureReasons CheckCanStartSVGElementOnCompositor(const SVGElement&);
+  // This doesn't include the reasons returned from the above function.
+  static FailureReasons CheckCanStartTransformAnimationOnCompositorForSVG(
+      const SVGElement&);
 
   friend class AnimationCompositorAnimationsTest;
 };

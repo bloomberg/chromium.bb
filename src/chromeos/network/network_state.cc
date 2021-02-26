@@ -9,6 +9,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -21,6 +23,7 @@
 #include "chromeos/network/shill_property_util.h"
 #include "chromeos/network/tether_constants.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "net/http/http_status_code.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
@@ -30,49 +33,15 @@ const char kDefaultCellularNetworkPath[] = "/cellular";
 // TODO(tbarzic): Add payment portal method values to shill/dbus-constants.
 constexpr char kPaymentPortalMethodPost[] = "POST";
 
-std::string GetStringFromDictionary(const base::Value* dict, const char* key) {
-  const base::Value* v = dict ? dict->FindKey(key) : nullptr;
-  return v ? v->GetString() : std::string();
-}
+// TODO(b/169939319): Use shill constant once it lands.
+const char kPortalDetectionFailedStatusCodeProperty[] =
+    "PortalDetectionFailedStatusCode";
 
-bool IsCaptivePortalState(const base::Value& properties,
-                          const std::string& log_id) {
-  std::string state =
-      GetStringFromDictionary(&properties, shill::kStateProperty);
-  if (!chromeos::NetworkState::StateIsPortalled(state))
-    return false;
-  if (!properties.FindKey(shill::kPortalDetectionFailedPhaseProperty) ||
-      !properties.FindKey(shill::kPortalDetectionFailedStatusProperty)) {
-    // If Shill (or a stub) has not set PortalDetectionFailedStatus
-    // or PortalDetectionFailedPhase, assume we are in captive portal state.
-    return true;
-  }
-
-  std::string portal_detection_phase = GetStringFromDictionary(
-      &properties, shill::kPortalDetectionFailedPhaseProperty);
-  std::string portal_detection_status = GetStringFromDictionary(
-      &properties, shill::kPortalDetectionFailedStatusProperty);
-
-  // Shill reports the phase in which it determined that the device is behind a
-  // captive portal. We only want to rely only on incorrect content being
-  // returned and ignore other reasons.
-  bool is_captive_portal =
-      portal_detection_phase == shill::kPortalDetectionPhaseContent &&
-      (portal_detection_status == shill::kPortalDetectionStatusSuccess ||
-       portal_detection_status == shill::kPortalDetectionStatusFailure ||
-       portal_detection_status == shill::kPortalDetectionStatusRedirect);
-
-  if (!log_id.empty()) {
-    if (!is_captive_portal) {
-      NET_LOG(EVENT) << "State is 'portal' but not in captive portal state:"
-                     << log_id << ", phase=" << portal_detection_phase
-                     << ", status=" << portal_detection_status;
-    } else {
-      NET_LOG(EVENT) << "Network is in captive portal state: " << log_id;
-    }
-  }
-
-  return is_captive_portal;
+// |dict| may be an empty value, in which case return an empty string.
+std::string GetStringFromDictionary(const base::Value& dict, const char* key) {
+  const std::string* stringp =
+      dict.is_none() ? nullptr : dict.FindStringKey(key);
+  return stringp ? *stringp : std::string();
 }
 
 }  // namespace
@@ -90,7 +59,15 @@ bool NetworkState::PropertyChanged(const std::string& key,
   if (ManagedStatePropertyChanged(key, value))
     return true;
   if (key == shill::kSignalStrengthProperty) {
-    return GetIntegerValue(key, value, &signal_strength_);
+    int signal_strength = signal_strength_;
+    if (!GetIntegerValue(key, value, &signal_strength))
+      return false;
+    if (signal_strength_ > 0 && abs(signal_strength - signal_strength_) <
+                                    kSignalStrengthChangeThreshold) {
+      return false;
+    }
+    signal_strength_ = signal_strength;
+    return true;
   } else if (key == shill::kStateProperty) {
     std::string connection_state;
     if (!GetStringValue(key, value, &connection_state))
@@ -168,16 +145,16 @@ bool NetworkState::PropertyChanged(const std::string& key,
       return false;
     }
 
-    proxy_config_.reset();
-    if (proxy_config_str.empty())
+    if (proxy_config_str.empty()) {
+      proxy_config_ = base::Value();
       return true;
-
-    std::unique_ptr<base::Value> proxy_config_dict(
-        onc::ReadDictionaryFromJson(proxy_config_str));
-    if (proxy_config_dict) {
-      proxy_config_ = std::move(proxy_config_dict);
-    } else {
+    }
+    base::Value proxy_config = onc::ReadDictionaryFromJson(proxy_config_str);
+    if (!proxy_config.is_dict()) {
       NET_LOG(ERROR) << "Failed to parse " << path() << "." << key;
+      proxy_config_ = base::Value();
+    } else {
+      proxy_config_ = std::move(proxy_config);
     }
     return true;
   } else if (key == shill::kProviderProperty) {
@@ -237,9 +214,9 @@ bool NetworkState::InitialPropertiesReceived(const base::Value& properties) {
     signal_strength_ = 1;
   }
 
-  // Any change to connection state will trigger a complete property update,
-  // so we update is_captive_portal_ here.
-  is_captive_portal_ = IsCaptivePortalState(properties, NetworkId(this));
+  // Any change to connection state or portal properties will trigger a complete
+  // property update, so we update captive portal state here.
+  UpdateCaptivePortalState(properties);
 
   // Ensure that the network has a valid name.
   return UpdateName(properties);
@@ -331,23 +308,23 @@ bool NetworkState::IsActive() const {
 
 void NetworkState::IPConfigPropertiesChanged(const base::Value& properties) {
   if (properties.DictEmpty()) {
-    ipv4_config_.reset();
+    ipv4_config_ = base::Value();
     return;
   }
-  ipv4_config_ = std::make_unique<base::Value>(properties.Clone());
+  ipv4_config_ = properties.Clone();
 }
 
 std::string NetworkState::GetIpAddress() const {
-  return GetStringFromDictionary(ipv4_config_.get(), shill::kAddressProperty);
+  return GetStringFromDictionary(ipv4_config_, shill::kAddressProperty);
 }
 
 std::string NetworkState::GetGateway() const {
-  return GetStringFromDictionary(ipv4_config_.get(), shill::kGatewayProperty);
+  return GetStringFromDictionary(ipv4_config_, shill::kGatewayProperty);
 }
 
 GURL NetworkState::GetWebProxyAutoDiscoveryUrl() const {
   std::string url = GetStringFromDictionary(
-      ipv4_config_.get(), shill::kWebProxyAutoDiscoveryUrlProperty);
+      ipv4_config_, shill::kWebProxyAutoDiscoveryUrlProperty);
   if (url.empty())
     return GURL();
   GURL gurl(url);
@@ -357,18 +334,6 @@ GURL NetworkState::GetWebProxyAutoDiscoveryUrl() const {
     return GURL();
   }
   return gurl;
-}
-
-void NetworkState::SetCaptivePortalProvider(const std::string& id,
-                                            const std::string& name) {
-  if (id.empty()) {
-    captive_portal_provider_ = nullptr;
-    return;
-  }
-  if (!captive_portal_provider_)
-    captive_portal_provider_ = std::make_unique<CaptivePortalProviderInfo>();
-  captive_portal_provider_->id = id;
-  captive_portal_provider_->name = name;
 }
 
 std::string NetworkState::GetVpnProviderType() const {
@@ -383,8 +348,8 @@ bool NetworkState::RequiresActivation() const {
 
 bool NetworkState::SecurityRequiresPassphraseOnly() const {
   return type() == shill::kTypeWifi &&
-         (security_class() == shill::kSecurityPsk ||
-          security_class() == shill::kSecurityWep);
+         (security_class_ == shill::kSecurityPsk ||
+          security_class_ == shill::kSecurityWep);
 }
 
 const std::string& NetworkState::GetError() const {
@@ -445,11 +410,6 @@ bool NetworkState::IsManagedByPolicy() const {
          onc_source_ == ::onc::ONCSource::ONC_SOURCE_USER_POLICY;
 }
 
-bool NetworkState::IsUsingMobileData() const {
-  return type() == shill::kTypeCellular || type() == chromeos::kTypeTether ||
-         tethering_state() == shill::kTetheringConfirmedState;
-}
-
 bool NetworkState::IndicateRoaming() const {
   return type() == shill::kTypeCellular &&
          roaming_ == shill::kRoamingStateRoaming && !provider_requires_roaming_;
@@ -500,8 +460,27 @@ bool NetworkState::IsDefaultCellular() const {
          path() == kDefaultCellularNetworkPath;
 }
 
+bool NetworkState::IsShillCaptivePortal() const {
+  switch (portal_state_) {
+    case PortalState::kUnknown:
+    case PortalState::kOnline:
+      return false;
+    case PortalState::kPortalSuspected:
+    case PortalState::kPortal:
+    case PortalState::kProxyAuthRequired:
+    case PortalState::kNoInternet:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 bool NetworkState::IsCaptivePortal() const {
-  return is_captive_portal_ || is_chrome_captive_portal_;
+  return is_chrome_captive_portal_ || IsShillCaptivePortal();
+}
+
+bool NetworkState::IsSecure() const {
+  return !security_class_.empty() && security_class_ != shill::kSecurityNone;
 }
 
 std::string NetworkState::GetHexSsid() const {
@@ -510,8 +489,9 @@ std::string NetworkState::GetHexSsid() const {
 
 std::string NetworkState::GetDnsServersAsString() const {
   const base::Value* listv =
-      ipv4_config_ ? ipv4_config_->FindKey(shill::kNameServersProperty)
-                   : nullptr;
+      ipv4_config_.is_none()
+          ? nullptr
+          : ipv4_config_.FindListKey(shill::kNameServersProperty);
   if (!listv)
     return std::string();
   std::string result;
@@ -524,9 +504,8 @@ std::string NetworkState::GetDnsServersAsString() const {
 }
 
 std::string NetworkState::GetNetmask() const {
-  const base::Value* v =
-      ipv4_config_ ? ipv4_config_->FindKey(shill::kPrefixlenProperty) : nullptr;
-  int prefixlen = v ? v->GetInt() : -1;
+  int prefixlen =
+      ipv4_config_.FindIntKey(shill::kPrefixlenProperty).value_or(-1);
   return network_util::PrefixLengthToNetmask(prefixlen);
 }
 
@@ -568,7 +547,7 @@ NetworkState::GetMojoActivationState() const {
 
 network_config::mojom::SecurityType NetworkState::GetMojoSecurity() const {
   using network_config::mojom::SecurityType;
-  if (security_class_.empty() || security_class_ == shill::kSecurityNone)
+  if (!IsSecure())
     return SecurityType::kNone;
   if (IsDynamicWep())
     return SecurityType::kWep8021x;
@@ -581,6 +560,25 @@ network_config::mojom::SecurityType NetworkState::GetMojoSecurity() const {
     return SecurityType::kWpaEap;
   NET_LOG(ERROR) << "Unsupported shill security class: " << security_class_;
   return SecurityType::kNone;
+}
+
+NetworkState::NetworkTechnologyType NetworkState::GetNetworkTechnologyType()
+    const {
+  const std::string& network_type = type();
+  if (network_type == shill::kTypeCellular)
+    return NetworkTechnologyType::kCellular;
+  if (network_type == shill::kTypeEthernet)
+    return NetworkTechnologyType::kEthernet;
+  if (network_type == shill::kTypeEthernetEap)
+    return NetworkTechnologyType::kEthernet;
+  if (network_type == kTypeTether)
+    return NetworkTechnologyType::kTether;
+  if (network_type == shill::kTypeVPN)
+    return NetworkTechnologyType::kVPN;
+  if (network_type == shill::kTypeWifi)
+    return NetworkTechnologyType::kWiFi;
+  NOTREACHED() << "Unknown network type: " << network_type;
+  return NetworkTechnologyType::kUnknown;
 }
 
 // static
@@ -602,12 +600,6 @@ bool NetworkState::StateIsPortalled(const std::string& connection_state) {
           connection_state == shill::kStateNoConnectivity ||
           connection_state == shill::kStateRedirectFound ||
           connection_state == shill::kStatePortalSuspected);
-}
-
-// static
-bool NetworkState::NetworkStateIsCaptivePortal(
-    const base::Value& shill_properties) {
-  return IsCaptivePortalState(shill_properties, std::string() /* log_id */);
 }
 
 // static
@@ -636,6 +628,35 @@ bool NetworkState::UpdateName(const base::Value& properties) {
     return true;
   }
   return false;
+}
+
+void NetworkState::UpdateCaptivePortalState(const base::Value& properties) {
+  int status_code =
+      properties.FindIntKey(kPortalDetectionFailedStatusCodeProperty)
+          .value_or(0);
+  if (connection_state_ == shill::kStateNoConnectivity) {
+    portal_state_ = PortalState::kNoInternet;
+  } else if (connection_state_ == shill::kStatePortal ||
+             connection_state_ == shill::kStateRedirectFound) {
+    portal_state_ = status_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED
+                        ? PortalState::kProxyAuthRequired
+                        : PortalState::kPortal;
+  } else if (connection_state_ == shill::kStatePortalSuspected) {
+    portal_state_ = PortalState::kPortalSuspected;
+  } else {
+    portal_state_ = PortalState::kOnline;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("CaptivePortal.NetworkStateResult", portal_state_);
+  if (portal_state_ != PortalState::kOnline) {
+    portal_status_code_ = status_code;
+    NET_LOG(EVENT) << "Network is in captive portal state: " << NetworkId(this)
+                   << " status_code=" << portal_status_code_;
+    base::UmaHistogramSparse("CaptivePortal.NetworkStateStatusCode",
+                             std::abs(portal_status_code_));
+  } else {
+    portal_status_code_ = 0;
+  }
 }
 
 void NetworkState::SetVpnProvider(const std::string& id,

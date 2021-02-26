@@ -8,53 +8,56 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 745019
-  "build_rev": "716de5b7e1f94a1a7e056a02c3f48d99afb9145f", # from cr commit position 745019
-  "binutils_rev": "8d77853bc9415bcb7bb4206fa2901de7603387db", # from cr commit position 392828
-  # NOTE: be sure to update clang_lib_version in SConstruct whenever
-  # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "f5a394169f59ae2bb15966b2ef6388fe17b3e166", # from cr commit position 744792
+  # chrome_rev: 814460
+  "build_rev": "d4bf20279ce4b3234f5c39efb587bbb3615e56d5", # from cr commit position 814429
+  "buildtools_revision": "4be464e050b3d05060471788f926b34c641db9fd", # from cr commit position 811878
+  "clang_rev": "7e5979b1dd98e27570e58908e70a6e0c5978aa0e", # from cr commit position 814250
 
-  # Rolls of build_overrides_rev should done at the same time as a roll
-  # of build_rev as build_overrides/ is tightly coupled with build/.
-  # build_overrides/ is forked from chromium/src/build_overrides/ and
-  # needs to be manually updated to keep in sync before a build_rev
-  # update can be done.
-  "build_overrides_rev": "d56d0aa73300038348206b7503934d3706131d09",
+  # build_overrides/ is a separate, NaCl-specific repo *forked* from
+  # chromium/src/build_overrides/. It may need to be updated if
+  # //build_overrides/build.gni changes in Chromium.
+  "build_overrides_rev": "3a801f70d2dad1d2b4c935103cc44b6f16144f8d",
 
-  # NOTE!  These five should be kept up to date with their counterparts in
-  # chromium/src/DEPS.
-  # Be sure to update them when updating the chromium slice revisions above.
-  # (This is not essential for Breakpad, because we do not use its code
-  # in the build that goes into Chromium.  But we might as well update it too.)
-  # You should now use the roll-dep script in depot_tools to do this update.
-  "gtest_rev": "2d3543f81d6d4583332f8b60768ade18e0f96220",
-  "gyp_rev": "e7079f0e0e14108ab0dba58728ff219637458563",
-  # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling build tools
-  # and whatever else without interference from each other.
-  'buildtools_revision': 'afc5b798c72905e85f9991152be878714c579958',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
-  'lss_revision': '3f6478ac95edf86cd3da300c2c0d34a438f5dbeb',
+  "lss_revision": "3f6478ac95edf86cd3da300c2c0d34a438f5dbeb",
 
   "breakpad_rev": "54fa71efbe50fb2b58096d871575b59e12edba6d",
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:97cc440d84f050f99ff0161f9414bfa2ffa38f65',
+  "gn_version": "git_revision:e002e68a48d1c82648eadde2f6aafa20d08c36f2",
 
   # Separately pinned repositories, update with roll-dep individually.
-  "third_party_rev": "d4e38e5faf600b39649025e5605d6e7f94518ea7",
+  "binutils_rev": "8d77853bc9415bcb7bb4206fa2901de7603387db",
+  "gtest_rev": "2d3543f81d6d4583332f8b60768ade18e0f96220",
+  "gyp_rev": "e7079f0e0e14108ab0dba58728ff219637458563",
+  "mingw_rev": "3cc8b140b883a9fe4986d12cfd46c16a093d3527", # from svn revision 7064
   "lcov_rev": "b37daf5968200da8ff520ce65c4e5bce4047dd15", # from svn revision 149720
   "gnu_binutils_rev": "f4003433b61b25666565690caf3d7a7a1a4ec436", # from svn revision 8151
-  "mingw_rev": "3cc8b140b883a9fe4986d12cfd46c16a093d3527", # from svn revision 7064
   "nsis_rev": "21b6ad22daa7bfc04b9f1c1805a34622e2607a93", # from svn revision 7071
   "ragel_rev": "da42bb33f1b67c2d70b38ec1d2edf5263271b635", # from svn revision 9010
+  "third_party_rev": "d4e38e5faf600b39649025e5605d6e7f94518ea7",
   "validator_snapshots_rev": "ef053694ef9b0d98d9bed0b9bb649963084bfc81",
+
+  # Dummy variables for compatibility with //build.
+  "build_with_chromium": False,
+  "cros_boards": Str(""),
+  "cros_boards_with_qemu_images": Str(""),
+  "mac_xcode_version": "default",
 
   "chromium_git": "https://chromium.googlesource.com",
 }
+
+gclient_gn_args_file = 'build/config/gclient_args.gni'
+gclient_gn_args = [
+  'build_with_chromium',
+  'checkout_android',  # this is provided by gclient
+  'cros_boards',
+  'cros_boards_with_qemu_images',
+  'mac_xcode_version',
+]
+
 
 deps = {
   "breakpad":
@@ -158,19 +161,42 @@ hooks = [
   ###
 
   {
+    'name': 'sysroot_arm',
+    'pattern': '.',
+    'condition': 'checkout_linux',
+    'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
+               '--arch=arm'],
+  },
+  {
+    'name': 'sysroot_arm64',
+    'pattern': '.',
+    'condition': 'checkout_linux',
+    'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
+               '--arch=arm64'],
+  },
+  {
     # Downloads the current stable linux sysroot to build/linux/ if needed.
     # This sysroot updates at about the same rate that the chrome build deps
     # change. This script is a no-op except for linux users who are doing
     # official chrome builds or cross compiling.
-    'name': 'sysroot',
+    'name': 'sysroot_x64',
     'pattern': '.',
+    'condition': 'checkout_linux',
     'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
-               '--all'],
+               '--arch=x64'],
+  },
+  {
+    'name': 'sysroot_x86',
+    'pattern': '.',
+    'condition': 'checkout_linux',
+    'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
+               '--arch=x86'],
   },
   {
     # Update the Windows toolchain if necessary.
     'name': 'win_toolchain',
     'pattern': '.',
+    'condition': 'checkout_win',
     'action': ['python', 'build/vs_toolchain.py', 'update'],
   },
   {
@@ -186,6 +212,7 @@ hooks = [
   {
     'name': 'binutils',
     'pattern': 'third_party/binutils',
+    'condition': 'checkout_linux',
     'action': [
         'python',
         'third_party/binutils/download.py',

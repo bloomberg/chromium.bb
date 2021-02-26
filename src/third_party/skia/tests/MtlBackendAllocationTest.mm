@@ -5,28 +5,34 @@
  * found in the LICENSE file.
  */
 
-#include "include/gpu/GrContext.h"
-#include "src/gpu/GrContextPriv.h"
+#include "include/gpu/GrDirectContext.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "tests/Test.h"
 
 #import <Metal/Metal.h>
 #include "src/gpu/mtl/GrMtlCaps.h"
 
 // In BackendAllocationTest.cpp
-void test_wrapping(GrContext* context, skiatest::Reporter* reporter,
-                   std::function<GrBackendTexture (GrContext*,
-                                                   GrMipMapped,
+void test_wrapping(GrDirectContext*,
+                   skiatest::Reporter*,
+                   std::function<GrBackendTexture (GrDirectContext*,
+                                                   GrMipmapped,
                                                    GrRenderable)> create,
-                   GrColorType colorType, GrMipMapped mipMapped, GrRenderable renderable,
+                   GrColorType,
+                   GrMipmapped,
+                   GrRenderable,
                    bool* finishedBackendCreation);
 
-void test_color_init(GrContext* context, skiatest::Reporter* reporter,
-                     std::function<GrBackendTexture (GrContext*,
+void test_color_init(GrDirectContext*,
+                     skiatest::Reporter*,
+                     std::function<GrBackendTexture (GrDirectContext*,
                                                      const SkColor4f&,
-                                                     GrMipMapped,
+                                                     GrMipmapped,
                                                      GrRenderable)> create,
-                     GrColorType colorType, const SkColor4f& color,
-                     GrMipMapped mipMapped, GrRenderable renderable,
+                     GrColorType,
+                     const SkColor4f&,
+                     GrMipmapped,
+                     GrRenderable,
                      bool* finishedBackendCreation);
 
 static void mark_signaled(void* context) {
@@ -34,8 +40,8 @@ static void mark_signaled(void* context) {
 }
 
 DEF_GPUTEST_FOR_METAL_CONTEXT(MtlBackendAllocationTest, reporter, ctxInfo) {
-    GrContext* context = ctxInfo.grContext();
-    const GrMtlCaps* mtlCaps = static_cast<const GrMtlCaps*>(context->priv().caps());
+    auto dContext = ctxInfo.directContext();
+    const GrMtlCaps* mtlCaps = static_cast<const GrMtlCaps*>(dContext->priv().caps());
 
     constexpr SkColor4f kTransCol { 0, 0.25f, 0.75f, 0.5f };
     constexpr SkColor4f kGrayCol { 0.75f, 0.75f, 0.75f, 0.75f };
@@ -95,8 +101,8 @@ DEF_GPUTEST_FOR_METAL_CONTEXT(MtlBackendAllocationTest, reporter, ctxInfo) {
             continue;
         }
 
-        for (auto mipMapped : { GrMipMapped::kNo, GrMipMapped::kYes }) {
-            if (GrMipMapped::kYes == mipMapped && !mtlCaps->mipMapSupport()) {
+        for (auto mipMapped : { GrMipmapped::kNo, GrMipmapped::kYes }) {
+            if (GrMipmapped::kYes == mipMapped && !mtlCaps->mipmapSupport()) {
                 continue;
             }
 
@@ -112,15 +118,15 @@ DEF_GPUTEST_FOR_METAL_CONTEXT(MtlBackendAllocationTest, reporter, ctxInfo) {
                 }
 
                 {
-                    auto uninitCreateMtd = [format](GrContext* context,
-                                                    GrMipMapped mipMapped,
+                    auto uninitCreateMtd = [format](GrDirectContext* dContext,
+                                                    GrMipmapped mipMapped,
                                                     GrRenderable renderable) {
-                        return context->createBackendTexture(32, 32, format,
-                                                             mipMapped, renderable,
-                                                             GrProtected::kNo);
+                        return dContext->createBackendTexture(32, 32, format,
+                                                              mipMapped, renderable,
+                                                              GrProtected::kNo);
                     };
 
-                    test_wrapping(context, reporter, uninitCreateMtd,
+                    test_wrapping(dContext, reporter, uninitCreateMtd,
                                   combo.fColorType, mipMapped, renderable, nullptr);
                 }
 
@@ -152,13 +158,15 @@ DEF_GPUTEST_FOR_METAL_CONTEXT(MtlBackendAllocationTest, reporter, ctxInfo) {
                     bool* finishedPtr = &finishedBackendCreation;
 
                     auto createWithColorMtd = [format, swizzle, finishedPtr](
-                            GrContext* context, const SkColor4f& color, GrMipMapped mipMapped,
+                            GrDirectContext* dContext,
+                            const SkColor4f& color,
+                            GrMipmapped mipMapped,
                             GrRenderable renderable) {
                         auto swizzledColor = swizzle.applyTo(color);
-                        return context->createBackendTexture(32, 32, format, swizzledColor,
-                                                             mipMapped, renderable,
-                                                             GrProtected::kNo,
-                                                             mark_signaled, finishedPtr);
+                        return dContext->createBackendTexture(32, 32, format, swizzledColor,
+                                                              mipMapped, renderable,
+                                                              GrProtected::kNo,
+                                                              mark_signaled, finishedPtr);
                     };
                     // We make our comparison color using SkPixmap::erase(color) on a pixmap of
                     // combo.fColorType and then calling SkPixmap::readPixels(). erase() will premul
@@ -172,7 +180,7 @@ DEF_GPUTEST_FOR_METAL_CONTEXT(MtlBackendAllocationTest, reporter, ctxInfo) {
                             color.fB * color.fA,
                             1.f};
                     }
-                    test_color_init(context, reporter, createWithColorMtd, combo.fColorType, color,
+                    test_color_init(dContext, reporter, createWithColorMtd, combo.fColorType, color,
                                     mipMapped, renderable, finishedPtr);
                 }
             }

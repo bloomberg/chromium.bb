@@ -16,6 +16,7 @@
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/disk_data_allocator_test_utils.h"
+#include "third_party/blink/renderer/platform/disk_data_metadata.h"
 
 using ThreadPoolExecutionMode =
     base::test::TaskEnvironment::ThreadPoolExecutionMode;
@@ -30,11 +31,11 @@ class DiskDataAllocatorTest : public ::testing::Test {
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME,
                           thread_pool_execution_mode) {}
 
-  static std::vector<std::unique_ptr<DiskDataAllocator::Metadata>>
+  static std::vector<std::unique_ptr<DiskDataMetadata>>
   Allocate(InMemoryDataAllocator* allocator, size_t size, size_t count) {
     std::string random_data = base::RandBytesAsString(size);
 
-    std::vector<std::unique_ptr<DiskDataAllocator::Metadata>> all_metadata;
+    std::vector<std::unique_ptr<DiskDataMetadata>> all_metadata;
     for (size_t i = 0; i < count; i++) {
       auto metadata = allocator->Write(random_data.c_str(), random_data.size());
       EXPECT_EQ(metadata->start_offset(), static_cast<int64_t>(i * size));
@@ -44,6 +45,14 @@ class DiskDataAllocatorTest : public ::testing::Test {
   }
 
  protected:
+  void SetUp() override {
+    // On some platforms, initialization takes time, though it happens when
+    // base::ThreadTicks is used. To prevent flakiness depending on test
+    // execution ordering, force initialization.
+    if (base::ThreadTicks::IsSupported())
+      base::ThreadTicks::WaitUntilInitialized();
+  }
+
   base::test::TaskEnvironment task_environment_;
 };
 
@@ -65,8 +74,7 @@ TEST_F(DiskDataAllocatorTest, ReadWrite) {
 TEST_F(DiskDataAllocatorTest, ReadWriteDiscardMultiple) {
   InMemoryDataAllocator allocator;
 
-  std::vector<
-      std::pair<std::unique_ptr<DiskDataAllocator::Metadata>, std::string>>
+  std::vector<std::pair<std::unique_ptr<DiskDataMetadata>, std::string>>
       data_written;
 
   for (int i = 0; i < 10; i++) {
@@ -115,7 +123,7 @@ TEST_F(DiskDataAllocatorTest, CanReuseFreedChunk) {
   InMemoryDataAllocator allocator;
 
   constexpr size_t kSize = 1 << 10;
-  std::vector<std::unique_ptr<DiskDataAllocator::Metadata>> all_metadata;
+  std::vector<std::unique_ptr<DiskDataMetadata>> all_metadata;
 
   for (int i = 0; i < 10; i++) {
     std::string random_data = base::RandBytesAsString(kSize);
@@ -140,7 +148,7 @@ TEST_F(DiskDataAllocatorTest, ExactThenWorstFit) {
 
   int count = 10;
   size_t size_increment = 1000;
-  std::vector<std::unique_ptr<DiskDataAllocator::Metadata>> all_metadata;
+  std::vector<std::unique_ptr<DiskDataMetadata>> all_metadata;
 
   size_t size = 10000;
   // Allocate a bunch of random-sized
@@ -178,6 +186,8 @@ TEST_F(DiskDataAllocatorTest, FreeChunksMerging) {
 
   auto allocator = std::make_unique<InMemoryDataAllocator>();
   auto chunks = Allocate(allocator.get(), kSize, 4);
+  EXPECT_EQ(static_cast<int64_t>(4 * kSize), allocator->disk_footprint());
+  EXPECT_EQ(0u, allocator->free_chunks_size());
 
   // Layout is (indices in |chunks|):
   // | 0 | 1 | 2 | 3 |
@@ -192,9 +202,11 @@ TEST_F(DiskDataAllocatorTest, FreeChunksMerging) {
   allocator->Discard(std::move(chunks[2]));
   EXPECT_EQ(1u, allocator->FreeChunks().size());
   EXPECT_EQ(3 * kSize, allocator->FreeChunks().begin()->second);
+  EXPECT_EQ(3 * kSize, allocator->free_chunks_size());
   allocator->Discard(std::move(chunks[3]));
   EXPECT_EQ(1u, allocator->FreeChunks().size());
   EXPECT_EQ(4 * kSize, allocator->FreeChunks().begin()->second);
+  EXPECT_EQ(static_cast<int64_t>(4 * kSize), allocator->disk_footprint());
 
   allocator = std::make_unique<InMemoryDataAllocator>();
   chunks = Allocate(allocator.get(), kSize, 4);
@@ -207,6 +219,7 @@ TEST_F(DiskDataAllocatorTest, FreeChunksMerging) {
   EXPECT_EQ(2 * kSize, allocator->FreeChunks().begin()->second);
   allocator->Discard(std::move(chunks[0]));
   EXPECT_EQ(2u, allocator->FreeChunks().size());
+  EXPECT_EQ(3 * kSize, allocator->free_chunks_size());
   // Multiple merges: left, then right.
   allocator->Discard(std::move(chunks[1]));
   EXPECT_EQ(1u, allocator->FreeChunks().size());

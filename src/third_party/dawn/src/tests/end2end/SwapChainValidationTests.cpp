@@ -24,14 +24,15 @@
 
 class SwapChainValidationTests : public DawnTest {
   public:
-    void TestSetUp() override {
+    void SetUp() override {
+        DawnTest::SetUp();
         DAWN_SKIP_TEST_IF(UsesWire());
         DAWN_SKIP_TEST_IF(IsDawnValidationSkipped());
 
         glfwSetErrorCallback([](int code, const char* message) {
             dawn::ErrorLog() << "GLFW error " << code << " " << message;
         });
-        glfwInit();
+        DAWN_SKIP_TEST_IF(!glfwInit());
 
         // The SwapChainValidationTests don't create devices so we don't need to call
         // SetupGLFWWindowHintsForBackend. Set GLFW_NO_API anyway to avoid GLFW bringing up a GL
@@ -45,7 +46,7 @@ class SwapChainValidationTests : public DawnTest {
 
         goodDescriptor.width = 1;
         goodDescriptor.height = 1;
-        goodDescriptor.usage = wgpu::TextureUsage::OutputAttachment;
+        goodDescriptor.usage = wgpu::TextureUsage::RenderAttachment;
         goodDescriptor.format = wgpu::TextureFormat::BGRA8Unorm;
         goodDescriptor.presentMode = wgpu::PresentMode::Mailbox;
 
@@ -59,6 +60,7 @@ class SwapChainValidationTests : public DawnTest {
         if (window != nullptr) {
             glfwDestroyWindow(window);
         }
+        DawnTest::TearDown();
     }
 
   protected:
@@ -67,26 +69,40 @@ class SwapChainValidationTests : public DawnTest {
     wgpu::SwapChainDescriptor goodDescriptor;
     wgpu::SwapChainDescriptor badDescriptor;
 
-    // Checks that an OutputAttachment view is an error by trying to create a render pass on it.
+    // Checks that an RenderAttachment view is an error by trying to create a render pass on it.
     void CheckTextureViewIsError(wgpu::TextureView view) {
-        utils::ComboRenderPassDescriptor renderPassDesc({view});
-
-        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
-        pass.EndPass();
-        ASSERT_DEVICE_ERROR(encoder.Finish());
+        CheckTextureView(view, true, false);
     }
 
-    // Checks that an OutputAttachment view is an error by trying to create a render pass on it.
+    // Checks that an RenderAttachment view is an error by trying to submit a render pass on it.
     void CheckTextureViewIsDestroyed(wgpu::TextureView view) {
+        CheckTextureView(view, false, true);
+    }
+
+    // Checks that an OutputAttachment view is valid by submitting a render pass on it.
+    void CheckTextureViewIsValid(wgpu::TextureView view) {
+        CheckTextureView(view, false, false);
+    }
+
+  private:
+    void CheckTextureView(wgpu::TextureView view, bool errorAtFinish, bool errorAtSubmit) {
         utils::ComboRenderPassDescriptor renderPassDesc({view});
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
         pass.EndPass();
-        wgpu::CommandBuffer commands = encoder.Finish();
 
-        ASSERT_DEVICE_ERROR(queue.Submit(1, &commands));
+        if (errorAtFinish) {
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        } else {
+            wgpu::CommandBuffer commands = encoder.Finish();
+
+            if (errorAtSubmit) {
+                ASSERT_DEVICE_ERROR(queue.Submit(1, &commands));
+            } else {
+                queue.Submit(1, &commands);
+            }
+        }
     }
 };
 
@@ -133,7 +149,7 @@ TEST_P(SwapChainValidationTests, InvalidCreationSize) {
     }
 }
 
-// Checks that the creation usage must be OutputAttachment
+// Checks that the creation usage must be RenderAttachment
 TEST_P(SwapChainValidationTests, InvalidCreationUsage) {
     wgpu::SwapChainDescriptor desc = goodDescriptor;
     desc.usage = wgpu::TextureUsage::Sampled;
@@ -179,12 +195,17 @@ TEST_P(SwapChainValidationTests, PresentWithoutCurrentView) {
     ASSERT_DEVICE_ERROR(swapchain.Present());
 }
 
-// Check that the current view is in the destroyed state after the swapchain is destroyed.
-TEST_P(SwapChainValidationTests, ViewDestroyedAfterSwapChainDestruction) {
+// Check that the current view isn't destroyed when the ref to the swapchain is lost because the
+// swapchain is kept alive by the surface. Also check after we lose all refs to the surface, the
+// texture is destroyed.
+TEST_P(SwapChainValidationTests, ViewValidAfterSwapChainRefLost) {
     wgpu::SwapChain swapchain = device.CreateSwapChain(surface, &goodDescriptor);
     wgpu::TextureView view = swapchain.GetCurrentTextureView();
-    swapchain = nullptr;
 
+    swapchain = nullptr;
+    CheckTextureViewIsValid(view);
+
+    surface = nullptr;
     CheckTextureViewIsDestroyed(view);
 }
 
@@ -224,7 +245,7 @@ TEST_P(SwapChainValidationTests, ReturnedViewCharacteristics) {
     // Create a second texture to be used as render pass attachment. Validation will check that the
     // size of the view matches the size of this texture.
     wgpu::TextureDescriptor textureDesc;
-    textureDesc.usage = wgpu::TextureUsage::OutputAttachment;
+    textureDesc.usage = wgpu::TextureUsage::RenderAttachment;
     textureDesc.dimension = wgpu::TextureDimension::e2D;
     textureDesc.size = {1, 1, 1};
     textureDesc.format = wgpu::TextureFormat::R8Unorm;
@@ -236,7 +257,7 @@ TEST_P(SwapChainValidationTests, ReturnedViewCharacteristics) {
     wgpu::TextureView view = swapchain.GetCurrentTextureView();
 
     // Validation will also check the dimension of the view is 2D, and it's usage contains
-    // OutputAttachment
+    // RenderAttachment
     utils::ComboRenderPassDescriptor renderPassDesc({view, secondTexture.CreateView()});
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);

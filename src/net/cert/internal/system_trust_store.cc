@@ -11,7 +11,7 @@
 #if defined(USE_NSS_CERTS)
 #include <cert.h>
 #include <pk11pub.h>
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 #include <Security/Security.h>
 #endif
 
@@ -19,7 +19,10 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"
@@ -34,7 +37,7 @@
 #include "net/cert/internal/trust_store_nss.h"
 #include "net/cert/known_roots_nss.h"
 #include "net/cert/scoped_nss_types.h"
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 #include "net/cert/internal/trust_store_mac.h"
 #include "net/cert/x509_util_mac.h"
 #elif defined(OS_FUCHSIA)
@@ -149,7 +152,7 @@ CreateSslSystemTrustStoreNSSWithNoUserSlots() {
       trustSSL, TrustStoreNSS::DisallowTrustForCertsOnUserSlots()));
 }
 
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 
 class SystemTrustStoreMac : public BaseSystemTrustStore {
  public:
@@ -175,8 +178,12 @@ class SystemTrustStoreMac : public BaseSystemTrustStore {
     return GetGlobalTrustStoreMac()->IsKnownRoot(trust_anchor);
   }
 
+  static void InitializeTrustCacheOnWorkerThread() {
+    GetGlobalTrustStoreMac()->InitializeTrustCache();
+  }
+
  private:
-  TrustStoreMac* GetGlobalTrustStoreMac() const {
+  static TrustStoreMac* GetGlobalTrustStoreMac() {
     static base::NoDestructor<TrustStoreMac> static_trust_store_mac(
         kSecPolicyAppleSSL);
     return static_trust_store_mac.get();
@@ -185,6 +192,13 @@ class SystemTrustStoreMac : public BaseSystemTrustStore {
 
 std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
   return std::make_unique<SystemTrustStoreMac>();
+}
+
+void InitializeTrustStoreMacCache() {
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&SystemTrustStoreMac::InitializeTrustCacheOnWorkerThread));
 }
 
 #elif defined(OS_FUCHSIA)

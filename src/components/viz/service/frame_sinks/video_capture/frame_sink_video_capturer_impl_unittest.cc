@@ -4,6 +4,7 @@
 
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_impl.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -58,28 +59,23 @@ bool CompareVarsInCompositorFrameMetadata(
     float device_scale_factor,
     float page_scale_factor,
     const gfx::Vector2dF& root_scroll_offset) {
-  double dsf, psf, rso_x, rso_y;
-  bool valid = true;
+  auto dsf = frame.metadata()->device_scale_factor;
+  auto psf = frame.metadata()->page_scale_factor;
+  auto rso_x = frame.metadata()->root_scroll_offset_x;
+  auto rso_y = frame.metadata()->root_scroll_offset_y;
 
-  valid &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::DEVICE_SCALE_FACTOR, &dsf);
-  valid &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::PAGE_SCALE_FACTOR, &psf);
-  valid &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_X, &rso_x);
-  valid &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_Y, &rso_y);
+  bool valid = dsf.has_value() && psf.has_value() && rso_x.has_value() &&
+               rso_y.has_value();
 
-  return valid && dsf == device_scale_factor && psf == page_scale_factor &&
-         gfx::Vector2dF(rso_x, rso_y) == root_scroll_offset;
+  return valid && *dsf == device_scale_factor && *psf == page_scale_factor &&
+         gfx::Vector2dF(*rso_x, *rso_y) == root_scroll_offset;
 }
 
 // Dummy frame sink ID.
 constexpr FrameSinkId kFrameSinkId = FrameSinkId(1, 1);
 
 // The compositor frame interval.
-constexpr base::TimeDelta kVsyncInterval =
-    base::TimeDelta::FromSecondsD(1.0 / 60.0);
+constexpr auto kVsyncInterval = base::TimeDelta::FromSeconds(1) / 60;
 
 const struct SizeSet {
   // The size of the compositor frame sink's Surface.
@@ -107,7 +103,11 @@ struct YUVColor {
 
 // Forces any pending Mojo method calls between the capturer and consumer to be
 // made.
-void PropagateMojoTasks() {
+void PropagateMojoTasks(
+    scoped_refptr<base::TestMockTimeTaskRunner> runner = nullptr) {
+  if (runner) {
+    runner->RunUntilIdle();
+  }
   base::RunLoop().RunUntilIdle();
 }
 
@@ -171,7 +171,7 @@ class MockConsumer : public mojom::FrameSinkVideoConsumer {
             const_cast<uint8_t*>(static_cast<const uint8_t*>(mapping.memory())),
             mapping.size(), info->timestamp);
     ASSERT_TRUE(frame);
-    frame->metadata()->MergeInternalValuesFrom(info->metadata);
+    frame->set_metadata(info->metadata);
     if (info->color_space.has_value())
       frame->set_color_space(info->color_space.value());
 
@@ -288,7 +288,11 @@ class FakeCapturableFrameSink : public CapturableFrameSink {
   void SendCopyOutputResult(int offset) {
     auto it = results_.begin() + offset;
     std::move(*it).Run();
-    PropagateMojoTasks();
+    PropagateMojoTasks(task_runner_);
+  }
+
+  void set_task_runner(scoped_refptr<base::TestMockTimeTaskRunner> runner) {
+    task_runner_ = std::move(runner);
   }
 
  private:
@@ -296,6 +300,7 @@ class FakeCapturableFrameSink : public CapturableFrameSink {
   YUVColor color_ = {0xde, 0xad, 0xbf};
   SizeSet size_set_;
   CompositorFrameMetadata metadata_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 
   std::vector<base::OnceClosure> results_;
 };
@@ -393,6 +398,10 @@ class FrameSinkVideoCapturerTest : public testing::Test {
     start_time_ = task_runner_->NowTicks();
     capturer_->clock_ = task_runner_->GetMockTickClock();
 
+    // Ensure any posted tasks for CopyOutputResults will be handled when
+    // PropagateMojoTasks() is called
+    frame_sink_.set_task_runner(task_runner_);
+
     // Replace the retry timer with one that uses this test's fake clock and
     // task runner.
     capturer_->refresh_frame_retry_timer_.emplace(
@@ -435,8 +444,7 @@ class FrameSinkVideoCapturerTest : public testing::Test {
 
   base::TimeTicks GetNextVsync() const {
     const auto now = task_runner_->NowTicks();
-    const auto num_vsyncs_elapsed = (now - start_time_) / kVsyncInterval;
-    return start_time_ + (num_vsyncs_elapsed + 1) * kVsyncInterval;
+    return now + kVsyncInterval - ((now - start_time_) % kVsyncInterval);
   }
 
   void AdvanceClockToNextVsync() {
@@ -642,26 +650,15 @@ TEST_F(FrameSinkVideoCapturerTest, CapturesCompositedFrames) {
     EXPECT_LT(last_timestamp, frame->timestamp());
     last_timestamp = frame->timestamp();
     const VideoFrameMetadata* metadata = frame->metadata();
-    base::TimeTicks capture_begin_time;
-    EXPECT_TRUE(metadata->GetTimeTicks(VideoFrameMetadata::CAPTURE_BEGIN_TIME,
-                                       &capture_begin_time));
-    EXPECT_EQ(expected_capture_begin_time, capture_begin_time);
-    base::TimeTicks capture_end_time;
-    EXPECT_TRUE(metadata->GetTimeTicks(VideoFrameMetadata::CAPTURE_END_TIME,
-                                       &capture_end_time));
-    EXPECT_EQ(expected_capture_end_time, capture_end_time);
+    EXPECT_EQ(expected_capture_begin_time, *metadata->capture_begin_time);
+    EXPECT_EQ(expected_capture_end_time, *metadata->capture_end_time);
     EXPECT_EQ(gfx::ColorSpace::CreateREC709(), frame->ColorSpace());
-    EXPECT_TRUE(metadata->HasKey(VideoFrameMetadata::FRAME_DURATION));
-    // FRAME_DURATION is an estimate computed by the VideoCaptureOracle, so it
+    // frame_duration is an estimate computed by the VideoCaptureOracle, so it
     // its exact value is not being checked here.
-    double frame_rate = 0.0;
-    EXPECT_TRUE(
-        metadata->GetDouble(VideoFrameMetadata::FRAME_RATE, &frame_rate));
-    EXPECT_NEAR(media::limits::kMaxFramesPerSecond, frame_rate, 0.001);
-    base::TimeTicks reference_time;
-    EXPECT_TRUE(metadata->GetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
-                                       &reference_time));
-    EXPECT_EQ(expected_reference_time, reference_time);
+    EXPECT_TRUE(metadata->frame_duration.has_value());
+    EXPECT_NEAR(media::limits::kMaxFramesPerSecond, *metadata->frame_rate,
+                0.001);
+    EXPECT_EQ(expected_reference_time, *metadata->reference_time);
 
     // Notify the capturer that the consumer is done with the frame.
     consumer.SendDoneNotification(i);
@@ -1150,14 +1147,10 @@ TEST_F(FrameSinkVideoCapturerTest, DeliversUpdateRectAndCaptureCounter) {
   EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
   {
     auto received_frame = consumer.TakeFrame(cur_frame_index);
-    gfx::Rect received_update_rect;
-    int received_capture_counter = 0;
-    ASSERT_TRUE(received_frame->metadata()->GetInteger(
-        media::VideoFrameMetadata::CAPTURE_COUNTER, &received_capture_counter));
-    ASSERT_TRUE(received_frame->metadata()->GetRect(
-        media::VideoFrameMetadata::CAPTURE_UPDATE_RECT, &received_update_rect));
-    EXPECT_EQ(gfx::Rect(size_set().capture_size), received_update_rect);
-    previous_capture_counter_received = received_capture_counter;
+    EXPECT_EQ(gfx::Rect(size_set().capture_size),
+              received_frame->metadata()->capture_update_rect);
+    previous_capture_counter_received =
+        *received_frame->metadata()->capture_counter;
   }
   consumer.SendDoneNotification(cur_frame_index);
 
@@ -1184,13 +1177,9 @@ TEST_F(FrameSinkVideoCapturerTest, DeliversUpdateRectAndCaptureCounter) {
   EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
   {
     auto received_frame = consumer.TakeFrame(++cur_frame_index);
-    int received_capture_counter = 0;
-    gfx::Rect received_update_rect;
-    ASSERT_TRUE(received_frame->metadata()->GetInteger(
-        media::VideoFrameMetadata::CAPTURE_COUNTER, &received_capture_counter));
-    ASSERT_TRUE(received_frame->metadata()->GetRect(
-        media::VideoFrameMetadata::CAPTURE_UPDATE_RECT, &received_update_rect));
-    EXPECT_EQ(expected_frame_update_rect, received_update_rect);
+    int received_capture_counter = *received_frame->metadata()->capture_counter;
+    EXPECT_EQ(expected_frame_update_rect,
+              *received_frame->metadata()->capture_update_rect);
     EXPECT_EQ(previous_capture_counter_received + 1, received_capture_counter);
     previous_capture_counter_received = received_capture_counter;
   }
@@ -1206,13 +1195,8 @@ TEST_F(FrameSinkVideoCapturerTest, DeliversUpdateRectAndCaptureCounter) {
   EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
   {
     auto received_frame = consumer.TakeFrame(++cur_frame_index);
-    int received_capture_counter = 0;
-    gfx::Rect received_update_rect;
-    ASSERT_TRUE(received_frame->metadata()->GetInteger(
-        media::VideoFrameMetadata::CAPTURE_COUNTER, &received_capture_counter));
-    ASSERT_TRUE(received_frame->metadata()->GetRect(
-        media::VideoFrameMetadata::CAPTURE_UPDATE_RECT, &received_update_rect));
-    EXPECT_TRUE(received_update_rect.IsEmpty());
+    int received_capture_counter = *received_frame->metadata()->capture_counter;
+    EXPECT_TRUE(received_frame->metadata()->capture_update_rect->IsEmpty());
     EXPECT_EQ(previous_capture_counter_received + 1, received_capture_counter);
     previous_capture_counter_received = received_capture_counter;
   }
@@ -1229,13 +1213,9 @@ TEST_F(FrameSinkVideoCapturerTest, DeliversUpdateRectAndCaptureCounter) {
   EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
   {
     auto received_frame = consumer.TakeFrame(++cur_frame_index);
-    int received_capture_counter = 0;
-    gfx::Rect received_update_rect;
-    ASSERT_TRUE(received_frame->metadata()->GetInteger(
-        media::VideoFrameMetadata::CAPTURE_COUNTER, &received_capture_counter));
-    ASSERT_TRUE(received_frame->metadata()->GetRect(
-        media::VideoFrameMetadata::CAPTURE_UPDATE_RECT, &received_update_rect));
-    EXPECT_EQ(gfx::Rect(size_set().capture_size), received_update_rect);
+    int received_capture_counter = *received_frame->metadata()->capture_counter;
+    EXPECT_EQ(gfx::Rect(size_set().capture_size),
+              *received_frame->metadata()->capture_update_rect);
     EXPECT_EQ(previous_capture_counter_received + 1, received_capture_counter);
     previous_capture_counter_received = received_capture_counter;
   }
@@ -1252,13 +1232,9 @@ TEST_F(FrameSinkVideoCapturerTest, DeliversUpdateRectAndCaptureCounter) {
   EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
   {
     auto received_frame = consumer.TakeFrame(++cur_frame_index);
-    int received_capture_counter = 0;
-    gfx::Rect received_update_rect;
-    ASSERT_TRUE(received_frame->metadata()->GetInteger(
-        media::VideoFrameMetadata::CAPTURE_COUNTER, &received_capture_counter));
-    ASSERT_TRUE(received_frame->metadata()->GetRect(
-        media::VideoFrameMetadata::CAPTURE_UPDATE_RECT, &received_update_rect));
-    EXPECT_EQ(gfx::Rect(size_set().capture_size), received_update_rect);
+    int received_capture_counter = *received_frame->metadata()->capture_counter;
+    EXPECT_EQ(gfx::Rect(size_set().capture_size),
+              *received_frame->metadata()->capture_update_rect);
     EXPECT_EQ(previous_capture_counter_received + 1, received_capture_counter);
     previous_capture_counter_received = received_capture_counter;
   }
@@ -1286,14 +1262,10 @@ TEST_F(FrameSinkVideoCapturerTest, CaptureCounterSkipsWhenFramesAreDropped) {
   EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
   {
     auto received_frame = consumer.TakeFrame(cur_receive_frame_index);
-    int received_capture_counter = 0;
-    gfx::Rect received_update_rect;
-    ASSERT_TRUE(received_frame->metadata()->GetInteger(
-        media::VideoFrameMetadata::CAPTURE_COUNTER, &received_capture_counter));
-    ASSERT_TRUE(received_frame->metadata()->GetRect(
-        media::VideoFrameMetadata::CAPTURE_UPDATE_RECT, &received_update_rect));
-    EXPECT_EQ(gfx::Rect(size_set().capture_size), received_update_rect);
-    previous_capture_counter_received = received_capture_counter;
+    EXPECT_EQ(gfx::Rect(size_set().capture_size),
+              *received_frame->metadata()->capture_update_rect);
+    previous_capture_counter_received =
+        *received_frame->metadata()->capture_counter;
   }
   consumer.SendDoneNotification(cur_receive_frame_index);
 
@@ -1318,10 +1290,8 @@ TEST_F(FrameSinkVideoCapturerTest, CaptureCounterSkipsWhenFramesAreDropped) {
   EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
   {
     auto received_frame = consumer.TakeFrame(++cur_receive_frame_index);
-    int received_capture_counter = 0;
-    ASSERT_TRUE(received_frame->metadata()->GetInteger(
-        media::VideoFrameMetadata::CAPTURE_COUNTER, &received_capture_counter));
-    EXPECT_NE(previous_capture_counter_received + 1, received_capture_counter);
+    EXPECT_NE(previous_capture_counter_received + 1,
+              *received_frame->metadata()->capture_counter);
   }
   StopCapture();
 }

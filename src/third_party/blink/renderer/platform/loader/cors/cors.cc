@@ -277,7 +277,7 @@ bool CheckIfRequestCanSkipPreflight(
 // This is the same as that function except using KURL and SecurityOrigin
 // instead of GURL and url::Origin. We can't combine them because converting
 // SecurityOrigin to url::Origin loses information about origins that are
-// whitelisted by SecurityPolicy.
+// allowed by SecurityPolicy.
 //
 // This function also doesn't use a |tainted_origin| flag because Blink loaders
 // mutate the origin instead of using such a flag.
@@ -352,6 +352,13 @@ Vector<String> CorsUnsafeRequestHeaderNames(const HTTPHeaderMap& headers) {
 
   Vector<String> header_names;
   for (const auto& name : network::cors::CorsUnsafeRequestHeaderNames(in))
+    header_names.push_back(WebString::FromLatin1(name));
+  return header_names;
+}
+
+PLATFORM_EXPORT Vector<String> PrivilegedNoCorsHeaderNames() {
+  Vector<String> header_names;
+  for (const auto& name : network::cors::PrivilegedNoCorsHeaderNames())
     header_names.push_back(WebString::FromLatin1(name));
   return header_names;
 }
@@ -457,18 +464,18 @@ bool IsCorsSafelistedResponseHeader(const String& name) {
 // No-CORS mode is highly discouraged from using it for new features. Only
 // legacy usages for backward compatibility are allowed except for well-designed
 // usages over the fetch API.
-bool IsNoCorsAllowedContext(mojom::RequestContextType context) {
+bool IsNoCorsAllowedContext(mojom::blink::RequestContextType context) {
   switch (context) {
-    case mojom::RequestContextType::AUDIO:
-    case mojom::RequestContextType::FAVICON:
-    case mojom::RequestContextType::FETCH:
-    case mojom::RequestContextType::IMAGE:
-    case mojom::RequestContextType::OBJECT:
-    case mojom::RequestContextType::PLUGIN:
-    case mojom::RequestContextType::SCRIPT:
-    case mojom::RequestContextType::SHARED_WORKER:
-    case mojom::RequestContextType::VIDEO:
-    case mojom::RequestContextType::WORKER:
+    case mojom::blink::RequestContextType::AUDIO:
+    case mojom::blink::RequestContextType::FAVICON:
+    case mojom::blink::RequestContextType::FETCH:
+    case mojom::blink::RequestContextType::IMAGE:
+    case mojom::blink::RequestContextType::OBJECT:
+    case mojom::blink::RequestContextType::PLUGIN:
+    case mojom::blink::RequestContextType::SCRIPT:
+    case mojom::blink::RequestContextType::SHARED_WORKER:
+    case mojom::blink::RequestContextType::VIDEO:
+    case mojom::blink::RequestContextType::WORKER:
       return true;
     default:
       return false;

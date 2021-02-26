@@ -2,6 +2,8 @@
 // Copyright (c) 2017 Valve Corporation
 // Copyright (c) 2017 LunarG, Inc.
 //
+// SPDX-License-Identifier: Apache-2.0
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -23,6 +25,7 @@
 #include "platform_utils.hpp"
 
 #include <cstring>
+#include <string>
 
 #if defined DISABLE_STD_FILESYSTEM
 #define USE_EXPERIMENTAL_FS 0
@@ -87,6 +90,7 @@
 #if defined(XR_USE_PLATFORM_WIN32)
 #define PATH_SEPARATOR ';'
 #define DIRECTORY_SYMBOL '\\'
+#define ALTERNATE_DIRECTORY_SYMBOL '/'
 #else
 #define PATH_SEPARATOR ':'
 #define DIRECTORY_SYMBOL '/'
@@ -169,10 +173,12 @@ bool FileSysUtilsPathExists(const std::string& path) {
 }
 
 bool FileSysUtilsIsAbsolutePath(const std::string& path) {
-    if ((path[0] == '\\') || (path[1] == ':' && (path[2] == '\\' || path[2] == '/'))) {
-        return true;
-    }
-    return false;
+    bool pathStartsWithDir = (path.size() >= 1) && ((path[0] == DIRECTORY_SYMBOL) || (path[0] == ALTERNATE_DIRECTORY_SYMBOL));
+
+    bool pathStartsWithDrive =
+        (path.size() >= 3) && (path[1] == ':' && (path[2] == DIRECTORY_SYMBOL || path[2] == ALTERNATE_DIRECTORY_SYMBOL));
+
+    return pathStartsWithDir || pathStartsWithDrive;
 }
 
 bool FileSysUtilsGetCurrentPath(std::string& path) {
@@ -187,8 +193,8 @@ bool FileSysUtilsGetCurrentPath(std::string& path) {
 bool FileSysUtilsGetParentPath(const std::string& file_path, std::string& parent_path) {
     std::string full_path;
     if (FileSysUtilsGetAbsolutePath(file_path, full_path)) {
-        std::string::size_type lastSeperator = full_path.find_last_of(DIRECTORY_SYMBOL);
-        parent_path = (lastSeperator == 0) ? full_path : full_path.substr(0, lastSeperator);
+        std::string::size_type lastSeparator = full_path.find_last_of(DIRECTORY_SYMBOL);
+        parent_path = (lastSeparator == 0) ? full_path : full_path.substr(0, lastSeparator);
         return true;
     }
     return false;
@@ -210,7 +216,7 @@ bool FileSysUtilsCombinePaths(const std::string& parent, const std::string& chil
         return true;
     }
     char last_char = parent[parent_len - 1];
-    if (last_char == DIRECTORY_SYMBOL) {
+    if ((last_char == DIRECTORY_SYMBOL) || (last_char == ALTERNATE_DIRECTORY_SYMBOL)) {
         parent_len--;
     }
     combined = parent.substr(0, parent_len) + DIRECTORY_SYMBOL + child;
@@ -278,8 +284,8 @@ bool FileSysUtilsGetCurrentPath(std::string& path) {
 bool FileSysUtilsGetParentPath(const std::string& file_path, std::string& parent_path) {
     std::string full_path;
     if (FileSysUtilsGetAbsolutePath(file_path, full_path)) {
-        std::string::size_type lastSeperator = full_path.find_last_of(DIRECTORY_SYMBOL);
-        parent_path = (lastSeperator == 0) ? full_path : full_path.substr(0, lastSeperator);
+        std::string::size_type lastSeparator = full_path.find_last_of(DIRECTORY_SYMBOL);
+        parent_path = (lastSeparator == 0) ? full_path : full_path.substr(0, lastSeparator);
         return true;
     }
     return false;

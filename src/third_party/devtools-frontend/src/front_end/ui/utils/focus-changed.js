@@ -31,9 +31,10 @@ function WidgetfocusWidgetForNode(node) {
  */
 function XWidgetfocusWidgetForNode(node) {
   node = node && node.parentNodeOrShadowHost();
+  const XWidgetCtor = customElements.get('x-widget');
   let widget = null;
   while (node) {
-    if (node instanceof self.XWidget) {
+    if (node instanceof XWidgetCtor) {
       if (widget) {
         node._defaultFocusedElement = widget;
       }
@@ -51,14 +52,4 @@ export function focusChanged(event) {
   const element = document ? document.deepActiveElement() : null;
   WidgetfocusWidgetForNode(element);
   XWidgetfocusWidgetForNode(element);
-  if (!UI._keyboardFocus) {
-    return;
-  }
-
-  markAsFocusedByKeyboard(element);
-}
-
-export function markAsFocusedByKeyboard(element) {
-  element.setAttribute('data-keyboard-focus', 'true');
-  element.addEventListener('blur', () => element.removeAttribute('data-keyboard-focus'), {once: true, capture: true});
 }

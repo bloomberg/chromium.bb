@@ -32,22 +32,22 @@ TEST_TIMEOUT_S = 330  # 5m 30s
 
 def DepotToolsPylint(input_api, output_api):
   """Gather all the pylint logic into one place to make it self-contained."""
-  white_list = [
+  files_to_check = [
     r'^[^/]*\.py$',
     r'^testing_support/[^/]*\.py$',
     r'^tests/[^/]*\.py$',
     r'^recipe_modules/.*\.py$',  # Allow recursive search in recipe modules.
   ]
-  black_list = list(input_api.DEFAULT_BLACK_LIST)
+  files_to_skip = list(input_api.DEFAULT_FILES_TO_SKIP)
   if os.path.exists('.gitignore'):
     with open('.gitignore') as fh:
       lines = [l.strip() for l in fh.readlines()]
-      black_list.extend([fnmatch.translate(l) for l in lines if
+      files_to_skip.extend([fnmatch.translate(l) for l in lines if
                          l and not l.startswith('#')])
   if os.path.exists('.git/info/exclude'):
     with open('.git/info/exclude') as fh:
       lines = [l.strip() for l in fh.readlines()]
-      black_list.extend([fnmatch.translate(l) for l in lines if
+      files_to_skip.extend([fnmatch.translate(l) for l in lines if
                          l and not l.startswith('#')])
   disabled_warnings = [
     'R0401',  # Cyclic import
@@ -56,12 +56,12 @@ def DepotToolsPylint(input_api, output_api):
   return input_api.canned_checks.GetPylint(
       input_api,
       output_api,
-      white_list=white_list,
-      black_list=black_list,
+      files_to_check=files_to_check,
+      files_to_skip=files_to_skip,
       disabled_warnings=disabled_warnings)
 
 
-def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
+def CommonChecks(input_api, output_api, tests_to_skip_list, run_on_python3):
   input_api.SetTimeout(TEST_TIMEOUT_S)
 
   results = []
@@ -72,10 +72,10 @@ def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
       input_api, output_api))
 
   # Run only selected tests on Windows.
-  tests_to_white_list = [r'.*test\.py$']
+  test_to_run_list = [r'.*test\.py$']
   if input_api.platform.startswith(('cygwin', 'win32')):
     print('Warning: skipping most unit tests on Windows')
-    tests_to_black_list = [
+    tests_to_skip_list = [
         r'.*auth_test\.py$',
         r'.*git_common_test\.py$',
         r'.*git_hyper_blame_test\.py$',
@@ -91,8 +91,8 @@ def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
       input_api,
       output_api,
       'tests',
-      whitelist=tests_to_white_list,
-      blacklist=tests_to_black_list,
+      files_to_check=test_to_run_list,
+      files_to_skip=tests_to_skip_list,
       run_on_python3=run_on_python3))
 
   # Validate CIPD manifests.
@@ -131,14 +131,14 @@ def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
 
 def CheckChangeOnUpload(input_api, output_api):
   # Do not run integration tests on upload since they are way too slow.
-  tests_to_black_list = [
+  tests_to_skip_list = [
       r'^checkout_test\.py$',
       r'^cipd_bootstrap_test\.py$',
       r'^gclient_smoketest\.py$',
   ]
   # TODO(ehmaldonado): Run Python 3 tests on upload once Python 3 is
   # bootstrapped on Linux and Mac.
-  return CommonChecks(input_api, output_api, tests_to_black_list, False)
+  return CommonChecks(input_api, output_api, tests_to_skip_list, False)
 
 
 def CheckChangeOnCommit(input_api, output_api):

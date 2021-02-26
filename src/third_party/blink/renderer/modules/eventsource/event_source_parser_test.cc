@@ -37,8 +37,6 @@ struct EventOrReconnectionTimeSetting {
 
 class Client : public GarbageCollected<Client>,
                public EventSourceParser::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(Client);
-
  public:
   ~Client() override = default;
   const Vector<EventOrReconnectionTimeSetting>& Events() const {
@@ -59,8 +57,6 @@ class Client : public GarbageCollected<Client>,
 
 class StoppingClient : public GarbageCollected<StoppingClient>,
                        public EventSourceParser::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(StoppingClient);
-
  public:
   ~StoppingClient() override = default;
   const Vector<EventOrReconnectionTimeSetting>& Events() const {
@@ -77,7 +73,7 @@ class StoppingClient : public GarbageCollected<StoppingClient>,
     events_.push_back(EventOrReconnectionTimeSetting(reconnection_time));
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(parser_);
     EventSourceParser::Client::Trace(visitor);
   }

@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
@@ -27,6 +27,7 @@
 #include "base/test/scoped_field_trial_list_resetter.h"
 #include "components/variations/client_filterable_state.h"
 #include "components/variations/processed_study.h"
+#include "components/variations/proto/study.pb.h"
 #include "components/variations/study_filtering.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -128,26 +129,28 @@ class VariationsSeedProcessorTest : public ::testing::Test {
   }
 
   bool CreateTrialFromStudy(const Study& study) {
+    base::MockEntropyProvider mock_low_entropy_provider(0.9);
     return CreateTrialFromStudyWithFeatureListAndEntropyOverride(
-        study, nullptr, base::FeatureList::GetInstance());
+        study, mock_low_entropy_provider, base::FeatureList::GetInstance());
   }
 
   bool CreateTrialFromStudyWithEntropyOverride(
       const Study& study,
-      const base::FieldTrial::EntropyProvider* override_entropy_provider) {
+      const base::FieldTrial::EntropyProvider& override_entropy_provider) {
     return CreateTrialFromStudyWithFeatureListAndEntropyOverride(
         study, override_entropy_provider, base::FeatureList::GetInstance());
   }
 
   bool CreateTrialFromStudyWithFeatureList(const Study& study,
                                            base::FeatureList* feature_list) {
-    return CreateTrialFromStudyWithFeatureListAndEntropyOverride(study, nullptr,
-                                                                 feature_list);
+    base::MockEntropyProvider mock_low_entropy_provider(0.9);
+    return CreateTrialFromStudyWithFeatureListAndEntropyOverride(
+        study, mock_low_entropy_provider, feature_list);
   }
 
   bool CreateTrialFromStudyWithFeatureListAndEntropyOverride(
       const Study& study,
-      const base::FieldTrial::EntropyProvider* override_entropy_provider,
+      const base::FieldTrial::EntropyProvider& override_entropy_provider,
       base::FeatureList* feature_list) {
     ProcessedStudy processed_study;
     const bool is_expired = internal::IsStudyExpired(study, base::Time::Now());
@@ -177,8 +180,25 @@ TEST_F(VariationsSeedProcessorTest, AllowForceGroupAndVariationId) {
   EXPECT_EQ(kFlagGroup1Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
 
-  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, kFlagStudyName,
-                                        kFlagGroup1Name);
+  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES_ANY_CONTEXT,
+                                        kFlagStudyName, kFlagGroup1Name);
+  EXPECT_EQ(kExperimentId, id);
+}
+
+TEST_F(VariationsSeedProcessorTest, AllowForceGroupAndVariationId_FirstParty) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+
+  Study study = CreateStudyWithFlagGroups(100, 0, 0);
+  Study_Experiment* experiment1 = study.mutable_experiment(1);
+  experiment1->set_google_web_experiment_id(kExperimentId);
+  experiment1->set_google_web_visibility(Study_GoogleWebVisibility_FIRST_PARTY);
+
+  EXPECT_TRUE(CreateTrialFromStudy(study));
+  EXPECT_EQ(kFlagGroup1Name,
+            base::FieldTrialList::FindFullName(kFlagStudyName));
+
+  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES_FIRST_PARTY,
+                                        kFlagStudyName, kFlagGroup1Name);
   EXPECT_EQ(kExperimentId, id);
 }
 
@@ -271,9 +291,10 @@ TEST_F(VariationsSeedProcessorTest,
 
     base::FeatureList feature_list;
     study1->set_expiry_date(TimeToProtoTime(year_ago));
-    seed_processor.CreateTrialsFromSeed(seed, client_state,
-                                        override_callback_.callback(), nullptr,
-                                        &feature_list);
+    base::MockEntropyProvider mock_low_entropy_provider(0.9);
+    seed_processor.CreateTrialsFromSeed(
+        seed, client_state, override_callback_.callback(),
+        mock_low_entropy_provider, &feature_list);
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 
@@ -286,9 +307,10 @@ TEST_F(VariationsSeedProcessorTest,
     base::FeatureList feature_list;
     study1->clear_expiry_date();
     study2->set_expiry_date(TimeToProtoTime(year_ago));
-    seed_processor.CreateTrialsFromSeed(seed, client_state,
-                                        override_callback_.callback(), nullptr,
-                                        &feature_list);
+    base::MockEntropyProvider mock_low_entropy_provider(0.9);
+    seed_processor.CreateTrialsFromSeed(
+        seed, client_state, override_callback_.callback(),
+        mock_low_entropy_provider, &feature_list);
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 }
@@ -542,9 +564,10 @@ TEST_F(VariationsSeedProcessorTest, StartsActive) {
   client_state.platform = Study::PLATFORM_ANDROID;
 
   VariationsSeedProcessor seed_processor;
-  seed_processor.CreateTrialsFromSeed(seed, client_state,
-                                      override_callback_.callback(), nullptr,
-                                      base::FeatureList::GetInstance());
+  base::MockEntropyProvider mock_low_entropy_provider(0.9);
+  seed_processor.CreateTrialsFromSeed(
+      seed, client_state, override_callback_.callback(),
+      mock_low_entropy_provider, base::FeatureList::GetInstance());
 
   // Non-specified and ACTIVATE_ON_QUERY should not start active, but
   // ACTIVATE_ON_STARTUP should.
@@ -593,8 +616,8 @@ TEST_F(VariationsSeedProcessorTest, ForcingFlagAlreadyForced) {
 
   // Check that params and experiment ids correspond.
   EXPECT_EQ("y", GetVariationParamValue(study.name(), "x"));
-  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, kFlagStudyName,
-                                        kNonFlagGroupName);
+  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES_ANY_CONTEXT,
+                                        kFlagStudyName, kNonFlagGroupName);
   EXPECT_EQ(kExperimentId, id);
 }
 
@@ -961,9 +984,9 @@ TEST_F(VariationsSeedProcessorTest, LowEntropyStudyTest) {
   base::MockEntropyProvider mock_low_entropy_provider(0.9);
 
   EXPECT_TRUE(CreateTrialFromStudyWithEntropyOverride(
-      *study1, &mock_low_entropy_provider));
+      *study1, mock_low_entropy_provider));
   EXPECT_TRUE(CreateTrialFromStudyWithEntropyOverride(
-      *study2, &mock_low_entropy_provider));
+      *study2, mock_low_entropy_provider));
 
   // Since no experiment in study1 sends experiment IDs, it will use the high
   // entropy provider, which selects the non-default group.

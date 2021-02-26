@@ -9,7 +9,7 @@
   function collectMessages(message) {
     messages.push(message);
   }
-  Protocol.test.dumpProtocol = collectMessages;
+  ProtocolClient.test.dumpProtocol = collectMessages;
   messages.push('--> SDK.targetManager.suspendAllTargets();');
   await SDK.targetManager.suspendAllTargets();
   messages.push('');
@@ -17,11 +17,17 @@
   await SDK.targetManager.resumeAllTargets();
   messages.push('');
   messages.push('--> done');
-  Protocol.test.dumpProtocol = null;
+  ProtocolClient.test.dumpProtocol = null;
   for (var i = 0; i < messages.length; ++i) {
     var message = messages[i];
     if (message.startsWith('backend'))
       continue;
+    // Manually remove "Grid" because CSS Grid is still experimental but enabled by default
+    // see: https://crrev.com/c/2416525
+    // TODO: remove this and update test expectations once CSS Grid is non-experimental
+    if (message.includes('setShowGridOverlays')) {
+      continue;
+    }
     message = message.replace(/"id":\d+,/, '"id":<number>,');
     TestRunner.addResult(message);
   }

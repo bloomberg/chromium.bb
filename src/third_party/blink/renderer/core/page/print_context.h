@@ -91,10 +91,10 @@ class CORE_EXPORT PrintContext : public GarbageCollected<PrintContext> {
                                   const FloatSize& page_size_in_pixels);
   static String PageProperty(LocalFrame*,
                              const char* property_name,
-                             int page_number);
-  static bool IsPageBoxVisible(LocalFrame*, int page_number);
+                             uint32_t page_number);
+  static bool IsPageBoxVisible(LocalFrame*, uint32_t page_number);
   static String PageSizeAndMarginsInPixels(LocalFrame*,
-                                           int page_number,
+                                           uint32_t page_number,
                                            int width,
                                            int height,
                                            int margin_top,
@@ -103,7 +103,7 @@ class CORE_EXPORT PrintContext : public GarbageCollected<PrintContext> {
                                            int margin_left);
   static int NumberOfPages(LocalFrame*, const FloatSize& page_size_in_pixels);
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   bool use_printing_layout() const;
 
@@ -128,7 +128,7 @@ class CORE_EXPORT PrintContext : public GarbageCollected<PrintContext> {
   // True when printing layout needs to be applied.
   bool use_printing_layout_;
 
-  HeapHashMap<String, Member<Element>> linked_destinations_;
+  HeapHashMap<String, Member<Node>> linked_destinations_;
   bool linked_destinations_valid_;
 };
 

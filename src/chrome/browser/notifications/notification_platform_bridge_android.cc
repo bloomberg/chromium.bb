@@ -17,16 +17,16 @@
 #include "base/notreached.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/android/chrome_jni_headers/ActionInfo_jni.h"
 #include "chrome/android/chrome_jni_headers/NotificationPlatformBridge_jni.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -65,7 +65,7 @@ ScopedJavaLocalRef<jobject> JNI_NotificationPlatformBridge_ConvertToJavaBitmap(
   SkBitmap skbitmap = icon.AsBitmap();
   ScopedJavaLocalRef<jobject> j_bitmap;
   if (!skbitmap.drawsNothing())
-    j_bitmap = gfx::ConvertToJavaBitmap(&skbitmap);
+    j_bitmap = gfx::ConvertToJavaBitmap(skbitmap);
   return j_bitmap;
 }
 
@@ -277,6 +277,8 @@ void NotificationPlatformBridgeAndroid::Display(
       ConvertUTF8ToJavaString(env, notification.id());
   ScopedJavaLocalRef<jstring> j_origin =
       ConvertUTF8ToJavaString(env, origin_url.spec());
+  ScopedJavaLocalRef<jobject> android_profile =
+      ProfileAndroid::FromProfile(profile)->GetJavaObject();
   ScopedJavaLocalRef<jstring> title =
       ConvertUTF16ToJavaString(env, notification.title());
   ScopedJavaLocalRef<jstring> body =
@@ -285,17 +287,17 @@ void NotificationPlatformBridgeAndroid::Display(
   ScopedJavaLocalRef<jobject> image;
   SkBitmap image_bitmap = notification.image().AsBitmap();
   if (!image_bitmap.drawsNothing())
-    image = gfx::ConvertToJavaBitmap(&image_bitmap);
+    image = gfx::ConvertToJavaBitmap(image_bitmap);
 
   ScopedJavaLocalRef<jobject> notification_icon;
   SkBitmap notification_icon_bitmap = notification.icon().AsBitmap();
   if (!notification_icon_bitmap.drawsNothing())
-    notification_icon = gfx::ConvertToJavaBitmap(&notification_icon_bitmap);
+    notification_icon = gfx::ConvertToJavaBitmap(notification_icon_bitmap);
 
   ScopedJavaLocalRef<jobject> badge;
   SkBitmap badge_bitmap = notification.small_image().AsBitmap();
   if (!badge_bitmap.drawsNothing())
-    badge = gfx::ConvertToJavaBitmap(&badge_bitmap);
+    badge = gfx::ConvertToJavaBitmap(badge_bitmap);
 
   ScopedJavaLocalRef<jobjectArray> actions =
       ConvertToJavaActionInfos(notification.buttons());
@@ -310,7 +312,7 @@ void NotificationPlatformBridgeAndroid::Display(
 
   Java_NotificationPlatformBridge_displayNotification(
       env, java_object_, j_notification_id, j_notification_type, j_origin,
-      j_scope_url, j_profile_id, profile->IsOffTheRecord(), title, body, image,
+      j_scope_url, j_profile_id, android_profile, title, body, image,
       notification_icon, badge, vibration_pattern,
       notification.timestamp().ToJavaTime(), notification.renotify(),
       notification.silent(), actions);
@@ -359,8 +361,8 @@ void NotificationPlatformBridgeAndroid::GetDisplayed(
     Profile* profile,
     GetDisplayedNotificationsCallback callback) const {
   std::set<std::string> displayed_notifications;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), std::move(displayed_notifications),
                      false /* supports_synchronization */));
 }

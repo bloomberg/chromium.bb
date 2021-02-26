@@ -1,15 +1,14 @@
 <style include="cr-hidden-style">
   :host {
     display: flex;
-    height: -webkit-fill-available;
   }
 
   #container {
     padding: 4px;
   }
 
-  ntp-grid {
-    --ntp-grid-gap: 8px;
+  cr-grid {
+    --cr-grid-gap: 8px;
   }
 
   .tile {
@@ -17,7 +16,7 @@
     outline-width: 0;
   }
 
-  ntp-untrusted-iframe {
+  ntp-iframe {
     pointer-events: none;
   }
 
@@ -33,7 +32,7 @@
   }
 
   .label {
-    color: var(--ntp-primary-text-color);
+    color: var(--cr-primary-text-color);
     margin-bottom: 4px;
     margin-top: 3px;
     min-height: 30px;
@@ -139,7 +138,7 @@
     -webkit-mask-image: url(chrome://resources/images/business.svg);
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: 100%;
-    background-color: var(--ntp-primary-text-color);
+    background-color: var(--cr-primary-text-color);
     height: 48px;
     margin: auto;
     width: 48px;
@@ -167,7 +166,7 @@
   <div id="backgroundsDisabledIcon"></div>
   <div id="backgroundsDisabledTitle">$i18n{customBackgroundDisabled}</div>
 </div>
-<ntp-grid id="collections" columns="3" hidden="[[!showBackgroundSelection_]]">
+<cr-grid id="collections" columns="3" hidden="[[!showBackgroundSelection_]]">
   <div id="uploadFromDevice" class="tile" role="button"
       on-click="onUploadFromDeviceClick_" tabindex="0">
     <div class$="[[getCustomBackgroundClass_(theme, backgroundSelection)]]">
@@ -197,15 +196,15 @@
     <template>
       <div class="tile" tabindex="0" title="[[item.label]]" role="button"
           on-click="onCollectionClick_">
-        <ntp-untrusted-iframe class="image"
-            path="background_image?[[item.previewImageUrl.url]]">
-        </ntp-untrusted-iframe>
+        <ntp-iframe class="image"
+            src="chrome-untrusted://new-tab-page/background_image?[[item.previewImageUrl.url]]">
+        </ntp-iframe>
         <div class="label">[[item.label]]</div>
       </div>
     </template>
   </dom-repeat>
-</ntp-grid>
-<ntp-grid id="images" columns="3" hidden="[[!selectedCollection]]">
+</cr-grid>
+<cr-grid id="images" columns="3" hidden="[[!selectedCollection]]">
   <dom-repeat id="imagesRepeat" items="[[images_]]">
     <template>
       <div
@@ -213,12 +212,12 @@
               [[getImageSelectedClass_(index, theme, backgroundSelection)]]"
           tabindex="0" title="[[item.attribution1]]" role="button"
           on-click="onImageClick_">
-        <ntp-untrusted-iframe class="image"
-            path="background_image?[[item.previewImageUrl.url]]">
-        </ntp-untrusted-iframe>
+        <ntp-iframe class="image"
+            src="chrome-untrusted://new-tab-page/background_image?[[item.previewImageUrl.url]]">
+        </ntp-iframe>
         <div class="selected-circle"></div>
         <div class="selected-check"></div>
       </div>
     </template>
   </dom-repeat>
-</ntp-grid>
+</cr-grid>

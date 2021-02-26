@@ -16,7 +16,6 @@
 #include "ui/gfx/image/image.h"
 
 class Browser;
-class ExtensionAction;
 class ExtensionActionPlatformDelegate;
 class GURL;
 class IconWithBadgeImageSource;
@@ -25,6 +24,7 @@ class ExtensionsContainer;
 namespace extensions {
 class Command;
 class Extension;
+class ExtensionAction;
 class ExtensionRegistry;
 class ExtensionViewHost;
 }
@@ -45,7 +45,7 @@ class ExtensionActionViewController
 
   ExtensionActionViewController(const extensions::Extension* extension,
                                 Browser* browser,
-                                ExtensionAction* extension_action,
+                                extensions::ExtensionAction* extension_action,
                                 ExtensionsContainer* extensions_container,
                                 bool in_overflow_mode);
   ~ExtensionActionViewController() override;
@@ -72,6 +72,7 @@ class ExtensionActionViewController
   bool ExecuteAction(bool by_user, InvocationSource source) override;
   void UpdateState() override;
   void RegisterCommand() override;
+  void UnregisterCommand() override;
   bool DisabledClickOpensMenu() const override;
 
   // ExtensionContextMenuModel::PopupDelegate:
@@ -90,8 +91,10 @@ class ExtensionActionViewController
 
   const extensions::Extension* extension() const { return extension_.get(); }
   Browser* browser() { return browser_; }
-  ExtensionAction* extension_action() { return extension_action_; }
-  const ExtensionAction* extension_action() const { return extension_action_; }
+  extensions::ExtensionAction* extension_action() { return extension_action_; }
+  const extensions::ExtensionAction* extension_action() const {
+    return extension_action_;
+  }
   ToolbarActionViewDelegate* view_delegate() { return view_delegate_; }
 
   std::unique_ptr<IconWithBadgeImageSource> GetIconImageSourceForTesting(
@@ -104,7 +107,7 @@ class ExtensionActionViewController
   void OnIconUpdated() override;
 
   // ExtensionHostObserver:
-  void OnExtensionHostDestroyed(const extensions::ExtensionHost* host) override;
+  void OnExtensionHostDestroyed(extensions::ExtensionHost* host) override;
 
   // Checks if the associated |extension| is still valid by checking its
   // status in the registry. Since the OnExtensionUnloaded() notifications are
@@ -151,6 +154,15 @@ class ExtensionActionViewController
   // to run on the given |web_contents|.
   bool PageActionWantsToRun(content::WebContents* web_contents) const;
 
+  // Returns true if this extension uses the activeTab permission and would
+  // probably be able to to access the given |url|. The actual checks when an
+  // activeTab extension tries to run are a little more complicated and can be
+  // seen in ExtensionActionRunner and ActiveTabPermissionGranter.
+  // Note: The rare cases where this gets it wrong should only be for false
+  // positives, where it reports that the extension wants access but it can't
+  // actually be given access when it tries to run.
+  bool HasActiveTabAndCanAccess(const GURL& url) const;
+
   // Returns true if this extension has been blocked on the given
   // |web_contents|.
   bool HasBeenBlocked(content::WebContents* web_contents) const;
@@ -167,7 +179,7 @@ class ExtensionActionViewController
 
   // The browser action this view represents. The ExtensionAction is not owned
   // by this class.
-  ExtensionAction* const extension_action_;
+  extensions::ExtensionAction* const extension_action_;
 
   // The corresponding ExtensionsContainer on the toolbar.
   ExtensionsContainer* const extensions_container_;

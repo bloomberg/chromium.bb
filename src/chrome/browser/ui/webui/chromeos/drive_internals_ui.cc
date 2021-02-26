@@ -15,13 +15,14 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
+#include "base/process/launch.h"
 #include "base/strings/pattern.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
@@ -217,6 +218,14 @@ std::pair<ino_t, base::ListValue> GetServiceLogContents(
   return {inode, std::move(result)};
 }
 
+bool GetDeveloperMode() {
+  std::string output;
+  if (!base::GetAppOutput({"/usr/bin/crossystem", "cros_debug"}, &output)) {
+    return false;
+  }
+  return output == "1";
+}
+
 class DriveInternalsWebUIHandler;
 
 void ZipLogs(Profile* profile,
@@ -263,6 +272,19 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
         base::BindRepeating(&DriveInternalsWebUIHandler::OnPeriodicUpdate,
                             weak_ptr_factory_.GetWeakPtr()));
     web_ui()->RegisterMessageCallback(
+        "setVerboseLoggingEnabled",
+        base::BindRepeating(
+            &DriveInternalsWebUIHandler::SetVerboseLoggingEnabled,
+            weak_ptr_factory_.GetWeakPtr()));
+    web_ui()->RegisterMessageCallback(
+        "enableTracing",
+        base::BindRepeating(&DriveInternalsWebUIHandler::SetTracingEnabled,
+                            weak_ptr_factory_.GetWeakPtr(), true));
+    web_ui()->RegisterMessageCallback(
+        "disableTracing",
+        base::BindRepeating(&DriveInternalsWebUIHandler::SetTracingEnabled,
+                            weak_ptr_factory_.GetWeakPtr(), false));
+    web_ui()->RegisterMessageCallback(
         "restartDrive",
         base::BindRepeating(&DriveInternalsWebUIHandler::RestartDrive,
                             weak_ptr_factory_.GetWeakPtr()));
@@ -273,6 +295,38 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     web_ui()->RegisterMessageCallback(
         "zipLogs",
         base::BindRepeating(&DriveInternalsWebUIHandler::ZipDriveFsLogs,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void RegisterDeveloperMessages() {
+    CHECK(developer_mode_);
+    web_ui()->RegisterMessageCallback(
+        "setStartupArguments",
+        base::BindRepeating(&DriveInternalsWebUIHandler::SetStartupArguments,
+                            weak_ptr_factory_.GetWeakPtr()));
+    web_ui()->RegisterMessageCallback(
+        "enableNetworking",
+        base::BindRepeating(&DriveInternalsWebUIHandler::SetNetworkingEnabled,
+                            weak_ptr_factory_.GetWeakPtr(), true));
+    web_ui()->RegisterMessageCallback(
+        "disableNetworking",
+        base::BindRepeating(&DriveInternalsWebUIHandler::SetNetworkingEnabled,
+                            weak_ptr_factory_.GetWeakPtr(), false));
+    web_ui()->RegisterMessageCallback(
+        "enableForcePauseSyncing",
+        base::BindRepeating(&DriveInternalsWebUIHandler::ForcePauseSyncing,
+                            weak_ptr_factory_.GetWeakPtr(), true));
+    web_ui()->RegisterMessageCallback(
+        "disableForcePauseSyncing",
+        base::BindRepeating(&DriveInternalsWebUIHandler::ForcePauseSyncing,
+                            weak_ptr_factory_.GetWeakPtr(), false));
+    web_ui()->RegisterMessageCallback(
+        "dumpAccountSettings",
+        base::BindRepeating(&DriveInternalsWebUIHandler::DumpAccountSettings,
+                            weak_ptr_factory_.GetWeakPtr()));
+    web_ui()->RegisterMessageCallback(
+        "loadAccountSettings",
+        base::BindRepeating(&DriveInternalsWebUIHandler::LoadAccountSettings,
                             weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -410,6 +464,17 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void UpdateDriveDebugSection() {
     SetSectionEnabled("drive-debug", true);
 
+    bool verbose_logging_enabled = profile()->GetPrefs()->GetBoolean(
+        drive::prefs::kDriveFsEnableVerboseLogging);
+    MaybeCallJavascript("updateVerboseLogging",
+                        base::Value(verbose_logging_enabled));
+
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(GetDeveloperMode),
+        base::BindOnce(&DriveInternalsWebUIHandler::OnGetDeveloperMode,
+                       weak_ptr_factory_.GetWeakPtr()));
+
     // Propagate the amount of local free space in bytes.
     base::FilePath home_path;
     if (base::PathService::Get(base::DIR_HOME, &home_path)) {
@@ -421,6 +486,33 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     } else {
       LOG(ERROR) << "Home directory not found";
     }
+  }
+
+  // Called when GetDeveloperMode() is complete.
+  void OnGetDeveloperMode(bool enabled) {
+    developer_mode_ = enabled;
+    if (!enabled) {
+      return;
+    }
+
+    RegisterDeveloperMessages();
+
+    // Get the startup arguments.
+    drive::DriveIntegrationService* integration_service =
+        GetIntegrationService();
+    if (integration_service) {
+      integration_service->GetStartupArguments(
+          base::BindOnce(&DriveInternalsWebUIHandler::OnGetStartupArguments,
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
+  }
+
+  // Called when GetStartupArguments() is complete.
+  void OnGetStartupArguments(const std::string& arguments) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(developer_mode_);
+    MaybeCallJavascript("updateStartupArguments", base::Value(arguments));
+    SetSectionEnabled("developer-mode-controls", true);
   }
 
   // Called when AmountOfFreeDiskSpace() is complete.
@@ -440,6 +532,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
         drive::prefs::kDisableDriveOverCellular,
         drive::prefs::kDriveFsWasLaunchedAtLeastOnce,
         drive::prefs::kDriveFsPinnedMigrated,
+        drive::prefs::kDriveFsEnableVerboseLogging,
     };
 
     PrefService* pref_service = profile()->GetPrefs();
@@ -552,6 +645,105 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
                         std::move(response.second));
   }
 
+  // Called when the "Verbose Logging" checkbox on the page is changed.
+  void SetVerboseLoggingEnabled(const base::ListValue* args) {
+    AllowJavascript();
+    drive::DriveIntegrationService* integration_service =
+        GetIntegrationService();
+    if (!integration_service) {
+      return;
+    }
+
+    if (args->GetList().size() == 1 && args->GetList()[0].is_bool()) {
+      bool enabled = args->GetList()[0].GetBool();
+      profile()->GetPrefs()->SetBoolean(
+          drive::prefs::kDriveFsEnableVerboseLogging, enabled);
+      RestartDrive(nullptr);
+    }
+  }
+
+  // Called when the "Startup Arguments" field on the page is submitted.
+  void SetStartupArguments(const base::ListValue* args) {
+    AllowJavascript();
+
+    CHECK(developer_mode_);
+
+    if (args->GetList().size() < 1 || !args->GetList()[0].is_string()) {
+      OnSetStartupArguments(false);
+      return;
+    }
+
+    drive::DriveIntegrationService* integration_service =
+        GetIntegrationService();
+    if (!integration_service) {
+      OnSetStartupArguments(false);
+      return;
+    }
+
+    integration_service->SetStartupArguments(
+        args->GetList()[0].GetString(),
+        base::BindOnce(&DriveInternalsWebUIHandler::OnSetStartupArguments,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void OnSetStartupArguments(bool success) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(developer_mode_);
+    if (success) {
+      RestartDrive(nullptr);
+    }
+    MaybeCallJavascript("updateStartupArgumentsStatus", base::Value(success));
+  }
+
+  void SetTracingEnabled(bool enabled, const base::ListValue* args) {
+    AllowJavascript();
+    drive::DriveIntegrationService* integration_service =
+        GetIntegrationService();
+    if (integration_service) {
+      integration_service->SetTracingEnabled(enabled);
+    }
+  }
+
+  void SetNetworkingEnabled(bool enabled, const base::ListValue* args) {
+    AllowJavascript();
+    CHECK(developer_mode_);
+    drive::DriveIntegrationService* integration_service =
+        GetIntegrationService();
+    if (integration_service) {
+      integration_service->SetNetworkingEnabled(enabled);
+    }
+  }
+
+  void ForcePauseSyncing(bool enabled, const base::ListValue* args) {
+    AllowJavascript();
+    CHECK(developer_mode_);
+    drive::DriveIntegrationService* integration_service =
+        GetIntegrationService();
+    if (integration_service) {
+      integration_service->ForcePauseSyncing(enabled);
+    }
+  }
+
+  void DumpAccountSettings(const base::ListValue* args) {
+    AllowJavascript();
+    CHECK(developer_mode_);
+    drive::DriveIntegrationService* integration_service =
+        GetIntegrationService();
+    if (integration_service) {
+      integration_service->DumpAccountSettings();
+    }
+  }
+
+  void LoadAccountSettings(const base::ListValue* args) {
+    AllowJavascript();
+    CHECK(developer_mode_);
+    drive::DriveIntegrationService* integration_service =
+        GetIntegrationService();
+    if (integration_service) {
+      integration_service->LoadAccountSettings();
+    }
+  }
+
   // Called when the "Restart Drive" button on the page is pressed.
   void RestartDrive(const base::ListValue* args) {
     AllowJavascript();
@@ -619,6 +811,9 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Service log file is being parsed.
   bool service_log_file_is_processing_ = false;
 
+  // Whether developer mode is enabled for debug commands.
+  bool developer_mode_ = false;
+
   base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DriveInternalsWebUIHandler);
 };
@@ -659,7 +854,7 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
     // Note: this may be racy if multiple attempts to export logs are run
     // concurrently, but it's a debug page and it requires explicit action to
     // cause problems.
-    base::DeleteFile(zip_path, false);
+    base::DeleteFile(zip_path);
     std::vector<base::FilePath> log_files;
     base::FileEnumerator enumerator(logs_path, false /* recursive */,
                                     base::FileEnumerator::FILES);
@@ -695,8 +890,7 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
   void CleanUp() {
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), zip_path_,
-                       false));
+        base::BindOnce(base::GetDeleteFileCallback(), zip_path_));
     download_notifier_.reset();
     if (drive_internals_) {
       drive_internals_->OnZipDone();

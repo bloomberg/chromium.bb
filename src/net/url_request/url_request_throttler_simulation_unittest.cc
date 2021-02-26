@@ -413,14 +413,10 @@ class Requester : public DiscreteTimeSimulation::Actor {
   }
 
   void PerformAction() override {
-    TimeDelta effective_delay = time_between_requests_;
-    TimeDelta current_jitter = TimeDelta::FromMilliseconds(
-        request_jitter_.InMilliseconds() * base::RandDouble());
-    if (base::RandInt(0, 1)) {
-      effective_delay -= current_jitter;
-    } else {
-      effective_delay += current_jitter;
-    }
+    const TimeDelta current_jitter = request_jitter_ * base::RandDouble();
+    const TimeDelta effective_delay =
+        time_between_requests_ +
+        (base::RandInt(0, 1) ? -current_jitter : current_jitter);
 
     if (throttler_entry_->ImplGetTimeNow() - time_of_last_attempt_ >
         effective_delay) {
@@ -438,12 +434,10 @@ class Requester : public DiscreteTimeSimulation::Actor {
           }
 
           time_of_last_success_ = throttler_entry_->ImplGetTimeNow();
-          last_attempt_was_failure_ = false;
-        } else {
-          if (results_)
-            results_->AddFailure();
-          last_attempt_was_failure_ = true;
+        } else if (results_) {
+          results_->AddFailure();
         }
+        last_attempt_was_failure_ = status_code != 200;
       } else {
         if (results_)
           results_->AddBlocked();
@@ -666,10 +660,10 @@ TEST(URLRequestThrottlerSimulation, PerceivedDowntimeRatio) {
     Stats stats;
 
     void PrintTrialDescription() {
-      double duration_minutes =
-          static_cast<double>(duration.InSeconds()) / 60.0;
-      double interval_minutes =
-          static_cast<double>(average_client_interval.InSeconds()) / 60.0;
+      const double duration_minutes =
+          duration / base::TimeDelta::FromMinutes(1);
+      const double interval_minutes =
+          average_client_interval / base::TimeDelta::FromMinutes(1);
       VerboseOut("Trial with %.2f min downtime, avg. interval %.2f min.\n",
                  duration_minutes, interval_minutes);
     }

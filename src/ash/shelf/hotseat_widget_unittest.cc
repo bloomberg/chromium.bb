@@ -6,7 +6,6 @@
 #include <tuple>
 #include <vector>
 
-#include "ash/shelf/hotseat_widget.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/assistant/assistant_controller_impl.h"
@@ -15,9 +14,11 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shelf/home_button.h"
+#include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_focus_cycler.h"
@@ -28,7 +29,6 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/test/hotseat_state_watcher.h"
-#include "ash/shelf/test/overview_animation_waiter.h"
 #include "ash/shelf/test/shelf_layout_manager_test_base.h"
 #include "ash/shelf/test/widget_animation_smoothness_inspector.h"
 #include "ash/shelf/test/widget_animation_waiter.h"
@@ -40,10 +40,11 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -78,16 +79,16 @@ class HotseatWidgetTest
         navigation_buttons_shown_in_tablet_mode_(std::get<2>(GetParam())) {
     if (is_assistant_enabled_)
       assistant_test_api_ = AssistantTestApi::Create();
+
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
     if (navigation_buttons_shown_in_tablet_mode_) {
-      scoped_feature_list_.InitWithFeatures(
-          {chromeos::features::kShelfHotseat},
-          {features::kHideShelfControlsInTabletMode});
+      disabled_features.push_back(features::kHideShelfControlsInTabletMode);
     } else {
-      scoped_feature_list_.InitWithFeatures(
-          {chromeos::features::kShelfHotseat,
-           features::kHideShelfControlsInTabletMode},
-          {});
+      enabled_features.push_back(features::kHideShelfControlsInTabletMode);
     }
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   // testing::Test:
@@ -105,6 +106,13 @@ class HotseatWidgetTest
     }
   }
 
+  void TearDown() override {
+    // Some tests may override this value, make sure it's reset.
+    PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        false);
+    ShelfLayoutManagerTestBase::TearDown();
+  }
+
   ShelfAutoHideBehavior shelf_auto_hide_behavior() const {
     return shelf_auto_hide_behavior_;
   }
@@ -120,7 +128,7 @@ class HotseatWidgetTest
     if (!navigation_buttons_shown_in_tablet_mode_ &&
         Shell::Get()->tablet_mode_controller()->InTabletMode()) {
       AssistantUiController::Get()->ShowUi(
-          chromeos::assistant::mojom::AssistantEntryPoint::kLongPressLauncher);
+          chromeos::assistant::AssistantEntryPoint::kLongPressLauncher);
       return;
     }
 
@@ -807,15 +815,15 @@ TEST_P(HotseatWidgetTest, ObserverCallsMatch) {
   // kShownHomeLauncher.
   StartOverview();
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsInStartAnimation());
-  EXPECT_FALSE(observer.ObserverCountsEqual());
-  // Overview triggers two animations for hotseat state changes, thus one of
-  // them is cancelled.
-  EXPECT_EQ(1, observer.AnimationAbortedCalls());
+  // No animations should have been started so no animations are in progress
+  // or aborted.
+  EXPECT_TRUE(observer.ObserverCountsEqual());
+  EXPECT_EQ(0, observer.AnimationAbortedCalls());
+
   EndOverview();
-  observer.Wait();
-  // We cancelled the StartOverviewAnimation while it was running, so we expect
-  // the total number of aborted calls were 3.
-  EXPECT_EQ(3, observer.AnimationAbortedCalls());
+
+  // No animations should have been started or aborted.
+  EXPECT_EQ(0, observer.AnimationAbortedCalls());
   EXPECT_TRUE(observer.ObserverCountsEqual());
   ASSERT_EQ(HotseatState::kShownHomeLauncher,
             GetShelfLayoutManager()->hotseat_state());
@@ -823,9 +831,10 @@ TEST_P(HotseatWidgetTest, ObserverCallsMatch) {
   observer.Reset();
   // Go to overview. Hotseat state should be kExtended.
   StartOverview();
-  observer.Wait();
+
+  ASSERT_EQ(HotseatState::kShownHomeLauncher,
+            GetShelfLayoutManager()->hotseat_state());
   EXPECT_TRUE(observer.ObserverCountsEqual());
-  ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 }
 
 // Tests that a swipe up on the shelf shows the hotseat while in split view.
@@ -838,17 +847,15 @@ TEST_P(HotseatWidgetTest, DisableBlurDuringOverviewMode) {
 
   // Go into overview and check that at the end of the animation, background
   // blur is disabled.
-  OverviewAnimationWaiter enter_overview_waiter;
   StartOverview();
-  enter_overview_waiter.Wait();
+  WaitForOverviewAnimation(/*enter=*/true);
   EXPECT_EQ(
       0, GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest());
 
   // Exit overview and check that at the end of the animation, background
   // blur is enabled again.
-  OverviewAnimationWaiter exit_overview_waiter;
   EndOverview();
-  exit_overview_waiter.Wait();
+  WaitForOverviewAnimation(/*enter=*/false);
   EXPECT_EQ(
       ShelfConfig::Get()->shelf_blur_radius(),
       GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest());
@@ -969,10 +976,9 @@ TEST_P(HotseatWidgetTest, HomeToOverviewChangesStateOnce) {
   // First, try with no windows open.
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
-    OverviewAnimationWaiter waiter;
     StartOverview();
-    waiter.Wait();
-    watcher.CheckEqual({HotseatState::kExtended});
+    WaitForOverviewAnimation(/*enter=*/true);
+    watcher.CheckEqual({/* shelf state should not change*/});
   }
 
   // Open a window, then open the home launcher.
@@ -985,12 +991,40 @@ TEST_P(HotseatWidgetTest, HomeToOverviewChangesStateOnce) {
   // Activate overview and expect the hotseat only changes state to extended.
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
-    OverviewAnimationWaiter waiter;
     StartOverview();
-    waiter.Wait();
+    WaitForOverviewAnimation(/*enter=*/true);
 
-    watcher.CheckEqual({HotseatState::kExtended});
+    watcher.CheckEqual({/* shelf state should not change*/});
   }
+}
+
+// Verifies that the hotseat widget and the status area widget are animated to
+// the target location when entering overview mode in home launcher
+// (https://crbug.com/1079347).
+TEST_P(HotseatWidgetTest, VerifyShelfAnimationWhenEnteringOverview) {
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  HotseatWidget* hotseat_widget = GetPrimaryShelf()->hotseat_widget();
+  ASSERT_EQ(HotseatState::kShownHomeLauncher, hotseat_widget->state());
+
+  ui::LayerAnimator* hotseat_layer_animator =
+      hotseat_widget->GetNativeView()->layer()->GetAnimator();
+  ui::LayerAnimator* status_area_layer_animator = GetShelfWidget()
+                                                      ->status_area_widget()
+                                                      ->GetNativeView()
+                                                      ->layer()
+                                                      ->GetAnimator();
+  ASSERT_FALSE(hotseat_layer_animator->is_animating());
+  ASSERT_FALSE(status_area_layer_animator->is_animating());
+
+  StartOverview();
+  EXPECT_FALSE(hotseat_layer_animator->is_animating());
+  EXPECT_FALSE(status_area_layer_animator->is_animating());
+  ASSERT_EQ(HotseatState::kShownHomeLauncher, hotseat_widget->state());
 }
 
 // Tests that home -> in-app results in only one state change.
@@ -1081,14 +1115,17 @@ TEST_P(HotseatWidgetTest, HomeToOverviewAndBack) {
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   WindowState::Get(window.get())->Minimize();
 
-  // Start going to overview - hotseat should transition to extended state.
   HotseatStateWatcher watcher(GetShelfLayoutManager());
+
+  // Start going to overview.
   {
     ui::ScopedAnimationDurationScaleMode regular_animations(
         ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
     StartOverview();
-    watcher.CheckEqual({HotseatState::kExtended});
+
+    watcher.CheckEqual({/*Hotseat state should not change*/});
   }
+
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
@@ -1098,8 +1135,7 @@ TEST_P(HotseatWidgetTest, HomeToOverviewAndBack) {
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(ShelfConfig::Get()->is_in_app());
 
-  watcher.CheckEqual(
-      {HotseatState::kExtended, HotseatState::kShownHomeLauncher});
+  watcher.CheckEqual({/*Hotseat state should not change*/});
 }
 
 TEST_P(HotseatWidgetTest, InAppToOverviewAndBack) {
@@ -1203,17 +1239,14 @@ TEST_P(HotseatWidgetTest, InAppToOverviewChangesStateOnceAutohiddenShelf) {
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     // Enter overview by using the controller.
-    OverviewAnimationWaiter waiter;
     Shell::Get()->overview_controller()->StartOverview();
-    waiter.Wait();
+    WaitForOverviewAnimation(/*enter=*/true);
 
     watcher.CheckEqual({HotseatState::kExtended});
   }
-  {
-    OverviewAnimationWaiter waiter;
-    Shell::Get()->overview_controller()->EndOverview();
-    waiter.Wait();
-  }
+
+  Shell::Get()->overview_controller()->EndOverview();
+  WaitForOverviewAnimation(/*enter=*/false);
 
   // Test in-app -> overview again with the autohide shown shelf.
   EXPECT_TRUE(ShelfConfig::Get()->is_in_app());
@@ -1223,9 +1256,8 @@ TEST_P(HotseatWidgetTest, InAppToOverviewChangesStateOnceAutohiddenShelf) {
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     // Enter overview by using the controller.
-    OverviewAnimationWaiter waiter;
     Shell::Get()->overview_controller()->StartOverview();
-    waiter.Wait();
+    WaitForOverviewAnimation(/*enter=*/true);
 
     watcher.CheckEqual({});
     EXPECT_EQ(HotseatState::kExtended,
@@ -1240,20 +1272,12 @@ TEST_P(HotseatWidgetTest,
   TabletModeControllerTestApi().EnterTabletMode();
   DisplayWorkAreaChangeCounter counter;
 
-  {
-    OverviewAnimationWaiter waiter;
-    Shell::Get()->overview_controller()->StartOverview();
-    waiter.Wait();
-  }
-
+  Shell::Get()->overview_controller()->StartOverview();
+  WaitForOverviewAnimation(/*enter=*/true);
   EXPECT_EQ(0, counter.count());
 
-  {
-    OverviewAnimationWaiter waiter;
-    Shell::Get()->overview_controller()->EndOverview();
-    waiter.Wait();
-  }
-
+  Shell::Get()->overview_controller()->StartOverview();
+  WaitForOverviewAnimation(/*enter=*/true);
   EXPECT_EQ(0, counter.count());
 }
 
@@ -1269,20 +1293,12 @@ TEST_P(HotseatWidgetTest,
   ASSERT_EQ(1, counter.count());
   ShowShelfAndGoHome();
 
-  {
-    OverviewAnimationWaiter waiter;
-    StartOverview();
-    waiter.Wait();
-  }
-
+  StartOverview();
+  WaitForOverviewAnimation(/*enter=*/true);
   EXPECT_EQ(1, counter.count());
 
-  {
-    OverviewAnimationWaiter waiter;
-    EndOverview();
-    waiter.Wait();
-  }
-
+  EndOverview();
+  WaitForOverviewAnimation(/*enter=*/false);
   EXPECT_EQ(1, counter.count());
 }
 
@@ -1320,12 +1336,8 @@ TEST_P(HotseatWidgetTest, WorkAreaDoesNotUpdateOpenWindowToFromOverview) {
 
   // Go to overview, there should not be a work area update.
   DisplayWorkAreaChangeCounter counter;
-  {
-    OverviewAnimationWaiter waiter;
-    StartOverview();
-    waiter.Wait();
-  }
-
+  StartOverview();
+  WaitForOverviewAnimation(/*enter=*/true);
   EXPECT_EQ(0, counter.count());
 
   // Go back to the app, there should not be a work area update.
@@ -1527,6 +1539,43 @@ TEST_P(HotseatWidgetTest, ToFromTabletModeWithWindowChangesWorkArea) {
   EXPECT_EQ(2, counter.count());
 }
 
+// Tests that the work area changes when fullscreening the active window or
+// autohiding the shelf.
+TEST_P(HotseatWidgetTest, ShelfVisibilityChangeChangesWorkArea) {
+  UpdateDisplay("800x603");
+
+  TabletModeControllerTestApi().EnterTabletMode();
+  auto window = AshTestBase::CreateTestWindow(gfx::Rect(400, 400));
+
+  // The expected work area is 3 pixels smaller to leave space to swipe the auto
+  // hide shelf up.
+  const gfx::Rect expected_auto_hide_work_area(800, 600);
+  const gfx::Rect expected_in_app_work_area(
+      800, 603 - ShelfConfig::Get()->in_app_shelf_size());
+  auto get_work_area = []() -> gfx::Rect {
+    return WorkAreaInsets::ForWindow(Shell::GetPrimaryRootWindow())
+        ->user_work_area_bounds();
+  };
+
+  DisplayWorkAreaChangeCounter counter;
+  WMEvent toggle_fullscreen(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState::Get(window.get())->OnWMEvent(&toggle_fullscreen);
+  EXPECT_EQ(expected_auto_hide_work_area, get_work_area());
+  EXPECT_EQ(1, counter.count());
+
+  WindowState::Get(window.get())->OnWMEvent(&toggle_fullscreen);
+  EXPECT_EQ(expected_in_app_work_area, get_work_area());
+  EXPECT_EQ(2, counter.count());
+
+  GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  EXPECT_EQ(expected_auto_hide_work_area, get_work_area());
+  EXPECT_EQ(3, counter.count());
+
+  GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kNever);
+  EXPECT_EQ(expected_in_app_work_area, get_work_area());
+  EXPECT_EQ(4, counter.count());
+}
+
 // Tests that the hotseat is flush with the bottom of the screen when in
 // clamshell mode and the shelf is oriented on the bottom.
 TEST_P(HotseatWidgetTest, HotseatFlushWithScreenBottomInClamshell) {
@@ -1544,10 +1593,6 @@ TEST_P(HotseatWidgetTest, HotseatFlushWithScreenBottomInClamshell) {
 // Tests that when hotseat and drag-window-to-overview features are both
 // enabled, HomeLauncherGestureHandler can receive and process events properly.
 TEST_P(HotseatWidgetTest, DragActiveWindowInTabletMode) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kDragFromShelfToHomeOrOverview);
-
   GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
@@ -1584,11 +1629,7 @@ TEST_P(HotseatWidgetTest, DragActiveWindowInTabletMode) {
 // Tests that when hotseat and drag-window-to-overview features are both
 // enabled, hotseat is not extended after dragging a window to overview, and
 // then activating the window.
-TEST_P(HotseatWidgetTest, ExitingOvervieHidesHotseat) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kDragFromShelfToHomeOrOverview);
-
+TEST_P(HotseatWidgetTest, ExitingOverviewHidesHotseat) {
   const ShelfAutoHideBehavior auto_hide_behavior = shelf_auto_hide_behavior();
   GetPrimaryShelf()->SetAutoHideBehavior(auto_hide_behavior);
   TabletModeControllerTestApi().EnterTabletMode();
@@ -1609,7 +1650,10 @@ TEST_P(HotseatWidgetTest, ExitingOvervieHidesHotseat) {
   const gfx::Rect bottom_shelf_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
   StartScroll(bottom_shelf_bounds.CenterPoint());
-
+  // Ensure swipe goes past the top of the hotseat first to activate the window
+  // drag controller.
+  UpdateScroll(
+      -GetPrimaryShelf()->hotseat_widget()->GetHotseatFullDragAmount());
   // Drag upward, to the center of the screen, and release (this should enter
   // the overview).
   const gfx::Rect display_bounds =
@@ -1639,10 +1683,6 @@ TEST_P(HotseatWidgetTest, ExitingOvervieHidesHotseat) {
 // Tests that failing to drag the maximized window to overview mode results in
 // an extended hotseat.
 TEST_P(HotseatWidgetTest, FailingOverviewDragResultsInExtendedHotseat) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kDragFromShelfToHomeOrOverview);
-
   const ShelfAutoHideBehavior auto_hide_behavior = shelf_auto_hide_behavior();
   GetPrimaryShelf()->SetAutoHideBehavior(auto_hide_behavior);
   TabletModeControllerTestApi().EnterTabletMode();
@@ -1664,12 +1704,22 @@ TEST_P(HotseatWidgetTest, FailingOverviewDragResultsInExtendedHotseat) {
       GetShelfWidget()->GetWindowBoundsInScreen();
   StartScroll(bottom_shelf_bounds.top_center());
 
-  // Drag upward, a bit past the hotseat extended height but not enough to go to
-  // overview.
   const int extended_hotseat_distance_from_top_of_shelf =
       ShelfConfig::Get()->hotseat_bottom_padding() +
       GetPrimaryShelf()->hotseat_widget()->GetHotseatSize();
-  UpdateScroll(-extended_hotseat_distance_from_top_of_shelf - 30);
+  // Overview is triggered when the bottom of the dragged window goes past the
+  // top of the hotseat. The window scaling and translation are handled slightly
+  // differently for if the hotseat is extended or not.
+  if (HotseatState::kExtended == GetShelfLayoutManager()->hotseat_state()) {
+    // Drag upward, a bit below the hotseat extended height, to ensure that the
+    // bottom of the dragged window doesn't go past the top of the hotseat, so
+    // that it doesn't go into overview.
+    UpdateScroll(-extended_hotseat_distance_from_top_of_shelf + 20);
+  } else {
+    // Drag upward, a bit past the hotseat extended height so that the window
+    // drag controller is activated, but not enough to go to overview.
+    UpdateScroll(-extended_hotseat_distance_from_top_of_shelf - 30);
+  }
   EndScroll(/*is_fling=*/false, 0.f);
 
   ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -2064,6 +2114,156 @@ TEST_P(HotseatWidgetTest, NoBlurDuringAnimations) {
   EXPECT_EQ(
       ShelfConfig::Get()->shelf_blur_radius(),
       GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest());
+}
+
+TEST_P(HotseatWidgetTest, PresentationTimeMetricDuringDrag) {
+  PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(true);
+
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  // Drag upwards from the bottom of the screen to bring up hotseat - this
+  // should request presentation time metric to be reported.
+  generator->PressTouch(display_bounds.bottom_center());
+
+  HotseatWidget* const hotseat_widget = GetPrimaryShelf()->hotseat_widget();
+  int last_hotseat_y = hotseat_widget->GetWindowBoundsInScreen().y();
+
+  // Returns whether the hotseat vertical position has changed comapred to
+  // |last_hotseat_y|, and updates |last_hotseat_y| to match the current hotseat
+  // position.
+  auto hotseat_moved = [&last_hotseat_y, &hotseat_widget]() -> bool {
+    const int hotseat_y = hotseat_widget->GetWindowBoundsInScreen().y();
+    const bool y_changed = hotseat_y != last_hotseat_y;
+    last_hotseat_y = hotseat_y;
+    return y_changed;
+  };
+
+  base::HistogramTester histogram_tester;
+
+  auto check_bucket_size = [&histogram_tester](int expected_size) {
+    histogram_tester.ExpectTotalCount(
+        "Ash.HotseatTransition.Drag.PresentationTime", expected_size);
+    histogram_tester.ExpectTotalCount(
+        "Ash.HotseatTransition.Drag.PresentationTime.MaxLatency", 0);
+  };
+
+  int expected_bucket_size = 0;
+  {
+    SCOPED_TRACE("Initial state");
+    check_bucket_size(expected_bucket_size);
+  }
+
+  const int shelf_height = GetShelfWidget()->GetWindowBoundsInScreen().height();
+
+  {
+    SCOPED_TRACE("Upward drag with move - 1");
+    generator->MoveTouchBy(0, -shelf_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Upward drag with move - 2");
+    generator->MoveTouchBy(0, -shelf_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Downward drag with move");
+    generator->MoveTouchBy(0, shelf_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Upward drag with move - 3");
+    generator->MoveTouchBy(0, -shelf_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  const int hotseat_height =
+      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen().height();
+  {
+    SCOPED_TRACE("Upward drag with move above shelf - 1");
+    generator->MoveTouchBy(0, -hotseat_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Upward drag with move above shelf - 2");
+    generator->MoveTouchBy(0, -hotseat_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Downward drag with move above shelf");
+    generator->MoveTouchBy(0, hotseat_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Upward drag with move above shelf - 3");
+    generator->MoveTouchBy(0, -hotseat_height - hotseat_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  // Once the hotseat has been fully extended, presentation time metric should
+  // stop being reported, as the hotseat is expected to stop moving.
+  {
+    SCOPED_TRACE("Upward drag without moving - 1");
+    generator->MoveTouchBy(0, -hotseat_height);
+    ASSERT_FALSE(hotseat_moved());
+    check_bucket_size(expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Upward drag without moving - 2");
+    generator->MoveTouchBy(0, -hotseat_height / 2);
+    ASSERT_FALSE(hotseat_moved());
+    check_bucket_size(expected_bucket_size);
+  }
+
+  // Move hotseat downwards - the presentation time should not get reported
+  // until the hotseat starts moving downwards.
+  {
+    SCOPED_TRACE("Downward drag without moving - 1");
+    generator->MoveTouchBy(0, hotseat_height / 2);
+    ASSERT_FALSE(hotseat_moved());
+    check_bucket_size(expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Downward drag without moving - 2");
+    generator->MoveTouchBy(0, hotseat_height);
+    ASSERT_FALSE(hotseat_moved());
+    check_bucket_size(expected_bucket_size);
+  }
+
+  generator->ReleaseTouch();
+
+  window.reset();
+
+  {
+    SCOPED_TRACE("Drag ended.");
+    histogram_tester.ExpectTotalCount(
+        "Ash.HotseatTransition.Drag.PresentationTime", expected_bucket_size);
+    histogram_tester.ExpectTotalCount(
+        "Ash.HotseatTransition.Drag.PresentationTime.MaxLatency", 1);
+  }
 }
 
 // TODO(manucornet): Enable this test once the new API for layer animation

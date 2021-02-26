@@ -107,8 +107,10 @@ base::TimeDelta AccessibilityControllerClient::PlayShutdownSound() {
 }
 
 void AccessibilityControllerClient::HandleAccessibilityGesture(
-    ax::mojom::Gesture gesture) {
-  chromeos::AccessibilityManager::Get()->HandleAccessibilityGesture(gesture);
+    ax::mojom::Gesture gesture,
+    gfx::PointF location) {
+  chromeos::AccessibilityManager::Get()->HandleAccessibilityGesture(gesture,
+                                                                    location);
 }
 
 bool AccessibilityControllerClient::ToggleDictation() {
@@ -146,4 +148,14 @@ void AccessibilityControllerClient::RequestAutoclickScrollableBoundsForPoint(
     gfx::Point& point_in_screen) {
   chromeos::AccessibilityManager::Get()
       ->RequestAutoclickScrollableBoundsForPoint(point_in_screen);
+}
+
+void AccessibilityControllerClient::MagnifierBoundsChanged(
+    const gfx::Rect& bounds_in_screen) {
+  chromeos::AccessibilityManager::Get()->MagnifierBoundsChanged(
+      bounds_in_screen);
+}
+
+void AccessibilityControllerClient::OnSwitchAccessDisabled() {
+  chromeos::AccessibilityManager::Get()->OnSwitchAccessDisabled();
 }

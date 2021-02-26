@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -84,17 +83,15 @@ class StackAllocator : public std::allocator<T> {
   // for Us.
   // TODO: If we were fancy pants, perhaps we could share storage
   // iff sizeof(T) == sizeof(U).
-  template<typename U, size_t other_capacity>
+  template <typename U, size_t other_capacity>
   StackAllocator(const StackAllocator<U, other_capacity>& other)
-      : source_(NULL) {
-  }
+      : source_(nullptr) {}
 
   // This constructor must exist. It creates a default allocator that doesn't
   // actually have a stack buffer. glibc's std::string() will compare the
   // current allocator against the default-constructed allocator, so this
   // should be fast.
-  StackAllocator() : source_(NULL) {
-  }
+  StackAllocator() : source_(nullptr) {}
 
   explicit StackAllocator(Source* source) : source_(source) {
   }
@@ -149,6 +146,8 @@ class StackContainer {
     // before doing anything else.
     container_.reserve(stack_capacity);
   }
+  StackContainer(const StackContainer&) = delete;
+  StackContainer& operator=(const StackContainer&) = delete;
 
   // Getters for the actual container.
   //
@@ -177,9 +176,6 @@ class StackContainer {
   typename Allocator::Source stack_data_;
   Allocator allocator_;
   ContainerType container_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StackContainer);
 };
 
 // Range-based iteration support for StackContainer.

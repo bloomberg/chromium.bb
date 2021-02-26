@@ -61,6 +61,11 @@ typedef enum {
   // again later.
   kLibgav1StatusTryAgain = -10,
 
+  // Used only by DequeueFrame(). There are no enqueued frames, so there is
+  // nothing to dequeue. This is not a fatal error. Try enqueuing a frame before
+  // trying to dequeue again.
+  kLibgav1StatusNothingToDequeue = -11,
+
   // An extra enumerator to prevent people from writing code that fails to
   // compile when a new status code is added.
   //
@@ -99,6 +104,7 @@ constexpr StatusCode kStatusUnimplemented = kLibgav1StatusUnimplemented;
 constexpr StatusCode kStatusInternalError = kLibgav1StatusInternalError;
 constexpr StatusCode kStatusBitstreamError = kLibgav1StatusBitstreamError;
 constexpr StatusCode kStatusTryAgain = kLibgav1StatusTryAgain;
+constexpr StatusCode kStatusNothingToDequeue = kLibgav1StatusNothingToDequeue;
 
 // Returns a human readable error string in en-US for the status code |status|.
 // Always returns a valid (non-NULL) string.

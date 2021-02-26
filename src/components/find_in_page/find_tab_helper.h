@@ -8,7 +8,6 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/find_in_page/find_notification_details.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/range/range.h"
 
@@ -18,8 +17,7 @@ class FindResultObserver;
 enum class SelectionAction;
 
 // Per-tab find manager. Handles dealing with the life cycle of find sessions.
-class FindTabHelper : public content::WebContentsObserver,
-                      public content::WebContentsUserData<FindTabHelper> {
+class FindTabHelper : public content::WebContentsUserData<FindTabHelper> {
  public:
   // The delegate tracks search text state.
   class Delegate {
@@ -48,9 +46,13 @@ class FindTabHelper : public content::WebContentsObserver,
   // function does not block while a search is in progress. The controller will
   // receive the results through the notification mechanism. See Observe(...)
   // for details.
+  //
+  // |find_match| controls whether to find the first match or to only do match
+  // counts and highlighting.
   void StartFinding(base::string16 search_string,
                     bool forward_direction,
                     bool case_sensitive,
+                    bool find_match,
                     bool run_synchronously_for_testing = false);
 
   // Stops the current Find operation.
@@ -79,7 +81,8 @@ class FindTabHelper : public content::WebContentsObserver,
   // Accessor for the previous search we issued.
   base::string16 previous_find_text() const { return previous_find_text_; }
 
-  // Accessor for the latest search for which a final result was reported.
+  // Accessor for the last completed search (i.e., where |find_match| was true
+  // and we got a final_update result).
   base::string16 last_completed_find_text() const {
     return last_completed_find_text_;
   }
@@ -98,6 +101,8 @@ class FindTabHelper : public content::WebContentsObserver,
   const FindNotificationDetails& find_result() const {
     return last_search_result_;
   }
+
+  bool should_find_match() const { return should_find_match_; }
 
 #if defined(OS_ANDROID)
   // Selects and zooms to the find result nearest to the point (x,y)
@@ -126,6 +131,9 @@ class FindTabHelper : public content::WebContentsObserver,
   // the user has issued a new search).
   static int find_request_id_counter_;
 
+  // The WebContents which owns this helper.
+  content::WebContents* web_contents_ = nullptr;
+
   // True if the Find UI is active for this Tab.
   bool find_ui_active_ = false;
 
@@ -151,7 +159,8 @@ class FindTabHelper : public content::WebContentsObserver,
   // The string we searched for before |find_text_|.
   base::string16 previous_find_text_;
 
-  // Used to keep track the last completed search. A single find session can
+  // Used to keep track the last completed search (i.e., where |find_match|
+  // was true and we got a final_update result). A single find session can
   // result in multiple final updates, if the document contents change
   // dynamically. It's a nuisance to notify the user more than once that a
   // search came up empty, and we never want to notify the user that a
@@ -169,6 +178,10 @@ class FindTabHelper : public content::WebContentsObserver,
   // matches, the find selection rectangle, etc. The UI can access this
   // information to build its presentation.
   FindNotificationDetails last_search_result_;
+
+  // The value of the |find_match| option for the active search, or false if
+  // there is no active search.
+  bool should_find_match_ = false;
 
   // The optional delegate that remembers recent search text state.
   Delegate* delegate_ = nullptr;

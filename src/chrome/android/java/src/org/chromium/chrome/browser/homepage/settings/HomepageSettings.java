@@ -18,12 +18,11 @@ import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.homepage.settings.RadioButtonGroupHomepagePreference.HomepageOption;
 import org.chromium.chrome.browser.homepage.settings.RadioButtonGroupHomepagePreference.PreferenceValues;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
-import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.settings.TextMessagePreference;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.url_formatter.UrlFormatter;
 
 /**
@@ -50,8 +49,6 @@ public class HomepageSettings extends PreferenceFragmentCompat {
             return HomepagePolicyManager.isHomepageManagedByPolicy();
         }
     }
-
-    private static boolean sIsHomeButtonOnBottomToolbar;
 
     private HomepageManager mHomepageManager;
     private Preference mHomepageEdit;
@@ -80,16 +77,12 @@ public class HomepageSettings extends PreferenceFragmentCompat {
         setupPreferenceVisibility();
 
         // Set up listeners and update the page.
-        if (isHomeButtonOnBottomToolbar()) {
-            homepageSwitch.setVisible(false);
-        } else {
-            boolean isHomepageEnabled = HomepageManager.isHomepageEnabled();
-            homepageSwitch.setChecked(isHomepageEnabled);
-            homepageSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
-                onSwitchPreferenceChange((boolean) newValue);
-                return true;
-            });
-        }
+        boolean isHomepageEnabled = HomepageManager.isHomepageEnabled();
+        homepageSwitch.setChecked(isHomepageEnabled);
+        homepageSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
+            onSwitchPreferenceChange((boolean) newValue);
+            return true;
+        });
 
         RecordUserAction.record("Settings.Homepage.Opened");
 
@@ -116,7 +109,7 @@ public class HomepageSettings extends PreferenceFragmentCompat {
      */
     private void updatePreferenceState() {
         boolean isManagedByPolicy = HomepagePolicyManager.isHomepageManagedByPolicy();
-        mTextManaged.setVisible(isManagedByPolicy && isHomeButtonOnBottomToolbar());
+        mTextManaged.setVisible(false);
 
         if (isHomepageSettingsUIConversionEnabled()) {
             if (mRadioButtons != null) {
@@ -130,15 +123,6 @@ public class HomepageSettings extends PreferenceFragmentCompat {
 
     private boolean isHomepageSettingsUIConversionEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.HOMEPAGE_SETTINGS_UI_CONVERSION);
-    }
-
-    private boolean isHomeButtonOnBottomToolbar() {
-        return sIsHomeButtonOnBottomToolbar || BottomToolbarVariationManager.isHomeButtonOnBottom();
-    }
-
-    @VisibleForTesting
-    public static void setIsHomeButtonOnBottomToolbar(boolean isOnBottom) {
-        sIsHomeButtonOnBottomToolbar = isOnBottom;
     }
 
     @Override
@@ -194,10 +178,10 @@ public class HomepageSettings extends PreferenceFragmentCompat {
         String defaultUrl = HomepageManager.getDefaultHomepageUri();
         String customUrl = mHomepageManager.getPrefHomepageCustomUri();
         if (mHomepageManager.getPrefHomepageUseDefaultUri()) {
-            return NewTabPage.isNTPUrl(defaultUrl) ? "" : defaultUrl;
+            return UrlUtilities.isNTPUrl(defaultUrl) ? "" : defaultUrl;
         }
 
-        if (TextUtils.isEmpty(customUrl) && !NewTabPage.isNTPUrl(defaultUrl)) {
+        if (TextUtils.isEmpty(customUrl) && !UrlUtilities.isNTPUrl(defaultUrl)) {
             return defaultUrl;
         }
 
@@ -212,11 +196,11 @@ public class HomepageSettings extends PreferenceFragmentCompat {
         // URL, we don't check Chrome's Homepage radio button.
         boolean shouldCheckNTP;
         if (isPolicyEnabled) {
-            shouldCheckNTP = NewTabPage.isNTPUrl(HomepagePolicyManager.getHomepageUrl());
+            shouldCheckNTP = UrlUtilities.isNTPUrl(HomepagePolicyManager.getHomepageUrl());
         } else {
             shouldCheckNTP = mHomepageManager.getPrefHomepageUseChromeNTP()
                     || (mHomepageManager.getPrefHomepageUseDefaultUri()
-                            && NewTabPage.isNTPUrl(HomepageManager.getDefaultHomepageUri()));
+                            && UrlUtilities.isNTPUrl(HomepageManager.getDefaultHomepageUri()));
         }
 
         @HomepageOption

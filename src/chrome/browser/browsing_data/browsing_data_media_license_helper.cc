@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,7 +27,7 @@ namespace {
 // An implementation of the BrowsingDataMediaLicenseHelper interface that
 // determine data on media licenses in a given |filesystem_context| and
 // returns a list of MediaLicenseInfo items to a client.
-class BrowsingDataMediaLicenseHelperImpl
+class BrowsingDataMediaLicenseHelperImpl final
     : public BrowsingDataMediaLicenseHelper {
  public:
   // BrowsingDataMediaLicenseHelper implementation
@@ -99,9 +98,9 @@ void BrowsingDataMediaLicenseHelperImpl::FetchMediaLicenseInfoOnFileTaskRunner(
           filesystem_context_->GetFileSystemBackend(kType));
 
   // Determine the set of origins used.
-  std::set<url::Origin> origins;
+  std::vector<url::Origin> origins =
+      backend->GetOriginsForTypeOnFileTaskRunner(kType);
   std::list<MediaLicenseInfo> result;
-  backend->GetOriginsForTypeOnFileTaskRunner(kType, &origins);
   for (const auto& origin : origins) {
     if (!browsing_data::HasWebScheme(origin.GetURL()))
       continue;  // Non-websafe state is not considered browsing data.
@@ -114,8 +113,8 @@ void BrowsingDataMediaLicenseHelperImpl::FetchMediaLicenseInfoOnFileTaskRunner(
         MediaLicenseInfo(origin.GetURL(), size, last_modified_time));
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void BrowsingDataMediaLicenseHelperImpl::

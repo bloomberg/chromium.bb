@@ -23,6 +23,7 @@
 #include "src/trace_processor/types/trace_processor_context.h"
 #include "test/gtest_and_gmock.h"
 
+#include "protos/perfetto/common/builtin_clock.pbzero.h"
 #include "protos/perfetto/trace/clock_snapshot.pbzero.h"
 
 namespace perfetto {
@@ -32,11 +33,12 @@ namespace {
 using ::testing::NiceMock;
 using Clock = protos::pbzero::ClockSnapshot::Clock;
 
-constexpr auto REALTIME = Clock::REALTIME;
-constexpr auto BOOTTIME = Clock::BOOTTIME;
-constexpr auto MONOTONIC = Clock::MONOTONIC;
-constexpr auto MONOTONIC_COARSE = Clock::MONOTONIC_COARSE;
-constexpr auto MONOTONIC_RAW = Clock::MONOTONIC_RAW;
+constexpr auto REALTIME = protos::pbzero::BUILTIN_CLOCK_REALTIME;
+constexpr auto BOOTTIME = protos::pbzero::BUILTIN_CLOCK_BOOTTIME;
+constexpr auto MONOTONIC = protos::pbzero::BUILTIN_CLOCK_MONOTONIC;
+constexpr auto MONOTONIC_COARSE =
+    protos::pbzero::BUILTIN_CLOCK_MONOTONIC_COARSE;
+constexpr auto MONOTONIC_RAW = protos::pbzero::BUILTIN_CLOCK_MONOTONIC_RAW;
 
 class ClockTrackerTest : public ::testing::Test {
  public:
@@ -47,7 +49,7 @@ class ClockTrackerTest : public ::testing::Test {
 };
 
 TEST_F(ClockTrackerTest, ClockDomainConversions) {
-  EXPECT_EQ(ct_.ToTraceTime(Clock::REALTIME, 0), base::nullopt);
+  EXPECT_EQ(ct_.ToTraceTime(REALTIME, 0), base::nullopt);
 
   ct_.AddSnapshot({{REALTIME, 10}, {BOOTTIME, 10010}});
   ct_.AddSnapshot({{REALTIME, 20}, {BOOTTIME, 20220}});
@@ -158,6 +160,31 @@ TEST_F(ClockTrackerTest, ChainedResolutionHard) {
   // 3-hop conversion to REALTIME, one way only (REALTIME goes backwards).
   EXPECT_EQ(*ct_.Convert(MONOTONIC_RAW, 53, REALTIME), 53 - 1 - 50 + 10000);
   EXPECT_EQ(*ct_.Convert(MONOTONIC_RAW, 753, REALTIME), 753 - 1 - 50 + 9000);
+}
+
+// Regression test for b/158182858. When taking two snapshots back-to-back,
+// MONOTONIC_COARSE might be stuck to the last value. We should still be able
+// to convert both ways in this case.
+TEST_F(ClockTrackerTest, NonStrictlyMonotonic) {
+  ct_.AddSnapshot({{BOOTTIME, 101}, {MONOTONIC, 51}, {MONOTONIC_COARSE, 50}});
+  ct_.AddSnapshot({{BOOTTIME, 105}, {MONOTONIC, 55}, {MONOTONIC_COARSE, 50}});
+
+  // This last snapshot is deliberately identical to the previous one. This
+  // is to simulate the case of taking two snapshots so close to each other that
+  // all clocks are identical.
+  ct_.AddSnapshot({{BOOTTIME, 105}, {MONOTONIC, 55}, {MONOTONIC_COARSE, 50}});
+
+  EXPECT_EQ(ct_.Convert(MONOTONIC_COARSE, 49, MONOTONIC), 50);
+  EXPECT_EQ(ct_.Convert(MONOTONIC_COARSE, 50, MONOTONIC), 55);
+  EXPECT_EQ(ct_.Convert(MONOTONIC_COARSE, 51, MONOTONIC), 56);
+
+  EXPECT_EQ(ct_.Convert(MONOTONIC_COARSE, 40, BOOTTIME), 91);
+  EXPECT_EQ(ct_.Convert(MONOTONIC_COARSE, 50, BOOTTIME), 105);
+  EXPECT_EQ(ct_.Convert(MONOTONIC_COARSE, 55, BOOTTIME), 110);
+
+  EXPECT_EQ(ct_.Convert(BOOTTIME, 91, MONOTONIC_COARSE), 40);
+  EXPECT_EQ(ct_.Convert(BOOTTIME, 105, MONOTONIC_COARSE), 50);
+  EXPECT_EQ(ct_.Convert(BOOTTIME, 110, MONOTONIC_COARSE), 55);
 }
 
 TEST_F(ClockTrackerTest, SequenceScopedClocks) {

@@ -87,7 +87,7 @@ var CrElementsInputV3Test = class extends CrElementsV3FocusTest {
 };
 
 // https://crbug.com/997943: Flaky on Mac
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');
@@ -134,6 +134,19 @@ TEST_F('CrElementsToggleV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrElementsToolbarSearchFieldV3Test = class extends CrElementsV3FocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_toolbar_search_field_tests.m.js';
+  }
+};
+
+TEST_F('CrElementsToolbarSearchFieldV3Test', 'All', function() {
+  mocha.run();
+});
+
+
+// eslint-disable-next-line no-var
 var IronListFocusV3Test = class extends CrElementsV3FocusTest {
   /** @override */
   get browsePreload() {
@@ -142,5 +155,31 @@ var IronListFocusV3Test = class extends CrElementsV3FocusTest {
 };
 
 TEST_F('IronListFocusV3Test', 'All', function() {
+  mocha.run();
+});
+
+
+// eslint-disable-next-line no-var
+var CrElementsGridFocusTest = class extends CrElementsV3FocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_grid_focus_test.js';
+  }
+};
+
+TEST_F('CrElementsGridFocusTest', 'All', function() {
+  mocha.run();
+});
+
+
+// eslint-disable-next-line no-var
+var CrElementsMenuSelectorFocusTest = class extends CrElementsV3FocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_menu_selector_focus_test.js';
+  }
+};
+
+TEST_F('CrElementsMenuSelectorFocusTest', 'All', function() {
   mocha.run();
 });

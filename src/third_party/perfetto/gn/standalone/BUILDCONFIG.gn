@@ -18,9 +18,9 @@ declare_args() {
   is_system_compiler = false
   is_lto = false
 
-  extra_cflags = ""
-  extra_cxxflags = ""
-  extra_ldflags = ""
+  # This is defined here because it's needed below for determining the value of
+  # |is_cross_compiling|.
+  target_triplet = ""
 }
 
 # Platform detection
@@ -35,6 +35,7 @@ is_android = current_os == "android"
 is_linux = current_os == "linux"
 is_linux_host = host_os == "linux"
 is_mac = current_os == "mac"
+is_mac_host = host_os == "mac"
 
 # Building with Windows/Fuchsia/nacl is currently only supported in the Chromium
 # tree so always set this to false.
@@ -52,7 +53,8 @@ if (current_cpu == "") {
   current_cpu = target_cpu
 }
 
-is_cross_compiling = target_cpu != host_cpu || target_os != host_os
+is_cross_compiling =
+    target_cpu != host_cpu || target_os != host_os || target_triplet != ""
 
 default_configs = [
   "//gn/standalone:debug_symbols",

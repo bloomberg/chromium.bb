@@ -12,14 +12,19 @@
 
 namespace net {
 
-// Default QUIC version used in absence of any external configuration.
-constexpr quic::ParsedQuicVersion kDefaultSupportedQuicVersion{
-    quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_46};
-
-// Returns a list containing only the current default version.
+// Default QUIC supported versions used in absence of any external
+// configuration.
 inline NET_EXPORT_PRIVATE quic::ParsedQuicVersionVector
 DefaultSupportedQuicVersions() {
-  return quic::ParsedQuicVersionVector{kDefaultSupportedQuicVersion};
+  return quic::ParsedQuicVersionVector{quic::ParsedQuicVersion::Q050()};
+}
+
+// Obsolete QUIC supported versions are versions that are supported by the
+// QUIC shared code but that Chrome refuses to use because modern clients
+// should only use versions at least as recent as the oldest default version.
+inline NET_EXPORT_PRIVATE quic::ParsedQuicVersionVector ObsoleteQuicVersions() {
+  return quic::ParsedQuicVersionVector{quic::ParsedQuicVersion::Q043(),
+                                       quic::ParsedQuicVersion::Q046()};
 }
 
 // When a connection is idle for 30 seconds it will be closed.
@@ -165,6 +170,13 @@ struct NET_EXPORT QuicParams {
   // The initial rtt that will be used in crypto handshake if no cached
   // smoothed rtt is present.
   base::TimeDelta initial_rtt_for_handshake;
+  // If true, QUIC with TLS will not try 0-RTT connection.
+  bool disable_tls_zero_rtt = false;
+  // If true, gQUIC requests will always require confirmation.
+  bool disable_gquic_zero_rtt = false;
+  // Network Service Type of the socket for iOS. Default is NET_SERVICE_TYPE_BE
+  // (best effort).
+  int ios_network_service_type = 0;
 };
 
 // QuicContext contains QUIC-related variables that are shared across all of the
@@ -185,6 +197,11 @@ class NET_EXPORT_PRIVATE QuicContext {
   }
   const quic::ParsedQuicVersionVector& supported_versions() {
     return params_.supported_versions;
+  }
+
+  void SetHelperForTesting(
+      std::unique_ptr<quic::QuicConnectionHelperInterface> helper) {
+    helper_ = std::move(helper);
   }
 
  private:

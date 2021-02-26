@@ -37,7 +37,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
-#include "rlz/lib/machine_id.h"
+#include "rlz/lib/machine_id.h"  // nogncheck crbug.com/1125897
 #endif
 
 namespace {
@@ -327,9 +327,9 @@ void InstallSigner::GetSignature(SignatureCallback callback) {
             "This feature cannot be disabled, but it is only activated if "
             "extensions are installed."
           chrome_policy {
-            ExtensionInstallBlacklist {
+            ExtensionInstallBlocklist {
               policy_options {mode: MANDATORY}
-              ExtensionInstallBlacklist: {
+              ExtensionInstallBlocklist: {
                 entries: '*'
               }
             }

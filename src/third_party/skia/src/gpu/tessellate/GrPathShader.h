@@ -8,10 +8,12 @@
 #ifndef GrPathShader_DEFINED
 #define GrPathShader_DEFINED
 
+#include "src/core/SkArenaAlloc.h"
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsRenderPass.h"
 #include "src/gpu/GrProgramInfo.h"
+#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
  // This is a common base class for shaders in the GPU tessellator.
 class GrPathShader : public GrGeometryProcessor {
@@ -27,23 +29,39 @@ public:
         }
     }
 
+    GrPrimitiveType primitiveType() const { return fPrimitiveType; }
+    int tessellationPatchVertexCount() const { return fTessellationPatchVertexCount; }
     const SkMatrix& viewMatrix() const { return fViewMatrix; }
 
-    // This subclass is used to simplify the argument list for constructing GrProgramInfo from a
-    // GrPathShader.
-    class ProgramInfo : public GrProgramInfo {
-    public:
-        ProgramInfo(const GrSurfaceProxyView* view, const GrPipeline* pipeline,
-                    const GrPathShader* shader)
-                : ProgramInfo(view->asRenderTargetProxy(), view->origin(), pipeline, shader) {
-        }
-        ProgramInfo(const GrRenderTargetProxy* proxy, GrSurfaceOrigin origin,
-                    const GrPipeline* pipeline, const GrPathShader* shader)
-                : GrProgramInfo(proxy->numSamples(), proxy->numStencilSamples(),
-                                proxy->backendFormat(), origin, pipeline, shader,
-                                shader->fPrimitiveType, shader->fTessellationPatchVertexCount) {
-        }
-    };
+    static GrProgramInfo* MakeProgramInfo(const GrPathShader* shader, SkArenaAlloc* arena,
+                                          const GrSurfaceProxyView* writeView,
+                                          GrPipeline::InputFlags pipelineFlags,
+                                          GrProcessorSet&& processors, GrAppliedClip&& appliedClip,
+                                          const GrXferProcessor::DstProxyView& dstProxyView,
+                                          GrXferBarrierFlags renderPassXferBarriers,
+                                          const GrUserStencilSettings* stencil,
+                                          const GrCaps& caps) {
+        auto* pipeline = GrSimpleMeshDrawOpHelper::CreatePipeline(
+                &caps, arena, writeView->swizzle(), std::move(appliedClip), dstProxyView,
+                std::move(processors), pipelineFlags);
+        return MakeProgramInfo(shader, arena, writeView, pipeline, dstProxyView,
+                               renderPassXferBarriers, stencil, caps);
+    }
+
+    static GrProgramInfo* MakeProgramInfo(const GrPathShader* shader, SkArenaAlloc* arena,
+                                          const GrSurfaceProxyView* writeView,
+                                          const GrPipeline* pipeline,
+                                          const GrXferProcessor::DstProxyView& dstProxyView,
+                                          GrXferBarrierFlags renderPassXferBarriers,
+                                          const GrUserStencilSettings* stencil,
+                                          const GrCaps& caps) {
+        GrRenderTargetProxy* proxy = writeView->asRenderTargetProxy();
+        return arena->make<GrProgramInfo>(proxy->numSamples(), proxy->numStencilSamples(),
+                                          proxy->backendFormat(), writeView->origin(), pipeline,
+                                          stencil, shader, shader->fPrimitiveType,
+                                          shader->fTessellationPatchVertexCount,
+                                          renderPassXferBarriers);
+    }
 
 private:
     const SkMatrix fViewMatrix;

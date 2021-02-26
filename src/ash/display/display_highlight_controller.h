@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -15,6 +15,8 @@ namespace ash {
 // DisplayHighlightController manages which display should render display
 // identification highlights. Highlights are translucent blue rectangles on the
 // edges of a display.
+// TODO(1091497): Consider combining DisplayHighlightController and
+// DisplayAlignmentController.
 class ASH_EXPORT DisplayHighlightController
     : public WindowTreeHostManager::Observer,
       public SessionObserver {

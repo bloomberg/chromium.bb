@@ -61,12 +61,12 @@ class TrackerImplAndroid : public base::SupportsUserData::Data {
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jobj);
 
-  TrackerImplAndroid(TrackerImpl* tracker_impl, FeatureVector features);
+  TrackerImplAndroid(Tracker* tracker, FeatureVector features);
   ~TrackerImplAndroid() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  TrackerImpl* tracker_impl() { return tracker_impl_; }
+  Tracker* tracker() { return tracker_; }
 
   // Tracker JNI bridge implementation.
   virtual void NotifyEvent(JNIEnv* env,
@@ -108,8 +108,8 @@ class TrackerImplAndroid : public base::SupportsUserData::Data {
   // class as well, we should remove this mapping.
   FeatureMap features_;
 
-  // The TrackerImpl this is a JNI bridge for.
-  TrackerImpl* tracker_impl_;
+  // The Tracker this is a JNI bridge for.
+  Tracker* tracker_;
 
   // The Java-side of this JNI bridge.
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

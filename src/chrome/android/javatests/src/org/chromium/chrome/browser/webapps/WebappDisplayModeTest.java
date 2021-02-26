@@ -6,10 +6,11 @@ package org.chromium.chrome.browser.webapps;
 
 import android.graphics.Color;
 import android.net.Uri;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -17,6 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -26,7 +28,6 @@ import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.test.util.UiRestriction;
@@ -127,9 +128,6 @@ public class WebappDisplayModeTest {
                         .putExtra(ShortcutHelper.EXTRA_URL, url)
                         .putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, displayMode)
                         .putExtra(ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
-
-        mActivityTestRule.waitUntilSplashscreenHides();
-        mActivityTestRule.waitUntilIdle();
 
         return mActivityTestRule.getActivity();
     }

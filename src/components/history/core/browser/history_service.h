@@ -17,20 +17,20 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/check.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/favicon_base/favicon_callback.h"
@@ -46,12 +46,9 @@ class HistoryQuickProviderTest;
 class HistoryURLProvider;
 class InMemoryURLIndexTest;
 class SkBitmap;
-class SyncBookmarkDataTypeControllerTest;
-class TestingProfile;
 
 namespace base {
 class FilePath;
-class Thread;
 }  // namespace base
 
 namespace favicon {
@@ -88,8 +85,6 @@ class WebHistoryService;
 // as information about downloads.
 class HistoryService : public KeyedService {
  public:
-  static const base::Feature kHistoryServiceUsesTaskScheduler;
-
   // Must call Init after construction. The empty constructor provided only for
   // unit tests. When using the full constructor, |history_client| may only be
   // null during testing, while |visit_delegate| may be null if the embedder use
@@ -168,6 +163,9 @@ class HistoryService : public KeyedService {
   // should be the unique ID of the current navigation entry in the given
   // process.
   //
+  // |publicly_routable| is a property of the IP address at the URL visit time.
+  // See VisitRow for more details about this field.
+  //
   // TODO(avi): This is no longer true. 'page id' was removed years ago, and
   // their uses replaced by globally-unique nav_entry_ids. Is ContextID still
   // needed? https://crbug.com/859902
@@ -190,7 +188,8 @@ class HistoryService : public KeyedService {
                const RedirectList& redirects,
                ui::PageTransition transition,
                VisitSource visit_source,
-               bool did_replace_entry);
+               bool did_replace_entry,
+               bool publicly_routable);
 
   // For adding pages to history where no tracking information can be done.
   void AddPage(const GURL& url, base::Time time, VisitSource visit_source);
@@ -480,15 +479,15 @@ class HistoryService : public KeyedService {
   // icon URL (e.g. http://www.google.com/favicon.ico) for which the favicon
   // data has changed. It is valid to call the callback with non-empty
   // "page URLs" and no "icon URL" and vice versa.
-  using OnFaviconsChangedCallback =
-      base::RepeatingCallback<void(const std::set<GURL>&, const GURL&)>;
+  using FaviconsChangedCallbackList =
+      base::RepeatingCallbackList<void(const std::set<GURL>&, const GURL&)>;
+  using FaviconsChangedCallback = FaviconsChangedCallbackList::CallbackType;
 
   // Add a callback to the list. The callback will remain registered until the
   // returned Subscription is destroyed. The Subscription must be destroyed
   // before HistoryService is destroyed.
-  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
-                                          const GURL&)>::Subscription>
-  AddFaviconsChangedCallback(const OnFaviconsChangedCallback& callback)
+  std::unique_ptr<FaviconsChangedCallbackList::Subscription>
+  AddFaviconsChangedCallback(const FaviconsChangedCallback& callback)
       WARN_UNUSED_RESULT;
 
   // Testing -------------------------------------------------------------------
@@ -573,8 +572,6 @@ class HistoryService : public KeyedService {
   friend class ::HistoryURLProvider;
   friend class HQPPerfTestOnePopularURL;
   friend class ::InMemoryURLIndexTest;
-  friend class ::SyncBookmarkDataTypeControllerTest;
-  friend class ::TestingProfile;
   friend std::unique_ptr<HistoryService> CreateHistoryService(
       const base::FilePath& history_dir,
       bool create_db);
@@ -619,7 +616,8 @@ class HistoryService : public KeyedService {
 
   // Notify all HistoryServiceObservers registered that URLs have been added or
   // modified. |changed_urls| contains the list of affects URLs.
-  void NotifyURLsModified(const URLRows& changed_urls);
+  void NotifyURLsModified(const URLRows& changed_urls,
+                          UrlsModifiedReason reason);
 
   // Notify all HistoryServiceObservers registered that URLs have been deleted.
   // |deletion_info| describes the urls that have been removed from history.
@@ -846,13 +844,7 @@ class HistoryService : public KeyedService {
   void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
                              const GURL& icon_url);
 
-  base::ThreadChecker thread_checker_;
-
-  // The thread used by the history service to run HistoryBackend operations.
-  // Intentionally not a BrowserThread because the sync integration unit tests
-  // need to create multiple HistoryServices which each have their own thread.
-  // Nullptr if TaskScheduler is used for HistoryBackend operations.
-  std::unique_ptr<base::Thread> thread_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // The TaskRunner to which HistoryBackend tasks are posted. Nullptr once
   // Cleanup() is called.
@@ -883,8 +875,7 @@ class HistoryService : public KeyedService {
   bool backend_loaded_;
 
   base::ObserverList<HistoryServiceObserver>::Unchecked observers_;
-  base::CallbackList<void(const std::set<GURL>&, const GURL&)>
-      favicon_changed_callback_list_;
+  FaviconsChangedCallbackList favicons_changed_callback_list_;
 
   std::unique_ptr<DeleteDirectiveHandler> delete_directive_handler_;
 

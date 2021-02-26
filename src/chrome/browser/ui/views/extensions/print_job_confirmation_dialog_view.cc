@@ -92,20 +92,21 @@ PrintJobConfirmationDialogView::PrintJobConfirmationDialogView(
     : BubbleDialogDelegateView(anchor_view,
                                anchor_view ? views::BubbleBorder::TOP_RIGHT
                                            : views::BubbleBorder::NONE),
-      extension_name_(extension_name),
-      extension_icon_(gfx::ImageSkiaOperations::CreateResizedImage(
-          extension_icon,
-          skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
-          gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
-                    extension_misc::EXTENSION_ICON_SMALL))),
-      callback_(std::move(callback)),
-      dialog_is_bubble_(anchor_view != nullptr) {
+      callback_(std::move(callback)) {
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(
                      IDS_EXTENSIONS_PRINTING_API_PRINT_REQUEST_ALLOW));
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  l10n_util::GetStringUTF16(
                      IDS_EXTENSIONS_PRINTING_API_PRINT_REQUEST_DENY));
+  SetShowCloseButton(false);
+  SetShowIcon(true);
+  SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
+      extension_icon, skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
+      gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
+                extension_misc::EXTENSION_ICON_SMALL)));
+  SetTitle(l10n_util::GetStringUTF16(
+      IDS_EXTENSIONS_PRINTING_API_PRINT_REQUEST_BUBBLE_TITLE));
 
   auto run_callback = [](PrintJobConfirmationDialogView* dialog, bool accept) {
     std::move(dialog->callback_).Run(accept);
@@ -114,10 +115,15 @@ PrintJobConfirmationDialogView::PrintJobConfirmationDialogView(
   SetCancelCallback(
       base::BindOnce(run_callback, base::Unretained(this), false));
 
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  ChromeLayoutProvider* const provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+  const bool dialog_is_bubble = anchor_view != nullptr;
+  SetModalType(dialog_is_bubble ? ui::MODAL_TYPE_NONE : ui::MODAL_TYPE_WINDOW);
+  set_fixed_width(provider->GetDistanceMetric(
+      dialog_is_bubble ? views::DISTANCE_BUBBLE_PREFERRED_WIDTH
+                       : views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   // Add margins for the icon plus the icon-title padding so that the dialog
   // contents align with the title text.
@@ -130,7 +136,7 @@ PrintJobConfirmationDialogView::PrintJobConfirmationDialogView(
       l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_PRINTING_API_PRINT_REQUEST_BUBBLE_HEADING,
           extension_name, print_job_title, printer_name),
-      CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
+      views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_SECONDARY);
   heading->SetMultiLine(true);
   heading->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   heading->SetAllowCharacterBreak(true);
@@ -141,36 +147,6 @@ PrintJobConfirmationDialogView::PrintJobConfirmationDialogView(
 }
 
 PrintJobConfirmationDialogView::~PrintJobConfirmationDialogView() = default;
-
-gfx::Size PrintJobConfirmationDialogView::CalculatePreferredSize() const {
-  const int width =
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          dialog_is_bubble_ ? DISTANCE_BUBBLE_PREFERRED_WIDTH
-                            : DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-      margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
-}
-
-ui::ModalType PrintJobConfirmationDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
-}
-
-base::string16 PrintJobConfirmationDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringFUTF16(
-      IDS_EXTENSIONS_PRINTING_API_PRINT_REQUEST_BUBBLE_TITLE, extension_name_);
-}
-
-gfx::ImageSkia PrintJobConfirmationDialogView::GetWindowIcon() {
-  return extension_icon_;
-}
-
-bool PrintJobConfirmationDialogView::ShouldShowWindowIcon() const {
-  return true;
-}
-
-bool PrintJobConfirmationDialogView::ShouldShowCloseButton() const {
-  return false;
-}
 
 namespace chrome {
 

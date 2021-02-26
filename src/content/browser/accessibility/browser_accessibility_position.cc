@@ -46,7 +46,7 @@ bool BrowserAccessibilityPosition::IsInTextObject() const {
   if (IsNullPosition())
     return false;
   DCHECK(GetAnchor());
-  return GetAnchor()->IsTextOnlyObject();
+  return GetAnchor()->IsText();
 }
 
 bool BrowserAccessibilityPosition::IsInWhiteSpace() const {
@@ -102,6 +102,13 @@ int BrowserAccessibilityPosition::AnchorUnignoredChildCount() const {
 int BrowserAccessibilityPosition::AnchorIndexInParent() const {
   return GetAnchor() ? GetAnchor()->GetIndexInParent()
                      : AXPosition::INVALID_INDEX;
+}
+
+int BrowserAccessibilityPosition::AnchorSiblingCount() const {
+  BrowserAccessibility* parent = GetAnchor()->PlatformGetParent();
+  if (parent)
+    return static_cast<int>(parent->InternalChildCount());
+  return 0;
 }
 
 base::stack<BrowserAccessibility*>
@@ -170,7 +177,7 @@ bool BrowserAccessibilityPosition::IsEmbeddedObjectInParent() const {
 #if defined(OS_WIN) || BUILDFLAG(USE_ATK)
   // Not all objects in the internal accessibility tree are exposed to platform
   // APIs.
-  return !IsNullPosition() && !GetAnchor()->IsTextOnlyObject() &&
+  return !IsNullPosition() && !GetAnchor()->IsText() &&
          !GetAnchor()->IsChildOfLeaf();
 #else
   return false;
@@ -186,11 +193,16 @@ bool BrowserAccessibilityPosition::IsInLineBreakingObject() const {
          !GetAnchor()->IsInListMarker();
 }
 
-ax::mojom::Role BrowserAccessibilityPosition::GetRole() const {
+ax::mojom::Role BrowserAccessibilityPosition::GetAnchorRole() const {
   if (IsNullPosition())
     return ax::mojom::Role::kNone;
   DCHECK(GetAnchor());
-  return GetAnchor()->GetRole();
+  return GetRole(GetAnchor());
+}
+
+ax::mojom::Role BrowserAccessibilityPosition::GetRole(
+    BrowserAccessibility* node) const {
+  return node->GetRole();
 }
 
 ui::AXNodeTextStyles BrowserAccessibilityPosition::GetTextStyles() const {

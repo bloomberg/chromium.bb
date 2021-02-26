@@ -187,6 +187,9 @@ class TestLauncher {
   // Runs all tests in current iteration.
   void RunTests();
 
+  // Print test names that almost match a filter (matches *<filter>*).
+  void PrintFuzzyMatchingTestNames();
+
   // Retry to run tests that failed during RunTests.
   // Returns false if retry still fails or unable to start.
   bool RunRetryTests();
@@ -231,6 +234,8 @@ class TestLauncher {
                           bool was_timeout,
                           int leaked_items);
 
+  std::vector<std::string> CollectTests();
+
   // Make sure we don't accidentally call the wrong methods e.g. on the worker
   // pool thread.  Should be the first member so that it's destroyed last: when
   // destroying other members, especially the worker pool, we may check the code
@@ -272,6 +277,9 @@ class TestLauncher {
   // likely indicating a more systemic problem if widespread.
   size_t test_broken_count_;
 
+  // How many retries are left.
+  size_t retries_left_;
+
   // Maximum number of retries per iteration.
   size_t retry_limit_;
 
@@ -308,11 +316,16 @@ class TestLauncher {
   // redirect stdio of subprocess
   bool redirect_stdio_;
 
+  // Number of times all tests should be repeated during each iteration.
+  // 1 if gtest_repeat is not specified or gtest_break_on_failure is specified.
+  // Otherwise it matches gtest_repeat value.
+  int repeats_per_iteration_ = 1;
+
   DISALLOW_COPY_AND_ASSIGN(TestLauncher);
 };
 
 // Return the number of parallel jobs to use, or 0U in case of error.
-size_t NumParallelJobs();
+size_t NumParallelJobs(unsigned int cores_per_job);
 
 // Extract part from |full_output| that applies to |result|.
 std::string GetTestOutputSnippet(const TestResult& result,

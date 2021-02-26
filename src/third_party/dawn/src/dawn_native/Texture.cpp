@@ -20,6 +20,7 @@
 #include "common/Constants.h"
 #include "common/Math.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/EnumMaskIterator.h"
 #include "dawn_native/PassResourceUsage.h"
 #include "dawn_native/ValidationUtils_autogen.h"
 
@@ -46,9 +47,11 @@ namespace dawn_native {
                 case wgpu::TextureViewDimension::Cube:
                 case wgpu::TextureViewDimension::CubeArray:
                     return textureDimension == wgpu::TextureDimension::e2D;
-                default:
+
+                case wgpu::TextureViewDimension::e1D:
+                case wgpu::TextureViewDimension::e3D:
+                case wgpu::TextureViewDimension::Undefined:
                     UNREACHABLE();
-                    return false;
             }
         }
 
@@ -65,9 +68,11 @@ namespace dawn_native {
                     return textureViewArrayLayer == 6u;
                 case wgpu::TextureViewDimension::CubeArray:
                     return textureViewArrayLayer % 6 == 0;
-                default:
+
+                case wgpu::TextureViewDimension::e1D:
+                case wgpu::TextureViewDimension::e3D:
+                case wgpu::TextureViewDimension::Undefined:
                     UNREACHABLE();
-                    return false;
             }
         }
 
@@ -81,9 +86,11 @@ namespace dawn_native {
                 case wgpu::TextureViewDimension::e2D:
                 case wgpu::TextureViewDimension::e2DArray:
                     return true;
-                default:
+
+                case wgpu::TextureViewDimension::e1D:
+                case wgpu::TextureViewDimension::e3D:
+                case wgpu::TextureViewDimension::Undefined:
                     UNREACHABLE();
-                    return false;
             }
         }
 
@@ -101,8 +108,9 @@ namespace dawn_native {
 
                 // Multisampled 2D array texture is not supported because on Metal it requires the
                 // version of macOS be greater than 10.14.
-                if (descriptor->arrayLayerCount > 1) {
-                    return DAWN_VALIDATION_ERROR("Multisampled 2D array texture is not supported.");
+                if (descriptor->size.depth > 1) {
+                    return DAWN_VALIDATION_ERROR(
+                        "Multisampled textures with depth > 1 are not supported.");
                 }
 
                 if (format->isCompressed) {
@@ -157,13 +165,18 @@ namespace dawn_native {
                 return DAWN_VALIDATION_ERROR("Texture has too many mip levels");
             }
 
-            if (format->isCompressed && (descriptor->size.width % format->blockWidth != 0 ||
-                                         descriptor->size.height % format->blockHeight != 0)) {
-                return DAWN_VALIDATION_ERROR(
-                    "The size of the texture is incompatible with the texture format");
+            if (format->isCompressed) {
+                const TexelBlockInfo& blockInfo =
+                    format->GetAspectInfo(wgpu::TextureAspect::All).block;
+                if (descriptor->size.width % blockInfo.width != 0 ||
+                    descriptor->size.height % blockInfo.height != 0) {
+                    return DAWN_VALIDATION_ERROR(
+                        "The size of the texture is incompatible with the texture format");
+                }
             }
 
-            if (descriptor->arrayLayerCount > kMaxTexture2DArrayLayers) {
+            if (descriptor->dimension == wgpu::TextureDimension::e2D &&
+                descriptor->size.depth > kMaxTexture2DArrayLayers) {
                 return DAWN_VALIDATION_ERROR("Texture 2D array layer count exceeded");
             }
             if (descriptor->mipLevelCount > kMaxTexture2DMipLevels) {
@@ -179,15 +192,15 @@ namespace dawn_native {
             constexpr wgpu::TextureUsage kValidCompressedUsages = wgpu::TextureUsage::Sampled |
                                                                   wgpu::TextureUsage::CopySrc |
                                                                   wgpu::TextureUsage::CopyDst;
-            if (format->isCompressed && (descriptor->usage & (~kValidCompressedUsages))) {
+            if (format->isCompressed && !IsSubset(descriptor->usage, kValidCompressedUsages)) {
                 return DAWN_VALIDATION_ERROR(
                     "Compressed texture format is incompatible with the texture usage");
             }
 
             if (!format->isRenderable &&
-                (descriptor->usage & wgpu::TextureUsage::OutputAttachment)) {
+                (descriptor->usage & wgpu::TextureUsage::RenderAttachment)) {
                 return DAWN_VALIDATION_ERROR(
-                    "Non-renderable format used with OutputAttachment usage");
+                    "Non-renderable format used with RenderAttachment usage");
             }
 
             if (!format->supportsStorageUsage &&
@@ -196,6 +209,11 @@ namespace dawn_native {
             }
 
             return {};
+        }
+
+        uint8_t GetPlaneIndex(Aspect aspect) {
+            ASSERT(HasOneBit(aspect));
+            return static_cast<uint8_t>(Log2(static_cast<uint32_t>(aspect)));
         }
 
     }  // anonymous namespace
@@ -218,8 +236,7 @@ namespace dawn_native {
 
         // TODO(jiawei.shao@intel.com): check stuff based on the dimension
         if (descriptor->size.width == 0 || descriptor->size.height == 0 ||
-            descriptor->size.depth == 0 || descriptor->arrayLayerCount == 0 ||
-            descriptor->mipLevelCount == 0) {
+            descriptor->size.depth == 0 || descriptor->mipLevelCount == 0) {
             return DAWN_VALIDATION_ERROR("Cannot create an empty texture");
         }
 
@@ -254,8 +271,8 @@ namespace dawn_native {
         DAWN_TRY(ValidateTextureFormat(descriptor->format));
 
         DAWN_TRY(ValidateTextureAspect(descriptor->aspect));
-        if (descriptor->aspect != wgpu::TextureAspect::All) {
-            return DAWN_VALIDATION_ERROR("Texture aspect must be 'all'");
+        if (TryConvertAspect(texture->GetFormat(), descriptor->aspect) == Aspect::None) {
+            return DAWN_VALIDATION_ERROR("Texture does not have selected aspect for texture view.");
         }
 
         // TODO(jiawei.shao@intel.com): check stuff based on resource limits
@@ -308,9 +325,6 @@ namespace dawn_native {
                 case wgpu::TextureDimension::e3D:
                     desc.dimension = wgpu::TextureViewDimension::e3D;
                     break;
-
-                default:
-                    UNREACHABLE();
             }
         }
 
@@ -337,6 +351,36 @@ namespace dawn_native {
         }
     }
 
+    Aspect ConvertSingleAspect(const Format& format, wgpu::TextureAspect aspect) {
+        Aspect aspectMask = ConvertAspect(format, aspect);
+        ASSERT(HasOneBit(aspectMask));
+        return aspectMask;
+    }
+
+    Aspect ConvertAspect(const Format& format, wgpu::TextureAspect aspect) {
+        Aspect aspectMask = TryConvertAspect(format, aspect);
+        ASSERT(aspectMask != Aspect::None);
+        return aspectMask;
+    }
+
+    Aspect TryConvertAspect(const Format& format, wgpu::TextureAspect aspect) {
+        switch (aspect) {
+            case wgpu::TextureAspect::All:
+                return format.aspects;
+            case wgpu::TextureAspect::DepthOnly:
+                return format.aspects & Aspect::Depth;
+            case wgpu::TextureAspect::StencilOnly:
+                return format.aspects & Aspect::Stencil;
+        }
+    }
+
+    // static
+    SubresourceRange SubresourceRange::SingleMipAndLayer(uint32_t baseMipLevel,
+                                                         uint32_t baseArrayLayer,
+                                                         Aspect aspects) {
+        return {baseMipLevel, 1, baseArrayLayer, 1, aspects};
+    }
+
     // TextureBase
 
     TextureBase::TextureBase(DeviceBase* device,
@@ -346,13 +390,17 @@ namespace dawn_native {
           mDimension(descriptor->dimension),
           mFormat(device->GetValidInternalFormat(descriptor->format)),
           mSize(descriptor->size),
-          mArrayLayerCount(descriptor->arrayLayerCount),
           mMipLevelCount(descriptor->mipLevelCount),
           mSampleCount(descriptor->sampleCount),
           mUsage(descriptor->usage),
           mState(state) {
+        uint8_t planeIndex = 0;
+        for (Aspect aspect : IterateEnumMask(mFormat.aspects)) {
+            mPlaneIndices[GetPlaneIndex(aspect)] = planeIndex++;
+        }
+
         uint32_t subresourceCount =
-            GetSubresourceIndex(descriptor->mipLevelCount, descriptor->arrayLayerCount);
+            mMipLevelCount * mSize.depth * static_cast<uint32_t>(planeIndex);
         mIsSubresourceContentInitializedAtIndex = std::vector<bool>(subresourceCount, false);
 
         // Add readonly storage usage if the texture has a storage usage. The validation rules in
@@ -387,17 +435,42 @@ namespace dawn_native {
         ASSERT(!IsError());
         return mSize;
     }
+    uint32_t TextureBase::GetWidth() const {
+        ASSERT(!IsError());
+        return mSize.width;
+    }
+    uint32_t TextureBase::GetHeight() const {
+        ASSERT(!IsError());
+        ASSERT(mDimension == wgpu::TextureDimension::e2D ||
+               mDimension == wgpu::TextureDimension::e3D);
+        return mSize.height;
+    }
+    uint32_t TextureBase::GetDepth() const {
+        ASSERT(!IsError());
+        ASSERT(mDimension == wgpu::TextureDimension::e3D);
+        return mSize.depth;
+    }
     uint32_t TextureBase::GetArrayLayers() const {
         ASSERT(!IsError());
-        return mArrayLayerCount;
+        // TODO(cwallez@chromium.org): Update for 1D / 3D textures when they are supported.
+        ASSERT(mDimension == wgpu::TextureDimension::e2D);
+        return mSize.depth;
     }
     uint32_t TextureBase::GetNumMipLevels() const {
         ASSERT(!IsError());
         return mMipLevelCount;
     }
+    SubresourceRange TextureBase::GetAllSubresources() const {
+        ASSERT(!IsError());
+        return {0, mMipLevelCount, 0, GetArrayLayers(), mFormat.aspects};
+    }
     uint32_t TextureBase::GetSampleCount() const {
         ASSERT(!IsError());
         return mSampleCount;
+    }
+    uint32_t TextureBase::GetSubresourceCount() const {
+        ASSERT(!IsError());
+        return static_cast<uint32_t>(mIsSubresourceContentInitializedAtIndex.size());
     }
     wgpu::TextureUsage TextureBase::GetUsage() const {
         ASSERT(!IsError());
@@ -409,27 +482,32 @@ namespace dawn_native {
         return mState;
     }
 
-    uint32_t TextureBase::GetSubresourceIndex(uint32_t mipLevel, uint32_t arraySlice) const {
+    uint32_t TextureBase::GetSubresourceIndex(uint32_t mipLevel,
+                                              uint32_t arraySlice,
+                                              Aspect aspect) const {
         ASSERT(arraySlice <= kMaxTexture2DArrayLayers);
         ASSERT(mipLevel <= kMaxTexture2DMipLevels);
+        ASSERT(HasOneBit(aspect));
         static_assert(kMaxTexture2DMipLevels <=
                           std::numeric_limits<uint32_t>::max() / kMaxTexture2DArrayLayers,
                       "texture size overflows uint32_t");
-        return GetNumMipLevels() * arraySlice + mipLevel;
+        return mipLevel +
+               GetNumMipLevels() *
+                   (arraySlice + GetArrayLayers() * mPlaneIndices[GetPlaneIndex(aspect)]);
     }
 
-    bool TextureBase::IsSubresourceContentInitialized(uint32_t baseMipLevel,
-                                                      uint32_t levelCount,
-                                                      uint32_t baseArrayLayer,
-                                                      uint32_t layerCount) const {
+    bool TextureBase::IsSubresourceContentInitialized(const SubresourceRange& range) const {
         ASSERT(!IsError());
-        for (uint32_t mipLevel = baseMipLevel; mipLevel < baseMipLevel + levelCount; ++mipLevel) {
-            for (uint32_t arrayLayer = baseArrayLayer; arrayLayer < baseArrayLayer + layerCount;
-                 ++arrayLayer) {
-                uint32_t subresourceIndex = GetSubresourceIndex(mipLevel, arrayLayer);
-                ASSERT(subresourceIndex < mIsSubresourceContentInitializedAtIndex.size());
-                if (!mIsSubresourceContentInitializedAtIndex[subresourceIndex]) {
-                    return false;
+        for (Aspect aspect : IterateEnumMask(range.aspects)) {
+            for (uint32_t arrayLayer = range.baseArrayLayer;
+                 arrayLayer < range.baseArrayLayer + range.layerCount; ++arrayLayer) {
+                for (uint32_t mipLevel = range.baseMipLevel;
+                     mipLevel < range.baseMipLevel + range.levelCount; ++mipLevel) {
+                    uint32_t subresourceIndex = GetSubresourceIndex(mipLevel, arrayLayer, aspect);
+                    ASSERT(subresourceIndex < mIsSubresourceContentInitializedAtIndex.size());
+                    if (!mIsSubresourceContentInitializedAtIndex[subresourceIndex]) {
+                        return false;
+                    }
                 }
             }
         }
@@ -437,17 +515,17 @@ namespace dawn_native {
     }
 
     void TextureBase::SetIsSubresourceContentInitialized(bool isInitialized,
-                                                         uint32_t baseMipLevel,
-                                                         uint32_t levelCount,
-                                                         uint32_t baseArrayLayer,
-                                                         uint32_t layerCount) {
+                                                         const SubresourceRange& range) {
         ASSERT(!IsError());
-        for (uint32_t mipLevel = baseMipLevel; mipLevel < baseMipLevel + levelCount; ++mipLevel) {
-            for (uint32_t arrayLayer = baseArrayLayer; arrayLayer < baseArrayLayer + layerCount;
-                 ++arrayLayer) {
-                uint32_t subresourceIndex = GetSubresourceIndex(mipLevel, arrayLayer);
-                ASSERT(subresourceIndex < mIsSubresourceContentInitializedAtIndex.size());
-                mIsSubresourceContentInitializedAtIndex[subresourceIndex] = isInitialized;
+        for (Aspect aspect : IterateEnumMask(range.aspects)) {
+            for (uint32_t arrayLayer = range.baseArrayLayer;
+                 arrayLayer < range.baseArrayLayer + range.layerCount; ++arrayLayer) {
+                for (uint32_t mipLevel = range.baseMipLevel;
+                     mipLevel < range.baseMipLevel + range.levelCount; ++mipLevel) {
+                    uint32_t subresourceIndex = GetSubresourceIndex(mipLevel, arrayLayer, aspect);
+                    ASSERT(subresourceIndex < mIsSubresourceContentInitializedAtIndex.size());
+                    mIsSubresourceContentInitializedAtIndex[subresourceIndex] = isInitialized;
+                }
             }
         }
     }
@@ -466,9 +544,16 @@ namespace dawn_native {
     }
 
     Extent3D TextureBase::GetMipLevelVirtualSize(uint32_t level) const {
-        Extent3D extent;
-        extent.width = std::max(mSize.width >> level, 1u);
+        Extent3D extent = {std::max(mSize.width >> level, 1u), 1u, 1u};
+        if (mDimension == wgpu::TextureDimension::e1D) {
+            return extent;
+        }
+
         extent.height = std::max(mSize.height >> level, 1u);
+        if (mDimension == wgpu::TextureDimension::e2D) {
+            return extent;
+        }
+
         extent.depth = std::max(mSize.depth >> level, 1u);
         return extent;
     }
@@ -480,13 +565,26 @@ namespace dawn_native {
         // 4 at non-zero mipmap levels.
         if (mFormat.isCompressed) {
             // TODO(jiawei.shao@intel.com): check if there are any overflows.
-            uint32_t blockWidth = mFormat.blockWidth;
-            uint32_t blockHeight = mFormat.blockHeight;
-            extent.width = (extent.width + blockWidth - 1) / blockWidth * blockWidth;
-            extent.height = (extent.height + blockHeight - 1) / blockHeight * blockHeight;
+            const TexelBlockInfo& blockInfo = mFormat.GetAspectInfo(wgpu::TextureAspect::All).block;
+            extent.width = (extent.width + blockInfo.width - 1) / blockInfo.width * blockInfo.width;
+            extent.height =
+                (extent.height + blockInfo.height - 1) / blockInfo.height * blockInfo.height;
         }
 
         return extent;
+    }
+
+    Extent3D TextureBase::ClampToMipLevelVirtualSize(uint32_t level,
+                                                     const Origin3D& origin,
+                                                     const Extent3D& extent) const {
+        const Extent3D virtualSizeAtLevel = GetMipLevelVirtualSize(level);
+        uint32_t clampedCopyExtentWidth = (origin.x + extent.width > virtualSizeAtLevel.width)
+                                              ? (virtualSizeAtLevel.width - origin.x)
+                                              : extent.width;
+        uint32_t clampedCopyExtentHeight = (origin.y + extent.height > virtualSizeAtLevel.height)
+                                               ? (virtualSizeAtLevel.height - origin.y)
+                                               : extent.height;
+        return {clampedCopyExtentWidth, clampedCopyExtentHeight, extent.depth};
     }
 
     TextureViewBase* TextureBase::CreateView(const TextureViewDescriptor* descriptor) {
@@ -521,10 +619,8 @@ namespace dawn_native {
           mTexture(texture),
           mFormat(GetDevice()->GetValidInternalFormat(descriptor->format)),
           mDimension(descriptor->dimension),
-          mBaseMipLevel(descriptor->baseMipLevel),
-          mMipLevelCount(descriptor->mipLevelCount),
-          mBaseArrayLayer(descriptor->baseArrayLayer),
-          mArrayLayerCount(descriptor->arrayLayerCount) {
+          mRange({descriptor->baseMipLevel, descriptor->mipLevelCount, descriptor->baseArrayLayer,
+                  descriptor->arrayLayerCount, ConvertAspect(mFormat, descriptor->aspect)}) {
     }
 
     TextureViewBase::TextureViewBase(DeviceBase* device, ObjectBase::ErrorTag tag)
@@ -546,6 +642,11 @@ namespace dawn_native {
         return mTexture.Get();
     }
 
+    Aspect TextureViewBase::GetAspects() const {
+        ASSERT(!IsError());
+        return mRange.aspects;
+    }
+
     const Format& TextureViewBase::GetFormat() const {
         ASSERT(!IsError());
         return mFormat;
@@ -558,21 +659,27 @@ namespace dawn_native {
 
     uint32_t TextureViewBase::GetBaseMipLevel() const {
         ASSERT(!IsError());
-        return mBaseMipLevel;
+        return mRange.baseMipLevel;
     }
 
     uint32_t TextureViewBase::GetLevelCount() const {
         ASSERT(!IsError());
-        return mMipLevelCount;
+        return mRange.levelCount;
     }
 
     uint32_t TextureViewBase::GetBaseArrayLayer() const {
         ASSERT(!IsError());
-        return mBaseArrayLayer;
+        return mRange.baseArrayLayer;
     }
 
     uint32_t TextureViewBase::GetLayerCount() const {
         ASSERT(!IsError());
-        return mArrayLayerCount;
+        return mRange.layerCount;
     }
+
+    const SubresourceRange& TextureViewBase::GetSubresourceRange() const {
+        ASSERT(!IsError());
+        return mRange;
+    }
+
 }  // namespace dawn_native

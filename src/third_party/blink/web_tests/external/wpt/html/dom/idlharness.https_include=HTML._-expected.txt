@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 3732 tests; 3701 PASS, 31 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 3738 tests; 3709 PASS, 29 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -127,6 +127,7 @@ PASS OffscreenCanvasRenderingContext2D includes CanvasImageData: member names ar
 PASS OffscreenCanvasRenderingContext2D includes CanvasPathDrawingStyles: member names are unique
 PASS OffscreenCanvasRenderingContext2D includes CanvasTextDrawingStyles: member names are unique
 PASS OffscreenCanvasRenderingContext2D includes CanvasPath: member names are unique
+PASS ElementInternals includes ARIAMixin: member names are unique
 PASS Window includes GlobalEventHandlers: member names are unique
 PASS Window includes WindowEventHandlers: member names are unique
 PASS Window includes WindowOrWorkerGlobalScope: member names are unique
@@ -149,6 +150,11 @@ PASS WorkerNavigator includes NavigatorLanguage: member names are unique
 PASS WorkerNavigator includes NavigatorOnLine: member names are unique
 PASS WorkerNavigator includes NavigatorConcurrentHardware: member names are unique
 PASS HTMLFrameSetElement includes WindowEventHandlers: member names are unique
+PASS Element includes ARIAMixin: member names are unique
+PASS Element includes ParentNode: member names are unique
+PASS Element includes NonDocumentTypeChildNode: member names are unique
+PASS Element includes ChildNode: member names are unique
+PASS Element includes Slottable: member names are unique
 PASS SVGElement includes GlobalEventHandlers: member names are unique
 PASS SVGElement includes DocumentAndElementEventHandlers: member names are unique
 PASS SVGElement includes SVGElementInstance: member names are unique
@@ -164,10 +170,6 @@ FAIL SVGAElement includes HTMLHyperlinkElementUtils: member names are unique ass
 PASS DocumentFragment includes NonElementParentNode: member names are unique
 PASS DocumentFragment includes ParentNode: member names are unique
 PASS ShadowRoot includes DocumentOrShadowRoot: member names are unique
-PASS Element includes ParentNode: member names are unique
-PASS Element includes NonDocumentTypeChildNode: member names are unique
-PASS Element includes ChildNode: member names are unique
-PASS Element includes Slottable: member names are unique
 PASS HTMLAllCollection interface: existence and properties of interface object
 PASS HTMLAllCollection interface object length
 PASS HTMLAllCollection interface object name
@@ -247,7 +249,6 @@ PASS HTMLElement interface: attribute ondblclick
 PASS HTMLElement interface: attribute ondrag
 PASS HTMLElement interface: attribute ondragend
 PASS HTMLElement interface: attribute ondragenter
-FAIL HTMLElement interface: attribute ondragexit assert_true: The prototype object must have a property "ondragexit" expected true got false
 PASS HTMLElement interface: attribute ondragleave
 PASS HTMLElement interface: attribute ondragover
 PASS HTMLElement interface: attribute ondragstart
@@ -342,7 +343,6 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ondrag" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ondragend" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ondragenter" with the proper type
-FAIL HTMLElement interface: document.createElement("noscript") must inherit property "ondragexit" with the proper type assert_inherits: property "ondragexit" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ondragleave" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ondragover" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ondragstart" with the proper type
@@ -475,6 +475,7 @@ PASS HTMLLinkElement interface: attribute sizes
 PASS HTMLLinkElement interface: attribute imageSrcset
 PASS HTMLLinkElement interface: attribute imageSizes
 PASS HTMLLinkElement interface: attribute referrerPolicy
+PASS HTMLLinkElement interface: attribute disabled
 PASS HTMLLinkElement interface: attribute charset
 PASS HTMLLinkElement interface: attribute rev
 PASS HTMLLinkElement interface: attribute target
@@ -493,6 +494,7 @@ PASS HTMLLinkElement interface: document.createElement("link") must inherit prop
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "imageSrcset" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "imageSizes" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "referrerPolicy" with the proper type
+PASS HTMLLinkElement interface: document.createElement("link") must inherit property "disabled" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "charset" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "rev" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "target" with the proper type
@@ -939,10 +941,10 @@ PASS HTMLIFrameElement interface: attribute name
 PASS HTMLIFrameElement interface: attribute sandbox
 PASS HTMLIFrameElement interface: attribute allow
 PASS HTMLIFrameElement interface: attribute allowFullscreen
-PASS HTMLIFrameElement interface: attribute allowPaymentRequest
 PASS HTMLIFrameElement interface: attribute width
 PASS HTMLIFrameElement interface: attribute height
 PASS HTMLIFrameElement interface: attribute referrerPolicy
+PASS HTMLIFrameElement interface: attribute loading
 PASS HTMLIFrameElement interface: attribute contentDocument
 PASS HTMLIFrameElement interface: attribute contentWindow
 PASS HTMLIFrameElement interface: operation getSVGDocument()
@@ -1101,6 +1103,7 @@ FAIL HTMLMediaElement interface: document.createElement("video") must inherit pr
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "paused" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "defaultPlaybackRate" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "playbackRate" with the proper type
+PASS HTMLMediaElement interface: document.createElement("video") must inherit property "preservesPitch" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "played" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "seekable" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "ended" with the proper type
@@ -1161,6 +1164,7 @@ FAIL HTMLMediaElement interface: document.createElement("audio") must inherit pr
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "paused" with the proper type
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "defaultPlaybackRate" with the proper type
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "playbackRate" with the proper type
+PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "preservesPitch" with the proper type
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "played" with the proper type
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "seekable" with the proper type
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "ended" with the proper type
@@ -1209,6 +1213,7 @@ FAIL HTMLMediaElement interface: new Audio() must inherit property "getStartDate
 PASS HTMLMediaElement interface: new Audio() must inherit property "paused" with the proper type
 PASS HTMLMediaElement interface: new Audio() must inherit property "defaultPlaybackRate" with the proper type
 PASS HTMLMediaElement interface: new Audio() must inherit property "playbackRate" with the proper type
+PASS HTMLMediaElement interface: new Audio() must inherit property "preservesPitch" with the proper type
 PASS HTMLMediaElement interface: new Audio() must inherit property "played" with the proper type
 PASS HTMLMediaElement interface: new Audio() must inherit property "seekable" with the proper type
 PASS HTMLMediaElement interface: new Audio() must inherit property "ended" with the proper type
@@ -1302,6 +1307,7 @@ FAIL HTMLMediaElement interface: operation getStartDate() assert_own_property: i
 PASS HTMLMediaElement interface: attribute paused
 PASS HTMLMediaElement interface: attribute defaultPlaybackRate
 PASS HTMLMediaElement interface: attribute playbackRate
+PASS HTMLMediaElement interface: attribute preservesPitch
 PASS HTMLMediaElement interface: attribute played
 PASS HTMLMediaElement interface: attribute seekable
 PASS HTMLMediaElement interface: attribute ended

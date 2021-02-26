@@ -47,7 +47,6 @@ bool ImageElementBase::IsImageElement() const {
 
 scoped_refptr<Image> ImageElementBase::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    AccelerationHint,
     const FloatSize& default_object_size) {
   ImageResourceContent* image_content = CachedImage();
   if (!GetImageLoader().ImageComplete() || !image_content) {
@@ -145,6 +144,7 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
           "specified.");
       return ScriptPromise();
     }
+    // The following function only works on SVGImages (as checked above).
     return ImageBitmap::CreateAsync(this, crop_rect, script_state, options);
   }
   return ImageBitmapSource::FulfillImageBitmap(

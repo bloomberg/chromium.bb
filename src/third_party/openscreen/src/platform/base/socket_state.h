@@ -18,6 +18,9 @@ enum class SocketState {
   // Socket is not connected.
   kNotConnected = 0,
 
+  // Socket is actively listening for incoming connections.
+  kListening,
+
   // Socket is currently being connected.
   kConnecting,
 

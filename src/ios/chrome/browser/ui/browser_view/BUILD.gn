@@ -35,6 +35,7 @@ source_set("browser_view") {
     "//components/translate/core/browser",
     "//components/url_formatter",
     "//ios/chrome/app:tests_hook",
+    "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/app_launcher",
@@ -48,6 +49,7 @@ source_set("browser_view") {
     "//ios/chrome/browser/geolocation:geolocation_internal",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/language",
+    "//ios/chrome/browser/link_to_text",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/metrics:metrics_browser_agent",
     "//ios/chrome/browser/metrics:metrics_internal",
@@ -78,8 +80,6 @@ source_set("browser_view") {
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/autofill:autofill",
     "//ios/chrome/browser/ui/autofill/form_input_accessory",
-    "//ios/chrome/browser/ui/autofill/manual_fill",
-    "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",
     "//ios/chrome/browser/ui/badges:badges_popup_menu",
     "//ios/chrome/browser/ui/bookmarks",
     "//ios/chrome/browser/ui/browser_container",
@@ -89,17 +89,16 @@ source_set("browser_view") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/content_suggestions",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
-    "//ios/chrome/browser/ui/context_menu",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/dialogs:dialogs_internal",
     "//ios/chrome/browser/ui/download",
-    "//ios/chrome/browser/ui/download:features",
     "//ios/chrome/browser/ui/elements:elements_internal",
     "//ios/chrome/browser/ui/find_bar",
     "//ios/chrome/browser/ui/first_run",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/fullscreen:ui",
+    "//ios/chrome/browser/ui/gestures",
     "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/image_util:web",
     "//ios/chrome/browser/ui/infobars",
@@ -107,6 +106,7 @@ source_set("browser_view") {
     "//ios/chrome/browser/ui/infobars:public",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/location_bar:location_bar_model_delegate",
+    "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/main_content:main_content_ui",
     "//ios/chrome/browser/ui/main_content:main_content_ui_broadcasting_util",
     "//ios/chrome/browser/ui/ntp",
@@ -133,14 +133,17 @@ source_set("browser_view") {
     "//ios/chrome/browser/ui/send_tab_to_self",
     "//ios/chrome/browser/ui/settings/autofill",
     "//ios/chrome/browser/ui/settings/sync/utils",
+    "//ios/chrome/browser/ui/sharing",
     "//ios/chrome/browser/ui/side_swipe",
-    "//ios/chrome/browser/ui/signin_interaction/public",
     "//ios/chrome/browser/ui/snackbar",
+    "//ios/chrome/browser/ui/tab_switcher/tab_strip",
     "//ios/chrome/browser/ui/tabs",
     "//ios/chrome/browser/ui/tabs:coordinator",
     "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/ui/text_zoom",
     "//ios/chrome/browser/ui/text_zoom:text_zoom_ui",
+    "//ios/chrome/browser/ui/thumb_strip",
+    "//ios/chrome/browser/ui/thumb_strip:feature_flags",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/toolbar:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/accessory",
@@ -148,13 +151,13 @@ source_set("browser_view") {
     "//ios/chrome/browser/ui/toolbar/fullscreen",
     "//ios/chrome/browser/ui/toolbar/fullscreen:fullscreen_broadcasting_util",
     "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/chrome/browser/ui/toolbar/public:feature_flags",
     "//ios/chrome/browser/ui/toolbar_container",
     "//ios/chrome/browser/ui/toolbar_container:feature_flags",
     "//ios/chrome/browser/ui/translate:legacy_translate",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util:multiwindow_util",
     "//ios/chrome/browser/ui/voice",
+    "//ios/chrome/browser/ui/whats_new",
     "//ios/chrome/browser/upgrade",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/voice:voice",
@@ -170,10 +173,12 @@ source_set("browser_view") {
     "//ios/chrome/browser/window_activities",
     "//ios/chrome/common",
     "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/common/ui/util",
     "//ios/components/security_interstitials",
     "//ios/components/webui:url_constants",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/public/provider/chrome/browser/voice",
     "//ios/third_party/material_components_ios",
@@ -190,7 +195,7 @@ source_set("browser_view") {
     # Fake dependencies to break cycles
     "//ios/chrome/browser/ui/settings",
   ]
-  libs = [
+  frameworks = [
     "MessageUI.framework",
     "Photos.framework",
     "UIKit.framework",
@@ -211,6 +216,7 @@ source_set("unit_tests") {
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
     "//components/omnibox/browser:test_support",
+    "//components/open_from_clipboard:test_support",
     "//components/prefs:test_support",
     "//components/search_engines",
     "//components/sessions",
@@ -232,8 +238,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/browser_container:ui",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/download:features",
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
+    "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/test",
     "//ios/chrome/browser/ui/util",
@@ -261,41 +267,6 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [ "browser_view_controller_egtest.mm" ]
-  deps = [
-    ":browser_view",
-    "//base",
-    "//base/test:test_support",
-    "//components/strings",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ntp:features",
-    "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui/bookmarks:bookmarks_ui",
-    "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/table_view",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test:eg_test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/third_party/webkit",
-    "//ios/web/public/test",
-    "//ios/web/public/test/http_server",
-    "//ui/base",
-    "//url",
-  ]
-  libs = [
-    "UIKit.framework",
-    "XCTest.framework",
-  ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
@@ -319,5 +290,5 @@ source_set("eg2_tests") {
     "//ui/base",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

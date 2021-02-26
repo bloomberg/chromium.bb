@@ -403,6 +403,23 @@ Status ParseExcludeSwitches(const base::Value& option,
   return Status(kOk);
 }
 
+Status ParsePortNumber(int* to_set,
+                     const base::Value& option,
+                     Capabilities* capabilities) {
+  int max_port_number = 65535;
+  int parsed_int = 0;
+  if (!option.GetAsInteger(&parsed_int))
+    return Status(kInvalidArgument, "must be an integer");
+  if (parsed_int <= 0)
+    return Status(kInvalidArgument, "must be positive");
+  if (parsed_int > max_port_number)
+    return Status(kInvalidArgument, "must be less than or equal to " +
+                                    base::NumberToString(max_port_number));
+  *to_set = parsed_int;
+  return Status(kOk);
+}
+
+
 Status ParseNetAddress(NetAddress* to_set,
                        const base::Value& option,
                        Capabilities* capabilities) {
@@ -410,8 +427,23 @@ Status ParseNetAddress(NetAddress* to_set,
   if (!option.GetAsString(&server_addr))
     return Status(kInvalidArgument, "must be 'host:port'");
 
-  std::vector<std::string> values = base::SplitString(
-      server_addr, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> values;
+  if (base::StartsWith(server_addr, "[")) {
+    size_t ipv6_terminator_pos = server_addr.find(']');
+    if (ipv6_terminator_pos == std::string::npos) {
+      return Status(kInvalidArgument,
+                    "ipv6 address must be terminated with ']'");
+    }
+    values.push_back(server_addr.substr(0, ipv6_terminator_pos + 1));
+    std::vector<std::string> remaining =
+        base::SplitString(server_addr.substr(ipv6_terminator_pos + 1), ":",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    values.insert(values.end(), remaining.begin(), remaining.end());
+  } else {
+    values = base::SplitString(server_addr, ":", base::TRIM_WHITESPACE,
+                               base::SPLIT_WANT_ALL);
+  }
+
   if (values.size() != 2)
     return Status(kInvalidArgument, "must be 'host:port'");
 
@@ -545,9 +577,6 @@ Status ParseChromeOptions(
   // sent if not parsed correctly.
   parser_map["w3c"] = base::BindRepeating(&IgnoreCapability);
 
-  parser_map["useUnsupportedLaunchAppDeprecationWorkaround"] =
-      base::BindRepeating(&ParseBoolean, &capabilities->enable_launch_app);
-
   if (is_android) {
     parser_map["androidActivity"] =
         base::BindRepeating(&ParseString, &capabilities->android_activity);
@@ -563,6 +592,8 @@ Status ParseChromeOptions(
         base::BindRepeating(&ParseString, &capabilities->android_device_socket);
     parser_map["androidUseRunningApp"] = base::BindRepeating(
         &ParseBoolean, &capabilities->android_use_running_app);
+    parser_map["androidDevToolsPort"] = base::BindRepeating(
+        &ParsePortNumber, &capabilities->android_devtools_port);
     parser_map["args"] = base::BindRepeating(&ParseSwitches);
     parser_map["excludeSwitches"] = base::BindRepeating(&ParseExcludeSwitches);
     parser_map["loadAsync"] =
@@ -589,8 +620,8 @@ Status ParseChromeOptions(
         base::BindRepeating(&ParseString, &capabilities->minidump_path);
     parser_map["mobileEmulation"] = base::BindRepeating(&ParseMobileEmulation);
     parser_map["prefs"] = base::BindRepeating(&ParseDict, &capabilities->prefs);
-    parser_map["useAutomationExtension"] = base::BindRepeating(
-        &ParseBoolean, &capabilities->use_automation_extension);
+    parser_map["useAutomationExtension"] =
+        base::BindRepeating(&IgnoreDeprecatedOption, "useAutomationExtension");
   }
 
   for (base::DictionaryValue::Iterator it(*chrome_options); !it.IsAtEnd();
@@ -759,9 +790,7 @@ Capabilities::Capabilities()
       android_use_running_app(false),
       detach(false),
       extension_load_timeout(base::TimeDelta::FromSeconds(10)),
-      network_emulation_enabled(false),
-      use_automation_extension(true),
-      enable_launch_app(false) {}
+      network_emulation_enabled(false) {}
 
 Capabilities::~Capabilities() {}
 
@@ -790,6 +819,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   parser_map["timeouts"] = base::BindRepeating(&ParseTimeouts);
   parser_map["strictFileInteractability"] =
       base::BindRepeating(&ParseBoolean, &strict_file_interactability);
+  parser_map["webSocketUrl"] =
+      base::BindRepeating(&ParseBoolean, &webSocketUrl);
   if (!w3c_compliant) {
     // TODO(https://crbug.com/chromedriver/2596): "unexpectedAlertBehaviour" is
     // legacy name of "unhandledPromptBehavior", remove when we stop supporting
@@ -803,6 +834,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   // W3C defined extension capabilities.
   // See https://w3c.github.io/webauthn/#sctn-automation-webdriver-capability
   parser_map["webauthn:virtualAuthenticators"] =
+      base::BindRepeating(&ParseBoolean, nullptr);
+  parser_map["webauthn:extension:largeBlob"] =
       base::BindRepeating(&ParseBoolean, nullptr);
 
   // ChromeDriver specific capabilities.

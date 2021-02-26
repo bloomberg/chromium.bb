@@ -13,11 +13,11 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/json/json_parser.h"
+#include "base/json/json_reader.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
@@ -42,9 +42,6 @@
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
@@ -67,7 +64,7 @@ struct ReverseIndexJSON {
   std::string model;
 
   // Restrictions for this manufacturer
-  PpdProvider::Restrictions restrictions;
+  PpdProvider::LegacyRestrictions restrictions;
 };
 
 struct PpdLicenseJSON {
@@ -87,7 +84,7 @@ struct ManufacturersJSON {
   std::string reference;
 
   // Restrictions for this manufacturer
-  PpdProvider::Restrictions restrictions;
+  PpdProvider::LegacyRestrictions restrictions;
 };
 
 // Holds a metadata_v2 printers response
@@ -99,7 +96,7 @@ struct PrintersJSON {
   std::string effective_make_and_model;
 
   // Restrictions for this printer
-  PpdProvider::Restrictions restrictions;
+  PpdProvider::LegacyRestrictions restrictions;
 };
 
 // Holds a metadata_v2 ppd-index response
@@ -219,79 +216,6 @@ struct PpdReferenceResolutionQueueEntry {
   DISALLOW_COPY_AND_ASSIGN(PpdReferenceResolutionQueueEntry);
 };
 
-// Extract cupsFilter/cupsFilter2 filter names from a line from a ppd.
-
-// cupsFilter2 lines look like this:
-//
-// *cupsFilter2: "application/vnd.cups-raster application/vnd.foo 100
-// rastertofoo"
-//
-// cupsFilter lines look like this:
-//
-// *cupsFilter: "application/vnd.cups-raster 100 rastertofoo"
-//
-// |field_name| is the starting token we look for (*cupsFilter: or
-// *cupsFilter2:).
-//
-// |num_value_tokens| is the number of tokens we expect to find in the
-// value string.  The filter is always the last of these.
-//
-// Return the name of the filter, if one is found.
-//
-// This would be simpler with re2, but re2 is not an allowed dependency in
-// this part of the tree.
-base::Optional<std::string> ExtractCupsFilter(const std::string& line,
-                                              const std::string& field_name,
-                                              int num_value_tokens) {
-  std::string delims(" \n\t\r\"");
-  base::StringTokenizer line_tok(line, delims);
-
-  if (!line_tok.GetNext()) {
-    return {};
-  }
-  if (line_tok.token_piece() != field_name) {
-    return {};
-  }
-
-  // Skip to the last of the value tokens.
-  for (int i = 0; i < num_value_tokens; ++i) {
-    if (!line_tok.GetNext()) {
-      return {};
-    }
-  }
-  if (line_tok.token_piece() != "") {
-    return line_tok.token_piece().as_string();
-  }
-  return {};
-}
-
-// Extract the used cups filters from a ppd.
-//
-// Note that CUPS (post 1.5) discards all cupsFilter lines if *any*
-// cupsFilter2 lines exist.
-//
-std::vector<std::string> ExtractFiltersFromPpd(
-    const std::string& ppd_contents) {
-  std::string line;
-  base::Optional<std::string> tmp;
-  auto ppd_reader = PpdLineReader::Create(ppd_contents, 255);
-  std::vector<std::string> cups_filters;
-  std::vector<std::string> cups_filter2s;
-  while (ppd_reader->NextLine(&line)) {
-    tmp = ExtractCupsFilter(line, "*cupsFilter:", 3);
-    if (tmp.has_value()) {
-      cups_filters.push_back(tmp.value());
-    }
-    tmp = ExtractCupsFilter(line, "*cupsFilter2:", 4);
-    if (tmp.has_value()) {
-      cups_filter2s.push_back(tmp.value());
-    }
-  }
-  if (!cups_filter2s.empty()) {
-    return cups_filter2s;
-  }
-  return cups_filters;
-}
 
 // Returns false if there are obvious errors in the reference that will prevent
 // resolution.
@@ -352,9 +276,9 @@ std::string ComputeLicense(const base::Value& dict) {
 }
 
 // Constructs and returns a printers' restrictions parsed from |dict|.
-PpdProvider::Restrictions ComputeRestrictions(const base::Value& dict) {
+PpdProvider::LegacyRestrictions ComputeRestrictions(const base::Value& dict) {
   DCHECK(dict.is_dict());
-  PpdProvider::Restrictions restrictions;
+  PpdProvider::LegacyRestrictions restrictions;
 
   const base::Value* min_milestone =
       dict.FindKeyOfType({"min_milestone"}, base::Value::Type::DOUBLE);
@@ -377,7 +301,7 @@ PpdProvider::Restrictions ComputeRestrictions(const base::Value& dict) {
 // |current_version|.
 bool IsPrinterRestricted(const PrintersJSON& printer,
                          const base::Version& current_version) {
-  const PpdProvider::Restrictions& restrictions = printer.restrictions;
+  const PpdProvider::LegacyRestrictions& restrictions = printer.restrictions;
 
   if (restrictions.min_milestone != base::Version("0.0") &&
       restrictions.min_milestone > current_version) {
@@ -443,12 +367,12 @@ class PpdProviderImpl : public PpdProvider {
   };
 
   PpdProviderImpl(const std::string& browser_locale,
-                  network::mojom::URLLoaderFactory* loader_factory,
+                  LoaderFactoryGetter loader_factory_getter,
                   scoped_refptr<PpdCache> ppd_cache,
                   const base::Version& current_version,
                   const PpdProvider::Options& options)
       : browser_locale_(browser_locale),
-        loader_factory_(loader_factory),
+        loader_factory_getter_(loader_factory_getter),
         ppd_cache_(ppd_cache),
         disk_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
             {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
@@ -862,7 +786,7 @@ class PpdProviderImpl : public PpdProvider {
 
       // TODO(luum): consider using unbounded size
       fetcher_->DownloadToString(
-          loader_factory_,
+          loader_factory_getter_.Run(),
           base::BindOnce(&PpdProviderImpl::OnURLFetchComplete, this),
           network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
 
@@ -893,17 +817,12 @@ class PpdProviderImpl : public PpdProvider {
   void FinishPpdResolution(ResolvePpdCallback cb,
                            const std::string& ppd_contents,
                            PpdProvider::CallbackResultCode error_code) {
-    if (!ppd_contents.empty()) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(cb), PpdProvider::SUCCESS, ppd_contents,
-                         ExtractFiltersFromPpd(ppd_contents)));
-    } else {
-      DCHECK_NE(error_code, PpdProvider::SUCCESS);
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(cb), error_code, std::string(),
-                                    std::vector<std::string>()));
+    if (!ppd_contents.empty() && error_code != SUCCESS) {
+      error_code = SUCCESS;
+      LOG(WARNING) << "Resolved from cache due to network issue";
     }
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), error_code, ppd_contents));
   }
 
   // Callback when the cache lookup for a ppd request finishes.  If we hit in
@@ -1094,8 +1013,17 @@ class PpdProviderImpl : public PpdProvider {
     std::string contents;
     auto& entry = ppd_resolution_queue_.front();
     if ((ValidateAndGetResponseAsString(&contents) != PpdProvider::SUCCESS)) {
-      FinishPpdResolution(std::move(entry.callback), entry.cached_contents,
-                          PpdProvider::SERVER_ERROR);
+      //  If we cannot retrieve a PPD from the server, we want the user to be
+      //  able to keep working.  So, if we retrieved a PPD from cache, even if
+      //  it's stale, provide it to the caller.
+      if (entry.cached_contents.empty()) {
+        FinishPpdResolution(std::move(entry.callback), std::string(),
+                            PpdProvider::SERVER_ERROR);
+      } else {
+        LOG(WARNING) << "Using stale cache PPD.  Unable to fetch from server";
+        FinishPpdResolution(std::move(entry.callback), entry.cached_contents,
+                            PpdProvider::SUCCESS);
+      }
     } else if (contents.size() > kMaxPpdSizeBytes) {
       FinishPpdResolution(std::move(entry.callback), entry.cached_contents,
                           PpdProvider::PPD_TOO_LARGE);
@@ -1299,7 +1227,7 @@ class PpdProviderImpl : public PpdProvider {
     size_t best_idx = -1;
     for (size_t i = 0; i < available_locales.size(); ++i) {
       const std::string& available = available_locales[i];
-      if (base::StringPiece(browser_locale_).starts_with(available + "-") &&
+      if (base::StartsWith(browser_locale_, available + "-") &&
           available.size() > best_len) {
         best_len = available.size();
         best_idx = i;
@@ -1806,7 +1734,7 @@ class PpdProviderImpl : public PpdProvider {
   // BrowserContext::GetApplicationLocale();
   const std::string browser_locale_;
 
-  network::mojom::URLLoaderFactory* loader_factory_;
+  LoaderFactoryGetter loader_factory_getter_;
 
   // For file:// fetches, a staging buffer and result flag for loading the file.
   std::string file_fetch_contents_;
@@ -1852,11 +1780,12 @@ PrinterSearchData::~PrinterSearchData() = default;
 // static
 scoped_refptr<PpdProvider> PpdProvider::Create(
     const std::string& browser_locale,
-    network::mojom::URLLoaderFactory* loader_factory,
+    LoaderFactoryGetter loader_factory_getter,
     scoped_refptr<PpdCache> ppd_cache,
     const base::Version& current_version,
     const PpdProvider::Options& options) {
-  return scoped_refptr<PpdProvider>(new PpdProviderImpl(
-      browser_locale, loader_factory, ppd_cache, current_version, options));
+  return scoped_refptr<PpdProvider>(
+      new PpdProviderImpl(browser_locale, loader_factory_getter, ppd_cache,
+                          current_version, options));
 }
 }  // namespace chromeos

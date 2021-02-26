@@ -23,8 +23,8 @@ constexpr SkColor kSkipAdButtonBackgroundColor = gfx::kGoogleGrey700;
 
 namespace views {
 
-SkipAdLabelButton::SkipAdLabelButton(ButtonListener* listener)
-    : LabelButton(listener,
+SkipAdLabelButton::SkipAdLabelButton(PressedCallback callback)
+    : LabelButton(std::move(callback),
                   l10n_util::GetStringUTF16(
                       IDS_PICTURE_IN_PICTURE_SKIP_AD_CONTROL_TEXT)) {
   SetBackground(
@@ -35,7 +35,6 @@ SkipAdLabelButton::SkipAdLabelButton(ButtonListener* listener)
   SetSize(gfx::Size(kSkipAdButtonWidth, kSkipAdButtonHeight));
 
   // Accessibility.
-  SetFocusForPlatform();
   SetAccessibleName(label()->GetText());
   SetTooltipText(label()->GetText());
   SetInstallFocusRingOnFocus(true);

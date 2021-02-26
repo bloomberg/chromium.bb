@@ -7,20 +7,21 @@
 #ifndef XFA_FXFA_CXFA_FFWIDGET_H_
 #define XFA_FXFA_CXFA_FFWIDGET_H_
 
-#include <vector>
-
 #include "core/fpdfdoc/cpdf_formfield.h"
 #include "core/fxcodec/fx_codec_def.h"
-#include "core/fxcrt/observed_ptr.h"
 #include "core/fxge/cfx_graphstatedata.h"
+#include "fxjs/gc/heap.h"
+#include "v8/include/cppgc/garbage-collected.h"
+#include "v8/include/cppgc/prefinalizer.h"
+#include "v8/include/cppgc/visitor.h"
 #include "xfa/fwl/cfwl_app.h"
 #include "xfa/fwl/cfwl_messagemouse.h"
 #include "xfa/fwl/cfwl_widget.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
-#include "xfa/fxfa/cxfa_ffpageview.h"
 #include "xfa/fxfa/fxfa.h"
 #include "xfa/fxfa/layout/cxfa_contentlayoutitem.h"
 
+class CFGAS_GEGraphics;
 class CFX_DIBitmap;
 class CXFA_Box;
 class CXFA_FFApp;
@@ -29,7 +30,6 @@ class CXFA_FFDocView;
 class CXFA_FFField;
 class CXFA_FFPageView;
 class CXFA_FFWidgetHandler;
-class CXFA_Graphics;
 class CXFA_Image;
 class CXFA_Margin;
 enum class FWL_WidgetHit;
@@ -40,7 +40,7 @@ inline float XFA_UnitPx2Pt(float fPx, float fDpi) {
 
 constexpr float kXFAWidgetPrecision = 0.001f;
 
-void XFA_DrawImage(CXFA_Graphics* pGS,
+void XFA_DrawImage(CFGAS_GEGraphics* pGS,
                    const CFX_RectF& rtImage,
                    const CFX_Matrix& matrix,
                    const RetainPtr<CFX_DIBitmap>& pDIBitmap,
@@ -56,23 +56,22 @@ RetainPtr<CFX_DIBitmap> XFA_LoadImageFromBuffer(
     int32_t& iImageYDpi);
 
 void XFA_RectWithoutMargin(CFX_RectF* rt, const CXFA_Margin* margin);
-CXFA_FFWidget* XFA_GetWidgetFromLayoutItem(CXFA_LayoutItem* pLayoutItem);
 
-class CXFA_CalcData {
- public:
-  CXFA_CalcData();
-  ~CXFA_CalcData();
+class CXFA_FFWidget : public cppgc::GarbageCollected<CXFA_FFWidget>,
+                      public CFWL_Widget::AdapterIface {
+  CPPGC_USING_PRE_FINALIZER(CXFA_FFWidget, PreFinalize);
 
-  std::vector<CXFA_Node*> m_Globals;
-};
-
-class CXFA_FFWidget : public Observable, public CFWL_Widget::AdapterIface {
  public:
   enum FocusOption { kDoNotDrawFocus = 0, kDrawFocus };
   enum HighlightOption { kNoHighlight = 0, kHighlight };
 
-  explicit CXFA_FFWidget(CXFA_Node* pNode);
+  static CXFA_FFWidget* FromLayoutItem(CXFA_LayoutItem* pLayoutItem);
+
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_FFWidget() override;
+
+  virtual void PreFinalize();
+  virtual void Trace(cppgc::Visitor* visitor) const;
 
   // CFWL_Widget::AdapterIface:
   CFX_Matrix GetRotateMatrix() override;
@@ -80,9 +79,8 @@ class CXFA_FFWidget : public Observable, public CFWL_Widget::AdapterIface {
   void GetBorderColorAndThickness(FX_ARGB* cr, float* fWidth) override;
 
   virtual CXFA_FFField* AsField();
-
   virtual CFX_RectF GetBBox(FocusOption focus);
-  virtual void RenderWidget(CXFA_Graphics* pGS,
+  virtual void RenderWidget(CFGAS_GEGraphics* pGS,
                             const CFX_Matrix& matrix,
                             HighlightOption highlight);
   virtual bool IsLoaded();
@@ -145,9 +143,9 @@ class CXFA_FFWidget : public Observable, public CFWL_Widget::AdapterIface {
   CXFA_Node* GetNode() const { return m_pNode.Get(); }
   CXFA_ContentLayoutItem* GetLayoutItem() const { return m_pLayoutItem.Get(); }
   void SetLayoutItem(CXFA_ContentLayoutItem* pItem) { m_pLayoutItem = pItem; }
-  CXFA_FFPageView* GetPageView() const { return m_pPageView.Get(); }
-  void SetPageView(CXFA_FFPageView* pPageView) { m_pPageView.Reset(pPageView); }
-  CXFA_FFDocView* GetDocView() const { return m_pDocView.Get(); }
+  CXFA_FFPageView* GetPageView() const { return m_pPageView; }
+  void SetPageView(CXFA_FFPageView* pPageView) { m_pPageView = pPageView; }
+  CXFA_FFDocView* GetDocView() const { return m_pDocView; }
   void SetDocView(CXFA_FFDocView* pDocView) { m_pDocView = pDocView; }
 
   CXFA_FFWidget* GetNextFFWidget() const;
@@ -158,6 +156,7 @@ class CXFA_FFWidget : public Observable, public CFWL_Widget::AdapterIface {
   CXFA_FFDoc* GetDoc();
   CXFA_FFApp* GetApp();
   IXFA_AppProvider* GetAppProvider();
+  CFWL_App* GetFWLApp() const;
   void InvalidateRect();
   bool IsFocused() const {
     return GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_Focused);
@@ -166,21 +165,20 @@ class CXFA_FFWidget : public Observable, public CFWL_Widget::AdapterIface {
   bool IsLayoutRectEmpty();
   CXFA_LayoutItem* GetParent();
   bool IsAncestorOf(CXFA_FFWidget* pWidget);
-  const CFWL_App* GetFWLApp();
-
   bool HasEventUnderHandler(XFA_EVENTTYPE eEventType,
                             CXFA_FFWidgetHandler* pHandler);
   bool ProcessEventUnderHandler(CXFA_EventParam* params,
                                 CXFA_FFWidgetHandler* pHandler);
 
  protected:
+  explicit CXFA_FFWidget(CXFA_Node* pNode);
   virtual bool PtInActiveRect(const CFX_PointF& point);
 
-  void DrawBorder(CXFA_Graphics* pGS,
+  void DrawBorder(CFGAS_GEGraphics* pGS,
                   CXFA_Box* box,
                   const CFX_RectF& rtBorder,
                   const CFX_Matrix& matrix);
-  void DrawBorderWithFlag(CXFA_Graphics* pGS,
+  void DrawBorderWithFlag(CFGAS_GEGraphics* pGS,
                           CXFA_Box* box,
                           const CFX_RectF& rtBorder,
                           const CFX_Matrix& matrix,
@@ -192,10 +190,10 @@ class CXFA_FFWidget : public Observable, public CFWL_Widget::AdapterIface {
   bool IsButtonDown();
   void SetButtonDown(bool bSet);
 
-  UnownedPtr<CXFA_ContentLayoutItem> m_pLayoutItem;
-  UnownedPtr<CXFA_FFDocView> m_pDocView;
-  ObservedPtr<CXFA_FFPageView> m_pPageView;
-  UnownedPtr<CXFA_Node> const m_pNode;
+  cppgc::Member<CXFA_ContentLayoutItem> m_pLayoutItem;
+  cppgc::Member<CXFA_FFDocView> m_pDocView;
+  cppgc::Member<CXFA_FFPageView> m_pPageView;
+  cppgc::Member<CXFA_Node> const m_pNode;
   mutable CFX_RectF m_WidgetRect;
 };
 

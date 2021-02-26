@@ -13,8 +13,8 @@
  * |                                                 |
  * |  optionLabel_                     ( O)          |
  * |  optionDescription_                             |
- * |                                                 |    SubOptionMode.PREF or
- * |  subOptionLabel                   ( O)          |<-- COOKIES_SESSION_ONLY
+ * |                                                 |
+ * |  subOptionLabel                   ( O)          |<-- SubOptionMode.PREF
  * |  subOptionDescription                           |    (optional)
  * |                                                 |
  * +-------------------------------------------------+
@@ -31,6 +31,8 @@
  * |                                                 |
  * +-------------------------------------------------+
  *
+ * TODO(crbug.com/1113642): Remove this element when content settings redesign
+ * is launched.
  */
 import '../controls/settings_toggle_button.m.js';
 import '../settings_shared_css.m.js';
@@ -51,7 +53,6 @@ import {ContentSettingProvider, DefaultContentSetting} from './site_settings_pre
  * @enum {string}
  */
 const SubOptionMode = {
-  COOKIES_SESSION_ONLY: 'cookies-session-only',
   PREF: 'pref',
   NONE: 'none',
 };
@@ -118,24 +119,11 @@ Polymer({
         return /** @type {DefaultContentSetting} */ ({});
       },
     },
-
-    /**
-     * Cookies and Flash settings have a sub-control that is used to mimic a
-     * tri-state value.
-     * @private {chrome.settingsPrivate.PrefObject}
-     */
-    subControlParams_: {
-      type: Object,
-      value() {
-        return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
-      },
-    },
   },
 
   observers: [
     'onCategoryChanged_(category)',
-    'onChangePermissionControl_(category, controlParams_.value, ' +
-        'subControlParams_.value)',
+    'onChangePermissionControl_(category, controlParams_.value)',
   ],
 
   /** @override */
@@ -156,14 +144,13 @@ Polymer({
    */
   onChangePermissionControl_() {
     if (this.category === undefined ||
-        this.controlParams_.value === undefined ||
-        this.subControlParams_.value === undefined) {
+        this.controlParams_.value === undefined) {
       // Do nothing unless all dependencies are defined.
       return;
     }
 
     // Don't override user settings with enforced settings.
-    if (this.controlParams_.enforcement ==
+    if (this.controlParams_.enforcement ===
         chrome.settingsPrivate.Enforcement.ENFORCED) {
       return;
     }
@@ -178,7 +165,6 @@ Polymer({
       case ContentSettingsTypes.PAYMENT_HANDLER:
       case ContentSettingsTypes.POPUPS:
       case ContentSettingsTypes.PROTOCOL_HANDLERS:
-
         // "Allowed" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,
@@ -187,41 +173,25 @@ Polymer({
       case ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
       case ContentSettingsTypes.CAMERA:
       case ContentSettingsTypes.CLIPBOARD:
+      case ContentSettingsTypes.FONT_ACCESS:
       case ContentSettingsTypes.GEOLOCATION:
       case ContentSettingsTypes.MIC:
       case ContentSettingsTypes.NOTIFICATIONS:
-      case ContentSettingsTypes.UNSANDBOXED_PLUGINS:
       case ContentSettingsTypes.MIDI_DEVICES:
       case ContentSettingsTypes.USB_DEVICES:
       case ContentSettingsTypes.SERIAL_PORTS:
       case ContentSettingsTypes.BLUETOOTH_DEVICES:
       case ContentSettingsTypes.BLUETOOTH_SCANNING:
-      case ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE:
+      case ContentSettingsTypes.FILE_SYSTEM_WRITE:
       case ContentSettingsTypes.HID_DEVICES:
       case ContentSettingsTypes.VR:
       case ContentSettingsTypes.AR:
       case ContentSettingsTypes.WINDOW_PLACEMENT:
+      case ContentSettingsTypes.IDLE_DETECTION:
         // "Ask" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,
             this.categoryEnabled ? ContentSetting.ASK : ContentSetting.BLOCK);
-        break;
-      case ContentSettingsTypes.COOKIES:
-        // This category is tri-state: "Allow", "Block", "Keep data until
-        // browser quits".
-        let value = ContentSetting.BLOCK;
-        if (this.categoryEnabled) {
-          value = this.subControlParams_.value ? ContentSetting.SESSION_ONLY :
-                                                 ContentSetting.ALLOW;
-        }
-        this.browserProxy.setDefaultValueForContentType(this.category, value);
-        break;
-      case ContentSettingsTypes.PLUGINS:
-        // "Run important content" vs. "Block".
-        this.browserProxy.setDefaultValueForContentType(
-            this.category,
-            this.categoryEnabled ? ContentSetting.IMPORTANT_CONTENT :
-                                   ContentSetting.BLOCK);
         break;
       default:
         assertNotReached('Invalid category: ' + this.category);
@@ -235,8 +205,8 @@ Polymer({
    */
   updateControlParams_(update) {
     // Early out if there is no actual change.
-    if (this.priorDefaultContentSetting_.setting == update.setting &&
-        this.priorDefaultContentSetting_.source == update.source) {
+    if (this.priorDefaultContentSetting_.setting === update.setting &&
+        this.priorDefaultContentSetting_.source === update.source) {
       return;
     }
     this.priorDefaultContentSetting_ = update;
@@ -246,7 +216,7 @@ Polymer({
       'type': chrome.settingsPrivate.PrefType.BOOLEAN,
     };
     if (update.source !== undefined &&
-        update.source != ContentSettingProvider.PREFERENCE) {
+        update.source !== ContentSettingProvider.PREFERENCE) {
       basePref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
       switch (update.source) {
         case ContentSettingProvider.POLICY:
@@ -271,21 +241,6 @@ Polymer({
     // that observers will be notified of the change.
     this.controlParams_ = /** @type {chrome.settingsPrivate.PrefObject} */ (
         Object.assign({'value': prefValue}, basePref));
-
-    if (!!routes.COOKIES &&
-        !loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-      assertNotReached(
-          'Cookie specific category logic should be removed when M82 settings' +
-          'redesign solidifies.');
-    } else {
-      const subPrefValue = this.category == ContentSettingsTypes.COOKIES &&
-          update.setting == ContentSetting.SESSION_ONLY;
-      // The subControlParams_ must be replaced (rather than just value changes)
-      // so that observers will be notified of the change.
-      this.subControlParams_ =
-          /** @type {chrome.settingsPrivate.PrefObject} */ (
-              Object.assign({'value': subPrefValue}, basePref));
-    }
   },
 
   /**
@@ -311,7 +266,7 @@ Polymer({
    * @private
    */
   isToggleDisabled_() {
-    return this.category == ContentSettingsTypes.POPUPS &&
+    return this.category === ContentSettingsTypes.POPUPS &&
         loadTimeData.getBoolean('isGuest');
   },
 
@@ -319,15 +274,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showCookiesSubOption_(subOptionMode) {
-    return (subOptionMode == SubOptionMode.COOKIES_SESSION_ONLY);
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
   showPrefSubOption_(subOptionMode) {
-    return (subOptionMode == SubOptionMode.PREF);
+    return (subOptionMode === SubOptionMode.PREF);
   },
 });

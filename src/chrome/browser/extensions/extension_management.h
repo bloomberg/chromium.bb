@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -74,6 +75,18 @@ class ExtensionManagement : public KeyedService {
     INSTALLATION_REMOVED,
   };
 
+  // Behavior for "Pin extension to toolbar" from the extensions menu, default
+  // is kDefaultUnpinned
+  // * kDefaultUnpinned: Extension starts unpinned, but the user can still pin
+  //                     it afterwards.
+  // * kForcePinned: Extension starts pinned to the toolbar, and the user
+  //                 cannot unpin it.
+  // TODO(crbug.com/1071314): Add kDefaultPinned state.
+  enum class ToolbarPinMode {
+    kDefaultUnpinned = 0,
+    kForcePinned,
+  };
+
   explicit ExtensionManagement(Profile* profile);
   ~ExtensionManagement() override;
 
@@ -88,16 +101,16 @@ class ExtensionManagement : public KeyedService {
   const std::vector<std::unique_ptr<ManagementPolicy::Provider>>& GetProviders()
       const;
 
-  // Checks if extensions are blacklisted by default, by policy. When true,
-  // this means that even extensions without an ID should be blacklisted (e.g.
+  // Checks if extensions are blocklisted by default, by policy. When true,
+  // this means that even extensions without an ID should be blocklisted (e.g.
   // from the command line, or when loaded as an unpacked extension).
-  bool BlacklistedByDefault() const;
+  bool BlocklistedByDefault() const;
 
   // Returns installation mode for an extension.
   InstallationMode GetInstallationMode(const Extension* extension) const;
 
-  // Returns installation mode for an extension with id |id| and updated with
-  // |update_url|.
+  // Returns installation mode for an extension with id |extension_id| and
+  // updated with |update_url|.
   InstallationMode GetInstallationMode(const ExtensionId& extension_id,
                                        const std::string& update_url) const;
 
@@ -111,7 +124,7 @@ class ExtensionManagement : public KeyedService {
   // Returns |true| if there is at least one extension with
   // |INSTALLATION_ALLOWED| as installation mode. This excludes force installed
   // extensions.
-  bool HasWhitelistedExtension() const;
+  bool HasAllowlistedExtension() const;
 
   // Returns if an extension with id |id| is explicitly allowed by enterprise
   // policy or not.
@@ -132,6 +145,12 @@ class ExtensionManagement : public KeyedService {
 
   // Returns the list of blocked API permissions for |extension|.
   APIPermissionSet GetBlockedAPIPermissions(const Extension* extension) const;
+
+  // Returns the list of blocked API permissions for an extension with id
+  // |extension_id| and updated with |update_url|.
+  APIPermissionSet GetBlockedAPIPermissions(
+      const ExtensionId& extension_id,
+      const std::string& update_url) const;
 
   // Returns the list of hosts blocked by policy for |extension|.
   const URLPatternSet& GetPolicyBlockedHosts(const Extension* extension) const;
@@ -174,12 +193,22 @@ class ExtensionManagement : public KeyedService {
   bool IsPermissionSetAllowed(const Extension* extension,
                               const PermissionSet& perms) const;
 
+  // Returns true if every permission in |perms| is allowed for an extension
+  // with id |extension_id| and updated with |update_url|.
+  bool IsPermissionSetAllowed(const ExtensionId& extension_id,
+                              const std::string& update_url,
+                              const PermissionSet& perms) const;
+
   // Returns true if |extension| meets the minimum required version set for it.
   // If there is no such requirement set for it, returns true as well.
   // If false is returned and |required_version| is not null, the minimum
   // required version is returned.
   bool CheckMinimumVersion(const Extension* extension,
                            std::string* required_version) const;
+
+  // Returns the list of extensions with "force_pinned" mode for the
+  // "toolbar_pin" setting.
+  ExtensionIdSet GetForcePinnedList() const;
 
   // Returns whether the profile associated with this instance is supervised.
   bool is_child() const { return is_child_; }
@@ -207,6 +236,14 @@ class ExtensionManagement : public KeyedService {
 
   void OnExtensionPrefChanged();
   void NotifyExtensionManagementPrefChanged();
+
+  // Reports install creation stage to InstallStageTracker for the extensions.
+  // |forced_stage| is reported for the extensions which have installation mode
+  // as INSTALLATION_FORCED, and |other_stage| is reported for all other
+  // installation modes.
+  void ReportExtensionManagementInstallCreationStage(
+      InstallStageTracker::InstallCreationStage forced_stage,
+      InstallStageTracker::InstallCreationStage other_stage);
 
   // Helper to return an extension install list, in format specified by
   // ExternalPolicyLoader::AddExtension().

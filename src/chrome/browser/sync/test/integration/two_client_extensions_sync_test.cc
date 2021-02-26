@@ -24,12 +24,10 @@ using extensions_helper::UninstallExtension;
 
 class TwoClientExtensionsSyncTest : public SyncTest {
  public:
-  TwoClientExtensionsSyncTest() : SyncTest(TWO_CLIENT) { DisableVerifier(); }
+  TwoClientExtensionsSyncTest() : SyncTest(TWO_CLIENT) {}
+  ~TwoClientExtensionsSyncTest() override = default;
 
   bool TestUsesSelfNotifications() override { return false; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TwoClientExtensionsSyncTest);
 };
 
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
@@ -39,15 +37,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
   ASSERT_TRUE(ExtensionsMatchChecker().Wait());
 }
 
-// E2E tests flaky on Mac and Windows: https://crbug.com/597319
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_E2E(test_name) test_name
-#else
-#define MAYBE_E2E(test_name) E2E_ENABLED(test_name)
-#endif
-
 // Flaky on Mac: http://crbug.com/535996
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_StartWithSameExtensions DISABLED_StartWithSameExtensions
 #else
 #define MAYBE_StartWithSameExtensions StartWithSameExtensions
@@ -70,13 +61,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
 }
 
 // Flaky on Mac: http://crbug.com/535996
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_StartWithDifferentExtensions DISABLED_StartWithDifferentExtensions
 #else
 #define MAYBE_StartWithDifferentExtensions StartWithDifferentExtensions
 #endif
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
-                       MAYBE_E2E(MAYBE_StartWithDifferentExtensions)) {
+                       E2E_ENABLED(MAYBE_StartWithDifferentExtensions)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupClients());
 
@@ -137,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
       static_cast<int>(GetInstalledExtensions(GetProfile(0)).size()));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, MAYBE_E2E(Add)) {
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, E2E_ENABLED(Add)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensions());
 
@@ -147,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, MAYBE_E2E(Add)) {
   EXPECT_EQ(1u, GetInstalledExtensions(GetProfile(0)).size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, MAYBE_E2E(Uninstall)) {
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, E2E_ENABLED(Uninstall)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensions());
@@ -161,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, MAYBE_E2E(Uninstall)) {
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
-                       MAYBE_E2E(UpdateEnableDisableExtension)) {
+                       E2E_ENABLED(UpdateEnableDisableExtension)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensions());

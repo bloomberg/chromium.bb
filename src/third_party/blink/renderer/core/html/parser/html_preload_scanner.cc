@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html/link_rel_attribute.h"
+#include "third_party/blink/renderer/core/html/loading_attribute.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
@@ -57,6 +58,7 @@
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
@@ -129,7 +131,8 @@ class TokenPreloadScanner::StartTagScanner {
                   MediaValuesCached* media_values,
                   SubresourceIntegrity::IntegrityFeatures features,
                   TokenPreloadScanner::ScannerType scanner_type,
-                  bool priority_hints_origin_trial_enabled)
+                  bool priority_hints_origin_trial_enabled,
+                  const HashSet<String>* disabled_image_types)
       : tag_impl_(tag_impl),
         link_is_style_sheet_(false),
         link_is_preconnect_(false),
@@ -150,7 +153,7 @@ class TokenPreloadScanner::StartTagScanner {
         referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
         integrity_attr_set_(false),
         integrity_features_(features),
-        loading_attr_value_(LoadingAttrValue::kAuto),
+        loading_attr_value_(LoadingAttributeValue::kAuto),
         width_attr_dimension_type_(
             HTMLImageElement::LazyLoadDimensionType::kNotAbsolute),
         height_attr_dimension_type_(
@@ -159,7 +162,8 @@ class TokenPreloadScanner::StartTagScanner {
             HTMLImageElement::LazyLoadDimensionType::kNotAbsolute),
         scanner_type_(scanner_type),
         priority_hints_origin_trial_enabled_(
-            priority_hints_origin_trial_enabled) {
+            priority_hints_origin_trial_enabled),
+        disabled_image_types_(disabled_image_types) {
     if (Match(tag_impl_, html_names::kImgTag) ||
         Match(tag_impl_, html_names::kSourceTag) ||
         Match(tag_impl_, html_names::kLinkTag)) {
@@ -286,7 +290,7 @@ class TokenPreloadScanner::StartTagScanner {
     if ((Match(tag_impl_, html_names::kScriptTag) &&
          type_attribute_value_ == "module") ||
         IsLinkRelModulePreload()) {
-      request->SetScriptType(mojom::ScriptType::kModule);
+      request->SetScriptType(mojom::blink::ScriptType::kModule);
     }
 
     request->SetCrossOrigin(cross_origin_);
@@ -295,13 +299,6 @@ class TokenPreloadScanner::StartTagScanner {
     request->SetCharset(Charset());
     request->SetDefer(defer_);
 
-    LoadingAttrValue effective_loading_attr_value = loading_attr_value_;
-    // If the 'lazyload' feature policy is enforced, the attribute value
-    // loading='eager' is considered as 'auto'.
-    if (effective_loading_attr_value == LoadingAttrValue::kEager &&
-        document_parameters.lazyload_policy_enforced) {
-      effective_loading_attr_value = LoadingAttrValue::kAuto;
-    }
     if (type == ResourceType::kImage && Match(tag_impl_, html_names::kImgTag) &&
         IsLazyLoadImageDeferable(document_parameters)) {
       return nullptr;
@@ -324,8 +321,6 @@ class TokenPreloadScanner::StartTagScanner {
   }
 
  private:
-  enum class LoadingAttrValue { kAuto, kLazy, kEager };
-
   template <typename NameType>
   void ProcessScriptAttribute(const NameType& attribute_name,
                               const String& attribute_value) {
@@ -384,15 +379,10 @@ class TokenPreloadScanner::StartTagScanner {
                Match(attribute_name, html_names::kImportanceAttr) &&
                priority_hints_origin_trial_enabled_) {
       SetImportance(attribute_value);
-    } else if (loading_attr_value_ == LoadingAttrValue::kAuto &&
+    } else if (loading_attr_value_ == LoadingAttributeValue::kAuto &&
                Match(attribute_name, html_names::kLoadingAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
-      loading_attr_value_ =
-          EqualIgnoringASCIICase(attribute_value, "eager")
-              ? LoadingAttrValue::kEager
-              : EqualIgnoringASCIICase(attribute_value, "lazy")
-                    ? LoadingAttrValue::kLazy
-                    : LoadingAttrValue::kAuto;
+      loading_attr_value_ = GetLoadingAttributeValue(attribute_value);
     } else if (width_attr_dimension_type_ ==
                    HTMLImageElement::LazyLoadDimensionType::kNotAbsolute &&
                Match(attribute_name, html_names::kWidthAttr) &&
@@ -512,8 +502,8 @@ class TokenPreloadScanner::StartTagScanner {
       // FIXME - Don't match media multiple times.
       matched_ &= MediaAttributeMatches(*media_values_, attribute_value);
     } else if (Match(attribute_name, html_names::kTypeAttr)) {
-      matched_ &= MIMETypeRegistry::IsSupportedImagePrefixedMIMEType(
-          ContentType(attribute_value).GetType());
+      matched_ &= HTMLImageElement::SupportedImageType(attribute_value,
+                                                       disabled_image_types_);
     }
   }
 
@@ -559,19 +549,12 @@ class TokenPreloadScanner::StartTagScanner {
       return false;
     }
 
-    // If the 'lazyload' feature policy is enforced, the attribute value
-    // loading='eager' is considered as 'auto'.
-    LoadingAttrValue effective_loading_attr_value = loading_attr_value_;
-    if (effective_loading_attr_value == LoadingAttrValue::kEager &&
-        document_parameters.lazyload_policy_enforced) {
-      effective_loading_attr_value = LoadingAttrValue::kAuto;
-    }
-    switch (effective_loading_attr_value) {
-      case LoadingAttrValue::kEager:
+    switch (loading_attr_value_) {
+      case LoadingAttributeValue::kEager:
         return false;
-      case LoadingAttrValue::kLazy:
+      case LoadingAttributeValue::kLazy:
         return true;
-      case LoadingAttrValue::kAuto:
+      case LoadingAttributeValue::kAuto:
         if ((width_attr_dimension_type_ ==
                  HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall &&
              height_attr_dimension_type_ ==
@@ -653,14 +636,15 @@ class TokenPreloadScanner::StartTagScanner {
              MIMETypeRegistry::IsSupportedStyleSheetMIMEType(
                  ContentType(type_attribute_value_).GetType());
     } else if (link_is_preload_) {
+      if (type == ResourceType::kImage) {
+        return HTMLImageElement::SupportedImageType(type_attribute_value_,
+                                                    disabled_image_types_);
+      }
       if (type_attribute_value_.IsEmpty())
         return true;
       String type_from_attribute = ContentType(type_attribute_value_).GetType();
       if ((type == ResourceType::kFont &&
            !MIMETypeRegistry::IsSupportedFontMIMEType(type_from_attribute)) ||
-          (type == ResourceType::kImage &&
-           !MIMETypeRegistry::IsSupportedImagePrefixedMIMEType(
-               type_from_attribute)) ||
           (type == ResourceType::kCSSStyleSheet &&
            !MIMETypeRegistry::IsSupportedStyleSheetMIMEType(
                type_from_attribute))) {
@@ -685,7 +669,7 @@ class TokenPreloadScanner::StartTagScanner {
     if (Match(tag_impl_, html_names::kInputTag) && !input_is_image_)
       return false;
     if (Match(tag_impl_, html_names::kScriptTag)) {
-      mojom::ScriptType script_type = mojom::ScriptType::kClassic;
+      mojom::blink::ScriptType script_type = mojom::blink::ScriptType::kClassic;
       bool is_import_map = false;
       if (!ScriptLoader::IsValidScriptTypeAndLanguage(
               type_attribute_value_, language_attribute_value_,
@@ -765,13 +749,14 @@ class TokenPreloadScanner::StartTagScanner {
   bool integrity_attr_set_;
   IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::IntegrityFeatures integrity_features_;
-  LoadingAttrValue loading_attr_value_;
+  LoadingAttributeValue loading_attr_value_;
   HTMLImageElement::LazyLoadDimensionType width_attr_dimension_type_;
   HTMLImageElement::LazyLoadDimensionType height_attr_dimension_type_;
   HTMLImageElement::LazyLoadDimensionType inline_style_dimensions_type_;
   TokenPreloadScanner::ScannerType scanner_type_;
   // For explanation, see TokenPreloadScanner's declaration.
   bool priority_hints_origin_trial_enabled_;
+  const HashSet<String>* disabled_image_types_;
 };
 
 TokenPreloadScanner::TokenPreloadScanner(
@@ -982,9 +967,8 @@ void TokenPreloadScanner::ScanCommon(
             const typename Token::Attribute* content_attribute =
                 token.GetAttributeItem(html_names::kContentAttr);
             if (content_attribute) {
-              client_hints_preferences_.UpdateFromAcceptClientHintsHeader(
-                  content_attribute->Value(), document_url_,
-                  ClientHintsPreferences::UpdateMode::kMerge, nullptr);
+              client_hints_preferences_.UpdateFromHttpEquivAcceptCH(
+                  content_attribute->Value(), document_url_, nullptr);
             }
           }
           return;
@@ -1008,7 +992,8 @@ void TokenPreloadScanner::ScanCommon(
 
       StartTagScanner scanner(
           tag_impl, media_values_, document_parameters_->integrity_features,
-          scanner_type_, priority_hints_origin_trial_enabled_);
+          scanner_type_, priority_hints_origin_trial_enabled_,
+          &document_parameters_->disabled_image_types);
       scanner.ProcessAttributes(token.Attributes());
       // TODO(yoav): ViewportWidth is currently racy and might be zero in some
       // cases, at least in tests. That problem will go away once
@@ -1114,7 +1099,6 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   referrer_policy = document->GetReferrerPolicy();
   integrity_features =
       SubresourceIntegrityHelper::GetFeatures(document->GetExecutionContext());
-  lazyload_policy_enforced = document->IsLazyLoadPolicyEnforced();
   if (document->Loader() && document->Loader()->GetFrame()) {
     lazy_load_image_setting =
         document->Loader()->GetFrame()->GetLazyLoadImageSetting();
@@ -1122,6 +1106,8 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   } else {
     lazy_load_image_setting = LocalFrame::LazyLoadImageSetting::kDisabled;
   }
+  probe::GetDisabledImageTypes(document->GetExecutionContext(),
+                               &disabled_image_types);
 }
 
 }  // namespace blink

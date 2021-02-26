@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "services/device/public/cpp/hid/fake_input_service_linux.h"
@@ -62,7 +62,7 @@ void HIDControllerMixin::SetUpInProcessBrowserTestFixture() {
   SetUpBluetoothMock(mock_adapter_, true);
 
   // Note: The SecureChannel service, which is never destroyed until the
-  // browser process is killed, utilizes |mock_adapter_|.
+  // browser process is killed, utilizes `mock_adapter_`.
   testing::Mock::AllowLeak(mock_adapter_.get());
 }
 

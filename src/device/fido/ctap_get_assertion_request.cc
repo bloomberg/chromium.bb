@@ -10,8 +10,10 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "components/cbor/writer.h"
+#include "device/fido/device_response_converter.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "device/fido/pin.h"
 
 namespace device {
 
@@ -36,6 +38,31 @@ bool AreGetAssertionRequestMapKeysCorrect(
       });
 }
 }  // namespace
+
+CtapGetAssertionOptions::CtapGetAssertionOptions() = default;
+CtapGetAssertionOptions::CtapGetAssertionOptions(
+    const CtapGetAssertionOptions&) = default;
+CtapGetAssertionOptions::CtapGetAssertionOptions(CtapGetAssertionOptions&&) =
+    default;
+CtapGetAssertionOptions::~CtapGetAssertionOptions() = default;
+
+CtapGetAssertionOptions::PRFInput::PRFInput() = default;
+CtapGetAssertionOptions::PRFInput::PRFInput(const PRFInput&) = default;
+CtapGetAssertionOptions::PRFInput::PRFInput(PRFInput&&) = default;
+CtapGetAssertionOptions::PRFInput::~PRFInput() = default;
+
+CtapGetAssertionRequest::HMACSecret::HMACSecret(
+    base::span<const uint8_t, kP256X962Length> in_public_key_x962,
+    base::span<const uint8_t> in_encrypted_salts,
+    base::span<const uint8_t> in_salts_auth)
+    : public_key_x962(fido_parsing_utils::Materialize(in_public_key_x962)),
+      encrypted_salts(fido_parsing_utils::Materialize(in_encrypted_salts)),
+      salts_auth(fido_parsing_utils::Materialize(in_salts_auth)) {}
+
+CtapGetAssertionRequest::HMACSecret::HMACSecret(const HMACSecret&) = default;
+CtapGetAssertionRequest::HMACSecret::~HMACSecret() = default;
+CtapGetAssertionRequest::HMACSecret&
+CtapGetAssertionRequest::HMACSecret::operator=(const HMACSecret&) = default;
 
 // static
 base::Optional<CtapGetAssertionRequest> CtapGetAssertionRequest::Parse(
@@ -92,7 +119,6 @@ base::Optional<CtapGetAssertionRequest> CtapGetAssertionRequest::Parse(
     }
 
     const cbor::Value::MapValue& extensions = extensions_it->second.GetMap();
-
     if (opts.reject_all_extensions && !extensions.empty()) {
       return base::nullopt;
     }
@@ -102,7 +128,8 @@ base::Optional<CtapGetAssertionRequest> CtapGetAssertionRequest::Parse(
         return base::nullopt;
       }
 
-      if (extension.first.GetString() == kExtensionAndroidClientData) {
+      const std::string& extension_id = extension.first.GetString();
+      if (extension_id == kExtensionAndroidClientData) {
         base::Optional<AndroidClientDataExtensionInput>
             android_client_data_ext =
                 AndroidClientDataExtensionInput::Parse(extension.second);
@@ -110,6 +137,47 @@ base::Optional<CtapGetAssertionRequest> CtapGetAssertionRequest::Parse(
           return base::nullopt;
         }
         request.android_client_data_ext = std::move(*android_client_data_ext);
+      } else if (extension_id == kExtensionHmacSecret) {
+        if (!extension.second.is_map()) {
+          return base::nullopt;
+        }
+        const auto& hmac_extension = extension.second.GetMap();
+
+        auto hmac_it = hmac_extension.find(cbor::Value(1));
+        if (hmac_it == hmac_extension.end() || !hmac_it->second.is_map()) {
+          return base::nullopt;
+        }
+        const base::Optional<pin::KeyAgreementResponse> key(
+            pin::KeyAgreementResponse::ParseFromCOSE(hmac_it->second.GetMap()));
+
+        hmac_it = hmac_extension.find(cbor::Value(2));
+        if (hmac_it == hmac_extension.end() ||
+            !hmac_it->second.is_bytestring()) {
+          return base::nullopt;
+        }
+        const std::vector<uint8_t>& encrypted_salts =
+            hmac_it->second.GetBytestring();
+
+        hmac_it = hmac_extension.find(cbor::Value(3));
+        if (hmac_it == hmac_extension.end() ||
+            !hmac_it->second.is_bytestring()) {
+          return base::nullopt;
+        }
+        const std::vector<uint8_t>& salts_auth =
+            hmac_it->second.GetBytestring();
+
+        if (!key ||
+            (encrypted_salts.size() != 32 && encrypted_salts.size() != 64) ||
+            salts_auth.size() != 16) {
+          return base::nullopt;
+        }
+
+        request.hmac_secret.emplace(key->X962(), encrypted_salts, salts_auth);
+      } else if (extension_id == kExtensionLargeBlobKey) {
+        if (!extension.second.is_bool() || !extension.second.GetBool()) {
+          return base::nullopt;
+        }
+        request.large_blob_key = true;
       }
     }
   }
@@ -154,7 +222,12 @@ base::Optional<CtapGetAssertionRequest> CtapGetAssertionRequest::Parse(
             std::numeric_limits<uint8_t>::max()) {
       return base::nullopt;
     }
-    request.pin_protocol = pin_protocol_it->second.GetUnsigned();
+    base::Optional<PINUVAuthProtocol> pin_protocol =
+        ToPINUVAuthProtocol(pin_protocol_it->second.GetUnsigned());
+    if (!pin_protocol) {
+      return base::nullopt;
+    }
+    request.pin_protocol = *pin_protocol;
   }
 
   return request;
@@ -196,10 +269,28 @@ AsCTAPRequestValuePair(const CtapGetAssertionRequest& request) {
     cbor_map[cbor::Value(3)] = cbor::Value(std::move(allow_list_array));
   }
 
+  cbor::Value::MapValue extensions;
+
   if (request.android_client_data_ext) {
-    cbor::Value::MapValue extensions;
     extensions.emplace(kExtensionAndroidClientData,
                        AsCBOR(*request.android_client_data_ext));
+  }
+
+  if (request.large_blob_key) {
+    extensions.emplace(kExtensionLargeBlobKey, cbor::Value(true));
+  }
+
+  if (request.hmac_secret) {
+    const auto& hmac_secret = *request.hmac_secret;
+    cbor::Value::MapValue hmac_extension;
+    hmac_extension.emplace(
+        1, pin::EncodeCOSEPublicKey(hmac_secret.public_key_x962));
+    hmac_extension.emplace(2, hmac_secret.encrypted_salts);
+    hmac_extension.emplace(3, hmac_secret.salts_auth);
+    extensions.emplace(kExtensionHmacSecret, std::move(hmac_extension));
+  }
+
+  if (!extensions.empty()) {
     cbor_map[cbor::Value(4)] = cbor::Value(std::move(extensions));
   }
 
@@ -208,7 +299,8 @@ AsCTAPRequestValuePair(const CtapGetAssertionRequest& request) {
   }
 
   if (request.pin_protocol) {
-    cbor_map[cbor::Value(7)] = cbor::Value(*request.pin_protocol);
+    cbor_map[cbor::Value(7)] =
+        cbor::Value(static_cast<uint8_t>(*request.pin_protocol));
   }
 
   cbor::Value::MapValue option_map;

@@ -18,19 +18,28 @@ DawnJSONGenerator(
     RESULT_VARIABLE "DAWN_WIRE_GEN_SOURCES"
 )
 
-add_library(dawn_wire STATIC ${DAWN_DUMMY_FILE})
+add_library(dawn_wire ${DAWN_DUMMY_FILE})
+
+target_compile_definitions(dawn_wire PRIVATE "DAWN_WIRE_IMPLEMENTATION")
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(dawn_wire PRIVATE "DAWN_WIRE_SHARED_LIBRARY")
+endif()
+
 target_sources(dawn_wire PRIVATE
     "${DAWN_INCLUDE_DIR}/dawn_wire/Wire.h"
     "${DAWN_INCLUDE_DIR}/dawn_wire/WireClient.h"
     "${DAWN_INCLUDE_DIR}/dawn_wire/WireServer.h"
     "${DAWN_INCLUDE_DIR}/dawn_wire/dawn_wire_export.h"
     ${DAWN_WIRE_GEN_SOURCES}
+    "ChunkedCommandHandler.cpp"
+    "ChunkedCommandHandler.h"
+    "ChunkedCommandSerializer.cpp"
+    "ChunkedCommandSerializer.h"
     "WireClient.cpp"
     "WireDeserializeAllocator.cpp"
     "WireDeserializeAllocator.h"
     "WireServer.cpp"
     "client/ApiObjects.h"
-    "client/ApiProcs.cpp"
     "client/Buffer.cpp"
     "client/Buffer.h"
     "client/Client.cpp"
@@ -42,6 +51,8 @@ target_sources(dawn_wire PRIVATE
     "client/Fence.cpp"
     "client/Fence.h"
     "client/ObjectAllocator.h"
+    "client/Queue.cpp"
+    "client/Queue.h"
     "server/ObjectStorage.h"
     "server/Server.cpp"
     "server/Server.h"

@@ -14,6 +14,7 @@
 
 licenses(["notice"])  # Apache 2.0
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":data_blob.bzl", "cc_data_blob")
 
 cc_data_blob(
@@ -96,4 +97,10 @@ cc_binary(
         "@com_github_gflags_gflags//:gflags",
         "@com_google_glog//:glog",
     ],
+)
+
+bzl_library(
+    name = "data_blob_bzl",
+    srcs = ["data_blob.bzl"],
+    visibility = ["//visibility:private"],
 )

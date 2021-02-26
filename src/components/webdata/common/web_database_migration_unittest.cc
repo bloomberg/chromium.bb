@@ -126,7 +126,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 86;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 90;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -1929,5 +1929,115 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion85ToCurrent) {
 
     // No more entries
     EXPECT_FALSE(s.Step());
+  }
+}
+
+// Tests addition of nickname column in credit_cards table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion86ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_86.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 86, 83));
+
+    EXPECT_FALSE(connection.DoesColumnExist("credit_cards", "nickname"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // The nickname column should exist.
+    EXPECT_TRUE(connection.DoesColumnExist("credit_cards", "nickname"));
+  }
+}
+
+// Tests addition of new name-structure columns in autofill_profile_names table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion87ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_86.sql")));
+
+  std::vector<std::string> new_columns = {
+      "honorific_prefix",      "honorific_prefix_status",
+      "first_name_status",     "middle_name_status",
+      "first_last_name",       "first_last_name_status",
+      "conjunction_last_name", "conjunction_last_name_status",
+      "second_last_name",      "second_last_name_status",
+      "last_name_status",      "full_name_status"};
+  // Verify pre-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 87, 83));
+
+    for (const std::string& column : new_columns) {
+      EXPECT_FALSE(
+          connection.DoesColumnExist("autofill_profile_names", column.c_str()));
+    }
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    for (const std::string& column : new_columns) {
+      EXPECT_TRUE(
+          connection.DoesColumnExist("autofill_profile_names", column.c_str()));
+    }
+  }
+}
+
+// Tests addition of instrument_id column in masked_credit_cards table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion88ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_88.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 88, 83));
+
+    EXPECT_FALSE(
+        connection.DoesColumnExist("masked_credit_cards", "instrument_id"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // The card_issuer column should exist.
+    EXPECT_TRUE(
+        connection.DoesColumnExist("masked_credit_cards", "instrument_id"));
   }
 }

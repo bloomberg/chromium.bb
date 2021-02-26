@@ -30,9 +30,10 @@ class CertificateWatcherTest : public testing::Test {
   CertificateWatcherTest()
       : task_runner_(task_environment_.GetMainThreadTaskRunner()) {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    watcher_.reset(new CertificateWatcher(
-        base::Bind(&CertificateWatcherTest::OnRestart, base::Unretained(this)),
-        task_runner_));
+    watcher_ = std::make_unique<CertificateWatcher>(
+        base::BindRepeating(&CertificateWatcherTest::OnRestart,
+                            base::Unretained(this)),
+        task_runner_);
     watcher_->SetDelayForTests(base::TimeDelta::FromSeconds(0));
     watcher_->SetWatchPathForTests(temp_dir_.GetPath());
   }
@@ -101,7 +102,7 @@ class CertificateWatcherTest : public testing::Test {
   int restart_count_ = 0;
   base::TimeDelta loop_wait_ =
       base::TimeDelta::FromMilliseconds(kMessageLoopWaitMsecs);
-  base::Closure quit_loop_closure_;
+  base::RepeatingClosure quit_loop_closure_;
 
  private:
   void OnRestart() {

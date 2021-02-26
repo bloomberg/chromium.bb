@@ -41,7 +41,7 @@ public:
     // returns true if close() has not been called
     bool isOpen() const { return fOpen; }
 
-#ifdef SK_DEBUG
+#ifdef SK_TRACE_MANAGED_RESOURCES
     void dumpInfo() const override {
         SkDebugf("GrVkCommandPool: %p (%d refs)\n", fCommandPool, this->getRefCnt());
     }
@@ -62,6 +62,7 @@ private:
 
     // Array of available secondary command buffers that are not in flight
     SkSTArray<4, std::unique_ptr<GrVkSecondaryCommandBuffer>, true> fAvailableSecondaryBuffers;
+    int fMaxCachedSecondaryCommandBuffers;
 };
 
 #endif

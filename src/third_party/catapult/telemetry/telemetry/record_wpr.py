@@ -193,6 +193,9 @@ class WprRecorder(object):
       self._benchmark.AddCommandLineArgs(self._parser)
       self._benchmark.SetArgumentDefaults(self._parser)
     self._parser.add_option('--upload', action='store_true')
+    self._parser.add_option('--use-local-wpr', action='store_true',
+                            help='Builds and runs WPR from Catapult. '
+                            'Also enables WPR debug output to STDOUT.')
     self._SetArgumentDefaults()
 
   def _SetArgumentDefaults(self):
@@ -310,9 +313,9 @@ def Main(environment, **log_config_kwargs):
 
   binary_manager.InitDependencyManager(environment.client_configs)
 
-  # TODO(nednguyen): update WprRecorder so that it handles the difference
-  # between recording a benchmark vs recording a story better based on
-  # the distinction between args.benchmark & args.story
+  # TODO(crbug.com/1111556): update WprRecorder so that it handles the
+  # difference between recording a benchmark vs recording a story better based
+  # on the distinction between args.benchmark & args.story
   with WprRecorder(environment.top_level_dir,
                    target, extra_args) as wpr_recorder:
     results = wpr_recorder.CreateResults()

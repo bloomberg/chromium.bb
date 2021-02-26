@@ -16,7 +16,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "cc/layers/layer.h"
@@ -400,10 +400,9 @@ void TabContentManager::SendThumbnailToJava(
         0, 0, bitmap.width() / scale,
         std::min(bitmap.height() / scale,
                  (int)(bitmap.width() / aspect_ratio / scale))};
-    SkBitmap result_bitmap = skia::ImageOperations::Resize(
+    j_bitmap = gfx::ConvertToJavaBitmap(skia::ImageOperations::Resize(
         bitmap, skia::ImageOperations::RESIZE_BETTER, bitmap.width() / scale,
-        bitmap.height() / scale, dest_subset);
-    j_bitmap = gfx::ConvertToJavaBitmap(&result_bitmap);
+        bitmap.height() / scale, dest_subset));
   }
   RunObjectCallbackAndroid(j_callback, j_bitmap);
 }

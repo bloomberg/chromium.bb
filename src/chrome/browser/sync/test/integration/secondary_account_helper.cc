@@ -9,7 +9,6 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_test_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
@@ -39,9 +38,8 @@ void OnWillCreateBrowserContextServices(
 ScopedSigninClientFactory SetUpSigninClient(
     network::TestURLLoaderFactory* test_url_loader_factory) {
   return BrowserContextDependencyManager::GetInstance()
-      ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-          base::BindRepeating(&OnWillCreateBrowserContextServices,
-                              test_url_loader_factory));
+      ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+          &OnWillCreateBrowserContextServices, test_url_loader_factory));
 }
 
 #if defined(OS_CHROMEOS)
@@ -55,12 +53,9 @@ void InitNetwork() {
 
   portal_detector->SetDefaultNetworkForTesting(default_network->guid());
 
-  chromeos::NetworkPortalDetector::CaptivePortalState online_state;
-  online_state.status =
-      chromeos::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
-  online_state.response_code = 204;
-  portal_detector->SetDetectionResultsForTesting(default_network->guid(),
-                                                 online_state);
+  portal_detector->SetDetectionResultsForTesting(
+      default_network->guid(),
+      chromeos::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204);
 
   // Takes ownership.
   chromeos::network_portal_detector::InitializeForTesting(portal_detector);

@@ -4,6 +4,12 @@
 
 #include "discovery/mdns/mdns_records.h"
 
+#include <limits>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "absl/hash/hash_testing.h"
 #include "discovery/mdns/mdns_reader.h"
 #include "discovery/mdns/mdns_writer.h"
 #include "discovery/mdns/testing/mdns_test_util.h"
@@ -102,6 +108,9 @@ TEST(MdnsDomainNameTest, Compare) {
 
   EXPECT_FALSE(fourth < fifth);
   EXPECT_FALSE(fifth < fourth);
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      {first, second, third, fourth, fifth}));
 }
 
 TEST(MdnsDomainNameTest, CopyAndMove) {
@@ -147,6 +156,9 @@ TEST(MdnsRawRecordRdataTest, Compare) {
 
   EXPECT_EQ(rdata1, rdata2);
   EXPECT_NE(rdata1, rdata3);
+
+  EXPECT_TRUE(
+      absl::VerifyTypeImplementsAbslHashCorrectly({rdata1, rdata2, rdata3}));
 }
 
 TEST(MdnsRawRecordRdataTest, CopyAndMove) {
@@ -185,6 +197,9 @@ TEST(MdnsSrvRecordRdataTest, Compare) {
   EXPECT_NE(rdata1, rdata4);
   EXPECT_NE(rdata1, rdata5);
   EXPECT_NE(rdata1, rdata6);
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      {rdata1, rdata2, rdata3, rdata4, rdata5, rdata6}));
 }
 
 TEST(MdnsSrvRecordRdataTest, CopyAndMove) {
@@ -208,6 +223,9 @@ TEST(MdnsARecordRdataTest, Compare) {
 
   EXPECT_EQ(rdata1, rdata2);
   EXPECT_NE(rdata1, rdata3);
+
+  EXPECT_TRUE(
+      absl::VerifyTypeImplementsAbslHashCorrectly({rdata1, rdata2, rdata3}));
 }
 
 TEST(MdnsARecordRdataTest, CopyAndMove) {
@@ -249,6 +267,9 @@ TEST(MdnsAAAARecordRdataTest, Compare) {
 
   EXPECT_EQ(rdata1, rdata2);
   EXPECT_NE(rdata1, rdata3);
+
+  EXPECT_TRUE(
+      absl::VerifyTypeImplementsAbslHashCorrectly({rdata1, rdata2, rdata3}));
 }
 
 TEST(MdnsAAAARecordRdataTest, CopyAndMove) {
@@ -275,6 +296,9 @@ TEST(MdnsPtrRecordRdataTest, Compare) {
 
   EXPECT_EQ(rdata1, rdata2);
   EXPECT_NE(rdata1, rdata3);
+
+  EXPECT_TRUE(
+      absl::VerifyTypeImplementsAbslHashCorrectly({rdata1, rdata2, rdata3}));
 }
 
 TEST(MdnsPtrRecordRdataTest, CopyAndMove) {
@@ -300,6 +324,9 @@ TEST(MdnsTxtRecordRdataTest, Compare) {
   EXPECT_EQ(rdata1, rdata2);
   EXPECT_NE(rdata1, rdata3);
   EXPECT_NE(rdata1, rdata4);
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      {rdata1, rdata2, rdata3, rdata4}));
 }
 
 TEST(MdnsTxtRecordRdataTest, CopyAndMove) {
@@ -428,11 +455,65 @@ TEST(MdnsNsecRecordRdataTest, Compare) {
   EXPECT_NE(rdata1, rdata3);
   EXPECT_NE(rdata1, rdata4);
   EXPECT_NE(rdata3, rdata4);
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      {rdata1, rdata2, rdata3, rdata4}));
 }
 
 TEST(MdnsNsecRecordRdataTest, CopyAndMove) {
   TestCopyAndMove(NsecRecordRdata(DomainName{"testing", "local"}, DnsType::kA,
                                   DnsType::kSRV));
+}
+
+TEST(MdnsOptRecordRdataTest, Construct) {
+  OptRecordRdata rdata1;
+  EXPECT_EQ(rdata1.MaxWireSize(), size_t{0});
+  EXPECT_EQ(rdata1.options().size(), size_t{0});
+
+  OptRecordRdata::Option opt1{12, 34, {0x12, 0x34}};
+  OptRecordRdata::Option opt2{12, 34, {0x12, 0x34}};
+  OptRecordRdata::Option opt3{12, 34, {0x12, 0x34, 0x56}};
+  OptRecordRdata::Option opt4{34, 12, {0x00}};
+  OptRecordRdata::Option opt5{12, 12, {0x12, 0x34}};
+  rdata1 = OptRecordRdata(opt1, opt2, opt3, opt4, opt5);
+  EXPECT_EQ(rdata1.MaxWireSize(), size_t{30});
+
+  ASSERT_EQ(rdata1.options().size(), size_t{5});
+  EXPECT_EQ(rdata1.options()[0], opt5);
+  EXPECT_EQ(rdata1.options()[1], opt1);
+  EXPECT_EQ(rdata1.options()[2], opt2);
+  EXPECT_EQ(rdata1.options()[3], opt3);
+  EXPECT_EQ(rdata1.options()[4], opt4);
+}
+
+TEST(MdnsOptRecordRdataTest, Compare) {
+  OptRecordRdata::Option opt1{12, 34, {0x12, 0x34}};
+  OptRecordRdata::Option opt2{12, 34, {0x12, 0x34}};
+  OptRecordRdata::Option opt3{12, 34, {0x12, 0x56}};
+  OptRecordRdata rdata1(opt1);
+  OptRecordRdata rdata2(opt2);
+  OptRecordRdata rdata3(opt3);
+  OptRecordRdata rdata4;
+
+  EXPECT_EQ(rdata1, rdata1);
+  EXPECT_EQ(rdata2, rdata2);
+  EXPECT_EQ(rdata3, rdata3);
+  EXPECT_EQ(rdata4, rdata4);
+
+  EXPECT_EQ(rdata1, rdata2);
+  EXPECT_NE(rdata1, rdata3);
+  EXPECT_NE(rdata1, rdata4);
+  EXPECT_NE(rdata2, rdata3);
+  EXPECT_NE(rdata2, rdata4);
+  EXPECT_NE(rdata3, rdata4);
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      {rdata1, rdata2, rdata3, rdata4}));
+}
+
+TEST(MdnsOptRecordRdataTest, CopyAndMove) {
+  OptRecordRdata::Option opt1{12, 34, {0x12, 0x34}};
+  TestCopyAndMove(OptRecordRdata(opt1));
 }
 
 TEST(MdnsRecordTest, Construct) {
@@ -460,35 +541,61 @@ TEST(MdnsRecordTest, Construct) {
 }
 
 TEST(MdnsRecordTest, Compare) {
-  MdnsRecord record1(DomainName{"hostname", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, RecordType::kShared, kTtl,
-                     PtrRecordRdata(DomainName{"testing", "local"}));
-  MdnsRecord record2(DomainName{"hostname", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, RecordType::kShared, kTtl,
-                     PtrRecordRdata(DomainName{"testing", "local"}));
-  MdnsRecord record3(DomainName{"othername", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, RecordType::kShared, kTtl,
-                     PtrRecordRdata(DomainName{"testing", "local"}));
-  MdnsRecord record4(DomainName{"hostname", "local"}, DnsType::kA,
-                     DnsClass::kIN, RecordType::kShared, kTtl,
-                     ARecordRdata(IPAddress{8, 8, 8, 8}));
-  MdnsRecord record5(DomainName{"hostname", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, RecordType::kUnique, kTtl,
-                     PtrRecordRdata(DomainName{"testing", "local"}));
-  MdnsRecord record6(DomainName{"hostname", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, RecordType::kShared,
-                     std::chrono::seconds(200),
-                     PtrRecordRdata(DomainName{"testing", "local"}));
-  MdnsRecord record7(DomainName{"hostname", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, RecordType::kShared, kTtl,
-                     PtrRecordRdata(DomainName{"device", "local"}));
+  const MdnsRecord record1(DomainName{"hostname", "local"}, DnsType::kPTR,
+                           DnsClass::kIN, RecordType::kShared, kTtl,
+                           PtrRecordRdata(DomainName{"testing", "local"}));
+  const MdnsRecord record2(DomainName{"hostname", "local"}, DnsType::kPTR,
+                           DnsClass::kIN, RecordType::kShared, kTtl,
+                           PtrRecordRdata(DomainName{"testing", "local"}));
+  const MdnsRecord record3(DomainName{"othername", "local"}, DnsType::kPTR,
+                           DnsClass::kIN, RecordType::kShared, kTtl,
+                           PtrRecordRdata(DomainName{"testing", "local"}));
+  const MdnsRecord record4(DomainName{"hostname", "local"}, DnsType::kA,
+                           DnsClass::kIN, RecordType::kShared, kTtl,
+                           ARecordRdata(IPAddress{8, 8, 8, 8}));
+  const MdnsRecord record5(DomainName{"hostname", "local"}, DnsType::kPTR,
+                           DnsClass::kIN, RecordType::kUnique, kTtl,
+                           PtrRecordRdata(DomainName{"testing", "local"}));
+  const MdnsRecord record6(DomainName{"hostname", "local"}, DnsType::kPTR,
+                           DnsClass::kIN, RecordType::kShared,
+                           std::chrono::seconds(200),
+                           PtrRecordRdata(DomainName{"testing", "local"}));
+  const MdnsRecord record7(DomainName{"hostname", "local"}, DnsType::kPTR,
+                           DnsClass::kIN, RecordType::kShared, kTtl,
+                           PtrRecordRdata(DomainName{"device", "local"}));
+  const MdnsRecord record8(
+      DomainName{"testing", "local"}, DnsType::kNSEC, DnsClass::kIN,
+      RecordType::kUnique, std::chrono::seconds(120),
+      NsecRecordRdata(DomainName{"testing", "local"}, DnsType::kA));
+  const MdnsRecord record9(
+      DomainName{"testing", "local"}, DnsType::kNSEC, DnsClass::kIN,
+      RecordType::kUnique, std::chrono::seconds(120),
+      NsecRecordRdata(DomainName{"testing", "local"}, DnsType::kAAAA));
 
   EXPECT_EQ(record1, record2);
-  EXPECT_NE(record1, record3);
-  EXPECT_NE(record1, record4);
-  EXPECT_NE(record1, record5);
+
+  // Account for intentional differences between > / < and = / !=. This is
+  // unfortunate but required difference for > / < per RFC.
   EXPECT_NE(record1, record6);
-  EXPECT_NE(record1, record7);
+  ASSERT_FALSE(record1 > record6);
+  ASSERT_FALSE(record6 > record1);
+
+  std::vector<const MdnsRecord*> records_sorted{
+      &record4, &record7, &record1, &record5, &record3, &record8, &record9};
+  for (size_t i = 0; i < records_sorted.size(); i++) {
+    for (size_t j = i + 1; j < records_sorted.size(); j++) {
+      EXPECT_NE(*records_sorted[i], *records_sorted[j])
+          << "failure for i=" << i << " , j=" << j;
+      EXPECT_GT(*records_sorted[j], *records_sorted[i])
+          << "failure for i=" << i << " , j=" << j;
+      EXPECT_LT(*records_sorted[i], *records_sorted[j])
+          << "failure for i=" << i << " , j=" << j;
+    }
+  }
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      {record1, record2, record3, record4, record5, record6, record7, record8,
+       record9}));
 }
 
 TEST(MdnsRecordTest, CopyAndMove) {
@@ -531,6 +638,9 @@ TEST(MdnsQuestionTest, Compare) {
   EXPECT_NE(question1, question3);
   EXPECT_NE(question1, question4);
   EXPECT_NE(question1, question5);
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      {question1, question2, question3, question4, question5}));
 }
 
 TEST(MdnsQuestionTest, CopyAndMove) {
@@ -656,6 +766,10 @@ TEST(MdnsMessageTest, Compare) {
   EXPECT_NE(message1, message6);
   EXPECT_NE(message1, message7);
   EXPECT_NE(message1, message8);
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      {message1, message2, message3, message4, message5, message6, message7,
+       message8}));
 }
 
 TEST(MdnsMessageTest, CopyAndMove) {
@@ -675,6 +789,12 @@ TEST(MdnsMessageTest, CopyAndMove) {
       std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
       std::vector<MdnsRecord>{record3});
   TestCopyAndMove(message);
+}
+
+TEST(MdnsRecordOperations, CanBeProcessed) {
+  EXPECT_FALSE(CanBeProcessed(static_cast<DnsType>(1234)));
+  EXPECT_FALSE(CanBeProcessed(static_cast<DnsType>(222)));
+  EXPECT_FALSE(CanBeProcessed(static_cast<DnsType>(8973)));
 }
 
 }  // namespace discovery

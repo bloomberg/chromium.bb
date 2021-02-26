@@ -17,6 +17,7 @@
 
 #include <initializer_list>
 #include <functional>
+#include <memory>
 #include <utility>
 
 uint32_t GrStyledShape::testingOnly_getOriginalGenerationID() const {
@@ -465,7 +466,7 @@ public:
         SkRect rect;
         unsigned start;
         SkPathDirection dir;
-        if (SkPathPriv::IsSimpleClosedRect(fPath, &rect, &dir, &start)) {
+        if (SkPathPriv::IsSimpleRect(fPath, false, &rect, &dir, &start)) {
             return RectGeo(rect).strokeAndFillIsConvertedToFill(paint);
         }
         return false;
@@ -586,9 +587,9 @@ private:
     }
 
     void init(skiatest::Reporter* r, SkScalar scale) {
-        fAppliedPE.reset(new GrStyledShape);
-        fAppliedPEThenStroke.reset(new GrStyledShape);
-        fAppliedFull.reset(new GrStyledShape);
+        fAppliedPE = std::make_unique<GrStyledShape>();
+        fAppliedPEThenStroke = std::make_unique<GrStyledShape>();
+        fAppliedFull = std::make_unique<GrStyledShape>();
 
         *fAppliedPE = fBase->applyStyle(GrStyle::Apply::kPathEffectOnly, scale);
         *fAppliedPEThenStroke =
@@ -771,7 +772,7 @@ static sk_sp<SkPathEffect> make_null_dash() {
 // the maximum stack frame limit.  make_TestCase() moves those temporaries over to the heap.
 template <typename... Args>
 static std::unique_ptr<TestCase> make_TestCase(Args&&... args) {
-    return std::unique_ptr<TestCase>{ new TestCase(std::forward<Args>(args)...) };
+    return std::make_unique<TestCase>( std::forward<Args>(args)... );
 }
 
 static void test_basic(skiatest::Reporter* reporter, const Geo& geo) {
@@ -1534,9 +1535,9 @@ DEF_TEST(GrStyledShape_empty_shape, reporter) {
     REPORTER_ASSERT(reporter, fillInvertedEmptyCase.appliedPathEffectShape().inverseFilled());
     REPORTER_ASSERT(reporter, fillInvertedEmptyCase.appliedFullStyleShape().inverseFilled());
 
-    Key emptyKey(fillEmptyCase.baseKey());
+    const Key& emptyKey = fillEmptyCase.baseKey();
     REPORTER_ASSERT(reporter, emptyKey.count());
-    Key inverseEmptyKey(fillInvertedEmptyCase.baseKey());
+    const Key& inverseEmptyKey = fillInvertedEmptyCase.baseKey();
     REPORTER_ASSERT(reporter, inverseEmptyKey.count());
     TestCase::SelfExpectations expectations;
     expectations.fStrokeApplies = false;
@@ -1885,19 +1886,11 @@ DEF_TEST(GrStyledShape_lines, r) {
     static constexpr SkPoint kB { 5, -9};
     static constexpr SkPoint kC {-3, 17};
 
-    SkPath lineAB;
-    lineAB.moveTo(kA);
-    lineAB.lineTo(kB);
-
-    SkPath lineBA;
-    lineBA.moveTo(kB);
-    lineBA.lineTo(kA);
-
-    SkPath lineAC;
-    lineAC.moveTo(kB);
-    lineAC.lineTo(kC);
-
+    SkPath lineAB = SkPath::Line(kA, kB);
+    SkPath lineBA = SkPath::Line(kB, kA);
+    SkPath lineAC = SkPath::Line(kB, kC);
     SkPath invLineAB = lineAB;
+
     invLineAB.setFillType(SkPathFillType::kInverseEvenOdd);
 
     SkPaint fill;
@@ -2352,4 +2345,33 @@ DEF_TEST(GrStyledShape_arcs, reporter) {
                                                 : TestCase::kAllDifferent_ComparisonExpecation;
         ovalArcWithCenter.compare(reporter, oval, ovalExpectations);
     }
+}
+
+DEF_TEST(GrShapeInversion, r) {
+    SkPath path;
+    SkScalar radii[] = {10.f, 10.f, 10.f, 10.f,
+                        10.f, 10.f, 10.f, 10.f};
+    path.addRoundRect(SkRect::MakeWH(50, 50), radii);
+    path.toggleInverseFillType();
+
+    GrShape inverseRRect(path);
+    GrShape rrect(inverseRRect);
+    rrect.setInverted(false);
+
+    REPORTER_ASSERT(r, inverseRRect.inverted() && inverseRRect.isPath());
+    REPORTER_ASSERT(r, !rrect.inverted() && rrect.isPath());
+
+    // Invertedness should be preserved after simplification
+    inverseRRect.simplify();
+    rrect.simplify();
+
+    REPORTER_ASSERT(r, inverseRRect.inverted() && inverseRRect.isRRect());
+    REPORTER_ASSERT(r, !rrect.inverted() && rrect.isRRect());
+
+    // Invertedness should be reset when calling reset().
+    inverseRRect.reset();
+    REPORTER_ASSERT(r, !inverseRRect.inverted() && inverseRRect.isEmpty());
+    inverseRRect.setPath(path);
+    inverseRRect.reset();
+    REPORTER_ASSERT(r, !inverseRRect.inverted() && inverseRRect.isEmpty());
 }

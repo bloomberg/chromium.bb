@@ -79,8 +79,8 @@ class SearchEngineDelegateImpl
     return url::Origin();
   }
 
-  void SetDSEChangedCallback(const base::Closure& callback) override {
-    dse_changed_callback_ = callback;
+  void SetDSEChangedCallback(base::RepeatingClosure callback) override {
+    dse_changed_callback_ = std::move(callback);
   }
 
   // TemplateURLServiceObserver
@@ -92,7 +92,7 @@ class SearchEngineDelegateImpl
   // Will be null in unittests.
   TemplateURLService* template_url_service_;
 
-  base::Closure dse_changed_callback_;
+  base::RepeatingClosure dse_changed_callback_;
 };
 
 }  // namespace
@@ -154,7 +154,7 @@ SearchPermissionsService::SearchPermissionsService(Profile* profile)
   DCHECK(!profile_->IsOffTheRecord());
 
   delegate_.reset(new SearchEngineDelegateImpl(profile_));
-  delegate_->SetDSEChangedCallback(base::Bind(
+  delegate_->SetDSEChangedCallback(base::BindRepeating(
       &SearchPermissionsService::OnDSEChanged, base::Unretained(this)));
 
   // Under normal circumstances we wouldn't need to call OnDSEChanged here, just
@@ -459,7 +459,7 @@ ContentSetting SearchPermissionsService::GetContentSetting(
     const GURL& origin,
     ContentSettingsType type) {
   return host_content_settings_map_->GetUserModifiableContentSetting(
-      origin, origin, type, std::string());
+      origin, origin, type);
 }
 
 void SearchPermissionsService::SetContentSetting(const GURL& origin,
@@ -474,20 +474,20 @@ void SearchPermissionsService::SetContentSetting(const GURL& origin,
   // never be changed between ALLOW<->BLOCK on Android. Do not copy this code.
   // Check with the notifications team if you need to do something like this.
   host_content_settings_map_->SetContentSettingDefaultScope(
-      origin, origin, type, std::string(), CONTENT_SETTING_DEFAULT);
+      origin, origin, type, CONTENT_SETTING_DEFAULT);
 
   // If we're restoring an ASK setting, it really implies that we should delete
   // the user-defined setting to fall back to the default.
   if (setting == CONTENT_SETTING_ASK)
     return;  // We deleted the setting above already.
 
-  host_content_settings_map_->SetContentSettingDefaultScope(
-      origin, origin, type, std::string(), setting);
+  host_content_settings_map_->SetContentSettingDefaultScope(origin, origin,
+                                                            type, setting);
 }
 
 void SearchPermissionsService::SetSearchEngineDelegateForTest(
     std::unique_ptr<SearchEngineDelegate> delegate) {
   delegate_ = std::move(delegate);
-  delegate_->SetDSEChangedCallback(base::Bind(
+  delegate_->SetDSEChangedCallback(base::BindRepeating(
       &SearchPermissionsService::OnDSEChanged, base::Unretained(this)));
 }

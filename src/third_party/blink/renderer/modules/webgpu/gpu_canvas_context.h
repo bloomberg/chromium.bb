@@ -39,15 +39,13 @@ class GPUCanvasContext : public CanvasRenderingContext {
                    const CanvasContextCreationAttributesCore&);
   ~GPUCanvasContext() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const IntSize& CanvasSize() const;
 
   // CanvasRenderingContext implementation
   ContextType GetContextType() const override;
   void SetCanvasGetContextResult(RenderingContext&) final;
-  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) final {
-    return nullptr;
-  }
+  scoped_refptr<StaticBitmapImage> GetImage() final { return nullptr; }
   void SetIsInHiddenPage(bool) override {}
   void SetIsBeingDisplayed(bool) override {}
   bool isContextLost() const override { return false; }

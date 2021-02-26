@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.search_engines;
 
 import android.net.Uri;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -13,16 +14,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.search_engines.settings.SearchEngineAdapter;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.search_engines.TemplateUrlService.LoadListener;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.url.GURL;
@@ -62,7 +61,6 @@ public class TemplateUrlServiceTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @RetryOnFailure
     public void testUrlForContextualSearchQueryValid() throws ExecutionException {
         waitForTemplateUrlServiceToLoad();
 
@@ -122,7 +120,6 @@ public class TemplateUrlServiceTest {
     @Test
     @SmallTest
     @Feature({"SearchEngines"})
-    @RetryOnFailure
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // see crbug.com/581268
     public void testLoadUrlService() {
         waitForTemplateUrlServiceToLoad();
@@ -146,13 +143,9 @@ public class TemplateUrlServiceTest {
                 }
             });
         });
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Observer wasn't notified of TemplateUrlService load.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return observerNotified.get();
-                    }
-                });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return observerNotified.get();
+        }, "Observer wasn't notified of TemplateUrlService load.");
     }
 
     @Test
@@ -323,13 +316,9 @@ public class TemplateUrlServiceTest {
                             }
                         });
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria(
-                "Observer wasn't notified of TemplateUrlService load.") {
-            @Override
-            public boolean isSatisfied() {
-                return observerNotified.get();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return observerNotified.get();
+        }, "Observer wasn't notified of TemplateUrlService load.");
         return templateUrlService;
     }
 }

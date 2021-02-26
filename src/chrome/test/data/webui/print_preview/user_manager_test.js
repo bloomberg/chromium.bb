@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloudPrintInterfaceImpl, DestinationStore, InvitationStore, NativeLayer} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceImpl, DestinationStore, InvitationStore, NativeLayer, NativeLayerImpl} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
@@ -32,11 +32,11 @@ suite('UserManagerTest', function() {
 
   /** @override */
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     // Create data classes
     nativeLayer = new NativeLayerStub();
-    NativeLayer.setInstance(nativeLayer);
+    NativeLayerImpl.instance_ = nativeLayer;
     cloudPrintInterface = new CloudPrintInterfaceStub();
     CloudPrintInterfaceImpl.instance_ = cloudPrintInterface;
 
@@ -46,9 +46,10 @@ suite('UserManagerTest', function() {
     destinationStore = createDestinationStore();
     destinationStore.setCloudPrintInterface(cloudPrintInterface);
     const localDestinations = [];
-    const destinations = getDestinations(nativeLayer, localDestinations);
+    const destinations = getDestinations(localDestinations);
     destinationStore.init(
-        false /* isInAppKioskMode */, 'FooDevice' /* printerName */,
+        false /* pdfPrinterDisabled */, true /* isDriveMounted */,
+        'FooDevice' /* printerName */,
         '' /* serializedDefaultDestinationSelectionRulesStr */, []);
     nativeLayer.setLocalDestinations(localDestinations);
 

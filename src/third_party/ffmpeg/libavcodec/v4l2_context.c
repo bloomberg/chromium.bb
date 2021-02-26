@@ -291,6 +291,18 @@ static V4L2Buffer* v4l2_dequeue_v4l2buf(V4L2Context *ctx, int timeout)
     };
     int i, ret;
 
+    if (!V4L2_TYPE_IS_OUTPUT(ctx->type) && ctx->buffers) {
+        for (i = 0; i < ctx->num_buffers; i++) {
+            if (ctx->buffers[i].status == V4L2BUF_IN_DRIVER)
+                break;
+        }
+        if (i == ctx->num_buffers)
+            av_log(logger(ctx), AV_LOG_WARNING, "All capture buffers returned to "
+                                                "userspace. Increase num_capture_buffers "
+                                                "to prevent device deadlock or dropped "
+                                                "packets/frames.\n");
+    }
+
     /* if we are draining and there are no more capture buffers queued in the driver we are done */
     if (!V4L2_TYPE_IS_OUTPUT(ctx->type) && ctx_to_m2mctx(ctx)->draining) {
         for (i = 0; i < ctx->num_buffers; i++) {
@@ -391,6 +403,19 @@ dequeue:
                         ctx->name, av_err2str(AVERROR(errno)));
             }
             return NULL;
+        }
+
+        if (ctx_to_m2mctx(ctx)->draining && !V4L2_TYPE_IS_OUTPUT(ctx->type)) {
+            int bytesused = V4L2_TYPE_IS_MULTIPLANAR(buf.type) ?
+                            buf.m.planes[0].bytesused : buf.bytesused;
+            if (bytesused == 0) {
+                ctx->done = 1;
+                return NULL;
+            }
+#ifdef V4L2_BUF_FLAG_LAST
+            if (buf.flags & V4L2_BUF_FLAG_LAST)
+                ctx->done = 1;
+#endif
         }
 
         avbuf = &ctx->buffers[buf.index];
@@ -574,7 +599,7 @@ int ff_v4l2_context_enqueue_frame(V4L2Context* ctx, const AVFrame* frame)
 
     avbuf = v4l2_getfree_v4l2buf(ctx);
     if (!avbuf)
-        return AVERROR(ENOMEM);
+        return AVERROR(EAGAIN);
 
     ret = ff_v4l2_buffer_avframe_to_buf(frame, avbuf);
     if (ret)

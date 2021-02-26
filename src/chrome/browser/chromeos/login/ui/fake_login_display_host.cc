@@ -72,7 +72,7 @@ WizardController* FakeLoginDisplayHost::GetWizardController() {
   return wizard_controller_.get();
 }
 
-AppLaunchController* FakeLoginDisplayHost::GetAppLaunchController() {
+KioskLaunchController* FakeLoginDisplayHost::GetKioskLaunchController() {
   return nullptr;
 }
 
@@ -87,15 +87,10 @@ void FakeLoginDisplayHost::OnPreferencesChanged() {}
 
 void FakeLoginDisplayHost::PrewarmAuthentication() {}
 
-void FakeLoginDisplayHost::StartAppLaunch(const std::string& app_id,
-                                          bool diagnostic_mode,
-                                          bool is_auto_launch) {}
-
 void FakeLoginDisplayHost::StartDemoAppLaunch() {}
 
-void FakeLoginDisplayHost::StartArcKiosk(const AccountId& account_id) {}
-
-void FakeLoginDisplayHost::StartWebKiosk(const AccountId& account_id) {}
+void FakeLoginDisplayHost::StartKiosk(const KioskAppId& kiosk_app_id,
+                                      bool is_auto_launch) {}
 
 void FakeLoginDisplayHost::CompleteLogin(const UserContext& user_context) {}
 
@@ -111,7 +106,9 @@ void FakeLoginDisplayHost::LoadWallpaper(const AccountId& account_id) {}
 
 void FakeLoginDisplayHost::LoadSigninWallpaper() {}
 
-bool FakeLoginDisplayHost::IsUserWhitelisted(const AccountId& account_id) {
+bool FakeLoginDisplayHost::IsUserAllowlisted(
+    const AccountId& account_id,
+    const base::Optional<user_manager::UserType>& user_type) {
   return false;
 }
 
@@ -121,24 +118,30 @@ void FakeLoginDisplayHost::HideOobeDialog() {}
 
 void FakeLoginDisplayHost::UpdateOobeDialogState(ash::OobeDialogState state) {}
 
-const user_manager::UserList FakeLoginDisplayHost::GetUsers() {
-  return user_manager::UserList();
-}
-
 void FakeLoginDisplayHost::CancelPasswordChangedFlow() {}
 
 void FakeLoginDisplayHost::MigrateUserData(const std::string& old_password) {}
 
 void FakeLoginDisplayHost::ResyncUserData() {}
 
-void FakeLoginDisplayHost::ShowFeedback() {}
-
-void FakeLoginDisplayHost::ShowResetScreen() {}
+bool FakeLoginDisplayHost::HandleAccelerator(
+    ash::LoginAcceleratorAction action) {
+  return false;
+}
 
 void FakeLoginDisplayHost::HandleDisplayCaptivePortal() {}
 
 void FakeLoginDisplayHost::UpdateAddUserButtonStatus() {}
 
 void FakeLoginDisplayHost::RequestSystemInfoUpdate() {}
+
+bool FakeLoginDisplayHost::HasUserPods() {
+  return false;
+}
+
+void FakeLoginDisplayHost::AddObserver(LoginDisplayHost::Observer* observer) {}
+
+void FakeLoginDisplayHost::RemoveObserver(
+    LoginDisplayHost::Observer* observer) {}
 
 }  // namespace chromeos

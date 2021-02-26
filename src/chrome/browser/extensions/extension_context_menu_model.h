@@ -13,7 +13,6 @@
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
-class ExtensionAction;
 class GURL;
 class Profile;
 
@@ -22,8 +21,9 @@ class WebContents;
 }
 
 namespace extensions {
-class Extension;
 class ContextMenuMatcher;
+class Extension;
+class ExtensionAction;
 
 // The context menu model for extension icons.
 class ExtensionContextMenuModel : public ui::SimpleMenuModel,
@@ -69,15 +69,18 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
     kMaxValue = kPageAccessLearnMore,
   };
 
-  // The current visibility of the button; this can affect the "hide"/"show"
+  // The current visibility of the extension; this affects the "pin" / "unpin"
   // strings in the menu.
+  // TODO(devlin): Rename this "PinState" when we finish removing the old UI
+  // bits.
   enum ButtonVisibility {
-    // The button is visible on the toolbar.
-    VISIBLE,
-    // The button is temporarily visible on the toolbar, as for showign a popup.
+    // The extension is pinned on the toolbar.
+    PINNED,
+    // The extension is temporarily visible on the toolbar, as for showing a
+    // popup.
     TRANSITIVELY_VISIBLE,
-    // The button is showed in the overflow menu.
-    OVERFLOWED
+    // The extension is not pinned (and is shown in the extensions menu).
+    UNPINNED,
   };
 
   // Delegate to handle showing an ExtensionAction popup.
@@ -130,6 +133,10 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
 
   void HandlePageAccessCommand(int command_id,
                                const Extension* extension) const;
+
+  // Logs a user action when an option is selected in the page access section of
+  // the context menu.
+  void LogPageAccessAction(int command_id) const;
 
   // Gets the extension we are displaying the menu for. Returns NULL if the
   // extension has been uninstalled and no longer exists.

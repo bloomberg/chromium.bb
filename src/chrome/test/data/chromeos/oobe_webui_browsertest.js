@@ -4,8 +4,7 @@
 
 GEN('#include "chrome/browser/ui/browser.h"');
 GEN('#include "chrome/browser/ui/browser_commands.h"');
-GEN('#include "chrome/browser/ui/exclusive_access/' +
-    'fullscreen_controller_test.h"');
+GEN('#include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
 /**
@@ -139,7 +138,7 @@ TEST_F('OobeWebUITest', 'DISABLED_OobeEula', function() {
 
 // Fails on chromeos, http://crbug.com/665315
 TEST_F('OobeWebUITest', 'DISABLED_OobeUpdate', function() {
-  Oobe.getInstance().showScreen({'id':'update'});
+  Oobe.getInstance().showScreen({'id':'oobe-update'});
 });
 
 // Fails on chromeos, http://crbug.com/665315

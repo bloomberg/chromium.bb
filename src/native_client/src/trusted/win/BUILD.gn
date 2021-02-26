@@ -16,6 +16,9 @@ template("nacl_win_as_toolchain") {
       # For GCC we can just use the C compiler to compile assembly.
       win_as_script =
           rebase_path("//native_client/tools/win_as.py", root_build_dir)
+      clang_cl = rebase_path(
+              "//third_party/llvm-build/Release+Asserts/bin/clang-cl.exe",
+              root_build_dir)
       if (invoker.toolchain_cpu == "x86") {
         env = "environment.x86"
         win_as_arch = "Win32"
@@ -25,7 +28,7 @@ template("nacl_win_as_toolchain") {
       }
       top_srcdir = rebase_path("//", root_build_dir)
       rspfile = "{{output}}.rsp"
-      rspfile_content = "\"$python_path\" $win_as_script -a $win_as_arch -p $top_srcdir -o {{output}} {{source}}"
+      rspfile_content = "\"$python_path\" $win_as_script -a $win_as_arch -p $top_srcdir -c $clang_cl -o {{output}} {{source}}"
       command = "$python_path $tool_wrapper_path action-wrapper $env $rspfile"
       depsformat = "msvc"
       description = "GNU ASM {{output}}"
@@ -51,9 +54,7 @@ template("nacl_win_as_toolchain") {
     # toolchain.
     tool("alink") {
       command = "fake"
-      outputs = [
-        "fake",
-      ]
+      outputs = [ "fake" ]
     }
 
     toolchain_args = {

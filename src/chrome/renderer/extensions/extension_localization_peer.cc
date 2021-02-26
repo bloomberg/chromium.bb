@@ -72,6 +72,9 @@ void ExtensionLocalizationPeer::OnReceivedResponse(
   response_head_ = std::move(head);
 }
 
+void ExtensionLocalizationPeer::EvictFromBackForwardCache(
+    blink::mojom::RendererEvictionReason) {}
+
 void ExtensionLocalizationPeer::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   data_pipe_state_.body_state_ = DataPipeState::BodyState::kReadingBody;
@@ -114,10 +117,6 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
 
   // We've sent all the body to the peer. Complete the request.
   CompleteRequest();
-}
-
-scoped_refptr<base::TaskRunner> ExtensionLocalizationPeer::GetTaskRunner() {
-  return original_peer_->GetTaskRunner();
 }
 
 void ExtensionLocalizationPeer::OnReadableBody(

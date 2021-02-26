@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/image_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -19,11 +20,15 @@ namespace blink {
 
 void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
                                  const PhysicalOffset& paint_offset) {
+  if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kSelectionDragImage)
+    return;
+
   WebMediaPlayer* media_player =
       layout_video_.MediaElement()->GetWebMediaPlayer();
-  bool displaying_poster =
-      layout_video_.VideoElement()->ShouldDisplayPosterImage();
-  if (!displaying_poster && !media_player)
+  bool should_display_poster =
+      layout_video_.GetDisplayMode() == LayoutVideo::kPoster;
+  if (!should_display_poster && !media_player)
     return;
 
   PhysicalRect replaced_rect = layout_video_.ReplacedContentRect();
@@ -38,10 +43,17 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
     return;
 
   GraphicsContext& context = paint_info.context;
+  // Here we're not painting the video but rather preparing the layer for the
+  // compositor to submit video frames. But the compositor will do all the work
+  // related to the video moving forward. Therefore we mark the FCP here.
+  context.GetPaintController().SetImagePainted();
   PhysicalRect content_box_rect = layout_video_.PhysicalContentBoxRect();
   content_box_rect.Move(paint_offset);
 
   if (context.IsPaintingPreview()) {
+    // Create a canvas and draw a URL rect to it for the paint preview.
+    BoxDrawingRecorder recorder(context, layout_video_, paint_info.phase,
+                                paint_offset);
     context.SetURLForRect(layout_video_.GetDocument().Url(),
                           snapped_replaced_rect);
   }
@@ -57,8 +69,9 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
       paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers;
 
   bool paint_with_foreign_layer =
-      !displaying_poster && !force_software_video_paint &&
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      paint_info.phase == PaintPhase::kForeground && !should_display_poster &&
+      !force_software_video_paint;
   if (paint_with_foreign_layer) {
     if (cc::Layer* layer = layout_video_.MediaElement()->CcLayer()) {
       layer->SetBounds(gfx::Size(snapped_replaced_rect.Size()));
@@ -66,14 +79,15 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
       layer->SetHitTestable(true);
       RecordForeignLayer(context, layout_video_,
                          DisplayItem::kForeignLayerVideo, layer,
-                         FloatPoint(snapped_replaced_rect.Location()));
+                         snapped_replaced_rect.Location());
       return;
     }
   }
 
-  DrawingRecorder recorder(context, layout_video_, paint_info.phase);
+  BoxDrawingRecorder recorder(context, layout_video_, paint_info.phase,
+                              paint_offset);
 
-  if (displaying_poster || !force_software_video_paint) {
+  if (should_display_poster || !force_software_video_paint) {
     // This will display the poster image, if one is present, and otherwise
     // paint nothing.
     DCHECK(paint_info.PaintContainer());

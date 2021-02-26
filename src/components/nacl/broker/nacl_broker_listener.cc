@@ -29,7 +29,6 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "sandbox/win/src/sandbox_policy.h"
-#include "services/service_manager/embedder/switches.h"
 
 namespace {
 
@@ -52,8 +51,8 @@ void NaClBrokerListener::Listen() {
   run_loop_.Run();
 }
 
-service_manager::SandboxType NaClBrokerListener::GetSandboxType() {
-  return service_manager::SandboxType::kPpapi;
+sandbox::policy::SandboxType NaClBrokerListener::GetSandboxType() {
+  return sandbox::policy::SandboxType::kPpapi;
 }
 
 void NaClBrokerListener::OnChannelConnected(int32_t peer_pid) {
@@ -142,7 +141,7 @@ void NaClBrokerListener::OnLaunchDebugExceptionHandler(
   NaClStartDebugExceptionHandlerThread(
       base::Process(process_handle), startup_info,
       base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(SendReply, channel_.get(), pid));
+      base::BindRepeating(SendReply, channel_.get(), pid));
 }
 
 void NaClBrokerListener::OnStopBroker() {

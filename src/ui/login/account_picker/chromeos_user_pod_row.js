@@ -1635,9 +1635,8 @@ cr.define('login', function() {
       if (this.user.legacySupervisedUser && !this.user.isDesktopUser) {
         this.showSupervisedUserSigninWarning();
       } else {
-        // Special case for multi-profiles sign in. We show users even if they
-        // are not allowed per policy. Restrict those users from starting GAIA.
-        if (this.multiProfilesPolicyApplied)
+        // Disable online sign-in flow for user-adding screen.
+        if (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING)
           return;
 
         this.parentNode.showSigninUI(this.user.emailAddress);
@@ -2518,7 +2517,7 @@ cr.define('login', function() {
       UserPod.prototype.update.call(this);
       this.querySelector('.info').textContent =
           loadTimeData.getStringF('publicAccountInfoFormat',
-                                  this.user_.enterpriseDisplayDomain);
+                                  this.user_.enterpriseDomainManager);
       if (this.querySelector('.full-name'))
         this.querySelector('.full-name').textContent = this.user_.displayName;
     },
@@ -4685,9 +4684,6 @@ cr.define('login', function() {
       }
 
       this.handleAfterPodPlacement_();
-      // This is a hack for https://crbug.com/875128.
-      if (Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE)
-        document.documentElement.removeAttribute('full-screen-dialog');
     },
 
     /**

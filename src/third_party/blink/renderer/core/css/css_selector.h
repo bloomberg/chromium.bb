@@ -34,6 +34,7 @@ namespace blink {
 
 class CSSParserContext;
 class CSSSelectorList;
+class Node;
 
 // This class represents a simple selector for a StyleRule.
 
@@ -107,9 +108,23 @@ class CORE_EXPORT CSSSelector {
   static constexpr unsigned kClassLikeSpecificity = 0x000100;
   static constexpr unsigned kTagSpecificity = 0x000001;
 
+  // TODO(crbug.com/1143404): Fix :host pseudos and remove this enum.
+  enum class SpecificityMode {
+    // Normal mode currently treats :host() and :host-context() as zero.
+    // (The actual specificity is determined dynamically during selector
+    // matching).
+    kNormal,
+    // This mode calculates the specificity for :host() and :host-context()
+    // like it's calculated for :is(), i.e. the specificity is that of the
+    // most specific argument.
+    //
+    // This mode is intended for use-counting purposes only.
+    kIncludeHostPseudos
+  };
+
   // http://www.w3.org/TR/css3-selectors/#specificity
   // We use 256 as the base of the specificity number system.
-  unsigned Specificity() const;
+  unsigned Specificity(SpecificityMode = SpecificityMode::kNormal) const;
 
   /* how the attribute value has to match.... Default is Exact */
   enum MatchType {
@@ -194,6 +209,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoBefore,
     kPseudoAfter,
     kPseudoMarker,
+    kPseudoModal,
     kPseudoBackdrop,
     kPseudoLang,
     kPseudoNot,
@@ -242,6 +258,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoUnresolved,
     kPseudoDefined,
     kPseudoContent,
+    kPseudoHasDatalist,
     kPseudoHost,
     kPseudoHostContext,
     kPseudoShadow,
@@ -254,9 +271,10 @@ class CORE_EXPORT CSSSelector {
     kPseudoSlotted,
     kPseudoVideoPersistent,
     kPseudoVideoPersistentAncestor,
+    kPseudoTargetText,
   };
 
-  enum AttributeMatchType {
+  enum class AttributeMatchType {
     kCaseSensitive,
     kCaseInsensitive,
   };
@@ -272,7 +290,7 @@ class CORE_EXPORT CSSSelector {
   void UpdatePseudoPage(const AtomicString&);
 
   static PseudoType ParsePseudoType(const AtomicString&, bool has_arguments);
-  static PseudoId ParsePseudoId(const String&);
+  static PseudoId ParsePseudoId(const String&, const Node*);
   static PseudoId GetPseudoId(PseudoType);
 
   // Selectors are kept in an array by CSSSelectorList. The next component of
@@ -366,9 +384,6 @@ class CORE_EXPORT CSSSelector {
   bool IsLastInTagHistory() const { return is_last_in_tag_history_; }
   void SetLastInTagHistory(bool is_last) { is_last_in_tag_history_ = is_last; }
 
-  bool IgnoreSpecificity() const { return ignore_specificity_; }
-  void SetIgnoreSpecificity(bool ignore) { ignore_specificity_ = ignore; }
-
   // https://drafts.csswg.org/selectors/#compound
   bool IsCompound() const;
 
@@ -377,7 +392,10 @@ class CORE_EXPORT CSSSelector {
     kMatchVisited = 2,
     kMatchAll = kMatchLink | kMatchVisited
   };
-  unsigned ComputeLinkMatchType(unsigned link_match_type) const;
+
+  // True if :link or :visited pseudo-classes are found anywhere in
+  // the selector.
+  bool HasLinkOrVisited() const;
 
   bool IsForPage() const { return is_for_page_; }
   void SetForPage() { is_for_page_ = true; }
@@ -399,8 +417,8 @@ class CORE_EXPORT CSSSelector {
   // Returns true if the immediately preceeding simple selector is ::part.
   bool FollowsPart() const;
   bool NeedsUpdatedDistribution() const;
-  bool HasPseudoIs() const;
-  bool HasPseudoWhere() const;
+
+  static String FormatPseudoTypeForDebugging(PseudoType);
 
  private:
   unsigned relation_ : 4;     // enum RelationType
@@ -413,7 +431,6 @@ class CORE_EXPORT CSSSelector {
   unsigned tag_is_implicit_ : 1;
   unsigned relation_is_affected_by_pseudo_content_ : 1;
   unsigned is_last_in_original_list_ : 1;
-  unsigned ignore_specificity_ : 1;
 
   void SetPseudoType(PseudoType pseudo_type) {
     pseudo_type_ = pseudo_type;
@@ -421,7 +438,8 @@ class CORE_EXPORT CSSSelector {
               pseudo_type);  // using a bitfield.
   }
 
-  unsigned SpecificityForOneSelector() const;
+  unsigned SpecificityForOneSelector(
+      SpecificityMode = SpecificityMode::kNormal) const;
   unsigned SpecificityForPage() const;
   const CSSSelector* SerializeCompound(StringBuilder&) const;
 
@@ -540,7 +558,6 @@ inline CSSSelector::CSSSelector()
       tag_is_implicit_(false),
       relation_is_affected_by_pseudo_content_(false),
       is_last_in_original_list_(false),
-      ignore_specificity_(false),
       data_(DataUnion::kConstructEmptyValue) {}
 
 inline CSSSelector::CSSSelector(const QualifiedName& tag_q_name,
@@ -555,7 +572,6 @@ inline CSSSelector::CSSSelector(const QualifiedName& tag_q_name,
       tag_is_implicit_(tag_is_implicit),
       relation_is_affected_by_pseudo_content_(false),
       is_last_in_original_list_(false),
-      ignore_specificity_(false),
       data_(tag_q_name) {}
 
 inline CSSSelector::CSSSelector(const CSSSelector& o)
@@ -570,7 +586,6 @@ inline CSSSelector::CSSSelector(const CSSSelector& o)
       relation_is_affected_by_pseudo_content_(
           o.relation_is_affected_by_pseudo_content_),
       is_last_in_original_list_(o.is_last_in_original_list_),
-      ignore_specificity_(o.ignore_specificity_),
       data_(DataUnion::kConstructUninitialized) {
   if (o.match_ == kTag) {
     new (&data_.tag_q_name_) QualifiedName(o.data_.tag_q_name_);

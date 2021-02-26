@@ -17,11 +17,16 @@ class FilePath;
 namespace chromeos {
 namespace assistant {
 
+// Returns the root path of all user specific files.
 base::FilePath GetRootPath();
+
+// Returns the path where all downloaded LibAssistant resources are stored.
+base::FilePath GetBaseAssistantDir();
 
 // Creates the configuration for libassistant.
 std::string CreateLibAssistantConfig(
-    base::Optional<std::string> s3_server_uri_override = base::nullopt);
+    base::Optional<std::string> s3_server_uri_override,
+    base::Optional<std::string> device_id_override);
 
 }  // namespace assistant
 }  // namespace chromeos

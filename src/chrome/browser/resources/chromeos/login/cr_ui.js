@@ -131,29 +131,6 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Shows password changed screen that offers migration.
-   * @param {boolean} showError Whether to show the incorrect password error.
-   */
-  Oobe.showPasswordChangedScreen = function(showError, email) {
-    DisplayManager.showPasswordChangedScreen(showError, email);
-  };
-
-  /**
-   * Shows TPM error screen.
-   */
-  Oobe.showTpmError = function() {
-    DisplayManager.showTpmError();
-  };
-
-  /**
-   * Shows Active Directory password change screen.
-   * @param {string} username Name of the user that should change the password.
-   */
-  Oobe.showActiveDirectoryPasswordChangeScreen = function(username) {
-    DisplayManager.showActiveDirectoryPasswordChangeScreen(username);
-  };
-
-  /**
    * Show user-pods.
    */
   Oobe.showUserPods = function() {
@@ -195,14 +172,6 @@ cr.define('cr.ui', function() {
    */
   Oobe.setBluetoothDeviceInfo = function(bluetoothName) {
     DisplayManager.setBluetoothDeviceInfo(bluetoothName);
-  };
-
-  /**
-   * Updates the device requisition string shown in the requisition prompt.
-   * @param {string} requisition The device requisition.
-   */
-  Oobe.updateDeviceRequisition = function(requisition) {
-    Oobe.getInstance().updateDeviceRequisition(requisition);
   };
 
   /**
@@ -279,7 +248,7 @@ cr.define('cr.ui', function() {
         chrome.send('toggleFakeEnrollment');
       });
 
-      waitForOobeScreen('oauth-enrollment', function() {
+      waitForOobeScreen('enterprise-enrollment', function() {
         chrome.send('oauthEnrollCompleteLogin', [username]);
       });
     }
@@ -322,7 +291,7 @@ cr.define('cr.ui', function() {
    * Hotrod requisition for telemetry.
    */
   Oobe.remoraRequisitionForTesting = function() {
-    chrome.send('setDeviceRequisition', ['remora']);
+    chrome.send('WelcomeScreen.setDeviceRequisition', ['remora']);
   };
 
   /**
@@ -344,7 +313,7 @@ cr.define('cr.ui', function() {
    * attribute screen if it's present.
    */
   Oobe.isEnrollmentSuccessfulForTest = function() {
-    const step = $('enterprise-enrollment').currentStep_;
+    const step = $('enterprise-enrollment').uiStep;
     if (step === ENROLLMENT_STEP.ATTRIBUTE_PROMPT) {
       chrome.send('oauthEnrollAttributes', ['', '']);
       return true;
@@ -445,7 +414,7 @@ function initializeOobe() {
   document.removeEventListener('DOMContentLoaded', initializeOobe);
 
   // TODO(crbug.com/1082670): Remove excessive logging after investigation.
-  console.warn('initializing OOBE');
+  console.warn('1082670 : initializing OOBE');
 
   try {
     Oobe.initialize();
@@ -467,7 +436,7 @@ window.onerror = function(message, file, line, column, error) {
 };
 
 // TODO(crbug.com/1082670): Remove excessive logging after investigation.
-console.warn('cr_ui loaded');
+console.warn('1082670 : cr_ui loaded');
 
 /**
  * Final initialization performed after DOM and all scripts have loaded.

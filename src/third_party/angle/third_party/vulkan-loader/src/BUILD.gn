@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//build_overrides/build.gni")
 import("//build_overrides/vulkan_loader.gni")
 
-# Fuchsia has non-upstream changes to the vulkan loader, so we don't want
-# to build it from upstream sources.
-assert(!is_fuchsia)
+if (is_fuchsia) {
+  import("//build/cpp/sdk_shared_library.gni")
+  import("//build/sdk/sdk_documentation.gni")
+}
 
 if (!is_android) {
   vulkan_undefine_configs = []
@@ -32,7 +34,20 @@ if (is_win) {
 config("vulkan_internal_config") {
   defines = [ "VULKAN_NON_CMAKE_BUILD" ]
   if (is_clang || !is_win) {
-    cflags = [ "-Wno-unused-function" ]
+    cflags = [
+      "-Wno-conversion",
+      "-Wno-extra-semi",
+      "-Wno-sign-compare",
+      "-Wno-unreachable-code",
+      "-Wno-unused-function",
+      "-Wno-unused-variable",
+    ]
+  }
+  if (is_fuchsia) {
+    defines += [
+      "SYSCONFDIR=\"/config\"",
+      "EXTRASYSCONFDIR=\"/pkg/data\"",
+    ]
   }
   if (is_linux || is_mac) {
     defines += [
@@ -66,7 +81,9 @@ config("vulkan_loader_config") {
 }
 
 if (!is_android) {
-  if (vulkan_loader_shared) {
+  if (is_fuchsia) {
+    library_type = "sdk_shared_library"
+  } else if (vulkan_loader_shared) {
     library_type = "shared_library"
   } else {
     library_type = "static_library"
@@ -74,6 +91,7 @@ if (!is_android) {
 
   target(library_type, "libvulkan") {
     sources = [
+      "loader/adapters.h",
       "loader/asm_offset.c",
       "loader/cJSON.c",
       "loader/cJSON.h",
@@ -82,6 +100,9 @@ if (!is_android) {
       "loader/dev_ext_trampoline.c",
       "loader/extension_manual.c",
       "loader/extension_manual.h",
+      "loader/generated/vk_layer_dispatch_table.h",
+      "loader/generated/vk_loader_extensions.h",
+      "loader/generated/vk_object_types.h",
       "loader/gpa_helper.h",
       "loader/loader.c",
       "loader/loader.h",
@@ -89,6 +110,7 @@ if (!is_android) {
       "loader/murmurhash.h",
       "loader/phys_dev_ext.c",
       "loader/trampoline.c",
+      "loader/vk_loader_layer.h",
 
       # TODO(jmadill): Use assembler where available.
       "loader/unknown_ext_chain.c",
@@ -101,8 +123,6 @@ if (!is_android) {
       sources += [
         "loader/dirent_on_windows.c",
         "loader/dirent_on_windows.h",
-        "loader/dxgi_loader.c",
-        "loader/dxgi_loader.h",
         "loader/vulkan-1.def",
       ]
       if (!is_clang) {
@@ -127,14 +147,32 @@ if (!is_android) {
       libs = [ "Cfgmgr32.lib" ]
     }
     if (is_mac) {
-      libs = [ "CoreFoundation.framework" ]
+      frameworks = [ "CoreFoundation.framework" ]
     }
     public_deps = [ "$vulkan_headers_dir:vulkan_headers" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
+    if (build_with_chromium) {
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [ "//build/config/compiler:no_chromium_code" ]
+    }
     configs += [ ":vulkan_internal_config" ]
     public_configs = [ ":vulkan_loader_config" ]
     configs -= vulkan_undefine_configs
+
+    if (is_fuchsia) {
+      output_name = "vulkan"
+      category = "partner"
+
+      # The Vulkan loader's interface is defined by standard Khronos vulkan headers
+      # which can be obtained separately from the loader implementation itself.
+      no_headers = true
+
+      deps = [
+        ":dlopen_fuchsia",
+        "//sdk/lib/fdio",
+      ]
+
+      runtime_deps = [ "//sdk/lib/fdio:fdio_sdk" ]
+    }
   }
 
   if (is_linux && vulkan_loader_shared) {
@@ -144,5 +182,37 @@ if (!is_android) {
 
       deps = [ ":libvulkan" ]
     }
+  }
+}
+
+if (is_fuchsia) {
+  config("fuchsia_config") {
+    include_dirs = [ "fuchsia" ]
+  }
+
+  source_set("dlopen_fuchsia") {
+    public_configs = [ ":fuchsia_config" ]
+
+    sources = [
+      "fuchsia/dlopen_fuchsia.c",
+      "fuchsia/dlopen_fuchsia.h",
+    ]
+
+    deps = [
+      "//sdk/fidl/fuchsia.vulkan.loader:fuchsia.vulkan.loader_c_client",
+      "//sdk/lib/fdio",
+    ]
+  }
+
+  sdk_documentation("vulkan_license") {
+    name = "vulkan_license"
+    category = "public"
+
+    files = [
+      {
+        source = "LICENSE.txt"
+        dest = "LICENSE.vulkan"
+      },
+    ]
   }
 }

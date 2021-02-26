@@ -51,6 +51,10 @@ blink_modules_sources("payments") {
     "payment_state_resolver.h",
     "payments_validators.cc",
     "payments_validators.h",
+    "secure_payment_confirmation_helper.cc",
+    "secure_payment_confirmation_helper.h",
+    "secure_payment_confirmation_type_converter.cc",
+    "secure_payment_confirmation_type_converter.h",
     "update_payment_details_function.cc",
     "update_payment_details_function.h",
   ]
@@ -62,5 +66,9 @@ blink_modules_sources("payments") {
     ]
   }
 
-  deps = [ "//components/payments/mojom:mojom_blink" ]
+  deps = [
+    "//components/payments/mojom:mojom_blink",
+    "//third_party/blink/renderer/modules/credentialmanager",
+    "//third_party/blink/renderer/modules/permissions",
+  ]
 }

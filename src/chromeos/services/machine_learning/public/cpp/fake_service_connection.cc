@@ -14,6 +14,7 @@ namespace machine_learning {
 
 FakeServiceConnectionImpl::FakeServiceConnectionImpl()
     : output_tensor_(mojom::Tensor::New()),
+      load_handwriting_model_result_(mojom::LoadHandwritingModelResult::OK),
       load_model_result_(mojom::LoadModelResult::OK),
       load_text_classifier_result_(mojom::LoadModelResult::OK),
       create_graph_executor_result_(mojom::CreateGraphExecutorResult::OK),
@@ -48,11 +49,46 @@ void FakeServiceConnectionImpl::CreateGraphExecutor(
       base::Unretained(this), std::move(receiver), std::move(callback)));
 }
 
+// Fake impl of CreateGrapHExecutorWithOptions just ignores `options`.
+void FakeServiceConnectionImpl::CreateGraphExecutorWithOptions(
+    mojom::GraphExecutorOptionsPtr options,
+    mojo::PendingReceiver<mojom::GraphExecutor> receiver,
+    mojom::Model::CreateGraphExecutorCallback callback) {
+  CreateGraphExecutor(std::move(receiver), std::move(callback));
+}
+
 void FakeServiceConnectionImpl::LoadTextClassifier(
     mojo::PendingReceiver<mojom::TextClassifier> receiver,
     mojom::MachineLearningService::LoadTextClassifierCallback callback) {
   ScheduleCall(base::BindOnce(
       &FakeServiceConnectionImpl::HandleLoadTextClassifierCall,
+      base::Unretained(this), std::move(receiver), std::move(callback)));
+}
+
+void FakeServiceConnectionImpl::LoadHandwritingModel(
+    mojom::HandwritingRecognizerSpecPtr spec,
+    mojo::PendingReceiver<mojom::HandwritingRecognizer> receiver,
+    mojom::MachineLearningService::LoadHandwritingModelCallback callback) {
+  ScheduleCall(base::BindOnce(
+      &FakeServiceConnectionImpl::HandleLoadHandwritingModel,
+      base::Unretained(this), std::move(receiver), std::move(callback)));
+}
+
+void FakeServiceConnectionImpl::LoadHandwritingModelWithSpec(
+    mojom::HandwritingRecognizerSpecPtr spec,
+    mojo::PendingReceiver<mojom::HandwritingRecognizer> receiver,
+    mojom::MachineLearningService::LoadHandwritingModelWithSpecCallback
+        callback) {
+  ScheduleCall(base::BindOnce(
+      &FakeServiceConnectionImpl::HandleLoadHandwritingModelWithSpec,
+      base::Unretained(this), std::move(receiver), std::move(callback)));
+}
+
+void FakeServiceConnectionImpl::LoadGrammarChecker(
+    mojo::PendingReceiver<mojom::GrammarChecker> receiver,
+    mojom::MachineLearningService::LoadGrammarCheckerCallback callback) {
+  ScheduleCall(base::BindOnce(
+      &FakeServiceConnectionImpl::HandleLoadGrammarChecker,
       base::Unretained(this), std::move(receiver), std::move(callback)));
 }
 
@@ -188,6 +224,16 @@ void FakeServiceConnectionImpl::HandleSuggestSelectionCall(
   std::move(callback).Run(std::move(selection));
 }
 
+void FakeServiceConnectionImpl::HandleFindLanguagesCall(
+    std::string request,
+    mojom::TextClassifier::FindLanguagesCallback callback) {
+  std::vector<mojom::TextLanguagePtr> languages;
+  for (auto const& language : find_languages_result_) {
+    languages.emplace_back(language.Clone());
+  }
+  std::move(callback).Run(std::move(languages));
+}
+
 void FakeServiceConnectionImpl::SetOutputAnnotation(
     const std::vector<mojom::TextAnnotationPtr>& annotations) {
   annotate_result_.clear();
@@ -199,6 +245,24 @@ void FakeServiceConnectionImpl::SetOutputAnnotation(
 void FakeServiceConnectionImpl::SetOutputSelection(
     const mojom::CodepointSpanPtr& selection) {
   suggest_selection_result_ = selection.Clone();
+}
+
+void FakeServiceConnectionImpl::SetOutputLanguages(
+    const std::vector<mojom::TextLanguagePtr>& languages) {
+  find_languages_result_.clear();
+  for (auto const& language : languages) {
+    find_languages_result_.emplace_back(language.Clone());
+  }
+}
+
+void FakeServiceConnectionImpl::SetOutputHandwritingRecognizerResult(
+    const mojom::HandwritingRecognizerResultPtr& result) {
+  handwriting_result_ = result.Clone();
+}
+
+void FakeServiceConnectionImpl::SetOutputGrammarCheckerResult(
+    const mojom::GrammarCheckerResultPtr& result) {
+  grammar_checker_result_ = result.Clone();
 }
 
 void FakeServiceConnectionImpl::Annotate(
@@ -215,6 +279,70 @@ void FakeServiceConnectionImpl::SuggestSelection(
   ScheduleCall(base::BindOnce(
       &FakeServiceConnectionImpl::HandleSuggestSelectionCall,
       base::Unretained(this), std::move(request), std::move(callback)));
+}
+
+void FakeServiceConnectionImpl::FindLanguages(
+    const std::string& text,
+    mojom::TextClassifier::FindLanguagesCallback callback) {
+  ScheduleCall(base::BindOnce(
+      &FakeServiceConnectionImpl::HandleFindLanguagesCall,
+      base::Unretained(this), text, std::move(callback)));
+}
+
+void FakeServiceConnectionImpl::Recognize(
+    mojom::HandwritingRecognitionQueryPtr query,
+    mojom::HandwritingRecognizer::RecognizeCallback callback) {
+  ScheduleCall(base::BindOnce(&FakeServiceConnectionImpl::HandleRecognize,
+                              base::Unretained(this), std::move(query),
+                              std::move(callback)));
+}
+
+void FakeServiceConnectionImpl::Check(
+    mojom::GrammarCheckerQueryPtr query,
+    mojom::GrammarChecker::CheckCallback callback) {
+  ScheduleCall(base::BindOnce(
+      &FakeServiceConnectionImpl::HandleGrammarCheckerQuery,
+      base::Unretained(this), std::move(query), std::move(callback)));
+}
+
+void FakeServiceConnectionImpl::HandleLoadHandwritingModel(
+    mojo::PendingReceiver<mojom::HandwritingRecognizer> receiver,
+    mojom::MachineLearningService::LoadHandwritingModelCallback callback) {
+  if (load_handwriting_model_result_ == mojom::LoadHandwritingModelResult::OK)
+    handwriting_receivers_.Add(this, std::move(receiver));
+
+  std::move(callback).Run(load_handwriting_model_result_);
+}
+
+void FakeServiceConnectionImpl::HandleLoadHandwritingModelWithSpec(
+    mojo::PendingReceiver<mojom::HandwritingRecognizer> receiver,
+    mojom::MachineLearningService::LoadHandwritingModelWithSpecCallback
+        callback) {
+  if (load_model_result_ == mojom::LoadModelResult::OK)
+    handwriting_receivers_.Add(this, std::move(receiver));
+
+  std::move(callback).Run(load_model_result_);
+}
+
+void FakeServiceConnectionImpl::HandleRecognize(
+    mojom::HandwritingRecognitionQueryPtr query,
+    mojom::HandwritingRecognizer::RecognizeCallback callback) {
+  std::move(callback).Run(handwriting_result_.Clone());
+}
+
+void FakeServiceConnectionImpl::HandleLoadGrammarChecker(
+    mojo::PendingReceiver<mojom::GrammarChecker> receiver,
+    mojom::MachineLearningService::LoadGrammarCheckerCallback callback) {
+  if (load_model_result_ == mojom::LoadModelResult::OK)
+    grammar_checker_receivers_.Add(this, std::move(receiver));
+
+  std::move(callback).Run(load_model_result_);
+}
+
+void FakeServiceConnectionImpl::HandleGrammarCheckerQuery(
+    mojom::GrammarCheckerQueryPtr query,
+    mojom::GrammarChecker::CheckCallback callback) {
+  std::move(callback).Run(grammar_checker_result_.Clone());
 }
 
 }  // namespace machine_learning

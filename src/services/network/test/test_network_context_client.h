@@ -6,8 +6,10 @@
 #define SERVICES_NETWORK_TEST_TEST_NETWORK_CONTEXT_CLIENT_H_
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace network {
@@ -77,9 +79,14 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
       const std::string& spn,
       OnGenerateHttpNegotiateAuthTokenCallback callback) override {}
 #endif
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   void OnTrustAnchorUsed() override {}
 #endif
+#if BUILDFLAG(IS_CT_SUPPORTED)
+#endif
+  void OnTrustTokenIssuanceDivertedToSystem(
+      mojom::FulfillTrustTokenIssuanceRequestPtr request,
+      OnTrustTokenIssuanceDivertedToSystemCallback callback) override {}
 
  private:
   mojo::Receiver<mojom::NetworkContextClient> receiver_;

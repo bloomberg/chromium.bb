@@ -7,10 +7,10 @@
 
 #include <cstdint>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_stream_sender_delegate.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -33,7 +33,7 @@ class QUIC_EXPORT_PRIVATE QpackSendStream : public QuicStream,
   // Overriding QuicStream::OnStopSending() to make sure QPACK stream is never
   // closed before connection.
   void OnStreamReset(const QuicRstStreamFrame& frame) override;
-  bool OnStopSending(uint16_t code) override;
+  bool OnStopSending(QuicRstStreamErrorCode code) override;
 
   // The send QPACK stream is write unidirectional, so this method
   // should never be called.
@@ -41,7 +41,7 @@ class QUIC_EXPORT_PRIVATE QpackSendStream : public QuicStream,
 
   // Writes the instructions to peer. The stream type will be sent
   // before the first instruction so that the peer can open an qpack stream.
-  void WriteStreamData(quiche::QuicheStringPiece data) override;
+  void WriteStreamData(absl::string_view data) override;
 
   // TODO(b/112770235): Remove this method once QuicStreamIdManager supports
   // creating HTTP/3 unidirectional streams dynamically.

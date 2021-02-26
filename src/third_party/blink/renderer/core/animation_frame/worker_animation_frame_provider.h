@@ -29,17 +29,15 @@ class OffscreenCanvas;
 class CORE_EXPORT WorkerAnimationFrameProvider
     : public GarbageCollected<WorkerAnimationFrameProvider>,
       public BeginFrameProviderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerAnimationFrameProvider);
-
  public:
   WorkerAnimationFrameProvider(
       ExecutionContext* context,
       const BeginFrameProviderParams& begin_frame_provider_params);
 
-  int RegisterCallback(FrameRequestCallbackCollection::FrameCallback* callback);
+  int RegisterCallback(FrameCallback* callback);
   void CancelCallback(int id);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // BeginFrameProviderClient
   void BeginFrame(const viz::BeginFrameArgs&) override;
@@ -57,8 +55,6 @@ class CORE_EXPORT WorkerAnimationFrameProvider
   HeapLinkedHashSet<WeakMember<OffscreenCanvas>> offscreen_canvases_;
 
   Member<ExecutionContext> context_;
-
-  base::WeakPtrFactory<WorkerAnimationFrameProvider> weak_factory_{this};
 };
 
 }  // namespace blink

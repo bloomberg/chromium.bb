@@ -49,10 +49,13 @@ TEST_F(OmniboxPedalTest, SynonymGroupsDriveConceptMatches) {
   constexpr int required_b = 3;
   constexpr int nonsense = 4;
   OmniboxPedal test_pedal(
+      OmniboxPedalId::CLEAR_BROWSING_DATA,
       OmniboxPedal::LabelStrings(
           IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
           IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT,
-          IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS),
+          IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS,
+          IDS_ACC_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUFFIX,
+          IDS_ACC_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA),
       GURL());
   const auto add_group = [&](bool required, int token) {
     OmniboxPedal::SynonymGroup group(required, true, 1);

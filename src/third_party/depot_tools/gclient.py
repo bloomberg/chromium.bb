@@ -118,18 +118,6 @@ import setup_color
 
 from third_party import six
 
-# Warn when executing this script with Python 3 when the GCLIENT_PY3 environment
-# variable is not set to 1.
-# It is an increasingly common error on Windows 10 due to the store version of
-# Python.
-if (sys.version_info.major >= 3
-    and not 'GCLIENT_TEST' in os.environ
-    and os.getenv('GCLIENT_PY3') != '1'):
-  print('Warning: Running gclient on Python 3. \n'
-        'If you encounter any issues, please file a bug on crbug.com under '
-        'the Infra>SDK component.', file=sys.stderr)
-
-
 # TODO(crbug.com/953884): Remove this when python3 migration is done.
 if six.PY3:
   # pylint: disable=redefined-builtin
@@ -439,6 +427,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # The actual revision we ended up getting, or None if that information is
     # unavailable
     self._got_revision = None
+    # Whether this dependency should use relative paths.
+    self._use_relative_paths = False
 
     # recursedeps is a mutable value that selectively overrides the default
     # 'no recursion' setting on a dep-by-dep basis.
@@ -763,9 +753,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # (and therefore set self.relative on this Dependency object), then we
     # want to modify the deps and recursedeps by prepending the parent
     # directory of this dependency.
-    use_relative_paths = local_scope.get('use_relative_paths', False)
+    self._use_relative_paths = local_scope.get('use_relative_paths', False)
     rel_prefix = None
-    if use_relative_paths:
+    if self._use_relative_paths:
       rel_prefix = self.name
     elif self._relative:
       rel_prefix = os.path.dirname(self.name)
@@ -800,16 +790,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     deps = local_scope.get('deps', {})
     deps_to_add = self._deps_to_objects(
-        self._postprocess_deps(deps, rel_prefix), use_relative_paths)
+        self._postprocess_deps(deps, rel_prefix), self._use_relative_paths)
 
     # compute which working directory should be used for hooks
-    use_relative_hooks = local_scope.get('use_relative_hooks', False)
+    if local_scope.get('use_relative_hooks', False):
+      print('use_relative_hooks is deprecated, please remove it from DEPS. ' +
+            '(it was merged in use_relative_paths)', file=sys.stderr)
+
     hooks_cwd = self.root.root_dir
-    if use_relative_hooks:
-      if not use_relative_paths:
-        raise gclient_utils.Error(
-            'ParseDepsFile(%s): use_relative_hooks must be used with '
-            'use_relative_paths' % self.name)
+    if self._use_relative_paths:
       hooks_cwd = os.path.join(hooks_cwd, self.name)
       logging.warning('Updating hook base working directory to %s.',
                       hooks_cwd)
@@ -1043,10 +1032,18 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     variables = self.get_vars()
     for arg in self._gn_args:
       value = variables[arg]
-      if isinstance(value, basestring):
+      if isinstance(value, gclient_eval.ConstantString):
+        value = value.value
+      elif isinstance(value, basestring):
         value = gclient_eval.EvaluateCondition(value, variables)
       lines.append('%s = %s' % (arg, ToGNString(value)))
-    with open(os.path.join(self.root.root_dir, self._gn_args_file), 'wb') as f:
+
+    # When use_relative_paths is set, gn_args_file is relative to this DEPS
+    path_prefix = self.root.root_dir
+    if self._use_relative_paths:
+      path_prefix = os.path.join(path_prefix, self.name)
+
+    with open(os.path.join(path_prefix, self._gn_args_file), 'wb') as f:
       f.write('\n'.join(lines).encode('utf-8', 'replace'))
 
   @gclient_utils.lockedmethod
@@ -1265,11 +1262,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     result = {}
     result.update(self._vars)
     if self.parent:
-      parent_vars = self.parent.get_vars()
-      result.update(parent_vars)
+      merge_vars(result, self.parent.get_vars())
     # Provide some built-in variables.
     result.update(self.get_builtin_vars())
-    result.update(self.custom_vars or {})
+    merge_vars(result, self.custom_vars)
+
     return result
 
 
@@ -1281,6 +1278,20 @@ _PLATFORM_MAPPING = {
   'win32': 'win',
   'aix6': 'aix',
 }
+
+
+def merge_vars(result, new_vars):
+  for k, v in new_vars.items():
+    if k in result:
+      if isinstance(result[k], gclient_eval.ConstantString):
+        if isinstance(v, gclient_eval.ConstantString):
+          result[k] = v
+        else:
+          result[k].value = v
+      else:
+        result[k] = v
+    else:
+      result[k] = v
 
 
 def _detect_host_os():
@@ -1407,12 +1418,14 @@ The local checkout in %(checkout_path)s reports:
 
 You should ensure that the URL listed in .gclient is correct and either change
 it or fix the checkout.
-'''  % {'checkout_path': os.path.join(self.root_dir, dep.name),
-        'expected_url': dep.url,
-        'expected_scm': dep.GetScmName(),
-        'mirror_string': mirror_string,
-        'actual_url': actual_url,
-        'actual_scm': dep.GetScmName()})
+''' % {
+                  'checkout_path': os.path.join(self.root_dir, dep.name),
+                  'expected_url': dep.url,
+                  'expected_scm': dep.GetScmName(),
+                  'mirror_string': mirror_string,
+                  'actual_url': actual_url,
+                  'actual_scm': dep.GetScmName()
+              })
 
   def SetConfig(self, content):
     assert not self.dependencies
@@ -2687,21 +2700,15 @@ def CMDsync(parser, args):
   parser.add_option('--no_bootstrap', '--no-bootstrap',
                     action='store_true',
                     help='Don\'t bootstrap from Google Storage.')
-  parser.add_option('--ignore_locks', action='store_true',
-                    help='GIT ONLY - Ignore cache locks.')
-  parser.add_option('--break_repo_locks', action='store_true',
-                    help='GIT ONLY - Forcibly remove repo locks (e.g. '
-                      'index.lock). This should only be used if you know for '
-                      'certain that this invocation of gclient is the only '
-                      'thing operating on the git repos (e.g. on a bot).')
+  parser.add_option('--ignore_locks',
+                    action='store_true',
+                    help='No longer used.')
+  parser.add_option('--break_repo_locks',
+                    action='store_true',
+                    help='No longer used.')
   parser.add_option('--lock_timeout', type='int', default=5000,
                     help='GIT ONLY - Deadline (in seconds) to wait for git '
                          'cache lock to become available. Default is %default.')
-  # TODO(agable): Remove these when the oldest CrOS release milestone is M56.
-  parser.add_option('-t', '--transitive', action='store_true',
-                    help='DEPRECATED: This is a no-op.')
-  parser.add_option('-m', '--manually_grab_svn_rev', action='store_true',
-                    help='DEPRECATED: This is a no-op.')
   parser.add_option('--no-rebase-patch-ref', action='store_false',
                     dest='rebase_patch_ref', default=True,
                     help='Bypass rebase of the patch ref after checkout.')
@@ -2713,6 +2720,13 @@ def CMDsync(parser, args):
 
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')
+
+  if options.ignore_locks:
+    print('Warning: ignore_locks is no longer used. Please remove its usage.')
+
+  if options.break_repo_locks:
+    print('Warning: break_repo_locks is no longer used. Please remove its '
+          'usage.')
 
   if options.revisions and options.head:
     # TODO(maruel): Make it a parser.error if it doesn't break any builder.
@@ -2784,12 +2798,14 @@ def CMDrevert(parser, args):
                     help='don\'t run pre-DEPS hooks', default=False)
   parser.add_option('--upstream', action='store_true',
                     help='Make repo state match upstream branch.')
-  parser.add_option('--break_repo_locks', action='store_true',
-                    help='GIT ONLY - Forcibly remove repo locks (e.g. '
-                      'index.lock). This should only be used if you know for '
-                      'certain that this invocation of gclient is the only '
-                      'thing operating on the git repos (e.g. on a bot).')
+  parser.add_option('--break_repo_locks',
+                    action='store_true',
+                    help='No longer used.')
   (options, args) = parser.parse_args(args)
+  if options.break_repo_locks:
+    print('Warning: break_repo_locks is no longer used. Please remove its ' +
+          'usage.')
+
   # --force is implied.
   options.force = True
   options.reset = False

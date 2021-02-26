@@ -16,13 +16,14 @@ class Commit(api_request_handler.ApiRequestHandler):
     pass
 
   def Post(self):
+    repository = self.request.get('repository', 'chromium')
     git_hash = self.request.get('git_hash')
     try:
       c = change.Commit.FromDict({
-          'repository': 'chromium',
+          'repository': repository,
           'git_hash': git_hash,
       })
       return c.AsDict()
     except KeyError:
-      raise api_request_handler.BadRequestError(
-          'Unknown git hash: %s' % git_hash)
+      raise api_request_handler.BadRequestError('Unknown git hash: %s' %
+                                                git_hash)

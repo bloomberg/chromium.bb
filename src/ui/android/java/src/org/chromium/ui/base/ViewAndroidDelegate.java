@@ -110,7 +110,7 @@ public class ViewAndroidDelegate {
      */
     @CalledByNative
     public View acquireView() {
-        ViewGroup containerView = getContainerView();
+        ViewGroup containerView = getContainerViewGroup();
         if (containerView == null || containerView.getParent() == null) return null;
         View anchorView = new View(containerView.getContext());
         containerView.addView(anchorView);
@@ -123,7 +123,7 @@ public class ViewAndroidDelegate {
      */
     @CalledByNative
     public void removeView(View anchorView) {
-        ViewGroup containerView = getContainerView();
+        ViewGroup containerView = getContainerViewGroup();
         if (containerView == null) return;
         containerView.removeView(anchorView);
     }
@@ -140,7 +140,7 @@ public class ViewAndroidDelegate {
     @CalledByNative
     public void setViewPosition(View anchorView, float x, float y, float width, float height,
             int leftMargin, int topMargin) {
-        ViewGroup containerView = getContainerView();
+        ViewGroup containerView = getContainerViewGroup();
         if (containerView == null) return;
         assert anchorView.getParent() == containerView;
 
@@ -175,7 +175,7 @@ public class ViewAndroidDelegate {
     private boolean startDragAndDrop(String text, Bitmap shadowImage) {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) return false;
 
-        ViewGroup containerView = getContainerView();
+        ViewGroup containerView = getContainerViewGroup();
         if (containerView == null) return false;
 
         ImageView imageView = new ImageView(containerView.getContext());
@@ -192,7 +192,7 @@ public class ViewAndroidDelegate {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             PointerIcon icon =
                     ApiHelperForN.createPointerIcon(customCursorBitmap, hotspotX, hotspotY);
-            ApiHelperForN.setPointerIcon(getContainerView(), icon);
+            ApiHelperForN.setPointerIcon(getContainerViewGroup(), icon);
         }
     }
 
@@ -322,7 +322,7 @@ public class ViewAndroidDelegate {
                 assert false : "onCursorChangedToCustom must be called instead";
                 break;
         }
-        ViewGroup containerView = getContainerView();
+        ViewGroup containerView = getContainerViewGroup();
         PointerIcon icon = PointerIcon.getSystemIcon(containerView.getContext(), pointerIconType);
         ApiHelperForN.setPointerIcon(containerView, icon);
     }
@@ -363,10 +363,30 @@ public class ViewAndroidDelegate {
     }
 
     /**
+     * Called when root scroll direction changes.
+     * @param directionUp whether the new scroll direction is up (true) or down (false).
+     * @param current_scroll_ratio the ratio of vertical scroll in [0, 1] range.
+     * Scroll at top of page is 0, and bottom of page is 1. It is defined as 0
+     * if page is not scrollable, though this should not be called in that case.
+     */
+    @CalledByNative
+    protected void onVerticalScrollDirectionChanged(boolean directionUp, float currentScrollRatio) {
+    }
+
+    /**
+     * While ViewAndroidDelegate takes a ViewGroup, and internally adds Views to it, all other
+     * consumers should *not* be manipulating child Views. This is particularly important as the
+     * container view is usually ContentView, and ContentView only supports children directly added
+     * by this class. See ContentView for details on this.
+     *
      * @return container view that the anchor views are added to. May be null.
      */
     @CalledByNative
-    public final ViewGroup getContainerView() {
+    public final View getContainerView() {
+        return mContainerView;
+    }
+
+    protected final ViewGroup getContainerViewGroup() {
         return mContainerView;
     }
 
@@ -375,7 +395,7 @@ public class ViewAndroidDelegate {
      */
     @CalledByNative
     private int getXLocationOfContainerViewInWindow() {
-        ViewGroup container = getContainerView();
+        View container = getContainerView();
         if (container == null) return 0;
 
         container.getLocationInWindow(mTemporaryContainerLocation);
@@ -387,7 +407,7 @@ public class ViewAndroidDelegate {
      */
     @CalledByNative
     private int getYLocationOfContainerViewInWindow() {
-        ViewGroup container = getContainerView();
+        View container = getContainerView();
         if (container == null) return 0;
 
         container.getLocationInWindow(mTemporaryContainerLocation);
@@ -399,7 +419,7 @@ public class ViewAndroidDelegate {
      */
     @CalledByNative
     private int getXLocationOnScreen() {
-        ViewGroup container = getContainerView();
+        View container = getContainerView();
         if (container == null) return 0;
 
         container.getLocationOnScreen(mTemporaryContainerLocation);
@@ -411,7 +431,7 @@ public class ViewAndroidDelegate {
      */
     @CalledByNative
     private int getYLocationOnScreen() {
-        ViewGroup container = getContainerView();
+        View container = getContainerView();
         if (container == null) return 0;
 
         container.getLocationOnScreen(mTemporaryContainerLocation);
@@ -420,26 +440,34 @@ public class ViewAndroidDelegate {
 
     @CalledByNative
     private void requestDisallowInterceptTouchEvent() {
-        ViewGroup container = getContainerView();
+        ViewGroup container = getContainerViewGroup();
         if (container != null) container.requestDisallowInterceptTouchEvent(true);
     }
 
     @CalledByNative
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void requestUnbufferedDispatch(MotionEvent event) {
-        ViewGroup container = getContainerView();
-        if (container != null) container.requestUnbufferedDispatch(event);
+        ViewGroup container = getContainerViewGroup();
+        if (container != null) {
+            for (int i = 0; i < event.getPointerCount(); i++) {
+                // This is a workaround for crbug.com/1064161.
+                // TODO(smaier) remove this if LG fixes the stylus bug.
+                if (event.getToolType(i) == MotionEvent.TOOL_TYPE_STYLUS) {
+                    return;
+                }
+            }
+            container.requestUnbufferedDispatch(event);
+        }
     }
 
     @CalledByNative
     private boolean hasFocus() {
-        ViewGroup containerView = getContainerView();
+        View containerView = getContainerView();
         return containerView == null ? false : ViewUtils.hasFocus(containerView);
     }
 
     @CalledByNative
     private void requestFocus() {
-        ViewGroup containerView = getContainerView();
+        View containerView = getContainerViewGroup();
         if (containerView != null) ViewUtils.requestFocus(containerView);
     }
 
@@ -447,4 +475,17 @@ public class ViewAndroidDelegate {
      * @see InputConnection#performPrivateCommand(java.lang.String, android.os.Bundle)
      */
     public void performPrivateImeCommand(String action, Bundle data) {}
+
+    /**
+     * @return Array of ints with 4 values, the top, left, right, and bottom of
+     *         the display feature. A display feature is a distinctive physical attribute
+     *         located within the display panel of the device that creates a logical or
+     *         physical separation of the Window's space. The display feature is expressed
+     *         in physical pixels, with coordinates relative to the Window. If no
+     *         DisplayFeature exists, or if it is not currently available, returns null.
+     */
+    @CalledByNative
+    protected int[] getDisplayFeature() {
+        return null;
+    }
 }

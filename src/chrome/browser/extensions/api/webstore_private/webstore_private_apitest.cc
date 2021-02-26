@@ -55,7 +55,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_test_util.h"
 #include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
-#include "chrome/browser/ui/views/parent_permission_dialog_view.h"
+#include "chrome/browser/ui/views/supervised_user/parent_permission_dialog_view.h"
 #include "components/account_id/account_id.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "extensions/common/extension_builder.h"
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   // an iframe (i.e. http://www.example.com)
   content::TestNavigationObserver observer(web_contents);
   ASSERT_TRUE(content::ExecuteScript(web_contents, "dropFrame()"));
-  WaitForLoadStop(web_contents);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
   content::RenderFrameHost* subframe =
       content::ChildFrameAt(web_contents->GetMainFrame(), 0);
   ASSERT_TRUE(subframe);
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, FrameErrorPageBlocked) {
   // an iframe (i.e. http://www.example.com)
   content::TestNavigationObserver observer(web_contents);
   ASSERT_TRUE(content::ExecuteScript(web_contents, "dropFrame()"));
-  WaitForLoadStop(web_contents);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
   content::RenderFrameHost* subframe =
       content::ChildFrameAt(web_contents->GetMainFrame(), 0);
   ASSERT_TRUE(subframe);
@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath missing_directory = temp_dir.Take();
-  EXPECT_TRUE(base::DeleteFileRecursively(missing_directory));
+  EXPECT_TRUE(base::DeletePathRecursively(missing_directory));
   WebstoreInstaller::SetDownloadDirectoryForTests(&missing_directory);
 
   // Now run the install test, which should succeed.
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
 
   // Cleanup.
   if (base::DirectoryExists(missing_directory))
-    EXPECT_TRUE(base::DeleteFileRecursively(missing_directory));
+    EXPECT_TRUE(base::DeletePathRecursively(missing_directory));
 }
 
 // Tests passing a localized name.
@@ -682,9 +682,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Allowed) {
   RunTest(webgl_allowed);
 }
 
-// Tests getWebGLStatus function when WebGL is blacklisted.
+// Tests getWebGLStatus function when WebGL is blocklisted.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
-  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
+  content::GpuDataManager::GetInstance()->BlocklistWebGLForTesting();
 
   bool webgl_allowed = false;
   RunTest(webgl_allowed);

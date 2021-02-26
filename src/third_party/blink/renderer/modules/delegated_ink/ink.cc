@@ -4,10 +4,26 @@
 
 #include "third_party/blink/renderer/modules/delegated_ink/ink.h"
 
-#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
+
+const char Ink::kSupplementName[] = "Ink";
+
+Ink* Ink::ink(Navigator& navigator) {
+  DCHECK(RuntimeEnabledFeatures::DelegatedInkTrailsEnabled());
+  Ink* ink = Supplement<Navigator>::From<Ink>(navigator);
+  if (!ink) {
+    ink = MakeGarbageCollected<Ink>(navigator);
+    ProvideTo(navigator, ink);
+  }
+  return ink;
+}
+
+Ink::Ink(Navigator& navigator) : Supplement<Navigator>(navigator) {}
 
 ScriptPromise Ink::requestPresenter(ScriptState* state,
                                     String type,
@@ -20,25 +36,28 @@ ScriptPromise Ink::requestPresenter(ScriptState* state,
 
   if (!state->ContextIsValid()) {
     resolver->Reject(V8ThrowException::CreateError(
-        state->GetIsolate(), "Unable to create presenter"));
+        state->GetIsolate(),
+        "The object is no longer associated with a window."));
     return promise;
   }
 
   if (type != "delegated-ink-trail") {
-    resolver->Reject(
-        V8ThrowException::CreateTypeError(state->GetIsolate(), "Bad type"));
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        state->GetIsolate(), "Unknown type requested."));
     return promise;
   }
 
   DelegatedInkTrailPresenter* trail_presenter =
-      MakeGarbageCollected<DelegatedInkTrailPresenter>(presentationArea);
+      DelegatedInkTrailPresenter::CreatePresenter(
+          presentationArea, GetSupplementable()->DomWindow()->GetFrame());
 
   resolver->Resolve(trail_presenter);
   return promise;
 }
 
-void Ink::Trace(Visitor* visitor) {
+void Ink::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
+  Supplement<Navigator>::Trace(visitor);
 }
 
 }  // namespace blink

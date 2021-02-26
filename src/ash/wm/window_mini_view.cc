@@ -7,14 +7,14 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/window_properties.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/wm_highlight_item_border.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -26,20 +26,16 @@
 namespace ash {
 namespace {
 
-// Foreground label color.
-constexpr SkColor kLabelColor = SK_ColorWHITE;
-
 // The font delta of the window title.
 constexpr int kLabelFontDelta = 2;
 
 // Values of the backdrop.
 constexpr int kBackdropBorderRoundingDp = 4;
-constexpr SkColor kBackdropColor = SkColorSetA(SK_ColorWHITE, 0x24);
 
 base::string16 GetWindowTitle(aura::Window* window) {
   aura::Window* transient_root = wm::GetTransientRoot(window);
   const base::string16* overview_title =
-      transient_root->GetProperty(kWindowOverviewTitleKey);
+      transient_root->GetProperty(chromeos::kWindowOverviewTitleKey);
   return (overview_title && !overview_title->empty())
              ? *overview_title
              : transient_root->GetTitle();
@@ -61,11 +57,12 @@ void WindowMiniView::SetBackdropVisibility(bool visible) {
     backdrop_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     ui::Layer* layer = backdrop_view_->layer();
     layer->SetFillsBoundsOpaquely(false);
-    layer->SetColor(kBackdropColor);
+    layer->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
+        AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive));
     layer->SetRoundedCornerRadius(
         gfx::RoundedCornersF(kBackdropBorderRoundingDp));
     layer->SetIsFastRoundedCorner(true);
-    backdrop_view_->set_can_process_events_within_subtree(false);
+    backdrop_view_->SetCanProcessEventsWithinSubtree(false);
     Layout();
   }
   backdrop_view_->SetVisible(visible);
@@ -108,12 +105,8 @@ void WindowMiniView::UpdatePreviewRoundedCorners(bool show) {
 }
 
 void WindowMiniView::UpdateBorderState(bool show) {
-  border_ptr_->set_color(show ? gfx::kGoogleBlue300 : SK_ColorTRANSPARENT);
+  border_ptr_->SetFocused(show);
   SchedulePaint();
-}
-
-int WindowMiniView::GetMargin() const {
-  return 0;
 }
 
 gfx::Rect WindowMiniView::GetHeaderBounds() const {
@@ -151,7 +144,6 @@ WindowMiniView::WindowMiniView(aura::Window* source_window)
       std::make_unique<views::Label>(GetWindowTitle(source_window_)));
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetAutoColorReadabilityEnabled(false);
-  title_label_->SetEnabledColor(kLabelColor);
   title_label_->SetSubpixelRenderingEnabled(false);
   title_label_->SetFontList(gfx::FontList().Derive(
       kLabelFontDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
@@ -203,6 +195,12 @@ void WindowMiniView::Layout() {
 void WindowMiniView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kWindow;
   node_data->SetName(wm::GetTransientRoot(source_window_)->GetTitle());
+}
+
+void WindowMiniView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  title_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
 }
 
 void WindowMiniView::OnWindowPropertyChanged(aura::Window* window,

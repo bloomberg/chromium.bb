@@ -22,6 +22,23 @@
 namespace blink {
 namespace {
 
+void ExtractLinks(const cc::PaintOpBuffer* buffer,
+                  std::vector<std::pair<GURL, SkRect>>* links) {
+  for (cc::PaintOpBuffer::Iterator it(buffer); it; ++it) {
+    if (it->GetType() == cc::PaintOpType::Annotate) {
+      auto* annotate_op = static_cast<cc::AnnotateOp*>(*it);
+      links->push_back(std::make_pair(
+          GURL(std::string(
+              reinterpret_cast<const char*>(annotate_op->data->data()),
+              annotate_op->data->size())),
+          annotate_op->rect));
+    } else if (it->GetType() == cc::PaintOpType::DrawRecord) {
+      auto* record_op = static_cast<cc::DrawRecordOp*>(*it);
+      ExtractLinks(record_op->record.get(), links);
+    }
+  }
+}
+
 class StubWebMediaPlayer : public EmptyWebMediaPlayer {
  public:
   StubWebMediaPlayer(WebMediaPlayerClient* client) : client_(client) {}
@@ -108,7 +125,8 @@ class VideoPaintPreviewTest : public testing::Test,
     web_view_helper_.Initialize();
 
     WebLocalFrameImpl& frame_impl = GetLocalMainFrame();
-    frame_impl.ViewImpl()->MainFrameWidget()->Resize(WebSize(bounds().size()));
+    frame_impl.ViewImpl()->MainFrameViewWidget()->Resize(
+        gfx::Size(bounds().size()));
 
     frame_test_helpers::LoadFrame(&GetLocalMainFrame(), "about:blank");
     GetDocument().View()->SetParentVisible(true);
@@ -164,12 +182,15 @@ TEST_P(VideoPaintPreviewTest, URLIsRecordedWhenPaintingPreview) {
       recorder.beginRecording(bounds().width(), bounds().height());
   canvas->SetPaintPreviewTracker(&tracker);
 
-  EXPECT_EQ(0lu, tracker.GetLinks().size());
-  GetLocalMainFrame().CapturePaintPreview(WebRect(bounds()), canvas);
+  GetLocalMainFrame().CapturePaintPreview(WebRect(bounds()), canvas,
+                                          /*include_linked_destinations=*/true);
+  auto record = recorder.finishRecordingAsPicture();
+  std::vector<std::pair<GURL, SkRect>> links;
+  ExtractLinks(record.get(), &links);
 
-  ASSERT_EQ(1lu, tracker.GetLinks().size());
-  EXPECT_EQ("http://test.com/", tracker.GetLinks()[0]->url);
-  EXPECT_EQ(gfx::Rect(300, 300), tracker.GetLinks()[0]->rect);
+  ASSERT_EQ(1lu, links.size());
+  EXPECT_EQ("http://test.com/", links[0].first);
+  EXPECT_EQ(SkRect::MakeWH(300, 300), links[0].second);
 }
 
 }  // namespace

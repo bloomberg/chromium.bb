@@ -18,12 +18,14 @@
 #include "chromecast/browser/cast_web_view_default.h"
 #include "chromecast/browser/cast_web_view_factory.h"
 #include "chromecast/browser/lru_renderer_cache.h"
+#include "chromecast/browser/webui/cast_webui_controller_factory.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace chromecast {
@@ -63,10 +65,9 @@ CastWebView::Scoped CastWebService::CreateWebView(
     const GURL& initial_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto web_view = web_view_factory_->CreateWebView(params, this, initial_url);
-  CastWebView::Scoped scoped(web_view.get(), [this](CastWebView* web_view) {
+  CastWebView::Scoped scoped(web_view.release(), [this](CastWebView* web_view) {
     OwnerDestroyed(web_view);
   });
-  web_views_.insert(std::move(web_view));
   return scoped;
 }
 
@@ -102,6 +103,20 @@ void CastWebService::StopGpuProcess(base::OnceClosure callback) const {
   content::StopGpuProcess(std::move(callback));
 }
 
+void CastWebService::RegisterWebUiClient(
+    mojo::PendingRemote<mojom::WebUiClient> client,
+    const std::vector<std::string>& hosts) {
+  content::WebUIControllerFactory::RegisterFactory(
+      new CastWebUiControllerFactory(std::move(client), hosts));
+}
+
+void CastWebService::DeleteExpiringWebViews() {
+  DCHECK(!immediately_delete_webviews_);
+  // We don't want to delay webview deletion after this point.
+  immediately_delete_webviews_ = true;
+  expiring_web_views_.clear();
+}
+
 void CastWebService::OwnerDestroyed(CastWebView* web_view) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   content::WebContents* web_contents = web_view->web_contents();
@@ -114,13 +129,14 @@ void CastWebService::OwnerDestroyed(CastWebView* web_view) {
         ->Suspend(content::MediaSession::SuspendType::kSystem);
   }
   auto delay = web_view->shutdown_delay();
-  if (delay <= base::TimeDelta()) {
+  if (delay <= base::TimeDelta() || immediately_delete_webviews_) {
     LOG(INFO) << "Immediately deleting CastWebView for " << url;
-    DeleteWebView(web_view);
+    delete web_view;
     return;
   }
   LOG(INFO) << "Deleting CastWebView for " << url << " in "
             << delay.InMilliseconds() << " milliseconds.";
+  expiring_web_views_.emplace(web_view);
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&CastWebService::DeleteWebView, weak_ptr_, web_view),
@@ -129,7 +145,7 @@ void CastWebService::OwnerDestroyed(CastWebView* web_view) {
 
 void CastWebService::DeleteWebView(CastWebView* web_view) {
   LOG(INFO) << "Deleting CastWebView.";
-  base::EraseIf(web_views_,
+  base::EraseIf(expiring_web_views_,
                 [web_view](const std::unique_ptr<CastWebView>& ptr) {
                   return ptr.get() == web_view;
                 });

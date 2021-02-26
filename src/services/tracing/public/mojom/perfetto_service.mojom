@@ -12,11 +12,14 @@ module tracing.mojom;
 // particular interest is PosixSystemProducer::ConnectSocket().
 const string kPerfettoProducerNamePrefix = "org.chromium-";
 const string kTraceEventDataSourceName = "org.chromium.trace_event";
+const string kMemoryInstrumentationDataSourceName = "org.chromium.memory_instrumentation";
 const string kMetaDataSourceName = "org.chromium.trace_metadata";
 const string kSystemTraceDataSourceName = "org.chromium.trace_system";
 const string kArcTraceDataSourceName = "org.chromium.trace_arc";
 const string kSamplerProfilerSourceName = "org.chromium.sampler_profiler";
 const string kJavaHeapProfilerSourceName = "org.chromium.java_heap_profiler";
+const string kReachedCodeProfilerSourceName =
+    "org.chromium.reached_code_profiler";
 
 // Brief description of the flow: There's a per-process ProducerClient which
 // connects to the central PerfettoService and establishes a two-way connection
@@ -83,6 +86,13 @@ struct ChromeConfig {
   // When enabled the data source is supposed to only emit fields in the output
   // proto that are guaranteed to not contain any sensitive data.
   bool privacy_filtering_enabled;
+
+  // Whether the final tracing result will be converted to the legacy JSON
+  // format.
+  bool convert_to_legacy_json;
+
+  // Priority of the tracing session.
+  TracingClientPriority client_priority;
 };
 
 struct DataSourceConfig {
@@ -176,13 +186,15 @@ struct DataSource {
   array<string> producer_name_filter;
 };
 
-// Allows to disable the built-in data sources implicitly enabled in the tracing service.
-// See comments in third_party/perfetto/protos/perfetto/config/trace_config.proto.
+// Allows to disable the built-in data sources implicitly enabled in the
+// tracing service. See comments in
+// third_party/perfetto/protos/perfetto/config/trace_config.proto.
 struct PerfettoBuiltinDataSource {
   bool disable_clock_snapshotting;
   bool disable_trace_config;
   bool disable_system_info;
   bool disable_service_events;
+  int32 primary_trace_clock_id;
 };
 
 struct IncrementalStateConfig {
@@ -224,13 +236,13 @@ interface ConsumerHost {
   // Note: Right now only a single concurrent tracing session is supported,
   // as there's no support for multiplexing enabled trace events to multiple
   // consumers. If a new tracing session is attempted while there's an existing
-  // one in progress, the relative priorities will be used to figure out which
-  // one to be able to (keep) tracing; if the priorities are the same, the new
-  // session will take precedence.
+  // one in progress, the relative priorities (configured through
+  // TracingClientPriority in the trace config) will be used to figure out
+  // which one to be able to (keep) tracing; if the priorities are the same,
+  // the new session will take precedence.
   EnableTracing(pending_receiver<TracingSessionHost> tracing_session_host,
                 pending_remote<TracingSessionClient> tracing_session_client,
-                TraceConfig config,
-                TracingClientPriority priority);
+                TraceConfig config);
 };
 
 // Represents the host side of an active tracing session. Closing this
@@ -281,5 +293,5 @@ interface TracingSessionClient {
   // Called when tracing is disabled; initiated either by a call to
   // TracingSessionHost::DisableTracing or by the service itself if a timeout is
   // specified in the tracing config.
-  OnTracingDisabled();
+  OnTracingDisabled(bool tracing_succeeded);
 };

@@ -22,8 +22,6 @@ source_set("platform_apps") {
     "browser_context_keyed_service_factories.h",
     "chrome_apps_browser_api_provider.cc",
     "chrome_apps_browser_api_provider.h",
-    "extension_app_shim_manager_delegate_mac.cc",
-    "extension_app_shim_manager_delegate_mac.h",
     "install_chrome_app.cc",
     "install_chrome_app.h",
     "platform_app_launch.cc",
@@ -35,6 +33,13 @@ source_set("platform_apps") {
     "shortcut_manager_factory.cc",
     "shortcut_manager_factory.h",
   ]
+
+  if (is_mac) {
+    sources += [
+      "extension_app_shim_manager_delegate_mac.cc",
+      "extension_app_shim_manager_delegate_mac.h",
+    ]
+  }
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
@@ -55,6 +60,7 @@ source_set("platform_apps") {
     "//components/crx_file",
     "//components/keyed_service/content",
     "//components/navigation_interception",
+    "//components/no_state_prefetch/browser",
     "//components/pref_registry",
     "//content/public/browser",
     "//content/public/common",

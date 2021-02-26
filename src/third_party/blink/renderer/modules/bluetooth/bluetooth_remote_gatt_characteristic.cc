@@ -162,9 +162,10 @@ void BluetoothRemoteGATTCharacteristic::WriteValueCallback(
   }
 }
 
-ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
+ScriptPromise BluetoothRemoteGATTCharacteristic::WriteCharacteristicValue(
     ScriptState* script_state,
     const DOMArrayPiece& value,
+    mojom::blink::WebBluetoothWriteType write_type,
     ExceptionState& exception_state) {
   if (!GetGatt()->connected()) {
     exception_state.ThrowDOMException(
@@ -194,7 +195,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
   // If bytes is more than 512 bytes long (the maximum length of an attribute
   // value, per Long Attribute Values) return a promise rejected with an
   // InvalidModificationError and abort.
-  if (value.ByteLengthAsSizeT() > 512) {
+  if (value.ByteLength() > 512) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidModificationError,
         "Value can't exceed 512 bytes.");
@@ -204,7 +205,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
   // Let valueVector be a copy of the bytes held by value.
   Vector<uint8_t> value_vector;
   value_vector.Append(value.Bytes(),
-                      static_cast<wtf_size_t>(value.ByteLengthAsSizeT()));
+                      static_cast<wtf_size_t>(value.ByteLength()));
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -213,11 +214,40 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
   mojom::blink::WebBluetoothService* service =
       device_->GetBluetooth()->Service();
   service->RemoteCharacteristicWriteValue(
-      characteristic_->instance_id, value_vector,
+      characteristic_->instance_id, value_vector, write_type,
       WTF::Bind(&BluetoothRemoteGATTCharacteristic::WriteValueCallback,
                 WrapPersistent(this), WrapPersistent(resolver), value_vector));
 
   return promise;
+}
+
+ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
+    ScriptState* script_state,
+    const DOMArrayPiece& value,
+    ExceptionState& exception_state) {
+  return WriteCharacteristicValue(
+      script_state, value,
+      mojom::blink::WebBluetoothWriteType::kWriteDefaultDeprecated,
+      exception_state);
+}
+
+ScriptPromise BluetoothRemoteGATTCharacteristic::writeValueWithResponse(
+    ScriptState* script_state,
+    const DOMArrayPiece& value,
+    ExceptionState& exception_state) {
+  return WriteCharacteristicValue(
+      script_state, value,
+      mojom::blink::WebBluetoothWriteType::kWriteWithResponse, exception_state);
+}
+
+ScriptPromise BluetoothRemoteGATTCharacteristic::writeValueWithoutResponse(
+    ScriptState* script_state,
+    const DOMArrayPiece& value,
+    ExceptionState& exception_state) {
+  return WriteCharacteristicValue(
+      script_state, value,
+      mojom::blink::WebBluetoothWriteType::kWriteWithoutResponse,
+      exception_state);
 }
 
 void BluetoothRemoteGATTCharacteristic::NotificationsCallback(
@@ -446,7 +476,7 @@ BluetoothRemoteGATTCharacteristic::CreateInvalidCharacteristicErrorMessage() {
          "after reconnecting.";
 }
 
-void BluetoothRemoteGATTCharacteristic::Trace(Visitor* visitor) {
+void BluetoothRemoteGATTCharacteristic::Trace(Visitor* visitor) const {
   visitor->Trace(service_);
   visitor->Trace(properties_);
   visitor->Trace(value_);

@@ -4,14 +4,19 @@
 
 #include "third_party/blink/renderer/modules/imagecapture/image_capture_frame_grabber.h"
 
+#include "cc/paint/skia_paint_canvas.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
@@ -49,7 +54,7 @@ void OnError(std::unique_ptr<ImageCaptureGrabFrameCallbacks> callbacks) {
 }  // anonymous namespace
 
 // Ref-counted class to receive a single VideoFrame on IO thread, convert it and
-// send it to |main_task_runner_|, where this class is created and destroyed.
+// send it to |task_runner|, where this class is created and destroyed.
 class ImageCaptureFrameGrabber::SingleShotFrameHandler
     : public WTF::ThreadSafeRefCounted<SingleShotFrameHandler> {
  public:
@@ -67,6 +72,10 @@ class ImageCaptureFrameGrabber::SingleShotFrameHandler
  private:
   friend class WTF::ThreadSafeRefCounted<SingleShotFrameHandler>;
 
+  // Converts the media::VideoFrame into a SkImage on the |task_runner|.
+  void ConvertAndDeliverFrame(SkImageDeliverCB callback,
+                              scoped_refptr<media::VideoFrame> frame);
+
   // Flag to indicate that the first frames has been processed, and subsequent
   // ones can be safely discarded.
   bool first_frame_received_;
@@ -79,31 +88,56 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks /* current_time */) {
-  DCHECK(frame->format() == media::PIXEL_FORMAT_I420 ||
-         frame->format() == media::PIXEL_FORMAT_I420A ||
-         frame->format() == media::PIXEL_FORMAT_NV12);
-
   if (first_frame_received_)
     return;
   first_frame_received_ = true;
+  task_runner->PostTask(FROM_HERE,
+                        ConvertToBaseOnceCallback(CrossThreadBindOnce(
+                            &SingleShotFrameHandler::ConvertAndDeliverFrame,
+                            scoped_refptr<SingleShotFrameHandler>(this),
+                            std::move(callback), std::move(frame))));
+}
 
+void ImageCaptureFrameGrabber::SingleShotFrameHandler::ConvertAndDeliverFrame(
+    SkImageDeliverCB callback,
+    scoped_refptr<media::VideoFrame> frame) {
   const SkAlphaType alpha = media::IsOpaque(frame->format())
                                 ? kOpaque_SkAlphaType
                                 : kPremul_SkAlphaType;
   const SkImageInfo info = SkImageInfo::MakeN32(
       frame->visible_rect().width(), frame->visible_rect().height(), alpha);
 
-  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
+  SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info, &props);
   DCHECK(surface);
 
-  auto wrapper_callback =
-      media::BindToLoop(std::move(task_runner),
-                        ConvertToBaseRepeatingCallback(std::move(callback)));
+  // If a frame is GPU backed, we need to use PaintCanvasVideoRenderer to read
+  // it back from the GPU.
+  const bool is_readable = frame->format() == media::PIXEL_FORMAT_I420 ||
+                           frame->format() == media::PIXEL_FORMAT_I420A ||
+                           (frame->format() == media::PIXEL_FORMAT_NV12 &&
+                            frame->HasGpuMemoryBuffer());
+  if (!is_readable) {
+    // |context_provider| is null if the GPU process has crashed or isn't there
+    auto context_provider =
+        Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
+    if (!context_provider) {
+      DLOG(ERROR) << "Failed to create GPU context for GPU backed frame.";
+      std::move(callback).Run(sk_sp<SkImage>());
+      return;
+    }
+
+    cc::SkiaPaintCanvas canvas(surface->getCanvas());
+    media::PaintCanvasVideoRenderer pcvr;
+    context_provider->CopyVideoFrame(&pcvr, frame.get(), &canvas);
+    std::move(callback).Run(surface->makeImageSnapshot());
+    return;
+  }
 
   SkPixmap pixmap;
   if (!skia::GetWritablePixels(surface->getCanvas(), &pixmap)) {
     DLOG(ERROR) << "Error trying to map SkSurface's pixels";
-    std::move(wrapper_callback).Run(sk_sp<SkImage>());
+    std::move(callback).Run(sk_sp<SkImage>());
     return;
   }
 
@@ -118,10 +152,11 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
   int destination_height = pixmap.height();
 
   if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_NV12);
     auto* gmb = frame->GetGpuMemoryBuffer();
     if (!gmb->Map()) {
       DLOG(ERROR) << "Error mapping GpuMemoryBuffer video frame";
-      std::move(wrapper_callback).Run(sk_sp<SkImage>());
+      std::move(callback).Run(sk_sp<SkImage>());
       return;
     }
 
@@ -176,7 +211,7 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
     }
   }
 
-  std::move(wrapper_callback).Run(surface->makeImageSnapshot());
+  std::move(callback).Run(surface->makeImageSnapshot());
 }
 
 ImageCaptureFrameGrabber::ImageCaptureFrameGrabber()
@@ -187,14 +222,14 @@ ImageCaptureFrameGrabber::~ImageCaptureFrameGrabber() {
 }
 
 void ImageCaptureFrameGrabber::GrabFrame(
-    WebMediaStreamTrack* track,
+    MediaStreamComponent* component,
     std::unique_ptr<ImageCaptureGrabFrameCallbacks> callbacks,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!!callbacks);
 
-  DCHECK(track && !track->IsNull() && track->GetPlatformTrack());
-  DCHECK_EQ(WebMediaStreamSource::kTypeVideo, track->Source().GetType());
+  DCHECK(component && component->GetPlatformTrack());
+  DCHECK_EQ(MediaStreamSource::kTypeVideo, component->Source()->GetType());
 
   if (frame_grab_in_progress_) {
     // Reject grabFrame()s too close back to back.
@@ -212,7 +247,7 @@ void ImageCaptureFrameGrabber::GrabFrame(
   // https://crbug.com/623042.
   frame_grab_in_progress_ = true;
   MediaStreamVideoSink::ConnectToTrack(
-      *track,
+      WebMediaStreamTrack(component),
       ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &SingleShotFrameHandler::OnVideoFrameOnIOThread,
           base::MakeRefCounted<SingleShotFrameHandler>(),

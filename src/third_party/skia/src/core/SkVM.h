@@ -19,20 +19,27 @@
 
 class SkWStream;
 
+#if defined(SKVM_JIT_WHEN_POSSIBLE)
+    #if defined(__x86_64__) || defined(_M_X64)
+        #if defined(_WIN32) || defined(__linux) || defined(__APPLE__)
+            #if !defined(SK_BUILD_FOR_IOS)  // Exclude iOS simulator.
+                #define SKVM_JIT
+            #endif
+        #endif
+    #endif
+    #if defined(__aarch64__)
+        #if defined(__ANDROID__)
+            #define SKVM_JIT
+        #endif
+    #endif
+#endif
+
 #if 0
     #define SKVM_LLVM
 #endif
 
-// JIT code isn't MSAN-instrumented, so we won't see when it uses
-// uninitialized memory, and we'll not see the writes it makes as properly
-// initializing memory.  Instead force the interpreter, which should let
-// MSAN see everything our programs do properly.
-//
-// Similarly, we can't get ASAN's checks unless we let it instrument our interpreter.
-#if defined(__has_feature)
-    #if __has_feature(memory_sanitizer) || __has_feature(address_sanitizer)
-        #undef SKVM_JIT
-    #endif
+#if 0
+    #undef SKVM_JIT
 #endif
 
 namespace skvm {
@@ -125,8 +132,17 @@ namespace skvm {
         void vpsubd (Ymm dst, Ymm x, Operand y);
         void vpmulld(Ymm dst, Ymm x, Operand y);
 
-        void vpsubw (Ymm dst, Ymm x, Operand y);
-        void vpmullw(Ymm dst, Ymm x, Operand y);
+        void vpaddw   (Ymm dst, Ymm x, Operand y);
+        void vpsubw   (Ymm dst, Ymm x, Operand y);
+        void vpmullw  (Ymm dst, Ymm x, Operand y);
+
+        void vpabsw   (Ymm dst, Operand x);
+        void vpavgw   (Ymm dst, Ymm x, Operand y);  // dst = (x+y+1)>>1, unsigned.
+        void vpmulhrsw(Ymm dst, Ymm x, Operand y);  // dst = (x*y + (1<<14)) >> 15, signed.
+        void vpminsw  (Ymm dst, Ymm x, Operand y);
+        void vpminuw  (Ymm dst, Ymm x, Operand y);
+        void vpmaxsw  (Ymm dst, Ymm x, Operand y);
+        void vpmaxuw  (Ymm dst, Ymm x, Operand y);
 
         void vaddps(Ymm dst, Ymm x, Operand y);
         void vsubps(Ymm dst, Ymm x, Operand y);
@@ -152,8 +168,13 @@ namespace skvm {
         void vpackusdw(Ymm dst, Ymm x, Operand y);
         void vpackuswb(Ymm dst, Ymm x, Operand y);
 
+        void vpunpckldq(Ymm dst, Ymm x, Operand y);
+        void vpunpckhdq(Ymm dst, Ymm x, Operand y);
+
         void vpcmpeqd(Ymm dst, Ymm x, Operand y);
         void vpcmpgtd(Ymm dst, Ymm x, Operand y);
+        void vpcmpeqw(Ymm dst, Ymm x, Operand y);
+        void vpcmpgtw(Ymm dst, Ymm x, Operand y);
 
         void vcmpps   (Ymm dst, Ymm x, Operand y, int imm);
         void vcmpeqps (Ymm dst, Ymm x, Operand y) { this->vcmpps(dst,x,y,0); }
@@ -165,21 +186,30 @@ namespace skvm {
         void vpslld(Ymm dst, Ymm x, int imm);
         void vpsrld(Ymm dst, Ymm x, int imm);
         void vpsrad(Ymm dst, Ymm x, int imm);
+
+        void vpsllw(Ymm dst, Ymm x, int imm);
         void vpsrlw(Ymm dst, Ymm x, int imm);
+        void vpsraw(Ymm dst, Ymm x, int imm);
 
-        void vpermq(Ymm dst, Operand x, int imm);
+        void vpermq    (Ymm dst, Operand x, int imm);
+        void vperm2f128(Ymm dst, Ymm x, Operand y, int imm);
+        void vpermps   (Ymm dst, Ymm ix, Operand src);        // dst[i] = src[ix[i]]
 
-        enum Rounding { NEAREST, FLOOR, CEIL, TRUNC };
+        enum Rounding { NEAREST, FLOOR, CEIL, TRUNC, CURRENT };
         void vroundps(Ymm dst, Operand x, Rounding);
 
         void vmovdqa(Ymm dst, Operand x);
         void vmovups(Ymm dst, Operand x);
+        void vmovups(Xmm dst, Operand x);
         void vmovups(Operand dst, Ymm x);
         void vmovups(Operand dst, Xmm x);
 
         void vcvtdq2ps (Ymm dst, Operand x);
         void vcvttps2dq(Ymm dst, Operand x);
         void vcvtps2dq (Ymm dst, Operand x);
+
+        void vcvtps2ph(Operand dst, Ymm x, Rounding);
+        void vcvtph2ps(Ymm dst, Operand x);
 
         void vpblendvb(Ymm dst, Ymm x, Operand y, Ymm z);
 
@@ -196,6 +226,7 @@ namespace skvm {
         void vmovd(Operand dst, Xmm src);  // dst = src,  32-bit
         void vmovd(Xmm dst, Operand src);  // dst = src,  32-bit
 
+        void vpinsrd(Xmm dst, Xmm src, Operand y, int imm);  // dst = src; dst[imm] = y, 32-bit
         void vpinsrw(Xmm dst, Xmm src, Operand y, int imm);  // dst = src; dst[imm] = y, 16-bit
         void vpinsrb(Xmm dst, Xmm src, Operand y, int imm);  // dst = src; dst[imm] = y,  8-bit
 
@@ -369,34 +400,32 @@ namespace skvm {
         int disp19(Label*);
     };
 
-    // Order matters a little: Ops <=store32 are treated as having side effects.
-    #define SKVM_OPS(M)                       \
-        M(assert_true)                        \
-        M(store8)   M(store16)   M(store32)   \
-        M(index)                              \
-        M(load8)    M(load16)    M(load32)    \
-        M(gather8)  M(gather16)  M(gather32)  \
-        M(uniform8) M(uniform16) M(uniform32) \
-        M(splat)                              \
-        M(add_f32) M(add_i32)                 \
-        M(sub_f32) M(sub_i32)                 \
-        M(mul_f32) M(mul_i32)                 \
-        M(div_f32)                            \
-        M(min_f32)                            \
-        M(max_f32)                            \
-        M(fma_f32) M(fms_f32) M(fnma_f32)     \
-        M(sqrt_f32)                           \
-        M(shl_i32) M(shr_i32) M(sra_i32)      \
-        M(floor) M(trunc) M(round) M(to_f32)  \
-        M( eq_f32) M( eq_i32)                 \
-        M(neq_f32)                            \
-        M( gt_f32) M( gt_i32)                 \
-        M(gte_f32)                            \
-        M(bit_and)                            \
-        M(bit_or)                             \
-        M(bit_xor)                            \
-        M(bit_clear)                          \
-        M(select) M(pack)                     \
+    // Order matters a little: Ops <=store128 are treated as having side effects.
+    #define SKVM_OPS(M)                                              \
+        M(assert_true)                                               \
+        M(store8)   M(store16)   M(store32) M(store64) M(store128)   \
+        M(index)                                                     \
+        M(load8)    M(load16)    M(load32)  M(load64) M(load128)     \
+        M(gather8)  M(gather16)  M(gather32)                         \
+        M(uniform8) M(uniform16) M(uniform32)                        \
+        M(splat) M(splat_q14)                                        \
+        M(add_f32) M(add_i32) M(add_q14)                             \
+        M(sub_f32) M(sub_i32) M(sub_q14)                             \
+        M(mul_f32) M(mul_i32) M(mul_q14)                             \
+        M(div_f32)                                                   \
+        M(min_f32) M(max_f32)                                        \
+        M(min_q14) M(max_q14) M(uavg_q14)                            \
+        M(fma_f32) M(fms_f32) M(fnma_f32)                            \
+        M(sqrt_f32)                                                  \
+        M(shl_i32) M(shr_i32) M(sra_i32)                             \
+        M(shl_q14) M(shr_q14) M(sra_q14)                             \
+        M(ceil) M(floor) M(trunc) M(round) M(to_half) M(from_half)   \
+        M(to_f32) M(to_q14) M(from_q14)                              \
+        M(neq_f32) M(eq_f32) M(eq_i32) M(eq_q14)                     \
+        M(gte_f32) M(gt_f32) M(gt_i32) M(gt_q14)                     \
+        M(bit_and)     M(bit_or)     M(bit_xor)     M(bit_clear)     \
+        M(bit_and_q14) M(bit_or_q14) M(bit_xor_q14) M(bit_clear_q14) \
+        M(select) M(select_q14) M(pack)                              \
     // End of SKVM_OPS
 
     enum class Op : int {
@@ -406,7 +435,7 @@ namespace skvm {
     };
 
     static inline bool has_side_effect(Op op) {
-        return op <= Op::store32;
+        return op <= Op::store128;
     }
     static inline bool is_always_varying(Op op) {
         return op <= Op::gather32 && op != Op::assert_true;
@@ -427,6 +456,13 @@ namespace skvm {
     };
 
     struct F32 {
+        Builder* builder = nullptr;
+        Val      id      = NA;
+        explicit operator bool() const { return id != NA; }
+        Builder* operator->()    const { return builder; }
+    };
+
+    struct Q14 {
         Builder* builder = nullptr;
         Val      id      = NA;
         explicit operator bool() const { return id != NA; }
@@ -463,16 +499,38 @@ namespace skvm {
         float imm = 0;
     };
 
+    struct Q14a {
+        Q14a(Q14 v) : SkDEBUGCODE(builder(v.builder),) id(v.id) {}
+        Q14a(int bits) : imm{SkTo<int16_t>(bits)} {}   // 0x0000'4000 -> 0x4000
+        Q14a(float f) : Q14a{(int)(f * 16384.0f)} {}   //        1.0f -> 0x4000
+
+        SkDEBUGCODE(Builder* builder = nullptr;)
+        Val     id  = NA;
+        int16_t imm = 0;
+    };
+
     struct Color {
-        skvm::F32 r,g,b,a;
+        F32 r,g,b,a;
         explicit operator bool() const { return r && g && b && a; }
         Builder* operator->()    const { return a.operator->(); }
     };
 
     struct HSLA {
-        skvm::F32 h,s,l,a;
+        F32 h,s,l,a;
         explicit operator bool() const { return h && s && l && a; }
         Builder* operator->()    const { return a.operator->(); }
+    };
+
+    struct Color_Q14 {
+        Q14 r,g,b,a;
+        explicit operator bool() const { return r && g && b && a; }
+        Builder* operator->()    const { return a.operator->(); }
+    };
+
+    struct Coord {
+        F32 x,y;
+        explicit operator bool() const { return x && y; }
+        Builder* operator->()    const { return x.operator->(); }
     };
 
     struct Uniform {
@@ -506,6 +564,13 @@ namespace skvm {
             return {base, (int)( sizeof(int)*(buf.size() - SK_ARRAY_COUNT(ints)) )};
         }
     };
+
+    struct PixelFormat {
+        enum { UNORM, FLOAT} encoding;
+        int r_bits,  g_bits,  b_bits,  a_bits,
+            r_shift, g_shift, b_shift, a_shift;
+    };
+    bool SkColorType_to_PixelFormat(SkColorType, PixelFormat*);
 
     SK_BEGIN_REQUIRE_DENSE
     struct Instruction {
@@ -556,20 +621,24 @@ namespace skvm {
         void assert_true(I32 cond, F32 debug) { assert_true(cond, bit_cast(debug)); }
         void assert_true(I32 cond)            { assert_true(cond, cond); }
 
-        // Store {8,16,32}-bit varying.
-        void store8 (Arg ptr, I32 val);
-        void store16(Arg ptr, I32 val);
-        void store32(Arg ptr, I32 val);
-        void storeF (Arg ptr, F32 val) { store32(ptr, bit_cast(val)); }
+        // Store {8,16,32,64,128}-bit varying.
+        void store8  (Arg ptr, I32 val);
+        void store16 (Arg ptr, I32 val);
+        void store32 (Arg ptr, I32 val);
+        void storeF  (Arg ptr, F32 val) { store32(ptr, bit_cast(val)); }
+        void store64 (Arg ptr, I32 lo, I32 hi);            // *ptr = lo|(hi<<32)
+        void store128(Arg ptr, I32 lo, I32 hi, int lane);  // 64-bit lane 0-1 at ptr = lo|(hi<<32).
 
         // Returns varying {n, n-1, n-2, ..., 1}, where n is the argument to Program::eval().
         I32 index();
 
-        // Load u8,u16,i32 varying.
-        I32 load8 (Arg ptr);
-        I32 load16(Arg ptr);
-        I32 load32(Arg ptr);
-        F32 loadF (Arg ptr) { return bit_cast(load32(ptr)); }
+        // Load {8,16,32,64,128}-bit varying.
+        I32 load8  (Arg ptr);
+        I32 load16 (Arg ptr);
+        I32 load32 (Arg ptr);
+        F32 loadF  (Arg ptr) { return bit_cast(load32(ptr)); }
+        I32 load64 (Arg ptr, int lane);  // Load 32-bit lane 0-1 of  64-bit value.
+        I32 load128(Arg ptr, int lane);  // Load 32-bit lane 0-3 of 128-bit value.
 
         // Load u8,u16,i32 uniform with byte-count offset.
         I32 uniform8 (Arg ptr, int offset);
@@ -577,9 +646,8 @@ namespace skvm {
         I32 uniform32(Arg ptr, int offset);
         F32 uniformF (Arg ptr, int offset) { return this->bit_cast(this->uniform32(ptr,offset)); }
 
-        // Load this color as a uniform, premultiplied and converted to dst SkColorSpace.
-        Color uniformPremul(SkColor4f, SkColorSpace* src,
-                            Uniforms*, SkColorSpace* dst);
+        // Push and load this color as a uniform.
+        Color uniformColor(SkColor4f, Uniforms*);
 
         // Gather u8,u16,i32 with varying element-count index from *(ptr + byte-count offset).
         I32 gather8 (Arg ptr, int offset, I32 index);
@@ -602,7 +670,16 @@ namespace skvm {
         // Load an immediate constant.
         I32 splat(int      n);
         I32 splat(unsigned u) { return splat((int)u); }
-        F32 splat(float    f);
+        F32 splat(float    f) {
+            int bits;
+            memcpy(&bits, &f, 4);
+            return bit_cast(splat(bits));
+        }
+
+        // Load an immediate Q14, expressed as either integer (16384, 0x4000) or float (1.0f).
+        Q14 splat_q14(int      n);
+        Q14 splat_q14(unsigned u) { return splat_q14((int)u); }
+        Q14 splat_q14(float    f) { return splat_q14(Q14a{f}.imm); }
 
         // float math, comparisons, etc.
         F32 add(F32, F32);  F32 add(F32a x, F32a y) { return add(_(x), _(y)); }
@@ -633,7 +710,7 @@ namespace skvm {
         F32 approx_atan(F32 x);
         F32 approx_atan2(F32 y, F32 x);
 
-        F32 lerp(F32  lo, F32  hi, F32  t) { return mad(sub(hi, lo), t, lo); }
+        F32 lerp(F32  lo, F32  hi, F32  t);
         F32 lerp(F32a lo, F32a hi, F32a t) { return lerp(_(lo), _(hi), _(t)); }
 
         F32 clamp(F32  x, F32  lo, F32  hi) { return max(lo, min(x, hi)); }
@@ -642,12 +719,17 @@ namespace skvm {
 
         F32    abs(F32 x) { return bit_cast(bit_and(bit_cast(x), 0x7fff'ffff)); }
         F32  fract(F32 x) { return sub(x, floor(x)); }
+        F32   ceil(F32);
         F32  floor(F32);
-        I32 is_NaN(F32 x) { return neq(x,x); }
+        I32 is_NaN   (F32 x) { return neq(x,x); }
+        I32 is_finite(F32 x) { return lt(bit_and(bit_cast(x), 0x7f80'0000), 0x7f80'0000); }
 
         I32 trunc(F32 x);
         I32 round(F32 x);  // Round to int using current rounding mode (as if lrintf()).
         I32 bit_cast(F32 x) { return {x.builder, x.id}; }
+
+        I32   to_half(F32 x);
+        F32 from_half(I32 x);
 
         F32 norm(F32 x, F32 y) {
             return sqrt(add(mul(x,x),
@@ -678,7 +760,7 @@ namespace skvm {
         I32 gt (I32 x, I32 y);  I32 gt (I32a x, I32a y) { return gt (_(x), _(y)); }
         I32 gte(I32 x, I32 y);  I32 gte(I32a x, I32a y) { return gte(_(x), _(y)); }
 
-        F32 to_f32(I32 x);
+        F32 to_F32(I32 x);
         F32 bit_cast(I32 x) { return {x.builder, x.id}; }
 
         // Bitwise operations.
@@ -698,9 +780,11 @@ namespace skvm {
             return bit_cast(select(cond, bit_cast(t)
                                        , bit_cast(f)));
         }
+        Q14 select(Q14 cond, Q14 t, Q14 f);
 
         I32 select(I32a cond, I32a t, I32a f) { return select(_(cond), _(t), _(f)); }
         F32 select(I32a cond, F32a t, F32a f) { return select(_(cond), _(t), _(f)); }
+        Q14 select(Q14a cond, Q14a t, Q14a f) { return select(_(cond), _(t), _(f)); }
 
         I32 extract(I32 x, int bits, I32 z);   // (x>>bits) & z
         I32 pack   (I32 x, I32 y, int bits);   // x | (y << bits), assuming (x & (y << bits)) == 0
@@ -708,22 +792,58 @@ namespace skvm {
         I32 extract(I32a x, int bits, I32a z) { return extract(_(x), bits, _(z)); }
         I32 pack   (I32a x, I32a y, int bits) { return pack   (_(x), _(y), bits); }
 
+        Q14 add(Q14, Q14);  Q14 add(Q14a x, Q14a y) { return add(_(x), _(y)); }
+        Q14 sub(Q14, Q14);  Q14 sub(Q14a x, Q14a y) { return sub(_(x), _(y)); }
+        Q14 mul(Q14, Q14);  Q14 mul(Q14a x, Q14a y) { return mul(_(x), _(y)); }
+
+        Q14 min(Q14, Q14);  Q14 min(Q14a x, Q14a y) { return min(_(x), _(y)); }
+        Q14 max(Q14, Q14);  Q14 max(Q14a x, Q14a y) { return max(_(x), _(y)); }
+
+        Q14 shl(Q14, int bits);
+        Q14 shr(Q14, int bits);
+        Q14 sra(Q14, int bits);
+
+        Q14 eq (Q14, Q14);  Q14  eq(Q14a x, Q14a y) { return  eq(_(x), _(y)); }
+        Q14 neq(Q14, Q14);  Q14 neq(Q14a x, Q14a y) { return neq(_(x), _(y)); }
+        Q14 lt (Q14, Q14);  Q14 lt (Q14a x, Q14a y) { return lt (_(x), _(y)); }
+        Q14 lte(Q14, Q14);  Q14 lte(Q14a x, Q14a y) { return lte(_(x), _(y)); }
+        Q14 gt (Q14, Q14);  Q14 gt (Q14a x, Q14a y) { return gt (_(x), _(y)); }
+        Q14 gte(Q14, Q14);  Q14 gte(Q14a x, Q14a y) { return gte(_(x), _(y)); }
+
+        Q14 bit_and  (Q14, Q14);  Q14 bit_and  (Q14a x, Q14a y) { return bit_and  (_(x), _(y)); }
+        Q14 bit_or   (Q14, Q14);  Q14 bit_or   (Q14a x, Q14a y) { return bit_or   (_(x), _(y)); }
+        Q14 bit_xor  (Q14, Q14);  Q14 bit_xor  (Q14a x, Q14a y) { return bit_xor  (_(x), _(y)); }
+        Q14 bit_clear(Q14, Q14);  Q14 bit_clear(Q14a x, Q14a y) { return bit_clear(_(x), _(y)); }
+
+        Q14 unsigned_avg(Q14  x, Q14  y);  // (x+y+1)>>1
+        Q14 unsigned_avg(Q14a x, Q14a y) { return unsigned_avg(_(x), _(y)); }
+
+        Q14 to_Q14(F32); F32 to_F32(Q14);   // Converts values, e.g. 0x4000 <-> 1.0f
+        Q14 to_Q14(I32); I32 to_I32(Q14);   // Preserves bits, e.g. 0x4000 <-> 0x00004000
 
         // Common idioms used in several places, worth centralizing for consistency.
         F32 from_unorm(int bits, I32);   // E.g. from_unorm(8, x) -> x * (1/255.0f)
         I32   to_unorm(int bits, F32);   // E.g.   to_unorm(8, x) -> round(x * 255)
 
-        Color unpack_1010102(I32 rgba);
-        Color unpack_8888   (I32 rgba);
-        Color unpack_565    (I32 bgr );  // bottom 16 bits
+        Color   load(PixelFormat, Arg ptr);
+        bool   store(PixelFormat, Arg ptr, Color);
+        Color gather(PixelFormat, Arg ptr, int offset, I32 index);
+        Color gather(PixelFormat f, Uniform u, I32 index) {
+            return gather(f, u.ptr, u.offset, index);
+        }
 
         void   premul(F32* r, F32* g, F32* b, F32 a);
         void unpremul(F32* r, F32* g, F32* b, F32 a);
 
         Color   premul(Color c) {   this->premul(&c.r, &c.g, &c.b, c.a); return c; }
         Color unpremul(Color c) { this->unpremul(&c.r, &c.g, &c.b, c.a); return c; }
+
         Color lerp(Color lo, Color hi, F32 t);
         Color blend(SkBlendMode, Color src, Color dst);
+
+        Color clamp01(Color c) {
+            return { clamp01(c.r), clamp01(c.g), clamp01(c.b), clamp01(c.a) };
+        }
 
         HSLA  to_hsla(Color);
         Color to_rgba(HSLA);
@@ -753,6 +873,14 @@ namespace skvm {
                 return {this, x.id};
             }
             return splat(x.imm);
+        }
+
+        Q14 _(Q14a x) {
+            if (x.id != NA) {
+                SkASSERT(x.builder == this);
+                return {this, x.id};
+            }
+            return splat_q14(x.imm);
         }
 
         bool allImm() const;
@@ -845,7 +973,9 @@ namespace skvm {
         void setupJIT        (const std::vector<OptimizedInstruction>&, const char* debug_name);
         void setupLLVM       (const std::vector<OptimizedInstruction>&, const char* debug_name);
 
-        bool jit(const std::vector<OptimizedInstruction>&, int* stack_hint, Assembler*) const;
+        bool jit(const std::vector<OptimizedInstruction>&,
+                 int* stack_hint, uint32_t* registers_used,
+                 Assembler*) const;
 
         void waitForLLVM() const;
 
@@ -855,6 +985,45 @@ namespace skvm {
 
     // TODO: control flow
     // TODO: 64-bit values?
+
+    static inline Q14 operator+(Q14   x, Q14a y) { return x->add(x,y); }
+    static inline Q14 operator+(float x, Q14  y) { return y->add(x,y); }
+
+    static inline Q14 operator-(Q14   x, Q14a y) { return x->sub(x,y); }
+    static inline Q14 operator-(float x, Q14  y) { return y->sub(x,y); }
+
+    static inline Q14 operator*(Q14   x, Q14a y) { return x->mul(x,y); }
+    static inline Q14 operator*(float x, Q14  y) { return y->mul(x,y); }
+
+    static inline Q14 min(Q14   x, Q14a y) { return x->min(x,y); }
+    static inline Q14 min(float x, Q14  y) { return y->min(x,y); }
+
+    static inline Q14 max(Q14   x, Q14a y) { return x->max(x,y); }
+    static inline Q14 max(float x, Q14  y) { return y->max(x,y); }
+
+    static inline Q14 unsigned_avg(Q14   x, Q14a y) { return x->unsigned_avg(x,y); }
+    static inline Q14 unsigned_avg(float x, Q14  y) { return y->unsigned_avg(x,y); }
+
+    static inline Q14 operator==(Q14   x, Q14   y) { return x->eq(x,y); }
+    static inline Q14 operator==(Q14   x, float y) { return x->eq(x,y); }
+    static inline Q14 operator==(float x, Q14   y) { return y->eq(x,y); }
+
+    static inline Q14 operator!=(Q14   x, Q14   y) { return x->neq(x,y); }
+    static inline Q14 operator!=(Q14   x, float y) { return x->neq(x,y); }
+    static inline Q14 operator!=(float x, Q14   y) { return y->neq(x,y); }
+
+    static inline Q14 operator< (Q14   x, Q14a y) { return x->lt(x,y); }
+    static inline Q14 operator< (float x, Q14  y) { return y->lt(x,y); }
+
+    static inline Q14 operator<=(Q14   x, Q14a y) { return x->lte(x,y); }
+    static inline Q14 operator<=(float x, Q14  y) { return y->lte(x,y); }
+
+    static inline Q14 operator> (Q14   x, Q14a y) { return x->gt(x,y); }
+    static inline Q14 operator> (float x, Q14  y) { return y->gt(x,y); }
+
+    static inline Q14 operator>=(Q14   x, Q14a y) { return x->gte(x,y); }
+    static inline Q14 operator>=(float x, Q14  y) { return y->gte(x,y); }
+
 
     static inline I32 operator+(I32 x, I32a y) { return x->add(x,y); }
     static inline I32 operator+(int x, I32  y) { return y->add(x,y); }
@@ -871,11 +1040,13 @@ namespace skvm {
     static inline I32 max(I32 x, I32a y) { return x->max(x,y); }
     static inline I32 max(int x, I32  y) { return y->max(x,y); }
 
-    static inline I32 operator==(I32 x, I32a y) { return x->eq(x,y); }
-    static inline I32 operator==(int x, I32  y) { return y->eq(x,y); }
+    static inline I32 operator==(I32 x, I32 y) { return x->eq(x,y); }
+    static inline I32 operator==(I32 x, int y) { return x->eq(x,y); }
+    static inline I32 operator==(int x, I32 y) { return y->eq(x,y); }
 
-    static inline I32 operator!=(I32 x, I32a y) { return x->neq(x,y); }
-    static inline I32 operator!=(int x, I32  y) { return y->neq(x,y); }
+    static inline I32 operator!=(I32 x, I32 y) { return x->neq(x,y); }
+    static inline I32 operator!=(I32 x, int y) { return x->neq(x,y); }
+    static inline I32 operator!=(int x, I32 y) { return y->neq(x,y); }
 
     static inline I32 operator< (I32 x, I32a y) { return x->lt(x,y); }
     static inline I32 operator< (int x, I32  y) { return y->lt(x,y); }
@@ -908,11 +1079,13 @@ namespace skvm {
     static inline F32 max(F32   x, F32a y) { return x->max(x,y); }
     static inline F32 max(float x, F32  y) { return y->max(x,y); }
 
-    static inline I32 operator==(F32   x, F32a y) { return x->eq(x,y); }
-    static inline I32 operator==(float x, F32  y) { return y->eq(x,y); }
+    static inline I32 operator==(F32   x, F32   y) { return x->eq(x,y); }
+    static inline I32 operator==(F32   x, float y) { return x->eq(x,y); }
+    static inline I32 operator==(float x, F32   y) { return y->eq(x,y); }
 
-    static inline I32 operator!=(F32   x, F32a y) { return x->neq(x,y); }
-    static inline I32 operator!=(float x, F32  y) { return y->neq(x,y); }
+    static inline I32 operator!=(F32   x, F32   y) { return x->neq(x,y); }
+    static inline I32 operator!=(F32   x, float y) { return x->neq(x,y); }
+    static inline I32 operator!=(float x, F32   y) { return y->neq(x,y); }
 
     static inline I32 operator< (F32   x, F32a y) { return x->lt(x,y); }
     static inline I32 operator< (float x, F32  y) { return y->lt(x,y); }
@@ -926,6 +1099,9 @@ namespace skvm {
     static inline I32 operator>=(F32   x, F32a y) { return x->gte(x,y); }
     static inline I32 operator>=(float x, F32  y) { return y->gte(x,y); }
 
+    static inline Q14& operator+=(Q14& x, Q14a y) { return (x = x + y); }
+    static inline Q14& operator-=(Q14& x, Q14a y) { return (x = x - y); }
+    static inline Q14& operator*=(Q14& x, Q14a y) { return (x = x * y); }
 
     static inline I32& operator+=(I32& x, I32a y) { return (x = x + y); }
     static inline I32& operator-=(I32& x, I32a y) { return (x = x - y); }
@@ -939,10 +1115,12 @@ namespace skvm {
     static inline void assert_true(I32 cond, F32 debug) { cond->assert_true(cond,debug); }
     static inline void assert_true(I32 cond)            { cond->assert_true(cond); }
 
-    static inline void store8 (Arg ptr, I32 val) { val->store8 (ptr, val); }
-    static inline void store16(Arg ptr, I32 val) { val->store16(ptr, val); }
-    static inline void store32(Arg ptr, I32 val) { val->store32(ptr, val); }
-    static inline void storeF (Arg ptr, F32 val) { val->storeF (ptr, val); }
+    static inline void store8  (Arg ptr, I32 val)                { val->store8  (ptr, val); }
+    static inline void store16 (Arg ptr, I32 val)                { val->store16 (ptr, val); }
+    static inline void store32 (Arg ptr, I32 val)                { val->store32 (ptr, val); }
+    static inline void storeF  (Arg ptr, F32 val)                { val->storeF  (ptr, val); }
+    static inline void store64 (Arg ptr, I32 lo, I32 hi)         { lo ->store64 (ptr, lo,hi); }
+    static inline void store128(Arg ptr, I32 lo, I32 hi, int ix) { lo ->store128(ptr, lo,hi, ix); }
 
     static inline I32 gather8 (Arg ptr, int off, I32 ix) { return ix->gather8 (ptr, off, ix); }
     static inline I32 gather16(Arg ptr, int off, I32 ix) { return ix->gather16(ptr, off, ix); }
@@ -972,17 +1150,26 @@ namespace skvm {
     static inline F32 approx_atan(F32 x) { return x->approx_atan(x); }
     static inline F32 approx_atan2(F32 y, F32 x) { return x->approx_atan2(y, x); }
 
-    static inline F32 clamp01(F32 x) { return x->clamp01(x); }
-    static inline F32     abs(F32 x) { return x->    abs(x); }
-    static inline F32   fract(F32 x) { return x->  fract(x); }
-    static inline F32   floor(F32 x) { return x->  floor(x); }
-    static inline I32  is_NaN(F32 x) { return x-> is_NaN(x); }
+    static inline F32   clamp01(F32 x) { return x->  clamp01(x); }
+    static inline F32       abs(F32 x) { return x->      abs(x); }
+    static inline F32      ceil(F32 x) { return x->     ceil(x); }
+    static inline F32     fract(F32 x) { return x->    fract(x); }
+    static inline F32     floor(F32 x) { return x->    floor(x); }
+    static inline I32    is_NaN(F32 x) { return x->   is_NaN(x); }
+    static inline I32 is_finite(F32 x) { return x->is_finite(x); }
 
-    static inline I32    trunc(F32 x) { return x->   trunc(x); }
-    static inline I32    round(F32 x) { return x->   round(x); }
-    static inline I32 bit_cast(F32 x) { return x->bit_cast(x); }
-    static inline F32 bit_cast(I32 x) { return x->bit_cast(x); }
-    static inline F32   to_f32(I32 x) { return x->  to_f32(x); }
+    static inline I32     trunc(F32 x) { return x->    trunc(x); }
+    static inline I32     round(F32 x) { return x->    round(x); }
+    static inline I32  bit_cast(F32 x) { return x-> bit_cast(x); }
+    static inline F32  bit_cast(I32 x) { return x-> bit_cast(x); }
+    static inline F32    to_F32(I32 x) { return x->   to_F32(x); }
+    static inline I32   to_half(F32 x) { return x->  to_half(x); }
+    static inline F32 from_half(I32 x) { return x->from_half(x); }
+
+    static inline F32 to_F32(Q14 x) { return x->to_F32(x); }
+    static inline I32 to_I32(Q14 x) { return x->to_I32(x); }
+    static inline Q14 to_Q14(F32 x) { return x->to_Q14(x); }
+    static inline Q14 to_Q14(I32 x) { return x->to_Q14(x); }
 
     static inline F32 lerp(F32   lo, F32a  hi, F32a t) { return lo->lerp(lo,hi,t); }
     static inline F32 lerp(float lo, F32   hi, F32a t) { return hi->lerp(lo,hi,t); }
@@ -1000,6 +1187,12 @@ namespace skvm {
     static inline I32        shr(I32 x, int bits) { return x->shr(x, bits); }
     static inline I32        sra(I32 x, int bits) { return x->sra(x, bits); }
 
+    static inline Q14 operator<<(Q14 x, int bits) { return x->shl(x, bits); }
+    static inline Q14        shl(Q14 x, int bits) { return x->shl(x, bits); }
+    static inline Q14        shr(Q14 x, int bits) { return x->shr(x, bits); }
+    static inline Q14        sra(Q14 x, int bits) { return x->sra(x, bits); }
+    static inline Q14 operator>>(Q14 x, int bits) { return x->sra(x, bits); }
+
     static inline I32 operator&(I32 x, I32a y) { return x->bit_and(x,y); }
     static inline I32 operator&(int x, I32  y) { return y->bit_and(x,y); }
 
@@ -1013,24 +1206,47 @@ namespace skvm {
     static inline I32& operator|=(I32& x, I32a y) { return (x = x | y); }
     static inline I32& operator^=(I32& x, I32a y) { return (x = x ^ y); }
 
+    static inline Q14 operator&(Q14 x, Q14a y) { return x->bit_and(x,y); }
+    static inline Q14 operator&(int x, Q14  y) { return y->bit_and(x,y); }
+
+    static inline Q14 operator|(Q14 x, Q14a y) { return x->bit_or(x,y); }
+    static inline Q14 operator|(int x, Q14  y) { return y->bit_or(x,y); }
+
+    static inline Q14 operator^(Q14 x, Q14a y) { return x->bit_xor(x,y); }
+    static inline Q14 operator^(int x, Q14  y) { return y->bit_xor(x,y); }
+
+    static inline Q14& operator&=(Q14& x, Q14a y) { return (x = x & y); }
+    static inline Q14& operator|=(Q14& x, Q14a y) { return (x = x | y); }
+    static inline Q14& operator^=(Q14& x, Q14a y) { return (x = x ^ y); }
+
+    static inline I32 bit_clear(I32 x, I32a y) { return x->bit_clear(x,y); }
+    static inline I32 bit_clear(int x, I32  y) { return y->bit_clear(x,y); }
+
     static inline I32 select(I32 cond, I32a t, I32a f) { return cond->select(cond,t,f); }
     static inline F32 select(I32 cond, F32a t, F32a f) { return cond->select(cond,t,f); }
+    static inline Q14 select(Q14 cond, Q14a t, Q14a f) { return cond->select(cond,t,f); }
 
     static inline I32 extract(I32 x, int bits, I32a z) { return x->extract(x,bits,z); }
     static inline I32 extract(int x, int bits, I32  z) { return z->extract(x,bits,z); }
     static inline I32 pack   (I32 x, I32a y, int bits) { return x->pack   (x,y,bits); }
     static inline I32 pack   (int x, I32  y, int bits) { return y->pack   (x,y,bits); }
 
-    static inline I32 operator~(I32 x) { return ~0^x; }
-    static inline I32 operator-(I32 x) { return  0-x; }
-    static inline F32 operator-(F32 x) { return  0-x; }
+    static inline I32 operator~(I32 x) { return ~0 ^ x; }
+    static inline Q14 operator~(Q14 x) { return ~0 ^ x; }
+    static inline I32 operator-(I32 x) { return  0 - x; }
+    static inline Q14 operator-(Q14 x) { return  0 - x; }
+    static inline F32 operator-(F32 x) { return 0.0f - x; }
 
     static inline F32 from_unorm(int bits, I32 x) { return x->from_unorm(bits,x); }
     static inline I32   to_unorm(int bits, F32 x) { return x->  to_unorm(bits,x); }
 
-    static inline  Color unpack_1010102(I32 rgba) { return rgba->unpack_1010102(rgba); }
-    static inline  Color unpack_8888   (I32 rgba) { return rgba->unpack_8888   (rgba); }
-    static inline  Color unpack_565    (I32 bgr ) { return bgr ->unpack_565    (bgr ); }
+    static inline bool store(PixelFormat f, Arg p, Color c) { return c->store(f,p,c); }
+    static inline Color gather(PixelFormat f, Arg p, int off, I32 ix) {
+        return ix->gather(f,p,off,ix);
+    }
+    static inline Color gather(PixelFormat f, Uniform u, I32 ix) {
+        return ix->gather(f,u,ix);
+    }
 
     static inline void   premul(F32* r, F32* g, F32* b, F32 a) { a->  premul(r,g,b,a); }
     static inline void unpremul(F32* r, F32* g, F32* b, F32 a) { a->unpremul(r,g,b,a); }
@@ -1041,6 +1257,8 @@ namespace skvm {
     static inline Color lerp(Color lo, Color hi, F32 t) { return t->lerp(lo,hi,t); }
 
     static inline Color blend(SkBlendMode m, Color s, Color d) { return s->blend(m,s,d); }
+
+    static inline Color clamp01(Color c) { return c->clamp01(c); }
 
     static inline HSLA  to_hsla(Color c) { return c->to_hsla(c); }
     static inline Color to_rgba(HSLA  c) { return c->to_rgba(c); }
@@ -1054,6 +1272,6 @@ namespace skvm {
             return poly(x, x*a+b, rest...);
         }
     }
-}
+}  // namespace skvm
 
 #endif//SkVM_DEFINED

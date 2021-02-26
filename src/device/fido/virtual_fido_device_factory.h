@@ -39,8 +39,9 @@ class VirtualFidoDeviceFactory : public device::FidoDiscoveryFactory {
 
  protected:
   // device::FidoDiscoveryFactory:
-  std::unique_ptr<FidoDiscoveryBase> Create(
+  std::vector<std::unique_ptr<FidoDiscoveryBase>> Create(
       FidoTransportProtocol transport) override;
+  bool IsTestOverride() override;
 
  private:
   ProtocolVersion supported_protocol_ = ProtocolVersion::kU2f;

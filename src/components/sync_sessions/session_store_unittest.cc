@@ -9,15 +9,15 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/cancelable_callback.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/hash_util.h"
-#include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/session_specifics.pb.h"
+#include "components/sync/test/model/model_type_store_test_util.h"
 #include "components/sync/test/test_matchers.h"
 #include "components/sync_device_info/local_device_info_util.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"
@@ -57,10 +57,12 @@ const char kCacheGuid[] = "SomeCacheGuid";
 // b) conveniently exposes the last instantiated session store.
 class MockOpenCallback {
  public:
-  MOCK_METHOD3(Run,
-               void(const base::Optional<syncer::ModelError>& error,
-                    SessionStore* store,
-                    MetadataBatch* metadata_batch));
+  MOCK_METHOD(void,
+              Run,
+              (const base::Optional<syncer::ModelError>& error,
+               SessionStore* store,
+               MetadataBatch* metadata_batch),
+              ());
 
   SessionStore::OpenCallback Get() {
     return base::BindOnce(

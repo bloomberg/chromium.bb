@@ -28,6 +28,7 @@
 #include "include/effects/SkHighContrastFilter.h"
 #include "include/effects/SkImageFilters.h"
 #include "include/effects/SkShaderMaskFilter.h"
+#include "include/gpu/GrDirectContext.h"
 #include "tools/Resources.h"
 #include "tools/ToolUtils.h"
 
@@ -134,7 +135,7 @@ static void draw_set(SkCanvas* canvas, sk_sp<SkImageFilter> filters[], int count
         canvas->save();
         SkRRect rr = SkRRect::MakeRectXY(r.makeOffset(dx, dy), 20, 20);
         canvas->clipRRect(rr, true);
-        canvas->saveLayer({ &rr.getBounds(), nullptr, filters[i].get(), nullptr, nullptr, 0 });
+        canvas->saveLayer(SkCanvas::SaveLayerRec(&rr.getBounds(), nullptr, filters[i].get(), 0));
         canvas->drawColor(0x40FFFFFF);
         canvas->restore();
         canvas->restore();
@@ -200,9 +201,9 @@ DEF_GM(return new SaveLayerWithBackdropGM();)
 // normally be a sprite draw that could avoid an auto-saveLayer.
 DEF_SIMPLE_GM(imagefilters_effect_order, canvas, 512, 512) {
     sk_sp<SkImage> image(GetResourceAsImage("images/mandrill_256.png"));
-    if (canvas->getGrContext()) {
-        sk_sp<SkImage> gpuImage = image->makeTextureImage(canvas->getGrContext());
-        if (gpuImage) {
+    auto direct = GrAsDirectContext(canvas->recordingContext());
+    if (direct) {
+        if (sk_sp<SkImage> gpuImage = image->makeTextureImage(direct)) {
             image = std::move(gpuImage);
         }
     }
@@ -256,19 +257,17 @@ DEF_SIMPLE_GM(imagefilters_effect_order, canvas, 512, 512) {
     // If edge detector sees the mask filter, it'll have alpha and then blend with the original
     // image; otherwise the mask filter will apply late (incorrectly) and none of the original
     // image will be visible.
-    sk_sp<SkImageFilter> edgeBlend = SkImageFilters::Xfermode(SkBlendMode::kSrcOver,
+    sk_sp<SkImageFilter> edgeBlend = SkImageFilters::Blend(SkBlendMode::kSrcOver,
             SkImageFilters::Image(image), edgeDetector);
 
     SkPaint testMaskPaint;
     testMaskPaint.setMaskFilter(maskFilter);
     testMaskPaint.setImageFilter(edgeBlend);
 
-    SkPaint alphaPaint;
-    alphaPaint.setShader(alphaMaskShader);
     SkPaint expectedMaskPaint;
     expectedMaskPaint.setImageFilter(SkImageFilters::Compose(edgeBlend,
-            SkImageFilters::Xfermode(SkBlendMode::kSrcIn,
-                                     SkImageFilters::Paint(alphaPaint))));
+            SkImageFilters::Blend(SkBlendMode::kSrcIn,
+                                  SkImageFilters::Shader(alphaMaskShader))));
 
     canvas->save();
     canvas->translate(0, image->height());

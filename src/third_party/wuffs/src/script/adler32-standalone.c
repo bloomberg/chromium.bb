@@ -40,20 +40,63 @@
 
 // The order matters here. Clang also defines "__GNUC__".
 #if defined(__clang__)
-const char* cc = "clang";
-const char* cc_version = __clang_version__;
+const char* g_cc = "clang";
+const char* g_cc_version = __clang_version__;
 #elif defined(__GNUC__)
-const char* cc = "gcc";
-const char* cc_version = __VERSION__;
+const char* g_cc = "gcc";
+const char* g_cc_version = __VERSION__;
 #elif defined(_MSC_VER)
-const char* cc = "cl";
-const char* cc_version = "???";
+const char* g_cc = "cl";
+const char* g_cc_version = "???";
 #else
-const char* cc = "cc";
-const char* cc_version = "???";
+const char* g_cc = "cc";
+const char* g_cc_version = "???";
 #endif
 
-static uint32_t calculate_hash(uint8_t* x_ptr, size_t x_len) {
+struct {
+  int remaining_argc;
+  char** remaining_argv;
+
+  bool no_check;
+} g_flags = {0};
+
+const char*  //
+parse_flags(int argc, char** argv) {
+  int c = (argc > 0) ? 1 : 0;  // Skip argv[0], the program name.
+  for (; c < argc; c++) {
+    char* arg = argv[c];
+    if (*arg++ != '-') {
+      break;
+    }
+
+    // A double-dash "--foo" is equivalent to a single-dash "-foo". As special
+    // cases, a bare "-" is not a flag (some programs may interpret it as
+    // stdin) and a bare "--" means to stop parsing flags.
+    if (*arg == '\x00') {
+      break;
+    } else if (*arg == '-') {
+      arg++;
+      if (*arg == '\x00') {
+        c++;
+        break;
+      }
+    }
+
+    if (!strcmp(arg, "no-check")) {
+      g_flags.no_check = true;
+      continue;
+    }
+
+    return "main: unrecognized flag argument";
+  }
+
+  g_flags.remaining_argc = argc - c;
+  g_flags.remaining_argv = argv + c;
+  return NULL;
+}
+
+static uint32_t  //
+calculate_hash(uint8_t* x_ptr, size_t x_len) {
   uint32_t s1 = 1;
   uint32_t s2 = 0;
 
@@ -113,15 +156,14 @@ static uint32_t calculate_hash(uint8_t* x_ptr, size_t x_len) {
   return (s2 << 16) | s1;
 }
 
-uint8_t buffer[BUFFER_SIZE] = {0};
+uint8_t g_buffer[BUFFER_SIZE] = {0};
 
-int main(int argc, char** argv) {
-  bool nocheck = false;
-  int i;
-  for (i = 0; i < argc; i++) {
-    if (!strcmp(argv[i], "-nocheck")) {
-      nocheck = true;
-    }
+int  //
+main(int argc, char** argv) {
+  const char* err_msg = parse_flags(argc, argv);
+  if (err_msg) {
+    fprintf(stderr, "%s\n", err_msg);
+    return 1;
   }
 
   struct timeval bench_start_tv;
@@ -133,10 +175,11 @@ int main(int argc, char** argv) {
   // https://play.golang.org/p/IU2T58P00C
   const uint32_t expected_hash_of_1mib_of_zeroes = 0x00f00001UL;
 
+  int i;
   int num_bad = 0;
   for (i = 0; i < num_reps; i++) {
-    uint32_t actual_hash = calculate_hash(buffer, BUFFER_SIZE);
-    if (!nocheck && (actual_hash != expected_hash_of_1mib_of_zeroes)) {
+    uint32_t actual_hash = calculate_hash(g_buffer, BUFFER_SIZE);
+    if (!g_flags.no_check && (actual_hash != expected_hash_of_1mib_of_zeroes)) {
       num_bad++;
     }
   }
@@ -155,6 +198,6 @@ int main(int argc, char** argv) {
   int64_t denom = micros * ONE_MIBIBYTE;
   int64_t mib_per_s = denom ? numer / denom : 0;
 
-  printf("%8d MiB/s, %s %s\n", (int)mib_per_s, cc, cc_version);
+  printf("%8d MiB/s, %s %s\n", (int)mib_per_s, g_cc, g_cc_version);
   return 0;
 }

@@ -56,12 +56,13 @@ LIBGAV1_ALWAYS_INLINE int GetNumRows(TransformType tx_type, int tx_height,
   if (tx_height > 4) {
     if (tx_class == kTransformClass2D) {
       if (tx_width == 4) {
-        if (non_zero_coeff_count <= 10) return 4;
+        if (non_zero_coeff_count <= 13) return 4;
         if (non_zero_coeff_count <= 29) return 8;
         return tx_height;
       }
       if (tx_width == 8) {
         if (non_zero_coeff_count <= 10) return 4;
+        if ((non_zero_coeff_count <= 14) & (tx_height > 8)) return 4;
         if (non_zero_coeff_count <= 43) return 8;
         if ((non_zero_coeff_count <= 107) & (tx_height > 16)) return 16;
         if ((non_zero_coeff_count <= 171) & (tx_height > 16)) return 24;
@@ -69,7 +70,9 @@ LIBGAV1_ALWAYS_INLINE int GetNumRows(TransformType tx_type, int tx_height,
       }
       if (tx_width == 16) {
         if (non_zero_coeff_count <= 10) return 4;
+        if ((non_zero_coeff_count <= 14) & (tx_height > 16)) return 4;
         if (non_zero_coeff_count <= 36) return 8;
+        if ((non_zero_coeff_count <= 44) & (tx_height > 16)) return 8;
         if ((non_zero_coeff_count <= 151) & (tx_height > 16)) return 16;
         if ((non_zero_coeff_count <= 279) & (tx_height > 16)) return 24;
         return tx_height;
@@ -100,23 +103,28 @@ LIBGAV1_ALWAYS_INLINE int GetNumRows(TransformType tx_type, int tx_height,
       if (tx_width == 8) {
         if (non_zero_coeff_count <= 32) return 4;
         if (non_zero_coeff_count <= 64) return 8;
-        if ((non_zero_coeff_count <= 128) & (tx_height > 16)) return 16;
-        if ((non_zero_coeff_count <= 192) & (tx_height > 16)) return 24;
+        // There's no need to check tx_height since the maximum values for
+        // smaller sizes are: 8x8: 63, 8x16: 127.
+        if (non_zero_coeff_count <= 128) return 16;
+        if (non_zero_coeff_count <= 192) return 24;
         return tx_height;
       }
-
       if (tx_width == 16) {
         if (non_zero_coeff_count <= 64) return 4;
         if (non_zero_coeff_count <= 128) return 8;
-        if ((non_zero_coeff_count <= 256) & (tx_height > 16)) return 16;
-        if ((non_zero_coeff_count <= 384) & (tx_height > 16)) return 24;
+        // There's no need to check tx_height since the maximum values for
+        // smaller sizes are: 16x8: 127, 16x16: 255.
+        if (non_zero_coeff_count <= 256) return 16;
+        if (non_zero_coeff_count <= 384) return 24;
         return tx_height;
       }
       if (tx_width == 32) {
         if (non_zero_coeff_count <= 128) return 4;
         if (non_zero_coeff_count <= 256) return 8;
-        if ((non_zero_coeff_count <= 512) & (tx_height > 16)) return 16;
-        if ((non_zero_coeff_count <= 768) & (tx_height > 16)) return 24;
+        // There's no need to check tx_height since the maximum values for
+        // smaller sizes are: 32x8 is 255, 32x16 is 511.
+        if ((non_zero_coeff_count <= 512)) return 16;
+        if ((non_zero_coeff_count <= 768)) return 24;
         return tx_height;
       }
     }

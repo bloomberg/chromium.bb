@@ -31,11 +31,10 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "services/service_manager/embedder/switches.h"
 
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"
-#include "services/service_manager/embedder/descriptors.h"
+#include "content/public/common/content_descriptors.h"
 #endif
 
 namespace ipc_fuzzer {
@@ -58,11 +57,6 @@ class FakeChildProcessImpl
     return disconnected_process_.get();
   }
 
-  void Initialize(mojo::PendingRemote<content::mojom::ChildProcessHostBootstrap>
-                      bootstrap) override {
-    bootstrap_.Bind(std::move(bootstrap));
-  }
-
   void BootstrapLegacyIpc(
       mojo::PendingReceiver<IPC::mojom::ChannelBootstrap> receiver) override {
     mojo::FusePipes(std::move(receiver), std::move(legacy_ipc_bootstrap_));
@@ -70,7 +64,6 @@ class FakeChildProcessImpl
 
  private:
   mojo::PendingRemote<IPC::mojom::ChannelBootstrap> legacy_ipc_bootstrap_;
-  mojo::Remote<content::mojom::ChildProcessHostBootstrap> bootstrap_;
   mojo::Remote<content::mojom::ChildProcess> disconnected_process_;
 };
 
@@ -88,9 +81,8 @@ mojo::IncomingInvitation InitializeMojoIPCChannel() {
   endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
       *base::CommandLine::ForCurrentProcess());
 #elif defined(OS_POSIX)
-  endpoint = mojo::PlatformChannelEndpoint(mojo::PlatformHandle(
-      base::ScopedFD(base::GlobalDescriptors::GetInstance()->Get(
-          service_manager::kMojoIPCChannel))));
+  endpoint = mojo::PlatformChannelEndpoint(mojo::PlatformHandle(base::ScopedFD(
+      base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel))));
 #endif
   CHECK(endpoint.is_valid());
   return mojo::IncomingInvitation::Accept(std::move(endpoint));
@@ -136,9 +128,8 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
 
 #if defined(OS_POSIX)
   base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
-  g_fds->Set(service_manager::kMojoIPCChannel,
-             service_manager::kMojoIPCChannel +
-                 base::GlobalDescriptors::kBaseDescriptor);
+  g_fds->Set(kMojoIPCChannel,
+             kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
 #endif
 
   mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(

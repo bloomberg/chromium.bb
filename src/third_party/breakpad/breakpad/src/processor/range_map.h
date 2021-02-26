@@ -78,17 +78,17 @@ class RangeMap {
   // stored in the map.  If enable_shrink_down is true and there is an overlap
   // between the current range and some other range (already in the map),
   // shrink down the range which ends at a higher address.
-  bool StoreRange(const AddressType &base, const AddressType &size,
-                  const EntryType &entry);
+  bool StoreRange(const AddressType& base, const AddressType& size,
+                  const EntryType& entry);
 
   // Locates the range encompassing the supplied address.  If there is no such
   // range, returns false.  entry_base, entry_delta, and entry_size, if
   // non-NULL, are set to the base, delta, and size of the entry's range.
   // A positive entry delta (> 0) indicates that there was an overlap and the
   // entry was shrunk down (original start address was increased by delta).
-  bool RetrieveRange(const AddressType &address, EntryType *entry,
-                     AddressType *entry_base, AddressType *entry_delta,
-                     AddressType *entry_size) const;
+  bool RetrieveRange(const AddressType& address, EntryType* entry,
+                     AddressType* entry_base, AddressType* entry_delta,
+                     AddressType* entry_size) const;
 
   // Locates the range encompassing the supplied address, if one exists.
   // If no range encompasses the supplied address, locates the nearest range
@@ -97,9 +97,9 @@ class RangeMap {
   // if non-NULL, are set to the base, delta, and size of the entry's range.
   // A positive entry delta (> 0) indicates that there was an overlap and the
   // entry was shrunk down (original start address was increased by delta).
-  bool RetrieveNearestRange(const AddressType &address, EntryType *entry,
-                            AddressType *entry_base, AddressType *entry_delta,
-                            AddressType *entry_size) const;
+  bool RetrieveNearestRange(const AddressType& address, EntryType* entry,
+                            AddressType* entry_base, AddressType* entry_delta,
+                            AddressType* entry_size) const;
 
   // Treating all ranges as a list ordered by the address spaces that they
   // occupy, locates the range at the index specified by index.  Returns
@@ -110,9 +110,9 @@ class RangeMap {
   // entry was shrunk down (original start address was increased by delta).
   //
   // RetrieveRangeAtIndex is not optimized for speedy operation.
-  bool RetrieveRangeAtIndex(int index, EntryType *entry,
-                            AddressType *entry_base, AddressType *entry_delta,
-                            AddressType *entry_size) const;
+  bool RetrieveRangeAtIndex(int index, EntryType* entry,
+                            AddressType* entry_base, AddressType* entry_delta,
+                            AddressType* entry_size) const;
 
   // Returns the number of ranges stored in the RangeMap.
   int GetCount() const;
@@ -128,13 +128,13 @@ class RangeMap {
 
   // Same a StoreRange() with the only exception that the |delta| can be
   // passed in.
-  bool StoreRangeInternal(const AddressType &base, const AddressType &delta,
-                          const AddressType &size, const EntryType &entry);
+  bool StoreRangeInternal(const AddressType& base, const AddressType& delta,
+                          const AddressType& size, const EntryType& entry);
 
   class Range {
    public:
-    Range(const AddressType &base, const AddressType &delta,
-          const EntryType &entry)
+    Range(const AddressType& base, const AddressType& delta,
+          const EntryType& entry)
         : base_(base), delta_(delta), entry_(entry) {}
 
     AddressType base() const { return base_; }

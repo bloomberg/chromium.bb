@@ -51,9 +51,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
     return group_index_in_container_view_;
   }
 
-  // Overridden from views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   // Overridden from views::Button:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
@@ -82,6 +79,8 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   // The callback used when a menu closes.
   void OnMenuClosed();
+
+  void OnButtonPressed(const ui::Event& event);
 
   void SetIcon(const gfx::ImageSkia& icon);
   void SetBadgeIcon(const gfx::ImageSkia& badge_icon);
@@ -123,10 +122,12 @@ class APP_LIST_EXPORT SearchResultTileItemView
   // suggestion window: Installed apps, play store apps, play store reinstalled
   // app.
   int group_index_in_container_view_;
-
-  const bool is_play_store_app_search_enabled_;
   const bool is_app_reinstall_recommendation_enabled_;
   const bool show_in_apps_page_;  // True if shown in app list's apps page.
+
+  // Whether the result view moved into selected state only because a context
+  // menu was shown.
+  bool selected_for_context_menu_ = false;
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 

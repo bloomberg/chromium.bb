@@ -19,10 +19,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#import "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
+#import "media/capture/video/mac/video_capture_device_avfoundation_protocol_mac.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video_capture_types.h"
-
-@class VideoCaptureDeviceAVFoundation;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -52,7 +52,9 @@ namespace media {
 
 // Called by VideoCaptureManager to open, close and start, stop Mac video
 // capture devices.
-class VideoCaptureDeviceMac : public VideoCaptureDevice {
+class VideoCaptureDeviceMac
+    : public VideoCaptureDevice,
+      public VideoCaptureDeviceAVFoundationFrameReceiver {
  public:
   explicit VideoCaptureDeviceMac(
       const VideoCaptureDeviceDescriptor& device_descriptor);
@@ -70,27 +72,26 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
 
   bool Init(VideoCaptureApi capture_api_type);
 
-  // Called to deliver captured video frames.  It's safe to call this method
-  // from any thread, including those controlled by AVFoundation.
+  // VideoCaptureDeviceAVFoundationFrameReceiver:
   void ReceiveFrame(const uint8_t* video_frame,
                     int video_frame_length,
                     const VideoCaptureFormat& frame_format,
                     const gfx::ColorSpace color_space,
                     int aspect_numerator,
                     int aspect_denominator,
-                    base::TimeDelta timestamp);
-
-  // Callbacks with the result of a still image capture, or in case of error,
-  // respectively. It's safe to call these methods from any thread.
+                    base::TimeDelta timestamp) override;
+  void ReceiveExternalGpuMemoryBufferFrame(
+      gfx::GpuMemoryBufferHandle handle,
+      const VideoCaptureFormat& frame_format,
+      const gfx::ColorSpace color_space,
+      base::TimeDelta timestamp) override;
   void OnPhotoTaken(const uint8_t* image_data,
                     size_t image_length,
-                    const std::string& mime_type);
-  void OnPhotoError();
-
-  // Forwarder to VideoCaptureDevice::Client::OnError().
+                    const std::string& mime_type) override;
+  void OnPhotoError() override;
   void ReceiveError(VideoCaptureError error,
                     const base::Location& from_here,
-                    const std::string& reason);
+                    const std::string& reason) override;
 
   // Forwarder to VideoCaptureDevice::Client::OnLog().
   void LogMessage(const std::string& message);
@@ -98,6 +99,9 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   static std::string GetDeviceModelId(const std::string& device_id,
                                       VideoCaptureApi capture_api,
                                       VideoCaptureTransportType transport_type);
+
+  static VideoCaptureControlSupport GetControlSupport(
+      const std::string& device_model);
 
  private:
   void SetErrorState(VideoCaptureError error,
@@ -117,7 +121,8 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   InternalState state_;
 
-  base::scoped_nsobject<VideoCaptureDeviceAVFoundation> capture_device_;
+  base::scoped_nsobject<NSObject<VideoCaptureDeviceAVFoundationProtocol>>
+      capture_device_;
 
   // To hold on to the TakePhotoCallback while the picture is being taken.
   TakePhotoCallback photo_callback_;

@@ -10,9 +10,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -75,25 +76,24 @@ MediaStreamAudioSource::~MediaStreamAudioSource() {
 
 // static
 MediaStreamAudioSource* MediaStreamAudioSource::From(
-    const WebMediaStreamSource& source) {
-  if (source.IsNull() || source.GetType() != WebMediaStreamSource::kTypeAudio) {
+    MediaStreamSource* source) {
+  if (!source || source->GetType() != MediaStreamSource::kTypeAudio) {
     return nullptr;
   }
-  return static_cast<MediaStreamAudioSource*>(source.GetPlatformSource());
+  return static_cast<MediaStreamAudioSource*>(source->GetPlatformSource());
 }
 
-bool MediaStreamAudioSource::ConnectToTrack(
-    const WebMediaStreamTrack& blink_track) {
+bool MediaStreamAudioSource::ConnectToTrack(MediaStreamComponent* component) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!blink_track.IsNull());
+  DCHECK(component);
   SendLogMessage(base::StringPrintf("ConnectToTrack({track_id=%s})",
-                                    blink_track.Id().Utf8().c_str()));
+                                    component->Id().Utf8().c_str()));
 
   // Sanity-check that there is not already a MediaStreamAudioTrack instance
-  // associated with |blink_track|.
-  if (MediaStreamAudioTrack::From(blink_track)) {
-    LOG(DFATAL)
-        << "Attempting to connect another source to a WebMediaStreamTrack.";
+  // associated with |component|.
+  if (MediaStreamAudioTrack::From(component)) {
+    LOG(DFATAL) << "Attempting to connect another source to a "
+                   "WebMediaStreamTrack/MediaStreamComponent.";
     return false;
   }
 
@@ -106,15 +106,14 @@ bool MediaStreamAudioSource::ConnectToTrack(
   }
 
   // Create and initialize a new MediaStreamAudioTrack and pass ownership of it
-  // to the WebMediaStreamTrack.
-  WebMediaStreamTrack mutable_blink_track = blink_track;
-  mutable_blink_track.SetPlatformTrack(
-      CreateMediaStreamAudioTrack(blink_track.Id().Utf8()));
+  // to the MediaStreamComponent.
+  component->SetPlatformTrack(
+      CreateMediaStreamAudioTrack(component->Id().Utf8()));
 
   // Propagate initial "enabled" state.
-  MediaStreamAudioTrack* const track = MediaStreamAudioTrack::From(blink_track);
+  MediaStreamAudioTrack* const track = MediaStreamAudioTrack::From(component);
   DCHECK(track);
-  track->SetEnabled(blink_track.IsEnabled());
+  track->SetEnabled(component->Enabled());
 
   // If the source is stopped, do not start the track.
   if (is_stopped_)

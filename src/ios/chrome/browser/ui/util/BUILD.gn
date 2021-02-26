@@ -5,15 +5,6 @@
 import("//build/buildflag_header.gni")
 import("//ios/build/chrome_build.gni")
 
-buildflag_header("ios_multi_window_buildflags") {
-  header = "multi_window_buildflags.h"
-  header_dir = "ios/chrome/browser/ui/util"
-  flags = [
-    "IOS_MULTIWINDOW_ENABLED=$ios_enable_multi_window",
-    "IOS_SCENE_STARTUP_ENABLED=$ios_enable_scene_startup",
-  ]
-}
-
 source_set("multiwindow_util") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
@@ -23,8 +14,8 @@ source_set("multiwindow_util") {
   ]
 
   deps = [
-    ":ios_multi_window_buildflags",
     "//base",
+    "//base/ios:ios_multi_window_buildflags",
   ]
 }
 
@@ -55,6 +46,8 @@ source_set("util") {
     "layout_guide_names.mm",
     "manual_text_framer.h",
     "manual_text_framer.mm",
+    "menu_util.h",
+    "menu_util.mm",
     "named_guide.h",
     "named_guide.mm",
     "named_guide_util.h",
@@ -93,7 +86,7 @@ source_set("util") {
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser:utils",
     "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/toolbar/public:feature_flags",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/common:timing",
     "//ios/chrome/common/ui/util",
     "//ios/chrome/common/ui/util:dynamic_type_util",
@@ -105,7 +98,7 @@ source_set("util") {
     "//ui/gfx",
     "//url",
   ]
-  libs = [
+  frameworks = [
     "Accelerate.framework",
     "CoreGraphics.framework",
     "QuartzCore.framework",
@@ -137,6 +130,7 @@ source_set("unit_tests") {
     "manual_text_framer_unittest.mm",
     "named_guide_unittest.mm",
     "optional_property_animator_unittest.mm",
+    "pasteboard_util_unittest.mm",
     "terms_util_unittest.mm",
     "text_region_mapper_unittest.mm",
     "ui_util_unittest.mm",
@@ -212,23 +206,6 @@ bundle_data("terms_resources") {
     "//components/resources/terms/terms_zh-TW.html",
   ]
   outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
-}
-
-source_set("test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "keyboard_observer_helper_app_interface.h",
-    "keyboard_observer_helper_app_interface.mm",
-  ]
-  deps = [
-    ":util",
-    "//base",
-    "//base/test:test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-  ]
 }
 
 source_set("eg_app_support+eg2") {

@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
@@ -35,6 +35,7 @@
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/features.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
@@ -72,13 +73,15 @@
 
 using net::test::IsError;
 using net::test::IsOk;
-using testing::Gt;
 using testing::AllOf;
+using testing::ByRef;
 using testing::Contains;
+using testing::ElementsAre;
 using testing::Eq;
 using testing::Field;
-using testing::Contains;
-using testing::ByRef;
+using testing::Gt;
+using testing::IsEmpty;
+using testing::NotNull;
 
 using base::Time;
 
@@ -371,6 +374,7 @@ const MockTransaction kFastNoStoreGET_Transaction = {
     base::Time(),
     "",
     LOAD_VALIDATE_CACHE,
+    DefaultTransportInfo(),
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n",
     base::Time(),
@@ -381,7 +385,8 @@ const MockTransaction kFastNoStoreGET_Transaction = {
     nullptr,
     0,
     0,
-    OK};
+    OK,
+};
 
 // This class provides a handler for kRangeGET_TransactionOK so that the range
 // request can be served on demand.
@@ -565,6 +570,7 @@ const MockTransaction kRangeGET_TransactionOK = {
     base::Time(),
     "Range: bytes = 40-49\r\n" EXTRA_HEADER,
     LOAD_NORMAL,
+    DefaultTransportInfo(),
     "HTTP/1.1 206 Partial Content",
     "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
     "ETag: \"foo\"\n"
@@ -578,7 +584,8 @@ const MockTransaction kRangeGET_TransactionOK = {
     nullptr,
     0,
     0,
-    OK};
+    OK,
+};
 
 const char kFullRangeData[] =
     "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 "
@@ -720,6 +727,13 @@ bool LogContainsEventType(const RecordingBoundTestNetLog& log,
   return !log.GetEntriesWithType(expected).empty();
 }
 
+// Returns a TransportInfo distinct from the default for mock transactions.
+TransportInfo TestTransportInfo() {
+  TransportInfo result;
+  result.endpoint = IPEndPoint(IPAddress(42, 0, 1, 2), 1337);
+  return result;
+}
+
 }  // namespace
 
 using HttpCacheTest = TestWithTaskEnvironment;
@@ -817,6 +831,98 @@ TEST_F(HttpCacheTest, SimpleGET) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
   TestLoadTimingNetworkRequest(load_timing_info);
+}
+
+// This test verifies that the callback passed to SetConnectedCallback() is
+// called once for simple GET calls that traverse the cache.
+TEST_F(HttpCacheTest, SimpleGET_ConnectedCallback) {
+  MockHttpCache cache;
+
+  ConnectedHandler connected_handler;
+
+  ScopedMockTransaction mock_transaction(kSimpleGET_Transaction);
+  mock_transaction.transport_info = TestTransportInfo();
+  MockHttpRequest request(mock_transaction);
+
+  std::unique_ptr<HttpTransaction> transaction;
+  EXPECT_THAT(cache.CreateTransaction(&transaction), IsOk());
+  ASSERT_THAT(transaction, NotNull());
+
+  transaction->SetConnectedCallback(connected_handler.Callback());
+
+  TestCompletionCallback callback;
+  ASSERT_THAT(
+      transaction->Start(&request, callback.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  EXPECT_THAT(connected_handler.transports(), ElementsAre(TestTransportInfo()));
+}
+
+// This test verifies that when the callback passed to SetConnectedCallback()
+// returns an error, the transaction fails with that error.
+TEST_F(HttpCacheTest, SimpleGET_ConnectedCallbackReturnError) {
+  MockHttpCache cache;
+
+  ConnectedHandler connected_handler;
+  // The exact error code does not matter. We only care that it is passed to
+  // the transaction's completion callback unmodified.
+  connected_handler.set_result(ERR_NOT_IMPLEMENTED);
+
+  MockHttpRequest request(kSimpleGET_Transaction);
+
+  std::unique_ptr<HttpTransaction> transaction;
+  EXPECT_THAT(cache.CreateTransaction(&transaction), IsOk());
+  ASSERT_THAT(transaction, NotNull());
+
+  transaction->SetConnectedCallback(connected_handler.Callback());
+
+  TestCompletionCallback callback;
+  ASSERT_THAT(
+      transaction->Start(&request, callback.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NOT_IMPLEMENTED));
+}
+
+// This test verifies that the callback passed to SetConnectedCallback() is
+// called once for requests that hit the cache.
+// TODO(crbug.com/986744): This is not yet the case, but this test serves to
+// document the intent.
+TEST_F(HttpCacheTest, SimpleGET_ConnectedCallbackOnCacheHit) {
+  MockHttpCache cache;
+
+  // Populate the cache.
+  RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
+
+  // Establish a baseline.
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  // Load from the cache (only), observe the callback being called.
+
+  ConnectedHandler connected_handler;
+
+  MockHttpRequest request(kSimpleGET_Transaction);
+
+  std::unique_ptr<HttpTransaction> transaction;
+  EXPECT_THAT(cache.CreateTransaction(&transaction), IsOk());
+  ASSERT_THAT(transaction, NotNull());
+
+  transaction->SetConnectedCallback(connected_handler.Callback());
+
+  TestCompletionCallback callback;
+  ASSERT_THAT(
+      transaction->Start(&request, callback.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  // Still only 1 transaction for the previous request. The connected callback
+  // was not called by a second network transaction.
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  // TODO(crbug.com/986744): Expect 1 call once HttpCache::Transaction is
+  // modified to call the callback on cache hits, expect that the endpoint is
+  // the one from which the cached data was downloaded.
+  EXPECT_THAT(connected_handler.transports(), IsEmpty());
 }
 
 class HttpCacheTest_SplitCacheFeature
@@ -1914,6 +2020,132 @@ TEST_F(HttpCacheTest, RangeGET_FullAfterPartialReuse) {
   }
 }
 
+// This test verifies that the ConnectedCallback passed to a cache transaction
+// is called once per subrange in the case of a range request with a partial
+// cache hit.
+TEST_F(HttpCacheTest, RangeGET_ConnectedCallbackCalledForEachRange) {
+  MockHttpCache cache;
+
+  // Request an infix range and populate the cache with it.
+  {
+    ScopedMockTransaction mock_transaction(kRangeGET_TransactionOK);
+    mock_transaction.request_headers = "Range: bytes = 20-29\r\n" EXTRA_HEADER;
+    mock_transaction.data = "rg: 20-29 ";
+
+    RunTransactionTest(cache.http_cache(), mock_transaction);
+  }
+
+  // Request a surrounding range and observe that the callback is called once
+  // per subrange, as split up by cache hits.
+  {
+    ScopedMockTransaction mock_transaction(kRangeGET_TransactionOK);
+    mock_transaction.request_headers = "Range: bytes = 10-39\r\n" EXTRA_HEADER;
+    mock_transaction.data = "rg: 10-19 rg: 20-29 rg: 30-39 ";
+    mock_transaction.transport_info = TestTransportInfo();
+    MockHttpRequest request(mock_transaction);
+
+    ConnectedHandler connected_handler;
+
+    std::unique_ptr<HttpTransaction> transaction;
+    EXPECT_THAT(cache.CreateTransaction(&transaction), IsOk());
+    ASSERT_THAT(transaction, NotNull());
+
+    transaction->SetConnectedCallback(connected_handler.Callback());
+
+    TestCompletionCallback callback;
+    ASSERT_THAT(
+        transaction->Start(&request, callback.callback(), NetLogWithSource()),
+        IsError(ERR_IO_PENDING));
+    EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+    // 1 call for the first range's network transaction.
+    EXPECT_THAT(connected_handler.transports(),
+                ElementsAre(TestTransportInfo()));
+
+    // Switch the endpoint for the next network transaction to observe.
+    // For ease, we just switch the port number.
+    //
+    // NOTE: This works because only the mock transaction struct's address is
+    // registered with the mocking framework - the pointee data is consulted
+    // each time it is read.
+    auto new_transport_info = TestTransportInfo();
+    new_transport_info.endpoint =
+        IPEndPoint(new_transport_info.endpoint.address(), 123);
+    mock_transaction.transport_info = new_transport_info;
+
+    ReadAndVerifyTransaction(transaction.get(), mock_transaction);
+
+    // A second call for the last range's network transaction.
+    // TODO(crbug.com/986744): Expect 3 calls once the callback is notified on
+    // cache hits as well as network connections.
+    // TODO(crbug.com/986744): Test that the cached data is served as coming
+    // from the endpoint whence it was originally downloaded.
+    EXPECT_THAT(connected_handler.transports(),
+                ElementsAre(TestTransportInfo(), new_transport_info));
+  }
+}
+
+// This test verifies that when the ConnectedCallback passed to a cache
+// transaction returns an error for the second (or third) subrange transaction,
+// the overall cache transaction fails with that error.
+TEST_F(HttpCacheTest, RangeGET_ConnectedCallbackReturnErrorSecondTime) {
+  MockHttpCache cache;
+
+  // Request an infix range and populate the cache with it.
+  {
+    ScopedMockTransaction mock_transaction(kRangeGET_TransactionOK);
+    mock_transaction.request_headers = "Range: bytes = 20-29\r\n" EXTRA_HEADER;
+    mock_transaction.data = "rg: 20-29 ";
+
+    RunTransactionTest(cache.http_cache(), mock_transaction);
+  }
+
+  // Request a surrounding range. This results in three transactions:
+  //
+  // 1. for the prefix, from the network
+  // 2. for the cached infix, from the cache
+  // 3. for the suffix, from the network
+  //
+  // The connected callback returns OK for 1), but fails after that.
+  {
+    ScopedMockTransaction mock_transaction(kRangeGET_TransactionOK);
+    mock_transaction.request_headers = "Range: bytes = 10-39\r\n" EXTRA_HEADER;
+    mock_transaction.data = "rg: 10-19 rg: 20-29 rg: 30-39 ";
+    MockHttpRequest request(mock_transaction);
+
+    ConnectedHandler connected_handler;
+
+    std::unique_ptr<HttpTransaction> transaction;
+    EXPECT_THAT(cache.CreateTransaction(&transaction), IsOk());
+    ASSERT_THAT(transaction, NotNull());
+
+    transaction->SetConnectedCallback(connected_handler.Callback());
+
+    TestCompletionCallback callback;
+    ASSERT_THAT(
+        transaction->Start(&request, callback.callback(), NetLogWithSource()),
+        IsError(ERR_IO_PENDING));
+    EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+    // 1 call for the first range's network transaction.
+    EXPECT_THAT(connected_handler.transports(),
+                ElementsAre(DefaultTransportInfo()));
+
+    // Set the callback to return an error the next time it is called. The exact
+    // error code is irrelevant, what matters is that it is reflected in the
+    // overall status of the transaction.
+    connected_handler.set_result(ERR_NOT_IMPLEMENTED);
+
+    std::string content;
+    EXPECT_THAT(ReadTransaction(transaction.get(), &content),
+                IsError(ERR_NOT_IMPLEMENTED));
+
+    // A second call that failed.
+    EXPECT_THAT(connected_handler.transports(),
+                ElementsAre(DefaultTransportInfo(), DefaultTransportInfo()));
+  }
+}
+
 // Tests that a range transaction is still usable even if it's unable to access
 // the cache.
 TEST_F(HttpCacheTest, RangeGET_FailedCacheAccess) {
@@ -2226,7 +2458,7 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationDifferentRanges) {
     std::string data_read(buffer->data(), kBufferSize);
     first_read = data_read;
 
-    EXPECT_EQ(LOAD_STATE_READING_RESPONSE, c->trans->GetLoadState());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
   }
 
   // 2nd transaction requests ranges 30-39.
@@ -2379,7 +2611,7 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationCacheLockTimeout) {
     std::string data_read(buffer->data(), kBufferSize);
     first_read = data_read;
 
-    EXPECT_EQ(LOAD_STATE_READING_RESPONSE, c->trans->GetLoadState());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
   }
 
   // Cache lock timeout will lead to dooming the entry since the transaction may
@@ -2474,7 +2706,7 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationCouldntConditionalize) {
     std::string data_read(buffer->data(), kBufferSize);
     first_read = data_read;
 
-    EXPECT_EQ(LOAD_STATE_READING_RESPONSE, c->trans->GetLoadState());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
   }
 
   // 2nd transaction requests a range.
@@ -2562,7 +2794,7 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationCouldConditionalize) {
     std::string data_read(buffer->data(), kBufferSize);
     first_read = data_read;
 
-    EXPECT_EQ(LOAD_STATE_READING_RESPONSE, c->trans->GetLoadState());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
   }
 
   // 2nd transaction requests a range.
@@ -2638,7 +2870,7 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationOverlappingRanges) {
     std::string data_read(buffer->data(), kBufferSize);
     first_read = data_read;
 
-    EXPECT_EQ(LOAD_STATE_READING_RESPONSE, c->trans->GetLoadState());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
   }
 
   // 2nd transaction requests ranges 30-49.
@@ -2741,7 +2973,7 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationRestartDoneHeaders) {
     std::string data_read(buffer->data(), kBufferSize);
     first_read = data_read;
 
-    EXPECT_EQ(LOAD_STATE_READING_RESPONSE, c->trans->GetLoadState());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
   }
 
   // 2nd transaction requests ranges 30-59.
@@ -3384,7 +3616,7 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelValidationCancelReader) {
     MockHttpRequest* this_request = &request;
     if (i == 3) {
       this_request = &validate_request;
-      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferCallback));
+      c->trans->SetBeforeNetworkStartCallback(base::BindOnce(&DeferCallback));
     }
 
     c->result = c->trans->Start(this_request, c->callback.callback(),
@@ -3525,7 +3757,7 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelWritingCancelWriter) {
     MockHttpRequest* this_request = &request;
     if (i == 2) {
       this_request = &validate_request;
-      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferCallback));
+      c->trans->SetBeforeNetworkStartCallback(base::BindOnce(&DeferCallback));
     }
 
     c->result = c->trans->Start(this_request, c->callback.callback(),
@@ -4241,7 +4473,7 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelWritersStopCachingNoOp) {
     MockHttpRequest* this_request = &request;
     if (i == 2) {
       this_request = &validate_request;
-      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferCallback));
+      c->trans->SetBeforeNetworkStartCallback(base::BindOnce(&DeferCallback));
     }
 
     c->result = c->trans->Start(this_request, c->callback.callback(),
@@ -4301,7 +4533,7 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelValidationCancelHeaders) {
     ASSERT_THAT(c->result, IsOk());
 
     if (i == 0)
-      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferCallback));
+      c->trans->SetBeforeNetworkStartCallback(base::BindOnce(&DeferCallback));
 
     c->result =
         c->trans->Start(&request, c->callback.callback(), NetLogWithSource());
@@ -4558,7 +4790,7 @@ TEST_F(HttpCacheTest, DoomDoesNotSetHints) {
   c1.result = cache.CreateTransaction(&c1.trans);
   ASSERT_THAT(c1.result, IsOk());
   c1.trans->SetBeforeNetworkStartCallback(
-      base::Bind([](bool* defer) { *defer = true; }));
+      base::BindOnce([](bool* defer) { *defer = true; }));
   c1.result =
       c1.trans->Start(&request1, c1.callback.callback(), NetLogWithSource());
   ASSERT_THAT(c1.result, IsError(ERR_IO_PENDING));
@@ -9086,8 +9318,7 @@ TEST_F(HttpCacheTest, WriteResponseInfo_Truncated) {
 
 // Tests basic pickling/unpickling of HttpResponseInfo.
 TEST_F(HttpCacheTest, PersistHttpResponseInfo) {
-  const IPEndPoint expected_endpoint =
-      IPEndPoint(net::IPAddress(1, 2, 3, 4), 80);
+  const IPEndPoint expected_endpoint = IPEndPoint(IPAddress(1, 2, 3, 4), 80);
   // Set some fields (add more if needed.)
   HttpResponseInfo response1;
   response1.was_cached = false;
@@ -10336,6 +10567,7 @@ TEST_F(HttpCacheTest, HttpCacheProfileThirdPartyCSS) {
   // Requesting with the same top-frame origin should not count as third-party
   // but should still be recorded as CSS
   trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
+  trans_info.possibly_top_frame_origin = origin_a;
 
   RunTransactionTestWithRequest(cache.http_cache(), transaction, trans_info,
                                 &response);
@@ -10347,6 +10579,7 @@ TEST_F(HttpCacheTest, HttpCacheProfileThirdPartyCSS) {
   // Requesting with a different top-frame origin should count as third-party
   // and recorded as CSS
   trans_info.network_isolation_key = NetworkIsolationKey(origin_b, origin_b);
+  trans_info.possibly_top_frame_origin = origin_b;
 
   RunTransactionTestWithRequest(cache.http_cache(), transaction, trans_info,
                                 &response);
@@ -10371,6 +10604,7 @@ TEST_F(HttpCacheTest, HttpCacheProfileThirdPartyJavaScript) {
   // Requesting with the same top-frame origin should not count as third-party
   // but should still be recorded as JavaScript
   trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
+  trans_info.possibly_top_frame_origin = origin_a;
 
   RunTransactionTestWithRequest(cache.http_cache(), transaction, trans_info,
                                 &response);
@@ -10382,6 +10616,7 @@ TEST_F(HttpCacheTest, HttpCacheProfileThirdPartyJavaScript) {
   // Requesting with a different top-frame origin should count as third-party
   // and recorded as JavaScript
   trans_info.network_isolation_key = NetworkIsolationKey(origin_b, origin_b);
+  trans_info.possibly_top_frame_origin = origin_b;
 
   RunTransactionTestWithRequest(cache.http_cache(), transaction, trans_info,
                                 &response);
@@ -10406,6 +10641,7 @@ TEST_F(HttpCacheTest, HttpCacheProfileThirdPartyFont) {
   // Requesting with the same top-frame origin should not count as third-party
   // but should still be recorded as a font
   trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
+  trans_info.possibly_top_frame_origin = origin_a;
 
   RunTransactionTestWithRequest(cache.http_cache(), transaction, trans_info,
                                 &response);
@@ -10417,6 +10653,7 @@ TEST_F(HttpCacheTest, HttpCacheProfileThirdPartyFont) {
   // Requesting with a different top-frame origin should count as third-party
   // and recorded as a font
   trans_info.network_isolation_key = NetworkIsolationKey(origin_b, origin_b);
+  trans_info.possibly_top_frame_origin = origin_b;
 
   RunTransactionTestWithRequest(cache.http_cache(), transaction, trans_info,
                                 &response);
@@ -10472,6 +10709,19 @@ TEST_F(HttpCacheTest, SplitCache) {
                                 trans_info, &response);
   EXPECT_TRUE(response.was_cached);
 
+  // If the same resource with the same NIK is for a subframe document resource,
+  // it should not be a cache hit.
+  MockHttpRequest subframe_document_trans_info = trans_info;
+  subframe_document_trans_info.is_subframe_document_resource = true;
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                subframe_document_trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+
+  // Same request again should be a cache hit.
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                subframe_document_trans_info, &response);
+  EXPECT_TRUE(response.was_cached);
+
   // Now request with b.com as the top frame origin. It shouldn't be cached.
   trans_info.network_isolation_key = NetworkIsolationKey(origin_b, origin_b);
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
@@ -10521,12 +10771,51 @@ TEST_F(HttpCacheTest, SplitCache) {
   EXPECT_FALSE(response.was_cached);
 }
 
-TEST_F(HttpCacheTest, SplitCacheWithRegistrableDomain) {
+TEST_F(HttpCacheTest, SplitCacheEnabledByDefault) {
+  HttpCache::ClearGlobalsForTesting();
+  HttpCache::SplitCacheFeatureEnableByDefault();
+  EXPECT_TRUE(HttpCache::IsSplitCacheEnabled());
+
+  MockHttpCache cache;
+  HttpResponseInfo response;
+
+  url::Origin origin_a = url::Origin::Create(GURL("http://a.com"));
+  url::Origin origin_b = url::Origin::Create(GURL("http://b.com"));
+  MockHttpRequest trans_info = MockHttpRequest(kSimpleGET_Transaction);
+  net::NetworkIsolationKey key_a(origin_a, origin_a);
+  trans_info.network_isolation_key = key_a;
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+
+  // Subsequent requests with the same NIK and different NIK will be a cache hit
+  // and miss respectively.
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_TRUE(response.was_cached);
+
+  net::NetworkIsolationKey key_b(origin_b, origin_b);
+  trans_info.network_isolation_key = key_b;
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+}
+
+TEST_F(HttpCacheTest, SplitCacheEnabledByDefaultButOverridden) {
+  HttpCache::ClearGlobalsForTesting();
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {net::features::kSplitCacheByNetworkIsolationKey,
-       net::features::kUseRegistrableDomainInNetworkIsolationKey},
-      {});
+  feature_list.InitAndDisableFeature(
+      net::features::kSplitCacheByNetworkIsolationKey);
+
+  // Enabling it here should have no effect as it is already overridden.
+  HttpCache::SplitCacheFeatureEnableByDefault();
+  EXPECT_FALSE(HttpCache::IsSplitCacheEnabled());
+}
+
+TEST_F(HttpCacheTest, SplitCacheUsesRegistrableDomain) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      net::features::kSplitCacheByNetworkIsolationKey);
 
   base::HistogramTester histograms;
   MockHttpCache cache;
@@ -11171,8 +11460,8 @@ TEST_P(HttpCacheHugeResourceTest,
 
   bool network_transaction_started = false;
   if (stop_caching_phase == TransactionPhase::AFTER_NETWORK_READ) {
-    http_transaction->SetBeforeNetworkStartCallback(
-        base::Bind(&SetFlagOnBeforeNetworkStart, &network_transaction_started));
+    http_transaction->SetBeforeNetworkStartCallback(base::BindOnce(
+        &SetFlagOnBeforeNetworkStart, &network_transaction_started));
   }
 
   rv = http_transaction->Start(&request, callback.callback(),

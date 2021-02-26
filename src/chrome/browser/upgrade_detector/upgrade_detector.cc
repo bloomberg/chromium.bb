@@ -10,6 +10,7 @@
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -39,6 +40,7 @@ void UpgradeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void UpgradeDetector::Init() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Not all tests provide a PrefService for local_state().
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
@@ -53,8 +55,13 @@ void UpgradeDetector::Init() {
 }
 
 void UpgradeDetector::Shutdown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   idle_check_timer_.Stop();
   pref_change_registrar_.RemoveAll();
+}
+
+void UpgradeDetector::OverrideRelaunchNotificationToRequired(bool override) {
+  NotifyRelaunchOverriddenToRequired(override);
 }
 
 UpgradeDetector::UpgradeDetector(const base::Clock* clock,
@@ -70,16 +77,25 @@ UpgradeDetector::UpgradeDetector(const base::Clock* clock,
       notify_upgrade_(false) {}
 
 UpgradeDetector::~UpgradeDetector() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Ensure that Shutdown() was called.
   DCHECK(pref_change_registrar_.IsEmpty());
 }
 
 void UpgradeDetector::NotifyOutdatedInstall() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!observer_list_.might_have_observers())
+    return;
+
   for (auto& observer : observer_list_)
     observer.OnOutdatedInstall();
 }
 
 void UpgradeDetector::NotifyOutdatedInstallNoAutoUpdate() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!observer_list_.might_have_observers())
+    return;
+
   for (auto& observer : observer_list_)
     observer.OnOutdatedInstallNoAutoUpdate();
 }
@@ -114,6 +130,7 @@ bool UpgradeDetector::IsRelaunchNotificationPolicyEnabled() {
 }
 
 void UpgradeDetector::NotifyUpgrade() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // An implementation will request that a notification be sent after dropping
   // back to the "none" annoyance level if the RelaunchNotificationPeriod
   // setting changes to a large enough value such that none of the revised
@@ -135,26 +152,52 @@ void UpgradeDetector::NotifyUpgrade() {
 }
 
 void UpgradeDetector::NotifyUpgradeRecommended() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!observer_list_.might_have_observers())
+    return;
+
   for (auto& observer : observer_list_)
     observer.OnUpgradeRecommended();
 }
 
 void UpgradeDetector::NotifyCriticalUpgradeInstalled() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!observer_list_.might_have_observers())
+    return;
+
   for (auto& observer : observer_list_)
     observer.OnCriticalUpgradeInstalled();
 }
 
 void UpgradeDetector::NotifyUpdateOverCellularAvailable() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!observer_list_.might_have_observers())
+    return;
+
   for (auto& observer : observer_list_)
     observer.OnUpdateOverCellularAvailable();
 }
 
 void UpgradeDetector::NotifyUpdateOverCellularOneTimePermissionGranted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!observer_list_.might_have_observers())
+    return;
+
   for (auto& observer : observer_list_)
     observer.OnUpdateOverCellularOneTimePermissionGranted();
 }
 
+void UpgradeDetector::NotifyRelaunchOverriddenToRequired(bool override) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!observer_list_.might_have_observers())
+    return;
+
+  for (auto& observer : observer_list_)
+    observer.OnRelaunchOverriddenToRequired(override);
+}
+
 void UpgradeDetector::TriggerCriticalUpdate() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::TimeDelta idle_timer =
       UseTestingIntervals()
           ? base::TimeDelta::FromSeconds(kIdleRepeatingTimerWait)
@@ -164,10 +207,14 @@ void UpgradeDetector::TriggerCriticalUpdate() {
 }
 
 void UpgradeDetector::CheckIdle() {
-  // Don't proceed while an incognito window is open. The timer will still
-  // keep firing, so this function will get a chance to re-evaluate this.
-  if (chrome::IsIncognitoSessionActive())
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Don't proceed while an off-the-record or Guest window is open. The timer
+  // will still keep firing, so this function will get a chance to re-evaluate
+  // this.
+  if (chrome::IsOffTheRecordSessionActive() ||
+      BrowserList::GetGuestBrowserCount()) {
     return;
+  }
 
   // CalculateIdleState expects an interval in seconds.
   int idle_time_allowed =
@@ -193,9 +240,11 @@ void UpgradeDetector::CheckIdle() {
 }
 
 void UpgradeDetector::AddObserver(UpgradeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer_list_.AddObserver(observer);
 }
 
 void UpgradeDetector::RemoveObserver(UpgradeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer_list_.RemoveObserver(observer);
 }

@@ -16,10 +16,11 @@ import './shared_style.js';
 import './strings.m.js';
 
 import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {KeyboardShortcutList} from 'chrome://resources/js/cr/ui/keyboard_shortcut_list.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {afterNextRender, flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -50,13 +51,6 @@ export const CommandManager = Polymer({
 
     /** @private {Set<string>} */
     menuIds_: Object,
-
-    /** @private */
-    hasAnySublabel_: {
-      type: Boolean,
-      reflectToAttribute: true,
-      computed: 'computeHasAnySublabel_(menuCommands_, menuIds_)',
-    },
 
     /**
      * Indicates where the context menu was opened from. Will be NONE if
@@ -352,7 +346,7 @@ export const CommandManager = Polymer({
             labelPromise =
                 Promise.resolve(loadTimeData.getString('toastItemCopied'));
           } else {
-            labelPromise = this.browserProxy_.getPluralString(
+            labelPromise = PluralStringProxyImpl.getInstance().getPluralString(
                 'toastItemsCopied', idList.length);
           }
 
@@ -378,7 +372,7 @@ export const CommandManager = Polymer({
           labelPromise =
               Promise.resolve(loadTimeData.getString('toastItemDeleted'));
         } else {
-          labelPromise = this.browserProxy_.getPluralString(
+          labelPromise = PluralStringProxyImpl.getInstance().getPluralString(
               'toastItemsDeleted', idList.length);
         }
 
@@ -429,9 +423,6 @@ export const CommandManager = Polymer({
             assert(state.selectedFolder));
         getToastManager().querySelector('dom-if').if = true;
         getToastManager().show(loadTimeData.getString('toastFolderSorted'));
-        this.fire('iron-announce', {
-          text: loadTimeData.getString('undoDescription'),
-        });
         break;
       case Command.ADD_BOOKMARK:
         /** @type {!BookmarksEditDialogElement} */ (this.$.editDialog.get())
@@ -471,8 +462,6 @@ export const CommandManager = Polymer({
       if (shortcut.matchesEvent(e) && this.canExecute(command, itemIds)) {
         this.handle(command, itemIds);
 
-        this.recordCommandHistogram_(
-            itemIds, 'BookmarkManager.CommandExecutedFromKeyboard', command);
         e.stopPropagation();
         e.preventDefault();
         return true;
@@ -640,11 +629,8 @@ export const CommandManager = Polymer({
    * @private
    */
   getCommandLabel_(command) {
-    const multipleNodes = this.menuIds_.size > 1 ||
-        this.containsMatchingNode_(this.menuIds_, function(node) {
-          return !node.url;
-        });
-    let label;
+    // Handle non-pluralized strings first.
+    let label = null;
     switch (command) {
       case Command.EDIT:
         if (this.menuIds_.size !== 1) {
@@ -673,15 +659,6 @@ export const CommandManager = Polymer({
       case Command.SHOW_IN_FOLDER:
         label = 'menuShowInFolder';
         break;
-      case Command.OPEN_NEW_TAB:
-        label = multipleNodes ? 'menuOpenAllNewTab' : 'menuOpenNewTab';
-        break;
-      case Command.OPEN_NEW_WINDOW:
-        label = multipleNodes ? 'menuOpenAllNewWindow' : 'menuOpenNewWindow';
-        break;
-      case Command.OPEN_INCOGNITO:
-        label = multipleNodes ? 'menuOpenAllIncognito' : 'menuOpenIncognito';
-        break;
       case Command.SORT:
         label = 'menuSort';
         break;
@@ -701,9 +678,51 @@ export const CommandManager = Polymer({
         label = 'menuHelpCenter';
         break;
     }
-    assert(label);
+    if (label !== null) {
+      return loadTimeData.getString(assert(label));
+    }
 
-    return loadTimeData.getString(assert(label));
+    // Handle pluralized strings.
+    switch (command) {
+      case Command.OPEN_NEW_TAB:
+        return this.getPluralizedOpenAllString_(
+            'menuOpenAllNewTab', 'menuOpenNewTab',
+            'menuOpenAllNewTabWithCount');
+      case Command.OPEN_NEW_WINDOW:
+        return this.getPluralizedOpenAllString_(
+            'menuOpenAllNewWindow', 'menuOpenNewWindow',
+            'menuOpenAllNewWindowWithCount');
+      case Command.OPEN_INCOGNITO:
+        return this.getPluralizedOpenAllString_(
+            'menuOpenAllIncognito', 'menuOpenIncognito',
+            'menuOpenAllIncognitoWithCount');
+    }
+
+    assertNotReached();
+    return '';
+  },
+
+  /**
+   * @param {string} case0 String ID for the case of zero URLs.
+   * @param {string} case1 String ID for the case of 1 URL.
+   * @param {string} caseOther String ID for string that includes the URL count.
+   * @return {string}
+   * @private
+   */
+  getPluralizedOpenAllString_(case0, case1, caseOther) {
+    const multipleNodes = this.menuIds_.size > 1 ||
+        this.containsMatchingNode_(this.menuIds_, node => !node.url);
+
+    const urls = this.expandUrls_(this.menuIds_);
+    if (urls.length === 0) {
+      return loadTimeData.getStringF(case0, urls.length);
+    }
+
+    if (urls.length === 1 && !multipleNodes) {
+      return loadTimeData.getString(case1);
+    }
+
+    return loadTimeData.getStringF(caseOther, urls.length);
   },
 
   /**
@@ -768,19 +787,6 @@ export const CommandManager = Polymer({
   },
 
   /**
-   * @return {boolean}
-   * @private
-   */
-  computeHasAnySublabel_() {
-    if (this.menuIds_ === undefined || this.menuCommands_ === undefined) {
-      return false;
-    }
-
-    return this.menuCommands_.some(
-        (command) => this.getCommandSublabel_(command) !== '');
-  },
-
-  /**
    * @param {Command} command
    * @param {!Set<string>} itemIds
    * @return {boolean}
@@ -834,11 +840,6 @@ export const CommandManager = Polymer({
         });
     getToastManager().querySelector('dom-if').if = canUndo;
     getToastManager().showForStringPieces(pieces);
-    if (canUndo) {
-      this.fire('iron-announce', {
-        text: loadTimeData.getString('undoDescription'),
-      });
-    }
   },
 
   /**

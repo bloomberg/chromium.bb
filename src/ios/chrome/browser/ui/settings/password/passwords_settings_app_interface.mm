@@ -4,11 +4,13 @@
 
 #include "ios/chrome/browser/ui/settings/password/passwords_settings_app_interface.h"
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -17,7 +19,6 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/password_test_util.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -25,7 +26,7 @@
 #error "This file requires ARC support."
 #endif
 
-using autofill::PasswordForm;
+using password_manager::PasswordForm;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModule;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModuleForExport;
 
@@ -48,7 +49,8 @@ scoped_refptr<password_manager::PasswordStore> GetPasswordStore() {
 class FakeStoreConsumer : public password_manager::PasswordStoreConsumer {
  public:
   void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> obtained) override {
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> obtained)
+      override {
     obtained_ = std::move(obtained);
   }
 
@@ -65,7 +67,7 @@ class FakeStoreConsumer : public password_manager::PasswordStoreConsumer {
     return responded;
   }
 
-  const std::vector<autofill::PasswordForm>& GetStoreResults() {
+  const std::vector<password_manager::PasswordForm>& GetStoreResults() {
     return results_;
   }
 
@@ -88,10 +90,10 @@ class FakeStoreConsumer : public password_manager::PasswordStoreConsumer {
   }
 
   // Temporary cache of obtained store results.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> obtained_;
+  std::vector<std::unique_ptr<password_manager::PasswordForm>> obtained_;
 
   // Combination of fillable and blacklisted credentials from the store.
-  std::vector<autofill::PasswordForm> results_;
+  std::vector<password_manager::PasswordForm> results_;
 };
 
 // Saves |form| to the password store and waits until the async processing is
@@ -99,8 +101,8 @@ class FakeStoreConsumer : public password_manager::PasswordStoreConsumer {
 bool SaveToPasswordStore(const PasswordForm& form) {
   GetPasswordStore()->AddLogin(form);
   // When we retrieve the form from the store, |in_store| should be set.
-  autofill::PasswordForm expected_form = form;
-  expected_form.in_store = autofill::PasswordForm::Store::kProfileStore;
+  password_manager::PasswordForm expected_form = form;
+  expected_form.in_store = password_manager::PasswordForm::Store::kProfileStore;
   // Check the result and ensure PasswordStore processed this.
   FakeStoreConsumer consumer;
   if (!consumer.FetchStoreResults()) {
@@ -121,14 +123,14 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       base::ASCIIToUTF16(base::StringPrintf("concrete username %02d", index));
   form.password_value =
       base::ASCIIToUTF16(base::StringPrintf("concrete password %02d", index));
-  form.origin = GURL(base::StringPrintf("https://www%02d.example.com", index));
-  form.signon_realm = form.origin.spec();
+  form.url = GURL(base::StringPrintf("https://www%02d.example.com", index));
+  form.signon_realm = form.url.spec();
   return form;
 }
 
 bool ClearPasswordStore() {
   GetPasswordStore()->RemoveLoginsCreatedBetween(base::Time(), base::Time(),
-                                                 base::Closure());
+                                                 base::OnceClosure());
   FakeStoreConsumer consumer;
   if (!consumer.FetchStoreResults()) {
     return false;
@@ -161,7 +163,7 @@ static MockReauthenticationModule* _mockReauthenticationModule;
 }
 
 + (void)dismissSnackBar {
-  [MDCSnackbarManager
+  [MDCSnackbarManager.defaultManager
       dismissAndCallCompletionBlocksWithCategory:@"PasswordsSnackbarCategory"];
 }
 
@@ -177,16 +179,16 @@ static MockReauthenticationModule* _mockReauthenticationModule;
   PasswordForm example;
   example.username_value = base::SysNSStringToUTF16(userName);
   example.password_value = base::SysNSStringToUTF16(password);
-  example.origin = GURL(base::SysNSStringToUTF16(origin));
-  example.signon_realm = example.origin.spec();
+  example.url = GURL(base::SysNSStringToUTF16(origin));
+  example.signon_realm = example.url.spec();
   return SaveToPasswordStore(example);
 }
 
 + (BOOL)saveExampleBlockedOrigin:(NSString*)origin {
   PasswordForm example;
-  example.origin = GURL(base::SysNSStringToUTF16(origin));
-  example.blacklisted_by_user = true;
-  example.signon_realm = example.origin.spec();
+  example.url = GURL(base::SysNSStringToUTF16(origin));
+  example.blocked_by_user = true;
+  example.signon_realm = example.url.spec();
   return SaveToPasswordStore(example);
 }
 
@@ -195,8 +197,8 @@ static MockReauthenticationModule* _mockReauthenticationModule;
                             origin:(NSString*)origin {
   PasswordForm federated;
   federated.username_value = base::SysNSStringToUTF16(userName);
-  federated.origin = GURL(base::SysNSStringToUTF16(origin));
-  federated.signon_realm = federated.origin.spec();
+  federated.url = GURL(base::SysNSStringToUTF16(origin));
+  federated.signon_realm = federated.url.spec();
   federated.federation_origin =
       url::Origin::Create(GURL(base::SysNSStringToUTF16(federatedOrigin)));
   return SaveToPasswordStore(federated);

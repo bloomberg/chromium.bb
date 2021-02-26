@@ -4,29 +4,39 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunker.h"
 
+#include "cc/base/features.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 
 namespace blink {
 
-PaintChunker::PaintChunker()
-    : current_properties_(PropertyTreeState::Uninitialized()),
-      force_new_chunk_(true) {}
-
-PaintChunker::~PaintChunker() = default;
+void PaintChunker::ResetChunks(Vector<PaintChunk>* chunks) {
+  if (chunks_) {
+    FinalizeLastChunkProperties();
+    SetWillForceNewChunk(true);
+    current_properties_ = PropertyTreeState::Uninitialized();
+  }
+  chunks_ = chunks;
+#if DCHECK_IS_ON()
+  DCHECK(!chunks || chunks->IsEmpty());
+  DCHECK(IsInInitialState());
+#endif
+}
 
 #if DCHECK_IS_ON()
 bool PaintChunker::IsInInitialState() const {
   if (current_properties_ != PropertyTreeState::Uninitialized())
     return false;
-
-  DCHECK(chunks_.IsEmpty());
+  DCHECK_EQ(candidate_background_color_.Rgb(), Color::kTransparent);
+  DCHECK_EQ(candidate_background_area_, 0u);
+  DCHECK(will_force_new_chunk_);
+  DCHECK(!chunks_ || chunks_->IsEmpty());
   return true;
 }
 #endif
 
 void PaintChunker::UpdateCurrentPaintChunkProperties(
     const PaintChunk::Id* chunk_id,
-    const PropertyTreeState& properties) {
+    const PropertyTreeStateOrAlias& properties) {
   // If properties are the same, continue to use the previously set
   // |next_chunk_id_| because the id of the outer painting is likely to be
   // more stable to reduce invalidation because of chunk id changes.
@@ -40,14 +50,16 @@ void PaintChunker::UpdateCurrentPaintChunkProperties(
 }
 
 void PaintChunker::AppendByMoving(PaintChunk&& chunk) {
-  UpdateLastChunkKnownToBeOpaque();
+  DCHECK(chunks_);
+  FinalizeLastChunkProperties();
   wtf_size_t next_chunk_begin_index =
-      chunks_.IsEmpty() ? 0 : LastChunk().end_index;
-  chunks_.emplace_back(next_chunk_begin_index, std::move(chunk));
+      chunks_->IsEmpty() ? 0 : chunks_->back().end_index;
+  chunks_->emplace_back(next_chunk_begin_index, std::move(chunk));
 }
 
-PaintChunk& PaintChunker::EnsureCurrentChunk(const PaintChunk::Id& id) {
+bool PaintChunker::EnsureCurrentChunk(const PaintChunk::Id& id) {
 #if DCHECK_IS_ON()
+  DCHECK(chunks_);
   // If this DCHECKs are hit we are missing a call to update the properties.
   // See: ScopedPaintChunkProperties.
   DCHECK(!IsInInitialState());
@@ -55,32 +67,42 @@ PaintChunk& PaintChunker::EnsureCurrentChunk(const PaintChunk::Id& id) {
   DCHECK(current_properties_.IsInitialized());
 #endif
 
-  if (WillForceNewChunk() || current_properties_ != LastChunk().properties) {
+  if (WillForceNewChunk() ||
+      current_properties_ != chunks_->back().properties) {
     if (!next_chunk_id_)
       next_chunk_id_.emplace(id);
-    UpdateLastChunkKnownToBeOpaque();
-    wtf_size_t begin = chunks_.IsEmpty() ? 0 : LastChunk().end_index;
-    chunks_.emplace_back(begin, begin, *next_chunk_id_, current_properties_);
+    FinalizeLastChunkProperties();
+    wtf_size_t begin = chunks_->IsEmpty() ? 0 : chunks_->back().end_index;
+    chunks_->emplace_back(begin, begin, *next_chunk_id_, current_properties_);
     next_chunk_id_ = base::nullopt;
-    force_new_chunk_ = false;
+    will_force_new_chunk_ = false;
+    return true;
   }
-  return LastChunk();
+  return false;
 }
 
 bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
-  bool item_forces_new_chunk = item.IsForeignLayer() ||
-                               item.IsGraphicsLayerWrapper() ||
-                               item.IsScrollbar();
-  if (item_forces_new_chunk)
-    SetForceNewChunk(true);
+  DCHECK(chunks_);
 
-  auto previous_size = size();
-  auto& chunk = EnsureCurrentChunk(item.GetId());
-  bool created_new_chunk = size() > previous_size;
+  bool item_forces_new_chunk = item.IsForeignLayer() || item.IsScrollbar();
+  if (item_forces_new_chunk)
+    SetWillForceNewChunk(true);
+
+  bool created_new_chunk = EnsureCurrentChunk(item.GetId());
+  auto& chunk = chunks_->back();
 
   chunk.bounds.Unite(item.VisualRect());
   if (item.DrawsContent())
     chunk.drawable_bounds.Unite(item.VisualRect());
+
+  // If this paints the background and it's larger than our current candidate,
+  // set the candidate to be this item.
+  if (item.IsDrawing() && item.DrawsContent()) {
+    float item_area;
+    Color item_color =
+        static_cast<const DrawingDisplayItem&>(item).BackgroundColor(item_area);
+    ProcessBackgroundColorCandidate(chunk.id, item_color, item_area);
+  }
 
   constexpr wtf_size_t kMaxRegionComplexity = 10;
   if (item.IsDrawing() &&
@@ -88,40 +110,48 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
       last_chunk_known_to_be_opaque_region_.Complexity() < kMaxRegionComplexity)
     last_chunk_known_to_be_opaque_region_.Unite(item.VisualRect());
 
-  chunk.outset_for_raster_effects =
-      std::max(chunk.outset_for_raster_effects, item.OutsetForRasterEffects());
+  chunk.raster_effect_outset =
+      std::max(chunk.raster_effect_outset, item.GetRasterEffectOutset());
 
   chunk.end_index++;
 
   // When forcing a new chunk, we still need to force new chunk for the next
   // display item. Otherwise reset force_new_chunk_ to false.
-  DCHECK(!force_new_chunk_);
+  DCHECK(!will_force_new_chunk_);
   if (item_forces_new_chunk) {
     DCHECK(created_new_chunk);
-    SetForceNewChunk(true);
+    SetWillForceNewChunk(true);
   }
 
   return created_new_chunk;
 }
 
-void PaintChunker::AddHitTestDataToCurrentChunk(const PaintChunk::Id& id,
+bool PaintChunker::AddHitTestDataToCurrentChunk(const PaintChunk::Id& id,
                                                 const IntRect& rect,
-                                                TouchAction touch_action) {
+                                                TouchAction touch_action,
+                                                bool blocking_wheel) {
   // In CompositeAfterPaint, we ensure a paint chunk for correct composited
   // hit testing. In pre-CompositeAfterPaint, this is unnecessary, except that
-  // there is special touch action, and that we have a non-root effect so that
-  // PaintChunksToCcLayer will emit paint operations for filters.
+  // there is special touch action or blocking wheel event handler, and that we
+  // have a non-root effect so that PaintChunksToCcLayer will emit paint
+  // operations for filters.
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      touch_action == TouchAction::kAuto &&
+      touch_action == TouchAction::kAuto && !blocking_wheel &&
       &current_properties_.Effect() == &EffectPaintPropertyNode::Root())
-    return;
+    return false;
 
-  auto& chunk = EnsureCurrentChunk(id);
+  bool created_new_chunk = EnsureCurrentChunk(id);
+  auto& chunk = chunks_->back();
   chunk.bounds.Unite(rect);
   if (touch_action != TouchAction::kAuto) {
     chunk.EnsureHitTestData().touch_action_rects.push_back(
         TouchActionRect{rect, touch_action});
   }
+  if (blocking_wheel) {
+    DCHECK(base::FeatureList::IsEnabled(::features::kWheelEventRegions));
+    chunk.EnsureHitTestData().wheel_event_rects.push_back(rect);
+  }
+  return created_new_chunk;
 }
 
 void PaintChunker::CreateScrollHitTestChunk(
@@ -144,31 +174,55 @@ void PaintChunker::CreateScrollHitTestChunk(
   }
 #endif
 
-  SetForceNewChunk(true);
-  auto& chunk = EnsureCurrentChunk(id);
+  SetWillForceNewChunk(true);
+  bool created_new_chunk = EnsureCurrentChunk(id);
+  DCHECK(created_new_chunk);
+
+  auto& chunk = chunks_->back();
   chunk.bounds.Unite(rect);
   auto& hit_test_data = chunk.EnsureHitTestData();
   hit_test_data.scroll_translation = scroll_translation;
   hit_test_data.scroll_hit_test_rect = rect;
-  SetForceNewChunk(true);
+  SetWillForceNewChunk(true);
 }
 
-void PaintChunker::UpdateLastChunkKnownToBeOpaque() {
-  if (chunks_.IsEmpty() || LastChunk().is_moved_from_cached_subsequence)
+bool PaintChunker::ProcessBackgroundColorCandidate(const PaintChunk::Id& id,
+                                                   Color color,
+                                                   float area) {
+  if (color == Color::kTransparent)
+    return false;
+
+  bool created_new_chunk = EnsureCurrentChunk(id);
+  float min_background_area = kMinBackgroundColorCoverageRatio *
+                              chunks_->back().bounds.Width() *
+                              chunks_->back().bounds.Height();
+  if (created_new_chunk || area >= candidate_background_area_ ||
+      area >= min_background_area) {
+    candidate_background_color_ =
+        candidate_background_area_ >= min_background_area
+            ? candidate_background_color_.Blend(color)
+            : color;
+    candidate_background_area_ = area;
+  }
+  return created_new_chunk;
+}
+
+void PaintChunker::FinalizeLastChunkProperties() {
+  DCHECK(chunks_);
+  if (chunks_->IsEmpty() || chunks_->back().is_moved_from_cached_subsequence)
     return;
 
-  LastChunk().known_to_be_opaque =
-      last_chunk_known_to_be_opaque_region_.Contains(LastChunk().bounds);
+  auto& chunk = chunks_->back();
+  chunk.known_to_be_opaque =
+      last_chunk_known_to_be_opaque_region_.Contains(chunk.bounds);
   last_chunk_known_to_be_opaque_region_ = Region();
-}
 
-Vector<PaintChunk> PaintChunker::ReleasePaintChunks() {
-  UpdateLastChunkKnownToBeOpaque();
-  next_chunk_id_ = base::nullopt;
-  current_properties_ = PropertyTreeState::Uninitialized();
-  chunks_.ShrinkToFit();
-  force_new_chunk_ = true;
-  return std::move(chunks_);
+  if (candidate_background_color_ != Color::kTransparent) {
+    chunk.background_color = candidate_background_color_;
+    chunk.background_color_area = candidate_background_area_;
+  }
+  candidate_background_color_ = Color::kTransparent;
+  candidate_background_area_ = 0u;
 }
 
 }  // namespace blink

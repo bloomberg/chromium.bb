@@ -226,7 +226,7 @@ SkScalar SkFont::measureText(const void* text, size_t length, SkTextEncoding enc
 
     SkStrikeSpec strikeSpec = SkStrikeSpec::MakeCanonicalized(*this, paint);
     SkBulkGlyphMetrics metrics{strikeSpec};
-    SkSpan<const SkGlyph*> glyphs = metrics.glyphs(SkMakeSpan(glyphIDs, glyphCount));
+    SkSpan<const SkGlyph*> glyphs = metrics.glyphs(SkSpan(glyphIDs, glyphCount));
 
     SkScalar width = 0;
     if (bounds) {
@@ -265,12 +265,12 @@ void SkFont::getWidthsBounds(const SkGlyphID glyphIDs[],
                              const SkPaint* paint) const {
     SkStrikeSpec strikeSpec = SkStrikeSpec::MakeCanonicalized(*this, paint);
     SkBulkGlyphMetrics metrics{strikeSpec};
-    SkSpan<const SkGlyph*> glyphs = metrics.glyphs(SkMakeSpan(glyphIDs, count));
+    SkSpan<const SkGlyph*> glyphs = metrics.glyphs(SkSpan(glyphIDs, count));
 
     SkScalar scale = strikeSpec.strikeToSourceRatio();
 
     if (bounds) {
-        SkMatrix scaleMat = SkMatrix::MakeScale(scale);
+        SkMatrix scaleMat = SkMatrix::Scale(scale, scale);
         SkRect* cursor = bounds;
         for (auto glyph : glyphs) {
             scaleMat.mapRectScaleTranslate(cursor++, glyph->rect());
@@ -288,7 +288,7 @@ void SkFont::getWidthsBounds(const SkGlyphID glyphIDs[],
 void SkFont::getPos(const SkGlyphID glyphIDs[], int count, SkPoint pos[], SkPoint origin) const {
     SkStrikeSpec strikeSpec = SkStrikeSpec::MakeCanonicalized(*this);
     SkBulkGlyphMetrics metrics{strikeSpec};
-    SkSpan<const SkGlyph*> glyphs = metrics.glyphs(SkMakeSpan(glyphIDs, count));
+    SkSpan<const SkGlyph*> glyphs = metrics.glyphs(SkSpan(glyphIDs, count));
 
     SkPoint sum = origin;
     for (auto glyph : glyphs) {
@@ -302,7 +302,7 @@ void SkFont::getXPos(
 
     SkStrikeSpec strikeSpec = SkStrikeSpec::MakeCanonicalized(*this);
     SkBulkGlyphMetrics metrics{strikeSpec};
-    SkSpan<const SkGlyph*> glyphs = metrics.glyphs(SkMakeSpan(glyphIDs, count));
+    SkSpan<const SkGlyph*> glyphs = metrics.glyphs(SkSpan(glyphIDs, count));
 
     SkScalar loc = origin;
     SkScalar* cursor = xpos;
@@ -316,11 +316,11 @@ void SkFont::getPaths(const SkGlyphID glyphIDs[], int count,
                       void (*proc)(const SkPath*, const SkMatrix&, void*), void* ctx) const {
     SkFont font(*this);
     SkScalar scale = font.setupForAsPaths(nullptr);
-    const SkMatrix mx = SkMatrix::MakeScale(scale);
+    const SkMatrix mx = SkMatrix::Scale(scale, scale);
 
     SkStrikeSpec strikeSpec = SkStrikeSpec::MakeWithNoDevice(font);
     SkBulkGlyphMetricsAndPaths paths{strikeSpec};
-    SkSpan<const SkGlyph*> glyphs = paths.glyphs(SkMakeSpan(glyphIDs, count));
+    SkSpan<const SkGlyph*> glyphs = paths.glyphs(SkSpan(glyphIDs, count));
 
     for (auto glyph : glyphs) {
         proc(glyph->path(), mx, ctx);

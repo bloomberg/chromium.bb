@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
@@ -13,18 +14,17 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "ui/display/screen_base.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace content {
 
 namespace {
 
-// Used to get info about the screens in a list of dictionary values.
+// Used to get async getScreens() info in a list of dictionary values.
 constexpr char kGetScreensScript[] = R"(
   (async () => {
     const screens = await self.getScreens();
     let result = [];
-    for (s of screens) {
+    for (let s of screens) {
       result.push({ availHeight: s.availHeight,
                     availLeft: s.availLeft,
                     availTop: s.availTop,
@@ -44,6 +44,11 @@ constexpr char kGetScreensScript[] = R"(
     }
     return result;
   })();
+)";
+
+// Used to get the async result of isMultiScreen().
+constexpr char kIsMultiScreenScript[] = R"(
+  (async () => { return await self.isMultiScreen(); })();
 )";
 
 // Returns a list of dictionary values from native screen information, intended
@@ -67,7 +72,7 @@ base::ListValue GetExpectedScreens() {
     s.SetIntKey("pixelDepth", d.color_depth());
     s.SetBoolKey("primary", d.id() == screen->GetPrimaryDisplay().id());
     // Handle JS's pattern for specifying integer and floating point numbers.
-    int int_scale_factor = gfx::ToCeiledInt(d.device_scale_factor());
+    int int_scale_factor = base::ClampCeil(d.device_scale_factor());
     if (int_scale_factor == d.device_scale_factor())
       s.SetIntKey("scaleFactor", int_scale_factor);
     else
@@ -100,11 +105,20 @@ class ScreenEnumerationTest : public ContentBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ScreenEnumerationTest, GetScreensBasic) {
+// TODO(crbug.com/1119974): Need content_browsertests permission controls.
+IN_PROC_BROWSER_TEST_F(ScreenEnumerationTest, DISABLED_GetScreensBasic) {
   ASSERT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "empty.html")));
   ASSERT_EQ(true, EvalJs(shell()->web_contents(), "'getScreens' in self"));
   auto result = EvalJs(shell()->web_contents(), kGetScreensScript);
   EXPECT_EQ(GetExpectedScreens(), base::Value::AsListValue(result.value));
+}
+
+IN_PROC_BROWSER_TEST_F(ScreenEnumerationTest, IsMultiScreenBasic) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "empty.html")));
+  ASSERT_EQ(true, EvalJs(shell()->web_contents(), "'isMultiScreen' in self"));
+  auto result = EvalJs(shell()->web_contents(), kIsMultiScreenScript);
+  EXPECT_EQ(display::Screen::GetScreen()->GetNumDisplays() > 1,
+            result.ExtractBool());
 }
 
 // Tests screen enumeration functionality with a fake Screen object.
@@ -146,14 +160,15 @@ class FakeScreenEnumerationTest : public ScreenEnumerationTest {
 #if defined(OS_ANDROID) || defined(OS_WIN)
 #define MAYBE_GetScreensFaked DISABLED_GetScreensFaked
 #else
-#define MAYBE_GetScreensFaked GetScreensFaked
+// TODO(crbug.com/1119974): Need content_browsertests permission controls.
+#define MAYBE_GetScreensFaked DISABLED_GetScreensFaked
 #endif
 IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest, MAYBE_GetScreensFaked) {
   ASSERT_TRUE(NavigateToURL(test_shell(), GetTestUrl(nullptr, "empty.html")));
   ASSERT_EQ(true, EvalJs(test_shell()->web_contents(), "'getScreens' in self"));
 
   screen()->display_list().AddDisplay({1, gfx::Rect(100, 100, 801, 802)},
-                                      display::DisplayList::Type::PRIMARY);
+                                      display::DisplayList::Type::NOT_PRIMARY);
   screen()->display_list().AddDisplay({2, gfx::Rect(901, 100, 801, 802)},
                                       display::DisplayList::Type::NOT_PRIMARY);
 
@@ -164,11 +179,35 @@ IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest, MAYBE_GetScreensFaked) {
 // TODO(crbug.com/1042990): Windows crashes static casting to ScreenWin.
 // TODO(crbug.com/1042990): Android requires a GetDisplayNearestView overload.
 #if defined(OS_ANDROID) || defined(OS_WIN)
-#define MAYBE_OnScreensChange DISABLED_OnScreensChange
+#define MAYBE_IsMultiScreenFaked DISABLED_IsMultiScreenFaked
 #else
-#define MAYBE_OnScreensChange OnScreensChange
+#define MAYBE_IsMultiScreenFaked IsMultiScreenFaked
 #endif
-IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest, MAYBE_OnScreensChange) {
+IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest, MAYBE_IsMultiScreenFaked) {
+  ASSERT_TRUE(NavigateToURL(test_shell(), GetTestUrl(nullptr, "empty.html")));
+  ASSERT_EQ(true,
+            EvalJs(test_shell()->web_contents(), "'isMultiScreen' in self"));
+  EXPECT_EQ(false, EvalJs(test_shell()->web_contents(), kIsMultiScreenScript));
+
+  screen()->display_list().AddDisplay({1, gfx::Rect(100, 100, 801, 802)},
+                                      display::DisplayList::Type::NOT_PRIMARY);
+  EXPECT_EQ(true, EvalJs(test_shell()->web_contents(), kIsMultiScreenScript));
+
+  screen()->display_list().RemoveDisplay(1);
+  EXPECT_EQ(false, EvalJs(test_shell()->web_contents(), kIsMultiScreenScript));
+}
+
+// TODO(crbug.com/1042990): Windows crashes static casting to ScreenWin.
+// TODO(crbug.com/1042990): Android requires a GetDisplayNearestView overload.
+#if defined(OS_ANDROID) || defined(OS_WIN)
+#define MAYBE_OnScreensChangeNoPermission DISABLED_OnScreensChangeNoPermission
+#else
+#define MAYBE_OnScreensChangeNoPermission OnScreensChangeNoPermission
+#endif
+// Sites with no permission only get an event if isMultiScreen() changes.
+// TODO(crbug.com/1119974): Need content_browsertests permission controls.
+IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest,
+                       MAYBE_OnScreensChangeNoPermission) {
   ASSERT_TRUE(NavigateToURL(test_shell(), GetTestUrl(nullptr, "empty.html")));
   ASSERT_EQ(true,
             EvalJs(test_shell()->web_contents(), "'onscreenschange' in self"));
@@ -178,20 +217,34 @@ IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest, MAYBE_OnScreensChange) {
   )";
   EXPECT_EQ(0, EvalJs(test_shell()->web_contents(), kSetOnScreensChange));
 
+  // isMultiScreen() changes from false to true here, so an event is sent.
+  EXPECT_EQ(false, EvalJs(test_shell()->web_contents(), kIsMultiScreenScript));
   screen()->display_list().AddDisplay({1, gfx::Rect(100, 100, 801, 802)},
-                                      display::DisplayList::Type::PRIMARY);
+                                      display::DisplayList::Type::NOT_PRIMARY);
+  EXPECT_EQ(true, EvalJs(test_shell()->web_contents(), kIsMultiScreenScript));
   EXPECT_EQ("1", EvalJs(test_shell()->web_contents(), "document.title"));
 
+  // isMultiScreen() remains unchanged, so no event is sent.
   screen()->display_list().AddDisplay({2, gfx::Rect(901, 100, 801, 802)},
                                       display::DisplayList::Type::NOT_PRIMARY);
-  EXPECT_EQ("2", EvalJs(test_shell()->web_contents(), "document.title"));
+  EXPECT_EQ(true, EvalJs(test_shell()->web_contents(), kIsMultiScreenScript));
+  EXPECT_EQ("1", EvalJs(test_shell()->web_contents(), "document.title"));
 
+  // isMultiScreen() remains unchanged, so no event is sent.
   EXPECT_NE(0u, screen()->display_list().UpdateDisplay(
                     {2, gfx::Rect(902, 100, 801, 802)}));
-  EXPECT_EQ("3", EvalJs(test_shell()->web_contents(), "document.title"));
+  EXPECT_EQ(true, EvalJs(test_shell()->web_contents(), kIsMultiScreenScript));
+  EXPECT_EQ("1", EvalJs(test_shell()->web_contents(), "document.title"));
 
+  // isMultiScreen() remains unchanged, so no event is sent.
   screen()->display_list().RemoveDisplay(2);
-  EXPECT_EQ("4", EvalJs(test_shell()->web_contents(), "document.title"));
+  EXPECT_EQ(true, EvalJs(test_shell()->web_contents(), kIsMultiScreenScript));
+  EXPECT_EQ("1", EvalJs(test_shell()->web_contents(), "document.title"));
+
+  // isMultiScreen() changes from true to false here, so an event is sent.
+  screen()->display_list().RemoveDisplay(1);
+  EXPECT_EQ(false, EvalJs(test_shell()->web_contents(), kIsMultiScreenScript));
+  EXPECT_EQ("2", EvalJs(test_shell()->web_contents(), "document.title"));
 }
 
 }  // namespace content

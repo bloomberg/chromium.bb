@@ -18,13 +18,23 @@ namespace media {
 class PictureBuffer;
 class VaapiWrapper;
 
+using CreatePictureCB = base::RepeatingCallback<std::unique_ptr<VaapiPicture>(
+    scoped_refptr<VaapiWrapper>,
+    const MakeGLContextCurrentCallback&,
+    const BindGLImageCallback&,
+    const PictureBuffer&,
+    const gfx::Size&,
+    uint32_t,
+    uint32_t)>;
+
 // Factory of platform dependent VaapiPictures.
 class MEDIA_GPU_EXPORT VaapiPictureFactory {
  public:
   enum VaapiImplementation {
     kVaapiImplementationNone = 0,
     kVaapiImplementationDrm,
-    kVaapiImplementationX11
+    kVaapiImplementationX11,
+    kVaapiImplementationAngle,
   };
 
   VaapiPictureFactory();
@@ -43,6 +53,10 @@ class MEDIA_GPU_EXPORT VaapiPictureFactory {
   // implementation.
   VaapiImplementation GetVaapiImplementation(gl::GLImplementation gl_impl);
 
+  // Determines whether the DownloadFromSurface() method of the VaapiPictures
+  // created by this factory requires a processing pipeline VaapiWrapper.
+  bool NeedsProcessingPipelineForDownloading() const;
+
   // Gets the texture target used to bind EGLImages (either GL_TEXTURE_2D on X11
   // or GL_TEXTURE_EXTERNAL_OES on DRM).
   uint32_t GetGLTextureTarget();
@@ -51,7 +65,24 @@ class MEDIA_GPU_EXPORT VaapiPictureFactory {
   // the format decoded frames in VASurfaces are converted into.
   gfx::BufferFormat GetBufferFormat();
 
+  std::unique_ptr<VaapiPicture> CreateVaapiPictureNative(
+      scoped_refptr<VaapiWrapper> vaapi_wrapper,
+      const MakeGLContextCurrentCallback& make_context_current_cb,
+      const BindGLImageCallback& bind_image_cb,
+      const PictureBuffer& picture_buffer,
+      const gfx::Size& visible_size,
+      uint32_t client_texture_id,
+      uint32_t service_texture_id);
+
+  std::map<gl::GLImplementation, VaapiPictureFactory::VaapiImplementation>
+      vaapi_impl_pairs_;
+
  private:
+  void DeterminePictureCreationAndDownloadingMechanism();
+
+  CreatePictureCB create_picture_cb_;
+  bool needs_vpp_for_downloading_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(VaapiPictureFactory);
 };
 

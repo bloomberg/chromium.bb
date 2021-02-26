@@ -9,10 +9,16 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_service.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_service_factory.h"
+#include "chrome/browser/ui/media_router/media_router_ui.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
+#include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "components/media_router/browser/presentation/start_presentation_context.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
@@ -29,19 +35,42 @@ MediaRouterUIService* GetMediaRouterUIService(WebContents* web_contents) {
 
 }  // namespace
 
-// static
-MediaRouterDialogController*
-MediaRouterDialogController::GetOrCreateForWebContents(
-    content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  // This call does nothing if the controller already exists.
-  MediaRouterDialogControllerViews::CreateForWebContents(web_contents);
-  return MediaRouterDialogControllerViews::FromWebContents(web_contents);
-}
-
 MediaRouterDialogControllerViews::~MediaRouterDialogControllerViews() {
   Reset();
   media_router_ui_service_->RemoveObserver(this);
+}
+
+bool MediaRouterDialogControllerViews::ShowMediaRouterDialogForPresentation(
+    std::unique_ptr<StartPresentationContext> context) {
+  if (GlobalMediaControlsCastStartStopEnabled()) {
+    // Show global media controls instead of the Cast dialog.
+    Profile* const profile =
+        Profile::FromBrowserContext(initiator()->GetBrowserContext());
+    MediaNotificationService* const service =
+        MediaNotificationServiceFactory::GetForProfile(profile);
+    service->OnStartPresentationContextCreated(std::move(context));
+    Browser* const browser = chrome::FindBrowserWithWebContents(initiator());
+    BrowserView* const browser_view =
+        browser ? BrowserView::GetBrowserViewForBrowser(browser) : nullptr;
+    ToolbarView* const toolbar_view =
+        browser_view ? browser_view->toolbar() : nullptr;
+    MediaToolbarButtonView* const media_button =
+        toolbar_view ? toolbar_view->media_button() : nullptr;
+    // TODO(crbug/1111120): When |media_button| is null, we want to show the
+    // global media controls anchored to the top of the web contents. As it is
+    // now, it shows the dialog in the wrong place with a big blue border around
+    // it.  Fixing the position probably involves doing something similar to the
+    // computation of |anchor_bounds| in CreateMediaRouterDialog() below, but
+    // just doing the same thing here doesn't work.  I suspect that approach
+    // will work, though, once the issue causing the blue border is fixed.
+    scoped_widget_observer_.Add(
+        MediaDialogView::ShowDialog(media_button, service, profile));
+    return true;
+  } else {
+    // Delegate to the base class, which will show the Cast dialog.
+    return MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
+        std::move(context));
+  }
 }
 
 void MediaRouterDialogControllerViews::CreateMediaRouterDialog(
@@ -52,10 +81,11 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog(
 
   Profile* profile =
       Profile::FromBrowserContext(initiator()->GetBrowserContext());
-  InitializeMediaRouterUI();
 
+  InitializeMediaRouterUI();
   Browser* browser = chrome::FindBrowserWithWebContents(initiator());
   if (browser) {
+    // Show the Cast dialog anchored to the Cast toolbar button.
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
     if (browser_view->toolbar()->cast_button()) {
       CastDialogView::ShowDialogWithToolbarAction(
@@ -65,6 +95,7 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog(
           ui_.get(), browser, dialog_creation_time, activation_location);
     }
   } else {
+    // Show the Cast dialog anchored to the top of the web contents.
     gfx::Rect anchor_bounds = initiator()->GetContainerBounds();
     // Set the height to 0 so that the dialog gets anchored to the top of the
     // window.
@@ -74,6 +105,7 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog(
                                        activation_location);
   }
   scoped_widget_observer_.Add(CastDialogView::GetCurrentDialogWidget());
+
   if (dialog_creation_callback_)
     dialog_creation_callback_.Run();
 }
@@ -98,6 +130,8 @@ void MediaRouterDialogControllerViews::Reset() {
 
 void MediaRouterDialogControllerViews::OnWidgetClosing(views::Widget* widget) {
   DCHECK(scoped_widget_observer_.IsObserving(widget));
+  if (ui_)
+    ui_->LogMediaSinkStatus();
   Reset();
   scoped_widget_observer_.Remove(widget);
 }
@@ -121,12 +155,12 @@ void MediaRouterDialogControllerViews::OnServiceDisabled() {
 }
 
 void MediaRouterDialogControllerViews::InitializeMediaRouterUI() {
-  ui_ = std::make_unique<MediaRouterViewsUI>(initiator());
+  ui_ = std::make_unique<MediaRouterUI>(initiator());
   if (start_presentation_context_) {
-    ui_->InitWithStartPresentationContext(
+    ui_->InitWithStartPresentationContextAndMirroring(
         std::move(start_presentation_context_));
   } else {
-    ui_->InitWithDefaultMediaSource();
+    ui_->InitWithDefaultMediaSourceAndMirroring();
   }
 }
 

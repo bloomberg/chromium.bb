@@ -9,8 +9,11 @@
 #include <stdint.h>
 
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/android/android_image_reader_compat.h"
+#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -19,8 +22,9 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/common/android/android_image_reader_utils.h"
-#include "ui/gl/android/android_surface_control_compat.h"
+#include "ui/gfx/android/android_surface_control_compat.h"
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/scoped_binders.h"
@@ -35,6 +39,7 @@ bool IsSurfaceControl(TextureOwner::Mode mode) {
     case TextureOwner::Mode::kAImageReaderSecureSurfaceControl:
       return true;
     case TextureOwner::Mode::kAImageReaderInsecure:
+    case TextureOwner::Mode::kAImageReaderInsecureMultithreaded:
       return false;
     case TextureOwner::Mode::kSurfaceTextureInsecure:
       NOTREACHED();
@@ -43,24 +48,63 @@ bool IsSurfaceControl(TextureOwner::Mode mode) {
   NOTREACHED();
   return false;
 }
+
+// This should be as small as possible to limit the memory usage.
+// ImageReader needs 1 image to mimic the behavior of SurfaceTexture but
+// 2 images are required to minimize negative impact on
+// smoothness. This is because in case an image is not acquired for some
+// reasons, last acquired image should be displayed which is only possible with
+// 2 images (1 previously acquired, 1 currently acquired/tried to acquire).
+// But some devices supports only 1 image to be acquired. (see
+// crbug.com/1051705). For SurfaceControl we need 3 images instead of 2 since 1
+// frame (and hence image associated with it) will be with system compositor and
+// 2 frames will be in flight. For multi-threaded compositor, when AImageReader
+// is supported, we need 3 images in order to skip texture copy. 1 frame with
+// display compositor, 1 frame in flight and 1 frame being prepared by the
+// renderer.
+uint32_t NumRequiredMaxImages(TextureOwner::Mode mode) {
+  if (IsSurfaceControl(mode) ||
+      mode == TextureOwner::Mode::kAImageReaderInsecureMultithreaded) {
+    DCHECK(!features::LimitAImageReaderMaxSizeToOne());
+    return 3;
+  }
+  return features::LimitAImageReaderMaxSizeToOne() ? 1 : 2;
+}
+
 }  // namespace
 
+// This class is safe to be created/destroyed on different threads. This is made
+// sure by destruction happening on correct thread. This class is not thread
+// safe to be used concurrently on multiple thraeads.
 class ImageReaderGLOwner::ScopedHardwareBufferImpl
     : public base::android::ScopedHardwareBufferFenceSync {
  public:
-  ScopedHardwareBufferImpl(scoped_refptr<ImageReaderGLOwner> texture_owner,
+  ScopedHardwareBufferImpl(base::WeakPtr<ImageReaderGLOwner> texture_owner,
                            AImage* image,
                            base::android::ScopedHardwareBufferHandle handle,
                            base::ScopedFD fence_fd)
       : base::android::ScopedHardwareBufferFenceSync(std::move(handle),
-                                                     std::move(fence_fd)),
+                                                     std::move(fence_fd),
+                                                     base::ScopedFD(),
+                                                     true /* is_video */),
         texture_owner_(std::move(texture_owner)),
-        image_(image) {
+        image_(image),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()) {
     DCHECK(image_);
     texture_owner_->RegisterRefOnImage(image_);
   }
+
   ~ScopedHardwareBufferImpl() override {
-    texture_owner_->ReleaseRefOnImage(image_, std::move(read_fence_));
+    if (task_runner_->RunsTasksInCurrentSequence()) {
+      if (texture_owner_) {
+        texture_owner_->ReleaseRefOnImage(image_, std::move(read_fence_));
+      }
+    } else {
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&gpu::ImageReaderGLOwner::ReleaseRefOnImage,
+                         texture_owner_, image_, std::move(read_fence_)));
+    }
   }
 
   void SetReadFence(base::ScopedFD fence_fd, bool has_context) final {
@@ -72,8 +116,9 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
 
  private:
   base::ScopedFD read_fence_;
-  scoped_refptr<ImageReaderGLOwner> texture_owner_;
+  base::WeakPtr<ImageReaderGLOwner> texture_owner_;
   AImage* image_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 ImageReaderGLOwner::ImageReaderGLOwner(
@@ -91,15 +136,7 @@ ImageReaderGLOwner::ImageReaderGLOwner(
   // are/maybe overriden by the producer sending buffers to this imageReader's
   // Surface.
   int32_t width = 1, height = 1;
-
-  // This should be as small as possible to limit the memory usage.
-  // ImageReader needs 1 image to mimic the behavior of SurfaceTexture. Ideally
-  // it should be 2 but that doesn't work on some devices
-  // (see crbug.com/1051705).
-  // For SurfaceControl we need 3 images instead of 2 since 1 frame (and hence
-  // image associated with it) will be with system compositor and 2 frames will
-  // be in flight.
-  max_images_ = IsSurfaceControl(mode) ? 3 : 1;
+  max_images_ = NumRequiredMaxImages(mode);
   AIMAGE_FORMATS format = mode == Mode::kAImageReaderSecureSurfaceControl
                               ? AIMAGE_FORMAT_PRIVATE
                               : AIMAGE_FORMAT_YUV_420_888;
@@ -117,12 +154,16 @@ ImageReaderGLOwner::ImageReaderGLOwner(
   media_status_t return_code = loader_.AImageReader_newWithUsage(
       width, height, format, usage, max_images_, &reader);
   if (return_code != AMEDIA_OK) {
-    LOG(ERROR) << " Image reader creation failed.";
-    if (return_code == AMEDIA_ERROR_INVALID_PARAMETER)
+    LOG(ERROR) << " Image reader creation failed on device model : "
+               << base::android::BuildInfo::GetInstance()->model()
+               << ". maxImages used is : " << max_images_;
+    base::debug::DumpWithoutCrashing();
+    if (return_code == AMEDIA_ERROR_INVALID_PARAMETER) {
       LOG(ERROR) << "Either reader is null, or one or more of width, height, "
                     "format, maxImages arguments is not supported";
-    else
+    } else {
       LOG(ERROR) << "unknown error";
+    }
     return;
   }
   DCHECK(reader);
@@ -209,7 +250,9 @@ gl::ScopedJavaSurface ImageReaderGLOwner::CreateJavaSurface() const {
   DCHECK(j_surface);
 
   // Get the scoped java surface that is owned externally.
-  return gl::ScopedJavaSurface::AcquireExternalSurface(j_surface);
+  // TODO(1146071): use of JavaParamRef temporary to try to debug crash.
+  return gl::ScopedJavaSurface::AcquireExternalSurface(
+      base::android::JavaParamRef<jobject>(env, j_surface));
 }
 
 void ImageReaderGLOwner::UpdateTexImage() {
@@ -305,7 +348,7 @@ ImageReaderGLOwner::GetAHardwareBuffer() {
     return nullptr;
 
   return std::make_unique<ScopedHardwareBufferImpl>(
-      this, current_image_ref_->image(),
+      weak_factory_.GetWeakPtr(), current_image_ref_->image(),
       base::android::ScopedHardwareBufferHandle::Create(buffer),
       current_image_ref_->GetReadyFence());
 }
@@ -367,96 +410,6 @@ void ImageReaderGLOwner::ReleaseRefOnImage(AImage* image,
   image_refs_.erase(it);
 }
 
-void ImageReaderGLOwner::GetTransformMatrix(float mtx[]) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // Assign a Y inverted Identity matrix. Both MCVD and AVDA path performs a Y
-  // inversion of this matrix later. Hence if we assign a Y inverted matrix
-  // here, it simply becomes an identity matrix later and will have no effect
-  // on the image data.
-  static constexpr float kYInvertedIdentity[16]{1, 0, 0, 0, 0, -1, 0, 0,
-                                                0, 0, 1, 0, 0, 1,  0, 1};
-  memcpy(mtx, kYInvertedIdentity, sizeof(kYInvertedIdentity));
-
-
-  // Get the crop rectangle associated with this image. The crop rectangle
-  // specifies the region of valid pixels in the image.
-  gfx::Rect crop_rect = GetCropRect();
-  if (crop_rect.IsEmpty())
-    return;
-
-  // Get the AHardwareBuffer to query its dimensions.
-  AHardwareBuffer* buffer = nullptr;
-  loader_.AImage_getHardwareBuffer(current_image_ref_->image(), &buffer);
-  if (!buffer) {
-    DLOG(ERROR) << "Unable to get an AHardwareBuffer from the image";
-    return;
-  }
-
-  // Get the buffer descriptor. Note that for querying the buffer descriptor, we
-  // do not need to wait on the AHB to be ready.
-  AHardwareBuffer_Desc desc;
-  base::AndroidHardwareBufferCompat::GetInstance().Describe(buffer, &desc);
-
-  // Note: Below calculation of shrink_amount and the transform matrix params
-  // tx,ty,sx,sy is copied from the android
-  // SurfaceTexture::computeCurrentTransformMatrix() -
-  // https://android.googlesource.com/platform/frameworks/native/+/5c1139f/libs/gui/SurfaceTexture.cpp#516.
-  // We are assuming here that bilinear filtering is always enabled for
-  // sampling the texture.
-  float shrink_amount = 0.0f;
-  float tx = 0.0f, ty = 0.0f, sx = 1.0f, sy = 1.0f;
-
-  // In order to prevent bilinear sampling beyond the edge of the
-  // crop rectangle we may need to shrink it by 2 texels in each
-  // dimension.  Normally this would just need to take 1/2 a texel
-  // off each end, but because the chroma channels of YUV420 images
-  // are subsampled we may need to shrink the crop region by a whole
-  // texel on each side.
-  switch (desc.format) {
-    case AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM:
-    case AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM:
-    case AHARDWAREBUFFER_FORMAT_R8G8B8_UNORM:
-    case AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM:
-      // We know there's no subsampling of any channels, so we
-      // only need to shrink by a half a pixel.
-      shrink_amount = 0.5;
-      break;
-    default:
-      // If we don't recognize the format, we must assume the
-      // worst case (that we care about), which is YUV420.
-      shrink_amount = 1.0;
-  }
-
-  int32_t crop_rect_width = crop_rect.width();
-  int32_t crop_rect_height = crop_rect.height();
-  int32_t crop_rect_left = crop_rect.x();
-  int32_t crop_rect_bottom = crop_rect.y() + crop_rect_height;
-  int32_t buffer_width = desc.width;
-  int32_t buffer_height = desc.height;
-  DCHECK_GT(buffer_width, 0);
-  DCHECK_GT(buffer_height, 0);
-
-  // Only shrink the dimensions that are not the size of the buffer.
-  if (crop_rect_width < buffer_width) {
-    tx = (float(crop_rect_left) + shrink_amount) / buffer_width;
-    sx = (float(crop_rect_width) - (2.0f * shrink_amount)) / buffer_width;
-  }
-
-  if (crop_rect_height < buffer_height) {
-    ty = (float(buffer_height - crop_rect_bottom) + shrink_amount) /
-         buffer_height;
-    sy = (float(crop_rect_height) - (2.0f * shrink_amount)) / buffer_height;
-  }
-
-  // Update the transform matrix with above parameters by also taking into
-  // account Y inversion/ vertical flip.
-  mtx[0] = sx;
-  mtx[5] = 0 - sy;
-  mtx[12] = tx;
-  mtx[13] = 1 - ty;
-}
-
 void ImageReaderGLOwner::ReleaseBackBuffers() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // ReleaseBackBuffers() call is not required with image reader.
@@ -482,7 +435,7 @@ void ImageReaderGLOwner::OnFrameAvailable(void* context, AImageReader* reader) {
   image_reader_ptr->frame_available_cb_.Run();
 }
 
-void ImageReaderGLOwner::GetCodedSizeAndVisibleRect(
+bool ImageReaderGLOwner::GetCodedSizeAndVisibleRect(
     gfx::Size rotated_visible_size,
     gfx::Size* coded_size,
     gfx::Rect* visible_rect) {
@@ -499,7 +452,7 @@ void ImageReaderGLOwner::GetCodedSizeAndVisibleRect(
   if (!buffer) {
     *coded_size = gfx::Size();
     *visible_rect = gfx::Rect();
-    return;
+    return false;
   }
   // Get the buffer descriptor. Note that for querying the buffer descriptor, we
   // do not need to wait on the AHB to be ready.
@@ -508,6 +461,8 @@ void ImageReaderGLOwner::GetCodedSizeAndVisibleRect(
 
   *visible_rect = GetCropRect();
   *coded_size = gfx::Size(desc.width, desc.height);
+
+  return true;
 }
 
 ImageReaderGLOwner::ImageRef::ImageRef() = default;

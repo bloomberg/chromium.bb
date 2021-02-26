@@ -5,13 +5,19 @@
 package org.chromium.components.page_info;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Consumer;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsClient;
+import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -22,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  *  Provides embedder-level information to PageInfoController.
  */
-public class PageInfoControllerDelegate {
+public abstract class PageInfoControllerDelegate {
     @IntDef({OfflinePageState.NOT_OFFLINE_PAGE, OfflinePageState.TRUSTED_OFFLINE_PAGE,
             OfflinePageState.UNTRUSTED_OFFLINE_PAGE})
     @Retention(RetentionPolicy.SOURCE)
@@ -48,6 +54,7 @@ public class PageInfoControllerDelegate {
     private final boolean mCookieControlsShown;
     protected @PreviewPageState int mPreviewPageState;
     protected @OfflinePageState int mOfflinePageState;
+    protected boolean mIsHttpsImageCompressionApplied;
     protected String mOfflinePageUrl;
 
     public PageInfoControllerDelegate(Supplier<ModalDialogManager> modalDialogManager,
@@ -58,6 +65,7 @@ public class PageInfoControllerDelegate {
         mVrHandler = vrHandler;
         mIsSiteSettingsAvailable = isSiteSettingsAvailable;
         mCookieControlsShown = cookieControlsShown;
+        mIsHttpsImageCompressionApplied = false;
 
         // These sometimes get overwritten by derived classes.
         mPreviewPageState = PreviewPageState.NOT_PREVIEW;
@@ -119,6 +127,13 @@ public class PageInfoControllerDelegate {
     }
 
     /**
+     * Returns whether LiteMode https image compression was applied on this page
+     */
+    public boolean isHttpsImageCompressionApplied() {
+        return mIsHttpsImageCompressionApplied;
+    }
+
+    /**
      * Gets the instant app intent for the given URL if one exists.
      */
     public Intent getInstantAppIntentForUrl(String url) {
@@ -148,9 +163,16 @@ public class PageInfoControllerDelegate {
     }
 
     /**
+     * Whether the page being shown is a paint preview.
+     */
+    public boolean isShowingPaintPreviewPage() {
+        return false;
+    }
+
+    /**
      * Initialize viewParams with Offline Page UI info, if any.
      * @param viewParams The PageInfoViewParams to set state on.
-     * @param consumer Used to set "open Online" button callback for offline page.
+     * @param runAfterDismiss Used to set "open Online" button callback for offline page.
      */
     public void initOfflinePageUiParams(
             PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss) {
@@ -163,6 +185,15 @@ public class PageInfoControllerDelegate {
      */
     @Nullable
     public String getOfflinePageConnectionMessage() {
+        return null;
+    }
+
+    /**
+     * Return the connection message shown for a paint preview page, if appropriate.
+     * Returns null if there's no paint preview page.
+     */
+    @Nullable
+    public String getPaintPreviewPageConnectionMessage() {
         return null;
     }
 
@@ -184,25 +215,42 @@ public class PageInfoControllerDelegate {
      * Show site settings for the URL passed in.
      * @param url The URL to show site settings for.
      */
-    public void showSiteSettings(String url) {
-        // TODO(crbug.com/1058595): Override for WebLayer once SiteSettingsHelper is componentized.
-    }
+    public abstract void showSiteSettings(String url);
 
-    // TODO(crbug.com/1052375): Remove the next three methods when cookie controls UI
-    // has been componentized.
+    /**
+     * Show cookie settings.
+     */
+    public abstract void showCookieSettings();
+
     /**
      * Creates Cookie Controls Bridge.
-     * @param The CookieControlsObserver to create the bridge with.
+     * @param observer The CookieControlsObserver to create the bridge with.
+     * @return the object that facilitates interfacing with native code.
      */
-    public void createCookieControlsBridge(CookieControlsObserver observer) {}
+    @NonNull
+    public abstract CookieControlsBridge createCookieControlsBridge(
+            CookieControlsObserver observer);
 
     /**
-     * Called when cookie controls UI is closed.
+     * @return Returns the browser context associated with this dialog.
      */
-    public void onUiClosing() {}
+    @NonNull
+    public abstract BrowserContextHandle getBrowserContext();
 
     /**
-     * Notes whether third party cookies should be blocked for the site.
+     * @return Returns the SiteSettingsClient for this page info.
      */
-    public void setThirdPartyCookieBlockingEnabledForSite(boolean blockCookies) {}
+    @NonNull
+    public abstract SiteSettingsClient getSiteSettingsClient();
+
+    /**
+     * Fetches a favicon for the current page and passes it to callback.
+     * The UI will use a fallback icon if null is supplied.
+     */
+    public abstract void getFavicon(String url, Callback<Drawable> callback);
+
+    /**
+     * @return Returns the drawable for the Preview UI.
+     */
+    public abstract Drawable getPreviewUiIcon();
 }

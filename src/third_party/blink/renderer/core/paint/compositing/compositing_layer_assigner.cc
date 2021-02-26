@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -52,11 +53,12 @@ void CompositingLayerAssigner::Assign(
   TRACE_EVENT0("blink", "CompositingLayerAssigner::assign");
 
   SquashingState squashing_state;
-  AssignLayersToBackingsInternal(update_root, squashing_state,
+  AssignLayersToBackingsInternal(update_root, update_root, squashing_state,
                                  layers_needing_paint_invalidation);
-  if (squashing_state.has_most_recent_mapping) {
+  if (squashing_state.most_recent_mapping) {
     squashing_state.most_recent_mapping->FinishAccumulatingSquashingLayers(
-        squashing_state.next_squashed_layer_index,
+        squashing_state.next_non_scrolling_squashed_layer_index,
+        squashing_state.next_squashed_layer_in_scrolling_contents_index,
         layers_needing_paint_invalidation);
   }
 }
@@ -64,19 +66,29 @@ void CompositingLayerAssigner::Assign(
 void CompositingLayerAssigner::SquashingState::
     UpdateSquashingStateForNewMapping(
         CompositedLayerMapping* new_composited_layer_mapping,
-        bool has_new_composited_layer_mapping,
         Vector<PaintLayer*>& layers_needing_paint_invalidation) {
   // The most recent backing is done accumulating any more squashing layers.
-  if (has_most_recent_mapping) {
+  if (most_recent_mapping) {
     most_recent_mapping->FinishAccumulatingSquashingLayers(
-        next_squashed_layer_index, layers_needing_paint_invalidation);
+        next_non_scrolling_squashed_layer_index,
+        next_squashed_layer_in_scrolling_contents_index,
+        layers_needing_paint_invalidation);
   }
 
-  next_squashed_layer_index = 0;
+  next_non_scrolling_squashed_layer_index = 0;
+  next_squashed_layer_in_scrolling_contents_index = 0;
   bounding_rect = IntRect();
   most_recent_mapping = new_composited_layer_mapping;
-  has_most_recent_mapping = has_new_composited_layer_mapping;
   have_assigned_backings_to_entire_squashing_layer_subtree = false;
+  // We may squash layers with CompositingReason::kOverflowScrollingParent into
+  // scrolling contents. These layers are stacked, and scrolled by a
+  // non-stacking-context scroller. See CompositingReasonFinder.
+  next_layer_may_squash_into_scrolling_contents =
+      most_recent_mapping &&
+      most_recent_mapping->OwningLayer().NeedsCompositedScrolling() &&
+      !most_recent_mapping->OwningLayer()
+           .GetLayoutObject()
+           .IsStackingContext();
 }
 
 bool CompositingLayerAssigner::SquashingWouldExceedSparsityTolerance(
@@ -133,7 +145,7 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   if (!squashing_state.have_assigned_backings_to_entire_squashing_layer_subtree)
     return SquashingDisallowedReason::kWouldBreakPaintOrder;
 
-  DCHECK(squashing_state.has_most_recent_mapping);
+  DCHECK(squashing_state.most_recent_mapping);
   const PaintLayer& squashing_layer =
       squashing_state.most_recent_mapping->OwningLayer();
 
@@ -150,21 +162,30 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
         kSquashingLayoutEmbeddedContentIsDisallowed;
   }
 
-  if (SquashingWouldExceedSparsityTolerance(layer, squashing_state))
-    return SquashingDisallowedReason::kSquashingSparsityExceeded;
+  // The layer may squash into scrolling contents if the squashing layer allows,
+  // and it's scrolled and clipped by the squashing layer.
+  bool may_squash_into_scrolling_contents =
+      squashing_state.next_layer_may_squash_into_scrolling_contents &&
+      layer->AncestorScrollingLayer() == &squashing_layer &&
+      layer->ClippingContainer() == &squashing_layer.GetLayoutObject();
+  if (!may_squash_into_scrolling_contents) {
+    if (SquashingWouldExceedSparsityTolerance(layer, squashing_state))
+      return SquashingDisallowedReason::kSquashingSparsityExceeded;
+
+    if (layer->ClippingContainer() != squashing_layer.ClippingContainer() &&
+        !squashing_layer.GetCompositedLayerMapping()
+             ->ContainingSquashedLayerInSquashingLayer(
+                 layer->ClippingContainer(),
+                 squashing_state.next_non_scrolling_squashed_layer_index))
+      return SquashingDisallowedReason::kClippingContainerMismatch;
+
+    if (layer->ScrollsWithRespectTo(&squashing_layer))
+      return SquashingDisallowedReason::kScrollsWithRespectToSquashingLayer;
+  }
 
   if (layer->GetLayoutObject().StyleRef().HasBlendMode() ||
       squashing_layer.GetLayoutObject().StyleRef().HasBlendMode())
     return SquashingDisallowedReason::kSquashingBlendingIsDisallowed;
-
-  if (layer->ClippingContainer() != squashing_layer.ClippingContainer() &&
-      !squashing_layer.GetCompositedLayerMapping()->ContainingSquashedLayer(
-          layer->ClippingContainer(),
-          squashing_state.next_squashed_layer_index))
-    return SquashingDisallowedReason::kClippingContainerMismatch;
-
-  if (layer->ScrollsWithRespectTo(&squashing_layer))
-    return SquashingDisallowedReason::kScrollsWithRespectToSquashingLayer;
 
   if (layer->OpacityAncestor() != squashing_layer.OpacityAncestor())
     return SquashingDisallowedReason::kOpacityAncestorMismatch;
@@ -227,11 +248,12 @@ void CompositingLayerAssigner::UpdateSquashingAssignment(
     // A layer that is squashed with other layers cannot have its own
     // CompositedLayerMapping.
     DCHECK(!layer->HasCompositedLayerMapping());
-    DCHECK(squashing_state.has_most_recent_mapping);
+    DCHECK(squashing_state.most_recent_mapping);
 
     bool changed_squashing_layer =
         squashing_state.most_recent_mapping->UpdateSquashingLayerAssignment(
-            layer, squashing_state.next_squashed_layer_index);
+            *layer, squashing_state.next_non_scrolling_squashed_layer_index,
+            squashing_state.next_squashed_layer_in_scrolling_contents_index);
     if (!changed_squashing_layer)
       return;
 
@@ -268,12 +290,10 @@ void CompositingLayerAssigner::UpdateSquashingAssignment(
 
 void CompositingLayerAssigner::AssignLayersToBackingsInternal(
     PaintLayer* layer,
+    PaintLayer* paint_invalidation_container,
     SquashingState& squashing_state,
     Vector<PaintLayer*>& layers_needing_paint_invalidation) {
   if (layer->NeedsCompositingLayerAssignment()) {
-    DCHECK(layer->GetCompositingReasons() ||
-           (layer->GetCompositingState() != kNotComposited) ||
-           layer->LostGroupedMapping());
     if (RequiresSquashing(layer->GetCompositingReasons())) {
       SquashingDisallowedReasons reasons_preventing_squashing =
           GetReasonsPreventingSquashing(layer, squashing_state);
@@ -281,7 +301,10 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
         layer->SetCompositingReasons(layer->GetCompositingReasons() |
                                      CompositingReason::kSquashingDisallowed);
         layer->SetSquashingDisallowedReasons(reasons_preventing_squashing);
+        squashing_state.next_layer_may_squash_into_scrolling_contents = false;
       }
+    } else {
+      squashing_state.next_layer_may_squash_into_scrolling_contents = false;
     }
 
     CompositingStateTransitionType composited_layer_update =
@@ -315,18 +338,28 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
         (composited_layer_update == kNoCompositingStateChange &&
          layer->GroupedMapping());
     if (layer_is_squashed) {
-      squashing_state.next_squashed_layer_index++;
-      IntRect layer_bounds = layer->ClippedAbsoluteBoundingBox();
-      squashing_state.total_area_of_squashed_rects +=
-          layer_bounds.Size().Area();
-      squashing_state.bounding_rect.Unite(layer_bounds);
+      if (layer->AncestorScrollingLayer() ==
+          &squashing_state.most_recent_mapping->OwningLayer()) {
+        squashing_state.next_squashed_layer_in_scrolling_contents_index++;
+      } else {
+        squashing_state.next_non_scrolling_squashed_layer_index++;
+        squashing_state.next_layer_may_squash_into_scrolling_contents = false;
+        IntRect layer_bounds = layer->ClippedAbsoluteBoundingBox();
+        squashing_state.total_area_of_squashed_rects +=
+            layer_bounds.Size().Area();
+        squashing_state.bounding_rect.Unite(layer_bounds);
+      }
     }
   }
+
+  if (layer->GetCompositingState() != kNotComposited)
+    paint_invalidation_container = layer;
 
   if (layer->StackingDescendantNeedsCompositingLayerAssignment()) {
     PaintLayerPaintOrderIterator iterator(*layer, kNegativeZOrderChildren);
     while (PaintLayer* child_node = iterator.Next()) {
-      AssignLayersToBackingsInternal(child_node, squashing_state,
+      AssignLayersToBackingsInternal(child_node, paint_invalidation_container,
+                                     squashing_state,
                                      layers_needing_paint_invalidation);
     }
   }
@@ -337,26 +370,49 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
       layer->GetCompositingState() == kPaintsIntoOwnBacking) {
     DCHECK(!RequiresSquashing(layer->GetCompositingReasons()));
     squashing_state.UpdateSquashingStateForNewMapping(
-        layer->GetCompositedLayerMapping(), layer->HasCompositedLayerMapping(),
-        layers_needing_paint_invalidation);
+        layer->GetCompositedLayerMapping(), layers_needing_paint_invalidation);
   }
 
   if (layer->StackingDescendantNeedsCompositingLayerAssignment()) {
     PaintLayerPaintOrderIterator iterator(*layer,
                                           kNormalFlowAndPositiveZOrderChildren);
     while (PaintLayer* curr_layer = iterator.Next()) {
-      AssignLayersToBackingsInternal(curr_layer, squashing_state,
+      AssignLayersToBackingsInternal(curr_layer, paint_invalidation_container,
+                                     squashing_state,
                                      layers_needing_paint_invalidation);
     }
   }
 
   if (layer->NeedsCompositingLayerAssignment()) {
-    if (squashing_state.has_most_recent_mapping &&
+    if (squashing_state.most_recent_mapping &&
         &squashing_state.most_recent_mapping->OwningLayer() == layer) {
       squashing_state.have_assigned_backings_to_entire_squashing_layer_subtree =
           true;
     }
   }
+
+  // If this is an iframe whose content document is composited, then we can't
+  // squash layers painted after the iframe with layers painted before it.
+  if (layer->GetLayoutObject().IsLayoutEmbeddedContent() &&
+      To<LayoutEmbeddedContent>(layer->GetLayoutObject())
+          .ContentDocumentIsCompositing()) {
+    squashing_state.have_assigned_backings_to_entire_squashing_layer_subtree =
+        false;
+  }
+
+  if (layer->NeedsCheckRasterInvalidation()) {
+    DCHECK(paint_invalidation_container);
+    if (!paint_invalidation_container->SelfNeedsRepaint()) {
+      auto* mapping = paint_invalidation_container->GetCompositedLayerMapping();
+      if (!mapping)
+        mapping = paint_invalidation_container->GroupedMapping();
+      if (mapping)
+        mapping->SetNeedsCheckRasterInvalidation();
+    }
+
+    layer->ClearNeedsCheckRasterInvalidation();
+  }
+
   layer->ClearNeedsCompositingLayerAssignment();
 }
 

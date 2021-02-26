@@ -261,15 +261,15 @@ int avfilter_insert_filter(AVFilterLink *link, AVFilterContext *filt,
 
     /* if any information on supported media formats already exists on the
      * link, we need to preserve that */
-    if (link->out_formats)
-        ff_formats_changeref(&link->out_formats,
-                             &filt->outputs[filt_dstpad_idx]->out_formats);
-    if (link->out_samplerates)
-        ff_formats_changeref(&link->out_samplerates,
-                             &filt->outputs[filt_dstpad_idx]->out_samplerates);
-    if (link->out_channel_layouts)
-        ff_channel_layouts_changeref(&link->out_channel_layouts,
-                                     &filt->outputs[filt_dstpad_idx]->out_channel_layouts);
+    if (link->outcfg.formats)
+        ff_formats_changeref(&link->outcfg.formats,
+                             &filt->outputs[filt_dstpad_idx]->outcfg.formats);
+    if (link->outcfg.samplerates)
+        ff_formats_changeref(&link->outcfg.samplerates,
+                             &filt->outputs[filt_dstpad_idx]->outcfg.samplerates);
+    if (link->outcfg.channel_layouts)
+        ff_channel_layouts_changeref(&link->outcfg.channel_layouts,
+                                     &filt->outputs[filt_dstpad_idx]->outcfg.channel_layouts);
 
     return 0;
 }
@@ -583,6 +583,7 @@ static void *filter_child_next(void *obj, void *prev)
     return NULL;
 }
 
+#if FF_API_CHILD_CLASS_NEXT
 static const AVClass *filter_child_class_next(const AVClass *prev)
 {
     void *opaque = NULL;
@@ -599,6 +600,18 @@ static const AVClass *filter_child_class_next(const AVClass *prev)
 
     /* find next filter with specific options */
     while ((f = av_filter_iterate(&opaque)))
+        if (f->priv_class)
+            return f->priv_class;
+
+    return NULL;
+}
+#endif
+
+static const AVClass *filter_child_class_iterate(void **iter)
+{
+    const AVFilter *f;
+
+    while ((f = av_filter_iterate(iter)))
         if (f->priv_class)
             return f->priv_class;
 
@@ -625,7 +638,10 @@ static const AVClass avfilter_class = {
     .version    = LIBAVUTIL_VERSION_INT,
     .category   = AV_CLASS_CATEGORY_FILTER,
     .child_next = filter_child_next,
+#if FF_API_CHILD_CLASS_NEXT
     .child_class_next = filter_child_class_next,
+#endif
+    .child_class_iterate = filter_child_class_iterate,
     .option           = avfilter_options,
 };
 
@@ -730,12 +746,12 @@ static void free_link(AVFilterLink *link)
 
     av_buffer_unref(&link->hw_frames_ctx);
 
-    ff_formats_unref(&link->in_formats);
-    ff_formats_unref(&link->out_formats);
-    ff_formats_unref(&link->in_samplerates);
-    ff_formats_unref(&link->out_samplerates);
-    ff_channel_layouts_unref(&link->in_channel_layouts);
-    ff_channel_layouts_unref(&link->out_channel_layouts);
+    ff_formats_unref(&link->incfg.formats);
+    ff_formats_unref(&link->outcfg.formats);
+    ff_formats_unref(&link->incfg.samplerates);
+    ff_formats_unref(&link->outcfg.samplerates);
+    ff_channel_layouts_unref(&link->incfg.channel_layouts);
+    ff_channel_layouts_unref(&link->outcfg.channel_layouts);
     avfilter_link_free(&link);
 }
 
@@ -841,16 +857,16 @@ static int process_options(AVFilterContext *ctx, AVDictionary **options,
                 return ret;
             }
         } else {
-        av_dict_set(options, key, value, 0);
-        if ((ret = av_opt_set(ctx->priv, key, value, AV_OPT_SEARCH_CHILDREN)) < 0) {
-            if (!av_opt_find(ctx->priv, key, NULL, 0, AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ)) {
-            if (ret == AVERROR_OPTION_NOT_FOUND)
-                av_log(ctx, AV_LOG_ERROR, "Option '%s' not found\n", key);
-            av_free(value);
-            av_free(parsed_key);
-            return ret;
+            av_dict_set(options, key, value, 0);
+            if ((ret = av_opt_set(ctx->priv, key, value, AV_OPT_SEARCH_CHILDREN)) < 0) {
+                if (!av_opt_find(ctx->priv, key, NULL, 0, AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ)) {
+                    if (ret == AVERROR_OPTION_NOT_FOUND)
+                        av_log(ctx, AV_LOG_ERROR, "Option '%s' not found\n", key);
+                    av_free(value);
+                    av_free(parsed_key);
+                    return ret;
+                }
             }
-        }
         }
 
         av_free(value);
@@ -1408,9 +1424,6 @@ static int ff_filter_activate_default(AVFilterContext *filter)
      Rationale: checking frame_blocked_in is necessary to avoid requesting
      repeatedly on a blocked input if another is not blocked (example:
      [buffersrc1][testsrc1][buffersrc2][testsrc2]concat=v=2).
-
-     TODO: respect needs_fifo and remove auto-inserted fifos.
-
  */
 
 int ff_filter_activate(AVFilterContext *filter)

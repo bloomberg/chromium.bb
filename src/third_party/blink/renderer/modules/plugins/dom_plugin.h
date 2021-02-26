@@ -32,11 +32,10 @@ namespace blink {
 class ExceptionState;
 
 class DOMPlugin final : public ScriptWrappable, public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(DOMPlugin);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DOMPlugin(LocalFrame*, const PluginInfo&);
+  DOMPlugin(LocalDOMWindow*, const PluginInfo&);
 
   String name() const;
   String filename() const;
@@ -49,7 +48,7 @@ class DOMPlugin final : public ScriptWrappable, public ExecutionContextClient {
   void NamedPropertyEnumerator(Vector<String>&, ExceptionState&) const;
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<const PluginInfo> plugin_info_;

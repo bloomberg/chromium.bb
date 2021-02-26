@@ -14,9 +14,11 @@
 #include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/services/network_config/public/mojom/network_types.mojom-shared.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/sync/protocol/wifi_configuration_specifics.pb.h"
 #include "dbus/object_path.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 
@@ -131,8 +133,9 @@ bool LocalNetworkCollectorImpl::IsEligible(
 
   const network_config::mojom::WiFiStatePropertiesPtr& wifi_properties =
       network->type_state->get_wifi();
-  return IsEligibleForSync(network->guid, network->connectable, network->source,
-                           wifi_properties->security, /*log_result=*/true);
+  return IsEligibleForSync(network->guid, network->connectable,
+                           wifi_properties->security, network->source,
+                           /*log_result=*/true);
 }
 
 void LocalNetworkCollectorImpl::StartGetNetworkDetails(
@@ -163,15 +166,44 @@ void LocalNetworkCollectorImpl::OnGetManagedPropertiesResult(
   proto.set_automatically_connect(AutomaticallyConnectProtoFromMojo(
       properties->type_properties->get_wifi()->auto_connect));
   proto.set_is_preferred(IsPreferredProtoFromMojo(properties->priority));
-  proto.mutable_proxy_configuration()->CopyFrom(
-      ProxyConfigurationProtoFromMojo(properties->proxy_settings));
 
+  if (properties->metered) {
+    proto.set_metered(
+        properties->metered->active_value
+            ? sync_pb::
+                  WifiConfigurationSpecifics_MeteredOption_METERED_OPTION_YES
+            : sync_pb::
+                  WifiConfigurationSpecifics_MeteredOption_METERED_OPTION_NO);
+  }
+
+  bool is_proxy_modified =
+      network_metadata_store_->GetIsFieldExternallyModified(
+          properties->guid, shill::kProxyConfigProperty);
+  sync_pb::WifiConfigurationSpecifics_ProxyConfiguration proxy_config =
+      ProxyConfigurationProtoFromMojo(properties->proxy_settings,
+                                      /*is_unspecified=*/is_proxy_modified);
+  proto.mutable_proxy_configuration()->CopyFrom(proxy_config);
+
+  bool is_dns_externally_modified =
+      network_metadata_store_->GetIsFieldExternallyModified(
+          properties->guid, shill::kNameServersProperty);
   if (properties->static_ip_config &&
-      properties->static_ip_config->name_servers) {
+      properties->static_ip_config->name_servers &&
+      (properties->source == network_config::mojom::OncSource::kUser ||
+       !is_dns_externally_modified)) {
+    proto.set_dns_option(
+        sync_pb::WifiConfigurationSpecifics_DnsOption_DNS_OPTION_CUSTOM);
     for (const std::string& nameserver :
          properties->static_ip_config->name_servers->active_value) {
       proto.add_custom_dns(nameserver);
     }
+  } else if (properties->source == network_config::mojom::OncSource::kDevice &&
+             is_dns_externally_modified) {
+    proto.set_dns_option(
+        sync_pb::WifiConfigurationSpecifics_DnsOption_DNS_OPTION_UNSPECIFIED);
+  } else {
+    proto.set_dns_option(
+        sync_pb::WifiConfigurationSpecifics_DnsOption_DNS_OPTION_DEFAULT_DHCP);
   }
 
   ShillServiceClient::Get()->GetWiFiPassphrase(

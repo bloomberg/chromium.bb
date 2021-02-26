@@ -5,7 +5,7 @@
 #include <cstddef>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -16,7 +16,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
-#include "chrome/browser/ui/blocked_content/url_list_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -27,6 +26,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/blocked_content/url_list_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -37,7 +37,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/event.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -52,8 +53,9 @@ const int kDisallowRadioButtonIndex = 1;
 
 }  // namespace
 
-class FramebustBlockBrowserTest : public InProcessBrowserTest,
-                                  public UrlListManager::Observer {
+class FramebustBlockBrowserTest
+    : public InProcessBrowserTest,
+      public blocked_content::UrlListManager::Observer {
  public:
   FramebustBlockBrowserTest() = default;
 
@@ -140,8 +142,10 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, ModelAllowsRedirection) {
   EXPECT_FALSE(clicked_url_.has_value());
 
   content::TestNavigationObserver observer(GetWebContents());
-  framebust_block_bubble_model.OnListItemClicked(/* index = */ 1,
-                                                 ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                             ui::EF_LEFT_MOUSE_BUTTON);
+  framebust_block_bubble_model.OnListItemClicked(/* index = */ 1, click_event);
   observer.Wait();
 
   EXPECT_TRUE(clicked_index_.has_value());
@@ -165,8 +169,8 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, AllowRadioButtonSelected) {
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            settings_map->GetContentSetting(
-                url, GURL(), ContentSettingsType::POPUPS, std::string()));
+            settings_map->GetContentSetting(url, GURL(),
+                                            ContentSettingsType::POPUPS));
 
   // Create a content bubble and simulate clicking on the first radio button
   // before closing it.
@@ -178,8 +182,8 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, AllowRadioButtonSelected) {
   owner->SetSelectedRadioOptionAndCommit(kAllowRadioButtonIndex);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            settings_map->GetContentSetting(
-                url, GURL(), ContentSettingsType::POPUPS, std::string()));
+            settings_map->GetContentSetting(url, GURL(),
+                                            ContentSettingsType::POPUPS));
 }
 
 IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, DisallowRadioButtonSelected) {
@@ -195,8 +199,8 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, DisallowRadioButtonSelected) {
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            settings_map->GetContentSetting(
-                url, GURL(), ContentSettingsType::POPUPS, std::string()));
+            settings_map->GetContentSetting(url, GURL(),
+                                            ContentSettingsType::POPUPS));
 
   // Create a content bubble and simulate clicking on the second radio button
   // before closing it.
@@ -209,8 +213,8 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, DisallowRadioButtonSelected) {
   owner->SetSelectedRadioOptionAndCommit(kDisallowRadioButtonIndex);
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            settings_map->GetContentSetting(
-                url, GURL(), ContentSettingsType::POPUPS, std::string()));
+            settings_map->GetContentSetting(url, GURL(),
+                                            ContentSettingsType::POPUPS));
 }
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
@@ -309,9 +313,9 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest,
   GURL top_level_url = embedded_test_server()->GetURL("/iframe.html");
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
-  settings_map->SetContentSettingDefaultScope(
-      top_level_url, GURL(), ContentSettingsType::POPUPS, std::string(),
-      CONTENT_SETTING_ALLOW);
+  settings_map->SetContentSettingDefaultScope(top_level_url, GURL(),
+                                              ContentSettingsType::POPUPS,
+                                              CONTENT_SETTING_ALLOW);
 
   // Create a new browser to test in to ensure that the render process gets the
   // updated content settings.

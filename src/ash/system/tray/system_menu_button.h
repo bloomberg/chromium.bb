@@ -18,11 +18,11 @@ namespace ash {
 // used across Ash material design native UI menus.
 class SystemMenuButton : public views::ImageButton {
  public:
-  // Constructs the button with |listener| and a centered icon corresponding to
+  // Constructs the button with |callback| and a centered icon corresponding to
   // |normal_icon| when button is enabled and |disabled_icon| when it is
   // disabled. |accessible_name_id| corresponds to the string in
   // ui::ResourceBundle to use for the button's accessible and tooltip text.
-  SystemMenuButton(views::ButtonListener* listener,
+  SystemMenuButton(PressedCallback callback,
                    const gfx::ImageSkia& normal_icon,
                    const gfx::ImageSkia& disabled_icon,
                    int accessible_name_id);
@@ -30,7 +30,7 @@ class SystemMenuButton : public views::ImageButton {
   // Similar to the above constructor. Just gets a single vector icon and
   // creates the normal and disabled icons based on that using default menu icon
   // colors.
-  SystemMenuButton(views::ButtonListener* listener,
+  SystemMenuButton(PressedCallback callback,
                    const gfx::VectorIcon& icon,
                    int accessible_name_id);
   ~SystemMenuButton() override;
@@ -38,11 +38,6 @@ class SystemMenuButton : public views::ImageButton {
   // Sets the normal and disabled icons based on that using default menu icon
   // colors.
   void SetVectorIcon(const gfx::VectorIcon& icon);
-
-  // Explicity sets the ink drop color. Otherwise the default value will be used
-  // by TrayPopupUtils::CreateInkDropRipple() and
-  // TrayPopupUtils::CreateInkDropHighlight().
-  void SetInkDropColor(SkColor color);
 
   // views::ImageButton:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
@@ -54,11 +49,6 @@ class SystemMenuButton : public views::ImageButton {
  private:
   // Returns the size that the ink drop should be constructed with.
   gfx::Size GetInkDropSize() const;
-
-  // The color to use when creating the ink drop. If null the default color is
-  // used as defined by TrayPopupUtils::CreateInkDropRipple() and
-  // TrayPopupUtils::CreateInkDropHighlight().
-  base::Optional<SkColor> ink_drop_color_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMenuButton);
 };

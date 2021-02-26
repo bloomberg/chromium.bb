@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/aura/aura_export.h"
@@ -248,7 +247,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Requests using unadjusted movement mouse events, i.e. WM_INPUT on Windows.
   // Returns a ScopedEnableUnadjustedMouseEvents instance which stops using
   // unadjusted mouse events when destroyed, returns nullptr if unadjusted mouse
-  // event is not not implemented or failed.
+  // event is not not implemented or failed. On some platforms this function may
+  // temporarily affect the global state of mouse settings.  This function is
+  // currently only intended to be used with PointerLock as it is not set up for
+  // multiple calls.
   virtual std::unique_ptr<ScopedEnableUnadjustedMouseEvents>
   RequestUnadjustedMovement();
 
@@ -379,9 +381,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Whether the InputMethod instance is owned by this WindowTreeHost.
   bool owned_input_method_;
-
-  // Set to the time the synchronization event began.
-  base::TimeTicks synchronization_start_time_;
 
   // Set to true if this WindowTreeHost is currently holding pointer moves.
   bool holding_pointer_moves_ = false;

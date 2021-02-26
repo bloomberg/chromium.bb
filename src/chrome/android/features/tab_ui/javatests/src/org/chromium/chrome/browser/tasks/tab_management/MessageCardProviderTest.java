@@ -4,22 +4,22 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,10 +27,11 @@ import org.junit.rules.TestRule;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestion;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter;
@@ -41,7 +42,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Integration tests for TabGridMessageCardProvider component.
+ * Integration tests for MessageCardProvider component.
  */
 @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
 public class MessageCardProviderTest extends DummyUiActivityTestCase {
@@ -132,9 +133,13 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
             view.addView(mRecyclerView);
         });
 
-        mCoordinator = new MessageCardProviderCoordinator(getActivity(), mUiDismissActionProvider);
+        mCoordinator = new MessageCardProviderCoordinator(
+                getActivity(), () -> false, mUiDismissActionProvider);
         mCoordinator.subscribeMessageService(mTestingService);
         mCoordinator.subscribeMessageService(mSuggestionService);
+
+        when(mTabSuggestionMessageData.getActionType())
+                .thenReturn(TabSuggestion.TabSuggestionAction.CLOSE);
     }
 
     @Test

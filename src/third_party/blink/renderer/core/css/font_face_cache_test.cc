@@ -43,7 +43,7 @@ class FontFaceCacheTest : public PageTestBase {
 
   FontFaceCache cache_;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  protected:
   const AtomicString kFontNameForTesting{"Arial"};
@@ -64,13 +64,14 @@ void FontFaceCacheTest::AppendTestFaceForCapabilities(const CSSValue& stretch,
   CSSFontFamilyValue* family_name =
       CSSFontFamilyValue::Create(kFontNameForTesting);
   CSSFontFaceSrcValue* src = CSSFontFaceSrcValue::CreateLocal(
-      kFontNameForTesting, network::mojom::CSPDisposition::DO_NOT_CHECK,
-      OriginClean::kTrue, false /* is_ad_related */);
+      kFontNameForTesting, nullptr /* world */, OriginClean::kTrue,
+      false /* is_ad_related */);
   CSSValueList* src_value_list = CSSValueList::CreateCommaSeparated();
   src_value_list->Append(*src);
   CSSPropertyValue properties[] = {
-      CSSPropertyValue(GetCSSPropertyFontFamily(), *family_name),
-      CSSPropertyValue(GetCSSPropertySrc(), *src_value_list)};
+      CSSPropertyValue(CSSPropertyName(CSSPropertyID::kFontFamily),
+                       *family_name),
+      CSSPropertyValue(CSSPropertyName(CSSPropertyID::kSrc), *src_value_list)};
   auto* font_face_descriptor = MakeGarbageCollected<MutableCSSPropertyValueSet>(
       properties, base::size(properties));
 
@@ -494,7 +495,7 @@ TEST_F(FontFaceCacheTest, ObliqueRangeMatching) {
       FontSelectionRange({FontSelectionValue(30), FontSelectionValue(35)}));
 }
 
-void FontFaceCacheTest::Trace(Visitor* visitor) {
+void FontFaceCacheTest::Trace(Visitor* visitor) const {
   visitor->Trace(cache_);
 }
 

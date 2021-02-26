@@ -10,19 +10,27 @@
 
 #include <stddef.h>
 
+#include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 
 namespace base {
+
+typedef void (*OomFunction)(size_t);
+
 namespace internal {
 
-NOINLINE void PartitionExcessiveAllocationSize(size_t size);
+// g_oom_handling_function is invoked when PartitionAlloc hits OutOfMemory.
+static OomFunction g_oom_handling_function = nullptr;
+
+BASE_EXPORT NOINLINE void PartitionExcessiveAllocationSize(size_t size);
 
 #if !defined(ARCH_CPU_64_BITS)
 NOINLINE void PartitionOutOfMemoryWithLotsOfUncommitedPages(size_t size);
 #endif
 
 }  // namespace internal
+
 }  // namespace base
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_OOM_H_

@@ -20,6 +20,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/components_resources.h"
+#include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "components/version_ui/version_ui_constants.h"
@@ -41,7 +42,7 @@
 #include "chrome/browser/ui/webui/version_handler_chromeos.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -59,6 +60,7 @@ WebUIDataSource* CreateVersionUIDataSource() {
   // These localized strings are used to label version details.
   static constexpr webui::LocalizedString kStrings[] = {
     {version_ui::kTitle, IDS_VERSION_UI_TITLE},
+    {version_ui::kLogoAltText, IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
     {version_ui::kApplicationLabel, IDS_PRODUCT_NAME},
     {version_ui::kCompany, IDS_ABOUT_VERSION_COMPANY_NAME},
     {version_ui::kRevision, IDS_VERSION_UI_REVISION},
@@ -117,14 +119,43 @@ VersionUI::VersionUI(content::WebUI* web_ui)
 VersionUI::~VersionUI() {}
 
 // static
+int VersionUI::VersionProcessorVariation() {
+#if defined(OS_ANDROID)
+  // When building for Android, "unused" strings are removed. However, binaries
+  // of both bitnesses are stripped of strings based on string analysis of one
+  // bitness. Search the code for "generate_resource_allowlist" for more
+  // information. Therefore, make sure both the IDS_VERSION_UI_32BIT and
+  // IDS_VERSION_UI_64BIT strings are marked as always used so that they’re
+  // never stripped. https://crbug.com/1119479
+  IDS_VERSION_UI_32BIT;
+  IDS_VERSION_UI_64BIT;
+#endif  // OS_ANDROID
+#if defined(OS_MAC)
+  switch (base::mac::GetCPUType()) {
+    case base::mac::CPUType::kIntel:
+      return IDS_VERSION_UI_64BIT_INTEL;
+    case base::mac::CPUType::kTranslatedIntel:
+      return IDS_VERSION_UI_64BIT_TRANSLATED_INTEL;
+    case base::mac::CPUType::kArm:
+      return IDS_VERSION_UI_64BIT_ARM;
+  }
+#elif defined(ARCH_CPU_64_BITS)
+  return IDS_VERSION_UI_64BIT;
+#elif defined(ARCH_CPU_32_BITS)
+  return IDS_VERSION_UI_32BIT;
+#else
+#error Update for a processor that is neither 32-bit nor 64-bit.
+#endif
+}
+
+// static
 void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(version_ui::kOfficial,
                                   version_info::IsOfficialBuild()
                                       ? IDS_VERSION_UI_OFFICIAL
                                       : IDS_VERSION_UI_UNOFFICIAL);
-  html_source->AddLocalizedString(
-      version_ui::kVersionBitSize,
-      sizeof(void*) == 8 ? IDS_VERSION_UI_64BIT : IDS_VERSION_UI_32BIT);
+  html_source->AddLocalizedString(version_ui::kVersionProcessorVariation,
+                                  VersionProcessorVariation());
 
   // Data strings.
   html_source->AddString(version_ui::kVersion,
@@ -146,24 +177,18 @@ void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(version_ui::kExecutablePath, std::string());
   html_source->AddString(version_ui::kProfilePath, std::string());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   html_source->AddString(version_ui::kOSType, base::mac::GetOSDisplayName());
 #elif !defined(OS_CHROMEOS)
   html_source->AddString(version_ui::kOSType, version_info::GetOSType());
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(OS_ANDROID)
   html_source->AddString(version_ui::kOSVersion,
                          AndroidAboutAppInfo::GetOsInfo());
   html_source->AddString(version_ui::kGmsVersion,
                          AndroidAboutAppInfo::GetGmsInfo());
-#else
-  html_source->AddString(version_ui::kFlashPlugin, "Flash");
-  // Note that the Flash version is retrieve asynchronously and returned in
-  // VersionHandler::OnGotPlugins. The area is initially blank.
-  html_source->AddString(version_ui::kFlashVersion, std::string());
 #endif  // OS_ANDROID
-
 
 #if defined(OS_WIN)
   html_source->AddString(

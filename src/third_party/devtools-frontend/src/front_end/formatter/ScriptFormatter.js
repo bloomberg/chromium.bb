@@ -42,7 +42,7 @@ export class FormatterInterface {}
  * @param {!Common.ResourceType.ResourceType} contentType
  * @param {string} mimeType
  * @param {string} content
- * @param {function(string, !FormatterSourceMapping)} callback
+ * @param {function(string, !FormatterSourceMapping):!Promise<void>} callback
  */
 FormatterInterface.format = function(contentType, mimeType, content, callback) {
   if (contentType.isDocumentOrScriptOrStyleSheet()) {
@@ -86,16 +86,26 @@ export class ScriptFormatter {
   /**
    * @param {string} mimeType
    * @param {string} content
-   * @param {function(string, !FormatterSourceMapping)} callback
+   * @param {function(string, !FormatterSourceMapping):!Promise<void>} callback
    */
   constructor(mimeType, content, callback) {
-    content = content.replace(/\r\n?|[\n\u2028\u2029]/g, '\n').replace(/^\uFEFF/, '');
+    this._mimeType = mimeType;
+    this._originalContent = content.replace(/\r\n?|[\n\u2028\u2029]/g, '\n').replace(/^\uFEFF/, '');
     this._callback = callback;
-    this._originalContent = content;
 
-    formatterWorkerPool()
-        .format(mimeType, content, Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get())
-        .then(this._didFormatContent.bind(this));
+    this._initialize();
+  }
+
+  async _initialize() {
+    const pool = formatterWorkerPool();
+    const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
+
+    const formatResult = await pool.format(this._mimeType, this._originalContent, indent);
+    if (!formatResult) {
+      this._callback(this._originalContent, new IdentityFormatterSourceMapping());
+    } else {
+      this._didFormatContent(formatResult);
+    }
   }
 
   /**
@@ -119,7 +129,7 @@ class ScriptIdentityFormatter {
   /**
    * @param {string} mimeType
    * @param {string} content
-   * @param {function(string, !FormatterSourceMapping)} callback
+   * @param {function(string, !FormatterSourceMapping):!Promise<void>} callback
    */
   constructor(mimeType, content, callback) {
     callback(content, new IdentityFormatterSourceMapping());
@@ -136,6 +146,7 @@ export class FormatterSourceMapping {
    * @return {!Array.<number>}
    */
   originalToFormatted(lineNumber, columnNumber) {
+    throw new Error('Not implemented yet.');
   }
 
   /**
@@ -143,7 +154,9 @@ export class FormatterSourceMapping {
    * @param {number=} columnNumber
    * @return {!Array.<number>}
    */
-  formattedToOriginal(lineNumber, columnNumber) {}
+  formattedToOriginal(lineNumber, columnNumber) {
+    throw new Error('Not implemented yet.');
+  }
 }
 
 /**

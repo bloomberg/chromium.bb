@@ -19,6 +19,9 @@
 #include "tools/debugger/DebugLayerManager.h"
 #include "tools/debugger/DrawCommand.h"
 
+#include <map>
+#include <vector>
+
 class GrAuditTrail;
 class SkNWayCanvas;
 class SkPicture;
@@ -59,7 +62,9 @@ public:
      */
     void setClipVizColor(SkColor clipVizColor) { this->fClipVizColor = clipVizColor; }
 
-    void setAndroidClipViz(bool enable) {this->fShowAndroidClip = enable; }
+    void setAndroidClipViz(bool enable) { this->fShowAndroidClip = enable; }
+
+    void setOriginVisible(bool enable) { this->fShowOrigin = enable; }
 
     void setDrawGpuOpBounds(bool drawGpuOpBounds) { fDrawGpuOpBounds = drawGpuOpBounds; }
 
@@ -101,7 +106,7 @@ public:
         Returns the draw command at the given index.
         @param index  The index of the command
      */
-    DrawCommand* getDrawCommandAt(int index);
+    DrawCommand* getDrawCommandAt(int index) const;
 
     /**
         Returns length of draw command vector.
@@ -124,6 +129,11 @@ public:
     void toJSONOpsTask(SkJSONWriter& writer, SkCanvas*);
 
     void detachCommands(SkTDArray<DrawCommand*>* dst) { fCommandVector.swap(*dst); }
+
+    /**
+        Returns a map from image IDs to command indices where they are used.
+     */
+    std::map<int, std::vector<int>> getImageIdToCommandMap(UrlDataManager& udm) const;
 
 protected:
     void              willSave() override;
@@ -213,6 +223,7 @@ private:
     SkColor fClipVizColor;
     bool    fDrawGpuOpBounds = false;
     bool    fShowAndroidClip = false;
+    bool    fShowOrigin = false;
 
     // When not negative, indicates the render node id of the layer represented by the next
     // drawPicture call.
@@ -237,7 +248,7 @@ private:
     void drawAndCollectOps(SkCanvas*);
     void cleanupAuditTrail(SkCanvas*);
 
-    typedef SkCanvasVirtualEnforcer<SkCanvas> INHERITED;
+    using INHERITED = SkCanvasVirtualEnforcer<SkCanvas>;
 };
 
 #endif

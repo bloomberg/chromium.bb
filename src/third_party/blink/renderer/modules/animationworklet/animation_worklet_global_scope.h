@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_GLOBAL_SCOPE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_GLOBAL_SCOPE_H_
 
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/animationworklet/animator.h"
@@ -37,7 +38,7 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
                               WorkerThread*);
   ~AnimationWorkletGlobalScope() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void Dispose() override;
   bool IsAnimationWorkletGlobalScope() const final { return true; }
 
@@ -61,6 +62,15 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
   }
   unsigned GetAnimatorsSizeForTest() { return animators_.size(); }
 
+  // Returns the token that uniquely identifies this worklet.
+  const AnimationWorkletToken& GetAnimationWorkletToken() const {
+    return token_;
+  }
+  WorkletToken GetWorkletToken() const final { return token_; }
+  ExecutionContextToken GetExecutionContextToken() const final {
+    return token_;
+  }
+
  private:
   void RegisterWithProxyClientIfNeeded();
   Animator* CreateInstance(
@@ -83,6 +93,9 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
   AnimatorMap animators_;
 
   bool registered_ = false;
+
+  // Default initialized to generate a distinct token for this worklet.
+  const AnimationWorkletToken token_;
 };
 
 template <>

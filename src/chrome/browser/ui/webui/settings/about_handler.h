@@ -28,7 +28,10 @@ namespace base {
 class DictionaryValue;
 class FilePath;
 class ListValue;
+class Clock;
 }  // namespace base
+
+class Profile;
 
 namespace settings {
 
@@ -36,7 +39,7 @@ namespace settings {
 class AboutHandler : public settings::SettingsPageUIHandler,
                      public UpgradeObserver {
  public:
-  AboutHandler();
+  explicit AboutHandler(Profile* profile);
   ~AboutHandler() override;
 
   // WebUIMessageHandler implementation.
@@ -49,6 +52,10 @@ class AboutHandler : public settings::SettingsPageUIHandler,
 
   // Returns the browser version as a string.
   static base::string16 BuildBrowserVersionString();
+
+ protected:
+  // Used to test the EOL string displayed in the About details page.
+  void set_clock(base::Clock* clock) { clock_ = clock; }
 
  private:
   void OnDeviceAutoUpdatePolicyChanged(const base::Value* previous_policy,
@@ -64,7 +71,7 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void HandleRefreshUpdateStatus(const base::ListValue* args);
   void RefreshUpdateStatus();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Promotes the updater for all users.
   void PromoteUpdater(const base::ListValue* args);
 #endif
@@ -135,11 +142,12 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void SetUpdateStatus(VersionUpdater::Status status,
                        int progress,
                        bool rollback,
+                       bool powerwash,
                        const std::string& version,
                        int64_t size,
                        const base::string16& fail_message);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Callback method which forwards promotion state to the page.
   void SetPromotionState(VersionUpdater::PromotionState state);
 #endif
@@ -168,6 +176,8 @@ class AboutHandler : public settings::SettingsPageUIHandler,
                           chromeos::UpdateEngineClient::EolInfo eol_info);
 #endif
 
+  Profile* profile_;
+
   // Specialized instance of the VersionUpdater used to update the browser.
   std::unique_ptr<VersionUpdater> version_updater_;
 
@@ -176,6 +186,9 @@ class AboutHandler : public settings::SettingsPageUIHandler,
 
   // If true changes to UpgradeObserver are applied, if false they are ignored.
   bool apply_changes_from_upgrade_observer_;
+
+  // Override to test the EOL string displayed in the About details page.
+  base::Clock* clock_;
 
   // Used for callbacks.
   base::WeakPtrFactory<AboutHandler> weak_factory_{this};

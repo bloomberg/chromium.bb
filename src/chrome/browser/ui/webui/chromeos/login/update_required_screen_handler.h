@@ -42,7 +42,7 @@ class UpdateRequiredView {
   // Hides the contents of the screen.
   virtual void Hide() = 0;
 
-  // Binds |screen| to the view.
+  // Binds `screen` to the view.
   virtual void Bind(UpdateRequiredScreen* screen) = 0;
 
   // Unbinds the screen from the view.
@@ -65,6 +65,8 @@ class UpdateRequiredView {
   // Set enterprise and device name to be used in strings in the UI.
   virtual void SetEnterpriseAndDeviceName(const std::string& enterpriseDomain,
                                           const base::string16& deviceName) = 0;
+  virtual void SetEolMessage(const std::string& eolMessage) = 0;
+  virtual void SetIsUserDataPresent(bool deleted) = 0;
 };
 
 class UpdateRequiredScreenHandler : public UpdateRequiredView,
@@ -90,6 +92,8 @@ class UpdateRequiredScreenHandler : public UpdateRequiredView,
   void SetUIState(UpdateRequiredView::UIState ui_state) override;
   void SetEnterpriseAndDeviceName(const std::string& enterpriseDomain,
                                   const base::string16& deviceName) override;
+  void SetEolMessage(const std::string& eolMessage) override;
+  void SetIsUserDataPresent(bool data_present) override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(

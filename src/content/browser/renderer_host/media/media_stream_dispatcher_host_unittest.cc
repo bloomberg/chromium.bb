@@ -22,6 +22,7 @@
 #include "base/test/gmock_move_support.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
@@ -43,7 +44,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #endif
@@ -69,7 +70,8 @@ constexpr media::VideoCaptureApi kStubCaptureApi =
 void AudioInputDevicesEnumerated(base::OnceClosure quit_closure,
                                  media::AudioDeviceDescriptions* out,
                                  const MediaDeviceEnumeration& enumeration) {
-  for (const auto& info : enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
+  for (const auto& info : enumeration[static_cast<size_t>(
+           blink::mojom::MediaDeviceType::MEDIA_AUDIO_INPUT)]) {
     out->emplace_back(info.label, info.device_id, info.group_id);
   }
   std::move(quit_closure).Run();
@@ -138,11 +140,13 @@ class MockMediaStreamDispatcherHost
                        const blink::MediaStreamDevice& device) override {
     OnDeviceStoppedInternal(label, device);
   }
-
-  // mojom::MediaStreamDeviceObserver implementation.
   void OnDeviceChanged(const std::string& label,
                        const blink::MediaStreamDevice& old_device,
                        const blink::MediaStreamDevice& new_device) override {}
+  void OnDeviceRequestStateChange(
+      const std::string& label,
+      const blink::MediaStreamDevice& device,
+      const blink::mojom::MediaStreamStateChange new_state) override {}
 
   mojo::PendingRemote<blink::mojom::MediaStreamDeviceObserver>
   BindNewPipeAndPassRemote() {
@@ -160,7 +164,8 @@ class MockMediaStreamDispatcherHost
                          blink::mojom::MediaStreamRequestResult result,
                          const std::string& label,
                          const blink::MediaStreamDevices& audio_devices,
-                         const blink::MediaStreamDevices& video_devices) {
+                         const blink::MediaStreamDevices& video_devices,
+                         bool pan_tilt_zoom_allowed) {
     if (result != blink::mojom::MediaStreamRequestResult::OK) {
       OnStreamGenerationFailed(request_id, result);
       return;
@@ -225,7 +230,10 @@ class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
   void OnStarted(
       base::OnceClosure stop,
       content::MediaStreamUI::SourceCallback source,
-      MediaStreamUIProxy::WindowIdCallback window_id_callback) override {
+      MediaStreamUIProxy::WindowIdCallback window_id_callback,
+      const std::string& label,
+      std::vector<DesktopMediaID> screen_share_ids,
+      MediaStreamUI::StateChangeCallback state_change_callback) override {
     // gmock cannot handle move-only types, so no std::move().
     MockOnStarted(stop);
   }
@@ -262,7 +270,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     host_->SetMediaStreamDeviceObserverForTesting(
         host_->BindNewPipeAndPassRemote());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     chromeos::CrasAudioClient::InitializeFake();
     chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
@@ -270,7 +278,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
   ~MediaStreamDispatcherHostTest() override {
     audio_manager_->Shutdown();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     chromeos::CrasAudioHandler::Shutdown();
     chromeos::CrasAudioClient::Shutdown();
 #endif
@@ -295,7 +303,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
     base::RunLoop run_loop;
     MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-    devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+    devices_to_enumerate[static_cast<size_t>(
+        blink::mojom::MediaDeviceType::MEDIA_AUDIO_INPUT)] = true;
     media_stream_manager_->media_devices_manager()->EnumerateDevices(
         devices_to_enumerate,
         base::BindOnce(&AudioInputDevicesEnumerated, run_loop.QuitClosure(),

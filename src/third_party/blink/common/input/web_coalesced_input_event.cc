@@ -19,7 +19,7 @@ WebInputEvent* WebCoalescedInputEvent::EventPointer() {
 
 void WebCoalescedInputEvent::AddCoalescedEvent(
     const blink::WebInputEvent& event) {
-  coalesced_events_.emplace_back(event.Clone());
+  coalesced_events_.push_back(event.Clone());
 }
 
 const WebInputEvent& WebCoalescedInputEvent::Event() const {
@@ -35,14 +35,14 @@ const WebInputEvent& WebCoalescedInputEvent::CoalescedEvent(
   return *coalesced_events_[index].get();
 }
 
-const std::vector<WebCoalescedInputEvent::WebScopedInputEvent>&
+const std::vector<std::unique_ptr<WebInputEvent>>&
 WebCoalescedInputEvent::GetCoalescedEventsPointers() const {
   return coalesced_events_;
 }
 
 void WebCoalescedInputEvent::AddPredictedEvent(
     const blink::WebInputEvent& event) {
-  predicted_events_.emplace_back(event.Clone());
+  predicted_events_.push_back(event.Clone());
 }
 
 size_t WebCoalescedInputEvent::PredictedEventSize() const {
@@ -54,7 +54,7 @@ const WebInputEvent& WebCoalescedInputEvent::PredictedEvent(
   return *predicted_events_[index].get();
 }
 
-const std::vector<WebCoalescedInputEvent::WebScopedInputEvent>&
+const std::vector<std::unique_ptr<WebInputEvent>>&
 WebCoalescedInputEvent::GetPredictedEventsPointers() const {
   return predicted_events_;
 }
@@ -67,7 +67,8 @@ WebCoalescedInputEvent::WebCoalescedInputEvent(
     std::unique_ptr<WebInputEvent> event,
     const ui::LatencyInfo& latency)
     : event_(std::move(event)), latency_(latency) {
-  coalesced_events_.emplace_back(event_->Clone());
+  DCHECK(event_);
+  coalesced_events_.push_back(event_->Clone());
 }
 
 WebCoalescedInputEvent::WebCoalescedInputEvent(
@@ -85,17 +86,20 @@ WebCoalescedInputEvent::WebCoalescedInputEvent(
   event_ = event.event_->Clone();
   latency_ = event.latency_;
   for (const auto& coalesced_event : event.coalesced_events_)
-    coalesced_events_.emplace_back(coalesced_event->Clone());
+    coalesced_events_.push_back(coalesced_event->Clone());
   for (const auto& predicted_event : event.predicted_events_)
-    predicted_events_.emplace_back(predicted_event->Clone());
+    predicted_events_.push_back(predicted_event->Clone());
 }
+
+WebCoalescedInputEvent::~WebCoalescedInputEvent() = default;
 
 bool WebCoalescedInputEvent::CanCoalesceWith(
     const WebCoalescedInputEvent& other) const {
   return event_->CanCoalesce(*other.event_);
 }
 
-void WebCoalescedInputEvent::CoalesceWith(WebCoalescedInputEvent& newer_event) {
+void WebCoalescedInputEvent::CoalesceWith(
+    const WebCoalescedInputEvent& newer_event) {
   TRACE_EVENT2("input", "WebCoalescedInputEvent::CoalesceWith", "traceId",
                latency_.trace_id(), "coalescedTraceId",
                newer_event.latency_.trace_id());
@@ -110,14 +114,10 @@ void WebCoalescedInputEvent::CoalesceWith(WebCoalescedInputEvent& newer_event) {
   event_->SetTimeStamp(time_stamp);
   AddCoalescedEvent(*newer_event.event_);
 
-  // When coalescing two input events, we keep the oldest LatencyInfo
-  // since it will represent the longest latency. If it's a GestureScrollUpdate
-  // event, update the old event's last timestamp and scroll delta using the
-  // newer event's latency info.
+  // If this is a GestureScrollUpdate event, update the old event's last
+  // timestamp and scroll delta using the newer event's latency info.
   if (event_->GetType() == WebInputEvent::Type::kGestureScrollUpdate)
     latency_.CoalesceScrollUpdateWith(newer_event.latency_);
-  newer_event.latency_ = latency_;
-  newer_event.latency_.set_coalesced();
 }
 
 }  // namespace blink

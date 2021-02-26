@@ -52,14 +52,14 @@
 
 namespace google_breakpad {
 
-static bool file_exists(const string &file_name) {
+static bool file_exists(const string& file_name) {
   struct stat sb;
   return stat(file_name.c_str(), &sb) == 0;
 }
 
 SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFile(
-    const CodeModule *module, const SystemInfo *system_info,
-    string *symbol_file) {
+    const CodeModule* module, const SystemInfo* system_info,
+    string* symbol_file) {
   BPLOG_IF(ERROR, !symbol_file) << "SimpleSymbolSupplier::GetSymbolFile "
                                    "requires |symbol_file|";
   assert(symbol_file);
@@ -77,10 +77,10 @@ SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFile(
 }
 
 SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFile(
-    const CodeModule *module,
-    const SystemInfo *system_info,
-    string *symbol_file,
-    string *symbol_data) {
+    const CodeModule* module,
+    const SystemInfo* system_info,
+    string* symbol_file,
+    string* symbol_data) {
   assert(symbol_data);
   symbol_data->clear();
 
@@ -96,11 +96,11 @@ SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFile(
 }
 
 SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetCStringSymbolData(
-    const CodeModule *module,
-    const SystemInfo *system_info,
-    string *symbol_file,
-    char **symbol_data,
-    size_t *symbol_data_size) {
+    const CodeModule* module,
+    const SystemInfo* system_info,
+    string* symbol_file,
+    char** symbol_data,
+    size_t* symbol_data_size) {
   assert(symbol_data);
   assert(symbol_data_size);
 
@@ -123,13 +123,13 @@ SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetCStringSymbolData(
   return s;
 }
 
-void SimpleSymbolSupplier::FreeSymbolData(const CodeModule *module) {
+void SimpleSymbolSupplier::FreeSymbolData(const CodeModule* module) {
   if (!module) {
     BPLOG(INFO) << "Cannot free symbol data buffer for NULL module";
     return;
   }
 
-  map<string, char *>::iterator it = memory_buffers_.find(module->code_file());
+  map<string, char*>::iterator it = memory_buffers_.find(module->code_file());
   if (it == memory_buffers_.end()) {
     BPLOG(INFO) << "Cannot find symbol data buffer for module "
                 << module->code_file();
@@ -140,8 +140,8 @@ void SimpleSymbolSupplier::FreeSymbolData(const CodeModule *module) {
 }
 
 SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFileAtPathFromRoot(
-    const CodeModule *module, const SystemInfo *system_info,
-    const string &root_path, string *symbol_file) {
+    const CodeModule* module, const SystemInfo* system_info,
+    const string& root_path, string* symbol_file) {
   BPLOG_IF(ERROR, !symbol_file) << "SimpleSymbolSupplier::GetSymbolFileAtPath "
                                    "requires |symbol_file|";
   assert(symbol_file);

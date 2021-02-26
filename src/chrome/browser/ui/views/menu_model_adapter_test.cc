@@ -6,16 +6,15 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/views/test/view_event_test_base.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/test/ui_controls.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -153,8 +152,7 @@ class TopMenuModel : public CommonMenuModel {
 
 }  // namespace
 
-class MenuModelAdapterTest : public ViewEventTestBase,
-                             public views::ButtonListener {
+class MenuModelAdapterTest : public ViewEventTestBase {
  public:
   MenuModelAdapterTest() = default;
   ~MenuModelAdapterTest() override = default;
@@ -177,23 +175,15 @@ class MenuModelAdapterTest : public ViewEventTestBase,
 
   std::unique_ptr<views::View> CreateContentsView() override {
     auto button = std::make_unique<views::MenuButton>(
-        base::ASCIIToUTF16("Menu Adapter Test"), this);
+        base::BindRepeating(&MenuModelAdapterTest::ButtonPressed,
+                            base::Unretained(this)),
+        base::ASCIIToUTF16("Menu Adapter Test"));
     button_ = button.get();
     return button;
   }
 
   gfx::Size GetPreferredSizeForContents() const override {
     return button_->GetPreferredSize();
-  }
-
-  // views::ButtonListener implementation.
-  void ButtonPressed(views::Button* source, const ui::Event& event) override {
-    gfx::Point screen_location;
-    views::View::ConvertPointToScreen(source, &screen_location);
-    gfx::Rect bounds(screen_location, source->size());
-    menu_runner_->RunMenuAt(source->GetWidget(), button_->button_controller(),
-                            bounds, views::MenuAnchorPosition::kTopLeft,
-                            ui::MENU_SOURCE_NONE);
   }
 
   // ViewEventTestBase implementation
@@ -224,7 +214,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
 
     menu_model_adapter_.BuildMenu(menu_);
 
-    ASSERT_TRUE(base::MessageLoopCurrentForUI::IsSet());
+    ASSERT_TRUE(base::CurrentUIThread::IsSet());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, CreateEventTask(this, &MenuModelAdapterTest::Step3));
   }
@@ -258,6 +248,13 @@ class MenuModelAdapterTest : public ViewEventTestBase,
     ui_test_utils::MoveMouseToCenterAndPress(
         view, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
         std::move(next));
+  }
+
+  void ButtonPressed() {
+    menu_runner_->RunMenuAt(button_->GetWidget(), button_->button_controller(),
+                            button_->GetBoundsInScreen(),
+                            views::MenuAnchorPosition::kTopLeft,
+                            ui::MENU_SOURCE_NONE);
   }
 
   views::MenuButton* button_ = nullptr;

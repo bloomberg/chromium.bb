@@ -15,6 +15,7 @@
 #ifndef TESTS_UNITTESTS_VALIDATIONTEST_H_
 #define TESTS_UNITTESTS_VALIDATIONTEST_H_
 
+#include "common/Log.h"
 #include "dawn/webgpu_cpp.h"
 #include "dawn_native/DawnNative.h"
 #include "gtest/gtest.h"
@@ -28,19 +29,37 @@
     do {                                                        \
     } while (0)
 
+// Skip a test when the given condition is satisfied.
+#define DAWN_SKIP_TEST_IF(condition)                            \
+    do {                                                        \
+        if (condition) {                                        \
+            dawn::InfoLog() << "Test skipped: " #condition "."; \
+            GTEST_SKIP();                                       \
+            return;                                             \
+        }                                                       \
+    } while (0)
+
+#define EXPECT_DEPRECATION_WARNING(statement)                                                    \
+    do {                                                                                         \
+        size_t warningsBefore = dawn_native::GetDeprecationWarningCountForTesting(device.Get()); \
+        statement;                                                                               \
+        size_t warningsAfter = dawn_native::GetDeprecationWarningCountForTesting(device.Get());  \
+        EXPECT_EQ(mLastWarningCount, warningsBefore);                                            \
+        mLastWarningCount = warningsAfter;                                                       \
+    } while (0)
+
 class ValidationTest : public testing::Test {
   public:
-    ValidationTest();
     ~ValidationTest() override;
 
-    wgpu::Device CreateDeviceFromAdapter(dawn_native::Adapter adapter,
-                                         const std::vector<const char*>& requiredExtensions);
-
+    void SetUp() override;
     void TearDown() override;
 
     void StartExpectDeviceError();
     bool EndExpectDeviceError();
     std::string GetLastDeviceErrorMessage() const;
+
+    void WaitForAllOperations(const wgpu::Device& device) const;
 
     // Helper functions to create objects to test validation.
 
@@ -56,10 +75,16 @@ class ValidationTest : public testing::Test {
         wgpu::RenderPassColorAttachmentDescriptor mColorAttachment;
     };
 
+    bool HasWGSL() const;
+
   protected:
+    virtual wgpu::Device CreateTestDevice();
+
     wgpu::Device device;
     dawn_native::Adapter adapter;
     std::unique_ptr<dawn_native::Instance> instance;
+
+    size_t mLastWarningCount = 0;
 
   private:
     static void OnDeviceError(WGPUErrorType type, const char* message, void* userdata);
@@ -68,4 +93,4 @@ class ValidationTest : public testing::Test {
     bool mError = false;
 };
 
-#endif // TESTS_UNITTESTS_VALIDATIONTEST_H_
+#endif  // TESTS_UNITTESTS_VALIDATIONTEST_H_

@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_shelf_context_menu.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
@@ -38,10 +39,10 @@ DownloadShelfContextMenu::DownloadShelfContextMenu(DownloadUIModel* download)
 }
 
 ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
-  ui::SimpleMenuModel* model = NULL;
+  ui::SimpleMenuModel* model = nullptr;
 
   if (!download_)
-    return NULL;
+    return nullptr;
 
   DCHECK(WantsContextMenu(download_));
 
@@ -49,12 +50,8 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
 
   if (download_->IsMixedContent()) {
     model = GetMixedContentDownloadMenuModel();
-  } else if (download_->GetDangerType() ==
-                 download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED ||
-             download_->GetDangerType() ==
-                 download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE ||
-             download_->GetDangerType() ==
-                 download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK) {
+  } else if (ChromeDownloadManagerDelegate::IsDangerTypeBlocked(
+                 download_->GetDangerType())) {
     model = GetInterruptedMenuModel(is_download);
   } else if (download_->GetDangerType() ==
              download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
@@ -149,7 +146,7 @@ base::string16 DownloadShelfContextMenu::GetLabelForCommandId(
                    : IDS_DOWNLOAD_MENU_PLATFORM_OPEN_ALWAYS;
           break;
         }
-#elif defined(OS_MACOSX) || defined(OS_LINUX)
+#elif defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
         if (can_open_pdf_in_system_viewer) {
           id = IDS_DOWNLOAD_MENU_PLATFORM_OPEN_ALWAYS;
           break;
@@ -196,7 +193,7 @@ void DownloadShelfContextMenu::DetachFromDownloadItem() {
 
   download_commands_.reset();
   download_->RemoveObserver(this);
-  download_ = NULL;
+  download_ = nullptr;
 }
 
 void DownloadShelfContextMenu::OnDownloadDestroyed() {
@@ -416,7 +413,8 @@ void DownloadShelfContextMenu::AddAutoOpenToMenu(ui::SimpleMenuModel* menu) {
         DownloadCommands::ALWAYS_OPEN_TYPE,
         GetLabelForCommandId(DownloadCommands::ALWAYS_OPEN_TYPE),
         ui::ImageModel::FromVectorIcon(vector_icons::kBusinessIcon,
-                                       gfx::kChromeIconGrey, 16));
+                                       gfx::kChromeIconGrey,
+                                       ui::SimpleMenuModel::kDefaultIconSize));
   } else {
     menu->AddCheckItem(
         DownloadCommands::ALWAYS_OPEN_TYPE,

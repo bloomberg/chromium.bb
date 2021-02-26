@@ -54,8 +54,6 @@ class DevToolsFrontendImpl final
       public Supplement<LocalFrame>,
       public mojom::blink::DevToolsFrontend,
       public InspectorFrontendClient {
-  USING_GARBAGE_COLLECTED_MIXIN(DevToolsFrontendImpl);
-
  public:
   static const char kSupplementName[];
 
@@ -69,7 +67,7 @@ class DevToolsFrontendImpl final
       mojo::PendingAssociatedReceiver<mojom::blink::DevToolsFrontend>);
   ~DevToolsFrontendImpl() override;
   void DidClearWindowObject();
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void DestroyOnHostGone();
@@ -87,11 +85,11 @@ class DevToolsFrontendImpl final
   Member<DevToolsHost> devtools_host_;
   String api_script_;
   HeapMojoAssociatedRemote<mojom::blink::DevToolsFrontendHost,
-                           HeapMojoWrapperMode::kWithoutContextObserver>
+                           HeapMojoWrapperMode::kForceWithoutContextObserver>
       host_;
   HeapMojoAssociatedReceiver<mojom::blink::DevToolsFrontend,
                              DevToolsFrontendImpl,
-                             HeapMojoWrapperMode::kWithoutContextObserver>
+                             HeapMojoWrapperMode::kForceWithoutContextObserver>
       receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrontendImpl);

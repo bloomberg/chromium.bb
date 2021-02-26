@@ -9,19 +9,13 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/mojom/notifications/notification.mojom-forward.h"
+#include "third_party/blink/public/mojom/notifications/notification.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace blink {
-
-enum PlatformNotificationActionType {
-  PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON = 0,
-  PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT,
-};
 
 // A notification action (button or text input); corresponds to Blink
 // WebNotificationAction.
@@ -31,8 +25,7 @@ struct BLINK_COMMON_EXPORT PlatformNotificationAction {
   ~PlatformNotificationAction();
 
   // Type of the action (button or text input).
-  PlatformNotificationActionType type =
-      PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
+  mojom::NotificationActionType type = mojom::NotificationActionType::BUTTON;
 
   // Action name that the author can use to distinguish them.
   std::string action;
@@ -45,7 +38,7 @@ struct BLINK_COMMON_EXPORT PlatformNotificationAction {
 
   // Optional text to use as placeholder for text inputs. May be null if it was
   // not specified.
-  base::NullableString16 placeholder;
+  base::Optional<base::string16> placeholder;
 };
 
 // Structure representing the information associated with a Web Notification.

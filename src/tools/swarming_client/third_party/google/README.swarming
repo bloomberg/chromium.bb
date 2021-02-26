@@ -10,8 +10,8 @@ License: Apache 2.0
 
 Name: Protocol Buffers
 Short Name: protobuf
-Version: 3.6.1
-Revision: 48cb18e5c419ddd23d9badcfe4e9df7bde1979b2
+Version: 3.12.1
+Revision: a37cc13b2f6d11303811011b0bfbc867e7c0bf2b
 Home-page: https://github.com/protocolbuffers/protobuf
 License: New BSD License
 
@@ -21,17 +21,17 @@ Protocol Buffers are Google's data interchange format.
 Reproduce:
 
 ```
-curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.6.1/protobuf-python-3.6.1.zip
-unzip protobuf-python-3.6.1.zip
-cd protobuf-3.6.1/python
+curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.12.1/protobuf-python-3.12.1.zip
+unzip protobuf-python-3.12.1.zip
+cd protobuf-3.12.1/python
 # You need protoc in $PATH from infra.git:
 python setup.py build
-rm -rf ../..
+cd ../..
 git rm -rf protobuf
-mv protobuf-3.6.1/python/build/lib/google/protobuf .
+mv protobuf-3.12.1/python/build/lib/google/protobuf .
 find protobuf -name "*_test.py" -delete
 git add protobuf
-rm -rf protobuf-3.6.1 protobuf-python-3.6.1.zip
+rm -rf protobuf-3.12.1 protobuf-python-3.12.1.zip
 ```
 
 ---

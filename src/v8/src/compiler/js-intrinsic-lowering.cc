@@ -82,12 +82,14 @@ Reduction JSIntrinsicLowering::Reduce(Node* node) {
       return ReduceToLength(node);
     case Runtime::kInlineToObject:
       return ReduceToObject(node);
-    case Runtime::kInlineToStringRT:
+    case Runtime::kInlineToString:
       return ReduceToString(node);
     case Runtime::kInlineCall:
       return ReduceCall(node);
     case Runtime::kInlineIncBlockCounter:
       return ReduceIncBlockCounter(node);
+    case Runtime::kInlineGetImportMetaObject:
+      return ReduceGetImportMetaObject(node);
     default:
       break;
   }
@@ -283,7 +285,8 @@ Reduction JSIntrinsicLowering::ReduceTurbofanStaticAssert(Node* node) {
   } else {
     Node* value = NodeProperties::GetValueInput(node, 0);
     Node* effect = NodeProperties::GetEffectInput(node);
-    Node* assert = graph()->NewNode(common()->StaticAssert(), value, effect);
+    Node* assert = graph()->NewNode(
+        common()->StaticAssert("%TurbofanStaticAssert"), value, effect);
     ReplaceWithValue(node, node, assert, nullptr);
   }
   return Changed(jsgraph_->UndefinedConstant());
@@ -320,7 +323,7 @@ Reduction JSIntrinsicLowering::ReduceToObject(Node* node) {
 Reduction JSIntrinsicLowering::ReduceToString(Node* node) {
   // ToString is unnecessary if the input is a string.
   HeapObjectMatcher m(NodeProperties::GetValueInput(node, 0));
-  if (m.HasValue() && m.Ref(broker()).IsString()) {
+  if (m.HasResolvedValue() && m.Ref(broker()).IsString()) {
     ReplaceWithValue(node, m.node());
     return Replace(m.node());
   }
@@ -330,8 +333,15 @@ Reduction JSIntrinsicLowering::ReduceToString(Node* node) {
 
 
 Reduction JSIntrinsicLowering::ReduceCall(Node* node) {
-  size_t const arity = CallRuntimeParametersOf(node->op()).arity();
-  NodeProperties::ChangeOp(node, javascript()->Call(arity));
+  int const arity =
+      static_cast<int>(CallRuntimeParametersOf(node->op()).arity());
+  static constexpr int kTargetAndReceiver = 2;
+  STATIC_ASSERT(JSCallNode::kFeedbackVectorIsLastInput);
+  Node* feedback = jsgraph()->UndefinedConstant();
+  node->InsertInput(graph()->zone(), arity, feedback);
+  NodeProperties::ChangeOp(
+      node,
+      javascript()->Call(JSCallNode::ArityForArgc(arity - kTargetAndReceiver)));
   return Changed(node);
 }
 
@@ -341,6 +351,11 @@ Reduction JSIntrinsicLowering::ReduceIncBlockCounter(Node* node) {
   return Change(node,
                 Builtins::CallableFor(isolate(), Builtins::kIncBlockCounter), 0,
                 kDoesNotNeedFrameState);
+}
+
+Reduction JSIntrinsicLowering::ReduceGetImportMetaObject(Node* node) {
+  NodeProperties::ChangeOp(node, javascript()->GetImportMeta());
+  return Changed(node);
 }
 
 Reduction JSIntrinsicLowering::Change(Node* node, const Operator* op, Node* a,

@@ -4,11 +4,12 @@
 
 #include <memory>
 
-#include "base/bind_helpers.h"
+#include "base/barrier_closure.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -16,11 +17,14 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/web_apps/web_app_uninstall_dialog_view.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/os_integration_manager.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 
 using web_app::AppId;
 
@@ -30,7 +34,7 @@ AppId InstallTestWebApp(Profile* profile) {
   const GURL example_url = GURL("http://example.org/");
 
   auto web_app_info = std::make_unique<WebApplicationInfo>();
-  web_app_info->app_url = example_url;
+  web_app_info->start_url = example_url;
   web_app_info->scope = example_url;
   web_app_info->open_as_window = true;
   return web_app::InstallWebApp(profile, std::move(web_app_info));
@@ -38,7 +42,16 @@ AppId InstallTestWebApp(Profile* profile) {
 
 }  // namespace
 
-using WebAppUninstallDialogViewBrowserTest = InProcessBrowserTest;
+class WebAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    os_hooks_suppress_ =
+        web_app::OsIntegrationManager::ScopedSuppressOsHooksForTesting();
+  }
+
+ private:
+  web_app::ScopedOsHooksSuppress os_hooks_suppress_;
+};
 
 // Test that WebAppUninstallDialog cancels the uninstall if the Window
 // which is passed to WebAppUninstallDialog::Create() is destroyed before
@@ -89,6 +102,55 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
   browser()->window()->Close();
   run_loop.Run();
   EXPECT_FALSE(was_uninstalled);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
+                       TestDialogUserFlow_Cancel) {
+  extensions::ScopedTestDialogAutoConfirm auto_confirm(
+      extensions::ScopedTestDialogAutoConfirm::CANCEL);
+  AppId app_id = InstallTestWebApp(browser()->profile());
+
+  WebAppUninstallDialogViews dialog(browser()->profile(),
+                                    browser()->window()->GetNativeWindow());
+
+  base::RunLoop run_loop;
+  auto callback =
+      base::BarrierClosure(/*num_closures=*/2, run_loop.QuitClosure());
+  bool was_uninstalled = false;
+
+  dialog.SetDialogShownCallbackForTesting(callback);
+  dialog.ConfirmUninstall(app_id,
+                          base::BindLambdaForTesting([&](bool uninstalled) {
+                            was_uninstalled = uninstalled;
+                            callback.Run();
+                          }));
+  run_loop.Run();
+  EXPECT_FALSE(was_uninstalled);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
+                       TestDialogUserFlow_Accept) {
+  extensions::ScopedTestDialogAutoConfirm auto_confirm(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION);
+  AppId app_id = InstallTestWebApp(browser()->profile());
+
+  WebAppUninstallDialogViews dialog(browser()->profile(),
+                                    browser()->window()->GetNativeWindow());
+
+  base::RunLoop run_loop;
+  auto callback =
+      base::BarrierClosure(/*num_closures=*/2, run_loop.QuitClosure());
+  bool was_uninstalled = false;
+
+  dialog.SetDialogShownCallbackForTesting(callback);
+  dialog.ConfirmUninstall(app_id,
+                          base::BindLambdaForTesting([&](bool uninstalled) {
+                            was_uninstalled = uninstalled;
+                            callback.Run();
+                          }));
+
+  run_loop.Run();
+  EXPECT_TRUE(was_uninstalled);
 }
 
 #if defined(OS_CHROMEOS)

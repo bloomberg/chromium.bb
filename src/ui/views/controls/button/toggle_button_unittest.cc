@@ -19,8 +19,7 @@ namespace views {
 
 class TestToggleButton : public ToggleButton {
  public:
-  explicit TestToggleButton(int* counter)
-      : ToggleButton(nullptr), counter_(counter) {}
+  explicit TestToggleButton(int* counter) : counter_(counter) {}
   ~TestToggleButton() override {
     // Calling SetInkDropMode() in this subclass allows this class's
     // implementation of RemoveInkDropLayer() to be called. The same
@@ -66,8 +65,8 @@ class ToggleButtonTest : public ViewsTestBase {
     widget_->Init(std::move(params));
     widget_->Show();
 
-    button_ = new TestToggleButton(&counter_);
-    widget_->SetContentsView(button_);
+    button_ =
+        widget_->SetContentsView(std::make_unique<TestToggleButton>(&counter_));
   }
 
   void TearDown() override {

@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "media/capture/video/linux/scoped_v4l2_device_fd.h"
 #include "media/capture/video/linux/video_capture_device_linux.h"
 
@@ -27,7 +28,7 @@
 #include <linux/videodev2.h>
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 #include "media/capture/video/linux/camera_config_chromeos.h"
 #include "media/capture/video/linux/video_capture_device_chromeos.h"
 #endif
@@ -35,6 +36,11 @@
 namespace media {
 
 namespace {
+
+bool CompareCaptureDevices(const VideoCaptureDeviceInfo& a,
+                           const VideoCaptureDeviceInfo& b) {
+  return a.descriptor < b.descriptor;
+}
 
 // USB VID and PID are both 4 bytes long.
 const size_t kVidPidSize = 4;
@@ -47,7 +53,7 @@ const char kPidPathTemplate[] = "/sys/class/video4linux/%s/device/../idProduct";
 const char kInterfacePathTemplate[] =
     "/sys/class/video4linux/%s/device/interface";
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 static CameraConfigChromeOS* GetCameraConfig() {
   static CameraConfigChromeOS* config = new CameraConfigChromeOS();
   return config;
@@ -119,7 +125,7 @@ class DevVideoFilePathsDeviceProvider
 
   VideoFacingMode GetCameraFacing(const std::string& device_id,
                                   const std::string& model_id) override {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
     return GetCameraConfig()->GetCameraFacing(device_id, model_id);
 #else
     NOTREACHED();
@@ -129,7 +135,7 @@ class DevVideoFilePathsDeviceProvider
 
   int GetOrientation(const std::string& device_id,
                      const std::string& model_id) override {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
     return GetCameraConfig()->GetOrientation(device_id, model_id);
 #else
     NOTREACHED();
@@ -160,7 +166,7 @@ std::unique_ptr<VideoCaptureDevice>
 VideoCaptureDeviceFactoryLinux::CreateDevice(
     const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   ChromeOSDeviceCameraConfig camera_config(
       device_provider_->GetCameraFacing(device_descriptor.device_id,
                                         device_descriptor.model_id),
@@ -187,10 +193,10 @@ VideoCaptureDeviceFactoryLinux::CreateDevice(
   return self;
 }
 
-void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
-    VideoCaptureDeviceDescriptors* device_descriptors) {
+void VideoCaptureDeviceFactoryLinux::GetDevicesInfo(
+    GetDevicesInfoCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(device_descriptors->empty());
+  std::vector<VideoCaptureDeviceInfo> devices_info;
   std::vector<std::string> filepaths;
   device_provider_->GetDeviceIds(&filepaths);
   for (auto& unique_id : filepaths) {
@@ -215,43 +221,51 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
           device_provider_->GetDeviceDisplayName(unique_id);
       if (display_name.empty())
         display_name = reinterpret_cast<char*>(cap.card);
-#if defined(OS_CHROMEOS)
-      device_descriptors->emplace_back(
-          display_name, unique_id, model_id,
-          VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE,
-          VideoCaptureTransportType::OTHER_TRANSPORT,
-          device_provider_->GetCameraFacing(unique_id, model_id));
+
+      VideoFacingMode facing_mode =
+#if BUILDFLAG(IS_ASH)
+          device_provider_->GetCameraFacing(unique_id, model_id);
 #else
-      device_descriptors->emplace_back(
-          display_name, unique_id, model_id,
-          VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE);
+          VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
 #endif
+
+      devices_info.emplace_back(VideoCaptureDeviceDescriptor(
+          display_name, unique_id, model_id,
+          VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE, GetControlSupport(fd.get()),
+          VideoCaptureTransportType::OTHER_TRANSPORT, facing_mode));
+
+      GetSupportedFormatsForV4L2BufferType(
+          fd.get(), &devices_info.back().supported_formats);
     }
   }
-  // Since JS doesn't have API to get camera facing, we sort the list to make
-  // sure apps use the front camera by default.
-  // TODO(henryhsu): remove this after JS API completed (crbug.com/543997).
-  std::sort(device_descriptors->begin(), device_descriptors->end());
-}
 
-void VideoCaptureDeviceFactoryLinux::GetSupportedFormats(
-    const VideoCaptureDeviceDescriptor& device,
-    VideoCaptureFormats* supported_formats) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (device.device_id.empty())
-    return;
-  ScopedV4L2DeviceFD fd(v4l2_.get(), HANDLE_EINTR(v4l2_->open(
-                                         device.device_id.c_str(), O_RDONLY)));
-  if (!fd.is_valid())  // Failed to open this device.
-    return;
-  supported_formats->clear();
+  // This is required for some applications that rely on the stable ordering of
+  // devices.
+  std::sort(devices_info.begin(), devices_info.end(), CompareCaptureDevices);
 
-  DCHECK_NE(device.capture_api, VideoCaptureApi::UNKNOWN);
-  GetSupportedFormatsForV4L2BufferType(fd.get(), supported_formats);
+  std::move(callback).Run(std::move(devices_info));
 }
 
 int VideoCaptureDeviceFactoryLinux::DoIoctl(int fd, int request, void* argp) {
   return HANDLE_EINTR(v4l2_->ioctl(fd, request, argp));
+}
+
+// Check if the video capture device supports pan, tilt and zoom controls.
+VideoCaptureControlSupport VideoCaptureDeviceFactoryLinux::GetControlSupport(
+    int fd) {
+  VideoCaptureControlSupport control_support;
+  control_support.pan = GetControlSupport(fd, V4L2_CID_PAN_ABSOLUTE);
+  control_support.tilt = GetControlSupport(fd, V4L2_CID_TILT_ABSOLUTE);
+  control_support.zoom = GetControlSupport(fd, V4L2_CID_ZOOM_ABSOLUTE);
+  return control_support;
+}
+
+bool VideoCaptureDeviceFactoryLinux::GetControlSupport(int fd, int control_id) {
+  v4l2_queryctrl range = {};
+  range.id = control_id;
+  range.type = V4L2_CTRL_TYPE_INTEGER;
+  return DoIoctl(fd, VIDIOC_QUERYCTRL, &range) == 0 &&
+         range.minimum < range.maximum;
 }
 
 bool VideoCaptureDeviceFactoryLinux::HasUsableFormats(int fd,
@@ -330,6 +344,7 @@ void VideoCaptureDeviceFactoryLinux::GetSupportedFormatsForV4L2BufferType(
                  frame_size.type == V4L2_FRMSIZE_TYPE_CONTINUOUS) {
         // TODO(mcasas): see http://crbug.com/249953, support these devices.
         NOTIMPLEMENTED_LOG_ONCE();
+        continue;
       }
 
       const std::vector<float> frame_rates = GetFrameRateList(

@@ -17,9 +17,8 @@
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_stop_metadata_fate.h"
-#include "components/sync/engine/cycle/status_counters.h"
+#include "components/sync/engine/commit_and_get_updates_types.h"
 #include "components/sync/engine/model_type_processor.h"
-#include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/metadata_batch.h"
@@ -103,7 +102,9 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                       StartCallback callback) override;
   void OnSyncStopping(SyncStopMetadataFate metadata_fate) override;
   void GetAllNodesForDebugging(AllNodesCallback callback) override;
-  void GetStatusCountersForDebugging(StatusCountersCallback callback) override;
+  void GetTypeEntitiesCountForDebugging(
+      base::OnceCallback<void(const TypeEntitiesCount&)> callback)
+      const override;
   void RecordMemoryUsageAndCountsHistograms() override;
 
   // Returns the estimate of dynamically allocated memory in bytes.
@@ -115,14 +116,31 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   bool IsModelReadyToSyncForTest() const;
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. Public for tests.
+  enum class ErrorSite {
+    kBridgeInitiated = 0,
+    kApplyFullUpdates = 1,
+    kApplyIncrementalUpdates = 2,
+    kApplyUpdatesOnCommitResponse = 3,
+    kSupportsIncrementalUpdatesMismatch = 4,
+    kMaxValue = kSupportsIncrementalUpdatesMismatch,
+  };
+
  private:
   friend class ModelTypeDebugInfo;
   friend class ClientTagBasedModelTypeProcessorTest;
 
-  // Clears all metadata and directs the bridge to clear the persisted metadata
-  // as well. In addition, it resets the state of the processor and clears all
-  // tracking maps such as |entities_| and |storage_key_to_tag_hash_|.
-  void ClearMetadataAndResetState();
+  // Directs the bridge to clear the persisted metadata as known to the entity
+  // tracker / `metadata_map`. In addition, it resets the state of the processor
+  // incl. the entity tracker.
+  void ClearAllTrackedMetadataAndResetState();
+  void ClearAllProvidedMetadataAndResetState(
+      const EntityMetadataMap& metadata_map);
+  // Implementation for the functions above, `change_list` is assumed to delete
+  // all known metadata.
+  void ClearAllMetadataAndResetStateImpl(
+      std::unique_ptr<MetadataChangeList> change_list);
 
   // Whether the processor is allowing changes to its model type. If this is
   // false, the bridge should not allow any changes to its data.
@@ -205,9 +223,13 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void MergeDataWithMetadataForDebugging(AllNodesCallback callback,
                                          std::unique_ptr<DataBatch> batch);
 
-  // Checks for valid cache GUID and data type id. Resets state if metadata is
-  // invalid.
-  void CheckForInvalidPersistedMetadata();
+  // Checks for valid persisted state. Resets state (incl. the persisted data)
+  // if it is invalid.
+  void CheckForInvalidPersistedModelTypeState();
+  bool CheckForInvalidPersistedMetadata(const EntityMetadataMap& metadata_map);
+
+  // Reports error and records a metric about |site| where the error occurred.
+  void ReportErrorImpl(const ModelError& error, ErrorSite site);
 
   /////////////////////
   // Processor state //

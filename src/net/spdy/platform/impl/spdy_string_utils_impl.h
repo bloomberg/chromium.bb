@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/hex_utils.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace spdy {
 
@@ -33,41 +34,36 @@ inline char SpdyHexDigitToIntImpl(char c) {
   return base::HexDigitToInt(c);
 }
 
-inline std::string SpdyHexDecodeImpl(quiche::QuicheStringPiece data) {
-  std::string result;
-  if (!base::HexStringToString(data, &result))
-    result.clear();
-  return result;
+inline std::string SpdyHexDecodeImpl(absl::string_view data) {
+  return absl::HexStringToBytes(data);
 }
 
-NET_EXPORT_PRIVATE bool SpdyHexDecodeToUInt32Impl(
-    quiche::QuicheStringPiece data,
-    uint32_t* out);
+NET_EXPORT_PRIVATE bool SpdyHexDecodeToUInt32Impl(absl::string_view data,
+                                                  uint32_t* out);
 
 inline std::string SpdyHexEncodeImpl(const char* bytes, size_t size) {
-  return base::ToLowerASCII(base::HexEncode(bytes, size));
+  return absl::BytesToHexString(absl::string_view(bytes, size));
 }
 
 inline std::string SpdyHexEncodeUInt32AndTrimImpl(uint32_t data) {
   return base::StringPrintf("%x", data);
 }
 
-inline std::string SpdyHexDumpImpl(quiche::QuicheStringPiece data) {
-  return net::HexDump(data);
+inline std::string SpdyHexDumpImpl(absl::string_view data) {
+  return quiche::QuicheTextUtils::HexDump(data);
 }
 
 struct SpdyStringPieceCaseHashImpl {
-  size_t operator()(quiche::QuicheStringPiece data) const {
-    std::string lower = ToLowerASCII(data);
-    base::StringPieceHash hasher;
+  size_t operator()(absl::string_view data) const {
+    std::string lower = absl::AsciiStrToLower(data);
+    absl::Hash<absl::string_view> hasher;
     return hasher(lower);
   }
 };
 
 struct SpdyStringPieceCaseEqImpl {
-  bool operator()(quiche::QuicheStringPiece piece1,
-                  quiche::QuicheStringPiece piece2) const {
-    return base::EqualsCaseInsensitiveASCII(piece1, piece2);
+  bool operator()(absl::string_view piece1, absl::string_view piece2) const {
+    return absl::EqualsIgnoreCase(piece1, piece2);
   }
 };
 

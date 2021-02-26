@@ -60,6 +60,7 @@ message ApplicationList {
   enum VmType {
     TERMINA = 0;
     PLUGIN_VM = 1;
+    BOREALIS = 2;
   }
 
   repeated App apps = 1;
@@ -88,6 +89,9 @@ message TerminalParams {
 
   // The owner of the VM and container.
   string owner_id = 4;
+
+  // Current working directory, optional to override default home dir.
+  string cwd = 5;
 }
 
 // MIME type mapping information internal to the container.

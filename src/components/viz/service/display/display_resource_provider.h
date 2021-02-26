@@ -86,19 +86,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  // Send an overlay promotion hint to all resources that requested it via
-  // |requestor_set|.  |promotable_hints| contains all the resources that should
-  // be told that they're promotable.  Others will be told that they're not.
-  //
-  // We don't use |wants_promotion_hints_set_| in place of |requestor_set|,
-  // since we might have resources that aren't used for drawing.  Sending a hint
-  // for a resource that wasn't even considered for overlay would be misleading
-  // to the requestor; the resource might be overlayable except that nobody
-  // tried to do it.
-  void SendPromotionHints(
-      const std::map<ResourceId, gfx::RectF>& promotion_hints,
-      const ResourceIdSet& requestor_set);
-
 #if defined(OS_ANDROID)
   // Indicates if this resource is backed by an Android SurfaceTexture, and thus
   // can't really be promoted to an overlay.
@@ -156,6 +143,23 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     GLenum target_ = GL_TEXTURE_2D;
     gfx::Size size_;
     gfx::ColorSpace color_space_;
+  };
+
+  class VIZ_SERVICE_EXPORT ScopedOverlayLockGL {
+   public:
+    ScopedOverlayLockGL(DisplayResourceProvider* resource_provider,
+                        ResourceId resource_id);
+    ~ScopedOverlayLockGL();
+
+    ScopedOverlayLockGL(const ScopedOverlayLockGL&) = delete;
+    ScopedOverlayLockGL& operator=(const ScopedOverlayLockGL&) = delete;
+
+    GLuint texture_id() const { return texture_id_; }
+
+   private:
+    DisplayResourceProvider* const resource_provider_;
+    const ResourceId resource_id_;
+    GLuint texture_id_ = 0;
   };
 
   class VIZ_SERVICE_EXPORT ScopedSamplerGL {
@@ -233,9 +237,11 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     }
 
    private:
-    DisplayResourceProvider* resource_provider_;
-    ResourceId resource_id_;
-    ChildResource* resource_;
+    void Reset();
+
+    DisplayResourceProvider* resource_provider_ = nullptr;
+    ResourceId resource_id_ = kInvalidResourceId;
+    ChildResource* resource_ = nullptr;
   };
 
   // Maintains set of resources locked for external use by SkiaRenderer.
@@ -253,9 +259,14 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
         delete;
 
     // Lock a resource for external use. The return value was created by
-    // |client| at some point in the past.
-    ExternalUseClient::ImageContext* LockResource(ResourceId resource_id,
-                                                  bool is_video_plane);
+    // |client| at some point in the past. The SkImage color space will be set
+    // to |color_space| if valid, otherwise it will be set to the resource's
+    // color space. If |is_video_plane| is true, the image color space will be
+    // set to nullptr (to avoid LOG spam).
+    ExternalUseClient::ImageContext* LockResource(
+        ResourceId resource_id,
+        bool is_video_plane = false,
+        const gfx::ColorSpace& color_space = gfx::ColorSpace());
 
     // Unlock all locked resources with a |sync_token|.  The |sync_token| should
     // be waited on before reusing the resource's backing to ensure that any
@@ -488,18 +499,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     gpu::SyncToken sync_token_;
   };
 
-  // Class to do Scoped Begin/End read access on a batch of shared images.
-  class ScopedBatchReadAccess {
-   public:
-    explicit ScopedBatchReadAccess(gpu::gles2::GLES2Interface* gl);
-    ~ScopedBatchReadAccess();
-
-   private:
-    gpu::gles2::GLES2Interface* gl_ = nullptr;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedBatchReadAccess);
-  };
-
   using ChildMap = std::unordered_map<int, Child>;
   using ResourceMap = std::unordered_map<ResourceId, ChildResource>;
 
@@ -521,8 +520,8 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // Returns null if we do not have a ContextProvider.
   gpu::gles2::GLES2Interface* ContextGL() const;
 
-  const ChildResource* LockForRead(ResourceId id);
-  void UnlockForRead(ResourceId id);
+  const ChildResource* LockForRead(ResourceId id, bool overlay_only);
+  void UnlockForRead(ResourceId id, bool overlay_only);
 
   void TryReleaseResource(ResourceId id, ChildResource* resource);
   // Binds the given GL resource to a texture target for sampling using the
@@ -577,7 +576,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 #endif
 
   bool enable_shared_images_;
-  std::unique_ptr<ScopedBatchReadAccess> scoped_batch_read_access_;
 
   // Indicates that gpu thread is available and calls like
   // ReleaseImageContexts() are expected to finish in finite time. It's always

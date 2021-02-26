@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram_macros.h"
@@ -83,7 +83,7 @@ ShortcutsBackend::ShortcutsBackend(
   if (!suppress_db)
     db_ = new ShortcutsDatabase(database_path);
   if (history_service)
-    history_service_observer_.Add(history_service);
+    history_service_observation_.Observe(history_service);
 }
 
 bool ShortcutsBackend::Init() {
@@ -176,8 +176,12 @@ ShortcutsDatabase::Shortcut::MatchCore ShortcutsBackend::MatchToMatchCore(
           ? normalized_match->description_class
           : normalized_match->description_class_for_shortcuts;
 
+  auto fill_into_edit = normalized_match->swapped_fill_into_edit
+                            ? normalized_match->fill_into_edit_additional_text
+                            : normalized_match->fill_into_edit;
+
   return ShortcutsDatabase::Shortcut::MatchCore(
-      normalized_match->fill_into_edit, normalized_match->destination_url,
+      fill_into_edit, normalized_match->destination_url,
       static_cast<int>(normalized_match->document_type),
       normalized_match->contents,
       StripMatchMarkers(normalized_match->contents_class), description,
@@ -186,7 +190,8 @@ ShortcutsDatabase::Shortcut::MatchCore ShortcutsBackend::MatchToMatchCore(
 }
 
 void ShortcutsBackend::ShutdownOnUIThread() {
-  history_service_observer_.RemoveAll();
+  if (history_service_observation_.IsObserving())
+    history_service_observation_.RemoveObservation();
 }
 
 void ShortcutsBackend::OnURLsDeleted(

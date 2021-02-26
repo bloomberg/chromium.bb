@@ -9,14 +9,12 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_utils.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -27,6 +25,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 
 PluginResponseInterceptorURLLoaderThrottle::
     PluginResponseInterceptorURLLoaderThrottle(int resource_type,
@@ -115,7 +114,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
             response_head->headers->raw_headers());
   }
 
-  auto transferrable_loader = content::mojom::TransferrableURLLoader::New();
+  auto transferrable_loader = blink::mojom::TransferrableURLLoader::New();
   transferrable_loader->url = GURL(
       extensions::Extension::GetBaseURLFromExtensionId(extension_id).spec() +
       base::GenerateGUID());
@@ -126,8 +125,8 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
 
   bool embedded = resource_type_ !=
                   static_cast<int>(blink::mojom::ResourceType::kMainFrame);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
           extension_id, view_id, embedded, frame_tree_node_id_,

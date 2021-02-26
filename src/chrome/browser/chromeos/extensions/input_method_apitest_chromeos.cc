@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -26,10 +25,10 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/chromeos/input_method_allowlist.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
-#include "ui/base/ime/chromeos/input_method_whitelist.h"
-#include "ui/base/ime/ime_bridge.h"
 
 using chromeos::input_method::InputMethodManager;
 
@@ -63,8 +62,7 @@ class TestListener : public content::NotificationObserver {
       // background.
       InputMethodManager* manager = InputMethodManager::Get();
       manager->GetInputMethodUtil()->InitXkbInputMethodsForTesting(
-          *chromeos::input_method::InputMethodWhitelist()
-               .GetSupportedInputMethods());
+          *chromeos::input_method::allowlist::GetSupportedInputMethods());
 
       std::vector<std::string> keyboard_layouts;
       keyboard_layouts.push_back(
@@ -87,7 +85,7 @@ class ExtensionInputMethodApiTest : public extensions::ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
+        extensions::switches::kAllowlistedExtensionID,
         "ilanclmaeigfpnmdlgelmhkpkegdioip");
   }
 

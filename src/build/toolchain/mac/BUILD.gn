@@ -33,6 +33,17 @@ declare_args() {
   # https://reviews.llvm.org/rL368199 but that has not yet made it into a public
   # lldb release.
   mac_deterministic_build = false
+
+  # This controls whether whole module optimization is enabled when building
+  # Swift modules. If enabled, the compiler will compile the module as one
+  # unit, generating just one single object file. Otherwise, it will generate
+  # one object file per .swift file. If unspecified, will default to "true"
+  # for official builds, and "false" for all other builds.
+  swift_whole_module_optimization = -1
+}
+
+if (swift_whole_module_optimization == -1) {
+  swift_whole_module_optimization = is_official_build
 }
 
 if (current_toolchain == default_toolchain) {
@@ -58,6 +69,7 @@ if (current_toolchain == default_toolchain) {
 tool_versions =
     exec_script("get_tool_mtime.py",
                 rebase_path([
+                              "//build/apple/swiftc.py",
                               "//build/config/ios/compile_xcassets.py",
                               "//build/toolchain/mac/filter_libtool.py",
                               "//build/toolchain/mac/linker_driver.py",
@@ -94,6 +106,8 @@ template("mac_toolchain") {
 
     _cc = "${prefix}clang"
     _cxx = "${prefix}clang++"
+
+    swiftmodule_switch = "-Wl,-add_ast_path,"
 
     # When the invoker has explicitly overridden use_goma or cc_wrapper in the
     # toolchain args, use those values, otherwise default to the global one.
@@ -252,20 +266,12 @@ template("mac_toolchain") {
       script =
           rebase_path("//build/toolchain/mac/filter_libtool.py", root_build_dir)
 
-      # Note about -filelist: Apple's linker reads the file list file and
-      # interprets each newline-separated chunk of text as a file name. It
-      # doesn't do the things one would expect from the shell like unescaping
-      # or handling quotes. In contrast, when Ninja finds a file name with
-      # spaces, it single-quotes them in $inputs_newline as it would normally
-      # do for command-line arguments. Thus any source names with spaces, or
-      # label names with spaces (which GN bases the output paths on) will be
-      # corrupted by this process. Don't use spaces for source files or labels.
       rspfile = "{{output}}.rsp"
-      rspfile_content = "{{inputs_newline}}"
+      rspfile_content = "{{inputs}}"
 
       # Specify explicit path for libtool.
       libtool = mac_bin_path + "libtool"
-      command = "rm -f {{output}} && TOOL_VERSION=${tool_versions.filter_libtool} python $script $libtool -static -D {{arflags}} -o {{output}} -filelist $rspfile"
+      command = "rm -f {{output}} && TOOL_VERSION=${tool_versions.filter_libtool} python $script $libtool -static -D {{arflags}} -o {{output}} \"@$rspfile\""
       description = "LIBTOOL-STATIC {{output}}"
       outputs = [ "{{output_dir}}/{{target_output_name}}{{output_extension}}" ]
       default_output_dir = "{{target_out_dir}}"
@@ -304,7 +310,7 @@ template("mac_toolchain") {
         link_command += " -Wl,-install_name,@rpath/\"{{target_output_name}}{{output_extension}}\" "
       }
       link_command += dsym_switch
-      link_command += "{{ldflags}} -o \"$dylib\" -Wl,-filelist,\"$rspfile\" {{frameworks}} {{solibs}} {{libs}}"
+      link_command += "{{ldflags}} -o \"$dylib\" -Wl,-filelist,\"$rspfile\" {{frameworks}} {{swiftmodules}} {{solibs}} {{libs}}"
 
       replace_command = "if ! cmp -s \"$temporary_tocname\" \"$tocname\"; then mv \"$temporary_tocname\" \"$tocname\""
       extract_toc_command = "{ $otool -l \"$dylib\" | grep LC_ID_DYLIB -A 5; $nm -gPp \"$dylib\" | cut -f1-2 -d' ' | grep -v U\$\$; true; }"
@@ -356,7 +362,7 @@ template("mac_toolchain") {
         link_command += " -Wl,-install_name,@rpath/{{target_output_name}}{{output_extension}}"
       }
       link_command += dsym_switch
-      link_command += " {{frameworks}} {{solibs}} {{libs}}"
+      link_command += " {{frameworks}} {{swiftmodules}} {{solibs}} {{libs}}"
       command = link_command
 
       rspfile_content = "{{inputs_newline}}"
@@ -392,7 +398,7 @@ template("mac_toolchain") {
       # do for command-line arguments. Thus any source names with spaces, or
       # label names with spaces (which GN bases the output paths on) will be
       # corrupted by this process. Don't use spaces for source files or labels.
-      command = "$linker_driver $ld $dsym_switch {{ldflags}} -o \"$outfile\" -Wl,-filelist,\"$rspfile\" {{frameworks}} {{solibs}} {{libs}}"
+      command = "$linker_driver $ld $dsym_switch {{ldflags}} -o \"$outfile\" -Wl,-filelist,\"$rspfile\" {{frameworks}} {{swiftmodules}} {{solibs}} {{libs}}"
       description = "LINK $outfile"
       rspfile_content = "{{inputs_newline}}"
       outputs = [ outfile ]
@@ -436,6 +442,51 @@ template("mac_toolchain") {
       pool = ":bundle_pool($default_toolchain)"
     }
 
+    tool("swift") {
+      _tool = rebase_path("//build/apple/swiftc.py", root_build_dir)
+
+      depfile = "{{target_out_dir}}/{{module_name}}.d"
+      depsformat = "gcc"
+
+      outputs = [
+        # The module needs to be the first output listed. The blank line after
+        # the module is required to prevent `gn format` from changing the file
+        # order.
+        "{{target_gen_dir}}/{{module_name}}.swiftmodule",
+
+        "{{target_gen_dir}}/{{module_name}}.h",
+        "{{target_gen_dir}}/{{module_name}}.swiftdoc",
+        "{{target_gen_dir}}/{{module_name}}.swiftsourceinfo",
+      ]
+
+      if (swift_whole_module_optimization) {
+        _extra_flags = "-whole-module-optimization"
+        _objects_dir = "{{target_out_dir}}"
+
+        outputs += [ "$_objects_dir/{{module_name}}.o" ]
+      } else {
+        _extra_flags = ""
+        _objects_dir = "{{target_out_dir}}/{{label_name}}"
+
+        partial_outputs = [ "$_objects_dir/{{source_name_part}}.o" ]
+      }
+
+      _env_vars = "TOOL_VERSION=${tool_versions.swiftc}"
+      if (is_ios && ios_sdk_developer_dir != "") {
+        _env_vars += " DEVELOPER_DIR=$ios_sdk_developer_dir"
+      }
+
+      command =
+          "$_env_vars $_tool -module-name {{module_name}} " +
+          "-object-dir $_objects_dir " +
+          "-module-path {{target_gen_dir}}/{{module_name}}.swiftmodule " +
+          "-header-path {{target_gen_dir}}/{{module_name}}.h " +
+          "-depfile {{target_out_dir}}/{{module_name}}.d " +
+          "-depfile-filter {{target_gen_dir}}/{{module_name}}.swiftmodule " +
+          "-bridge-header {{bridge_header}} $_extra_flags " +
+          "{{swiftflags}} {{include_dirs}} {{module_dirs}} {{inputs}}"
+    }
+
     # xcassets are only used on iOS, not macOS. We want to minimize the number
     # of Xcode-based tools used by the macOS toolchain, so we intentionally
     # disallow future uses of xcassets on macOS. https://crbug.com/965663.
@@ -473,6 +524,13 @@ template("mac_toolchain") {
 mac_toolchain("clang_arm") {
   toolchain_args = {
     current_cpu = "arm"
+    current_os = "mac"
+  }
+}
+
+mac_toolchain("clang_arm64") {
+  toolchain_args = {
+    current_cpu = "arm64"
     current_os = "mac"
   }
 }
@@ -543,6 +601,21 @@ mac_toolchain("clang_x64_v8_mips64el") {
 }
 
 if (is_ios) {
+  mac_toolchain("ios_clang_arm64") {
+    toolchain_args = {
+      current_cpu = "arm64"
+      current_os = "ios"
+    }
+  }
+
+  mac_toolchain("ios_clang_arm64_14_0") {
+    toolchain_args = {
+      current_cpu = "arm64"
+      current_os = "ios"
+      ios_deployment_target = "14.0"
+    }
+  }
+
   mac_toolchain("ios_clang_arm") {
     toolchain_args = {
       current_cpu = "arm"
@@ -550,10 +623,27 @@ if (is_ios) {
     }
   }
 
-  mac_toolchain("ios_clang_arm64") {
+  mac_toolchain("ios_clang_arm_fat") {
     toolchain_args = {
-      current_cpu = "arm64"
+      current_cpu = "arm"
       current_os = "ios"
+      is_fat_secondary_toolchain = true
+      primary_fat_toolchain_name = "//build/toolchain/mac:ios_clang_arm64"
+    }
+  }
+
+  mac_toolchain("ios_clang_x64") {
+    toolchain_args = {
+      current_cpu = "x64"
+      current_os = "ios"
+    }
+  }
+
+  mac_toolchain("ios_clang_x64_14_0") {
+    toolchain_args = {
+      current_cpu = "x64"
+      current_os = "ios"
+      ios_deployment_target = "14.0"
     }
   }
 
@@ -564,10 +654,12 @@ if (is_ios) {
     }
   }
 
-  mac_toolchain("ios_clang_x64") {
+  mac_toolchain("ios_clang_x86_fat") {
     toolchain_args = {
-      current_cpu = "x64"
+      current_cpu = "x86"
       current_os = "ios"
+      is_fat_secondary_toolchain = true
+      primary_fat_toolchain_name = "//build/toolchain/mac:ios_clang_x64"
     }
   }
 }

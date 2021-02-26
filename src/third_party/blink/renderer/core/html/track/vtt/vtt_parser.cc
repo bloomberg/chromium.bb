@@ -255,8 +255,7 @@ VTTParser::ParseState VTTParser::CollectStyleSheet(const String& line) {
         CSSDeferPropertyParsing::kNo, false /* allow_import_rules */);
     auto* style_sheet =
         MakeGarbageCollected<CSSStyleSheet>(style_sheet_contents);
-    style_sheet->SetAssociatedDocument(document_);
-    style_sheet->SetIsConstructed(true);
+    style_sheet->SetConstructorDocument(*document_);
     style_sheet->SetTitle("");
     style_sheets_.push_back(style_sheet);
 
@@ -669,7 +668,7 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
   }
 }
 
-void VTTParser::Trace(Visitor* visitor) {
+void VTTParser::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(current_region_);
   visitor->Trace(client_);

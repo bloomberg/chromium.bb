@@ -117,7 +117,7 @@ std::unique_ptr<DragImage> DragImage::Create(
   SkBitmap bm;
   paint_image = Image::ResizeAndOrientImage(
       paint_image, orientation, image_scale, opacity, interpolation_quality);
-  if (!paint_image || !paint_image.GetSkImage()->asLegacyBitmap(&bm))
+  if (!paint_image || !paint_image.GetSwSkImage()->asLegacyBitmap(&bm))
     return nullptr;
 
   return base::WrapUnique(
@@ -204,7 +204,8 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
   // TODO(fserb): are we sure this should be software?
   std::unique_ptr<CanvasResourceProvider> resource_provider(
       CanvasResourceProvider::CreateBitmapProvider(
-          scaled_image_size, kLow_SkFilterQuality, CanvasColorParams()));
+          scaled_image_size, kLow_SkFilterQuality, CanvasColorParams(),
+          CanvasResourceProvider::ShouldInitialize::kNo));
   if (!resource_provider)
     return nullptr;
 

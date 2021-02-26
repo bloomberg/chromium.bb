@@ -49,7 +49,7 @@ class ASH_EXPORT AccessibilityFocusRingLayer : public FocusRingLayer {
   SkColor secondary_color_;
   // The color of the background. When fully transparent, no background will be
   // drawn.
-  SkColor background_color_;
+  SkColor background_color_ = SK_ColorTRANSPARENT;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityFocusRingLayer);
 };

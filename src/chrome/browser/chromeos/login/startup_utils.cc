@@ -28,6 +28,9 @@
 
 namespace {
 
+constexpr char kDisableHIDDetectionScreenForTests[] =
+    "oobe.disable_hid_detection_screen_for_tests";
+
 // Saves boolean "Local State" preference and forces its persistence to disk.
 void SaveBoolPreferenceForced(const char* pref_name, bool value) {
   PrefService* prefs = g_browser_process->local_state();
@@ -56,6 +59,8 @@ void SaveStringPreferenceForced(const char* pref_name,
 // On Linux desktop, returns {DIR_USER_DATA}/.oobe_completed.
 base::FilePath GetOobeCompleteFlagPath() {
   // The constant is defined here so it won't be referenced directly.
+  // If you change this path make sure to also change the corresponding rollback
+  // constant in Chrome OS: src/platform2/oobe_config/rollback_constants.cc
   const char kOobeCompleteFlagFilePath[] = "/home/chronos/.oobe_completed";
 
   if (base::SysInfo::IsRunningOnChromeOS()) {
@@ -90,6 +95,7 @@ void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kDeviceRegistered, -1);
   registry->RegisterBooleanPref(prefs::kEnrollmentRecoveryRequired, false);
   registry->RegisterStringPref(prefs::kInitialLocale, "en-US");
+  registry->RegisterBooleanPref(kDisableHIDDetectionScreenForTests, false);
 }
 
 // static
@@ -173,6 +179,17 @@ void StartupUtils::MarkDeviceRegistered(base::OnceClosure done_callback) {
 // static
 void StartupUtils::MarkEnrollmentRecoveryRequired() {
   SaveBoolPreferenceForced(prefs::kEnrollmentRecoveryRequired, true);
+}
+
+// static
+void StartupUtils::DisableHIDDetectionScreenForTests() {
+  SaveBoolPreferenceForced(kDisableHIDDetectionScreenForTests, true);
+}
+
+// static
+bool StartupUtils::IsHIDDetectionScreenDisabledForTests() {
+  return g_browser_process->local_state()->GetBoolean(
+      kDisableHIDDetectionScreenForTests);
 }
 
 // static

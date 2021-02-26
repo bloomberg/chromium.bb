@@ -3,18 +3,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const REMOTE_MODULE_FALLBACK_REVISION = '@010ddcfda246975d194964ccf20038ebbdec6084';
-const instanceSymbol = Symbol('instance');
-
 const originalConsole = console;
 const originalAssert = console.assert;
 
 /** @type {!URLSearchParams} */
 const queryParamsObject = new URLSearchParams(location.search);
 
-// The following two variables are initialized all the way at the bottom of this file
-/** @type {?string} */
-let remoteBase;
+// The following variable are initialized all the way at the bottom of this file
 /** @type {string} */
 let importScriptPathPrefix;
 
@@ -23,8 +18,26 @@ let runtimePlatform = '';
 /** @type {function(string):string} */
 let l10nCallback;
 
-/** @type {!Runtime} */
+/** @type {!Runtime|undefined} */
 let runtimeInstance;
+
+export function getRemoteBase(location = self.location.toString()) {
+  const url = new URL(location);
+  const remoteBase = url.searchParams.get('remoteBase');
+  if (!remoteBase) {
+    return null;
+  }
+
+  const version = /\/serve_file\/(@[0-9a-zA-Z]+)\/?$/.exec(remoteBase);
+  if (!version) {
+    return null;
+  }
+
+  return {base: `${url.origin}/remote/serve_file/${version[1]}/`, version: version[1]};
+}
+
+/** @type {!WeakMap<function(new:?), ?>} */
+const constructedInstances = new WeakMap();
 
 /**
  * @unrestricted
@@ -46,8 +59,8 @@ export class Runtime {
     /** @type {!Object<string, !ModuleDescriptor>} */
     this._descriptorsMap = {};
 
-    for (let i = 0; i < descriptors.length; ++i) {
-      this._registerModule(descriptors[i]);
+    for (const descriptor of descriptors) {
+      this._registerModule(descriptor);
     }
   }
 
@@ -57,7 +70,7 @@ export class Runtime {
    */
   static instance(opts = {forceNew: null, moduleDescriptors: null}) {
     const {forceNew, moduleDescriptors} = opts;
-    if (!moduleDescriptors || forceNew) {
+    if (!runtimeInstance || forceNew) {
       if (!moduleDescriptors) {
         throw new Error(
             `Unable to create settings: targetManager and workspace must be provided: ${new Error().stack}`);
@@ -69,12 +82,24 @@ export class Runtime {
     return runtimeInstance;
   }
 
+  static removeInstance() {
+    runtimeInstance = undefined;
+  }
+
   /**
    * @param {string} url
    * @return {!Promise.<!ArrayBuffer>}
    */
   loadBinaryResourcePromise(url) {
     return internalLoadResourcePromise(url, true);
+  }
+
+  /**
+   * @param {string} url
+   * @return {!Promise.<string>}
+   */
+  loadTextResourcePromise(url) {
+    return internalLoadResourcePromise(url, false);
   }
 
   /**
@@ -89,8 +114,7 @@ export class Runtime {
 
     const normalizedSegments = [];
     const segments = path.split('/');
-    for (let i = 0; i < segments.length; i++) {
-      const segment = segments[i];
+    for (const segment of segments) {
       if (segment === '.') {
         continue;
       } else if (segment === '..') {
@@ -199,13 +223,6 @@ export class Runtime {
     l10nCallback = localizationFunction;
   }
 
-  useTestBase() {
-    remoteBase = 'http://localhost:8000/inspector-sources/';
-    if (Runtime.queryParam('debugFrontend')) {
-      remoteBase += 'debug/';
-    }
-  }
-
   /**
    * @param {string} moduleName
    * @return {!Module}
@@ -237,8 +254,8 @@ export class Runtime {
    */
   loadAutoStartModules(moduleNames) {
     const promises = [];
-    for (let i = 0; i < moduleNames.length; ++i) {
-      promises.push(this.loadModulePromise(moduleNames[i]));
+    for (const moduleName of moduleNames) {
+      promises.push(this.loadModulePromise(moduleName));
     }
     return Promise.all(promises);
   }
@@ -288,7 +305,7 @@ export class Runtime {
 
   /**
    * @param {!Extension} extension
-   * @param {!Set.<!Function>=} currentContextTypes
+   * @param {!Set.<function(new:Object, ...?):void>} currentContextTypes
    * @return {boolean}
    */
   isExtensionApplicableToContextTypes(extension, currentContextTypes) {
@@ -300,7 +317,7 @@ export class Runtime {
 
     if (currentContextTypes) {
       /**
-       * @param {!Function} targetType
+       * @param {function(new:Object, ...?):void} targetType
        * @return {boolean}
        */
       callback = targetType => {
@@ -401,15 +418,18 @@ export class Runtime {
    * @template T
    */
   sharedInstance(constructorFunction) {
-    if (instanceSymbol in constructorFunction &&
-        Object.getOwnPropertySymbols(constructorFunction).includes(instanceSymbol)) {
-      // @ts-ignore Usage of symbols
-      return constructorFunction[instanceSymbol];
+    const instanceDescriptor = Object.getOwnPropertyDescriptor(constructorFunction, 'instance');
+    if (instanceDescriptor) {
+      const method = instanceDescriptor.value;
+      if (method instanceof Function) {
+        return method.call(null);
+      }
     }
-
-    const instance = new constructorFunction();
-    // @ts-ignore Usage of symbols
-    constructorFunction[instanceSymbol] = instance;
+    let instance = constructedInstances.get(constructorFunction);
+    if (!instance) {
+      instance = new constructorFunction();
+      constructedInstances.set(constructorFunction, instance);
+    }
     return instance;
   }
 }
@@ -453,11 +473,6 @@ export class ModuleDescriptor {
      * @type {string|undefined}
      */
     this.condition;
-
-    /**
-     * @type {boolean|undefined}
-     */
-    this.remote;
 
     /** @type {string|null} */
     this.experiment;
@@ -522,7 +537,7 @@ export class RuntimeExtensionDescriptor {
     /** @type {string|null} */
     this.settingType;
 
-    /** @type {string} */
+    /** @type {*} */
     this.defaultValue;
 
     /** @type {string|null} */
@@ -536,24 +551,69 @@ export class RuntimeExtensionDescriptor {
 
     /** @type {string|null} */
     this.name;
+
+    /** @type {string|null} */
+    this.destination;
+
+    /** @type {string|null} */
+    this.color;
+
+    /** @type {string|null} */
+    this.prefix;
+
+    /** @type {string|null} */
+    this.decoratorType;
+
+    /** @type {string|null} */
+    this.category;
+
+    /** @type {string|null} */
+    this.tags;
+
+    /** @type {boolean|null|undefined} */
+    this.reloadRequired;
+
+    /** @type {string} */
+    this.id;
+
+    /** @type {string|null} */
+    this.location;
+
+    /** @type {?string} */
+    this.title;
+
+    /** @type {!Array<!Option>|undefined} */
+    this.options;
+
+    /** @type {!Array<string>|undefined} */
+    this.settings;
+
+    // This is an EmulatedDevice, but typing it as such introduces a
+    // circular dep between emulation and root.
+    /** @type {?} */
+    this.device;
+
+    /** @type {string|null} */
+    this.viewId;
+
+    /** @type {?string} */
+    this.persistence;
+    /** @type {?string} */
+    this.setting;
+    /** @type {?string} */
+    this.name;
   }
 }
 
-// Module namespaces.
-// NOTE: Update scripts/build/special_case_namespaces.json if you add a special cased namespace.
-/** @type {!Object<string,string>} */
-const specialCases = {
-  'sdk': 'SDK',
-  'js_sdk': 'JSSDK',
-  'browser_sdk': 'BrowserSDK',
-  'ui': 'UI',
-  'object_ui': 'ObjectUI',
-  'javascript_metadata': 'JavaScriptMetadata',
-  'perf_ui': 'PerfUI',
-  'har_importer': 'HARImporter',
-  'sdk_test_runner': 'SDKTestRunner',
-  'cpu_profiler_test_runner': 'CPUProfilerTestRunner'
-};
+/**
+ * @typedef {{
+ *  title: string,
+ *  value: (string|boolean),
+ *  raw: (boolean|undefined),
+ * }}
+ */
+// @ts-ignore typedef
+export let Option;
 
 /**
  * @unrestricted
@@ -601,7 +661,7 @@ export class Module {
    */
   resource(name) {
     const fullName = this._name + '/' + name;
-    const content = self.Runtime.cachedResources[fullName];
+    const content = cachedResources.get(fullName);
     if (!content) {
       throw new Error(fullName + ' not preloaded. Check module.json');
     }
@@ -627,68 +687,32 @@ export class Module {
     }
 
     this._pendingLoadPromise = Promise.all(dependencyPromises)
-                                   .then(this._loadResources.bind(this))
                                    .then(this._loadModules.bind(this))
-                                   .then(this._loadScripts.bind(this))
-                                   .then(() => this._loadedForTest = true);
+                                   .then(() => {
+                                     this._loadedForTest = true;
+                                     return this._loadedForTest;
+                                   });
 
     return this._pendingLoadPromise;
   }
 
-  /**
-   * @return {!Promise.<void>}
-   * @this {Module}
-   */
-  _loadResources() {
-    const resources = this._descriptor['resources'];
-    if (!resources || !resources.length) {
-      return Promise.resolve();
-    }
-    const promises = [];
-    for (let i = 0; i < resources.length; ++i) {
-      const url = this._modularizeURL(resources[i]);
-      const isHtml = url.endsWith('.html');
-      promises.push(loadResourceIntoCache(url, !isHtml /* appendSourceURL */));
-    }
-    return Promise.all(promises).then(undefined);
-  }
-
-  _loadModules() {
-    if (!this._descriptor.modules || !this._descriptor.modules.length) {
-      return Promise.resolve();
-    }
-
-    const namespace = this._computeNamespace();
-    // @ts-ignore Legacy global namespace instantation
-    self[namespace] = self[namespace] || {};
-
+  async _loadModules() {
     const legacyFileName = `${this._name}-legacy.js`;
-    const fileName = this._descriptor.modules.includes(legacyFileName) ? legacyFileName : `${this._name}.js`;
+    const moduleFileName = `${this._name}_module.js`;
+    const entrypointFileName = `${this._name}.js`;
+
+    // If a module has resources, they are part of the `_module.js` files that are generated
+    // by `build_release_applications`. These need to be loaded before any other code is
+    // loaded, to make sure that the resource content is properly cached in `cachedResources`.
+    if (this._descriptor.modules.includes(moduleFileName)) {
+      // TODO(crbug.com/1011811): Remove eval when we use TypeScript which does support dynamic imports
+      await eval(`import('../${this._name}/${moduleFileName}')`);
+    }
+
+    const fileName = this._descriptor.modules.includes(legacyFileName) ? legacyFileName : entrypointFileName;
 
     // TODO(crbug.com/1011811): Remove eval when we use TypeScript which does support dynamic imports
-    return eval(`import('../${this._name}/${fileName}')`);
-  }
-
-  /**
-   * @return {!Promise.<void>}
-   */
-  _loadScripts() {
-    if (!this._descriptor.scripts || !this._descriptor.scripts.length) {
-      return Promise.resolve();
-    }
-
-    const namespace = this._computeNamespace();
-    // @ts-ignore Legacy global namespace instantation
-    self[namespace] = self[namespace] || {};
-    return loadScriptsPromise(this._descriptor.scripts.map(this._modularizeURL, this), this._remoteBase());
-  }
-
-  /**
-   * @return {string}
-   */
-  _computeNamespace() {
-    return specialCases[this._name] ||
-        this._name.split('_').map(a => a.substring(0, 1).toUpperCase() + a.substring(1)).join('');
+    await eval(`import('../${this._name}/${fileName}')`);
   }
 
   /**
@@ -699,20 +723,12 @@ export class Module {
   }
 
   /**
-   * @return {string|undefined}
-   */
-  _remoteBase() {
-    return !Runtime.queryParam('debugFrontend') && this._descriptor.remote && remoteBase || undefined;
-  }
-
-  /**
    * @param {string} resourceName
    * @return {!Promise.<string>}
    */
   fetchResource(resourceName) {
-    const base = this._remoteBase();
-    const sourceURL = getResourceURL(this._modularizeURL(resourceName), base);
-    return base ? loadResourcePromiseWithFallback(sourceURL) : loadResourcePromise(sourceURL);
+    const sourceURL = getResourceURL(this._modularizeURL(resourceName));
+    return loadResourcePromise(sourceURL);
   }
 
   /**
@@ -720,7 +736,6 @@ export class Module {
    * @return {string}
    */
   substituteURL(value) {
-    const base = this._remoteBase() || '';
     return value.replace(/@url\(([^\)]*?)\)/g, convertURL.bind(this));
 
     /**
@@ -729,7 +744,7 @@ export class Module {
      * @this {Module}
      */
     function convertURL(match, url) {
-      return base + this._modularizeURL(url);
+      return importScriptPathPrefix + this._modularizeURL(url);
     }
   }
 }
@@ -840,7 +855,7 @@ export class Extension {
   }
 
   /**
-  * @param {function(new:Object)} contextType
+  * @param {function(new:Object, ...?):void} contextType
   * @return {boolean}
   */
   hasContextType(contextType) {
@@ -864,10 +879,12 @@ export class ExperimentsSupport {
   constructor() {
     /** @type {!Array<!Experiment>} */
     this._experiments = [];
-    /** @type {!Object<string,boolean>} */
-    this._experimentNames = {};
-    /** @type {!Object<string,boolean>} */
-    this._enabledTransiently = {};
+    /** @type {!Set<string>} */
+    this._experimentNames = new Set();
+    /** @type {!Set<string>} */
+    this._enabledTransiently = new Set();
+    /** @type {!Set<string>} */
+    this._enabledByDefault = new Set();
     /** @type {!Set<string>} */
     this._serverEnabled = new Set();
   }
@@ -877,13 +894,19 @@ export class ExperimentsSupport {
   */
   allConfigurableExperiments() {
     const result = [];
-    for (let i = 0; i < this._experiments.length; i++) {
-      const experiment = this._experiments[i];
-      if (!this._enabledTransiently[experiment.name]) {
+    for (const experiment of this._experiments) {
+      if (!this._enabledTransiently.has(experiment.name)) {
         result.push(experiment);
       }
     }
     return result;
+  }
+
+  /**
+  * @return {!Array.<!Experiment>}
+  */
+  enabledExperiments() {
+    return this._experiments.filter(experiment => experiment.isEnabled());
   }
 
   /**
@@ -902,8 +925,9 @@ export class ExperimentsSupport {
   * @param {boolean=} unstable
   */
   register(experimentName, experimentTitle, unstable) {
-    Runtime._assert(!this._experimentNames[experimentName], 'Duplicate registration of experiment ' + experimentName);
-    this._experimentNames[experimentName] = true;
+    Runtime._assert(
+        !this._experimentNames.has(experimentName), 'Duplicate registration of experiment ' + experimentName);
+    this._experimentNames.add(experimentName);
     this._experiments.push(new Experiment(this, experimentName, experimentTitle, !!unstable));
   }
 
@@ -918,7 +942,7 @@ export class ExperimentsSupport {
     if (Runtime._experimentsSetting()[experimentName] === false) {
       return false;
     }
-    if (this._enabledTransiently[experimentName]) {
+    if (this._enabledTransiently.has(experimentName) || this._enabledByDefault.has(experimentName)) {
       return true;
     }
     if (this._serverEnabled.has(experimentName)) {
@@ -942,10 +966,20 @@ export class ExperimentsSupport {
   /**
   * @param {!Array.<string>} experimentNames
   */
-  setDefaultExperiments(experimentNames) {
-    for (let i = 0; i < experimentNames.length; ++i) {
-      this._checkExperiment(experimentNames[i]);
-      this._enabledTransiently[experimentNames[i]] = true;
+  enableExperimentsTransiently(experimentNames) {
+    for (const experimentName of experimentNames) {
+      this._checkExperiment(experimentName);
+      this._enabledTransiently.add(experimentName);
+    }
+  }
+
+  /**
+  * @param {!Array.<string>} experimentNames
+  */
+  enableExperimentsByDefault(experimentNames) {
+    for (const experimentName of experimentNames) {
+      this._checkExperiment(experimentName);
+      this._enabledByDefault.add(experimentName);
     }
   }
 
@@ -964,13 +998,14 @@ export class ExperimentsSupport {
   */
   enableForTest(experimentName) {
     this._checkExperiment(experimentName);
-    this._enabledTransiently[experimentName] = true;
+    this._enabledTransiently.add(experimentName);
   }
 
   clearForTest() {
     this._experiments = [];
-    this._experimentNames = {};
-    this._enabledTransiently = {};
+    this._experimentNames.clear();
+    this._enabledTransiently.clear();
+    this._enabledByDefault.clear();
     this._serverEnabled.clear();
   }
 
@@ -978,10 +1013,12 @@ export class ExperimentsSupport {
     const experimentsSetting = Runtime._experimentsSetting();
     /** @type {!Object<string,boolean>} */
     const cleanedUpExperimentSetting = {};
-    for (let i = 0; i < this._experiments.length; ++i) {
-      const experimentName = this._experiments[i].name;
-      if (experimentsSetting[experimentName]) {
-        cleanedUpExperimentSetting[experimentName] = true;
+    for (const {name: experimentName} of this._experiments) {
+      if (experimentsSetting.hasOwnProperty(experimentName)) {
+        const isEnabled = experimentsSetting[experimentName];
+        if (isEnabled || this._enabledByDefault.has(experimentName)) {
+          cleanedUpExperimentSetting[experimentName] = isEnabled;
+        }
       }
     }
     this._setExperimentsSetting(cleanedUpExperimentSetting);
@@ -991,7 +1028,7 @@ export class ExperimentsSupport {
   * @param {string} experimentName
   */
   _checkExperiment(experimentName) {
-    Runtime._assert(this._experimentNames[experimentName], 'Unknown experiment ' + experimentName);
+    Runtime._assert(this._experimentNames.has(experimentName), 'Unknown experiment ' + experimentName);
   }
 }
 
@@ -1076,101 +1113,6 @@ function internalLoadResourcePromise(url, asBinary) {
 }
 
 /**
- * @type {!Object<string,boolean>}
- */
-const loadedScripts = {};
-
-/**
- * @param {!Array.<string>} scriptNames
- * @param {string=} base
- * @return {!Promise.<void>}
- */
-function loadScriptsPromise(scriptNames, base) {
-  /** @type {!Array<!Promise<void>>} */
-  const promises = [];
-  /** @type {!Array<string>} */
-  const urls = [];
-  const sources = new Array(scriptNames.length);
-  let scriptToEval = 0;
-  for (let i = 0; i < scriptNames.length; ++i) {
-    const scriptName = scriptNames[i];
-    const sourceURL = getResourceURL(scriptName, base);
-
-    if (loadedScripts[sourceURL]) {
-      continue;
-    }
-    urls.push(sourceURL);
-    const promise = base ? loadResourcePromiseWithFallback(sourceURL) : loadResourcePromise(sourceURL);
-    promises.push(promise.then(scriptSourceLoaded.bind(null, i), scriptSourceLoaded.bind(null, i, undefined)));
-  }
-  return Promise.all(promises).then(undefined);
-
-  /**
-   * @param {number} scriptNumber
-   * @param {string=} scriptSource
-   */
-  function scriptSourceLoaded(scriptNumber, scriptSource) {
-    sources[scriptNumber] = scriptSource || '';
-    // Eval scripts as fast as possible.
-    while (typeof sources[scriptToEval] !== 'undefined') {
-      evaluateScript(urls[scriptToEval], sources[scriptToEval]);
-      ++scriptToEval;
-    }
-  }
-
-  /**
-   * @param {string} sourceURL
-   * @param {string=} scriptSource
-   */
-  function evaluateScript(sourceURL, scriptSource) {
-    loadedScripts[sourceURL] = true;
-    if (!scriptSource) {
-      // Do not reject, as this is normal in the hosted mode.
-      console.error('Empty response arrived for script \'' + sourceURL + '\'');
-      return;
-    }
-    self.eval(scriptSource + '\n//# sourceURL=' + sourceURL);
-  }
-}
-
-/**
- * @param {string} url
- * @return {!Promise.<string>}
- */
-function loadResourcePromiseWithFallback(url) {
-  return loadResourcePromise(url).catch(err => {
-    const urlWithFallbackVersion = url.replace(/@[0-9a-f]{40}/, REMOTE_MODULE_FALLBACK_REVISION);
-    // TODO(phulce): mark fallbacks in module.json and modify build script instead
-    if (urlWithFallbackVersion === url || !url.includes('lighthouse_worker_module')) {
-      throw err;
-    }
-    return loadResourcePromise(urlWithFallbackVersion);
-  });
-}
-
-/**
- * @param {string} url
- * @param {boolean} appendSourceURL
- * @return {!Promise<void>}
- */
-function loadResourceIntoCache(url, appendSourceURL) {
-  return loadResourcePromise(url).then(cacheResource.bind(null, url), cacheResource.bind(null, url, undefined));
-
-  /**
-   * @param {string} path
-   * @param {string=} content
-   */
-  function cacheResource(path, content) {
-    if (!content) {
-      console.error('Failed to load resource: ' + path);
-      return;
-    }
-    const sourceURL = appendSourceURL ? Runtime.resolveSourceURL(path) : '';
-    self.Runtime.cachedResources[path] = content + sourceURL;
-  }
-}
-
-/**
  * @param {string} url
  * @return {!Promise.<string>}
  */
@@ -1193,18 +1135,6 @@ function getResourceURL(scriptName, base) {
   return sourceURL.substring(0, pathIndex) + Runtime.normalizePath(sourceURL.substring(pathIndex));
 }
 
-(function validateRemoteBase() {
-  if (location.href.startsWith('devtools://devtools/bundled/')) {
-    const queryParam = Runtime.queryParam('remoteBase');
-    if (queryParam) {
-      const versionMatch = /\/serve_file\/(@[0-9a-zA-Z]+)\/?$/.exec(queryParam);
-      if (versionMatch) {
-        remoteBase = `${location.origin}/remote/serve_file/${versionMatch[1]}/`;
-      }
-    }
-  }
-})();
-
 (function() {
 const baseUrl = self.location ? self.location.origin + self.location.pathname : '';
 importScriptPathPrefix = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
@@ -1212,3 +1142,20 @@ importScriptPathPrefix = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
 
 // This must be constructed after the query parameters have been parsed.
 export const experiments = new ExperimentsSupport();
+
+/**
+ * @type {!Map<string, string>}
+ */
+export const cachedResources = new Map();
+
+// Only exported for LightHouse, which uses it in `report-generator.js`.
+// Do not use this global in DevTools' implementation.
+// TODO(crbug.com/1127292): remove this global
+globalThis.EXPORTED_CACHED_RESOURCES_ONLY_FOR_LIGHTHOUSE = cachedResources;
+
+/** @type {function():void} */
+export let appStartedPromiseCallback;
+/** @type {!Promise<void>} */
+export const appStarted = new Promise(fulfill => {
+  appStartedPromiseCallback = fulfill;
+});

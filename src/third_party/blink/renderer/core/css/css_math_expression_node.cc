@@ -32,7 +32,7 @@
 
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
-#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/platform/geometry/calculation_expression_node.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -268,7 +268,7 @@ bool CSSMathExpressionNumericLiteral::IsComputationallyIndependent() const {
   return value_->IsComputationallyIndependent();
 }
 
-void CSSMathExpressionNumericLiteral::Trace(Visitor* visitor) {
+void CSSMathExpressionNumericLiteral::Trace(Visitor* visitor) const {
   visitor->Trace(value_);
   CSSMathExpressionNode::Trace(visitor);
 }
@@ -716,7 +716,7 @@ CSSPrimitiveValue::UnitType CSSMathExpressionBinaryOperation::ResolvedUnitType()
   return CSSPrimitiveValue::UnitType::kUnknown;
 }
 
-void CSSMathExpressionBinaryOperation::Trace(Visitor* visitor) {
+void CSSMathExpressionBinaryOperation::Trace(Visitor* visitor) const {
   visitor->Trace(left_side_);
   visitor->Trace(right_side_);
   CSSMathExpressionNode::Trace(visitor);
@@ -803,7 +803,7 @@ CSSMathExpressionVariadicOperation::CSSMathExpressionVariadicOperation(
       operands_(std::move(operands)),
       operator_(op) {}
 
-void CSSMathExpressionVariadicOperation::Trace(Visitor* visitor) {
+void CSSMathExpressionVariadicOperation::Trace(Visitor* visitor) const {
   visitor->Trace(operands_);
   CSSMathExpressionNode::Trace(visitor);
 }
@@ -1029,7 +1029,7 @@ class CSSMathExpressionNodeParser {
       last_token_is_comma = false;
       operands.push_back(operand);
 
-      if (!css_property_parser_helpers::ConsumeCommaIncludingWhitespace(tokens))
+      if (!css_parsing_utils::ConsumeCommaIncludingWhitespace(tokens))
         break;
       last_token_is_comma = true;
     }
@@ -1048,14 +1048,14 @@ class CSSMathExpressionNodeParser {
     if (!min_operand)
       return nullptr;
 
-    if (!css_property_parser_helpers::ConsumeCommaIncludingWhitespace(tokens))
+    if (!css_parsing_utils::ConsumeCommaIncludingWhitespace(tokens))
       return nullptr;
 
     CSSMathExpressionNode* val_operand = ParseValueExpression(tokens, depth);
     if (!val_operand)
       return nullptr;
 
-    if (!css_property_parser_helpers::ConsumeCommaIncludingWhitespace(tokens))
+    if (!css_parsing_utils::ConsumeCommaIncludingWhitespace(tokens))
       return nullptr;
 
     CSSMathExpressionNode* max_operand = ParseValueExpression(tokens, depth);

@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 
@@ -32,7 +32,7 @@ void ProxyOverrideChanged(const JavaRef<jobject>& obj,
                           const JavaRef<jobject>& listener,
                           const JavaRef<jobject>& executor) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (listener.is_null())
+  if (!listener)
     return;
   JNIEnv* env = AttachCurrentThread();
   Java_AwProxyController_proxyOverrideChanged(env, obj, listener, executor);
@@ -40,7 +40,7 @@ void ProxyOverrideChanged(const JavaRef<jobject>& obj,
     // Tell the chromium message loop to not perform any tasks after the current
     // one - we want to make sure we return to Java cleanly without first making
     // any new JNI calls.
-    base::MessageLoopCurrentForUI::Get()->Abort();
+    base::CurrentUIThread::Get()->Abort();
   }
 }
 

@@ -40,7 +40,7 @@ CustomElementDefinition::CustomElementDefinition(
 
 CustomElementDefinition::~CustomElementDefinition() = default;
 
-void CustomElementDefinition::Trace(Visitor* visitor) {
+void CustomElementDefinition::Trace(Visitor* visitor) const {
   visitor->Trace(construction_stack_);
   visitor->Trace(default_style_sheets_);
 }
@@ -196,10 +196,10 @@ CustomElementDefinition::ConstructionStackScope::~ConstructionStackScope() {
 
 // https://html.spec.whatwg.org/C/#concept-upgrade-an-element
 void CustomElementDefinition::Upgrade(Element& element) {
-  // 4.13.5.1 If element is custom, then return.
-  // 4.13.5.2 If element's custom element state is "failed", then return.
-  if (element.GetCustomElementState() == CustomElementState::kCustom ||
-      element.GetCustomElementState() == CustomElementState::kFailed) {
+  // 4.13.5.1 If element's custom element state is not "undefined" or
+  // "uncustomized", then return.
+  if (element.GetCustomElementState() != CustomElementState::kUndefined &&
+      element.GetCustomElementState() != CustomElementState::kUncustomized) {
     return;
   }
 
@@ -246,8 +246,8 @@ void CustomElementDefinition::AddDefaultStylesTo(Element& element) {
     return;
   const auto& default_styles = DefaultStyleSheets();
   for (CSSStyleSheet* style : default_styles) {
-    Document* associated_document = style->AssociatedDocument();
-    if (associated_document && associated_document != &element.GetDocument()) {
+    Document* document = style->ConstructorDocument();
+    if (document && document != &element.GetDocument()) {
       // No spec yet, but for now we forbid usage of other document's
       // constructed stylesheet.
       return;

@@ -42,11 +42,17 @@
   <message name="IDS_DEVTOOLS_0c1ac4502b106b89cbf1d3850f44ae12" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Android (4.0.2) Browser — Galaxy Nexus</ph>
   </message>
+  <message name="IDS_DEVTOOLS_0d6c76e22c095f0ae6cf53753121adef" desc="Text used to show that serviceworker fetch response source is ServiceWorker Cache Storage">
+    <ph name="LOCKED_TERM">ServiceWorker</ph> cache storage
+  </message>
   <message name="IDS_DEVTOOLS_0db377921f4ce762c62526131097968f" desc="Text in Request Headers View of the Network panel">
     General
   </message>
   <message name="IDS_DEVTOOLS_0f591b1d87c91e77d4fa11dc6e44288c" desc="Text in Network Item View of the Network panel">
     Request and response timeline
+  </message>
+  <message name="IDS_DEVTOOLS_0f713721ede1e7199d61b6dd2956f0e9" desc="Text in Network Log View of the Network panel">
+    Copy stacktrace
   </message>
   <message name="IDS_DEVTOOLS_100b560e280fea6e7d5ab12179d3f0e2" desc="Tooltip to explain what malformed response cookies are">
     Cookies that were received from the server in the &apos;set-cookie&apos; header of the response but were malformed
@@ -63,8 +69,14 @@
   <message name="IDS_DEVTOOLS_13d453df11cf2f0534129d30b6253ac0" desc="Text in Network Log View of the Network panel">
     <ph name="TRANSFERSIZE">$1s<ex>4</ex></ph> B transferred over network
   </message>
+  <message name="IDS_DEVTOOLS_13e685964c2548aa748f7ea263bad4e5" desc="Text in Request Timing View of the Network panel">
+    Startup
+  </message>
   <message name="IDS_DEVTOOLS_16c32be3b42643aee708e7ccdd52c9f4" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Microsoft Edge — Android Mobile</ph>
+  </message>
+  <message name="IDS_DEVTOOLS_17145319aba079a26c6d3bb2b1d58894" desc="Text in Request Timing View of the Network panel">
+    <ph name="LOCKED_TERM">Service Worker</ph>
   </message>
   <message name="IDS_DEVTOOLS_17439cab6b197fcaff231614384c9dcc" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Opera (Presto) — Windows</ph>
@@ -111,11 +123,11 @@
   <message name="IDS_DEVTOOLS_21fd2e738b03921c90da8ac98319a04b" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Chrome — Windows</ph>
   </message>
+  <message name="IDS_DEVTOOLS_22c5170c679b5d0232542f02c15bf335" desc="Text used to show that data was retrieved via a Network fetch">
+    Network fetch
+  </message>
   <message name="IDS_DEVTOOLS_22f3e616a52e25632d98fd53d3f821ed" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Safari — Mac</ph>
-  </message>
-  <message name="IDS_DEVTOOLS_2537b3e6907e17001b7cdf121cd39dc0" desc="Text in Request Headers View of the Network panel">
-    (from ServiceWorker)
   </message>
   <message name="IDS_DEVTOOLS_26b6b5ae2c6e2575b2a451c35e94df23" desc="Text in Request Timing View of the Network panel">
     Waiting (TTFB)
@@ -124,13 +136,10 @@
     Signed HTTP exchange
   </message>
   <message name="IDS_DEVTOOLS_29d37bdcfeb74d25d56bcf841866ae32" desc="Cell title in Network Data Grid Node of the Network panel">
-    Served from ServiceWorker, resource size: <ph name="RESOURCESIZE">$1s<ex>4 B</ex></ph>
+    Served from <ph name="LOCKED_TERM">ServiceWorker</ph>, resource size: <ph name="RESOURCESIZE">$1s<ex>4 B</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_2ad7f735dd6d0dedb0d010a612854a17" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Internet Explorer 8</ph>
-  </message>
-  <message name="IDS_DEVTOOLS_2cc979d2cc5eda80f702a242ad5242cf" desc="Tooltip to explain lack of raw headers for a particular network request">
-    Only provisional headers are available because this request was not sent over the network and instead was served from a local cache, which doesn&apos;t store the original request headers. Disable cache to see full request headers.
   </message>
   <message name="IDS_DEVTOOLS_2d13df6f8b5e4c5af9f87e0dc39df69d" desc="Text in Network Data Grid Node of the Network panel">
     Pending
@@ -162,9 +171,6 @@
   <message name="IDS_DEVTOOLS_346ff32eaa3c09983fb2ec057816d352" desc="Text of a DOM element in Request Timing View of the Network panel">
     TIME
   </message>
-  <message name="IDS_DEVTOOLS_3681a6c01fa5b440938e8112bfc13996" desc="Text in Request Timing View of the Network panel">
-    ServiceWorker Preparation
-  </message>
   <message name="IDS_DEVTOOLS_36d95f430159f0ac7a477e4ee6c5ad21" desc="Tooltip text that appears when hovering over the largeicon clear button in the Blocked URLs Pane of the Network panel">
     Remove all patterns
   </message>
@@ -182,6 +188,9 @@
   </message>
   <message name="IDS_DEVTOOLS_38adb5ba687241627ce2b1f82b714e7d" desc="Tooltip text for network request overview setting">
     Show overview of network requests
+  </message>
+  <message name="IDS_DEVTOOLS_38f054df4f04de343770f468846f0202" desc="Text for unknown cache storage name">
+    Cache storage cache name: Unknown
   </message>
   <message name="IDS_DEVTOOLS_39b8414d89adf80e97ec0024e13e3b86" desc="Title of a section in Request Initiator view of the Network Panel">
     Request call stack
@@ -210,20 +219,23 @@
   <message name="IDS_DEVTOOLS_3e0dc7bd31f5ad41b900fef5b7aba791" desc="Title of a setting under the Network category that can be invoked through the Command Menu">
     Don&apos;t group network log items by frame
   </message>
+  <message name="IDS_DEVTOOLS_3e150c8e936066f2c4e47dad7a07c9d1" desc="Description for treeitem in ServiceWorker Fetch Details">
+    Original Request
+  </message>
   <message name="IDS_DEVTOOLS_3ebfafd757759c5e0081920b36450c58" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Firefox — Android Mobile</ph>
   </message>
   <message name="IDS_DEVTOOLS_408f8a4ecdacbe1d9989b800a0c12936" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Internet Explorer 11</ph>
   </message>
+  <message name="IDS_DEVTOOLS_4109dce9b5309157da5948c7aac41e29" desc="Comment used in decoded X-Client-Data HTTP header output in Headers View of the Network panel">
+    Active client experiment variation IDs that trigger server-side behavior.
+  </message>
   <message name="IDS_DEVTOOLS_4145ea54b6f576d7646d6a68eb39813f" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Opera (Presto) — Mac</ph>
   </message>
   <message name="IDS_DEVTOOLS_41d98c4bb351da4733feff7e1ad628a5" desc="Error text for empty list widget input in Request Blocking tool">
     Pattern input cannot be empty.
-  </message>
-  <message name="IDS_DEVTOOLS_41de6d6cfb8953c021bbe4ba0701c8a1" desc="Text in Network Item View of the Network panel">
-    Messages
   </message>
   <message name="IDS_DEVTOOLS_41e85145baafb89d0b709ae827218084" desc="A context menu item in the Network Log View of the Network panel">
     Clear browser cache
@@ -291,9 +303,6 @@
   <message name="IDS_DEVTOOLS_5223b56f806ed0547f295a2c643061ec" desc="Text in Headers View of the Network panel">
     To use this resource from a different origin, the server needs to specify a cross-origin resource policy in the response headers:
   </message>
-  <message name="IDS_DEVTOOLS_52c2263c92c8b0f41e36892ccd8cb119" desc="Accessible label for the button to add request blocking patterns in the Request blocking tool">
-    Add request blocking pattern
-  </message>
   <message name="IDS_DEVTOOLS_53fa249ce3d02c8a686b657b31d02ee7" desc="Text in Network Log View of the Network panel">
     Copy response
   </message>
@@ -302,6 +311,9 @@
   </message>
   <message name="IDS_DEVTOOLS_5639d3df5aea3d9e78027b843ee3cbb2" desc="Text in Resource Web Socket Frame View of the Network panel">
     Receive
+  </message>
+  <message name="IDS_DEVTOOLS_566054a0cc477c285fcdb4b7579db3cf" desc="Accessible label for the button to add request blocking patterns in the network request blocking tool">
+    Add network request blocking pattern
   </message>
   <message name="IDS_DEVTOOLS_566bbee0f961ad71b54c3c2fd36db053" desc="Reason in Network Data Grid Node of the Network panel">
     extension
@@ -375,6 +387,9 @@
   <message name="IDS_DEVTOOLS_6b41d86d21d49c95f5b106fb2ed95762" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Internet Explorer 10</ph>
   </message>
+  <message name="IDS_DEVTOOLS_5d0fc8284dca5a87af1d80b6715da9cf" desc="Displays how a particular response was fetched">
+    Source of response: <ph name="THIS__REQUEST_RESPONSESOURCE__">$1s<ex>Network fetch</ex></ph>
+  </message>
   <message name="IDS_DEVTOOLS_6c2a1bf87fb84c91fc7e1120f4e3d0c7" desc="Text in Request Timing View of the Network panel">
     Content Download
   </message>
@@ -407,6 +422,30 @@
   </message>
   <message name="IDS_DEVTOOLS_8470bd9052ed82990d6e49335b14e41e" desc="Text in Headers View of the Network panel">
     This document was blocked from loading in an <ph name="LOCKED_1">iframe</ph> with a <ph name="LOCKED_1">sandbox</ph> attribute because this document specified a cross-origin opener policy.
+  </message>
+  <message name="IDS_DEVTOOLS_88183b946cc5f0e8c96b2e66e1c74a7e" desc="Text for an unspecified service worker response source">
+    Unknown
+  </message>
+  <message name="IDS_DEVTOOLS_95059da3555281e1df90b77ce4ff7554" desc="Text in Request Timing View of the Network panel">
+    respondWith
+  </message>
+  <message name="IDS_DEVTOOLS_9b5e92790ca7fec879dfd28355a224d1" desc="Text used to show that serviceworker fetch response source is HTTP cache">
+    From HTTP cache
+  </message>
+  <message name="IDS_DEVTOOLS_a1725c50b8a42b8b7af43912a64eb7d2" desc="Tooltip to explain lack of raw headers for a particular network request">
+    Only provisional headers are available because this request was not sent over the network and instead was served from a local cache, which doesn’t store the original request headers. Disable cache to see full request headers.
+  </message>
+  <message name="IDS_DEVTOOLS_85456468f5810641fba6ec7ee35aba75" desc="Tooltip providing the cors error code">
+    Cross-Origin Resource Sharing error: <ph name="CORSERRORSTATUS_CORSERROR">$1s<ex>PreflightDisallowedRedirect</ex></ph>
+  </message>
+  <message name="IDS_DEVTOOLS_a65043efa3ffbf89834b6d9c362d56a8" desc="Comment used in decoded X-Client-Data HTTP header output in Headers View of the Network panel">
+    Active client experiment variation IDs.
+  </message>
+  <message name="IDS_DEVTOOLS_2995fcc60be8c8c4525af76b7adc34bd" desc="Text in Network Data Grid Node of the Network panel">
+    CORS error
+  </message>
+  <message name="IDS_DEVTOOLS_bb9fd331bd610fd877425ceff23708a7" desc="Time at which a response was retrieved">
+    Retrieval Time: <ph name="THIS__REQUEST_RESPONSERETRIEVALTIME">$1s<ex>Fri Apr 10 2020 17:20:27 GMT-0700 (Pacific Daylight Time)</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_b23be8e9d2dc9b79c70ec2acd3f174d3" desc="Label for the Server Timing API">
     the Server Timing API
@@ -441,6 +480,9 @@
   <message name="IDS_DEVTOOLS_d0ba1750af6bfca9c78ae8105e2d2c96" desc="Tooltip for a filter in the Network panel">
     Only show blocked requests
   </message>
+  <message name="IDS_DEVTOOLS_d2dcef098e49899b0c4270c71b927b31" desc="Text in Headers View of the Network panel for X-Client-Data HTTP headers">
+    Decoded:
+  </message>
   <message name="IDS_DEVTOOLS_d3a5ba3be76f23c067151787387512d2" desc="Text for a link to the issues panel">
     Learn more in the issues tab
   </message>
@@ -453,11 +495,20 @@
   <message name="IDS_DEVTOOLS_da011b03135db41fae6598372f46bd0c" desc="An option in the user agent dropdown menu in the Network conditions tool">
     Safari — iPad iOS 13.2
   </message>
+  <message name="IDS_DEVTOOLS_da08e0918c9042e0d594fc3ec3c63ce2" desc="Text in Request Headers View of the Network panel">
+    (from <ph name="LOCKED_TERM">service worker</ph>)
+  </message>
   <message name="IDS_DEVTOOLS_da3211be40e2b7282b37431dc1e6ceb6" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Googlebot Desktop</ph>
   </message>
   <message name="IDS_DEVTOOLS_db6cb44185e9c607291751f915b1ca99" desc="Title of an action that hides network request details">
     Hide request details
+  </message>
+  <message name="IDS_DEVTOOLS_de04f7066e574ccce5b163308115dd2c" desc="Text used to show that data was retrieved using ServiceWorker fallback code">
+    Fallback code
+  </message>
+  <message name="IDS_DEVTOOLS_de334a2dc1db5a51d8d8cd49e13ca1c4" desc="Button to add a pattern to block netwrok requests in the Network request blocking tool">
+    Network requests are not blocked. <ph name="ADD_BUTTON">$1s<ex>Add pattern</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_de9b14d980b77c264d42463f407180be" desc="Message to explain lack of raw headers for a particular network request">
     Provisional headers are shown
@@ -482,6 +533,12 @@
   </message>
   <message name="IDS_DEVTOOLS_e48c00bc05b642164b5520137b66d011" desc="Text in Network Log View of the Network panel">
     Copy all as Node.js fetch
+  </message>
+  <message name="IDS_DEVTOOLS_eb7a6acbba5314f2cd2c41476115d732" desc="Title of the 'Network request blocking' tool in the bottom drawer">
+    Network request blocking
+  </message>
+  <message name="IDS_DEVTOOLS_f0c5b7ae2d085f65b7b003d43a7d7521" desc="Name of storage cache from which a response was fetched">
+    Cache storage cache name: <ph name="THIS__REQUEST_RESPONSECACHESTORAGECACHENAME">$1s<ex>v1</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_f59329e45eb11a75d709aeb5b9b8943e" desc="Tooltip for expanding network request row setting">
     Show more information in request rows
@@ -511,7 +568,7 @@
     Copied as Hex
   </message>
   <message name="IDS_DEVTOOLS_79307e20670213e6f99203c2d81bbbaf" desc="Text of a DOM element in Network Data Grid Node of the Network panel">
-    (ServiceWorker)
+    (<ph name="LOCKED_TERM">ServiceWorker</ph>)
   </message>
   <message name="IDS_DEVTOOLS_7954bc50e461d57fa640f77741cea491" desc="Text of a DOM element in Request Timing View of the Network panel">
     Resource Scheduling
@@ -648,9 +705,6 @@
   <message name="IDS_DEVTOOLS_986371172510b03c03ac7cd17c1f84d4" desc="Cell title in Network Data Grid Node of the Network panel">
     Served from Signed HTTP Exchange, resource size: <ph name="RESOURCESIZE">$1s<ex>4 B</ex></ph>
   </message>
-  <message name="IDS_DEVTOOLS_986491ef3610ed7ef82bd863e4ee00a2" desc="Title of the 'Request blocking' tool in the bottom drawer">
-    Request blocking
-  </message>
   <message name="IDS_DEVTOOLS_986c37480b1f1c2e443504b38b6361b4" desc="A group title in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Chrome</ph>
   </message>
@@ -685,7 +739,7 @@
     <ph name="COUNT">$1d<ex>4</ex></ph> blocked
   </message>
   <message name="IDS_DEVTOOLS_a09b75f1cd4e3d54099fa8e14ff5056d" desc="From service worker format in Network Time Calculator of the Network panel">
-    <ph name="PH1">$1s<ex>20ms latency</ex></ph> (from ServiceWorker)
+    <ph name="PH1">$1s<ex>20ms latency</ex></ph> (from <ph name="LOCKED_TERM">ServiceWorker</ph>)
   </message>
   <message name="IDS_DEVTOOLS_a12a6481ad87f558622dcf0a1a87982a" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">UC Browser — Android Mobile</ph>
@@ -766,7 +820,7 @@
     Copy as cURL (bash)
   </message>
   <message name="IDS_DEVTOOLS_b4774747599df05309e1de2e2734dd3e" desc="Text in Request Timing View of the Network panel">
-    Request to ServiceWorker
+    Request to <ph name="LOCKED_TERM">ServiceWorker</ph>
   </message>
   <message name="IDS_DEVTOOLS_b72ac10807b29c77f5b7e4b80ea40414" desc="Text in Request Timing View of the Network panel">
     Explanation
@@ -839,9 +893,6 @@
   </message>
   <message name="IDS_DEVTOOLS_cc0af601bfd673427a8abb171f62c707" desc="Reason in Network Data Grid Node of the Network panel">
     content-type
-  </message>
-  <message name="IDS_DEVTOOLS_cc910147ba0845397ea686345faf7340" desc="Button to add a pattern to block requests in the Request Blocking tool">
-    Requests are not blocked. <ph name="ADD_BUTTON">$1s<ex>Add pattern</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_ce9d64b8fde226fd9e5fa4c0947c7ee0" desc="Tooltip to explain what response cookies are">
     Cookies that were received from the server in the &apos;set-cookie&apos; header of the response
@@ -1007,6 +1058,9 @@
   </message>
   <message name="IDS_DEVTOOLS_f750833a940ae1ba3cd75b86d520fda3" desc="From cache format in Network Time Calculator of the Network panel">
     <ph name="PH1">$1s<ex>20ms latency</ex></ph> (from cache)
+  </message>
+  <message name="IDS_DEVTOOLS_f7aa0779f4d8e843b2877afa34d559e0" desc="Description for treeitem in ServiceWorker Fetch Details">
+    Response Received
   </message>
   <message name="IDS_DEVTOOLS_f9069c6541beaac49cce4b2542069f02" desc="Text in Request Headers View of the Network panel">
     Referrer Policy

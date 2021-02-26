@@ -98,7 +98,7 @@ struct SK_API GrContextOptions {
 
     /** Construct mipmaps manually, via repeated downsampling draw-calls. This is used when
         the driver's implementation (glGenerateMipmap) contains bugs. This requires mipmap
-        level and LOD control (ie desktop or ES3). */
+        level control (ie desktop or ES3). */
     bool fDoManualMipmapping = false;
 
     /**
@@ -134,16 +134,20 @@ struct SK_API GrContextOptions {
 
     /**
      * Below this threshold size in device space distance field fonts won't be used. Distance field
-     * fonts don't support hinting which is more important at smaller sizes. A negative value means
-     * use the default threshold.
+     * fonts don't support hinting which is more important at smaller sizes.
      */
-    float fMinDistanceFieldFontSize = -1.f;
+    float fMinDistanceFieldFontSize = 18;
 
     /**
-     * Above this threshold size in device space glyphs are drawn as individual paths. A negative
-     * value means use the default threshold.
+     * Above this threshold size in device space glyphs are drawn as individual paths.
      */
-    float fGlyphsAsPathsFontSize = -1.f;
+#if defined(SK_BUILD_FOR_ANDROID)
+    float fGlyphsAsPathsFontSize = 384;
+#elif defined(SK_BUILD_FOR_MAC)
+    float fGlyphsAsPathsFontSize = 256;
+#else
+    float fGlyphsAsPathsFontSize = 324;
+#endif
 
     /**
      * Can the glyph atlas use multiple textures. If allowed, the each texture's size is bound by
@@ -221,6 +225,22 @@ struct SK_API GrContextOptions {
      */
     int  fInternalMultisampleCount = 4;
 
+    /**
+     * In Skia's vulkan backend a single GrContext submit equates to the submission of a single
+     * primary command buffer to the VkQueue. This value specifies how many vulkan secondary command
+     * buffers we will cache for reuse on a given primary command buffer. A single submit may use
+     * more than this many secondary command buffers, but after the primary command buffer is
+     * finished on the GPU it will only hold on to this many secondary command buffers for reuse.
+     *
+     * A value of -1 means we will pick a limit value internally.
+     */
+    int fMaxCachedVulkanSecondaryCommandBuffers = -1;
+
+    /**
+     * If true, the caps will never support mipmaps.
+     */
+    bool fSuppressMipmapSupport = false;
+
 #if GR_TEST_UTILS
     /**
      * Private options that are only meant for testing within Skia's tools.
@@ -248,6 +268,17 @@ struct SK_API GrContextOptions {
     bool fSuppressTessellationShaders = false;
 
     /**
+     * If greater than zero and less than the actual hardware limit, overrides the maximum number of
+     * tessellation segments supported by the caps.
+     */
+    int  fMaxTessellationSegmentsOverride = 0;
+
+    /**
+     * If true, then all paths are processed as if "setIsVolatile" had been called.
+     */
+    bool fAllPathsVolatile = false;
+
+    /**
      * Render everything in wireframe
      */
     bool fWireframeMode = false;
@@ -258,17 +289,14 @@ struct SK_API GrContextOptions {
     bool fClearAllTextures = false;
 
     /**
+     * Randomly generate a (false) GL_OUT_OF_MEMORY error
+     */
+    bool fRandomGLOOM = false;
+
+    /**
      * Include or exclude specific GPU path renderers.
      */
     GpuPathRenderers fGpuPathRenderers = GpuPathRenderers::kDefault;
-#endif
-
-#if SK_SUPPORT_ATLAS_TEXT
-    /**
-     * Controls whether distance field glyph vertices always have 3 components even when the view
-     * matrix does not have perspective.
-     */
-    Enable fDistanceFieldGlyphVerticesAlwaysHaveW = Enable::kDefault;
 #endif
 
     GrDriverBugWorkarounds fDriverBugWorkarounds;

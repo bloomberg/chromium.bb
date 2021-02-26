@@ -872,9 +872,13 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
     has_pending_tree_ = true;
     pending_tree_needs_first_draw_on_activation_ = true;
     pending_tree_is_ready_for_activation_ = false;
-    // Wait for the new pending tree to become ready to draw, which may happen
-    // before or after activation.
-    active_tree_is_ready_to_draw_ = false;
+    if (!active_tree_needs_first_draw_ ||
+        !settings_.wait_for_all_pipeline_stages_before_draw) {
+      // Wait for the new pending tree to become ready to draw, which may happen
+      // before or after activation (unless we're in full-pipeline mode and
+      // need first draw to come through).
+      active_tree_is_ready_to_draw_ = false;
+    }
   }
 
   // Update state related to forced draws.
@@ -1191,8 +1195,6 @@ void SchedulerStateMachine::OnBeginImplFrameIdle() {
   // then the main thread is in a high latency mode.
   main_thread_missed_last_deadline_ =
       CommitPending() || has_pending_tree_ || active_tree_needs_first_draw_;
-  main_thread_failed_to_respond_last_deadline_ =
-      begin_main_frame_state_ == BeginMainFrameState::SENT;
 
   // If we're entering a state where we won't get BeginFrames set all the
   // funnels so that we don't perform any actions that we shouldn't.
@@ -1439,7 +1441,6 @@ void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   main_thread_missed_last_deadline_ = false;
 
   switch (reason) {
-    case CommitEarlyOutReason::ABORTED_LAYER_TREE_FRAME_SINK_LOST:
     case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:
     case CommitEarlyOutReason::ABORTED_DEFERRED_MAIN_FRAME_UPDATE:
     case CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT:

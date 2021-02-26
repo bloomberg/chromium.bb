@@ -22,6 +22,7 @@
 static void extend_plane(uint8_t *const src, int src_stride, int width,
                          int height, int extend_top, int extend_left,
                          int extend_bottom, int extend_right) {
+  assert(src != NULL);
   int i;
   const int linesize = extend_left + extend_right + width;
 

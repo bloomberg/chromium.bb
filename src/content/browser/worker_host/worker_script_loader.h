@@ -14,15 +14,16 @@
 #include "base/optional.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "content/public/browser/dedicated_worker_id.h"
-#include "content/public/browser/shared_worker_id.h"
+#include "content/public/browser/service_worker_client_info.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace blink {
 class ThrottlingURLLoader;
@@ -69,8 +70,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   // chrome-extension:// URL.
   WorkerScriptLoader(
       int process_id,
-      DedicatedWorkerId dedicated_worker_id,
-      SharedWorkerId shared_worker_id,
+      const DedicatedOrSharedWorkerToken& worker_token,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
@@ -80,7 +80,8 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       base::WeakPtr<AppCacheHost> appcache_host,
       const BrowserContextGetter& browser_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      ukm::SourceId ukm_source_id);
   ~WorkerScriptLoader() override;
 
   // network::mojom::URLLoader:
@@ -155,6 +156,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   BrowserContextGetter browser_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
+  const ukm::SourceId ukm_source_id_;
 
   base::Optional<net::RedirectInfo> redirect_info_;
   int redirect_limit_ = net::URLRequest::kMaxRedirects;

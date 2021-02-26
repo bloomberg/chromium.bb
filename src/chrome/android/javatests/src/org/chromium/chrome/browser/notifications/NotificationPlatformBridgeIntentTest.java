@@ -9,17 +9,20 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 
+import androidx.test.filters.MediumTest;
+
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.settings.SettingsActivity;
@@ -27,8 +30,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Instrumentation tests for the Notification Platform Bridge.
@@ -38,7 +39,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
  * the code exercised by this test.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class NotificationPlatformBridgeIntentTest {
     /**
@@ -148,7 +148,7 @@ public class NotificationPlatformBridgeIntentTest {
                                   .getApplicationContext();
 
         Intent intent = new Intent(NotificationConstants.ACTION_CLICK_NOTIFICATION);
-        intent.setClass(context, NotificationService.Receiver.class);
+        intent.setClass(context, NotificationServiceImpl.Receiver.class);
 
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_ID, "42");
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_PROFILE_ID, "Default");
@@ -161,11 +161,9 @@ public class NotificationPlatformBridgeIntentTest {
         // Send the pending intent. This will begin starting up the browser process.
         pendingIntent.send();
 
-        CriteriaHelper.pollUiThread(new Criteria("Browser process was never started.") {
-            @Override
-            public boolean isSatisfied() {
-                return NotificationPlatformBridge.getInstanceForTests() != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Browser process was never started.",
+                    NotificationPlatformBridge.getInstanceForTests(), Matchers.notNullValue());
         });
 
         Assert.assertTrue("The native library should be loaded now",

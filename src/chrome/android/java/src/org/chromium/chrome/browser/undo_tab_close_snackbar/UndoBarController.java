@@ -6,7 +6,11 @@ package org.chromium.chrome.browser.undo_tab_close_snackbar;
 
 import android.content.Context;
 
-import org.chromium.base.metrics.RecordHistogram;
+import androidx.annotation.Nullable;
+
+import org.chromium.base.CallbackController;
+import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -18,7 +22,7 @@ import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 
 import java.util.List;
 import java.util.Locale;
@@ -40,16 +44,12 @@ import java.util.Locale;
  * in sync with the model.
  */
 public class UndoBarController implements SnackbarManager.SnackbarController {
-    // AndroidTabCloseUndoToastEvent defined in tools/metrics/histograms/histograms.xml.
-    private static final int TAB_CLOSE_UNDO_TOAST_SHOWN_COLD = 0;
-    private static final int TAB_CLOSE_UNDO_TOAST_SHOWN_WARM = 1;
-    private static final int TAB_CLOSE_UNDO_TOAST_PRESSED = 2;
-    private static final int TAB_CLOSE_UNDO_TOAST_COUNT = 5;
-
     private final TabModelSelector mTabModelSelector;
     private final TabModelObserver mTabModelObserver;
     private final SnackbarManager.SnackbarManageable mSnackbarManagable;
     private final Context mContext;
+    private CallbackController mCallbackController = new CallbackController();
+    private OverviewModeBehavior mOverviewModeBehavior;
 
     /**
      * Creates an instance of a {@link UndoBarController}.
@@ -57,52 +57,75 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
      * @param selector The {@link TabModelSelector} that will be used to commit and undo tab
      *                 closures.
      * @param snackbarManageable The holder class to get the manager that helps to show up snackbar.
-     * @param overviewModeBehavior The {@link OverviewModeBehavior} to help check whether the
-     *         overview is showing or not.
+     * @param overviewModeBehaviorSupplier The {@link OverviewModeBehavior} to help check whether
+     *         the
+     * @param dialogVisibilitySupplier The {@link Supplier} to get the visibility of TabGridDialog.
      */
     public UndoBarController(Context context, TabModelSelector selector,
             SnackbarManager.SnackbarManageable snackbarManageable,
-            OverviewModeBehavior overviewModeBehavior) {
+            OneshotSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
+            @Nullable Supplier<Boolean> dialogVisibilitySupplier) {
         mSnackbarManagable = snackbarManageable;
         mTabModelSelector = selector;
         mContext = context;
+        overviewModeBehaviorSupplier.onAvailable(mCallbackController.makeCancelable(
+                overviewModeBehavior -> mOverviewModeBehavior = overviewModeBehavior));
+
         mTabModelObserver = new TabModelObserver() {
-            private boolean disableUndo() {
+            /**
+             * Decides whether we should disable an attempt to show/hide the undo bar.
+             * @param showingUndoBar indicates whether the expected behavior of the caller is to
+             *         show or dismiss the undo bar.
+             */
+            private boolean disableUndo(boolean showingUndoBar) {
                 // If the closure happens through conditional tab strip, show the undo snack bar
                 // regardless of whether accessibility mode is enabled.
                 if (TabUiFeatureUtilities.isConditionalTabStripEnabled()
                         && ConditionalTabStripUtils.getFeatureStatus()
                                 == ConditionalTabStripUtils.FeatureStatus.ACTIVATED
-                        && !overviewModeBehavior.overviewVisible()) {
+                        && (mOverviewModeBehavior != null
+                                && !mOverviewModeBehavior.overviewVisible())) {
                     return false;
                 }
-                return AccessibilityUtil.isAccessibilityEnabled()
+                // When closure(s) happen and we are trying to show the undo bar, check whether the
+                // TabGridDialog is showing. If so, don't show the undo bar because TabGridDialog
+                // has its own undo bar. See crbug.com/1119899. Note that we don't disable attempts
+                // to dismiss snack bar to make sure that snack bar state is in sync with tab model.
+                if (dialogVisibilitySupplier != null && showingUndoBar) {
+                    return dialogVisibilitySupplier.get();
+                }
+                // If grid tab switcher is enabled, show the undo snack bar regardless of whether
+                // accessibility mode is enabled.
+                if (TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
+                    return false;
+                }
+                return ChromeAccessibilityUtil.get().isAccessibilityEnabled()
                         || DeviceClassManager.enableAccessibilityLayout();
             }
 
             @Override
             public void tabPendingClosure(Tab tab) {
-                if (disableUndo()) return;
+                if (disableUndo(true)) return;
                 showUndoBar(tab.getId(), tab.getTitle());
             }
 
             @Override
             public void tabClosureUndone(Tab tab) {
-                if (disableUndo()) return;
+                if (disableUndo(false)) return;
                 mSnackbarManagable.getSnackbarManager().dismissSnackbars(
                         UndoBarController.this, tab.getId());
             }
 
             @Override
             public void tabClosureCommitted(Tab tab) {
-                if (disableUndo()) return;
+                if (disableUndo(false)) return;
                 mSnackbarManagable.getSnackbarManager().dismissSnackbars(
                         UndoBarController.this, tab.getId());
             }
 
             @Override
             public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
-                if (disableUndo()) return;
+                if (disableUndo(true)) return;
 
                 if (tabs.size() == 1) {
                     tabPendingClosure(tabs.get(0));
@@ -115,7 +138,7 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
 
             @Override
             public void allTabsClosureCommitted() {
-                if (disableUndo()) return;
+                if (disableUndo(false)) return;
                 mSnackbarManagable.getSnackbarManager().dismissSnackbars(UndoBarController.this);
             }
         };
@@ -135,6 +158,10 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
     public void destroy() {
         TabModel model = mTabModelSelector.getModel(false);
         if (model != null) model.removeObserver(mTabModelObserver);
+        if (mCallbackController != null) {
+            mCallbackController.destroy();
+            mCallbackController = null;
+        }
     }
 
     /**
@@ -146,15 +173,12 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
      * @param content The title of the tab.
      */
     private void showUndoBar(int tabId, String content) {
-        RecordHistogram.recordEnumeratedHistogram("AndroidTabCloseUndo.Toast",
-                mSnackbarManagable.getSnackbarManager().isShowing()
-                        ? TAB_CLOSE_UNDO_TOAST_SHOWN_WARM
-                        : TAB_CLOSE_UNDO_TOAST_SHOWN_COLD,
-                TAB_CLOSE_UNDO_TOAST_COUNT);
         mSnackbarManagable.getSnackbarManager().showSnackbar(
                 Snackbar.make(content, this, Snackbar.TYPE_ACTION, Snackbar.UMA_TAB_CLOSE_UNDO)
                         .setTemplateText(mContext.getString(R.string.undo_bar_close_message))
-                        .setAction(mContext.getString(R.string.undo), tabId));
+                        .setAction(mContext.getString(R.string.undo), tabId)
+                        .setActionAccessibilityAnnouncement(
+                                getUndoneAccessibilityAnnouncement(content, false)));
     }
 
     /**
@@ -173,7 +197,18 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
                                 isAllTabs ? Snackbar.UMA_TAB_CLOSE_ALL_UNDO
                                           : Snackbar.UMA_TAB_CLOSE_MULTIPLE_UNDO)
                         .setTemplateText(mContext.getString(R.string.undo_bar_close_all_message))
-                        .setAction(mContext.getString(R.string.undo), closedTabs));
+                        .setAction(mContext.getString(R.string.undo), closedTabs)
+                        .setActionAccessibilityAnnouncement(
+                                getUndoneAccessibilityAnnouncement(content, true)));
+    }
+
+    private String getUndoneAccessibilityAnnouncement(String content, boolean isMultiple) {
+        return isMultiple
+                ? mContext.getString(
+                        R.string.accessibility_undo_multiple_closed_tabs_announcement_message,
+                        content)
+                : mContext.getString(
+                        R.string.accessibility_undo_closed_tab_announcement_message, content);
     }
 
     /**
@@ -183,8 +218,6 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
     @SuppressWarnings("unchecked")
     @Override
     public void onAction(Object actionData) {
-        RecordHistogram.recordEnumeratedHistogram("AndroidTabCloseUndo.Toast",
-                TAB_CLOSE_UNDO_TOAST_PRESSED, TAB_CLOSE_UNDO_TOAST_COUNT);
         if (actionData instanceof Integer) {
             cancelTabClosure((Integer) actionData);
         } else {

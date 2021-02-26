@@ -111,7 +111,7 @@ void InitializeCrashpadImpl(bool initial_client,
   const bool browser_process = process_type.empty();
 
   if (initial_client) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // "relauncher" is hard-coded because it's a Chrome --type, but this
     // component can't see Chrome's switches. This is only used for argument
     // sanitization.
@@ -123,11 +123,11 @@ void InitializeCrashpadImpl(bool initial_client,
     DCHECK(browser_process || process_type == "Chrome Installer" ||
            process_type == "notification-helper" ||
            process_type == "GCPW Installer" || process_type == "GCPW DLL");
-#elif defined(OS_LINUX) || defined(OS_ANDROID)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
     DCHECK(browser_process);
 #else
 #error Port.
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
   } else {
     DCHECK(!browser_process);
   }
@@ -137,7 +137,7 @@ void InitializeCrashpadImpl(bool initial_client,
       initial_client, browser_process, embedded_handler, user_data_dir,
       exe_path, initial_arguments);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #if defined(NDEBUG)
   const bool is_debug_build = false;
 #else
@@ -155,7 +155,7 @@ void InitializeCrashpadImpl(bool initial_client,
     crashpad::CrashpadInfo::GetCrashpadInfo()
         ->set_system_crash_reporter_forwarding(crashpad::TriState::kDisabled);
   }
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
   crashpad::AnnotationList::Register();
 
@@ -182,7 +182,7 @@ void InitializeCrashpadImpl(bool initial_client,
   // the same file and line.
   base::debug::SetDumpWithoutCrashingFunction(DumpWithoutCrashing);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On Mac, we only want the browser to initialize the database, but not the
   // relauncher.
   const bool should_initialize_database_and_set_upload_policy = browser_process;
@@ -191,7 +191,7 @@ void InitializeCrashpadImpl(bool initial_client,
   // other "main, first process" to initialize things. There is no "relauncher"
   // on Windows, so this is synonymous with initial_client.
   const bool should_initialize_database_and_set_upload_policy = initial_client;
-#elif defined(OS_LINUX) || defined(OS_ANDROID)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   const bool should_initialize_database_and_set_upload_policy = browser_process;
 #endif
   if (should_initialize_database_and_set_upload_policy) {
@@ -280,11 +280,11 @@ void DumpWithoutCrashing() {
 }
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 void CrashWithoutDumping(const std::string& message) {
   crashpad::CrashpadClient::CrashWithoutDump(message);
 }
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 void GetReports(std::vector<Report>* reports) {
 #if defined(OS_WIN)

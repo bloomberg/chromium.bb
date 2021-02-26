@@ -40,9 +40,9 @@
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "chrome/common/web_application_info.h"
 #include "components/favicon/core/favicon_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -236,12 +236,12 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
       const favicon_base::FaviconImageResult& image_result) {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->title = base::UTF8ToUTF16(title);
-    web_app_info->app_url = launch_url;
+    web_app_info->start_url = launch_url;
     web_app_info->display_mode = web_app::DisplayMode::kBrowser;
     web_app_info->open_as_window = false;
 
     if (!image_result.image.IsEmpty()) {
-      web_app_info->icon_bitmaps[image_result.image.Width()] =
+      web_app_info->icon_bitmaps_any[image_result.image.Width()] =
           image_result.image.AsBitmap();
     }
 
@@ -273,7 +273,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     info.is_app = true;
     info.type = extensions::api::management::EXTENSION_TYPE_HOSTED_APP;
     info.app_launch_url =
-        std::make_unique<std::string>(registrar.GetAppLaunchURL(app_id).spec());
+        std::make_unique<std::string>(registrar.GetAppStartUrl(app_id).spec());
 
     info.icons =
         std::make_unique<std::vector<extensions::api::management::IconInfo>>();
@@ -282,7 +282,8 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     info.icons->reserve(icon_infos.size());
     for (const WebApplicationIconInfo& web_app_icon_info : icon_infos) {
       extensions::api::management::IconInfo icon_info;
-      icon_info.size = web_app_icon_info.square_size_px;
+      if (web_app_icon_info.square_size_px)
+        icon_info.size = *web_app_icon_info.square_size_px;
       icon_info.url = web_app_icon_info.url.spec();
       info.icons->push_back(std::move(icon_info));
     }
@@ -301,6 +302,8 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
         info.launch_type =
             extensions::api::management::LAUNCH_TYPE_OPEN_FULL_SCREEN;
         break;
+      // This mode is not supported by the extension app backend.
+      case web_app::DisplayMode::kWindowControlsOverlay:
       case web_app::DisplayMode::kUndefined:
         info.launch_type = extensions::api::management::LAUNCH_TYPE_NONE;
         break;
@@ -331,7 +334,7 @@ void LaunchWebApp(const web_app::AppId& app_id, Profile* profile) {
 
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(apps::AppLaunchParams(
+      ->LaunchAppWithParams(apps::AppLaunchParams(
           app_id, launch_container, WindowOpenDisposition::NEW_FOREGROUND_TAB,
           apps::mojom::AppLaunchSource::kSourceManagementApi));
 }
@@ -368,7 +371,8 @@ void OnWebAppInstallabilityChecked(
           displayer.browser(), nullptr, std::move(web_contents), url,
           WindowOpenDisposition::NEW_FOREGROUND_TAB, gfx::Rect());
       web_app::CreateWebAppFromManifest(
-          containing_contents, WebappInstallSource::MANAGEMENT_API,
+          containing_contents, /*bypass_service_worker_check=*/true,
+          WebappInstallSource::MANAGEMENT_API,
           base::BindOnce(&OnWebAppInstallCompleted, std::move(callback)));
       return;
   }
@@ -396,7 +400,7 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
   Profile* profile = Profile::FromBrowserContext(context);
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(apps::AppLaunchParams(
+      ->LaunchAppWithParams(apps::AppLaunchParams(
           extension->id(), launch_container,
           WindowOpenDisposition::NEW_FOREGROUND_TAB,
           apps::mojom::AppLaunchSource::kSourceManagementApi));
@@ -520,7 +524,7 @@ void ChromeManagementAPIDelegate::InstallOrLaunchReplacementWebApp(
     return;
   }
 
-  provider->install_manager().LoadWebAppAndCheckInstallability(
+  provider->install_manager().LoadWebAppAndCheckManifest(
       web_app_url, WebappInstallSource::MANAGEMENT_API,
       base::BindOnce(&OnWebAppInstallabilityChecked, profile,
                      std::move(callback)));

@@ -61,7 +61,7 @@ ui_dist_targets = [
   ":wasm_dist",
 ]
 
-# Buils the ui, but not service worker, tests and extensions.
+# Builds the ui, but not service worker, tests and extensions.
 group("dist") {
   deps = ui_dist_targets
 }
@@ -99,7 +99,16 @@ template("node_bin") {
     if (defined(invoker.suppress_stderr) && invoker.suppress_stderr) {
       args += [ "--suppress_stderr" ]
     }
+
+    # Some of the node_bin rules *cough*transpile_all_ts*cough* don't
+    # accuratly report the output files. This means if they can run,
+    # change something, and not cause their dependees to rerun causing
+    # bugs. Adding a stamp file which is always rewritten avoids this.
+    # See also b/120010518
+    stamp_path = "$ui_dir/$target_name.node_bin.stamp"
+    outputs += [ stamp_path ]
     args += [
+              "--stamp=" + rebase_path(stamp_path, root_build_dir),
               "--path=$nodejs_bin",
               "node",
               rebase_path("node_modules/.bin/$_node_cmd", root_build_dir),
@@ -223,6 +232,7 @@ node_bin("protos_to_js") {
   outputs = [ "$ui_gen_dir/protos.js" ]
   node_cmd = "pbjs"
   args = [
+           "--force-number",
            "-t",
            "static-module",
            "-w",
@@ -285,6 +295,7 @@ node_bin("transpile_all_ts") {
 
   node_cmd = "tsc"
   args = [
+    "--incremental",
     "--project",
     rebase_path(".", root_build_dir),
     "--outDir",
@@ -318,13 +329,16 @@ node_bin("transpile_service_worker_ts") {
 
 scss_root = "src/assets/perfetto.scss"
 scss_srcs = [
-  "src/assets/typefaces.scss",
+  "src/assets/analyze_page.scss",
+  "src/assets/common.scss",
+  "src/assets/details.scss",
+  "src/assets/metrics_page.scss",
+  "src/assets/modal.scss",
+  "src/assets/record.scss",
   "src/assets/sidebar.scss",
   "src/assets/topbar.scss",
-  "src/assets/record.scss",
-  "src/assets/common.scss",
-  "src/assets/modal.scss",
-  "src/assets/details.scss",
+  "src/assets/trace_info_page.scss",
+  "src/assets/typefaces.scss",
 ]
 
 # Build css.
@@ -379,8 +393,8 @@ copy("assets_dist") {
               "src/assets/rec_cpu_fine.png",
               "src/assets/rec_cpu_freq.png",
               "src/assets/rec_cpu_voltage.png",
-              "src/assets/rec_cpu_wakeup.png",
               "src/assets/rec_ftrace.png",
+              "src/assets/rec_gpu_mem_total.png",
               "src/assets/rec_java_heap_dump.png",
               "src/assets/rec_lmk.png",
               "src/assets/rec_logcat.png",
@@ -562,7 +576,7 @@ copy("copy_tests_script") {
 
 # This target generates an map containing all the UI subresources and their
 # hashes. This is used by the service worker code for offline caching.
-# This taarget needs to be kept at the end of the BUILD.gn file, because of the
+# This target needs to be kept at the end of the BUILD.gn file, because of the
 # get_target_outputs() call (fails otherwise due to GN's evaluation order).
 action("gen_dist_file_map") {
   out_file_path = "$ui_gen_dir/dist_file_map.ts"

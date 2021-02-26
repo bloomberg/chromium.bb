@@ -20,14 +20,14 @@ import androidx.appcompat.content.res.AppCompatResources;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.ShareDelegate;
-import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.chrome.browser.share.ShareParams;
+import org.chromium.chrome.browser.share.ShareDelegateImpl.ShareOrigin;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -36,8 +36,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
-import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -50,7 +52,7 @@ import java.util.List;
  * with the components' coordinator as well as managing the business logic
  * for dialog show/hide.
  */
-public class TabGridDialogMediator {
+public class TabGridDialogMediator implements SnackbarManager.SnackbarController {
     /**
      * Defines an interface for a {@link TabGridDialogMediator} to control dialog.
      */
@@ -100,6 +102,7 @@ public class TabGridDialogMediator {
     private final AnimationSourceViewProvider mAnimationSourceViewProvider;
     private final DialogHandler mTabGridDialogHandler;
     private final ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
+    private final Runnable mScrimClickRunnable;
     private final String mComponentName;
 
     private TabGroupTitleEditor mTabGroupTitleEditor;
@@ -115,7 +118,8 @@ public class TabGridDialogMediator {
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
             TabSwitcherMediator.ResetHandler tabSwitcherResetHandler,
             AnimationSourceViewProvider animationSourceViewProvider,
-            ObservableSupplier<ShareDelegate> shareDelegateSupplier, String componentName) {
+            ObservableSupplier<ShareDelegate> shareDelegateSupplier,
+            SnackbarManager snackbarManager, String componentName) {
         mContext = context;
         mModel = model;
         mTabModelSelector = tabModelSelector;
@@ -132,9 +136,7 @@ public class TabGridDialogMediator {
             @Override
             public void didAddTab(
                     Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {
-                if (!mTabModelSelector.getTabModelFilterProvider()
-                                .getCurrentTabModelFilter()
-                                .isTabModelRestored()) {
+                if (!mTabModelSelector.isTabStateInitialized()) {
                     return;
                 }
                 hideDialog(false);
@@ -144,6 +146,7 @@ public class TabGridDialogMediator {
             public void tabClosureUndone(Tab tab) {
                 updateDialog();
                 updateGridTabSwitcher();
+                snackbarManager.dismissSnackbars(TabGridDialogMediator.this, tab.getId());
             }
 
             @Override
@@ -170,8 +173,23 @@ public class TabGridDialogMediator {
                 updateDialog();
                 updateGridTabSwitcher();
             }
+
+            @Override
+            public void tabPendingClosure(Tab tab) {
+                if (!mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE)) return;
+                snackbarManager.showSnackbar(
+                        Snackbar.make(tab.getTitle(), TabGridDialogMediator.this,
+                                        Snackbar.TYPE_ACTION, Snackbar.UMA_TAB_CLOSE_UNDO)
+                                .setTemplateText(
+                                        mContext.getString(R.string.undo_bar_close_message))
+                                .setAction(mContext.getString(R.string.undo), tab.getId()));
+            }
+
+            @Override
+            public void tabClosureCommitted(Tab tab) {
+                snackbarManager.dismissSnackbars(TabGridDialogMediator.this, tab.getId());
+            }
         };
-        mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
@@ -195,7 +213,7 @@ public class TabGridDialogMediator {
                         ? R.style.TextAppearance_TextMediumThick_Blue_Light
                         : R.style.TextAppearance_TextMediumThick_Blue;
 
-                mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_RESOUCE_ID,
+                mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_RESOURCE_ID,
                         dialogBackgroundResource);
                 mModel.set(TabGridPanelProperties.TINT, tintList);
                 mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID,
@@ -207,6 +225,17 @@ public class TabGridDialogMediator {
             }
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
+
+        // Setup ScrimView click Runnable.
+        mScrimClickRunnable = () -> {
+            if (!TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+                mModel.set(TabGridPanelProperties.IS_KEYBOARD_VISIBLE, false);
+                mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
+            }
+            hideDialog(true);
+            RecordUserAction.record("TabGridDialog.Exit");
+        };
+        mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
     }
 
     public void initWithNative(@Nullable TabSelectionEditorCoordinator
@@ -214,13 +243,17 @@ public class TabGridDialogMediator {
             TabGroupTitleEditor tabGroupTitleEditor) {
         mTabSelectionEditorController = tabSelectionEditorController;
         mTabGroupTitleEditor = tabGroupTitleEditor;
+        mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
 
         assert mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof TabGroupModelFilter;
 
         mToolbarMenuCallback = result -> {
             if (result == R.id.ungroup_tab) {
-                mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, false);
+                if (!TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+                    mModel.set(TabGridPanelProperties.IS_KEYBOARD_VISIBLE, false);
+                }
+                mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
                 List<Tab> tabs = getRelatedTabs(mCurrentTabId);
                 if (mTabSelectionEditorController != null) {
                     mTabSelectionEditorController.show(tabs);
@@ -231,10 +264,8 @@ public class TabGridDialogMediator {
                         new ShareParams
                                 .Builder(tab.getWindowAndroid(),
                                         mModel.get(TabGridPanelProperties.HEADER_TITLE), "")
-                                .setShareDirectly(false)
-                                .setSaveLastUsed(true)
                                 .setText(getTabGroupStringForSharing())
-                                .setCallback(new ShareHelper.TargetChosenCallback() {
+                                .setCallback(new ShareParams.TargetChosenCallback() {
                                     @Override
                                     public void onTargetChosen(ComponentName chosenComponent) {
                                         RecordUserAction.record(
@@ -245,7 +276,20 @@ public class TabGridDialogMediator {
                                     public void onCancel() {}
                                 })
                                 .build();
-                mShareDelegateSupplier.get().share(shareParams);
+                // TODO(crbug.com/1085078): Sharing hub is suppressed for tab group sharing.
+                // Re-enable it when tab group sharing is supported by sharing hub.
+                ChromeShareExtras chromeShareExtras = new ChromeShareExtras.Builder()
+                                                              .setSharingTabGroup(true)
+                                                              .setSaveLastUsed(true)
+                                                              .build();
+                mShareDelegateSupplier.get().share(
+                        shareParams, chromeShareExtras, ShareOrigin.TAB_GROUP);
+            }
+
+            if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+                if (result == R.id.edit_group_name) {
+                    mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, true);
+                }
             }
         };
 
@@ -260,12 +304,10 @@ public class TabGridDialogMediator {
             setupDialogSelectionEditor();
             mModel.set(TabGridPanelProperties.MENU_CLICK_LISTENER, getMenuButtonClickListener());
         }
-
-        // Setup ScrimView observer.
-        setupScrimViewObserver();
     }
 
     void hideDialog(boolean showAnimation) {
+        if (!mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE)) return;
         if (!showAnimation) {
             mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
         } else {
@@ -278,6 +320,9 @@ public class TabGridDialogMediator {
             mTabSelectionEditorController.hide();
         }
         saveCurrentGroupModifiedTitle();
+        if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+            mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
+        }
         mDialogController.resetWithListOfTabs(null);
     }
 
@@ -299,6 +344,7 @@ public class TabGridDialogMediator {
             }
             updateDialog();
             updateDialogScrollPosition();
+            mModel.set(TabGridPanelProperties.SCRIMVIEW_CLICK_RUNNABLE, mScrimClickRunnable);
             mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
         } else {
             mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
@@ -340,9 +386,21 @@ public class TabGridDialogMediator {
             Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
             String storedTitle = mTabGroupTitleEditor.getTabGroupTitle(getRootId(currentTab));
             if (storedTitle != null && relatedTabs.size() > 1) {
+                if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+                    mModel.set(TabGridPanelProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION,
+                            mContext.getResources().getQuantityString(
+                                    R.plurals.accessibility_dialog_back_button_with_group_name,
+                                    relatedTabs.size(), storedTitle, relatedTabs.size()));
+                }
                 mModel.set(TabGridPanelProperties.HEADER_TITLE, storedTitle);
                 return;
             }
+        }
+        if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+            mModel.set(TabGridPanelProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION,
+                    mContext.getResources().getQuantityString(
+                            R.plurals.accessibility_dialog_back_button, relatedTabs.size(),
+                            relatedTabs.size()));
         }
         mModel.set(TabGridPanelProperties.HEADER_TITLE,
                 mContext.getResources().getQuantityString(
@@ -350,7 +408,7 @@ public class TabGridDialogMediator {
     }
 
     private static int getRootId(Tab tab) {
-        return ((TabImpl) tab).getRootId();
+        return CriticalPersistedTabData.from(tab).getRootId();
     }
 
     private void updateDialogScrollPosition() {
@@ -380,16 +438,22 @@ public class TabGridDialogMediator {
 
         String actionButtonText =
                 mContext.getString(R.string.tab_grid_dialog_selection_mode_remove);
-        mTabSelectionEditorController.configureToolbar(actionButtonText, actionProvider, 1, null);
+        mTabSelectionEditorController.configureToolbar(actionButtonText,
+                R.plurals.accessibility_tab_selection_dialog_remove_button, actionProvider, 1,
+                null);
     }
 
     private void setupToolbarEditText() {
         mKeyboardVisibilityListener = isShowing -> {
             mModel.set(TabGridPanelProperties.TITLE_CURSOR_VISIBILITY, isShowing);
-            mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, isShowing);
+            if (!TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+                mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, isShowing);
+                mModel.set(TabGridPanelProperties.IS_KEYBOARD_VISIBLE, isShowing);
+            } else if (TabUiFeatureUtilities.isLaunchPolishEnabled() && !isShowing) {
+                mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
+            }
             if (!isShowing) {
                 saveCurrentGroupModifiedTitle();
-                mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, false);
             }
         };
         KeyboardVisibilityDelegate.getInstance().addKeyboardVisibilityListener(
@@ -410,34 +474,20 @@ public class TabGridDialogMediator {
         };
         mModel.set(TabGridPanelProperties.TITLE_TEXT_WATCHER, textWatcher);
 
-        View.OnFocusChangeListener onFocusChangeListener =
-                (v, hasFocus) -> mIsUpdatingTitle = hasFocus;
+        View.OnFocusChangeListener onFocusChangeListener = (v, hasFocus) -> {
+            mIsUpdatingTitle = hasFocus;
+            if (!TabUiFeatureUtilities.isLaunchPolishEnabled()) return;
+            mModel.set(TabGridPanelProperties.IS_KEYBOARD_VISIBLE, hasFocus);
+            mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, hasFocus);
+        };
         mModel.set(TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER, onFocusChangeListener);
-
-        View.OnTouchListener onTouchListener = (v, event) -> {
-            // When touching title text field, make the PopupWindow focusable and request focus.
-            mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, true);
-            v.performClick();
-            return false;
-        };
-        mModel.set(TabGridPanelProperties.TITLE_TEXT_ON_TOUCH_LISTENER, onTouchListener);
-    }
-
-    private void setupScrimViewObserver() {
-        ScrimView.ScrimObserver scrimObserver = new ScrimView.ScrimObserver() {
-            @Override
-            public void onScrimClick() {
-                hideDialog(true);
-                RecordUserAction.record("TabGridDialog.Exit");
-            }
-            @Override
-            public void onScrimVisibilityChanged(boolean visible) {}
-        };
-        mModel.set(TabGridPanelProperties.SCRIMVIEW_OBSERVER, scrimObserver);
     }
 
     private View.OnClickListener getCollapseButtonClickListener() {
         return view -> {
+            if (!TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+                mModel.set(TabGridPanelProperties.IS_KEYBOARD_VISIBLE, false);
+            }
             hideDialog(true);
             RecordUserAction.record("TabGridDialog.Exit");
         };
@@ -498,12 +548,24 @@ public class TabGridDialogMediator {
 
             String originalTitle = mContext.getResources().getQuantityString(
                     R.plurals.bottom_tab_grid_title_placeholder, tabsCount, tabsCount);
+            if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+                mModel.set(TabGridPanelProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION,
+                        mContext.getResources().getQuantityString(
+                                R.plurals.accessibility_dialog_back_button, tabsCount, tabsCount));
+            }
             mModel.set(TabGridPanelProperties.HEADER_TITLE, originalTitle);
             mTabGroupTitleEditor.updateTabGroupTitle(currentTab, originalTitle);
             return;
         }
         mTabGroupTitleEditor.storeTabGroupTitle(getRootId(currentTab), mCurrentGroupModifiedTitle);
         mTabGroupTitleEditor.updateTabGroupTitle(currentTab, mCurrentGroupModifiedTitle);
+        if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+            int relatedTabsCount = getRelatedTabs(mCurrentTabId).size();
+            mModel.set(TabGridPanelProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION,
+                    mContext.getResources().getQuantityString(
+                            R.plurals.accessibility_dialog_back_button_with_group_name,
+                            relatedTabsCount, mCurrentGroupModifiedTitle, relatedTabsCount));
+        }
         mModel.set(TabGridPanelProperties.HEADER_TITLE, mCurrentGroupModifiedTitle);
         RecordUserAction.record("TabGridDialog.TabGroupNamedInDialog");
         mCurrentGroupModifiedTitle = null;
@@ -513,13 +575,32 @@ public class TabGridDialogMediator {
         return mTabGridDialogHandler;
     }
 
+    // SnackbarManager.SnackbarController implementation.
+    @Override
+    public void onAction(Object actionData) {
+        int tabId = (int) actionData;
+        TabModel model = mTabModelSelector.getModelForTabId(tabId);
+        if (model != null) {
+            model.cancelTabClosure(tabId);
+        }
+    }
+
+    @Override
+    public void onDismissNoAction(Object actionData) {
+        int tabId = (int) actionData;
+        TabModel model = mTabModelSelector.getModelForTabId(tabId);
+        if (model != null) {
+            model.commitTabClosure(tabId);
+        }
+    }
+
     /**
      * A handler that handles TabGridDialog related changes originated from {@link TabListMediator}
      * and {@link TabGridItemTouchHelperCallback}.
      */
     class DialogHandler implements TabListMediator.TabGridDialogHandler {
         @Override
-        public void updateUngroupBarStatus(@TabGridDialogParent.UngroupBarStatus int status) {
+        public void updateUngroupBarStatus(@TabGridDialogView.UngroupBarStatus int status) {
             mModel.set(TabGridPanelProperties.UNGROUP_BAR_STATUS, status);
         }
 
@@ -574,5 +655,10 @@ public class TabGridDialogMediator {
     @VisibleForTesting
     Callback<Integer> getToolbarMenuCallbackForTesting() {
         return mToolbarMenuCallback;
+    }
+
+    @VisibleForTesting
+    Runnable getScrimClickRunnableForTesting() {
+        return mScrimClickRunnable;
     }
 }

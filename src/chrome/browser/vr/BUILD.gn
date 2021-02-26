@@ -22,19 +22,6 @@ buildflag_header("vr_buildflags") {
   flags = [ "USE_VR_ASSETS_COMPONENT=$use_vr_assets_component" ]
 }
 
-use_command_buffer = is_win
-
-config("vr_gl_mode") {
-  if (use_command_buffer) {
-    defines = [
-      "VR_USE_COMMAND_BUFFER",
-      "GL_GLEXT_PROTOTYPES",
-    ]
-  } else {
-    defines = [ "VR_USE_NATIVE_GL" ]
-  }
-}
-
 component("vr_ui") {
   sources = [
     "animation.cc",
@@ -190,6 +177,7 @@ component("vr_ui") {
     "//components/url_formatter",
     "//components/vector_icons",
     "//device/base",
+    "//device/vr:vr_base",
     "//device/vr/buildflags:buildflags",
     "//media",
     "//net",
@@ -235,8 +223,6 @@ component("vr_common") {
     "browser_renderer.cc",
     "browser_renderer.h",
     "browser_renderer_browser_interface.h",
-    "consent/xr_session_request_consent_manager.cc",
-    "consent/xr_session_request_consent_manager.h",
     "frame_type.h",
     "gesture_detector.cc",
     "gesture_detector.h",
@@ -263,7 +249,7 @@ component("vr_common") {
 
   public_deps = [
     ":vr_base",
-    "//device/vr/public/mojom",
+    "//device/vr/public/mojom:isolated_xr_service",
   ]
 
   deps = [
@@ -279,7 +265,7 @@ component("vr_common") {
     "//device/base",
     "//device/vr",
     "//device/vr/buildflags:buildflags",
-    "//device/vr/public/mojom",
+    "//device/vr/public/mojom:isolated_xr_service",
     "//media",
     "//net",
     "//services/audio/public/cpp",
@@ -322,7 +308,6 @@ component("vr_common") {
 # vr_ui must not depend on vr_common.
 component("vr_base") {
   sources = [
-    "assets_component_update_status.h",
     "assets_load_status.h",
     "assets_loader.cc",
     "assets_loader.h",
@@ -332,18 +317,12 @@ component("vr_base") {
     "content_input_delegate.h",
     "exit_vr_prompt_choice.h",
     "fov_rectangle.h",
-    "gl_bindings.h",
     "gl_texture_location.h",
     "input_event.cc",
     "input_event.h",
     "keyboard_delegate.h",
     "keyboard_ui_interface.h",
     "macros.h",
-    "metrics/consent_flow_metrics_helper.cc",
-    "metrics/consent_flow_metrics_helper.h",
-    "metrics/metrics_helper.cc",
-    "metrics/metrics_helper.h",
-    "mode.h",
     "model/assets.cc",
     "model/assets.h",
     "model/camera_model.h",
@@ -385,8 +364,6 @@ component("vr_base") {
     "vr_base_export.h",
     "vr_geometry_util.cc",
     "vr_geometry_util.h",
-    "vr_gl_util.cc",
-    "vr_gl_util.h",
   ]
 
   sources += [
@@ -398,10 +375,10 @@ component("vr_base") {
 
   public_deps = [
     ":vr_buildflags",
-    ":vr_gl_bindings",
     "//components/omnibox/browser",
     "//components/strings:components_strings_grit",
     "//content/public/common",
+    "//device/vr:vr_gl_bindings",
     "//device/vr/public/cpp",
     "//ui/base",
   ]
@@ -414,7 +391,7 @@ component("vr_base") {
     "//components/ukm/content",
     "//components/url_formatter",
     "//content/public/browser",
-    "//device/vr/public/mojom:mojom",
+    "//device/vr/public/mojom:isolated_xr_service",
     "//media",
     "//net",
     "//services/metrics/public/cpp:ukm_builders",
@@ -423,16 +400,6 @@ component("vr_base") {
 
   if (is_android) {
     deps += [ "//chrome/android/features/vr:jni_headers" ]
-  }
-}
-
-source_set("vr_gl_bindings") {
-  sources = [ "gl_bindings.h" ]
-  public_configs = [ ":vr_gl_mode" ]
-  if (use_command_buffer) {
-    public_deps = [ "//gpu/command_buffer/client:gles2_c_lib" ]
-  } else {
-    public_deps = [ "//ui/gl" ]
   }
 }
 
@@ -600,8 +567,8 @@ source_set("vr_gl_test_support") {
   ]
 
   public_deps = [
-    ":vr_gl_bindings",
     "//base/test:test_support",
+    "//device/vr:vr_gl_bindings",
     "//skia",
     "//testing/gtest",
   ]
@@ -649,12 +616,8 @@ if (!is_android) {
 
     # Infrastructure
     sources = [
-      "test/fake_xr_session_request_consent_manager.cc",
-      "test/fake_xr_session_request_consent_manager.h",
       "test/mock_xr_device_hook_base.cc",
       "test/mock_xr_device_hook_base.h",
-      "test/mock_xr_session_request_consent_manager.cc",
-      "test/mock_xr_session_request_consent_manager.h",
       "test/multi_class_browser_test.h",
     ]
 
@@ -665,7 +628,7 @@ if (!is_android) {
       "//device/vr:vr",
       "//device/vr/buildflags:buildflags",
       "//device/vr/orientation",
-      "//device/vr/public/mojom",
+      "//device/vr/public/mojom:isolated_xr_service",
       "//device/vr/public/mojom:test_mojom",
     ]
 
@@ -683,12 +646,12 @@ if (!is_android) {
 
       # Tests.
       sources += [
-        "webxr_vr_consent_dialog_browser_test.cc",
         "webxr_vr_frame_loop_browser_test.cc",
         "webxr_vr_frame_pose_browser_test.cc",
         "webxr_vr_indicators_browser_test.cc",
         "webxr_vr_input_browser_test.cc",
         "webxr_vr_isolated_device_service_test.cc",
+        "webxr_vr_permission_browser_test.cc",
         "webxr_vr_permission_request_browser_test.cc",
         "webxr_vr_pixel_browser_test.cc",
         "webxr_vr_tab_browser_test.cc",
@@ -698,10 +661,7 @@ if (!is_android) {
         ":vr_common",
         "//components/content_settings/core/browser",
         "//device/vr:directx_helpers",
-        "//third_party/openvr",
       ]
-
-      data_deps += [ "//device/vr:openvr_mock" ]
 
       if (enable_openxr) {
         deps += [ "//third_party/openxr" ]

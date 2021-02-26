@@ -5,16 +5,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_GESTURE_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_GESTURE_MANAGER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
 
 namespace blink {
 
 class IntPoint;
+class LocalFrame;
 class ScrollManager;
 class SelectionController;
 class PointerEventManager;
@@ -30,15 +29,30 @@ class CORE_EXPORT GestureManager final
                  MouseEventManager&,
                  PointerEventManager&,
                  SelectionController&);
-  void Trace(Visitor*);
+  GestureManager(const GestureManager&) = delete;
+  GestureManager& operator=(const GestureManager&) = delete;
+  void Trace(Visitor*) const;
 
   void Clear();
+  void ResetLongTapContextMenuStates();
 
   HitTestRequest::HitTestRequestType GetHitTypeForGestureType(
       WebInputEvent::Type);
   WebInputEventResult HandleGestureEventInFrame(
       const GestureEventWithHitTestResults&);
-  bool LongTapShouldInvokeContextMenu() const;
+  bool GestureContextMenuDeferred() const;
+
+  // Dispatches contextmenu event for drag-ends that haven't really dragged
+  // except for a few pixels.
+  //
+  // The reason for handling this in GestureManager is the similarity of the
+  // interaction with long taps.  When a drag ends without a drag offset, it is
+  // effectively a long tap but with one difference: there is no gesture long
+  // tap event.  This is because the drag controller interrupts current gesture
+  // sequence (cancelling the gesture) at the moment a drag begins, and the
+  // gesture recognizer does not know if the drag has ended at the originating
+  // position.
+  void SendContextMenuEventTouchDragEnd(const WebMouseEvent&);
 
  private:
   WebInputEventResult HandleGestureShowPress();
@@ -75,11 +89,11 @@ class CORE_EXPORT GestureManager final
   // firing for the current gesture sequence (i.e. until next GestureTapDown).
   bool suppress_mouse_events_from_gestures_;
 
-  bool long_tap_should_invoke_context_menu_;
+  bool gesture_context_menu_deferred_;
+
+  gfx::PointF long_press_position_in_root_frame_;
 
   const Member<SelectionController> selection_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(GestureManager);
 };
 
 }  // namespace blink

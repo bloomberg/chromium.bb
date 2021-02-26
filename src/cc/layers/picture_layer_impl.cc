@@ -10,11 +10,14 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <set>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
@@ -58,6 +61,11 @@ const float kSnapToExistingTilingRatio = 1.2f;
 // scales.
 const float kMaxIdealContentsScale = 10000.f;
 
+// We try to avoid raster scale adjustment for will-change:transform for
+// performance, unless the scale is too small compared to the ideal scale and
+// the native scale.
+const float kMinScaleRatioForWillChangeTransform = 0.25f;
+
 // Intersect rects which may have right() and bottom() that overflow integer
 // boundaries. This code is similar to gfx::Rect::Intersect with the exception
 // that the types are promoted to int64_t when there is a chance of overflow.
@@ -96,7 +104,6 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       was_screen_space_transform_animating_(false),
       only_used_low_res_last_append_quads_(false),
       nearest_neighbor_(false),
-      use_transformed_rasterization_(false),
       lcd_text_disallowed_reason_(LCDTextDisallowedReason::kNone),
       directly_composited_image_size_(base::nullopt),
       directly_composited_image_initial_raster_scale_(0.f),
@@ -139,7 +146,6 @@ std::unique_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
 void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
 
-
   LayerImpl::PushPropertiesTo(base_layer);
 
   // Twin relationships should never change once established.
@@ -153,7 +159,6 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->twin_layer_ = this;
 
   layer_impl->SetNearestNeighbor(nearest_neighbor_);
-  layer_impl->SetUseTransformedRasterization(use_transformed_rasterization_);
   layer_impl->SetDirectlyCompositedImageSize(directly_composited_image_size_);
   layer_impl->SetIsBackdropFilterMask(is_backdrop_filter_mask_);
 
@@ -187,7 +192,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->SanityCheckTilingState();
 }
 
-void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
+void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
   // RenderSurfaceImpl::AppendQuads sets mask properties in the DrawQuad for
   // the masked surface, which will apply to both the backdrop filter and the
@@ -258,18 +263,22 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     // |PictureLayerTiling::EnclosingContentsRectFromLayer()| will
     // create a tiling that, when scaled by |max_contents_scale| above, is
     // larger than the layer bounds by a fraction of a pixel.
-    gfx::Rect clip_rect = draw_properties().drawable_content_rect;
+    gfx::Rect bounds_in_target_space = MathUtil::MapEnclosingClippedRect(
+        draw_properties().target_space_transform, gfx::Rect(bounds()));
+    if (is_clipped())
+      bounds_in_target_space.Intersect(draw_properties().clip_rect);
+
     if (shared_quad_state->is_clipped)
-      clip_rect.Intersect(shared_quad_state->clip_rect);
+      bounds_in_target_space.Intersect(shared_quad_state->clip_rect);
 
     shared_quad_state->is_clipped = true;
-    shared_quad_state->clip_rect = clip_rect;
+    shared_quad_state->clip_rect = bounds_in_target_space;
 
 #if DCHECK_IS_ON()
     // Validate that the tile and bounds size are always within one pixel.
     PictureLayerTiling* high_res =
         tilings_->FindTilingWithResolution(HIGH_RESOLUTION);
-    if (high_res) {
+    if (raster_contents_scale_ >= 1.f && high_res) {
       const float epsilon = 1.f;
       gfx::SizeF scaled_tiling_size(high_res->tiling_size());
       scaled_tiling_size.Scale(1 / raster_contents_scale_);
@@ -593,17 +602,12 @@ bool PictureLayerImpl::UpdateTiles() {
   if (layer_tree_impl()->IsActiveTree())
     CleanUpTilingsOnActiveLayer(last_append_quads_tilings_);
 
-  const float old_ideal_contents_scale = ideal_contents_scale_;
   UpdateIdealScales();
 
-  const bool ideal_contents_scale_changed =
-      old_ideal_contents_scale != 0 &&
-      old_ideal_contents_scale != ideal_contents_scale_;
-  if (!raster_contents_scale_ ||
-      ShouldAdjustRasterScale(ideal_contents_scale_changed)) {
+  const bool should_adjust_raster_scale = ShouldAdjustRasterScale();
+  if (should_adjust_raster_scale)
     RecalculateRasterScales();
-    AddTilingsForRasterScale();
-  }
+  UpdateTilingsForRasterScaleAndTranslation(should_adjust_raster_scale);
 
   if (layer_tree_impl()->IsActiveTree())
     AddLowResolutionTilingIfNeeded();
@@ -750,10 +754,12 @@ void PictureLayerImpl::UpdateRasterSource(
             layer_tree_impl()->GetMSAASampleCountForRaster(
                 new_display_item_list);
         needs_full_invalidation |=
-            current_display_item_list->discardable_image_map()
-                .contains_only_srgb_images() !=
-            new_display_item_list->discardable_image_map()
-                .contains_only_srgb_images();
+            layer_tree_impl()->GetRasterColorSpace(
+                current_display_item_list->discardable_image_map()
+                    .content_color_usage()) !=
+            layer_tree_impl()->GetRasterColorSpace(
+                new_display_item_list->discardable_image_map()
+                    .content_color_usage());
         if (needs_full_invalidation)
           new_invalidation->Union(gfx::Rect(raster_source->GetSize()));
       }
@@ -810,53 +816,74 @@ void PictureLayerImpl::UpdateRasterSource(
   }
 }
 
-bool PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
-  DCHECK(layer_tree_impl()->IsSyncTree());
+void PictureLayerImpl::UpdateCanUseLCDText(
+    bool raster_translation_aligns_pixels) {
+  // If we have pending/active trees, the active tree doesn't update lcd text
+  // status but copies it from the pending tree.
+  if (!layer_tree_impl()->IsSyncTree())
+    return;
 
-  // Once we disable lcd text, we don't re-enable it.
-  if (!can_use_lcd_text())
-    return false;
-
-  auto new_lcd_text_disallowed_reason = ComputeLCDTextDisallowedReason();
-  if (lcd_text_disallowed_reason_ == new_lcd_text_disallowed_reason)
-    return false;
-
-  lcd_text_disallowed_reason_ = new_lcd_text_disallowed_reason;
-  // Synthetically invalidate everything.
-  gfx::Rect bounds_rect(bounds());
-  invalidation_ = Region(bounds_rect);
-  tilings_->Invalidate(invalidation_);
-  UnionUpdateRect(bounds_rect);
-  return true;
+  lcd_text_disallowed_reason_ =
+      ComputeLCDTextDisallowedReason(raster_translation_aligns_pixels);
 }
 
-LCDTextDisallowedReason PictureLayerImpl::ComputeLCDTextDisallowedReason()
-    const {
+bool PictureLayerImpl::HasWillChangeTransformHint() const {
+  TransformNode* transform_node =
+      GetTransformTree().Node(transform_tree_index());
+  return transform_node && transform_node->will_change_transform;
+}
+
+LCDTextDisallowedReason PictureLayerImpl::ComputeLCDTextDisallowedReason(
+    bool raster_translation_aligns_pixels) const {
+  // No need to use LCD text if there is no text.
+  if (!raster_source_ || !raster_source_->GetDisplayItemList() ||
+      !raster_source_->GetDisplayItemList()->has_draw_text_ops()) {
+    return LCDTextDisallowedReason::kNoText;
+  }
+
   if (layer_tree_impl()->settings().layers_always_allowed_lcd_text)
     return LCDTextDisallowedReason::kNone;
   if (!layer_tree_impl()->settings().can_use_lcd_text)
     return LCDTextDisallowedReason::kSetting;
-  if (!contents_opaque()) {
+  if (!contents_opaque_for_text()) {
     if (SkColorGetA(background_color()) != SK_AlphaOPAQUE)
       return LCDTextDisallowedReason::kBackgroundColorNotOpaque;
     return LCDTextDisallowedReason::kContentsNotOpaque;
   }
 
-  if (!GetTransformTree()
-           .Node(transform_tree_index())
-           ->node_and_ancestors_have_only_integer_translation)
+  // If raster translation aligns pixels, we can ignore fractional layer offset
+  // and transform for LCD text.
+  if (!raster_translation_aligns_pixels) {
+    if (static_cast<int>(offset_to_transform_parent().x()) !=
+        offset_to_transform_parent().x())
+      return LCDTextDisallowedReason::kNonIntegralXOffset;
+    if (static_cast<int>(offset_to_transform_parent().y()) !=
+        offset_to_transform_parent().y())
+      return LCDTextDisallowedReason::kNonIntegralYOffset;
     return LCDTextDisallowedReason::kNonIntegralTranslation;
-  if (static_cast<int>(offset_to_transform_parent().x()) !=
-      offset_to_transform_parent().x())
-    return LCDTextDisallowedReason::kNonIntegralXOffset;
-  if (static_cast<int>(offset_to_transform_parent().y()) !=
-      offset_to_transform_parent().y())
-    return LCDTextDisallowedReason::kNonIntegralYOffset;
+  }
 
-  if (has_will_change_transform_hint())
+  TransformNode* transform_node =
+      GetTransformTree().Node(transform_tree_index());
+  if (transform_node->node_or_ancestors_will_change_transform)
     return LCDTextDisallowedReason::kWillChangeTransform;
 
+  if (screen_space_transform_is_animating())
+    return LCDTextDisallowedReason::kTransformAnimation;
+
+  EffectNode* effect_node = GetEffectTree().Node(effect_tree_index());
+  if (effect_node->node_or_ancestor_has_filters ||
+      effect_node->affected_by_backdrop_filter)
+    return LCDTextDisallowedReason::kPixelOrColorEffect;
+
   return LCDTextDisallowedReason::kNone;
+}
+
+LCDTextDisallowedReason
+PictureLayerImpl::ComputeLCDTextDisallowedReasonForTesting() const {
+  gfx::Vector2dF raster_translation;
+  return ComputeLCDTextDisallowedReason(
+      CalculateRasterTranslation(raster_translation));
 }
 
 void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
@@ -922,8 +949,7 @@ std::unique_ptr<Tile> PictureLayerImpl::CreateTile(
     flags |= Tile::IS_OPAQUE;
 
   return layer_tree_impl()->tile_manager()->CreateTile(
-      info, id(), layer_tree_impl()->source_frame_number(), flags,
-      can_use_lcd_text());
+      info, id(), layer_tree_impl()->source_frame_number(), flags);
 }
 
 const Region* PictureLayerImpl::GetPendingInvalidation() {
@@ -957,6 +983,10 @@ bool PictureLayerImpl::RequiresHighResToDraw() const {
 
 const PaintWorkletRecordMap& PictureLayerImpl::GetPaintWorkletRecords() const {
   return paint_worklet_records_;
+}
+
+bool PictureLayerImpl::IsDirectlyCompositedImage() const {
+  return directly_composited_image_size_.has_value();
 }
 
 gfx::Rect PictureLayerImpl::GetEnclosingRectInTargetSpace() const {
@@ -1065,14 +1095,6 @@ void PictureLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
   NoteLayerPropertyChanged();
 }
 
-void PictureLayerImpl::SetUseTransformedRasterization(bool use) {
-  if (use_transformed_rasterization_ == use)
-    return;
-
-  use_transformed_rasterization_ = use;
-  NoteLayerPropertyChanged();
-}
-
 void PictureLayerImpl::SetDirectlyCompositedImageSize(
     base::Optional<gfx::Size> size) {
   if (directly_composited_image_size_ == size)
@@ -1083,6 +1105,20 @@ void PictureLayerImpl::SetDirectlyCompositedImageSize(
 }
 
 bool PictureLayerImpl::ShouldDirectlyCompositeImage(float raster_scale) const {
+  // Even if there are minor rendering differences, we want to apply directly
+  // compositing images in cases where doing so is going to save memory.
+  if (raster_scale < 0.1f)
+    return true;
+
+#if defined(OS_FUCHSIA)
+  // Always downscale images on low-end devices to save memory. This is a
+  // temporary fix to work around crbug.com/1161327 .
+  // TODO(crbug.com/1161327): Implement proper solution that works on all
+  // devices.
+  if (base::SysInfo::IsLowEndDevice() && raster_scale > 1.0)
+    return false;
+#endif  // defined(OS_FUCHSIA)
+
   // If the results of scaling the bounds by the expected raster scale
   // would end up with a content rect whose width/height are more than one
   // pixel different from the layer bounds, don't directly composite the image
@@ -1140,40 +1176,16 @@ float PictureLayerImpl::CalculateDirectlyCompositedImageRasterScale() const {
   return adjusted_raster_scale;
 }
 
-// Log either the tile area saved or added due to directly compositing an
-// image. This is logged every time we choose a raster source scale for a
-// directly composited image.
-void PictureLayerImpl::LogDirectlyCompositedImageRasterScaleUMAs() const {
-  base::CheckedNumeric<int> actual_area =
-      ScaleToCeiledSize(bounds(), raster_source_scale_).GetCheckedArea();
-  base::CheckedNumeric<int> ideal_area =
-      ScaleToCeiledSize(bounds(), ideal_source_scale_).GetCheckedArea();
-  if (actual_area.IsValid() && ideal_area.IsValid()) {
-    int area_difference =
-        std::abs(static_cast<int>((actual_area - ideal_area).ValueOrDie()));
-    bool raster_area_matches = raster_source_scale_ == ideal_source_scale_;
-    UMA_HISTOGRAM_BOOLEAN(
-        "Compositing.Renderer.DirectlyCompositedImage.TileAreaMatches",
-        raster_area_matches);
-    if (raster_source_scale_ < ideal_source_scale_) {
-      UMA_HISTOGRAM_COUNTS_10M(
-          "Compositing.Renderer.DirectlyCompositedImage.TileAreaSaved",
-          area_difference);
-    } else if (raster_source_scale_ > ideal_source_scale_) {
-      UMA_HISTOGRAM_COUNTS_10M(
-          "Compositing.Renderer.DirectlyCompositedImage.TileAreaAdded",
-          area_difference);
-    }
-  }
-}
-
 PictureLayerTiling* PictureLayerImpl::AddTiling(
-    const gfx::AxisTransform2d& contents_transform) {
+    const gfx::AxisTransform2d& raster_transform) {
   DCHECK(CanHaveTilings());
-  DCHECK_GE(contents_transform.scale(), MinimumContentsScale());
-  DCHECK_LE(contents_transform.scale(), MaximumContentsScale());
+  DCHECK_GE(raster_transform.scale(), MinimumContentsScale());
+  DCHECK_LE(raster_transform.scale(), MaximumContentsScale());
   DCHECK(raster_source_->HasRecordings());
-  return tilings_->AddTiling(contents_transform, raster_source_);
+  bool tiling_can_use_lcd_text =
+      can_use_lcd_text() && raster_transform.scale() == raster_contents_scale_;
+  return tilings_->AddTiling(raster_transform, raster_source_,
+                             tiling_can_use_lcd_text);
 }
 
 void PictureLayerImpl::RemoveAllTilings() {
@@ -1182,24 +1194,60 @@ void PictureLayerImpl::RemoveAllTilings() {
   ResetRasterScale();
 }
 
-void PictureLayerImpl::AddTilingsForRasterScale() {
+bool PictureLayerImpl::CanRecreateHighResTilingForLCDTextAndRasterTranslation(
+    const PictureLayerTiling& high_res) const {
+  // This is for the sync tree only to avoid flickering.
+  if (!layer_tree_impl()->IsSyncTree())
+    return false;
+  // We can recreate the tiling if we would invalidate all of its tiles.
+  if (high_res.may_contain_low_resolution_tiles())
+    return true;
+  // Keep the non-ideal raster translation unchanged for transform animations
+  // to avoid re-rasterization during animation.
+  if (draw_properties().screen_space_transform_is_animating ||
+      HasWillChangeTransformHint())
+    return false;
+  // Also avoid re-rasterization during pinch-zoom.
+  if (layer_tree_impl()->PinchGestureActive())
+    return false;
+  // Keep the current LCD text and raster translation if there is no text.
+  if (lcd_text_disallowed_reason_ == LCDTextDisallowedReason::kNoText)
+    return false;
+  return true;
+}
+
+void PictureLayerImpl::UpdateTilingsForRasterScaleAndTranslation(
+    bool has_adjusted_raster_scale) {
+  PictureLayerTiling* high_res =
+      tilings_->FindTilingWithScaleKey(raster_contents_scale_);
+
+  gfx::Vector2dF raster_translation;
+  bool raster_translation_aligns_pixels =
+      CalculateRasterTranslation(raster_translation);
+  UpdateCanUseLCDText(raster_translation_aligns_pixels);
+  if (high_res) {
+    bool raster_translation_is_not_ideal =
+        high_res->raster_transform().translation() != raster_translation;
+    bool can_use_lcd_text_changed =
+        high_res->can_use_lcd_text() != can_use_lcd_text();
+    bool should_recreate_high_res =
+        (raster_translation_is_not_ideal || can_use_lcd_text_changed) &&
+        CanRecreateHighResTilingForLCDTextAndRasterTranslation(*high_res);
+    if (should_recreate_high_res) {
+      tilings_->Remove(high_res);
+      high_res = nullptr;
+    } else if (!has_adjusted_raster_scale) {
+      // Nothing changed, no need to update tilings.
+      DCHECK_EQ(HIGH_RESOLUTION, high_res->resolution());
+      SanityCheckTilingState();
+      return;
+    }
+  }
+
   // Reset all resolution enums on tilings, we'll be setting new values in this
   // function.
   tilings_->MarkAllTilingsNonIdeal();
 
-  PictureLayerTiling* high_res =
-      tilings_->FindTilingWithScaleKey(raster_contents_scale_);
-  // Note: This function is always invoked when raster scale is recomputed,
-  // but not necessarily changed. This means raster translation update is also
-  // always done when there are significant changes that triggered raster scale
-  // recomputation.
-  gfx::Vector2dF raster_translation =
-      CalculateRasterTranslation(raster_contents_scale_);
-  if (high_res &&
-      high_res->raster_transform().translation() != raster_translation) {
-    tilings_->Remove(high_res);
-    high_res = nullptr;
-  }
   if (!high_res) {
     // We always need a high res tiling, so create one if it doesn't exist.
     high_res = AddTiling(
@@ -1232,8 +1280,10 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
   SanityCheckTilingState();
 }
 
-bool PictureLayerImpl::ShouldAdjustRasterScale(
-    bool ideal_contents_scale_changed) const {
+bool PictureLayerImpl::ShouldAdjustRasterScale() const {
+  if (!raster_contents_scale_)
+    return true;
+
   if (directly_composited_image_size_) {
     // If we have a directly composited image size, but previous raster scale
     // calculations did not set an initial raster scale, we must recalcluate.
@@ -1260,18 +1310,6 @@ bool PictureLayerImpl::ShouldAdjustRasterScale(
     // and desired because of the adjustments in RecalculateRasterScales.
     bool default_raster_scale_changed =
         default_raster_scale != directly_composited_image_initial_raster_scale_;
-    if (ideal_contents_scale_changed && !default_raster_scale_changed) {
-      // Log a histogram to indicate that we most likely saved raster costs,
-      // if the ideal contents scale changed but we did not need to recalculate
-      // raster scales because this layer is a directly composited image.
-      bool transform_trigger =
-          draw_properties().screen_space_transform_is_animating ||
-          has_will_change_transform_hint();
-      UMA_HISTOGRAM_BOOLEAN(
-          "Compositing.Renderer.DirectlyCompositedImage."
-          "AvoidRasterAdjustmentWithTransformTrigger",
-          transform_trigger);
-    }
     return default_raster_scale_changed;
   }
 
@@ -1281,7 +1319,7 @@ bool PictureLayerImpl::ShouldAdjustRasterScale(
     // will-change: transform hint to preserve maximum resolution tiles
     // needed.
     if (draw_properties().screen_space_transform_is_animating ||
-        !has_will_change_transform_hint())
+        !HasWillChangeTransformHint())
       return true;
   }
 
@@ -1320,9 +1358,10 @@ bool PictureLayerImpl::ShouldAdjustRasterScale(
   }
 
   // Don't update will-change: transform layers if the raster contents scale is
-  // at least the native scale (otherwise, we'd need to clamp it).
-  if (has_will_change_transform_hint() &&
-      raster_contents_scale_ >= raster_page_scale_ * raster_device_scale_) {
+  // bigger than the minimum scale.
+  if (HasWillChangeTransformHint() &&
+      raster_contents_scale_ >=
+          MinimumRasterContentsScaleForWillChangeTransform()) {
     return false;
   }
 
@@ -1362,14 +1401,7 @@ void PictureLayerImpl::AddLowResolutionTilingIfNeeded() {
 void PictureLayerImpl::RecalculateRasterScales() {
   if (directly_composited_image_size_) {
     float used_raster_scale = CalculateDirectlyCompositedImageRasterScale();
-    const bool should_directly_composite =
-        ShouldDirectlyCompositeImage(used_raster_scale);
-
-    UMA_HISTOGRAM_BOOLEAN(
-        "Compositing.Renderer.DirectlyCompositedImage."
-        "RasterScaleDirectlyComposited",
-        should_directly_composite);
-    if (should_directly_composite) {
+    if (ShouldDirectlyCompositeImage(used_raster_scale)) {
       directly_composited_image_initial_raster_scale_ =
           GetDefaultDirectlyCompositedImageRasterScale();
       raster_source_scale_ = used_raster_scale;
@@ -1377,8 +1409,6 @@ void PictureLayerImpl::RecalculateRasterScales() {
       raster_device_scale_ = 1.f;
       raster_contents_scale_ = raster_source_scale_;
       low_res_raster_contents_scale_ = raster_contents_scale_;
-
-      LogDirectlyCompositedImageRasterScaleUMAs();
       return;
     }
 
@@ -1422,81 +1452,13 @@ void PictureLayerImpl::RecalculateRasterScales() {
         raster_contents_scale_ / raster_device_scale_ / raster_source_scale_;
   }
 
-  // We rasterize at the maximum scale that will occur during the animation, if
-  // the maximum scale is known. However we want to avoid excessive memory use.
-  // If the scale is smaller than what we would choose otherwise, then it's
-  // always better off for us memory-wise. But otherwise, we don't choose a
-  // scale at which this layer's rastered content would become larger than the
-  // viewport.
-  if (draw_properties().screen_space_transform_is_animating) {
-    bool can_raster_at_maximum_scale = false;
-    bool should_raster_at_starting_scale = false;
-    CombinedAnimationScale animation_scales =
-        layer_tree_impl()->property_trees()->GetAnimationScales(
-            transform_tree_index(), layer_tree_impl());
-    float maximum_scale = animation_scales.maximum_animation_scale;
-    float starting_scale = animation_scales.starting_animation_scale;
-    if (maximum_scale != kNotScaled) {
-      gfx::Size bounds_at_maximum_scale =
-          gfx::ScaleToCeiledSize(raster_source_->GetSize(), maximum_scale);
-      int64_t maximum_area =
-          static_cast<int64_t>(bounds_at_maximum_scale.width()) *
-          static_cast<int64_t>(bounds_at_maximum_scale.height());
-      gfx::Size viewport = layer_tree_impl()->GetDeviceViewport().size();
+  if (draw_properties().screen_space_transform_is_animating)
+    AdjustRasterScaleForTransformAnimation(preserved_raster_contents_scale);
 
-      // Use the square of the maximum viewport dimension direction, to
-      // compensate for viewports with different aspect ratios.
-      int64_t max_viewport_dimension =
-          std::max(static_cast<int64_t>(viewport.width()),
-                   static_cast<int64_t>(viewport.height()));
-      int64_t squared_viewport_area =
-          max_viewport_dimension * max_viewport_dimension;
-
-      if (maximum_area <= squared_viewport_area)
-        can_raster_at_maximum_scale = true;
-    }
-    if (starting_scale != kNotScaled && starting_scale > maximum_scale) {
-      gfx::Size bounds_at_starting_scale =
-          gfx::ScaleToCeiledSize(raster_source_->GetSize(), starting_scale);
-      int64_t start_area =
-          static_cast<int64_t>(bounds_at_starting_scale.width()) *
-          static_cast<int64_t>(bounds_at_starting_scale.height());
-      gfx::Size viewport = layer_tree_impl()->GetDeviceViewport().size();
-      int64_t viewport_area = static_cast<int64_t>(viewport.width()) *
-                              static_cast<int64_t>(viewport.height());
-      if (start_area <= viewport_area)
-        should_raster_at_starting_scale = true;
-    }
-
-    // Use the computed scales for the raster scale directly, do not try to use
-    // the ideal scale here. The current ideal scale may be way too large in the
-    // case of an animation with scale, and will be constantly changing.
-    float animation_desired_scale;
-    if (should_raster_at_starting_scale)
-      animation_desired_scale = starting_scale;
-    else if (can_raster_at_maximum_scale)
-      animation_desired_scale = maximum_scale;
-    else
-      animation_desired_scale = 1.f * ideal_page_scale_ * ideal_device_scale_;
-
-    if (has_will_change_transform_hint()) {
-      // If we have a will-change: transform hint, do not shrink the content
-      // raster scale, otherwise we will end up throwing away larger tiles we
-      // may need again.
-      raster_contents_scale_ =
-          std::max(preserved_raster_contents_scale, animation_desired_scale);
-    } else {
-      raster_contents_scale_ = animation_desired_scale;
-    }
-  }
-
-  // Clamp will-change: transform layers to be at least the native scale.
-  if (has_will_change_transform_hint()) {
-    float min_desired_scale = raster_device_scale_ * raster_page_scale_;
-    if (raster_contents_scale_ < min_desired_scale) {
-      raster_contents_scale_ = min_desired_scale;
-      raster_page_scale_ = 1.f;
-    }
+  if (HasWillChangeTransformHint()) {
+    raster_contents_scale_ =
+        std::max(raster_contents_scale_,
+                 MinimumRasterContentsScaleForWillChangeTransform());
   }
 
   raster_contents_scale_ =
@@ -1525,6 +1487,55 @@ void PictureLayerImpl::RecalculateRasterScales() {
   DCHECK_LE(low_res_raster_contents_scale_, raster_contents_scale_);
   DCHECK_GE(low_res_raster_contents_scale_, MinimumContentsScale());
   DCHECK_LE(low_res_raster_contents_scale_, MaximumContentsScale());
+}
+
+void PictureLayerImpl::AdjustRasterScaleForTransformAnimation(
+    float preserved_raster_contents_scale) {
+  DCHECK(draw_properties().screen_space_transform_is_animating);
+
+  CombinedAnimationScale animation_scales =
+      layer_tree_impl()->property_trees()->GetAnimationScales(
+          transform_tree_index(), layer_tree_impl());
+  float maximum_scale = animation_scales.maximum_animation_scale;
+  float starting_scale = animation_scales.starting_animation_scale;
+  // Adjust raster scale only if the animation scale is known.
+  if (maximum_scale == kNotScaled && starting_scale == kNotScaled) {
+    // Use at least the native scale if the animation scale is unknown.
+    raster_contents_scale_ = std::max(raster_contents_scale_,
+                                      ideal_page_scale_ * ideal_device_scale_);
+  } else {
+    // We rasterize at the maximum scale that will occur during the animation.
+    raster_contents_scale_ = std::max(maximum_scale, starting_scale);
+  }
+  DCHECK_NE(raster_contents_scale_, kNotScaled);
+
+  // We will cap the adjusted scale with the viewport area, which is impossible
+  // if the viewport is empty.
+  gfx::Size viewport = layer_tree_impl()->GetDeviceViewport().size();
+  if (viewport.IsEmpty())
+    return;
+
+  // However we want to avoid excessive memory use. Choose a scale at which this
+  // layer's rastered content is not larger than the viewport.
+  float max_viewport_dimension = std::max(viewport.width(), viewport.height());
+  DCHECK(max_viewport_dimension);
+  // Use square to compensate for viewports with different aspect ratios.
+  float squared_viewport_area = max_viewport_dimension * max_viewport_dimension;
+  gfx::Size bounds_at_maximum_scale =
+      gfx::ScaleToCeiledSize(raster_source_->GetSize(), raster_contents_scale_);
+  float maximum_area = static_cast<float>(bounds_at_maximum_scale.width()) *
+                       bounds_at_maximum_scale.height();
+  // Clamp the scale to make the rastered content not larger than the viewport.
+  if (UNLIKELY(maximum_area > squared_viewport_area))
+    raster_contents_scale_ /= std::sqrt(maximum_area / squared_viewport_area);
+
+  if (HasWillChangeTransformHint()) {
+    // If we have a will-change: transform hint, do not shrink the content
+    // raster scale, otherwise we will end up throwing away larger tiles we
+    // may need again.
+    raster_contents_scale_ =
+        std::max(preserved_raster_contents_scale, raster_contents_scale_);
+  }
 }
 
 void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
@@ -1556,62 +1567,89 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
   SanityCheckTilingState();
 }
 
-gfx::Vector2dF PictureLayerImpl::CalculateRasterTranslation(
-    float raster_scale) {
-  if (!use_transformed_rasterization_)
-    return gfx::Vector2dF();
+float PictureLayerImpl::MinimumRasterContentsScaleForWillChangeTransform()
+    const {
+  DCHECK(HasWillChangeTransformHint());
+  float native_scale = ideal_device_scale_ * ideal_page_scale_;
+  // Clamp will-change: transform layers to be at least the native scale,
+  // unless the scale is too small to avoid too many tiles using too much tile
+  // memory.
+  if (ideal_contents_scale_ <
+      native_scale * kMinScaleRatioForWillChangeTransform) {
+    // Don't let the scale too small compared to the ideal scale.
+    return ideal_contents_scale_ * kMinScaleRatioForWillChangeTransform;
+  }
+  return native_scale;
+}
 
+bool PictureLayerImpl::CalculateRasterTranslation(
+    gfx::Vector2dF& raster_translation) const {
+  // If this setting is set, the client (e.g. the Chromium UI) is sure that it
+  // can almost always align raster pixels to physical pixels, and doesn't care
+  // about temporary misalignment, so don't bother raster translation.
+  if (layer_tree_impl()->settings().layers_always_allowed_lcd_text)
+    return true;
+
+  // No need to use raster translation if there is no text.
+  if (!raster_source_ || !raster_source_->GetDisplayItemList() ||
+      !raster_source_->GetDisplayItemList()->has_draw_text_ops()) {
+    return false;
+  }
+
+  const gfx::Transform& screen_transform = ScreenSpaceTransform();
   gfx::Transform draw_transform = DrawTransform();
-  // TODO(enne): for performance reasons, we should only have a raster
-  // translation when the screen space transform is not animating.  We try to
-  // avoid this elsewhere but it still happens: http://crbug.com/778440
-  // TODO(enne): Also, we shouldn't ever get here if the draw transform is not
-  // just a scale + translation, but we do sometimes: http://crbug.com/740113
-  if (draw_properties().screen_space_transform_is_animating ||
+
+  if (!screen_transform.IsScaleOrTranslation() ||
       !draw_transform.IsScaleOrTranslation()) {
-    // For now, while these problems are not well understood, avoid changing
-    // the raster scale in these cases.
-    return gfx::Vector2dF();
+    return false;
   }
 
   // It is only useful to align the content space to the target space if their
   // relative pixel ratio is some small rational number. Currently we only
-  // align if the relative pixel ratio is 1:1.
-  // Good match if the maximum alignment error on a layer of size 10000px
-  // does not exceed 0.001px.
-  static constexpr float kErrorThreshold = 0.0000001f;
-  if (std::abs(draw_transform.matrix().getFloat(0, 0) - raster_scale) >
-          kErrorThreshold ||
-      std::abs(draw_transform.matrix().getFloat(1, 1) - raster_scale) >
-          kErrorThreshold)
-    return gfx::Vector2dF();
+  // align if the relative pixel ratio is 1:1 (i.e. the scale components of
+  // both the screen transform and the draw transform are approximately the same
+  // as |raster_contents_scale_|). Good match if the maximum alignment error on
+  // a layer of size 10000px does not exceed 0.001px.
+  static constexpr float kPixelErrorThreshold = 0.001f;
+  static constexpr float kScaleErrorThreshold = kPixelErrorThreshold / 10000;
+  auto is_raster_scale = [this](float scale) -> bool {
+    return std::abs(scale - raster_contents_scale_) <= kScaleErrorThreshold;
+  };
+  if (!is_raster_scale(screen_transform.matrix().getFloat(0, 0)) ||
+      !is_raster_scale(screen_transform.matrix().getFloat(1, 1)) ||
+      !is_raster_scale(draw_transform.matrix().getFloat(0, 0)) ||
+      !is_raster_scale(draw_transform.matrix().getFloat(1, 1))) {
+    return false;
+  }
 
-  // Extract the fractional part of layer origin in the target space.
-  float origin_x = draw_transform.matrix().getFloat(0, 3);
-  float origin_y = draw_transform.matrix().getFloat(1, 3);
-  return gfx::Vector2dF(origin_x - floorf(origin_x),
-                        origin_y - floorf(origin_y));
+  // Extract the fractional part of layer origin in the screen space and in the
+  // target space.
+  auto fraction = [](float f) -> float { return f - floorf(f); };
+  float screen_x_fraction = fraction(screen_transform.matrix().getFloat(0, 3));
+  float screen_y_fraction = fraction(screen_transform.matrix().getFloat(1, 3));
+  float target_x_fraction = fraction(draw_transform.matrix().getFloat(0, 3));
+  float target_y_fraction = fraction(draw_transform.matrix().getFloat(1, 3));
+
+  // If the origin is different in the screen space and in the target space,
+  // it means the render target is not aligned to physical pixels, and the
+  // text content will be blurry regardless of raster translation.
+  if (std::abs(screen_x_fraction - target_x_fraction) > kPixelErrorThreshold ||
+      std::abs(screen_y_fraction - target_y_fraction) > kPixelErrorThreshold) {
+    return false;
+  }
+
+  raster_translation = gfx::Vector2dF(target_x_fraction, target_y_fraction);
+  return true;
 }
 
 float PictureLayerImpl::MinimumContentsScale() const {
-  float setting_min = layer_tree_impl()->settings().minimum_contents_scale;
-
   // If the contents scale is less than 1 / width (also for height),
   // then it will end up having less than one pixel of content in that
   // dimension.  Bump the minimum contents scale up in this case to prevent
   // this from happening.
   int min_dimension = std::min(raster_source_->GetSize().width(),
                                raster_source_->GetSize().height());
-  if (!min_dimension)
-    return setting_min;
-
-  // Directly composited images may result in contents scales that are
-  // less than the configured setting. We allow this lower scale so that we
-  // can raster at the intrinsic image size.
-  const float inverse_min_dimension = 1.f / min_dimension;
-  return (directly_composited_image_size_.has_value())
-             ? inverse_min_dimension
-             : std::max(inverse_min_dimension, setting_min);
+  return min_dimension ? 1.f / min_dimension : 1.f;
 }
 
 float PictureLayerImpl::MaximumContentsScale() const {
@@ -1700,26 +1738,34 @@ void PictureLayerImpl::UpdateIdealScales() {
   DCHECK_GT(min_contents_scale, 0.f);
 
   ideal_device_scale_ = layer_tree_impl()->device_scale_factor();
+  ideal_page_scale_ = 1.f;
+  ideal_contents_scale_ = GetIdealContentsScale();
+
   if (layer_tree_impl()->PageScaleTransformNode()) {
+    DCHECK(!layer_tree_impl()->settings().is_layer_tree_for_subframe);
     ideal_page_scale_ = IsAffectedByPageScale()
                             ? layer_tree_impl()->current_page_scale_factor()
                             : 1.f;
-    ideal_contents_scale_ = GetIdealContentsScale();
-  } else {
-    // This layer may be in a layer tree embedded in a hierarchy that has its
-    // own page scale factor. We represent that here as
-    // 'external_page_scale_factor', a value that affects raster scale in the
-    // same way that page_scale_factor does, but doesn't affect any geometry
-    // calculations.
-    float external_page_scale_factor =
-        layer_tree_impl() ? layer_tree_impl()->external_page_scale_factor()
-                          : 1.f;
-    DCHECK(!layer_tree_impl() || external_page_scale_factor == 1.f ||
-           layer_tree_impl()->current_page_scale_factor() == 1.f);
-    ideal_page_scale_ = external_page_scale_factor;
-    ideal_contents_scale_ =
-        GetIdealContentsScale() * external_page_scale_factor;
   }
+
+  // This layer may be in a layer tree embedded in a hierarchy that has its own
+  // page scale factor. We represent that here as 'external_page_scale_factor',
+  // a value that affects raster scale in the same way that page_scale_factor
+  // does, but doesn't affect any geometry calculations. In a normal main frame
+  // or OOPIF, only one of current or external page scale factor is ever used
+  // but not both. The only exception to this is a main frame in a portal. It
+  // may have a current_page_scale_factor (e.g. due to a viewport <meta> tag)
+  // as well as an external_page_scale_factor coming from the page scale of its
+  // embedder page.
+  float external_page_scale_factor =
+      layer_tree_impl() ? layer_tree_impl()->external_page_scale_factor() : 1.f;
+  DCHECK(!layer_tree_impl() ||
+         !layer_tree_impl()->settings().is_layer_tree_for_subframe ||
+         external_page_scale_factor == 1.f ||
+         layer_tree_impl()->current_page_scale_factor() == 1.f);
+  ideal_page_scale_ *= external_page_scale_factor;
+  ideal_contents_scale_ *= external_page_scale_factor;
+
   ideal_contents_scale_ = base::ClampToRange(
       ideal_contents_scale_, min_contents_scale, kMaxIdealContentsScale);
   ideal_source_scale_ =
@@ -1955,17 +2001,10 @@ void PictureLayerImpl::InvalidatePaintWorklets(
 
 gfx::ContentColorUsage PictureLayerImpl::GetContentColorUsage() const {
   auto display_item_list = raster_source_->GetDisplayItemList();
-  bool contains_only_srgb_images = true;
-  if (display_item_list) {
-    contains_only_srgb_images =
-        display_item_list->discardable_image_map().contains_only_srgb_images();
-  }
-
-  if (contains_only_srgb_images)
+  if (!display_item_list)
     return gfx::ContentColorUsage::kSRGB;
 
-  // TODO(cblume) This assumes only wide color gamut and not HDR
-  return gfx::ContentColorUsage::kWideColorGamut;
+  return display_item_list->discardable_image_map().content_color_usage();
 }
 
 }  // namespace cc

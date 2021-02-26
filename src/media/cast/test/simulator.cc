@@ -69,7 +69,6 @@
 #include "media/cast/cast_receiver.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/encoding_event_subscriber.h"
-#include "media/cast/logging/log_serializer.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/proto/raw_events.pb.h"
 #include "media/cast/logging/raw_event_subscriber_bundle.h"
@@ -128,7 +127,7 @@ void LogVideoOperationalStatus(OperationalStatus status) {
 }
 
 struct PacketProxy {
-  PacketProxy() : receiver(NULL) {}
+  PacketProxy() : receiver(nullptr) {}
   void ReceivePacket(std::unique_ptr<Packet> packet) {
     if (receiver)
       receiver->ReceivePacket(std::move(packet));
@@ -261,8 +260,8 @@ void GotVideoFrame(GotVideoFrameOutput* metrics_output,
                    bool continuous) {
   ++metrics_output->counter;
   cast_receiver->RequestDecodedVideoFrame(
-      base::Bind(&GotVideoFrame, metrics_output, yuv_output,
-                 video_frame_tracker, cast_receiver));
+      base::BindRepeating(&GotVideoFrame, metrics_output, yuv_output,
+                          video_frame_tracker, cast_receiver));
 
   // If |video_frame_tracker| is available that means we're computing
   // quality metrices.
@@ -285,39 +284,7 @@ void GotAudioFrame(int* counter,
                    bool is_continuous) {
   ++*counter;
   cast_receiver->RequestDecodedAudioFrame(
-      base::Bind(&GotAudioFrame, counter, cast_receiver));
-}
-
-// Serialize |frame_events| and |packet_events| and append to the file
-// located at |output_path|.
-void AppendLogToFile(media::cast::proto::LogMetadata* metadata,
-                     const media::cast::FrameEventList& frame_events,
-                     const media::cast::PacketEventList& packet_events,
-                     const base::FilePath& output_path) {
-  media::cast::proto::GeneralDescription* gen_desc =
-      metadata->mutable_general_description();
-  gen_desc->set_product("Cast Simulator");
-  gen_desc->set_product_version("0.1");
-
-  std::unique_ptr<char[]> serialized_log(
-      new char[media::cast::kMaxSerializedBytes]);
-  int output_bytes;
-  bool success = media::cast::SerializeEvents(*metadata,
-                                              frame_events,
-                                              packet_events,
-                                              true,
-                                              media::cast::kMaxSerializedBytes,
-                                              serialized_log.get(),
-                                              &output_bytes);
-
-  if (!success) {
-    LOG(ERROR) << "Failed to serialize log.";
-    return;
-  }
-
-  if (!AppendToFile(output_path, serialized_log.get(), output_bytes)) {
-    LOG(ERROR) << "Failed to append to log.";
-  }
+      base::BindRepeating(&GotAudioFrame, counter, cast_receiver));
 }
 
 // Run simulation once.
@@ -459,16 +426,16 @@ void RunSimulation(const base::FilePath& source_path,
   // Start receiver.
   int audio_frame_count = 0;
   cast_receiver->RequestDecodedVideoFrame(
-      base::Bind(&GotVideoFrame, &metrics_output, yuv_output_path,
-                 video_frame_tracker.get(), cast_receiver.get()));
-  cast_receiver->RequestDecodedAudioFrame(
-      base::Bind(&GotAudioFrame, &audio_frame_count, cast_receiver.get()));
+      base::BindRepeating(&GotVideoFrame, &metrics_output, yuv_output_path,
+                          video_frame_tracker.get(), cast_receiver.get()));
+  cast_receiver->RequestDecodedAudioFrame(base::BindRepeating(
+      &GotAudioFrame, &audio_frame_count, cast_receiver.get()));
 
   // Initializing audio and video senders.
   cast_sender->InitializeAudio(audio_sender_config,
                                base::BindOnce(&LogAudioOperationalStatus));
   cast_sender->InitializeVideo(media_source.get_video_config(),
-                               base::Bind(&LogVideoOperationalStatus),
+                               base::BindRepeating(&LogVideoOperationalStatus),
                                CreateDefaultVideoEncodeAcceleratorCallback(),
                                CreateDefaultVideoEncodeMemoryCallback());
   task_runner->RunTasks();
@@ -562,14 +529,17 @@ void RunSimulation(const base::FilePath& source_path,
   // Subtract fraction of dropped frames from |elapsed_time| before estimating
   // the average encoded bitrate.
   const base::TimeDelta elapsed_time_undropped =
-      total_video_frames <= 0 ? base::TimeDelta() :
-      (elapsed_time * (total_video_frames - dropped_video_frames) /
-           total_video_frames);
+      total_video_frames <= 0
+          ? base::TimeDelta()
+          : (elapsed_time * (total_video_frames - dropped_video_frames) /
+             total_video_frames);
+  constexpr double kKilobitsPerByte = 8.0 / 1000;
   const double avg_encoded_bitrate =
-      elapsed_time_undropped <= base::TimeDelta() ? 0 :
-      8.0 * encoded_size / elapsed_time_undropped.InSecondsF() / 1000;
+      elapsed_time_undropped <= base::TimeDelta()
+          ? 0
+          : encoded_size * kKilobitsPerByte * elapsed_time_undropped.ToHz();
   double avg_target_bitrate =
-      !encoded_video_frames ? 0 : target_bitrate / encoded_video_frames / 1000;
+      encoded_video_frames ? target_bitrate / encoded_video_frames / 1000 : 0;
 
   LOG(INFO) << "Configured target playout delay (ms): "
             << video_receiver_config.rtp_max_delay_ms;
@@ -596,10 +566,6 @@ void RunSimulation(const base::FilePath& source_path,
       return;
     }
   }
-  AppendLogToFile(&video_metadata, video_frame_events, video_packet_events,
-                  log_output_path);
-  AppendLogToFile(&audio_metadata, audio_frame_events, audio_packet_events,
-                  log_output_path);
 
   // Write quality metrics.
   if (quality_test) {

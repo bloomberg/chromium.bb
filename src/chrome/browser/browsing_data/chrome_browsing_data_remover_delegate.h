@@ -26,17 +26,11 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/browser/pepper_flash_settings_manager.h"
-#endif
-
-class BrowsingDataFlashLSOHelper;
 class Profile;
 class WebappRegistry;
 
 namespace content {
 class BrowserContext;
-class PluginDataRemover;
 }
 
 namespace webrtc_event_logging {
@@ -48,17 +42,11 @@ class WebRtcEventLogManager;
 class ChromeBrowsingDataRemoverDelegate
     : public content::BrowsingDataRemoverDelegate,
       public KeyedService
-#if BUILDFLAG(ENABLE_PLUGINS)
-    ,
-      public PepperFlashSettingsManager::Client
-#endif
 {
  public:
   // This is an extension of content::BrowsingDataRemover::RemoveDataMask which
   // includes all datatypes therefrom and adds additional Chrome-specific ones.
-  // TODO(crbug.com/668114): Extend this to uint64_t to ensure that we won't
-  // run out of space anytime soon.
-  enum DataType {
+  enum DataType : uint64_t {
     // Embedder can start adding datatypes after the last platform datatype.
     DATA_TYPE_EMBEDDER_BEGIN =
         content::BrowsingDataRemover::DATA_TYPE_CONTENT_END << 1,
@@ -78,6 +66,8 @@ class ChromeBrowsingDataRemoverDelegate
     DATA_TYPE_CONTENT_SETTINGS = DATA_TYPE_EMBEDDER_BEGIN << 9,
     DATA_TYPE_BOOKMARKS = DATA_TYPE_EMBEDDER_BEGIN << 10,
     DATA_TYPE_ISOLATED_ORIGINS = DATA_TYPE_EMBEDDER_BEGIN << 11,
+    DATA_TYPE_ACCOUNT_PASSWORDS = DATA_TYPE_EMBEDDER_BEGIN << 12,
+    DATA_TYPE_LOCAL_CUSTOM_DICTIONARY = DATA_TYPE_EMBEDDER_BEGIN << 13,
 
     // Group datatypes.
 
@@ -106,9 +96,16 @@ class ChromeBrowsingDataRemoverDelegate
                             content::BrowsingDataRemover::DATA_TYPE_CACHE |
                             content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
 
+    // Datatypes with account-scoped data that needs to be removed
+    // before Google cookies are deleted.
+    DEFERRED_COOKIE_DELETION_DATA_TYPES = DATA_TYPE_ACCOUNT_PASSWORDS,
+
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it
-    // look like a new Profile.
+    // look like a new Profile. Does not delete account-scoped data like
+    // passwords but will remove access to account-scoped data by signing the
+    // user out.
+
     ALL_DATA_TYPES = DATA_TYPE_SITE_DATA |  //
                      content::BrowsingDataRemover::DATA_TYPE_CACHE |
                      content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
@@ -116,7 +113,8 @@ class ChromeBrowsingDataRemoverDelegate
                      DATA_TYPE_HISTORY |           //
                      DATA_TYPE_PASSWORDS |         //
                      DATA_TYPE_CONTENT_SETTINGS |  //
-                     DATA_TYPE_BOOKMARKS,
+                     DATA_TYPE_BOOKMARKS |         //
+                     DATA_TYPE_LOCAL_CUSTOM_DICTIONARY,
 
     // Includes all available remove options. Meant to be used when the Profile
     // is scheduled to be deleted, and all possible data should be wiped from
@@ -128,7 +126,7 @@ class ChromeBrowsingDataRemoverDelegate
   // This is an extension of content::BrowsingDataRemover::OriginType which
   // includes all origin types therefrom and adds additional Chrome-specific
   // ones.
-  enum OriginType {
+  enum OriginType : uint64_t {
     // Embedder can start adding origin types after the last
     // platform origin type.
     ORIGIN_TYPE_EMBEDDER_BEGIN =
@@ -154,7 +152,17 @@ class ChromeBrowsingDataRemoverDelegate
   static_assert((IMPORTANT_SITES_DATA_TYPES & ~FILTERABLE_DATA_TYPES) == 0,
                 "All important sites datatypes must be filterable.");
 
-  ChromeBrowsingDataRemoverDelegate(content::BrowserContext* browser_context);
+  static_assert((DEFERRED_COOKIE_DELETION_DATA_TYPES & FILTERABLE_DATA_TYPES) ==
+                    0,
+                "Deferred deletion is currently not implemented for filterable "
+                "data types");
+
+  static_assert((DEFERRED_COOKIE_DELETION_DATA_TYPES & WIPE_PROFILE) == 0,
+                "Account data should not be included in deletions that remove "
+                "all local data");
+
+  explicit ChromeBrowsingDataRemoverDelegate(
+      content::BrowserContext* browser_context);
   ~ChromeBrowsingDataRemoverDelegate() override;
 
   // KeyedService:
@@ -164,22 +172,20 @@ class ChromeBrowsingDataRemoverDelegate
   content::BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher
   GetOriginTypeMatcher() override;
   bool MayRemoveDownloadHistory() override;
-  void RemoveEmbedderData(const base::Time& delete_begin,
-                          const base::Time& delete_end,
-                          int remove_mask,
-                          content::BrowsingDataFilterBuilder* filter_builder,
-                          int origin_type_mask,
-                          base::OnceClosure callback) override;
+  std::vector<std::string> GetDomainsForDeferredCookieDeletion(
+      uint64_t remove_mask) override;
+  void RemoveEmbedderData(
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
+      uint64_t remove_mask,
+      content::BrowsingDataFilterBuilder* filter_builder,
+      uint64_t origin_type_mask,
+      base::OnceCallback<void(/*failed_data_types=*/uint64_t)> callback)
+      override;
 
 #if defined(OS_ANDROID)
   void OverrideWebappRegistryForTesting(
       std::unique_ptr<WebappRegistry> webapp_registry);
-#endif
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // Used for testing.
-  void OverrideFlashLSOHelperForTesting(
-      scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper);
 #endif
 
   using DomainReliabilityClearer = base::RepeatingCallback<void(
@@ -204,7 +210,7 @@ class ChromeBrowsingDataRemoverDelegate
     kAutofillData = 6,
     kAutofillOrigins = 7,
     kPluginData = 8,
-    kFlashLsoHelper = 9,
+    kFlashLsoHelper = 9,  // deprecated
     kDomainReliability = 10,
     kNetworkPredictor = 11,
     kWebrtcLogs = 12,
@@ -232,7 +238,10 @@ class ChromeBrowsingDataRemoverDelegate
     kCompromisedCredentials = 34,
     kUserDataSnapshot = 35,
     kMediaFeeds = 36,
-    kMaxValue = kMediaFeeds,
+    kAccountPasswords = 37,
+    kAccountPasswordsSynced = 38,
+    kAccountCompromisedCredentials = 39,
+    kMaxValue = kAccountCompromisedCredentials,
   };
 
   // Called by CreateTaskCompletionClosure().
@@ -240,12 +249,20 @@ class ChromeBrowsingDataRemoverDelegate
 
   // Called by the closures returned by CreateTaskCompletionClosure().
   // Checks if all tasks have completed, and if so, calls callback_.
-  void OnTaskComplete(TracingDataType data_type);
+  void OnTaskComplete(TracingDataType data_type,
+                      uint64_t data_type_mask,
+                      bool success);
 
   // Increments the number of pending tasks by one, and returns a OnceClosure
   // that calls OnTaskComplete(). The Remover is complete once all the closures
   // created by this method have been invoked.
   base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
+  // Like CreateTaskCompletionClosure(), but allows tracking success/failure of
+  // the task. If |success = false| is passed to the callback, |data_type_mask|
+  // will be added to |failed_data_types_|.
+  base::OnceCallback<void(bool /* success */)> CreateTaskCompletionCallback(
+      TracingDataType data_type,
+      uint64_t data_type_mask);
 
   // Same as CreateTaskCompletionClosure() but guarantees that
   // OnTaskComplete() is called if the task is dropped. That can typically
@@ -260,23 +277,13 @@ class ChromeBrowsingDataRemoverDelegate
   bool IsForAllTime() const;
 
 #if defined(OS_CHROMEOS)
-  void OnClearPlatformKeys(base::OnceClosure done, base::Optional<bool> result);
+  void OnClearPlatformKeys(base::OnceClosure done, bool);
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Called when plugin data has been cleared. Invokes NotifyIfDone.
   void OnWaitableEventSignaled(base::OnceClosure done,
                                base::WaitableEvent* waitable_event);
-
-  // Called when the list of |sites| storing Flash LSO cookies is fetched.
-  void OnSitesWithFlashDataFetched(
-      base::RepeatingCallback<bool(const std::string&)> plugin_filter,
-      base::OnceClosure done,
-      const std::vector<std::string>& sites);
-
-  // PepperFlashSettingsManager::Client implementation.
-  void OnDeauthorizeFlashContentLicensesCompleted(uint32_t request_id,
-                                                  bool success) override;
 #endif
 
   // The profile for which the data will be deleted.
@@ -289,28 +296,16 @@ class ChromeBrowsingDataRemoverDelegate
   base::Time delete_end_;
 
   // Completion callback to call when all data are deleted.
-  base::OnceClosure callback_;
+  base::OnceCallback<void(uint64_t)> callback_;
 
   // Records which tasks of a deletion are currently active.
   std::set<TracingDataType> pending_sub_tasks_;
 
+  uint64_t failed_data_types_ = 0;
+
   // Fires after some time to track slow tasks. Cancelled when all tasks
   // are finished.
   base::CancelableClosure slow_pending_tasks_closure_;
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // Used to delete plugin data.
-  std::unique_ptr<content::PluginDataRemover> plugin_data_remover_;
-  base::WaitableEventWatcher watcher_;
-
-  // Used for per-site plugin data deletion.
-  scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
-
-  uint32_t deauthorize_flash_content_licenses_request_id_ = 0;
-
-  // Used to deauthorize content licenses for Pepper Flash.
-  std::unique_ptr<PepperFlashSettingsManager> pepper_flash_settings_manager_;
-#endif
 
   DomainReliabilityClearer domain_reliability_clearer_;
 
@@ -322,6 +317,8 @@ class ChromeBrowsingDataRemoverDelegate
   // not initialised, so the registry must be mocked out.
   std::unique_ptr<WebappRegistry> webapp_registry_;
 #endif
+
+  bool should_clear_password_account_storage_settings_ = false;
 
   base::WeakPtrFactory<ChromeBrowsingDataRemoverDelegate> weak_ptr_factory_{
       this};

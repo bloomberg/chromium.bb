@@ -19,6 +19,7 @@
 
 #include "absl/types/optional.h"
 #include "api/call/transport.h"
+#include "api/transport/field_trial_based_config.h"
 #include "api/video/video_bitrate_allocator_factory.h"
 #include "api/video/video_frame.h"
 #include "api/video/video_sink_interface.h"
@@ -31,9 +32,8 @@
 #include "media/base/media_engine.h"
 #include "media/engine/constants.h"
 #include "media/engine/unhandled_packets_buffer.h"
-#include "rtc_base/async_invoker.h"
-#include "rtc_base/critical_section.h"
 #include "rtc_base/network_route.h"
+#include "rtc_base/synchronization/mutex.h"
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/thread_checker.h"
 
@@ -98,7 +98,8 @@ class WebRtcVideoEngine : public VideoEngineInterface {
   // and external hardware codecs.
   WebRtcVideoEngine(
       std::unique_ptr<webrtc::VideoEncoderFactory> video_encoder_factory,
-      std::unique_ptr<webrtc::VideoDecoderFactory> video_decoder_factory);
+      std::unique_ptr<webrtc::VideoDecoderFactory> video_decoder_factory,
+      const webrtc::WebRtcKeyValueConfig& trials);
 
   ~WebRtcVideoEngine() override;
 
@@ -120,6 +121,7 @@ class WebRtcVideoEngine : public VideoEngineInterface {
   const std::unique_ptr<webrtc::VideoEncoderFactory> encoder_factory_;
   const std::unique_ptr<webrtc::VideoBitrateAllocatorFactory>
       bitrate_allocator_factory_;
+  const webrtc::WebRtcKeyValueConfig& trials_;
 };
 
 class WebRtcVideoChannel : public VideoMediaChannel,
@@ -169,9 +171,7 @@ class WebRtcVideoChannel : public VideoMediaChannel,
   void OnReadyToSend(bool ready) override;
   void OnNetworkRouteChanged(const std::string& transport_name,
                              const rtc::NetworkRoute& network_route) override;
-  void SetInterface(
-      NetworkInterface* iface,
-      const webrtc::MediaTransportConfig& media_transport_config) override;
+  void SetInterface(NetworkInterface* iface) override;
 
   // E2E Encrypted Video Frame API
   // Set a frame decryptor to a particular ssrc that will intercept all
@@ -321,8 +321,7 @@ class WebRtcVideoChannel : public VideoMediaChannel,
       const std::vector<VideoCodecSettings>& codecs);
 
   // Wrapper for the sender part.
-  class WebRtcVideoSendStream
-      : public rtc::VideoSourceInterface<webrtc::VideoFrame> {
+  class WebRtcVideoSendStream {
    public:
     WebRtcVideoSendStream(
         webrtc::Call* call,
@@ -334,7 +333,7 @@ class WebRtcVideoChannel : public VideoMediaChannel,
         const absl::optional<VideoCodecSettings>& codec_settings,
         const absl::optional<std::vector<webrtc::RtpExtension>>& rtp_extensions,
         const VideoSendParameters& send_params);
-    virtual ~WebRtcVideoSendStream();
+    ~WebRtcVideoSendStream();
 
     void SetSendParameters(const ChangedSendParameters& send_params);
     webrtc::RTCError SetRtpParameters(const webrtc::RtpParameters& parameters);
@@ -342,14 +341,6 @@ class WebRtcVideoChannel : public VideoMediaChannel,
 
     void SetFrameEncryptor(
         rtc::scoped_refptr<webrtc::FrameEncryptorInterface> frame_encryptor);
-
-    // Implements rtc::VideoSourceInterface<webrtc::VideoFrame>.
-    // WebRtcVideoSendStream acts as a source to the webrtc::VideoSendStream
-    // in |stream_|. This is done to proxy VideoSinkWants from the encoder to
-    // the worker thread.
-    void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink,
-                         const rtc::VideoSinkWants& wants) override;
-    void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override;
 
     bool SetVideoSend(const VideoOptions* options,
                       rtc::VideoSourceInterface<webrtc::VideoFrame>* source);
@@ -416,8 +407,7 @@ class WebRtcVideoChannel : public VideoMediaChannel,
         RTC_GUARDED_BY(&thread_checker_);
 
     webrtc::VideoSendStream* stream_ RTC_GUARDED_BY(&thread_checker_);
-    rtc::VideoSinkInterface<webrtc::VideoFrame>* encoder_sink_
-        RTC_GUARDED_BY(&thread_checker_);
+
     // Contains settings that are the same for all streams in the MediaChannel,
     // such as codecs, header extensions, and the global bitrate limit for the
     // entire channel.
@@ -431,10 +421,10 @@ class WebRtcVideoChannel : public VideoMediaChannel,
 
     bool sending_ RTC_GUARDED_BY(&thread_checker_);
 
-    // In order for the |invoker_| to protect other members from being
-    // destructed as they are used in asynchronous tasks it has to be destructed
-    // first.
-    rtc::AsyncInvoker invoker_;
+    // TODO(asapersson): investigate why setting
+    // DegrationPreferences::MAINTAIN_RESOLUTION isn't sufficient to disable
+    // downscaling everywhere in the pipeline.
+    const bool disable_automatic_resize_;
   };
 
   // Wrapper for the receiver part, contains configs etc. that are needed to
@@ -518,7 +508,7 @@ class WebRtcVideoChannel : public VideoMediaChannel,
 
     webrtc::VideoDecoderFactory* const decoder_factory_;
 
-    rtc::CriticalSection sink_lock_;
+    webrtc::Mutex sink_lock_;
     rtc::VideoSinkInterface<webrtc::VideoFrame>* sink_
         RTC_GUARDED_BY(sink_lock_);
     // Expands remote RTP timestamps to int64_t to be able to estimate how long
@@ -563,7 +553,7 @@ class WebRtcVideoChannel : public VideoMediaChannel,
   void FillSendAndReceiveCodecStats(VideoMediaInfo* video_media_info)
       RTC_EXCLUSIVE_LOCKS_REQUIRED(thread_checker_);
 
-  rtc::Thread* worker_thread_;
+  rtc::Thread* const worker_thread_;
   rtc::ThreadChecker thread_checker_;
 
   uint32_t rtcp_receiver_report_ssrc_ RTC_GUARDED_BY(thread_checker_);
@@ -636,10 +626,6 @@ class WebRtcVideoChannel : public VideoMediaChannel,
   bool allow_codec_switching_ = false;
   absl::optional<EncoderSwitchRequestCallback::Config>
       requested_encoder_switch_;
-
-  // In order for the |invoker_| to protect other members from being destructed
-  // as they are used in asynchronous tasks it has to be destructed first.
-  rtc::AsyncInvoker invoker_;
 };
 
 class EncoderStreamFactory
@@ -648,7 +634,18 @@ class EncoderStreamFactory
   EncoderStreamFactory(std::string codec_name,
                        int max_qp,
                        bool is_screenshare,
-                       bool conference_mode);
+                       bool conference_mode)
+      : EncoderStreamFactory(codec_name,
+                             max_qp,
+                             is_screenshare,
+                             conference_mode,
+                             nullptr) {}
+
+  EncoderStreamFactory(std::string codec_name,
+                       int max_qp,
+                       bool is_screenshare,
+                       bool conference_mode,
+                       const webrtc::WebRtcKeyValueConfig* trials);
 
  private:
   std::vector<webrtc::VideoStream> CreateEncoderStreams(
@@ -663,7 +660,7 @@ class EncoderStreamFactory
       const absl::optional<webrtc::DataRate>& experimental_min_bitrate) const;
 
   std::vector<webrtc::VideoStream>
-  CreateSimulcastOrConfereceModeScreenshareStreams(
+  CreateSimulcastOrConferenceModeScreenshareStreams(
       int width,
       int height,
       const webrtc::VideoEncoderConfig& encoder_config,
@@ -675,6 +672,8 @@ class EncoderStreamFactory
   // Allows a screenshare specific configuration, which enables temporal
   // layering and various settings.
   const bool conference_mode_;
+  const webrtc::FieldTrialBasedConfig fallback_trials_;
+  const webrtc::WebRtcKeyValueConfig& trials_;
 };
 
 }  // namespace cricket

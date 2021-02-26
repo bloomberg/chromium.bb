@@ -42,8 +42,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
       SchedulerType scheduler_type = SchedulerType::kMockScheduler);
   ~TestBlinkWebUnitTestSupport() override;
 
-  std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
-      override;
   blink::WebString UserAgent() override;
   blink::WebString QueryLocalizedString(int resource_id) override;
   blink::WebString QueryLocalizedString(int resource_id,
@@ -54,8 +52,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
       const blink::WebString& value2) override;
   blink::WebString DefaultLocale() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;
-
-  blink::WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
 
   bool IsThreadedAnimationEnabled() override;
 
@@ -69,7 +65,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
  private:
   void BindClipboardHost(mojo::ScopedMessagePipeHandle handle);
 
-  std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   bool threaded_animation_ = true;
 

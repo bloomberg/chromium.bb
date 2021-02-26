@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+// #import {AmbientModeTopicSource, AmbientModeTemperatureUnit, AmbientModeSettings} from './constants.m.js';
+// clang-format on
+
 /**
  * @fileoverview A helper object used from the ambient mode section to interact
  * with the browser.
@@ -9,27 +14,55 @@
 
 cr.define('settings', function() {
   /** @interface */
-  class AmbientModeBrowserProxy {
+  /* #export */ class AmbientModeBrowserProxy {
     /**
-     * Retrieves the initial settings from server, such as topic source. As a
-     * response, the C++ sends the 'topic-source-changed' WebUIListener event.
+     * Retrieves the AmbientModeTopicSource and AmbientModeTemperatureUnit from
+     * server. As a response, the C++ sends the 'topic-source-changed' and
+     * 'temperature-unit-changed' events.
      */
-    onAmbientModePageReady() {}
+    requestSettings() {}
 
-    /** Updates the selected topic source to server. */
-    onTopicSourceSelectedChanged(selected) {}
+    /**
+     * Retrieves the albums from server. As a response, the C++ sends either the
+     * 'albums-changed' WebUIListener event.
+     * @param {!AmbientModeTopicSource} topicSource the topic source for which
+     *     the albums requested.
+     */
+    requestAlbums(topicSource) {}
+
+    /**
+     * Updates the selected temperature unit to server.
+     * @param {!AmbientModeTemperatureUnit} temperatureUnit
+     */
+    setSelectedTemperatureUnit(temperatureUnit) {}
+
+    /**
+     * Updates the selected albums of Google Photos or art categories to server.
+     * @param {!AmbientModeSettings} settings the selected albums or categeries.
+     */
+    setSelectedAlbums(settings) {}
   }
 
   /** @implements {settings.AmbientModeBrowserProxy} */
-  class AmbientModeBrowserProxyImpl {
+  /* #export */ class AmbientModeBrowserProxyImpl {
     /** @override */
-    onAmbientModePageReady() {
-      chrome.send('onAmbientModePageReady');
+    requestSettings() {
+      chrome.send('requestSettings');
     }
 
     /** @override */
-    onTopicSourceSelectedChanged(selected) {
-      chrome.send('onTopicSourceSelectedChanged', [selected]);
+    requestAlbums(topicSource) {
+      chrome.send('requestAlbums', [topicSource]);
+    }
+
+    /** @override */
+    setSelectedTemperatureUnit(temperatureUnit) {
+      chrome.send('setSelectedTemperatureUnit', [temperatureUnit]);
+    }
+
+    /** @override */
+    setSelectedAlbums(settings) {
+      chrome.send('setSelectedAlbums', [settings]);
     }
   }
 

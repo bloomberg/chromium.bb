@@ -37,16 +37,23 @@
     <item name="chip_background_selected_alpha_light" format="float" type="dimen">0.06</item>
     <item name="chip_background_selected_alpha_dark" format="float" type="dimen">1</item>
 
+    <dimen name="chip_solid_border_width">0dp</dimen>
     <dimen name="chip_border_width">1dp</dimen>
     <dimen name="chip_corner_radius">8dp</dimen>
     <dimen name="chip_default_height">32dp</dimen>
     <dimen name="chip_end_padding">16dp</dimen>
     <dimen name="chip_element_leading_padding">8dp</dimen>
+    <dimen name="chip_element_extended_leading_padding">16dp</dimen>
     <dimen name="chip_bg_vertical_inset">8dp</dimen>
     <dimen name="chip_background_selected_alpha">@dimen/chip_background_selected_alpha_light</dimen>
     <dimen name="chip_icon_size">20dp</dimen>
     <dimen name="chip_end_icon_margin_start">8dp</dimen>
+    <dimen name="chip_end_icon_extended_margin_start">16dp</dimen>
     <dimen name="chip_end_padding_with_end_icon">6dp</dimen>
+    <dimen name="chip_extended_end_padding_with_end_icon">16dp</dimen>
+    <dimen name="chip_text_multiline_vertical_padding">12dp</dimen>
+    <!-- ( listPreferredItemHeightSmall(40dp) - text size(12sp) - top and bottom padding(8dp) ) / 2 -->
+    <dimen name="menu_chip_vertical_inset">10dp</dimen>
 
     <!-- Dropdown default measures -->
     <dimen name="dropdown_item_height">50dp</dimen>

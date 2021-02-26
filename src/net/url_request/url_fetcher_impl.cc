@@ -59,8 +59,7 @@ void URLFetcherImpl::SetReferrer(const std::string& referrer) {
   core_->SetReferrer(referrer);
 }
 
-void URLFetcherImpl::SetReferrerPolicy(
-    URLRequest::ReferrerPolicy referrer_policy) {
+void URLFetcherImpl::SetReferrerPolicy(ReferrerPolicy referrer_policy) {
   core_->SetReferrerPolicy(referrer_policy);
 }
 
@@ -178,8 +177,8 @@ const GURL& URLFetcherImpl::GetURL() const {
   return core_->GetURL();
 }
 
-const URLRequestStatus& URLFetcherImpl::GetStatus() const {
-  return core_->GetStatus();
+Error URLFetcherImpl::GetError() const {
+  return core_->GetError();
 }
 
 int URLFetcherImpl::GetResponseCode() const {

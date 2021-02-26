@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -186,7 +187,7 @@ class PLATFORM_EXPORT CanvasResource
   gpu::raster::RasterInterface* RasterInterface() const;
   gpu::webgpu::WebGPUInterface* WebGPUInterface() const;
   GLenum GLFilter() const;
-  GrContext* GetGrContext() const;
+  GrDirectContext* GetGrContext() const;
   virtual base::WeakPtr<WebGraphicsContext3DProviderWrapper>
   ContextProviderWrapper() const {
     NOTREACHED();
@@ -338,7 +339,7 @@ class PLATFORM_EXPORT CanvasResourceRasterSharedImage final
     gpu::Mailbox shared_image_mailbox;
     gpu::SyncToken sync_token;
     size_t bitmap_image_read_refs = 0u;
-    MailboxSyncMode mailbox_sync_mode = kVerifiedSyncToken;
+    MailboxSyncMode mailbox_sync_mode = kUnverifiedSyncToken;
     bool is_lost = false;
 
     // We need to create 2 representations if canvas is operating in single
@@ -418,11 +419,11 @@ class PLATFORM_EXPORT CanvasResourceRasterSharedImage final
 };
 
 #if BUILDFLAG(SKIA_USE_DAWN)
-// Resource type for WebGPU SharedImage
-class PLATFORM_EXPORT CanvasResourceWebGPUSharedImage final
+// Resource type for SharedImage that uses Skia and Dawn backend
+class PLATFORM_EXPORT CanvasResourceSkiaDawnSharedImage final
     : public CanvasResourceSharedImage {
  public:
-  static scoped_refptr<CanvasResourceWebGPUSharedImage> Create(
+  static scoped_refptr<CanvasResourceSkiaDawnSharedImage> Create(
       const IntSize&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::WeakPtr<CanvasResourceProvider>,
@@ -430,7 +431,7 @@ class PLATFORM_EXPORT CanvasResourceWebGPUSharedImage final
       const CanvasColorParams&,
       bool is_origin_top_left,
       uint32_t shared_image_usage_flags);
-  ~CanvasResourceWebGPUSharedImage() override;
+  ~CanvasResourceSkiaDawnSharedImage() override;
 
   bool IsRecycleable() const final { return true; }
   bool IsAccelerated() const final { return true; }
@@ -477,12 +478,12 @@ class PLATFORM_EXPORT CanvasResourceWebGPUSharedImage final
     GLuint id;
     GLuint generation;
     size_t bitmap_image_read_refs = 0u;
-    MailboxSyncMode mailbox_sync_mode = kVerifiedSyncToken;
+    MailboxSyncMode mailbox_sync_mode = kUnverifiedSyncToken;
     bool is_lost = false;
   };
 
   static void OnBitmapImageDestroyed(
-      scoped_refptr<CanvasResourceWebGPUSharedImage> resource,
+      scoped_refptr<CanvasResourceSkiaDawnSharedImage> resource,
       bool has_read_ref_on_texture,
       const gpu::SyncToken& sync_token,
       bool is_lost);
@@ -495,7 +496,7 @@ class PLATFORM_EXPORT CanvasResourceWebGPUSharedImage final
   const gpu::SyncToken GetSyncToken() override;
   bool IsOverlayCandidate() const final { return false; }
 
-  CanvasResourceWebGPUSharedImage(
+  CanvasResourceSkiaDawnSharedImage(
       const IntSize&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::WeakPtr<CanvasResourceProvider>,
@@ -636,9 +637,8 @@ class PLATFORM_EXPORT CanvasResourceSwapChain final : public CanvasResource {
   scoped_refptr<StaticBitmapImage> Bitmap() override;
 
   GLenum TextureTarget() const final { return GL_TEXTURE_2D; }
-  GLuint GetBackingTextureHandleForOverwrite() {
-    return back_buffer_texture_id_;
-  }
+
+  GLuint GetBackBufferTextureId() const { return back_buffer_texture_id_; }
 
   void PresentSwapChain();
   const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) override;
@@ -662,7 +662,6 @@ class PLATFORM_EXPORT CanvasResourceSwapChain final : public CanvasResource {
   const IntSize size_;
   gpu::Mailbox front_buffer_mailbox_;
   gpu::Mailbox back_buffer_mailbox_;
-  GLuint front_buffer_texture_id_ = 0u;
   GLuint back_buffer_texture_id_ = 0u;
   gpu::SyncToken sync_token_;
 

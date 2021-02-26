@@ -3,6 +3,12 @@
         "benchmarks": {
             "power.desktop": {
                 "abridged": false
+            },
+            "system_health.common_desktop": {
+                "abridged": false
+            },
+            "rendering.desktop": {
+                "abridged": true
             }
         }
     },

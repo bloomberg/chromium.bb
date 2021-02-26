@@ -24,6 +24,11 @@
         "ExecuteScript",
       ]
     },
+    InspectorIssueReporter: {
+      probes: [
+        "DidFailLoading",
+      ]
+    },
     InspectorAnimationAgent: {
       probes: [
         "AnimationPlayStateChanged",
@@ -45,11 +50,15 @@
     InspectorCSSAgent: {
       probes: [
         "ActiveStyleSheetsUpdated",
+        "DidMutateStyleSheet",
         "DocumentDetached",
         "FontsUpdated",
         "ForcePseudoState",
         "MediaQueryResultChanged",
         "WillChangeStyleElement",
+        "LocalFontsEnabled",
+        "DidUpdateComputedStyle",
+        "RecalculateStyle",
       ]
     },
     InspectorDOMAgent: {
@@ -110,6 +119,8 @@
         "ApplyUserAgentMetadataOverride",
         "FrameStartedLoading",
         "PrepareRequest",
+        "GetDisabledImageTypes",
+        "WillCommitLoad",
       ]
     },
     InspectorLayerTreeAgent: {

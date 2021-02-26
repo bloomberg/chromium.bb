@@ -14,11 +14,16 @@
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
+#import "components/pref_registry/pref_registry_syncable.h"
+#import "components/prefs/ios/pref_observer_bridge.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_discover_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
@@ -27,10 +32,13 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_category_wrapper.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_mediator.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_provider.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_service_bridge_observer.h"
+#import "ios/chrome/browser/ui/content_suggestions/discover_feed_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/content_suggestions/mediator_util.h"
@@ -39,6 +47,7 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/discover_feed/discover_feed_observer_bridge.h"
 #include "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -54,23 +63,33 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 }  // namespace
 
-@interface ContentSuggestionsMediator ()<ContentSuggestionsItemDelegate,
-                                         ContentSuggestionsServiceObserver,
-                                         MostVisitedSitesObserving,
-                                         ReadingListModelBridgeObserver> {
+@interface ContentSuggestionsMediator () <BooleanObserver,
+                                          DiscoverFeedObserverBridgeDelegate,
+                                          ContentSuggestionsItemDelegate,
+                                          ContentSuggestionsServiceObserver,
+                                          MostVisitedSitesObserving,
+                                          PrefObserverDelegate,
+                                          ReadingListModelBridgeObserver> {
   // Bridge for this class to become an observer of a ContentSuggestionsService.
   std::unique_ptr<ContentSuggestionsServiceBridge> _suggestionBridge;
   std::unique_ptr<ntp_tiles::MostVisitedSites> _mostVisitedSites;
   std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
   std::unique_ptr<NotificationPromoWhatsNew> _notificationPromo;
   std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
+  // Pref observer to track changes to prefs.
+  std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
+  // Registrar for pref changes notifications.
+  std::unique_ptr<PrefChangeRegistrar> _prefChangeRegistrar;
+  // Observes changes in the DiscoverFeed.
+  std::unique_ptr<DiscoverFeedObserverBridge>
+      _discoverFeedProviderObserverBridge;
 }
 
 // Whether the contents section should be hidden completely.
 // Don't use PrefBackedBoolean or PrefMember as this value needs to be checked
 // when the Preference is updated.
-@property(nullable, nonatomic, assign)
-    const PrefService::Preference* contentArticlesEnabled;
+@property(nonatomic, assign)
+    const PrefService::Preference* contentSuggestionsEnabled;
 // Most visited items from the MostVisitedSites service currently displayed.
 @property(nonatomic, strong)
     NSMutableArray<ContentSuggestionsMostVisitedItem*>* mostVisitedItems;
@@ -93,6 +112,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 // suggested content.
 @property(nonatomic, strong)
     ContentSuggestionsSectionInformation* learnMoreSectionInfo;
+// Section Info for the section containing the Discover feed.
+@property(nonatomic, strong)
+    ContentSuggestionsSectionInformation* discoverSectionInfo;
 // Whether the page impression has been recorded.
 @property(nonatomic, assign) BOOL recordedPageImpression;
 // The ContentSuggestionsService, serving suggestions.
@@ -111,6 +133,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 // reading list count.
 @property(nonatomic, strong)
     ContentSuggestionsMostVisitedActionItem* readingListItem;
+// Item for the Discover feed.
+@property(nonatomic, strong) ContentSuggestionsDiscoverItem* discoverItem;
 // Number of unread items in reading list model.
 @property(nonatomic, assign) NSInteger readingListUnreadCount;
 
@@ -123,18 +147,22 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 #pragma mark - Public
 
 - (instancetype)
-    initWithContentService:
-        (ntp_snippets::ContentSuggestionsService*)contentService
-          largeIconService:(favicon::LargeIconService*)largeIconService
-            largeIconCache:(LargeIconCache*)largeIconCache
-           mostVisitedSite:
-               (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
-          readingListModel:(ReadingListModel*)readingListModel
-               prefService:(PrefService*)prefService {
+           initWithContentService:
+               (ntp_snippets::ContentSuggestionsService*)contentService
+                 largeIconService:(favicon::LargeIconService*)largeIconService
+                   largeIconCache:(LargeIconCache*)largeIconCache
+                  mostVisitedSite:(std::unique_ptr<ntp_tiles::MostVisitedSites>)
+                                      mostVisitedSites
+                 readingListModel:(ReadingListModel*)readingListModel
+                      prefService:(PrefService*)prefService
+                     discoverFeed:(UIViewController*)discoverFeed
+    isGoogleDefaultSearchProvider:(BOOL)isGoogleDefaultSearchProvider {
   self = [super init];
   if (self) {
-    _contentArticlesEnabled =
+    _contentSuggestionsEnabled =
         prefService->FindPreference(prefs::kArticlesForYouEnabled);
+    // TODO(crbug.com/1085419): Stop observing this Service once DiscoverFeed is
+    // launched.
     _suggestionBridge =
         std::make_unique<ContentSuggestionsServiceBridge>(self, contentService);
     _contentService = contentService;
@@ -152,6 +180,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
     _learnMoreItem = [[ContentSuggestionsLearnMoreItem alloc] init];
 
+    _discoverFeed = discoverFeed;
+    _discoverSectionInfo =
+        DiscoverSectionInformation(isGoogleDefaultSearchProvider);
+    _discoverItem = [[ContentSuggestionsDiscoverItem alloc] init];
+    _discoverItem.discoverFeed = _discoverFeed;
+
     _notificationPromo = std::make_unique<NotificationPromoWhatsNew>(
         GetApplicationContext()->GetLocalState());
     _notificationPromo->Init();
@@ -161,19 +195,52 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
         std::make_unique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
     _mostVisitedSites->SetMostVisitedURLsObserver(_mostVisitedBridge.get(),
                                                   kMaxNumMostVisitedTiles);
+
+    _prefChangeRegistrar = std::make_unique<PrefChangeRegistrar>();
+    _prefChangeRegistrar->Init(prefService);
+    _prefObserverBridge.reset(new PrefObserverBridge(self));
+    _prefObserverBridge->ObserveChangesForPreference(
+        prefs::kArticlesForYouEnabled, _prefChangeRegistrar.get());
+
     _readingListModelBridge =
         std::make_unique<ReadingListModelBridge>(self, readingListModel);
+
+    if (IsDiscoverFeedEnabled()) {
+      _discoverFeedProviderObserverBridge =
+          std::make_unique<DiscoverFeedObserverBridge>(self);
+    }
   }
   return self;
 }
 
++ (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
+  registry->RegisterInt64Pref(prefs::kIosDiscoverFeedLastRefreshTime, 0);
+}
+
+- (void)disconnect {
+  _prefChangeRegistrar.reset();
+  _prefObserverBridge.reset();
+  _discoverFeedProviderObserverBridge.reset();
+}
+
+- (void)reloadAllData {
+  [self.dataSink reloadAllData];
+}
+
+- (void)setConsumer:(id<ContentSuggestionsConsumer>)consumer {
+  _consumer = consumer;
+  [self.consumer
+      setContentSuggestionsEnabled:self.contentSuggestionsEnabled->GetValue()
+                                       ->GetBool()];
+}
+
 - (void)blockMostVisitedURL:(GURL)URL {
-  _mostVisitedSites->AddOrRemoveBlacklistedUrl(URL, true);
+  _mostVisitedSites->AddOrRemoveBlockedUrl(URL, true);
   [self useFreshMostVisited];
 }
 
 - (void)allowMostVisitedURL:(GURL)URL {
-  _mostVisitedSites->AddOrRemoveBlacklistedUrl(URL, false);
+  _mostVisitedSites->AddOrRemoveBlockedUrl(URL, false);
   [self useFreshMostVisited];
 }
 
@@ -204,22 +271,31 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
   [sectionsInfo addObject:self.mostVisitedSectionInfo];
 
-  std::vector<ntp_snippets::Category> categories =
-      self.contentService->GetCategories();
+  if (!IsDiscoverFeedEnabled()) {
+    std::vector<ntp_snippets::Category> categories =
+        self.contentService->GetCategories();
 
-  for (auto& category : categories) {
-    ContentSuggestionsCategoryWrapper* categoryWrapper =
-        [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
-    if (!self.sectionInformationByCategory[categoryWrapper]) {
-      [self addSectionInformationForCategory:category];
+    for (auto& category : categories) {
+      ContentSuggestionsCategoryWrapper* categoryWrapper =
+          [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
+      if (!self.sectionInformationByCategory[categoryWrapper]) {
+        [self addSectionInformationForCategory:category];
+      }
+      if ([self isCategoryAvailable:category]) {
+        [sectionsInfo
+            addObject:self.sectionInformationByCategory[categoryWrapper]];
+      }
     }
-    if ([self isCategoryAvailable:category]) {
-      [sectionsInfo
-          addObject:self.sectionInformationByCategory[categoryWrapper]];
-    }
+
+    [sectionsInfo addObject:self.learnMoreSectionInfo];
   }
 
-  [sectionsInfo addObject:self.learnMoreSectionInfo];
+  // TODO(crbug.com/1105624): Observe the kArticlesForYouEnabled Pref in order
+  // to hide the DiscoverFeed section if the finch flag is enabled.
+  if (IsDiscoverFeedEnabled() &&
+      self.contentSuggestionsEnabled->GetValue()->GetBool()) {
+    [sectionsInfo addObject:self.discoverSectionInfo];
+  }
 
   return sectionsInfo;
 }
@@ -246,7 +322,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     [convertedSuggestions addObjectsFromArray:self.actionButtonItems];
   } else if (sectionInfo == self.learnMoreSectionInfo) {
     [convertedSuggestions addObject:self.learnMoreItem];
-  } else {
+  } else if (sectionInfo == self.discoverSectionInfo) {
+    if ([self.contentArticlesExpanded value]) {
+      [convertedSuggestions addObject:self.discoverItem];
+    }
+  } else if (!IsDiscoverFeedEnabled()) {
     ntp_snippets::Category category =
         [[self categoryWrapperForSectionInfo:sectionInfo] category];
 
@@ -346,22 +426,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 - (void)toggleArticlesVisibility {
   [self.contentArticlesExpanded setValue:![self.contentArticlesExpanded value]];
+  [self reloadArticleSectionOrAllData:NO];
+}
 
-  // Update the section information for new collapsed state.
-  ntp_snippets::Category category = ntp_snippets::Category::FromKnownCategory(
-      ntp_snippets::KnownCategories::ARTICLES);
-  ContentSuggestionsCategoryWrapper* wrapper =
-      [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
-  ContentSuggestionsSectionInformation* sectionInfo =
-      self.sectionInformationByCategory[wrapper];
-  sectionInfo.expanded = [self.contentArticlesExpanded value];
+#pragma mark - BooleanObserver
 
-  // Reloading the section with animations looks bad because the section
-  // border with the new collapsed height draws before the elements collapse.
-  BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
-  [UIView setAnimationsEnabled:NO];
-  [self.dataSink reloadSection:sectionInfo];
-  [UIView setAnimationsEnabled:animationsWereEnabled];
+- (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
+  [self reloadArticleSectionOrAllData:YES];
 }
 
 #pragma mark - ContentSuggestionsServiceObserver
@@ -369,6 +440,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 - (void)contentSuggestionsService:
             (ntp_snippets::ContentSuggestionsService*)suggestionsService
          newSuggestionsInCategory:(ntp_snippets::Category)category {
+  // Ignore newSuggestionsInCategory if the DiscoverFeed is enabled, if not
+  // these might cause some unecessary section updates and crashes.
+  if (IsDiscoverFeedEnabled())
+    return;
+
   ContentSuggestionsCategoryWrapper* wrapper =
       [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
   if (!self.sectionInformationByCategory[wrapper]) {
@@ -391,6 +467,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
             (ntp_snippets::ContentSuggestionsService*)suggestionsService
                          category:(ntp_snippets::Category)category
                   statusChangedTo:(ntp_snippets::CategoryStatus)status {
+  // Ignore all ContentSuggestionsService if the DiscoverFeed is enabled, if not
+  // these might cause some unecessary section updates and crashes.
+  if (IsDiscoverFeedEnabled())
+    return;
+
   ContentSuggestionsCategoryWrapper* wrapper =
       [[ContentSuggestionsCategoryWrapper alloc] initWithCategory:category];
   if (![self isCategoryInitOrAvailable:category]) {
@@ -413,6 +494,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
       [self.dataSink section:sectionInfo isLoading:NO];
     }
   }
+  [self.consumer
+      setContentSuggestionsEnabled:self.contentSuggestionsEnabled->GetValue()
+                                       ->GetBool()];
 }
 
 - (void)contentSuggestionsService:
@@ -440,7 +524,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)),
       dispatch_get_main_queue(), ^{
-        [self.dataSink reloadAllData];
+        [self reloadAllData];
       });
 }
 
@@ -533,6 +617,33 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 #pragma mark - Private
 
+// Reloads article section (for the page that trigers the request) or all
+// for other tabs/windows observing the pref. It avoids issues with scroll
+// changes, in hidden tabs/windows which leads to crashes.
+- (void)reloadArticleSectionOrAllData:(BOOL)allData {
+  // Update the section information for new collapsed state.
+  ntp_snippets::Category category = ntp_snippets::Category::FromKnownCategory(
+      ntp_snippets::KnownCategories::ARTICLES);
+  ContentSuggestionsCategoryWrapper* wrapper =
+      [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
+  ContentSuggestionsSectionInformation* sectionInfo =
+      self.sectionInformationByCategory[wrapper];
+  sectionInfo.expanded = [self.contentArticlesExpanded value];
+  [self.consumer
+      setContentSuggestionsVisible:[self.contentArticlesExpanded value]];
+
+  if (allData) {
+    [self reloadAllData];
+  } else {
+    // Reloading the section with animations looks bad because the section
+    // border with the new collapsed height draws before the elements collapse.
+    BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
+    [UIView setAnimationsEnabled:NO];
+    [self.dataSink reloadSection:sectionInfo];
+    [UIView setAnimationsEnabled:animationsWereEnabled];
+  }
+}
+
 // Converts the |suggestions| from |category| to CSCollectionViewItem and adds
 // them to the |contentArray| if the category is available.
 - (void)addSuggestions:
@@ -609,13 +720,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 // ntp_snippets doesn't differentiate between disabled vs collapsed, so if
 // the status is |CATEGORY_EXPLICITLY_DISABLED|, check the value of
-// |contentArticlesEnabled|.
+// |contentSuggestionsEnabled|.
 - (BOOL)isCategoryInitOrAvailable:(ntp_snippets::Category)category {
   ntp_snippets::CategoryStatus status =
       self.contentService->GetCategoryStatus(category);
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES) &&
       status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED)
-    return self.contentArticlesEnabled->GetValue()->GetBool();
+    return self.contentSuggestionsEnabled->GetValue()->GetBool();
   else
     return IsCategoryStatusInitOrAvailable(
         self.contentService->GetCategoryStatus(category));
@@ -623,13 +734,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 // ntp_snippets doesn't differentiate between disabled vs collapsed, so if
 // the status is |CATEGORY_EXPLICITLY_DISABLED|, check the value of
-// |contentArticlesEnabled|.
+// |contentSuggestionsEnabled|.
 - (BOOL)isCategoryAvailable:(ntp_snippets::Category)category {
   ntp_snippets::CategoryStatus status =
       self.contentService->GetCategoryStatus(category);
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES) &&
       status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
-    return self.contentArticlesEnabled->GetValue()->GetBool();
+    return self.contentSuggestionsEnabled->GetValue()->GetBool();
   } else {
     return IsCategoryStatusAvailable(
         self.contentService->GetCategoryStatus(category));
@@ -675,6 +786,37 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   }
 }
 
+- (void)setContentArticlesExpanded:(PrefBackedBoolean*)contentArticlesExpanded {
+  if (_contentArticlesExpanded == contentArticlesExpanded)
+    return;
+  _contentArticlesExpanded = contentArticlesExpanded;
+  [contentArticlesExpanded setObserver:self];
+}
+
+- (void)setDiscoverFeed:(UIViewController*)discoverFeed {
+  DCHECK(_discoverFeed != discoverFeed);
+  _discoverFeed = discoverFeed;
+  _discoverItem.discoverFeed = _discoverFeed;
+  // The UICollectionView -reloadData method is a no-op if it is called at the
+  // same time as other collection updates. This full refresh command can come
+  // at the same time as other collection update commands. To make sure that it
+  // is taken into account, dispatch it with a delay. See
+  // http://crbug.com/945726.
+  dispatch_after(
+      dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)),
+      dispatch_get_main_queue(), ^{
+        [self reloadAllData];
+      });
+}
+
+#pragma mark - PrefObserverDelegate
+
+- (void)onPreferenceChanged:(const std::string&)preferenceName {
+  if (preferenceName == prefs::kArticlesForYouEnabled) {
+    [self reloadAllData];
+  }
+}
+
 #pragma mark - ReadingListModelBridgeObserver
 
 - (void)readingListModelLoaded:(const ReadingListModel*)model {
@@ -687,6 +829,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     self.readingListItem.count = self.readingListUnreadCount;
     [self.dataSink itemHasChanged:self.readingListItem];
   }
+}
+
+#pragma mark - DiscoverFeedObserverBridge
+
+- (void)onDiscoverFeedModelRecreated {
+  [self.discoverFeedDelegate recreateDiscoverFeedViewController];
 }
 
 @end

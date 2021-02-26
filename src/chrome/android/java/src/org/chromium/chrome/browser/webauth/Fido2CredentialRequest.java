@@ -32,8 +32,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.blink.mojom.AuthenticatorStatus;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -254,7 +254,7 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
             return true;
         }
 
-        if (!ExternalAuthUtils.getInstance().canUseGooglePlayServices(
+        if (!AppHooks.get().getExternalAuthUtils().canUseGooglePlayServices(
                     new UserRecoverableErrorHandler.Silent())) {
             return false;
         }
@@ -308,9 +308,13 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
         if (response instanceof AuthenticatorErrorResponse) {
             processErrorResponse((AuthenticatorErrorResponse) response);
         } else if (response instanceof AuthenticatorAttestationResponse) {
-            mCallback.onRegisterResponse(AuthenticatorStatus.SUCCESS,
-                    Fido2Helper.toMakeCredentialResponse(publicKeyCredential));
-            mCallback = null;
+            try {
+                mCallback.onRegisterResponse(AuthenticatorStatus.SUCCESS,
+                        Fido2Helper.toMakeCredentialResponse(publicKeyCredential));
+                mCallback = null;
+            } catch (NoSuchAlgorithmException e) {
+                returnErrorAndResetCallback(AuthenticatorStatus.ALGORITHM_UNSUPPORTED);
+            }
         } else if (response instanceof AuthenticatorAssertionResponse) {
             mCallback.onSignResponse(AuthenticatorStatus.SUCCESS,
                     Fido2Helper.toGetAssertionResponse(publicKeyCredential, mAppIdExtensionUsed));
@@ -331,10 +335,15 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
         switch (mRequestStatus) {
             case REGISTER_REQUEST:
                 Log.e(TAG, "Received a register response from Google Play Services FIDO2 API");
-                mCallback.onRegisterResponse(AuthenticatorStatus.SUCCESS,
-                        Fido2Helper.toMakeCredentialResponse(
-                                AuthenticatorAttestationResponse.deserializeFromBytes(
-                                        data.getByteArrayExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA))));
+                try {
+                    mCallback.onRegisterResponse(AuthenticatorStatus.SUCCESS,
+                            Fido2Helper.toMakeCredentialResponse(
+                                    AuthenticatorAttestationResponse.deserializeFromBytes(
+                                            data.getByteArrayExtra(
+                                                    Fido.FIDO2_KEY_RESPONSE_EXTRA))));
+                } catch (NoSuchAlgorithmException e) {
+                    returnErrorAndResetCallback(AuthenticatorStatus.ALGORITHM_UNSUPPORTED);
+                }
                 break;
             case SIGN_REQUEST:
                 Log.e(TAG, "Received a sign response from Google Play Services FIDO2 API");

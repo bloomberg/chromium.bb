@@ -39,7 +39,8 @@ typedef struct {
   unsigned int profile;
   unsigned int limit;
   unsigned int screen_content;
-  double psnr_threshold;
+  double psnr_threshold;   // used by modes other than AOM_SUPERRES_AUTO
+  double psnr_threshold2;  // used by AOM_SUPERRES_AUTO
 } TestVideoParam;
 
 std::ostream &operator<<(std::ostream &os, const TestVideoParam &test_arg) {
@@ -51,13 +52,16 @@ std::ostream &operator<<(std::ostream &os, const TestVideoParam &test_arg) {
 }
 
 const TestVideoParam kTestVideoVectors[] = {
-  { "park_joy_90p_8_420.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 5, 0, 25.5 },
+  { "park_joy_90p_8_420.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 5, 0, 26.0,
+    45.0 },
 #if CONFIG_AV1_HIGHBITDEPTH
-  { "park_joy_90p_10_444.y4m", AOM_IMG_FMT_I44416, AOM_BITS_10, 1, 5, 0, 28.0 },
+  { "park_joy_90p_10_444.y4m", AOM_IMG_FMT_I44416, AOM_BITS_10, 1, 5, 0, 28.0,
+    48.0 },
 #endif
-  { "screendata.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 4, 1, 20.0 },
+  { "screendata.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 4, 1, 23.0, 56.0 },
   // Image coding (single frame).
-  { "niklas_1280_720_30.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 1, 0, 32.0 },
+  { "niklas_1280_720_30.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 1, 0, 32.0,
+    49.0 },
 };
 
 // Modes with extra params have their own tests.
@@ -158,12 +162,13 @@ class HorzSuperresEndToEndTest
     ASSERT_TRUE(video.get() != NULL);
 
     ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
+    const double psnr_thresh = (superres_mode_ == AOM_SUPERRES_AUTO)
+                                   ? test_video_param_.psnr_threshold2
+                                   : test_video_param_.psnr_threshold;
     const double psnr = GetAveragePsnr();
-    EXPECT_GT(psnr, test_video_param_.psnr_threshold)
-        << "superres_mode_ = " << superres_mode_;
+    EXPECT_GT(psnr, psnr_thresh);
 
-    EXPECT_EQ(test_video_param_.limit, frame_count_)
-        << "superres_mode_ = " << superres_mode_;
+    EXPECT_EQ(test_video_param_.limit, frame_count_);
   }
 
   TestVideoParam test_video_param_;
@@ -176,9 +181,9 @@ class HorzSuperresEndToEndTest
 
 TEST_P(HorzSuperresEndToEndTest, HorzSuperresEndToEndPSNRTest) { DoTest(); }
 
-AV1_INSTANTIATE_TEST_CASE(HorzSuperresEndToEndTest,
-                          ::testing::ValuesIn(kTestVideoVectors),
-                          ::testing::ValuesIn(kSuperresModesWithoutParams));
+AV1_INSTANTIATE_TEST_SUITE(HorzSuperresEndToEndTest,
+                           ::testing::ValuesIn(kTestVideoVectors),
+                           ::testing::ValuesIn(kSuperresModesWithoutParams));
 
 // Test parameter list:
 //  <[needed for EncoderTest], test_video_param_, tuple(superres_denom_,
@@ -287,9 +292,9 @@ class HorzSuperresFixedEndToEndTest
 
 TEST_P(HorzSuperresFixedEndToEndTest, HorzSuperresFixedTestParam) { DoTest(); }
 
-AV1_INSTANTIATE_TEST_CASE(HorzSuperresFixedEndToEndTest,
-                          ::testing::ValuesIn(kTestVideoVectors),
-                          ::testing::ValuesIn(kSuperresDenominators));
+AV1_INSTANTIATE_TEST_SUITE(HorzSuperresFixedEndToEndTest,
+                           ::testing::ValuesIn(kTestVideoVectors),
+                           ::testing::ValuesIn(kSuperresDenominators));
 
 // Test parameter list:
 //  <[needed for EncoderTest], test_video_param_,
@@ -400,8 +405,8 @@ TEST_P(HorzSuperresQThreshEndToEndTest, HorzSuperresQThreshEndToEndPSNRTest) {
   DoTest();
 }
 
-AV1_INSTANTIATE_TEST_CASE(HorzSuperresQThreshEndToEndTest,
-                          ::testing::ValuesIn(kTestVideoVectors),
-                          ::testing::ValuesIn(kSuperresQThresholds));
+AV1_INSTANTIATE_TEST_SUITE(HorzSuperresQThreshEndToEndTest,
+                           ::testing::ValuesIn(kTestVideoVectors),
+                           ::testing::ValuesIn(kSuperresQThresholds));
 
 }  // namespace

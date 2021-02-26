@@ -33,6 +33,12 @@ class IOSBlockingPageControllerClient
       const std::string& app_locale);
   ~IOSBlockingPageControllerClient() override;
 
+  // security_interstitials::ControllerClient implementation.
+  void Proceed() override;
+  void GoBack() override;
+  bool CanGoBack() override;
+  void OpenEnhancedProtectionSettings() override;
+
   void SetWebInterstitial(web::WebInterstitial* web_interstitial);
 
   // web::WebStateObserver implementation.
@@ -47,11 +53,8 @@ class IOSBlockingPageControllerClient
   // security_interstitials::ControllerClient implementation.
   bool CanLaunchDateAndTimeSettings() override;
   void LaunchDateAndTimeSettings() override;
-  void GoBack() override;
-  bool CanGoBack() override;
   bool CanGoBackBeforeNavigation() override;
   void GoBackAfterNavigationCommitted() override;
-  void Proceed() override;
   void Reload() override;
   void OpenUrlInCurrentTab(const GURL& url) override;
   void OpenUrlInNewForegroundTab(const GURL& url) override;

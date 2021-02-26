@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/management/management_api_constants.h"
@@ -47,11 +48,6 @@
 #include "extensions/common/url_pattern.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
-
-#if defined(OS_CHROMEOS)
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/web_contents.h"
-#endif
 
 using content::BrowserThread;
 
@@ -436,53 +432,42 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
 
   bool should_enable = params->enabled;
 
-  const SupervisedUserServiceDelegate* supervised_user_service_delegate =
-      ManagementAPI::GetFactoryInstance()
-          ->Get(browser_context())
-          ->GetSupervisedUserServiceDelegate();
-
-  const bool is_supervised_child_who_may_install_extensions =
-      supervised_user_service_delegate
-          ? supervised_user_service_delegate
-                ->IsSupervisedChildWhoMayInstallExtensions(browser_context())
-          : false;
-
   const ManagementPolicy* policy =
       ExtensionSystem::Get(browser_context())->management_policy();
-
   if (!policy->ExtensionMayModifySettings(extension(), target_extension,
                                           nullptr)) {
     return RespondNow(Error(keys::kUserCantModifyError, extension_id_));
   }
 
-  disable_reason::DisableReason reason = disable_reason::DISABLE_NONE;
-  bool disallow_enable =
-      should_enable &&
-      policy->MustRemainDisabled(target_extension, &reason, nullptr);
+  SupervisedUserExtensionsDelegate* supervised_user_extensions_delegate =
+      ManagementAPI::GetFactoryInstance()
+          ->Get(browser_context())
+          ->GetSupervisedUserExtensionsDelegate();
+  if (supervised_user_extensions_delegate &&
+      supervised_user_extensions_delegate->IsChild(browser_context()) &&
+      // Don't prompt the user if the extension has unsupported requirements.
+      // TODO(crbug/1071978): If OnRequirementsChecked() passes, the extension
+      // will enable, bypassing parent approval.
+      !HasUnsupportedRequirements(extension_id_) &&
+      // Only ask for parent approval if the extension still requires approval.
+      !supervised_user_extensions_delegate->IsExtensionAllowedByParent(
+          *target_extension, browser_context())) {
+    // Either ask for parent permission or notify the child that their parent
+    // has disabled this action.
+    auto parent_permission_callback = base::BindOnce(
+        &ManagementSetEnabledFunction::OnParentPermissionDialogDone, this);
+    auto error_callback = base::BindOnce(
+        &ManagementSetEnabledFunction::OnBlockedByParentDialogDone, this);
+    AddRef();  // Matched in OnParentPermissionDialogDone() or
+               // OnBlockedByParentDialogDone().
+    supervised_user_extensions_delegate->PromptForParentPermissionOrShowError(
+        *target_extension, browser_context(), GetSenderWebContents(),
+        std::move(parent_permission_callback), std::move(error_callback));
+    return RespondLater();
+  }
 
-  // Figure out if we should prompt for parental approval.
-  bool prompt_parent_for_approval =
-      disallow_enable && is_supervised_child_who_may_install_extensions &&
-      reason == disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED;
-
-  // If the extension can't be enabled, only continue if we plan to prompt for
-  // parental approval.  For any child or other type of managed user, if
-  // extension installation has been blocked, we stop the enabling of the
-  // extension here.
-  if (disallow_enable && !prompt_parent_for_approval) {
-    LOG(ERROR) << "ManagementSetEnabledFunction::Run: extension may not be "
-                  "enabled, and we're not prompting for parent approval";
-
-#if defined(OS_CHROMEOS)
-    // On ChromeOS, if this is a child, show the dialog indicating that enabling
-    // extensions has been blocked by a parent.
-    if (supervised_user_service_delegate &&
-        supervised_user_service_delegate->IsChild(browser_context())) {
-      AddRef();  // Matched in OnBlockedByParentDialogDone().
-      ShowBlockedByParentDialog(target_extension);
-      return RespondLater();
-    }
-#endif
+  if (should_enable &&
+      policy->MustRemainDisabled(target_extension, nullptr, nullptr)) {
     return RespondNow(Error(keys::kUserCantModifyError, extension_id_));
   }
 
@@ -492,8 +477,7 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
 
   if (!currently_enabled && should_enable) {
     ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
-    if (!prompt_parent_for_approval &&
-        prefs->DidExtensionEscalatePermissions(extension_id_)) {
+    if (prefs->DidExtensionEscalatePermissions(extension_id_)) {
       if (!user_gesture())
         return RespondNow(Error(keys::kGestureNeededForEscalationError));
 
@@ -503,8 +487,7 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
           base::Bind(&ManagementSetEnabledFunction::OnInstallPromptDone, this));
       return RespondLater();
     }
-    if (prefs->GetDisableReasons(extension_id_) &
-        disable_reason::DISABLE_UNSUPPORTED_REQUIREMENT) {
+    if (HasUnsupportedRequirements(extension_id_)) {
       // Recheck the requirements.
       requirements_checker_ =
           std::make_unique<RequirementsChecker>(target_extension);
@@ -513,18 +496,6 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
                          this));  // This bind creates a reference.
       return RespondLater();
     }
-    // Handle parental approval for child accounts that have the ability to
-    // install extensions.
-    if (prompt_parent_for_approval &&
-        // Don't re-prompt the parent for extensions that have already been
-        // approved for a child.
-        !supervised_user_service_delegate->IsExtensionAllowedByParent(
-            *target_extension, browser_context())) {
-      LOG(ERROR) << "ManagementSetEnabledFunction::Run:  prompting for parent "
-                    "approval";
-      return RequestParentPermission(target_extension);
-    }
-
     delegate->EnableExtension(browser_context(), extension_id_);
   } else if (currently_enabled && !params->enabled) {
     delegate->DisableExtension(
@@ -543,12 +514,19 @@ void ManagementSetEnabledFunction::OnInstallPromptDone(bool did_accept) {
         ->Get(browser_context())
         ->GetDelegate()
         ->EnableExtension(browser_context(), extension_id_);
-    Respond(OneArgument(std::make_unique<base::Value>(true)));
+    Respond(NoArguments());
   } else {
     Respond(Error(keys::kUserDidNotReEnableError));
   }
 
   Release();  // Balanced in Run().
+}
+
+bool ManagementSetEnabledFunction::HasUnsupportedRequirements(
+    const std::string& extension_id) {
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
+  return prefs->GetDisableReasons(extension_id) &
+         disable_reason::DISABLE_UNSUPPORTED_REQUIREMENT;
 }
 
 void ManagementSetEnabledFunction::OnRequirementsChecked(
@@ -564,91 +542,44 @@ void ManagementSetEnabledFunction::OnRequirementsChecked(
   }
 }
 
-ExtensionFunction::ResponseAction
-ManagementSetEnabledFunction::RequestParentPermission(
-    const Extension* extension) {
-  content::WebContents* web_contents = GetSenderWebContents();
-  if (!web_contents)
-    return RespondNow(Error(keys::kWebContentsDisappearedError));
-
-  // Show parental approval prompt.
-  auto callback = base::BindOnce(
-      &ManagementSetEnabledFunction::OnParentPermissionDone, this);
-  SupervisedUserServiceDelegate* supervised_user_service_delegate =
-      ManagementAPI::GetFactoryInstance()
-          ->Get(browser_context())
-          ->GetSupervisedUserServiceDelegate();
-  DCHECK(supervised_user_service_delegate);
-  supervised_user_service_delegate->ShowParentPermissionDialogForExtension(
-      *extension, browser_context(), web_contents, std::move(callback));
-  return RespondLater();
-}
-
-void ManagementSetEnabledFunction::OnParentPermissionDone(
-    SupervisedUserServiceDelegate::ParentPermissionDialogResult result) {
+void ManagementSetEnabledFunction::OnParentPermissionDialogDone(
+    SupervisedUserExtensionsDelegate::ParentPermissionDialogResult result) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   switch (result) {
-    case SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+    case SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
         kParentPermissionReceived: {
       const ManagementAPIDelegate* delegate =
           ManagementAPI::GetFactoryInstance()
               ->Get(browser_context())
               ->GetDelegate();
       delegate->EnableExtension(browser_context(), extension_id_);
-      Respond(OneArgument(std::make_unique<base::Value>(true)));
+      Respond(NoArguments());
       break;
     }
 
-    case SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+    case SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
         kParentPermissionCanceled: {
       Respond(Error(keys::kUserDidNotReEnableError));
       break;
     }
 
-    case SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+    case SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
         kParentPermissionFailed: {
       Respond(Error(keys::kParentPermissionFailedError));
       break;
     }
   }
-}
-
-void ManagementSetEnabledFunction::ShowBlockedByParentDialog(
-    const Extension* extension) {
-#if defined(OS_CHROMEOS)
-  DCHECK(extension);
-  SupervisedUserServiceDelegate* supervised_user_service_delegate =
-      ManagementAPI::GetFactoryInstance()
-          ->Get(browser_context())
-          ->GetSupervisedUserServiceDelegate();
-
-  supervised_user_service_delegate
-      ->RecordExtensionEnableBlockedByParentDialogUmaMetric();
-
-  content::WebContents* contents = GetSenderWebContents();
-  web_modal::WebContentsModalDialogManager* manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(contents);
-  if (!contents || !contents->GetTopLevelNativeWindow() || !manager) {
-    // If the contents are null, or there is no top level native window to
-    // anchor the dialog on, or no dialog manager, skip showing the dialog and
-    // return the error immediately.
-    OnBlockedByParentDialogDone();
-    return;
-  }
-  supervised_user_service_delegate
-      ->ShowExtensionEnableBlockedByParentDialogForExtension(
-          extension, contents,
-          base::BindOnce(
-              &ManagementSetEnabledFunction::OnBlockedByParentDialogDone,
-              this));
-#endif
+  // Matches the AddRef in Run().
+  Release();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void ManagementSetEnabledFunction::OnBlockedByParentDialogDone() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   Respond(Error(keys::kUserCantModifyError, extension_id_));
   // Matches the AddRef in Run().
   Release();
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 ManagementUninstallFunctionBase::ManagementUninstallFunctionBase() = default;
@@ -823,7 +754,7 @@ ExtensionFunction::ResponseAction ManagementCreateAppShortcutFunction::Run() {
         ErrorUtils::FormatErrorMessage(keys::kNotAnAppError, params->id)));
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!extension->is_platform_app())
     return RespondNow(Error(keys::kCreateOnlyPackagedAppShortcutMac));
 #endif
@@ -1180,8 +1111,9 @@ void ManagementEventRouter::BroadcastEvent(
 ManagementAPI::ManagementAPI(content::BrowserContext* context)
     : browser_context_(context),
       delegate_(ExtensionsAPIClient::Get()->CreateManagementAPIDelegate()),
-      supervised_user_service_delegate_(
-          ExtensionsAPIClient::Get()->CreateSupervisedUserServiceDelegate()) {
+      supervised_user_extensions_delegate_(
+          ExtensionsAPIClient::Get()
+              ->CreateSupervisedUserExtensionsDelegate()) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this, management::OnInstalled::kEventName);
   event_router->RegisterObserver(this, management::OnUninstalled::kEventName);

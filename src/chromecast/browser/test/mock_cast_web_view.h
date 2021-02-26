@@ -17,9 +17,9 @@ class MockCastWebContents : public CastWebContents {
 
   // CastWebContents implementation
   MOCK_METHOD(int, tab_id, (), (const, override));
+  MOCK_METHOD(int, id, (), (const, override));
   MOCK_METHOD(content::WebContents*, web_contents, (), (const, override));
   MOCK_METHOD(PageState, page_state, (), (const, override));
-  MOCK_METHOD(QueryableDataHost*, queryable_data_host, (), (const, override));
   MOCK_METHOD(base::Optional<pid_t>,
               GetMainFrameRenderProcessPid,
               (),
@@ -37,16 +37,11 @@ class MockCastWebContents : public CastWebContents {
   MOCK_METHOD(void, BlockMediaLoading, (bool), (override));
   MOCK_METHOD(void, BlockMediaStarting, (bool), (override));
   MOCK_METHOD(void, EnableBackgroundVideoPlayback, (bool), (override));
-  MOCK_METHOD(void,
-              AddBeforeLoadJavaScript,
-              (base::StringPiece,
-               const std::vector<std::string>&,
-               base::StringPiece),
+  MOCK_METHOD(on_load_script_injector::OnLoadScriptInjectorHost<std::string>*,
+              script_injector,
+              (),
               (override));
-  MOCK_METHOD(void,
-              RemoveBeforeLoadJavaScript,
-              (base::StringPiece),
-              (override));
+  MOCK_METHOD(void, InjectScriptsIntoMainFrame, (), (override));
   MOCK_METHOD(void,
               PostMessageToMainFrame,
               (const std::string&,

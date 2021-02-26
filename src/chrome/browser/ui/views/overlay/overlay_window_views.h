@@ -9,7 +9,6 @@
 
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
@@ -28,7 +27,6 @@ class TrackImageButton;
 // The Chrome desktop implementation of OverlayWindow. This will only be
 // implemented in views, which will support all desktop platforms.
 class OverlayWindowViews : public content::OverlayWindow,
-                           public views::ButtonListener,
                            public views::Widget {
  public:
   static std::unique_ptr<content::OverlayWindow> Create(
@@ -48,7 +46,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Rect GetBounds() override;
   void UpdateVideoSize(const gfx::Size& natural_size) override;
   void SetPlaybackState(PlaybackState playback_state) override;
-  void SetAlwaysHidePlayPauseButton(bool is_visible) override;
+  void SetPlayPauseButtonVisibility(bool is_visible) override;
   void SetSkipAdButtonVisibility(bool is_visible) override;
   void SetNextTrackButtonVisibility(bool is_visible) override;
   void SetPreviousTrackButtonVisibility(bool is_visible) override;
@@ -67,9 +65,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Gets the bounds of the controls.
   gfx::Rect GetBackToTabControlsBounds();
@@ -183,9 +178,8 @@ class OverlayWindowViews : public content::OverlayWindow,
   // components has been initialized.
   bool has_been_shown_ = false;
 
-  // Whether or not the play/pause button will always be hidden. This is the
-  // case for media streams video that user is not allowed to play/pause.
-  bool always_hide_play_pause_button_ = false;
+  // Whether or not the play/pause button will be shown.
+  bool show_play_pause_button_ = false;
 
   // The upper and lower bounds of |current_size_|. These are determined by the
   // size of the primary display work area when Picture-in-Picture is initiated.

@@ -144,6 +144,7 @@ void BluetoothTestMac::InitWithFakeAdapter() {
   adapter_mac_->SetCentralManagerForTesting((id)mock_central_manager_->get());
   adapter_mac_->SetPowerStateFunctionForTesting(base::BindRepeating(
       &BluetoothTestMac::SetMockControllerPowerState, base::Unretained(this)));
+  adapter_mac_->SetPresentForTesting(true);
 }
 
 void BluetoothTestMac::ResetEventCounts() {
@@ -344,7 +345,9 @@ void BluetoothTestMac::SimulateGattDisconnectionError(BluetoothDevice* device) {
 
 void BluetoothTestMac::SimulateGattServicesDiscovered(
     BluetoothDevice* device,
-    const std::vector<std::string>& uuids) {
+    const std::vector<std::string>& uuids,
+    const std::vector<std::string>& blocked_uuids) {
+  DCHECK(blocked_uuids.empty()) << "Setting blocked_uuids unsupported.";
   AddServicesToDeviceMac(device, uuids);
   [GetMockCBPeripheral(device) mockDidDiscoverEvents];
 }

@@ -5,14 +5,20 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace content {
 class NavigationHandle;
 }  // namespace content
+
+namespace safe_browsing {
+class SafeBrowsingDatabaseManager;
+}
 
 namespace subresource_filter {
 
@@ -37,6 +43,20 @@ class SubresourceFilterClient {
       content::NavigationHandle* navigation_handle,
       mojom::ActivationLevel initial_activation_level,
       subresource_filter::ActivationDecision* decision) = 0;
+
+  // Called on the subresource filter client when an ads violation is detected.
+  virtual void OnAdsViolationTriggered(
+      content::RenderFrameHost* rfh,
+      mojom::AdsViolation triggered_violation) = 0;
+
+  // Returns the SafeBrowsingDatabaseManager instance associated with this
+  // client, or null if there is no such instance.
+  virtual const scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+  GetSafeBrowsingDatabaseManager() = 0;
+
+  // Invoked when the user has requested a reload of a page with blocked ads
+  // (e.g., via an infobar).
+  virtual void OnReloadRequested() = 0;
 };
 
 }  // namespace subresource_filter

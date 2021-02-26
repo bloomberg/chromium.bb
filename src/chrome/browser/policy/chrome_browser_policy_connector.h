@@ -66,8 +66,15 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
   }
 #endif
 
- protected:
   // BrowserPolicyConnector:
+  // Command line switch only supports Dev and Canary channel, trunk and browser
+  // tests on Win, Mac, Linux and Android.
+  bool IsCommandLineSwitchSupported() const override;
+
+  static void EnableCommandLineSupportForTesting();
+
+ protected:
+  // BrowserPolicyConnectorBase::
   std::vector<std::unique_ptr<policy::ConfigurationPolicyProvider>>
   CreatePolicyProviders() override;
 
@@ -84,6 +91,8 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
   MachineLevelUserCloudPolicyManager* machine_level_user_cloud_policy_manager_ =
       nullptr;
 #endif
+
+  ConfigurationPolicyProvider* command_line_provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserPolicyConnector);
 };

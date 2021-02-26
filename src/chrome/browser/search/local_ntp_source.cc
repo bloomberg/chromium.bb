@@ -31,13 +31,11 @@
 #include "chrome/browser/search/background/ntp_background_service_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/local_ntp_js_integrity.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/promos/promo_data.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/search/promos/promo_service_factory.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/search/search_suggest/search_suggest_data.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -57,6 +55,8 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/search/ntp_features.h"
+#include "components/search/search.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -69,12 +69,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "net/base/url_util.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/resources/grit/webui_generated_resources.h"
 #include "ui/resources/grit/webui_resources.h"
 #include "url/gurl.h"
 
@@ -113,7 +115,7 @@ const struct Resource{
 } kResources[] = {
     {"animations.css", IDR_LOCAL_NTP_ANIMATIONS_CSS, "text/css"},
     {"animations.js", IDR_LOCAL_NTP_ANIMATIONS_JS, "application/javascript"},
-    {"assert.js", IDR_WEBUI_JS_ASSERT, "application/javascript"},
+    {"assert.js", IDR_WEBUI_JS_ASSERT_JS, "application/javascript"},
     {"local-ntp-common.css", IDR_LOCAL_NTP_COMMON_CSS, "text/css"},
     {"customize.css", IDR_LOCAL_NTP_CUSTOMIZE_CSS, "text/css"},
     {"customize.js", IDR_LOCAL_NTP_CUSTOMIZE_JS, "application/javascript"},
@@ -139,7 +141,7 @@ const struct Resource{
     // added complexity.
     {chrome::kChromeSearchLocalNtpBackgroundFilename, kLocalResource,
      "image/jpg"},
-    {omnibox::kGoogleGIconResourceName, IDR_WEBUI_IMAGES_200_LOGO_GOOGLE_G,
+    {omnibox::kGoogleGIconResourceName, IDR_WEBUI_IMAGES_200_LOGO_GOOGLE_G_PNG,
      "image/png"},
     {omnibox::kBookmarkIconResourceName, IDR_LOCAL_NTP_ICONS_BOOKMARK,
      "image/svg+xml"},
@@ -168,7 +170,9 @@ const struct Resource{
     {omnibox::kExtensionAppIconResourceName, IDR_LOCAL_NTP_ICONS_EXTENSION_APP,
      "image/svg+xml"},
     {omnibox::kPageIconResourceName, IDR_LOCAL_NTP_ICONS_PAGE, "image/svg+xml"},
-    {omnibox::kSearchIconResourceName, IDR_WEBUI_IMAGES_ICON_SEARCH,
+    {omnibox::kSearchIconResourceName, IDR_WEBUI_IMAGES_ICON_SEARCH_SVG,
+     "image/svg+xml"},
+    {omnibox::kTrendingUpIconResourceName, IDR_LOCAL_NTP_ICONS_TRENDING_UP,
      "image/svg+xml"},
 };
 
@@ -625,15 +629,10 @@ class LocalNtpSource::SearchConfigurationProvider
 
     if (is_google) {
       config_data.SetBoolean("richerPicker", true);
-      config_data.SetBoolean("realboxEnabled",
-                             ntp_features::IsRealboxEnabled());
+      config_data.SetBoolean("realboxEnabled", true);
       config_data.SetBoolean("realboxMatchOmniboxTheme",
                              base::FeatureList::IsEnabled(
                                  ntp_features::kRealboxMatchOmniboxTheme));
-      config_data.SetBoolean(
-          "suggestionTransparencyEnabled",
-          base::FeatureList::IsEnabled(
-              omnibox::kOmniboxSuggestionTransparencyOptions));
       config_data.SetBoolean(
           "useGoogleGIcon",
           base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon));
@@ -991,7 +990,7 @@ void LocalNtpSource::StartDataRequest(
         base::StrCat({kSha256, VOICE_JS_INTEGRITY});
     // TODO(dbeam): why is this needed? How does it interact with
     // URLDataSource::GetContentSecurityPolicy*() methods?
-    replacements["contentSecurityPolicy"] = GetContentSecurityPolicy();
+    replacements["contentSecurityPolicy"] = GetContentSecurityPolicyForNTP();
 
     replacements["customizeMenu"] =
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL);
@@ -1046,9 +1045,8 @@ void LocalNtpSource::StartDataRequest(
                                     "\" as=\"image\">";
     }
 
-    bool realbox_enabled = ntp_features::IsRealboxEnabled();
-    replacements["hiddenIfRealboxEnabled"] = realbox_enabled ? "hidden" : "";
-    replacements["hiddenIfRealboxDisabled"] = realbox_enabled ? "" : "hidden";
+    replacements["hiddenIfRealboxEnabled"] = "hidden";
+    replacements["hiddenIfRealboxDisabled"] = "";
 
     bool use_google_g_icon =
         base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon);
@@ -1127,7 +1125,7 @@ bool LocalNtpSource::ShouldAddContentSecurityPolicy() {
   return false;
 }
 
-std::string LocalNtpSource::GetContentSecurityPolicy() {
+std::string LocalNtpSource::GetContentSecurityPolicyForNTP() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   GURL google_base_url = google_util::CommandLineGoogleBaseURL();
 
@@ -1148,8 +1146,9 @@ std::string LocalNtpSource::GetContentSecurityPolicy() {
       VOICE_JS_INTEGRITY,
       search_config_provider_->config_data_integrity().c_str());
 
-  return GetContentSecurityPolicyObjectSrc() +
-         GetContentSecurityPolicyStyleSrc() + GetContentSecurityPolicyImgSrc() +
+  return GetContentSecurityPolicy(network::mojom::CSPDirectiveName::ObjectSrc) +
+         GetContentSecurityPolicy(network::mojom::CSPDirectiveName::StyleSrc) +
+         GetContentSecurityPolicy(network::mojom::CSPDirectiveName::ImgSrc) +
          child_src_csp + script_src_csp;
 }
 

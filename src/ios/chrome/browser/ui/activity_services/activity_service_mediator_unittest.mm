@@ -4,9 +4,12 @@
 
 #import "ios/chrome/browser/ui/activity_services/activity_service_mediator.h"
 
-#include "components/bookmarks/browser/bookmark_model.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/testing_pref_service.h"
+#import "base/test/metrics/histogram_tester.h"
+#import "components/bookmarks/browser/bookmark_model.h"
+#import "components/prefs/pref_registry_simple.h"
+#import "components/prefs/pref_service.h"
+#import "components/prefs/testing_pref_service.h"
+#import "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/copy_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/find_in_page_activity.h"
@@ -15,26 +18,29 @@
 #import "ios/chrome/browser/ui/activity_services/activities/reading_list_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/request_desktop_or_mobile_site_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/send_tab_to_self_activity.h"
+#import "ios/chrome/browser/ui/activity_services/activity_scenario.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 #import "ios/chrome/browser/ui/activity_services/data/chrome_activity_image_source.h"
+#import "ios/chrome/browser/ui/activity_services/data/chrome_activity_item_source.h"
 #import "ios/chrome/browser/ui/activity_services/data/chrome_activity_item_thumbnail_generator.h"
+#import "ios/chrome/browser/ui/activity_services/data/chrome_activity_text_source.h"
 #import "ios/chrome/browser/ui/activity_services/data/chrome_activity_url_source.h"
 #import "ios/chrome/browser/ui/activity_services/data/share_image_data.h"
 #import "ios/chrome/browser/ui/activity_services/data/share_to_data.h"
+#import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
-#include "ios/web/common/user_agent.h"
-#include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "ios/web/common/user_agent.h"
+#import "testing/gtest_mac.h"
+#import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@protocol
-    HandlerProtocols <BrowserCommands, FindInPageCommands, QRGenerationCommands>
+@protocol HandlerProtocols <BrowserCommands, FindInPageCommands>
 @end
 
 class ActivityServiceMediatorTest : public PlatformTest {
@@ -45,13 +51,22 @@ class ActivityServiceMediatorTest : public PlatformTest {
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
 
     mocked_handler_ = OCMStrictProtocolMock(@protocol(HandlerProtocols));
+    mocked_bookmarks_handler_ =
+        OCMStrictProtocolMock(@protocol(BookmarksCommands));
+    mocked_qr_generation_handler_ =
+        OCMStrictProtocolMock(@protocol(QRGenerationCommands));
     mocked_thumbnail_generator_ =
         OCMStrictClassMock([ChromeActivityItemThumbnailGenerator class]);
 
-    mediator_ =
-        [[ActivityServiceMediator alloc] initWithHandler:mocked_handler_
-                                             prefService:pref_service_.get()
-                                           bookmarkModel:nil];
+    mediator_ = [[ActivityServiceMediator alloc]
+            initWithHandler:mocked_handler_
+           bookmarksHandler:mocked_bookmarks_handler_
+        qrGenerationHandler:mocked_qr_generation_handler_
+                prefService:pref_service_.get()
+              bookmarkModel:nil];
+
+    pref_service_->registry()->RegisterBooleanPref(prefs::kPrintingEnabled,
+                                                   true);
   }
 
   void VerifyTypes(NSArray* activities, NSArray* expected_types) {
@@ -62,19 +77,24 @@ class ActivityServiceMediatorTest : public PlatformTest {
   }
 
   id mocked_handler_;
+  id mocked_bookmarks_handler_;
+  id mocked_qr_generation_handler_;
   id mocked_thumbnail_generator_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  base::HistogramTester histograms_tester_;
 
   ActivityServiceMediator* mediator_;
 };
 
 // Tests that only one ChromeActivityURLSource is initialized from a ShareToData
-// instance.
-TEST_F(ActivityServiceMediatorTest, ActivityItemsForData_Success) {
+// instance without additional text.
+TEST_F(ActivityServiceMediatorTest,
+       ActivityItemsForData_NoAdditionalText_Success) {
   ShareToData* data =
       [[ShareToData alloc] initWithShareURL:GURL("https://www.google.com/")
                                  visibleURL:GURL("https://google.com/")
                                       title:@"Some Title"
+                             additionalText:nil
                             isOriginalTitle:YES
                             isPagePrintable:YES
                            isPageSearchable:YES
@@ -82,10 +102,36 @@ TEST_F(ActivityServiceMediatorTest, ActivityItemsForData_Success) {
                                   userAgent:web::UserAgentType::MOBILE
                          thumbnailGenerator:mocked_thumbnail_generator_];
 
-  NSArray<ChromeActivityURLSource*>* activityItems =
+  NSArray<id<ChromeActivityItemSource>>* activityItems =
       [mediator_ activityItemsForData:data];
 
   EXPECT_EQ(1U, [activityItems count]);
+  EXPECT_TRUE([activityItems[0] isKindOfClass:[ChromeActivityURLSource class]]);
+}
+
+// Tests that two activity items are created from a ShareToData instance with
+// additional text.
+TEST_F(ActivityServiceMediatorTest,
+       ActivityItemsForData_WithAdditionalText_Success) {
+  ShareToData* data =
+      [[ShareToData alloc] initWithShareURL:GURL("https://www.google.com/")
+                                 visibleURL:GURL("https://google.com/")
+                                      title:@"Some Title"
+                             additionalText:@"Foo, bar!"
+                            isOriginalTitle:YES
+                            isPagePrintable:YES
+                           isPageSearchable:YES
+                           canSendTabToSelf:YES
+                                  userAgent:web::UserAgentType::MOBILE
+                         thumbnailGenerator:mocked_thumbnail_generator_];
+
+  NSArray<id<ChromeActivityItemSource>>* activityItems =
+      [mediator_ activityItemsForData:data];
+
+  EXPECT_EQ(2U, [activityItems count]);
+  EXPECT_TRUE(
+      [activityItems[0] isKindOfClass:[ChromeActivityTextSource class]]);
+  EXPECT_TRUE([activityItems[1] isKindOfClass:[ChromeActivityURLSource class]]);
 }
 
 // Tests that only the CopyActivity and PrintActivity get added for a page that
@@ -95,6 +141,7 @@ TEST_F(ActivityServiceMediatorTest, ActivitiesForData_NotHTTPOrHTTPS) {
       [[ShareToData alloc] initWithShareURL:GURL("chrome://chromium.org/")
                                  visibleURL:GURL("chrome://chromium.org/")
                                       title:@"baz"
+                             additionalText:nil
                             isOriginalTitle:YES
                             isPagePrintable:YES
                            isPageSearchable:YES
@@ -114,6 +161,7 @@ TEST_F(ActivityServiceMediatorTest, ActivitiesForData_HTTP) {
       [[ShareToData alloc] initWithShareURL:GURL("http://example.com")
                                  visibleURL:GURL("http://example.com")
                                       title:@"baz"
+                             additionalText:nil
                             isOriginalTitle:YES
                             isPagePrintable:YES
                            isPageSearchable:YES
@@ -138,6 +186,7 @@ TEST_F(ActivityServiceMediatorTest, ActivitiesForData_HTTPS) {
       [[ShareToData alloc] initWithShareURL:GURL("https://example.com")
                                  visibleURL:GURL("https://example.com")
                                       title:@"baz"
+                             additionalText:nil
                             isOriginalTitle:YES
                             isPagePrintable:YES
                            isPageSearchable:YES
@@ -184,9 +233,8 @@ TEST_F(ActivityServiceMediatorTest, ActivitiesForImageData) {
 // Tests that computing the list of excluded activities works for one item.
 TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes_SingleItem) {
   ChromeActivityURLSource* activityURLSource = [[ChromeActivityURLSource alloc]
-        initWithShareURL:[NSURL URLWithString:@"https://example.com"]
-                 subject:@"Does not matter"
-      thumbnailGenerator:mocked_thumbnail_generator_];
+      initWithShareURL:[NSURL URLWithString:@"https://example.com"]
+               subject:@"Does not matter"];
 
   NSSet* computedExclusion =
       [mediator_ excludedActivityTypesForItems:@[ activityURLSource ]];
@@ -198,9 +246,8 @@ TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes_SingleItem) {
 // Tests that computing the list of excluded activities works for two item.
 TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes_TwoItems) {
   ChromeActivityURLSource* activityURLSource = [[ChromeActivityURLSource alloc]
-        initWithShareURL:[NSURL URLWithString:@"https://example.com"]
-                 subject:@"Does not matter"
-      thumbnailGenerator:mocked_thumbnail_generator_];
+      initWithShareURL:[NSURL URLWithString:@"https://example.com"]
+               subject:@"Does not matter"];
   ChromeActivityImageSource* activityImageSource =
       [[ChromeActivityImageSource alloc] initWithImage:[[UIImage alloc] init]
                                                  title:@"something"];
@@ -216,31 +263,77 @@ TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes_TwoItems) {
   EXPECT_TRUE([expectedSet isEqualToSet:computedExclusion]);
 }
 
+// Tests that successful action completion is wired to log a histogram.
 TEST_F(ActivityServiceMediatorTest, ShareFinished_Success) {
   // Since mocked_handler_ is a strict mock, any call to its methods would make
-  // the test fail. That is our success condition.
+  // the test fail.
   NSString* copyActivityString = @"com.google.chrome.copyActivity";
-  [mediator_ shareFinishedWithActivityType:copyActivityString
-                                 completed:YES
-                             returnedItems:@[]
-                                     error:nil];
+  [mediator_ shareFinishedWithScenario:ActivityScenario::TabShareButton
+                          activityType:copyActivityString
+                             completed:YES];
+
+  // Verify histogram is logged. Values are hardcoded as they are encapsulated
+  // away.
+  const char histogramName[] = "Mobile.Share.TabShareButton.Actions";
+  int copyAction = 3;
+  histograms_tester_.ExpectBucketCount(histogramName, copyAction, 1);
 }
 
 TEST_F(ActivityServiceMediatorTest, ShareFinished_Cancel) {
   // Since mocked_handler_ is a strict mock, any call to its methods would make
   // the test fail. That is our success condition.
   NSString* copyActivityString = @"com.google.chrome.copyActivity";
-  [mediator_ shareFinishedWithActivityType:copyActivityString
-                                 completed:NO
-                             returnedItems:@[]
-                                     error:nil];
+  [mediator_ shareFinishedWithScenario:ActivityScenario::TabShareButton
+                          activityType:copyActivityString
+                             completed:NO];
+
+  // Verify histogram is logged. Values are hardcoded as they are encapsulated
+  // away.
+  const char histogramName[] = "Mobile.Share.TabShareButton.Actions";
+  int cancelAction = 1;
+  histograms_tester_.ExpectBucketCount(histogramName, cancelAction, 1);
 }
 
 TEST_F(ActivityServiceMediatorTest, ShareCancelled) {
   // Since mocked_handler_ is a strict mock, any call to its methods would make
   // the test fail. That is our success condition.
-  [mediator_ shareFinishedWithActivityType:nil
-                                 completed:NO
-                             returnedItems:@[]
-                                     error:nil];
+  [mediator_ shareFinishedWithScenario:ActivityScenario::TabShareButton
+                          activityType:nil
+                             completed:NO];
+
+  // Verify histogram is logged. Values are hardcoded as they are encapsulated
+  // away.
+  const char histogramName[] = "Mobile.Share.TabShareButton.Actions";
+  int cancelAction = 1;
+  histograms_tester_.ExpectBucketCount(histogramName, cancelAction, 1);
+}
+
+TEST_F(ActivityServiceMediatorTest, PrintPrefDisabled) {
+  pref_service_->SetUserPref(prefs::kPrintingEnabled,
+                             std::make_unique<base::Value>(false));
+
+  ShareToData* data =
+      [[ShareToData alloc] initWithShareURL:GURL("http://example.com")
+                                 visibleURL:GURL("http://example.com")
+                                      title:@"baz"
+                             additionalText:nil
+                            isOriginalTitle:YES
+                            isPagePrintable:YES
+                           isPageSearchable:YES
+                           canSendTabToSelf:YES
+                                  userAgent:web::UserAgentType::MOBILE
+                         thumbnailGenerator:mocked_thumbnail_generator_];
+
+  NSArray* activities = [mediator_ applicationActivitiesForData:data];
+
+  // Verify activities' types.
+  VerifyTypes(activities, @[
+    [CopyActivity class], [SendTabToSelfActivity class],
+    [ReadingListActivity class], [BookmarkActivity class],
+    [GenerateQrCodeActivity class], [FindInPageActivity class],
+    [RequestDesktopOrMobileSiteActivity class]
+  ]);
+
+  // Verify activities' size.
+  EXPECT_EQ(7U, [activities count]);
 }

@@ -181,9 +181,11 @@ node = env.CommandSelLdrTestNacl(
     sel_ldr_flags=['-a'],
     stdout_golden=env.File('../hello_world/hello_world.stdout'),
     extra_deps=[pll_libc, pll_hello_world])
+# TODO(crbug.com/1101347): This test fails on ARM bots error:
+# "PLL Loader cannot find shared object: pll_libc.so"
 env.AddNodeToTestSuite(
     node, ['small_tests', 'toolchain_tests'],
-    'run_pll_hello_world_test', is_broken=is_broken)
+    'run_pll_hello_world_test', is_broken=is_broken or on_arm_hw)
 
 
 test_pll_c_finalized = MakePll(
@@ -201,6 +203,8 @@ node = env.CommandSelLdrTestNacl(
     sel_ldr_flags=['-a'],
     extra_deps=[pll_libc, test_pll_a, test_pll_b, test_pll_c,
                 pll_dependencies_test])
+# TODO(crbug.com/1101347): This test fails on ARM bots error:
+# "PLL Loader cannot find shared object: pll_libc.so"
 env.AddNodeToTestSuite(
     node, ['small_tests', 'toolchain_tests'], 'run_pll_dependencies_test',
-    is_broken=is_broken)
+    is_broken=is_broken or on_arm_hw)

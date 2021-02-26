@@ -21,7 +21,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/test_switches.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -157,7 +156,7 @@ class RenderThreadImplBrowserTest : public testing::Test,
     browser_threads_.reset(
         new BrowserTaskEnvironment(BrowserTaskEnvironment::REAL_IO_THREAD));
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-        base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+        GetIOThreadTaskRunner({});
 
     InitializeMojo();
     process_host_ =
@@ -176,9 +175,9 @@ class RenderThreadImplBrowserTest : public testing::Test,
     cmd->AppendSwitchASCII(switches::kNumRasterThreads, "1");
 
     // To avoid creating a GPU channel to query if
-    // accelerated_video_decode is blacklisted on older Android system
+    // accelerated_video_decode is blocklisted on older Android system
     // in RenderThreadImpl::Init().
-    cmd->AppendSwitch(switches::kIgnoreGpuBlacklist);
+    cmd->AppendSwitch(switches::kIgnoreGpuBlocklist);
 
     blink::Platform::InitializeBlink();
     auto main_thread_scheduler =
@@ -266,18 +265,6 @@ class RenderThreadImplBrowserTest : public testing::Test,
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImplBrowserTest);
 };
-
-// Check that InputHandlerManager outlives compositor thread because it uses
-// raw pointers to post tasks.
-// Disabled under LeakSanitizer due to memory leaks. http://crbug.com/348994
-// Disabled on Windows due to flakiness: http://crbug.com/728034.
-#if defined(OS_WIN)
-#define MAYBE_InputHandlerManagerDestroyedAfterCompositorThread \
-  DISABLED_InputHandlerManagerDestroyedAfterCompositorThread
-#else
-#define MAYBE_InputHandlerManagerDestroyedAfterCompositorThread \
-  InputHandlerManagerDestroyedAfterCompositorThread
-#endif
 
 // Disabled under LeakSanitizer due to memory leaks.
 TEST_F(RenderThreadImplBrowserTest,

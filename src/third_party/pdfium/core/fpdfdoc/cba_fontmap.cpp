@@ -28,22 +28,21 @@
 #include "core/fxge/cfx_fontmgr.h"
 #include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/cfx_substfont.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
 
-bool FindNativeTrueTypeFont(ByteString sFontFaceName) {
+bool FindNativeTrueTypeFont(ByteStringView sFontFaceName) {
   CFX_FontMgr* pFontMgr = CFX_GEModule::Get()->GetFontMgr();
   CFX_FontMapper* pFontMapper = pFontMgr->GetBuiltinMapper();
   pFontMapper->LoadInstalledFonts();
 
   for (const auto& font : pFontMapper->m_InstalledTTFonts) {
-    if (font.Compare(sFontFaceName.AsStringView()))
+    if (font.Compare(sFontFaceName))
       return true;
   }
   for (const auto& fontPair : pFontMapper->m_LocalizedTTFonts) {
-    if (fontPair.first.Compare(sFontFaceName.AsStringView()))
+    if (fontPair.first.Compare(sFontFaceName))
       return true;
   }
   return false;
@@ -55,7 +54,7 @@ RetainPtr<CPDF_Font> AddNativeTrueTypeFontToPDF(CPDF_Document* pDoc,
   if (!pDoc)
     return nullptr;
 
-  auto pFXFont = pdfium::MakeUnique<CFX_Font>();
+  auto pFXFont = std::make_unique<CFX_Font>();
   pFXFont->LoadSubst(sFontFaceName, true, 0, 0, 0,
                      FX_GetCodePageFromCharset(nCharset), false);
 
@@ -193,7 +192,7 @@ void CBA_FontMap::Initialize() {
 
 RetainPtr<CPDF_Font> CBA_FontMap::FindFontSameCharset(ByteString* sFontAlias,
                                                       int32_t nCharset) {
-  if (m_pAnnotDict->GetStringFor(pdfium::annotation::kSubtype) != "Widget")
+  if (m_pAnnotDict->GetNameFor(pdfium::annotation::kSubtype) != "Widget")
     return nullptr;
 
   const CPDF_Dictionary* pRootDict = m_pDocument->GetRoot();
@@ -230,7 +229,7 @@ RetainPtr<CPDF_Font> CBA_FontMap::FindResFontSameCharset(
       continue;
 
     CPDF_Dictionary* pElement = ToDictionary(it.second->GetDirect());
-    if (!pElement || pElement->GetStringFor("Type") != "Font")
+    if (!pElement || pElement->GetNameFor("Type") != "Font")
       continue;
 
     auto* pData = CPDF_DocPageData::FromDocument(m_pDocument.Get());
@@ -253,7 +252,7 @@ RetainPtr<CPDF_Font> CBA_FontMap::FindResFontSameCharset(
 RetainPtr<CPDF_Font> CBA_FontMap::GetAnnotDefaultFont(ByteString* sAlias) {
   CPDF_Dictionary* pAcroFormDict = nullptr;
   const bool bWidget =
-      (m_pAnnotDict->GetStringFor(pdfium::annotation::kSubtype) == "Widget");
+      (m_pAnnotDict->GetNameFor(pdfium::annotation::kSubtype) == "Widget");
   if (bWidget) {
     CPDF_Dictionary* pRootDict = m_pDocument->GetRoot();
     if (pRootDict)
@@ -380,7 +379,7 @@ int32_t CBA_FontMap::GetFontIndex(const ByteString& sFontName,
 int32_t CBA_FontMap::AddFontData(const RetainPtr<CPDF_Font>& pFont,
                                  const ByteString& sFontAlias,
                                  int32_t nCharset) {
-  auto pNewData = pdfium::MakeUnique<Data>();
+  auto pNewData = std::make_unique<Data>();
   pNewData->pFont = pFont;
   pNewData->sFontName = sFontAlias;
   pNewData->nCharset = nCharset;
@@ -416,7 +415,7 @@ ByteString CBA_FontMap::GetNativeFontName(int32_t nCharset) {
     nCharset = GetNativeCharset();
 
   ByteString sFontName = CFX_Font::GetDefaultFontNameByCharset(nCharset);
-  if (!FindNativeTrueTypeFont(sFontName))
+  if (!FindNativeTrueTypeFont(sFontName.AsStringView()))
     return ByteString();
 
   return sFontName;
@@ -432,7 +431,7 @@ ByteString CBA_FontMap::GetCachedNativeFontName(int32_t nCharset) {
   if (sNew.IsEmpty())
     return ByteString();
 
-  auto pNewData = pdfium::MakeUnique<Native>();
+  auto pNewData = std::make_unique<Native>();
   pNewData->nCharset = nCharset;
   pNewData->sFontName = sNew;
   m_NativeFont.push_back(std::move(pNewData));

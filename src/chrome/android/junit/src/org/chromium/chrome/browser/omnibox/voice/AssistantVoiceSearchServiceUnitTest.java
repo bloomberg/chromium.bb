@@ -5,8 +5,11 @@
 package org.chromium.chrome.browser.omnibox.voice;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
+
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.ASSISTANT_LAST_VERSION;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.ASSISTANT_VOICE_SEARCH_ENABLED;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.ASSISTANT_VOICE_SEARCH_SUPPORTED;
 
 import android.app.Activity;
 import android.content.Context;
@@ -28,28 +31,29 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.SysUtils;
+import org.chromium.base.BaseSwitches;
+import org.chromium.base.metrics.test.ShadowRecordHistogram;
+import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.gsa.GSAState;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.search_engines.TemplateUrlService;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * Tests for AssistantVoiceSearchService.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE,
+        shadows = {CustomShadowAsyncTask.class, ShadowRecordHistogram.class})
 @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH)
+@CommandLineFlags.Add(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE)
 public class AssistantVoiceSearchServiceUnitTest {
     AssistantVoiceSearchService mAssistantVoiceSearchService;
 
@@ -65,38 +69,44 @@ public class AssistantVoiceSearchServiceUnitTest {
     @Mock
     ExternalAuthUtils mExternalAuthUtils;
 
+    SharedPreferencesManager mSharedPreferencesManager;
     PackageInfo mPackageInfo;
     Context mContext;
 
+    private static class TestDeferredStartupHandler extends DeferredStartupHandler {
+        @Override
+        public void addDeferredTask(Runnable deferredTask) {
+            deferredTask.run();
+        }
+    }
+
     @Before
     public void setUp() throws NameNotFoundException {
+        ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
+        DeferredStartupHandler.setInstanceForTests(new TestDeferredStartupHandler());
+        mSharedPreferencesManager = SharedPreferencesManager.getInstance();
 
         mContext = Mockito.spy(Robolectric.buildActivity(Activity.class).setup().get());
 
         doReturn(true).when(mExternalAuthUtils).isChromeGoogleSigned();
         doReturn(true).when(mExternalAuthUtils).isGoogleSigned(IntentHandler.PACKAGE_GSA);
-
-        mPackageInfo = new PackageInfo();
-        mPackageInfo.versionName = AssistantVoiceSearchService.DEFAULT_ASSISTANT_AGSA_MIN_VERSION;
-        doReturn(mPackageInfo).when(mPackageManager).getPackageInfo(IntentHandler.PACKAGE_GSA, 0);
-        doReturn(mPackageManager).when(mContext).getPackageManager();
-
         doReturn(true).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
-        doReturn(false).when(mGsaState).isAgsaVersionBelowMinimum(anyString(), anyString());
+        doReturn(false).when(mGsaState).isAgsaVersionBelowMinimum(any(), any());
         doReturn(true).when(mGsaState).canAgsaHandleIntent(any());
+        doReturn(true).when(mGsaState).agsaSupportsAssistantVoiceSearch();
+        doReturn(true).when(mGsaState).doesGsaAccountMatchChrome();
+        mSharedPreferencesManager.writeBoolean(ASSISTANT_VOICE_SEARCH_ENABLED, true);
 
-        SysUtils.setAmountOfPhysicalMemoryKBForTesting(
-                AssistantVoiceSearchService.DEFAULT_ASSISTANT_MIN_MEMORY_MB
-                * ConversionUtils.KILOBYTES_PER_MEGABYTE);
-
-        mAssistantVoiceSearchService = new AssistantVoiceSearchService(
-                mContext, mExternalAuthUtils, mTemplateUrlService, mGsaState, null);
+        mAssistantVoiceSearchService = new AssistantVoiceSearchService(mContext, mExternalAuthUtils,
+                mTemplateUrlService, mGsaState, null, mSharedPreferencesManager);
     }
 
     @After
     public void tearDown() {
-        SysUtils.resetForTesting();
+        mSharedPreferencesManager.removeKey(ASSISTANT_VOICE_SEARCH_SUPPORTED);
+        mSharedPreferencesManager.removeKey(ASSISTANT_LAST_VERSION);
+        AssistantVoiceSearchService.setAgsaSupportsAssistantVoiceSearchForTesting(null);
     }
 
     @Test
@@ -107,10 +117,22 @@ public class AssistantVoiceSearchServiceUnitTest {
 
     @Test
     @Feature("OmniboxAssistantVoiceSearch")
+    public void testStartVoiceRecognition_StartsAssistantVoiceSearch_DisabledByPref() {
+        mSharedPreferencesManager.writeBoolean(ASSISTANT_VOICE_SEARCH_ENABLED, false);
+        Assert.assertFalse(mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch());
+    }
+
+    @Test
+    @Feature("OmniboxAssistantVoiceSearch")
     public void testStartVoiceRecognition_StartsAssistantVoiceSearch_ChromeNotSigned() {
         doReturn(false).when(mExternalAuthUtils).isChromeGoogleSigned();
 
         Assert.assertFalse(mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch());
+        Assert.assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        AssistantVoiceSearchService.USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
+                        AssistantVoiceSearchService.EligibilityFailureReason
+                                .CHROME_NOT_GOOGLE_SIGNED));
     }
 
     @Test
@@ -119,66 +141,82 @@ public class AssistantVoiceSearchServiceUnitTest {
         doReturn(false).when(mExternalAuthUtils).isGoogleSigned(IntentHandler.PACKAGE_GSA);
 
         Assert.assertFalse(mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch());
+        Assert.assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        AssistantVoiceSearchService.USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
+                        AssistantVoiceSearchService.EligibilityFailureReason
+                                .AGSA_NOT_GOOGLE_SIGNED));
     }
 
     @Test
     @Feature("OmniboxAssistantVoiceSearch")
-    public void testAssistantEligibility_MimimumSpecs() {
-        Assert.assertTrue(mAssistantVoiceSearchService.isDeviceEligibleForAssistant(
-                AssistantVoiceSearchService.DEFAULT_ASSISTANT_MIN_MEMORY_MB,
-                AssistantVoiceSearchService.DEFAULT_ASSISTANT_LOCALES.iterator().next()));
+    public void testStartVoiceRecognition_StartsAssistantVoiceSearch_AGSARotiChromeNotEnabled() {
+        AssistantVoiceSearchService.setAgsaSupportsAssistantVoiceSearchForTesting(false);
+
+        Assert.assertFalse(mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch());
+        Assert.assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        AssistantVoiceSearchService.USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
+                        AssistantVoiceSearchService.EligibilityFailureReason
+                                .AGSA_DOESNT_SUPPORT_VOICE_SEARCH));
     }
 
     @Test
     @Feature("OmniboxAssistantVoiceSearch")
-    public void testAssistantEligibility_MemoryTooLow() {
-        Assert.assertFalse(mAssistantVoiceSearchService.isDeviceEligibleForAssistant(
-                AssistantVoiceSearchService.DEFAULT_ASSISTANT_MIN_MEMORY_MB - 1,
-                AssistantVoiceSearchService.DEFAULT_ASSISTANT_LOCALES.iterator().next()));
+    public void
+    testStartVoiceRecognition_StartsAssistantVoiceSearch_AGSARotiChromeNotEnabledNotComplete() {
+        AssistantVoiceSearchService.setAgsaSupportsAssistantVoiceSearchForTesting(null);
+
+        Assert.assertFalse(mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch());
+        Assert.assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        AssistantVoiceSearchService.USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
+                        AssistantVoiceSearchService.EligibilityFailureReason
+                                .AGSA_DOESNT_SUPPORT_VOICE_SEARCH_CHECK_NOT_COMPLETE));
     }
 
     @Test
     @Feature("OmniboxAssistantVoiceSearch")
-    public void testAssistantEligibility_UnsupportedLocale() {
-        Assert.assertFalse(mAssistantVoiceSearchService.isDeviceEligibleForAssistant(
-                AssistantVoiceSearchService.DEFAULT_ASSISTANT_MIN_MEMORY_MB, new Locale("br")));
+    public void testStartVoiceRecognition_StartsAssistantVoiceSearch_AccountMismatch() {
+        doReturn(false).when(mGsaState).doesGsaAccountMatchChrome();
+
+        Assert.assertFalse(mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch());
+        Assert.assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        AssistantVoiceSearchService.USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
+                        AssistantVoiceSearchService.EligibilityFailureReason.ACCOUNT_MISMATCH));
     }
 
     @Test
     @Feature("OmniboxAssistantVoiceSearch")
-    public void parseLocalesFromString_SingleValid() {
-        String encodedLocales = "en-us";
-        Set<Locale> locales = new HashSet<>(Arrays.asList(new Locale("en", "us")));
+    public void testStartVoiceRecognition_StartsAssistantVoiceSearch_TemporaryAccountMismatch() {
+        doReturn(false).when(mGsaState).doesGsaAccountMatchChrome();
 
-        Assert.assertEquals(
-                locales, AssistantVoiceSearchService.parseLocalesFromString(encodedLocales));
+        Assert.assertFalse(mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch());
+        Assert.assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        AssistantVoiceSearchService.USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
+                        AssistantVoiceSearchService.EligibilityFailureReason.ACCOUNT_MISMATCH));
+
+        doReturn(true).when(mGsaState).doesGsaAccountMatchChrome();
+        Assert.assertTrue(mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch());
+        Assert.assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        AssistantVoiceSearchService.USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
+                        AssistantVoiceSearchService.EligibilityFailureReason.ACCOUNT_MISMATCH));
     }
 
     @Test
     @Feature("OmniboxAssistantVoiceSearch")
-    public void parseLocalesFromString_SingleInvalid() {
-        String encodedLocales = "en)us";
-        Assert.assertEquals(AssistantVoiceSearchService.DEFAULT_ASSISTANT_LOCALES,
-                AssistantVoiceSearchService.parseLocalesFromString(encodedLocales));
-    }
+    public void testAssistantEligibility_VersionTooLow() {
+        doReturn(true).when(mGsaState).isAgsaVersionBelowMinimum(any(), any());
 
-    @Test
-    @Feature("OmniboxAssistantVoiceSearch")
-    public void parseLocalesFromString_MultipleValid() {
-        String encodedLocales = "en-us,es-us,hi-in";
-        Set<Locale> locales = new HashSet<>(Arrays.asList(
-                new Locale("en", "us"), new Locale("es", "us"), new Locale("hi", "in")));
-
-        Assert.assertEquals(
-                locales, AssistantVoiceSearchService.parseLocalesFromString(encodedLocales));
-    }
-
-    @Test
-    @Feature("OmniboxAssistantVoiceSearch")
-    public void parseLocalesFromString_MultipleLastInvalid() {
-        String encodedLocales = "en-us,es-us,hi*in";
-        Assert.assertEquals(AssistantVoiceSearchService.DEFAULT_ASSISTANT_LOCALES,
-                AssistantVoiceSearchService.parseLocalesFromString(encodedLocales));
+        Assert.assertFalse(mAssistantVoiceSearchService.isDeviceEligibleForAssistant());
+        Assert.assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        AssistantVoiceSearchService.USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
+                        AssistantVoiceSearchService.EligibilityFailureReason
+                                .AGSA_VERSION_BELOW_MINIMUM));
     }
 
     @Test

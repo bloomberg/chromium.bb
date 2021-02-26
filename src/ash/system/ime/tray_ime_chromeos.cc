@@ -16,7 +16,6 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/tray_detailed_view.h"
-#include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/tray/tri_view.h"
@@ -53,29 +52,23 @@ void IMEDetailedView::ResetImeListView() {
   controlled_setting_icon_ = nullptr;
 }
 
-void IMEDetailedView::HandleButtonPressed(views::Button* sender,
-                                          const ui::Event& event) {
-  if (sender == settings_button_)
-    ShowSettings();
-  else
-    ImeListView::HandleButtonPressed(sender, event);
-}
-
 void IMEDetailedView::CreateExtraTitleRowButtons() {
   if (ime_controller_->managed_by_policy()) {
     controlled_setting_icon_ = TrayPopupUtils::CreateMainImageView();
     controlled_setting_icon_->SetImage(gfx::CreateVectorIcon(
         kSystemMenuBusinessIcon,
         AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kIconPrimary,
-            AshColorProvider::AshColorMode::kLight)));
-    controlled_setting_icon_->set_tooltip_text(
+            AshColorProvider::ContentLayerType::kIconColorPrimary)));
+    controlled_setting_icon_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME_MANAGED));
     tri_view()->AddView(TriView::Container::END, controlled_setting_icon_);
   }
 
   tri_view()->SetContainerVisible(TriView::Container::END, true);
-  settings_button_ = CreateSettingsButton(IDS_ASH_STATUS_TRAY_IME_SETTINGS);
+  settings_button_ =
+      CreateSettingsButton(base::BindRepeating(&IMEDetailedView::ShowSettings,
+                                               base::Unretained(this)),
+                           IDS_ASH_STATUS_TRAY_IME_SETTINGS);
   tri_view()->AddView(TriView::Container::END, settings_button_);
 }
 

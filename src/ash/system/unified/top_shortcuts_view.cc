@@ -14,13 +14,13 @@
 #include "ash/shell.h"
 #include "ash/shutdown_controller_impl.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/collapse_button.h"
 #include "ash/system/unified/sign_out_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
-#include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/system/unified/user_chooser_detailed_view_controller.h"
 #include "ash/system/unified/user_chooser_view.h"
 #include "base/numerics/ranges.h"
@@ -32,21 +32,22 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_class_properties.h"
+
 namespace ash {
 
 namespace {
 
 class UserAvatarButton : public views::Button {
  public:
-  UserAvatarButton(views::ButtonListener* listener);
+  explicit UserAvatarButton(PressedCallback callback);
   ~UserAvatarButton() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserAvatarButton);
 };
 
-UserAvatarButton::UserAvatarButton(views::ButtonListener* listener)
-    : Button(listener) {
+UserAvatarButton::UserAvatarButton(PressedCallback callback)
+    : Button(std::move(callback)) {
   SetID(VIEW_ID_USER_AVATAR_BUTTON);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(kUnifiedCircularButtonFocusPadding));
@@ -54,10 +55,10 @@ UserAvatarButton::UserAvatarButton(views::ButtonListener* listener)
 
   SetTooltipText(GetUserItemAccessibleString(0 /* user_index */));
   SetInstallFocusRingOnFocus(true);
-  SetFocusForPlatform();
 
   views::InstallCircleHighlightPathGenerator(this);
-  focus_ring()->SetColor(UnifiedSystemTrayView::GetFocusRingColor());
+  focus_ring()->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kFocusRingColor));
 }
 
 }  // namespace
@@ -156,9 +157,8 @@ void TopShortcutButtonContainer::AddSignOutButton(
   sign_out_button_ = sign_out_button;
 }
 
-TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
-    : controller_(controller) {
-  DCHECK(controller_);
+TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller) {
+  DCHECK(controller);
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, kUnifiedTopShortcutPadding,
@@ -176,31 +176,41 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   bool can_lock_screen = shell->session_controller()->CanLockScreen();
 
   if (!is_on_login_screen) {
-    user_avatar_button_ = new UserAvatarButton(this);
+    user_avatar_button_ = new UserAvatarButton(
+        base::BindRepeating(&UnifiedSystemTrayController::ShowUserChooserView,
+                            base::Unretained(controller)));
     user_avatar_button_->SetEnabled(
         UserChooserDetailedViewController::IsUserChooserEnabled());
     container_->AddUserAvatarButton(user_avatar_button_);
 
-    sign_out_button_ = new SignOutButton(this);
+    sign_out_button_ = new SignOutButton(
+        base::BindRepeating(&UnifiedSystemTrayController::HandleSignOutAction,
+                            base::Unretained(controller)));
     container_->AddSignOutButton(sign_out_button_);
   }
 
   bool reboot = shell->shutdown_controller()->reboot_on_shutdown();
   power_button_ = new TopShortcutButton(
-      this, kUnifiedMenuPowerIcon,
+      base::BindRepeating(&UnifiedSystemTrayController::HandlePowerAction,
+                          base::Unretained(controller)),
+      kUnifiedMenuPowerIcon,
       reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN);
   power_button_->SetID(VIEW_ID_POWER_BUTTON);
   container_->AddChildView(power_button_);
 
   if (can_show_settings && can_lock_screen) {
-    lock_button_ = new TopShortcutButton(this, kUnifiedMenuLockIcon,
-                                         IDS_ASH_STATUS_TRAY_LOCK);
+    lock_button_ = new TopShortcutButton(
+        base::BindRepeating(&UnifiedSystemTrayController::HandleLockAction,
+                            base::Unretained(controller)),
+        kUnifiedMenuLockIcon, IDS_ASH_STATUS_TRAY_LOCK);
     container_->AddChildView(lock_button_);
   }
 
   if (can_show_settings) {
-    settings_button_ = new TopShortcutButton(this, kUnifiedMenuSettingsIcon,
-                                             IDS_ASH_STATUS_TRAY_SETTINGS);
+    settings_button_ = new TopShortcutButton(
+        base::BindRepeating(&UnifiedSystemTrayController::HandleSettingsAction,
+                            base::Unretained(controller)),
+        kUnifiedMenuSettingsIcon, IDS_ASH_STATUS_TRAY_SETTINGS);
     container_->AddChildView(settings_button_);
     local_state_pref_change_registrar_.Init(Shell::Get()->local_state());
     local_state_pref_change_registrar_.Add(
@@ -214,7 +224,9 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   // container flex occupying all remaining space.
   layout->SetFlexForView(container_, 1);
 
-  collapse_button_ = new CollapseButton(this);
+  collapse_button_ = new CollapseButton(
+      base::BindRepeating(&UnifiedSystemTrayController::ToggleExpanded,
+                          base::Unretained(controller)));
   AddChildView(collapse_button_);
 }
 
@@ -225,22 +237,6 @@ void TopShortcutsView::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 
 void TopShortcutsView::SetExpandedAmount(double expanded_amount) {
   collapse_button_->SetExpandedAmount(expanded_amount);
-}
-
-void TopShortcutsView::ButtonPressed(views::Button* sender,
-                                     const ui::Event& event) {
-  if (sender == user_avatar_button_)
-    controller_->ShowUserChooserView();
-  else if (sender == sign_out_button_)
-    controller_->HandleSignOutAction();
-  else if (sender == lock_button_)
-    controller_->HandleLockAction();
-  else if (sender == settings_button_)
-    controller_->HandleSettingsAction();
-  else if (sender == power_button_)
-    controller_->HandlePowerAction();
-  else if (sender == collapse_button_)
-    controller_->ToggleExpanded();
 }
 
 const char* TopShortcutsView::GetClassName() const {

@@ -5,6 +5,7 @@
 #include "components/exo/wm_helper_chromeos.h"
 #include "components/exo/wm_helper.h"
 
+#include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -59,6 +60,16 @@ void WMHelperChromeOS::AddDisplayConfigurationObserver(
 void WMHelperChromeOS::RemoveDisplayConfigurationObserver(
     ash::WindowTreeHostManager::Observer* observer) {
   ash::Shell::Get()->window_tree_host_manager()->RemoveObserver(observer);
+}
+
+void WMHelperChromeOS::AddFrameThrottlingObserver() {
+  ash::Shell::Get()->frame_throttling_controller()->AddArcObserver(
+      &vsync_timing_manager_);
+}
+
+void WMHelperChromeOS::RemoveFrameThrottlingObserver() {
+  ash::Shell::Get()->frame_throttling_controller()->RemoveArcObserver(
+      &vsync_timing_manager_);
 }
 
 void WMHelperChromeOS::AddActivationObserver(
@@ -120,11 +131,10 @@ void WMHelperChromeOS::OnDragExited() {
 
 int WMHelperChromeOS::OnPerformDrop(const ui::DropTargetEvent& event,
                                     std::unique_ptr<ui::OSExchangeData> data) {
+  int valid_operation = ui::DragDropTypes::DRAG_NONE;
   for (DragDropObserver& observer : drag_drop_observers_)
-    observer.OnPerformDrop(event);
-  // TODO(hirono): Return the correct result instead of always returning
-  // DRAG_MOVE.
-  return ui::DragDropTypes::DRAG_MOVE;
+    valid_operation = valid_operation | observer.OnPerformDrop(event);
+  return valid_operation;
 }
 
 void WMHelperChromeOS::AddVSyncParameterObserver(

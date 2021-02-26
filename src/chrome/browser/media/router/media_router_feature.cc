@@ -16,10 +16,10 @@
 #include "ui/base/buildflags.h"
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
+#include "media/base/media_switches.h"
 #endif  // defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_ANDROID)
@@ -29,6 +29,13 @@
 namespace media_router {
 
 #if !defined(OS_ANDROID)
+#if !defined(OFFICIAL_BUILD)
+// Enables the media router. Can be useful to disable for local
+// development on Mac because DIAL local discovery opens a local port
+// and triggers a permission prompt. Only toggleable for developer builds.
+const base::Feature kMediaRouter{"MediaRouter",
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // !defined(OFFICIAL_BUILD)
 // Controls if browser side DialMediaRouteProvider is enabled.
 const base::Feature kDialMediaRouteProvider{"DialMediaRouteProvider",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -36,7 +43,11 @@ const base::Feature kCastMediaRouteProvider{"CastMediaRouteProvider",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kCastAllowAllIPsFeature{"CastAllowAllIPs",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
+const base::Feature kGlobalMediaControlsCastStartStop{
+    "GlobalMediaControlsCastStartStop", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAllowAllSitesToInitiateMirroring{
+    "AllowAllSitesToInitiateMirroring", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 namespace {
@@ -49,6 +60,11 @@ const PrefService::Preference* GetMediaRouterPref(
 #endif  // defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 
 bool MediaRouterEnabled(content::BrowserContext* context) {
+#if !defined(OFFICIAL_BUILD) && !defined(OS_ANDROID)
+  if (!base::FeatureList::IsEnabled(kMediaRouter))
+    return false;
+#endif  // !defined(OFFICIAL_BUILD) && !defined(OS_ANDROID)
+
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
   const PrefService::Preference* pref = GetMediaRouterPref(context);
   // Only use the pref value if it set from a mandatory policy.
@@ -111,6 +127,13 @@ bool DialMediaRouteProviderEnabled() {
 
 bool CastMediaRouteProviderEnabled() {
   return base::FeatureList::IsEnabled(kCastMediaRouteProvider);
+}
+
+bool GlobalMediaControlsCastStartStopEnabled() {
+  return base::FeatureList::IsEnabled(kGlobalMediaControlsCastStartStop) &&
+         base::FeatureList::IsEnabled(media::kGlobalMediaControlsForCast) &&
+         base::FeatureList::IsEnabled(
+             media::kGlobalMediaControlsOverlayControls);
 }
 
 #endif  // !defined(OS_ANDROID)

@@ -11,6 +11,7 @@
 
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "core/fxge/cfx_textrenderoptions.h"
 #include "fxbarcode/BC_Library.h"
 #include "fxbarcode/BC_Writer.h"
 #include "fxbarcode/utils.h"
@@ -22,6 +23,9 @@ class TextCharPos;
 
 class CBC_OneDimWriter : public CBC_Writer {
  public:
+  static constexpr CFX_TextRenderOptions GetTextRenderOptions() {
+    return CFX_TextRenderOptions(CFX_TextRenderOptions::kLcd);
+  }
   static bool HasValidContentSize(WideStringView contents);
 
   CBC_OneDimWriter();

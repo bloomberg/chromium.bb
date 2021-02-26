@@ -160,7 +160,14 @@ def RunDsymUtil(dsym_path_prefix, full_args):
 
   # Remove old dSYMs before invoking dsymutil.
   _RemovePath(dsym_out)
-  subprocess.check_call(DSYMUTIL_INVOKE + ['-o', dsym_out, linker_out])
+
+  tools_paths = _FindToolsPaths(full_args)
+  if os.environ.get('PATH'):
+    tools_paths.append(os.environ['PATH'])
+  dsymutil_env = os.environ.copy()
+  dsymutil_env['PATH'] = ':'.join(tools_paths)
+  subprocess.check_call(DSYMUTIL_INVOKE + ['-o', dsym_out, linker_out],
+                        env=dsymutil_env)
   return [dsym_out]
 
 
@@ -259,6 +266,19 @@ def _FindLinkerOutput(full_args):
   return full_args[output_flag_index + 1]
 
 
+def _FindToolsPaths(full_args):
+  """Finds all paths where the script should look for additional tools."""
+  paths = []
+  for idx, arg in enumerate(full_args):
+    if arg in ['-B', '--prefix']:
+      paths.append(full_args[idx + 1])
+    elif arg.startswith('-B'):
+      paths.append(arg[2:])
+    elif arg.startswith('--prefix='):
+      paths.append(arg[9:])
+  return paths
+
+
 def _RemovePath(path):
   """Removes the file or directory at |path| if it exists."""
   if os.path.exists(path):
@@ -278,8 +298,8 @@ _LINKER_DRIVER_ACTIONS = [
     ('dsymutilpath,', SetDsymutilPath),
     ('dsym,', RunDsymUtil),
     ('unstripped,', RunSaveUnstripped),
-    ('strip,', RunStrip),
     ('strippath,', SetStripPath),
+    ('strip,', RunStrip),
 ]
 
 

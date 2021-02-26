@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_
 
 #include "ash/ash_export.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -102,13 +103,17 @@ constexpr int kSystemMenuCollapseExpandAnimationDurationMs = 500;
 
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);
 constexpr gfx::Insets kUnifiedSystemInfoViewPadding(0, 16, 16, 16);
-constexpr gfx::Insets kUnifiedManagedDeviceViewPadding(4, 19, 4, 16);
+constexpr gfx::Insets kUnifiedManagedDeviceViewPadding(0, 16, 11, 16);
 constexpr gfx::Insets kUnifiedSliderRowPadding(0, 16, 8, 16);
 constexpr gfx::Insets kUnifiedSliderBubblePadding(12, 0, 4, 0);
 constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
-constexpr gfx::Insets kMicGainSliderViewPadding(0, 52, 0, 0);
-constexpr gfx::Insets kMicGainSliderPadding(0, 0, 0, 48);
+constexpr gfx::Insets kMicGainSliderViewPadding(0, 52, 8, 0);
+constexpr gfx::Insets kMicGainSliderPadding(0, 8, 0, 48);
 constexpr int kMicGainSliderViewSpacing = 8;
+
+constexpr int kTrayRadioButtonInterSpacing = 20;
+constexpr gfx::Insets kTrayRadioButtonPadding(16, 20, 0, 0);
+constexpr gfx::Insets kTraySubLabelPadding(4, 56, 16, 16);
 
 constexpr int kMessageCenterCollapseThreshold = 175;
 constexpr int kStackedNotificationBarHeight = 32;
@@ -118,9 +123,13 @@ constexpr int kUnifiedSliderViewSpacing = 16;
 constexpr int kUnifiedMenuPadding = 8;
 constexpr int kUnifiedMessageCenterBubbleSpacing = 8;
 constexpr int kUnifiedNotificationCenterSpacing = 16;
-constexpr int kUnifiedTrayIconSize = 20;
+constexpr int kUnifiedTrayIconSize = 18;
+constexpr int kUnifiedTrayTextTopPadding = 2;
+constexpr int kUnifiedTrayTextRightPadding = 1;
+constexpr int kUnifiedTrayTimeLeftPadding = 1;
 constexpr int kUnifiedTraySpacingBetweenIcons = 6;
-constexpr int kUnifiedTrayBatteryWidth = 10;
+constexpr int kUnifiedTrayBatteryWidth = 12;
+constexpr int kUnifiedTrayBatteryBottomPadding = 1;
 constexpr int kUnifiedTrayCornerRadius = 16;
 constexpr int kUnifiedTrayContentPadding = 12;
 constexpr int kUnifiedTopShortcutSpacing = 16;
@@ -137,7 +146,7 @@ constexpr gfx::Insets kStackingNotificationClearAllButtonPadding(8, 16);
 // A dark disc with |kTrayItemSize| diameter is drawn in the background.
 constexpr int kTrayTopShortcutButtonIconSize = 20;
 
-constexpr int kUnifiedManagedDeviceSpacing = 4;
+constexpr int kUnifiedManagedDeviceSpacing = 8;
 constexpr int kUnifiedSystemInfoHeight = 16;
 constexpr int kUnifiedSystemInfoSpacing = 8;
 constexpr gfx::Insets kUnifiedSystemInfoDateViewPadding(3);
@@ -160,10 +169,10 @@ constexpr double kNotificationCenterDragExpandThreshold = 0.8;
 constexpr gfx::Size kUnifiedFeaturePodIconSize(46, 46);
 constexpr gfx::Size kUnifiedFeaturePodSize(112, 94);
 constexpr gfx::Size kUnifiedFeaturePodCollapsedSize(46, 46);
-constexpr gfx::Insets kUnifiedFeaturePodIconPadding(4);
+constexpr gfx::Insets kUnifiedFeaturePodIconPadding(5);
 constexpr gfx::Insets kUnifiedFeaturePodHoverPadding(2);
-constexpr int kUnifiedFeaturePodVectorIconSize = 20;
-constexpr int kUnifiedFeaturePodLabelWidth = 80;
+constexpr int kUnifiedFeaturePodVectorIconSize = 18;
+constexpr int kUnifiedFeaturePodLabelWidth = 85;
 constexpr int kUnifiedFeaturePodSpacing = 6;
 constexpr int kUnifiedFeaturePodHoverCornerRadius = 4;
 constexpr int kUnifiedFeaturePodVerticalPadding = 24;
@@ -186,6 +195,7 @@ constexpr int kUnifiedFeaturePodMinRows = 1;
 constexpr int kUnifiedFeaturePodMaxItemsInCollapsed = 5;
 constexpr int kUnifiedFeaturePodsPageSpacing = 48;
 constexpr int kUnifiedNotificationSeparatorThickness = 1;
+constexpr int kPageIndicatorViewMaxHeight = 20;
 
 // Constants used in system tray page transition animations.
 constexpr double kCollapseThreshold = 0.3;
@@ -203,7 +213,8 @@ constexpr int kUnifiedUserChooserRowHeight = 64;
 constexpr int kUnifiedTopShortcutButtonDefaultSpacing = 16;
 constexpr int kUnifiedTopShortcutButtonMinSpacing = 4;
 
-// Constants used in the title row of a detailed view in UnifiedSystemTray.
+// Constants used in the detailed view in UnifiedSystemTray.
+constexpr gfx::Insets kUnifiedDetailedViewPadding(0, 0, 8, 0);
 constexpr gfx::Insets kUnifiedDetailedViewTitlePadding(0, 0, 0, 16);
 constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
 
@@ -225,6 +236,13 @@ constexpr int kPrivacyScreenToastMainLabelFontSize = 14;
 constexpr int kPrivacyScreenToastSubLabelFontSize = 13;
 constexpr gfx::Insets kPrivacyScreenToastInsets(10, 16);
 constexpr int kPrivacyScreenToastSpacing = 16;
+
+// Constants used for media tray.
+constexpr int kMediaTrayPadding = 8;
+
+// There is no active user session during oobe, which means it doesn't support
+// dark mode. Sets the icon color to be constant.
+constexpr SkColor kIconColorInOobe = gfx::kGoogleGrey700;
 
 }  // namespace ash
 

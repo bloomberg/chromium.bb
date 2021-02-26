@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser.input;
 
-import android.support.test.filters.LargeTest;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.SuggestionSpan;
@@ -12,17 +11,24 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.test.filters.LargeTest;
+
+import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content.R;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -35,6 +41,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ContentJUnit4ClassRunner.class)
 @CommandLineFlags.Add({"expose-internals-for-testing"})
+@Batch(ImeTest.IME_BATCH)
 public class TextSuggestionMenuTest {
     private static final String URL =
             "data:text/html, <div contenteditable id=\"div\" /><span id=\"span\" />";
@@ -46,6 +53,11 @@ public class TextSuggestionMenuTest {
     public void setUp() throws Throwable {
         mRule.setUpForUrl(ImeActivityTestRule.INPUT_FORM_HTML);
         mRule.fullyLoadUrl(URL);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        mRule.getActivity().finish();
     }
 
     @Test
@@ -69,9 +81,10 @@ public class TextSuggestionMenuTest {
 
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertEquals("", DOMUtils.getNodeContents(webContents, "div"));
+                Criteria.checkThat(
+                        DOMUtils.getNodeContents(webContents, "div"), Matchers.isEmptyString());
             } catch (TimeoutException e) {
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
 
@@ -95,9 +108,10 @@ public class TextSuggestionMenuTest {
         // necessarily have been committed yet.
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertEquals("hello", DOMUtils.getNodeContents(webContents, "div"));
+                Criteria.checkThat(
+                        DOMUtils.getNodeContents(webContents, "div"), Matchers.is("hello"));
             } catch (TimeoutException e) {
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
 
@@ -117,9 +131,10 @@ public class TextSuggestionMenuTest {
 
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertEquals("", DOMUtils.getNodeContents(mRule.getWebContents(), "div"));
+                Criteria.checkThat(DOMUtils.getNodeContents(mRule.getWebContents(), "div"),
+                        Matchers.isEmptyString());
             } catch (TimeoutException e) {
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
 
@@ -163,9 +178,10 @@ public class TextSuggestionMenuTest {
         // Wait for renderer to acknowledge commitText().
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertEquals("hello world", DOMUtils.getNodeContents(webContents, "div"));
+                Criteria.checkThat(
+                        DOMUtils.getNodeContents(webContents, "div"), Matchers.is("hello world"));
             } catch (TimeoutException e) {
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
 
@@ -188,10 +204,10 @@ public class TextSuggestionMenuTest {
 
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertEquals(
-                        "suggestion3", DOMUtils.getNodeContents(mRule.getWebContents(), "div"));
+                Criteria.checkThat(DOMUtils.getNodeContents(mRule.getWebContents(), "div"),
+                        Matchers.is("suggestion3"));
             } catch (TimeoutException e) {
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
 
@@ -228,10 +244,10 @@ public class TextSuggestionMenuTest {
 
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertEquals(
-                        "replacement", DOMUtils.getNodeContents(mRule.getWebContents(), "div"));
+                Criteria.checkThat(DOMUtils.getNodeContents(mRule.getWebContents(), "div"),
+                        Matchers.is("replacement"));
             } catch (TimeoutException e) {
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
 
@@ -395,12 +411,13 @@ public class TextSuggestionMenuTest {
     private void waitForMenuToShow(WebContents webContents) {
         CriteriaHelper.pollUiThread(() -> {
             View deleteButton = getDeleteButton(webContents);
-            Assert.assertNotNull(deleteButton);
+            Criteria.checkThat(deleteButton, Matchers.notNullValue());
+
             // suggestionsPopupWindow.isShowing() returns true, the delete button hasn't been
             // measured yet and getWidth()/getHeight() return 0. This causes the menu button
             // click to instead fall on the "Add to dictionary" button. So we have to check that
             // this isn't happening.
-            Assert.assertNotEquals(0, deleteButton.getWidth());
+            Criteria.checkThat(deleteButton.getWidth(), Matchers.not(0));
         });
     }
 
@@ -408,11 +425,11 @@ public class TextSuggestionMenuTest {
         CriteriaHelper.pollUiThread(() -> {
             SuggestionsPopupWindow suggestionsPopupWindow =
                     getTextSuggestionHost(webContents).getTextSuggestionsPopupWindowForTesting();
-            Assert.assertNull(suggestionsPopupWindow);
+            Criteria.checkThat(suggestionsPopupWindow, Matchers.nullValue());
 
             SuggestionsPopupWindow spellCheckPopupWindow =
                     getTextSuggestionHost(webContents).getSpellCheckPopupWindowForTesting();
-            Assert.assertNull(spellCheckPopupWindow);
+            Criteria.checkThat(spellCheckPopupWindow, Matchers.nullValue());
         });
     }
 

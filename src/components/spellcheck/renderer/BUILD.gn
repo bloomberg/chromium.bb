@@ -66,7 +66,6 @@ source_set("unit_tests") {
     "custom_dictionary_engine_unittest.cc",
     "empty_local_interface_provider.cc",
     "empty_local_interface_provider.h",
-    "spellcheck_provider_mac_unittest.cc",
     "spellcheck_provider_test.cc",
     "spellcheck_provider_test.h",
     "spellcheck_provider_unittest.cc",
@@ -97,7 +96,8 @@ source_set("unit_tests") {
     "//third_party/icu",
   ]
 
-  if (is_mac && !is_ios) {
+  if (is_mac) {
+    sources += [ "spellcheck_provider_mac_unittest.cc" ]
     deps += [ "//third_party/hunspell" ]
   }
 }

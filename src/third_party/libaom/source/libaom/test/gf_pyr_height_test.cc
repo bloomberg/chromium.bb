@@ -25,32 +25,32 @@ static const struct GFPyrHeightTestParam {
   double psnr_thresh;
 } kTestParams[] = {
   // gf_min_pyr_height = 0
-  { 0, 0, 33.40 },
+  { 0, 0, 32.30 },
   { 0, 1, 33.90 },
   { 0, 2, 34.00 },
   { 0, 3, 34.20 },
   { 0, 4, 34.30 },
-  { 0, 5, 34.40 },
+  { 0, 5, 34.35 },
   // gf_min_pyr_height = 1
   { 1, 1, 33.90 },
   { 1, 2, 34.00 },
   { 1, 3, 34.20 },
   { 1, 4, 34.30 },
-  { 1, 5, 34.40 },
+  { 1, 5, 34.35 },
   // gf_min_pyr_height = 2
   { 2, 2, 34.00 },
   { 2, 3, 34.20 },
   { 2, 4, 34.30 },
-  { 2, 5, 34.40 },
+  { 2, 5, 34.35 },
   // gf_min_pyr_height = 3
   { 3, 3, 34.20 },
   { 3, 4, 34.30 },
-  { 3, 5, 34.40 },
+  { 3, 5, 34.35 },
   // gf_min_pyr_height = 4
   { 4, 4, 34.30 },
-  { 4, 5, 34.40 },
+  { 4, 5, 34.35 },
   // gf_min_pyr_height = 5
-  { 5, 5, 34.40 },
+  { 5, 5, 34.35 },
 };
 
 // Compiler may decide to add some padding to the struct above for alignment,
@@ -150,7 +150,7 @@ TEST_P(GFPyrHeightTest, EncodeAndVerifyPSNR) {
       << "GF Max Pyramid Height = " << gf_max_pyr_height_;
 }
 
-AV1_INSTANTIATE_TEST_CASE(GFPyrHeightTest, NONREALTIME_TEST_MODES,
-                          ::testing::Values(AOM_Q, AOM_VBR),
-                          ::testing::ValuesIn(kTestParams));
+AV1_INSTANTIATE_TEST_SUITE(GFPyrHeightTest, NONREALTIME_TEST_MODES,
+                           ::testing::Values(AOM_Q, AOM_VBR),
+                           ::testing::ValuesIn(kTestParams));
 }  // namespace

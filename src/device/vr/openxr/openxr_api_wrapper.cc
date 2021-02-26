@@ -39,11 +39,12 @@ constexpr base::TimeDelta kTimeBetweenPollingEvents =
 
 }  // namespace
 
-std::unique_ptr<OpenXrApiWrapper> OpenXrApiWrapper::Create() {
+std::unique_ptr<OpenXrApiWrapper> OpenXrApiWrapper::Create(
+    XrInstance instance) {
   std::unique_ptr<OpenXrApiWrapper> openxr =
       std::make_unique<OpenXrApiWrapper>();
 
-  if (!openxr->Initialize()) {
+  if (!openxr->Initialize(instance)) {
     return nullptr;
   }
 
@@ -76,17 +77,17 @@ void OpenXrApiWrapper::Reset() {
   layer_projection_views_.clear();
 }
 
-bool OpenXrApiWrapper::Initialize() {
+bool OpenXrApiWrapper::Initialize(XrInstance instance) {
   Reset();
-  session_ended_ = false;
+  session_running_ = false;
   pending_frame_ = false;
   // Set to min so that the first call to EnsureEventPolling is guaranteed to
   // call ProcessEvents, which will update this variable from there on.
   last_process_events_time_ = base::TimeTicks::Min();
 
-  if (XR_FAILED(CreateInstance(&instance_, &instance_metadata_))) {
-    return false;
-  }
+  DCHECK(instance != XR_NULL_HANDLE);
+  instance_ = instance;
+
   DCHECK(HasInstance());
 
   if (XR_FAILED(InitializeSystem())) {
@@ -117,18 +118,20 @@ bool OpenXrApiWrapper::IsInitialized() const {
 }
 
 void OpenXrApiWrapper::Uninitialize() {
-  // Destroying an instance in OpenXr also destroys all child objects of that
-  // instance (including the session, swapchain, and spaces objects),
+  // The instance is owned by the OpenXRDevice, so don't destroy it here.
+
+  // Destroying an session in OpenXr also destroys all child objects of that
+  // instance (including the swapchain, and spaces objects),
   // so they don't need to be manually destroyed.
-  if (HasInstance()) {
-    xrDestroyInstance(instance_);
+  if (HasSession()) {
+    xrDestroySession(session_);
   }
 
   if (test_hook_)
     test_hook_->DetachCurrentThread();
 
   Reset();
-  session_ended_ = true;
+  session_running_ = false;
   pending_frame_ = false;
 
   // Set to max so events are no longer polled in the EnsureEventPolling loop.
@@ -140,8 +143,7 @@ bool OpenXrApiWrapper::HasInstance() const {
 }
 
 bool OpenXrApiWrapper::HasSystem() const {
-  return system_ != kInvalidSystem && view_configs_.size() == kNumViews &&
-         HasBlendMode();
+  return system_ != kInvalidSystem && view_configs_.size() == kNumViews;
 }
 
 bool OpenXrApiWrapper::HasBlendMode() const {
@@ -199,8 +201,6 @@ XrResult OpenXrApiWrapper::InitializeSystem() {
       instance_, system, kSupportedViewConfiguration, view_count, &view_count,
       view_configs.data()));
 
-  RETURN_IF_XR_FAILED(PickEnvironmentBlendMode(system));
-
   // Only assign the member variables on success. If any of the above XR calls
   // fail, the vector cleans up view_configs if necessary. system does not need
   // to be cleaned up because it is not allocated.
@@ -210,40 +210,60 @@ XrResult OpenXrApiWrapper::InitializeSystem() {
   return XR_SUCCESS;
 }
 
-XrResult OpenXrApiWrapper::PickEnvironmentBlendMode(XrSystemId system) {
-  const std::array<XrEnvironmentBlendMode, 2> kSupportedBlendMode = {
-      XR_ENVIRONMENT_BLEND_MODE_ADDITIVE,
-      XR_ENVIRONMENT_BLEND_MODE_OPAQUE,
+device::mojom::XREnvironmentBlendMode OpenXrApiWrapper::GetMojoBlendMode(
+    XrEnvironmentBlendMode xr_blend_mode) {
+  switch (xr_blend_mode) {
+    case XR_ENVIRONMENT_BLEND_MODE_OPAQUE:
+      return device::mojom::XREnvironmentBlendMode::kOpaque;
+    case XR_ENVIRONMENT_BLEND_MODE_ADDITIVE:
+      return device::mojom::XREnvironmentBlendMode::kAdditive;
+    case XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND:
+      return device::mojom::XREnvironmentBlendMode::kAlphaBlend;
+    case XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM:
+      NOTREACHED();
   };
+  return device::mojom::XREnvironmentBlendMode::kOpaque;
+}
+
+device::mojom::XREnvironmentBlendMode
+OpenXrApiWrapper::PickEnvironmentBlendModeForSession(
+    device::mojom::XRSessionMode session_mode) {
   DCHECK(HasInstance());
+  std::vector<XrEnvironmentBlendMode> supported_blend_modes =
+      GetSupportedBlendModes(instance_, system_);
 
-  uint32_t blend_mode_count;
-  RETURN_IF_XR_FAILED(xrEnumerateEnvironmentBlendModes(
-      instance_, system, kSupportedViewConfiguration, 0, &blend_mode_count,
-      nullptr));
+  DCHECK(supported_blend_modes.size() > 0);
 
-  std::vector<XrEnvironmentBlendMode> blend_modes(blend_mode_count);
-  RETURN_IF_XR_FAILED(xrEnumerateEnvironmentBlendModes(
-      instance_, system, kSupportedViewConfiguration, blend_mode_count,
-      &blend_mode_count, blend_modes.data()));
+  blend_mode_ = supported_blend_modes[0];
 
-  auto* blend_mode_it =
-      std::find_first_of(kSupportedBlendMode.begin(), kSupportedBlendMode.end(),
-                         blend_modes.begin(), blend_modes.end());
-  if (blend_mode_it == kSupportedBlendMode.end()) {
-    return XR_ERROR_ENVIRONMENT_BLEND_MODE_UNSUPPORTED;
+  switch (session_mode) {
+    case device::mojom::XRSessionMode::kImmersiveVr:
+      if (base::Contains(supported_blend_modes,
+                         XR_ENVIRONMENT_BLEND_MODE_OPAQUE))
+        blend_mode_ = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+      break;
+    case device::mojom::XRSessionMode::kImmersiveAr:
+      if (base::Contains(supported_blend_modes,
+                         XR_ENVIRONMENT_BLEND_MODE_ADDITIVE))
+        blend_mode_ = XR_ENVIRONMENT_BLEND_MODE_ADDITIVE;
+      break;
+    case device::mojom::XRSessionMode::kInline:
+      NOTREACHED();
   }
 
-  blend_mode_ = *blend_mode_it;
-  return XR_SUCCESS;
+  return GetMojoBlendMode(blend_mode_);
 }
 
 bool OpenXrApiWrapper::UpdateAndGetSessionEnded() {
   // Ensure we have the latest state from the OpenXR runtime.
   if (XR_FAILED(ProcessEvents())) {
-    DCHECK(session_ended_);
+    DCHECK(!session_running_);
   }
-  return session_ended_;
+
+  // This object is initialized at creation and uninitialized when the OpenXR
+  // session has ended. Once uninitialized, this object is never re-initialized.
+  // If a new session is requested by WebXR, a new object is created.
+  return !IsInitialized();
 }
 
 // Callers of this function must check the XrResult return value and destroy
@@ -251,7 +271,8 @@ bool OpenXrApiWrapper::UpdateAndGetSessionEnded() {
 // objects that may have been created before the failure.
 XrResult OpenXrApiWrapper::InitSession(
     const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
-    std::unique_ptr<OpenXRInputHelper>* input_helper) {
+    std::unique_ptr<OpenXRInputHelper>* input_helper,
+    const OpenXrExtensionHelper& extension_helper) {
   DCHECK(d3d_device.Get());
   DCHECK(IsInitialized());
 
@@ -266,12 +287,13 @@ XrResult OpenXrApiWrapper::InitSession(
   CreateSpace(XR_REFERENCE_SPACE_TYPE_STAGE, &stage_space_);
   UpdateStageBounds();
 
-  if (instance_metadata_.unboundedReferenceSpaceSupported) {
+  if (extension_helper.ExtensionEnumeration()->ExtensionSupported(
+          XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME)) {
     RETURN_IF_XR_FAILED(
         CreateSpace(XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT, &unbounded_space_));
   }
 
-  RETURN_IF_XR_FAILED(CreateGamepadHelper(input_helper));
+  RETURN_IF_XR_FAILED(CreateGamepadHelper(input_helper, extension_helper));
 
   // Since the objects in these arrays are used on every frame,
   // we don't want to create and destroy these objects every frame,
@@ -373,12 +395,13 @@ XrResult OpenXrApiWrapper::CreateSpace(XrReferenceSpaceType type,
 }
 
 XrResult OpenXrApiWrapper::CreateGamepadHelper(
-    std::unique_ptr<OpenXRInputHelper>* input_helper) {
+    std::unique_ptr<OpenXRInputHelper>* input_helper,
+    const OpenXrExtensionHelper& extension_helper) {
   DCHECK(HasSession());
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
 
-  return OpenXRInputHelper::CreateOpenXRInputHelper(instance_, session_,
-                                                    local_space_, input_helper);
+  return OpenXRInputHelper::CreateOpenXRInputHelper(
+      instance_, extension_helper, session_, local_space_, input_helper);
 }
 
 XrResult OpenXrApiWrapper::BeginSession() {
@@ -387,7 +410,11 @@ XrResult OpenXrApiWrapper::BeginSession() {
   XrSessionBeginInfo session_begin_info = {XR_TYPE_SESSION_BEGIN_INFO};
   session_begin_info.primaryViewConfigurationType = kSupportedViewConfiguration;
 
-  return xrBeginSession(session_, &session_begin_info);
+  XrResult xr_result = xrBeginSession(session_, &session_begin_info);
+  if (XR_SUCCEEDED(xr_result))
+    session_running_ = true;
+
+  return xr_result;
 }
 
 XrResult OpenXrApiWrapper::BeginFrame(
@@ -395,7 +422,8 @@ XrResult OpenXrApiWrapper::BeginFrame(
   DCHECK(HasSession());
   DCHECK(HasColorSwapChain());
 
-  DCHECK(!session_ended_);
+  if (!session_running_)
+    return XR_ERROR_SESSION_NOT_RUNNING;
 
   XrFrameWaitInfo wait_frame_info = {XR_TYPE_FRAME_WAIT_INFO};
   XrFrameState frame_state = {XR_TYPE_FRAME_STATE};
@@ -593,13 +621,20 @@ void OpenXrApiWrapper::GetHeadFromEyes(XrView* left, XrView* right) const {
   *right = head_from_eye_views_[1];
 }
 
-XrResult OpenXrApiWrapper::GetLuid(LUID* luid) const {
+XrResult OpenXrApiWrapper::GetLuid(
+    LUID* luid,
+    const OpenXrExtensionHelper& extension_helper) const {
   DCHECK(IsInitialized());
+
+  if (extension_helper.ExtensionMethods().xrGetD3D11GraphicsRequirementsKHR ==
+      nullptr)
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
 
   XrGraphicsRequirementsD3D11KHR graphics_requirements = {
       XR_TYPE_GRAPHICS_REQUIREMENTS_D3D11_KHR};
-  RETURN_IF_XR_FAILED(xrGetD3D11GraphicsRequirementsKHR(
-      instance_, system_, &graphics_requirements));
+  RETURN_IF_XR_FAILED(
+      extension_helper.ExtensionMethods().xrGetD3D11GraphicsRequirementsKHR(
+          instance_, system_, &graphics_requirements));
 
   luid->LowPart = graphics_requirements.adapterLuid.LowPart;
   luid->HighPart = graphics_requirements.adapterLuid.HighPart;
@@ -610,17 +645,17 @@ XrResult OpenXrApiWrapper::GetLuid(LUID* luid) const {
 void OpenXrApiWrapper::EnsureEventPolling() {
   // Events are usually processed at the beginning of a frame. When frames
   // aren't being requested, this timer loop ensures OpenXR events are
-  // occasionally polled while the session is active.
-  if (!session_ended_) {
+  // occasionally polled while OpenXR is active.
+  if (IsInitialized()) {
     if (base::TimeTicks::Now() - last_process_events_time_ >
         kTimeBetweenPollingEvents) {
       if (XR_FAILED(ProcessEvents())) {
-        DCHECK(session_ended_);
+        DCHECK(!session_running_);
       }
     }
 
-    // Verify that the session is still active after processing events.
-    if (!session_ended_) {
+    // Verify that OpenXR is still active after processing events.
+    if (IsInitialized()) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&OpenXrApiWrapper::EnsureEventPolling,
@@ -646,9 +681,10 @@ XrResult OpenXrApiWrapper::ProcessEvents() {
           xr_result = BeginSession();
           break;
         case XR_SESSION_STATE_STOPPING:
-          session_ended_ = true;
+          session_running_ = false;
           xr_result = xrEndSession(session_);
-          break;
+          Uninitialize();
+          return xr_result;
         case XR_SESSION_STATE_SYNCHRONIZED:
           visibility_changed_callback_.Run(
               device::mojom::XRVisibilityState::HIDDEN);
@@ -731,6 +767,26 @@ uint32_t OpenXrApiWrapper::GetRecommendedSwapchainSampleCount() const {
       ->recommendedSwapchainSampleCount;
 }
 
+// From the OpenXR Spec:
+// maxSwapchainSampleCount is the maximum number of sub-data element samples
+// supported for swapchain images that will be rendered into for this view.
+//
+// To ease the workload on low end devices, we disable anti-aliasing when the
+// max sample count is 1.
+bool OpenXrApiWrapper::CanEnableAntiAliasing() const {
+  DCHECK(IsInitialized());
+
+  const auto compareMaxSwapchainSampleCounts =
+      [](const XrViewConfigurationView& i, const XrViewConfigurationView& j) {
+        return (i.maxSwapchainSampleCount < j.maxSwapchainSampleCount);
+      };
+
+  const auto it_min_element =
+      std::min_element(view_configs_.begin(), view_configs_.end(),
+                       compareMaxSwapchainSampleCounts);
+  return (it_min_element->maxSwapchainSampleCount > 1);
+}
+
 // stage bounds is fixed unless we received event
 // XrEventDataReferenceSpaceChangePending
 XrResult OpenXrApiWrapper::UpdateStageBounds() {
@@ -760,7 +816,7 @@ bool OpenXrApiWrapper::GetStageParameters(XrExtent2Df* stage_bounds,
   *stage_bounds = stage_bounds_;
 
   XrSpaceLocation local_from_stage_location = {XR_TYPE_SPACE_LOCATION};
-  if (FAILED(xrLocateSpace(local_space_, stage_space_,
+  if (FAILED(xrLocateSpace(stage_space_, local_space_,
                            frame_state_.predictedDisplayTime,
                            &local_from_stage_location)) ||
       !(local_from_stage_location.locationFlags &

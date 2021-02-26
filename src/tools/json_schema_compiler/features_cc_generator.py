@@ -35,7 +35,7 @@ class _Generator(object):
       .Append()
       .Append('#include "%s.h"' % self._source_file_filename)
       .Append()
-      .Append('#include "base/logging.h"')
+      .Append('#include "base/notreached.h"')
       .Append()
       .Concat(cpp_util.OpenNamespace(self._namespace))
       .Append()
@@ -47,7 +47,8 @@ class _Generator(object):
     )
     for feature in self._feature_defs:
       c.Append('features_["%s"] = %s;'
-                       % (feature.name, cpp_util.ConstantName(feature.name)))
+                       % (feature.name,
+                          cpp_util.FeatureNameToConstantName(feature.name)))
     (c.Eblock()
       .Append('}')
       .Append()
@@ -62,7 +63,7 @@ class _Generator(object):
     )
     for feature in self._feature_defs:
       c.Append('case %s: return "%s";' %
-          (cpp_util.ConstantName(feature.name), feature.name))
+          (cpp_util.FeatureNameToConstantName(feature.name), feature.name))
     (c.Append('case kUnknown: break;')
       .Append('case kEnumBoundary: break;')
       .Eblock()

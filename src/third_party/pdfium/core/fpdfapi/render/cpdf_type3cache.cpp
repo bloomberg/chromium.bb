@@ -6,7 +6,6 @@
 
 #include "core/fpdfapi/render/cpdf_type3cache.h"
 
-#include <map>
 #include <memory>
 #include <utility>
 
@@ -17,8 +16,7 @@
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/cfx_glyphbitmap.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
-#include "core/fxge/fx_dib.h"
-#include "third_party/base/ptr_util.h"
+#include "core/fxge/dib/fx_dib.h"
 
 namespace {
 
@@ -97,7 +95,7 @@ const CFX_GlyphBitmap* CPDF_Type3Cache::LoadGlyph(uint32_t charcode,
   CPDF_Type3GlyphMap* pSizeCache;
   auto it = m_SizeMap.find(FaceGlyphsKey);
   if (it == m_SizeMap.end()) {
-    auto pNew = pdfium::MakeUnique<CPDF_Type3GlyphMap>();
+    auto pNew = std::make_unique<CPDF_Type3GlyphMap>();
     pSizeCache = pNew.get();
     m_SizeMap[FaceGlyphsKey] = std::move(pNew);
   } else {
@@ -160,7 +158,7 @@ std::unique_ptr<CFX_GlyphBitmap> CPDF_Type3Cache::RenderGlyph(
   if (!pResBitmap)
     return nullptr;
 
-  auto pGlyph = pdfium::MakeUnique<CFX_GlyphBitmap>(left, -top);
+  auto pGlyph = std::make_unique<CFX_GlyphBitmap>(left, -top);
   pGlyph->GetBitmap()->TakeOver(std::move(pResBitmap));
   return pGlyph;
 }

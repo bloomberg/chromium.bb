@@ -3,24 +3,21 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
 import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {SafeBrowsingBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {MetricsBrowserProxyImpl, PrivacyElementInteractions,PrivacyPageBrowserProxyImpl, Router, routes, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
-
+import {SafeBrowsingSetting} from 'chrome://settings/lazy_load.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Router, routes, SafeBrowsingInteractions, SecureDnsMode, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
-import {flushTasks} from '../test_util.m.js';
+import {flushTasks, isChildVisible} from '../test_util.m.js';
 
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 import {TestPrivacyPageBrowserProxy} from './test_privacy_page_browser_proxy.js';
-import {TestSafeBrowsingBrowserProxy} from './test_safe_browsing_browser_proxy.js';
 import {TestSyncBrowserProxy} from './test_sync_browser_proxy.m.js';
 
 // clang-format on
 
-suite('CrSettingsSecurityPageTestWithEnhanced', function() {
+suite('CrSettingsSecurityPageTest', function() {
   /** @type {!TestMetricsBrowserProxy} */
   let testMetricsBrowserProxy;
 
@@ -30,14 +27,12 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
   /** @type {!TestPrivacyPageBrowserProxy} */
   let testPrivacyBrowserProxy;
 
-  /** @type {!TestSafeBrowsingBrowserProxy} */
-  let testSafeBrowsingBrowserProxy;
-
   /** @type {!SettingsSecurityPageElement} */
   let page;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
+      enableSecurityKeysSubpage: true,
       safeBrowsingEnhancedEnabled: true,
     });
   });
@@ -49,29 +44,34 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     PrivacyPageBrowserProxyImpl.instance_ = testPrivacyBrowserProxy;
     syncBrowserProxy = new TestSyncBrowserProxy();
     SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
-    testSafeBrowsingBrowserProxy = new TestSafeBrowsingBrowserProxy();
-    SafeBrowsingBrowserProxyImpl.instance_ = testSafeBrowsingBrowserProxy;
     document.body.innerHTML = '';
     page = /** @type {!SettingsSecurityPageElement} */ (
         document.createElement('settings-security-page'));
     page.prefs = {
-      profile: {password_manager_leak_detection: {value: true}},
-      signin: {
-        allowed_on_next_startup:
-            {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
-      },
+      profile: {password_manager_leak_detection: {value: false}},
       safebrowsing: {
-        enabled: {value: true},
         scout_reporting_enabled: {value: true},
-        enhanced: {value: false}
       },
+      generated: {
+        safe_browsing: {
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: SafeBrowsingSetting.STANDARD,
+        },
+        password_leak_detection: {value: true, userControlDisabled: false},
+      },
+      dns_over_https:
+          {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
     };
+    page.set('syncStatus', {signedIn: false, hasError: false});
     document.body.appendChild(page);
+    page.$$('#safeBrowsingEnhanced').updateCollapsed();
+    page.$$('#safeBrowsingStandard').updateCollapsed();
     flush();
   });
 
   teardown(function() {
     page.remove();
+    Router.getInstance().navigateTo(routes.BASIC);
   });
 
   if (isMac || isWindows) {
@@ -81,6 +81,12 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     });
   }
 
+  // Initially specified pref option should be expanded
+  test('SafeBrowsingRadio_InitialPrefOptionIsExpanded', function() {
+    assertFalse(page.$$('#safeBrowsingEnhanced').expanded);
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
+  });
+
   test('LogManageCerfificatesClick', async function() {
     page.$$('#manageCertificates').click();
     const result =
@@ -88,9 +94,32 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     assertEquals(PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
   });
 
-  test('ManageSecurityKeysSubpageRoute', function() {
-    page.$$('#security-keys-subpage-trigger').click();
-    assertEquals(Router.getInstance().getCurrentRoute(), routes.SECURITY_KEYS);
+  test('ManageSecurityKeysSubpageVisible', function() {
+    assertTrue(isChildVisible(page, '#security-keys-subpage-trigger'));
+  });
+
+  test('PasswordsLeakDetectionSubLabel', function() {
+    const toggle = page.$$('#passwordsLeakToggle');
+    const defaultSubLabel =
+        loadTimeData.getString('passwordsLeakDetectionGeneralDescription');
+    const activeWhenSignedInSubLabel =
+        loadTimeData.getString('passwordsLeakDetectionGeneralDescription') +
+        ' ' +
+        loadTimeData.getString(
+            'passwordsLeakDetectionSignedOutEnabledDescription');
+    assertEquals(defaultSubLabel, toggle.subLabel);
+
+    page.set('prefs.profile.password_manager_leak_detection.value', true);
+    flush();
+    assertEquals(activeWhenSignedInSubLabel, toggle.subLabel);
+
+    page.set('syncStatus', {signedIn: true});
+    flush();
+    assertEquals(defaultSubLabel, toggle.subLabel);
+
+    page.set('syncStatus', {signedIn: true, hasError: true});
+    flush();
+    assertEquals(activeWhenSignedInSubLabel, toggle.subLabel);
   });
 
   test('LogSafeBrowsingExtendedToggle', async function() {
@@ -105,38 +134,101 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
 
   test('safeBrowsingReportingToggle', function() {
     page.$$('#safeBrowsingStandard').click();
+    assertEquals(
+        SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
+
     const safeBrowsingReportingToggle = page.$$('#safeBrowsingReportingToggle');
-    assertTrue(
-        page.prefs.safebrowsing.enabled.value &&
-        !page.prefs.safebrowsing.enhanced.value);
     assertFalse(safeBrowsingReportingToggle.disabled);
     assertTrue(safeBrowsingReportingToggle.checked);
+
     // This could also be set to disabled, anything other than standard.
     page.$$('#safeBrowsingEnhanced').click();
+    assertEquals(
+        SafeBrowsingSetting.ENHANCED, page.prefs.generated.safe_browsing.value);
     flush();
-
-    assertFalse(
-        page.prefs.safebrowsing.enabled.value &&
-        !page.prefs.safebrowsing.enhanced.value);
     assertTrue(safeBrowsingReportingToggle.disabled);
     assertTrue(safeBrowsingReportingToggle.checked);
     assertTrue(page.prefs.safebrowsing.scout_reporting_enabled.value);
-    page.$$('#safeBrowsingStandard').click();
-    flush();
 
-    assertTrue(
-        page.prefs.safebrowsing.enabled.value &&
-        !page.prefs.safebrowsing.enhanced.value);
+    page.$$('#safeBrowsingStandard').click();
+    assertEquals(
+        SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
+    flush();
     assertFalse(safeBrowsingReportingToggle.disabled);
     assertTrue(safeBrowsingReportingToggle.checked);
   });
 
+  test(
+      'SafeBrowsingRadio_ManuallyExpandedRemainExpandedOnRepeatSelection',
+      function() {
+        page.$$('#safeBrowsingStandard').click();
+        flush();
+        assertEquals(
+            SafeBrowsingSetting.STANDARD,
+            page.prefs.generated.safe_browsing.value);
+        assertTrue(page.$$('#safeBrowsingStandard').expanded);
+        assertFalse(page.$$('#safeBrowsingEnhanced').expanded);
+
+        // Expanding another radio button should not collapse already expanded
+        // option.
+        page.$$('#safeBrowsingEnhanced').$$('cr-expand-button').click();
+        flush();
+        assertTrue(page.$$('#safeBrowsingStandard').expanded);
+        assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
+
+        // Clicking on already selected button should not collapse manually
+        // expanded option.
+        page.$$('#safeBrowsingStandard').click();
+        flush();
+        assertTrue(page.$$('#safeBrowsingStandard').expanded);
+        assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
+      });
+
+  test(
+      'SafeBrowsingRadio_ManuallyExpandedRemainExpandedOnSelectedChanged',
+      async function() {
+        page.$$('#safeBrowsingStandard').click();
+        flush();
+        assertEquals(
+            SafeBrowsingSetting.STANDARD,
+            page.prefs.generated.safe_browsing.value);
+
+        page.$$('#safeBrowsingEnhanced').$$('cr-expand-button').click();
+        flush();
+        assertTrue(page.$$('#safeBrowsingStandard').expanded);
+        assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
+
+        page.$$('#safeBrowsingDisabled').click();
+        flush();
+
+        // Previously selected option must remain opened.
+        assertTrue(page.$$('#safeBrowsingStandard').expanded);
+        assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
+
+        page.$$('settings-disable-safebrowsing-dialog')
+            .$$('.action-button')
+            .click();
+        flush();
+
+        // Wait for onDisableSafebrowsingDialogClose_ to finish.
+        await flushTasks();
+
+        // The deselected option should become collapsed.
+        assertFalse(page.$$('#safeBrowsingStandard').expanded);
+        assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
+      });
+
   test('DisableSafebrowsingDialog_Confirm', async function() {
     page.$$('#safeBrowsingStandard').click();
+    assertEquals(
+        SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
     flush();
 
     page.$$('#safeBrowsingDisabled').click();
     flush();
+
+    // Previously selected option must remain opened.
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
 
     page.$$('settings-disable-safebrowsing-dialog')
         .$$('.action-button')
@@ -151,17 +243,21 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     assertFalse(page.$$('#safeBrowsingEnhanced').checked);
     assertFalse(page.$$('#safeBrowsingStandard').checked);
     assertTrue(page.$$('#safeBrowsingDisabled').checked);
-
-    assertFalse(page.prefs.safebrowsing.enabled.value);
-    assertFalse(page.prefs.safebrowsing.enhanced.value);
+    assertEquals(
+        SafeBrowsingSetting.DISABLED, page.prefs.generated.safe_browsing.value);
   });
 
   test('DisableSafebrowsingDialog_CancelFromEnhanced', async function() {
     page.$$('#safeBrowsingEnhanced').click();
+    assertEquals(
+        SafeBrowsingSetting.ENHANCED, page.prefs.generated.safe_browsing.value);
     flush();
 
     page.$$('#safeBrowsingDisabled').click();
     flush();
+
+    // Previously selected option must remain opened.
+    assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
 
     page.$$('settings-disable-safebrowsing-dialog')
         .$$('.cancel-button')
@@ -176,17 +272,21 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     assertTrue(page.$$('#safeBrowsingEnhanced').checked);
     assertFalse(page.$$('#safeBrowsingStandard').checked);
     assertFalse(page.$$('#safeBrowsingDisabled').checked);
-
-    assertTrue(page.prefs.safebrowsing.enabled.value);
-    assertTrue(page.prefs.safebrowsing.enhanced.value);
+    assertEquals(
+        SafeBrowsingSetting.ENHANCED, page.prefs.generated.safe_browsing.value);
   });
 
   test('DisableSafebrowsingDialog_CancelFromStandard', async function() {
     page.$$('#safeBrowsingStandard').click();
+    assertEquals(
+        SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
     flush();
 
     page.$$('#safeBrowsingDisabled').click();
     flush();
+
+    // Previously selected option must remain opened.
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
 
     page.$$('settings-disable-safebrowsing-dialog')
         .$$('.cancel-button')
@@ -201,9 +301,8 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     assertFalse(page.$$('#safeBrowsingEnhanced').checked);
     assertTrue(page.$$('#safeBrowsingStandard').checked);
     assertFalse(page.$$('#safeBrowsingDisabled').checked);
-
-    assertTrue(page.prefs.safebrowsing.enabled.value);
-    assertFalse(page.prefs.safebrowsing.enhanced.value);
+    assertEquals(
+        SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
   });
 
   test('noControlSafeBrowsingReportingInEnhanced', function() {
@@ -237,6 +336,9 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     page.$$('#safeBrowsingDisabled').click();
     flush();
 
+    // Previously selected option must remain opened.
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
+
     page.$$('settings-disable-safebrowsing-dialog')
         .$$('.action-button')
         .click();
@@ -255,6 +357,9 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
 
     page.$$('#safeBrowsingDisabled').click();
     flush();
+
+    // Previously selected option must remain opened.
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
 
     page.$$('settings-disable-safebrowsing-dialog')
         .$$('.action-button')
@@ -288,6 +393,9 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     page.$$('#safeBrowsingDisabled').click();
     flush();
 
+    // Previously selected option must remain opened.
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
+
     page.$$('settings-disable-safebrowsing-dialog')
         .$$('.action-button')
         .click();
@@ -300,131 +408,194 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
         page.prefs.profile.password_manager_leak_detection.value === previous);
   });
 
-  test('SafeBrowsingRadio_PreferenceUpdate', function() {
-    const enhancedRadio = page.$$('#safeBrowsingEnhanced');
-    const standardRadio = page.$$('#safeBrowsingStandard');
-    const disabledRadio = page.$$('#safeBrowsingDisabled');
+  test('safeBrowsingUserActionRecorded', async function() {
+    testMetricsBrowserProxy.resetResolver(
+        'recordSafeBrowsingInteractionHistogram');
+    page.$$('#safeBrowsingStandard').click();
+    assertEquals(
+        SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
+    // Not logged because it is already in standard mode.
+    assertEquals(
+        0,
+        testMetricsBrowserProxy.getCallCount(
+            'recordSafeBrowsingInteractionHistogram'));
 
-    // Set an enhanced protection preference state and ensure the radio buttons
-    // correctly reflect this.
-    page.set('prefs.safebrowsing.enabled.value', true);
-    page.set('prefs.safebrowsing.enhanced.value', true);
+    testMetricsBrowserProxy.resetResolver(
+        'recordSafeBrowsingInteractionHistogram');
+    testMetricsBrowserProxy.resetResolver('recordAction');
+    page.$$('#safeBrowsingEnhanced').click();
     flush();
-    assertTrue(enhancedRadio.checked);
-    assertFalse(standardRadio.checked);
-    assertFalse(disabledRadio.checked);
+    const [enhancedClickedResult, enhancedClickedAction] = await Promise.all([
+      testMetricsBrowserProxy.whenCalled(
+          'recordSafeBrowsingInteractionHistogram'),
+      testMetricsBrowserProxy.whenCalled('recordAction')
+    ]);
+    assertEquals(
+        SafeBrowsingInteractions.SAFE_BROWSING_ENHANCED_PROTECTION_CLICKED,
+        enhancedClickedResult);
+    assertEquals(
+        'SafeBrowsing.Settings.EnhancedProtectionClicked',
+        enhancedClickedAction);
 
-    // As above but for an enabled protection state.
-    page.set('prefs.safebrowsing.enabled.value', true);
-    page.set('prefs.safebrowsing.enhanced.value', false);
+    testMetricsBrowserProxy.resetResolver(
+        'recordSafeBrowsingInteractionHistogram');
+    testMetricsBrowserProxy.resetResolver('recordAction');
+    page.$$('#safeBrowsingEnhanced').$$('cr-expand-button').click();
     flush();
-    assertFalse(enhancedRadio.checked);
-    assertTrue(standardRadio.checked);
-    assertFalse(disabledRadio.checked);
+    const [enhancedExpandedResult, enhancedExpandedAction] = await Promise.all([
+      testMetricsBrowserProxy.whenCalled(
+          'recordSafeBrowsingInteractionHistogram'),
+      testMetricsBrowserProxy.whenCalled('recordAction')
+    ]);
+    assertEquals(
+        SafeBrowsingInteractions
+            .SAFE_BROWSING_ENHANCED_PROTECTION_EXPAND_ARROW_CLICKED,
+        enhancedExpandedResult);
+    assertEquals(
+        'SafeBrowsing.Settings.EnhancedProtectionExpandArrowClicked',
+        enhancedExpandedAction);
 
-    // As above but for a safebrowsing disabled state.
-    page.set('prefs.safebrowsing.enabled.value', false);
-    page.set('prefs.safebrowsing.enhanced.value', false);
+    testMetricsBrowserProxy.resetResolver(
+        'recordSafeBrowsingInteractionHistogram');
+    testMetricsBrowserProxy.resetResolver('recordAction');
+    page.$$('#safeBrowsingStandard').$$('cr-expand-button').click();
     flush();
-    assertFalse(enhancedRadio.checked);
-    assertFalse(standardRadio.checked);
-    assertTrue(disabledRadio.checked);
+    const [standardExpandedResult, standardExpandedAction] = await Promise.all([
+      testMetricsBrowserProxy.whenCalled(
+          'recordSafeBrowsingInteractionHistogram'),
+      testMetricsBrowserProxy.whenCalled('recordAction')
+    ]);
+    assertEquals(
+        SafeBrowsingInteractions
+            .SAFE_BROWSING_STANDARD_PROTECTION_EXPAND_ARROW_CLICKED,
+        standardExpandedResult);
+    assertEquals(
+        'SafeBrowsing.Settings.StandardProtectionExpandArrowClicked',
+        standardExpandedAction);
+
+    testMetricsBrowserProxy.resetResolver(
+        'recordSafeBrowsingInteractionHistogram');
+    testMetricsBrowserProxy.resetResolver('recordAction');
+    page.$$('#safeBrowsingDisabled').click();
+    flush();
+    const [disableClickedResult, disableClickedAction] = await Promise.all([
+      testMetricsBrowserProxy.whenCalled(
+          'recordSafeBrowsingInteractionHistogram'),
+      testMetricsBrowserProxy.whenCalled('recordAction')
+    ]);
+    assertEquals(
+        SafeBrowsingInteractions.SAFE_BROWSING_DISABLE_SAFE_BROWSING_CLICKED,
+        disableClickedResult);
+    assertEquals(
+        'SafeBrowsing.Settings.DisableSafeBrowsingClicked',
+        disableClickedAction);
+
+    testMetricsBrowserProxy.resetResolver(
+        'recordSafeBrowsingInteractionHistogram');
+    testMetricsBrowserProxy.resetResolver('recordAction');
+    page.$$('settings-disable-safebrowsing-dialog')
+        .$$('.cancel-button')
+        .click();
+    flush();
+    const [disableDeniedResult, disableDeniedAction] = await Promise.all([
+      testMetricsBrowserProxy.whenCalled(
+          'recordSafeBrowsingInteractionHistogram'),
+      testMetricsBrowserProxy.whenCalled('recordAction')
+    ]);
+    assertEquals(
+        SafeBrowsingInteractions
+            .SAFE_BROWSING_DISABLE_SAFE_BROWSING_DIALOG_DENIED,
+        disableDeniedResult);
+    assertEquals(
+        'SafeBrowsing.Settings.DisableSafeBrowsingDialogDenied',
+        disableDeniedAction);
+
+    await flushTasks();
+
+    page.$$('#safeBrowsingDisabled').click();
+    flush();
+    testMetricsBrowserProxy.resetResolver(
+        'recordSafeBrowsingInteractionHistogram');
+    testMetricsBrowserProxy.resetResolver('recordAction');
+    page.$$('settings-disable-safebrowsing-dialog')
+        .$$('.action-button')
+        .click();
+    flush();
+    const [disableConfirmedResult, disableConfirmedAction] = await Promise.all([
+      testMetricsBrowserProxy.whenCalled(
+          'recordSafeBrowsingInteractionHistogram'),
+      testMetricsBrowserProxy.whenCalled('recordAction')
+    ]);
+    assertEquals(
+        SafeBrowsingInteractions
+            .SAFE_BROWSING_DISABLE_SAFE_BROWSING_DIALOG_CONFIRMED,
+        disableConfirmedResult);
+    assertEquals(
+        'SafeBrowsing.Settings.DisableSafeBrowsingDialogConfirmed',
+        disableConfirmedAction);
   });
 
-  test('SafeBrowsingRadio_ManagedState', async function() {
-    const enhancedRadio = page.$$('#safeBrowsingEnhanced');
-    const standardRadio = page.$$('#safeBrowsingStandard');
-    const disabledRadio = page.$$('#safeBrowsingDisabled');
-
-    const managedRadioState = {
-      enhanced:
-          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
-      standard:
-          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
-      disabled:
-          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
-    };
-
-    // Make sure the element has requested the managed state from its init.
-    await testSafeBrowsingBrowserProxy.whenCalled(
-        'getSafeBrowsingRadioManagedState');
-    testSafeBrowsingBrowserProxy.reset();
-
-    testSafeBrowsingBrowserProxy.setSafeBrowsingRadioManagedState(
-        managedRadioState);
-    // Change an arbitrary Safe Browsing pref to trigger managed state update.
-    page.set('prefs.safebrowsing.enabled.value', false);
-    await testSafeBrowsingBrowserProxy.whenCalled(
-        'getSafeBrowsingRadioManagedState');
-    testSafeBrowsingBrowserProxy.reset();
-    flush();
-
-    assertTrue(enhancedRadio.disabled);
+  test('securityPageShowedRecorded', async function() {
+    testMetricsBrowserProxy.resetResolver(
+        'recordSafeBrowsingInteractionHistogram');
+    Router.getInstance().navigateTo(
+        routes.SECURITY, /* dynamicParams= */ null,
+        /* removeSearch= */ true);
     assertEquals(
-        enhancedRadio.policyIndicatorType, CrPolicyIndicatorType.DEVICE_POLICY);
-    assertTrue(standardRadio.disabled);
-    assertEquals(
-        standardRadio.policyIndicatorType, CrPolicyIndicatorType.DEVICE_POLICY);
-    assertTrue(disabledRadio.disabled);
-    assertEquals(
-        disabledRadio.policyIndicatorType, CrPolicyIndicatorType.DEVICE_POLICY);
+        SafeBrowsingInteractions.SAFE_BROWSING_SHOWED,
+        await testMetricsBrowserProxy.whenCalled(
+            'recordSafeBrowsingInteractionHistogram'));
+  });
 
-    // Ensure reverting to an unmanaged state is correctly handled.
-    const unmanagedRadioState = {
-      enhanced: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
-      standard: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
-      disabled: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
-    };
-    testSafeBrowsingBrowserProxy.setSafeBrowsingRadioManagedState(
-        unmanagedRadioState);
-    // Change an arbitrary Safe Browsing pref to trigger managed state update.
-    page.set('prefs.safebrowsing.enabled.value', true);
-    await testSafeBrowsingBrowserProxy.whenCalled(
-        'getSafeBrowsingRadioManagedState');
-    testSafeBrowsingBrowserProxy.reset();
-    flush();
-
-    assertFalse(enhancedRadio.disabled);
-    assertEquals(enhancedRadio.policyIndicatorType, CrPolicyIndicatorType.NONE);
-    assertFalse(standardRadio.disabled);
-    assertEquals(standardRadio.policyIndicatorType, CrPolicyIndicatorType.NONE);
-    assertFalse(disabledRadio.disabled);
-    assertEquals(disabledRadio.policyIndicatorType, CrPolicyIndicatorType.NONE);
+  test('enhancedProtectionAutoExpanded', function() {
+    // Standard protection should be pre-expanded if there is no param.
+    Router.getInstance().navigateTo(routes.SECURITY);
+    assertFalse(page.$$('#safeBrowsingEnhanced').expanded);
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
+    // Enhanced protection should be pre-expanded if the param is set to
+    // enhanced.
+    Router.getInstance().navigateTo(
+        routes.SECURITY,
+        /* dynamicParams= */ new URLSearchParams('q=enhanced'));
+    assertEquals(
+        SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
+    assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
+    assertFalse(page.$$('#safeBrowsingStandard').expanded);
   });
 });
 
 
-suite('CrSettingsSecurityPageTestWithoutEnhanced', function() {
+suite('CrSettingsSecurityPageTest_FlagsDisabled', function() {
   /** @type {!SettingsSecurityPageElement} */
   let page;
 
-  /** @type {!TestSafeBrowsingBrowserProxy} */
-  let testSafeBrowsingBrowserProxy;
-
   suiteSetup(function() {
     loadTimeData.overrideValues({
+      enableSecurityKeysSubpage: false,
       safeBrowsingEnhancedEnabled: false,
     });
   });
 
   setup(function() {
-    testSafeBrowsingBrowserProxy = new TestSafeBrowsingBrowserProxy();
-    SafeBrowsingBrowserProxyImpl.instance_ = testSafeBrowsingBrowserProxy;
     document.body.innerHTML = '';
     page = /** @type {!SettingsSecurityPageElement} */ (
         document.createElement('settings-security-page'));
     page.prefs = {
       profile: {password_manager_leak_detection: {value: true}},
-      signin: {
-        allowed_on_next_startup:
-            {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
-      },
       safebrowsing: {
-        enabled: {value: true},
         scout_reporting_enabled: {value: true},
-        enhanced: {value: false}
       },
+      generated: {
+        safe_browsing: {
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: SafeBrowsingSetting.STANDARD,
+        },
+        password_leak_detection: {value: true, userControlDisabled: false},
+      },
+      dns_over_https:
+          {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
     };
+    page.set('syncStatus', {signedIn: true, hasError: false});
     document.body.appendChild(page);
     flush();
   });
@@ -433,12 +604,11 @@ suite('CrSettingsSecurityPageTestWithoutEnhanced', function() {
     page.remove();
   });
 
-  test('enhancedHiddenWhenDisbled', function() {
-    assertTrue(page.$$('#safeBrowsingEnhanced').hidden);
+  test('EnhancedHiddenWhenDisbled', function() {
+    assertFalse(isChildVisible(page, '#safeBrowsingEnhanced'));
   });
 
-  test('validateSafeBrowsingEnhanced', function() {
-    return testSafeBrowsingBrowserProxy.whenCalled(
-        'validateSafeBrowsingEnhanced');
+  test('ManageSecurityKeysSubpageHidden', function() {
+    assertFalse(isChildVisible(page, '#security-keys-subpage-trigger'));
   });
 });

@@ -12,12 +12,16 @@ namespace display {
 namespace features {
 
 #if defined(OS_CHROMEOS)
-DISPLAY_EXPORT extern const base::Feature kUseMonitorColorSpace;
+DISPLAY_EXPORT extern const base::Feature kUseHDRTransferFunction;
 #endif
 
 DISPLAY_EXPORT extern const base::Feature kListAllDisplayModes;
 
 DISPLAY_EXPORT bool IsListAllDisplayModesEnabled();
+
+DISPLAY_EXPORT extern const base::Feature kEnableHardwareMirrorMode;
+
+DISPLAY_EXPORT bool IsHardwareMirrorModeEnabled();
 
 }  // namespace features
 }  // namespace display

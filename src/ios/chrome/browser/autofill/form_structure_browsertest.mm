@@ -17,14 +17,18 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/data_driven_test.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/pattern_provider/test_pattern_provider.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/renderer_id.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
@@ -104,19 +108,23 @@ class FormStructureBrowserTest
   void SetUp() override;
   void TearDown() override;
 
+  bool LoadHtmlWithoutSubresourcesAndInitRendererIds(const std::string& html);
+
   // DataDrivenTest:
   void GenerateResults(const std::string& input, std::string* output) override;
 
   // Serializes the given |forms| into a string.
   std::string FormStructuresToString(
-      const AutofillManager::FormStructureMap& forms);
+      const std::map<FormRendererId, std::unique_ptr<FormStructure>>& forms);
 
   std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;
   AutofillAgent* autofill_agent_;
   FormSuggestionController* suggestion_controller_;
+  TestPatternProvider test_pattern_provider_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
+  PasswordController* password_controller_;
   DISALLOW_COPY_AND_ASSIGN(FormStructureBrowserTest);
 };
 
@@ -125,16 +133,28 @@ FormStructureBrowserTest::FormStructureBrowserTest()
       DataDrivenTest(GetTestDataDir()) {
   feature_list_.InitWithFeatures(
       // Enabled
-      {},
+      {
+          // TODO(crbug.com/1098943): Remove once experiment is over.
+          autofill::features::kAutofillEnableSupportForMoreStructureInNames,
+          // TODO(crbug.com/1125978): Remove once launched.
+          autofill::features::kAutofillEnableSupportForMoreStructureInAddresses,
+          // TODO(crbug.com/896689): Remove once launched.
+          autofill::features::kAutofillNameSectionsWithRendererIds,
+          // TODO(crbug.com/1076175) Remove once launched.
+          autofill::features::kAutofillUseNewSectioningMethod,
+      },
       // Disabled
-      {autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics,
-       autofill::features::kAutofillEnforceMinRequiredFieldsForQuery,
-       autofill::features::kAutofillEnforceMinRequiredFieldsForUpload,
-       autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
+      {autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
 }
 
 void FormStructureBrowserTest::SetUp() {
   ChromeWebTest::SetUp();
+
+  // Create a PasswordController instance that will handle set up for renderer
+  // ids.
+  UniqueIDDataTabHelper::CreateForWebState(web_state());
+  password_controller_ =
+      [[PasswordController alloc] initWithWebState:web_state()];
 
   // AddressNormalizerFactory must be initialized in a blocking allowed scoped.
   // Initialize it now as it may DCHECK if it is initialized during the test.
@@ -165,9 +185,17 @@ void FormStructureBrowserTest::TearDown() {
   ChromeWebTest::TearDown();
 }
 
+bool FormStructureBrowserTest::LoadHtmlWithoutSubresourcesAndInitRendererIds(
+    const std::string& html) {
+  bool success = ChromeWebTest::LoadHtmlWithoutSubresources(html);
+  if (success)
+    ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  return success;
+}
+
 void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                std::string* output) {
-  ASSERT_TRUE(LoadHtmlWithoutSubresources(input));
+  ASSERT_TRUE(LoadHtmlWithoutSubresourcesAndInitRendererIds(input));
   base::ThreadPoolInstance::Get()->FlushForTesting();
   web::WebFrame* frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
   AutofillManager* autofill_manager =
@@ -182,17 +210,13 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
 }
 
 std::string FormStructureBrowserTest::FormStructuresToString(
-    const AutofillManager::FormStructureMap& forms) {
-  std::map<base::TimeTicks, const FormStructure*> sorted_forms;
+    const std::map<FormRendererId, std::unique_ptr<FormStructure>>& forms) {
+  std::string forms_string;
+  // The forms are sorted by renderer ID, which should make the order
+  // deterministic.
   for (const auto& form_kv : forms) {
     const auto* form = form_kv.second.get();
-    EXPECT_TRUE(
-        sorted_forms.emplace(form->form_parsed_timestamp(), form).second);
-  }
-
-  std::string forms_string;
-  for (const auto& form_kv : sorted_forms) {
-    const auto* form = form_kv.second;
+    std::map<std::string, int> section_to_index;
     for (const auto& field : *form) {
       std::string name = base::UTF16ToUTF8(field->name);
       if (base::StartsWith(name, "gChrome~field~",
@@ -201,6 +225,7 @@ std::string FormStructureBrowserTest::FormStructuresToString(
         // to have a behavior similar to other platforms.
         name = "";
       }
+
       std::string section = field->section;
       if (base::StartsWith(section, "gChrome~field~",
                            base::CompareCase::SENSITIVE)) {
@@ -209,6 +234,22 @@ std::string FormStructureBrowserTest::FormStructuresToString(
         size_t first_underscore = section.find_first_of('_');
         section = section.substr(first_underscore);
       }
+
+      // Normalize the section by replacing the unique but platform-dependent
+      // integers in |field->section| with consecutive unique integers.
+      size_t last_underscore = section.find_last_of('_');
+      size_t next_dash = section.find_first_of('-', last_underscore);
+      int new_section_index = static_cast<int>(section_to_index.size() + 1);
+      int section_index =
+          section_to_index.insert(std::make_pair(section, new_section_index))
+              .first->second;
+      if (last_underscore != std::string::npos &&
+          next_dash != std::string::npos) {
+        section = base::StringPrintf(
+            "%s%d%s", section.substr(0, last_underscore + 1).c_str(),
+            section_index, section.substr(next_dash).c_str());
+      }
+
       forms_string += field->Type().ToString();
       forms_string += " | " + name;
       forms_string += " | " + base::UTF16ToUTF8(field->label);

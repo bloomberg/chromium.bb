@@ -21,7 +21,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/mock_timer.h"
 #include "build/build_config.h"
@@ -37,6 +37,7 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/cert/pem.h"
+#include "net/socket/client_socket_factory.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_server_socket.h"
@@ -298,6 +299,7 @@ class TestSocketFactory : public net::ClientSocketFactory {
   std::unique_ptr<net::TransportClientSocket> CreateTransportClientSocket(
       const net::AddressList&,
       std::unique_ptr<net::SocketPerformanceWatcher>,
+      net::NetworkQualityEstimator*,
       net::NetLog*,
       const net::NetLogSource&) override {
     if (tcp_client_socket_)
@@ -489,7 +491,7 @@ class SslCastSocketTest : public CastSocketTestBase {
     ASSERT_EQ(net::OK, tcp_server_socket_->GetLocalAddress(&server_address));
     tcp_client_socket_.reset(
         new net::TCPClientSocket(net::AddressList(server_address), nullptr,
-                                 nullptr, net::NetLogSource()));
+                                 nullptr, nullptr, net::NetLogSource()));
 
     std::unique_ptr<net::StreamSocket> accepted_socket;
     accept_result_ = tcp_server_socket_->Accept(
@@ -532,11 +534,12 @@ class SslCastSocketTest : public CastSocketTestBase {
   std::unique_ptr<crypto::RSAPrivateKey> ReadTestKeyFromPEM(
       const base::StringPiece& name) {
     base::FilePath key_path = GetTestCertsDirectory().AppendASCII(name);
-    std::vector<std::string> headers({"PRIVATE KEY"});
     std::string pem_data;
     if (!base::ReadFileToString(key_path, &pem_data)) {
       return nullptr;
     }
+
+    const std::vector<std::string> headers({"PRIVATE KEY"});
     net::PEMTokenizer pem_tokenizer(pem_data, headers);
     if (!pem_tokenizer.GetNext()) {
       return nullptr;
@@ -1054,7 +1057,7 @@ TEST_F(MockCastSocketTest, TestOpenChannelClosedSocket) {
 }
 
 // https://crbug.com/874491, flaky on Win and Mac
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
 #define MAYBE_TestConnectEndToEndWithRealSSL \
   DISABLED_TestConnectEndToEndWithRealSSL
 #else

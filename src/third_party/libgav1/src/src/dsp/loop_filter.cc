@@ -31,10 +31,10 @@ template <int bitdepth, typename Pixel>
 struct LoopFilterFuncs_C {
   LoopFilterFuncs_C() = delete;
 
-  static const int kMaxPixel = (1 << bitdepth) - 1;
-  static const int kMinSignedPixel = -(1 << (bitdepth - 1));
-  static const int kMaxSignedPixel = (1 << (bitdepth - 1)) - 1;
-  static const int kFlatThresh = 1 << (bitdepth - 8);
+  static constexpr int kMaxPixel = (1 << bitdepth) - 1;
+  static constexpr int kMinSignedPixel = -(1 << (bitdepth - 1));
+  static constexpr int kMaxSignedPixel = (1 << (bitdepth - 1)) - 1;
+  static constexpr int kFlatThresh = 1 << (bitdepth - 8);
 
   static void Vertical4(void* dest, ptrdiff_t stride, int outer_thresh,
                         int inner_thresh, int hev_thresh);

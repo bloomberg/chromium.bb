@@ -34,13 +34,13 @@ ServiceWorkerMainResourceHandle::~ServiceWorkerMainResourceHandle() {
                             core_);
 }
 
-void ServiceWorkerMainResourceHandle::OnCreatedProviderHost(
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info) {
+void ServiceWorkerMainResourceHandle::OnCreatedContainerHost(
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(provider_info->host_remote.is_valid() &&
-         provider_info->client_receiver.is_valid());
+  DCHECK(container_info->host_remote.is_valid() &&
+         container_info->client_receiver.is_valid());
 
-  provider_info_ = std::move(provider_info);
+  container_info_ = std::move(container_info);
 }
 
 void ServiceWorkerMainResourceHandle::OnBeginNavigationCommit(
@@ -49,27 +49,40 @@ void ServiceWorkerMainResourceHandle::OnBeginNavigationCommit(
     const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info) {
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr* out_container_info,
+    ukm::SourceId document_ukm_source_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // We may have failed to pre-create the provider host.
-  if (!provider_info_)
+  // We may have failed to pre-create the container host.
+  if (!container_info_)
     return;
   ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
       FROM_HERE,
       base::BindOnce(
           &ServiceWorkerMainResourceHandleCore::OnBeginNavigationCommit,
           base::Unretained(core_), render_process_id, render_frame_id,
-          cross_origin_embedder_policy, std::move(coep_reporter)));
-  *out_provider_info = std::move(provider_info_);
+          cross_origin_embedder_policy, std::move(coep_reporter),
+          document_ukm_source_id));
+  *out_container_info = std::move(container_info_);
+}
+
+void ServiceWorkerMainResourceHandle::OnEndNavigationCommit() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
+      FROM_HERE,
+      base::BindOnce(
+          &ServiceWorkerMainResourceHandleCore::OnEndNavigationCommit,
+          base::Unretained(core_)));
 }
 
 void ServiceWorkerMainResourceHandle::OnBeginWorkerCommit(
-    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy) {
+    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+    ukm::SourceId worker_ukm_source_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
       FROM_HERE,
       base::BindOnce(&ServiceWorkerMainResourceHandleCore::OnBeginWorkerCommit,
-                     base::Unretained(core_), cross_origin_embedder_policy));
+                     base::Unretained(core_), cross_origin_embedder_policy,
+                     worker_ukm_source_id));
 }
 
 }  // namespace content

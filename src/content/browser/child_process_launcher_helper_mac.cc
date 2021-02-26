@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/browser/child_process_launcher_helper_posix.h"
@@ -22,11 +23,10 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "sandbox/mac/seatbelt_exec.h"
-#include "services/service_manager/embedder/result_codes.h"
-#include "services/service_manager/sandbox/mac/sandbox_mac.h"
-#include "services/service_manager/sandbox/sandbox.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/mac/sandbox_mac.h"
+#include "sandbox/policy/sandbox.h"
+#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/switches.h"
 
 namespace content {
 namespace internal {
@@ -65,24 +65,28 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   options->mach_ports_for_rendezvous.insert(std::make_pair(
       'mojo', base::MachRendezvousPort(endpoint.TakeMachReceiveRight())));
 
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+  options->launch_x86_64 = delegate_->LaunchX86_64();
+#endif  // OS_MAC && ARCH_CPU_ARM64
+
   options->environment = delegate_->GetEnvironment();
 
   options->disclaim_responsibility = delegate_->DisclaimResponsibility();
 
   auto sandbox_type =
-      service_manager::SandboxTypeFromCommandLine(*command_line_);
+      sandbox::policy::SandboxTypeFromCommandLine(*command_line_);
 
   bool no_sandbox =
-      command_line_->HasSwitch(service_manager::switches::kNoSandbox) ||
-      service_manager::IsUnsandboxedSandboxType(sandbox_type);
+      command_line_->HasSwitch(sandbox::policy::switches::kNoSandbox) ||
+      sandbox::policy::IsUnsandboxedSandboxType(sandbox_type);
 
-  bool use_v2 = (sandbox_type != service_manager::SandboxType::kGpu) ||
+  bool use_v2 = (sandbox_type != sandbox::policy::SandboxType::kGpu) ||
                 base::FeatureList::IsEnabled(features::kMacV2GPUSandbox);
 
   if (use_v2 && !no_sandbox) {
     // Generate the profile string.
     std::string profile =
-        service_manager::SandboxMac::GetSandboxProfile(sandbox_type);
+        sandbox::policy::SandboxMac::GetSandboxProfile(sandbox_type);
 
     // Disable os logging to com.apple.diagnosticd which is a performance
     // problem.
@@ -160,7 +164,7 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   // Client has gone away, so just kill the process.  Using exit code 0 means
   // that UMA won't treat this as a crash.
-  process.process.Terminate(service_manager::RESULT_CODE_NORMAL_EXIT, false);
+  process.process.Terminate(RESULT_CODE_NORMAL_EXIT, false);
   base::EnsureProcessTerminated(std::move(process.process));
 }
 

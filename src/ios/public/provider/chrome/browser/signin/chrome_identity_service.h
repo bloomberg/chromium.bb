@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -26,6 +27,7 @@ class ChromeBrowserState;
 @class UIApplication;
 @class UIImage;
 @class UINavigationController;
+@class UIScene;
 @class UIViewController;
 
 namespace ios {
@@ -102,10 +104,21 @@ class ChromeIdentityService {
 
   // Handles open URL authentication callback. Returns whether the URL was
   // actually handled. This should be called within
-  // UIApplicationDelegate application:openURL:options:.
+  // -[<UIApplicationDelegate> application:openURL:options:].
   virtual bool HandleApplicationOpenURL(UIApplication* application,
                                         NSURL* url,
                                         NSDictionary* options);
+
+  // Handles open URL authentication callback. Returns whether the URL was
+  // actually handled. This should be called within
+  // -[<UISceneDelegate> application:openURLContexts:].
+  virtual bool HandleSessionOpenURLContexts(UIScene* scene, NSSet* url_contexts)
+      API_AVAILABLE(ios(13.0));
+
+  // Discards scene session data.This should be called within
+  // -[<UIApplicationDelegate> application:didDiscardSceneSessions:].
+  virtual void ApplicationDidDiscardSceneSessions(NSSet* scene_sessions)
+      API_AVAILABLE(ios(13.0));
 
   // Dismisses all the dialogs created by the abstracted flows.
   virtual void DismissDialogs();
@@ -141,31 +154,46 @@ class ChromeIdentityService {
 
   // Returns YES if |identity| is valid and if the service has it in its list of
   // identitites.
-  virtual bool IsValidIdentity(ChromeIdentity* identity) const;
-
-  // Returns the chrome identity having the email equal to |email| or |nil| if
-  // no matching identity is found.
-  virtual ChromeIdentity* GetIdentityWithEmail(const std::string& email) const;
+  virtual bool IsValidIdentity(ChromeIdentity* identity);
 
   // Returns the chrome identity having the gaia ID equal to |gaia_id| or |nil|
   // if no matching identity is found.
-  virtual ChromeIdentity* GetIdentityWithGaiaID(
-      const std::string& gaia_id) const;
-
-  // Returns the canonicalized emails for all identities.
-  virtual std::vector<std::string> GetCanonicalizeEmailsForAllIdentities()
-      const;
+  // Before calling this method, the identity cache need to be populated.
+  // See RunAfterCacheIsPopulated() or WaitUntilCacheIsPopulated().
+  virtual ChromeIdentity* GetIdentityWithGaiaID(const std::string& gaia_id);
 
   // Returns true if there is at least one identity.
-  virtual bool HasIdentities() const;
+  // Before calling this method, the identity cache need to be populated.
+  // See RunAfterCacheIsPopulated() or WaitUntilCacheIsPopulated().
+  virtual bool HasIdentities();
 
   // Returns all ChromeIdentity objects in an array.
-  virtual NSArray* GetAllIdentities() const;
+  // Before calling this method, the identity cache need to be populated.
+  // See RunAfterCacheIsPopulated() or WaitUntilCacheIsPopulated().
+  virtual NSArray* GetAllIdentities();
 
   // Returns all ChromeIdentity objects sorted by the ordering used in the
   // account manager, which is typically based on the keychain ordering of
   // accounts.
-  virtual NSArray* GetAllIdentitiesSortedForDisplay() const;
+  // Before calling this method, the identity cache need to be populated.
+  // See RunAfterCacheIsPopulated() or WaitUntilCacheIsPopulated().
+  virtual NSArray* GetAllIdentitiesSortedForDisplay();
+
+  // Invokes |callback| after the cache of identities is populated:
+  // * if cache is already populated, then |callback| is called on the next run
+  //   loop.
+  // * if cache is not populated, then |callback| is called once the cache of
+  //   identities is populated.
+  // If this method is call multiple times, the callbacks will be invoked in the
+  // same order.
+  virtual void RunAfterCacheIsPopulated(base::OnceClosure callback);
+
+  // Waits until the identity cache is populated. Does nothing if the cache is
+  // already populated.
+  // Note: This method blocks the main thread until the cache of identities if
+  // populated. RunAfterCacheIsPopulated() is highly suggested instead of this
+  // method.
+  virtual void WaitUntilCacheIsPopulated();
 
   // Forgets the given identity on the device. This method logs the user out.
   // It is asynchronous because it needs to contact the server to revoke the

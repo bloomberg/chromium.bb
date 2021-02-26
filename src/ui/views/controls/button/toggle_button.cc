@@ -19,7 +19,6 @@
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -69,7 +68,7 @@ class ToggleButton::ThumbView : public InkDropHostView {
 
  protected:
   // views::View:
-  bool CanProcessEventsWithinSubtree() const override {
+  bool GetCanProcessEventsWithinSubtree() const override {
     // Make the thumb behave as part of the parent for event handling.
     return false;
   }
@@ -121,18 +120,18 @@ class ToggleButton::ThumbView : public InkDropHostView {
   DISALLOW_COPY_AND_ASSIGN(ThumbView);
 };
 
-ToggleButton::ToggleButton(ButtonListener* listener) : Button(listener) {
+ToggleButton::ToggleButton(PressedCallback callback)
+    : Button(std::move(callback)) {
   slide_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(80));
   slide_animation_.SetTweenType(gfx::Tween::LINEAR);
   thumb_view_ = AddChildView(std::make_unique<ThumbView>());
   SetInkDropMode(InkDropMode::ON);
-  SetFocusForPlatform();
   // TODO(pbos): Update the highlight-path shape so that a FocusRing can be used
   // on top of it to increase contrast. Disabling it for now addresses a
   // regression in crbug.com/1031983, but a matching FocusRing would probably be
   // desirable.
   SetInstallFocusRingOnFocus(false);
-  set_has_ink_drop_action_on_click(true);
+  SetHasInkDropActionOnClick(true);
 }
 
 ToggleButton::~ToggleButton() {
@@ -330,10 +329,6 @@ std::unique_ptr<InkDrop> ToggleButton::CreateInkDrop() {
   return std::move(ink_drop);
 }
 
-std::unique_ptr<InkDropMask> ToggleButton::CreateInkDropMask() const {
-  return nullptr;
-}
-
 std::unique_ptr<InkDropRipple> ToggleButton::CreateInkDropRipple() const {
   gfx::Rect rect = thumb_view_->GetLocalBounds();
   rect.Inset(-ThumbView::GetShadowOutsets());
@@ -355,14 +350,13 @@ void ToggleButton::AnimationProgressed(const gfx::Animation* animation) {
   Button::AnimationProgressed(animation);
 }
 
-BEGIN_METADATA(ToggleButton)
-METADATA_PARENT_CLASS(Button)
-ADD_PROPERTY_METADATA(ToggleButton, bool, IsOn)
-ADD_PROPERTY_METADATA(ToggleButton, bool, AcceptsEvents)
-ADD_PROPERTY_METADATA(ToggleButton, base::Optional<SkColor>, ThumbOnColor)
-ADD_PROPERTY_METADATA(ToggleButton, base::Optional<SkColor>, ThumbOffColor)
-ADD_PROPERTY_METADATA(ToggleButton, base::Optional<SkColor>, TrackOnColor)
-ADD_PROPERTY_METADATA(ToggleButton, base::Optional<SkColor>, TrackOffColor)
-END_METADATA()
+BEGIN_METADATA(ToggleButton, Button)
+ADD_PROPERTY_METADATA(bool, IsOn)
+ADD_PROPERTY_METADATA(bool, AcceptsEvents)
+ADD_PROPERTY_METADATA(base::Optional<SkColor>, ThumbOnColor)
+ADD_PROPERTY_METADATA(base::Optional<SkColor>, ThumbOffColor)
+ADD_PROPERTY_METADATA(base::Optional<SkColor>, TrackOnColor)
+ADD_PROPERTY_METADATA(base::Optional<SkColor>, TrackOffColor)
+END_METADATA
 
 }  // namespace views

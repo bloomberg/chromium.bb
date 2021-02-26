@@ -1,0 +1,60 @@
+// Copyright 2020 The Tint Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "src/writer/wgsl/generator.h"
+
+#include <utility>
+
+namespace tint {
+namespace writer {
+namespace wgsl {
+
+Generator::Generator(ast::Module module)
+    : Text(std::move(module)), impl_(std::make_unique<GeneratorImpl>()) {}
+
+Generator::~Generator() = default;
+
+void Generator::Reset() {
+  set_error("");
+  impl_ = std::make_unique<GeneratorImpl>();
+}
+
+bool Generator::Generate() {
+  auto ret = impl_->Generate(module_);
+  if (!ret) {
+    error_ = impl_->error();
+  }
+  return ret;
+}
+
+bool Generator::GenerateEntryPoint(ast::PipelineStage stage,
+                                   const std::string& name) {
+  auto ret = impl_->GenerateEntryPoint(module_, stage, name);
+  if (!ret) {
+    error_ = impl_->error();
+  }
+  return ret;
+}
+
+std::string Generator::result() const {
+  return impl_->result();
+}
+
+std::string Generator::error() const {
+  return impl_->error();
+}
+
+}  // namespace wgsl
+}  // namespace writer
+}  // namespace tint

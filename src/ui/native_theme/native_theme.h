@@ -107,25 +107,31 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   // OS-level preferred color scheme. (Ex. high contrast or dark mode color
   // preference.)
-  enum PreferredColorScheme {
-    kNoPreference,
-    kDark,
-    kLight,
+  enum class PreferredColorScheme {
+    kDark = 0,
+    kLight = 1,
     kMaxValue = kLight,
+  };
+
+  // OS-level preferred contrast. (Ex. high contrast or increased contrast.)
+  enum class PreferredContrast {
+    kNoPreference = 0,
+    kMore = 1,
+    kLess = 2,
+    kMaxValue = kLess,
   };
 
   // IMPORTANT!
   // This enum is reporting in metrics. Do not reorder; add additional values at
   // the end.
   //
-  // This represents the OS-level high contrast theme. kNone if high contrast is
-  // not enabled.
-  enum class HighContrastColorScheme {
+  // This represents the OS-level high contrast theme. kNone unless the default
+  // system color scheme is kPlatformHighContrast.
+  enum class PlatformHighContrastColorScheme {
     kNone = 0,
     kDark = 1,
     kLight = 2,
-    kCustom = 3,
-    kMaxValue = kCustom,
+    kMaxValue = kLight,
   };
 
   // The color scheme used for painting the native controls.
@@ -251,12 +257,32 @@ class NATIVE_THEME_EXPORT NativeTheme {
     ScrollbarOverlayColorTheme scrollbar_theme;
   };
 
+#if defined(OS_APPLE)
+  enum ScrollbarOrientation {
+    // Vertical scrollbar on the right side of content.
+    kVerticalOnRight,
+    // Vertical scrollbar on the left side of content.
+    kVerticalOnLeft,
+    // Horizontal scrollbar (on the bottom of content).
+    kHorizontal,
+  };
+
+  // A unique set of scrollbar params. Currently needed for Mac.
+  struct ScrollbarExtraParams {
+    bool is_hovering;
+    bool is_overlay;
+    ScrollbarOverlayColorTheme scrollbar_theme;
+    ScrollbarOrientation orientation;  // Used on Mac for drawing gradients.
+  };
+#endif
+
   struct SliderExtraParams {
     bool vertical;
     bool in_drag;
     int thumb_x;
     int thumb_y;
     float zoom;
+    bool right_to_left;
   };
 
   struct TextFieldExtraParams {
@@ -292,6 +318,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
     MenuBackgroundExtraParams menu_background;
     ProgressBarExtraParams progress_bar;
     ScrollbarArrowExtraParams scrollbar_arrow;
+#if defined(OS_APPLE)
+    ScrollbarExtraParams scrollbar_extra;
+#endif
     ScrollbarTrackExtraParams scrollbar_track;
     ScrollbarThumbExtraParams scrollbar_thumb;
     SliderExtraParams slider;
@@ -399,9 +428,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // system accessibility settings and the system theme.
   virtual bool UsesHighContrastColors() const;
 
-  // Returns the HighContrastColorScheme used by the OS. Returns kNone if high
-  // contrast is not enabled.
-  HighContrastColorScheme GetHighContrastColorScheme() const;
+  // Returns the PlatformHighContrastColorScheme used by the OS. Returns a value
+  // other than kNone only if the default system color scheme is
+  // kPlatformHighContrast.
+  PlatformHighContrastColorScheme GetPlatformHighContrastColorScheme() const;
 
   // Returns true when the NativeTheme uses a light-on-dark color scheme. If
   // you're considering using this function to choose between two hard-coded
@@ -412,6 +442,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // CalculatePreferredColorScheme() for details on how preferred color scheme
   // is calculated.
   virtual PreferredColorScheme GetPreferredColorScheme() const;
+
+  // Returns the OS-level user preferred contrast.
+  virtual PreferredContrast GetPreferredContrast() const;
 
   // Returns the system's caption style.
   virtual base::Optional<CaptionStyle> GetSystemCaptionStyle() const;
@@ -435,11 +468,14 @@ class NATIVE_THEME_EXPORT NativeTheme {
   void set_preferred_color_scheme(PreferredColorScheme preferred_color_scheme) {
     preferred_color_scheme_ = preferred_color_scheme;
   }
+  void set_preferred_contrast(PreferredContrast preferred_contrast) {
+    preferred_contrast_ = preferred_contrast;
+  }
   void set_system_colors(const std::map<SystemThemeColor, SkColor>& colors);
 
-  // Updates the state of dark mode, high contrast, preferred color scheme,
-  // and the map of system colors. Returns true if NativeTheme was updated
-  // as a result, or false if the state of NativeTheme was untouched.
+  // Updates the state of dark mode, high contrast, and the map of system
+  // colors. Returns true if NativeTheme was updated as a result, or false if
+  // the state of NativeTheme was untouched.
   bool UpdateSystemColorInfo(
       bool is_dark_mode,
       bool is_high_contrast,
@@ -448,6 +484,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // On certain platforms, currently only Mac, there is a unique visual for
   // pressed states.
   virtual SkColor GetSystemButtonPressedColor(SkColor base_color) const;
+
+  // Assign the focus-ring-appropriate alpha value to the provided base_color.
+  virtual SkColor FocusRingColorForBaseColor(SkColor base_color) const;
 
  protected:
   explicit NativeTheme(bool should_only_use_dark_colors);
@@ -465,13 +504,13 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Some platforms override this behavior. On Windows, for example, we also
   // look at the high contrast setting. If high contrast is enabled, the
   // preferred color scheme calculation will ignore the state of dark mode.
-  // Instead, preferred color scheme will be light, dark, or no-preference
-  // depending on the OS high contrast theme. If high contrast is off, the
-  // preferred color scheme calculation will follow the default behavior.
-  //
-  // Note, if the preferred color scheme is based on dark mode, it will never
-  // be set to no-preference.
+  // Instead, preferred color scheme will be light, or dark depending on the OS
+  // high contrast theme. If high contrast is off, the preferred color scheme
+  // calculation will follow the default behavior.
   virtual PreferredColorScheme CalculatePreferredColorScheme() const;
+
+  // Calculates and returns the current user preferred contrast.
+  virtual PreferredContrast CalculatePreferredContrast() const;
 
   // A function to be called by native theme instances that need to set state
   // or listeners with the webinstance in order to provide correct native
@@ -481,7 +520,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Allows one native theme to observe changes in another. For example, the
   // web native theme for Windows observes the corresponding ui native theme in
   // order to receive changes regarding the state of dark mode, high contrast,
-  // and preferred color scheme.
+  // preferred color scheme and preferred contrast.
   class NATIVE_THEME_EXPORT ColorSchemeNativeThemeObserver
       : public NativeThemeObserver {
    public:
@@ -506,8 +545,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   bool should_use_dark_colors_ = false;
   bool is_high_contrast_ = false;
-  PreferredColorScheme preferred_color_scheme_ =
-      PreferredColorScheme::kNoPreference;
+  PreferredColorScheme preferred_color_scheme_ = PreferredColorScheme::kLight;
+  PreferredContrast preferred_contrast_ = PreferredContrast::kNoPreference;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTheme);
 };

@@ -6,6 +6,7 @@ module network.mojom;
 
 import "components/content_settings/core/common/content_settings.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "services/network/public/mojom/schemeful_site.mojom";
 import "url/mojom/url.mojom";
 
 // Parameters for constructing a cookie manager.
@@ -78,6 +79,14 @@ enum CookieSameSite {
   // Reserved 3 (was EXTENDED_MODE), next number is 4.
 };
 
+enum CookieEffectiveSameSite {
+  kNoRestriction = 0,
+  kLaxMode = 1,
+  kStrictMode = 2,
+  kLaxModeAllowUnsafe = 3,
+  kUndefined = 4,
+};
+
 enum ContextType {
   CROSS_SITE,
   SAME_SITE_LAX_METHOD_UNSAFE,
@@ -106,6 +115,7 @@ struct CookieOptions {
   CookieSameSiteContext same_site_cookie_context;
   bool update_access_time = true;
   bool return_excluded_cookies = false;
+  array<SchemefulSite>? full_party_context;
 };
 
 // See net/cookies/canonical_cookie.{h,cc} for documentation.
@@ -123,26 +133,36 @@ struct CanonicalCookie {
   CookieSameSite site_restrictions = NO_RESTRICTION;
   CookiePriority priority = MEDIUM;
   CookieSourceScheme source_scheme = kUnset;
+  bool same_party = false;
+  // -1 because of url::PORT_UNSPECIFIED
+  // url/third_party/mozilla/url_parse.h
+  int32 source_port = -1;
 };
 
 struct CookieInclusionStatus {
   // Bitfield. Is defined in
-  // net::CanonicalCookie::CookieInclusionStatus::ExclusionReason.
+  // net::CookieInclusionStatus::ExclusionReason.
+  // net::CookieInclusionStatus::WarningReason.
   uint32 exclusion_reasons;
   // Bitfield. Is defined in
-  // net::CanonicalCookie::CookieInclusionStatus::WarningReason.
   uint32 warning_reasons;
 };
 
-struct CookieWithStatus {
-  CanonicalCookie cookie;
+struct CookieAndLineWithAccessResult {
+  CanonicalCookie? cookie;
+  string cookie_string;
+  CookieAccessResult access_result;
+};
+
+struct CookieAccessResult {
+  CookieEffectiveSameSite effective_same_site;
+  CookieAccessSemantics access_semantics;
   CookieInclusionStatus status;
 };
 
-struct CookieAndLineWithStatus {
-  CanonicalCookie? cookie;
-  string cookie_string;
-  CookieInclusionStatus status;
+struct CookieWithAccessResult {
+  CanonicalCookie cookie;
+  CookieAccessResult access_result;
 };
 
 // Keep values here in sync with net::CookieChangeCause.
@@ -167,8 +187,8 @@ enum CookieChangeCause {
 struct CookieChangeInfo {
   // The cookie that changed, in its post-change state.
   CanonicalCookie cookie;
-  // Access semantics of the cookie at the time of the change.
-  CookieAccessSemantics access_semantics;
+  // Access results at the time of the change.
+  CookieAccessResult access_result;
   CookieChangeCause cause;
 };
 
@@ -276,8 +296,8 @@ interface CookieManager {
   // blocked from being sent along with the reason each cookie was blocked. By
   // default, that option is not set and |excluded_cookies| is an empty list.
   GetCookieList(url.mojom.Url url, CookieOptions cookie_options)
-      => (array<CookieWithStatus> cookies,
-          array<CookieWithStatus> excluded_cookies);
+      => (array<CookieWithAccessResult> cookies,
+          array<CookieWithAccessResult> excluded_cookies);
 
   // Set a cookie.  |source_url| is used to check whether existing secure
   // cookies can be overwritten (secure cookies may be created from a
@@ -288,7 +308,7 @@ interface CookieManager {
   // |status| will be set to INCLUDE.
   SetCanonicalCookie(CanonicalCookie cookie, url.mojom.Url source_url,
                      CookieOptions cookie_options)
-      => (CookieInclusionStatus status);
+      => (CookieAccessResult access_result);
 
   // Delete a cookie. Returns true if a cookie was deleted.
   DeleteCanonicalCookie(CanonicalCookie cookie) => (bool success);

@@ -18,7 +18,6 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -26,8 +25,6 @@
 #include "components/metrics/serialization/serialization_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace chromeos {
 
@@ -51,14 +48,13 @@ bool CheckLinearValues(const std::string& name, int maximum) {
   return CheckValues(name, 1, maximum, maximum + 1);
 }
 
-// The file from which externally-reported metrics are read.
-constexpr char kEventsFilePath[] = "/var/lib/metrics/uma-events";
-
 // Default interval between externally-reported metrics being collected.
 constexpr base::TimeDelta kDefaultCollectionInterval =
     base::TimeDelta::FromSeconds(30);
 
 }  // namespace
+
+constexpr char ExternalMetrics::kEventsFilePath[];
 
 ExternalMetrics::ExternalMetrics()
     : uma_events_file_(kEventsFilePath),
@@ -96,8 +92,8 @@ void ExternalMetrics::RecordActionUI(const std::string& action_string) {
 }
 
 void ExternalMetrics::RecordAction(const std::string& action) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ExternalMetrics::RecordActionUI, this, action));
 }
 
@@ -106,8 +102,8 @@ void ExternalMetrics::RecordCrashUI(const std::string& crash_kind) {
 }
 
 void ExternalMetrics::RecordCrash(const std::string& crash_kind) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ExternalMetrics::RecordCrashUI, this, crash_kind));
 }
 

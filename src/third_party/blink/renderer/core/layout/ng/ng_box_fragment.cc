@@ -6,36 +6,26 @@
 
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
 
-NGLineHeightMetrics NGBoxFragment::BaselineMetrics(
-    const NGLineBoxStrut& margins,
-    FontBaseline baseline_type) const {
+FontHeight NGBoxFragment::BaselineMetrics(const NGLineBoxStrut& margins,
+                                          FontBaseline baseline_type) const {
   DCHECK(physical_fragment_.IsAtomicInline() ||
          physical_fragment_.IsListMarker());
-  const ComputedStyle& style = physical_fragment_.Style();
 
-  // For "leaf" theme objects, let the theme decide what the baseline position
-  // is. The theme baseline wins over the propagated baselines.
-  if (style.HasEffectiveAppearance() &&
-      !LayoutTheme::GetTheme().IsControlContainer(
-          style.EffectiveAppearance())) {
-    return NGLineHeightMetrics(
-        BlockSize() + margins.line_over +
-            LayoutTheme::GetTheme().BaselinePositionAdjustment(style),
-        margins.line_under);
+  // For checkbox and radio controls, we always use the border edge instead of
+  // the margin edge.
+  if (physical_fragment_.Style().IsCheckboxOrRadioPart()) {
+    return FontHeight(margins.line_over + BlockSize(), margins.line_under);
   }
 
-  base::Optional<LayoutUnit> baseline = Baseline();
-  if (baseline) {
-    NGLineHeightMetrics metrics =
-        IsFlippedLinesWritingMode(GetWritingMode())
-            ? NGLineHeightMetrics(BlockSize() - *baseline, *baseline)
-            : NGLineHeightMetrics(*baseline, BlockSize() - *baseline);
+  if (const base::Optional<LayoutUnit> baseline = Baseline()) {
+    FontHeight metrics = writing_direction_.IsFlippedLines()
+                             ? FontHeight(BlockSize() - *baseline, *baseline)
+                             : FontHeight(*baseline, BlockSize() - *baseline);
 
     // For replaced elements, inline-block elements, and inline-table elements,
     // the height is the height of their margin-box.
@@ -52,8 +42,8 @@ NGLineHeightMetrics NGBoxFragment::BaselineMetrics(
   LayoutUnit block_size = BlockSize() + margins.BlockSum();
 
   if (baseline_type == kAlphabeticBaseline)
-    return NGLineHeightMetrics(block_size, LayoutUnit());
-  return NGLineHeightMetrics(block_size - block_size / 2, block_size / 2);
+    return FontHeight(block_size, LayoutUnit());
+  return FontHeight(block_size - block_size / 2, block_size / 2);
 }
 
 }  // namespace blink

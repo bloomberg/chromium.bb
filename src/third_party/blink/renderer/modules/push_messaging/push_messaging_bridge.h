@@ -27,8 +27,6 @@ class ScriptState;
 // TODO(peter): Use the PushMessaging Mojo service directly from here.
 class PushMessagingBridge final : public GarbageCollected<PushMessagingBridge>,
                                   public Supplement<ServiceWorkerRegistration> {
-  USING_GARBAGE_COLLECTED_MIXIN(PushMessagingBridge);
-
  public:
   static const char kSupplementName[];
 
@@ -41,7 +39,7 @@ class PushMessagingBridge final : public GarbageCollected<PushMessagingBridge>,
   ScriptPromise GetPermissionState(ScriptState* script_state,
                                    const PushSubscriptionOptionsInit* options);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Method to be invoked when the permission status has been retrieved from the

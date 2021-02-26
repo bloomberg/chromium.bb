@@ -96,7 +96,7 @@ class MediaKeys::PendingAction final
                 const String& string_data)
       : type_(type), result_(result), data_(data), string_data_(string_data) {}
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(result_);
     visitor->Trace(data_);
   }
@@ -150,7 +150,7 @@ class SetCertificateResultPromise
         exception_code, system_code, error_message);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(media_keys_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
@@ -183,7 +183,7 @@ class GetStatusForPolicyResultPromise
     Resolve(EncryptedMediaUtils::ConvertKeyStatusToString(key_status));
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(media_keys_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
@@ -220,6 +220,13 @@ MediaKeySession* MediaKeys::createSession(ScriptState* script_state,
                                           ExceptionState& exception_state) {
   DVLOG(MEDIA_KEYS_LOG_LEVEL)
       << __func__ << "(" << this << ") " << session_type_string;
+
+  // If the context for MediaKeys has been destroyed, fail.
+  if (!GetExecutionContext()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The context provided is invalid.");
+    return nullptr;
+  }
 
   // [RuntimeEnabled] does not work with enum values. So we have to check it
   // here. See https://crbug.com/871867 for details.
@@ -267,6 +274,13 @@ ScriptPromise MediaKeys::setServerCertificate(
     ScriptState* script_state,
     const DOMArrayPiece& server_certificate,
     ExceptionState& exception_state) {
+  // If the context for MediaKeys has been destroyed, fail.
+  if (!GetExecutionContext()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The context provided is invalid.");
+    return ScriptPromise();
+  }
+
   // From https://w3c.github.io/encrypted-media/#setServerCertificate
   // The setServerCertificate(serverCertificate) method provides a server
   // certificate to be used to encrypt messages to the license server.
@@ -279,7 +293,7 @@ ScriptPromise MediaKeys::setServerCertificate(
   //
   // 2. If serverCertificate is an empty array, return a promise rejected
   //    with a new a newly created TypeError.
-  if (!server_certificate.ByteLengthAsSizeT()) {
+  if (!server_certificate.ByteLength()) {
     exception_state.ThrowTypeError("The serverCertificate parameter is empty.");
     return ScriptPromise();
   }
@@ -287,7 +301,7 @@ ScriptPromise MediaKeys::setServerCertificate(
   // 3. Let certificate be a copy of the contents of the serverCertificate
   //    parameter.
   DOMArrayBuffer* server_certificate_buffer = DOMArrayBuffer::Create(
-      server_certificate.Data(), server_certificate.ByteLengthAsSizeT());
+      server_certificate.Data(), server_certificate.ByteLength());
 
   // 4. Let promise be a new promise.
   SetCertificateResultPromise* result =
@@ -309,13 +323,22 @@ void MediaKeys::SetServerCertificateTask(
     ContentDecryptionModuleResult* result) {
   DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ")";
 
+  // If the context has been destroyed, don't proceed. Try to have the promise
+  // be rejected.
+  if (!GetExecutionContext()) {
+    result->CompleteWithError(
+        kWebContentDecryptionModuleExceptionInvalidStateError, 0,
+        "The context provided is invalid.");
+    return;
+  }
+
   // 5.1 Let cdm be the cdm during the initialization of this object.
   WebContentDecryptionModule* cdm = ContentDecryptionModule();
 
   // 5.2 Use the cdm to process certificate.
   cdm->SetServerCertificate(
       static_cast<unsigned char*>(server_certificate->Data()),
-      server_certificate->ByteLengthAsSizeT(), result->Result());
+      server_certificate->ByteLength(), result->Result());
 
   // 5.3 If any of the preceding steps failed, reject promise with a
   //     new DOMException whose name is the appropriate error name.
@@ -325,7 +348,15 @@ void MediaKeys::SetServerCertificateTask(
 
 ScriptPromise MediaKeys::getStatusForPolicy(
     ScriptState* script_state,
-    const MediaKeysPolicy* media_keys_policy) {
+    const MediaKeysPolicy* media_keys_policy,
+    ExceptionState& exception_state) {
+  // If the context for MediaKeys has been destroyed, fail.
+  if (!GetExecutionContext()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The context provided is invalid.");
+    return ScriptPromise();
+  }
+
   // TODO(xhwang): Pass MediaKeysPolicy classes all the way to Chromium when
   // we have more than one policy to check.
   String min_hdcp_version = media_keys_policy->minHdcpVersion();
@@ -348,6 +379,15 @@ ScriptPromise MediaKeys::getStatusForPolicy(
 void MediaKeys::GetStatusForPolicyTask(const String& min_hdcp_version,
                                        ContentDecryptionModuleResult* result) {
   DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << ": " << min_hdcp_version;
+
+  // If the context has been destroyed, don't proceed. Try to have the promise
+  // be rejected.
+  if (!GetExecutionContext()) {
+    result->CompleteWithError(
+        kWebContentDecryptionModuleExceptionInvalidStateError, 0,
+        "The context provided is invalid.");
+    return;
+  }
 
   WebContentDecryptionModule* cdm = ContentDecryptionModule();
   cdm->GetStatusForPolicy(min_hdcp_version, result->Result());
@@ -417,7 +457,7 @@ WebContentDecryptionModule* MediaKeys::ContentDecryptionModule() {
   return cdm_.get();
 }
 
-void MediaKeys::Trace(Visitor* visitor) {
+void MediaKeys::Trace(Visitor* visitor) const {
   visitor->Trace(pending_actions_);
   visitor->Trace(media_element_);
   ScriptWrappable::Trace(visitor);

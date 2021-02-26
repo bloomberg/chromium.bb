@@ -4,16 +4,16 @@
 
 cr.define('cr.toastManager', () => {
   /* eslint-disable */
-  /** @private {?cr.toastManager.CrToastManagerElement} */
+  /** @private {?CrToastManagerElement} */
   let toastManagerInstance = null;
   /* eslint-enable */
 
-  /** @return {!cr.toastManager.CrToastManagerElement} */
+  /** @return {!CrToastManagerElement} */
   /* #export */ function getToastManager() {
     return assert(toastManagerInstance);
   }
 
-  /** @param {?cr.toastManager.CrToastManagerElement} instance */
+  /** @param {?CrToastManagerElement} instance */
   function setInstance(instance) {
     assert(!instance || !toastManagerInstance);
     toastManagerInstance = instance;
@@ -23,7 +23,7 @@ cr.define('cr.toastManager', () => {
    * @fileoverview Element which shows toasts with optional undo button.
    */
   // eslint-disable-next-line
-  /* #export */ let CrToastManagerElement = Polymer({
+  Polymer({
     is: 'cr-toast-manager',
 
     properties: {
@@ -38,6 +38,11 @@ cr.define('cr.toastManager', () => {
       return this.$.toast.open;
     },
 
+    /** @return {boolean} */
+    get slottedHidden() {
+      return this.$.slotted.hidden;
+    },
+
     /** @override */
     attached() {
       setInstance(this);
@@ -48,17 +53,21 @@ cr.define('cr.toastManager', () => {
       setInstance(null);
     },
 
-    /** @param {string} label The label to display inside the toast. */
-    show(label) {
+    /**
+     * @param {string} label The label to display inside the toast.
+     * @param {boolean=} hideSlotted
+     */
+    show(label, hideSlotted = false) {
       this.$.content.textContent = label;
-      this.showInternal_();
+      this.showInternal_(hideSlotted);
     },
 
     /**
      * Shows the toast, making certain text fragments collapsible.
      * @param {!Array<!{value: string, collapsible: boolean}>} pieces
+     * @param {boolean=} hideSlotted
      */
-    showForStringPieces(pieces) {
+    showForStringPieces(pieces, hideSlotted = false) {
       const content = this.$.content;
       content.textContent = '';
       pieces.forEach(function(p) {
@@ -75,15 +84,15 @@ cr.define('cr.toastManager', () => {
         content.appendChild(span);
       });
 
-      this.showInternal_();
+      this.showInternal_(hideSlotted);
     },
 
-    /** @private */
-    showInternal_() {
-      Polymer.IronA11yAnnouncer.requestAvailability();
-      this.fire('iron-announce', {
-        text: this.$.content.textContent,
-      });
+    /**
+     * @param {boolean} hideSlotted
+     * @private
+     */
+    showInternal_(hideSlotted) {
+      this.$.slotted.hidden = hideSlotted;
       this.$.toast.show();
     },
 
@@ -94,7 +103,6 @@ cr.define('cr.toastManager', () => {
 
   // #cr_define_end
   return {
-    CrToastManagerElement: CrToastManagerElement,
     getToastManager: getToastManager,
   };
 });

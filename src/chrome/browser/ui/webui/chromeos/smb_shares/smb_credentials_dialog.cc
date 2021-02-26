@@ -20,7 +20,7 @@ namespace chromeos {
 namespace smb_dialog {
 namespace {
 
-constexpr int kSmbCredentialsDialogHeight = 250;
+constexpr int kSmbCredentialsDialogHeight = 230;
 
 void AddSmbCredentialsDialogStrings(content::WebUIDataSource* html_source) {
   static const struct {
@@ -109,6 +109,8 @@ SmbCredentialsDialogUI::SmbCredentialsDialogUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISmbCredentialsHost);
 
+  source->DisableTrustedTypesCSP();
+
   AddSmbCredentialsDialogStrings(source);
 
   source->UseStringsJs();
@@ -133,6 +135,10 @@ void SmbCredentialsDialogUI::OnUpdateCredentials(const std::string& username,
   if (dialog) {
     dialog->Respond(username, password);
   }
+}
+
+bool SmbCredentialsDialog::ShouldShowCloseButton() const {
+  return false;
 }
 
 }  // namespace smb_dialog

@@ -628,11 +628,13 @@ SkBitmap SkBitmapOperations::DownsampleByTwo(const SkBitmap& bitmap) {
 SkBitmap SkBitmapOperations::UnPreMultiply(const SkBitmap& bitmap) {
   if (bitmap.isNull())
     return bitmap;
-  if (bitmap.isOpaque())
+  if (bitmap.alphaType() != kPremul_SkAlphaType)
     return bitmap;
+  // It's expected this code is called with a 32bpp image.
+  CHECK_EQ(kN32_SkColorType, bitmap.colorType());
 
   const SkImageInfo& opaque_info =
-      bitmap.info().makeAlphaType(kOpaque_SkAlphaType);
+      bitmap.info().makeAlphaType(kUnpremul_SkAlphaType);
   SkBitmap opaque_bitmap;
   opaque_bitmap.allocPixels(opaque_info);
 
@@ -675,7 +677,7 @@ SkBitmap SkBitmapOperations::CreateColorMask(const SkBitmap& bitmap,
   color_mask.allocN32Pixels(bitmap.width(), bitmap.height());
   color_mask.eraseARGB(0, 0, 0, 0);
 
-  SkCanvas canvas(color_mask);
+  SkCanvas canvas(color_mask, SkSurfaceProps{});
 
   SkPaint paint;
   paint.setColorFilter(SkColorFilters::Blend(c, SkBlendMode::kSrcIn));
@@ -699,7 +701,7 @@ SkBitmap SkBitmapOperations::CreateDropShadow(
                                    bitmap.height() + shadow_margin.height());
   image_with_shadow.eraseARGB(0, 0, 0, 0);
 
-  SkCanvas canvas(image_with_shadow);
+  SkCanvas canvas(image_with_shadow, SkSurfaceProps{});
   canvas.translate(SkIntToScalar(shadow_margin.left()),
                    SkIntToScalar(shadow_margin.top()));
 
@@ -749,7 +751,7 @@ SkBitmap SkBitmapOperations::Rotate(const SkBitmap& source,
      break;
   }
 
-  SkCanvas canvas(result);
+  SkCanvas canvas(result, SkSurfaceProps{});
   canvas.clear(SkColorSetARGB(0, 0, 0, 0));
 
   canvas.translate(SkFloatToScalar(result.width() * 0.5f),

@@ -4,10 +4,15 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.app.Activity;
+import android.view.ViewGroup;
+
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
@@ -24,20 +29,26 @@ import dagger.Lazy;
  */
 @ActivityScope
 public class CustomTabCompositorContentInitializer implements NativeInitObserver {
+    private final List<Callback<LayoutManagerImpl>> mListeners = new ArrayList<>();
+
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
-
-    private final ChromeActivity<?> mActivity;
+    private final Activity mActivity;
     private final Lazy<CompositorViewHolder> mCompositorViewHolder;
+    private final ObservableSupplier<TabContentManager> mTabContentManagerSupplier;
+    private final CompositorViewHolder.Initializer mCompositorViewHolderInitializer;
 
-    private final List<Callback<LayoutManager>> mListeners = new ArrayList<>();
     private boolean mInitialized;
 
     @Inject
     public CustomTabCompositorContentInitializer(ActivityLifecycleDispatcher lifecycleDispatcher,
-            ChromeActivity<?> activity, Lazy<CompositorViewHolder> compositorViewHolder) {
+            Activity activity, Lazy<CompositorViewHolder> compositorViewHolder,
+            ObservableSupplier<TabContentManager> tabContentManagerSupplier,
+            CompositorViewHolder.Initializer compositorViewHolderInitializer) {
         mLifecycleDispatcher = lifecycleDispatcher;
         mActivity = activity;
         mCompositorViewHolder = compositorViewHolder;
+        mTabContentManagerSupplier = tabContentManagerSupplier;
+        mCompositorViewHolderInitializer = compositorViewHolderInitializer;
 
         lifecycleDispatcher.register(this);
     }
@@ -46,8 +57,7 @@ public class CustomTabCompositorContentInitializer implements NativeInitObserver
      * Adds a callback that will be called once the Compositor View Holder has its content
      * initialized, or immediately (synchronously) if it is already initialized.
      */
-    public void addCallback(Callback<LayoutManager> callback) {
-
+    public void addCallback(Callback<LayoutManagerImpl> callback) {
         if (mInitialized) {
             callback.onResult(mCompositorViewHolder.get().getLayoutManager());
         } else {
@@ -57,13 +67,18 @@ public class CustomTabCompositorContentInitializer implements NativeInitObserver
 
     @Override
     public void onFinishNativeInitialization() {
-        LayoutManager layoutDriver = new LayoutManager(mCompositorViewHolder.get());
-        mActivity.initializeCompositorContent(layoutDriver,
-                mActivity.findViewById(org.chromium.chrome.R.id.url_bar),
-                mActivity.findViewById(android.R.id.content),
+        ViewGroup contentContainer = mActivity.findViewById(android.R.id.content);
+        LayoutManagerImpl layoutDriver = new LayoutManagerImpl(
+                mCompositorViewHolder.get(), contentContainer, mTabContentManagerSupplier, () -> {
+                    if (mCompositorViewHolder.get() == null) return null;
+                    return mCompositorViewHolder.get().getLayerTitleCache();
+                }, new OneshotSupplierImpl<>());
+
+        mCompositorViewHolderInitializer.initializeCompositorContent(layoutDriver,
+                mActivity.findViewById(org.chromium.chrome.R.id.url_bar), contentContainer,
                 mActivity.findViewById(org.chromium.chrome.R.id.control_container));
 
-        for (Callback<LayoutManager> listener : mListeners) {
+        for (Callback<LayoutManagerImpl> listener : mListeners) {
             listener.onResult(layoutDriver);
         }
 

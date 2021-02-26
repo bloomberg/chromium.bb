@@ -6,8 +6,6 @@
 
 #include "core/fpdfapi/page/cpdf_devicecs.h"
 
-#include <limits.h>
-
 #include <algorithm>
 
 #include "core/fpdfapi/parser/cpdf_array.h"
@@ -17,7 +15,7 @@
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fxcodec/fx_codec.h"
 #include "core/fxge/dib/cfx_cmyk_to_srgb.h"
-#include "third_party/base/logging.h"
+#include "third_party/base/notreached.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -45,13 +43,13 @@ uint32_t CPDF_DeviceCS::v_Load(CPDF_Document* pDoc,
   return 0;
 }
 
-bool CPDF_DeviceCS::GetRGB(const float* pBuf,
+bool CPDF_DeviceCS::GetRGB(pdfium::span<const float> pBuf,
                            float* R,
                            float* G,
                            float* B) const {
   switch (m_Family) {
     case PDFCS_DEVICEGRAY:
-      *R = NormalizeChannel(*pBuf);
+      *R = NormalizeChannel(pBuf[0]);
       *G = *R;
       *B = *R;
       return true;

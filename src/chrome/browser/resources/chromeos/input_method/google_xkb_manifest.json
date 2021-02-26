@@ -58,9 +58,10 @@
       "options_page": "hmm_options.html?code=xkb:us::eng"
     },
     {
-      "name": "__MSG_keyboard_us__",
+      "name": "__MSG_keyboard_indonesian__",
       "type": "ime",
       "id": "xkb:us::ind",
+      "indicator": "ID",
       "description": "",
       "language": [
         "id"
@@ -71,9 +72,10 @@
       "options_page": "hmm_options.html?code=xkb:us::ind"
     },
     {
-      "name": "__MSG_keyboard_us__",
+      "name": "__MSG_keyboard_filipino__",
       "type": "ime",
       "id": "xkb:us::fil",
+      "indicator": "FIL",
       "description": "",
       "language": [
         "fil"
@@ -84,9 +86,10 @@
       "options_page": "hmm_options.html?code=xkb:us::fil"
     },
     {
-      "name": "__MSG_keyboard_us__",
+      "name": "__MSG_keyboard_malay__",
       "type": "ime",
       "id": "xkb:us::msa",
+      "indicator": "MS",
       "description": "",
       "language": [
         "ms"
@@ -141,7 +144,7 @@
       "options_page": "hmm_options.html?code=xkb:us:intl:nld"
     },
     {
-      "name": "__MSG_keyboard_us_international_pc__",
+      "name": "__MSG_keyboard_netherlands_us_international_pc__",
       "type": "ime",
       "id": "xkb:us:intl_pc:nld",
       "indicator": "NLD",
@@ -245,7 +248,7 @@
       "options_page": "hmm_options.html?code=xkb:us:workman-intl:eng"
     },
     {
-      "name": "__MSG_keyboard_belgian__",
+      "name": "__MSG_keyboard_belgian_dutch__",
       "type": "ime",
       "id": "xkb:be::nld",
       "description": "",
@@ -286,7 +289,7 @@
       "options_page": "hmm_options.html?code=xkb:fr:bepo:fra"
     },
     {
-      "name": "__MSG_keyboard_belgian__",
+      "name": "__MSG_keyboard_belgian_french__",
       "type": "ime",
       "id": "xkb:be::fra",
       "description": "",
@@ -387,7 +390,7 @@
       "options_page": "hmm_options.html?code=xkb:de:neo:ger"
     },
     {
-      "name": "__MSG_keyboard_belgian__",
+      "name": "__MSG_keyboard_belgian_german__",
       "type": "ime",
       "id": "xkb:be::ger",
       "description": "",
@@ -468,7 +471,7 @@
       "options_page": "hmm_options.html?code=xkb:br::por"
     },
     {
-      "name": "__MSG_keyboard_us_international__",
+      "name": "__MSG_keyboard_portuguese_us_international__",
       "type": "ime",
       "id": "xkb:us:intl:por",
       "indicator": "INTL",
@@ -482,7 +485,7 @@
       "options_page": "hmm_options.html?code=xkb:us:intl:por"
     },
     {
-      "name": "__MSG_keyboard_us_international_pc__",
+      "name": "__MSG_keyboard_portuguese_us_international_pc__",
       "type": "ime",
       "id": "xkb:us:intl_pc:por",
       "indicator": "INTL",

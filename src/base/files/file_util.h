@@ -23,6 +23,7 @@
 #endif
 
 #include "base/base_export.h"
+#include "base/callback_forward.h"
 #include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -34,7 +35,6 @@
 #include "base/win/windows_types.h"
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/file_descriptor_posix.h"
-#include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #endif
 
@@ -59,21 +59,15 @@ BASE_EXPORT FilePath MakeAbsoluteFilePath(const FilePath& input);
 BASE_EXPORT int64_t ComputeDirectorySize(const FilePath& root_path);
 
 // Deletes the given path, whether it's a file or a directory.
-// If it's a directory, it's perfectly happy to delete all of the
-// directory's contents.  Passing true to recursive deletes
-// subdirectories and their contents as well.
-// Returns true if successful, false otherwise. It is considered successful
-// to attempt to delete a file that does not exist.
+// If it's a directory, it's perfectly happy to delete all of the directory's
+// contents, but it will not recursively delete subdirectories and their
+// contents.
+// Returns true if successful, false otherwise. It is considered successful to
+// attempt to delete a file that does not exist.
 //
 // In POSIX environment and if |path| is a symbolic link, this deletes only
 // the symlink. (even if the symlink points to a non-existent file)
-//
-// WARNING: USING THIS WITH recursive==true IS EQUIVALENT
-//          TO "rm -rf", SO USE WITH CAUTION.
-//
-// Note: The |recursive| parameter is in the process of being removed. Use
-// DeleteFileRecursively() instead. See https://crbug.com/1009837
-BASE_EXPORT bool DeleteFile(const FilePath& path, bool recursive);
+BASE_EXPORT bool DeleteFile(const FilePath& path);
 
 // Deletes the given path, whether it's a file or a directory.
 // If it's a directory, it's perfectly happy to delete all of the
@@ -85,7 +79,16 @@ BASE_EXPORT bool DeleteFile(const FilePath& path, bool recursive);
 // the symlink. (even if the symlink points to a non-existent file)
 //
 // WARNING: USING THIS EQUIVALENT TO "rm -rf", SO USE WITH CAUTION.
-BASE_EXPORT bool DeleteFileRecursively(const FilePath& path);
+BASE_EXPORT bool DeletePathRecursively(const FilePath& path);
+
+// Simplified way to get a callback to do DeleteFile(path) and ignore the
+// DeleteFile() result.
+BASE_EXPORT OnceCallback<void(const FilePath&)> GetDeleteFileCallback();
+
+// Simplified way to get a callback to do DeletePathRecursively(path) and ignore
+// the DeletePathRecursively() result.
+BASE_EXPORT OnceCallback<void(const FilePath&)>
+GetDeletePathRecursivelyCallback();
 
 #if defined(OS_WIN)
 // Schedules to delete the given path, whether it's a file or a directory, until
@@ -158,6 +161,9 @@ BASE_EXPORT bool CopyDirectoryExcl(const FilePath& from_path,
 // false otherwise.
 BASE_EXPORT bool PathExists(const FilePath& path);
 
+// Returns true if the given path is readable by the user, false otherwise.
+BASE_EXPORT bool PathIsReadable(const FilePath& path);
+
 // Returns true if the given path is writable by the user, false otherwise.
 BASE_EXPORT bool PathIsWritable(const FilePath& path);
 
@@ -223,6 +229,15 @@ BASE_EXPORT ScopedFD CreateAndOpenFdForTemporaryFileInDir(const FilePath& dir,
 
 #if defined(OS_POSIX)
 
+// ReadFileToStringNonBlocking is identical to ReadFileToString except it
+// guarantees that it will not block. This guarantee is provided on POSIX by
+// opening the file as O_NONBLOCK. This variant should only be used on files
+// which are guaranteed not to block (such as kernel files). Or in situations
+// where a partial read would be acceptable because the backing store returned
+// EWOULDBLOCK.
+BASE_EXPORT bool ReadFileToStringNonBlocking(const base::FilePath& file,
+                                             std::string* ret);
+
 // Creates a symbolic link at |symlink| pointing to |target|.  Returns
 // false on failure.
 BASE_EXPORT bool CreateSymbolicLink(const FilePath& target,
@@ -263,14 +278,14 @@ BASE_EXPORT bool SetPosixFilePermissions(const FilePath& path, int mode);
 BASE_EXPORT bool ExecutableExistsInPath(Environment* env,
                                         const FilePath::StringType& executable);
 
-#if defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
 // Determine if files under a given |path| can be mapped and then mprotect'd
 // PROT_EXEC. This depends on the mount options used for |path|, which vary
 // among different Linux distributions and possibly local configuration. It also
 // depends on details of kernel--ChromeOS uses the noexec option for /dev/shm
 // but its kernel allows mprotect with PROT_EXEC anyway.
 BASE_EXPORT bool IsPathExecutable(const FilePath& path);
-#endif  // OS_LINUX || OS_AIX
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
 
 #endif  // OS_POSIX
 
@@ -308,6 +323,11 @@ BASE_EXPORT bool CreateTemporaryFile(FilePath* path);
 // Same as CreateTemporaryFile but the file is created in |dir|.
 BASE_EXPORT bool CreateTemporaryFileInDir(const FilePath& dir,
                                           FilePath* temp_file);
+
+// Returns the file name for a temporary file by using a platform-specific
+// naming scheme that incorporates |identifier|.
+BASE_EXPORT FilePath
+FormatTemporaryFileName(FilePath::StringPieceType identifier);
 
 // Create and open a temporary file stream for exclusive read, write, and delete
 // access (note: exclusivity is unique to Windows). The full path is placed in
@@ -473,6 +493,30 @@ BASE_EXPORT FilePath GetUniquePath(const FilePath& path);
 // false.
 BASE_EXPORT bool SetNonBlocking(int fd);
 
+// Possible results of PreReadFile().
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PrefetchResultCode {
+  kSuccess = 0,
+  kInvalidFile = 1,
+  kSlowSuccess = 2,
+  kSlowFailed = 3,
+  kMemoryMapFailedSlowUsed = 4,
+  kMemoryMapFailedSlowFailed = 5,
+  kFastFailed = 6,
+  kFastFailedSlowUsed = 7,
+  kFastFailedSlowFailed = 8,
+  kMaxValue = kFastFailedSlowFailed
+};
+
+struct PrefetchResult {
+  bool succeeded() const {
+    return code_ == PrefetchResultCode::kSuccess ||
+           code_ == PrefetchResultCode::kSlowSuccess;
+  }
+  const PrefetchResultCode code_;
+};
+
 // Hints the OS to prefetch the first |max_bytes| of |file_path| into its cache.
 //
 // If called at the appropriate time, this can reduce the latency incurred by
@@ -486,17 +530,18 @@ BASE_EXPORT bool SetNonBlocking(int fd);
 // executable code or as data. Windows treats the file backed pages in RAM
 // differently, and specifying the wrong value results in two copies in RAM.
 //
-// Returns false if prefetching definitely failed. A return value of true does
-// not guarantee that the entire desired range was prefetched.
+// Returns a PrefetchResult indicating whether prefetch succeeded, and the type
+// of failure if it did not. A return value of kSuccess does not guarantee that
+// the entire desired range was prefetched.
 //
 // Calling this before using ::LoadLibrary() on Windows is more efficient memory
 // wise, but we must be sure no other threads try to LoadLibrary() the file
 // while we are doing the mapping and prefetching, or the process will get a
 // private copy of the DLL via COW.
-BASE_EXPORT bool PreReadFile(
-    const FilePath& file_path,
-    bool is_executable,
-    int64_t max_bytes = std::numeric_limits<int64_t>::max());
+BASE_EXPORT PrefetchResult
+PreReadFile(const FilePath& file_path,
+            bool is_executable,
+            int64_t max_bytes = std::numeric_limits<int64_t>::max());
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 
@@ -537,7 +582,7 @@ BASE_EXPORT bool VerifyPathControlledByUser(const base::FilePath& base,
                                             const std::set<gid_t>& group_gids);
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 // Is |path| writable only by a user with administrator privileges?
 // This function uses Mac OS conventions.  The super user is assumed to have
 // uid 0, and the administrator group is assumed to be named "admin".
@@ -546,13 +591,13 @@ BASE_EXPORT bool VerifyPathControlledByUser(const base::FilePath& base,
 // "admin", are not writable by all users, and contain no symbolic links.
 // Will return false if |path| does not exist.
 BASE_EXPORT bool VerifyPathControlledByAdmin(const base::FilePath& path);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
 // Returns the maximum length of path component on the volume containing
 // the directory |path|, in the number of FilePath::CharType, or -1 on failure.
 BASE_EXPORT int GetMaximumPathComponentLength(const base::FilePath& path);
 
-#if defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
 // Broad categories of file systems as returned by statfs() on Linux.
 enum FileSystemType {
   FILE_SYSTEM_UNKNOWN,  // statfs failed.

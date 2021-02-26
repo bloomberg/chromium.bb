@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
+#include "base/hash/md5.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
@@ -31,6 +33,32 @@ namespace {
 
 MATCHER(ContainsDecoderErrorLog, "") {
   return CONTAINS_STRING(arg, "libgav1::Decoder::DequeueFrame failed");
+}
+
+// Similar to VideoFrame::HashFrameForTesting(), but uses visible_data() and
+// visible_rect() instead of data() and coded_size() to determine the region to
+// hash.
+//
+// The VideoFrame objects created by Gav1VideoDecoder have extended pixels
+// outside the visible_rect(). Those extended pixels are for libgav1 internal
+// use and are not part of the actual video frames. Unlike
+// VideoFrame::HashFrameForTesting(), this function excludes the extended pixels
+// and hashes only the actual video frames.
+void HashFrameVisibleRectForTesting(base::MD5Context* context,
+                                    const VideoFrame& frame) {
+  DCHECK(context);
+  for (size_t plane = 0; plane < VideoFrame::NumPlanes(frame.format());
+       ++plane) {
+    int rows = frame.Rows(plane, frame.format(), frame.visible_rect().height());
+    for (int row = 0; row < rows; ++row) {
+      int row_bytes =
+          frame.RowBytes(plane, frame.format(), frame.visible_rect().width());
+      base::MD5Update(context, base::StringPiece(reinterpret_cast<const char*>(
+                                                     frame.visible_data(plane) +
+                                                     frame.stride(plane) * row),
+                                                 row_bytes));
+    }
+  }
 }
 
 }  // namespace
@@ -82,15 +110,14 @@ class Gav1VideoDecoderTest : public testing::Test {
   // Sets up expectations and actions to put Gav1VideoDecoder in an active
   // decoding state.
   void ExpectDecodingState() {
-    EXPECT_EQ(DecodeStatus::OK, DecodeSingleFrame(i_frame_buffer_));
+    EXPECT_TRUE(DecodeSingleFrame(i_frame_buffer_).is_ok());
     ASSERT_EQ(1U, output_frames_.size());
   }
 
   // Sets up expectations and actions to put Gav1VideoDecoder in an end
   // of stream state.
   void ExpectEndOfStreamState() {
-    EXPECT_EQ(DecodeStatus::OK,
-              DecodeSingleFrame(DecoderBuffer::CreateEOSBuffer()));
+    EXPECT_TRUE(DecodeSingleFrame(DecoderBuffer::CreateEOSBuffer()).is_ok());
     ASSERT_FALSE(output_frames_.empty());
   }
 
@@ -100,26 +127,26 @@ class Gav1VideoDecoderTest : public testing::Test {
   // Decodes all buffers in |input_buffers| and push all successfully decoded
   // output frames into |output_frames|. Returns the last decode status returned
   // by the decoder.
-  DecodeStatus DecodeMultipleFrames(const InputBuffers& input_buffers) {
+  Status DecodeMultipleFrames(const InputBuffers& input_buffers) {
     for (auto iter = input_buffers.begin(); iter != input_buffers.end();
          ++iter) {
-      DecodeStatus status = Decode(*iter);
-      switch (status) {
-        case DecodeStatus::OK:
+      Status status = Decode(*iter);
+      switch (status.code()) {
+        case StatusCode::kOk:
           break;
-        case DecodeStatus::ABORTED:
+        case StatusCode::kAborted:
           NOTREACHED();
           FALLTHROUGH;
-        case DecodeStatus::DECODE_ERROR:
+        default:
           DCHECK(output_frames_.empty());
           return status;
       }
     }
-    return DecodeStatus::OK;
+    return StatusCode::kOk;
   }
 
   // Decodes the single compressed frame in |buffer|.
-  DecodeStatus DecodeSingleFrame(scoped_refptr<DecoderBuffer> buffer) {
+  Status DecodeSingleFrame(scoped_refptr<DecoderBuffer> buffer) {
     InputBuffers input_buffers;
     input_buffers.push_back(std::move(buffer));
     return DecodeMultipleFrames(input_buffers);
@@ -138,9 +165,9 @@ class Gav1VideoDecoderTest : public testing::Test {
     input_buffers.push_back(buffer);
     input_buffers.push_back(DecoderBuffer::CreateEOSBuffer());
 
-    DecodeStatus status = DecodeMultipleFrames(input_buffers);
+    Status status = DecodeMultipleFrames(input_buffers);
 
-    EXPECT_EQ(DecodeStatus::OK, status);
+    EXPECT_TRUE(status.is_ok());
     ASSERT_EQ(2U, output_frames_.size());
 
     gfx::Size original_size = TestVideoConfig::NormalCodedSize();
@@ -154,8 +181,8 @@ class Gav1VideoDecoderTest : public testing::Test {
               output_frames_[1]->visible_rect().size().height());
   }
 
-  DecodeStatus Decode(scoped_refptr<DecoderBuffer> buffer) {
-    DecodeStatus status;
+  Status Decode(scoped_refptr<DecoderBuffer> buffer) {
+    Status status;
     EXPECT_CALL(*this, DecodeDone(_)).WillOnce(testing::SaveArg<0>(&status));
 
     decoder_->Decode(std::move(buffer),
@@ -167,11 +194,20 @@ class Gav1VideoDecoderTest : public testing::Test {
   }
 
   void FrameReady(scoped_refptr<VideoFrame> frame) {
-    DCHECK(!frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
+    DCHECK(!frame->metadata()->end_of_stream);
     output_frames_.push_back(std::move(frame));
   }
 
-  MOCK_METHOD1(DecodeDone, void(DecodeStatus));
+  std::string GetVideoFrameHash(const VideoFrame& frame) {
+    base::MD5Context md5_context;
+    base::MD5Init(&md5_context);
+    HashFrameVisibleRectForTesting(&md5_context, frame);
+    base::MD5Digest digest;
+    base::MD5Final(&digest, &md5_context);
+    return base::MD5DigestToBase16(digest);
+  }
+
+  MOCK_METHOD1(DecodeDone, void(Status));
 
   testing::StrictMock<MockMediaLog> media_log_;
 
@@ -211,15 +247,55 @@ TEST_F(Gav1VideoDecoderTest, DecodeFrame_Normal) {
   Initialize();
 
   // Simulate decoding a single frame.
-  EXPECT_EQ(DecodeStatus::OK, DecodeSingleFrame(i_frame_buffer_));
+  EXPECT_TRUE(DecodeSingleFrame(i_frame_buffer_).is_ok());
   ASSERT_EQ(1U, output_frames_.size());
+
+  const auto& frame = output_frames_.front();
+  EXPECT_EQ(PIXEL_FORMAT_I420, frame->format());
+  EXPECT_EQ("589dc641b7742ffe7a2b0d4c16aa3e86", GetVideoFrameHash(*frame));
+}
+
+TEST_F(Gav1VideoDecoderTest, DecodeFrame_8bitMono) {
+  Initialize();
+  EXPECT_TRUE(
+      DecodeSingleFrame(ReadTestDataFile("av1-monochrome-I-frame-320x240-8bpp"))
+          .is_ok());
+  ASSERT_EQ(1U, output_frames_.size());
+
+  const auto& frame = output_frames_.front();
+  EXPECT_EQ(PIXEL_FORMAT_I420, frame->format());
+  EXPECT_EQ("eeba03dcc9c22c4632bf74b481db36b2", GetVideoFrameHash(*frame));
+}
+
+TEST_F(Gav1VideoDecoderTest, DecodeFrame_10bitMono) {
+  Initialize();
+  EXPECT_TRUE(DecodeSingleFrame(
+                  ReadTestDataFile("av1-monochrome-I-frame-320x240-10bpp"))
+                  .is_ok());
+  ASSERT_EQ(1U, output_frames_.size());
+
+  const auto& frame = output_frames_.front();
+  EXPECT_EQ(PIXEL_FORMAT_YUV420P10, frame->format());
+  EXPECT_EQ("026c1fed9e161f09d816ac7278458a80", GetVideoFrameHash(*frame));
+}
+
+// libgav1 does not support bit depth 12.
+TEST_F(Gav1VideoDecoderTest, DISABLED_DecodeFrame_12bitMono) {
+  Initialize();
+  EXPECT_TRUE(DecodeSingleFrame(
+                  ReadTestDataFile("av1-monochrome-I-frame-320x240-12bpp"))
+                  .is_ok());
+  ASSERT_EQ(1U, output_frames_.size());
+
+  const auto& frame = output_frames_.front();
+  EXPECT_EQ(PIXEL_FORMAT_YUV420P12, frame->format());
+  EXPECT_EQ("32115092dc00fbe86823b0b714a0f63e", GetVideoFrameHash(*frame));
 }
 
 // Decode |i_frame_buffer_| and then a frame with a larger width and verify
 // the output size was adjusted.
-// TODO(dalecurtis): Get an I-frame from a larger video.
-TEST_F(Gav1VideoDecoderTest, DISABLED_DecodeFrame_LargerWidth) {
-  DecodeIFrameThenTestFile("av1-I-frame-320x240", gfx::Size(1280, 720));
+TEST_F(Gav1VideoDecoderTest, DecodeFrame_LargerWidth) {
+  DecodeIFrameThenTestFile("av1-I-frame-1280x720", gfx::Size(1280, 720));
 }
 
 // Decode a VP9 frame which should trigger a decoder error.

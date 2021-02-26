@@ -7,5 +7,15 @@ include_rules = [
     '+json',
 
     # BoringSSL includes
-    '+openssl'
+    '+openssl',
+
+    # See below
+    '-logging_test.h'
 ]
+
+specific_include_rules = {
+    'logging_(unittest|posix).cc': [
+        '+logging_test.h',
+    ],
+}
+

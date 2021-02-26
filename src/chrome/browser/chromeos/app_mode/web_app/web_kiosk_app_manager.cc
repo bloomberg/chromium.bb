@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_registry_simple.h"
 
@@ -63,6 +63,11 @@ void WebKioskAppManager::GetApps(std::vector<App>* apps) const {
   }
 }
 
+void WebKioskAppManager::LoadIcons() {
+  for (auto& web_app : apps_)
+    web_app->LoadIcon();
+}
+
 const AccountId& WebKioskAppManager::GetAutoLaunchAccountId() const {
   return auto_launch_account_id_;
 }
@@ -95,6 +100,7 @@ void WebKioskAppManager::AddAppForTesting(const AccountId& account_id,
   apps_.push_back(std::make_unique<WebKioskAppData>(
       this, app_id, account_id, install_url, /*title*/ std::string(),
       /*icon_url*/ GURL()));
+  NotifyKioskAppsChanged();
 }
 
 void WebKioskAppManager::InitSession(Browser* browser) {
@@ -142,8 +148,6 @@ void WebKioskAppManager::UpdateAppsFromPolicy() {
 
     auto old_it = old_apps.find(app_id);
     if (old_it != old_apps.end()) {
-      // TODO(apotapchuk): Data fetcher will be created, will use it to
-      // update previously not loaded data.
       apps_.push_back(std::move(old_it->second));
       old_apps.erase(old_it);
     } else {

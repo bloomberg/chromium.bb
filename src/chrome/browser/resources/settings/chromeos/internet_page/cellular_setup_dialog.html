@@ -1,0 +1,74 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/cellular_setup.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/cellular_setup_delegate.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/cellular_types.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="cellular_setup_settings_delegate.html">
+
+<dom-module id="os-settings-cellular-setup-dialog">
+  <template>
+    <style include="settings-shared">
+      @media (min-width: 640px){
+        :host {
+          --cr-dialog-width: 512px;
+        }
+      }
+
+      @media (max-width: 640px){
+        :host {
+          --cr-dialog-width: 320px;
+        }
+      }
+
+      :host {
+        --cr-dialog-title-slot-padding-bottom: 0;
+        --cr-dialog-title-slot-padding-end: 0;
+        --cr-dialog-title-slot-padding-start: 0;
+        --cr-dialog-title-slot-padding-top: 0;
+      }
+
+      #header {
+        padding-bottom: 16px;
+        padding-inline-end:  20px;
+        padding-inline-start: 20px;
+        padding-top: 20px;
+      }
+
+      #title {
+        align-items: center;
+        background-color: var(--google-grey-200);
+        display: flex;
+        font-size: x-small;
+        height: 32px;
+        justify-content: center;
+      }
+
+    </style>
+    <!-- TODO(crbug/1093185): Change close logic when CellularSetup embedded -->
+    <cr-dialog id="dialog">
+      <div slot="title">
+        <template is="dom-if"
+            if="[[shouldShowDialogTitle_(dialogTitle_)]]" restamp>
+          <div id="title">
+            [[dialogTitle_]]
+          </div>
+        </template>
+        <div id="header">
+          $i18n{cellularSetupDialogTitle}
+        </div>
+      </div>
+      <div slot="body">
+        <cellular-setup
+            flow-title="{{dialogTitle_}}"
+            delegate="[[delegate_]]"
+            current-page-name="[[pageName]]">
+        </cellular-setup>
+      </div>
+    </cr-dialog>
+  </template>
+  <script src="cellular_setup_dialog.js"></script>
+</dom-module>

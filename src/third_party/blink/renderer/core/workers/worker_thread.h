@@ -67,6 +67,7 @@ class WorkerResourceTimingNotifier;
 struct CrossThreadFetchClientSettingsObjectData;
 struct GlobalScopeCreationParams;
 struct WorkerDevToolsParams;
+struct WorkerMainScriptLoadParameters;
 
 // WorkerThread is a kind of WorkerBackingThread client. Each worker mechanism
 // can access the lower thread infrastructure via an implementation of this
@@ -90,7 +91,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
     kGracefullyTerminated,
     kSyncForciblyTerminated,
     kAsyncForciblyTerminated,
-    kLastEnum,
+    kMaxValue = kAsyncForciblyTerminated,
   };
 
   ~WorkerThread() override;
@@ -118,6 +119,8 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // thread. Called on the main thread after Start().
   void FetchAndRunClassicScript(
       const KURL& script_url,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object_data,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -127,6 +130,8 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // thread. Called on the main thread after Start().
   void FetchAndRunModuleScript(
       const KURL& script_url,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object_data,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -195,17 +200,21 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // adds the current WorkerThread* as the first parameter |function|.
   // This only calls |function| for threads for which Start() was already
   // called.
+  // Returns the number of workers that are scheduled to run the function.
   template <typename FunctionType, typename... Parameters>
-  static void CallOnAllWorkerThreads(FunctionType function,
-                                     TaskType task_type,
-                                     Parameters&&... parameters) {
+  static unsigned CallOnAllWorkerThreads(FunctionType function,
+                                         TaskType task_type,
+                                         Parameters&&... parameters) {
     MutexLocker lock(ThreadSetMutex());
+    unsigned called_worker_count = 0;
     for (WorkerThread* thread : WorkerThreads()) {
       PostCrossThreadTask(
           *thread->GetTaskRunner(task_type), FROM_HERE,
           CrossThreadBindOnce(function, WTF::CrossThreadUnretained(thread),
                               parameters...));
+      ++called_worker_count;
     }
+    return called_worker_count;
   }
 
   int GetWorkerThreadId() const { return worker_thread_id_; }
@@ -222,16 +231,11 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
 
   scheduler::WorkerScheduler* GetScheduler();
 
-  // Returns a task runner bound to the per-global-scope scheduler's task queue.
-  // You don't have to care about the lifetime of the associated global scope
-  // and underlying thread. After the global scope is destroyed, queued tasks
-  // are discarded and PostTask on the returned task runner just fails. This
-  // function can be called on both the main thread and the worker thread.
-  // You must not call this after Terminate() is called.
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType type) {
-    DCHECK(worker_scheduler_);
-    return worker_scheduler_->GetTaskRunner(type);
-  }
+  // Returns a task runner bound to this worker. Users of the task runner don't
+  // have to care about the lifetime of the worker. When the worker global scope
+  // is destroyed, the task runner starts failing PostTask calls and discards
+  // queued tasks. This function can be called from any threads.
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType type);
 
   void ChildThreadStartedOnWorkerThread(WorkerThread*);
   void ChildThreadTerminatedOnWorkerThread(WorkerThread*);
@@ -339,12 +343,16 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
       const v8_inspector::V8StackTraceId& stack_id);
   void FetchAndRunClassicScriptOnWorkerThread(
       const KURL& script_url,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id);
   void FetchAndRunModuleScriptOnWorkerThread(
       const KURL& script_url,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -425,6 +433,14 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // Tasks managed by this scheduler are canceled when the global scope is
   // closed.
   std::unique_ptr<scheduler::WorkerScheduler> worker_scheduler_;
+
+  // Task runners bound with |worker_scheduler_|. These are captured when the
+  // worker scheduler is initialized.
+  using TaskRunnerHashMap = HashMap<TaskType,
+                                    scoped_refptr<base::SingleThreadTaskRunner>,
+                                    WTF::IntHash<TaskType>,
+                                    TaskTypeTraits>;
+  TaskRunnerHashMap worker_task_runners_;
 
   // This lock protects shared states between the main thread and the worker
   // thread. See thread-safety annotations (e.g., GUARDED_BY) in this header

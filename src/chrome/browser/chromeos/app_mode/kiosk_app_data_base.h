@@ -47,8 +47,17 @@ class KioskAppDataBase : public KioskAppIconLoader::Delegate {
   // Helper to save name and icon to provided dictionary.
   void SaveToDictionary(DictionaryPrefUpdate& dict_update);
 
+  // Helper to save icon to provided dictionary.
+  void SaveIconToDictionary(DictionaryPrefUpdate& dict_update);
+
   // Helper to load name and icon from provided dictionary.
-  bool LoadFromDictionary(const base::DictionaryValue& dict);
+  // if |lazy_icon_load| is set to true, the icon will not be updated, only
+  // icon_path_.
+  bool LoadFromDictionary(const base::DictionaryValue& dict,
+                          bool lazy_icon_load = false);
+
+  // Starts loading the icon from |icon_path_|;
+  void DecodeIcon();
 
   // Helper to cache |icon| to |cache_dir|.
   void SaveIcon(const SkBitmap& icon, const base::FilePath& cache_dir);

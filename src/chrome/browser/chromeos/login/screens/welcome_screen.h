@@ -14,22 +14,48 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace chromeos {
 
 class InputEventsBlocker;
 class WelcomeView;
-class ScreenManager;
 
 namespace locale_util {
 struct LanguageSwitchResult;
 }
 
 class WelcomeScreen : public BaseScreen,
-                      public input_method::InputMethodManager::Observer {
+                      public input_method::InputMethodManager::Observer,
+                      public DemoModeDetector::Observer {
  public:
+  using TView = WelcomeView;
+
+  // This enum is tied directly to a UMA enum defined in
+  // //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+  // change one without changing the other).  Entries should be never modified
+  // or deleted.  Only additions possible.
+  enum class A11yUserAction {
+    kEnableSpokenFeedback = 0,
+    kDisableSpokenFeedback = 1,
+    kEnableLargeCursor = 2,
+    kDisableLargeCursor = 3,
+    kEnableHighContrast = 4,
+    kDisableHighContrast = 5,
+    kEnableScreenMagnifier = 6,
+    kDisableScreenMagnifier = 7,
+    kEnableSelectToSpeak = 8,
+    kDisableSelectToSpeak = 9,
+    kEnableDockedMagnifier = 10,
+    kDisableDockedMagnifier = 11,
+    kEnableVirtualKeyboard = 12,
+    kDisableVirtualKeyboard = 13,
+    kMaxValue = kDisableVirtualKeyboard
+  };
+
   class Observer {
    public:
     virtual ~Observer() {}
@@ -38,13 +64,17 @@ class WelcomeScreen : public BaseScreen,
     virtual void OnLanguageListReloaded() = 0;
   };
 
-  WelcomeScreen(WelcomeView* view, const base::RepeatingClosure& exit_callback);
+  enum class Result { NEXT, START_DEMO, SETUP_DEMO, ENABLE_DEBUGGING };
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
+
+  WelcomeScreen(WelcomeView* view, const ScreenExitCallback& exit_callback);
   ~WelcomeScreen() override;
 
-  static WelcomeScreen* Get(ScreenManager* manager);
+  static std::string GetResultString(Result result);
 
-  // Called when |view| has been destroyed. If this instance is destroyed before
-  // the |view| it should call view->Unbind().
+  // Called when `view` has been destroyed. If this instance is destroyed before
+  // the `view` it should call view->Unbind().
   void OnViewDestroyed(WelcomeView* view);
 
   const std::string& language_list_locale() const {
@@ -54,9 +84,9 @@ class WelcomeScreen : public BaseScreen,
 
   void UpdateLanguageList();
 
-  // Set locale and input method. If |locale| is empty or doesn't change, set
-  // the |input_method| directly. If |input_method| is empty or ineligible, we
-  // don't change the current |input_method|.
+  // Set locale and input method. If `locale` is empty or doesn't change, set
+  // the `input_method` directly. If `input_method` is empty or ineligible, we
+  // don't change the current `input_method`.
   void SetApplicationLocaleAndInputMethod(const std::string& locale,
                                           const std::string& input_method);
   std::string GetApplicationLocale();
@@ -67,26 +97,41 @@ class WelcomeScreen : public BaseScreen,
   void SetTimezone(const std::string& timezone_id);
   std::string GetTimezone() const;
 
+  void SetDeviceRequisition(const std::string& requisition);
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  base::Value* GetConfigurationForTesting() {
+    return &(context()->configuration);
+  }
+
  protected:
   // Exposes exit callback to test overrides.
-  base::RepeatingClosure* exit_callback() { return &exit_callback_; }
+  ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:
   // BaseScreen:
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
+  bool HandleAccelerator(ash::LoginAcceleratorAction action) override;
 
-  // InputMethodManager::Observer implementation:
+  // DemoModeDetector::Observer:
+  void OnShouldStartDemoMode() override;
+
+  // InputMethodManager::Observer:
   void InputMethodChanged(input_method::InputMethodManager* manager,
                           Profile* profile,
                           bool show_message) override;
 
-  // Called when continue button is pressed.
+  // Handlers for various user actions:
+  // Proceed with common user flow.
   void OnContinueButtonPressed();
+  // Proceed with Demo mode setup.
+  void OnSetupDemoMode();
+  // Proceed with Enable debugging features flow.
+  void OnEnableDebugging();
 
   // Async callback after ReloadResourceBundle(locale) completed.
   void OnLanguageChangedCallback(
@@ -113,7 +158,9 @@ class WelcomeScreen : public BaseScreen,
   void OnLocaleChangeResult(ash::LocaleNotificationResult result);
 
   WelcomeView* view_ = nullptr;
-  base::RepeatingClosure exit_callback_;
+  ScreenExitCallback exit_callback_;
+
+  std::unique_ptr<DemoModeDetector> demo_mode_detector_;
 
   std::string input_method_;
   std::string timezone_;

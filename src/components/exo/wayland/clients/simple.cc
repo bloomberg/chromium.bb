@@ -14,7 +14,7 @@
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace exo {
@@ -140,7 +140,7 @@ void Simple::Run(int frames,
     canvas->clear(kColors[++frame_count % base::size(kColors)]);
 
     if (gr_context_) {
-      gr_context_->flush();
+      gr_context_->flushAndSubmit();
       glFinish();
     }
 

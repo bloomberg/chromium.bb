@@ -60,6 +60,7 @@ class StylePropertySerializer {
   bool AppendFontLonghandValueIfNotNormal(const CSSProperty&,
                                           StringBuilder& result) const;
   String OffsetValue() const;
+  String TextDecorationValue() const;
   String BackgroundRepeatPropertyValue() const;
   String GetPropertyText(const CSSProperty&,
                          const String& value,
@@ -87,30 +88,25 @@ class StylePropertySerializer {
     explicit PropertyValueForSerializer(
         CSSPropertyValueSet::PropertyReference property)
         : value_(&property.Value()),
-          property_(property.Property()),
-          is_important_(property.IsImportant()),
-          is_inherited_(property.IsInherited()) {}
+          property_(CSSProperty::Get(property.Id())),
+          is_important_(property.IsImportant()) {}
 
     // TODO(sashab): Make this take a const CSSValue&.
     PropertyValueForSerializer(const CSSProperty& property,
                                const CSSValue* value,
                                bool is_important)
-        : value_(value),
-          property_(property),
-          is_important_(is_important),
-          is_inherited_(value->IsInheritedValue()) {}
+        : value_(value), property_(property), is_important_(is_important) {}
 
+    // TODO(crbug.com/980160): Remove this function.
     const CSSProperty& Property() const { return property_; }
     const CSSValue* Value() const { return value_; }
     bool IsImportant() const { return is_important_; }
-    bool IsInherited() const { return is_inherited_; }
     bool IsValid() const { return value_; }
 
    private:
     const CSSValue* value_;
     const CSSProperty& property_;
     bool is_important_;
-    bool is_inherited_;
   };
 
   String GetCustomPropertyText(const PropertyValueForSerializer&,
@@ -129,7 +125,7 @@ class StylePropertySerializer {
     const CSSValue* GetPropertyCSSValue(const CSSProperty&) const;
     bool IsDescriptorContext() const;
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
    private:
     bool HasExpandedAllProperty() const {

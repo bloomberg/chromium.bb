@@ -198,6 +198,7 @@ static_library("protobuf_full") {
   visibility = [
     ":protoc_lib",
     "../chromium_quic/src/third_party:quic_trace",
+    "//third_party/libprotobuf-mutator:*",
   ]
 }
 

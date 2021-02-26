@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"  // For firstPositionInOrBeforeNode
@@ -113,7 +114,7 @@ class FocusNavigation : public GarbageCollected<FocusNavigation> {
     return FindOwner(*root_);
   }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(root_);
     visitor->Trace(slot_);
   }
@@ -1212,7 +1213,7 @@ Element* FocusController::NextFocusableElementInForm(
       return next_element;
     }
     LayoutObject* layout = next_element->GetLayoutObject();
-    if (layout && layout->IsTextControl()) {
+    if (layout && layout->IsTextControlIncludingNG()) {
       // TODO(ajith.v) Extend it for select elements, radio buttons and check
       // boxes
       return next_element;
@@ -1360,7 +1361,7 @@ void FocusController::NotifyFocusChangedObservers() const {
     it->FocusedFrameChanged();
 }
 
-void FocusController::Trace(Visitor* visitor) {
+void FocusController::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
   visitor->Trace(focused_frame_);
   visitor->Trace(focus_changed_observers_);

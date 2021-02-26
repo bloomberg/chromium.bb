@@ -37,15 +37,16 @@ public class IdentityMutator {
     }
 
     /**
-     * Marks the account with |account_id| as the primary account, and returns whether the operation
+     * Marks the account with |accountId| as the primary account, and returns whether the operation
      * succeeded or not. To succeed, this requires that:
      *   - the account is known by the IdentityManager.
      *   - setting the primary account is allowed,
      *   - the account username is allowed by policy,
      *   - there is not already a primary account set.
      */
-    public boolean setPrimaryAccount(CoreAccountId accountId) {
-        return IdentityMutatorJni.get().setPrimaryAccount(mNativeIdentityMutator, accountId);
+    public boolean setPrimaryAccount(CoreAccountId accountId, @ConsentLevel int consentLevel) {
+        return IdentityMutatorJni.get().setPrimaryAccount(
+                mNativeIdentityMutator, accountId, consentLevel);
     }
 
     /**
@@ -69,7 +70,8 @@ public class IdentityMutator {
 
     @NativeMethods
     interface Natives {
-        public boolean setPrimaryAccount(long nativeJniIdentityMutator, CoreAccountId accountId);
+        public boolean setPrimaryAccount(long nativeJniIdentityMutator, CoreAccountId accountId,
+                @ConsentLevel int consentLevel);
         public boolean clearPrimaryAccount(long nativeJniIdentityMutator,
                 @ClearAccountsAction int action, @SignoutReason int sourceMetric,
                 @SignoutDelete int deleteMetric);

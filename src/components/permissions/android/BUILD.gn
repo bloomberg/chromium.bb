@@ -4,6 +4,7 @@
 
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
+import("//tools/grit/grit_rule.gni")
 
 generate_jni("jni_headers") {
   sources = [
@@ -87,9 +88,9 @@ android_resources("java_resources") {
     "res/drawable-xxxhdpi/permission_cookie.png",
     "res/drawable-xxxhdpi/settings_nfc.png",
     "res/drawable-xxxhdpi/vr_headset.png",
+    "res/drawable/permission_idle_detection.xml",
     "res/layout/update_permissions_dialog.xml",
   ]
-  custom_package = "org.chromium.components.permissions"
   deps = [
     ":permissions_strings_grd",
     "//components/browser_ui/modaldialog/android:java_resources",
@@ -126,9 +127,11 @@ android_library("java") {
     "//components/content_settings/android:content_settings_enums_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:android_support_v4_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  resources_package = "org.chromium.components.permissions"
 }
 
 java_library("components_permissions_junit_tests") {
@@ -140,6 +143,9 @@ java_library("components_permissions_junit_tests") {
     ":java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//third_party/android_deps:robolectric_all_java",
+    "//third_party/junit",
+    "//third_party/mockito:mockito_java",
     "//ui/android:ui_java",
   ]
 }

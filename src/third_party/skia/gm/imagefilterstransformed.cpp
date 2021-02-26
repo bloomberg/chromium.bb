@@ -25,7 +25,9 @@
 #include "include/core/SkTypes.h"
 #include "include/effects/SkGradientShader.h"
 #include "include/effects/SkImageFilters.h"
+#include "tools/Resources.h"
 #include "tools/ToolUtils.h"
+#include "tools/timer/TimeUtils.h"
 
 #include <utility>
 
@@ -118,10 +120,10 @@ protected:
 private:
     sk_sp<SkImage> fCheckerboard;
     sk_sp<SkImage> fGradientCircle;
-    typedef GM INHERITED;
+    using INHERITED = GM;
 };
 DEF_GM( return new ImageFiltersTransformedGM; )
-}
+}  // namespace skiagm
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -133,7 +135,7 @@ DEF_SIMPLE_GM(rotate_imagefilter, canvas, 500, 500) {
     sk_sp<SkImageFilter> filters[] = {
         nullptr,
         SkImageFilters::Blur(6, 0, nullptr),
-        SkImageFilters::Xfermode(SkBlendMode::kSrcOver, nullptr),
+        SkImageFilters::Blend(SkBlendMode::kSrcOver, nullptr),
     };
 
     for (auto& filter : filters) {
@@ -161,3 +163,56 @@ DEF_SIMPLE_GM(rotate_imagefilter, canvas, 500, 500) {
         canvas->translate(0, 150);
     }
 }
+
+class ImageFilterMatrixWLocalMatrix : public skiagm::GM {
+public:
+
+    // Start at 132 degrees, since that resulted in a skipped draw before the fix to
+    // SkLocalMatrixImageFilter's computeFastBounds() function.
+    ImageFilterMatrixWLocalMatrix() : fDegrees(132.f) {}
+
+protected:
+    SkString onShortName() override {
+        return SkString("imagefilter_matrix_localmatrix");
+    }
+
+    SkISize onISize() override {
+        return SkISize::Make(512, 512);
+    }
+
+    bool onAnimate(double nanos) override {
+        // Animate the rotation angle to ensure the local matrix bounds modifications work
+        // for a variety of transformations.
+        fDegrees = TimeUtils::Scaled(1e-9f * nanos, 360.f);
+        return true;
+    }
+
+    void onOnceBeforeDraw() override {
+        fImage = GetResourceAsImage("images/mandrill_256.png");
+    }
+
+    void onDraw(SkCanvas* canvas) override {
+        SkMatrix localMatrix;
+        localMatrix.preTranslate(128, 128);
+        localMatrix.preScale(2.0f, 2.0f);
+
+        // This matrix applies a rotate around the center of the image (prior to the simulated
+        // hi-dpi 2x device scale).
+        SkMatrix filterMatrix;
+        filterMatrix.setRotate(fDegrees, 64, 64);
+
+        sk_sp<SkImageFilter> filter =
+                SkImageFilter::MakeMatrixFilter(filterMatrix, kLow_SkFilterQuality, nullptr)
+                             ->makeWithLocalMatrix(localMatrix);
+
+        SkPaint p;
+        p.setImageFilter(filter);
+        canvas->drawImage(fImage.get(), 128, 128, &p);
+    }
+
+private:
+    SkScalar fDegrees;
+    sk_sp<SkImage> fImage;
+};
+
+DEF_GM(return new ImageFilterMatrixWLocalMatrix();)

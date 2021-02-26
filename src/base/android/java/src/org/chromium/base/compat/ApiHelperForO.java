@@ -6,14 +6,19 @@ package org.chromium.base.compat;
 
 import android.annotation.TargetApi;
 import android.content.ClipDescription;
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
+import android.view.autofill.AutofillManager;
 import android.view.Display;
 import android.view.View;
 import android.view.Window;
 
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.VerifiesOnO;
+import org.chromium.base.ContextUtils;
 
 /**
  * Utility class to use new APIs that were added in O (API level 26). These need to exist in a
@@ -53,5 +58,27 @@ public final class ApiHelperForO {
     /** See {@link ClipDescription#getTimestamp()}. */
     public static long getTimestamp(ClipDescription clipDescription) {
         return clipDescription.getTimestamp();
+    }
+
+    /** See {@link ApplicationInfo#splitNames}. */
+    public static String[] getSplitNames(ApplicationInfo info) {
+        return info.splitNames;
+    }
+
+    /** See {@link Context.createContextForSplit(String) }. */
+    public static Context createContextForSplit(Context context, String name)
+            throws PackageManager.NameNotFoundException {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            return context.createContextForSplit(name);
+        }
+    }
+
+    /** See {@link AutofillManager@cancel()}. */
+    public static void cancelAutofillSession() {
+        AutofillManager autofillManager = ContextUtils.getApplicationContext().getSystemService(
+            AutofillManager.class);
+        if (autofillManager != null) {
+            autofillManager.cancel();
+        }
     }
 }

@@ -333,7 +333,7 @@ TEST(FeedbackVectorPreservedAcrossRecompiles) {
 
   // Verify that the feedback is still "gathered" despite a recompilation
   // of the full code.
-  CHECK(f->IsOptimized());
+  CHECK(f->HasAttachedOptimizedCode());
   object = f->feedback_vector().Get(slot_for_a);
   {
     HeapObject heap_object;
@@ -413,8 +413,10 @@ TEST(OptimizedCodeSharing1) {
             env->Global()
                 ->Get(env.local(), v8_str("closure2"))
                 .ToLocalChecked())));
-    CHECK(fun1->IsOptimized() || !CcTest::i_isolate()->use_optimizer());
-    CHECK(fun2->IsOptimized() || !CcTest::i_isolate()->use_optimizer());
+    CHECK(fun1->HasAttachedOptimizedCode() ||
+          !CcTest::i_isolate()->use_optimizer());
+    CHECK(fun2->HasAttachedOptimizedCode() ||
+          !CcTest::i_isolate()->use_optimizer());
     CHECK_EQ(fun1->code(), fun2->code());
   }
 }
@@ -806,30 +808,6 @@ TEST(InvocationCount) {
   CHECK_EQ(4, foo->feedback_vector().invocation_count());
 }
 
-TEST(SafeToSkipArgumentsAdaptor) {
-  CcTest::InitializeVM();
-  v8::HandleScope scope(CcTest::isolate());
-  CompileRun(
-      "function a() { \"use strict\"; }; a();"
-      "function b() { }; b();"
-      "function c() { \"use strict\"; return arguments; }; c();"
-      "function d(...args) { return args; }; d();"
-      "function e() { \"use strict\"; return eval(\"\"); }; e();"
-      "function f(x, y) { \"use strict\"; return x + y; }; f(1, 2);");
-  Handle<JSFunction> a = Handle<JSFunction>::cast(GetGlobalProperty("a"));
-  CHECK(a->shared().is_safe_to_skip_arguments_adaptor());
-  Handle<JSFunction> b = Handle<JSFunction>::cast(GetGlobalProperty("b"));
-  CHECK(!b->shared().is_safe_to_skip_arguments_adaptor());
-  Handle<JSFunction> c = Handle<JSFunction>::cast(GetGlobalProperty("c"));
-  CHECK(!c->shared().is_safe_to_skip_arguments_adaptor());
-  Handle<JSFunction> d = Handle<JSFunction>::cast(GetGlobalProperty("d"));
-  CHECK(!d->shared().is_safe_to_skip_arguments_adaptor());
-  Handle<JSFunction> e = Handle<JSFunction>::cast(GetGlobalProperty("e"));
-  CHECK(!e->shared().is_safe_to_skip_arguments_adaptor());
-  Handle<JSFunction> f = Handle<JSFunction>::cast(GetGlobalProperty("f"));
-  CHECK(f->shared().is_safe_to_skip_arguments_adaptor());
-}
-
 TEST(ShallowEagerCompilation) {
   i::FLAG_always_opt = false;
   CcTest::InitializeVM();
@@ -968,18 +946,20 @@ static int AllocationSitesCount(Heap* heap) {
 TEST(DecideToPretenureDuringCompilation) {
   // The test makes use of optimization and relies on deterministic
   // compilation.
-  if (!i::FLAG_opt || i::FLAG_always_opt ||
-      i::FLAG_stress_incremental_marking || i::FLAG_optimize_for_size
-#ifdef ENABLE_MINOR_MC
-      || i::FLAG_minor_mc
-#endif
-  )
+  if (!i::FLAG_opt || i::FLAG_always_opt || i::FLAG_minor_mc ||
+      i::FLAG_stress_incremental_marking || i::FLAG_optimize_for_size ||
+      i::FLAG_turbo_nci || i::FLAG_turbo_nci_as_midtier ||
+      i::FLAG_stress_concurrent_allocation) {
     return;
+  }
 
   FLAG_stress_gc_during_compilation = true;
   FLAG_allow_natives_syntax = true;
   FLAG_allocation_site_pretenuring = true;
   FLAG_flush_bytecode = false;
+  // Turn on lazy feedback allocation, so we create exactly one allocation site.
+  // Without lazy feedback allocation, we create two allocation sites.
+  FLAG_lazy_feedback_allocation = true;
 
   // We want to trigger exactly 1 optimization.
   FLAG_use_osr = false;
@@ -1055,7 +1035,7 @@ TEST(DecideToPretenureDuringCompilation) {
               .ToHandleChecked();
       Handle<JSFunction> bar = Handle<JSFunction>::cast(foo_obj);
 
-      CHECK(bar->IsOptimized());
+      CHECK(bar->HasAttachedOptimizedCode());
     }
   }
   isolate->Exit();
@@ -1104,7 +1084,7 @@ TEST(ProfilerEnabledDuringBackgroundCompile) {
       std::make_unique<DummySourceStream>(source),
       v8::ScriptCompiler::StreamedSource::UTF8);
   std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task(
-      v8::ScriptCompiler::StartStreamingScript(isolate, &streamed_source));
+      v8::ScriptCompiler::StartStreaming(isolate, &streamed_source));
 
   // Run the background compilation task on the main thread.
   task->Run();

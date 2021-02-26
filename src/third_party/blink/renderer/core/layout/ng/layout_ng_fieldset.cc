@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
 
+#include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 
 namespace blink {
 
@@ -46,67 +46,8 @@ void LayoutNGFieldset::AddChild(LayoutObject* new_child,
         break;
     }
 
-    scoped_refptr<ComputedStyle> new_style =
-        ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(), display);
-
-    // Inherit all properties listed here:
-    // https://html.spec.whatwg.org/C/#the-fieldset-and-legend-elements
-
-    // TODO(crbug.com/875235): When the paint code is ready for anonymous
-    // scrollable containers, inherit overflow-x and overflow-y here.
-
-    new_style->SetAlignContent(StyleRef().AlignContent());
-    new_style->SetAlignItems(StyleRef().AlignItems());
-
-    new_style->SetBorderBottomLeftRadius(StyleRef().BorderBottomLeftRadius());
-    new_style->SetBorderBottomRightRadius(StyleRef().BorderBottomRightRadius());
-    new_style->SetBorderTopLeftRadius(StyleRef().BorderTopLeftRadius());
-    new_style->SetBorderTopRightRadius(StyleRef().BorderTopRightRadius());
-
-    new_style->SetPaddingTop(StyleRef().PaddingTop());
-    new_style->SetPaddingRight(StyleRef().PaddingRight());
-    new_style->SetPaddingBottom(StyleRef().PaddingBottom());
-    new_style->SetPaddingLeft(StyleRef().PaddingLeft());
-
-    if (StyleRef().SpecifiesColumns()) {
-      new_style->SetColumnCount(StyleRef().ColumnCount());
-      new_style->SetColumnWidth(StyleRef().ColumnWidth());
-    } else {
-      new_style->SetHasAutoColumnCount();
-      new_style->SetHasAutoColumnWidth();
-    }
-    new_style->SetColumnGap(StyleRef().ColumnGap());
-    new_style->SetColumnFill(StyleRef().GetColumnFill());
-    new_style->SetColumnRuleColor(StyleColor(LayoutObject::ResolveColor(
-        StyleRef(), GetCSSPropertyColumnRuleColor())));
-    new_style->SetColumnRuleStyle(StyleRef().ColumnRuleStyle());
-    new_style->SetColumnRuleWidth(StyleRef().ColumnRuleWidth());
-
-    new_style->SetFlexDirection(StyleRef().FlexDirection());
-    new_style->SetFlexWrap(StyleRef().FlexWrap());
-
-    new_style->SetGridAutoColumns(StyleRef().GridAutoColumns());
-    new_style->SetGridAutoFlow(StyleRef().GetGridAutoFlow());
-    new_style->SetGridAutoRows(StyleRef().GridAutoRows());
-    new_style->SetGridColumnEnd(StyleRef().GridColumnEnd());
-    new_style->SetGridColumnStart(StyleRef().GridColumnStart());
-    new_style->SetGridRowEnd(StyleRef().GridRowEnd());
-    new_style->SetGridRowStart(StyleRef().GridRowStart());
-    new_style->SetGridTemplateColumns(StyleRef().GridTemplateColumns());
-    new_style->SetGridTemplateRows(StyleRef().GridTemplateRows());
-    new_style->SetNamedGridArea(StyleRef().NamedGridArea());
-    new_style->SetNamedGridAreaColumnCount(
-        StyleRef().NamedGridAreaColumnCount());
-    new_style->SetNamedGridAreaRowCount(StyleRef().NamedGridAreaRowCount());
-    new_style->SetRowGap(StyleRef().RowGap());
-
-    new_style->SetJustifyContent(StyleRef().JustifyContent());
-    new_style->SetJustifyItems(StyleRef().JustifyItems());
-    new_style->SetUnicodeBidi(StyleRef().GetUnicodeBidi());
-
-    fieldset_content = LayoutBlock::CreateAnonymousWithParentAndDisplay(
-        this, new_style->Display());
-    fieldset_content->SetStyle(std::move(new_style));
+    fieldset_content =
+        LayoutBlock::CreateAnonymousWithParentAndDisplay(this, display);
     LayoutBox::AddChild(fieldset_content);
   }
   fieldset_content->AddChild(new_child, before_child);
@@ -116,8 +57,131 @@ void LayoutNGFieldset::AddChild(LayoutObject* new_child,
 // childless. While an empty anonymous child should have no effect, it doesn't
 // seem right to leave it around.
 
+void LayoutNGFieldset::UpdateAnonymousChildStyle(
+    const LayoutObject*,
+    ComputedStyle& child_style) const {
+  // Inherit all properties listed here:
+  // https://html.spec.whatwg.org/C/#anonymous-fieldset-content-box
+
+  child_style.SetAlignContent(StyleRef().AlignContent());
+  child_style.SetAlignItems(StyleRef().AlignItems());
+
+  child_style.SetBorderBottomLeftRadius(StyleRef().BorderBottomLeftRadius());
+  child_style.SetBorderBottomRightRadius(StyleRef().BorderBottomRightRadius());
+  child_style.SetBorderTopLeftRadius(StyleRef().BorderTopLeftRadius());
+  child_style.SetBorderTopRightRadius(StyleRef().BorderTopRightRadius());
+
+  child_style.SetPaddingTop(StyleRef().PaddingTop());
+  child_style.SetPaddingRight(StyleRef().PaddingRight());
+  child_style.SetPaddingBottom(StyleRef().PaddingBottom());
+  child_style.SetPaddingLeft(StyleRef().PaddingLeft());
+
+  if (StyleRef().SpecifiesColumns()) {
+    child_style.SetColumnCount(StyleRef().ColumnCount());
+    child_style.SetColumnWidth(StyleRef().ColumnWidth());
+  } else {
+    child_style.SetHasAutoColumnCount();
+    child_style.SetHasAutoColumnWidth();
+  }
+  child_style.SetColumnGap(StyleRef().ColumnGap());
+  child_style.SetColumnFill(StyleRef().GetColumnFill());
+  child_style.SetColumnRuleColor(StyleColor(
+      LayoutObject::ResolveColor(StyleRef(), GetCSSPropertyColumnRuleColor())));
+  child_style.SetColumnRuleStyle(StyleRef().ColumnRuleStyle());
+  child_style.SetColumnRuleWidth(StyleRef().ColumnRuleWidth());
+
+  child_style.SetFlexDirection(StyleRef().FlexDirection());
+  child_style.SetFlexWrap(StyleRef().FlexWrap());
+
+  child_style.SetGridAutoColumns(StyleRef().GridAutoColumns());
+  child_style.SetGridAutoFlow(StyleRef().GetGridAutoFlow());
+  child_style.SetGridAutoRows(StyleRef().GridAutoRows());
+  child_style.SetGridColumnEnd(StyleRef().GridColumnEnd());
+  child_style.SetGridColumnStart(StyleRef().GridColumnStart());
+  child_style.SetGridRowEnd(StyleRef().GridRowEnd());
+  child_style.SetGridRowStart(StyleRef().GridRowStart());
+  child_style.SetGridTemplateColumns(StyleRef().GridTemplateColumns());
+  child_style.SetGridTemplateRows(StyleRef().GridTemplateRows());
+  child_style.SetNamedGridArea(StyleRef().NamedGridArea());
+  child_style.SetNamedGridAreaColumnCount(
+      StyleRef().NamedGridAreaColumnCount());
+  child_style.SetNamedGridAreaRowCount(StyleRef().NamedGridAreaRowCount());
+  child_style.SetRowGap(StyleRef().RowGap());
+
+  child_style.SetJustifyContent(StyleRef().JustifyContent());
+  child_style.SetJustifyItems(StyleRef().JustifyItems());
+  child_style.SetOverflowX(StyleRef().OverflowX());
+  child_style.SetOverflowY(StyleRef().OverflowY());
+  child_style.SetUnicodeBidi(StyleRef().GetUnicodeBidi());
+
+  // If the FIELDSET is an OOF container, the anonymous content box should be
+  // an OOF container to steal OOF objects under the FIELDSET.
+  if (CanContainFixedPositionObjects())
+    child_style.SetContain(kContainsPaint);
+  else if (StyleRef().CanContainAbsolutePositionObjects())
+    child_style.SetPosition(EPosition::kRelative);
+}
+
 bool LayoutNGFieldset::IsOfType(LayoutObjectType type) const {
   return type == kLayoutObjectNGFieldset || LayoutNGBlockFlow::IsOfType(type);
+}
+
+void LayoutNGFieldset::InvalidatePaint(
+    const PaintInvalidatorContext& context) const {
+  // Fieldset's box decoration painting depends on the legend geometry.
+  const LayoutBox* legend_box = LayoutFieldset::FindInFlowLegend(*this);
+  if (legend_box && legend_box->ShouldCheckGeometryForPaintInvalidation()) {
+    GetMutableForPainting().SetShouldDoFullPaintInvalidation(
+        PaintInvalidationReason::kGeometry);
+  }
+  LayoutNGBlockFlow::InvalidatePaint(context);
+}
+
+bool LayoutNGFieldset::BackgroundIsKnownToBeOpaqueInRect(
+    const PhysicalRect& local_rect) const {
+  // If the field set has a legend, then it probably does not completely fill
+  // its background.
+  if (LayoutFieldset::FindInFlowLegend(*this))
+    return false;
+
+  return LayoutBlockFlow::BackgroundIsKnownToBeOpaqueInRect(local_rect);
+}
+
+bool LayoutNGFieldset::HitTestChildren(HitTestResult& result,
+                                       const HitTestLocation& hit_test_location,
+                                       const PhysicalOffset& accumulated_offset,
+                                       HitTestAction hit_test_action) {
+  if (LayoutNGBlockFlow::HitTestChildren(result, hit_test_location,
+                                         accumulated_offset, hit_test_action))
+    return true;
+
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentTraversalEnabled());
+  LayoutBox* legend = LayoutFieldset::FindInFlowLegend(*this);
+  if (!legend || legend->HasSelfPaintingLayer() || legend->IsColumnSpanAll())
+    return false;
+  if (legend->NodeAtPoint(result, hit_test_location,
+                          accumulated_offset + legend->PhysicalLocation(this),
+                          hit_test_action == kHitTestChildBlockBackgrounds
+                              ? kHitTestChildBlockBackground
+                              : hit_test_action)) {
+    UpdateHitTestResult(result, hit_test_location.Point() - accumulated_offset);
+    return true;
+  }
+  return false;
+}
+
+LayoutUnit LayoutNGFieldset::ScrollWidth() const {
+  const LayoutObject* child = FirstChild();
+  if (child && child->IsAnonymous())
+    return To<LayoutBox>(child)->ScrollWidth();
+  return LayoutNGBlockFlow::ScrollWidth();
+}
+
+LayoutUnit LayoutNGFieldset::ScrollHeight() const {
+  const LayoutObject* child = FirstChild();
+  if (child && child->IsAnonymous())
+    return To<LayoutBox>(child)->ScrollHeight();
+  return LayoutNGBlockFlow::ScrollHeight();
 }
 
 }  // namespace blink

@@ -9,18 +9,20 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
-import androidx.annotation.ColorRes;
+import androidx.annotation.ColorInt;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 
-import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.base.ViewUtils;
@@ -45,7 +47,6 @@ class SearchBoxMediator
         mContext = context;
         mModel = model;
         mView = view;
-
         PropertyModelChangeProcessor.create(mModel, mView, new SearchBoxViewBinder());
     }
 
@@ -79,9 +80,9 @@ class SearchBoxMediator
 
     @Override
     public void onFinishNativeInitialization() {
-        mAssistantVoiceSearchService =
-                new AssistantVoiceSearchService(mContext, ExternalAuthUtils.getInstance(),
-                        TemplateUrlServiceFactory.get(), GSAState.getInstance(mContext), this);
+        mAssistantVoiceSearchService = new AssistantVoiceSearchService(mContext,
+                AppHooks.get().getExternalAuthUtils(), TemplateUrlServiceFactory.get(),
+                GSAState.getInstance(mContext), this, SharedPreferencesManager.getInstance());
         onAssistantVoiceSearchServiceChanged();
     }
 
@@ -93,7 +94,7 @@ class SearchBoxMediator
         Drawable drawable = mAssistantVoiceSearchService.getCurrentMicDrawable();
         mModel.set(SearchBoxProperties.VOICE_SEARCH_DRAWABLE, drawable);
 
-        final @ColorRes int primaryColor = ChromeColors.getDefaultThemeColor(
+        final @ColorInt int primaryColor = ChromeColors.getDefaultThemeColor(
                 mContext.getResources(), false /* forceDarkBgColor= */);
         ColorStateList colorStateList =
                 mAssistantVoiceSearchService.getMicButtonColorStateList(primaryColor, mContext);
@@ -106,7 +107,7 @@ class SearchBoxMediator
             boolean isChipVisible = mModel.get(SearchBoxProperties.CHIP_VISIBILITY);
             if (isChipVisible) {
                 String chipText = mModel.get(SearchBoxProperties.CHIP_TEXT);
-                mModel.set(SearchBoxProperties.SEARCH_TEXT, chipText);
+                mModel.set(SearchBoxProperties.SEARCH_TEXT, Pair.create(chipText, true));
                 mChipDelegate.onCancelClicked();
             }
             listener.onClick(v);

@@ -40,7 +40,7 @@ TextElementTiming::TextElementTiming(LocalDOMWindow& window)
 FloatRect TextElementTiming::ComputeIntersectionRect(
     const LayoutObject& object,
     const IntRect& aggregated_visual_rect,
-    const PropertyTreeState& property_tree_state,
+    const PropertyTreeStateOrAlias& property_tree_state,
     const LocalFrameView* frame_view) {
   Node* node = object.GetNode();
   DCHECK(node);
@@ -77,7 +77,7 @@ void TextElementTiming::OnTextObjectPainted(const TextRecord& record) {
       element);
 }
 
-void TextElementTiming::Trace(Visitor* visitor) {
+void TextElementTiming::Trace(Visitor* visitor) const {
   Supplement<LocalDOMWindow>::Trace(visitor);
   visitor->Trace(performance_);
 }

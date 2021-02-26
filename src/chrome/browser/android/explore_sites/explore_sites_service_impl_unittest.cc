@@ -5,7 +5,7 @@
 #include "chrome/browser/android/explore_sites/explore_sites_service_impl.h"
 
 #include "base/bind.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
@@ -574,7 +574,7 @@ TEST_F(ExploreSitesServiceImplTest, UnparseableCatalogHistograms) {
                                   ExploreSitesCatalogError::kParseFailure, 1);
 }
 
-TEST_F(ExploreSitesServiceImplTest, BlacklistNonCanonicalUrls) {
+TEST_F(ExploreSitesServiceImplTest, BlockNonCanonicalUrls) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
 
@@ -597,7 +597,7 @@ TEST_F(ExploreSitesServiceImplTest, BlacklistNonCanonicalUrls) {
   // This will fail if canonicalization does not work correctly because
   // kSite1Url is the canonicalized version of the URL inserted in to the
   // database.
-  service()->BlacklistSite(kSite1Url);
+  service()->BlockSite(kSite1Url);
   PumpLoop();
 
   service()->GetCatalog(base::BindOnce(
@@ -605,8 +605,8 @@ TEST_F(ExploreSitesServiceImplTest, BlacklistNonCanonicalUrls) {
   PumpLoop();
 
   EXPECT_EQ(2U, database_categories()->at(0).sites.size());
-  EXPECT_TRUE(database_categories()->at(0).sites.at(0).is_blacklisted);
-  EXPECT_FALSE(database_categories()->at(0).sites.at(1).is_blacklisted);
+  EXPECT_TRUE(database_categories()->at(0).sites.at(0).is_blocked);
+  EXPECT_FALSE(database_categories()->at(0).sites.at(1).is_blocked);
 }
 
 TEST_F(ExploreSitesServiceImplTest, CountryCodeDefault) {

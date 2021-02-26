@@ -67,6 +67,44 @@ interface DriveFs {
   // encoded proto message.
   SendNativeMessageRequest(string request) => (
       FileError error, string response);
+
+  // Sets the arguments to be parsed by DriveFS on startup. Should only be
+  // called in developer mode.
+  SetStartupArguments(string arguments) => (bool success);
+
+  // Gets the currently set arguments parsed by DriveFS on startup. Should only
+  // be called in developer mode.
+  GetStartupArguments() => (string arguments);
+
+  // Enables or disables performance tracing, which logs to
+  // |data_dir_path|/Logs/drive_fs_trace.
+  SetTracingEnabled(bool enabled);
+
+  // Enables or disables networking for testing. Should only be called in
+  // developer mode.
+  SetNetworkingEnabled(bool enabled);
+
+  // Overrides syncing to be paused if enabled. Should only be called in
+  // developer mode.
+  ForcePauseSyncing(bool enable);
+
+  // Dumps account settings (including feature flags) to
+  // |data_dir_path/account_settings. Should only be called in developer mode.
+  DumpAccountSettings();
+
+  // Loads account settings (including feature flags) from
+  // |data_dir_path/account_settings. Should only be called in developer mode.
+  LoadAccountSettings();
+
+  // Establish communication session between extension and DriveFS.
+  CreateNativeHostSession(ExtensionConnectionParams params,
+      pending_receiver<NativeMessagingHost> session,
+      pending_remote<NativeMessagingPort> port);
+
+  // Find the files corresponding to Drive's item IDs provided.
+  // Paths returned are relative to the mount point.
+  LocateFilesByItemIds(array<string> item_ids) => (
+      array<FilePathOrError>? response);
 };
 
 // Implemented by Chrome, used from DriveFS.
@@ -109,9 +147,20 @@ interface DriveFsDelegate {
 
   // Invoked from time to time to indicate that drivefs is operational.
   OnHeartbeat();
+
+  enum ExtensionConnectionStatus {
+    kSuccess,
+    kExtensionNotFound,
+  };
+
+  // Initiates connection to the extension specified.
+  ConnectToExtension(ExtensionConnectionParams params,
+      pending_receiver<NativeMessagingPort> port,
+      pending_remote<NativeMessagingHost> host) => (
+          ExtensionConnectionStatus error);
 };
 
-// Next MinVersion: 5
+// Next MinVersion: 6
 struct DriveFsConfiguration {
   string user_email;
 
@@ -128,6 +177,9 @@ struct DriveFsConfiguration {
 
   [MinVersion=4]
   bool enable_experimental_mirroring = false;
+
+  [MinVersion=5]
+  bool enable_verbose_logging = false;
 };
 
 enum AccessTokenStatus {
@@ -170,6 +222,7 @@ enum FileError {
 struct DriveError {
   [Extensible] enum Type {
     kCantUploadStorageFull,
+    kPinningFailedDiskFull,
   };
 
   Type type;
@@ -264,6 +317,18 @@ struct QuickAccess {
   double score;
 };
 
+// Reason why this event occurred.
+// TODO(crbug.com/896777): Put this inside ItemEvent once the fix for the linked
+// bug is in libchrome.
+[Extensible]
+enum ItemEventReason {
+  // Due to sync traffic from file transfers.
+  kTransfer,
+  // Due to the user pinning a file.
+  kPin,
+};
+
+// Next MinVersion: 2
 struct ItemEvent {
   enum State {
     kQueued,
@@ -286,6 +351,8 @@ struct ItemEvent {
   // as the sentinel value for unset.
   int64 bytes_transferred = -1;
   int64 bytes_to_transfer = -1;
+
+  [MinVersion=1] ItemEventReason reason = kTransfer;
 };
 
 struct SyncingStatus {
@@ -390,4 +457,34 @@ struct FetchChangeLogOptions {
   // ID of the Team Drive to fetch the changelog for. Set to an empty string to
   // fetch the My Drive changelog instead.
   string team_drive_id;
+};
+
+// Implemented in the browser and used from DriveFS.
+// Roughly corresponds to a native messaging port to the extension and allows
+// sending messages from the DriveFS process to the extension.
+interface NativeMessagingPort {
+  // Send a native |message| to the extension. |message| is an
+  // opaque string in an extension-specific format.
+  PostMessageToExtension(string message);
+};
+
+// Implemented in DriveFS and used from the browser.
+// Roughly corresponds to a native messaging host instance and allows
+// processing of requests from the extension by the DriveFS process.
+// It's up to the extension and the host to agree to message ordering.
+interface NativeMessagingHost {
+  // Process |message| from the extension. |message| is an
+  // opaque string in an extension-specific format.
+  HandleMessageFromExtension(string message);
+};
+
+// Configuration of the connection between extension and DriveFS.
+struct ExtensionConnectionParams {
+  string extension_id;
+};
+
+// A single file path resolution result.
+union FilePathOrError {
+  FileError error;
+  mojo_base.mojom.FilePath path;
 };

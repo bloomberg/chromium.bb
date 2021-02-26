@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -111,6 +112,11 @@ void FileStream::Context::Close(CompletionOnceCallback callback) {
 void FileStream::Context::Seek(int64_t offset,
                                Int64CompletionOnceCallback callback) {
   DCHECK(!async_in_progress_);
+
+  if (offset < 0) {
+    std::move(callback).Run(net::ERR_INVALID_ARGUMENT);
+    return;
+  }
 
   bool posted = base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,

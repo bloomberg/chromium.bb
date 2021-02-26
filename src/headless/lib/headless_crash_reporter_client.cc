@@ -13,13 +13,12 @@
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "headless/public/version.h"
-#include "services/service_manager/embedder/switches.h"
 
 namespace headless {
 
 namespace {
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
 
 constexpr char kChromeHeadlessProductName[] = "Chrome_Headless";
 
@@ -30,7 +29,7 @@ constexpr char kChromeHeadlessProductName[] = "Chrome_Headless";
 HeadlessCrashReporterClient::HeadlessCrashReporterClient() = default;
 HeadlessCrashReporterClient::~HeadlessCrashReporterClient() = default;
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
 void HeadlessCrashReporterClient::GetProductNameAndVersion(
     const char** product_name,
     const char** version) {
@@ -50,7 +49,7 @@ void HeadlessCrashReporterClient::GetProductNameAndVersion(
 base::FilePath HeadlessCrashReporterClient::GetReporterLogFilename() {
   return base::FilePath(FILE_PATH_LITERAL("uploads.log"));
 }
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+#endif  // defined(OS_POSIX) && !defined(OS_MAC)
 
 bool HeadlessCrashReporterClient::GetCrashDumpLocation(
 #if defined(OS_WIN)
@@ -76,7 +75,7 @@ bool HeadlessCrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {
   return process_type == ::switches::kRendererProcess ||
          process_type == ::switches::kPpapiPluginProcess ||
-         process_type == service_manager::switches::kZygoteProcess ||
+         process_type == ::switches::kZygoteProcess ||
          process_type == ::switches::kGpuProcess;
 }
 

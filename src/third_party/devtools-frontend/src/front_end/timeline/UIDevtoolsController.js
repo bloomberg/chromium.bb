@@ -28,7 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {TimelineController} from './TimelineController.js';
+import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+
+import {Client, TimelineController} from './TimelineController.js';  // eslint-disable-line no-unused-vars
 import {TimelineUIUtils} from './TimelineUIUtils.js';
 import {UIDevtoolsUtils} from './UIDevtoolsUtils.js';
 
@@ -37,6 +39,10 @@ import {UIDevtoolsUtils} from './UIDevtoolsUtils.js';
  * @unrestricted
  */
 export class UIDevtoolsController extends TimelineController {
+  /**
+   * @param {!SDK.SDKModel.Target} target
+   * @param {!Client} client
+   */
   constructor(target, client) {
     super(target, client);
     TimelineUIUtils.setEventStylesMap(UIDevtoolsUtils.categorizeEvents());

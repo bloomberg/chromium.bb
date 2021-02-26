@@ -249,7 +249,7 @@ static void RasterizeMain(cc::PaintCanvas* canvas, sk_sp<PaintRecord> record) {
 }
 
 // Flaky on Mac. crbug.com/792540.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_decodeOnOtherThread DISABLED_decodeOnOtherThread
 #else
 #define MAYBE_decodeOnOtherThread decodeOnOtherThread
@@ -396,7 +396,7 @@ TEST_F(DeferredImageDecoderTest, frameOpacity) {
     SkPixmap pixmap(pix_info, storage.data(), row_bytes);
 
     // Before decoding, the frame is not known to be opaque.
-    sk_sp<SkImage> frame = CreatePaintImage(decoder.get()).GetSkImage();
+    sk_sp<SkImage> frame = CreatePaintImage(decoder.get()).GetSwSkImage();
     ASSERT_TRUE(frame);
     EXPECT_FALSE(frame->isOpaque());
     EXPECT_EQ(decoder->AlphaType(), kPremul_SkAlphaType);
@@ -406,7 +406,7 @@ TEST_F(DeferredImageDecoderTest, frameOpacity) {
 
     // After decoding, the frame is known to be opaque.
     EXPECT_EQ(decoder->AlphaType(), kOpaque_SkAlphaType);
-    frame = CreatePaintImage(decoder.get()).GetSkImage();
+    frame = CreatePaintImage(decoder.get()).GetSwSkImage();
     ASSERT_TRUE(frame);
     EXPECT_TRUE(frame->isOpaque());
 

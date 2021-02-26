@@ -8,9 +8,9 @@
 #include <objidl.h>
 #include <wrl/implements.h>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -26,7 +26,8 @@ class DragSourceWin
           IDropSource> {
  public:
   // Factory method to avoid exporting the class and all it derives from.
-  static UI_BASE_EXPORT Microsoft::WRL::ComPtr<DragSourceWin> Create();
+  static COMPONENT_EXPORT(
+      UI_BASE) Microsoft::WRL::ComPtr<DragSourceWin> Create();
 
   // Use Create() to construct these objects. Direct calls to the constructor
   // are an error - it is only public because a WRL helper function creates the
@@ -40,6 +41,10 @@ class DragSourceWin
   void CancelDrag() {
     cancel_drag_ = true;
   }
+
+  // This is used to tell if the drag drop actually started, for generating
+  // a BooleanSuccess histogram.
+  int num_query_continues() const { return num_query_continues_; }
 
   // IDropSource implementation:
   HRESULT __stdcall QueryContinueDrag(BOOL escape_pressed,
@@ -61,6 +66,12 @@ class DragSourceWin
   bool cancel_drag_;
 
   const OSExchangeData* data_;
+
+  // The number of times for this drag that Windows asked if the drag should
+  // continue. This is used in DesktopDragDropClientWin::StartDragAndDrop to
+  // detect if touch drag drop started successfully. See comment there for much
+  // more info.
+  int num_query_continues_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(DragSourceWin);
 };

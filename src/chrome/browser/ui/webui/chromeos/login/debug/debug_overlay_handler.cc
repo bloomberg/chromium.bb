@@ -6,12 +6,15 @@
 
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -44,9 +47,10 @@ void RunStoreScreenshotOnTaskRunner(
     const base::FilePath& screenshot_dir,
     const std::string& screenshot_name,
     scoped_refptr<base::RefCountedMemory> png_data) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&StoreScreenshot, screenshot_dir,
-                                screenshot_name, png_data));
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&StoreScreenshot, screenshot_dir, screenshot_name,
+                     png_data));
 }
 
 }  // namespace

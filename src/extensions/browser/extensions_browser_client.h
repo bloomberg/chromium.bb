@@ -11,7 +11,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/bluetooth_chooser.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extensions_browser_api_provider.h"
@@ -32,15 +34,16 @@ namespace base {
 class CommandLine;
 class FilePath;
 class ListValue;
-}
+}  // namespace base
 
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
 class WebContents;
-}
+}  // namespace content
 
 namespace network {
+struct ResourceRequest;
 namespace mojom {
 class NetworkContext;
 }
@@ -48,6 +51,10 @@ class NetworkContext;
 
 namespace update_client {
 class UpdateClient;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace extensions {
@@ -62,6 +69,7 @@ class ExtensionSystem;
 class ExtensionSystemProvider;
 class ExtensionWebContentsObserver;
 class KioskDelegate;
+class MediaRouterExtensionAccessLogger;
 class ProcessManagerDelegate;
 class ProcessMap;
 class RuntimeAPIDelegate;
@@ -76,6 +84,8 @@ class UserScriptListener;
 class ExtensionsBrowserClient {
  public:
   ExtensionsBrowserClient();
+  ExtensionsBrowserClient(const ExtensionsBrowserClient&) = delete;
+  ExtensionsBrowserClient& operator=(const ExtensionsBrowserClient&) = delete;
   virtual ~ExtensionsBrowserClient();
 
   // Returns the single instance of |this|.
@@ -124,7 +134,7 @@ class ExtensionsBrowserClient {
   virtual content::BrowserContext* GetOriginalContext(
       content::BrowserContext* context) = 0;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Returns a user id hash from |context| or an empty string if no hash could
   // be extracted.
   virtual std::string GetUserIdHashFromContext(
@@ -318,7 +328,7 @@ class ExtensionsBrowserClient {
   // of whether it is currently loaded or not) under the provided |context|.
   // Loaded extensions return true if they are currently loaded or terminated.
   // Unloaded extensions will return true if they are not blocked, disabled,
-  // blacklisted or uninstalled (for external extensions). The default return
+  // blocklisted or uninstalled (for external extensions). The default return
   // value of this function is false.
   virtual bool IsExtensionEnabled(const std::string& extension_id,
                                   content::BrowserContext* context) const;
@@ -343,15 +353,26 @@ class ExtensionsBrowserClient {
   virtual bool ShouldSchemeBypassNavigationChecks(
       const std::string& scheme) const;
 
-  // Returns true when we should enforce 'extraHeaders' option for any
-  // webRequest API callbacks so to mitigate CORS related compatibility issues.
-  virtual bool ShouldForceWebRequestExtraHeaders(
-      content::BrowserContext* context) const;
+  // Gets and sets the last save (download) path for a given context.
+  virtual base::FilePath GetSaveFilePath(content::BrowserContext* context);
+  virtual void SetLastSaveFilePath(content::BrowserContext* context,
+                                   const base::FilePath& path);
+
+  // Retrieves the media router access logger for this session.
+  virtual const MediaRouterExtensionAccessLogger* GetMediaRouterAccessLogger()
+      const;
+
+  // Returns true if the |extension_id| requires its own isolated storage
+  // partition.
+  virtual bool HasIsolatedStorage(const std::string& extension_id,
+                                  content::BrowserContext* context);
+
+  // Returns whether screenshot of |web_contents| is restricted due to Data Leak
+  // Protection policy.
+  virtual bool IsScreenshotRestricted(content::WebContents* web_contents) const;
 
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsBrowserClient);
 };
 
 }  // namespace extensions

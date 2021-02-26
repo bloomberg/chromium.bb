@@ -21,7 +21,8 @@ class AccessibilityControllerClient
       const std::string& message) override;
   void PlayEarcon(int sound_key) override;
   base::TimeDelta PlayShutdownSound() override;
-  void HandleAccessibilityGesture(ax::mojom::Gesture gesture) override;
+  void HandleAccessibilityGesture(ax::mojom::Gesture gesture,
+                                  gfx::PointF location) override;
   bool ToggleDictation() override;
   void SilenceSpokenFeedback() override;
   void OnTwoFingerTouchStart() override;
@@ -31,6 +32,8 @@ class AccessibilityControllerClient
   void RequestSelectToSpeakStateChange() override;
   void RequestAutoclickScrollableBoundsForPoint(
       gfx::Point& point_in_screen) override;
+  void MagnifierBoundsChanged(const gfx::Rect& bounds_in_screen) override;
+  void OnSwitchAccessDisabled() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerClient);

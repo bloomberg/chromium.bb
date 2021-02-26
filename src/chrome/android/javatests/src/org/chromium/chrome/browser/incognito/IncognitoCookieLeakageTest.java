@@ -5,17 +5,17 @@
 package org.chromium.chrome.browser.incognito;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 
+import androidx.test.filters.LargeTest;
+
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
@@ -24,20 +24,17 @@ import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils.ActivityType;
 import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils.TestParams;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -62,20 +59,20 @@ public class IncognitoCookieLeakageTest {
     private static final String COOKIES_SETTING_PATH = "/chrome/test/data/android/cookie.html";
 
     @Rule
-    public ChromeActivityTestRule<ChromeTabbedActivity> mChromeActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
+    public ChromeTabbedActivityTestRule mChromeActivityTestRule =
+            new ChromeTabbedActivityTestRule();
 
     @Rule
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
-    @Rule
-    public TestRule mProcessor = new Features.InstrumentationProcessor();
-
     @Before
-    public void setUp() {
+    public void setUp() throws TimeoutException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mCookiesTestPage = mTestServer.getURL(COOKIES_SETTING_PATH);
-        mChromeActivityTestRule.startMainActivityOnBlankPage();
+
+        // Ensuring native is initialized before we access the CCT_INCOGNITO feature flag.
+        IncognitoDataTestUtils.fireAndWaitForCctWarmup();
+        assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_INCOGNITO));
     }
 
     @After
@@ -86,13 +83,15 @@ public class IncognitoCookieLeakageTest {
     }
 
     private void setCookies(Tab tab) throws TimeoutException {
-        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab.getWebContents()); });
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(tab.getWebContents(), Matchers.notNullValue()));
         JavaScriptUtils.executeJavaScriptAndWaitForResult(tab.getWebContents(), "setCookie()");
         assertCookies(tab, "\"Foo=Bar\"");
     }
 
     private void assertCookies(Tab tab, String expected) throws TimeoutException {
-        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab.getWebContents()); });
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(tab.getWebContents(), Matchers.notNullValue()));
         String actual = JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 tab.getWebContents(), "getCookie()");
         if (actual.equalsIgnoreCase("null")) actual = "\"\"";
@@ -113,11 +112,8 @@ public class IncognitoCookieLeakageTest {
     // the session with other incognito sessions. Once, they are properly isolated we should change
     // the test to expect that cookies are not leaked from/to an incognito CCT session.
     @Test
-    @MediumTest
+    @LargeTest
     @UseMethodParameter(TestParams.IncognitoToIncognito.class)
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP,
-            message = "TODO(crbug.com/1062357): The test is disabled in "
-                    + "Android Kitkat because of incognito CCT flakiness.")
     public void
     testCookiesDoNotLeakFromIncognitoToIncognito(
             String incognitoActivityType1, String incognitoActivityType2) throws TimeoutException {
@@ -131,7 +127,7 @@ public class IncognitoCookieLeakageTest {
         Tab getter_tab = incognitoActivity2.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mCookiesTestPage);
 
-        String expected = CustomTabIncognitoManager.hasIsolatedProfile() ? "\"\"" : "\"Foo=Bar\"";
+        String expected = "\"\"";
 
         assertCookies(getter_tab, expected);
     }
@@ -139,11 +135,8 @@ public class IncognitoCookieLeakageTest {
     // This test cookie does not leak from regular to incognito and from incognito to regular
     // session across different activity types.
     @Test
-    @MediumTest
+    @LargeTest
     @UseMethodParameter(IsolatedFlowsParams.class)
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP,
-            message = "TODO(crbug.com/1062357): The test is disabled in "
-                    + "Android Kitkat because of incognito CCT flakiness.")
     public void
     testCookiesDoNotLeakBetweenRegularAndIncognito(
             String setterActivityType, String getterActivityType) throws TimeoutException {

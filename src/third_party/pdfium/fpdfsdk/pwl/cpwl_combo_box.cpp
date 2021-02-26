@@ -7,159 +7,20 @@
 #include "fpdfsdk/pwl/cpwl_combo_box.h"
 
 #include <algorithm>
-#include <sstream>
 #include <utility>
 
-#include "core/fxge/cfx_pathdata.h"
-#include "core/fxge/cfx_renderdevice.h"
+#include "fpdfsdk/pwl/cpwl_cbbutton.h"
+#include "fpdfsdk/pwl/cpwl_cblistbox.h"
 #include "fpdfsdk/pwl/cpwl_edit.h"
-#include "fpdfsdk/pwl/cpwl_edit_ctrl.h"
-#include "fpdfsdk/pwl/cpwl_list_box.h"
-#include "fpdfsdk/pwl/cpwl_list_impl.h"
-#include "fpdfsdk/pwl/cpwl_wnd.h"
+#include "fpdfsdk/pwl/ipwl_fillernotify.h"
 #include "public/fpdf_fwlevent.h"
-#include "third_party/base/ptr_util.h"
 
 namespace {
 
 constexpr float kComboBoxDefaultFontSize = 12.0f;
-constexpr float kComboBoxTriangleHalfLength = 3.0f;
 constexpr int kDefaultButtonWidth = 13;
 
 }  // namespace
-
-CPWL_CBListBox::CPWL_CBListBox(
-    const CreateParams& cp,
-    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData)
-    : CPWL_ListBox(cp, std::move(pAttachedData)) {}
-
-CPWL_CBListBox::~CPWL_CBListBox() = default;
-
-bool CPWL_CBListBox::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
-  CPWL_Wnd::OnLButtonUp(nFlag, point);
-
-  if (!m_bMouseDown)
-    return true;
-
-  ReleaseCapture();
-  m_bMouseDown = false;
-
-  if (!ClientHitTest(point))
-    return true;
-  if (CPWL_Wnd* pParent = GetParentWindow())
-    pParent->NotifyLButtonUp(this, point);
-
-  return !OnNotifySelectionChanged(false, nFlag);
-}
-
-bool CPWL_CBListBox::IsMovementKey(uint16_t nChar) const {
-  switch (nChar) {
-    case FWL_VKEY_Up:
-    case FWL_VKEY_Down:
-    case FWL_VKEY_Home:
-    case FWL_VKEY_Left:
-    case FWL_VKEY_End:
-    case FWL_VKEY_Right:
-      return true;
-    default:
-      return false;
-  }
-}
-
-bool CPWL_CBListBox::OnMovementKeyDown(uint16_t nChar, uint32_t nFlag) {
-  ASSERT(IsMovementKey(nChar));
-
-  switch (nChar) {
-    case FWL_VKEY_Up:
-      m_pList->OnVK_UP(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
-      break;
-    case FWL_VKEY_Down:
-      m_pList->OnVK_DOWN(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
-      break;
-    case FWL_VKEY_Home:
-      m_pList->OnVK_HOME(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
-      break;
-    case FWL_VKEY_Left:
-      m_pList->OnVK_LEFT(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
-      break;
-    case FWL_VKEY_End:
-      m_pList->OnVK_END(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
-      break;
-    case FWL_VKEY_Right:
-      m_pList->OnVK_RIGHT(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
-      break;
-  }
-  return OnNotifySelectionChanged(true, nFlag);
-}
-
-bool CPWL_CBListBox::IsChar(uint16_t nChar, uint32_t nFlag) const {
-  return m_pList->OnChar(nChar, IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
-}
-
-bool CPWL_CBListBox::OnCharNotify(uint16_t nChar, uint32_t nFlag) {
-  if (auto* pComboBox = static_cast<CPWL_ComboBox*>(GetParentWindow()))
-    pComboBox->SetSelectText();
-
-  return OnNotifySelectionChanged(true, nFlag);
-}
-
-CPWL_CBButton::CPWL_CBButton(
-    const CreateParams& cp,
-    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData)
-    : CPWL_Wnd(cp, std::move(pAttachedData)) {}
-
-CPWL_CBButton::~CPWL_CBButton() = default;
-
-void CPWL_CBButton::DrawThisAppearance(CFX_RenderDevice* pDevice,
-                                       const CFX_Matrix& mtUser2Device) {
-  CPWL_Wnd::DrawThisAppearance(pDevice, mtUser2Device);
-
-  CFX_FloatRect rectWnd = CPWL_Wnd::GetWindowRect();
-  if (!IsVisible() || rectWnd.IsEmpty())
-    return;
-
-  CFX_PointF ptCenter = GetCenterPoint();
-
-  static constexpr float kComboBoxTriangleQuarterLength =
-      kComboBoxTriangleHalfLength * 0.5;
-  CFX_PointF pt1(ptCenter.x - kComboBoxTriangleHalfLength,
-                 ptCenter.y + kComboBoxTriangleQuarterLength);
-  CFX_PointF pt2(ptCenter.x + kComboBoxTriangleHalfLength,
-                 ptCenter.y + kComboBoxTriangleQuarterLength);
-  CFX_PointF pt3(ptCenter.x, ptCenter.y - kComboBoxTriangleQuarterLength);
-
-  if (IsFloatBigger(rectWnd.right - rectWnd.left,
-                    kComboBoxTriangleHalfLength * 2) &&
-      IsFloatBigger(rectWnd.top - rectWnd.bottom,
-                    kComboBoxTriangleHalfLength)) {
-    CFX_PathData path;
-    path.AppendPoint(pt1, FXPT_TYPE::MoveTo);
-    path.AppendPoint(pt2, FXPT_TYPE::LineTo);
-    path.AppendPoint(pt3, FXPT_TYPE::LineTo);
-    path.AppendPoint(pt1, FXPT_TYPE::LineTo);
-
-    pDevice->DrawPath(&path, &mtUser2Device, nullptr,
-                      PWL_DEFAULT_BLACKCOLOR.ToFXColor(GetTransparency()), 0,
-                      FXFILL_ALTERNATE);
-  }
-}
-
-bool CPWL_CBButton::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
-  CPWL_Wnd::OnLButtonDown(nFlag, point);
-
-  SetCapture();
-  if (CPWL_Wnd* pParent = GetParentWindow())
-    pParent->NotifyLButtonDown(this, point);
-
-  return true;
-}
-
-bool CPWL_CBButton::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
-  CPWL_Wnd::OnLButtonUp(nFlag, point);
-
-  ReleaseCapture();
-  return true;
-}
 
 CPWL_ComboBox::CPWL_ComboBox(
     const CreateParams& cp,
@@ -204,6 +65,10 @@ WideString CPWL_ComboBox::GetSelectedText() {
 void CPWL_ComboBox::ReplaceSelection(const WideString& text) {
   if (m_pEdit)
     m_pEdit->ReplaceSelection(text);
+}
+
+bool CPWL_ComboBox::SelectAllText() {
+  return m_pEdit && m_pEdit->SelectAllText();
 }
 
 bool CPWL_ComboBox::CanUndo() {
@@ -286,9 +151,9 @@ void CPWL_ComboBox::CreateEdit(const CreateParams& cp) {
 
   ecp.rcRectWnd = CFX_FloatRect();
   ecp.dwBorderWidth = 0;
-  ecp.nBorderStyle = BorderStyle::SOLID;
+  ecp.nBorderStyle = BorderStyle::kSolid;
 
-  auto pEdit = pdfium::MakeUnique<CPWL_Edit>(ecp, CloneAttachedData());
+  auto pEdit = std::make_unique<CPWL_Edit>(ecp, CloneAttachedData());
   m_pEdit = pEdit.get();
   m_pEdit->AttachFFLData(m_pFormFiller.Get());
   AddChild(std::move(pEdit));
@@ -305,10 +170,10 @@ void CPWL_ComboBox::CreateButton(const CreateParams& cp) {
                                    220.0f / 255.0f, 220.0f / 255.0f);
   bcp.sBorderColor = PWL_DEFAULT_BLACKCOLOR;
   bcp.dwBorderWidth = 2;
-  bcp.nBorderStyle = BorderStyle::BEVELED;
+  bcp.nBorderStyle = BorderStyle::kBeveled;
   bcp.eCursorType = FXCT_ARROW;
 
-  auto pButton = pdfium::MakeUnique<CPWL_CBButton>(bcp, CloneAttachedData());
+  auto pButton = std::make_unique<CPWL_CBButton>(bcp, CloneAttachedData());
   m_pButton = pButton.get();
   AddChild(std::move(pButton));
   m_pButton->Realize();
@@ -321,7 +186,7 @@ void CPWL_ComboBox::CreateListBox(const CreateParams& cp) {
   CreateParams lcp = cp;
   lcp.dwFlags =
       PWS_CHILD | PWS_BORDER | PWS_BACKGROUND | PLBS_HOVERSEL | PWS_VSCROLL;
-  lcp.nBorderStyle = BorderStyle::SOLID;
+  lcp.nBorderStyle = BorderStyle::kSolid;
   lcp.dwBorderWidth = 1;
   lcp.eCursorType = FXCT_ARROW;
   lcp.rcRectWnd = CFX_FloatRect();
@@ -335,7 +200,7 @@ void CPWL_ComboBox::CreateListBox(const CreateParams& cp) {
   if (cp.sBackgroundColor.nColorType == CFX_Color::kTransparent)
     lcp.sBackgroundColor = PWL_DEFAULT_WHITECOLOR;
 
-  auto pList = pdfium::MakeUnique<CPWL_CBListBox>(lcp, CloneAttachedData());
+  auto pList = std::make_unique<CPWL_CBListBox>(lcp, CloneAttachedData());
   m_pList = pList.get();
   m_pList->AttachFFLData(m_pFormFiller.Get());
   AddChild(std::move(pList));
@@ -420,7 +285,7 @@ bool CPWL_ComboBox::RePosChildWnd() {
 
 void CPWL_ComboBox::SelectAll() {
   if (m_pEdit && HasFlag(PCBS_ALLOWCUSTOMTEXT))
-    m_pEdit->SelectAll();
+    m_pEdit->SelectAllText();
 }
 
 CFX_FloatRect CPWL_ComboBox::GetFocusRect() const {
@@ -534,6 +399,28 @@ bool CPWL_ComboBox::OnChar(uint16_t nChar, uint32_t nFlag) {
   if (!m_pEdit)
     return false;
 
+  // In a combo box if the ENTER/SPACE key is pressed, show the combo box
+  // options.
+  switch (nChar) {
+    case FWL_VKEY_Return:
+      SetPopup(!IsPopup());
+      SetSelectText();
+      return true;
+    case FWL_VKEY_Space:
+      // Show the combo box options with space only if the combo box is not
+      // editable
+      if (!HasFlag(PCBS_ALLOWCUSTOMTEXT)) {
+        if (!IsPopup()) {
+          SetPopup(/*bPopUp=*/true);
+          SetSelectText();
+        }
+        return true;
+      }
+      break;
+    default:
+      break;
+  }
+
   m_nSelectItem = -1;
   if (HasFlag(PCBS_ALLOWCUSTOMTEXT))
     return m_pEdit->OnChar(nChar, nFlag);
@@ -562,7 +449,7 @@ void CPWL_ComboBox::NotifyLButtonUp(CPWL_Wnd* child, const CFX_PointF& pos) {
     return;
 
   SetSelectText();
-  SelectAll();
+  SelectAllText();
   m_pEdit->SetFocus();
   SetPopup(false);
   // Note, |this| may no longer be viable at this point. If more work needs to
@@ -574,13 +461,13 @@ bool CPWL_ComboBox::IsPopup() const {
 }
 
 void CPWL_ComboBox::SetSelectText() {
-  m_pEdit->SelectAll();
+  m_pEdit->SelectAllText();
   m_pEdit->ReplaceSelection(m_pList->GetText());
-  m_pEdit->SelectAll();
+  m_pEdit->SelectAllText();
   m_nSelectItem = m_pList->GetCurSel();
 }
 
-void CPWL_ComboBox::SetFillerNotify(IPWL_Filler_Notify* pNotify) {
+void CPWL_ComboBox::SetFillerNotify(IPWL_FillerNotify* pNotify) {
   m_pFillerNotify = pNotify;
 
   if (m_pEdit)

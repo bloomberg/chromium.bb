@@ -24,12 +24,11 @@
 #include "content/browser/renderer_host/input/touch_action_filter.h"
 #include "content/browser/renderer_host/input/touchpad_pinch_event_queue.h"
 #include "content/common/input/input_event_stream_validator.h"
-#include "content/common/input/input_handler.mojom.h"
-#include "content/common/widget.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 
 namespace ui {
 class LatencyInfo;
@@ -43,7 +42,7 @@ class MockRenderWidgetHost;
 
 class CONTENT_EXPORT InputRouterImplClient : public InputRouterClient {
  public:
-  virtual mojom::WidgetInputHandler* GetWidgetInputHandler() = 0;
+  virtual blink::mojom::WidgetInputHandler* GetWidgetInputHandler() = 0;
   virtual void OnImeCancelComposition() = 0;
   virtual void OnImeCompositionRangeChanged(
       const gfx::Range& range,
@@ -51,13 +50,14 @@ class CONTENT_EXPORT InputRouterImplClient : public InputRouterClient {
 };
 
 // A default implementation for browser input event routing.
-class CONTENT_EXPORT InputRouterImpl : public InputRouter,
-                                       public GestureEventQueueClient,
-                                       public FlingControllerEventSenderClient,
-                                       public MouseWheelEventQueueClient,
-                                       public PassthroughTouchEventQueueClient,
-                                       public TouchpadPinchEventQueueClient,
-                                       public mojom::WidgetInputHandlerHost {
+class CONTENT_EXPORT InputRouterImpl
+    : public InputRouter,
+      public GestureEventQueueClient,
+      public FlingControllerEventSenderClient,
+      public MouseWheelEventQueueClient,
+      public PassthroughTouchEventQueueClient,
+      public TouchpadPinchEventQueueClient,
+      public blink::mojom::WidgetInputHandlerHost {
  public:
   InputRouterImpl(InputRouterImplClient* client,
                   InputDispositionHandler* disposition_handler,
@@ -82,11 +82,9 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void SetForceEnableZoom(bool enabled) override;
   base::Optional<cc::TouchAction> AllowedTouchAction() override;
   base::Optional<cc::TouchAction> ActiveTouchAction() override;
-  mojo::PendingRemote<mojom::WidgetInputHandlerHost> BindNewHost() override;
-  mojo::PendingRemote<mojom::WidgetInputHandlerHost> BindNewFrameHost()
+  mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> BindNewHost()
       override;
   void StopFling() override;
-  void OnSetTouchAction(cc::TouchAction touch_action) override;
   void ForceSetTouchActionAuto() override;
 
   // InputHandlerHost impl
@@ -99,17 +97,20 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       const std::vector<gfx::Rect>& bounds) override;
   void SetMouseCapture(bool capture) override;
   void RequestMouseLock(bool from_user_gesture,
-                        bool privileged,
                         bool unadjusted_movement,
                         RequestMouseLockCallback response) override;
-  void OnHasTouchEventHandlers(bool has_handlers) override;
+  // Notifies touch action filter and touch event queue whether there are
+  // JavaScript touch event handlers or not, or whether the platform has
+  // hit-testable scrollbars.
+  void OnHasTouchEventConsumers(
+      blink::mojom::TouchEventConsumersPtr consumers) override;
   void WaitForInputProcessed(base::OnceClosure callback) override;
   void FlushTouchEventQueue() override;
 
   // Exposed so that tests can swap out the implementation and intercept calls.
-  mojo::Receiver<mojom::WidgetInputHandlerHost>&
-  frame_host_receiver_for_testing() {
-    return frame_host_receiver_;
+  mojo::Receiver<blink::mojom::WidgetInputHandlerHost>&
+  host_receiver_for_testing() {
+    return host_receiver_;
   }
 
   void ForceResetTouchActionForTest();
@@ -181,7 +182,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void FilterAndSendWebInputEvent(
       const blink::WebInputEvent& input_event,
       const ui::LatencyInfo& latency_info,
-      mojom::WidgetInputHandler::DispatchEventCallback callback);
+      blink::mojom::WidgetInputHandler::DispatchEventCallback callback);
 
   void KeyboardEventHandled(const NativeWebKeyboardEventWithLatencyInfo& event,
                             KeyboardEventCallback event_result_callback,
@@ -229,7 +230,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       GestureEventWithLatencyInfo& gesture_event,
       const FilterGestureEventResult& existing_result);
   void ProcessDeferredGestureEventQueue();
-  void OnSetWhiteListedTouchAction(cc::TouchAction touch_action);
+  void OnSetCompositorAllowedTouchAction(cc::TouchAction touch_action);
 
   InputRouterImplClient* client_;
   InputDispositionHandler* disposition_handler_;
@@ -254,11 +255,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
 
   // The host receiver associated with the widget input handler from
   // the widget.
-  mojo::Receiver<mojom::WidgetInputHandlerHost> host_receiver_{this};
-
-  // The host receiver associated with the widget input handler from
-  // the frame.
-  mojo::Receiver<mojom::WidgetInputHandlerHost> frame_host_receiver_{this};
+  mojo::Receiver<blink::mojom::WidgetInputHandlerHost> host_receiver_{this};
 
   base::WeakPtr<InputRouterImpl> weak_this_;
   base::WeakPtrFactory<InputRouterImpl> weak_ptr_factory_{this};

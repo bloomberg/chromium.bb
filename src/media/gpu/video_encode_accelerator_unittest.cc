@@ -13,13 +13,14 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/bits.h"
+#include "base/callback_helpers.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
@@ -43,6 +44,9 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
@@ -77,6 +81,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
+#include "ui/gfx/geometry/size.h"
 
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -130,6 +135,15 @@ const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
 // https://crbug.com/1019307.
 const unsigned int kBitstreamBufferReadyTimeoutMs =
     10 * base::Time::kMillisecondsPerSecond;
+// How much to scale down the input stream by for the scaling test.
+constexpr unsigned int kScalingDenominator = 2u;
+// The smallest test stream visible size for which the scaling test will run. If
+// any of the test streams has a size below this, the scaling test will be
+// skipped. This is used to ensure that all boards are able to pass the scaling
+// test successfully. For example, if |kScalingDenominator| is 2 and
+// |kMinVisibleSizeForScalingTest| is 640x360, it's expected that all boards can
+// encode a stream that is 320x180.
+constexpr gfx::Size kMinVisibleSizeForScalingTest(640, 360);
 
 // The syntax of multiple test streams is:
 //  test-stream1;test-stream2;test-stream3
@@ -171,7 +185,7 @@ const unsigned int kBitstreamBufferReadyTimeoutMs =
 const char kDefaultInputFileName[] = "bear_320x192_40frames.yuv.webm";
 const base::FilePath::CharType kDefaultInputParameters[] =
     FILE_PATH_LITERAL(":320:192:1:out.h264:200000");
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 // VideoToolbox falls back to SW encoder with resolutions lower than this.
 const char kDefaultInputFileName[] = "bear_640x384_40frames.yuv.webm";
 const base::FilePath::CharType kDefaultInputParameters[] =
@@ -215,6 +229,21 @@ bool g_native_input = false;
 // Environment to store test stream data for all test cases.
 class VideoEncodeAcceleratorTestEnvironment;
 VideoEncodeAcceleratorTestEnvironment* g_env;
+
+std::unique_ptr<base::test::ScopedFeatureList> CreateScopedFeatureList() {
+#if BUILDFLAG(USE_VAAPI)
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  std::vector<base::Feature> enabled_features = {
+      // TODO(crbug.com/828482): remove once enabled by default.
+      media::kVaapiLowPowerEncoderGen9x,
+      // TODO(crbug.com/811912): remove once enabled by default.
+      media::kVaapiVP9Encoder};
+  scoped_feature_list->InitWithFeatures(enabled_features, {});
+  return scoped_feature_list;
+#else
+  return nullptr;
+#endif  // BUILDFLAG(USE_VAAPI)
+}
 
 // The number of frames to be encoded. This variable is set by the switch
 // "--num_frames_to_encode". Ignored if 0.
@@ -285,7 +314,7 @@ static bool IsVP9(VideoCodecProfile profile) {
   return profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 // Determine the test is known-to-fail and should be skipped.
 bool ShouldSkipTest(VideoPixelFormat format) {
   struct Pattern {
@@ -333,7 +362,7 @@ bool ShouldSkipTest(VideoPixelFormat format) {
 
   return false;
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_ASH)
 
 // Helper functions to do string conversions.
 static base::FilePath::StringType StringToFilePathStringType(
@@ -541,7 +570,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
     const char* src_ptr = &src_data[0];
     for (size_t i = 0; i < num_planes; i++) {
       // Assert that each plane of frame starts at required byte boundary.
-      ASSERT_EQ(0u, dest_offset & (test::kPlatformBufferAlignment - 1))
+      ASSERT_TRUE(base::IsAligned(dest_offset, test::kPlatformBufferAlignment))
           << "Planes of frame should be mapped per platform requirements";
       char* dst_ptr = &test_stream->aligned_in_file_data[dest_offset];
       for (size_t j = 0; j < visible_plane_rows[i]; j++) {
@@ -1060,8 +1089,8 @@ class VideoFrameQualityValidator
 
  private:
   void InitializeCB(Status status);
-  void DecodeDone(DecodeStatus status);
-  void FlushDone(DecodeStatus status);
+  void DecodeDone(Status status);
+  void FlushDone(Status status);
   void VerifyOutputFrame(scoped_refptr<VideoFrame> output_frame);
   void Decode();
   void WriteFrameStats();
@@ -1169,20 +1198,21 @@ void VideoFrameQualityValidator::AddOriginalFrame(
   original_frames_.push(frame);
 }
 
-void VideoFrameQualityValidator::DecodeDone(DecodeStatus status) {
+void VideoFrameQualityValidator::DecodeDone(Status status) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (status == DecodeStatus::OK) {
+  if (status.is_ok()) {
     decoder_state_ = INITIALIZED;
     Decode();
   } else {
     decoder_state_ = DECODER_ERROR;
     decode_error_cb_.Run();
-    FAIL() << "Unexpected decode status = " << status << ". Stop decoding.";
+    FAIL() << "Unexpected decode status = " << status.code()
+           << ". Stop decoding.";
   }
 }
 
-void VideoFrameQualityValidator::FlushDone(DecodeStatus status) {
+void VideoFrameQualityValidator::FlushDone(Status status) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   WriteFrameStats();
@@ -1492,9 +1522,14 @@ class VEAClient : public VEAClientBase {
             bool mid_stream_framerate_switch,
             bool verify_output,
             bool verify_output_timestamp,
-            bool force_level);
+            bool force_level,
+            bool scale);
   void CreateEncoder();
   void DestroyEncoder();
+
+  bool requested_scaling() const {
+    return encoded_visible_size_ != test_stream_->visible_size;
+  }
 
   // VideoDecodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
@@ -1653,6 +1688,11 @@ class VEAClient : public VEAClientBase {
   // Check whether the output timestamps match input timestamps.
   bool verify_output_timestamp_;
 
+  // The visible size we want the encoded stream to have. This can be different
+  // than the visible size of the |test_stream_| when doing scaling in native
+  // input mode.
+  gfx::Size encoded_visible_size_;
+
   // Used to perform codec-specific sanity checks on the stream.
   std::unique_ptr<StreamValidator> stream_validator_;
 
@@ -1704,7 +1744,8 @@ VEAClient::VEAClient(TestStream* test_stream,
                      bool mid_stream_framerate_switch,
                      bool verify_output,
                      bool verify_output_timestamp,
-                     bool force_level)
+                     bool force_level,
+                     bool scale)
     : VEAClientBase(note),
       state_(CS_CREATED),
       test_stream_(test_stream),
@@ -1756,6 +1797,14 @@ VEAClient::VEAClient(TestStream* test_stream,
     }
   }
 
+  encoded_visible_size_ = test_stream_->visible_size;
+  if (scale) {
+    LOG_ASSERT(g_native_input)
+        << "Scaling is only supported on native input mode";
+    encoded_visible_size_ = gfx::ScaleToFlooredSize(encoded_visible_size_,
+                                                    1.0 / kScalingDenominator);
+  }
+
   if (save_to_file_) {
     LOG_ASSERT(!test_stream_->out_filename.empty());
 #if defined(OS_POSIX)
@@ -1781,7 +1830,8 @@ VEAClient::VEAClient(TestStream* test_stream,
 static std::unique_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator(
     const VideoEncodeAccelerator::Config& config,
     VideoEncodeAccelerator::Client* client,
-    const gpu::GpuPreferences& gpu_preferences) {
+    const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuDriverBugWorkarounds& gpu_workarounds) {
   if (g_fake_encoder) {
     std::unique_ptr<VideoEncodeAccelerator> encoder(
         new FakeVideoEncodeAccelerator(
@@ -1791,8 +1841,8 @@ static std::unique_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator(
       return encoder;
     return nullptr;
   } else {
-    return GpuVideoEncodeAcceleratorFactory::CreateVEA(config, client,
-                                                       gpu_preferences);
+    return GpuVideoEncodeAcceleratorFactory::CreateVEA(
+        config, client, gpu_preferences, gpu_workarounds);
   }
 }
 
@@ -1805,10 +1855,11 @@ void VEAClient::CreateEncoder() {
                           ? VideoEncodeAccelerator::Config::StorageType::kDmabuf
                           : VideoEncodeAccelerator::Config::StorageType::kShmem;
   const VideoEncodeAccelerator::Config config(
-      test_stream_->pixel_format, test_stream_->visible_size,
+      test_stream_->pixel_format, encoded_visible_size_,
       test_stream_->requested_profile, requested_bitrate_, requested_framerate_,
-      keyframe_period_, test_stream_->requested_level, storage_type);
-  encoder_ = CreateVideoEncodeAccelerator(config, this, gpu::GpuPreferences());
+      keyframe_period_, test_stream_->requested_level, false, storage_type);
+  encoder_ = CreateVideoEncodeAccelerator(config, this, gpu::GpuPreferences(),
+                                          gpu::GpuDriverBugWorkarounds());
   if (!encoder_) {
     LOG(ERROR) << "Failed creating a VideoEncodeAccelerator.";
     SetState(CS_ERROR);
@@ -1892,9 +1943,16 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
 
   if (quality_validator_)
     quality_validator_->Initialize(input_coded_size,
-                                   gfx::Rect(test_stream_->visible_size));
+                                   gfx::Rect(encoded_visible_size_));
 
-  CreateAlignedInputStreamFile(input_coded_size, test_stream_);
+  // When scaling is requested in native input mode, |input_coded_size| is not
+  // useful for building the input video frames because the encoder's image
+  // processor will be the one responsible for building the video frames that
+  // are fed to the hardware encoder. Instead, we can just use the unscaled
+  // visible size as the coded size.
+  const gfx::Size coded_size_to_use =
+      requested_scaling() ? test_stream_->visible_size : input_coded_size;
+  CreateAlignedInputStreamFile(coded_size_to_use, test_stream_);
 
   num_frames_to_encode_ = test_stream_->num_frames;
   if (g_num_frames_to_encode > 0)
@@ -1916,7 +1974,7 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
     }
   }
 
-  input_coded_size_ = input_coded_size;
+  input_coded_size_ = coded_size_to_use;
   num_required_input_buffers_ = input_count;
   ASSERT_GT(num_required_input_buffers_, 0UL);
 
@@ -1989,9 +2047,9 @@ void VEAClient::BitstreamBufferReady(
       stream_validator_->ProcessStreamBuffer(stream_ptr,
                                              metadata.payload_size_bytes);
     } else {
-      // We don't know the visible size of without stream validator, just
-      // send the expected value to pass the check.
-      HandleEncodedFrame(metadata.key_frame, test_stream_->visible_size);
+      // We don't know the visible size of the encoded stream without the stream
+      // validator, so just send the expected value to pass the check.
+      HandleEncodedFrame(metadata.key_frame, encoded_visible_size_);
     }
 
     if (quality_validator_) {
@@ -2001,8 +2059,9 @@ void VEAClient::BitstreamBufferReady(
       quality_validator_->AddDecodeBuffer(buffer);
     }
     // If the encoder does not support flush, pretend flush is done when all
-    // frames are received.
-    if (!encoder_->IsFlushSupported() &&
+    // frames are received. We also do this when scaling is requested (because a
+    // well behaved client should not request a flush in this situation).
+    if ((!encoder_->IsFlushSupported() || requested_scaling()) &&
         num_encoded_frames_ == num_frames_to_encode_) {
       FlushEncoderDone(true);
     }
@@ -2098,13 +2157,13 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
   scoped_refptr<VideoFrame> video_frame =
       VideoFrame::WrapExternalYuvDataWithLayout(
           *layout, gfx::Rect(test_stream_->visible_size),
-          test_stream_->visible_size, frame_data[0], frame_data[1],
+          /*natural_size=*/encoded_visible_size_, frame_data[0], frame_data[1],
           frame_data[2],
           // Timestamp needs to avoid starting from 0.
           base::TimeDelta().FromMilliseconds(
               (next_input_id_ + 1) * base::Time::kMillisecondsPerSecond /
               current_framerate_));
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   if (video_frame) {
     if (g_native_input) {
       video_frame = test::CloneVideoFrame(
@@ -2201,7 +2260,12 @@ void VEAClient::FeedEncoderWithOneInput() {
   }
   encoder_->Encode(video_frame, force_keyframe);
   ++num_frames_submitted_to_encoder_;
-  if (num_frames_submitted_to_encoder_ == num_frames_to_encode_) {
+
+  // If scaling was requested, we don't need to flush: that's because the only
+  // use case for Flush() is ARC++ and pixel format conversion and/or scaling
+  // are not used.
+  if (!requested_scaling() &&
+      num_frames_submitted_to_encoder_ == num_frames_to_encode_) {
     FlushEncoder();
   }
 }
@@ -2266,7 +2330,7 @@ bool VEAClient::HandleEncodedFrame(bool keyframe,
     }
   }
 
-  EXPECT_EQ(test_stream_->visible_size, visible_size);
+  EXPECT_EQ(encoded_visible_size_, visible_size);
 
   if (num_encoded_frames_ == num_frames_to_encode_ / 2) {
     VerifyStreamProperties();
@@ -2398,10 +2462,8 @@ void VEAClient::WriteIvfFileHeader(uint32_t fourcc) {
   header.version = 0;
   header.header_size = sizeof(header);
   header.fourcc = fourcc;  // VP80 or VP90
-  header.width =
-      base::checked_cast<uint16_t>(test_stream_->visible_size.width());
-  header.height =
-      base::checked_cast<uint16_t>(test_stream_->visible_size.height());
+  header.width = base::checked_cast<uint16_t>(encoded_visible_size_.width());
+  header.height = base::checked_cast<uint16_t>(encoded_visible_size_.height());
   header.timebase_denum = requested_framerate_;
   header.timebase_num = 1;
   header.num_frames = num_frames_to_encode_;
@@ -2473,7 +2535,8 @@ void SimpleVEAClientBase::CreateEncoder() {
   const VideoEncodeAccelerator::Config config(
       g_env->test_streams_[0]->pixel_format, visible_size,
       g_env->test_streams_[0]->requested_profile, bitrate_, fps_);
-  encoder_ = CreateVideoEncodeAccelerator(config, this, gpu::GpuPreferences());
+  encoder_ = CreateVideoEncodeAccelerator(config, this, gpu::GpuPreferences(),
+                                          gpu::GpuDriverBugWorkarounds());
   if (!encoder_) {
     LOG(ERROR) << "Failed creating a VideoEncodeAccelerator.";
     SetState(CS_ERROR);
@@ -2681,11 +2744,43 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
 // - If true, verify the timestamps of output frames.
 // - If true, verify the output level is as provided in input stream. Only
 //   available for H264 encoder for now.
+// - If true, request that the encoder scales the input stream to 50% of the
+//   original size prior to encoding. This is only applicable when
+//   |g_native_input| is true. Otherwise, the test is skipped. This is because
+//   the intention is to exercise the image processor path inside the decoder,
+//   and in non-native input mode, the scaling is done by the client instead of
+//   the encoder (and we're not interested in testing that). This is also
+//   skipped if any of the test streams have a visible size smaller than
+//   |kMinVisibleSizeForScalingTest|.
 class VideoEncodeAcceleratorTest
     : public ::testing::TestWithParam<
-          std::tuple<int, bool, int, bool, bool, bool, bool, bool, bool>> {};
+          std::
+              tuple<int, bool, int, bool, bool, bool, bool, bool, bool, bool>> {
+ public:
+  void SetUp() override {
+    const bool scale = std::get<9>(GetParam());
+    if (scale) {
+      if (!g_native_input) {
+        GTEST_SKIP() << "Test skipped because scaling should only occur when "
+                        "using native input";
+      }
+      for (const auto& test_stream : g_env->test_streams_) {
+        if (!gfx::Rect(test_stream->visible_size)
+                 .Contains(gfx::Rect(kMinVisibleSizeForScalingTest))) {
+          GTEST_SKIP() << "Test skipped because the resolution of one of the "
+                          "input streams is below the minimum "
+                       << kMinVisibleSizeForScalingTest.ToString();
+        }
+      }
+    }
+  }
+};
 
 TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
+  // Workaround: TestSuite::Initialize() overwrites specified features.
+  // Re-enable our required features here so that they are enabled in encoding.
+  auto scoped_feature_list = CreateScopedFeatureList();
+
   size_t num_concurrent_encoders = std::get<0>(GetParam());
   const bool save_to_file = std::get<1>(GetParam());
   const unsigned int keyframe_period = std::get<2>(GetParam());
@@ -2696,11 +2791,12 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
       std::get<6>(GetParam()) || g_env->verify_all_output();
   const bool verify_output_timestamp = std::get<7>(GetParam());
   const bool force_level = std::get<8>(GetParam());
+  const bool scale = std::get<9>(GetParam());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   if (ShouldSkipTest(g_env->test_streams_[0]->pixel_format))
     GTEST_SKIP();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_ASH)
 
   if (force_level) {
     // Skip ForceLevel test if "--force_level=false".
@@ -2749,7 +2845,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
         g_env->test_streams_[test_stream_index].get(), notes.back().get(),
         encoder_save_to_file, keyframe_period, force_bitrate,
         mid_stream_bitrate_switch, mid_stream_framerate_switch, verify_output,
-        verify_output_timestamp, force_level));
+        verify_output_timestamp, force_level, scale));
 
     g_env->GetRenderingTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&VEAClient::CreateEncoder,
@@ -2825,13 +2921,17 @@ void SimpleTestFunc() {
 }
 
 TEST_P(VideoEncodeAcceleratorSimpleTest, TestSimpleEncode) {
+  // Workaround: TestSuite::Initialize() overwrites specified features.
+  // Re-enable our required features here so that they are enabled in encoding.
+  auto scoped_feature_list = CreateScopedFeatureList();
+
   const int test_type = GetParam();
   ASSERT_LT(test_type, 2) << "Invalid test type=" << test_type;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   if (ShouldSkipTest(g_env->test_streams_[0]->pixel_format))
     GTEST_SKIP();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_ASH)
 
   if (test_type == 0)
     SimpleTestFunc<VEANoInputClient>();
@@ -2852,13 +2952,28 @@ INSTANTIATE_TEST_SUITE_P(SimpleEncode,
                                                            false,
                                                            false,
                                                            false,
+                                                           false,
                                                            false)));
+
+INSTANTIATE_TEST_SUITE_P(SimpleEncodeWithScaling,
+                         VideoEncodeAcceleratorTest,
+                         ::testing::Values(std::make_tuple(1,
+                                                           true,
+                                                           0,
+                                                           false,
+                                                           false,
+                                                           false,
+                                                           false,
+                                                           false,
+                                                           false,
+                                                           true)));
 
 INSTANTIATE_TEST_SUITE_P(EncoderPerf,
                          VideoEncodeAcceleratorTest,
                          ::testing::Values(std::make_tuple(1,
                                                            false,
                                                            0,
+                                                           false,
                                                            false,
                                                            false,
                                                            false,
@@ -2876,6 +2991,7 @@ INSTANTIATE_TEST_SUITE_P(ForceKeyframes,
                                                            false,
                                                            false,
                                                            false,
+                                                           false,
                                                            false)));
 
 INSTANTIATE_TEST_SUITE_P(ForceBitrate,
@@ -2884,6 +3000,7 @@ INSTANTIATE_TEST_SUITE_P(ForceBitrate,
                                                            false,
                                                            0,
                                                            true,
+                                                           false,
                                                            false,
                                                            false,
                                                            false,
@@ -2900,6 +3017,7 @@ INSTANTIATE_TEST_SUITE_P(MidStreamParamSwitchBitrate,
                                                            false,
                                                            false,
                                                            false,
+                                                           false,
                                                            false)));
 
 // TODO(kcwu): add back bitrate test after https://crbug.com/693336 fixed.
@@ -2913,6 +3031,7 @@ INSTANTIATE_TEST_SUITE_P(DISABLED_MidStreamParamSwitchFPS,
                                                            true,
                                                            false,
                                                            false,
+                                                           false,
                                                            false)));
 
 INSTANTIATE_TEST_SUITE_P(MultipleEncoders,
@@ -2920,6 +3039,7 @@ INSTANTIATE_TEST_SUITE_P(MultipleEncoders,
                          ::testing::Values(std::make_tuple(3,
                                                            false,
                                                            0,
+                                                           false,
                                                            false,
                                                            false,
                                                            false,
@@ -2934,6 +3054,7 @@ INSTANTIATE_TEST_SUITE_P(MultipleEncoders,
                                                            false,
                                                            false,
                                                            false,
+                                                           false,
                                                            false)));
 
 INSTANTIATE_TEST_SUITE_P(VerifyTimestamp,
@@ -2946,6 +3067,7 @@ INSTANTIATE_TEST_SUITE_P(VerifyTimestamp,
                                                            false,
                                                            false,
                                                            true,
+                                                           false,
                                                            false)));
 
 INSTANTIATE_TEST_SUITE_P(ForceLevel,
@@ -2958,7 +3080,8 @@ INSTANTIATE_TEST_SUITE_P(ForceLevel,
                                                            false,
                                                            false,
                                                            false,
-                                                           true)));
+                                                           true,
+                                                           false)));
 
 INSTANTIATE_TEST_SUITE_P(NoInputTest,
                          VideoEncodeAcceleratorSimpleTest,
@@ -2968,12 +3091,13 @@ INSTANTIATE_TEST_SUITE_P(CacheLineUnalignedInputTest,
                          VideoEncodeAcceleratorSimpleTest,
                          ::testing::Values(1));
 
-#elif defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(OS_MAC) || defined(OS_WIN)
 INSTANTIATE_TEST_SUITE_P(SimpleEncode,
                          VideoEncodeAcceleratorTest,
                          ::testing::Values(std::make_tuple(1,
                                                            true,
                                                            0,
+                                                           false,
                                                            false,
                                                            false,
                                                            false,
@@ -2988,6 +3112,7 @@ INSTANTIATE_TEST_SUITE_P(SimpleEncode,
                                                            false,
                                                            true,
                                                            false,
+                                                           false,
                                                            false)));
 
 INSTANTIATE_TEST_SUITE_P(EncoderPerf,
@@ -2995,6 +3120,7 @@ INSTANTIATE_TEST_SUITE_P(EncoderPerf,
                          ::testing::Values(std::make_tuple(1,
                                                            false,
                                                            0,
+                                                           false,
                                                            false,
                                                            false,
                                                            false,
@@ -3012,6 +3138,7 @@ INSTANTIATE_TEST_SUITE_P(MultipleEncoders,
                                                            false,
                                                            false,
                                                            false,
+                                                           false,
                                                            false)));
 
 INSTANTIATE_TEST_SUITE_P(VerifyTimestamp,
@@ -3024,6 +3151,7 @@ INSTANTIATE_TEST_SUITE_P(VerifyTimestamp,
                                                            false,
                                                            false,
                                                            true,
+                                                           false,
                                                            false)));
 
 #if defined(OS_WIN)
@@ -3033,6 +3161,7 @@ INSTANTIATE_TEST_SUITE_P(ForceBitrate,
                                                            false,
                                                            0,
                                                            true,
+                                                           false,
                                                            false,
                                                            false,
                                                            false,
@@ -3056,7 +3185,7 @@ class VEATestSuite : public base::TestSuite {
   void Initialize() override {
     base::TestSuite::Initialize();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
     task_environment_ = std::make_unique<base::test::TaskEnvironment>(
         base::test::TaskEnvironment::MainThreadType::UI);
 #else
@@ -3072,14 +3201,7 @@ class VEATestSuite : public base::TestSuite {
                     media::g_verify_all_output)));
 
 #if BUILDFLAG(USE_VAAPI)
-    base::test::ScopedFeatureList scoped_feature_list;
-    std::vector<base::Feature> enabled_features = {
-        // TODO(crbug.com/811912): remove once enabled by default.
-        media::kVaapiVP9Encoder,
-        // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
-        // default.
-        media::kVaapiH264AMDEncoder};
-    scoped_feature_list.InitWithFeatures(enabled_features, {});
+    auto scoped_feature_list = CreateScopedFeatureList();
     media::VaapiWrapper::PreSandboxInitialization();
 #elif defined(OS_WIN)
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
@@ -3155,7 +3277,7 @@ int main(int argc, char** argv) {
     }
 
     if (it->first == "native_input") {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
       media::g_native_input = true;
 #else
       LOG(FATAL) << "Unsupported option";

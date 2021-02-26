@@ -19,8 +19,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -33,9 +33,9 @@
 
 namespace android {
 
-using autofill::PasswordForm;
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
+using password_manager::PasswordForm;
 
 namespace {
 
@@ -83,7 +83,7 @@ void FakeCredentialProvider::AddPasswordEntry(const std::string& origin,
                                               const std::string& username,
                                               const std::string& password) {
   auto form = std::make_unique<PasswordForm>();
-  form->origin = GURL(origin);
+  form->url = GURL(origin);
   form->signon_realm = origin;
   form->username_value = base::UTF8ToUTF16(username);
   form->password_value = base::UTF8ToUTF16(password);

@@ -62,7 +62,6 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::CLIENT_HINTS, 37},
     {ContentSettingsType::SENSORS, 38},
     {ContentSettingsType::ACCESSIBILITY_EVENTS, 39},
-    {ContentSettingsType::PLUGINS_DATA, 42},
     {ContentSettingsType::PAYMENT_HANDLER, 43},
     {ContentSettingsType::USB_GUARD, 44},
     {ContentSettingsType::BACKGROUND_FETCH, 45},
@@ -77,7 +76,7 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::WAKE_LOCK_SCREEN, 54},
     {ContentSettingsType::WAKE_LOCK_SYSTEM, 55},
     {ContentSettingsType::LEGACY_COOKIE_ACCESS, 56},
-    {ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD, 57},
+    {ContentSettingsType::FILE_SYSTEM_WRITE_GUARD, 57},
     {ContentSettingsType::INSTALLED_WEB_APP_METADATA, 58},
     {ContentSettingsType::NFC, 59},
     {ContentSettingsType::BLUETOOTH_CHOOSER_DATA, 60},
@@ -86,10 +85,14 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA, 63},
     {ContentSettingsType::VR, 64},
     {ContentSettingsType::AR, 65},
-    {ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD, 66},
+    {ContentSettingsType::FILE_SYSTEM_READ_GUARD, 66},
     {ContentSettingsType::STORAGE_ACCESS, 67},
     {ContentSettingsType::CAMERA_PAN_TILT_ZOOM, 68},
     {ContentSettingsType::WINDOW_PLACEMENT, 69},
+    {ContentSettingsType::INSECURE_PRIVATE_NETWORK, 70},
+    {ContentSettingsType::FONT_ACCESS, 71},
+    {ContentSettingsType::PERMISSION_AUTOREVOCATION_DATA, 72},
+    {ContentSettingsType::FILE_SYSTEM_LAST_PICKED_DIRECTORY, 73},
 };
 
 }  // namespace

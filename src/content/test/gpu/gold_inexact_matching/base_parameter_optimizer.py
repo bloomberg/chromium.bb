@@ -15,7 +15,7 @@ import subprocess
 import sys
 import tempfile
 
-import parameter_set
+from gold_inexact_matching import parameter_set
 
 CHROMIUM_SRC_DIR = os.path.realpath(
     os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
@@ -48,11 +48,14 @@ class BaseParameterOptimizer(object):
     self._working_dir = None
     self._expectations = None
     self._gold_url = 'https://%s-gold.skia.org' % args.gold_instance
+    self._pool = multiprocessing.Pool()
     # A map of strings, denoting a resolution or trace, to an iterable of
     # strings, denoting images that are that dimension or belong to that
     # trace.
     self._images = {}
     self._VerifyArgs()
+    parameter_set.ParameterSet.ignored_border_thickness = \
+        self._args.ignored_border_thickness
 
   @classmethod
   def AddArguments(cls, parser):
@@ -159,6 +162,13 @@ class BaseParameterOptimizer(object):
         help='The maximum value to consider for the per-channel delta sum '
         'threshold. Higher values result in more fuzzy comparisons being '
         'allowed.')
+    fuzzy_group.add_argument(
+        '--ignored-border-thickness',
+        default=0,
+        type=int,
+        help='How many pixels along the border of the image to ignore. 0 is '
+        'typical for most tests, 1 is useful for tests that have edges going '
+        'all the way to the border of the image and are using a Sobel filter.')
 
     return common_group, sobel_group, fuzzy_group
 
@@ -176,6 +186,7 @@ class BaseParameterOptimizer(object):
     assert self._args.min_delta_threshold >= self.MIN_DELTA_THRESHOLD
     assert self._args.max_delta_threshold <= self.MAX_DELTA_THRESHOLD
     assert self._args.min_delta_threshold <= self._args.max_delta_threshold
+    assert self._args.ignored_border_thickness >= 0
 
   def RunOptimization(self):
     """Runs an optimization for whatever test and parameters were supplied.
@@ -346,7 +357,6 @@ class BaseParameterOptimizer(object):
     max_num_pixels = -1
     max_max_delta = -1
 
-    process_pool = multiprocessing.Pool()
     for resolution, digest_list in self._images.iteritems():
       logging.debug('Resolution/trace: %s, digests: %s', resolution,
                     digest_list)
@@ -354,7 +364,7 @@ class BaseParameterOptimizer(object):
           self._GenerateComparisonCmd(l, r, parameters)
           for (l, r) in itertools.combinations(digest_list, 2)
       ]
-      results = process_pool.map(RunCommandAndExtractData, cmds)
+      results = self._pool.map(RunCommandAndExtractData, cmds)
       for (success, num_pixels, max_delta) in results:
         num_attempts += 1
         if success:

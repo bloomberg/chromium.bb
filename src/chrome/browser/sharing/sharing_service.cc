@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_constants.h"
@@ -20,50 +19,10 @@
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
-#include "chrome/browser/sharing/webrtc/webrtc_flags.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "content/public/browser/browser_task_traits.h"
-
-namespace {
-
-SharingMessageSender::DelegateType GetSendDelegateType(
-    const syncer::DeviceInfo& device,
-    const chrome_browser_sharing::SharingMessage& message) {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-  // Messages other than SharedClipboard are always sent via FCM.
-  if (message.payload_case() !=
-      chrome_browser_sharing::SharingMessage::kSharedClipboardMessage) {
-    return SharingMessageSender::DelegateType::kFCM;
-  }
-
-  // Check if the local device support sending and receiving WebRTC messages.
-  if (!base::FeatureList::IsEnabled(kSharingPeerConnectionSender) ||
-      !base::FeatureList::IsEnabled(kSharingPeerConnectionReceiver)) {
-    return SharingMessageSender::DelegateType::kFCM;
-  }
-
-  // Fallback to FCM if remote device does not support WebRTC yet.
-  if (!device.sharing_info() ||
-      !device.sharing_info()->enabled_features.count(
-          sync_pb::SharingSpecificFields::PEER_CONNECTION)) {
-    return SharingMessageSender::DelegateType::kFCM;
-  }
-
-  // TODO(crbug.com/1002436): This will send SharedClipboard messages between
-  // compatible devices that are both in the experiment via WebRTC. Revisit this
-  // logic once we wrap up the experiment and e.g. only send messages over a
-  // certain size via WebRTC.
-  return SharingMessageSender::DelegateType::kWebRtc;
-#else
-  // Only FCM is supported for non desktop OS.
-  return SharingMessageSender::DelegateType::kFCM;
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
-}
-
-}  // namespace
+#include "content/public/browser/browser_thread.h"
 
 SharingService::SharingService(
     std::unique_ptr<SharingSyncPreference> sync_prefs,
@@ -120,10 +79,9 @@ void SharingService::SendMessageToDevice(
     base::TimeDelta response_timeout,
     chrome_browser_sharing::SharingMessage message,
     SharingMessageSender::ResponseCallback callback) {
-  auto delegate_type = GetSendDelegateType(device, message);
-  message_sender_->SendMessageToDevice(device, response_timeout,
-                                       std::move(message), delegate_type,
-                                       std::move(callback));
+  message_sender_->SendMessageToDevice(
+      device, response_timeout, std::move(message),
+      SharingMessageSender::DelegateType::kFCM, std::move(callback));
 }
 
 void SharingService::RegisterSharingHandler(
@@ -246,12 +204,11 @@ void SharingService::OnDeviceRegistered(
       backoff_entry_.InformOfRequest(false);
       // Transient error - try again after a delay.
       LOG(ERROR) << "Device registration failed with transient error";
-      base::PostDelayedTask(
-          FROM_HERE,
-          {base::TaskPriority::BEST_EFFORT, content::BrowserThread::UI},
-          base::BindOnce(&SharingService::RegisterDevice,
-                         weak_ptr_factory_.GetWeakPtr()),
-          backoff_entry_.GetTimeUntilRelease());
+      content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+          ->PostDelayedTask(FROM_HERE,
+                            base::BindOnce(&SharingService::RegisterDevice,
+                                           weak_ptr_factory_.GetWeakPtr()),
+                            backoff_entry_.GetTimeUntilRelease());
       break;
     case SharingDeviceRegistrationResult::kEncryptionError:
     case SharingDeviceRegistrationResult::kFcmFatalError:

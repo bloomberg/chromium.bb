@@ -10,7 +10,7 @@
 
 #include "include/gpu/vk/GrVkTypes.h"
 #include "src/gpu/GrCaps.h"
-#include "src/gpu/vk/GrVkStencilAttachment.h"
+#include "src/gpu/vk/GrVkAttachment.h"
 
 class GrShaderCaps;
 class GrVkExtensions;
@@ -21,8 +21,6 @@ struct GrVkInterface;
  */
 class GrVkCaps : public GrCaps {
 public:
-    typedef GrVkStencilAttachment::Format StencilFormat;
-
     /**
      * Creates a GrVkCaps that is set such that nothing is supported. The init function should
      * be called to fill out the caps.
@@ -33,7 +31,6 @@ public:
              const GrVkExtensions& extensions, GrProtected isProtected = GrProtected::kNo);
 
     bool isFormatSRGB(const GrBackendFormat&) const override;
-    SkImage::CompressionType compressionType(const GrBackendFormat&) const override;
 
     bool isFormatTexturable(const GrBackendFormat&) const override;
     bool isVkFormatTexturable(VkFormat) const;
@@ -50,9 +47,6 @@ public:
 
     int maxRenderTargetSampleCount(const GrBackendFormat&) const override;
     int maxRenderTargetSampleCount(VkFormat format) const;
-
-    size_t bytesPerPixel(const GrBackendFormat&) const override;
-    size_t bytesPerPixel(VkFormat format) const;
 
     SupportedWrite supportedWritePixelsColorType(GrColorType surfaceColorType,
                                                  const GrBackendFormat& surfaceFormat,
@@ -76,12 +70,6 @@ public:
         return SkToBool(FormatInfo::kBlitSrc_Flag & flags);
     }
 
-    // On Adreno vulkan, they do not respect the imageOffset parameter at least in
-    // copyImageToBuffer. This flag says that we must do the copy starting from the origin always.
-    bool mustDoCopiesFromOrigin() const {
-        return fMustDoCopiesFromOrigin;
-    }
-
     // Sometimes calls to QueueWaitIdle return before actually signalling the fences
     // on the command buffers even though they have completed. This causes an assert to fire when
     // destroying the command buffers. Therefore we add a sleep to make sure the fence signals.
@@ -102,7 +90,7 @@ public:
     /**
      * Returns both a supported and most preferred stencil format to use in draws.
      */
-    const StencilFormat& preferredStencilFormat() const {
+    VkFormat preferredStencilFormat() const {
         return fPreferredStencilFormat;
     }
 
@@ -163,6 +151,14 @@ public:
         return fPreferPrimaryOverSecondaryCommandBuffers;
     }
 
+    int maxPerPoolCachedSecondaryCommandBuffers() const {
+        return fMaxPerPoolCachedSecondaryCommandBuffers;
+    }
+
+    uint32_t maxInputAttachmentDescriptors() const { return fMaxInputAttachmentDescriptors; }
+
+    bool preferCachedCpuMemory() const { return fPreferCachedCpuMemory; }
+
     bool mustInvalidatePrimaryCmdBufferStateAfterClearAttachments() const {
         return fMustInvalidatePrimaryCmdBufferStateAfterClearAttachments;
     }
@@ -189,7 +185,6 @@ public:
         return fColorTypeToFormatTable[idx];
     }
 
-    GrSwizzle getReadSwizzle(const GrBackendFormat&, GrColorType) const override;
     GrSwizzle getWriteSwizzle(const GrBackendFormat&, GrColorType) const override;
 
     uint64_t computeFormatKey(const GrBackendFormat&) const override;
@@ -201,7 +196,9 @@ public:
                             GrSamplerState,
                             const GrBackendFormat&) const override;
 
-    GrProgramDesc makeDesc(const GrRenderTarget*, const GrProgramInfo&) const override;
+    GrProgramDesc makeDesc(GrRenderTarget*, const GrProgramInfo&) const override;
+
+    GrInternalSurfaceFlags getExtraSurfaceFlagsForDeferredRT() const override;
 
 #if GR_TEST_UTILS
     std::vector<TestFormatColorTypeCombination> getTestingCombinations() const override;
@@ -242,6 +239,10 @@ private:
 
     SupportedRead onSupportedReadPixelsColorType(GrColorType, const GrBackendFormat&,
                                                  GrColorType) const override;
+
+    GrSwizzle onGetReadSwizzle(const GrBackendFormat&, GrColorType) const override;
+
+    GrDstSampleType onGetDstSampleTypeForProxy(const GrRenderTargetProxy*) const override;
 
     // ColorTypeInfo for a specific format
     struct ColorTypeInfo {
@@ -288,8 +289,6 @@ private:
         uint16_t fLinearFlags = 0;
 
         SkTDArray<int> fColorSampleCounts;
-        // This value is only valid for regular formats. Compressed formats will be 0.
-        size_t fBytesPerPixel = 0;
 
         std::unique_ptr<ColorTypeInfo[]> fColorTypeInfos;
         int fColorTypeInfoCount = 0;
@@ -303,11 +302,10 @@ private:
     VkFormat fColorTypeToFormatTable[kGrColorTypeCnt];
     void setColorType(GrColorType, std::initializer_list<VkFormat> formats);
 
-    StencilFormat fPreferredStencilFormat;
+    VkFormat fPreferredStencilFormat;
 
     SkSTArray<1, GrVkYcbcrConversionInfo> fYcbcrInfos;
 
-    bool fMustDoCopiesFromOrigin = false;
     bool fMustSleepOnTearDown = false;
     bool fShouldAlwaysUseDedicatedImageMemory = false;
 
@@ -333,7 +331,16 @@ private:
     bool fPreferPrimaryOverSecondaryCommandBuffers = true;
     bool fMustInvalidatePrimaryCmdBufferStateAfterClearAttachments = false;
 
-    typedef GrCaps INHERITED;
+    // We default this to 100 since we already cap the max render tasks at 100 before doing a
+    // submission in the GrDrawingManager, so we shouldn't be going over 100 secondary command
+    // buffers per primary anyways.
+    int fMaxPerPoolCachedSecondaryCommandBuffers = 100;
+
+    uint32_t fMaxInputAttachmentDescriptors = 0;
+
+    bool fPreferCachedCpuMemory = true;
+
+    using INHERITED = GrCaps;
 };
 
 #endif

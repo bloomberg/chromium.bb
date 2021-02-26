@@ -29,6 +29,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
@@ -110,6 +111,11 @@ enum class BreakSpaceType {
   // opportunities between white spaces.
   // LayoutNG line breaker uses this type.
   kBeforeSpaceRun,
+
+  // Break after a run of white space characters.
+  // This mode enables the LazyLineBreakIterator to completely rely on
+  // ICU for determining the breaking opportunities.
+  kAfterSpaceRun,
 
   // white-spaces:break-spaces allows breaking after any preserved white-space,
   // even when these are leading spaces so that we can avoid breaking
@@ -307,6 +313,15 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
           prior_context.length);
     }
     return iterator_;
+  }
+
+  template <typename CharacterType>
+  bool IsOtherSpaceSeparator(UChar ch) const {
+    return Character::IsOtherSpaceSeparator(ch);
+  }
+  template <LChar>
+  bool IsOtherSpaceSeparator(UChar ch) const {
+    return false;
   }
 
   template <typename CharacterType, LineBreakType, BreakSpaceType>

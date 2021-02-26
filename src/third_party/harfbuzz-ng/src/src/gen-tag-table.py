@@ -16,6 +16,12 @@ back to BCP 47 tags. Ambiguous OpenType tags (those that correspond to
 multiple BCP 47 tags) are listed here, except when the alphabetically
 first BCP 47 tag happens to be the chosen disambiguated tag. In that
 case, the fallback behavior will choose the right tag anyway.
+
+usage: ./gen-tag-table.py languagetags language-subtag-registry
+
+Input files:
+* https://docs.microsoft.com/en-us/typography/opentype/spec/languagetags
+* https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
 """
 
 import collections
@@ -23,19 +29,13 @@ from html.parser import HTMLParser
 def write (s):
 	sys.stdout.flush ()
 	sys.stdout.buffer.write (s.encode ('utf-8'))
-import io
 import itertools
 import re
 import sys
 import unicodedata
 
 if len (sys.argv) != 3:
-	print ('''usage: ./gen-tag-table.py languagetags language-subtag-registry
-
-Input files, as of Unicode 12:
-* https://docs.microsoft.com/en-us/typography/opentype/spec/languagetags
-* https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry''', file=sys.stderr)
-	sys.exit (1)
+	sys.exit (__doc__)
 
 from html import unescape
 def html_unescape (parser, entity):
@@ -392,7 +392,7 @@ class OpenTypeRegistryParser (HTMLParser):
 		Args:
 			filename (str): The file name of the registry.
 		"""
-		with io.open (filename, encoding='utf-8') as f:
+		with open (filename, encoding='utf-8') as f:
 			self.feed (f.read ())
 		expect (self.header)
 		for tag, iso_codes in self.to_bcp_47.items ():
@@ -534,7 +534,7 @@ class BCP47Parser (object):
 		Args:
 			filename (str): The file name of the registry.
 		"""
-		with io.open (filename, encoding='utf-8') as f:
+		with open (filename, encoding='utf-8') as f:
 			subtag_type = None
 			subtag = None
 			deprecated = False
@@ -676,19 +676,13 @@ ot.add_language ('ga-Latg', 'IRT')
 ot.remove_language_ot ('KGE')
 ot.add_language ('und-Geok', 'KGE')
 
-ot.add_language ('guk', 'GUK')
-ot.names['GUK'] = 'Gumuz (SIL fonts)'
-ot.ranks['GUK'] = ot.ranks['GMZ'] + 1
-
 bcp_47.macrolanguages['id'] = {'in'}
 
 bcp_47.macrolanguages['ijo'] = {'ijc'}
 
 ot.add_language ('kht', 'KHN')
 ot.names['KHN'] = ot.names['KHT'] + ' (Microsoft fonts)'
-ot.names['KHT'] = ot.names['KHT'] + ' (OpenType spec and SIL fonts)'
-ot.ranks['KHN'] = ot.ranks['KHT']
-ot.ranks['KHT'] += 1
+ot.ranks['KHN'] = ot.ranks['KHT'] + 1
 
 ot.ranks['LCR'] = ot.ranks['MCR'] + 1
 
@@ -735,10 +729,6 @@ ot.add_language ('qxw', 'QWH')
 
 bcp_47.macrolanguages['ro'].remove ('mo')
 bcp_47.macrolanguages['ro-MD'].add ('mo')
-
-ot.add_language ('sgw', 'SGW')
-ot.names['SGW'] = ot.names['CHG'] + ' (SIL fonts)'
-ot.ranks['SGW'] = ot.ranks['CHG'] + 1
 
 ot.remove_language_ot ('SYRE')
 ot.remove_language_ot ('SYRJ')
@@ -807,6 +797,7 @@ disambiguation = {
 	'HAL': 'cfm',
 	'HND': 'hnd',
 	'KIS': 'kqs',
+	'KUI': 'uki',
 	'LRC': 'bqi',
 	'NDB': 'nd',
 	'NIS': 'njz',
@@ -1078,6 +1069,10 @@ def verify_disambiguation_dict ():
 			expect (ot_tag not in disambiguation, 'unnecessary disambiguation for OT tag: %s' % ot_tag)
 			if '-' in primary_tags[0]:
 				disambiguation[ot_tag] = primary_tags[0]
+			else:
+				first_tag = sorted (t for t in bcp_47_tags if t not in bcp_47.grandfathered and ot_tag in ot.from_bcp_47.get (t))[0]
+				if primary_tags[0] != first_tag:
+					disambiguation[ot_tag] = primary_tags[0]
 		elif len (primary_tags) == 0:
 			expect (ot_tag not in disambiguation, 'There is no possible valid disambiguation for %s' % ot_tag)
 		else:

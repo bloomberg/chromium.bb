@@ -6,25 +6,25 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.ADD_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.ANIMATION_SOURCE_VIEW;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.COLLAPSE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.CONTENT_TOP_MARGIN;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.DIALOG_BACKGROUND_RESOUCE_ID;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.DIALOG_BACKGROUND_RESOURCE_ID;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.DIALOG_UNGROUP_BAR_TEXT_APPEARANCE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.HEADER_TITLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_DIALOG_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_KEYBOARD_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_MAIN_CONTENT_VISIBLE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.MENU_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.PRIMARY_COLOR;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.SCRIMVIEW_OBSERVER;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.SCRIMVIEW_CLICK_RUNNABLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TINT;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TITLE_CURSOR_VISIBILITY;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TITLE_TEXT_ON_TOUCH_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TITLE_TEXT_WATCHER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.UNGROUP_BAR_STATUS;
 
@@ -49,10 +49,10 @@ class TabGridPanelViewBinder {
         public final TabGroupUiToolbarView toolbarView;
         public final RecyclerView contentView;
         @Nullable
-        public TabGridDialogParent dialogView;
+        public TabGridDialogView dialogView;
 
         ViewHolder(TabGroupUiToolbarView toolbarView, RecyclerView contentView,
-                @Nullable TabGridDialogParent dialogView) {
+                @Nullable TabGridDialogView dialogView) {
             this.toolbarView = toolbarView;
             this.contentView = contentView;
             this.dialogView = dialogView;
@@ -81,8 +81,8 @@ class TabGridPanelViewBinder {
             viewHolder.contentView.setBackgroundColor(model.get(PRIMARY_COLOR));
         } else if (TINT == propertyKey) {
             viewHolder.toolbarView.setTint(model.get(TINT));
-        } else if (SCRIMVIEW_OBSERVER == propertyKey) {
-            viewHolder.dialogView.setScrimViewObserver(model.get(SCRIMVIEW_OBSERVER));
+        } else if (SCRIMVIEW_CLICK_RUNNABLE == propertyKey) {
+            viewHolder.dialogView.setScrimClickRunnable(model.get(SCRIMVIEW_CLICK_RUNNABLE));
         } else if (IS_DIALOG_VISIBLE == propertyKey) {
             if (model.get(IS_DIALOG_VISIBLE)) {
                 viewHolder.dialogView.resetDialog(viewHolder.toolbarView, viewHolder.contentView);
@@ -94,9 +94,9 @@ class TabGridPanelViewBinder {
             viewHolder.dialogView.setupDialogAnimation(model.get(ANIMATION_SOURCE_VIEW));
         } else if (UNGROUP_BAR_STATUS == propertyKey) {
             viewHolder.dialogView.updateUngroupBar(model.get(UNGROUP_BAR_STATUS));
-        } else if (DIALOG_BACKGROUND_RESOUCE_ID == propertyKey) {
+        } else if (DIALOG_BACKGROUND_RESOURCE_ID == propertyKey) {
             if (viewHolder.dialogView != null) {
-                int backgroundResourceId = model.get(DIALOG_BACKGROUND_RESOUCE_ID);
+                int backgroundResourceId = model.get(DIALOG_BACKGROUND_RESOURCE_ID);
                 viewHolder.dialogView.updateDialogContainerBackgroundResource(backgroundResourceId);
                 viewHolder.toolbarView.setBackgroundResource(backgroundResourceId);
             }
@@ -131,14 +131,28 @@ class TabGridPanelViewBinder {
         } else if (TITLE_CURSOR_VISIBILITY == propertyKey) {
             viewHolder.toolbarView.setTitleCursorVisibility(model.get(TITLE_CURSOR_VISIBILITY));
         } else if (IS_TITLE_TEXT_FOCUSED == propertyKey) {
+            if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+                viewHolder.toolbarView.updateTitleTextFocus(model.get(IS_TITLE_TEXT_FOCUSED));
+                return;
+            }
             // Don't explicitly request focus since it should happen automatically.
             if (!model.get(IS_TITLE_TEXT_FOCUSED)) {
                 viewHolder.toolbarView.clearTitleTextFocus();
             }
-        } else if (IS_POPUP_WINDOW_FOCUSABLE == propertyKey) {
-            viewHolder.dialogView.setPopupWindowFocusable(model.get(IS_POPUP_WINDOW_FOCUSABLE));
-        } else if (TITLE_TEXT_ON_TOUCH_LISTENER == propertyKey) {
-            viewHolder.toolbarView.setTitleOnTouchListener(model.get(TITLE_TEXT_ON_TOUCH_LISTENER));
+        } else if (IS_KEYBOARD_VISIBLE == propertyKey) {
+            if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+                viewHolder.toolbarView.updateKeyboardVisibility(model.get(IS_KEYBOARD_VISIBLE));
+                return;
+            }
+            // Don't explicitly show keyboard since it should happen automatically.
+            if (!model.get(IS_KEYBOARD_VISIBLE)) {
+                viewHolder.toolbarView.hideKeyboard();
+            }
+        } else if (COLLAPSE_BUTTON_CONTENT_DESCRIPTION == propertyKey) {
+            if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
+                viewHolder.toolbarView.setLeftButtonContentDescription(
+                        model.get(COLLAPSE_BUTTON_CONTENT_DESCRIPTION));
+            }
         }
     }
 }

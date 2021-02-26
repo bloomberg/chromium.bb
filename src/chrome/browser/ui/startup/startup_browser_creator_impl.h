@@ -5,18 +5,19 @@
 #ifndef CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_IMPL_H_
 #define CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/browser/ui/startup/startup_types.h"
 #include "url/gurl.h"
 
 class Browser;
+class LaunchModeRecorder;
 class Profile;
 class StartupBrowserCreator;
 class StartupTabProvider;
@@ -47,7 +48,10 @@ class StartupBrowserCreatorImpl {
                             const base::CommandLine& command_line,
                             StartupBrowserCreator* browser_creator,
                             chrome::startup::IsFirstRun is_first_run);
-  ~StartupBrowserCreatorImpl();
+  StartupBrowserCreatorImpl(const StartupBrowserCreatorImpl&) = delete;
+  StartupBrowserCreatorImpl& operator=(const StartupBrowserCreatorImpl&) =
+      delete;
+  ~StartupBrowserCreatorImpl() = default;
 
   // Creates the necessary windows for startup. Returns true on success,
   // false on failure. process_startup is true if Chrome is just
@@ -55,7 +59,8 @@ class StartupBrowserCreatorImpl {
   // already running and the user wants to launch another instance.
   bool Launch(Profile* profile,
               const std::vector<GURL>& urls_to_open,
-              bool process_startup);
+              bool process_startup,
+              std::unique_ptr<LaunchModeRecorder> launch_mode_recorder);
 
   // Convenience for OpenTabsInBrowser that converts |urls| into a set of
   // Tabs.
@@ -72,7 +77,7 @@ class StartupBrowserCreatorImpl {
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
                            DetermineStartupTabs_Crash);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
-                           DetermineStartupTabs_MasterPrefs);
+                           DetermineStartupTabs_InitialPrefs);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
                            DetermineStartupTabs_CommandLine);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
@@ -125,14 +130,18 @@ class StartupBrowserCreatorImpl {
   // If the process was launched with the web application command line flags,
   // e.g. --app=http://www.google.com/ or --app_id=... return true.
   // In this case |app_url| or |app_id| are populated if they're non-null.
-  bool IsAppLaunch(std::string* app_url, std::string* app_id);
+  bool IsAppLaunch(std::string* app_url, std::string* app_id) const;
 
   // Opens an application window or tab if the process was launched with the web
   // application command line switches. Returns true if launch succeeded (or is
   // proceeding asynchronously); otherwise, returns false to indicate that
   // normal browser startup should resume. Desktop web applications launch
   // asynchronously, and fall back to launching a browser window.
-  bool MaybeLaunchApplication(Profile* profile);
+  // If the function returns true, |launch_mode_recorder| will be moved away,
+  // and the unique_ptr's value will be null.
+  bool MaybeLaunchApplication(
+      Profile* profile,
+      std::unique_ptr<LaunchModeRecorder>& launch_mode_recorder);
 
   // Determines the URLs to be shown at startup by way of various policies
   // (welcome, pinned tabs, etc.), determines whether a session restore
@@ -189,10 +198,9 @@ class StartupBrowserCreatorImpl {
 
   const base::FilePath cur_dir_;
   const base::CommandLine& command_line_;
-  Profile* profile_;
+  Profile* profile_ = nullptr;
   StartupBrowserCreator* browser_creator_;
   bool is_first_run_;
-  DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorImpl);
 };
 
 #endif  // CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_IMPL_H_

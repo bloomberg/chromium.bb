@@ -24,21 +24,21 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model/sync_error_factory.h"
-#include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync/test/model/fake_sync_change_processor.h"
+#include "components/sync/test/model/sync_error_factory_mock.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/input_method_whitelist.h"
+#include "ui/base/ime/chromeos/input_method_allowlist.h"
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
 #include "url/gurl.h"
 
@@ -66,7 +66,7 @@ CreatePrefSyncData(const std::string& name, const base::Value& value) {
           : specifics.mutable_preference();
   pref->set_name(name);
   pref->set_value(serialized);
-  return syncer::SyncData::CreateRemoteData(1, specifics);
+  return syncer::SyncData::CreateRemoteData(specifics);
 }
 
 }  // anonymous namespace
@@ -86,7 +86,6 @@ class MyMockInputMethodManager : public MockInputMethodManagerImpl {
     void ChangeInputMethod(const std::string& input_method_id,
                            bool show_message) override {
       manager_->last_input_method_id_ = input_method_id;
-      // Do the same thing as BrowserStateMonitor::UpdateUserPreferences.
       const std::string current_input_method_on_pref =
           manager_->current_->GetValue();
       if (current_input_method_on_pref == input_method_id)
@@ -128,7 +127,7 @@ class MyMockInputMethodManager : public MockInputMethodManagerImpl {
 
   std::unique_ptr<InputMethodDescriptors> GetSupportedInputMethods()
       const override {
-    return whitelist_.GetSupportedInputMethods();
+    return allowlist::GetSupportedInputMethods();
   }
 
   std::string last_input_method_id_;
@@ -136,7 +135,6 @@ class MyMockInputMethodManager : public MockInputMethodManagerImpl {
  private:
   StringPrefMember* previous_;
   StringPrefMember* current_;
-  InputMethodWhitelist whitelist_;
 };
 
 }  // anonymous namespace
@@ -254,8 +252,8 @@ class InputMethodPreferencesTest : public PreferencesTest {
 
   void InitComponentExtensionIMEManager() {
     // Set our custom IME list on the mock delegate.
-    input_method::MockComponentExtIMEManagerDelegate* mock_delegate =
-        new input_method::MockComponentExtIMEManagerDelegate();
+    input_method::MockComponentExtensionIMEManagerDelegate* mock_delegate =
+        new input_method::MockComponentExtensionIMEManagerDelegate();
     mock_delegate->set_ime_list(CreateImeList());
 
     // Pass the mock delegate to a new ComponentExtensionIMEManager.

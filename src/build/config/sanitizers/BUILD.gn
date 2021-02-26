@@ -89,7 +89,7 @@ if ((is_mac || is_win || (is_ios && !use_xcode_clang)) && is_asan) {
     }
   }
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     bundle_data("asan_runtime_bundle_data") {
       sources = get_target_outputs(":copy_asan_runtime")
       outputs = [ "{{bundle_executable_dir}}/{{source_file_part}}" ]
@@ -99,7 +99,7 @@ if ((is_mac || is_win || (is_ios && !use_xcode_clang)) && is_asan) {
 }
 
 config("sanitizer_options_link_helper") {
-  if (is_mac || is_ios) {
+  if (is_apple) {
     ldflags = [ "-Wl,-U,_sanitizer_options_link_helper" ]
   } else if (!is_win) {
     ldflags = [ "-Wl,-u_sanitizer_options_link_helper" ]
@@ -148,6 +148,9 @@ config("default_sanitizer_ldflags") {
   visibility = [
     ":default_sanitizer_flags",
     ":deps",
+
+    # https://crbug.com/360158.
+    "//tools/ipc_fuzzer/fuzzer:ipc_fuzzer",
   ]
 
   if (is_posix || is_fuchsia) {
@@ -333,7 +336,7 @@ config("cfi_flags") {
   if (is_cfi && current_toolchain == default_toolchain) {
     if (!defined(cfi_blacklist_path)) {
       cfi_blacklist_path =
-          rebase_path("//tools/cfi/blacklist.txt", root_build_dir)
+          rebase_path("//tools/cfi/ignores.txt", root_build_dir)
     }
     cflags += [
       "-fsanitize=cfi-vcall",
@@ -432,7 +435,8 @@ config("lsan_flags") {
 
 config("msan_flags") {
   if (is_msan) {
-    assert(is_linux, "msan only supported on linux x86_64")
+    assert(is_linux || is_chromeos,
+           "msan only supported on linux x86_64/ChromeOS")
     if (!defined(msan_blacklist_path)) {
       msan_blacklist_path =
           rebase_path("//tools/msan/blacklist.txt", root_build_dir)
@@ -447,7 +451,7 @@ config("msan_flags") {
 
 config("tsan_flags") {
   if (is_tsan) {
-    assert(is_linux, "tsan only supported on linux x86_64")
+    assert(is_linux || is_chromeos, "tsan only supported on linux x86_64")
     if (!defined(tsan_blacklist_path)) {
       tsan_blacklist_path =
           rebase_path("//tools/memory/tsan_v2/ignores.txt", root_build_dir)

@@ -54,18 +54,19 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     private static final int MAX_NUM_FAVICONS_TO_CACHE = 128;
 
     @IntDef({ChildType.NONE, ChildType.DEFAULT_CONTENT, ChildType.PERSONALIZED_SIGNIN_PROMO,
-            ChildType.SYNC_PROMO})
+            ChildType.PERSONALIZED_SYNC_PROMO, ChildType.SYNC_PROMO})
     @Retention(RetentionPolicy.SOURCE)
     private @interface ChildType {
         // Values should be enumerated from 0 and can't have gaps.
         int NONE = 0;
         int DEFAULT_CONTENT = 1;
         int PERSONALIZED_SIGNIN_PROMO = 2;
-        int SYNC_PROMO = 3;
+        int PERSONALIZED_SYNC_PROMO = 3;
+        int SYNC_PROMO = 4;
         /**
          * Number of entries.
          */
-        int NUM_ENTRIES = 4;
+        int NUM_ENTRIES = 5;
     }
 
     @IntDef({GroupType.CONTENT, GroupType.VISIBLE_SEPARATOR, GroupType.INVISIBLE_SEPARATOR})
@@ -449,6 +450,30 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     }
 
     /**
+     * A group containing the personalized sync promo.
+     */
+    class PersonalizedSyncPromoGroup extends PromoGroup {
+        @Override
+        @ChildType
+        int getChildType() {
+            return ChildType.PERSONALIZED_SYNC_PROMO;
+        }
+
+        @Override
+        View getChildView(
+                int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+                convertView = layoutInflater.inflate(
+                        R.layout.personalized_signin_promo_view_recent_tabs, parent, false);
+            }
+            mRecentTabsManager.setupPersonalizedSyncPromo(
+                    convertView.findViewById(R.id.signin_promo_view_container));
+            return convertView;
+        }
+    }
+
+    /**
      * A group containing the sync promo.
      */
     class SyncPromoGroup extends PromoGroup {
@@ -537,12 +562,12 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
             String title = TitleUtil.getTitleForDisplay(tab.title, tab.url);
             viewHolder.textView.setText(title);
 
-            String domain = UrlUtilities.getDomainAndRegistry(tab.url, false);
+            String domain = UrlUtilities.getDomainAndRegistry(tab.url.getSpec(), false);
             if (!TextUtils.isEmpty(domain)) {
                 viewHolder.domainView.setText(domain);
                 viewHolder.domainView.setVisibility(View.VISIBLE);
             }
-            loadFavicon(viewHolder, tab.url, FaviconLocality.LOCAL);
+            loadFavicon(viewHolder, tab.url.getSpec(), FaviconLocality.LOCAL);
         }
 
         @Override
@@ -839,6 +864,9 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                 break;
             case RecentTabsManager.PromoState.PROMO_SIGNIN_PERSONALIZED:
                 addGroup(new PersonalizedSigninPromoGroup());
+                break;
+            case RecentTabsManager.PromoState.PROMO_SYNC_PERSONALIZED:
+                addGroup(new PersonalizedSyncPromoGroup());
                 break;
             case RecentTabsManager.PromoState.PROMO_SYNC:
                 addGroup(new SyncPromoGroup());

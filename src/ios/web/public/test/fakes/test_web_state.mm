@@ -100,6 +100,10 @@ UIView* TestWebState::GetView() {
   return view_;
 }
 
+void TestWebState::DidCoverWebContent() {}
+
+void TestWebState::DidRevealWebContent() {}
+
 void TestWebState::WasShown() {
   is_visible_ = true;
   for (auto& observer : observers_)
@@ -252,6 +256,10 @@ void TestWebState::SetJSInjectionReceiver(
 
 void TestWebState::SetContentIsHTML(bool content_is_html) {
   content_is_html_ = content_is_html;
+}
+
+void TestWebState::SetContentsMimeType(const std::string& mime_type) {
+  mime_type_ = mime_type;
 }
 
 void TestWebState::SetTitle(const base::string16& title) {
@@ -452,6 +460,11 @@ bool TestWebState::CanTakeSnapshot() const {
 void TestWebState::TakeSnapshot(const gfx::RectF& rect,
                                 SnapshotCallback callback) {
   std::move(callback).Run(gfx::Image([[UIImage alloc] init]));
+}
+
+void TestWebState::CreateFullPagePdf(
+    base::OnceCallback<void(NSData*)> callback) {
+  std::move(callback).Run([[NSData alloc] init]);
 }
 
 }  // namespace web

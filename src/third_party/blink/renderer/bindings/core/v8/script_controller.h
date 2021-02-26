@@ -51,13 +51,13 @@ namespace blink {
 class DOMWrapperWorld;
 class ExecutionContext;
 class KURL;
-class LocalFrame;
+class LocalDOMWindow;
 class ScriptSourceCode;
 class SecurityOrigin;
 
 // This class exposes methods to run script in a frame (in the main world and
 // in isolated worlds). An instance can be obtained by using
-// LocalFrame::GetScriptController().
+// LocalDOMWindow::GetScriptController().
 class CORE_EXPORT ScriptController final
     : public GarbageCollected<ScriptController> {
  public:
@@ -66,10 +66,10 @@ class CORE_EXPORT ScriptController final
     kDoNotExecuteScriptWhenScriptsDisabled
   };
 
-  ScriptController(LocalFrame& frame,
+  ScriptController(LocalDOMWindow& window,
                    LocalWindowProxyManager& window_proxy_manager)
-      : frame_(&frame), window_proxy_manager_(&window_proxy_manager) {}
-  void Trace(Visitor*);
+      : window_(&window), window_proxy_manager_(&window_proxy_manager) {}
+  void Trace(Visitor*) const;
 
   // This returns an initialized window proxy. (If the window proxy is not
   // yet initialized, it's implicitly initialized at the first access.)
@@ -77,28 +77,27 @@ class CORE_EXPORT ScriptController final
     return window_proxy_manager_->WindowProxy(world);
   }
 
-  // Evaluate JavaScript in the main world.
-  void ExecuteScriptInMainWorld(
-      const String& script,
-      ScriptSourceLocationType = ScriptSourceLocationType::kUnknown,
-      ExecuteScriptPolicy = kDoNotExecuteScriptWhenScriptsDisabled);
-  void ExecuteScriptInMainWorld(
-      const ScriptSourceCode&,
-      const KURL& base_url,
-      SanitizeScriptErrors,
-      const ScriptFetchOptions& = ScriptFetchOptions());
-  v8::Local<v8::Value> ExecuteScriptInMainWorldAndReturnValue(
-      const ScriptSourceCode&,
-      const KURL& base_url,
-      SanitizeScriptErrors,
-      const ScriptFetchOptions& = ScriptFetchOptions(),
-      ExecuteScriptPolicy = kDoNotExecuteScriptWhenScriptsDisabled);
   v8::Local<v8::Value> ExecuteScriptAndReturnValue(
       v8::Local<v8::Context>,
       const ScriptSourceCode&,
       const KURL& base_url,
       SanitizeScriptErrors,
       const ScriptFetchOptions& = ScriptFetchOptions());
+
+  v8::Local<v8::Value> EvaluateMethodInMainWorld(
+      v8::Local<v8::Function> function,
+      v8::Local<v8::Value> receiver,
+      int argc,
+      v8::Local<v8::Value> argv[],
+      ScriptController::ExecuteScriptPolicy = ScriptController::
+          ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled);
+
+  // Evaluate JavaScript in the main world.
+  v8::Local<v8::Value> EvaluateScriptInMainWorld(const ScriptSourceCode&,
+                                                 const KURL& base_url,
+                                                 SanitizeScriptErrors,
+                                                 const ScriptFetchOptions&,
+                                                 ExecuteScriptPolicy);
 
   // Executes JavaScript in an isolated world. The script gets its own global
   // scope, its own prototypes for intrinsic JavaScript objects (String, Array,
@@ -112,7 +111,12 @@ class CORE_EXPORT ScriptController final
       const KURL& base_url,
       SanitizeScriptErrors sanitize_script_errors);
 
-  void ExecuteJavaScriptURL(const KURL&, network::mojom::CSPDisposition);
+  // Executes a javascript url in the main world. |world_for_csp| denotes the
+  // javascript world in which this navigation initiated and which should be
+  // used for CSP checks.
+  void ExecuteJavaScriptURL(const KURL&,
+                            network::mojom::CSPDisposition,
+                            const DOMWrapperWorld* world_for_csp);
 
   // Creates a new isolated world for DevTools with the given human readable
   // |world_name| and returns it id or nullptr on failure.
@@ -129,12 +133,8 @@ class CORE_EXPORT ScriptController final
 
   TextPosition EventHandlerPosition() const;
 
-  void ClearWindowProxy();
   void UpdateDocument();
-
   void UpdateSecurityOrigin(const SecurityOrigin*);
-
-  void ClearForClose();
 
   // Registers a v8 extension to be available on webpages. Will only
   // affect v8 contexts initialized after this call.
@@ -142,7 +142,7 @@ class CORE_EXPORT ScriptController final
   static v8::ExtensionConfiguration ExtensionsFor(const ExecutionContext*);
 
  private:
-  LocalFrame* GetFrame() const { return frame_; }
+  bool CanExecuteScript(ExecuteScriptPolicy policy);
   v8::Isolate* GetIsolate() const {
     return window_proxy_manager_->GetIsolate();
   }
@@ -154,13 +154,7 @@ class CORE_EXPORT ScriptController final
                        bool allow_eval,
                        const String& error_message);
 
-  v8::Local<v8::Value> EvaluateScriptInMainWorld(const ScriptSourceCode&,
-                                                 const KURL& base_url,
-                                                 SanitizeScriptErrors,
-                                                 const ScriptFetchOptions&,
-                                                 ExecuteScriptPolicy);
-
-  const Member<LocalFrame> frame_;
+  const Member<LocalDOMWindow> window_;
   const Member<LocalWindowProxyManager> window_proxy_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptController);

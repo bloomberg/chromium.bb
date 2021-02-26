@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -35,7 +36,6 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -90,8 +90,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
       @"clear_browsing_data_cookies",
   [NSNumber numberWithInteger:ItemTypeDataTypeCache] :
       @"clear_browsing_data_cached_images",
-  [NSNumber numberWithInteger:ItemTypeDataTypeSavedPasswords] :
-      @"clear_browsing_data_passwords",
+  [NSNumber numberWithInteger:ItemTypeDataTypeSavedPasswords] : @"password_key",
   [NSNumber numberWithInteger:ItemTypeDataTypeAutofill] :
       @"clear_browsing_data_autofill",
 };
@@ -129,6 +128,14 @@ static NSDictionary* _imageNamesByItemTypes = @{
 @property(nonatomic, strong) TableViewDetailIconItem* tableViewTimeRangeItem;
 
 @property(nonatomic, strong)
+    TableViewClearBrowsingDataItem* browsingHistoryItem;
+@property(nonatomic, strong)
+    TableViewClearBrowsingDataItem* cookiesSiteDataItem;
+@property(nonatomic, strong) TableViewClearBrowsingDataItem* cacheItem;
+@property(nonatomic, strong) TableViewClearBrowsingDataItem* savedPasswordsItem;
+@property(nonatomic, strong) TableViewClearBrowsingDataItem* autofillItem;
+
+@property(nonatomic, strong)
     BrowsingDataCounterWrapperProducer* counterWrapperProducer;
 
 @end
@@ -136,7 +143,6 @@ static NSDictionary* _imageNamesByItemTypes = @{
 @implementation ClearBrowsingDataManager
 @synthesize browserState = _browserState;
 @synthesize consumer = _consumer;
-@synthesize linkDelegate = _linkDelegate;
 @synthesize shouldShowNoticeAboutOtherFormsOfBrowsingHistory =
     _shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
 @synthesize shouldPopupDialogAboutOtherFormsOfBrowsingHistory =
@@ -172,6 +178,17 @@ static NSDictionary* _imageNamesByItemTypes = @{
     _prefObserverBridge.reset(new PrefObserverBridge(self));
     _prefObserverBridge->ObserveChangesForPreference(
         browsing_data::prefs::kDeleteTimePeriod, &_prefChangeRegistrar);
+
+    _prefObserverBridge->ObserveChangesForPreference(
+        browsing_data::prefs::kDeleteBrowsingHistory, &_prefChangeRegistrar);
+    _prefObserverBridge->ObserveChangesForPreference(
+        browsing_data::prefs::kDeleteCookies, &_prefChangeRegistrar);
+    _prefObserverBridge->ObserveChangesForPreference(
+        browsing_data::prefs::kDeleteCache, &_prefChangeRegistrar);
+    _prefObserverBridge->ObserveChangesForPreference(
+        browsing_data::prefs::kDeletePasswords, &_prefChangeRegistrar);
+    _prefObserverBridge->ObserveChangesForPreference(
+        browsing_data::prefs::kDeleteFormData, &_prefChangeRegistrar);
   }
   return self;
 }
@@ -193,45 +210,46 @@ static NSDictionary* _imageNamesByItemTypes = @{
 - (void)addClearBrowsingDataItemsToModel:(ListModel*)model {
   // Data types section.
   [model addSectionWithIdentifier:SectionIdentifierDataTypes];
-  ListItem* browsingHistoryItem =
+  self.browsingHistoryItem =
       [self clearDataItemWithType:ItemTypeDataTypeBrowsingHistory
                           titleID:IDS_IOS_CLEAR_BROWSING_HISTORY
                              mask:BrowsingDataRemoveMask::REMOVE_HISTORY
                          prefName:browsing_data::prefs::kDeleteBrowsingHistory];
-  [model addItem:browsingHistoryItem
+  [model addItem:self.browsingHistoryItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
 
   // This data type doesn't currently have an associated counter, but displays
   // an explanatory text instead.
-  ListItem* cookiesSiteDataItem =
+  self.cookiesSiteDataItem =
       [self clearDataItemWithType:ItemTypeDataTypeCookiesSiteData
                           titleID:IDS_IOS_CLEAR_COOKIES
                              mask:BrowsingDataRemoveMask::REMOVE_SITE_DATA
                          prefName:browsing_data::prefs::kDeleteCookies];
-  [model addItem:cookiesSiteDataItem
+  [model addItem:self.cookiesSiteDataItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
 
-  ListItem* cacheItem =
+  self.cacheItem =
       [self clearDataItemWithType:ItemTypeDataTypeCache
                           titleID:IDS_IOS_CLEAR_CACHE
                              mask:BrowsingDataRemoveMask::REMOVE_CACHE
                          prefName:browsing_data::prefs::kDeleteCache];
-  [model addItem:cacheItem toSectionWithIdentifier:SectionIdentifierDataTypes];
+  [model addItem:self.cacheItem
+      toSectionWithIdentifier:SectionIdentifierDataTypes];
 
-  ListItem* savedPasswordsItem =
+  self.savedPasswordsItem =
       [self clearDataItemWithType:ItemTypeDataTypeSavedPasswords
                           titleID:IDS_IOS_CLEAR_SAVED_PASSWORDS
                              mask:BrowsingDataRemoveMask::REMOVE_PASSWORDS
                          prefName:browsing_data::prefs::kDeletePasswords];
-  [model addItem:savedPasswordsItem
+  [model addItem:self.savedPasswordsItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
 
-  ListItem* autofillItem =
+  self.autofillItem =
       [self clearDataItemWithType:ItemTypeDataTypeAutofill
                           titleID:IDS_IOS_CLEAR_AUTOFILL
                              mask:BrowsingDataRemoveMask::REMOVE_FORM_DATA
                          prefName:browsing_data::prefs::kDeleteFormData];
-  [model addItem:autofillItem
+  [model addItem:self.autofillItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
 }
 
@@ -306,9 +324,6 @@ static NSDictionary* _imageNamesByItemTypes = @{
                   [weakSelf clearDataForDataTypes:dataTypeMaskToRemove];
                 }
                  style:UIAlertActionStyleDestructive];
-  [actionCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               action:nil
-                                style:UIAlertActionStyleCancel];
   return actionCoordinator;
 }
 
@@ -382,10 +397,11 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
 // Creates item of type |itemType| with |mask| of data to be cleared if
 // selected, |prefName|, and |titleId| of item.
-- (ListItem*)clearDataItemWithType:(ClearBrowsingDataItemType)itemType
-                           titleID:(int)titleMessageID
-                              mask:(BrowsingDataRemoveMask)mask
-                          prefName:(const char*)prefName {
+- (TableViewClearBrowsingDataItem*)
+    clearDataItemWithType:(ClearBrowsingDataItemType)itemType
+                  titleID:(int)titleMessageID
+                     mask:(BrowsingDataRemoveMask)mask
+                 prefName:(const char*)prefName {
   PrefService* prefs = self.browserState->GetPrefs();
   TableViewClearBrowsingDataItem* clearDataItem =
       [[TableViewClearBrowsingDataItem alloc] initWithType:itemType];
@@ -415,7 +431,8 @@ static NSDictionary* _imageNamesByItemTypes = @{
         ^(const browsing_data::BrowsingDataCounter::Result& result) {
           weakTableClearDataItem.detailText =
               [weakSelf counterTextFromResult:result];
-          [weakSelf.consumer updateCellsForItem:weakTableClearDataItem];
+          [weakSelf.consumer updateCellsForItem:weakTableClearDataItem
+                                         reload:YES];
         });
     std::unique_ptr<BrowsingDataCounterWrapper> counter =
         [self.counterWrapperProducer
@@ -428,13 +445,13 @@ static NSDictionary* _imageNamesByItemTypes = @{
   return clearDataItem;
 }
 
-- (ListItem*)footerForGoogleAccountSectionItem {
+- (TableViewItem*)footerForGoogleAccountSectionItem {
   return _shouldShowNoticeAboutOtherFormsOfBrowsingHistory
              ? [self footerGoogleAccountAndMyActivityItem]
              : [self footerGoogleAccountItem];
 }
 
-- (ListItem*)footerGoogleAccountItem {
+- (TableViewItem*)footerGoogleAccountItem {
   TableViewTextLinkItem* footerItem =
       [[TableViewTextLinkItem alloc] initWithType:ItemTypeFooterGoogleAccount];
   footerItem.text =
@@ -442,7 +459,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
   return footerItem;
 }
 
-- (ListItem*)footerGoogleAccountAndMyActivityItem {
+- (TableViewItem*)footerGoogleAccountAndMyActivityItem {
   UIImage* image = ios::GetChromeBrowserProvider()
                        ->GetBrandedImageProvider()
                        ->GetClearBrowsingDataAccountActivityImage();
@@ -453,7 +470,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
                    image:image];
 }
 
-- (ListItem*)footerSavedSiteDataItem {
+- (TableViewItem*)footerSavedSiteDataItem {
   UIImage* image = ios::GetChromeBrowserProvider()
                        ->GetBrandedImageProvider()
                        ->GetClearBrowsingDataSiteDataImage();
@@ -464,7 +481,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
                    image:image];
 }
 
-- (ListItem*)footerClearSyncAndSavedSiteDataItem {
+- (TableViewItem*)footerClearSyncAndSavedSiteDataItem {
   UIImage* infoIcon = [ChromeIcon infoIcon];
   UIImage* image = TintImage(infoIcon, [[MDCPalette greyPalette] tint500]);
   return [self
@@ -475,10 +492,10 @@ static NSDictionary* _imageNamesByItemTypes = @{
                    image:image];
 }
 
-- (ListItem*)footerItemWithType:(ClearBrowsingDataItemType)itemType
-                        titleID:(int)titleMessageID
-                            URL:(const char[])URL
-                          image:(UIImage*)image {
+- (TableViewItem*)footerItemWithType:(ClearBrowsingDataItemType)itemType
+                             titleID:(int)titleMessageID
+                                 URL:(const char[])URL
+                               image:(UIImage*)image {
   TableViewTextLinkItem* footerItem =
       [[TableViewTextLinkItem alloc] initWithType:itemType];
   footerItem.text = l10n_util::GetNSString(titleMessageID);
@@ -584,7 +601,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
     return;
   }
 
-  ListItem* footerItem = [self footerForGoogleAccountSectionItem];
+  TableViewItem* footerItem = [self footerForGoogleAccountSectionItem];
   // TODO(crbug.com/650424): Simplify with setFooter:inSection: when the bug in
   // MDC is fixed.
   // Remove the footer if there is one in that section.
@@ -601,17 +618,36 @@ static NSDictionary* _imageNamesByItemTypes = @{
   // Add the new footer.
   [model addItem:footerItem
       toSectionWithIdentifier:SectionIdentifierGoogleAccount];
-  [self.consumer updateCellsForItem:footerItem];
+  [self.consumer updateCellsForItem:footerItem reload:YES];
 }
 
 #pragma mark - PrefObserverDelegate
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
-  DCHECK(preferenceName == browsing_data::prefs::kDeleteTimePeriod);
-  NSString* detailText = [TimeRangeSelectorTableViewController
-      timePeriodLabelForPrefs:self.browserState->GetPrefs()];
-  self.tableViewTimeRangeItem.detailText = detailText;
-  [self.consumer updateCellsForItem:self.tableViewTimeRangeItem];
+  PrefService* prefs = self.browserState->GetPrefs();
+  if (preferenceName == browsing_data::prefs::kDeleteTimePeriod) {
+    NSString* detailText =
+        [TimeRangeSelectorTableViewController timePeriodLabelForPrefs:prefs];
+    self.tableViewTimeRangeItem.detailText = detailText;
+    [self.consumer updateCellsForItem:self.tableViewTimeRangeItem reload:YES];
+  } else if (preferenceName == browsing_data::prefs::kDeleteBrowsingHistory) {
+    self.browsingHistoryItem.checked = prefs->GetBoolean(preferenceName);
+    [self.consumer updateCellsForItem:self.browsingHistoryItem reload:NO];
+  } else if (preferenceName == browsing_data::prefs::kDeleteCookies) {
+    self.cookiesSiteDataItem.checked = prefs->GetBoolean(preferenceName);
+    [self.consumer updateCellsForItem:self.cookiesSiteDataItem reload:NO];
+  } else if (preferenceName == browsing_data::prefs::kDeleteCache) {
+    self.cacheItem.checked = prefs->GetBoolean(preferenceName);
+    [self.consumer updateCellsForItem:self.cacheItem reload:NO];
+  } else if (preferenceName == browsing_data::prefs::kDeletePasswords) {
+    self.savedPasswordsItem.checked = prefs->GetBoolean(preferenceName);
+    [self.consumer updateCellsForItem:self.savedPasswordsItem reload:NO];
+  } else if (preferenceName == browsing_data::prefs::kDeleteFormData) {
+    self.autofillItem.checked = prefs->GetBoolean(preferenceName);
+    [self.consumer updateCellsForItem:self.autofillItem reload:NO];
+  } else {
+    DCHECK(false) << "Unxpected clear browsing data item type.";
+  }
 }
 
 #pragma mark BrowsingDataRemoverObserving

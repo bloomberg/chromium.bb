@@ -26,11 +26,13 @@ namespace network_element {
 namespace {
 
 constexpr webui::LocalizedString kElementLocalizedStrings[] = {
+    {"OncType", IDS_NETWORK_TYPE},
     {"OncTypeCellular", IDS_NETWORK_TYPE_CELLULAR},
     {"OncTypeEthernet", IDS_NETWORK_TYPE_ETHERNET},
     {"OncTypeMobile", IDS_NETWORK_TYPE_MOBILE_DATA},
     {"OncTypeTether", IDS_NETWORK_TYPE_TETHER},
     {"OncTypeVPN", IDS_NETWORK_TYPE_VPN},
+    {"OncTypeWireless", IDS_NETWORK_TYPE_WIRELESS},
     {"OncTypeWiFi", IDS_NETWORK_TYPE_WIFI},
     {"ipAddressNotAvailable", IDS_NETWORK_IP_ADDRESS_NA},
     {"networkListItemConnected", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED},
@@ -156,7 +158,11 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
       {"OncMacAddress", IDS_ONC_MAC_ADDRESS},
       {"OncName", IDS_ONC_NAME},
       {"OncNotConnected", IDS_ONC_NOT_CONNECTED},
-      {"OncRestrictedConnectivity", IDS_ONC_RESTRICTED_CONNECTIVITY},
+      {"OncPortalState", IDS_ONC_PORTAL_STATE},
+      {"OncPortalState_NoInternet", IDS_ONC_PORTAL_STATE_NO_INTERNET},
+      {"OncPortalState_Portal", IDS_ONC_PORTAL_STATE_PORTAL},
+      {"OncPortalState_PortalSuspected", IDS_ONC_PORTAL_STATE_PORTAL_SUSPECTED},
+      {"OncPortalState_ProxyAuthRequired", IDS_ONC_PORTAL_STATE_PROXY_AUTH},
       {"OncTether-BatteryPercentage", IDS_ONC_TETHER_BATTERY_PERCENTAGE},
       {"OncTether-BatteryPercentage_Value",
        IDS_ONC_TETHER_BATTERY_PERCENTAGE_VALUE},
@@ -189,6 +195,7 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
       {"OncWiFi-Frequency", IDS_ONC_WIFI_FREQUENCY},
       {"OncWiFi-Passphrase", IDS_ONC_WIFI_PASSWORD},
       {"OncWiFi-SSID", IDS_ONC_WIFI_SSID},
+      {"OncWiFi-BSSID", IDS_ONC_WIFI_BSSID},
       {"OncWiFi-Security", IDS_ONC_WIFI_SECURITY},
       {"OncWiFi-Security_None", IDS_ONC_WIFI_SECURITY_NONE},
       {"OncWiFi-Security_WEP-PSK", IDS_ONC_WIFI_SECURITY_WEP},
@@ -198,7 +205,8 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
       {"OncWiFi-SignalStrength", IDS_ONC_WIFI_SIGNAL_STRENGTH},
       {"Oncipv4-Gateway", IDS_ONC_IPV4_GATEWAY},
       {"Oncipv4-IPAddress", IDS_ONC_IPV4_ADDRESS},
-      {"Oncipv4-RoutingPrefix", IDS_ONC_IPV4_ROUTING_PREFIX},
+      // We use 'Netmask' in the UI instead of RoutingPrefix.
+      {"Oncipv4-Netmask", IDS_ONC_IPV4_NETMASK},
       {"Oncipv6-IPAddress", IDS_ONC_IPV6_ADDRESS},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);

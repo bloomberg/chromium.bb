@@ -118,6 +118,7 @@ BrowserActionsContainer::~BrowserActionsContainer() {
   toolbar_actions_bar_->DeleteActions();
   // All views should be removed as part of ToolbarActionsBar::DeleteActions().
   DCHECK(toolbar_action_views_.empty());
+  CHECK(!IsInObserverList());
 }
 
 std::string BrowserActionsContainer::GetIdAt(size_t index) const {
@@ -329,7 +330,7 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
   active_bubble_ = bubble;
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->GetWidget()->AddObserver(this);
-  bubble->Show();
+  bubble->GetWidget()->Show();
 }
 
 bool BrowserActionsContainer::CloseOverflowMenuIfOpen() {
@@ -376,7 +377,7 @@ views::FlexRule BrowserActionsContainer::GetFlexRule() {
         const BrowserActionsContainer* browser_actions =
             static_cast<const BrowserActionsContainer*>(view);
         gfx::Size preferred_size = browser_actions->GetPreferredSize();
-        if (maximum_size.width()) {
+        if (maximum_size.width().is_bounded()) {
           int width;
           if (browser_actions->resizing() || browser_actions->animating()) {
             // When there are actions present, the floor on the size of the
@@ -386,13 +387,15 @@ views::FlexRule BrowserActionsContainer::GetFlexRule() {
                                       : browser_actions->GetResizeAreaWidth();
             // If the provided maximum width is too small even for |min_width|,
             // |min_width| takes precedence.
-            const int max_width = std::max(min_width, *maximum_size.width());
+            const int max_width =
+                std::max(min_width, maximum_size.width().value());
             width = base::ClampToRange(preferred_size.width(), min_width,
                                        max_width);
           } else {
             // When not animating or resizing, the desired width should always
             // be based on the number of icons that can be displayed.
-            width = browser_actions->GetWidthForMaxWidth(*maximum_size.width());
+            width = browser_actions->GetWidthForMaxWidth(
+                maximum_size.width().value());
           }
           preferred_size =
               gfx::Size(width, browser_actions->GetHeightForWidth(width));

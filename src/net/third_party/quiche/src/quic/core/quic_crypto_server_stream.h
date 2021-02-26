@@ -29,15 +29,16 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
 
   ~QuicCryptoServerStream() override;
 
-  // From HandshakerInterface
+  // From QuicCryptoServerStreamBase
   void CancelOutstandingCallbacks() override;
   bool GetBase64SHA256ClientChannelID(std::string* output) const override;
   void SendServerConfigUpdate(
       const CachedNetworkParameters* cached_network_params) override;
   bool IsZeroRtt() const override;
+  bool IsResumption() const override;
+  bool ResumptionAttempted() const override;
   int NumServerConfigUpdateMessagesSent() const override;
   const CachedNetworkParameters* PreviousCachedNetworkParams() const override;
-  bool ZeroRttAttempted() const override;
   void SetPreviousCachedNetworkParams(
       CachedNetworkParameters cached_network_params) override;
   void OnPacketDecrypted(EncryptionLevel level) override;
@@ -47,15 +48,23 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
                           ConnectionCloseSource /*source*/) override {}
   void OnHandshakeDoneReceived() override;
   bool ShouldSendExpectCTHeader() const override;
+  const ProofSource::Details* ProofSourceDetails() const override;
 
   // From QuicCryptoStream
+  ssl_early_data_reason_t EarlyDataReason() const override;
   bool encryption_established() const override;
   bool one_rtt_keys_available() const override;
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
   CryptoMessageParser* crypto_message_parser() override;
   HandshakeState GetHandshakeState() const override;
+  void SetServerApplicationStateForResumption(
+      std::unique_ptr<ApplicationState> state) override;
   size_t BufferSizeLimitForLevel(EncryptionLevel level) const override;
+  bool KeyUpdateSupportedLocally() const override;
+  std::unique_ptr<QuicDecrypter> AdvanceKeysAndCreateCurrentOneRttDecrypter()
+      override;
+  std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() override;
 
   // From QuicCryptoHandshaker
   void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
@@ -233,6 +242,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
   // FinishProcessingHandshakeMessageAfterProcessClientHello.  Note that this
   // field is mutually exclusive with validate_client_hello_cb_.
   ProcessClientHelloCallback* process_client_hello_cb_;
+
+  // The ProofSource::Details from this connection.
+  std::unique_ptr<ProofSource::Details> proof_source_details_;
 
   bool encryption_established_;
   bool one_rtt_keys_available_;

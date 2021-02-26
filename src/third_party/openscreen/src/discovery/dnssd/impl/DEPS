@@ -1,4 +1,4 @@
-# -*- Mode: Python; -*-
+#- * - Mode : Python; - * -
 
 include_rules = [
   '+discovery/dnssd/public',

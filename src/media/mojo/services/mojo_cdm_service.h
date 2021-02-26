@@ -23,6 +23,7 @@
 #include "media/mojo/services/mojo_decryptor_service.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace media {
@@ -31,25 +32,32 @@ class CdmFactory;
 
 // A mojom::ContentDecryptionModule implementation backed by a
 // media::ContentDecryptionModule.
-class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
+class MEDIA_MOJO_EXPORT MojoCdmService final
+    : public mojom::ContentDecryptionModule {
  public:
-  // Constructs a MojoCdmService and strongly binds it to the |request|.
+  using CdmServiceCreatedCB =
+      base::OnceCallback<void(std::unique_ptr<MojoCdmService> mojo_cdm_service,
+                              mojo::PendingRemote<mojom::Decryptor> decryptor,
+                              const std::string& error_message)>;
+
+  // Creates a MojoCdmService. Callback will have |mojo_cdm_service| be non-null
+  // on success, on failure it will be null and the |error_message| will
+  // indicate a reason.
   // - |cdm_factory| is used to create CDM instances. Must not be null.
   // - |context| is used to keep track of all CDM instances such that we can
   //   connect the CDM with a media player (e.g. decoder). Can be null if the
   //   CDM does not need to be connected with any media player in this process.
-  MojoCdmService(CdmFactory* cdm_factory, MojoCdmServiceContext* context);
+  static void Create(CdmFactory* cdm_factory,
+                     MojoCdmServiceContext* context,
+                     const std::string& key_system,
+                     const CdmConfig& cdm_config,
+                     CdmServiceCreatedCB callback);
 
   ~MojoCdmService() final;
-
   // mojom::ContentDecryptionModule implementation.
   void SetClient(
       mojo::PendingAssociatedRemote<mojom::ContentDecryptionModuleClient>
           client) final;
-  void Initialize(const std::string& key_system,
-                  const url::Origin& security_origin,
-                  const CdmConfig& cdm_config,
-                  InitializeCallback callback) final;
   void SetServerCertificate(const std::vector<uint8_t>& certificate_data,
                             SetServerCertificateCallback callback) final;
   void GetStatusForPolicy(HdcpVersion min_hdcp_version,
@@ -73,9 +81,15 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
   // Get CDM to be used by the media pipeline.
   scoped_refptr<::media::ContentDecryptionModule> GetCdm();
 
+  // Gets the remote ID of the CDM this is holding.
+  base::Optional<base::UnguessableToken> cdm_id() const { return cdm_id_; }
+
  private:
+  MojoCdmService(CdmFactory* cdm_factory, MojoCdmServiceContext* context);
+
   // Callback for CdmFactory::Create().
-  void OnCdmCreated(InitializeCallback callback,
+  void OnCdmCreated(std::unique_ptr<MojoCdmService> mojo_cdm_service,
+                    CdmServiceCreatedCB callback,
                     const scoped_refptr<::media::ContentDecryptionModule>& cdm,
                     const std::string& error_message);
 
@@ -93,8 +107,6 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
   // Callback for when |decryptor_| loses connectivity.
   void OnDecryptorConnectionError();
 
-  bool has_initialize_been_called_ = false;
-
   CdmFactory* cdm_factory_;
   MojoCdmServiceContext* const context_ = nullptr;
   scoped_refptr<::media::ContentDecryptionModule> cdm_;
@@ -102,10 +114,11 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
   // MojoDecryptorService is passed the Decryptor from |cdm_|, so
   // |decryptor_| must not outlive |cdm_|.
   std::unique_ptr<MojoDecryptorService> decryptor_;
+  mojo::PendingRemote<mojom::Decryptor> decryptor_remote_;
   std::unique_ptr<mojo::Receiver<mojom::Decryptor>> decryptor_receiver_;
 
   // Set to a valid CDM ID if the |cdm_| is successfully created.
-  int cdm_id_;
+  base::Optional<base::UnguessableToken> cdm_id_;
 
   mojo::AssociatedRemote<mojom::ContentDecryptionModuleClient> client_;
 

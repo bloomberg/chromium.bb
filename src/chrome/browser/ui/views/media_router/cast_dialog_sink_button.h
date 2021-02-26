@@ -19,9 +19,7 @@ namespace media_router {
 // hovered.
 class CastDialogSinkButton : public HoverButton {
  public:
-  CastDialogSinkButton(views::ButtonListener* button_listener,
-                       const UIMediaSink& sink,
-                       int button_tag);
+  CastDialogSinkButton(PressedCallback callback, const UIMediaSink& sink);
   ~CastDialogSinkButton() override;
 
   void OverrideStatusText(const base::string16& status_text);
@@ -36,6 +34,8 @@ class CastDialogSinkButton : public HoverButton {
 
   const UIMediaSink& sink() const { return sink_; }
 
+  static const gfx::VectorIcon* GetVectorIcon(SinkIconType icon_type);
+
  private:
   friend class MediaRouterUiForTest;
   FRIEND_TEST_ALL_PREFIXES(CastDialogSinkButtonTest, OverrideStatusText);
@@ -45,6 +45,8 @@ class CastDialogSinkButton : public HoverButton {
                            SetStatusLabelForAvailableSink);
   FRIEND_TEST_ALL_PREFIXES(CastDialogSinkButtonTest,
                            SetStatusLabelForSinkWithIssue);
+  FRIEND_TEST_ALL_PREFIXES(CastDialogSinkButtonTest,
+                           SetStatusLabelForDialSinks);
 
   void OnEnabledChanged();
 

@@ -7,19 +7,23 @@
 #ifndef XFA_FXFA_PARSER_CXFA_NODELOCALE_H_
 #define XFA_FXFA_PARSER_CXFA_NODELOCALE_H_
 
-#include "xfa/fgas/crt/locale_iface.h"
+#include "fxjs/gc/heap.h"
+#include "v8/include/cppgc/garbage-collected.h"
+#include "v8/include/cppgc/member.h"
 #include "xfa/fxfa/fxfa_basic.h"
+#include "xfa/fxfa/parser/gced_locale_iface.h"
 
 class CXFA_Node;
 
-WideString XFA_PatternToString(FX_LOCALENUMSUBCATEGORY category);
+WideString XFA_PatternToString(LocaleIface::NumSubcategory category);
 
-class CXFA_NodeLocale final : public LocaleIface {
+class CXFA_NodeLocale final : public GCedLocaleIface {
  public:
-  explicit CXFA_NodeLocale(CXFA_Node* pLocale);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_NodeLocale() override;
 
-  // LocaleIface
+  // GCedLocaleIface:
+  void Trace(cppgc::Visitor* visitor) const override;
   WideString GetName() const override;
   WideString GetDecimalSymbol() const override;
   WideString GetGroupingSymbol() const override;
@@ -33,18 +37,20 @@ class CXFA_NodeLocale final : public LocaleIface {
   FX_TIMEZONE GetTimeZone() const override;
   WideString GetEraName(bool bAD) const override;
 
-  WideString GetDatePattern(FX_LOCALEDATETIMESUBCATEGORY eType) const override;
-  WideString GetTimePattern(FX_LOCALEDATETIMESUBCATEGORY eType) const override;
-  WideString GetNumPattern(FX_LOCALENUMSUBCATEGORY eType) const override;
+  WideString GetDatePattern(DateTimeSubcategory eType) const override;
+  WideString GetTimePattern(DateTimeSubcategory eType) const override;
+  WideString GetNumPattern(NumSubcategory eType) const override;
 
  private:
+  explicit CXFA_NodeLocale(CXFA_Node* pNode);
+
   CXFA_Node* GetNodeByName(CXFA_Node* pParent, WideStringView wsName) const;
   WideString GetSymbol(XFA_Element eElement, WideStringView symbol_type) const;
   WideString GetCalendarSymbol(XFA_Element eElement,
                                int index,
                                bool bAbbr) const;
 
-  UnownedPtr<CXFA_Node> const m_pLocale;
+  cppgc::Member<CXFA_Node> const m_pNode;
 };
 
 #endif  // XFA_FXFA_PARSER_CXFA_NODELOCALE_H_

@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace base {
 
@@ -65,14 +66,20 @@ class BASE_EXPORT SysInfo {
   // on failure.
   static int64_t AmountOfTotalDiskSpace(const FilePath& path);
 
+#if defined(OS_FUCHSIA)
+  // Sets the total amount of disk space to report under the specified |path|.
+  // If |bytes| is -ve then any existing entry for |path| is removed.
+  static void SetAmountOfTotalDiskSpace(const FilePath& path, int64_t bytes);
+#endif
+
   // Returns system uptime.
   static TimeDelta Uptime();
 
   // Returns a descriptive string for the current machine model or an empty
   // string if the machine model is unknown or an error occurred.
   // e.g. "MacPro1,1" on Mac, "iPhone9,3" on iOS or "Nexus 5" on Android. Only
-  // implemented on OS X, iOS, and Android. This returns an empty string on
-  // other platforms.
+  // implemented on OS X, iOS, Android and Chrome OS. This returns an empty
+  // string on other platforms.
   static std::string HardwareModelName();
 
   struct HardwareInfo {
@@ -127,7 +134,7 @@ class BASE_EXPORT SysInfo {
   // allocate.
   static size_t VMAllocationGranularity();
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
   // Set |value| and return true if LsbRelease contains information about |key|.
   static bool GetLsbReleaseValue(const std::string& key, std::string* value);
 
@@ -160,7 +167,11 @@ class BASE_EXPORT SysInfo {
 
   // Returns the kernel version of the host operating system.
   static std::string KernelVersion();
-#endif  // defined(OS_CHROMEOS)
+
+  // Crashes if running on Chrome OS non-test image. Use only for really
+  // sensitive and risky use cases.
+  static void CrashIfChromeOSNonTestImage();
+#endif  // defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 
 #if defined(OS_ANDROID)
   // Returns the Android build's codename.
@@ -206,7 +217,8 @@ class BASE_EXPORT SysInfo {
   static bool IsLowEndDeviceImpl();
   static HardwareInfo GetHardwareInfoSync();
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+    defined(OS_AIX)
   static int64_t AmountOfAvailablePhysicalMemory(
       const SystemMemoryInfoKB& meminfo);
 #endif

@@ -17,58 +17,6 @@ namespace openscreen {
 namespace cast {
 namespace testing {
 
-std::vector<std::string> ReadCertificatesFromPemFile(
-    absl::string_view filename) {
-  FILE* fp = fopen(filename.data(), "r");
-  if (!fp) {
-    return {};
-  }
-  std::vector<std::string> certs;
-  char* name;
-  char* header;
-  unsigned char* data;
-  long length;
-  while (PEM_read(fp, &name, &header, &data, &length) == 1) {
-    if (absl::StartsWith(name, "CERTIFICATE")) {
-      certs.emplace_back((char*)data, length);
-    }
-    OPENSSL_free(name);
-    OPENSSL_free(header);
-    OPENSSL_free(data);
-  }
-  fclose(fp);
-  return certs;
-}
-
-bssl::UniquePtr<EVP_PKEY> ReadKeyFromPemFile(absl::string_view filename) {
-  FILE* fp = fopen(filename.data(), "r");
-  if (!fp) {
-    return nullptr;
-  }
-  bssl::UniquePtr<EVP_PKEY> pkey;
-  char* name;
-  char* header;
-  unsigned char* data;
-  long length;
-  while (PEM_read(fp, &name, &header, &data, &length) == 1) {
-    if (absl::StartsWith(name, "RSA PRIVATE KEY")) {
-      OSP_DCHECK(!pkey);
-      CBS cbs;
-      CBS_init(&cbs, data, length);
-      RSA* rsa = RSA_parse_private_key(&cbs);
-      if (rsa) {
-        pkey.reset(EVP_PKEY_new());
-        EVP_PKEY_assign_RSA(pkey.get(), rsa);
-      }
-    }
-    OPENSSL_free(name);
-    OPENSSL_free(header);
-    OPENSSL_free(data);
-  }
-  fclose(fp);
-  return pkey;
-}
-
 SignatureTestData::SignatureTestData()
     : message{nullptr, 0}, sha1{nullptr, 0}, sha256{nullptr, 0} {}
 
@@ -85,7 +33,7 @@ SignatureTestData ReadSignatureTestData(absl::string_view filename) {
   char* name;
   char* header;
   unsigned char* data;
-  long length;
+  long length;  // NOLINT
   while (PEM_read(fp, &name, &header, &data, &length) == 1) {
     if (strcmp(name, "MESSAGE") == 0) {
       OSP_DCHECK(!result.message.data);
@@ -110,19 +58,6 @@ SignatureTestData ReadSignatureTestData(absl::string_view filename) {
   OSP_DCHECK(result.sha256.data);
 
   return result;
-}
-
-std::unique_ptr<TrustStore> CreateTrustStoreFromPemFile(
-    absl::string_view filename) {
-  std::unique_ptr<TrustStore> store = std::make_unique<TrustStore>();
-
-  std::vector<std::string> certs =
-      testing::ReadCertificatesFromPemFile(filename);
-  for (const auto& der_cert : certs) {
-    const uint8_t* data = (const uint8_t*)der_cert.data();
-    store->certs.emplace_back(d2i_X509(nullptr, &data, der_cert.size()));
-  }
-  return store;
 }
 
 }  // namespace testing

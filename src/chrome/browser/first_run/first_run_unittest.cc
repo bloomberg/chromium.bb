@@ -12,7 +12,7 @@
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/initial_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace first_run {
@@ -33,16 +33,17 @@ class FirstRunTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(FirstRunTest);
 };
 
-TEST_F(FirstRunTest, SetupMasterPrefsFromInstallPrefs_NoVariationsSeed) {
-  installer::MasterPreferences install_prefs("{ }");
+TEST_F(FirstRunTest, SetupInitialPrefsFromInstallPrefs_NoVariationsSeed) {
+  installer::InitialPreferences install_prefs("{ }");
   EXPECT_TRUE(install_prefs.master_dictionary().empty());
 
   EXPECT_TRUE(install_prefs.GetCompressedVariationsSeed().empty());
   EXPECT_TRUE(install_prefs.GetVariationsSeedSignature().empty());
 }
 
-TEST_F(FirstRunTest, SetupMasterPrefsFromInstallPrefs_VariationsSeedSignature) {
-  installer::MasterPreferences install_prefs(
+TEST_F(FirstRunTest,
+       SetupInitialPrefsFromInstallPrefs_VariationsSeedSignature) {
+  installer::InitialPreferences install_prefs(
       "{\"variations_compressed_seed\":\"xyz\","
       " \"variations_seed_signature\":\"abc\"}");
   EXPECT_EQ(2U, install_prefs.master_dictionary().size());

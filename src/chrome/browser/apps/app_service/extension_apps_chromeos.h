@@ -18,10 +18,10 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/services/app_service/public/cpp/instance.h"
-#include "chrome/services/app_service/public/cpp/instance_registry.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/services/app_service/public/cpp/instance.h"
+#include "components/services/app_service/public/cpp/instance_registry.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -45,7 +45,7 @@ namespace apps {
 //
 // In the future, desktop PWAs will be migrated to a new system.
 //
-// See chrome/services/app_service/README.md.
+// See components/services/app_service/README.md.
 class ExtensionAppsChromeOs : public ExtensionAppsBase,
                               public extensions::AppWindowRegistry::Observer,
                               public ArcAppListPrefs::Observer,
@@ -78,9 +78,6 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
                            apps::mojom::IntentPtr intent,
                            apps::mojom::LaunchSource launch_source,
                            int64_t display_id) override;
-  void Uninstall(const std::string& app_id,
-                 bool clear_site_data,
-                 bool report_abuse) override;
   void PauseApp(const std::string& app_id) override;
   void UnpauseApps(const std::string& app_id) override;
   void GetMenuModel(const std::string& app_id,
@@ -116,13 +113,13 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
   void OnNotificationDisplayServiceDestroyed(
       NotificationDisplayService* service) override;
 
-  void MaybeAddNotification(const std::string& app_id,
+  bool MaybeAddNotification(const std::string& app_id,
                             const std::string& notification_id);
   void MaybeAddWebPageNotifications(
       const message_center::Notification& notification,
       const NotificationCommon::Metadata* const metadata);
 
-  static bool IsBlacklisted(const std::string& app_id);
+  static bool IsBlocklisted(const std::string& app_id);
 
   void UpdateShowInFields(const std::string& app_id);
 

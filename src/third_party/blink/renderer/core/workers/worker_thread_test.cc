@@ -11,7 +11,7 @@
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
@@ -103,7 +103,7 @@ void CreateNestedWorkerThenTerminateParent(
               WillEvaluateClassicScriptMock(_, _))
       .Times(1);
   EXPECT_CALL(*nested_worker_helper->reporting_proxy,
-              DidEvaluateClassicScript(true))
+              DidEvaluateTopLevelScript(true))
       .Times(1);
   EXPECT_CALL(*nested_worker_helper->reporting_proxy,
               WillDestroyWorkerGlobalScope())
@@ -191,7 +191,7 @@ class WorkerThreadTest : public testing::Test {
     EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
     EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock(_, _))
         .Times(1);
-    EXPECT_CALL(*reporting_proxy_, DidEvaluateClassicScript(true)).Times(1);
+    EXPECT_CALL(*reporting_proxy_, DidEvaluateTopLevelScript(true)).Times(1);
     EXPECT_CALL(*reporting_proxy_, WillDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*reporting_proxy_, DidTerminateWorkerThread()).Times(1);
   }
@@ -200,7 +200,7 @@ class WorkerThreadTest : public testing::Test {
     EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
     EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock(_, _))
         .Times(AtMost(1));
-    EXPECT_CALL(*reporting_proxy_, DidEvaluateClassicScript(_))
+    EXPECT_CALL(*reporting_proxy_, DidEvaluateTopLevelScript(_))
         .Times(AtMost(1));
     EXPECT_CALL(*reporting_proxy_, WillDestroyWorkerGlobalScope())
         .Times(AtMost(1));
@@ -211,7 +211,7 @@ class WorkerThreadTest : public testing::Test {
     EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
     EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock(_, _))
         .Times(1);
-    EXPECT_CALL(*reporting_proxy_, DidEvaluateClassicScript(false)).Times(1);
+    EXPECT_CALL(*reporting_proxy_, DidEvaluateTopLevelScript(false)).Times(1);
     EXPECT_CALL(*reporting_proxy_, WillDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*reporting_proxy_, DidTerminateWorkerThread()).Times(1);
   }
@@ -397,7 +397,8 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           network::mojom::IPAddressSpace::kLocal,
           nullptr /* originTrialToken */, base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(std::make_unique<Settings>().get()),
-          kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
+          mojom::blink::V8CacheOptions::kDefault,
+          nullptr /* worklet_module_responses_map */);
 
   // Set wait_for_debugger so that the worker thread can pause
   // on initialization to run debugger tasks.

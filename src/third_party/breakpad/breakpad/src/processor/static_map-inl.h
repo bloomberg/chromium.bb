@@ -59,7 +59,7 @@ StaticMap<Key, Value, Compare>::StaticMap(const char* raw_data)
 // find(), lower_bound() and upper_bound() implement binary search algorithm.
 template<typename Key, typename Value, typename Compare>
 StaticMapIterator<Key, Value, Compare>
-StaticMap<Key, Value, Compare>::find(const Key &key) const {
+StaticMap<Key, Value, Compare>::find(const Key& key) const {
   int begin = 0;
   int end = num_nodes_;
   int middle;
@@ -80,7 +80,7 @@ StaticMap<Key, Value, Compare>::find(const Key &key) const {
 
 template<typename Key, typename Value, typename Compare>
 StaticMapIterator<Key, Value, Compare>
-StaticMap<Key, Value, Compare>::lower_bound(const Key &key) const {
+StaticMap<Key, Value, Compare>::lower_bound(const Key& key) const {
   int begin = 0;
   int end = num_nodes_;
   int middle;
@@ -101,7 +101,7 @@ StaticMap<Key, Value, Compare>::lower_bound(const Key &key) const {
 
 template<typename Key, typename Value, typename Compare>
 StaticMapIterator<Key, Value, Compare>
-StaticMap<Key, Value, Compare>::upper_bound(const Key &key) const {
+StaticMap<Key, Value, Compare>::upper_bound(const Key& key) const {
   int begin = 0;
   int end = num_nodes_;
   int middle;

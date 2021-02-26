@@ -11,11 +11,14 @@ std::unique_ptr<syncer::DeviceInfo> CreateFakeDeviceInfo(
     const std::string& name,
     const base::Optional<syncer::DeviceInfo::SharingInfo>& sharing_info,
     sync_pb::SyncEnums_DeviceType device_type,
-    base::SysInfo::HardwareInfo hardware_info,
+    const std::string& manufacturer_name,
+    const std::string& model_name,
     base::Time last_updated_timestamp) {
   return std::make_unique<syncer::DeviceInfo>(
       guid, name, "chrome_version", "user_agent", device_type, "device_id",
-      hardware_info, last_updated_timestamp,
+      manufacturer_name, model_name, last_updated_timestamp,
       syncer::DeviceInfoUtil::GetPulseInterval(),
-      /*send_tab_to_self_receiving_enabled=*/false, sharing_info);
+      /*send_tab_to_self_receiving_enabled=*/false, sharing_info,
+      /*fcm_registration_token=*/std::string(),
+      /*interested_data_types=*/syncer::ModelTypeSet());
 }

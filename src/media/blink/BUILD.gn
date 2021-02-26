@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
@@ -50,10 +51,6 @@ component("blink") {
     "video_decode_stats_reporter.h",
     "video_frame_compositor.cc",
     "video_frame_compositor.h",
-    "watch_time_component.cc",
-    "watch_time_component.h",
-    "watch_time_reporter.cc",
-    "watch_time_reporter.h",
     "webcontentdecryptionmodule_impl.cc",
     "webcontentdecryptionmodule_impl.h",
     "webcontentdecryptionmoduleaccess_impl.cc",
@@ -99,10 +96,14 @@ component("blink") {
       "webmediaplayer_impl.cc",
       "webmediaplayer_impl.h",
     ]
+
+    deps += [ "//media/remoting:remoting_constants" ]
   }
 }
 
 test("media_blink_unittests") {
+  use_xvfb = use_xvfb_in_this_config
+
   deps = [
     ":blink",
     "//base",
@@ -156,7 +157,6 @@ test("media_blink_unittests") {
     "url_index_unittest.cc",
     "video_decode_stats_reporter_unittest.cc",
     "video_frame_compositor_unittest.cc",
-    "watch_time_component_unittest.cc",
     "watch_time_reporter_unittest.cc",
     "webmediaplayer_impl_unittest.cc",
   ]

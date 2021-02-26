@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
@@ -21,7 +22,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_reference_counted.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -42,13 +42,13 @@ struct QUIC_EXPORT_PRIVATE QuicResumptionState {
   // client didn't receive a 0-RTT capable session ticket from the server,
   // |transport_params| will be null. Otherwise, it will contain the transport
   // parameters received from the server on the original connection.
-  TransportParameters* transport_params;
+  std::unique_ptr<TransportParameters> transport_params = nullptr;
 
   // If |transport_params| is null, then |application_state| is ignored and
   // should be empty. |application_state| contains serialized state that the
   // client received from the server at the application layer that the client
   // needs to remember when performing a 0-RTT handshake.
-  ApplicationState* application_state;
+  std::unique_ptr<ApplicationState> application_state = nullptr;
 };
 
 // SessionCache is an interface for managing storing and retrieving
@@ -76,6 +76,10 @@ class QUIC_EXPORT_PRIVATE SessionCache {
   virtual std::unique_ptr<QuicResumptionState> Lookup(
       const QuicServerId& server_id,
       const SSL_CTX* ctx) = 0;
+
+  // Called when 0-RTT is rejected. Disables early data for all the TLS tickets
+  // associated with |server_id|.
+  virtual void ClearEarlyData(const QuicServerId& server_id) = 0;
 };
 
 // QuicCryptoClientConfig contains crypto-related configuration settings for a
@@ -127,7 +131,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // SetServerConfig checks that |server_config| parses correctly and stores
     // it in |server_config_|. |now| is used to judge whether |server_config|
     // has expired.
-    ServerConfigState SetServerConfig(quiche::QuicheStringPiece server_config,
+    ServerConfigState SetServerConfig(absl::string_view server_config,
                                       QuicWallTime now,
                                       QuicWallTime expiry_time,
                                       std::string* error_details);
@@ -137,9 +141,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
     // SetProof stores a cert chain, cert signed timestamp and signature.
     void SetProof(const std::vector<std::string>& certs,
-                  quiche::QuicheStringPiece cert_sct,
-                  quiche::QuicheStringPiece chlo_hash,
-                  quiche::QuicheStringPiece signature);
+                  absl::string_view cert_sct,
+                  absl::string_view chlo_hash,
+                  absl::string_view signature);
 
     // Clears all the data.
     void Clear();
@@ -167,23 +171,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     uint64_t generation_counter() const;
     const ProofVerifyDetails* proof_verify_details() const;
 
-    void set_source_address_token(quiche::QuicheStringPiece token);
+    void set_source_address_token(absl::string_view token);
 
-    void set_cert_sct(quiche::QuicheStringPiece cert_sct);
-
-    // Adds the connection ID to the queue of server-designated connection-ids.
-    void add_server_designated_connection_id(QuicConnectionId connection_id);
-
-    // If true, the crypto config contains at least one connection ID specified
-    // by the server, and the client should use one of these IDs when initiating
-    // the next connection.
-    bool has_server_designated_connection_id() const;
-
-    // This function should only be called when
-    // has_server_designated_connection_id is true.  Returns the next
-    // connection_id specified by the server and removes it from the
-    // queue of ids.
-    QuicConnectionId GetNextServerDesignatedConnectionId();
+    void set_cert_sct(absl::string_view cert_sct);
 
     // Adds the servernonce to the queue of server nonces.
     void add_server_nonce(const std::string& server_nonce);
@@ -208,12 +198,12 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
     // Initializes this cached state based on the arguments provided.
     // Returns false if there is a problem parsing the server config.
-    bool Initialize(quiche::QuicheStringPiece server_config,
-                    quiche::QuicheStringPiece source_address_token,
+    bool Initialize(absl::string_view server_config,
+                    absl::string_view source_address_token,
                     const std::vector<std::string>& certs,
                     const std::string& cert_sct,
-                    quiche::QuicheStringPiece chlo_hash,
-                    quiche::QuicheStringPiece signature,
+                    absl::string_view chlo_hash,
+                    absl::string_view signature,
                     QuicWallTime now,
                     QuicWallTime expiration_time);
 
@@ -238,10 +228,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // scfg contains the cached, parsed value of |server_config|.
     mutable std::unique_ptr<CryptoHandshakeMessage> scfg_;
 
-    // TODO(jokulik): Consider using a hash-set as extra book-keeping to ensure
-    // that no connection-id is added twice.  Also, consider keeping the server
-    // nonces and connection_ids together in one queue.
-    QuicQueue<QuicConnectionId> server_designated_connection_ids_;
     QuicQueue<std::string> server_nonces_;
   };
 
@@ -325,7 +311,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
       const CryptoHandshakeMessage& rej,
       QuicWallTime now,
       QuicTransportVersion version,
-      quiche::QuicheStringPiece chlo_hash,
+      absl::string_view chlo_hash,
       CachedState* cached,
       QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
       std::string* error_details);
@@ -357,7 +343,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
       const CryptoHandshakeMessage& server_update,
       QuicWallTime now,
       const QuicTransportVersion version,
-      quiche::QuicheStringPiece chlo_hash,
+      absl::string_view chlo_hash,
       CachedState* cached,
       QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
       std::string* error_details);
@@ -394,7 +380,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   void set_alpn(const std::string& alpn) { alpn_ = alpn; }
 
   // Saves the pre-shared key used during the handshake.
-  void set_pre_shared_key(quiche::QuicheStringPiece psk) {
+  void set_pre_shared_key(absl::string_view psk) {
     pre_shared_key_ = std::string(psk);
   }
 
@@ -421,7 +407,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
       const CryptoHandshakeMessage& message,
       QuicWallTime now,
       QuicTransportVersion version,
-      quiche::QuicheStringPiece chlo_hash,
+      absl::string_view chlo_hash,
       const std::vector<std::string>& cached_certs,
       CachedState* cached,
       std::string* error_details);
@@ -450,6 +436,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   std::unique_ptr<ProofVerifier> proof_verifier_;
   std::unique_ptr<SessionCache> session_cache_;
   std::unique_ptr<ProofSource> proof_source_;
+
   bssl::UniquePtr<SSL_CTX> ssl_ctx_;
 
   // The |user_agent_id_| passed in QUIC's CHLO message.

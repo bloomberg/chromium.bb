@@ -9,10 +9,11 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -23,7 +24,8 @@
 #include "chrome/common/channel_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/sync/driver/about_sync_util.h"
+#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_internals_util.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/engine_impl/net/url_translator.h"
 #include "components/sync/engine_impl/traffic_logger.h"
@@ -227,14 +229,14 @@ void ProfileSyncServiceHarness::ResetSyncForPrimaryAccount() {
   auto* cmd_line = base::CommandLine::ForCurrentProcess();
   DCHECK(cmd_line->HasSwitch(kSyncUrlClearServerDataKey))
       << "Missing switch " << kSyncUrlClearServerDataKey;
-  std::string url =
-      cmd_line->GetSwitchValueASCII(kSyncUrlClearServerDataKey) + "/command/?";
-  url += syncer::MakeSyncQueryString(sync_prefs.GetCacheGuid());
+  GURL base_url(cmd_line->GetSwitchValueASCII(kSyncUrlClearServerDataKey) +
+                "/command/?");
+  GURL url = syncer::AppendSyncQueryString(base_url, sync_prefs.GetCacheGuid());
 
   // Call sync server to clear sync data.
   std::string access_token = service()->GetAccessTokenForTest();
   DCHECK(access_token.size()) << "Access token is not available.";
-  ResetAccount(profile_->GetURLLoaderFactory().get(), access_token, GURL(url),
+  ResetAccount(profile_->GetURLLoaderFactory().get(), access_token, url,
                username_, sync_prefs.GetBirthday());
 }
 
@@ -256,6 +258,10 @@ void ProfileSyncServiceHarness::EnterSyncPausedStateForPrimaryAccount() {
 void ProfileSyncServiceHarness::ExitSyncPausedStateForPrimaryAccount() {
   signin::SetRefreshTokenForPrimaryAccount(
       IdentityManagerFactory::GetForProfile(profile_));
+  if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
+    // The engine was off in the sync-paused state, so wait for it to start.
+    AwaitSyncSetupCompletion();
+  }
 }
 
 bool ProfileSyncServiceHarness::SetupSync() {
@@ -600,9 +606,12 @@ SyncCycleSnapshot ProfileSyncServiceHarness::GetLastCycleSnapshot() const {
 }
 
 std::string ProfileSyncServiceHarness::GetServiceStatus() {
+  // This method is only used in test code for debugging purposes, so it's fine
+  // to include sensitive data in ConstructAboutInformation().
   std::unique_ptr<base::DictionaryValue> value(
-      syncer::sync_ui_util::ConstructAboutInformation(service(),
-                                                      chrome::GetChannel()));
+      syncer::sync_ui_util::ConstructAboutInformation(
+          syncer::sync_ui_util::IncludeSensitiveData(true), service(),
+          chrome::GetChannel()));
   std::string service_status;
   base::JSONWriter::WriteWithOptions(
       *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &service_status);

@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nearby Share specific strings (included from generated_resources.grd). -->
+<grit-part>
+  <!-- Confirmation page -->
+  <message name="IDS_NEARBY_CONFIRMATION_PAGE_ADD_CONTACT_SUBTITLE" desc="Subtitle of the checkbox to add the person to a users contacts. This will make the local device visible to them once they are nearby.">
+    Adding this contact will remember the next time they share
+  </message>
+  <message name="IDS_NEARBY_CONFIRMATION_PAGE_ADD_CONTACT_TITLE" desc="Title of the checkbox to add the person to a users contacts.">
+    Add <ph name="CONTACT_NAME">$1<ex>Richard</ex></ph> to your contacts
+  </message>
+  <message name="IDS_NEARBY_CONFIRMATION_PAGE_TITLE" desc="Title of the Nearby Share confirmation page after selecting a device to share with.">
+    Share with this device?
+  </message>
+
+  <!-- Contact visibility component -->
+  <message name="IDS_NEARBY_CONTACT_VISIBILITY_DOWNLOAD_FAILED" desc="Message shown when downloading contacts failed when trying to load contacts to show the user a list of who they will be able to share with.">
+      Unable to download contact list. Please check your network connection, or &lt;a href="#" id="tryAgainLink"&gt;try again&lt;/a&gt;.
+  </message>
+  <message name="IDS_NEARBY_CONTACT_VISIBILITY_DOWNLOADING" desc="Message shown when contacts are being downloaded to show the user a list of who they will be able to share with.">
+    Downloading contact list...
+  </message>
+  <message name="IDS_NEARBY_CONTACT_VISIBILITY_NO_CONTACTS_SUBTITLE" desc="Help text shown when there are no reachable contacts with a Google Account to select from. Nearby Share is the feature name.">
+    To use Nearby Share with these contacts, add the email address linked with their Google Account to your contacts.
+  </message>
+  <message name="IDS_NEARBY_CONTACT_VISIBILITY_NO_CONTACTS_TITLE" desc="Title text shown when there are no reachable contacts with a Google Account to select from.">
+    No reachable contacts
+  </message>
+  <message name="IDS_NEARBY_CONTACT_VISIBILITY_OTHERS" desc="Describes when nearby devices are visible to this user when using the Nearby Share feature.">
+    People who have chosen to be visible to you when their screen is unlocked and devices near you when Nearby Share is open
+  </message>
+  <message name="IDS_NEARBY_CONTACT_VISIBILITY_OTHERS_TITLE" desc="Title of the description for which devices the user can share with using the Nearby Share feature.">
+    Devices you can share with
+  </message>
+  <message name="IDS_NEARBY_CONTACT_VISIBILITY_OWN_ALL" desc="Describes who can see the local device when the Nearby Share visibility setting is set to 'All contacts'.">
+    All contacts near you when your screen is unlocked and devices near you when Nearby Share is open
+  </message>
+  <message name="IDS_NEARBY_CONTACT_VISIBILITY_OWN_NONE" desc="Describes who can see the local device when the Nearby Share visibility setting is set to 'Hidden'.">
+    No one unless you open Nearby Share
+  </message>
+  <message name="IDS_NEARBY_CONTACT_VISIBILITY_OWN_SOME" desc="Describes who can see the local device when the Nearby Share visibility setting is set to 'Some contacts'.">
+    Selected contacts near you when your screen is unlocked and devices near you when Nearby Share is open
+  </message>
+  <message name="IDS_NEARBY_CONTACT_VISIBILITY_OWN_TITLE" desc="Title of the description for which nearby devices can share with a users device using the Nearby Share feature.">
+    Who can share with your device
+  </message>
+  <message name="IDS_NEARBY_CONTACT_VISIBILITY_ZERO_STATE_INFO" desc="Help text to learn more about the privacy and visibility settings of the Nearby Share feature.">
+    Learn more
+  </message>
+  <message name="IDS_NEARBY_CONTACT_VISIBILITY_ZERO_STATE_TEXT" desc="Zero state help text to explain how the visibility settings control the Nearby Share feature.">
+    Your device visibility controls who can share with you while your screen is unlocked
+  </message>
+
+  <!-- Device name validation -->
+  <message name="IDS_NEARBY_DEVICE_NAME_EMPTY_ERROR" desc="Error message when the user has left the device name empty to indicate that they are required to provide a name.">
+    Add a device name to continue
+  </message>
+  <message name="IDS_NEARBY_DEVICE_NAME_TOO_LONG_ERROR" desc="Error message when the user has entered a device name that is too long and must enter a shorter one.">
+    Device name too long
+  </message>
+  <message name="IDS_NEARBY_DEVICE_NAME_INVALID_CHARACTERS_ERROR" desc="Error message when the user has entered a device name that contains invalid characters.">
+    Device name contains invalid characters
+  </message>
+
+  <!-- Discovery page -->
+  <message name="IDS_NEARBY_DISCOVERY_PAGE_INFO" desc="Help text on how to use the Nearby Share feature. Explains how to enable it on a nearby Chromebook to share with it.">
+    Make sure both devices are unlocked, close together, and have Bluetooth turned on. If you’re sharing with a Chromebook, make sure it has Nearby Sharing turned on (open the status area by selecting the time, then select Nearby Share). <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_NEARBY_DISCOVERY_PAGE_SUBTITLE" desc="Subtitle of the Nearby Share device discovery page. This is where users select a device to share files with.">
+    Select the device you’d like to share files with
+  </message>
+  <message name="IDS_NEARBY_DISCOVERY_PAGE_TITLE" desc="Title of the Nearby Share device discovery page. This is where users select a device to share files with. Nearby Share is the feature name.">
+    Nearby Share
+  </message>
+  <message name="IDS_NEARBY_DISCOVERY_PAGE_PLACEHOLDER" desc="Text shown on the Nearby Share device discovery page. This is where users select a device to share files with. This placeholder text is shown when the list of devices to share with is empty, and is meant to inform the user that we are currently looking for a device to share with.">
+    Scanning for nearby devices...
+  </message>
+
+  <!-- Onboarding page -->
+  <message name="IDS_NEARBY_ONBOARDING_PAGE_DEVICE_NAME" desc="Label of the text input field to set the name of a users device which is shown to other devices for the Nearby Share feature.">
+    Device name
+  </message>
+  <message name="IDS_NEARBY_ONBOARDING_PAGE_SUBTITLE" desc="Subtitle of the Nearby Share onboarding page that sets up the local device for the feature which provides a way for nearby devices to share files, text, and urls.">
+    Share files with people around you
+  </message>
+  <message name="IDS_NEARBY_ONBOARDING_PAGE_TITLE" desc="Title of the Nearby Share onboarding page that sets up the local device for the feature. Nearby Share is the feature name.">
+    Set up Nearby Share
+  </message>
+
+  <!-- Visibility page -->
+  <message name="IDS_NEARBY_VISIBILITY_PAGE_MANAGE_CONTACTS" desc="Action button text to manage the contacts of a user while setting up Nearby Share.">
+    Manage contacts
+  </message>
+  <message name="IDS_NEARBY_VISIBILITY_PAGE_SUBTITLE" desc="Subtitle of the Nearby Share device visibility page that sets up the visibility settings for the local device. This page allows users to configure who can see their local device when nearby.">
+    Select who can share with you
+  </message>
+  <message name="IDS_NEARBY_VISIBILITY_PAGE_TITLE" desc="Title of the Nearby Share device visibility page that sets up the visibility settings for the local device.">
+    Device visibility
+  </message>
+
+  <!-- Common strings -->
+  <message name="IDS_NEARBY_SHARE_FEATURE_NAME" desc="This is the name of the Nearby Share feature which provides a way for nearby devices to share files, text, and urls">
+    Nearby Share
+  </message>
+  <message name="IDS_NEARBY_ACTIONS_CANCEL" desc="Action button text to cancel the current step in the Nearby Share UI.">
+    Cancel
+  </message>
+  <message name="IDS_NEARBY_ACTIONS_CONFIRM" desc="Action button text to confirm a transfer in the Nearby Share UI.">
+    Confirm
+  </message>
+  <message name="IDS_NEARBY_ACTIONS_NEXT" desc="Action button text to go to the next step in the Nearby Share UI.">
+    Next
+  </message>
+  <message name="IDS_NEARBY_ACTIONS_REJECT" desc="Action button text to reject a transfer in the Nearby Share UI.">
+    Reject
+  </message>
+  <message name="IDS_NEARBY_DEFAULT_DEVICE_NAME" desc="The default device name used unless a user explicitly sets the device name during onboarding or in settings. Displayed to other users during sharing.">
+    <ph name="GIVEN_NAME">$1<ex>Josh</ex></ph>'s <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>
+  </message>
+  <message name="IDS_NEARBY_ERROR_CANT_SHARE" desc="Notify user that the file wasn't able to be shared. Generic title text for displaying errors to the user. To be shown next to more specific error text.">
+    Can't share
+  </message>
+  <message name="IDS_NEARBY_ERROR_NO_RESPONSE" desc="Notify user that the file share failed because the receiver neither accepted nor declined the share.">
+    The device you're sharing with didn't respond
+  </message>
+  <message name="IDS_NEARBY_ERROR_REJECTED" desc="Notify sender that receiver declined the file share.">
+    The device you’re trying to share with did not accept
+  </message>
+  <message name="IDS_NEARBY_ERROR_SOMETHING_WRONG" desc="Generic error text shown when the reason for the failure is unknown or too technical to explain.">
+    Something went wrong
+  </message>
+  <message name="IDS_NEARBY_ERROR_TIME_OUT" desc="Notify user that the file share failed because something didn't happen in time, e.g. the receiver neither accepted nor declined the share. Generic title text to be shown next to more specific error text describing the situation.">
+    Time out
+  </message>
+  <message name="IDS_NEARBY_ERROR_UNSUPPORTED_FILE_TYPE" desc="Notify user that the file chosen can't be shared because of its type, e.g. missing file extension.">
+    Unsupported file type
+  </message>
+  <message name="IDS_NEARBY_FILE_ATTACHMENTS_APPS" desc="Describes one or more apps being transfered via Nearby Share.">
+    {COUNT, plural, =1 {1 app} other {# apps}}
+  </message>
+  <message name="IDS_NEARBY_FILE_ATTACHMENTS_IMAGES" desc="Describes one or more images being transfered via Nearby Share.">
+    {COUNT, plural, =1 {1 image} other {# images}}
+  </message>
+  <message name="IDS_NEARBY_FILE_ATTACHMENTS_UNKNOWN" desc="Describes one or more files being transfered via Nearby Share.">
+    {COUNT, plural, =1 {1 file} other {# files}}
+  </message>
+  <message name="IDS_NEARBY_FILE_ATTACHMENTS_VIDEOS" desc="Describes one or more videos being transfered via Nearby Share.">
+    {COUNT, plural, =1 {1 video} other {# videos}}
+  </message>
+  <message name="IDS_NEARBY_SECURE_CONNECTION_ID" desc="Description shown on both sender and receiver devices, to remind users to verify/compare tokens on both devices for security before sending/receiving data.">
+    Secure connection ID: <ph name="TOKEN">$1<ex>1234</ex></ph>
+  </message>
+  <message name="IDS_NEARBY_TEXT_ATTACHMENTS_ADDRESSES" desc="Describes one or more addresses being transfered via Nearby Share.">
+    {COUNT, plural, =1 {1 address} other {# addresses}}
+  </message>
+  <message name="IDS_NEARBY_TEXT_ATTACHMENTS_LINKS" desc="Describes one or more web links being transfered via Nearby Share.">
+    {COUNT, plural, =1 {1 link} other {# links}}
+  </message>
+  <message name="IDS_NEARBY_TEXT_ATTACHMENTS_PHONE_NUMBERS" desc="Describes one or more phone numbers being transfered via Nearby Share.">
+    {COUNT, plural, =1 {1 phone number} other {# phone numbers}}
+  </message>
+  <message name="IDS_NEARBY_TEXT_ATTACHMENTS_UNKNOWN" desc="Describes one or more pieces of text being transfered via Nearby Share.">
+    {COUNT, plural, =1 {1 text} other {# texts}}
+  </message>
+  <message name="IDS_NEARBY_UNKNOWN_ATTACHMENTS" desc="Describes one or more items being transfered via Nearby Share.">
+    {COUNT, plural, =1 {1 item} other {# items}}
+  </message>
+
+  <!-- High Visibility Page Strings -->
+  <message name="IDS_NEARBY_HIGH_VISIBILITY_SUB_TITLE" desc="Describes to the user that their device is visible to nearby devices with a specific device name. This is used on the sub-title of the of high visibility receive dialog for the Nearby Share feature.">
+    Visible to nearby devices as <ph name="DEVICE_NAME">$1<ex>Rea’s Chromebook</ex></ph>
+  </message>
+  <message name="IDS_NEARBY_HIGH_VISIBILITY_HELP_TEXT" desc="Describes to the user that their device is visible to nearby devices with a specific device name. This is used on the sub-title of the of high visibility receive dialog for the Nearby Share feature.">
+    Make sure both devices are unlocked, close together, and have Bluetooth turned on. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+
+  <!-- Receive Confirmation Page Strings -->
+  <message name="IDS_NEARBY_RECEIVE_CONFIRM_PAGE_TITLE" desc="The title of the recieve confirmation page which askign the user to confirm receving a share from a specific device.">
+    Receive from this device?
+  </message>
+
+  <!-- File Preview Strings -->
+  <message name="IDS_NEARBY_PREVIEW_TITLE_MULTIPLE_FILE" desc="The file share preview would show the name of the file being shared, but if multiple files are being shared, we show this description instead. The FILE_COUNT will always be greater than 1, so this string will always be plural.">
+    <ph name="FILE_COUNT">$1<ex>3</ex></ph> Files
+  </message>
+
+  <!-- Settings Strings -->
+  <message name="IDS_NEARBY_ACCOUNT_ROW_LABEL" desc="Label to describe the account row which displays the user's full name and their email which will identify them when using the Nearby Share feature." is_accessibility_with_no_ui="true">
+      Nearby Share settings for <ph name="USER_NAME">$1<ex>Jane Doe</ex></ph>'s device, sharing under the account <ph name="USER_EMAIL">$2<ex>example@gmail.com</ex></ph>.
+  </message>
+  <message name="IDS_NEARBY_VISIBLITY_ALL_CONTACTS" desc="Describes the user preference state for the user to be visibile to all their contacts in the Nearby Share feature.">
+    All contacts
+  </message>
+  <message name="IDS_NEARBY_VISIBLITY_ALL_CONTACTS_DESCRIPTION" desc="Accessibility description that explains to the user that their current visibility setting is all contacts for the Nearby Share feature." is_accessibility_with_no_ui="true">
+    Current visibility setting is all contacts
+  </message>
+  <message name="IDS_NEARBY_VISIBLITY_SOME_CONTACTS" desc="Describes the user preference state for the user to be visibile to some selected set of their contacts in the Nearby Share feature.">
+    Some contacts
+  </message>
+  <message name="IDS_NEARBY_VISIBLITY_SOME_CONTACTS_DESCRIPTION" desc="Accessibility description that explains to the user that their current visibility setting is some contacts for the Nearby Share feature." is_accessibility_with_no_ui="true">
+    Current visibility setting is some contacts
+  </message>
+  <message name="IDS_NEARBY_VISIBLITY_HIDDEN" desc="Describes the user preference state for the user to be visibile to none of their contacts (hidden) in the Nearby Share feature.">
+    Hidden
+  </message>
+  <message name="IDS_NEARBY_VISIBLITY_HIDDEN_DESCRIPTION" desc="Accessibility description that explains to the user that their current visibility setting hidden for the Nearby Share feature." is_accessibility_with_no_ui="true">
+    Current visibility setting is hidden
+  </message>
+  <message name="IDS_NEARBY_VISIBLITY_UNKNOWN" desc="Describes the user preference state when the user has not chosen a visibility preference yet in the Nearby Share feature.">
+    Choose your visibility
+  </message>
+  <message name="IDS_NEARBY_VISIBLITY_UNKNOWN_DESCRIPTION" desc="Accessibility description that explains to the user that their current visibility setting is not set yet for the Nearby Share feature." is_accessibility_with_no_ui="true">
+    Current visibility setting is not set yet
+  </message>
+
+  <!-- Notification strings -->
+  <message name="IDS_NEARBY_NOTIFICATION_ACTION_COPY_TO_CLIPBOARD" desc="Notification action button text that copies the received text or image to the clipboard.">
+    Copy to clipboard
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_ACTION_OPEN_FOLDER" desc="Notification action button text that opens the folder to the received files.">
+    Open folder
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_MESSAGE" desc="Text shown as the message of a notfication when a nearby device requests a connection via Nearby Share.">
+    {COUNT, plural,
+      =1 {<ph name="DEVICE_NAME">$1<ex>Ted's Pixel 2</ex></ph> is sharing <ph name="ATTACHMENTS">$2<ex>1 item</ex></ph> with you.}
+      other {<ph name="DEVICE_NAME">$1<ex>Ted's Pixel 2</ex></ph> is sharing <ph name="ATTACHMENTS">$2<ex>3 items</ex></ph> with you.}}
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_TITLE" desc="Text shown as the title of a notfication when a nearby device requests a connection via Nearby Share.">
+    Receive with Nearby Share?
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_DECLINE_ACTION" desc="Text shown on the notification action to decline receiving data via Nearby Share.">
+    Decline
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_ONBOARDING_MESSAGE" desc="Text shown as the message of a notification when a nearby device is attempting to share data via Nearby Share.">
+    Click to become visible so it can share with you
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_ONBOARDING_TITLE" desc="Text shown as the title of a notification when a nearby device is attempting to share data via Nearby Share.">
+    Device nearby is sharing
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION" desc="Text shown on the notification action to accept receiving data via Nearby Share.">
+    Receive
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_RECEIVE_FAILURE_TITLE" desc="Text shown as the title of a notfication when receiving data via Nearby Share failed.">
+    {COUNT, plural,
+      =1 {Failed to receive <ph name="ATTACHMENTS">$1<ex>1 item</ex></ph> from <ph name="DEVICE_NAME">$2<ex>Ted's Pixel 2</ex></ph>}
+      other {Failed to receive <ph name="ATTACHMENTS">$1<ex>3 items</ex></ph> from <ph name="DEVICE_NAME">$2<ex>Ted's Pixel 2</ex></ph>}}
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_RECEIVE_PROGRESS_TITLE" desc="Text shown as the title of a notfication when receiving data via Nearby Share.">
+    {COUNT, plural,
+      =1 {Receiving <ph name="ATTACHMENTS">$1<ex>1 item</ex></ph> from <ph name="DEVICE_NAME">$2<ex>Ted's Pixel 2</ex></ph>}
+      other {Receiving <ph name="ATTACHMENTS">$1<ex>3 items</ex></ph> from <ph name="DEVICE_NAME">$2<ex>Ted's Pixel 2</ex></ph>}}
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_RECEIVE_SUCCESS_TITLE" desc="Text shown as the title of a notfication when data was sucessfully received via Nearby Share.">
+    {COUNT, plural,
+      =1 {<ph name="ATTACHMENTS">$1<ex>1 item</ex></ph> received from <ph name="DEVICE_NAME">$2<ex>Ted's Pixel 2</ex></ph>}
+      other {<ph name="ATTACHMENTS">$1<ex>3 items</ex></ph> received from <ph name="DEVICE_NAME">$2<ex>Ted's Pixel 2</ex></ph>}}
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_SEND_FAILURE_TITLE" desc="Text shown as the title of a notfication when sending data via Nearby Share failed.">
+    {COUNT, plural,
+      =1 {Failed to send <ph name="ATTACHMENTS">$1<ex>1 item</ex></ph> to <ph name="DEVICE_NAME">$2<ex>Ted's Pixel 2</ex></ph>}
+      other {Failed to send <ph name="ATTACHMENTS">$1<ex>3 items</ex></ph> to <ph name="DEVICE_NAME">$2<ex>Ted's Pixel 2</ex></ph>}}
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE" desc="Text shown as the title of a notfication when sending data via Nearby Share.">
+    {COUNT, plural,
+      =1 {Sending <ph name="ATTACHMENTS">$1<ex>1 item</ex></ph> to <ph name="DEVICE_NAME">$2<ex>Ted's Pixel 2</ex></ph>}
+      other {Sending <ph name="ATTACHMENTS">$1<ex>3 items</ex></ph> to <ph name="DEVICE_NAME">$2<ex>Ted's Pixel 2</ex></ph>}}
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_SEND_SUCCESS_TITLE" desc="Text shown as the title of a notfication when data was successfully sent via Nearby Share.">
+    {COUNT, plural,
+      =1 {<ph name="ATTACHMENTS">$1<ex>1 item</ex></ph> successfully sent to <ph name="DEVICE_NAME">$2<ex>Ted's Pixel 2</ex></ph>}
+      other {<ph name="ATTACHMENTS">$1<ex>3 items</ex></ph> successfully sent to <ph name="DEVICE_NAME">$2<ex>Ted's Pixel 2</ex></ph>}}
+  </message>
+  <message name="IDS_NEARBY_NOTIFICATION_SOURCE" desc="Text shown as the source of a Nearby Share notification.">
+    Nearby Share
+  </message>
+</grit-part>

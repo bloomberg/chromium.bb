@@ -8,6 +8,7 @@
 #include "base/version.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -17,25 +18,40 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace {
 
+constexpr int kTimesToShowSuggestionChip = 3;
+
 int GetMilestone() {
   return version_info::GetVersion().components()[0];
 }
 
-constexpr int kTimesToShowSuggestionChip = 1;
+bool IsEligibleProfile(Profile* profile) {
+  std::string user_email = profile->GetProfileUserName();
+  return gaia::IsGoogleInternalAccountEmail(user_email) ||
+         (chromeos::ProfileHelper::Get()
+              ->GetUserByProfile(profile)
+              ->HasGaiaAccount() &&
+          !profile->GetProfilePolicyConnector()->IsManaged());
+}
+
+bool ShouldShowForCurrentChannel() {
+  return chrome::GetChannel() == version_info::Channel::STABLE ||
+         base::FeatureList::IsEnabled(
+             chromeos::features::kReleaseNotesNotificationAllChannels);
+}
 
 }  // namespace
 
 namespace chromeos {
 
 void ReleaseNotesStorage::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kReleaseNotesLastShownMilestone,
-                                GetMilestone());
+  registry->RegisterIntegerPref(prefs::kReleaseNotesLastShownMilestone, -1);
   registry->RegisterIntegerPref(
       prefs::kReleaseNotesSuggestionChipTimesLeftToShow, 0);
 }
@@ -50,30 +66,45 @@ bool ReleaseNotesStorage::ShouldNotify() {
           chromeos::features::kReleaseNotesNotification))
     return false;
 
-  std::string user_email = profile_->GetProfileUserName();
-  if (gaia::IsGoogleInternalAccountEmail(user_email) ||
-      (ProfileHelper::Get()->GetUserByProfile(profile_)->HasGaiaAccount() &&
-       !profile_->GetProfilePolicyConnector()->IsManaged())) {
-    const int last_milestone = profile_->GetPrefs()->GetInteger(
-        prefs::kReleaseNotesLastShownMilestone);
-    if (last_milestone < GetMilestone()) {
-      profile_->GetPrefs()->SetInteger(
-          prefs::kReleaseNotesSuggestionChipTimesLeftToShow,
-          kTimesToShowSuggestionChip);
-      return true;
-    }
+  if (!ShouldShowForCurrentChannel())
+    return false;
+
+  if (!IsEligibleProfile(profile_))
+    return false;
+
+  int last_milestone =
+      profile_->GetPrefs()->GetInteger(prefs::kReleaseNotesLastShownMilestone);
+  if (profile_->GetPrefs()
+          ->FindPreference(prefs::kReleaseNotesLastShownMilestone)
+          ->IsDefaultValue()) {
+    // We don't know if the user has seen any notification before as we have
+    // never set which milestone was last seen. So use the version of chrome
+    // where the profile was created instead.
+    base::Version profile_version(
+        ChromeVersionService::GetVersion(profile_->GetPrefs()));
+    last_milestone = profile_version.components()[0];
   }
-  return false;
+  // Hardcoding this to M86 as that was the last release notes update that the
+  // current chrome version should see. There is not an update every milestone.
+  if (last_milestone >= 86) {
+    return false;
+  }
+  return true;
 }
 
 void ReleaseNotesStorage::MarkNotificationShown() {
   profile_->GetPrefs()->SetInteger(prefs::kReleaseNotesLastShownMilestone,
                                    GetMilestone());
+  // When the notification is shown we should also show the suggestion chip a
+  // number of times.
+  profile_->GetPrefs()->SetInteger(
+      prefs::kReleaseNotesSuggestionChipTimesLeftToShow,
+      kTimesToShowSuggestionChip);
 }
 
 bool ReleaseNotesStorage::ShouldShowSuggestionChip() {
   if (!base::FeatureList::IsEnabled(
-          chromeos::features::kReleaseNotesNotification)) {
+          chromeos::features::kReleaseNotesSuggestionChip)) {
     return false;
   }
 
@@ -90,6 +121,11 @@ void ReleaseNotesStorage::DecreaseTimesLeftToShowSuggestionChip() {
   profile_->GetPrefs()->SetInteger(
       prefs::kReleaseNotesSuggestionChipTimesLeftToShow,
       times_left_to_show - 1);
+}
+
+void ReleaseNotesStorage::StopShowingSuggestionChip() {
+  profile_->GetPrefs()->SetInteger(
+      prefs::kReleaseNotesSuggestionChipTimesLeftToShow, 0);
 }
 
 }  // namespace chromeos

@@ -43,25 +43,28 @@ DeviceInfo::DeviceInfo(const std::string& guid,
                        const std::string& sync_user_agent,
                        const sync_pb::SyncEnums::DeviceType device_type,
                        const std::string& signin_scoped_device_id,
-                       const base::SysInfo::HardwareInfo& hardware_info,
+                       const std::string& manufacturer_name,
+                       const std::string& model_name,
                        base::Time last_updated_timestamp,
                        base::TimeDelta pulse_interval,
                        bool send_tab_to_self_receiving_enabled,
-                       const base::Optional<SharingInfo>& sharing_info)
+                       const base::Optional<SharingInfo>& sharing_info,
+                       const std::string& fcm_registration_token,
+                       const ModelTypeSet& interested_data_types)
     : guid_(guid),
       client_name_(client_name),
       chrome_version_(chrome_version),
       sync_user_agent_(sync_user_agent),
       device_type_(device_type),
       signin_scoped_device_id_(signin_scoped_device_id),
-      hardware_info_(hardware_info),
+      manufacturer_name_(manufacturer_name),
+      model_name_(model_name),
       last_updated_timestamp_(last_updated_timestamp),
       pulse_interval_(pulse_interval),
       send_tab_to_self_receiving_enabled_(send_tab_to_self_receiving_enabled),
-      sharing_info_(sharing_info) {
-  // We do not store device's serial number in DeviceInfo.
-  hardware_info_.serial_number.clear();
-}
+      sharing_info_(sharing_info),
+      fcm_registration_token_(fcm_registration_token),
+      interested_data_types_(interested_data_types) {}
 
 DeviceInfo::~DeviceInfo() {}
 
@@ -93,8 +96,12 @@ const std::string& DeviceInfo::signin_scoped_device_id() const {
   return signin_scoped_device_id_;
 }
 
-const base::SysInfo::HardwareInfo& DeviceInfo::hardware_info() const {
-  return hardware_info_;
+const std::string& DeviceInfo::manufacturer_name() const {
+  return manufacturer_name_;
+}
+
+const std::string& DeviceInfo::model_name() const {
+  return model_name_;
 }
 
 base::Time DeviceInfo::last_updated_timestamp() const {
@@ -150,6 +157,14 @@ std::string DeviceInfo::GetDeviceTypeString() const {
   }
 }
 
+const std::string& DeviceInfo::fcm_registration_token() const {
+  return fcm_registration_token_;
+}
+
+const ModelTypeSet& DeviceInfo::interested_data_types() const {
+  return interested_data_types_;
+}
+
 bool DeviceInfo::Equals(const DeviceInfo& other) const {
   return this->guid() == other.guid() &&
          this->client_name() == other.client_name() &&
@@ -157,13 +172,16 @@ bool DeviceInfo::Equals(const DeviceInfo& other) const {
          this->sync_user_agent() == other.sync_user_agent() &&
          this->device_type() == other.device_type() &&
          this->signin_scoped_device_id() == other.signin_scoped_device_id() &&
-         this->hardware_info() == other.hardware_info() &&
+         this->manufacturer_name() == other.manufacturer_name() &&
+         this->model_name() == other.model_name() &&
          this->send_tab_to_self_receiving_enabled() ==
              other.send_tab_to_self_receiving_enabled() &&
-         this->sharing_info() == other.sharing_info();
+         this->sharing_info() == other.sharing_info() &&
+         this->fcm_registration_token() == other.fcm_registration_token() &&
+         this->interested_data_types() == other.interested_data_types();
 }
 
-std::unique_ptr<base::DictionaryValue> DeviceInfo::ToValue() {
+std::unique_ptr<base::DictionaryValue> DeviceInfo::ToValue() const {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString("name", client_name_);
   value->SetString("id", public_id_);
@@ -192,6 +210,14 @@ void DeviceInfo::set_sharing_info(
 
 void DeviceInfo::set_client_name(const std::string& client_name) {
   client_name_ = client_name;
+}
+
+void DeviceInfo::set_fcm_registration_token(const std::string& fcm_token) {
+  fcm_registration_token_ = fcm_token;
+}
+
+void DeviceInfo::set_interested_data_types(const ModelTypeSet& data_types) {
+  interested_data_types_ = data_types;
 }
 
 }  // namespace syncer

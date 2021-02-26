@@ -6,8 +6,6 @@
  * @fileoverview Polymer element for displaying the IP Config properties for
  * a network state.
  */
-(function() {
-'use strict';
 
 /**
  * Returns the routing prefix as a string for a given prefix length. If
@@ -44,16 +42,19 @@ const getRoutingPrefixAsNetmask = function(prefixLength) {
 
 /**
  * Returns the routing prefix length as a number from the netmask string.
- * @param {string} netmask The netmask string, e.g. 255.255.255.0.
+ * @param {string|undefined} netmask The netmask string, e.g. 255.255.255.0.
  * @return {number} The corresponding netmask or NO_ROUTING_PREFIX if invalid.
  */
 const getRoutingPrefixAsLength = function(netmask) {
   'use strict';
-  let prefixLength = 0;
+  if (!netmask) {
+    return chromeos.networkConfig.mojom.NO_ROUTING_PREFIX;
+  }
   const tokens = netmask.split('.');
   if (tokens.length !== 4) {
-    return -1;
+    return chromeos.networkConfig.mojom.NO_ROUTING_PREFIX;
   }
+  let prefixLength = 0;
   for (let i = 0; i < tokens.length; ++i) {
     const token = tokens[i];
     // If we already found the last mask and the current one is not
@@ -127,13 +128,21 @@ Polymer({
       value() {
         return [
           'ipv4.ipAddress',
-          'ipv4.routingPrefix',
+          'ipv4.netmask',
           'ipv4.gateway',
           'ipv6.ipAddress',
         ];
       },
       readOnly: true
     },
+  },
+
+  /**
+   * Returns the automatically configure IP CrToggleElement.
+   * @return {?CrToggleElement}
+   */
+  getAutoConfigIpToggle() {
+    return /** @type {?CrToggleElement} */ (this.$$('#autoConfigIpToggle'));
   },
 
   /**
@@ -154,11 +163,8 @@ Polymer({
     }
 
     // Update the 'automatic' property.
-    if (properties.ipAddressConfigType) {
-      const ipConfigType =
-          OncMojo.getActiveValue(properties.ipAddressConfigType);
-      this.automatic_ = ipConfigType !== 'Static';
-    }
+    const ipConfigType = OncMojo.getActiveValue(properties.ipAddressConfigType);
+    this.automatic_ = ipConfigType !== 'Static';
 
     if (properties.ipConfigs || properties.staticIpConfig) {
       // Update the 'ipConfig' property.
@@ -188,26 +194,51 @@ Polymer({
    * @private
    */
   canChangeIPConfigType_(managedProperties) {
+    if (managedProperties.type ===
+        chromeos.networkConfig.mojom.NetworkType.kCellular) {
+      // Cellular IP config properties can not be changed.
+      return false;
+    }
     const ipConfigType = managedProperties.ipAddressConfigType;
     return !ipConfigType || !this.isNetworkPolicyEnforced(ipConfigType);
+  },
+
+  /**
+   * Overrides null values of |ipv4| with defaults so |ipv4| passes validation
+   * after being converted to ONC StaticIPConfig.
+   * TODO(https://crbug.com/1148841): Setting defaults here is strange, find
+   * some better way.
+   * @param {!OncMojo.IPConfigUIProperties} ipv4 this will be modified in place
+   * @private
+   */
+  setIpv4Defaults_(ipv4) {
+    if (!ipv4.gateway) {
+      ipv4.gateway = '192.168.1.1';
+    }
+    if (!ipv4.ipAddress) {
+      ipv4.ipAddress = '192.168.1.1';
+    }
+    if (!ipv4.netmask) {
+      ipv4.netmask = '255.255.255.0';
+    }
+    if (!ipv4.type) {
+      ipv4.type = 'IPv4';
+    }
   },
 
   /** @private */
   onAutomaticChange_() {
     if (!this.automatic_) {
-      const defaultIpv4 = {
-        gateway: '192.168.1.1',
-        ipAddress: '192.168.1.1',
-        routingPrefix: '255.255.255.0',
-        type: 'IPv4',
-      };
-      // Ensure that there is a valid IPConfig object. Copy any set properties
-      // over the default properties to ensure all properties are set.
-      if (this.ipConfig_) {
-        this.ipConfig_.ipv4 = Object.assign(defaultIpv4, this.ipConfig_.ipv4);
-      } else {
-        this.ipConfig_ = {ipv4: defaultIpv4};
+      if (!this.ipConfig_) {
+        this.ipConfig_ = {};
       }
+      if (this.savedStaticIp_) {
+        this.ipConfig_.ipv4 = this.savedStaticIp_;
+      }
+      if (!this.ipConfig_.ipv4) {
+        this.ipConfig_.ipv4 = {};
+      }
+      this.setIpv4Defaults_(this.ipConfig_.ipv4);
       this.sendStaticIpConfig_();
       return;
     }
@@ -226,9 +257,9 @@ Polymer({
    * @param {!chromeos.networkConfig.mojom.IPConfigProperties|undefined}
    *     ipconfig
    * @return {!OncMojo.IPConfigUIProperties|undefined} A new
-   *     IPConfigUIProperties object with routingPrefix expressed as a string
-   *     mask instead of a prefix length. Returns undefined if |ipconfig| is not
-   *     defined.
+   *     IPConfigUIProperties object with routingPrefix expressed as a netmask
+   *     string instead of a prefix length. Returns undefined if |ipconfig|
+   *     is not defined.
    * @private
    */
   getIPConfigUIProperties_(ipconfig) {
@@ -236,39 +267,39 @@ Polymer({
       return undefined;
     }
 
-    // Copy |ipconfig| into a new object, |newIpconfig|.
-    const newIpconfig = {};
-    Object.assign(newIpconfig, ipconfig);
+    // Copy |ipconfig| properties into |ipconfigUI|.
+    const ipconfigUI = {};
+    ipconfigUI.gateway = ipconfig.gateway;
+    ipconfigUI.ipAddress = ipconfig.ipAddress;
+    ipconfigUI.nameServers = ipconfig.nameServers;
+    ipconfigUI.type = ipconfig.type;
+    ipconfigUI.webProxyAutoDiscoveryUrl = ipconfig.webProxyAutoDiscoveryUrl;
 
     if (ipconfig.routingPrefix !==
         chromeos.networkConfig.mojom.NO_ROUTING_PREFIX) {
-      const netmask = getRoutingPrefixAsNetmask(ipconfig.routingPrefix);
-      if (netmask !== undefined) {
-        newIpconfig.routingPrefix = netmask;
-      }
+      ipconfigUI.netmask = getRoutingPrefixAsNetmask(ipconfig.routingPrefix);
     }
 
-    return newIpconfig;
+    return ipconfigUI;
   },
 
   /**
-   * @param {!OncMojo.IPConfigUIProperties} ipconfig
+   * @param {!OncMojo.IPConfigUIProperties} ipconfigUI
    * @return {!chromeos.networkConfig.mojom.IPConfigProperties} A new
-   *     IPConfigProperties object with RoutingPrefix expressed as a a prefix
+   *     IPConfigProperties object with netmask expressed as a a prefix
    *     length.
    * @private
    */
-  getIPConfigProperties_(ipconfig) {
-    const result = {};
-    for (const key in ipconfig) {
-      const value = ipconfig[key];
-      if (key === 'routingPrefix') {
-        result.routingPrefix = getRoutingPrefixAsLength(value);
-      } else {
-        result[key] = value;
-      }
-    }
-    return result;
+  getIPConfigProperties_(ipconfigUI) {
+    const ipconfig = {};
+    ipconfig.gateway = ipconfigUI.gateway;
+    ipconfig.ipAddress = ipconfigUI.ipAddress;
+    ipconfig.nameServers = ipconfigUI.nameServers;
+    ipconfig.routingPrefix = getRoutingPrefixAsLength(ipconfigUI.netmask);
+    ipconfig.type = ipconfigUI.type;
+    ipconfig.webProxyAutoDiscoveryUrl = ipconfigUI.webProxyAutoDiscoveryUrl;
+
+    return ipconfig;
   },
 
   /**
@@ -282,11 +313,7 @@ Polymer({
     for (let i = 0; i < this.ipConfigFields_.length; ++i) {
       const key = this.ipConfigFields_[i];
       const value = this.get(key, this.ipConfig_);
-      if (key === 'ipv4.routingPrefix') {
-        if (value !== chromeos.networkConfig.mojom.NO_ROUTING_PREFIX) {
-          return true;
-        }
-      } else if (value !== undefined && value !== '') {
+      if (value !== undefined && value !== '') {
         return true;
       }
     }
@@ -314,8 +341,10 @@ Polymer({
     }
     return {
       'ipv4.ipAddress': this.getIPFieldEditType_(staticIpConfig.ipAddress),
-      'ipv4.routingPrefix':
-          this.getIPFieldEditType_(staticIpConfig.routingPrefix),
+      // Use routingPrefix instead of netmask because getIPFieldEditType_
+      // expects a ManagedProperty and routingPrefix has the same type as
+      // netmask.
+      'ipv4.netmask': this.getIPFieldEditType_(staticIpConfig.routingPrefix),
       'ipv4.gateway': this.getIPFieldEditType_(staticIpConfig.gateway)
     };
   },
@@ -348,4 +377,3 @@ Polymer({
     });
   },
 });
-})();

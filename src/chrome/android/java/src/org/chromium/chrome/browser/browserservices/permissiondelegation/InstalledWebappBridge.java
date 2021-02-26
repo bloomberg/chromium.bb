@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
+import android.net.Uri;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.content_settings.ContentSettingValues;
@@ -48,6 +50,12 @@ public class InstalledWebappBridge {
                 sNativeInstalledWebappProvider, type);
     }
 
+    public static void onGetPermissionResult(long callback, boolean allow) {
+        if (callback == 0) return;
+
+        InstalledWebappBridgeJni.get().notifyPermissionResult(callback, allow);
+    }
+
     @CalledByNative
     private static void setInstalledWebappProvider(long provider) {
         sNativeInstalledWebappProvider = provider;
@@ -68,8 +76,19 @@ public class InstalledWebappBridge {
         return permission.setting;
     }
 
+    @CalledByNative
+    private static void decidePermission(String url, long callback) {
+        Origin origin = Origin.create(Uri.parse(url));
+        if (origin == null) {
+            onGetPermissionResult(callback, false);
+            return;
+        }
+        PermissionUpdater.get().getLocationPermission(origin, callback);
+    }
+
     @NativeMethods
     interface Natives {
         void notifyPermissionsChange(long provider, int type);
+        void notifyPermissionResult(long callback, boolean allow);
     }
 }

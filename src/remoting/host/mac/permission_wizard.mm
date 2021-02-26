@@ -7,13 +7,12 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "remoting/base/string_resources.h"
@@ -513,16 +512,6 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
     return;
 
   _hasPermission = result;
-
-  // Ugly workaround for crbug.com/1031343:
-  // Polling stops when permission is granted. Posting a task to execute in the
-  // future seems to keep the system's UI message-pump active, in order to
-  // render the button outlines.
-  // TODO(lambroslambrou): Remove this hack and fix the underlying problem.
-  if (_hasPermission) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::DoNothing(), base::TimeDelta::Max());
-  }
 
   if (_hasPermission && _autoAdvance) {
     // Skip showing the "Next" button, and immediately kick off a permission

@@ -204,6 +204,11 @@ static_assert(sizeof(ObuSequenceHeader) ==
                       sizeof(OperatingParameters),
               "");
 
+struct TileBuffer {
+  const uint8_t* data;
+  size_t size;
+};
+
 enum MetadataType : uint8_t {
   // 0 is reserved for AOM use.
   kMetadataTypeHdrContentLightLevel = 1,
@@ -235,23 +240,13 @@ struct ObuMetadata {
   size_t itu_t_t35_payload_size;
 };
 
-struct ObuTileGroup {
-  int start;
-  int end;
-  // Pointer to the start of Tile Group data.
-  const uint8_t* data;
-  // Size of the Tile Group data (excluding the Tile Group headers).
-  size_t data_size;
-  // Offset of the start of Tile Group data relative to |ObuParser->data_|.
-  size_t data_offset;
-};
-
 class ObuParser : public Allocable {
  public:
-  ObuParser(const uint8_t* const data, size_t size,
+  ObuParser(const uint8_t* const data, size_t size, int operating_point,
             BufferPool* const buffer_pool, DecoderState* const decoder_state)
       : data_(data),
         size_(size),
+        operating_point_(operating_point),
         buffer_pool_(buffer_pool),
         decoder_state_(*decoder_state) {}
 
@@ -279,8 +274,8 @@ class ObuParser : public Allocable {
   const Vector<ObuHeader>& obu_headers() const { return obu_headers_; }
   const ObuSequenceHeader& sequence_header() const { return sequence_header_; }
   const ObuFrameHeader& frame_header() const { return frame_header_; }
+  const Vector<TileBuffer>& tile_buffers() const { return tile_buffers_; }
   const ObuMetadata& metadata() const { return metadata_; }
-  const Vector<ObuTileGroup>& tile_groups() const { return tile_groups_; }
 
   // Setters.
   void set_sequence_header(const ObuSequenceHeader& sequence_header) {
@@ -288,9 +283,9 @@ class ObuParser : public Allocable {
     has_sequence_header_ = true;
   }
 
-  // Moves |tile_groups_| into |tile_groups|.
-  void MoveTileGroups(Vector<ObuTileGroup>* tile_groups) {
-    *tile_groups = std::move(tile_groups_);
+  // Moves |tile_buffers_| into |tile_buffers|.
+  void MoveTileBuffers(Vector<TileBuffer>* tile_buffers) {
+    *tile_buffers = std::move(tile_buffers_);
   }
 
  private:
@@ -367,26 +362,25 @@ class ObuParser : public Allocable {
   // ParseMetadata() can find the trailing bit of the OBU and either extract
   // or skip over the payload data as an opaque chunk of data.
   bool ParseMetadata(const uint8_t* data, size_t size);  // 5.8.
-  // Validates the |start| and |end| fields of the current tile group. If
-  // valid, updates next_tile_group_start_ and returns true. Otherwise,
-  // returns false.
-  bool ValidateTileGroup();
-  bool SetTileDataOffset(size_t total_size, size_t tg_header_size,
-                         size_t bytes_consumed_so_far);
+  // Adds and populates the TileBuffer for each tile in the tile group and
+  // updates |next_tile_group_start_|
+  bool AddTileBuffers(int start, int end, size_t total_size,
+                      size_t tg_header_size, size_t bytes_consumed_so_far);
   bool ParseTileGroup(size_t size, size_t bytes_consumed_so_far);  // 5.11.1.
 
   // Parser elements.
   std::unique_ptr<RawBitReader> bit_reader_;
   const uint8_t* data_;
   size_t size_;
+  const int operating_point_;
 
   // OBU elements. Only valid if ParseOneFrame() completes successfully.
   Vector<ObuHeader> obu_headers_;
   ObuSequenceHeader sequence_header_ = {};
   ObuFrameHeader frame_header_ = {};
+  Vector<TileBuffer> tile_buffers_;
   ObuMetadata metadata_ = {};
-  Vector<ObuTileGroup> tile_groups_;
-  // The expected |start| value of the next ObuTileGroup.
+  // The expected starting tile number of the next Tile Group.
   int next_tile_group_start_ = 0;
   // If true, the sequence_header_ field is valid.
   bool has_sequence_header_ = false;

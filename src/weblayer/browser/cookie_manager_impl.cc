@@ -19,9 +19,9 @@ namespace weblayer {
 namespace {
 
 void GetCookieComplete(CookieManager::GetCookieCallback callback,
-                       const net::CookieStatusList& cookies,
-                       const net::CookieStatusList& excluded_cookies) {
-  net::CookieList cookie_list = net::cookie_util::StripStatuses(cookies);
+                       const net::CookieAccessResultList& cookies,
+                       const net::CookieAccessResultList& excluded_cookies) {
+  net::CookieList cookie_list = net::cookie_util::StripAccessResults(cookies);
   std::move(callback).Run(net::CanonicalCookie::BuildCookieLine(cookie_list));
 }
 
@@ -147,9 +147,9 @@ bool CookieManagerImpl::SetCookieInternal(const GURL& url,
 
   content::BrowserContext::GetDefaultStoragePartition(browser_context_)
       ->GetCookieManagerForBrowserProcess()
-      ->SetCanonicalCookie(*cc, url, net::CookieOptions::MakeAllInclusive(),
-                           net::cookie_util::AdaptCookieInclusionStatusToBool(
-                               std::move(callback)));
+      ->SetCanonicalCookie(
+          *cc, url, net::CookieOptions::MakeAllInclusive(),
+          net::cookie_util::AdaptCookieAccessResultToBool(std::move(callback)));
   return true;
 }
 

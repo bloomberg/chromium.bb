@@ -21,6 +21,8 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "testing/gtest/include/gtest/gtest-death-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -48,13 +50,13 @@ TEST_F(SysInfoTest, AmountOfMem) {
   EXPECT_GE(SysInfo::AmountOfVirtualMemory(), 0);
 }
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_AmountOfAvailablePhysicalMemory \
   DISABLED_AmountOfAvailablePhysicalMemory
 #else
 #define MAYBE_AmountOfAvailablePhysicalMemory AmountOfAvailablePhysicalMemory
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 TEST_F(SysInfoTest, MAYBE_AmountOfAvailablePhysicalMemory) {
   // Note: info is in _K_bytes.
   SystemMemoryInfoKB info;
@@ -85,38 +87,58 @@ TEST_F(SysInfoTest, MAYBE_AmountOfAvailablePhysicalMemory) {
   EXPECT_GT(amount, static_cast<int64_t>(info.free) * 1024);
   EXPECT_LT(amount / 1024, info.total);
 }
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
-#if defined(OS_FUCHSIA)
-// TODO(crbug.com/851734): Implementation depends on statvfs, which is not
-// implemented on Fuchsia
-#define MAYBE_AmountOfFreeDiskSpace DISABLED_AmountOfFreeDiskSpace
-#else
-#define MAYBE_AmountOfFreeDiskSpace AmountOfFreeDiskSpace
-#endif
-TEST_F(SysInfoTest, MAYBE_AmountOfFreeDiskSpace) {
+TEST_F(SysInfoTest, AmountOfFreeDiskSpace) {
   // We aren't actually testing that it's correct, just that it's sane.
   FilePath tmp_path;
   ASSERT_TRUE(GetTempDir(&tmp_path));
+#if defined(OS_FUCHSIA)
+  // Fuchsia currently requires "total disk space" be set explicitly.
+  // See crbug.com/1148334.
+  SysInfo::SetAmountOfTotalDiskSpace(tmp_path, 1024);
+#endif
   EXPECT_GE(SysInfo::AmountOfFreeDiskSpace(tmp_path), 0) << tmp_path.value();
 }
 
-#if defined(OS_FUCHSIA)
-// TODO(crbug.com/851734): Implementation depends on statvfs, which is not
-// implemented on Fuchsia
-#define MAYBE_AmountOfTotalDiskSpace DISABLED_AmountOfTotalDiskSpace
-#else
-#define MAYBE_AmountOfTotalDiskSpace AmountOfTotalDiskSpace
-#endif
-TEST_F(SysInfoTest, MAYBE_AmountOfTotalDiskSpace) {
+TEST_F(SysInfoTest, AmountOfTotalDiskSpace) {
   // We aren't actually testing that it's correct, just that it's sane.
   FilePath tmp_path;
   ASSERT_TRUE(GetTempDir(&tmp_path));
+#if defined(OS_FUCHSIA)
+  // Fuchsia currently requires "total disk space" be set explicitly.
+  // See crbug.com/1148334.
+  SysInfo::SetAmountOfTotalDiskSpace(tmp_path, 1024);
+#endif
   EXPECT_GT(SysInfo::AmountOfTotalDiskSpace(tmp_path), 0) << tmp_path.value();
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA)
+// Verify that specifying total disk space for nested directories matches
+// the deepest-nested.
+TEST_F(SysInfoTest, NestedVolumesAmountOfTotalDiskSpace) {
+  constexpr int64_t kOuterVolumeQuota = 1024;
+  constexpr int64_t kInnerVolumeQuota = kOuterVolumeQuota / 2;
+
+  FilePath tmp_path;
+  ASSERT_TRUE(GetTempDir(&tmp_path));
+  SysInfo::SetAmountOfTotalDiskSpace(tmp_path, kOuterVolumeQuota);
+  const FilePath subdirectory_path = tmp_path.Append("subdirectory");
+  SysInfo::SetAmountOfTotalDiskSpace(subdirectory_path, kInnerVolumeQuota);
+
+  EXPECT_EQ(SysInfo::AmountOfTotalDiskSpace(tmp_path), kOuterVolumeQuota);
+  EXPECT_EQ(SysInfo::AmountOfTotalDiskSpace(subdirectory_path),
+            kInnerVolumeQuota);
+
+  // Remove the inner directory quota setting and check again.
+  SysInfo::SetAmountOfTotalDiskSpace(subdirectory_path, -1);
+  EXPECT_EQ(SysInfo::AmountOfTotalDiskSpace(subdirectory_path),
+            kOuterVolumeQuota);
+}
+#endif  // defined(OS_FUCHSIA)
+
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 TEST_F(SysInfoTest, OperatingSystemVersionNumbers) {
   int32_t os_major_version = -1;
   int32_t os_minor_version = -1;
@@ -146,7 +168,7 @@ TEST_F(SysInfoTest, Uptime) {
   EXPECT_GT(up_time_2.InMicroseconds(), up_time_1.InMicroseconds());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 TEST_F(SysInfoTest, HardwareModelNameFormatMacAndiOS) {
   std::string hardware_model = SysInfo::HardwareModelName();
   ASSERT_FALSE(hardware_model.empty());
@@ -175,8 +197,8 @@ TEST_F(SysInfoTest, GetHardwareInfo) {
   EXPECT_TRUE(IsStringUTF8(hardware_info->manufacturer));
   EXPECT_TRUE(IsStringUTF8(hardware_info->model));
   bool empty_result_expected =
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN) || \
-    defined(OS_LINUX)
+#if defined(OS_ANDROID) || defined(OS_APPLE) || defined(OS_WIN) || \
+    defined(OS_LINUX) || defined(OS_CHROMEOS)
       false;
 #else
       true;
@@ -192,7 +214,7 @@ TEST_F(SysInfoTest, GetHardwareInfo) {
 #endif
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
 
 TEST_F(SysInfoTest, GoogleChromeOSVersionNumbers) {
   int32_t os_major_version = -1;
@@ -268,6 +290,34 @@ TEST_F(SysInfoTest, IsRunningOnChromeOS) {
   EXPECT_TRUE(SysInfo::IsRunningOnChromeOS());
 }
 
-#endif  // OS_CHROMEOS
+TEST_F(SysInfoTest, CrashOnBaseImage) {
+  const char kLsbRelease2[] =
+      "CHROMEOS_RELEASE_NAME=Chrome OS\n"
+      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n"
+      "CHROMEOS_RELEASE_TRACK=stable-channel\n";
+  SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease2, Time());
+  EXPECT_TRUE(SysInfo::IsRunningOnChromeOS());
+  EXPECT_DEATH_IF_SUPPORTED({ SysInfo::CrashIfChromeOSNonTestImage(); }, "");
+}
+
+TEST_F(SysInfoTest, NoCrashOnTestImage) {
+  const char kLsbRelease2[] =
+      "CHROMEOS_RELEASE_NAME=Chrome OS\n"
+      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n"
+      "CHROMEOS_RELEASE_TRACK=testimage-channel\n";
+  SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease2, Time());
+  EXPECT_TRUE(SysInfo::IsRunningOnChromeOS());
+  // Should not crash.
+  SysInfo::CrashIfChromeOSNonTestImage();
+}
+
+TEST_F(SysInfoTest, NoCrashOnLinuxBuild) {
+  SysInfo::SetChromeOSVersionInfoForTest("", Time());
+  EXPECT_FALSE(SysInfo::IsRunningOnChromeOS());
+  // Should not crash.
+  SysInfo::CrashIfChromeOSNonTestImage();
+}
+
+#endif  // OS_CHROMEOS || BUILDFLAG(IS_LACROS)
 
 }  // namespace base

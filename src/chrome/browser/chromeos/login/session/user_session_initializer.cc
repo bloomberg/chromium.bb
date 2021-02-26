@@ -15,18 +15,23 @@
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/child_accounts/child_status_reporting_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
+#include "chrome/browser/chromeos/child_accounts/family_user_metrics_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/lacros/lacros_loader.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
+#include "chrome/browser/chromeos/policy/extension_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/ui/ash/clipboard_image_model_factory_impl.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/prefs/pref_service.h"
@@ -92,31 +97,20 @@ void UserSessionInitializer::OnUserProfileLoaded(const AccountId& account_id) {
   user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
 
   if (user_manager::UserManager::Get()->GetPrimaryUser() == user) {
+    DCHECK_EQ(primary_profile_, nullptr);
+    primary_profile_ = profile;
+
     InitRlz(profile);
     InitializeCerts(profile);
-    InitializeCRLSetFetcher(user);
+    InitializeCRLSetFetcher();
     InitializeCertificateTransparencyComponents(user);
     InitializePrimaryProfileServices(profile, user);
+
+    FamilyUserMetricsServiceFactory::GetForBrowserContext(profile);
   }
 
   if (user->GetType() == user_manager::USER_TYPE_CHILD)
     InitializeChildUserServices(profile);
-}
-
-void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
-  // Only construct lacros loader once, regardless of how many users are logged
-  // in. Checking for |is_primary_user| is insufficient because this method can
-  // be called multiple times, even if there's only a single user.
-  if (!lacros_loader_) {
-    // The component_manager can be nullptr in tests.
-    if (g_browser_process->platform_part()->cros_component_manager()) {
-      // Always construct LacrosLoader, even if the lacros flag is disabled, so
-      // it can do cleanup work if needed.
-      lacros_loader_ = std::make_unique<LacrosLoader>(
-          g_browser_process->platform_part()->cros_component_manager());
-      lacros_loader_->Init();
-    }
-  }
 }
 
 void UserSessionInitializer::InitializeChildUserServices(Profile* profile) {
@@ -137,13 +131,13 @@ void UserSessionInitializer::InitRlz(Profile* profile) {
           ->GetString()
           .empty()) {
     // Read brand code asynchronously from an OEM data and repost ourselves.
-    google_brand::chromeos::InitBrand(base::Bind(
+    google_brand::chromeos::InitBrand(base::BindOnce(
         &UserSessionInitializer::InitRlz, weak_factory_.GetWeakPtr(), profile));
     return;
   }
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CollectRlzParams),
       base::BindOnce(&UserSessionInitializer::InitRlzImpl,
@@ -153,25 +147,19 @@ void UserSessionInitializer::InitRlz(Profile* profile) {
 
 void UserSessionInitializer::InitializeCerts(Profile* profile) {
   // Now that the user profile has been initialized
-  // |GetNSSCertDatabaseForProfile| is safe to be used.
+  // `GetNSSCertDatabaseForProfile` is safe to be used.
   if (NetworkCertLoader::IsInitialized() &&
       base::SysInfo::IsRunningOnChromeOS()) {
     GetNSSCertDatabaseForProfile(profile,
-                                 base::Bind(&OnGetNSSCertDatabaseForUser));
+                                 base::BindOnce(&OnGetNSSCertDatabaseForUser));
   }
 }
 
-void UserSessionInitializer::InitializeCRLSetFetcher(
-    const user_manager::User* user) {
-  const std::string username_hash = user->username_hash();
-  if (!username_hash.empty()) {
-    base::FilePath path =
-        ProfileHelper::GetProfilePathByUserIdHash(username_hash);
-    component_updater::ComponentUpdateService* cus =
-        g_browser_process->component_updater();
-    if (cus)
-      component_updater::RegisterCRLSetComponent(cus, path);
-  }
+void UserSessionInitializer::InitializeCRLSetFetcher() {
+  component_updater::ComponentUpdateService* cus =
+      g_browser_process->component_updater();
+  if (cus)
+    component_updater::RegisterCRLSetComponent(cus);
 }
 
 void UserSessionInitializer::InitializeCertificateTransparencyComponents(
@@ -190,12 +178,15 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
   lock_screen_apps::StateController::Get()->SetPrimaryProfile(profile);
 
   if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
-    // App install logs are uploaded via the user's communication channel with
-    // the management server. This channel exists for regular users only.
-    // The |AppInstallEventLogManagerWrapper| manages its own lifetime and
-    // self-destructs on logout.
+    // App install logs for extensions and ARC++ are uploaded via the user's
+    // communication channel with the management server. This channel exists for
+    // regular users only. `AppInstallEventLogManagerWrapper` and
+    // `ExtensionInstallEventLogManagerWrapper` manages their own lifetime and
+    // self-destruct on logout.
     policy::AppInstallEventLogManagerWrapper::CreateForProfile(profile);
+    policy::ExtensionInstallEventLogManagerWrapper::CreateForProfile(profile);
   }
+
   arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
 
   crostini::CrostiniManager* crostini_manager =
@@ -203,7 +194,23 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
   if (crostini_manager)
     crostini_manager->MaybeUpdateCrostini();
 
+  if (chromeos::features::IsClipboardHistoryEnabled()) {
+    clipboard_image_model_factory_impl_ =
+        std::make_unique<ClipboardImageModelFactoryImpl>(profile);
+  }
+
   g_browser_process->platform_part()->InitializePrimaryProfileServices(profile);
+}
+
+void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
+  if (is_primary_user) {
+    DCHECK_NE(primary_profile_, nullptr);
+
+    plugin_vm::PluginVmManager* plugin_vm_manager =
+        plugin_vm::PluginVmManagerFactory::GetForProfile(primary_profile_);
+    if (plugin_vm_manager)
+      plugin_vm_manager->OnPrimaryUserSessionStarted();
+  }
 }
 
 void UserSessionInitializer::InitRlzImpl(Profile* profile,

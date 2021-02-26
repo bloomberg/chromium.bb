@@ -18,12 +18,13 @@ class GrBackendRenderTarget;
 class GrBackendSemaphore;
 class GrBackendTexture;
 class GrGpu;
+class GrMSAAAttachment;
 class GrPath;
 class GrRenderTarget;
 class GrResourceProviderPriv;
 class GrSemaphore;
 class GrSingleOwner;
-class GrStencilAttachment;
+class GrAttachment;
 class GrTexture;
 struct GrVkDrawableInfo;
 
@@ -70,7 +71,7 @@ public:
                                    const GrBackendFormat& format,
                                    GrRenderable renderable,
                                    int renderTargetSampleCnt,
-                                   GrMipMapped mipMapped,
+                                   GrMipmapped mipMapped,
                                    SkBudgeted budgeted,
                                    GrProtected isProtected);
 
@@ -111,7 +112,7 @@ public:
     sk_sp<GrTexture> createCompressedTexture(SkISize dimensions,
                                              const GrBackendFormat&,
                                              SkBudgeted,
-                                             GrMipMapped,
+                                             GrMipmapped,
                                              GrProtected,
                                              SkData* data);
 
@@ -263,16 +264,10 @@ public:
      */
     bool attachStencilAttachment(GrRenderTarget* rt, int numStencilSamples);
 
-     /**
-      * Wraps an existing texture with a GrRenderTarget object. This is useful when the provided
-      * texture has a format that cannot be textured from by Skia, but we want to raster to it.
-      *
-      * The texture is wrapped as borrowed. The texture object will not be freed once the
-      * render target is destroyed.
-      *
-      * @return GrRenderTarget object or NULL on failure.
-      */
-    sk_sp<GrRenderTarget> wrapBackendTextureAsRenderTarget(const GrBackendTexture&, int sampleCnt);
+    sk_sp<GrAttachment> makeMSAAAttachment(SkISize dimensions,
+                                           const GrBackendFormat& format,
+                                           int sampleCnt,
+                                           GrProtected isProtected);
 
     /**
      * Assigns a unique key to a resource. If the key is associated with another resource that
@@ -303,7 +298,7 @@ public:
     static SkISize MakeApprox(SkISize);
 
     inline GrResourceProviderPriv priv();
-    inline const GrResourceProviderPriv priv() const;
+    inline const GrResourceProviderPriv priv() const;  // NOLINT(readability-const-return-type)
 
 private:
     sk_sp<GrGpuResource> findResourceByUniqueKey(const GrUniqueKey&);
@@ -314,7 +309,7 @@ private:
                                        const GrBackendFormat&,
                                        GrRenderable,
                                        int renderTargetSampleCnt,
-                                       GrMipMapped,
+                                       GrMipmapped,
                                        GrProtected);
 
     /*
@@ -326,8 +321,15 @@ private:
                                      GrRenderable,
                                      int renderTargetSampleCnt,
                                      SkBudgeted,
-                                     GrMipMapped,
+                                     GrMipmapped,
                                      GrProtected);
+
+    // Attempts to find a resource in the cache that exactly matches the SkISize. Failing that
+    // it returns null. If non-null, the resulting msaa attachment is always budgeted.
+    sk_sp<GrAttachment> refScratchMSAAAttachment(SkISize dimensions,
+                                                 const GrBackendFormat&,
+                                                 int sampleCnt,
+                                                 GrProtected);
 
     // Used to perform any conversions necessary to texel data before creating a texture with
     // existing data or uploading to a scratch texture.

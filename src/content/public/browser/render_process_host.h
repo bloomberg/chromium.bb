@@ -33,11 +33,12 @@
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
+#include "third_party/blink/public/mojom/file_system_access/native_file_system_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-forward.h"
-#include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/native_io/native_io.mojom-forward.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-forward.h"
@@ -70,6 +71,7 @@ namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
 class IsolationContext;
+class ProcessLock;
 class RenderProcessHostObserver;
 class StoragePartition;
 #if defined(OS_ANDROID)
@@ -212,6 +214,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // RenderProcessExited may never be called.
   virtual bool Shutdown(int exit_code) = 0;
 
+  // Returns true if shutdown was started by calling |Shutdown()|.
+  virtual bool ShutdownRequested() = 0;
+
   // Try to shut down the associated renderer process as fast as possible.
   // If a non-zero |page_count| value is provided, then a fast shutdown will
   // only happen if the count matches the active view count. If
@@ -280,9 +285,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void SetBlocked(bool blocked) = 0;
   virtual bool IsBlocked() = 0;
 
-  virtual std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
-  RegisterBlockStateChangedCallback(
-      const base::RepeatingCallback<void(bool)>& cb) = 0;
+  using BlockStateChangedCallbackList = base::RepeatingCallbackList<void(bool)>;
+  using BlockStateChangedCallback = BlockStateChangedCallbackList::CallbackType;
+  virtual std::unique_ptr<BlockStateChangedCallbackList::Subscription>
+  RegisterBlockStateChangedCallback(const BlockStateChangedCallback& cb) = 0;
 
   // Schedules the host for deletion and removes it from the all_hosts list.
   virtual void Cleanup() = 0;
@@ -416,9 +422,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns true if DisableKeepAliveRefCount() was called.
   virtual bool IsKeepAliveRefCountDisabled() = 0;
 
-  // Resumes the renderer process.
-  virtual void Resume() = 0;
-
   // Acquires the |mojom::Renderer| interface to the render process. This is for
   // internal use only, and is only exposed here to support
   // MockRenderProcessHost usage in tests.
@@ -460,13 +463,16 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // crbug.com/738634.
   virtual bool HostHasNotBeenUsed() = 0;
 
-  // Locks this RenderProcessHost to the 'origin' |lock_url|. This method is
-  // public so that it can be called from SiteInstanceImpl, and used by
-  // MockRenderProcessHost. It isn't meant to be called outside of content.
-  // TODO(creis): Rename LockToOrigin to LockToPrincipal. See
-  // https://crbug.com/846155.
-  virtual void LockToOrigin(const IsolationContext& isolation_context,
-                            const GURL& lock_url) = 0;
+  // Locks this RenderProcessHost to documents compatible with |process_lock|.
+  // This method is public so that it can be called from SiteInstanceImpl, and
+  // used by MockRenderProcessHost. It isn't meant to be called outside of
+  // content.
+  virtual void SetProcessLock(const IsolationContext& isolation_context,
+                              const ProcessLock& process_lock) = 0;
+
+  // Returns true if this process is locked to a particular site-specific
+  // ProcessLock.  See the SetProcessLock() call above.
+  virtual bool IsProcessLockedToSiteForTesting() = 0;
 
   // The following several methods are for internal use only, and are only
   // exposed here to support MockRenderProcessHost usage in tests.
@@ -495,6 +501,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
           receiver) = 0;
   virtual void BindVideoDecodePerfHistory(
       mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) = 0;
+  virtual void CreateOneShotSyncService(
+      mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>
+          receiver) = 0;
+  virtual void CreatePeriodicSyncService(
+      mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>
+          receiver) = 0;
   virtual void BindQuotaManagerHost(
       int render_frame_id,
       const url::Origin& origin,
@@ -541,6 +553,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // RenderProcessHostImpl::AddCorbExceptionForPlugin).
   virtual void CleanupNetworkServicePluginExceptionsUponDestruction() = 0;
 
+  // Returns a string that contains information useful for debugging
+  // crashes related to RenderProcessHost objects staying alive longer than
+  // the BrowserContext they are associated with.
+  virtual std::string GetInfoForBrowserContextDestructionCrashReporting() = 0;
+
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   // Ask the renderer process to dump its profiling data to disk. Invokes
   // |callback| once this has completed.
@@ -572,6 +589,16 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // globally-used spare RenderProcessHost at any time.
   static RenderProcessHost* GetSpareRenderProcessHostForTesting();
 
+  // Registers a callback to be notified when the spare RenderProcessHost is
+  // changed. If a new spare RenderProcessHost is created, the callback is made
+  // when the host is ready (RenderProcessHostObserver::RenderProcessReady). If
+  // the spare RenderProcessHost is promoted to be a "real" RenderProcessHost or
+  // discarded for any reason, the callback is made with a null pointer.
+  static std::unique_ptr<
+      base::CallbackList<void(RenderProcessHost*)>::Subscription>
+  RegisterSpareRenderProcessHostChangedCallback(
+      const base::RepeatingCallback<void(RenderProcessHost*)>& cb);
+
   // Flag to run the renderer in process.  This is primarily
   // for debugging purposes.  When running "in process", the
   // browser maintains a single RenderProcessHost which communicates
@@ -597,12 +624,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // instance does not correspond to a live RenderProcessHost.
   static RenderProcessHost* FromRendererInstanceId(
       const base::Token& instance_id);
-
-  // Returns whether the process-per-site model is in use (globally or just for
-  // the current site), in which case we should ensure there is only one
-  // RenderProcessHost per site for the entire browser context.
-  static bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
-                                      const GURL& site_url);
 
   // Returns true if the caller should attempt to use an existing
   // RenderProcessHost rather than creating a new one.

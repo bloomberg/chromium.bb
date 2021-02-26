@@ -7,17 +7,19 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
+#include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "ui/gfx/geometry/rect.h"
 
 // Helpers --------------------------------------------------------------------
 
 std::unique_ptr<Browser> CreateBrowserWithTestWindowForParams(
-    Browser::CreateParams* params) {
+    Browser::CreateParams params) {
+  DCHECK(!params.window);
   TestBrowserWindow* window = new TestBrowserWindow;
   new TestBrowserWindowOwner(window);
-  params->window = window;
-  return std::make_unique<Browser>(*params);
+  params.window = window;
+  return std::unique_ptr<Browser>(Browser::Create(params));
 }
 
 // TestBrowserWindow::TestLocationBar -----------------------------------------
@@ -176,7 +178,7 @@ bool TestBrowserWindow::IsBookmarkBarAnimating() const {
 }
 
 bool TestBrowserWindow::IsTabStripEditable() const {
-  return false;
+  return true;
 }
 
 bool TestBrowserWindow::IsToolbarVisible() const {
@@ -236,16 +238,12 @@ web_modal::WebContentsModalDialogHost*
   return NULL;
 }
 
-void TestBrowserWindow::ExecuteExtensionCommand(
-    const extensions::Extension* extension,
-    const extensions::Command& command) {}
-
 ExclusiveAccessContext* TestBrowserWindow::GetExclusiveAccessContext() {
   return nullptr;
 }
 
 std::string TestBrowserWindow::GetWorkspace() const {
-  return std::string();
+  return workspace_;
 }
 
 bool TestBrowserWindow::IsVisibleOnAllWorkspaces() const {
@@ -264,6 +262,16 @@ void TestBrowserWindow::SetNativeWindow(gfx::NativeWindow window) {
 
 void TestBrowserWindow::SetCloseCallback(base::OnceClosure close_callback) {
   close_callback_ = std::move(close_callback);
+}
+
+FeaturePromoController* TestBrowserWindow::GetFeaturePromoController() {
+  return feature_promo_controller_.get();
+}
+
+FeaturePromoController* TestBrowserWindow::SetFeaturePromoController(
+    std::unique_ptr<FeaturePromoController> feature_promo_controller) {
+  feature_promo_controller_ = std::move(feature_promo_controller);
+  return feature_promo_controller_.get();
 }
 
 // TestBrowserWindowOwner -----------------------------------------------------

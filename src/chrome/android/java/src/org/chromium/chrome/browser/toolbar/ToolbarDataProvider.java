@@ -4,61 +4,36 @@
 
 package org.chromium.chrome.browser.toolbar;
 
-import android.content.res.ColorStateList;
-
-import androidx.annotation.ColorRes;
-import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.omnibox.SecurityStatusIcon;
-import org.chromium.components.security_state.ConnectionSecurityLevel;
 
 /**
  * Defines the data that is exposed to properly render the Toolbar.
  */
-// TODO(crbug.com/865801): Refine split between common/generally toolbar properties and
-//                         sub-component properties.
-public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
+public interface ToolbarDataProvider {
     /**
      * @return The tab that contains the information currently displayed in the toolbar.
      */
     @Nullable
     Tab getTab();
 
-    @Override
-    default boolean isLoading() {
-        Tab tab = getTab();
-        return tab != null && tab.isLoading();
-    }
-
-    /**
-     * @return Whether ToolbarDataProvider currently has a tab related to it.
-     */
-    boolean hasTab();
-
     /**
      * @return The current url for the current tab. Returns empty string when there is no tab.
      */
     @NonNull
-    @Override
     String getCurrentUrl();
 
-    /**
-     * @return The NewTabPage shown for the current Tab or null if one is not being shown.
-     */
-    @Override
-    NewTabPage getNewTabPageForCurrentTab();
+    /** Returns the delegate for the NewTabPage shown for the current tab. */
+    @NonNull
+    NewTabPageDelegate getNewTabPageDelegate();
 
     /**
      * @return Whether the toolbar is currently being displayed for incognito.
      */
-    @Override
     boolean isIncognito();
 
     /**
@@ -83,11 +58,6 @@ public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
     UrlBarData getUrlBarData();
 
     /**
-     * @return The title of the current tab, or the empty string if there is currently no tab.
-     */
-    String getTitle();
-
-    /**
      * @return The primary color to use for the background drawable.
      */
     int getPrimaryColor();
@@ -96,61 +66,4 @@ public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
      * @return Whether the current primary color is a brand color.
      */
     boolean isUsingBrandColor();
-
-    /**
-     * @return Whether the page currently shown is an offline page.
-     */
-    boolean isOfflinePage();
-
-    /**
-     * @return Whether the page currently shown is a preview.
-     */
-    boolean isPreview();
-
-    /**
-     * @return The current {@link ConnectionSecurityLevel}.
-     */
-    @ConnectionSecurityLevel
-    int getSecurityLevel();
-
-    /**
-     * @param isFocusedFromFakebox If the omnibox focus originated from the fakebox.
-     * @return The current page classification.
-     */
-    default int getPageClassification(boolean isFocusedFromFakebox) {
-        return 0;
-    }
-
-    /**
-     * @return The resource ID of the icon that should be displayed or 0 if no icon should be shown.
-     */
-    @DrawableRes
-    int getSecurityIconResource(boolean isTablet);
-
-    /**
-     * @return The resource ID of the content description for the security icon.
-     */
-    @StringRes
-    default int getSecurityIconContentDescriptionResourceId() {
-        return SecurityStatusIcon.getSecurityIconContentDescriptionResourceId(getSecurityLevel());
-    }
-
-    /**
-     * @return The {@link ColorStateList} to use to tint the security state icon.
-     */
-    @ColorRes
-    int getSecurityIconColorStateList();
-
-    /**
-     * If the current tab state is eligible for displaying the search query terms instead of the
-     * URL, this extracts the query terms from the current URL.
-     *
-     * @return The search terms. Returns null if the tab is ineligible to display the search terms
-     *         instead of the URL.
-     */
-    @Nullable
-    @Override
-    public default String getDisplaySearchTerms() {
-        return null;
-    }
 }

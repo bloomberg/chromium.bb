@@ -12,11 +12,9 @@
 
 namespace views {
 
-MdTextButtonWithDownArrow::MdTextButtonWithDownArrow(ButtonListener* listener,
+MdTextButtonWithDownArrow::MdTextButtonWithDownArrow(PressedCallback callback,
                                                      const base::string16& text)
-    : MdTextButton(listener, style::CONTEXT_BUTTON_MD) {
-  SetText(text);
-  SetFocusForPlatform();
+    : MdTextButton(std::move(callback), text) {
   SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   SetImageLabelSpacing(LayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_DROPDOWN_BUTTON_LABEL_ARROW_SPACING));

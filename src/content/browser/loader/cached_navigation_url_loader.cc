@@ -4,11 +4,10 @@
 
 #include "content/browser/loader/cached_navigation_url_loader.h"
 
-#include "base/task/post_task.h"
-#include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/browser/renderer_host/navigation_request_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
@@ -28,8 +27,8 @@ CachedNavigationURLLoader::CachedNavigationURLLoader(
   // Normal navigations never call OnResponseStarted on the same message loop
   // iteration that the NavigationURLLoader is created, because they have to
   // make a network request.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&CachedNavigationURLLoader::OnResponseStarted,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CachedNavigationURLLoader::OnResponseStarted,
                                 weak_factory_.GetWeakPtr()));
 }
 
@@ -57,7 +56,7 @@ void CachedNavigationURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    PreviewsState new_previews_state) {
+    blink::PreviewsState new_previews_state) {
   NOTREACHED();
 }
 }  // namespace content

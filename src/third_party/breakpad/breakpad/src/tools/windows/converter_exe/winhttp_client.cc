@@ -197,7 +197,7 @@ bool WinHttpClient::GetHttpStatusCode(HttpHandle request_handle,
   if (!::WinHttpQueryHeaders(ToHINTERNET(request_handle),
                              WINHTTP_QUERY_STATUS_CODE,
                              WINHTTP_HEADER_NAME_BY_INDEX,
-                             static_cast<void *>(&http_status_string),
+                             static_cast<void*>(&http_status_string),
                              &http_status_string_size, 0)) {
     return false;
   }
@@ -216,7 +216,7 @@ bool WinHttpClient::GetContentLength(HttpHandle request_handle,
   if (!::WinHttpQueryHeaders(ToHINTERNET(request_handle),
                              WINHTTP_QUERY_CONTENT_LENGTH,
                              WINHTTP_HEADER_NAME_BY_INDEX,
-                             static_cast<void *>(&content_length_string),
+                             static_cast<void*>(&content_length_string),
                              &content_length_string_size, 0)) {
     *content_length = kUnknownContentLength;
   } else {

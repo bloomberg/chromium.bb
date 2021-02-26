@@ -1,0 +1,54 @@
+<template>
+  <style>
+    :host {
+      --text-font-size: 1.16em;
+      --scrollbar-width: 4px;
+      --scrollbar-background: var(--google-grey-refresh-100);
+      --footer-margin: 40px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :host {
+        --scrollbar-background: var(--google-grey-800);
+      }
+    }
+
+    html {
+      font-family: roboto;
+    }
+
+    h2 {
+      color: var(--cr-primary-text-color);
+      font-size: 1.85em;
+      font-weight: normal;
+    }
+
+    h3 {
+      color: var(--cr-secondary-text-color);
+      font-size: var(--text-font-size);
+      font-weight: normal;
+    }
+
+    .profile-card-info {
+      color: var(--cr-primary-text-color);
+      font-size: var(--text-font-size);
+      font-weight: 500;
+      height: 20px;
+      overflow: hidden;
+      padding: 16px;
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 130px;
+    }
+
+  .footer {
+    bottom: 0;
+    display: flex;
+    font-size: var(--text-font-size);
+    margin-bottom: var(--footer-margin);
+    position: absolute;
+    width: 100%;
+  }
+  </style>
+</template>

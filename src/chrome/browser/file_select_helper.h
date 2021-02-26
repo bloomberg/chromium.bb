@@ -24,7 +24,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
+#include "chrome/browser/enterprise/connectors/content_analysis_delegate.h"
 #endif
 
 class Profile;
@@ -56,13 +56,13 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   // Show the file chooser dialog.
   static void RunFileChooser(
       content::RenderFrameHost* render_frame_host,
-      std::unique_ptr<content::FileSelectListener> listener,
+      scoped_refptr<content::FileSelectListener> listener,
       const blink::mojom::FileChooserParams& params);
 
   // Enumerates all the files in directory.
   static void EnumerateDirectory(
       content::WebContents* tab,
-      std::unique_ptr<content::FileSelectListener> listener,
+      scoped_refptr<content::FileSelectListener> listener,
       const base::FilePath& path);
 
  private:
@@ -77,22 +77,22 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, GetSanitizedFileName);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, LastSelectedDirectory);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest,
-                           DeepScanCompletionCallback_NoFiles);
+                           ContentAnalysisCompletionCallback_NoFiles);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest,
-                           DeepScanCompletionCallback_OneOKFile);
+                           ContentAnalysisCompletionCallback_OneOKFile);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest,
-                           DeepScanCompletionCallback_TwoOKFiles);
+                           ContentAnalysisCompletionCallback_TwoOKFiles);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest,
-                           DeepScanCompletionCallback_TwoBadFiles);
+                           ContentAnalysisCompletionCallback_TwoBadFiles);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest,
-                           DeepScanCompletionCallback_OKBadFiles);
+                           ContentAnalysisCompletionCallback_OKBadFiles);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, GetFileTypesFromAcceptType);
 
   explicit FileSelectHelper(Profile* profile);
   ~FileSelectHelper() override;
 
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                      std::unique_ptr<content::FileSelectListener> listener,
+                      scoped_refptr<content::FileSelectListener> listener,
                       blink::mojom::FileChooserParamsPtr params);
   void GetFileTypesInThreadPool(blink::mojom::FileChooserParamsPtr params);
   void GetSanitizedFilenameOnUIThread(
@@ -138,7 +138,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
 
   void EnumerateDirectoryImpl(
       content::WebContents* tab,
-      std::unique_ptr<content::FileSelectListener> listener,
+      scoped_refptr<content::FileSelectListener> listener,
       const base::FilePath& path);
 
   // Kicks off a new directory enumeration.
@@ -157,7 +157,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   // callback is received from the enumeration code.
   void EnumerateDirectoryEnd();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Must be called from a MayBlock() task. Each selected file that is a package
   // will be zipped, and the zip will be passed to the render view host in place
   // of the package.
@@ -173,7 +173,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   // temporary destination, if the zip was successful. Otherwise returns an
   // empty path.
   static base::FilePath ZipPackage(const base::FilePath& path);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // This function is the start of a call chain that may or may not be async
   // depending on the platform and features enabled.  The call to this method
@@ -183,17 +183,17 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   //
   // ConvertToFileChooserFileInfoList: converts a vector of SelectedFileInfo
   // into a vector of FileChooserFileInfoPtr and then calls
-  // PerformSafeBrowsingDeepScanIfNeeded().  On chromeos, the conversion is
+  // PerformContentAnalysisIfNeeded().  On chromeos, the conversion is
   // performed asynchronously.
   //
-  // PerformSafeBrowsingDeepScanIfNeeded: if the deep scanning feature is
+  // PerformContentAnalysisIfNeeded: if the deep scanning feature is
   // enabled and it is determined by enterprise policy that scans are required,
-  // starts the scans and sets DeepScanCompletionCallback() as the async
+  // starts the scans and sets ContentAnalysisCompletionCallback() as the async
   // callback.  If deep scanning is not enabled or is not supported on the
   // platform, this function calls NotifyListenerAndEnd() directly.
   //
-  // DeepScanCompletionCallback: processes the results of the deep scan.  Any
-  // files that did not pass the scan are removed from the list.  Ends by
+  // ContentAnalysisCompletionCallback: processes the results of the deep scan.
+  // Any files that did not pass the scan are removed from the list.  Ends by
   // calling NotifyListenerAndEnd().
   //
   // NotifyListenerAndEnd: Informs the listener of the final list of files to
@@ -207,22 +207,21 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
       const std::vector<ui::SelectedFileInfo>& files);
 
   // Checks to see if scans are required for the specified files.
-  void PerformSafeBrowsingDeepScanIfNeeded(
+  void PerformContentAnalysisIfNeeded(
       std::vector<blink::mojom::FileChooserFileInfoPtr> list);
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  // Callback used to receive the results of a deep scan.
-  void DeepScanCompletionCallback(
+  // Callback used to receive the results of a content analysis scan.
+  void ContentAnalysisCompletionCallback(
       std::vector<blink::mojom::FileChooserFileInfoPtr> list,
-      const safe_browsing::DeepScanningDialogDelegate::Data& data,
-      const safe_browsing::DeepScanningDialogDelegate::Result& result);
+      const enterprise_connectors::ContentAnalysisDelegate::Data& data,
+      const enterprise_connectors::ContentAnalysisDelegate::Result& result);
 #endif
 
-  // Finish the PerformSafeBrowsingDeepScanIfNeeded() handling after the
+  // Finish the PerformContentAnalysisIfNeeded() handling after the
   // deep scanning checks have been performed.  Deep scanning may change the
   // list of files chosen by the user, so the list of files passed here may be
-  // a subset of of the files passed to
-  // PerformSafeBrowsingDeepScanIfNeeded().
+  // a subset of of the files passed to PerformContentAnalysisIfNeeded().
   void NotifyListenerAndEnd(
       std::vector<blink::mojom::FileChooserFileInfoPtr> list);
 
@@ -238,7 +237,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   bool AbortIfWebContentsDestroyed();
 
   void SetFileSelectListenerForTesting(
-      std::unique_ptr<content::FileSelectListener> listener);
+      scoped_refptr<content::FileSelectListener> listener);
 
   void DontAbortOnMissingWebContentsForTesting();
 
@@ -279,7 +278,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   content::WebContents* web_contents_;
 
   // |listener_| receives the result of the FileSelectHelper.
-  std::unique_ptr<content::FileSelectListener> listener_;
+  scoped_refptr<content::FileSelectListener> listener_;
 
   // Dialog box used for choosing files to upload from file form fields.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;

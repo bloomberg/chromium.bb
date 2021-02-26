@@ -20,20 +20,20 @@ class PaymentRequestDialogView;
 class PaymentMethodViewController : public PaymentRequestSheetController {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
-  PaymentMethodViewController(PaymentRequestSpec* spec,
-                              PaymentRequestState* state,
-                              PaymentRequestDialogView* dialog);
+  PaymentMethodViewController(base::WeakPtr<PaymentRequestSpec> spec,
+                              base::WeakPtr<PaymentRequestState> state,
+                              base::WeakPtr<PaymentRequestDialogView> dialog);
   ~PaymentMethodViewController() override;
 
  private:
   // PaymentRequestSheetController:
   base::string16 GetSheetTitle() override;
   void FillContentView(views::View* content_view) override;
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-  base::string16 GetSecondaryButtonLabel() override;
-  int GetSecondaryButtonTag() override;
-  int GetSecondaryButtonId() override;
+  bool ShouldShowPrimaryButton() override;
   bool ShouldShowSecondaryButton() override;
+  base::string16 GetSecondaryButtonLabel() override;
+  views::Button::PressedCallback GetSecondaryButtonCallback() override;
+  int GetSecondaryButtonId() override;
 
   PaymentRequestItemList payment_method_list_;
 

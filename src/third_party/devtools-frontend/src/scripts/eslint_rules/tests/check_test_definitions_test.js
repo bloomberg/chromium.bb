@@ -11,7 +11,7 @@ const ruleTester = new (require('eslint').RuleTester)({
 ruleTester.run('check_e2e_tests', rule, {
   valid: [
     {
-      code: `import {describe, it} from 'mocha';
+      code: `import {describe, it} from '../../shared/mocha-extensions.js';
 
       describe('e2e-test', async () => {
         it('normal test', async () => {
@@ -21,7 +21,7 @@ ruleTester.run('check_e2e_tests', rule, {
       filename: 'test/e2e/folder/file.ts',
     },
     {
-      code: `import {describe, it} from 'mocha';
+      code: `import {describe, it} from '../../shared/mocha-extensions.js';
 
       describe('e2e-test', async () => {
         // Explaining comment
@@ -31,11 +31,32 @@ ruleTester.run('check_e2e_tests', rule, {
       `,
       filename: 'test/e2e/folder/file.ts',
     },
+    {
+      code: `import {describe, it} from '../../shared/mocha-extensions.js';
+
+      describe('e2e-test', async () => {
+        // Explaining comment
+        it.skip(\`[crbug.com/123456] normal test \${withVariable}\`, async () => {
+        });
+      });
+      `,
+      filename: 'test/e2e/folder/file.ts',
+    },
+    {
+      code: `import {describe, it} from '../../shared/mocha-extensions.js';
+
+      // Explaining comment
+      it.skip = function (name, callback) {
+        callback(name);
+      };
+      `,
+      filename: 'test/e2e/folder/file.ts',
+    }
   ],
 
   invalid: [
     {
-      code: `import {describe, it} from 'mocha';
+      code: `import {describe, it} from '../../shared/mocha-extensions.js';
 
       describe('e2e-test', async () => {
         // Explaining comment
@@ -47,7 +68,7 @@ ruleTester.run('check_e2e_tests', rule, {
       errors: [{message: rule.meta.messages.description}],
     },
     {
-      code: `import {describe, it} from 'mocha';
+      code: `import {describe, it} from '../../shared/mocha-extensions.js';
 
       describe('e2e-test', async () => {
         it.skip('[crbug.com/1345] normal test', async () => {
@@ -56,6 +77,18 @@ ruleTester.run('check_e2e_tests', rule, {
       `,
       filename: 'test/e2e/folder/file.ts',
       errors: [{message: rule.meta.messages.comment}],
+    },
+    {
+      code: `import {describe, it} from '../../shared/mocha-extensions.js';
+
+      describe('e2e-test', async () => {
+        // Explaining comment
+        it.skip(\`normal test \${withVariable}\`, async () => {
+        });
+      });
+      `,
+      filename: 'test/e2e/folder/file.ts',
+      errors: [{message: rule.meta.messages.description}],
     },
   ]
 });

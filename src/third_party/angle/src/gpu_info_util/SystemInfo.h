@@ -41,7 +41,7 @@ struct GPUDeviceInfo
     std::string driverVersion;
     std::string driverDate;
 
-    // Only available on Android
+    // Only available via GetSystemInfoVulkan currently.
     VersionInfo detailedDriverVersion;
 };
 
@@ -67,6 +67,9 @@ struct SystemInfo
     bool isAMDSwitchable = false;
     // Only true on dual-GPU Mac laptops.
     bool isMacSwitchable = false;
+    // Only true on Apple Silicon Macs when running iOS binaries.
+    // See https://developer.apple.com/documentation/foundation/nsprocessinfo/3608556-iosapponmac
+    bool isiOSAppOnMac = false;
 
     // Only available on Android
     std::string machineManufacturer;
@@ -82,6 +85,9 @@ struct SystemInfo
 // Returns true if all info was gathered, false otherwise. Even when false is returned, `info` will
 // be filled with partial information.
 bool GetSystemInfo(SystemInfo *info);
+
+// Vulkan-specific info collection.
+bool GetSystemInfoVulkan(SystemInfo *info);
 
 // Known PCI vendor IDs
 constexpr VendorID kVendorID_AMD      = 0x1002;
@@ -100,7 +106,9 @@ constexpr VendorID kVendorID_VeriSilicon = 0x10002;
 constexpr VendorID kVendorID_Kazan       = 0x10003;
 
 // Known device IDs
-constexpr DeviceID kDeviceID_Swiftshader = 0xC0DE;
+constexpr DeviceID kDeviceID_Swiftshader  = 0xC0DE;
+constexpr DeviceID kDeviceID_Adreno540    = 0x5040001;
+constexpr DeviceID kDeviceID_UHD630Mobile = 0x3E9B;
 
 // Predicates on vendor IDs
 bool IsAMD(VendorID vendorId);
@@ -126,6 +134,18 @@ void GetDualGPUInfo(SystemInfo *info);
 void PrintSystemInfo(const SystemInfo &info);
 
 VersionInfo ParseNvidiaDriverVersion(uint32_t version);
+
+#if defined(ANGLE_PLATFORM_MACOS) || defined(ANGLE_PLATFORM_MACCATALYST)
+// Helper to get the active GPU ID from a given Core Graphics display ID.
+uint64_t GetGpuIDFromDisplayID(uint32_t displayID);
+
+// Helper to get the active GPU ID from an OpenGL display mask.
+uint64_t GetGpuIDFromOpenGLDisplayMask(uint32_t displayMask);
+
+// Get VendorID from metal device's registry ID
+VendorID GetVendorIDFromMetalDeviceRegistryID(uint64_t registryID);
+#endif
+
 }  // namespace angle
 
 #endif  // GPU_INFO_UTIL_SYSTEM_INFO_H_

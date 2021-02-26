@@ -4,13 +4,17 @@
 
 package org.chromium.chrome.browser.toolbar.load_progress;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.base.MathUtils;
-import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.native_page.NativePageFactory;
-import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.tab.CurrentTabObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.load_progress.LoadProgressProperties.CompletionState;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -22,21 +26,27 @@ public class LoadProgressMediator {
     static final float MINIMUM_LOAD_PROGRESS = 0.05f;
 
     private final PropertyModel mModel;
-    private final EmptyTabObserver mTabObserver;
+    private final CurrentTabObserver mTabObserver;
     private final LoadProgressSimulator mLoadProgressSimulator;
+    private boolean mPreventUpdates;
 
-    public LoadProgressMediator(ActivityTabProvider activityTabProvider, PropertyModel model) {
+    /**
+     * @param tabSupplier An observable supplier of the current {@link Tab}.
+     * @param model MVC property model instance used for load progress bar.
+     */
+    public LoadProgressMediator(
+            @NonNull ObservableSupplier<Tab> tabSupplier, @NonNull PropertyModel model) {
         mModel = model;
         mLoadProgressSimulator = new LoadProgressSimulator(model);
 
-        mTabObserver = new ActivityTabProvider.ActivityTabTabObserver(activityTabProvider) {
+        mTabObserver = new CurrentTabObserver(tabSupplier, new EmptyTabObserver() {
             @Override
             public void onDidStartNavigation(Tab tab, NavigationHandle navigation) {
                 if (navigation.isSameDocument() || !navigation.isInMainFrame()) {
                     return;
                 }
 
-                if (NativePageFactory.isNativePageUrl(navigation.getUrl(), tab.isIncognito())) {
+                if (NativePage.isNativePageUrl(navigation.getUrlString(), tab.isIncognito())) {
                     finishLoadProgress(false);
                     return;
                 }
@@ -60,9 +70,8 @@ public class LoadProgressMediator {
 
             @Override
             public void onLoadProgressChanged(Tab tab, float progress) {
-                if (NewTabPage.isNTPUrl(tab.getUrlString())
-                        || NativePageFactory.isNativePageUrl(
-                                tab.getUrlString(), tab.isIncognito())) {
+                if (UrlUtilities.isNTPUrl(tab.getUrlString())
+                        || NativePage.isNativePageUrl(tab.getUrlString(), tab.isIncognito())) {
                     return;
                 }
 
@@ -74,7 +83,7 @@ public class LoadProgressMediator {
                 // If loading both started and finished before we swapped in the WebContents, we
                 // won't get any load progress signals. Otherwise, we should receive at least one
                 // real signal so we don't need to simulate them.
-                if (didStartLoad && didFinishLoad) {
+                if (didStartLoad && didFinishLoad && !mPreventUpdates) {
                     mLoadProgressSimulator.start();
                 }
             }
@@ -83,19 +92,40 @@ public class LoadProgressMediator {
             public void onCrash(Tab tab) {
                 finishLoadProgress(false);
             }
+        });
 
-            @Override
-            protected void onObservingDifferentTab(Tab tab) {
-                onNewTabObserved(tab);
-            }
-        };
-        onNewTabObserved(activityTabProvider.get());
+        tabSupplier.addObserver(this::onNewTabObserved);
+        onNewTabObserved(tabSupplier.get());
+    }
+
+    /**
+     * Simulates progressbar being filled over a short time.
+     */
+    void simulateLoadProgressCompletion() {
+        mLoadProgressSimulator.start();
+    }
+
+    /**
+     * Whether progressbar should be updated on tab progress changes.
+     * @param preventUpdates If true, prevents updating progressbar when the tab it's observing
+     *                       is being loaded.
+     */
+    void setPreventUpdates(boolean preventUpdates) {
+        mPreventUpdates = preventUpdates;
     }
 
     private void onNewTabObserved(Tab tab) {
-        if (tab == null) return;
+        if (tab == null) {
+            // If start surface is enabled and new tab is null, then new tab is home page or tab
+            // switcher. Finish progress bar loading.
+            if (StartSurfaceConfiguration.isStartSurfaceEnabled()) {
+                finishLoadProgress(false);
+            }
+            return;
+        }
+
         if (tab.isLoading()) {
-            if (NativePageFactory.isNativePageUrl(tab.getUrlString(), tab.isIncognito())) {
+            if (NativePage.isNativePageUrl(tab.getUrlString(), tab.isIncognito())) {
                 finishLoadProgress(false);
             } else {
                 startLoadProgress();
@@ -107,10 +137,14 @@ public class LoadProgressMediator {
     }
 
     private void startLoadProgress() {
+        if (mPreventUpdates) return;
+
         mModel.set(LoadProgressProperties.COMPLETION_STATE, CompletionState.UNFINISHED);
     }
 
     private void updateLoadProgress(float progress) {
+        if (mPreventUpdates) return;
+
         progress = Math.max(progress, MINIMUM_LOAD_PROGRESS);
         mModel.set(LoadProgressProperties.PROGRESS, progress);
         if (MathUtils.areFloatsEqual(progress, 1)) finishLoadProgress(true);
@@ -122,5 +156,10 @@ public class LoadProgressMediator {
         int completionState = animateCompletion ? CompletionState.FINISHED_DO_ANIMATE
                                                 : CompletionState.FINISHED_DONT_ANIMATE;
         mModel.set(LoadProgressProperties.COMPLETION_STATE, completionState);
+    }
+
+    /** Destroy load progress bar object. */
+    public void destroy() {
+        mTabObserver.destroy();
     }
 }

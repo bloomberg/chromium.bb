@@ -4,12 +4,14 @@
 
 #include "ui/base/dragdrop/os_exchange_data.h"
 
+#include <objbase.h>
 #include <memory>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/win/scoped_hglobal.h"
@@ -24,10 +26,93 @@
 namespace ui {
 
 namespace {
+
 const std::vector<DWORD> kStorageMediaTypesForVirtualFiles = {
     TYMED_ISTORAGE,
     TYMED_ISTREAM,
     TYMED_HGLOBAL,
+};
+
+class RefCountMockStream : public IStream {
+ public:
+  RefCountMockStream() = default;
+  ~RefCountMockStream() = default;
+
+  ULONG GetRefCount() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return ref_count_;
+  }
+
+  // Overridden from IUnknown:
+  IFACEMETHODIMP QueryInterface(REFIID iid, void** object) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (iid == IID_IUnknown || iid == IID_ISequentialStream ||
+        iid == IID_IStream) {
+      *object = static_cast<IStream*>(this);
+      AddRef();
+      return S_OK;
+    }
+
+    *object = nullptr;
+    return E_NOINTERFACE;
+  }
+
+  IFACEMETHODIMP_(ULONG) AddRef(void) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return ++ref_count_;
+  }
+
+  IFACEMETHODIMP_(ULONG) Release(void) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    EXPECT_GT(ref_count_, 0u);
+    return --ref_count_;
+  }
+  // Overridden from ISequentialStream:
+  MOCK_METHOD3_WITH_CALLTYPE(STDMETHODCALLTYPE,
+                             Read,
+                             HRESULT(void* pv, ULONG cb, ULONG* pcbRead));
+
+  MOCK_METHOD3_WITH_CALLTYPE(STDMETHODCALLTYPE,
+                             Write,
+                             HRESULT(void const* pv, ULONG cb, ULONG* pcbW));
+
+  // Overridden from IStream:
+  MOCK_METHOD1_WITH_CALLTYPE(STDMETHODCALLTYPE,
+                             SetSize,
+                             HRESULT(ULARGE_INTEGER));
+
+  MOCK_METHOD4_WITH_CALLTYPE(
+      STDMETHODCALLTYPE,
+      CopyTo,
+      HRESULT(IStream*, ULARGE_INTEGER, ULARGE_INTEGER*, ULARGE_INTEGER*));
+
+  MOCK_METHOD1_WITH_CALLTYPE(STDMETHODCALLTYPE, Commit, HRESULT(DWORD));
+
+  MOCK_METHOD0_WITH_CALLTYPE(STDMETHODCALLTYPE, Revert, HRESULT());
+
+  MOCK_METHOD3_WITH_CALLTYPE(STDMETHODCALLTYPE,
+                             LockRegion,
+                             HRESULT(ULARGE_INTEGER, ULARGE_INTEGER, DWORD));
+
+  MOCK_METHOD3_WITH_CALLTYPE(STDMETHODCALLTYPE,
+                             UnlockRegion,
+                             HRESULT(ULARGE_INTEGER, ULARGE_INTEGER, DWORD));
+
+  MOCK_METHOD1_WITH_CALLTYPE(STDMETHODCALLTYPE, Clone, HRESULT(IStream**));
+
+  MOCK_METHOD3_WITH_CALLTYPE(STDMETHODCALLTYPE,
+                             Seek,
+                             HRESULT(LARGE_INTEGER liDistanceToMove,
+                                     DWORD dwOrigin,
+                                     ULARGE_INTEGER* lpNewFilePointer));
+
+  MOCK_METHOD2_WITH_CALLTYPE(STDMETHODCALLTYPE,
+                             Stat,
+                             HRESULT(STATSTG* pStatstg, DWORD grfStatFlag));
+
+ private:
+  ULONG ref_count_ = 0u;
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace
@@ -100,10 +185,11 @@ TEST_F(OSExchangeDataWinTest, StringDataWritingViaCOM) {
   // Construct a new object with the old object so that we can use our access
   // APIs.
   OSExchangeData data2(data.provider().Clone());
-  EXPECT_TRUE(data2.HasURL(CONVERT_FILENAMES));
+  EXPECT_TRUE(data2.HasURL(FilenameToURLPolicy::CONVERT_FILENAMES));
   GURL url_from_data;
   std::wstring title;
-  EXPECT_TRUE(data2.GetURLAndTitle(CONVERT_FILENAMES, &url_from_data, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(FilenameToURLPolicy::CONVERT_FILENAMES,
+                                   &url_from_data, &title));
   GURL reference_url(input);
   EXPECT_EQ(reference_url.spec(), url_from_data.spec());
 }
@@ -147,10 +233,11 @@ TEST_F(OSExchangeDataWinTest, RemoveData) {
   // Construct a new object with the old object so that we can use our access
   // APIs.
   OSExchangeData data2(data.provider().Clone());
-  EXPECT_TRUE(data2.HasURL(CONVERT_FILENAMES));
+  EXPECT_TRUE(data2.HasURL(FilenameToURLPolicy::CONVERT_FILENAMES));
   GURL url_from_data;
   std::wstring title;
-  EXPECT_TRUE(data2.GetURLAndTitle(CONVERT_FILENAMES, &url_from_data, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(FilenameToURLPolicy::CONVERT_FILENAMES,
+                                   &url_from_data, &title));
   EXPECT_EQ(GURL(input2).spec(), url_from_data.spec());
 }
 
@@ -221,8 +308,7 @@ TEST_F(OSExchangeDataWinTest, EnumerationViaCOM) {
   Microsoft::WRL::ComPtr<IDataObject> com_data(
       OSExchangeDataProviderWin::GetIDataObject(data));
   Microsoft::WRL::ComPtr<IEnumFORMATETC> enumerator;
-  EXPECT_EQ(S_OK, com_data.Get()->EnumFormatEtc(DATADIR_GET,
-                                                enumerator.GetAddressOf()));
+  EXPECT_EQ(S_OK, com_data.Get()->EnumFormatEtc(DATADIR_GET, &enumerator));
 
   // Test that we can get one item.
   {
@@ -275,7 +361,7 @@ TEST_F(OSExchangeDataWinTest, EnumerationViaCOM) {
     EXPECT_EQ(S_OK, enumerator->Reset());
     EXPECT_EQ(S_OK, enumerator->Skip(1));
     Microsoft::WRL::ComPtr<IEnumFORMATETC> cloned_enumerator;
-    EXPECT_EQ(S_OK, enumerator.Get()->Clone(cloned_enumerator.GetAddressOf()));
+    EXPECT_EQ(S_OK, enumerator.Get()->Clone(&cloned_enumerator));
     EXPECT_EQ(S_OK, enumerator.Get()->Reset());
 
     {
@@ -844,7 +930,7 @@ TEST_F(OSExchangeDataWinTest, CFHtml) {
 
 TEST_F(OSExchangeDataWinTest, SetURLWithMaxPath) {
   OSExchangeData data;
-  std::wstring long_title(L'a', MAX_PATH + 1);
+  std::wstring long_title(MAX_PATH + 1, L'a');
   data.SetURL(GURL("http://google.com"), long_title);
 }
 
@@ -853,10 +939,11 @@ TEST_F(OSExchangeDataWinTest, ProvideURLForPlainTextURL) {
   data.SetString(L"http://google.com");
 
   OSExchangeData data2(data.provider().Clone());
-  ASSERT_TRUE(data2.HasURL(CONVERT_FILENAMES));
+  ASSERT_TRUE(data2.HasURL(FilenameToURLPolicy::CONVERT_FILENAMES));
   GURL read_url;
   std::wstring title;
-  EXPECT_TRUE(data2.GetURLAndTitle(CONVERT_FILENAMES, &read_url, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(FilenameToURLPolicy::CONVERT_FILENAMES,
+                                   &read_url, &title));
   EXPECT_EQ(GURL("http://google.com"), read_url);
 }
 
@@ -895,6 +982,64 @@ TEST_F(OSExchangeDataWinTest, OnDownloadCompleted) {
   OSExchangeDataProviderWin::GetDataObjectImpl(data)->OnDownloadCompleted(
       base::FilePath());
   EXPECT_TRUE(weak_ptr);
+}
+
+// Verifies the data set by DataObjectImpl::SetData with |fRelease| is released
+// correctly after the DataObjectImpl instance is destroyed.
+TEST_F(OSExchangeDataWinTest, SetDataRelease) {
+  RefCountMockStream stream;
+
+  ASSERT_EQ(stream.AddRef(), 1u);
+  {
+    OSExchangeDataProviderWin data_provider;
+    IDataObject* data_object = data_provider.data_object();
+
+    ClipboardFormatType format(
+        /* cfFormat= */ CF_TEXT, /* lindex= */ -1, /* tymed= */ TYMED_ISTREAM);
+    FORMATETC format_etc = format.ToFormatEtc();
+
+    STGMEDIUM medium;
+    medium.tymed = TYMED_ISTREAM;
+    medium.pstm = &stream;
+    medium.pUnkForRelease = nullptr;
+
+    // |stream| should be released when |data_object| is destroyed since it
+    // takes responsibility to release |stream| after used.
+    EXPECT_EQ(S_OK,
+              data_object->SetData(&format_etc, &medium, /* fRelease= */ TRUE));
+    ASSERT_EQ(stream.GetRefCount(), 1u);
+  }
+
+  EXPECT_EQ(stream.GetRefCount(), 0u);
+}
+
+// Verifies the data duplicated by DataObjectImpl::SetData without |fRelease|
+// is released correctly after the DataObjectImpl instance destroyed.
+TEST_F(OSExchangeDataWinTest, SetDataNoRelease) {
+  RefCountMockStream stream;
+
+  ASSERT_EQ(stream.GetRefCount(), 0u);
+  {
+    OSExchangeDataProviderWin data_provider;
+    IDataObject* data_object = data_provider.data_object();
+
+    ClipboardFormatType format(
+        /* cfFormat= */ CF_TEXT, /* lindex= */ -1, /* tymed= */ TYMED_ISTREAM);
+    FORMATETC format_etc = format.ToFormatEtc();
+
+    STGMEDIUM medium;
+    medium.tymed = TYMED_ISTREAM;
+    medium.pstm = &stream;
+    medium.pUnkForRelease = nullptr;
+
+    EXPECT_EQ(S_OK, data_object->SetData(&format_etc, &medium,
+                                         /* fRelease= */ FALSE));
+    ASSERT_EQ(stream.GetRefCount(), 1u);
+  }
+
+  // Reference count should be the same as before if |data_object| is
+  // destroyed.
+  EXPECT_EQ(stream.GetRefCount(), 0u);
 }
 
 }  // namespace ui

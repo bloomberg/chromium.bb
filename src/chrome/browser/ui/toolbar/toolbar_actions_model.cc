@@ -14,11 +14,12 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/one_shot_event.h"
+#include "base/ranges/algorithm.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -28,13 +29,13 @@
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/pref_names.h"
@@ -153,7 +154,7 @@ void ToolbarActionsModel::SetVisibleIconCount(size_t count) {
 }
 
 void ToolbarActionsModel::OnExtensionActionUpdated(
-    ExtensionAction* extension_action,
+    extensions::ExtensionAction* extension_action,
     content::WebContents* web_contents,
     content::BrowserContext* browser_context) {
   // Notify observers if the extension exists and is in the model.
@@ -242,6 +243,10 @@ void ToolbarActionsModel::OnLoadFailure(
   }
 }
 
+void ToolbarActionsModel::OnExtensionManagementSettingsChanged() {
+  OnActionToolbarPrefChange();
+}
+
 void ToolbarActionsModel::RemovePref(const ActionId& action_id) {
   auto pos = std::find(last_known_positions_.begin(),
                        last_known_positions_.end(), action_id);
@@ -276,6 +281,10 @@ void ToolbarActionsModel::OnReady() {
   // taken from prefs.
   extension_registry_observer_.Add(extension_registry_);
   extension_action_observer_.Add(extension_action_api_);
+
+  auto* management =
+      extensions::ExtensionManagementFactory::GetForBrowserContext(profile_);
+  extension_management_observer_.Add(management);
 
   actions_initialized_ = true;
   for (Observer& observer : observers_)
@@ -452,6 +461,13 @@ bool ToolbarActionsModel::IsActionPinned(const ActionId& action_id) const {
   return base::Contains(pinned_action_ids_, action_id);
 }
 
+bool ToolbarActionsModel::IsActionForcePinned(const ActionId& action_id) const {
+  DCHECK(base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+  auto* management =
+      extensions::ExtensionManagementFactory::GetForBrowserContext(profile_);
+  return base::Contains(management->GetForcePinnedList(), action_id);
+}
+
 void ToolbarActionsModel::MovePinnedAction(const ActionId& action_id,
                                            size_t target_index) {
   DCHECK(base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
@@ -519,11 +535,11 @@ void ToolbarActionsModel::InitializeActionList() {
     if (!profile_->IsOffTheRecord() && !action_ids_.empty()) {
       base::UmaHistogramCounts100("Extensions.Toolbar.PinnedExtensionCount2",
                                   pinned_action_ids_.size());
-      double percentage_double =
-          pinned_action_ids_.size() / action_ids_.size() * 100.0;
+      double percentage_double = double{pinned_action_ids_.size()} /
+                                 double{action_ids_.size()} * 100.0;
       int percentage = int{percentage_double};
-      base::UmaHistogramPercentage(
-          "Extensions.Toolbar.PinnedExtensionPercentage2", percentage);
+      base::UmaHistogramPercentageObsoleteDoNotUse(
+          "Extensions.Toolbar.PinnedExtensionPercentage3", percentage);
     }
   }
 }
@@ -657,6 +673,7 @@ void ToolbarActionsModel::SetActionVisibility(const ActionId& action_id,
                                               bool is_now_visible) {
   if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
     DCHECK_NE(is_now_visible, IsActionPinned(action_id));
+    DCHECK(!IsActionForcePinned(action_id));
     auto new_pinned_action_ids = pinned_action_ids_;
     if (is_now_visible) {
       new_pinned_action_ids.push_back(action_id);
@@ -830,10 +847,19 @@ void ToolbarActionsModel::UpdatePinnedActionIds() {
 
 std::vector<ToolbarActionsModel::ActionId>
 ToolbarActionsModel::GetFilteredPinnedActionIds() const {
+  // Force-pinned extensions should always be present in the output vector.
+  extensions::ExtensionIdList pinned = extension_prefs_->GetPinnedExtensions();
+  auto* management =
+      extensions::ExtensionManagementFactory::GetForBrowserContext(profile_);
+  // O(n^2), but there are typically very few force-pinned extensions.
+  base::ranges::copy_if(
+      management->GetForcePinnedList(), std::back_inserter(pinned),
+      [&pinned](const std::string& id) { return !base::Contains(pinned, id); });
+
   // TODO(pbos): Make sure that the pinned IDs are pruned from ExtensionPrefs on
   // startup so that we don't keep saving stale IDs.
   std::vector<ActionId> filtered_action_ids;
-  for (auto& action_id : extension_prefs_->GetPinnedExtensions()) {
+  for (auto& action_id : pinned) {
     if (HasAction(action_id))
       filtered_action_ids.push_back(action_id);
   }

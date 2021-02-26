@@ -2,17 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/apple/tweak_info_plist.gni")
 import("//build/config/ios/rules.gni")
 import("//build/config/locales.gni")
 import("//build/config/mac/base_rules.gni")
-import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/build/config.gni")
 import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 import("//tools/grit/repack.gni")
 
+assert(
+    ios_enable_content_widget_extension,
+    "ios_enable_content_widget_extension must be true to depend on //ios/chrome/content_widget_extension")
+
 tweak_info_plist("tweak_info_plist") {
   info_plist = "Info.plist"
+
+  # TODO(crbug.com/1140474): Remove once iOS 14.2 reaches mass adoption.
+  if (ios_lock_to_version != "") {
+    args = [ "--lock-to-version=$ios_lock_to_version" ]
+  }
 }
 
 compile_entitlements("entitlements") {
@@ -61,7 +70,7 @@ source_set("content_widget") {
     "//ios/chrome/common/ui/util",
   ]
 
-  libs = [
+  frameworks = [
     "Foundation.framework",
     "NotificationCenter.framework",
     "UIKit.framework",

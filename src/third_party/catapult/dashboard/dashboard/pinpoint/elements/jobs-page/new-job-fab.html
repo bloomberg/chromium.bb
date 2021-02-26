@@ -143,7 +143,6 @@ found in the LICENSE file.
               <input type="hidden" name="grouping_label" disabled$="[[!job.arguments.grouping_label]]" value="[[job.arguments.grouping_label]]">
               <input type="hidden" name="trace" disabled$="[[!job.arguments.trace]]" value="[[job.arguments.trace]]">
               <input type="hidden" name="tags" disabled$="[[!job.arguments.tags]]" value="[[job.arguments.tags]]">
-              <input type="hidden" name="pin" disabled$="[[!job.arguments.pin]]" value="[[job.arguments.pin]]">
             </template>
 
             <div class="divider">
@@ -243,18 +242,43 @@ found in the LICENSE file.
 
             <template is="dom-if" if="[[!isBisectJob(comparisonMode)]]">
               <div class="horizontal">
-                <commit-details class="column rightPad" value="{{base_git_hash}}" label="Base Git Hash" items="[[commitsListItems(commitsList)]]" headers="[[authHeaders]]" required disabled="[[isBisectJob(comparisonMode)]]"></commit-details>
-                <paper-input class="column" name="patch" value="{{patch}}" label="Gerrit URL" required disabled="[[isBisectJob(comparisonMode)]]"></paper-input>
+                <commit-details class="column rightPad"
+                                project="{{project}}"
+                                value="{{base_git_hash}}"
+                                label="Base Git Hash"
+                                items="[[commitsListItems(commitsList)]]"
+                                headers="[[authHeaders]]"
+                                required disabled="[[isBisectJob(comparisonMode)]]"></commit-details>
+                <paper-input class="column" name="patch" value="{{patch}}" label="Patch to apply (Gerrit URL)" required disabled="[[isBisectJob(comparisonMode)]]"></paper-input>
               </div>
             </template>
 
             <template is="dom-if" if="[[isBisectJob(comparisonMode)]]">
               <div class="horizontal">
-                  <commit-details class="column rightPad" value="{{start_git_hash}}" label="Start Git Hash" items="[[commitsListItems(commitsList)]]" headers="[[authHeaders]]" required disabled="[[!isBisectJob(comparisonMode)]]"></commit-details>
-                  <commit-details class="column" value="{{end_git_hash}}" label="End Git Hash" items="[[commitsListItems(commitsList)]]" headers="[[authHeaders]]" required disabled="[[!isBisectJob(comparisonMode)]]"></commit-details>
+                  <commit-details class="column rightPad"
+                                  project="{{project}}"
+                                  value="{{start_git_hash}}"
+                                  label="Start Git Hash"
+                                  items="[[commitsListItems(commitsList)]]"
+                                  headers="[[authHeaders]]"
+                                  required disabled="[[!isBisectJob(comparisonMode)]]"></commit-details>
+                  <commit-details class="column"
+                                  project="{{project}}"
+                                  value="{{end_git_hash}}"
+                                  label="End Git Hash"
+                                  items="[[commitsListItems(commitsList)]]"
+                                  headers="[[authHeaders]]"
+                                  required disabled="[[!isBisectJob(comparisonMode)]]"></commit-details>
               </div>
             </template>
 
+            <!-- If we're showing a bisection, we should allow setting
+              the "pin" field to allow re-running the job with a provided
+              patch. -->
+            <template is="dom-if" if="[[isBisectJob(comparisonMode)]]">
+              <paper-input name="pin" value="[[job.arguments.pin]]" label="Patch to apply (Gerrit URL)"></paper-input>
+            </template>
+            <paper-input name="project" value="{{project::input}}" label="Monorail Project"></paper-input>
             <paper-input name="bug_id" value="{{bug_id}}" label="Bug ID"></paper-input>
 
             <paper-checkbox name="experimental_execution_engine">
@@ -272,10 +296,7 @@ found in the LICENSE file.
   <script>
     'use strict';
 
-    const _NON_TELEMETRY_TARGETS = [
-      'base_perftests', 'angle_perftests', 'cc_perftests',
-      'gpu_perftests', 'load_library_perf_tests', 'media_perftests',
-      'net_perftests', 'tracing_perftests', 'vr_common_perftests'];
+    const _NON_TELEMETRY_TARGETS = ['vr_common_perftests', 'webrtc_perf_tests'];
 
     const _STATISTICS = ['avg', 'count', 'max', 'min', 'std', 'sum'];
 
@@ -288,6 +309,10 @@ found in the LICENSE file.
         benchmarkConfigLoading: {
           type: Boolean,
           value: false
+        },
+        project: {
+          type: String,
+          value: 'chromium'
         },
         bug_id: String,
         chart: String,
@@ -421,6 +446,7 @@ found in the LICENSE file.
           return;
         }
         this.bug_id = job.bug_id;
+        this.project = job.arguments.project;
         this.patch = job.arguments.patch;
         // Legacy try job doesn't have base_git_hash, use end_git_hash instead
         this.base_git_hash = job.arguments.base_git_hash ||
@@ -456,6 +482,7 @@ found in the LICENSE file.
 
       commitsParams(job) {
         return {
+          repository: job.arguments.project ? job.arguments.project : 'chromium',
           start_git_hash: job.arguments.start_git_hash,
           end_git_hash: job.arguments.end_git_hash
         };

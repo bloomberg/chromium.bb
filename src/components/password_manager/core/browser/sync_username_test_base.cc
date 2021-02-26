@@ -6,10 +6,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/password_manager/core/browser/password_form.h"
 
 using autofill::FormData;
 using autofill::FormFieldData;
-using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 
 namespace password_manager {
@@ -76,7 +76,7 @@ PasswordForm SyncUsernameTestBase::SimpleNonGaiaForm(const char* username,
   PasswordForm form;
   form.signon_realm = "https://site.com";
   form.username_value = ASCIIToUTF16(username);
-  form.origin = GURL(origin);
+  form.url = GURL(origin);
   form.form_data = CreateSigninFormData(GURL(form.signon_realm), username);
   return form;
 }

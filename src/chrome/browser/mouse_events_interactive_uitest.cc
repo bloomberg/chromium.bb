@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -81,8 +81,8 @@ class MouseEventsTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(MouseEventsTest);
 };
 
-#if defined(OS_MACOSX)
-// OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
+#if defined(OS_MAC)
+// OS_MAC: Missing automation provider support: http://crbug.com/45892.
 #define MAYBE_MouseOver DISABLED_MouseOver
 #else
 #define MAYBE_MouseOver MouseOver
@@ -92,8 +92,8 @@ IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_MouseOver) {
   NavigateAndWaitForMouseOver();
 }
 
-#if defined(OS_MACOSX)
-// OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
+#if defined(OS_MAC)
+// OS_MAC: Missing automation provider support: http://crbug.com/45892.
 #define MAYBE_ClickAndDoubleClick DISABLED_ClickAndDoubleClick
 #else
 #define MAYBE_ClickAndDoubleClick ClickAndDoubleClick
@@ -109,8 +109,9 @@ IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_ClickAndDoubleClick) {
   WaitForTitle("ondblclick");
 }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
-// OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_WIN)
+// OS_MAC: Missing automation provider support: http://crbug.com/45892.
 // OS_LINUX, OS_WIN: http://crbug.com/133361.
 #define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
 #else
@@ -122,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_TestOnMouseOut) {
 }
 
 #if defined(OS_WIN)
-// OS_MACOSX: Missing automation provider support: http://crbug.com/45892
+// OS_MAC: Missing automation provider support: http://crbug.com/45892
 // OS_LINUX: http://crbug.com/133361. interactive mouse tests are flaky.
 IN_PROC_BROWSER_TEST_F(MouseEventsTest, MouseDownOnBrowserCaption) {
   gfx::Rect browser_bounds = browser()->window()->GetBounds();
@@ -133,15 +134,15 @@ IN_PROC_BROWSER_TEST_F(MouseEventsTest, MouseDownOnBrowserCaption) {
 }
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
 // Test that a mouseleave is not triggered when showing the context menu.
 // If the test is failed, it means that Blink gets the mouseleave event
 // when showing the context menu and it could make the unexpecting
 // content behavior such as clearing the hover status.
 // Please refer to the below issue for understanding what happens .
-// TODO: Make test pass on OS_WIN and OS_MACOSX
+// TODO: Make test pass on OS_WIN and OS_MAC
 // OS_WIN: Flaky. See http://crbug.com/656101.
-// OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
+// OS_MAC: Missing automation provider support: http://crbug.com/45892.
 #define MAYBE_ContextMenu DISABLED_ContextMenu
 #else
 #define MAYBE_ContextMenu ContextMenu
@@ -165,12 +166,13 @@ IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_ContextMenu) {
   EXPECT_EQ(success_title, done_title_watcher.WaitAndGetTitle());
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 // Test that a mouseleave is not triggered when showing a modal dialog.
 // Sample regression: crbug.com/394672
-// TODO: Make test pass on OS_WIN and OS_MACOSX
+// TODO: Make test pass on OS_WIN and OS_MAC
 // OS_WIN: http://crbug.com/450138
-// OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
+// OS_MAC: Missing automation provider support: http://crbug.com/45892.
 // OS_LINUX: Flaky http://crbug.com/838120
 #define MAYBE_ModalDialog DISABLED_ModalDialog
 #else

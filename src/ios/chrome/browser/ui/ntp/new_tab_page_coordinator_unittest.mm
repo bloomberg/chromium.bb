@@ -11,9 +11,13 @@
 #include "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
@@ -44,6 +48,10 @@ class NewTabPageCoordinatorTest : public PlatformTest {
     test_cbs_builder.AddTestingFactory(
         IOSChromeLargeIconServiceFactory::GetInstance(),
         IOSChromeLargeIconServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        AuthenticationServiceFactory::GetInstance(),
+        base::BindRepeating(
+            &AuthenticationServiceFake::CreateAuthenticationService));
     browser_state_ = test_cbs_builder.Build();
 
     toolbar_delegate_ =
@@ -59,6 +67,8 @@ class NewTabPageCoordinatorTest : public PlatformTest {
           [[NewTabPageCoordinator alloc] initWithBrowser:browser_.get()];
     } else {
       browser_ = std::make_unique<TestBrowser>(browser_state_.get());
+      scene_state_ = OCMClassMock([SceneState class]);
+      SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
       coordinator_ =
           [[NewTabPageCoordinator alloc] initWithBrowser:browser_.get()];
     }
@@ -73,6 +83,7 @@ class NewTabPageCoordinatorTest : public PlatformTest {
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<Browser> browser_;
+  id scene_state_;
   NewTabPageCoordinator* coordinator_;
 };
 

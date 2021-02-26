@@ -18,6 +18,10 @@ Per-Milestone Binary Size Breakdowns:
 
  * https://chrome-supersize.firebaseapp.com/chrome-supersize/index.html
 
+Guide to dealing with chrome-perf size alerts:
+
+ * [//docs/speed/apk_size_regressions.md](/docs/speed/apk_size_regressions.md)
+
 [TOC]
 
 ## Binary Size Trybot (android-binary-size)
@@ -38,7 +42,7 @@ Per-Milestone Binary Size Breakdowns:
    [chromeperf](https://chromeperf.appspot.com/report) under
    `Test suite="resource_sizes ($APK)"`.
  * Metrics reported by this tool are described in
-   [//docs/speed/binary_size/metrics.md](//docs/speed/binary_size/metrics.md).
+   [//docs/speed/binary_size/metrics.md](/docs/speed/binary_size/metrics.md).
 
 ## SuperSize
 
@@ -341,6 +345,9 @@ tools/binary_size/diagnose_bloat.py HEAD --gn-args="is_official_build=false" -v
 
 # Build and diff all contiguous revs in range BEFORE_REV..AFTER_REV for src/v8.
 tools/binary_size/diagnose_bloat.py AFTER_REV --reference-rev BEFORE_REV --subrepo v8 --all -v
+
+# Build and diff system_webview_apk HEAD^ and HEAD with arsc obfucstion disabled.
+tools/binary_size/diagnose_bloat.py HEAD --target system_webview_apk --gn-args enable_arsc_obfuscation=false
 
 # Display detailed usage info (there are many options).
 tools/binary_size/diagnose_bloat.py -h

@@ -14,16 +14,18 @@
 class SkSurfaceCharacterization;
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrRenderTask.h"
 #include "src/gpu/ccpr/GrCCPerOpsTaskPaths.h"
 #endif
 
 SkDeferredDisplayList::SkDeferredDisplayList(const SkSurfaceCharacterization& characterization,
+                                             sk_sp<GrRenderTargetProxy> targetProxy,
                                              sk_sp<LazyProxyData> lazyProxyData)
         : fCharacterization(characterization)
 #if SK_SUPPORT_GPU
-    , fLazyProxyData(std::move(lazyProxyData))
+        , fTargetProxy(std::move(targetProxy))
+        , fLazyProxyData(std::move(lazyProxyData))
 #endif
 {
 }
@@ -39,9 +41,9 @@ SkDeferredDisplayList::~SkDeferredDisplayList() {
 //-------------------------------------------------------------------------------------------------
 #if SK_SUPPORT_GPU
 
-SkDeferredDisplayList::ProgramIterator::ProgramIterator(GrContext* context,
+SkDeferredDisplayList::ProgramIterator::ProgramIterator(GrDirectContext* dContext,
                                                         SkDeferredDisplayList* ddl)
-    : fContext(context)
+    : fDContext(dContext)
     , fProgramData(ddl->programData())
     , fIndex(0) {
 }
@@ -49,11 +51,11 @@ SkDeferredDisplayList::ProgramIterator::ProgramIterator(GrContext* context,
 SkDeferredDisplayList::ProgramIterator::~ProgramIterator() {}
 
 bool SkDeferredDisplayList::ProgramIterator::compile() {
-    if (!fContext || fIndex < 0 || fIndex >= (int) fProgramData.size()) {
+    if (!fDContext || fIndex < 0 || fIndex >= (int) fProgramData.size()) {
         return false;
     }
 
-    return fContext->priv().compile(fProgramData[fIndex].desc(), fProgramData[fIndex].info());
+    return fDContext->priv().compile(fProgramData[fIndex].desc(), fProgramData[fIndex].info());
 }
 
 bool SkDeferredDisplayList::ProgramIterator::done() const {

@@ -52,7 +52,7 @@ void RTCEncodedVideoFrameDelegate::SetData(const DOMArrayBuffer* data) {
   MutexLocker lock(mutex_);
   if (webrtc_frame_ && data) {
     webrtc_frame_->SetData(rtc::ArrayView<const uint8_t>(
-        static_cast<const uint8_t*>(data->Data()), data->ByteLengthAsSizeT()));
+        static_cast<const uint8_t*>(data->Data()), data->ByteLength()));
   }
 }
 
@@ -78,6 +78,12 @@ DOMArrayBuffer* RTCEncodedVideoFrameDelegate::CreateAdditionalDataBuffer()
 uint32_t RTCEncodedVideoFrameDelegate::Ssrc() const {
   MutexLocker lock(mutex_);
   return webrtc_frame_ ? webrtc_frame_->GetSsrc() : 0;
+}
+
+const webrtc::VideoFrameMetadata* RTCEncodedVideoFrameDelegate::GetMetadata()
+    const {
+  MutexLocker lock(mutex_);
+  return webrtc_frame_ ? &webrtc_frame_->GetMetadata() : nullptr;
 }
 
 std::unique_ptr<webrtc::TransformableVideoFrameInterface>

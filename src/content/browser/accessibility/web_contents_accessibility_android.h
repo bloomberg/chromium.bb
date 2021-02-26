@@ -24,7 +24,7 @@ class WebContentsImpl;
 
 // Bridges BrowserAccessibilityManagerAndroid and Java WebContentsAccessibility.
 // A RenderWidgetHostConnector runs behind to manage the connection. Referenced
-// by BrowserAccessibilityManagerAndroid for main frame (root manager) only.
+// by BrowserAccessibilityManagerAndroid for main frame only.
 // The others for subframes should acquire this instance through the root
 // manager to access Java layer.
 //
@@ -38,6 +38,10 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
       const base::android::JavaParamRef<jobject>& obj,
       WebContents* web_contents);
   ~WebContentsAccessibilityAndroid() override;
+
+  // Notify the root BrowserAccessibilityManager that this is the
+  // WebContentsAccessibilityAndroid it should talk to.
+  void UpdateBrowserAccessibilityManager();
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -244,10 +248,6 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
 
   void UpdateFrameInfo(float page_scale);
 
-  void set_root_manager(BrowserAccessibilityManagerAndroid* manager) {
-    root_manager_ = manager;
-  }
-
   // --------------------------------------------------------------------------
   // Methods called from the BrowserAccessibilityManager
   // --------------------------------------------------------------------------
@@ -274,6 +274,8 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   base::WeakPtr<WebContentsAccessibilityAndroid> GetWeakPtr();
 
  private:
+  BrowserAccessibilityManagerAndroid* GetRootBrowserAccessibilityManager();
+
   BrowserAccessibilityAndroid* GetAXFromUniqueID(int32_t unique_id);
 
   void CollectStats();
@@ -295,13 +297,11 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
 
   bool use_zoom_for_dsf_enabled_;
 
-  BrowserAccessibilityManagerAndroid* root_manager_;
-
   // Manages the connection between web contents and the RenderFrameHost that
   // receives accessibility events.
   // Owns itself, and destroyed upon WebContentsObserver::WebContentsDestroyed.
   class Connector;
-  Connector* connector_;
+  Connector* connector_ = nullptr;
 
   base::WeakPtrFactory<WebContentsAccessibilityAndroid> weak_ptr_factory_{this};
 

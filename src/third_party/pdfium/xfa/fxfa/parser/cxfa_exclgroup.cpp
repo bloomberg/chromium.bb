@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_exclgroup.h"
 
 #include "fxjs/xfa/cjx_exclgroup.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -60,6 +60,8 @@ CXFA_ExclGroup::CXFA_ExclGroup(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::ExclGroup,
                 kExclGroupPropertyData,
                 kExclGroupAttributeData,
-                pdfium::MakeUnique<CJX_ExclGroup>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_ExclGroup>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_ExclGroup::~CXFA_ExclGroup() = default;

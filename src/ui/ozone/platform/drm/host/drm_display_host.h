@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
@@ -28,13 +29,12 @@ class DrmDisplayHost : public GpuThreadObserver {
   ~DrmDisplayHost() override;
 
   display::DisplaySnapshot* snapshot() const { return snapshot_.get(); }
+  bool is_dummy() const { return is_dummy_; }
 
   void UpdateDisplaySnapshot(std::unique_ptr<display::DisplaySnapshot> params);
-  void Configure(const display::DisplayMode* mode,
-                 const gfx::Point& origin,
-                 display::ConfigureCallback callback);
   void GetHDCPState(display::GetHDCPStateCallback callback);
   void SetHDCPState(display::HDCPState state,
+                    display::ContentProtectionMethod protection_method,
                     display::SetHDCPStateCallback callback);
   void SetColorMatrix(const std::vector<float>& color_matrix);
   void SetGammaCorrection(
@@ -44,8 +44,9 @@ class DrmDisplayHost : public GpuThreadObserver {
 
   // Called when the IPC from the GPU process arrives to answer the above
   // commands.
-  void OnDisplayConfigured(bool status);
-  void OnHDCPStateReceived(bool status, display::HDCPState state);
+  void OnHDCPStateReceived(bool status,
+                           display::HDCPState state,
+                           display::ContentProtectionMethod protection_method);
   void OnHDCPStateUpdated(bool status);
 
   // GpuThreadObserver:
@@ -65,7 +66,6 @@ class DrmDisplayHost : public GpuThreadObserver {
   // synchronous and succeed.
   bool is_dummy_;
 
-  display::ConfigureCallback configure_callback_;
   display::GetHDCPStateCallback get_hdcp_callback_;
   display::SetHDCPStateCallback set_hdcp_callback_;
 

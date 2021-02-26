@@ -14,7 +14,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
@@ -922,7 +922,7 @@ base::circular_deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSVCFrame() {
     DVLOG(1) << "Frame " << i << ", size: " << size;
   }
 
-  DCHECK(!frames_.empty());
+  DCHECK(!frames.empty());
 
   gfx::Size max_frame_size;
 

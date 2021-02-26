@@ -112,13 +112,13 @@ FloatSize LayoutImageResource::ImageSize(float multiplier) const {
   }
   if (layout_object_ && layout_object_->IsLayoutImage() && size.Width() &&
       size.Height())
-    size.Scale(ToLayoutImage(layout_object_)->ImageDevicePixelRatio());
+    size.Scale(To<LayoutImage>(layout_object_)->ImageDevicePixelRatio());
   return size;
 }
 
 FloatSize LayoutImageResource::ImageSizeWithDefaultSize(
     float multiplier,
-    const LayoutSize&) const {
+    const FloatSize&) const {
   return ImageSize(multiplier);
 }
 

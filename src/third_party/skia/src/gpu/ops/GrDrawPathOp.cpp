@@ -5,15 +5,17 @@
  * found in the LICENSE file.
  */
 
-#include "include/private/GrRecordingContext.h"
+#include "src/gpu/ops/GrDrawPathOp.h"
+
+#include "include/gpu/GrRecordingContext.h"
 #include "include/private/SkTemplates.h"
 #include "src/gpu/GrAppliedClip.h"
+#include "src/gpu/GrGpu.h"
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetPriv.h"
-#include "src/gpu/ops/GrDrawPathOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
 static constexpr GrUserStencilSettings kCoverPass{
@@ -35,12 +37,9 @@ GrDrawPathOpBase::GrDrawPathOpBase(uint32_t classID, const SkMatrix& viewMatrix,
         , fDoAA(GrAA::kYes == aa)
         , fProcessorSet(std::move(paint)) {}
 
-#ifdef SK_DEBUG
-SkString GrDrawPathOp::dumpInfo() const {
-    SkString string;
-    string.printf("PATH: 0x%p", fPath.get());
-    string.append(INHERITED::dumpInfo());
-    return string;
+#if GR_TEST_UTILS
+SkString GrDrawPathOp::onDumpInfo() const {
+    return SkStringPrintf("PATH: 0x%p", fPath.get());
 }
 #endif
 
@@ -61,19 +60,17 @@ void init_stencil_pass_settings(const GrOpFlushState& flushState,
     bool stencilClip = appliedClip && appliedClip->hasStencilClip();
     GrRenderTarget* rt = flushState.drawOpArgs().proxy()->peekRenderTarget();
     stencil->reset(GrPathRendering::GetStencilPassSettings(fillType), stencilClip,
-                   rt->renderTargetPriv().numStencilBits());
+                   rt->numStencilBits());
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<GrDrawOp> GrDrawPathOp::Make(GrRecordingContext* context,
-                                             const SkMatrix& viewMatrix,
-                                             GrPaint&& paint,
-                                             GrAA aa,
-                                             sk_sp<const GrPath> path) {
-    GrOpMemoryPool* pool = context->priv().opMemoryPool();
-
-    return pool->allocate<GrDrawPathOp>(viewMatrix, std::move(paint), aa, std::move(path));
+GrOp::Owner GrDrawPathOp::Make(GrRecordingContext* context,
+                               const SkMatrix& viewMatrix,
+                               GrPaint&& paint,
+                               GrAA aa,
+                               sk_sp<const GrPath> path) {
+    return GrOp::Make<GrDrawPathOp>(context, viewMatrix, std::move(paint), aa, std::move(path));
 }
 
 void GrDrawPathOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) {
@@ -84,8 +81,7 @@ void GrDrawPathOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBoun
 
     auto pipeline = GrSimpleMeshDrawOpHelper::CreatePipeline(flushState,
                                                              this->detachProcessorSet(),
-                                                             pipelineFlags,
-                                                             &kCoverPass);
+                                                             pipelineFlags);
 
     sk_sp<GrPathProcessor> pathProc(GrPathProcessor::Create(this->color(), this->viewMatrix()));
 
@@ -95,8 +91,11 @@ void GrDrawPathOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBoun
                               proxy->backendFormat(),
                               flushState->writeView()->origin(),
                               pipeline,
+                              &kCoverPass,
                               pathProc.get(),
-                              GrPrimitiveType::kPath);
+                              GrPrimitiveType::kPath,
+                              0,
+                              flushState->renderPassBarriers());
 
     flushState->bindPipelineAndScissorClip(programInfo, this->bounds());
     flushState->bindTextures(programInfo.primProc(), nullptr, programInfo.pipeline());

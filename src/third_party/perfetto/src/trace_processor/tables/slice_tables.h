@@ -24,6 +24,9 @@ namespace perfetto {
 namespace trace_processor {
 namespace tables {
 
+// @name slice
+// @tablegroup Events
+// @param arg_set_id {@joinable args.arg_set_id}
 #define PERFETTO_TP_SLICE_TABLE_DEF(NAME, PARENT, C) \
   NAME(SliceTable, "internal_slice")                 \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                  \
@@ -40,6 +43,8 @@ namespace tables {
 
 PERFETTO_TP_TABLE(PERFETTO_TP_SLICE_TABLE_DEF);
 
+// @tablegroup Events
+// @param arg_set_id {@joinable args.arg_set_id}
 #define PERFETTO_TP_INSTANT_TABLE_DEF(NAME, PARENT, C) \
   NAME(InstantTable, "instant")                        \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                    \
@@ -51,6 +56,8 @@ PERFETTO_TP_TABLE(PERFETTO_TP_SLICE_TABLE_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_INSTANT_TABLE_DEF);
 
+// @tablegroup Events
+// @param utid {@joinable thread.utid}
 #define PERFETTO_TP_SCHED_SLICE_TABLE_DEF(NAME, PARENT, C) \
   NAME(SchedSliceTable, "sched_slice")                     \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                        \
@@ -63,6 +70,21 @@ PERFETTO_TP_TABLE(PERFETTO_TP_INSTANT_TABLE_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_SCHED_SLICE_TABLE_DEF);
 
+// @tablegroup Events
+// @param utid {@joinable thread.utid}
+#define PERFETTO_TP_THREAD_STATE_TABLE_DEF(NAME, PARENT, C) \
+  NAME(ThreadStateTable, "thread_state")                    \
+  PERFETTO_TP_ROOT_TABLE(PARENT, C)                         \
+  C(int64_t, ts)                                            \
+  C(int64_t, dur)                                           \
+  C(base::Optional<uint32_t>, cpu)                          \
+  C(uint32_t, utid)                                         \
+  C(StringPool::Id, state)                                  \
+  C(base::Optional<uint32_t>, io_wait)
+
+PERFETTO_TP_TABLE(PERFETTO_TP_THREAD_STATE_TABLE_DEF);
+
+// @tablegroup Events
 #define PERFETTO_TP_GPU_SLICES_DEF(NAME, PARENT, C) \
   NAME(GpuSliceTable, "gpu_slice")                  \
   PARENT(PERFETTO_TP_SLICE_TABLE_DEF, C)            \
@@ -75,29 +97,22 @@ PERFETTO_TP_TABLE(PERFETTO_TP_SCHED_SLICE_TABLE_DEF);
   C(StringPool::Id, command_buffer_name)            \
   C(base::Optional<uint32_t>, frame_id)             \
   C(base::Optional<uint32_t>, submission_id)        \
-  C(base::Optional<uint32_t>, hw_queue_id)
+  C(base::Optional<int64_t>, hw_queue_id)           \
+  C(StringPool::Id, render_subpasses)
 
 PERFETTO_TP_TABLE(PERFETTO_TP_GPU_SLICES_DEF);
 
+// @tablegroup Events
 #define PERFETTO_TP_GRAPHICS_FRAME_SLICES_DEF(NAME, PARENT, C) \
   NAME(GraphicsFrameSliceTable, "frame_slice")                 \
   PARENT(PERFETTO_TP_SLICE_TABLE_DEF, C)                       \
-  C(StringPool::Id, frame_numbers)                             \
-  C(StringPool::Id, layer_names)
-
-PERFETTO_TP_TABLE(PERFETTO_TP_GRAPHICS_FRAME_SLICES_DEF);
-
-// frame_slice -> frame_stats : 1 -> Many,
-// with frame_slice.id = frame_stats.slice_id
-#define PERFETTO_TP_GRAPHICS_FRAME_STATS_DEF(NAME, PARENT, C) \
-  NAME(GraphicsFrameStatsTable, "frame_stats")                \
-  PERFETTO_TP_ROOT_TABLE(PARENT, C)                           \
-  C(uint32_t, slice_id)                                       \
-  C(int64_t, queue_to_acquire_time)                           \
-  C(int64_t, acquire_to_latch_time)                           \
+  C(uint32_t, frame_number)                                    \
+  C(StringPool::Id, layer_name)                                \
+  C(int64_t, queue_to_acquire_time)                            \
+  C(int64_t, acquire_to_latch_time)                            \
   C(int64_t, latch_to_present_time)
 
-PERFETTO_TP_TABLE(PERFETTO_TP_GRAPHICS_FRAME_STATS_DEF);
+PERFETTO_TP_TABLE(PERFETTO_TP_GRAPHICS_FRAME_SLICES_DEF);
 
 #define PERFETTO_TP_DESCRIBE_SLICE_TABLE(NAME, PARENT, C) \
   NAME(DescribeSliceTable, "describe_slice")              \

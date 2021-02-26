@@ -44,9 +44,9 @@ Affects:
     output/outcoff.c
 
 ------------------------------------------------------------------
-commit dff67a9842e4ab6699598d75691a630df090e7f5
+commit e62fca4a4a7f10e4f1e0506f2cfdb6c1c4b7cf3a
 Author: Reid Kleckner <rnk@google.com>
-Date:   Tue Aug 6 15:16:16 2019 -0700
+Date:   Tue Aug 6 15:24:48 2019 -0700
 
     Fix extern_inline for MSVC and clang-cl
 
@@ -75,7 +75,36 @@ Date:   Tue Aug 6 15:16:16 2019 -0700
     it from the build, but I felt it was best to solve this in source code
     instead of the build system.
 
+    R=dalecurtis@chromium.org, davidben@chromium.org
+
+    Chromium-specific: I reran find_patches.py with some modifications to
+    make it work on Windows.
+    Change-Id: I21011ed4f619f920c53f7cfc3afaa32dc2c0ff4e
+
 Affects:
     include/compiler.h
     include/ilog2.h
+
+------------------------------------------------------------------
+commit 2326c263ecb55e2fb0747def58855198bdd0fbc4
+Author: H. Peter Anvin (Intel) <hpa@zytor.com>
+Date:   Mon Jul 6 21:46:43 2020 -0700
+
+    BR 3392692: outcoff: allow user to reduce the default alignment
+
+    NASM would incorrectly only allow for the alignment to be increased,
+    even when overridden by the user. Allow the user to specify any
+    alignment value and have it override the partition type default.
+
+    The user can increade their own alignment value specification later,
+    of course, and the sectalign directive will present a floor for either
+    kind of specification.
+
+    Reported-by: Dale Curtis <dalecurtis@chromium.org>
+    Signed-off-by: H. Peter Anvin (Intel) <hpa@zytor.com>
+
+Affects:
+    doc/nasmdoc.src
+    output/outcoff.c
+    output/pecoff.h
 

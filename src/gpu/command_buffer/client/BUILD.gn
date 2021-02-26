@@ -2,8 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//ui/gl/features.gni")
+
+if (!is_nacl) {
+  import("//skia/features.gni")
+}
 
 declare_args() {
   # Enable GPU client logging without DCHECK being on.
@@ -45,7 +48,7 @@ group("webgpu") {
   }
 }
 
-jumbo_source_set("client_sources") {
+source_set("client_sources") {
   # External code should depend on this via //gpu/client above rather than
   # depending on this directly or the component build will break.
   visibility = [ "//gpu/*" ]
@@ -71,13 +74,10 @@ jumbo_source_set("client_sources") {
     "mapped_memory.h",
     "ring_buffer.cc",
     "ring_buffer.h",
-    "shared_image_interface.cc",
-    "shared_image_interface.h",
     "transfer_buffer.cc",
     "transfer_buffer.h",
     "transfer_buffer_cmd_copy_helpers.h",
   ]
-
   configs += [ "//gpu:gpu_implementation" ]
 
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
@@ -93,6 +93,18 @@ jumbo_source_set("client_sources") {
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
   ]
+
+  # These files now rely on Skia which isn't allowed as a dependency in nacl builds.
+  if (!is_nacl) {
+    sources += [
+      "shared_image_interface.cc",
+      "shared_image_interface.h",
+    ]
+
+    public_deps += [ "//skia" ]
+
+    deps += [ "//skia:buildflags" ]
+  }
 }
 
 source_set("gles2_cmd_helper_sources") {
@@ -192,6 +204,7 @@ source_set("raster_interface") {
     "//base",
     "//components/viz/common:resource_format",
     "//gpu/command_buffer/common",
+    "//skia:skia",
     "//ui/gfx:buffer_types",
   ]
 }
@@ -210,7 +223,7 @@ source_set("webgpu_interface") {
 }
 
 # Library emulates GLES2 using command_buffers.
-jumbo_component("gles2_implementation") {
+component("gles2_implementation") {
   sources = gles2_implementation_source_files
 
   defines = [ "GLES2_IMPL_IMPLEMENTATION" ]
@@ -308,7 +321,7 @@ source_set("webgpu_sources") {
 }
 
 # Library emulates GLES2 using command_buffers.
-jumbo_component("gles2_implementation_no_check") {
+component("gles2_implementation_no_check") {
   sources = gles2_implementation_source_files
 
   defines = [
@@ -354,7 +367,7 @@ component("gles2_c_lib") {
 
 # Same as gles2_c_lib except with no parameter checking. Required for
 # OpenGL ES 2.0 conformance tests.
-jumbo_component("gles2_c_lib_nocheck") {
+component("gles2_c_lib_nocheck") {
   sources = gles2_c_lib_source_files
 
   defines = [

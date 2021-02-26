@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/test_simple_task_runner.h"
@@ -84,6 +84,19 @@ class SynchronousSimpleTaskRunner : public base::TestSimpleTaskRunner {
   ~SynchronousSimpleTaskRunner() override = default;
 
   bool run_tasks_synchronously_ = false;
+};
+
+class FakeRasterBuffer : public RasterBuffer {
+ public:
+  void Playback(const RasterSource* raster_source,
+                const gfx::Rect& raster_full_rect,
+                const gfx::Rect& raster_dirty_rect,
+                uint64_t new_content_id,
+                const gfx::AxisTransform2d& transform,
+                const RasterSource::PlaybackSettings& playback_settings,
+                const GURL& url) override {}
+
+  bool SupportsBackgroundThreadPriority() const override { return true; }
 };
 
 class TileManagerTilePriorityQueueTest : public TestLayerTreeHostBase {
@@ -830,7 +843,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
 
   scoped_refptr<FakeRasterSource> pending_raster_source =
-      FakeRasterSource::CreateFilled(layer_bounds);
+      FakeRasterSource::CreateFilledWithText(layer_bounds);
   SetupPendingTree(pending_raster_source);
 
   auto* pending_child_layer = AddLayer<FakePictureLayerImpl>(
@@ -1568,6 +1581,8 @@ class TestSoftwareRasterBufferProvider : public FakeRasterBufferProviderImpl {
           gfx::ColorSpace(), kIsGpuCompositing, playback_settings);
     }
 
+    bool SupportsBackgroundThreadPriority() const override { return true; }
+
    private:
     gfx::Size size_;
     void* pixels_;
@@ -2188,17 +2203,6 @@ class InvalidResourceRasterBufferProvider
         uint64_t tracing_process_id,
         int importance) const override {}
   };
-
-  class FakeRasterBuffer : public RasterBuffer {
-   public:
-    void Playback(const RasterSource* raster_source,
-                  const gfx::Rect& raster_full_rect,
-                  const gfx::Rect& raster_dirty_rect,
-                  uint64_t new_content_id,
-                  const gfx::AxisTransform2d& transform,
-                  const RasterSource::PlaybackSettings& playback_settings,
-                  const GURL& url) override {}
-  };
 };
 
 class InvalidResourceTileManagerTest : public TileManagerTest {
@@ -2273,18 +2277,6 @@ class MockReadyToDrawRasterBufferProviderImpl
       resource.set_software_backing(std::make_unique<TestSoftwareBacking>());
     return std::make_unique<FakeRasterBuffer>();
   }
-
- private:
-  class FakeRasterBuffer : public RasterBuffer {
-   public:
-    void Playback(const RasterSource* raster_source,
-                  const gfx::Rect& raster_full_rect,
-                  const gfx::Rect& raster_dirty_rect,
-                  uint64_t new_content_id,
-                  const gfx::AxisTransform2d& transform,
-                  const RasterSource::PlaybackSettings& playback_settings,
-                  const GURL& url) override {}
-  };
 };
 
 class TileManagerReadyToDrawTest : public TileManagerTest {
@@ -3241,6 +3233,8 @@ class VerifyImageProviderRasterBuffer : public RasterBuffer {
     EXPECT_TRUE(playback_settings.image_provider);
   }
 
+  bool SupportsBackgroundThreadPriority() const override { return true; }
+
  private:
   bool did_raster_ = false;
 };
@@ -3421,6 +3415,107 @@ TEST_F(DecodedImageTrackerTileManagerTest, DecodedImageTrackerDropsLocksOnUse) {
                     ->tile_manager()
                     ->decoded_image_tracker()
                     .NumLockedImagesForTesting());
+}
+
+class HdrImageTileManagerTest : public CheckerImagingTileManagerTest {
+ public:
+  void DecodeHdrImage(const gfx::ColorSpace& raster_cs) {
+    auto color_space = gfx::ColorSpace::CreateHDR10();
+    auto size = gfx::Size(250, 250);
+    auto info =
+        SkImageInfo::Make(size.width(), size.height(), kRGBA_F16_SkColorType,
+                          kPremul_SkAlphaType, color_space.ToSkColorSpace());
+    SkBitmap bitmap;
+    bitmap.allocPixels(info);
+    PaintImage hdr_image = PaintImageBuilder::WithDefault()
+                               .set_id(PaintImage::kInvalidId)
+                               .set_is_high_bit_depth(true)
+                               .set_image(SkImage::MakeFromBitmap(bitmap),
+                                          PaintImage::GetNextContentId())
+                               .TakePaintImage();
+
+    // Add the image to our decoded_image_tracker.
+    host_impl()->tile_manager()->decoded_image_tracker().QueueImageDecode(
+        hdr_image, raster_cs, base::DoNothing());
+    FlushDecodeTasks();
+
+    // Add images to a fake recording source.
+    constexpr gfx::Size kLayerBounds(1000, 500);
+    auto recording_source =
+        FakeRecordingSource::CreateFilledRecordingSource(kLayerBounds);
+    recording_source->set_fill_with_nonsolid_color(true);
+    recording_source->add_draw_image(hdr_image, gfx::Point(0, 0));
+    recording_source->Rerecord();
+
+    auto raster_source = recording_source->CreateRasterSource();
+
+    constexpr gfx::Size kTileSize(500, 500);
+    Region invalidation((gfx::Rect(kLayerBounds)));
+    SetupPendingTree(raster_source, kTileSize, invalidation);
+
+    constexpr float kCustomWhiteLevel = 200.f;
+    auto display_cs = gfx::DisplayColorSpaces(raster_cs);
+    if (raster_cs.IsHDR())
+      display_cs.SetSDRWhiteLevel(kCustomWhiteLevel);
+
+    pending_layer()->layer_tree_impl()->SetDisplayColorSpaces(display_cs);
+    PictureLayerTilingSet* tiling_set =
+        pending_layer()->picture_layer_tiling_set();
+    PictureLayerTiling* pending_tiling = tiling_set->tiling_at(0);
+    pending_tiling->set_resolution(HIGH_RESOLUTION);
+    pending_tiling->CreateAllTilesForTesting();
+    pending_tiling->SetTilePriorityRectsForTesting(
+        gfx::Rect(kLayerBounds),   // Visible rect.
+        gfx::Rect(kLayerBounds),   // Skewport rect.
+        gfx::Rect(kLayerBounds),   // Soon rect.
+        gfx::Rect(kLayerBounds));  // Eventually rect.
+
+    host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+    ASSERT_TRUE(host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
+
+    auto pending_tiles = pending_tiling->AllTilesForTesting();
+    ASSERT_FALSE(pending_tiles.empty());
+
+    if (raster_cs.IsHDR()) {
+      // Only the last tile will have any pending tasks.
+      const auto& pending_tasks =
+          host_impl()->tile_manager()->decode_tasks_for_testing(
+              pending_tiles.back()->id());
+      EXPECT_FALSE(pending_tasks.empty());
+      for (const auto& draw_info : pending_tasks) {
+        EXPECT_EQ(draw_info.target_color_space(), raster_cs);
+        EXPECT_FLOAT_EQ(draw_info.sdr_white_level(), kCustomWhiteLevel);
+      }
+    }
+
+    // Raster all tiles.
+    static_cast<SynchronousTaskGraphRunner*>(task_graph_runner())
+        ->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
+    ASSERT_FALSE(
+        host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
+
+    auto expected_format = raster_cs.IsHDR() ? viz::RGBA_F16 : viz::RGBA_8888;
+    auto all_tiles = host_impl()->tile_manager()->AllTilesForTesting();
+    for (const auto* tile : all_tiles)
+      EXPECT_EQ(expected_format, tile->draw_info().resource_format());
+  }
+};
+
+TEST_F(HdrImageTileManagerTest, DecodeHdrImagesToHdrPq) {
+  DecodeHdrImage(gfx::ColorSpace::CreateHDR10());
+}
+
+TEST_F(HdrImageTileManagerTest, DecodeHdrImagesToHdrHlg) {
+  DecodeHdrImage(gfx::ColorSpace::CreateHLG());
+}
+
+TEST_F(HdrImageTileManagerTest, DecodeHdrImagesToSdrSrgb) {
+  DecodeHdrImage(gfx::ColorSpace::CreateSRGB());
+}
+
+TEST_F(HdrImageTileManagerTest, DecodeHdrImagesToSdrP3) {
+  DecodeHdrImage(gfx::ColorSpace::CreateDisplayP3D65());
 }
 
 class TileManagerCheckRasterQueriesTest : public TileManagerTest {

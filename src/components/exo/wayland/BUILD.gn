@@ -2,18 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/linux/pkg_config.gni")
+import("//build/config/ozone.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
-import("//ui/ozone/ozone.gni")
-
-if (use_xkbcommon) {
-  pkg_config("xkbcommon") {
-    packages = [ "xkbcommon" ]
-  }
-}
 
 source_set("wayland") {
   sources = [
@@ -36,7 +29,6 @@ source_set("wayland") {
     "wayland_touch_delegate.cc",
     "wayland_touch_delegate.h",
     "wayland_watcher.cc",
-    "wayland_watcher.h",
     "wl_compositor.cc",
     "wl_compositor.h",
     "wl_data_device_manager.cc",
@@ -82,6 +74,7 @@ source_set("wayland") {
     "//third_party/wayland-protocols:alpha_compositing_protocol",
     "//third_party/wayland-protocols:color_space_protocol",
     "//third_party/wayland-protocols:cursor_shapes_protocol",
+    "//third_party/wayland-protocols:extended_drag",
     "//third_party/wayland-protocols:gaming_input_protocol",
     "//third_party/wayland-protocols:input_timestamps_protocol",
     "//third_party/wayland-protocols:keyboard_configuration_protocol",
@@ -99,9 +92,11 @@ source_set("wayland") {
     "//third_party/wayland-protocols:text_input_protocol",
     "//third_party/wayland-protocols:viewporter_protocol",
     "//third_party/wayland-protocols:vsync_feedback_protocol",
+    "//third_party/wayland-protocols:xdg_decoration_protocol",
     "//third_party/wayland-protocols:xdg_shell_protocol",
     "//ui/aura",
     "//ui/base",
+    "//ui/base/dragdrop/mojom:mojom_shared",
     "//ui/display/manager",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
@@ -120,18 +115,19 @@ source_set("wayland") {
     deps += [
       "//build/config/linux/libdrm",
       "//third_party/wayland-protocols:linux_dmabuf_protocol",
+      "//ui/ozone",
     ]
 
     if (is_chromeos) {
       deps += [
+        "//ash",
         "//ash/public/cpp",
-        "//ui/events/ozone/layout",
+        "//chromeos/ui/base",
       ]
     }
   }
 
   if (use_xkbcommon) {
-    configs += [ ":xkbcommon" ]
     deps += [ "//ui/events/keycodes:xkb" ]
   }
 
@@ -152,10 +148,14 @@ source_set("wayland") {
       "wayland_positioner.h",
       "wl_shell.cc",
       "wl_shell.h",
+      "xdg_shell.cc",
+      "xdg_shell.h",
       "zcr_color_space.cc",
       "zcr_color_space.h",
       "zcr_cursor_shapes.cc",
       "zcr_cursor_shapes.h",
+      "zcr_extended_drag.cc",
+      "zcr_extended_drag.h",
       "zcr_gaming_input.cc",
       "zcr_gaming_input.h",
       "zcr_keyboard_configuration.cc",
@@ -178,6 +178,7 @@ source_set("wayland") {
       "zwp_relative_pointer_manager.h",
       "zwp_text_input_manager.cc",
       "zwp_text_input_manager.h",
+      "zxdg_decoration_manager.h",
       "zxdg_shell.cc",
       "zxdg_shell.h",
     ]
@@ -197,7 +198,9 @@ source_set("unit_tests") {
     "//components/exo",
     "//components/exo:test_support",
     "//components/exo/wayland/fuzzer:unit_tests",
+    "//components/exo/wayland/protocol:aura_shell_protocol",
     "//skia",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/wayland:wayland_client",
   ]
@@ -224,7 +227,7 @@ source_set("unit_tests") {
 }
 
 config("client_support_config") {
-  if (ozone_platform_gbm) {
+  if (ozone_platform_drm) {
     defines = [ "USE_GBM" ]
     if (enable_vulkan) {
       defines += [ "USE_VULKAN" ]
@@ -261,7 +264,7 @@ source_set("client_support") {
     "//third_party/wayland-protocols:vsync_feedback_protocol",
   ]
 
-  if (ozone_platform_gbm) {
+  if (ozone_platform_drm) {
     configs += [ "//ui/gl:gl_config" ]
     deps += [
       "//build/config/linux/libdrm",
@@ -288,7 +291,7 @@ executable("wayland_rects_client") {
     "//ui/gl",
   ]
 
-  if (ozone_platform_gbm) {
+  if (ozone_platform_drm) {
     configs += [ "//ui/gl:gl_config" ]
     defines = [ "USE_GBM" ]
     deps += [
@@ -317,7 +320,7 @@ source_set("simple") {
     "//ui/gl",
   ]
 
-  if (ozone_platform_gbm) {
+  if (ozone_platform_drm) {
     configs += [ "//ui/gl:gl_config" ]
   }
 }
@@ -340,7 +343,7 @@ source_set("fullscreen_shell") {
     "//ui/gl",
   ]
 
-  if (ozone_platform_gbm) {
+  if (ozone_platform_drm) {
     configs += [ "//ui/gl:gl_config" ]
   }
 }
@@ -378,7 +381,7 @@ executable("wayland_subsurface_client") {
     "//ui/gl",
   ]
 
-  if (ozone_platform_gbm) {
+  if (ozone_platform_drm) {
     configs += [ "//ui/gl:gl_config" ]
   }
 }
@@ -399,7 +402,7 @@ source_set("blur") {
     "//ui/gl",
   ]
 
-  if (ozone_platform_gbm) {
+  if (ozone_platform_drm) {
     configs += [ "//ui/gl:gl_config" ]
   }
 }
@@ -460,11 +463,15 @@ source_set("wayland_client_test_helper") {
 }
 
 test("wayland_client_perftests") {
+  use_xvfb = use_xvfb_in_this_config
+
   sources = [
     "clients/perftests.cc",
     "clients/test/run_all_client_perftests.cc",
     "clients/test/wayland_client_test.cc",
     "clients/test/wayland_client_test.h",
+    "clients/test/wayland_client_test_server.cc",
+    "clients/test/wayland_client_test_server.h",
   ]
 
   deps = [
@@ -502,7 +509,44 @@ test("wayland_client_perftests") {
   }
 }
 
-if (ozone_platform_gbm) {
+test("wayland_client_compatibility_tests") {
+  testonly = true
+
+  sources = [
+    "clients/test/wayland_client_test.cc",
+    "clients/test/wayland_client_test.h",
+    "clients/test/wayland_client_test_server.cc",
+    "clients/test/wayland_client_test_server.h",
+    "compatibility_test/client_compatibility_test.cc",
+    "compatibility_test/client_compatibility_test.h",
+    "compatibility_test/client_compatibility_test_server.cc",
+    "compatibility_test/wayland_client_event_receiver_version_fixtures.h",
+    "compatibility_test/wayland_client_event_recorder.cc",
+    "compatibility_test/wayland_client_event_recorder.h",
+    "compatibility_test/wayland_client_registry.cc",
+    "compatibility_test/wayland_client_registry.h",
+  ]
+
+  deps = [
+    ":wayland",
+    ":wayland_client_test_helper",
+    "//base",
+    "//base/test:test_support",
+    "//components/exo/wayland/compatibility_test",
+    "//components/exo/wayland/compatibility_test:generated_client_helper_headers",
+    "//components/viz/test:test_support",
+    "//mojo/core/embedder:embedder",
+    "//ui/gl:test_support",
+  ]
+
+  if (is_chromeos) {
+    deps += [ "//ash:test_support" ]
+  }
+
+  data_deps = []
+}
+
+if (ozone_platform_drm) {
   executable("wayland_yuv_client") {
     sources = [ "clients/yuv.cc" ]
 

@@ -32,7 +32,9 @@ const char kIsSameTabAttrName[] = "is_same_tab";
 const char kIsSamlAttrName[] = "is_saml";
 const char kProfileModeAttrName[] = "mode";
 const char kServiceTypeAttrName[] = "action";
-#if defined(OS_ANDROID)
+const char kSupervisedAttrName[] = "supervised";
+const char kSourceAttrName[] = "source";
+#if defined(OS_ANDROID) || defined(OS_IOS)
 const char kEligibleForConsistency[] = "eligible_for_consistency";
 const char kShowConsistencyPromo[] = "show_consistency_promo";
 #endif
@@ -69,8 +71,13 @@ std::string ChromeConnectedHeaderHelper::BuildRequestCookieIfPossible(
   ChromeConnectedHeaderHelper chrome_connected_helper(account_consistency);
   if (!chrome_connected_helper.ShouldBuildRequestHeader(url, cookie_settings))
     return "";
+
+  // Child accounts are not supported on iOS, so it is preferred to not include
+  // this information in the ChromeConnected cookie.
   return chrome_connected_helper.BuildRequestHeader(
-      false /* is_header_request */, url, gaia_id, profile_mode_mask);
+      false /* is_header_request */, url, gaia_id,
+      base::nullopt /* is_child_account */, profile_mode_mask, "" /* source */,
+      false /* force_account_consistency */);
 }
 
 // static
@@ -94,7 +101,7 @@ ManageAccountsParams ChromeConnectedHeaderHelper::BuildManageAccountsParams(
       params.continue_url = value;
     } else if (key_name == kIsSameTabAttrName) {
       params.is_same_tab = value == "true";
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
     } else if (key_name == kShowConsistencyPromo) {
       params.show_consistency_promo = value == "true";
 #endif
@@ -176,26 +183,36 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
     bool is_header_request,
     const GURL& url,
     const std::string& gaia_id,
-    int profile_mode_mask) {
+    const base::Optional<bool>& is_child_account,
+    int profile_mode_mask,
+    const std::string& source,
+    bool force_account_consistency) {
+  std::vector<std::string> parts;
+  if (!source.empty()) {
+    parts.push_back(
+        base::StringPrintf("%s=%s", kSourceAttrName, source.c_str()));
+  }
 // If we are on mobile or desktop, an empty |account_id| corresponds to the user
 // not signed into Sync. Do not enforce account consistency, unless Mice is
-// enabled on Android.
+// enabled on mobile (Android or iOS).
 // On Chrome OS, an empty |account_id| corresponds to Public Sessions, Guest
 // Sessions and Active Directory logins. Guest Sessions have already been
 // filtered upstream and we want to enforce account consistency in Public
 // Sessions and Active Directory logins.
 #if !defined(OS_CHROMEOS)
-  if (gaia_id.empty()) {
-#if defined(OS_ANDROID)
-    if (base::FeatureList::IsEnabled(kMobileIdentityConsistency)) {
-      return base::StringPrintf("%s=%s", kEligibleForConsistency, "true");
+  if (!force_account_consistency && gaia_id.empty()) {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    if (base::FeatureList::IsEnabled(kMobileIdentityConsistency) &&
+        gaia::IsGaiaSignonRealm(url.GetOrigin())) {
+      parts.push_back(
+          base::StringPrintf("%s=%s", kEligibleForConsistency, "true"));
+      return base::JoinString(parts, is_header_request ? "," : ":");
     }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
     return std::string();
   }
 #endif  // !defined(OS_CHROMEOS)
 
-  std::vector<std::string> parts;
   if (!gaia_id.empty() &&
       IsUrlEligibleToIncludeGaiaId(url, is_header_request)) {
     // Only set the Gaia ID on domains that actually require it.
@@ -209,6 +226,11 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
       account_consistency_ == AccountConsistencyMethod::kMirror;
   parts.push_back(base::StringPrintf("%s=%s", kEnableAccountConsistencyAttrName,
                                      is_mirror_enabled ? "true" : "false"));
+  if (is_child_account.has_value()) {
+    parts.push_back(
+        base::StringPrintf("%s=%s", kSupervisedAttrName,
+                           is_child_account.value() ? "true" : "false"));
+  }
   parts.push_back(base::StringPrintf(
       "%s=%s", kConsistencyEnabledByDefaultAttrName, "false"));
 

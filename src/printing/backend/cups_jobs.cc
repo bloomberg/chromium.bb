@@ -7,8 +7,10 @@
 #include <cups/ipp.h>
 
 #include <array>
+#include <cstring>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -145,40 +147,40 @@ CupsJob::JobState ToJobState(ipp_attribute_t* attr) {
 const std::map<base::StringPiece, PReason>& GetLabelToReason() {
   static const std::map<base::StringPiece, PReason> kLabelToReason =
       std::map<base::StringPiece, PReason>{
-        {kNone, PReason::NONE},
-        {kMediaNeeded, PReason::MEDIA_NEEDED},
-        {kMediaJam, PReason::MEDIA_JAM},
-        {kMovingToPaused, PReason::MOVING_TO_PAUSED},
-        {kPaused, PReason::PAUSED},
-        {kShutdown, PReason::SHUTDOWN},
-        {kConnectingToDevice, PReason::CONNECTING_TO_DEVICE},
-        {kTimedOut, PReason::TIMED_OUT},
-        {kStopping, PReason::STOPPING},
-        {kStoppedPartly, PReason::STOPPED_PARTLY},
-        {kTonerLow, PReason::TONER_LOW},
-        {kTonerEmpty, PReason::TONER_EMPTY},
-        {kSpoolAreaFull, PReason::SPOOL_AREA_FULL},
-        {kCoverOpen, PReason::COVER_OPEN},
-        {kInterlockOpen, PReason::INTERLOCK_OPEN},
-        {kDoorOpen, PReason::DOOR_OPEN},
-        {kInputTrayMissing, PReason::INPUT_TRAY_MISSING},
-        {kMediaLow, PReason::MEDIA_LOW},
-        {kMediaEmpty, PReason::MEDIA_EMPTY},
-        {kOutputTrayMissing, PReason::OUTPUT_TRAY_MISSING},
-        {kOutputAreaAlmostFull, PReason::OUTPUT_AREA_ALMOST_FULL},
-        {kOutputAreaFull, PReason::OUTPUT_AREA_FULL},
-        {kMarkerSupplyLow, PReason::MARKER_SUPPLY_LOW},
-        {kMarkerSupplyEmpty, PReason::MARKER_SUPPLY_EMPTY},
-        {kMarkerWasteAlmostFull, PReason::MARKER_WASTE_ALMOST_FULL},
-        {kMarkerWasteFull, PReason::MARKER_WASTE_FULL},
-        {kFuserOverTemp, PReason::FUSER_OVER_TEMP},
-        {kFuserUnderTemp, PReason::FUSER_UNDER_TEMP},
-        {kOpcNearEol, PReason::OPC_NEAR_EOL},
-        {kOpcLifeOver, PReason::OPC_LIFE_OVER},
-        {kDeveloperLow, PReason::DEVELOPER_LOW},
-        {kDeveloperEmpty, PReason::DEVELOPER_EMPTY},
-        {kInterpreterResourceUnavailable,
-          PReason::INTERPRETER_RESOURCE_UNAVAILABLE},
+          {kNone, PReason::kNone},
+          {kMediaNeeded, PReason::kMediaNeeded},
+          {kMediaJam, PReason::kMediaJam},
+          {kMovingToPaused, PReason::kMovingToPaused},
+          {kPaused, PReason::kPaused},
+          {kShutdown, PReason::kShutdown},
+          {kConnectingToDevice, PReason::kConnectingToDevice},
+          {kTimedOut, PReason::kTimedOut},
+          {kStopping, PReason::kStopping},
+          {kStoppedPartly, PReason::kStoppedPartly},
+          {kTonerLow, PReason::kTonerLow},
+          {kTonerEmpty, PReason::kTonerEmpty},
+          {kSpoolAreaFull, PReason::kSpoolAreaFull},
+          {kCoverOpen, PReason::kCoverOpen},
+          {kInterlockOpen, PReason::kInterlockOpen},
+          {kDoorOpen, PReason::kDoorOpen},
+          {kInputTrayMissing, PReason::kInputTrayMissing},
+          {kMediaLow, PReason::kMediaLow},
+          {kMediaEmpty, PReason::kMediaEmpty},
+          {kOutputTrayMissing, PReason::kOutputTrayMissing},
+          {kOutputAreaAlmostFull, PReason::kOutputAreaAlmostFull},
+          {kOutputAreaFull, PReason::kOutputAreaFull},
+          {kMarkerSupplyLow, PReason::kMarkerSupplyLow},
+          {kMarkerSupplyEmpty, PReason::kMarkerSupplyEmpty},
+          {kMarkerWasteAlmostFull, PReason::kMarkerWasteAlmostFull},
+          {kMarkerWasteFull, PReason::kMarkerWasteFull},
+          {kFuserOverTemp, PReason::kFuserOverTemp},
+          {kFuserUnderTemp, PReason::kFuserUnderTemp},
+          {kOpcNearEol, PReason::kOpcNearEol},
+          {kOpcLifeOver, PReason::kOpcLifeOver},
+          {kDeveloperLow, PReason::kDeveloperLow},
+          {kDeveloperEmpty, PReason::kDeveloperEmpty},
+          {kInterpreterResourceUnavailable,
+           PReason::kInterpreterResourceUnavailable},
       };
   return kLabelToReason;
 }
@@ -188,22 +190,22 @@ const std::map<base::StringPiece, PReason>& GetLabelToReason() {
 PrinterStatus::PrinterReason::Reason ToReason(base::StringPiece reason) {
   const auto& enum_map = GetLabelToReason();
   const auto& entry = enum_map.find(reason);
-  return entry != enum_map.end() ? entry->second : PReason::UNKNOWN_REASON;
+  return entry != enum_map.end() ? entry->second : PReason::kUnknownReason;
 }
 
 // Returns the Severity cooresponding to |severity|.  Returns UNKNOWN_SEVERITY
 // if the strin gis not recognized.
 PSeverity ToSeverity(base::StringPiece severity) {
   if (severity == kSeverityError)
-    return PSeverity::ERROR;
+    return PSeverity::kError;
 
   if (severity == kSeverityWarn)
-    return PSeverity::WARNING;
+    return PSeverity::kWarning;
 
   if (severity == kSeverityReport)
-    return PSeverity::REPORT;
+    return PSeverity::kReport;
 
-  return PSeverity::UNKNOWN_SEVERITY;
+  return PSeverity::kUnknownSeverity;
 }
 
 // Parses the |reason| string into a PrinterReason.  Splits the string based on
@@ -213,22 +215,22 @@ PrinterStatus::PrinterReason ToPrinterReason(base::StringPiece reason) {
   PrinterStatus::PrinterReason parsed;
 
   if (reason == kNone) {
-    parsed.reason = PReason::NONE;
-    parsed.severity = PSeverity::UNKNOWN_SEVERITY;
+    parsed.reason = PReason::kNone;
+    parsed.severity = PSeverity::kUnknownSeverity;
     return parsed;
   }
 
   size_t last_dash = reason.rfind('-');
-  auto severity = PSeverity::UNKNOWN_SEVERITY;
+  auto severity = PSeverity::kUnknownSeverity;
   if (last_dash != base::StringPiece::npos) {
     // try to parse the last part of the string as the severity.
     severity = ToSeverity(reason.substr(last_dash + 1));
   }
 
-  if (severity == PSeverity::UNKNOWN_SEVERITY) {
+  if (severity == PSeverity::kUnknownSeverity) {
     // Severity is unknown.  No severity in the reason.
     // Per spec, if there is no severity, severity is error.
-    parsed.severity = PSeverity::ERROR;
+    parsed.severity = PSeverity::kError;
     parsed.reason = ToReason(reason);
   } else {
     parsed.severity = severity;
@@ -244,8 +246,10 @@ void ParseCollection(ipp_attribute_t* attr,
                      std::vector<std::string>* collection) {
   int count = ippGetCount(attr);
   for (int i = 0; i < count; i++) {
-    base::StringPiece value = ippGetString(attr, i, nullptr);
-    collection->push_back(value.as_string());
+    const char* const value = ippGetString(attr, i, nullptr);
+    if (value) {
+      collection->push_back(value);
+    }
   }
 }
 
@@ -288,9 +292,9 @@ void ParseJobs(ipp_t* response,
   CupsJob* current_job = NewJob(printer_id, jobs);
   for (ipp_attribute_t* attr = starting_attr; attr != nullptr;
        attr = ippNextAttribute(response)) {
-    base::StringPiece attribute_name = ippGetName(attr);
+    const char* const attribute_name = ippGetName(attr);
     // Separators indicate a new job.  Separators have empty names.
-    if (attribute_name.empty()) {
+    if (!attribute_name || strlen(attribute_name) == 0) {
       current_job = NewJob(printer_id, jobs);
       continue;
     }
@@ -306,7 +310,11 @@ void ParseJobs(ipp_t* response,
 bool ParsePrinterInfo(ipp_t* response, PrinterInfo* printer_info) {
   for (ipp_attribute_t* attr = ippFirstAttribute(response); attr != nullptr;
        attr = ippNextAttribute(response)) {
-    base::StringPiece name = ippGetName(attr);
+    const char* const value = ippGetName(attr);
+    if (!value) {
+      continue;
+    }
+    base::StringPiece name(value);
     if (name == base::StringPiece(kPrinterMakeAndModel)) {
       DCHECK_EQ(IPP_TAG_TEXT, ippGetValueTag(attr));
       const char* make_and_model_string = ippGetString(attr, 0, nullptr);
@@ -421,10 +429,11 @@ void ParsePrinterStatus(ipp_t* response, PrinterStatus* printer_status) {
 
   for (ipp_attribute_t* attr = ippFirstAttribute(response); attr != nullptr;
        attr = ippNextAttribute(response)) {
-    base::StringPiece name = ippGetName(attr);
-    if (name.empty()) {
+    const char* const value = ippGetName(attr);
+    if (!value) {
       continue;
     }
+    base::StringPiece name(value);
 
     if (name == kPrinterState) {
       DCHECK_EQ(IPP_TAG_ENUM, ippGetValueTag(attr));
@@ -459,7 +468,7 @@ PrinterQueryResult GetPrinterInfo(const std::string& address,
       kHttpConnectTimeoutMs, nullptr));
   if (!http) {
     LOG(WARNING) << "Could not connect to host";
-    return PrinterQueryResult::UNREACHABLE;
+    return PrinterQueryResult::kUnreachable;
   }
 
   // TODO(crbug.com/821497): Use a library to canonicalize the URL.
@@ -478,15 +487,15 @@ PrinterQueryResult GetPrinterInfo(const std::string& address,
       kPrinterInfoAndStatus.data(), &status);
   if (StatusError(status) || response.get() == nullptr) {
     LOG(WARNING) << "Get attributes failure: " << status;
-    return PrinterQueryResult::UNKNOWN_FAILURE;
+    return PrinterQueryResult::kUnknownFailure;
   }
 
   ParsePrinterStatus(response.get(), printer_status);
 
   if (ParsePrinterInfo(response.get(), printer_info)) {
-    return PrinterQueryResult::SUCCESS;
+    return PrinterQueryResult::kSuccess;
   }
-  return PrinterQueryResult::UNKNOWN_FAILURE;
+  return PrinterQueryResult::kUnknownFailure;
 }
 
 bool GetPrinterStatus(http_t* http,

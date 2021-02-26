@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
 
 #include <gbm.h>
+
 #include <memory>
 #include <utility>
 
@@ -22,6 +23,7 @@
 #include "ui/gfx/linux/gbm_util.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
+#include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_dumb_buffer.h"
@@ -108,8 +110,8 @@ void DrmThread::Init() {
   device_manager_ =
       std::make_unique<DrmDeviceManager>(std::move(device_generator_));
   screen_manager_ = std::make_unique<ScreenManager>();
-  display_manager_.reset(
-      new DrmGpuDisplayManager(screen_manager_.get(), device_manager_.get()));
+  display_manager_ = std::make_unique<DrmGpuDisplayManager>(
+      screen_manager_.get(), device_manager_.get());
 
   DCHECK(task_runner())
       << "DrmThread::Init -- thread doesn't have a task_runner";
@@ -150,7 +152,8 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   // explicitly set via kms on a CRTC (e.g: BufferQueue buffers), therefore
   // allocation should fail if it's not possible to allocate a BO_USE_SCANOUT
   // buffer in that case.
-  if (!*buffer && usage != gfx::BufferUsage::SCANOUT) {
+  if (!*buffer && usage != gfx::BufferUsage::SCANOUT &&
+      usage != gfx::BufferUsage::PROTECTED_SCANOUT_VDA_WRITE) {
     flags &= ~GBM_BO_USE_SCANOUT;
     CreateBufferWithGbmFlags(drm, fourcc_format, size, framebuffer_size, flags,
                              modifiers, buffer, framebuffer);
@@ -276,8 +279,8 @@ void DrmThread::SetCursor(gfx::AcceleratedWidget widget,
                           const gfx::Point& location,
                           int32_t frame_delay_ms) {
   TRACE_EVENT0("drm", "DrmThread::SetCursor");
-  screen_manager_->GetWindow(widget)
-      ->SetCursor(bitmaps, location, frame_delay_ms);
+  screen_manager_->GetWindow(widget)->SetCursor(bitmaps, location,
+                                                frame_delay_ms);
 }
 
 void DrmThread::MoveCursor(gfx::AcceleratedWidget widget,
@@ -323,21 +326,15 @@ void DrmThread::RefreshNativeDisplays(
   std::move(callback).Run(display_manager_->GetDisplays());
 }
 
-void DrmThread::ConfigureNativeDisplay(
-    int64_t id,
-    std::unique_ptr<display::DisplayMode> mode,
-    const gfx::Point& origin,
-    base::OnceCallback<void(int64_t, bool)> callback) {
-  TRACE_EVENT0("drm", "DrmThread::ConfigureNativeDisplay");
-  std::move(callback).Run(
-      id, display_manager_->ConfigureDisplay(id, *mode, origin));
-}
+void DrmThread::ConfigureNativeDisplays(
+    const std::vector<display::DisplayConfigurationParams>& config_requests,
+    base::OnceCallback<void(const base::flat_map<int64_t, bool>&)> callback) {
+  TRACE_EVENT0("drm", "DrmThread::ConfigureNativeDisplays");
 
-void DrmThread::DisableNativeDisplay(
-    int64_t id,
-    base::OnceCallback<void(int64_t, bool)> callback) {
-  TRACE_EVENT0("drm", "DrmThread::DisableNativeDisplay");
-  std::move(callback).Run(id, display_manager_->DisableDisplay(id));
+  base::flat_map<int64_t, bool> statuses =
+      display_manager_->ConfigureDisplays(config_requests);
+
+  std::move(callback).Run(statuses);
 }
 
 void DrmThread::TakeDisplayControl(base::OnceCallback<void(bool)> callback) {
@@ -367,19 +364,27 @@ void DrmThread::RemoveGraphicsDevice(const base::FilePath& path) {
 
 void DrmThread::GetHDCPState(
     int64_t display_id,
-    base::OnceCallback<void(int64_t, bool, display::HDCPState)> callback) {
+    base::OnceCallback<void(int64_t,
+                            bool,
+                            display::HDCPState,
+                            display::ContentProtectionMethod)> callback) {
   TRACE_EVENT0("drm", "DrmThread::GetHDCPState");
   display::HDCPState state = display::HDCP_STATE_UNDESIRED;
-  bool success = display_manager_->GetHDCPState(display_id, &state);
-  std::move(callback).Run(display_id, success, state);
+  display::ContentProtectionMethod protection_method =
+      display::CONTENT_PROTECTION_METHOD_NONE;
+  bool success =
+      display_manager_->GetHDCPState(display_id, &state, &protection_method);
+  std::move(callback).Run(display_id, success, state, protection_method);
 }
 
 void DrmThread::SetHDCPState(int64_t display_id,
                              display::HDCPState state,
+                             display::ContentProtectionMethod protection_method,
                              base::OnceCallback<void(int64_t, bool)> callback) {
   TRACE_EVENT0("drm", "DrmThread::SetHDCPState");
-  std::move(callback).Run(display_id,
-                          display_manager_->SetHDCPState(display_id, state));
+  std::move(callback).Run(
+      display_id,
+      display_manager_->SetHDCPState(display_id, state, protection_method));
 }
 
 void DrmThread::SetColorMatrix(int64_t display_id,
@@ -416,6 +421,19 @@ void DrmThread::ProcessPendingTasks() {
   }
 
   pending_tasks_.clear();
+}
+
+void DrmThread::SetColorSpace(gfx::AcceleratedWidget widget,
+                              const gfx::ColorSpace& color_space) {
+  DCHECK(screen_manager_->GetWindow(widget));
+  HardwareDisplayController* controller =
+      screen_manager_->GetWindow(widget)->GetController();
+  if (!controller)
+    return;
+
+  const auto& crtc_controllers = controller->crtc_controllers();
+  for (const auto& crtc_controller : crtc_controllers)
+    display_manager_->SetColorSpace(crtc_controller->crtc(), color_space);
 }
 
 }  // namespace ui

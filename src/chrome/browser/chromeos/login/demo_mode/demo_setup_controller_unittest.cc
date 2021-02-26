@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -17,8 +17,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/common/pref_names.h"
@@ -69,7 +68,7 @@ class DemoSetupControllerTestHelper {
 
   // Wait until the setup result arrives (either OnSetupError or OnSetupSuccess
   // is called), returns true when the success result matches with
-  // |success_expected| and setup step matches |setup_step_expected|.
+  // `success_expected` and setup step matches `setup_step_expected`.
   bool WaitResult(bool success_expected,
                   DemoSetupController::DemoSetupStep setup_step_expected) {
     // Run() stops immediately if Quit is already called.
@@ -118,11 +117,7 @@ class DemoSetupControllerTest : public testing::Test {
     DBusThreadManager::Initialize();
     SessionManagerClient::InitializeFake();
     DeviceSettingsService::Initialize();
-    TestingBrowserProcess::GetGlobal()
-        ->platform_part()
-        ->browser_policy_connector_chromeos()
-        ->GetDeviceCloudPolicyManager()
-        ->Initialize(TestingBrowserProcess::GetGlobal()->local_state());
+    policy::EnrollmentRequisitionManager::Initialize();
     helper_ = std::make_unique<DemoSetupControllerTestHelper>();
     tested_controller_ = std::make_unique<DemoSetupController>();
   }
@@ -136,11 +131,7 @@ class DemoSetupControllerTest : public testing::Test {
   }
 
   static std::string GetDeviceRequisition() {
-    return TestingBrowserProcess::GetGlobal()
-        ->platform_part()
-        ->browser_policy_connector_chromeos()
-        ->GetDeviceCloudPolicyManager()
-        ->GetDeviceRequisition();
+    return policy::EnrollmentRequisitionManager::GetDeviceRequisition();
   }
 
   std::unique_ptr<DemoSetupControllerTestHelper> helper_;

@@ -35,7 +35,9 @@ void DummyTextInputClient::SetCompositionText(
   composition_history_.push_back(composition);
 }
 
-void DummyTextInputClient::ConfirmCompositionText(bool keep_selection) {}
+uint32_t DummyTextInputClient::ConfirmCompositionText(bool keep_selection) {
+  return UINT32_MAX;
+}
 
 void DummyTextInputClient::ClearCompositionText() {
   SetCompositionText(CompositionText());
@@ -150,6 +152,31 @@ bool DummyTextInputClient::SetCompositionFromExistingText(
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
   return false;
 }
+#endif
+
+#if defined(OS_CHROMEOS)
+gfx::Range DummyTextInputClient::GetAutocorrectRange() const {
+  return autocorrect_range_;
+}
+gfx::Rect DummyTextInputClient::GetAutocorrectCharacterBounds() const {
+  return gfx::Rect();
+}
+
+bool DummyTextInputClient::SetAutocorrectRange(
+    const base::string16& autocorrect_text,
+    const gfx::Range& range) {
+  // Clears autocorrect range if text is empty.
+  // autocorrect_text content is ignored.
+  if (autocorrect_text.empty()) {
+    autocorrect_range_ = gfx::Range();
+  } else {
+    autocorrect_range_ = range;
+  }
+  return true;
+}
+
+void DummyTextInputClient::ClearAutocorrectRange() {}
+
 #endif
 
 #if defined(OS_WIN)

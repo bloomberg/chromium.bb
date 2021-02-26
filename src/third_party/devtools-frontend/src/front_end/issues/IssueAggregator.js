@@ -25,6 +25,12 @@ export class AggregatedIssue extends SDK.Issue.Issue {
     this._representative = null;
     /** @type {!Map<string, !Protocol.Audits.MixedContentIssueDetails>} */
     this._mixedContents = new Map();
+    /** @type {!Map<string, !Protocol.Audits.HeavyAdIssueDetails>} */
+    this._heavyAdIssueDetails = new Map();
+    /** @type {!Set<!SDK.ContentSecurityPolicyIssue.ContentSecurityPolicyIssue>} */
+    this._cspIssues = new Set();
+    /** @type {!Map<string, !Protocol.Audits.BlockedByResponseIssueDetails>} */
+    this._blockedByResponseDetails = new Map();
     this._aggregatedIssuesCount = 0;
   }
 
@@ -34,6 +40,14 @@ export class AggregatedIssue extends SDK.Issue.Issue {
    */
   primaryKey() {
     throw new Error('This should never be called');
+  }
+
+  /**
+   * @override
+   * @returns {!Iterable<Protocol.Audits.BlockedByResponseIssueDetails>}
+   */
+  blockedByResponseDetails() {
+    return this._blockedByResponseDetails.values();
   }
 
   /**
@@ -53,10 +67,25 @@ export class AggregatedIssue extends SDK.Issue.Issue {
 
   /**
    * @override
+   * @returns {!Iterable<!Protocol.Audits.HeavyAdIssueDetails>}
+   */
+  heavyAds() {
+    return this._heavyAdIssueDetails.values();
+  }
+
+  /**
+   * @override
    * @returns {!Iterable<!Protocol.Audits.MixedContentIssueDetails>}
    */
   mixedContents() {
     return this._mixedContents.values();
+  }
+
+  /**
+   * @returns {!Iterable<!SDK.ContentSecurityPolicyIssue.ContentSecurityPolicyIssue>}
+   */
+  cspIssues() {
+    return this._cspIssues;
   }
 
   /**
@@ -129,6 +158,17 @@ export class AggregatedIssue extends SDK.Issue.Issue {
     for (const mixedContent of issue.mixedContents()) {
       const key = JSON.stringify(mixedContent);
       this._mixedContents.set(key, mixedContent);
+    }
+    for (const heavyAds of issue.heavyAds()) {
+      const key = JSON.stringify(heavyAds);
+      this._heavyAdIssueDetails.set(key, heavyAds);
+    }
+    for (const details of issue.blockedByResponseDetails()) {
+      const key = JSON.stringify(details, ['parentFrame', 'blockedFrame', 'requestId', 'frameId', 'reason', 'request']);
+      this._blockedByResponseDetails.set(key, details);
+    }
+    if (issue instanceof SDK.ContentSecurityPolicyIssue.ContentSecurityPolicyIssue) {
+      this._cspIssues.add(issue);
     }
   }
 }

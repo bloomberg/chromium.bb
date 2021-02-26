@@ -43,9 +43,15 @@ Bbr2Mode Bbr2StartupMode::OnCongestionEvent(
     const AckedPacketVector& /*acked_packets*/,
     const LostPacketVector& /*lost_packets*/,
     const Bbr2CongestionEvent& congestion_event) {
-  CheckFullBandwidthReached(congestion_event);
+  if (!full_bandwidth_reached_ && congestion_event.end_of_round_trip) {
+    // TCP BBR always exits upon excessive losses. QUIC BBRv1 does not exits
+    // upon excessive losses, if enough bandwidth growth is observed.
+    bool has_enough_bw_growth = CheckBandwidthGrowth(congestion_event);
 
-  CheckExcessiveLosses(congestion_event);
+    if (Params().always_exit_startup_on_excess_loss || !has_enough_bw_growth) {
+      CheckExcessiveLosses(congestion_event);
+    }
+  }
 
   model_->set_pacing_gain(Params().startup_pacing_gain);
   model_->set_cwnd_gain(Params().startup_cwnd_gain);
@@ -54,68 +60,68 @@ Bbr2Mode Bbr2StartupMode::OnCongestionEvent(
   return full_bandwidth_reached_ ? Bbr2Mode::DRAIN : Bbr2Mode::STARTUP;
 }
 
-void Bbr2StartupMode::CheckFullBandwidthReached(
+bool Bbr2StartupMode::CheckBandwidthGrowth(
     const Bbr2CongestionEvent& congestion_event) {
   DCHECK(!full_bandwidth_reached_);
-  if (full_bandwidth_reached_ || !congestion_event.end_of_round_trip ||
-      congestion_event.last_sample_is_app_limited) {
-    return;
+  DCHECK(congestion_event.end_of_round_trip);
+  if (congestion_event.last_sample_is_app_limited) {
+    // Return true such that when Params().always_exit_startup_on_excess_loss is
+    // false, we'll not check excess loss, which is the behavior of QUIC BBRv1.
+    return true;
   }
 
   QuicBandwidth threshold =
       full_bandwidth_baseline_ * Params().startup_full_bw_threshold;
 
   if (model_->MaxBandwidth() >= threshold) {
-    QUIC_DVLOG(3)
-        << sender_
-        << " CheckFullBandwidthReached at end of round. max_bandwidth:"
-        << model_->MaxBandwidth() << ", threshold:" << threshold
-        << " (Still growing)  @ " << congestion_event.event_time;
+    QUIC_DVLOG(3) << sender_
+                  << " CheckBandwidthGrowth at end of round. max_bandwidth:"
+                  << model_->MaxBandwidth() << ", threshold:" << threshold
+                  << " (Still growing)  @ " << congestion_event.event_time;
     full_bandwidth_baseline_ = model_->MaxBandwidth();
     rounds_without_bandwidth_growth_ = 0;
-    return;
+    return true;
   }
 
   ++rounds_without_bandwidth_growth_;
   full_bandwidth_reached_ =
       rounds_without_bandwidth_growth_ >= Params().startup_full_bw_rounds;
   QUIC_DVLOG(3) << sender_
-                << " CheckFullBandwidthReached at end of round. max_bandwidth:"
+                << " CheckBandwidthGrowth at end of round. max_bandwidth:"
                 << model_->MaxBandwidth() << ", threshold:" << threshold
                 << " rounds_without_growth:" << rounds_without_bandwidth_growth_
                 << " full_bw_reached:" << full_bandwidth_reached_ << "  @ "
                 << congestion_event.event_time;
+
+  return false;
 }
 
 void Bbr2StartupMode::CheckExcessiveLosses(
     const Bbr2CongestionEvent& congestion_event) {
+  DCHECK(congestion_event.end_of_round_trip);
+
   if (full_bandwidth_reached_) {
     return;
   }
 
-  const int64_t loss_events_in_round = model_->loss_events_in_round();
-
-  // TODO(wub): In TCP, loss based exit only happens at end of a loss round, in
-  // QUIC we use the end of the normal round here. It is possible to exit after
-  // any congestion event, using information of the "rolling round".
-  if (!congestion_event.end_of_round_trip) {
-    return;
-  }
-
-  QUIC_DVLOG(3)
-      << sender_
-      << " CheckExcessiveLosses at end of round. loss_events_in_round:"
-      << loss_events_in_round
-      << ", threshold:" << Params().startup_full_loss_count << "  @ "
-      << congestion_event.event_time;
-
   // At the end of a round trip. Check if loss is too high in this round.
-  if (loss_events_in_round >= Params().startup_full_loss_count &&
-      model_->IsInflightTooHigh(congestion_event)) {
-    const QuicByteCount bdp = model_->BDP(model_->MaxBandwidth());
-    QUIC_DVLOG(3) << sender_
-                  << " Exiting STARTUP due to loss. inflight_hi:" << bdp;
-    model_->set_inflight_hi(bdp);
+  if (model_->IsInflightTooHigh(congestion_event,
+                                Params().startup_full_loss_count)) {
+    QuicByteCount new_inflight_hi = model_->BDP(model_->MaxBandwidth());
+    if (Params().startup_loss_exit_use_max_delivered_for_inflight_hi) {
+      if (new_inflight_hi < model_->max_bytes_delivered_in_round()) {
+        QUIC_RELOADABLE_FLAG_COUNT_N(
+            quic_bbr2_startup_loss_exit_use_max_delivered, 1, 2);
+        new_inflight_hi = model_->max_bytes_delivered_in_round();
+      } else {
+        QUIC_RELOADABLE_FLAG_COUNT_N(
+            quic_bbr2_startup_loss_exit_use_max_delivered, 2, 2);
+      }
+    }
+    QUIC_DVLOG(3) << sender_ << " Exiting STARTUP due to loss. inflight_hi:"
+                  << new_inflight_hi;
+    // TODO(ianswett): Add a shared method to set inflight_hi in the model.
+    model_->set_inflight_hi(new_inflight_hi);
 
     full_bandwidth_reached_ = true;
     sender_->connection_stats_->bbr_exit_startup_due_to_loss = true;

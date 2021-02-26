@@ -22,8 +22,6 @@
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
-#include "ios/chrome/browser/signin/constants.h"
-#include "ios/chrome/browser/signin/signin_util.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/system_flags.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -110,10 +108,16 @@ void AuthenticationService::Initialize(
 
   HandleForgottenIdentity(nil, true /* should_prompt */);
 
-  crash_keys::SetCurrentlySignedIn(IsAuthenticated());
+  ios::ChromeIdentityService* identity_service =
+      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  identity_service->RunAfterCacheIsPopulated(base::BindOnce(
+      [](AuthenticationService* authentication_service) {
+        bool is_authenticated = authentication_service->IsAuthenticated();
+        crash_keys::SetCurrentlySignedIn(is_authenticated);
+      },
+      this));
 
-  identity_service_observer_.Add(
-      ios::GetChromeBrowserProvider()->GetChromeIdentityService());
+  identity_service_observer_.Add(identity_service);
 
   OnApplicationWillEnterForeground();
 }
@@ -136,6 +140,9 @@ void AuthenticationService::OnApplicationWillEnterForeground() {
   UpdateHaveAccountsChangedWhileInBackground();
   StoreKnownAccountsWhileInForeground();
 
+  ios::ChromeIdentityService* identity_service =
+      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  identity_service->WaitUntilCacheIsPopulated();
   if (IsAuthenticated()) {
     bool sync_enabled = sync_setup_service_->IsSyncEnabled();
     LoginMethodAndSyncState loginMethodAndSyncState =
@@ -146,9 +153,7 @@ void AuthenticationService::OnApplicationWillEnterForeground() {
                               LOGIN_METHOD_AND_SYNC_STATE_COUNT);
   }
   UMA_HISTOGRAM_COUNTS_100("Signin.IOSNumberOfDeviceAccounts",
-                           [ios::GetChromeBrowserProvider()
-                                   ->GetChromeIdentityService()
-                                   ->GetAllIdentities() count]);
+                           identity_service->GetAllIdentities().count);
 
   // Clear signin errors on the accounts that had a specific MDM device status.
   // This will trigger services to fetch data for these accounts again.
@@ -286,8 +291,9 @@ AuthenticationService::GetLastKnownAccountsFromForeground() {
 ChromeIdentity* AuthenticationService::GetAuthenticatedIdentity() const {
   // There is no authenticated identity if there is no signed in user or if the
   // user signed in via the client login flow.
-  if (!IsAuthenticated())
+  if (!identity_manager_->HasPrimaryAccount()) {
     return nil;
+  }
 
   std::string authenticated_gaia_id =
       identity_manager_->GetPrimaryAccountInfo().gaia;
@@ -297,6 +303,12 @@ ChromeIdentity* AuthenticationService::GetAuthenticatedIdentity() const {
   return ios::GetChromeBrowserProvider()
       ->GetChromeIdentityService()
       ->GetIdentityWithGaiaID(authenticated_gaia_id);
+}
+
+void AuthenticationService::WaitUntilCacheIsPopulated() const {
+  ios::ChromeIdentityService* identity_service =
+      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  identity_service->WaitUntilCacheIsPopulated();
 }
 
 void AuthenticationService::SignIn(ChromeIdentity* identity) {
@@ -309,7 +321,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity) {
 
   const CoreAccountId account_id = identity_manager_->PickAccountIdForAccount(
       base::SysNSStringToUTF8(identity.gaiaID),
-      GetCanonicalizedEmailForIdentity(identity));
+      base::SysNSStringToUTF8(identity.userEmail));
 
   // Load all credentials from SSO library. This must load the credentials
   // for the primary account too.
@@ -356,7 +368,7 @@ void AuthenticationService::SignOut(
     signin_metrics::ProfileSignout signout_source,
     bool force_clear_browsing_data,
     ProceduralBlock completion) {
-  if (!IsAuthenticated()) {
+  if (!identity_manager_->HasPrimaryAccount()) {
     if (completion)
       completion();
     return;
@@ -464,8 +476,9 @@ bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
   base::WeakPtr<AuthenticationService> weak_ptr = GetWeakPtr();
   ios::MDMStatusCallback callback = ^(bool is_blocked) {
     if (is_blocked && weak_ptr.get()) {
-      // If the identiy is blocked, sign out of the account. As only managed
+      // If the identity is blocked, sign out of the account. As only managed
       // account can be blocked, this will clear the associated browsing data.
+      weak_ptr->WaitUntilCacheIsPopulated();
       if (identity == weak_ptr->GetAuthenticatedIdentity()) {
         weak_ptr->SignOut(signin_metrics::ABORT_SIGNIN,
                           /*force_clear_browsing_data=*/false, nil);
@@ -525,11 +538,14 @@ void AuthenticationService::HandleIdentityListChanged() {
 void AuthenticationService::HandleForgottenIdentity(
     ChromeIdentity* invalid_identity,
     bool should_prompt) {
-  if (!IsAuthenticated()) {
+  if (!identity_manager_->HasPrimaryAccount()) {
     // User is not signed in. Nothing to do here.
     return;
   }
 
+  ios::ChromeIdentityService* identity_service =
+      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  identity_service->WaitUntilCacheIsPopulated();
   ChromeIdentity* authenticated_identity = GetAuthenticatedIdentity();
   if (authenticated_identity && authenticated_identity != invalid_identity) {
     // |authenticated_identity| exists and is a valid identity. Nothing to do
@@ -552,6 +568,7 @@ void AuthenticationService::ReloadCredentialsFromIdentities(
 
   base::AutoReset<bool> auto_reset(&is_reloading_credentials_, true);
 
+  WaitUntilCacheIsPopulated();
   HandleForgottenIdentity(nil, should_prompt);
   if (IsAuthenticated()) {
     identity_manager_->GetDeviceAccountsSynchronizer()
@@ -560,7 +577,7 @@ void AuthenticationService::ReloadCredentialsFromIdentities(
 }
 
 bool AuthenticationService::IsAuthenticated() const {
-  return identity_manager_->HasPrimaryAccount();
+  return GetAuthenticatedIdentity() != nil;
 }
 
 bool AuthenticationService::IsAuthenticatedIdentityManaged() const {

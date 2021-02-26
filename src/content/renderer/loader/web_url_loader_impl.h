@@ -20,6 +20,11 @@
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 
+namespace blink {
+class ResourceLoadInfoNotifierWrapper;
+class WebURLRequestExtraData;
+}  // namespace blink
+
 namespace content {
 
 class ResourceDispatcher;
@@ -36,7 +41,9 @@ class CONTENT_EXPORT WebURLLoaderFactoryImpl
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          task_runner_handle) override;
+          freezable_task_runner_handle,
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+          unfreezable_task_runner_handle) override;
 
  private:
   base::WeakPtr<ResourceDispatcher> resource_dispatcher_;
@@ -51,7 +58,9 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
   WebURLLoaderImpl(
       ResourceDispatcher* resource_dispatcher,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          task_runner_handle,
+          freezable_task_runner_handle,
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+          unfreezable_task_runner_handle,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle);
   ~WebURLLoaderImpl() override;
@@ -68,9 +77,8 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
   // WebURLLoader methods:
   void LoadSynchronously(
       std::unique_ptr<network::ResourceRequest> request,
-      scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
+      scoped_refptr<blink::WebURLRequestExtraData> url_request_extra_data,
       int requestor_id,
-      bool download_to_network_cache_only,
       bool pass_response_pipe_to_client,
       bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
@@ -80,23 +88,26 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
       blink::WebData& data,
       int64_t& encoded_data_length,
       int64_t& encoded_body_length,
-      blink::WebBlobInfo& downloaded_blob) override;
+      blink::WebBlobInfo& downloaded_blob,
+      std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
+          resource_load_info_notifier_wrapper) override;
   void LoadAsynchronously(
       std::unique_ptr<network::ResourceRequest> request,
-      scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
+      scoped_refptr<blink::WebURLRequestExtraData> url_request_extra_data,
       int requestor_id,
-      bool download_to_network_cache_only,
       bool no_mime_sniffing,
+      std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
+          resource_load_info_notifier_wrapper,
       blink::WebURLLoaderClient* client) override;
-  void SetDefersLoading(bool value) override;
+  void SetDefersLoading(DeferType value) override;
   void DidChangePriority(blink::WebURLRequest::Priority new_priority,
                          int intra_priority_value) override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForBodyLoader()
+      override;
 
  private:
   class Context;
   class RequestPeerImpl;
-  class SinkPeer;
 
   void Cancel();
 

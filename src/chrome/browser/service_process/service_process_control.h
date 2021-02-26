@@ -136,9 +136,9 @@ class ServiceProcessControl : public UpgradeObserver {
     friend class base::RefCountedThreadSafe<ServiceProcessControl::Launcher>;
     virtual ~Launcher();
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     void DoDetectLaunched();
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 
     void DoRun();
     void Notify();
@@ -193,7 +193,8 @@ class ServiceProcessControl : public UpgradeObserver {
 
   std::unique_ptr<mojo::IsolatedConnection> mojo_connection_;
 
-  service_manager::InterfaceProvider remote_interfaces_;
+  service_manager::InterfaceProvider remote_interfaces_{
+      base::ThreadTaskRunnerHandle::Get()};
   mojo::Remote<chrome::mojom::ServiceProcess> service_process_;
 
   // Service process launcher.

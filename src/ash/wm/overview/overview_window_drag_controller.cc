@@ -30,6 +30,7 @@
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/ranges.h"
+#include "base/numerics/safe_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
@@ -162,17 +163,17 @@ class OverviewItemMoveHelper : public aura::WindowObserver {
     OverviewController* overview_controller =
         Shell::Get()->overview_controller();
     if (overview_controller->InOverviewSession()) {
-      OverviewGrid* target_grid =
-          overview_controller->overview_session()->GetGridWithRootWindow(
-              window->GetRootWindow());
-      // Add |window| to |target_grid| with reposition=false and restack=false,
-      // because soon we will handle both repositioning and restacking anyway.
-      target_grid->AddItemInMruOrder(window, /*reposition=*/false,
-                                     /*animate=*/false, /*restack=*/false);
-      OverviewItem* item = target_grid->GetOverviewItemContaining(window);
+      // OverviewSession::AddItemInMruOrder() will add |window| to the grid
+      // associated with |window|'s root. Do not reposition or restack as we
+      // will soon handle them both anyway.
+      OverviewSession* session = overview_controller->overview_session();
+      session->AddItemInMruOrder(window, /*reposition=*/false,
+                                 /*animate=*/false, /*restack=*/false);
+      OverviewItem* item = session->GetOverviewItemForWindow(window);
+      DCHECK(item);
       item->SetBounds(target_item_bounds_, OVERVIEW_ANIMATION_NONE);
       item->set_should_restack_on_animation_end(true);
-      // The destructor will call |OverviewSession::PositionWindows|.
+      // The destructor will call OverviewSession::PositionWindows().
     }
     delete this;
   }
@@ -665,10 +666,10 @@ OverviewWindowDragController::CompleteNormalDrag(
     // Get the window and bounds from |item_| before removing it from its grid.
     aura::Window* window = item_->GetWindow();
     const gfx::RectF target_item_bounds = item_->target_bounds();
-    // Remove |item_| from its grid. Leave the repositioning to the
+    // Remove |item_| from overview. Leave the repositioning to the
     // |OverviewItemMoveHelper|.
-    item_overview_grid->RemoveItem(item_, /*item_destroying=*/false,
-                                   /*reposition=*/false);
+    overview_session_->RemoveItem(item_, /*item_destroying=*/false,
+                                  /*reposition=*/false);
     item_ = nullptr;
     // The |OverviewItemMoveHelper| will self destruct when we move |window| to
     // |target_root|.
@@ -726,9 +727,9 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
     return SplitViewController::NONE;
   if (split_view_controller->InSplitViewMode()) {
     const int position =
-        gfx::ToRoundedInt(SplitViewController::IsLayoutHorizontal()
-                              ? location_in_screen.x() - area.x()
-                              : location_in_screen.y() - area.y());
+        base::ClampRound(SplitViewController::IsLayoutHorizontal()
+                             ? location_in_screen.x() - area.x()
+                             : location_in_screen.y() - area.y());
     SplitViewController::SnapPosition default_snap_position =
         split_view_controller->default_snap_position();
     // If we're trying to snap to a position that already has a snapped window:

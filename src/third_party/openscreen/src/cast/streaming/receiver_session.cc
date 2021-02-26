@@ -4,29 +4,24 @@
 
 #include "cast/streaming/receiver_session.h"
 
-#include <chrono>  // NOLINT
+#include <algorithm>
+#include <chrono>
 #include <string>
 #include <utility>
 
 #include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
+#include "cast/common/channel/message_util.h"
+#include "cast/common/public/message_port.h"
 #include "cast/streaming/environment.h"
-#include "cast/streaming/message_port.h"
-#include "cast/streaming/message_util.h"
+#include "cast/streaming/message_fields.h"
 #include "cast/streaming/offer_messages.h"
 #include "cast/streaming/receiver.h"
+#include "util/json/json_helpers.h"
 #include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {
-
-// JSON message field values specific to the Receiver Session.
-static constexpr char kMessageTypeOffer[] = "OFFER";
-
-// List of OFFER message fields.
-static constexpr char kOfferMessageBody[] = "offer";
-static constexpr char kKeyType[] = "type";
-static constexpr char kSequenceNumber[] = "seqNum";
 
 // Using statements for constructor readability.
 using Preferences = ReceiverSession::Preferences;
@@ -34,42 +29,14 @@ using ConfiguredReceivers = ReceiverSession::ConfiguredReceivers;
 
 namespace {
 
-std::string GetCodecName(ReceiverSession::AudioCodec codec) {
-  switch (codec) {
-    case ReceiverSession::AudioCodec::kAac:
-      return "aac";
-    case ReceiverSession::AudioCodec::kOpus:
-      return "opus";
-  }
-
-  OSP_NOTREACHED() << "Codec not accounted for in switch statement.";
-  return {};
-}
-
-std::string GetCodecName(ReceiverSession::VideoCodec codec) {
-  switch (codec) {
-    case ReceiverSession::VideoCodec::kH264:
-      return "h264";
-    case ReceiverSession::VideoCodec::kVp8:
-      return "vp8";
-    case ReceiverSession::VideoCodec::kHevc:
-      return "hevc";
-    case ReceiverSession::VideoCodec::kVp9:
-      return "vp9";
-  }
-
-  OSP_NOTREACHED() << "Codec not accounted for in switch statement.";
-  return {};
-}
-
 template <typename Stream, typename Codec>
 const Stream* SelectStream(const std::vector<Codec>& preferred_codecs,
                            const std::vector<Stream>& offered_streams) {
-  for (Codec codec : preferred_codecs) {
-    const std::string codec_name = GetCodecName(codec);
+  for (auto codec : preferred_codecs) {
+    const std::string codec_name = CodecToString(codec);
     for (const Stream& offered_stream : offered_streams) {
       if (offered_stream.stream.codec_name == codec_name) {
-        OSP_VLOG << "Selected " << codec_name << " as codec for streaming.";
+        OSP_DVLOG << "Selected " << codec_name << " as codec for streaming";
         return &offered_stream;
       }
     }
@@ -77,7 +44,34 @@ const Stream* SelectStream(const std::vector<Codec>& preferred_codecs,
   return nullptr;
 }
 
+// Helper method that creates an invalid Answer response.
+Json::Value CreateInvalidAnswerMessage(Error error) {
+  Json::Value message_root;
+  message_root[kMessageType] = kMessageTypeAnswer;
+  message_root[kResult] = kResultError;
+  message_root[kErrorMessageBody][kErrorCode] = static_cast<int>(error.code());
+  message_root[kErrorMessageBody][kErrorDescription] = error.message();
+
+  return message_root;
+}
+
+// Helper method that creates a valid Answer response.
+Json::Value CreateAnswerMessage(const Answer& answer) {
+  OSP_DCHECK(answer.IsValid());
+  Json::Value message_root;
+  message_root[kMessageType] = kMessageTypeAnswer;
+  message_root[kAnswerMessageBody] = answer.ToJson();
+  message_root[kResult] = kResultOk;
+  return message_root;
+}
+
+DisplayResolution ToDisplayResolution(const Resolution& resolution) {
+  return DisplayResolution{resolution.width, resolution.height};
+}
+
 }  // namespace
+
+ReceiverSession::Client::~Client() = default;
 
 Preferences::Preferences() = default;
 Preferences::Preferences(std::vector<VideoCodec> video_codecs,
@@ -102,67 +96,36 @@ ReceiverSession::ReceiverSession(Client* const client,
                                  Preferences preferences)
     : client_(client),
       environment_(environment),
-      message_port_(message_port),
       preferences_(std::move(preferences)),
+      session_id_(MakeUniqueSessionId("streaming_receiver")),
+      messager_(message_port,
+                session_id_,
+                [this](Error error) {
+                  OSP_DLOG_WARN << "Got a session messager error: " << error;
+                  client_->OnError(this, error);
+                }),
       packet_router_(environment_) {
   OSP_DCHECK(client_);
-  OSP_DCHECK(message_port_);
   OSP_DCHECK(environment_);
 
-  message_port_->SetClient(this);
+  messager_.SetHandler(kMessageTypeOffer,
+                       [this](SessionMessager::Message message) {
+                         OnOffer(std::move(message));
+                       });
 }
 
 ReceiverSession::~ReceiverSession() {
-  ResetReceivers();
-  message_port_->SetClient(nullptr);
+  ResetReceivers(Client::kEndOfSession);
 }
 
-void ReceiverSession::OnMessage(absl::string_view sender_id,
-                                absl::string_view message_namespace,
-                                absl::string_view message) {
-  ErrorOr<Json::Value> message_json = json::Parse(message);
-
-  if (!message_json) {
-    client_->OnError(this, Error::Code::kJsonParseError);
-    OSP_LOG_WARN << "Received an invalid message: " << message;
-    return;
-  }
-
-  // TODO(jophba): add sender connected/disconnected messaging.
-  auto sequence_number = ParseInt(message_json.value(), kSequenceNumber);
-  if (!sequence_number) {
-    OSP_LOG_WARN << "Invalid message sequence number";
-    return;
-  }
-
-  auto key_or_error = ParseString(message_json.value(), kKeyType);
-  if (!key_or_error) {
-    OSP_LOG_WARN << "Invalid message key";
-    return;
-  }
-
-  Message parsed_message{sender_id.data(), message_namespace.data(),
-                         sequence_number.value()};
-  if (key_or_error.value() == kMessageTypeOffer) {
-    parsed_message.body = std::move(message_json.value()[kOfferMessageBody]);
-    if (parsed_message.body.isNull()) {
-      OSP_LOG_WARN << "Invalid message offer body";
-      return;
-    }
-    OnOffer(&parsed_message);
-  }
-}
-
-void ReceiverSession::OnError(Error error) {
-  OSP_LOG_WARN << "ReceiverSession's MessagePump encountered an error:"
-               << error;
-}
-
-void ReceiverSession::OnOffer(Message* message) {
-  ErrorOr<Offer> offer = Offer::Parse(std::move(message->body));
+void ReceiverSession::OnOffer(SessionMessager::Message message) {
+  ErrorOr<Offer> offer = Offer::Parse(std::move(message.body));
   if (!offer) {
     client_->OnError(this, offer.error());
-    OSP_LOG_WARN << "Could not parse offer" << offer.error();
+    OSP_DLOG_WARN << "Could not parse offer" << offer.error();
+    message.body = CreateInvalidAnswerMessage(
+        Error(Error::Code::kParseError, "Failed to parse malformed OFFER"));
+    messager_.SendMessage(std::move(message));
     return;
   }
 
@@ -180,74 +143,88 @@ void ReceiverSession::OnOffer(Message* message) {
         SelectStream(preferences_.video_codecs, offer.value().video_streams);
   }
 
-  cast_mode_ = offer.value().cast_mode;
-  auto receivers =
-      TrySpawningReceivers(selected_audio_stream, selected_video_stream);
-  if (receivers) {
-    const Answer answer =
-        ConstructAnswer(message, selected_audio_stream, selected_video_stream);
-    client_->OnNegotiated(this, std::move(receivers.value()));
-
-    message->body = answer.ToAnswerMessage();
-  } else {
-    message->body = CreateInvalidAnswer(receivers.error());
+  if (!selected_audio_stream && !selected_video_stream) {
+    message.body = CreateInvalidAnswerMessage(
+        Error(Error::Code::kParseError, "No selected streams"));
+    OSP_DLOG_WARN << "Failed to select any streams from OFFER";
+    messager_.SendMessage(std::move(message));
+    return;
   }
 
-  SendMessage(message);
+  const Answer answer =
+      ConstructAnswer(&message, selected_audio_stream, selected_video_stream);
+  if (!answer.IsValid()) {
+    message.body = CreateInvalidAnswerMessage(
+        Error(Error::Code::kParseError, "Invalid answer message"));
+    OSP_DLOG_WARN << "Failed to construct an ANSWER message";
+    messager_.SendMessage(std::move(message));
+    return;
+  }
+
+  // Only spawn receivers if we know we have a valid answer message.
+  ConfiguredReceivers receivers =
+      SpawnReceivers(selected_audio_stream, selected_video_stream);
+  // If the answer message is invalid, there is no point in setting up a
+  // negotiation because the sender won't be able to connect to it.
+  client_->OnNegotiated(this, std::move(receivers));
+  message.body = CreateAnswerMessage(answer);
+  messager_.SendMessage(std::move(message));
 }
 
-std::pair<SessionConfig, std::unique_ptr<Receiver>>
-ReceiverSession::ConstructReceiver(const Stream& stream) {
+std::unique_ptr<Receiver> ReceiverSession::ConstructReceiver(
+    const Stream& stream) {
   SessionConfig config = {stream.ssrc,         stream.ssrc + 1,
                           stream.rtp_timebase, stream.channels,
                           stream.target_delay, stream.aes_key,
                           stream.aes_iv_mask};
-  auto receiver =
-      std::make_unique<Receiver>(environment_, &packet_router_, config);
-
-  return std::make_pair(std::move(config), std::move(receiver));
+  return std::make_unique<Receiver>(environment_, &packet_router_,
+                                    std::move(config));
 }
 
-ErrorOr<ConfiguredReceivers> ReceiverSession::TrySpawningReceivers(
-    const AudioStream* audio,
-    const VideoStream* video) {
-  if (!audio && !video) {
-    return Error::Code::kParameterInvalid;
-  }
+ConfiguredReceivers ReceiverSession::SpawnReceivers(const AudioStream* audio,
+                                                    const VideoStream* video) {
+  OSP_DCHECK(audio || video);
+  ResetReceivers(Client::kRenegotiated);
 
-  ResetReceivers();
-
-  absl::optional<ConfiguredReceiver<AudioStream>> audio_receiver;
-  absl::optional<ConfiguredReceiver<VideoStream>> video_receiver;
-
+  AudioCaptureConfig audio_config;
   if (audio) {
-    auto audio_pair = ConstructReceiver(audio->stream);
-    current_audio_receiver_ = std::move(audio_pair.second);
-    audio_receiver.emplace(ConfiguredReceiver<AudioStream>{
-        current_audio_receiver_.get(), std::move(audio_pair.first), *audio});
+    current_audio_receiver_ = ConstructReceiver(audio->stream);
+    audio_config = AudioCaptureConfig{
+        StringToAudioCodec(audio->stream.codec_name), audio->stream.channels,
+        audio->bit_rate, audio->stream.rtp_timebase,
+        audio->stream.target_delay};
   }
 
+  VideoCaptureConfig video_config;
   if (video) {
-    auto video_pair = ConstructReceiver(video->stream);
-    current_video_receiver_ = std::move(video_pair.second);
-    video_receiver.emplace(ConfiguredReceiver<VideoStream>{
-        current_video_receiver_.get(), std::move(video_pair.first), *video});
+    current_video_receiver_ = ConstructReceiver(video->stream);
+    std::vector<DisplayResolution> display_resolutions;
+    std::transform(video->resolutions.begin(), video->resolutions.end(),
+                   std::back_inserter(display_resolutions),
+                   ToDisplayResolution);
+    video_config =
+        VideoCaptureConfig{StringToVideoCodec(video->stream.codec_name),
+                           FrameRate{video->max_frame_rate.numerator,
+                                     video->max_frame_rate.denominator},
+                           video->max_bit_rate, std::move(display_resolutions),
+                           video->stream.target_delay};
   }
 
-  return ConfiguredReceivers{std::move(audio_receiver),
-                             std::move(video_receiver)};
+  return ConfiguredReceivers{
+      current_audio_receiver_.get(), std::move(audio_config),
+      current_video_receiver_.get(), std::move(video_config)};
 }
 
-void ReceiverSession::ResetReceivers() {
+void ReceiverSession::ResetReceivers(Client::ReceiversDestroyingReason reason) {
   if (current_video_receiver_ || current_audio_receiver_) {
-    client_->OnConfiguredReceiversDestroyed(this);
+    client_->OnReceiversDestroying(this, reason);
     current_audio_receiver_.reset();
     current_video_receiver_.reset();
   }
 }
 
 Answer ReceiverSession::ConstructAnswer(
-    Message* message,
+    SessionMessager::Message* message,
     const AudioStream* selected_audio_stream,
     const VideoStream* selected_video_stream) {
   OSP_DCHECK(selected_audio_stream || selected_video_stream);
@@ -266,36 +243,23 @@ Answer ReceiverSession::ConstructAnswer(
 
   absl::optional<Constraints> constraints;
   if (preferences_.constraints) {
-    constraints = *preferences_.constraints;
+    constraints = absl::optional<Constraints>(*preferences_.constraints);
   }
 
   absl::optional<DisplayDescription> display;
   if (preferences_.display_description) {
-    display = *preferences_.display_description;
+    display =
+        absl::optional<DisplayDescription>(*preferences_.display_description);
   }
 
-  return Answer{cast_mode_,
-                environment_->GetBoundLocalEndpoint().port,
+  return Answer{environment_->GetBoundLocalEndpoint().port,
                 std::move(stream_indexes),
                 std::move(stream_ssrcs),
-                constraints,
-                display,
+                std::move(constraints),
+                std::move(display),
                 std::vector<int>{},  // receiver_rtcp_event_log
                 std::vector<int>{},  // receiver_rtcp_dscp
                 supports_wifi_status_reporting_};
-}
-
-void ReceiverSession::SendMessage(Message* message) {
-  // All messages have the sequence number embedded.
-  message->body[kSequenceNumber] = message->sequence_number;
-
-  auto body_or_error = json::Stringify(message->body);
-  if (body_or_error.is_value()) {
-    message_port_->PostMessage(message->sender_id, message->message_namespace,
-                               body_or_error.value());
-  } else {
-    client_->OnError(this, body_or_error.error());
-  }
 }
 
 }  // namespace cast

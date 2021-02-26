@@ -14,15 +14,16 @@
 
 #include "src/weighted_reservoir_sampler.h"
 
+#include <numeric>
 #include <tuple>
 #include <vector>
 
 #include "port/gtest.h"
 
-using testing::TestWithParam;
-using testing::ValuesIn;
 using testing::Combine;
 using testing::Range;
+using testing::TestWithParam;
+using testing::ValuesIn;
 
 namespace protobuf_mutator {
 
@@ -52,7 +53,7 @@ TEST_P(WeightedReservoirSamplerTest, Test) {
   std::vector<int> weights = std::get<1>(GetParam());
   std::vector<int> counts(weights.size(), 0);
 
-  using RandomEngine = std::mt19937;
+  using RandomEngine = std::minstd_rand;
   RandomEngine rand(std::get<0>(GetParam()));
   for (int i = 0; i < kRuns; ++i) {
     WeightedReservoirSampler<int, RandomEngine> sampler(&rand);

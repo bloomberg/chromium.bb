@@ -7,6 +7,8 @@
 
 #include <utility>
 
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
@@ -92,7 +94,8 @@ void InspectorMediaAgent::Restore() {
 
 void InspectorMediaAgent::RegisterAgent() {
   instrumenting_agents_->AddInspectorMediaAgent(this);
-  auto* cache = MediaInspectorContextImpl::From(*local_frame_->DomWindow());
+  auto* cache = MediaInspectorContextImpl::From(
+      *local_frame_->DomWindow()->GetExecutionContext());
   Vector<WebString> players = cache->AllPlayerIds();
   PlayersCreated(players);
   for (const auto& player_id : players) {
@@ -161,7 +164,7 @@ void InspectorMediaAgent::PlayersCreated(const Vector<WebString>& player_ids) {
   GetFrontend()->playersCreated(std::move(protocol_players));
 }
 
-void InspectorMediaAgent::Trace(Visitor* visitor) {
+void InspectorMediaAgent::Trace(Visitor* visitor) const {
   visitor->Trace(local_frame_);
   InspectorBaseAgent::Trace(visitor);
 }

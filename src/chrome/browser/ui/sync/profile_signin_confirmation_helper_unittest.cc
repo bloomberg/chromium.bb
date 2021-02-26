@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
@@ -57,18 +57,18 @@ using bookmarks::BookmarkModel;
 
 namespace {
 
-template<typename T>
-void GetValueAndQuit(T* result, const base::Closure& quit, T actual) {
+template <typename T>
+void GetValueAndQuit(T* result, base::OnceClosure quit, T actual) {
   *result = actual;
-  quit.Run();
+  std::move(quit).Run();
 }
 
 template <typename T>
 T GetCallbackResult(
-    const base::Callback<void(base::OnceCallback<void(T)>)>& callback) {
+    base::OnceCallback<void(base::OnceCallback<void(T)>)> callback) {
   T result = false;
   base::RunLoop loop;
-  callback.Run(
+  std::move(callback).Run(
       base::BindOnce(&GetValueAndQuit<T>, &result, loop.QuitClosure()));
   loop.Run();
   return result;
@@ -127,9 +127,7 @@ static scoped_refptr<extensions::Extension> CreateExtension(
 class ProfileSigninConfirmationHelperTest : public testing::Test {
  public:
   ProfileSigninConfirmationHelperTest()
-      : user_prefs_(NULL),
-        model_(NULL) {
-  }
+      : user_prefs_(nullptr), model_(nullptr) {}
 
   void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
@@ -148,13 +146,14 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
     RegisterUserProfilePrefs(pref_service->registry());
     builder.SetPrefService(
         base::WrapUnique<sync_preferences::PrefServiceSyncable>(pref_service));
+    builder.AddTestingFactory(BookmarkModelFactory::GetInstance(),
+                              BookmarkModelFactory::GetDefaultFactory());
     profile_ = builder.Build();
 
     // Initialize the services we check.
-    profile_->CreateBookmarkModel(true);
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
-    ASSERT_TRUE(profile_->CreateHistoryService(true, false));
+    ASSERT_TRUE(profile_->CreateHistoryService());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::TestExtensionSystem* system =
         static_cast<extensions::TestExtensionSystem*>(
@@ -190,11 +189,8 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
 TEST_F(ProfileSigninConfirmationHelperTest, DISABLED_DoNotPromptForNewProfile) {
   // Profile is new and there's no profile data.
   profile_->SetIsNewProfile(true);
-  EXPECT_FALSE(
-      GetCallbackResult(
-          base::Bind(
-              &ui::CheckShouldPromptForNewProfile,
-              profile_.get())));
+  EXPECT_FALSE(GetCallbackResult(
+      base::BindOnce(&ui::CheckShouldPromptForNewProfile, profile_.get())));
 }
 
 TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Bookmarks) {
@@ -205,11 +201,8 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Bookmarks) {
   model_->AddURL(model_->bookmark_bar_node(), 0,
                  base::string16(base::ASCIIToUTF16("foo")),
                  GURL("http://foo.com"));
-  EXPECT_TRUE(
-      GetCallbackResult(
-          base::Bind(
-              &ui::CheckShouldPromptForNewProfile,
-              profile_.get())));
+  EXPECT_TRUE(GetCallbackResult(
+      base::BindOnce(&ui::CheckShouldPromptForNewProfile, profile_.get())));
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -228,7 +221,7 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
       ->AddGrantedPermissions(webstore->id(), extensions::PermissionSet());
   extensions->AddExtension(webstore.get());
   EXPECT_FALSE(GetCallbackResult(
-      base::Bind(&ui::CheckShouldPromptForNewProfile, profile_.get())));
+      base::BindOnce(&ui::CheckShouldPromptForNewProfile, profile_.get())));
 
   scoped_refptr<extensions::Extension> extension =
       CreateExtension("foo", std::string(), extensions::Manifest::INTERNAL);
@@ -236,7 +229,7 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
       ->AddGrantedPermissions(extension->id(), extensions::PermissionSet());
   extensions->AddExtension(extension.get());
   EXPECT_TRUE(GetCallbackResult(
-      base::Bind(&ui::CheckShouldPromptForNewProfile, profile_.get())));
+      base::BindOnce(&ui::CheckShouldPromptForNewProfile, profile_.get())));
 }
 #endif
 
@@ -253,16 +246,12 @@ TEST_F(ProfileSigninConfirmationHelperTest,
   char buf[18];
   for (int i = 0; i < 10; i++) {
     base::snprintf(buf, base::size(buf), "http://foo.com/%d", i);
-    history->AddPage(
-        GURL(std::string(buf)), base::Time::Now(), NULL, 1,
-        GURL(), history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-        history::SOURCE_BROWSED, false);
+    history->AddPage(GURL(std::string(buf)), base::Time::Now(), NULL, 1, GURL(),
+                     history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                     history::SOURCE_BROWSED, false, false);
   }
-  EXPECT_TRUE(
-      GetCallbackResult(
-          base::Bind(
-              &ui::CheckShouldPromptForNewProfile,
-              profile_.get())));
+  EXPECT_TRUE(GetCallbackResult(
+      base::BindOnce(&ui::CheckShouldPromptForNewProfile, profile_.get())));
 }
 
 // http://crbug.com/393149
@@ -274,23 +263,16 @@ TEST_F(ProfileSigninConfirmationHelperTest,
 
   // Profile is new but has a typed URL.
   profile_->SetIsNewProfile(true);
-  history->AddPage(
-      GURL("http://example.com"), base::Time::Now(), NULL, 1,
-      GURL(), history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
-      history::SOURCE_BROWSED, false);
-  EXPECT_TRUE(
-      GetCallbackResult(
-          base::Bind(
-              &ui::CheckShouldPromptForNewProfile,
-              profile_.get())));
+  history->AddPage(GURL("http://example.com"), base::Time::Now(), NULL, 1,
+                   GURL(), history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
+                   history::SOURCE_BROWSED, false, false);
+  EXPECT_TRUE(GetCallbackResult(
+      base::BindOnce(&ui::CheckShouldPromptForNewProfile, profile_.get())));
 }
 
 TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Restarted) {
   // Browser has been shut down since profile was created.
   profile_->SetIsNewProfile(false);
-  EXPECT_TRUE(
-      GetCallbackResult(
-          base::Bind(
-              &ui::CheckShouldPromptForNewProfile,
-              profile_.get())));
+  EXPECT_TRUE(GetCallbackResult(
+      base::BindOnce(&ui::CheckShouldPromptForNewProfile, profile_.get())));
 }

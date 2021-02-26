@@ -21,7 +21,6 @@
 
 namespace blink {
 
-class Document;
 class PresentationConnectionList;
 class ReceiverPresentationConnection;
 
@@ -41,8 +40,6 @@ class MODULES_EXPORT PresentationReceiver final
   explicit PresentationReceiver(LocalDOMWindow*);
   ~PresentationReceiver() override = default;
 
-  static PresentationReceiver* From(Document&);
-
   // PresentationReceiver.idl implementation
   ScriptPromise connectionList(ScriptState*);
 
@@ -58,7 +55,7 @@ class MODULES_EXPORT PresentationReceiver final
 
   LocalDOMWindow* GetWindow() const { return window_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   friend class PresentationReceiverTest;

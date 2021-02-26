@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/dib/cfx_dibbase.h"
 #include "third_party/base/span.h"
@@ -17,8 +18,7 @@ class CPDF_TransferFunc;
 
 class CPDF_TransferFuncDIB final : public CFX_DIBBase {
  public:
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
+  CONSTRUCT_VIA_MAKE_RETAIN;
 
   void TranslateScanline(
       const uint8_t* src_buf,

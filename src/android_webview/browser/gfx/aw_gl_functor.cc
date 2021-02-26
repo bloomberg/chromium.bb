@@ -7,7 +7,6 @@
 #include "android_webview/browser_jni_headers/AwGLFunctor_jni.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -36,8 +35,7 @@ int g_instance_count = 0;
 
 AwGLFunctor::AwGLFunctor(const JavaObjectWeakGlobalRef& java_ref)
     : java_ref_(java_ref),
-      render_thread_manager_(
-          base::CreateSingleThreadTaskRunner({BrowserThread::UI})) {
+      render_thread_manager_(content::GetUIThreadTaskRunner({})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ++g_instance_count;
 }
@@ -51,7 +49,7 @@ bool AwGLFunctor::RequestInvokeGL(bool wait_for_completion) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (!obj)
     return false;
   return Java_AwGLFunctor_requestInvokeGL(env, obj, wait_for_completion);
 }
@@ -60,7 +58,7 @@ void AwGLFunctor::DetachFunctorFromView() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj.is_null())
+  if (obj)
     Java_AwGLFunctor_detachFunctorFromView(env, obj);
 }
 

@@ -7,7 +7,7 @@
 #include <v8-inspector.h>
 #include <memory>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -143,9 +143,12 @@ DevToolsAgent::DevToolsAgent(
       inspector_task_runner_(std::move(inspector_task_runner)),
       io_task_runner_(std::move(io_task_runner)) {}
 
-DevToolsAgent::~DevToolsAgent() {}
+DevToolsAgent::~DevToolsAgent() = default;
 
-void DevToolsAgent::Trace(Visitor* visitor) {
+void DevToolsAgent::Trace(Visitor* visitor) const {
+  visitor->Trace(associated_receiver_);
+  visitor->Trace(host_remote_);
+  visitor->Trace(associated_host_remote_);
   visitor->Trace(inspected_frames_);
   visitor->Trace(probe_sink_);
   visitor->Trace(sessions_);
@@ -164,7 +167,7 @@ void DevToolsAgent::BindReceiverForWorker(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!associated_receiver_.is_bound());
 
-  host_remote_.Bind(std::move(host_remote));
+  host_remote_.Bind(std::move(host_remote), std::move(task_runner));
   host_remote_.set_disconnect_handler(
       WTF::Bind(&DevToolsAgent::CleanupConnection, WrapWeakPersistent(this)));
 
@@ -178,8 +181,8 @@ void DevToolsAgent::BindReceiver(
     mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!associated_receiver_.is_bound());
-  associated_receiver_.Bind(std::move(receiver), std::move(task_runner));
-  associated_host_remote_.Bind(std::move(host_remote));
+  associated_receiver_.Bind(std::move(receiver), task_runner);
+  associated_host_remote_.Bind(std::move(host_remote), task_runner);
   associated_host_remote_.set_disconnect_handler(
       WTF::Bind(&DevToolsAgent::CleanupConnection, WrapWeakPersistent(this)));
 }
@@ -197,7 +200,8 @@ void DevToolsAgent::AttachDevToolsSessionImpl(
   DevToolsSession* session = MakeGarbageCollected<DevToolsSession>(
       this, std::move(host), std::move(session_receiver),
       std::move(io_session_receiver), std::move(reattach_session_state),
-      client_expects_binary_responses, session_id);
+      client_expects_binary_responses, session_id,
+      inspector_task_runner_->isolate_task_runner());
   sessions_.insert(session);
   client_->DebuggerTaskFinished();
 }
@@ -287,9 +291,13 @@ std::unique_ptr<WorkerDevToolsParams> DevToolsAgent::WorkerThreadCreated(
     ExecutionContext* parent_context,
     WorkerThread* worker_thread,
     const KURL& url,
-    const String& global_scope_name) {
+    const String& global_scope_name,
+    const base::Optional<const blink::DedicatedWorkerToken>& token) {
   auto result = std::make_unique<WorkerDevToolsParams>();
-  result->devtools_worker_token = base::UnguessableToken::Create();
+  base::UnguessableToken devtools_worker_token =
+      token.has_value() ? token.value().value()
+                        : base::UnguessableToken::Create();
+  result->devtools_worker_token = devtools_worker_token;
 
   DevToolsAgent* agent = DevToolsAgentFromContext(parent_context);
   if (!agent)

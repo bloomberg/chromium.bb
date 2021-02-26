@@ -15,19 +15,18 @@
 
 #include "base/bind.h"
 #include "base/containers/stack.h"
+#include "base/json/json_reader.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/navigator.h"
-#include "content/browser/frame_host/render_frame_host_delegate.h"
-#include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/navigator.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
+#include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/frame_visual_properties.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/file_select_listener.h"
@@ -41,7 +40,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
-#include "net/url_request/url_request.h"
+#include "third_party/blink/public/common/frame/frame_visual_properties.h"
 
 namespace content {
 
@@ -50,7 +49,7 @@ bool NavigateFrameToURL(FrameTreeNode* node, const GURL& url) {
   NavigationController::LoadURLParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_LINK;
   params.frame_tree_node_id = node->frame_tree_node_id();
-  node->navigator()->GetController()->LoadURLWithParams(params);
+  node->navigator().GetController()->LoadURLWithParams(params);
   observer.Wait();
 
   if (!observer.last_navigation_succeeded()) {
@@ -85,9 +84,23 @@ bool NavigateToURLInSameBrowsingInstance(Shell* window, const GURL& url) {
                           ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK));
   observer.Wait();
 
-  if (!IsLastCommittedEntryOfPageType(window->web_contents(), PAGE_TYPE_NORMAL))
+  if (!IsLastCommittedEntryOfPageType(window->web_contents(),
+                                      PAGE_TYPE_NORMAL)) {
+    NavigationEntry* last_entry =
+        window->web_contents()->GetController().GetLastCommittedEntry();
+    DLOG(WARNING) << "last_entry->GetPageType() = "
+                  << (last_entry ? last_entry->GetPageType() : -1);
     return false;
-  return window->web_contents()->GetLastCommittedURL() == url;
+  }
+
+  if (window->web_contents()->GetLastCommittedURL() != url) {
+    DLOG(WARNING) << "window->web_contents()->GetLastCommittedURL() = "
+                  << window->web_contents()->GetLastCommittedURL()
+                  << "; url = " << url;
+    return false;
+  }
+
+  return true;
 }
 
 FrameTreeVisualizer::FrameTreeVisualizer() {
@@ -282,18 +295,33 @@ std::string FrameTreeVisualizer::GetName(SiteInstance* site_instance) {
 Shell* OpenPopup(const ToRenderFrameHost& opener,
                  const GURL& url,
                  const std::string& name) {
+  return OpenPopup(opener, url, name, "", true);
+}
+
+Shell* OpenPopup(const ToRenderFrameHost& opener,
+                 const GURL& url,
+                 const std::string& name,
+                 const std::string& features,
+                 bool expect_return_from_window_open) {
   TestNavigationObserver observer(url);
   observer.StartWatchingNewWebContents();
 
   ShellAddedObserver new_shell_observer;
   bool did_create_popup = false;
-  bool did_execute_script = ExecuteScriptAndExtractBool(
-      opener,
+  std::string popup_script =
       "window.domAutomationController.send("
-      "    !!window.open('" + url.spec() + "', '" + name + "'));",
-      &did_create_popup);
-  if (!did_execute_script || !did_create_popup)
+      "    !!window.open('" +
+      url.spec() + "', '" + name + "', '" + features + "'));";
+  bool did_execute_script =
+      ExecuteScriptAndExtractBool(opener, popup_script, &did_create_popup);
+
+  // Don't check the value of |did_create_popup| since there are valid reasons
+  // for it to be false, e.g. |features| specifies 'noopener', or 'noreferrer'
+  // or others.
+  if (!did_execute_script ||
+      !(did_create_popup || !expect_return_from_window_open)) {
     return nullptr;
+  }
 
   observer.Wait();
 
@@ -311,7 +339,7 @@ FileChooserDelegate::~FileChooserDelegate() = default;
 
 void FileChooserDelegate::RunFileChooser(
     RenderFrameHost* render_frame_host,
-    std::unique_ptr<content::FileSelectListener> listener,
+    scoped_refptr<content::FileSelectListener> listener,
     const blink::mojom::FileChooserParams& params) {
   // Send the selected file to the renderer process.
   auto file_info = blink::mojom::FileChooserFileInfo::NewNativeFile(
@@ -376,55 +404,53 @@ RenderProcessHostBadIpcMessageWaiter::Wait() {
   return static_cast<bad_message::BadMessageReason>(internal_result.value());
 }
 
-ShowWidgetMessageFilter::ShowWidgetMessageFilter(WebContents* web_contents)
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-    : BrowserMessageFilter(FrameMsgStart),
-#else
-    : BrowserMessageFilter(ViewMsgStart),
-#endif
-      run_loop_(std::make_unique<base::RunLoop>()) {
-  WebContentsObserver::Observe(web_contents);
+ShowPopupWidgetWaiter::ShowPopupWidgetWaiter(WebContents* web_contents,
+                                             RenderFrameHostImpl* frame_host)
+    : WebContentsObserver(web_contents), frame_host_(frame_host) {
+  frame_host_->SetCreateNewPopupCallbackForTesting(base::BindRepeating(
+      &ShowPopupWidgetWaiter::DidCreatePopupWidget, base::Unretained(this)));
 }
 
-ShowWidgetMessageFilter::~ShowWidgetMessageFilter() {
-  DCHECK(is_shut_down_);
+ShowPopupWidgetWaiter::~ShowPopupWidgetWaiter() {
+  if (auto* rwhi = RenderWidgetHostImpl::FromID(process_id_, routing_id_)) {
+    rwhi->popup_widget_host_receiver_for_testing().SwapImplForTesting(rwhi);
+  }
+  if (frame_host_)
+    frame_host_->SetCreateNewPopupCallbackForTesting(base::NullCallback());
 }
 
-void ShowWidgetMessageFilter::Shutdown() {
-  WebContentsObserver::Observe(nullptr);
-  is_shut_down_ = true;
+void ShowPopupWidgetWaiter::Wait() {
+  run_loop_.Run();
 }
 
-bool ShowWidgetMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(ShowWidgetMessageFilter, message)
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
-#endif
-  IPC_END_MESSAGE_MAP()
-  return false;
+void ShowPopupWidgetWaiter::Stop() {
+  Observe(nullptr);
+  frame_host_->SetCreateNewPopupCallbackForTesting(base::NullCallback());
+  frame_host_ = nullptr;
 }
 
-void ShowWidgetMessageFilter::Wait() {
-  DCHECK(!is_shut_down_);
-  run_loop_->Run();
+blink::mojom::PopupWidgetHost* ShowPopupWidgetWaiter::GetForwardingInterface() {
+  DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
+  return RenderWidgetHostImpl::FromID(process_id_, routing_id_);
 }
 
-void ShowWidgetMessageFilter::Reset() {
-  DCHECK(!is_shut_down_);
-  initial_rect_ = gfx::Rect();
-  routing_id_ = MSG_ROUTING_NONE;
-  run_loop_ = std::make_unique<base::RunLoop>();
+void ShowPopupWidgetWaiter::ShowPopup(const gfx::Rect& initial_rect,
+                                      ShowPopupCallback callback) {
+  GetForwardingInterface()->ShowPopup(initial_rect, std::move(callback));
+  initial_rect_ = initial_rect;
+  run_loop_.Quit();
 }
 
-void ShowWidgetMessageFilter::OnShowWidget(int route_id,
-                                           const gfx::Rect& initial_rect) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI,
-                                this, route_id, initial_rect));
+void ShowPopupWidgetWaiter::DidCreatePopupWidget(
+    RenderWidgetHostImpl* render_widget_host) {
+  process_id_ = render_widget_host->GetProcess()->GetID();
+  routing_id_ = render_widget_host->GetRoutingID();
+  render_widget_host->popup_widget_host_receiver_for_testing()
+      .SwapImplForTesting(this);
 }
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-bool ShowWidgetMessageFilter::ShowPopupMenu(
+#if defined(OS_MAC) || defined(OS_ANDROID)
+bool ShowPopupWidgetWaiter::ShowPopupMenu(
     RenderFrameHost* render_frame_host,
     mojo::PendingRemote<blink::mojom::PopupMenuClient>* popup_client,
     const gfx::Rect& bounds,
@@ -434,19 +460,11 @@ bool ShowWidgetMessageFilter::ShowPopupMenu(
     std::vector<blink::mojom::MenuItemPtr>* menu_items,
     bool right_aligned,
     bool allow_multiple_selection) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI,
-                                this, MSG_ROUTING_NONE, bounds));
+  initial_rect_ = bounds;
+  run_loop_.Quit();
   return true;
 }
 #endif
-
-void ShowWidgetMessageFilter::OnShowWidgetOnUI(int route_id,
-                                               const gfx::Rect& initial_rect) {
-  initial_rect_ = initial_rect;
-  routing_id_ = route_id;
-  run_loop_->Quit();
-}
 
 DropMessageFilter::DropMessageFilter(uint32_t message_class,
                                      uint32_t drop_message_id)
@@ -476,8 +494,8 @@ bool ObserveMessageFilter::OnMessageReceived(const IPC::Message& message) {
     // Exit the Wait() method if it's being used, but in a fresh stack once the
     // message is actually handled.
     if (quit_closure_ && !received_) {
-      base::PostTask(FROM_HERE,
-                     base::BindOnce(&ObserveMessageFilter::QuitWait, this));
+      base::ThreadPool::PostTask(
+          FROM_HERE, base::BindOnce(&ObserveMessageFilter::QuitWait, this));
     }
     received_ = true;
   }
@@ -560,6 +578,68 @@ bool BeforeUnloadBlockingDelegate::HandleJavaScriptDialog(
     const base::string16* prompt_override) {
   NOTREACHED();
   return true;
+}
+
+namespace {
+static constexpr int kEnableLogMessageId = 0;
+static constexpr char kEnableLogMessage[] = R"({"id":0,"method":"Log.enable"})";
+static constexpr int kDisableLogMessageId = 1;
+static constexpr char kDisableLogMessage[] =
+    R"({"id":1,"method":"Log.disable"})";
+}  // namespace
+
+DevToolsInspectorLogWatcher::DevToolsInspectorLogWatcher(
+    WebContents* web_contents) {
+  host_ = DevToolsAgentHost::GetOrCreateFor(web_contents);
+  host_->AttachClient(this);
+
+  host_->DispatchProtocolMessage(
+      this, base::as_bytes(
+                base::make_span(kEnableLogMessage, strlen(kEnableLogMessage))));
+
+  run_loop_enable_log_.Run();
+}
+
+DevToolsInspectorLogWatcher::~DevToolsInspectorLogWatcher() {
+  host_->DetachClient(this);
+}
+
+void DevToolsInspectorLogWatcher::DispatchProtocolMessage(
+    DevToolsAgentHost* host,
+    base::span<const uint8_t> message) {
+  base::StringPiece message_str(reinterpret_cast<const char*>(message.data()),
+                                message.size());
+  auto parsed_message = base::JSONReader::Read(message_str);
+  base::Optional<int> command_id = parsed_message->FindIntPath("id");
+  if (command_id.has_value()) {
+    switch (command_id.value()) {
+      case kEnableLogMessageId:
+        run_loop_enable_log_.Quit();
+        break;
+      case kDisableLogMessageId:
+        run_loop_disable_log_.Quit();
+        break;
+      default:
+        NOTREACHED();
+    }
+    return;
+  }
+
+  std::string* notification = parsed_message->FindStringPath("method");
+  if (notification && *notification == "Log.entryAdded") {
+    std::string* text = parsed_message->FindStringPath("params.entry.text");
+    DCHECK(text);
+    last_message_ = *text;
+  }
+}
+
+void DevToolsInspectorLogWatcher::AgentHostClosed(DevToolsAgentHost* host) {}
+
+void DevToolsInspectorLogWatcher::FlushAndStopWatching() {
+  host_->DispatchProtocolMessage(
+      this, base::as_bytes(base::make_span(kDisableLogMessage,
+                                           strlen(kDisableLogMessage))));
+  run_loop_disable_log_.Run();
 }
 
 }  // namespace content

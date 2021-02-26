@@ -1,5 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+// License & terms of use: http://www.unicode.org/copyright.html
+// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
 yue_Hans{
     %%Parent{"root"}
     Countries{
@@ -304,5 +305,4 @@ yue_Hans{
         CZ{"捷克共和国"}
         SZ{"斯威士兰"}
     }
-    Version{"37"}
 }

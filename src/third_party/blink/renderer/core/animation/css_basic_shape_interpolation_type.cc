@@ -33,12 +33,21 @@ const BasicShape* GetBasicShape(const CSSProperty& property,
       if (style.ShapeOutside()->CssBox() != CSSBoxType::kMissing)
         return nullptr;
       return style.ShapeOutside()->Shape();
-    case CSSPropertyID::kClipPath:
+    case CSSPropertyID::kClipPath: {
       if (!style.ClipPath())
         return nullptr;
-      if (style.ClipPath()->GetType() != ClipPathOperation::SHAPE)
+      auto* clip_path_operation =
+          DynamicTo<ShapeClipPathOperation>(style.ClipPath());
+      if (!clip_path_operation)
         return nullptr;
-      return To<ShapeClipPathOperation>(style.ClipPath())->GetBasicShape();
+      auto* shape = clip_path_operation->GetBasicShape();
+
+      // Path shape is handled by PathInterpolationType.
+      if (shape->GetType() == BasicShape::kStylePathType)
+        return nullptr;
+
+      return shape;
+    }
     default:
       NOTREACHED();
       return nullptr;
@@ -68,7 +77,7 @@ class InheritedShapeChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   InheritedShapeChecker(const CSSProperty& property,
-                        scoped_refptr<BasicShape> inherited_shape)
+                        scoped_refptr<const BasicShape> inherited_shape)
       : property_(property), inherited_shape_(std::move(inherited_shape)) {}
 
  private:
@@ -79,7 +88,7 @@ class InheritedShapeChecker
   }
 
   const CSSProperty& property_;
-  scoped_refptr<BasicShape> inherited_shape_;
+  scoped_refptr<const BasicShape> inherited_shape_;
 };
 
 }  // namespace
@@ -110,9 +119,8 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversion_checkers) const {
   const BasicShape* shape = GetBasicShape(CssProperty(), *state.ParentStyle());
-  // const_cast to take a ref.
-  conversion_checkers.push_back(std::make_unique<InheritedShapeChecker>(
-      CssProperty(), const_cast<BasicShape*>(shape)));
+  conversion_checkers.push_back(
+      std::make_unique<InheritedShapeChecker>(CssProperty(), shape));
   return basic_shape_interpolation_functions::MaybeConvertBasicShape(
       shape, state.ParentStyle()->EffectiveZoom());
 }

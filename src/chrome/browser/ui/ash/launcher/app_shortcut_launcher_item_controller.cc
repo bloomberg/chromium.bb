@@ -10,6 +10,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback_forward.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,6 +52,61 @@ const int kClickSuppressionInMS = 1000;
 
 bool IsAppBrowser(Browser* browser) {
   return browser->is_type_app() || browser->is_type_app_popup();
+}
+
+// Activate the browser with the given |content| and show the associated tab,
+// or minimize the browser if it is already active. Returns the action
+// performed by activating the content.
+ash::ShelfAction ActivateContentOrMinimize(content::WebContents* content,
+                                           bool allow_minimize) {
+  Browser* browser = chrome::FindBrowserWithWebContents(content);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  int index = tab_strip->GetIndexOfWebContents(content);
+  DCHECK_NE(TabStripModel::kNoTab, index);
+
+  int old_index = tab_strip->active_index();
+  if (index != old_index)
+    tab_strip->ActivateTabAt(index);
+  return ChromeLauncherController::instance()->ActivateWindowOrMinimizeIfActive(
+      browser->window(), index == old_index && allow_minimize);
+}
+
+// Advance to the next window of an app if possible. |items| is the list of
+// browsers/web contents associated with this app. |active_item_callback|
+// retrieves the window that is currently active, if available.
+// |activate_callback| will activate the next window selected by this function.
+template <class T>
+base::Optional<ash::ShelfAction> AdvanceApp(
+    const std::vector<T*>& items,
+    base::OnceCallback<T*(const std::vector<T*>&, aura::Window**)>
+        active_item_callback,
+    base::OnceCallback<void(T*)> activate_callback) {
+  if (items.empty())
+    return base::nullopt;
+
+  // Get the active item and associated aura::Window if it exists.
+  aura::Window* active_item_window = nullptr;
+  T* active_item =
+      std::move(active_item_callback).Run(items, &active_item_window);
+
+  // If there is only one of the app, and it is the current active item,
+  // bounce the window to signal nothing happened.
+  if (items.size() == 1u && active_item) {
+    DCHECK(active_item_window);
+    ash_util::BounceWindow(active_item_window);
+    return ash::SHELF_ACTION_NONE;
+  }
+
+  // If one of the items is active, active the next one in the list, otherwise
+  // activate the first item in the list.
+  size_t index = 0;
+  if (active_item) {
+    DCHECK(base::Contains(items, active_item));
+    auto it = std::find(items.cbegin(), items.cend(), active_item);
+    index = (it - items.cbegin() + 1) % items.size();
+  }
+  std::move(activate_callback).Run(items[index]);
+  return ash::SHELF_ACTION_WINDOW_ACTIVATED;
 }
 
 // AppMatcher is used to determine if various WebContents instances are
@@ -220,18 +277,20 @@ void AppShortcutLauncherItemController::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ash::ShelfLaunchSource source,
-    ItemSelectedCallback callback) {
+    ItemSelectedCallback callback,
+    const ItemFilterPredicate& filter_predicate) {
   // In case of a keyboard event, we were called by a hotkey. In that case we
   // activate the next item in line if an item of our list is already active.
   if (event && event->type() == ui::ET_KEY_RELEASED) {
-    auto optional_action = AdvanceToNextApp();
+    auto optional_action = AdvanceToNextApp(filter_predicate);
     if (optional_action.has_value()) {
       std::move(callback).Run(optional_action.value(), {});
       return;
     }
   }
 
-  AppMenuItems items = GetAppMenuItems(event ? event->flags() : ui::EF_NONE);
+  AppMenuItems items =
+      GetAppMenuItems(event ? event->flags() : ui::EF_NONE, filter_predicate);
   if (items.empty()) {
     // Ideally we come here only once. After that ShellLauncherItemController
     // will take over when the shell window gets opened. However there are apps
@@ -251,16 +310,18 @@ void AppShortcutLauncherItemController::ItemSelected(
     return;
   }
 
-  if (items.size() == 1) {
-    DCHECK(AppMenuSize() == 1);
+  if (source != ash::LAUNCH_FROM_SHELF || items.size() == 1) {
+    const bool can_minimize = source != ash::LAUNCH_FROM_APP_LIST &&
+                              source != ash::LAUNCH_FROM_APP_LIST_SEARCH;
     std::move(callback).Run(
         app_menu_cached_by_browsers_
             ? ChromeLauncherController::instance()
                   ->ActivateWindowOrMinimizeIfActive(
                       // We don't need to check nullptr here because
                       // we just called GetAppMenuItems() above to update it.
-                      app_menu_browsers_[0]->window(), true)
-            : ActivateContentOrMinimize(app_menu_web_contents_[0], true),
+                      app_menu_browsers_[0]->window(), can_minimize)
+            : ActivateContentOrMinimize(app_menu_web_contents_[0],
+                                        can_minimize),
         {});
   } else {
     // Multiple items, a menu will be shown. No need to activate the most
@@ -270,28 +331,30 @@ void AppShortcutLauncherItemController::ItemSelected(
 }
 
 bool AppShortcutLauncherItemController::HasRunningApplications() {
-  return IsWindowedWebApp() ? !GetAppBrowsers().empty()
-                            : !GetAppWebContents().empty();
+  return IsWindowedWebApp() ? !GetAppBrowsers(base::NullCallback()).empty()
+                            : !GetAppWebContents(base::NullCallback()).empty();
 }
 
 ash::ShelfItemDelegate::AppMenuItems
-AppShortcutLauncherItemController::GetAppMenuItems(int event_flags) {
+AppShortcutLauncherItemController::GetAppMenuItems(
+    int event_flags,
+    const ItemFilterPredicate& filter_predicate) {
   ChromeLauncherController* controller = ChromeLauncherController::instance();
   AppMenuItems items;
   auto add_menu_item = [&controller,
                         &items](content::WebContents* web_contents) {
-    items.push_back({controller->GetAppMenuTitle(web_contents),
+    items.push_back({items.size(), controller->GetAppMenuTitle(web_contents),
                      controller->GetAppMenuIcon(web_contents).AsImageSkia()});
   };
 
   if (IsWindowedWebApp() && !(event_flags & ui::EF_SHIFT_DOWN)) {
-    app_menu_browsers_ = GetAppBrowsers();
+    app_menu_browsers_ = GetAppBrowsers(filter_predicate);
     app_menu_cached_by_browsers_ = true;
     for (auto* browser : app_menu_browsers_) {
       add_menu_item(browser->tab_strip_model()->GetActiveWebContents());
     }
   } else {
-    app_menu_web_contents_ = GetAppWebContents();
+    app_menu_web_contents_ = GetAppWebContents(filter_predicate);
     app_menu_cached_by_browsers_ = false;
     for (auto* web_contents : app_menu_web_contents_) {
       add_menu_item(web_contents);
@@ -364,10 +427,10 @@ void AppShortcutLauncherItemController::ExecuteCommand(bool from_context_menu,
 void AppShortcutLauncherItemController::Close() {
   // Close all running 'programs' of this type.
   if (IsWindowedWebApp()) {
-    for (Browser* browser : GetAppBrowsers())
+    for (Browser* browser : GetAppBrowsers(base::NullCallback()))
       browser->tab_strip_model()->CloseAllTabs();
   } else {
-    for (content::WebContents* item : GetAppWebContents()) {
+    for (content::WebContents* item : GetAppWebContents(base::NullCallback())) {
       Browser* browser = chrome::FindBrowserWithWebContents(item);
       if (!browser ||
           !multi_user_util::IsProfileFromActiveUser(browser->profile())) {
@@ -392,7 +455,8 @@ void AppShortcutLauncherItemController::OnBrowserClosing(Browser* browser) {
 }
 
 std::vector<content::WebContents*>
-AppShortcutLauncherItemController::GetAppWebContents() {
+AppShortcutLauncherItemController::GetAppWebContents(
+    const ItemFilterPredicate& filter_predicate) {
   URLPattern refocus_pattern(URLPattern::SCHEME_ALL);
   refocus_pattern.SetMatchAllURLs(true);
 
@@ -410,6 +474,10 @@ AppShortcutLauncherItemController::GetAppWebContents() {
     return items;
 
   for (auto* browser : *BrowserList::GetInstance()) {
+    if (!filter_predicate.is_null() &&
+        !filter_predicate.Run(browser->window()->GetNativeWindow())) {
+      continue;
+    }
     if (!multi_user_util::IsProfileFromActiveUser(browser->profile()))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
@@ -422,10 +490,15 @@ AppShortcutLauncherItemController::GetAppWebContents() {
   return items;
 }
 
-std::vector<Browser*> AppShortcutLauncherItemController::GetAppBrowsers() {
+std::vector<Browser*> AppShortcutLauncherItemController::GetAppBrowsers(
+    const ItemFilterPredicate& filter_predicate) {
   DCHECK(IsWindowedWebApp());
   std::vector<Browser*> browsers;
   for (Browser* browser : *BrowserList::GetInstance()) {
+    if (!filter_predicate.is_null() &&
+        !filter_predicate.Run(browser->window()->GetNativeWindow())) {
+      continue;
+    }
     if (!multi_user_util::IsProfileFromActiveUser(browser->profile()))
       continue;
     if (!IsAppBrowser(browser))
@@ -439,58 +512,52 @@ std::vector<Browser*> AppShortcutLauncherItemController::GetAppBrowsers() {
   return browsers;
 }
 
-ash::ShelfAction AppShortcutLauncherItemController::ActivateContentOrMinimize(
-    content::WebContents* content,
-    bool allow_minimize) {
-  Browser* browser = chrome::FindBrowserWithWebContents(content);
-  TabStripModel* tab_strip = browser->tab_strip_model();
-  int index = tab_strip->GetIndexOfWebContents(content);
-  DCHECK_NE(TabStripModel::kNoTab, index);
-
-  int old_index = tab_strip->active_index();
-  if (index != old_index)
-    tab_strip->ActivateTabAt(index);
-  return ChromeLauncherController::instance()->ActivateWindowOrMinimizeIfActive(
-      browser->window(), index == old_index && allow_minimize);
-}
-
 base::Optional<ash::ShelfAction>
-AppShortcutLauncherItemController::AdvanceToNextApp() {
-  Browser* browser = chrome::FindLastActive();
-  // The last active browser is not necessarily the active window. The window
-  // could be a v2 app or ARC app.
-  if (browser && browser->window()->IsActive()) {
-    if (IsWindowedWebApp()) {
-      std::vector<Browser*> browsers = GetAppBrowsers();
-      auto it = std::find(browsers.cbegin(), browsers.cend(), browser);
-      if (it == browsers.cend()) {
-        return base::nullopt;
-      }
-      if (browsers.size() == 1) {
-        ash_util::BounceWindow(browser->window()->GetNativeWindow());
-        return ash::SHELF_ACTION_NONE;
-      }
-      size_t index = (it - browsers.cbegin() + 1) % browsers.size();
-      browsers[index]->window()->Show();
-      browsers[index]->window()->Activate();
-      return ash::SHELF_ACTION_WINDOW_ACTIVATED;
-    } else {
-      std::vector<content::WebContents*> items = GetAppWebContents();
-      TabStripModel* tab_strip = browser->tab_strip_model();
-      content::WebContents* active_content = tab_strip->GetActiveWebContents();
-      auto it = std::find(items.cbegin(), items.cend(), active_content);
-      if (it != items.cend()) {
-        if (items.size() == 1) {
-          ash_util::BounceWindow(browser->window()->GetNativeWindow());
-          return ash::SHELF_ACTION_NONE;
-        }
-        size_t index = (it - items.cbegin() + 1) % items.size();
-        ActivateContentOrMinimize(items[index], false);
-        return ash::SHELF_ACTION_WINDOW_ACTIVATED;
-      }
-    }
+AppShortcutLauncherItemController::AdvanceToNextApp(
+    const ItemFilterPredicate& filter_predicate) {
+  if (!chrome::FindLastActive())
+    return base::nullopt;
+
+  if (IsWindowedWebApp()) {
+    return AdvanceApp(GetAppBrowsers(filter_predicate),
+                      base::BindOnce([](const std::vector<Browser*>& browsers,
+                                        aura::Window** out_window) -> Browser* {
+                        for (auto* browser : browsers) {
+                          if (browser->window()->IsActive()) {
+                            *out_window = browser->window()->GetNativeWindow();
+                            return browser;
+                          }
+                        }
+                        return nullptr;
+                      }),
+                      base::BindOnce([](Browser* browser) -> void {
+                        browser->window()->Show();
+                        browser->window()->Activate();
+                      }));
   }
-  return base::nullopt;
+
+  return AdvanceApp(
+      GetAppWebContents(filter_predicate),
+      base::BindOnce([](const std::vector<content::WebContents*>& web_contents,
+                        aura::Window** out_window) -> content::WebContents* {
+        for (auto* web_content : web_contents) {
+          Browser* browser = chrome::FindBrowserWithWebContents(web_content);
+          // The active web contents is on the active browser, and matches the
+          // index of the current active tab.
+          if (browser->window()->IsActive()) {
+            TabStripModel* tab_strip = browser->tab_strip_model();
+            int index = tab_strip->GetIndexOfWebContents(web_content);
+            if (tab_strip->active_index() == index) {
+              *out_window = browser->window()->GetNativeWindow();
+              return web_content;
+            }
+          }
+        }
+        return nullptr;
+      }),
+      base::BindOnce([](content::WebContents* web_contents) -> void {
+        ActivateContentOrMinimize(web_contents, /*allow_minimize=*/false);
+      }));
 }
 
 bool AppShortcutLauncherItemController::IsV2App() {

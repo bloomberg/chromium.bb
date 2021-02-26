@@ -4,6 +4,7 @@
 
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 
 std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
   switch (origin) {
@@ -29,6 +30,8 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "PIN_MIGRATION";
     case KeepAliveOrigin::REMOTE_DEBUGGING:
       return out << "REMOTE_DEBUGGING";
+    case KeepAliveOrigin::DEVTOOLS_WINDOW:
+      return out << "DEVTOOLS_WINDOW";
     case KeepAliveOrigin::NOTIFICATION:
       return out << "NOTIFICATION";
     case KeepAliveOrigin::PENDING_NOTIFICATION_CLICK_EVENT:

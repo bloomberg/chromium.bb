@@ -35,6 +35,7 @@
 #include "fxjs/js_define.h"
 #include "fxjs/js_resources.h"
 #include "third_party/base/optional.h"
+#include "third_party/base/stl_util.h"
 
 // static
 const JSMethodSpec CJS_PublicMethods::GlobalFunctionSpecs[] = {
@@ -93,11 +94,14 @@ T StrTrim(const T& str) {
   return result;
 }
 
-void AlertIfPossible(CJS_EventContext* pContext, const WideString& swMsg) {
+void AlertIfPossible(CJS_EventContext* pContext,
+                     const WideString& wsCaller,
+                     const WideString& wsMsg) {
   CPDFSDK_FormFillEnvironment* pFormFillEnv = pContext->GetFormFillEnv();
-  if (pFormFillEnv)
-    pFormFillEnv->JS_appAlert(swMsg, WideString(), JSPLATFORM_ALERT_BUTTON_OK,
+  if (pFormFillEnv) {
+    pFormFillEnv->JS_appAlert(wsMsg, wsCaller, JSPLATFORM_ALERT_BUTTON_OK,
                               JSPLATFORM_ALERT_ICON_STATUS);
+  }
 }
 
 #if !defined(OS_ANDROID)
@@ -711,7 +715,7 @@ CJS_Result CJS_PublicMethods::AFNumber_Keystroke(
     if (!IsNumber(swTemp)) {
       pEvent->Rc() = false;
       WideString sError = JSGetStringFromID(JSMessage::kInvalidInputError);
-      AlertIfPossible(pContext, sError);
+      AlertIfPossible(pContext, L"AFNumber_Keystroke", sError);
       return CJS_Result::Failure(sError);
     }
     // It happens after the last keystroke and before validating,
@@ -799,8 +803,7 @@ CJS_Result CJS_PublicMethods::AFPercent_Format(
 
   // When the |iDec| value is too big, Acrobat will just return "%".
   static constexpr int kDecLimit = 512;
-  // TODO(thestig): Calculate this once C++14 can be used to declare variables
-  // in constexpr functions.
+  // This count must be in sync with |kDecLimit|.
   static constexpr size_t kDigitsInDecLimit = 3;
   WideString& Value = pEvent->Value();
   if (iDec > kDecLimit) {
@@ -900,7 +903,7 @@ CJS_Result CJS_PublicMethods::AFDate_FormatEx(
   if (std::isnan(dDate)) {
     WideString swMsg = WideString::Format(
         JSGetStringFromID(JSMessage::kParseDateError).c_str(), sFormat.c_str());
-    AlertIfPossible(pContext, swMsg);
+    AlertIfPossible(pContext, L"AFDate_FormatEx", swMsg);
     return CJS_Result::Failure(JSMessage::kParseDateError);
   }
 
@@ -924,7 +927,7 @@ double CJS_PublicMethods::ParseDateAsGMT(const WideString& strValue) {
 
   int nMonth = 1;
   sTemp = wsArray[1];
-  for (size_t i = 0; i < FX_ArraySize(fxjs::kMonths); ++i) {
+  for (size_t i = 0; i < pdfium::size(fxjs::kMonths); ++i) {
     if (sTemp.Compare(fxjs::kMonths[i]) == 0) {
       nMonth = i + 1;
       break;
@@ -971,7 +974,7 @@ CJS_Result CJS_PublicMethods::AFDate_KeystrokeEx(
   if (bWrongFormat || std::isnan(dRet)) {
     WideString swMsg = WideString::Format(
         JSGetStringFromID(JSMessage::kParseDateError).c_str(), sFormat.c_str());
-    AlertIfPossible(pContext, swMsg);
+    AlertIfPossible(pContext, L"AFDate_KeystrokeEx", swMsg);
     pEvent->Rc() = false;
   }
   return CJS_Result::Success();
@@ -984,7 +987,7 @@ CJS_Result CJS_PublicMethods::AFDate_Format(
     return CJS_Result::Failure(JSMessage::kParamError);
 
   int iIndex = WithinBoundsOrZero(pRuntime->ToInt32(params[0]),
-                                  FX_ArraySize(kDateFormats));
+                                  pdfium::size(kDateFormats));
   std::vector<v8::Local<v8::Value>> newParams;
   newParams.push_back(pRuntime->NewString(kDateFormats[iIndex]));
   return AFDate_FormatEx(pRuntime, newParams);
@@ -998,7 +1001,7 @@ CJS_Result CJS_PublicMethods::AFDate_Keystroke(
     return CJS_Result::Failure(JSMessage::kParamError);
 
   int iIndex = WithinBoundsOrZero(pRuntime->ToInt32(params[0]),
-                                  FX_ArraySize(kDateFormats));
+                                  pdfium::size(kDateFormats));
   std::vector<v8::Local<v8::Value>> newParams;
   newParams.push_back(pRuntime->NewString(kDateFormats[iIndex]));
   return AFDate_KeystrokeEx(pRuntime, newParams);
@@ -1012,7 +1015,7 @@ CJS_Result CJS_PublicMethods::AFTime_Format(
     return CJS_Result::Failure(JSMessage::kParamError);
 
   int iIndex = WithinBoundsOrZero(pRuntime->ToInt32(params[0]),
-                                  FX_ArraySize(kTimeFormats));
+                                  pdfium::size(kTimeFormats));
   std::vector<v8::Local<v8::Value>> newParams;
   newParams.push_back(pRuntime->NewString(kTimeFormats[iIndex]));
   return AFDate_FormatEx(pRuntime, newParams);
@@ -1025,7 +1028,7 @@ CJS_Result CJS_PublicMethods::AFTime_Keystroke(
     return CJS_Result::Failure(JSMessage::kParamError);
 
   int iIndex = WithinBoundsOrZero(pRuntime->ToInt32(params[0]),
-                                  FX_ArraySize(kTimeFormats));
+                                  pdfium::size(kTimeFormats));
   std::vector<v8::Local<v8::Value>> newParams;
   newParams.push_back(pRuntime->NewString(kTimeFormats[iIndex]));
   return AFDate_KeystrokeEx(pRuntime, newParams);
@@ -1101,7 +1104,7 @@ CJS_Result CJS_PublicMethods::AFSpecial_KeystrokeEx(
       return CJS_Result::Success();
 
     if (valEvent.GetLength() > wstrMask.GetLength()) {
-      AlertIfPossible(pContext,
+      AlertIfPossible(pContext, L"AFSpecial_KeystrokeEx",
                       JSGetStringFromID(JSMessage::kParamTooLongError));
       pEvent->Rc() = false;
       return CJS_Result::Success();
@@ -1113,7 +1116,7 @@ CJS_Result CJS_PublicMethods::AFSpecial_KeystrokeEx(
         break;
     }
     if (iIndex != wstrMask.GetLength()) {
-      AlertIfPossible(pContext,
+      AlertIfPossible(pContext, L"AFSpecial_KeystrokeEx",
                       JSGetStringFromID(JSMessage::kInvalidInputError));
       pEvent->Rc() = false;
     }
@@ -1129,20 +1132,22 @@ CJS_Result CJS_PublicMethods::AFSpecial_KeystrokeEx(
   size_t combined_len = valEvent.GetLength() + wChange.GetLength() +
                         pEvent->SelStart() - pEvent->SelEnd();
   if (combined_len > wstrMask.GetLength()) {
-    AlertIfPossible(pContext, JSGetStringFromID(JSMessage::kParamTooLongError));
+    AlertIfPossible(pContext, L"AFSpecial_KeystrokeEx",
+                    JSGetStringFromID(JSMessage::kParamTooLongError));
     pEvent->Rc() = false;
     return CJS_Result::Success();
   }
 
   if (iIndexMask >= wstrMask.GetLength() && !wChange.IsEmpty()) {
-    AlertIfPossible(pContext, JSGetStringFromID(JSMessage::kParamTooLongError));
+    AlertIfPossible(pContext, L"AFSpecial_KeystrokeEx",
+                    JSGetStringFromID(JSMessage::kParamTooLongError));
     pEvent->Rc() = false;
     return CJS_Result::Success();
   }
 
   for (size_t i = 0; i < wChange.GetLength(); ++i) {
     if (iIndexMask >= wstrMask.GetLength()) {
-      AlertIfPossible(pContext,
+      AlertIfPossible(pContext, L"AFSpecial_KeystrokeEx",
                       JSGetStringFromID(JSMessage::kParamTooLongError));
       pEvent->Rc() = false;
       return CJS_Result::Success();
@@ -1230,7 +1235,8 @@ CJS_Result CJS_PublicMethods::AFParseDateEx(
   if (std::isnan(dDate)) {
     WideString swMsg = WideString::Format(
         JSGetStringFromID(JSMessage::kParseDateError).c_str(), sFormat.c_str());
-    AlertIfPossible(pRuntime->GetCurrentEventContext(), swMsg);
+    AlertIfPossible(pRuntime->GetCurrentEventContext(), L"AFParseDateEx",
+                    swMsg);
     return CJS_Result::Failure(JSMessage::kParseDateError);
   }
   return CJS_Result::Success(pRuntime->NewNumber(dDate));
@@ -1413,7 +1419,7 @@ CJS_Result CJS_PublicMethods::AFRange_Validate(
   }
 
   if (!swMsg.IsEmpty()) {
-    AlertIfPossible(pContext, swMsg);
+    AlertIfPossible(pContext, L"AFRange_Validate", swMsg);
     pEvent->Rc() = false;
   }
   return CJS_Result::Success();

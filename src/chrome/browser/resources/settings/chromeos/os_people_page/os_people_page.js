@@ -10,6 +10,7 @@ Polymer({
   is: 'os-settings-people-page',
 
   behaviors: [
+    DeepLinkingBehavior,
     settings.RouteObserverBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
@@ -45,7 +46,7 @@ Polymer({
     pageVisibility: Object,
 
     /**
-     * Authentication token provided by settings-lock-screen.
+     * Authentication token.
      * @private {!chrome.quickUnlockPrivate.TokenInfo|undefined}
      */
     authToken_: {
@@ -144,6 +145,39 @@ Polymer({
         return map;
       },
     },
+
+    /** @private {boolean} */
+    showPasswordPromptDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * setModes_ is a partially applied function that stores the current auth
+     * token. It's defined only when the user has entered a valid password.
+     * @type {Object|undefined}
+     * @private
+     */
+    setModes_: {
+      type: Object,
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kSetUpParentalControls,
+
+        // Perform Sync page deep links here since it's a shared page.
+        chromeos.settings.mojom.Setting.kNonSplitSyncEncryptionOptions,
+        chromeos.settings.mojom.Setting.kAutocompleteSearchesAndUrls,
+        chromeos.settings.mojom.Setting.kMakeSearchesAndBrowsingBetter,
+        chromeos.settings.mojom.Setting.kGoogleDriveSearchSuggestions,
+      ]),
+    },
   },
 
   /** @private {?settings.SyncBrowserProxy} */
@@ -171,9 +205,116 @@ Polymer({
         'sync-status-changed', this.handleSyncStatus_.bind(this));
   },
 
-  /** @protected */
-  currentRouteChanged() {
-    if (settings.Router.getInstance().getCurrentRoute() ==
+  /** @private */
+  onPasswordRequested_() {
+    this.showPasswordPromptDialog_ = true;
+  },
+
+  // Invalidate the token to trigger a password re-prompt. Used for PIN auto
+  // submit when too many attempts were made when using PrefStore based PIN.
+  onInvalidateTokenRequested_() {
+    this.authToken_ = undefined;
+  },
+
+  /** @private */
+  onPasswordPromptDialogClose_() {
+    this.showPasswordPromptDialog_ = false;
+    if (!this.setModes_) {
+      settings.Router.getInstance().navigateToPreviousRoute();
+    }
+  },
+
+  /**
+   * Helper function for manually showing deep links on this page.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @param {!function():?Element} getElementCallback
+   * @private
+   */
+  afterRenderShowDeepLink_(settingId, getElementCallback) {
+    // Wait for element to load.
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      const deepLinkElement = getElementCallback();
+      if (!deepLinkElement || deepLinkElement.hidden) {
+        console.warn(`Element with deep link id ${settingId} not focusable.`);
+        return;
+      }
+      this.showDeepLinkElement(deepLinkElement);
+    });
+  },
+
+  /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
+   */
+  beforeDeepLinkAttempt(settingId) {
+    switch (settingId) {
+      // Manually show the deep links for settings nested within elements.
+      case chromeos.settings.mojom.Setting.kSetUpParentalControls:
+        this.afterRenderShowDeepLink_(settingId, () => {
+          const parentalPage =
+              /** @type {?SettingsParentalControlsPageElement} */ (
+                  this.$$('settings-parental-controls-page'));
+          return parentalPage && parentalPage.getSetupButton();
+        });
+        // Stop deep link attempt since we completed it manually.
+        return false;
+
+      // Handle the settings within the old sync page since its a shared
+      // component.
+      case chromeos.settings.mojom.Setting.kNonSplitSyncEncryptionOptions:
+        this.afterRenderShowDeepLink_(settingId, () => {
+          const syncPage = /** @type {?SettingsSyncPageElement} */ (
+              this.$$('settings-sync-page'));
+          // Expand the encryption collapse.
+          syncPage.forceEncryptionExpanded = true;
+          Polymer.dom.flush();
+          return syncPage && syncPage.getEncryptionOptions() &&
+              syncPage.getEncryptionOptions().getEncryptionsRadioButtons();
+        });
+        return false;
+
+      case chromeos.settings.mojom.Setting.kAutocompleteSearchesAndUrls:
+        this.afterRenderShowDeepLink_(settingId, () => {
+          const syncPage = /** @type {?SettingsSyncPageElement} */ (
+              this.$$('settings-sync-page'));
+          return syncPage && syncPage.getPersonalizationOptions() &&
+              syncPage.getPersonalizationOptions().getSearchSuggestToggle();
+        });
+        return false;
+
+      case chromeos.settings.mojom.Setting.kMakeSearchesAndBrowsingBetter:
+        this.afterRenderShowDeepLink_(settingId, () => {
+          const syncPage = /** @type {?SettingsSyncPageElement} */ (
+              this.$$('settings-sync-page'));
+          return syncPage && syncPage.getPersonalizationOptions() &&
+              syncPage.getPersonalizationOptions().getUrlCollectionToggle();
+        });
+        return false;
+
+      case chromeos.settings.mojom.Setting.kGoogleDriveSearchSuggestions:
+        this.afterRenderShowDeepLink_(settingId, () => {
+          const syncPage = /** @type {?SettingsSyncPageElement} */ (
+              this.$$('settings-sync-page'));
+          return syncPage && syncPage.getPersonalizationOptions() &&
+              syncPage.getPersonalizationOptions().getDriveSuggestToggle();
+        });
+        return false;
+
+      default:
+        // Continue with deep linking attempt.
+        return true;
+    }
+  },
+
+  /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   * @protected
+   */
+  currentRouteChanged(route, oldRoute) {
+    if (settings.Router.getInstance().getCurrentRoute() ===
         settings.routes.OS_SIGN_OUT) {
       // If the sync status has not been fetched yet, optimistically display
       // the sign-out dialog. There is another check when the sync status is
@@ -184,6 +325,20 @@ Polymer({
         this.showSignoutDialog_ = true;
       }
     }
+
+    // The old sync page is a shared subpage, so we handle deep links for
+    // both this page and the sync page. Not ideal.
+    if (route === settings.routes.SYNC || route === settings.routes.OS_PEOPLE) {
+      this.attemptDeepLink();
+    }
+  },
+
+  /**
+   * @param {!CustomEvent<!chrome.quickUnlockPrivate.TokenInfo>} e
+   * @private
+   * */
+  onAuthTokenObtained_(e) {
+    this.authToken_ = e.detail;
   },
 
   /** @private */
@@ -245,10 +400,10 @@ Polymer({
     const /** @type {!Array<settings.Account>} */ accounts =
         await settings.AccountManagerBrowserProxyImpl.getInstance()
             .getAccounts();
-    // The user might not have any GAIA accounts (e.g. guest mode, Kerberos,
-    // Active Directory). In these cases the profile row is hidden, so there's
-    // nothing to do.
-    if (accounts.length == 0) {
+    // The user might not have any GAIA accounts (e.g. guest mode or Active
+    // Directory). In these cases the profile row is hidden, so there's nothing
+    // to do.
+    if (accounts.length === 0) {
       return;
     }
     this.profileName_ = accounts[0].fullName;
@@ -292,7 +447,7 @@ Polymer({
     this.showSignoutDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$$('#disconnectButton')));
 
-    if (settings.Router.getInstance().getCurrentRoute() ==
+    if (settings.Router.getInstance().getCurrentRoute() ===
         settings.routes.OS_SIGN_OUT) {
       settings.Router.getInstance().navigateToPreviousRoute();
     }
@@ -388,6 +543,23 @@ Polymer({
 
   /** @private */
   onAuthTokenChanged_() {
+    if (this.authToken_ === undefined) {
+      this.setModes_ = undefined;
+    } else {
+      this.setModes_ = (modes, credentials, onComplete) => {
+        this.quickUnlockPrivate.setModes(
+            this.authToken_.token, modes, credentials, () => {
+              let result = true;
+              if (chrome.runtime.lastError) {
+                console.error(
+                    'setModes failed: ' + chrome.runtime.lastError.message);
+                result = false;
+              }
+              onComplete(result);
+            });
+      };
+    }
+
     if (this.clearAuthTokenTimeoutId_) {
       clearTimeout(this.clearAccountPasswordTimeoutId_);
     }

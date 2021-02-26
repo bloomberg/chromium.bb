@@ -51,7 +51,7 @@
                 android:ellipsize="none"
                 android:singleLine="true"
                 android:textAppearance="@style/TextAppearance.TextMediumThick.Primary"/>
-            <org.chromium.components.browser_ui.widget.RoundedCornerImageView
+            <org.chromium.chrome.browser.tasks.tab_management.TabGridThumbnailView
                 android:id="@+id/tab_thumbnail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -63,6 +63,13 @@
                 android:src="@color/thumbnail_placeholder_on_primary_bg"
                 app:cornerRadiusBottomStart="@dimen/tab_list_card_radius"
                 app:cornerRadiusBottomEnd="@dimen/tab_list_card_radius"/>
+            <org.chromium.chrome.browser.tasks.tab_management.PriceCardView
+                android:id="@+id/price_info_box_outer"
+                android:layout_below="@id/tab_title"
+                android:background="@drawable/price_card_scrim"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:visibility="gone"/>
             <View
                 android:id="@+id/divider_view"
                 style="@style/HorizontalDivider"
@@ -80,7 +87,7 @@
                 android:visibility="gone"
                 style="@style/FilledButton"/>
             <org.chromium.ui.widget.ChipView
-                android:id="@+id/search_button"
+                android:id="@+id/page_info_button"
                 android:gravity="center"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"

@@ -22,7 +22,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -84,8 +83,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
       return;
     }
     handler_ = host_->CreateRequestHandler(
-        std::make_unique<AppCacheRequest>(request_),
-        static_cast<blink::mojom::ResourceType>(request_.resource_type),
+        std::make_unique<AppCacheRequest>(request_), request_.destination,
         request_.should_reset_appcache);
     if (!handler_) {
       CreateAndStartNetworkLoader();

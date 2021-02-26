@@ -25,9 +25,7 @@ class PermissionStatus final : public EventTargetWithInlineData,
                                public ActiveScriptWrappable<PermissionStatus>,
                                public ExecutionContextLifecycleStateObserver,
                                public mojom::blink::PermissionObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
   DEFINE_WRAPPERTYPEINFO();
-  USING_PRE_FINALIZER(PermissionStatus, Dispose);
 
   using MojoPermissionDescriptor = mojom::blink::PermissionDescriptorPtr;
   using MojoPermissionStatus = mojom::blink::PermissionStatus;
@@ -45,7 +43,6 @@ class PermissionStatus final : public EventTargetWithInlineData,
                    MojoPermissionStatus,
                    MojoPermissionDescriptor);
   ~PermissionStatus() override;
-  void Dispose();
 
   // EventTarget implementation.
   const AtomicString& InterfaceName() const override;
@@ -62,7 +59,7 @@ class PermissionStatus final : public EventTargetWithInlineData,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void StartListening();

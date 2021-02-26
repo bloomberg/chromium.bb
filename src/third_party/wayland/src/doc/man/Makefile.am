@@ -15,7 +15,6 @@ CLEANFILES =
 EXTRA_DIST = $(XML_FILES)
 
 if HAVE_XSLTPROC
-if HAVE_MANPAGES_STYLESHEET
 
 CLEANFILES += $(MANPAGES) $(MANPAGES_ALIASES)
 EXTRA_DIST += $(MANPAGES) $(MANPAGES_ALIASES)
@@ -30,7 +29,7 @@ XSLTPROC_FLAGS = \
 
 XSLTPROC_PROCESS_MAN = \
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && \
-	$(XSLTPROC) -o $@ $(XSLTPROC_FLAGS) $(MANPAGES_STYLESHEET) $< && \
+	$(XSLTPROC) -o $@ $(XSLTPROC_FLAGS) $(DOCS_STYLESHEET) $< && \
 	$(SED) -i -e 's/^\.so \(.*\)\.\(.\)$$/\.so man\2\/\1\.\2/' $(MANPAGES_ALIASES)
 
 %.1: %.xml
@@ -47,5 +46,4 @@ XSLTPROC_PROCESS_MAN = \
 
 wl_display_connect_to_fd.3: wl_display_connect.3
 
-endif # HAVE_MANPAGES_STYLESHEET
 endif # HAVE_XSLTPROC

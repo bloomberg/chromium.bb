@@ -38,6 +38,32 @@ def write_result(result, opt):
 
 
 @subcommand.usage('[args ...]')
+def CMDmovechanges(parser, args):
+  parser.add_option('-p', '--param', dest='params', action='append',
+                    help='repeatable query parameter, format: -p key=value')
+  parser.add_option('--destination_branch', dest='destination_branch',
+                    help='where to move changes to')
+
+  (opt, args) = parser.parse_args(args)
+  assert opt.destination_branch, "--destination_branch not defined"
+  host = urlparse.urlparse(opt.host).netloc
+
+  limit = 100
+  while True:
+    result = gerrit_util.QueryChanges(
+        host,
+        list(tuple(p.split('=', 1)) for p in opt.params),
+        limit=limit,
+    )
+    for change in result:
+      gerrit_util.MoveChange(host, change['id'], opt.destination_branch)
+
+    if len(result) < limit:
+      break
+  logging.info("Done")
+
+
+@subcommand.usage('[args ...]')
 def CMDbranchinfo(parser, args):
   parser.add_option('--branch', dest='branch', help='branch name')
 

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <vector>
 
+#include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -414,8 +415,7 @@ TEST(BreakIteratorTest, IsSentenceBoundary) {
   sentence_breaks.push_back(24);
   sentence_breaks.push_back(42);
   for (size_t i = 0; i < str.size(); i++) {
-    if (std::find(sentence_breaks.begin(), sentence_breaks.end(), i) !=
-        sentence_breaks.end()) {
+    if (ranges::find(sentence_breaks, i) != sentence_breaks.end()) {
       EXPECT_TRUE(iter.IsSentenceBoundary(i)) << " at index=" << i;
     } else {
       EXPECT_FALSE(iter.IsSentenceBoundary(i)) << " at index=" << i;
@@ -547,12 +547,12 @@ TEST(BreakIteratorTest, GetStringPiece) {
   ASSERT_TRUE(iter.Init());
 
   EXPECT_TRUE(iter.Advance());
-  EXPECT_EQ(iter.GetString(), iter.GetStringPiece().as_string());
+  EXPECT_EQ(iter.GetString(), iter.GetStringPiece());
   EXPECT_EQ(StringPiece16(ASCIIToUTF16("some")), iter.GetStringPiece());
 
   EXPECT_TRUE(iter.Advance());
   EXPECT_TRUE(iter.Advance());
-  EXPECT_EQ(iter.GetString(), iter.GetStringPiece().as_string());
+  EXPECT_EQ(iter.GetString(), iter.GetStringPiece());
   EXPECT_EQ(StringPiece16(ASCIIToUTF16("string")), iter.GetStringPiece());
 }
 

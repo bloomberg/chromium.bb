@@ -8,13 +8,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
@@ -49,7 +49,6 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/http/http_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/url_request/url_request_slow_download_job.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -102,13 +101,13 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   bool opened_;
 };
 
-// A Network Service based implementation of net::URLRequestSlowDownloadJob.
+// Simulates a slow download.
 class SlowDownloadInterceptor {
  public:
-  static const char* kUnknownSizeUrl;
-  static const char* kKnownSizeUrl;
-  static const char* kFinishDownloadUrl;
-  static const char* kErrorDownloadUrl;
+  static const char kUnknownSizeUrl[];
+  static const char kKnownSizeUrl[];
+  static const char kFinishDownloadUrl[];
+  static const char kErrorDownloadUrl[];
 
   SlowDownloadInterceptor()
       : handlers_(
@@ -239,14 +238,14 @@ class SlowDownloadInterceptor {
   content::URLLoaderInterceptor interceptor_;
 };
 
-const char* SlowDownloadInterceptor::kUnknownSizeUrl =
-    net::URLRequestSlowDownloadJob::kUnknownSizeUrl;
-const char* SlowDownloadInterceptor::kKnownSizeUrl =
-    net::URLRequestSlowDownloadJob::kKnownSizeUrl;
-const char* SlowDownloadInterceptor::kFinishDownloadUrl =
-    net::URLRequestSlowDownloadJob::kFinishDownloadUrl;
-const char* SlowDownloadInterceptor::kErrorDownloadUrl =
-    net::URLRequestSlowDownloadJob::kErrorDownloadUrl;
+const char SlowDownloadInterceptor::kUnknownSizeUrl[] =
+    "http://url.handled.by.slow.download/download-unknown-size";
+const char SlowDownloadInterceptor::kKnownSizeUrl[] =
+    "http://url.handled.by.slow.download/download-known-size";
+const char SlowDownloadInterceptor::kFinishDownloadUrl[] =
+    "http://url.handled.by.slow.download/download-finish";
+const char SlowDownloadInterceptor::kErrorDownloadUrl[] =
+    "http://url.handled.by.slow.download/download-error";
 
 // Utility method to retrieve a notification object by id. Warning: this will
 // check the last display service that was created. If there's a normal and an
@@ -280,13 +279,7 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
         browser()->profile());
 
-    if (!content::IsInProcessNetworkService()) {
-      interceptor_ = std::make_unique<SlowDownloadInterceptor>();
-    } else {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&net::URLRequestSlowDownloadJob::AddUrlHandler));
-    }
+    interceptor_ = std::make_unique<SlowDownloadInterceptor>();
   }
 
   void TearDownOnMainThread() override {

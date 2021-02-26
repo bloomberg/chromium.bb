@@ -46,7 +46,7 @@ class LaunchOptionsComboboxModel : public ui::ComboboxModel {
 
   // Overridden from ui::ComboboxModel:
   int GetItemCount() const override;
-  base::string16 GetItemAt(int index) override;
+  base::string16 GetItemAt(int index) const override;
 
  private:
   // A list of the launch types available in the combobox, in order.
@@ -92,7 +92,7 @@ int LaunchOptionsComboboxModel::GetItemCount() const {
   return launch_types_.size();
 }
 
-base::string16 LaunchOptionsComboboxModel::GetItemAt(int index) {
+base::string16 LaunchOptionsComboboxModel::GetItemAt(int index) const {
   return launch_type_messages_[index];
 }
 
@@ -139,7 +139,7 @@ void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
     auto* link = description_and_labels_stack->AddChildView(
         std::make_unique<views::Link>(l10n_util::GetStringUTF16(message_id)));
     link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    link->set_callback(base::BindRepeating(ptr, base::Unretained(this)));
+    link->SetCallback(base::BindRepeating(ptr, base::Unretained(this)));
     link->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   };
   if (CanShowAppHomePage()) {
@@ -200,7 +200,8 @@ void AppInfoSummaryPanel::AddLaunchOptionControl(views::View* vertical_stack) {
       std::make_unique<views::Combobox>(launch_options_combobox_model_.get());
   launch_options_combobox->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_LAUNCH_OPTIONS_ACCNAME));
-  launch_options_combobox->set_listener(this);
+  launch_options_combobox->SetCallback(base::BindRepeating(
+      &AppInfoSummaryPanel::LaunchOptionsChanged, base::Unretained(this)));
   launch_options_combobox->SetSelectedIndex(
       launch_options_combobox_model_->GetIndexForLaunchType(GetLaunchType()));
 
@@ -223,13 +224,9 @@ void AppInfoSummaryPanel::AddSubviews() {
   AddChildView(std::move(vertical_stack));
 }
 
-void AppInfoSummaryPanel::OnPerformAction(views::Combobox* combobox) {
-  if (combobox == launch_options_combobox_) {
-    SetLaunchType(launch_options_combobox_model_->GetLaunchTypeAtIndex(
-        launch_options_combobox_->GetSelectedIndex()));
-  } else {
-    NOTREACHED();
-  }
+void AppInfoSummaryPanel::LaunchOptionsChanged() {
+  SetLaunchType(launch_options_combobox_model_->GetLaunchTypeAtIndex(
+      launch_options_combobox_->GetSelectedIndex()));
 }
 
 void AppInfoSummaryPanel::StartCalculatingAppSize() {

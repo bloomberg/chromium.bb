@@ -44,6 +44,93 @@ namespace vkt
 {
 namespace texture
 {
+namespace util
+{
+
+template <>
+void checkTextureSupport (Context& context, const Texture2DTestCaseParameters& testParameters)
+{
+	if (testParameters.minFilter == tcu::Sampler::Sampler::CUBIC || testParameters.minFilter == tcu::Sampler::Sampler::CUBIC_MIPMAP_NEAREST || testParameters.minFilter == tcu::Sampler::Sampler::CUBIC_MIPMAP_LINEAR ||
+		testParameters.magFilter == tcu::Sampler::Sampler::CUBIC)
+	{
+		context.requireDeviceFunctionality("VK_EXT_filter_cubic");
+
+		// check if image format supports cubic filtering
+		const vk::VkPhysicalDeviceImageViewImageFormatInfoEXT imageViewImageFormatInfo =
+		{
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_IMAGE_FORMAT_INFO_EXT,		// VkStructureType    sType;
+			DE_NULL,																// void*              pNext;
+			VK_IMAGE_VIEW_TYPE_2D													// VkImageViewType    imageViewType;
+		};
+
+		const vk::VkPhysicalDeviceImageFormatInfo2 formatInfo =
+		{
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2,					// VkStructureType       sType;
+			&imageViewImageFormatInfo,												// const void*           pNext;
+			testParameters.format,													// VkFormat              format;
+			VK_IMAGE_TYPE_2D,														// VkImageType           type;
+			VK_IMAGE_TILING_OPTIMAL,												// VkImageTiling         tiling;
+			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+			VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+			VK_IMAGE_USAGE_TRANSFER_DST_BIT,										// VkImageUsageFlags     usage;
+			0u																		// VkImageCreateFlags    flags;
+		};
+
+		vk::VkFilterCubicImageViewImageFormatPropertiesEXT cubicImageViewProperties =
+		{
+			VK_STRUCTURE_TYPE_FILTER_CUBIC_IMAGE_VIEW_IMAGE_FORMAT_PROPERTIES_EXT,	// VkStructureType	sType;
+			DE_NULL,																// void*			pNext;
+			DE_FALSE,																// VkBool32		filterCubic;
+			DE_FALSE																// VkBool32		filterCubicMinmax;
+		};
+
+		vk::VkImageFormatProperties2 formatProperties =
+		{
+			VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2,							// VkStructureType			sType;
+			&cubicImageViewProperties,												// void*					pNext;
+			vk::VkImageFormatProperties()											// VkImageFormatProperties	imageFormatProperties;
+		};
+
+		const vk::VkResult res = context.getInstanceInterface().getPhysicalDeviceImageFormatProperties2(context.getPhysicalDevice(), &formatInfo, &formatProperties);
+		if (res == vk::VK_ERROR_FORMAT_NOT_SUPPORTED)
+			TCU_THROW(NotSupportedError, "Image format not supported");
+		VK_CHECK(res);
+
+		if (!cubicImageViewProperties.filterCubic)
+			TCU_THROW(NotSupportedError, "Image format does not support cubic filtering");
+
+		VkFormatProperties formatProps;
+		context.getInstanceInterface().getPhysicalDeviceFormatProperties(context.getPhysicalDevice(), testParameters.format, &formatProps);
+		if ((formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT) == 0)
+			TCU_THROW(NotSupportedError, "Format properties do not support cubic filtering feature");
+	}
+
+	if (testParameters.wrapS == tcu::Sampler::Sampler::MIRRORED_ONCE || testParameters.wrapT == tcu::Sampler::Sampler::MIRRORED_ONCE)
+		context.requireDeviceFunctionality("VK_KHR_sampler_mirror_clamp_to_edge");
+}
+
+template <>
+void checkTextureSupport (Context& context, const TextureCubeTestCaseParameters& testParameters)
+{
+	if (testParameters.wrapS == tcu::Sampler::Sampler::MIRRORED_ONCE || testParameters.wrapT == tcu::Sampler::Sampler::MIRRORED_ONCE)
+		context.requireDeviceFunctionality("VK_KHR_sampler_mirror_clamp_to_edge");
+}
+
+template <>
+void checkTextureSupport (Context& context, const Texture2DArrayTestCaseParameters& testParameters)
+{
+	if (testParameters.wrapS == tcu::Sampler::Sampler::MIRRORED_ONCE || testParameters.wrapT == tcu::Sampler::Sampler::MIRRORED_ONCE)
+		context.requireDeviceFunctionality("VK_KHR_sampler_mirror_clamp_to_edge");
+}
+
+template <>
+void checkTextureSupport (Context& context, const Texture3DTestCaseParameters& testParameters)
+{
+	if (testParameters.wrapS == tcu::Sampler::Sampler::MIRRORED_ONCE || testParameters.wrapT == tcu::Sampler::Sampler::MIRRORED_ONCE || testParameters.wrapR == tcu::Sampler::Sampler::MIRRORED_ONCE)
+		context.requireDeviceFunctionality("VK_KHR_sampler_mirror_clamp_to_edge");
+}
+
+} // util
 
 namespace
 {
@@ -131,9 +218,6 @@ Texture2DFilteringTestInstance::Texture2DFilteringTestInstance (Context& context
 		cScale												= fmtInfo.valueMax - fmtInfo.valueMin;
 	}
 
-	if (testParameters.wrapS == Sampler::MIRRORED_ONCE || testParameters.wrapT == Sampler::MIRRORED_ONCE)
-		context.requireDeviceFunctionality("VK_KHR_sampler_mirror_clamp_to_edge");
-
 	// Create 2 textures.
 	m_textures.reserve(2);
 	for (int ndx = 0; ndx < 2; ndx++)
@@ -213,7 +297,6 @@ Texture2DFilteringTestInstance::~Texture2DFilteringTestInstance (void)
 tcu::TestStatus Texture2DFilteringTestInstance::iterate (void)
 {
 	tcu::TestLog&					log			= m_context.getTestContext().getLog();
-
 	const pipeline::TestTexture2D&	texture		= m_renderer.get2DTexture(m_cases[m_caseNdx].textureIndex);
 	const tcu::TextureFormat		texFmt		= texture.getTextureFormat();
 	const tcu::TextureFormatInfo	fmtInfo		= tcu::getTextureFormatInfo(texFmt);
@@ -350,9 +433,6 @@ TextureCubeFilteringTestInstance::TextureCubeFilteringTestInstance (Context& con
 		cBias												= fmtInfo.valueMin;
 		cScale												= fmtInfo.valueMax - fmtInfo.valueMin;
 	}
-
-	if (testParameters.wrapS == Sampler::MIRRORED_ONCE || testParameters.wrapT == Sampler::MIRRORED_ONCE)
-		context.requireDeviceFunctionality("VK_KHR_sampler_mirror_clamp_to_edge");
 
 	m_textures.reserve(2);
 	for (int ndx = 0; ndx < 2; ndx++)
@@ -597,9 +677,6 @@ Texture2DArrayFilteringTestInstance::Texture2DArrayFilteringTestInstance (Contex
 		cScale												= fmtInfo.valueMax - fmtInfo.valueMin;
 	}
 
-	if (testParameters.wrapS == Sampler::MIRRORED_ONCE || testParameters.wrapT == Sampler::MIRRORED_ONCE)
-		context.requireDeviceFunctionality("VK_KHR_sampler_mirror_clamp_to_edge");
-
 	// Create textures.
 	m_textures.reserve(2);
 	for (int ndx = 0; ndx < 2; ndx++)
@@ -818,9 +895,6 @@ Texture3DFilteringTestInstance::Texture3DFilteringTestInstance (Context& context
 		cScale												= fmtInfo.valueMax - fmtInfo.valueMin;
 	}
 
-	if (testParameters.wrapS == Sampler::MIRRORED_ONCE || testParameters.wrapT == Sampler::MIRRORED_ONCE || testParameters.wrapR == Sampler::MIRRORED_ONCE)
-		context.requireDeviceFunctionality("VK_KHR_sampler_mirror_clamp_to_edge");
-
 	// Create textures.
 	m_textures.reserve(2);
 	for (int ndx = 0; ndx < 2; ndx++)
@@ -960,17 +1034,17 @@ tcu::TestStatus Texture3DFilteringTestInstance::iterate (void)
 	return m_caseNdx < (int)m_cases.size() ? tcu::TestStatus::incomplete() : tcu::TestStatus::pass("Pass");
 }
 
-bool verifierCanBeUsed (const VkFormat format, const Sampler::FilterMode minFilter, const Sampler::FilterMode magFilter)
+bool verifierCanBeUsed(const VkFormat format, const Sampler::FilterMode minFilter, const Sampler::FilterMode magFilter)
 {
 	const tcu::TextureFormat				textureFormat		= mapVkFormat(format);
 	const tcu::TextureChannelClass			textureChannelClass	= tcu::getTextureChannelClass(textureFormat.type);
 
-	return !(!(textureChannelClass == tcu::TEXTURECHANNELCLASS_UNSIGNED_FIXED_POINT	||
-			   textureChannelClass == tcu::TEXTURECHANNELCLASS_SIGNED_FIXED_POINT	||
-			   textureChannelClass == tcu::TEXTURECHANNELCLASS_FLOATING_POINT) &&
-			  (tcu::TexVerifierUtil::isLinearFilter(minFilter) || tcu::TexVerifierUtil::isLinearFilter(magFilter)));
+	return !(!(textureChannelClass == tcu::TEXTURECHANNELCLASS_UNSIGNED_FIXED_POINT ||
+		textureChannelClass == tcu::TEXTURECHANNELCLASS_SIGNED_FIXED_POINT ||
+		textureChannelClass == tcu::TEXTURECHANNELCLASS_FLOATING_POINT) &&
+		(tcu::TexVerifierUtil::isLinearFilter(minFilter) || tcu::TexVerifierUtil::isLinearFilter(magFilter) ||
+		 tcu::TexVerifierUtil::isCubicFilter(minFilter)  || tcu::TexVerifierUtil::isCubicFilter(magFilter)));
 }
-
 void populateTextureFilteringTests (tcu::TestCaseGroup* textureFilteringTests)
 {
 	tcu::TestContext&	testCtx		= textureFilteringTests->getTestContext();
@@ -988,11 +1062,13 @@ void populateTextureFilteringTests (tcu::TestCaseGroup* textureFilteringTests)
 		{ "mirror_clamp_to_edge",	Sampler::MIRRORED_ONCE		}
 	};
 
-	static const struct
+	struct FilterModes
 	{
 		const char* const			name;
 		const Sampler::FilterMode	mode;
-	} minFilterModes[] =
+	};
+
+	static const FilterModes minFilterModes[] =
 	{
 		{ "nearest",				Sampler::NEAREST					},
 		{ "linear",					Sampler::LINEAR						},
@@ -1002,14 +1078,30 @@ void populateTextureFilteringTests (tcu::TestCaseGroup* textureFilteringTests)
 		{ "linear_mipmap_linear",	Sampler::LINEAR_MIPMAP_LINEAR		}
 	};
 
-	static const struct
-	{
-		const char* const			name;
-		const Sampler::FilterMode	mode;
-	} magFilterModes[] =
+	static const FilterModes magFilterModes[] =
 	{
 		{ "nearest",				Sampler::NEAREST },
 		{ "linear",					Sampler::LINEAR	 }
+	};
+
+	static const FilterModes minFilterModes2D[] =
+	{
+		{ "nearest",				Sampler::NEAREST					},
+		{ "linear",					Sampler::LINEAR						},
+		{ "cubic",					Sampler::CUBIC						},
+		{ "nearest_mipmap_nearest",	Sampler::NEAREST_MIPMAP_NEAREST		},
+		{ "linear_mipmap_nearest",	Sampler::LINEAR_MIPMAP_NEAREST		},
+		{ "nearest_mipmap_linear",	Sampler::NEAREST_MIPMAP_LINEAR		},
+		{ "linear_mipmap_linear",	Sampler::LINEAR_MIPMAP_LINEAR		},
+		{ "cubic_mipmap_nearest",	Sampler::CUBIC_MIPMAP_NEAREST		},
+		{ "cubic_mipmap_linear",	Sampler::CUBIC_MIPMAP_LINEAR		}
+	};
+
+	static const FilterModes magFilterModes2D[] =
+	{
+		{ "nearest",				Sampler::NEAREST },
+		{ "linear",					Sampler::LINEAR	 },
+		{ "cubic",					Sampler::CUBIC	 }
 	};
 
 	static const struct
@@ -1106,11 +1198,11 @@ void populateTextureFilteringTests (tcu::TestCaseGroup* textureFilteringTests)
 			const string					filterGroupName	= filterableFormatsByType[fmtNdx].name;
 			de::MovePtr<tcu::TestCaseGroup>	filterGroup		(new tcu::TestCaseGroup(testCtx, filterGroupName.c_str(), ""));
 
-			for (int filterNdx = 0; filterNdx < DE_LENGTH_OF_ARRAY(minFilterModes); filterNdx++)
+			for (int filterNdx = 0; filterNdx < DE_LENGTH_OF_ARRAY(minFilterModes2D); filterNdx++)
 			{
-				const Sampler::FilterMode	minFilter		= minFilterModes[filterNdx].mode;
-				const bool					isMipmap		= minFilter != Sampler::NEAREST && minFilter != Sampler::LINEAR;
-				const string				name			= minFilterModes[filterNdx].name;
+				const Sampler::FilterMode	minFilter		= minFilterModes2D[filterNdx].mode;
+				const bool					isMipmap		= minFilter != Sampler::NEAREST && minFilter != Sampler::LINEAR && minFilter != Sampler::CUBIC;
+				const string				name			= minFilterModes2D[filterNdx].name;
 				Texture2DTestCaseParameters	testParameters;
 
 				testParameters.format		= filterableFormatsByType[fmtNdx].format;
@@ -1141,11 +1233,11 @@ void populateTextureFilteringTests (tcu::TestCaseGroup* textureFilteringTests)
 			const string					filterGroupName = de::toString(sizes2D[sizeNdx].width) + "x" + de::toString(sizes2D[sizeNdx].height);
 			de::MovePtr<tcu::TestCaseGroup>	filterGroup		(new tcu::TestCaseGroup(testCtx, filterGroupName.c_str(), ""));
 
-			for (int filterNdx = 0; filterNdx < DE_LENGTH_OF_ARRAY(minFilterModes); filterNdx++)
+			for (int filterNdx = 0; filterNdx < DE_LENGTH_OF_ARRAY(minFilterModes2D); filterNdx++)
 			{
-				const Sampler::FilterMode	minFilter		= minFilterModes[filterNdx].mode;
-				const bool					isMipmap		= minFilter != Sampler::NEAREST && minFilter != Sampler::LINEAR;
-				const string				name			= minFilterModes[filterNdx].name;
+				const Sampler::FilterMode	minFilter		= minFilterModes2D[filterNdx].mode;
+				const bool					isMipmap		= minFilter != Sampler::NEAREST && minFilter != Sampler::LINEAR && minFilter != Sampler::CUBIC;
+				const string				name			= minFilterModes2D[filterNdx].name;
 				Texture2DTestCaseParameters	testParameters;
 
 				testParameters.format		= VK_FORMAT_R8G8B8A8_UNORM;
@@ -1167,13 +1259,13 @@ void populateTextureFilteringTests (tcu::TestCaseGroup* textureFilteringTests)
 		}
 
 		// Wrap modes.
-		for (int minFilterNdx = 0; minFilterNdx < DE_LENGTH_OF_ARRAY(minFilterModes); minFilterNdx++)
+		for (int minFilterNdx = 0; minFilterNdx < DE_LENGTH_OF_ARRAY(minFilterModes2D); minFilterNdx++)
 		{
-			de::MovePtr<tcu::TestCaseGroup>	minFilterGroup(new tcu::TestCaseGroup(testCtx, minFilterModes[minFilterNdx].name, ""));
+			de::MovePtr<tcu::TestCaseGroup>	minFilterGroup(new tcu::TestCaseGroup(testCtx, minFilterModes2D[minFilterNdx].name, ""));
 
-			for (int magFilterNdx = 0; magFilterNdx < DE_LENGTH_OF_ARRAY(magFilterModes); magFilterNdx++)
+			for (int magFilterNdx = 0; magFilterNdx < DE_LENGTH_OF_ARRAY(magFilterModes2D); magFilterNdx++)
 			{
-				de::MovePtr<tcu::TestCaseGroup>	magFilterGroup(new tcu::TestCaseGroup(testCtx, magFilterModes[magFilterNdx].name, ""));
+				de::MovePtr<tcu::TestCaseGroup>	magFilterGroup(new tcu::TestCaseGroup(testCtx, magFilterModes2D[magFilterNdx].name, ""));
 
 				for (int wrapSNdx = 0; wrapSNdx < DE_LENGTH_OF_ARRAY(wrapModes); wrapSNdx++)
 				{
@@ -1185,8 +1277,8 @@ void populateTextureFilteringTests (tcu::TestCaseGroup* textureFilteringTests)
 						Texture2DTestCaseParameters	testParameters;
 
 						testParameters.format		= VK_FORMAT_R8G8B8A8_UNORM;
-						testParameters.minFilter	= minFilterModes[minFilterNdx].mode;
-						testParameters.magFilter	= magFilterModes[magFilterNdx].mode;
+						testParameters.minFilter	= minFilterModes2D[minFilterNdx].mode;
+						testParameters.magFilter	= magFilterModes2D[magFilterNdx].mode;
 						testParameters.mipmaps		= true;
 
 						testParameters.wrapS		= wrapModes[wrapSNdx].mode;
@@ -1226,10 +1318,10 @@ void populateTextureFilteringTests (tcu::TestCaseGroup* textureFilteringTests)
 			const string					filterGroupName	= filterableFormatsByType[fmtNdx].name;
 			de::MovePtr<tcu::TestCaseGroup>	filterGroup		(new tcu::TestCaseGroup(testCtx, filterGroupName.c_str(), ""));
 
-			for (int filterNdx = 0; filterNdx < DE_LENGTH_OF_ARRAY(magFilterModes); filterNdx++)
+			for (int filterNdx = 0; filterNdx < DE_LENGTH_OF_ARRAY(magFilterModes2D); filterNdx++)
 			{
-				const Sampler::FilterMode	magFilter		= magFilterModes[filterNdx].mode;
-				const string				name			= magFilterModes[filterNdx].name;
+				const Sampler::FilterMode	magFilter		= magFilterModes2D[filterNdx].mode;
+				const string				name			= magFilterModes2D[filterNdx].name;
 				Texture2DTestCaseParameters	testParameters;
 
 				testParameters.unnormal		= true;
@@ -1262,10 +1354,10 @@ void populateTextureFilteringTests (tcu::TestCaseGroup* textureFilteringTests)
 			const string					filterGroupName = de::toString(sizes2D[sizeNdx].width) + "x" + de::toString(sizes2D[sizeNdx].height);
 			de::MovePtr<tcu::TestCaseGroup>	filterGroup		(new tcu::TestCaseGroup(testCtx, filterGroupName.c_str(), ""));
 
-			for (int filterNdx = 0; filterNdx < DE_LENGTH_OF_ARRAY(magFilterModes); filterNdx++)
+			for (int filterNdx = 0; filterNdx < DE_LENGTH_OF_ARRAY(magFilterModes2D); filterNdx++)
 			{
-				const Sampler::FilterMode	magFilter		= magFilterModes[filterNdx].mode;
-				const string				name			= magFilterModes[filterNdx].name;
+				const Sampler::FilterMode	magFilter		= magFilterModes2D[filterNdx].mode;
+				const string				name			= magFilterModes2D[filterNdx].name;
 				Texture2DTestCaseParameters	testParameters;
 
 				testParameters.unnormal		= true;

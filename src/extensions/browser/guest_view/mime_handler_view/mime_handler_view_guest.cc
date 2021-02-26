@@ -16,7 +16,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/web_preferences.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
@@ -35,6 +34,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 
 using content::WebContents;
 using guest_view::GuestViewBase;
@@ -46,7 +46,7 @@ StreamContainer::StreamContainer(
     bool embedded,
     const GURL& handler_url,
     const std::string& extension_id,
-    content::mojom::TransferrableURLLoaderPtr transferrable_loader,
+    blink::mojom::TransferrableURLLoaderPtr transferrable_loader,
     const GURL& original_url)
     : embedded_(embedded),
       tab_id_(tab_id),
@@ -65,7 +65,7 @@ base::WeakPtr<StreamContainer> StreamContainer::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-content::mojom::TransferrableURLLoaderPtr
+blink::mojom::TransferrableURLLoaderPtr
 StreamContainer::TakeTransferrableURLLoader() {
   return std::move(transferrable_loader_);
 }
@@ -220,9 +220,9 @@ void MimeHandlerViewGuest::DidAttachToEmbedder() {
   web_contents()->GetController().LoadURL(
       stream_->handler_url(), content::Referrer(),
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
-  auto prefs = web_contents()->GetRenderViewHost()->GetWebkitPreferences();
+  auto prefs = web_contents()->GetOrCreateWebPreferences();
   prefs.navigate_on_drag_drop = true;
-  web_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+  web_contents()->SetWebPreferences(prefs);
 }
 
 void MimeHandlerViewGuest::DidInitialize(
@@ -354,22 +354,19 @@ void MimeHandlerViewGuest::OnRenderFrameHostDeleted(int process_id,
 }
 
 void MimeHandlerViewGuest::EnterFullscreenModeForTab(
-    content::WebContents*,
-    const GURL& origin,
+    content::RenderFrameHost* requesting_frame,
     const blink::mojom::FullscreenOptions& options) {
   if (SetFullscreenState(true)) {
-    auto* delegate = embedder_web_contents()->GetDelegate();
-    if (delegate) {
-      delegate->EnterFullscreenModeForTab(embedder_web_contents(), origin,
-                                          options);
+    if (auto* delegate = embedder_web_contents()->GetDelegate()) {
+      delegate->EnterFullscreenModeForTab(
+          embedder_web_contents()->GetMainFrame(), options);
     }
   }
 }
 
 void MimeHandlerViewGuest::ExitFullscreenModeForTab(content::WebContents*) {
   if (SetFullscreenState(false)) {
-    auto* delegate = embedder_web_contents()->GetDelegate();
-    if (delegate)
+    if (auto* delegate = embedder_web_contents()->GetDelegate())
       delegate->ExitFullscreenModeForTab(embedder_web_contents());
   }
 }

@@ -8,6 +8,8 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
@@ -18,7 +20,6 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/chrome_features.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -102,7 +103,7 @@ void AppBannerManagerDesktop::InvalidateWeakPtrs() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-bool AppBannerManagerDesktop::IsSupportedAppPlatform(
+bool AppBannerManagerDesktop::IsSupportedNonWebAppPlatform(
     const base::string16& platform) const {
   if (base::EqualsASCII(platform, kPlatformChromeWebStore))
     return true;
@@ -118,13 +119,15 @@ bool AppBannerManagerDesktop::IsSupportedAppPlatform(
   return false;
 }
 
-bool AppBannerManagerDesktop::IsRelatedAppInstalled(
+bool AppBannerManagerDesktop::IsRelatedNonWebAppInstalled(
     const blink::Manifest::RelatedApplication& related_app) const {
-  std::string id = base::UTF16ToUTF8(related_app.id.string());
-  if (id.empty())
+  if (!related_app.id || related_app.id->empty() || !related_app.platform ||
+      related_app.platform->empty()) {
     return false;
+  }
 
-  const base::string16& platform = related_app.platform.string();
+  const std::string id = base::UTF16ToUTF8(*related_app.id);
+  const base::string16& platform = *related_app.platform;
 
   if (base::EqualsASCII(platform, kPlatformChromeWebStore)) {
     return extension_registry_->GetExtensionById(
@@ -161,9 +164,17 @@ bool AppBannerManagerDesktop::IsExternallyInstalledWebApp() {
     return registrar().IsLocallyInstalled(manifest_app_id) &&
            registrar().HasExternalApp(manifest_app_id);
   }
+
+  // Check URL wouldn't collide with an external app's install URL.
+  const GURL& url = web_contents()->GetLastCommittedURL();
+  base::Optional<web_app::AppId> external_app_id =
+      registrar().LookupExternalAppId(url);
+  // TODO(crbug.com/1090182): Make LookupExternalAppId imply IsLocallyInstalled.
+  if (external_app_id && registrar().IsLocallyInstalled(*external_app_id))
+    return true;
+
   // Check an app created for this page wouldn't collide with any external app.
-  web_app::AppId possible_app_id =
-      web_app::GenerateAppIdFromURL(web_contents()->GetLastCommittedURL());
+  web_app::AppId possible_app_id = web_app::GenerateAppIdFromURL(url);
   // TODO(crbug.com/1090182): Make HasExternalApp imply IsLocallyInstalled.
   return registrar().IsLocallyInstalled(possible_app_id) &&
          registrar().HasExternalApp(possible_app_id);
@@ -215,7 +226,7 @@ void AppBannerManagerDesktop::OnWebAppInstalled(
   if (app_id.has_value() && *app_id == installed_app_id &&
       registrar().GetAppUserDisplayMode(*app_id) ==
           blink::mojom::DisplayMode::kStandalone) {
-    OnInstall(registrar().GetAppDisplayMode(*app_id));
+    OnInstall(registrar().GetEffectiveDisplayModeFromManifest(*app_id));
     SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kNo);
   }
 }
@@ -230,7 +241,7 @@ void AppBannerManagerDesktop::CreateWebApp(WebappInstallSource install_source) {
 
   // TODO(loyso): Take appropriate action if WebApps disabled for profile.
   web_app::CreateWebAppFromManifest(
-      contents, install_source,
+      contents, /*bypass_service_worker_check=*/false, install_source,
       base::BindOnce(&AppBannerManagerDesktop::DidFinishCreatingWebApp,
                      weak_factory_.GetWeakPtr()));
 }

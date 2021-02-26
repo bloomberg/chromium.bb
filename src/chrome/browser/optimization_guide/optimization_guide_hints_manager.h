@@ -103,22 +103,20 @@ class OptimizationGuideHintsManager
     return registered_optimization_types_;
   }
 
-  // Returns whether there is an optimization filter loaded for
+  // Returns whether there is an optimization allowlist loaded for
   // |optimization_type|.
-  bool HasLoadedOptimizationFilter(
+  bool HasLoadedOptimizationAllowlist(
       optimization_guide::proto::OptimizationType optimization_type);
-
-  // Returns the OptimizationTargetDecision based on the given parameters.
-  // TODO(crbug/1021364): Remove this method once the hints have nothing to do
-  // with predicting navigations.
-  optimization_guide::OptimizationTargetDecision ShouldTargetNavigation(
-      content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationTarget optimization_target);
+  // Returns whether there is an optimization blocklist loaded for
+  // |optimization_type|.
+  bool HasLoadedOptimizationBlocklist(
+      optimization_guide::proto::OptimizationType optimization_type);
 
   // Returns the OptimizationTypeDecision based on the given parameters.
   // |optimization_metadata| will be populated, if applicable.
   optimization_guide::OptimizationTypeDecision CanApplyOptimization(
-      content::NavigationHandle* navigation_handle,
+      const GURL& navigation_url,
+      const base::Optional<int64_t>& navigation_id,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata);
 
@@ -127,11 +125,16 @@ class OptimizationGuideHintsManager
   // |this| to make the decision. Virtual for testing.
   virtual void CanApplyOptimizationAsync(
       const GURL& navigation_url,
+      const base::Optional<int64_t>& navigation_id,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationGuideDecisionCallback callback);
 
-  // Clears fetched hints from |hint_cache_|.
+  // Clears all fetched hints from |hint_cache_|.
   void ClearFetchedHints();
+
+  // Clears the host-keyed fetched hints from |hint_cache_|, both the persisted
+  // and in memory ones.
+  void ClearHostKeyedHints();
 
   // Returns the current batch update hints fetcher.
   optimization_guide::HintsFetcher* batch_update_hints_fetcher() const {
@@ -167,6 +170,13 @@ class OptimizationGuideHintsManager
       const GURL& url,
       optimization_guide::proto::OptimizationType optimization_type,
       const base::Optional<optimization_guide::OptimizationMetadata>& metadata);
+
+  // Override the decision returned by |ShouldTargetNavigation|
+  // for |optimization_target|. For testing purposes only.
+  void OverrideTargetDecisionForTesting(
+      optimization_guide::proto::OptimizationTarget optimization_target,
+      optimization_guide::OptimizationGuideDecision
+          optimization_guide_decision);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest, IsGoogleURL);
@@ -210,12 +220,28 @@ class OptimizationGuideHintsManager
   void ProcessOptimizationFilters(
       const google::protobuf::RepeatedPtrField<
           optimization_guide::proto::OptimizationFilter>&
-          blacklist_optimization_filters,
+          allowlist_optimization_filters,
+      const google::protobuf::RepeatedPtrField<
+          optimization_guide::proto::OptimizationFilter>&
+          blocklist_optimization_filters,
       const base::flat_set<optimization_guide::proto::OptimizationType>&
           registered_optimization_types);
 
-  // Callback run after the hint cache is fully initialized. At this point, the
-  // OptimizationGuideHintsManager is ready to process hints.
+  // Process a set of optimization filters.
+  //
+  // |is_allowlist| will be used to ensure that the filters are either uses as
+  // allowlists or blocklists. |optimization_filters_lock_| should be held
+  // before calling this function.
+  void ProcessOptimizationFilterSet(
+      const google::protobuf::RepeatedPtrField<
+          optimization_guide::proto::OptimizationFilter>& filters,
+      bool is_allowlist,
+      const base::flat_set<optimization_guide::proto::OptimizationType>&
+          registered_optimization_types)
+      EXCLUSIVE_LOCKS_REQUIRED(optimization_filters_lock_);
+
+  // Callback run after the hint cache is fully initialized. At this point,
+  // the OptimizationGuideHintsManager is ready to process hints.
   void OnHintCacheInitialized();
 
   // Updates the cache with the latest hints sent by the Component Updater.
@@ -245,6 +271,7 @@ class OptimizationGuideHintsManager
   // Optimization Guide Service and are ready for parsing. This is used when
   // fetching hints in batch mode.
   void OnTopHostsHintsFetched(
+      const base::flat_set<std::string>& hosts_fetched,
       base::Optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response);
@@ -297,7 +324,7 @@ class OptimizationGuideHintsManager
 
   // Returns true if |this| is allowed to fetch hints at the navigation time for
   // |url|.
-  bool IsAllowedToFetchNavigationHints(const GURL& url) const;
+  bool IsAllowedToFetchNavigationHints(const GURL& url);
 
   // Loads the hint if available.
   // |callback| is run when the request has finished regardless of whether there
@@ -326,20 +353,16 @@ class OptimizationGuideHintsManager
       const base::Optional<NavigationPredictorKeyedService::Prediction>
           prediction) override;
 
+  // Returns whether there is an optimization type to fetch for. Will return
+  // false if no optimization types are registered or if all registered
+  // optimization types are covered by optimization filters.
+  bool HasOptimizationTypeToFetchFor();
+
   // Creates a hints fetch for |navigation_handle| if it is allowed. The
   // fetch will include the host and URL of the |navigation_handle| if the
   // associated hints for each are not already in the cache.
   void MaybeFetchHintsForNavigation(
       content::NavigationHandle* navigation_handle);
-
-  // Returns the OptimizationTypeDecision based on the given parameters.
-  // |optimization_metadata| will be populated, if applicable. If
-  // |navigation_data| is provided, some metrics will be populated within it.
-  optimization_guide::OptimizationTypeDecision CanApplyOptimization(
-      OptimizationGuideNavigationData* navigation_data,
-      const GURL& url,
-      optimization_guide::proto::OptimizationType optimization_type,
-      optimization_guide::OptimizationMetadata* optimization_metadata);
 
   // If an entry for |navigation_url| is contained in |registered_callbacks_|,
   // it will load the hint for |navigation_url|'s host and upon completion, will
@@ -378,18 +401,27 @@ class OptimizationGuideHintsManager
   base::flat_set<optimization_guide::proto::OptimizationType>
       optimization_types_with_filter_ GUARDED_BY(optimization_filters_lock_);
 
-  // A map from optimization type to the host filter that holds the blacklist
+  // A map from optimization type to the host filter that holds the allowlist
   // for that type.
   base::flat_map<optimization_guide::proto::OptimizationType,
                  std::unique_ptr<optimization_guide::OptimizationFilter>>
-      blacklist_optimization_filters_ GUARDED_BY(optimization_filters_lock_);
+      allowlist_optimization_filters_ GUARDED_BY(optimization_filters_lock_);
 
-  // A map from URL to a map of callbacks keyed by their optimization type.
+  // A map from optimization type to the host filter that holds the blocklist
+  // for that type.
+  base::flat_map<optimization_guide::proto::OptimizationType,
+                 std::unique_ptr<optimization_guide::OptimizationFilter>>
+      blocklist_optimization_filters_ GUARDED_BY(optimization_filters_lock_);
+
+  // A map from URL to a map of callbacks (along with the navigation IDs that
+  // they were called for) keyed by their optimization type.
   base::flat_map<
       GURL,
       base::flat_map<
           optimization_guide::proto::OptimizationType,
-          std::vector<optimization_guide::OptimizationGuideDecisionCallback>>>
+          std::vector<std::pair<
+              base::Optional<int64_t>,
+              optimization_guide::OptimizationGuideDecisionCallback>>>>
       registered_callbacks_;
 
   // Background thread where hints processing should be performed.
@@ -435,6 +467,10 @@ class OptimizationGuideHintsManager
   // The clock used to schedule fetching from the remote Optimization Guide
   // Service.
   const base::Clock* clock_;
+
+  // Whether fetched hints should be cleared when the store is initialized
+  // because a new optimization type was registered.
+  bool should_clear_hints_for_new_type_ = false;
 
   // The current estimate of the EffectiveConnectionType.
   net::EffectiveConnectionType current_effective_connection_type_ =

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ash/frame/non_client_frame_view_ash.h"
-#include "ash/public/cpp/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/cursor_manager_test_api.h"
@@ -11,6 +10,7 @@
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
+#include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
@@ -19,6 +19,9 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+using chromeos::kResizeInsideBoundsSize;
+using chromeos::kResizeOutsideBoundsSize;
+
 namespace ash {
 
 namespace {
@@ -26,16 +29,17 @@ namespace {
 // views::WidgetDelegate which uses ash::NonClientFrameViewAsh.
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
-  TestWidgetDelegate() = default;
+  TestWidgetDelegate() {
+    SetCanMaximize(true);
+    SetCanMinimize(true);
+    SetCanResize(true);
+  }
   ~TestWidgetDelegate() override = default;
 
   // views::WidgetDelegateView overrides:
-  bool CanResize() const override { return true; }
-  bool CanMaximize() const override { return true; }
-  bool CanMinimize() const override { return true; }
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new NonClientFrameViewAsh(widget);
+    return std::make_unique<NonClientFrameViewAsh>(widget);
   }
 
  private:

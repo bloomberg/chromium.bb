@@ -6,6 +6,7 @@
 
 #include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader.h"
@@ -16,6 +17,7 @@
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/testing/mock_context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -30,17 +32,18 @@ class WorkletModuleResponsesMapTest : public testing::Test {
     platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     auto* context = MakeGarbageCollected<MockFetchContext>();
-    fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(properties->MakeDetachable(), context,
-                            base::MakeRefCounted<scheduler::FakeTaskRunner>(),
-                            MakeGarbageCollected<TestLoaderFactory>()));
+    fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+        properties->MakeDetachable(), context,
+        base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+        base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+        MakeGarbageCollected<TestLoaderFactory>(
+            platform_->GetURLLoaderMockFactory()),
+        MakeGarbageCollected<MockContextLifecycleNotifier>()));
     map_ = MakeGarbageCollected<WorkletModuleResponsesMap>();
   }
 
   class ClientImpl final : public GarbageCollected<ClientImpl>,
                            public ModuleScriptFetcher::Client {
-    USING_GARBAGE_COLLECTED_MIXIN(ClientImpl);
-
    public:
     enum class Result { kInitial, kOK, kFailed };
 
@@ -70,8 +73,10 @@ class WorkletModuleResponsesMapTest : public testing::Test {
     ResourceRequest resource_request(url);
     // TODO(nhiroki): Specify worklet-specific request context (e.g.,
     // "paintworklet").
-    resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
-    FetchParameters fetch_params(std::move(resource_request));
+    resource_request.SetRequestContext(
+        mojom::blink::RequestContextType::SCRIPT);
+    FetchParameters fetch_params =
+        FetchParameters::CreateForTest(std::move(resource_request));
     WorkletModuleScriptFetcher* module_fetcher =
         MakeGarbageCollected<WorkletModuleScriptFetcher>(
             map_.Get(), ModuleScriptLoader::CreatePassKeyForTests());
@@ -94,7 +99,8 @@ class WorkletModuleResponsesMapTest : public testing::Test {
 TEST_F(WorkletModuleResponsesMapTest, Basic) {
   const KURL kUrl("https://example.com/module.js");
   url_test_helpers::RegisterMockedURLLoad(
-      kUrl, test::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl, test::CoreTestDataPath("module.js"), "text/javascript",
+      platform_->GetURLLoaderMockFactory());
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call initiates a fetch request.
@@ -124,7 +130,8 @@ TEST_F(WorkletModuleResponsesMapTest, Basic) {
 
 TEST_F(WorkletModuleResponsesMapTest, Failure) {
   const KURL kUrl("https://example.com/module.js");
-  url_test_helpers::RegisterMockedErrorURLLoad(kUrl);
+  url_test_helpers::RegisterMockedErrorURLLoad(
+      kUrl, platform_->GetURLLoaderMockFactory());
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call initiates a fetch request.
@@ -155,9 +162,11 @@ TEST_F(WorkletModuleResponsesMapTest, Failure) {
 TEST_F(WorkletModuleResponsesMapTest, Isolation) {
   const KURL kUrl1("https://example.com/module?1.js");
   const KURL kUrl2("https://example.com/module?2.js");
-  url_test_helpers::RegisterMockedErrorURLLoad(kUrl1);
+  url_test_helpers::RegisterMockedErrorURLLoad(
+      kUrl1, platform_->GetURLLoaderMockFactory());
   url_test_helpers::RegisterMockedURLLoad(
-      kUrl2, test::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl2, test::CoreTestDataPath("module.js"), "text/javascript",
+      platform_->GetURLLoaderMockFactory());
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call for |kUrl1| initiates a fetch request.
@@ -230,9 +239,11 @@ TEST_F(WorkletModuleResponsesMapTest, Dispose) {
   const KURL kUrl1("https://example.com/module?1.js");
   const KURL kUrl2("https://example.com/module?2.js");
   url_test_helpers::RegisterMockedURLLoad(
-      kUrl1, test::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl1, test::CoreTestDataPath("module.js"), "text/javascript",
+      platform_->GetURLLoaderMockFactory());
   url_test_helpers::RegisterMockedURLLoad(
-      kUrl2, test::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl2, test::CoreTestDataPath("module.js"), "text/javascript",
+      platform_->GetURLLoaderMockFactory());
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call for |kUrl1| creates a placeholder entry and asks the

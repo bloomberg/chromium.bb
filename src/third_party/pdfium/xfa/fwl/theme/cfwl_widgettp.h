@@ -8,21 +8,21 @@
 #define XFA_FWL_THEME_CFWL_WIDGETTP_H_
 
 #include <memory>
-#include <vector>
 
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
+#include "core/fxge/dib/fx_dib.h"
+#include "v8/include/cppgc/garbage-collected.h"
 #include "xfa/fwl/theme/cfwl_utils.h"
-#include "xfa/fxgraphics/cxfa_graphics.h"
 
 class CFDE_TextOut;
-class CFGAS_FontMgr;
 class CFGAS_GEFont;
+class CFGAS_GEGraphics;
 class CFWL_ThemeBackground;
 class CFWL_ThemeText;
 
-class CFWL_WidgetTP {
+class CFWL_WidgetTP : public cppgc::GarbageCollected<CFWL_WidgetTP> {
  public:
   virtual ~CFWL_WidgetTP();
 
@@ -30,6 +30,9 @@ class CFWL_WidgetTP {
   virtual void DrawText(const CFWL_ThemeText& pParams);
 
   const RetainPtr<CFGAS_GEFont>& GetFont() const;
+
+  // Non-virtual, nothing to trace in subclasses at present.
+  void Trace(cppgc::Visitor* visitor) const;
 
  protected:
   struct CColorData {
@@ -44,74 +47,37 @@ class CFWL_WidgetTP {
   void InitializeArrowColorData();
   void EnsureTTOInitialized();
 
-  void DrawBorder(CXFA_Graphics* pGraphics,
+  void DrawBorder(CFGAS_GEGraphics* pGraphics,
                   const CFX_RectF& rect,
                   const CFX_Matrix& matrix);
-  void FillBackground(CXFA_Graphics* pGraphics,
+  void FillBackground(CFGAS_GEGraphics* pGraphics,
                       const CFX_RectF& rect,
                       const CFX_Matrix& matrix);
-  void FillSolidRect(CXFA_Graphics* pGraphics,
+  void FillSolidRect(CFGAS_GEGraphics* pGraphics,
                      FX_ARGB fillColor,
                      const CFX_RectF& rect,
                      const CFX_Matrix& matrix);
-  void DrawFocus(CXFA_Graphics* pGraphics,
+  void DrawFocus(CFGAS_GEGraphics* pGraphics,
                  const CFX_RectF& rect,
                  const CFX_Matrix& matrix);
-  void DrawArrow(CXFA_Graphics* pGraphics,
+  void DrawArrow(CFGAS_GEGraphics* pGraphics,
                  const CFX_RectF& rect,
                  FWLTHEME_DIRECTION eDict,
                  FX_ARGB argSign,
                  const CFX_Matrix& matrix);
-  void DrawBtn(CXFA_Graphics* pGraphics,
+  void DrawBtn(CFGAS_GEGraphics* pGraphics,
                const CFX_RectF& rect,
                FWLTHEME_STATE eState,
                const CFX_Matrix& matrix);
-  void DrawArrowBtn(CXFA_Graphics* pGraphics,
+  void DrawArrowBtn(CFGAS_GEGraphics* pGraphics,
                     const CFX_RectF& rect,
                     FWLTHEME_DIRECTION eDict,
                     FWLTHEME_STATE eState,
                     const CFX_Matrix& matrix);
 
   std::unique_ptr<CFDE_TextOut> m_pTextOut;
-  RetainPtr<CFGAS_GEFont> m_pFDEFont;
+  RetainPtr<CFGAS_GEFont> m_pFGASFont;
   std::unique_ptr<CColorData> m_pColorData;
-};
-
-class CFWL_FontData final {
- public:
-  CFWL_FontData();
-  ~CFWL_FontData();
-
-  bool Equal(WideStringView wsFontFamily,
-             uint32_t dwFontStyles,
-             uint16_t wCodePage);
-  bool LoadFont(WideStringView wsFontFamily,
-                uint32_t dwFontStyles,
-                uint16_t wCodePage);
-  RetainPtr<CFGAS_GEFont> GetFont() const;
-
- protected:
-  WideString m_wsFamily;
-  uint32_t m_dwStyles;
-  uint32_t m_dwCodePage;
-  std::unique_ptr<CFGAS_FontMgr> m_pFontMgr;
-  RetainPtr<CFGAS_GEFont> m_pFont;
-};
-
-class CFWL_FontManager final {
- public:
-  static CFWL_FontManager* GetInstance();
-  static void DestroyInstance();
-
-  RetainPtr<CFGAS_GEFont> FindFont(WideStringView wsFontFamily,
-                                   uint32_t dwFontStyles,
-                                   uint16_t dwCodePage);
-
- private:
-  CFWL_FontManager();
-  ~CFWL_FontManager();
-
-  std::vector<std::unique_ptr<CFWL_FontData>> m_FontsArray;
 };
 
 #endif  // XFA_FWL_THEME_CFWL_WIDGETTP_H_

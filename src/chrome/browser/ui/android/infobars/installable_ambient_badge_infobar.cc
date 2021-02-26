@@ -7,13 +7,17 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "chrome/android/chrome_jni_headers/InstallableAmbientBadgeInfoBar_jni.h"
+#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 InstallableAmbientBadgeInfoBar::InstallableAmbientBadgeInfoBar(
     std::unique_ptr<InstallableAmbientBadgeInfoBarDelegate> delegate)
-    : InfoBarAndroid(std::move(delegate)) {}
+    : infobars::InfoBarAndroid(
+          std::move(delegate),
+          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 
 InstallableAmbientBadgeInfoBar::~InstallableAmbientBadgeInfoBar() {}
 
@@ -39,7 +43,7 @@ InstallableAmbientBadgeInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   DCHECK(!delegate->GetPrimaryIcon().drawsNothing());
   base::android::ScopedJavaLocalRef<jobject> java_bitmap =
-      gfx::ConvertToJavaBitmap(&delegate->GetPrimaryIcon());
+      gfx::ConvertToJavaBitmap(delegate->GetPrimaryIcon());
 
   jboolean java_is_primary_icon_maskable = delegate->GetIsPrimaryIconMaskable();
 

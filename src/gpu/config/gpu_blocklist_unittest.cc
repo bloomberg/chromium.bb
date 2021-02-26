@@ -20,7 +20,7 @@ class GpuBlocklistTest : public testing::Test {
 
   void RunFeatureTest(GpuFeatureType feature_type) {
     const int kFeatureListForEntry1[1] = {feature_type};
-    const uint32_t kDeviceIDsForEntry1[1] = {0x0640};
+    const GpuControlList::Device kDevicesForEntry1[1] = {{0x0640, 0x0}};
     const GpuControlList::Entry kTestEntries[1] = {{
         1,                      // id
         "Test entry",           // description
@@ -38,8 +38,8 @@ class GpuBlocklistTest : public testing::Test {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                             // os_version
             0x10de,                                // vendor_id
-            1,                                     // DeviceIDs size
-            kDeviceIDsForEntry1,                   // DeviceIDs
+            1,                                     // Devices size
+            kDevicesForEntry1,                     // Devices
             GpuControlList::kMultiGpuCategoryAny,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,    // multi_gpu_style
             nullptr,                               // driver info
@@ -56,9 +56,9 @@ class GpuBlocklistTest : public testing::Test {
         nullptr,  // exceptions
     }};
     GpuControlListData data(1, kTestEntries);
-    std::unique_ptr<GpuBlocklist> blacklist = GpuBlocklist::Create(data);
+    std::unique_ptr<GpuBlocklist> blocklist = GpuBlocklist::Create(data);
     std::set<int> type =
-        blacklist->MakeDecision(GpuBlocklist::kOsMacosx, "10.12.3", gpu_info());
+        blocklist->MakeDecision(GpuBlocklist::kOsMacosx, "10.12.3", gpu_info());
     EXPECT_EQ(1u, type.size());
     EXPECT_EQ(1u, type.count(feature_type));
   }
@@ -86,13 +86,6 @@ GPU_BLOCKLIST_FEATURE_TEST(Accelerated2DCanvas,
                            GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)
 
 GPU_BLOCKLIST_FEATURE_TEST(AcceleratedWebGL, GPU_FEATURE_TYPE_ACCELERATED_WEBGL)
-
-GPU_BLOCKLIST_FEATURE_TEST(Flash3D, GPU_FEATURE_TYPE_FLASH3D)
-
-GPU_BLOCKLIST_FEATURE_TEST(FlashStage3D, GPU_FEATURE_TYPE_FLASH_STAGE3D)
-
-GPU_BLOCKLIST_FEATURE_TEST(FlashStage3DBaseline,
-                           GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE)
 
 GPU_BLOCKLIST_FEATURE_TEST(AcceleratedVideoDecode,
                            GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE)

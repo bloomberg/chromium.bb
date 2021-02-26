@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -39,9 +40,9 @@
 #include "util/net/url.h"
 #include "util/stdlib/map_insert.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "handler/mac/file_limit_annotation.h"
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 namespace crashpad {
 
@@ -135,9 +136,9 @@ void CrashReportUploadThread::ProcessPendingReports() {
 
 void CrashReportUploadThread::ProcessPendingReport(
     const CrashReportDatabase::Report& report) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   RecordFileLimitAnnotation();
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
   Settings* const settings = database_->GetSettings();
 

@@ -5,19 +5,9 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 
 namespace web_app {
-
-std::string ProviderTypeParamToString(
-    const ::testing::TestParamInfo<ProviderType>& provider_type) {
-  switch (provider_type.param) {
-    case ProviderType::kBookmarkApps:
-      return "BookmarkApps";
-    case ProviderType::kWebApps:
-      return "WebApps";
-  }
-}
 
 void TestAcceptDialogCallback(
     content::WebContents* initiator_web_contents,

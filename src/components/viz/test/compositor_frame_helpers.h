@@ -5,14 +5,16 @@
 #ifndef COMPONENTS_VIZ_TEST_COMPOSITOR_FRAME_HELPERS_H_
 #define COMPONENTS_VIZ_TEST_COMPOSITOR_FRAME_HELPERS_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/optional.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/frame_deadline.h"
-#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/service/display/aggregated_frame.h"
 #include "ui/latency/latency_info.h"
 
 namespace viz {
@@ -35,10 +37,11 @@ class CompositorFrameBuilder {
   CompositorFrameBuilder& AddRenderPass(const gfx::Rect& output_rect,
                                         const gfx::Rect& damage_rect);
   CompositorFrameBuilder& AddRenderPass(
-      std::unique_ptr<RenderPass> render_pass);
+      std::unique_ptr<CompositorRenderPass> render_pass);
   // Sets list of render passes. The list of render passes must be empty when
   // this is called.
-  CompositorFrameBuilder& SetRenderPassList(RenderPassList render_pass_list);
+  CompositorFrameBuilder& SetRenderPassList(
+      CompositorRenderPassList render_pass_list);
 
   CompositorFrameBuilder& AddTransferableResource(
       TransferableResource resource);
@@ -64,7 +67,7 @@ class CompositorFrameBuilder {
   CompositorFrame MakeInitCompositorFrame() const;
 
   base::Optional<CompositorFrame> frame_;
-  uint64_t next_render_pass_id_ = 1;
+  CompositorRenderPassId::Generator render_pass_id_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameBuilder);
 };
@@ -72,6 +75,9 @@ class CompositorFrameBuilder {
 // Creates a CompositorFrame that has a render pass with 20x20 output_rect and
 // empty damage_rect. This CompositorFrame is valid and can be sent over IPC.
 CompositorFrame MakeDefaultCompositorFrame();
+
+// Makes an aggregated frame out of the default compositor frame.
+AggregatedFrame MakeDefaultAggregatedFrame(size_t num_render_passes = 1);
 
 // Creates a CompositorFrame that will be valid once its render_pass_list is
 // initialized.

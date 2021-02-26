@@ -33,6 +33,24 @@
 
 typedef BrowserWithTestWindowTest BrowserCommandControllerTest;
 
+class GuestBrowserCommandControllerTest
+    : public BrowserWithTestWindowTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  GuestBrowserCommandControllerTest() : is_ephemeral_(GetParam()) {
+    // Change the value if Ephemeral is not supported.
+    is_ephemeral_ &=
+        TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+            scoped_feature_list_, is_ephemeral_);
+  }
+
+  bool is_ephemeral() const { return is_ephemeral_; }
+
+ private:
+  bool is_ephemeral_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKey) {
 #if defined(OS_CHROMEOS)
   // F1-3 keys are reserved Chrome accelerators on Chrome OS.
@@ -119,7 +137,7 @@ TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKeyIsApp) {
       /*trusted_source=*/true, browser()->window()->GetBounds(), profile(),
       /*user_gesture=*/true);
   params.window = browser()->window();
-  set_browser(new Browser(params));
+  set_browser(Browser::Create(params));
 
   ASSERT_TRUE(browser()->is_type_app());
 
@@ -157,7 +175,7 @@ TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKeyIsApp) {
 #endif  // USE_AURA
 }
 
-TEST_F(BrowserCommandControllerTest, IncognitoCommands) {
+TEST_P(GuestBrowserCommandControllerTest, IncognitoCommands) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
@@ -193,7 +211,7 @@ TEST_F(BrowserCommandControllerTest, AppFullScreen) {
       /*trusted_source=*/true, browser()->window()->GetBounds(), profile(),
       /*user_gesture=*/true);
   params.window = browser()->window();
-  set_browser(new Browser(params));
+  set_browser(Browser::Create(params));
   ASSERT_TRUE(browser()->is_type_app());
   browser()->command_controller()->FullscreenStateChanged();
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
@@ -239,7 +257,7 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysEnabledInIncognitoMode) {
   Browser::CreateParams profile_params(original_profile->GetPrimaryOTRProfile(),
                                        true);
   std::unique_ptr<Browser> otr_browser(
-      CreateBrowserWithTestWindowForParams(&profile_params));
+      CreateBrowserWithTestWindowForParams(profile_params));
 
   chrome::BrowserCommandController command_controller(otr_browser.get());
   const CommandUpdater* command_updater = &command_controller;
@@ -300,10 +318,14 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
 
 // Test that uses FullscreenTestBrowserWindow for its window.
 class BrowserCommandControllerFullscreenTest
-    : public BrowserWithTestWindowTest {
+    : public BrowserWithTestWindowTest,
+      public testing::WithParamInterface<bool> {
  public:
-  BrowserCommandControllerFullscreenTest() {}
-  ~BrowserCommandControllerFullscreenTest() override {}
+  BrowserCommandControllerFullscreenTest() {
+    TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+        scoped_feature_list_, GetParam());
+  }
+  ~BrowserCommandControllerFullscreenTest() override = default;
 
   Browser* GetBrowser() { return BrowserWithTestWindowTest::browser(); }
 
@@ -313,6 +335,7 @@ class BrowserCommandControllerFullscreenTest
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(BrowserCommandControllerFullscreenTest);
 };
 
@@ -324,7 +347,7 @@ content::WebContents* FullscreenTestBrowserWindow::GetActiveWebContents() {
   return test_browser_->GetBrowser()->tab_strip_model()->GetActiveWebContents();
 }
 
-TEST_F(BrowserCommandControllerFullscreenTest,
+TEST_P(BrowserCommandControllerFullscreenTest,
        UpdateCommandsForFullscreenMode) {
   struct {
     int command_id;
@@ -409,7 +432,7 @@ TEST_F(BrowserCommandControllerFullscreenTest,
               commands[i].reserved_in_fullscreen);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // When the toolbar is showing, commands should be reserved as if the content
   // were in a tab; IDC_FULLSCREEN should also be reserved.
   static_cast<FullscreenTestBrowserWindow*>(window())->set_toolbar_showing(
@@ -453,10 +476,14 @@ TEST_F(BrowserCommandControllerFullscreenTest,
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
 }
 
+INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
+                         BrowserCommandControllerFullscreenTest,
+                         /*is_ephemeral=*/testing::Bool());
+
 // Ensure that the logic for enabling IDC_OPTIONS is consistent, regardless of
 // the order of entering fullscreen and forced incognito modes. See
 // http://crbug.com/694331.
-TEST_F(BrowserCommandControllerTest, OptionsConsistency) {
+TEST_P(GuestBrowserCommandControllerTest, OptionsConsistency) {
   TestingProfile* profile = browser()->profile()->AsTestingProfile();
   // Setup guest session.
   profile->SetGuestSession(true);
@@ -489,7 +516,7 @@ TEST_F(BrowserCommandControllerTest, IncognitoModeOnSigninAllowedPrefChange) {
   // Create a new browser based on the off the record profile.
   Browser::CreateParams profile_params(profile1->GetPrimaryOTRProfile(), true);
   std::unique_ptr<Browser> browser2(
-      CreateBrowserWithTestWindowForParams(&profile_params));
+      CreateBrowserWithTestWindowForParams(profile_params));
 
   chrome::BrowserCommandController command_controller(browser2.get());
   const CommandUpdater* command_updater = &command_controller;
@@ -509,3 +536,7 @@ TEST_F(BrowserCommandControllerTest, OnSigninAllowedPrefChange) {
   profile()->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SIGNIN));
 }
+
+INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
+                         GuestBrowserCommandControllerTest,
+                         /*is_ephemeral=*/testing::Bool());

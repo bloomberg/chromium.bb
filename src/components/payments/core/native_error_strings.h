@@ -103,13 +103,6 @@ extern const char kInvalidSslCertificate[];
 // work.
 extern const char kInvalidWebAppIcon[];
 
-// Used when the {"supportedMethods": "", data: {}} is required, but not
-// provided.
-extern const char kMethodDataRequired[];
-
-// Used when non-empty "supportedMethods": "" is required, but not provided.
-extern const char kMethodNameRequired[];
-
 // The format for the message about multiple payment methods that are not
 // supported. This format should be used with base::ReplaceChars() function,
 // where "$" is the character to replace.
@@ -155,6 +148,12 @@ extern const char kPaymentEventTimeout[];
 // malicious content.
 extern const char kPaymentHandlerInsecureNavigation[];
 
+// The payment handler is closed because the Android activity is destroyed.
+extern const char kPaymentHandlerActivityDied[];
+
+// The payment handler fails to load the page.
+extern const char kPaymentHandlerFailToLoadMainFrame[];
+
 // Payment handler encountered an internal error when handling the
 // "paymentrequest" event.
 extern const char kPaymentEventInternalError[];
@@ -170,9 +169,6 @@ extern const char kReachedMaximumNumberOfRedirects[];
 // supported. This format should be used with base::ReplaceChars() function,
 // where "$" is the character to replace.
 extern const char kSinglePaymentMethodNotSupportedFormat[];
-
-// Used when non-empty "shippingOptionId": "" is required, but not provided.
-extern const char kShippingOptionIdRequired[];
 
 // The payment handler rejected the promise passed into
 // CanMakePaymentEvent.respondWith().
@@ -232,9 +228,28 @@ extern const char kGenericPaymentMethodNotSupportedMessage[];
 // be used with base::ReplaceStringPlaceholders(fmt, {A}, nullptr).
 extern const char kNoContentAndNoLinkHeader[];
 
-// User when the downloaded payment manifest A is empty. This format should be
+// Used when the downloaded payment manifest A is empty. This format should be
 // used with base::ReplaceStringPlaceholders(fmt, {A}, nullptr).
 extern const char kNoContentInPaymentManifest[];
+
+// Used when it's impossible to invoke Android payment apps, e.g., when ARC is
+// disabled on Chrome OS.
+extern const char kUnableToInvokeAndroidPaymentApps[];
+
+// Used when the user has closed the payment app. For example, An Android app
+// indicates this by returning Activity.RESULT_CANCELED.
+extern const char kUserClosedPaymentApp[];
+
+// Used when an Android app declares more than one IS_READY_TO_PAY service.
+extern const char kMoreThanOneService[];
+
+// Used when no credential IDs are specified for the
+// "secure-payment-confirmation" method.
+extern const char kCredentialIdsRequired[];
+
+// Used when the timeout specified for the "secure-payment-confirmation" method
+// is too long.
+extern const char kTimeoutTooLong[];
 
 }  // namespace errors
 }  // namespace payments

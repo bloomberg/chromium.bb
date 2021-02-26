@@ -31,7 +31,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProviderForFrame final
   // the loading context, e.g. a frame, provides it.
   static std::unique_ptr<ServiceWorkerNetworkProviderForFrame> Create(
       RenderFrameImpl* frame,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
+      blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
@@ -47,13 +47,16 @@ class CONTENT_EXPORT ServiceWorkerNetworkProviderForFrame final
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          task_runner_handle) override;
+          freezable_task_runner_handle,
+      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
+          unfreezable_task_runner_handle) override;
   blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
       override;
   int64_t ControllerServiceWorkerID() override;
   void DispatchNetworkQuiet() override;
-  mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
-      int request_id) override;
+  blink::CrossVariantMojoReceiver<
+      blink::mojom::WorkerTimingContainerInterfaceBase>
+  TakePendingWorkerTimingReceiver(int request_id) override;
 
   ServiceWorkerProviderContext* context() { return context_.get(); }
 

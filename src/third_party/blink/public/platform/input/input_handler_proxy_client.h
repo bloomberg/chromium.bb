@@ -5,41 +5,45 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_INPUT_INPUT_HANDLER_PROXY_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_INPUT_INPUT_HANDLER_PROXY_CLIENT_H_
 
-namespace ui {
-class LatencyInfo;
+#include <memory>
+
+namespace cc {
+class EventMetrics;
 }
 
 namespace blink {
-class WebInputEvent;
+class WebCoalescedInputEvent;
 class WebGestureEvent;
 
 // All callbacks invoked from the compositor thread.
 class InputHandlerProxyClient {
  public:
-  using WebScopedInputEvent = std::unique_ptr<blink::WebInputEvent>;
-
   // Called just before the InputHandlerProxy shuts down.
   virtual void WillShutdown() = 0;
 
   // Dispatch a non blocking event to the main thread. This is used when a
   // gesture fling from a touchpad is processed and the target only has
-  // passive event listeners.
+  // passive event listeners. `metrics` contains information about the event
+  // which can be used in reporting latency metrics.
   virtual void DispatchNonBlockingEventToMainThread(
-      WebScopedInputEvent event,
-      const ui::LatencyInfo& latency_info,
-      const blink::WebInputEventAttribution& attribution) = 0;
+      std::unique_ptr<WebCoalescedInputEvent> event,
+      const blink::WebInputEventAttribution& attribution,
+      std::unique_ptr<cc::EventMetrics> metrics) = 0;
 
   virtual void DidAnimateForInput() = 0;
 
   virtual void DidStartScrollingViewport() = 0;
 
   // Used to send a GSB to the main thread when the scrolling should switch to
-  // the main thread.
+  // the main thread. `update_metrics` contains information about the original
+  // `update_event` which can be used to create metrics information for the
+  // generated GSB event.
   virtual void GenerateScrollBeginAndSendToMainThread(
       const blink::WebGestureEvent& update_event,
-      const blink::WebInputEventAttribution& attribution) = 0;
+      const blink::WebInputEventAttribution& attribution,
+      const cc::EventMetrics* update_metrics) = 0;
 
-  virtual void SetWhiteListedTouchAction(
+  virtual void SetAllowedTouchAction(
       cc::TouchAction touch_action,
       uint32_t unique_touch_event_id,
       InputHandlerProxy::EventDisposition event_disposition) = 0;

@@ -168,7 +168,7 @@ defines a `BindNewPipeAndPassReceiver` method:
 
 ``` cpp
 mojo::Remote<sample::mojom::Logger> logger;
-auto receiver = logger.BindNewPipeAndPassReceiver());
+auto receiver = logger.BindNewPipeAndPassReceiver();
 ```
 
 This second snippet is equivalent to the first one.
@@ -237,6 +237,8 @@ class LoggerImpl : public sample::mojom::Logger {
   explicit LoggerImpl(mojo::PendingReceiver<sample::mojom::Logger> receiver)
       : receiver_(this, std::move(receiver)) {}
   ~Logger() override {}
+  Logger(const Logger&) = delete;
+  Logger& operator=(const Logger&) = delete;
 
   // sample::mojom::Logger:
   void Log(const std::string& message) override {
@@ -245,8 +247,6 @@ class LoggerImpl : public sample::mojom::Logger {
 
  private:
   mojo::Receiver<sample::mojom::Logger> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoggerImpl);
 };
 ```
 
@@ -318,9 +318,11 @@ class Logger {
 As before, both clients and implementations of this interface use the same
 signature for the `GetTail` method: implementations use the `callback` argument
 to *respond* to the request, while clients pass a `callback` argument to
-asynchronously `receive` the response. A client's `callback` runs on the same
-sequence on which they invoked `GetTail` (the sequence to which their `logger`
-is bound). Here's an updated implementation:
+asynchronously `receive` the response. The parameter `GetTailCallback` passed to
+the implementation of `GetTail` is sequence-affine. It must be invoked on the
+same sequence that `GetTail` is called on. A client's `callback` runs on the
+same sequence on which they invoked `GetTail` (the sequence to which their
+`logger` is bound). Here's an updated implementation:
 
 ```cpp
 class LoggerImpl : public sample::mojom::Logger {
@@ -331,6 +333,8 @@ class LoggerImpl : public sample::mojom::Logger {
   explicit LoggerImpl(mojo::PendingReceiver<sample::mojom::Logger> receiver)
       : receiver_(this, std::move(receiver)) {}
   ~Logger() override {}
+  Logger(const Logger&) = delete;
+  Logger& operator=(const Logger&) = delete;
 
   // sample::mojom::Logger:
   void Log(const std::string& message) override {
@@ -345,8 +349,6 @@ class LoggerImpl : public sample::mojom::Logger {
  private:
   mojo::Receiver<sample::mojom::Logger> receiver_;
   std::vector<std::string> lines_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoggerImpl);
 };
 ```
 
@@ -738,7 +740,7 @@ interface Database {
 ```
 
 As noted in the
-[Mojom IDL documentation](/mojo/public/tools/bindings/README.md#Primitive-Types), // need to update this page too!
+[Mojom IDL documentation](/mojo/public/tools/bindings/README.md#Primitive-Types),
 the `pending_receiver<Table>` syntax corresponds
 precisely to the `PendingReceiver<T>` type discussed in the sections above, and
 in fact the generated code for these interfaces is approximately:
@@ -1002,31 +1004,30 @@ Associated interfaces are interfaces which:
 
 ### Mojom
 
-A new keyword `associated` is introduced for remote/receiver
-fields. For example:
+New types `pending_associated_remote` and `pending_associated_receiver` are
+introduced for remote/receiver fields. For example:
 
 ``` cpp
 interface Bar {};
 
 struct Qux {
-  pending_associated_remote<Bar> bar3;
+  pending_associated_remote<Bar> bar;
 };
 
 interface Foo {
   // Uses associated remote.
-  SetBar(pending_associated_remote<Bar> bar1);
+  PassBarRemote(pending_associated_remote<Bar> bar);
   // Uses associated receiver.
-  GetBar(pending_associated_receiver<Bar> bar2);
+  PassBarReceiver(pending_associated_receiver<Bar> bar);
   // Passes a struct with associated interface pointer.
   PassQux(Qux qux);
   // Uses associated interface pointer in callback.
-  AsyncGetBar() => (pending_associated_remote<Bar> bar4);
+  AsyncGetBar() => (pending_associated_remote<Bar> bar);
 };
 ```
 
-It means the interface impl/client will communicate using the same
-message pipe over which the associated remote/receiver is
-passed.
+In each case the interface impl/client will communicate using the same message
+pipe over which the associated remote/receiver is passed.
 
 ### Using associated interfaces in C++
 
@@ -1038,29 +1039,29 @@ mapped to `mojo::PendingAssociatedRemote<Bar>`; pending_associated_receiver to
 // In mojom:
 interface Foo {
   ...
-  SetBar(pending_associated_remote<Bar> bar1);
-  GetBar(pending_associated_receiver<Bar> bar2);
+  PassBarRemote(pending_associated_remote<Bar> bar);
+  PassBarReceiver(pending_associated_receiver<Bar> bar);
   ...
 };
 
 // In C++:
 class Foo {
   ...
-  virtual void SetBar(mojo::PendingAssociatedRemote<Bar> bar1) = 0;
-  virtual void GetBar(mojo::PendingAssociatedReceiver<Bar> bar2) = 0;
+  virtual void PassBarRemote(mojo::PendingAssociatedRemote<Bar> bar) = 0;
+  virtual void PassBarReceiver(mojo::PendingAssociatedReceiver<Bar> bar) = 0;
   ...
 };
 ```
 
 #### Passing pending associated receivers
 
-Assume you have already got an `Remote<Foo> foo`, and you would like
-to call `GetBar()` on it. You can do:
+Assume you already have a `Remote<Foo> foo`, and you would like to call
+`PassBarReceiver()` on it. You can do:
 
 ``` cpp
 mojo::PendingAssociatedRemote<Bar> pending_bar;
 mojo::PendingAssociatedReceiver<Bar> bar_receiver = pending_bar.InitWithNewEndpointAndPassReceiver();
-foo->GetBar(std::move(bar_receiver));
+foo->PassBarReceiver(std::move(bar_receiver));
 
 mojo::AssociatedRemote<Bar> bar;
 bar.Bind(std::move(pending_bar));
@@ -1087,7 +1088,7 @@ to make the code a little shorter. The following code achieves the same purpose:
 
 ``` cpp
 mojo::AssociatedRemote<Bar> bar;
-foo->GetBar(bar.BindNewEndpointAndPassReceiver());
+foo->PassBarReceiver(bar.BindNewEndpointAndPassReceiver());
 bar->DoSomething();
 ```
 
@@ -1096,8 +1097,8 @@ The implementation of `Foo` looks like this:
 ``` cpp
 class FooImpl : public Foo {
   ...
-  void GetBar(mojo::AssociatedReceiver<Bar> bar2) override {
-    bar_receiver_.Bind(std::move(bar2));
+  void PassBarReceiver(mojo::AssociatedReceiver<Bar> bar) override {
+    bar_receiver_.Bind(std::move(bar));
     ...
   }
   ...
@@ -1118,13 +1119,13 @@ When the underlying message pipe is disconnected (e.g., `foo` or
 #### Passing associated remotes
 
 Similarly, assume you have already got an `Remote<Foo> foo`, and you
-would like to call `SetBar()` on it. You can do:
+would like to call `PassBarRemote()` on it. You can do:
 
 ``` cpp
 mojo::AssociatedReceiver<Bar> bar_receiver(some_bar_impl);
 mojo::PendingAssociatedRemote<Bar> bar;
 mojo::PendingAssociatedReceiver<Bar> bar_pending_receiver = bar.InitWithNewEndpointAndPassReceiver();
-foo->SetBar(std::move(bar));
+foo->PassBarRemote(std::move(bar));
 bar_receiver.Bind(std::move(bar_pending_receiver));
 ```
 
@@ -1134,31 +1135,31 @@ The following code achieves the same purpose:
 mojo::AssociatedReceiver<Bar> bar_receiver(some_bar_impl);
 mojo::PendingAssociatedRemote<Bar> bar;
 bar_receiver.Bind(bar.InitWithNewPipeAndPassReceiver());
-foo->SetBar(std::move(bar));
+foo->PassBarRemote(std::move(bar));
 ```
 
 ### Performance considerations
 
-When using associated interfaces on different sequences than the master sequence
-(where the master interface lives):
+When using associated interfaces on different sequences than the primary
+sequence (where the primary interface lives):
 
 * Sending messages: send happens directly on the calling sequence. So there
   isn't sequence hopping.
 * Receiving messages: associated interfaces bound on a different sequence from
-  the master interface incur an extra sequence hop during dispatch.
+  the primary interface incur an extra sequence hop during dispatch.
 
 Therefore, performance-wise associated interfaces are better suited for
-scenarios where message receiving happens on the master sequence.
+scenarios where message receiving happens on the primary sequence.
 
 ### Testing
 
-Associated interfaces need to be associated with a master interface before
+Associated interfaces need to be associated with a primary interface before
 they can be used. This means one end of the associated interface must be sent
-over one end of the master interface, or over one end of another associated
-interface which itself already has a master interface.
+over one end of the primary interface, or over one end of another associated
+interface which itself already has a primary interface.
 
 If you want to test an associated interface endpoint without first
-associating it, you can use `AssociatedRemote::BindNewEndpointAndPassDedicatedReceiverForTesting`.
+associating it, you can use `AssociatedRemote::BindNewEndpointAndPassDedicatedReceiver`.
 This will create working associated interface endpoints which are not actually
 associated with anything else.
 

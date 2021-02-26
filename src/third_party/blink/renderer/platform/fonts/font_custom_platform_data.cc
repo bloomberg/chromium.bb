@@ -37,10 +37,10 @@
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/opentype/font_format_check.h"
 #include "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/variable_axes_names.h"
 #include "third_party/blink/renderer/platform/fonts/web_font_decoder.h"
 #include "third_party/blink/renderer/platform/fonts/web_font_typeface_factory.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
-#include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
 namespace blink {
@@ -77,13 +77,13 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
   if (font_sub_type ==
           FontFormatCheck::VariableFontSubType::kVariableTrueType ||
       font_sub_type == FontFormatCheck::VariableFontSubType::kVariableCFF2) {
-    Vector<SkFontArguments::Axis, 0> axes;
+    Vector<SkFontArguments::VariationPosition::Coordinate, 0> variation;
 
-    SkFontArguments::Axis weight_axis = {
+    SkFontArguments::VariationPosition::Coordinate weight_coordinate = {
         SkSetFourByteTag('w', 'g', 'h', 't'),
         SkFloatToScalar(selection_capabilities.weight.clampToRange(
             selection_request.weight))};
-    SkFontArguments::Axis width_axis = {
+    SkFontArguments::VariationPosition::Coordinate width_coordinate = {
         SkSetFourByteTag('w', 'd', 't', 'h'),
         SkFloatToScalar(selection_capabilities.width.clampToRange(
             selection_request.width))};
@@ -92,35 +92,36 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     // values clockwise - in CSS positive values are clockwise rotations /
     // skew. See note in https://drafts.csswg.org/css-fonts/#font-style-prop -
     // map value from CSS to OpenType here.
-    SkFontArguments::Axis slant_axis = {
+    SkFontArguments::VariationPosition::Coordinate slant_coordinate = {
         SkSetFourByteTag('s', 'l', 'n', 't'),
         SkFloatToScalar(-selection_capabilities.slope.clampToRange(
             selection_request.slope))};
 
-    axes.push_back(weight_axis);
-    axes.push_back(width_axis);
-    axes.push_back(slant_axis);
+    variation.push_back(weight_coordinate);
+    variation.push_back(width_coordinate);
+    variation.push_back(slant_coordinate);
 
     bool explicit_opsz_configured = false;
     if (variation_settings && variation_settings->size() < UINT16_MAX) {
-      axes.ReserveCapacity(variation_settings->size() + axes.size());
+      variation.ReserveCapacity(variation_settings->size() + variation.size());
       for (const auto& setting : *variation_settings) {
-        if (setting.Tag() == AtomicString("opsz"))
+        if (setting.Tag() == SkSetFourByteTag('o', 'p', 's', 'z'))
           explicit_opsz_configured = true;
-        SkFontArguments::Axis axis = {AtomicStringToFourByteTag(setting.Tag()),
-                                      SkFloatToScalar(setting.Value())};
-        axes.push_back(axis);
+        SkFontArguments::VariationPosition::Coordinate setting_coordinate =
+            {setting.Tag(), SkFloatToScalar(setting.Value())};
+        variation.push_back(setting_coordinate);
       }
     }
 
     if (optical_sizing == kAutoOpticalSizing && !explicit_opsz_configured) {
-      SkFontArguments::Axis opsz_axis = {SkSetFourByteTag('o', 'p', 's', 'z'),
-                                         SkFloatToScalar(size)};
-      axes.push_back(opsz_axis);
+      SkFontArguments::VariationPosition::Coordinate opsz_coordinate =
+          {SkSetFourByteTag('o', 'p', 's', 'z'), SkFloatToScalar(size)};
+      variation.push_back(opsz_coordinate);
     }
 
-    sk_sp<SkTypeface> sk_variation_font(base_typeface_->makeClone(
-        SkFontArguments().setAxes(axes.data(), axes.size())));
+    SkFontArguments font_args;
+    font_args.setVariationDesignPosition({variation.data(), variation.size()});
+    sk_sp<SkTypeface> sk_variation_font(base_typeface_->makeClone(font_args));
 
     if (sk_variation_font) {
       return_typeface = sk_variation_font;
@@ -136,6 +137,10 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
   return FontPlatformData(std::move(return_typeface), std::string(), size,
                           bold && !base_typeface_->isBold(),
                           italic && !base_typeface_->isItalic(), orientation);
+}
+
+Vector<VariationAxis> FontCustomPlatformData::GetVariationAxes() const {
+  return VariableAxesNames::GetVariationAxes(base_typeface_);
 }
 
 String FontCustomPlatformData::FamilyNameForInspector() const {
@@ -180,6 +185,41 @@ bool FontCustomPlatformData::SupportsFormat(const String& format) {
          EqualIgnoringASCIICase(format, "truetype-variations") ||
          EqualIgnoringASCIICase(format, "opentype-variations") ||
          EqualIgnoringASCIICase(format, "woff2-variations");
+}
+
+bool FontCustomPlatformData::MayBeIconFont() const {
+  if (!may_be_icon_font_computed_) {
+    // We observed that many icon fonts define almost all of their glyphs in the
+    // Unicode Private Use Area, while non-icon fonts rarely use PUA. We use
+    // this as a heuristic to determine if a font is an icon font.
+
+    // We first obtain the list of glyphs mapped from PUA codepoint range:
+    // https://unicode.org/charts/PDF/UE000.pdf
+    // Note: The two supplementary PUA here are too long but not used much by
+    // icon fonts, so we don't include them in this heuristic.
+    wtf_size_t pua_length =
+        kPrivateUseLastCharacter - kPrivateUseFirstCharacter + 1;
+    Vector<SkUnichar> pua_codepoints(pua_length);
+    for (wtf_size_t i = 0; i < pua_length; ++i)
+      pua_codepoints[i] = kPrivateUseFirstCharacter + i;
+
+    Vector<SkGlyphID> glyphs(pua_codepoints.size());
+    base_typeface_->unicharsToGlyphs(pua_codepoints.data(),
+                                     pua_codepoints.size(), glyphs.data());
+
+    // Deduplicate and exclude glyph ID 0 (which means undefined glyph)
+    std::sort(glyphs.begin(), glyphs.end());
+    glyphs.erase(std::unique(glyphs.begin(), glyphs.end()), glyphs.end());
+    if (!glyphs[0])
+      glyphs.EraseAt(0);
+
+    // We use the heuristic that if more than half of the define glyphs are in
+    // PUA, then the font may be an icon font.
+    wtf_size_t pua_glyph_count = glyphs.size();
+    wtf_size_t total_glyphs = base_typeface_->countGlyphs();
+    may_be_icon_font_ = pua_glyph_count * 2 > total_glyphs;
+  }
+  return may_be_icon_font_;
 }
 
 }  // namespace blink

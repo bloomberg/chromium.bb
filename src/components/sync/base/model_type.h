@@ -73,6 +73,9 @@ enum ModelType {
   // Usage counts and last use dates for Wallet cards and addresses. This data
   // is both readable and writable.
   AUTOFILL_WALLET_METADATA,
+  // Offers and rewards from the user's account. These are read-only on the
+  // client side.
+  AUTOFILL_WALLET_OFFER,
   // A theme object.
   THEMES,
   // A typed_url object, i.e. a URL the user has typed into the Omnibox.
@@ -109,9 +112,9 @@ enum ModelType {
   SUPERVISED_USER_SETTINGS,
   // App List items, used by the ChromeOS app launcher.
   APP_LIST,
-  // Supervised user whitelists. Each item contains a CRX ID (like an extension
+  // Supervised user allowlists. Each item contains a CRX ID (like an extension
   // ID) and a name.
-  SUPERVISED_USER_WHITELISTS,
+  SUPERVISED_USER_ALLOWLISTS,
   // ARC package items, i.e. Android apps on ChromeOS.
   ARC_PACKAGE,
   // Printer device information. ChromeOS only.
@@ -152,8 +155,7 @@ enum ModelType {
   // ---- Control Types ----
   // An object representing a set of Nigori keys.
   NIGORI,
-  DEPRECATED_EXPERIMENTS,
-  LAST_REAL_MODEL_TYPE = DEPRECATED_EXPERIMENTS,
+  LAST_REAL_MODEL_TYPE = NIGORI,
 
   NUM_ENTRIES,
 };
@@ -198,7 +200,7 @@ enum class ModelTypeForHistograms {
   kHistoryDeleteDirectices = 16,
   kNigori = 17,
   kDeviceInfo = 18,
-  kDeprecatedExperiments = 19,
+  // kDeprecatedExperiments = 19,
   // kDeprecatedSyncedNotifications = 20,
   kPriorityPreferences = 21,
   kDictionary = 22,
@@ -212,7 +214,7 @@ enum class ModelTypeForHistograms {
   // kDeprecatedSupervisedUserSharedSettings = 30,
   // kDeprecatedSyncedNotificationAppInfo = 31,
   // kDeprecatedWifiCredentials = 32,
-  kSupervisedUserWhitelists = 33,
+  kSupervisedUserAllowlists = 33,
   kAutofillWalletData = 34,
   kAutofillWalletMetadata = 35,
   kArcPackage = 36,
@@ -228,7 +230,8 @@ enum class ModelTypeForHistograms {
   kOsPreferences = 46,
   kOsPriorityPreferences = 47,
   kSharingMessage = 48,
-  kMaxValue = kSharingMessage
+  kAutofillWalletOffer = 49,
+  kMaxValue = kAutofillWalletOffer
 };
 
 // Used to mark the type of EntitySpecifics that has no actual data.
@@ -251,15 +254,15 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
 constexpr ModelTypeSet ProtocolTypes() {
   return ModelTypeSet(
       BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL_PROFILE, AUTOFILL,
-      AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA, THEMES, TYPED_URLS,
-      EXTENSIONS, SEARCH_ENGINES, SESSIONS, APPS, APP_SETTINGS,
-      EXTENSION_SETTINGS, HISTORY_DELETE_DIRECTIVES, DICTIONARY,
+      AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA, AUTOFILL_WALLET_OFFER,
+      THEMES, TYPED_URLS, EXTENSIONS, SEARCH_ENGINES, SESSIONS, APPS,
+      APP_SETTINGS, EXTENSION_SETTINGS, HISTORY_DELETE_DIRECTIVES, DICTIONARY,
       DEPRECATED_FAVICON_IMAGES, DEPRECATED_FAVICON_TRACKING, DEVICE_INFO,
       PRIORITY_PREFERENCES, SUPERVISED_USER_SETTINGS, APP_LIST,
-      SUPERVISED_USER_WHITELISTS, ARC_PACKAGE, PRINTERS, READING_LIST,
-      USER_EVENTS, NIGORI, DEPRECATED_EXPERIMENTS, USER_CONSENTS,
-      SEND_TAB_TO_SELF, SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS,
-      OS_PREFERENCES, OS_PRIORITY_PREFERENCES, SHARING_MESSAGE);
+      SUPERVISED_USER_ALLOWLISTS, ARC_PACKAGE, PRINTERS, READING_LIST,
+      USER_EVENTS, NIGORI, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS,
+      WEB_APPS, WIFI_CONFIGURATIONS, OS_PREFERENCES, OS_PRIORITY_PREFERENCES,
+      SHARING_MESSAGE);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -272,7 +275,7 @@ constexpr ModelTypeSet UserTypes() {
 // User types, which are not user-controlled.
 constexpr ModelTypeSet AlwaysPreferredUserTypes() {
   return ModelTypeSet(DEVICE_INFO, USER_CONSENTS, SECURITY_EVENTS,
-                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS,
+                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_ALLOWLISTS,
                       SHARING_MESSAGE);
 }
 
@@ -284,12 +287,29 @@ constexpr ModelTypeSet AlwaysEncryptedUserTypes() {
   return ModelTypeSet(PASSWORDS, WIFI_CONFIGURATIONS);
 }
 
-// This is the subset of UserTypes() that have priority over other types.  These
-// types are synced before other user types and are never encrypted.
+// This is the subset of UserTypes() that have priority over other types. These
+// types are synced before other user types (both for get_updates and commits).
+// This mostly matters during initial sync, since priority types can become
+// active before all the data for non-prio types has been downloaded (which may
+// be a lot of data).
 constexpr ModelTypeSet PriorityUserTypes() {
-  return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES,
-                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS,
-                      OS_PRIORITY_PREFERENCES, SHARING_MESSAGE);
+  return ModelTypeSet(
+      // The "Send to Your Devices" feature needs fast updating of the list of
+      // your devices and also fast sending of the actual messages.
+      DEVICE_INFO, SHARING_MESSAGE,
+      // For supervised users, it is important to quickly deliver changes in
+      // settings and in allowed sites to the supervised user.
+      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_ALLOWLISTS,
+      // These are by definition preferences for which it is important that the
+      // client picks them up quickly (also because these can get changed
+      // server-side). For example, such a pref could control whether a
+      // non-priority type gets enabled (Wallet has such a pref).
+      PRIORITY_PREFERENCES, OS_PRIORITY_PREFERENCES,
+      // Speed matters for the user experience when sync gets enabled directly
+      // in the creation flow for a new profile. If the user has no theme in
+      // their sync data, the browser offers a theme customization bubble which
+      // should appear soon after opening the browser.
+      THEMES);
 }
 
 // Proxy types are placeholder types for handling implicitly enabling real

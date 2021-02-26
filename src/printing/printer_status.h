@@ -18,46 +18,54 @@ namespace printing {
 // printer-state-reasons, and printer-state-message.
 struct PRINTING_EXPORT PrinterStatus {
   struct PrinterReason {
-    // Standardized reasons from RFC2911.
-    enum Reason {
-      UNKNOWN_REASON,
-      NONE,
-      MEDIA_NEEDED,
-      MEDIA_JAM,
-      MOVING_TO_PAUSED,
-      PAUSED,
-      SHUTDOWN,
-      CONNECTING_TO_DEVICE,
-      TIMED_OUT,
-      STOPPING,
-      STOPPED_PARTLY,
-      TONER_LOW,
-      TONER_EMPTY,
-      SPOOL_AREA_FULL,
-      COVER_OPEN,
-      INTERLOCK_OPEN,
-      DOOR_OPEN,
-      INPUT_TRAY_MISSING,
-      MEDIA_LOW,
-      MEDIA_EMPTY,
-      OUTPUT_TRAY_MISSING,
-      OUTPUT_AREA_ALMOST_FULL,
-      OUTPUT_AREA_FULL,
-      MARKER_SUPPLY_LOW,
-      MARKER_SUPPLY_EMPTY,
-      MARKER_WASTE_ALMOST_FULL,
-      MARKER_WASTE_FULL,
-      FUSER_OVER_TEMP,
-      FUSER_UNDER_TEMP,
-      OPC_NEAR_EOL,
-      OPC_LIFE_OVER,
-      DEVELOPER_LOW,
-      DEVELOPER_EMPTY,
-      INTERPRETER_RESOURCE_UNAVAILABLE
+    // This enum is used to record UMA histogram values and should not be
+    // reordered. Please keep in sync with PrinterStatusReasons in
+    // src/tools/metrics/histograms/enums.xml.
+    enum class Reason {
+      kUnknownReason = 0,
+      kNone = 1,
+      kMediaNeeded = 2,
+      kMediaJam = 3,
+      kMovingToPaused = 4,
+      kPaused = 5,
+      kShutdown = 6,
+      kConnectingToDevice = 7,
+      kTimedOut = 8,
+      kStopping = 9,
+      kStoppedPartly = 10,
+      kTonerLow = 11,
+      kTonerEmpty = 12,
+      kSpoolAreaFull = 13,
+      kCoverOpen = 14,
+      kInterlockOpen = 15,
+      kDoorOpen = 16,
+      kInputTrayMissing = 17,
+      kMediaLow = 18,
+      kMediaEmpty = 19,
+      kOutputTrayMissing = 20,
+      kOutputAreaAlmostFull = 21,
+      kOutputAreaFull = 22,
+      kMarkerSupplyLow = 23,
+      kMarkerSupplyEmpty = 24,
+      kMarkerWasteAlmostFull = 25,
+      kMarkerWasteFull = 26,
+      kFuserOverTemp = 27,
+      kFuserUnderTemp = 28,
+      kOpcNearEol = 29,
+      kOpcLifeOver = 30,
+      kDeveloperLow = 31,
+      kDeveloperEmpty = 32,
+      kInterpreterResourceUnavailable = 33,
+      kMaxValue = kInterpreterResourceUnavailable
     };
 
     // Severity of the state-reason.
-    enum Severity { UNKNOWN_SEVERITY, REPORT, WARNING, ERROR };
+    enum class Severity {
+      kUnknownSeverity = 0,
+      kReport = 1,
+      kWarning = 2,
+      kError = 3,
+    };
 
     Reason reason;
     Severity severity;

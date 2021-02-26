@@ -154,7 +154,7 @@
            summary="presentation output"/>
     </event>
 
-    <enum name="kind">
+    <enum name="kind" bitfield="true">
       <description summary="bitmask of flags in presented event">
         These flags provide information about how the presentation of
         the related content update was done. The intent is to help

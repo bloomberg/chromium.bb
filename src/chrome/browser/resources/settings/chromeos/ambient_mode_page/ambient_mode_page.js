@@ -9,33 +9,86 @@
 Polymer({
   is: 'settings-ambient-mode-page',
 
-  behaviors: [I18nBehavior, PrefsBehavior, WebUIListenerBehavior],
+  behaviors: [
+    DeepLinkingBehavior, I18nBehavior, PrefsBehavior,
+    settings.RouteObserverBehavior, WebUIListenerBehavior
+  ],
 
   properties: {
+    /** Preferences state. */
     prefs: Object,
 
     /**
-     * Enum values for topicSourceRadioGroup.
-     * Values need to stay in sync with the enum |ash::AmbientModeTopicSource|.
-     * @private {!Object<string, number>}
+     * Used to refer to the enum values in the HTML.
+     * @private {!Object}
      */
-    topicSource_: {
+    AmbientModeTopicSource: {
       type: Object,
-      value: {
-        UNKNOWN: -1,
-        GOOGLE_PHOTOS: 0,
-        ART_GALLERY: 1,
-      },
-      readOnly: true,
+      value: AmbientModeTopicSource,
+    },
+
+    /**
+     * Used to refer to the enum values in the HTML.
+     * @private {!Object<string, AmbientModeTemperatureUnit>}
+     */
+    AmbientModeTemperatureUnit_: {
+      type: Object,
+      value: AmbientModeTemperatureUnit,
+    },
+
+    // TODO(b/160632748): Dynamically generate topic source of Google Photos.
+    /** @private {!Array<!AmbientModeTopicSource>} */
+    topicSources_: {
+      type: Array,
+      value: [
+        AmbientModeTopicSource.GOOGLE_PHOTOS, AmbientModeTopicSource.ART_GALLERY
+      ],
+    },
+
+    /** @private {!AmbientModeTopicSource} */
+    selectedTopicSource_: {
+      type: AmbientModeTopicSource,
+      value: AmbientModeTopicSource.UNKNOWN,
     },
 
     /** @private */
-    topicSourceSelected_: {
-      type: String,
-      value() {
-        return this.topicSource_.UNKNOWN;
-      },
+    hasGooglePhotosAlbums_: Boolean,
+
+    /** @private {!AmbientModeTemperatureUnit} */
+    selectedTemperatureUnit_: {
+      type: AmbientModeTemperatureUnit,
+      value: AmbientModeTemperatureUnit.UNKNOWN,
+      observer: 'onSelectedTemperatureUnitChanged_'
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kAmbientModeOnOff,
+        chromeos.settings.mojom.Setting.kAmbientModeSource,
+      ]),
+    },
+
+    /** @private */
+    showSettings_: {
+      type: Boolean,
+      computed: 'computeShowSettings_(' +
+          'selectedTopicSource_, selectedTemperatureUnit_)',
+    },
+
+    /** @private */
+    disableSettings_: {
+      type: Boolean,
+      computed: 'computeDisableSettings_(prefs.settings.ambient_mode.*)',
+    }
+  },
+
+  listeners: {
+    'show-albums': 'onShowAlbums_',
   },
 
   /** @private {?settings.AmbientModeBrowserProxy} */
@@ -48,11 +101,60 @@ Polymer({
 
   /** @override */
   ready() {
-    this.addWebUIListener('topic-source-changed', (topicSource) => {
-      this.topicSourceSelected_ = topicSource;
-    });
+    this.addWebUIListener(
+        'topic-source-changed',
+        (/** @type {!TopicSourceItem} */ topicSourceItem) => {
+          this.selectedTopicSource_ = topicSourceItem.topicSource;
+          this.hasGooglePhotosAlbums_ = topicSourceItem.hasGooglePhotosAlbums;
+        },
+    );
+    this.addWebUIListener(
+        'temperature-unit-changed',
+        (/** @type {!AmbientModeTemperatureUnit} */ temperatureUnit) => {
+          this.selectedTemperatureUnit_ = temperatureUnit;
+        },
+    );
+  },
 
-    this.browserProxy_.onAmbientModePageReady();
+  /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   */
+  beforeDeepLinkAttempt(settingId) {
+    if (settingId !== chromeos.settings.mojom.Setting.kAmbientModeSource) {
+      // Continue with deep link attempt.
+      return true;
+    }
+
+    // Wait for element to load.
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      Polymer.dom.flush();
+
+      const topicList = this.$$('topic-source-list');
+      const listItem = topicList && topicList.$$('topic-source-item');
+      if (listItem) {
+        this.showDeepLinkElement(listItem);
+        return;
+      }
+
+      console.warn(`Element with deep link id ${settingId} not focusable.`);
+    });
+    // Stop deep link attempt since we completed it manually.
+    return false;
+  },
+
+  /**
+   * RouteObserverBehavior
+   * @param {!settings.Route} currentRoute
+   * @protected
+   */
+  currentRouteChanged(currentRoute) {
+    if (currentRoute !== settings.routes.AMBIENT_MODE) {
+      return;
+    }
+
+    this.browserProxy_.requestSettings();
+    this.attemptDeepLink();
   },
 
   /**
@@ -64,10 +166,14 @@ Polymer({
     return this.i18n(toggleValue ? 'ambientModeOn' : 'ambientModeOff');
   },
 
-  /** @private */
-  onTopicSourceSelectedChanged_() {
-    return this.browserProxy_.onTopicSourceSelectedChanged(
-        this.$$('#topicSourceRadioGroup').selected);
+  /**
+   * @param {!AmbientModeTemperatureUnit} temperatureUnit
+   * @return {boolean}
+   * @private
+   */
+  isValidTemperatureUnit_(temperatureUnit) {
+    return temperatureUnit === AmbientModeTemperatureUnit.FAHRENHEIT ||
+        temperatureUnit === AmbientModeTemperatureUnit.CELSIUS;
   },
 
   /**
@@ -76,6 +182,49 @@ Polymer({
    * @private
    */
   isValidTopicSource_(topicSource) {
-    return this.topicSourceSelected_ !== this.topicSource_.UNKNOWN;
+    return topicSource !== AmbientModeTopicSource.UNKNOWN;
   },
+
+  /**
+   * @param {!AmbientModeTemperatureUnit} newValue
+   * @param {!AmbientModeTemperatureUnit} oldValue
+   * @private
+   */
+  onSelectedTemperatureUnitChanged_(newValue, oldValue) {
+    if (newValue && newValue !== AmbientModeTemperatureUnit.UNKNOWN &&
+        newValue !== oldValue) {
+      this.browserProxy_.setSelectedTemperatureUnit(newValue);
+    }
+  },
+
+  /**
+   * Open ambientMode/photos subpage.
+   * @param {!CustomEvent<{item: !AmbientModeTopicSource}>} event
+   * @private
+   */
+  onShowAlbums_(event) {
+    const params = new URLSearchParams();
+    params.append('topicSource', JSON.stringify(event.detail));
+    settings.Router.getInstance().navigateTo(
+        settings.routes.AMBIENT_MODE_PHOTOS, params);
+  },
+
+  /**
+   * Whether to show settings.
+   * @return {boolean}
+   * @private
+   */
+  computeShowSettings_() {
+    return this.isValidTopicSource_(this.selectedTopicSource_) &&
+        this.isValidTemperatureUnit_(this.selectedTemperatureUnit_);
+  },
+
+  /**
+   * Whether to disable settings.
+   * @return {boolean}
+   * @private
+   */
+  computeDisableSettings_() {
+    return !this.getPref('settings.ambient_mode.enabled').value;
+  }
 });

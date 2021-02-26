@@ -361,7 +361,7 @@ void DeveloperPrivateApiUnitTest::SetUp() {
   Browser::CreateParams params(profile(), true);
   params.type = Browser::TYPE_NORMAL;
   params.window = browser_window_.get();
-  browser_.reset(new Browser(params));
+  browser_.reset(Browser::Create(params));
 
   // Allow the API to be created.
   EventRouterFactory::GetInstance()->SetTestingFactory(
@@ -466,7 +466,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivatePackFunction) {
 
   // Try to pack a final time when omitting (an existing) pem file. We should
   // get an error.
-  base::DeleteFile(crx_path, false);
+  base::DeleteFile(crx_path);
   EXPECT_TRUE(pack_args.Remove(1u, nullptr));  // Remove the pem key argument.
   EXPECT_TRUE(pack_args.Remove(1u, nullptr));  // Remove the flags argument.
   EXPECT_TRUE(TestPackExtensionFunction(
@@ -1229,7 +1229,7 @@ TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithoutDevMode) {
   prefs->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
 }
 
-TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithBlacklistingPolicy) {
+TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithBlocklistingPolicy) {
   std::unique_ptr<content::WebContents> web_contents(
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
 
@@ -1239,15 +1239,15 @@ TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithBlacklistingPolicy) {
   {
     ExtensionManagementPrefUpdater<sync_preferences::TestingPrefServiceSyncable>
         pref_updater(testing_profile()->GetTestingPrefService());
-    pref_updater.SetBlacklistedByDefault(true);
+    pref_updater.SetBlocklistedByDefault(true);
   }
   EXPECT_TRUE(
       ExtensionManagementFactory::GetForBrowserContext(browser_context())
-          ->BlacklistedByDefault());
+          ->BlocklistedByDefault());
 
   EXPECT_FALSE(
       ExtensionManagementFactory::GetForBrowserContext(browser_context())
-          ->HasWhitelistedExtension());
+          ->HasAllowlistedExtension());
 
   auto info = DeveloperPrivateAPI::CreateProfileInfo(testing_profile());
 
@@ -1262,7 +1262,7 @@ TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithBlacklistingPolicy) {
 }
 
 TEST_F(DeveloperPrivateApiUnitTest,
-       LoadUnpackedWorksWithBlacklistingPolicyAlongWhitelistingPolicy) {
+       LoadUnpackedWorksWithBlocklistingPolicyAlongAllowlistingPolicy) {
   std::unique_ptr<content::WebContents> web_contents(
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
 
@@ -1272,17 +1272,17 @@ TEST_F(DeveloperPrivateApiUnitTest,
   {
     ExtensionManagementPrefUpdater<sync_preferences::TestingPrefServiceSyncable>
         pref_updater(testing_profile()->GetTestingPrefService());
-    pref_updater.SetBlacklistedByDefault(true);
+    pref_updater.SetBlocklistedByDefault(true);
     pref_updater.SetIndividualExtensionInstallationAllowed(kGoodCrx, true);
   }
 
   EXPECT_TRUE(
       ExtensionManagementFactory::GetForBrowserContext(browser_context())
-          ->BlacklistedByDefault());
+          ->BlocklistedByDefault());
 
   EXPECT_TRUE(
       ExtensionManagementFactory::GetForBrowserContext(browser_context())
-          ->HasWhitelistedExtension());
+          ->HasAllowlistedExtension());
 
   auto info = DeveloperPrivateAPI::CreateProfileInfo(testing_profile());
 

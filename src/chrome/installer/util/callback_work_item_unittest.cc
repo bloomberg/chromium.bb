@@ -5,8 +5,8 @@
 #include "chrome/installer/util/callback_work_item.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/test/bind_test_util.h"
+#include "base/callback_helpers.h"
+#include "base/test/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -36,7 +36,7 @@ enum TestCallbackState {
 
 }  // namespace
 
-// Test that the callback is invoked correclty during Do() and Rollback().
+// Test that the callback is invoked correctly during Do() and Rollback().
 TEST(CallbackWorkItemTest, TestForwardBackward) {
   TestCallbackState state = TCS_UNDEFINED;
 

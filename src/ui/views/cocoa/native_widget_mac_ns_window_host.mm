@@ -25,6 +25,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/native_theme/native_theme_mac.h"
 #include "ui/views/cocoa/text_input_host.h"
@@ -155,7 +156,8 @@ class BridgedNativeWidgetHostDummy
     bool always_render_as_key = false;
     std::move(callback).Run(always_render_as_key);
   }
-  void GetCanWindowClose(GetCanWindowCloseCallback callback) override {
+  void OnWindowCloseRequested(
+      OnWindowCloseRequestedCallback callback) override {
     bool can_window_close = false;
     std::move(callback).Run(can_window_close);
   }
@@ -523,11 +525,15 @@ void NativeWidgetMacNSWindowHost::CreateCompositor(
 void NativeWidgetMacNSWindowHost::UpdateCompositorProperties() {
   if (!compositor_)
     return;
-  gfx::Size surface_size_in_dip = content_bounds_in_screen_.size();
-  layer()->SetBounds(gfx::Rect(surface_size_in_dip));
-  compositor_->UpdateSurface(
-      ConvertSizeToPixel(display_.device_scale_factor(), surface_size_in_dip),
-      display_.device_scale_factor(), display_.color_spaces());
+  layer()->SetBounds(gfx::Rect(content_bounds_in_screen_.size()));
+  // Mac device scale factor is always an integer so the result here is an
+  // integer pixel size.
+  gfx::Size content_bounds_in_pixels =
+      gfx::ToRoundedSize(gfx::ConvertSizeToPixels(
+          content_bounds_in_screen_.size(), display_.device_scale_factor()));
+  compositor_->UpdateSurface(content_bounds_in_pixels,
+                             display_.device_scale_factor(),
+                             display_.color_spaces());
 }
 
 void NativeWidgetMacNSWindowHost::DestroyCompositor() {
@@ -958,13 +964,16 @@ void NativeWidgetMacNSWindowHost::OnWindowFullscreenTransitionStart(
   if (target_fullscreen_state)
     window_bounds_before_fullscreen_ = window_bounds_in_screen_;
 
-  // Notify that fullscreen state changed.
-  native_widget_mac_->OnWindowFullscreenStateChange();
+  // Notify that fullscreen state is changing.
+  native_widget_mac_->OnWindowFullscreenTransitionStart();
 }
 
 void NativeWidgetMacNSWindowHost::OnWindowFullscreenTransitionComplete(
     bool actual_fullscreen_state) {
   in_fullscreen_transition_ = false;
+
+  // Notify that fullscreen state has changed.
+  native_widget_mac_->OnWindowFullscreenTransitionComplete();
 
   // Ensure constraints are re-applied when completing a transition.
   native_widget_mac_->OnSizeConstraintsChanged();
@@ -982,10 +991,14 @@ void NativeWidgetMacNSWindowHost::OnWindowDisplayChanged(
   bool display_id_changed = display_.id() != new_display.id();
   display_ = new_display;
   if (compositor_) {
-    compositor_->UpdateSurface(
-        ConvertSizeToPixel(display_.device_scale_factor(),
-                           content_bounds_in_screen_.size()),
-        display_.device_scale_factor(), display_.color_spaces());
+    // Mac device scale factor is always an integer so the result here is an
+    // integer pixel size.
+    gfx::Size content_bounds_in_pixels =
+        gfx::ToRoundedSize(gfx::ConvertSizeToPixels(
+            content_bounds_in_screen_.size(), display_.device_scale_factor()));
+    compositor_->UpdateSurface(content_bounds_in_pixels,
+                               display_.device_scale_factor(),
+                               display_.color_spaces());
   }
   if (display_id_changed) {
     display_link_ = ui::DisplayLinkMac::GetForDisplay(display_.id());
@@ -1094,12 +1107,14 @@ bool NativeWidgetMacNSWindowHost::GetAlwaysRenderWindowAsKey(
   return true;
 }
 
-bool NativeWidgetMacNSWindowHost::GetCanWindowClose(bool* can_window_close) {
+bool NativeWidgetMacNSWindowHost::OnWindowCloseRequested(
+    bool* can_window_close) {
   *can_window_close = true;
   views::NonClientView* non_client_view =
       root_view_ ? root_view_->GetWidget()->non_client_view() : nullptr;
   if (non_client_view)
-    *can_window_close = non_client_view->CanClose();
+    *can_window_close = non_client_view->OnWindowCloseRequested() ==
+                        CloseRequestResult::kCanClose;
   return true;
 }
 
@@ -1272,10 +1287,10 @@ void NativeWidgetMacNSWindowHost::GetAlwaysRenderWindowAsKey(
   std::move(callback).Run(always_render_as_key);
 }
 
-void NativeWidgetMacNSWindowHost::GetCanWindowClose(
-    GetCanWindowCloseCallback callback) {
+void NativeWidgetMacNSWindowHost::OnWindowCloseRequested(
+    OnWindowCloseRequestedCallback callback) {
   bool can_window_close = false;
-  GetCanWindowClose(&can_window_close);
+  OnWindowCloseRequested(&can_window_close);
   std::move(callback).Run(can_window_close);
 }
 

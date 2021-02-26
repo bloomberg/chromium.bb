@@ -11,9 +11,9 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
-#include "components/safe_browsing/core/proto/webprotect.pb.h"
 
 class Profile;
 
@@ -46,8 +46,8 @@ class BinaryFCMService : public gcm::GCMAppHandler {
 
   using GetInstanceIDCallback =
       base::OnceCallback<void(const std::string& token)>;
-  using OnMessageCallback =
-      base::RepeatingCallback<void(DeepScanningClientResponse)>;
+  using OnMessageCallback = base::RepeatingCallback<void(
+      enterprise_connectors::ContentAnalysisResponse)>;
   using UnregisterInstanceIDCallback = base::OnceCallback<void(bool)>;
 
   // Get an InstanceID for use.
@@ -92,6 +92,8 @@ class BinaryFCMService : public gcm::GCMAppHandler {
                        const std::string& instance_id,
                        instance_id::InstanceID::Result result);
 
+  void QueueGetInstanceIDCallback(GetInstanceIDCallback callback);
+
   // Run the next queued operation, and post a task for another operation if
   // necessary.
   void MaybeRunNextQueuedOperation();
@@ -111,6 +113,9 @@ class BinaryFCMService : public gcm::GCMAppHandler {
 
   // Queue of pending GetToken calls.
   std::deque<base::OnceClosure> pending_token_calls_;
+
+  // Count of unregistrations currently happening asynchronously.
+  size_t pending_unregistrations_count_ = 0;
 
   // Delay between attempts to dequeue pending operations. Not constant so we
   // can override it in tests.

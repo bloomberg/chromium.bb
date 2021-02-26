@@ -19,8 +19,6 @@ template <typename T>
 class NavigatorLocksImpl final : public GarbageCollected<NavigatorLocksImpl<T>>,
                                  public Supplement<T>,
                                  public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorLocksImpl);
-
  public:
   static const char kSupplementName[];
 
@@ -43,7 +41,7 @@ class NavigatorLocksImpl final : public GarbageCollected<NavigatorLocksImpl<T>>,
     return lock_manager_.Get();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(lock_manager_);
     Supplement<T>::Trace(visitor);
   }

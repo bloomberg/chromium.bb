@@ -6,9 +6,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/crash_report/crash_reporter_url_observer.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
@@ -33,9 +34,17 @@ namespace {
 
 // Rapidly starts leaking memory by 10MB blocks.
 void StartLeakingMemory() {
-  int* leak = new int[10 * 1024 * 1024];
-  ALLOW_UNUSED_LOCAL(leak);
-  base::PostTask(FROM_HERE, base::BindOnce(&StartLeakingMemory));
+  static NSMutableArray* memory = nil;
+  if (!memory)
+    memory = [[NSMutableArray alloc] init];
+
+  // Store block of memory into NSArray to ensure that compiler does not throw
+  // away unused code.
+  NSUInteger leak_size = 10 * 1024 * 1024;
+  int* leak = new int[leak_size];
+  [memory addObject:[NSData dataWithBytes:leak length:leak_size]];
+
+  base::ThreadPool::PostTask(FROM_HERE, base::BindOnce(&StartLeakingMemory));
 }
 
 // Helper method for inducing intentional freezes, leaks and crashes, in a
@@ -150,10 +159,15 @@ void UrlLoadingBrowserAgent::LoadUrlInCurrentTab(const UrlLoadParams& params) {
 
   notifier_->TabWillLoadUrl(web_params.url, web_params.transition_type);
 
+  WebStateList* web_state_list = browser_->GetWebStateList();
+  web::WebState* current_web_state = web_state_list->GetActiveWebState();
+
   // NOTE: This check for the Crash Host URL is here to avoid the URL from
   // ending up in the history causing the app to crash at every subsequent
   // restart.
   if (web_params.url.host() == kChromeUIBrowserCrashHost) {
+    CrashReporterURLObserver::GetSharedInstance()->RecordURL(
+        web_params.url, current_web_state, /*pending=*/true);
     InduceBrowserCrash(web_params.url);
     // Under a debugger, the app can continue working even after the CHECK.
     // Adding a return avoids adding the crash url to history.
@@ -168,8 +182,6 @@ void UrlLoadingBrowserAgent::LoadUrlInCurrentTab(const UrlLoadParams& params) {
   // load a disallowed URL, instead create a new tab not in the incognito state.
   // Also if there's no current web state, that means there is no current tab
   // to open in, so this also redirects to a new tab.
-  WebStateList* web_state_list = browser_->GetWebStateList();
-  web::WebState* current_web_state = web_state_list->GetActiveWebState();
   if (!current_web_state || (browser_state->IsOffTheRecord() &&
                              !IsURLAllowedInIncognito(web_params.url))) {
     if (prerenderService) {
@@ -305,12 +317,16 @@ void UrlLoadingBrowserAgent::LoadUrlInNewTab(const UrlLoadParams& params) {
   if (params.append_to == kCurrentTab)
     adjacent_web_state = browser_->GetWebStateList()->GetActiveWebState();
 
+  int insertion_index = TabInsertion::kPositionAutomatically;
+  if (params.append_to == kSpecifiedIndex)
+    insertion_index = params.insertion_index;
+
   UrlLoadParams saved_params = params;
   auto openTab = ^{
     TabInsertionBrowserAgent* insertionAgent =
         TabInsertionBrowserAgent::FromBrowser(browser_);
     insertionAgent->InsertWebState(saved_params.web_params, adjacent_web_state,
-                                   false, TabInsertion::kPositionAutomatically,
+                                   false, insertion_index,
                                    saved_params.in_background());
     notifier_->NewTabDidLoadUrl(saved_params.web_params.url,
                                 saved_params.user_initiated);

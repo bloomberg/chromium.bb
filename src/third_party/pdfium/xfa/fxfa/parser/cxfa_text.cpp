@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_text.h"
 
 #include "fxjs/xfa/cjx_object.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -31,7 +31,9 @@ CXFA_Text::CXFA_Text(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Text,
                 {},
                 kTextAttributeData,
-                pdfium::MakeUnique<CJX_Object>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Object>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Text::~CXFA_Text() = default;
 

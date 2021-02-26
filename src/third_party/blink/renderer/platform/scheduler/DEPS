@@ -8,8 +8,7 @@ include_rules = [
   # Dependencies.
   "+base/atomic_sequence_num.h",
   "+base/atomicops.h",
-  "+base/bind_helpers.h",
-  "+base/callback.h",
+  "+base/callback_helpers.h",
   "+base/cancelable_callback.h",
   "+base/command_line.h",
   "+base/compiler_specific.h",
@@ -37,6 +36,8 @@ include_rules = [
   "+base/synchronization/atomic_flag.h",
   "+base/synchronization/cancellation_flag.h",
   "+base/synchronization/lock.h",
+  "+base/task/common/scoped_defer_task_posting.h",
+  "+base/task/common/task_annotator.h",
   "+base/task/sequence_manager/lazy_now.h",
   "+base/task/sequence_manager/sequence_manager.h",
   "+base/task/sequence_manager/task_queue.h",

@@ -86,6 +86,9 @@ bool IsElementInInvisibleSubTree(const Element& element) {
     auto* ancestor_element = DynamicTo<Element>(ancestor);
     if (!ancestor_element)
       continue;
+    // Return true if the whole frame is not rendered.
+    if (ancestor.IsHTMLElement() && !ancestor.GetLayoutObject())
+      return true;
     const ComputedStyle* style = ancestor_element->EnsureComputedStyle();
     if (style && (style->Visibility() != EVisibility::kVisible ||
                   style->Display() == EDisplay::kNone)) {
@@ -182,7 +185,8 @@ void LazyLoadImageObserver::StartMonitoringNearViewport(
             GetLazyImageLoadingViewportDistanceThresholdPx(*root_document))},
         {std::numeric_limits<float>::min()}, root_document,
         WTF::BindRepeating(&LazyLoadImageObserver::LoadIfNearViewport,
-                           WrapWeakPersistent(this)));
+                           WrapWeakPersistent(this)),
+        LocalFrameUkmAggregator::kLazyLoadIntersectionObserver);
   }
   lazy_load_intersection_observer_->observe(element);
 
@@ -259,7 +263,8 @@ void LazyLoadImageObserver::StartMonitoringVisibility(
     visibility_metrics_observer_ = IntersectionObserver::Create(
         {}, {std::numeric_limits<float>::min()}, root_document,
         WTF::BindRepeating(&LazyLoadImageObserver::OnVisibilityChanged,
-                           WrapWeakPersistent(this)));
+                           WrapWeakPersistent(this)),
+        LocalFrameUkmAggregator::kLazyLoadIntersectionObserver);
   }
   visibility_metrics_observer_->observe(image_element);
 }
@@ -335,7 +340,7 @@ bool LazyLoadImageObserver::IsFullyLoadableFirstKImageAndDecrementCount() {
   return false;
 }
 
-void LazyLoadImageObserver::Trace(Visitor* visitor) {
+void LazyLoadImageObserver::Trace(Visitor* visitor) const {
   visitor->Trace(lazy_load_intersection_observer_);
   visitor->Trace(visibility_metrics_observer_);
 }

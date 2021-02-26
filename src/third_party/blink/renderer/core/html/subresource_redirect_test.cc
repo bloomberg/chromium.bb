@@ -66,11 +66,8 @@ class SubresourceRedirectSimTest
 // This test verifies subresource redirect previews state based on different
 // states of SaveData, LazyLoad, SubresourceRedirect features.
 TEST_P(SubresourceRedirectSimTest, CSSBackgroundImage) {
-  WebView().GetPage()->GetSettings().SetLazyLoadEnabled(
-      is_lazyload_image_enabled());
-
   SimRequest image_resource("https://example.com/img.png", "image/png");
-  LoadMainResource(String::Format(R"HTML(
+  LoadMainResource(R"HTML(
         <style>
         #deferred_image {
           height:200px;
@@ -79,7 +76,7 @@ TEST_P(SubresourceRedirectSimTest, CSSBackgroundImage) {
         </style>
         <div style='height:10000px;'></div>
         <div id="deferred_image"></div>
-      )HTML"));
+      )HTML");
 
   if (!is_lazyload_image_enabled())
     image_resource.Complete(ReadTestImage());
@@ -96,7 +93,7 @@ TEST_P(SubresourceRedirectSimTest, CSSBackgroundImage) {
     image_resource.Complete(ReadTestImage());
   }
 
-  WebURLRequest::PreviewsState previews_state =
+  PreviewsState previews_state =
       GetDocument()
           .Fetcher()
           ->CachedResource(KURL("https://example.com/img.png"))
@@ -105,7 +102,7 @@ TEST_P(SubresourceRedirectSimTest, CSSBackgroundImage) {
   // Subresource redirect previews bit should be set only if SaveData and
   // SubresourceRedirect feature are enabled.
   EXPECT_EQ(is_save_data_enabled() && is_subresource_redirect_enabled(),
-            (previews_state & WebURLRequest::kSubresourceRedirectOn) != 0);
+            (previews_state & PreviewsTypes::kSubresourceRedirectOn) != 0);
 }
 
 INSTANTIATE_TEST_SUITE_P(

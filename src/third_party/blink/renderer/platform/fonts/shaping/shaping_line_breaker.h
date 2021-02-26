@@ -53,8 +53,14 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
     STACK_ALLOCATED();
 
    public:
+    // Indicates the limits of the space run.
+    base::Optional<unsigned> non_hangable_run_end;
+
     // Indicates the resulting break offset.
     unsigned break_offset;
+
+    // Indicates that the shape result contains trailing spaces
+    bool has_trailing_spaces;
 
     // True if there were no break opportunities that can fit. When this is
     // false, the result width should be smaller than or equal to the available
@@ -107,7 +113,16 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
     STACK_ALLOCATED();
 
    public:
+    BreakOpportunity(unsigned new_offset, bool hyphenated)
+        : offset(new_offset),
+          is_hyphenated(hyphenated) {}
+    BreakOpportunity(unsigned new_offset, unsigned run_end, bool hyphenated)
+        : offset(new_offset),
+          non_hangable_run_end(run_end),
+          is_hyphenated(hyphenated) {}
+
     unsigned offset;
+    base::Optional<unsigned> non_hangable_run_end;
     bool is_hyphenated;
   };
   BreakOpportunity PreviousBreakOpportunity(unsigned offset,
@@ -130,6 +145,9 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
                                                   unsigned first_safe,
                                                   unsigned range_start,
                                                   unsigned range_end);
+
+  void SetBreakOffset(unsigned break_offset, const String&, Result*);
+  void SetBreakOffset(const BreakOpportunity&, const String&, Result*);
 
   const ShapeCallback shape_callback_;
   void* shape_callback_context_;

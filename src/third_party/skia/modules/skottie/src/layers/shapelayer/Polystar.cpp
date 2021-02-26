@@ -5,6 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "include/core/SkPathBuilder.h"
+#include "include/private/SkTPin.h"
 #include "modules/skottie/src/Adapter.h"
 #include "modules/skottie/src/SkottieJson.h"
 #include "modules/skottie/src/SkottiePriv.h"
@@ -49,7 +51,7 @@ private:
 
         // TODO: inner/outer "roundness"?
 
-        SkPath poly;
+        SkPathBuilder poly;
 
         auto angle = SkDegreesToRadians(fRotation - 90);
         poly.moveTo(pt_on_circle(fPosition, fOuterRadius, angle));
@@ -64,7 +66,7 @@ private:
         }
 
         poly.close();
-        this->node()->setPath(poly);
+        this->node()->setPath(poly.detach());
     }
 
     const Type fType;

@@ -27,6 +27,14 @@ public class TestTileProvider implements TileProvider {
     }
 
     /**
+     * Builds and populates a {@link TestTileProvider} around the real provider. Convenient for
+     * matching purposes.
+     */
+    public TestTileProvider(TileProvider realProvider) {
+        realProvider.getQueryTiles(null, tiles -> { mTiles = tiles; });
+    }
+
+    /**
      * Finds a tile by traversing the tree.
      * @param indices The indices for each child to select as the tree is traversed.
      * @return        The matching {@link QueryTile} node.
@@ -55,11 +63,22 @@ public class TestTileProvider implements TileProvider {
         return tile == null ? mTiles : tile.children;
     }
 
-    // TileProvider implementation.
     @Override
-    public void getQueryTiles(Callback<List<QueryTile>> callback) {
-        callback.onResult(mTiles);
+    public void getQueryTiles(String tileId, Callback<List<QueryTile>> callback) {
+        if (tileId == null) {
+            callback.onResult(mTiles);
+            return;
+        }
+        for (QueryTile tile : mTiles) {
+            if (tile.id.equals(tileId)) {
+                callback.onResult(tile.children);
+                return;
+            }
+        }
     }
+
+    @Override
+    public void onTileClicked(String tileId) {}
 
     private static List<QueryTile> buildTiles(String prefix, int levelsLeft, int count) {
         if (levelsLeft == 0) return null;

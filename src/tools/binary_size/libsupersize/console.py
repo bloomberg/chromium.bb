@@ -125,9 +125,10 @@ class _Session(object):
     if not first_sym:
       return []
     size_info = self._SizeInfoForSymbol(first_sym)
+    container = first_sym.container
     tool_prefix = self._ToolPrefixForSymbol(size_info)
-    elf_path = self._ElfPathForSymbol(
-        size_info, tool_prefix, elf_path)
+    elf_path = self._ElfPathForSymbol(size_info, container, tool_prefix,
+                                      elf_path)
 
     return string_extract.ReadStringLiterals(
         thing, elf_path, tool_prefix, all_rodata=all_rodata)
@@ -165,10 +166,10 @@ class _Session(object):
     shortname = os.path.basename(os.path.normpath(to_file))
     msg = (
         'Saved locally to {local}. To share, run:\n'
-        '> gsutil.py cp {local} gs://chrome-supersize/oneoffs && gsutil.py -m '
-        'acl ch -u AllUsers:R gs://chrome-supersize/oneoffs/{shortname}\n'
-        '  Then view it at https://storage.googleapis.com/chrome-supersize'
-        '/viewer.html?load_url=oneoffs%2F{shortname}')
+        '> gsutil.py cp -a public-read {local} gs://chrome-supersize/oneoffs\n'
+        '  Then view it at https://chrome-supersize.firebaseapp.com/viewer.html'
+        '?load_url=https://storage.googleapis.com/chrome-supersize/oneoffs/'
+        '{shortname}')
     print(msg.format(local=to_file, shortname=shortname))
 
   def _SaveDeltaSizeInfo(self, size_info, to_file=None):
@@ -243,7 +244,8 @@ class _Session(object):
 
   def _ToolPrefixForSymbol(self, size_info):
     tool_prefix = self._tool_prefix_finder.Tentative()
-    orig_tool_prefix = size_info.metadata.get(models.METADATA_TOOL_PREFIX)
+    orig_tool_prefix = size_info.build_config.get(
+        models.BUILD_CONFIG_TOOL_PREFIX)
     if orig_tool_prefix:
       orig_tool_prefix = path_util.FromToolsSrcRootRelative(orig_tool_prefix)
       if os.path.exists(path_util.GetObjDumpPath(orig_tool_prefix)):
@@ -256,13 +258,13 @@ class _Session(object):
         '--tool-prefix, or setting --output-directory')
     return tool_prefix
 
-  def _ElfPathForSymbol(self, size_info, tool_prefix, elf_path):
+  def _ElfPathForSymbol(self, size_info, container, tool_prefix, elf_path):
     def build_id_matches(elf_path):
       found_build_id = archive.BuildIdFromElf(elf_path, tool_prefix)
-      expected_build_id = size_info.metadata.get(models.METADATA_ELF_BUILD_ID)
+      expected_build_id = container.metadata.get(models.METADATA_ELF_BUILD_ID)
       return found_build_id == expected_build_id
 
-    filename = size_info.metadata.get(models.METADATA_ELF_FILENAME)
+    filename = container.metadata.get(models.METADATA_ELF_FILENAME)
     paths_to_try = []
     if elf_path:
       paths_to_try.append(elf_path)
@@ -317,17 +319,20 @@ class _Session(object):
     assert not symbol.IsDelta(), ('Cannot disasseble a Diff\'ed symbol. Try '
                                   'passing .before_symbol or .after_symbol.')
     size_info = self._SizeInfoForSymbol(symbol)
+    container = symbol.container
     tool_prefix = self._ToolPrefixForSymbol(size_info)
-    elf_path = self._ElfPathForSymbol(size_info, tool_prefix, elf_path)
-    # Always use Android NDK's objdump because llvm-objdump does not seem to
-    # correctly disassemble.
+    elf_path = self._ElfPathForSymbol(size_info, container, tool_prefix,
+                                      elf_path)
+    # Always use Android NDK's objdump because llvm-objdump does not print
+    # the target of jump instructions, which is really useful.
     output_directory_finder = self._output_directory_finder
     if not output_directory_finder.Tentative():
       output_directory_finder = path_util.OutputDirectoryFinder(
           any_path_within_output_directory=elf_path)
-    tool_prefix = path_util.ToolPrefixFinder(
-        output_directory_finder=output_directory_finder,
-        linker_name='ld').Finalized()
+    if output_directory_finder.Tentative():
+      tool_prefix = path_util.ToolPrefixFinder(
+          output_directory=output_directory_finder.Finalized(),
+          linker_name='ld').Finalized()
 
     args = [
         path_util.GetObjDumpPath(tool_prefix),
@@ -481,18 +486,24 @@ def AddArguments(parser):
 
 
 def Run(args, on_config_error):
+  # Up-front check for faster error-checking.
   for path in args.inputs:
-    if not path.endswith('.size'):
-      on_config_error('All inputs must end with ".size"')
+    if not path.endswith('.size') and not path.endswith('.sizediff'):
+      on_config_error('All inputs must end with ".size" or ".sizediff"')
 
-  size_infos = [archive.LoadAndPostProcessSizeInfo(p) for p in args.inputs]
+  size_infos = []
+  for path in args.inputs:
+    if path.endswith('.sizediff'):
+      size_infos.extend(archive.LoadAndPostProcessDeltaSizeInfo(path))
+    else:
+      size_infos.append(archive.LoadAndPostProcessSizeInfo(path))
   output_directory_finder = path_util.OutputDirectoryFinder(
       value=args.output_directory,
       any_path_within_output_directory=args.inputs[0])
-  linker_name = size_infos[-1].metadata.get(models.METADATA_LINKER_NAME)
+  linker_name = size_infos[-1].build_config.get(models.BUILD_CONFIG_LINKER_NAME)
   tool_prefix_finder = path_util.ToolPrefixFinder(
       value=args.tool_prefix,
-      output_directory_finder=output_directory_finder,
+      output_directory=output_directory_finder.Tentative(),
       linker_name=linker_name)
   session = _Session(size_infos, output_directory_finder, tool_prefix_finder)
 

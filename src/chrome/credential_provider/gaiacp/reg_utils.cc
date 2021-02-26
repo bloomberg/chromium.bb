@@ -4,12 +4,12 @@
 
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 
-#include <Windows.h>
-
 #include <atlbase.h>
 
+#include "base/base64.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "build/branding_buildflags.h"
@@ -43,6 +43,28 @@ const wchar_t kMicrosoftCryptographyRegKey[] =
     L"SOFTWARE\\Microsoft\\Cryptography";
 const wchar_t kMicrosoftCryptographyMachineGuidRegKey[] = L"MachineGuid";
 
+constexpr wchar_t kRegUserDeviceResourceId[] = L"device_resource_id";
+constexpr wchar_t kRegGlsPath[] = L"gls_path";
+constexpr wchar_t kRegEnableVerboseLogging[] = L"enable_verbose_logging";
+constexpr wchar_t kRegInitializeCrashReporting[] = L"enable_crash_reporting";
+constexpr wchar_t kRegMdmUrl[] = L"mdm";
+constexpr wchar_t kRegEnableDmEnrollment[] = L"enable_dm_enrollment";
+constexpr wchar_t kRegDisablePasswordSync[] = L"disable_password_sync";
+constexpr wchar_t kRegMdmSupportsMultiUser[] = L"enable_multi_user_login";
+constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"enable_consumer_accounts ";
+constexpr wchar_t kRegMdmEnableForcePasswordReset[] =
+    L"enable_force_reset_password_option";
+constexpr wchar_t kRegDeviceDetailsUploadStatus[] =
+    L"device_details_upload_status";
+constexpr wchar_t kRegDeviceDetailsUploadFailures[] =
+    L"device_details_upload_failures";
+constexpr wchar_t kRegDeveloperMode[] = L"developer_mode";
+constexpr wchar_t kRegUpdateCredentialsOnChange[] =
+    L"update_credentials_on_change";
+constexpr wchar_t kRegUseShorterAccountName[] = L"use_shorter_account_name";
+constexpr wchar_t kEmailDomainsKey[] = L"ed";  // deprecated.
+constexpr wchar_t kEmailDomainsKeyNew[] = L"domains_allowed_to_login";
+
 namespace {
 
 constexpr wchar_t kAccountPicturesRootRegKey[] =
@@ -57,6 +79,9 @@ constexpr wchar_t kMakeGcpwDefaultCredProvider[] = L"set_gcpw_as_default_cp";
 constexpr wchar_t kDefaultCredProviderPath[] =
     L"Software\\Policies\\Microsoft\\Windows\\System";
 constexpr wchar_t kDefaultCredProviderKey[] = L"DefaultCredentialProvider";
+
+constexpr wchar_t kEnrollmentRegKey[] = L"SOFTWARE\\Google\\Enrollment";
+constexpr wchar_t kDmTokenRegKey[] = L"dmtoken";
 
 HRESULT SetMachineRegDWORD(const base::string16& key_name,
                            const base::string16& name,
@@ -95,6 +120,30 @@ HRESULT SetMachineRegString(const base::string16& key_name,
   return S_OK;
 }
 
+HRESULT SetMachineRegBinaryInternal(const base::string16& key_name,
+                                    const base::string16& name,
+                                    const std::string& value,
+                                    REGSAM sam_desired) {
+  base::win::RegKey key;
+  LONG sts = key.Create(HKEY_LOCAL_MACHINE, key_name.c_str(), sam_desired);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  if (value.empty()) {
+    sts = key.DeleteValue(name.c_str());
+    if (sts == ERROR_FILE_NOT_FOUND)
+      sts = ERROR_SUCCESS;
+  } else {
+    sts =
+        key.WriteValue(name.c_str(), value.c_str(), value.length(), REG_BINARY);
+  }
+
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  return S_OK;
+}
+
 base::string16 GetImageRegKeyForSpecificSize(int image_size) {
   return base::StringPrintf(L"%ls%i", kImageRegKey, image_size);
 }
@@ -110,7 +159,7 @@ HRESULT MakeGcpwDefaultCP() {
   if (GetGlobalFlagOrDefault(kMakeGcpwDefaultCredProvider, 1))
     return SetMachineRegString(
         kDefaultCredProviderPath, kDefaultCredProviderKey,
-        base::win::String16FromGUID(CLSID_GaiaCredentialProvider));
+        base::win::WStringFromGUID(CLSID_GaiaCredentialProvider));
 
   return S_OK;
 }
@@ -167,6 +216,41 @@ HRESULT GetMachineRegString(const base::string16& key_name,
   return S_OK;
 }
 
+HRESULT GetMachineRegBinaryInternal(const base::string16& key_name,
+                                    const base::string16& name,
+                                    std::string* val,
+                                    REGSAM sam_desired) {
+  DCHECK(val);
+
+  base::win::RegKey key;
+  LONG sts = key.Open(HKEY_LOCAL_MACHINE, key_name.c_str(), sam_desired);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  DWORD type;
+  DWORD size = 0;
+
+  sts = key.ReadValue(name.c_str(), nullptr, &size, &type);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  if (type != REG_BINARY)
+    return HRESULT_FROM_WIN32(ERROR_CANTREAD);
+
+  std::vector<char> buffer(size);
+
+  sts = key.ReadValue(name.c_str(), const_cast<char*>(buffer.data()), &size,
+                      &type);
+  if (sts != ERROR_SUCCESS) {
+    if (sts == ERROR_MORE_DATA)
+      return HRESULT_FROM_WIN32(sts);
+  }
+
+  val->assign(buffer.data(), buffer.size());
+
+  return S_OK;
+}
+
 HRESULT GetAccountPictureRegString(const base::string16& user_sid,
                                    int image_size,
                                    wchar_t* value,
@@ -216,6 +300,10 @@ HRESULT SetGlobalFlag(const base::string16& name, DWORD value) {
   return SetMachineRegDWORD(kGcpRootKeyName, name, value);
 }
 
+HRESULT SetGlobalFlag(const base::string16& name, const base::string16& value) {
+  return SetMachineRegString(kGcpRootKeyName, name, value);
+}
+
 HRESULT SetGlobalFlagForTesting(const base::string16& name,
                                 const base::string16& value) {
   return SetMachineRegString(kGcpRootKeyName, name, value);
@@ -223,6 +311,41 @@ HRESULT SetGlobalFlagForTesting(const base::string16& name,
 
 HRESULT SetGlobalFlagForTesting(const base::string16& name, DWORD value) {
   return SetMachineRegDWORD(kGcpRootKeyName, name, value);
+}
+
+HRESULT SetUpdaterClientsAppPathFlag(const base::string16& name, DWORD value) {
+  base::win::RegKey key;
+  LONG sts = key.Create(HKEY_LOCAL_MACHINE, kRegUpdaterClientsAppPath,
+                        KEY_WRITE | KEY_WOW64_32KEY);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  sts = key.WriteValue(name.c_str(), value);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  return S_OK;
+}
+
+HRESULT GetUpdaterClientsAppPathFlag(const base::string16& name, DWORD* value) {
+  base::win::RegKey key;
+  LONG sts = key.Open(HKEY_LOCAL_MACHINE, kRegUpdaterClientsAppPath,
+                      KEY_READ | KEY_WOW64_32KEY);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  sts = key.ReadValueDW(name.c_str(), value);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  return S_OK;
+}
+
+DWORD GetUpdaterClientsAppPathFlagOrDefault(const base::string16& reg_key,
+                                            const DWORD& default_value) {
+  DWORD value;
+  HRESULT hr = GetUpdaterClientsAppPathFlag(reg_key, &value);
+  return SUCCEEDED(hr) ? value : default_value;
 }
 
 HRESULT GetUserProperty(const base::string16& sid,
@@ -355,6 +478,18 @@ HRESULT GetIdFromSid(const wchar_t* sid, base::string16* id) {
   return HRESULT_FROM_WIN32(ERROR_NONE_MAPPED);
 }
 
+std::string GetUserEmailFromSid(const base::string16& sid) {
+  wchar_t email_id[512];
+  ULONG email_id_size = base::size(email_id);
+  HRESULT hr = GetUserProperty(sid, kUserEmail, email_id, &email_id_size);
+
+  base::string16 email_id_str;
+  if (SUCCEEDED(hr) && email_id_size > 0)
+    email_id_str = base::string16(email_id, email_id_size - 1);
+
+  return base::UTF16ToUTF8(email_id_str);
+}
+
 HRESULT SetUserWinlogonUserListEntry(const base::string16& username,
                                      DWORD visible) {
   // Sets the value of the key that will hide the user from all credential
@@ -382,7 +517,7 @@ HRESULT SetUserWinlogonUserListEntry(const base::string16& username,
 
 HRESULT SetLogonUiUserTileEntry(const base::string16& sid, CLSID cp_guid) {
   return SetMachineRegString(kLogonUiUserTileRegKey, sid,
-                             base::win::String16FromGUID(cp_guid));
+                             base::win::WStringFromGUID(cp_guid));
 }
 
 HRESULT GetMachineGuid(base::string16* machine_guid) {
@@ -410,6 +545,38 @@ HRESULT SetMachineGuidForTesting(const base::string16& machine_guid) {
   return SetMachineRegString(kMicrosoftCryptographyRegKey,
                              kMicrosoftCryptographyMachineGuidRegKey,
                              machine_guid);
+}
+
+base::string16 GetUserDeviceResourceId(const base::string16& sid) {
+  wchar_t known_resource_id[512];
+  ULONG known_resource_id_size = base::size(known_resource_id);
+  HRESULT hr = GetUserProperty(sid, kRegUserDeviceResourceId, known_resource_id,
+                               &known_resource_id_size);
+
+  if (SUCCEEDED(hr) && known_resource_id_size > 0)
+    return base::string16(known_resource_id, known_resource_id_size - 1);
+
+  return base::string16();
+}
+
+HRESULT GetDmToken(std::string* dm_token) {
+  DCHECK(dm_token);
+
+  std::string binary_dm_token;
+  HRESULT hr =
+      GetMachineRegBinaryInternal(kEnrollmentRegKey, kDmTokenRegKey,
+                                  &binary_dm_token, KEY_READ | KEY_WOW64_32KEY);
+  if (SUCCEEDED(hr)) {
+    base::Base64Encode(binary_dm_token, dm_token);
+  }
+  return hr;
+}
+
+HRESULT SetDmTokenForTesting(const std::string& dm_token) {
+  // Set a debug dm token for the machine so that unit tests that override the
+  // registry can run properly.
+  return SetMachineRegBinaryInternal(kEnrollmentRegKey, kDmTokenRegKey,
+                                     dm_token, KEY_WRITE | KEY_WOW64_32KEY);
 }
 
 }  // namespace credential_provider

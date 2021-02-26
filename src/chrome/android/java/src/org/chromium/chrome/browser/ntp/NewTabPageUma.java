@@ -17,12 +17,14 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
@@ -150,21 +152,6 @@ public class NewTabPageUma {
         int NUM_ENTRIES = 3;
     }
 
-    /** The NTP was loaded in a cold startup. */
-    private static final int LOAD_TYPE_COLD_START = 0;
-
-    /** The NTP was loaded in a warm startup. */
-    private static final int LOAD_TYPE_WARM_START = 1;
-
-    /**
-     * The NTP was loaded at some other time after activity creation and the user interacted with
-     * the activity in the meantime.
-     */
-    private static final int LOAD_TYPE_OTHER = 2;
-
-    /** The number of load types. */
-    private static final int LOAD_TYPE_COUNT = 3;
-
     private final TabModelSelector mTabModelSelector;
     private final Supplier<Long> mLastInteractionTime;
     private final boolean mActivityHadWarmStart;
@@ -233,26 +220,6 @@ public class NewTabPageUma {
     }
 
     /**
-     * Records the type of load for the NTP, such as cold or warm start.
-     */
-    public void recordLoadType() {
-        if (mLastInteractionTime.get() > 0) {
-            RecordHistogram.recordEnumeratedHistogram(
-                    "NewTabPage.LoadType", LOAD_TYPE_OTHER, LOAD_TYPE_COUNT);
-            return;
-        }
-
-        if (mActivityHadWarmStart) {
-            RecordHistogram.recordEnumeratedHistogram(
-                    "NewTabPage.LoadType", LOAD_TYPE_WARM_START, LOAD_TYPE_COUNT);
-            return;
-        }
-
-        RecordHistogram.recordEnumeratedHistogram(
-                "NewTabPage.LoadType", LOAD_TYPE_COLD_START, LOAD_TYPE_COUNT);
-    }
-
-    /**
      * Records the network status of the user.
      */
     public void recordIsUserOnline() {
@@ -304,13 +271,13 @@ public class NewTabPageUma {
     /**
      * Records Content Suggestions Display Status when NTPs opened.
      */
-    public void recordContentSuggestionsDisplayStatus() {
+    public void recordContentSuggestionsDisplayStatus(Profile profile) {
         @ContentSuggestionsDisplayStatus
         int status = ContentSuggestionsDisplayStatus.VISIBLE;
-        if (!PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED)) {
+        if (!UserPrefs.get(profile).getBoolean(Pref.ENABLE_SNIPPETS)) {
             // Disabled by policy.
             status = ContentSuggestionsDisplayStatus.DISABLED_BY_POLICY;
-        } else if (!PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)) {
+        } else if (!UserPrefs.get(profile).getBoolean(Pref.ARTICLES_LIST_VISIBLE)) {
             // Articles are collapsed.
             status = ContentSuggestionsDisplayStatus.COLLAPSED;
         }
@@ -326,7 +293,7 @@ public class NewTabPageUma {
     private static class TabCreationRecorder extends EmptyTabModelSelectorObserver {
         @Override
         public void onNewTabCreated(Tab tab, @TabCreationState int creationState) {
-            if (!NewTabPage.isNTPUrl(tab.getUrlString())) return;
+            if (!UrlUtilities.isNTPUrl(tab.getUrlString())) return;
             RecordUserAction.record("MobileNTPOpenedInNewTab");
         }
     }

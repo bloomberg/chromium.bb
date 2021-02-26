@@ -4,16 +4,40 @@
 
 #include "components/variations/net/variations_url_loader_throttle.h"
 
+#include "components/google/core/common/google_util.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_client.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "url/gurl.h"
 
 namespace variations {
+namespace {
+
+// Returns the Owner corresponding to |top_frame_origin|.
+Owner GetOwner(const url::Origin& top_frame_origin) {
+  // Use GetTupleOrPrecursorTupleIfOpaque().GetURL() rather than just GetURL()
+  // to handle sandboxed top frames in addition to non-sandboxed ones.
+  // top_frame_origin.GetURL() handles only the latter.
+  const GURL url(top_frame_origin.GetTupleOrPrecursorTupleIfOpaque().GetURL());
+  if (!url.is_valid())
+    return Owner::kUnknownFromRenderer;
+  return google_util::IsGoogleAssociatedDomainUrl(url) ? Owner::kGoogle
+                                                       : Owner::kNotGoogle;
+}
+
+}  // namespace
 
 VariationsURLLoaderThrottle::VariationsURLLoaderThrottle(
-    const std::string& variation_ids_header)
-    : variation_ids_header_(variation_ids_header) {}
+    variations::mojom::VariationsHeadersPtr variations_headers)
+    : variations_headers_(std::move(variations_headers)),
+      owner_(Owner::kUnknown) {}
+
+VariationsURLLoaderThrottle::VariationsURLLoaderThrottle(
+    variations::mojom::VariationsHeadersPtr variations_headers,
+    const url::Origin& top_frame_origin)
+    : variations_headers_(std::move(variations_headers)),
+      owner_(GetOwner(top_frame_origin)) {}
 
 VariationsURLLoaderThrottle::~VariationsURLLoaderThrottle() = default;
 
@@ -21,11 +45,11 @@ VariationsURLLoaderThrottle::~VariationsURLLoaderThrottle() = default;
 void VariationsURLLoaderThrottle::AppendThrottleIfNeeded(
     const variations::VariationsClient* variations_client,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles) {
-  if (!variations_client || variations_client->IsIncognito())
+  if (!variations_client || variations_client->IsOffTheRecord())
     return;
 
   throttles->push_back(std::make_unique<VariationsURLLoaderThrottle>(
-      variations_client->GetVariationsHeader()));
+      variations_client->GetVariationsHeaders()));
 }
 
 void VariationsURLLoaderThrottle::DetachFromCurrentSequence() {}
@@ -33,10 +57,17 @@ void VariationsURLLoaderThrottle::DetachFromCurrentSequence() {}
 void VariationsURLLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
-  // This throttle is never created when incognito so we pass in
-  // variations::InIncognito::kNo.
+  if (variations_headers_.is_null())
+    return;
+
+  // InIncognito::kNo is passed because this throttle is never created in
+  // incognito mode.
+  //
+  // |variations_headers_| is moved rather than cloned because a
+  // VariationsURLLoaderThrottle is created for each request and
+  // WillStartRequest() is called only once—from ThrottlingURLLoader::Start().
   variations::AppendVariationsHeaderWithCustomValue(
-      request->url, variations::InIncognito::kNo, variation_ids_header_,
+      request->url, InIncognito::kNo, std::move(variations_headers_), owner_,
       request);
 }
 

@@ -80,11 +80,6 @@ const QuicByteCount kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
 const QuicByteCount kStreamReceiveWindowLimit = 16 * 1024 * 1024;   // 16 MB
 const QuicByteCount kSessionReceiveWindowLimit = 24 * 1024 * 1024;  // 24 MB
 
-// Default limit on the size of uncompressed headers,
-// communicated via SETTINGS_MAX_HEADER_LIST_SIZE.
-// TODO(bnc): Move this constant to quic/core/http/.
-const QuicByteCount kDefaultMaxUncompressedHeaderSize = 16 * 1024;  // 16 KB
-
 // Minimum size of the CWND, in packets, when doing bandwidth resumption.
 const QuicPacketCount kMinCongestionWindowForBandwidthResumption = 10;
 
@@ -94,8 +89,8 @@ const QuicByteCount kDefaultSocketReceiveBuffer = 1024 * 1024;
 // Don't allow a client to suggest an RTT shorter than 10ms.
 const uint32_t kMinInitialRoundTripTimeUs = 10 * kNumMicrosPerMilli;
 
-// Don't allow a client to suggest an RTT longer than 15 seconds.
-const uint32_t kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
+// Don't allow a client to suggest an RTT longer than 1 second.
+const uint32_t kMaxInitialRoundTripTimeUs = kNumMicrosPerSecond;
 
 // Maximum number of open streams per connection.
 const size_t kDefaultMaxStreamsPerConnection = 100;
@@ -108,6 +103,10 @@ const size_t kQuicVersionSize = 4;
 // Length of the retry integrity tag in bytes.
 // https://tools.ietf.org/html/draft-ietf-quic-transport-25#section-17.2.5
 const size_t kRetryIntegrityTagLength = 16;
+
+// By default, UnackedPacketsMap allocates buffer of 64 after the first packet
+// is added.
+const int kDefaultUnackedPacketsInitialCapacity = 64;
 
 // Signifies that the QuicPacket will contain version of the protocol.
 const bool kIncludeVersion = true;
@@ -122,6 +121,10 @@ QUIC_EXPORT_PRIVATE extern const char* const kFinalOffsetHeaderKey;
 // Uses a 25ms delayed ack timer. Helps with better signaling
 // in low-bandwidth (< ~384 kbps), where an ack is sent per packet.
 const int64_t kDefaultDelayedAckTimeMs = 25;
+
+// Default minimum delayed ack time, in ms (used only for sender control of ack
+// frequency).
+const uint32_t kDefaultMinAckDelayTimeMs = 5;
 
 // Default shift of the ACK delay in the IETF QUIC ACK frame.
 const uint32_t kDefaultAckDelayExponent = 3;
@@ -266,6 +269,8 @@ const QuicPacketCount kMaxRetransmittablePacketsBeforeAck = 10;
 // This intends to avoid the beginning of slow start, when CWNDs may be
 // rapidly increasing.
 const QuicPacketCount kMinReceivedBeforeAckDecimation = 100;
+// One quarter RTT delay when doing ack decimation.
+const float kAckDecimationDelay = 0.25;
 
 // The default alarm granularity assumed by QUIC code.
 const QuicTime::Delta kAlarmGranularity = QuicTime::Delta::FromMilliseconds(1);

@@ -16,7 +16,9 @@
 
 namespace credential_provider {
 
-constexpr char kGaiaReauthPath[] = "embedded/reauth/windows";
+// TODO(crbug.com/1111561): Change it back to emdedded/reauth/windows
+// once reauth flow latency issue is resolved.
+constexpr char kGaiaReauthPath[] = "embedded/setup/windows";
 
 CReauthCredential::CReauthCredential() = default;
 
@@ -176,6 +178,10 @@ HRESULT CReauthCredential::GetStringValueImpl(DWORD field_id, wchar_t** value) {
             ONLINE_LOGIN_ENFORCED:
           description_label_id =
               IDS_REAUTH_ONLINE_LOGIN_ENFORCED_DESCRIPTION_BASE;
+          break;
+        case AssociatedUserValidator::EnforceAuthReason::
+            MISSING_OR_STALE_USER_POLICIES:
+          description_label_id = IDS_REAUTH_MISSING_POLICIES_DESCRIPTION_BASE;
           break;
         default:
           description_label_id = IDS_REAUTH_FID_DESCRIPTION_BASE;

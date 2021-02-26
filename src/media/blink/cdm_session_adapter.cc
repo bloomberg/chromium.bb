@@ -20,7 +20,6 @@
 #include "media/base/key_systems.h"
 #include "media/blink/webcontentdecryptionmodulesession_impl.h"
 #include "media/cdm/cdm_context_ref_impl.h"
-#include "url/origin.h"
 
 namespace media {
 
@@ -37,7 +36,6 @@ CdmSessionAdapter::~CdmSessionAdapter() = default;
 
 void CdmSessionAdapter::CreateCdm(CdmFactory* cdm_factory,
                                   const std::string& key_system,
-                                  const url::Origin& security_origin,
                                   const CdmConfig& cdm_config,
                                   WebCdmCreatedCB web_cdm_created_cb) {
   TRACE_EVENT_ASYNC_BEGIN0("media", "CdmSessionAdapter::CreateCdm",
@@ -54,11 +52,12 @@ void CdmSessionAdapter::CreateCdm(CdmFactory* cdm_factory,
   web_cdm_created_cb_ = std::move(web_cdm_created_cb);
 
   cdm_factory->Create(
-      key_system, security_origin, cdm_config,
-      base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
-      base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
-      base::Bind(&CdmSessionAdapter::OnSessionKeysChange, weak_this),
-      base::Bind(&CdmSessionAdapter::OnSessionExpirationUpdate, weak_this),
+      key_system, cdm_config,
+      base::BindRepeating(&CdmSessionAdapter::OnSessionMessage, weak_this),
+      base::BindRepeating(&CdmSessionAdapter::OnSessionClosed, weak_this),
+      base::BindRepeating(&CdmSessionAdapter::OnSessionKeysChange, weak_this),
+      base::BindRepeating(&CdmSessionAdapter::OnSessionExpirationUpdate,
+                          weak_this),
       base::BindOnce(&CdmSessionAdapter::OnCdmCreated, this, key_system,
                      cdm_config, start_time));
 }
@@ -76,8 +75,10 @@ void CdmSessionAdapter::GetStatusForPolicy(
 }
 
 std::unique_ptr<WebContentDecryptionModuleSessionImpl>
-CdmSessionAdapter::CreateSession() {
-  return std::make_unique<WebContentDecryptionModuleSessionImpl>(this);
+CdmSessionAdapter::CreateSession(
+    blink::WebEncryptedMediaSessionType session_type) {
+  return std::make_unique<WebContentDecryptionModuleSessionImpl>(this,
+                                                                 session_type);
 }
 
 bool CdmSessionAdapter::RegisterSession(

@@ -128,6 +128,41 @@ MessageResult::MessageResult(MessageStatus status, QuicMessageId message_id)
   case x:                        \
     return #x;
 
+std::string QuicFrameTypeToString(QuicFrameType t) {
+  switch (t) {
+    RETURN_STRING_LITERAL(PADDING_FRAME)
+    RETURN_STRING_LITERAL(RST_STREAM_FRAME)
+    RETURN_STRING_LITERAL(CONNECTION_CLOSE_FRAME)
+    RETURN_STRING_LITERAL(GOAWAY_FRAME)
+    RETURN_STRING_LITERAL(WINDOW_UPDATE_FRAME)
+    RETURN_STRING_LITERAL(BLOCKED_FRAME)
+    RETURN_STRING_LITERAL(STOP_WAITING_FRAME)
+    RETURN_STRING_LITERAL(PING_FRAME)
+    RETURN_STRING_LITERAL(CRYPTO_FRAME)
+    RETURN_STRING_LITERAL(HANDSHAKE_DONE_FRAME)
+    RETURN_STRING_LITERAL(STREAM_FRAME)
+    RETURN_STRING_LITERAL(ACK_FRAME)
+    RETURN_STRING_LITERAL(MTU_DISCOVERY_FRAME)
+    RETURN_STRING_LITERAL(NEW_CONNECTION_ID_FRAME)
+    RETURN_STRING_LITERAL(MAX_STREAMS_FRAME)
+    RETURN_STRING_LITERAL(STREAMS_BLOCKED_FRAME)
+    RETURN_STRING_LITERAL(PATH_RESPONSE_FRAME)
+    RETURN_STRING_LITERAL(PATH_CHALLENGE_FRAME)
+    RETURN_STRING_LITERAL(STOP_SENDING_FRAME)
+    RETURN_STRING_LITERAL(MESSAGE_FRAME)
+    RETURN_STRING_LITERAL(NEW_TOKEN_FRAME)
+    RETURN_STRING_LITERAL(RETIRE_CONNECTION_ID_FRAME)
+    RETURN_STRING_LITERAL(ACK_FREQUENCY_FRAME)
+    RETURN_STRING_LITERAL(NUM_FRAME_TYPES)
+  }
+  return quiche::QuicheStrCat("Unknown(", static_cast<int>(t), ")");
+}
+
+std::ostream& operator<<(std::ostream& os, const QuicFrameType& t) {
+  os << QuicFrameTypeToString(t);
+  return os;
+}
+
 std::string QuicIetfFrameTypeString(QuicIetfFrameType t) {
   if (IS_IETF_STREAM_FRAME(t)) {
     return "IETF_STREAM";
@@ -173,8 +208,7 @@ std::string TransmissionTypeToString(TransmissionType transmission_type) {
   switch (transmission_type) {
     RETURN_STRING_LITERAL(NOT_RETRANSMISSION);
     RETURN_STRING_LITERAL(HANDSHAKE_RETRANSMISSION);
-    RETURN_STRING_LITERAL(ALL_UNACKED_RETRANSMISSION);
-    RETURN_STRING_LITERAL(ALL_INITIAL_RETRANSMISSION);
+    RETURN_STRING_LITERAL(ALL_ZERO_RTT_RETRANSMISSION);
     RETURN_STRING_LITERAL(LOSS_RETRANSMISSION);
     RETURN_STRING_LITERAL(RTO_RETRANSMISSION);
     RETURN_STRING_LITERAL(TLP_RETRANSMISSION);
@@ -189,6 +223,11 @@ std::string TransmissionTypeToString(TransmissionType transmission_type) {
                                   static_cast<int>(transmission_type), ")");
       break;
   }
+}
+
+std::ostream& operator<<(std::ostream& os, TransmissionType transmission_type) {
+  os << TransmissionTypeToString(transmission_type);
+  return os;
 }
 
 std::string PacketHeaderFormatToString(PacketHeaderFormat format) {
@@ -260,10 +299,15 @@ std::string SerializedPacketFateToString(SerializedPacketFate fate) {
     RETURN_STRING_LITERAL(COALESCE);
     RETURN_STRING_LITERAL(BUFFER);
     RETURN_STRING_LITERAL(SEND_TO_WRITER);
-    RETURN_STRING_LITERAL(FAILED_TO_WRITE_COALESCED_PACKET);
+    RETURN_STRING_LITERAL(LEGACY_VERSION_ENCAPSULATE);
     default:
       return quiche::QuicheStrCat("Unknown(", static_cast<int>(fate), ")");
   }
+}
+
+std::ostream& operator<<(std::ostream& os, SerializedPacketFate fate) {
+  os << SerializedPacketFateToString(fate);
+  return os;
 }
 
 std::string EncryptionLevelToString(EncryptionLevel level) {
@@ -276,6 +320,11 @@ std::string EncryptionLevelToString(EncryptionLevel level) {
       return quiche::QuicheStrCat("Unknown(", static_cast<int>(level), ")");
       break;
   }
+}
+
+std::ostream& operator<<(std::ostream& os, EncryptionLevel level) {
+  os << EncryptionLevelToString(level);
+  return os;
 }
 
 std::string QuicConnectionCloseTypeString(QuicConnectionCloseType type) {
@@ -311,6 +360,29 @@ std::string AddressChangeTypeToString(AddressChangeType type) {
 
 std::ostream& operator<<(std::ostream& os, AddressChangeType type) {
   os << AddressChangeTypeToString(type);
+  return os;
+}
+
+std::string KeyUpdateReasonString(KeyUpdateReason reason) {
+#define RETURN_REASON_LITERAL(x) \
+  case KeyUpdateReason::x:       \
+    return #x
+  switch (reason) {
+    RETURN_REASON_LITERAL(kInvalid);
+    RETURN_REASON_LITERAL(kRemote);
+    RETURN_REASON_LITERAL(kLocalForTests);
+    RETURN_REASON_LITERAL(kLocalForInteropRunner);
+    RETURN_REASON_LITERAL(kLocalAeadConfidentialityLimit);
+    RETURN_REASON_LITERAL(kLocalKeyUpdateLimitOverride);
+    default:
+      return quiche::QuicheStrCat("Unknown(", static_cast<int>(reason), ")");
+      break;
+  }
+#undef RETURN_REASON_LITERAL
+}
+
+std::ostream& operator<<(std::ostream& os, const KeyUpdateReason reason) {
+  os << KeyUpdateReasonString(reason);
   return os;
 }
 

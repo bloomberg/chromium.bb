@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/html/html_view_source_document.h"
 
+#include "third_party/blink/renderer/core/css/css_value_id_mappings.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_base_element.h"
@@ -38,17 +39,15 @@
 #include "third_party/blink/renderer/core/html/html_table_row_element.h"
 #include "third_party/blink/renderer/core/html/html_table_section_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_view_source_parser.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer)
-    : HTMLDocument(initializer, kViewSourceDocumentClass),
-      type_(initializer.GetMimeType()) {
+    : HTMLDocument(initializer), type_(initializer.GetMimeType()) {
   SetIsViewSource(true);
-
-  // FIXME: Why do view-source pages need to load in quirks mode?
-  SetCompatibilityMode(kQuirksMode);
+  SetCompatibilityMode(kNoQuirksMode);
   LockCompatibilityMode();
 }
 
@@ -335,7 +334,7 @@ int HTMLViewSourceDocument::AddSrcset(const String& source,
   return end;
 }
 
-void HTMLViewSourceDocument::Trace(Visitor* visitor) {
+void HTMLViewSourceDocument::Trace(Visitor* visitor) const {
   visitor->Trace(current_);
   visitor->Trace(tbody_);
   visitor->Trace(td_);

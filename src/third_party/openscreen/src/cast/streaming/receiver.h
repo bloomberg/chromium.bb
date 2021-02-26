@@ -8,8 +8,9 @@
 #include <stdint.h>
 
 #include <array>
-#include <chrono>  // NOLINT
+#include <chrono>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "absl/types/optional.h"
@@ -24,6 +25,7 @@
 #include "cast/streaming/rtcp_session.h"
 #include "cast/streaming/rtp_packet_parser.h"
 #include "cast/streaming/sender_report_parser.h"
+#include "cast/streaming/session_config.h"
 #include "cast/streaming/ssrc.h"
 #include "platform/api/time.h"
 #include "util/alarm.h"
@@ -33,7 +35,6 @@ namespace cast {
 
 struct EncodedFrame;
 class ReceiverPacketRouter;
-struct SessionConfig;
 
 // The Cast Streaming Receiver, a peer corresponding to some Cast Streaming
 // Sender at the other end of a network link.
@@ -124,11 +125,12 @@ class Receiver {
   // is started).
   Receiver(Environment* environment,
            ReceiverPacketRouter* packet_router,
-           const SessionConfig& config);
+           SessionConfig config);
   ~Receiver();
 
-  Ssrc ssrc() const { return rtcp_session_.receiver_ssrc(); }
+  const SessionConfig& config() const { return config_; }
   int rtp_timebase() const { return rtp_timebase_; }
+  Ssrc ssrc() const { return rtcp_session_.receiver_ssrc(); }
 
   // Set the Consumer receiving notifications when new frames are ready for
   // consumption. Frames received before this method is called will remain in
@@ -256,6 +258,7 @@ class Receiver {
 
   const ClockNowFunctionPtr now_;
   ReceiverPacketRouter* const packet_router_;
+  const SessionConfig config_;
   RtcpSession rtcp_session_;
   SenderReportParser rtcp_parser_;
   CompoundRtcpBuilder rtcp_builder_;

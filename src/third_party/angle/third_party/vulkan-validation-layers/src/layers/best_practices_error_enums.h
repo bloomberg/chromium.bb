@@ -91,10 +91,18 @@ static const char DECORATE_UNUSED *kVUID_BestPractices_ClearAttachments_ClearAft
 static const char DECORATE_UNUSED *kVUID_BestPractices_Error_Result = "UNASSIGNED-BestPractices-Error-Result";
 static const char DECORATE_UNUSED *kVUID_BestPractices_NonSuccess_Result = "UNASSIGNED-BestPractices-NonSuccess-Result";
 static const char DECORATE_UNUSED *kVUID_BestPractices_SuboptimalSwapchain = "UNASSIGNED-BestPractices-SuboptimalSwapchain";
+static const char DECORATE_UNUSED *kVUID_BestPractices_SuboptimalSwapchainImageCount =
+    "UNASSIGNED-BestPractices-vkCreateSwapchainKHR-suboptimal-swapchain-image-count";
 
 // Arm-specific best practice
 static const char DECORATE_UNUSED *kVUID_BestPractices_AllocateDescriptorSets_SuboptimalReuse =
     "UNASSIGNED-BestPractices-vkAllocateDescriptorSets-suboptimal-reuse";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateComputePipelines_ComputeThreadGroupAlignment =
+    "UNASSIGNED-BestPractices-vkCreateComputePipelines-compute-thread-group-alignment";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateComputePipelines_ComputeWorkGroupSize =
+    "UNASSIGNED-BestPractices-vkCreateComputePipelines-compute-work-group-size";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateComputePipelines_ComputeSpatialLocality =
+    "UNASSIGNED-BestPractices-vkCreateComputePipelines-compute-spatial-locality";
 static const char DECORATE_UNUSED *kVUID_BestPractices_CreatePipelines_MultisampledBlending =
     "UNASSIGNED-BestPractices-vkCreatePipelines-multisampled-blending";
 static const char DECORATE_UNUSED *kVUID_BestPractices_CreateImage_TooLargeSampleCount =
@@ -114,6 +122,8 @@ static const char DECORATE_UNUSED *kVUID_BestPractices_CreateSampler_Anisotropy 
     "UNASSIGNED-BestPractices-vkCreateSampler-anisotropy";
 static const char DECORATE_UNUSED *kVUID_BestPractices_CmdResolveImage_ResolvingImage =
     "UNASSIGNED-BestPractices-vkCmdResolveImage-resolving-image";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CmdResolveImage2KHR_ResolvingImage =
+    "UNASSIGNED-BestPractices-vkCmdResolveImage2KHR-resolving-image";
 static const char DECORATE_UNUSED *kVUID_BestPractices_CmdDrawIndexed_ManySmallIndexedDrawcalls =
     "UNASSIGNED-BestPractices-vkCmdDrawIndexed-many-small-indexed-drawcalls";
 static const char DECORATE_UNUSED *kVUID_BestPractices_CmdDrawIndexed_SparseIndexBuffer =
@@ -124,5 +134,13 @@ static const char DECORATE_UNUSED *kVUID_BestPractices_BeginCommandBuffer_OneTim
     "UNASSIGNED-BestPractices-vkBeginCommandBuffer-one-time-submit";
 static const char DECORATE_UNUSED *kVUID_BestPractices_BeginRenderPass_AttachmentNeedsReadback =
     "UNASSIGNED-BestPractices-vkCmdBeginRenderPass-attachment-needs-readback";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateSwapchain_PresentMode =
+    "UNASSIGNED-BestPractices-vkCreateSwapchainKHR-swapchain-presentmode-not-fifo";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreatePipelines_DepthBias_Zero =
+    "UNASSIGNED-BestPractices-vkCreatePipelines-depthbias-zero";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateDevice_RobustBufferAccess =
+    "UNASSIGNED-BestPractices-vkCreateDevice-RobustBufferAccess";
+static const char DECORATE_UNUSED *kVUID_BestPractices_EndRenderPass_DepthPrePassUsage =
+    "UNASSIGNED-BestPractices-vkCmdEndRenderPass-depth-pre-pass-usage";
 
 #endif

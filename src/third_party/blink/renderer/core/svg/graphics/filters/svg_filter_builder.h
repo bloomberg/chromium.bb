@@ -60,18 +60,18 @@ class SVGFilterGraphNodeMap final
 
   void InvalidateDependentEffects(FilterEffect*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   FilterEffectSet& EffectReferences(FilterEffect* effect) {
     // Only allowed for effects that are part of this node map.
     DCHECK(effect_references_.Contains(effect));
-    return effect_references_.find(effect)->value;
+    return *effect_references_.find(effect)->value;
   }
 
   // The value is the set of filter effects that depend on the key
   // filter effect.
-  HeapHashMap<Member<FilterEffect>, FilterEffectSet> effect_references_;
+  HeapHashMap<Member<FilterEffect>, Member<FilterEffectSet>> effect_references_;
   HeapHashMap<WeakMember<SVGFilterPrimitiveStandardAttributes>,
               Member<FilterEffect>>
       effect_element_;

@@ -80,7 +80,7 @@ String RTCEncodedAudioFrame::toString() const {
   sb.Append("RTCEncodedAudioFrame{timestamp: ");
   sb.AppendNumber(timestamp());
   sb.Append("us, size: ");
-  sb.AppendNumber(data() ? data()->ByteLengthAsSizeT() : 0);
+  sb.AppendNumber(data() ? data()->ByteLength() : 0);
   sb.Append("}");
   return sb.ToString();
 }
@@ -101,7 +101,7 @@ RTCEncodedAudioFrame::PassWebRtcFrame() {
   return delegate_->PassWebRtcFrame();
 }
 
-void RTCEncodedAudioFrame::Trace(Visitor* visitor) {
+void RTCEncodedAudioFrame::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   visitor->Trace(frame_data_);
 }

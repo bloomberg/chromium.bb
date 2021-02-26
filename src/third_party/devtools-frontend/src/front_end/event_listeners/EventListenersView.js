@@ -15,15 +15,17 @@ import {frameworkEventListeners, FrameworkEventListenersObject} from './EventLis
  */
 export class EventListenersView extends UI.Widget.VBox {
   /**
-   * @param {function()} changeCallback
+   * @param {function():void} changeCallback
+   * @param {boolean=} enableDefaultTreeFocus
    */
-  constructor(changeCallback) {
+  constructor(changeCallback, enableDefaultTreeFocus = false) {
     super();
     this._changeCallback = changeCallback;
+    this._enableDefaultTreeFocus = enableDefaultTreeFocus;
     this._treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
     this._treeOutline.hideOverflow();
-    this._treeOutline.registerRequiredCSS('object_ui/objectValue.css');
-    this._treeOutline.registerRequiredCSS('event_listeners/eventListenersView.css');
+    this._treeOutline.registerRequiredCSS('object_ui/objectValue.css', {enableLegacyPatching: true});
+    this._treeOutline.registerRequiredCSS('event_listeners/eventListenersView.css', {enableLegacyPatching: true});
     this._treeOutline.setComparator(EventListenersTreeElement.comparator);
     this._treeOutline.element.classList.add('monospace');
     this._treeOutline.setShowSelectionOnKeyboardFocus(true);
@@ -42,6 +44,9 @@ export class EventListenersView extends UI.Widget.VBox {
    * @override
    */
   focus() {
+    if (!this._enableDefaultTreeFocus) {
+      return;
+    }
     if (!this._emptyHolder.parentNode) {
       this._treeOutline.forceSelect();
     } else {
@@ -51,7 +56,7 @@ export class EventListenersView extends UI.Widget.VBox {
 
   /**
    * @param {!Array<?SDK.RemoteObject.RemoteObject>} objects
-   * @return {!Promise<undefined>}
+   * @return {!Promise<void>}
    */
   async addObjects(objects) {
     this.reset();
@@ -62,7 +67,7 @@ export class EventListenersView extends UI.Widget.VBox {
 
   /**
    * @param {!SDK.RemoteObject.RemoteObject} object
-   * @return {!Promise<undefined>}
+   * @return {!Promise<void>}
    */
   _addObject(object) {
     /** @type {!Array<!SDK.DOMDebuggerModel.EventListener>} */
@@ -94,11 +99,15 @@ export class EventListenersView extends UI.Widget.VBox {
     }
 
     /**
-     * @return {!Promise<undefined>}
+     * @return {!Promise<void>}
      */
     function markInternalEventListeners() {
+      if (!frameworkEventListenersObject) {
+        return Promise.resolve();
+      }
+
       if (!frameworkEventListenersObject.internalHandlers) {
-        return Promise.resolve(undefined);
+        return Promise.resolve();
       }
       return frameworkEventListenersObject.internalHandlers.object()
           .callFunctionJSON(isInternalEventListener, eventListeners.map(handlerArgument))
@@ -143,7 +152,9 @@ export class EventListenersView extends UI.Widget.VBox {
      */
     function addEventListeners() {
       this._addObjectEventListeners(object, eventListeners);
-      this._addObjectEventListeners(object, frameworkEventListenersObject.eventListeners);
+      if (frameworkEventListenersObject) {
+        this._addObjectEventListeners(object, frameworkEventListenersObject.eventListeners);
+      }
     }
   }
 
@@ -171,7 +182,8 @@ export class EventListenersView extends UI.Widget.VBox {
     for (const eventType of eventTypes) {
       let hiddenEventType = true;
       for (const listenerElement of eventType.children()) {
-        const listenerOrigin = listenerElement.eventListener().origin();
+        const objectListenerElement = /** @type {!ObjectEventListenerBar} */ (listenerElement);
+        const listenerOrigin = objectListenerElement.eventListener().origin();
         let hidden = false;
         if (listenerOrigin === SDK.DOMDebuggerModel.EventListener.Origin.FrameworkUser && !showFramework) {
           hidden = true;
@@ -179,13 +191,13 @@ export class EventListenersView extends UI.Widget.VBox {
         if (listenerOrigin === SDK.DOMDebuggerModel.EventListener.Origin.Framework && showFramework) {
           hidden = true;
         }
-        if (!showPassive && listenerElement.eventListener().passive()) {
+        if (!showPassive && objectListenerElement.eventListener().passive()) {
           hidden = true;
         }
-        if (!showBlocking && !listenerElement.eventListener().passive()) {
+        if (!showBlocking && !objectListenerElement.eventListener().passive()) {
           hidden = true;
         }
-        listenerElement.hidden = hidden;
+        objectListenerElement.hidden = hidden;
         hiddenEventType = hiddenEventType && hidden;
       }
       eventType.hidden = hiddenEventType;
@@ -245,7 +257,7 @@ export class EventListenersTreeElement extends UI.TreeOutline.TreeElement {
   /**
    * @param {string} type
    * @param {!Components.Linkifier.Linkifier} linkifier
-   * @param {function()} changeCallback
+   * @param {function():void} changeCallback
    */
   constructor(type, linkifier, changeCallback) {
     super(type);
@@ -286,7 +298,7 @@ export class ObjectEventListenerBar extends UI.TreeOutline.TreeElement {
    * @param {!SDK.DOMDebuggerModel.EventListener} eventListener
    * @param {!SDK.RemoteObject.RemoteObject} object
    * @param {!Components.Linkifier.Linkifier} linkifier
-   * @param {function()} changeCallback
+   * @param {function():void} changeCallback
    */
   constructor(eventListener, object, linkifier, changeCallback) {
     super('', true);
@@ -298,7 +310,7 @@ export class ObjectEventListenerBar extends UI.TreeOutline.TreeElement {
 
   /**
    * @override
-   * @returns {!Promise}
+   * @returns {!Promise<void>}
    */
   async onpopulate() {
     const properties = [];
@@ -373,7 +385,7 @@ export class ObjectEventListenerBar extends UI.TreeOutline.TreeElement {
   }
 
   _togglePassiveListener() {
-    this._eventListener.togglePassive().then(this._changeCallback());
+    this._eventListener.togglePassive().then(() => this._changeCallback());
   }
 
   _removeListenerBar() {
@@ -403,7 +415,7 @@ export class ObjectEventListenerBar extends UI.TreeOutline.TreeElement {
    */
   onenter() {
     if (this._valueTitle) {
-      this._valueTitle.click();
+      /** @type {!HTMLElement} */ (this._valueTitle).click();
       return true;
     }
 

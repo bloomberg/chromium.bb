@@ -3,15 +3,18 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_browsertest_base.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
-#include "chrome/browser/safe_browsing/dm_token_utils.h"
+#include "chrome/browser/enterprise/connectors/connectors_manager.h"
+#include "chrome/browser/enterprise/connectors/content_analysis_dialog.h"
+#include "chrome/browser/enterprise/connectors/fake_content_analysis_delegate.h"
+#include "chrome/browser/policy/dm_token_utils.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
 
 namespace safe_browsing {
@@ -20,19 +23,18 @@ namespace {
 
 constexpr char kDmToken[] = "dm_token";
 
-constexpr base::TimeDelta kInitialUIDelay =
-    base::TimeDelta::FromMilliseconds(100);
 constexpr base::TimeDelta kMinimumPendingDelay =
     base::TimeDelta::FromMilliseconds(400);
 constexpr base::TimeDelta kSuccessTimeout =
     base::TimeDelta::FromMilliseconds(100);
 
-class UnresponsiveDeepScanningDialogDelegate
-    : public FakeDeepScanningDialogDelegate {
+class UnresponsiveContentAnalysisDelegate
+    : public enterprise_connectors::FakeContentAnalysisDelegate {
  public:
-  using FakeDeepScanningDialogDelegate::FakeDeepScanningDialogDelegate;
+  using enterprise_connectors::FakeContentAnalysisDelegate::
+      FakeContentAnalysisDelegate;
 
-  static std::unique_ptr<DeepScanningDialogDelegate> Create(
+  static std::unique_ptr<enterprise_connectors::ContentAnalysisDelegate> Create(
       base::RepeatingClosure delete_closure,
       StatusCallback status_callback,
       EncryptionStatusCallback encryption_callback,
@@ -40,7 +42,7 @@ class UnresponsiveDeepScanningDialogDelegate
       content::WebContents* web_contents,
       Data data,
       CompletionCallback callback) {
-    auto ret = std::make_unique<UnresponsiveDeepScanningDialogDelegate>(
+    auto ret = std::make_unique<UnresponsiveContentAnalysisDelegate>(
         delete_closure, status_callback, encryption_callback,
         std::move(dm_token), web_contents, std::move(data),
         std::move(callback));
@@ -66,100 +68,57 @@ class UnresponsiveDeepScanningDialogDelegate
 DeepScanningBrowserTestBase::DeepScanningBrowserTestBase() {
   // Enable every deep scanning features.
   scoped_feature_list_.InitWithFeatures(
-      {kContentComplianceEnabled, kMalwareScanEnabled}, {});
+      {enterprise_connectors::kEnterpriseConnectorsEnabled}, {});
 
   // Change the time values of the upload UI to smaller ones to make tests
   // showing it run faster.
-  DeepScanningDialogViews::SetInitialUIDelayForTesting(kInitialUIDelay);
-  DeepScanningDialogViews::SetMinimumPendingDialogTimeForTesting(
-      kMinimumPendingDelay);
-  DeepScanningDialogViews::SetSuccessDialogTimeoutForTesting(kSuccessTimeout);
+  enterprise_connectors::ContentAnalysisDialog::
+      SetMinimumPendingDialogTimeForTesting(kMinimumPendingDelay);
+  enterprise_connectors::ContentAnalysisDialog::
+      SetSuccessDialogTimeoutForTesting(kSuccessTimeout);
 }
 
 DeepScanningBrowserTestBase::~DeepScanningBrowserTestBase() = default;
 
+void DeepScanningBrowserTestBase::SetUpOnMainThread() {
+  enterprise_connectors::ConnectorsManager::GetInstance()->SetUpForTesting();
+}
+
 void DeepScanningBrowserTestBase::TearDownOnMainThread() {
-  DeepScanningDialogDelegate::ResetFactoryForTesting();
+  enterprise_connectors::ConnectorsManager::GetInstance()->TearDownForTesting();
+  enterprise_connectors::ContentAnalysisDelegate::ResetFactoryForTesting();
 
-  SetDlpPolicy(CheckContentComplianceValues::CHECK_NONE);
-  SetMalwarePolicy(SendFilesForMalwareCheckValues::DO_NOT_SCAN);
-  SetWaitPolicy(DelayDeliveryUntilVerdictValues::DELAY_NONE);
-  SetAllowPasswordProtectedFilesPolicy(
-      AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
-  SetBlockUnsupportedFileTypesPolicy(
-      BlockUnsupportedFiletypesValues::BLOCK_UNSUPPORTED_FILETYPES_NONE);
-  SetBlockLargeFileTransferPolicy(BlockLargeFileTransferValues::BLOCK_NONE);
-  SetUnsafeEventsReportingPolicy(false);
-}
-
-void DeepScanningBrowserTestBase::SetDlpPolicy(
-    CheckContentComplianceValues state) {
-  g_browser_process->local_state()->SetInteger(prefs::kCheckContentCompliance,
-                                               state);
-}
-
-void DeepScanningBrowserTestBase::SetMalwarePolicy(
-    SendFilesForMalwareCheckValues state) {
-  browser()->profile()->GetPrefs()->SetInteger(
-      prefs::kSafeBrowsingSendFilesForMalwareCheck, state);
-}
-
-void DeepScanningBrowserTestBase::SetWaitPolicy(
-    DelayDeliveryUntilVerdictValues state) {
-  g_browser_process->local_state()->SetInteger(
-      prefs::kDelayDeliveryUntilVerdict, state);
-}
-
-void DeepScanningBrowserTestBase::SetAllowPasswordProtectedFilesPolicy(
-    AllowPasswordProtectedFilesValues state) {
-  g_browser_process->local_state()->SetInteger(
-      prefs::kAllowPasswordProtectedFiles, state);
-}
-
-void DeepScanningBrowserTestBase::SetBlockUnsupportedFileTypesPolicy(
-    BlockUnsupportedFiletypesValues state) {
-  g_browser_process->local_state()->SetInteger(
-      prefs::kBlockUnsupportedFiletypes, state);
-}
-
-void DeepScanningBrowserTestBase::SetBlockLargeFileTransferPolicy(
-    BlockLargeFileTransferValues state) {
-  g_browser_process->local_state()->SetInteger(prefs::kBlockLargeFileTransfer,
-                                               state);
-}
-
-void DeepScanningBrowserTestBase::SetUnsafeEventsReportingPolicy(bool report) {
-  g_browser_process->local_state()->SetBoolean(
-      prefs::kUnsafeEventsReportingEnabled, report);
-}
-
-void DeepScanningBrowserTestBase::AddUrlToCheckComplianceOfDownloads(
-    const std::string& url) {
-  ListPrefUpdate(g_browser_process->local_state(),
-                 prefs::kURLsToCheckComplianceOfDownloadedContent)
-      ->Append(url);
+  ClearAnalysisConnector(enterprise_connectors::FILE_ATTACHED);
+  ClearAnalysisConnector(enterprise_connectors::FILE_DOWNLOADED);
+  ClearAnalysisConnector(enterprise_connectors::BULK_DATA_ENTRY);
+  SetOnSecurityEventReporting(false);
 }
 
 void DeepScanningBrowserTestBase::SetUpDelegate() {
   SetDMTokenForTesting(policy::DMToken::CreateValidTokenForTesting(kDmToken));
-  DeepScanningDialogDelegate::SetFactoryForTesting(base::BindRepeating(
-      &FakeDeepScanningDialogDelegate::Create, base::DoNothing(),
-      base::Bind(&DeepScanningBrowserTestBase::StatusCallback,
-                 base::Unretained(this)),
-      base::Bind(&DeepScanningBrowserTestBase::EncryptionStatusCallback,
-                 base::Unretained(this)),
-      kDmToken));
+  enterprise_connectors::ContentAnalysisDelegate::SetFactoryForTesting(
+      base::BindRepeating(
+          &enterprise_connectors::FakeContentAnalysisDelegate::Create,
+          base::DoNothing(),
+          base::BindRepeating(&DeepScanningBrowserTestBase::StatusCallback,
+                              base::Unretained(this)),
+          base::BindRepeating(
+              &DeepScanningBrowserTestBase::EncryptionStatusCallback,
+              base::Unretained(this)),
+          kDmToken));
 }
 
 void DeepScanningBrowserTestBase::SetUpUnresponsiveDelegate() {
   SetDMTokenForTesting(policy::DMToken::CreateValidTokenForTesting(kDmToken));
-  DeepScanningDialogDelegate::SetFactoryForTesting(base::BindRepeating(
-      &UnresponsiveDeepScanningDialogDelegate::Create, base::DoNothing(),
-      base::Bind(&DeepScanningBrowserTestBase::StatusCallback,
-                 base::Unretained(this)),
-      base::Bind(&DeepScanningBrowserTestBase::EncryptionStatusCallback,
-                 base::Unretained(this)),
-      kDmToken));
+  enterprise_connectors::ContentAnalysisDelegate::SetFactoryForTesting(
+      base::BindRepeating(
+          &UnresponsiveContentAnalysisDelegate::Create, base::DoNothing(),
+          base::BindRepeating(&DeepScanningBrowserTestBase::StatusCallback,
+                              base::Unretained(this)),
+          base::BindRepeating(
+              &DeepScanningBrowserTestBase::EncryptionStatusCallback,
+              base::Unretained(this)),
+          kDmToken));
 }
 
 void DeepScanningBrowserTestBase::SetQuitClosure(
@@ -173,13 +132,13 @@ void DeepScanningBrowserTestBase::CallQuitClosure() {
 }
 
 void DeepScanningBrowserTestBase::SetStatusCallbackResponse(
-    DeepScanningClientResponse response) {
-  status_callback_response_ = response;
+    enterprise_connectors::ContentAnalysisResponse response) {
+  connector_status_callback_response_ = response;
 }
 
-DeepScanningClientResponse DeepScanningBrowserTestBase::StatusCallback(
-    const base::FilePath& path) {
-  return status_callback_response_;
+enterprise_connectors::ContentAnalysisResponse
+DeepScanningBrowserTestBase::StatusCallback(const base::FilePath& path) {
+  return connector_status_callback_response_;
 }
 
 bool DeepScanningBrowserTestBase::EncryptionStatusCallback(
@@ -190,7 +149,7 @@ bool DeepScanningBrowserTestBase::EncryptionStatusCallback(
 void DeepScanningBrowserTestBase::CreateFilesForTest(
     const std::vector<std::string>& paths,
     const std::vector<std::string>& contents,
-    DeepScanningDialogDelegate::Data* data) {
+    enterprise_connectors::ContentAnalysisDelegate::Data* data) {
   ASSERT_EQ(paths.size(), contents.size());
 
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

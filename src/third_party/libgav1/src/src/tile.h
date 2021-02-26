@@ -33,7 +33,6 @@
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/frame_scratch_buffer.h"
-#include "src/loop_filter_mask.h"
 #include "src/loop_restoration_info.h"
 #include "src/obu_parser.h"
 #include "src/post_filter.h"
@@ -77,16 +76,14 @@ class Tile : public Allocable {
       const WedgeMaskArray& wedge_masks,
       SymbolDecoderContext* const saved_symbol_decoder_context,
       const SegmentationMap* prev_segment_ids, PostFilter* const post_filter,
-      BlockParametersHolder* const block_parameters_holder,
       const dsp::Dsp* const dsp, ThreadPool* const thread_pool,
       BlockingCounterWithStatus* const pending_tiles, bool frame_parallel,
       bool use_intra_prediction_buffer) {
     std::unique_ptr<Tile> tile(new (std::nothrow) Tile(
         tile_number, data, size, sequence_header, frame_header, current_frame,
         state, frame_scratch_buffer, wedge_masks, saved_symbol_decoder_context,
-        prev_segment_ids, post_filter, block_parameters_holder, dsp,
-        thread_pool, pending_tiles, frame_parallel,
-        use_intra_prediction_buffer));
+        prev_segment_ids, post_filter, dsp, thread_pool, pending_tiles,
+        frame_parallel, use_intra_prediction_buffer));
     return (tile != nullptr && tile->Init()) ? std::move(tile) : nullptr;
   }
 
@@ -100,9 +97,17 @@ class Tile : public Allocable {
 
   // Parses the entire tile.
   bool Parse();
+  // Decodes the entire tile. |superblock_row_progress| and
+  // |superblock_row_progress_condvar| are arrays of size equal to the number of
+  // superblock rows in the frame. Increments |superblock_row_progress[i]| after
+  // each superblock row at index |i| is decoded. If the count reaches the
+  // number of tile columns, then it notifies
+  // |superblock_row_progress_condvar[i]|.
+  bool Decode(std::mutex* mutex, int* superblock_row_progress,
+              std::condition_variable* superblock_row_progress_condvar);
   // Parses and decodes the entire tile. Depending on the configuration of this
   // Tile, this function may do multithreaded decoding.
-  bool ParseAndDecode(bool is_main_thread);  // 5.11.2.
+  bool ParseAndDecode();  // 5.11.2.
   // Processes all the columns of the superblock row at |row4x4| that are within
   // this Tile. If |save_symbol_decoder_context| is true, then
   // SaveSymbolDecoderContext() is invoked for the last superblock row.
@@ -118,10 +123,14 @@ class Tile : public Allocable {
     return reference_frame_sign_bias_;
   }
 
+  bool IsRow4x4Inside(int row4x4) const {
+    return row4x4 >= row4x4_start_ && row4x4 < row4x4_end_;
+  }
+
   // 5.11.51.
   bool IsInside(int row4x4, int column4x4) const {
-    return row4x4 >= row4x4_start_ && row4x4 < row4x4_end_ &&
-           column4x4 >= column4x4_start_ && column4x4 < column4x4_end_;
+    return IsRow4x4Inside(row4x4) && column4x4 >= column4x4_start_ &&
+           column4x4 < column4x4_end_;
   }
 
   bool IsLeftInside(int column4x4) const {
@@ -168,9 +177,13 @@ class Tile : public Allocable {
   const BlockParameters& Parameters(int row, int column) const {
     return *block_parameters_holder_.Find(row, column);
   }
+
   int number() const { return number_; }
   int superblock_rows() const { return superblock_rows_; }
   int superblock_columns() const { return superblock_columns_; }
+  int row4x4_start() const { return row4x4_start_; }
+  int column4x4_start() const { return column4x4_start_; }
+  int column4x4_end() const { return column4x4_end_; }
 
  private:
   Tile(int tile_number, const uint8_t* data, size_t size,
@@ -180,9 +193,9 @@ class Tile : public Allocable {
        const WedgeMaskArray& wedge_masks,
        SymbolDecoderContext* saved_symbol_decoder_context,
        const SegmentationMap* prev_segment_ids, PostFilter* post_filter,
-       BlockParametersHolder* block_parameters_holder, const dsp::Dsp* dsp,
-       ThreadPool* thread_pool, BlockingCounterWithStatus* pending_tiles,
-       bool frame_parallel, bool use_intra_prediction_buffer);
+       const dsp::Dsp* dsp, ThreadPool* thread_pool,
+       BlockingCounterWithStatus* pending_tiles, bool frame_parallel,
+       bool use_intra_prediction_buffer);
 
   // Stores the transform tree state when reading variable size transform trees
   // and when applying the transform tree. When applying the transform tree,
@@ -201,16 +214,20 @@ class Tile : public Allocable {
     int depth;
   };
 
+  // Enum to track the processing state of a superblock.
+  enum SuperBlockState : uint8_t {
+    kSuperBlockStateNone,       // Not yet parsed or decoded.
+    kSuperBlockStateParsed,     // Parsed but not yet decoded.
+    kSuperBlockStateScheduled,  // Scheduled for decoding.
+    kSuperBlockStateDecoded     // Parsed and decoded.
+  };
+
   // Parameters used to facilitate multi-threading within the Tile.
   struct ThreadingParameters {
     std::mutex mutex;
-    // Array2DView of size |superblock_rows_| by |superblock_columns_|
-    // containing the processing state of each superblock. The code in this
-    // class uses relative indexing of superblocks with respect to this Tile.
-    // The memory for this comes from the caller (the |super_block_state|
-    // parameter in the constructor). The memory is for the whole frame whereas
-    // the |sb_state| array in this struct points to the beginning of this Tile.
-    Array2DView<SuperBlockState> sb_state LIBGAV1_GUARDED_BY(mutex);
+    // 2d array of size |superblock_rows_| by |superblock_columns_| containing
+    // the processing state of each superblock.
+    Array2D<SuperBlockState> sb_state LIBGAV1_GUARDED_BY(mutex);
     // Variable used to indicate either parse or decode failure.
     bool abort LIBGAV1_GUARDED_BY(mutex) = false;
     int pending_jobs LIBGAV1_GUARDED_BY(mutex) = 0;
@@ -297,14 +314,6 @@ class Tile : public Allocable {
   void ResetLoopRestorationParams();
   void ReadLoopRestorationCoefficients(int row4x4, int column4x4,
                                        BlockSize block_size);  // 5.11.57.
-  // Build bit masks for vertical edges followed by horizontal edges.
-  // Traverse through each transform edge in the current coding block, and
-  // determine if a 4x4 edge needs filtering. If filtering is needed, determine
-  // filter length. Set corresponding bit mask to 1.
-  void BuildBitMask(const Block& block);
-  void BuildBitMaskHelper(const Block& block, int row4x4, int column4x4,
-                          BlockSize block_size, bool is_vertical_block_border,
-                          bool is_horizontal_block_border);
 
   // Helper functions for DecodeBlock.
   bool ReadSegmentId(const Block& block);       // 5.11.9.
@@ -339,19 +348,7 @@ class Tile : public Allocable {
   void ReadIsInter(const Block& block);                        // 5.11.20.
   bool ReadIntraBlockModeInfo(const Block& block,
                               bool intra_y_mode);  // 5.11.22.
-  int GetUseCompoundReferenceContext(const Block& block);
   CompoundReferenceType ReadCompoundReferenceType(const Block& block);
-  // Calculates count0 by calling block.CountReferences() on the frame types
-  // from type0_start to type0_end, inclusive, and summing the results.
-  // Calculates count1 by calling block.CountReferences() on the frame types
-  // from type1_start to type1_end, inclusive, and summing the results.
-  // Compares count0 with count1 and returns 0, 1 or 2.
-  //
-  // See count_refs and ref_count_ctx in 8.3.2.
-  int GetReferenceContext(const Block& block, ReferenceFrameType type0_start,
-                          ReferenceFrameType type0_end,
-                          ReferenceFrameType type1_start,
-                          ReferenceFrameType type1_end) const;
   template <bool is_single, bool is_backward, int index>
   uint16_t* GetReferenceCdf(const Block& block, CompoundReferenceType type =
                                                     kNumCompoundReferenceTypes);
@@ -395,9 +392,6 @@ class Tile : public Allocable {
                                      int block_y);  // 5.11.40.
   void ReadTransformType(const Block& block, int x4, int y4,
                          TransformSize tx_size);  // 5.11.47.
-  int GetCoeffBaseContextEob(TransformSize tx_size, int index);
-  int GetCoeffBaseRangeContextEob(int adjusted_tx_width_log2, int pos,
-                                  TransformClass tx_class);
   template <typename ResidualType>
   void ReadCoeffBase2D(
       const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
@@ -582,8 +576,8 @@ class Tile : public Allocable {
   }
 
   const int number_;
-  int row_;
-  int column_;
+  const int row_;
+  const int column_;
   const uint8_t* const data_;
   size_t size_;
   int row4x4_start_;
@@ -729,14 +723,17 @@ class Tile : public Allocable {
   int8_t delta_lf_[kFrameLfCount];
   // True if all the values in |delta_lf_| are zero. False otherwise.
   bool delta_lf_all_zero_;
-  bool build_bit_mask_when_parsing_;
   const bool frame_parallel_;
   const bool use_intra_prediction_buffer_;
   // Buffer used to store the unfiltered pixels that are necessary for decoding
   // the next superblock row (for the intra prediction process). Used only if
-  // |use_intra_prediction_buffer_| is true.
-  std::array<AlignedDynamicBuffer<uint8_t, kMaxAlignment>, kMaxPlanes>
-      intra_prediction_buffer_;
+  // |use_intra_prediction_buffer_| is true. The |frame_scratch_buffer| contains
+  // one row buffer for each tile row. This tile will have to use the buffer
+  // corresponding to this tile's row.
+  IntraPredictionBuffer* const intra_prediction_buffer_;
+  // Stores the progress of the reference frames. This will be used to avoid
+  // unnecessary calls into RefCountedBuffer::WaitUntil().
+  std::array<int, kNumReferenceFrameTypes> reference_frame_progress_cache_;
 };
 
 struct Tile::Block {
@@ -890,6 +887,13 @@ struct Tile::Block {
   TileScratchBuffer* const scratch_buffer;
   ResidualPtr* const residual;
 };
+
+extern template bool
+Tile::ProcessSuperBlockRow<kProcessingModeDecodeOnly, false>(
+    int row4x4, TileScratchBuffer* scratch_buffer);
+extern template bool
+Tile::ProcessSuperBlockRow<kProcessingModeParseAndDecode, true>(
+    int row4x4, TileScratchBuffer* scratch_buffer);
 
 }  // namespace libgav1
 

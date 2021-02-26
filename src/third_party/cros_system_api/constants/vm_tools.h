@@ -11,6 +11,7 @@ constexpr int kMaitredPort = 8888;
 constexpr int kGarconPort = 8889;
 constexpr int kTremplinPort = 8890;
 constexpr int kVshPort = 9001;
+constexpr int kArcHostClockServicePort = 9901;
 
 constexpr int kDefaultStartupListenerPort = 7777;
 constexpr int kTremplinListenerPort = 7778;

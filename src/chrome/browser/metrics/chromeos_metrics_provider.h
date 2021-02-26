@@ -18,30 +18,17 @@ namespace arc {
 struct ArcFeatures;
 }
 
-namespace features {
-extern const base::Feature kUmaShortHWClass;
-}
-
 namespace metrics {
 class CachedMetricsProfile;
 class ChromeUserMetricsExtension;
 }
 
+enum class EnrollmentStatus;
 class PrefRegistrySimple;
 
 // Performs ChromeOS specific metrics logging.
 class ChromeOSMetricsProvider : public metrics::MetricsProvider {
  public:
-  // Possible device enrollment status for a Chrome OS device.
-  // Used by UMA histogram, so entries shouldn't be reordered or removed.
-  enum EnrollmentStatus {
-    NON_MANAGED,
-    UNUSED,  // Formerly MANAGED_EDU, see crbug.com/462770.
-    MANAGED,
-    ERROR_GETTING_ENROLLMENT_STATUS,
-    ENROLLMENT_STATUS_MAX,
-  };
-
   explicit ChromeOSMetricsProvider(
       metrics::MetricsLogUploader::MetricServiceType service_type);
   ~ChromeOSMetricsProvider() override;
@@ -75,6 +62,7 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
 
  private:
   void ProvideAccessibilityMetrics();
+  void ProvideSuggestedContentMetrics();
 
   // Update the number of users logged into a multi-profile session.
   // If the number of users change while the log is open, the call invalidates
@@ -110,9 +98,6 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // valid value only if |registered_user_count_at_log_initialization_| is
   // true.
   uint64_t user_count_at_log_initialization_;
-
-  // Short Hardware class. This value identifies the board of the hardware.
-  std::string hardware_class_;
 
   // Hardware class (e.g., hardware qualification ID). This value identifies
   // the configured system components such as CPU, WiFi adapter, etc.

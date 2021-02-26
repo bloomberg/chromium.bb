@@ -31,10 +31,10 @@
 
 
 typedef int (*hash_t_func_t)(const EC_GROUP *group, EC_RAW_POINT *out,
-                             const uint8_t t[PMBTOKEN_NONCE_SIZE]);
+                             const uint8_t t[TRUST_TOKEN_NONCE_SIZE]);
 typedef int (*hash_s_func_t)(const EC_GROUP *group, EC_RAW_POINT *out,
                              const EC_AFFINE *t,
-                             const uint8_t s[PMBTOKEN_NONCE_SIZE]);
+                             const uint8_t s[TRUST_TOKEN_NONCE_SIZE]);
 typedef int (*hash_c_func_t)(const EC_GROUP *group, EC_SCALAR *out,
                              uint8_t *buf, size_t len);
 
@@ -52,9 +52,7 @@ typedef struct {
   // hash_c implements the H_c operation in PMBTokens. It returns one on success
   // and zero on error.
   hash_c_func_t hash_c;
-  // batched_proof determines whether PMBToken uses a batched DLEQOR proof when
-  // signing tokens.
-  int batched_proof : 1;
+  int prefix_point : 1;
 } PMBTOKEN_METHOD;
 
 static const uint8_t kDefaultAdditionalData[32] = {0};
@@ -62,7 +60,7 @@ static const uint8_t kDefaultAdditionalData[32] = {0};
 static int pmbtoken_init_method(PMBTOKEN_METHOD *method, int curve_nid,
                                 const uint8_t *h_bytes, size_t h_len,
                                 hash_t_func_t hash_t, hash_s_func_t hash_s,
-                                hash_c_func_t hash_c, int batched_proof) {
+                                hash_c_func_t hash_c, int prefix_point) {
   method->group = EC_GROUP_new_by_curve_name(curve_nid);
   if (method->group == NULL) {
     return 0;
@@ -71,7 +69,7 @@ static int pmbtoken_init_method(PMBTOKEN_METHOD *method, int curve_nid,
   method->hash_t = hash_t;
   method->hash_s = hash_s;
   method->hash_c = hash_c;
-  method->batched_proof = batched_proof;
+  method->prefix_point = prefix_point;
 
   EC_AFFINE h;
   if (!ec_point_from_uncompressed(method->group, &h, h_bytes, h_len)) {
@@ -117,11 +115,40 @@ static int point_to_cbb(CBB *out, const EC_GROUP *group,
                            len) == len;
 }
 
+static int cbb_add_prefixed_point(CBB *out, const EC_GROUP *group,
+                                  const EC_AFFINE *point, int prefix_point) {
+  if (prefix_point) {
+    CBB child;
+    if (!CBB_add_u16_length_prefixed(out, &child) ||
+        !point_to_cbb(&child, group, point) ||
+        !CBB_flush(out)) {
+      return 0;
+    }
+  } else {
+    if (!point_to_cbb(out, group, point) ||
+        !CBB_flush(out)) {
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
 static int cbs_get_prefixed_point(CBS *cbs, const EC_GROUP *group,
-                                  EC_AFFINE *out) {
+                                  EC_AFFINE *out, int prefix_point) {
   CBS child;
-  if (!CBS_get_u16_length_prefixed(cbs, &child) ||
-      !ec_point_from_uncompressed(group, out, CBS_data(&child),
+  if (prefix_point) {
+    if (!CBS_get_u16_length_prefixed(cbs, &child)) {
+      return 0;
+    }
+  } else {
+    size_t plen = 1 + 2 * BN_num_bytes(&group->field);
+    if (!CBS_get_bytes(cbs, &child, plen)) {
+      return 0;
+    }
+  }
+
+  if (!ec_point_from_uncompressed(group, out, CBS_data(&child),
                                   CBS_len(&child))) {
     return 0;
   }
@@ -136,10 +163,6 @@ static int mul_public_3(const EC_GROUP *group, EC_RAW_POINT *out,
   EC_SCALAR scalars[3] = {*scalar0, *scalar1, *scalar2};
   return ec_point_mul_scalar_public_batch(group, out, /*g_scalar=*/NULL, points,
                                           scalars, 3);
-}
-
-void PMBTOKEN_PRETOKEN_free(PMBTOKEN_PRETOKEN *pretoken) {
-  OPENSSL_free(pretoken);
 }
 
 static int pmbtoken_generate_key(const PMBTOKEN_METHOD *method,
@@ -170,16 +193,12 @@ static int pmbtoken_generate_key(const PMBTOKEN_METHOD *method,
     return 0;
   }
 
-  // TODO(https://crbug.com/boringssl/331): When updating the key format, remove
-  // the redundant length prefixes.
-  CBB child;
-  if (!CBB_add_u16_length_prefixed(out_public, &child) ||
-      !point_to_cbb(&child, group, &pub_affine[0]) ||
-      !CBB_add_u16_length_prefixed(out_public, &child) ||
-      !point_to_cbb(&child, group, &pub_affine[1]) ||
-      !CBB_add_u16_length_prefixed(out_public, &child) ||
-      !point_to_cbb(&child, group, &pub_affine[2]) ||
-      !CBB_flush(out_public)) {
+  if (!cbb_add_prefixed_point(out_public, group, &pub_affine[0],
+                              method->prefix_point) ||
+      !cbb_add_prefixed_point(out_public, group, &pub_affine[1],
+                              method->prefix_point) ||
+      !cbb_add_prefixed_point(out_public, group, &pub_affine[2],
+                              method->prefix_point)) {
     OPENSSL_PUT_ERROR(TRUST_TOKEN, TRUST_TOKEN_R_BUFFER_TOO_SMALL);
     return 0;
   }
@@ -188,15 +207,16 @@ static int pmbtoken_generate_key(const PMBTOKEN_METHOD *method,
 }
 
 static int pmbtoken_client_key_from_bytes(const PMBTOKEN_METHOD *method,
-                                          PMBTOKEN_CLIENT_KEY *key,
+                                          TRUST_TOKEN_CLIENT_KEY *key,
                                           const uint8_t *in, size_t len) {
-  // TODO(https://crbug.com/boringssl/331): When updating the key format, remove
-  // the redundant length prefixes.
   CBS cbs;
   CBS_init(&cbs, in, len);
-  if (!cbs_get_prefixed_point(&cbs, method->group, &key->pub0) ||
-      !cbs_get_prefixed_point(&cbs, method->group, &key->pub1) ||
-      !cbs_get_prefixed_point(&cbs, method->group, &key->pubs) ||
+  if (!cbs_get_prefixed_point(&cbs, method->group, &key->pub0,
+                              method->prefix_point) ||
+      !cbs_get_prefixed_point(&cbs, method->group, &key->pub1,
+                              method->prefix_point) ||
+      !cbs_get_prefixed_point(&cbs, method->group, &key->pubs,
+                              method->prefix_point) ||
       CBS_len(&cbs) != 0) {
     OPENSSL_PUT_ERROR(TRUST_TOKEN, TRUST_TOKEN_R_DECODE_FAILURE);
     return 0;
@@ -206,7 +226,7 @@ static int pmbtoken_client_key_from_bytes(const PMBTOKEN_METHOD *method,
 }
 
 static int pmbtoken_issuer_key_from_bytes(const PMBTOKEN_METHOD *method,
-                                          PMBTOKEN_ISSUER_KEY *key,
+                                          TRUST_TOKEN_ISSUER_KEY *key,
                                           const uint8_t *in, size_t len) {
   const EC_GROUP *group = method->group;
   CBS cbs, tmp;
@@ -245,10 +265,10 @@ static int pmbtoken_issuer_key_from_bytes(const PMBTOKEN_METHOD *method,
   return 1;
 }
 
-static STACK_OF(PMBTOKEN_PRETOKEN) *
+static STACK_OF(TRUST_TOKEN_PRETOKEN) *
     pmbtoken_blind(const PMBTOKEN_METHOD *method, CBB *cbb, size_t count) {
   const EC_GROUP *group = method->group;
-  STACK_OF(PMBTOKEN_PRETOKEN) *pretokens = sk_PMBTOKEN_PRETOKEN_new_null();
+  STACK_OF(TRUST_TOKEN_PRETOKEN) *pretokens = sk_TRUST_TOKEN_PRETOKEN_new_null();
   if (pretokens == NULL) {
     OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_MALLOC_FAILURE);
     goto err;
@@ -256,11 +276,11 @@ static STACK_OF(PMBTOKEN_PRETOKEN) *
 
   for (size_t i = 0; i < count; i++) {
     // Insert |pretoken| into |pretokens| early to simplify error-handling.
-    PMBTOKEN_PRETOKEN *pretoken = OPENSSL_malloc(sizeof(PMBTOKEN_PRETOKEN));
+    TRUST_TOKEN_PRETOKEN *pretoken = OPENSSL_malloc(sizeof(TRUST_TOKEN_PRETOKEN));
     if (pretoken == NULL ||
-        !sk_PMBTOKEN_PRETOKEN_push(pretokens, pretoken)) {
+        !sk_TRUST_TOKEN_PRETOKEN_push(pretokens, pretoken)) {
       OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_MALLOC_FAILURE);
-      PMBTOKEN_PRETOKEN_free(pretoken);
+      TRUST_TOKEN_PRETOKEN_free(pretoken);
       goto err;
     }
 
@@ -286,12 +306,8 @@ static STACK_OF(PMBTOKEN_PRETOKEN) *
       goto err;
     }
 
-    // TODO(https://crbug.com/boringssl/331): When updating the key format,
-    // remove the redundant length prefixes.
-    CBB child;
-    if (!CBB_add_u16_length_prefixed(cbb, &child) ||
-        !point_to_cbb(&child, group, &pretoken->Tp) ||
-        !CBB_flush(cbb)) {
+    if (!cbb_add_prefixed_point(cbb, group, &pretoken->Tp,
+                                method->prefix_point)) {
       goto err;
     }
   }
@@ -299,7 +315,7 @@ static STACK_OF(PMBTOKEN_PRETOKEN) *
   return pretokens;
 
 err:
-  sk_PMBTOKEN_PRETOKEN_pop_free(pretokens, PMBTOKEN_PRETOKEN_free);
+  sk_TRUST_TOKEN_PRETOKEN_pop_free(pretokens, TRUST_TOKEN_PRETOKEN_free);
   return NULL;
 }
 
@@ -435,9 +451,10 @@ err:
 // DLEQOR2 with only one value (n=1).
 
 static int dleq_generate(const PMBTOKEN_METHOD *method, CBB *cbb,
-                         const PMBTOKEN_ISSUER_KEY *priv, const EC_RAW_POINT *T,
-                         const EC_RAW_POINT *S, const EC_RAW_POINT *W,
-                         const EC_RAW_POINT *Ws, uint8_t private_metadata) {
+                         const TRUST_TOKEN_ISSUER_KEY *priv,
+                         const EC_RAW_POINT *T, const EC_RAW_POINT *S,
+                         const EC_RAW_POINT *W, const EC_RAW_POINT *Ws,
+                         uint8_t private_metadata) {
   const EC_GROUP *group = method->group;
 
   // We generate a DLEQ proof for the validity token and a DLEQOR2 proof for the
@@ -596,7 +613,7 @@ static int dleq_generate(const PMBTOKEN_METHOD *method, CBB *cbb,
 }
 
 static int dleq_verify(const PMBTOKEN_METHOD *method, CBS *cbs,
-                       const PMBTOKEN_CLIENT_KEY *pub, const EC_RAW_POINT *T,
+                       const TRUST_TOKEN_CLIENT_KEY *pub, const EC_RAW_POINT *T,
                        const EC_RAW_POINT *S, const EC_RAW_POINT *W,
                        const EC_RAW_POINT *Ws) {
   const EC_GROUP *group = method->group;
@@ -715,7 +732,7 @@ static int dleq_verify(const PMBTOKEN_METHOD *method, CBS *cbs,
 }
 
 static int pmbtoken_sign(const PMBTOKEN_METHOD *method,
-                         const PMBTOKEN_ISSUER_KEY *key, CBB *cbb, CBS *cbs,
+                         const TRUST_TOKEN_ISSUER_KEY *key, CBB *cbb, CBS *cbs,
                          size_t num_requested, size_t num_to_issue,
                          uint8_t private_metadata) {
   const EC_GROUP *group = method->group;
@@ -724,43 +741,37 @@ static int pmbtoken_sign(const PMBTOKEN_METHOD *method,
     return 0;
   }
 
+  if (num_to_issue > ((size_t)-1) / sizeof(EC_RAW_POINT) ||
+      num_to_issue > ((size_t)-1) / sizeof(EC_SCALAR)) {
+    OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_OVERFLOW);
+    return 0;
+  }
+
   int ret = 0;
-  EC_RAW_POINT *Tps = NULL;
-  EC_RAW_POINT *Sps = NULL;
-  EC_RAW_POINT *Wps = NULL;
-  EC_RAW_POINT *Wsps = NULL;
-  EC_SCALAR *es = NULL;
+  EC_RAW_POINT *Tps = OPENSSL_malloc(num_to_issue * sizeof(EC_RAW_POINT));
+  EC_RAW_POINT *Sps = OPENSSL_malloc(num_to_issue * sizeof(EC_RAW_POINT));
+  EC_RAW_POINT *Wps = OPENSSL_malloc(num_to_issue * sizeof(EC_RAW_POINT));
+  EC_RAW_POINT *Wsps = OPENSSL_malloc(num_to_issue * sizeof(EC_RAW_POINT));
+  EC_SCALAR *es = OPENSSL_malloc(num_to_issue * sizeof(EC_SCALAR));
   CBB batch_cbb;
   CBB_zero(&batch_cbb);
-  if (method->batched_proof) {
-    if (num_to_issue > ((size_t)-1) / sizeof(EC_RAW_POINT) ||
-        num_to_issue > ((size_t)-1) / sizeof(EC_SCALAR)) {
-      OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_OVERFLOW);
-      goto err;
-    }
-    Tps = OPENSSL_malloc(num_to_issue * sizeof(EC_RAW_POINT));
-    Sps = OPENSSL_malloc(num_to_issue * sizeof(EC_RAW_POINT));
-    Wps = OPENSSL_malloc(num_to_issue * sizeof(EC_RAW_POINT));
-    Wsps = OPENSSL_malloc(num_to_issue * sizeof(EC_RAW_POINT));
-    es = OPENSSL_malloc(num_to_issue * sizeof(EC_SCALAR));
-    if (!Tps ||
-        !Sps ||
-        !Wps ||
-        !Wsps ||
-        !es ||
-        !CBB_init(&batch_cbb, 0) ||
-        !point_to_cbb(&batch_cbb, method->group, &key->pubs) ||
-        !point_to_cbb(&batch_cbb, method->group, &key->pub0) ||
-        !point_to_cbb(&batch_cbb, method->group, &key->pub1)) {
-      OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_MALLOC_FAILURE);
-      goto err;
-    }
+  if (!Tps ||
+      !Sps ||
+      !Wps ||
+      !Wsps ||
+      !es ||
+      !CBB_init(&batch_cbb, 0) ||
+      !point_to_cbb(&batch_cbb, method->group, &key->pubs) ||
+      !point_to_cbb(&batch_cbb, method->group, &key->pub0) ||
+      !point_to_cbb(&batch_cbb, method->group, &key->pub1)) {
+    OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_MALLOC_FAILURE);
+    goto err;
   }
 
   for (size_t i = 0; i < num_to_issue; i++) {
     EC_AFFINE Tp_affine;
     EC_RAW_POINT Tp;
-    if (!cbs_get_prefixed_point(cbs, group, &Tp_affine)) {
+    if (!cbs_get_prefixed_point(cbs, group, &Tp_affine, method->prefix_point)) {
       OPENSSL_PUT_ERROR(TRUST_TOKEN, TRUST_TOKEN_R_DECODE_FAILURE);
       goto err;
     }
@@ -771,47 +782,36 @@ static int pmbtoken_sign(const PMBTOKEN_METHOD *method,
     ec_scalar_select(group, &xb, mask, &key->x1, &key->x0);
     ec_scalar_select(group, &yb, mask, &key->y1, &key->y0);
 
-    uint8_t s[PMBTOKEN_NONCE_SIZE];
-    RAND_bytes(s, PMBTOKEN_NONCE_SIZE);
+    uint8_t s[TRUST_TOKEN_NONCE_SIZE];
+    RAND_bytes(s, TRUST_TOKEN_NONCE_SIZE);
     // The |jacobians| and |affines| contain Sp, Wp, and Wsp.
     EC_RAW_POINT jacobians[3];
     EC_AFFINE affines[3];
-    CBB child;
     if (!method->hash_s(group, &jacobians[0], &Tp_affine, s) ||
         !ec_point_mul_scalar_batch(group, &jacobians[1], &Tp, &xb,
                                    &jacobians[0], &yb, NULL, NULL) ||
         !ec_point_mul_scalar_batch(group, &jacobians[2], &Tp, &key->xs,
                                    &jacobians[0], &key->ys, NULL, NULL) ||
         !ec_jacobian_to_affine_batch(group, affines, jacobians, 3) ||
-        !CBB_add_bytes(cbb, s, PMBTOKEN_NONCE_SIZE) ||
-        // TODO(https://crbug.com/boringssl/331): When updating the key format,
-        // remove the redundant length prefixes.
-        !CBB_add_u16_length_prefixed(cbb, &child) ||
-        !point_to_cbb(&child, group, &affines[1]) ||
-        !CBB_add_u16_length_prefixed(cbb, &child) ||
-        !point_to_cbb(&child, group, &affines[2])) {
+        !CBB_add_bytes(cbb, s, TRUST_TOKEN_NONCE_SIZE) ||
+        !cbb_add_prefixed_point(cbb, group, &affines[1],
+                                method->prefix_point) ||
+        !cbb_add_prefixed_point(cbb, group, &affines[2],
+                                method->prefix_point)) {
       goto err;
     }
 
-    if (!method->batched_proof) {
-      if (!CBB_add_u16_length_prefixed(cbb, &child) ||
-          !dleq_generate(method, &child, key, &Tp, &jacobians[0], &jacobians[1],
-                         &jacobians[2], private_metadata)) {
-        goto err;
-      }
-    } else {
-      if (!point_to_cbb(&batch_cbb, group, &Tp_affine) ||
-          !point_to_cbb(&batch_cbb, group, &affines[0]) ||
-          !point_to_cbb(&batch_cbb, group, &affines[1]) ||
-          !point_to_cbb(&batch_cbb, group, &affines[2])) {
-        OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_MALLOC_FAILURE);
-        goto err;
-      }
-      Tps[i] = Tp;
-      Sps[i] = jacobians[0];
-      Wps[i] = jacobians[1];
-      Wsps[i] = jacobians[2];
+    if (!point_to_cbb(&batch_cbb, group, &Tp_affine) ||
+        !point_to_cbb(&batch_cbb, group, &affines[0]) ||
+        !point_to_cbb(&batch_cbb, group, &affines[1]) ||
+        !point_to_cbb(&batch_cbb, group, &affines[2])) {
+      OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_MALLOC_FAILURE);
+      goto err;
     }
+    Tps[i] = Tp;
+    Sps[i] = jacobians[0];
+    Wps[i] = jacobians[1];
+    Wsps[i] = jacobians[2];
 
     if (!CBB_flush(cbb)) {
       goto err;
@@ -821,41 +821,43 @@ static int pmbtoken_sign(const PMBTOKEN_METHOD *method,
   // The DLEQ batching construction is described in appendix B of
   // https://eprint.iacr.org/2020/072/20200324:214215. Note the additional
   // computations all act on public inputs.
-  if (method->batched_proof) {
-    for (size_t i = 0; i < num_to_issue; i++) {
-      if (!hash_c_batch(method, &es[i], &batch_cbb, i)) {
-        goto err;
-      }
-    }
-
-    EC_RAW_POINT Tp_batch, Sp_batch, Wp_batch, Wsp_batch;
-    if (!ec_point_mul_scalar_public_batch(group, &Tp_batch,
-                                          /*g_scalar=*/NULL, Tps, es,
-                                          num_to_issue) ||
-        !ec_point_mul_scalar_public_batch(group, &Sp_batch,
-                                          /*g_scalar=*/NULL, Sps, es,
-                                          num_to_issue) ||
-        !ec_point_mul_scalar_public_batch(group, &Wp_batch,
-                                          /*g_scalar=*/NULL, Wps, es,
-                                          num_to_issue) ||
-        !ec_point_mul_scalar_public_batch(group, &Wsp_batch,
-                                          /*g_scalar=*/NULL, Wsps, es,
-                                          num_to_issue)) {
-      goto err;
-    }
-
-    CBB proof;
-    if (!CBB_add_u16_length_prefixed(cbb, &proof) ||
-        !dleq_generate(method, &proof, key, &Tp_batch, &Sp_batch, &Wp_batch,
-                       &Wsp_batch, private_metadata) ||
-        !CBB_flush(cbb)) {
+  for (size_t i = 0; i < num_to_issue; i++) {
+    if (!hash_c_batch(method, &es[i], &batch_cbb, i)) {
       goto err;
     }
   }
 
+  EC_RAW_POINT Tp_batch, Sp_batch, Wp_batch, Wsp_batch;
+  if (!ec_point_mul_scalar_public_batch(group, &Tp_batch,
+                                        /*g_scalar=*/NULL, Tps, es,
+                                        num_to_issue) ||
+      !ec_point_mul_scalar_public_batch(group, &Sp_batch,
+                                        /*g_scalar=*/NULL, Sps, es,
+                                        num_to_issue) ||
+      !ec_point_mul_scalar_public_batch(group, &Wp_batch,
+                                        /*g_scalar=*/NULL, Wps, es,
+                                        num_to_issue) ||
+      !ec_point_mul_scalar_public_batch(group, &Wsp_batch,
+                                        /*g_scalar=*/NULL, Wsps, es,
+                                        num_to_issue)) {
+    goto err;
+  }
+
+  CBB proof;
+  if (!CBB_add_u16_length_prefixed(cbb, &proof) ||
+      !dleq_generate(method, &proof, key, &Tp_batch, &Sp_batch, &Wp_batch,
+                     &Wsp_batch, private_metadata) ||
+      !CBB_flush(cbb)) {
+    goto err;
+  }
+
   // Skip over any unused requests.
   size_t point_len = 1 + 2 * BN_num_bytes(&group->field);
-  if (!CBS_skip(cbs, (2 + point_len) * (num_requested - num_to_issue))) {
+  size_t token_len = point_len;
+  if (method->prefix_point) {
+    token_len += 2;
+  }
+  if (!CBS_skip(cbs, token_len * (num_requested - num_to_issue))) {
     OPENSSL_PUT_ERROR(TRUST_TOKEN, TRUST_TOKEN_R_DECODE_FAILURE);
     goto err;
   }
@@ -874,11 +876,11 @@ err:
 
 static STACK_OF(TRUST_TOKEN) *
     pmbtoken_unblind(const PMBTOKEN_METHOD *method,
-                     const PMBTOKEN_CLIENT_KEY *key,
-                     const STACK_OF(PMBTOKEN_PRETOKEN) * pretokens, CBS *cbs,
+                     const TRUST_TOKEN_CLIENT_KEY *key,
+                     const STACK_OF(TRUST_TOKEN_PRETOKEN) * pretokens, CBS *cbs,
                      size_t count, uint32_t key_id) {
   const EC_GROUP *group = method->group;
-  if (count > sk_PMBTOKEN_PRETOKEN_num(pretokens)) {
+  if (count > sk_TRUST_TOKEN_PRETOKEN_num(pretokens)) {
     OPENSSL_PUT_ERROR(TRUST_TOKEN, TRUST_TOKEN_R_DECODE_FAILURE);
     return NULL;
   }
@@ -890,115 +892,86 @@ static STACK_OF(TRUST_TOKEN) *
     return NULL;
   }
 
-  EC_RAW_POINT *Tps = NULL;
-  EC_RAW_POINT *Sps = NULL;
-  EC_RAW_POINT *Wps = NULL;
-  EC_RAW_POINT *Wsps = NULL;
-  EC_SCALAR *es = NULL;
+  if (count > ((size_t)-1) / sizeof(EC_RAW_POINT) ||
+      count > ((size_t)-1) / sizeof(EC_SCALAR)) {
+    OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_OVERFLOW);
+    return 0;
+  }
+  EC_RAW_POINT *Tps = OPENSSL_malloc(count * sizeof(EC_RAW_POINT));
+  EC_RAW_POINT *Sps = OPENSSL_malloc(count * sizeof(EC_RAW_POINT));
+  EC_RAW_POINT *Wps = OPENSSL_malloc(count * sizeof(EC_RAW_POINT));
+  EC_RAW_POINT *Wsps = OPENSSL_malloc(count * sizeof(EC_RAW_POINT));
+  EC_SCALAR *es = OPENSSL_malloc(count * sizeof(EC_SCALAR));
   CBB batch_cbb;
   CBB_zero(&batch_cbb);
-  if (method->batched_proof) {
-    if (count > ((size_t)-1) / sizeof(EC_RAW_POINT) ||
-        count > ((size_t)-1) / sizeof(EC_SCALAR)) {
-      OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_OVERFLOW);
-      goto err;
-    }
-    Tps = OPENSSL_malloc(count * sizeof(EC_RAW_POINT));
-    Sps = OPENSSL_malloc(count * sizeof(EC_RAW_POINT));
-    Wps = OPENSSL_malloc(count * sizeof(EC_RAW_POINT));
-    Wsps = OPENSSL_malloc(count * sizeof(EC_RAW_POINT));
-    es = OPENSSL_malloc(count * sizeof(EC_SCALAR));
-    if (!Tps ||
-        !Sps ||
-        !Wps ||
-        !Wsps ||
-        !es ||
-        !CBB_init(&batch_cbb, 0) ||
-        !point_to_cbb(&batch_cbb, method->group, &key->pubs) ||
-        !point_to_cbb(&batch_cbb, method->group, &key->pub0) ||
-        !point_to_cbb(&batch_cbb, method->group, &key->pub1)) {
-      OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_MALLOC_FAILURE);
-      goto err;
-    }
+  if (!Tps ||
+      !Sps ||
+      !Wps ||
+      !Wsps ||
+      !es ||
+      !CBB_init(&batch_cbb, 0) ||
+      !point_to_cbb(&batch_cbb, method->group, &key->pubs) ||
+      !point_to_cbb(&batch_cbb, method->group, &key->pub0) ||
+      !point_to_cbb(&batch_cbb, method->group, &key->pub1)) {
+    OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_MALLOC_FAILURE);
+    goto err;
   }
 
   for (size_t i = 0; i < count; i++) {
-    const PMBTOKEN_PRETOKEN *pretoken =
-        sk_PMBTOKEN_PRETOKEN_value(pretokens, i);
+    const TRUST_TOKEN_PRETOKEN *pretoken =
+        sk_TRUST_TOKEN_PRETOKEN_value(pretokens, i);
 
-    uint8_t s[PMBTOKEN_NONCE_SIZE];
+    uint8_t s[TRUST_TOKEN_NONCE_SIZE];
     EC_AFFINE Wp_affine, Wsp_affine;
-    CBS proof;
-    if (!CBS_copy_bytes(cbs, s, PMBTOKEN_NONCE_SIZE) ||
-        !cbs_get_prefixed_point(cbs, group, &Wp_affine) ||
-        !cbs_get_prefixed_point(cbs, group, &Wsp_affine)) {
+    if (!CBS_copy_bytes(cbs, s, TRUST_TOKEN_NONCE_SIZE) ||
+        !cbs_get_prefixed_point(cbs, group, &Wp_affine, method->prefix_point) ||
+        !cbs_get_prefixed_point(cbs, group, &Wsp_affine,
+                                method->prefix_point)) {
       OPENSSL_PUT_ERROR(TRUST_TOKEN, TRUST_TOKEN_R_DECODE_FAILURE);
       goto err;
     }
 
-    EC_RAW_POINT Tp, Wp, Wsp, Sp;
-    ec_affine_to_jacobian(group, &Tp, &pretoken->Tp);
-    ec_affine_to_jacobian(group, &Wp, &Wp_affine);
-    ec_affine_to_jacobian(group, &Wsp, &Wsp_affine);
-    if (!method->hash_s(group, &Sp, &pretoken->Tp, s)) {
+    ec_affine_to_jacobian(group, &Tps[i], &pretoken->Tp);
+    ec_affine_to_jacobian(group, &Wps[i], &Wp_affine);
+    ec_affine_to_jacobian(group, &Wsps[i], &Wsp_affine);
+    if (!method->hash_s(group, &Sps[i], &pretoken->Tp, s)) {
       goto err;
     }
 
-    if (!method->batched_proof) {
-      if(!CBS_get_u16_length_prefixed(cbs, &proof)) {
-        OPENSSL_PUT_ERROR(TRUST_TOKEN, TRUST_TOKEN_R_DECODE_FAILURE);
-        goto err;
-      }
-
-      if (!dleq_verify(method, &proof, key, &Tp, &Sp, &Wp, &Wsp)) {
-        goto err;
-      }
-
-      if (CBS_len(&proof) != 0) {
-        OPENSSL_PUT_ERROR(TRUST_TOKEN, TRUST_TOKEN_R_DECODE_FAILURE);
-        goto err;
-      }
-    } else {
-      EC_AFFINE Sp_affine;
-      if (!point_to_cbb(&batch_cbb, group, &pretoken->Tp) ||
-          !ec_jacobian_to_affine(group, &Sp_affine, &Sp) ||
-          !point_to_cbb(&batch_cbb, group, &Sp_affine) ||
-          !point_to_cbb(&batch_cbb, group, &Wp_affine) ||
-          !point_to_cbb(&batch_cbb, group, &Wsp_affine)) {
-        OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_MALLOC_FAILURE);
-        goto err;
-      }
-      Tps[i] = Tp;
-      Sps[i] = Sp;
-      Wps[i] = Wp;
-      Wsps[i] = Wsp;
+    EC_AFFINE Sp_affine;
+    if (!point_to_cbb(&batch_cbb, group, &pretoken->Tp) ||
+        !ec_jacobian_to_affine(group, &Sp_affine, &Sps[i]) ||
+        !point_to_cbb(&batch_cbb, group, &Sp_affine) ||
+        !point_to_cbb(&batch_cbb, group, &Wp_affine) ||
+        !point_to_cbb(&batch_cbb, group, &Wsp_affine)) {
+      OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_MALLOC_FAILURE);
+      goto err;
     }
 
     // Unblind the token.
     EC_RAW_POINT jacobians[3];
     EC_AFFINE affines[3];
-    if (!ec_point_mul_scalar(group, &jacobians[0], &Sp, &pretoken->r) ||
-        !ec_point_mul_scalar(group, &jacobians[1], &Wp, &pretoken->r) ||
-        !ec_point_mul_scalar(group, &jacobians[2], &Wsp, &pretoken->r) ||
+    if (!ec_point_mul_scalar(group, &jacobians[0], &Sps[i], &pretoken->r) ||
+        !ec_point_mul_scalar(group, &jacobians[1], &Wps[i], &pretoken->r) ||
+        !ec_point_mul_scalar(group, &jacobians[2], &Wsps[i], &pretoken->r) ||
         !ec_jacobian_to_affine_batch(group, affines, jacobians, 3)) {
       goto err;
     }
 
     // Serialize the token. Include |key_id| to avoid an extra copy in the layer
     // above.
-    CBB token_cbb, child;
+    CBB token_cbb;
     size_t point_len = 1 + 2 * BN_num_bytes(&group->field);
-    if (!CBB_init(&token_cbb, 4 + PMBTOKEN_NONCE_SIZE + 3 * (2 + point_len)) ||
+    if (!CBB_init(&token_cbb,
+                  4 + TRUST_TOKEN_NONCE_SIZE + 3 * (2 + point_len)) ||
         !CBB_add_u32(&token_cbb, key_id) ||
-        !CBB_add_bytes(&token_cbb, pretoken->t, PMBTOKEN_NONCE_SIZE) ||
-        // TODO(https://crbug.com/boringssl/331): When updating the key format,
-        // remove the redundant length prefixes.
-        !CBB_add_u16_length_prefixed(&token_cbb, &child) ||
-        !point_to_cbb(&child, group, &affines[0]) ||
-        !CBB_add_u16_length_prefixed(&token_cbb, &child) ||
-        !point_to_cbb(&child, group, &affines[1]) ||
-        !CBB_add_u16_length_prefixed(&token_cbb, &child) ||
-        !point_to_cbb(&child, group, &affines[2]) ||
+        !CBB_add_bytes(&token_cbb, pretoken->t, TRUST_TOKEN_NONCE_SIZE) ||
+        !cbb_add_prefixed_point(&token_cbb, group, &affines[0],
+                                method->prefix_point) ||
+        !cbb_add_prefixed_point(&token_cbb, group, &affines[1],
+                                method->prefix_point) ||
+        !cbb_add_prefixed_point(&token_cbb, group, &affines[2],
+                                method->prefix_point) ||
         !CBB_flush(&token_cbb)) {
       CBB_cleanup(&token_cbb);
       goto err;
@@ -1018,32 +991,30 @@ static STACK_OF(TRUST_TOKEN) *
   // The DLEQ batching construction is described in appendix B of
   // https://eprint.iacr.org/2020/072/20200324:214215. Note the additional
   // computations all act on public inputs.
-  if (method->batched_proof) {
-    for (size_t i = 0; i < count; i++) {
-      if (!hash_c_batch(method, &es[i], &batch_cbb, i)) {
-        goto err;
-      }
-    }
-
-    EC_RAW_POINT Tp_batch, Sp_batch, Wp_batch, Wsp_batch;
-    if (!ec_point_mul_scalar_public_batch(group, &Tp_batch,
-                                          /*g_scalar=*/NULL, Tps, es, count) ||
-        !ec_point_mul_scalar_public_batch(group, &Sp_batch,
-                                          /*g_scalar=*/NULL, Sps, es, count) ||
-        !ec_point_mul_scalar_public_batch(group, &Wp_batch,
-                                          /*g_scalar=*/NULL, Wps, es, count) ||
-        !ec_point_mul_scalar_public_batch(group, &Wsp_batch,
-                                          /*g_scalar=*/NULL, Wsps, es, count)) {
+  for (size_t i = 0; i < count; i++) {
+    if (!hash_c_batch(method, &es[i], &batch_cbb, i)) {
       goto err;
     }
+  }
 
-    CBS proof;
-    if (!CBS_get_u16_length_prefixed(cbs, &proof) ||
-        !dleq_verify(method, &proof, key, &Tp_batch, &Sp_batch, &Wp_batch,
-                     &Wsp_batch) ||
-        CBS_len(&proof) != 0) {
-      goto err;
-    }
+  EC_RAW_POINT Tp_batch, Sp_batch, Wp_batch, Wsp_batch;
+  if (!ec_point_mul_scalar_public_batch(group, &Tp_batch,
+                                        /*g_scalar=*/NULL, Tps, es, count) ||
+      !ec_point_mul_scalar_public_batch(group, &Sp_batch,
+                                        /*g_scalar=*/NULL, Sps, es, count) ||
+      !ec_point_mul_scalar_public_batch(group, &Wp_batch,
+                                        /*g_scalar=*/NULL, Wps, es, count) ||
+      !ec_point_mul_scalar_public_batch(group, &Wsp_batch,
+                                        /*g_scalar=*/NULL, Wsps, es, count)) {
+    goto err;
+  }
+
+  CBS proof;
+  if (!CBS_get_u16_length_prefixed(cbs, &proof) ||
+      !dleq_verify(method, &proof, key, &Tp_batch, &Sp_batch, &Wp_batch,
+                   &Wsp_batch) ||
+      CBS_len(&proof) != 0) {
+    goto err;
   }
 
   ok = 1;
@@ -1063,18 +1034,18 @@ err:
 }
 
 static int pmbtoken_read(const PMBTOKEN_METHOD *method,
-                         const PMBTOKEN_ISSUER_KEY *key,
-                         uint8_t out_nonce[PMBTOKEN_NONCE_SIZE],
+                         const TRUST_TOKEN_ISSUER_KEY *key,
+                         uint8_t out_nonce[TRUST_TOKEN_NONCE_SIZE],
                          uint8_t *out_private_metadata, const uint8_t *token,
                          size_t token_len) {
   const EC_GROUP *group = method->group;
   CBS cbs;
   CBS_init(&cbs, token, token_len);
   EC_AFFINE S, W, Ws;
-  if (!CBS_copy_bytes(&cbs, out_nonce, PMBTOKEN_NONCE_SIZE) ||
-      !cbs_get_prefixed_point(&cbs, group, &S) ||
-      !cbs_get_prefixed_point(&cbs, group, &W) ||
-      !cbs_get_prefixed_point(&cbs, group, &Ws) ||
+  if (!CBS_copy_bytes(&cbs, out_nonce, TRUST_TOKEN_NONCE_SIZE) ||
+      !cbs_get_prefixed_point(&cbs, group, &S, method->prefix_point) ||
+      !cbs_get_prefixed_point(&cbs, group, &W, method->prefix_point) ||
+      !cbs_get_prefixed_point(&cbs, group, &Ws, method->prefix_point) ||
       CBS_len(&cbs) != 0) {
     OPENSSL_PUT_ERROR(TRUST_TOKEN, TRUST_TOKEN_R_INVALID_TOKEN);
     return 0;
@@ -1127,214 +1098,18 @@ static int pmbtoken_read(const PMBTOKEN_METHOD *method,
 }
 
 
-// PMBTokens experiment v0.
-
-static int pmbtoken_exp0_hash_t(const EC_GROUP *group, EC_RAW_POINT *out,
-                                const uint8_t t[PMBTOKEN_NONCE_SIZE]) {
-  const uint8_t kHashTLabel[] = "PMBTokensV0 HashT";
-  return ec_hash_to_curve_p521_xmd_sha512_sswu_draft06(
-      group, out, kHashTLabel, sizeof(kHashTLabel), t, PMBTOKEN_NONCE_SIZE);
-}
-
-static int pmbtoken_exp0_hash_s(const EC_GROUP *group, EC_RAW_POINT *out,
-                                const EC_AFFINE *t,
-                                const uint8_t s[PMBTOKEN_NONCE_SIZE]) {
-  const uint8_t kHashSLabel[] = "PMBTokensV0 HashS";
-  int ret = 0;
-  CBB cbb;
-  uint8_t *buf = NULL;
-  size_t len;
-  if (!CBB_init(&cbb, 0) ||
-      !point_to_cbb(&cbb, group, t) ||
-      !CBB_add_bytes(&cbb, s, PMBTOKEN_NONCE_SIZE) ||
-      !CBB_finish(&cbb, &buf, &len) ||
-      !ec_hash_to_curve_p521_xmd_sha512_sswu_draft06(
-          group, out, kHashSLabel, sizeof(kHashSLabel), buf, len)) {
-    OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_MALLOC_FAILURE);
-    goto err;
-  }
-
-  ret = 1;
-
-err:
-  OPENSSL_free(buf);
-  CBB_cleanup(&cbb);
-  return ret;
-}
-
-static int pmbtoken_exp0_hash_c(const EC_GROUP *group, EC_SCALAR *out,
-                                uint8_t *buf, size_t len) {
-  const uint8_t kHashCLabel[] = "PMBTokensV0 HashC";
-  return ec_hash_to_scalar_p521_xmd_sha512_draft06(
-      group, out, kHashCLabel, sizeof(kHashCLabel), buf, len);
-}
-
-// H for PMBTokens v0 was generated with the following Python code.
-/*
-import hashlib
-
-SEED_H = 'PrivacyPass H'
-
-A = -3
-B = 0x051953eb9618e1c9a1f929a21a0b68540eea2da725b99b315f3b8b489918ef109e156193951ec7e937b1652c0bd3bb1bf073573df883d2c34f1ef451fd46b503f00
-P = 2**521 - 1
-
-def get_y(x):
-  y2 = (x**3 + A*x + B) % P
-  y = pow(y2, (P+1)/4, P)
-  if (y*y) % P != y2:
-    raise ValueError("point not on curve")
-  return y
-
-def bit(h,i):
-  return (ord(h[i/8]) >> (i%8)) & 1
-
-b = 521
-def decode_point(so):
-  s = hashlib.sha256(so + '0').digest() + hashlib.sha256(so + '1').digest() + \
-      hashlib.sha256(so + '2').digest()
-
-  x = 0
-  for i in range(0,b):
-    x = x + (long(bit(s,i))<<i)
-  if x >= P:
-    raise ValueError("x out of range")
-  y = get_y(x)
-  if y & 1 != bit(s,b-1): y = P-y
-  return (x, y)
-
-
-def gen_point(seed):
-  v = hashlib.sha256(seed).digest()
-  it = 1
-  while True:
-    try:
-      x,y = decode_point(v)
-    except Exception, e:
-      print e
-      it += 1
-      v = hashlib.sha256(v).digest()
-      continue
-    print "Found in %d iterations:" % it
-    print "  x = %d" % x
-    print "  y = %d" % y
-    print " Encoded (hex): (%x, %x)" % (x, y)
-    return (x, y)
-
-if __name__ == "__main__":
-  gen_point(SEED_H)
-*/
-static int pmbtoken_exp0_ok = 0;
-static PMBTOKEN_METHOD pmbtoken_exp0_method;
-static CRYPTO_once_t pmbtoken_exp0_method_once = CRYPTO_ONCE_INIT;
-
-static void pmbtoken_exp0_init_method_impl(void) {
-  static const uint8_t kH[] = {
-      0x04, 0x01, 0xf0, 0xa9, 0xf7, 0x9e, 0xbc, 0x12, 0x6c, 0xef, 0xd1, 0xab,
-      0x29, 0x10, 0x03, 0x6f, 0x4e, 0xf5, 0xbd, 0xeb, 0x0f, 0x6b, 0xc0, 0x5c,
-      0x0e, 0xce, 0xfe, 0x59, 0x45, 0xd1, 0x3e, 0x25, 0x33, 0x7e, 0x4c, 0xda,
-      0x64, 0x53, 0x54, 0x4e, 0xf9, 0x76, 0x0d, 0x6d, 0xc5, 0x39, 0x2a, 0xd4,
-      0xce, 0x84, 0x6e, 0x31, 0xc2, 0x86, 0x21, 0xf9, 0x5c, 0x98, 0xb9, 0x3d,
-      0x01, 0x74, 0x9f, 0xc5, 0x1e, 0x47, 0x24, 0x00, 0x5c, 0x17, 0x62, 0x51,
-      0x7d, 0x32, 0x5e, 0x29, 0xac, 0x52, 0x14, 0x75, 0x6f, 0x36, 0xd9, 0xc7,
-      0xfa, 0xbb, 0xa9, 0x3b, 0x9d, 0x70, 0x49, 0x1e, 0xb4, 0x53, 0xbc, 0x55,
-      0xea, 0xad, 0x8f, 0x26, 0x1d, 0xe0, 0xbc, 0xf3, 0x50, 0x5c, 0x7e, 0x66,
-      0x41, 0xb5, 0x61, 0x70, 0x12, 0x72, 0xac, 0x6a, 0xb0, 0x6e, 0x78, 0x3d,
-      0x17, 0x08, 0xe3, 0xdf, 0x3c, 0xff, 0xa6, 0xa0, 0xea, 0x96, 0x67, 0x92,
-      0xcd,
-  };
-
-  pmbtoken_exp0_ok =
-      pmbtoken_init_method(&pmbtoken_exp0_method, NID_secp521r1, kH, sizeof(kH),
-                           pmbtoken_exp0_hash_t, pmbtoken_exp0_hash_s,
-                           pmbtoken_exp0_hash_c, /*batched_proof=*/0);
-}
-
-static int pmbtoken_exp0_init_method(void) {
-  CRYPTO_once(&pmbtoken_exp0_method_once, pmbtoken_exp0_init_method_impl);
-  if (!pmbtoken_exp0_ok) {
-    OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_INTERNAL_ERROR);
-    return 0;
-  }
-  return 1;
-}
-
-int pmbtoken_exp0_generate_key(CBB *out_private, CBB *out_public) {
-  if (!pmbtoken_exp0_init_method()) {
-    return 0;
-  }
-
-  return pmbtoken_generate_key(&pmbtoken_exp0_method, out_private, out_public);
-}
-
-int pmbtoken_exp0_client_key_from_bytes(PMBTOKEN_CLIENT_KEY *key,
-                                        const uint8_t *in, size_t len) {
-  if (!pmbtoken_exp0_init_method()) {
-    return 0;
-  }
-  return pmbtoken_client_key_from_bytes(&pmbtoken_exp0_method, key, in, len);
-}
-
-int pmbtoken_exp0_issuer_key_from_bytes(PMBTOKEN_ISSUER_KEY *key,
-                                        const uint8_t *in, size_t len) {
-  if (!pmbtoken_exp0_init_method()) {
-    return 0;
-  }
-  return pmbtoken_issuer_key_from_bytes(&pmbtoken_exp0_method, key, in, len);
-}
-
-STACK_OF(PMBTOKEN_PRETOKEN) * pmbtoken_exp0_blind(CBB *cbb, size_t count) {
-  if (!pmbtoken_exp0_init_method()) {
-    return NULL;
-  }
-  return pmbtoken_blind(&pmbtoken_exp0_method, cbb, count);
-}
-
-int pmbtoken_exp0_sign(const PMBTOKEN_ISSUER_KEY *key, CBB *cbb, CBS *cbs,
-                       size_t num_requested, size_t num_to_issue,
-                       uint8_t private_metadata) {
-  if (!pmbtoken_exp0_init_method()) {
-    return 0;
-  }
-  return pmbtoken_sign(&pmbtoken_exp0_method, key, cbb, cbs, num_requested,
-                       num_to_issue, private_metadata);
-}
-
-STACK_OF(TRUST_TOKEN) *
-    pmbtoken_exp0_unblind(const PMBTOKEN_CLIENT_KEY *key,
-                          const STACK_OF(PMBTOKEN_PRETOKEN) * pretokens,
-                          CBS *cbs, size_t count, uint32_t key_id) {
-  if (!pmbtoken_exp0_init_method()) {
-    return NULL;
-  }
-  return pmbtoken_unblind(&pmbtoken_exp0_method, key, pretokens, cbs, count,
-                          key_id);
-}
-
-int pmbtoken_exp0_read(const PMBTOKEN_ISSUER_KEY *key,
-                       uint8_t out_nonce[PMBTOKEN_NONCE_SIZE],
-                       uint8_t *out_private_metadata, const uint8_t *token,
-                       size_t token_len) {
-  if (!pmbtoken_exp0_init_method()) {
-    return 0;
-  }
-  return pmbtoken_read(&pmbtoken_exp0_method, key, out_nonce,
-                       out_private_metadata, token, token_len);
-}
-
-
 // PMBTokens experiment v1.
 
 static int pmbtoken_exp1_hash_t(const EC_GROUP *group, EC_RAW_POINT *out,
-                                const uint8_t t[PMBTOKEN_NONCE_SIZE]) {
+                                const uint8_t t[TRUST_TOKEN_NONCE_SIZE]) {
   const uint8_t kHashTLabel[] = "PMBTokens Experiment V1 HashT";
   return ec_hash_to_curve_p384_xmd_sha512_sswu_draft07(
-      group, out, kHashTLabel, sizeof(kHashTLabel), t, PMBTOKEN_NONCE_SIZE);
+      group, out, kHashTLabel, sizeof(kHashTLabel), t, TRUST_TOKEN_NONCE_SIZE);
 }
 
 static int pmbtoken_exp1_hash_s(const EC_GROUP *group, EC_RAW_POINT *out,
                                 const EC_AFFINE *t,
-                                const uint8_t s[PMBTOKEN_NONCE_SIZE]) {
+                                const uint8_t s[TRUST_TOKEN_NONCE_SIZE]) {
   const uint8_t kHashSLabel[] = "PMBTokens Experiment V1 HashS";
   int ret = 0;
   CBB cbb;
@@ -1342,7 +1117,7 @@ static int pmbtoken_exp1_hash_s(const EC_GROUP *group, EC_RAW_POINT *out,
   size_t len;
   if (!CBB_init(&cbb, 0) ||
       !point_to_cbb(&cbb, group, t) ||
-      !CBB_add_bytes(&cbb, s, PMBTOKEN_NONCE_SIZE) ||
+      !CBB_add_bytes(&cbb, s, TRUST_TOKEN_NONCE_SIZE) ||
       !CBB_finish(&cbb, &buf, &len) ||
       !ec_hash_to_curve_p384_xmd_sha512_sswu_draft07(
           group, out, kHashSLabel, sizeof(kHashSLabel), buf, len)) {
@@ -1387,7 +1162,7 @@ static void pmbtoken_exp1_init_method_impl(void) {
   pmbtoken_exp1_ok =
       pmbtoken_init_method(&pmbtoken_exp1_method, NID_secp384r1, kH, sizeof(kH),
                            pmbtoken_exp1_hash_t, pmbtoken_exp1_hash_s,
-                           pmbtoken_exp1_hash_c, /*batched_proof=*/1);
+                           pmbtoken_exp1_hash_c, 1);
 }
 
 static int pmbtoken_exp1_init_method(void) {
@@ -1407,7 +1182,7 @@ int pmbtoken_exp1_generate_key(CBB *out_private, CBB *out_public) {
   return pmbtoken_generate_key(&pmbtoken_exp1_method, out_private, out_public);
 }
 
-int pmbtoken_exp1_client_key_from_bytes(PMBTOKEN_CLIENT_KEY *key,
+int pmbtoken_exp1_client_key_from_bytes(TRUST_TOKEN_CLIENT_KEY *key,
                                         const uint8_t *in, size_t len) {
   if (!pmbtoken_exp1_init_method()) {
     return 0;
@@ -1415,7 +1190,7 @@ int pmbtoken_exp1_client_key_from_bytes(PMBTOKEN_CLIENT_KEY *key,
   return pmbtoken_client_key_from_bytes(&pmbtoken_exp1_method, key, in, len);
 }
 
-int pmbtoken_exp1_issuer_key_from_bytes(PMBTOKEN_ISSUER_KEY *key,
+int pmbtoken_exp1_issuer_key_from_bytes(TRUST_TOKEN_ISSUER_KEY *key,
                                         const uint8_t *in, size_t len) {
   if (!pmbtoken_exp1_init_method()) {
     return 0;
@@ -1423,14 +1198,14 @@ int pmbtoken_exp1_issuer_key_from_bytes(PMBTOKEN_ISSUER_KEY *key,
   return pmbtoken_issuer_key_from_bytes(&pmbtoken_exp1_method, key, in, len);
 }
 
-STACK_OF(PMBTOKEN_PRETOKEN) * pmbtoken_exp1_blind(CBB *cbb, size_t count) {
+STACK_OF(TRUST_TOKEN_PRETOKEN) * pmbtoken_exp1_blind(CBB *cbb, size_t count) {
   if (!pmbtoken_exp1_init_method()) {
     return NULL;
   }
   return pmbtoken_blind(&pmbtoken_exp1_method, cbb, count);
 }
 
-int pmbtoken_exp1_sign(const PMBTOKEN_ISSUER_KEY *key, CBB *cbb, CBS *cbs,
+int pmbtoken_exp1_sign(const TRUST_TOKEN_ISSUER_KEY *key, CBB *cbb, CBS *cbs,
                        size_t num_requested, size_t num_to_issue,
                        uint8_t private_metadata) {
   if (!pmbtoken_exp1_init_method()) {
@@ -1441,8 +1216,8 @@ int pmbtoken_exp1_sign(const PMBTOKEN_ISSUER_KEY *key, CBB *cbb, CBS *cbs,
 }
 
 STACK_OF(TRUST_TOKEN) *
-    pmbtoken_exp1_unblind(const PMBTOKEN_CLIENT_KEY *key,
-                          const STACK_OF(PMBTOKEN_PRETOKEN) * pretokens,
+    pmbtoken_exp1_unblind(const TRUST_TOKEN_CLIENT_KEY *key,
+                          const STACK_OF(TRUST_TOKEN_PRETOKEN) * pretokens,
                           CBS *cbs, size_t count, uint32_t key_id) {
   if (!pmbtoken_exp1_init_method()) {
     return NULL;
@@ -1451,8 +1226,8 @@ STACK_OF(TRUST_TOKEN) *
                           key_id);
 }
 
-int pmbtoken_exp1_read(const PMBTOKEN_ISSUER_KEY *key,
-                       uint8_t out_nonce[PMBTOKEN_NONCE_SIZE],
+int pmbtoken_exp1_read(const TRUST_TOKEN_ISSUER_KEY *key,
+                       uint8_t out_nonce[TRUST_TOKEN_NONCE_SIZE],
                        uint8_t *out_private_metadata, const uint8_t *token,
                        size_t token_len) {
   if (!pmbtoken_exp1_init_method()) {
@@ -1470,5 +1245,155 @@ int pmbtoken_exp1_get_h_for_testing(uint8_t out[97]) {
   return ec_jacobian_to_affine(pmbtoken_exp1_method.group, &h,
                                &pmbtoken_exp1_method.h) &&
          ec_point_to_bytes(pmbtoken_exp1_method.group, &h,
+                           POINT_CONVERSION_UNCOMPRESSED, out, 97) == 97;
+}
+
+// PMBTokens experiment v2.
+
+static int pmbtoken_exp2_hash_t(const EC_GROUP *group, EC_RAW_POINT *out,
+                                const uint8_t t[TRUST_TOKEN_NONCE_SIZE]) {
+  const uint8_t kHashTLabel[] = "PMBTokens Experiment V2 HashT";
+  return ec_hash_to_curve_p384_xmd_sha512_sswu_draft07(
+      group, out, kHashTLabel, sizeof(kHashTLabel), t, TRUST_TOKEN_NONCE_SIZE);
+}
+
+static int pmbtoken_exp2_hash_s(const EC_GROUP *group, EC_RAW_POINT *out,
+                                const EC_AFFINE *t,
+                                const uint8_t s[TRUST_TOKEN_NONCE_SIZE]) {
+  const uint8_t kHashSLabel[] = "PMBTokens Experiment V2 HashS";
+  int ret = 0;
+  CBB cbb;
+  uint8_t *buf = NULL;
+  size_t len;
+  if (!CBB_init(&cbb, 0) ||
+      !point_to_cbb(&cbb, group, t) ||
+      !CBB_add_bytes(&cbb, s, TRUST_TOKEN_NONCE_SIZE) ||
+      !CBB_finish(&cbb, &buf, &len) ||
+      !ec_hash_to_curve_p384_xmd_sha512_sswu_draft07(
+          group, out, kHashSLabel, sizeof(kHashSLabel), buf, len)) {
+    OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_MALLOC_FAILURE);
+    goto err;
+  }
+
+  ret = 1;
+
+err:
+  OPENSSL_free(buf);
+  CBB_cleanup(&cbb);
+  return ret;
+}
+
+static int pmbtoken_exp2_hash_c(const EC_GROUP *group, EC_SCALAR *out,
+                                uint8_t *buf, size_t len) {
+  const uint8_t kHashCLabel[] = "PMBTokens Experiment V2 HashC";
+  return ec_hash_to_scalar_p384_xmd_sha512_draft07(
+      group, out, kHashCLabel, sizeof(kHashCLabel), buf, len);
+}
+
+static int pmbtoken_exp2_ok = 0;
+static PMBTOKEN_METHOD pmbtoken_exp2_method;
+static CRYPTO_once_t pmbtoken_exp2_method_once = CRYPTO_ONCE_INIT;
+
+static void pmbtoken_exp2_init_method_impl(void) {
+  // This is the output of |ec_hash_to_scalar_p384_xmd_sha512_draft07| with DST
+  // "PMBTokens Experiment V2 HashH" and message "generator".
+  static const uint8_t kH[] = {
+      0x04, 0xbc, 0x27, 0x24, 0x99, 0xfa, 0xc9, 0xa4, 0x74, 0x6f, 0xf9,
+      0x07, 0x81, 0x55, 0xf8, 0x1f, 0x6f, 0xda, 0x09, 0xe7, 0x8c, 0x5d,
+      0x9e, 0x4e, 0x14, 0x7c, 0x53, 0x14, 0xbc, 0x7e, 0x29, 0x57, 0x92,
+      0x17, 0x94, 0x6e, 0xd2, 0xdf, 0xa5, 0x31, 0x1b, 0x4e, 0xb7, 0xfc,
+      0x93, 0xe3, 0x6e, 0x14, 0x1f, 0x4f, 0x14, 0xf3, 0xe5, 0x47, 0x61,
+      0x1c, 0x2c, 0x72, 0x25, 0xf0, 0x4a, 0x45, 0x23, 0x2d, 0x57, 0x93,
+      0x0e, 0xb2, 0x55, 0xb8, 0x57, 0x25, 0x4c, 0x1e, 0xdb, 0xfd, 0x58,
+      0x70, 0x17, 0x9a, 0xbb, 0x9e, 0x5e, 0x93, 0x9e, 0x92, 0xd3, 0xe8,
+      0x25, 0x62, 0xbf, 0x59, 0xb2, 0xd2, 0x3d, 0x71, 0xff
+  };
+
+  pmbtoken_exp2_ok =
+      pmbtoken_init_method(&pmbtoken_exp2_method, NID_secp384r1, kH, sizeof(kH),
+                           pmbtoken_exp2_hash_t, pmbtoken_exp2_hash_s,
+                           pmbtoken_exp2_hash_c, 0);
+}
+
+static int pmbtoken_exp2_init_method(void) {
+  CRYPTO_once(&pmbtoken_exp2_method_once, pmbtoken_exp2_init_method_impl);
+  if (!pmbtoken_exp2_ok) {
+    OPENSSL_PUT_ERROR(TRUST_TOKEN, ERR_R_INTERNAL_ERROR);
+    return 0;
+  }
+  return 1;
+}
+
+int pmbtoken_exp2_generate_key(CBB *out_private, CBB *out_public) {
+  if (!pmbtoken_exp2_init_method()) {
+    return 0;
+  }
+
+  return pmbtoken_generate_key(&pmbtoken_exp2_method, out_private, out_public);
+}
+
+int pmbtoken_exp2_client_key_from_bytes(TRUST_TOKEN_CLIENT_KEY *key,
+                                        const uint8_t *in, size_t len) {
+  if (!pmbtoken_exp2_init_method()) {
+    return 0;
+  }
+  return pmbtoken_client_key_from_bytes(&pmbtoken_exp2_method, key, in, len);
+}
+
+int pmbtoken_exp2_issuer_key_from_bytes(TRUST_TOKEN_ISSUER_KEY *key,
+                                        const uint8_t *in, size_t len) {
+  if (!pmbtoken_exp2_init_method()) {
+    return 0;
+  }
+  return pmbtoken_issuer_key_from_bytes(&pmbtoken_exp2_method, key, in, len);
+}
+
+STACK_OF(TRUST_TOKEN_PRETOKEN) * pmbtoken_exp2_blind(CBB *cbb, size_t count) {
+  if (!pmbtoken_exp2_init_method()) {
+    return NULL;
+  }
+  return pmbtoken_blind(&pmbtoken_exp2_method, cbb, count);
+}
+
+int pmbtoken_exp2_sign(const TRUST_TOKEN_ISSUER_KEY *key, CBB *cbb, CBS *cbs,
+                       size_t num_requested, size_t num_to_issue,
+                       uint8_t private_metadata) {
+  if (!pmbtoken_exp2_init_method()) {
+    return 0;
+  }
+  return pmbtoken_sign(&pmbtoken_exp2_method, key, cbb, cbs, num_requested,
+                       num_to_issue, private_metadata);
+}
+
+STACK_OF(TRUST_TOKEN) *
+    pmbtoken_exp2_unblind(const TRUST_TOKEN_CLIENT_KEY *key,
+                          const STACK_OF(TRUST_TOKEN_PRETOKEN) * pretokens,
+                          CBS *cbs, size_t count, uint32_t key_id) {
+  if (!pmbtoken_exp2_init_method()) {
+    return NULL;
+  }
+  return pmbtoken_unblind(&pmbtoken_exp2_method, key, pretokens, cbs, count,
+                          key_id);
+}
+
+int pmbtoken_exp2_read(const TRUST_TOKEN_ISSUER_KEY *key,
+                       uint8_t out_nonce[TRUST_TOKEN_NONCE_SIZE],
+                       uint8_t *out_private_metadata, const uint8_t *token,
+                       size_t token_len) {
+  if (!pmbtoken_exp2_init_method()) {
+    return 0;
+  }
+  return pmbtoken_read(&pmbtoken_exp2_method, key, out_nonce,
+                       out_private_metadata, token, token_len);
+}
+
+int pmbtoken_exp2_get_h_for_testing(uint8_t out[97]) {
+  if (!pmbtoken_exp2_init_method()) {
+    return 0;
+  }
+  EC_AFFINE h;
+  return ec_jacobian_to_affine(pmbtoken_exp2_method.group, &h,
+                               &pmbtoken_exp2_method.h) &&
+         ec_point_to_bytes(pmbtoken_exp2_method.group, &h,
                            POINT_CONVERSION_UNCOMPRESSED, out, 97) == 97;
 }

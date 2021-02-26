@@ -161,7 +161,7 @@ void SourceListDirective::Parse(const UChar* begin, const UChar* end) {
     SkipWhile<UChar, IsSourceCharacter>(position, end);
 
     String scheme, host, path;
-    int port = 0;
+    int port = CSPSource::kPortUnspecified;
     CSPSource::WildcardDisposition host_wildcard = CSPSource::kNoWildcard;
     CSPSource::WildcardDisposition port_wildcard = CSPSource::kNoWildcard;
 
@@ -239,10 +239,7 @@ bool SourceListDirective::ParseSource(
     return true;
   }
 
-  if (EqualIgnoringASCIICase("'strict-dynamic'", token) ||
-      (RuntimeEnabledFeatures::
-           ExperimentalContentSecurityPolicyFeaturesEnabled() &&
-       EqualIgnoringASCIICase("'csp3-strict-dynamic'", token))) {
+  if (EqualIgnoringASCIICase("'strict-dynamic'", token)) {
     AddSourceStrictDynamic();
     return true;
   }
@@ -342,7 +339,7 @@ bool SourceListDirective::ParseSource(
     if (!ParsePort(begin_port, begin_path, port, port_wildcard))
       return false;
   } else {
-    *port = 0;
+    *port = CSPSource::kPortUnspecified;
   }
 
   if (begin_path != end) {
@@ -365,14 +362,7 @@ bool SourceListDirective::ParseNonce(const UChar* begin,
   // TODO(esprehn): Should be StringView(begin, nonceLength).startsWith(prefix).
   if (nonce_length <= prefix.length() ||
       !EqualIgnoringASCIICase(prefix, StringView(begin, prefix.length()))) {
-    // Experimentally the prefix could also be "'csp3-nonce-"
-    prefix = "'csp3-nonce-";
-    if (!RuntimeEnabledFeatures::
-            ExperimentalContentSecurityPolicyFeaturesEnabled() ||
-        nonce_length <= prefix.length() ||
-        !EqualIgnoringASCIICase(prefix, StringView(begin, prefix.length()))) {
       return true;
-    }
   }
 
   const UChar* position = begin + prefix.length();
@@ -402,53 +392,28 @@ bool SourceListDirective::ParseHash(
   // respective entries in the kAlgorithmMap array in
   // ContentSecurityPolicy::FillInCSPHashValues().
 
-  static const SupportedPrefixesStruct kSupportedPrefixes[] = {
+  constexpr SupportedPrefixesStruct kSupportedPrefixes[] = {
       {"'sha256-", kContentSecurityPolicyHashAlgorithmSha256},
       {"'sha384-", kContentSecurityPolicyHashAlgorithmSha384},
       {"'sha512-", kContentSecurityPolicyHashAlgorithmSha512},
       {"'sha-256-", kContentSecurityPolicyHashAlgorithmSha256},
       {"'sha-384-", kContentSecurityPolicyHashAlgorithmSha384},
-      {"'sha-512-", kContentSecurityPolicyHashAlgorithmSha512},
-      {"'ed25519-", kContentSecurityPolicyHashAlgorithmEd25519}};
+      {"'sha-512-", kContentSecurityPolicyHashAlgorithmSha512}};
 
-  static const SupportedPrefixesStruct kSupportedPrefixesExperimental[] = {
-      {"'sha256-", kContentSecurityPolicyHashAlgorithmSha256},
-      {"'sha384-", kContentSecurityPolicyHashAlgorithmSha384},
-      {"'sha512-", kContentSecurityPolicyHashAlgorithmSha512},
-      {"'sha-256-", kContentSecurityPolicyHashAlgorithmSha256},
-      {"'sha-384-", kContentSecurityPolicyHashAlgorithmSha384},
-      {"'sha-512-", kContentSecurityPolicyHashAlgorithmSha512},
-      {"'ed25519-", kContentSecurityPolicyHashAlgorithmEd25519},
-      {"'csp3-sha256-", kContentSecurityPolicyHashAlgorithmSha256},
-      {"'csp3-sha384-", kContentSecurityPolicyHashAlgorithmSha384},
-      {"'csp3-sha512-", kContentSecurityPolicyHashAlgorithmSha512},
-      {"'csp3-sha-256-", kContentSecurityPolicyHashAlgorithmSha256},
-      {"'csp3-sha-384-", kContentSecurityPolicyHashAlgorithmSha384},
-      {"'csp3-sha-512-", kContentSecurityPolicyHashAlgorithmSha512},
-      {"'csp3-ed25519-", kContentSecurityPolicyHashAlgorithmEd25519}};
-
-  auto* const supportedPrefixes =
-      RuntimeEnabledFeatures::ExperimentalContentSecurityPolicyFeaturesEnabled()
-          ? kSupportedPrefixesExperimental
-          : kSupportedPrefixes;
-
-  const size_t supportedPrefixesLength =
-      RuntimeEnabledFeatures::ExperimentalContentSecurityPolicyFeaturesEnabled()
-          ? sizeof(kSupportedPrefixesExperimental) /
-                sizeof(kSupportedPrefixesExperimental[0])
-          : sizeof(kSupportedPrefixes) / sizeof(kSupportedPrefixes[0]);
+  constexpr size_t kSupportedPrefixesLength =
+      sizeof(kSupportedPrefixes) / sizeof(kSupportedPrefixes[0]);
 
   StringView prefix;
   *hash_algorithm = kContentSecurityPolicyHashAlgorithmNone;
   size_t hash_length = end - begin;
 
-  for (size_t i = 0; i < supportedPrefixesLength; i++) {
-    prefix = supportedPrefixes[i].prefix;
+  for (size_t i = 0; i < kSupportedPrefixesLength; i++) {
+    prefix = kSupportedPrefixes[i].prefix;
     // TODO(esprehn): Should be StringView(begin, end -
     // begin).startsWith(prefix).
     if (hash_length > prefix.length() &&
         EqualIgnoringASCIICase(prefix, StringView(begin, prefix.length()))) {
-      *hash_algorithm = supportedPrefixes[i].type;
+      *hash_algorithm = kSupportedPrefixes[i].type;
       break;
     }
   }
@@ -594,7 +559,7 @@ bool SourceListDirective::ParsePort(
     int* port,
     CSPSource::WildcardDisposition* port_wildcard) {
   DCHECK(begin <= end);
-  DCHECK_EQ(*port, 0);
+  DCHECK_EQ(*port, CSPSource::kPortUnspecified);
   DCHECK(*port_wildcard == CSPSource::kNoWildcard);
 
   if (!SkipExactly<UChar>(begin, end, ':'))
@@ -604,7 +569,7 @@ bool SourceListDirective::ParsePort(
     return false;
 
   if (end - begin == 1 && *begin == '*') {
-    *port = 0;
+    *port = CSPSource::kPortUnspecified;
     *port_wildcard = CSPSource::kHasWildcard;
     return true;
   }
@@ -707,18 +672,18 @@ HeapVector<Member<CSPSource>> SourceListDirective::GetSources(
   HeapVector<Member<CSPSource>> sources = list_;
   if (allow_star_) {
     sources.push_back(MakeGarbageCollected<CSPSource>(
-        policy_, "ftp", String(), 0, String(), CSPSource::kNoWildcard,
-        CSPSource::kNoWildcard));
+        policy_, "ftp", String(), CSPSource::kPortUnspecified, String(),
+        CSPSource::kNoWildcard, CSPSource::kNoWildcard));
     sources.push_back(MakeGarbageCollected<CSPSource>(
-        policy_, "ws", String(), 0, String(), CSPSource::kNoWildcard,
-        CSPSource::kNoWildcard));
+        policy_, "ws", String(), CSPSource::kPortUnspecified, String(),
+        CSPSource::kNoWildcard, CSPSource::kNoWildcard));
     sources.push_back(MakeGarbageCollected<CSPSource>(
-        policy_, "http", String(), 0, String(), CSPSource::kNoWildcard,
-        CSPSource::kNoWildcard));
+        policy_, "http", String(), CSPSource::kPortUnspecified, String(),
+        CSPSource::kNoWildcard, CSPSource::kNoWildcard));
     if (self) {
       sources.push_back(MakeGarbageCollected<CSPSource>(
-          policy_, self->GetScheme(), String(), 0, String(),
-          CSPSource::kNoWildcard, CSPSource::kNoWildcard));
+          policy_, self->GetScheme(), String(), CSPSource::kPortUnspecified,
+          String(), CSPSource::kNoWildcard, CSPSource::kNoWildcard));
     }
   } else if (allow_self_ && self) {
     sources.push_back(self);
@@ -802,8 +767,14 @@ SourceListDirective::ExposeForNavigationalChecks() const {
   for (const auto& source : list_)
     sources.push_back(source->ExposeForNavigationalChecks());
 
+  // We do not need nonces and hashes for navigational checks
+  WTF::Vector<WTF::String> nonces;
+  WTF::Vector<network::mojom::blink::CSPHashSourcePtr> hashes;
+
   return network::mojom::blink::CSPSourceList::New(
-      std::move(sources), allow_self_, allow_star_, allow_redirects_);
+      std::move(sources), std::move(nonces), std::move(hashes), allow_self_,
+      allow_star_, allow_redirects_, allow_inline_, allow_eval_,
+      allow_wasm_eval_, allow_dynamic_, allow_unsafe_hashes_, report_sample_);
 }
 
 bool SourceListDirective::SubsumesNoncesAndHashes(
@@ -892,33 +863,19 @@ HeapVector<Member<CSPSource>> SourceListDirective::GetIntersectCSPSources(
     if (schemes_map.Contains(source_a->GetScheme()))
       continue;
 
-    CSPSource* match(nullptr);
     for (const auto& source_b : other) {
       // No need to add a host source expression if it is subsumed by the
       // matching scheme source expression.
       if (schemes_map.Contains(source_b->GetScheme()))
         continue;
-      // If sourceA is scheme only but there was no intersection for it in the
-      // `other` list, we add all the sourceB with that scheme.
-      if (source_a->IsSchemeOnly()) {
-        if (CSPSource* local_match = source_b->Intersect(source_a))
-          normalized.push_back(local_match);
-        continue;
-      }
-      if (source_b->Subsumes(source_a)) {
-        match = source_a;
-        break;
-      }
-      if (CSPSource* local_match = source_b->Intersect(source_a))
-        match = local_match;
+      if (CSPSource* match = source_b->Intersect(source_a))
+        normalized.push_back(match);
     }
-    if (match)
-      normalized.push_back(match);
   }
   return normalized;
 }
 
-void SourceListDirective::Trace(Visitor* visitor) {
+void SourceListDirective::Trace(Visitor* visitor) const {
   visitor->Trace(policy_);
   visitor->Trace(list_);
   CSPDirective::Trace(visitor);

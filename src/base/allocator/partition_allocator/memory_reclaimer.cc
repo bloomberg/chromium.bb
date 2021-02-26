@@ -5,35 +5,33 @@
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/timer/elapsed_timer.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 
 namespace {
 
 template <bool thread_safe>
-void Insert(std::set<internal::PartitionRootBase<thread_safe>*>* partitions,
-            internal::PartitionRootBase<thread_safe>* partition) {
-  DCHECK(partition);
+void Insert(std::set<PartitionRoot<thread_safe>*>* partitions,
+            PartitionRoot<thread_safe>* partition) {
+  PA_DCHECK(partition);
   auto it_and_whether_inserted = partitions->insert(partition);
-  DCHECK(it_and_whether_inserted.second);
+  PA_DCHECK(it_and_whether_inserted.second);
 }
 
 template <bool thread_safe>
-void Remove(std::set<internal::PartitionRootBase<thread_safe>*>* partitions,
-            internal::PartitionRootBase<thread_safe>* partition) {
-  DCHECK(partition);
+void Remove(std::set<PartitionRoot<thread_safe>*>* partitions,
+            PartitionRoot<thread_safe>* partition) {
+  PA_DCHECK(partition);
   size_t erased_count = partitions->erase(partition);
-  DCHECK_EQ(1u, erased_count);
+  PA_DCHECK(erased_count == 1u);
 }
 
 }  // namespace
-
-constexpr TimeDelta PartitionAllocMemoryReclaimer::kStatsRecordingTimeDelta;
 
 // static
 PartitionAllocMemoryReclaimer* PartitionAllocMemoryReclaimer::Instance() {
@@ -42,37 +40,37 @@ PartitionAllocMemoryReclaimer* PartitionAllocMemoryReclaimer::Instance() {
 }
 
 void PartitionAllocMemoryReclaimer::RegisterPartition(
-    internal::PartitionRootBase<internal::ThreadSafe>* partition) {
+    PartitionRoot<internal::ThreadSafe>* partition) {
   AutoLock lock(lock_);
   Insert(&thread_safe_partitions_, partition);
 }
 
 void PartitionAllocMemoryReclaimer::RegisterPartition(
-    internal::PartitionRootBase<internal::NotThreadSafe>* partition) {
+    PartitionRoot<internal::NotThreadSafe>* partition) {
   AutoLock lock(lock_);
   Insert(&thread_unsafe_partitions_, partition);
 }
 
 void PartitionAllocMemoryReclaimer::UnregisterPartition(
-    internal::PartitionRootBase<internal::ThreadSafe>* partition) {
+    PartitionRoot<internal::ThreadSafe>* partition) {
   AutoLock lock(lock_);
   Remove(&thread_safe_partitions_, partition);
 }
 
 void PartitionAllocMemoryReclaimer::UnregisterPartition(
-    internal::PartitionRootBase<internal::NotThreadSafe>* partition) {
+    PartitionRoot<internal::NotThreadSafe>* partition) {
   AutoLock lock(lock_);
   Remove(&thread_unsafe_partitions_, partition);
 }
 
 void PartitionAllocMemoryReclaimer::Start(
     scoped_refptr<SequencedTaskRunner> task_runner) {
-  DCHECK(!timer_);
-  DCHECK(task_runner);
+  PA_DCHECK(!timer_);
+  PA_DCHECK(task_runner);
 
   {
     AutoLock lock(lock_);
-    DCHECK(!thread_safe_partitions_.empty());
+    PA_DCHECK(!thread_safe_partitions_.empty());
   }
 
   // This does not need to run on the main thread, however there are a few
@@ -98,58 +96,27 @@ void PartitionAllocMemoryReclaimer::Start(
   timer_->Start(
       FROM_HERE, kInterval,
       BindRepeating(&PartitionAllocMemoryReclaimer::Reclaim, Unretained(this)));
-
-  task_runner->PostDelayedTask(
-      FROM_HERE,
-      BindOnce(&PartitionAllocMemoryReclaimer::RecordStatistics,
-               Unretained(this)),
-      kStatsRecordingTimeDelta);
 }
 
 PartitionAllocMemoryReclaimer::PartitionAllocMemoryReclaimer() = default;
 PartitionAllocMemoryReclaimer::~PartitionAllocMemoryReclaimer() = default;
 
 void PartitionAllocMemoryReclaimer::Reclaim() {
+  AutoLock lock(lock_);  // Has to protect from concurrent (Un)Register calls.
   TRACE_EVENT0("base", "PartitionAllocMemoryReclaimer::Reclaim()");
-  // Reclaim will almost always call into the kernel, so tail latency of this
-  // task would likely be affected by descheduling.
-  //
-  // On Linux (and Android) at least, ThreadTicks also includes kernel time, so
-  // this is a good measure of the true cost of decommit.
-  ElapsedThreadTimer timer;
-  constexpr int kFlags =
-      PartitionPurgeDecommitEmptyPages | PartitionPurgeDiscardUnusedSystemPages;
 
-  {
-    AutoLock lock(lock_);  // Has to protect from concurrent (Un)Register calls.
-    for (auto* partition : thread_safe_partitions_)
-      partition->PurgeMemory(kFlags);
-    for (auto* partition : thread_unsafe_partitions_)
-      partition->PurgeMemory(kFlags);
-  }
+  constexpr int kFlags = PartitionPurgeDecommitEmptySlotSpans |
+                         PartitionPurgeDiscardUnusedSystemPages;
 
-  has_called_reclaim_ = true;
-  if (timer.is_supported())
-    total_reclaim_thread_time_ += timer.Elapsed();
-}
-
-void PartitionAllocMemoryReclaimer::RecordStatistics() {
-  if (!ElapsedThreadTimer().is_supported())
-    return;
-  if (!has_called_reclaim_)
-    return;
-
-  UmaHistogramTimes("Memory.PartitionAlloc.MainThreadTime.5min",
-                    total_reclaim_thread_time_);
-  has_called_reclaim_ = false;
-  total_reclaim_thread_time_ = TimeDelta();
+  for (auto* partition : thread_safe_partitions_)
+    partition->PurgeMemory(kFlags);
+  for (auto* partition : thread_unsafe_partitions_)
+    partition->PurgeMemory(kFlags);
 }
 
 void PartitionAllocMemoryReclaimer::ResetForTesting() {
   AutoLock lock(lock_);
 
-  has_called_reclaim_ = false;
-  total_reclaim_thread_time_ = TimeDelta();
   timer_ = nullptr;
   thread_safe_partitions_.clear();
   thread_unsafe_partitions_.clear();

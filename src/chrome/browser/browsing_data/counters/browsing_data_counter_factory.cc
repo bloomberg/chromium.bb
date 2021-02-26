@@ -5,7 +5,7 @@
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_factory.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/counters/cache_counter.h"
@@ -17,6 +17,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
+#include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -40,7 +41,7 @@
 #include "content/public/browser/host_zoom_map.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/credential_store.h"
 #endif
 
@@ -60,7 +61,8 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
     return std::make_unique<browsing_data::HistoryCounter>(
         HistoryServiceFactory::GetForProfile(
             profile, ServiceAccessType::EXPLICIT_ACCESS),
-        base::Bind(&GetUpdatedWebHistoryService, base::Unretained(profile)),
+        base::BindRepeating(&GetUpdatedWebHistoryService,
+                            base::Unretained(profile)),
         ProfileSyncServiceFactory::GetForProfile(profile));
   }
   if (pref_name == browsing_data::prefs::kDeleteBrowsingHistoryBasic) {
@@ -83,7 +85,7 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
 
   if (pref_name == browsing_data::prefs::kDeletePasswords) {
     std::unique_ptr<::device::fido::PlatformCredentialStore> credential_store =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
         std::make_unique<::device::fido::mac::TouchIdCredentialStore>(
             ChromeAuthenticatorRequestDelegate::
                 TouchIdAuthenticatorConfigForProfile(profile));
@@ -93,6 +95,8 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
     return std::make_unique<browsing_data::SigninDataCounter>(
         PasswordStoreFactory::GetForProfile(profile,
                                             ServiceAccessType::EXPLICIT_ACCESS),
+        AccountPasswordStoreFactory::GetForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS),
         ProfileSyncServiceFactory::GetForProfile(profile),
         std::move(credential_store));
   }

@@ -42,6 +42,10 @@ import("//third_party/blink/renderer/config.gni")
 #     # Similar to |modules_dependency_idl_files| but limited to things that are
 #     # exposed only for testing.
 #   ]
+#
+#   modules_typedefs_enums_only_idl_files = [
+#     # IDL files that only have typedefs/enums.
+#   ]
 _idl_imports = [
   "//third_party/blink/renderer/modules/accessibility/idls.gni",
   "//third_party/blink/renderer/modules/animationworklet/idls.gni",
@@ -71,6 +75,7 @@ _idl_imports = [
   "//third_party/blink/renderer/modules/encryptedmedia/idls.gni",
   "//third_party/blink/renderer/modules/eventsource/idls.gni",
   "//third_party/blink/renderer/modules/filesystem/idls.gni",
+  "//third_party/blink/renderer/modules/file_system_access/idls.gni",
   "//third_party/blink/renderer/modules/font_access/idls.gni",
   "//third_party/blink/renderer/modules/gamepad/idls.gni",
   "//third_party/blink/renderer/modules/geolocation/idls.gni",
@@ -89,13 +94,13 @@ _idl_imports = [
   "//third_party/blink/renderer/modules/mediasession/idls.gni",
   "//third_party/blink/renderer/modules/mediasource/idls.gni",
   "//third_party/blink/renderer/modules/mediastream/idls.gni",
-  "//third_party/blink/renderer/modules/native_file_system/idls.gni",
   "//third_party/blink/renderer/modules/native_io/idls.gni",
   "//third_party/blink/renderer/modules/navigatorcontentutils/idls.gni",
   "//third_party/blink/renderer/modules/netinfo/idls.gni",
   "//third_party/blink/renderer/modules/nfc/idls.gni",
   "//third_party/blink/renderer/modules/notifications/idls.gni",
   "//third_party/blink/renderer/modules/payments/idls.gni",
+  "//third_party/blink/renderer/modules/payments/goods/idls.gni",
   "//third_party/blink/renderer/modules/peerconnection/idls.gni",
   "//third_party/blink/renderer/modules/permissions/idls.gni",
   "//third_party/blink/renderer/modules/picture_in_picture/idls.gni",
@@ -104,6 +109,7 @@ _idl_imports = [
   "//third_party/blink/renderer/modules/push_messaging/idls.gni",
   "//third_party/blink/renderer/modules/quota/idls.gni",
   "//third_party/blink/renderer/modules/remoteplayback/idls.gni",
+  "//third_party/blink/renderer/modules/sanitizer_api/idls.gni",
   "//third_party/blink/renderer/modules/scheduler/idls.gni",
   "//third_party/blink/renderer/modules/screen_enumeration/idls.gni",
   "//third_party/blink/renderer/modules/screen_orientation/idls.gni",
@@ -122,6 +128,7 @@ _idl_imports = [
   "//third_party/blink/renderer/modules/webdatabase/idls.gni",
   "//third_party/blink/renderer/modules/webgl/idls.gni",
   "//third_party/blink/renderer/modules/webgpu/idls.gni",
+  "//third_party/blink/renderer/modules/webid/idls.gni",
   "//third_party/blink/renderer/modules/webmidi/idls.gni",
   "//third_party/blink/renderer/modules/webshare/idls.gni",
   "//third_party/blink/renderer/modules/websockets/idls.gni",
@@ -133,7 +140,10 @@ _idl_imports = [
 # TODO(dcheng): For whatever reason, is_android doesn't seem to be defined, even
 # if using import() instead of read_file() in the foreach() loop below...
 if (!is_android) {
-  _idl_imports += [ "//third_party/blink/renderer/modules/serial/idls.gni" ]
+  _idl_imports += [
+    "//third_party/blink/renderer/modules/direct_sockets/idls.gni",
+    "//third_party/blink/renderer/modules/serial/idls.gni",
+  ]
 }
 
 # Do not add IDL files directly to these lists. See _idl_imports above instead
@@ -143,6 +153,7 @@ modules_callback_function_idl_files = []
 modules_dictionary_idl_files = []
 modules_dependency_idl_files = []
 modules_testing_dependency_idl_files = []
+modules_typedefs_enums_only_idl_files = []
 
 foreach(idl_import, _idl_imports) {
   # Avoid reassignment error by assigning to empty scope first.
@@ -186,6 +197,15 @@ foreach(idl_import, _idl_imports) {
     modules_testing_dependency_idl_files +=
         get_path_info(
             rebase_path(_imported.modules_testing_dependency_idl_files,
+                        ".",
+                        gni_dir),
+            "abspath")
+  }
+
+  if (defined(_imported.modules_typedefs_enums_only_idl_files)) {
+    modules_typedefs_enums_only_idl_files +=
+        get_path_info(
+            rebase_path(_imported.modules_typedefs_enums_only_idl_files,
                         ".",
                         gni_dir),
             "abspath")
@@ -244,14 +264,19 @@ modules_global_constructors_generated_idl_files = process_file_template(
 modules_definition_idl_files = modules_dictionary_idl_files + modules_idl_files
 
 # Static IDL files
-modules_static_interface_idl_files = modules_callback_function_idl_files
+modules_static_interface_idl_files =
+    modules_callback_function_idl_files + modules_typedefs_enums_only_idl_files
 
 modules_static_dependency_idl_files =
     modules_dependency_idl_files + modules_testing_dependency_idl_files
 
-modules_generated_dependency_idl_files =
-    modules_core_global_constructors_generated_idl_files +
-    modules_global_constructors_generated_idl_files
+if (use_blink_v8_binding_new_idl_interface) {
+  modules_generated_dependency_idl_files = []
+} else {
+  modules_generated_dependency_idl_files =
+      modules_core_global_constructors_generated_idl_files +
+      modules_global_constructors_generated_idl_files
+}
 
 # 'modules_dependency_idl_files' is already used in Source/modules, so avoid
 # collision

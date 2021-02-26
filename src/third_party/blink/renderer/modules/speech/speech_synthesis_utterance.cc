@@ -75,7 +75,7 @@ void SpeechSynthesisUtterance::setVoice(SpeechSynthesisVoice* voice) {
   mojom_utterance_->voice = voice_ ? voice_->name() : String();
 }
 
-void SpeechSynthesisUtterance::Trace(Visitor* visitor) {
+void SpeechSynthesisUtterance::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   visitor->Trace(synthesis_);
   visitor->Trace(voice_);
@@ -148,10 +148,6 @@ void SpeechSynthesisUtterance::Start(SpeechSynthesis* synthesis) {
   // Add a disconnect handler so we can cleanup appropriately.
   receiver_.set_disconnect_handler(WTF::Bind(
       &SpeechSynthesisUtterance::OnDisconnected, WrapWeakPersistent(this)));
-}
-
-void SpeechSynthesisUtterance::Dispose() {
-  receiver_.reset();
 }
 
 void SpeechSynthesisUtterance::OnDisconnected() {

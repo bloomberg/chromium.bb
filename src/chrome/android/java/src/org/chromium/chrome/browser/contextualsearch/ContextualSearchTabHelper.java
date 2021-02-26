@@ -6,13 +6,12 @@ package org.chromium.chrome.browser.contextualsearch;
 
 import android.app.Activity;
 import android.content.Context;
-import android.view.ContextMenu;
 
 import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -29,7 +28,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.WindowAndroid;
 
-/** Manages the activation and gesture listeners for ContextualSearch on a given tab. */
+/** Manages the enabling and disabling and gesture listeners for ContextualSearch on a given Tab. */
 public class ContextualSearchTabHelper
         extends EmptyTabObserver implements NetworkChangeNotifier.ConnectionTypeObserver {
     /** The Tab that this helper tracks. */
@@ -106,7 +105,7 @@ public class ContextualSearchTabHelper
     public void onContentChanged(Tab tab) {
         // Native initialization happens after a page loads or content is changed to ensure profile
         // is initialized.
-        if (mNativeHelper == 0) {
+        if (mNativeHelper == 0 && tab.getWebContents() != null) {
             mNativeHelper = ContextualSearchTabHelperJni.get().init(
                     ContextualSearchTabHelper.this, Profile.fromWebContents(tab.getWebContents()));
         }
@@ -164,7 +163,7 @@ public class ContextualSearchTabHelper
     }
 
     @Override
-    public void onContextMenuShown(Tab tab, ContextMenu menu) {
+    public void onContextMenuShown(Tab tab) {
         ContextualSearchManager manager = getContextualSearchManager(tab);
         if (manager != null) {
             manager.onContextMenuShown();
@@ -278,8 +277,7 @@ public class ContextualSearchTabHelper
                 // Svelte and Accessibility devices are incompatible with the first-run flow and
                 // Talkback has poor interaction with Contextual Search (see http://crbug.com/399708
                 // and http://crbug.com/396934).
-                && !manager.isRunningInCompatibilityMode()
-                && !(mTab.isShowingErrorPage() || webContents.isShowingInterstitialPage())
+                && !manager.isRunningInCompatibilityMode() && !(mTab.isShowingErrorPage())
                 && isDeviceOnline(manager);
     }
 

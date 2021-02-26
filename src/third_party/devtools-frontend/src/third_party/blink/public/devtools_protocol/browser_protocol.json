@@ -383,6 +383,53 @@
                             }
                         }
                     ]
+                },
+                {
+                    "name": "queryAXTree",
+                    "description": "Query a DOM node's accessibility subtree for accessible name and role.\nThis command computes the name and role for all nodes in the subtree, including those that are\nignored for accessibility, and returns those that mactch the specified name and role. If no DOM\nnode is specified, or the DOM node does not exist, the command returns an error. If neither\n`accessibleName` or `role` is specified, it returns all the accessibility nodes in the subtree.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "nodeId",
+                            "description": "Identifier of the node for the root to query.",
+                            "optional": true,
+                            "$ref": "DOM.NodeId"
+                        },
+                        {
+                            "name": "backendNodeId",
+                            "description": "Identifier of the backend node for the root to query.",
+                            "optional": true,
+                            "$ref": "DOM.BackendNodeId"
+                        },
+                        {
+                            "name": "objectId",
+                            "description": "JavaScript object id of the node wrapper for the root to query.",
+                            "optional": true,
+                            "$ref": "Runtime.RemoteObjectId"
+                        },
+                        {
+                            "name": "accessibleName",
+                            "description": "Find nodes with this computed name.",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "role",
+                            "description": "Find nodes with this computed role.",
+                            "optional": true,
+                            "type": "string"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "nodes",
+                            "description": "A list of `Accessibility.AXNode` matching the specified attributes,\nincluding nodes that are ignored for accessibility.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "AXNode"
+                            }
+                        }
+                    ]
                 }
             ]
         },
@@ -969,7 +1016,9 @@
                     "type": "string",
                     "enum": [
                         "ExcludeSameSiteUnspecifiedTreatedAsLax",
-                        "ExcludeSameSiteNoneInsecure"
+                        "ExcludeSameSiteNoneInsecure",
+                        "ExcludeSameSiteLax",
+                        "ExcludeSameSiteStrict"
                     ]
                 },
                 {
@@ -1120,12 +1169,159 @@
                     ]
                 },
                 {
+                    "id": "BlockedByResponseReason",
+                    "description": "Enum indicating the reason a response has been blocked. These reasons are\nrefinements of the net error BLOCKED_BY_RESPONSE.",
+                    "type": "string",
+                    "enum": [
+                        "CoepFrameResourceNeedsCoepHeader",
+                        "CoopSandboxedIFrameCannotNavigateToCoopPage",
+                        "CorpNotSameOrigin",
+                        "CorpNotSameOriginAfterDefaultedToSameOriginByCoep",
+                        "CorpNotSameSite"
+                    ]
+                },
+                {
+                    "id": "BlockedByResponseIssueDetails",
+                    "description": "Details for a request that has been blocked with the BLOCKED_BY_RESPONSE\ncode. Currently only used for COEP/COOP, but may be extended to include\nsome CSP errors in the future.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "request",
+                            "$ref": "AffectedRequest"
+                        },
+                        {
+                            "name": "parentFrame",
+                            "optional": true,
+                            "$ref": "AffectedFrame"
+                        },
+                        {
+                            "name": "blockedFrame",
+                            "optional": true,
+                            "$ref": "AffectedFrame"
+                        },
+                        {
+                            "name": "reason",
+                            "$ref": "BlockedByResponseReason"
+                        }
+                    ]
+                },
+                {
+                    "id": "HeavyAdResolutionStatus",
+                    "type": "string",
+                    "enum": [
+                        "HeavyAdBlocked",
+                        "HeavyAdWarning"
+                    ]
+                },
+                {
+                    "id": "HeavyAdReason",
+                    "type": "string",
+                    "enum": [
+                        "NetworkTotalLimit",
+                        "CpuTotalLimit",
+                        "CpuPeakLimit"
+                    ]
+                },
+                {
+                    "id": "HeavyAdIssueDetails",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "resolution",
+                            "description": "The resolution status, either blocking the content or warning.",
+                            "$ref": "HeavyAdResolutionStatus"
+                        },
+                        {
+                            "name": "reason",
+                            "description": "The reason the ad was blocked, total network or cpu or peak cpu.",
+                            "$ref": "HeavyAdReason"
+                        },
+                        {
+                            "name": "frame",
+                            "description": "The frame that was blocked.",
+                            "$ref": "AffectedFrame"
+                        }
+                    ]
+                },
+                {
+                    "id": "ContentSecurityPolicyViolationType",
+                    "type": "string",
+                    "enum": [
+                        "kInlineViolation",
+                        "kEvalViolation",
+                        "kURLViolation",
+                        "kTrustedTypesSinkViolation",
+                        "kTrustedTypesPolicyViolation"
+                    ]
+                },
+                {
+                    "id": "SourceCodeLocation",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "url",
+                            "type": "string"
+                        },
+                        {
+                            "name": "lineNumber",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "columnNumber",
+                            "type": "integer"
+                        }
+                    ]
+                },
+                {
+                    "id": "ContentSecurityPolicyIssueDetails",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "blockedURL",
+                            "description": "The url not included in allowed sources.",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "violatedDirective",
+                            "description": "Specific directive that is violated, causing the CSP issue.",
+                            "type": "string"
+                        },
+                        {
+                            "name": "isReportOnly",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "contentSecurityPolicyViolationType",
+                            "$ref": "ContentSecurityPolicyViolationType"
+                        },
+                        {
+                            "name": "frameAncestor",
+                            "optional": true,
+                            "$ref": "AffectedFrame"
+                        },
+                        {
+                            "name": "sourceCodeLocation",
+                            "optional": true,
+                            "$ref": "SourceCodeLocation"
+                        },
+                        {
+                            "name": "violatingNodeId",
+                            "optional": true,
+                            "$ref": "DOM.BackendNodeId"
+                        }
+                    ]
+                },
+                {
                     "id": "InspectorIssueCode",
                     "description": "A unique identifier for the type of issue. Each type may use one of the\noptional fields in InspectorIssueDetails to convey more specific\ninformation about the kind of issue.",
                     "type": "string",
                     "enum": [
                         "SameSiteCookieIssue",
-                        "MixedContentIssue"
+                        "MixedContentIssue",
+                        "BlockedByResponseIssue",
+                        "HeavyAdIssue",
+                        "ContentSecurityPolicyIssue"
                     ]
                 },
                 {
@@ -1142,6 +1338,21 @@
                             "name": "mixedContentIssueDetails",
                             "optional": true,
                             "$ref": "MixedContentIssueDetails"
+                        },
+                        {
+                            "name": "blockedByResponseIssueDetails",
+                            "optional": true,
+                            "$ref": "BlockedByResponseIssueDetails"
+                        },
+                        {
+                            "name": "heavyAdIssueDetails",
+                            "optional": true,
+                            "$ref": "HeavyAdIssueDetails"
+                        },
+                        {
+                            "name": "contentSecurityPolicyIssueDetails",
+                            "optional": true,
+                            "$ref": "ContentSecurityPolicyIssueDetails"
                         }
                     ]
                 },
@@ -1472,6 +1683,7 @@
                         "protectedMediaIdentifier",
                         "sensors",
                         "videoCapture",
+                        "videoCapturePanTiltZoom",
                         "idleDetection",
                         "wakeLockScreen",
                         "wakeLockSystem"
@@ -1511,17 +1723,27 @@
                             "type": "boolean"
                         },
                         {
-                            "name": "type",
-                            "description": "For \"wake-lock\" permission, must specify type as either \"screen\" or \"system\".",
-                            "optional": true,
-                            "type": "string"
-                        },
-                        {
                             "name": "allowWithoutSanitization",
                             "description": "For \"clipboard\" permission, may specify allowWithoutSanitization.",
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "panTiltZoom",
+                            "description": "For \"camera\" permission, may specify panTiltZoom.",
+                            "optional": true,
+                            "type": "boolean"
                         }
+                    ]
+                },
+                {
+                    "id": "BrowserCommandId",
+                    "description": "Browser command ids used by executeBrowserCommand.",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "openTabSearch",
+                        "closeTabSearch"
                     ]
                 },
                 {
@@ -1870,6 +2092,17 @@
                             "type": "binary"
                         }
                     ]
+                },
+                {
+                    "name": "executeBrowserCommand",
+                    "description": "Invoke custom browser commands used by telemetry.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "commandId",
+                            "$ref": "BrowserCommandId"
+                        }
+                    ]
                 }
             ]
         },
@@ -2052,6 +2285,16 @@
                         {
                             "name": "isInline",
                             "description": "Whether this stylesheet is created for STYLE tag by parser. This flag is not set for\ndocument.written STYLE tags.",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "isMutable",
+                            "description": "Whether this stylesheet is mutable. Inline stylesheets become mutable\nafter they have been modified via CSSOM API.\n<link> element's stylesheets become mutable only if DevTools modifies them.\nConstructed stylesheets (new CSSStyleSheet()) are mutable immediately after creation.",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "isConstructed",
+                            "description": "Whether this stylesheet is a constructed stylesheet (created using new CSSStyleSheet()).",
                             "type": "boolean"
                         },
                         {
@@ -2431,8 +2674,40 @@
                     ]
                 },
                 {
+                    "id": "FontVariationAxis",
+                    "description": "Information about font variation axes for variable fonts",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "tag",
+                            "description": "The font-variation-setting tag (a.k.a. \"axis tag\").",
+                            "type": "string"
+                        },
+                        {
+                            "name": "name",
+                            "description": "Human-readable variation name in the default language (normally, \"en\").",
+                            "type": "string"
+                        },
+                        {
+                            "name": "minValue",
+                            "description": "The minimum value (inclusive) the font supports for this tag.",
+                            "type": "number"
+                        },
+                        {
+                            "name": "maxValue",
+                            "description": "The maximum value (inclusive) the font supports for this tag.",
+                            "type": "number"
+                        },
+                        {
+                            "name": "defaultValue",
+                            "description": "The default value.",
+                            "type": "number"
+                        }
+                    ]
+                },
+                {
                     "id": "FontFace",
-                    "description": "Properties of a web font: https://www.w3.org/TR/2008/REC-CSS2-20080411/fonts.html#font-descriptions",
+                    "description": "Properties of a web font: https://www.w3.org/TR/2008/REC-CSS2-20080411/fonts.html#font-descriptions\nand additional information such as platformFontFamily and fontVariationAxes.",
                     "type": "object",
                     "properties": [
                         {
@@ -2474,6 +2749,15 @@
                             "name": "platformFontFamily",
                             "description": "The resolved platform font family",
                             "type": "string"
+                        },
+                        {
+                            "name": "fontVariationAxes",
+                            "description": "Available variation settings (a.k.a. \"axes\").",
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "$ref": "FontVariationAxis"
+                            }
                         }
                     ]
                 },
@@ -2830,6 +3114,35 @@
                     ]
                 },
                 {
+                    "name": "trackComputedStyleUpdates",
+                    "description": "Starts tracking the given computed styles for updates. The specified array of properties\nreplaces the one previously specified. Pass empty array to disable tracking.\nUse takeComputedStyleUpdates to retrieve the list of nodes that had properties modified.\nThe changes to computed style properties are only tracked for nodes pushed to the front-end\nby the DOM agent. If no changes to the tracked properties occur after the node has been pushed\nto the front-end, no updates will be issued for the node.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "propertiesToTrack",
+                            "type": "array",
+                            "items": {
+                                "$ref": "CSSComputedStyleProperty"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "takeComputedStyleUpdates",
+                    "description": "Polls the next batch of computed style updates.",
+                    "experimental": true,
+                    "returns": [
+                        {
+                            "name": "nodeIds",
+                            "description": "The list of node Ids that have their tracked computed styles updated",
+                            "type": "array",
+                            "items": {
+                                "$ref": "DOM.NodeId"
+                            }
+                        }
+                    ]
+                },
+                {
                     "name": "setEffectivePropertyValueForNode",
                     "description": "Find a rule with the given active property for the given node and set the new value for this\nproperty",
                     "parameters": [
@@ -3000,6 +3313,18 @@
                             "name": "timestamp",
                             "description": "Monotonically increasing time, in seconds.",
                             "type": "number"
+                        }
+                    ]
+                },
+                {
+                    "name": "setLocalFontsEnabled",
+                    "description": "Enables/disables rendering of local CSS fonts (enabled by default).",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "enabled",
+                            "description": "Whether rendering of local fonts is enabled.",
+                            "type": "boolean"
                         }
                     ]
                 }
@@ -3454,6 +3779,7 @@
                         "marker",
                         "backdrop",
                         "selection",
+                        "target-text",
                         "first-line-inherited",
                         "scrollbar",
                         "scrollbar-thumb",
@@ -3792,6 +4118,22 @@
                             "type": "number"
                         }
                     ]
+                },
+                {
+                    "id": "CSSComputedStyleProperty",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "name",
+                            "description": "Computed style property name.",
+                            "type": "string"
+                        },
+                        {
+                            "name": "value",
+                            "description": "Computed style property value.",
+                            "type": "string"
+                        }
+                    ]
                 }
             ],
             "commands": [
@@ -4079,7 +4421,8 @@
                 },
                 {
                     "name": "getFlattenedDocument",
-                    "description": "Returns the root DOM node (and optionally the subtree) to the caller.",
+                    "description": "Returns the root DOM node (and optionally the subtree) to the caller.\nDeprecated, as it is not designed to work well with the rest of the DOM agent.\nUse DOMSnapshot.captureSnapshot instead.",
+                    "deprecated": true,
                     "parameters": [
                         {
                             "name": "depth",
@@ -4101,6 +4444,42 @@
                             "type": "array",
                             "items": {
                                 "$ref": "Node"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "getNodesForSubtreeByStyle",
+                    "description": "Finds nodes with a given computed style in a subtree.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "nodeId",
+                            "description": "Node ID pointing to the root of a subtree.",
+                            "$ref": "NodeId"
+                        },
+                        {
+                            "name": "computedStyles",
+                            "description": "The style to filter nodes by (includes nodes if any of properties matches).",
+                            "type": "array",
+                            "items": {
+                                "$ref": "CSSComputedStyleProperty"
+                            }
+                        },
+                        {
+                            "name": "pierce",
+                            "description": "Whether or not iframes and shadow roots in the same target should be traversed when returning the\nresults (default is false).",
+                            "optional": true,
+                            "type": "boolean"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "nodeIds",
+                            "description": "Resulting nodes.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "NodeId"
                             }
                         }
                     ]
@@ -6363,6 +6742,31 @@
                     ]
                 },
                 {
+                    "id": "DisplayFeature",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "orientation",
+                            "description": "Orientation of a display feature in relation to screen",
+                            "type": "string",
+                            "enum": [
+                                "vertical",
+                                "horizontal"
+                            ]
+                        },
+                        {
+                            "name": "offset",
+                            "description": "The offset from the screen origin in either the x (for vertical\norientation) or y (for horizontal orientation) direction.",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "maskLength",
+                            "description": "A display feature may mask content such that it is not physically\ndisplayed - this length along with the offset describes this area.\nA display feature that only splits content will have a 0 mask_length.",
+                            "type": "integer"
+                        }
+                    ]
+                },
+                {
                     "id": "MediaFeature",
                     "type": "object",
                     "properties": [
@@ -6440,6 +6844,16 @@
                             "name": "mobile",
                             "type": "boolean"
                         }
+                    ]
+                },
+                {
+                    "id": "DisabledImageType",
+                    "description": "Enum of image types that can be disabled.",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "avif",
+                        "webp"
                     ]
                 }
             ],
@@ -6582,6 +6996,13 @@
                             "experimental": true,
                             "optional": true,
                             "$ref": "Page.Viewport"
+                        },
+                        {
+                            "name": "displayFeature",
+                            "description": "If set, the display feature of a multi-segment screen. If not set, multi-segment support\nis turned-off.",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "DisplayFeature"
                         }
                     ]
                 },
@@ -6692,6 +7113,28 @@
                             "type": "number"
                         }
                     ]
+                },
+                {
+                    "name": "setIdleOverride",
+                    "description": "Overrides the Idle state.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "isUserActive",
+                            "description": "Mock isUserActive",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "isScreenUnlocked",
+                            "description": "Mock isScreenUnlocked",
+                            "type": "boolean"
+                        }
+                    ]
+                },
+                {
+                    "name": "clearIdleOverride",
+                    "description": "Clears Idle state overrides.",
+                    "experimental": true
                 },
                 {
                     "name": "setNavigatorOverrides",
@@ -6828,6 +7271,20 @@
                             "name": "height",
                             "description": "Frame height (DIP).",
                             "type": "integer"
+                        }
+                    ]
+                },
+                {
+                    "name": "setDisabledImageTypes",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "imageTypes",
+                            "description": "Image types to disable.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "DisabledImageType"
+                            }
                         }
                     ]
                 },
@@ -7519,6 +7976,34 @@
                             "type": "number"
                         },
                         {
+                            "name": "tangentialPressure",
+                            "description": "The normalized tangential pressure, which has a range of [-1,1] (default: 0).",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "number"
+                        },
+                        {
+                            "name": "tiltX",
+                            "description": "The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0)",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "integer"
+                        },
+                        {
+                            "name": "tiltY",
+                            "description": "The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "integer"
+                        },
+                        {
+                            "name": "twist",
+                            "description": "The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "integer"
+                        },
+                        {
                             "name": "id",
                             "description": "Identifier used to track touch sources between events, must be unique within an event.",
                             "optional": true,
@@ -7647,6 +8132,16 @@
                             "description": "Whether the event was from the left or right side of the keyboard. 1=Left, 2=Right (default:\n0).",
                             "optional": true,
                             "type": "integer"
+                        },
+                        {
+                            "name": "commands",
+                            "description": "Editing commands to send with the key event (e.g., 'selectAll') (default: []).\nThese are related to but not equal the command names used in `document.execCommand` and NSStandardKeyBindingResponding.\nSee https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/editing/commands/editor_command_names.h for valid command names.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
                         }
                     ]
                 },
@@ -7714,6 +8209,41 @@
                         {
                             "name": "clickCount",
                             "description": "Number of times the mouse button was clicked (default: 0).",
+                            "optional": true,
+                            "type": "integer"
+                        },
+                        {
+                            "name": "force",
+                            "description": "The normalized pressure, which has a range of [0,1] (default: 0).",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "number"
+                        },
+                        {
+                            "name": "tangentialPressure",
+                            "description": "The normalized tangential pressure, which has a range of [-1,1] (default: 0).",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "number"
+                        },
+                        {
+                            "name": "tiltX",
+                            "description": "The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0).",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "integer"
+                        },
+                        {
+                            "name": "tiltY",
+                            "description": "The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "integer"
+                        },
+                        {
+                            "name": "twist",
+                            "description": "The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).",
+                            "experimental": true,
                             "optional": true,
                             "type": "integer"
                         },
@@ -8992,6 +9522,18 @@
                             "type": "number"
                         },
                         {
+                            "name": "workerFetchStart",
+                            "description": "Started fetch event.",
+                            "experimental": true,
+                            "type": "number"
+                        },
+                        {
+                            "name": "workerRespondWithSettled",
+                            "description": "Settled fetch event respondWith promise.",
+                            "experimental": true,
+                            "type": "number"
+                        },
+                        {
                             "name": "sendStart",
                             "description": "Started sending request.",
                             "type": "number"
@@ -9033,6 +9575,18 @@
                     ]
                 },
                 {
+                    "id": "PostDataEntry",
+                    "description": "Post data entry for HTTP request",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "bytes",
+                            "optional": true,
+                            "type": "binary"
+                        }
+                    ]
+                },
+                {
                     "id": "Request",
                     "description": "HTTP request data.",
                     "type": "object",
@@ -9071,6 +9625,16 @@
                             "type": "boolean"
                         },
                         {
+                            "name": "postDataEntries",
+                            "description": "Request body elements. This will be converted from base64 to binary",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "$ref": "PostDataEntry"
+                            }
+                        },
+                        {
                             "name": "mixedContentType",
                             "description": "The mixed content type of the request.",
                             "optional": true,
@@ -9101,6 +9665,13 @@
                             "description": "Whether is loaded via link preload.",
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "trustTokenParams",
+                            "description": "Set for requests when the TrustToken API is used. Contains the parameters\npassed by the developer (e.g. via \"fetch\") as understood by the backend.",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "TrustTokenParams"
                         }
                     ]
                 },
@@ -9262,6 +9833,103 @@
                     ]
                 },
                 {
+                    "id": "CorsError",
+                    "description": "The reason why request was blocked.",
+                    "type": "string",
+                    "enum": [
+                        "DisallowedByMode",
+                        "InvalidResponse",
+                        "WildcardOriginNotAllowed",
+                        "MissingAllowOriginHeader",
+                        "MultipleAllowOriginValues",
+                        "InvalidAllowOriginValue",
+                        "AllowOriginMismatch",
+                        "InvalidAllowCredentials",
+                        "CorsDisabledScheme",
+                        "PreflightInvalidStatus",
+                        "PreflightDisallowedRedirect",
+                        "PreflightWildcardOriginNotAllowed",
+                        "PreflightMissingAllowOriginHeader",
+                        "PreflightMultipleAllowOriginValues",
+                        "PreflightInvalidAllowOriginValue",
+                        "PreflightAllowOriginMismatch",
+                        "PreflightInvalidAllowCredentials",
+                        "PreflightMissingAllowExternal",
+                        "PreflightInvalidAllowExternal",
+                        "InvalidAllowMethodsPreflightResponse",
+                        "InvalidAllowHeadersPreflightResponse",
+                        "MethodDisallowedByPreflightResponse",
+                        "HeaderDisallowedByPreflightResponse",
+                        "RedirectContainsCredentials",
+                        "InsecurePrivateNetwork"
+                    ]
+                },
+                {
+                    "id": "CorsErrorStatus",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "corsError",
+                            "$ref": "CorsError"
+                        },
+                        {
+                            "name": "failedParameter",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "id": "ServiceWorkerResponseSource",
+                    "description": "Source of serviceworker response.",
+                    "type": "string",
+                    "enum": [
+                        "cache-storage",
+                        "http-cache",
+                        "fallback-code",
+                        "network"
+                    ]
+                },
+                {
+                    "id": "TrustTokenParams",
+                    "description": "Determines what type of Trust Token operation is executed and\ndepending on the type, some additional parameters. The values\nare specified in third_party/blink/renderer/core/fetch/trust_token.idl.",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "type",
+                            "$ref": "TrustTokenOperationType"
+                        },
+                        {
+                            "name": "refreshPolicy",
+                            "description": "Only set for \"token-redemption\" type and determine whether\nto request a fresh SRR or use a still valid cached SRR.",
+                            "type": "string",
+                            "enum": [
+                                "UseCached",
+                                "Refresh"
+                            ]
+                        },
+                        {
+                            "name": "issuers",
+                            "description": "Origins of issuers from whom to request tokens or redemption\nrecords.",
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "TrustTokenOperationType",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "Issuance",
+                        "Redemption",
+                        "Signing"
+                    ]
+                },
+                {
                     "id": "Response",
                     "description": "HTTP response data.",
                     "type": "object",
@@ -9359,6 +10027,24 @@
                             "description": "Timing information for the given request.",
                             "optional": true,
                             "$ref": "ResourceTiming"
+                        },
+                        {
+                            "name": "serviceWorkerResponseSource",
+                            "description": "Response source of response from ServiceWorker.",
+                            "optional": true,
+                            "$ref": "ServiceWorkerResponseSource"
+                        },
+                        {
+                            "name": "responseTime",
+                            "description": "The time at which the returned response was generated.",
+                            "optional": true,
+                            "$ref": "TimeSinceEpoch"
+                        },
+                        {
+                            "name": "cacheStorageCacheName",
+                            "description": "Cache Storage Cache Name.",
+                            "optional": true,
+                            "type": "string"
                         },
                         {
                             "name": "protocol",
@@ -9515,6 +10201,12 @@
                             "description": "Initiator line number, set for Parser type or for Script type (when script is importing\nmodule) (0-based).",
                             "optional": true,
                             "type": "number"
+                        },
+                        {
+                            "name": "columnNumber",
+                            "description": "Initiator column number, set for Parser type or for Script type (when script is importing\nmodule) (0-based).",
+                            "optional": true,
+                            "type": "number"
                         }
                     ]
                 },
@@ -9599,7 +10291,10 @@
                         "OverwriteSecure",
                         "InvalidDomain",
                         "InvalidPrefix",
-                        "UnknownError"
+                        "UnknownError",
+                        "SchemefulSameSiteStrict",
+                        "SchemefulSameSiteLax",
+                        "SchemefulSameSiteUnspecifiedTreatedAsLax"
                     ]
                 },
                 {
@@ -9616,7 +10311,10 @@
                         "SameSiteUnspecifiedTreatedAsLax",
                         "SameSiteNoneInsecure",
                         "UserPreferences",
-                        "UnknownError"
+                        "UnknownError",
+                        "SchemefulSameSiteStrict",
+                        "SchemefulSameSiteLax",
+                        "SchemefulSameSiteUnspecifiedTreatedAsLax"
                     ]
                 },
                 {
@@ -9999,6 +10697,149 @@
                             }
                         }
                     ]
+                },
+                {
+                    "id": "CrossOriginOpenerPolicyValue",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "SameOrigin",
+                        "SameOriginAllowPopups",
+                        "UnsafeNone",
+                        "SameOriginPlusCoep"
+                    ]
+                },
+                {
+                    "id": "CrossOriginOpenerPolicyStatus",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "value",
+                            "$ref": "CrossOriginOpenerPolicyValue"
+                        },
+                        {
+                            "name": "reportOnlyValue",
+                            "$ref": "CrossOriginOpenerPolicyValue"
+                        },
+                        {
+                            "name": "reportingEndpoint",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "reportOnlyReportingEndpoint",
+                            "optional": true,
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "id": "CrossOriginEmbedderPolicyValue",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "None",
+                        "RequireCorp"
+                    ]
+                },
+                {
+                    "id": "CrossOriginEmbedderPolicyStatus",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "value",
+                            "$ref": "CrossOriginEmbedderPolicyValue"
+                        },
+                        {
+                            "name": "reportOnlyValue",
+                            "$ref": "CrossOriginEmbedderPolicyValue"
+                        },
+                        {
+                            "name": "reportingEndpoint",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "reportOnlyReportingEndpoint",
+                            "optional": true,
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "id": "SecurityIsolationStatus",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "coop",
+                            "optional": true,
+                            "$ref": "CrossOriginOpenerPolicyStatus"
+                        },
+                        {
+                            "name": "coep",
+                            "optional": true,
+                            "$ref": "CrossOriginEmbedderPolicyStatus"
+                        }
+                    ]
+                },
+                {
+                    "id": "LoadNetworkResourcePageResult",
+                    "description": "An object providing the result of a network resource load.",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "success",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "netError",
+                            "description": "Optional values used for error reporting.",
+                            "optional": true,
+                            "type": "number"
+                        },
+                        {
+                            "name": "netErrorName",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "httpStatusCode",
+                            "optional": true,
+                            "type": "number"
+                        },
+                        {
+                            "name": "stream",
+                            "description": "If successful, one of the following two fields holds the result.",
+                            "optional": true,
+                            "$ref": "IO.StreamHandle"
+                        },
+                        {
+                            "name": "headers",
+                            "description": "Response headers.",
+                            "optional": true,
+                            "$ref": "Network.Headers"
+                        }
+                    ]
+                },
+                {
+                    "id": "LoadNetworkResourceOptions",
+                    "description": "An options object that may be extended later to better support CORS,\nCORB and streaming.",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "disableCache",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "includeCredentials",
+                            "type": "boolean"
+                        }
+                    ]
                 }
             ],
             "commands": [
@@ -10232,7 +11073,7 @@
                     "parameters": [
                         {
                             "name": "urls",
-                            "description": "The list of URLs for which applicable cookies will be fetched",
+                            "description": "The list of URLs for which applicable cookies will be fetched.\nIf not specified, it's assumed to be set to the list containing\nthe URLs of the page and all of its subframes.",
                             "optional": true,
                             "type": "array",
                             "items": {
@@ -10489,7 +11330,8 @@
                     "returns": [
                         {
                             "name": "success",
-                            "description": "True if successfully set cookie.",
+                            "description": "Always set to true. If an error occurs, the response indicates protocol error.",
+                            "deprecated": true,
                             "type": "boolean"
                         }
                     ]
@@ -10537,6 +11379,18 @@
                     ]
                 },
                 {
+                    "name": "setAttachDebugStack",
+                    "description": "Specifies whether to attach a page script stack id in requests",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "enabled",
+                            "description": "Whether to attach a page script stack for debugging purpose.",
+                            "type": "boolean"
+                        }
+                    ]
+                },
+                {
                     "name": "setRequestInterception",
                     "description": "Sets the requests to intercept that match the provided patterns and optionally resource types.\nDeprecated, please use Fetch.enable instead.",
                     "experimental": true,
@@ -10580,6 +11434,53 @@
                             "experimental": true,
                             "optional": true,
                             "$ref": "Emulation.UserAgentMetadata"
+                        }
+                    ]
+                },
+                {
+                    "name": "getSecurityIsolationStatus",
+                    "description": "Returns information about the COEP/COOP isolation status.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "frameId",
+                            "description": "If no frameId is provided, the status of the target is provided.",
+                            "optional": true,
+                            "$ref": "Page.FrameId"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "status",
+                            "$ref": "SecurityIsolationStatus"
+                        }
+                    ]
+                },
+                {
+                    "name": "loadNetworkResource",
+                    "description": "Fetches the resource and returns the content.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "frameId",
+                            "description": "Frame id to get the resource for.",
+                            "$ref": "Page.FrameId"
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL of the resource to get content for.",
+                            "type": "string"
+                        },
+                        {
+                            "name": "options",
+                            "description": "Options for the request.",
+                            "$ref": "LoadNetworkResourceOptions"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "resource",
+                            "$ref": "LoadNetworkResourcePageResult"
                         }
                     ]
                 }
@@ -10677,6 +11578,12 @@
                             "description": "The reason why loading was blocked, if any.",
                             "optional": true,
                             "$ref": "BlockedReason"
+                        },
+                        {
+                            "name": "corsErrorStatus",
+                            "description": "The reason why loading was blocked by CORS, if any.",
+                            "optional": true,
+                            "$ref": "CorsErrorStatus"
                         }
                     ]
                 },
@@ -11150,6 +12057,200 @@
             ],
             "types": [
                 {
+                    "id": "SourceOrderConfig",
+                    "description": "Configuration data for drawing the source order of an elements children.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "parentOutlineColor",
+                            "description": "the color to outline the givent element in.",
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "childOutlineColor",
+                            "description": "the color to outline the child elements in.",
+                            "$ref": "DOM.RGBA"
+                        }
+                    ]
+                },
+                {
+                    "id": "GridHighlightConfig",
+                    "description": "Configuration data for the highlighting of Grid elements.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "showGridExtensionLines",
+                            "description": "Whether the extension lines from grid cells to the rulers should be shown (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showPositiveLineNumbers",
+                            "description": "Show Positive line number labels (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showNegativeLineNumbers",
+                            "description": "Show Negative line number labels (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showAreaNames",
+                            "description": "Show area name labels (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showLineNames",
+                            "description": "Show line name labels (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showTrackSizes",
+                            "description": "Show track size labels (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "gridBorderColor",
+                            "description": "The grid container border highlight color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "cellBorderColor",
+                            "description": "The cell border color (default: transparent). Deprecated, please use rowLineColor and columnLineColor instead.",
+                            "deprecated": true,
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "rowLineColor",
+                            "description": "The row line color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "columnLineColor",
+                            "description": "The column line color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "gridBorderDash",
+                            "description": "Whether the grid border is dashed (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "cellBorderDash",
+                            "description": "Whether the cell border is dashed (default: false). Deprecated, please us rowLineDash and columnLineDash instead.",
+                            "deprecated": true,
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "rowLineDash",
+                            "description": "Whether row lines are dashed (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "columnLineDash",
+                            "description": "Whether column lines are dashed (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "rowGapColor",
+                            "description": "The row gap highlight fill color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "rowHatchColor",
+                            "description": "The row gap hatching fill color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "columnGapColor",
+                            "description": "The column gap highlight fill color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "columnHatchColor",
+                            "description": "The column gap hatching fill color (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "areaBorderColor",
+                            "description": "The named grid areas border color (Default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "gridBackgroundColor",
+                            "description": "The grid container background color (Default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        }
+                    ]
+                },
+                {
+                    "id": "FlexContainerHighlightConfig",
+                    "description": "Configuration data for the highlighting of Flex container elements.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "containerBorder",
+                            "description": "The style of the container border",
+                            "optional": true,
+                            "$ref": "LineStyle"
+                        },
+                        {
+                            "name": "lineSeparator",
+                            "description": "The style of the separator between lines",
+                            "optional": true,
+                            "$ref": "LineStyle"
+                        },
+                        {
+                            "name": "itemSeparator",
+                            "description": "The style of the separator between items",
+                            "optional": true,
+                            "$ref": "LineStyle"
+                        }
+                    ]
+                },
+                {
+                    "id": "LineStyle",
+                    "description": "Style information for drawing a line.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "color",
+                            "description": "The color of the line (default: transparent)",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "pattern",
+                            "description": "The line pattern (default: solid)",
+                            "optional": true,
+                            "type": "string",
+                            "enum": [
+                                "dashed",
+                                "dotted"
+                            ]
+                        }
+                    ]
+                },
+                {
                     "id": "HighlightConfig",
                     "description": "Configuration data for the highlighting of page elements.",
                     "type": "object",
@@ -11169,6 +12270,12 @@
                         {
                             "name": "showRulers",
                             "description": "Whether the rulers should be shown (default: false).",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "showAccessibilityInfo",
+                            "description": "Whether the a11y info should be shown (default: true).",
                             "optional": true,
                             "type": "boolean"
                         },
@@ -11231,6 +12338,18 @@
                             "description": "The color format used to format color styles (default: hex).",
                             "optional": true,
                             "$ref": "ColorFormat"
+                        },
+                        {
+                            "name": "gridHighlightConfig",
+                            "description": "The grid layout highlight configuration (default: all transparent).",
+                            "optional": true,
+                            "$ref": "GridHighlightConfig"
+                        },
+                        {
+                            "name": "flexContainerHighlightConfig",
+                            "description": "The flex container highlight configuration (default: all transparent).",
+                            "optional": true,
+                            "$ref": "FlexContainerHighlightConfig"
                         }
                     ]
                 },
@@ -11241,6 +12360,23 @@
                         "rgb",
                         "hsl",
                         "hex"
+                    ]
+                },
+                {
+                    "id": "GridNodeHighlightConfig",
+                    "description": "Configurations for Persistent Grid Highlight",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "gridHighlightConfig",
+                            "description": "A descriptor for the highlight appearance.",
+                            "$ref": "GridHighlightConfig"
+                        },
+                        {
+                            "name": "nodeId",
+                            "description": "Identifier of the node to highlight.",
+                            "$ref": "DOM.NodeId"
+                        }
                     ]
                 },
                 {
@@ -11311,15 +12447,60 @@
                         },
                         {
                             "name": "colorFormat",
-                            "description": "The color format to get config with (default: hex)",
+                            "description": "The color format to get config with (default: hex).",
                             "optional": true,
                             "$ref": "ColorFormat"
+                        },
+                        {
+                            "name": "showAccessibilityInfo",
+                            "description": "Whether to show accessibility info (default: true).",
+                            "optional": true,
+                            "type": "boolean"
                         }
                     ],
                     "returns": [
                         {
                             "name": "highlight",
                             "description": "Highlight data for the node.",
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "name": "getGridHighlightObjectsForTest",
+                    "description": "For Persistent Grid testing.",
+                    "parameters": [
+                        {
+                            "name": "nodeIds",
+                            "description": "Ids of the node to get highlight object for.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "DOM.NodeId"
+                            }
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "highlights",
+                            "description": "Grid Highlight data for the node ids provided.",
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "name": "getSourceOrderHighlightObjectForTest",
+                    "description": "For Source Order Viewer testing.",
+                    "parameters": [
+                        {
+                            "name": "nodeId",
+                            "description": "Id of the node to highlight.",
+                            "$ref": "DOM.NodeId"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "highlight",
+                            "description": "Source order highlight data for the node id provided.",
                             "type": "object"
                         }
                     ]
@@ -11448,6 +12629,35 @@
                     ]
                 },
                 {
+                    "name": "highlightSourceOrder",
+                    "description": "Highlights the source order of the children of the DOM node with given id or with the given\nJavaScript object wrapper. Either nodeId or objectId must be specified.",
+                    "parameters": [
+                        {
+                            "name": "sourceOrderConfig",
+                            "description": "A descriptor for the appearance of the overlay drawing.",
+                            "$ref": "SourceOrderConfig"
+                        },
+                        {
+                            "name": "nodeId",
+                            "description": "Identifier of the node to highlight.",
+                            "optional": true,
+                            "$ref": "DOM.NodeId"
+                        },
+                        {
+                            "name": "backendNodeId",
+                            "description": "Identifier of the backend node to highlight.",
+                            "optional": true,
+                            "$ref": "DOM.BackendNodeId"
+                        },
+                        {
+                            "name": "objectId",
+                            "description": "JavaScript object id of the node to be highlighted.",
+                            "optional": true,
+                            "$ref": "Runtime.RemoteObjectId"
+                        }
+                    ]
+                },
+                {
                     "name": "setInspectMode",
                     "description": "Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted.\nBackend then generates 'inspectNodeRequested' event upon element selection.",
                     "parameters": [
@@ -11505,6 +12715,20 @@
                             "name": "show",
                             "description": "True for showing the FPS counter",
                             "type": "boolean"
+                        }
+                    ]
+                },
+                {
+                    "name": "setShowGridOverlays",
+                    "description": "Highlight multiple elements with the CSS Grid overlay.",
+                    "parameters": [
+                        {
+                            "name": "gridNodeHighlightConfigs",
+                            "description": "An array of node identifiers and descriptors for the highlight appearance.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "GridNodeHighlightConfig"
+                            }
                         }
                     ]
                 },
@@ -11632,6 +12856,51 @@
                     "type": "string"
                 },
                 {
+                    "id": "AdFrameType",
+                    "description": "Indicates whether a frame has been identified as an ad.",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "child",
+                        "root"
+                    ]
+                },
+                {
+                    "id": "SecureContextType",
+                    "description": "Indicates whether the frame is a secure context and why it is the case.",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "Secure",
+                        "SecureLocalhost",
+                        "InsecureScheme",
+                        "InsecureAncestor"
+                    ]
+                },
+                {
+                    "id": "CrossOriginIsolatedContextType",
+                    "description": "Indicates whether the frame is cross-origin isolated and why it is the case.",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "Isolated",
+                        "NotIsolated",
+                        "NotIsolatedFeatureDisabled"
+                    ]
+                },
+                {
+                    "id": "GatedAPIFeatures",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "SharedArrayBuffers",
+                        "SharedArrayBuffersTransferAllowed",
+                        "PerformanceMeasureMemory",
+                        "PerformanceProfile"
+                    ]
+                },
+                {
                     "id": "Frame",
                     "description": "Information about the Frame on the page.",
                     "type": "object",
@@ -11671,6 +12940,12 @@
                             "type": "string"
                         },
                         {
+                            "name": "domainAndRegistry",
+                            "description": "Frame document's registered domain, taking the public suffixes list into account.\nExtracted from the Frame's url.\nExample URLs: http://www.google.com/file.html -> \"google.com\"\n              http://a.b.co.uk/file.html      -> \"b.co.uk\"",
+                            "experimental": true,
+                            "type": "string"
+                        },
+                        {
                             "name": "securityOrigin",
                             "description": "Frame document's security origin.",
                             "type": "string"
@@ -11686,6 +12961,34 @@
                             "experimental": true,
                             "optional": true,
                             "type": "string"
+                        },
+                        {
+                            "name": "adFrameType",
+                            "description": "Indicates whether this frame was tagged as an ad.",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "AdFrameType"
+                        },
+                        {
+                            "name": "secureContextType",
+                            "description": "Indicates whether the main document is a secure context and explains why that is the case.",
+                            "experimental": true,
+                            "$ref": "SecureContextType"
+                        },
+                        {
+                            "name": "crossOriginIsolatedContextType",
+                            "description": "Indicates whether this is a cross origin isolated context.",
+                            "experimental": true,
+                            "$ref": "CrossOriginIsolatedContextType"
+                        },
+                        {
+                            "name": "gatedAPIFeatures",
+                            "description": "Indicated which gated APIs / features are available.",
+                            "experimental": true,
+                            "type": "array",
+                            "items": {
+                                "$ref": "GatedAPIFeatures"
+                            }
                         }
                     ]
                 },
@@ -13442,6 +14745,11 @@
                             "name": "url",
                             "description": "URL of the resource being downloaded.",
                             "type": "string"
+                        },
+                        {
+                            "name": "suggestedFilename",
+                            "description": "Suggested file name of the resource (the actual name of the file saved on disk may differ).",
+                            "type": "string"
                         }
                     ]
                 },
@@ -14621,12 +15929,35 @@
                             "type": "number"
                         },
                         {
+                            "name": "overrideActive",
+                            "description": "Whether or not the origin has an active storage quota override",
+                            "type": "boolean"
+                        },
+                        {
                             "name": "usageBreakdown",
                             "description": "Storage usage per type (bytes).",
                             "type": "array",
                             "items": {
                                 "$ref": "UsageForType"
                             }
+                        }
+                    ]
+                },
+                {
+                    "name": "overrideQuotaForOrigin",
+                    "description": "Override quota for the specified origin",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "origin",
+                            "description": "Security origin.",
+                            "type": "string"
+                        },
+                        {
+                            "name": "quotaSize",
+                            "description": "The quota size (in bytes) to override the original quota with.\nIf this is called multiple times, the overriden quota will be equal to\nthe quotaSize provided in the final call. If this is called without\nspecifying a quotaSize, the quota will be reset to the default value for\nthe specified origin. If this is called multiple times with different\norigins, the override will be maintained for each origin until it is\ndisabled (called without a quotaSize).",
+                            "optional": true,
+                            "type": "number"
                         }
                     ]
                 },
@@ -15076,6 +16407,19 @@
                             "$ref": "TargetID"
                         },
                         {
+                            "name": "canAccessOpener",
+                            "description": "Whether the target has access to the originating window.",
+                            "experimental": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "openerFrameId",
+                            "description": "Frame id of originating window (is only set if target has an opener).",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "Page.FrameId"
+                        },
+                        {
                             "name": "browserContextId",
                             "experimental": true,
                             "optional": true,
@@ -15157,6 +16501,8 @@
                     "returns": [
                         {
                             "name": "success",
+                            "description": "Always set to true. If an error occurs, the response indicates protocol error.",
+                            "deprecated": true,
                             "type": "boolean"
                         }
                     ]
@@ -15188,6 +16534,18 @@
                             "description": "If specified, disposes this context when debugging session disconnects.",
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "proxyServer",
+                            "description": "Proxy server, similar to the one passed to --proxy-server",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "proxyBypassList",
+                            "description": "Proxy bypass list, similar to the one passed to --proxy-bypass-list",
+                            "optional": true,
+                            "type": "string"
                         }
                     ],
                     "returns": [
@@ -15663,6 +17021,16 @@
                         "none",
                         "gzip"
                     ]
+                },
+                {
+                    "id": "MemoryDumpLevelOfDetail",
+                    "description": "Details exposed when memory request explicitly declared.\nKeep consistent with memory_dump_request_args.h and\nmemory_instrumentation.mojom",
+                    "type": "string",
+                    "enum": [
+                        "background",
+                        "light",
+                        "detailed"
+                    ]
                 }
             ],
             "commands": [
@@ -15704,6 +17072,12 @@
                             "description": "Enables more deterministic results by forcing garbage collection",
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "levelOfDetail",
+                            "description": "Specifies level of details in memory dump. Defaults to \"detailed\".",
+                            "optional": true,
+                            "$ref": "MemoryDumpLevelOfDetail"
                         }
                     ],
                     "returns": [
@@ -15844,7 +17218,6 @@
         {
             "domain": "Fetch",
             "description": "A domain for letting clients substitute browser's network layer with client code.",
-            "experimental": true,
             "dependencies": [
                 "Network",
                 "IO",
@@ -15859,7 +17232,6 @@
                 {
                     "id": "RequestStage",
                     "description": "Stages of the request to handle. Request will intercept before the request is\nsent. Response will intercept after the response is received (but before response\nbody is received.",
-                    "experimental": true,
                     "type": "string",
                     "enum": [
                         "Request",
@@ -15868,7 +17240,6 @@
                 },
                 {
                     "id": "RequestPattern",
-                    "experimental": true,
                     "type": "object",
                     "properties": [
                         {
@@ -15909,7 +17280,6 @@
                 {
                     "id": "AuthChallenge",
                     "description": "Authorization challenge for HTTP status code 401 or 407.",
-                    "experimental": true,
                     "type": "object",
                     "properties": [
                         {
@@ -15942,7 +17312,6 @@
                 {
                     "id": "AuthChallengeResponse",
                     "description": "Response to an AuthChallenge.",
-                    "experimental": true,
                     "type": "object",
                     "properties": [
                         {
@@ -16080,7 +17449,7 @@
                             "name": "postData",
                             "description": "If set, overrides the post data in the request.",
                             "optional": true,
-                            "type": "string"
+                            "type": "binary"
                         },
                         {
                             "name": "headers",
@@ -16371,7 +17740,7 @@
                 },
                 {
                     "id": "AudioListener",
-                    "description": "Protocol object for AudioListner",
+                    "description": "Protocol object for AudioListener",
                     "type": "object",
                     "properties": [
                         {
@@ -16718,6 +18087,14 @@
                     ]
                 },
                 {
+                    "id": "Ctap2Version",
+                    "type": "string",
+                    "enum": [
+                        "ctap2_0",
+                        "ctap2_1"
+                    ]
+                },
+                {
                     "id": "AuthenticatorTransport",
                     "type": "string",
                     "enum": [
@@ -16737,6 +18114,12 @@
                             "$ref": "AuthenticatorProtocol"
                         },
                         {
+                            "name": "ctap2Version",
+                            "description": "Defaults to ctap2_0. Ignored if |protocol| == u2f.",
+                            "optional": true,
+                            "$ref": "Ctap2Version"
+                        },
+                        {
                             "name": "transport",
                             "$ref": "AuthenticatorTransport"
                         },
@@ -16749,6 +18132,12 @@
                         {
                             "name": "hasUserVerification",
                             "description": "Defaults to false.",
+                            "optional": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "hasLargeBlob",
+                            "description": "If set to true, the authenticator will support the largeBlob extension.\nhttps://w3c.github.io/webauthn#largeBlob\nDefaults to false.",
                             "optional": true,
                             "type": "boolean"
                         },
@@ -16799,6 +18188,12 @@
                             "name": "signCount",
                             "description": "Signature counter. This is incremented by one for each successful\nassertion.\nSee https://w3c.github.io/webauthn/#signature-counter",
                             "type": "integer"
+                        },
+                        {
+                            "name": "largeBlob",
+                            "description": "The large blob associated with the credential.\nSee https://w3c.github.io/webauthn/#sctn-large-blob-extension",
+                            "optional": true,
+                            "type": "binary"
                         }
                     ]
                 }
@@ -16925,6 +18320,20 @@
                         },
                         {
                             "name": "isUserVerified",
+                            "type": "boolean"
+                        }
+                    ]
+                },
+                {
+                    "name": "setAutomaticPresenceSimulation",
+                    "description": "Sets whether tests of user presence will succeed immediately (if true) or fail to resolve (if false) for an authenticator.\nThe default is true.",
+                    "parameters": [
+                        {
+                            "name": "authenticatorId",
+                            "$ref": "AuthenticatorId"
+                        },
+                        {
+                            "name": "enabled",
                             "type": "boolean"
                         }
                     ]
@@ -17262,6 +18671,26 @@
                         {
                             "name": "columnNumber",
                             "type": "integer"
+                        }
+                    ]
+                },
+                {
+                    "id": "LocationRange",
+                    "description": "Location range within one script.",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "scriptId",
+                            "$ref": "Runtime.ScriptId"
+                        },
+                        {
+                            "name": "start",
+                            "$ref": "ScriptPosition"
+                        },
+                        {
+                            "name": "end",
+                            "$ref": "ScriptPosition"
                         }
                     ]
                 },
@@ -18126,6 +19555,16 @@
                             "experimental": true,
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "skipList",
+                            "description": "The skipList specifies location ranges that should be skipped on step into.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "$ref": "LocationRange"
+                            }
                         }
                     ]
                 },
@@ -18135,7 +19574,19 @@
                 },
                 {
                     "name": "stepOver",
-                    "description": "Steps over the statement."
+                    "description": "Steps over the statement.",
+                    "parameters": [
+                        {
+                            "name": "skipList",
+                            "description": "The skipList specifies location ranges that should be skipped on step over.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "$ref": "LocationRange"
+                            }
+                        }
+                    ]
                 }
             ],
             "events": [
@@ -18321,6 +19772,13 @@
                             "experimental": true,
                             "optional": true,
                             "$ref": "Debugger.ScriptLanguage"
+                        },
+                        {
+                            "name": "embedderName",
+                            "description": "The name the embedder supplied for this script.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "string"
                         }
                     ]
                 },
@@ -18432,6 +19890,13 @@
                             "experimental": true,
                             "optional": true,
                             "$ref": "Debugger.DebugSymbols"
+                        },
+                        {
+                            "name": "embedderName",
+                            "description": "The name the embedder supplied for this script.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "string"
                         }
                     ]
                 }
@@ -18979,6 +20444,29 @@
                             "type": "integer"
                         }
                     ]
+                },
+                {
+                    "id": "RuntimeCallCounterInfo",
+                    "description": "Runtime call counter information.",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "name",
+                            "description": "Counter name.",
+                            "type": "string"
+                        },
+                        {
+                            "name": "value",
+                            "description": "Counter value.",
+                            "type": "number"
+                        },
+                        {
+                            "name": "time",
+                            "description": "Counter time in seconds.",
+                            "type": "number"
+                        }
+                    ]
                 }
             ],
             "commands": [
@@ -19106,6 +20594,31 @@
                     ]
                 },
                 {
+                    "name": "enableCounters",
+                    "description": "Enable counters collection.",
+                    "experimental": true
+                },
+                {
+                    "name": "disableCounters",
+                    "description": "Disable counters collection.",
+                    "experimental": true
+                },
+                {
+                    "name": "getCounters",
+                    "description": "Retrieve counters.",
+                    "experimental": true,
+                    "returns": [
+                        {
+                            "name": "result",
+                            "description": "Collected counters information.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "CounterInfo"
+                            }
+                        }
+                    ]
+                },
+                {
                     "name": "enableRuntimeCallStats",
                     "description": "Enable run time call stats collection.",
                     "experimental": true
@@ -19122,10 +20635,10 @@
                     "returns": [
                         {
                             "name": "result",
-                            "description": "Collected counter information.",
+                            "description": "Collected runtime call counter information.",
                             "type": "array",
                             "items": {
-                                "$ref": "CounterInfo"
+                                "$ref": "RuntimeCallCounterInfo"
                             }
                         }
                     ]
@@ -19272,7 +20785,7 @@
                                 "f32",
                                 "f64",
                                 "v128",
-                                "anyref"
+                                "externref"
                             ]
                         },
                         {
@@ -20072,6 +21585,13 @@
                             "experimental": true,
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "allowUnsafeEvalBlockedByCSP",
+                            "description": "The Content Security Policy (CSP) for the target might block 'unsafe-eval'\nwhich includes eval(), Function(), setTimeout() and setInterval()\nwhen called with non-callable arguments. This flag bypasses CSP for this\nevaluation and allows unsafe-eval. Defaults to true.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "boolean"
                         }
                     ],
                     "returns": [
@@ -20358,7 +21878,7 @@
                 },
                 {
                     "name": "addBinding",
-                    "description": "If executionContextId is empty, adds binding with the given name on the\nglobal objects of all inspected contexts, including those created later,\nbindings survive reloads.\nIf executionContextId is specified, adds binding only on global object of\ngiven execution context.\nBinding function takes exactly one argument, this argument should be string,\nin case of any other input, function throws an exception.\nEach binding function call produces Runtime.bindingCalled notification.",
+                    "description": "If executionContextId is empty, adds binding with the given name on the\nglobal objects of all inspected contexts, including those created later,\nbindings survive reloads.\nBinding function takes exactly one argument, this argument should be string,\nin case of any other input, function throws an exception.\nEach binding function call produces Runtime.bindingCalled notification.",
                     "experimental": true,
                     "parameters": [
                         {
@@ -20367,8 +21887,16 @@
                         },
                         {
                             "name": "executionContextId",
+                            "description": "If specified, the binding would only be exposed to the specified\nexecution context. If omitted and `executionContextName` is not set,\nthe binding is exposed to all execution contexts of the target.\nThis parameter is mutually exclusive with `executionContextName`.",
                             "optional": true,
                             "$ref": "ExecutionContextId"
+                        },
+                        {
+                            "name": "executionContextName",
+                            "description": "If specified, the binding is exposed to the executionContext with\nmatching name, even for contexts created after the binding is added.\nSee also `ExecutionContext.name` and `worldName` parameter to\n`Page.addScriptToEvaluateOnNewDocument`.\nThis parameter is mutually exclusive with `executionContextId`.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "string"
                         }
                     ]
                 },

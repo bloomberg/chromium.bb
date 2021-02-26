@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_PAGE_AGENT_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Page.h"
@@ -176,7 +176,7 @@ class CORE_EXPORT InspectorPageAgent final
   void LoadEventFired(LocalFrame*);
   void WillCommitLoad(LocalFrame*, DocumentLoader*);
   void FrameAttachedToParent(LocalFrame*);
-  void FrameDetachedFromParent(LocalFrame*);
+  void FrameDetachedFromParent(LocalFrame*, FrameDetachType);
   void FrameStartedLoading(LocalFrame*);
   void FrameStoppedLoading(LocalFrame*);
   void FrameRequestedNavigation(Frame* target_frame,
@@ -201,8 +201,7 @@ class CORE_EXPORT InspectorPageAgent final
   void Did(const probe::UpdateLayout&);
   void Will(const probe::RecalculateStyle&);
   void Did(const probe::RecalculateStyle&);
-  void WindowOpen(Document*,
-                  const String&,
+  void WindowOpen(const KURL&,
                   const AtomicString&,
                   const WebWindowFeatures&,
                   bool);
@@ -218,7 +217,7 @@ class CORE_EXPORT InspectorPageAgent final
   void Restore() override;
   bool ScreencastEnabled();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void GetResourceContentAfterResourcesContentLoaded(

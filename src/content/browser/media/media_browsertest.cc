@@ -48,7 +48,7 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
     // the fallback path.
     media::kFallbackAfterDecodeError,
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     // Disable out of process audio on Linux due to process spawn
     // failures. http://crbug.com/986021
     features::kAudioServiceOutOfProcess,
@@ -166,6 +166,26 @@ class MediaTest : public testing::WithParamInterface<bool>,
     RunMediaTestPage("player.html", query_params, expected_title, false);
   }
 };
+
+#if defined(OS_ANDROID)
+class AndroidPlayerMediaTest : public MediaTest {
+ private:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    MediaTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+  }
+};
+
+// TODO(crbug.com/1094571): Flaky.
+IN_PROC_BROWSER_TEST_P(AndroidPlayerMediaTest, DISABLED_VideoBearMp4) {
+  PlayVideo("bear.mp4", GetParam());
+}
+
+INSTANTIATE_TEST_SUITE_P(File,
+                         AndroidPlayerMediaTest,
+                         ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(Http, AndroidPlayerMediaTest, ::testing::Values(true));
+#endif  // defined(OS_ANDROID)
 
 // Android doesn't support Theora.
 #if !defined(OS_ANDROID)

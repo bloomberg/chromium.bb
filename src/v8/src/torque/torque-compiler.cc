@@ -55,6 +55,7 @@ void CompileCurrentAst(TorqueCompilerOptions options) {
   }
   TargetArchitecture::Scope target_architecture(options.force_32bit_output);
   TypeOracle::Scope type_oracle;
+  CurrentScope::Scope current_namespace(GlobalContext::GetDefaultNamespace());
 
   // Two-step process of predeclaration + resolution allows to resolve type
   // declarations independent of the order they are given.
@@ -74,7 +75,8 @@ void CompileCurrentAst(TorqueCompilerOptions options) {
   implementation_visitor.SetDryRun(output_directory.length() == 0);
 
   implementation_visitor.GenerateInstanceTypes(output_directory);
-  implementation_visitor.BeginCSAFiles();
+  implementation_visitor.BeginGeneratedFiles();
+  implementation_visitor.BeginRuntimeMacrosFile();
 
   implementation_visitor.VisitAllDeclarables();
 
@@ -93,7 +95,8 @@ void CompileCurrentAst(TorqueCompilerOptions options) {
   implementation_visitor.GenerateExportedMacrosAssembler(output_directory);
   implementation_visitor.GenerateCSATypes(output_directory);
 
-  implementation_visitor.EndCSAFiles();
+  implementation_visitor.EndGeneratedFiles();
+  implementation_visitor.EndRuntimeMacrosFile();
   implementation_visitor.GenerateImplementation(output_directory);
 
   if (GlobalContext::collect_language_server_data()) {

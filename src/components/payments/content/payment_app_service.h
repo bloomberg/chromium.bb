@@ -14,12 +14,17 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/payments/content/payment_app_factory.h"
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 namespace payments {
 
 // Retrieves payment apps of all types.
 class PaymentAppService : public KeyedService {
  public:
-  PaymentAppService();
+  // The |context| pointer is not being saved.
+  explicit PaymentAppService(content::BrowserContext* context);
   ~PaymentAppService() override;
 
   // Returns the number of payment app factories, which is the number of times
@@ -29,6 +34,9 @@ class PaymentAppService : public KeyedService {
 
   // Create payment apps for |delegate|.
   void Create(base::WeakPtr<PaymentAppFactory::Delegate> delegate);
+
+  // KeyedService implementation:
+  void Shutdown() override;
 
  private:
   std::vector<std::unique_ptr<PaymentAppFactory>> factories_;

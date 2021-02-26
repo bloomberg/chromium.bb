@@ -749,7 +749,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kAppView);
   skip.insert(APIPermission::kAudio);
   skip.insert(APIPermission::kBrowsingData);
-  skip.insert(APIPermission::kCastStreaming);
   skip.insert(APIPermission::kCommandsAccessibility);
   skip.insert(APIPermission::kContextMenus);
   skip.insert(APIPermission::kCryptotokenPrivate);
@@ -768,6 +767,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kPointerLock);
   skip.insert(APIPermission::kPower);
   skip.insert(APIPermission::kPrinterProvider);
+  skip.insert(APIPermission::kSearch);
   skip.insert(APIPermission::kSessions);
   skip.insert(APIPermission::kStorage);
   skip.insert(APIPermission::kSystemCpu);
@@ -780,11 +780,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kWebcamPrivate);
   skip.insert(APIPermission::kWebView);
   skip.insert(APIPermission::kWindowShape);
-
-  // These permissions are restricted to extensions force-installed by policy
-  // and don't require a prompt, i.e. they're restricted to location 'policy'.
-  skip.insert(APIPermission::kEnterprisePlatformKeys);
-  skip.insert(APIPermission::kEnterpriseDeviceAttributes);
 
   // TODO(erikkay) add a string for this permission.
   skip.insert(APIPermission::kBackground);
@@ -800,6 +795,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kDeclarativeContent);
   skip.insert(APIPermission::kPageCapture);
   skip.insert(APIPermission::kProxy);
+  skip.insert(APIPermission::kScripting);
   skip.insert(APIPermission::kTabCapture);
   skip.insert(APIPermission::kWebRequest);
   skip.insert(APIPermission::kWebRequestBlocking);
@@ -827,7 +823,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kBookmarkManagerPrivate);
   skip.insert(APIPermission::kBrailleDisplayPrivate);
   skip.insert(APIPermission::kCast);
-  skip.insert(APIPermission::kCastStreaming);
   skip.insert(APIPermission::kCecPrivate);
   skip.insert(APIPermission::kChromeosInfoPrivate);
   skip.insert(APIPermission::kCloudPrintPrivate);

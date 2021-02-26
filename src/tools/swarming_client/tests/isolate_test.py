@@ -1,10 +1,10 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2012 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import cStringIO
 import hashlib
+import io
 import json
 import logging
 import optparse
@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unittest
 
 import six
 
@@ -205,11 +206,10 @@ class IsolateTest(IsolateBase):
   def test_variable_arg_fail(self):
     parser = optparse.OptionParser()
     isolate.add_isolate_options(parser)
-    self.mock(sys, 'stderr', cStringIO.StringIO())
     with self.assertRaises(SystemExit):
       parser.parse_args(['--config-variable', 'Foo'])
 
-  def test_blacklist_default(self):
+  def test_denylist_default(self):
     ok = [
       '.git2',
       '.pyc',
@@ -223,13 +223,13 @@ class IsolateTest(IsolateBase):
       'foo.pyc',
       'bar.swp',
     ]
-    blacklist = tools.gen_blacklist(isolateserver.DEFAULT_BLACKLIST)
+    denylist = tools.gen_denylist(isolateserver.DEFAULT_DENYLIST)
     for i in ok:
-      self.assertFalse(blacklist(i), i)
+      self.assertFalse(denylist(i), i)
     for i in blocked:
-      self.assertTrue(blacklist(i), i)
+      self.assertTrue(denylist(i), i)
 
-  def test_blacklist_custom(self):
+  def test_denylist_custom(self):
     ok = [
       '.run_test_cases',
       'testserver.log2',
@@ -239,32 +239,11 @@ class IsolateTest(IsolateBase):
       'testserver.log',
       os.path.join('foo', 'testserver.log'),
     ]
-    blacklist = tools.gen_blacklist([r'^.+\.run_test_cases$', r'^.+\.log$'])
+    denylist = tools.gen_denylist([r'^.+\.run_test_cases$', r'^.+\.log$'])
     for i in ok:
-      self.assertFalse(blacklist(i), i)
+      self.assertFalse(denylist(i), i)
     for i in blocked:
-      self.assertTrue(blacklist(i), i)
-
-  def test_read_only(self):
-    isolate_file = os.path.join(self.cwd, 'fake.isolate')
-    isolate_content = {
-      'variables': {
-        'read_only': 0,
-      },
-    }
-    tools.write_json(isolate_file, isolate_content, False)
-    expected = {
-      'algo': 'sha-1',
-      'files': {},
-      'read_only': 0,
-      'version': isolated_format.ISOLATED_FILE_VERSION,
-    }
-    complete_state = isolate.CompleteState(
-        None, isolate.SavedState('sha-1', self.cwd))
-    complete_state.load_isolate(
-        six.text_type(self.cwd), six.text_type(isolate_file), {}, {}, None,
-        False, False)
-    self.assertEqual(expected, complete_state.saved_state.to_isolated())
+      self.assertTrue(denylist(i), i)
 
   if sys.platform == 'darwin':
     def test_expand_directories_and_symlinks_path_case(self):
@@ -307,7 +286,7 @@ class IsolateLoad(IsolateBase):
       isolated = os.path.join(self.isolated_dir, 'foo.isolated')
       outdir = os.path.join(self.directory, 'outdir')
       isolate = isolate_file
-      blacklist = list(isolateserver.DEFAULT_BLACKLIST)
+      blacklist = list(isolateserver.DEFAULT_DENYLIST)
       path_variables = {}
       config_variables = {
         'OS': 'linux',
@@ -385,7 +364,6 @@ class IsolateLoad(IsolateBase):
                 's': self.size('at_root'),
             },
         },
-        'read_only': 1,
         'relative_cwd': os.path.join(u'tests', 'isolate'),
         'version': isolated_format.ISOLATED_FILE_VERSION,
     }
@@ -452,7 +430,6 @@ class IsolateLoad(IsolateBase):
                 's': self.size('tests', 'isolate', 'touch_root.py'),
             },
         },
-        'read_only': 1,
         'relative_cwd': os.path.join(u'tests', 'isolate'),
         'version': isolated_format.ISOLATED_FILE_VERSION,
     }
@@ -519,7 +496,6 @@ class IsolateLoad(IsolateBase):
                 's': self.size('tests', 'isolate', 'touch_root.py'),
             },
         },
-        'read_only': 1,
         'relative_cwd': os.path.join(u'tests', 'isolate'),
         'version': isolated_format.ISOLATED_FILE_VERSION,
     }
@@ -572,7 +548,7 @@ class IsolateLoad(IsolateBase):
     self.make_tree(TOUCH_ROOT_ISOLATE)
     options = self._get_option('tests', 'isolate', 'touch_root.isolate')
     options.path_variables['PRODUCT_DIR'] = os.path.join(u'tests', u'isolate')
-    native_cwd = file_path.get_native_path_case(unicode(self.cwd))
+    native_cwd = file_path.get_native_path_case(six.ensure_text(self.cwd))
     try:
       isolate.load_complete_state(options, self.cwd, None, False)
       self.fail()
@@ -606,7 +582,6 @@ class IsolateLoad(IsolateBase):
                 's': self.size('tests', 'isolate', 'touch_root.py'),
             },
         },
-        'read_only': 1,
         'relative_cwd': os.path.join(u'tests', 'isolate'),
         'version': isolated_format.ISOLATED_FILE_VERSION,
     }
@@ -712,7 +687,6 @@ class IsolateLoad(IsolateBase):
                 's': self.size('tests', 'isolate', 'no_run.isolate'),
             },
         },
-        'read_only': 1,
         'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     self._cleanup_isolated(expected_isolated)
@@ -799,11 +773,10 @@ class IsolateLoad(IsolateBase):
     # By saving the files, it forces splitting the data up.
     complete_state.save_files()
 
-    actual_isolated_master = tools.read_json(
+    actual_isolated_main = tools.read_json(
         os.path.join(self.isolated_dir, 'foo.isolated'))
-    expected_isolated_master = {
-        u'algo':
-            u'sha-1',
+    expected_isolated_main = {
+        u'algo': u'sha-1',
         u'command': [u'python', u'split.py'],
         u'files': {
             u'split.py': {
@@ -820,15 +793,11 @@ class IsolateLoad(IsolateBase):
             six.text_type(self.hash_file(self.isolated_dir, 'foo.0.isolated')),
             six.text_type(self.hash_file(self.isolated_dir, 'foo.1.isolated')),
         ],
-        u'read_only':
-            1,
-        u'relative_cwd':
-            u'.',
-        u'version':
-            six.text_type(isolated_format.ISOLATED_FILE_VERSION),
+        u'relative_cwd': u'.',
+        u'version': six.text_type(isolated_format.ISOLATED_FILE_VERSION),
     }
-    self._cleanup_isolated(expected_isolated_master)
-    self.assertEqual(expected_isolated_master, actual_isolated_master)
+    self._cleanup_isolated(expected_isolated_main)
+    self.assertEqual(expected_isolated_main, actual_isolated_main)
 
     actual_isolated_0 = tools.read_json(
         os.path.join(self.isolated_dir, 'foo.0.isolated'))
@@ -1024,7 +993,7 @@ class IsolateLoad(IsolateBase):
       """Creates a tree of files in a subdirectory for testing and test this
       set of conditions.
       """
-      directory = os.path.join(unicode(self.directory), config_os)
+      directory = os.path.join(six.ensure_text(self.directory), config_os)
       os.mkdir(directory)
       isolate_dir = os.path.join(directory, u'isolate')
       isolate_dir_1 = os.path.join(isolate_dir, u'1')
@@ -1070,7 +1039,6 @@ class IsolateLoad(IsolateBase):
               six.text_type(f.replace('/', os.path.sep)): {}
               for f in expected_files
           },
-          'read_only': 1,
           'relative_cwd': relative_cwd.replace('/', os.path.sep),
           'version': isolated_format.ISOLATED_FILE_VERSION,
       }
@@ -1215,9 +1183,9 @@ class IsolateLoad(IsolateBase):
       """Creates a tree of files in a subdirectory for testing and test this
       set of conditions.
       """
-      directory = os.path.join(unicode(self.directory), config_os)
+      directory = os.path.join(six.ensure_text(self.directory), config_os)
       os.mkdir(directory)
-      cwd = os.path.join(unicode(self.cwd), config_os)
+      cwd = os.path.join(six.ensure_text(self.cwd), config_os)
       os.mkdir(cwd)
       isolate_dir = os.path.join(directory, u'isolate')
       isolate_dir_1 = os.path.join(isolate_dir, u'1')
@@ -1268,7 +1236,6 @@ class IsolateLoad(IsolateBase):
               six.text_type(os.path.join(cwd_name, config_os, 'path', f)): {}
               for f in expected_files
           },
-          'read_only': 1,
           'relative_cwd': relative_cwd,
           'version': isolated_format.ISOLATED_FILE_VERSION,
       }
@@ -1339,7 +1306,7 @@ class IsolateCommand(IsolateBase):
 
     isolate_file = join('x.isolate')
     isolated_file = join('x.isolated')
-    with open(isolate_file, 'wb') as f:
+    with open(isolate_file, 'w') as f:
       f.write(
           '# Foo\n'
           '{'
@@ -1351,10 +1318,10 @@ class IsolateCommand(IsolateBase):
           '    }],'
           '  ],'
           '}')
-    with open(join('foo'), 'wb') as f:
+    with open(join('foo'), 'w') as f:
       f.write('fooo')
 
-    self.mock(sys, 'stdout', cStringIO.StringIO())
+    self.mock(sys, 'stdout', io.StringIO())
     cmd = [
         '-i', isolate_file,
         '-s', isolated_file,
@@ -1388,7 +1355,7 @@ class IsolateCommand(IsolateBase):
     # First isolate: x.isolate.
     isolate_file_x = join('x.isolate')
     isolated_file_x = join('x.isolated')
-    with open(isolate_file_x, 'wb') as f:
+    with open(isolate_file_x, 'w') as f:
       f.write(
           '# Foo\n'
           '{'
@@ -1400,9 +1367,9 @@ class IsolateCommand(IsolateBase):
           '    }],'
           '  ],'
           '}')
-    with open(join('foo'), 'wb') as f:
+    with open(join('foo'), 'w') as f:
       f.write('fooo')
-    with open(join('x.isolated.gen.json'), 'wb') as f:
+    with open(join('x.isolated.gen.json'), 'w') as f:
       json.dump({
         'args': [
           '-i', isolate_file_x,
@@ -1416,7 +1383,7 @@ class IsolateCommand(IsolateBase):
     # Second isolate: y.isolate.
     isolate_file_y = join('y.isolate')
     isolated_file_y = join('y.isolated')
-    with open(isolate_file_y, 'wb') as f:
+    with open(isolate_file_y, 'w') as f:
       f.write(
           '# Foo\n'
           '{'
@@ -1428,9 +1395,9 @@ class IsolateCommand(IsolateBase):
           '    }],'
           '  ],'
           '}')
-    with open(join('bar'), 'wb') as f:
+    with open(join('bar'), 'w') as f:
       f.write('barr')
-    with open(join('y.isolated.gen.json'), 'wb') as f:
+    with open(join('y.isolated.gen.json'), 'w') as f:
       json.dump({
         'args': [
           '-i', isolate_file_y,
@@ -1441,7 +1408,7 @@ class IsolateCommand(IsolateBase):
         'version': 1,
       }, f)
 
-    self.mock(sys, 'stdout', cStringIO.StringIO())
+    self.mock(sys, 'stdout', io.StringIO())
     cmd = [
       '--isolate-server', 'http://localhost:1',
       '--dump-json', 'json_output.json',
@@ -1474,17 +1441,17 @@ class IsolateCommand(IsolateBase):
   def test_CMDcheck_empty(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
     isolated_file = os.path.join(self.cwd, 'x.isolated')
-    with open(isolate_file, 'wb') as f:
+    with open(isolate_file, 'w') as f:
       f.write('# Foo\n{\n}')
 
-    self.mock(sys, 'stdout', cStringIO.StringIO())
+    self.mock(sys, 'stdout', io.StringIO())
     cmd = ['-i', isolate_file, '-s', isolated_file]
     isolate.CMDcheck(optparse.OptionParser(), cmd)
 
   def test_CMDcheck_stale_version(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
     isolated_file = os.path.join(self.cwd, 'x.isolated')
-    with open(isolate_file, 'wb') as f:
+    with open(isolate_file, 'w') as f:
       f.write(
           '# Foo\n'
           '{'
@@ -1497,7 +1464,7 @@ class IsolateCommand(IsolateBase):
           '  ],'
           '}')
 
-    self.mock(sys, 'stdout', cStringIO.StringIO())
+    self.mock(sys, 'stdout', io.BytesIO())
     cmd = [
         '-i', isolate_file,
         '-s', isolated_file,
@@ -1505,24 +1472,23 @@ class IsolateCommand(IsolateBase):
     ]
     self.assertEqual(0, isolate.CMDcheck(optparse.OptionParser(), cmd))
 
-    with open(isolate_file, 'rb') as f:
+    with open(isolate_file, 'r') as f:
       actual = f.read()
     expected = (
         '# Foo\n{  \'conditions\':[    [\'OS=="dendy"\', {      '
         '\'variables\': {        \'command\': [\'foo\'],      },    }],  ],}')
     self.assertEqual(expected, actual)
 
-    with open(isolated_file, 'rb') as f:
+    with open(isolated_file, 'r') as f:
       actual_isolated = f.read()
-    expected_isolated = (
-        '{"algo":"sha-1","command":["foo"],"files":{},'
-        '"read_only":1,"relative_cwd":".","version":"%s"}'
-    ) % isolated_format.ISOLATED_FILE_VERSION
+    expected_isolated = ('{"algo":"sha-1","command":["foo"],"files":{},'
+                         '"relative_cwd":".","version":"%s"}'
+                        ) % isolated_format.ISOLATED_FILE_VERSION
     self.assertEqual(expected_isolated, actual_isolated)
     isolated_data = json.loads(actual_isolated)
 
 
-    with open(isolated_file + '.state', 'rb') as f:
+    with open(isolated_file + '.state', 'r') as f:
       actual_isolated_state = f.read()
     expected_isolated_state = (
         '{"OS":"%s","algo":"sha-1","child_isolated_files":[],"command":["foo"],'
@@ -1536,23 +1502,23 @@ class IsolateCommand(IsolateBase):
 
     # Now edit the .isolated.state file to break the version number and make
     # sure it doesn't crash.
-    with open(isolated_file + '.state', 'wb') as f:
+    with open(isolated_file + '.state', 'w') as f:
       isolated_state_data['version'] = '100.42'
       json.dump(isolated_state_data, f)
     self.assertEqual(0, isolate.CMDcheck(optparse.OptionParser(), cmd))
 
     # Now edit the .isolated file to break the version number and make
     # sure it doesn't crash.
-    with open(isolated_file, 'wb') as f:
+    with open(isolated_file, 'w') as f:
       isolated_data['version'] = '100.42'
       json.dump(isolated_data, f)
     self.assertEqual(0, isolate.CMDcheck(optparse.OptionParser(), cmd))
 
     # Make sure the files were regenerated.
-    with open(isolated_file, 'rb') as f:
+    with open(isolated_file, 'r') as f:
       actual_isolated = f.read()
     self.assertEqual(expected_isolated, actual_isolated)
-    with open(isolated_file + '.state', 'rb') as f:
+    with open(isolated_file + '.state', 'r') as f:
       actual_isolated_state = f.read()
     self.assertEqual(expected_isolated_state, actual_isolated_state)
 
@@ -1565,7 +1531,7 @@ class IsolateCommand(IsolateBase):
         '-s', isolated_file,
         '--config-variable', 'OS=dendy',
     ]
-    with open(isolate_file, 'wb') as f:
+    with open(isolate_file, 'w') as f:
       f.write(
           '# Foo\n'
           '{'
@@ -1578,14 +1544,14 @@ class IsolateCommand(IsolateBase):
           '    }],'
           '  ],'
           '}')
-    with open(os.path.join(self.cwd, 'foo'), 'wb') as f:
+    with open(os.path.join(self.cwd, 'foo'), 'w') as f:
       f.write('yeah')
 
-    self.mock(sys, 'stdout', cStringIO.StringIO())
+    self.mock(sys, 'stdout', io.BytesIO())
     self.assertEqual(0, isolate.CMDcheck(optparse.OptionParser(), cmd))
 
     # Now add a new config variable.
-    with open(isolate_file, 'wb') as f:
+    with open(isolate_file, 'w') as f:
       f.write(
           '# Foo\n'
           '{'
@@ -1603,7 +1569,7 @@ class IsolateCommand(IsolateBase):
           '    }],'
           '  ],'
           '}')
-    with open(os.path.join(self.cwd, 'bar'), 'wb') as f:
+    with open(os.path.join(self.cwd, 'bar'), 'w') as f:
       f.write('yeah right!')
 
     # The configuration is OS=dendy and foo=bar. So it should load both
@@ -1620,7 +1586,7 @@ class IsolateCommand(IsolateBase):
     x_isolate_file = os.path.join(self.cwd, 'x.isolate')
     isolated_file = os.path.join(self.cwd, 'x.isolated')
     cmd = ['-i', x_isolate_file, '-s', isolated_file]
-    with open(x_isolate_file, 'wb') as f:
+    with open(x_isolate_file, 'w') as f:
       f.write('{}')
     self.assertEqual(0, isolate.CMDcheck(optparse.OptionParser(), cmd))
     self.assertTrue(os.path.isfile(isolated_file + '.state'))
@@ -1647,11 +1613,11 @@ class IsolateCommand(IsolateBase):
 
   def test_CMDrun_no_isolated(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
-    with open(isolate_file, 'wb') as f:
+    with open(isolate_file, 'w') as f:
       f.write('{"variables": {"command": ["python", "-c", "print(\'hi\')"]} }')
 
     def expect_call(cmd, cwd):
-      if sys.platform == 'darwin':
+      if sys.platform == 'darwin' or six.PY3:
         # python path is generally a symlink, and sys.executable points to the
         # resolved one but the path passed in is not the resolved one.
         # But even with that, one can point on '.../2.7/bin/python2.7' while the

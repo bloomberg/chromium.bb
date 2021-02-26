@@ -18,8 +18,6 @@ namespace blink {
 
 class MediaKeySystemAccessInitializerBase : public EncryptedMediaRequest,
                                             public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaKeySystemAccessInitializerBase);
-
  public:
   MediaKeySystemAccessInitializerBase(
       ScriptState* script_state,
@@ -41,7 +39,7 @@ class MediaKeySystemAccessInitializerBase : public EncryptedMediaRequest,
   // Promise() in script_promise_resolver.h
   ScriptPromise Promise();
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  protected:
   // Returns true if the ExecutionContext is valid, false otherwise.

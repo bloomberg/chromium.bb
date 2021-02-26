@@ -7,7 +7,9 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 
+<link rel="import" href="/components/oobe_i18n_behavior.html">
 <!--
   Offline UI for the New Gaia flow.
   Contains two cards with a slide transition between them:
@@ -19,9 +21,8 @@
 
   Attributes:
     'showEnterpriseMessage' - If the "manged by" message should be shown.
-    'domain' - The enterprise domain the device is managed by.
+    'manager' - The entity (email or domain) the device is managed by.
     'emailDomain' - autocomplete domain for the email input.
-    'glif-mode' - GLIF MM mode (Gaia v2 API).
 
   Events:
     'authCompleted' - fired when user enters login and password. Fires with an
@@ -58,40 +59,36 @@
             </div>
             <div id="subtitle-container">
               <div id="managedBy" class="enterprise-info"
-                  hidden$="[[!domain]]">
-                  [[i18nDynamic(locale, 'enterpriseInfoMessage', domain)]]
+                  hidden$="[[!manager]]">
+                  [[i18nDynamic(locale, 'enterpriseInfoMessage', manager)]]
               </div>
             </div>
             <gaia-input-form id="email-input-form"
                 on-submit="onNextButtonClicked_" disabled="[[disabled]]">
-              <gaia-input slot="inputs" id="emailInput" type="email" required
-                  domain="[[emailDomain]]">
-                <div slot="label">
-                  [[i18nDynamic(locale, 'offlineLoginEmail')]]
-                </div>
-                <div slot="error">
-                  [[i18nDynamic(locale, 'offlineLoginInvalidEmail')]]
-                </div>
-              </gaia-input>
+              <cr-input slot="inputs" id="emailInput" value="{{email_}}"
+                  clear-error required
+                  error-message="[[i18nDynamic(
+                      locale, 'offlineLoginInvalidEmail')]]"
+                  placeholder="[[i18nDynamic(locale, 'offlineLoginEmail')]]">
+                <span slot="inline-suffix">[[displayDomain_]]</span>
+              </cr-input>
             </gaia-input-form>
           </div>
           <div id="password-section" class="section">
             <div id="title-container" class="layout vertical end-justified">
-              <gaia-header id="passwordHeader"></gaia-header>
+              <gaia-header id="passwordHeader" email="[[fullEmail_]]">
+              </gaia-header>
             </div>
             <div id="subtitle-container">
             </div>
             <gaia-input-form id="password-input-form"
                 on-submit="onNextButtonClicked_" disabled="[[disabled]]">
-              <gaia-input slot="inputs" id="passwordInput" type="password"
-                  required>
-                <div slot="label">
-                  [[i18nDynamic(locale, 'offlineLoginPassword')]]
-                </div>
-                <div slot="error">
-                  [[i18nDynamic(locale, 'offlineLoginInvalidPassword')]]
-                </div>
-              </gaia-input>
+              <cr-input slot="inputs" id="passwordInput" value="{{password_}}"
+                  type="password" clear-error required
+                  error-message="[[i18nDynamic(
+                      locale, 'offlineLoginInvalidPassword')]]"
+                  placeholder="[[i18nDynamic(locale, 'offlineLoginPassword')]]">
+              </cr-input>
               <gaia-button on-click="onForgotPasswordClicked_" link>
                 [[i18nDynamic(locale, 'offlineLoginForgotPasswordBtn')]]
               </gaia-button>
@@ -99,10 +96,12 @@
           </div>
         </div>
       </div>
-      <div slot="bottom-buttons" class="flex layout horizontal justified">
-        <oobe-back-button on-tap="onBackButtonClicked_"></oobe-back-button>
+      <div slot="back-navigation">
+        <oobe-back-button on-click="onBackButtonClicked_"></oobe-back-button>
+      </div>
+      <div slot="bottom-buttons">
         <oobe-next-button id="next-button"
-            on-tap="onNextButtonClicked_"></oobe-next-button>
+            on-click="onNextButtonClicked_"></oobe-next-button>
       </div>
     </oobe-dialog>
     <cr-dialog id="forgotPasswordDlg"
@@ -111,7 +110,7 @@
         [[i18nDynamic(locale, 'offlineLoginForgotPasswordDlg')]]
       </div>
       <div slot="button-container">
-        <cr-button autofocus on-tap="onForgotPasswordCloseTap_"
+        <cr-button autofocus on-click="onForgotPasswordCloseTap_"
             class="action-button">
           [[i18nDynamic(locale, 'offlineLoginCloseBtn')]]
         </cr-button>

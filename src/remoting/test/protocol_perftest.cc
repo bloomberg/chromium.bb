@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/rand_util.h"
@@ -49,6 +50,7 @@
 #include "remoting/test/fake_port_allocator.h"
 #include "remoting/test/fake_socket_factory.h"
 #include "remoting/test/scroll_frame_generator.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {

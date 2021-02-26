@@ -15,13 +15,18 @@ from telemetry.internal.platform import platform_backend
 class FuchsiaPlatformBackend(platform_backend.PlatformBackend):
   def __init__(self, device):
     super(FuchsiaPlatformBackend, self).__init__(device)
-    self._config_dir = device.ssh_config_dir
+    if os.path.isfile(device.ssh_config):
+      self._ssh_config = device.ssh_config
+    else:
+      raise Exception('ssh config file not found.')
     self._system_log_file = device.system_log_file
     self._command_runner = CommandRunner(
-        os.path.join(self._config_dir, 'ssh_config'),
+        self._ssh_config,
         device.host,
         device.port)
     self._managed_repo = device.managed_repo
+    self._detailed_os_version = None
+    self._device_type = None
 
   @classmethod
   def SupportsDevice(cls, device):
@@ -41,8 +46,8 @@ class FuchsiaPlatformBackend(platform_backend.PlatformBackend):
     return self._command_runner
 
   @property
-  def config_dir(self):
-    return self._config_dir
+  def ssh_config(self):
+    return self._ssh_config
 
   def GetSystemLog(self):
     if not self._system_log_file:
@@ -68,13 +73,23 @@ class FuchsiaPlatformBackend(platform_backend.PlatformBackend):
     return 'fuchsia'
 
   def GetDeviceTypeName(self):
-    return 'Device type not supported in Fuchsia.'
+    if not self._device_type:
+      _, self._device_type, _ = self._command_runner.RunCommand(
+          ['cat', '/config/build-info/board'],
+          stdout=subprocess.PIPE,
+          stderr=subprocess.PIPE)
+    return 'fuchsia-board-' + self._device_type
 
   def GetOSVersionName(self):
-    return 'OS Version not supported in Fuchsia.'
+    return ''  # TODO(crbug.com/1140869): Implement this.
 
   def GetOSVersionDetailString(self):
-    return ''
+    if not self._detailed_os_version:
+      _, self._detailed_os_version, _ = self._command_runner.RunCommand(
+          ['cat', '/config/build-info/version'],
+          stdout=subprocess.PIPE,
+          stderr=subprocess.PIPE)
+    return self._detailed_os_version
 
   def GetSystemTotalPhysicalMemory(self):
     raise NotImplementedError()
@@ -121,3 +136,8 @@ class FuchsiaPlatformBackend(platform_backend.PlatformBackend):
 
   def TakeScreenshot(self, file_path):
     return None
+
+  def GetTypExpectationsTags(self):
+    tags = super(FuchsiaPlatformBackend, self).GetTypExpectationsTags()
+    tags.append(self.GetDeviceTypeName())
+    return tags

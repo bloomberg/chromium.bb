@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 
@@ -141,10 +140,6 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
   }
 }
 
-bool IsFocused(Element* element) {
-  return element && element->IsFocused();
-}
-
 bool IsInAccessibilityMode(Page* page) {
   Frame* frame = page->GetFocusController().FocusedOrMainFrame();
   auto* local_frame = DynamicTo<LocalFrame>(frame);
@@ -162,12 +157,7 @@ bool IsInAccessibilityMode(Page* page) {
 }  // namespace
 
 SpatialNavigationController::SpatialNavigationController(Page& page)
-    : page_(&page),
-      spatial_navigation_state_(mojom::blink::SpatialNavigationState::New()),
-      spatial_navigation_host_(
-          DynamicTo<LocalFrame>(page.MainFrame())
-              ? DynamicTo<LocalFrame>(page.MainFrame())->DomWindow()
-              : nullptr) {
+    : page_(&page) {
   DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
 }
 
@@ -261,15 +251,15 @@ bool SpatialNavigationController::HandleEscapeKeyboardEvent(
     KeyboardEvent* event) {
   DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
 
-  if (!spatial_navigation_state_->can_exit_focus)
+  if (!interest_element_)
     return false;
 
-  if (Element* focused = GetFocusedElement()) {
+  if (Element* focused = GetFocusedElement())
     focused->blur();
-    return true;
-  }
+  else
+    MoveInterestTo(nullptr);
 
-  return false;
+  return true;
 }
 
 Element* SpatialNavigationController::GetInterestedElement() const {
@@ -294,24 +284,15 @@ void SpatialNavigationController::DidDetachFrameView(
   // etc.) then reset navigation.
   if (interest_element_ && !interest_element_->GetDocument().View())
     interest_element_ = nullptr;
-
-  // TODO(bokan): This still needs a test. crbug.com/976892.
-  if (view.GetFrame().IsMainFrame()) {
-    // TODO(crbug.com/956209): should be checked via an integration test.
-    ResetMojoBindings();
-  }
 }
 
-void SpatialNavigationController::Trace(Visitor* visitor) {
+void SpatialNavigationController::Trace(Visitor* visitor) const {
   visitor->Trace(interest_element_);
   visitor->Trace(page_);
-  visitor->Trace(spatial_navigation_host_);
 }
 
 bool SpatialNavigationController::Advance(
     SpatialNavigationDirection direction) {
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.SpatialNavigation.Advance");
-
   Node* interest_node = StartingNode();
   if (!interest_node)
     return false;
@@ -479,8 +460,6 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
 
     interest_element_ = element;
 
-    UpdateSpatialNavigationState(interest_element_);
-
     if (interest_element_) {
       interest_element_->SetNeedsStyleRecalc(
           kLocalStyleChange, StyleChangeReasonForTracing::Create(
@@ -587,7 +566,6 @@ void SpatialNavigationController::OnSpatialNavigationSettingChanged() {
     return;
   if (!page_->GetSettings().GetSpatialNavigationEnabled()) {
     MoveInterestTo(nullptr);
-    ResetMojoBindings();
     return;
   }
   // FocusedController::FocusedOrMainFrame will crash if called before the
@@ -611,8 +589,6 @@ void SpatialNavigationController::FocusedNodeChanged(Document* document) {
   if (document->FocusedElement() &&
       interest_element_ != document->FocusedElement()) {
     MoveInterestTo(document->FocusedElement());
-  } else {
-    UpdateSpatialNavigationState(interest_element_);
   }
 }
 
@@ -624,99 +600,6 @@ void SpatialNavigationController::FullscreenStateChanged(Element* element) {
                                mojom::blink::FocusType::kSpatialNavigation,
                                nullptr));
   }
-}
-
-void SpatialNavigationController::UpdateSpatialNavigationState(
-    Element* element) {
-  bool change = false;
-  change |= UpdateCanExitFocus(element);
-  change |= UpdateCanSelectInterestedElement(element);
-  change |= UpdateIsFormFocused(element);
-  change |= UpdateHasNextFormElement(element);
-  change |= UpdateHasDefaultVideoControls(element);
-  if (change)
-    OnSpatialNavigationStateChanged();
-}
-
-void SpatialNavigationController::OnSpatialNavigationStateChanged() {
-  if (!GetSpatialNavigationHost().is_bound())
-    return;
-  GetSpatialNavigationHost()->SpatialNavigationStateChanged(
-      spatial_navigation_state_.Clone());
-}
-
-bool SpatialNavigationController::UpdateCanExitFocus(Element* element) {
-  bool can_exit_focus = IsFocused(element) && !IsA<HTMLBodyElement>(element);
-  if (can_exit_focus == spatial_navigation_state_->can_exit_focus)
-    return false;
-  spatial_navigation_state_->can_exit_focus = can_exit_focus;
-  return true;
-}
-
-bool SpatialNavigationController::UpdateCanSelectInterestedElement(
-    Element* element) {
-  bool can_select_interested_element = element;
-  if (can_select_interested_element ==
-      spatial_navigation_state_->can_select_element) {
-    return false;
-  }
-  spatial_navigation_state_->can_select_element = can_select_interested_element;
-  return true;
-}
-
-bool SpatialNavigationController::UpdateHasNextFormElement(Element* element) {
-  bool has_next_form_element =
-      IsFocused(element) &&
-      page_->GetFocusController().NextFocusableElementInForm(
-          element, mojom::blink::FocusType::kForward);
-  if (has_next_form_element == spatial_navigation_state_->has_next_form_element)
-    return false;
-
-  spatial_navigation_state_->has_next_form_element = has_next_form_element;
-  return true;
-}
-
-bool SpatialNavigationController::UpdateIsFormFocused(Element* element) {
-  bool is_form_focused = IsFocused(element) && element->IsFormControlElement();
-
-  if (is_form_focused == spatial_navigation_state_->is_form_focused)
-    return false;
-  spatial_navigation_state_->is_form_focused = is_form_focused;
-  return true;
-}
-
-bool SpatialNavigationController::UpdateHasDefaultVideoControls(
-    Element* element) {
-  auto* video_element = DynamicTo<HTMLVideoElement>(element);
-  bool has_default_video_controls = IsFocused(element) && video_element &&
-                                    video_element->ShouldShowControls();
-  if (has_default_video_controls ==
-      spatial_navigation_state_->has_default_video_controls) {
-    return false;
-  }
-  spatial_navigation_state_->has_default_video_controls =
-      has_default_video_controls;
-  return true;
-}
-
-const HeapMojoRemote<mojom::blink::SpatialNavigationHost,
-                     HeapMojoWrapperMode::kWithoutContextObserver>&
-SpatialNavigationController::GetSpatialNavigationHost() {
-  if (!spatial_navigation_host_.is_bound()) {
-    LocalFrame* frame = DynamicTo<LocalFrame>(page_->MainFrame());
-    if (!frame)
-      return spatial_navigation_host_;
-
-    frame->GetBrowserInterfaceBroker().GetInterface(
-        spatial_navigation_host_.BindNewPipeAndPassReceiver(
-            frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-  }
-  return spatial_navigation_host_;
-}
-
-void SpatialNavigationController::ResetMojoBindings() {
-  spatial_navigation_host_.reset();
-  spatial_navigation_state_ = mojom::blink::SpatialNavigationState::New();
 }
 
 }  // namespace blink

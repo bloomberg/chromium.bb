@@ -27,7 +27,7 @@ namespace blink {
 // which embeds the document.
 //
 // See
-// https://github.com/w3c/webappsec-feature-policy/blob/master/document-policy-explainer.md
+// https://github.com/w3c/webappsec-permissions-policy/blob/master/document-policy-explainer.md
 //
 // Key concepts:
 //
@@ -63,16 +63,13 @@ namespace blink {
 
 class BLINK_COMMON_EXPORT DocumentPolicy {
  public:
-  using FeatureState =
-      base::flat_map<mojom::DocumentPolicyFeature, PolicyValue>;
-
   // Mapping of feature to endpoint group.
   // https://w3c.github.io/reporting/#endpoint-group
   using FeatureEndpointMap =
       base::flat_map<mojom::DocumentPolicyFeature, std::string>;
 
   struct ParsedDocumentPolicy {
-    FeatureState feature_state;
+    DocumentPolicyFeatureState feature_state;
     FeatureEndpointMap endpoint_map;
   };
 
@@ -88,11 +85,6 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   bool IsFeatureEnabled(mojom::DocumentPolicyFeature feature,
                         const PolicyValue& threshold_value) const;
 
-  // Returns true if the feature is being migrated to document policy
-  // TODO(iclelland): remove this method when those features are fully
-  // migrated to document policy.
-  bool IsFeatureSupported(mojom::DocumentPolicyFeature feature) const;
-
   // Returns the value of the given feature on the given origin.
   PolicyValue GetFeatureValue(mojom::DocumentPolicyFeature feature) const;
 
@@ -103,34 +95,40 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
 
   // Returns true if the incoming policy is compatible with the given required
   // policy, i.e. incoming policy is at least as strict as required policy.
-  static bool IsPolicyCompatible(const FeatureState& required_policy,
-                                 const FeatureState& incoming_policy);
+  static bool IsPolicyCompatible(
+      const DocumentPolicyFeatureState& required_policy,
+      const DocumentPolicyFeatureState& incoming_policy);
 
   // Serialize document policy according to http_structured_header.
   // returns base::nullopt when http structured header serializer encounters
   // problems, e.g. double value out of the range supported.
-  static base::Optional<std::string> Serialize(const FeatureState& policy);
+  static base::Optional<std::string> Serialize(
+      const DocumentPolicyFeatureState& policy);
 
   static base::Optional<std::string> SerializeInternal(
-      const FeatureState& policy,
+      const DocumentPolicyFeatureState& policy,
       const DocumentPolicyFeatureInfoMap&);
 
-  // Merge two FeatureState map. Take stricter value when there is conflict.
-  static FeatureState MergeFeatureState(const FeatureState& policy1,
-                                        const FeatureState& policy2);
+  // Merge two FeatureState map.
+  // When there is conflict:
+  // - take the stricter value if PolicyValue is comparable
+  // - take override_policy's value if PolicyValue is not comparable
+  static DocumentPolicyFeatureState MergeFeatureState(
+      const DocumentPolicyFeatureState& base_policy,
+      const DocumentPolicyFeatureState& override_policy);
 
  private:
   friend class DocumentPolicyTest;
 
-  DocumentPolicy(const FeatureState& header_policy,
+  DocumentPolicy(const DocumentPolicyFeatureState& header_policy,
                  const FeatureEndpointMap& endpoint_map,
-                 const FeatureState& defaults);
+                 const DocumentPolicyFeatureState& defaults);
   static std::unique_ptr<DocumentPolicy> CreateWithHeaderPolicy(
-      const FeatureState& header_policy,
+      const DocumentPolicyFeatureState& header_policy,
       const FeatureEndpointMap& endpoint_map,
-      const FeatureState& defaults);
+      const DocumentPolicyFeatureState& defaults);
 
-  void UpdateFeatureState(const FeatureState& feature_state);
+  void UpdateFeatureState(const DocumentPolicyFeatureState& feature_state);
 
   // Internal feature state is represented as an array to avoid overhead
   // in using container classes.

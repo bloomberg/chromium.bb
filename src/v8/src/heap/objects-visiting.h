@@ -9,7 +9,7 @@
 #include "src/objects/map.h"
 #include "src/objects/objects.h"
 #include "src/objects/visitors.h"
-#include "torque-generated/field-offsets-tq.h"
+#include "torque-generated/field-offsets.h"
 
 namespace v8 {
 namespace internal {
@@ -25,12 +25,10 @@ namespace internal {
   V(Context)                           \
   V(CoverageInfo)                      \
   V(DataHandler)                       \
-  V(DescriptorArray)                   \
   V(EmbedderDataArray)                 \
   V(EphemeronHashTable)                \
   V(FeedbackCell)                      \
   V(FeedbackMetadata)                  \
-  V(FeedbackVector)                    \
   V(FixedDoubleArray)                  \
   V(JSArrayBuffer)                     \
   V(JSDataView)                        \
@@ -42,7 +40,6 @@ namespace internal {
   V(JSWeakRef)                         \
   V(Map)                               \
   V(NativeContext)                     \
-  V(Oddball)                           \
   V(PreparseData)                      \
   V(PropertyArray)                     \
   V(PropertyCell)                      \
@@ -58,10 +55,10 @@ namespace internal {
   V(UncompiledDataWithoutPreparseData) \
   V(UncompiledDataWithPreparseData)    \
   V(WasmArray)                         \
-  V(WasmCapiFunctionData)              \
   V(WasmIndirectFunctionTable)         \
   V(WasmInstanceObject)                \
-  V(WasmStruct)
+  V(WasmStruct)                        \
+  V(WasmTypeInfo)
 
 #define FORWARD_DECLARE(TypeName) class TypeName;
 TYPED_VISITOR_ID_LIST(FORWARD_DECLARE)

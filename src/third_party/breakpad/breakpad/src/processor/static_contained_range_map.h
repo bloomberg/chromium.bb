@@ -57,7 +57,7 @@ class StaticContainedRangeMap {
   // child ranges, and not the entry contained by |this|.  This is necessary
   // to support a sparsely-populated root range.  If no descendant range
   // encompasses the address, returns false.
-  bool RetrieveRange(const AddressType &address, const EntryType *&entry) const;
+  bool RetrieveRange(const AddressType& address, const EntryType*& entry) const;
 
  private:
   friend class ModuleComparer;

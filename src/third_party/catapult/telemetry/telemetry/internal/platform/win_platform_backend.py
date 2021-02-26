@@ -30,7 +30,8 @@ try:
   except ImportError:
     import _winreg as winreg  # pylint: disable=import-error,wrong-import-order
   import win32security  # pylint: disable=import-error
-except ImportError:
+except ImportError as e:
+  logging.warning('import error in win_platform_backend: %s', e)
   pywintypes = None
   shell = None
   shellcon = None
@@ -102,6 +103,29 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
       pi['CommandLine'] = ','.join(parts[1:-4])
       process_info.append(pi)
     return process_info
+
+  def GetPcSystemType(self):
+    # use: wmic computersystem get pcsystemtype
+    # the return value of the communicate() looks like:
+    #  ('PCSystemType  \r\r\nX             \r\r\n\r\r\n', None)
+    # where X represents the system type.
+    # More on: https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-computersystem
+    lines = subprocess.Popen(
+        ['wmic', 'computersystem', 'get', 'pcsystemtype'],
+        stdout=subprocess.PIPE).communicate()[0].split()
+    if len(lines) > 1 and lines[0] == 'PCSystemType':
+      return lines[1]
+    return '0'
+
+  def IsLaptop(self):
+    # if the pcsystemtype value is 2, then it is mobile/laptop.
+    return self.GetPcSystemType() == '2'
+
+  def GetTypExpectationsTags(self):
+    tags = super(WinPlatformBackend, self).GetTypExpectationsTags()
+    if self.IsLaptop():
+      tags.append('win-laptop')
+    return tags
 
   @decorators.Cache
   def GetArchName(self):
@@ -269,6 +293,10 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
     return True
 
   def CooperativelyShutdown(self, proc, app_name):
+    if win32gui is None:
+      logging.warning('win32gui unavailable, cannot cooperatively shutdown')
+      return False
+
     pid = proc.pid
 
     # http://timgolden.me.uk/python/win32_how_do_i/

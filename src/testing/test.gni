@@ -6,6 +6,9 @@
 # TEST SETUP
 # ==============================================================================
 
+import("//build/config/chromeos/ui_mode.gni")
+import("//build_overrides/build.gni")
+
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/extract_unwind_tables.gni")
@@ -21,6 +24,7 @@ if (is_fuchsia) {
 
 if (is_chromeos) {
   import("//build/config/chromeos/rules.gni")
+  import("//build/util/generate_wrapper.gni")
 }
 
 if (is_ios) {
@@ -29,13 +33,29 @@ if (is_ios) {
   import("//build/config/ios/rules.gni")
 }
 
+if ((is_linux && !is_chromeos) || is_mac || is_win ||
+    chromeos_is_browser_only) {
+  import("//build/config/sanitizers/sanitizers.gni")
+  import("//build/util/generate_wrapper.gni")
+}
+
 # Define a test as an executable (or apk on Android) with the "testonly" flag
 # set.
 # Variable:
+#   use_xvfb: (optional) whether to run the executable under Xvfb.
 #   use_raw_android_executable: Use executable() rather than android_apk().
 #   use_native_activity: Test implements ANativeActivity_onCreate().
+#   is_xctest: (iOS, optional) whether to build the executable as XCTest.
+#      Similar to the GN arg 'enable_run_ios_unittests_with_xctest' but
+#      for build targets.
 template("test") {
+  if (!is_ios) {
+    assert(!defined(invoker.is_xctest) || !invoker.is_xctest,
+           "is_xctest can be set only for iOS builds")
+  }
   if (is_android) {
+    assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
+
     _use_raw_android_executable = defined(invoker.use_raw_android_executable) &&
                                   invoker.use_raw_android_executable
 
@@ -96,12 +116,12 @@ template("test") {
       _apk_specific_vars = [
         "android_manifest",
         "android_manifest_dep",
+        "app_as_shared_lib",
         "enable_multidex",
         "product_config_java_packages",
         "min_sdk_version",
         "proguard_configs",
         "proguard_enabled",
-        "shared_resources",
         "srcjar_deps",
         "target_sdk_version",
         "use_default_launcher",
@@ -202,12 +222,15 @@ template("test") {
       }
     }
   } else if (is_fuchsia) {
+    assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
+
     _output_name = invoker.target_name
     _pkg_target = "${_output_name}_pkg"
     _exec_target = "${_output_name}__exec"
 
     fuchsia_package_runner(target_name) {
       testonly = true
+      is_test_exe = true
       forward_variables_from(invoker,
                              [
                                "use_test_server",
@@ -233,6 +256,9 @@ template("test") {
       output_name = _exec_target
     }
   } else if (is_ios) {
+    assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
+    _runtime_deps_file = "$root_out_dir/${target_name}.runtime_deps"
+
     declare_args() {
       # Keep the unittest-as-xctest functionality defaulted to off until the
       # bots are updated to handle it properly.
@@ -275,7 +301,10 @@ template("test") {
       outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
     }
 
-    if (enable_run_ios_unittests_with_xctest) {
+    force_xctest = enable_run_ios_unittests_with_xctest ||
+                   (defined(invoker.is_xctest) && invoker.is_xctest)
+
+    if (force_xctest) {
       ios_test_target_type = "ios_xctest_test"
     } else {
       ios_test_target_type = "ios_app_bundle"
@@ -284,12 +313,10 @@ template("test") {
     target(ios_test_target_type, _test_target) {
       testonly = true
 
-      if (enable_run_ios_unittests_with_xctest) {
+      if (force_xctest && build_with_chromium) {
         xctest_module_target = "//base/test:google_test_runner"
       }
 
-      # See above call.
-      set_sources_assignment_filter([])
       forward_variables_from(invoker, "*", [ "testonly" ])
 
       # Provide sensible defaults in case invoker did not define any of those
@@ -318,8 +345,11 @@ template("test") {
 
       # Include the generate_wrapper as part of data_deps
       data_deps += [ ":${_wrapper_output_name}" ]
+      write_runtime_deps = _runtime_deps_file
     }
   } else if (is_chromeos && cros_board != "") {
+    assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
+
     # Building for a cros board (ie: not linux-chromeos).
 
     _gen_runner_target = "${target_name}__runner"
@@ -352,25 +382,223 @@ template("test") {
       data += [ _runtime_deps_file ]
       deps += [ ":$_gen_runner_target" ]
     }
-  } else {
+  } else if (is_chromeos && cros_board == "") {
+    # TODO(crbug.com/816629) - Make use_xvfb work right in this situation.
+    not_needed([ "use_xvfb" ])
+    executable(target_name) {
+      forward_variables_from(invoker, "*", [ "use_xvfb" ])
+      if (!defined(deps)) {
+        deps = []
+      }
+
+      testonly = true
+    }
+  } else if (chromeos_is_browser_only) {
+    _runtime_deps_file = "$root_out_dir/${target_name}.runtime_deps"
+    _executable = target_name
+    _gen_runner_target = "${target_name}__runner"
+
+    if (defined(invoker.use_xvfb)) {
+      _use_xvfb = invoker.use_xvfb
+    } else {
+      _use_xvfb = false
+    }
+
+    # When use_xvfb is set by the invoker, it indicates that running this test
+    # target requires a window, and in lacros build, ash-chrome serves as the
+    # display server. Note that even though the tests themselves do not require
+    # xvfb anymore, xvfb.py is still needed to invoke the lacros test runner
+    # because ash-chrome is based on x11.
+    _use_ash_chrome = _use_xvfb
+
+    generate_wrapper(_gen_runner_target) {
+      testonly = true
+      wrapper_script = "$root_build_dir/bin/run_" + _executable
+
+      data = []
+      if (_use_xvfb) {
+        executable = "//testing/xvfb.py"
+        data += [ "//testing/xvfb.py" ]
+      } else {
+        executable = "//testing/test_env.py"
+        data += [ "//testing/test_env.py" ]
+      }
+
+      executable_args = [
+        "@WrappedPath(../../build/lacros/test_runner.py)",
+        "test",
+        "@WrappedPath(./${_executable})",
+        "--test-launcher-bot-mode",
+      ]
+
+      if (_use_ash_chrome) {
+        executable_args += [ "--ash-chrome-path=ash_clang_x64/chrome" ]
+      }
+
+      if (is_asan) {
+        executable_args += [ "--asan=true" ]
+      }
+      if (is_msan) {
+        executable_args += [ "--msan=true" ]
+      }
+      if (is_tsan) {
+        executable_args += [ "--tsan=true" ]
+      }
+      if (use_cfi_diag) {
+        executable_args += [ "--cfi-diag=true" ]
+      }
+
+      data += [
+        "//build/lacros/test_runner.py",
+        "//.vpython",
+      ]
+    }
+
     executable(target_name) {
       forward_variables_from(invoker, "*")
       if (!defined(deps)) {
         deps = []
       }
 
-      if (is_win) {
-        # Initializing CFG data during process creation is a significant
-        # bottleneck for large test binaries, and CFG is not needed for tests,
-        # so disable it. See https://crbug.com/950923 for details.
-        configs -= [ "//build/config/win:cfi_linker" ]
+      if (!defined(data_deps)) {
+        data_deps = []
       }
+
+      testonly = true
+      write_runtime_deps = _runtime_deps_file
+      deps += [ ":$_gen_runner_target" ]
+      if (_use_ash_chrome && also_build_ash_chrome) {
+        data_deps +=
+            [ "//chrome:chrome(//build/toolchain/linux:ash_clang_x64)" ]
+      }
+    }
+  } else {
+    if (is_mac || is_win) {
+      assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
+    }
+
+    if ((is_linux && !is_chromeos) || is_mac || is_win) {
+      _runtime_deps_file = "$root_out_dir/${target_name}.runtime_deps"
+      _executable = target_name
+      _gen_runner_target = "${target_name}__runner"
+
+      if ((is_linux || is_chromeos) && defined(invoker.use_xvfb)) {
+        _use_xvfb = invoker.use_xvfb
+      } else {
+        _use_xvfb = false
+      }
+
+      generate_wrapper(_gen_runner_target) {
+        testonly = true
+        wrapper_script = "$root_build_dir/bin/run_" + _executable
+
+        data = []
+        if (_use_xvfb) {
+          executable = "//testing/xvfb.py"
+          data += [ "//testing/xvfb.py" ]
+        } else {
+          executable = "//testing/test_env.py"
+          data += [ "//testing/test_env.py" ]
+        }
+
+        executable_args = [
+          "@WrappedPath(./${_executable})",
+          "--test-launcher-bot-mode",
+        ]
+        if (is_asan) {
+          executable_args += [ "--asan=true" ]
+        }
+        if (is_msan) {
+          executable_args += [ "--msan=true" ]
+        }
+        if (is_tsan) {
+          executable_args += [ "--tsan=true" ]
+        }
+        if (use_cfi_diag) {
+          executable_args += [ "--cfi-diag=true" ]
+        }
+
+        data += [ "//.vpython" ]
+      }
+    }
+
+    executable(target_name) {
+      forward_variables_from(invoker, "*", [ "use_xvfb" ])
+      if (!defined(deps)) {
+        deps = []
+      }
+
       testonly = true
       deps += [
         # Give tests the default manifest on Windows (a no-op elsewhere).
         "//build/win:default_exe_manifest",
       ]
+
+      if (is_linux || is_chromeos || is_mac || is_win) {
+        write_runtime_deps = _runtime_deps_file
+        deps += [ ":$_gen_runner_target" ]
+      }
     }
+  }
+}
+
+# Defines a type of test that invokes a script to run, rather than
+# invoking an executable.
+#
+# The script must implement the
+# [test executable API](//docs/testing/test_executable_api.md).
+#
+# The template must be passed the `script` parameter, which specifies
+# the path to the script to run. It may optionally be passed a
+# `script_args` parameter, which can be used to include a list of
+# args to be specified by default. The template will produce
+# a `$root_build_dir/run_$target_name` wrapper and write the runtime_deps
+# for the target to $root_build_dir/${target_name}.runtime_deps, as per
+# the conventions listed in the
+# [test wrapper API](//docs/testing/test_wrapper_api.md).
+template("script_test") {
+  generate_wrapper(target_name) {
+    testonly = true
+    wrapper_script = "${root_build_dir}/bin/run_${target_name}"
+
+    executable = "//testing/test_env.py"
+
+    executable_args =
+        [ "@WrappedPath(" + rebase_path(invoker.script, root_build_dir) + ")" ]
+    if (defined(invoker.args)) {
+      executable_args += invoker.args
+    }
+
+    data = [
+      "//.vpython",
+      "//testing/test_env.py",
+
+      # These aren't needed by *every* test, but they're likely needed often
+      # enough to just make it easier to declare them here.
+      "//testing/xvfb.py",
+      "//testing/scripts/common.py",
+
+      invoker.script,
+    ]
+    if (defined(invoker.data)) {
+      data += invoker.data
+    }
+    data_deps = []
+    if (defined(invoker.data_deps)) {
+      data_deps += invoker.data_deps
+    }
+
+    forward_variables_from(invoker,
+                           [ "*" ],
+                           [
+                             "data",
+                             "data_deps",
+                             "script",
+                             "script_args",
+                             "testonly",
+                           ])
+
+    write_runtime_deps = "${root_build_dir}/${target_name}.runtime_deps"
   }
 }
 

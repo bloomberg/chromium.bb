@@ -5,12 +5,14 @@
 #include "cast/streaming/frame_crypto.h"
 
 #include <random>
+#include <utility>
 
 #include "openssl/crypto.h"
 #include "openssl/err.h"
 #include "openssl/rand.h"
 #include "util/big_endian.h"
 #include "util/crypto/openssl_util.h"
+#include "util/crypto/random_bytes.h"
 
 namespace openscreen {
 namespace cast {
@@ -21,15 +23,14 @@ EncryptedFrame::EncryptedFrame() {
 
 EncryptedFrame::~EncryptedFrame() = default;
 
-EncryptedFrame::EncryptedFrame(EncryptedFrame&& other) MAYBE_NOEXCEPT
+EncryptedFrame::EncryptedFrame(EncryptedFrame&& other)
     : EncodedFrame(static_cast<EncodedFrame&&>(other)),
       owned_data_(std::move(other.owned_data_)) {
   data = absl::Span<uint8_t>(owned_data_);
   other.data = absl::Span<uint8_t>{};
 }
 
-EncryptedFrame& EncryptedFrame::operator=(EncryptedFrame&& other)
-    MAYBE_NOEXCEPT {
+EncryptedFrame& EncryptedFrame::operator=(EncryptedFrame&& other) {
   this->EncodedFrame::operator=(static_cast<EncodedFrame&&>(other));
   owned_data_ = std::move(other.owned_data_);
   data = absl::Span<uint8_t>(owned_data_);
@@ -100,19 +101,6 @@ void FrameCrypto::EncryptCommon(FrameId frame_id,
   unsigned int block_offset = 0;
   AES_ctr128_encrypt(in.data(), out.data(), in.size(), &aes_key_,
                      aes_nonce.data(), ecount_buf.data(), &block_offset);
-}
-
-// static
-std::array<uint8_t, 16> FrameCrypto::GenerateRandomBytes() {
-  std::array<uint8_t, 16> result;
-  const int return_code = RAND_bytes(result.data(), sizeof(result));
-  if (return_code != 1) {
-    ClearOpenSSLERRStack(CURRENT_LOCATION);
-    OSP_LOG_FATAL
-        << "Failure when generating random bytes; unsafe to continue.";
-    OSP_NOTREACHED();
-  }
-  return result;
 }
 
 }  // namespace cast

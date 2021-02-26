@@ -37,7 +37,6 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
   // ChromeSearchResult overrides:
   void GetContextMenuModel(GetMenuModelCallback callback) override;
   void Open(int event_flags) override;
-  ash::SearchResultType GetSearchResultType() const override;
 
   // app_list::AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;
@@ -53,7 +52,7 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
   }
   float review_score() const { return data_->review_score; }
   const std::vector<uint8_t>& icon_png_data() const {
-    return data_->icon_png_data;
+    return data_->icon->icon_png_data.value();
   }
 
   // ChromeSearchResult overrides:

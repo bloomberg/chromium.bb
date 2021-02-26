@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_packet.h"
 
 #include "fxjs/xfa/cjx_packet.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 CXFA_Packet::CXFA_Packet(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
@@ -17,6 +17,8 @@ CXFA_Packet::CXFA_Packet(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Packet,
                 {},
                 {},
-                pdfium::MakeUnique<CJX_Packet>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Packet>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Packet::~CXFA_Packet() = default;

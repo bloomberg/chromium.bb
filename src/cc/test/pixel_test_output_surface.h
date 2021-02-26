@@ -5,6 +5,8 @@
 #ifndef CC_TEST_PIXEL_TEST_OUTPUT_SURFACE_H_
 #define CC_TEST_PIXEL_TEST_OUTPUT_SURFACE_H_
 
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "components/viz/service/display/output_surface.h"
 
@@ -24,7 +26,6 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
-  void SetDrawRectangle(const gfx::Rect& rect) override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
@@ -41,9 +42,6 @@ class PixelTestOutputSurface : public viz::OutputSurface {
       viz::UpdateVSyncParametersCallback callback) override;
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
   gfx::OverlayTransform GetDisplayTransform() override;
-  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
-      override;
-  gpu::MemoryTracker* GetMemoryTracker() override;
 
   void set_has_external_stencil_test(bool has_test) {
     external_stencil_test_ = has_test;

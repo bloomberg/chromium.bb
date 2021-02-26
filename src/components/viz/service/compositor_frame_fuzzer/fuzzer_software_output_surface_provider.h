@@ -22,13 +22,17 @@ class FuzzerSoftwareOutputSurfaceProvider : public OutputSurfaceProvider {
   ~FuzzerSoftwareOutputSurfaceProvider() override;
 
   // OutputSurfaceProvider implementation.
+  std::unique_ptr<DisplayCompositorMemoryAndTaskController> CreateGpuDependency(
+      bool gpu_compositing,
+      gpu::SurfaceHandle surface_handle,
+      const RendererSettings& renderer_settings) override;
   std::unique_ptr<OutputSurface> CreateOutputSurface(
       gpu::SurfaceHandle surface_handle,
       bool gpu_compositing,
       mojom::DisplayClient* display_client,
-      const RendererSettings& renderer_settings) override;
-
-  gpu::SharedImageManager* GetSharedImageManager() override;
+      DisplayCompositorMemoryAndTaskController* gpu_dependency,
+      const RendererSettings& renderer_settings,
+      const DebugRendererSettings* debug_settings) override;
 
  private:
   base::Optional<base::FilePath> png_dir_path_;

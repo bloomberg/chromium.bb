@@ -77,11 +77,13 @@ extern NSString* const kSettingsDoneButtonId;
 
 // Creates a new SavePasswordsCollectionViewController and the chrome around it.
 // |browser| is the browser where settings are being displayed and should not be
-// nil. |delegate| may be nil.
+// nil. |delegate| may be nil. |startCheck| indicates whether startPasswordCheck
+// should be called right after creating view controller.
 + (instancetype)
     savePasswordsControllerForBrowser:(Browser*)browser
                              delegate:(id<SettingsNavigationControllerDelegate>)
-                                          delegate;
+                                          delegate
+      startPasswordCheckAutomatically:(BOOL)startCheck;
 
 // Creates and displays a new UIViewController for user to report an issue.
 // |browser| is the browser where settings are being displayed and should not be
@@ -93,7 +95,8 @@ extern NSString* const kSettingsDoneButtonId;
                             delegate:(id<SettingsNavigationControllerDelegate>)
                                          delegate
                   feedbackDataSource:(id<UserFeedbackDataSource>)dataSource
-                          dispatcher:(id<ApplicationCommands>)dispatcher;
+                              sender:(UserFeedbackSender)sender
+                             handler:(id<ApplicationCommands>)handler;
 
 // Creates and displays a new ImportDataTableViewController. |browserState|
 // should not be nil.

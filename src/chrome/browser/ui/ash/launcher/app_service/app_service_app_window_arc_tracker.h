@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "ash/public/cpp/shelf_types.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/arc_util.h"
 
@@ -32,6 +32,10 @@ namespace base {
 class Time;
 }
 
+namespace gfx {
+class ImageSkia;
+}
+
 class AppServiceAppWindowLauncherController;
 class AppServiceAppWindowLauncherItemController;
 class ArcAppWindowInfo;
@@ -40,7 +44,7 @@ class Profile;
 // AppServiceAppWindowArcTracker observes the ArcAppListPrefs to handle ARC app
 // window special cases, e.g. task id, closing ARC app windows, etc.
 class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
-                                      public arc::ArcSessionManager::Observer {
+                                      public arc::ArcSessionManagerObserver {
  public:
   explicit AppServiceAppWindowArcTracker(
       AppServiceAppWindowLauncherController* app_service_controller);
@@ -66,10 +70,10 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
                      const std::string& package_name,
                      const std::string& activity,
                      const std::string& intent) override;
-  void OnTaskDescriptionUpdated(
+  void OnTaskDescriptionChanged(
       int32_t task_id,
       const std::string& label,
-      const std::vector<uint8_t>& icon_png_data) override;
+      const arc::mojom::RawIconPngData& icon) override;
   void OnTaskDestroyed(int task_id) override;
   void OnTaskSetActive(int32_t task_id) override;
 
@@ -104,13 +108,31 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
   void CheckAndAttachControllers();
   void AttachControllerToTask(int taskId);
 
-  // arc::ArcSessionManager::Observer:
+  // arc::ArcSessionManagerObserver:
   void OnArcOptInManagementCheckStarted() override;
   void OnArcSessionStopped(arc::ArcStopReason stop_reason) override;
 
   void HandlePlayStoreLaunch(ArcAppWindowInfo* app_window_info);
 
+  // Returns a task ID different from |task_id| that is part of the same
+  // logical window. Return arc::kNoTaskId if there is no such window.
+  // For consistency, always return the lowest such task ID.
+  int GetTaskIdSharingLogicalWindow(int task_id);
+
   std::vector<int> GetTaskIdsForApp(const std::string& arc_app_id) const;
+
+  // Invoked when the compressed data is converted to an ImageSkia.
+  void OnIconLoaded(int32_t task_id,
+                    const std::string& title,
+                    const gfx::ImageSkia& icon);
+
+  // Sets the window title and icon.
+  // TODO(crbug.com/1083331): This function can be deleted when the flag
+  // kAppServiceAdaptiveIcon is deleted, and use OnIconLoaded to replace this
+  // function.
+  void SetDescription(int32_t task_id,
+                      const std::string& title,
+                      gfx::ImageSkia icon);
 
   Profile* const observed_profile_;
   AppServiceAppWindowLauncherController* const app_service_controller_;
@@ -133,6 +155,8 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
   // starts for the first time. OptIn management check is preceding step before
   // ARC container is actually started.
   base::Time opt_in_management_check_start_time_;
+
+  base::WeakPtrFactory<AppServiceAppWindowArcTracker> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_APP_SERVICE_APP_SERVICE_APP_WINDOW_ARC_TRACKER_H_

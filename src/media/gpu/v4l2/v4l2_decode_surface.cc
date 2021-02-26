@@ -127,7 +127,7 @@ bool V4L2ConfigStoreDecodeSurface::Submit() {
     case V4L2_MEMORY_MMAP:
       return std::move(output_buffer()).QueueMMap();
     case V4L2_MEMORY_DMABUF:
-      return std::move(output_buffer()).QueueDMABuf(video_frame()->DmabufFds());
+      return std::move(output_buffer()).QueueDMABuf(video_frame());
     default:
       NOTREACHED() << "We should only use MMAP or DMABUF.";
   }
@@ -140,7 +140,6 @@ void V4L2RequestDecodeSurface::PrepareSetCtrls(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(ctrls, nullptr);
 
-  ctrls->which = V4L2_CTRL_WHICH_REQUEST_VAL;
   request_ref_.ApplyCtrls(ctrls);
 }
 
@@ -174,8 +173,7 @@ bool V4L2RequestDecodeSurface::Submit() {
       result = std::move(output_buffer()).QueueMMap();
       break;
     case V4L2_MEMORY_DMABUF:
-      result = std::move(output_buffer())
-                    .QueueDMABuf(video_frame()->DmabufFds());
+      result = std::move(output_buffer()).QueueDMABuf(video_frame());
       break;
     default:
       NOTREACHED() << "We should only use MMAP or DMABUF.";

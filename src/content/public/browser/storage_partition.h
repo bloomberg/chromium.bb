@@ -66,7 +66,6 @@ class NativeFileSystemEntryFactory;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
 class SharedWorkerService;
-class IdleManager;
 
 #if !defined(OS_ANDROID)
 class HostZoomLevelContext;
@@ -98,6 +97,12 @@ class CONTENT_EXPORT StoragePartition {
   // use after StoragePartition has gone.
   // The returned SharedURLLoaderFactory can be held on and will work across
   // network process restarts.
+  //
+  // SECURITY NOTE: This browser-process factory relaxes many security features
+  // (e.g. may disable CORB, won't set |request_initiator_origin_lock| or
+  // IsolationInfo, etc.).  Network requests that may be initiated or influenced
+  // by a web origin should typically use a different factory (e.g.  the one
+  // from RenderFrameHost::CreateNetworkServiceDefaultFactory).
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcess() = 0;
   virtual scoped_refptr<network::SharedURLLoaderFactory>
@@ -117,7 +122,6 @@ class CONTENT_EXPORT StoragePartition {
   virtual storage::FileSystemContext* GetFileSystemContext() = 0;
   virtual storage::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
-  virtual IdleManager* GetIdleManager() = 0;
   virtual storage::mojom::IndexedDBControl& GetIndexedDBControl() = 0;
   virtual NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
@@ -189,6 +193,19 @@ class CONTENT_EXPORT StoragePartition {
       base::RepeatingCallback<bool(const url::Origin&,
                                    storage::SpecialStoragePolicy*)>;
 
+  // Observer interface that is notified of specific data clearing events which
+  // which were facilitated by the StoragePartition. Notification occurs on the
+  // UI thread, observer life time is not managed by the StoragePartition.
+  class DataRemovalObserver : public base::CheckedObserver {
+   public:
+    // Called on a deletion event for origin keyed storage APIs.
+    virtual void OnOriginDataCleared(
+        uint32_t remove_mask,
+        base::RepeatingCallback<bool(const url::Origin&)> origin_matcher,
+        const base::Time begin,
+        const base::Time end) = 0;
+  };
+
   // Similar to ClearDataForOrigin().
   // Deletes all data out for the StoragePartition if |storage_origin| is empty.
   // |callback| is called when data deletion is done or at least the deletion is
@@ -247,6 +264,10 @@ class CONTENT_EXPORT StoragePartition {
   // Resets all URLLoaderFactories bound to this partition's network context.
   virtual void ResetURLLoaderFactories() = 0;
 
+  virtual void AddObserver(DataRemovalObserver* observer) = 0;
+
+  virtual void RemoveObserver(DataRemovalObserver* observer) = 0;
+
   // Clear the bluetooth allowed devices map. For test use only.
   virtual void ClearBluetoothAllowedDevicesMapForTesting() = 0;
 
@@ -263,6 +284,11 @@ class CONTENT_EXPORT StoragePartition {
   virtual void SetNetworkContextForTesting(
       mojo::PendingRemote<network::mojom::NetworkContext>
           network_context_remote) = 0;
+
+  // Returns the same provider as GetProtoDatabaseProvider() but doesn't create
+  // a new instance and returns nullptr instead.
+  virtual leveldb_proto::ProtoDatabaseProvider*
+  GetProtoDatabaseProviderForTesting() = 0;
 
   // The value pointed to by |settings| should remain valid until the
   // the function is called again with a new value or a nullptr.

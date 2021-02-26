@@ -75,16 +75,16 @@ class StackwalkerARM : public Stackwalker {
   // Use cfi_frame_info (derived from STACK CFI records) to construct
   // the frame that called frames.back(). The caller takes ownership
   // of the returned frame. Return NULL on failure.
-  StackFrameARM* GetCallerByCFIFrameInfo(const vector<StackFrame*> &frames,
+  StackFrameARM* GetCallerByCFIFrameInfo(const vector<StackFrame*>& frames,
                                          CFIFrameInfo* cfi_frame_info);
 
   // Use the frame pointer. The caller takes ownership of the returned frame.
   // Return NULL on failure.
-  StackFrameARM* GetCallerByFramePointer(const vector<StackFrame*> &frames);
+  StackFrameARM* GetCallerByFramePointer(const vector<StackFrame*>& frames);
 
   // Scan the stack for plausible return addresses. The caller takes ownership
   // of the returned frame. Return NULL on failure.
-  StackFrameARM* GetCallerByStackScan(const vector<StackFrame*> &frames);
+  StackFrameARM* GetCallerByStackScan(const vector<StackFrame*>& frames);
 
   // Stores the CPU context corresponding to the youngest stack frame, to
   // be returned by GetContextFrame.

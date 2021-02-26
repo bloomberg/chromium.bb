@@ -63,7 +63,7 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
   // that contains a pretty-printed and sanitized version. In particular, we
   // remove any Passphrases that may be contained in the JSON. Ownership of the
   // return value is transferred to the caller.
-  static std::unique_ptr<base::Value> SanitizeNetworkConfig(
+  static base::Optional<base::Value> SanitizeNetworkConfig(
       const base::Value* config);
 
   // The kind of ONC source that this handler represents. ONCSource
@@ -209,21 +209,6 @@ class ArcServicePolicyHandler : public IntRangePolicyHandlerBase {
   const std::string pref_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServicePolicyHandler);
-};
-
-// Handles the |EcryptfsMigrationStrategy| policy, aliasing policy values that
-// are no longer supported to the "migrate" option.
-class EcryptfsMigrationStrategyPolicyHandler
-    : public IntRangePolicyHandlerBase {
- public:
-  EcryptfsMigrationStrategyPolicyHandler();
-
-  // IntRangePolicyHandlerBase:
-  void ApplyPolicySettings(const PolicyMap& policies,
-                           PrefValueMap* prefs) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EcryptfsMigrationStrategyPolicyHandler);
 };
 
 }  // namespace policy

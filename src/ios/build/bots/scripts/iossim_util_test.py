@@ -176,7 +176,7 @@ class GetiOSSimUtil(test_runner_test.TestCase):
         'com.apple.CoreSimulator.SimRuntime.iOS-13-2'
     ], subprocess_mock.call_args[0][0])
 
-  @mock.patch('subprocess.call', autospec=True)
+  @mock.patch('subprocess.check_output', autospec=True)
   def test_delete_simulator_by_udid(self, subprocess_mock, _):
     """Ensures that command is correct."""
     iossim_util.delete_simulator_by_udid('UDID')

@@ -10,6 +10,7 @@
  **************************************************************************************************/
 #include "GrUnrolledBinaryGradientColorizer.h"
 
+#include "src/core/SkUtils.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -127,14 +128,50 @@ public:
         thresholds9_13Var = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
                                                              kHalf4_GrSLType, "thresholds9_13");
         fragBuilder->codeAppendf(
-                "half t = %s.x;\nfloat4 scale, bias;\nif (%d <= 4 || t < %s.w) {\n    if (%d <= 2 "
-                "|| t < %s.y) {\n        if (%d <= 1 || t < %s.x) {\n            scale = %s;\n     "
-                "       bias = %s;\n        } else {\n            scale = %s;\n            bias = "
-                "%s;\n        }\n    } else {\n        if (%d <= 3 || t < %s.z) {\n            "
-                "scale = %s;\n            bias = %s;\n        } else {\n            scale = %s;\n  "
-                "          bias = %s;\n        }\n    }\n} else {\n    if (%d <= 6 || t < %s.y) "
-                "{\n        if (%d <= 5 || t <",
-                args.fInputColor, _outer.intervalCount,
+                R"SkSL(half t = half(%s.x);
+float4 scale;
+float4 bias;
+
+if (%d <= 4 || t < %s.w) {
+    if (%d <= 2 || t < %s.y) {
+        if (%d <= 1 || t < %s.x) {
+            scale = %s;
+            bias = %s;
+        } else {
+            scale = %s;
+            bias = %s;
+        }
+    } else {
+        if (%d <= 3 || t < %s.z) {
+            scale = %s;
+            bias = %s;
+        } else {
+            scale = %s;
+            bias = %s;
+        }
+    }
+} else {
+    if (%d <= 6 || t < %s.y) {
+        if (%d <= 5 || t < %s.x) {
+            scale = %s;
+            bias = %s;
+        } else {
+            scale = %s;
+            bias = %s;
+        }
+    } else {
+        if (%d <= 7 || t < %s.z) {
+            scale = %s;
+            bias = %s;
+        } else {
+            scale = %s;
+            bias = %s;
+        }
+    }
+}
+return half4(float(t) * scale + bias);
+)SkSL",
+                args.fSampleCoord, _outer.intervalCount,
                 args.fUniformHandler->getUniformCStr(thresholds1_7Var), _outer.intervalCount,
                 args.fUniformHandler->getUniformCStr(thresholds1_7Var), _outer.intervalCount,
                 args.fUniformHandler->getUniformCStr(thresholds1_7Var),
@@ -154,14 +191,7 @@ public:
                 bias6_7Var.isValid() ? args.fUniformHandler->getUniformCStr(bias6_7Var)
                                      : "float4(0)",
                 _outer.intervalCount, args.fUniformHandler->getUniformCStr(thresholds9_13Var),
-                _outer.intervalCount);
-        fragBuilder->codeAppendf(
-                " %s.x) {\n            scale = %s;\n            bias = %s;\n        } else {\n     "
-                "       scale = %s;\n            bias = %s;\n        }\n    } else {\n        if "
-                "(%d <= 7 || t < %s.z) {\n            scale = %s;\n            bias = %s;\n        "
-                "} else {\n            scale = %s;\n            bias = %s;\n        }\n    "
-                "}\n}\n%s = half4(float(t) * scale + bias);\n",
-                args.fUniformHandler->getUniformCStr(thresholds9_13Var),
+                _outer.intervalCount, args.fUniformHandler->getUniformCStr(thresholds9_13Var),
                 scale8_9Var.isValid() ? args.fUniformHandler->getUniformCStr(scale8_9Var)
                                       : "float4(0)",
                 bias8_9Var.isValid() ? args.fUniformHandler->getUniformCStr(bias8_9Var)
@@ -178,8 +208,7 @@ public:
                 scale14_15Var.isValid() ? args.fUniformHandler->getUniformCStr(scale14_15Var)
                                         : "float4(0)",
                 bias14_15Var.isValid() ? args.fUniformHandler->getUniformCStr(bias14_15Var)
-                                       : "float4(0)",
-                args.fOutputColor);
+                                       : "float4(0)");
     }
 
 private:
@@ -262,7 +291,7 @@ GrGLSLFragmentProcessor* GrUnrolledBinaryGradientColorizer::onCreateGLSLInstance
 }
 void GrUnrolledBinaryGradientColorizer::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                               GrProcessorKeyBuilder* b) const {
-    b->add32((int32_t)intervalCount);
+    b->add32((uint32_t)intervalCount);
 }
 bool GrUnrolledBinaryGradientColorizer::onIsEqual(const GrFragmentProcessor& other) const {
     const GrUnrolledBinaryGradientColorizer& that = other.cast<GrUnrolledBinaryGradientColorizer>();
@@ -288,6 +317,7 @@ bool GrUnrolledBinaryGradientColorizer::onIsEqual(const GrFragmentProcessor& oth
     if (thresholds9_13 != that.thresholds9_13) return false;
     return true;
 }
+bool GrUnrolledBinaryGradientColorizer::usesExplicitReturn() const { return true; }
 GrUnrolledBinaryGradientColorizer::GrUnrolledBinaryGradientColorizer(
         const GrUnrolledBinaryGradientColorizer& src)
         : INHERITED(kGrUnrolledBinaryGradientColorizer_ClassID, src.optimizationFlags())
@@ -309,10 +339,40 @@ GrUnrolledBinaryGradientColorizer::GrUnrolledBinaryGradientColorizer(
         , bias12_13(src.bias12_13)
         , bias14_15(src.bias14_15)
         , thresholds1_7(src.thresholds1_7)
-        , thresholds9_13(src.thresholds9_13) {}
-std::unique_ptr<GrFragmentProcessor> GrUnrolledBinaryGradientColorizer::clone() const {
-    return std::unique_ptr<GrFragmentProcessor>(new GrUnrolledBinaryGradientColorizer(*this));
+        , thresholds9_13(src.thresholds9_13) {
+    this->cloneAndRegisterAllChildProcessors(src);
+    this->setUsesSampleCoordsDirectly();
 }
+std::unique_ptr<GrFragmentProcessor> GrUnrolledBinaryGradientColorizer::clone() const {
+    return std::make_unique<GrUnrolledBinaryGradientColorizer>(*this);
+}
+#if GR_TEST_UTILS
+SkString GrUnrolledBinaryGradientColorizer::onDumpInfo() const {
+    return SkStringPrintf(
+            "(intervalCount=%d, scale0_1=float4(%f, %f, %f, %f), scale2_3=float4(%f, %f, %f, %f), "
+            "scale4_5=float4(%f, %f, %f, %f), scale6_7=float4(%f, %f, %f, %f), scale8_9=float4(%f, "
+            "%f, %f, %f), scale10_11=float4(%f, %f, %f, %f), scale12_13=float4(%f, %f, %f, %f), "
+            "scale14_15=float4(%f, %f, %f, %f), bias0_1=float4(%f, %f, %f, %f), bias2_3=float4(%f, "
+            "%f, %f, %f), bias4_5=float4(%f, %f, %f, %f), bias6_7=float4(%f, %f, %f, %f), "
+            "bias8_9=float4(%f, %f, %f, %f), bias10_11=float4(%f, %f, %f, %f), "
+            "bias12_13=float4(%f, %f, %f, %f), bias14_15=float4(%f, %f, %f, %f), "
+            "thresholds1_7=half4(%f, %f, %f, %f), thresholds9_13=half4(%f, %f, %f, %f))",
+            intervalCount, scale0_1.fR, scale0_1.fG, scale0_1.fB, scale0_1.fA, scale2_3.fR,
+            scale2_3.fG, scale2_3.fB, scale2_3.fA, scale4_5.fR, scale4_5.fG, scale4_5.fB,
+            scale4_5.fA, scale6_7.fR, scale6_7.fG, scale6_7.fB, scale6_7.fA, scale8_9.fR,
+            scale8_9.fG, scale8_9.fB, scale8_9.fA, scale10_11.fR, scale10_11.fG, scale10_11.fB,
+            scale10_11.fA, scale12_13.fR, scale12_13.fG, scale12_13.fB, scale12_13.fA,
+            scale14_15.fR, scale14_15.fG, scale14_15.fB, scale14_15.fA, bias0_1.fR, bias0_1.fG,
+            bias0_1.fB, bias0_1.fA, bias2_3.fR, bias2_3.fG, bias2_3.fB, bias2_3.fA, bias4_5.fR,
+            bias4_5.fG, bias4_5.fB, bias4_5.fA, bias6_7.fR, bias6_7.fG, bias6_7.fB, bias6_7.fA,
+            bias8_9.fR, bias8_9.fG, bias8_9.fB, bias8_9.fA, bias10_11.fR, bias10_11.fG,
+            bias10_11.fB, bias10_11.fA, bias12_13.fR, bias12_13.fG, bias12_13.fB, bias12_13.fA,
+            bias14_15.fR, bias14_15.fG, bias14_15.fB, bias14_15.fA, thresholds1_7.left(),
+            thresholds1_7.top(), thresholds1_7.right(), thresholds1_7.bottom(),
+            thresholds9_13.left(), thresholds9_13.top(), thresholds9_13.right(),
+            thresholds9_13.bottom());
+}
+#endif
 
 static const int kMaxIntervals = 8;
 std::unique_ptr<GrFragmentProcessor> GrUnrolledBinaryGradientColorizer::Make(

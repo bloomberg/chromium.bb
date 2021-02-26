@@ -96,7 +96,7 @@ bool StyleFetchedImageSet::ErrorOccurred() const {
 FloatSize StyleFetchedImageSet::ImageSize(
     const Document&,
     float multiplier,
-    const LayoutSize& default_object_size,
+    const FloatSize& default_object_size,
     RespectImageOrientationEnum respect_orientation) const {
   Image* image = best_fit_image_->GetImage();
   if (auto* svg_image = DynamicTo<SVGImage>(image)) {
@@ -143,7 +143,7 @@ bool StyleFetchedImageSet::KnownToBeOpaque(const Document&,
   return best_fit_image_->GetImage()->CurrentFrameKnownToBeOpaque();
 }
 
-void StyleFetchedImageSet::Trace(Visitor* visitor) {
+void StyleFetchedImageSet::Trace(Visitor* visitor) const {
   visitor->Trace(best_fit_image_);
   visitor->Trace(image_set_value_);
   StyleImage::Trace(visitor);

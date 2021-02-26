@@ -174,24 +174,17 @@ void TurboAssembler::Jump(Handle<Code> code, RelocInfo::Mode rmode,
                  Builtins::IsIsolateIndependentBuiltin(*code));
 
   int builtin_index = Builtins::kNoBuiltinId;
-  bool target_is_isolate_independent_builtin =
-      isolate()->builtins()->IsBuiltinHandle(code, &builtin_index) &&
-      Builtins::IsIsolateIndependent(builtin_index);
+  bool target_is_builtin =
+      isolate()->builtins()->IsBuiltinHandle(code, &builtin_index);
 
-  if (options().inline_offheap_trampolines &&
-      target_is_isolate_independent_builtin) {
-    Label skip;
-    if (cond != al) {
-      b(NegateCondition(cond), &skip, Label::kNear);
-    }
+  if (options().inline_offheap_trampolines && target_is_builtin) {
     // Inline the trampoline.
     RecordCommentForOffHeapTrampoline(builtin_index);
     CHECK_NE(builtin_index, Builtins::kNoBuiltinId);
     EmbeddedData d = EmbeddedData::FromBlob();
     Address entry = d.InstructionStartOfBuiltin(builtin_index);
     mov(ip, Operand(entry, RelocInfo::OFF_HEAP_TARGET));
-    b(ip);
-    bind(&skip);
+    b(cond, ip);
     return;
   }
   jump(code, RelocInfo::RELATIVE_CODE_TARGET, cond);
@@ -242,12 +235,10 @@ void TurboAssembler::Call(Handle<Code> code, RelocInfo::Mode rmode,
   DCHECK_IMPLIES(options().isolate_independent_code,
                  Builtins::IsIsolateIndependentBuiltin(*code));
   int builtin_index = Builtins::kNoBuiltinId;
-  bool target_is_isolate_independent_builtin =
-      isolate()->builtins()->IsBuiltinHandle(code, &builtin_index) &&
-      Builtins::IsIsolateIndependent(builtin_index);
+  bool target_is_builtin =
+      isolate()->builtins()->IsBuiltinHandle(code, &builtin_index);
 
-  if (options().inline_offheap_trampolines &&
-      target_is_isolate_independent_builtin) {
+  if (target_is_builtin && options().inline_offheap_trampolines) {
     // Inline the trampoline.
     RecordCommentForOffHeapTrampoline(builtin_index);
     CHECK_NE(builtin_index, Builtins::kNoBuiltinId);
@@ -377,6 +368,37 @@ void TurboAssembler::BranchRelativeOnIdxHighP(Register dst, Register inc,
 #else
   brxh(dst, inc, L);
 #endif  // V8_TARGET_ARCH_S390X
+}
+
+void TurboAssembler::PushArray(Register array, Register size, Register scratch,
+                               Register scratch2, PushArrayOrder order) {
+  Label loop, done;
+
+  if (order == kNormal) {
+    ShiftLeftP(scratch, size, Operand(kSystemPointerSizeLog2));
+    lay(scratch, MemOperand(array, scratch));
+    bind(&loop);
+    CmpP(array, scratch);
+    bge(&done);
+    lay(scratch, MemOperand(scratch, -kSystemPointerSize));
+    lay(sp, MemOperand(sp, -kSystemPointerSize));
+    MoveChar(MemOperand(sp), MemOperand(scratch), Operand(kSystemPointerSize));
+    b(&loop);
+    bind(&done);
+  } else {
+    DCHECK_NE(scratch2, r0);
+    ShiftLeftP(scratch, size, Operand(kSystemPointerSizeLog2));
+    lay(scratch, MemOperand(array, scratch));
+    LoadRR(scratch2, array);
+    bind(&loop);
+    CmpP(scratch2, scratch);
+    bge(&done);
+    lay(sp, MemOperand(sp, -kSystemPointerSize));
+    MoveChar(MemOperand(sp), MemOperand(scratch2), Operand(kSystemPointerSize));
+    lay(scratch2, MemOperand(scratch2, kSystemPointerSize));
+    b(&loop);
+    bind(&done);
+  }
 }
 
 void TurboAssembler::MultiPush(RegList regs, Register location) {
@@ -759,6 +781,7 @@ void TurboAssembler::PushStandardFrame(Register function_reg) {
     fp_delta = 1;
   }
   la(fp, MemOperand(sp, fp_delta * kSystemPointerSize));
+  Push(kJavaScriptCallArgCountRegister);
 }
 
 void TurboAssembler::RestoreFrameStateForTailCall() {
@@ -1349,7 +1372,7 @@ void MacroAssembler::InvokePrologue(Register expected_parameter_count,
 
   // The code below is made a lot easier because the calling code already sets
   // up actual and expected registers according to the contract.
-  // ARM has some sanity checks as per below, considering add them for S390
+  // ARM has some checks as per below, considering add them for S390
   DCHECK_EQ(actual_parameter_count, r2);
   DCHECK_EQ(expected_parameter_count, r4);
 
@@ -1379,8 +1402,7 @@ void MacroAssembler::CheckDebugHook(Register fun, Register new_target,
 
   {
     // Load receiver to pass it later to DebugOnFunctionCall hook.
-    ShiftLeftP(r6, actual_parameter_count, Operand(kSystemPointerSizeLog2));
-    LoadP(r6, MemOperand(sp, r6));
+    LoadReceiver(r6, actual_parameter_count);
     FrameScope frame(this,
                      has_frame() ? StackFrame::NONE : StackFrame::INTERNAL);
 
@@ -2024,10 +2046,10 @@ void TurboAssembler::CheckPageFlag(
     // Reverse the byte_offset if emulating on little endian platform
     byte_offset = kSystemPointerSize - byte_offset - 1;
 #endif
-    tm(MemOperand(scratch, MemoryChunk::kFlagsOffset + byte_offset),
+    tm(MemOperand(scratch, BasicMemoryChunk::kFlagsOffset + byte_offset),
        Operand(shifted_mask));
   } else {
-    LoadP(scratch, MemOperand(scratch, MemoryChunk::kFlagsOffset));
+    LoadP(scratch, MemOperand(scratch, BasicMemoryChunk::kFlagsOffset));
     AndP(r0, scratch, Operand(mask));
   }
   // Should be okay to remove rc
@@ -4509,15 +4531,17 @@ void TurboAssembler::StoreReturnAddressAndCall(Register target) {
   bind(&return_label);
 }
 
-void TurboAssembler::CallForDeoptimization(Address target, int deopt_id,
-                                           Label* exit, DeoptimizeKind kind) {
+void TurboAssembler::CallForDeoptimization(Builtins::Name target, int,
+                                           Label* exit, DeoptimizeKind kind,
+                                           Label*) {
+  LoadP(ip, MemOperand(kRootRegister,
+                       IsolateData::builtin_entry_slot_offset(target)));
+  Call(ip);
+  DCHECK_EQ(SizeOfCodeGeneratedSince(exit),
+            (kind == DeoptimizeKind::kLazy)
+                ? Deoptimizer::kLazyDeoptExitSize
+                : Deoptimizer::kNonLazyDeoptExitSize);
   USE(exit, kind);
-  NoRootArrayScope no_root_array(this);
-
-  // Save the deopt id in r10 (we don't need the roots array from now on).
-  DCHECK_LE(deopt_id, 0xFFFF);
-  lghi(r10, Operand(deopt_id));
-  Call(target, RelocInfo::RUNTIME_ENTRY);
 }
 
 void TurboAssembler::Trap() { stop(); }

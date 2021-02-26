@@ -10,20 +10,17 @@
 
 namespace blink {
 
-NGInlineItemResult::NGInlineItemResult()
-    : item(nullptr), item_index(0), start_offset(0), end_offset(0) {}
+NGInlineItemResult::NGInlineItemResult() : item(nullptr), item_index(0) {}
 
 NGInlineItemResult::NGInlineItemResult(const NGInlineItem* item,
                                        unsigned index,
-                                       unsigned start,
-                                       unsigned end,
+                                       const NGTextOffset& text_offset,
                                        bool break_anywhere_if_overflow,
                                        bool should_create_line_box,
                                        bool has_unpositioned_floats)
     : item(item),
       item_index(index),
-      start_offset(start),
-      end_offset(end),
+      text_offset(text_offset),
       break_anywhere_if_overflow(break_anywhere_if_overflow),
       should_create_line_box(should_create_line_box),
       has_unpositioned_floats(has_unpositioned_floats) {}
@@ -33,16 +30,31 @@ void NGLineInfo::SetLineStyle(const NGInlineNode& node,
                               bool use_first_line_style) {
   use_first_line_style_ = use_first_line_style;
   items_data_ = &items_data;
-  line_style_ = node.GetLayoutBox()->Style(use_first_line_style_);
+  const LayoutBox* box = node.GetLayoutBox();
+  line_style_ = box->Style(use_first_line_style_);
   needs_accurate_end_position_ = ComputeNeedsAccurateEndPosition();
+  is_ruby_base_ = box->IsRubyBase();
+  is_ruby_text_ = box->IsRubyText();
+}
+
+ETextAlign NGLineInfo::GetTextAlign(bool is_last_line) const {
+  // See LayoutRubyBase::TextAlignmentForLine().
+  if (is_ruby_base_)
+    return ETextAlign::kJustify;
+
+  // See LayoutRubyText::TextAlignmentForLine().
+  if (is_ruby_text_ && LineStyle().GetTextAlign() ==
+                           ComputedStyleInitialValues::InitialTextAlign())
+    return ETextAlign::kJustify;
+
+  return LineStyle().GetTextAlign(is_last_line);
 }
 
 bool NGLineInfo::ComputeNeedsAccurateEndPosition() const {
   // Some 'text-align' values need accurate end position. At this point, we
   // don't know if this is the last line or not, and thus we don't know whether
   // 'text-align' is used or 'text-align-last' is used.
-  const ComputedStyle& line_style = LineStyle();
-  switch (line_style.GetTextAlign()) {
+  switch (GetTextAlign()) {
     case ETextAlign::kStart:
       break;
     case ETextAlign::kEnd:
@@ -61,7 +73,16 @@ bool NGLineInfo::ComputeNeedsAccurateEndPosition() const {
         return true;
       break;
   }
-  switch (line_style.TextAlignLast()) {
+  ETextAlignLast align_last = LineStyle().TextAlignLast();
+  if (is_ruby_base_) {
+    // See LayoutRubyBase::TextAlignmentForLine().
+    align_last = ETextAlignLast::kJustify;
+  } else if (is_ruby_text_ &&
+             align_last == ComputedStyleInitialValues::InitialTextAlignLast()) {
+    // See LayoutRubyText::TextAlignmentForLine().
+    align_last = ETextAlignLast::kJustify;
+  }
+  switch (align_last) {
     case ETextAlignLast::kStart:
     case ETextAlignLast::kAuto:
       return false;
@@ -85,13 +106,13 @@ bool NGLineInfo::ComputeNeedsAccurateEndPosition() const {
 void NGInlineItemResult::CheckConsistency(bool allow_null_shape_result) const {
   DCHECK(item);
   if (item->Type() == NGInlineItem::kText) {
-    DCHECK_LT(start_offset, end_offset);
+    text_offset.AssertNotEmpty();
     if (allow_null_shape_result && !shape_result)
       return;
     DCHECK(shape_result);
-    DCHECK_EQ(end_offset - start_offset, shape_result->NumCharacters());
-    DCHECK_EQ(start_offset, shape_result->StartIndex());
-    DCHECK_EQ(end_offset, shape_result->EndIndex());
+    DCHECK_EQ(Length(), shape_result->NumCharacters());
+    DCHECK_EQ(StartOffset(), shape_result->StartIndex());
+    DCHECK_EQ(EndOffset(), shape_result->EndIndex());
   }
 }
 #endif
@@ -105,7 +126,7 @@ unsigned NGLineInfo::InflowEndOffset() const {
     if (item.Type() == NGInlineItem::kText ||
         item.Type() == NGInlineItem::kControl ||
         item.Type() == NGInlineItem::kAtomicInline)
-      return item_result.end_offset;
+      return item_result.EndOffset();
   }
   return StartOffset();
 }
@@ -133,7 +154,7 @@ bool NGLineInfo::ShouldHangTrailingSpaces() const {
 }
 
 void NGLineInfo::UpdateTextAlign() {
-  text_align_ = line_style_->GetTextAlign(IsLastLine());
+  text_align_ = GetTextAlign(IsLastLine());
 
   if (HasTrailingSpaces() && ShouldHangTrailingSpaces()) {
     hang_width_ = ComputeTrailingSpaceWidth(&end_offset_for_justify_);
@@ -175,18 +196,18 @@ LayoutUnit NGLineInfo::ComputeTrailingSpaceWidth(
 
     // The last text item may contain trailing spaces if this is a last line,
     // has a forced break, or is 'white-space: pre'.
-    unsigned end_offset = item_result.end_offset;
+    unsigned end_offset = item_result.EndOffset();
     DCHECK(end_offset);
     if (item.Type() == NGInlineItem::kText) {
       const String& text = items_data_->text_content;
       if (end_offset && text[end_offset - 1] == kSpaceCharacter) {
         do {
           --end_offset;
-        } while (end_offset > item_result.start_offset &&
+        } while (end_offset > item_result.StartOffset() &&
                  text[end_offset - 1] == kSpaceCharacter);
 
         // If all characters in this item_result are spaces, check next item.
-        if (end_offset == item_result.start_offset) {
+        if (end_offset == item_result.StartOffset()) {
           trailing_spaces_width += item_result.inline_size;
           continue;
         }
@@ -223,6 +244,26 @@ LayoutUnit NGLineInfo::ComputeWidth() const {
     inline_size += item_result.inline_size;
 
   return inline_size;
+}
+
+#if DCHECK_IS_ON()
+float NGLineInfo::ComputeWidthInFloat() const {
+  float inline_size = TextIndent();
+  for (const NGInlineItemResult& item_result : Results())
+    inline_size += item_result.inline_size.ToFloat();
+
+  return inline_size;
+}
+#endif
+
+std::ostream& operator<<(std::ostream& ostream, const NGLineInfo& line_info) {
+  // Feel free to add more NGLneInfo members.
+  ostream << "NGLineInfo available_width_=" << line_info.AvailableWidth()
+          << " width_=" << line_info.Width() << " Results=[\n";
+  for (const auto& result : line_info.Results()) {
+    ostream << "\t" << result.item->ToString() << "\n";
+  }
+  return ostream << "]";
 }
 
 }  // namespace blink

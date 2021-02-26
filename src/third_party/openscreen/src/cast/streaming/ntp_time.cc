@@ -6,8 +6,6 @@
 
 #include "util/osp_logging.h"
 
-using std::chrono::duration_cast;
-
 namespace openscreen {
 namespace cast {
 
@@ -21,17 +19,19 @@ constexpr NtpSeconds kTimeBetweenNtpEpochAndUnixEpoch{INT64_C(2208988800)};
 NtpTimeConverter::NtpTimeConverter(Clock::time_point now,
                                    std::chrono::seconds since_unix_epoch)
     : start_time_(now),
-      since_ntp_epoch_(duration_cast<NtpSeconds>(since_unix_epoch) +
-                       kTimeBetweenNtpEpochAndUnixEpoch) {}
+      since_ntp_epoch_(
+          std::chrono::duration_cast<NtpSeconds>(since_unix_epoch) +
+          kTimeBetweenNtpEpochAndUnixEpoch) {}
 
 NtpTimeConverter::~NtpTimeConverter() = default;
 
 NtpTimestamp NtpTimeConverter::ToNtpTimestamp(
     Clock::time_point time_point) const {
   const Clock::duration time_since_start = time_point - start_time_;
-  const auto whole_seconds = duration_cast<NtpSeconds>(time_since_start);
+  const auto whole_seconds =
+      std::chrono::duration_cast<NtpSeconds>(time_since_start);
   const auto remainder =
-      duration_cast<NtpFraction>(time_since_start - whole_seconds);
+      std::chrono::duration_cast<NtpFraction>(time_since_start - whole_seconds);
   return AssembleNtpTimestamp(since_ntp_epoch_ + whole_seconds, remainder);
 }
 
@@ -47,9 +47,8 @@ Clock::time_point NtpTimeConverter::ToLocalTime(NtpTimestamp timestamp) const {
 
   const auto whole_seconds = ntp_seconds - since_ntp_epoch_;
   const auto seconds_since_start =
-      duration_cast<Clock::duration>(whole_seconds) + start_time_;
-  const auto remainder =
-      duration_cast<Clock::duration>(NtpFractionPart(timestamp));
+      Clock::to_duration(whole_seconds) + start_time_;
+  const auto remainder = Clock::to_duration(NtpFractionPart(timestamp));
   return seconds_since_start + remainder;
 }
 

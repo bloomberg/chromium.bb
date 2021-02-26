@@ -10,11 +10,12 @@
  **************************************************************************************************/
 #include "GrCircleBlurFragmentProcessor.h"
 
-#include "include/gpu/GrContext.h"
-#include "include/private/GrRecordingContext.h"
+#include "include/gpu/GrRecordingContext.h"
+#include "src/core/SkGpuBlurUtils.h"
 #include "src/gpu/GrBitmapTextureMaker.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrThreadSafeCache.h"
 
 // Computes an unnormalized half kernel (right side). Returns the summation of all the half
 // kernel values.
@@ -177,15 +178,18 @@ static void create_half_plane_profile(uint8_t* profile, int profileWidth) {
     profile[profileWidth - 1] = 0;
 }
 
-static GrSurfaceProxyView create_profile_texture(GrRecordingContext* context,
-                                                 const SkRect& circle,
-                                                 float sigma,
-                                                 float* solidRadius,
-                                                 float* textureRadius) {
+static std::unique_ptr<GrFragmentProcessor> create_profile_effect(GrRecordingContext* rContext,
+                                                                  const SkRect& circle,
+                                                                  float sigma,
+                                                                  float* solidRadius,
+                                                                  float* textureRadius) {
     float circleR = circle.width() / 2.0f;
     if (circleR < SK_ScalarNearlyZero) {
-        return {};
+        return nullptr;
     }
+
+    auto threadSafeCache = rContext->priv().threadSafeCache();
+
     // Profile textures are cached by the ratio of sigma to circle radius and by the size of the
     // profile texture (binned by powers of 2).
     SkScalar sigmaToCircleRRatio = sigma / circleR;
@@ -214,24 +218,28 @@ static GrSurfaceProxyView create_profile_texture(GrRecordingContext* context,
         *textureRadius = circleR + 3 * sigma;
     }
 
+    static constexpr int kProfileTextureWidth = 512;
+    // This would be kProfileTextureWidth/textureRadius if it weren't for the fact that we do
+    // the calculation of the profile coord in a coord space that has already been scaled by
+    // 1 / textureRadius. This is done to avoid overflow in length().
+    SkMatrix texM = SkMatrix::Scale(kProfileTextureWidth, 1.f);
+
     static const GrUniqueKey::Domain kDomain = GrUniqueKey::GenerateDomain();
     GrUniqueKey key;
     GrUniqueKey::Builder builder(&key, kDomain, 1, "1-D Circular Blur");
     builder[0] = sigmaToCircleRRatioFixed;
     builder.finish();
 
-    GrProxyProvider* proxyProvider = context->priv().proxyProvider();
-    if (sk_sp<GrTextureProxy> blurProfile = proxyProvider->findOrCreateProxyByUniqueKey(key)) {
-        GrSwizzle swizzle = context->priv().caps()->getReadSwizzle(blurProfile->backendFormat(),
-                                                                   GrColorType::kAlpha_8);
-        return {std::move(blurProfile), kTopLeft_GrSurfaceOrigin, swizzle};
+    GrSurfaceProxyView profileView = threadSafeCache->find(key);
+    if (profileView) {
+        SkASSERT(profileView.asTextureProxy());
+        SkASSERT(profileView.origin() == kTopLeft_GrSurfaceOrigin);
+        return GrTextureEffect::Make(std::move(profileView), kPremul_SkAlphaType, texM);
     }
-
-    static constexpr int kProfileTextureWidth = 512;
 
     SkBitmap bm;
     if (!bm.tryAllocPixels(SkImageInfo::MakeA8(kProfileTextureWidth, 1))) {
-        return {};
+        return nullptr;
     }
 
     if (useHalfPlaneApprox) {
@@ -245,27 +253,36 @@ static GrSurfaceProxyView create_profile_texture(GrRecordingContext* context,
 
     bm.setImmutable();
 
-    GrBitmapTextureMaker maker(context, bm, GrImageTexGenPolicy::kNew_Uncached_Budgeted);
-    auto blurView = maker.view(GrMipMapped::kNo);
-    if (!blurView) {
-        return {};
+    GrBitmapTextureMaker maker(rContext, bm, GrImageTexGenPolicy::kNew_Uncached_Budgeted);
+    profileView = maker.view(GrMipmapped::kNo);
+    if (!profileView) {
+        return nullptr;
     }
-    proxyProvider->assignUniqueKeyToProxy(key, blurView.asTextureProxy());
-    return blurView;
+
+    profileView = threadSafeCache->add(key, profileView);
+    return GrTextureEffect::Make(std::move(profileView), kPremul_SkAlphaType, texM);
 }
 
 std::unique_ptr<GrFragmentProcessor> GrCircleBlurFragmentProcessor::Make(
-        GrRecordingContext* context, const SkRect& circle, float sigma) {
+        std::unique_ptr<GrFragmentProcessor> inputFP,
+        GrRecordingContext* context,
+        const SkRect& circle,
+        float sigma) {
+    if (SkGpuBlurUtils::IsEffectivelyZeroSigma(sigma)) {
+        return inputFP;
+    }
+
     float solidRadius;
     float textureRadius;
-    GrSurfaceProxyView profile =
-            create_profile_texture(context, circle, sigma, &solidRadius, &textureRadius);
+    std::unique_ptr<GrFragmentProcessor> profile =
+            create_profile_effect(context, circle, sigma, &solidRadius, &textureRadius);
     if (!profile) {
         return nullptr;
     }
     return std::unique_ptr<GrFragmentProcessor>(new GrCircleBlurFragmentProcessor(
-            circle, textureRadius, solidRadius, std::move(profile)));
+            std::move(inputFP), circle, solidRadius, textureRadius, std::move(profile)));
 }
+#include "src/core/SkUtils.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -282,28 +299,31 @@ public:
         (void)_outer;
         auto circleRect = _outer.circleRect;
         (void)circleRect;
-        auto textureRadius = _outer.textureRadius;
-        (void)textureRadius;
         auto solidRadius = _outer.solidRadius;
         (void)solidRadius;
+        auto textureRadius = _outer.textureRadius;
+        (void)textureRadius;
         circleDataVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
                                                          kHalf4_GrSLType, "circleData");
         fragBuilder->codeAppendf(
-                "half2 vec = half2(half((sk_FragCoord.x - float(%s.x)) * float(%s.w)), "
-                "half((sk_FragCoord.y - float(%s.y)) * float(%s.w)));\nhalf dist = length(vec) + "
-                "(0.5 - %s.z) * %s.w;\n%s = %s * sample(%s, float2(half2(dist, 0.5))).%s.w;\n",
+                R"SkSL(half2 vec = half2((sk_FragCoord.xy - float2(%s.xy)) * float(%s.w));
+half dist = length(vec) + (0.5 - %s.z) * %s.w;)SkSL",
                 args.fUniformHandler->getUniformCStr(circleDataVar),
                 args.fUniformHandler->getUniformCStr(circleDataVar),
                 args.fUniformHandler->getUniformCStr(circleDataVar),
-                args.fUniformHandler->getUniformCStr(circleDataVar),
-                args.fUniformHandler->getUniformCStr(circleDataVar),
-                args.fUniformHandler->getUniformCStr(circleDataVar), args.fOutputColor,
-                args.fInputColor,
-                fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]),
-                fragBuilder->getProgramBuilder()
-                        ->samplerSwizzle(args.fTexSamplers[0])
-                        .asString()
-                        .c_str());
+                args.fUniformHandler->getUniformCStr(circleDataVar));
+        SkString _sample0 = this->invokeChild(0, args);
+        fragBuilder->codeAppendf(
+                R"SkSL(
+half4 inputColor = %s;)SkSL",
+                _sample0.c_str());
+        SkString _coords1("float2(half2(dist, 0.5))");
+        SkString _sample1 = this->invokeChild(1, args, _coords1.c_str());
+        fragBuilder->codeAppendf(
+                R"SkSL(
+return inputColor * %s.w;
+)SkSL",
+                _sample1.c_str());
     }
 
 private:
@@ -312,13 +332,10 @@ private:
         const GrCircleBlurFragmentProcessor& _outer = _proc.cast<GrCircleBlurFragmentProcessor>();
         auto circleRect = _outer.circleRect;
         (void)circleRect;
-        auto textureRadius = _outer.textureRadius;
-        (void)textureRadius;
         auto solidRadius = _outer.solidRadius;
         (void)solidRadius;
-        const GrSurfaceProxyView& blurProfileSamplerView = _outer.textureSampler(0).view();
-        GrTexture& blurProfileSampler = *blurProfileSamplerView.proxy()->peekTexture();
-        (void)blurProfileSampler;
+        auto textureRadius = _outer.textureRadius;
+        (void)textureRadius;
         UniformHandle& circleData = circleDataVar;
         (void)circleData;
 
@@ -336,27 +353,29 @@ bool GrCircleBlurFragmentProcessor::onIsEqual(const GrFragmentProcessor& other) 
     const GrCircleBlurFragmentProcessor& that = other.cast<GrCircleBlurFragmentProcessor>();
     (void)that;
     if (circleRect != that.circleRect) return false;
-    if (textureRadius != that.textureRadius) return false;
     if (solidRadius != that.solidRadius) return false;
-    if (blurProfileSampler != that.blurProfileSampler) return false;
+    if (textureRadius != that.textureRadius) return false;
     return true;
 }
+bool GrCircleBlurFragmentProcessor::usesExplicitReturn() const { return true; }
 GrCircleBlurFragmentProcessor::GrCircleBlurFragmentProcessor(
         const GrCircleBlurFragmentProcessor& src)
         : INHERITED(kGrCircleBlurFragmentProcessor_ClassID, src.optimizationFlags())
         , circleRect(src.circleRect)
-        , textureRadius(src.textureRadius)
         , solidRadius(src.solidRadius)
-        , blurProfileSampler(src.blurProfileSampler) {
-    this->setTextureSamplerCnt(1);
+        , textureRadius(src.textureRadius) {
+    this->cloneAndRegisterAllChildProcessors(src);
 }
 std::unique_ptr<GrFragmentProcessor> GrCircleBlurFragmentProcessor::clone() const {
-    return std::unique_ptr<GrFragmentProcessor>(new GrCircleBlurFragmentProcessor(*this));
+    return std::make_unique<GrCircleBlurFragmentProcessor>(*this);
 }
-const GrFragmentProcessor::TextureSampler& GrCircleBlurFragmentProcessor::onTextureSampler(
-        int index) const {
-    return IthTextureSampler(index, blurProfileSampler);
+#if GR_TEST_UTILS
+SkString GrCircleBlurFragmentProcessor::onDumpInfo() const {
+    return SkStringPrintf("(circleRect=half4(%f, %f, %f, %f), solidRadius=%f, textureRadius=%f)",
+                          circleRect.left(), circleRect.top(), circleRect.right(),
+                          circleRect.bottom(), solidRadius, textureRadius);
 }
+#endif
 GR_DEFINE_FRAGMENT_PROCESSOR_TEST(GrCircleBlurFragmentProcessor);
 #if GR_TEST_UTILS
 std::unique_ptr<GrFragmentProcessor> GrCircleBlurFragmentProcessor::TestCreate(
@@ -364,6 +383,7 @@ std::unique_ptr<GrFragmentProcessor> GrCircleBlurFragmentProcessor::TestCreate(
     SkScalar wh = testData->fRandom->nextRangeScalar(100.f, 1000.f);
     SkScalar sigma = testData->fRandom->nextRangeF(1.f, 10.f);
     SkRect circle = SkRect::MakeWH(wh, wh);
-    return GrCircleBlurFragmentProcessor::Make(testData->context(), circle, sigma);
+    return GrCircleBlurFragmentProcessor::Make(testData->inputFP(), testData->context(), circle,
+                                               sigma);
 }
 #endif

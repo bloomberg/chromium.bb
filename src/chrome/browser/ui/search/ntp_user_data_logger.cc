@@ -7,18 +7,19 @@
 #include <algorithm>
 #include <string>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/ntp_user_data_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/ntp_tiles/metrics.h"
 #include "components/prefs/pref_service.h"
+#include "components/search/ntp_features.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -28,8 +29,8 @@ namespace {
 // This enum must match the numbering for NewTabPageVoiceAction in enums.xml.
 // Do not reorder or remove items, only add new items before VOICE_ACTION_MAX.
 enum VoiceAction {
-  // Activated by clicking on the fakebox icon.
-  VOICE_ACTION_ACTIVATE_FAKEBOX = 0,
+  // Activated by clicking on the fakebox or realbox icon.
+  VOICE_ACTION_ACTIVATE_SEARCH_BOX = 0,
   // Activated by keyboard shortcut.
   VOICE_ACTION_ACTIVATE_KEYBOARD = 1,
   // Close the voice overlay by a user's explicit action.
@@ -50,8 +51,8 @@ enum VoiceAction {
 // is an action value. Otherwise, |VOICE_ACTION_MAX| is returned.
 VoiceAction LoggingEventToVoiceAction(NTPLoggingEventType event) {
   switch (event) {
-    case NTP_VOICE_ACTION_ACTIVATE_FAKEBOX:
-      return VOICE_ACTION_ACTIVATE_FAKEBOX;
+    case NTP_VOICE_ACTION_ACTIVATE_SEARCH_BOX:
+      return VOICE_ACTION_ACTIVATE_SEARCH_BOX;
     case NTP_VOICE_ACTION_ACTIVATE_KEYBOARD:
       return VOICE_ACTION_ACTIVATE_KEYBOARD;
     case NTP_VOICE_ACTION_CLOSE_OVERLAY:
@@ -431,7 +432,7 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
     case NTP_ALL_TILES_LOADED:
       // permitted above for non-Google search providers
       break;
-    case NTP_VOICE_ACTION_ACTIVATE_FAKEBOX:
+    case NTP_VOICE_ACTION_ACTIVATE_SEARCH_BOX:
     case NTP_VOICE_ACTION_ACTIVATE_KEYBOARD:
     case NTP_VOICE_ACTION_CLOSE_OVERLAY:
     case NTP_VOICE_ACTION_QUERY_SUBMITTED:
@@ -548,6 +549,12 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
     case NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED:
       RecordAction(LoggingEventToShortcutUserActionName(event));
       break;
+    case NTP_MODULES_SHOWN:
+      UMA_HISTOGRAM_LOAD_TIME("NewTabPage.Modules.ShownTime", time);
+      break;
+    case NTP_APP_RENDERED:
+      UMA_HISTOGRAM_LOAD_TIME("NewTabPage.MainUi.ShownTime", time);
+      break;
   }
 }
 
@@ -587,6 +594,31 @@ void NTPUserDataLogger::LogMostVisitedNavigation(
   // Records the action. This will be available as a time-stamped stream
   // server-side and can be used to compute time-to-long-dwell.
   base::RecordAction(base::UserMetricsAction("MostVisited_Clicked"));
+}
+
+void NTPUserDataLogger::LogModuleImpression(const std::string& id,
+                                            base::TimeDelta time) {
+  UMA_HISTOGRAM_LOAD_TIME("NewTabPage.Modules.Impression", time);
+  base::UmaHistogramCustomTimes("NewTabPage.Modules.Impression." + id, time,
+                                base::TimeDelta::FromMilliseconds(1),
+                                base::TimeDelta::FromSeconds(60), 100);
+}
+
+void NTPUserDataLogger::LogModuleLoaded(const std::string& id,
+                                        base::TimeDelta time) {
+  UMA_HISTOGRAM_LOAD_TIME("NewTabPage.Modules.Loaded", time);
+  base::UmaHistogramCustomTimes("NewTabPage.Modules.Loaded." + id, time,
+                                base::TimeDelta::FromMilliseconds(1),
+                                base::TimeDelta::FromSeconds(60), 100);
+}
+
+void NTPUserDataLogger::LogModuleUsage(const std::string& id) {
+  UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.Modules.Usage", 1, 1);
+  base::UmaHistogramExactLinear("NewTabPage.Modules.Usage." + id, 1, 1);
+}
+
+void NTPUserDataLogger::SetModulesVisible(bool visible) {
+  modules_visible_ = visible;
 }
 
 NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
@@ -712,6 +744,11 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
           "NewTabPage.Customized",
           LoggingEventToCustomizedFeature(NTP_BACKGROUND_CUSTOMIZED));
     }
+  }
+
+  if (base::FeatureList::IsEnabled(ntp_features::kModules)) {
+    base::UmaHistogramBoolean("NewTabPage.Modules.VisibleOnNTPLoad",
+                              modules_visible_);
   }
 
   has_emitted_ = true;

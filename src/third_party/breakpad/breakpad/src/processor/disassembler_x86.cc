@@ -30,7 +30,7 @@
 
 namespace google_breakpad {
 
-DisassemblerX86::DisassemblerX86(const uint8_t *bytecode,
+DisassemblerX86::DisassemblerX86(const uint8_t* bytecode,
                                  uint32_t size,
                                  uint32_t virtual_address) :
                                      bytecode_(bytecode),
@@ -62,7 +62,7 @@ uint32_t DisassemblerX86::NextInstruction() {
     return 0;
   }
   uint32_t instr_size = 0;
-  instr_size = libdis::x86_disasm((unsigned char *)bytecode_, size_,
+  instr_size = libdis::x86_disasm((unsigned char*)bytecode_, size_,
                           virtual_address_, current_byte_offset_,
                           &current_instr_);
   if (instr_size == 0) {
@@ -78,8 +78,8 @@ uint32_t DisassemblerX86::NextInstruction() {
 
   if (current_instr_.type == libdis::insn_return)
     end_of_block_ = true;
-  libdis::x86_op_t *src = libdis::x86_get_src_operand(&current_instr_);
-  libdis::x86_op_t *dest = libdis::x86_get_dest_operand(&current_instr_);
+  libdis::x86_op_t* src = libdis::x86_get_src_operand(&current_instr_);
+  libdis::x86_op_t* dest = libdis::x86_get_dest_operand(&current_instr_);
 
   if (register_valid_) {
     switch (current_instr_.group) {
@@ -213,7 +213,7 @@ bool DisassemblerX86::setBadRead() {
   if (!instr_valid_)
     return false;
 
-  libdis::x86_op_t *operand = libdis::x86_get_src_operand(&current_instr_);
+  libdis::x86_op_t* operand = libdis::x86_get_src_operand(&current_instr_);
   if (!operand || operand->type != libdis::op_expression)
     return false;
 
@@ -227,7 +227,7 @@ bool DisassemblerX86::setBadWrite() {
   if (!instr_valid_)
     return false;
 
-  libdis::x86_op_t *operand = libdis::x86_get_dest_operand(&current_instr_);
+  libdis::x86_op_t* operand = libdis::x86_get_dest_operand(&current_instr_);
   if (!operand || operand->type != libdis::op_expression)
     return false;
 

@@ -329,7 +329,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                       const SSLInfo& ssl_info,
                       const SSLConfigService& ssl_config_service,
                       const std::string& old_hostname,
-                      const std::string& new_hostname);
+                      const std::string& new_hostname,
+                      const net::NetworkIsolationKey& network_isolation_key);
 
   // Create a new SpdySession.
   // |spdy_session_key| is the host/port that this session connects to, privacy
@@ -350,6 +351,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               const spdy::SettingsMap& initial_settings,
               const base::Optional<SpdySessionPool::GreasedHttp2Frame>&
                   greased_http2_frame,
+              bool http2_end_stream_with_data_frame,
               TimeFunc time_func,
               ServerPushDelegate* push_delegate,
               NetworkQualityEstimator* network_quality_estimator,
@@ -430,6 +432,14 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
   bool GreasedFramesEnabled() const;
 
+  // Returns true if HEADERS frames on request streams should not have the
+  // END_STREAM flag set, but instead an empty DATA frame with END_STREAM should
+  // be sent afterwards to close the stream.  Does not apply to bidirectional or
+  // proxy streams.
+  bool EndStreamWithDataFrame() const {
+    return http2_end_stream_with_data_frame_;
+  }
+
   // Send greased frame, that is, a frame of reserved type.
   void EnqueueGreasedFrame(const base::WeakPtr<SpdyStream>& stream);
 
@@ -443,15 +453,19 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
       spdy::SpdyStreamId stream_id,
       RequestPriority priority,
       spdy::SpdyControlFlags flags,
-      spdy::SpdyHeaderBlock headers,
+      spdy::Http2HeaderBlock headers,
       NetLogSource source_dependency);
 
-  // Creates and returns a SpdyBuffer holding a data frame with the
-  // given data. May return NULL if stalled by flow control.
+  // Creates and returns a SpdyBuffer holding a data frame with the given data.
+  // Sets |*effective_len| to number of bytes sent, and |*end_stream| to the
+  // value of the END_STREAM (also known as fin) flag.  Returns nullptr if
+  // session is draining or if session or stream is stalled by flow control.
   std::unique_ptr<SpdyBuffer> CreateDataBuffer(spdy::SpdyStreamId stream_id,
                                                IOBuffer* data,
                                                int len,
-                                               spdy::SpdyDataFlags flags);
+                                               spdy::SpdyDataFlags flags,
+                                               int* effective_len,
+                                               bool* end_stream);
 
   // Send PRIORITY frames according to the new priority of an existing stream.
   void UpdateStreamPriority(SpdyStream* stream,
@@ -696,7 +710,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   void TryCreatePushStream(spdy::SpdyStreamId stream_id,
                            spdy::SpdyStreamId associated_stream_id,
-                           spdy::SpdyHeaderBlock headers);
+                           spdy::Http2HeaderBlock headers);
 
   // Close the stream pointed to by the given iterator. Note that that
   // stream may hold the last reference to the session.
@@ -833,7 +847,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void RecordHistograms();
   void RecordProtocolErrorHistogram(SpdyProtocolErrorDetails details);
   static void RecordPushedStreamVaryResponseHeaderHistogram(
-      const spdy::SpdyHeaderBlock& headers);
+      const spdy::Http2HeaderBlock& headers);
 
   // DCHECKs that |availability_state_| >= STATE_GOING_AWAY, that
   // there are no pending stream creation requests, and that there are
@@ -896,14 +910,14 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                       int delta_window_size) override;
   void OnPushPromise(spdy::SpdyStreamId stream_id,
                      spdy::SpdyStreamId promised_stream_id,
-                     spdy::SpdyHeaderBlock headers) override;
+                     spdy::Http2HeaderBlock headers) override;
   void OnHeaders(spdy::SpdyStreamId stream_id,
                  bool has_priority,
                  int weight,
                  spdy::SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
-                 spdy::SpdyHeaderBlock headers,
+                 spdy::Http2HeaderBlock headers,
                  base::TimeTicks recv_first_byte_time) override;
   void OnAltSvc(spdy::SpdyStreamId stream_id,
                 base::StringPiece origin,
@@ -1106,10 +1120,18 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // and maximum HPACK dynamic table size.
   const spdy::SettingsMap initial_settings_;
 
-  // If set, an HTTP/2 frame with a reserved frame type will be sent after every
-  // valid HTTP/2 frame.  See
+  // If set, an HTTP/2 frame with a reserved frame type will be sent after
+  // every HTTP/2 SETTINGS frame and before every HTTP/2 DATA frame. See
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
   const base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame_;
+
+  // If set, the HEADERS frame carrying a request without body will not have the
+  // END_STREAM flag set.  The stream will be closed by a subsequent empty DATA
+  // frame with END_STREAM.  Does not affect bidirectional or proxy streams.
+  // If unset, the HEADERS frame will have the END_STREAM flag set on.
+  // This is useful in conjuction with |greased_http2_frame_| so that a frame
+  // of reserved type can be sent out even on requests without a body.
+  bool http2_end_stream_with_data_frame_;
 
   // The callbacks to notify a request that the handshake has been confirmed.
   std::vector<CompletionOnceCallback> waiting_for_confirmation_callbacks_;

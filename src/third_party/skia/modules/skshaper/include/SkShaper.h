@@ -39,6 +39,7 @@
 
 class SkFont;
 class SkFontMgr;
+class SkUnicode;
 
 /**
    Shapes text using HarfBuzz and places the shaped text into a
@@ -54,8 +55,9 @@ public:
     static std::unique_ptr<SkShaper> MakeShapeThenWrap(sk_sp<SkFontMgr> = nullptr);
     static std::unique_ptr<SkShaper> MakeShapeDontWrapOrReorder(sk_sp<SkFontMgr> = nullptr);
     #endif
-    // Returns nullptr if not supported
+    #ifdef SK_SHAPER_CORETEXT_AVAILABLE
     static std::unique_ptr<SkShaper> MakeCoreText();
+    #endif
 
     static std::unique_ptr<SkShaper> Make(sk_sp<SkFontMgr> = nullptr);
 
@@ -132,7 +134,9 @@ public:
 
     static std::unique_ptr<BiDiRunIterator>
     MakeBiDiRunIterator(const char* utf8, size_t utf8Bytes, uint8_t bidiLevel);
-    #ifdef SK_SHAPER_HARFBUZZ_AVAILABLE
+    #ifdef SK_UNICODE_AVAILABLE
+    static std::unique_ptr<BiDiRunIterator>
+    MakeSkUnicodeBidiRunIterator(SkUnicode* unicode, const char* utf8, size_t utf8Bytes, uint8_t bidiLevel);
     static std::unique_ptr<BiDiRunIterator>
     MakeIcuBiDiRunIterator(const char* utf8, size_t utf8Bytes, uint8_t bidiLevel);
     #endif
@@ -147,7 +151,9 @@ public:
 
     static std::unique_ptr<ScriptRunIterator>
     MakeScriptRunIterator(const char* utf8, size_t utf8Bytes, SkFourByteTag script);
-    #ifdef SK_SHAPER_HARFBUZZ_AVAILABLE
+    #if defined(SK_SHAPER_HARFBUZZ_AVAILABLE) && defined(SK_UNICODE_AVAILABLE)
+    static std::unique_ptr<ScriptRunIterator>
+    MakeSkUnicodeHbScriptRunIterator(SkUnicode* unicode, const char* utf8, size_t utf8Bytes);
     static std::unique_ptr<ScriptRunIterator>
     MakeHbIcuScriptRunIterator(const char* utf8, size_t utf8Bytes);
     #endif

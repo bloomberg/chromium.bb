@@ -97,6 +97,9 @@ class JSSpeculativeBinopBuilder final {
       case CompareOperationHint::kNumber:
         *hint = NumberOperationHint::kNumber;
         return true;
+      case CompareOperationHint::kNumberOrBoolean:
+        *hint = NumberOperationHint::kNumberOrBoolean;
+        return true;
       case CompareOperationHint::kNumberOrOddball:
         *hint = NumberOperationHint::kNumberOrOddball;
         return true;
@@ -282,31 +285,33 @@ JSTypeHintLowering::LoweringResult JSTypeHintLowering::ReduceUnaryOperation(
     return LoweringResult::Exit(node);
   }
 
+  // Note: Unary and binary operations collect the same kind of feedback.
+  FeedbackSource feedback(feedback_vector(), slot);
+
   Node* node;
   switch (op->opcode()) {
     case IrOpcode::kJSBitwiseNot: {
       // Lower to a speculative xor with -1 if we have some kind of Number
       // feedback.
-      JSSpeculativeBinopBuilder b(this, jsgraph()->javascript()->BitwiseXor(),
-                                  operand, jsgraph()->SmiConstant(-1), effect,
-                                  control, slot);
+      JSSpeculativeBinopBuilder b(
+          this, jsgraph()->javascript()->BitwiseXor(feedback), operand,
+          jsgraph()->SmiConstant(-1), effect, control, slot);
       node = b.TryBuildNumberBinop();
       break;
     }
     case IrOpcode::kJSDecrement: {
       // Lower to a speculative subtraction of 1 if we have some kind of Number
       // feedback.
-      JSSpeculativeBinopBuilder b(this, jsgraph()->javascript()->Subtract(),
-                                  operand, jsgraph()->SmiConstant(1), effect,
-                                  control, slot);
+      JSSpeculativeBinopBuilder b(
+          this, jsgraph()->javascript()->Subtract(feedback), operand,
+          jsgraph()->SmiConstant(1), effect, control, slot);
       node = b.TryBuildNumberBinop();
       break;
     }
     case IrOpcode::kJSIncrement: {
       // Lower to a speculative addition of 1 if we have some kind of Number
       // feedback.
-      BinaryOperationHint hint = BinaryOperationHint::kAny;  // Dummy.
-      JSSpeculativeBinopBuilder b(this, jsgraph()->javascript()->Add(hint),
+      JSSpeculativeBinopBuilder b(this, jsgraph()->javascript()->Add(feedback),
                                   operand, jsgraph()->SmiConstant(1), effect,
                                   control, slot);
       node = b.TryBuildNumberBinop();
@@ -315,9 +320,9 @@ JSTypeHintLowering::LoweringResult JSTypeHintLowering::ReduceUnaryOperation(
     case IrOpcode::kJSNegate: {
       // Lower to a speculative multiplication with -1 if we have some kind of
       // Number feedback.
-      JSSpeculativeBinopBuilder b(this, jsgraph()->javascript()->Multiply(),
-                                  operand, jsgraph()->SmiConstant(-1), effect,
-                                  control, slot);
+      JSSpeculativeBinopBuilder b(
+          this, jsgraph()->javascript()->Multiply(feedback), operand,
+          jsgraph()->SmiConstant(-1), effect, control, slot);
       node = b.TryBuildNumberBinop();
       if (!node) {
         if (GetBinaryOperationHint(slot) == BinaryOperationHint::kBigInt) {
@@ -508,9 +513,9 @@ JSTypeHintLowering::ReduceGetIteratorOperation(const Operator* op,
 }
 
 JSTypeHintLowering::LoweringResult JSTypeHintLowering::ReduceLoadNamedOperation(
-    const Operator* op, Node* receiver, Node* effect, Node* control,
-    FeedbackSlot slot) const {
-  DCHECK_EQ(IrOpcode::kJSLoadNamed, op->opcode());
+    const Operator* op, Node* effect, Node* control, FeedbackSlot slot) const {
+  DCHECK(op->opcode() == IrOpcode::kJSLoadNamed ||
+         op->opcode() == IrOpcode::kJSLoadNamedFromSuper);
   if (Node* node = TryBuildSoftDeopt(
           slot, effect, control,
           DeoptimizeReason::kInsufficientTypeFeedbackForGenericNamedAccess)) {
@@ -569,8 +574,8 @@ Node* JSTypeHintLowering::TryBuildSoftDeopt(FeedbackSlot slot, Node* effect,
 
   FeedbackSource source(feedback_vector(), slot);
   // TODO(mythria): Think of adding flags to specify if we need a soft deopt for
-  // calls instead of using FLAG_turboprop here.
-  if (FLAG_turboprop &&
+  // calls instead of using broker()->is_turboprop() here.
+  if (broker()->is_turboprop() &&
       broker()->GetFeedbackSlotKind(source) == FeedbackSlotKind::kCall) {
     return nullptr;
   }

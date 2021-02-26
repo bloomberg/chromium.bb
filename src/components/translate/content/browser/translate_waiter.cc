@@ -9,7 +9,7 @@ namespace translate {
 TranslateWaiter::TranslateWaiter(ContentTranslateDriver* translate_driver,
                                  WaitEvent wait_event)
     : wait_event_(wait_event) {
-  scoped_observer_.Add(translate_driver);
+  scoped_observation_.Observe(translate_driver);
 }
 
 TranslateWaiter::~TranslateWaiter() = default;
@@ -29,6 +29,11 @@ void TranslateWaiter::OnPageTranslated(const std::string& original_lang,
                                        const std::string& translated_lang,
                                        TranslateErrors::Type error_type) {
   if (wait_event_ == WaitEvent::kPageTranslated)
+    run_loop_.Quit();
+}
+
+void TranslateWaiter::OnIsPageTranslatedChanged(content::WebContents* source) {
+  if (wait_event_ == WaitEvent::kIsPageTranslatedChanged)
     run_loop_.Quit();
 }
 

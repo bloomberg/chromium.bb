@@ -14,30 +14,64 @@ namespace blink {
 
 namespace {
 
-inline bool ShouldSetFirstAndLastForNode() {
-  return RuntimeEnabledFeatures::LayoutNGFragmentTraversalEnabled();
+#if DCHECK_IS_ON()
+void CheckNoItemsAreAssociated(const NGPhysicalBoxFragment& fragment) {
+  if (const NGFragmentItems* fragment_items = fragment.Items()) {
+    for (const NGFragmentItem& item : fragment_items->Items()) {
+      if (item.Type() == NGFragmentItem::kLine)
+        continue;
+      if (const LayoutObject* layout_object = item.GetLayoutObject())
+        DCHECK(!layout_object->FirstInlineFragmentItemIndex());
+    }
+  }
 }
+
+void CheckIsLast(const NGFragmentItem& item) {
+  if (const NGPhysicalBoxFragment* fragment = item.BoxFragment()) {
+    if (!fragment->IsInline()) {
+      DCHECK(fragment->IsFloating());
+      DCHECK_EQ(item.IsLastForNode(), !fragment->BreakToken());
+    }
+  }
+}
+#endif
 
 }  // namespace
 
 NGFragmentItems::NGFragmentItems(NGFragmentItemsBuilder* builder)
     : text_content_(std::move(builder->text_content_)),
       first_line_text_content_(std::move(builder->first_line_text_content_)),
-      size_(builder->items_.size()) {
+      size_(builder->items_.size()),
+      size_of_earlier_fragments_(0) {
   NGFragmentItemsBuilder::ItemWithOffsetList& source_items = builder->items_;
-  for (unsigned i = 0; i < size_; ++i) {
+  for (wtf_size_t i = 0; i < size_; ++i) {
     // Call the move constructor to move without |AddRef|. Items in
     // |NGFragmentItemsBuilder| are not used after |this| was constructed.
-    DCHECK(source_items[i].item);
-    new (&items_[i])
-        scoped_refptr<const NGFragmentItem>(std::move(source_items[i].item));
-    DCHECK(!source_items[i].item);  // Ensure the source was moved.
+    new (&items_[i]) NGFragmentItem(std::move(source_items[i].item));
+  }
+}
+
+NGFragmentItems::NGFragmentItems(const NGFragmentItems& other)
+    : text_content_(other.text_content_),
+      first_line_text_content_(other.first_line_text_content_),
+      size_(other.size_),
+      size_of_earlier_fragments_(other.size_of_earlier_fragments_) {
+  for (wtf_size_t i = 0; i < size_; ++i) {
+    const auto& other_item = other.items_[i];
+    new (&items_[i]) NGFragmentItem(other_item);
+
+    // The |other| object is likely going to be freed after this copy. Detach
+    // any |AbstractInlineTextBox|, as they store a pointer to an individual
+    // |NGFragmentItem|.
+    if (auto* layout_text =
+            DynamicTo<LayoutText>(other_item.GetMutableLayoutObject()))
+      layout_text->DetachAbstractInlineTextBoxesIfNeeded();
   }
 }
 
 NGFragmentItems::~NGFragmentItems() {
   for (unsigned i = 0; i < size_; ++i)
-    items_[i]->Release();
+    items_[i].~NGFragmentItem();
 }
 
 bool NGFragmentItems::IsSubSpan(const Span& span) const {
@@ -47,63 +81,95 @@ bool NGFragmentItems::IsSubSpan(const Span& span) const {
 
 void NGFragmentItems::FinalizeAfterLayout(
     const Vector<scoped_refptr<const NGLayoutResult>, 1>& results) {
-  HashMap<const LayoutObject*, const NGFragmentItem*> first_and_last;
+#if DCHECK_IS_ON()
+  if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
+    for (const auto& result : results) {
+      CheckNoItemsAreAssociated(
+          To<NGPhysicalBoxFragment>(result->PhysicalFragment()));
+    }
+  }
+#endif
+  struct LastItem {
+    const NGFragmentItem* item;
+    wtf_size_t fragment_id;
+    wtf_size_t item_index;
+  };
+  HashMap<const LayoutObject*, LastItem> last_items;
+  wtf_size_t item_index = 0;
   for (const auto& result : results) {
     const auto& fragment =
         To<NGPhysicalBoxFragment>(result->PhysicalFragment());
-    const NGFragmentItems* current = fragment.Items();
-    if (UNLIKELY(!current))
+    const NGFragmentItems* fragment_items = fragment.Items();
+    if (UNLIKELY(!fragment_items))
       continue;
-    HashMap<const LayoutObject*, wtf_size_t> last_fragment_map;
-    const Span items = current->Items();
-    wtf_size_t index = 0;
-    for (const scoped_refptr<const NGFragmentItem>& item : items) {
-      ++index;
-      if (item->Type() == NGFragmentItem::kLine) {
-        DCHECK_EQ(item->DeltaToNextForSameLayoutObject(), 0u);
+
+    fragment_items->size_of_earlier_fragments_ = item_index;
+    const Span items = fragment_items->Items();
+    for (const NGFragmentItem& item : items) {
+      ++item_index;
+      if (item.Type() == NGFragmentItem::kLine) {
+        DCHECK_EQ(item.DeltaToNextForSameLayoutObject(), 0u);
         continue;
       }
-      LayoutObject* const layout_object = item->GetMutableLayoutObject();
-      if (UNLIKELY(layout_object->IsFloating())) {
-        DCHECK_EQ(item->DeltaToNextForSameLayoutObject(), 0u);
-        continue;
-      }
+      LayoutObject* const layout_object = item.GetMutableLayoutObject();
       DCHECK(!layout_object->IsOutOfFlowPositioned());
-      DCHECK(layout_object->IsInLayoutNGInlineFormattingContext()) << *item;
-      item->SetDeltaToNextForSameLayoutObject(0);
+      DCHECK(layout_object->IsInLayoutNGInlineFormattingContext());
 
-      if (ShouldSetFirstAndLastForNode()) {
-        bool is_first_for_node =
-            first_and_last.Set(layout_object, item.get()).is_new_entry;
-        item->SetIsFirstForNode(is_first_for_node);
-        item->SetIsLastForNode(false);
+      item.SetDeltaToNextForSameLayoutObject(0);
+      if (UNLIKELY(layout_object->IsFloating())) {
+        // Fragments that aren't really on a line, such as floats, will have
+        // block break tokens if they continue in a subsequent fragmentainer, so
+        // just check that. Floats in particular will continue as regular box
+        // fragment children in subsequent fragmentainers, i.e. they will not be
+        // fragment items (even if we're in an inline formatting context). So
+        // we're not going to find the last fragment by just looking for items.
+        DCHECK(item.BoxFragment() && item.BoxFragment()->IsFloating());
+        item.SetIsLastForNode(!item.BoxFragment()->BreakToken());
+      } else {
+        DCHECK(layout_object->IsInline());
+        // This will be updated later if following fragments are found.
+        item.SetIsLastForNode(true);
       }
 
-      // TODO(layout-dev): Make this work for multiple box fragments (block
-      // fragmentation).
-      if (!fragment.IsFirstForNode())
-        continue;
-
-      auto insert_result = last_fragment_map.insert(layout_object, index);
-      if (insert_result.is_new_entry) {
-        DCHECK_EQ(layout_object->FirstInlineFragmentItemIndex(), 0u);
-        layout_object->SetFirstInlineFragmentItemIndex(index);
+      // If this is the first fragment, associate with |layout_object|.
+      const auto last_item_result =
+          last_items.insert(layout_object, LastItem{&item, 0, item_index});
+      const bool is_first = last_item_result.is_new_entry;
+      if (is_first) {
+        item.SetFragmentId(0);
+#if DCHECK_IS_ON()
+        if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled())
+          DCHECK_EQ(layout_object->FirstInlineFragmentItemIndex(), 0u);
+#endif
+        layout_object->SetFirstInlineFragmentItemIndex(item_index);
         continue;
       }
-      const wtf_size_t last_index = insert_result.stored_value->value;
-      insert_result.stored_value->value = index;
-      DCHECK_GT(last_index, 0u) << *item;
-      DCHECK_LT(last_index, items.size());
-      DCHECK_LT(last_index, index);
-      DCHECK_EQ(items[last_index - 1]->DeltaToNextForSameLayoutObject(), 0u);
-      items[last_index - 1]->SetDeltaToNextForSameLayoutObject(index -
-                                                               last_index);
+
+      // Update the last item for |layout_object|.
+      LastItem* last = &last_item_result.stored_value->value;
+      const NGFragmentItem* last_item = last->item;
+      DCHECK_EQ(last_item->DeltaToNextForSameLayoutObject(), 0u);
+      const wtf_size_t last_index = last->item_index;
+      DCHECK_GT(last_index, 0u);
+      DCHECK_LT(last_index, fragment_items->EndItemIndex());
+      DCHECK_LT(last_index, item_index);
+      last_item->SetDeltaToNextForSameLayoutObject(item_index - last_index);
+      if (!layout_object->IsFloating())
+        last_item->SetIsLastForNode(false);
+#if DCHECK_IS_ON()
+      CheckIsLast(*last_item);
+#endif
+
+      // Update this item.
+      item.SetFragmentId(++last->fragment_id);
+      last->item = &item;
+      last->item_index = item_index;
     }
   }
-  if (!ShouldSetFirstAndLastForNode())
-    return;
-  for (const auto& iter : first_and_last)
-    iter.value->SetIsLastForNode(true);
+#if DCHECK_IS_ON()
+  for (const auto& iter : last_items)
+    CheckIsLast(*iter.value.item);
+#endif
 }
 
 void NGFragmentItems::ClearAssociatedFragments(LayoutObject* container) {
@@ -113,7 +179,7 @@ void NGFragmentItems::ClearAssociatedFragments(LayoutObject* container) {
   for (LayoutObject* child = container->SlowFirstChild(); child;
        child = child->NextSibling()) {
     if (UNLIKELY(!child->IsInLayoutNGInlineFormattingContext() ||
-                 child->IsFloatingOrOutOfFlowPositioned()))
+                 child->IsOutOfFlowPositioned()))
       continue;
     child->ClearFirstInlineFragmentItemIndex();
 
@@ -123,6 +189,12 @@ void NGFragmentItems::ClearAssociatedFragments(LayoutObject* container) {
     if (child->IsLayoutInline())
       ClearAssociatedFragments(child);
   }
+#if DCHECK_IS_ON()
+  if (const auto* box = DynamicTo<LayoutBox>(container)) {
+    for (const NGPhysicalBoxFragment& fragment : box->PhysicalFragments())
+      CheckNoItemsAreAssociated(fragment);
+  }
+#endif
 }
 
 // static
@@ -135,9 +207,10 @@ bool NGFragmentItems::CanReuseAll(NGInlineCursor* cursor) {
   return true;
 }
 
-const NGFragmentItem* NGFragmentItems::EndOfReusableItems() const {
+const NGFragmentItem* NGFragmentItems::EndOfReusableItems(
+    const NGPhysicalBoxFragment& container) const {
   const NGFragmentItem* last_line_start = &front();
-  for (NGInlineCursor cursor(*this); cursor;) {
+  for (NGInlineCursor cursor(container, *this); cursor;) {
     const NGFragmentItem& item = *cursor.Current();
     if (item.IsDirty())
       return &item;
@@ -178,127 +251,121 @@ const NGFragmentItem* NGFragmentItems::EndOfReusableItems() const {
   return nullptr;  // all items are reusable.
 }
 
-bool NGFragmentItems::TryDirtyFirstLineFor(
-    const LayoutObject& layout_object) const {
-  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
-  DCHECK(!layout_object.IsFloatingOrOutOfFlowPositioned());
-  if (wtf_size_t index = layout_object.FirstInlineFragmentItemIndex()) {
-    const NGFragmentItem& item = *Items()[index - 1];
-    DCHECK_EQ(&layout_object, item.GetLayoutObject());
-    item.SetDirty();
-    return true;
-  }
-  return false;
+// static
+bool NGFragmentItems::TryDirtyFirstLineFor(const LayoutObject& layout_object,
+                                           const LayoutBlockFlow& container) {
+  DCHECK(layout_object.IsDescendantOf(&container));
+  NGInlineCursor cursor(container);
+  cursor.MoveTo(layout_object);
+  if (!cursor)
+    return false;
+  DCHECK(cursor.Current().Item());
+  DCHECK_EQ(&layout_object, cursor.Current().GetLayoutObject());
+  cursor.Current()->SetDirty();
+  return true;
 }
 
-bool NGFragmentItems::TryDirtyLastLineFor(
-    const LayoutObject& layout_object) const {
-  NGInlineCursor cursor(*this);
+// static
+bool NGFragmentItems::TryDirtyLastLineFor(const LayoutObject& layout_object,
+                                          const LayoutBlockFlow& container) {
+  DCHECK(layout_object.IsDescendantOf(&container));
+  NGInlineCursor cursor(container);
   cursor.MoveTo(layout_object);
   if (!cursor)
     return false;
   cursor.MoveToLastForSameLayoutObject();
   DCHECK(cursor.Current().Item());
-  const NGFragmentItem& item = *cursor.Current().Item();
-  DCHECK_EQ(&layout_object, item.GetLayoutObject());
-  item.SetDirty();
+  DCHECK_EQ(&layout_object, cursor.Current().GetLayoutObject());
+  cursor.Current()->SetDirty();
   return true;
 }
 
+// static
 void NGFragmentItems::DirtyLinesFromChangedChild(
-    const LayoutObject* child) const {
-  if (UNLIKELY(!child)) {
-    front().SetDirty();
-    return;
+    const LayoutObject& child,
+    const LayoutBlockFlow& container) {
+  if (child.IsInLayoutNGInlineFormattingContext() &&
+      !child.IsFloatingOrOutOfFlowPositioned()) {
+    if (TryDirtyFirstLineFor(child, container))
+      return;
   }
-
-  if (child->IsInLayoutNGInlineFormattingContext() &&
-      !child->IsFloatingOrOutOfFlowPositioned() && TryDirtyFirstLineFor(*child))
-    return;
 
   // If |child| is new, or did not generate fragments, mark the fragments for
   // previous |LayoutObject| instead.
-  while (true) {
-    if (const LayoutObject* previous = child->PreviousSibling()) {
-      while (const LayoutInline* layout_inline =
-                 ToLayoutInlineOrNull(previous)) {
+  for (const LayoutObject* current = &child;;) {
+    if (const LayoutObject* previous = current->PreviousSibling()) {
+      while (const auto* layout_inline = DynamicTo<LayoutInline>(previous)) {
         if (const LayoutObject* last_child = layout_inline->LastChild())
           previous = last_child;
         else
           break;
       }
-      child = previous;
-      if (UNLIKELY(child->IsFloatingOrOutOfFlowPositioned()))
+      current = previous;
+      if (UNLIKELY(current->IsFloatingOrOutOfFlowPositioned()))
         continue;
-      if (child->IsInLayoutNGInlineFormattingContext() &&
-          TryDirtyLastLineFor(*child))
-        return;
+      if (current->IsInLayoutNGInlineFormattingContext()) {
+        if (TryDirtyLastLineFor(*current, container))
+          return;
+      }
       continue;
     }
 
-    child = child->Parent();
-    if (!child || child->IsLayoutBlockFlow()) {
-      front().SetDirty();
+    current = current->Parent();
+    if (!current || current->IsLayoutBlockFlow()) {
+      DirtyFirstItem(container);
       return;
     }
-    DCHECK(child->IsLayoutInline());
-    if (child->IsInLayoutNGInlineFormattingContext() &&
-        TryDirtyFirstLineFor(*child))
-      return;
+    DCHECK(current->IsLayoutInline());
+    if (current->IsInLayoutNGInlineFormattingContext()) {
+      if (TryDirtyFirstLineFor(*current, container))
+        return;
+    }
   }
 }
 
-void NGFragmentItems::DirtyLinesFromNeedsLayout(
-    const LayoutBlockFlow* container) const {
-  DCHECK_EQ(this, container->FragmentItems());
-  for (LayoutObject* layout_object = container->FirstChild(); layout_object;) {
-    if (layout_object->IsText()) {
-      if (layout_object->SelfNeedsLayout()) {
-        DirtyLinesFromChangedChild(layout_object);
-        return;
-      }
-    } else if (auto* layout_inline = ToLayoutInlineOrNull(layout_object)) {
-      if (layout_object->SelfNeedsLayout()) {
-        DirtyLinesFromChangedChild(layout_object);
-        return;
-      }
-      if (layout_object->NormalChildNeedsLayout() ||
-          layout_object->PosChildNeedsLayout()) {
-        if (LayoutObject* child = layout_inline->FirstChild()) {
-          layout_object = child;
-          continue;
-        }
-      }
-    } else {
-      if (layout_object->NeedsLayout()) {
-        DirtyLinesFromChangedChild(layout_object);
-        return;
-      }
+// static
+void NGFragmentItems::DirtyFirstItem(const LayoutBlockFlow& container) {
+  for (const NGPhysicalBoxFragment& fragment : container.PhysicalFragments()) {
+    if (const NGFragmentItems* items = fragment.Items()) {
+      items->front().SetDirty();
+      return;
     }
+  }
+}
 
-    layout_object = layout_object->NextInPreOrderAfterChildren(container);
+// static
+void NGFragmentItems::DirtyLinesFromNeedsLayout(
+    const LayoutBlockFlow& container) {
+  DCHECK(std::any_of(container.PhysicalFragments().begin(),
+                     container.PhysicalFragments().end(),
+                     [](const NGPhysicalBoxFragment& fragment) {
+                       return fragment.HasItems();
+                     }));
+
+  // Mark dirty for the first top-level child that has |NeedsLayout|.
+  //
+  // TODO(kojii): We could mark first descendant to increase reuse
+  // opportunities. Doing this complicates the logic, especially when culled
+  // inline is involved, and common case is to append to large IFC. Choose
+  // simpler logic and faster to check over more reuse opportunities.
+  const auto writing_mode = container.StyleRef().GetWritingMode();
+  for (LayoutObject* child = container.FirstChild(); child;
+       child = child->NextSibling()) {
+    // NeedsLayout is not helpful for an orthogonal writing-mode root because
+    // its NeedsLayout flag is cleared during the ComputeMinMaxSizes() step of
+    // the container.
+    if (child->NeedsLayout() ||
+        !IsParallelWritingMode(writing_mode,
+                               child->StyleRef().GetWritingMode())) {
+      DirtyLinesFromChangedChild(*child, container);
+      return;
+    }
   }
 }
 
 // static
 void NGFragmentItems::LayoutObjectWillBeMoved(
     const LayoutObject& layout_object) {
-  if (UNLIKELY(layout_object.IsInsideFlowThread())) {
-    // TODO(crbug.com/829028): Make NGInlineCursor handle block
-    // fragmentation. For now, perform a slow walk here manually.
-    const LayoutBlock& container = *layout_object.ContainingBlock();
-    for (wtf_size_t idx = 0; idx < container.PhysicalFragmentCount(); idx++) {
-      const NGPhysicalBoxFragment& fragment =
-          *container.GetPhysicalFragment(idx);
-      DCHECK(fragment.Items());
-      for (const auto& item : fragment.Items()->Items()) {
-        if (item->GetLayoutObject() == &layout_object)
-          item->LayoutObjectWillBeMoved();
-      }
-    }
-    return;
-  }
-
   NGInlineCursor cursor;
   cursor.MoveTo(layout_object);
   for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
@@ -310,22 +377,6 @@ void NGFragmentItems::LayoutObjectWillBeMoved(
 // static
 void NGFragmentItems::LayoutObjectWillBeDestroyed(
     const LayoutObject& layout_object) {
-  if (UNLIKELY(layout_object.IsInsideFlowThread())) {
-    // TODO(crbug.com/829028): Make NGInlineCursor handle block
-    // fragmentation. For now, perform a slow walk here manually.
-    const LayoutBlock& container = *layout_object.ContainingBlock();
-    for (wtf_size_t idx = 0; idx < container.PhysicalFragmentCount(); idx++) {
-      const NGPhysicalBoxFragment& fragment =
-          *container.GetPhysicalFragment(idx);
-      DCHECK(fragment.Items());
-      for (const auto& item : fragment.Items()->Items()) {
-        if (item->GetLayoutObject() == &layout_object)
-          item->LayoutObjectWillBeDestroyed();
-      }
-    }
-    return;
-  }
-
   NGInlineCursor cursor;
   cursor.MoveTo(layout_object);
   for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
@@ -333,5 +384,12 @@ void NGFragmentItems::LayoutObjectWillBeDestroyed(
     item->LayoutObjectWillBeDestroyed();
   }
 }
+
+#if DCHECK_IS_ON()
+void NGFragmentItems::CheckAllItemsAreValid() const {
+  for (const NGFragmentItem& item : Items())
+    DCHECK(!item.IsLayoutObjectDestroyedOrMoved());
+}
+#endif
 
 }  // namespace blink

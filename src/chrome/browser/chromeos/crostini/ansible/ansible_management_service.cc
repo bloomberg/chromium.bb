@@ -22,6 +22,9 @@
 
 namespace crostini {
 
+const char kCrostiniDefaultAnsibleVersion[] =
+    "ansible;2.2.1.0-2+deb9u1;all;debian-stable-main";
+
 namespace {
 
 chromeos::CiceroneClient* GetCiceroneClient() {
@@ -62,8 +65,7 @@ void AnsibleManagementService::ConfigureDefaultContainer(
   CrostiniManager::GetForProfile(profile_)
       ->AddLinuxPackageOperationProgressObserver(this);
   CrostiniManager::GetForProfile(profile_)->InstallLinuxPackageFromApt(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
-      kCrostiniDefaultAnsibleVersion,
+      ContainerId::GetDefault(), kCrostiniDefaultAnsibleVersion,
       base::BindOnce(
           &AnsibleManagementService::OnInstallAnsibleInDefaultContainer,
           weak_ptr_factory_.GetWeakPtr()));

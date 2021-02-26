@@ -1164,7 +1164,7 @@ namespace {
         REPORTER_ASSERT(reporter, intersection.isEmpty());
         REPORTER_ASSERT(reporter, SkRRectPriv::ConservativeIntersect(b, a).isEmpty());
     }
-} // anonymous
+}  // namespace
 
 static void test_conservative_intersection(skiatest::Reporter* reporter) {
     // Helper to inline making an inset round rect
@@ -1206,6 +1206,22 @@ static void test_conservative_intersection(skiatest::Reporter* reporter) {
     // is returned unmodified when intersected.
     verify_success(reporter, a, make_inset(a, 1.f, 1.f), kB, kB, kB, kB);
     verify_success(reporter, make_inset(b, 2.f, 2.f), b, kA, kA, kA, kA);
+
+    // A rectangle exactly matching the corners of the rrect bounds keeps the rrect radii,
+    // regardless of whether or not it's the 1st or 2nd arg to ConservativeIntersect.
+    SkRRect c = SkRRect::MakeRectXY({0.f, 0.f, 10.f, 10.f}, 2.f, 2.f);
+    SkRRect cT = SkRRect::MakeRect({0.f, 0.f, 10.f, 5.f});
+    verify_success(reporter, c, cT, kA, kA, kRect, kRect);
+    verify_success(reporter, cT, c, kB, kB, kRect, kRect);
+    SkRRect cB = SkRRect::MakeRect({0.f, 5.f, 10.f, 10.});
+    verify_success(reporter, c, cB, kRect, kRect, kA, kA);
+    verify_success(reporter, cB, c, kRect, kRect, kB, kB);
+    SkRRect cL = SkRRect::MakeRect({0.f, 0.f, 5.f, 10.f});
+    verify_success(reporter, c, cL, kA, kRect, kRect, kA);
+    verify_success(reporter, cL, c, kB, kRect, kRect, kB);
+    SkRRect cR = SkRRect::MakeRect({5.f, 0.f, 10.f, 10.f});
+    verify_success(reporter, c, cR, kRect, kA, kA, kRect);
+    verify_success(reporter, cR, c, kRect, kB, kB, kRect);
 
     // Failed intersection operations:
 
@@ -1266,4 +1282,36 @@ DEF_TEST(RoundRect, reporter) {
     test_read(reporter);
     test_inner_bounds(reporter);
     test_conservative_intersection(reporter);
+}
+
+DEF_TEST(RRect_fuzzer_regressions, r) {
+    {
+        unsigned char buf[] = {
+            0x0a, 0x00, 0x00, 0xff, 0x00, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f,
+            0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f,
+            0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f,
+            0x7f, 0x7f, 0x7f, 0x02, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x02, 0x00
+        };
+        REPORTER_ASSERT(r, sizeof(buf) == SkRRect{}.readFromMemory(buf, sizeof(buf)));
+    }
+
+    {
+        unsigned char buf[] = {
+            0x5d, 0xff, 0xff, 0x5d, 0x0a, 0x60, 0x0a, 0x0a, 0x0a, 0x7e, 0x0a, 0x5a,
+            0x0a, 0x12, 0x3a, 0x3a, 0x3a, 0x3a, 0x3a, 0x3a, 0x3a, 0x3a, 0x3a, 0x3a,
+            0x3a, 0x3a, 0x3a, 0x3a, 0x3a, 0x3a, 0x3a, 0x3a, 0x00, 0x00, 0x00, 0x0a,
+            0x0a, 0x0a, 0x0a, 0x26, 0x0a, 0x0a, 0x0a, 0x0a, 0xff, 0xff, 0x0a, 0x0a
+        };
+        REPORTER_ASSERT(r, sizeof(buf) == SkRRect{}.readFromMemory(buf, sizeof(buf)));
+    }
+
+    {
+        unsigned char buf[] = {
+            0xfe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0e, 0x04, 0xdd, 0xdd, 0x15,
+            0xfe, 0x00, 0x00, 0x04, 0x05, 0x7e, 0x00, 0x00, 0x00, 0xff, 0x08, 0x04,
+            0xff, 0xff, 0xfe, 0xfe, 0xff, 0x32, 0x32, 0x32, 0x32, 0x00, 0x32, 0x32,
+            0x04, 0xdd, 0x3d, 0x1c, 0xfe, 0x89, 0x04, 0x0a, 0x0e, 0x05, 0x7e, 0x0a
+        };
+        REPORTER_ASSERT(r, sizeof(buf) == SkRRect{}.readFromMemory(buf, sizeof(buf)));
+    }
 }

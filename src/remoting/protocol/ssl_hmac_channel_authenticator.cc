@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -245,10 +244,10 @@ SslHmacChannelAuthenticator::~SslHmacChannelAuthenticator() {
 
 void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     std::unique_ptr<P2PStreamSocket> socket,
-    const DoneCallback& done_callback) {
+    DoneCallback done_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  done_callback_ = done_callback;
+  done_callback_ = std::move(done_callback);
 
   int result;
   if (is_ssl_server()) {
@@ -286,7 +285,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
         socket_context_.transport_security_state.get(),
         socket_context_.ct_verifier.get(),
         socket_context_.ct_policy_enforcer.get(),
-        nullptr /* no session caching */);
+        nullptr /* no session caching */, nullptr /* no sct auditing */);
 
     net::SSLConfig ssl_config;
     ssl_config.require_ecdhe = true;

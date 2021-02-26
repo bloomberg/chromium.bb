@@ -29,12 +29,17 @@ class BackgroundCompileTaskTest : public TestWithNativeContext {
  public:
   BackgroundCompileTaskTest() : allocator_(isolate()->allocator()) {}
   ~BackgroundCompileTaskTest() override = default;
+  BackgroundCompileTaskTest(const BackgroundCompileTaskTest&) = delete;
+  BackgroundCompileTaskTest& operator=(const BackgroundCompileTaskTest&) =
+      delete;
 
   AccountingAllocator* allocator() { return allocator_; }
 
   static void SetUpTestCase() {
     CHECK_NULL(save_flags_);
     save_flags_ = new SaveFlags();
+    // TODO(leszeks): Support background finalization in compiler dispatcher.
+    FLAG_finalize_streaming_on_background = false;
     TestWithNativeContext::SetUpTestCase();
   }
 
@@ -58,10 +63,11 @@ class BackgroundCompileTaskTest : public TestWithNativeContext {
 
     const AstRawString* function_name =
         ast_value_factory->GetOneByteString("f");
-    DeclarationScope* script_scope = new (outer_parse_info->zone())
-        DeclarationScope(outer_parse_info->zone(), ast_value_factory);
+    DeclarationScope* script_scope =
+        outer_parse_info->zone()->New<DeclarationScope>(
+            outer_parse_info->zone(), ast_value_factory);
     DeclarationScope* function_scope =
-        new (outer_parse_info->zone()) DeclarationScope(
+        outer_parse_info->zone()->New<DeclarationScope>(
             outer_parse_info->zone(), script_scope, FUNCTION_SCOPE);
     function_scope->set_start_position(shared->StartPosition());
     function_scope->set_end_position(shared->EndPosition());
@@ -84,8 +90,6 @@ class BackgroundCompileTaskTest : public TestWithNativeContext {
  private:
   AccountingAllocator* allocator_;
   static SaveFlags* save_flags_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundCompileTaskTest);
 };
 
 SaveFlags* BackgroundCompileTaskTest::save_flags_ = nullptr;
@@ -170,6 +174,8 @@ class CompileTask : public Task {
   CompileTask(BackgroundCompileTask* task, base::Semaphore* semaphore)
       : task_(task), semaphore_(semaphore) {}
   ~CompileTask() override = default;
+  CompileTask(const CompileTask&) = delete;
+  CompileTask& operator=(const CompileTask&) = delete;
 
   void Run() override {
     task_->Run();
@@ -179,7 +185,6 @@ class CompileTask : public Task {
  private:
   BackgroundCompileTask* task_;
   base::Semaphore* semaphore_;
-  DISALLOW_COPY_AND_ASSIGN(CompileTask);
 };
 
 TEST_F(BackgroundCompileTaskTest, CompileOnBackgroundThread) {

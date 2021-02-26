@@ -9,6 +9,7 @@
 #include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream.h"
+#include "net/third_party/quiche/src/quic/core/quic_tag.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
@@ -39,6 +40,9 @@ void QuicServerSessionBase::Initialize() {
   crypto_stream_ =
       CreateQuicCryptoServerStream(crypto_config_, compressed_certs_cache_);
   QuicSpdySession::Initialize();
+  if (GetQuicRestartFlag(quic_enable_zero_rtt_for_tls_v2)) {
+    SendSettingsToCryptoStream();
+  }
 }
 
 void QuicServerSessionBase::OnConfigNegotiated() {
@@ -46,6 +50,12 @@ void QuicServerSessionBase::OnConfigNegotiated() {
 
   if (!config()->HasReceivedConnectionOptions()) {
     return;
+  }
+
+  // Disable server push if peer sends the corresponding connection option.
+  if (!version().UsesHttp3() &&
+      ContainsQuicTag(config()->ReceivedConnectionOptions(), kQNSP)) {
+    OnSetting(spdy::SETTINGS_ENABLE_PUSH, 0);
   }
 
   // Enable bandwidth resumption if peer sent correct connection options.
@@ -258,6 +268,21 @@ int32_t QuicServerSessionBase::BandwidthToCachedParameterBytesPerSecond(
     const QuicBandwidth& bandwidth) {
   return static_cast<int32_t>(std::min<int64_t>(
       bandwidth.ToBytesPerSecond(), std::numeric_limits<uint32_t>::max()));
+}
+
+void QuicServerSessionBase::SendSettingsToCryptoStream() {
+  if (!version().UsesTls()) {
+    return;
+  }
+  std::unique_ptr<char[]> buffer;
+  QuicByteCount buffer_size =
+      HttpEncoder::SerializeSettingsFrame(settings(), &buffer);
+
+  std::unique_ptr<ApplicationState> serialized_settings =
+      std::make_unique<ApplicationState>(buffer.get(),
+                                         buffer.get() + buffer_size);
+  GetMutableCryptoStream()->SetServerApplicationStateForResumption(
+      std::move(serialized_settings));
 }
 
 }  // namespace quic

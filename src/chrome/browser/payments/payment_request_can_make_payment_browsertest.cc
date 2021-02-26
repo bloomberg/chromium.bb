@@ -180,10 +180,41 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
   const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
   AddCreditCard(card);
 
-  CallCanMakePayment();
+  ResetEventWaiterForEventSequence({TestEvent::kConnectionTerminated});
+  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "buy();"));
+  WaitForObservedEvent();
   ExpectBodyContains("false");
+}
 
-  CallHasEnrolledInstrument();
+// Pages without a valid SSL certificate always get NotSupported error from
+// .show().
+IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest, Show_InvalidSSL) {
+  NavigateTo("/payment_request_can_make_payment_query_test.html");
+  test_controller()->SetValidSsl(false);
+
+  const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
+  AddCreditCard(card);
+
+  ResetEventWaiterForEventSequence({TestEvent::kConnectionTerminated});
+  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "show();"));
+  WaitForObservedEvent();
+  ExpectBodyContains("NotSupportedError: Invalid SSL certificate");
+}
+
+// Pages without a valid SSL certificate always get "false" from
+// .hasEnrolledInstrument().
+IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
+                       HasEnrolledInstrument_InvalidSSL) {
+  NavigateTo("/payment_request_can_make_payment_query_test.html");
+  test_controller()->SetValidSsl(false);
+
+  const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
+  AddCreditCard(card);
+
+  ResetEventWaiterForEventSequence({TestEvent::kConnectionTerminated});
+  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(),
+                                     "hasEnrolledInstrument();"));
+  WaitForObservedEvent();
   ExpectBodyContains("false");
 }
 
@@ -192,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
                        CanMakePayment_Supported_InIncognitoMode) {
   NavigateTo("/payment_request_can_make_payment_query_test.html");
-  test_controller()->SetIncognito(true);
+  test_controller()->SetOffTheRecord(true);
 
   const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
   AddCreditCard(card);
@@ -224,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
                        CanMakePayment_NotSupported_InIncognitoMode) {
   NavigateTo("/payment_request_can_make_payment_query_test.html");
-  test_controller()->SetIncognito(true);
+  test_controller()->SetOffTheRecord(true);
 
   const autofill::CreditCard card = autofill::test::GetCreditCard2();  // Amex.
   AddCreditCard(card);
@@ -344,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest,
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest,
                        QueryQuotaInIncognito) {
   NavigateTo("/payment_request_can_make_payment_query_cc_test.html");
-  test_controller()->SetIncognito(true);
+  test_controller()->SetOffTheRecord(true);
 
   CallHasEnrolledInstrument(/*visa=*/true);
   ExpectBodyContains("false");
@@ -462,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForBasicCardsInIncognito) {
   NavigateTo("/payment_request_payment_method_identifier_test.html");
-  test_controller()->SetIncognito(true);
+  test_controller()->SetOffTheRecord(true);
 
   // User starts off without having a visa card.
   CallCanMakePayment(CheckFor::BASIC_VISA);
@@ -490,40 +521,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
   ExpectBodyContains("true");
   CallHasEnrolledInstrument(CheckFor::BASIC_CARD);
   ExpectBodyContains("NotAllowedError");
-}
-
-class PaymentRequestCanMakePaymentQueryPMITestWithPaymentQuota
-    : public PaymentRequestCanMakePaymentQueryPMITest {
- public:
-  PaymentRequestCanMakePaymentQueryPMITestWithPaymentQuota() {
-    feature_list_.InitAndEnableFeature(
-        features::kWebPaymentsPerMethodCanMakePaymentQuota);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// If the device does not have any payment apps installed, canMakePayment() and
-// hasEnrolledInstrument() should return false for them.
-IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITestWithPaymentQuota,
-                       QueryQuotaForPaymentApps) {
-  NavigateTo("/payment_request_payment_method_identifier_test.html");
-
-  CallCanMakePayment(CheckFor::ALICE_PAY);
-  ExpectBodyContains("false");
-  CallHasEnrolledInstrument(CheckFor::ALICE_PAY);
-  ExpectBodyContains("false");
-
-  CallCanMakePayment(CheckFor::BOB_PAY);
-  ExpectBodyContains("false");
-  CallHasEnrolledInstrument(CheckFor::ALICE_PAY);
-  ExpectBodyContains("false");
-
-  CallCanMakePayment(CheckFor::ALICE_PAY);
-  ExpectBodyContains("false");
-  CallHasEnrolledInstrument(CheckFor::ALICE_PAY);
-  ExpectBodyContains("false");
 }
 
 // If the device does not have any payment apps installed,
@@ -566,101 +563,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
   ExpectBodyContains("true");
   CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_BASIC_CARD);
   ExpectBodyContains("NotAllowedError");
-}
-
-class
-    PaymentRequestCanMakePaymentQueryPMITestWithPaymentQuotaAndServiceWorkerPayment
-    : public PaymentRequestCanMakePaymentQueryPMITest {
- public:
-  PaymentRequestCanMakePaymentQueryPMITestWithPaymentQuotaAndServiceWorkerPayment() {
-    feature_list_.InitWithFeatures(
-        /*enable_features=*/{::features::kServiceWorkerPaymentApps,
-                             features::
-                                 kWebPaymentsPerMethodCanMakePaymentQuota},
-        /*disable_features=*/{});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Querying for payment apps in incognito returns result as normal mode to avoid
-// incognito mode detection. Multiple queries for different apps are rejected
-// with NotSupportedError to avoid user fingerprinting.
-IN_PROC_BROWSER_TEST_F(
-    PaymentRequestCanMakePaymentQueryPMITestWithPaymentQuotaAndServiceWorkerPayment,
-    QueryQuotaForPaymentAppsInIncognitoMode) {
-  NavigateTo("/payment_request_payment_method_identifier_test.html");
-  test_controller()->SetIncognito(true);
-
-  CallCanMakePayment(CheckFor::ALICE_PAY);
-  ExpectBodyContains("false");
-  CallHasEnrolledInstrument(CheckFor::ALICE_PAY);
-  ExpectBodyContains("false");
-
-  CallCanMakePayment(CheckFor::BOB_PAY);
-  ExpectBodyContains("false");
-  CallHasEnrolledInstrument(CheckFor::BOB_PAY);
-  ExpectBodyContains("false");
-
-  CallCanMakePayment(CheckFor::ALICE_PAY);
-  ExpectBodyContains("false");
-  CallHasEnrolledInstrument(CheckFor::ALICE_PAY);
-  ExpectBodyContains("false");
-
-  CallCanMakePayment(CheckFor::BOB_PAY);
-  ExpectBodyContains("false");
-  CallHasEnrolledInstrument(CheckFor::BOB_PAY);
-  ExpectBodyContains("false");
-}
-
-// Querying for both payment apps and autofill cards in incognito returns result
-// as in normal mode to avoid incognito mode detection. Multiple queries for
-// different payment methods are rejected with NotSupportedError to avoid user
-// fingerprinting.
-IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITestWithPaymentQuota,
-                       NoQueryQuotaForPaymentAppsAndCardsInIncognito) {
-  NavigateTo("/payment_request_payment_method_identifier_test.html");
-  test_controller()->SetIncognito(true);
-
-  CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);
-  ExpectBodyContains("true");
-  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_VISA);
-  ExpectBodyContains("false");
-
-  CallCanMakePayment(CheckFor::BOB_PAY_AND_BASIC_CARD);
-  ExpectBodyContains("true");
-  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_BASIC_CARD);
-  ExpectBodyContains("NotAllowedError");
-
-  AddCreditCard(autofill::test::GetCreditCard2());  // Amex
-
-  CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);
-  ExpectBodyContains("true");
-  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_VISA);
-  ExpectBodyContains("false");
-
-  CallCanMakePayment(CheckFor::BOB_PAY_AND_BASIC_CARD);
-  ExpectBodyContains("true");
-  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_BASIC_CARD);
-  ExpectBodyContains("NotAllowedError");
-
-  AddCreditCard(autofill::test::GetCreditCard());  // Visa
-
-  CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);
-  ExpectBodyContains("true");
-  CallHasEnrolledInstrument(CheckFor::BOB_PAY_AND_VISA);
-  ExpectBodyContains("true");
-
-  CallCanMakePayment(CheckFor::BOB_PAY);
-  ExpectBodyContains("false");
-  CallHasEnrolledInstrument(CheckFor::BOB_PAY);
-  ExpectBodyContains("false");
-
-  CallCanMakePayment(CheckFor::BASIC_VISA);
-  ExpectBodyContains("true");
-  CallHasEnrolledInstrument(CheckFor::BASIC_VISA);
-  ExpectBodyContains("true");
 }
 
 }  // namespace payments

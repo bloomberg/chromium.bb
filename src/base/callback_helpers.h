@@ -10,6 +10,7 @@
 #ifndef BASE_CALLBACK_HELPERS_H_
 #define BASE_CALLBACK_HELPERS_H_
 
+#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -17,8 +18,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "base/memory/ptr_util.h"
 
 namespace base {
 
@@ -72,6 +71,10 @@ class AdaptCallbackForRepeatingHelper final {
       : callback_(std::move(callback)) {
     DCHECK(callback_);
   }
+  AdaptCallbackForRepeatingHelper(const AdaptCallbackForRepeatingHelper&) =
+      delete;
+  AdaptCallbackForRepeatingHelper& operator=(
+      const AdaptCallbackForRepeatingHelper&) = delete;
 
   void Run(Args... args) {
     if (subtle::NoBarrier_AtomicExchange(&has_run_, 1))
@@ -83,8 +86,6 @@ class AdaptCallbackForRepeatingHelper final {
  private:
   volatile subtle::Atomic32 has_run_ = 0;
   base::OnceCallback<void(Args...)> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(AdaptCallbackForRepeatingHelper);
 };
 
 }  // namespace internal
@@ -112,6 +113,8 @@ class BASE_EXPORT ScopedClosureRunner {
  public:
   ScopedClosureRunner();
   explicit ScopedClosureRunner(OnceClosure closure);
+  ScopedClosureRunner(const ScopedClosureRunner&) = delete;
+  ScopedClosureRunner& operator=(const ScopedClosureRunner&) = delete;
   ~ScopedClosureRunner();
 
   ScopedClosureRunner(ScopedClosureRunner&& other);
@@ -131,9 +134,51 @@ class BASE_EXPORT ScopedClosureRunner {
 
  private:
   OnceClosure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedClosureRunner);
 };
+
+// Creates a null callback.
+class BASE_EXPORT NullCallback {
+ public:
+  template <typename R, typename... Args>
+  operator RepeatingCallback<R(Args...)>() const {
+    return RepeatingCallback<R(Args...)>();
+  }
+  template <typename R, typename... Args>
+  operator OnceCallback<R(Args...)>() const {
+    return OnceCallback<R(Args...)>();
+  }
+};
+
+// Creates a callback that does nothing when called.
+class BASE_EXPORT DoNothing {
+ public:
+  template <typename... Args>
+  operator RepeatingCallback<void(Args...)>() const {
+    return Repeatedly<Args...>();
+  }
+  template <typename... Args>
+  operator OnceCallback<void(Args...)>() const {
+    return Once<Args...>();
+  }
+  // Explicit way of specifying a specific callback type when the compiler can't
+  // deduce it.
+  template <typename... Args>
+  static RepeatingCallback<void(Args...)> Repeatedly() {
+    return BindRepeating([](Args... args) {});
+  }
+  template <typename... Args>
+  static OnceCallback<void(Args...)> Once() {
+    return BindOnce([](Args... args) {});
+  }
+};
+
+// Useful for creating a Closure that will delete a pointer when invoked. Only
+// use this when necessary. In most cases MessageLoop::DeleteSoon() is a better
+// fit.
+template <typename T>
+void DeletePointer(T* obj) {
+  delete obj;
+}
 
 }  // namespace base
 

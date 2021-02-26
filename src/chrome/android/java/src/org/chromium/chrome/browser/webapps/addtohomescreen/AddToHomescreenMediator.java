@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.webapps.addtohomescreen;
 import android.graphics.Bitmap;
 import android.util.Pair;
 
+import androidx.annotation.StringRes;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -36,11 +38,11 @@ class AddToHomescreenMediator implements AddToHomescreenViewDelegate {
         mNativeAddToHomescreenMediator = AddToHomescreenMediatorJni.get().initialize(this);
     }
 
-    void startForAppMenu(@Nonnull WebContents webContents) {
+    void startForAppMenu(@Nonnull WebContents webContents, @StringRes int titleId) {
         if (mNativeAddToHomescreenMediator == 0) return;
 
         AddToHomescreenMediatorJni.get().startForAppMenu(
-                mNativeAddToHomescreenMediator, webContents);
+                mNativeAddToHomescreenMediator, webContents, titleId);
     }
 
     @CalledByNative
@@ -82,6 +84,7 @@ class AddToHomescreenMediator implements AddToHomescreenViewDelegate {
         if (mNativeAddToHomescreenMediator == 0) return;
 
         AddToHomescreenMediatorJni.get().addToHomescreen(mNativeAddToHomescreenMediator, title);
+        destroyNative();
     }
 
     @Override
@@ -103,15 +106,24 @@ class AddToHomescreenMediator implements AddToHomescreenViewDelegate {
         if (mNativeAddToHomescreenMediator == 0) return;
 
         AddToHomescreenMediatorJni.get().onUiDismissed(mNativeAddToHomescreenMediator);
+        destroyNative();
+    }
+
+    private void destroyNative() {
+        if (mNativeAddToHomescreenMediator == 0) return;
+
+        AddToHomescreenMediatorJni.get().destroy(mNativeAddToHomescreenMediator);
         mNativeAddToHomescreenMediator = 0;
     }
 
     @NativeMethods
     interface Natives {
         long initialize(AddToHomescreenMediator instance);
-        void startForAppMenu(long nativeAddToHomescreenMediator, WebContents webContents);
+        void startForAppMenu(long nativeAddToHomescreenMediator, WebContents webContents,
+                @StringRes int titleId);
         void addToHomescreen(long nativeAddToHomescreenMediator, String title);
         void onNativeDetailsShown(long nativeAddToHomescreenMediator);
         void onUiDismissed(long nativeAddToHomescreenMediator);
+        void destroy(long nativeAddToHomescreenMediator);
     }
 }

@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -143,16 +142,16 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
 
   // Start a timeout.
   inspected_rvh->GetWidget()->StartInputEventAckTimeout();
-  task_environment()->FastForwardBy(
-      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs + 10));
+  task_environment()->FastForwardBy(kHungRendererDelay +
+                                    base::TimeDelta::FromMilliseconds(10));
   EXPECT_FALSE(delegate.renderer_unresponsive_received());
 
   // Now close devtools and check that the notification is delivered.
   client_host.Close();
   // Start a timeout.
   inspected_rvh->GetWidget()->StartInputEventAckTimeout();
-  task_environment()->FastForwardBy(
-      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs + 10));
+  task_environment()->FastForwardBy(kHungRendererDelay +
+                                    base::TimeDelta::FromMilliseconds(10));
   EXPECT_TRUE(delegate.renderer_unresponsive_received());
 
   contents()->SetDelegate(nullptr);

@@ -3,24 +3,16 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//tools/grit/grit_rule.gni")
 
-declare_args() {
-  # Controls the product part of the user agent calculated in sync_util.cc.
-  sync_user_agent_product = "Chrome"
-}
-
-jumbo_static_library("driver") {
+static_library("driver") {
   sources = [
-    "about_sync_util.cc",
-    "about_sync_util.h",
+    "active_devices_provider.h",
     "backend_migrator.cc",
     "backend_migrator.h",
     "configure_context.h",
     "data_type_controller.cc",
     "data_type_controller.h",
-    "data_type_encryption_handler.cc",
     "data_type_encryption_handler.h",
     "data_type_manager.cc",
     "data_type_manager.h",
@@ -29,14 +21,12 @@ jumbo_static_library("driver") {
     "data_type_manager_observer.h",
     "data_type_status_table.cc",
     "data_type_status_table.h",
-    "file_based_trusted_vault_client.cc",
-    "file_based_trusted_vault_client.h",
     "glue/sync_engine_backend.cc",
     "glue/sync_engine_backend.h",
     "glue/sync_engine_impl.cc",
     "glue/sync_engine_impl.h",
-    "model_association_manager.cc",
-    "model_association_manager.h",
+    "model_load_manager.cc",
+    "model_load_manager.h",
     "model_type_controller.cc",
     "model_type_controller.h",
     "non_ui_syncable_service_based_model_type_controller.cc",
@@ -52,10 +42,11 @@ jumbo_static_library("driver") {
     "sync_auth_manager.h",
     "sync_auth_util.cc",
     "sync_auth_util.h",
-    "sync_client.cc",
     "sync_client.h",
     "sync_driver_switches.cc",
     "sync_driver_switches.h",
+    "sync_internals_util.cc",
+    "sync_internals_util.h",
     "sync_service.cc",
     "sync_service.h",
     "sync_service_crypto.cc",
@@ -68,14 +59,11 @@ jumbo_static_library("driver") {
     "sync_session_durations_metrics_recorder.h",
     "sync_stopped_reporter.cc",
     "sync_stopped_reporter.h",
-    "sync_token_status.cc",
     "sync_token_status.h",
     "sync_type_preference_provider.h",
     "sync_user_settings.h",
     "sync_user_settings_impl.cc",
     "sync_user_settings_impl.h",
-    "sync_util.cc",
-    "sync_util.h",
     "syncable_service_based_model_type_controller.cc",
     "syncable_service_based_model_type_controller.h",
     "trusted_vault_client.h",
@@ -102,12 +90,14 @@ jumbo_static_library("driver") {
     "//components/keyed_service/core",
     "//components/metrics",
     "//components/os_crypt",
+    "//components/policy:generated",
+    "//components/policy/core/browser",
     "//components/prefs",
     "//components/signin/public/identity_manager",
+    "//components/sync/invalidations",
     "//components/version_info",
     "//components/version_info:generate_version_info",
     "//services/network/public/cpp",
-    "//ui/base",
   ]
 
   if (!is_ios) {
@@ -115,17 +105,11 @@ jumbo_static_library("driver") {
       "sync_policy_handler.cc",
       "sync_policy_handler.h",
     ]
-    deps += [
-      "//components/policy:generated",
-      "//components/policy/core/browser",
-    ]
   }
 
   if (is_chromeos) {
     deps += [ "//chromeos/constants" ]
   }
-
-  defines = [ "SYNC_USER_AGENT_PRODUCT=$sync_user_agent_product" ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
@@ -138,10 +122,6 @@ grit("resources") {
     "sync_driver_resources.pak",
   ]
   output_dir = "$root_gen_dir/components"
-  grit_flags = [
-    "-E",
-    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-  ]
 }
 
 static_library("test_support") {
@@ -174,13 +154,14 @@ static_library("test_support") {
   deps = [
     "//components/invalidation/impl:test_support",
     "//components/pref_registry",
+    "//components/prefs:test_support",
     "//components/signin/public/base",
     "//components/signin/public/identity_manager:test_support",
     "//components/sync",
     "//components/sync:test_support_engine",
     "//components/sync:test_support_model",
     "//components/sync/driver",
-    "//components/sync_preferences:test_support",
+    "//components/sync/invalidations:test_support",
     "//components/version_info",
     "//components/version_info:generate_version_info",
     "//google_apis",

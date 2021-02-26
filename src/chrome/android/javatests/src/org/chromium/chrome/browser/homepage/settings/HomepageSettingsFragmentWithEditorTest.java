@@ -4,22 +4,20 @@
 
 package org.chromium.chrome.browser.homepage.settings;
 
-import android.support.test.filters.SmallTest;
-
 import androidx.preference.Preference;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -34,10 +32,10 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
  * @see HomepageSettingsFragmentTest Tests when ChromeFeatureList#HOMEPAGE_SETTINGS_UI_CONVERSION is
  *         enabled.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 // clang-format off
 @Features.DisableFeatures({
-    ChromeFeatureList.HOMEPAGE_SETTINGS_UI_CONVERSION, ChromeFeatureList.CHROME_DUET})
+    ChromeFeatureList.HOMEPAGE_SETTINGS_UI_CONVERSION})
 public class HomepageSettingsFragmentWithEditorTest {
     // clang-format on
     private static final String ASSERT_HOMEPAGE_MISMATCH =
@@ -48,8 +46,7 @@ public class HomepageSettingsFragmentWithEditorTest {
             "HomepageEditor should be enabled when homepage is enabled.";
     private static final String ASSERT_SWITCH_CHECKED =
             "Switch checked state when homepage is enabled.";
-    private static final String ASSERT_SWITCH_VISIBLE_WITHOUT_DUET =
-            "Switch should be visible without bottom toolbar.";
+    private static final String ASSERT_SWITCH_VISIBLE = "Switch should be visible.";
 
     public static final String TEST_URL = "http://127.0.0.1:8000/foo.html";
     public static final String CHROME_NTP = UrlConstants.NTP_NON_NATIVE_URL;
@@ -60,9 +57,6 @@ public class HomepageSettingsFragmentWithEditorTest {
 
     @Rule
     public HomepageTestRule mHomepageTestRule = new HomepageTestRule();
-
-    @Rule
-    public TestRule mFeatureProcessor = new Features.InstrumentationProcessor();
 
     private ChromeSwitchPreference mSwitch;
     private Preference mHomepageEditor;
@@ -95,7 +89,7 @@ public class HomepageSettingsFragmentWithEditorTest {
 
         launchSettingsActivity();
 
-        Assert.assertTrue(ASSERT_SWITCH_VISIBLE_WITHOUT_DUET, mSwitch.isVisible());
+        Assert.assertTrue(ASSERT_SWITCH_VISIBLE, mSwitch.isVisible());
         Assert.assertEquals(ASSERT_HOMEPAGE_MISMATCH, TEST_URL, mHomepageEditor.getSummary());
 
         Assert.assertTrue(ASSERT_SWITCH_CHECKED, mSwitch.isChecked());
@@ -110,7 +104,7 @@ public class HomepageSettingsFragmentWithEditorTest {
 
         launchSettingsActivity();
 
-        Assert.assertTrue(ASSERT_SWITCH_VISIBLE_WITHOUT_DUET, mSwitch.isVisible());
+        Assert.assertTrue(ASSERT_SWITCH_VISIBLE, mSwitch.isVisible());
         Assert.assertEquals(ASSERT_HOMEPAGE_MISMATCH, CHROME_NTP, mHomepageEditor.getSummary());
 
         Assert.assertTrue(ASSERT_SWITCH_CHECKED, mSwitch.isChecked());
@@ -126,7 +120,7 @@ public class HomepageSettingsFragmentWithEditorTest {
 
         launchSettingsActivity();
 
-        Assert.assertTrue(ASSERT_SWITCH_VISIBLE_WITHOUT_DUET, mSwitch.isVisible());
+        Assert.assertTrue(ASSERT_SWITCH_VISIBLE, mSwitch.isVisible());
         Assert.assertEquals(ASSERT_HOMEPAGE_MISMATCH, TEST_URL, mHomepageEditor.getSummary());
 
         Assert.assertFalse("Homepage should be disabled", HomepageManager.isHomepageEnabled());
@@ -142,7 +136,7 @@ public class HomepageSettingsFragmentWithEditorTest {
 
         launchSettingsActivity();
 
-        Assert.assertTrue(ASSERT_SWITCH_VISIBLE_WITHOUT_DUET, mSwitch.isVisible());
+        Assert.assertTrue(ASSERT_SWITCH_VISIBLE, mSwitch.isVisible());
         Assert.assertEquals(ASSERT_HOMEPAGE_MISMATCH, TEST_URL, mHomepageEditor.getSummary());
 
         // Homepage should be enabled when start up.

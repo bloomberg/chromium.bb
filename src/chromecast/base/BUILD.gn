@@ -16,7 +16,8 @@ declare_args() {
   if (is_android_arc) {
     cast_product_type = 7  # CAST_PRODUCT_TYPE_CHROME_OS
   } else if (is_android) {
-    if (is_android_things) {
+    if (is_android_appliance) {
+      # Android Things and Appliances under the Android Things product type.
       cast_product_type = 6  # CAST_PRODUCT_TYPE_ANDROID_THINGS
     } else {
       cast_product_type = 4  # CAST_PRODUCT_TYPE_ANDROID_TV
@@ -42,12 +43,6 @@ cast_source_set("base") {
   sources = [
     "alarm_manager.cc",
     "alarm_manager.h",
-    "android/cast_settings_manager.cc",
-    "android/cast_settings_manager.h",
-    "android/dumpstate_writer.cc",
-    "android/dumpstate_writer.h",
-    "android/system_time_change_notifier_android.cc",
-    "android/system_time_change_notifier_android.h",
     "bind_to_task_runner.h",
     "bitstream_audio_codecs.cc",
     "bitstream_audio_codecs.h",
@@ -97,10 +92,6 @@ cast_source_set("base") {
     "//chromecast:chromecast_buildflags",
   ]
 
-  if (is_android) {
-    deps += [ ":jni_headers" ]
-  }
-
   if (chromecast_branding == "public") {
     sources += [ "cast_features_internal.cc" ]
   } else {
@@ -108,7 +99,16 @@ cast_source_set("base") {
   }
 
   if (is_android) {
-    sources += [ "chromecast_config_android.h" ]
+    sources += [
+      "android/cast_settings_manager.cc",
+      "android/cast_settings_manager.h",
+      "android/dumpstate_writer.cc",
+      "android/dumpstate_writer.h",
+      "android/system_time_change_notifier_android.cc",
+      "android/system_time_change_notifier_android.h",
+      "chromecast_config_android.h",
+    ]
+    deps += [ ":jni_headers" ]
     if (chromecast_branding == "public") {
       sources += [ "chromecast_config_android_dummy.cc" ]
     } else {
@@ -244,7 +244,10 @@ if (is_android) {
 
     deps = [
       ":cast_sys_info_util",
+      ":chromecast_switches",
       ":dummy_cast_sys_info",
+      ":init_shlib",
+      "//base",
       "//chromecast/public",
     ]
   }
@@ -352,6 +355,7 @@ if (is_android) {
     deps = [
       "//base:base_java",
       "//base:jni_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
@@ -391,6 +395,7 @@ if (is_android) {
     deps = [
       ":base_java",
       ":cast_base_test_utils_java",
+      "//base:base_java",
       "//base:base_junit_test_support",
       "//third_party/hamcrest:hamcrest_java",
     ]

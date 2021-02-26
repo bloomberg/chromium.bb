@@ -28,6 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
+#include "chrome/browser/supervised_user/supervised_user_allowlist_service.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_filtering_switches.h"
@@ -36,9 +37,9 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
-#include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -83,11 +84,11 @@ using extensions::ExtensionSystem;
 
 namespace {
 
-// The URL from which to download a host blacklist if no local one exists yet.
-const char kBlacklistURL[] =
+// The URL from which to download a host denylist if no local one exists yet.
+const char kDenylistURL[] =
     "https://www.gstatic.com/chrome/supervised_user/blacklist-20141001-1k.bin";
-// The filename under which we'll store the blacklist (in the user data dir).
-const char kBlacklistFilename[] = "su-blacklist.bin";
+// The filename under which we'll store the denylist (in the user data dir).
+const char kDenylistFilename[] = "su-blacklist.bin";
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // These extensions are allowed for supervised users for internal development
@@ -117,10 +118,10 @@ void CreateURLAccessRequest(const GURL& url,
   creator->CreateURLAccessRequest(url, std::move(callback));
 }
 
-base::FilePath GetBlacklistPath() {
-  base::FilePath blacklist_dir;
-  base::PathService::Get(chrome::DIR_USER_DATA, &blacklist_dir);
-  return blacklist_dir.AppendASCII(kBlacklistFilename);
+base::FilePath GetDenylistPath() {
+  base::FilePath denylist_dir;
+  base::PathService::Get(chrome::DIR_USER_DATA, &denylist_dir);
+  return denylist_dir.AppendASCII(kDenylistFilename);
 }
 
 }  // namespace
@@ -161,7 +162,7 @@ void SupervisedUserService::Init() {
       base::Bind(&SupervisedUserService::OnSupervisedUserIdChanged,
           base::Unretained(this)));
 
-  whitelist_service_->AddSiteListsChangedCallback(
+  allowlist_service_->AddSiteListsChangedCallback(
       base::Bind(&SupervisedUserService::OnSiteListsChanged,
                  weak_ptr_factory_.GetWeakPtr()));
 
@@ -184,8 +185,8 @@ SupervisedUserURLFilter* SupervisedUserService::GetURLFilter() {
   return &url_filter_;
 }
 
-SupervisedUserWhitelistService* SupervisedUserService::GetWhitelistService() {
-  return whitelist_service_.get();
+SupervisedUserAllowlistService* SupervisedUserService::GetAllowlistService() {
+  return allowlist_service_.get();
 }
 
 bool SupervisedUserService::AccessRequestsEnabled() {
@@ -277,8 +278,15 @@ bool SupervisedUserService::IsSupervisedUserIframeFilterEnabled() const {
       supervised_users::kSupervisedUserIframeFilter);
 }
 
+// static
+std::string SupervisedUserService::GetEduCoexistenceLoginUrl() {
+  return base::FeatureList::IsEnabled(supervised_users::kEduCoexistenceFlowV2)
+             ? chrome::kChromeUIEDUCoexistenceLoginURLV2
+             : chrome::kChromeUIEDUCoexistenceLoginURLV1;
+}
+
 bool SupervisedUserService::IsChild() const {
-  return profile_->IsSupervised();
+  return profile_->IsChild();
 }
 
 bool SupervisedUserService::IsSupervisedUserExtensionInstallEnabled() const {
@@ -309,11 +317,11 @@ void SupervisedUserService::AddPermissionRequestCreator(
 SupervisedUserService::SupervisedUserService(Profile* profile)
     : profile_(profile),
       active_(false),
-      delegate_(NULL),
+      delegate_(nullptr),
       is_profile_active_(false),
       did_init_(false),
       did_shutdown_(false),
-      blacklist_state_(BlacklistLoadState::NOT_LOADED) {
+      denylist_state_(DenylistLoadState::NOT_LOADED) {
   url_filter_.AddObserver(this);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
@@ -321,7 +329,7 @@ SupervisedUserService::SupervisedUserService(Profile* profile)
 
   std::string client_id = component_updater::SupervisedUserWhitelistInstaller::
       ClientIdForProfilePath(profile_->GetPath());
-  whitelist_service_ = std::make_unique<SupervisedUserWhitelistService>(
+  allowlist_service_ = std::make_unique<SupervisedUserAllowlistService>(
       profile_->GetPrefs(),
       g_browser_process->supervised_user_whitelist_installer(), client_id);
 }
@@ -373,6 +381,9 @@ void SupervisedUserService::UpdateApprovedExtensionForTesting(
 
 bool SupervisedUserService::
     GetSupervisedUserExtensionsMayRequestPermissionsPref() const {
+  DCHECK(IsChild())
+      << "Calling GetSupervisedUserExtensionsMayRequestPermissionsPref() only "
+         "makes sense for supervised users";
   return profile_->GetPrefs()->GetBoolean(
       prefs::kSupervisedUserExtensionsMayRequestPermissions);
 }
@@ -475,7 +486,7 @@ void SupervisedUserService::SetActive(bool active) {
     // Initialize the filter.
     OnDefaultFilteringBehaviorChanged();
     OnSafeSitesSettingChanged();
-    whitelist_service_->Init();
+    allowlist_service_->Init();
     UpdateManualHosts();
     UpdateManualURLs();
 
@@ -580,28 +591,39 @@ void SupervisedUserService::OnDefaultFilteringBehaviorChanged() {
   SupervisedUserURLFilter::FilteringBehavior behavior =
       SupervisedUserURLFilter::BehaviorFromInt(behavior_value);
   url_filter_.SetDefaultFilteringBehavior(behavior);
+  UpdateAsyncUrlChecker();
 
   for (SupervisedUserServiceObserver& observer : observer_list_)
     observer.OnURLFilterChanged();
 }
 
 void SupervisedUserService::OnSafeSitesSettingChanged() {
-  bool use_blacklist = supervised_users::IsSafeSitesBlacklistEnabled(profile_);
-  if (use_blacklist != url_filter_.HasBlacklist()) {
-    if (use_blacklist && blacklist_state_ == BlacklistLoadState::NOT_LOADED) {
-      LoadBlacklist(GetBlacklistPath(), GURL(kBlacklistURL));
-    } else if (!use_blacklist ||
-               blacklist_state_ == BlacklistLoadState::LOADED) {
-      // Either the blacklist was turned off, or it was turned on but has
+  bool use_denylist = supervised_users::IsSafeSitesDenylistEnabled(profile_);
+  if (use_denylist != url_filter_.HasDenylist()) {
+    if (use_denylist && denylist_state_ == DenylistLoadState::NOT_LOADED) {
+      LoadDenylist(GetDenylistPath(), GURL(kDenylistURL));
+    } else if (!use_denylist || denylist_state_ == DenylistLoadState::LOADED) {
+      // Either the denylist was turned off, or it was turned on but has
       // already been loaded previously. Just update the setting.
-      UpdateBlacklist();
+      UpdateDenylist();
     }
-    // Else: The blacklist was enabled, but the load is already in progress.
+    // Else: The denylist was enabled, but the load is already in progress.
     // Do nothing - we'll check the setting again when the load finishes.
   }
 
+  UpdateAsyncUrlChecker();
+}
+
+void SupervisedUserService::UpdateAsyncUrlChecker() {
+  int behavior_value = profile_->GetPrefs()->GetInteger(
+      prefs::kDefaultSupervisedUserFilteringBehavior);
+  SupervisedUserURLFilter::FilteringBehavior behavior =
+      SupervisedUserURLFilter::BehaviorFromInt(behavior_value);
+
   bool use_online_check =
-      supervised_users::IsSafeSitesOnlineCheckEnabled(profile_);
+      supervised_users::IsSafeSitesOnlineCheckEnabled(profile_) ||
+      behavior == SupervisedUserURLFilter::FilteringBehavior::BLOCK;
+
   if (use_online_check != url_filter_.HasAsyncURLChecker()) {
     if (use_online_check) {
       url_filter_.InitAsyncURLChecker(
@@ -615,33 +637,33 @@ void SupervisedUserService::OnSafeSitesSettingChanged() {
 
 void SupervisedUserService::OnSiteListsChanged(
     const std::vector<scoped_refptr<SupervisedUserSiteList> >& site_lists) {
-  whitelists_ = site_lists;
-  url_filter_.LoadWhitelists(site_lists);
+  allowlists_ = site_lists;
+  url_filter_.LoadAllowlists(site_lists);
 }
 
-void SupervisedUserService::LoadBlacklist(const base::FilePath& path,
-                                          const GURL& url) {
-  DCHECK(blacklist_state_ == BlacklistLoadState::NOT_LOADED);
-  blacklist_state_ = BlacklistLoadState::LOAD_STARTED;
+void SupervisedUserService::LoadDenylist(const base::FilePath& path,
+                                         const GURL& url) {
+  DCHECK(denylist_state_ == DenylistLoadState::NOT_LOADED);
+  denylist_state_ = DenylistLoadState::LOAD_STARTED;
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&base::PathExists, path),
-      base::BindOnce(&SupervisedUserService::OnBlacklistFileChecked,
+      base::BindOnce(&SupervisedUserService::OnDenylistFileChecked,
                      weak_ptr_factory_.GetWeakPtr(), path, url));
 }
 
-void SupervisedUserService::OnBlacklistFileChecked(const base::FilePath& path,
-                                                   const GURL& url,
-                                                   bool file_exists) {
-  DCHECK(blacklist_state_ == BlacklistLoadState::LOAD_STARTED);
+void SupervisedUserService::OnDenylistFileChecked(const base::FilePath& path,
+                                                  const GURL& url,
+                                                  bool file_exists) {
+  DCHECK(denylist_state_ == DenylistLoadState::LOAD_STARTED);
   if (file_exists) {
-    LoadBlacklistFromFile(path);
+    LoadDenylistFromFile(path);
     return;
   }
 
-  DCHECK(!blacklist_downloader_);
+  DCHECK(!denylist_downloader_);
 
   // Create traffic annotation tag.
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -649,7 +671,7 @@ void SupervisedUserService::OnBlacklistFileChecked(const base::FilePath& path,
         semantics {
           sender: "Supervised Users"
           description:
-            "Downloads a static blacklist consisting of hostname hashes of "
+            "Downloads a static denylist consisting of hostname hashes of "
             "common inappropriate websites. This is only enabled for child "
             "accounts and only if the corresponding setting is enabled by the "
             "parent."
@@ -677,43 +699,42 @@ void SupervisedUserService::OnBlacklistFileChecked(const base::FilePath& path,
 
   auto factory = content::BrowserContext::GetDefaultStoragePartition(profile_)
                      ->GetURLLoaderFactoryForBrowserProcess();
-  blacklist_downloader_.reset(new FileDownloader(
+  denylist_downloader_.reset(new FileDownloader(
       url, path, false, std::move(factory),
-      base::BindOnce(&SupervisedUserService::OnBlacklistDownloadDone,
+      base::BindOnce(&SupervisedUserService::OnDenylistDownloadDone,
                      base::Unretained(this), path),
       traffic_annotation));
 }
 
-void SupervisedUserService::LoadBlacklistFromFile(const base::FilePath& path) {
-  DCHECK(blacklist_state_ == BlacklistLoadState::LOAD_STARTED);
-  blacklist_.ReadFromFile(
-      path,
-      base::Bind(&SupervisedUserService::OnBlacklistLoaded,
-                 base::Unretained(this)));
+void SupervisedUserService::LoadDenylistFromFile(const base::FilePath& path) {
+  DCHECK(denylist_state_ == DenylistLoadState::LOAD_STARTED);
+  denylist_.ReadFromFile(path,
+                         base::Bind(&SupervisedUserService::OnDenylistLoaded,
+                                    base::Unretained(this)));
 }
 
-void SupervisedUserService::OnBlacklistDownloadDone(
+void SupervisedUserService::OnDenylistDownloadDone(
     const base::FilePath& path,
     FileDownloader::Result result) {
-  DCHECK(blacklist_state_ == BlacklistLoadState::LOAD_STARTED);
+  DCHECK(denylist_state_ == DenylistLoadState::LOAD_STARTED);
   if (FileDownloader::IsSuccess(result)) {
-    LoadBlacklistFromFile(path);
+    LoadDenylistFromFile(path);
   } else {
-    LOG(WARNING) << "Blacklist download failed";
+    LOG(WARNING) << "Denylist download failed";
     // TODO(treib): Retry downloading after some time?
   }
-  blacklist_downloader_.reset();
+  denylist_downloader_.reset();
 }
 
-void SupervisedUserService::OnBlacklistLoaded() {
-  DCHECK(blacklist_state_ == BlacklistLoadState::LOAD_STARTED);
-  blacklist_state_ = BlacklistLoadState::LOADED;
-  UpdateBlacklist();
+void SupervisedUserService::OnDenylistLoaded() {
+  DCHECK(denylist_state_ == DenylistLoadState::LOAD_STARTED);
+  denylist_state_ = DenylistLoadState::LOADED;
+  UpdateDenylist();
 }
 
-void SupervisedUserService::UpdateBlacklist() {
-  bool use_blacklist = supervised_users::IsSafeSitesBlacklistEnabled(profile_);
-  url_filter_.SetBlacklist(use_blacklist ? &blacklist_ : nullptr);
+void SupervisedUserService::UpdateDenylist() {
+  bool use_denylist = supervised_users::IsSafeSitesDenylistEnabled(profile_);
+  url_filter_.SetDenylist(use_denylist ? &denylist_ : nullptr);
   for (SupervisedUserServiceObserver& observer : observer_list_)
     observer.OnURLFilterChanged();
 }
@@ -1012,7 +1033,7 @@ bool SupervisedUserService::IsEncryptEverythingAllowed() const {
 
 #if !defined(OS_ANDROID)
 void SupervisedUserService::OnBrowserSetLastActive(Browser* browser) {
-  bool profile_became_active = profile_->IsSameProfile(browser->profile());
+  bool profile_became_active = profile_->IsSameOrParent(browser->profile());
   if (!is_profile_active_ && profile_became_active)
     base::RecordAction(UserMetricsAction("ManagedUsers_OpenProfile"));
   else if (is_profile_active_ && !profile_became_active)

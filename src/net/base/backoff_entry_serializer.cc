@@ -4,6 +4,7 @@
 
 #include "net/base/backoff_entry_serializer.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
@@ -15,6 +16,15 @@ namespace {
 // Increment this number when changing the serialization format, to avoid old
 // serialized values loaded from disk etc being misinterpreted.
 const int kSerializationFormatVersion = 1;
+
+// This max defines how many times we are willing to call
+// |BackoffEntry::InformOfRequest| in |DeserializeFromValue|.
+//
+// This value is meant to large enough that the computed backoff duration can
+// still be saturated. Given that the duration is an int64 and assuming 1.01 as
+// a conservative lower bound for BackoffEntry::Policy::multiply_factor,
+// ceil(log(2**63-1, 1.01)) = 4389.
+const int kMaxFailureCount = 4389;
 }  // namespace
 
 namespace net {
@@ -57,8 +67,11 @@ std::unique_ptr<BackoffEntry> BackoffEntrySerializer::DeserializeFromValue(
   }
 
   int failure_count;
-  if (!serialized_list->GetInteger(1, &failure_count) || failure_count < 0)
+  if (!serialized_list->GetInteger(1, &failure_count) || failure_count < 0) {
     return nullptr;
+  }
+  failure_count = std::min(failure_count, kMaxFailureCount);
+
   double original_backoff_duration_double;
   if (!serialized_list->GetDouble(2, &original_backoff_duration_double))
     return nullptr;
@@ -67,8 +80,7 @@ std::unique_ptr<BackoffEntry> BackoffEntrySerializer::DeserializeFromValue(
     return nullptr;
   int64_t absolute_release_time_us;
   if (!base::StringToInt64(absolute_release_time_string,
-                           &absolute_release_time_us) ||
-      absolute_release_time_us < 0) {
+                           &absolute_release_time_us)) {
     return nullptr;
   }
 
@@ -81,13 +93,23 @@ std::unique_ptr<BackoffEntry> BackoffEntrySerializer::DeserializeFromValue(
       base::TimeDelta::FromSecondsD(original_backoff_duration_double);
   base::Time absolute_release_time =
       base::Time::FromInternalValue(absolute_release_time_us);
-  base::TimeDelta backoff_duration = absolute_release_time - time_now;
+  // Before computing |backoff_duration|, throw out +/- infinity values for
+  // either operand. This way, we can use base::TimeDelta's saturated math.
+  if (absolute_release_time.is_min() || absolute_release_time.is_max() ||
+      time_now.is_min() || time_now.is_max()) {
+    return nullptr;
+  }
+  base::TimeDelta backoff_duration =
+      absolute_release_time.ToDeltaSinceWindowsEpoch() -
+      time_now.ToDeltaSinceWindowsEpoch();
   // In cases where the system wall clock is rewound, use the redundant
   // original_backoff_duration to ensure the backoff duration isn't longer
   // than it was before serializing (note that it's not possible to protect
   // against the clock being wound forward).
   if (backoff_duration > original_backoff_duration)
     backoff_duration = original_backoff_duration;
+  if (backoff_duration.is_min() || backoff_duration.is_max())
+    return nullptr;
   entry->SetCustomReleaseTime(
       entry->BackoffDurationToReleaseTime(backoff_duration));
 

@@ -16,6 +16,7 @@
 class GURL;
 
 namespace blink {
+enum class ProtocolHandlerSecurityLevel;
 class WebElement;
 class WebFrame;
 class WebLocalFrame;
@@ -24,9 +25,12 @@ class WebURL;
 }
 
 namespace content {
-class BrowserPluginDelegate;
 class RenderFrame;
 struct WebPluginInfo;
+}
+
+namespace guest_view {
+class GuestViewContainer;
 }
 
 namespace extensions {
@@ -83,6 +87,7 @@ class ChromeExtensionsRendererClient
   bool OverrideCreatePlugin(content::RenderFrame* render_frame,
                             const blink::WebPluginParams& params);
   bool AllowPopup();
+  blink::ProtocolHandlerSecurityLevel GetProtocolHandlerSecurityLevel();
   void WillSendRequest(blink::WebLocalFrame* frame,
                        ui::PageTransition transition_type,
                        const blink::WebURL& url,
@@ -97,11 +102,13 @@ class ChromeExtensionsRendererClient
       std::unique_ptr<extensions::Dispatcher> extension_dispatcher);
   extensions::Dispatcher* GetExtensionDispatcherForTest();
 
-  static content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
+  // TODO(533069): Remove since BrowserPlugin has been removed.
+  static guest_view::GuestViewContainer* CreateBrowserPluginDelegate(
       content::RenderFrame* render_frame,
       const content::WebPluginInfo& info,
       const std::string& mime_type,
       const GURL& original_url);
+
   static void DidBlockMimeHandlerViewForDisallowedPlugin(
       const blink::WebElement& plugin_element);
   static bool MaybeCreateMimeHandlerView(

@@ -54,6 +54,7 @@ PlayerUtils.registerEMEEventListeners = function(player) {
         player.video.receivedKeyMessage = true;
         if (message.messageType == 'license-request' ||
             message.messageType == 'license-renewal' ||
+            message.messageType == 'license-release' ||
             message.messageType == 'individualization-request') {
           player.video.receivedMessageTypes.add(message.messageType);
         } else {
@@ -140,7 +141,8 @@ PlayerUtils.registerEMEEventListeners = function(player) {
     }
 
     try {
-      if (player.testConfig.sessionToLoad) {
+      if (player.testConfig.sessionToLoad &&
+          player.testConfig.sessionToLoad != 'PersistentUsageRecord') {
         // Create a session to load using a new MediaKeys.
         // TODO(jrummell): Add a test that covers remove().
         player.access.createMediaKeys()
@@ -148,11 +150,11 @@ PlayerUtils.registerEMEEventListeners = function(player) {
               // As the tests run with a different origin every time, there is
               // no way currently to create a session in one test and then load
               // it in a subsequent test (https://crbug.com/715349).
-              // So if |sessionToLoad| is 'LoadableSession', create a session
+              // So if |sessionToLoad| is 'PersistentLicense', create a session
               // that can be loaded and use that session to load. Otherwise
               // use the name provided (which allows for testing load() on a
               // session which doesn't exist).
-              if (player.testConfig.sessionToLoad == 'LoadableSession') {
+              if (player.testConfig.sessionToLoad == 'PersistentLicense') {
                 return Utils.createSessionToLoad(
                     mediaKeys, player.testConfig.sessionToLoad);
               } else {
@@ -190,10 +192,16 @@ PlayerUtils.registerEMEEventListeners = function(player) {
           Utils.failTest(error, UNIT_TEST_FAILURE);
         });
       } else {
-        Utils.timeLog('Creating new media key session for initDataType: ' +
-                      message.initDataType + ', initData: ' +
-                      Utils.getHexString(new Uint8Array(message.initData)));
-        player.session = message.target.mediaKeys.createSession();
+        Utils.timeLog(
+            'Creating new media key session for initDataType: ' +
+            message.initDataType + ', initData: ' +
+            Utils.getHexString(new Uint8Array(message.initData)));
+        if (player.testConfig.sessionToLoad == 'PersistentUsageRecord') {
+          player.session =
+              message.target.mediaKeys.createSession('persistent-usage-record');
+        } else {
+          player.session = message.target.mediaKeys.createSession();
+        }
         addMediaKeySessionListeners(player.session);
         player.session.generateRequest(message.initDataType, message.initData)
             .catch(function(error) {
@@ -259,6 +267,9 @@ PlayerUtils.registerEMEEventListeners = function(player) {
       player.testConfig.keySystem == STORAGE_ID_TEST_KEYSYSTEM) {
     config.persistentState = 'required';
     config.sessionTypes = ['temporary', 'persistent-license'];
+    if (player.testConfig.sessionToLoad == 'PersistentUsageRecord') {
+      config.sessionTypes.push('persistent-usage-record');
+    }
   }
 
   return navigator
@@ -326,3 +337,27 @@ PlayerUtils.createPlayer = function(video, testConfig) {
   var Player = getPlayerType(testConfig.keySystem);
   return new Player(video, testConfig);
 };
+
+PlayerUtils.removeSession = async function(player) {
+  // Once remove() is called, another 'keystatuseschange' and 'message' events
+  // will happen.
+  const waitForKeyStatusChangePromise =
+      Utils.waitForEvent(player.session, 'keystatuseschange');
+
+  const waitForMessagePromise = Utils.waitForEvent(
+      player.session, 'message', function(e, resolve, reject) {
+        Utils.timeLog(e.messageType);
+        if (e.messageType == 'license-release' &&
+            player.testConfig.sessionToLoad == 'PersistentUsageRecord') {
+          Utils.verifyUsageRecord(e.message, /* expectNullTime= */ false);
+        }
+        // TODO: verify license-release message for persistent-license session
+        resolve();
+      });
+
+  Utils.timeLog('Calling remove()');
+  const removePromise = player.session.remove();
+
+  return Promise.all(
+      [removePromise, waitForKeyStatusChangePromise, waitForMessagePromise]);
+}

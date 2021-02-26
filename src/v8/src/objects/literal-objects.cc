@@ -10,7 +10,7 @@
 #include "src/common/globals.h"
 #include "src/execution/isolate.h"
 #include "src/heap/factory.h"
-#include "src/heap/off-thread-factory-inl.h"
+#include "src/heap/local-factory-inl.h"
 #include "src/objects/dictionary.h"
 #include "src/objects/hash-table-inl.h"
 #include "src/objects/literal-objects-inl.h"
@@ -119,8 +119,9 @@ constexpr int ComputeEnumerationIndex(int value_index) {
   // We "shift" value indices to ensure that the enumeration index for the value
   // will not overlap with minimum properties set for both class and prototype
   // objects.
-  return value_index + Max(ClassBoilerplate::kMinimumClassPropertiesCount,
-                           ClassBoilerplate::kMinimumPrototypePropertiesCount);
+  return value_index +
+         std::max({ClassBoilerplate::kMinimumClassPropertiesCount,
+                   ClassBoilerplate::kMinimumPrototypePropertiesCount});
 }
 
 inline int GetExistingValueIndex(Object value) {
@@ -133,7 +134,7 @@ void AddToDictionaryTemplate(LocalIsolate* isolate,
                              int key_index,
                              ClassBoilerplate::ValueKind value_kind,
                              Smi value) {
-  InternalIndex entry = dictionary->FindEntry(ReadOnlyRoots(isolate), key);
+  InternalIndex entry = dictionary->FindEntry(isolate, key);
 
   if (entry.is_not_found()) {
     // Entry not found, add new one.
@@ -347,7 +348,7 @@ class ObjectDescriptor {
       AddToDictionaryTemplate(isolate, properties_dictionary_template_, name,
                               value_index, value_kind, value);
     } else {
-      *temp_handle_.location() = value.ptr();
+      temp_handle_.PatchValue(value);
       AddToDescriptorArrayTemplate(isolate, descriptor_array_template_, name,
                                    value_kind, temp_handle_);
     }
@@ -412,9 +413,8 @@ template void ClassBoilerplate::AddToPropertiesTemplate(
     Isolate* isolate, Handle<NameDictionary> dictionary, Handle<Name> name,
     int key_index, ClassBoilerplate::ValueKind value_kind, Smi value);
 template void ClassBoilerplate::AddToPropertiesTemplate(
-    OffThreadIsolate* isolate, Handle<NameDictionary> dictionary,
-    Handle<Name> name, int key_index, ClassBoilerplate::ValueKind value_kind,
-    Smi value);
+    LocalIsolate* isolate, Handle<NameDictionary> dictionary, Handle<Name> name,
+    int key_index, ClassBoilerplate::ValueKind value_kind, Smi value);
 
 template <typename LocalIsolate>
 void ClassBoilerplate::AddToElementsTemplate(
@@ -427,9 +427,8 @@ template void ClassBoilerplate::AddToElementsTemplate(
     Isolate* isolate, Handle<NumberDictionary> dictionary, uint32_t key,
     int key_index, ClassBoilerplate::ValueKind value_kind, Smi value);
 template void ClassBoilerplate::AddToElementsTemplate(
-    OffThreadIsolate* isolate, Handle<NumberDictionary> dictionary,
-    uint32_t key, int key_index, ClassBoilerplate::ValueKind value_kind,
-    Smi value);
+    LocalIsolate* isolate, Handle<NumberDictionary> dictionary, uint32_t key,
+    int key_index, ClassBoilerplate::ValueKind value_kind, Smi value);
 
 template <typename LocalIsolate>
 Handle<ClassBoilerplate> ClassBoilerplate::BuildClassBoilerplate(
@@ -553,32 +552,24 @@ Handle<ClassBoilerplate> ClassBoilerplate::BuildClassBoilerplate(
     }
   }
 
-  // Add name accessor to the class object if necessary.
-  bool install_class_name_accessor = false;
+  // All classes, even anonymous ones, have a name accessor. If static_desc is
+  // in dictionary mode, the name accessor is installed at runtime in
+  // DefineClass.
   if (!expr->has_name_static_property() &&
-      expr->constructor()->has_shared_name()) {
-    if (static_desc.HasDictionaryProperties()) {
-      // Install class name accessor if necessary during class literal
-      // instantiation.
-      install_class_name_accessor = true;
-    } else {
-      // Set class name accessor if the "name" method was not added yet.
-      PropertyAttributes attribs =
-          static_cast<PropertyAttributes>(DONT_ENUM | READ_ONLY);
-      static_desc.AddConstant(isolate, factory->name_string(),
-                              factory->function_name_accessor(), attribs);
-    }
+      !static_desc.HasDictionaryProperties()) {
+    // Set class name accessor if the "name" method was not added yet.
+    PropertyAttributes attribs =
+        static_cast<PropertyAttributes>(DONT_ENUM | READ_ONLY);
+    static_desc.AddConstant(isolate, factory->name_string(),
+                            factory->function_name_accessor(), attribs);
   }
 
   static_desc.Finalize(isolate);
   instance_desc.Finalize(isolate);
 
   Handle<ClassBoilerplate> class_boilerplate = Handle<ClassBoilerplate>::cast(
-      factory->NewFixedArray(kBoileplateLength, AllocationType::kOld));
+      factory->NewFixedArray(kBoilerplateLength, AllocationType::kOld));
 
-  class_boilerplate->set_flags(0);
-  class_boilerplate->set_install_class_name_accessor(
-      install_class_name_accessor);
   class_boilerplate->set_arguments_count(dynamic_argument_index);
 
   class_boilerplate->set_static_properties_template(
@@ -601,7 +592,7 @@ Handle<ClassBoilerplate> ClassBoilerplate::BuildClassBoilerplate(
 template Handle<ClassBoilerplate> ClassBoilerplate::BuildClassBoilerplate(
     Isolate* isolate, ClassLiteral* expr);
 template Handle<ClassBoilerplate> ClassBoilerplate::BuildClassBoilerplate(
-    OffThreadIsolate* isolate, ClassLiteral* expr);
+    LocalIsolate* isolate, ClassLiteral* expr);
 
 }  // namespace internal
 }  // namespace v8

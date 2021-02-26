@@ -120,6 +120,11 @@ void FakeUserManager::UpdateUserAccountData(
   }
 }
 
+void FakeUserManager::LogoutAllUsers() {
+  primary_user_ = nullptr;
+  active_user_ = nullptr;
+}
+
 void FakeUserManager::UserLoggedIn(const AccountId& account_id,
                                    const std::string& username_hash,
                                    bool browser_restart,
@@ -230,11 +235,11 @@ base::string16 FakeUserManager::GetUserDisplayName(
 }
 
 bool FakeUserManager::IsCurrentUserOwner() const {
-  return false;
+  return is_current_user_owner_;
 }
 
 bool FakeUserManager::IsCurrentUserNew() const {
-  return false;
+  return is_current_user_new_;
 }
 
 bool FakeUserManager::IsCurrentUserNonCryptohomeDataEphemeral() const {
@@ -254,14 +259,11 @@ bool FakeUserManager::IsLoggedInAsUserWithGaiaAccount() const {
 }
 
 bool FakeUserManager::IsLoggedInAsPublicAccount() const {
-  return false;
+  const User* active_user = GetActiveUser();
+  return active_user && active_user->GetType() == USER_TYPE_PUBLIC_ACCOUNT;
 }
 
 bool FakeUserManager::IsLoggedInAsGuest() const {
-  return false;
-}
-
-bool FakeUserManager::IsLoggedInAsSupervisedUser() const {
   return false;
 }
 
@@ -294,10 +296,6 @@ bool FakeUserManager::IsLoggedInAsStub() const {
 bool FakeUserManager::IsUserNonCryptohomeDataEphemeral(
     const AccountId& account_id) const {
   return false;
-}
-
-bool FakeUserManager::AreSupervisedUsersAllowed() const {
-  return true;
 }
 
 bool FakeUserManager::IsGuestSessionAllowed() const {

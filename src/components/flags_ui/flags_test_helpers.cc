@@ -106,7 +106,7 @@ bool IsValidLookingOwner(base::StringPiece owner) {
     return owner.find(".", at_pos) != std::string::npos;
   }
 
-  if (owner.starts_with("//")) {
+  if (base::StartsWith(owner, "//")) {
     // Looks like a path to a file. It would be nice to check that the file
     // actually exists here, but that's not possible because when this test
     // runs it runs in an isolated environment. To check for the presence of the
@@ -114,7 +114,7 @@ bool IsValidLookingOwner(base::StringPiece owner) {
     // file. Instead, just assume any file path ending in 'OWNERS' is valid.
     // This doesn't check that the entire filename part of the path is 'OWNERS'
     // because sometimes it is instead 'IPC_OWNERS' or similar.
-    return owner.ends_with("OWNERS");
+    return base::EndsWith(owner, "OWNERS");
   }
 
   // Otherwise, look for something that seems like the username part of an
@@ -177,7 +177,8 @@ bool IsUnexpireFlagFor(const flags_ui::FeatureEntry& entry, int milestone) {
     return false;
   std::string expected_feature =
       base::StringPrintf("UnexpireFlagsM%d", milestone);
-  if (!entry.feature || entry.feature->name != expected_feature)
+  const auto* feature = entry.feature.feature;
+  if (!feature || feature->name != expected_feature)
     return false;
   return true;
 }

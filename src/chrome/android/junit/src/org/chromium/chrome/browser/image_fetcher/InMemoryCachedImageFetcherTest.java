@@ -32,7 +32,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.util.BitmapCache;
+import org.chromium.components.browser_ui.util.BitmapCache;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
@@ -149,8 +149,9 @@ public class InMemoryCachedImageFetcherTest {
             answerFetch(mBitmap, true);
 
             // No exception should be thrown here when bitmap cache is null.
-            mInMemoryCachedImageFetcher.fetchImage(
-                    URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, (Bitmap bitmap) -> {});
+            ImageFetcher.Params params =
+                    ImageFetcher.Params.create(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX);
+            mInMemoryCachedImageFetcher.fetchImage(params, (Bitmap bitmap) -> {});
         } catch (Exception e) {
             Assert.fail("Destroy called in the middle of execution shouldn't throw");
         }
@@ -158,8 +159,9 @@ public class InMemoryCachedImageFetcherTest {
 
     @Test
     public void testFetchGif() {
-        mInMemoryCachedImageFetcher.fetchGif(URL, UMA_CLIENT_NAME, (BaseGifImage gif) -> {});
-        verify(mMockImageFetcher).fetchGif(eq(URL), eq(UMA_CLIENT_NAME), any());
+        ImageFetcher.Params params = ImageFetcher.Params.create(URL, UMA_CLIENT_NAME);
+        mInMemoryCachedImageFetcher.fetchGif(params, (BaseGifImage gif) -> {});
+        verify(mMockImageFetcher).fetchGif(eq(params), any());
     }
 
     @Test
@@ -181,9 +183,9 @@ public class InMemoryCachedImageFetcherTest {
         // Check that calling methods after destroy throw AssertionErrors.
         mExpectedException.expect(AssertionError.class);
         mExpectedException.expectMessage("fetchGif called after destroy");
-        mInMemoryCachedImageFetcher.fetchGif("", "", null);
+        mInMemoryCachedImageFetcher.fetchGif(ImageFetcher.Params.create("", ""), null);
         mExpectedException.expectMessage("fetchImage called after destroy");
-        mInMemoryCachedImageFetcher.fetchImage("", "", 100, 100, null);
+        mInMemoryCachedImageFetcher.fetchImage(ImageFetcher.Params.create("", "", 100, 100), null);
         mExpectedException.expectMessage("clear called after destroy");
         mInMemoryCachedImageFetcher.clear();
     }

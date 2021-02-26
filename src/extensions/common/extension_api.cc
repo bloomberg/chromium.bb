@@ -152,9 +152,10 @@ ExtensionAPI::~ExtensionAPI() {
 }
 
 void ExtensionAPI::InitDefaultConfiguration() {
-  const char* names[] = {"api", "manifest", "permission"};
-  for (size_t i = 0; i < base::size(names); ++i)
-    RegisterDependencyProvider(names[i], FeatureProvider::GetByName(names[i]));
+  const constexpr char* const names[] = {"api", "behavior", "manifest",
+                                         "permission"};
+  for (const char* const name : names)
+    RegisterDependencyProvider(name, FeatureProvider::GetByName(name));
 
   default_configuration_initialized_ = true;
 }
@@ -223,18 +224,12 @@ Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,
 base::StringPiece ExtensionAPI::GetSchemaStringPiece(
     const std::string& api_name) {
   DCHECK_EQ(api_name, GetAPINameFromFullName(api_name, nullptr));
-  auto cached = schema_strings_.find(api_name);
-  if (cached != schema_strings_.end())
-    return cached->second;
-
   ExtensionsClient* client = ExtensionsClient::Get();
   DCHECK(client);
   if (!default_configuration_initialized_)
     return base::StringPiece();
 
   base::StringPiece schema = client->GetAPISchema(api_name);
-  if (!schema.empty())
-    schema_strings_[api_name] = schema;
   return schema;
 }
 

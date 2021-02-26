@@ -36,7 +36,7 @@ NavigationEvent::NavigationEvent()
       original_request_url(),
       source_tab_id(SessionID::InvalidValue()),
       target_tab_id(SessionID::InvalidValue()),
-      frame_id(-1),
+      frame_id(content::RenderFrameHost::kNoFrameTreeNodeId),
       last_updated(base::Time::Now()),
       navigation_initiation(ReferrerChainEntry::UNDEFINED),
       has_committed(false),
@@ -102,10 +102,7 @@ SafeBrowsingNavigationObserver* SafeBrowsingNavigationObserver::FromWebContents(
 SafeBrowsingNavigationObserver::SafeBrowsingNavigationObserver(
     content::WebContents* contents,
     const scoped_refptr<SafeBrowsingNavigationObserverManager>& manager)
-    : content::WebContentsObserver(contents),
-      manager_(manager),
-      has_user_gesture_(false),
-      last_user_gesture_timestamp_(base::Time()) {
+    : content::WebContentsObserver(contents), manager_(manager) {
   content_settings_observer_.Add(HostContentSettingsMapFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext())));
 }
@@ -113,10 +110,7 @@ SafeBrowsingNavigationObserver::SafeBrowsingNavigationObserver(
 SafeBrowsingNavigationObserver::~SafeBrowsingNavigationObserver() {}
 
 void SafeBrowsingNavigationObserver::OnUserInteraction() {
-  last_user_gesture_timestamp_ = base::Time::Now();
-  has_user_gesture_ = true;
-  manager_->RecordUserGestureForWebContents(web_contents(),
-                                            last_user_gesture_timestamp_);
+  manager_->RecordUserGestureForWebContents(web_contents());
 }
 
 // Called when a navigation starts in the WebContents. |navigation_handle|
@@ -140,6 +134,23 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
     return;
   }
 
+  // When navigating a newly created portal contents, establish an association
+  // with its creator, so we can track the referrer chain across portal
+  // activations.
+  if (web_contents()->IsPortal() &&
+      !web_contents()->GetController().GetLastCommittedEntry()) {
+    content::RenderFrameHost* initiator_frame_host =
+        content::RenderFrameHost::FromID(
+            navigation_handle->GetInitiatorRoutingId());
+    content::WebContents* initiator_contents =
+        content::WebContents::FromRenderFrameHost(initiator_frame_host);
+    manager_->RecordNewWebContents(
+        initiator_contents, initiator_frame_host->GetProcess()->GetID(),
+        initiator_frame_host->GetRoutingID(), navigation_handle->GetURL(),
+        navigation_handle->GetPageTransition(), web_contents(),
+        navigation_handle->IsRendererInitiated());
+  }
+
   std::unique_ptr<NavigationEvent> nav_event =
       std::make_unique<NavigationEvent>();
   auto it = navigation_handle_map_.find(navigation_handle);
@@ -154,20 +165,14 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
     // NavigationEvent, and decide if it is triggered by user.
     if (!navigation_handle->IsRendererInitiated()) {
       nav_event->navigation_initiation = ReferrerChainEntry::BROWSER_INITIATED;
-    } else if (has_user_gesture_ &&
-               !SafeBrowsingNavigationObserverManager::IsUserGestureExpired(
-                   last_user_gesture_timestamp_)) {
+    } else if (manager_->HasUnexpiredUserGesture(web_contents())) {
       nav_event->navigation_initiation =
           ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE;
     } else {
       nav_event->navigation_initiation =
           ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE;
     }
-    if (has_user_gesture_) {
-      manager_->OnUserGestureConsumed(web_contents(),
-                                      last_user_gesture_timestamp_);
-      has_user_gesture_ = false;
-    }
+    manager_->OnUserGestureConsumed(web_contents());
   }
 
   // All the other fields are reconstructed based on current content of
@@ -176,8 +181,7 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
 
   // If there was a URL previously committed in the current RenderFrameHost,
   // set it as the source url of this navigation. Otherwise, this is the
-  // first url going to commit in this frame. We set navigation_handle's URL as
-  // the source url.
+  // first url going to commit in this frame.
   int current_process_id =
       navigation_handle->GetStartingSiteInstance()->GetProcess()->GetID();
   content::RenderFrameHost* current_frame_host =
@@ -257,7 +261,7 @@ void SafeBrowsingNavigationObserver::DidFinishNavigation(
 }
 
 void SafeBrowsingNavigationObserver::DidGetUserInteraction(
-    const blink::WebInputEvent::Type type) {
+    const blink::WebInputEvent& event) {
   OnUserInteraction();
 }
 
@@ -285,8 +289,7 @@ void SafeBrowsingNavigationObserver::DidOpenRequestedURL(
 void SafeBrowsingNavigationObserver::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier) {
+    ContentSettingsType content_type) {
   // For all the content settings that can be changed via page info UI, we
   // assume there is a user gesture associated with the content setting change.
   if (web_contents() &&

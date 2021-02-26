@@ -12,6 +12,10 @@
 
 class PasswordsModelDelegate;
 
+namespace password_manager {
+struct PasswordForm;
+}  // namespace password_manager
+
 // This controller provides data and actions for the
 // PasswordSaveUnsyncedCredentialsLocallyView.
 class SaveUnsyncedCredentialsLocallyBubbleController
@@ -21,15 +25,17 @@ class SaveUnsyncedCredentialsLocallyBubbleController
       base::WeakPtr<PasswordsModelDelegate> delegate);
   ~SaveUnsyncedCredentialsLocallyBubbleController() override;
 
-  // Called by the view code when the save button is clicked by the user.
-  // Saves the uncommitted credentials to the password store.
-  void OnSaveClicked();
+  // Called by the view code when the save button is clicked by the user. Saves
+  // the credentials whose corresponding position in |was_credential_selected|
+  // holds true.
+  void OnSaveClicked(const std::vector<bool>& was_credential_selected);
 
   // Called by the view code when the cancel button is clicked by the user.
   // Drops the unsynced credentials.
   void OnCancelClicked();
 
-  const std::vector<autofill::PasswordForm>& unsynced_credentials() const {
+  const std::vector<password_manager::PasswordForm>& unsynced_credentials()
+      const {
     return unsynced_credentials_;
   }
 
@@ -38,8 +44,8 @@ class SaveUnsyncedCredentialsLocallyBubbleController
   base::string16 GetTitle() const override;
   void ReportInteractions() override;
 
-  std::vector<autofill::PasswordForm> unsynced_credentials_;
   password_manager::metrics_util::UIDismissalReason dismissal_reason_;
+  std::vector<password_manager::PasswordForm> unsynced_credentials_;
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_SAVE_UNSYNCED_CREDENTIALS_LOCALLY_BUBBLE_CONTROLLER_H_

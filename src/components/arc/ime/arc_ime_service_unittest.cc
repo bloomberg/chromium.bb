@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/mojom/ime.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,9 +33,7 @@ namespace {
 class FakeArcImeBridge : public ArcImeBridge {
  public:
   FakeArcImeBridge()
-      : count_send_insert_text_(0),
-        last_keyboard_availability_(false),
-        selection_range_(gfx::Range()) {}
+      : count_send_insert_text_(0), last_keyboard_availability_(false) {}
 
   void SendSetCompositionText(const ui::CompositionText& composition) override {
   }
@@ -53,6 +52,9 @@ class FakeArcImeBridge : public ArcImeBridge {
     last_keyboard_bounds_ = new_bounds;
     last_keyboard_availability_ = is_available;
   }
+  void SendSetComposingRegion(const gfx::Range& composing_range) override {
+    composing_range_ = composing_range;
+  }
 
   int count_send_insert_text() const { return count_send_insert_text_; }
   const gfx::Rect& last_keyboard_bounds() const {
@@ -62,12 +64,14 @@ class FakeArcImeBridge : public ArcImeBridge {
     return last_keyboard_availability_;
   }
   gfx::Range selection_range() { return selection_range_; }
+  gfx::Range composing_range() { return composing_range_; }
 
  private:
   int count_send_insert_text_;
   gfx::Rect last_keyboard_bounds_;
   bool last_keyboard_availability_;
   gfx::Range selection_range_;
+  gfx::Range composing_range_;
 };
 
 class FakeInputMethod : public ui::DummyInputMethod {
@@ -207,16 +211,17 @@ class ArcImeServiceTest : public testing::Test {
  private:
   void SetUp() override {
     arc_bridge_service_ = std::make_unique<ArcBridgeService>();
-    instance_ =
-        std::make_unique<ArcImeService>(nullptr, arc_bridge_service_.get());
+
+    fake_input_method_ = std::make_unique<FakeInputMethod>();
+    auto delegate =
+        std::make_unique<FakeArcWindowDelegate>(fake_input_method_.get());
+    fake_window_delegate_ = delegate.get();
+
+    instance_ = base::WrapUnique(new ArcImeService(
+        nullptr, arc_bridge_service_.get(), std::move(delegate)));
     fake_arc_ime_bridge_ = new FakeArcImeBridge();
     instance_->SetImeBridgeForTesting(base::WrapUnique(fake_arc_ime_bridge_));
 
-    fake_input_method_ = std::make_unique<FakeInputMethod>();
-
-    fake_window_delegate_ = new FakeArcWindowDelegate(fake_input_method_.get());
-    instance_->SetArcWindowDelegateForTesting(
-        base::WrapUnique(fake_window_delegate_));
     arc_win_ = fake_window_delegate_->CreateFakeArcWindow();
   }
 
@@ -226,6 +231,7 @@ class ArcImeServiceTest : public testing::Test {
     fake_window_delegate_ = nullptr;
     fake_arc_ime_bridge_ = nullptr;
     instance_.reset();
+    fake_input_method_.reset();
     arc_bridge_service_.reset();
   }
 };
@@ -506,6 +512,29 @@ TEST_F(ArcImeServiceTest, DoNothingIfArcWindowIsNotFocused) {
   EXPECT_EQ(0, fake_input_method_->count_on_text_input_type_changed());
   EXPECT_EQ(0, fake_input_method_->count_on_caret_bounds_changed());
   EXPECT_EQ(0, fake_input_method_->count_cancel_composition());
+}
+
+TEST_F(ArcImeServiceTest, SetComposingRegion) {
+  instance_->OnWindowFocused(arc_win_.get(), nullptr);
+
+  const gfx::Range composing_range(1, 3);
+
+  // Ignore it if the range is outside of text range.
+  instance_->SetCompositionFromExistingText(composing_range, {});
+  EXPECT_EQ(gfx::Range(), fake_arc_ime_bridge_->composing_range());
+
+  instance_->OnCursorRectChangedWithSurroundingText(
+      gfx::Rect(), gfx::Range(0, 100), base::string16(100, 'a'),
+      gfx::Range(0, 0), false);
+  instance_->SetCompositionFromExistingText(composing_range, {});
+  EXPECT_EQ(composing_range, fake_arc_ime_bridge_->composing_range());
+
+  // Ignore it if the range is outside of text range.
+  instance_->OnCursorRectChangedWithSurroundingText(
+      gfx::Rect(), gfx::Range(0, 100), base::string16(100, 'a'),
+      gfx::Range(0, 0), false);
+  instance_->SetCompositionFromExistingText(gfx::Range(50, 101), {});
+  EXPECT_EQ(composing_range, fake_arc_ime_bridge_->composing_range());
 }
 
 }  // namespace arc

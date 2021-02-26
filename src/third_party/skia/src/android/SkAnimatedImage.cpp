@@ -19,15 +19,6 @@
 #include <utility>
 
 sk_sp<SkAnimatedImage> SkAnimatedImage::Make(std::unique_ptr<SkAndroidCodec> codec,
-        SkISize scaledSize, SkIRect cropRect, sk_sp<SkPicture> postProcess) {
-    if (!codec) {
-        return nullptr;
-    }
-    auto info = codec->getInfo().makeDimensions(scaledSize);
-    return Make(std::move(codec), info, cropRect, std::move(postProcess));
-}
-
-sk_sp<SkAnimatedImage> SkAnimatedImage::Make(std::unique_ptr<SkAndroidCodec> codec,
         const SkImageInfo& requestedInfo, SkIRect cropRect, sk_sp<SkPicture> postProcess) {
     if (!codec) {
         return nullptr;
@@ -92,10 +83,10 @@ SkAnimatedImage::SkAnimatedImage(std::unique_ptr<SkAndroidCodec> codec, SkISize 
     }
 
     if (!fSimple) {
-        fMatrix = SkMatrix::MakeTrans(-fCropRect.fLeft, -fCropRect.fTop);
+        fMatrix = SkMatrix::Translate(-fCropRect.fLeft, -fCropRect.fTop);
         float scaleX = (float) fScaledSize.width()  / fDecodeInfo.width();
         float scaleY = (float) fScaledSize.height() / fDecodeInfo.height();
-        fMatrix.preConcat(SkMatrix::MakeScale(scaleX, scaleY));
+        fMatrix.preConcat(SkMatrix::Scale(scaleX, scaleY));
     }
     this->decodeNextFrame();
 }

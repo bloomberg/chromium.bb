@@ -23,15 +23,15 @@
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/favicon_base/favicon_usage_data.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/search_engines/template_url.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // TODO(estade): some of these are disabled on mac. http://crbug.com/48007
 // TODO(jschuh): Disabled on Win64 build. http://crbug.com/179688
-#if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ARCH_CPU_X86_64))
+#if defined(OS_MAC) || (defined(OS_WIN) && defined(ARCH_CPU_X86_64))
 #define MAYBE_IMPORTER(x) DISABLED_##x
 #else
 #define MAYBE_IMPORTER(x) x
@@ -170,16 +170,16 @@ class FirefoxObserver : public ProfileWriter,
 
   bool TemplateURLServiceIsLoaded() const override { return true; }
 
-  void AddPasswordForm(const autofill::PasswordForm& form) override {
+  void AddPasswordForm(const password_manager::PasswordForm& form) override {
     PasswordInfo p = kFirefoxPasswords[password_count_];
-    EXPECT_EQ(p.origin, form.origin.spec());
+    EXPECT_EQ(p.origin, form.url.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
     EXPECT_EQ(p.action, form.action.spec());
     EXPECT_EQ(base::ASCIIToUTF16(p.username_element), form.username_element);
     EXPECT_EQ(base::ASCIIToUTF16(p.username), form.username_value);
     EXPECT_EQ(base::ASCIIToUTF16(p.password_element), form.password_element);
     EXPECT_EQ(base::ASCIIToUTF16(p.password), form.password_value);
-    EXPECT_EQ(p.blacklisted, form.blacklisted_by_user);
+    EXPECT_EQ(p.blacklisted, form.blocked_by_user);
     ++password_count_;
   }
 
@@ -273,7 +273,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     // Creates a new profile in a new subdirectory in the temp directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath test_path = temp_dir_.GetPath().AppendASCII("ImporterTest");
-    base::DeleteFileRecursively(test_path);
+    base::DeletePathRecursively(test_path);
     base::CreateDirectory(test_path);
     profile_path_ = test_path.AppendASCII("profile");
     app_path_ = test_path.AppendASCII("app");

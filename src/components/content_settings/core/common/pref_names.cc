@@ -6,10 +6,6 @@
 
 namespace prefs {
 
-// Boolean that is true if we should unconditionally block third-party cookies,
-// regardless of other content settings.
-const char kBlockThirdPartyCookies[] = "profile.block_third_party_cookies";
-
 // CookieControlsMode enum value that decides when the cookie controls UI is
 // enabled. This will block third-party cookies similar to
 // kBlockThirdPartyCookies but with a new UI.
@@ -41,16 +37,24 @@ const char kManagedDefaultNotificationsSetting[] =
     "profile.managed_default_content_settings.notifications";
 const char kManagedDefaultMediaStreamSetting[] =
     "profile.managed_default_content_settings.media_stream";
-const char kManagedDefaultPluginsSetting[] =
-    "profile.managed_default_content_settings.plugins";
 const char kManagedDefaultPopupsSetting[] =
     "profile.managed_default_content_settings.popups";
+const char kManagedDefaultSensorsSetting[] =
+    "profile.managed_default_content_settings.sensors";
 const char kManagedDefaultWebBluetoothGuardSetting[] =
     "profile.managed_default_content_settings.web_bluetooth_guard";
 const char kManagedDefaultWebUsbGuardSetting[] =
     "profile.managed_default_content_settings.web_usb_guard";
+const char kManagedDefaultFileSystemReadGuardSetting[] =
+    "profile.managed_default_content_settings.file_system_read_guard";
+const char kManagedDefaultFileSystemWriteGuardSetting[] =
+    "profile.managed_default_content_settings.file_system_write_guard";
 const char kManagedDefaultLegacyCookieAccessSetting[] =
     "profile.managed_default_content_settings.legacy_cookie_access";
+const char kManagedDefaultSerialGuardSetting[] =
+    "profile.managed_default_content_settings.serial_guard";
+const char kManagedDefaultInsecurePrivateNetworkSetting[] =
+    "profile.managed_default_content_settings.insecure_private_network";
 
 // Preferences that are exclusively used to store managed
 // content settings patterns.
@@ -78,20 +82,50 @@ const char kManagedNotificationsAllowedForUrls[] =
     "profile.managed_notifications_allowed_for_urls";
 const char kManagedNotificationsBlockedForUrls[] =
     "profile.managed_notifications_blocked_for_urls";
-const char kManagedPluginsAllowedForUrls[] =
-    "profile.managed_plugins_allowed_for_urls";
-const char kManagedPluginsBlockedForUrls[] =
-    "profile.managed_plugins_blocked_for_urls";
 const char kManagedPopupsAllowedForUrls[] =
     "profile.managed_popups_allowed_for_urls";
 const char kManagedPopupsBlockedForUrls[] =
     "profile.managed_popups_blocked_for_urls";
+const char kManagedSensorsAllowedForUrls[] =
+    "profile.managed_sensors_allowed_for_urls";
+const char kManagedSensorsBlockedForUrls[] =
+    "profile.managed_sensors_blocked_for_urls";
 const char kManagedWebUsbAllowDevicesForUrls[] =
     "profile.managed_web_usb_allow_devices_for_urls";
 const char kManagedWebUsbAskForUrls[] = "profile.managed_web_usb_ask_for_urls";
 const char kManagedWebUsbBlockedForUrls[] =
     "profile.managed_web_usb_blocked_for_urls";
+const char kManagedFileSystemReadAskForUrls[] =
+    "profile.managed_file_system_read_ask_for_urls";
+const char kManagedFileSystemReadBlockedForUrls[] =
+    "profile.managed_file_system_read_blocked_for_urls";
+const char kManagedFileSystemWriteAskForUrls[] =
+    "profile.managed_file_system_write_ask_for_urls";
+const char kManagedFileSystemWriteBlockedForUrls[] =
+    "profile.managed_file_system_write_blocked_for_urls";
 const char kManagedLegacyCookieAccessAllowedForDomains[] =
     "profile.managed_legacy_cookie_access_allowed_for_domains";
+const char kManagedSerialAskForUrls[] = "profile.managed_serial_ask_for_urls";
+const char kManagedSerialBlockedForUrls[] =
+    "profile.managed_serial_blocked_for_urls";
+const char kManagedInsecurePrivateNetworkAllowedForUrls[] =
+    "profile.managed_insecure_private_network_allowed_for_urls";
+
+// Boolean indicating whether the quiet UI is enabled for notification
+// permission requests.
+const char kEnableQuietNotificationPermissionUi[] =
+    "profile.content_settings.enable_quiet_permission_ui.notifications";
+
+// Enum indicating by which method the quiet UI has been enabled for
+// notification permission requests. This is stored as of M88 and will be
+// backfilled if the quiet UI is enabled but this preference has no value.
+const char kQuietNotificationPermissionUiEnablingMethod[] =
+    "profile.content_settings.enable_quiet_permission_ui_enabling_method."
+    "notifications";
+
+#if defined(OS_ANDROID)
+// Enable vibration for web notifications.
+const char kNotificationsVibrateEnabled[] = "notifications.vibrate_enabled";
+#endif
 
 }  // namespace prefs

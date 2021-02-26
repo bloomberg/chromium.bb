@@ -167,10 +167,10 @@
 	  <term>new_id</term>
 	  <listitem>
 	    <para>
-	      The 32-bit object ID.  On requests, the client
-	      decides the ID.  The only events with <type>new_id</type> are
-	      advertisements of globals, and the server will use IDs below
-	      0x10000.
+	      The 32-bit object ID.  Generally, the interface used for the new
+	      object is inferred from the xml, but in the case where it's not
+	      specified, a new_id is preceeded by a <code>string</code> specifying
+	      the interface name, and a <code>uint</code> specifying the version.
 	    </para>
 	  </listitem>
 	</varlistentry>

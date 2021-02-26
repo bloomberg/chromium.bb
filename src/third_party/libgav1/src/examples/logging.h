@@ -18,12 +18,17 @@
 #define LIBGAV1_EXAMPLES_LOGGING_H_
 
 #include <cstddef>
+#include <cstdio>
 
 namespace libgav1 {
 namespace examples {
 
 #if !defined(LIBGAV1_EXAMPLES_ENABLE_LOGGING)
+#if defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION)
+#define LIBGAV1_EXAMPLES_ENABLE_LOGGING 0
+#else
 #define LIBGAV1_EXAMPLES_ENABLE_LOGGING 1
+#endif
 #endif
 
 #if LIBGAV1_EXAMPLES_ENABLE_LOGGING

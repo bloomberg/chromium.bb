@@ -342,7 +342,7 @@ interface OemCryptoService {
 // that runs in Chrome OS.
 // Next Method ID: 1
 interface OemCryptoHost {
-  Connect@0(OemCryptoService& oemcryptor);
+  Connect@0(pending_receiver<OemCryptoService> oemcryptor);
 };
 
 // OemCryptoInstance is implemented in the liboemcrypto.so library that runs in
@@ -350,8 +350,8 @@ interface OemCryptoHost {
 // Next Method ID: 2
 interface OemCryptoInstance {
   // DEPRECATED: Please use Init@1 instead.
-  InitDeprecated@0(OemCryptoHost host_ptr);
+  InitDeprecated@0(pending_remote<OemCryptoHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=1] Init@1(OemCryptoHost host_ptr) => ();
+  [MinVersion=1] Init@1(pending_remote<OemCryptoHost> host_remote) => ();
 };

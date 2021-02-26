@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
@@ -146,6 +146,10 @@ class FakeUpgradeDetector : public UpgradeDetector {
   void BroadcastHighThresholdChange(base::TimeDelta high_threshold) {
     high_threshold_ = high_threshold;
     NotifyUpgrade();
+  }
+
+  void BroadcastNotificationTypeOverriden(bool override) {
+    NotifyRelaunchOverriddenToRequired(override);
   }
 
   base::TimeDelta high_threshold() const { return high_threshold_; }
@@ -734,6 +738,31 @@ TEST_F(RelaunchNotificationControllerTest, DeferredRequired) {
   // And the relaunch is extended by the grace period.
   EXPECT_CALL(mock_controller_delegate, OnRelaunchDeadlineExpired());
   FastForwardBy(FakeRelaunchNotificationController::kRelaunchGracePeriod);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
+}
+
+// Call to override the current relaunch notification type should override it to
+// required and policy change should not affect it.
+TEST_F(RelaunchNotificationControllerTest, OverriddenToRequired) {
+  SetNotificationPref(1);
+  ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
+
+  FakeRelaunchNotificationController controller(
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
+
+  fake_upgrade_detector().BroadcastNotificationTypeOverriden(true);
+
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
+  fake_upgrade_detector().BroadcastLevelChange(
+      UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
+
+  SetNotificationPref(0);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
+
+  EXPECT_CALL(mock_controller_delegate, Close());
+  fake_upgrade_detector().BroadcastNotificationTypeOverriden(false);
   ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
 }
 

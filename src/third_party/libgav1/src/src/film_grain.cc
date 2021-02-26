@@ -250,8 +250,7 @@ inline void CopyImagePlane(const uint8_t* source_plane, ptrdiff_t source_stride,
 
   int y = 0;
   do {
-    memcpy(dest_plane, source_plane,
-           width * sizeof(Pixel) * sizeof(dest_plane[0]));
+    memcpy(dest_plane, source_plane, width * sizeof(Pixel));
     source_plane += source_stride;
     dest_plane += dest_stride;
   } while (++y < height);
@@ -333,7 +332,8 @@ bool FilmGrain<bitdepth>::Init() {
     } else if (params_.num_u_points > 0 || params_.num_v_points > 0) {
       const size_t buffer_size =
           (kScalingLookupTableSize + kScalingLookupTablePadding) *
-          ((params_.num_u_points > 0) + (params_.num_v_points > 0));
+          (static_cast<int>(params_.num_u_points > 0) +
+           static_cast<int>(params_.num_v_points > 0));
       scaling_lut_chroma_buffer_.reset(new (std::nothrow) uint8_t[buffer_size]);
       if (scaling_lut_chroma_buffer_ == nullptr) return false;
 
@@ -433,7 +433,7 @@ bool FilmGrain<bitdepth>::AllocateNoiseStripes() {
   if (!is_monochrome_) {
     noise_buffer_size += 2 * max_luma_num *
                          (kNoiseStripeHeight >> subsampling_y_) *
-                         RightShiftWithRounding(width_, subsampling_x_);
+                         SubsampledValue(width_, subsampling_x_);
   }
   noise_buffer_.reset(new (std::nothrow) GrainType[noise_buffer_size]);
   if (noise_buffer_ == nullptr) return false;
@@ -444,18 +444,16 @@ bool FilmGrain<bitdepth>::AllocateNoiseStripes() {
     noise_buffer += max_luma_num * kNoiseStripeHeight * width_;
   }
   if (!is_monochrome_) {
-    noise_stripes_[kPlaneU].Reset(
-        max_luma_num,
-        (kNoiseStripeHeight >> subsampling_y_) *
-            RightShiftWithRounding(width_, subsampling_x_),
-        noise_buffer);
+    noise_stripes_[kPlaneU].Reset(max_luma_num,
+                                  (kNoiseStripeHeight >> subsampling_y_) *
+                                      SubsampledValue(width_, subsampling_x_),
+                                  noise_buffer);
     noise_buffer += max_luma_num * (kNoiseStripeHeight >> subsampling_y_) *
-                    RightShiftWithRounding(width_, subsampling_x_);
-    noise_stripes_[kPlaneV].Reset(
-        max_luma_num,
-        (kNoiseStripeHeight >> subsampling_y_) *
-            RightShiftWithRounding(width_, subsampling_x_),
-        noise_buffer);
+                    SubsampledValue(width_, subsampling_x_);
+    noise_stripes_[kPlaneV].Reset(max_luma_num,
+                                  (kNoiseStripeHeight >> subsampling_y_) *
+                                      SubsampledValue(width_, subsampling_x_),
+                                  noise_buffer);
   }
   return true;
 }
@@ -657,7 +655,8 @@ bool FilmGrain<bitdepth>::AddNoise(
   if (use_luma) {
     ConstructNoiseImage(
         &noise_stripes_[kPlaneY], width_, height_, /*subsampling_x=*/0,
-        /*subsampling_y=*/0, params_.overlap_flag << 1, &noise_image_[kPlaneY]);
+        /*subsampling_y=*/0, static_cast<int>(params_.overlap_flag) << 1,
+        &noise_image_[kPlaneY]);
     if (params_.overlap_flag) {
       dsp.film_grain.construct_noise_image_overlap(
           &noise_stripes_[kPlaneY], width_, height_, /*subsampling_x=*/0,
@@ -667,11 +666,13 @@ bool FilmGrain<bitdepth>::AddNoise(
   if (!is_monochrome_) {
     ConstructNoiseImage(&noise_stripes_[kPlaneU], width_, height_,
                         subsampling_x_, subsampling_y_,
-                        params_.overlap_flag << (1 - subsampling_y_),
+                        static_cast<int>(params_.overlap_flag)
+                            << (1 - subsampling_y_),
                         &noise_image_[kPlaneU]);
     ConstructNoiseImage(&noise_stripes_[kPlaneV], width_, height_,
                         subsampling_x_, subsampling_y_,
-                        params_.overlap_flag << (1 - subsampling_y_),
+                        static_cast<int>(params_.overlap_flag)
+                            << (1 - subsampling_y_),
                         &noise_image_[kPlaneV]);
     if (params_.overlap_flag) {
       dsp.film_grain.construct_noise_image_overlap(
@@ -712,8 +713,8 @@ bool FilmGrain<bitdepth>::AddNoise(
       planes_to_blend[num_planes++] = kPlaneU;
       planes_to_blend[num_planes++] = kPlaneV;
     } else {
-      const int height_uv = RightShiftWithRounding(height_, subsampling_y_);
-      const int width_uv = RightShiftWithRounding(width_, subsampling_x_);
+      const int height_uv = SubsampledValue(height_, subsampling_y_);
+      const int width_uv = SubsampledValue(width_, subsampling_x_);
 
       // Noise is applied according to a lookup table defined by pieceiwse
       // linear "points." If the lookup table is empty, that corresponds to

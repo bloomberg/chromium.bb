@@ -83,10 +83,12 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   bool SendTreeChangeEvent(api::automation::TreeChangeType change_type,
                            ui::AXTree* tree,
                            ui::AXNode* node);
-  void SendAutomationEvent(ui::AXTreeID tree_id,
-                           const gfx::Point& mouse_location,
-                           const ui::AXEvent& event,
-                           api::automation::EventType event_type);
+  void SendAutomationEvent(
+      ui::AXTreeID tree_id,
+      const gfx::Point& mouse_location,
+      const ui::AXEvent& event,
+      base::Optional<ui::AXEventGenerator::Event> generated_event_type =
+          base::Optional<ui::AXEventGenerator::Event>());
 
   void MaybeSendFocusAndBlur(
       AutomationAXTreeWrapper* tree,
@@ -161,7 +163,8 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
                        AutomationAXTreeWrapper* tree_wrapper,
                        ui::AXNode* node,
                        int start,
-                       int end));
+                       int end,
+                       bool clipped));
   void RouteNodeIDPlusStringBoolFunction(
       const std::string& name,
       std::function<void(v8::Isolate* isolate,
@@ -186,7 +189,7 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
                        v8::ReturnValue<v8::Value> result,
                        AutomationAXTreeWrapper* tree_wrapper,
                        ui::AXNode* node,
-                       ax::mojom::Event event_type));
+                       api::automation::EventType event_type));
 
   //
   // Access the cached accessibility trees and properties of their nodes.

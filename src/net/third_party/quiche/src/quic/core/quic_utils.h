@@ -11,6 +11,7 @@
 #include <string>
 #include <type_traits>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/frames/quic_frame.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
@@ -21,7 +22,6 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_iovec.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -31,22 +31,22 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
 
   // Returns the 64 bit FNV1a hash of the data.  See
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
-  static uint64_t FNV1a_64_Hash(quiche::QuicheStringPiece data);
+  static uint64_t FNV1a_64_Hash(absl::string_view data);
 
   // Returns the 128 bit FNV1a hash of the data.  See
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
-  static QuicUint128 FNV1a_128_Hash(quiche::QuicheStringPiece data);
+  static QuicUint128 FNV1a_128_Hash(absl::string_view data);
 
   // Returns the 128 bit FNV1a hash of the two sequences of data.  See
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
-  static QuicUint128 FNV1a_128_Hash_Two(quiche::QuicheStringPiece data1,
-                                        quiche::QuicheStringPiece data2);
+  static QuicUint128 FNV1a_128_Hash_Two(absl::string_view data1,
+                                        absl::string_view data2);
 
   // Returns the 128 bit FNV1a hash of the three sequences of data.  See
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
-  static QuicUint128 FNV1a_128_Hash_Three(quiche::QuicheStringPiece data1,
-                                          quiche::QuicheStringPiece data2,
-                                          quiche::QuicheStringPiece data3);
+  static QuicUint128 FNV1a_128_Hash_Three(absl::string_view data1,
+                                          absl::string_view data2,
+                                          absl::string_view data3);
 
   // SerializeUint128 writes the first 96 bits of |v| in little-endian form
   // to |out|.
@@ -80,7 +80,7 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
                            char* buffer);
 
   // Creates an iovec pointing to the same data as |data|.
-  static struct iovec MakeIovec(quiche::QuicheStringPiece data);
+  static struct iovec MakeIovec(absl::string_view data);
 
   // Returns the opposite Perspective of the |perspective| passed in.
   static constexpr Perspective InvertPerspective(Perspective perspective) {
@@ -146,14 +146,16 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
 
   // Returns true if |id| is considered as bidirectional stream ID. Only used in
   // v99.
-  static bool IsBidirectionalStreamId(QuicStreamId id);
+  static bool IsBidirectionalStreamId(QuicStreamId id,
+                                      ParsedQuicVersion version);
 
   // Returns stream type.  Either |perspective| or |peer_initiated| would be
   // enough together with |id|.  This method enforces that the three parameters
   // are consistent.  Only used in v99.
   static StreamType GetStreamType(QuicStreamId id,
                                   Perspective perspective,
-                                  bool peer_initiated);
+                                  bool peer_initiated,
+                                  ParsedQuicVersion version);
 
   // Returns the delta between consecutive stream IDs of the same type.
   static QuicStreamId StreamIdDelta(QuicTransportVersion version);
@@ -168,11 +170,23 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
       QuicTransportVersion version,
       Perspective perspective);
 
-  // Generates a 64bit connection ID derived from the input connection ID.
+  // Returns the largest possible client initiated bidirectional stream ID.
+  static QuicStreamId GetMaxClientInitiatedBidirectionalStreamId(
+      QuicTransportVersion version);
+
+  // Generates a connection ID of length |expected_connection_id_length|
+  // derived from |connection_id|.
   // This is guaranteed to be deterministic (calling this method with two
   // connection IDs that are equal is guaranteed to produce the same result).
   static QuicConnectionId CreateReplacementConnectionId(
-      QuicConnectionId connection_id);
+      const QuicConnectionId& connection_id,
+      uint8_t expected_connection_id_length);
+
+  // Generates a 64bit connection ID derived from |connection_id|.
+  // This is guaranteed to be deterministic (calling this method with two
+  // connection IDs that are equal is guaranteed to produce the same result).
+  static QuicConnectionId CreateReplacementConnectionId(
+      const QuicConnectionId& connection_id);
 
   // Generates a random 64bit connection ID.
   static QuicConnectionId CreateRandomConnectionId();
@@ -220,6 +234,9 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   // exceeds this value, it will result in a stream ID that exceeds the
   // implementation limit on stream ID size.
   static QuicStreamCount GetMaxStreamCount();
+
+  // Return true if this frame is an IETF probing frame.
+  static bool IsProbingFrame(QuicFrameType type);
 };
 
 template <typename Mask>

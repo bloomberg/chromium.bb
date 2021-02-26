@@ -15,9 +15,9 @@
 #ifndef DAWNPLATFORM_DAWNPLATFORM_H_
 #define DAWNPLATFORM_DAWNPLATFORM_H_
 
-#include <dawn_native/dawn_native_export.h>
+#include "dawn_platform/dawn_platform_export.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace dawn_platform {
 
@@ -28,10 +28,11 @@ namespace dawn_platform {
         GPUWork,     // Actual GPU work
     };
 
-    class DAWN_NATIVE_EXPORT Platform {
+    class DAWN_PLATFORM_EXPORT Platform {
       public:
-        virtual ~Platform() {
-        }
+        Platform();
+        virtual ~Platform();
+
         virtual const unsigned char* GetTraceCategoryEnabledFlag(TraceCategory category) = 0;
 
         virtual double MonotonicallyIncreasingTime() = 0;
@@ -46,6 +47,10 @@ namespace dawn_platform {
                                        const unsigned char* argTypes,
                                        const uint64_t* argValues,
                                        unsigned char flags) = 0;
+
+      private:
+        Platform(const Platform&) = delete;
+        Platform& operator=(const Platform&) = delete;
     };
 
 }  // namespace dawn_platform

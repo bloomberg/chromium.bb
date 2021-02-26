@@ -9,6 +9,7 @@
 
 #include "base/android/android_image_reader_compat.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/service/texture_owner.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gl/gl_fence_egl.h"
@@ -37,12 +38,10 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
   gl::ScopedJavaSurface CreateJavaSurface() const override;
   void UpdateTexImage() override;
   void EnsureTexImageBound() override;
-  void GetTransformMatrix(float mtx[16]) override;
   void ReleaseBackBuffers() override;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
-  gfx::Rect GetCropRect() override;
-  void GetCodedSizeAndVisibleRect(gfx::Size rotated_visible_size,
+  bool GetCodedSizeAndVisibleRect(gfx::Size rotated_visible_size,
                                   gfx::Size* coded_size,
                                   gfx::Rect* visible_rect) override;
 
@@ -89,6 +88,8 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
   void RegisterRefOnImage(AImage* image);
   void ReleaseRefOnImage(AImage* image, base::ScopedFD fence_fd);
 
+  gfx::Rect GetCropRect();
+
   static void OnFrameAvailable(void* context, AImageReader* reader);
 
   // AImageReader instance
@@ -131,6 +132,8 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
   base::RepeatingClosure frame_available_cb_;
 
   THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtrFactory<ImageReaderGLOwner> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageReaderGLOwner);
 };

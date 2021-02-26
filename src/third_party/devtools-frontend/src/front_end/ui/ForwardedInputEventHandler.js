@@ -2,18 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as Host from '../host/host.js';
 
+import {Context} from './Context.js';  // eslint-disable-line no-unused-vars
 import {KeyboardShortcut} from './KeyboardShortcut.js';
-import {ForwardedShortcut} from './ShortcutRegistry.js';
+import {ForwardedShortcut, ShortcutRegistry} from './ShortcutRegistry.js';  // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
+
 export class ForwardedInputEventHandler {
   constructor() {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
@@ -34,9 +30,12 @@ export class ForwardedInputEventHandler {
       return;
     }
 
-    self.UI.context.setFlavor(ForwardedShortcut, ForwardedShortcut.instance);
-    self.UI.shortcutRegistry.handleKey(KeyboardShortcut.makeKey(keyCode, modifiers), key);
-    self.UI.context.setFlavor(ForwardedShortcut, null);
+    const context = Context.instance();
+    const shortcutRegistry = ShortcutRegistry.instance();
+
+    context.setFlavor(ForwardedShortcut, ForwardedShortcut.instance);
+    shortcutRegistry.handleKey(KeyboardShortcut.makeKey(keyCode, modifiers), key);
+    context.setFlavor(ForwardedShortcut, null);
   }
 }
 

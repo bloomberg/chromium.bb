@@ -28,23 +28,32 @@ import {
   LogExists,
   LogExistsKey
 } from '../common/logs';
+import {MetricResult} from '../common/metric_data';
 import {CurrentSearchResults, SearchSummary} from '../common/search_data';
 
+import {AnalyzePage} from './analyze_page';
+import {loadAndroidBugToolInfo} from './android_bug_tool';
 import {maybeShowErrorDialog} from './error_dialog';
 import {
   CounterDetails,
+  CpuProfileDetails,
+  Flow,
   globals,
   HeapProfileDetails,
   QuantizedLoad,
   SliceDetails,
-  ThreadDesc
+  ThreadDesc,
+  ThreadStateDetails
 } from './globals';
 import {HomePage} from './home_page';
 import {openBufferWithLegacyTraceViewer} from './legacy_trace_viewer';
+import {MetricsPage} from './metrics_page';
 import {postMessageHandler} from './post_message_handler';
 import {RecordPage, updateAvailableAdbDevices} from './record_page';
 import {Router} from './router';
 import {CheckHttpRpcConnection} from './rpc_http_dialog';
+import {taskTracker} from './task_tracker';
+import {TraceInfoPage} from './trace_info_page';
 import {ViewerPage} from './viewer_page';
 
 const EXTENSION_ID = 'lfmkphfpdbjijhpomgecfikhfohaoine';
@@ -120,6 +129,43 @@ class FrontendApi {
     this.redraw();
   }
 
+  publishThreadStateDetails(click: ThreadStateDetails) {
+    globals.threadStateDetails = click;
+    this.redraw();
+  }
+
+  publishConnectedFlows(connectedFlows: Flow[]) {
+    globals.connectedFlows = connectedFlows;
+    // Call resetFlowFocus() each time connectedFlows is updated to correctly
+    // navigate using hotkeys.
+    this.resetFlowFocus();
+    this.redraw();
+  }
+
+  // If a chrome slice is selected and we have any flows in connectedFlows
+  // we will find the flows on the right and left of that slice to set a default
+  // focus. In all other cases the focusedFlowId(Left|Right) will be set to -1.
+  resetFlowFocus() {
+    globals.frontendLocalState.focusedFlowIdLeft = -1;
+    globals.frontendLocalState.focusedFlowIdRight = -1;
+    if (globals.state.currentSelection?.kind === 'CHROME_SLICE') {
+      const sliceId = globals.state.currentSelection.id;
+      for (const flow of globals.connectedFlows) {
+        if (flow.begin.sliceId === sliceId) {
+          globals.frontendLocalState.focusedFlowIdRight = flow.id;
+        }
+        if (flow.end.sliceId === sliceId) {
+          globals.frontendLocalState.focusedFlowIdLeft = flow.id;
+        }
+      }
+    }
+  }
+
+  publishSelectedFlows(selectedFlows: Flow[]) {
+    globals.selectedFlows = selectedFlows;
+    this.redraw();
+  }
+
   publishCounterDetails(click: CounterDetails) {
     globals.counterDetails = click;
     this.redraw();
@@ -127,6 +173,11 @@ class FrontendApi {
 
   publishHeapProfileDetails(click: HeapProfileDetails) {
     globals.heapProfileDetails = click;
+    this.redraw();
+  }
+
+  publishCpuProfileDetails(details: CpuProfileDetails) {
+    globals.cpuProfileDetails = details;
     this.redraw();
   }
 
@@ -175,6 +226,22 @@ class FrontendApi {
     this.redraw();
   }
 
+  publishTraceErrors(numErrors: number) {
+    globals.setTraceErrors(numErrors);
+    this.redraw();
+  }
+
+  publishMetricError(error: string) {
+    globals.setMetricError(error);
+    globals.logging.logError(error, false);
+    this.redraw();
+  }
+
+  publishMetricResult(metricResult: MetricResult) {
+    globals.setMetricResult(metricResult);
+    this.redraw();
+  }
+
   publishAggregateData(args: {data: AggregateData, kind: string}) {
     globals.setAggregateData(args.kind, args.data);
     this.redraw();
@@ -194,20 +261,6 @@ function setExtensionAvailability(available: boolean) {
   globals.dispatch(Actions.setExtensionAvailable({
     available,
   }));
-}
-
-function fetchChromeTracingCategoriesFromExtension(
-    extensionPort: chrome.runtime.Port) {
-  extensionPort.postMessage({method: 'GetCategories'});
-}
-
-function onExtensionMessage(message: object) {
-  const typedObject = message as {type: string};
-  if (typedObject.type === 'GetCategoriesResponse') {
-    const categoriesMessage = message as {categories: string[]};
-    globals.dispatch(Actions.setChromeCategories(
-        {categories: categoriesMessage.categories}));
-  }
 }
 
 function main() {
@@ -241,17 +294,22 @@ function main() {
 
   const dispatch =
       controllerChannel.port2.postMessage.bind(controllerChannel.port2);
+  globals.initialize(dispatch, controller);
+  globals.serviceWorkerController.install();
+
   const router = new Router(
       '/',
       {
         '/': HomePage,
         '/viewer': ViewerPage,
         '/record': RecordPage,
+        '/query': AnalyzePage,
+        '/metrics': MetricsPage,
+        '/info': TraceInfoPage,
       },
-      dispatch);
+      dispatch,
+      globals.logging);
   forwardRemoteCalls(frontendChannel.port2, new FrontendApi(router));
-  globals.initialize(dispatch, controller);
-  globals.serviceWorkerController.install();
 
   // We proxy messages between the extension and the controller because the
   // controller's worker can't access chrome.runtime.
@@ -270,10 +328,8 @@ function main() {
     // This forwards the messages from the extension to the controller.
     extensionPort.onMessage.addListener(
         (message: object, _port: chrome.runtime.Port) => {
-          onExtensionMessage(message);
           extensionLocalChannel.port2.postMessage(message);
         });
-    fetchChromeTracingCategoriesFromExtension(extensionPort);
   }
 
   updateAvailableAdbDevices();
@@ -305,14 +361,32 @@ function main() {
   // /?s=xxxx for permalinks.
   const stateHash = Router.param('s');
   const urlHash = Router.param('url');
-  if (stateHash) {
+  const androidBugTool = Router.param('openFromAndroidBugTool');
+  if (typeof stateHash === 'string' && stateHash) {
     globals.dispatch(Actions.loadPermalink({
       hash: stateHash,
     }));
-  } else if (urlHash) {
+  } else if (typeof urlHash === 'string' && urlHash) {
     globals.dispatch(Actions.openTraceFromUrl({
       url: urlHash,
     }));
+  } else if (androidBugTool) {
+    // TODO(hjd): Unify updateStatus and TaskTracker
+    globals.dispatch(Actions.updateStatus({
+      msg: 'Loading trace from ABT extension',
+      timestamp: Date.now() / 1000
+    }));
+    const loadInfo = loadAndroidBugToolInfo();
+    taskTracker.trackPromise(loadInfo, 'Loading trace from ABT extension');
+    loadInfo
+        .then(info => {
+          globals.dispatch(Actions.openTraceFromFile({
+            file: info.file,
+          }));
+        })
+        .catch(e => {
+          console.error(e);
+        });
   }
 
   // Prevent pinch zoom.

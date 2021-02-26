@@ -49,6 +49,7 @@
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
+#include "url/android/gurl_android.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
@@ -486,13 +487,13 @@ void OfflinePageBridge::GetPagesByNamespace(
 void OfflinePageBridge::SelectPageForOnlineUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_online_url,
+    const JavaParamRef<jobject>& j_online_url,
     int tab_id,
     const JavaParamRef<jobject>& j_callback_obj) {
   DCHECK(j_callback_obj);
 
   OfflinePageUtils::SelectPagesForURL(
-      key_, GURL(ConvertJavaStringToUTF8(env, j_online_url)), tab_id,
+      key_, *url::GURLAndroid::ToNativeGURL(env, j_online_url), tab_id,
       base::BindOnce(&SelectPageCallback,
                      ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
@@ -525,9 +526,9 @@ void OfflinePageBridge::SavePage(JNIEnv* env,
 
   offline_page_model_->SavePage(
       save_page_params, std::move(archiver), web_contents,
-      base::Bind(&SavePageCallback,
-                 ScopedJavaGlobalRef<jobject>(j_callback_obj),
-                 save_page_params.url));
+      base::BindOnce(&SavePageCallback,
+                     ScopedJavaGlobalRef<jobject>(j_callback_obj),
+                     save_page_params.url));
 }
 
 void OfflinePageBridge::PublishInternalPageByOfflineId(
@@ -541,10 +542,10 @@ void OfflinePageBridge::PublishInternalPageByOfflineId(
 
   offline_page_model->GetPageByOfflineId(
       j_offline_id,
-      base::Bind(&OfflinePageBridge::PublishInternalArchive,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 ScopedJavaGlobalRef<jobject>(j_published_callback),
-                 PublishSource::kPublishByOfflineId));
+      base::BindOnce(&OfflinePageBridge::PublishInternalArchive,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     ScopedJavaGlobalRef<jobject>(j_published_callback),
+                     PublishSource::kPublishByOfflineId));
 }
 
 void OfflinePageBridge::PublishInternalPageByGuid(
@@ -754,11 +755,11 @@ void OfflinePageBridge::GetLoadUrlParamsByOfflineId(
 
   offline_page_model_->GetPageByOfflineId(
       j_offline_id,
-      base::Bind(&OfflinePageBridge::GetPageByOfflineIdDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 static_cast<offline_items_collection::LaunchLocation>(
-                     launch_location),
-                 j_callback_ref));
+      base::BindOnce(&OfflinePageBridge::GetPageByOfflineIdDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     static_cast<offline_items_collection::LaunchLocation>(
+                         launch_location),
+                     j_callback_ref));
 }
 
 void OfflinePageBridge::GetLoadUrlParamsForOpeningMhtmlFileOrContent(

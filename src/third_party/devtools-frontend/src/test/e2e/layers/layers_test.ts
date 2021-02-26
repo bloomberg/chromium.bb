@@ -3,33 +3,37 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {describe, it} from 'mocha';
 
-import {getBrowserAndPages, resourcesPath, waitFor} from '../../shared/helper.js';
+import {getBrowserAndPages, getResourcesPath, goToResource, timeout, waitFor} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
 import {getCurrentUrl} from '../helpers/layers-helpers.js';
 import {openPanelViaMoreTools} from '../helpers/settings-helpers.js';
 
 describe('The Layers Panel', async () => {
-  // FIXME: This test is crashing on some bots. https://crbug.com/1076763
-  it.skip('[crbug.com/1076763] should keep the currently inspected url as an attribute', async () => {
-    const {target} = getBrowserAndPages();
-    const targetUrl = `${resourcesPath}/layers/default.html`;
-    await target.goto(targetUrl);
+  it('should keep the currently inspected url as an attribute', async () => {
+    const targetUrl = 'layers/default.html';
+    await goToResource(targetUrl);
 
     await openPanelViaMoreTools('Layers');
+
+    await waitFor('[aria-label="layers"]:not([test-current-url=""])');
+
+    // FIXME(crbug/1112692): Refactor test to remove the timeout.
+    await timeout(50);
 
     const url = await getCurrentUrl();
-    assert.strictEqual(url, targetUrl);
+    assert.strictEqual(url, `${getResourcesPath()}/${targetUrl}`);
   });
 
-  it('[crbug.com/1053901] should update the layers view when going offline', async () => {
+  // Disabled due to flakiness, original regression: crbug.com/1053901
+  it.skip('[crbug.com/1111256] should update the layers view when going offline', async () => {
     const {target} = getBrowserAndPages();
     await openPanelViaMoreTools('Layers');
 
-    const targetUrl = `${resourcesPath}/layers/default.html`;
-    await target.goto(targetUrl);
+    const targetUrl = 'layers/default.html';
+    await goToResource(targetUrl);
     await waitFor('[aria-label="layers"]:not([test-current-url=""])');
-    assert.strictEqual(await getCurrentUrl(), targetUrl);
+    assert.strictEqual(await getCurrentUrl(), `${getResourcesPath()}/${targetUrl}`);
 
     const session = await target.target().createCDPSession();
     await session.send('Network.emulateNetworkConditions', {

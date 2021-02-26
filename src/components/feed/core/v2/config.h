@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_FEED_CORE_V2_CONFIG_H_
 #define COMPONENTS_FEED_CORE_V2_CONFIG_H_
 
+#include "base/containers/flat_set.h"
 #include "base/time/time.h"
+#include "components/feed/core/proto/v2/wire/capability.pb.h"
 
 namespace feed {
 
@@ -28,12 +30,43 @@ struct Config {
   base::TimeDelta max_action_age = base::TimeDelta::FromHours(24);
   // Maximum payload size for one action upload batch.
   size_t max_action_upload_bytes = 20000;
+  // If no surfaces are attached, the stream model is unloaded after this
+  // timeout.
+  base::TimeDelta model_unload_timeout = base::TimeDelta::FromSeconds(1);
+  // How far ahead in number of items from last visible item to final item
+  // before attempting to load more content.
+  int load_more_trigger_lookahead = 5;
+  // Whether to attempt uploading actions when Chrome is hidden.
+  bool upload_actions_on_enter_background = true;
+  // Whether to send (pseudonymous) logs for signed-out sessions.
+  bool send_signed_out_session_logs = false;
+  // The max age of a signed-out session token.
+  base::TimeDelta session_id_max_age = base::TimeDelta::FromDays(30);
+  // Maximum number of images prefetched per refresh.
+  int max_prefetch_image_requests_per_refresh = 50;
+  // Set of optional capabilities included in requests. See
+  // CreateFeedQueryRequest() for required capabilities.
+  base::flat_set<feedwire::Capability> experimental_capabilities = {
+      feedwire::Capability::REQUEST_SCHEDULE,
+      feedwire::Capability::OPEN_IN_TAB,
+      feedwire::Capability::DOWNLOAD_LINK,
+      feedwire::Capability::INFINITE_FEED,
+      feedwire::Capability::DISMISS_COMMAND,
+      feedwire::Capability::UI_THEME_V2,
+      feedwire::Capability::UNDO_FOR_DISMISS_COMMAND,
+      feedwire::Capability::PREFETCH_METADATA,
+  };
+
+  Config();
+  Config(const Config& other);
+  ~Config();
 };
 
 // Gets the current configuration.
 const Config& GetFeedConfig();
 
 void SetFeedConfigForTesting(const Config& config);
+void OverrideConfigWithFinchForTesting();
 
 }  // namespace feed
 

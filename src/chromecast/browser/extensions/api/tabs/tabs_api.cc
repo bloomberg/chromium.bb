@@ -84,8 +84,8 @@ class ApiParameterExtractor {
   ~ApiParameterExtractor() {}
 
   bool populate_tabs() {
-    if (params_->get_info.get() && params_->get_info->populate.get())
-      return *params_->get_info->populate;
+    if (params_->query_options.get() && params_->query_options->populate.get())
+      return *params_->query_options->populate;
     return false;
   }
 
@@ -278,7 +278,8 @@ ExtensionFunction::ResponseAction WindowsGetFunction::Run() {
   std::unique_ptr<base::DictionaryValue> windows =
       CreateWindowValueForExtension(browser_context(), extension(),
                                     populate_tab_behavior);
-  return RespondNow(OneArgument(std::move(windows)));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(std::move(windows))));
 }
 
 ExtensionFunction::ResponseAction WindowsGetCurrentFunction::Run() {
@@ -294,7 +295,8 @@ ExtensionFunction::ResponseAction WindowsGetCurrentFunction::Run() {
   std::unique_ptr<base::DictionaryValue> windows =
       CreateWindowValueForExtension(browser_context(), extension(),
                                     populate_tab_behavior);
-  return RespondNow(OneArgument(std::move(windows)));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(std::move(windows))));
 }
 
 ExtensionFunction::ResponseAction WindowsGetLastFocusedFunction::Run() {
@@ -310,7 +312,8 @@ ExtensionFunction::ResponseAction WindowsGetLastFocusedFunction::Run() {
   std::unique_ptr<base::DictionaryValue> windows =
       CreateWindowValueForExtension(browser_context(), extension(),
                                     populate_tab_behavior);
-  return RespondNow(OneArgument(std::move(windows)));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(std::move(windows))));
 }
 
 ExtensionFunction::ResponseAction WindowsGetAllFunction::Run() {
@@ -326,7 +329,8 @@ ExtensionFunction::ResponseAction WindowsGetAllFunction::Run() {
   window_list->Append(CreateWindowValueForExtension(
       browser_context(), extension(), populate_tab_behavior));
 
-  return RespondNow(OneArgument(std::move(window_list)));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(std::move(window_list))));
 }
 
 ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
@@ -347,8 +351,9 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
         keys::kWindowNotFoundError, base::NumberToString(params->window_id))));
   }
 
-  return RespondNow(OneArgument(CreateWindowValueForExtension(
-      browser_context(), extension(), ExtensionTabUtil::kDontPopulateTabs)));
+  return RespondNow(OneArgument(base::Value::FromUniquePtrValue(
+      CreateWindowValueForExtension(browser_context(), extension(),
+                                    ExtensionTabUtil::kDontPopulateTabs))));
 }
 
 ExtensionFunction::ResponseAction WindowsRemoveFunction::Run() {
@@ -395,7 +400,8 @@ ExtensionFunction::ResponseAction TabsGetAllInWindowFunction::Run() {
     return RespondNow(Error(ErrorUtils::FormatErrorMessage(
         keys::kWindowNotFoundError, base::NumberToString(window_id))));
 
-  return RespondNow(OneArgument(CreateTabList(GetTabList(), extension())));
+  return RespondNow(OneArgument(base::Value::FromUniquePtrValue(
+      CreateTabList(GetTabList(), extension()))));
 }
 
 ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
@@ -424,19 +430,20 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
   if (params->query_info.window_id.get())
     window_id = *params->query_info.window_id;
   if (window_id != kCastWindowId) {
-    return RespondNow(OneArgument(std::make_unique<base::ListValue>()));
+    return RespondNow(OneArgument(base::Value(base::Value::Type::LIST)));
   }
 
   std::string window_type;
   if (params->query_info.window_type != tabs::WINDOW_TYPE_NONE) {
     window_type = tabs::ToString(params->query_info.window_type);
     if (window_type != "normal")
-      return RespondNow(OneArgument(std::make_unique<base::ListValue>()));
+      return RespondNow(OneArgument(base::Value(base::Value::Type::LIST)));
   }
 
   // For now, pretend that all tabs will match the query.
   // TODO(achaulk): make this actually execute the query.
-  return RespondNow(OneArgument(CreateTabList(GetTabList(), extension())));
+  return RespondNow(OneArgument(base::Value::FromUniquePtrValue(
+      CreateTabList(GetTabList(), extension()))));
 }
 
 ExtensionFunction::ResponseAction TabsCreateFunction::Run() {
@@ -532,8 +539,9 @@ ExtensionFunction::ResponseAction TabsHighlightFunction::Run() {
   selection.set_active(active_index);
   // TODO(achaulk): figure out what tab focus means for cast.
   NOTIMPLEMENTED() << "not changing tab focus";
-  return RespondNow(OneArgument(CreateWindowValueForExtension(
-      browser_context(), extension(), ExtensionTabUtil::kPopulateTabs)));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(CreateWindowValueForExtension(
+          browser_context(), extension(), ExtensionTabUtil::kPopulateTabs))));
 }
 
 bool TabsHighlightFunction::HighlightTab(
@@ -761,6 +769,14 @@ ExecuteCodeFunction::InitResult ExecuteCodeInTabFunction::Init() {
   return set_init_result(SUCCESS);
 }
 
+bool ExecuteCodeInTabFunction::ShouldInsertCSS() const {
+  return false;
+}
+
+bool ExecuteCodeInTabFunction::ShouldRemoveCSS() const {
+  return false;
+}
+
 bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage(std::string* error) {
   const CastWebContents* webview = GetWebViewForTab(execute_tab_id_);
   if (!webview) {
@@ -835,11 +851,11 @@ const GURL& ExecuteCodeInTabFunction::GetWebViewSrc() const {
   return GURL::EmptyGURL();
 }
 
-bool TabsExecuteScriptFunction::ShouldInsertCSS() const {
-  return false;
+bool TabsInsertCSSFunction::ShouldInsertCSS() const {
+  return true;
 }
 
-bool TabsInsertCSSFunction::ShouldInsertCSS() const {
+bool TabsRemoveCSSFunction::ShouldRemoveCSS() const {
   return true;
 }
 

@@ -162,6 +162,7 @@ class VideoEncoderSoftwareFallbackWrapper final : public VideoEncoder {
       case EncoderState::kForcedFallback:
         return fallback_encoder_.get();
     }
+    RTC_CHECK_NOTREACHED();
   }
 
   // Updates encoder with last observed parameters, such as callbacks, rates,
@@ -345,7 +346,9 @@ int32_t VideoEncoderSoftwareFallbackWrapper::Encode(
     case EncoderState::kForcedFallback:
       return fallback_encoder_->Encode(frame, frame_types);
   }
+  RTC_CHECK_NOTREACHED();
 }
+
 int32_t VideoEncoderSoftwareFallbackWrapper::EncodeWithMainEncoder(
     const VideoFrame& frame,
     const std::vector<VideoFrameType>* frame_types) {
@@ -367,9 +370,12 @@ int32_t VideoEncoderSoftwareFallbackWrapper::EncodeWithMainEncoder(
         RTC_LOG(LS_ERROR) << "Failed to convert from to I420";
         return WEBRTC_VIDEO_CODEC_ENCODER_FAILURE;
       }
-      rtc::scoped_refptr<I420Buffer> dst_buffer =
-          I420Buffer::Create(codec_settings_.width, codec_settings_.height);
-      dst_buffer->ScaleFrom(*src_buffer);
+      rtc::scoped_refptr<VideoFrameBuffer> dst_buffer =
+          src_buffer->Scale(codec_settings_.width, codec_settings_.height);
+      if (!dst_buffer) {
+        RTC_LOG(LS_ERROR) << "Failed to scale video frame.";
+        return WEBRTC_VIDEO_CODEC_ENCODER_FAILURE;
+      }
       VideoFrame scaled_frame = frame;
       scaled_frame.set_video_frame_buffer(dst_buffer);
       scaled_frame.set_update_rect(VideoFrame::UpdateRect{

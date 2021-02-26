@@ -14,7 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/android/navigation_handle_proxy.h"
-#include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/android/content_jni_headers/WebContentsObserverProxy_jni.h"
@@ -66,6 +66,22 @@ void WebContentsObserverProxy::WebContentsDestroyed() {
   JNIEnv* env = AttachCurrentThread();
   // The java side will destroy |this|
   Java_WebContentsObserverProxy_destroy(env, java_observer_);
+}
+
+void WebContentsObserverProxy::RenderFrameCreated(
+    RenderFrameHost* render_frame_host) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_renderFrameCreated(
+      env, java_observer_, render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRoutingID());
+}
+
+void WebContentsObserverProxy::RenderFrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_renderFrameDeleted(
+      env, java_observer_, render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRoutingID());
 }
 
 void WebContentsObserverProxy::RenderViewReady() {
@@ -195,16 +211,6 @@ void WebContentsObserverProxy::NavigationEntryChanged(
   JNIEnv* env = AttachCurrentThread();
   // TODO(jinsukkim): Convert |change_details| to Java object when needed.
   Java_WebContentsObserverProxy_navigationEntriesChanged(env, java_observer_);
-}
-
-void WebContentsObserverProxy::DidAttachInterstitialPage() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_WebContentsObserverProxy_didAttachInterstitialPage(env, java_observer_);
-}
-
-void WebContentsObserverProxy::DidDetachInterstitialPage() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_WebContentsObserverProxy_didDetachInterstitialPage(env, java_observer_);
 }
 
 void WebContentsObserverProxy::DidChangeThemeColor() {

@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "ui/display/types/display_snapshot.h"
@@ -128,34 +129,24 @@ bool HostDrmDevice::GpuRefreshNativeDisplays() {
   return true;
 }
 
-bool HostDrmDevice::GpuConfigureNativeDisplay(int64_t id,
-                                              const display::DisplayMode& pmode,
-                                              const gfx::Point& origin) {
+void HostDrmDevice::GpuConfigureNativeDisplays(
+    const std::vector<display::DisplayConfigurationParams>& config_requests,
+    display::ConfigureCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
-  if (!IsConnected())
-    return false;
+  if (IsConnected()) {
+    drm_device_->ConfigureNativeDisplays(config_requests, std::move(callback));
+  } else {
+    // If not connected, report failure to config.
+    base::flat_map<int64_t, bool> dummy_statuses;
+    for (const auto& config : config_requests)
+      dummy_statuses.insert(std::make_pair(config.id, false));
 
-  auto mode = std::make_unique<display::DisplayMode>(
-      pmode.size(), pmode.is_interlaced(), pmode.refresh_rate());
-  auto callback =
-      base::BindOnce(&HostDrmDevice::GpuConfigureNativeDisplayCallback, this);
-
-  drm_device_->ConfigureNativeDisplay(id, std::move(mode), origin,
-                                      std::move(callback));
-
-  return true;
-}
-
-bool HostDrmDevice::GpuDisableNativeDisplay(int64_t id) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
-  if (!IsConnected())
-    return false;
-  auto callback =
-      base::BindOnce(&HostDrmDevice::GpuDisableNativeDisplayCallback, this);
-
-  drm_device_->DisableNativeDisplay(id, std::move(callback));
-
-  return true;
+    // Post this task to protect the callstack from accumulating too many
+    // recursive calls to ConfigureDisplaysTask::Run() in cases in which the GPU
+    // process crashes repeatedly.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), dummy_statuses));
+  }
 }
 
 bool HostDrmDevice::GpuTakeDisplayControl() {
@@ -223,14 +214,17 @@ bool HostDrmDevice::GpuGetHDCPState(int64_t display_id) {
   return true;
 }
 
-bool HostDrmDevice::GpuSetHDCPState(int64_t display_id,
-                                    display::HDCPState state) {
+bool HostDrmDevice::GpuSetHDCPState(
+    int64_t display_id,
+    display::HDCPState state,
+    display::ContentProtectionMethod protection_method) {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
   auto callback = base::BindOnce(&HostDrmDevice::GpuSetHDCPStateCallback, this);
 
-  drm_device_->SetHDCPState(display_id, state, std::move(callback));
+  drm_device_->SetHDCPState(display_id, state, protection_method,
+                            std::move(callback));
 
   return true;
 }
@@ -266,22 +260,10 @@ bool HostDrmDevice::GpuSetPrivacyScreen(int64_t display_id, bool enabled) {
   return true;
 }
 
-void HostDrmDevice::GpuConfigureNativeDisplayCallback(int64_t display_id,
-                                                      bool success) const {
-  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
-  display_manager_->GpuConfiguredDisplay(display_id, success);
-}
-
 void HostDrmDevice::GpuRefreshNativeDisplaysCallback(
     MovableDisplaySnapshots displays) const {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   display_manager_->GpuHasUpdatedNativeDisplays(std::move(displays));
-}
-
-void HostDrmDevice::GpuDisableNativeDisplayCallback(int64_t display_id,
-                                                    bool success) const {
-  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
-  display_manager_->GpuConfiguredDisplay(display_id, success);
 }
 
 void HostDrmDevice::GpuTakeDisplayControlCallback(bool success) const {
@@ -294,11 +276,14 @@ void HostDrmDevice::GpuRelinquishDisplayControlCallback(bool success) const {
   display_manager_->GpuRelinquishedDisplayControl(success);
 }
 
-void HostDrmDevice::GpuGetHDCPStateCallback(int64_t display_id,
-                                            bool success,
-                                            display::HDCPState state) const {
+void HostDrmDevice::GpuGetHDCPStateCallback(
+    int64_t display_id,
+    bool success,
+    display::HDCPState state,
+    display::ContentProtectionMethod protection_method) const {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
-  display_manager_->GpuReceivedHDCPState(display_id, success, state);
+  display_manager_->GpuReceivedHDCPState(display_id, success, state,
+                                         protection_method);
 }
 
 void HostDrmDevice::GpuSetHDCPStateCallback(int64_t display_id,

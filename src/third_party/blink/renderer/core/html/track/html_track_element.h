@@ -39,7 +39,6 @@ class LoadableTextTrack;
 class HTMLTrackElement final : public HTMLElement,
                                private TextTrackLoaderClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLTrackElement);
 
  public:
   explicit HTMLTrackElement(Document&);
@@ -53,7 +52,7 @@ class HTMLTrackElement final : public HTMLElement,
 
   TextTrack* track();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   ~HTMLTrackElement() override;

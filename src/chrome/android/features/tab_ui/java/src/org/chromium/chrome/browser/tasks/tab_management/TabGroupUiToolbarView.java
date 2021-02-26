@@ -21,6 +21,7 @@ import androidx.core.widget.TextViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.widget.ChromeImageView;
 
 /**
@@ -79,12 +80,47 @@ public class TabGroupUiToolbarView extends FrameLayout {
         mTitleTextView.setCursorVisible(isVisible);
     }
 
+    void updateTitleTextFocus(boolean shouldFocus) {
+        if (!TabUiFeatureUtilities.isLaunchPolishEnabled()) return;
+        if (mTitleTextView.isFocused() == shouldFocus) return;
+        if (shouldFocus) {
+            mTitleTextView.requestFocus();
+        } else {
+            clearTitleTextFocus();
+        }
+    }
+
+    void updateKeyboardVisibility(boolean shouldShow) {
+        if (!TabUiFeatureUtilities.isLaunchPolishEnabled()) return;
+        // This is equal to the animation duration of toolbar menu hiding.
+        int showKeyboardDelay = 150;
+        if (shouldShow) {
+            // TODO(crbug.com/1116644) Figure out why a call to show keyboard without delay still
+            // won't work when the window gets focus in onWindowFocusChanged call.
+            // Wait until the current window has focus to show the keyboard. This is to deal with
+            // the case where the keyboard showing is caused by toolbar menu. In this case, we need
+            // to wait for the menu window to hide and current window to gain focus so that we can
+            // show the keyboard.
+            KeyboardVisibilityDelegate delegate = KeyboardVisibilityDelegate.getInstance();
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    assert hasWindowFocus();
+                    delegate.showKeyboard(mTitleTextView);
+                }
+            }, showKeyboardDelay);
+        } else {
+            hideKeyboard();
+        }
+    }
+
     void clearTitleTextFocus() {
         mTitleTextView.clearFocus();
     }
 
-    void setTitleOnTouchListener(View.OnTouchListener listener) {
-        mTitleTextView.setOnTouchListener(listener);
+    void hideKeyboard() {
+        KeyboardVisibilityDelegate delegate = KeyboardVisibilityDelegate.getInstance();
+        delegate.hideKeyboard(this);
     }
 
     ViewGroup getViewContainer() {

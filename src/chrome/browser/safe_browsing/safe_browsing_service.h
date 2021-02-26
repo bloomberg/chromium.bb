@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -129,9 +130,10 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   network::mojom::NetworkContext* GetNetworkContext();
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
-  // Get the NetworkContext or URLLoaderFactory attached to |profile|. Called on
-  // UI thread.
-  network::mojom::NetworkContext* GetNetworkContext(Profile* profile);
+  // Get the NetworkContext or URLLoaderFactory attached to |browser_context|.
+  // Called on UI thread.
+  network::mojom::NetworkContext* GetNetworkContext(
+      content::BrowserContext* browser_context) override;
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
       Profile* profile);
 
@@ -164,23 +166,23 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // Registers |callback| to be run after some delay following process launch.
   // |callback| will be dropped if the service is not applicable for the
   // process.
-  void RegisterDelayedAnalysisCallback(const DelayedAnalysisCallback& callback);
+  void RegisterDelayedAnalysisCallback(DelayedAnalysisCallback callback);
 
   // Adds |download_manager| to the set monitored by safe browsing.
   void AddDownloadManager(content::DownloadManager* download_manager);
 
   // Type for subscriptions to SafeBrowsing service state.
-  typedef base::CallbackList<void(void)>::Subscription StateSubscription;
-  typedef base::CallbackList<void(void)>::Subscription ShutdownSubscription;
+  typedef base::RepeatingClosureList::Subscription StateSubscription;
 
   // Adds a listener for when SafeBrowsing preferences might have changed.
   // To get the current state, the callback should call enabled_by_prefs().
   // Should only be called on the UI thread.
   virtual std::unique_ptr<StateSubscription> RegisterStateCallback(
-      const base::Callback<void(void)>& callback);
+      const base::RepeatingClosure& callback);
 
   // Sends serialized download report to backend.
-  virtual void SendSerializedDownloadReport(const std::string& report);
+  virtual void SendSerializedDownloadReport(Profile* profile,
+                                            const std::string& report);
 
   // Create the default v4 protocol config struct.
   virtual V4ProtocolConfig GetV4ProtocolConfig() const;
@@ -221,10 +223,16 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   void SetDatabaseManagerForTest(SafeBrowsingDatabaseManager* database_manager);
 
-  // Called to initialize objects that are used on the io_thread.  This may be
+  // Called to initialize objects that are used on the io_thread. This may be
   // called multiple times during the life of the SafeBrowsingService.
+  // |sb_url_loader_factory| is a SharedURLLoaderFactory attached to the Safe
+  // Browsing NetworkContexts, and |browser_url_loader_factory| is attached to
+  // the global browser process.
+  // TODO(crbug.com/1049833): Remove the sb_url_loader_factory here.
   void StartOnIOThread(std::unique_ptr<network::PendingSharedURLLoaderFactory>
-                           url_loader_factory);
+                           sb_url_loader_factory,
+                       std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                           browser_url_loader_factory);
 
   // Called to stop or shutdown operations on the io_thread. This may be called
   // multiple times to stop during the life of the SafeBrowsingService. If
@@ -294,7 +302,7 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   // Callbacks when SafeBrowsing state might have changed.
   // Should only be accessed on the UI thread.
-  base::CallbackList<void(void)> state_callback_list_;
+  base::RepeatingClosureList state_callback_list_;
 
   // The UI manager handles showing interstitials.  Accessed on both UI and IO
   // thread.

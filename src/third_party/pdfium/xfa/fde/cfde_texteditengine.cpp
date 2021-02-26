@@ -10,8 +10,10 @@
 #include <limits>
 #include <utility>
 
+#include "core/fxcrt/fx_extension.h"
 #include "core/fxge/text_char_pos.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/check.h"
+#include "third_party/base/notreached.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fde/cfde_wordbreak_data.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
@@ -155,7 +157,7 @@ CFDE_TextEditEngine::CFDE_TextEditEngine()
   text_break_.SetTabWidth(36);
 }
 
-CFDE_TextEditEngine::~CFDE_TextEditEngine() {}
+CFDE_TextEditEngine::~CFDE_TextEditEngine() = default;
 
 void CFDE_TextEditEngine::Clear() {
   text_length_ = 0;
@@ -209,7 +211,7 @@ size_t CFDE_TextEditEngine::CountCharsExceedingSize(const WideString& text,
   if (!limit_horizontal_area_ && !limit_vertical_area_)
     return 0;
 
-  auto text_out = pdfium::MakeUnique<CFDE_TextOut>();
+  auto text_out = std::make_unique<CFDE_TextOut>();
   text_out->SetLineSpace(line_spacing_);
   text_out->SetFont(font_);
   text_out->SetFontSize(font_size_);
@@ -344,7 +346,7 @@ void CFDE_TextEditEngine::Insert(size_t idx,
 
   if (add_operation == RecordOperation::kInsertRecord) {
     AddOperationRecord(
-        pdfium::MakeUnique<InsertOperation>(this, gap_position_, text));
+        std::make_unique<InsertOperation>(this, gap_position_, text));
   }
 
   WideString previous_text;
@@ -855,8 +857,7 @@ WideString CFDE_TextEditEngine::Delete(size_t start_idx,
   ret += WideStringView(content_.data() + start_idx, length);
 
   if (add_operation == RecordOperation::kInsertRecord) {
-    AddOperationRecord(
-        pdfium::MakeUnique<DeleteOperation>(this, start_idx, ret));
+    AddOperationRecord(std::make_unique<DeleteOperation>(this, start_idx, ret));
   }
 
   WideString previous_text = GetText();
@@ -903,7 +904,7 @@ void CFDE_TextEditEngine::ReplaceSelectedText(const WideString& requested_rep) {
   Insert(gap_position_, rep, RecordOperation::kSkipRecord);
 
   AddOperationRecord(
-      pdfium::MakeUnique<ReplaceOperation>(this, start_idx, txt, rep));
+      std::make_unique<ReplaceOperation>(this, start_idx, txt, rep));
 }
 
 WideString CFDE_TextEditEngine::GetText() const {
@@ -1071,7 +1072,7 @@ std::vector<TextCharPos> CFDE_TextEditEngine::GetDisplayPos(
 }
 
 void CFDE_TextEditEngine::RebuildPieces() {
-  text_break_.EndBreak(CFX_BreakType::Paragraph);
+  text_break_.EndBreak(CFX_BreakType::kParagraph);
   text_break_.ClearBreakPieces();
 
   char_widths_.clear();
@@ -1086,14 +1087,14 @@ void CFDE_TextEditEngine::RebuildPieces() {
   size_t current_piece_start = 0;
   float current_line_start = 0;
 
-  auto iter = pdfium::MakeUnique<CFDE_TextEditEngine::Iterator>(this);
-  while (!iter->IsEOF(false)) {
-    iter->Next(false);
+  CFDE_TextEditEngine::Iterator iter(this);
+  while (!iter.IsEOF(false)) {
+    iter.Next(false);
 
     CFX_BreakType break_status = text_break_.AppendChar(
-        password_mode_ ? password_alias_ : iter->GetChar());
-    if (iter->IsEOF(false) && CFX_BreakTypeNoneOrPiece(break_status))
-      break_status = text_break_.EndBreak(CFX_BreakType::Paragraph);
+        password_mode_ ? password_alias_ : iter.GetChar());
+    if (iter.IsEOF(false) && CFX_BreakTypeNoneOrPiece(break_status))
+      break_status = text_break_.EndBreak(CFX_BreakType::kParagraph);
 
     if (CFX_BreakTypeNoneOrPiece(break_status))
       continue;
@@ -1153,8 +1154,8 @@ void CFDE_TextEditEngine::RebuildPieces() {
 
 std::pair<int32_t, CFX_RectF> CFDE_TextEditEngine::GetCharacterInfo(
     int32_t start_idx) {
-  ASSERT(start_idx >= 0);
-  ASSERT(static_cast<size_t>(start_idx) <= text_length_);
+  DCHECK(start_idx >= 0);
+  DCHECK(static_cast<size_t>(start_idx) <= text_length_);
 
   // Make sure the current available data is fresh.
   Layout();
@@ -1220,7 +1221,7 @@ std::pair<size_t, size_t> CFDE_TextEditEngine::BoundsForWordAt(
 CFDE_TextEditEngine::Iterator::Iterator(const CFDE_TextEditEngine* engine)
     : engine_(engine), current_position_(-1) {}
 
-CFDE_TextEditEngine::Iterator::~Iterator() {}
+CFDE_TextEditEngine::Iterator::~Iterator() = default;
 
 void CFDE_TextEditEngine::Iterator::Next(bool bPrev) {
   if (bPrev && current_position_ == -1)

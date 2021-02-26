@@ -12,7 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_notification.h"
 
 namespace ash {
 
@@ -22,24 +22,19 @@ class AssistantNotificationModelObserver;
 // notification state and notifies a pool of observers.
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
  public:
-  using AssistantNotification =
-      chromeos::assistant::mojom::AssistantNotification;
-  using AssistantNotificationPtr =
-      chromeos::assistant::mojom::AssistantNotificationPtr;
-  using AssistantNotificationType =
-      chromeos::assistant::mojom::AssistantNotificationType;
+  using AssistantNotification = chromeos::assistant::AssistantNotification;
 
   AssistantNotificationModel();
   ~AssistantNotificationModel();
 
   // Adds/removes the specified notification model |observer|.
-  void AddObserver(AssistantNotificationModelObserver* observer);
-  void RemoveObserver(AssistantNotificationModelObserver* observer);
+  void AddObserver(AssistantNotificationModelObserver* observer) const;
+  void RemoveObserver(AssistantNotificationModelObserver* observer) const;
 
   // Adds or updates the specified |notification| in the model. If there is an
   // existing notification with the same |client_id|, an update will occur.
   // Otherwise a new notification will be added.
-  void AddOrUpdateNotification(AssistantNotificationPtr notification);
+  void AddOrUpdateNotification(AssistantNotification&& notification);
 
   // Removes the notification uniquely identified by |id|. If |from_server| is
   // true the request to remove was initiated by the server.
@@ -57,11 +52,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
   // Returns the notification uniquely identified by |id|.
   const AssistantNotification* GetNotificationById(const std::string& id) const;
 
-  // Returns all notifications matching the specified |type|.
-  // Use base::nullopt to return all notifications independent of their type.
-  std::vector<const AssistantNotification*> GetNotificationsByType(
-      base::Optional<AssistantNotificationType> type) const;
-
   // Returns all notifications (that have not been removed).
   std::vector<const AssistantNotification*> GetNotifications() const;
 
@@ -70,16 +60,16 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
   bool HasNotificationForId(const std::string& id) const;
 
  private:
-  void NotifyNotificationAdded(const AssistantNotification* notification);
-  void NotifyNotificationUpdated(const AssistantNotification* notification);
-  void NotifyNotificationRemoved(const AssistantNotification* notification,
+  void NotifyNotificationAdded(const AssistantNotification& notification);
+  void NotifyNotificationUpdated(const AssistantNotification& notification);
+  void NotifyNotificationRemoved(const AssistantNotification& notification,
                                  bool from_server);
   void NotifyAllNotificationsRemoved(bool from_server);
 
   // Notifications are each mapped to their unique id.
-  std::map<std::string, AssistantNotificationPtr> notifications_;
+  std::map<std::string, AssistantNotification> notifications_;
 
-  base::ObserverList<AssistantNotificationModelObserver> observers_;
+  mutable base::ObserverList<AssistantNotificationModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationModel);
 };

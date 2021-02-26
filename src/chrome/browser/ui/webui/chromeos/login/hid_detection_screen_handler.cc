@@ -12,7 +12,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
-#include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -63,11 +62,6 @@ void HIDDetectionScreenHandler::Bind(HIDDetectionScreen* screen) {
 void HIDDetectionScreenHandler::Unbind() {
   screen_ = nullptr;
   BaseScreenHandler::SetBaseScreen(nullptr);
-}
-
-void HIDDetectionScreenHandler::CheckIsScreenRequired(
-      const base::Callback<void(bool)>& on_check_done) {
-  screen_->CheckIsScreenRequired(on_check_done);
 }
 
 void HIDDetectionScreenHandler::SetKeyboardState(const std::string& value) {

@@ -4,15 +4,17 @@
 
 #include "net/base/network_change_notifier_fuchsia.h"
 
+#include <lib/async-loop/cpp/loop.h>
 #include <lib/sys/cpp/component_context.h>
+
 #include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "net/base/network_interfaces.h"
@@ -21,51 +23,44 @@
 namespace net {
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
-    uint32_t required_features)
-    : NetworkChangeNotifierFuchsia(
-          base::fuchsia::ComponentContextForCurrentProcess()
-              ->svc()
-              ->Connect<fuchsia::netstack::Netstack>(),
-          required_features) {}
+    fuchsia::hardware::ethernet::Features required_features)
+    : NetworkChangeNotifierFuchsia(base::ComponentContextForProcess()
+                                       ->svc()
+                                       ->Connect<fuchsia::netstack::Netstack>(),
+                                   required_features) {}
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
-    fuchsia::netstack::NetstackPtr netstack,
-    uint32_t required_features,
+    fidl::InterfaceHandle<fuchsia::netstack::Netstack> netstack,
+    fuchsia::hardware::ethernet::Features required_features,
     SystemDnsConfigChangeNotifier* system_dns_config_notifier)
     : NetworkChangeNotifier(NetworkChangeCalculatorParams(),
                             system_dns_config_notifier),
       required_features_(required_features) {
   DCHECK(netstack);
 
-  // Temporarily re-wrap our Netstack channel so we can query the interfaces
-  // and routing table synchronously to populate the initial state.
-  fuchsia::netstack::NetstackSyncPtr sync_netstack;
-  sync_netstack.Bind(netstack.Unbind());
-  DCHECK(sync_netstack);
-
-  // Manually fetch the interfaces and routes.
-  std::vector<fuchsia::netstack::NetInterface> interfaces;
-  zx_status_t status = sync_netstack->GetInterfaces(&interfaces);
-  ZX_CHECK(status == ZX_OK, status) << "synchronous GetInterfaces()";
-  std::vector<fuchsia::netstack::RouteTableEntry> routes;
-  status = sync_netstack->GetRouteTable(&routes);
-  ZX_CHECK(status == ZX_OK, status) << "synchronous GetInterfaces()";
-  // This will Notify internal observers like the NetworkChangeCalculator
-  // to be properly updated.
-  OnRouteTableReceived(std::move(interfaces), std::move(routes));
-
-  // Re-wrap Netstack back into an asynchronous pointer.
-  netstack_.Bind(sync_netstack.Unbind());
-  DCHECK(netstack_);
   netstack_.set_error_handler([](zx_status_t status) {
-    // TODO(https://crbug.com/901092): Unit tests that use NetworkService are
-    // crashing because NetworkService does not clean up properly, and the
-    // netstack connection is cancelled, causing this fatal error.
-    // When the NetworkService cleanup is fixed, we should make this log FATAL.
-    ZX_LOG(ERROR, status) << "Lost connection to netstack.";
+    ZX_LOG(FATAL, status) << "Lost connection to netstack.";
   });
+
   netstack_.events().OnInterfacesChanged = fit::bind_member(
       this, &NetworkChangeNotifierFuchsia::ProcessInterfaceList);
+
+  // Temporarily bind to a local dispatcher so we can synchronously wait for the
+  // synthetic event to populate the initial state.
+  async::Loop loop(&kAsyncLoopConfigNeverAttachToThread);
+  zx_status_t status = netstack_.Bind(std::move(netstack), loop.dispatcher());
+  ZX_CHECK(status == ZX_OK, status) << "Bind()";
+  on_initial_interfaces_received_ =
+      base::BindOnce(&async::Loop::Quit, base::Unretained(&loop));
+  status = loop.Run();
+  ZX_CHECK(status == ZX_ERR_CANCELED, status) << "loop.Run()";
+
+  // Bind to the dispatcher for the thread's MessagePump.
+  //
+  // Note this must be done before |loop| is destroyed, since that would close
+  // the interface handle underlying |netstack_|.
+  status = netstack_.Bind(netstack_.Unbind());
+  ZX_CHECK(status == ZX_OK, status) << "Bind()";
 }
 
 NetworkChangeNotifierFuchsia::~NetworkChangeNotifierFuchsia() {
@@ -82,6 +77,7 @@ NetworkChangeNotifierFuchsia::GetCurrentConnectionType() const {
 
 void NetworkChangeNotifierFuchsia::ProcessInterfaceList(
     std::vector<fuchsia::netstack::NetInterface> interfaces) {
+  ++pending_route_table_requests_;
   netstack_->GetRouteTable(
       [this, interfaces = std::move(interfaces)](
           std::vector<fuchsia::netstack::RouteTableEntry> route_table) mutable {
@@ -92,6 +88,9 @@ void NetworkChangeNotifierFuchsia::ProcessInterfaceList(
 void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
     std::vector<fuchsia::netstack::NetInterface> interfaces,
     std::vector<fuchsia::netstack::RouteTableEntry> route_table) {
+  --pending_route_table_requests_;
+  DCHECK_GE(pending_route_table_requests_, 0);
+
   // Create a set of NICs that have default routes (ie 0.0.0.0).
   base::flat_set<uint32_t> default_route_ids;
   for (const auto& route : route_table) {
@@ -108,7 +107,8 @@ void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
     if ((internal::ConvertConnectionType(interface) ==
          NetworkChangeNotifier::CONNECTION_NONE) ||
         (interface.features &
-         fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK)) {
+         fuchsia::hardware::ethernet::Features::LOOPBACK) ==
+            fuchsia::hardware::ethernet::Features::LOOPBACK) {
       continue;
     }
 
@@ -148,6 +148,13 @@ void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
   if (connection_type != cached_connection_type_) {
     base::subtle::Release_Store(&cached_connection_type_, connection_type);
     NotifyObserversOfConnectionTypeChange();
+  }
+
+  // If this request was made during construction, and no further requests are
+  // in-flight, then we have an initial stable interface state and can safely
+  // allow the constructor to re-Bind() the Netstack channel, and return.
+  if (on_initial_interfaces_received_ && (pending_route_table_requests_ <= 0)) {
+    std::move(on_initial_interfaces_received_).Run();
   }
 }
 

@@ -6,60 +6,62 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/check_op.h"
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/notreached.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/google/core/common/google_util.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/password_manager/core/browser/ui/password_check_referrer.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#import "ios/chrome/browser/passwords/save_passwords_consumer.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
+#import "ios/chrome/browser/ui/elements/home_waiting_view.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
-#import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_exporter.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_settings_commands.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller_presentation_delegate.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "net/base/mac/url_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
@@ -69,28 +71,38 @@
 
 namespace {
 
+using base::UmaHistogramEnumeration;
+using password_manager::metrics_util::PasswordCheckInteraction;
+
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSavePasswordsSwitch = kSectionIdentifierEnumZero,
   SectionIdentifierSavedPasswords,
   SectionIdentifierBlocked,
   SectionIdentifierExportPasswordsButton,
+  SectionIdentifierPasswordCheck,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeLinkHeader = kItemTypeEnumZero,
   ItemTypeHeader,
   ItemTypeSavePasswordsSwitch,
+  ItemTypeManagedSavePasswords,
+  ItemTypePasswordCheckStatus,
+  ItemTypeCheckForProblemsButton,
+  ItemTypeLastCheckTimestampFooter,
   ItemTypeSavedPassword,  // This is a repeated item type.
   ItemTypeBlocked,        // This is a repeated item type.
   ItemTypeExportPasswordsButton,
 };
 
-std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list) {
-  std::vector<std::unique_ptr<autofill::PasswordForm>> password_list_copy;
+std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
+    const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
+        password_list) {
+  std::vector<std::unique_ptr<password_manager::PasswordForm>>
+      password_list_copy;
   for (const auto& form : password_list) {
     password_list_copy.push_back(
-        std::make_unique<autofill::PasswordForm>(*form));
+        std::make_unique<password_manager::PasswordForm>(*form));
   }
   return password_list_copy;
 }
@@ -98,7 +110,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 }  // namespace
 
 @interface PasswordFormContentItem : TableViewDetailTextItem
-@property(nonatomic) autofill::PasswordForm* form;
+@property(nonatomic) password_manager::PasswordForm* form;
 @end
 @implementation PasswordFormContentItem
 @end
@@ -155,13 +167,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 @interface PasswordsTableViewController () <
     BooleanObserver,
     ChromeIdentityServiceObserver,
-    PasswordDetailsTableViewControllerDelegate,
     PasswordExporterDelegate,
     PasswordExportActivityViewControllerDelegate,
-    SavePasswordsConsumerDelegate,
-    UISearchControllerDelegate,
+    PasswordsConsumer,
+    PopoverLabelViewControllerDelegate,
     UISearchBarDelegate,
-    SuccessfulReauthTimeAccessor> {
+    UISearchControllerDelegate> {
   // The observable boolean that binds to the password manager setting state.
   // Saved passwords are only on if the password manager is enabled.
   PrefBackedBoolean* _passwordManagerEnabled;
@@ -169,54 +180,63 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   TableViewLinkHeaderFooterItem* _manageAccountLinkItem;
   // The item related to the switch for the password manager setting.
   SettingsSwitchItem* _savePasswordsItem;
+  // The item related to the enterprise managed save password setting.
+  TableViewInfoButtonItem* _managedSavePasswordItem;
+  // The item related to the password check status.
+  SettingsCheckItem* _passwordProblemsItem;
+  // The button to start password check.
+  TableViewTextItem* _checkForProblemsItem;
   // The item related to the button for exporting passwords.
   TableViewTextItem* _exportPasswordsItem;
   // The interface for getting and manipulating a user's saved passwords.
   scoped_refptr<password_manager::PasswordStore> _passwordStore;
-  // A helper object for passing data about saved passwords from a finished
-  // password store request to the PasswordsTableViewController.
-  std::unique_ptr<ios::SavePasswordsConsumer> _savedPasswordsConsumer;
   // The list of the user's saved passwords.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> _savedForms;
+  std::vector<std::unique_ptr<password_manager::PasswordForm>> _savedForms;
   // The list of the user's blocked sites.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> _blockedForms;
+  std::vector<std::unique_ptr<password_manager::PasswordForm>> _blockedForms;
   // Map containing duplicates of saved passwords.
   password_manager::DuplicatesMap _savedPasswordDuplicates;
   // Map containing duplicates of blocked passwords.
   password_manager::DuplicatesMap _blockedPasswordDuplicates;
+  // The browser where the screen is being displayed.
+  Browser* _browser;
   // The current Chrome browser state.
   ChromeBrowserState* _browserState;
   // Authentication Service Observer.
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
-  // Object storing the time of the previous successful re-authentication.
-  // This is meant to be used by the |ReauthenticationModule| for keeping
-  // re-authentications valid for a certain time interval within the scope
-  // of the Save Passwords Settings.
-  NSDate* _successfulReauthTime;
-  // Module containing the reauthentication mechanism for viewing and copying
-  // passwords.
-  ReauthenticationModule* _reauthenticationModule;
   // Boolean containing whether the export operation is ready. This implies that
   // the exporter is idle and there is at least one saved passwords to export.
   BOOL _exportReady;
+  // Boolean indicating if password forms have been received for the first time.
+  // Used to show a loading indicator while waiting for the store response.
+  BOOL _didReceiveSavedForms;
   // Alert informing the user that passwords are being prepared for
   // export.
   UIAlertController* _preparingPasswordsAlert;
 }
 
-// Kick off async request to get logins from password store.
-- (void)getLoginsFromPasswordStore;
-
 // Object handling passwords export operations.
 @property(nonatomic, strong) PasswordExporter* passwordExporter;
+
 // Current passwords search term.
 @property(nonatomic, copy) NSString* searchTerm;
+
 // The scrim view that covers the table view when search bar is focused with
 // empty search term. Tapping on the scrim view will dismiss the search bar.
 @property(nonatomic, strong) UIControl* scrimView;
+
 // Example headers for calculating headers' heights.
 @property(nonatomic, strong)
     NSMutableDictionary<Class, UITableViewHeaderFooterView*>* exampleHeaders;
+
+// The loading spinner background which appears when loading passwords.
+@property(nonatomic, strong) HomeWaitingView* spinnerView;
+
+// Current state of the Password Check.
+@property(nonatomic, assign) PasswordCheckUIState passwordCheckState;
+
+// Number of compromised passwords.
+@property(assign) NSInteger compromisedPasswordsCount;
 
 @end
 
@@ -224,19 +244,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 #pragma mark - Initialization
 
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
-  DCHECK(browserState);
+- (instancetype)initWithBrowser:(Browser*)browser {
+  DCHECK(browser);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
   self = [super initWithStyle:style];
   if (self) {
-    _browserState = browserState;
-    _reauthenticationModule = [[ReauthenticationModule alloc]
-        initWithSuccessfulReauthTimeAccessor:self];
-    _passwordExporter = [[PasswordExporter alloc]
-        initWithReauthenticationModule:_reauthenticationModule
-                              delegate:self];
+    _browser = browser;
+    _browserState = browser->GetBrowserState();
     self.exampleHeaders = [[NSMutableDictionary alloc] init];
     self.title = l10n_util::GetNSString(IDS_IOS_PASSWORDS);
     self.shouldHideDoneButton = YES;
@@ -248,11 +264,18 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
         initWithPrefService:_browserState->GetPrefs()
                    prefName:password_manager::prefs::kCredentialsEnableService];
     [_passwordManagerEnabled setObserver:self];
-    [self getLoginsFromPasswordStore];
     [self updateUIForEditState];
     [self updateExportPasswordsButton];
   }
   return self;
+}
+
+- (void)setReauthenticationModule:
+    (ReauthenticationModule*)reauthenticationModule {
+  _reauthenticationModule = reauthenticationModule;
+  _passwordExporter = [[PasswordExporter alloc]
+      initWithReauthenticationModule:_reauthenticationModule
+                            delegate:self];
 }
 
 #pragma mark - UIViewController
@@ -261,6 +284,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   [super viewDidLoad];
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.tableView.accessibilityIdentifier = kPasswordsTableViewId;
+
+  // With no header on first appearance, UITableView adds a 35 points space at
+  // the beginning of the table view. This space remains after this table view
+  // reloads with headers. Setting a small tableHeaderView avoids this.
+  self.tableView.tableHeaderView =
+      [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, CGFLOAT_MIN)];
 
   // SearchController Configuration.
   // Init the searchController with nil so the results are displayed on the same
@@ -297,6 +326,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
            forControlEvents:UIControlEventTouchUpInside];
 
   [self loadModel];
+
+  if (!_didReceiveSavedForms) {
+    [self showLoadingSpinnerBackground];
+  }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -323,6 +356,13 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
                              forBarMetrics:UIBarMetricsDefault];
 }
 
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  [super didMoveToParentViewController:parent];
+  if (!parent) {
+    [self.presentationDelegate passwordsTableViewControllerDismissed];
+  }
+}
+
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
   [super setEditing:editing animated:animated];
   if (editing) {
@@ -343,19 +383,58 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (void)loadModel {
   [super loadModel];
+
+  if (!_didReceiveSavedForms) {
+    return;
+  }
+
   TableViewModel* model = self.tableViewModel;
 
   // Save passwords switch and manage account message. Only show this section
   // when the searchController is not active.
   if (!self.navigationItem.searchController.active) {
     [model addSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
-    _savePasswordsItem = [self savePasswordsItem];
-    [model addItem:_savePasswordsItem
-        toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+
+    if (base::FeatureList::IsEnabled(kEnableIOSManagedSettingsUI) &&
+        _browserState->GetPrefs()->IsManagedPreference(
+            password_manager::prefs::kCredentialsEnableService)) {
+      // TODO(crbug.com/1082827): observe the managing status of the pref.
+      // Show managed settings UI when the pref is managed by the policy.
+      _managedSavePasswordItem = [self managedSavePasswordItem];
+      [model addItem:_managedSavePasswordItem
+          toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+    } else {
+      _savePasswordsItem = [self savePasswordsItem];
+      [model addItem:_savePasswordsItem
+          toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+    }
+
     _manageAccountLinkItem = [self manageAccountLinkItem];
     [model setHeader:_manageAccountLinkItem
         forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
   }
+
+  // Password check.
+  [model addSectionWithIdentifier:SectionIdentifierPasswordCheck];
+  if (!_passwordProblemsItem) {
+    _passwordProblemsItem = [self passwordProblemsItem];
+  }
+
+  [self updatePasswordCheckStatusLabelWithState:_passwordCheckState];
+  [model addItem:_passwordProblemsItem
+      toSectionWithIdentifier:SectionIdentifierPasswordCheck];
+
+  if (!_checkForProblemsItem) {
+    _checkForProblemsItem = [self checkForProblemsItem];
+  }
+
+  [self updatePasswordCheckButtonWithState:_passwordCheckState];
+  [model addItem:_checkForProblemsItem
+      toSectionWithIdentifier:SectionIdentifierPasswordCheck];
+
+  [self updateLastCheckTimestampWithState:_passwordCheckState
+                                fromState:_passwordCheckState
+                                   update:NO];
 
   // Saved passwords.
   if (!_savedForms.empty()) {
@@ -413,6 +492,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   base::RecordAction(base::UserMetricsAction("MobilePasswordsSettingsClose"));
 }
 
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobilePasswordsSettingsBack"));
+}
+
 - (void)settingsWillBeDismissed {
   // Dismiss the search bar if presented, otherwise the VC will be retained by
   // UIKit thus cause a memory leak.
@@ -440,8 +523,52 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       [[SettingsSwitchItem alloc] initWithType:ItemTypeSavePasswordsSwitch];
   savePasswordsItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
   savePasswordsItem.on = [_passwordManagerEnabled value];
-  savePasswordsItem.accessibilityIdentifier = @"savePasswordsItem_switch";
+  savePasswordsItem.accessibilityIdentifier = kSavePasswordSwitchTableViewId;
   return savePasswordsItem;
+}
+
+- (TableViewInfoButtonItem*)managedSavePasswordItem {
+  TableViewInfoButtonItem* managedSavePasswordItem =
+      [[TableViewInfoButtonItem alloc]
+          initWithType:ItemTypeManagedSavePasswords];
+  managedSavePasswordItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
+  managedSavePasswordItem.statusText =
+      [_passwordManagerEnabled value]
+          ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+          : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
+  managedSavePasswordItem.accessibilityHint =
+      l10n_util::GetNSString(IDS_IOS_TOGGLE_SETTING_MANAGED_ACCESSIBILITY_HINT);
+  managedSavePasswordItem.accessibilityIdentifier =
+      kSavePasswordManagedTableViewId;
+  return managedSavePasswordItem;
+}
+
+- (SettingsCheckItem*)passwordProblemsItem {
+  SettingsCheckItem* passwordProblemsItem =
+      [[SettingsCheckItem alloc] initWithType:ItemTypePasswordCheckStatus];
+  passwordProblemsItem.enabled = NO;
+  passwordProblemsItem.text = l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS);
+  passwordProblemsItem.detailText =
+      l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_DESCRIPTION);
+  return passwordProblemsItem;
+}
+
+- (TableViewTextItem*)checkForProblemsItem {
+  TableViewTextItem* checkForProblemsItem =
+      [[TableViewTextItem alloc] initWithType:ItemTypeCheckForProblemsButton];
+  checkForProblemsItem.text =
+      l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
+  checkForProblemsItem.textColor = UIColor.cr_secondaryLabelColor;
+  checkForProblemsItem.accessibilityTraits = UIAccessibilityTraitButton;
+  return checkForProblemsItem;
+}
+
+- (TableViewLinkHeaderFooterItem*)lastCompletedCheckTime {
+  TableViewLinkHeaderFooterItem* footerItem =
+      [[TableViewLinkHeaderFooterItem alloc]
+          initWithType:ItemTypeLastCheckTimestampFooter];
+  footerItem.text = [self.delegate formatElapsedTimeSinceLastCheck];
+  return footerItem;
 }
 
 - (TableViewTextItem*)exportPasswordsItem {
@@ -456,7 +583,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (SavedFormContentItem*)savedFormItemWithText:(NSString*)text
                                  andDetailText:(NSString*)detailText
-                                       forForm:(autofill::PasswordForm*)form {
+                                       forForm:(password_manager::PasswordForm*)
+                                                   form {
   SavedFormContentItem* passwordItem =
       [[SavedFormContentItem alloc] initWithType:ItemTypeSavedPassword];
   passwordItem.text = text;
@@ -467,9 +595,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return passwordItem;
 }
 
-- (BlockedFormContentItem*)blockedFormItemWithText:(NSString*)text
-                                           forForm:
-                                               (autofill::PasswordForm*)form {
+- (BlockedFormContentItem*)
+    blockedFormItemWithText:(NSString*)text
+                    forForm:(password_manager::PasswordForm*)form {
   BlockedFormContentItem* passwordItem =
       [[BlockedFormContentItem alloc] initWithType:ItemTypeBlocked];
   passwordItem.text = text;
@@ -479,18 +607,32 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return passwordItem;
 }
 
+#pragma mark - PopoverLabelViewControllerDelegate
+
+- (void)didTapLinkURL:(NSURL*)URL {
+  GURL convertedURL = net::GURLWithNSURL(URL);
+  [self view:nil didTapLinkURL:convertedURL];
+}
+
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
   if (observableBoolean == _passwordManagerEnabled) {
-    // Update the item.
-    _savePasswordsItem.on = [_passwordManagerEnabled value];
+    if (_savePasswordsItem) {
+      // Update the item.
+      _savePasswordsItem.on = [_passwordManagerEnabled value];
 
-    // Update the cell if it's not removed by presenting search controller.
-    if ([self.tableViewModel
-            hasItemForItemType:ItemTypeSavePasswordsSwitch
-             sectionIdentifier:SectionIdentifierSavePasswordsSwitch]) {
-      [self reconfigureCellsForItems:@[ _savePasswordsItem ]];
+      // Update the cell if it's not removed by presenting search controller.
+      if ([self.tableViewModel
+              hasItemForItemType:ItemTypeSavePasswordsSwitch
+               sectionIdentifier:SectionIdentifierSavePasswordsSwitch]) {
+        [self reconfigureCellsForItems:@[ _savePasswordsItem ]];
+      }
+    } else {
+      _managedSavePasswordItem.detailText =
+          [_passwordManagerEnabled value]
+              ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+              : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
     }
   } else {
     NOTREACHED();
@@ -507,15 +649,91 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   _savePasswordsItem.on = [_passwordManagerEnabled value];
 }
 
-#pragma mark - SavePasswordsConsumerDelegate
+// Called when the user clicks on the information button of the managed
+// setting's UI. Shows a textual bubble with the information of the enterprise.
+- (void)didTapManagedUIInfoButton:(UIButton*)buttonView {
+  EnterpriseInfoPopoverViewController* bubbleViewController =
+      [[EnterpriseInfoPopoverViewController alloc] initWithEnterpriseName:nil];
+  bubbleViewController.delegate = self;
+  [self presentViewController:bubbleViewController animated:YES completion:nil];
 
-- (void)onGetPasswordStoreResults:
-    (std::vector<std::unique_ptr<autofill::PasswordForm>>)results {
+  // Disable the button when showing the bubble.
+  buttonView.enabled = NO;
+
+  // Set the anchor and arrow direction of the bubble.
+  bubbleViewController.popoverPresentationController.sourceView = buttonView;
+  bubbleViewController.popoverPresentationController.sourceRect =
+      buttonView.bounds;
+  bubbleViewController.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionAny;
+}
+
+// Called when user tapped on the information button of the password check
+// item. Shows popover with detailed description of an error.
+- (void)didTapPasswordCheckInfoButton:(UIButton*)buttonView {
+  NSAttributedString* info = [self.delegate passwordCheckErrorInfo];
+  // If no info returned by mediator handle this tap as tap on a cell.
+  if (!info) {
+    [self showPasswordIssuesPage];
+    return;
+  }
+
+  PopoverLabelViewController* errorInfoPopover =
+      [[PopoverLabelViewController alloc] initWithPrimaryAttributedString:info
+                                                secondaryAttributedString:nil];
+  errorInfoPopover.delegate = self;
+
+  errorInfoPopover.popoverPresentationController.sourceView = buttonView;
+  errorInfoPopover.popoverPresentationController.sourceRect = buttonView.bounds;
+  errorInfoPopover.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionAny;
+  [self presentViewController:errorInfoPopover animated:YES completion:nil];
+}
+
+#pragma mark - PasswordsConsumer
+
+- (void)setPasswordCheckUIState:(PasswordCheckUIState)state
+      compromisedPasswordsCount:(NSInteger)count {
+  self.compromisedPasswordsCount = count;
+  // Update password check status and check button with new state.
+  [self updatePasswordCheckButtonWithState:state];
+  [self updatePasswordCheckStatusLabelWithState:state];
+
+  // During searching Password Check section is hidden so cells should not be
+  // reconfigured.
+  if (self.navigationItem.searchController.active) {
+    _passwordCheckState = state;
+    return;
+  }
+
+  if (_checkForProblemsItem)
+    [self reconfigureCellsForItems:@[ _checkForProblemsItem ]];
+  if (_passwordProblemsItem) {
+    [self reconfigureCellsForItems:@[ _passwordProblemsItem ]];
+  }
+  // Before updating cached state value update timestamp as for proper animation
+  // it requires both new and old values.
+  [self updateLastCheckTimestampWithState:state
+                                fromState:_passwordCheckState
+                                   update:YES];
+  _passwordCheckState = state;
+}
+
+- (void)setPasswordsForms:
+    (std::vector<std::unique_ptr<password_manager::PasswordForm>>)results {
+  _blockedForms.clear();
+  _savedForms.clear();
+  _savedPasswordDuplicates.clear();
+  _blockedPasswordDuplicates.clear();
+
+  _didReceiveSavedForms = YES;
+  [self hideLoadingSpinnerBackground];
   if (results.empty()) {
+    [self reloadData];
     return;
   }
   for (auto& form : results) {
-    if (form->blacklisted_by_user)
+    if (form->blocked_by_user)
       _blockedForms.push_back(std::move(form));
     else
       _savedForms.push_back(std::move(form));
@@ -573,9 +791,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (void)willPresentSearchController:(UISearchController*)searchController {
   [self showScrim];
-  // Remove save passwords switch section.
+  // Remove save passwords switch section and password check section.
   [self
       performBatchTableViewUpdates:^{
+        [self clearSectionWithIdentifier:SectionIdentifierPasswordCheck
+                        withRowAnimation:UITableViewRowAnimationTop];
+
         [self clearSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch
                         withRowAnimation:UITableViewRowAnimationTop];
       }
@@ -595,12 +816,37 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
             forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
         [self.tableView insertSections:[NSIndexSet indexSetWithIndex:0]
                       withRowAnimation:UITableViewRowAnimationTop];
-        [model addItem:_savePasswordsItem
-            toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
-        [self.tableView
-            insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0
-                                                         inSection:0] ]
-                  withRowAnimation:UITableViewRowAnimationTop];
+        if (_savePasswordsItem) {
+          [model addItem:_savePasswordsItem
+              toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+        } else {
+          [model addItem:_managedSavePasswordItem
+              toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+        }
+        NSInteger switchSection = [model
+            sectionForSectionIdentifier:SectionIdentifierSavePasswordsSwitch];
+        NSMutableArray<NSIndexPath*>* rowsIndexPaths = [NSMutableArray
+            arrayWithObjects:[NSIndexPath indexPathForRow:0
+                                                inSection:switchSection],
+                             nil];
+        [model insertSectionWithIdentifier:SectionIdentifierPasswordCheck
+                                   atIndex:1];
+        NSInteger checkSection =
+            [model sectionForSectionIdentifier:SectionIdentifierPasswordCheck];
+
+        [self.tableView insertSections:[NSIndexSet indexSetWithIndex:1]
+                      withRowAnimation:UITableViewRowAnimationTop];
+        [model addItem:_passwordProblemsItem
+            toSectionWithIdentifier:SectionIdentifierPasswordCheck];
+        [model addItem:_checkForProblemsItem
+            toSectionWithIdentifier:SectionIdentifierPasswordCheck];
+        [rowsIndexPaths addObject:[NSIndexPath indexPathForRow:0
+                                                     inSection:checkSection]];
+        [rowsIndexPaths addObject:[NSIndexPath indexPathForRow:1
+                                                     inSection:checkSection]];
+
+        [self.tableView insertRowsAtIndexPaths:rowsIndexPaths
+                              withRowAnimation:UITableViewRowAnimationTop];
       }
                completion:nil];
 }
@@ -618,6 +864,36 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 }
 
 #pragma mark - Private methods
+
+// Shows loading spinner background view.
+- (void)showLoadingSpinnerBackground {
+  if (!self.spinnerView) {
+    self.spinnerView =
+        [[HomeWaitingView alloc] initWithFrame:self.tableView.bounds
+                               backgroundColor:UIColor.clearColor];
+    [self.spinnerView startWaiting];
+  }
+  self.navigationItem.searchController.searchBar.userInteractionEnabled = NO;
+  self.tableView.backgroundView = self.spinnerView;
+}
+
+// Hide the loading spinner if it is showing.
+- (void)hideLoadingSpinnerBackground {
+  if (self.spinnerView) {
+    [self.spinnerView stopWaitingWithCompletion:^{
+      [UIView animateWithDuration:0.2
+          animations:^{
+            self.spinnerView.alpha = 0.0;
+          }
+          completion:^(BOOL finished) {
+            self.navigationItem.searchController.searchBar
+                .userInteractionEnabled = YES;
+            self.tableView.backgroundView = nil;
+            self.spinnerView = nil;
+          }];
+    }];
+  }
+}
 
 // Dismisses the search controller when there's a touch event on the scrim.
 - (void)dismissSearchController:(UIControl*)sender {
@@ -725,10 +1001,149 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   }
 }
 
-// Starts requests for saved and blocked passwords to the store.
-- (void)getLoginsFromPasswordStore {
-  _savedPasswordsConsumer.reset(new ios::SavePasswordsConsumer(self));
-  _passwordStore->GetAllLogins(_savedPasswordsConsumer.get());
+// Update timestamp of the last check. Both old and new password check state
+// should be provided in order to animate footer in a proper way.
+- (void)updateLastCheckTimestampWithState:(PasswordCheckUIState)state
+                                fromState:(PasswordCheckUIState)oldState
+                                   update:(BOOL)update {
+  if (!_didReceiveSavedForms) {
+    return;
+  }
+
+  NSInteger checkSection = [self.tableViewModel
+      sectionForSectionIdentifier:SectionIdentifierPasswordCheck];
+
+  switch (state) {
+    case PasswordCheckStateUnSafe:
+      [self.tableViewModel setFooter:[self lastCompletedCheckTime]
+            forSectionWithIdentifier:SectionIdentifierPasswordCheck];
+      // Transition from disabled to unsafe state is possible only on page load.
+      // In this case we want to avoid animation.
+      if (oldState == PasswordCheckStateDisabled) {
+        [UIView performWithoutAnimation:^{
+          [self.tableView
+                reloadSections:[NSIndexSet indexSetWithIndex:checkSection]
+              withRowAnimation:UITableViewRowAnimationNone];
+        }];
+        return;
+      }
+      break;
+    case PasswordCheckStateSafe:
+    case PasswordCheckStateDefault:
+    case PasswordCheckStateError:
+    case PasswordCheckStateRunning:
+    case PasswordCheckStateDisabled:
+      if (oldState != PasswordCheckStateUnSafe)
+        return;
+
+      [self.tableViewModel setFooter:nil
+            forSectionWithIdentifier:SectionIdentifierPasswordCheck];
+      break;
+  }
+  if (update) {
+    [self.tableView
+        performBatchUpdates:^{
+          if (!self.tableView)
+            return;
+          // Deleting and inserting section results in pleasant animation of
+          // footer being added/removed.
+          [self.tableView
+                deleteSections:[NSIndexSet indexSetWithIndex:checkSection]
+              withRowAnimation:UITableViewRowAnimationNone];
+          [self.tableView
+                insertSections:[NSIndexSet indexSetWithIndex:checkSection]
+              withRowAnimation:UITableViewRowAnimationNone];
+        }
+                 completion:nil];
+  }
+}
+
+// Updates password check button according to provided state.
+- (void)updatePasswordCheckButtonWithState:(PasswordCheckUIState)state {
+  if (!_checkForProblemsItem)
+    return;
+
+  switch (state) {
+    case PasswordCheckStateSafe:
+    case PasswordCheckStateUnSafe:
+    case PasswordCheckStateDefault:
+    case PasswordCheckStateError:
+      _checkForProblemsItem.textColor = [UIColor colorNamed:kBlueColor];
+      _checkForProblemsItem.accessibilityTraits &=
+          ~UIAccessibilityTraitNotEnabled;
+      _checkForProblemsItem.text =
+          l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
+      break;
+    case PasswordCheckStateRunning:
+    // Fall through.
+    case PasswordCheckStateDisabled:
+      _checkForProblemsItem.text =
+          l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
+      _checkForProblemsItem.textColor = UIColor.cr_secondaryLabelColor;
+      _checkForProblemsItem.accessibilityTraits |=
+          UIAccessibilityTraitNotEnabled;
+      break;
+  }
+}
+
+// Updates password check status label according to provided state.
+- (void)updatePasswordCheckStatusLabelWithState:(PasswordCheckUIState)state {
+  if (!_passwordProblemsItem)
+    return;
+
+  _passwordProblemsItem.trailingImage = nil;
+  _passwordProblemsItem.enabled = YES;
+  _passwordProblemsItem.indicatorHidden = YES;
+  _passwordProblemsItem.infoButtonHidden = YES;
+  _passwordProblemsItem.accessoryType = UITableViewCellAccessoryNone;
+  _passwordProblemsItem.detailText =
+      l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_DESCRIPTION);
+
+  switch (state) {
+    case PasswordCheckStateRunning: {
+      _passwordProblemsItem.trailingImage = nil;
+      _passwordProblemsItem.indicatorHidden = NO;
+      break;
+    }
+    case PasswordCheckStateDisabled: {
+      _passwordProblemsItem.enabled = NO;
+      break;
+    }
+    case PasswordCheckStateUnSafe: {
+      _passwordProblemsItem.detailText =
+          base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+              IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT,
+              self.compromisedPasswordsCount));
+      UIImage* unSafeIconImage = [[UIImage imageNamed:@"settings_unsafe_state"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      _passwordProblemsItem.trailingImage = unSafeIconImage;
+      _passwordProblemsItem.trailingImageTintColor =
+          [UIColor colorNamed:kRedColor];
+      _passwordProblemsItem.accessoryType =
+          UITableViewCellAccessoryDisclosureIndicator;
+      break;
+    }
+    case PasswordCheckStateSafe: {
+      DCHECK(!self.compromisedPasswordsCount);
+      UIImage* safeIconImage = [[UIImage imageNamed:@"settings_safe_state"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      _passwordProblemsItem.detailText =
+          base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+              IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT, 0));
+      _passwordProblemsItem.trailingImage = safeIconImage;
+      _passwordProblemsItem.trailingImageTintColor =
+          [UIColor colorNamed:kGreenColor];
+      break;
+    }
+    case PasswordCheckStateDefault:
+      break;
+    case PasswordCheckStateError: {
+      _passwordProblemsItem.detailText =
+          l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR);
+      _passwordProblemsItem.infoButtonHidden = NO;
+      break;
+    }
+  }
 }
 
 - (void)updateExportPasswordsButton {
@@ -812,16 +1227,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   }
 }
 
-- (void)openDetailedViewForForm:(const autofill::PasswordForm&)form {
-  PasswordDetailsTableViewController* controller =
-      [[PasswordDetailsTableViewController alloc]
-            initWithPasswordForm:form
-                        delegate:self
-          reauthenticationModule:_reauthenticationModule];
-  controller.dispatcher = self.dispatcher;
-  [self.navigationController pushViewController:controller animated:YES];
-}
-
 - (void)deleteItemAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths {
   // Ensure indexPaths are sorted to maintain delete logic, and keep track of
   // number of items deleted to adjust index for accessing elements in the
@@ -842,18 +1247,21 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     auto& duplicates =
         blocked ? _blockedPasswordDuplicates : _savedPasswordDuplicates;
 
-    const autofill::PasswordForm& deletedForm = *item.form;
+    const password_manager::PasswordForm& deletedForm = *item.form;
     auto begin = blocked ? blockedIterator : passwordIterator;
     auto end = blocked ? blockedEndIterator : passwordEndIterator;
 
     auto formIterator = std::find_if(
         begin, end,
-        [&deletedForm](const std::unique_ptr<autofill::PasswordForm>& value) {
-          return *value == deletedForm;
+        [&deletedForm](
+            const std::unique_ptr<password_manager::PasswordForm>& value) {
+          return password_manager::ArePasswordFormUniqueKeysEqual(*value,
+                                                                  deletedForm);
         });
     DCHECK(formIterator != end);
 
-    std::unique_ptr<autofill::PasswordForm> form = std::move(*formIterator);
+    std::unique_ptr<password_manager::PasswordForm> form =
+        std::move(*formIterator);
     std::string key = password_manager::CreateSortKey(*form);
     auto duplicatesRange = duplicates.equal_range(key);
     for (auto iterator = duplicatesRange.first;
@@ -912,6 +1320,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       }];
 }
 
+- (void)showPasswordIssuesPage {
+  if (!self.compromisedPasswordsCount ||
+      self.passwordCheckState == PasswordCheckStateRunning)
+    return;
+  [self.handler showCompromisedPasswords];
+  password_manager::LogPasswordCheckReferrer(
+      password_manager::PasswordCheckReferrer::kPasswordSettings);
+}
+
 #pragma mark UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
@@ -929,6 +1346,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     case ItemTypeLinkHeader:
     case ItemTypeHeader:
     case ItemTypeSavePasswordsSwitch:
+    case ItemTypeManagedSavePasswords:
+      break;
+    case ItemTypePasswordCheckStatus:
+      [self showPasswordIssuesPage];
       break;
     case ItemTypeSavedPassword: {
       DCHECK_EQ(SectionIdentifierSavedPasswords,
@@ -936,7 +1357,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       SavedFormContentItem* saveFormItem =
           base::mac::ObjCCastStrict<SavedFormContentItem>(
               [model itemAtIndexPath:indexPath]);
-      [self openDetailedViewForForm:*saveFormItem.form];
+      [self.handler showDetailedViewForForm:*saveFormItem.form];
       break;
     }
     case ItemTypeBlocked: {
@@ -945,7 +1366,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       BlockedFormContentItem* blockedItem =
           base::mac::ObjCCastStrict<BlockedFormContentItem>(
               [model itemAtIndexPath:indexPath]);
-      [self openDetailedViewForForm:*blockedItem.form];
+      [self.handler showDetailedViewForForm:*blockedItem.form];
       break;
     }
     case ItemTypeExportPasswordsButton:
@@ -955,10 +1376,32 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
         [self startPasswordsExportFlow];
       }
       break;
+    case ItemTypeCheckForProblemsButton:
+      if (self.passwordCheckState != PasswordCheckStateRunning) {
+        [self.delegate startPasswordCheck];
+        UmaHistogramEnumeration("PasswordManager.BulkCheck.UserAction",
+                                PasswordCheckInteraction::kManualPasswordCheck);
+      }
+      break;
     default:
       NOTREACHED();
   }
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (BOOL)tableView:(UITableView*)tableView
+    shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
+  switch (itemType) {
+    case ItemTypeSavePasswordsSwitch:
+      return NO;
+    case ItemTypePasswordCheckStatus:
+      return self.passwordCheckState == PasswordCheckStateUnSafe;
+    case ItemTypeCheckForProblemsButton:
+      return self.passwordCheckState != PasswordCheckStateRunning &&
+             self.passwordCheckState != PasswordCheckStateDisabled;
+  }
+  return YES;
 }
 
 - (UIView*)tableView:(UITableView*)tableView
@@ -1008,51 +1451,33 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
                       forControlEvents:UIControlEventValueChanged];
       break;
     }
+    case ItemTypeManagedSavePasswords: {
+      TableViewInfoButtonCell* managedCell =
+          base::mac::ObjCCastStrict<TableViewInfoButtonCell>(cell);
+      [managedCell.trailingButton
+                 addTarget:self
+                    action:@selector(didTapManagedUIInfoButton:)
+          forControlEvents:UIControlEventTouchUpInside];
+      break;
+    }
+    case ItemTypePasswordCheckStatus: {
+      SettingsCheckCell* passwordCheckCell =
+          base::mac::ObjCCastStrict<SettingsCheckCell>(cell);
+      [passwordCheckCell.infoButton
+                 addTarget:self
+                    action:@selector(didTapPasswordCheckInfoButton:)
+          forControlEvents:UIControlEventTouchUpInside];
+      break;
+    }
+    case ItemTypeSavedPassword:
+    case ItemTypeBlocked: {
+      TableViewDetailTextCell* textCell =
+          base::mac::ObjCCastStrict<TableViewDetailTextCell>(cell);
+      textCell.textLabel.lineBreakMode = NSLineBreakByTruncatingHead;
+      break;
+    }
   }
   return cell;
-}
-
-#pragma mark PasswordDetailsTableViewControllerDelegate
-
-- (void)passwordDetailsTableViewController:
-            (PasswordDetailsTableViewController*)controller
-                            deletePassword:(const autofill::PasswordForm&)form {
-  _passwordStore->RemoveLogin(form);
-
-  std::vector<std::unique_ptr<autofill::PasswordForm>>& forms =
-      form.blacklisted_by_user ? _blockedForms : _savedForms;
-  auto iterator = std::find_if(
-      forms.begin(), forms.end(),
-      [&form](const std::unique_ptr<autofill::PasswordForm>& value) {
-        return *value == form;
-      });
-  DCHECK(iterator != forms.end());
-  forms.erase(iterator);
-
-  password_manager::DuplicatesMap& duplicates = form.blacklisted_by_user
-                                                    ? _blockedPasswordDuplicates
-                                                    : _savedPasswordDuplicates;
-  std::string key = password_manager::CreateSortKey(form);
-  auto duplicatesRange = duplicates.equal_range(key);
-  for (auto iterator = duplicatesRange.first;
-       iterator != duplicatesRange.second; ++iterator) {
-    _passwordStore->RemoveLogin(*(iterator->second));
-  }
-  duplicates.erase(key);
-
-  [self updateUIForEditState];
-  [self reloadData];
-  [self.navigationController popViewControllerAnimated:YES];
-}
-
-#pragma mark SuccessfulReauthTimeAccessor
-
-- (void)updateSuccessfulReauthTime {
-  _successfulReauthTime = [[NSDate alloc] init];
-}
-
-- (NSDate*)lastSuccessfulReauthTime {
-  return _successfulReauthTime;
 }
 
 #pragma mark PasswordExporterDelegate
@@ -1141,7 +1566,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
   UIView* sourceView = nil;
   CGRect sourceRect = CGRectZero;
-  if (IsIPadIdiom() && !IsCompactWidth()) {
+  if (IsIPadIdiom() && !IsCompactWidth(self.view.window)) {
     NSIndexPath* indexPath = [self.tableViewModel
         indexPathForItemType:ItemTypeExportPasswordsButton
            sectionIdentifier:SectionIdentifierExportPasswordsButton];
@@ -1185,8 +1610,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 // Sets the save passwords switch item's enabled status to |enabled| and
 // reconfigures the corresponding cell.
 - (void)setSavePasswordsSwitchItemEnabled:(BOOL)enabled {
-  [_savePasswordsItem setEnabled:enabled];
-  [self reconfigureCellsForItems:@[ _savePasswordsItem ]];
+  if (_savePasswordsItem) {
+    [_savePasswordsItem setEnabled:enabled];
+    [self reconfigureCellsForItems:@[ _savePasswordsItem ]];
+  }
 }
 
 // Enables/disables search bar.
@@ -1201,18 +1628,44 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   }
 }
 
+// Deletes passed password form and updates list accordingly.
+- (void)deletePasswordForm:(const password_manager::PasswordForm&)form {
+  _passwordStore->RemoveLogin(form);
+
+  std::vector<std::unique_ptr<password_manager::PasswordForm>>& forms =
+      form.blocked_by_user ? _blockedForms : _savedForms;
+  auto iterator = std::find_if(
+      forms.begin(), forms.end(),
+      [&form](const std::unique_ptr<password_manager::PasswordForm>& value) {
+        return password_manager::ArePasswordFormUniqueKeysEqual(*value, form);
+      });
+  // If |form| not found, pop password details view controller.
+  if (iterator == forms.end()) {
+    [self.navigationController popViewControllerAnimated:YES];
+    return;
+  }
+
+  forms.erase(iterator);
+
+  password_manager::DuplicatesMap& duplicates = form.blocked_by_user
+                                                    ? _blockedPasswordDuplicates
+                                                    : _savedPasswordDuplicates;
+  std::string key = password_manager::CreateSortKey(form);
+  auto duplicatesRange = duplicates.equal_range(key);
+  for (auto iterator = duplicatesRange.first;
+       iterator != duplicatesRange.second; ++iterator) {
+    _passwordStore->RemoveLogin(*(iterator->second));
+  }
+  duplicates.erase(key);
+
+  [self updateUIForEditState];
+  [self reloadData];
+  // TODO(crbug.com/1096986): Delete this once
+  // LegacyPasswordDetailsTableViewController is removed.
+  [self.navigationController popViewControllerAnimated:YES];
+}
+
 #pragma mark - Testing
-
-- (void)setReauthenticationModuleForExporter:
-    (id<ReauthenticationProtocol>)reauthenticationModule {
-  _passwordExporter = [[PasswordExporter alloc]
-      initWithReauthenticationModule:reauthenticationModule
-                            delegate:self];
-}
-
-- (PasswordExporter*)getPasswordExporter {
-  return _passwordExporter;
-}
 
 #pragma mark - ChromeIdentityServiceObserver
 

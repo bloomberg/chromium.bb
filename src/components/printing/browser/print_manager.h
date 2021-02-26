@@ -8,27 +8,32 @@
 #include <map>
 #include <memory>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "components/printing/common/print.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "printing/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "base/callback.h"
+#endif
+
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
+#include "ui/accessibility/ax_tree_update_forward.h"
 #endif
 
 namespace IPC {
 class Message;
 }
 
-struct PrintHostMsg_DidPrintDocument_Params;
-struct PrintHostMsg_ScriptedPrint_Params;
-
 namespace printing {
 
-class PrintManager : public content::WebContentsObserver {
+class PrintManager : public content::WebContentsObserver,
+                     public mojom::PrintManagerHost {
  public:
+  PrintManager(const PrintManager&) = delete;
+  PrintManager& operator=(const PrintManager&) = delete;
   ~PrintManager() override;
 
 #if defined(OS_ANDROID)
@@ -39,8 +44,27 @@ class PrintManager : public content::WebContentsObserver {
   virtual void PdfWritingDone(int page_count) = 0;
 #endif
 
+  // printing::mojom::PrintManagerHost:
+  void DidGetPrintedPagesCount(int32_t cookie, uint32_t number_pages) override;
+  void DidGetDocumentCookie(int32_t cookie) override;
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
+  void SetAccessibilityTree(
+      int32_t cookie,
+      const ui::AXTreeUpdate& accessibility_tree) override;
+#endif
+  void UpdatePrintSettings(int32_t cookie,
+                           base::Value job_settings,
+                           UpdatePrintSettingsCallback callback) override;
+  void DidShowPrintDialog() override;
+  void ShowInvalidPrinterSettingsError() override;
+  void PrintingFailed(int32_t cookie) override;
+
  protected:
   explicit PrintManager(content::WebContents* contents);
+
+  // Helper method to determine if PrintRenderFrame associated remote interface
+  // is still connected.
+  bool IsPrintRenderFrameConnected(content::RenderFrameHost* rfh);
 
   // Helper method to fetch the PrintRenderFrame associated remote interface
   // pointer.
@@ -86,21 +110,19 @@ class PrintManager : public content::WebContentsObserver {
   };
 
   // IPC handlers
-  virtual void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   virtual void OnDidPrintDocument(
       content::RenderFrameHost* render_frame_host,
-      const PrintHostMsg_DidPrintDocument_Params& params,
+      const mojom::DidPrintDocumentParams& params,
       std::unique_ptr<DelayedFrameDispatchHelper> helper) = 0;
-  virtual void OnGetDefaultPrintSettings(
-      content::RenderFrameHost* render_frame_host,
-      IPC::Message* reply_msg) = 0;
-  virtual void OnPrintingFailed(int cookie);
   virtual void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
-                               const PrintHostMsg_ScriptedPrint_Params& params,
+                               const mojom::ScriptedPrintParams& params,
                                IPC::Message* reply_msg) = 0;
 
-  int number_pages_ = 0;  // Number of pages to print in the print job.
+  uint32_t number_pages_ = 0;  // Number of pages to print in the print job.
   int cookie_ = 0;        // The current document cookie.
+  // Holds WebContents associated mojo receivers.
+  content::WebContentsFrameReceiverSet<printing::mojom::PrintManagerHost>
+      print_manager_host_receivers_;
 
 #if defined(OS_ANDROID)
   // Callback to execute when done writing pdf.
@@ -108,16 +130,12 @@ class PrintManager : public content::WebContentsObserver {
 #endif
 
  private:
-  void OnDidGetDocumentCookie(int cookie);
-
   // Stores a PrintRenderFrame associated remote with the RenderFrameHost used
   // to bind it. The PrintRenderFrame is used to transmit mojo interface method
   // calls to the associated receiver.
   std::map<content::RenderFrameHost*,
            mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>>
       print_render_frames_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintManager);
 };
 
 }  // namespace printing

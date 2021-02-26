@@ -7,7 +7,7 @@ package org.chromium.chrome.features.start_surface;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_STACK_TAB_SWITCHER;
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_MARGIN;
 
 import android.animation.ObjectAnimator;
 import android.view.View;
@@ -27,10 +27,12 @@ class TasksSurfaceViewBinder {
     public static class ViewHolder {
         public final ViewGroup parentView;
         public final View tasksSurfaceView;
+        public final View topToolbarPlaceholderView;
 
-        ViewHolder(ViewGroup parentView, View tasksSurfaceView) {
+        ViewHolder(ViewGroup parentView, View tasksSurfaceView, View topToolbarPlaceholderView) {
             this.parentView = parentView;
             this.tasksSurfaceView = tasksSurfaceView;
+            this.topToolbarPlaceholderView = topToolbarPlaceholderView;
         }
     }
 
@@ -41,8 +43,8 @@ class TasksSurfaceViewBinder {
             updateLayoutAndVisibility(viewHolder, model);
         } else if (BOTTOM_BAR_HEIGHT == propertyKey) {
             setBottomBarHeight(viewHolder, model.get(BOTTOM_BAR_HEIGHT));
-        } else if (TOP_BAR_HEIGHT == propertyKey) {
-            setTopBarHeight(viewHolder, model.get(TOP_BAR_HEIGHT));
+        } else if (TOP_MARGIN == propertyKey) {
+            setTopBarHeight(viewHolder, model.get(TOP_MARGIN));
         }
     }
 
@@ -54,7 +56,7 @@ class TasksSurfaceViewBinder {
             MarginLayoutParams layoutParams =
                     (MarginLayoutParams) viewHolder.tasksSurfaceView.getLayoutParams();
             layoutParams.bottomMargin = model.get(BOTTOM_BAR_HEIGHT);
-            layoutParams.topMargin = model.get(TOP_BAR_HEIGHT);
+            setTopBarHeight(viewHolder, model.get(TOP_MARGIN));
         }
 
         View taskSurfaceView = viewHolder.tasksSurfaceView;
@@ -79,11 +81,10 @@ class TasksSurfaceViewBinder {
     }
 
     private static void setTopBarHeight(ViewHolder viewHolder, int height) {
-        MarginLayoutParams layoutParams =
-                (MarginLayoutParams) viewHolder.tasksSurfaceView.getLayoutParams();
-        if (layoutParams == null) return;
+        ViewGroup.LayoutParams lp = viewHolder.topToolbarPlaceholderView.getLayoutParams();
+        if (lp == null) return;
 
-        layoutParams.topMargin = height;
-        viewHolder.tasksSurfaceView.setLayoutParams(layoutParams);
+        lp.height = height;
+        viewHolder.topToolbarPlaceholderView.setLayoutParams(lp);
     }
 }

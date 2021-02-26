@@ -7,7 +7,6 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/browser_process.h"
@@ -31,6 +30,7 @@
 #include "components/safe_browsing/content/browser/mojo_safe_browsing_impl.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "media/mojo/buildflags.h"
@@ -42,6 +42,10 @@
 #elif defined(OS_WIN)
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/module_event_sink_impl.h"
+#elif defined(OS_CHROMEOS)
+#include "chrome/browser/performance_manager/mechanisms/userspace_swap_chromeos.h"
+#include "chromeos/components/cdm_factory_daemon/cdm_factory_daemon_proxy.h"
+#include "components/performance_manager/public/performance_manager.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -76,7 +80,8 @@ void MaybeCreateSafeBrowsingForRenderer(
     int process_id,
     content::ResourceContext* resource_context,
     base::RepeatingCallback<scoped_refptr<safe_browsing::UrlCheckerDelegate>(
-        bool safe_browsing_enabled)> get_checker_delegate,
+        bool safe_browsing_enabled,
+        bool should_check_on_sb_disabled)> get_checker_delegate,
     mojo::PendingReceiver<safe_browsing::mojom::SafeBrowsing> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -88,14 +93,17 @@ void MaybeCreateSafeBrowsingForRenderer(
   bool safe_browsing_enabled = safe_browsing::IsSafeBrowsingEnabled(
       *Profile::FromBrowserContext(render_process_host->GetBrowserContext())
            ->GetPrefs());
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, process_id,
-              resource_context,
-              base::BindRepeating(get_checker_delegate, safe_browsing_enabled),
-              std::move(receiver)));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, process_id,
+          resource_context,
+          base::BindRepeating(get_checker_delegate, safe_browsing_enabled,
+                              // Navigation initiated from renderer should never
+                              // check when safe browsing is disabled, because
+                              // enterprise check only supports mainframe URL.
+                              /*should_check_on_sb_disabled=*/false),
+          std::move(receiver)));
 }
 
 }  // namespace
@@ -109,11 +117,11 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   // message after a time delay, in order to rate limit. The association
   // protects against the render process host ID being recycled in that time
   // gap between the preparation and the execution of that IPC.
-  associated_registry->AddInterface(
-      base::Bind(&CacheStatsRecorder::Create, render_process_host->GetID()));
+  associated_registry->AddInterface(base::BindRepeating(
+      &CacheStatsRecorder::Create, render_process_host->GetID()));
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+      content::GetUIThreadTaskRunner({});
   registry->AddInterface(
       base::BindRepeating(&metrics::CallStackProfileCollector::Create));
 
@@ -172,7 +180,18 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   registry->AddInterface(
       base::BindRepeating(&android::AvailableOfflineContentProvider::Create,
                           profile),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+      content::GetUIThreadTaskRunner({}));
+#endif
+
+#if defined(OS_CHROMEOS)
+  if (performance_manager::mechanism::userspace_swap::
+          UserspaceSwapInitializationImpl::UserspaceSwapSupportedAndEnabled()) {
+    registry->AddInterface(
+        base::BindRepeating(&performance_manager::mechanism::userspace_swap::
+                                UserspaceSwapInitializationImpl::Create,
+                            render_process_host->GetID()),
+        performance_manager::PerformanceManager::GetTaskRunner());
+  }
 #endif
 
   for (auto* ep : extra_parts_) {
@@ -269,6 +288,19 @@ void ChromeContentBrowserClient::BindBadgeServiceReceiverFromServiceWorker(
 }
 
 void ChromeContentBrowserClient::BindGpuHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  if (auto r = receiver.As<metrics::mojom::CallStackProfileCollector>()) {
+    metrics::CallStackProfileCollector::Create(std::move(r));
+    return;
+  }
+
+#if defined(OS_CHROMEOS)
+  if (auto r = receiver.As<chromeos::cdm::mojom::CdmFactoryDaemon>())
+    chromeos::CdmFactoryDaemonProxy::Create(std::move(r));
+#endif  // OS_CHROMEOS
+}
+
+void ChromeContentBrowserClient::BindUtilityHostReceiver(
     mojo::GenericPendingReceiver receiver) {
   if (auto r = receiver.As<metrics::mojom::CallStackProfileCollector>())
     metrics::CallStackProfileCollector::Create(std::move(r));

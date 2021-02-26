@@ -34,7 +34,7 @@
 SigninErrorUI::SigninErrorUI(content::WebUI* web_ui)
     : SigninWebDialogUI(web_ui) {
   Profile* webui_profile = Profile::FromWebUI(web_ui);
-  if (webui_profile->GetOriginalProfile()->IsSystemProfile()) {
+  if (webui_profile->IsSystemProfile()) {
     InitializeMessageHandlerForUserManager();
   }
 }
@@ -66,6 +66,7 @@ void SigninErrorUI::Initialize(Browser* browser, bool is_system_profile) {
 
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISigninErrorHost);
+  source->DisableTrustedTypesCSP();
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
   source->SetDefaultResource(IDR_SIGNIN_ERROR_HTML);

@@ -12,6 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/data_model/address.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/borrowed_transliterator.h"
 #include "components/autofill/core/browser/data_model/contact_info.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 
@@ -56,9 +57,9 @@ class AutofillProfileComparator {
   //
   // If |whitespace_spec| is DISCARD_WHITESPACE, punctuation and whitespace are
   // discarded. For example, +1 (234) 567-8900 becomes 12345678900.
-  base::string16 NormalizeForComparison(
+  static base::string16 NormalizeForComparison(
       base::StringPiece16 text,
-      WhitespaceSpec whitespace_spec = RETAIN_WHITESPACE) const;
+      WhitespaceSpec whitespace_spec = RETAIN_WHITESPACE);
 
   // Returns true if |p1| and |p2| are viable merge candidates. This means that
   // their names, addresses, email addreses, company names, and phone numbers

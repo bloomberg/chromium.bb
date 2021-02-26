@@ -209,7 +209,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   // RenderText:
   const base::string16& GetDisplayText() override;
   SizeF GetStringSizeF() override;
-  Size GetLineSize(const SelectionModel& caret) override;
+  SizeF GetLineSizeF(const SelectionModel& caret) override;
   std::vector<Rect> GetSubstringBounds(const Range& range) override;
   RangeF GetCursorSpan(const Range& text_range) override;
   size_t GetLineContainingCaret(const SelectionModel& caret) override;
@@ -229,7 +229,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   void OnDisplayTextAttributeChanged() override;
   void EnsureLayout() override;
   void DrawVisualText(internal::SkiaTextRenderer* renderer,
-                      const std::vector<Range> selections) override;
+                      const std::vector<Range>& selections) override;
 
  private:
   friend class test::RenderTextTestApi;
@@ -285,6 +285,10 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // Makes sure that text runs for layout text are shaped.
   void EnsureLayoutRunList();
+
+  // Returns whether the display range is still a valid range after the eliding
+  // pass.
+  bool IsValidDisplayRange(Range display_range);
 
   // RenderText:
   internal::TextRunList* GetRunList() override;

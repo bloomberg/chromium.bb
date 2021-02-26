@@ -10,12 +10,19 @@ import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
-import org.chromium.chrome.browser.download.DownloadLocationDialogBridge;
+import org.chromium.chrome.browser.download.DownloadDialogBridge;
+import org.chromium.chrome.browser.download.DownloadLaterPromptStatus;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.download.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /**
  * Fragment containing Download settings.
@@ -23,10 +30,14 @@ import org.chromium.components.browser_ui.settings.SettingsUtils;
 public class DownloadSettings
         extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener {
     public static final String PREF_LOCATION_CHANGE = "location_change";
+    private static final String PREF_DOWNLOAD_LATER_PROMPT_ENABLED =
+            "download_later_prompt_enabled";
     private static final String PREF_LOCATION_PROMPT_ENABLED = "location_prompt_enabled";
     private static final String PREF_PREFETCHING_ENABLED = "prefetching_enabled";
 
+    private PrefService mPrefService;
     private DownloadLocationPreference mLocationChangePref;
+    private ChromeSwitchPreference mDownloadLaterPromptEnabledPref;
     private ChromeSwitchPreference mLocationPromptEnabledPref;
     private ChromeSwitchPreference mPrefetchingEnabled;
 
@@ -34,11 +45,20 @@ public class DownloadSettings
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, String s) {
         getActivity().setTitle(R.string.menu_downloads);
         SettingsUtils.addPreferencesFromResource(this, R.xml.download_preferences);
+        mPrefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
+
+        mDownloadLaterPromptEnabledPref =
+                (ChromeSwitchPreference) findPreference(PREF_DOWNLOAD_LATER_PROMPT_ENABLED);
+        mDownloadLaterPromptEnabledPref.setOnPreferenceChangeListener(this);
+
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_LATER)) {
+            getPreferenceScreen().removePreference(
+                    findPreference(PREF_DOWNLOAD_LATER_PROMPT_ENABLED));
+        }
 
         mLocationPromptEnabledPref =
                 (ChromeSwitchPreference) findPreference(PREF_LOCATION_PROMPT_ENABLED);
         mLocationPromptEnabledPref.setOnPreferenceChangeListener(this);
-
         mLocationChangePref = (DownloadLocationPreference) findPreference(PREF_LOCATION_CHANGE);
 
         if (PrefetchConfiguration.isPrefetchingFlagEnabled()) {
@@ -67,24 +87,28 @@ public class DownloadSettings
     @Override
     public void onResume() {
         super.onResume();
-        updateData();
+        updateDownloadSettings();
     }
 
-    private void updateData() {
-        if (mLocationChangePref != null) {
-            mLocationChangePref.updateSummary();
+    private void updateDownloadSettings() {
+        mLocationChangePref.updateSummary();
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_LATER)) {
+            @DownloadLaterPromptStatus
+            int downloadLaterPromptStatus =
+                    mPrefService.getInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS);
+            mDownloadLaterPromptEnabledPref.setChecked(
+                    !(downloadLaterPromptStatus == DownloadLaterPromptStatus.DONT_SHOW));
         }
 
-        if (mLocationPromptEnabledPref != null) {
-            // Location prompt is marked enabled if the prompt status is not DONT_SHOW.
-            boolean isLocationPromptEnabled =
-                    DownloadLocationDialogBridge.getPromptForDownloadAndroid()
-                    != DownloadPromptStatus.DONT_SHOW;
-            mLocationPromptEnabledPref.setChecked(isLocationPromptEnabled);
-        }
+        // Location prompt is marked enabled if the prompt status is not DONT_SHOW.
+        boolean isLocationPromptEnabled = DownloadDialogBridge.getPromptForDownloadAndroid()
+                != DownloadPromptStatus.DONT_SHOW;
+        mLocationPromptEnabledPref.setChecked(isLocationPromptEnabled);
 
         if (mPrefetchingEnabled != null) {
-            mPrefetchingEnabled.setChecked(PrefetchConfiguration.isPrefetchingEnabledInSettings());
+            mPrefetchingEnabled.setChecked(PrefetchConfiguration.isPrefetchingEnabledInSettings(
+                    ProfileKey.getLastUsedRegularProfileKey()));
             updatePrefetchSummary();
         }
     }
@@ -92,12 +116,13 @@ public class DownloadSettings
     private void updatePrefetchSummary() {
         // The summary text should remain empty if mPrefetchingEnabled is switched off so it is only
         // updated when the setting is on.
-        if (PrefetchConfiguration.isPrefetchingEnabled()) {
+        ProfileKey profileKey = ProfileKey.getLastUsedRegularProfileKey();
+        if (PrefetchConfiguration.isPrefetchingEnabled(profileKey)) {
             mPrefetchingEnabled.setSummaryOn("");
-        } else if (PrefetchConfiguration.isPrefetchingEnabledInSettings()) {
+        } else if (PrefetchConfiguration.isPrefetchingEnabledInSettings(profileKey)) {
             // If prefetching is enabled by the user but isPrefetchingEnabled() returned false, we
             // know that prefetching is forbidden by the server.
-            if (PrefetchConfiguration.isEnabledByServerUnknown()) {
+            if (PrefetchConfiguration.isEnabledByServerUnknown(profileKey)) {
                 mPrefetchingEnabled.setSummaryOn(
                         R.string.download_settings_prefetch_maybe_unavailable_description);
             } else {
@@ -108,23 +133,38 @@ public class DownloadSettings
     }
 
     // Preference.OnPreferenceChangeListener implementation.
-
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (PREF_LOCATION_PROMPT_ENABLED.equals(preference.getKey())) {
+        if (PREF_DOWNLOAD_LATER_PROMPT_ENABLED.equals(preference.getKey())) {
+            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_LATER)) return false;
+            @DownloadLaterPromptStatus
+            int downloadLaterPromptStatus =
+                    mPrefService.getInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS);
+            if (!(boolean) newValue) {
+                mPrefService.setInteger(
+                        Pref.DOWNLOAD_LATER_PROMPT_STATUS, DownloadLaterPromptStatus.DONT_SHOW);
+                return true;
+            }
+
+            // Only update if the download later dialog has been shown before.
+            if (downloadLaterPromptStatus != DownloadLaterPromptStatus.SHOW_INITIAL) {
+                mPrefService.setInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS,
+                        DownloadLaterPromptStatus.SHOW_PREFERENCE);
+            }
+        } else if (PREF_LOCATION_PROMPT_ENABLED.equals(preference.getKey())) {
             if ((boolean) newValue) {
-                // Only update if the interstitial has been shown before.
-                if (DownloadLocationDialogBridge.getPromptForDownloadAndroid()
+                // Only update if the download location dialog has been shown before.
+                if (DownloadDialogBridge.getPromptForDownloadAndroid()
                         != DownloadPromptStatus.SHOW_INITIAL) {
-                    DownloadLocationDialogBridge.setPromptForDownloadAndroid(
+                    DownloadDialogBridge.setPromptForDownloadAndroid(
                             DownloadPromptStatus.SHOW_PREFERENCE);
                 }
             } else {
-                DownloadLocationDialogBridge.setPromptForDownloadAndroid(
-                        DownloadPromptStatus.DONT_SHOW);
+                DownloadDialogBridge.setPromptForDownloadAndroid(DownloadPromptStatus.DONT_SHOW);
             }
         } else if (PREF_PREFETCHING_ENABLED.equals(preference.getKey())) {
-            PrefetchConfiguration.setPrefetchingEnabledInSettings((boolean) newValue);
+            PrefetchConfiguration.setPrefetchingEnabledInSettings(
+                    ProfileKey.getLastUsedRegularProfileKey(), (boolean) newValue);
             updatePrefetchSummary();
         }
         return true;

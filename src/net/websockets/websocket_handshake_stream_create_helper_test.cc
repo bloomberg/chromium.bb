@@ -117,7 +117,9 @@ class TestConnectDelegate : public WebSocketStream::ConnectDelegate {
   void OnSuccess(
       std::unique_ptr<WebSocketStream> stream,
       std::unique_ptr<WebSocketHandshakeResponseInfo> response) override {}
-  void OnFailure(const std::string& failure_message) override {}
+  void OnFailure(const std::string& failure_message,
+                 int net_error,
+                 base::Optional<int> response_code) override {}
   void OnStartOpeningHandshake(
       std::unique_ptr<WebSocketHandshakeRequestInfo> request) override {}
   void OnSSLCertificateError(
@@ -144,7 +146,10 @@ class MockWebSocketStreamRequestAPI : public WebSocketStreamRequestAPI {
                void(WebSocketBasicHandshakeStream* handshake_stream));
   MOCK_METHOD1(OnHttp2HandshakeStreamCreated,
                void(WebSocketHttp2HandshakeStream* handshake_stream));
-  MOCK_METHOD1(OnFailure, void(const std::string& message));
+  MOCK_METHOD3(OnFailure,
+               void(const std::string& message,
+                    int net_error,
+                    base::Optional<int> response_code));
 };
 
 class WebSocketHandshakeStreamCreateHelperTest
@@ -176,7 +181,7 @@ class WebSocketHandshakeStreamCreateHelperTest
         NOTREACHED();
     }
 
-    EXPECT_CALL(stream_request_, OnFailure(_)).Times(0);
+    EXPECT_CALL(stream_request_, OnFailure(_, _, _)).Times(0);
 
     HttpRequestInfo request_info;
     request_info.url = url;
@@ -229,14 +234,14 @@ class WebSocketHandshakeStreamCreateHelperTest
       }
       case HTTP2_HANDSHAKE_STREAM: {
         SpdyTestUtil spdy_util;
-        spdy::SpdyHeaderBlock request_header_block = WebSocketHttp2Request(
+        spdy::Http2HeaderBlock request_header_block = WebSocketHttp2Request(
             kPath, "www.example.org", kOrigin, extra_request_headers);
         spdy::SpdySerializedFrame request_headers(
             spdy_util.ConstructSpdyHeaders(1, std::move(request_header_block),
                                            DEFAULT_PRIORITY, false));
         MockWrite writes[] = {CreateMockWrite(request_headers, 0)};
 
-        spdy::SpdyHeaderBlock response_header_block =
+        spdy::Http2HeaderBlock response_header_block =
             WebSocketHttp2Response(extra_response_headers);
         spdy::SpdySerializedFrame response_headers(
             spdy_util.ConstructSpdyResponseHeaders(

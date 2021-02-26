@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/strings/string16.h"
+#include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/indexed_db_control_test.mojom.h"
 #include "components/services/storage/public/mojom/native_file_system_context.mojom.h"
@@ -28,7 +29,6 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
-#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/origin.h"
@@ -61,7 +61,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // This is *not* called on the IDBTaskRunner, unlike most other functions.
   IndexedDBContextImpl(
       const base::FilePath& data_path,
-      scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::Clock* clock,
       mojo::PendingRemote<storage::mojom::BlobStorageContext>
@@ -89,6 +88,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
                           DownloadOriginDataCallback callback) override;
   void GetAllOriginsDetails(GetAllOriginsDetailsCallback callback) override;
   void SetForceKeepSessionState() override;
+  void ApplyPolicyUpdates(
+      std::vector<storage::mojom::IndexedDBStoragePolicyUpdatePtr>
+          policy_updates) override;
   void BindTestInterface(
       mojo::PendingReceiver<storage::mojom::IndexedDBControlTest> receiver)
       override;
@@ -251,6 +253,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   std::unique_ptr<std::set<url::Origin>> origin_set_;
   std::map<url::Origin, int64_t> origin_size_map_;
+  // The set of origins whose storage should be cleared on shutdown.
+  std::set<url::Origin> origins_to_purge_on_shutdown_;
   base::Clock* clock_;
 
   mojo::ReceiverSet<storage::mojom::IndexedDBControl> receivers_;
@@ -258,6 +262,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   base::Optional<mojo::Receiver<storage::mojom::MockFailureInjector>>
       mock_failure_injector_;
   mojo::RemoteSet<storage::mojom::IndexedDBObserver> observers_;
+  std::unique_ptr<storage::FilesystemProxy> filesystem_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);
 };

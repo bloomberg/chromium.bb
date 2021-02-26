@@ -10,13 +10,17 @@ namespace switches {
 // Overrides the kEnableGpuRasterization flag.
 const char kDisableGpuRasterization[] = "disable-gpu-rasterization";
 
+// Disables mipmap generation in Skia. Used a workaround for select low memory
+// devices, see https://crbug.com/1138979 for details.
+const char kDisableMipmapGeneration[] = "disable-mipmap-generation";
+
 // Allow heuristics to determine when a layer tile should be drawn with the
 // Skia GPU backend. Only valid with GPU accelerated compositing.
 const char kEnableGpuRasterization[] = "enable-gpu-rasterization";
 
-// Select a different set of GPU blacklist entries with the specificed
+// Select a different set of GPU blocklist entries with the specified
 // test_group ID.
-const char kGpuBlacklistTestGroup[] = "gpu-blacklist-test-group";
+const char kGpuBlocklistTestGroup[] = "gpu-blocklist-test-group";
 
 // Enable an extra set of GPU driver bug list entries with the specified
 // test_group ID. Note the default test group (group 0) is still active.
@@ -25,7 +29,11 @@ const char kGpuDriverBugListTestGroup[] = "gpu-driver-bug-list-test-group";
 // Passes encoded GpuPreferences to GPU process.
 const char kGpuPreferences[] = "gpu-preferences";
 
-// Ignores GPU blacklist.
+// Ignores GPU blocklist.
+const char kIgnoreGpuBlocklist[] = "ignore-gpu-blocklist";
+
+// Ignores GPU blocklist.
+// TODO(crbug.com/1101491): remove in 2020Q4 in favor of --ignore-gpu-blocklist.
 const char kIgnoreGpuBlacklist[] = "ignore-gpu-blacklist";
 
 // Allows explicitly specifying the shader disk cache size for embedded devices.
@@ -33,14 +41,17 @@ const char kIgnoreGpuBlacklist[] = "ignore-gpu-blacklist";
 // devices.
 const char kShaderDiskCacheSizeKB[] = "shader-disk-cache-size-kb";
 
-// Disables the non-sandboxed GPU process for DX12 and Vulkan info collection
-const char kDisableGpuProcessForDX12VulkanInfoCollection[] =
-    "disable-gpu-process-for-dx12-vulkan-info-collection";
+// Disables the non-sandboxed GPU process for DX12 info collection
+const char kDisableGpuProcessForDX12InfoCollection[] =
+    "disable-gpu-process-for-dx12-info-collection";
 
 const char kEnableUnsafeWebGPU[] = "enable-unsafe-webgpu";
 
 // Enable validation layers in Dawn backends.
 const char kEnableDawnBackendValidation[] = "enable-dawn-backend-validation";
+
+// Enable the toggle Toggle::DisableRobustness when creating Dawn device.
+const char kDisableDawnRobustness[] = "disable-dawn-robustness";
 
 // Increases the priority (to REALTIME_AUDIO) of gpu process and compositor
 // thread.
@@ -76,5 +87,28 @@ const char kGpuRevision[] = "gpu-revision";
 // Passes the active graphics driver version from browser process to info
 // collection GPU process.
 const char kGpuDriverVersion[] = "gpu-driver-version";
+
+// Indicate that the this is being used by Android WebView and its draw functor
+// is using vulkan.
+const char kWebViewDrawFunctorUsesVulkan[] = "webview-draw-functor-uses-vulkan";
+
+// Enables using protected memory for vulkan resources.
+const char kEnableVulkanProtectedMemory[] = "enable-vulkan-protected-memory";
+
+// Forces vulkan resources to use protected memory for vulkan compositing.
+const char kEnforceVulkanProtectedMemory[] = "enforce-vulkan-protected-memory";
+
+// Disables falling back to GL based hardware rendering if initializing Vulkan
+// fails. This is to allow tests to catch regressions in Vulkan.
+const char kDisableVulkanFallbackToGLForTesting[] =
+    "disable-vulkan-fallback-to-gl-for-testing";
+
+// Specifies the heap limit for Vulkan memory.
+// TODO(crbug/1158000): Remove this switch.
+const char kVulkanHeapMemoryLimitMb[] = "vulkan-heap-memory-limit-mb";
+
+// Specifies the sync CPU limit for total Vulkan memory.
+// TODO(crbug/1158000): Remove this switch.
+const char kVulkanSyncCpuMemoryLimitMb[] = "vulkan-sync-cpu-memory-limit-mb";
 
 }  // namespace switches

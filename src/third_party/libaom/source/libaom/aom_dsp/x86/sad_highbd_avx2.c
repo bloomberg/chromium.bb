@@ -259,6 +259,14 @@ static AOM_FORCE_INLINE unsigned int aom_highbd_sad128xN_avx2(
     return aom_highbd_sad##m##xN_avx2(n, src, src_stride, ref, ref_stride); \
   }
 
+#define highbd_sad_skip_MxN_avx2(m, n)                                       \
+  unsigned int aom_highbd_sad_skip_##m##x##n##_avx2(                         \
+      const uint8_t *src, int src_stride, const uint8_t *ref,                \
+      int ref_stride) {                                                      \
+    return 2 * aom_highbd_sad##m##xN_avx2((n / 2), src, 2 * src_stride, ref, \
+                                          2 * ref_stride);                   \
+  }
+
 highbd_sadMxN_avx2(16, 4);
 highbd_sadMxN_avx2(16, 8);
 highbd_sadMxN_avx2(16, 16);
@@ -277,6 +285,24 @@ highbd_sadMxN_avx2(64, 128);
 
 highbd_sadMxN_avx2(128, 64);
 highbd_sadMxN_avx2(128, 128);
+
+highbd_sad_skip_MxN_avx2(16, 8);
+highbd_sad_skip_MxN_avx2(16, 16);
+highbd_sad_skip_MxN_avx2(16, 32);
+highbd_sad_skip_MxN_avx2(16, 64);
+
+highbd_sad_skip_MxN_avx2(32, 8);
+highbd_sad_skip_MxN_avx2(32, 16);
+highbd_sad_skip_MxN_avx2(32, 32);
+highbd_sad_skip_MxN_avx2(32, 64);
+
+highbd_sad_skip_MxN_avx2(64, 16);
+highbd_sad_skip_MxN_avx2(64, 32);
+highbd_sad_skip_MxN_avx2(64, 64);
+highbd_sad_skip_MxN_avx2(64, 128);
+
+highbd_sad_skip_MxN_avx2(128, 64);
+highbd_sad_skip_MxN_avx2(128, 128);
 
 unsigned int aom_highbd_sad16x4_avg_avx2(const uint8_t *src, int src_stride,
                                          const uint8_t *ref, int ref_stride,
@@ -678,6 +704,17 @@ static AOM_FORCE_INLINE void aom_highbd_sad128xNx4d_avx2(
     aom_highbd_sad##m##xNx4d_avx2(n, src, src_stride, ref_array, ref_stride, \
                                   sad_array);                                \
   }
+#define highbd_sad_skip_MxNx4d_avx2(m, n)                                   \
+  void aom_highbd_sad_skip_##m##x##n##x4d_avx2(                             \
+      const uint8_t *src, int src_stride, const uint8_t *const ref_array[], \
+      int ref_stride, uint32_t *sad_array) {                                \
+    aom_highbd_sad##m##xNx4d_avx2((n / 2), src, 2 * src_stride, ref_array,  \
+                                  2 * ref_stride, sad_array);               \
+    sad_array[0] <<= 1;                                                     \
+    sad_array[1] <<= 1;                                                     \
+    sad_array[2] <<= 1;                                                     \
+    sad_array[3] <<= 1;                                                     \
+  }
 
 highbd_sadMxNx4d_avx2(16, 4);
 highbd_sadMxNx4d_avx2(16, 8);
@@ -697,3 +734,21 @@ highbd_sadMxNx4d_avx2(64, 128);
 
 highbd_sadMxNx4d_avx2(128, 64);
 highbd_sadMxNx4d_avx2(128, 128);
+
+highbd_sad_skip_MxNx4d_avx2(16, 8);
+highbd_sad_skip_MxNx4d_avx2(16, 16);
+highbd_sad_skip_MxNx4d_avx2(16, 32);
+highbd_sad_skip_MxNx4d_avx2(16, 64);
+
+highbd_sad_skip_MxNx4d_avx2(32, 8);
+highbd_sad_skip_MxNx4d_avx2(32, 16);
+highbd_sad_skip_MxNx4d_avx2(32, 32);
+highbd_sad_skip_MxNx4d_avx2(32, 64);
+
+highbd_sad_skip_MxNx4d_avx2(64, 16);
+highbd_sad_skip_MxNx4d_avx2(64, 32);
+highbd_sad_skip_MxNx4d_avx2(64, 64);
+highbd_sad_skip_MxNx4d_avx2(64, 128);
+
+highbd_sad_skip_MxNx4d_avx2(128, 64);
+highbd_sad_skip_MxNx4d_avx2(128, 128);

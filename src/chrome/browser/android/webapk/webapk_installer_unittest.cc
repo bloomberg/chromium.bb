@@ -26,7 +26,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -144,11 +143,11 @@ class WebApkInstallerRunner {
                    bool relax_updates,
                    const std::string& webapk_package) {
     result_ = result;
-    on_completed_callback_.Run();
+    std::move(on_completed_callback_).Run();
   }
 
   // Called after the installation process has succeeded or failed.
-  base::Closure on_completed_callback_;
+  base::OnceClosure on_completed_callback_;
 
   // The result of the installation process.
   WebApkInstallResult result_;
@@ -175,9 +174,9 @@ class UpdateRequestStorer {
   }
 
  private:
-  void OnComplete(bool success) { quit_closure_.Run(); }
+  void OnComplete(bool success) { std::move(quit_closure_).Run(); }
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateRequestStorer);
 };
@@ -246,14 +245,14 @@ class BuildProtoRunner {
   void OnBuiltWebApkProto(std::unique_ptr<std::string> serialized_proto) {
     webapk_request_ = std::make_unique<webapk::WebApk>();
     webapk_request_->ParseFromString(*serialized_proto);
-    on_completed_callback_.Run();
+    std::move(on_completed_callback_).Run();
   }
 
   // The populated webapk::WebApk.
   std::unique_ptr<webapk::WebApk> webapk_request_;
 
   // Called after the |webapk_request_| is built.
-  base::Closure on_completed_callback_;
+  base::OnceClosure on_completed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BuildProtoRunner);
 };
@@ -262,9 +261,7 @@ class ScopedTempFile {
  public:
   ScopedTempFile() { CHECK(base::CreateTemporaryFile(&file_path_)); }
 
-  ~ScopedTempFile() {
-    base::DeleteFile(file_path_, false);
-  }
+  ~ScopedTempFile() { base::DeleteFile(file_path_); }
 
   const base::FilePath& GetFilePath() { return file_path_; }
 
@@ -278,7 +275,8 @@ class ScopedTempFile {
 
 class WebApkInstallerTest : public ::testing::Test {
  public:
-  typedef base::Callback<std::unique_ptr<net::test_server::HttpResponse>(void)>
+  typedef base::RepeatingCallback<
+      std::unique_ptr<net::test_server::HttpResponse>(void)>
       WebApkResponseBuilder;
 
   WebApkInstallerTest()
@@ -326,7 +324,7 @@ class WebApkInstallerTest : public ::testing::Test {
 
   // Sets the function that should be used to build the response to the
   // WebAPK creation request.
-  void SetWebApkResponseBuilder(const WebApkResponseBuilder& builder) {
+  void SetWebApkResponseBuilder(WebApkResponseBuilder builder) {
     webapk_response_builder_ = builder;
   }
 
@@ -341,7 +339,8 @@ class WebApkInstallerTest : public ::testing::Test {
   // Sets default configuration for running WebApkInstaller.
   void SetDefaults() {
     SetWebApkServerUrl(test_server_.GetURL(kServerUrl));
-    SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, kToken));
+    SetWebApkResponseBuilder(
+        base::BindRepeating(&BuildValidWebApkResponse, kToken));
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleWebApkRequest(
@@ -522,7 +521,7 @@ TEST_F(WebApkInstallerTest, StoreUpdateRequestToFileCreatesDirectories) {
   EXPECT_TRUE(base::PathExists(update_request_path));
 
   // Clean up
-  base::DeleteFileRecursively(outer_file_path);
+  base::DeletePathRecursively(outer_file_path);
 }
 
 // When there is no Web Manifest available for a site, an empty

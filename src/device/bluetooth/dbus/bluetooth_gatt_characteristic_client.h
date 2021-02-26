@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "build/chromeos_buildflags.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -105,10 +106,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicClient
                          ErrorCallback error_callback) = 0;
 
   // Issues a request to write the value of GATT characteristic with object path
-  // |object_path| with value |value|. Invokes |callback| on success and
-  // |error_callback| on failure.
+  // |object_path| with value |value| and |type_option|. |type_option| is
+  // bluetooth_gatt_characteristic::kTypeRequest or kTypeCommand, or "" to omit
+  // the option. Invokes |callback| on success and |error_callback| on failure.
   virtual void WriteValue(const dbus::ObjectPath& object_path,
                           const std::vector<uint8_t>& value,
+                          base::StringPiece type_option,
                           base::OnceClosure callback,
                           ErrorCallback error_callback) = 0;
 
@@ -123,7 +126,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicClient
   // Starts a notification session from this characteristic with object path
   // |object_path| if it supports value notifications or indications. Invokes
   // |callback| on success and |error_callback| on failure.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   virtual void StartNotify(
       const dbus::ObjectPath& object_path,
       device::BluetoothGattCharacteristic::NotificationType notification_type,

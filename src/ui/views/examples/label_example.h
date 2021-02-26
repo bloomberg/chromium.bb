@@ -6,22 +6,19 @@
 #define UI_VIEWS_EXAMPLES_LABEL_EXAMPLE_H_
 
 #include "base/macros.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/examples/example_base.h"
 
 namespace views {
 
 class Checkbox;
+class Combobox;
 class GridLayout;
 class Label;
 
 namespace examples {
 
 class VIEWS_EXAMPLES_EXPORT LabelExample : public ExampleBase,
-                                           public ButtonListener,
-                                           public ComboboxListener,
                                            public TextfieldController {
  public:
   LabelExample();
@@ -30,11 +27,9 @@ class VIEWS_EXAMPLES_EXPORT LabelExample : public ExampleBase,
   // ExampleBase:
   void CreateExampleView(View* container) override;
 
-  // ButtonListener:
-  void ButtonPressed(Button* button, const ui::Event& event) override;
-
-  // ComboboxListener:
-  void OnPerformAction(Combobox* combobox) override;
+  void MultilineCheckboxPressed();
+  void ShadowsCheckboxPressed();
+  void SelectableCheckboxPressed();
 
   // TextfieldController:
   void ContentsChanged(Textfield* sender,
@@ -48,7 +43,11 @@ class VIEWS_EXAMPLES_EXPORT LabelExample : public ExampleBase,
   Combobox* AddCombobox(GridLayout* layout,
                         const char* name,
                         const char** strings,
-                        int count);
+                        int count,
+                        void (LabelExample::*function)());
+
+  void AlignmentChanged();
+  void ElidingChanged();
 
   Textfield* textfield_ = nullptr;
   Combobox* alignment_ = nullptr;

@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/overlay_processor_mac.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/trace_event/trace_event.h"
@@ -14,17 +15,14 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
-OverlayProcessorMac::OverlayProcessorMac(bool could_overlay,
-                                         bool enable_ca_overlay)
-    : could_overlay_(could_overlay),
-      enable_ca_overlay_(enable_ca_overlay),
+OverlayProcessorMac::OverlayProcessorMac(bool enable_ca_overlay)
+    : enable_ca_overlay_(enable_ca_overlay),
       ca_layer_overlay_processor_(std::make_unique<CALayerOverlayProcessor>()) {
 }
 
 OverlayProcessorMac::OverlayProcessorMac(
     std::unique_ptr<CALayerOverlayProcessor> ca_layer_overlay_processor)
-    : could_overlay_(true),
-      enable_ca_overlay_(true),
+    : enable_ca_overlay_(true),
       ca_layer_overlay_processor_(std::move(ca_layer_overlay_processor)) {}
 
 OverlayProcessorMac::~OverlayProcessorMac() = default;
@@ -34,7 +32,15 @@ bool OverlayProcessorMac::DisableSplittingQuads() const {
 }
 
 bool OverlayProcessorMac::IsOverlaySupported() const {
-  return could_overlay_;
+  return true;
+}
+
+gfx::Rect OverlayProcessorMac::GetPreviousFrameOverlaysBoundingRect() const {
+  // This function's return value is used to determine the range of quads
+  // produced by surface aggregation. We use the quads to generate our CALayer
+  // tree every frame, and we use the quads that didn't change. For that
+  // reason, always return the full frame.
+  return previous_frame_full_bounding_rect_;
 }
 
 gfx::Rect OverlayProcessorMac::GetAndResetOverlayDamage() {
@@ -45,20 +51,23 @@ gfx::Rect OverlayProcessorMac::GetAndResetOverlayDamage() {
 
 void OverlayProcessorMac::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
-    RenderPassList* render_passes,
+    AggregatedRenderPassList* render_passes,
     const SkMatrix44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
+    SurfaceDamageRectList* surface_damage_rect_list,
     OutputSurfaceOverlayPlane* output_surface_plane,
     CandidateList* candidates,
     gfx::Rect* damage_rect,
     std::vector<gfx::Rect>* content_bounds) {
   TRACE_EVENT0("viz", "OverlayProcessorMac::ProcessForOverlays");
+  auto& render_pass = render_passes->back();
+
   // Clear to get ready to handle output surface as overlay.
   output_surface_already_handled_ = false;
+  previous_frame_full_bounding_rect_ = render_pass->output_rect;
 
-  auto& render_pass = render_passes->back();
   // Skip overlay processing if we have copy request.
   if (!render_pass->copy_requests.empty())
     return;
@@ -79,6 +88,7 @@ void OverlayProcessorMac::ProcessForOverlays(
   // layers then mark the output surface as already handled.
   output_surface_already_handled_ = true;
   ca_overlay_damage_rect_ = render_pass->output_rect;
+  previous_frame_full_bounding_rect_ = ca_overlay_damage_rect_;
   *damage_rect = gfx::Rect();
 }
 
@@ -91,7 +101,7 @@ void OverlayProcessorMac::AdjustOutputSurfaceOverlay(
     output_surface_plane->reset();
 }
 
-bool OverlayProcessorMac::NeedsSurfaceOccludingDamageRect() const {
+bool OverlayProcessorMac::NeedsSurfaceDamageRectList() const {
   return false;
 }
 

@@ -36,7 +36,7 @@ class CORE_EXPORT MultiColumnFragmentainerGroup {
  public:
   MultiColumnFragmentainerGroup(const LayoutMultiColumnSet&);
 
-  const LayoutMultiColumnSet& ColumnSet() const { return column_set_; }
+  const LayoutMultiColumnSet& ColumnSet() const { return *column_set_; }
 
   bool IsFirstGroup() const;
   bool IsLastGroup() const;
@@ -159,7 +159,7 @@ class CORE_EXPORT MultiColumnFragmentainerGroup {
   // Returns 1 or greater, never 0.
   unsigned ActualColumnCount() const;
 
-  void UpdateFromNG(LayoutUnit logical_height);
+  void SetColumnBlockSizeFromNG(LayoutUnit);
 
  private:
   LayoutUnit HeightAdjustedForRowOffset(LayoutUnit height) const;
@@ -180,7 +180,7 @@ class CORE_EXPORT MultiColumnFragmentainerGroup {
 
   unsigned UnclampedActualColumnCount() const;
 
-  const LayoutMultiColumnSet& column_set_;
+  const LayoutMultiColumnSet* const column_set_;
 
   LayoutUnit logical_top_;
   LayoutUnit logical_top_in_flow_thread_;

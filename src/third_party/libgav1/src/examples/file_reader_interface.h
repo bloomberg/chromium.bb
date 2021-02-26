@@ -21,8 +21,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "absl/base/attributes.h"
-
 namespace libgav1 {
 
 class FileReaderInterface {
@@ -47,10 +45,10 @@ class FileReaderInterface {
   // The |timestamp| pointer is optional: callers not interested in timestamps
   // can pass nullptr. When |timestamp| is not a nullptr, this function returns
   // the presentation timestamp of the temporal unit.
-  ABSL_MUST_USE_RESULT virtual bool ReadTemporalUnit(
+  /*LIBGAV1_MUST_USE_RESULT*/ virtual bool ReadTemporalUnit(
       std::vector<uint8_t>* tu_data, int64_t* timestamp) = 0;
 
-  ABSL_MUST_USE_RESULT virtual bool IsEndOfFile() const = 0;
+  /*LIBGAV1_MUST_USE_RESULT*/ virtual bool IsEndOfFile() const = 0;
 
   // The values returned by these accessors are strictly informative. No
   // validation is performed when they are read from file.

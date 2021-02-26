@@ -40,11 +40,11 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/web_preferences.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -55,13 +55,13 @@
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #endif
 
+using blink::web_pref::WebPreferences;
 using content::WebContents;
-using content::WebPreferences;
 
 namespace {
 
@@ -135,7 +135,7 @@ const FontDefault kFontDefaults[] = {
     {prefs::kWebKitCursiveFontFamily, IDS_CURSIVE_FONT_FAMILY},
     {prefs::kWebKitFantasyFontFamily, IDS_FANTASY_FONT_FAMILY},
     {prefs::kWebKitPictographFontFamily, IDS_PICTOGRAPH_FONT_FAMILY},
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_WIN)
     {prefs::kWebKitStandardFontFamilyJapanese,
      IDS_STANDARD_FONT_FAMILY_JAPANESE},
     {prefs::kWebKitFixedFontFamilyJapanese, IDS_FIXED_FONT_FAMILY_JAPANESE},
@@ -159,7 +159,7 @@ const FontDefault kFontDefaults[] = {
     {prefs::kWebKitSansSerifFontFamilyTraditionalHan,
      IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN},
 #endif
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
     {prefs::kWebKitCursiveFontFamilySimplifiedHan,
      IDS_CURSIVE_FONT_FAMILY_SIMPLIFIED_HAN},
     {prefs::kWebKitCursiveFontFamilyTraditionalHan,
@@ -246,11 +246,11 @@ UScriptCode GetScriptOfBrowserLocale(const std::string& locale) {
 }
 
 // Sets a font family pref in |prefs| to |pref_value|.
-void OverrideFontFamily(WebPreferences* prefs,
+void OverrideFontFamily(blink::web_pref::WebPreferences* prefs,
                         const std::string& generic_family,
                         const std::string& script,
                         const std::string& pref_value) {
-  content::ScriptFontFamilyMap* map = NULL;
+  blink::web_pref::ScriptFontFamilyMap* map = nullptr;
   if (generic_family == "standard")
     map = &prefs->standard_font_family_map;
   else if (generic_family == "fixed")
@@ -314,11 +314,11 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
     PrefWatcher::Get(profile_)->RegisterHelper(this);
   }
 
-  blink::mojom::RendererPreferences* render_prefs =
+  blink::RendererPreferences* render_prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(render_prefs, profile_);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
@@ -433,7 +433,7 @@ void PrefsTabHelper::GetServiceInstance() {
 void PrefsTabHelper::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     UpdateRendererPreferences();
     return;
@@ -444,13 +444,11 @@ void PrefsTabHelper::Observe(int type,
 }
 
 void PrefsTabHelper::UpdateWebPreferences() {
-  web_contents_->GetRenderViewHost()->UpdateWebkitPreferences(
-      web_contents_->GetRenderViewHost()->GetWebkitPreferences());
+  web_contents_->NotifyPreferencesChanged();
 }
 
 void PrefsTabHelper::UpdateRendererPreferences() {
-  blink::mojom::RendererPreferences* prefs =
-      web_contents_->GetMutableRendererPrefs();
+  blink::RendererPreferences* prefs = web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(prefs, profile_);
   web_contents_->SyncRendererPrefs();
 }
@@ -476,10 +474,10 @@ void PrefsTabHelper::OnFontFamilyPrefChanged(const std::string& pref_name) {
     PrefService* prefs = profile_->GetPrefs();
     std::string pref_value = prefs->GetString(pref_name);
     if (pref_value.empty()) {
-      WebPreferences web_prefs =
-          web_contents_->GetRenderViewHost()->GetWebkitPreferences();
+      blink::web_pref::WebPreferences web_prefs =
+          web_contents_->GetOrCreateWebPreferences();
       OverrideFontFamily(&web_prefs, generic_family, script, std::string());
-      web_contents_->GetRenderViewHost()->UpdateWebkitPreferences(web_prefs);
+      web_contents_->SetWebPreferences(web_prefs);
       return;
     }
   }
@@ -500,7 +498,7 @@ void PrefsTabHelper::NotifyWebkitPreferencesChanged(
   OnFontFamilyPrefChanged(pref_name);
 #endif
 
-  web_contents_->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  web_contents_->OnWebPreferencesChanged();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PrefsTabHelper)

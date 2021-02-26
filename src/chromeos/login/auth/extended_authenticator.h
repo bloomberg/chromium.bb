@@ -54,6 +54,9 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticator
   // Updates consumer of the class.
   virtual void SetConsumer(AuthStatusConsumer* consumer) = 0;
 
+  // TODO(crbug.com/866790): Following method was only used for supervised
+  // users authentication. Check if there is a reason to keep it and remove it.
+
   // This call will attempt to mount the home dir for the user, key (and key
   // label) in |context|. If the key is of type KEY_TYPE_PASSWORD_PLAIN, it will
   // be hashed with the system salt before being passed to cryptohomed. This
@@ -67,6 +70,25 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticator
   // label) in |context|. No further actions are taken after authentication.
   virtual void AuthenticateToCheck(const UserContext& context,
                                    base::OnceClosure success_callback) = 0;
+
+  // Attempts to start fingerprint auth session (prepare biometrics daemon for
+  // upcoming fingerprint scan) for the user with |account_id|. |callback| will
+  // be invoked with whether the fingerprint auth session is successfully
+  // started.
+  virtual void StartFingerprintAuthSession(
+      const AccountId& account_id,
+      base::OnceCallback<void(bool)> callback) = 0;
+
+  // Attempts to end the current fingerprint auth session. Logs an error if no
+  // response.
+  virtual void EndFingerprintAuthSession() = 0;
+
+  // Waits for a fingerprint scan from the user in |context|, and calls
+  // |callback| with a fingerprint-specific CryptohomeErrorCode. No further
+  // actions are taken after authentication.
+  virtual void AuthenticateWithFingerprint(
+      const UserContext& context,
+      base::OnceCallback<void(cryptohome::CryptohomeErrorCode)> callback) = 0;
 
   // Attempts to add a new |key| for the user identified/authorized by
   // |context|. If a key with the same label already exists, the behavior

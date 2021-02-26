@@ -5,9 +5,10 @@
 #include "chrome/browser/ui/layout_constants.h"
 
 #include "base/notreached.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 int GetCocoaLayoutConstant(LayoutConstant constant) {
   switch (constant) {
     case BOOKMARK_BAR_HEIGHT:
@@ -54,6 +55,9 @@ int GetLayoutConstant(LayoutConstant constant) {
     case LOCATION_BAR_ELEMENT_PADDING:
       return touch_ui ? 3 : 2;
     case LOCATION_BAR_HEIGHT:
+      if (OmniboxFieldTrial::RichAutocompletionShowAdditionalText() &&
+          OmniboxFieldTrial::RichAutocompletionTwoLineOmnibox())
+        return touch_ui ? 52 : 40;
       return touch_ui ? 36 : 28;
     case LOCATION_BAR_ICON_SIZE:
       return touch_ui ? 20 : 16;
@@ -69,6 +73,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       return 8;
     case TAB_STACK_DISTANCE:
       return touch_ui ? 4 : 6;
+    case TABSTRIP_REGION_VIEW_CONTROL_PADDING:
+      return 8;
     case TABSTRIP_TOOLBAR_OVERLAP:
       return 1;
     case TOOLBAR_BUTTON_HEIGHT:

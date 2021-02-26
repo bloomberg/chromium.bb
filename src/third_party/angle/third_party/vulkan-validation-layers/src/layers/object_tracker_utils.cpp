@@ -887,8 +887,10 @@ void ObjectLifetimes::PostCallRecordGetPhysicalDeviceDisplayProperties2KHR(VkPhy
                                                                            uint32_t *pPropertyCount,
                                                                            VkDisplayProperties2KHR *pProperties, VkResult result) {
     if ((result != VK_SUCCESS) && (result != VK_INCOMPLETE)) return;
-    for (uint32_t index = 0; index < *pPropertyCount; ++index) {
-        CreateObject(pProperties[index].displayProperties.display, kVulkanObjectTypeDisplayKHR, nullptr);
+    if (pProperties) {
+        for (uint32_t index = 0; index < *pPropertyCount; ++index) {
+            CreateObject(pProperties[index].displayProperties.display, kVulkanObjectTypeDisplayKHR, nullptr);
+        }
     }
 }
 
@@ -908,37 +910,35 @@ void ObjectLifetimes::PostCallRecordGetDisplayModeProperties2KHR(VkPhysicalDevic
                                                                  uint32_t *pPropertyCount, VkDisplayModeProperties2KHR *pProperties,
                                                                  VkResult result) {
     if ((result != VK_SUCCESS) && (result != VK_INCOMPLETE)) return;
-    for (uint32_t index = 0; index < *pPropertyCount; ++index) {
-        CreateObject(pProperties[index].displayModeProperties.displayMode, kVulkanObjectTypeDisplayModeKHR, nullptr);
+    if (pProperties) {
+        for (uint32_t index = 0; index < *pPropertyCount; ++index) {
+            CreateObject(pProperties[index].displayModeProperties.displayMode, kVulkanObjectTypeDisplayModeKHR, nullptr);
+        }
     }
 }
 
-bool ObjectLifetimes::PreCallValidateAcquirePerformanceConfigurationINTEL(
-    VkDevice device, const VkPerformanceConfigurationAcquireInfoINTEL *pAcquireInfo,
-    VkPerformanceConfigurationINTEL *pConfiguration) const {
-    bool skip = false;
-    skip |= ValidateObject(device, kVulkanObjectTypeDevice, false, "VUID-vkAcquirePerformanceConfigurationINTEL-device-parameter",
-                           kVUIDUndefined);
-
-    return skip;
+void ObjectLifetimes::PostCallRecordGetPhysicalDeviceDisplayPlanePropertiesKHR(VkPhysicalDevice physicalDevice,
+                                                                               uint32_t *pPropertyCount,
+                                                                               VkDisplayPlanePropertiesKHR *pProperties,
+                                                                               VkResult result) {
+    if ((result != VK_SUCCESS) && (result != VK_INCOMPLETE)) return;
+    if (pProperties) {
+        for (uint32_t index = 0; index < *pPropertyCount; ++index) {
+            CreateObject(pProperties[index].currentDisplay, kVulkanObjectTypeDisplayKHR, nullptr);
+        }
+    }
 }
 
-bool ObjectLifetimes::PreCallValidateReleasePerformanceConfigurationINTEL(VkDevice device,
-                                                                          VkPerformanceConfigurationINTEL configuration) const {
-    bool skip = false;
-    skip |= ValidateObject(device, kVulkanObjectTypeDevice, false, "VUID-vkReleasePerformanceConfigurationINTEL-device-parameter",
-                           kVUIDUndefined);
-
-    return skip;
-}
-
-bool ObjectLifetimes::PreCallValidateQueueSetPerformanceConfigurationINTEL(VkQueue queue,
-                                                                           VkPerformanceConfigurationINTEL configuration) const {
-    bool skip = false;
-    skip |= ValidateObject(queue, kVulkanObjectTypeQueue, false, "VUID-vkQueueSetPerformanceConfigurationINTEL-queue-parameter",
-                           "VUID-vkQueueSetPerformanceConfigurationINTEL-commonparent");
-
-    return skip;
+void ObjectLifetimes::PostCallRecordGetPhysicalDeviceDisplayPlaneProperties2KHR(VkPhysicalDevice physicalDevice,
+                                                                                uint32_t *pPropertyCount,
+                                                                                VkDisplayPlaneProperties2KHR *pProperties,
+                                                                                VkResult result) {
+    if ((result != VK_SUCCESS) && (result != VK_INCOMPLETE)) return;
+    if (pProperties) {
+        for (uint32_t index = 0; index < *pPropertyCount; ++index) {
+            CreateObject(pProperties[index].displayPlaneProperties.currentDisplay, kVulkanObjectTypeDisplayKHR, nullptr);
+        }
+    }
 }
 
 bool ObjectLifetimes::PreCallValidateCreateFramebuffer(VkDevice device, const VkFramebufferCreateInfo *pCreateInfo,

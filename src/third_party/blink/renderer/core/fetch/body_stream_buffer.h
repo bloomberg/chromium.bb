@@ -6,8 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BODY_STREAM_BUFFER_H_
 
 #include <memory>
-#include "base/optional.h"
 #include "base/util/type_safety/pass_key.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -21,6 +22,7 @@
 
 namespace blink {
 
+class BytesUploader;
 class EncodedFormData;
 class ExceptionState;
 class ReadableStream;
@@ -28,8 +30,6 @@ class ScriptState;
 
 class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
                                            public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(BodyStreamBuffer);
-
  public:
   using PassKey = util::PassKey<BodyStreamBuffer>;
 
@@ -59,9 +59,11 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
 
   // Callable only when neither locked nor disturbed.
   scoped_refptr<BlobDataHandle> DrainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy,
-      ExceptionState&);
-  scoped_refptr<EncodedFormData> DrainAsFormData(ExceptionState&);
+      BytesConsumer::BlobSizePolicy);
+  scoped_refptr<EncodedFormData> DrainAsFormData();
+  void DrainAsChunkedDataPipeGetter(
+      ScriptState*,
+      mojo::PendingReceiver<network::mojom::blink::ChunkedDataPipeGetter>);
   void StartLoading(FetchDataLoader*,
                     FetchDataLoader::Client* /* client */,
                     ExceptionState&);
@@ -77,14 +79,16 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   void OnStateChange() override;
   String DebugName() const override { return "BodyStreamBuffer"; }
 
-  base::Optional<bool> IsStreamReadable(ExceptionState&);
-  base::Optional<bool> IsStreamClosed(ExceptionState&);
-  base::Optional<bool> IsStreamErrored(ExceptionState&);
-  base::Optional<bool> IsStreamLocked(ExceptionState&);
-  bool IsStreamLockedForDCheck(ExceptionState&);
-  base::Optional<bool> IsStreamDisturbed(ExceptionState&);
-  bool IsStreamDisturbedForDCheck(ExceptionState&);
-  void CloseAndLockAndDisturb(ExceptionState&);
+  bool IsStreamReadable() const;
+  bool IsStreamClosed() const;
+  bool IsStreamErrored() const;
+  bool IsStreamLocked() const;
+  bool IsStreamDisturbed() const;
+
+  // Closes the stream if necessary, and then locks and disturbs it. Should not
+  // be called if |stream_broken_| is true.
+  void CloseAndLockAndDisturb();
+
   ScriptState* GetScriptState() { return script_state_; }
 
   bool IsAborted();
@@ -97,7 +101,9 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
     return side_data_blob_;
   }
 
-  void Trace(Visitor*) override;
+  bool IsMadeFromReadableStream() const { return made_from_readable_stream_; }
+
+  void Trace(Visitor*) const override;
 
  private:
   class LoaderClient;
@@ -116,17 +122,9 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   void EndLoading();
   void StopLoading();
 
-  // Implementation of IsStream*() methods. Delegates to |predicate|, one of the
-  // methods defined in ReadableStream. Sets |stream_broken_| and throws if
-  // |predicate| throws. Throws an exception if called when |stream_broken_|
-  // is already true.
-  base::Optional<bool> BooleanStreamOperation(
-      base::Optional<bool> (ReadableStream::*predicate)(ScriptState*,
-                                                        ExceptionState&) const,
-      ExceptionState& exception_state);
-
   Member<ScriptState> script_state_;
   Member<ReadableStream> stream_;
+  Member<BytesUploader> stream_uploader_;
   Member<BytesConsumer> consumer_;
   // We need this member to keep it alive while loading.
   Member<FetchDataLoader> loader_;
@@ -140,6 +138,8 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   bool stream_needs_more_ = false;
   bool made_from_readable_stream_;
   bool in_process_data_ = false;
+
+  // TODO(ricea): Remove remaining uses of |stream_broken_|.
   bool stream_broken_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BodyStreamBuffer);

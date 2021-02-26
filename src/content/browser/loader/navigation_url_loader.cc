@@ -7,11 +7,11 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/cached_navigation_url_loader.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_factory.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
+#include "content/browser/renderer_host/navigation_request_info.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "services/network/public/cpp/features.h"
@@ -30,7 +30,7 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
     NavigationURLLoaderDelegate* delegate,
-    bool is_served_from_back_forward_cache,
+    LoaderType loader_type,
     mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
         initial_interceptors) {
@@ -38,10 +38,10 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     return g_loader_factory->CreateLoader(
         storage_partition, std::move(request_info),
         std::move(navigation_ui_data), service_worker_handle, delegate,
-        is_served_from_back_forward_cache);
+        loader_type);
   }
 
-  if (is_served_from_back_forward_cache)
+  if (loader_type == LoaderType::kNoop)
     return CachedNavigationURLLoader::Create(std::move(request_info), delegate);
 
   return std::make_unique<NavigationURLLoaderImpl>(

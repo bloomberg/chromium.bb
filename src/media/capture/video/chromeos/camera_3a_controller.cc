@@ -220,6 +220,7 @@ void Camera3AController::Stabilize3AForStillCapture(
 }
 
 void Camera3AController::OnResultMetadataAvailable(
+    uint32_t frame_number,
     const cros::mojom::CameraMetadataPtr& result_metadata) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -378,6 +379,54 @@ void Camera3AController::SetAutoFocusModeForVideoRecording() {
   DVLOG(1) << "Setting AF mode to: " << af_mode_;
 }
 
+void Camera3AController::SetAutoWhiteBalanceMode(
+    cros::mojom::AndroidControlAwbMode mode) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!available_awb_modes_.count(mode)) {
+    LOG(WARNING) << "Don't support awb mode:" << mode;
+    return;
+  }
+
+  SetCaptureMetadata(
+      cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AWB_LOCK,
+      cros::mojom::AndroidControlAwbLock::ANDROID_CONTROL_AWB_LOCK_OFF);
+  awb_mode_ = mode;
+  Set3AMode(cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AWB_MODE,
+            base::checked_cast<uint8_t>(awb_mode_));
+  DVLOG(1) << "Setting AWB mode to: " << awb_mode_;
+}
+
+void Camera3AController::SetExposureTime(bool enable_auto,
+                                         int64_t exposure_time_nanoseconds) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (enable_auto) {
+    if (!available_ae_modes_.count(
+            cros::mojom::AndroidControlAeMode::ANDROID_CONTROL_AE_MODE_ON)) {
+      LOG(WARNING) << "Don't support ANDROID_CONTROL_AE_MODE_ON";
+      return;
+    }
+    ae_mode_ = cros::mojom::AndroidControlAeMode::ANDROID_CONTROL_AE_MODE_ON;
+    capture_metadata_dispatcher_->UnsetRepeatingCaptureMetadata(
+        cros::mojom::CameraMetadataTag::ANDROID_SENSOR_EXPOSURE_TIME);
+  } else {
+    if (!available_ae_modes_.count(
+            cros::mojom::AndroidControlAeMode::ANDROID_CONTROL_AE_MODE_OFF)) {
+      LOG(WARNING) << "Don't support ANDROID_CONTROL_AE_MODE_OFF";
+      return;
+    }
+    ae_mode_ = cros::mojom::AndroidControlAeMode::ANDROID_CONTROL_AE_MODE_OFF;
+    SetRepeatingCaptureMetadata(
+        cros::mojom::CameraMetadataTag::ANDROID_SENSOR_EXPOSURE_TIME,
+        exposure_time_nanoseconds);
+  }
+
+  Set3AMode(cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_MODE,
+            base::checked_cast<uint8_t>(ae_mode_));
+  DVLOG(1) << "Setting AE mode to: " << ae_mode_;
+}
+
 bool Camera3AController::IsPointOfInterestSupported() {
   return point_of_interest_supported_;
 }
@@ -521,7 +570,7 @@ void Camera3AController::Set3AMode(cros::mojom::CameraMetadataTag tag,
          tag == cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_MODE ||
          tag == cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AWB_MODE);
 
-  SetCaptureMetadata(tag, target_mode);
+  SetRepeatingCaptureMetadata(tag, target_mode);
 
   switch (tag) {
     case cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AF_MODE:

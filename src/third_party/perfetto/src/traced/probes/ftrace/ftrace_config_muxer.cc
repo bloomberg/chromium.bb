@@ -395,6 +395,12 @@ std::set<GroupAndName> FtraceConfigMuxer::GetFtraceEvents(
         events.insert(GroupAndName("mm_event", "mm_event_record"));
         continue;
       }
+
+      if (category == "thermal") {
+        events.insert(GroupAndName("thermal", "thermal_temperature"));
+        events.insert(GroupAndName("thermal", "cdev_update"));
+        continue;
+      }
     }
   }
   return events;
@@ -502,12 +508,11 @@ FtraceConfigId FtraceConfigMuxer::SetupConfig(const FtraceConfig& request) {
 
   std::vector<std::string> apps(request.atrace_apps());
   std::vector<std::string> categories(request.atrace_categories());
-
   FtraceConfigId id = ++last_id_;
   ds_configs_.emplace(
       std::piecewise_construct, std::forward_as_tuple(id),
       std::forward_as_tuple(std::move(filter), compact_sched, std::move(apps),
-                            std::move(categories)));
+                            std::move(categories), request.symbolize_ksyms()));
   return id;
 }
 

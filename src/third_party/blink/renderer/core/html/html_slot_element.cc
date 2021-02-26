@@ -196,6 +196,7 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes,
   if (!CheckNodesValidity(nodes, exception_state))
     return;
 
+  UseCounter::Count(GetDocument(), WebFeature::kSlotAssignNode);
   ContainingShadowRoot()->GetSlotAssignment().ClearCandidateNodes(
       assigned_nodes_candidates_);
   HeapLinkedHashSet<Member<Node>> candidates;
@@ -339,6 +340,7 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
     LayoutObject* layout_object = GetLayoutObject();
     AttachContext children_context(context);
     const ComputedStyle* style = GetComputedStyle();
+    AdjustForceLegacyLayout(style, &children_context.force_legacy_layout);
     if (layout_object || !style || style->IsEnsuredInDisplayNone()) {
       children_context.previous_in_flow = nullptr;
       children_context.parent = layout_object;
@@ -746,7 +748,7 @@ bool HTMLSlotElement::HasAssignedNodesSlow() const {
   return assignment.FindHostChildBySlotName(GetName());
 }
 
-void HTMLSlotElement::Trace(Visitor* visitor) {
+void HTMLSlotElement::Trace(Visitor* visitor) const {
   visitor->Trace(assigned_nodes_);
   visitor->Trace(flat_tree_children_);
   visitor->Trace(assigned_nodes_candidates_);

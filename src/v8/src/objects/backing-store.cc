@@ -9,6 +9,7 @@
 #include "src/execution/isolate.h"
 #include "src/handles/global-handles.h"
 #include "src/logging/counters.h"
+#include "src/trap-handler/trap-handler.h"
 #include "src/wasm/wasm-constants.h"
 #include "src/wasm/wasm-engine.h"
 #include "src/wasm/wasm-limits.h"
@@ -23,12 +24,6 @@ namespace v8 {
 namespace internal {
 
 namespace {
-#if V8_TARGET_ARCH_64_BIT
-constexpr bool kUseGuardRegions = true;
-#else
-constexpr bool kUseGuardRegions = false;
-#endif
-
 #if V8_TARGET_ARCH_MIPS64
 // MIPS64 has a user space of 2^40 bytes on most processors,
 // address space limits needs to be smaller.
@@ -39,11 +34,10 @@ constexpr size_t kAddressSpaceLimit = 0x10100000000L;  // 1 TiB + 4 GiB
 constexpr size_t kAddressSpaceLimit = 0xC0000000;  // 3 GiB
 #endif
 
-constexpr uint64_t kOneGiB = 1024 * 1024 * 1024;
-constexpr uint64_t kNegativeGuardSize = 2 * kOneGiB;
+constexpr uint64_t kNegativeGuardSize = uint64_t{2} * GB;
 
 #if V8_TARGET_ARCH_64_BIT
-constexpr uint64_t kFullGuardSize = 10 * kOneGiB;
+constexpr uint64_t kFullGuardSize = uint64_t{10} * GB;
 #endif
 
 std::atomic<uint64_t> reserved_address_space_{0};
@@ -62,30 +56,26 @@ enum class AllocationStatus {
   kOtherFailure  // Failed for an unknown reason
 };
 
+base::AddressRegion GetReservedRegion(bool has_guard_regions,
+                                      void* buffer_start,
+                                      size_t byte_capacity) {
 #if V8_TARGET_ARCH_64_BIT
-base::AddressRegion GetGuardedRegion(void* buffer_start, size_t byte_length) {
-  // Guard regions always look like this:
-  // |xxx(2GiB)xxx|.......(4GiB)..xxxxx|xxxxxx(4GiB)xxxxxx|
-  //              ^ buffer_start
-  //                              ^ byte_length
-  // ^ negative guard region           ^ positive guard region
+  if (has_guard_regions) {
+    // Guard regions always look like this:
+    // |xxx(2GiB)xxx|.......(4GiB)..xxxxx|xxxxxx(4GiB)xxxxxx|
+    //              ^ buffer_start
+    //                              ^ byte_length
+    // ^ negative guard region           ^ positive guard region
 
-  Address start = reinterpret_cast<Address>(buffer_start);
-  DCHECK_EQ(8, sizeof(size_t));  // only use on 64-bit
-  DCHECK_EQ(0, start % AllocatePageSize());
-  return base::AddressRegion(start - (2 * kOneGiB),
-                             static_cast<size_t>(kFullGuardSize));
-}
+    Address start = reinterpret_cast<Address>(buffer_start);
+    DCHECK_EQ(8, sizeof(size_t));  // only use on 64-bit
+    DCHECK_EQ(0, start % AllocatePageSize());
+    return base::AddressRegion(start - kNegativeGuardSize,
+                               static_cast<size_t>(kFullGuardSize));
+  }
 #endif
 
-base::AddressRegion GetRegion(bool has_guard_regions, void* buffer_start,
-                              size_t byte_length, size_t byte_capacity) {
-#if V8_TARGET_ARCH_64_BIT
-  if (has_guard_regions) return GetGuardedRegion(buffer_start, byte_length);
-#else
   DCHECK(!has_guard_regions);
-#endif
-
   return base::AddressRegion(reinterpret_cast<Address>(buffer_start),
                              byte_capacity);
 }
@@ -173,8 +163,11 @@ BackingStore::~BackingStore() {
   if (is_wasm_memory_) {
     DCHECK(free_on_destruct_);
     DCHECK(!custom_deleter_);
-    TRACE_BS("BSw:free  bs=%p mem=%p (length=%zu, capacity=%zu)\n", this,
-             buffer_start_, byte_length(), byte_capacity_);
+    size_t reservation_size =
+        GetReservationSize(has_guard_regions_, byte_capacity_);
+    TRACE_BS(
+        "BSw:free  bs=%p mem=%p (length=%zu, capacity=%zu, reservation=%zu)\n",
+        this, buffer_start_, byte_length(), byte_capacity_, reservation_size);
     if (is_shared_) {
       // Deallocate the list of attached memory objects.
       SharedWasmMemoryData* shared_data = get_shared_wasm_memory_data();
@@ -183,22 +176,21 @@ BackingStore::~BackingStore() {
     }
 
     // Wasm memories are always allocated through the page allocator.
-    auto region = GetRegion(has_guard_regions_, buffer_start_, byte_length_,
-                            byte_capacity_);
+    auto region =
+        GetReservedRegion(has_guard_regions_, buffer_start_, byte_capacity_);
 
     bool pages_were_freed =
         region.size() == 0 /* no need to free any pages */ ||
         FreePages(GetPlatformPageAllocator(),
                   reinterpret_cast<void*>(region.begin()), region.size());
     CHECK(pages_were_freed);
-    BackingStore::ReleaseReservation(
-        GetReservationSize(has_guard_regions_, byte_capacity_));
+    BackingStore::ReleaseReservation(reservation_size);
     Clear();
     return;
   }
   if (custom_deleter_) {
     DCHECK(free_on_destruct_);
-    TRACE_BS("BS:custome deleter bs=%p mem=%p (length=%zu, capacity=%zu)\n",
+    TRACE_BS("BS:custom deleter bs=%p mem=%p (length=%zu, capacity=%zu)\n",
              this, buffer_start_, byte_length(), byte_capacity_);
     type_specific_data_.deleter.callback(buffer_start_, byte_length_,
                                          type_specific_data_.deleter.data);
@@ -275,6 +267,13 @@ std::unique_ptr<BackingStore> BackingStore::Allocate(
   return std::unique_ptr<BackingStore>(result);
 }
 
+// Trying to allocate 4 GiB on a 32-bit platform is guaranteed to fail.
+// We don't lower the official max_mem_pages() limit because that would be
+// observable upon instantiation; this way the effective limit on 32-bit
+// platforms is defined by the allocator.
+constexpr size_t kPlatformMaxPages =
+    std::numeric_limits<size_t>::max() / wasm::kWasmPageSize;
+
 void BackingStore::SetAllocatorFromIsolate(Isolate* isolate) {
   if (auto allocator_shared = isolate->array_buffer_allocator_shared()) {
     holds_shared_ptr_to_allocator_ = true;
@@ -297,7 +296,7 @@ std::unique_ptr<BackingStore> BackingStore::TryAllocateWasmMemory(
 
   TRACE_BS("BSw:try   %zu pages, %zu max\n", initial_pages, maximum_pages);
 
-  bool guards = kUseGuardRegions;
+  bool guards = trap_handler::IsTrapHandlerEnabled();
 
   // For accounting purposes, whether a GC was necessary.
   bool did_retry = false;
@@ -318,8 +317,11 @@ std::unique_ptr<BackingStore> BackingStore::TryAllocateWasmMemory(
 
   // Compute size of reserved memory.
 
-  size_t engine_max_pages = wasm::max_maximum_mem_pages();
+  size_t engine_max_pages = wasm::max_mem_pages();
   maximum_pages = std::min(engine_max_pages, maximum_pages);
+  // If the platform doesn't support so many pages, attempting to allocate
+  // is guaranteed to fail, so we don't even try.
+  if (maximum_pages > kPlatformMaxPages) return {};
   CHECK_LE(maximum_pages,
            std::numeric_limits<size_t>::max() / wasm::kWasmPageSize);
   size_t byte_capacity = maximum_pages * wasm::kWasmPageSize;
@@ -338,7 +340,8 @@ std::unique_ptr<BackingStore> BackingStore::TryAllocateWasmMemory(
       FATAL("could not allocate wasm memory backing store");
     }
     RecordStatus(isolate, AllocationStatus::kAddressSpaceLimitReachedFailure);
-    TRACE_BS("BSw:try   failed to reserve address space\n");
+    TRACE_BS("BSw:try   failed to reserve address space (size %zu)\n",
+             reservation_size);
     return {};
   }
 
@@ -375,9 +378,10 @@ std::unique_ptr<BackingStore> BackingStore::TryAllocateWasmMemory(
                           PageAllocator::kReadWrite);
   };
   if (!gc_retry(commit_memory)) {
+    TRACE_BS("BSw:try   failed to set permissions (%p, %zu)\n", buffer_start,
+             byte_length);
     // SetPermissions put us over the process memory limit.
     V8::FatalProcessOutOfMemory(nullptr, "BackingStore::AllocateWasmMemory()");
-    TRACE_BS("BSw:try   failed to set permissions\n");
   }
 
   DebugCheckZero(buffer_start, byte_length);  // touch the bytes.
@@ -395,8 +399,10 @@ std::unique_ptr<BackingStore> BackingStore::TryAllocateWasmMemory(
                                  false,          // custom_deleter
                                  false);         // empty_deleter
 
-  TRACE_BS("BSw:alloc bs=%p mem=%p (length=%zu, capacity=%zu)\n", result,
-           result->buffer_start(), byte_length, byte_capacity);
+  TRACE_BS(
+      "BSw:alloc bs=%p mem=%p (length=%zu, capacity=%zu, reservation=%zu)\n",
+      result, result->buffer_start(), byte_length, byte_capacity,
+      reservation_size);
 
   // Shared Wasm memories need an anchor for the memory object list.
   if (shared == SharedFlag::kShared) {
@@ -417,21 +423,24 @@ std::unique_ptr<BackingStore> BackingStore::AllocateWasmMemory(
 
   // Enforce engine limitation on the maximum number of pages.
   if (initial_pages > wasm::kV8MaxWasmMemoryPages) return nullptr;
-
-  // Trying to allocate 4 GiB on a 32-bit platform is guaranteed to fail.
-  // We don't lower the official max_maximum_mem_pages() limit because that
-  // would be observable upon instantiation; this way the effective limit
-  // on 32-bit platforms is defined by the allocator.
-  constexpr size_t kPlatformMax =
-      std::numeric_limits<size_t>::max() / wasm::kWasmPageSize;
-  if (initial_pages > kPlatformMax) return nullptr;
+  if (initial_pages > kPlatformMaxPages) return nullptr;
 
   auto backing_store =
       TryAllocateWasmMemory(isolate, initial_pages, maximum_pages, shared);
-  if (!backing_store && maximum_pages > initial_pages) {
-    // If reserving {maximum_pages} failed, try with maximum = initial.
+  if (maximum_pages == initial_pages) {
+    // If initial pages, and maximum are equal, nothing more to do return early.
+    return backing_store;
+  }
+
+  // Retry with smaller maximum pages at each retry.
+  const int kAllocationTries = 3;
+  auto delta = (maximum_pages - initial_pages) / (kAllocationTries + 1);
+  size_t sizes[] = {maximum_pages - delta, maximum_pages - 2 * delta,
+                    maximum_pages - 3 * delta, initial_pages};
+
+  for (size_t i = 0; i < arraysize(sizes) && !backing_store; i++) {
     backing_store =
-        TryAllocateWasmMemory(isolate, initial_pages, initial_pages, shared);
+        TryAllocateWasmMemory(isolate, initial_pages, sizes[i], shared);
   }
   return backing_store;
 }
@@ -646,7 +655,7 @@ SharedWasmMemoryData* BackingStore::get_shared_wasm_memory_data() {
 namespace {
 // Implementation details of GlobalBackingStoreRegistry.
 struct GlobalBackingStoreRegistryImpl {
-  GlobalBackingStoreRegistryImpl() {}
+  GlobalBackingStoreRegistryImpl() = default;
   base::Mutex mutex_;
   std::unordered_map<const void*, std::weak_ptr<BackingStore>> map_;
 };

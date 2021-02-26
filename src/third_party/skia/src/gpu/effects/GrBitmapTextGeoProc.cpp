@@ -20,7 +20,10 @@
 
 class GrGLBitmapTextGeoProc : public GrGLSLGeometryProcessor {
 public:
-    GrGLBitmapTextGeoProc() : fColor(SK_PMColor4fILLEGAL), fAtlasDimensions{0,0} {}
+    GrGLBitmapTextGeoProc()
+            : fColor(SK_PMColor4fILLEGAL)
+            , fAtlasDimensions{0,0}
+            , fLocalMatrix(SkMatrix::InvalidMatrix()) {}
 
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
         const GrBitmapTextGeoProc& btgp = args.fGP.cast<GrBitmapTextGeoProc>();
@@ -36,9 +39,7 @@ public:
         fAtlasDimensionsInvUniform = uniformHandler->addUniform(nullptr, kVertex_GrShaderFlag,
                 kFloat2_GrSLType, "AtlasSizeInv", &atlasDimensionsInvName);
 
-        GrGLSLVarying uv(kFloat2_GrSLType);
-        GrSLType texIdxType = args.fShaderCaps->integerSupport() ? kInt_GrSLType : kFloat_GrSLType;
-        GrGLSLVarying texIdx(texIdxType);
+        GrGLSLVarying uv, texIdx;
         append_index_uv_varyings(args, btgp.numTextureSamplers(), btgp.inTextureCoords().name(),
                                  atlasDimensionsInvName, &uv, &texIdx, nullptr);
 
@@ -53,14 +54,8 @@ public:
 
         // Setup position
         gpArgs->fPositionVar = btgp.inPosition().asShaderVar();
-
-        // emit transforms
-        this->emitTransforms(vertBuilder,
-                             varyingHandler,
-                             uniformHandler,
-                             btgp.inPosition().asShaderVar(),
-                             btgp.localMatrix(),
-                             args.fFPCoordTransformHandler);
+        this->writeLocalCoord(vertBuilder, uniformHandler, gpArgs, btgp.inPosition().asShaderVar(),
+                              btgp.localMatrix(), &fLocalMatrixUniform);
 
         fragBuilder->codeAppend("half4 texColor;");
         append_multitexture_lookup(args, btgp.numTextureSamplers(),
@@ -75,8 +70,7 @@ public:
         }
     }
 
-    void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor& gp,
-                 const CoordTransformRange& transformRange) override {
+    void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor& gp) override {
         const GrBitmapTextGeoProc& btgp = gp.cast<GrBitmapTextGeoProc>();
         if (btgp.color() != fColor && !btgp.hasVertexColor()) {
             pdman.set4fv(fColorUniform, 1, btgp.color().vec());
@@ -92,7 +86,8 @@ public:
                         1.0f / atlasDimensions.fHeight);
             fAtlasDimensions = atlasDimensions;
         }
-        this->setTransformDataHelper(btgp.localMatrix(), pdman, transformRange);
+
+        this->setTransform(pdman, fLocalMatrixUniform, btgp.localMatrix(), &fLocalMatrix);
     }
 
     static inline void GenKey(const GrGeometryProcessor& proc,
@@ -102,6 +97,7 @@ public:
         uint32_t key = 0;
         key |= btgp.usesW() ? 0x1 : 0x0;
         key |= btgp.maskFormat() << 1;
+        key |= ComputeMatrixKey(btgp.localMatrix()) << 2;
         b->add32(key);
         b->add32(btgp.numTextureSamplers());
     }
@@ -113,7 +109,10 @@ private:
     SkISize       fAtlasDimensions;
     UniformHandle fAtlasDimensionsInvUniform;
 
-    typedef GrGLSLGeometryProcessor INHERITED;
+    SkMatrix      fLocalMatrix;
+    UniformHandle fLocalMatrixUniform;
+
+    using INHERITED = GrGLSLGeometryProcessor;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -206,7 +205,7 @@ GrGeometryProcessor* GrBitmapTextGeoProc::TestCreate(GrProcessorTestData* d) {
     GrSamplerState::WrapMode wrapModes[2];
     GrTest::TestWrapModes(d->fRandom, wrapModes);
     GrSamplerState samplerState(wrapModes, d->fRandom->nextBool()
-                                                   ? GrSamplerState::Filter::kBilerp
+                                                   ? GrSamplerState::Filter::kLinear
                                                    : GrSamplerState::Filter::kNearest);
 
     GrMaskFormat format;

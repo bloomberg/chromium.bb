@@ -110,9 +110,9 @@ int main(int argc, char **argv) {
     die("Failed to open %s for reading.", argv[3]);
 
   if (aom_codec_enc_init(&codec, encoder, &cfg, 0))
-    die_codec(&codec, "Failed to initialize encoder");
+    die("Failed to initialize encoder");
 
-  if (aom_codec_control_(&codec, AV1E_SET_LOSSLESS, 1))
+  if (AOM_CODEC_CONTROL_TYPECHECKED(&codec, AV1E_SET_LOSSLESS, 1))
     die_codec(&codec, "Failed to use lossless mode");
 
   // Encode frames.

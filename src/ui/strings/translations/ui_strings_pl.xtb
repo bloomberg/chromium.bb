@@ -23,6 +23,7 @@
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" />: nie udało się udostępnić</translation>
 <translation id="1487931858675166540">Element <ph name="FIRST_ITEM_TITLE" /> został zastąpiony elementem <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Z Twojej historii wyszukiwania. Jeśli usuniesz zapytanie „<ph name="QUERY" />” z historii, zostanie ono trwale usunięte z Twojego konta na wszystkich urządzeniach.</translation>
+<translation id="1510238584712386396">Menu z aplikacjami</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta i }few{# minuty i }many{# minut i }other{# minuty i }}</translation>
 <translation id="1643823602425662293">Powiadomienie</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -37,12 +38,13 @@
 <translation id="1842960171412779397">wybierz</translation>
 <translation id="1859234291848436338">Kierunek pisania</translation>
 <translation id="1860796786778352021">Zamknięcie powiadomienia</translation>
+<translation id="186476001994626254">Treść typu Web Smart Paste</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Zaznacz &amp;wszystko</translation>
+<translation id="19085484004813472">To jest nowa funkcja</translation>
 <translation id="2006524834898217237">Upewnij się, że to urządzenie jest połączone z internetem.</translation>
 <translation id="208586643495776849">Spróbuj ponownie</translation>
-<translation id="2090963878406559571">Aby przesłać numer z <ph name="ORIGIN" /> na swój telefon z Androidem, <ph name="TROUBLESHOOT_LINK" /> obu urządzeń w ustawieniach.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 dzień}few{# dni}many{# dni}other{# dnia}}</translation>
 <translation id="2148716181193084225">Dzisiaj</translation>
 <translation id="2161656808144014275">Tekstowe</translation>
@@ -64,14 +66,18 @@
 <translation id="2522350507219695259">Kalibracja została ukończona</translation>
 <translation id="252373100621549798">Nieznany wyświetlacz</translation>
 <translation id="2545651323591713692">Odłóż</translation>
+<translation id="2570734079541893434">Zarządzaj ustawieniami</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{za 1 godz.}few{za # godz.}many{za # godz.}other{za # godz.}}</translation>
 <translation id="2583543531130364912">Skalibruj ekran dotykowy</translation>
+<translation id="2586657967955657006">Schowek</translation>
 <translation id="2666092431469916601">Do góry</translation>
 <translation id="2701330563083355633">Tę kartę udostępnia <ph name="DEVICE_NAME" /></translation>
+<translation id="271033894570825754">Nowy</translation>
 <translation id="2743387203779672305">Skopiuj do schowka</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Otwórz folder</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{rok temu}few{# lata temu}many{# lat temu}other{# roku temu}}</translation>
+<translation id="2878511608894704031">Usuń wszystko</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{za 1 dzień}few{za # dni}many{za # dni}other{za # dnia}}</translation>
 <translation id="2931838996092594335">kliknij</translation>
 <translation id="2981684127883932071">Wyświetlam sugestie</translation>
@@ -94,6 +100,7 @@
 <translation id="3600969208114796418">Plik <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Sprawdź słowo „<ph name="LOOKUP_STRING" />”</translation>
+<translation id="3622035490309591977">Historia schowka</translation>
 <translation id="364720409959344976">Wybierz folder do przesłania</translation>
 <translation id="3660179305079774227">Strzałka w górę</translation>
 <translation id="3670030362669914947">Numer</translation>
@@ -112,6 +119,7 @@
 <translation id="4289300219472526559">Zacznij mówić</translation>
 <translation id="430191667033048642">Aplikacja <ph name="MOVED_APP_NAME" /> została przeniesiona do folderu <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">WSZYSTKIE APLIKACJE</translation>
+<translation id="4491109536499578614">Obraz</translation>
 <translation id="4588090240171750605">Przewiń w prawo</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, liczba gwiazdek <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, rekomendowana aplikacja</translation>
@@ -128,22 +136,26 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Trójkąt rozwinięcia</translation>
 <translation id="5278860589123563674">Nie udało się wysłać</translation>
+<translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> wymaga Twojej reakcji.</translation>
 <translation id="528468243742722775">Zakończ</translation>
-<translation id="5327567770033251652">włącz synchronizację</translation>
 <translation id="5329858601952122676">&amp;Usuń</translation>
 <translation id="5395308026110844773">Aplikacja <ph name="DRAGGED_APP_NAME" /> jest nad aplikacją <ph name="IN_PLACE_APP" /> – puść, by utworzyć folder.</translation>
 <translation id="5463830097259460683">Emotikony i symbole</translation>
 <translation id="5476505524087279545">odznacz</translation>
 <translation id="547979256943495781">Półka po prawej</translation>
+<translation id="5528053674512161860">Nie udało się wczytać strony, ponieważ moduł interfejsu (dev_ui) nie jest zainstalowany</translation>
 <translation id="5574202486608032840">System <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Strzałka w lewo</translation>
+<translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> wymaga Twojej reakcji.</translation>
 <translation id="5675363643668471212">Element na półce</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktywność dzisiaj}=1{Aktywność 1 dzień temu}few{Aktywność # dni temu}many{Aktywność # dni temu}other{Aktywność # dnia temu}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dzień i }few{# dni i }many{# dni i }other{# dnia i }}</translation>
 <translation id="5789643057113097023">.</translation>
+<translation id="5843690142429128814">Obraz.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{za 1 rok}few{za # lata}many{za # lat}other{za # roku}}</translation>
+<translation id="588258955323874662">Pełny ekran</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Pozostała 1 sekunda}few{Pozostały # sekundy}many{Pozostało # sekund}other{Pozostało # sekundy}}</translation>
 <translation id="5941711191222866238">Minimalizuj</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 godzina}few{# godziny}many{# godzin}other{# godziny}}</translation>
@@ -152,10 +164,12 @@
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="6119846243427417423">aktywuj</translation>
 <translation id="6129953537138746214">Spacja</translation>
+<translation id="6134259848159370930">Przeszukaj urządzenie, aplikacje, ustawienia i internet.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Rozwiń, by wyświetlić wszystkie aplikacje</translation>
 <translation id="6165508094623778733">Dowiedz się więcej</translation>
+<translation id="6166852626429024716">Przeszukaj urządzenie, aplikacje, ustawienia, internet…</translation>
 <translation id="6264365405983206840">Wybierz &amp;wszystko</translation>
 <translation id="6351032674660237738">SUGEROWANE APLIKACJE</translation>
 <translation id="6364916375976753737">Przewiń w lewo</translation>
@@ -165,22 +179,22 @@
 <translation id="6417265370957905582">Asystent Google</translation>
 <translation id="6430678249303439055">Blokuj wszystkie powiadomienia z tej aplikacji</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{sekundę temu}few{# sekundy temu}many{# sekund temu}other{# sekundy temu}}</translation>
+<translation id="6503257047630241175">Treść RTF</translation>
 <translation id="6539092367496845964">Coś poszło nie tak. Spróbuj później.</translation>
 <translation id="654149438358937226">Blokuj wszystkie powiadomienia</translation>
 <translation id="6567071839949112727">kliknij element nadrzędny</translation>
 <translation id="6578407462441924264">Bez nazwy</translation>
 <translation id="6612467943526193239">Aby zakończyć kalibrację, naciśnij Esc.</translation>
 <translation id="6620110761915583480">Zapisz plik</translation>
-<translation id="6656912866303152668">Upewnij się, że <ph name="TARGET_DEVICE_NAME" /> ma w Chrome włączoną synchronizację, a potem spróbuj wysłać ponownie.</translation>
 <translation id="6699343763173986273">Następny utwór multimedialny</translation>
-<translation id="6710213216561001401">Wstecz</translation>
-<translation id="6779314412797872738">Aby przesłać stąd numer na swój telefon z Androidem, <ph name="TROUBLESHOOT_LINK" /> obu urządzeń w ustawieniach.</translation>
+<translation id="6710213216561001401">Poprzedni</translation>
 <translation id="6786750046913594791">Zamknij folder</translation>
 <translation id="6808150112686056157">Zatrzymaj multimedia</translation>
 <translation id="6845383723252244143">Wybierz folder</translation>
 <translation id="6845533974506654842">naciśnij</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Pozostała 1 godzina}few{Pozostały # godziny}many{Pozostało # godzin}other{Pozostało # godziny}}</translation>
 <translation id="688711909580084195">Strona internetowa bez tytułu</translation>
+<translation id="6902419395050653510">Treść HTML.</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{Pozostał rok}few{Pozostały # lata}many{Pozostało # lat}other{Pozostało # roku}}</translation>
 <translation id="6945221475159498467">Wybierz</translation>
@@ -192,7 +206,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Pozostała 1 min}few{Pozostały # min}many{Pozostało # min}other{Pozostało # min}}</translation>
 <translation id="7319740667687257810">Menu z aplikacjami, widok częściowy</translation>
-<translation id="7352651011704765696">Coś poszło nie tak</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min temu}few{# min temu}many{# min temu}other{# min temu}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Pozostała 1 minuta}few{Pozostały # minuty}many{Pozostały # minut}other{Pozostało # minuty}}</translation>
@@ -205,6 +218,7 @@
 <translation id="7848989271541991537">Przeniesiono do strony <ph name="PAGE_NUMBER" />, wiersza <ph name="ROW_NUMBER" />, kolumny <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Nie blokuj</translation>
 <translation id="7907591526440419938">Otwórz plik</translation>
+<translation id="7952747673138230804">Chrome OS proponuje nowe treści, które mogą Cię zainteresować. Wysyła statystyki, by ulepszać podpowiedzi, tylko wtedy, gdy zostało wybrane udostępnianie danych o korzystaniu. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Więcej niż 1 nieprzeczytane powiadomienie}few{Więcej niż # nieprzeczytane powiadomienia}many{Więcej niż # nieprzeczytanych powiadomień}other{Więcej niż # nieprzeczytanego powiadomienia}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{za 1 min}few{za # min}many{za # min}other{za # min}}</translation>
@@ -231,6 +245,7 @@
 <translation id="8602707065186045623">Plik <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Półka zawsze widoczna</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>
+<translation id="8685326675965865247">Przeszukaj urządzenie, aplikacje, ustawienia i internet. Aby poruszać się po aplikacjach, użyj klawiszy strzałek.</translation>
 <translation id="8725488761726303204">i jeszcze <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Gotowe</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 godz.}few{# godz.}many{# godz.}other{# godz.}}</translation>

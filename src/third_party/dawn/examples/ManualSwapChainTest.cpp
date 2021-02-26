@@ -111,7 +111,7 @@ void AddWindow() {
     glfwSetKeyCallback(window, OnKeyPress);
 
     wgpu::SwapChainDescriptor descriptor;
-    descriptor.usage = wgpu::TextureUsage::OutputAttachment;
+    descriptor.usage = wgpu::TextureUsage::RenderAttachment;
     descriptor.format = wgpu::TextureFormat::BGRA8Unorm;
     descriptor.width = 0;
     descriptor.height = 0;
@@ -150,7 +150,8 @@ void DoRender(WindowData* data) {
 
         utils::ComboRenderPassDescriptor desc({view});
         desc.cColorAttachments[0].loadOp = wgpu::LoadOp::Clear;
-        desc.cColorAttachments[0].clearColor = {data->clearCycle, 1.0f - data->clearCycle, 0.0f, 1.0f};
+        desc.cColorAttachments[0].clearColor = {data->clearCycle, 1.0f - data->clearCycle, 0.0f,
+                                                1.0f};
 
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&desc);
         pass.EndPass();
@@ -164,8 +165,8 @@ void DoRender(WindowData* data) {
 
 std::ostream& operator<<(std::ostream& o, const wgpu::SwapChainDescriptor& desc) {
     // For now only output attachment is possible.
-    ASSERT(desc.usage == wgpu::TextureUsage::OutputAttachment);
-    o << "OutputAttachment ";
+    ASSERT(desc.usage == wgpu::TextureUsage::RenderAttachment);
+    o << "RenderAttachment ";
     o << desc.width << "x" << desc.height << " ";
 
     // For now only BGRA is allowed

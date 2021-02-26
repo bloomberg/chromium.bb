@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_file_handler_manager.h"
+#include "chrome/browser/web_applications/test/test_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
@@ -26,21 +27,28 @@
 namespace file_manager {
 namespace file_tasks {
 
-class WebFileTasksTest : public testing::Test {
+class WebFileTasksTest : public ::testing::Test {
  protected:
-  WebFileTasksTest() {}
+  WebFileTasksTest() {
+  }
 
   void SetUp() override {
-    app_provider_ = web_app::TestWebAppProvider::Get(&profile_);
+    profile_ = std::make_unique<TestingProfile>();
+
+    app_provider_ = web_app::TestWebAppProvider::Get(profile_.get());
 
     auto app_registrar = std::make_unique<web_app::TestAppRegistrar>();
     app_registrar_ = app_registrar.get();
     app_provider_->SetRegistrar(std::move(app_registrar));
 
     auto file_handler_manager =
-        std::make_unique<web_app::TestFileHandlerManager>(&profile_);
+        std::make_unique<web_app::TestFileHandlerManager>(profile_.get());
     file_handler_manager_ = file_handler_manager.get();
-    app_provider_->SetFileHandlerManager(std::move(file_handler_manager));
+    auto os_integration_manager =
+        std::make_unique<web_app::TestOsIntegrationManager>(
+            profile_.get(), /*app_shortcut_manager=*/nullptr,
+            std::move(file_handler_manager));
+    app_provider_->SetOsIntegrationManager(std::move(os_integration_manager));
 
     app_provider_->Start();
   }
@@ -53,14 +61,14 @@ class WebFileTasksTest : public testing::Test {
     file_handler_manager_->InstallFileHandler(app_id, install_url, accept);
   }
 
-  Profile* profile() { return &profile_; }
+  Profile* profile() { return profile_.get(); }
   web_app::TestFileHandlerManager* file_handler_manager() {
     return file_handler_manager_;
   }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  TestingProfile profile_;
+  std::unique_ptr<TestingProfile> profile_;
   web_app::TestWebAppProvider* app_provider_;
   web_app::TestAppRegistrar* app_registrar_;
   web_app::TestFileHandlerManager* file_handler_manager_;
@@ -79,23 +87,21 @@ TEST_F(WebFileTasksTest, WebAppFileHandlingCanBeDisabledByFlag) {
   std::vector<FullTaskDescriptor> tasks;
 
   {
-    // Web Apps should not be able to handle files unless
-    // kNativeFileSystemAPI and kFileHandlingAPI are enabled.
+    // Web Apps should not be able to handle files unless kFileHandlingAPI is
+    // enabled.
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitWithFeatures({},
-                                         {blink::features::kNativeFileSystemAPI,
-                                          blink::features::kFileHandlingAPI});
+                                         {blink::features::kFileHandlingAPI});
     FindWebTasks(profile(), entries, &tasks);
     EXPECT_EQ(0u, tasks.size());
     tasks.clear();
   }
 
   {
-    // When the flags are enabled, it should be possible to handle files from
+    // When the flag is enabled, it should be possible to handle files from
     // bookmark apps.
     base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures({blink::features::kNativeFileSystemAPI,
-                                          blink::features::kFileHandlingAPI},
+    scoped_feature_list.InitWithFeatures({blink::features::kFileHandlingAPI},
                                          {});
 
     // Note: FileHandlers aren't enabled while the flag is off.
@@ -119,12 +125,10 @@ TEST_F(WebFileTasksTest, DisabledFileHandlersAreNotVisible) {
   const char kFooId[] = "foo-app-id";
   const char kFooAction[] = "https://foo.tld/csv";
 
-  // Web Apps should not be able to handle files unless
-  // kNativeFileSystemAPI and kFileHandlingAPI are enabled.
+  // Web Apps should not be able to handle files unless kFileHandlingAPI is
+  // enabled.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({blink::features::kNativeFileSystemAPI,
-                                        blink::features::kFileHandlingAPI},
-                                       {});
+  scoped_feature_list.InitWithFeatures({blink::features::kFileHandlingAPI}, {});
 
   InstallFileHandler(kGraphrId, GURL(kGraphrAction), {{"text/csv", {".csv"}}});
   InstallFileHandler(kFooId, GURL(kFooAction), {{"text/csv", {".csv"}}});
@@ -151,9 +155,7 @@ TEST_F(WebFileTasksTest, DisabledFileHandlersAreNotVisible) {
 
 TEST_F(WebFileTasksTest, FindWebFileHandlerTasks) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({blink::features::kNativeFileSystemAPI,
-                                        blink::features::kFileHandlingAPI},
-                                       {});
+  scoped_feature_list.InitWithFeatures({blink::features::kFileHandlingAPI}, {});
   const char kFooId[] = "foo-app-id";
   const char kFooAction[] = "https://foo.tld/files";
 
@@ -201,9 +203,7 @@ TEST_F(WebFileTasksTest, FindWebFileHandlerTasks) {
 
 TEST_F(WebFileTasksTest, FindWebFileHandlerTask_Generic) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({blink::features::kNativeFileSystemAPI,
-                                        blink::features::kFileHandlingAPI},
-                                       {});
+  scoped_feature_list.InitWithFeatures({blink::features::kFileHandlingAPI}, {});
 
   const char kBarId[] = "bar-app-id";
   const char kBarAction[] = "https://bar.tld/files";

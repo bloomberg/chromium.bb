@@ -392,16 +392,8 @@ bool IsCorsSafelistedContentType(const std::string& media_type) {
   return IsCorsSafelistedLowerCaseContentType(base::ToLowerASCII(media_type));
 }
 
-bool IsCorsSafelistedHeader(
-    const std::string& name,
-    const std::string& value,
-    const base::flat_set<std::string>& extra_safelisted_header_names) {
+bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
   const std::string lower_name = base::ToLowerASCII(name);
-
-  if (extra_safelisted_header_names.find(lower_name) !=
-      extra_safelisted_header_names.end()) {
-    return true;
-  }
 
   // If |value|’s length is greater than 128, then return false.
   if (value.size() > 128)
@@ -498,7 +490,14 @@ bool IsNoCorsSafelistedHeaderName(const std::string& name) {
 }
 
 bool IsPrivilegedNoCorsHeaderName(const std::string& name) {
-  return base::ToLowerASCII(name) == "range";
+  const std::string lower_name = base::ToLowerASCII(name);
+  const std::vector<std::string> privileged_no_cors_header_names =
+      PrivilegedNoCorsHeaderNames();
+  for (const auto& header : privileged_no_cors_header_names) {
+    if (lower_name == header)
+      return true;
+  }
+  return false;
 }
 
 bool IsNoCorsSafelistedHeader(const std::string& name,
@@ -535,8 +534,7 @@ std::vector<std::string> CorsUnsafeRequestHeaderNames(
 
 std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
     const net::HttpRequestHeaders::HeaderVector& headers,
-    bool is_revalidating,
-    const base::flat_set<std::string>& extra_safelisted_header_names) {
+    bool is_revalidating) {
   std::vector<std::string> header_names;
   std::vector<std::string> potentially_unsafe_names;
 
@@ -555,8 +553,7 @@ std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
         continue;
       }
     }
-    if (!IsCorsSafelistedHeader(name, header.value,
-                                extra_safelisted_header_names)) {
+    if (!IsCorsSafelistedHeader(name, header.value)) {
       header_names.push_back(name);
     } else {
       potentially_unsafe_names.push_back(name);
@@ -568,6 +565,10 @@ std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
                         potentially_unsafe_names.end());
   }
   return header_names;
+}
+
+std::vector<std::string> PrivilegedNoCorsHeaderNames() {
+  return {"range"};
 }
 
 bool IsForbiddenMethod(const std::string& method) {
@@ -616,6 +617,7 @@ bool CalculateCredentialsFlag(mojom::CredentialsMode credentials_mode,
   // is true, and unset otherwise.
   switch (credentials_mode) {
     case network::mojom::CredentialsMode::kOmit:
+    case network::mojom::CredentialsMode::kOmitBug_775438_Workaround:
       return false;
     case network::mojom::CredentialsMode::kSameOrigin:
       return response_tainting == network::mojom::FetchResponseType::kBasic;

@@ -15,7 +15,6 @@ import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.MediaStore;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.style.CharacterStyle;
@@ -30,6 +29,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -42,6 +42,7 @@ import org.chromium.ui.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Simple proxy that provides C++ code with an access pathway to the Android clipboard.
@@ -55,7 +56,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     // access to network resources, etceteras (e.g., URI in clipboard)
     private final Context mContext;
 
-    private final ClipboardManager mClipboardManager;
+    private ClipboardManager mClipboardManager;
 
     private long mNativeClipboard;
 
@@ -69,13 +70,12 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
          * Saves the given set of image bytes and provides that URI to a callback for
          * sharing the image.
          *
-         * @param context The context used to trigger the action.
          * @param imageData The image data to be shared in |fileExtension| format.
          * @param fileExtension File extension which |imageData| encoded to.
          * @param callback A provided callback function which will act on the generated URI.
          */
-        void storeImageAndGenerateUri(final Context context, final byte[] imageData,
-                String fileExtension, Callback<Uri> callback);
+        void storeImageAndGenerateUri(
+                final byte[] imageData, String fileExtension, Callback<Uri> callback);
 
         /**
          * Store the last image uri we put in the sytstem clipboard, this is special case for
@@ -237,10 +237,8 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
             Uri uri = getImageUri();
             if (uri == null) return null;
 
-            // TODO(crbug.com/1065914): Use ImageDecoder.decodeBitmap for API level 29 and up.
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(
+            Bitmap bitmap = ApiCompatibilityUtils.getBitmapByUri(
                     ContextUtils.getApplicationContext().getContentResolver(), uri);
-
             if (!bitmapSupportByGfx(bitmap)) {
                 return bitmap.copy(Bitmap.Config.ARGB_8888, /*mutable=*/false);
             }
@@ -318,7 +316,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         }
 
         mImageFileProvider.storeImageAndGenerateUri(
-                mContext, imageData, extension, (Uri uri) -> { setImageUri(uri); });
+                imageData, extension, (Uri uri) -> { setImageUri(uri); });
     }
 
     /**
@@ -330,12 +328,19 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         setPrimaryClipNoException(ClipData.newPlainText(null, null));
     }
 
-    public void setPrimaryClipNoException(ClipData clip) {
-        try {
+    private boolean setPrimaryClipNoException(ClipData clip) {
+        final String manufacturer = Build.MANUFACTURER.toLowerCase(Locale.US);
+        // See crbug.com/1123727, there are OEM devices having strict mode violations in their
+        // Android framework code. Disabling strict mode for non-google devices.
+        try (StrictModeContext ignored = manufacturer.equals("google")
+                        ? null
+                        : StrictModeContext.allowAllThreadPolicies()) {
             mClipboardManager.setPrimaryClip(clip);
+            return true;
         } catch (Exception ex) {
             // Ignore any exceptions here as certain devices have bugs and will fail.
             showCopyToClipboardFailureMessage();
+            return false;
         }
     }
 
@@ -377,8 +382,9 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
      */
     public void copyUrlToClipboard(String url) {
         ClipData clip = ClipData.newPlainText("url", url);
-        mClipboardManager.setPrimaryClip(clip);
-        Toast.makeText(mContext, R.string.url_copied, Toast.LENGTH_SHORT).show();
+        if (setPrimaryClipNoException(clip)) {
+            Toast.makeText(mContext, R.string.link_copied, Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -418,6 +424,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
      * system. But on Android O, sharing images/files needs to grant permission to each app/packages
      * individually. Note: Don't forget to revoke the permission once the clipboard is updated.
      */
+    @SuppressWarnings("QueryPermissionsNeeded")
     private void grantUriPermission(@NonNull Uri uri) {
         if ((Build.VERSION.SDK_INT != Build.VERSION_CODES.O
                     && Build.VERSION.SDK_INT != Build.VERSION_CODES.O_MR1)
@@ -477,6 +484,17 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         return bitmap != null
                 && (bitmap.getConfig() == Bitmap.Config.ARGB_8888
                         || bitmap.getConfig() == Bitmap.Config.ALPHA_8);
+    }
+
+    /**
+     * Allows the ClipboardManager Android Service to be replaced with a mock for tests, returning
+     * the original so that it can be restored.
+     */
+    @VisibleForTesting
+    public ClipboardManager overrideClipboardManagerForTesting(ClipboardManager manager) {
+        ClipboardManager oldManager = mClipboardManager;
+        mClipboardManager = manager;
+        return oldManager;
     }
 
     @NativeMethods

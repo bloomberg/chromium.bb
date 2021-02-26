@@ -42,11 +42,10 @@ struct TokenKeyPair {
 };
 struct ProtocolKeys {
   std::vector<TokenKeyPair> token_keys;
-
-  // Signed redemption record (SRR) signing and verification keys:
-  std::vector<uint8_t> srr_signing;
-  std::vector<uint8_t> srr_verification;
 };
+
+const mojom::TrustTokenProtocolVersion kProtocolVersion =
+    mojom::TrustTokenProtocolVersion::kTrustTokenV2Pmb;
 
 // Choose this number to be > 1 but fairly small: setting it to 10
 // led to the test running for 2.5 sec on a debug build.
@@ -62,7 +61,7 @@ TokenKeyPair GenerateTokenKeys(uint32_t key_id) {
   keys.verification.resize(TRUST_TOKEN_MAX_PUBLIC_KEY_SIZE);
   size_t signing_key_len, verification_key_len;
   CHECK(TRUST_TOKEN_generate_key(
-      TRUST_TOKEN_experiment_v1(), keys.signing.data(), &signing_key_len,
+      TRUST_TOKEN_experiment_v2_pmb(), keys.signing.data(), &signing_key_len,
       keys.signing.size(), keys.verification.data(), &verification_key_len,
       keys.verification.size(), key_id));
   keys.signing.resize(signing_key_len);
@@ -71,8 +70,7 @@ TokenKeyPair GenerateTokenKeys(uint32_t key_id) {
   return keys;
 }
 
-// Generates a set of issuance keys associated with |key_id| and a set of signed
-// redemption record keys.
+// Generates a set of issuance keys associated with |key_id|.
 ProtocolKeys GenerateProtocolKeys(size_t num_keys) {
   ProtocolKeys keys;
   for (size_t i = 0; i < num_keys; ++i) {
@@ -80,11 +78,6 @@ ProtocolKeys GenerateProtocolKeys(size_t num_keys) {
     // being consecutive.
     keys.token_keys.push_back(GenerateTokenKeys(/*key_id=*/3 * i));
   }
-
-  keys.srr_signing.resize(ED25519_PRIVATE_KEY_LEN);
-  keys.srr_verification.resize(ED25519_PUBLIC_KEY_LEN);
-  // (ED25519_keypair can't fail).
-  ED25519_keypair(keys.srr_verification.data(), keys.srr_signing.data());
 
   return keys;
 }
@@ -112,7 +105,8 @@ void RequestManyTokensAndRetainOneArbitrarily(
     TRUST_TOKEN_ISSUER* issuer_ctx,
     TrustToken* out_token) {
   BoringsslTrustTokenIssuanceCryptographer issuance_cryptographer;
-  ASSERT_TRUE(issuance_cryptographer.Initialize(kNumTokensToRequest));
+  ASSERT_TRUE(
+      issuance_cryptographer.Initialize(kProtocolVersion, kNumTokensToRequest));
 
   for (const TokenKeyPair& token_keys : keys.token_keys) {
     ASSERT_TRUE(issuance_cryptographer.AddKey(std::string(
@@ -158,14 +152,14 @@ void RequestManyTokensAndRetainOneArbitrarily(
 void RedeemSingleToken(const ProtocolKeys& keys,
                        TRUST_TOKEN_ISSUER* issuer_ctx,
                        const TrustToken& token_to_redeem,
-                       std::string* signed_redemption_record_out) {
+                       std::string* redemption_record_out) {
   BoringsslTrustTokenRedemptionCryptographer redemption_cryptographer;
 
   const url::Origin kRedeemingOrigin =
       url::Origin::Create(GURL("https://topframe.example"));
 
-  ASSERT_TRUE(redemption_cryptographer.Initialize(
-      kNumTokensToRequest, as_string(keys.srr_verification)));
+  ASSERT_TRUE(redemption_cryptographer.Initialize(kProtocolVersion,
+                                                  kNumTokensToRequest));
 
   base::Optional<std::string> maybe_base64_encoded_redemption_request =
       redemption_cryptographer.BeginRedemption(
@@ -184,7 +178,7 @@ void RedeemSingleToken(const ProtocolKeys& keys,
   //  TRUST_TOKEN **out_token, uint8_t **out_client_data,
   //  size_t *out_client_data_len, uint64_t *out_redemption_time,
   //  const uint8_t *request, size_t request_len, uint64_t lifetime);
-  constexpr base::TimeDelta kSrrLifetime = base::TimeDelta::FromSeconds(100);
+  constexpr base::TimeDelta kRrLifetime = base::TimeDelta::FromSeconds(100);
   ScopedBoringsslBytes raw_redemption_response;
   TRUST_TOKEN* redeemed_token;
   ScopedBoringsslBytes redeemed_client_data;
@@ -195,7 +189,7 @@ void RedeemSingleToken(const ProtocolKeys& keys,
       redeemed_client_data.mutable_ptr(), redeemed_client_data.mutable_len(),
       &received_redemption_timestamp,
       base::as_bytes(base::make_span(raw_redemption_request)).data(),
-      raw_redemption_request.size(), kSrrLifetime.InSeconds()));
+      raw_redemption_request.size(), kRrLifetime.InSeconds()));
   // Put the issuer-receied token in a smart pointer so it will get deleted on
   // leaving scope.
   bssl::UniquePtr<TRUST_TOKEN> redeemed_token_scoper(redeemed_token);
@@ -204,8 +198,6 @@ void RedeemSingleToken(const ProtocolKeys& keys,
   // |token_to_redeem|, but the TRUST_TOKEN type represents different things in
   // client and server settings, so these structs don't necessarily have equal
   // contents.
-  EXPECT_EQ(base::checked_cast<int64_t>(received_redemption_timestamp),
-            (base::Time::Now() - base::Time::UnixEpoch()).InSeconds());
   auto expected_client_data = *CanonicalizeTrustTokenClientDataForRedemption(
       base::Time::Now(), kRedeemingOrigin,
       "client-generated public key bound to the redemption");
@@ -216,12 +208,12 @@ void RedeemSingleToken(const ProtocolKeys& keys,
 
   std::string base64_encoded_redemption_response =
       base::Base64Encode(raw_redemption_response.as_span());
-  base::Optional<std::string> maybe_signed_redemption_record =
+  base::Optional<std::string> maybe_redemption_record =
       redemption_cryptographer.ConfirmRedemption(
           base64_encoded_redemption_response);
 
-  ASSERT_TRUE(maybe_signed_redemption_record);
-  signed_redemption_record_out->swap(*maybe_signed_redemption_record);
+  ASSERT_TRUE(maybe_redemption_record);
+  redemption_record_out->swap(*maybe_redemption_record);
 }
 
 }  // namespace
@@ -232,38 +224,36 @@ TEST(TrustTokenCryptographersTest, IssuanceAndRedemption) {
 
   ProtocolKeys keys = GenerateProtocolKeys(/*num_keys=*/1);
 
-  // Initialization: provide the issuer context the token-signing and
-  // SRR-signing keys.
+  // Initialization: provide the issuer context the token-signing keys.
   bssl::UniquePtr<TRUST_TOKEN_ISSUER> issuer_ctx(TRUST_TOKEN_ISSUER_new(
-      TRUST_TOKEN_experiment_v1(), /*max_batchsize=*/kNumTokensToRequest));
+      TRUST_TOKEN_experiment_v2_pmb(), /*max_batchsize=*/kNumTokensToRequest));
   ASSERT_TRUE(issuer_ctx);
   for (const TokenKeyPair& token_key_pair : keys.token_keys) {
     ASSERT_TRUE(TRUST_TOKEN_ISSUER_add_key(issuer_ctx.get(),
                                            token_key_pair.signing.data(),
                                            token_key_pair.signing.size()));
   }
+
   // Copying the comment from evp.h:
   // The [Ed25519] RFC 8032 private key format is the 32-byte prefix of
   // |ED25519_sign|'s 64-byte private key.
-  bssl::UniquePtr<EVP_PKEY> issuer_srr_key(EVP_PKEY_new_raw_private_key(
-      EVP_PKEY_ED25519, /*unused=*/nullptr, keys.srr_signing.data(),
+  uint8_t public_key[32], private_key[64];
+  ED25519_keypair(public_key, private_key);
+  bssl::UniquePtr<EVP_PKEY> issuer_rr_key(EVP_PKEY_new_raw_private_key(
+      EVP_PKEY_ED25519, /*unused=*/nullptr, private_key,
       /*len=*/32));
-  ASSERT_TRUE(issuer_srr_key);
+  ASSERT_TRUE(issuer_rr_key);
   ASSERT_TRUE(
-      TRUST_TOKEN_ISSUER_set_srr_key(issuer_ctx.get(), issuer_srr_key.get()));
+      TRUST_TOKEN_ISSUER_set_srr_key(issuer_ctx.get(), issuer_rr_key.get()));
 
   // Execute an issuance and a redemption; they should succeed.
   TrustToken token;
   ASSERT_NO_FATAL_FAILURE(RequestManyTokensAndRetainOneArbitrarily(
       keys, keys.token_keys[0], issuer_ctx.get(), &token));
 
-  std::string signed_redemption_record;
-  ASSERT_NO_FATAL_FAILURE(RedeemSingleToken(keys, issuer_ctx.get(), token,
-                                            &signed_redemption_record));
-
-  ASSERT_EQ(test::VerifyTrustTokenSignedRedemptionRecord(
-                signed_redemption_record, as_string(keys.srr_verification)),
-            test::SrrVerificationStatus::kSuccess);
+  std::string redemption_record;
+  ASSERT_NO_FATAL_FAILURE(
+      RedeemSingleToken(keys, issuer_ctx.get(), token, &redemption_record));
 }
 
 TEST(TrustTokenCryptographersTest, IssuanceAndRedemptionWithMultipleKeys) {
@@ -272,25 +262,27 @@ TEST(TrustTokenCryptographersTest, IssuanceAndRedemptionWithMultipleKeys) {
 
   ProtocolKeys keys = GenerateProtocolKeys(/*num_keys=*/3);
 
-  // Initialization: provide the issuer context the token-signing and
-  // SRR-signing keys.
+  // Initialization: provide the issuer context the token-signing keys.
   bssl::UniquePtr<TRUST_TOKEN_ISSUER> issuer_ctx(TRUST_TOKEN_ISSUER_new(
-      TRUST_TOKEN_experiment_v1(), /*max_batchsize=*/kNumTokensToRequest));
+      TRUST_TOKEN_experiment_v2_pmb(), /*max_batchsize=*/kNumTokensToRequest));
   ASSERT_TRUE(issuer_ctx);
   for (const TokenKeyPair& token_key_pair : keys.token_keys) {
     ASSERT_TRUE(TRUST_TOKEN_ISSUER_add_key(issuer_ctx.get(),
                                            token_key_pair.signing.data(),
                                            token_key_pair.signing.size()));
   }
+
   // Copying the comment from evp.h:
   // The [Ed25519] RFC 8032 private key format is the 32-byte prefix of
   // |ED25519_sign|'s 64-byte private key.
-  bssl::UniquePtr<EVP_PKEY> issuer_srr_key(EVP_PKEY_new_raw_private_key(
-      EVP_PKEY_ED25519, /*unused=*/nullptr, keys.srr_signing.data(),
+  uint8_t public_key[32], private_key[64];
+  ED25519_keypair(public_key, private_key);
+  bssl::UniquePtr<EVP_PKEY> issuer_rr_key(EVP_PKEY_new_raw_private_key(
+      EVP_PKEY_ED25519, /*unused=*/nullptr, private_key,
       /*len=*/32));
-  ASSERT_TRUE(issuer_srr_key);
+  ASSERT_TRUE(issuer_rr_key);
   ASSERT_TRUE(
-      TRUST_TOKEN_ISSUER_set_srr_key(issuer_ctx.get(), issuer_srr_key.get()));
+      TRUST_TOKEN_ISSUER_set_srr_key(issuer_ctx.get(), issuer_rr_key.get()));
 
   // Issuance should succeed when the issuer uses the first issuance key
   // generated, and when the issuer uses the second issuance key generated.
@@ -302,21 +294,13 @@ TEST(TrustTokenCryptographersTest, IssuanceAndRedemptionWithMultipleKeys) {
       keys, keys.token_keys[1], issuer_ctx.get(), &another_token));
 
   // In both cases, redeeming a token from the issuance should succeed and yield
-  // a well-formed signed redemption record.
-  std::string signed_redemption_record;
-  ASSERT_NO_FATAL_FAILURE(RedeemSingleToken(keys, issuer_ctx.get(), token,
-                                            &signed_redemption_record));
+  // a well-formed redemption record.
+  std::string redemption_record;
+  ASSERT_NO_FATAL_FAILURE(
+      RedeemSingleToken(keys, issuer_ctx.get(), token, &redemption_record));
 
-  ASSERT_EQ(test::VerifyTrustTokenSignedRedemptionRecord(
-                signed_redemption_record, as_string(keys.srr_verification)),
-            test::SrrVerificationStatus::kSuccess);
-
-  ASSERT_NO_FATAL_FAILURE(RedeemSingleToken(
-      keys, issuer_ctx.get(), another_token, &signed_redemption_record));
-
-  ASSERT_EQ(test::VerifyTrustTokenSignedRedemptionRecord(
-                signed_redemption_record, as_string(keys.srr_verification)),
-            test::SrrVerificationStatus::kSuccess);
+  ASSERT_NO_FATAL_FAILURE(RedeemSingleToken(keys, issuer_ctx.get(),
+                                            another_token, &redemption_record));
 }
 
 }  // namespace network

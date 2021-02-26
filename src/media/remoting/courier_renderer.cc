@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
@@ -74,7 +73,6 @@ CourierRenderer::CourierRenderer(
       remote_renderer_handle_(RpcBroker::kInvalidHandle),
       video_renderer_sink_(video_renderer_sink),
       clock_(base::DefaultTickClock::GetInstance()) {
-  VLOG(2) << __func__;
   // Note: The constructor is running on the main thread, but will be destroyed
   // on the media thread. Therefore, all weak pointers must be dereferenced on
   // the media thread.
@@ -85,7 +83,6 @@ CourierRenderer::CourierRenderer(
 }
 
 CourierRenderer::~CourierRenderer() {
-  VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   // Post task on main thread to unregister message receiver.
@@ -102,7 +99,6 @@ CourierRenderer::~CourierRenderer() {
 void CourierRenderer::Initialize(MediaResource* media_resource,
                                  RendererClient* client,
                                  PipelineStatusCallback init_cb) {
-  VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(media_resource);
   DCHECK(client);
@@ -150,19 +146,10 @@ void CourierRenderer::Initialize(MediaResource* media_resource,
                          rpc_broker_)));
 }
 
-void CourierRenderer::SetCdm(CdmContext* cdm_context,
-                             CdmAttachedCB cdm_attached_cb) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
-  // Media remoting doesn't support encrypted content.
-  NOTIMPLEMENTED();
-}
-
 void CourierRenderer::SetLatencyHint(
     base::Optional<base::TimeDelta> latency_hint) {}
 
 void CourierRenderer::Flush(base::OnceClosure flush_cb) {
-  VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!flush_cb_);
 
@@ -188,14 +175,13 @@ void CourierRenderer::Flush(base::OnceClosure flush_cb) {
       (video_demuxer_stream_adapter_ && !flush_video_count.has_value()) ||
       (audio_demuxer_stream_adapter_ && video_demuxer_stream_adapter_ &&
        flush_audio_count.has_value() != flush_video_count.has_value())) {
-    VLOG(1) << "Ignoring flush request while under flushing operation";
     return;
   }
 
   flush_cb_ = std::move(flush_cb);
 
   // Issues RPC_R_FLUSHUNTIL RPC message.
-  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
+  auto rpc = std::make_unique<pb::RpcMessage>();
   rpc->set_handle(remote_renderer_handle_);
   rpc->set_proc(pb::RpcMessage::RPC_R_FLUSHUNTIL);
   pb::RendererFlushUntil* message = rpc->mutable_renderer_flushuntil_rpc();
@@ -204,15 +190,10 @@ void CourierRenderer::Flush(base::OnceClosure flush_cb) {
   if (flush_video_count.has_value())
     message->set_video_count(*flush_video_count);
   message->set_callback_handle(rpc_handle_);
-  VLOG(2) << __func__ << ": Sending RPC_R_FLUSHUNTIL to " << rpc->handle()
-          << " with audio_count=" << message->audio_count()
-          << ", video_count=" << message->video_count()
-          << ", callback_handle=" << message->callback_handle();
   SendRpcToRemote(std::move(rpc));
 }
 
 void CourierRenderer::StartPlayingFrom(base::TimeDelta time) {
-  VLOG(2) << __func__ << ": " << time.InMicroseconds();
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (state_ != STATE_PLAYING) {
@@ -221,12 +202,10 @@ void CourierRenderer::StartPlayingFrom(base::TimeDelta time) {
   }
 
   // Issues RPC_R_STARTPLAYINGFROM RPC message.
-  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
+  auto rpc = std::make_unique<pb::RpcMessage>();
   rpc->set_handle(remote_renderer_handle_);
   rpc->set_proc(pb::RpcMessage::RPC_R_STARTPLAYINGFROM);
   rpc->set_integer64_value(time.InMicroseconds());
-  VLOG(2) << __func__ << ": Sending RPC_R_STARTPLAYINGFROM to " << rpc->handle()
-          << " with time_usec=" << rpc->integer64_value();
   SendRpcToRemote(std::move(rpc));
 
   {
@@ -237,7 +216,6 @@ void CourierRenderer::StartPlayingFrom(base::TimeDelta time) {
 }
 
 void CourierRenderer::SetPlaybackRate(double playback_rate) {
-  VLOG(2) << __func__ << ": " << playback_rate;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (state_ != STATE_FLUSHING && state_ != STATE_PLAYING) {
@@ -246,33 +224,27 @@ void CourierRenderer::SetPlaybackRate(double playback_rate) {
   }
 
   // Issues RPC_R_SETPLAYBACKRATE RPC message.
-  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
+  auto rpc = std::make_unique<pb::RpcMessage>();
   rpc->set_handle(remote_renderer_handle_);
   rpc->set_proc(pb::RpcMessage::RPC_R_SETPLAYBACKRATE);
   rpc->set_double_value(playback_rate);
-  VLOG(2) << __func__ << ": Sending RPC_R_SETPLAYBACKRATE to " << rpc->handle()
-          << " with rate=" << rpc->double_value();
   SendRpcToRemote(std::move(rpc));
   playback_rate_ = playback_rate;
   ResetMeasurements();
 }
 
 void CourierRenderer::SetVolume(float volume) {
-  VLOG(2) << __func__ << ": " << volume;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  if (state_ != STATE_FLUSHING && state_ != STATE_PLAYING) {
-    DCHECK_EQ(state_, STATE_ERROR);
+  volume_ = volume;
+  if (state_ != STATE_FLUSHING && state_ != STATE_PLAYING)
     return;
-  }
 
   // Issues RPC_R_SETVOLUME RPC message.
-  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
+  auto rpc = std::make_unique<pb::RpcMessage>();
   rpc->set_handle(remote_renderer_handle_);
   rpc->set_proc(pb::RpcMessage::RPC_R_SETVOLUME);
   rpc->set_double_value(volume);
-  VLOG(2) << __func__ << ": Sending RPC_R_SETVOLUME to " << rpc->handle()
-          << " with volume=" << rpc->double_value();
   SendRpcToRemote(std::move(rpc));
 }
 
@@ -314,7 +286,6 @@ void CourierRenderer::OnDataPipeCreated(
     mojo::ScopedDataPipeProducerHandle video_handle,
     int audio_rpc_handle,
     int video_rpc_handle) {
-  VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (state_ == STATE_ERROR)
@@ -332,7 +303,6 @@ void CourierRenderer::OnDataPipeCreated(
   // Create audio demuxer stream adapter if audio is available.
   if (audio_demuxer_stream && audio.is_valid() && audio_handle.is_valid() &&
       audio_rpc_handle != RpcBroker::kInvalidHandle) {
-    VLOG(2) << "Initialize audio";
     audio_demuxer_stream_adapter_.reset(new DemuxerStreamAdapter(
         main_task_runner_, media_task_runner_, "audio", audio_demuxer_stream,
         rpc_broker_, audio_rpc_handle, std::move(audio),
@@ -344,7 +314,6 @@ void CourierRenderer::OnDataPipeCreated(
   // Create video demuxer stream adapter if video is available.
   if (video_demuxer_stream && video.is_valid() && video_handle.is_valid() &&
       video_rpc_handle != RpcBroker::kInvalidHandle) {
-    VLOG(2) << "Initialize video";
     video_demuxer_stream_adapter_.reset(new DemuxerStreamAdapter(
         main_task_runner_, media_task_runner_, "video", video_demuxer_stream,
         rpc_broker_, video_rpc_handle, std::move(video),
@@ -360,13 +329,27 @@ void CourierRenderer::OnDataPipeCreated(
   }
 
   state_ = STATE_ACQUIRING;
+
+  // Issues RPC_ACQUIRE_DEMUXER RPC message.
+  auto rpc = std::make_unique<pb::RpcMessage>();
+  rpc->set_handle(RpcBroker::kAcquireDemuxerHandle);
+  rpc->set_proc(pb::RpcMessage::RPC_ACQUIRE_DEMUXER);
+  pb::AcquireDemuxer* message = rpc->mutable_acquire_demuxer_rpc();
+  message->set_audio_demuxer_handle(
+      audio_demuxer_stream_adapter_
+          ? audio_demuxer_stream_adapter_->rpc_handle()
+          : RpcBroker::kInvalidHandle);
+  message->set_video_demuxer_handle(
+      video_demuxer_stream_adapter_
+          ? video_demuxer_stream_adapter_->rpc_handle()
+          : RpcBroker::kInvalidHandle);
+  SendRpcToRemote(std::move(rpc));
+
   // Issues RPC_ACQUIRE_RENDERER RPC message.
-  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
-  rpc->set_handle(RpcBroker::kAcquireHandle);
+  rpc = std::make_unique<pb::RpcMessage>();
+  rpc->set_handle(RpcBroker::kAcquireRendererHandle);
   rpc->set_proc(pb::RpcMessage::RPC_ACQUIRE_RENDERER);
   rpc->set_integer_value(rpc_handle_);
-  VLOG(2) << __func__ << ": Sending RPC_ACQUIRE_RENDERER to " << rpc->handle()
-          << " with rpc_handle=" << rpc->integer_value();
   SendRpcToRemote(std::move(rpc));
 }
 
@@ -393,9 +376,6 @@ void CourierRenderer::OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message) {
     case pb::RpcMessage::RPC_R_FLUSHUNTIL_CALLBACK:
       FlushUntilCallback();
       break;
-    case pb::RpcMessage::RPC_R_SETCDM_CALLBACK:
-      SetCdmCallback(std::move(message));
-      break;
     case pb::RpcMessage::RPC_RC_ONTIMEUPDATE:
       OnTimeUpdate(std::move(message));
       break;
@@ -403,11 +383,9 @@ void CourierRenderer::OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message) {
       OnBufferingStateChange(std::move(message));
       break;
     case pb::RpcMessage::RPC_RC_ONENDED:
-      VLOG(2) << __func__ << ": Received RPC_RC_ONENDED.";
       client_->OnEnded();
       break;
     case pb::RpcMessage::RPC_RC_ONERROR:
-      VLOG(2) << __func__ << ": Received RPC_RC_ONERROR.";
       OnFatalError(RECEIVER_PIPELINE_ERROR);
       break;
     case pb::RpcMessage::RPC_RC_ONAUDIOCONFIGCHANGE:
@@ -425,13 +403,9 @@ void CourierRenderer::OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message) {
     case pb::RpcMessage::RPC_RC_ONSTATISTICSUPDATE:
       OnStatisticsUpdate(std::move(message));
       break;
-    case pb::RpcMessage::RPC_RC_ONWAITINGFORDECRYPTIONKEY:
-      VLOG(2) << __func__ << ": Received RPC_RC_ONWAITINGFORDECRYPTIONKEY.";
-      client_->OnWaiting(WaitingReason::kNoDecryptionKey);
-      break;
 
     default:
-      VLOG(1) << "Unknown RPC: " << message->proc();
+      DVLOG(1) << "Unknown RPC: " << message->proc();
   }
 }
 
@@ -449,19 +423,15 @@ void CourierRenderer::AcquireRendererDone(
   DCHECK(message);
 
   remote_renderer_handle_ = message->integer_value();
-  VLOG(2) << __func__
-          << ": Received RPC_ACQUIRE_RENDERER_DONE with remote_renderer_handle="
-          << remote_renderer_handle_;
 
   if (state_ != STATE_ACQUIRING || init_workflow_done_callback_.is_null()) {
-    LOG(WARNING) << "Unexpected acquire renderer done RPC.";
     OnFatalError(PEERS_OUT_OF_SYNC);
     return;
   }
   state_ = STATE_INITIALIZING;
 
   // Issues RPC_R_INITIALIZE RPC message to initialize renderer.
-  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
+  auto rpc = std::make_unique<pb::RpcMessage>();
   rpc->set_handle(remote_renderer_handle_);
   rpc->set_proc(pb::RpcMessage::RPC_R_INITIALIZE);
   pb::RendererInitialize* init = rpc->mutable_renderer_initialize_rpc();
@@ -475,11 +445,6 @@ void CourierRenderer::AcquireRendererDone(
           ? video_demuxer_stream_adapter_->rpc_handle()
           : RpcBroker::kInvalidHandle);
   init->set_callback_handle(rpc_handle_);
-  VLOG(2) << __func__ << ": Sending RPC_R_INITIALIZE to " << rpc->handle()
-          << " with client_handle=" << init->client_handle()
-          << ", audio_demuxer_handle=" << init->audio_demuxer_handle()
-          << ", video_demuxer_handle=" << init->video_demuxer_handle()
-          << ", callback_handle=" << init->callback_handle();
   SendRpcToRemote(std::move(rpc));
 }
 
@@ -489,11 +454,7 @@ void CourierRenderer::InitializeCallback(
   DCHECK(message);
 
   const bool success = message->boolean_value();
-  VLOG(2) << __func__
-          << ": Received RPC_R_INITIALIZE_CALLBACK with success=" << success;
-
   if (state_ != STATE_INITIALIZING || init_workflow_done_callback_.is_null()) {
-    LOG(WARNING) << "Unexpected initialize callback RPC.";
     OnFatalError(PEERS_OUT_OF_SYNC);
     return;
   }
@@ -506,15 +467,15 @@ void CourierRenderer::InitializeCallback(
   metrics_recorder_.OnRendererInitialized();
 
   state_ = STATE_PLAYING;
+
+  SetVolume(volume_);
   std::move(init_workflow_done_callback_).Run(PIPELINE_OK);
 }
 
 void CourierRenderer::FlushUntilCallback() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  VLOG(2) << __func__ << ": Received RPC_R_FLUSHUNTIL_CALLBACK";
 
   if (state_ != STATE_FLUSHING || !flush_cb_) {
-    LOG(WARNING) << "Unexpected flushuntil callback RPC.";
     OnFatalError(PEERS_OUT_OF_SYNC);
     return;
   }
@@ -528,22 +489,11 @@ void CourierRenderer::FlushUntilCallback() {
   ResetMeasurements();
 }
 
-void CourierRenderer::SetCdmCallback(std::unique_ptr<pb::RpcMessage> message) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DCHECK(message);
-  VLOG(2) << __func__ << ": Received RPC_R_SETCDM_CALLBACK with cdm_id="
-          << message->renderer_set_cdm_rpc().cdm_id() << ", callback_handle="
-          << message->renderer_set_cdm_rpc().callback_handle();
-  // TODO(erickung): add implementation once Remote CDM implementation is done.
-  NOTIMPLEMENTED();
-}
-
 void CourierRenderer::OnTimeUpdate(std::unique_ptr<pb::RpcMessage> message) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(message);
   // Shutdown remoting session if receiving malformed RPC message.
   if (!message->has_rendererclient_ontimeupdate_rpc()) {
-    VLOG(1) << __func__ << " missing required RPC message";
     OnFatalError(RPC_INVALID);
     return;
   }
@@ -551,9 +501,6 @@ void CourierRenderer::OnTimeUpdate(std::unique_ptr<pb::RpcMessage> message) {
       message->rendererclient_ontimeupdate_rpc().time_usec();
   const int64_t max_time_usec =
       message->rendererclient_ontimeupdate_rpc().max_time_usec();
-  VLOG(2) << __func__
-          << ": Received RPC_RC_ONTIMEUPDATE with time_usec=" << time_usec
-          << ", max_time_usec=" << max_time_usec;
   // Ignores invalid time, such as negative value, or time larger than max value
   // (usually the time stamp that all streams are pushed into AV pipeline).
   if (time_usec < 0 || max_time_usec < 0 || time_usec > max_time_usec)
@@ -575,12 +522,9 @@ void CourierRenderer::OnBufferingStateChange(
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(message);
   if (!message->has_rendererclient_onbufferingstatechange_rpc()) {
-    VLOG(1) << __func__ << " missing required RPC message";
     OnFatalError(RPC_INVALID);
     return;
   }
-  VLOG(2) << __func__ << ": Received RPC_RC_ONBUFFERINGSTATECHANGE with state="
-          << message->rendererclient_onbufferingstatechange_rpc().state();
   base::Optional<BufferingState> state = ToMediaBufferingState(
       message->rendererclient_onbufferingstatechange_rpc().state());
   BufferingStateChangeReason reason = BUFFERING_CHANGE_REASON_UNKNOWN;
@@ -605,7 +549,6 @@ void CourierRenderer::OnAudioConfigChange(
   DCHECK(message);
   // Shutdown remoting session if receiving malformed RPC message.
   if (!message->has_rendererclient_onaudioconfigchange_rpc()) {
-    VLOG(1) << __func__ << " missing required RPC message";
     OnFatalError(RPC_INVALID);
     return;
   }
@@ -618,8 +561,6 @@ void CourierRenderer::OnAudioConfigChange(
   ConvertProtoToAudioDecoderConfig(pb_audio_config, &out_audio_config);
   DCHECK(out_audio_config.IsValidConfig());
 
-  VLOG(2) << __func__ << ": Received RPC_RC_ONAUDIOCONFIGCHANGE with config:"
-          << out_audio_config.AsHumanReadableString();
   client_->OnAudioConfigChange(out_audio_config);
 }
 
@@ -629,7 +570,6 @@ void CourierRenderer::OnVideoConfigChange(
   DCHECK(message);
   // Shutdown remoting session if receiving malformed RPC message.
   if (!message->has_rendererclient_onvideoconfigchange_rpc()) {
-    VLOG(1) << __func__ << " missing required RPC message";
     OnFatalError(RPC_INVALID);
     return;
   }
@@ -642,8 +582,6 @@ void CourierRenderer::OnVideoConfigChange(
   ConvertProtoToVideoDecoderConfig(pb_video_config, &out_video_config);
   DCHECK(out_video_config.IsValidConfig());
 
-  VLOG(2) << __func__ << ": Received RPC_RC_ONVIDEOCONFIGCHANGE with config:"
-          << out_video_config.AsHumanReadableString();
   client_->OnVideoConfigChange(out_video_config);
 }
 
@@ -653,14 +591,11 @@ void CourierRenderer::OnVideoNaturalSizeChange(
   DCHECK(message);
   // Shutdown remoting session if receiving malformed RPC message.
   if (!message->has_rendererclient_onvideonatualsizechange_rpc()) {
-    VLOG(1) << __func__ << " missing required RPC message";
     OnFatalError(RPC_INVALID);
     return;
   }
   const auto& size_change =
       message->rendererclient_onvideonatualsizechange_rpc();
-  VLOG(2) << __func__ << ": Received RPC_RC_ONVIDEONATURALSIZECHANGE with size="
-          << size_change.width() << 'x' << size_change.height();
   if (size_change.width() <= 0 || size_change.height() <= 0)
     return;
   client_->OnVideoNaturalSizeChange(
@@ -672,8 +607,6 @@ void CourierRenderer::OnVideoOpacityChange(
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(message);
   const bool opaque = message->boolean_value();
-  VLOG(2) << __func__
-          << ": Received RPC_RC_ONVIDEOOPACITYCHANGE with opaque=" << opaque;
   client_->OnVideoOpacityChange(opaque);
 }
 
@@ -683,7 +616,6 @@ void CourierRenderer::OnStatisticsUpdate(
   DCHECK(message);
   // Shutdown remoting session if receiving malformed RPC message.
   if (!message->has_rendererclient_onstatisticsupdate_rpc()) {
-    VLOG(1) << __func__ << " missing required RPC message";
     OnFatalError(RPC_INVALID);
     return;
   }
@@ -691,15 +623,6 @@ void CourierRenderer::OnStatisticsUpdate(
   ConvertProtoToPipelineStatistics(
       message->rendererclient_onstatisticsupdate_rpc(), &stats);
   // Note: Each field in |stats| is a delta, not the aggregate amount.
-  VLOG(2) << __func__
-          << ": Received RPC_RC_ONSTATISTICSUPDATE with audio_bytes_decoded="
-          << stats.audio_bytes_decoded
-          << ", video_bytes_decoded=" << stats.video_bytes_decoded
-          << ", video_frames_decoded=" << stats.video_frames_decoded
-          << ", video_frames_dropped=" << stats.video_frames_dropped
-          << ", audio_memory_usage=" << stats.audio_memory_usage
-          << ", video_memory_usage=" << stats.video_memory_usage;
-
   if (stats.audio_bytes_decoded > 0 || stats.video_frames_decoded > 0 ||
       stats.video_frames_dropped > 0) {
     metrics_recorder_.OnEvidenceOfPlayoutAtReceiver();
@@ -711,8 +634,6 @@ void CourierRenderer::OnStatisticsUpdate(
 void CourierRenderer::OnFatalError(StopTrigger stop_trigger) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(UNKNOWN_STOP_TRIGGER, stop_trigger);
-
-  VLOG(2) << __func__ << " with StopTrigger " << stop_trigger;
 
   // If this is the first error, notify the controller. It is expected the
   // controller will cause this renderer to shut down shortly.
@@ -761,9 +682,6 @@ void CourierRenderer::OnMediaTimeUpdated() {
       playback_rate_;
   if ((media_duration - update_duration).magnitude() >=
       kMediaPlaybackDelayThreshold) {
-    VLOG(1) << "Irregular playback detected: Media playback delayed."
-            << " media_duration = " << media_duration
-            << " update_duration = " << update_duration;
     ++times_playback_delayed_;
     if (times_playback_delayed_ == kPlaybackDelayCountThreshold)
       OnFatalError(PACING_TOO_SLOWLY);
@@ -807,9 +725,6 @@ void CourierRenderer::UpdateVideoStatsQueue(int video_frames_decoded,
   if (sum_video_frames_decoded_ &&
       sum_video_frames_dropped_ * 100 >
           sum_video_frames_decoded_ * kMaxNumVideoFramesDroppedPercentage) {
-    VLOG(1) << "Irregular playback detected: Too many video frames dropped."
-            << " video_frames_decoded= " << sum_video_frames_decoded_
-            << " video_frames_dropped= " << sum_video_frames_dropped_;
     OnFatalError(FRAME_DROP_RATE_HIGH);
   }
   // Prune |video_stats_queue_|.

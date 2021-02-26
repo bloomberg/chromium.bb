@@ -30,7 +30,8 @@ enum class OriginTrialTokenStatus {
   kWrongVersion = 7,
   kFeatureDisabled = 8,
   kTokenDisabled = 9,
-  kMaxValue = kTokenDisabled
+  kFeatureDisabledForUser = 10,
+  kMaxValue = kFeatureDisabledForUser
 };
 
 // The Origin Trials Framework (OT) provides limited access to experimental
@@ -48,6 +49,8 @@ enum class OriginTrialTokenStatus {
 class BLINK_COMMON_EXPORT TrialToken {
  public:
   ~TrialToken();
+
+  enum class UsageRestriction { kNone, kSubset };
 
   // If the string represents a signed well-formed token, a token object is
   // returned, and success is returned in the |out_status| parameter. Otherwise,
@@ -73,6 +76,7 @@ class BLINK_COMMON_EXPORT TrialToken {
   base::Time expiry_time() { return expiry_time_; }
   std::string signature() { return signature_; }
   bool is_third_party() const { return is_third_party_; }
+  UsageRestriction usage_restriction() { return usage_restriction_; }
 
  protected:
   // Tests can access the Parse method directly to validate it, and so are
@@ -112,7 +116,8 @@ class BLINK_COMMON_EXPORT TrialToken {
              bool match_subdomains,
              const std::string& feature_name,
              uint64_t expiry_timestamp,
-             bool is_third_party);
+             bool is_third_party,
+             UsageRestriction usage_restriction);
 
   // The origin for which this token is valid. Must be a secure origin.
   url::Origin origin_;
@@ -134,6 +139,12 @@ class BLINK_COMMON_EXPORT TrialToken {
   // https://docs.google.com/document/d/1xALH9W7rWmX0FpjudhDeS2TNTEOXuPn4Tlc9VmuPdHA
   // for more details.
   bool is_third_party_;
+
+  // Indicates the alternative usage restriction mode imposed on the token.
+  // See design doc
+  // https://docs.google.com/document/d/1xALH9W7rWmX0FpjudhDeS2TNTEOXuPn4Tlc9VmuPdHA
+  // for more details.
+  UsageRestriction usage_restriction_;
 };
 
 }  // namespace blink

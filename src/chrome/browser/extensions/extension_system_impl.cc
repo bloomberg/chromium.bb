@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -55,7 +54,7 @@
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/service_worker_manager.h"
-#include "extensions/browser/shared_user_script_master.h"
+#include "extensions/browser/shared_user_script_manager.h"
 #include "extensions/browser/state_store.h"
 #include "extensions/browser/uninstall_ping_sender.h"
 #include "extensions/browser/value_store/value_store_factory_impl.h"
@@ -76,8 +75,6 @@
 #include "chromeos/login/login_state/login_state.h"
 #include "components/user_manager/user_manager.h"
 #endif
-
-using content::BrowserThread;
 
 namespace extensions {
 
@@ -164,7 +161,7 @@ void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
 }
 
 void ExtensionSystemImpl::Shared::InitInstallGates() {
-  update_install_gate_.reset(new UpdateInstallGate(extension_service_.get()));
+  update_install_gate_.reset(new UpdateInstallGate(profile_));
   extension_service_->RegisterInstallGate(
       ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE, update_install_gate_.get());
   extension_service_->RegisterInstallGate(
@@ -200,7 +197,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 
   service_worker_manager_.reset(new ServiceWorkerManager(profile_));
 
-  shared_user_script_master_.reset(new SharedUserScriptMaster(profile_));
+  shared_user_script_manager_ =
+      std::make_unique<SharedUserScriptManager>(profile_);
 
   // ExtensionService depends on RuntimeData.
   runtime_data_.reset(new RuntimeData(ExtensionRegistry::Get(profile_)));
@@ -216,7 +214,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   extension_service_.reset(new ExtensionService(
       profile_, base::CommandLine::ForCurrentProcess(),
       profile_->GetPath().AppendASCII(extensions::kInstallDirectoryName),
-      ExtensionPrefs::Get(profile_), Blacklist::Get(profile_),
+      ExtensionPrefs::Get(profile_), Blocklist::Get(profile_),
       autoupdate_enabled, extensions_enabled, &ready_));
 
   uninstall_ping_sender_.reset(new UninstallPingSender(
@@ -236,9 +234,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       content_verifier_->Start();
     info_map()->SetContentVerifier(content_verifier_.get());
 #if defined(OS_CHROMEOS)
-    if (chromeos::ProfileHelper::IsLockScreenAppProfile(profile_))
-      info_map()->SetIsLockScreenContext(true);
-
     // This class is used to check the permissions of the force-installed
     // extensions inside the managed-guest session. It updates the local state
     // perf with the result, a boolean value deciding whether the full warning
@@ -335,9 +330,9 @@ ManagementPolicy* ExtensionSystemImpl::Shared::management_policy() {
   return management_policy_.get();
 }
 
-SharedUserScriptMaster*
-ExtensionSystemImpl::Shared::shared_user_script_master() {
-  return shared_user_script_master_.get();
+SharedUserScriptManager*
+ExtensionSystemImpl::Shared::shared_user_script_manager() {
+  return shared_user_script_manager_.get();
 }
 
 InfoMap* ExtensionSystemImpl::Shared::info_map() {
@@ -380,7 +375,7 @@ void ExtensionSystemImpl::Shutdown() {
 void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
   TRACE_EVENT0("browser,startup", "ExtensionSystemImpl::InitForRegularProfile");
 
-  if (shared_user_script_master() || extension_service())
+  if (shared_user_script_manager() || extension_service())
     return;  // Already initialized.
 
   // The InfoMap needs to be created before the ProcessManager.
@@ -404,8 +399,8 @@ ServiceWorkerManager* ExtensionSystemImpl::service_worker_manager() {
   return shared_->service_worker_manager();
 }
 
-SharedUserScriptMaster* ExtensionSystemImpl::shared_user_script_master() {
-  return shared_->shared_user_script_master();
+SharedUserScriptManager* ExtensionSystemImpl::shared_user_script_manager() {
+  return shared_->shared_user_script_manager();
 }
 
 StateStore* ExtensionSystemImpl::state_store() {
@@ -424,6 +419,10 @@ InfoMap* ExtensionSystemImpl::info_map() { return shared_->info_map(); }
 
 const base::OneShotEvent& ExtensionSystemImpl::ready() const {
   return shared_->ready();
+}
+
+bool ExtensionSystemImpl::is_ready() const {
+  return shared_->is_ready();
 }
 
 QuotaService* ExtensionSystemImpl::quota_service() {
@@ -499,8 +498,8 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
   notifications_disabled =
       !notifier_state_tracker->IsNotifierEnabled(notifier_id);
 
-  base::PostTaskAndReply(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(&InfoMap::AddExtension, info_map(),
                      base::RetainedRef(extension), install_time,
                      incognito_enabled, notifications_disabled),
@@ -510,8 +509,8 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
 void ExtensionSystemImpl::UnregisterExtensionWithRequestContexts(
     const std::string& extension_id,
     const UnloadedExtensionReason reason) {
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&InfoMap::RemoveExtension, info_map(),
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&InfoMap::RemoveExtension, info_map(),
                                 extension_id, reason));
 }
 

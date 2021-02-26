@@ -7,15 +7,29 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_proxy.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/content_features.h"
 
 using content::BrowserContext;
+
+namespace {
+
+bool IsStoragePressureEnabled() {
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return true;
+#endif
+}
+
+}  // namespace
 
 namespace quota_internals {
 
@@ -23,7 +37,7 @@ QuotaInternalsHandler::QuotaInternalsHandler() {}
 
 QuotaInternalsHandler::~QuotaInternalsHandler() {
   if (proxy_.get())
-    proxy_->handler_ = NULL;
+    proxy_->handler_ = nullptr;
 }
 
 void QuotaInternalsHandler::RegisterMessages() {
@@ -37,13 +51,13 @@ void QuotaInternalsHandler::RegisterMessages() {
 }
 
 void QuotaInternalsHandler::ReportAvailableSpace(int64_t available_space) {
-  SendMessage("AvailableSpaceUpdated",
-              base::Value(static_cast<double>(available_space)));
+  FireWebUIListener("AvailableSpaceUpdated",
+                    base::Value(static_cast<double>(available_space)));
 }
 
 void QuotaInternalsHandler::ReportGlobalInfo(const GlobalStorageInfo& data) {
   std::unique_ptr<base::Value> value(data.NewValue());
-  SendMessage("GlobalInfoUpdated", *value);
+  FireWebUIListener("GlobalInfoUpdated", *value);
 }
 
 void QuotaInternalsHandler::ReportPerHostInfo(
@@ -53,7 +67,7 @@ void QuotaInternalsHandler::ReportPerHostInfo(
     values.Append(itr->NewValue());
   }
 
-  SendMessage("PerHostInfoUpdated", values);
+  FireWebUIListener("PerHostInfoUpdated", values);
 }
 
 void QuotaInternalsHandler::ReportPerOriginInfo(
@@ -63,7 +77,7 @@ void QuotaInternalsHandler::ReportPerOriginInfo(
     origins_value.Append(itr->NewValue());
   }
 
-  SendMessage("PerOriginInfoUpdated", origins_value);
+  FireWebUIListener("PerOriginInfoUpdated", origins_value);
 }
 
 void QuotaInternalsHandler::ReportStatistics(const Statistics& stats) {
@@ -72,18 +86,21 @@ void QuotaInternalsHandler::ReportStatistics(const Statistics& stats) {
     dict.SetString(itr->first, itr->second);
   }
 
-  SendMessage("StatisticsUpdated", dict);
+  FireWebUIListener("StatisticsUpdated", dict);
 }
 
-void QuotaInternalsHandler::SendMessage(const std::string& message,
-                                        const base::Value& value) {
-  web_ui()->CallJavascriptFunctionUnsafe("cr.quota.messageHandler",
-                                         base::Value(message), value);
+void QuotaInternalsHandler::ReportStoragePressureFlag() {
+  base::DictionaryValue flag_enabled;
+  flag_enabled.SetBoolean("isStoragePressureEnabled",
+                          IsStoragePressureEnabled());
+  FireWebUIListener("StoragePressureFlagUpdated", flag_enabled);
 }
 
 void QuotaInternalsHandler::OnRequestInfo(const base::ListValue*) {
+  AllowJavascript();
   if (!proxy_.get())
     proxy_ = new QuotaInternalsProxy(this);
+  ReportStoragePressureFlag();
   proxy_->RequestInfo(
       BrowserContext::GetDefaultStoragePartition(
           Profile::FromWebUI(web_ui()))->GetQuotaManager());
@@ -91,6 +108,7 @@ void QuotaInternalsHandler::OnRequestInfo(const base::ListValue*) {
 
 void QuotaInternalsHandler::OnTriggerStoragePressure(
     const base::ListValue* args) {
+  AllowJavascript();
   CHECK_EQ(1U, args->GetSize());
   std::string origin_string;
   CHECK(args->GetString(0, &origin_string));

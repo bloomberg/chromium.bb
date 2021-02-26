@@ -11,7 +11,6 @@
 #include "include/core/SkTypes.h"
 
 #include "include/core/SkYUVAIndex.h"
-#include "src/gpu/GrCoordTransform.h"
 #include "src/gpu/GrFragmentProcessor.h"
 
 class GrYUVtoRGBEffect : public GrFragmentProcessor {
@@ -22,20 +21,25 @@ public:
                                                      GrSamplerState samplerState,
                                                      const GrCaps&,
                                                      const SkMatrix& localMatrix = SkMatrix::I(),
-                                                     const SkRect* subset = nullptr);
-#ifdef SK_DEBUG
-    SkString dumpInfo() const override;
-#endif
-
+                                                     const SkRect* subset = nullptr,
+                                                     const SkRect* domain = nullptr);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
 
     const char* name() const override { return "YUVtoRGBEffect"; }
+    bool usesExplicitReturn() const override { return true; }
 
 private:
-    GrYUVtoRGBEffect(std::unique_ptr<GrFragmentProcessor> planeFPs[4], int numPlanes,
-                     const SkYUVAIndex yuvaIndices[4], SkYUVColorSpace yuvColorSpace);
+    GrYUVtoRGBEffect(std::unique_ptr<GrFragmentProcessor> planeFPs[4],
+                     int numPlanes,
+                     const SkYUVAIndex yuvaIndices[4],
+                     const bool snap[2],
+                     SkYUVColorSpace yuvColorSpace);
 
     GrYUVtoRGBEffect(const GrYUVtoRGBEffect& src);
+
+#if GR_TEST_UTILS
+    SkString onDumpInfo() const override;
+#endif
 
     GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
 
@@ -47,5 +51,6 @@ private:
 
     SkYUVAIndex      fYUVAIndices[4];
     SkYUVColorSpace  fYUVColorSpace;
+    bool             fSnap[2];
 };
 #endif

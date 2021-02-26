@@ -4,12 +4,11 @@
 
 const fs = require('fs');
 const md5 = require('./md5');
-const {promisify} = require('util');
 const path = require('path');
-const readFileAsync = promisify(fs.readFile);
-const readDirAsync = promisify(fs.readdir);
-const statAsync = promisify(fs.stat);
-const writeFileAsync = promisify(fs.writeFile);
+const readDirAsync = fs.promises.readdir;
+const readFileAsync = fs.promises.readFile;
+const statAsync = fs.promises.stat;
+const writeFileAsync = fs.promises.writeFile;
 
 const espreeTypes = {
   BI_EXPR: 'BinaryExpression',
@@ -20,19 +19,28 @@ const espreeTypes = {
   MEMBER_EXPR: 'MemberExpression',
   NEW_EXPR: 'NewExpression',
   TAGGED_TEMP_EXPR: 'TaggedTemplateExpression',
-  TEMP_LITERAL: 'TemplateLiteral'
+  TEMP_LITERAL: 'TemplateLiteral',
+  VARIABLE_DECLARATOR: 'VariableDeclarator'
 };
 
-const excludeFiles = ['Tests.js'];
+
+const excludeFiles = [
+  'Tests.js',
+  '.d.ts',  // Skip definition files
+];
+
 const excludeDirs = [
   'test_runner',
   'Images',
   'langpacks',
   'node_modules',
-  'lighthouse/lighthouse',
-  'lighthouse_worker/lighthouse',
-  'front_end/third_party',
+  'lighthouse_worker',
+  `front_end${path.sep}third_party`,
+  `front_end${path.sep}dagre_layout`,
+  `front_end${path.sep}javascript_metadata`,
+  `front_end${path.sep}generated`,
 ];
+
 const cppSpecialCharactersMap = {
   '"': '\\"',
   '\\': '\\\\',
@@ -41,14 +49,19 @@ const cppSpecialCharactersMap = {
 const IDSPrefix = 'IDS_DEVTOOLS_';
 
 const SRC_PATH = path.resolve(__dirname, '..', '..', '..');
-const GRD_PATH = path.resolve(SRC_PATH, 'front_end', 'langpacks', 'devtools_ui_strings.grd');
-const SHARED_STRINGS_PATH = path.resolve(SRC_PATH, 'front_end', 'langpacks', 'shared_strings.grdp');
+const FRONT_END_PATH = path.resolve(SRC_PATH, 'front_end');
+const GRD_PATH = path.resolve(FRONT_END_PATH, 'langpacks', 'devtools_ui_strings.grd');
+const SHARED_STRINGS_PATH = path.resolve(FRONT_END_PATH, 'langpacks', 'shared_strings.grdp');
 const NODE_MODULES_PATH = path.resolve(SRC_PATH, 'node_modules');
 const escodegen = require(path.resolve(NODE_MODULES_PATH, 'escodegen'));
 const espree = require(path.resolve(NODE_MODULES_PATH, '@typescript-eslint', 'parser'));
 
 function getRelativeFilePathFromSrc(filePath) {
   return path.relative(SRC_PATH, filePath);
+}
+
+function getRelativeFilePathFromFrontEnd(filePath) {
+  return path.relative(FRONT_END_PATH, filePath);
 }
 
 function shouldParseDirectory(directoryName) {
@@ -59,12 +72,19 @@ function shouldParseDirectory(directoryName) {
  * @filepath can be partial path or full path, as long as it contains the file name.
  */
 function shouldParseFile(filepath) {
-  return !excludeFiles.includes(path.basename(filepath));
+  let result = true;
+  for (const exclusionPath of excludeFiles) {
+    if (path.normalize(filepath).includes(path.normalize(exclusionPath))) {
+      result = false;
+      break;
+    }
+  }
+
+  return result;
 }
 
 async function parseFileContent(filePath) {
-  let fileContent = await readFileAsync(filePath);
-  fileContent = fileContent.toString();
+  let fileContent = await readFileAsync(filePath, {encoding: 'utf8'});
   // normalize line ending to LF
   fileContent = fileContent.replace(/\r\n/g, '\n');
   return fileContent;
@@ -92,6 +112,10 @@ function isNodeUIStringDirectCall(node) {
   return node.type === espreeTypes.CALL_EXPR && node.callee.type === 'Identifier' && node.callee.name === 'UIString';
 }
 
+function isNodeI18nStringsCall(node) {
+  return node.type === espreeTypes.IDENTIFIER && node.name === 'i18nString';
+}
+
 function isNodeCommonUIStringFormat(node) {
   return node && node.type === espreeTypes.NEW_EXPR &&
       (verifyCallExpressionCallee(node.callee, 'Common', 'UIStringFormat') ||
@@ -106,6 +130,18 @@ function isNodeUIformatLocalized(node) {
 function isNodelsTaggedTemplateExpression(node) {
   return node !== undefined && node.type === espreeTypes.TAGGED_TEMP_EXPR && verifyIdentifier(node.tag, 'ls') &&
       node.quasi !== undefined && node.quasi.type !== undefined && node.quasi.type === espreeTypes.TEMP_LITERAL;
+}
+
+function isNodeGetLocalizedStringCall(node) {
+  return isNodeI18nStringsCall(node);
+}
+
+function isNodeGetFormatLocalizedStringCall(node) {
+  return isNodeCallOnNestedObject(node, 'i18n', 'i18n', 'getFormatLocalizedString');
+}
+
+function isNodeDeclaresUIStrings(node) {
+  return (node.type === espreeTypes.VARIABLE_DECLARATOR && node.id && node.id.name === 'UIStrings');
 }
 
 /**
@@ -129,28 +165,45 @@ function verifyIdentifier(node, name) {
   return node !== undefined && node.type === espreeTypes.IDENTIFIER && node.name === name;
 }
 
-function getLocalizationCase(node) {
+function getLocalizationCaseAndVersion(node) {
   if (isNodeCommonUIStringCall(node)) {
-    return 'Common.UIString';
+    return {locCase: 'Common.UIString', locVersion: 1};
   }
   if (isNodeCommonUIStringFormat(node)) {
-    return 'Common.UIStringFormat';
+    return {locCase: 'Common.UIStringFormat', locVersion: 1};
   }
   if (isNodelsTaggedTemplateExpression(node)) {
-    return 'Tagged Template';
+    return {locCase: 'Tagged Template', locVersion: 1};
   }
   if (isNodeUIformatLocalized(node)) {
-    return 'UI.formatLocalized';
+    return {locCase: 'UI.formatLocalized', locVersion: 1};
   }
   if (isNodePlatformUIStringCall(node) || isNodeUIStringDirectCall(node)) {
-    return 'Platform.UIString';
+    return {locCase: 'Platform.UIString', locVersion: 1};
   }
-  return null;
+  if (isNodeGetLocalizedStringCall(node)) {
+    return {locCase: 'i18nString', locVersion: 2};
+  }
+  if (isNodeGetFormatLocalizedStringCall(node)) {
+    return {locCase: 'i18n.i18n.getFormatLocalizedString', locVersion: 2};
+  }
+  if (isNodeDeclaresUIStrings(node)) {
+    return {locCase: 'UIStrings', locVersion: 2};
+  }
+  return {locCase: null, locVersion: null};
 }
 
 function isLocalizationCall(node) {
   return isNodeCommonUIStringCall(node) || isNodelsTaggedTemplateExpression(node) || isNodeUIformatLocalized(node) ||
       isNodePlatformUIStringCall(node) || isNodeUIStringDirectCall(node);
+}
+
+/**
+ * A helper function for localization V2 APIs unit tests.
+ */
+function isLocalizationV2Call(node) {
+  return isNodeDeclaresUIStrings(node) || isNodeGetFormatLocalizedStringCall(node) ||
+      isNodeGetLocalizedStringCall(node);
 }
 
 /**
@@ -237,7 +290,7 @@ async function getChildDirectoriesFromDirectory(directoryPath) {
   for (const itemName of itemNames) {
     const itemPath = path.resolve(directoryPath, itemName);
     const stat = await statAsync(itemPath);
-    if (stat.isDirectory() && shouldParseDirectory(itemName)) {
+    if (stat.isDirectory() && shouldParseDirectory(itemPath)) {
       dirPaths.push(itemPath);
     }
   }
@@ -298,7 +351,7 @@ function modifyStringIntoGRDFormat(str, args) {
 
 function createGrdpMessage(ids, stringObj) {
   let message = `  <message name="${ids}" desc="${stringObj.description || ''}">\n`;
-  message += `    ${modifyStringIntoGRDFormat(stringObj.string, stringObj.arguments)}\n`;
+  message += `    ${stringObj.grdString || modifyStringIntoGRDFormat(stringObj.string, stringObj.arguments)}\n`;
   message += '  </message>\n';
   return message;
 }
@@ -373,13 +426,15 @@ module.exports = {
   getChildDirectoriesFromDirectory,
   getFilesFromDirectory,
   getIDSKey,
-  getLocalizationCase,
+  getLocalizationCaseAndVersion,
   getLocationMessage,
+  getRelativeFilePathFromFrontEnd,
   getRelativeFilePathFromSrc,
   getRelativeGrdpPath,
   GRD_PATH,
   IDSPrefix,
   isLocalizationCall,
+  isLocalizationV2Call,
   lineNumberOfIndex,
   modifyStringIntoGRDFormat,
   parseFileContent,

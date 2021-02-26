@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_RENDERING_CONTEXT_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_token.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
@@ -46,7 +47,6 @@ class HTMLCanvasElement;
 class ImageBitmap;
 
 constexpr const char* kSRGBCanvasColorSpaceName = "srgb";
-constexpr const char* kLinearRGBCanvasColorSpaceName = "linear-rgb";
 constexpr const char* kRec2020CanvasColorSpaceName = "rec2020";
 constexpr const char* kP3CanvasColorSpaceName = "p3";
 
@@ -64,7 +64,8 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   // A Canvas can either be "2D" or "webgl" but never both. Requesting a context
   // with a type different from an existing will destroy the latter.
   enum ContextType {
-    // Do not change assigned numbers of existing items: add new features to the
+    // These values are mirrored in tools/metrics/histograms/enums.xml. Do
+    // not change assigned numbers of existing items and add new features to the
     // end of the list.
     kContext2D = 0,
     kContextExperimentalWebgl = 2,
@@ -72,11 +73,23 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
     kContextWebgl2 = 4,
     kContextImageBitmap = 5,
     kContextXRPresent = 6,
-    kContextWebgl2Compute = 7,
+    // WebGL2Compute used to be 7.
     kContextGPUPresent = 8,
     kContextTypeUnknown = 9,
     kMaxValue = kContextTypeUnknown,
   };
+
+  // Correspond to CanvasRenderingAPI defined in
+  // tools/metrics/histograms/enums.xml
+  enum CanvasRenderingAPI {
+    k2D = 0,
+    kWebgl = 1,
+    kWebgl2 = 2,
+    kBitmaprenderer = 3,
+    kWebgpu = 4,
+  };
+
+  void RecordUKMCanvasRenderingAPI(CanvasRenderingAPI canvasRenderingAPI);
 
   static ContextType ContextTypeFromId(const String& id);
   static ContextType ResolveContextTypeAliases(ContextType);
@@ -88,7 +101,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
 
   const CanvasColorParams& ColorParams() const { return color_params_; }
 
-  virtual scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) = 0;
+  virtual scoped_refptr<StaticBitmapImage> GetImage() = 0;
   virtual ContextType GetContextType() const = 0;
   virtual bool IsComposited() const = 0;
   virtual bool IsAccelerated() const = 0;
@@ -151,7 +164,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   void WillProcessTask(const base::PendingTask&, bool) final {}
 
   // Canvas2D-specific interface
-  virtual bool Is2d() const { return false; }
+  virtual bool IsRenderingContext2D() const { return false; }
   virtual void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const {}
   virtual void Reset() {}
   virtual void ClearRect(double x, double y, double width, double height) {}
@@ -201,8 +214,17 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
     return creation_attributes_;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   virtual void Stop() = 0;
+
+  virtual IdentifiableToken IdentifiableTextToken() const {
+    // Token representing no bytes.
+    return IdentifiableToken(base::span<const uint8_t>());
+  }
+
+  virtual bool IdentifiabilityEncounteredSkippedOps() const { return false; }
+
+  virtual bool IdentifiabilityEncounteredSensitiveOps() const { return false; }
 
  protected:
   CanvasRenderingContext(CanvasRenderingContextHost*,

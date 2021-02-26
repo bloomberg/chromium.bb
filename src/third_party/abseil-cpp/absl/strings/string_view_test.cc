@@ -1177,9 +1177,9 @@ TEST(FindOneCharTest, EdgeCases) {
   EXPECT_EQ(absl::string_view::npos, a.rfind('x'));
 }
 
-#ifndef THREAD_SANITIZER  // Allocates too much memory for tsan.
+#ifndef ABSL_HAVE_THREAD_SANITIZER  // Allocates too much memory for tsan.
 TEST(HugeStringView, TwoPointTwoGB) {
-  if (sizeof(size_t) <= 4 || AbslRunningOnValgrind())
+  if (sizeof(size_t) <= 4)
     return;
   // Try a huge string piece.
   const size_t size = size_t{2200} * 1000 * 1000;
@@ -1191,7 +1191,7 @@ TEST(HugeStringView, TwoPointTwoGB) {
   sp.remove_suffix(2);
   EXPECT_EQ(size - 1 - 2, sp.length());
 }
-#endif  // THREAD_SANITIZER
+#endif  // ABSL_HAVE_THREAD_SANITIZER
 
 #if !defined(NDEBUG) && !defined(ABSL_USES_STD_STRING_VIEW)
 TEST(NonNegativeLenTest, NonNegativeLen) {

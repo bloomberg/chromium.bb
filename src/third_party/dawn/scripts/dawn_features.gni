@@ -16,6 +16,14 @@ import("//build_overrides/build.gni")
 
 if (build_with_chromium) {
   import("//build/config/sanitizers/sanitizers.gni")
+  import("//build/config/ui.gni")
+
+  dawn_use_x11 = use_x11
+} else {
+  declare_args() {
+    # Whether Dawn should enable X11 support.
+    dawn_use_x11 = is_linux && !is_chromeos
+  }
 }
 
 declare_args() {
@@ -52,8 +60,8 @@ declare_args() {
   dawn_enable_opengl = is_linux && !is_chromeos
 
   # Enables the compilation of Dawn's Vulkan backend
-  dawn_enable_vulkan =
-      is_linux || is_win || is_fuchsia || is_android || dawn_use_swiftshader
+  dawn_enable_vulkan = is_linux || is_chromeos || is_win || is_fuchsia ||
+                       is_android || dawn_use_swiftshader
 
   # Enable use of reflection compiler in spirv-cross. This is needed
   # if performing reflection on systems that the platform language
@@ -66,12 +74,9 @@ declare_args() {
   dawn_enable_error_injection =
       is_debug || (build_with_chromium && use_fuzzing_engine)
 
-  # Whether Dawn should enable X11 support.
-  dawn_use_x11 = is_linux && !is_chromeos
-
-  # Enable support WGSL for shaders. Currently this is
-  # experimental, and requires dawn_tint_dir to be set.
-  dawn_enable_wgsl = false
+  # Enable support WGSL for shaders.
+  # Turned off for Skia, because Tint is currently not part of its DEPS.
+  dawn_enable_wgsl = !defined(is_skia_standalone)
 }
 
 # GN does not allow reading a variable defined in the same declare_args().

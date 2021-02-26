@@ -45,8 +45,11 @@ class GraphCsvTest(testing_common.TestCase):
 
       test_container_key = utils.GetTestContainerKey(dom_test)
       for i in range(15000, 16000, 5):
-        graph_data.Row(parent=test_container_key, id=i, value=float(i * 2.5),
-                       error=(i + 5)).put()
+        graph_data.Row(
+            parent=test_container_key,
+            id=i,
+            value=float(i * 2.5),
+            error=(i + 5)).put()
 
   def _AddMockInternalData(self):
     master = graph_data.Master(id='ChromiumPerf').put()
@@ -69,22 +72,28 @@ class GraphCsvTest(testing_common.TestCase):
       test_container_key = utils.GetTestContainerKey(dom_test)
       for i in range(1, 50):
         graph_data.Row(
-            parent=test_container_key, id=i, value=float(i * 2), error=(i + 10),
+            parent=test_container_key,
+            id=i,
+            value=float(i * 2),
+            error=(i + 10),
             internal_only=True).put()
 
-  def _CheckGet(
-      self, result_query, expected_result, whitelisted_ip='', status=200):
+  def _CheckGet(self,
+                result_query,
+                expected_result,
+                allowlisted_ip='',
+                status=200):
     """Asserts that the given query has the given CSV result.
 
     Args:
       result_query: The path and query string to request.
       expected_result: The expected table of values (list of lists).
-      whitelisted_ip: The IP address to set as request remote address.
+      allowlisted_ip: The IP address to set as request remote address.
     """
     response_rows = []
     response = self.testapp.get(
         result_query,
-        extra_environ={'REMOTE_ADDR': whitelisted_ip},
+        extra_environ={'REMOTE_ADDR': allowlisted_ip},
         status=status)
     if status != 200:
       return
@@ -105,8 +114,8 @@ class GraphCsvTest(testing_common.TestCase):
 
   def testPost(self):
     self._AddMockData()
-    response = self.testapp.post(
-        '/graph_csv?', {'test_path': 'ChromiumPerf/win7/dromaeo/dom'})
+    response = self.testapp.post('/graph_csv?',
+                                 {'test_path': 'ChromiumPerf/win7/dromaeo/dom'})
     for index, row, in enumerate(csv.reader(StringIO.StringIO(response.body))):
       # Skip the headers
       if index > 0:
@@ -164,36 +173,30 @@ class GraphCsvTest(testing_common.TestCase):
     ]
     self._CheckGet(query, expected)
 
-  def testGet_WithNonInternalUserAndWhitelistedIP(self):
+  def testGet_WithNonInternalUserAndAllowlistedIP(self):
     self._AddMockInternalData()
     self.UnsetCurrentUser()
     datastore_hooks.InstallHooks()
-    testing_common.SetIpWhitelist(['123.45.67.89'])
+    testing_common.SetIpAllowlist(['123.45.67.89'])
     query = '/graph_csv?test_path=ChromiumPerf/win7/dromaeo/dom&num_points=3'
     expected = [['revision', 'value']]
     self._CheckGet(query, expected, status=500)
 
-  def testGet_WhitelistedIPOnly(self):
+  def testGet_AllowlistedIPOnly(self):
     self.PatchDatastoreHooksRequest('123.45.67.89')
     self._AddMockInternalData()
     self.UnsetCurrentUser()
     datastore_hooks.InstallHooks()
-    testing_common.SetIpWhitelist(['123.45.67.89'])
+    testing_common.SetIpAllowlist(['123.45.67.89'])
     query = '/graph_csv?test_path=ChromiumPerf/win7/dromaeo/dom&num_points=3'
-    expected = [
-        ['revision', 'value'],
-        ['47', '94.0'],
-        ['48', '96.0'],
-        ['49', '98.0']
-    ]
-    self._CheckGet(query, expected, whitelisted_ip='123.45.67.89')
+    expected = [['revision', 'value'], ['47', '94.0'], ['48', '96.0'],
+                ['49', '98.0']]
+    self._CheckGet(query, expected, allowlisted_ip='123.45.67.89')
 
   def testGet_NoTestPathGiven_GivesError(self):
-    testing_common.SetIpWhitelist(['123.45.67.89'])
+    testing_common.SetIpAllowlist(['123.45.67.89'])
     self.testapp.get(
-        '/graph_csv',
-        extra_environ={'REMOTE_ADDR': '123.45.67.89'},
-        status=400)
+        '/graph_csv', extra_environ={'REMOTE_ADDR': '123.45.67.89'}, status=400)
 
 
 if __name__ == '__main__':

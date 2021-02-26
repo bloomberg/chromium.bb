@@ -172,6 +172,15 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
   // Overridden by tests in spellcheck_provider_test.cc (FakeSpellCheck class).
   virtual size_t EnabledLanguageCount();
 
+  // spellcheck::mojom::SpellChecker:
+  // Initialize the SpellCheck object with data provided by the browser process.
+  // Method is public since called directly in
+  // SpellCheckProvider::OnRespondInitializeDictionaries.
+  void Initialize(
+      std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries,
+      const std::vector<std::string>& custom_words,
+      bool enable) override;
+
  private:
    friend class SpellCheckTest;
    friend class FakeSpellCheck;
@@ -180,10 +189,6 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
        RequestSpellCheckMultipleTimesWithoutInitialization);
 
    // spellcheck::mojom::SpellChecker:
-   void Initialize(
-       std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries,
-       const std::vector<std::string>& custom_words,
-       bool enable) override;
    void CustomDictionaryChanged(
        const std::vector<std::string>& words_added,
        const std::vector<std::string>& words_removed) override;
@@ -191,6 +196,10 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
    // Performs dictionary update notification.
    void NotifyDictionaryObservers(
        const blink::WebVector<blink::WebString>& words_added);
+
+   // Returns whether a word is in the script of one of the enabled spellcheck
+   // languages.
+   bool IsWordInSupportedScript(const base::string16& word) const;
 
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
    // Posts delayed spellcheck task and clear it if any.

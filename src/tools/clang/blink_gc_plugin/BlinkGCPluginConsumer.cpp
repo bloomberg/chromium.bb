@@ -88,7 +88,10 @@ BlinkGCPluginConsumer::BlinkGCPluginConsumer(
   options_.checked_namespaces.insert("blink");
 
   // Ignore GC implementation files.
-  options_.ignored_directories.push_back("/heap/");
+  options_.ignored_directories.push_back(
+      "third_party/blink/renderer/platform/heap/");
+  options_.allowed_directories.push_back(
+      "third_party/blink/renderer/platform/heap/test/");
 }
 
 void BlinkGCPluginConsumer::HandleTranslationUnit(ASTContext& context) {
@@ -633,9 +636,14 @@ bool BlinkGCPluginConsumer::InIgnoredDirectory(RecordInfo* info) {
 #if defined(_WIN32)
   std::replace(filename.begin(), filename.end(), '\\', '/');
 #endif
-  for (const auto& dir : options_.ignored_directories)
-    if (filename.find(dir) != std::string::npos)
+  for (const auto& ignored_dir : options_.ignored_directories)
+    if (filename.find(ignored_dir) != std::string::npos) {
+      for (const auto& allowed_dir : options_.allowed_directories) {
+        if (filename.find(allowed_dir) != std::string::npos)
+          return false;
+      }
       return true;
+    }
   return false;
 }
 

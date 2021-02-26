@@ -5,7 +5,7 @@
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 
 #include "base/macros.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
@@ -65,11 +65,11 @@ class WindowedIncognitoMonitorTest : public testing::Test {
   size_t OpenBrowserWindow(bool incognito) {
     auto browser_window = std::make_unique<TestBrowserWindow>();
     Profile* browser_profile =
-        incognito ? profile_->GetOffTheRecordProfile() : profile_.get();
+        incognito ? profile_->GetPrimaryOTRProfile() : profile_.get();
     Browser::CreateParams params(browser_profile, true);
     params.type = Browser::TYPE_NORMAL;
     params.window = browser_window.get();
-    auto browser = std::make_unique<Browser>(params);
+    auto browser = std::unique_ptr<Browser>(Browser::Create(params));
 
     size_t handle = next_browser_id++;
     open_browsers_[handle] =

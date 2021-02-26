@@ -6,6 +6,29 @@ module ui.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 
+enum TextInputMode {
+  kDefault,
+  kNone,
+  kText,
+  kTel,
+  kUrl,
+  kEmail,
+  kNumeric,
+  kDecimal,
+  kSearch,
+};
+
+enum TextInputAction {
+  kDefault,
+  kEnter,
+  kDone,
+  kGo,
+  kNext,
+  kPrevious,
+  kSearch,
+  kSend,
+};
+
 // Text input type which is based on blink::WebTextInputType.
 enum TextInputType {
   NONE,
@@ -34,6 +57,7 @@ enum ImeTextSpanType {
   kComposition,
   kSuggestion,
   kMisspellingSuggestion,
+  kAutocorrect,
 };
 
 // This enum represents the thickness of an underline segment of text,
@@ -76,5 +100,6 @@ struct ImeTextSpan {
   uint32 background_color;
   uint32 suggestion_highlight_color;
   bool remove_on_finish_composing;
+  bool interim_char_selection;
   array<string> suggestions;
 };

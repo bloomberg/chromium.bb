@@ -60,7 +60,7 @@ def Generate(src_defs, dst_header, dst_server, sdk, mig_path, clang_path,
     # Write out to a temporary file.
     (nacl_exc_defs, nacl_exc_defs_path) = tempfile.mkstemp(
         suffix='.defs', prefix='run_mig')
-    os.write(nacl_exc_defs, defs)
+    os.write(nacl_exc_defs, defs.encode('utf-8'))
     os.close(nacl_exc_defs)
 
     # Run the 'Mach Interface Generator'.

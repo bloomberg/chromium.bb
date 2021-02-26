@@ -43,19 +43,20 @@ def enable_native_ansi():
 
 
 def init():
-  # should_wrap instructs colorama to wrap stdout/stderr with an ASNI colorcode
+  # should_wrap instructs colorama to wrap stdout/stderr with an ANSI colorcode
   # interpreter that converts them to SetConsoleTextAttribute calls. This only
   # should be True in cases where we're connected to cmd.exe's console. Setting
   # this to True on non-windows systems has no effect.
   should_wrap = False
   global IS_TTY, OUT_TYPE
   IS_TTY = sys.stdout.isatty()
+  is_windows = sys.platform.startswith('win')
   if IS_TTY:
     # Yay! We detected a console in the normal way. It doesn't really matter
     # if it's windows or not, we win.
     OUT_TYPE = 'console'
     should_wrap = True
-  elif sys.platform.startswith('win'):
+  elif is_windows:
     # assume this is some sort of file
     OUT_TYPE = 'file (win)'
 
@@ -117,9 +118,9 @@ def init():
     # This is non-windows, so we trust isatty.
     OUT_TYPE = 'pipe or file'
 
-  # Enable native ANSI color codes on Windows 10.
-  if IS_TTY and platform.release() == '10':
-    if enable_native_ansi():
+  if IS_TTY and is_windows:
+    # Wrapping may cause errors on some Windows versions (crbug.com/1114548).
+    if platform.release() != '10' or enable_native_ansi():
       should_wrap = False
 
   colorama.init(wrap=should_wrap)

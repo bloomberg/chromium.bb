@@ -47,10 +47,6 @@ namespace trace_to_text {
 
 namespace {
 
-using ::protozero::proto_utils::kMessageLengthFieldSize;
-using ::protozero::proto_utils::MakeTagLengthDelimited;
-using ::protozero::proto_utils::WriteVarInt;
-
 struct View {
   const char* type;
   const char* unit;
@@ -68,18 +64,19 @@ void MaybeDemangle(std::string* name) {
 }
 
 const View kSpaceView{"space", "bytes", "SUM(size)", nullptr};
-const View kAllocSpaceView{"alloc_space", "bytes", "SUM(size)", "size > 0"};
+const View kAllocSpaceView{"alloc_space", "bytes", "SUM(size)", "size >= 0"};
 const View kAllocObjectsView{"alloc_objects", "count", "sum(count)",
-                             "size > 0"};
+                             "size >= 0"};
 const View kObjectsView{"objects", "count", "SUM(count)", nullptr};
 
 const View kViews[] = {kAllocObjectsView, kObjectsView, kAllocSpaceView,
                        kSpaceView};
 
-using Iterator = trace_processor::TraceProcessor::Iterator;
+using trace_processor::Iterator;
 
 constexpr const char* kQueryProfiles =
-    "select distinct hpa.upid, hpa.ts, p.pid from heap_profile_allocation hpa, "
+    "select distinct hpa.upid, hpa.ts, p.pid, hpa.heap_name "
+    "from heap_profile_allocation hpa, "
     "process p where p.upid = hpa.upid;";
 
 int64_t GetStatsInt(trace_processor::TraceProcessor* tp,
@@ -221,7 +218,8 @@ class GProfileBuilder {
 
   std::vector<Iterator> BuildViewIterators(trace_processor::TraceProcessor* tp,
                                            uint64_t upid,
-                                           uint64_t ts) {
+                                           uint64_t ts,
+                                           const char* heap_name) {
     std::vector<Iterator> view_its;
     for (size_t i = 0; i < base::ArraySize(kViews); ++i) {
       const View& v = kViews[i];
@@ -232,6 +230,7 @@ class GProfileBuilder {
       query += "WHERE hpa.callsite_id >= 0 ";
       query += "AND hpa.upid = " + std::to_string(upid) + " ";
       query += "AND hpa.ts <= " + std::to_string(ts) + " ";
+      query += "AND hpa.heap_name = '" + std::string(heap_name) + "' ";
       if (v.filter)
         query += "AND " + std::string(v.filter) + " ";
       query += "GROUP BY hpa.callsite_id;";
@@ -258,15 +257,16 @@ class GProfileBuilder {
       }
 
       if (!all_next) {
-        PERFETTO_DCHECK(!any_next);
+        PERFETTO_CHECK(!any_next);
         break;
       }
 
       auto* gsample = result_->add_sample();
       protozero::PackedVarInt sample_values;
+      int64_t callstack_id = -1;
       for (size_t i = 0; i < base::ArraySize(kViews); ++i) {
-        int64_t callstack_id = (*view_its)[i].Get(0).AsLong();
         if (i == 0) {
+          callstack_id = (*view_its)[i].Get(0).AsLong();
           auto frames = FramesForCallstack(callstack_id);
           if (frames.empty())
             return false;
@@ -289,7 +289,7 @@ class GProfileBuilder {
   }
 
   bool WriteMappings(trace_processor::TraceProcessor* tp,
-                     const std::set<int64_t> seen_mappings) {
+                     const std::set<int64_t>& seen_mappings) {
     Iterator mapping_it = tp->ExecuteQuery(
         "SELECT id, exact_offset, start, end, name "
         "FROM stack_profile_mapping;");
@@ -366,7 +366,8 @@ class GProfileBuilder {
                    std::set<int64_t>* seen_mappings,
                    std::set<int64_t>* seen_symbol_ids) {
     Iterator frame_it = tp->ExecuteQuery(
-        "SELECT spf.id, spf.name, spf.mapping, spf.rel_pc, spf.symbol_set_id "
+        "SELECT spf.id, IFNULL(spf.deobfuscated_name, spf.name), spf.mapping, "
+        "spf.rel_pc, spf.symbol_set_id "
         "FROM stack_profile_frame spf;");
     size_t frames_no = 0;
     while (frame_it.Next()) {
@@ -446,12 +447,14 @@ class GProfileBuilder {
 
   std::string GenerateGProfile(trace_processor::TraceProcessor* tp,
                                uint64_t upid,
-                               uint64_t ts) {
+                               uint64_t ts,
+                               const char* heap_name) {
     std::set<int64_t> seen_frames;
     std::set<int64_t> seen_mappings;
     std::set<int64_t> seen_symbol_ids;
 
-    std::vector<Iterator> view_its = BuildViewIterators(tp, upid, ts);
+    std::vector<Iterator> view_its =
+        BuildViewIterators(tp, upid, ts, heap_name);
 
     WriteSampleTypes();
     if (!WriteAllocations(&view_its, &seen_frames))
@@ -557,6 +560,7 @@ bool TraceToPprof(trace_processor::TraceProcessor* tp,
     uint64_t upid = static_cast<uint64_t>(it.Get(0).AsLong());
     uint64_t ts = static_cast<uint64_t>(it.Get(1).AsLong());
     uint64_t profile_pid = static_cast<uint64_t>(it.Get(2).AsLong());
+    const char* heap_name = it.Get(3).AsString();
     if ((pid > 0 && profile_pid != pid) ||
         (!timestamps.empty() && std::find(timestamps.begin(), timestamps.end(),
                                           ts) == timestamps.end())) {
@@ -571,14 +575,17 @@ bool TraceToPprof(trace_processor::TraceProcessor* tp,
     Iterator pid_it = tp->ExecuteQuery(pid_query);
     PERFETTO_CHECK(pid_it.Next());
 
-    std::string profile_proto = builder.GenerateGProfile(tp, upid, ts);
-    output->emplace_back(SerializedProfile{
-        static_cast<uint64_t>(pid_it.Get(0).AsLong()), profile_proto});
+    std::string profile_proto =
+        builder.GenerateGProfile(tp, upid, ts, heap_name);
+    output->emplace_back(
+        SerializedProfile{static_cast<uint64_t>(pid_it.Get(0).AsLong()),
+                          heap_name, profile_proto});
   }
   if (any_fail) {
     PERFETTO_ELOG(
         "One or more of your profiles had an issue. Please consult "
-        "https://docs.perfetto.dev/#/heapprofd?id=troubleshooting.");
+        "https://perfetto.dev/docs/data-sources/"
+        "native-heap-profiler#troubleshooting");
   }
   if (!it.Status().ok()) {
     PERFETTO_DFATAL_OR_ELOG("Invalid iterator: %s",

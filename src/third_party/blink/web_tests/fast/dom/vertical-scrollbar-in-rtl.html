@@ -49,17 +49,18 @@
 
 
                 // Test zooming wont reset scroll position.
-                if (window.eventSender) {
+                if (window.testRunner) {
                     window.scrollTo(expectedScrollX, expectedScrollY);
-                    eventSender.zoomPageIn();
-                    eventSender.zoomPageOut();
+                    testRunner.zoomPageIn();
+                    testRunner.zoomPageOut();
                     assertClose("zoom in and out preserve scroll position", window.scrollY, expectedScrollY);
                 }
 
                 // Test resize wont reset scroll position.
-                window.resizeTo(window.innerWidth, 1000);
+                const oldHeight = window.innerHeight;
+                window.resizeTo(window.innerWidth, oldHeight - 100);
                 window.scrollTo(expectedScrollX, expectedScrollY);
-                window.resizeTo(window.innerWidth, 2000);
+                window.resizeTo(window.innerWidth, oldHeight);
                 assertEqual("resize preserves scroll position", window.scrollY, expectedScrollY);
 
                 // Test HOME/END operation.

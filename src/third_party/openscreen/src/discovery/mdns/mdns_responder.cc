@@ -4,6 +4,7 @@
 
 #include "discovery/mdns/mdns_responder.h"
 
+#include <string>
 #include <utility>
 
 #include "discovery/common/config.h"
@@ -24,7 +25,10 @@ const std::array<std::string, 3> kServiceEnumerationDomainLabels{
 
 enum AddResult { kNonePresent = 0, kAdded, kAlreadyKnown };
 
-std::chrono::seconds GetTtlForRecordType(DnsType type) {
+std::chrono::seconds GetTtlForNsecTargetingType(DnsType type) {
+  // NOTE: A 'default' switch statement has intentionally been avoided below to
+  // enforce that new DnsTypes added must be added below through a compile-time
+  // check.
   switch (type) {
     case DnsType::kA:
       return kARecordTtl;
@@ -40,17 +44,23 @@ std::chrono::seconds GetTtlForRecordType(DnsType type) {
       // If no records are present, re-querying should happen at the minimum
       // of any record that might be retrieved at that time.
       return kSrvRecordTtl;
-    default:
-      OSP_NOTREACHED();
-      return std::chrono::seconds{0};
+    case DnsType::kNSEC:
+    case DnsType::kOPT:
+      // Neither of these types should ever be hit. We should never be creating
+      // an NSEC record for type NSEC, and OPT record querying is not supported,
+      // so creating NSEC records for type OPT is not valid.
+      break;
   }
+
+  OSP_NOTREACHED() << "NSEC records do not support type " << type;
+  return std::chrono::seconds(0);
 }
 
 MdnsRecord CreateNsecRecord(DomainName target_name,
                             DnsType target_type,
                             DnsClass target_class) {
   auto rdata = NsecRecordRdata(target_name, target_type);
-  std::chrono::seconds ttl = GetTtlForRecordType(target_type);
+  std::chrono::seconds ttl = GetTtlForNsecTargetingType(target_type);
   return MdnsRecord(std::move(target_name), DnsType::kNSEC, target_class,
                     RecordType::kUnique, ttl, std::move(rdata));
 }
@@ -185,14 +195,12 @@ void ApplyQueryResults(MdnsMessage* message,
                              DnsType::kAAAA, clazz, target == domain);
       }
     }
-  }
-
-  // Per RFC 6763 section 12.2, when querying for an SRV record, all address
-  // records of type A and AAAA should be added to the additional records
-  // section. Per RFC 6762 section 6.1, if these records are not present and
-  // their name and class match that which is being queried for, a negative
-  // response NSEC record may be added to show their non-existence.
-  else if (type == DnsType::kSRV) {
+  } else if (type == DnsType::kSRV) {
+    // Per RFC 6763 section 12.2, when querying for an SRV record, all address
+    // records of type A and AAAA should be added to the additional records
+    // section. Per RFC 6762 section 6.1, if these records are not present and
+    // their name and class match that which is being queried for, a negative
+    // response NSEC record may be added to show their non-existence.
     for (const auto& srv_record : message->answers()) {
       OSP_DCHECK(srv_record.dns_type() == DnsType::kSRV);
 
@@ -203,13 +211,11 @@ void ApplyQueryResults(MdnsMessage* message,
       AddAdditionalRecords(message, record_handler, target, known_answers,
                            DnsType::kAAAA, clazz, target == domain);
     }
-  }
-
-  // Per RFC 6762 section 6.2, when querying for an address record of type A or
-  // AAAA, the record of the opposite type should be added to the additional
-  // records section if present. Else, a negative response NSEC record should be
-  // added to show its non-existence.
-  else if (type == DnsType::kA) {
+  } else if (type == DnsType::kA) {
+    // Per RFC 6762 section 6.2, when querying for an address record of type A
+    // or AAAA, the record of the opposite type should be added to the
+    // additional records section if present. Else, a negative response NSEC
+    // record should be added to show its non-existence.
     AddAdditionalRecords(message, record_handler, domain, known_answers,
                          DnsType::kAAAA, clazz, true);
   } else if (type == DnsType::kAAAA) {
@@ -397,7 +403,7 @@ void MdnsResponder::OnMessageReceived(const MdnsMessage& message,
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   OSP_DCHECK(message.type() == MessageType::Query);
 
-  // Handle multi-packet known answer suppression
+  // Handle multi-packet known answer suppression.
   if (IsMultiPacketTruncatedQueryMessage(message)) {
     // If there have been an excessive number of known answers received already,
     // then skip them. This would most likely mean that:
@@ -516,7 +522,7 @@ void MdnsResponder::ProcessQueries(
   for (const auto& question : questions) {
     OSP_DVLOG << "\tProcessing mDNS Query for domain: '"
               << question.name().ToString() << "', type: '"
-              << question.dns_type() << "'";
+              << question.dns_type() << "' from '" << src << "'";
 
     // NSEC records should not be queried for.
     if (question.dns_type() == DnsType::kNSEC) {
@@ -589,18 +595,25 @@ void MdnsResponder::SendResponse(
     // method is called. Exclusive ownership cannot be gained for a record which
     // has previously been published, and if this host is the exclusive owner
     // then this method will have been called without any delay on the task
-    // runner
+    // runner.
     ApplyQueryResults(&message, record_handler_, question.name(), known_answers,
                       question.dns_type(), question.dns_class(),
                       is_exclusive_owner);
   }
 
   // Send the response only if it contains answers to the query.
+  OSP_DVLOG << "\tCompleted Processing mDNS Query for domain: '"
+            << question.name().ToString() << "', type: '" << question.dns_type()
+            << "', with " << message.answers().size() << " results:";
+  for (const auto& record : message.answers()) {
+    OSP_DVLOG << "\t\tanswer (" << record.ToString() << ")";
+  }
+  for (const auto& record : message.additional_records()) {
+    OSP_DVLOG << "\t\tadditional record ('" << record.ToString() << ")";
+  }
+
   if (!message.answers().empty()) {
-    OSP_DVLOG << "\tmDNS Query processed and response sent!";
     send_response(message);
-  } else {
-    OSP_DVLOG << "\tmDNS Query processed and no response sent!";
   }
 }
 

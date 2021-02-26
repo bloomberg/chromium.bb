@@ -12,14 +12,19 @@
 #include "chrome/grit/dev_ui_browser_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace {
 
 content::WebUIDataSource* CreateSupervisedUserInternalsHTMLSource() {
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUISupervisedUserInternalsHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types jstemplate;");
 
   source->AddResourcePath("supervised_user_internals.js",
                           IDR_SUPERVISED_USER_INTERNALS_JS);

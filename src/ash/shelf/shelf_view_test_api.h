@@ -79,6 +79,9 @@ class ShelfViewTestAPI {
   // Close any open app list or context menu; returns true if a menu was closed.
   bool CloseMenu();
 
+  // The union of all visible shelf item bounds.
+  const gfx::Rect& visible_shelf_item_bounds_union() const;
+
   // An accessor for |shelf_view|.
   ShelfView* shelf_view() { return shelf_view_; }
 
@@ -109,6 +112,12 @@ class ShelfViewTestAPI {
 
   // Set callback which will run after showing shelf context menu.
   void SetShelfContextMenuCallback(base::RepeatingClosure closure);
+
+  // Returns |separator_index_|.
+  int GetSeparatorIndex() const;
+
+  // Checks whether the separator is visible or not.
+  bool IsSeparatorVisible() const;
 
  private:
   ShelfView* shelf_view_;

@@ -11,6 +11,7 @@ Polymer({
   is: 'settings-change-picture',
 
   behaviors: [
+    DeepLinkingBehavior,
     settings.RouteObserverBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
@@ -66,6 +67,16 @@ Polymer({
 
     /** @private */
     oldImageLabel_: String,
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () =>
+          new Set([chromeos.settings.mojom.Setting.kChangeDeviceAccountImage]),
+    },
   },
 
   listeners: {
@@ -104,15 +115,33 @@ Polymer({
         'profile-image-changed', this.receiveProfileImage_.bind(this));
     this.addWebUIListener(
         'camera-presence-changed', this.receiveCameraPresence_.bind(this));
+
+    // Initialize the announcer once.
+    Polymer.IronA11yAnnouncer.requestAvailability();
+  },
+
+  /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
+   */
+  beforeDeepLinkAttempt(settingId) {
+    assert(
+        settingId ===
+        chromeos.settings.mojom.Setting.kChangeDeviceAccountImage);
+
+    this.pictureList_.setFocus();
+    return false;
   },
 
 
   /** @protected */
   currentRouteChanged(newRoute) {
-    if (newRoute == settings.routes.CHANGE_PICTURE) {
+    if (newRoute === settings.routes.CHANGE_PICTURE) {
       this.browserProxy_.initialize();
       this.browserProxy_.requestSelectedImage();
       this.pictureList_.setFocus();
+      this.attemptDeepLink();
     } else {
       // Ensure we deactivate the camera when we navigate away.
       this.selectedItem_ = null;
@@ -233,8 +262,9 @@ Polymer({
     this.browserProxy_.photoTaken(event.detail.photoDataUrl);
     this.pictureList_.setOldImageUrl(event.detail.photoDataUrl);
     this.pictureList_.setFocus();
-    announceAccessibleMessage(
-        loadTimeData.getString('photoCaptureAccessibleText'));
+    this.fire(
+        'iron-announce',
+        {text: loadTimeData.getString('photoCaptureAccessibleText')});
   },
 
   /**
@@ -243,8 +273,10 @@ Polymer({
    */
   onSwitchMode_(event) {
     const videomode = event.detail;
-    announceAccessibleMessage(this.i18n(
-        videomode ? 'videoModeAccessibleText' : 'photoModeAccessibleText'));
+    this.fire('iron-announce', {
+      text: this.i18n(
+          videomode ? 'videoModeAccessibleText' : 'photoModeAccessibleText')
+    });
   },
 
   /**
@@ -267,7 +299,7 @@ Polymer({
     this.pictureList_.setOldImageUrl(CrPicture.kDefaultImageUrl);
     // Revert to profile image as we don't know what last used default image is.
     this.browserProxy_.selectProfileImage();
-    announceAccessibleMessage(this.i18n('photoDiscardAccessibleText'));
+    this.fire('iron-announce', {text: this.i18n('photoDiscardAccessibleText')});
   },
 
   /**
@@ -306,7 +338,7 @@ Polymer({
    */
   isAuthorCreditShown_(selectedItem) {
     return !!selectedItem &&
-        (selectedItem.dataset.type == CrPicture.SelectionTypes.DEFAULT ||
+        (selectedItem.dataset.type === CrPicture.SelectionTypes.DEFAULT ||
          (selectedItem.dataset.imageIndex !== undefined &&
           selectedItem.dataset.imageIndex >= 0));
   },

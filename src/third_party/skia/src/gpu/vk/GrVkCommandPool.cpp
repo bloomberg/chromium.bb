@@ -7,14 +7,12 @@
 
 #include "src/gpu/vk/GrVkCommandPool.h"
 
-#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/vk/GrVkCommandBuffer.h"
 #include "src/gpu/vk/GrVkGpu.h"
 
 GrVkCommandPool* GrVkCommandPool::Create(GrVkGpu* gpu) {
-    VkCommandPoolCreateFlags cmdPoolCreateFlags =
-            VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
-            VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    VkCommandPoolCreateFlags cmdPoolCreateFlags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
     if (gpu->protectedContext()) {
         cmdPoolCreateFlags |= VK_COMMAND_POOL_CREATE_PROTECTED_BIT;
     }
@@ -45,7 +43,9 @@ GrVkCommandPool::GrVkCommandPool(GrVkGpu* gpu, VkCommandPool commandPool,
                                  GrVkPrimaryCommandBuffer* primaryCmdBuffer)
         : GrVkManagedResource(gpu)
         , fCommandPool(commandPool)
-        , fPrimaryCommandBuffer(primaryCmdBuffer) {
+        , fPrimaryCommandBuffer(primaryCmdBuffer)
+        , fMaxCachedSecondaryCommandBuffers(
+                gpu->vkCaps().maxPerPoolCachedSecondaryCommandBuffers()) {
 }
 
 std::unique_ptr<GrVkSecondaryCommandBuffer> GrVkCommandPool::findOrCreateSecondaryCommandBuffer(
@@ -62,7 +62,13 @@ std::unique_ptr<GrVkSecondaryCommandBuffer> GrVkCommandPool::findOrCreateSeconda
 
 void GrVkCommandPool::recycleSecondaryCommandBuffer(GrVkSecondaryCommandBuffer* buffer) {
     std::unique_ptr<GrVkSecondaryCommandBuffer> scb(buffer);
-    fAvailableSecondaryBuffers.push_back(std::move(scb));
+    if (fAvailableSecondaryBuffers.count() < fMaxCachedSecondaryCommandBuffers) {
+        fAvailableSecondaryBuffers.push_back(std::move(scb));
+    } else {
+        VkCommandBuffer vkBuffer = buffer->vkCommandBuffer();
+        GR_VK_CALL(fGpu->vkInterface(),
+                   FreeCommandBuffers(fGpu->device(), fCommandPool, 1, &vkBuffer));
+    }
 }
 
 void GrVkCommandPool::close() {

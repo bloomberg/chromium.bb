@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
@@ -22,6 +23,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/omnibox/browser/url_index_private_data.h"
+#include "components/omnibox/common/omnibox_features.h"
 
 using in_memory_url_index::InMemoryURLIndexCacheItem;
 
@@ -160,20 +162,37 @@ void InMemoryURLIndex::OnURLVisited(history::HistoryService* history_service,
                                     const history::RedirectList& redirects,
                                     base::Time visit_time) {
   DCHECK_EQ(history_service_, history_service);
-  needs_to_be_cached_ |= private_data_->UpdateURL(history_service_,
-                                                  row,
-                                                  scheme_whitelist_,
-                                                  &private_data_tracker_);
+  // If |row| is not known to URLIndexPrivateData and the row is significant,
+  // URLIndexPrivateData will index it. When excluding visits from cct, the row
+  // may be significant, but not indexed. UpdateURL() does not have the full
+  // context to know it should not index the row (it lacks visits). If |row|
+  // has not been indexed, and the visit is from cct, we know it should not be
+  // indexed and should not call to UpdateURL().
+  if (!private_data_->IsUrlRowIndexed(row) &&
+      URLIndexPrivateData::ShouldExcludeBecauseOfCctTransition(transition)) {
+    return;
+  }
+  needs_to_be_cached_ |= private_data_->UpdateURL(
+      history_service_, row, scheme_whitelist_, &private_data_tracker_);
 }
 
 void InMemoryURLIndex::OnURLsModified(history::HistoryService* history_service,
-                                      const history::URLRows& changed_urls) {
+                                      const history::URLRows& changed_urls,
+                                      history::UrlsModifiedReason reason) {
   DCHECK_EQ(history_service_, history_service);
   for (const auto& row : changed_urls) {
-    needs_to_be_cached_ |= private_data_->UpdateURL(history_service_,
-                                                    row,
-                                                    scheme_whitelist_,
-                                                    &private_data_tracker_);
+    // When hiding visits from cct, don't add the entry just because the title
+    // changed. In other words, |row| may qualify (RowQualifiesAsSignificant),
+    // but not be indexed because all visits where excluded. In this case, the
+    // row won't be indexed and we shouldn't add just because the title
+    // changed.
+    if (base::FeatureList::IsEnabled(omnibox::kHideVisitsFromCct) &&
+        !private_data_->IsUrlRowIndexed(row) &&
+        reason == history::UrlsModifiedReason::kTitleChanged) {
+      continue;
+    }
+    needs_to_be_cached_ |= private_data_->UpdateURL(
+        history_service_, row, scheme_whitelist_, &private_data_tracker_);
   }
 }
 
@@ -203,9 +222,8 @@ void InMemoryURLIndex::OnURLsDeleted(
   // would be odd and confusing.  It's better to force a rebuild.
   base::FilePath path;
   if (needs_to_be_cached_ && GetCacheFilePath(&path))
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(base::IgnoreResult(base::DeleteFile), path, false));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(base::GetDeleteFileCallback(), path));
 }
 
 void InMemoryURLIndex::OnHistoryServiceLoaded(
@@ -232,6 +250,10 @@ bool InMemoryURLIndex::OnMemoryDump(
   auto* dump = process_memory_dump->CreateAllocatorDump(dump_name);
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes, res);
+
+  // TODO(https://crbug.com/1068883): Remove this code when the bug is fixed.
+  private_data_->OnMemoryAllocatorDump(dump);
+
   return true;
 }
 
@@ -240,6 +262,13 @@ bool InMemoryURLIndex::OnMemoryDump(
 void InMemoryURLIndex::PostRestoreFromCacheFileTask() {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("browser", "InMemoryURLIndex::PostRestoreFromCacheFileTask");
+
+  if (base::FeatureList::IsEnabled(
+          omnibox::kHistoryQuickProviderAblateInMemoryURLIndexCacheFile)) {
+    // To short circuit the cache, pretend we've failed to load it.
+    OnCacheLoadDone(nullptr);
+    return;
+  }
 
   base::FilePath path;
   if (!GetCacheFilePath(&path) || shutdown_) {
@@ -270,9 +299,8 @@ void InMemoryURLIndex::OnCacheLoadDone(
     base::FilePath path;
     if (!GetCacheFilePath(&path) || shutdown_)
       return;
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(base::IgnoreResult(base::DeleteFile), path, false));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(base::GetDeleteFileCallback(), path));
     if (history_service_->backend_loaded()) {
       ScheduleRebuildFromHistory();
     } else {
@@ -294,11 +322,16 @@ void InMemoryURLIndex::Shutdown() {
   if (!GetCacheFilePath(&path))
     return;
   private_data_tracker_.TryCancelAll();
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(
-                         &URLIndexPrivateData::WritePrivateDataToCacheFileTask),
-                     private_data_, path));
+
+  if (!base::FeatureList::IsEnabled(
+          omnibox::kHistoryQuickProviderAblateInMemoryURLIndexCacheFile)) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            base::IgnoreResult(
+                &URLIndexPrivateData::WritePrivateDataToCacheFileTask),
+            private_data_, path));
+  }
 #ifndef LEAK_SANITIZER
   // Intentionally create and then leak a scoped_refptr to private_data_. This
   // permanently raises the reference count so that the URLIndexPrivateData
@@ -351,6 +384,11 @@ void InMemoryURLIndex::RebuildFromHistory(
 // Saving to Cache -------------------------------------------------------------
 
 void InMemoryURLIndex::PostSaveToCacheFileTask() {
+  if (base::FeatureList::IsEnabled(
+          omnibox::kHistoryQuickProviderAblateInMemoryURLIndexCacheFile)) {
+    return;
+  }
+
   base::FilePath path;
   if (!GetCacheFilePath(&path))
     return;
@@ -368,9 +406,8 @@ void InMemoryURLIndex::PostSaveToCacheFileTask() {
         base::BindOnce(&InMemoryURLIndex::OnCacheSaveDone, AsWeakPtr()));
   } else {
     // If there is no data in our index then delete any existing cache file.
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(base::IgnoreResult(base::DeleteFile), path, false));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(base::GetDeleteFileCallback(), path));
   }
 }
 

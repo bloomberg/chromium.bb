@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
@@ -15,8 +15,10 @@
 #include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_uma.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
@@ -73,11 +75,12 @@ bool ShouldAttemptRestart() {
   return false;
 }
 
-// Returns the enterprise display domain after enrollment, or an empty string.
-std::string GetEnterpriseDisplayDomain() {
+// Returns the manager of the domain (either the domain name or the email of the
+// admin of the domain) after enrollment, or an empty string.
+std::string GetEnterpriseDomainManager() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->GetEnterpriseDisplayDomain();
+  return connector->GetEnterpriseDomainManager();
 }
 
 }  // namespace
@@ -91,6 +94,8 @@ std::string EnrollmentScreen::GetResultString(Result result) {
       return "Completed";
     case Result::BACK:
       return "Back";
+    case Result::SKIPPED_FOR_TESTS:
+      return BaseScreen::kNotApplicable;
   }
 }
 
@@ -197,6 +202,18 @@ void EnrollmentScreen::OnAuthCleared(const base::Closure& callback) {
   callback.Run();
 }
 
+bool EnrollmentScreen::MaybeSkip(WizardContext* context) {
+  VLOG(1) << "EnrollmentScreen::MaybeSkip("
+          << "config_.is_forced = " << config_.is_forced()
+          << "skip_to_login_for_tests = " << context->skip_to_login_for_tests
+          << ").";
+  if (context->skip_to_login_for_tests && !config_.is_forced()) {
+    exit_callback_.Run(Result::SKIPPED_FOR_TESTS);
+    return true;
+  }
+  return false;
+}
+
 void EnrollmentScreen::ShowImpl() {
   VLOG(1) << "Show enrollment screen";
   UMA(policy::kMetricEnrollmentTriggered);
@@ -283,7 +300,7 @@ void EnrollmentScreen::ProcessRetry() {
   ++num_retries_;
   LOG(WARNING) << "Enrollment retries: " << num_retries_
                << ", current auth: " << current_auth_ << ".";
-  Show();
+  Show(context());
 }
 
 void EnrollmentScreen::OnCancel() {
@@ -297,7 +314,7 @@ void EnrollmentScreen::OnCancel() {
   UMA(policy::kMetricEnrollmentCancelled);
 
   if (AdvanceToNextAuth()) {
-    Show();
+    Show(context());
     return;
   }
 
@@ -310,7 +327,7 @@ void EnrollmentScreen::OnCancel() {
     authpolicy_login_helper_->CancelRequestsAndRestart();
 
   // The callback passed to ClearAuth is called either immediately or gets
-  // wrapped in a callback bound to a weak pointer from |weak_factory_| - in
+  // wrapped in a callback bound to a weak pointer from `weak_factory_` - in
   // either case, passing exit_callback_ directly should be safe.
   ClearAuth(base::BindRepeating(
       exit_callback_, config_.is_forced() ? Result::BACK : Result::COMPLETED));
@@ -319,7 +336,7 @@ void EnrollmentScreen::OnCancel() {
 void EnrollmentScreen::OnConfirmationClosed() {
   VLOG(1) << "Confirmation closed.";
   // The callback passed to ClearAuth is called either immediately or gets
-  // wrapped in a callback bound to a weak pointer from |weak_factory_| - in
+  // wrapped in a callback bound to a weak pointer from `weak_factory_` - in
   // either case, passing exit_callback_ directly should be safe.
   ClearAuth(base::BindRepeating(exit_callback_, Result::COMPLETED));
 
@@ -343,7 +360,7 @@ void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
       current_auth_ == AUTH_ATTESTATION) {
     UMA(policy::kMetricEnrollmentDeviceNotPreProvisioned);
     if (AdvanceToNextAuth()) {
-      Show();
+      Show(context());
       return;
     }
   }
@@ -366,8 +383,8 @@ void EnrollmentScreen::OnDeviceEnrolled() {
   VLOG(1) << "Device enrolled.";
   enrollment_succeeded_ = true;
   // Some info to be shown on the success screen.
-  view_->SetEnterpriseDomainAndDeviceType(GetEnterpriseDisplayDomain(),
-                                          ui::GetChromeOSDeviceName());
+  view_->SetEnterpriseDomainInfo(GetEnterpriseDomainManager(),
+                                 ui::GetChromeOSDeviceName());
 
   enrollment_helper_->GetDeviceAttributeUpdatePermission();
 
@@ -413,8 +430,8 @@ void EnrollmentScreen::OnDeviceAttributeUpdatePermission(bool granted) {
 
 void EnrollmentScreen::OnRestoreAfterRollbackCompleted() {
   // Pass the enterprise domain and the device type to be shown.
-  view_->SetEnterpriseDomainAndDeviceType(GetEnterpriseDisplayDomain(),
-                                          ui::GetChromeOSDeviceName());
+  view_->SetEnterpriseDomainInfo(GetEnterpriseDomainManager(),
+                                 ui::GetChromeOSDeviceName());
   // Show the success screen
   StartupUtils::MarkDeviceRegistered(
       base::BindOnce(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
@@ -444,15 +461,15 @@ void EnrollmentScreen::ShowAttributePromptScreen() {
   std::string asset_id;
   std::string location;
 
-  if (GetConfiguration()) {
-    auto* asset_id_value = GetConfiguration()->FindKeyOfType(
+  if (!context()->configuration.DictEmpty()) {
+    auto* asset_id_value = context()->configuration.FindKeyOfType(
         configuration::kEnrollmentAssetId, base::Value::Type::STRING);
     if (asset_id_value) {
       VLOG(1) << "Using Asset ID from configuration "
               << asset_id_value->GetString();
       asset_id = asset_id_value->GetString();
     }
-    auto* location_value = GetConfiguration()->FindKeyOfType(
+    auto* location_value = context()->configuration.FindKeyOfType(
         configuration::kEnrollmentLocation, base::Value::Type::STRING);
     if (location_value) {
       VLOG(1) << "Using Location from configuration "
@@ -470,8 +487,8 @@ void EnrollmentScreen::ShowAttributePromptScreen() {
     location = policy->annotated_location();
   }
 
-  if (GetConfiguration()) {
-    auto* auto_attributes = GetConfiguration()->FindKeyOfType(
+  if (!context()->configuration.DictEmpty()) {
+    auto* auto_attributes = context()->configuration.FindKeyOfType(
         configuration::kEnrollmentAutoAttributes, base::Value::Type::BOOLEAN);
     if (auto_attributes && auto_attributes->GetBool()) {
       VLOG(1) << "Automatically accept attributes";

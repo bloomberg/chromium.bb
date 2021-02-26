@@ -11,6 +11,10 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#include <linux/input.h>
+#endif
+
 namespace ui {
 
 namespace {
@@ -20,17 +24,17 @@ namespace {
 #if defined(OS_WIN)
 #define DOM_CODE(usb, evdev, xkb, win, mac, code, id) \
   { usb, win, code }
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define DOM_CODE(usb, evdev, xkb, win, mac, code, id) \
   { usb, xkb, code }
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #define DOM_CODE(usb, evdev, xkb, win, mac, code, id) \
   { usb, mac, code }
 #elif defined(OS_ANDROID)
 #define DOM_CODE(usb, evdev, xkb, win, mac, code, id) \
   { usb, evdev, code }
 #elif defined(OS_FUCHSIA)
-// TODO(https://bugs.fuchsia.com/23982): Fuchsia currently delivers events
+// TODO(https://crbug.com/1107418): Fuchsia currently delivers events
 // with a USB Code but no Page specified, so only map |native_keycode| for
 // Keyboard Usage Page codes, for now.
 inline constexpr uint32_t CodeIfOnKeyboardPage(uint32_t usage) {
@@ -44,7 +48,7 @@ inline constexpr uint32_t CodeIfOnKeyboardPage(uint32_t usage) {
 #else
 #error Unsupported platform
 #endif
-#define DOM_CODE_DECLARATION const KeycodeMapEntry kDomCodeMappings[] =
+#define DOM_CODE_DECLARATION constexpr KeycodeMapEntry kDomCodeMappings[] =
 #include "ui/events/keycodes/dom/dom_code_data.inc"
 #undef DOM_CODE
 #undef DOM_CODE_DECLARATION
@@ -55,13 +59,53 @@ struct DomKeyMapEntry {
   const char* string;
 };
 
-#define DOM_KEY_MAP_DECLARATION const DomKeyMapEntry kDomKeyMappings[] =
+#define DOM_KEY_MAP_DECLARATION constexpr DomKeyMapEntry kDomKeyMappings[] =
 #define DOM_KEY_UNI(key, id, value) {DomKey::id, key}
 #define DOM_KEY_MAP(key, id, value) {DomKey::id, key}
 #include "ui/events/keycodes/dom/dom_key_data.inc"
 #undef DOM_KEY_MAP_DECLARATION
 #undef DOM_KEY_MAP
 #undef DOM_KEY_UNI
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+
+// The offset between XKB Keycode and evdev code.
+constexpr int kXkbKeycodeOffset = 8;
+
+// TODO(crbug.com/1135034): After migrating native code for
+// these platforms from XKB to evdev, use XKB_INVALID_KEYCODE
+// (=0xFFFFFFFF) to represent invalid XKB keycode.
+// Currently, 0 is returned for backward compatibility.
+
+// Converts XKB keycode to evdev code, based on the mapping
+// usually available at /usr/share/X11/xkb/keycodes/evdev.
+// See also
+// https://xkbcommon.org/doc/current/xkbcommon_8h.html#ac29aee92124c08d1953910ab28ee1997
+// for the reference of the history of key mapping.
+// Returns KEY_RESERVED for unknown XKB keycode mapping.
+int XkbKeycodeToEvdevCode(uint32_t xkb_keycode) {
+  // There's no mapping from XKB keycode in range [0-7] (inclusive)
+  // to evdev. Return KEY_RESERVED as an error.
+  if (xkb_keycode < kXkbKeycodeOffset)
+    return KEY_RESERVED;
+  return static_cast<int>(xkb_keycode - kXkbKeycodeOffset);
+}
+
+// Converts evdev code into XKB keycode.
+// Returns KeycodeConverter::InvalidNativeKeycode() if the given code is in
+// the invalid range or KEY_RESERVED.
+uint32_t EvdevCodeToXkbKeycode(int evdev_code) {
+  if (evdev_code < 0 || evdev_code > KEY_MAX || evdev_code == KEY_RESERVED)
+    return KeycodeConverter::InvalidNativeKeycode();
+
+  // TODO(crbug.com/1135034): Move this to EvdevCodeToDomCode on
+  // migration.
+  if (evdev_code == KEY_PLAYCD)
+    evdev_code = KEY_PLAY;
+  return static_cast<uint32_t>(evdev_code + kXkbKeycodeOffset);
+}
+
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -103,6 +147,36 @@ DomCode KeycodeConverter::NativeKeycodeToDomCode(int native_keycode) {
 int KeycodeConverter::DomCodeToNativeKeycode(DomCode code) {
   return UsbKeycodeToNativeKeycode(static_cast<uint32_t>(code));
 }
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+// static
+DomCode KeycodeConverter::XkbKeycodeToDomCode(uint32_t xkb_keycode) {
+  // Currently XKB keycode is the native keycode.
+  // TODO(crbug.com/1135034): Replace with evdev.
+  return NativeKeycodeToDomCode(static_cast<int>(xkb_keycode));
+}
+
+// static
+uint32_t KeycodeConverter::DomCodeToXkbKeycode(DomCode code) {
+  // Currently XKB keycode is the native keycode.
+  // TODO(crbug.com/1135034): Replace with evdev.
+  return static_cast<uint32_t>(DomCodeToNativeKeycode(code));
+}
+
+// static
+DomCode KeycodeConverter::EvdevCodeToDomCode(int evdev_code) {
+  // Currently XKB keycode is the native keycode.
+  // TODO(crbug.com/1135034): Replace with evdev.
+  return XkbKeycodeToDomCode(EvdevCodeToXkbKeycode(evdev_code));
+}
+
+// static
+int KeycodeConverter::DomCodeToEvdevCode(DomCode code) {
+  // Currently XKB keycode is the native keycode.
+  // TODO(crbug.com/1135034): Replace with evdev.
+  return XkbKeycodeToEvdevCode(DomCodeToXkbKeycode(code));
+}
+#endif
 
 // static
 DomCode KeycodeConverter::CodeStringToDomCode(const std::string& code) {
@@ -269,7 +343,7 @@ int KeycodeConverter::UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
   // Deal with some special-cases that don't fit the 1:1 mapping.
   if (usb_keycode == 0x070032)  // non-US hash.
     usb_keycode = 0x070031;     // US backslash.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (usb_keycode == 0x070046) // PrintScreen.
     usb_keycode = 0x070068; // F13.
 #endif

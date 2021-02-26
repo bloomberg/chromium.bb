@@ -39,11 +39,12 @@ class GraphicsContext;
 class WebMouseEvent;
 
 class CORE_EXPORT ScrollbarTheme {
-  DISALLOW_COPY_AND_ASSIGN(ScrollbarTheme);
   USING_FAST_MALLOC(ScrollbarTheme);
 
  public:
   ScrollbarTheme() = default;
+  ScrollbarTheme(const ScrollbarTheme&) = delete;
+  ScrollbarTheme& operator=(const ScrollbarTheme&) = delete;
   virtual ~ScrollbarTheme() = default;
 
   // If true, then scrollbars with this theme will be painted every time
@@ -60,14 +61,8 @@ class CORE_EXPORT ScrollbarTheme {
 
   ScrollbarPart HitTestRootFramePosition(const Scrollbar&, const IntPoint&);
 
-  // This returns a fixed value regardless of device-scale-factor.
-  // This returns thickness when scrollbar is painted.  i.e. It's not 0 even in
-  // overlay scrollbar mode.
-  // See also Scrollbar::scrollbarThickness().
-  virtual int ScrollbarThickness(ScrollbarControlSize = kRegularScrollbar) {
-    return 0;
-  }
-  virtual int ScrollbarMargin() const { return 0; }
+  virtual int ScrollbarThickness(float scale_from_dip) { return 0; }
+  virtual int ScrollbarMargin(float scale_from_dip) const { return 0; }
 
   virtual bool IsSolidColor() const { return false; }
   virtual bool UsesOverlayScrollbars() const { return false; }
@@ -102,7 +97,7 @@ class CORE_EXPORT ScrollbarTheme {
                                  const Scrollbar* vertical_scrollbar,
                                  const DisplayItemClient&,
                                  const IntRect& corner_rect,
-                                 WebColorScheme color_scheme);
+                                 mojom::blink::ColorScheme color_scheme);
   virtual void PaintTickmarks(GraphicsContext&,
                               const Scrollbar&,
                               const IntRect&);
@@ -120,6 +115,7 @@ class CORE_EXPORT ScrollbarTheme {
   }
 
   virtual bool SupportsDragSnapBack() const { return false; }
+  virtual bool JumpOnTrackClick() const { return false; }
 
   // The position of the thumb relative to the track.
   int ThumbPosition(const Scrollbar& scrollbar) {
@@ -154,7 +150,6 @@ class CORE_EXPORT ScrollbarTheme {
   virtual IntRect ForwardButtonRect(const Scrollbar&) = 0;
   virtual IntRect TrackRect(const Scrollbar&) = 0;
   virtual IntRect ThumbRect(const Scrollbar&);
-  virtual int ThumbThickness(const Scrollbar&);
 
   virtual int MinimumThumbLength(const Scrollbar&) = 0;
 

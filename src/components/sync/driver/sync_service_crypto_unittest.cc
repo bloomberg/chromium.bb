@@ -8,12 +8,15 @@
 #include <map>
 #include <utility>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/trusted_vault_client.h"
 #include "components/sync/engine/mock_sync_engine.h"
 #include "components/sync/nigori/nigori.h"
@@ -26,6 +29,7 @@ namespace {
 
 using testing::_;
 using testing::Eq;
+using testing::Ne;
 
 sync_pb::EncryptedData MakeEncryptedData(
     const std::string& passphrase,
@@ -54,11 +58,19 @@ class MockCryptoSyncPrefs : public CryptoSyncPrefs {
  public:
   MockCryptoSyncPrefs() = default;
   ~MockCryptoSyncPrefs() override = default;
-
-  MOCK_CONST_METHOD0(GetEncryptionBootstrapToken, std::string());
-  MOCK_METHOD1(SetEncryptionBootstrapToken, void(const std::string&));
-  MOCK_CONST_METHOD0(GetKeystoreEncryptionBootstrapToken, std::string());
-  MOCK_METHOD1(SetKeystoreEncryptionBootstrapToken, void(const std::string&));
+  MOCK_METHOD(std::string, GetEncryptionBootstrapToken, (), (const override));
+  MOCK_METHOD(void,
+              SetEncryptionBootstrapToken,
+              (const std::string&),
+              (override));
+  MOCK_METHOD(std::string,
+              GetKeystoreEncryptionBootstrapToken,
+              (),
+              (const override));
+  MOCK_METHOD(void,
+              SetKeystoreEncryptionBootstrapToken,
+              (const std::string&),
+              (override));
 };
 
 // Object representing a server that contains the authoritative trusted vault
@@ -129,6 +141,11 @@ class TestTrustedVaultClient : public TrustedVaultClient {
   // Exposes the total number of calls to the server's RequestKeysFromServer().
   int server_request_count() const { return server_request_count_; }
 
+  // Exposes the total number of calls to GetIsRecoverabilityDegraded().
+  int get_is_recoverablity_degraded_call_count() const {
+    return get_is_recoverablity_degraded_call_count_;
+  }
+
   // Mimics the completion of the next (FIFO) FetchKeys() request.
   bool CompleteFetchKeysRequest() {
     if (pending_responses_.empty()) {
@@ -141,10 +158,20 @@ class TestTrustedVaultClient : public TrustedVaultClient {
     return true;
   }
 
+  void SetIsRecoverabilityDegraded(bool is_recoverability_degraded) {
+    is_recoverability_degraded_ = is_recoverability_degraded;
+    for (Observer& observer : observer_list_) {
+      observer.OnTrustedVaultRecoverabilityChanged();
+    }
+  }
+
   // TrustedVaultClient implementation.
-  std::unique_ptr<Subscription> AddKeysChangedObserver(
-      const base::RepeatingClosure& cb) override {
-    return observer_list_.Add(cb);
+  void AddObserver(Observer* observer) override {
+    observer_list_.AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* observer) override {
+    observer_list_.RemoveObserver(observer);
   }
 
   void FetchKeys(
@@ -190,12 +217,16 @@ class TestTrustedVaultClient : public TrustedVaultClient {
     CachedKeysPerUser& cached_keys = gaia_id_to_cached_keys_[gaia_id];
     cached_keys.keys = keys;
     cached_keys.marked_as_stale = false;
-    observer_list_.Notify();
+    for (Observer& observer : observer_list_) {
+      observer.OnTrustedVaultKeysChanged();
+    }
   }
 
   void RemoveAllStoredKeys() override {
     gaia_id_to_cached_keys_.clear();
-    observer_list_.Notify();
+    for (Observer& observer : observer_list_) {
+      observer.OnTrustedVaultKeysChanged();
+    }
   }
 
   void MarkKeysAsStale(const CoreAccountInfo& account_info,
@@ -218,6 +249,19 @@ class TestTrustedVaultClient : public TrustedVaultClient {
     std::move(cb).Run(true);
   }
 
+  void GetIsRecoverabilityDegraded(const CoreAccountInfo& account_info,
+                                   base::OnceCallback<void(bool)> cb) override {
+    ++get_is_recoverablity_degraded_call_count_;
+    std::move(cb).Run(is_recoverability_degraded_);
+  }
+
+  void AddTrustedRecoveryMethod(const std::string& gaia_id,
+                                const std::vector<uint8_t>& public_key,
+                                base::OnceClosure cb) override {
+    // Not relevant in these tests.
+    std::move(cb).Run();
+  }
+
  private:
   struct CachedKeysPerUser {
     bool marked_as_stale = false;
@@ -227,11 +271,13 @@ class TestTrustedVaultClient : public TrustedVaultClient {
   const TestTrustedVaultServer* const server_;
 
   std::map<std::string, CachedKeysPerUser> gaia_id_to_cached_keys_;
-  CallbackList observer_list_;
+  base::ObserverList<Observer> observer_list_;
   int fetch_count_ = 0;
   int keys_marked_as_stale_count_ = 0;
+  int get_is_recoverablity_degraded_call_count_ = 0;
   int server_request_count_ = 0;
   std::list<base::OnceClosure> pending_responses_;
+  bool is_recoverability_degraded_ = false;
 };
 
 class SyncServiceCryptoTest : public testing::Test {
@@ -260,7 +306,7 @@ class SyncServiceCryptoTest : public testing::Test {
 
   bool VerifyAndClearExpectations() {
     return testing::Mock::VerifyAndClearExpectations(&notify_observers_cb_) &&
-           testing::Mock::VerifyAndClearExpectations(&notify_observers_cb_) &&
+           testing::Mock::VerifyAndClearExpectations(&reconfigure_cb_) &&
            testing::Mock::VerifyAndClearExpectations(&trusted_vault_client_) &&
            testing::Mock::VerifyAndClearExpectations(&engine_);
   }
@@ -282,6 +328,47 @@ class SyncServiceCryptoTest : public testing::Test {
   SyncServiceCrypto crypto_;
 };
 
+// Happy case where no user action is required upon startup.
+TEST_F(SyncServiceCryptoTest, ShouldRequireNoUserAction) {
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
+  EXPECT_FALSE(crypto_.IsPassphraseRequired());
+  EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+  EXPECT_TRUE(crypto_.IsTrustedVaultKeyRequiredStateKnown());
+  EXPECT_FALSE(crypto_.IsTrustedVaultRecoverabilityDegraded());
+}
+
+TEST_F(SyncServiceCryptoTest, ShouldSetUpNewCustomPassphrase) {
+  const std::string kTestPassphrase = "somepassphrase";
+
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
+  ASSERT_FALSE(crypto_.IsPassphraseRequired());
+  ASSERT_FALSE(crypto_.IsUsingSecondaryPassphrase());
+  ASSERT_FALSE(crypto_.IsEncryptEverythingEnabled());
+  ASSERT_THAT(crypto_.GetPassphraseType(),
+              Ne(PassphraseType::kCustomPassphrase));
+
+  EXPECT_CALL(engine_, SetEncryptionPassphrase(kTestPassphrase));
+  crypto_.SetEncryptionPassphrase(kTestPassphrase);
+
+  // Mimic completion of the procedure in the sync engine.
+  EXPECT_CALL(notify_observers_cb_, Run());
+  crypto_.OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase,
+                                  base::Time::Now());
+  // The current implementation notifies observers again upon
+  // crypto_.OnEncryptedTypesChanged(). This may change in the future.
+  EXPECT_CALL(notify_observers_cb_, Run());
+  crypto_.OnEncryptedTypesChanged(syncer::EncryptableUserTypes(),
+                                  /*encrypt_everything=*/true);
+  EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
+  crypto_.OnPassphraseAccepted();
+
+  EXPECT_FALSE(crypto_.IsPassphraseRequired());
+  EXPECT_TRUE(crypto_.IsEncryptEverythingEnabled());
+  ASSERT_THAT(crypto_.GetPassphraseType(),
+              Eq(PassphraseType::kCustomPassphrase));
+  EXPECT_TRUE(crypto_.IsUsingSecondaryPassphrase());
+}
+
 TEST_F(SyncServiceCryptoTest, ShouldExposePassphraseRequired) {
   const std::string kTestPassphrase = "somepassphrase";
 
@@ -292,7 +379,7 @@ TEST_F(SyncServiceCryptoTest, ShouldExposePassphraseRequired) {
   // Mimic the engine determining that a passphrase is required.
   EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
   crypto_.OnPassphraseRequired(
-      REASON_DECRYPTION, KeyDerivationParams::CreateForPbkdf2(),
+      KeyDerivationParams::CreateForPbkdf2(),
       MakeEncryptedData(kTestPassphrase,
                         KeyDerivationParams::CreateForPbkdf2()));
   EXPECT_TRUE(crypto_.IsPassphraseRequired());
@@ -308,7 +395,7 @@ TEST_F(SyncServiceCryptoTest, ShouldExposePassphraseRequired) {
   EXPECT_CALL(engine_, SetDecryptionPassphrase(kTestPassphrase))
       .WillOnce([&](const std::string&) { crypto_.OnPassphraseAccepted(); });
   // The current implementation issues two reconfigurations: one immediately
-  // after checking the passphase in the UI thread and a second time later when
+  // after checking the passphrase in the UI thread and a second time later when
   // the engine confirms with OnPassphraseAccepted().
   EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO)).Times(2);
   EXPECT_TRUE(crypto_.SetDecryptionPassphrase(kTestPassphrase));
@@ -709,6 +796,177 @@ TEST_F(
   // started.
   EXPECT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
   EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(3));
+}
+
+TEST_F(SyncServiceCryptoTest, ShouldNotGetRecoverabilityIfFeatureDisabled) {
+  trusted_vault_client_.SetIsRecoverabilityDegraded(true);
+  crypto_.OnPassphraseTypeChanged(PassphraseType::kTrustedVaultPassphrase,
+                                  base::Time::Now());
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
+  ASSERT_THAT(crypto_.GetPassphraseType(),
+              Eq(PassphraseType::kTrustedVaultPassphrase));
+  ASSERT_TRUE(crypto_.IsTrustedVaultKeyRequiredStateKnown());
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  EXPECT_THAT(trusted_vault_client_.get_is_recoverablity_degraded_call_count(),
+              Eq(0));
+  EXPECT_FALSE(crypto_.IsTrustedVaultRecoverabilityDegraded());
+}
+
+TEST_F(SyncServiceCryptoTest,
+       ShouldNotReportDegradedRecoverabilityUponInitialization) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSyncSupportTrustedVaultPassphraseRecovery);
+
+  trusted_vault_client_.SetIsRecoverabilityDegraded(false);
+  crypto_.OnPassphraseTypeChanged(PassphraseType::kTrustedVaultPassphrase,
+                                  base::Time::Now());
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
+  ASSERT_THAT(crypto_.GetPassphraseType(),
+              Eq(PassphraseType::kTrustedVaultPassphrase));
+  ASSERT_TRUE(crypto_.IsTrustedVaultKeyRequiredStateKnown());
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  EXPECT_FALSE(crypto_.IsTrustedVaultRecoverabilityDegraded());
+}
+
+TEST_F(SyncServiceCryptoTest,
+       ShouldReportDegradedRecoverabilityUponInitialization) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSyncSupportTrustedVaultPassphraseRecovery);
+
+  trusted_vault_client_.SetIsRecoverabilityDegraded(true);
+  crypto_.OnPassphraseTypeChanged(PassphraseType::kTrustedVaultPassphrase,
+                                  base::Time::Now());
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
+  ASSERT_THAT(crypto_.GetPassphraseType(),
+              Eq(PassphraseType::kTrustedVaultPassphrase));
+  ASSERT_TRUE(crypto_.IsTrustedVaultKeyRequiredStateKnown());
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  EXPECT_TRUE(crypto_.IsTrustedVaultRecoverabilityDegraded());
+}
+
+TEST_F(SyncServiceCryptoTest, ShouldReportDegradedRecoverabilityUponChange) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSyncSupportTrustedVaultPassphraseRecovery);
+
+  trusted_vault_client_.SetIsRecoverabilityDegraded(false);
+  crypto_.OnPassphraseTypeChanged(PassphraseType::kTrustedVaultPassphrase,
+                                  base::Time::Now());
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
+  ASSERT_THAT(crypto_.GetPassphraseType(),
+              Eq(PassphraseType::kTrustedVaultPassphrase));
+  ASSERT_TRUE(crypto_.IsTrustedVaultKeyRequiredStateKnown());
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+  ASSERT_FALSE(crypto_.IsTrustedVaultRecoverabilityDegraded());
+
+  // Changing the state notifies observers and should lead to a change in
+  // IsTrustedVaultRecoverabilityDegraded().
+  EXPECT_CALL(notify_observers_cb_, Run());
+  trusted_vault_client_.SetIsRecoverabilityDegraded(true);
+  EXPECT_TRUE(crypto_.IsTrustedVaultRecoverabilityDegraded());
+}
+
+TEST_F(SyncServiceCryptoTest,
+       ShouldStopReportingDegradedRecoverabilityUponChange) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSyncSupportTrustedVaultPassphraseRecovery);
+
+  trusted_vault_client_.SetIsRecoverabilityDegraded(true);
+  crypto_.OnPassphraseTypeChanged(PassphraseType::kTrustedVaultPassphrase,
+                                  base::Time::Now());
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
+  ASSERT_THAT(crypto_.GetPassphraseType(),
+              Eq(PassphraseType::kTrustedVaultPassphrase));
+  ASSERT_TRUE(crypto_.IsTrustedVaultKeyRequiredStateKnown());
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+  ASSERT_TRUE(crypto_.IsTrustedVaultRecoverabilityDegraded());
+
+  // Changing the state notifies observers and should lead to a change in
+  // IsTrustedVaultRecoverabilityDegraded().
+  EXPECT_CALL(notify_observers_cb_, Run());
+  trusted_vault_client_.SetIsRecoverabilityDegraded(false);
+  EXPECT_FALSE(crypto_.IsTrustedVaultRecoverabilityDegraded());
+}
+
+TEST_F(SyncServiceCryptoTest, ShouldReportDegradedRecoverabilityUponRetrieval) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSyncSupportTrustedVaultPassphraseRecovery);
+
+  trusted_vault_client_.SetIsRecoverabilityDegraded(true);
+
+  // Mimic startup with trusted vault keys being required.
+  crypto_.OnTrustedVaultKeyRequired();
+  crypto_.OnPassphraseTypeChanged(PassphraseType::kTrustedVaultPassphrase,
+                                  base::Time::Now());
+  crypto_.SetSyncEngine(kSyncingAccount, &engine_);
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequiredStateKnown());
+  ASSERT_FALSE(crypto_.IsTrustedVaultRecoverabilityDegraded());
+
+  // Complete the fetching of initial keys (no keys) from the client.
+  ASSERT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
+  ASSERT_TRUE(crypto_.IsTrustedVaultKeyRequiredStateKnown());
+  ASSERT_TRUE(crypto_.IsTrustedVaultKeyRequired());
+  ASSERT_FALSE(crypto_.IsTrustedVaultRecoverabilityDegraded());
+
+  // Mimic a successful key retrieval.
+  ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
+      .WillByDefault([&](const std::vector<std::vector<uint8_t>>& keys,
+                         base::OnceClosure done_cb) {
+        crypto_.OnTrustedVaultKeyAccepted();
+        std::move(done_cb).Run();
+      });
+  MimicKeyRetrievalByUser();
+  ASSERT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
+  ASSERT_TRUE(crypto_.IsTrustedVaultKeyRequiredStateKnown());
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  // The recoverability state should be exposed.
+  EXPECT_TRUE(crypto_.IsTrustedVaultRecoverabilityDegraded());
+}
+
+TEST_F(SyncServiceCryptoTest,
+       ShouldClearDegradedRecoverabilityIfCustomPassphraseIsSet) {
+  const std::string kTestPassphrase = "somepassphrase";
+
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSyncSupportTrustedVaultPassphraseRecovery);
+
+  // Mimic a browser startup in |kTrustedVaultPassphrase| with no additional
+  // keys required and degraded recoverability state.
+  trusted_vault_client_.SetIsRecoverabilityDegraded(true);
+  crypto_.OnPassphraseTypeChanged(PassphraseType::kTrustedVaultPassphrase,
+                                  base::Time::Now());
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
+  ASSERT_THAT(crypto_.GetPassphraseType(),
+              Eq(PassphraseType::kTrustedVaultPassphrase));
+  ASSERT_TRUE(crypto_.IsTrustedVaultKeyRequiredStateKnown());
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+  ASSERT_FALSE(crypto_.IsPassphraseRequired());
+  ASSERT_TRUE(crypto_.IsTrustedVaultRecoverabilityDegraded());
+
+  // Mimic the user setting up a new custom passphrase.
+  crypto_.SetEncryptionPassphrase(kTestPassphrase);
+
+  // Mimic completion of the procedure in the sync engine.
+  EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
+  EXPECT_CALL(notify_observers_cb_, Run());
+  crypto_.OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase,
+                                  base::Time::Now());
+  crypto_.OnPassphraseAccepted();
+
+  ASSERT_THAT(crypto_.GetPassphraseType(),
+              Eq(PassphraseType::kCustomPassphrase));
+
+  // Recoverability should no longer be considered degraded.
+  EXPECT_FALSE(crypto_.IsTrustedVaultRecoverabilityDegraded());
 }
 
 }  // namespace

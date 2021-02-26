@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/pending_task.h"
 #include "base/task/sequence_manager/enqueue_order_generator.h"
@@ -37,12 +36,11 @@ namespace task_queue_selector_unittest {
 class MockObserver : public TaskQueueSelector::Observer {
  public:
   MockObserver() = default;
+  MockObserver(const MockObserver&) = delete;
+  MockObserver& operator=(const MockObserver&) = delete;
   ~MockObserver() override = default;
 
   MOCK_METHOD1(OnTaskQueueEnabled, void(internal::TaskQueueImpl*));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
 
 class TaskQueueSelectorForTest : public TaskQueueSelector {
@@ -54,13 +52,14 @@ class TaskQueueSelectorForTest : public TaskQueueSelector {
   using TaskQueueSelector::SetImmediateStarvationCountForTest;
   using TaskQueueSelector::SetOperationOldest;
 
-  TaskQueueSelectorForTest(scoped_refptr<AssociatedThreadId> associated_thread)
+  explicit TaskQueueSelectorForTest(
+      scoped_refptr<AssociatedThreadId> associated_thread)
       : TaskQueueSelector(associated_thread, SequenceManager::Settings()) {}
 };
 
 class TaskQueueSelectorTest : public testing::Test {
  public:
-  explicit TaskQueueSelectorTest()
+  TaskQueueSelectorTest()
       : test_closure_(BindRepeating(&TaskQueueSelectorTest::TestFunction)),
         associated_thread_(AssociatedThreadId::CreateBound()),
         selector_(associated_thread_) {}
@@ -394,6 +393,75 @@ TEST_F(TaskQueueSelectorTest, ChooseWithPriority_OnlyImmediate) {
       selector_
           .ChooseWithPriority<TaskQueueSelectorForTest::SetOperationOldest>(
               TaskQueue::kNormalPriority));
+}
+
+TEST_F(TaskQueueSelectorTest,
+       SelectWorkQueueToServiceImmediateOnlyWithoutImmediateTask) {
+  task_queues_[0]->delayed_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(2)));
+
+  EXPECT_EQ(nullptr,
+            selector_.SelectWorkQueueToService(
+                TaskQueueSelector::SelectTaskOption::kSkipDelayedTask));
+  EXPECT_EQ(task_queues_[0]->delayed_work_queue(),
+            selector_.SelectWorkQueueToService());
+}
+
+TEST_F(TaskQueueSelectorTest,
+       SelectWorkQueueToServiceImmediateOnlyWithDelayedTasks) {
+  task_queues_[0]->delayed_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(1)));
+  task_queues_[0]->immediate_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(2)));
+
+  EXPECT_EQ(task_queues_[0]->immediate_work_queue(),
+            selector_.SelectWorkQueueToService(
+                TaskQueueSelector::SelectTaskOption::kSkipDelayedTask));
+  EXPECT_EQ(task_queues_[0]->delayed_work_queue(),
+            selector_.SelectWorkQueueToService());
+}
+
+TEST_F(TaskQueueSelectorTest,
+       SelectWorkQueueToServiceImmediateOnlyWithDisabledQueues) {
+  task_queues_[0]->delayed_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(1)));
+  task_queues_[0]->immediate_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(2)));
+  task_queues_[1]->delayed_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(3)));
+  task_queues_[2]->immediate_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(4)));
+
+  EXPECT_EQ(task_queues_[0]->delayed_work_queue(),
+            selector_.SelectWorkQueueToService());
+  EXPECT_EQ(task_queues_[0]->immediate_work_queue(),
+            selector_.SelectWorkQueueToService(
+                TaskQueueSelector::SelectTaskOption::kSkipDelayedTask));
+
+  task_queues_[0]->SetQueueEnabled(false);
+  selector_.DisableQueue(task_queues_[0].get());
+
+  EXPECT_EQ(task_queues_[1]->delayed_work_queue(),
+            selector_.SelectWorkQueueToService());
+  EXPECT_EQ(task_queues_[2]->immediate_work_queue(),
+            selector_.SelectWorkQueueToService(
+                TaskQueueSelector::SelectTaskOption::kSkipDelayedTask));
+
+  task_queues_[1]->SetQueueEnabled(false);
+  selector_.DisableQueue(task_queues_[1].get());
+
+  EXPECT_EQ(task_queues_[2]->immediate_work_queue(),
+            selector_.SelectWorkQueueToService(
+                TaskQueueSelector::SelectTaskOption::kSkipDelayedTask));
+  EXPECT_EQ(task_queues_[2]->immediate_work_queue(),
+            selector_.SelectWorkQueueToService());
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {

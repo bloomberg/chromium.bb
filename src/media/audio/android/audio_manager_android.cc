@@ -197,7 +197,7 @@ AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
     const LogCallback& log_callback) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   AudioOutputStream* stream = AudioManagerBase::MakeAudioOutputStream(
-      params, std::string(), AudioManager::LogCallback());
+      params, device_id, AudioManager::LogCallback());
   if (stream)
     streams_.insert(static_cast<MuteableAudioOutputStream*>(stream));
   return stream;
@@ -259,7 +259,6 @@ AudioOutputStream* AudioManagerAndroid::MakeLowLatencyOutputStream(
     const AudioParameters& params,
     const std::string& device_id,
     const LogCallback& log_callback) {
-  DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
 
   if (UseAAudio()) {
@@ -488,9 +487,9 @@ bool AudioManagerAndroid::UseAAudio() {
   if (!base::FeatureList::IsEnabled(features::kUseAAudioDriver))
     return false;
 
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_P) {
-    // We need APIs that weren't added until API Level 28.
+  if (!base::android::BuildInfo::GetInstance()->is_at_least_q()) {
+    // We need APIs that weren't added until API Level 28. Also, AAudio crashes
+    // on Android P, so only consider Q and above.
     return false;
   }
 

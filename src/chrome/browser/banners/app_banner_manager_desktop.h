@@ -13,6 +13,7 @@
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace extensions {
@@ -57,8 +58,9 @@ class AppBannerManagerDesktop
   // AppBannerManager overrides.
   base::WeakPtr<AppBannerManager> GetWeakPtr() override;
   void InvalidateWeakPtrs() override;
-  bool IsSupportedAppPlatform(const base::string16& platform) const override;
-  bool IsRelatedAppInstalled(
+  bool IsSupportedNonWebAppPlatform(
+      const base::string16& platform) const override;
+  bool IsRelatedNonWebAppInstalled(
       const blink::Manifest::RelatedApplication& related_app) const override;
 
   // Called when the web app install initiated by a banner has completed.

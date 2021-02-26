@@ -12,9 +12,9 @@
 #include <utility>
 
 #include "base/check_op.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/system/sys_info.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gin/debug_impl.h"
@@ -81,6 +81,8 @@ IsolateHolder::IsolateHolder(
         atomics_wait_mode == AllowAtomicsWaitMode::kAllowAtomicsWait;
     params.external_references = g_reference_table;
     params.only_terminate_in_safe_scope = true;
+    params.embedder_wrapper_type_index = kWrapperInfoIndex;
+    params.embedder_wrapper_object_index = kEncodedValueIndex;
 
     v8::Isolate::Initialize(isolate_, params);
   }

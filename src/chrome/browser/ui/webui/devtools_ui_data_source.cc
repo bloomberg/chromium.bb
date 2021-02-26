@@ -57,11 +57,19 @@ std::string GetMimeTypeForPath(const std::string& path) {
                             base::CompareCase::INSENSITIVE_ASCII)) {
     return "text/css";
   } else if (base::EndsWith(filename, ".js",
+                            base::CompareCase::INSENSITIVE_ASCII) ||
+             base::EndsWith(filename, ".mjs",
                             base::CompareCase::INSENSITIVE_ASCII)) {
     return "application/javascript";
   } else if (base::EndsWith(filename, ".png",
                             base::CompareCase::INSENSITIVE_ASCII)) {
     return "image/png";
+  } else if (base::EndsWith(filename, ".map",
+                            base::CompareCase::INSENSITIVE_ASCII)) {
+    return "application/json";
+  } else if (base::EndsWith(filename, ".ts",
+                            base::CompareCase::INSENSITIVE_ASCII)) {
+    return "application/x-typescript";
   } else if (base::EndsWith(filename, ".gif",
                             base::CompareCase::INSENSITIVE_ASCII)) {
     return "image/gif";
@@ -113,15 +121,20 @@ void DevToolsDataSource::StartDataRequest(
                             base::CompareCase::INSENSITIVE_ASCII));
     std::string path_under_bundled =
         path_without_params.substr(bundled_path_prefix.length());
-#if !BUILDFLAG(DEBUG_DEVTOOLS)
-    if (!GetCustomDevToolsFrontendURL().SchemeIsFile()) {
+    GURL custom_devtools_frontend = GetCustomDevToolsFrontendURL();
+    if (!custom_devtools_frontend.is_valid()) {
       // Fetch from packaged resources.
       StartBundledDataRequest(path_under_bundled, std::move(callback));
       return;
     }
-#endif
-    // Fetch from file system.
-    StartFileRequest(path_under_bundled, std::move(callback));
+    if (GetCustomDevToolsFrontendURL().SchemeIsFile()) {
+      // Fetch from file system.
+      StartFileRequest(path_under_bundled, std::move(callback));
+      return;
+    }
+    GURL remote_url(custom_devtools_frontend.spec() + path_under_bundled);
+    // Fetch from remote URL.
+    StartCustomDataRequest(remote_url, std::move(callback));
     return;
   }
 
@@ -190,10 +203,7 @@ void DevToolsDataSource::StartBundledDataRequest(
   scoped_refptr<base::RefCountedMemory> bytes =
       content::DevToolsFrontendHost::GetFrontendResourceBytes(path);
 
-  DLOG_IF(WARNING, !bytes)
-      << "Unable to find dev tool resource: " << path
-      << ". If you compiled with debug_devtools=1, try running with "
-         "--debug-devtools.";
+  DLOG_IF(WARNING, !bytes) << "Unable to find DevTools resource: " << path;
   std::move(callback).Run(bytes);
 }
 
@@ -303,21 +313,11 @@ void DevToolsDataSource::StartFileRequest(const std::string& path,
                                           GotDataCallback callback) {
   base::FilePath base_path;
   GURL custom_devtools_frontend = GetCustomDevToolsFrontendURL();
-  if (custom_devtools_frontend.SchemeIsFile()) {
-    if (!net::FileURLToFilePath(custom_devtools_frontend, &base_path)) {
-      std::move(callback).Run(CreateNotFoundResponse());
-      return;
-    }
-  } else {
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-    // Use default path for unbundled files when debug_devtools=true
-    if (!base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG, &base_path)) {
-      std::move(callback).Run(CreateNotFoundResponse());
-      return;
-    }
-#else
-    NOTREACHED();
-#endif
+  DCHECK(custom_devtools_frontend.SchemeIsFile());
+  if (!net::FileURLToFilePath(custom_devtools_frontend, &base_path)) {
+    std::move(callback).Run(CreateNotFoundResponse());
+    LOG(WARNING) << "Unable to find DevTools resource: " << path;
+    return;
   }
 
   base::FilePath full_path = base_path.AppendASCII(path);

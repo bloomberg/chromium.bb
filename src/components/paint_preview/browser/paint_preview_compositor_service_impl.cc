@@ -57,15 +57,19 @@ PaintPreviewCompositorServiceImpl::PaintPreviewCompositorServiceImpl(
 
 // The destructor for the |compositor_service_| will automatically result in any
 // active compositors being killed.
-PaintPreviewCompositorServiceImpl::~PaintPreviewCompositorServiceImpl() =
-    default;
+PaintPreviewCompositorServiceImpl::~PaintPreviewCompositorServiceImpl() {
+  DCHECK(default_task_runner_->RunsTasksInCurrentSequence());
+}
 
-std::unique_ptr<PaintPreviewCompositorClient>
+std::unique_ptr<PaintPreviewCompositorClient, base::OnTaskRunnerDeleter>
 PaintPreviewCompositorServiceImpl::CreateCompositor(
     base::OnceClosure connected_closure) {
   DCHECK(default_task_runner_->RunsTasksInCurrentSequence());
-  auto compositor = std::make_unique<PaintPreviewCompositorClientImpl>(
-      compositor_task_runner_, weak_ptr_factory_.GetWeakPtr());
+  std::unique_ptr<PaintPreviewCompositorClientImpl, base::OnTaskRunnerDeleter>
+      compositor(
+          new PaintPreviewCompositorClientImpl(compositor_task_runner_,
+                                               weak_ptr_factory_.GetWeakPtr()),
+          base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
 
   compositor_task_runner_->PostTask(
       FROM_HERE,
@@ -97,6 +101,12 @@ bool PaintPreviewCompositorServiceImpl::HasActiveClients() const {
   return !active_clients_.empty();
 }
 
+void PaintPreviewCompositorServiceImpl::SetDisconnectHandler(
+    base::OnceClosure disconnect_handler) {
+  DCHECK(default_task_runner_->RunsTasksInCurrentSequence());
+  user_disconnect_closure_ = std::move(disconnect_handler);
+}
+
 void PaintPreviewCompositorServiceImpl::MarkCompositorAsDeleted(
     const base::UnguessableToken& token) {
   DCHECK(default_task_runner_->RunsTasksInCurrentSequence());
@@ -117,7 +127,8 @@ void PaintPreviewCompositorServiceImpl::OnCompositorCreated(
 
 void PaintPreviewCompositorServiceImpl::DisconnectHandler() {
   DCHECK(default_task_runner_->RunsTasksInCurrentSequence());
-  std::move(user_disconnect_closure_).Run();
+  if (user_disconnect_closure_)
+    std::move(user_disconnect_closure_).Run();
   compositor_service_.reset();
 }
 

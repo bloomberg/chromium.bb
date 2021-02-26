@@ -23,6 +23,7 @@
 #include "media/base/video_frame.h"
 #include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/gpu_memory_buffer_utils.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkFont.h"
@@ -429,11 +430,17 @@ void PacmanFramePainter::DrawPacman(base::TimeDelta elapsed_time,
   paint.setStyle(SkPaint::kFill_Style);
   SkFont font;
   font.setEdging(SkFont::Edging::kAlias);
-  SkCanvas canvas(bitmap);
+  SkCanvas canvas(bitmap, skia::LegacyDisplayGlobals::GetSkSurfaceProps());
 
   const SkScalar unscaled_zoom = fake_device_state_->zoom / 100.f;
+  const SkScalar translate_x =
+      (fake_device_state_->pan - kMinPan) * (width / (kMaxPan - kMinPan));
+  const SkScalar translate_y =
+      (fake_device_state_->tilt - kMinTilt) * (height / (kMaxTilt - kMinTilt));
   SkMatrix matrix;
   matrix.setScale(unscaled_zoom, unscaled_zoom, width / 2, height / 2);
+  matrix.setTranslateX(translate_x);
+  matrix.setTranslateY(translate_y);
   canvas.setMatrix(matrix);
 
   // For the SK_N32 case, match the green color tone produced by the
@@ -610,22 +617,28 @@ void FakePhotoDevice::GetPhotoState(
   photo_state->focus_distance->step = kFocusDistanceStep;
 
   photo_state->pan = mojom::Range::New();
-  photo_state->pan->current = fake_device_state_->pan;
-  photo_state->pan->max = kMaxPan;
-  photo_state->pan->min = kMinPan;
-  photo_state->pan->step = kPanStep;
+  if (config_.control_support.pan) {
+    photo_state->pan->current = fake_device_state_->pan;
+    photo_state->pan->max = kMaxPan;
+    photo_state->pan->min = kMinPan;
+    photo_state->pan->step = kPanStep;
+  }
 
   photo_state->tilt = mojom::Range::New();
-  photo_state->tilt->current = fake_device_state_->tilt;
-  photo_state->tilt->max = kMaxTilt;
-  photo_state->tilt->min = kMinTilt;
-  photo_state->tilt->step = kTiltStep;
+  if (config_.control_support.tilt) {
+    photo_state->tilt->current = fake_device_state_->tilt;
+    photo_state->tilt->max = kMaxTilt;
+    photo_state->tilt->min = kMinTilt;
+    photo_state->tilt->step = kTiltStep;
+  }
 
   photo_state->zoom = mojom::Range::New();
-  photo_state->zoom->current = fake_device_state_->zoom;
-  photo_state->zoom->max = kMaxZoom;
-  photo_state->zoom->min = kMinZoom;
-  photo_state->zoom->step = kZoomStep;
+  if (config_.control_support.zoom) {
+    photo_state->zoom->current = fake_device_state_->zoom;
+    photo_state->zoom->max = kMaxZoom;
+    photo_state->zoom->min = kMinZoom;
+    photo_state->zoom->step = kZoomStep;
+  }
 
   photo_state->supports_torch = false;
   photo_state->torch = false;

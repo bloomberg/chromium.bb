@@ -20,6 +20,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "api/media_types.h"
+#include "api/priority.h"
 #include "api/rtp_transceiver_direction.h"
 #include "rtc_base/system/rtc_export.h"
 
@@ -91,15 +92,10 @@ enum class DegradationPreference {
   BALANCED,
 };
 
-RTC_EXPORT extern const double kDefaultBitratePriority;
+RTC_EXPORT const char* DegradationPreferenceToString(
+    DegradationPreference degradation_preference);
 
-// GENERATED_JAVA_ENUM_PACKAGE: org.webrtc
-enum class Priority {
-  kVeryLow,
-  kLow,
-  kMedium,
-  kHigh,
-};
+RTC_EXPORT extern const double kDefaultBitratePriority;
 
 struct RTC_EXPORT RtcpFeedback {
   RtcpFeedbackType type = RtcpFeedbackType::CCM;
@@ -226,7 +222,7 @@ struct RTC_EXPORT RtpHeaderExtensionCapability {
   bool preferred_encrypt = false;
 
   // The direction of the extension. The kStopped value is only used with
-  // RtpTransceiverInterface::header_extensions_offered() and
+  // RtpTransceiverInterface::HeaderExtensionsToOffer() and
   // SetOfferedRtpHeaderExtensions().
   RtpTransceiverDirection direction = RtpTransceiverDirection::kSendRecv;
 
@@ -314,10 +310,6 @@ struct RTC_EXPORT RtpExtension {
   static constexpr char kVideoTimingUri[] =
       "http://www.webrtc.org/experiments/rtp-hdrext/video-timing";
 
-  // Header extension for video frame marking.
-  static constexpr char kFrameMarkingUri[] =
-      "http://tools.ietf.org/html/draft-ietf-avtext-framemarking-07";
-
   // Experimental codec agnostic frame descriptor.
   static constexpr char kGenericFrameDescriptorUri00[] =
       "http://www.webrtc.org/experiments/rtp-hdrext/"
@@ -325,6 +317,10 @@ struct RTC_EXPORT RtpExtension {
   static constexpr char kDependencyDescriptorUri[] =
       "https://aomediacodec.github.io/av1-rtp-spec/"
       "#dependency-descriptor-rtp-header-extension";
+
+  // Experimental extension for signalling target bitrate per layer.
+  static constexpr char kVideoLayersAllocationUri[] =
+      "http://www.webrtc.org/experiments/rtp-hdrext/video-layers-allocation00";
 
   // Header extension for transport sequence number, see url for details:
   // http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions
@@ -481,6 +477,10 @@ struct RTC_EXPORT RtpEncodingParameters {
   // Called "encodingId" in ORTC.
   std::string rid;
 
+  // Allow dynamic frame length changes for audio:
+  // https://w3c.github.io/webrtc-extensions/#dom-rtcrtpencodingparameters-adaptiveptime
+  bool adaptive_ptime = false;
+
   bool operator==(const RtpEncodingParameters& o) const {
     return ssrc == o.ssrc && bitrate_priority == o.bitrate_priority &&
            network_priority == o.network_priority &&
@@ -489,7 +489,8 @@ struct RTC_EXPORT RtpEncodingParameters {
            max_framerate == o.max_framerate &&
            num_temporal_layers == o.num_temporal_layers &&
            scale_resolution_down_by == o.scale_resolution_down_by &&
-           active == o.active && rid == o.rid;
+           active == o.active && rid == o.rid &&
+           adaptive_ptime == o.adaptive_ptime;
   }
   bool operator!=(const RtpEncodingParameters& o) const {
     return !(*this == o);

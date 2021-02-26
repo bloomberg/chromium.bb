@@ -90,7 +90,9 @@ enum class StateSuffix {
   kLatentMultiProfileOthers,  // Recorded for multi-profile users with one
                               // active profile, only for the non-active
                               // profiles.
-  kSingleProfile  // Recorded for single-profile users for their single profile.
+  kSingleProfile,  // Recorded for single-profile users for their single
+                   // profile.
+  kUponDeletion    // Recorded whenever a profile gets deleted.
 };
 
 // Records the state of profile's avatar.
@@ -103,8 +105,15 @@ void LogProfileName(NameState name_state, StateSuffix suffix);
 void LogProfileAccountType(UnconsentedPrimaryAccountType account_type,
                            StateSuffix suffix);
 
+// Records the state of profile's sync.
+void LogProfileSyncEnabled(bool sync_enabled, StateSuffix suffix);
+
 // Records the days since last use of a profile.
 void LogProfileDaysSinceLastUse(int days_since_last_use, StateSuffix suffix);
+
+// Records the context of a profile deletion, whether it is the last profile and
+// whether it happens while no browser windows are opened.
+void LogProfileDeletionContext(bool is_last_profile, bool no_browser_windows);
 
 // Records the state of account names used in multi-login.
 void LogProfileAllAccountsNames(AllAccountsNames names);

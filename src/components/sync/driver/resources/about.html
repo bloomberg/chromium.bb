@@ -17,7 +17,7 @@
     <h2 jscontent="title"></h2>
     <table class="about-details">
       <tr jsselect="data"
-            jsvalues="class:$this.is_valid ? '' : 'uninitialized'"
+            jsvalues="class:$this.stat_status"
             jseval='chrome.sync.about_tab.highlightIfChanged(this, this.children[1].innerText, stat_value)'>
         <td class="detail" jscontent="stat_name" width=50%></td>
         <td class="value" jscontent="stat_value" width=50%></td>
@@ -55,9 +55,8 @@
         <td jscontent="name" width=30%></td>
         <td jscontent="num_entries" width=10%></td>
         <td jscontent="num_live" width=10%></td>
-        <td jscontent="message" width=30%></td>
+        <td jscontent="message" width=40%></td>
         <td jscontent="state" width=10%></td>
-        <td jscontent="group_type" width=10%></td>
       </tr>
     </table>
   </div>

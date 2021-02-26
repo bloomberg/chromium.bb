@@ -47,9 +47,4 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test('basic')
 
-  yield (
-    api.test('basic_luci')
-    + api.runtime(is_experimental=False, is_luci=True)
-  )
-
   yield api.test('win') + api.platform('win', 32)

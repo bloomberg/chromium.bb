@@ -11,6 +11,9 @@
 #include <string>
 #include <utility>
 
+#include "absl/base/macros.h"
+#include "absl/base/optimization.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/frames/quic_frame.h"
 #include "net/third_party/quiche/src/quic/core/frames/quic_path_challenge_frame.h"
@@ -18,19 +21,17 @@
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
+#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_aligned.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_exported_stats.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_server_stats.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace quic {
@@ -47,10 +48,10 @@ QuicLongHeaderType EncryptionlevelToLongHeaderType(EncryptionLevel level) {
     case ENCRYPTION_FORWARD_SECURE:
       QUIC_BUG
           << "Try to derive long header type for packet with encryption level: "
-          << EncryptionLevelToString(level);
+          << level;
       return INVALID_PACKET_TYPE;
     default:
-      QUIC_BUG << EncryptionLevelToString(level);
+      QUIC_BUG << level;
       return INVALID_PACKET_TYPE;
   }
 }
@@ -133,6 +134,9 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId server_connection_id,
       fully_pad_crypto_handshake_packets_(true),
       latched_hard_max_packet_length_(0),
       max_datagram_frame_size_(0) {
+  if (let_connection_handle_pings_) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_let_connection_handle_pings);
+  }
   SetMaxPacketLength(kDefaultMaxPacketSize);
   if (!framer_->version().UsesTls()) {
     // QUIC+TLS negotiates the maximum datagram frame size via the
@@ -165,6 +169,8 @@ void QuicPacketCreator::SetMaxPacketLength(QuicByteCount length) {
   if (length == max_packet_length_) {
     return;
   }
+  QUIC_DVLOG(1) << "Updating packet creator max packet length from "
+                << max_packet_length_ << " to " << length;
 
   max_packet_length_ = length;
   max_plaintext_size_ = framer_->GetMaxPlaintextSize(max_packet_length_);
@@ -198,7 +204,10 @@ void QuicPacketCreator::SetSoftMaxPacketLength(QuicByteCount length) {
   }
   if (framer_->GetMaxPlaintextSize(length) <
       PacketHeaderSize() + MinPlaintextPacketSize(framer_->version())) {
+    // Please note: this would not guarantee to fit next packet if the size of
+    // packet header increases (e.g., encryption level changes).
     QUIC_DLOG(INFO) << length << " is too small to fit packet header";
+    RemoveSoftMaxPacketLength();
     return;
   }
   QUIC_DVLOG(1) << "Setting soft max packet length to: " << length;
@@ -239,12 +248,24 @@ void QuicPacketCreator::UpdatePacketNumberLength(
     return;
   }
 
-  DCHECK_LE(least_packet_awaited_by_peer, packet_.packet_number + 1);
+  const QuicPacketNumber next_packet_number = NextSendingPacketNumber();
+  DCHECK_LE(least_packet_awaited_by_peer, next_packet_number);
   const uint64_t current_delta =
-      packet_.packet_number + 1 - least_packet_awaited_by_peer;
+      next_packet_number - least_packet_awaited_by_peer;
   const uint64_t delta = std::max(current_delta, max_packets_in_flight);
-  packet_.packet_number_length =
+  const QuicPacketNumberLength packet_number_length =
       QuicFramer::GetMinPacketNumberLength(QuicPacketNumber(delta * 4));
+  if (packet_.packet_number_length == packet_number_length) {
+    return;
+  }
+  QUIC_DLOG(INFO) << ENDPOINT << "Updating packet number length from "
+                  << static_cast<int>(packet_.packet_number_length) << " to "
+                  << static_cast<int>(packet_number_length)
+                  << ", least_packet_awaited_by_peer: "
+                  << least_packet_awaited_by_peer
+                  << " max_packets_in_flight: " << max_packets_in_flight
+                  << " next_packet_number: " << next_packet_number;
+  packet_.packet_number_length = packet_number_length;
 }
 
 void QuicPacketCreator::SkipNPacketNumbers(
@@ -281,6 +302,10 @@ bool QuicPacketCreator::ConsumeCryptoDataToFillCurrentPacket(
     bool needs_full_padding,
     TransmissionType transmission_type,
     QuicFrame* frame) {
+  QUIC_DVLOG(2) << "ConsumeCryptoDataToFillCurrentPacket " << level
+                << " write_length " << write_length << " offset " << offset
+                << (needs_full_padding ? " needs_full_padding" : "") << " "
+                << transmission_type;
   if (!CreateCryptoFrame(level, write_length, offset, frame)) {
     return false;
   }
@@ -390,13 +415,16 @@ void QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                           QuicStreamOffset offset,
                                           bool fin,
                                           QuicFrame* frame) {
-  DCHECK_GT(
-      max_packet_length_,
-      StreamFramePacketOverhead(
-          framer_->transport_version(), GetDestinationConnectionIdLength(),
-          GetSourceConnectionIdLength(), kIncludeVersion,
-          IncludeNonceInPublicHeader(), PACKET_6BYTE_PACKET_NUMBER,
-          GetRetryTokenLengthLength(), GetLengthLength(), offset));
+  // Make sure max_packet_length_ is greater than the largest possible overhead
+  // or max_packet_length_ is set to the soft limit.
+  DCHECK(max_packet_length_ >
+             StreamFramePacketOverhead(
+                 framer_->transport_version(),
+                 GetDestinationConnectionIdLength(),
+                 GetSourceConnectionIdLength(), kIncludeVersion,
+                 IncludeNonceInPublicHeader(), PACKET_6BYTE_PACKET_NUMBER,
+                 GetRetryTokenLengthLength(), GetLengthLength(), offset) ||
+         latched_hard_max_packet_length_ > 0);
 
   QUIC_BUG_IF(!HasRoomForStreamFrame(id, offset, data_size))
       << "No room for Stream frame, BytesFree: " << BytesFree()
@@ -421,7 +449,7 @@ bool QuicPacketCreator::CreateCryptoFrame(EncryptionLevel level,
                                           size_t write_length,
                                           QuicStreamOffset offset,
                                           QuicFrame* frame) {
-  size_t min_frame_size =
+  const size_t min_frame_size =
       QuicFramer::GetMinCryptoFrameSize(write_length, offset);
   if (BytesFree() <= min_frame_size &&
       (!RemoveSoftMaxPacketLength() || BytesFree() <= min_frame_size)) {
@@ -438,24 +466,23 @@ void QuicPacketCreator::FlushCurrentPacket() {
     return;
   }
 
-  QUIC_CACHELINE_ALIGNED char stack_buffer[kMaxOutgoingPacketSize];
-  char* serialized_packet_buffer = delegate_->GetPacketBuffer();
-  if (serialized_packet_buffer == nullptr) {
-    serialized_packet_buffer = stack_buffer;
+  ABSL_CACHELINE_ALIGNED char stack_buffer[kMaxOutgoingPacketSize];
+  QuicOwnedPacketBuffer external_buffer(delegate_->GetPacketBuffer());
+
+  if (external_buffer.buffer == nullptr) {
+    external_buffer.buffer = stack_buffer;
+    external_buffer.release_buffer = nullptr;
   }
 
-  SerializePacket(serialized_packet_buffer, kMaxOutgoingPacketSize);
+  DCHECK_EQ(nullptr, packet_.encrypted_buffer);
+  if (!SerializePacket(std::move(external_buffer), kMaxOutgoingPacketSize)) {
+    return;
+  }
   OnSerializedPacket();
 }
 
 void QuicPacketCreator::OnSerializedPacket() {
-  if (packet_.encrypted_buffer == nullptr) {
-    const std::string error_details = "Failed to SerializePacket.";
-    QUIC_BUG << error_details;
-    delegate_->OnUnrecoverableError(QUIC_FAILED_TO_SERIALIZE_PACKET,
-                                    error_details);
-    return;
-  }
+  QUIC_BUG_IF(packet_.encrypted_buffer == nullptr);
 
   SerializedPacket packet(std::move(packet_));
   ClearPacket();
@@ -467,10 +494,15 @@ void QuicPacketCreator::ClearPacket() {
   packet_.has_ack = false;
   packet_.has_stop_waiting = false;
   packet_.has_crypto_handshake = NOT_HANDSHAKE;
-  packet_.num_padding_bytes = 0;
   packet_.transmission_type = NOT_RETRANSMISSION;
   packet_.encrypted_buffer = nullptr;
   packet_.encrypted_length = 0;
+  packet_.has_ack_frequency = false;
+  packet_.has_message = false;
+  packet_.fate = SEND_TO_WRITER;
+  QUIC_BUG_IF(packet_.release_encrypted_buffer != nullptr)
+      << "packet_.release_encrypted_buffer should be empty";
+  packet_.release_encrypted_buffer = nullptr;
   DCHECK(packet_.retransmittable_frames.empty());
   DCHECK(packet_.nonretransmittable_frames.empty());
   packet_.largest_acked.Clear();
@@ -514,7 +546,9 @@ size_t QuicPacketCreator::ReserializeInitialPacketInCoalescedPacket(
       return 0;
     }
   }
-  SerializePacket(buffer, buffer_len);
+  if (!SerializePacket(QuicOwnedPacketBuffer(buffer, nullptr), buffer_len)) {
+    return 0;
+  }
   const size_t encrypted_length = packet_.encrypted_length;
   // Clear frames in packet_. No need to DeleteFrames since frames are owned by
   // initial_packet.
@@ -532,16 +566,27 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
     bool fin,
     TransmissionType transmission_type,
     size_t* num_bytes_consumed) {
+  // TODO(b/167222597): consider using ScopedSerializationFailureHandler.
   DCHECK(queued_frames_.empty());
+  DCHECK(!QuicUtils::IsCryptoStreamId(transport_version(), id));
   // Write out the packet header
   QuicPacketHeader header;
   FillPacketHeader(&header);
+  packet_.fate = delegate_->GetSerializedPacketFate(
+      /*is_mtu_discovery=*/false, packet_.encryption_level);
+  QUIC_DVLOG(1) << ENDPOINT << "fate of packet " << packet_.packet_number
+                << ": " << SerializedPacketFateToString(packet_.fate) << " of "
+                << EncryptionLevelToString(packet_.encryption_level);
 
-  QUIC_CACHELINE_ALIGNED char stack_buffer[kMaxOutgoingPacketSize];
-  char* encrypted_buffer = delegate_->GetPacketBuffer();
-  if (encrypted_buffer == nullptr) {
-    encrypted_buffer = stack_buffer;
+  ABSL_CACHELINE_ALIGNED char stack_buffer[kMaxOutgoingPacketSize];
+  QuicOwnedPacketBuffer packet_buffer(delegate_->GetPacketBuffer());
+
+  if (packet_buffer.buffer == nullptr) {
+    packet_buffer.buffer = stack_buffer;
+    packet_buffer.release_buffer = nullptr;
   }
+
+  char* encrypted_buffer = packet_buffer.buffer;
 
   QuicDataWriter writer(kMaxOutgoingPacketSize, encrypted_buffer);
   size_t length_field_offset = 0;
@@ -609,6 +654,9 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
 
   packet_.transmission_type = transmission_type;
 
+  DCHECK(packet_.encryption_level == ENCRYPTION_FORWARD_SECURE ||
+         packet_.encryption_level == ENCRYPTION_ZERO_RTT)
+      << packet_.encryption_level;
   size_t encrypted_length = framer_->EncryptInPlace(
       packet_.encryption_level, packet_.packet_number,
       GetStartOfEncryptedData(framer_->transport_version(), header),
@@ -623,6 +671,10 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
   packet_size_ = 0;
   packet_.encrypted_buffer = encrypted_buffer;
   packet_.encrypted_length = encrypted_length;
+
+  packet_buffer.buffer = nullptr;
+  packet_.release_encrypted_buffer = std::move(packet_buffer).release_buffer;
+
   packet_.retransmittable_frames.push_back(QuicFrame(frame));
   OnSerializedPacket();
 }
@@ -647,38 +699,38 @@ bool QuicPacketCreator::HasPendingStreamFramesOfStream(QuicStreamId id) const {
 size_t QuicPacketCreator::ExpansionOnNewFrame() const {
   // If the last frame in the packet is a message frame, then it will expand to
   // include the varint message length when a new frame is added.
-  const bool has_trailing_message_frame =
-      !queued_frames_.empty() && queued_frames_.back().type == MESSAGE_FRAME;
-  if (has_trailing_message_frame) {
-    return QuicDataWriter::GetVarInt62Len(
-        queued_frames_.back().message_frame->message_length);
-  }
-  // If the last frame in the packet is a stream frame, then it will expand to
-  // include the stream_length field when a new frame is added.
-  const bool has_trailing_stream_frame =
-      !queued_frames_.empty() && queued_frames_.back().type == STREAM_FRAME;
-  if (!has_trailing_stream_frame) {
+  if (queued_frames_.empty()) {
     return 0;
   }
-  if (VersionHasIetfQuicFrames(framer_->transport_version())) {
+  return ExpansionOnNewFrameWithLastFrame(queued_frames_.back(),
+                                          framer_->transport_version());
+}
+
+// static
+size_t QuicPacketCreator::ExpansionOnNewFrameWithLastFrame(
+    const QuicFrame& last_frame,
+    QuicTransportVersion version) {
+  if (last_frame.type == MESSAGE_FRAME) {
     return QuicDataWriter::GetVarInt62Len(
-        queued_frames_.back().stream_frame.data_length);
+        last_frame.message_frame->message_length);
+  }
+  if (last_frame.type != STREAM_FRAME) {
+    return 0;
+  }
+  if (VersionHasIetfQuicFrames(version)) {
+    return QuicDataWriter::GetVarInt62Len(last_frame.stream_frame.data_length);
   }
   return kQuicStreamPayloadLengthSize;
 }
 
-size_t QuicPacketCreator::BytesFree() {
+size_t QuicPacketCreator::BytesFree() const {
   DCHECK_GE(max_plaintext_size_, PacketSize());
   return max_plaintext_size_ -
          std::min(max_plaintext_size_, PacketSize() + ExpansionOnNewFrame());
 }
 
-size_t QuicPacketCreator::PacketSize() {
-  if (!queued_frames_.empty()) {
-    return packet_size_;
-  }
-  packet_size_ = PacketHeaderSize();
-  return packet_size_;
+size_t QuicPacketCreator::PacketSize() const {
+  return queued_frames_.empty() ? PacketHeaderSize() : packet_size_;
 }
 
 bool QuicPacketCreator::AddPaddedSavedFrame(
@@ -691,39 +743,67 @@ bool QuicPacketCreator::AddPaddedSavedFrame(
   return false;
 }
 
-void QuicPacketCreator::SerializePacket(char* encrypted_buffer,
+bool QuicPacketCreator::SerializePacket(QuicOwnedPacketBuffer encrypted_buffer,
                                         size_t encrypted_buffer_len) {
+  if (packet_.encrypted_buffer != nullptr) {
+    const std::string error_details =
+        "Packet's encrypted buffer is not empty before serialization";
+    QUIC_BUG << error_details;
+    delegate_->OnUnrecoverableError(QUIC_FAILED_TO_SERIALIZE_PACKET,
+                                    error_details);
+    return false;
+  }
+  ScopedSerializationFailureHandler handler(this);
+
   DCHECK_LT(0u, encrypted_buffer_len);
   QUIC_BUG_IF(queued_frames_.empty() && pending_padding_bytes_ == 0)
       << "Attempt to serialize empty packet";
   QuicPacketHeader header;
   // FillPacketHeader increments packet_number_.
   FillPacketHeader(&header);
+  if (delegate_ != nullptr) {
+    packet_.fate = delegate_->GetSerializedPacketFate(
+        /*is_mtu_discovery=*/QuicUtils::ContainsFrameType(queued_frames_,
+                                                          MTU_DISCOVERY_FRAME),
+        packet_.encryption_level);
+    QUIC_DVLOG(1) << ENDPOINT << "fate of packet " << packet_.packet_number
+                  << ": " << SerializedPacketFateToString(packet_.fate)
+                  << " of "
+                  << EncryptionLevelToString(packet_.encryption_level);
+  }
 
   MaybeAddPadding();
 
   QUIC_DVLOG(2) << ENDPOINT << "Serializing packet " << header
                 << QuicFramesToString(queued_frames_) << " at encryption_level "
-                << EncryptionLevelToString(packet_.encryption_level);
+                << packet_.encryption_level;
 
   if (!framer_->HasEncrypterOfEncryptionLevel(packet_.encryption_level)) {
+    // TODO(fayang): Use QUIC_MISSING_WRITE_KEYS for serialization failures due
+    // to missing keys.
     QUIC_BUG << ENDPOINT << "Attempting to serialize " << header
              << QuicFramesToString(queued_frames_)
-             << " at missing encryption_level "
-             << EncryptionLevelToString(packet_.encryption_level) << " using "
-             << framer_->version();
-    return;
+             << " at missing encryption_level " << packet_.encryption_level
+             << " using " << framer_->version();
+    return false;
   }
 
   DCHECK_GE(max_plaintext_size_, packet_size_);
   // Use the packet_size_ instead of the buffer size to ensure smaller
   // packet sizes are properly used.
   size_t length =
-      framer_->BuildDataPacket(header, queued_frames_, encrypted_buffer,
+      framer_->BuildDataPacket(header, queued_frames_, encrypted_buffer.buffer,
                                packet_size_, packet_.encryption_level);
   if (length == 0) {
-    QUIC_BUG << "Failed to serialize " << queued_frames_.size() << " frames.";
-    return;
+    QUIC_BUG << "Failed to serialize " << QuicFramesToString(queued_frames_)
+             << " at encryption_level: " << packet_.encryption_level
+             << ", needs_full_padding_: " << needs_full_padding_
+             << ", pending_padding_bytes_: " << pending_padding_bytes_
+             << ", latched_hard_max_packet_length_: "
+             << latched_hard_max_packet_length_
+             << ", max_packet_length_: " << max_packet_length_
+             << ", header: " << header;
+    return false;
   }
 
   // ACK Frames will be truncated due to length only if they're the only frame
@@ -741,31 +821,19 @@ void QuicPacketCreator::SerializePacket(char* encrypted_buffer,
   const size_t encrypted_length = framer_->EncryptInPlace(
       packet_.encryption_level, packet_.packet_number,
       GetStartOfEncryptedData(framer_->transport_version(), header), length,
-      encrypted_buffer_len, encrypted_buffer);
+      encrypted_buffer_len, encrypted_buffer.buffer);
   if (encrypted_length == 0) {
     QUIC_BUG << "Failed to encrypt packet number " << packet_.packet_number;
-    return;
+    return false;
   }
 
   packet_size_ = 0;
-  queued_frames_.clear();
-  packet_.encrypted_buffer = encrypted_buffer;
+  packet_.encrypted_buffer = encrypted_buffer.buffer;
   packet_.encrypted_length = encrypted_length;
-}
 
-std::unique_ptr<QuicEncryptedPacket>
-QuicPacketCreator::SerializeVersionNegotiationPacket(
-    bool ietf_quic,
-    bool use_length_prefix,
-    const ParsedQuicVersionVector& supported_versions) {
-  DCHECK_EQ(Perspective::IS_SERVER, framer_->perspective());
-  std::unique_ptr<QuicEncryptedPacket> encrypted =
-      QuicFramer::BuildVersionNegotiationPacket(
-          server_connection_id_, client_connection_id_, ietf_quic,
-          use_length_prefix, supported_versions);
-  DCHECK(encrypted);
-  DCHECK_GE(max_packet_length_, encrypted->length());
-  return encrypted;
+  encrypted_buffer.buffer = nullptr;
+  packet_.release_encrypted_buffer = std::move(encrypted_buffer).release_buffer;
+  return true;
 }
 
 std::unique_ptr<SerializedPacket>
@@ -785,6 +853,7 @@ QuicPacketCreator::SerializeConnectivityProbingPacket() {
       header, buffer.get(), max_plaintext_size_, packet_.encryption_level);
   DCHECK(length);
 
+  DCHECK_EQ(packet_.encryption_level, ENCRYPTION_FORWARD_SECURE);
   const size_t encrypted_length = framer_->EncryptInPlace(
       packet_.encryption_level, packet_.packet_number,
       GetStartOfEncryptedData(framer_->transport_version(), header), length,
@@ -824,6 +893,7 @@ QuicPacketCreator::SerializePathChallengeConnectivityProbingPacket(
       packet_.encryption_level);
   DCHECK(length);
 
+  DCHECK_EQ(packet_.encryption_level, ENCRYPTION_FORWARD_SECURE);
   const size_t encrypted_length = framer_->EncryptInPlace(
       packet_.encryption_level, packet_.packet_number,
       GetStartOfEncryptedData(framer_->transport_version(), header), length,
@@ -865,6 +935,7 @@ QuicPacketCreator::SerializePathResponseConnectivityProbingPacket(
                               payloads, is_padded, packet_.encryption_level);
   DCHECK(length);
 
+  DCHECK_EQ(packet_.encryption_level, ENCRYPTION_FORWARD_SECURE);
   const size_t encrypted_length = framer_->EncryptInPlace(
       packet_.encryption_level, packet_.packet_number,
       GetStartOfEncryptedData(framer_->transport_version(), header), length,
@@ -975,7 +1046,6 @@ size_t QuicPacketCreator::SerializeCoalescedPacket(
     const QuicCoalescedPacket& coalesced,
     char* buffer,
     size_t buffer_len) {
-  QUIC_BUG_IF(packet_.num_padding_bytes != 0);
   if (HasPendingFrames()) {
     QUIC_BUG << "Try to serialize coalesced packet with pending frames";
     return 0;
@@ -1107,22 +1177,23 @@ QuicVariableLengthIntegerLength QuicPacketCreator::GetRetryTokenLengthLength()
   return VARIABLE_LENGTH_INTEGER_LENGTH_0;
 }
 
-quiche::QuicheStringPiece QuicPacketCreator::GetRetryToken() const {
+absl::string_view QuicPacketCreator::GetRetryToken() const {
   if (QuicVersionHasLongHeaderLengths(framer_->transport_version()) &&
       HasIetfLongHeader() &&
       EncryptionlevelToLongHeaderType(packet_.encryption_level) == INITIAL) {
     return retry_token_;
   }
-  return quiche::QuicheStringPiece();
+  return absl::string_view();
 }
 
-void QuicPacketCreator::SetRetryToken(quiche::QuicheStringPiece retry_token) {
+void QuicPacketCreator::SetRetryToken(absl::string_view retry_token) {
   retry_token_ = std::string(retry_token);
 }
 
 bool QuicPacketCreator::ConsumeRetransmittableControlFrame(
     const QuicFrame& frame) {
-  QUIC_BUG_IF(IsControlFrame(frame.type) && !GetControlFrameId(frame))
+  QUIC_BUG_IF(IsControlFrame(frame.type) && !GetControlFrameId(frame) &&
+              (!let_connection_handle_pings_ || frame.type != PING_FRAME))
       << "Adding a control frame with no control frame id: " << frame;
   DCHECK(QuicUtils::IsRetransmittableFrame(frame.type)) << frame;
   MaybeBundleAckOpportunistically();
@@ -1180,9 +1251,9 @@ QuicConsumedData QuicPacketCreator::ConsumeData(QuicStreamId id,
       write_length - total_bytes_consumed > kMaxOutgoingPacketSize &&
       latched_hard_max_packet_length_ == 0;
 
-  while (!run_fast_path && delegate_->ShouldGeneratePacket(
-                               HAS_RETRANSMITTABLE_DATA,
-                               has_handshake ? IS_HANDSHAKE : NOT_HANDSHAKE)) {
+  while (!run_fast_path &&
+         (has_handshake || delegate_->ShouldGeneratePacket(
+                               HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE))) {
     QuicFrame frame;
     bool needs_full_padding =
         has_handshake && fully_pad_crypto_handshake_packets_;
@@ -1241,6 +1312,10 @@ QuicConsumedData QuicPacketCreator::ConsumeDataFastPath(
     bool fin,
     size_t total_bytes_consumed) {
   DCHECK(!QuicUtils::IsCryptoStreamId(transport_version(), id));
+  if (AttemptingToSendUnencryptedStreamData()) {
+    return QuicConsumedData(total_bytes_consumed,
+                            fin && (total_bytes_consumed == write_length));
+  }
 
   while (total_bytes_consumed < write_length &&
          delegate_->ShouldGeneratePacket(HAS_RETRANSMITTABLE_DATA,
@@ -1268,6 +1343,8 @@ QuicConsumedData QuicPacketCreator::ConsumeDataFastPath(
 size_t QuicPacketCreator::ConsumeCryptoData(EncryptionLevel level,
                                             size_t write_length,
                                             QuicStreamOffset offset) {
+  QUIC_DVLOG(2) << "ConsumeCryptoData " << level << " write_length "
+                << write_length << " offset " << offset;
   QUIC_BUG_IF(!flusher_attached_) << "Packet flusher is not attached when "
                                      "generator tries to write crypto data.";
   MaybeBundleAckOpportunistically();
@@ -1282,7 +1359,9 @@ size_t QuicPacketCreator::ConsumeCryptoData(EncryptionLevel level,
 
   size_t total_bytes_consumed = 0;
 
-  while (total_bytes_consumed < write_length) {
+  while (
+      total_bytes_consumed < write_length &&
+      delegate_->ShouldGeneratePacket(HAS_RETRANSMITTABLE_DATA, IS_HANDSHAKE)) {
     QuicFrame frame;
     if (!ConsumeCryptoDataToFillCurrentPacket(
             level, write_length - total_bytes_consumed,
@@ -1385,7 +1464,7 @@ void QuicPacketCreator::Flush() {
   FlushCurrentPacket();
   SendRemainingPendingPadding();
   flusher_attached_ = false;
-  if (GetQuicFlag(FLAGS_quic_export_server_num_packets_per_write_histogram)) {
+  if (GetQuicFlag(FLAGS_quic_export_write_path_stats_at_server)) {
     if (!write_start_packet_number_.IsInitialized()) {
       QUIC_BUG << "write_start_packet_number is not initialized";
       return;
@@ -1481,21 +1560,47 @@ void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
       EncryptionlevelToLongHeaderType(packet_.encryption_level);
 }
 
+size_t QuicPacketCreator::GetSerializedFrameLength(const QuicFrame& frame) {
+  size_t serialized_frame_length = framer_->GetSerializedFrameLength(
+      frame, BytesFree(), queued_frames_.empty(),
+      /* last_frame_in_packet= */ true, GetPacketNumberLength());
+  if (!framer_->version().HasHeaderProtection() ||
+      serialized_frame_length == 0) {
+    return serialized_frame_length;
+  }
+  // Calculate frame bytes and bytes free with this frame added.
+  const size_t frame_bytes = PacketSize() - PacketHeaderSize() +
+                             ExpansionOnNewFrame() + serialized_frame_length;
+  if (frame_bytes >= MinPlaintextPacketSize(framer_->version())) {
+    // No extra bytes is needed.
+    return serialized_frame_length;
+  }
+  if (BytesFree() < serialized_frame_length) {
+    QUIC_BUG << ENDPOINT << "Frame does not fit: " << frame;
+    return 0;
+  }
+  // Please note bytes_free does not take |frame|'s expansion into account.
+  size_t bytes_free = BytesFree() - serialized_frame_length;
+  // Extra bytes needed (this is NOT padding needed) should be at least 1
+  // padding + expansion.
+  const size_t extra_bytes_needed = std::max(
+      1 + ExpansionOnNewFrameWithLastFrame(frame, framer_->transport_version()),
+      MinPlaintextPacketSize(framer_->version()) - frame_bytes);
+  if (bytes_free < extra_bytes_needed) {
+    // This frame does not fit.
+    return 0;
+  }
+  return serialized_frame_length;
+}
+
 bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
                                  TransmissionType transmission_type) {
   QUIC_DVLOG(1) << ENDPOINT << "Adding frame with transmission type "
-                << TransmissionTypeToString(transmission_type) << ": " << frame;
+                << transmission_type << ": " << frame;
   if (frame.type == STREAM_FRAME &&
       !QuicUtils::IsCryptoStreamId(framer_->transport_version(),
                                    frame.stream_frame.stream_id) &&
-      (packet_.encryption_level == ENCRYPTION_INITIAL ||
-       packet_.encryption_level == ENCRYPTION_HANDSHAKE)) {
-    const std::string error_details =
-        quiche::QuicheStrCat("Cannot send stream data with level: ",
-                             EncryptionLevelToString(packet_.encryption_level));
-    QUIC_BUG << error_details;
-    delegate_->OnUnrecoverableError(
-        QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA, error_details);
+      AttemptingToSendUnencryptedStreamData()) {
     return false;
   }
 
@@ -1508,19 +1613,26 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
     }
   }
 
-  size_t frame_len = framer_->GetSerializedFrameLength(
-      frame, BytesFree(), queued_frames_.empty(),
-      /* last_frame_in_packet= */ true, GetPacketNumberLength());
+  // If this is an ACK frame, validate that it is non-empty and that
+  // largest_acked matches the max packet number.
+  DCHECK(frame.type != ACK_FRAME ||
+         (!frame.ack_frame->packets.Empty() &&
+          frame.ack_frame->packets.Max() == frame.ack_frame->largest_acked))
+      << "Invalid ACK frame: " << frame;
+
+  size_t frame_len = GetSerializedFrameLength(frame);
   if (frame_len == 0 && RemoveSoftMaxPacketLength()) {
     // Remove soft max_packet_length and retry.
-    frame_len = framer_->GetSerializedFrameLength(
-        frame, BytesFree(), queued_frames_.empty(),
-        /* last_frame_in_packet= */ true, GetPacketNumberLength());
+    frame_len = GetSerializedFrameLength(frame);
   }
   if (frame_len == 0) {
-    // Current open packet is full.
+    QUIC_DVLOG(1) << "Flushing because current open packet is full when adding "
+                  << frame;
     FlushCurrentPacket();
     return false;
+  }
+  if (queued_frames_.empty()) {
+    packet_size_ = PacketHeaderSize();
   }
   DCHECK_LT(0u, packet_size_);
 
@@ -1548,9 +1660,12 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
   if (frame.type == ACK_FRAME) {
     packet_.has_ack = true;
     packet_.largest_acked = LargestAcked(*frame.ack_frame);
-  }
-  if (frame.type == STOP_WAITING_FRAME) {
+  } else if (frame.type == STOP_WAITING_FRAME) {
     packet_.has_stop_waiting = true;
+  } else if (frame.type == ACK_FREQUENCY_FRAME) {
+    packet_.has_ack_frequency = true;
+  } else if (frame.type == MESSAGE_FRAME) {
+    packet_.has_message = true;
   }
   if (debug_delegate_ != nullptr) {
     debug_delegate_->OnFrameAddedToPacket(frame);
@@ -1562,6 +1677,23 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
     packet_.transmission_type = transmission_type;
   }
   return true;
+}
+
+void QuicPacketCreator::MaybeAddExtraPaddingForHeaderProtection() {
+  if (!framer_->version().HasHeaderProtection() || needs_full_padding_) {
+    return;
+  }
+  const size_t frame_bytes = PacketSize() - PacketHeaderSize();
+  if (frame_bytes >= MinPlaintextPacketSize(framer_->version())) {
+    return;
+  }
+  const QuicByteCount min_header_protection_padding =
+      std::max(1 + ExpansionOnNewFrame(),
+               MinPlaintextPacketSize(framer_->version()) - frame_bytes) -
+      ExpansionOnNewFrame();
+  // Update pending_padding_bytes_.
+  pending_padding_bytes_ =
+      std::max(pending_padding_bytes_, min_header_protection_padding);
 }
 
 bool QuicPacketCreator::MaybeCoalesceStreamFrame(const QuicStreamFrame& frame) {
@@ -1612,7 +1744,6 @@ bool QuicPacketCreator::RemoveSoftMaxPacketLength() {
 void QuicPacketCreator::MaybeAddPadding() {
   // The current packet should have no padding bytes because padding is only
   // added when this method is called just before the packet is serialized.
-  DCHECK_EQ(0, packet_.num_padding_bytes);
   if (BytesFree() == 0) {
     // Don't pad full packets.
     return;
@@ -1622,61 +1753,30 @@ void QuicPacketCreator::MaybeAddPadding() {
     needs_full_padding_ = true;
   }
 
-  // Packet coalescer pads INITIAL packets, so the creator should not.
-  if (framer_->version().CanSendCoalescedPackets() &&
-      (packet_.encryption_level == ENCRYPTION_INITIAL ||
-       packet_.encryption_level == ENCRYPTION_HANDSHAKE)) {
-    // TODO(fayang): MTU discovery packets should not ever be sent as
-    // ENCRYPTION_INITIAL or ENCRYPTION_HANDSHAKE.
-    bool is_mtu_discovery = false;
-    for (const auto& frame : packet_.nonretransmittable_frames) {
-      if (frame.type == MTU_DISCOVERY_FRAME) {
-        is_mtu_discovery = true;
-        break;
-      }
-    }
-    if (!is_mtu_discovery) {
-      // Do not add full padding if connection tries to coalesce packet.
-      needs_full_padding_ = false;
-    }
+  if (packet_.fate == COALESCE || packet_.fate == LEGACY_VERSION_ENCAPSULATE) {
+    // Do not add full padding if the packet is going to be coalesced or
+    // encapsulated.
+    needs_full_padding_ = false;
   }
 
   // Header protection requires a minimum plaintext packet size.
-  size_t extra_padding_bytes = 0;
-  if (framer_->version().HasHeaderProtection()) {
-    size_t frame_bytes = PacketSize() - PacketHeaderSize();
+  MaybeAddExtraPaddingForHeaderProtection();
 
-    if (frame_bytes + pending_padding_bytes_ <
-            MinPlaintextPacketSize(framer_->version()) &&
-        !needs_full_padding_) {
-      extra_padding_bytes =
-          MinPlaintextPacketSize(framer_->version()) - frame_bytes;
-    }
-  }
-
-  if (!needs_full_padding_ && pending_padding_bytes_ == 0 &&
-      extra_padding_bytes == 0) {
+  if (!needs_full_padding_ && pending_padding_bytes_ == 0) {
     // Do not need padding.
     return;
   }
 
   int padding_bytes = -1;
-  if (needs_full_padding_) {
-    // Full padding does not consume pending padding bytes.
-    packet_.num_padding_bytes = -1;
-  } else {
-    packet_.num_padding_bytes =
-        std::min<int16_t>(pending_padding_bytes_, BytesFree());
-    pending_padding_bytes_ -= packet_.num_padding_bytes;
-    padding_bytes =
-        std::max<int16_t>(packet_.num_padding_bytes, extra_padding_bytes);
+  if (!needs_full_padding_) {
+    padding_bytes = std::min<int16_t>(pending_padding_bytes_, BytesFree());
+    pending_padding_bytes_ -= padding_bytes;
   }
 
   bool success = AddFrame(QuicFrame(QuicPaddingFrame(padding_bytes)),
                           packet_.transmission_type);
   QUIC_BUG_IF(!success) << "Failed to add padding_bytes: " << padding_bytes
-                        << " transmission_type: "
-                        << TransmissionTypeToString(packet_.transmission_type);
+                        << " transmission_type: " << packet_.transmission_type;
 }
 
 bool QuicPacketCreator::IncludeNonceInPublicHeader() const {
@@ -1793,6 +1893,20 @@ QuicPacketLength QuicPacketCreator::GetGuaranteedLargestMessagePayload() const {
   return largest_payload;
 }
 
+bool QuicPacketCreator::AttemptingToSendUnencryptedStreamData() {
+  if (packet_.encryption_level == ENCRYPTION_ZERO_RTT ||
+      packet_.encryption_level == ENCRYPTION_FORWARD_SECURE) {
+    return false;
+  }
+  const std::string error_details =
+      quiche::QuicheStrCat("Cannot send stream data with level: ",
+                           EncryptionLevelToString(packet_.encryption_level));
+  QUIC_BUG << error_details;
+  delegate_->OnUnrecoverableError(QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA,
+                                  error_details);
+  return true;
+}
+
 bool QuicPacketCreator::HasIetfLongHeader() const {
   return VersionHasIetfInvariantHeader(framer_->transport_version()) &&
          packet_.encryption_level < ENCRYPTION_FORWARD_SECURE;
@@ -1835,6 +1949,113 @@ QuicPacketNumber QuicPacketCreator::NextSendingPacketNumber() const {
 
 bool QuicPacketCreator::PacketFlusherAttached() const {
   return flusher_attached_;
+}
+
+bool QuicPacketCreator::HasSoftMaxPacketLength() const {
+  return latched_hard_max_packet_length_ != 0;
+}
+
+void QuicPacketCreator::SetDefaultPeerAddress(QuicSocketAddress address) {
+  if (!packet_.peer_address.IsInitialized()) {
+    packet_.peer_address = address;
+    return;
+  }
+  if (packet_.peer_address != address) {
+    FlushCurrentPacket();
+    packet_.peer_address = address;
+  }
+}
+
+QuicPacketCreator::ScopedPeerAddressContext::ScopedPeerAddressContext(
+    QuicPacketCreator* creator,
+    QuicSocketAddress address)
+    : creator_(creator), old_peer_address_(creator_->packet_.peer_address) {
+  QUIC_BUG_IF(!creator_->packet_.peer_address.IsInitialized())
+      << "Context is used before seralized packet's peer address is "
+         "initialized.";
+  creator_->SetDefaultPeerAddress(address);
+}
+
+QuicPacketCreator::ScopedPeerAddressContext::~ScopedPeerAddressContext() {
+  creator_->SetDefaultPeerAddress(old_peer_address_);
+}
+
+QuicPacketCreator::ScopedSerializationFailureHandler::
+    ScopedSerializationFailureHandler(QuicPacketCreator* creator)
+    : creator_(creator) {}
+
+QuicPacketCreator::ScopedSerializationFailureHandler::
+    ~ScopedSerializationFailureHandler() {
+  if (creator_ == nullptr) {
+    return;
+  }
+  // Always clear queued_frames_.
+  creator_->queued_frames_.clear();
+
+  if (creator_->packet_.encrypted_buffer == nullptr) {
+    const std::string error_details = "Failed to SerializePacket.";
+    QUIC_BUG << error_details;
+    creator_->delegate_->OnUnrecoverableError(QUIC_FAILED_TO_SERIALIZE_PACKET,
+                                              error_details);
+  }
+}
+
+void QuicPacketCreator::set_encryption_level(EncryptionLevel level) {
+  DCHECK(level == packet_.encryption_level || !HasPendingFrames())
+      << "Cannot update encryption level from " << packet_.encryption_level
+      << " to " << level << " when we already have pending frames: "
+      << QuicFramesToString(queued_frames_);
+  packet_.encryption_level = level;
+}
+
+void QuicPacketCreator::AddPathChallengeFrame(QuicPathFrameBuffer* payload) {
+  // Write a PATH_CHALLENGE frame, which has a random 8-byte payload.
+  random_->RandBytes(payload->data(), payload->size());
+  auto path_challenge_frame = new QuicPathChallengeFrame(0, *payload);
+  QuicFrame frame(path_challenge_frame);
+  if (AddPaddedFrameWithRetry(frame)) {
+    return;
+  }
+  // Fail silently if the probing packet cannot be written, path validation
+  // initiator will retry sending automatically.
+  // TODO(danzh) This will consume retry budget, if it causes performance
+  // regression, consider to notify the caller about the sending failure and let
+  // the caller to decide if it worth retrying.
+  QUIC_DVLOG(1) << ENDPOINT << "Can't send PATH_CHALLENGE now";
+  delete path_challenge_frame;
+}
+
+bool QuicPacketCreator::AddPathResponseFrame(
+    const QuicPathFrameBuffer& data_buffer) {
+  auto path_response =
+      new QuicPathResponseFrame(kInvalidControlFrameId, data_buffer);
+  QuicFrame frame(path_response);
+  if (AddPaddedFrameWithRetry(frame)) {
+    return true;
+  }
+
+  QUIC_DVLOG(1) << ENDPOINT << "Can't send PATH_RESPONSE now";
+  QUIC_RELOADABLE_FLAG_COUNT_N(quic_send_path_response, 5, 5);
+  delete path_response;
+  return false;
+}
+
+bool QuicPacketCreator::AddPaddedFrameWithRetry(const QuicFrame& frame) {
+  if (HasPendingFrames()) {
+    if (AddPaddedSavedFrame(frame, NOT_RETRANSMISSION)) {
+      // Frame is queued.
+      return true;
+    }
+  }
+  // Frame was not queued but queued frames were flushed.
+  DCHECK(!HasPendingFrames());
+  if (!delegate_->ShouldGeneratePacket(NO_RETRANSMITTABLE_DATA,
+                                       NOT_HANDSHAKE)) {
+    return false;
+  }
+  bool success = AddPaddedSavedFrame(frame, NOT_RETRANSMISSION);
+  QUIC_BUG_IF(!success);
+  return true;
 }
 
 #undef ENDPOINT  // undef for jumbo builds

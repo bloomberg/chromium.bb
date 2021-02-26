@@ -7,7 +7,7 @@
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
-#include "third_party/blink/renderer/core/animation/animation_test_helper.h"
+#include "third_party/blink/renderer/core/animation/animation_test_helpers.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/interpolable_length.h"
@@ -20,6 +20,8 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
+
+using animation_test_helpers::EnsureInterpolatedValueCached;
 
 class AnimationEffectStackTest : public PageTestBase {
  protected:
@@ -66,7 +68,8 @@ class AnimationEffectStackTest : public PageTestBase {
   InertEffect* MakeInertEffect(KeyframeEffectModelBase* effect) {
     Timing timing;
     timing.fill_mode = Timing::FillMode::BOTH;
-    return MakeGarbageCollected<InertEffect>(effect, timing, false, 0);
+    return MakeGarbageCollected<InertEffect>(effect, timing, false, 0,
+                                             base::nullopt);
   }
 
   KeyframeEffect* MakeKeyframeEffect(KeyframeEffectModelBase* effect,
@@ -79,12 +82,12 @@ class AnimationEffectStackTest : public PageTestBase {
 
   double GetFontSizeValue(
       const ActiveInterpolationsMap& active_interpolations) {
-    const ActiveInterpolations& interpolations =
+    ActiveInterpolations* interpolations =
         active_interpolations.at(PropertyHandle(GetCSSPropertyFontSize()));
     EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
     const auto* typed_value =
-        To<InvalidatableInterpolation>(*interpolations.at(0))
+        To<InvalidatableInterpolation>(*interpolations->at(0))
             .GetCachedValueForTesting();
     // font-size is stored as an |InterpolableLength|; here we assume pixels.
     EXPECT_TRUE(typed_value->GetInterpolableValue().IsLength());
@@ -94,12 +97,12 @@ class AnimationEffectStackTest : public PageTestBase {
   }
 
   double GetZIndexValue(const ActiveInterpolationsMap& active_interpolations) {
-    const ActiveInterpolations& interpolations =
+    ActiveInterpolations* interpolations =
         active_interpolations.at(PropertyHandle(GetCSSPropertyZIndex()));
     EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
     const auto* typed_value =
-        To<InvalidatableInterpolation>(*interpolations.at(0))
+        To<InvalidatableInterpolation>(*interpolations->at(0))
             .GetCachedValueForTesting();
     // z-index is stored as a straight number value.
     EXPECT_TRUE(typed_value->GetInterpolableValue().IsNumber());

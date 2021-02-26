@@ -24,7 +24,7 @@
 
 namespace quic {
 
-typedef uint64_t QuicRoundTripCount;
+using QuicRoundTripCount = uint64_t;
 
 class CachedNetworkParameters;
 class RttStats;
@@ -41,16 +41,12 @@ class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
                   bool allow_cwnd_to_decrease)
         : bandwidth(bandwidth),
           rtt(rtt),
-          allow_cwnd_to_decrease(allow_cwnd_to_decrease),
-          quic_fix_bbr_cwnd_in_bandwidth_resumption(
-              GetQuicReloadableFlag(quic_fix_bbr_cwnd_in_bandwidth_resumption)),
-          quic_bbr_fix_pacing_rate(
-              GetQuicReloadableFlag(quic_bbr_fix_pacing_rate)),
-          quic_bbr_donot_inject_bandwidth(
-              GetQuicReloadableFlag(quic_bbr_donot_inject_bandwidth)) {}
+          allow_cwnd_to_decrease(allow_cwnd_to_decrease) {}
 
     bool operator==(const NetworkParams& other) const {
       return bandwidth == other.bandwidth && rtt == other.rtt &&
+             max_initial_congestion_window ==
+                 other.max_initial_congestion_window &&
              allow_cwnd_to_decrease == other.allow_cwnd_to_decrease &&
              quic_fix_bbr_cwnd_in_bandwidth_resumption ==
                  other.quic_fix_bbr_cwnd_in_bandwidth_resumption &&
@@ -61,14 +57,15 @@ class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
 
     QuicBandwidth bandwidth;
     QuicTime::Delta rtt;
+    int max_initial_congestion_window = 0;
     bool allow_cwnd_to_decrease;
     // Code changes that are controlled by flags.
     // TODO(b/131899599): Remove after impact of fix is measured.
-    bool quic_fix_bbr_cwnd_in_bandwidth_resumption;
+    bool quic_fix_bbr_cwnd_in_bandwidth_resumption = true;
     // TODO(b/143540157): Remove after impact of fix is measured.
-    bool quic_bbr_fix_pacing_rate;
+    bool quic_bbr_fix_pacing_rate = true;
     // TODO(b/72089315, b/143891040): Remove after impact of fix is measured.
-    bool quic_bbr_donot_inject_bandwidth;
+    bool quic_bbr_donot_inject_bandwidth = true;
   };
 
   static SendAlgorithmInterface* Create(

@@ -27,6 +27,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
 import * as UI from '../ui/ui.js';
 
@@ -72,7 +73,7 @@ export class ResourceSourceFrame extends SourceFrameImpl {
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber) {
     contextMenu.appendApplicableItems(this._resource);
@@ -85,11 +86,10 @@ export class SearchableContainer extends UI.Widget.VBox {
    * @param {!TextUtils.ContentProvider.ContentProvider} resource
    * @param {string} highlighterType
    * @param {boolean=} autoPrettyPrint
-   * @return {!UI.Widget.Widget}
    */
   constructor(resource, highlighterType, autoPrettyPrint) {
     super(true);
-    this.registerRequiredCSS('source_frame/resourceSourceFrame.css');
+    this.registerRequiredCSS('source_frame/resourceSourceFrame.css', {enableLegacyPatching: true});
     const sourceFrame = new ResourceSourceFrame(resource, autoPrettyPrint);
     this._sourceFrame = sourceFrame;
     sourceFrame.setHighlighterType(highlighterType);

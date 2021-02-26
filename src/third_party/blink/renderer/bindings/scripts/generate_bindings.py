@@ -37,6 +37,12 @@ def parse_options():
         type="string",
         help='output directory for "modules" component relative '
         'to root_gen_dir')
+    parser.add_option(
+        '--single_process',
+        action="store_true",
+        default=False,
+        help=('run everything in a single process, which makes debugging '
+              'easier'))
     options, args = parser.parse_args()
 
     required_option_names = ("web_idl_database", "root_src_dir",
@@ -56,9 +62,12 @@ def main():
     options, tasks = parse_options()
 
     dispatch_table = {
+        'callback_function': bind_gen.generate_callback_functions,
+        'callback_interface': bind_gen.generate_callback_interfaces,
         'dictionary': bind_gen.generate_dictionaries,
         'enumeration': bind_gen.generate_enumerations,
         'interface': bind_gen.generate_interfaces,
+        'namespace': bind_gen.generate_namespaces,
         'union': bind_gen.generate_unions,
     }
 
@@ -66,20 +75,35 @@ def main():
         if task not in dispatch_table:
             sys.exit("Unknown task: {}".format(task))
 
-    web_idl_database = web_idl.Database.read_from_file(
-        options.web_idl_database)
     component_reldirs = {
         web_idl.Component('core'): options.output_core_reldir,
         web_idl.Component('modules'): options.output_modules_reldir,
     }
+    bind_gen.init(web_idl_database_path=options.web_idl_database,
+                  root_src_dir=options.root_src_dir,
+                  root_gen_dir=options.root_gen_dir,
+                  component_reldirs=component_reldirs)
 
-    bind_gen.init(
-        root_src_dir=options.root_src_dir,
-        root_gen_dir=options.root_gen_dir,
-        component_reldirs=component_reldirs)
+    task_queue = bind_gen.TaskQueue(single_process=options.single_process)
 
     for task in tasks:
-        dispatch_table[task](web_idl_database=web_idl_database)
+        dispatch_table[task](task_queue)
+
+    def print_to_console(message):
+        out = sys.stdout
+        if not out.isatty():
+            return
+        out.write(message)
+        out.flush()
+
+    def report_progress(total, done):
+        percentage = (int(float(done) / float(total) *
+                          100) if total != 0 else 100)
+        message = "Blink-V8 bindings generation: {}% done\r".format(percentage)
+        print_to_console(message)
+
+    task_queue.run(report_progress)
+    print_to_console("\n")
 
 
 if __name__ == '__main__':

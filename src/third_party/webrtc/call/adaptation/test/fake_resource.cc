@@ -10,44 +10,35 @@
 
 #include "call/adaptation/test/fake_resource.h"
 
+#include <algorithm>
 #include <utility>
+
+#include "rtc_base/ref_counted_object.h"
 
 namespace webrtc {
 
+// static
+rtc::scoped_refptr<FakeResource> FakeResource::Create(std::string name) {
+  return new rtc::RefCountedObject<FakeResource>(name);
+}
+
 FakeResource::FakeResource(std::string name)
-    : rtc::RefCountedObject<Resource>(),
-      name_(std::move(name)),
-      is_adaptation_up_allowed_(true),
-      num_adaptations_applied_(0) {}
+    : Resource(), name_(std::move(name)), listener_(nullptr) {}
 
 FakeResource::~FakeResource() {}
 
-void FakeResource::set_usage_state(ResourceUsageState usage_state) {
-  OnResourceUsageStateMeasured(usage_state);
+void FakeResource::SetUsageState(ResourceUsageState usage_state) {
+  if (listener_) {
+    listener_->OnResourceUsageStateMeasured(this, usage_state);
+  }
 }
 
-void FakeResource::set_is_adaptation_up_allowed(bool is_adaptation_up_allowed) {
-  is_adaptation_up_allowed_ = is_adaptation_up_allowed;
+std::string FakeResource::Name() const {
+  return name_;
 }
 
-size_t FakeResource::num_adaptations_applied() const {
-  return num_adaptations_applied_;
-}
-
-bool FakeResource::IsAdaptationUpAllowed(
-    const VideoStreamInputState& input_state,
-    const VideoSourceRestrictions& restrictions_before,
-    const VideoSourceRestrictions& restrictions_after,
-    rtc::scoped_refptr<Resource> reason_resource) const {
-  return is_adaptation_up_allowed_;
-}
-
-void FakeResource::OnAdaptationApplied(
-    const VideoStreamInputState& input_state,
-    const VideoSourceRestrictions& restrictions_before,
-    const VideoSourceRestrictions& restrictions_after,
-    rtc::scoped_refptr<Resource> reason_resource) {
-  ++num_adaptations_applied_;
+void FakeResource::SetResourceListener(ResourceListener* listener) {
+  listener_ = listener;
 }
 
 }  // namespace webrtc

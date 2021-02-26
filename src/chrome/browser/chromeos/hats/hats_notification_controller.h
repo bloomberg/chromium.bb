@@ -20,6 +20,7 @@ class Profile;
 class NetworkState;
 
 namespace chromeos {
+class HatsDialog;
 
 // Happiness tracking survey (HaTS) notification controller is responsible for
 // managing the HaTS notification that is displayed to the user.
@@ -52,6 +53,18 @@ class HatsNotificationController : public message_center::NotificationDelegate,
 
   ~HatsNotificationController() override;
 
+  enum class HatsState {
+    kDeviceSelected = 0,         // Device was selected in roll of dice.
+    kSurveyShownRecently = 1,    // A survey was shown recently on device.
+    kNewDevice = 2,              // Device is too new to show the survey.
+    kNotificationDisplayed = 3,  // Pop up for survey was presented to user.
+    kNotificationDismissed = 4,  // Notification was dismissed by user.
+    kNotificationClicked = 5,    // User clicked on notification to open the
+                                 // survey.
+
+    kMaxValue = kNotificationClicked
+  };
+
   // NotificationDelegate overrides:
   void Initialize(bool is_new_device);
   void Close(bool by_user) override;
@@ -61,12 +74,16 @@ class HatsNotificationController : public message_center::NotificationDelegate,
   // NetworkPortalDetector::Observer override:
   void OnPortalDetectionCompleted(
       const NetworkState* network,
-      const NetworkPortalDetector::CaptivePortalState& state) override;
+      const NetworkPortalDetector::CaptivePortalStatus status) override;
 
   void UpdateLastInteractionTime();
 
   Profile* const profile_;
   std::unique_ptr<message_center::Notification> notification_;
+  std::unique_ptr<HatsDialog> hats_dialog_;
+
+  HatsState state_ = HatsState::kDeviceSelected;
+
   base::WeakPtrFactory<HatsNotificationController> weak_pointer_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HatsNotificationController);

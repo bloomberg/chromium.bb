@@ -8,7 +8,7 @@
  * NetworkListItem.
  */
 
-const NetworkList = {};
+/* #export */ const NetworkList = {};
 
 /**
  * Custom data for implementation specific network list items.

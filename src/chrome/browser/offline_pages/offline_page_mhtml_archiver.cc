@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -30,12 +30,11 @@
 namespace offline_pages {
 namespace {
 void DeleteFileOnFileThread(const base::FilePath& file_path,
-                            const base::Closure& callback) {
+                            base::OnceClosure callback) {
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path,
-                     false /* recursive */),
-      callback);
+      base::BindOnce(base::GetDeleteFileCallback(), file_path),
+      std::move(callback));
 }
 
 // Compute a SHA256 digest using a background thread. The computed digest will
@@ -101,8 +100,6 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
   params.remove_popup_overlay = create_archive_params.remove_popup_overlay;
   params.use_page_problem_detectors =
       create_archive_params.use_page_problem_detectors;
-  params.compute_contents_hash =
-      create_archive_params.use_on_the_fly_hash_computation;
 
   web_contents->GenerateMHTMLWithResult(
       params,
@@ -172,9 +169,9 @@ void OfflinePageMHTMLArchiver::OnComputeDigestDone(
 void OfflinePageMHTMLArchiver::DeleteFileAndReportFailure(
     const base::FilePath& file_path,
     ArchiverResult result) {
-  DeleteFileOnFileThread(file_path,
-                         base::Bind(&OfflinePageMHTMLArchiver::ReportFailure,
-                                    weak_ptr_factory_.GetWeakPtr(), result));
+  DeleteFileOnFileThread(
+      file_path, base::BindOnce(&OfflinePageMHTMLArchiver::ReportFailure,
+                                weak_ptr_factory_.GetWeakPtr(), result));
 }
 
 void OfflinePageMHTMLArchiver::ReportFailure(ArchiverResult result) {

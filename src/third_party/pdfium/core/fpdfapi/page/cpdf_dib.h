@@ -40,8 +40,7 @@ class CPDF_DIB final : public CFX_DIBBase {
  public:
   enum class LoadState : uint8_t { kFail, kSuccess, kContinue };
 
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
+  CONSTRUCT_VIA_MAKE_RETAIN;
 
   bool Load(CPDF_Document* pDoc, const CPDF_Stream* pStream);
 
@@ -64,7 +63,7 @@ class CPDF_DIB final : public CFX_DIBBase {
                              const CPDF_Stream* pStream,
                              bool bHasMask,
                              const CPDF_Dictionary* pFormResources,
-                             CPDF_Dictionary* pPageResources,
+                             const CPDF_Dictionary* pPageResources,
                              bool bStdCS,
                              uint32_t GroupFamily,
                              bool bLoadMask);
@@ -132,6 +131,9 @@ class CPDF_DIB final : public CFX_DIBBase {
                                int clip_width) const;
   bool TransMask() const;
   void SetMaskProperties();
+
+  uint32_t Get1BitSetValue() const;
+  uint32_t Get1BitResetValue() const;
 
   UnownedPtr<CPDF_Document> m_pDocument;
   RetainPtr<const CPDF_Stream> m_pStream;

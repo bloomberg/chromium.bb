@@ -14,12 +14,12 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/frame_navigate_params.h"
 #include "url/gurl.h"
 
 namespace content {
 
 class WebContents;
+class RenderFrameHost;
 
 // Extends WebContentsObserver for providing a public Java API for some of the
 // the calls it receives.
@@ -31,6 +31,8 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
  private:
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   void RenderViewReady() override;
   void RenderProcessGone(base::TerminationStatus termination_status) override;
   void DidStartLoading() override;
@@ -58,8 +60,6 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void NavigationEntryChanged(
       const EntryChangedDetails& change_details) override;
   void WebContentsDestroyed() override;
-  void DidAttachInterstitialPage() override;
-  void DidDetachInterstitialPage() override;
   void DidChangeThemeColor() override;
   void MediaEffectivelyFullscreenChanged(bool is_fullscreen) override;
   void SetToBaseURLForDataURLIfNeeded(std::string* url);

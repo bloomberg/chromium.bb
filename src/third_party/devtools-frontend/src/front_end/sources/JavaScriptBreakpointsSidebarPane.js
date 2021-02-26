@@ -4,6 +4,7 @@
 
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
@@ -11,13 +12,12 @@ import * as Workspace from '../workspace/workspace.js';
 
 /**
  * @implements {UI.ContextFlavorListener.ContextFlavorListener}
- * @implements {UI.ListControl.ListDelegate}
- * @unrestricted
+ * @implements {UI.ListControl.ListDelegate<!BreakpointItem>}
  */
 export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.ThrottledWidget {
   constructor() {
     super(true);
-    this.registerRequiredCSS('sources/javaScriptBreakpointsSidebarPane.css');
+    this.registerRequiredCSS('sources/javaScriptBreakpointsSidebarPane.css', {enableLegacyPatching: true});
 
     this._breakpointManager = Bindings.BreakpointManager.BreakpointManager.instance();
     this._breakpointManager.addEventListener(Bindings.BreakpointManager.Events.BreakpointAdded, this.update, this);
@@ -48,7 +48,17 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
 
     locations.sort((item1, item2) => item1.uiLocation.compareTo(item2.uiLocation));
 
-    return locations;
+    const result = [];
+    let lastBreakpoint = null;
+    let lastLocation = null;
+    for (const location of locations) {
+      if (location.breakpoint !== lastBreakpoint || (lastLocation && location.uiLocation.compareTo(lastLocation))) {
+        result.push(location);
+        lastBreakpoint = location.breakpoint;
+        lastLocation = location.uiLocation;
+      }
+    }
+    return result;
   }
 
   _hideList() {
@@ -103,7 +113,7 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
    * @return {!Promise<?Workspace.UISourceCode.UILocation>}
    */
   async _getSelectedUILocation() {
-    const details = self.UI.context.flavor(SDK.DebuggerModel.DebuggerPausedDetails);
+    const details = UI.Context.Context.instance().flavor(SDK.DebuggerModel.DebuggerPausedDetails);
     if (details && details.callFrames.length) {
       return await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(
           details.callFrames[0].location());
@@ -113,8 +123,9 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
 
   /**
    * @param {!Array<!Array<!BreakpointLocation>>} locations
+   * @return {!Promise<!Array<!TextUtils.Text.Text>>}
    */
-  async _getContent(locations) {
+  _getContent(locations) {
     // Use a cache to share the Text objects between all breakpoints. This way
     // we share the cached line ending information that Text calculates. This
     // was very slow to calculate with a lot of breakpoints in the same very
@@ -122,13 +133,25 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
     /** @type {!Map<string, !TextUtils.Text.Text>} */
     const contentToTextMap = new Map();
 
-    return Promise.all(locations.map(async ([breakpointLocation]) => {
-      const content = await breakpointLocation.uiLocation.uiSourceCode.requestContent();
-      if (contentToTextMap.has(content.content)) {
-        return contentToTextMap.get(content.content);
+    return Promise.all(locations.map(async ([{uiLocation: {uiSourceCode}}]) => {
+      if (uiSourceCode.mimeType() === 'application/wasm') {
+        // We could mirror the logic from `SourceFrame._ensureContentLoaded()` here
+        // (and if so, ideally share that code somewhere), but that's quite heavy
+        // logic just to display a single Wasm instruction. Also not really clear
+        // how much value this would add. So let's keep it simple for now and don't
+        // display anything additional for Wasm breakpoints, and if there's demand
+        // to display some text preview, we could look into selectively disassemb-
+        // ling the part of the text that we need here.
+        // Relevant crbug: https://crbug.com/1090256
+        return new TextUtils.Text.Text('');
       }
-      const text = new TextUtils.Text.Text(content.content || '');
-      contentToTextMap.set(content.content, text);
+      const {content} = await uiSourceCode.requestContent();
+      const contentText = content || '';
+      if (contentToTextMap.has(contentText)) {
+        return /** @type {!TextUtils.Text.Text} */ (contentToTextMap.get(contentText));
+      }
+      const text = new TextUtils.Text.Text(contentText);
+      contentToTextMap.set(contentText, text);
       return text;
     }));
   }
@@ -251,8 +274,8 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
           lineText.substring(item.showColumn ? uiLocation.columnNumber : 0).trimEndWithMaxLength(maxSnippetLength);
     }
 
-    element[breakpointLocationsSymbol] = item.locations;
-    element[locationSymbol] = uiLocation;
+    elementToBreakpointMap.set(element, item.locations);
+    elementToUILocationMap.set(element, uiLocation);
     return element;
   }
 
@@ -278,8 +301,8 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
    * @override
    * @param {?BreakpointItem} from
    * @param {?BreakpointItem} to
-   * @param {?Element} fromElement
-   * @param {?Element} toElement
+   * @param {?HTMLElement} fromElement
+   * @param {?HTMLElement} toElement
    */
   selectedItemChanged(from, to, fromElement, toElement) {
     if (fromElement) {
@@ -324,7 +347,7 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
     if (!node) {
       return [];
     }
-    return node[breakpointLocationsSymbol] || [];
+    return elementToBreakpointMap.get(node) || [];
   }
 
   /**
@@ -333,7 +356,7 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
   _breakpointCheckboxClicked(event) {
     const hadFocus = this.hasFocus();
     const breakpoints = this._breakpointLocations(event).map(breakpointLocation => breakpointLocation.breakpoint);
-    const newState = event.target.checkboxElement.checked;
+    const newState = /** @type {!UI.UIUtils.CheckboxLabel} */ (event.target).checkboxElement.checked;
     for (const breakpoint of breakpoints) {
       breakpoint.setEnabled(newState);
       const item =
@@ -390,17 +413,45 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
     if (breakpoints.some(breakpoint => !breakpoint.enabled())) {
       const enableTitle = Common.UIString.UIString('Enable all breakpoints');
       contextMenu.defaultSection().appendItem(enableTitle, this._toggleAllBreakpoints.bind(this, true));
+      if (event.target instanceof Element) {
+        const enableInFileTitle = Common.UIString.UIString('Enable breakpoints in file');
+        contextMenu.defaultSection().appendItem(
+            enableInFileTitle, this._toggleAllBreakpointsInFile.bind(this, event.target, true));
+      }
     }
     if (breakpoints.some(breakpoint => breakpoint.enabled())) {
       const disableTitle = Common.UIString.UIString('Disable all breakpoints');
       contextMenu.defaultSection().appendItem(disableTitle, this._toggleAllBreakpoints.bind(this, false));
+      if (event.target instanceof Element) {
+        const disableInFileTitle = Common.UIString.UIString('Disable breakpoints in file');
+        contextMenu.defaultSection().appendItem(
+            disableInFileTitle, this._toggleAllBreakpointsInFile.bind(this, event.target, false));
+      }
     }
+
     const removeAllTitle = Common.UIString.UIString('Remove all breakpoints');
     contextMenu.defaultSection().appendItem(removeAllTitle, this._removeAllBreakpoints.bind(this));
     const removeOtherTitle = Common.UIString.UIString('Remove other breakpoints');
     contextMenu.defaultSection().appendItem(
         removeOtherTitle, this._removeOtherBreakpoints.bind(this, new Set(breakpoints)));
     contextMenu.show();
+  }
+
+  /**
+   * @param {!Element} element
+   * @param {boolean} toggleState
+   */
+  _toggleAllBreakpointsInFile(element, toggleState) {
+    const breakpointLocations = this._getBreakpointLocations();
+    const selectedBreakpointLocations = this._breakpointLocationsForElement(element);
+    breakpointLocations.forEach(breakpointLocation => {
+      const matchesLocation = selectedBreakpointLocations.some(
+          selectedBreakpointLocation =>
+              selectedBreakpointLocation.breakpoint.url() === breakpointLocation.breakpoint.url());
+      if (matchesLocation) {
+        breakpointLocation.breakpoint.setEnabled(toggleState);
+      }
+    });
   }
 
   /**
@@ -469,10 +520,19 @@ class BreakpointItem {
   }
 }
 
-export const locationSymbol = Symbol('location');
-export const checkboxLabelSymbol = Symbol('checkbox-label');
-export const snippetElementSymbol = Symbol('snippet-element');
-export const breakpointLocationsSymbol = Symbol('locations');
+/** @type {!WeakMap<!Element, !Workspace.UISourceCode.UILocation>} */
+const elementToUILocationMap = new WeakMap();
+
+/**
+ * @param {!Element} element
+ */
+export function retrieveLocationForElement(element) {
+  return elementToUILocationMap.get(element);
+}
+
+/** @type {!WeakMap<!Element, !Array<!BreakpointLocation>>} */
+const elementToBreakpointMap = new WeakMap();
 
 /** @typedef {{breakpoint: !Bindings.BreakpointManager.Breakpoint, uiLocation: !Workspace.UISourceCode.UILocation}} */
+// @ts-ignore typedef
 export let BreakpointLocation;

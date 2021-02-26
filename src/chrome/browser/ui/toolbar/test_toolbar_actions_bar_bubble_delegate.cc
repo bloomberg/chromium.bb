@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_bubble_delegate.h"
 
+#include "base/check.h"
 #include "base/logging.h"
 #include "base/macros.h"
 
@@ -15,7 +16,7 @@ class TestToolbarActionsBarBubbleDelegate::DelegateImpl
   ~DelegateImpl() override {}
 
  private:
-  bool ShouldShow() override { return true; }
+  bool ShouldShow() override { return !parent_->shown_; }
   bool ShouldCloseOnDeactivate() override {
     return parent_->close_on_deactivate_;
   }

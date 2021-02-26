@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/append_quads_data.h"
@@ -220,7 +222,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   host_impl.ActivateSyncTree();
 
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  auto render_pass = viz::CompositorRenderPass::Create();
   AppendQuadsData data;
   host_impl.active_tree()->root_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   host_impl.active_tree()->root_layer()->AppendQuads(render_pass.get(), &data);
@@ -277,13 +279,13 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   // Do a main frame, record the picture layers.
   EXPECT_EQ(0, layer->update_count());
   layer->SetNeedsDisplay();
-  host1->Composite(base::TimeTicks::Now(), false);
+  host1->CompositeForTest(base::TimeTicks::Now(), false);
   EXPECT_EQ(1, layer->update_count());
   EXPECT_EQ(1, host1->SourceFrameNumber());
 
   // The source frame number in |host1| is now higher than host2.
   layer->SetNeedsDisplay();
-  host1->Composite(base::TimeTicks::Now(), false);
+  host1->CompositeForTest(base::TimeTicks::Now(), false);
   EXPECT_EQ(2, layer->update_count());
   EXPECT_EQ(2, host1->SourceFrameNumber());
 
@@ -294,7 +296,7 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   // Do a main frame, record the picture layers. The frame number has changed
   // non-monotonically.
   layer->SetNeedsDisplay();
-  host2->Composite(base::TimeTicks::Now(), false);
+  host2->CompositeForTest(base::TimeTicks::Now(), false);
   EXPECT_EQ(3, layer->update_count());
   EXPECT_EQ(1, host2->SourceFrameNumber());
 
@@ -349,7 +351,7 @@ TEST(PictureLayerTest, ChangingHostsWithCollidingFrames) {
   // Do a main frame, record the picture layers.
   EXPECT_EQ(0, layer->update_count());
   layer->SetBounds(gfx::Size(500, 500));
-  host1->Composite(base::TimeTicks::Now(), false);
+  host1->CompositeForTest(base::TimeTicks::Now(), false);
   EXPECT_EQ(1, layer->update_count());
   EXPECT_EQ(1, host1->SourceFrameNumber());
   EXPECT_EQ(gfx::Size(500, 500), layer->bounds());
@@ -367,7 +369,7 @@ TEST(PictureLayerTest, ChangingHostsWithCollidingFrames) {
 
   // Change its bounds while it's in a state that can't update.
   layer->SetBounds(gfx::Size(600, 600));
-  host2->Composite(base::TimeTicks::Now(), false);
+  host2->CompositeForTest(base::TimeTicks::Now(), false);
 
   // This layer should not have been updated because it is invisible.
   EXPECT_EQ(1, layer->update_count());

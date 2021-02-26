@@ -5,10 +5,12 @@
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
-#include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,14 +19,14 @@ namespace password_manager {
 
 namespace {
 
-using autofill::PasswordForm;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::IsEmpty;
 using ::testing::Pair;
+using ::testing::UnorderedElementsAre;
 
 struct MockSavedPasswordsPresenterObserver : SavedPasswordsPresenter::Observer {
-  MOCK_METHOD(void, OnEdited, (const autofill::PasswordForm&), (override));
+  MOCK_METHOD(void, OnEdited, (const PasswordForm&), (override));
   MOCK_METHOD(void,
               OnSavedPasswordsChanged,
               (SavedPasswordsPresenter::SavedPasswordsView),
@@ -86,7 +88,7 @@ TEST_F(SavedPasswordsPresenterTest, NotifyObservers) {
   EXPECT_FALSE(store().IsEmpty());
 }
 
-// Tests whether adding and removing an observer works as expected.
+// Tests whether adding federated credentials doesn't inform the observers.
 TEST_F(SavedPasswordsPresenterTest, IgnoredCredentials) {
   PasswordForm federated_form;
   federated_form.federation_origin =
@@ -101,10 +103,10 @@ TEST_F(SavedPasswordsPresenterTest, IgnoredCredentials) {
   store().AddLogin(federated_form);
   RunUntilIdle();
 
-  PasswordForm blacklisted_form;
-  blacklisted_form.blacklisted_by_user = true;
+  PasswordForm blocked_form;
+  blocked_form.blocked_by_user = true;
   EXPECT_CALL(observer, OnSavedPasswordsChanged(IsEmpty()));
-  store().AddLogin(blacklisted_form);
+  store().AddLogin(blocked_form);
   RunUntilIdle();
 
   presenter().RemoveObserver(&observer);
@@ -142,12 +144,312 @@ TEST_F(SavedPasswordsPresenterTest, EditPassword) {
 
   // Verify that editing a password that does not exist does not triggers
   // notifications.
+  form.username_value = base::ASCIIToUTF16("another_username");
   EXPECT_CALL(observer, OnEdited).Times(0);
   EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
   EXPECT_FALSE(presenter().EditPassword(form, new_password));
   RunUntilIdle();
 
   presenter().RemoveObserver(&observer);
+}
+
+TEST_F(SavedPasswordsPresenterTest, EditOnlyUsername) {
+  PasswordForm form;
+  form.signon_realm = "https://example.com";
+  form.username_value = base::ASCIIToUTF16("test@gmail.com");
+  form.password_value = base::ASCIIToUTF16("password");
+  form.in_store = PasswordForm::Store::kProfileStore;
+
+  StrictMockSavedPasswordsPresenterObserver observer;
+  presenter().AddObserver(&observer);
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged);
+  store().AddLogin(form);
+  RunUntilIdle();
+  EXPECT_FALSE(store().IsEmpty());
+
+  std::vector<PasswordForm> forms = {form};
+
+  const base::string16 new_username = base::ASCIIToUTF16("new_username");
+  PasswordForm updated_username = form;
+  updated_username.username_value = new_username;
+
+  // Verify that editing a username triggers the right notifications.
+  base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(observer, OnEdited(updated_username));
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(ElementsAre(updated_username)));
+  EXPECT_TRUE(
+      presenter().EditSavedPasswords(forms, new_username, form.password_value));
+  RunUntilIdle();
+  EXPECT_THAT(
+      store().stored_passwords(),
+      ElementsAre(Pair(form.signon_realm, ElementsAre(updated_username))));
+
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordEditUpdatedValues",
+      metrics_util::PasswordEditUpdatedValues::kUsername, 1);
+
+  presenter().RemoveObserver(&observer);
+}
+
+TEST_F(SavedPasswordsPresenterTest, EditOnlyPassword) {
+  PasswordForm form;
+  form.signon_realm = "https://example.com";
+  form.username_value = base::ASCIIToUTF16("test@gmail.com");
+  form.password_value = base::ASCIIToUTF16("password");
+  form.in_store = PasswordForm::Store::kProfileStore;
+
+  StrictMockSavedPasswordsPresenterObserver observer;
+  presenter().AddObserver(&observer);
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged);
+  store().AddLogin(form);
+  RunUntilIdle();
+  EXPECT_FALSE(store().IsEmpty());
+
+  std::vector<PasswordForm> forms = {form};
+
+  const base::string16 new_password = base::ASCIIToUTF16("new_password");
+  PasswordForm updated_password = form;
+  updated_password.password_value = new_password;
+
+  base::HistogramTester histogram_tester;
+  // Verify that editing a password triggers the right notifications.
+  EXPECT_CALL(observer, OnEdited(updated_password));
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(ElementsAre(updated_password)));
+  EXPECT_TRUE(
+      presenter().EditSavedPasswords(forms, form.username_value, new_password));
+  RunUntilIdle();
+  EXPECT_THAT(
+      store().stored_passwords(),
+      ElementsAre(Pair(form.signon_realm, ElementsAre(updated_password))));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordEditUpdatedValues",
+      metrics_util::PasswordEditUpdatedValues::kPassword, 1);
+
+  presenter().RemoveObserver(&observer);
+}
+
+TEST_F(SavedPasswordsPresenterTest, EditUsernameAndPassword) {
+  PasswordForm form;
+  form.signon_realm = "https://example.com";
+  form.username_value = base::ASCIIToUTF16("test@gmail.com");
+  form.password_value = base::ASCIIToUTF16("password");
+  form.in_store = PasswordForm::Store::kProfileStore;
+
+  StrictMockSavedPasswordsPresenterObserver observer;
+  presenter().AddObserver(&observer);
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged);
+  store().AddLogin(form);
+  RunUntilIdle();
+  EXPECT_FALSE(store().IsEmpty());
+
+  std::vector<PasswordForm> forms = {form};
+
+  const base::string16 new_username = base::ASCIIToUTF16("new_username");
+  const base::string16 new_password = base::ASCIIToUTF16("new_password");
+
+  PasswordForm updated_both = form;
+  updated_both.username_value = new_username;
+  updated_both.password_value = new_password;
+
+  base::HistogramTester histogram_tester;
+  // Verify that editing username and password triggers the right notifications.
+  EXPECT_CALL(observer, OnEdited(updated_both));
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(ElementsAre(updated_both)));
+  EXPECT_TRUE(
+      presenter().EditSavedPasswords(forms, new_username, new_password));
+  RunUntilIdle();
+  EXPECT_THAT(store().stored_passwords(),
+              ElementsAre(Pair(form.signon_realm, ElementsAre(updated_both))));
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.PasswordEditUpdatedValues",
+      metrics_util::PasswordEditUpdatedValues::kBoth, 1);
+
+  presenter().RemoveObserver(&observer);
+}
+
+TEST_F(SavedPasswordsPresenterTest, EditPasswordFails) {
+  PasswordForm form1;
+  form1.signon_realm = "https://example.com";
+  form1.username_value = base::ASCIIToUTF16("test1@gmail.com");
+  form1.password_value = base::ASCIIToUTF16("password");
+  form1.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm form2;
+  form2.signon_realm = "https://example.com";
+  form2.username_value = base::ASCIIToUTF16("test2@gmail.com");
+  form2.password_value = base::ASCIIToUTF16("password");
+  form2.in_store = PasswordForm::Store::kProfileStore;
+
+  store().AddLogin(form1);
+  store().AddLogin(form2);
+  RunUntilIdle();
+  EXPECT_FALSE(store().IsEmpty());
+
+  std::vector<PasswordForm> forms{form1};
+
+  // Updating the form with the username which is already used for same website
+  // fails.
+  const base::string16 new_username = base::ASCIIToUTF16("test2@gmail.com");
+  EXPECT_FALSE(presenter().EditSavedPasswords(forms, new_username,
+                                              form1.password_value));
+  RunUntilIdle();
+  EXPECT_THAT(store().stored_passwords(),
+              ElementsAre(Pair(form1.signon_realm, ElementsAre(form1, form2))));
+
+  // Updating the form with the empty password fails.
+  EXPECT_FALSE(presenter().EditSavedPasswords(forms, form1.username_value,
+                                              base::string16()));
+  RunUntilIdle();
+  EXPECT_THAT(store().stored_passwords(),
+              ElementsAre(Pair(form1.signon_realm, ElementsAre(form1, form2))));
+}
+
+TEST_F(SavedPasswordsPresenterTest, EditPasswordWithoutChanges) {
+  PasswordForm form;
+  form.signon_realm = "https://example.com";
+  form.username_value = base::ASCIIToUTF16("test1@gmail.com");
+  form.password_value = base::ASCIIToUTF16("password");
+  form.in_store = PasswordForm::Store::kProfileStore;
+
+  store().AddLogin(form);
+
+  RunUntilIdle();
+  StrictMockSavedPasswordsPresenterObserver observer;
+  presenter().AddObserver(&observer);
+
+  EXPECT_FALSE(store().IsEmpty());
+  // Verify that editing a form without changing the username or password does
+  // not triggers notifications.
+  base::HistogramTester histogram_tester;
+  EXPECT_CALL(observer, OnEdited).Times(0);
+  EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
+  std::vector<PasswordForm> forms = {form};
+  EXPECT_TRUE(presenter().EditSavedPasswords(forms, form.username_value,
+                                             form.password_value));
+  RunUntilIdle();
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.PasswordEditUpdatedValues",
+      metrics_util::PasswordEditUpdatedValues::kNone, 1);
+
+  presenter().RemoveObserver(&observer);
+}
+
+namespace {
+
+class SavedPasswordsPresenterWithTwoStoresTest : public ::testing::Test {
+ protected:
+  SavedPasswordsPresenterWithTwoStoresTest() {
+    profile_store_->Init(/*prefs=*/nullptr);
+    account_store_->Init(/*prefs=*/nullptr);
+  }
+
+  ~SavedPasswordsPresenterWithTwoStoresTest() override {
+    account_store_->ShutdownOnUIThread();
+    profile_store_->ShutdownOnUIThread();
+    task_env_.RunUntilIdle();
+  }
+
+  TestPasswordStore& profile_store() { return *profile_store_; }
+  TestPasswordStore& account_store() { return *account_store_; }
+  SavedPasswordsPresenter& presenter() { return presenter_; }
+
+  void RunUntilIdle() { task_env_.RunUntilIdle(); }
+
+ private:
+  base::test::SingleThreadTaskEnvironment task_env_;
+  scoped_refptr<TestPasswordStore> profile_store_ =
+      base::MakeRefCounted<TestPasswordStore>(IsAccountStore(false));
+  scoped_refptr<TestPasswordStore> account_store_ =
+      base::MakeRefCounted<TestPasswordStore>(IsAccountStore(true));
+  SavedPasswordsPresenter presenter_{profile_store_, account_store_};
+};
+
+}  // namespace
+
+// Tests whether adding credentials to profile or account store notifies
+// observers with credentials in both stores.
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest, AddCredentialsToBothStores) {
+  PasswordForm profile_store_form;
+  profile_store_form.username_value = base::ASCIIToUTF16("profile@gmail.com");
+  profile_store_form.password_value = base::ASCIIToUTF16("profile_pass");
+  profile_store_form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm account_store_form1;
+  account_store_form1.username_value = base::ASCIIToUTF16("account@gmail.com");
+  account_store_form1.password_value = base::ASCIIToUTF16("account_pass");
+  account_store_form1.in_store = PasswordForm::Store::kAccountStore;
+
+  PasswordForm account_store_form2 = account_store_form1;
+  account_store_form2.username_value = base::ASCIIToUTF16("account2@gmail.com");
+
+  StrictMockSavedPasswordsPresenterObserver observer;
+  presenter().AddObserver(&observer);
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(
+                            UnorderedElementsAre(profile_store_form)));
+  profile_store().AddLogin(profile_store_form);
+  RunUntilIdle();
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(UnorderedElementsAre(
+                            profile_store_form, account_store_form1)));
+  account_store().AddLogin(account_store_form1);
+  RunUntilIdle();
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(UnorderedElementsAre(
+                            profile_store_form, account_store_form1,
+                            account_store_form2)));
+  account_store().AddLogin(account_store_form2);
+  RunUntilIdle();
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(UnorderedElementsAre(
+                            account_store_form1, account_store_form2)));
+  profile_store().RemoveLogin(profile_store_form);
+  RunUntilIdle();
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(UnorderedElementsAre(
+                            profile_store_form, account_store_form1,
+                            account_store_form2)));
+  profile_store().AddLogin(profile_store_form);
+  RunUntilIdle();
+
+  presenter().RemoveObserver(&observer);
+}
+
+// This tests changing the username of a credentials stored in the profile store
+// to be equal to a username of a credential stored in the account store for the
+// same domain.
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest, EditUsername) {
+  PasswordForm profile_store_form;
+  profile_store_form.username_value = base::ASCIIToUTF16("profile@gmail.com");
+  profile_store_form.password_value = base::ASCIIToUTF16("profile_pass");
+  profile_store_form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm account_store_form;
+  account_store_form.username_value = base::ASCIIToUTF16("account@gmail.com");
+  account_store_form.password_value = base::ASCIIToUTF16("account_pass");
+  account_store_form.in_store = PasswordForm::Store::kAccountStore;
+
+  profile_store().AddLogin(profile_store_form);
+  account_store().AddLogin(account_store_form);
+  RunUntilIdle();
+
+  EXPECT_THAT(profile_store().stored_passwords(),
+              ElementsAre(Pair(profile_store_form.signon_realm,
+                               ElementsAre(profile_store_form))));
+
+  auto new_username = account_store_form.username_value;
+  std::vector<PasswordForm> forms_to_edit{profile_store_form};
+  EXPECT_TRUE(presenter().EditSavedPasswords(
+      forms_to_edit, new_username, profile_store_form.password_value));
+  RunUntilIdle();
+  profile_store_form.username_value = new_username;
+  EXPECT_THAT(profile_store().stored_passwords(),
+              ElementsAre(Pair(profile_store_form.signon_realm,
+                               ElementsAre(profile_store_form))));
 }
 
 }  // namespace password_manager

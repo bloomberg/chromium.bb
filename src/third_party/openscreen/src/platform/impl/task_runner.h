@@ -8,7 +8,7 @@
 #include <condition_variable>  // NOLINT
 #include <map>
 #include <memory>
-#include <mutex>  // NOLINT
+#include <mutex>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -85,7 +85,7 @@ class TaskRunnerImpl final : public TaskRunner {
     // NOTE: 'explicit' keyword omitted so that conversion construtor can be
     // used. This simplifies switching between 'Task' and 'TaskWithMetadata'
     // based on the compilation flag.
-    TaskWithMetadata(Task task)
+    TaskWithMetadata(Task task)  // NOLINT
         : task_(std::move(task)), trace_ids_(TRACE_HIERARCHY) {}
 
     void operator()() {

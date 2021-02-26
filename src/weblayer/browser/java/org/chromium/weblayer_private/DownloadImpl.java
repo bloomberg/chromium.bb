@@ -24,7 +24,6 @@ import org.chromium.components.browser_ui.notifications.NotificationManagerProxy
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
-import org.chromium.components.browser_ui.notifications.channels.ChannelsInitializer;
 import org.chromium.components.browser_ui.util.DownloadUtils;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.DownloadError;
@@ -58,12 +57,15 @@ public final class DownloadImpl extends IDownload.Stub {
             DOWNLOADS_PREFIX + ".NOTIFICATION_MIME_TYPE";
     private static final String EXTRA_NOTIFICATION_PROFILE =
             DOWNLOADS_PREFIX + ".NOTIFICATION_PROFILE";
+    private static final String EXTRA_NOTIFICATION_PROFILE_IS_INCOGNITO =
+            DOWNLOADS_PREFIX + ".NOTIFICATION_PROFILE_IS_INCOGNITO";
     // The intent prefix is used as the notification's tag since it's guaranteed not to conflict
     // with intent prefixes used by other subsystems that display notifications.
     private static final String NOTIFICATION_TAG = DOWNLOADS_PREFIX;
     private static final String TAG = "DownloadImpl";
 
     private final String mProfileName;
+    private final boolean mIsIncognito;
     private final IDownloadCallbackClient mClient;
     private final IClientDownload mClientDownload;
     // WARNING: DownloadImpl may outlive the native side, in which case this member is set to 0.
@@ -110,8 +112,14 @@ public final class DownloadImpl extends IDownload.Stub {
         }
 
         String profileName = intent.getStringExtra(EXTRA_NOTIFICATION_PROFILE);
+        boolean isIncognito;
+        if (intent.hasExtra(EXTRA_NOTIFICATION_PROFILE_IS_INCOGNITO)) {
+            isIncognito = intent.getBooleanExtra(EXTRA_NOTIFICATION_PROFILE_IS_INCOGNITO, false);
+        } else {
+            isIncognito = "".equals(profileName);
+        }
 
-        ProfileImpl profile = profileManager.getProfile(profileName);
+        ProfileImpl profile = profileManager.getProfile(profileName, isIncognito);
         if (!profile.areDownloadsInitialized()) {
             profile.addDownloadNotificationIntent(intent);
         } else {
@@ -139,9 +147,10 @@ public final class DownloadImpl extends IDownload.Stub {
         }
     }
 
-    public DownloadImpl(
-            String profileName, IDownloadCallbackClient client, long nativeDownloadImpl, int id) {
+    public DownloadImpl(String profileName, boolean isIncognito, IDownloadCallbackClient client,
+            long nativeDownloadImpl, int id) {
         mProfileName = profileName;
+        mIsIncognito = isIncognito;
         mClient = client;
         mNativeDownloadImpl = nativeDownloadImpl;
         mNotificationId = id;
@@ -294,16 +303,15 @@ public final class DownloadImpl extends IDownload.Stub {
         }
     }
 
-    private Intent createIntent() {
+    private Intent createIntent(String actionId) {
         // Because the intent is using classes from the implementation's class loader,
         // we need to use the constructor which doesn't take the app's context.
-        if (WebLayerFactoryImpl.getClientMajorVersion() >= 83) return WebLayerImpl.createIntent();
-
-        try {
-            return mClient.createIntent();
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+        Intent intent = WebLayerImpl.createIntent();
+        intent.setAction(actionId);
+        intent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
+        intent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
+        intent.putExtra(EXTRA_NOTIFICATION_PROFILE_IS_INCOGNITO, mIsIncognito);
+        return intent;
     }
 
     public void downloadStarted() {
@@ -335,15 +343,9 @@ public final class DownloadImpl extends IDownload.Stub {
 
         Context context = ContextUtils.getApplicationContext();
 
-        Intent deleteIntent = createIntent();
-        deleteIntent.setAction(DELETE_INTENT);
-        deleteIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
-        deleteIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
+        Intent deleteIntent = createIntent(DELETE_INTENT);
         PendingIntentProvider deletePendingIntent =
                 PendingIntentProvider.getBroadcast(context, mNotificationId, deleteIntent, 0);
-
-        ChannelsInitializer channelsInitializer = new ChannelsInitializer(notificationManager,
-                WebLayerNotificationChannels.getInstance(), context.getResources());
 
         @DownloadState
         int state = getState();
@@ -351,9 +353,8 @@ public final class DownloadImpl extends IDownload.Stub {
                 ? WebLayerNotificationChannels.ChannelId.COMPLETED_DOWNLOADS
                 : WebLayerNotificationChannels.ChannelId.ACTIVE_DOWNLOADS;
 
-        WebLayerNotificationBuilder builder =
-                new WebLayerNotificationBuilder(context, channelId, channelsInitializer,
-                        new NotificationMetadata(0, NOTIFICATION_TAG, mNotificationId));
+        WebLayerNotificationWrapperBuilder builder = WebLayerNotificationWrapperBuilder.create(
+                channelId, new NotificationMetadata(0, NOTIFICATION_TAG, mNotificationId));
         builder.setOngoing(true)
                 .setDeleteIntent(deletePendingIntent)
                 .setPriorityBeforeO(NotificationCompat.PRIORITY_DEFAULT);
@@ -373,10 +374,7 @@ public final class DownloadImpl extends IDownload.Stub {
         Resources resources = context.getResources();
 
         if (state == DownloadState.COMPLETE) {
-            Intent openIntent = createIntent();
-            openIntent.setAction(OPEN_INTENT);
-            openIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
-            openIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
+            Intent openIntent = createIntent(OPEN_INTENT);
             openIntent.putExtra(EXTRA_NOTIFICATION_LOCATION, getLocation());
             openIntent.putExtra(EXTRA_NOTIFICATION_MIME_TYPE, getMimeType());
             PendingIntentProvider openPendingIntent =
@@ -397,10 +395,7 @@ public final class DownloadImpl extends IDownload.Stub {
                     .setSmallIcon(android.R.drawable.stat_sys_download_done)
                     .setProgress(0, 0, false);
         } else if (state == DownloadState.IN_PROGRESS) {
-            Intent pauseIntent = createIntent();
-            pauseIntent.setAction(PAUSE_INTENT);
-            pauseIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
-            pauseIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
+            Intent pauseIntent = createIntent(PAUSE_INTENT);
             PendingIntentProvider pausePendingIntent =
                     PendingIntentProvider.getBroadcast(context, mNotificationId, pauseIntent, 0);
 
@@ -429,10 +424,7 @@ public final class DownloadImpl extends IDownload.Stub {
                     .setSmallIcon(android.R.drawable.stat_sys_download)
                     .setProgress(100, progressCurrent, indeterminate);
         } else if (state == DownloadState.PAUSED) {
-            Intent resumeIntent = createIntent();
-            resumeIntent.setAction(RESUME_INTENT);
-            resumeIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
-            resumeIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
+            Intent resumeIntent = createIntent(RESUME_INTENT);
             PendingIntentProvider resumePendingIntent =
                     PendingIntentProvider.getBroadcast(context, mNotificationId, resumeIntent, 0);
             builder.setContentText(resources.getString(R.string.download_notification_paused))
@@ -444,10 +436,7 @@ public final class DownloadImpl extends IDownload.Stub {
         }
 
         if (state == DownloadState.IN_PROGRESS || state == DownloadState.PAUSED) {
-            Intent cancelIntent = createIntent();
-            cancelIntent.setAction(CANCEL_INTENT);
-            cancelIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
-            cancelIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
+            Intent cancelIntent = createIntent(CANCEL_INTENT);
             PendingIntentProvider cancelPendingIntent =
                     PendingIntentProvider.getBroadcast(context, mNotificationId, cancelIntent, 0);
             builder.addAction(0 /* no icon */,
@@ -455,7 +444,7 @@ public final class DownloadImpl extends IDownload.Stub {
                     cancelPendingIntent, 0 /* no action for UMA */);
         }
 
-        notificationManager.notify(builder.buildChromeNotification());
+        notificationManager.notify(builder.buildNotificationWrapper());
     }
 
     /**

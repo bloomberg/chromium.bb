@@ -19,7 +19,9 @@ class MockPluginVmManager : public PluginVmManager {
   MockPluginVmManager(const MockPluginVmManager&) = delete;
   MockPluginVmManager& operator=(const MockPluginVmManager&) = delete;
 
+  MOCK_METHOD(void, OnPrimaryUserSessionStarted, (), ());
   MOCK_METHOD(void, LaunchPluginVm, (LaunchPluginVmCallback callback), ());
+  MOCK_METHOD(void, RelaunchPluginVm, (), ());
   MOCK_METHOD(void, StopPluginVm, (const std::string& name, bool force), ());
   MOCK_METHOD(void, UninstallPluginVm, (), ());
   MOCK_METHOD(uint64_t, seneschal_server_handle, (), (const));
@@ -38,6 +40,7 @@ class MockPluginVmManager : public PluginVmManager {
               (chromeos::VmStartingObserver * observer),
               ());
   MOCK_METHOD(vm_tools::plugin_dispatcher::VmState, vm_state, (), (const));
+  MOCK_METHOD(bool, IsRelaunchNeededForNewPermissions, (), (const));
 };
 
 }  // namespace test

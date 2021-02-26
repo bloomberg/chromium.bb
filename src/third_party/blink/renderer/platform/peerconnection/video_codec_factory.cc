@@ -113,8 +113,10 @@ class EncoderAdapter : public webrtc::VideoEncoderFactory {
       return nullptr;
 
     if (base::EqualsCaseInsensitiveASCII(format.name.c_str(),
-                                         cricket::kVp9CodecName)) {
-      // For VP9, we don't use simulcast.
+                                         cricket::kVp9CodecName) ||
+        base::EqualsCaseInsensitiveASCII(format.name.c_str(),
+                                         cricket::kAv1CodecName)) {
+      // For VP9 and AV1 we don't use simulcast.
       if (supported_in_hardware && supported_in_software) {
         return Wrap(software_encoder_factory_.CreateVideoEncoder(format),
                     hardware_encoder_factory_->CreateVideoEncoder(format));
@@ -185,7 +187,7 @@ class DecoderAdapter : public webrtc::VideoDecoderFactory {
 
 }  // namespace
 
-std::unique_ptr<webrtc::VideoEncoderFactory> CreateWebrtcVideoEncoderFactory(
+std::unique_ptr<webrtc::VideoEncoderFactory> CreateHWVideoEncoderFactory(
     media::GpuVideoAcceleratorFactories* gpu_factories) {
   std::unique_ptr<webrtc::VideoEncoderFactory> encoder_factory;
 
@@ -199,7 +201,13 @@ std::unique_ptr<webrtc::VideoEncoderFactory> CreateWebrtcVideoEncoderFactory(
     encoder_factory.reset();
 #endif
 
-  return std::make_unique<EncoderAdapter>(std::move(encoder_factory));
+  return encoder_factory;
+}
+
+std::unique_ptr<webrtc::VideoEncoderFactory> CreateWebrtcVideoEncoderFactory(
+    media::GpuVideoAcceleratorFactories* gpu_factories) {
+  return std::make_unique<EncoderAdapter>(
+      CreateHWVideoEncoderFactory(gpu_factories));
 }
 
 std::unique_ptr<webrtc::VideoDecoderFactory> CreateWebrtcVideoDecoderFactory(

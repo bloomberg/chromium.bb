@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -57,6 +57,9 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   FidoGetAssertionHandlerTest() {
     mock_adapter_ =
         base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
+    bluetooth_config_ =
+        BluetoothAdapterFactory::Get()->InitGlobalValuesForTesting();
+    bluetooth_config_->SetLESupported(true);
     BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
   }
 
@@ -99,7 +102,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
     auto handler = std::make_unique<GetAssertionRequestHandler>(
         fake_discovery_factory_.get(), supported_transports_,
-        std::move(request),
+        std::move(request), CtapGetAssertionOptions(),
         /*allow_skipping_pin_touch=*/true, get_assertion_cb_.callback());
     return handler;
   }
@@ -176,6 +179,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
       FidoTransportProtocol::kInternal,
       FidoTransportProtocol::kNearFieldCommunication,
       FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+  std::unique_ptr<BluetoothAdapterFactory::GlobalValuesForTesting>
+      bluetooth_config_;
 };
 
 TEST_F(FidoGetAssertionHandlerTest, TransportAvailabilityInfo) {
@@ -300,9 +305,10 @@ TEST_F(FidoGetAssertionHandlerTest, InvalidCredential) {
 
   discovery()->AddDevice(std::move(device));
 
-  get_assertion_callback().WaitForCallback();
-  EXPECT_EQ(GetAssertionStatus::kAuthenticatorResponseInvalid,
-            get_assertion_callback().status());
+  // The response with the invalid credential ID is considered to be an error at
+  // the task level and the request handler will drop the authenticator.
+  task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(get_assertion_callback().was_called());
 }
 
 // Tests a scenario where the authenticator responds with an empty credential.
@@ -723,7 +729,8 @@ TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
       &virtual_device_factory,
       base::flat_set<FidoTransportProtocol>(
           {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
-      std::move(request), /*allow_skipping_pin_touch=*/true, cb.callback());
+      std::move(request), CtapGetAssertionOptions(),
+      /*allow_skipping_pin_touch=*/true, cb.callback());
 
   task_environment.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(cb.was_called());
@@ -791,6 +798,7 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         CtapGetAssertionRequest(test_data::kRelyingPartyId,
                                 test_data::kClientDataJson),
+        CtapGetAssertionOptions(),
         /*allow_skipping_pin_touch=*/true, cb.callback());
     // Register an observer that disables automatic dispatch. Dispatch to the
     // (unimplemented) fake Windows API would immediately result in an invalid
@@ -805,7 +813,7 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
     EXPECT_EQ(handler->AuthenticatorsForTesting().size(), 1u);
     EXPECT_EQ(handler->AuthenticatorsForTesting()
                   .begin()
-                  ->second->authenticator->IsWinNativeApiAuthenticator(),
+                  ->second->IsWinNativeApiAuthenticator(),
               enable_api);
   }
 }

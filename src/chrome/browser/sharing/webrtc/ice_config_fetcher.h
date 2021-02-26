@@ -13,7 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chrome/services/sharing/public/mojom/webrtc.mojom.h"
+#include "chromeos/services/nearby/public/mojom/webrtc.mojom.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -21,23 +21,20 @@ class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
 
-class IceConfigFetcher {
+class IceConfigFetcher : public sharing::mojom::IceConfigFetcher {
  public:
-  using IceServerCallback =
-      base::OnceCallback<void(std::vector<sharing::mojom::IceServerPtr>)>;
-
   explicit IceConfigFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  ~IceConfigFetcher();
+  ~IceConfigFetcher() override;
 
   IceConfigFetcher(const IceConfigFetcher& other) = delete;
   IceConfigFetcher& operator=(const IceConfigFetcher& other) = delete;
 
-  // TODO(himanshujaju) - Cache configs fetched from server.
-  void GetIceServers(IceServerCallback callback);
+  // TODO(crbug.com/1124392) - Cache configs fetched from server.
+  void GetIceServers(GetIceServersCallback callback) override;
 
  private:
-  void OnIceServersResponse(IceServerCallback callback,
+  void OnIceServersResponse(GetIceServersCallback callback,
                             std::unique_ptr<std::string> response_body);
 
   std::vector<sharing::mojom::IceServerPtr> ParseIceConfigJson(

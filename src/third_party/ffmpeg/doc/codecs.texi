@@ -646,6 +646,24 @@ noise preserving sum of squared differences
 
 @item dia_size @var{integer} (@emph{encoding,video})
 Set diamond type & size for motion estimation.
+@table @samp
+@item (1024, INT_MAX)
+full motion estimation(slowest)
+@item (768, 1024]
+umh motion estimation
+@item (512, 768]
+hex motion estimation
+@item (256, 512]
+l2s diamond motion estimation
+@item [2,256]
+var diamond motion estimation
+@item (-1,  2)
+small diamond motion estimation
+@item -1
+funny diamond motion estimation
+@item (INT_MIN, -1)
+sab diamond motion estimation
+@end table
 
 @item last_pred @var{integer} (@emph{encoding,video})
 Set amount of motion predictors from the previous frame.
@@ -837,49 +855,8 @@ Set number of macroblock rows at the bottom which are skipped.
 
 @item profile @var{integer} (@emph{encoding,audio,video})
 
-Possible values:
-@table @samp
-@item unknown
-
-@item aac_main
-
-@item aac_low
-
-@item aac_ssr
-
-@item aac_ltp
-
-@item aac_he
-
-@item aac_he_v2
-
-@item aac_ld
-
-@item aac_eld
-
-@item mpeg2_aac_low
-
-@item mpeg2_aac_he
-
-@item mpeg4_sp
-
-@item mpeg4_core
-
-@item mpeg4_main
-
-@item mpeg4_asp
-
-@item dts
-
-@item dts_es
-
-@item dts_96_24
-
-@item dts_hd_hra
-
-@item dts_hd_ma
-
-@end table
+Set encoder codec profile. Default value is @samp{unknown}. Encoder specific
+profiles are documented in the relevant encoder documentation.
 
 @item level @var{integer} (@emph{encoding,audio,video})
 
@@ -1133,6 +1110,12 @@ BT.2020 NCL
 BT.2020 CL
 @item smpte2085
 SMPTE 2085
+@item chroma-derived-nc
+Chroma-derived NCL
+@item chroma-derived-c
+Chroma-derived CL
+@item ictcp
+ICtCp
 @end table
 
 @item color_range @var{integer} (@emph{decoding/encoding,video})

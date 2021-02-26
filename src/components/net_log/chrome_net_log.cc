@@ -4,28 +4,15 @@
 
 #include "components/net_log/chrome_net_log.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "components/version_info/version_info.h"
-#include "net/log/net_log_util.h"
 
 namespace net_log {
-
-std::unique_ptr<base::Value> GetConstantsForNetLog(
-    const base::CommandLine::StringType& command_line_string,
-    const std::string& channel_string) {
-  std::unique_ptr<base::DictionaryValue> constants_dict =
-      net::GetNetConstants();
-  DCHECK(constants_dict);
-
-  auto platform_dict =
-      GetPlatformConstantsForNetLog(command_line_string, channel_string);
-  if (platform_dict)
-    constants_dict->MergeDictionary(platform_dict.get());
-  return constants_dict;
-}
 
 std::unique_ptr<base::DictionaryValue> GetPlatformConstantsForNetLog(
     const base::CommandLine::StringType& command_line_string,

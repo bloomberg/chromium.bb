@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: chromeosInfoPrivate */
 
-/**
- * @const
- */
+/** @const */
 chrome.chromeosInfoPrivate = {};
 
 /**
@@ -33,8 +31,9 @@ chrome.chromeosInfoPrivate.PropertyName = {
   A11Y_FOCUS_HIGHLIGHT_ENABLED: 'a11yFocusHighlightEnabled',
   A11Y_SELECT_TO_SPEAK_ENABLED: 'a11ySelectToSpeakEnabled',
   A11Y_SWITCH_ACCESS_ENABLED: 'a11ySwitchAccessEnabled',
+  A11Y_CURSOR_COLOR_ENABLED: 'a11yCursorColorEnabled',
+  A11Y_DOCKED_MAGNIFIER_ENABLED: 'a11yDockedMagnifierEnabled',
   SEND_FUNCTION_KEYS: 'sendFunctionKeys',
-  CAMERA_MEDIA_CONSOLIDATED: 'cameraMediaConsolidated',
 };
 
 /**
@@ -117,10 +116,16 @@ chrome.chromeosInfoPrivate.AssistantStatus = {
  *   a11yScreenMagnifierEnabled: (boolean|undefined),
  *   a11yAutoClickEnabled: (boolean|undefined),
  *   a11yVirtualKeyboardEnabled: (boolean|undefined),
+ *   a11yCaretHighlightEnabled: (boolean|undefined),
+ *   a11yCursorHighlightEnabled: (boolean|undefined),
+ *   a11yFocusHighlightEnabled: (boolean|undefined),
+ *   a11ySelectToSpeakEnabled: (boolean|undefined),
+ *   a11ySwitchAccessEnabled: (boolean|undefined),
+ *   a11yCursorColorEnabled: (boolean|undefined),
+ *   a11yDockedMagnifierEnabled: (boolean|undefined),
  *   sendFunctionKeys: (boolean|undefined),
- *   cameraMediaConsolidated: (boolean|undefined),
  *   supportedTimezones: (!Array<!Array<string>>|undefined)
- * }):void} callback
+ * }): void} callback
  */
 chrome.chromeosInfoPrivate.get = function(propertyNames, callback) {};
 
@@ -131,3 +136,10 @@ chrome.chromeosInfoPrivate.get = function(propertyNames, callback) {};
  * @param {*} propertyValue Chrome OS system property value
  */
 chrome.chromeosInfoPrivate.set = function(propertyName, propertyValue) {};
+
+/**
+ * Called to request tablet mode enabled status from the Chrome OS system.
+ * @param {function(boolean): void} callback Returns tablet mode enabled status
+ *     as a boolean.
+ */
+chrome.chromeosInfoPrivate.isTabletModeEnabled = function(callback) {};

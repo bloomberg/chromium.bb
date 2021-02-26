@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
@@ -192,8 +191,8 @@ void CheckClientDownloadRequestBase::Start() {
   // If whitelist check passes, FinishRequest() will be called to avoid
   // analyzing file. Otherwise, AnalyzeFile() will be called to continue with
   // analysis.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&CheckUrlAgainstWhitelist, source_url_, database_manager_),
       base::BindOnce(&CheckClientDownloadRequestBase::OnUrlWhitelistCheckDone,
                      GetWeakPtr()));
@@ -221,10 +220,13 @@ void CheckClientDownloadRequestBase::FinishRequest(
     reason = DownloadCheckResultReason::REASON_ADVANCED_PROTECTION_PROMPT;
   }
 
-  if (ShouldUploadBinary(reason)) {
-    UploadBinary(reason);
+  auto settings = ShouldUploadBinary(reason);
+  if (settings.has_value()) {
+    UploadBinary(reason, std::move(settings.value()));
   } else {
-    std::move(callback_).Run(result);
+    // Post a task to avoid reentrance issue. http://crbug.com//1152451.
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback_), result));
   }
 
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
@@ -359,7 +361,7 @@ void CheckClientDownloadRequestBase::OnFileFeatureExtractionDone(
   file_count_ = results.file_count;
   directory_count_ = results.directory_count;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!results.disk_image_signature.empty())
     disk_image_signature_ =
         std::make_unique<std::vector<uint8_t>>(results.disk_image_signature);
@@ -368,8 +370,8 @@ void CheckClientDownloadRequestBase::OnFileFeatureExtractionDone(
   detached_code_signatures_.CopyFrom(results.detached_code_signatures);
 #endif
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&CheckCertificateChainAgainstWhitelist, signature_info_,
                      database_manager_),
       base::BindOnce(
@@ -379,8 +381,8 @@ void CheckClientDownloadRequestBase::OnFileFeatureExtractionDone(
   // We wait until after the file checks finish to start the timeout, as
   // windows can cause permissions errors if the timeout fired while we were
   // checking the file signature and we tried to complete the download.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&CheckClientDownloadRequestBase::StartTimeout,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CheckClientDownloadRequestBase::StartTimeout,
                                 GetWeakPtr()));
 }
 
@@ -392,10 +394,10 @@ void CheckClientDownloadRequestBase::StartTimeout() {
   timeout_closure_.Reset(base::BindOnce(
       &CheckClientDownloadRequestBase::FinishRequest, GetWeakPtr(),
       DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED));
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
-                        timeout_closure_.callback(),
-                        base::TimeDelta::FromMilliseconds(
-                            service_->download_request_timeout_ms()));
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, timeout_closure_.callback(),
+      base::TimeDelta::FromMilliseconds(
+          service_->download_request_timeout_ms()));
 }
 
 void CheckClientDownloadRequestBase::OnCertificateWhitelistCheckDone(
@@ -531,12 +533,7 @@ void CheckClientDownloadRequestBase::SendRequest() {
   request->set_file_basename(target_file_path_.BaseName().AsUTF8Unsafe());
   request->set_download_type(type_);
 
-#if defined(OS_MACOSX)
-  UMA_HISTOGRAM_BOOLEAN(
-      "SBClientDownload."
-      "DownloadFileHasDmgSignature",
-      disk_image_signature_ != nullptr);
-
+#if defined(OS_MAC)
   if (disk_image_signature_) {
     request->set_udif_code_signature(disk_image_signature_->data(),
                                      disk_image_signature_->size());
@@ -650,8 +647,8 @@ void CheckClientDownloadRequestBase::SendRequest() {
   // The following is to log this ClientDownloadRequest on any open
   // chrome://safe-browsing pages. If no such page is open, the request is
   // dropped and the |request| object deleted.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&WebUIInfoSingleton::AddToClientDownloadRequestsSent,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),
                      std::move(request)));
@@ -724,8 +721,8 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
       }
     }
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &WebUIInfoSingleton::AddToClientDownloadResponsesReceived,
             base::Unretained(WebUIInfoSingleton::GetInstance()),

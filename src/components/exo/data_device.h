@@ -13,7 +13,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/surface_observer.h"
 #include "ui/base/clipboard/clipboard_observer.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 
 namespace ui {
 class DropTargetEvent;
@@ -48,17 +48,15 @@ class DataDevice : public WMHelper::DragDropObserver,
   // be null if the data will be transferred only in the client.  |origin| is
   // the surface which starts the drag and drop operation. |icon| is the
   // nullable image which is rendered at the next to cursor while drag
-  // operation. |serial| is the unique number comes from input events which
-  // triggers the drag and drop operation.
+  // operation.
   void StartDrag(DataSource* source,
                  Surface* origin,
                  Surface* icon,
-                 ui::DragDropTypes::DragEventSource event_source);
+                 ui::mojom::DragEventSource event_source);
 
   // Sets selection data to the clipboard.
-  // |source| represents data comes from the client. |serial| is the unique
-  // number comes from input events which triggers the drag and drop operation.
-  void SetSelection(DataSource* source, uint32_t serial);
+  // |source| represents data comes from the client.
+  void SetSelection(DataSource* source);
 
   // Overridden from WMHelper::DragDropObserver:
   void OnDragEntered(const ui::DropTargetEvent& event) override;
@@ -90,6 +88,9 @@ class DataDevice : public WMHelper::DragDropObserver,
   FileHelper* const file_helper_;
   std::unique_ptr<ScopedDataOffer> data_offer_;
   std::unique_ptr<ScopedSurface> focused_surface_;
+
+  base::OnceClosure quit_closure_;
+  bool drop_succeeded_;
 
   DISALLOW_COPY_AND_ASSIGN(DataDevice);
 };

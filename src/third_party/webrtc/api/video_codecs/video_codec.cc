@@ -56,19 +56,8 @@ bool VideoCodecH264::operator==(const VideoCodecH264& other) const {
           numberOfTemporalLayers == other.numberOfTemporalLayers);
 }
 
-bool SpatialLayer::operator==(const SpatialLayer& other) const {
-  return (width == other.width && height == other.height &&
-          maxFramerate == other.maxFramerate &&
-          numberOfTemporalLayers == other.numberOfTemporalLayers &&
-          maxBitrate == other.maxBitrate &&
-          targetBitrate == other.targetBitrate &&
-          minBitrate == other.minBitrate && qpMax == other.qpMax &&
-          active == other.active);
-}
-
 VideoCodec::VideoCodec()
     : codecType(kVideoCodecGeneric),
-      plType(0),
       width(0),
       height(0),
       startBitrate(0),
@@ -83,6 +72,7 @@ VideoCodec::VideoCodec()
       mode(VideoCodecMode::kRealtimeVideo),
       expect_encode_from_texture(false),
       timing_frame_thresholds({0, 0}),
+      legacy_conference_mode(false),
       codec_specific_() {}
 
 VideoCodecVP8* VideoCodec::VP8() {
@@ -130,6 +120,7 @@ const char* CodecTypeToPayloadString(VideoCodecType type) {
     case kVideoCodecGeneric:
       return kPayloadNameGeneric;
   }
+  RTC_CHECK_NOTREACHED();
 }
 
 VideoCodecType PayloadStringToCodecType(const std::string& name) {

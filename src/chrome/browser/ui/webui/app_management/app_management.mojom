@@ -4,7 +4,7 @@
 
 module app_management.mojom;
 
-import "chrome/services/app_service/public/mojom/types.mojom";
+import "components/services/app_service/public/mojom/types.mojom";
 
 struct App {
   string id;
@@ -87,4 +87,6 @@ enum PwaPermissionType {
 // The Plugin VM app publisher uses this enum directly.
 enum PluginVmPermissionType {
   PRINTING = 0,
+  CAMERA = 1,
+  MICROPHONE = 2,
 };

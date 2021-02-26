@@ -9,16 +9,17 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "components/sync/engine/engine_components_factory.h"
 
 namespace syncer {
 
 class TestEngineComponentsFactory : public EngineComponentsFactory {
  public:
-  explicit TestEngineComponentsFactory(StorageOption option,
-                                       StorageOption* storage_used);
-  ~TestEngineComponentsFactory() override;
+  TestEngineComponentsFactory() = default;
+  TestEngineComponentsFactory(const TestEngineComponentsFactory&) = delete;
+  TestEngineComponentsFactory& operator=(const TestEngineComponentsFactory&) =
+      delete;
+  ~TestEngineComponentsFactory() override = default;
 
   std::unique_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
@@ -28,27 +29,15 @@ class TestEngineComponentsFactory : public EngineComponentsFactory {
 
   std::unique_ptr<SyncCycleContext> BuildContext(
       ServerConnectionManager* connection_manager,
-      syncable::Directory* directory,
       ExtensionsActivity* monitor,
       const std::vector<SyncEngineEventListener*>& listeners,
       DebugInfoGetter* debug_info_getter,
       ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id,
+      const std::string& cache_guid,
       const std::string& store_birthday,
       const std::string& bag_of_chips,
       base::TimeDelta poll_interval) override;
-
-  std::unique_ptr<syncable::DirectoryBackingStore> BuildDirectoryBackingStore(
-      StorageOption storage,
-      const std::string& dir_name,
-      const std::string& cache_guid,
-      const base::FilePath& backing_filepath) override;
-
- private:
-  const StorageOption storage_override_;
-  StorageOption* storage_used_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestEngineComponentsFactory);
 };
 
 }  // namespace syncer

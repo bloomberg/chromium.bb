@@ -26,13 +26,18 @@
 #include "components/version_info/version_info.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#include "base/android/bundle_utils.h"
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
 #include "chrome/browser/flags/android/cached_feature_flags.h"
+#include "chrome/common/chrome_features.h"
 #else
 #include "chrome/browser/chrome_browser_field_trials_desktop.h"
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/first_run/help_app_first_run_field_trial.h"
+#include "chrome/browser/chromeos/sync/split_settings_sync_field_trial.h"
 #include "chromeos/services/multidevice_setup/public/cpp/first_run_field_trial.h"
 #endif
 
@@ -77,6 +82,7 @@ void ChromeBrowserFieldTrials::SetupFieldTrials() {
 
 void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
     bool has_seed,
+    const base::FieldTrial::EntropyProvider& low_entropy_provider,
     base::FeatureList* feature_list) {
   // Only create the fallback trials if there isn't already a variations seed
   // being applied. This should occur during first run when first-run variations
@@ -90,6 +96,12 @@ void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
     chromeos::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
 #endif
   }
+#if defined(OS_CHROMEOS)
+  // These trials are fully client controlled and must be configured whether or
+  // not a seed is available.
+  split_settings_sync_field_trial::Create(feature_list, local_state_);
+  help_app_first_run_field_trial::Create(feature_list, local_state_);
+#endif
 }
 
 void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
@@ -101,6 +113,39 @@ void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
   if (!reached_code_profiler_group.empty()) {
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
         kReachedCodeProfilerTrial, reached_code_profiler_group);
+  }
+
+  const char* group_name;
+  bool java_feature_enabled =
+      chrome::android::IsJavaDrivenFeatureEnabled(features::kEarlyLibraryLoad);
+  bool feature_enabled =
+      base::FeatureList::IsEnabled(features::kEarlyLibraryLoad);
+  // Use the default group if cc and java feature values don't agree (can happen
+  // on first startup after feature is enabled by Finch), or the feature is not
+  // overridden by Finch.
+  if (feature_enabled != java_feature_enabled ||
+      !base::FeatureList::GetInstance()->IsFeatureOverridden(
+          features::kEarlyLibraryLoad.name)) {
+    group_name = "Default";
+  } else if (java_feature_enabled) {
+    group_name = "Enabled";
+  } else {
+    group_name = "Disabled";
+  }
+  static constexpr char kEarlyLibraryLoadTrial[] = "EarlyLibraryLoadSynthetic";
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      kEarlyLibraryLoadTrial, group_name);
+
+  // If isolated splits are enabled at build time, Monochrome and Trichrome will
+  // have a different bundle layout, so measure N+ even though isolated splits
+  // are only supported by Android in O+.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_NOUGAT) {
+    static constexpr char kIsolatedSplitsTrial[] = "IsolatedSplitsSynthetic";
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        kIsolatedSplitsTrial,
+        base::android::BundleUtils::IsolatedSplitsEnabled() ? "Enabled"
+                                                            : "Disabled");
   }
 #endif  // defined(OS_ANDROID)
 }

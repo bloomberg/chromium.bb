@@ -20,9 +20,7 @@
 #error "This file requires ARC support."
 #endif
 
-#if defined(CHROME_EARL_GREY_2)
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(BaseEarlGreyTestCaseAppInterface)
-#endif  // defined(CHROME_EARL_GREY_2)
 
 namespace {
 
@@ -43,7 +41,6 @@ bool g_needs_set_up_for_test_case = true;
 - (void)setUp {
   [super setUp];
 
-#if defined(CHROME_EARL_GREY_2)
   [[AppLaunchManager sharedManager]
       ensureAppLaunchedWithConfiguration:[self appConfigurationForTestCase]];
   [self handleSystemAlertIfVisible];
@@ -57,13 +54,9 @@ bool g_needs_set_up_for_test_case = true;
   // here. See +setUp below for details on why overriding +setUp causes a
   // failure.
   [self failIfSetUpIsOverridden];
-#endif
 
   if (g_needs_set_up_for_test_case) {
     g_needs_set_up_for_test_case = false;
-#if defined(CHROME_EARL_GREY_1)
-    [CoverageUtils configureCoverageReportPath];
-#endif
     [[self class] setUpForTestCase];
   }
 }
@@ -77,7 +70,6 @@ bool g_needs_set_up_for_test_case = true;
 
 // Handles system alerts if any are present, closing them to unblock the UI.
 - (void)handleSystemAlertIfVisible {
-#if defined(CHROME_EARL_GREY_2)
   NSError* systemAlertFoundError = nil;
   [[EarlGrey selectElementWithMatcher:grey_systemAlertViewShown()]
       assertWithMatcher:grey_nil()
@@ -152,6 +144,15 @@ bool g_needs_set_up_for_test_case = true;
         [self tapAlertButtonWithText:@"Not Now" error:&error];
         GREYAssertNil(
             error, @"Error closing Carrier Settings Update alert.\n%@", error);
+      } else if ([alertText containsString:@"would like to find and connect to "
+                                           @"devices on your local network."]) {
+        DLOG(WARNING) << "Denying iOS system alert of connecting to local "
+                         "network devices!";
+        NSError* error = nil;
+        [self tapAlertButtonWithText:@"OK" error:&error];
+        GREYAssertNil(error,
+                      @"Error closing connecting to local network devices.\n%@",
+                      error);
       } else {
         XCTFail("An unsupported system alert is present on device. Failing "
                 "this test. Alert label: %@",
@@ -162,7 +163,6 @@ bool g_needs_set_up_for_test_case = true;
   // Ensures no visible alert after handling.
   [self grey_waitForAlertVisibility:NO
                         withTimeout:kSystemAlertVisibilityTimeout];
-#endif  // CHROME_EARL_GREY_2
 }
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
@@ -190,7 +190,6 @@ bool g_needs_set_up_for_test_case = true;
 // button doesn't exist, note it in |error| accordingly. In EG1, this method is
 // no-op.
 - (void)tapAlertButtonWithText:(NSString*)text error:(NSError**)error {
-#if defined(CHROME_EARL_GREY_2)
   XCUIApplication* springboardApp = [[XCUIApplication alloc]
       initWithBundleIdentifier:@"com.apple.springboard"];
   XCUIElement* alert = [[springboardApp
@@ -210,7 +209,6 @@ bool g_needs_set_up_for_test_case = true;
   }
 
   [button tap];
-#endif  // CHROME_EARL_GREY_2
 }
 
 @end

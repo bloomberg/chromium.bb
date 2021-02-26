@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
+#include "base/debug/stack_trace.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/hid_chooser.h"
@@ -21,12 +23,24 @@ namespace content {
 
 HidService::HidService(RenderFrameHost* render_frame_host,
                        mojo::PendingReceiver<blink::mojom::HidService> receiver)
-    : FrameServiceBase(render_frame_host, std::move(receiver)) {
-  watchers_.set_disconnect_handler(base::BindRepeating(
-      &HidService::OnWatcherConnectionError, base::Unretained(this)));
+    : FrameServiceBase(render_frame_host, std::move(receiver)),
+      requesting_origin_(render_frame_host->GetLastCommittedOrigin()),
+      embedding_origin_(
+          render_frame_host->GetMainFrame()->GetLastCommittedOrigin()) {
+  watchers_.set_disconnect_handler(
+      base::BindRepeating(&HidService::OnWatcherRemoved, base::Unretained(this),
+                          true /* cleanup_watcher_ids */));
+
+  HidDelegate* delegate = GetContentClient()->browser()->GetHidDelegate();
+  if (delegate)
+    delegate->AddObserver(render_frame_host, this);
 }
 
 HidService::~HidService() {
+  HidDelegate* delegate = GetContentClient()->browser()->GetHidDelegate();
+  if (delegate)
+    delegate->RemoveObserver(render_frame_host(), this);
+
   // The remaining watchers will be closed from this end.
   if (!watchers_.empty())
     DecrementActiveFrameCount();
@@ -53,6 +67,11 @@ void HidService::Create(
   // occurs, the render frame host is deleted, or the render frame host
   // navigates to a new document.
   new HidService(render_frame_host, std::move(receiver));
+}
+
+void HidService::RegisterClient(
+    mojo::PendingAssociatedRemote<device::mojom::HidManagerClient> client) {
+  clients_.Add(std::move(client));
 }
 
 void HidService::GetDevices(GetDevicesCallback callback) {
@@ -92,7 +111,10 @@ void HidService::Connect(
   }
 
   mojo::PendingRemote<device::mojom::HidConnectionWatcher> watcher;
-  watchers_.Add(this, watcher.InitWithNewPipeAndPassReceiver());
+  mojo::ReceiverId receiver_id =
+      watchers_.Add(this, watcher.InitWithNewPipeAndPassReceiver());
+  watcher_ids_.insert({device_guid, receiver_id});
+
   GetContentClient()
       ->browser()
       ->GetHidDelegate()
@@ -103,15 +125,83 @@ void HidService::Connect(
                          std::move(callback)));
 }
 
-void HidService::OnWatcherConnectionError() {
+void HidService::OnWatcherRemoved(bool cleanup_watcher_ids) {
   if (watchers_.empty())
     DecrementActiveFrameCount();
+
+  if (cleanup_watcher_ids) {
+    // Clean up any associated |watchers_ids_| entries.
+    base::EraseIf(watcher_ids_, [&](const auto& watcher_entry) {
+      return watcher_entry.second == watchers_.current_receiver();
+    });
+  }
 }
 
 void HidService::DecrementActiveFrameCount() {
   auto* web_contents_impl = static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(render_frame_host()));
   web_contents_impl->DecrementHidActiveFrameCount();
+}
+
+void HidService::OnDeviceAdded(
+    const device::mojom::HidDeviceInfo& device_info) {
+  if (!GetContentClient()->browser()->GetHidDelegate()->HasDevicePermission(
+          WebContents::FromRenderFrameHost(render_frame_host()), origin(),
+          device_info)) {
+    return;
+  }
+
+  for (auto& client : clients_)
+    client->DeviceAdded(device_info.Clone());
+}
+
+void HidService::OnDeviceRemoved(
+    const device::mojom::HidDeviceInfo& device_info) {
+  if (!GetContentClient()->browser()->GetHidDelegate()->HasDevicePermission(
+          WebContents::FromRenderFrameHost(render_frame_host()), origin(),
+          device_info)) {
+    return;
+  }
+
+  for (auto& client : clients_)
+    client->DeviceRemoved(device_info.Clone());
+}
+
+void HidService::OnHidManagerConnectionError() {
+  // Close the connection with Blink.
+  clients_.Clear();
+}
+
+void HidService::OnPermissionRevoked(const url::Origin& requesting_origin,
+                                     const url::Origin& embedding_origin) {
+  if (requesting_origin_ != requesting_origin ||
+      embedding_origin_ != embedding_origin) {
+    return;
+  }
+
+  HidDelegate* delegate = GetContentClient()->browser()->GetHidDelegate();
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host());
+
+  size_t watchers_removed =
+      base::EraseIf(watcher_ids_, [&](const auto& watcher_entry) {
+        const auto* device_info =
+            delegate->GetDeviceInfo(web_contents, watcher_entry.first);
+        if (!device_info)
+          return true;
+
+        if (delegate->HasDevicePermission(web_contents, origin(),
+                                          *device_info)) {
+          return false;
+        }
+
+        watchers_.Remove(watcher_entry.second);
+        return true;
+      });
+
+  // If needed decrement the active frame count.
+  if (watchers_removed)
+    OnWatcherRemoved(/*cleanup_watcher_ids=*/false);
 }
 
 void HidService::FinishGetDevices(

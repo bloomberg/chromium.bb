@@ -19,10 +19,12 @@
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
+#include "chrome/browser/sync/sync_invalidations_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync_device_info/device_info_prefs.h"
 #include "components/sync_device_info/device_info_sync_client.h"
@@ -38,14 +40,14 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
 
   // syncer::DeviceInfoSyncClient:
   std::string GetSigninScopedDeviceId() const override {
-// Since the local sync backend is currently only supported on Windows don't
-// even check the pref on other os-es.
-#if defined(OS_WIN)
+// Since the local sync backend is currently only supported on Windows, Mac and
+// Linux don't even check the pref on other os-es.
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
     syncer::SyncPrefs prefs(profile_->GetPrefs());
     if (prefs.IsLocalSyncEnabled()) {
       return "local_device";
     }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
     return GetSigninScopedDeviceIdForProfile(profile_);
   }
@@ -61,6 +63,26 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
       const override {
     return SharingSyncPreference::GetLocalSharingInfoForSync(
         profile_->GetPrefs());
+  }
+
+  // syncer::DeviceInfoSyncClient:
+  std::string GetFCMRegistrationToken() const override {
+    syncer::SyncInvalidationsService* service =
+        SyncInvalidationsServiceFactory::GetForProfile(profile_);
+    if (service) {
+      return service->GetFCMRegistrationToken();
+    }
+    return std::string();
+  }
+
+  // syncer::DeviceInfoSyncClient:
+  syncer::ModelTypeSet GetInterestedDataTypes() const override {
+    syncer::SyncInvalidationsService* service =
+        SyncInvalidationsServiceFactory::GetForProfile(profile_);
+    if (service) {
+      return service->GetInterestedDataTypes();
+    }
+    return syncer::ModelTypeSet();
   }
 
  private:
@@ -107,6 +129,7 @@ DeviceInfoSyncServiceFactory::DeviceInfoSyncServiceFactory()
           "DeviceInfoSyncService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
+  DependsOn(SyncInvalidationsServiceFactory::GetInstance());
 }
 
 DeviceInfoSyncServiceFactory::~DeviceInfoSyncServiceFactory() {}
@@ -121,11 +144,13 @@ KeyedService* DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           chrome::GetChannel(), chrome::GetVersionString(),
           device_info_sync_client.get());
+
   auto device_prefs = std::make_unique<syncer::DeviceInfoPrefs>(
       profile->GetPrefs(), base::DefaultClock::GetInstance());
 
   return new syncer::DeviceInfoSyncServiceImpl(
       ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory(),
       std::move(local_device_info_provider), std::move(device_prefs),
-      std::move(device_info_sync_client));
+      std::move(device_info_sync_client),
+      SyncInvalidationsServiceFactory::GetForProfile(profile));
 }

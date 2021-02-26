@@ -19,6 +19,8 @@
 #include "build/build_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "third_party/libxml/chromium/xml_reader.h"
+#include "third_party/libxml/chromium/xml_writer.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_file_filter.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_id_checker.h"
@@ -66,6 +68,12 @@ const base::FilePath kExtractorScript =
         .Append(FILE_PATH_LITERAL("traffic_annotation"))
         .Append(FILE_PATH_LITERAL("scripts"))
         .Append(FILE_PATH_LITERAL("extractor.py"));
+
+const base::FilePath kGroupingXmlPath =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation"))
+        .Append(FILE_PATH_LITERAL("summary"))
+        .Append(FILE_PATH_LITERAL("grouping.xml"));
 
 // Checks if the list of |path_filters| include the given |file_path|, or there
 // are path filters which are a folder (don't have a '.' in their name), and
@@ -261,7 +269,7 @@ bool TrafficAnnotationAuditor::RunExtractor(
   }
 
   base::SetCurrentDirectory(original_path);
-  base::DeleteFile(options_filepath, false);
+  base::DeleteFile(options_filepath);
 
   return result;
 }
@@ -580,9 +588,9 @@ bool TrafficAnnotationAuditor::CheckIfCallCanBeUnannotated(
     const base::CommandLine::CharType* args[] = {
 #if defined(OS_WIN)
       FILE_PATH_LITERAL("buildtools/win/gn.exe"),
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
       FILE_PATH_LITERAL("buildtools/mac/gn"),
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
       FILE_PATH_LITERAL("buildtools/linux64/gn"),
 #else
       // Fallback to using PATH to find gn.
@@ -634,6 +642,8 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
         AuditorResult result = instance.IsComplete();
         if (result.IsOK())
           result = instance.IsConsistent();
+        if (result.IsOK())
+          result = instance.InGroupingXML(grouped_annotation_unique_ids_);
         if (!result.IsOK())
           errors_.push_back(result);
         break;
@@ -670,6 +680,9 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
 
         if (result.IsOK())
           result = completed.IsConsistent();
+
+        if (result.IsOK())
+          result = completed.InGroupingXML(grouped_annotation_unique_ids_);
 
         if (result.IsOK()) {
           new_annotations.push_back(completed);
@@ -714,9 +727,31 @@ void TrafficAnnotationAuditor::AddMissingAnnotations() {
           item.second.type, item.first, item.second.unique_id_hash_code,
           item.second.second_id_hash_code, item.second.content_hash_code,
           item.second.semantics_fields, item.second.policy_fields,
-          item.second.file_path));
+          item.second.file_path, item.second.added_in_milestone));
     }
   }
+}
+
+bool TrafficAnnotationAuditor::GetGroupingAnnotationsUniqueIDs(
+    base::FilePath grouping_xml_path,
+    std::set<std::string>* annotation_unique_ids) const {
+  XmlReader reader;
+  if (!reader.LoadFile(grouping_xml_path.MaybeAsASCII())) {
+    LOG(ERROR) << "Could not load '" << grouping_xml_path.MaybeAsASCII()
+               << "'.";
+    return false;
+  }
+
+  bool all_ok = true;
+  while (reader.Read()) {
+    if (reader.IsClosingElement() || reader.NodeName() != "traffic_annotation")
+      continue;
+
+    std::string unique_id;
+    all_ok &= reader.NodeAttribute("unique_id", &unique_id);
+    annotation_unique_ids->insert(unique_id);
+  }
+  return all_ok;
 }
 
 bool TrafficAnnotationAuditor::RunAllChecks(
@@ -728,6 +763,11 @@ bool TrafficAnnotationAuditor::RunAllChecks(
 
   std::set<int> deprecated_ids;
   exporter_.GetDeprecatedHashCodes(&deprecated_ids);
+
+  if (!GetGroupingAnnotationsUniqueIDs(source_path_.Append(kGroupingXmlPath),
+                                       &grouped_annotation_unique_ids_)) {
+    return false;
+  }
 
   if (!path_filters_.empty())
     AddMissingAnnotations();

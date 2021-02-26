@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -253,8 +252,6 @@ bool NotificationsApiFunction::CreateNotification(
   // Extract required fields: type, title, message, and icon.
   message_center::NotificationType type =
       MapApiTemplateTypeToType(options->type);
-  UMA_HISTOGRAM_ENUMERATION("Notifications.ExtensionNotificationType", type,
-                            message_center::NOTIFICATION_TYPE_LAST);
 
   const base::string16 title(base::UTF8ToUTF16(*options->title));
   const base::string16 message(base::UTF8ToUTF16(*options->message));
@@ -293,12 +290,6 @@ bool NotificationsApiFunction::CreateNotification(
   if (options->buttons.get()) {
     // Currently we allow up to 2 buttons.
     size_t number_of_buttons = options->buttons->size();
-
-    // Use distinct buckets for 1-16 notification action buttons, and an
-    // overflow bucket for 17 or more action buttons. Does not impact how many
-    // action buttons are shown.
-    UMA_HISTOGRAM_ENUMERATION("Notifications.ExtensionNotificationActionCount",
-                              number_of_buttons, 17);
 
     number_of_buttons = number_of_buttons > 2 ? 2 : number_of_buttons;
 
@@ -614,8 +605,7 @@ NotificationsCreateFunction::RunNotificationsApi() {
         api::notifications::Create::Results::Create(notification_id), error));
   }
 
-  return RespondNow(
-      OneArgument(std::make_unique<base::Value>(notification_id)));
+  return RespondNow(OneArgument(base::Value(notification_id)));
 }
 
 NotificationsUpdateFunction::NotificationsUpdateFunction() {
@@ -636,7 +626,7 @@ NotificationsUpdateFunction::RunNotificationsApi() {
           CreateScopedIdentifier(extension_->id(), params_->notification_id));
 
   if (!matched_notification) {
-    return RespondNow(OneArgument(std::make_unique<base::Value>(false)));
+    return RespondNow(OneArgument(base::Value(false)));
   }
 
   // Copy the existing notification to get a writable version of it.
@@ -656,7 +646,7 @@ NotificationsUpdateFunction::RunNotificationsApi() {
 
   // No trouble, created the notification, send true to the callback and
   // succeed.
-  return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
+  return RespondNow(OneArgument(base::Value(true)));
 }
 
 NotificationsClearFunction::NotificationsClearFunction() {
@@ -673,7 +663,7 @@ NotificationsClearFunction::RunNotificationsApi() {
   bool cancel_result = GetDisplayHelper()->Close(
       CreateScopedIdentifier(extension_->id(), params_->notification_id));
 
-  return RespondNow(OneArgument(std::make_unique<base::Value>(cancel_result)));
+  return RespondNow(OneArgument(base::Value(cancel_result)));
 }
 
 NotificationsGetAllFunction::NotificationsGetAllFunction() {}
@@ -693,7 +683,8 @@ NotificationsGetAllFunction::RunNotificationsApi() {
                    base::Value(true));
   }
 
-  return RespondNow(OneArgument(std::move(result)));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
 }
 
 NotificationsGetPermissionLevelFunction::
@@ -713,8 +704,8 @@ NotificationsGetPermissionLevelFunction::RunNotificationsApi() {
           ? api::notifications::PERMISSION_LEVEL_GRANTED
           : api::notifications::PERMISSION_LEVEL_DENIED;
 
-  return RespondNow(OneArgument(
-      std::make_unique<base::Value>(api::notifications::ToString(result))));
+  return RespondNow(
+      OneArgument(base::Value(api::notifications::ToString(result))));
 }
 
 }  // namespace extensions

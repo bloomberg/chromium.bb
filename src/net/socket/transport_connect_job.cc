@@ -19,6 +19,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
+#include "net/dns/public/secure_dns_mode.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
@@ -269,7 +270,7 @@ int TransportConnectJob::DoResolveHost() {
   HostResolver::ResolveHostParameters parameters;
   parameters.initial_priority = priority();
   if (params_->disable_secure_dns())
-    parameters.secure_dns_mode_override = DnsConfig::SecureDnsMode::OFF;
+    parameters.secure_dns_mode_override = SecureDnsMode::kOff;
   request_ = host_resolver()->CreateRequest(params_->destination(),
                                             params_->network_isolation_key(),
                                             net_log(), parameters);
@@ -323,8 +324,8 @@ int TransportConnectJob::DoTransportConnect() {
   }
   transport_socket_ = client_socket_factory()->CreateTransportClientSocket(
       request_->GetAddressResults().value(),
-      std::move(socket_performance_watcher), net_log().net_log(),
-      net_log().source());
+      std::move(socket_performance_watcher), network_quality_estimator(),
+      net_log().net_log(), net_log().source());
 
   // If the list contains IPv6 and IPv4 addresses, and the first address
   // is IPv6, the IPv4 addresses will be tried as fallback addresses, per
@@ -412,7 +413,7 @@ void TransportConnectJob::DoIPv6FallbackTransportConnect() {
   fallback_transport_socket_ =
       client_socket_factory()->CreateTransportClientSocket(
           *fallback_addresses_, std::move(socket_performance_watcher),
-          net_log().net_log(), net_log().source());
+          network_quality_estimator(), net_log().net_log(), net_log().source());
   fallback_connect_start_time_ = base::TimeTicks::Now();
   int rv = fallback_transport_socket_->Connect(base::BindOnce(
       &TransportConnectJob::DoIPv6FallbackTransportConnectComplete,

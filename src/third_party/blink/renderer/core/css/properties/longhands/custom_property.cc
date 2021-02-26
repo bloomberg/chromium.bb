@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/custom_property.h"
 
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/property_registration.h"
@@ -81,7 +82,6 @@ void CustomProperty::ApplyInherit(StyleResolverState& state) const {
 void CustomProperty::ApplyValue(StyleResolverState& state,
                                 const CSSValue& value) const {
   if (value.IsInvalidVariableValue()) {
-    DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
     state.Style()->SetVariableData(name_, nullptr, IsInherited());
     if (registration_)
       state.Style()->SetVariableValue(name_, nullptr, IsInherited());
@@ -103,14 +103,6 @@ void CustomProperty::ApplyValue(StyleResolverState& state,
   } else if (inherit) {
     ApplyInherit(state);
   } else {
-    if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-      state.Style()->SetVariableData(name_, declaration.Value(),
-                                     is_inherited_property);
-      if (registration_)
-        state.Style()->SetVariableValue(name_, nullptr, is_inherited_property);
-      return;
-    }
-
     scoped_refptr<CSSVariableData> data = declaration.Value();
     DCHECK(!data->NeedsVariableResolution());
 
@@ -119,8 +111,8 @@ void CustomProperty::ApplyValue(StyleResolverState& state,
     if (registration_) {
       // TODO(andruud): Store CSSParserContext on CSSCustomPropertyDeclaration
       // and use that.
-      const CSSParserContext* context =
-          StrictCSSParserContext(state.GetDocument().GetSecureContextMode());
+      const CSSParserContext* context = StrictCSSParserContext(
+          state.GetDocument().GetExecutionContext()->GetSecureContextMode());
       auto mode = CSSParserLocalContext::VariableMode::kTyped;
       auto local_context = CSSParserLocalContext().WithVariableMode(mode);
       CSSParserTokenRange range = data->TokenRange();
@@ -204,8 +196,10 @@ const CSSValue* CustomProperty::ParseUntyped(
     CSSParserTokenRange range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
+  // TODO(crbug.com/661854): Pass through the original string when we have it.
   return CSSVariableParser::ParseDeclarationValue(
-      name_, range, local_context.IsAnimationTainted(), context);
+      name_, {range, StringView()}, local_context.IsAnimationTainted(),
+      context);
 }
 
 const CSSValue* CustomProperty::ParseTyped(
@@ -216,6 +210,16 @@ const CSSValue* CustomProperty::ParseTyped(
     return ParseUntyped(range, context, local_context);
   return registration_->Syntax().Parse(range, context,
                                        local_context.IsAnimationTainted());
+}
+
+bool CustomProperty::HasInitialValue() const {
+  if (!registration_)
+    return false;
+  return registration_->InitialVariableData();
+}
+
+bool CustomProperty::SupportsGuaranteedInvalid() const {
+  return !registration_ || registration_->Syntax().IsUniversal();
 }
 
 }  // namespace blink

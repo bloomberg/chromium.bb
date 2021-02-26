@@ -14,6 +14,7 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
@@ -21,7 +22,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/grit/components_resources.h"
@@ -32,10 +32,10 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-#include "components/safe_browsing/core/proto/webprotect.pb.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #endif
-#include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_prefs/user_prefs.h"
@@ -46,6 +46,11 @@
 
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
 #include "components/safe_browsing/core/db/v4_local_database_manager.h"
+#endif
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+using TriggeredRule =
+    enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule;
 #endif
 
 using base::Time;
@@ -219,8 +224,8 @@ void WebUIInfoSingleton::LogMessage(const std::string& message) {
   base::Time timestamp = base::Time::Now();
   log_messages_.push_back(std::make_pair(timestamp, message));
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&WebUIInfoSingleton::NotifyLogMessageListeners,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&WebUIInfoSingleton::NotifyLogMessageListeners,
                                 timestamp, message));
 }
 
@@ -253,7 +258,8 @@ void WebUIInfoSingleton::ClearReportingEvents() {
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 void WebUIInfoSingleton::AddToDeepScanRequests(
-    const DeepScanningClientRequest& request) {
+    const GURL& tab_url,
+    const enterprise_connectors::ContentAnalysisRequest& request) {
   if (!HasListener())
     return;
 
@@ -264,6 +270,7 @@ void WebUIInfoSingleton::AddToDeepScanRequests(
         base::Time::Now();
   }
 
+  deep_scan_requests_[request.request_token()].tab_url = tab_url;
   deep_scan_requests_[request.request_token()].request = request;
 
   for (auto* webui_listener : webui_instances_)
@@ -274,7 +281,7 @@ void WebUIInfoSingleton::AddToDeepScanRequests(
 void WebUIInfoSingleton::AddToDeepScanResponses(
     const std::string& token,
     const std::string& status,
-    const DeepScanningClientResponse& response) {
+    const enterprise_connectors::ContentAnalysisResponse& response) {
   if (!HasListener())
     return;
 
@@ -299,33 +306,20 @@ void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   MaybeClearData();
 }
 
-network::mojom::CookieManager* WebUIInfoSingleton::GetCookieManager() {
-  if (!cookie_manager_remote_)
-    InitializeCookieManager();
+mojo::Remote<network::mojom::CookieManager>
+WebUIInfoSingleton::GetCookieManager(content::BrowserContext* browser_context) {
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_remote;
+  if (sb_service_) {
+    sb_service_->GetNetworkContext(browser_context)
+        ->GetCookieManager(cookie_manager_remote.BindNewPipeAndPassReceiver());
+  }
 
-  return cookie_manager_remote_.get();
+  return cookie_manager_remote;
 }
 
 void WebUIInfoSingleton::ClearListenerForTesting() {
   has_test_listener_ = false;
   MaybeClearData();
-}
-
-void WebUIInfoSingleton::InitializeCookieManager() {
-  DCHECK(network_context_);
-
-  // Reset |cookie_manager_remote_|, and only re-initialize it if we have a
-  // listening SafeBrowsingUIHandler.
-  cookie_manager_remote_.reset();
-
-  if (HasListener()) {
-    network_context_->GetNetworkContext()->GetCookieManager(
-        cookie_manager_remote_.BindNewPipeAndPassReceiver());
-
-    // base::Unretained is safe because |this| owns |cookie_manager_remote_|.
-    cookie_manager_remote_.set_disconnect_handler(base::BindOnce(
-        &WebUIInfoSingleton::InitializeCookieManager, base::Unretained(this)));
-  }
 }
 
 void WebUIInfoSingleton::MaybeClearData() {
@@ -369,34 +363,33 @@ void AddStoreInfo(const DatabaseManagerInfo::DatabaseInfo::StoreInfo store_info,
     database_info_list->Append(base::Value("Unknown store"));
   }
 
-  std::string store_info_string = "<blockquote>";
+  base::Value store_info_list(base::Value::Type::LIST);
   if (store_info.has_file_size_bytes()) {
-    store_info_string +=
-        "Size (in bytes): " + std::to_string(store_info.file_size_bytes()) +
-        "<br>";
+    store_info_list.Append(
+        "Size (in bytes): " +
+        base::UTF16ToUTF8(base::FormatNumber(store_info.file_size_bytes())));
   }
 
   if (store_info.has_update_status()) {
-    store_info_string +=
-        "Update status: " + std::to_string(store_info.update_status()) + "<br>";
+    store_info_list.Append(
+        "Update status: " +
+        base::UTF16ToUTF8(base::FormatNumber(store_info.update_status())));
   }
 
   if (store_info.has_last_apply_update_time_millis()) {
-    store_info_string += "Last update time: " +
-                         UserReadableTimeFromMillisSinceEpoch(
-                             store_info.last_apply_update_time_millis())
-                             .GetString() +
-                         "<br>";
+    store_info_list.Append("Last update time: " +
+                           UserReadableTimeFromMillisSinceEpoch(
+                               store_info.last_apply_update_time_millis())
+                               .GetString());
   }
 
   if (store_info.has_checks_attempted()) {
-    store_info_string += "Number of database checks: " +
-                         std::to_string(store_info.checks_attempted()) + "<br>";
+    store_info_list.Append(
+        "Number of database checks: " +
+        base::UTF16ToUTF8(base::FormatNumber(store_info.checks_attempted())));
   }
 
-  store_info_string += "</blockquote>";
-
-  database_info_list->Append(base::Value(store_info_string));
+  database_info_list->Append(std::move(store_info_list));
 }
 
 void AddDatabaseInfo(const DatabaseManagerInfo::DatabaseInfo database_info,
@@ -1145,6 +1138,20 @@ base::Value SerializeDomFeatures(const DomFeatures& dom_features) {
   return std::move(dom_features_dict);
 }
 
+base::Value SerializeUrlDisplayExperiment(
+    const LoginReputationClientRequest::UrlDisplayExperiment& experiment) {
+  base::DictionaryValue d;
+  d.SetBoolean("delayed_warnings_enabled",
+               experiment.delayed_warnings_enabled());
+  d.SetBoolean("delayed_warnings_mouse_clicks_enabled",
+               experiment.delayed_warnings_mouse_clicks_enabled());
+  d.SetBoolean("reveal_on_hover", experiment.reveal_on_hover());
+  d.SetBoolean("hide_on_interaction", experiment.hide_on_interaction());
+  d.SetBoolean("elide_to_registrable_domain",
+               experiment.elide_to_registrable_domain());
+  return std::move(d);
+}
+
 std::string SerializePGPing(const LoginReputationClientRequest& request) {
   base::DictionaryValue request_dict;
 
@@ -1195,6 +1202,12 @@ std::string SerializePGPing(const LoginReputationClientRequest& request) {
                         SerializeDomFeatures(request.dom_features()));
   }
 
+  if (request.has_url_display_experiment()) {
+    request_dict.SetKey(
+        "url_display_experiment",
+        SerializeUrlDisplayExperiment(request.url_display_experiment()));
+  }
+
   std::string request_serialized;
   JSONStringValueSerializer serializer(&request_serialized);
   serializer.set_pretty_print(true);
@@ -1242,6 +1255,7 @@ std::string SerializeRTLookupPing(const RTLookupRequestAndToken& ping) {
   request_dict.SetKey("population",
                       SerializeChromeUserPopulation(request.population()));
   request_dict.SetKey("scoped_oauth_token", base::Value(ping.token));
+  request_dict.SetKey("dm_token", base::Value(request.dm_token()));
 
   std::string lookupType;
   switch (request.lookup_type()) {
@@ -1255,8 +1269,39 @@ std::string SerializeRTLookupPing(const RTLookupRequestAndToken& ping) {
       lookupType = "DOWNLOAD";
       break;
   }
-
   request_dict.SetKey("lookup_type", base::Value(lookupType));
+
+  request_dict.SetKey("version", base::Value(request.version()));
+
+  std::string os;
+  switch (request.os_type()) {
+    case RTLookupRequest::OS_TYPE_UNSPECIFIED:
+      DCHECK(false) << "RTLookupRequest::os_type is undefined.";
+      os = "UNSPECIFIED";
+      break;
+    case RTLookupRequest::OS_TYPE_LINUX:
+      os = "LINUX";
+      break;
+    case RTLookupRequest::OS_TYPE_WINDOWS:
+      os = "WINDOWS";
+      break;
+    case RTLookupRequest::OS_TYPE_MAC:
+      os = "MAC";
+      break;
+    case RTLookupRequest::OS_TYPE_ANDROID:
+      os = "ANDROID";
+      break;
+    case RTLookupRequest::OS_TYPE_IOS:
+      os = "IOS";
+      break;
+    case RTLookupRequest::OS_TYPE_CHROME_OS:
+      os = "CHROME_OS";
+      break;
+    case RTLookupRequest::OS_TYPE_FUCHSIA:
+      os = "FUCHSIA";
+      break;
+  }
+  request_dict.SetKey("os", base::Value(os));
 
   std::string request_serialized;
   JSONStringValueSerializer serializer(&request_serialized);
@@ -1304,56 +1349,49 @@ base::Value SerializeReportingEvent(const base::Value& event) {
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-std::string SerializeDeepScanningRequest(
-    const DeepScanningClientRequest& request) {
+std::string SerializeContentAnalysisRequest(
+    const GURL& tab_url,
+    const enterprise_connectors::ContentAnalysisRequest& request) {
   base::DictionaryValue request_dict;
 
-  request_dict.SetKey("dm_token", base::Value(request.dm_token()));
+  request_dict.SetKey("device_token", base::Value(request.device_token()));
   request_dict.SetKey("fcm_notification_token",
                       base::Value(request.fcm_notification_token()));
-
-  if (request.has_malware_scan_request()) {
-    base::DictionaryValue malware_request;
-
-    switch (request.malware_scan_request().population()) {
-      case MalwareDeepScanningClientRequest::POPULATION_UNKNOWN:
-        malware_request.SetStringKey("population", "POPULATION_UNKNOWN");
-        break;
-      case MalwareDeepScanningClientRequest::POPULATION_ENTERPRISE:
-        malware_request.SetStringKey("population", "POPULATION_ENTERPRISE");
-        break;
-      case MalwareDeepScanningClientRequest::POPULATION_TITANIUM:
-        malware_request.SetStringKey("population", "POPULATION_TITANIUM");
-        break;
-    }
-
-    request_dict.SetKey("malware_scan_request", std::move(malware_request));
+  switch (request.analysis_connector()) {
+    case enterprise_connectors::ANALYSIS_CONNECTOR_UNSPECIFIED:
+      request_dict.SetStringKey("analysis_connector", "UNSPECIFIED");
+      break;
+    case enterprise_connectors::FILE_ATTACHED:
+      request_dict.SetStringKey("analysis_connector", "FILE_ATTACHED");
+      break;
+    case enterprise_connectors::FILE_DOWNLOADED:
+      request_dict.SetStringKey("analysis_connector", "FILE_DOWNLOADED");
+      break;
+    case enterprise_connectors::BULK_DATA_ENTRY:
+      request_dict.SetStringKey("analysis_connector", "BULK_DATA_ENTRY");
+      break;
   }
 
-  if (request.has_dlp_scan_request()) {
-    base::DictionaryValue dlp_request;
-
-    switch (request.dlp_scan_request().content_source()) {
-      case DlpDeepScanningClientRequest::CONTENT_SOURCE_UNKNOWN:
-        dlp_request.SetStringKey("content_source", "CONTENT_SOURCE_UNKNOWN");
-        break;
-      case DlpDeepScanningClientRequest::FILE_DOWNLOAD:
-        dlp_request.SetStringKey("content_source", "FILE_DOWNLOAD");
-        break;
-      case DlpDeepScanningClientRequest::FILE_UPLOAD:
-        dlp_request.SetStringKey("content_source", "FILE_UPLOAD");
-        break;
-      case DlpDeepScanningClientRequest::WEB_CONTENT_UPLOAD:
-        dlp_request.SetStringKey("content_source", "WEB_CONTENT_UPLOAD");
-        break;
+  if (request.has_request_data()) {
+    base::DictionaryValue request_data;
+    request_data.SetStringKey("url", request.request_data().url());
+    request_data.SetStringKey("filename", request.request_data().filename());
+    request_data.SetStringKey("digest", request.request_data().digest());
+    if (request.request_data().has_csd()) {
+      request_data.SetStringKey(
+          "csd", request.request_data().csd().SerializeAsString());
     }
-
-    request_dict.SetKey("dlp_scan_request", std::move(dlp_request));
+    request_dict.SetKey("request_data", std::move(request_data));
+  }
+  if (tab_url.is_valid()) {
+    request_dict.SetStringKey("tab_url", tab_url.spec());
   }
 
+  base::ListValue tags;
+  for (const std::string& tag : request.tags())
+    tags.Append(base::Value(tag));
+  request_dict.SetKey("tags", std::move(tags));
   request_dict.SetKey("request_token", base::Value(request.request_token()));
-  request_dict.SetKey("filename", base::Value(request.filename()));
-  request_dict.SetKey("digest", base::Value(request.digest()));
 
   std::string request_serialized;
   JSONStringValueSerializer serializer(&request_serialized);
@@ -1362,95 +1400,56 @@ std::string SerializeDeepScanningRequest(
   return request_serialized;
 }
 
-std::string SerializeDeepScanningResponse(
-    const DeepScanningClientResponse& response) {
+std::string SerializeContentAnalysisResponse(
+    const enterprise_connectors::ContentAnalysisResponse& response) {
   base::DictionaryValue response_dict;
 
-  response_dict.SetStringKey("token", response.token());
+  response_dict.SetStringKey("token", response.request_token());
 
-  if (response.has_malware_scan_verdict()) {
-    base::DictionaryValue malware_verdict;
-
-    switch (response.malware_scan_verdict().verdict()) {
-      case MalwareDeepScanningVerdict::VERDICT_UNSPECIFIED:
-        malware_verdict.SetStringKey("verdict", "VERDICT_UNSPECIFIED");
+  base::ListValue result_values;
+  for (const auto& result : response.results()) {
+    base::DictionaryValue result_value;
+    switch (result.status()) {
+      case enterprise_connectors::ContentAnalysisResponse::Result::
+          STATUS_UNKNOWN:
+        result_value.SetStringKey("status", "STATUS_UNKNOWN");
         break;
-      case MalwareDeepScanningVerdict::CLEAN:
-        malware_verdict.SetStringKey("verdict", "CLEAN");
+      case enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS:
+        result_value.SetStringKey("status", "SUCCESS");
         break;
-      case MalwareDeepScanningVerdict::UWS:
-        malware_verdict.SetStringKey("verdict", "UWS");
-        break;
-      case MalwareDeepScanningVerdict::MALWARE:
-        malware_verdict.SetStringKey("verdict", "MALWARE");
-        break;
-      case MalwareDeepScanningVerdict::SCAN_FAILURE:
-        malware_verdict.SetStringKey("verdict", "SCAN_FAILURE");
+      case enterprise_connectors::ContentAnalysisResponse::Result::FAILURE:
+        result_value.SetStringKey("status", "FAILURE");
         break;
     }
-
-    response_dict.SetKey("malware_scan_verdict", std::move(malware_verdict));
-  }
-
-  if (response.has_dlp_scan_verdict()) {
-    base::DictionaryValue dlp_verdict;
-
-    switch (response.dlp_scan_verdict().status()) {
-      case DlpDeepScanningVerdict::STATUS_UNKNOWN:
-        dlp_verdict.SetStringKey("status", "STATUS_UNKNOWN");
-        break;
-      case DlpDeepScanningVerdict::SUCCESS:
-        dlp_verdict.SetStringKey("status", "SUCCESS");
-        break;
-      case DlpDeepScanningVerdict::FAILURE:
-        dlp_verdict.SetStringKey("status", "FAILURE");
-        break;
-    }
+    result_value.SetStringKey("tag", result.tag());
 
     base::ListValue triggered_rules;
-    for (const DlpDeepScanningVerdict::TriggeredRule& rule :
-         response.dlp_scan_verdict().triggered_rules()) {
+    for (const auto& rule : result.triggered_rules()) {
       base::DictionaryValue rule_value;
 
       switch (rule.action()) {
-        case DlpDeepScanningVerdict::TriggeredRule::ACTION_UNKNOWN:
-          rule_value.SetStringKey("action", "ACTION_UNKNOWN");
+        case TriggeredRule::ACTION_UNSPECIFIED:
+          rule_value.SetStringKey("action", "ACTION_UNSPECIFIED");
           break;
-        case DlpDeepScanningVerdict::TriggeredRule::REPORT_ONLY:
+        case TriggeredRule::REPORT_ONLY:
           rule_value.SetStringKey("action", "REPORT_ONLY");
           break;
-        case DlpDeepScanningVerdict::TriggeredRule::WARN:
+        case TriggeredRule::WARN:
           rule_value.SetStringKey("action", "WARN");
           break;
-        case DlpDeepScanningVerdict::TriggeredRule::BLOCK:
+        case TriggeredRule::BLOCK:
           rule_value.SetStringKey("action", "BLOCK");
           break;
       }
 
       rule_value.SetStringKey("rule_name", rule.rule_name());
-      rule_value.SetDoubleKey("rule_id", rule.rule_id());
-      rule_value.SetStringKey("rule_resource_name", rule.rule_resource_name());
-      rule_value.SetStringKey("rule_severity", rule.rule_severity());
-
-      base::ListValue matched_detectors;
-      for (const DlpDeepScanningVerdict::MatchedDetector& detector :
-           rule.matched_detectors()) {
-        base::DictionaryValue detector_value;
-        detector_value.SetStringKey("detector_id", detector.detector_id());
-        detector_value.SetStringKey("display_name", detector.display_name());
-        detector_value.SetStringKey("detector_type", detector.detector_type());
-        matched_detectors.Append(std::move(detector_value));
-      }
-
-      rule_value.SetKey("matched_detectors", std::move(matched_detectors));
-
+      rule_value.SetStringKey("rule_id", rule.rule_id());
       triggered_rules.Append(std::move(rule_value));
     }
-
-    dlp_verdict.SetKey("triggered_rules", std::move(triggered_rules));
-
-    response_dict.SetKey("dlp_scan_verdict", std::move(dlp_verdict));
+    result_value.SetKey("triggered_rules", std::move(triggered_rules));
+    result_values.Append(std::move(result_value));
   }
+  response_dict.SetKey("results", std::move(result_values));
 
   std::string response_serialized;
   JSONStringValueSerializer serializer(&response_serialized);
@@ -1469,8 +1468,8 @@ base::Value SerializeDeepScanDebugData(const std::string& token,
   }
 
   if (data.request.has_value()) {
-    value.SetStringKey("request",
-                       SerializeDeepScanningRequest(data.request.value()));
+    value.SetStringKey("request", SerializeContentAnalysisRequest(
+                                      data.tab_url, data.request.value()));
   }
 
   if (!data.response_time.is_null()) {
@@ -1483,7 +1482,7 @@ base::Value SerializeDeepScanDebugData(const std::string& token,
 
   if (data.response.has_value()) {
     value.SetStringKey("response",
-                       SerializeDeepScanningResponse(data.response.value()));
+                       SerializeContentAnalysisResponse(data.response.value()));
   }
 
   return std::move(value);
@@ -1558,7 +1557,9 @@ void SafeBrowsingUIHandler::GetCookie(const base::ListValue* args) {
   std::string callback_id;
   args->GetString(0, &callback_id);
 
-  WebUIInfoSingleton::GetInstance()->GetCookieManager()->GetAllCookies(
+  cookie_manager_remote_ =
+      WebUIInfoSingleton::GetInstance()->GetCookieManager(browser_context_);
+  cookie_manager_remote_->GetAllCookies(
       base::BindOnce(&SafeBrowsingUIHandler::OnGetCookie,
                      weak_factory_.GetWeakPtr(), std::move(callback_id)));
 }
@@ -1790,17 +1791,6 @@ void SafeBrowsingUIHandler::GetRTLookupResponses(const base::ListValue* args) {
   std::string callback_id;
   args->GetString(0, &callback_id);
   ResolveJavascriptCallback(base::Value(callback_id), responses_sent);
-}
-
-void SafeBrowsingUIHandler::GetRTLookupExperimentEnabled(
-    const base::ListValue* args) {
-  base::ListValue value;
-  value.Append(base::Value(RealTimePolicyEngine::IsUrlLookupEnabled()));
-
-  AllowJavascript();
-  std::string callback_id;
-  args->GetString(0, &callback_id);
-  ResolveJavascriptCallback(base::Value(callback_id), value);
 }
 
 void SafeBrowsingUIHandler::GetReferrerChain(const base::ListValue* args) {
@@ -2038,10 +2028,6 @@ void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getRTLookupResponses",
       base::BindRepeating(&SafeBrowsingUIHandler::GetRTLookupResponses,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getRTLookupExperimentEnabled",
-      base::BindRepeating(&SafeBrowsingUIHandler::GetRTLookupExperimentEnabled,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getLogMessages",

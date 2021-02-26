@@ -16,9 +16,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 using message_center::Notification;
@@ -47,24 +49,26 @@ void ReleaseNotesNotification::HandleClickShowNotification() {
   SystemNotificationHelper::GetInstance()->Close(kShowNotificationID);
   base::RecordAction(
       base::UserMetricsAction("ReleaseNotes.LaunchedNotification"));
-  chrome::LaunchReleaseNotes(profile_);
+  chrome::LaunchReleaseNotes(
+      profile_, apps::mojom::LaunchSource::kFromReleaseNotesNotification);
 }
 
 void ReleaseNotesNotification::ShowReleaseNotesNotification() {
-  base::string16 title =
-      l10n_util::GetStringUTF16(IDS_RELEASE_NOTES_NOTIFICATION_TITLE);
+  base::string16 title = ui::SubstituteChromeOSDeviceType(
+      IDS_RELEASE_NOTES_DEVICE_SPECIFIC_NOTIFICATION_TITLE);
   base::string16 message =
       l10n_util::GetStringUTF16(IDS_RELEASE_NOTES_NOTIFICATION_MESSAGE);
 
   release_notes_available_notification_ = ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kShowNotificationID,
-      std::move(title), std::move(message), base::string16(), GURL(),
+      std::move(title), std::move(message),
+      l10n_util::GetStringUTF16(IDS_HELP_APP_EXPLORE), GURL(),
       message_center::NotifierId(), message_center::RichNotificationData(),
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating(
               &ReleaseNotesNotification::HandleClickShowNotification,
               weak_ptr_factory_.GetWeakPtr())),
-      gfx::VectorIcon(),
+      vector_icons::kNotificationExploreIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
   SystemNotificationHelper::GetInstance()->Display(
       *release_notes_available_notification_);

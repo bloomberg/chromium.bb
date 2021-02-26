@@ -22,21 +22,32 @@
 
 namespace dawn_wire { namespace client {
 
-    struct Queue;
-    struct Fence : ObjectBase {
+    class Queue;
+    class Fence final : public ObjectBase {
+      public:
         using ObjectBase::ObjectBase;
-
         ~Fence();
+        void Initialize(Queue* queue, const WGPUFenceDescriptor* descriptor);
+
         void CheckPassedFences();
+        void OnCompletion(uint64_t value, WGPUFenceOnCompletionCallback callback, void* userdata);
+        void OnUpdateCompletedValueCallback(uint64_t value);
+        bool OnCompletionCallback(uint64_t requestSerial, WGPUFenceCompletionStatus status);
+
+        uint64_t GetCompletedValue() const;
+        Queue* GetQueue() const;
+
+      private:
+        void CancelCallbacksForDisconnect() override;
 
         struct OnCompletionData {
-            WGPUFenceOnCompletionCallback completionCallback = nullptr;
+            WGPUFenceOnCompletionCallback callback = nullptr;
             void* userdata = nullptr;
         };
-        Queue* queue = nullptr;
-        uint64_t signaledValue = 0;
-        uint64_t completedValue = 0;
-        SerialMap<OnCompletionData> requests;
+        Queue* mQueue = nullptr;
+        uint64_t mCompletedValue = 0;
+        uint64_t mOnCompletionRequestSerial = 0;
+        std::map<uint64_t, OnCompletionData> mOnCompletionRequests;
     };
 
 }}  // namespace dawn_wire::client

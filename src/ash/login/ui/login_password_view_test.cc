@@ -4,6 +4,7 @@
 
 #include "ash/login/ui/login_password_view.h"
 
+#include "ash/login/ui/login_palette.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/shell.h"
@@ -13,6 +14,7 @@
 #include "base/timer/mock_timer.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -31,7 +33,7 @@ class LoginPasswordViewTest : public LoginTestBase {
   void SetUp() override {
     LoginTestBase::SetUp();
 
-    view_ = new LoginPasswordView();
+    view_ = new LoginPasswordView(CreateDefaultLoginPalette());
     view_->Init(
         base::BindRepeating(&LoginPasswordViewTest::OnPasswordSubmit,
                             base::Unretained(this)),
@@ -127,7 +129,7 @@ TEST_F(LoginPasswordViewTestFeatureEnabled,
 
   // The display password button is not toggled by default and the password is
   // not visible.
-  EXPECT_FALSE(test_api.display_password_button()->toggled_for_testing());
+  EXPECT_FALSE(test_api.display_password_button()->GetToggled());
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
 
@@ -136,7 +138,7 @@ TEST_F(LoginPasswordViewTestFeatureEnabled,
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_FALSE(test_api.display_password_button()->toggled_for_testing());
+  EXPECT_FALSE(test_api.display_password_button()->GetToggled());
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
 
@@ -145,14 +147,14 @@ TEST_F(LoginPasswordViewTestFeatureEnabled,
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_TRUE(test_api.display_password_button()->toggled_for_testing());
-  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_TRUE(test_api.display_password_button()->GetToggled());
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_NULL);
 
   // Click the display password button again. The password should be hidden.
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_FALSE(test_api.display_password_button()->toggled_for_testing());
+  EXPECT_FALSE(test_api.display_password_button()->GetToggled());
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
 }
@@ -170,6 +172,9 @@ TEST_F(LoginPasswordViewTest, PasswordSubmitIncludesPasswordText) {
 
   ASSERT_TRUE(password_.has_value());
   EXPECT_EQ(base::ASCIIToUTF16("abc1"), *password_);
+
+  // Expect the password field to be read only after submitting.
+  EXPECT_EQ(test_api.textfield()->GetReadOnly(), true);
 }
 
 // Verifies that password submit works when clicking the submit button.
@@ -187,6 +192,28 @@ TEST_F(LoginPasswordViewTest, PasswordSubmitViaButton) {
 
   ASSERT_TRUE(password_.has_value());
   EXPECT_EQ(base::ASCIIToUTF16("abc1"), *password_);
+
+  // Expect the password field to be read only after submitting.
+  EXPECT_EQ(test_api.textfield()->GetReadOnly(), true);
+}
+
+// Verifies that pressing 'Return' on the password field triggers an
+// unlock attempt by calling OnSubmit with an empty password.
+TEST_F(LoginPasswordViewTest, PressingReturnTriggersUnlockWithEmptyPassword) {
+  LoginPasswordView::TestApi test_api(view_);
+
+  // Hitting enter on an empty password should not submit an empty password
+  // when not allowed to.
+  view_->SetEnabledOnEmptyPassword(false);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
+  ASSERT_FALSE(password_.has_value());
+
+  // When allowed, hitting enter should submit an empty password.
+  view_->SetEnabledOnEmptyPassword(true);
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
+  ASSERT_TRUE(password_.has_value());
+  EXPECT_EQ(base::ASCIIToUTF16(""), *password_);
 }
 
 // Verifies that text is not cleared after submitting a password.
@@ -206,6 +233,7 @@ TEST_F(LoginPasswordViewTest, PasswordSubmitClearsPassword) {
   // Clear password.
   password_.reset();
   view_->Clear();
+  view_->SetReadOnly(false);
   EXPECT_TRUE(is_password_field_empty_);
 
   // Submit 'b' password.
@@ -316,7 +344,7 @@ TEST_F(LoginPasswordViewTestFeatureEnabled, PasswordAutoClearsAndHides) {
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_NULL);
   hide_timer->Fire();
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
@@ -326,32 +354,39 @@ TEST_F(LoginPasswordViewTestFeatureEnabled, PasswordAutoClearsAndHides) {
             ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
-// Verifies that the password textfield hides back when the content changes.
-TEST_F(LoginPasswordViewTestFeatureEnabled, PasswordHidesAfterTyping) {
+// Verifies that the password textfield remains in the same visibility state
+// when the content changes.
+TEST_F(LoginPasswordViewTestFeatureEnabled,
+       ContentChangesDoNotImpactPasswordVisibility) {
   LoginPasswordView::TestApi test_api(view_);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
-  // Show the password.
+  // Type to enable the display password button and click on it to display the
+  // password.
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
   generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_NULL);
 
-  // Type and check if the password textfield hides back.
+  // Type manually and programmatically, and check if the password textfield
+  // remains visible.
   generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
-  EXPECT_EQ(test_api.textfield()->GetTextInputType(),
-            ui::TEXT_INPUT_TYPE_PASSWORD);
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_NULL);
+  test_api.textfield()->InsertText(base::ASCIIToUTF16("test"));
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_NULL);
 
-  // Click again to show the password.
+  // Click again on the display password button to hide the password.
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(),
+            ui::TEXT_INPUT_TYPE_PASSWORD);
 
-  // Modifies the content programmatically and check it is still triggered.
+  // Type manually and programmatically, and check if the password textfield
+  // remains invisible.
   test_api.textfield()->InsertText(base::ASCIIToUTF16("test"));
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
@@ -388,6 +423,22 @@ TEST_F(LoginPasswordViewTestFeatureEnabled,
   generator->PressKey(ui::KeyboardCode::VKEY_DELETE, ui::EF_NONE);
   EXPECT_TRUE(is_password_field_empty_);
   EXPECT_FALSE(test_api.display_password_button()->GetEnabled());
+}
+
+// Verifies that focus returned to the textfield after InsertNumber is called.
+TEST_F(LoginPasswordViewTestFeatureEnabled, FocusReturn) {
+  LoginPasswordView::TestApi test_api(view_);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  // Verify that focus is returned to view after the number insertion.
+  view_->InsertNumber(0);
+  EXPECT_TRUE(test_api.textfield()->HasFocus());
+  // Focus on the next element to check that following focus return will not
+  // delete what was already inserted into textfield.
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EventFlags::EF_NONE);
+  EXPECT_FALSE(test_api.textfield()->HasFocus());
+  view_->InsertNumber(1);
+  EXPECT_TRUE(test_api.textfield()->HasFocus());
+  EXPECT_EQ(test_api.textfield()->GetText().length(), 2u);
 }
 
 }  // namespace ash

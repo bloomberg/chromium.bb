@@ -4,6 +4,7 @@
 #include "ui/views/controls/button/image_button_factory.h"
 
 #include <memory>
+#include <utility>
 
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -11,25 +12,26 @@
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 
+namespace views {
+
 namespace {
 
-class ColorTrackingVectorImageButton : public views::ImageButton {
+class ColorTrackingVectorImageButton : public ImageButton {
  public:
-  ColorTrackingVectorImageButton(views::ButtonListener* listener,
+  ColorTrackingVectorImageButton(PressedCallback callback,
                                  const gfx::VectorIcon& icon)
-      : ImageButton(listener), icon_(icon) {}
+      : ImageButton(std::move(callback)), icon_(icon) {}
 
-  // views::ImageButton:
+  // ImageButton:
   void OnThemeChanged() override {
     ImageButton::OnThemeChanged();
     const SkColor color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_DefaultIconColor);
-    views::SetImageFromVectorIconWithColor(this, icon_, color);
+    SetImageFromVectorIconWithColor(this, icon_, color);
   }
 
  private:
@@ -38,33 +40,32 @@ class ColorTrackingVectorImageButton : public views::ImageButton {
 
 }  // namespace
 
-namespace views {
-
 std::unique_ptr<ImageButton> CreateVectorImageButtonWithNativeTheme(
-    ButtonListener* listener,
+    Button::PressedCallback callback,
     const gfx::VectorIcon& icon) {
-  auto button =
-      std::make_unique<ColorTrackingVectorImageButton>(listener, icon);
+  auto button = std::make_unique<ColorTrackingVectorImageButton>(
+      std::move(callback), icon);
   ConfigureVectorImageButton(button.get());
   return button;
 }
 
-std::unique_ptr<ImageButton> CreateVectorImageButton(ButtonListener* listener) {
-  auto button = std::make_unique<ImageButton>(listener);
+std::unique_ptr<ImageButton> CreateVectorImageButton(
+    Button::PressedCallback callback) {
+  auto button = std::make_unique<ImageButton>(std::move(callback));
   ConfigureVectorImageButton(button.get());
   return button;
 }
 
 std::unique_ptr<ToggleImageButton> CreateVectorToggleImageButton(
-    ButtonListener* listener) {
-  auto button = std::make_unique<ToggleImageButton>(listener);
+    Button::PressedCallback callback) {
+  auto button = std::make_unique<ToggleImageButton>(std::move(callback));
   ConfigureVectorImageButton(button.get());
   return button;
 }
 
 void ConfigureVectorImageButton(ImageButton* button) {
   button->SetInkDropMode(Button::InkDropMode::ON);
-  button->set_has_ink_drop_action_on_click(true);
+  button->SetHasInkDropActionOnClick(true);
   button->SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
   button->SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
   button->SetBorder(CreateEmptyBorder(
@@ -107,24 +108,14 @@ void SetImageFromVectorIconWithColor(ImageButton* button,
 
   button->SetImage(Button::STATE_NORMAL, normal_image);
   button->SetImage(Button::STATE_DISABLED, disabled_image);
-  button->set_ink_drop_base_color(icon_color);
-}
-
-void SetToggledImageFromVectorIcon(ToggleImageButton* button,
-                                   const gfx::VectorIcon& icon,
-                                   int dip_size,
-                                   SkColor related_text_color) {
-  const SkColor icon_color =
-      color_utils::DeriveDefaultIconColor(related_text_color);
-  SetToggledImageFromVectorIconWithColor(button, icon, dip_size, icon_color);
+  button->SetInkDropBaseColor(icon_color);
 }
 
 void SetToggledImageFromVectorIconWithColor(ToggleImageButton* button,
                                             const gfx::VectorIcon& icon,
                                             int dip_size,
-                                            SkColor icon_color) {
-  const SkColor disabled_color =
-      SkColorSetA(icon_color, gfx::kDisabledControlAlpha);
+                                            SkColor icon_color,
+                                            SkColor disabled_color) {
   const gfx::ImageSkia normal_image =
       gfx::CreateVectorIcon(icon, dip_size, icon_color);
   const gfx::ImageSkia disabled_image =

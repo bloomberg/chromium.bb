@@ -21,6 +21,7 @@ absl_cc_library(
     "ascii.h"
     "charconv.h"
     "escaping.h"
+    "internal/string_constant.h"
     "match.h"
     "numbers.h"
     "str_cat.h"
@@ -155,6 +156,19 @@ absl_cc_test(
     absl::strings_internal
     absl::base
     absl::core_headers
+    gmock_main
+)
+
+absl_cc_test(
+  NAME
+    string_constant_test
+  SRCS
+    "internal/string_constant_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
+  DEPS
+    absl::strings
+    absl::type_traits
     gmock_main
 )
 
@@ -475,6 +489,7 @@ absl_cc_test(
   COPTS
     ${ABSL_TEST_COPTS}
   DEPS
+    absl::strings
     absl::str_format_internal
     absl::raw_logging_internal
     absl::int128
@@ -547,6 +562,7 @@ absl_cc_library(
   DEPS
     absl::base
     absl::base_internal
+    absl::compressed_tuple
     absl::core_headers
     absl::endian
     absl::fixed_array

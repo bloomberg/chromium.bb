@@ -63,7 +63,7 @@ class TestStdMapSerializer : public ::testing::Test {
   std::map<AddrType, EntryType> std_map_;
   google_breakpad::StdMapSerializer<AddrType, EntryType> serializer_;
   uint32_t serialized_size_;
-  char *serialized_data_;
+  char* serialized_data_;
 };
 
 TEST_F(TestStdMapSerializer, EmptyMapTestCase) {
@@ -135,7 +135,7 @@ class TestAddressMapSerializer : public ::testing::Test {
   google_breakpad::AddressMap<AddrType, EntryType> address_map_;
   google_breakpad::AddressMapSerializer<AddrType, EntryType> serializer_;
   uint32_t serialized_size_;
-  char *serialized_data_;
+  char* serialized_data_;
 };
 
 TEST_F(TestAddressMapSerializer, EmptyMapTestCase) {
@@ -210,7 +210,7 @@ class TestRangeMapSerializer : public ::testing::Test {
   google_breakpad::RangeMap<AddrType, EntryType> range_map_;
   google_breakpad::RangeMapSerializer<AddrType, EntryType> serializer_;
   uint32_t serialized_size_;
-  char *serialized_data_;
+  char* serialized_data_;
 };
 
 TEST_F(TestRangeMapSerializer, EmptyMapTestCase) {
@@ -283,7 +283,7 @@ class TestContainedRangeMapSerializer : public ::testing::Test {
   google_breakpad::ContainedRangeMap<AddrType, EntryType> crm_map_;
   google_breakpad::ContainedRangeMapSerializer<AddrType, EntryType> serializer_;
   uint32_t serialized_size_;
-  char *serialized_data_;
+  char* serialized_data_;
 };
 
 TEST_F(TestContainedRangeMapSerializer, EmptyMapTestCase) {
@@ -379,7 +379,7 @@ TEST_F(TestContainedRangeMapSerializer, MapWithTwoLevelsTestCase) {
 }
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
 
   return RUN_ALL_TESTS();

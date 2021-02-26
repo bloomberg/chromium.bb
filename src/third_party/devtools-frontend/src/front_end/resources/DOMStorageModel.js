@@ -74,7 +74,7 @@ export class DOMStorage extends Common.ObjectWrapper.ObjectWrapper {
    * @return {!Promise<?Array<!Protocol.DOMStorage.Item>>}
    */
   getItems() {
-    return this._model._agent.getDOMStorageItems(this.id);
+    return this._model._agent.invoke_getDOMStorageItems({storageId: this.id}).then(({entries}) => entries);
   }
 
   /**
@@ -82,18 +82,18 @@ export class DOMStorage extends Common.ObjectWrapper.ObjectWrapper {
    * @param {string} value
    */
   setItem(key, value) {
-    this._model._agent.setDOMStorageItem(this.id, key, value);
+    this._model._agent.invoke_setDOMStorageItem({storageId: this.id, key, value});
   }
 
   /**
    * @param {string} key
    */
   removeItem(key) {
-    this._model._agent.removeDOMStorageItem(this.id, key);
+    this._model._agent.invoke_removeDOMStorageItem({storageId: this.id, key});
   }
 
   clear() {
-    this._model._agent.clear(this.id);
+    this._model._agent.invoke_clear({storageId: this.id});
   }
 }
 
@@ -128,15 +128,17 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
     }
 
     this.target().registerDOMStorageDispatcher(new DOMStorageDispatcher(this));
-    this._securityOriginManager.addEventListener(
-        SDK.SecurityOriginManager.Events.SecurityOriginAdded, this._securityOriginAdded, this);
-    this._securityOriginManager.addEventListener(
-        SDK.SecurityOriginManager.Events.SecurityOriginRemoved, this._securityOriginRemoved, this);
+    if (this._securityOriginManager) {
+      this._securityOriginManager.addEventListener(
+          SDK.SecurityOriginManager.Events.SecurityOriginAdded, this._securityOriginAdded, this);
+      this._securityOriginManager.addEventListener(
+          SDK.SecurityOriginManager.Events.SecurityOriginRemoved, this._securityOriginRemoved, this);
 
-    for (const securityOrigin of this._securityOriginManager.securityOrigins()) {
-      this._addOrigin(securityOrigin);
+      for (const securityOrigin of this._securityOriginManager.securityOrigins()) {
+        this._addOrigin(securityOrigin);
+      }
     }
-    this._agent.enable();
+    this._agent.invoke_enable();
 
     this._enabled = true;
   }
@@ -151,6 +153,9 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
     for (const isLocal of [true, false]) {
       const key = this._storageKey(origin, isLocal);
       const storage = this._storages[key];
+      if (!storage) {
+        return;
+      }
       storage.clear();
     }
     this._removeOrigin(origin);
@@ -301,7 +306,7 @@ export const Events = {
 };
 
 /**
- * @implements {Protocol.DOMStorageDispatcher}
+ * @implements {ProtocolProxyApi.DOMStorageDispatcher}
  * @unrestricted
  */
 export class DOMStorageDispatcher {
@@ -314,39 +319,33 @@ export class DOMStorageDispatcher {
 
   /**
    * @override
-   * @param {!Protocol.DOMStorage.StorageId} storageId
+   * @param {!Protocol.DOMStorage.DomStorageItemsClearedEvent} event
    */
-  domStorageItemsCleared(storageId) {
+  domStorageItemsCleared({storageId}) {
     this._model._domStorageItemsCleared(storageId);
   }
 
   /**
    * @override
-   * @param {!Protocol.DOMStorage.StorageId} storageId
-   * @param {string} key
+   * @param {!Protocol.DOMStorage.DomStorageItemRemovedEvent} event
    */
-  domStorageItemRemoved(storageId, key) {
+  domStorageItemRemoved({storageId, key}) {
     this._model._domStorageItemRemoved(storageId, key);
   }
 
   /**
    * @override
-   * @param {!Protocol.DOMStorage.StorageId} storageId
-   * @param {string} key
-   * @param {string} value
+   * @param {!Protocol.DOMStorage.DomStorageItemAddedEvent} event
    */
-  domStorageItemAdded(storageId, key, value) {
-    this._model._domStorageItemAdded(storageId, key, value);
+  domStorageItemAdded({storageId, key, newValue}) {
+    this._model._domStorageItemAdded(storageId, key, newValue);
   }
 
   /**
    * @override
-   * @param {!Protocol.DOMStorage.StorageId} storageId
-   * @param {string} key
-   * @param {string} oldValue
-   * @param {string} value
+   * @param {!Protocol.DOMStorage.DomStorageItemUpdatedEvent} storageId
    */
-  domStorageItemUpdated(storageId, key, oldValue, value) {
-    this._model._domStorageItemUpdated(storageId, key, oldValue, value);
+  domStorageItemUpdated({storageId, key, oldValue, newValue}) {
+    this._model._domStorageItemUpdated(storageId, key, oldValue, newValue);
   }
 }

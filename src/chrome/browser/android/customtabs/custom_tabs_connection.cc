@@ -6,13 +6,14 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "chrome/android/chrome_jni_headers/CustomTabsConnection_jni.h"
 #include "chrome/browser/android/customtabs/client_data_header_web_contents_observer.h"
 #include "chrome/browser/android/customtabs/detached_resource_request.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "content/public/common/referrer.h"
+#include "net/url_request/referrer_policy.h"
 #include "url/gurl.h"
 
 namespace customtabs {
@@ -55,7 +56,7 @@ static void JNI_CustomTabsConnection_CreateAndStartDetachedResourceRequest(
     base::android::ConvertJavaStringToUTF8(env, package_name, &native_package);
 
   // Java only knows about the blink referrer policy.
-  net::URLRequest::ReferrerPolicy url_request_referrer_policy =
+  net::ReferrerPolicy url_request_referrer_policy =
       content::Referrer::ReferrerPolicyForUrlRequest(
           content::Referrer::ConvertToPolicy(referrer_policy));
   DetachedResourceRequest::Motivation request_motivation =

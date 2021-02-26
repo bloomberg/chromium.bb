@@ -21,7 +21,7 @@ class CookieSettings;
 }
 
 namespace net {
-class URLRequest;
+class HttpRequestHeaders;
 }
 
 namespace signin {
@@ -36,6 +36,7 @@ enum ProfileMode {
 };
 
 extern const char kChromeConnectedHeader[];
+extern const char kChromeManageAccountsHeader[];
 extern const char kDiceRequestHeader[];
 extern const char kDiceResponseHeader[];
 
@@ -66,19 +67,19 @@ enum class DiceAction {
 // Struct describing the parameters received in the manage account header.
 struct ManageAccountsParams {
   // The requested service type such as "ADDSESSION".
-  GAIAServiceType service_type;
+  GAIAServiceType service_type = GAIA_SERVICE_TYPE_NONE;
   // The prefilled email.
   std::string email;
   // Whether |email| is a saml account.
-  bool is_saml;
+  bool is_saml = false;
   // The continue URL after the requested service is completed successfully.
   // Defaults to the current URL if empty.
   std::string continue_url;
   // Whether the continue URL should be loaded in the same tab.
-  bool is_same_tab;
-#if defined(OS_ANDROID)
+  bool is_same_tab = false;
+#if defined(OS_ANDROID) || defined(OS_IOS)
   // Whether to show consistency promo.
-  bool show_consistency_promo;
+  bool show_consistency_promo = false;
 #endif
 
   ManageAccountsParams();
@@ -113,6 +114,9 @@ struct DiceResponseParams {
     AccountInfo account_info;
     // Authorization code to fetch a refresh token.
     std::string authorization_code;
+    // Whether Dice response contains the 'no_authorization_code' header value.
+    // If true then LSO was unavailable for provision of auth code.
+    bool no_authorization_code = false;
   };
 
   // Parameters for the SIGNOUT action.
@@ -157,19 +161,23 @@ struct DiceResponseParams {
 
 class RequestAdapter {
  public:
-  explicit RequestAdapter(net::URLRequest* request);
+  RequestAdapter(const GURL& url,
+                 const net::HttpRequestHeaders& original_headers,
+                 net::HttpRequestHeaders* modified_headers,
+                 std::vector<std::string>* headers_to_remove);
   virtual ~RequestAdapter();
 
-  virtual const GURL& GetUrl();
-  virtual bool HasHeader(const std::string& name);
-  virtual void RemoveRequestHeaderByName(const std::string& name);
-  virtual void SetExtraHeaderByName(const std::string& name,
-                                    const std::string& value);
-
- protected:
-  net::URLRequest* const request_;
+  const GURL& GetUrl();
+  bool HasHeader(const std::string& name);
+  void RemoveRequestHeaderByName(const std::string& name);
+  void SetExtraHeaderByName(const std::string& name, const std::string& value);
 
  private:
+  const GURL url_;
+  const net::HttpRequestHeaders& original_headers_;
+  net::HttpRequestHeaders* const modified_headers_;
+  std::vector<std::string>* const headers_to_remove_;
+
   DISALLOW_COPY_AND_ASSIGN(RequestAdapter);
 };
 
@@ -201,13 +209,16 @@ class SigninHeaderHelper {
   static ResponseHeaderDictionary ParseAccountConsistencyResponseHeader(
       const std::string& header_value);
 
- private:
   // Returns whether the url is eligible for the request header.
   virtual bool IsUrlEligibleForRequestHeader(const GURL& url) = 0;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SigninHeaderHelper);
 };
 
+// Returns whether the url is eligible for account consistency on Google
+// domains.
+bool IsUrlEligibleForMirrorCookie(const GURL& url);
 
 // Returns the CHROME_CONNECTED cookie, or an empty string if it should not be
 // added to the request to |url|.
@@ -221,13 +232,18 @@ std::string BuildMirrorRequestCookieIfPossible(
 // Adds the mirror header to all Gaia requests from a connected profile, with
 // the exception of requests from gaia webview.
 // Removes the header in case it should not be transfered to a redirected url.
+// If |force_account_consistency| is true, the mirror header will still be added
+// in cases where |gaia_id| is empty.
 void AppendOrRemoveMirrorRequestHeader(
     RequestAdapter* request,
     const GURL& redirect_url,
     const std::string& gaia_id,
+    const base::Optional<bool>& is_child_account,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
-    int profile_mode_mask);
+    int profile_mode_mask,
+    const std::string& source,
+    bool force_account_consistency);
 
 // Adds the Dice to all Gaia requests from a connected profile, with the
 // exception of requests from gaia webview.

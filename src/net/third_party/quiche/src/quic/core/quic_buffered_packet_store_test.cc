@@ -15,10 +15,6 @@
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 
 namespace quic {
-
-typedef QuicBufferedPacketStore::BufferedPacket BufferedPacket;
-typedef QuicBufferedPacketStore::EnqueuePacketResult EnqueuePacketResult;
-
 static const size_t kDefaultMaxConnectionsInStore = 100;
 static const size_t kMaxConnectionsWithoutCHLO =
     kDefaultMaxConnectionsInStore / 2;
@@ -26,9 +22,9 @@ static const size_t kMaxConnectionsWithoutCHLO =
 namespace test {
 namespace {
 
-typedef QuicBufferedPacketStore::BufferedPacket BufferedPacket;
-typedef QuicBufferedPacketStore::BufferedPacketList BufferedPacketList;
-
+using BufferedPacket = QuicBufferedPacketStore::BufferedPacket;
+using BufferedPacketList = QuicBufferedPacketStore::BufferedPacketList;
+using EnqueuePacketResult = QuicBufferedPacketStore::EnqueuePacketResult;
 class QuicBufferedPacketStoreVisitor
     : public QuicBufferedPacketStore::VisitorInterface {
  public:
@@ -55,7 +51,7 @@ class QuicBufferedPacketStoreTest : public QuicTest {
         packet_time_(QuicTime::Zero() + QuicTime::Delta::FromMicroseconds(42)),
         packet_(packet_content_.data(), packet_content_.size(), packet_time_),
         invalid_version_(UnsupportedQuicVersion()),
-        valid_version_(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_46) {}
+        valid_version_(CurrentSupportedVersions().front()) {}
 
  protected:
   QuicBufferedPacketStoreVisitor visitor_;

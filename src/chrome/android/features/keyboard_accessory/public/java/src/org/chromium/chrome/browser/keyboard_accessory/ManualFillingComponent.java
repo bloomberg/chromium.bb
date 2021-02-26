@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -19,15 +20,26 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public interface ManualFillingComponent {
     /**
+     * Observers are added with {@link #addObserver} and removed with {@link #removeObserver}.
+     * They are notified when the {@link ManualFillingComponent} is destroyed.
+     */
+    interface Observer {
+        /** Called if the ManualFillingComponent is destroyed. */
+        void onDestroy();
+    }
+
+    /**
      * Initializes the manual filling component. Calls to this class are NoOps until this method
      * is called.
      * @param windowAndroid The window needed to listen to the keyboard and to connect to
      *         activity.
+     * @param sheetController A {@link BottomSheetController} to show the UI in.
      * @param barStub The {@link ViewStub} used to inflate the keyboard accessory bar.
      * @param sheetStub The {@link ViewStub} used to inflate the keyboard accessory bottom
      *         sheet.
      */
-    void initialize(WindowAndroid windowAndroid, ViewStub barStub, ViewStub sheetStub);
+    void initialize(WindowAndroid windowAndroid, BottomSheetController sheetController,
+            ViewStub barStub, ViewStub sheetStub);
 
     /**
      * Cleans up the manual UI by destroying the accessory bar and its bottom sheet.
@@ -113,4 +125,16 @@ public interface ManualFillingComponent {
      * @param view A {@link View} that is used to find the window root.
      */
     boolean isFillingViewShown(View view);
+
+    /**
+     * @param observer An {@link Observer} to add.
+     * @return True iff the observer could be added.
+     */
+    boolean addObserver(Observer observer);
+
+    /**
+     * @param observer An {@link Observer} to add.
+     * @return True iff the observer could be remove.
+     */
+    boolean removeObserver(Observer observer);
 }

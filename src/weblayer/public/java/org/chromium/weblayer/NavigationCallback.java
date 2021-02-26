@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer;
 
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 /**
@@ -112,4 +114,38 @@ public abstract class NavigationCallback {
      * non-empty layout has finished. This is *not* called for same-document navigations.
      */
     public void onFirstContentfulPaint() {}
+
+    /**
+     * Similar to onFirstContentfulPaint but contains timing information from the renderer process
+     * to better align with the Navigation Timing API.
+     *
+     * @param navigationStartMs the absolute navigation start time in milliseconds since boot,
+     *        not counting time spent in deep sleep. This comes from SystemClock.uptimeMillis().
+     * @param firstContentfulPaintDurationMs the number of milliseconds to first contentful paint
+     *        from navigation start.
+     * @since 88
+     */
+    public void onFirstContentfulPaint(
+            long navigationStartMs, long firstContentfulPaintDurationMs) {}
+
+    /**
+     * This is fired when the largest contentful paint metric is available.
+     *
+     * @param navigationStartMs the absolute navigation start time in milliseconds since boot,
+     *        not counting time spent in deep sleep. This comes from SystemClock.uptimeMillis().
+     * @param largestContentfulPaintDurationMs the number of milliseconds to largest contentful
+     *         paint
+     *        from navigation start.
+     * @since 88
+     */
+    public void onLargestContentfulPaint(
+            long navigationStartMs, long largestContentfulPaintDurationMs) {}
+
+    /**
+     * Called after each navigation to indicate that the old page is no longer
+     * being rendered. Note this is not ordered with respect to onFirstContentfulPaint.
+     * @param newNavigationUri Uri of the new navigation.
+     * @since 85
+     */
+    public void onOldPageNoLongerRendered(@NonNull Uri newNavigationUri) {}
 }

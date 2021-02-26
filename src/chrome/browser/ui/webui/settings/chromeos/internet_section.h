@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_INTERNET_SECTION_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_INTERNET_SECTION_H_
 
+#include <string>
 #include <vector>
 
+#include "base/optional.h"
+#include "base/values.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -34,6 +37,16 @@ class InternetSection
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
   void AddHandlers(content::WebUI* web_ui) override;
+  int GetSectionNameMessageId() const override;
+  mojom::Section GetSection() const override;
+  mojom::SearchResultIcon GetSectionIcon() const override;
+  std::string GetSectionPath() const override;
+  bool LogMetric(mojom::Setting setting, base::Value& value) const override;
+  void RegisterHierarchy(HierarchyGenerator* generator) const override;
+  std::string ModifySearchResultUrl(
+      mojom::SearchResultType type,
+      OsSettingsIdentifier id,
+      const std::string& url_to_modify) const override;
 
   // network_config::mojom::CrosNetworkConfigObserver:
   void OnActiveNetworksChanged(
@@ -51,9 +64,20 @@ class InternetSection
   void OnDeviceList(
       std::vector<network_config::mojom::DeviceStatePropertiesPtr> devices);
 
-  void FetchActiveNetworks();
-  void OnActiveNetworks(
+  void FetchNetworkList();
+  void OnNetworkList(
       std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks);
+
+  // Null if no cellular network exists.
+  base::Optional<std::string> cellular_guid_;
+
+  // Note: If not connected, the below fields are null.
+  base::Optional<std::string> connected_ethernet_guid_;
+  base::Optional<std::string> connected_wifi_guid_;
+  base::Optional<std::string> connected_tether_guid_;
+  base::Optional<std::string> connected_vpn_guid_;
+
+  bool does_ethernet_device_exist_ = false;
 
   mojo::Receiver<network_config::mojom::CrosNetworkConfigObserver> receiver_{
       this};

@@ -6,22 +6,27 @@
 
 #include "base/optional.h"
 #include "base/strings/strcat.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "net/base/isolation_info.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/optional_trust_token_params.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/trust_token_http_headers.h"
+#include "services/network/public/cpp/trust_token_parameterization.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/pending_trust_token_store.h"
 #include "services/network/trust_tokens/test/trust_token_test_util.h"
-#include "services/network/trust_tokens/trust_token_http_headers.h"
+#include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
 namespace network {
 
 namespace {
+
+using Outcome = internal::TrustTokenRequestHelperFactoryOutcome;
 
 // These origins are not suitable for keying persistent Trust Tokens state:
 // - UnsuitableUntrustworthyOrigin is not potentially trustworthy.
@@ -52,15 +57,17 @@ class TrustTokenRequestHelperFactoryTest : public ::testing::Test {
   TrustTokenRequestHelperFactoryTest() {
     suitable_request_ = CreateSuitableRequest();
     suitable_params_ = mojom::TrustTokenParams::New();
-    suitable_params_->issuer =
-        url::Origin::Create(GURL("https://issuer.example"));
+    suitable_params_->type = mojom::TrustTokenOperationType::kSigning;
+    suitable_params_->issuers.push_back(
+        url::Origin::Create(GURL("https://issuer.example")));
   }
 
  protected:
   const net::URLRequest& suitable_request() const { return *suitable_request_; }
-  const mojom::TrustTokenParams& suitable_params() const {
+  const mojom::TrustTokenParams& suitable_signing_params() const {
     return *suitable_params_;
   }
+  const net::NetLog& net_log() const { return *maker_.net_log(); }
 
   std::unique_ptr<net::URLRequest> CreateSuitableRequest() {
     auto ret = maker_.MakeURLRequest("https://destination.example");
@@ -88,8 +95,11 @@ class TrustTokenRequestHelperFactoryTest : public ::testing::Test {
     store.OnStoreReady(TrustTokenStore::CreateForTesting());
     NoopTrustTokenKeyCommitmentGetter getter;
 
-    TrustTokenRequestHelperFactory(&store, &getter,
-                                   base::BindRepeating([]() { return true; }))
+    TrustTokenRequestHelperFactory(
+        &store, &getter,
+        base::BindRepeating(
+            []() -> mojom::NetworkContextClient* { return nullptr; }),
+        base::BindRepeating([]() { return true; }))
         .CreateTrustTokenHelperForRequest(
             request, params,
             base::BindLambdaForTesting(
@@ -110,87 +120,151 @@ class TrustTokenRequestHelperFactoryTest : public ::testing::Test {
 };
 
 TEST_F(TrustTokenRequestHelperFactoryTest, MissingTopFrameOrigin) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<net::URLRequest> request = CreateSuitableRequest();
   request->set_isolation_info(net::IsolationInfo());
 
-  EXPECT_EQ(CreateHelperAndWaitForResult(*request, suitable_params()).status(),
+  EXPECT_EQ(CreateHelperAndWaitForResult(*request, suitable_signing_params())
+                .status(),
             mojom::TrustTokenOperationStatus::kFailedPrecondition);
+
+  histogram_tester.ExpectUniqueSample(
+      "Net.TrustTokens.RequestHelperFactoryOutcome.Signing",
+      Outcome::kUnsuitableTopFrameOrigin, 1);
 }
 
 TEST_F(TrustTokenRequestHelperFactoryTest, UnsuitableTopFrameOrigin) {
+  base::HistogramTester histogram_tester;
   auto request = CreateSuitableRequest();
   request->set_isolation_info(
       CreateIsolationInfo(UnsuitableUntrustworthyOrigin()));
 
-  EXPECT_EQ(CreateHelperAndWaitForResult(*request, suitable_params()).status(),
+  EXPECT_EQ(CreateHelperAndWaitForResult(*request, suitable_signing_params())
+                .status(),
             mojom::TrustTokenOperationStatus::kFailedPrecondition);
 
   request->set_isolation_info(
       CreateIsolationInfo(UnsuitableNonHttpNonHttpsOrigin()));
-  EXPECT_EQ(CreateHelperAndWaitForResult(*request, suitable_params()).status(),
+  EXPECT_EQ(CreateHelperAndWaitForResult(*request, suitable_signing_params())
+                .status(),
             mojom::TrustTokenOperationStatus::kFailedPrecondition);
+
+  histogram_tester.ExpectUniqueSample(
+      "Net.TrustTokens.RequestHelperFactoryOutcome.Signing",
+      Outcome::kUnsuitableTopFrameOrigin, 2);
 }
 
 TEST_F(TrustTokenRequestHelperFactoryTest, ForbiddenHeaders) {
+  base::HistogramTester histogram_tester;
   for (const base::StringPiece& header : TrustTokensRequestHeaders()) {
     std::unique_ptr<net::URLRequest> my_request = CreateSuitableRequest();
     my_request->SetExtraRequestHeaderByName(std::string(header), " ",
                                             /*overwrite=*/true);
 
     EXPECT_EQ(
-        CreateHelperAndWaitForResult(*my_request, suitable_params()).status(),
+        CreateHelperAndWaitForResult(*my_request, suitable_signing_params())
+            .status(),
         mojom::TrustTokenOperationStatus::kInvalidArgument);
   }
+
+  histogram_tester.ExpectUniqueSample(
+      "Net.TrustTokens.RequestHelperFactoryOutcome.Signing",
+      Outcome::kRequestRejectedDueToBearingAnInternalTrustTokensHeader,
+      base::size(TrustTokensRequestHeaders()));
 }
 
 TEST_F(TrustTokenRequestHelperFactoryTest,
-       CreatingSigningHelperRequiresSuitableIssuer) {
+       CreatingSigningHelperRequiresSuitableIssuers) {
+  base::HistogramTester histogram_tester;
   auto request = CreateSuitableRequest();
 
-  auto params = suitable_params().Clone();
+  auto params = suitable_signing_params().Clone();
   params->type = mojom::TrustTokenOperationType::kSigning;
-  params->issuer.reset();
+  params->issuers.clear();
 
   EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
             mojom::TrustTokenOperationStatus::kInvalidArgument);
 
-  params->issuer = UnsuitableUntrustworthyOrigin();
+  histogram_tester.ExpectUniqueSample(
+      "Net.TrustTokens.RequestHelperFactoryOutcome.Signing",
+      Outcome::kEmptyIssuersParameter, 1);
+
+  params->issuers.push_back(UnsuitableUntrustworthyOrigin());
   EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
             mojom::TrustTokenOperationStatus::kInvalidArgument);
 
-  params->issuer = UnsuitableNonHttpNonHttpsOrigin();
+  histogram_tester.ExpectBucketCount(
+      "Net.TrustTokens.RequestHelperFactoryOutcome.Signing",
+      Outcome::kUnsuitableIssuerInIssuersParameter, 1);
+
+  params->issuers.clear();
+  params->issuers.push_back(UnsuitableNonHttpNonHttpsOrigin());
   EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
             mojom::TrustTokenOperationStatus::kInvalidArgument);
+
+  histogram_tester.ExpectBucketCount(
+      "Net.TrustTokens.RequestHelperFactoryOutcome.Signing",
+      Outcome::kUnsuitableIssuerInIssuersParameter, 2);
 }
 
-TEST_F(TrustTokenRequestHelperFactoryTest, CreatesSigningHelper) {
-  auto params = suitable_params().Clone();
+TEST_F(TrustTokenRequestHelperFactoryTest,
+       WillCreateSigningHelperWithAdditionalData) {
+  auto request = CreateSuitableRequest();
+
+  auto params = suitable_signing_params().Clone();
   params->type = mojom::TrustTokenOperationType::kSigning;
+  params->possibly_unsafe_additional_signing_data =
+      std::string(kTrustTokenAdditionalSigningDataMaxSizeBytes, 'a');
 
   auto result = CreateHelperAndWaitForResult(suitable_request(), *params);
   ASSERT_TRUE(result.ok());
   EXPECT_TRUE(result.TakeOrCrash());
 }
 
+TEST_F(TrustTokenRequestHelperFactoryTest, CreatesSigningHelper) {
+  base::HistogramTester histogram_tester;
+  auto params = suitable_signing_params().Clone();
+  params->type = mojom::TrustTokenOperationType::kSigning;
+
+  auto result = CreateHelperAndWaitForResult(suitable_request(), *params);
+  ASSERT_TRUE(result.ok());
+  EXPECT_TRUE(result.TakeOrCrash());
+
+  histogram_tester.ExpectUniqueSample(
+      "Net.TrustTokens.RequestHelperFactoryOutcome.Signing",
+      Outcome::kSuccessfullyCreatedASigningHelper, 1);
+}
+
 TEST_F(TrustTokenRequestHelperFactoryTest, CreatesIssuanceHelper) {
-  auto params = suitable_params().Clone();
+  base::HistogramTester histogram_tester;
+  auto params = suitable_signing_params().Clone();
   params->type = mojom::TrustTokenOperationType::kIssuance;
 
   auto result = CreateHelperAndWaitForResult(suitable_request(), *params);
   ASSERT_TRUE(result.ok());
   EXPECT_TRUE(result.TakeOrCrash());
+
+  histogram_tester.ExpectUniqueSample(
+      "Net.TrustTokens.RequestHelperFactoryOutcome.Issuance",
+      Outcome::kSuccessfullyCreatedAnIssuanceHelper, 1);
 }
 
 TEST_F(TrustTokenRequestHelperFactoryTest, CreatesRedemptionHelper) {
-  auto params = suitable_params().Clone();
+  base::HistogramTester histogram_tester;
+  auto params = suitable_signing_params().Clone();
   params->type = mojom::TrustTokenOperationType::kRedemption;
 
   auto result = CreateHelperAndWaitForResult(suitable_request(), *params);
   ASSERT_TRUE(result.ok());
   EXPECT_TRUE(result.TakeOrCrash());
+
+  histogram_tester.ExpectUniqueSample(
+      "Net.TrustTokens.RequestHelperFactoryOutcome.Redemption",
+      Outcome::kSuccessfullyCreatedARedemptionHelper, 1);
 }
 
 TEST_F(TrustTokenRequestHelperFactoryTest, RespectsAuthorizer) {
+  base::HistogramTester histogram_tester;
   base::RunLoop run_loop;
   TrustTokenStatusOrRequestHelper obtained_result;
   PendingTrustTokenStore store;
@@ -198,10 +272,13 @@ TEST_F(TrustTokenRequestHelperFactoryTest, RespectsAuthorizer) {
   store.OnStoreReady(TrustTokenStore::CreateForTesting());
   NoopTrustTokenKeyCommitmentGetter getter;
 
-  TrustTokenRequestHelperFactory(&store, &getter,
-                                 base::BindRepeating([]() { return false; }))
+  TrustTokenRequestHelperFactory(
+      &store, &getter,
+      base::BindRepeating(
+          []() -> mojom::NetworkContextClient* { return nullptr; }),
+      base::BindRepeating([]() { return false; }))
       .CreateTrustTokenHelperForRequest(
-          suitable_request(), suitable_params(),
+          suitable_request(), suitable_signing_params(),
           base::BindLambdaForTesting(
               [&](TrustTokenStatusOrRequestHelper result) {
                 obtained_result = std::move(result);
@@ -212,5 +289,8 @@ TEST_F(TrustTokenRequestHelperFactoryTest, RespectsAuthorizer) {
 
   EXPECT_EQ(obtained_result.status(),
             mojom::TrustTokenOperationStatus::kUnavailable);
+  histogram_tester.ExpectUniqueSample(
+      "Net.TrustTokens.RequestHelperFactoryOutcome.Signing",
+      Outcome::kRejectedByAuthorizer, 1);
 }
 }  // namespace network

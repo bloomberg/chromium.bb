@@ -5,8 +5,8 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/task_environment.h"
@@ -50,10 +50,11 @@ class MessageReaderTest : public testing::Test {
   }
 
   void InitReader() {
-    reader_->StartReading(
-        &socket_,
-        base::Bind(&MessageReaderTest::OnMessage, base::Unretained(this)),
-        base::Bind(&MessageReaderTest::OnReadError, base::Unretained(this)));
+    reader_->StartReading(&socket_,
+                          base::BindRepeating(&MessageReaderTest::OnMessage,
+                                              base::Unretained(this)),
+                          base::BindOnce(&MessageReaderTest::OnReadError,
+                                         base::Unretained(this)));
   }
 
   void AddMessage(const std::string& message) {

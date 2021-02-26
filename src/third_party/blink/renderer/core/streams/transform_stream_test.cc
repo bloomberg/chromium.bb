@@ -102,7 +102,7 @@ class TestTransformer : public TransformStreamTransformer {
 
   ScriptState* GetScriptState() override { return script_state_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     TransformStreamTransformer::Trace(visitor);
   }
@@ -140,7 +140,7 @@ class MockTransformStreamTransformer : public TransformStreamTransformer {
 
   ScriptState* GetScriptState() override { return script_state_; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     TransformStreamTransformer::Trace(visitor);
   }
@@ -264,7 +264,8 @@ TEST_F(TransformStreamTest, EnqueueFromTransform) {
                         "writer.write('a');\n");
 
   ReadableStream* readable = Stream()->Readable();
-  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  auto* reader =
+      readable->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION);
   ScriptPromiseTester tester(script_state,
                              reader->read(script_state, ASSERT_NO_EXCEPTION));
   tester.WaitUntilSettled();
@@ -298,7 +299,8 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
                         "writer.close();\n");
 
   ReadableStream* readable = Stream()->Readable();
-  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  auto* reader =
+      readable->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION);
   ScriptPromiseTester tester(script_state,
                              reader->read(script_state, ASSERT_NO_EXCEPTION));
   tester.WaitUntilSettled();
@@ -334,7 +336,8 @@ TEST_F(TransformStreamTest, ThrowFromTransform) {
                             "writer.write('a');\n");
 
   ReadableStream* readable = Stream()->Readable();
-  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  auto* reader =
+      readable->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION);
   ScriptPromiseTester read_tester(
       script_state, reader->read(script_state, ASSERT_NO_EXCEPTION));
   read_tester.WaitUntilSettled();
@@ -372,7 +375,8 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
                             "writer.close();\n");
 
   ReadableStream* readable = Stream()->Readable();
-  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  auto* reader =
+      readable->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION);
   ScriptPromiseTester read_tester(
       script_state, reader->read(script_state, ASSERT_NO_EXCEPTION));
   read_tester.WaitUntilSettled();
@@ -418,7 +422,7 @@ TEST_F(TransformStreamTest, WaitInTransform) {
     void ResolvePromise() { transform_promise_resolver_->Resolve(); }
     bool FlushCalled() const { return flush_called_; }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(transform_promise_resolver_);
       TestTransformer::Trace(visitor);
     }
@@ -444,7 +448,7 @@ TEST_F(TransformStreamTest, WaitInTransform) {
   // Need to read to relieve backpressure.
   Stream()
       ->Readable()
-      ->getReader(script_state, ASSERT_NO_EXCEPTION)
+      ->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION)
       ->read(script_state, ASSERT_NO_EXCEPTION);
 
   ScriptPromiseTester write_tester(script_state,
@@ -478,7 +482,7 @@ TEST_F(TransformStreamTest, WaitInFlush) {
 
     void ResolvePromise() { flush_promise_resolver_->Resolve(); }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(flush_promise_resolver_);
       TestTransformer::Trace(visitor);
     }
@@ -502,7 +506,7 @@ TEST_F(TransformStreamTest, WaitInFlush) {
   // Need to read to relieve backpressure.
   Stream()
       ->Readable()
-      ->getReader(script_state, ASSERT_NO_EXCEPTION)
+      ->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION)
       ->read(script_state, ASSERT_NO_EXCEPTION);
 
   ScriptPromiseTester close_tester(script_state,

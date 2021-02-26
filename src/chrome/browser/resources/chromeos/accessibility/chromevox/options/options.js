@@ -9,10 +9,12 @@
 
 goog.provide('OptionsPage');
 
+goog.require('AbstractTts');
 goog.require('BluetoothBrailleDisplayUI');
 goog.require('ConsoleTts');
 goog.require('Msgs');
 goog.require('PanelCommand');
+goog.require('TtsBackground');
 goog.require('BrailleTable');
 goog.require('BrailleTranslatorManager');
 goog.require('ChromeVox');
@@ -36,6 +38,8 @@ OptionsPage = class {
     OptionsPage.prefs = chrome.extension.getBackgroundPage().prefs;
     OptionsPage.consoleTts =
         chrome.extension.getBackgroundPage().ConsoleTts.getInstance();
+    OptionsPage.backgroundTts =
+        chrome.extension.getBackgroundPage().ChromeVoxState.backgroundTts;
     OptionsPage.populateVoicesSelect();
     BrailleTable.getAll(function(tables) {
       /** @type {!Array<BrailleTable.Table>} */
@@ -76,18 +80,18 @@ OptionsPage = class {
         Msgs.getMsg('options_hide_event_stream_filters');
     $('toggleEventStreamFilters').textContent = showEventStreamFilters;
     OptionsPage.disableEventStreamFilterCheckBoxes(
-        localStorage['enableEventStreamLogging'] == 'false');
+        localStorage['enableEventStreamLogging'] === 'false');
 
     if (localStorage['audioStrategy']) {
       for (let i = 0, opt; opt = $('audioStrategy').options[i]; i++) {
-        if (opt.id == localStorage['audioStrategy']) {
+        if (opt.id === localStorage['audioStrategy']) {
           opt.setAttribute('selected', '');
         }
       }
     }
     if (localStorage['capitalStrategy']) {
       for (let i = 0, opt; opt = $('capitalStrategy').options[i]; ++i) {
-        if (opt.id == localStorage['capitalStrategy']) {
+        if (opt.id === localStorage['capitalStrategy']) {
           opt.setAttribute('selected', '');
         }
       }
@@ -95,19 +99,22 @@ OptionsPage = class {
 
     if (localStorage['numberReadingStyle']) {
       for (let i = 0, opt; opt = $('numberReadingStyle').options[i]; ++i) {
-        if (opt.id == localStorage['numberReadingStyle']) {
+        if (opt.id === localStorage['numberReadingStyle']) {
           opt.setAttribute('selected', '');
         }
       }
     }
 
-    chrome.commandLinePrivate.hasSwitch(
-        'disable-experimental-accessibility-chromevox-language-switching',
-        (enabled) => {
-          if (enabled) {
-            $('languageSwitchingOption').hidden = true;
-          }
-        });
+    if (localStorage[AbstractTts.PUNCTUATION_ECHO]) {
+      const currentPunctuationEcho =
+          AbstractTts
+              .PUNCTUATION_ECHOES[localStorage[AbstractTts.PUNCTUATION_ECHO]];
+      for (let i = 0, opt; opt = $('punctuationEcho').options[i]; ++i) {
+        if (opt.id === currentPunctuationEcho.name) {
+          opt.setAttribute('selected', '');
+        }
+      }
+    }
 
     $('toggleEventStreamFilters').addEventListener('click', function(evt) {
       if ($('eventStreamFilters').hidden) {
@@ -117,6 +124,11 @@ OptionsPage = class {
         $('eventStreamFilters').hidden = true;
         $('toggleEventStreamFilters').textContent = showEventStreamFilters;
       }
+    });
+
+    $('openTtsSettings').addEventListener('click', (evt) => {
+      chrome.accessibilityPrivate.openSettingsSubpage(
+          'manageAccessibility/tts');
     });
 
     $('enableAllEventStreamFilters').addEventListener('click', () => {
@@ -150,9 +162,9 @@ OptionsPage = class {
     document.addEventListener('keydown', OptionsPage.eventListener, false);
 
     window.addEventListener('storage', (event) => {
-      if (event.key == 'speakTextUnderMouse') {
+      if (event.key === 'speakTextUnderMouse') {
         chrome.accessibilityPrivate.enableChromeVoxMouseEvents(
-            event.newValue == String(true));
+            event.newValue === String(true));
       }
     });
 
@@ -196,6 +208,31 @@ OptionsPage = class {
     if (bluetoothBraille) {
       OptionsPage.bluetoothBrailleDisplayUI.attach(bluetoothBraille);
     }
+
+    $('usePitchChanges').addEventListener('click', (evt) => {
+      // The capitalStrategy pref depends on the value of usePitchChanges.
+      // When usePitchChanges is toggled, we should update the preference value
+      // and options for capitalStrategy.
+      const checked = evt.target.checked;
+      if (!checked) {
+        $('announceCapitals').selected = true;
+        $('increasePitch').selected = false;
+        $('increasePitch').disabled = true;
+        localStorage['capitalStrategyBackup'] = localStorage['capitalStrategy'];
+        OptionsPage.prefs.setPref('capitalStrategy', 'announceCapitals');
+      } else {
+        $('increasePitch').disabled = false;
+        const capitalStrategyBackup = localStorage['capitalStrategyBackup'];
+        if (capitalStrategyBackup) {
+          // Restore original capitalStrategy setting.
+          $('announceCapitals').selected =
+              (capitalStrategyBackup === 'announceCapitals');
+          $('increasePitch').selected =
+              (capitalStrategyBackup === 'increasePitch');
+          OptionsPage.prefs.setPref('capitalStrategy', capitalStrategyBackup);
+        }
+      }
+    });
   }
 
   /**
@@ -282,7 +319,7 @@ OptionsPage = class {
         const elem = document.createElement('option');
         elem.id = item.id;
         elem.textContent = item.name;
-        if (item.id == activeTable) {
+        if (item.id === activeTable) {
           elem.setAttribute('selected', '');
         }
         node.appendChild(elem);
@@ -311,7 +348,7 @@ OptionsPage = class {
     const updateTableType = function(setFocus) {
       const currentTableType =
           localStorage['brailleTableType'] || 'brailleTable6';
-      if (currentTableType == 'brailleTable6') {
+      if (currentTableType === 'brailleTable6') {
         select6.parentElement.style.display = 'block';
         select8.parentElement.style.display = 'none';
         if (setFocus) {
@@ -340,7 +377,7 @@ OptionsPage = class {
     tableTypeButton.addEventListener('click', function(evt) {
       const oldTableType = localStorage['brailleTableType'];
       localStorage['brailleTableType'] =
-          oldTableType == 'brailleTable6' ? 'brailleTable8' : 'brailleTable6';
+          oldTableType === 'brailleTable6' ? 'brailleTable8' : 'brailleTable6';
       updateTableType(true);
     }, true);
   }
@@ -351,10 +388,10 @@ OptionsPage = class {
    * @param {string} value The new value.
    */
   static setValue(element, value) {
-    if (element.tagName == 'INPUT' && element.type == 'checkbox') {
-      element.checked = (value == 'true');
-    } else if (element.tagName == 'INPUT' && element.type == 'radio') {
-      element.checked = (String(element.value) == value);
+    if (element.tagName === 'INPUT' && element.type === 'checkbox') {
+      element.checked = (value === 'true');
+    } else if (element.tagName === 'INPUT' && element.type === 'radio') {
+      element.checked = (String(element.value) === value);
     } else {
       element.value = value;
     }
@@ -379,7 +416,7 @@ OptionsPage = class {
   static setAllEventStreamLoggingFilters(enabled) {
     for (const checkbox of document.querySelectorAll(
              '.option-eventstream > input')) {
-      if (checkbox.checked != enabled) {
+      if (checkbox.checked !== enabled) {
         OptionsPage.setEventStreamFilter(checkbox.name, enabled);
       }
     }
@@ -406,19 +443,24 @@ OptionsPage = class {
   static eventListener(event) {
     window.setTimeout(function() {
       const target = event.target;
-      if (target.id == 'brailleWordWrap') {
+      if (target.id === 'brailleWordWrap') {
         chrome.storage.local.set({brailleWordWrap: target.checked});
-      } else if (target.className.indexOf('logging') != -1) {
+      } else if (target.className.indexOf('logging') !== -1) {
         OptionsPage.prefs.setLoggingPrefs(target.name, target.checked);
-        if (target.name == 'enableEventStreamLogging') {
+        if (target.name === 'enableEventStreamLogging') {
           OptionsPage.disableEventStreamFilterCheckBoxes(!target.checked);
         }
-      } else if (target.className.indexOf('eventstream') != -1) {
+      } else if (target.className.indexOf('eventstream') !== -1) {
         OptionsPage.setEventStreamFilter(target.name, target.checked);
+      } else if (target.id === 'punctuationEcho') {
+        const selectedPunctuationEcho = target.options[target.selectedIndex].id;
+        const punctuationEcho = AbstractTts.PUNCTUATION_ECHOES.findIndex(
+            echo => echo.name === selectedPunctuationEcho);
+        OptionsPage.backgroundTts.updatePunctuationEcho(punctuationEcho);
       } else if (target.classList.contains('pref')) {
-        if (target.tagName == 'INPUT' && target.type == 'checkbox') {
+        if (target.tagName === 'INPUT' && target.type === 'checkbox') {
           OptionsPage.prefs.setPref(target.name, target.checked);
-        } else if (target.tagName == 'INPUT' && target.type == 'radio') {
+        } else if (target.tagName === 'INPUT' && target.type === 'radio') {
           const key = target.name;
           const elements = document.querySelectorAll('*[name="' + key + '"]');
           for (let i = 0; i < elements.length; i++) {
@@ -426,7 +468,7 @@ OptionsPage = class {
               OptionsPage.prefs.setPref(target.name, elements[i].value);
             }
           }
-        } else if (target.tagName == 'SELECT') {
+        } else if (target.tagName === 'SELECT') {
           const selIndex = target.selectedIndex;
           const sel = target.options[selIndex];
           const value = sel ? sel.id : 'audioNormal';
@@ -457,11 +499,16 @@ OptionsPage = class {
 OptionsPage.prefs;
 
 /**
- * The ChromeVoxConsoleTts object.
+ * The ConsoleTts object.
  * @type {ConsoleTts}
  */
 OptionsPage.consoleTts;
 
+/**
+ * The TtsBackground object.
+ * @type {TtsBackground}
+ */
+OptionsPage.backgroundTts;
 
 /**
  * Adds event listeners to input boxes to update local storage values and

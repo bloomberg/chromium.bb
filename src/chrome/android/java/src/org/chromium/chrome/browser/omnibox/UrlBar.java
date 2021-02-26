@@ -9,7 +9,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Build;
-import android.os.StrictMode;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.InputType;
@@ -24,7 +23,6 @@ import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.TextView;
@@ -37,6 +35,7 @@ import androidx.core.util.ObjectsCompat;
 import androidx.core.view.inputmethod.EditorInfoCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
@@ -171,17 +170,6 @@ public abstract class UrlBar extends AutocompleteEditText {
         void backKeyPressed();
 
         /**
-         * @return Whether or not we should force LTR text on the URL bar when unfocused.
-         */
-        boolean shouldForceLTR();
-
-        /**
-         * @return Whether or not the copy/cut action should grab the underlying URL or just copy
-         *         whatever's in the URL bar verbatim.
-         */
-        boolean shouldCutCopyVerbatim();
-
-        /**
          * Called to notify that a tap or long press gesture has been detected.
          * @param isLongPress Whether or not is a long press gesture.
          */
@@ -313,6 +301,14 @@ public abstract class UrlBar extends AutocompleteEditText {
             mPendingScroll = false;
         }
         fixupTextDirection();
+
+        if (!focused && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // https://crbug.com/1103555: On Android Q+, the URL bar can trigger augmented
+            // Autofill, which disables ordinary Autofill requests for the duration of the
+            // Autofill session. This is worked around by canceling the session when the user
+            // focuses another view.
+            ApiHelperForO.cancelAutofillSession();
+        }
     }
 
     /**
@@ -336,7 +332,7 @@ public abstract class UrlBar extends AutocompleteEditText {
         // normally (to allow users to make non-URL searches and to avoid showing Android's split
         // insertion point when an RTL user enters RTL text). Also render text normally when the
         // text field is empty (because then it displays an instruction that is not a URL).
-        if (mFocused || length() == 0 || !mUrlBarDelegate.shouldForceLTR()) {
+        if (mFocused || length() == 0) {
             setTextDirection(TEXT_DIRECTION_INHERIT);
         } else {
             setTextDirection(TEXT_DIRECTION_LTR);
@@ -590,8 +586,7 @@ public abstract class UrlBar extends AutocompleteEditText {
             return true;
         }
 
-        if ((id == android.R.id.cut || id == android.R.id.copy)
-                && !mUrlBarDelegate.shouldCutCopyVerbatim()) {
+        if ((id == android.R.id.cut || id == android.R.id.copy)) {
             if (id == android.R.id.cut) {
                 RecordUserAction.record("Omnibox.LongPress.Cut");
             } else {
@@ -866,21 +861,14 @@ public abstract class UrlBar extends AutocompleteEditText {
     }
 
     @Override
-    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
-        // Certain OEM implementations of onInitializeAccessibilityNodeInfo trigger disk reads
-        // to access the clipboard.  crbug.com/640993
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            super.onInitializeAccessibilityNodeInfo(info);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-    }
-
-    @Override
     public Editable getText() {
-        return mRequestingAutofillStructure ? new SpannableStringBuilder(mTextForAutofillServices)
-                                            : super.getText();
+        if (mRequestingAutofillStructure) {
+            // crbug.com/1109186: mTextForAutofillServices must not be null here, but Autofill
+            // requests can be triggered before it is initialized.
+            return new SpannableStringBuilder(
+                    mTextForAutofillServices != null ? mTextForAutofillServices : "");
+        }
+        return super.getText();
     }
 
     @Override

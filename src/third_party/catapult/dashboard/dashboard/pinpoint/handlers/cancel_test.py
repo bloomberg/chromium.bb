@@ -21,7 +21,7 @@ class CancelJobTest(test.TestCase):
   def setUp(self):
     super(CancelJobTest, self).setUp()
     self.SetCurrentUserOAuth(testing_common.INTERNAL_USER)
-    self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_WHITELIST[0])
+    self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_ALLOWLIST[0])
 
     self.add_bug_comment = mock.MagicMock()
     self.get_issue = mock.MagicMock()
@@ -150,7 +150,7 @@ class CancelJobTest(test.TestCase):
                              arguments={'configuration': 'mock'},
                              user='lovely.user@example.com')
     scheduler.Schedule(job)
-    _, status = scheduler.PickJob(job.configuration)
+    _, status = scheduler.PickJobs(job.configuration)[0]
     self.assertEqual(status, 'Queued')
     job.task = '123'
     job.started = True

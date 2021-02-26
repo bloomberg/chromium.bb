@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include <chrono>  // NOLINT
+#include <chrono>
 #include <memory>
 #include <vector>
 

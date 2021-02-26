@@ -23,6 +23,7 @@
 <translation id="1450753235335490080">Nije moguće podijeliti sadržaj <ph name="CONTENT_TYPE" /></translation>
 <translation id="1487931858675166540">Stavka <ph name="FIRST_ITEM_TITLE" /> je zamijenjena stavkom <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">To ste već pretraživali. Ako izbrišete upit "<ph name="QUERY" />" iz historije, trajno ćete ga ukloniti s računa na svim svojim uređajima.</translation>
+<translation id="1510238584712386396">Pokretač</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta i }one{# minuta i }few{# minute i }other{# minuta i }}</translation>
 <translation id="1643823602425662293">Obavještenje</translation>
 <translation id="169515659049020177">Gornji red</translation>
@@ -37,12 +38,13 @@
 <translation id="1842960171412779397">odaberi</translation>
 <translation id="1859234291848436338">Smjer pisanja</translation>
 <translation id="1860796786778352021">Zatvaranje obavještenja</translation>
+<translation id="186476001994626254">Web sadržaj za pametno lijepljenje</translation>
 <translation id="1871244248791675517">Umet</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Odaberi &amp;sve</translation>
+<translation id="19085484004813472">Ovo je nova funkcija</translation>
 <translation id="2006524834898217237">Provjerite je li ovaj uređaj povezan na internet.</translation>
 <translation id="208586643495776849">Pokušajte ponovo</translation>
-<translation id="2090963878406559571">Da pošaljete broj s web lokacije <ph name="ORIGIN" /> na Android telefon, <ph name="TROUBLESHOOT_LINK" /> za oba uređaja u postavkama.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}one{# d}few{# d}other{# d}}</translation>
 <translation id="2148716181193084225">Danas</translation>
 <translation id="2161656808144014275">Tekst</translation>
@@ -64,14 +66,18 @@
 <translation id="2522350507219695259">Kalibracija je završena</translation>
 <translation id="252373100621549798">Nepoznati zaslon</translation>
 <translation id="2545651323591713692">Odgodite</translation>
+<translation id="2570734079541893434">Upravljajte postavkama</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{za 1h}one{za # h}few{za # h}other{za # h}}</translation>
 <translation id="2583543531130364912">Kalibrirajte dodirni ekran</translation>
+<translation id="2586657967955657006">Međumemorija</translation>
 <translation id="2666092431469916601">Gornji</translation>
 <translation id="2701330563083355633">Dijeljeno s uređaja: <ph name="DEVICE_NAME" /></translation>
+<translation id="271033894570825754">Novo</translation>
 <translation id="2743387203779672305">Kopiraj u međumemoriju</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Otvori folder</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Prije godinu dana}one{Prije # godinu}few{Prije # godine}other{Prije # godina}}</translation>
+<translation id="2878511608894704031">Izbriši sve</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{Za 1 d}one{Za # d}few{Za # d}other{Za # d}}</translation>
 <translation id="2931838996092594335">kliknuti</translation>
 <translation id="2981684127883932071">Prikaz prijedloga</translation>
@@ -94,6 +100,7 @@
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> fajl</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Potražite “<ph name="LOOKUP_STRING" />”</translation>
+<translation id="3622035490309591977">Historija međumemorije</translation>
 <translation id="364720409959344976">Odaberite folder za otpremanje</translation>
 <translation id="3660179305079774227">Strelica nagore</translation>
 <translation id="3670030362669914947">Broj</translation>
@@ -112,6 +119,7 @@
 <translation id="4289300219472526559">Započinjanje govora</translation>
 <translation id="430191667033048642">Aplikacija <ph name="MOVED_APP_NAME" /> je premještena u folder <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">SVE APLIKACIJE</translation>
+<translation id="4491109536499578614">Slika</translation>
 <translation id="4588090240171750605">Kliznite udesno</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, ocjena zvjezdicama <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, preporučena aplikacija</translation>
@@ -128,22 +136,26 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Trougao za otkrivanje</translation>
 <translation id="5278860589123563674">Slanje nije uspjelo</translation>
+<translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> traži da reagirate.</translation>
 <translation id="528468243742722775">Prekid</translation>
-<translation id="5327567770033251652">uključite sinkronizaciju</translation>
 <translation id="5329858601952122676">&amp;Obriši</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> prekriva aplikaciju <ph name="IN_PLACE_APP" />. Pustite da kreirate folder.</translation>
 <translation id="5463830097259460683">Emoji sličice i simboli</translation>
 <translation id="5476505524087279545">uklonite oznaku</translation>
 <translation id="547979256943495781">Polica je na desnoj strani</translation>
+<translation id="5528053674512161860">Učitavanje stranice nije uspjelo jer programerski UI modul (dev_ui) nije instaliran</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> sistem</translation>
 <translation id="5583640892426849032">Tipka za brisanje</translation>
 <translation id="5613020302032141669">Strelica ulijevo</translation>
+<translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> traži da reagirate.</translation>
 <translation id="5675363643668471212">Stavka na polici</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}one{# min}few{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktivan danas}=1{Aktivan prije 1 dan}one{Aktivan prije # dan}few{Aktivan prije # dana}other{Aktivan prije # dana}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dan i }one{# dan i }few{# dana i }other{# dan i }}</translation>
 <translation id="5789643057113097023">,</translation>
+<translation id="5843690142429128814">Slika.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{za 1 g}one{za # g}few{za # g}other{za # g}}</translation>
+<translation id="588258955323874662">Cijeli ekran</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Još 1 sekunda}one{Još # sekunda}few{Još # sekunde}other{Još # sekundi}}</translation>
 <translation id="5941711191222866238">Minimiziraj</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 sat}one{# sat}few{# sata}other{# sati}}</translation>
@@ -152,10 +164,12 @@
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="6119846243427417423">aktiviraj</translation>
 <translation id="6129953537138746214">Razmaknica</translation>
+<translation id="6134259848159370930">Pretražite uređaj, aplikacije, postavke i web.</translation>
 <translation id="6135826906199951471">Izbr</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Proširite na sve aplikacije</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
+<translation id="6166852626429024716">Pretražite uređaj, aplikacije, postavke, web...</translation>
 <translation id="6264365405983206840">Odaberi &amp;sve</translation>
 <translation id="6351032674660237738">PRIJEDLOZI APLIKACIJA</translation>
 <translation id="6364916375976753737">Pomakni se lijevo</translation>
@@ -165,22 +179,22 @@
 <translation id="6417265370957905582">Google Asistent</translation>
 <translation id="6430678249303439055">Blokiraj sva obavještenja iz ove aplikacije</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Prije 1 sekundu}one{Prije # sekundu}few{Prije # sekunde}other{Prije # sekundi}}</translation>
+<translation id="6503257047630241175">RTF sadržaj</translation>
 <translation id="6539092367496845964">Nešto nije uredu. Pokušajte ponovo kasnije.</translation>
 <translation id="654149438358937226">Blokiraj sve obavijesti</translation>
 <translation id="6567071839949112727">kliknite na prethodnika</translation>
 <translation id="6578407462441924264">Neimenovano</translation>
 <translation id="6612467943526193239">Da izađete iz kalibracije, pritisnite tipku Esc.</translation>
 <translation id="6620110761915583480">Sačuvajte fajl</translation>
-<translation id="6656912866303152668">Provjerite je li sinhronizacija za uređaj <ph name="TARGET_DEVICE_NAME" /> uključena u Chromeu pa pokušajte poslati ponovo.</translation>
 <translation id="6699343763173986273">Sljedeća numera medijskog fajla</translation>
 <translation id="6710213216561001401">Nazad</translation>
-<translation id="6779314412797872738">Da pošaljete broj s ovog uređaja na Android telefon, <ph name="TROUBLESHOOT_LINK" /> za oba uređaja u postavkama.</translation>
 <translation id="6786750046913594791">Zatvori folder</translation>
 <translation id="6808150112686056157">Zaustavi medijske fajlove</translation>
 <translation id="6845383723252244143">Odaberite folder</translation>
 <translation id="6845533974506654842">pritisni</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{još 1 sat}one{još # sat}few{još # sata}other{još # sati}}</translation>
 <translation id="688711909580084195">Web lokacija bez naziva</translation>
+<translation id="6902419395050653510">HTML sadržaj.</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{Još godinu dana}one{Još # godinu}few{Još # godine}other{Još # godina}}</translation>
 <translation id="6945221475159498467">Odaberi</translation>
@@ -192,7 +206,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Ostala je još 1 min}one{Ostala je još # min}few{Ostale su još # min}other{Ostalo je još # min}}</translation>
 <translation id="7319740667687257810">Pokretač, djelimični prikaz</translation>
-<translation id="7352651011704765696">Nešto nije uredu</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Prije 1 min}one{Prije # min}few{Prije # min}other{Prije # min}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Još 1 minuta}one{Još # minuta}few{Još # minute}other{Još # minuta}}</translation>
@@ -205,6 +218,7 @@
 <translation id="7848989271541991537">Premješteno je na <ph name="PAGE_NUMBER" />. stranicu, <ph name="ROW_NUMBER" />. red, <ph name="COLUMN_NUMBER" />. kolonu.</translation>
 <translation id="7879499977785298635">Nemoj blokirati</translation>
 <translation id="7907591526440419938">Otvori fajl</translation>
+<translation id="7952747673138230804">Chrome OS prikazuje prijedloge novog sadržaja za istraživanje. Statistika se šalje radi poboljšanja kvaliteta isključivo ako ste odabrali da dijelite podatke o korištenju. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Komanda</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Više od 1 nepročitanog obavještenja}one{Više od # nepročitanog obavještenja}few{Više od # nepročitana obavještenja}other{Više od # nepročitanih obavještenja}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{za 1 m}one{za # m}few{za # m}other{za # m}}</translation>
@@ -231,6 +245,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> Fajl (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Polica se uvijek prikazuje</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Pretražite uređaj, aplikacije, postavke i web. Koristite tipke sa strelicama za kretanje kroz aplikacije.</translation>
 <translation id="8725488761726303204">Još <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Gotovo</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}one{# h}few{# h}other{# h}}</translation>

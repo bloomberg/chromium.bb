@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "bottom_sheet_state.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/event_handler.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/rectf.h"
@@ -23,7 +25,6 @@ class ControllerObserver;
 class Details;
 class InfoBox;
 class BasicInteractions;
-struct ClientSettings;
 
 // UI delegate called for script executions.
 class UiDelegate {
@@ -40,7 +41,7 @@ class UiDelegate {
   virtual ~UiDelegate() = default;
 
   // Returns the current state of the controller.
-  virtual AutofillAssistantState GetState() = 0;
+  virtual AutofillAssistantState GetState() const = 0;
 
   // Called when user interaction within the allowed touchable area was
   // detected. This should cause rerun of preconditions check.
@@ -65,8 +66,18 @@ class UiDelegate {
   // Returns the current progress; a percentage.
   virtual int GetProgress() const = 0;
 
+  // Returns the currently active progress step.
+  virtual base::Optional<int> GetProgressActiveStep() const = 0;
+
   // Returns whether the progress bar is visible.
   virtual bool GetProgressVisible() const = 0;
+
+  // Returns the current configuration of the step progress bar.
+  virtual base::Optional<ShowProgressBarProto::StepProgressBarConfiguration>
+  GetStepProgressBarConfiguration() const = 0;
+
+  // Returns whether the progress bar should show an error state.
+  virtual bool GetProgressBarErrorState() const = 0;
 
   // Returns the current set of user actions.
   virtual const std::vector<UserAction>& GetUserActions() const = 0;
@@ -168,13 +179,30 @@ class UiDelegate {
 
   // Reports a fatal error to Autofill Assistant, which should then stop.
   virtual void OnFatalError(const std::string& error_message,
+                            bool show_feedback_chip,
                             Metrics::DropOutReason reason) = 0;
+
+  // Reports that Autofill Assistant should be Stopped.
+  virtual void OnStop(const std::string& message,
+                      const std::string& button_label) = 0;
 
   // Returns whether the viewport should be resized.
   virtual ViewportMode GetViewportMode() = 0;
 
   // Peek mode state and whether it was changed automatically last time.
   virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
+
+  // Gets the bottom sheet state.
+  virtual BottomSheetState GetBottomSheetState() = 0;
+
+  // Sets the state of the bottom sheet.
+  virtual void SetBottomSheetState(BottomSheetState state) = 0;
+
+  // Gets whether the tab associated with this controller is currently selected.
+  virtual bool IsTabSelected() = 0;
+
+  // Sets whether the tab associated with this controller is currently selected.
+  virtual void SetTabSelected(bool selected) = 0;
 
   // Fills in the overlay colors.
   virtual void GetOverlayColors(OverlayColors* colors) const = 0;
@@ -197,6 +225,9 @@ class UiDelegate {
   virtual void SetChoiceSelected(int input_index,
                                  int choice_index,
                                  bool selected) = 0;
+
+  // Sets whether a UI is shown.
+  virtual void SetUiShown(bool shown) = 0;
 
   // Register an observer. Observers get told about changes to the
   // controller.
@@ -222,6 +253,19 @@ class UiDelegate {
 
   // The generic user interface to show, if any.
   virtual const GenericUserInterfaceProto* GetGenericUiProto() const = 0;
+
+  // Whether the overlay should be determined based on AA state or always
+  // hidden.
+  virtual bool ShouldShowOverlay() const = 0;
+
+  // Notifies the UI delegate that it should shut down.
+  virtual void ShutdownIfNecessary() = 0;
+
+  // Returns whether the UI delegate is currently running a lite script or not.
+  virtual bool IsRunningLiteScript() const = 0;
+
+  // Called when the visibility of the keyboard has changed.
+  virtual void OnKeyboardVisibilityChanged(bool visible) = 0;
 
  protected:
   UiDelegate() = default;

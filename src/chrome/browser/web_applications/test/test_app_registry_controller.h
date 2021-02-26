@@ -17,10 +17,17 @@ class TestAppRegistryController : public AppRegistryController {
   // AppRegistryController:
   void Init(base::OnceClosure callback) override;
   void SetAppUserDisplayMode(const AppId& app_id,
-                             DisplayMode display_mode) override;
+                             DisplayMode display_mode,
+                             bool is_user_action) override;
   void SetAppIsDisabled(const AppId& app_id, bool is_disabled) override;
   void SetAppIsLocallyInstalled(const AppId& app_id,
                                 bool is_locally_installed) override;
+  void SetAppLastLaunchTime(const AppId& app_id,
+                            const base::Time& time) override;
+  void SetAppInstallTime(const AppId& app_id, const base::Time& time) override;
+  void SetAppRunOnOsLoginMode(const AppId& app_id,
+                              RunOnOsLoginMode mode) override;
+
   WebAppSyncBridge* AsWebAppSyncBridge() override;
 };
 

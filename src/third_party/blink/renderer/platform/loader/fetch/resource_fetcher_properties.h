@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_FETCHER_PROPERTIES_H_
 
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_status.h"
@@ -40,7 +41,7 @@ class PLATFORM_EXPORT ResourceFetcherProperties
 
   ResourceFetcherProperties() = default;
   virtual ~ResourceFetcherProperties() = default;
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 
   // Returns the client settings object bound to this global context.
   virtual const FetchClientSettingsObject& GetFetchClientSettingsObject()
@@ -64,10 +65,18 @@ class PLATFORM_EXPORT ResourceFetcherProperties
   // https://html.spec.whatwg.org/C/webappapis.html#pause
   virtual bool IsPaused() const = 0;
 
+  // Returns the deferred status of the loading in the global context.
+  virtual WebURLLoader::DeferType DeferType() const = 0;
+
   // Returns whether this global context is detached. Note that in some cases
   // the loading pipeline continues working after detached (e.g., for fetch()
   // operations with "keepalive" specified).
   virtual bool IsDetached() const = 0;
+
+  // Returns whether the loading is deferred. When true, loading tasks keep
+  // running but the data is queued in the loading pipeline on the renderer.
+  // Upon resume the data is given to client modules such as scripts.
+  virtual bool IsLoadDeferred() const = 0;
 
   // Returns whether the main resource for this global context is loaded.
   virtual bool IsLoadComplete() const = 0;
@@ -103,7 +112,7 @@ class PLATFORM_EXPORT DetachableResourceFetcherProperties final
 
   void Detach();
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // ResourceFetcherProperties implementation
   // Add a test in resource_fetcher_test.cc when you change behaviors.
@@ -128,8 +137,14 @@ class PLATFORM_EXPORT DetachableResourceFetcherProperties final
   bool IsPaused() const override {
     return properties_ ? properties_->IsPaused() : paused_;
   }
+  WebURLLoader::DeferType DeferType() const override {
+    return properties_ ? properties_->DeferType() : defer_type_;
+  }
   bool IsDetached() const override {
     return properties_ ? properties_->IsDetached() : true;
+  }
+  bool IsLoadDeferred() const override {
+    return properties_ ? properties_->IsLoadDeferred() : false;
   }
   bool IsLoadComplete() const override {
     return properties_ ? properties_->IsLoadComplete() : load_complete_;
@@ -165,6 +180,7 @@ class PLATFORM_EXPORT DetachableResourceFetcherProperties final
   Member<const FetchClientSettingsObject> fetch_client_settings_object_;
   bool is_main_frame_ = false;
   bool paused_ = false;
+  WebURLLoader::DeferType defer_type_;
   bool load_complete_ = false;
   bool is_subframe_deprioritization_enabled_ = false;
   KURL web_bundle_physical_url_;

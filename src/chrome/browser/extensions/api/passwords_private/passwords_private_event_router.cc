@@ -9,7 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
@@ -97,13 +97,23 @@ void PasswordsPrivateEventRouter::OnAccountStorageOptInStateChanged(
 }
 
 void PasswordsPrivateEventRouter::OnCompromisedCredentialsChanged(
-    std::vector<api::passwords_private::CompromisedCredential>
+    std::vector<api::passwords_private::InsecureCredential>
         compromised_credentials) {
   auto extension_event = std::make_unique<Event>(
       events::PASSWORDS_PRIVATE_ON_COMPROMISED_CREDENTIALS_INFO_CHANGED,
       api::passwords_private::OnCompromisedCredentialsChanged::kEventName,
       api::passwords_private::OnCompromisedCredentialsChanged::Create(
           compromised_credentials));
+  event_router_->BroadcastEvent(std::move(extension_event));
+}
+
+void PasswordsPrivateEventRouter::OnWeakCredentialsChanged(
+    std::vector<api::passwords_private::InsecureCredential> weak_credentials) {
+  auto extension_event = std::make_unique<Event>(
+      events::PASSWORDS_PRIVATE_ON_WEAK_CREDENTIALS_CHANGED,
+      api::passwords_private::OnWeakCredentialsChanged::kEventName,
+      api::passwords_private::OnWeakCredentialsChanged::Create(
+          weak_credentials));
   event_router_->BroadcastEvent(std::move(extension_event));
 }
 

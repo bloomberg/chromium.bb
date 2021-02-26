@@ -9,8 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "cc/animation/animation_export.h"
 #include "cc/animation/transform_operation.h"
 #include "ui/gfx/transform.h"
@@ -98,6 +98,8 @@ class CC_ANIMATION_EXPORT TransformOperations {
   void AppendTranslate(SkScalar x, SkScalar y, SkScalar z);
   void AppendRotate(SkScalar x, SkScalar y, SkScalar z, SkScalar degrees);
   void AppendScale(SkScalar x, SkScalar y, SkScalar z);
+  void AppendSkewX(SkScalar x);
+  void AppendSkewY(SkScalar y);
   void AppendSkew(SkScalar x, SkScalar y);
   void AppendPerspective(SkScalar depth);
   void AppendMatrix(const gfx::Transform& matrix);

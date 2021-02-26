@@ -24,9 +24,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
-#include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/renderer_id.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -49,6 +47,11 @@ enum class PasswordAttribute {
   kPasswordAttributesCount
 };
 
+// The structure of forms and fields, represented by their signatures, on a
+// page. These are sequence containers to reflect their order in the DOM.
+using FormAndFieldSignatures =
+    std::vector<std::pair<FormSignature, std::vector<FieldSignature>>>;
+
 struct FormData;
 struct FormDataPredictions;
 
@@ -65,42 +68,36 @@ class FormStructure {
   // types.
   void DetermineHeuristicTypes(LogManager* log_manager = nullptr);
 
-  // Encodes the proto |upload| request from this FormStructure.
+  // Encodes the proto |upload| request from this FormStructure, and stores
+  // the (single) FormSignature and the signatures of the fields to be uploaded
+  // in |encoded_signatures|.
   // In some cases, a |login_form_signature| is included as part of the upload.
   // This field is empty when sending upload requests for non-login forms.
-  bool EncodeUploadRequest(const ServerFieldTypeSet& available_field_types,
-                           bool form_was_autofilled,
-                           const std::string& login_form_signature,
-                           bool observed_submission,
-                           autofill::AutofillUploadContents* upload) const;
+  bool EncodeUploadRequest(
+      const ServerFieldTypeSet& available_field_types,
+      bool form_was_autofilled,
+      const std::string& login_form_signature,
+      bool observed_submission,
+      autofill::AutofillUploadContents* upload,
+      std::vector<FormSignature>* encoded_signatures) const;
 
-  // Encodes the proto |query| request for the set of |forms| that are valid
-  // (see implementation for details on which forms are not included in the
-  // query). The form signatures used in the Query request are output in
-  // |encoded_signatures|. All valid fields are encoded in |query|.
-  static bool EncodeQueryRequest(const std::vector<FormStructure*>& forms,
-                                 std::vector<std::string>* encoded_signatures,
-                                 autofill::AutofillQueryContents* query);
+  // Encodes the proto |query| request for the list of |forms| and their fields
+  // that are valid. The queried FormSignatures and FieldSignatures are stored
+  // in |queried_form_signatures| in the same order as in |query|. In case
+  // multiple FormStructures have the same FormSignature, only the first one is
+  // included in |query| and |queried_form_signatures|.
+  static bool EncodeQueryRequest(
+      const std::vector<FormStructure*>& forms,
+      autofill::AutofillPageQueryRequest* query,
+      std::vector<FormSignature>* queried_form_signatures);
 
-  // Parses response as AutofillQueryResponseContents proto and calls
-  // ProcessQueryResponse.
-  static void ParseQueryResponse(std::string response,
-                                 const std::vector<FormStructure*>& forms,
-                                 AutofillMetrics::FormInteractionsUkmLogger*);
-
+  // Parses `payload` as AutofillQueryResponse proto and calls
+  // ProcessQueryResponse().
   static void ParseApiQueryResponse(
       base::StringPiece payload,
       const std::vector<FormStructure*>& forms,
+      const std::vector<FormSignature>& queried_form_signatures,
       AutofillMetrics::FormInteractionsUkmLogger*);
-
-  // Parses the field types from the server query response. |forms| must be the
-  // same as the one passed to EncodeQueryRequest when constructing the query.
-  // |form_interactions_ukm_logger| is used to provide logs to UKM and can be
-  // null in tests.
-  static void ProcessQueryResponse(
-      const AutofillQueryResponseContents& response,
-      const std::vector<FormStructure*>& forms,
-      AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger);
 
   // Returns predictions using the details from the given |form_structures| and
   // their fields' predicted types.
@@ -208,6 +205,10 @@ class FormStructure {
   // the fields that are considered composing a first complete phone number.
   void RationalizePhoneNumbersInSection(std::string section);
 
+  // Overrides server predictions with specific heuristic predictions:
+  // * NAME_LAST_SECOND heuristic predictions are unconditionally used.
+  void OverrideServerPredictionsWithHeuristics();
+
   const AutofillField* field(size_t index) const;
   AutofillField* field(size_t index);
   size_t field_count() const;
@@ -241,6 +242,8 @@ class FormStructure {
 
   const url::Origin& main_frame_origin() const { return main_frame_origin_; }
 
+  const ButtonTitleList& button_titles() const { return button_titles_; }
+
   bool has_author_specified_types() const {
     return has_author_specified_types_;
   }
@@ -268,17 +271,17 @@ class FormStructure {
 
   bool all_fields_are_passwords() const { return all_fields_are_passwords_; }
 
-  FormSignature form_signature() const { return form_signature_; }
+  const FormSignature form_signature() const { return form_signature_; }
+
+  void set_form_signature(FormSignature signature) {
+    form_signature_ = signature;
+  }
 
   // Returns a FormData containing the data this form structure knows about.
   FormData ToFormData() const;
 
   // Returns the possible form types.
   std::set<FormType> GetFormTypes() const;
-
-  // Returns a collection of ServerFieldTypes corresponding to this
-  // FormStructure's fields.
-  std::vector<ServerFieldType> GetServerFieldTypes() const;
 
   bool passwords_were_revealed() const { return passwords_were_revealed_; }
   void set_passwords_were_revealed(bool passwords_were_revealed) {
@@ -349,8 +352,6 @@ class FormStructure {
   void set_submission_source(mojom::SubmissionSource submission_source) {
     submission_source_ = submission_source;
   }
-  bool operator==(const FormData& form) const;
-  bool operator!=(const FormData& form) const;
 
   // Returns an identifier that is used by the refill logic. Takes the first non
   // empty of these or returns an empty string:
@@ -380,12 +381,29 @@ class FormStructure {
 
   FormRendererId unique_renderer_id() const { return unique_renderer_id_; }
 
+  bool ShouldSkipFieldVisibleForTesting(const FormFieldData& field) const {
+    return ShouldSkipField(field);
+  }
+
+  static void ProcessQueryResponseForTesting(
+      const AutofillQueryResponse& response,
+      const std::vector<FormStructure*>& forms,
+      const std::vector<FormSignature>& queried_form_signatures,
+      AutofillMetrics::FormInteractionsUkmLogger*
+          form_interactions_ukm_logger) {
+    ProcessQueryResponse(response, forms, queried_form_signatures,
+                         form_interactions_ukm_logger);
+  }
+
  private:
   friend class AutofillMergeTest;
-  friend class FormStructureTest;
+  friend class FormStructureTestImpl;
+  friend class ParameterizedFormStructureTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
-  FRIEND_TEST_ALL_PREFIXES(FormStructureTest, FindLongestCommonPrefix);
-  FRIEND_TEST_ALL_PREFIXES(FormStructureTest,
+  FRIEND_TEST_ALL_PREFIXES(FormStructureTestImpl, FindLongestCommonPrefix);
+  FRIEND_TEST_ALL_PREFIXES(FormStructureTestImpl, FindLongestCommonAffixLength);
+  FRIEND_TEST_ALL_PREFIXES(FormStructureTestImpl, IsValidParseableName);
+  FRIEND_TEST_ALL_PREFIXES(ParameterizedFormStructureTest,
                            RationalizePhoneNumber_RunsOncePerSection);
 
   class SectionedFieldsIndexes {
@@ -433,6 +451,16 @@ class FormStructure {
     // Points to a vector of indexes that belong to the same section.
     size_t current_section_ptr = 0;
   };
+
+  // Parses the field types from the server query response. |forms| must be the
+  // same as the one passed to EncodeQueryRequest when constructing the query.
+  // |form_interactions_ukm_logger| is used to provide logs to UKM and can be
+  // null in tests.
+  static void ProcessQueryResponse(
+      const AutofillQueryResponse& response,
+      const std::vector<FormStructure*>& forms,
+      const std::vector<FormSignature>& queried_form_signatures,
+      AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger);
 
   FormStructure(FormSignature form_signature,
                 const std::vector<FieldSignature>& field_signatures);
@@ -498,12 +526,13 @@ class FormStructure {
   // when it considers necessary.
   void RationalizeFieldTypePredictions();
 
-  // Encodes information about this form and its fields into |query_form|.
   void EncodeFormForQuery(
-      autofill::AutofillQueryContents::Form* query_form) const;
+      autofill::AutofillPageQueryRequest::Form* query_form,
+      std::vector<FormSignature>* queried_form_signatures) const;
 
-  // Encodes information about this form and its fields into |upload|.
-  void EncodeFormForUpload(autofill::AutofillUploadContents* upload) const;
+  void EncodeFormForUpload(
+      autofill::AutofillUploadContents* upload,
+      std::vector<FormSignature>* encoded_signatures) const;
 
   // Returns true if the form has no fields, or too many.
   bool IsMalformed() const;
@@ -525,11 +554,32 @@ class FormStructure {
   // Further processes the extracted |fields_|.
   void ProcessExtractedFields();
 
+  // Tries to set |parseable_name| fields by stripping the given offsets from
+  // both sides of the |name| fields.
+  // Sets |parseable_name| to |name| if the sum of offsets is bigger than
+  // |name|.
+  // Sets all |parseable_name| to |name| without modification and returns
+  // false if a name fails the |IsValidParseableName()| check after stripping.
+  bool SetStrippedParseableNames(size_t offset_left, size_t offset_right);
+
+  // Returns true if |string| is a valid parseable_name. Current criterion
+  // is the |autofill::kParseableNameValidationRe| regex.
+  static bool IsValidParseableName(base::string16 string);
+
+  // Returns the length of the longest common prefix found within |strings|
+  // if |findCommonSuffix| is false. Otherwise returns longest common suffix.
+  static size_t FindLongestCommonAffixLength(
+      const std::vector<base::StringPiece16>& strings,
+      bool findCommonSuffix = false);
+
   // Returns the longest common prefix found within |strings|. Strings below a
-  // threshold length are excluded when performing this check; this is needed
-  // because an exceptional field may be missing a prefix which is otherwise
-  // consistently applied--for instance, a framework may only apply a prefix
-  // to those fields which are bound when POSTing.
+  // threshold length defined by |kMinCommonNamePrefixLength| are excluded
+  // when performing this check; this is needed because an exceptional
+  // field may be missing a prefix which is otherwise consistently applied.
+  // For instance, a framework may only apply a prefix to those fields
+  // which are bound when POSTing.
+  //
+  // Soon to be replaced by FindLongestCommonPrefixLength
   static base::string16 FindLongestCommonPrefix(
       const std::vector<base::string16>& strings);
 
@@ -663,6 +713,8 @@ class FormStructure {
 };
 
 LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form);
+std::ostream& operator<<(std::ostream& buffer, const FormStructure& form);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_STRUCTURE_H_

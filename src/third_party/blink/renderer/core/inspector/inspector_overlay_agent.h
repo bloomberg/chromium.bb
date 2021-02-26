@@ -35,9 +35,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_highlight.h"
 #include "third_party/blink/renderer/core/inspector/inspector_overlay_host.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Overlay.h"
@@ -69,15 +72,29 @@ class WebLocalFrameImpl;
 class WebPointerEvent;
 
 class InspectorOverlayAgent;
+class GridHighlightTool;
 
 using OverlayFrontend = protocol::Overlay::Metainfo::FrontendClass;
 
+// Overlay names returned by GetOverlayName().
+class OverlayNames {
+ public:
+  static const char* OVERLAY_HIGHLIGHT;
+  static const char* OVERLAY_HIGHLIGHT_GRID;
+  static const char* OVERLAY_SOURCE_ORDER;
+  static const char* OVERLAY_DISTANCES;
+  static const char* OVERLAY_VIEWPORT_SIZE;
+  static const char* OVERLAY_SCREENSHOT;
+  static const char* OVERLAY_PAUSED;
+};
+
 class CORE_EXPORT InspectTool : public GarbageCollected<InspectTool> {
  public:
+  InspectTool(InspectorOverlayAgent* overlay, OverlayFrontend* frontend)
+      : overlay_(overlay), frontend_(frontend) {}
   virtual ~InspectTool() = default;
 
-  void Init(InspectorOverlayAgent* overlay, OverlayFrontend* frontend);
-  virtual int GetDataResourceId();
+  virtual String GetOverlayName() = 0;
   virtual bool HandleInputEvent(LocalFrameView* frame_view,
                                 const WebInputEvent& input_event,
                                 bool* swallow_next_mouse_up);
@@ -91,16 +108,14 @@ class CORE_EXPORT InspectTool : public GarbageCollected<InspectTool> {
   virtual bool HandlePointerEvent(const WebPointerEvent&);
   virtual bool HandleKeyboardEvent(const WebKeyboardEvent&);
   virtual bool ForwardEventsToOverlay();
+  virtual bool SupportsPersistentOverlays();
   virtual void Draw(float scale) {}
   virtual void Dispatch(const String& message) {}
-  virtual void Trace(Visitor* visitor);
-  virtual void Dispose() {}
+  virtual void Trace(Visitor* visitor) const;
   virtual bool HideOnHideHighlight();
   virtual bool HideOnMouseMove();
 
  protected:
-  InspectTool() = default;
-  virtual void DoInit() {}
   Member<InspectorOverlayAgent> overlay_;
   OverlayFrontend* frontend_ = nullptr;
 };
@@ -112,9 +127,9 @@ class CORE_EXPORT Hinge final : public GarbageCollected<Hinge> {
         Color outline_color,
         InspectorOverlayAgent* overlay);
   ~Hinge() = default;
-  static int GetDataResourceId();
+  String GetOverlayName();
   void Draw(float scale);
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   FloatQuad quad_;
@@ -127,11 +142,13 @@ class CORE_EXPORT Hinge final : public GarbageCollected<Hinge> {
 class CORE_EXPORT InspectorOverlayAgent final
     : public InspectorBaseAgent<protocol::Overlay::Metainfo>,
       public InspectorOverlayHost::Delegate {
-  USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayAgent);
-
  public:
   static std::unique_ptr<InspectorGridHighlightConfig> ToGridHighlightConfig(
       protocol::Overlay::GridHighlightConfig*);
+  static std::unique_ptr<InspectorFlexContainerHighlightConfig>
+  ToFlexContainerHighlightConfig(
+      protocol::Overlay::FlexContainerHighlightConfig*);
+  static std::unique_ptr<LineStyle> ToLineStyle(protocol::Overlay::LineStyle*);
   static std::unique_ptr<InspectorHighlightConfig> ToHighlightConfig(
       protocol::Overlay::HighlightConfig*);
   InspectorOverlayAgent(WebLocalFrameImpl*,
@@ -139,7 +156,7 @@ class CORE_EXPORT InspectorOverlayAgent final
                         v8_inspector::V8InspectorSession*,
                         InspectorDOMAgent*);
   ~InspectorOverlayAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // protocol::Dispatcher::OverlayCommandHandler implementation.
   protocol::Response enable() override;
@@ -174,6 +191,11 @@ class CORE_EXPORT InspectorOverlayAgent final
       protocol::Maybe<int> backend_node_id,
       protocol::Maybe<String> object_id,
       protocol::Maybe<String> selector_list) override;
+  protocol::Response highlightSourceOrder(
+      std::unique_ptr<protocol::Overlay::SourceOrderConfig>,
+      protocol::Maybe<int> node_id,
+      protocol::Maybe<int> backend_node_id,
+      protocol::Maybe<String> object_id) override;
   protocol::Response hideHighlight() override;
   protocol::Response highlightFrame(
       const String& frame_id,
@@ -184,15 +206,27 @@ class CORE_EXPORT InspectorOverlayAgent final
       protocol::Maybe<bool> include_distance,
       protocol::Maybe<bool> include_style,
       protocol::Maybe<String> color_format,
+      protocol::Maybe<bool> show_accessibility_info,
       std::unique_ptr<protocol::DictionaryValue>* highlight) override;
+  protocol::Response getGridHighlightObjectsForTest(
+      std::unique_ptr<protocol::Array<int>> node_ids,
+      std::unique_ptr<protocol::DictionaryValue>* highlights) override;
+  protocol::Response getSourceOrderHighlightObjectForTest(
+      int node_id,
+      std::unique_ptr<protocol::DictionaryValue>* highlights) override;
   protocol::Response setShowHinge(
       protocol::Maybe<protocol::Overlay::HingeConfig> hinge_config) override;
+  protocol::Response setShowGridOverlays(
+      std::unique_ptr<
+          protocol::Array<protocol::Overlay::GridNodeHighlightConfig>>
+          grid_node_highlight_configs) override;
 
   // InspectorBaseAgent overrides.
   void Restore() override;
   void Dispose() override;
 
   void Inspect(Node*);
+  void EnsureAXContext(Node*);
   void DispatchBufferedTouchEvents();
   WebInputEventResult HandleInputEvent(const WebInputEvent&);
   WebInputEventResult HandleInputEventInOverlay(const WebInputEvent&);
@@ -233,10 +267,14 @@ class CORE_EXPORT InspectorOverlayAgent final
   void SetNeedsUnbufferedInput(bool unbuffered);
   void PickTheRightTool();
   // Set or clear a mode tool, or add a highlight tool
-  void SetInspectTool(InspectTool* inspect_tool);
-  void LoadFrameForTool(int data_resource_id);
+  protocol::Response SetInspectTool(InspectTool* inspect_tool);
+  void ClearInspectTool();
+  void LoadOverlayPageResource();
   void EnsureEnableFrameOverlay();
   void DisableFrameOverlay();
+  InspectorSourceOrderConfig SourceOrderConfigFromInspectorObject(
+      std::unique_ptr<protocol::Overlay::SourceOrderConfig>
+          source_order_inspector_object);
   protocol::Response HighlightConfigFromInspectorObject(
       protocol::Maybe<protocol::Overlay::HighlightConfig>
           highlight_inspector_object,
@@ -244,7 +282,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
   Member<Page> overlay_page_;
-  int frame_resource_name_;
   Member<InspectorOverlayChromeClient> overlay_chrome_client_;
   Member<InspectorOverlayHost> overlay_host_;
   bool resize_timer_active_;
@@ -254,7 +291,12 @@ class CORE_EXPORT InspectorOverlayAgent final
   Member<InspectorDOMAgent> dom_agent_;
   std::unique_ptr<FrameOverlay> frame_overlay_;
   Member<InspectTool> inspect_tool_;
+  Member<GridHighlightTool> persistent_tool_;
   Member<Hinge> hinge_;
+  // The agent needs to keep AXContext because it enables caching of
+  // a11y attributes shown in the inspector overlay.
+  HeapHashMap<WeakMember<Document>, std::unique_ptr<AXContext>>
+      document_to_ax_context_;
   bool swallow_next_mouse_up_;
   DOMNodeId backend_node_id_to_inspect_;
   InspectorAgentState::Boolean enabled_;
@@ -269,6 +311,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   InspectorAgentState::String paused_in_debugger_message_;
   InspectorAgentState::String inspect_mode_;
   InspectorAgentState::Bytes inspect_mode_protocol_config_;
+
   DISALLOW_COPY_AND_ASSIGN(InspectorOverlayAgent);
 };
 

@@ -19,13 +19,17 @@ UserAddingScreenInputMethodsController::
   screen_->RemoveObserver(this);
 }
 
-void UserAddingScreenInputMethodsController::OnUserAddingStarted() {
+void UserAddingScreenInputMethodsController::OnBeforeUserAddingScreenStarted() {
   active_user_on_show_ = user_manager::UserManager::Get()->GetActiveUser();
   input_method::InputMethodManager* imm =
       input_method::InputMethodManager::Get();
   saved_ime_state_ = imm->GetActiveIMEState();
   imm->SetState(saved_ime_state_->Clone());
   imm->GetActiveIMEState()->EnableLockScreenLayouts();
+  imm->GetActiveIMEState()->SetUIStyle(
+      user_manager::UserManager::Get()->IsUserLoggedIn()
+          ? input_method::InputMethodManager::UIStyle::kSecondaryLogin
+          : input_method::InputMethodManager::UIStyle::kLogin);
 }
 
 void UserAddingScreenInputMethodsController::OnUserAddingFinished() {

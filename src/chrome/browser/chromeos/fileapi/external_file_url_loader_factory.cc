@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_resolver.h"
@@ -342,8 +341,10 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
 
 ExternalFileURLLoaderFactory::ExternalFileURLLoaderFactory(
     void* profile_id,
-    int render_process_host_id)
-    : profile_id_(profile_id),
+    int render_process_host_id,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver)
+    : content::NonNetworkURLLoaderFactoryBase(std::move(factory_receiver)),
+      profile_id_(profile_id),
       render_process_host_id_(render_process_host_id) {}
 
 ExternalFileURLLoaderFactory::~ExternalFileURLLoaderFactory() = default;
@@ -364,15 +365,25 @@ void ExternalFileURLLoaderFactory::CreateLoaderAndStart(
     mojo::ReportBadMessage("Unauthorized externalfile request");
     return;
   }
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ExternalFileURLLoader::CreateAndStart, profile_id_,
                      request, std::move(loader), std::move(client)));
 }
 
-void ExternalFileURLLoaderFactory::Clone(
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) {
-  receivers_.Add(this, std::move(loader));
+// static
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+ExternalFileURLLoaderFactory::Create(void* profile_id,
+                                     int render_process_host_id) {
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_remote;
+
+  // The ExternalFileURLLoaderFactory will delete itself when there are no more
+  // receivers - see the NonNetworkURLLoaderFactoryBase::OnDisconnect method.
+  new ExternalFileURLLoaderFactory(
+      profile_id, render_process_host_id,
+      pending_remote.InitWithNewPipeAndPassReceiver());
+
+  return pending_remote;
 }
 
 }  // namespace chromeos

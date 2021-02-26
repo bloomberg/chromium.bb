@@ -90,10 +90,10 @@ class BrowserAccessibilityMacTest : public ui::CocoaTest {
 
     ui::AXNodeData child1;
     child1.id = 1001;
+    child1.role = ax::mojom::Role::kButton;
     child1.SetName("Child1");
     child1.relative_bounds.bounds.set_width(250);
     child1.relative_bounds.bounds.set_height(100);
-    child1.role = ax::mojom::Role::kButton;
 
     ui::AXNodeData child2;
     child2.id = 1002;
@@ -172,8 +172,13 @@ TEST_F(BrowserAccessibilityMacTest, RetainedDetachedObjectsReturnNil) {
 }
 
 TEST_F(BrowserAccessibilityMacTest, TestComputeTextEdit) {
-  BrowserAccessibility* owner = [accessibility_ owner];
-  ASSERT_NE(nullptr, owner);
+  root_ = ui::AXNodeData();
+  root_.id = 1;
+  root_.role = ax::mojom::Role::kTextField;
+  manager_.reset(
+      new BrowserAccessibilityManagerMac(MakeAXTreeUpdate(root_), nullptr));
+  accessibility_.reset(
+      [ToBrowserAccessibilityCocoa(manager_->GetRoot()) retain]);
 
   // Insertion but no deletion.
 

@@ -6,7 +6,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -124,13 +124,13 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
     std::move(callback).Run(should_compute_hashes_);
   }
 
-  void OnUnpackSuccess(
-      const base::FilePath& temp_dir,
-      const base::FilePath& extension_root,
-      std::unique_ptr<base::DictionaryValue> original_manifest,
-      const Extension* extension,
-      const SkBitmap& install_icon,
-      declarative_net_request::RulesetChecksums ruleset_checksums) override {
+  void OnUnpackSuccess(const base::FilePath& temp_dir,
+                       const base::FilePath& extension_root,
+                       std::unique_ptr<base::DictionaryValue> original_manifest,
+                       const Extension* extension,
+                       const SkBitmap& install_icon,
+                       declarative_net_request::RulesetInstallPrefs
+                           ruleset_install_prefs) override {
     temp_dir_ = temp_dir;
     std::move(quit_closure_).Run();
   }
@@ -465,8 +465,8 @@ TEST_F(SandboxedUnpackerTest, InvalidMessagesFile) {
   EXPECT_FALSE(base::PathExists(install_path));
   EXPECT_TRUE(base::MatchPattern(
       GetInstallErrorMessage(),
-      base::ASCIIToUTF16("*_locales?en_US?messages.json': Line: 4, column: 1,"
-                         " Syntax error.'.")))
+      base::ASCIIToUTF16(
+          "*_locales?en_US?messages.json': Line: 4, column: 1,*")))
       << GetInstallErrorMessage();
   ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
             GetInstallErrorType());

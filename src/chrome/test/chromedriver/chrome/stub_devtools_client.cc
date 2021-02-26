@@ -25,6 +25,10 @@ Status StubDevToolsClient::ConnectIfNecessary() {
   return Status(kOk);
 }
 
+Status StubDevToolsClient::SetUpDevTools() {
+  return Status(kOk);
+}
+
 Status StubDevToolsClient::SendCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
@@ -91,3 +95,7 @@ Status StubDevToolsClient::HandleReceivedEvents() {
 void StubDevToolsClient::SetDetached() {}
 
 void StubDevToolsClient::SetOwner(WebViewImpl* owner) {}
+
+DevToolsClient* StubDevToolsClient::GetRootClient() {
+  return this;
+}

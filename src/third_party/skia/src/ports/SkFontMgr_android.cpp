@@ -48,7 +48,7 @@ protected:
     SkString fFamilyName;
 
 private:
-    typedef SkTypeface_FreeType INHERITED;
+    using INHERITED = SkTypeface_FreeType;
 };
 
 class SkTypeface_AndroidSystem : public SkTypeface_Android {
@@ -82,7 +82,7 @@ public:
         return SkStream::MakeFromFile(fPathName.c_str());
     }
 
-    virtual void onGetFontDescriptor(SkFontDescriptor* desc, bool* serialize) const override {
+    void onGetFontDescriptor(SkFontDescriptor* desc, bool* serialize) const override {
         SkASSERT(desc);
         SkASSERT(serialize);
         desc->setFamilyName(fFamilyName.c_str());
@@ -121,7 +121,7 @@ public:
     const FontVariant fVariantStyle;
     SkAutoTCallVProc<FILE, sk_fclose> fFile;
 
-    typedef SkTypeface_Android INHERITED;
+    using INHERITED = SkTypeface_Android;
 };
 
 class SkTypeface_AndroidStream : public SkTypeface_Android {
@@ -134,8 +134,7 @@ public:
         , fData(std::move(data))
     { }
 
-    virtual void onGetFontDescriptor(SkFontDescriptor* desc,
-                                     bool* serialize) const override {
+    void onGetFontDescriptor(SkFontDescriptor* desc, bool* serialize) const override {
         SkASSERT(desc);
         SkASSERT(serialize);
         desc->setFamilyName(fFamilyName.c_str());
@@ -164,7 +163,7 @@ public:
 
 private:
     const std::unique_ptr<const SkFontData> fData;
-    typedef SkTypeface_Android INHERITED;
+    using INHERITED = SkTypeface_Android;
 };
 
 class SkFontStyleSet_Android : public SkFontStyleSet {
@@ -274,7 +273,7 @@ private:
     friend struct NameToFamily;
     friend class SkFontMgr_Android;
 
-    typedef SkFontStyleSet INHERITED;
+    using INHERITED = SkFontStyleSet;
 };
 
 /** On Android a single family can have many names, but our API assumes unique names.
@@ -353,14 +352,14 @@ protected:
         return nullptr;
     }
 
-    virtual SkTypeface* onMatchFamilyStyle(const char familyName[],
-                                           const SkFontStyle& style) const override {
+    SkTypeface* onMatchFamilyStyle(const char familyName[],
+                                   const SkFontStyle& style) const override {
         sk_sp<SkFontStyleSet> sset(this->matchFamily(familyName));
         return sset->matchStyle(style);
     }
 
-    virtual SkTypeface* onMatchFaceStyle(const SkTypeface* typeface,
-                                         const SkFontStyle& style) const override {
+    SkTypeface* onMatchFaceStyle(const SkTypeface* typeface,
+                                 const SkFontStyle& style) const override {
         for (int i = 0; i < fStyleSets.count(); ++i) {
             for (int j = 0; j < fStyleSets[i]->fStyles.count(); ++j) {
                 if (fStyleSets[i]->fStyles[j].get() == typeface) {
@@ -403,12 +402,11 @@ protected:
         return nullptr;
     }
 
-    virtual SkTypeface* onMatchFamilyStyleCharacter(const char familyName[],
-                                                    const SkFontStyle& style,
-                                                    const char* bcp47[],
-                                                    int bcp47Count,
-                                                    SkUnichar character) const override
-    {
+    SkTypeface* onMatchFamilyStyleCharacter(const char familyName[],
+                                            const SkFontStyle& style,
+                                            const char* bcp47[],
+                                            int bcp47Count,
+                                            SkUnichar character) const override {
         // The variant 'elegant' is 'not squashed', 'compact' is 'stays in ascent/descent'.
         // The variant 'default' means 'compact and elegant'.
         // As a result, it is not possible to know the variant context from the font alone.
@@ -451,7 +449,7 @@ protected:
 
     sk_sp<SkTypeface> onMakeFromFile(const char path[], int ttcIndex) const override {
         std::unique_ptr<SkStreamAsset> stream = SkStream::MakeFromFile(path);
-        return stream.get() ? this->makeFromStream(std::move(stream), ttcIndex) : nullptr;
+        return stream ? this->makeFromStream(std::move(stream), ttcIndex) : nullptr;
     }
 
     sk_sp<SkTypeface> onMakeFromStreamIndex(std::unique_ptr<SkStreamAsset> stream,
@@ -552,7 +550,7 @@ private:
             addFamily(*family, isolated, familyIndex++);
             family->fallbackFamilies.foreach([this, isolated, &familyIndex]
                 (SkString, std::unique_ptr<FontFamily>* fallbackFamily) {
-                    addFamily(*(*fallbackFamily).get(), isolated, familyIndex++);
+                    addFamily(**fallbackFamily, isolated, familyIndex++);
                 }
             );
         }
@@ -574,7 +572,7 @@ private:
         SkASSERT(fDefaultStyleSet);
     }
 
-    typedef SkFontMgr INHERITED;
+    using INHERITED = SkFontMgr;
 };
 
 #ifdef SK_DEBUG

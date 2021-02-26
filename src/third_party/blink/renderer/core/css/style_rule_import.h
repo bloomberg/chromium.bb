@@ -67,8 +67,6 @@ class StyleRuleImport : public StyleRuleBase {
   class ImportedStyleSheetClient final
       : public GarbageCollected<ImportedStyleSheetClient>,
         public ResourceClient {
-    USING_GARBAGE_COLLECTED_MIXIN(ImportedStyleSheetClient);
-
    public:
     ImportedStyleSheetClient(StyleRuleImport* owner_rule)
         : owner_rule_(owner_rule) {}
@@ -80,7 +78,7 @@ class StyleRuleImport : public StyleRuleBase {
 
     String DebugName() const override { return "ImportedStyleSheetClient"; }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(owner_rule_);
       ResourceClient::Trace(visitor);
     }

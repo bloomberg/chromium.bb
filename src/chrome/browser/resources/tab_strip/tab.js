@@ -11,10 +11,9 @@ import {isRTL} from 'chrome://resources/js/util.m.js';
 
 import {AlertIndicatorsElement} from './alert_indicators.js';
 import {CustomElement} from './custom_element.js';
-import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
-import {tabStripOptions} from './tab_strip_options.js';
+import {TabStripEmbedderProxy, TabStripEmbedderProxyImpl} from './tab_strip_embedder_proxy.js';
 import {TabSwiper} from './tab_swiper.js';
-import {CloseTabAction, TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
+import {CloseTabAction, TabData, TabNetworkState, TabsApiProxy, TabsApiProxyImpl} from './tabs_api_proxy.js';
 
 const DEFAULT_ANIMATION_DURATION = 125;
 
@@ -84,18 +83,29 @@ export class TabElement extends CustomElement {
     this.tab_;
 
     /** @private {!TabsApiProxy} */
-    this.tabsApi_ = TabsApiProxy.getInstance();
+    this.tabsApi_ = TabsApiProxyImpl.getInstance();
 
     /** @private {!TabStripEmbedderProxy} */
-    this.embedderApi_ = TabStripEmbedderProxy.getInstance();
+    this.embedderApi_ = TabStripEmbedderProxyImpl.getInstance();
 
     /** @private {!HTMLElement} */
     this.titleTextEl_ = /** @type {!HTMLElement} */ (this.$('#titleText'));
+
+    /**
+     * Flag indicating if this TabElement can accept dragover events. This
+     * is used to pause dragover events while animating as animating causes
+     * the elements below the pointer to shift.
+     * @private {boolean}
+     */
+    this.isValidDragOverTarget_ = true;
 
     this.tabEl_.addEventListener('click', () => this.onClick_());
     this.tabEl_.addEventListener('contextmenu', e => this.onContextMenu_(e));
     this.tabEl_.addEventListener(
         'keydown', e => this.onKeyDown_(/** @type {!KeyboardEvent} */ (e)));
+    this.tabEl_.addEventListener(
+        'pointerup', e => this.onPointerUp_(/** @type {!PointerEvent} */ (e)));
+
     this.closeButtonEl_.addEventListener('click', e => this.onClose_(e));
     this.addEventListener('swipe', () => this.onSwipe_());
 
@@ -169,6 +179,16 @@ export class TabElement extends CustomElement {
     this.tab_ = Object.freeze(tab);
   }
 
+  /** @return {boolean} */
+  get isValidDragOverTarget() {
+    return !this.hasAttribute('dragging_') && this.isValidDragOverTarget_;
+  }
+
+  /** @param {boolean} isValid */
+  set isValidDragOverTarget(isValid) {
+    this.isValidDragOverTarget_ = isValid;
+  }
+
   /** @param {!Function} callback */
   set onTabActivating(callback) {
     this.onTabActivating_ = callback;
@@ -181,6 +201,13 @@ export class TabElement extends CustomElement {
   /** @return {!HTMLElement} */
   getDragImage() {
     return this.dragImageEl_;
+  }
+
+  /** @return {!HTMLElement} */
+  getDragImageCenter() {
+    // dragImageEl_ has padding, so the drag image should be centered relative
+    // to tabEl_, the element within the padding.
+    return this.tabEl_;
   }
 
   /**
@@ -200,9 +227,7 @@ export class TabElement extends CustomElement {
     this.onTabActivating_(tabId);
     this.tabsApi_.activateTab(tabId);
 
-    if (tabStripOptions.autoCloseEnabled) {
-      this.embedderApi_.closeContainer();
-    }
+    this.embedderApi_.closeContainer();
   }
 
   /**
@@ -211,13 +236,6 @@ export class TabElement extends CustomElement {
    */
   onContextMenu_(event) {
     event.preventDefault();
-
-    if (!this.tab_) {
-      return;
-    }
-
-    this.embedderApi_.showTabContextMenu(
-        this.tab_.id, event.clientX, event.clientY);
     event.stopPropagation();
   }
 
@@ -247,6 +265,17 @@ export class TabElement extends CustomElement {
     }
   }
 
+  /**
+   * @param {!PointerEvent} event
+   * @private
+   */
+  onPointerUp_(event) {
+    if (event.pointerType !== 'touch' && event.button === 2) {
+      this.embedderApi_.showTabContextMenu(
+          this.tab.id, event.clientX, event.clientY);
+    }
+  }
+
   resetSwipe() {
     this.tabSwiper_.reset();
   }
@@ -256,6 +285,16 @@ export class TabElement extends CustomElement {
    */
   setDragging(isDragging) {
     this.toggleAttribute('dragging_', isDragging);
+  }
+
+  /** @param {boolean} isDraggedOut */
+  setDraggedOut(isDraggedOut) {
+    this.toggleAttribute('dragged-out_', isDraggedOut);
+  }
+
+  /** @return {boolean} */
+  isDraggedOut() {
+    return this.hasAttribute('dragged-out_');
   }
 
   /**

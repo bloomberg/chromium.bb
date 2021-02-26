@@ -148,6 +148,22 @@ void GlsRunnerTestBase::SetUp() {
   // Make sure not to read random GCPW settings from the machine that is running
   // the tests.
   InitializeRegistryOverrideForTesting(&registry_override_);
+
+  // Override location of "Program Files" system folder and its x86 version so
+  // we don't modify local machine settings.
+  ASSERT_TRUE(scoped_temp_program_files_dir_.CreateUniqueTempDir());
+  program_files_override_.reset(new base::ScopedPathOverride(
+      base::DIR_PROGRAM_FILES, scoped_temp_program_files_dir_.GetPath()));
+  ASSERT_TRUE(scoped_temp_program_files_x86_dir_.CreateUniqueTempDir());
+  program_files_x86_override_.reset(new base::ScopedPathOverride(
+      base::DIR_PROGRAM_FILESX86,
+      scoped_temp_program_files_x86_dir_.GetPath()));
+
+  // Also override location of "ProgramData" system folder as we store user
+  // policies there.
+  ASSERT_TRUE(scoped_temp_progdata_dir_.CreateUniqueTempDir());
+  programdata_override_.reset(new base::ScopedPathOverride(
+      base::DIR_COMMON_APP_DATA, scoped_temp_progdata_dir_.GetPath()));
 }
 
 void GlsRunnerTestBase::TearDown() {

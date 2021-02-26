@@ -10,8 +10,8 @@
 #include "public/fpdfview.h"
 
 #ifdef PDF_ENABLE_SKIA
-#include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "third_party/skia/include/core/SkStream.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"  // nogncheck
+#include "third_party/skia/include/core/SkStream.h"  // nogncheck
 #endif
 
 std::string WritePpm(const char* pdf_name,
@@ -20,7 +20,7 @@ std::string WritePpm(const char* pdf_name,
                      int stride,
                      int width,
                      int height);
-void WriteText(FPDF_PAGE page, const char* pdf_name, int num);
+void WriteText(FPDF_TEXTPAGE textpage, const char* pdf_name, int num);
 void WriteAnnot(FPDF_PAGE page, const char* pdf_name, int num);
 std::string WritePng(const char* pdf_name,
                      int num,
@@ -48,6 +48,10 @@ std::string WriteSkp(const char* pdf_name,
 
 void WriteAttachments(FPDF_DOCUMENT doc, const std::string& name);
 void WriteImages(FPDF_PAGE page, const char* pdf_name, int page_num);
+void WriteRenderedImages(FPDF_DOCUMENT doc,
+                         FPDF_PAGE page,
+                         const char* pdf_name,
+                         int page_num);
 void WriteDecodedThumbnailStream(FPDF_PAGE page,
                                  const char* pdf_name,
                                  int page_num);

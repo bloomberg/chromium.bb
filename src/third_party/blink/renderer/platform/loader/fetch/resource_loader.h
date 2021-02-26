@@ -37,6 +37,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -67,7 +68,6 @@ class PLATFORM_EXPORT ResourceLoader final
       protected WebURLLoaderClient,
       protected mojom::blink::ProgressClient,
       private ResponseBodyLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ResourceLoader);
   USING_PRE_FINALIZER(ResourceLoader, Dispose);
 
  public:
@@ -78,14 +78,14 @@ class PLATFORM_EXPORT ResourceLoader final
                  ResourceRequestBody request_body = ResourceRequestBody(),
                  uint32_t inflight_keepalive_bytes = 0);
   ~ResourceLoader() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Start();
 
   void ScheduleCancel();
   void Cancel();
 
-  void SetDefersLoading(bool);
+  void SetDefersLoading(WebURLLoader::DeferType);
 
   void DidChangePriority(ResourceLoadPriority, int intra_priority_value);
 
@@ -130,15 +130,17 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidReceiveTransferSizeUpdate(int transfer_size_diff) override;
   void DidStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void DidFinishLoading(base::TimeTicks response_end,
+  void DidFinishLoading(base::TimeTicks response_end_time,
                         int64_t encoded_data_length,
                         int64_t encoded_body_length,
                         int64_t decoded_body_length,
                         bool should_report_corb_blocking) override;
   void DidFail(const WebURLError&,
+               base::TimeTicks response_end_time,
                int64_t encoded_data_length,
                int64_t encoded_body_length,
                int64_t decoded_body_length) override;
+  void EvictFromBackForwardCache(mojom::RendererEvictionReason) override;
 
   blink::mojom::CodeCacheType GetCodeCacheType() const;
   void SendCachedCodeToResource(mojo_base::BigBuffer data);
@@ -196,16 +198,12 @@ class PLATFORM_EXPORT ResourceLoader final
   void OnProgress(uint64_t delta) override;
   void FinishedCreatingBlob(const scoped_refptr<BlobDataHandle>&);
 
-  bool GetCorsFlag() const { return resource_->Options().cors_flag; }
-
   base::Optional<ResourceRequestBlockedReason> CheckResponseNosniff(
-      mojom::RequestContextType,
+      mojom::blink::RequestContextType,
       const ResourceResponse&);
 
   // Processes Data URL in ResourceLoader instead of using |loader_|.
   void HandleDataUrl();
-
-  bool ShouldCheckCorsInResourceLoader() const;
 
   std::unique_ptr<WebURLLoader> loader_;
   ResourceLoadScheduler::ClientId scheduler_client_id_;
@@ -238,15 +236,14 @@ class PLATFORM_EXPORT ResourceLoader final
   // struct is used to store the information needed to refire DidFinishLoading
   // when the blob is finished too.
   struct DeferredFinishLoadingInfo {
-    base::TimeTicks response_end;
+    base::TimeTicks response_end_time;
     bool should_report_corb_blocking;
   };
   base::Optional<DeferredFinishLoadingInfo> deferred_finish_loading_info_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_body_loader_;
 
-  // True if loading is deferred.
-  bool defers_ = false;
-  // True if the next call of SetDefersLoading(false) needs to invoke
+  WebURLLoader::DeferType defers_ = WebURLLoader::DeferType::kNotDeferred;
+  // True if the next call of SetDefersLoading(kNotDeferred) needs to invoke
   // HandleDataURL().
   bool defers_handling_data_url_ = false;
 
@@ -254,6 +251,8 @@ class PLATFORM_EXPORT ResourceLoader final
 
   FrameScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
+
+  base::TimeTicks response_end_time_for_error_cases_;
 };
 
 }  // namespace blink

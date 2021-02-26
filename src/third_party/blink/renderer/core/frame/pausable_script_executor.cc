@@ -11,13 +11,13 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -34,9 +34,9 @@ class WebScriptExecutor : public PausableScriptExecutor::Executor {
                     int32_t world_id,
                     bool user_gesture);
 
-  Vector<v8::Local<v8::Value>> Execute(LocalFrame*) override;
+  Vector<v8::Local<v8::Value>> Execute(LocalDOMWindow*) override;
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(sources_);
     PausableScriptExecutor::Executor::Trace(visitor);
   }
@@ -53,22 +53,25 @@ WebScriptExecutor::WebScriptExecutor(
     bool user_gesture)
     : sources_(sources), world_id_(world_id), user_gesture_(user_gesture) {}
 
-Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(LocalFrame* frame) {
-  if (user_gesture_)
-    LocalFrame::NotifyUserActivation(frame);
+Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(
+    LocalDOMWindow* window) {
+  if (user_gesture_) {
+    // TODO(mustaq): Need to make sure this is safe. https://crbug.com/1082273
+    LocalFrame::NotifyUserActivation(
+        window->GetFrame(),
+        mojom::blink::UserActivationNotificationType::kWebScriptExec);
+  }
 
   Vector<v8::Local<v8::Value>> results;
   for (const auto& source : sources_) {
     // Note: An error event in an isolated world will never be dispatched to
     // a foreign world.
+    ClassicScript* classic_script = ClassicScript::CreateUnspecifiedScript(
+        source, SanitizeScriptErrors::kDoNotSanitize);
     v8::Local<v8::Value> script_value =
-        world_id_
-            ? frame->GetScriptController().ExecuteScriptInIsolatedWorld(
-                  world_id_, source, KURL(),
-                  SanitizeScriptErrors::kDoNotSanitize)
-            : frame->GetScriptController()
-                  .ExecuteScriptInMainWorldAndReturnValue(
-                      source, KURL(), SanitizeScriptErrors::kDoNotSanitize);
+        world_id_ ? classic_script->RunScriptInIsolatedWorldAndReturnValue(
+                        window, world_id_)
+                  : classic_script->RunScriptAndReturnValue(window);
     results.push_back(script_value);
   }
 
@@ -83,9 +86,9 @@ class V8FunctionExecutor : public PausableScriptExecutor::Executor {
                      int argc,
                      v8::Local<v8::Value> argv[]);
 
-  Vector<v8::Local<v8::Value>> Execute(LocalFrame*) override;
+  Vector<v8::Local<v8::Value>> Execute(LocalDOMWindow*) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   TraceWrapperV8Reference<v8::Function> function_;
@@ -104,7 +107,8 @@ V8FunctionExecutor::V8FunctionExecutor(v8::Isolate* isolate,
     args_.push_back(TraceWrapperV8Reference<v8::Value>(isolate, argv[i]));
 }
 
-Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
+Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(
+    LocalDOMWindow* window) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   Vector<v8::Local<v8::Value>> results;
   v8::Local<v8::Value> single_result;
@@ -115,17 +119,17 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
     args.push_back(args_[i].NewLocal(isolate));
 
   {
-    if (V8ScriptRunner::CallFunction(function_.NewLocal(isolate),
-                                     frame->DomWindow(),
+    if (V8ScriptRunner::CallFunction(function_.NewLocal(isolate), window,
                                      receiver_.NewLocal(isolate), args.size(),
-                                     args.data(), ToIsolate(frame))
-            .ToLocal(&single_result))
+                                     args.data(), window->GetIsolate())
+            .ToLocal(&single_result)) {
       results.push_back(single_result);
+    }
   }
   return results;
 }
 
-void V8FunctionExecutor::Trace(Visitor* visitor) {
+void V8FunctionExecutor::Trace(Visitor* visitor) const {
   visitor->Trace(function_);
   visitor->Trace(receiver_);
   visitor->Trace(args_);
@@ -135,8 +139,7 @@ void V8FunctionExecutor::Trace(Visitor* visitor) {
 }  // namespace
 
 void PausableScriptExecutor::CreateAndRun(
-    LocalFrame* frame,
-    v8::Isolate* isolate,
+    LocalDOMWindow* window,
     v8::Local<v8::Context> context,
     v8::Local<v8::Function> function,
     v8::Local<v8::Value> receiver,
@@ -151,9 +154,9 @@ void PausableScriptExecutor::CreateAndRun(
   }
   PausableScriptExecutor* executor =
       MakeGarbageCollected<PausableScriptExecutor>(
-          frame, script_state, callback,
-          MakeGarbageCollected<V8FunctionExecutor>(isolate, function, receiver,
-                                                   argc, argv));
+          window, script_state, callback,
+          MakeGarbageCollected<V8FunctionExecutor>(
+              window->GetIsolate(), function, receiver, argc, argv));
   executor->Run();
 }
 
@@ -170,25 +173,25 @@ void PausableScriptExecutor::ContextDestroyed() {
 }
 
 PausableScriptExecutor::PausableScriptExecutor(
-    LocalFrame* frame,
+    LocalDOMWindow* window,
     scoped_refptr<DOMWrapperWorld> world,
     const HeapVector<ScriptSourceCode>& sources,
     bool user_gesture,
     WebScriptExecutionCallback* callback)
     : PausableScriptExecutor(
-          frame,
-          ToScriptState(frame, *world),
+          window,
+          ToScriptState(window, *world),
           callback,
           MakeGarbageCollected<WebScriptExecutor>(sources,
                                                   world->GetWorldId(),
                                                   user_gesture)) {}
 
 PausableScriptExecutor::PausableScriptExecutor(
-    LocalFrame* frame,
+    LocalDOMWindow* window,
     ScriptState* script_state,
     WebScriptExecutionCallback* callback,
     Executor* executor)
-    : ExecutionContextLifecycleObserver(frame->DomWindow()),
+    : ExecutionContextLifecycleObserver(window),
       script_state_(script_state),
       callback_(callback),
       blocking_option_(kNonBlocking),
@@ -206,10 +209,7 @@ void PausableScriptExecutor::Run() {
     ExecuteAndDestroySelf();
     return;
   }
-  task_handle_ = PostCancellableTask(
-      *context->GetTaskRunner(TaskType::kJavascriptTimer), FROM_HERE,
-      WTF::Bind(&PausableScriptExecutor::ExecuteAndDestroySelf,
-                WrapPersistent(this)));
+  PostExecuteAndDestroySelf(context);
 }
 
 void PausableScriptExecutor::RunAsync(BlockingOption blocking) {
@@ -219,8 +219,13 @@ void PausableScriptExecutor::RunAsync(BlockingOption blocking) {
   if (blocking_option_ == kOnloadBlocking)
     To<LocalDOMWindow>(context)->document()->IncrementLoadEventDelayCount();
 
+  PostExecuteAndDestroySelf(context);
+}
+
+void PausableScriptExecutor::PostExecuteAndDestroySelf(
+    ExecutionContext* context) {
   task_handle_ = PostCancellableTask(
-      *context->GetTaskRunner(TaskType::kJavascriptTimer), FROM_HERE,
+      *context->GetTaskRunner(TaskType::kJavascriptTimerImmediate), FROM_HERE,
       WTF::Bind(&PausableScriptExecutor::ExecuteAndDestroySelf,
                 WrapPersistent(this)));
 }
@@ -233,7 +238,7 @@ void PausableScriptExecutor::ExecuteAndDestroySelf() {
 
   auto* window = To<LocalDOMWindow>(GetExecutionContext());
   ScriptState::Scope script_scope(script_state_);
-  Vector<v8::Local<v8::Value>> results = executor_->Execute(window->GetFrame());
+  Vector<v8::Local<v8::Value>> results = executor_->Execute(window);
 
   // The script may have removed the frame, in which case contextDestroyed()
   // will have handled the disposal/callback.
@@ -252,16 +257,16 @@ void PausableScriptExecutor::ExecuteAndDestroySelf() {
 void PausableScriptExecutor::Dispose() {
   // Remove object as a ExecutionContextLifecycleObserver.
   // TODO(keishi): Remove IsIteratingOverObservers() check when
-  // HeapObserverList() supports removal while iterating.
+  // HeapObserverSet() supports removal while iterating.
   if (!GetExecutionContext()
-           ->ContextLifecycleObserverList()
+           ->ContextLifecycleObserverSet()
            .IsIteratingOverObservers()) {
     SetExecutionContext(nullptr);
   }
   task_handle_.Cancel();
 }
 
-void PausableScriptExecutor::Trace(Visitor* visitor) {
+void PausableScriptExecutor::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(executor_);
   ExecutionContextLifecycleObserver::Trace(visitor);

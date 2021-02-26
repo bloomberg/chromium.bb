@@ -8,6 +8,7 @@
  */
 
 // clang-format off
+import 'chrome://settings/lazy_load.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -62,7 +63,7 @@ suite('SettingsSecureDnsInteractive', function() {
 
   /** @type {!Array<!ResolverOption>} */
   const resolverList = [
-    {name: 'Custom', value: 'custom', policy: ''},
+    {name: 'Custom', value: '', policy: ''},
     {
       name: 'resolver1',
       value: 'resolver1_template',
@@ -192,7 +193,7 @@ suite('SettingsSecureDnsInteractive', function() {
   test('SecureDnsDropdownCustom', function() {
     webUIListenerCallback('secure-dns-setting-changed', {
       mode: SecureDnsMode.SECURE,
-      templates: ['custom'],
+      templates: [''],
       managementMode: SecureDnsUiManagementMode.NO_OVERRIDE,
     });
     flush();
@@ -202,7 +203,7 @@ suite('SettingsSecureDnsInteractive', function() {
         'none', getComputedStyle(testElement.$$('#privacyPolicy')).display);
     assertEquals(
         'block', getComputedStyle(testElement.$$('#secureDnsInput')).display);
-    assertEquals('custom', testElement.$$('#secureDnsInput').value);
+    assertEquals('', testElement.$$('#secureDnsInput').value);
   });
 
   test('SecureDnsDropdownChangeInSecureMode', async function() {
@@ -242,11 +243,11 @@ suite('SettingsSecureDnsInteractive', function() {
 
     // Change to custom
     testBrowserProxy.reset();
-    dropdownMenu.value = 'custom';
+    dropdownMenu.value = '';
     dropdownMenu.dispatchEvent(new Event('change'));
     args = await testBrowserProxy.whenCalled('recordUserDropdownInteraction');
     assertEquals(resolverList[2].value, args[0]);
-    assertEquals('custom', args[1]);
+    assertEquals('', args[1]);
     assertEquals(0, dropdownMenu.selectedIndex);
     assertEquals(
         'none', getComputedStyle(testElement.$$('#privacyPolicy')).display);
@@ -266,7 +267,7 @@ suite('SettingsSecureDnsInteractive', function() {
     dropdownMenu.value = resolverList[1].value;
     dropdownMenu.dispatchEvent(new Event('change'));
     args = await testBrowserProxy.whenCalled('recordUserDropdownInteraction');
-    assertEquals('custom', args[0]);
+    assertEquals('', args[0]);
     assertEquals(resolverList[1].value, args[1]);
     assertEquals(
         SecureDnsMode.SECURE, testElement.prefs.dns_over_https.mode.value);
@@ -274,11 +275,11 @@ suite('SettingsSecureDnsInteractive', function() {
         resolverList[1].value,
         testElement.prefs.dns_over_https.templates.value);
     testBrowserProxy.reset();
-    dropdownMenu.value = 'custom';
+    dropdownMenu.value = '';
     dropdownMenu.dispatchEvent(new Event('change'));
     args = await testBrowserProxy.whenCalled('recordUserDropdownInteraction');
     assertEquals(resolverList[1].value, args[0]);
-    assertEquals('custom', args[1]);
+    assertEquals('', args[1]);
     assertEquals('some_input', secureDnsInput.value);
   });
 

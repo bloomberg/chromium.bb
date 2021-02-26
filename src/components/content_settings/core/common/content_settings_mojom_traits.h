@@ -9,7 +9,8 @@
 
 #include "base/values.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/content_settings.mojom.h"
+#include "components/content_settings/core/common/content_settings.mojom-shared.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/base/values_mojom_traits.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
@@ -103,6 +104,10 @@ struct StructTraits<
     return r.setting_value;
   }
 
+  static const base::Time& expiration(const ContentSettingPatternSource& r) {
+    return r.expiration;
+  }
+
   static const std::string& source(const ContentSettingPatternSource& r) {
     return r.source;
   }
@@ -128,11 +133,6 @@ struct StructTraits<
   static const std::vector<ContentSettingPatternSource>& script_rules(
       const RendererContentSettingRules& r) {
     return r.script_rules;
-  }
-
-  static const std::vector<ContentSettingPatternSource>& client_hints_rules(
-      const RendererContentSettingRules& r) {
-    return r.client_hints_rules;
   }
 
   static const std::vector<ContentSettingPatternSource>& popup_redirect_rules(

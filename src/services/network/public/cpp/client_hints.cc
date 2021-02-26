@@ -11,6 +11,7 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "net/http/structured_headers.h"
@@ -72,8 +73,8 @@ const DecodeMap& GetDecodeMap() {
 
 }  // namespace
 
-base::Optional<std::vector<network::mojom::WebClientHintsType>> ParseAcceptCH(
-    const std::string& header) {
+base::Optional<std::vector<network::mojom::WebClientHintsType>>
+ParseClientHintsHeader(const std::string& header) {
   // Accept-CH is an sh-list of tokens; see:
   // https://httpwg.org/http-extensions/client-hints.html#rfc.section.3.1
   base::Optional<net::structured_headers::List> maybe_list =
@@ -102,6 +103,15 @@ base::Optional<std::vector<network::mojom::WebClientHintsType>> ParseAcceptCH(
       result.push_back(iter->second);
   }  // for list_item
   return base::make_optional(std::move(result));
+}
+
+base::TimeDelta ParseAcceptCHLifetime(const std::string& header) {
+  int64_t persist_duration_seconds = 0;
+  if (!base::StringToInt64(header, &persist_duration_seconds) ||
+      persist_duration_seconds <= 0)
+    return base::TimeDelta();
+
+  return base::TimeDelta::FromSeconds(persist_duration_seconds);
 }
 
 }  // namespace network

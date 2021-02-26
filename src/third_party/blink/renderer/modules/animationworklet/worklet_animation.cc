@@ -166,7 +166,8 @@ base::Optional<base::TimeDelta> CalculateStartTime(
     base::TimeDelta current_time,
     double playback_rate,
     AnimationTimeline& timeline) {
-  base::Optional<double> timeline_current_time_ms = timeline.currentTime();
+  base::Optional<double> timeline_current_time_ms =
+      timeline.CurrentTimeMilliseconds();
   return base::TimeDelta::FromMillisecondsD(timeline_current_time_ms.value()) -
          (current_time / playback_rate);
 }
@@ -327,11 +328,11 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
     if (!target)
       continue;
 
-    // TODO(yigu): Currently we have to keep a set of worklet animations in
-    // ElementAnimations so that the compositor knows that there are active
-    // worklet animations running. Ideally, this should be done via the regular
-    // Animation path, i.e., unify the logic between the two Animations.
-    // https://crbug.com/896249.
+    // TODO(crbug.com/896249): Currently we have to keep a set of worklet
+    // animations in ElementAnimations so that the compositor knows that there
+    // are active worklet animations running. Ideally, this should be done via
+    // the regular Animation path, i.e., unify the logic between the two
+    // Animations.
     target->EnsureElementAnimations().GetWorkletAnimations().insert(this);
     target->SetNeedsAnimationStyleRecalc();
   }
@@ -386,13 +387,15 @@ void WorkletAnimation::cancel() {
   has_started_ = false;
   local_times_.Fill(base::nullopt);
   running_on_main_thread_ = false;
-  // TODO(yigu): Because this animation has been detached and will not receive
-  // updates anymore, we have to update its value upon cancel. Similar to
-  // regular animations, we should not detach them immediately and update the
-  // value in the next frame. See https://crbug.com/883312.
+  // TODO(crbug.com/883312): Because this animation has been detached and will
+  // not receive updates anymore, we have to update its value upon cancel.
+  // Similar to regular animations, we should not detach them immediately and
+  // update the value in the next frame.
   if (IsActive(play_state_)) {
-    for (auto& effect : effects_)
-      effect->UpdateInheritedTime(base::nullopt, kTimingUpdateOnDemand);
+    for (auto& effect : effects_) {
+      effect->UpdateInheritedTime(base::nullopt, base::nullopt,
+                                  kTimingUpdateOnDemand);
+    }
   }
   SetPlayState(Animation::kIdle);
   SetCurrentTime(base::nullopt);
@@ -401,11 +404,11 @@ void WorkletAnimation::cancel() {
     Element* target = effect->EffectTarget();
     if (!target)
       continue;
-    // TODO(yigu): Currently we have to keep a set of worklet animations in
-    // ElementAnimations so that the compositor knows that there are active
-    // worklet animations running. Ideally, this should be done via the regular
-    // Animation path, i.e., unify the logic between the two Animations.
-    // https://crbug.com/896249.
+    // TODO(crbug.com/896249): Currently we have to keep a set of worklet
+    // animations in ElementAnimations so that the compositor knows that there
+    // are active worklet animations running. Ideally, this should be done via
+    // the regular Animation path, i.e., unify the logic between the two
+    // Animations.
     target->EnsureElementAnimations().GetWorkletAnimations().erase(this);
     target->SetNeedsAnimationStyleRecalc();
   }
@@ -476,7 +479,7 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
     effects_[i]->UpdateInheritedTime(
         local_times_[i] ? base::Optional<double>(local_times_[i]->InSecondsF())
                         : base::nullopt,
-        reason);
+        base::nullopt, reason);
   }
 }
 
@@ -592,8 +595,8 @@ bool WorkletAnimation::CanStartOnCompositor() {
 
   // If the scroll source is not composited, fall back to main thread.
   if (timeline_->IsScrollTimeline() &&
-      !CheckElementComposited(
-          *To<ScrollTimeline>(*timeline_).ResolvedScrollSource())) {
+      !CompositorAnimations::CheckUsesCompositedScrolling(
+          To<ScrollTimeline>(*timeline_).ResolvedScrollSource())) {
     return false;
   }
 
@@ -619,8 +622,8 @@ bool WorkletAnimation::StartOnCompositor() {
     // update the compositor to have the correct orientation and start/end
     // offset information.
     compositor_animation_ = CompositorAnimation::CreateWorkletAnimation(
-        id_, animator_name_, playback_rate_,
-        std::move(options_), std::move(effect_timings_));
+        id_, animator_name_, playback_rate_, std::move(options_),
+        std::move(effect_timings_));
     compositor_animation_->SetAnimationDelegate(this);
   }
 
@@ -668,16 +671,9 @@ bool WorkletAnimation::UpdateOnCompositor() {
     StartEffectOnCompositor(compositor_animation_.get(), GetEffect());
   }
 
-  if (timeline_->IsScrollTimeline()) {
-    auto& timeline = To<ScrollTimeline>(*timeline_);
-    Node* scroll_source = timeline.ResolvedScrollSource();
-    auto start_scroll_offset = timeline.GetResolvedStartScrollOffset();
-    auto end_scroll_offset = timeline.GetResolvedEndScrollOffset();
+  if (timeline_->IsScrollTimeline())
+    timeline_->UpdateCompositorTimeline();
 
-    compositor_animation_->UpdateScrollTimeline(
-        scroll_timeline_util::GetCompositorScrollElementId(scroll_source),
-        start_scroll_offset, end_scroll_offset);
-  }
   compositor_animation_->UpdatePlaybackRate(playback_rate_);
   return true;
 }
@@ -734,7 +730,7 @@ base::Optional<base::TimeDelta> WorkletAnimation::InitialCurrentTime() const {
 
   base::Optional<base::TimeDelta> starting_time =
       timeline_->InitialStartTimeForAnimations();
-  base::Optional<double> current_time = timeline_->currentTime();
+  base::Optional<double> current_time = timeline_->CurrentTimeMilliseconds();
 
   if (!starting_time || !current_time) {
     return base::nullopt;
@@ -796,7 +792,8 @@ base::Optional<base::TimeDelta> WorkletAnimation::CurrentTimeInternal() const {
   // OR
   // - Current scroll offset is greater than or equal to endScrollOffset and
   //   fill mode is none or backwards.
-  base::Optional<double> timeline_time_ms = timeline_->currentTime();
+  base::Optional<double> timeline_time_ms =
+      timeline_->CurrentTimeMilliseconds();
   if (!timeline_time_ms)
     return base::nullopt;
 
@@ -865,7 +862,7 @@ void WorkletAnimation::Dispose() {
   DestroyCompositorAnimation();
 }
 
-void WorkletAnimation::Trace(Visitor* visitor) {
+void WorkletAnimation::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(effects_);
   visitor->Trace(timeline_);

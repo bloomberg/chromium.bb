@@ -126,12 +126,22 @@ void NetworkHandler::InitializePrefServices(
       ui_proxy_config_service_.get());
   network_metadata_store_.reset(new NetworkMetadataStore(
       network_configuration_handler_.get(), network_connection_handler_.get(),
-      network_state_handler_.get(), logged_in_profile_prefs, device_prefs));
+      network_state_handler_.get(), logged_in_profile_prefs, device_prefs,
+      is_enterprise_managed_));
 }
 
 void NetworkHandler::ShutdownPrefServices() {
   ui_proxy_config_service_.reset();
   network_metadata_store_.reset();
+}
+
+bool NetworkHandler::HasUiProxyConfigService() {
+  return IsInitialized() && Get()->ui_proxy_config_service_.get();
+}
+
+UIProxyConfigService* NetworkHandler::GetUiProxyConfigService() {
+  DCHECK(HasUiProxyConfigService());
+  return Get()->ui_proxy_config_service_.get();
 }
 
 NetworkStateHandler* NetworkHandler::network_state_handler() {
@@ -186,11 +196,6 @@ GeolocationHandler* NetworkHandler::geolocation_handler() {
 ProhibitedTechnologiesHandler*
 NetworkHandler::prohibited_technologies_handler() {
   return prohibited_technologies_handler_.get();
-}
-
-UIProxyConfigService* NetworkHandler::ui_proxy_config_service() {
-  CHECK(ui_proxy_config_service_.get());
-  return ui_proxy_config_service_.get();
 }
 
 }  // namespace chromeos

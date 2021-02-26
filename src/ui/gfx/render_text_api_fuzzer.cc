@@ -9,12 +9,17 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/render_text.h"
+
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#include "base/test/test_discardable_memory_allocator.h"
+#endif
 
 namespace {
 
@@ -32,10 +37,18 @@ struct Environment {
                           TestTimeouts::Initialize(),
                           base::test::TaskEnvironment::MainThreadType::UI)) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
-
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+    // Some platforms require discardable memory to use bitmap fonts.
+    base::DiscardableMemoryAllocator::SetInstance(
+        &discardable_memory_allocator);
+#endif
     CHECK(base::i18n::InitializeICU());
     gfx::FontList::SetDefaultFontDescription(kFontDescription);
   }
+
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+  base::TestDiscardableMemoryAllocator discardable_memory_allocator;
+#endif
 
   base::AtExitManager at_exit_manager;
   base::test::TaskEnvironment task_environment;
@@ -72,7 +85,10 @@ enum class RenderTextAPI {
   kIsGraphemeBoundary,
   kIndexOfAdjacentGrapheme,
   kSetObscuredGlyphSpacing,
-  kMaxValue = kSetObscuredGlyphSpacing
+  kSetDisplayRect,
+  kGetSubstringBounds,
+  kGetCursorSpan,
+  kMaxValue = kGetCursorSpan
 };
 
 gfx::DirectionalityMode ConsumeDirectionalityMode(FuzzedDataProvider* fdp) {
@@ -331,6 +347,21 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       case RenderTextAPI::kSetObscuredGlyphSpacing:
         render_text->SetObscuredGlyphSpacing(
             fdp.ConsumeIntegralInRange<size_t>(0, 10));
+        break;
+      case RenderTextAPI::kSetDisplayRect:
+        render_text->SetDisplayRect(
+            gfx::Rect(fdp.ConsumeIntegralInRange<int>(-30, 30),
+                      fdp.ConsumeIntegralInRange<int>(-30, 30),
+                      fdp.ConsumeIntegralInRange<int>(0, 200),
+                      fdp.ConsumeIntegralInRange<int>(0, 30)));
+        break;
+      case RenderTextAPI::kGetSubstringBounds:
+        render_text->GetSubstringBounds(
+            ConsumeRange(&fdp, render_text->text().length()));
+        break;
+      case RenderTextAPI::kGetCursorSpan:
+        render_text->GetCursorSpan(
+            ConsumeRange(&fdp, render_text->text().length()));
         break;
     }
   }

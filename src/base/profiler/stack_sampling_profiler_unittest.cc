@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>
 #include <cstdlib>
 #include <memory>
 #include <set>
@@ -20,18 +19,20 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/profiler/profiler_buildflags.h"
 #include "base/profiler/sample_metadata.h"
 #include "base/profiler/stack_sampler.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/profiler/stack_sampling_profiler_test_util.h"
 #include "base/profiler/unwinder.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -47,7 +48,9 @@
 
 // STACK_SAMPLING_PROFILER_SUPPORTED is used to conditionally enable the tests
 // below for supported platforms (currently Win x64 and Mac x64).
-#if defined(_WIN64) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || \
+    (defined(OS_MAC) && defined(ARCH_CPU_X86_64)) || \
+    (defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE))
 #define STACK_SAMPLING_PROFILER_SUPPORTED 1
 #endif
 
@@ -186,8 +189,8 @@ void SynchronousUnloadNativeLibrary(NativeLibrary library) {
          ::GetLastError() != ERROR_MOD_NOT_FOUND) {
     PlatformThread::Sleep(TimeDelta::FromMilliseconds(1));
   }
-#elif defined(OS_MACOSX)
-// Unloading a library on the Mac is synchronous.
+#elif defined(OS_APPLE) || defined(OS_ANDROID)
+// Unloading a library on Mac and Android is synchronous.
 #else
   NOTIMPLEMENTED();
 #endif
@@ -213,7 +216,8 @@ struct TestProfilerInfo {
                        profile = std::move(result_profile);
                        completed.Signal();
                      })),
-                 nullptr,
+                 CreateCoreUnwindersFactoryForTesting(module_cache),
+                 RepeatingClosure(),
                  delegate) {}
 
   // The order here is important to ensure objects being referenced don't get
@@ -266,10 +270,10 @@ size_t WaitForSamplingComplete(
     const std::vector<std::unique_ptr<TestProfilerInfo>>& infos) {
   // Map unique_ptrs to something that WaitMany can accept.
   std::vector<WaitableEvent*> sampling_completed_rawptrs(infos.size());
-  std::transform(infos.begin(), infos.end(), sampling_completed_rawptrs.begin(),
-                 [](const std::unique_ptr<TestProfilerInfo>& info) {
-                   return &info.get()->completed;
-                 });
+  ranges::transform(infos, sampling_completed_rawptrs.begin(),
+                    [](const std::unique_ptr<TestProfilerInfo>& info) {
+                      return &info.get()->completed;
+                    });
   // Wait for one profiler to finish.
   return WaitableEvent::WaitMany(sampling_completed_rawptrs.data(),
                                  sampling_completed_rawptrs.size());
@@ -347,7 +351,8 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
                 profile = std::move(result_profile);
                 sampling_thread_completed.Signal();
               })),
-      nullptr, &test_delegate);
+      CreateCoreUnwindersFactoryForTesting(module_cache), RepeatingClosure(),
+      &test_delegate);
 
   profiler.Start();
 
@@ -443,10 +448,14 @@ class StackSamplingProfilerTest : public testing::Test {
 // Checks that the basic expected information is present in sampled frames.
 //
 // macOS ASAN is not yet supported - crbug.com/718628.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
-#define MAYBE_Basic Basic
-#else
+//
+// TODO(https://crbug.com/1100175): Enable this test again for Android with
+// ASAN. This is now disabled because the android-asan bot fails.
+#if (defined(ADDRESS_SANITIZER) && defined(OS_APPLE)) || \
+    (defined(ADDRESS_SANITIZER) && defined(OS_ANDROID))
 #define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
   UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
@@ -465,12 +474,19 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
 // A simple unwinder that always generates one frame then aborts the stack walk.
 class TestAuxUnwinder : public Unwinder {
  public:
-  TestAuxUnwinder(const Frame& frame_to_report)
-      : frame_to_report_(frame_to_report) {}
+  TestAuxUnwinder(const Frame& frame_to_report,
+                  base::RepeatingClosure add_initial_modules_callback)
+      : frame_to_report_(frame_to_report),
+        add_initial_modules_callback_(std::move(add_initial_modules_callback)) {
+  }
 
   TestAuxUnwinder(const TestAuxUnwinder&) = delete;
   TestAuxUnwinder& operator=(const TestAuxUnwinder&) = delete;
 
+  void AddInitialModules(ModuleCache* module_cache) override {
+    if (add_initial_modules_callback_)
+      add_initial_modules_callback_.Run();
+  }
   bool CanUnwindFrom(const Frame& current_frame) const override { return true; }
 
   UnwindResult TryUnwind(RegisterContext* thread_context,
@@ -483,15 +499,18 @@ class TestAuxUnwinder : public Unwinder {
 
  private:
   const Frame frame_to_report_;
+  base::RepeatingClosure add_initial_modules_callback_;
 };
 
 // Checks that the profiler handles stacks containing dynamically-allocated
 // stack memory.
 // macOS ASAN is not yet supported - crbug.com/718628.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
-#define MAYBE_Alloca Alloca
-#else
+// Android is not supported since Chrome unwind tables don't support dynamic
+// frames.
+#if (defined(ADDRESS_SANITIZER) && defined(OS_APPLE)) || defined(OS_ANDROID)
 #define MAYBE_Alloca DISABLED_Alloca
+#else
+#define MAYBE_Alloca Alloca
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
   UnwindScenario scenario(BindRepeating(&CallWithAlloca));
@@ -506,10 +525,16 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
 // Checks that a stack that runs through another library produces a stack with
 // the expected functions.
 // macOS ASAN is not yet supported - crbug.com/718628.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
-#define MAYBE_OtherLibrary OtherLibrary
-#else
+// Android is not supported when EXCLUDE_UNWIND_TABLES |other_library| doesn't
+// have unwind tables.
+// TODO(https://crbug.com/1100175): Enable this test again for Android with
+// ASAN. This is now disabled because the android-asan bot fails.
+#if (defined(ADDRESS_SANITIZER) && defined(OS_APPLE)) ||         \
+    (defined(OS_ANDROID) && BUILDFLAG(EXCLUDE_UNWIND_TABLES)) || \
+    (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
 #define MAYBE_OtherLibrary DISABLED_OtherLibrary
+#else
+#define MAYBE_OtherLibrary OtherLibrary
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
   ScopedNativeLibrary other_library(LoadOtherLibrary());
@@ -526,10 +551,16 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
 // Checks that a stack that runs through a library that is unloading produces a
 // stack, and doesn't crash.
 // Unloading is synchronous on the Mac, so this test is inapplicable.
-#if !defined(OS_MACOSX)
-#define MAYBE_UnloadingLibrary UnloadingLibrary
-#else
+// Android is not supported when EXCLUDE_UNWIND_TABLES |other_library| doesn't
+// have unwind tables.
+// TODO(https://crbug.com/1100175): Enable this test again for Android with
+// ASAN. This is now disabled because the android-asan bot fails.
+#if defined(OS_APPLE) ||                                         \
+    (defined(OS_ANDROID) && BUILDFLAG(EXCLUDE_UNWIND_TABLES)) || \
+    (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
 #define MAYBE_UnloadingLibrary DISABLED_UnloadingLibrary
+#else
+#define MAYBE_UnloadingLibrary UnloadingLibrary
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_UnloadingLibrary) {
   TestLibraryUnload(false, module_cache());
@@ -538,10 +569,11 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_UnloadingLibrary) {
 // Checks that a stack that runs through a library that has been unloaded
 // produces a stack, and doesn't crash.
 // macOS ASAN is not yet supported - crbug.com/718628.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
-#define MAYBE_UnloadedLibrary UnloadedLibrary
-#else
+// Android is not supported since modules are found before unwinding.
+#if (defined(ADDRESS_SANITIZER) && defined(OS_APPLE)) || defined(OS_ANDROID)
 #define MAYBE_UnloadedLibrary DISABLED_UnloadedLibrary
+#else
+#define MAYBE_UnloadedLibrary UnloadedLibrary
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_UnloadedLibrary) {
   TestLibraryUnload(true, module_cache());
@@ -568,7 +600,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopWithoutStarting) {
                     [&profile, &sampling_completed](Profile result_profile) {
                       profile = std::move(result_profile);
                       sampling_completed.Signal();
-                    })));
+                    })),
+            CreateCoreUnwindersFactoryForTesting(module_cache()));
 
         profiler.Stop();  // Constructed but never started.
         EXPECT_FALSE(sampling_completed.IsSignaled());
@@ -706,6 +739,73 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInterSampleInterval) {
       }));
 }
 
+PROFILER_TEST_F(StackSamplingProfilerTest, GetNextSampleTime_NormalExecution) {
+  const auto& GetNextSampleTime =
+      StackSamplingProfiler::TestPeer::GetNextSampleTime;
+
+  const TimeTicks scheduled_current_sample_time = TimeTicks::UnixEpoch();
+  const TimeDelta sampling_interval = TimeDelta::FromMilliseconds(10);
+
+  // When executing the sample at exactly the scheduled time the next sample
+  // should be one interval later.
+  EXPECT_EQ(scheduled_current_sample_time + sampling_interval,
+            GetNextSampleTime(scheduled_current_sample_time, sampling_interval,
+                              scheduled_current_sample_time));
+
+  // When executing the sample less than half an interval after the scheduled
+  // time the next sample also should be one interval later.
+  EXPECT_EQ(scheduled_current_sample_time + sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 0.4 * sampling_interval));
+
+  // When executing the sample less than half an interval before the scheduled
+  // time the next sample also should be one interval later. This is not
+  // expected to occur in practice since delayed tasks never run early.
+  EXPECT_EQ(scheduled_current_sample_time + sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time - 0.4 * sampling_interval));
+}
+
+PROFILER_TEST_F(StackSamplingProfilerTest, GetNextSampleTime_DelayedExecution) {
+  const auto& GetNextSampleTime =
+      StackSamplingProfiler::TestPeer::GetNextSampleTime;
+
+  const TimeTicks scheduled_current_sample_time = TimeTicks::UnixEpoch();
+  const TimeDelta sampling_interval = TimeDelta::FromMilliseconds(10);
+
+  // When executing the sample between 0.5 and 1.5 intervals after the scheduled
+  // time the next sample should be two intervals later.
+  EXPECT_EQ(scheduled_current_sample_time + 2 * sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 0.6 * sampling_interval));
+  EXPECT_EQ(scheduled_current_sample_time + 2 * sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 1.0 * sampling_interval));
+  EXPECT_EQ(scheduled_current_sample_time + 2 * sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 1.4 * sampling_interval));
+
+  // Similarly when executing the sample between 9.5 and 10.5 intervals after
+  // the scheduled time the next sample should be 11 intervals later.
+  EXPECT_EQ(scheduled_current_sample_time + 11 * sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 9.6 * sampling_interval));
+  EXPECT_EQ(scheduled_current_sample_time + 11 * sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 10.0 * sampling_interval));
+  EXPECT_EQ(scheduled_current_sample_time + 11 * sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 10.4 * sampling_interval));
+}
+
 // Checks that we can destroy the profiler while profiling.
 PROFILER_TEST_F(StackSamplingProfilerTest, DestroyProfilerWhileProfiling) {
   SamplingParams params;
@@ -720,8 +820,9 @@ PROFILER_TEST_F(StackSamplingProfilerTest, DestroyProfilerWhileProfiling) {
         BindLambdaForTesting([&profile](Profile result_profile) {
           profile = std::move(result_profile);
         }));
-    profiler.reset(new StackSamplingProfiler(target_thread_token, params,
-                                             std::move(profile_builder)));
+    profiler.reset(new StackSamplingProfiler(
+        target_thread_token, params, std::move(profile_builder),
+        CreateCoreUnwindersFactoryForTesting(module_cache())));
     profiler->Start();
     profiler.reset();
 
@@ -1072,7 +1173,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleSampledThreads) {
               [&profile1, &sampling_thread_completed1](Profile result_profile) {
                 profile1 = std::move(result_profile);
                 sampling_thread_completed1.Signal();
-              })));
+              })),
+      CreateCoreUnwindersFactoryForTesting(module_cache()));
 
   WaitableEvent sampling_thread_completed2(
       WaitableEvent::ResetPolicy::MANUAL,
@@ -1085,7 +1187,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleSampledThreads) {
               [&profile2, &sampling_thread_completed2](Profile result_profile) {
                 profile2 = std::move(result_profile);
                 sampling_thread_completed2.Signal();
-              })));
+              })),
+      CreateCoreUnwindersFactoryForTesting(module_cache()));
 
   // Finally the real work.
   profiler1.Start();
@@ -1120,8 +1223,8 @@ class ProfilerThread : public SimpleThread {
                       BindLambdaForTesting([this](Profile result_profile) {
                         profile_ = std::move(result_profile);
                         completed_.Signal();
-                      }))) {}
-
+                      })),
+                  CreateCoreUnwindersFactoryForTesting(module_cache)) {}
   void Run() override {
     run_.Wait();
     profiler_.Start();
@@ -1190,6 +1293,12 @@ PROFILER_TEST_F(StackSamplingProfilerTest, AddAuxUnwinder_BeforeStart) {
 
   UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
 
+  int add_initial_modules_invocation_count = 0;
+  const auto add_initial_modules_callback =
+      [&add_initial_modules_invocation_count]() {
+        ++add_initial_modules_invocation_count;
+      };
+
   Profile profile;
   WithTargetThread(
       &scenario,
@@ -1206,12 +1315,16 @@ PROFILER_TEST_F(StackSamplingProfilerTest, AddAuxUnwinder_BeforeStart) {
                                              Profile result_profile) {
                       profile = std::move(result_profile);
                       sampling_thread_completed.Signal();
-                    })));
-            profiler.AddAuxUnwinder(
-                std::make_unique<TestAuxUnwinder>(Frame(23, nullptr)));
+                    })),
+                CreateCoreUnwindersFactoryForTesting(module_cache()));
+            profiler.AddAuxUnwinder(std::make_unique<TestAuxUnwinder>(
+                Frame(23, nullptr),
+                BindLambdaForTesting(add_initial_modules_callback)));
             profiler.Start();
             sampling_thread_completed.Wait();
           }));
+
+  ASSERT_EQ(1, add_initial_modules_invocation_count);
 
   // The sample should have one frame from the context values and one from the
   // TestAuxUnwinder.
@@ -1230,6 +1343,12 @@ PROFILER_TEST_F(StackSamplingProfilerTest, AddAuxUnwinder_AfterStart) {
 
   UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
 
+  int add_initial_modules_invocation_count = 0;
+  const auto add_initial_modules_callback =
+      [&add_initial_modules_invocation_count]() {
+        ++add_initial_modules_invocation_count;
+      };
+
   Profile profile;
   WithTargetThread(
       &scenario,
@@ -1246,12 +1365,16 @@ PROFILER_TEST_F(StackSamplingProfilerTest, AddAuxUnwinder_AfterStart) {
                                              Profile result_profile) {
                       profile = std::move(result_profile);
                       sampling_thread_completed.Signal();
-                    })));
+                    })),
+                CreateCoreUnwindersFactoryForTesting(module_cache()));
             profiler.Start();
-            profiler.AddAuxUnwinder(
-                std::make_unique<TestAuxUnwinder>(Frame(23, nullptr)));
+            profiler.AddAuxUnwinder(std::make_unique<TestAuxUnwinder>(
+                Frame(23, nullptr),
+                BindLambdaForTesting(add_initial_modules_callback)));
             sampling_thread_completed.Wait();
           }));
+
+  ASSERT_EQ(1, add_initial_modules_invocation_count);
 
   // The sample should have one frame from the context values and one from the
   // TestAuxUnwinder.
@@ -1286,11 +1409,12 @@ PROFILER_TEST_F(StackSamplingProfilerTest, AddAuxUnwinder_AfterStop) {
                                              Profile result_profile) {
                       profile = std::move(result_profile);
                       sampling_thread_completed.Signal();
-                    })));
+                    })),
+                CreateCoreUnwindersFactoryForTesting(module_cache()));
             profiler.Start();
             profiler.Stop();
-            profiler.AddAuxUnwinder(
-                std::make_unique<TestAuxUnwinder>(Frame(23, nullptr)));
+            profiler.AddAuxUnwinder(std::make_unique<TestAuxUnwinder>(
+                Frame(23, nullptr), base::RepeatingClosure()));
             sampling_thread_completed.Wait();
           }));
 
@@ -1360,7 +1484,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest,
                     BindLambdaForTesting([&profile](Profile result_profile) {
                       profile = std::move(result_profile);
                     })),
-                nullptr, &post_sample_invoker);
+                CreateCoreUnwindersFactoryForTesting(module_cache()),
+                RepeatingClosure(), &post_sample_invoker);
             profiler.Start();
             // Wait for 5 samples to be collected.
             for (int i = 0; i < 5; ++i)

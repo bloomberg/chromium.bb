@@ -95,16 +95,12 @@ void AppIconSource::StartDataRequest(
 
   apps::AppServiceProxy* app_service_proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
-  if (!app_service_proxy) {
-    LoadDefaultImage(std::move(callback));
-    return;
-  }
 
   const apps::mojom::AppType app_type =
       app_service_proxy->AppRegistryCache().GetAppType(app_id);
   constexpr bool allow_placeholder_icon = false;
   app_service_proxy->LoadIcon(
-      app_type, app_id, apps::mojom::IconCompression::kCompressed, size_in_dip,
+      app_type, app_id, apps::mojom::IconType::kCompressed, size_in_dip,
       allow_placeholder_icon,
       base::BindOnce(&RunCallback, std::move(callback)));
 }

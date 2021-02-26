@@ -220,7 +220,7 @@ TEST_F(FloatingAccessibilityControllerTest, LocaleChangeObserver) {
   // RTL should position the menu on the bottom left.
   base::i18n::SetICUDefaultLocale("he");
   // Trigger the LocaleChangeObserver, which should cause a layout of the menu.
-  ash::LocaleUpdateController::Get()->OnLocaleChanged(
+  ash::LocaleUpdateController::Get()->ConfirmLocaleChange(
       "en", "en", "he", base::DoNothing::Once<ash::LocaleNotificationResult>());
   EXPECT_TRUE(base::i18n::IsRTL());
   EXPECT_LT(
@@ -229,8 +229,31 @@ TEST_F(FloatingAccessibilityControllerTest, LocaleChangeObserver) {
 
   // LTR should position the menu on the bottom right.
   base::i18n::SetICUDefaultLocale("en");
-  ash::LocaleUpdateController::Get()->OnLocaleChanged(
+  ash::LocaleUpdateController::Get()->ConfirmLocaleChange(
       "he", "he", "en", base::DoNothing::Once<ash::LocaleNotificationResult>());
+  EXPECT_FALSE(base::i18n::IsRTL());
+  EXPECT_LT(GetMenuViewBounds().ManhattanDistanceToPoint(
+                window_bounds.bottom_right()),
+            kMenuViewBoundsBuffer);
+}
+
+TEST_F(FloatingAccessibilityControllerTest,
+       LocaleChangeObserverWithNoNotification) {
+  SetUpVisibleMenu();
+  gfx::Rect window_bounds = Shell::GetPrimaryRootWindow()->bounds();
+
+  // RTL should position the menu on the bottom left.
+  base::i18n::SetICUDefaultLocale("he");
+  // Trigger the LocaleChangeObserver, which should cause a layout of the menu.
+  ash::LocaleUpdateController::Get()->OnLocaleChanged();
+  EXPECT_TRUE(base::i18n::IsRTL());
+  EXPECT_LT(
+      GetMenuViewBounds().ManhattanDistanceToPoint(window_bounds.bottom_left()),
+      kMenuViewBoundsBuffer);
+
+  // LTR should position the menu on the bottom right.
+  base::i18n::SetICUDefaultLocale("en");
+  ash::LocaleUpdateController::Get()->OnLocaleChanged();
   EXPECT_FALSE(base::i18n::IsRTL());
   EXPECT_LT(GetMenuViewBounds().ManhattanDistanceToPoint(
                 window_bounds.bottom_right()),
@@ -295,7 +318,7 @@ TEST_F(FloatingAccessibilityControllerTest, CollisionWithAutoclicksMenu) {
   accessibility_controller()->SetFloatingMenuPosition(
       FloatingMenuPosition::kTopRight);
 
-  accessibility_controller()->SetAutoclickEnabled(true);
+  accessibility_controller()->autoclick().SetEnabled(true);
 
   // Get the full root window bounds to test the position.
   gfx::Rect window_bounds = Shell::GetPrimaryRootWindow()->bounds();
@@ -362,7 +385,7 @@ TEST_F(FloatingAccessibilityControllerTest, ActiveFeaturesButtons) {
                          {FloatingAccessibilityView::ButtonId::kVirtualKeyboard,
                           AccessibilityControllerImpl::kVirtualKeyboard}};
 
-  accessibility_controller()->SetDictationAcceleratorDialogAccepted();
+  accessibility_controller()->dictation().SetDialogAccepted();
 
   gfx::Rect original_bounds = GetMenuViewBounds();
 
@@ -467,7 +490,7 @@ TEST_F(FloatingAccessibilityControllerTest, AccelatorFocusMenu) {
 }
 
 TEST_F(FloatingAccessibilityControllerTest, ShowingAlreadyEnabledFeatures) {
-  accessibility_controller()->SetDictationAcceleratorDialogAccepted();
+  accessibility_controller()->dictation().SetDialogAccepted();
   accessibility_controller()->select_to_speak().SetEnabled(true);
   accessibility_controller()->dictation().SetEnabled(true);
   accessibility_controller()->virtual_keyboard().SetEnabled(true);

@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/metal_util/hdr_copier_layer.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -267,23 +268,14 @@ bool CARendererLayerTree::RootLayer::WantsFullcreenLowPowerBackdrop() const {
   return found_video_layer;
 }
 
-void CARendererLayerTree::RootLayer::EnforceOnlyOneAVLayer() {
-  size_t video_layer_count = 0;
+void CARendererLayerTree::RootLayer::DowngradeAVLayersToCALayers() {
   for (auto& clip_layer : clip_and_sorting_layers) {
     for (auto& transform_layer : clip_layer.transform_layers) {
       for (auto& content_layer : transform_layer.content_layers) {
-        if (content_layer.type == CALayerType::kVideo)
-          video_layer_count += 1;
-      }
-    }
-  }
-  if (video_layer_count <= 1)
-    return;
-  for (auto& clip_layer : clip_and_sorting_layers) {
-    for (auto& transform_layer : clip_layer.transform_layers) {
-      for (auto& content_layer : transform_layer.content_layers) {
-        if (content_layer.type == CALayerType::kVideo)
+        if (content_layer.type == CALayerType::kVideo &&
+            content_layer.video_type_can_downgrade) {
           content_layer.type = CALayerType::kDefault;
+        }
       }
     }
   }
@@ -384,7 +376,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
     const gfx::RectF& contents_rect,
     const gfx::Rect& rect_in,
     unsigned background_color,
-    bool has_hdr_color_space,
+    const gfx::ColorSpace& io_surface_color_space,
     unsigned edge_aa_mask,
     float opacity,
     unsigned filter)
@@ -393,6 +385,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
       contents_rect(contents_rect),
       rect(rect_in),
       background_color(background_color),
+      io_surface_color_space(io_surface_color_space),
       ca_edge_aa_mask(0),
       opacity(opacity),
       ca_filter(filter == GL_LINEAR ? kCAFilterLinear : kCAFilterNearest) {
@@ -438,24 +431,24 @@ CARendererLayerTree::ContentLayer::ContentLayer(
   }
 
   // Determine which type of CALayer subclass we should use.
-  if (io_surface) {
-    switch (IOSurfaceGetPixelFormat(io_surface)) {
-      case kCVPixelFormatType_64RGBAHalf:
-      case kCVPixelFormatType_ARGB2101010LEPacked:
-        // HDR content can come in either as half-float or as 10-10-10-2.
-        if (has_hdr_color_space)
-          type = CALayerType::kHDRCopier;
-        break;
-      case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
-        // Only allow 4:2:0 frames which fill the layer's contents to be
-        // promoted to AV layers.
-        if (tree->allow_av_sample_buffer_display_layer_ &&
-            contents_rect == gfx::RectF(0, 0, 1, 1)) {
+  if (metal::ShouldUseHDRCopier(io_surface, io_surface_color_space)) {
+    type = CALayerType::kHDRCopier;
+  } else if (io_surface) {
+    // Only allow 4:2:0 frames which fill the layer's contents to be
+    // promoted to AV layers.
+    if (tree->allow_av_sample_buffer_display_layer_ &&
+        contents_rect == gfx::RectF(0, 0, 1, 1)) {
+      switch (IOSurfaceGetPixelFormat(io_surface)) {
+        case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
           type = CALayerType::kVideo;
-        }
-        break;
-      default:
-        break;
+          break;
+        case kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange:
+          type = CALayerType::kVideo;
+          video_type_can_downgrade = false;
+          break;
+        default:
+          break;
+      }
     }
   }
 
@@ -494,10 +487,12 @@ CARendererLayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
       contents_rect(layer.contents_rect),
       rect(layer.rect),
       background_color(layer.background_color),
+      io_surface_color_space(layer.io_surface_color_space),
       ca_edge_aa_mask(layer.ca_edge_aa_mask),
       opacity(layer.opacity),
       ca_filter(layer.ca_filter),
       type(layer.type),
+      video_type_can_downgrade(layer.video_type_can_downgrade),
       ca_layer(std::move(layer.ca_layer)),
       av_layer(std::move(layer.av_layer)) {
   DCHECK(!layer.ca_layer);
@@ -569,7 +564,7 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
     const CARendererLayerParams& params) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
-  bool has_hdr_color_space = false;
+  gfx::ColorSpace io_surface_color_space;
   if (params.image) {
     gl::GLImageIOSurface* io_surface_image =
         gl::GLImageIOSurface::FromGLImage(params.image);
@@ -583,11 +578,11 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
     // TODO(ccameron): If this indeed causes the bug to disappear, then
     // extirpate the CVPixelBufferRef path.
     // cv_pixel_buffer = io_surface_image->cv_pixel_buffer();
-    has_hdr_color_space = params.image->color_space().IsHDR();
+    io_surface_color_space = params.image->color_space();
   }
   content_layers.push_back(
       ContentLayer(tree, io_surface, cv_pixel_buffer, params.contents_rect,
-                   params.rect, params.background_color, has_hdr_color_space,
+                   params.rect, params.background_color, io_surface_color_space,
                    params.edge_aa_mask, params.opacity, params.filter));
 }
 
@@ -609,9 +604,9 @@ void CARendererLayerTree::RootLayer::CommitToCA(CALayer* superlayer,
     DLOG(ERROR) << "CARendererLayerTree root layer not attached to tree.";
   }
 
-  EnforceOnlyOneAVLayer();
-
   if (WantsFullcreenLowPowerBackdrop()) {
+    // In fullscreen low power mode there exists a single video layer on a
+    // solid black background.
     const gfx::RectF bg_rect(
         ScaleSize(gfx::SizeF(pixel_size), 1 / scale_factor));
     if (gfx::RectF([ca_layer frame]) != bg_rect)
@@ -623,6 +618,16 @@ void CARendererLayerTree::RootLayer::CommitToCA(CALayer* superlayer,
       [ca_layer setFrame:CGRectZero];
     if ([ca_layer backgroundColor])
       [ca_layer setBackgroundColor:nil];
+    // We know that we are not in fullscreen low power mode, so there is no
+    // power savings (and a slight power cost) to using
+    // AVSampleBufferDisplayLayer.
+    // https://crbug.com/1143477
+    // We also want to minimize our use of AVSampleBufferDisplayLayer because we
+    // don't track which video element corresponded to which CALayer, and
+    // AVSampleBufferDisplayLayer is not updated with the CATransaction.
+    // Combined, these can result in result in videos jumping around.
+    // https://crbug.com/923427
+    DowngradeAVLayersToCALayers();
   }
 
   for (size_t i = 0; i < clip_and_sorting_layers.size(); ++i) {
@@ -807,7 +812,10 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
 
   switch (type) {
     case CALayerType::kHDRCopier:
-      [ca_layer setContents:static_cast<id>(io_surface.get())];
+      if (update_contents) {
+        metal::UpdateHDRCopierLayer(ca_layer.get(), io_surface.get(),
+                                    io_surface_color_space);
+      }
       break;
     case CALayerType::kVideo:
       if (update_contents) {

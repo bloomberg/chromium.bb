@@ -28,11 +28,6 @@ const FEEDBACK_MIN_HEIGHT_LOGIN = 482;
 /** @type {number}
  * @const
  */
-const CONTENT_MARGIN_HEIGHT = 40;
-
-/** @type {number}
- * @const
- */
 const MAX_SCREENSHOT_WIDTH = 100;
 
 /** @type {string}
@@ -182,6 +177,36 @@ function checkForBluetoothKeywords(inputEvent) {
 }
 
 /**
+ * Updates the description-text box based on whether it was valid.
+ * If invalid, indicate an error to the user. If valid, remove indication of the
+ * error.
+ */
+function updateDescription(wasValid) {
+  // Set visibility of the alert text for users who don't use a screen
+  // reader.
+  $('description-empty-error').hidden = wasValid;
+
+  // Change the textarea's aria-labelled by to ensure the screen reader does
+  // (or doesn't) read the error, as appropriate.
+  // If it does read the error, it should do so _before_ it reads the normal
+  // description.
+  const description = $('description-text');
+  description.setAttribute(
+      'aria-labelledby',
+      (wasValid ? '' : 'description-empty-error ') + 'free-form-text');
+  // Indicate whether input is valid.
+  description.setAttribute('aria-invalid', !wasValid);
+  if (!wasValid) {
+    // Return focus to field so user can correct error.
+    description.focus();
+  }
+
+  // We may have added or removed a line of text, so make sure the app window
+  // is the right size.
+  resizeAppWindow();
+}
+
+/**
  * Sends the report; after the report is sent, we need to be redirected to
  * the landing page, but we shouldn't be able to navigate back, hence
  * we open the landing page in a new tab and sendReport closes this tab.
@@ -189,11 +214,13 @@ function checkForBluetoothKeywords(inputEvent) {
  */
 function sendReport() {
   if ($('description-text').value.length == 0) {
-    const description = $('description-text');
-    description.placeholder = loadTimeData.getString('noDescription');
-    description.focus();
+    updateDescription(false);
     return false;
   }
+  // This isn't strictly necessary, since if we get past this point we'll
+  // succeed, but for future-compatibility (and in case we later add more
+  // failure cases after this), re-hide the alert and reset the aria label.
+  updateDescription(true);
 
   // Prevent double clicking from sending additional reports.
   $('send-report-button').disabled = true;
@@ -302,11 +329,11 @@ function resizeAppWindow() {
     width = FEEDBACK_MIN_WIDTH;
   }
 
-  // We get the height by adding the titlebar height and the content height +
-  // margins. We can't get the margins for the content-pane here by using
-  // style.margin - the variable seems to not exist.
-  let height = $('title-bar').scrollHeight + $('content-pane').scrollHeight +
-      CONTENT_MARGIN_HEIGHT;
+  // Note: If the display is shorter than this (e.g. if the user has it set to
+  // largest display size), the chrome app api(?) will cap the height of the
+  // window at the height of the screen and add a scroll bar. If we switch away
+  // from chrome apps, make sure that this behavior is the same.
+  let height = document.body.scrollHeight;
 
   let minHeight = FEEDBACK_MIN_HEIGHT;
   if (feedbackInfo.flow == chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
@@ -314,7 +341,8 @@ function resizeAppWindow() {
   }
   height = Math.max(height, minHeight);
 
-  chrome.app.window.current().resizeTo(width, height);
+  chrome.app.window.current().innerBounds.width = width;
+  chrome.app.window.current().innerBounds.height = height;
 }
 
 /**
@@ -439,11 +467,13 @@ function initialize() {
         $('attach-file').hidden = true;
       }
 
-      // No URL and file attachment for login screen feedback.
+      // No URL, file attachment, or window minimizing for login screen
+      // feedback.
       if (feedbackInfo.flow == chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
         $('page-url').hidden = true;
         $('attach-file-container').hidden = true;
         $('attach-file-note').hidden = true;
+        $('minimize-button').hidden = true;
       }
 
       // <if expr="chromeos">
@@ -512,67 +542,71 @@ function initialize() {
               true /* useAppWindow */);
         }
 
-        const legalHelpPageUrlElement = $('legal-help-page-url');
-        if (legalHelpPageUrlElement) {
-          setupLinkHandlers(
-              legalHelpPageUrlElement, FEEDBACK_LEGAL_HELP_URL,
-              false /* useAppWindow */);
-        }
+        // The following URLs don't open on login screen, so hide them.
+        // TODO(crbug.com/1116383): Find a solution to display them properly.
+        if (feedbackInfo.flow != chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
+          const legalHelpPageUrlElement = $('legal-help-page-url');
+          if (legalHelpPageUrlElement) {
+            setupLinkHandlers(
+                legalHelpPageUrlElement, FEEDBACK_LEGAL_HELP_URL,
+                false /* useAppWindow */);
+          }
 
-        const privacyPolicyUrlElement = $('privacy-policy-url');
-        if (privacyPolicyUrlElement) {
-          setupLinkHandlers(
-              privacyPolicyUrlElement, FEEDBACK_PRIVACY_POLICY_URL,
-              false /* useAppWindow */);
-        }
+          const privacyPolicyUrlElement = $('privacy-policy-url');
+          if (privacyPolicyUrlElement) {
+            setupLinkHandlers(
+                privacyPolicyUrlElement, FEEDBACK_PRIVACY_POLICY_URL,
+                false /* useAppWindow */);
+          }
 
-        const termsOfServiceUrlElement = $('terms-of-service-url');
-        if (termsOfServiceUrlElement) {
-          setupLinkHandlers(
-              termsOfServiceUrlElement, FEEDBACK_TERM_OF_SERVICE_URL,
-              false /* useAppWindow */);
-        }
+          const termsOfServiceUrlElement = $('terms-of-service-url');
+          if (termsOfServiceUrlElement) {
+            setupLinkHandlers(
+                termsOfServiceUrlElement, FEEDBACK_TERM_OF_SERVICE_URL,
+                false /* useAppWindow */);
+          }
 
-        const bluetoothLogsInfoLinkElement = $('bluetooth-logs-info-link');
-        if (bluetoothLogsInfoLinkElement) {
-          bluetoothLogsInfoLinkElement.onclick = function(e) {
-            e.preventDefault();
-
-            chrome.app.window.create(
-                '/html/bluetooth_logs_info.html',
-                {width: 400, height: 120, resizable: false},
-                function(appWindow) {
-                  appWindow.contentWindow.onload = function() {
-                    i18nTemplate.process(
-                        appWindow.contentWindow.document, loadTimeData);
-                  };
-                });
-
-            bluetoothLogsInfoLinkElement.onauxclick = function(e) {
+          const bluetoothLogsInfoLinkElement = $('bluetooth-logs-info-link');
+          if (bluetoothLogsInfoLinkElement) {
+            bluetoothLogsInfoLinkElement.onclick = function(e) {
               e.preventDefault();
+
+              chrome.app.window.create(
+                  '/html/bluetooth_logs_info.html',
+                  {width: 400, height: 120, resizable: false},
+                  function(appWindow) {
+                    appWindow.contentWindow.onload = function() {
+                      i18nTemplate.process(
+                          appWindow.contentWindow.document, loadTimeData);
+                    };
+                  });
+
+              bluetoothLogsInfoLinkElement.onauxclick = function(e) {
+                e.preventDefault();
+              };
             };
-          };
-        }
+          }
 
-        const assistantLogsInfoLinkElement = $('assistant-logs-info-link');
-        if (assistantLogsInfoLinkElement) {
-          assistantLogsInfoLinkElement.onclick = function(e) {
-            e.preventDefault();
-
-            chrome.app.window.create(
-                '/html/assistant_logs_info.html',
-                {width: 400, height: 120, resizable: false, frame: 'none'},
-                function(appWindow) {
-                  appWindow.contentWindow.onload = function() {
-                    i18nTemplate.process(
-                        appWindow.contentWindow.document, loadTimeData);
-                  };
-                });
-
-            assistantLogsInfoLinkElement.onauxclick = function(e) {
+          const assistantLogsInfoLinkElement = $('assistant-logs-info-link');
+          if (assistantLogsInfoLinkElement) {
+            assistantLogsInfoLinkElement.onclick = function(e) {
               e.preventDefault();
+
+              chrome.app.window.create(
+                  '/html/assistant_logs_info.html',
+                  {width: 400, height: 120, resizable: false, frame: 'none'},
+                  function(appWindow) {
+                    appWindow.contentWindow.onload = function() {
+                      i18nTemplate.process(
+                          appWindow.contentWindow.document, loadTimeData);
+                    };
+                  });
+
+              assistantLogsInfoLinkElement.onauxclick = function(e) {
+                e.preventDefault();
+              };
             };
-          };
+          }
         }
 
         // Make sure our focus starts on the description field.

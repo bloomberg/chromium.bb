@@ -23,6 +23,7 @@ class CFX_Font;
 class CFX_PathData;
 class CPSFont;
 class TextCharPos;
+struct CFX_FillRenderOptions;
 struct FXDIB_ResampleOptions;
 
 struct EncoderIface {
@@ -56,15 +57,14 @@ class CFX_PSRenderer {
   void Init(const RetainPtr<IFX_RetainableWriteStream>& stream,
             int pslevel,
             int width,
-            int height,
-            bool bCmykOutput);
+            int height);
   bool StartRendering();
   void EndRendering();
   void SaveState();
   void RestoreState(bool bKeepSaved);
   void SetClip_PathFill(const CFX_PathData* pPathData,
                         const CFX_Matrix* pObject2Device,
-                        int fill_mode);
+                        const CFX_FillRenderOptions& fill_options);
   void SetClip_PathStroke(const CFX_PathData* pPathData,
                           const CFX_Matrix* pObject2Device,
                           const CFX_GraphStateData* pGraphState);
@@ -74,7 +74,7 @@ class CFX_PSRenderer {
                 const CFX_GraphStateData* pGraphState,
                 uint32_t fill_color,
                 uint32_t stroke_color,
-                int fill_mode);
+                const CFX_FillRenderOptions& fill_options);
   bool SetDIBits(const RetainPtr<CFX_DIBBase>& pBitmap,
                  uint32_t color,
                  int dest_left,
@@ -122,7 +122,6 @@ class CFX_PSRenderer {
 
   bool m_bInited = false;
   bool m_bGraphStateSet = false;
-  bool m_bCmykOutput;
   bool m_bColorSet = false;
   int m_PSLevel = 0;
   uint32_t m_LastColor = 0;

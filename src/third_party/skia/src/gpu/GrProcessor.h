@@ -18,7 +18,6 @@
 #include "src/gpu/GrSurfaceProxyPriv.h"
 #include "src/gpu/GrTextureProxy.h"
 
-class GrContext;
 class GrResourceProvider;
 
 /**
@@ -60,15 +59,16 @@ private:
 class GrProcessor {
 public:
     enum ClassID {
+        kNull_ClassID,  // Reserved ID for missing (null) processors
+
         kBigKeyProcessor_ClassID,
+        kBlendFragmentProcessor_ClassID,
         kBlockInputFragmentProcessor_ClassID,
         kButtCapStrokedCircleGeometryProcessor_ClassID,
         kCircleGeometryProcessor_ClassID,
         kCircularRRectEffect_ClassID,
         kClockwiseTestProcessor_ClassID,
         kColorTableEffect_ClassID,
-        kComposeOneFragmentProcessor_ClassID,
-        kComposeTwoFragmentProcessor_ClassID,
         kCoverageSetOpXP_ClassID,
         kCubicStrokeProcessor_ClassID,
         kCustomXP_ClassID,
@@ -82,6 +82,7 @@ public:
         kEllipticalRRectEffect_ClassID,
         kGP_ClassID,
         kVertexColorSpaceBenchGP_ClassID,
+        kGrArithmeticProcessor_ClassID,
         kGrAARectEffect_ClassID,
         kGrAlphaThresholdFragmentProcessor_ClassID,
         kGrBicubicEffect_ClassID,
@@ -106,11 +107,13 @@ public:
         kGrDistanceFieldA8TextGeoProc_ClassID,
         kGrDistanceFieldLCDTextGeoProc_ClassID,
         kGrDistanceFieldPathGeoProc_ClassID,
+        kGrDitherEffect_ClassID,
         kGrDualIntervalGradientColorizer_ClassID,
         kGrEllipseEffect_ClassID,
         kGrFillRRectOp_Processor_ClassID,
         kGrGaussianConvolutionFragmentProcessor_ClassID,
         kGrGSCoverageProcessor_ClassID,
+        kGrHighContrastFilterEffect_ClassID,
         kGrHSLToRGBFilterEffect_ClassID,
         kGrImprovedPerlinNoiseEffect_ClassID,
         kGrLinearGradientLayout_ClassID,
@@ -125,7 +128,6 @@ public:
         kGrPathProcessor_ClassID,
         kGrPerlinNoise2Effect_ClassID,
         kGrPipelineDynamicStateTestProcessor_ClassID,
-        kGrPremulInputFragmentProcessor_ClassID,
         kGrQuadEffect_ClassID,
         kGrRadialGradientLayout_ClassID,
         kGrRectBlurEffect_ClassID,
@@ -138,7 +140,6 @@ public:
         kGrSampleMaskProcessor_ClassID,
         kGrSweepGradientLayout_ClassID,
         kGrTextureEffect_ClassID,
-        kGrTextureGradientColorizer_ClassID,
         kGrTiledGradientEffect_ClassID,
         kGrTwoPointConicalGradientLayout_ClassID,
         kGrUnrolledBinaryGradientColorizer_ClassID,
@@ -157,14 +158,16 @@ public:
         kStencilResolveProcessor_ClassID,
         kFwidthSquircleTestProcessor_ClassID,
         kSwizzleFragmentProcessor_ClassID,
-        kTessellationTestTriShader_ClassID,
-        kTessellationTestRectShader_ClassID,
+        kTessellate_GrCubicTessellateShader_ClassID,
         kTessellate_GrFillBoundingBoxShader_ClassID,
         kTessellate_GrFillCubicHullShader_ClassID,
         kTessellate_GrFillTriangleShader_ClassID,
-        kTessellate_GrStencilCubicShader_ClassID,
+        kTessellate_GrMiddleOutCubicShader_ClassID,
         kTessellate_GrStencilTriangleShader_ClassID,
-        kTessellate_GrStencilWedgeShader_ClassID,
+        kTessellate_GrStrokeTessellateShader_ClassID,
+        kTessellate_GrWedgeTessellateShader_ClassID,
+        kTessellationTestTriShader_ClassID,
+        kTessellationTestRectShader_ClassID,
         kTestFP_ClassID,
         kTestRectOp_ClassID,
         kFlatNormalsFP_ClassID,
@@ -181,14 +184,14 @@ public:
     virtual const char* name() const = 0;
 
     /** Human-readable dump of all information */
-#ifdef SK_DEBUG
-    virtual SkString dumpInfo() const {
-        SkString str;
-        str.appendf("Missing data");
-        return str;
+#if GR_TEST_UTILS
+    virtual SkString onDumpInfo() const { return SkString(); }
+
+    virtual SkString dumpInfo() const final {
+        SkString info(name());
+        info.append(this->onDumpInfo());
+        return info;
     }
-#else
-    SkString dumpInfo() const { return SkString("<Processor information unavailable>"); }
 #endif
 
     /**

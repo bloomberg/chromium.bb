@@ -4,12 +4,14 @@
 
 #include "extensions/renderer/bindings/api_binding.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/bindings/api_binding_hooks_test_delegate.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
@@ -104,6 +106,10 @@ bool AllowAllFeatures(v8::Local<v8::Context> context, const std::string& name) {
   return true;
 }
 
+bool DisallowPromises(v8::Local<v8::Context> context) {
+  return false;
+}
+
 void OnEventListenersChanged(const std::string& event_name,
                              binding::EventListenersChanged change,
                              const base::DictionaryValue* filter,
@@ -186,9 +192,14 @@ class APIBindingUnittest : public APIBindingTest {
     on_silent_request_ = callback;
   }
 
-  void SetAvailabilityCallback(
-      const BindingAccessChecker::AvailabilityCallback& callback) {
-    availability_callback_ = callback;
+  void SetAPIAvailabilityCallback(
+      const BindingAccessChecker::APIAvailabilityCallback& callback) {
+    api_availability_callback_ = callback;
+  }
+
+  void SetPromiseAvailabilityCallback(
+      const BindingAccessChecker::PromiseAvailabilityCallback& callback) {
+    promise_availability_callback_ = callback;
   }
 
   void InitializeBinding() {
@@ -198,16 +209,18 @@ class APIBindingUnittest : public APIBindingTest {
       binding_hooks_->SetDelegate(std::move(binding_hooks_delegate_));
     if (!on_silent_request_)
       on_silent_request_ = base::DoNothing();
-    if (!availability_callback_)
-      availability_callback_ = base::BindRepeating(&AllowAllFeatures);
+    if (!api_availability_callback_)
+      api_availability_callback_ = base::BindRepeating(&AllowAllFeatures);
+    if (!promise_availability_callback_)
+      promise_availability_callback_ = base::BindRepeating(&DisallowPromises);
     auto get_context_owner = [](v8::Local<v8::Context>) {
       return std::string("context");
     };
     event_handler_ = std::make_unique<APIEventHandler>(
         base::BindRepeating(&OnEventListenersChanged),
         base::BindRepeating(get_context_owner), nullptr);
-    access_checker_ =
-        std::make_unique<BindingAccessChecker>(availability_callback_);
+    access_checker_ = std::make_unique<BindingAccessChecker>(
+        api_availability_callback_, promise_availability_callback_);
     binding_ = std::make_unique<APIBinding>(
         kBindingName, binding_functions_.get(), binding_types_.get(),
         binding_events_.get(), binding_properties_.get(), create_custom_type_,
@@ -283,7 +296,9 @@ class APIBindingUnittest : public APIBindingTest {
   std::unique_ptr<APIBindingHooksDelegate> binding_hooks_delegate_;
   APIBinding::CreateCustomType create_custom_type_;
   APIBinding::OnSilentRequest on_silent_request_;
-  BindingAccessChecker::AvailabilityCallback availability_callback_;
+  BindingAccessChecker::APIAvailabilityCallback api_availability_callback_;
+  BindingAccessChecker::PromiseAvailabilityCallback
+      promise_availability_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingUnittest);
 };
@@ -512,7 +527,7 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
     EXPECT_TRUE(allowed.count(name) || restricted.count(name)) << name;
     return allowed.count(name) != 0;
   };
-  SetAvailabilityCallback(base::BindRepeating(is_available));
+  SetAPIAvailabilityCallback(base::BindRepeating(is_available));
 
   InitializeBinding();
 
@@ -622,7 +637,9 @@ TEST_F(APIBindingUnittest, TestProperties) {
   EXPECT_EQ(R"({"subprop1":"some value","subprop2":true})",
             GetStringPropertyFromObject(binding_object, context, "prop2"));
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   EXPECT_EQ("\"linux\"",
             GetStringPropertyFromObject(binding_object, context, "linuxOnly"));
   EXPECT_EQ("undefined", GetStringPropertyFromObject(binding_object, context,
@@ -1675,20 +1692,35 @@ TEST_F(APIBindingUnittest, PromiseBasedAPIs) {
   constexpr char kFunctions[] =
       R"([{
             'name': 'supportsPromises',
-            'supportsPromises': true,
             'parameters': [{
               'name': 'int',
               'type': 'integer'
-            }, {
-              'name': 'callback',
-              'type': 'function',
-              'parameters': [{
-                'name': 'strResult',
-                'type': 'string'
-              }]
-            }]
+            }],
+            "returns_async": {
+              'name': 'strResult',
+              'type': 'string'
+            }
+          },
+          {
+            'name': 'callbackOptional',
+            'parameters': [{
+              'name': 'int',
+              'type': 'integer'
+            }],
+            "returns_async": {
+              'name': 'strResult',
+              'optional': true,
+              'type': 'string'
+            }
           }])";
   SetFunctions(kFunctions);
+
+  // Set a local boolean we can change to simulate if the context supports
+  // promises or not.
+  bool context_allows_promises = true;
+  SetPromiseAvailabilityCallback(base::BindRepeating(
+      [](bool* flag, v8::Local<v8::Context> context) { return *flag; },
+      &context_allows_promises));
 
   InitializeBinding();
 
@@ -1696,12 +1728,13 @@ TEST_F(APIBindingUnittest, PromiseBasedAPIs) {
   v8::Local<v8::Context> context = MainContext();
   v8::Local<v8::Object> binding_object = binding()->CreateInstance(context);
 
+  // A normal call into the promised based API should return a promise.
   {
     constexpr char kFunctionCall[] =
         R"((function(api) {
              this.apiResult = api.supportsPromises(3);
              this.apiResult.then((strResult) => {
-               this.strResult = strResult;
+               this.promiseResult = strResult;
              });
            }))";
     v8::Local<v8::Function> promise_api_call =
@@ -1723,8 +1756,88 @@ TEST_F(APIBindingUnittest, PromiseBasedAPIs) {
 
     EXPECT_EQ(v8::Promise::kFulfilled, promise->State());
     EXPECT_EQ(R"("foo")", V8ToString(promise->Result(), context));
-    EXPECT_EQ(R"("foo")", GetStringPropertyFromObject(context->Global(),
-                                                      context, "strResult"));
+    EXPECT_EQ(R"("foo")", GetStringPropertyFromObject(
+                              context->Global(), context, "promiseResult"));
+  }
+  // Also test that promise-based APIs still support passing a callback.
+  {
+    constexpr char kFunctionCall[] =
+        R"((function(api) {
+             api.supportsPromises(3, (strResult) => {
+               this.callbackResult = strResult
+             });
+           }))";
+    v8::Local<v8::Function> promise_api_call =
+        FunctionFromString(context, kFunctionCall);
+    v8::Local<v8::Value> args[] = {binding_object};
+    RunFunctionOnGlobal(promise_api_call, context, base::size(args), args);
+
+    ASSERT_TRUE(last_request());
+    request_handler()->CompleteRequest(last_request()->request_id,
+                                       *ListValueFromString(R"(["bar"])"),
+                                       std::string());
+
+    EXPECT_EQ(R"("bar")", GetStringPropertyFromObject(
+                              context->Global(), context, "callbackResult"));
+  }
+  // If the context doesn't support promises, there should be an error if a
+  // required callback isn't supplied.
+  context_allows_promises = false;
+  {
+    constexpr char kPromiseFunctionCall[] =
+        R"((function(api) {
+             this.apiResult = api.supportsPromises(3);
+           }))";
+    v8::Local<v8::Function> promise_api_call =
+        FunctionFromString(context, kPromiseFunctionCall);
+    v8::Local<v8::Value> args[] = {binding_object};
+    auto expected_error =
+        "Uncaught TypeError: " +
+        api_errors::InvocationError("test.supportsPromises",
+                                    "integer int, function callback",
+                                    api_errors::NoMatchingSignature());
+    RunFunctionAndExpectError(promise_api_call, context, base::size(args), args,
+                              expected_error);
+  }
+  // Test that required callbacks still work when the context doesn't support
+  // promises.
+  {
+    constexpr char kFunctionCall[] =
+        R"((function(api) {
+             api.supportsPromises(3, (strResult) => {
+               this.callbackResult = strResult
+             });
+           }))";
+    v8::Local<v8::Function> promise_api_call =
+        FunctionFromString(context, kFunctionCall);
+    v8::Local<v8::Value> args[] = {binding_object};
+    RunFunctionOnGlobal(promise_api_call, context, base::size(args), args);
+
+    ASSERT_TRUE(last_request());
+    request_handler()->CompleteRequest(last_request()->request_id,
+                                       *ListValueFromString(R"(["foo"])"),
+                                       std::string());
+
+    EXPECT_EQ(R"("foo")", GetStringPropertyFromObject(
+                              context->Global(), context, "callbackResult"));
+  }
+  // If a returns_async field is marked as optional, then a context which
+  // doesn't support promises should be able to leave it off of the call.
+  {
+    constexpr char kCallbackOptionalFunctionCall[] =
+        R"((function(api) {
+             this.callbackOptionalResult = api.callbackOptional(3);
+           }))";
+    v8::Local<v8::Function> promise_api_call =
+        FunctionFromString(context, kCallbackOptionalFunctionCall);
+    v8::Local<v8::Value> args[] = {binding_object};
+    RunFunctionOnGlobal(promise_api_call, context, base::size(args), args);
+
+    ASSERT_TRUE(last_request());
+
+    v8::Local<v8::Value> api_result = GetPropertyFromObject(
+        context->Global(), context, "callbackOptionalResult");
+    ASSERT_TRUE(api_result->IsNullOrUndefined());
   }
 }
 

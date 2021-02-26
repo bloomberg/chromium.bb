@@ -5,12 +5,13 @@
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
@@ -148,7 +149,17 @@ void EulaScreen::OnUserAction(const std::string& action_id) {
     return;
   }
   RecordUserAction(action_id);
-  if (action_id == kUserActionAcceptButtonClicked) {
+  if (action_id == kUserActionShowStatsUsageLearnMore) {
+    ShowStatsUsageLearnMore();
+  } else if (action_id == kUserActionShowAdditionalTos) {
+    ShowAdditionalTosDialog();
+  } else if (action_id == kUserActionShowSecuritySettings) {
+    InitiatePasswordFetch();
+  } else if (action_id == kUserActionSelectStatsUsage) {
+    SetUsageStatsEnabled(true);
+  } else if (action_id == kUserActionUnselectStatsUsage) {
+    SetUsageStatsEnabled(false);
+  } else if (action_id == kUserActionAcceptButtonClicked) {
     exit_callback_.Run(g_usage_statistics_reporting_enabled
                            ? Result::ACCEPTED_WITH_USAGE_STATS_REPORTING
                            : Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
@@ -157,10 +168,28 @@ void EulaScreen::OnUserAction(const std::string& action_id) {
   }
 }
 
+bool EulaScreen::HandleAccelerator(ash::LoginAcceleratorAction action) {
+  if (action == ash::LoginAcceleratorAction::kStartEnrollment) {
+    context()->enrollment_triggered_early = true;
+    return true;
+  }
+  return false;
+}
+
 void EulaScreen::OnPasswordFetched(const std::string& tpm_password) {
   tpm_password_ = tpm_password;
   if (view_)
     view_->OnPasswordFetched(tpm_password_);
+}
+
+void EulaScreen::ShowStatsUsageLearnMore() {
+  if (view_)
+    view_->ShowStatsUsageLearnMore();
+}
+
+void EulaScreen::ShowAdditionalTosDialog() {
+  if (view_)
+    view_->ShowAdditionalTosDialog();
 }
 
 }  // namespace chromeos

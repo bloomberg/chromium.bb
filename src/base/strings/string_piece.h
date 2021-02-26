@@ -25,11 +25,12 @@
 #include <stddef.h>
 
 #include <iosfwd>
+#include <ostream>
 #include <string>
 #include <type_traits>
 
 #include "base/base_export.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/char_traits.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
@@ -128,13 +129,6 @@ BASE_EXPORT size_t find_last_not_of(const StringPiece& self,
                                     char c,
                                     size_t pos);
 
-BASE_EXPORT StringPiece substr(const StringPiece& self,
-                               size_t pos,
-                               size_t n);
-BASE_EXPORT StringPiece16 substr(const StringPiece16& self,
-                                 size_t pos,
-                                 size_t n);
-
 }  // namespace internal
 
 // BasicStringPiece ------------------------------------------------------------
@@ -148,6 +142,7 @@ template <typename STRING_TYPE> class BasicStringPiece {
  public:
   // Standard STL container boilerplate.
   typedef size_t size_type;
+  typedef typename STRING_TYPE::traits_type traits_type;
   typedef typename STRING_TYPE::value_type value_type;
   typedef const value_type* pointer;
   typedef const value_type& reference;
@@ -162,7 +157,7 @@ template <typename STRING_TYPE> class BasicStringPiece {
   // We provide non-explicit singleton constructors so users can pass
   // in a "const char*" or a "string" wherever a "StringPiece" is
   // expected (likewise for char16, string16, StringPiece16).
-  constexpr BasicStringPiece() : ptr_(NULL), length_(0) {}
+  constexpr BasicStringPiece() : ptr_(nullptr), length_(0) {}
   // TODO(crbug.com/1049498): Construction from nullptr is not allowed for
   // std::basic_string_view, so remove the special handling for it.
   // Note: This doesn't just use STRING_TYPE::traits_type::length(), since that
@@ -203,19 +198,19 @@ template <typename STRING_TYPE> class BasicStringPiece {
   constexpr const value_type* data() const { return ptr_; }
   constexpr size_type size() const noexcept { return length_; }
   constexpr size_type length() const noexcept { return length_; }
-  bool empty() const { return length_ == 0; }
+  constexpr bool empty() const noexcept { return length_ == 0; }
 
   constexpr value_type operator[](size_type i) const {
     CHECK(i < length_);
     return ptr_[i];
   }
 
-  value_type front() const {
+  constexpr value_type front() const {
     CHECK_NE(0UL, length_);
     return ptr_[0];
   }
 
-  value_type back() const {
+  constexpr value_type back() const {
     CHECK_NE(0UL, length_);
     return ptr_[length_ - 1];
   }
@@ -242,19 +237,24 @@ template <typename STRING_TYPE> class BasicStringPiece {
   }
 
   // This is the style of conversion preferred by std::string_view in C++17.
-  explicit operator STRING_TYPE() const { return as_string(); }
-
-  STRING_TYPE as_string() const {
-    // std::string doesn't like to take a NULL pointer even with a 0 size.
+  explicit operator STRING_TYPE() const {
     return empty() ? STRING_TYPE() : STRING_TYPE(data(), size());
   }
 
-  const_iterator begin() const { return ptr_; }
-  const_iterator end() const { return ptr_ + length_; }
-  const_reverse_iterator rbegin() const {
+  // Deprecated, use operator STRING_TYPE() instead.
+  // TODO(crbug.com/1049498): Remove for all STRING_TYPEs.
+  template <typename StrT = STRING_TYPE,
+            typename = std::enable_if_t<std::is_same<StrT, std::string>::value>>
+  STRING_TYPE as_string() const {
+    return STRING_TYPE(*this);
+  }
+
+  constexpr const_iterator begin() const noexcept { return ptr_; }
+  constexpr const_iterator end() const noexcept { return ptr_ + length_; }
+  constexpr const_reverse_iterator rbegin() const noexcept {
     return const_reverse_iterator(ptr_ + length_);
   }
-  const_reverse_iterator rend() const {
+  constexpr const_reverse_iterator rend() const noexcept {
     return const_reverse_iterator(ptr_);
   }
 
@@ -263,21 +263,6 @@ template <typename STRING_TYPE> class BasicStringPiece {
 
   size_type copy(value_type* buf, size_type n, size_type pos = 0) const {
     return internal::copy(*this, buf, n, pos);
-  }
-
-  // Does "this" start with "x"
-  constexpr bool starts_with(BasicStringPiece x) const noexcept {
-    return (
-        (this->length_ >= x.length_) &&
-        (CharTraits<value_type>::compare(this->ptr_, x.ptr_, x.length_) == 0));
-  }
-
-  // Does "this" end with "x"
-  constexpr bool ends_with(BasicStringPiece x) const noexcept {
-    return ((this->length_ >= x.length_) &&
-            (CharTraits<value_type>::compare(
-                 this->ptr_ + (this->length_ - x.length_), x.ptr_, x.length_) ==
-             0));
   }
 
   // find: Search for a character or substring at a given offset.
@@ -337,9 +322,11 @@ template <typename STRING_TYPE> class BasicStringPiece {
   }
 
   // substr.
-  BasicStringPiece substr(size_type pos,
-                          size_type n = BasicStringPiece::npos) const {
-    return internal::substr(*this, pos, n);
+  constexpr BasicStringPiece substr(
+      size_type pos,
+      size_type n = BasicStringPiece::npos) const {
+    CHECK_LE(pos, size());
+    return {data() + pos, std::min(n, size() - pos)};
   }
 
  protected:

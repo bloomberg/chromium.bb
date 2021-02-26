@@ -10,7 +10,9 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 
 @protocol PopupMenuLongPressDelegate;
+@protocol TabStripContaining;
 @protocol TabStripPresentation;
+@class ViewRevealingVerticalPanHandler;
 class Browser;
 
 // Controller class for the tabstrip.  Manages displaying tabs and keeping the
@@ -20,7 +22,7 @@ class Browser;
 @interface TabStripController : NSObject
 
 @property(nonatomic, assign) BOOL highlightsSelectedTab;
-@property(nonatomic, readonly, retain) UIView* view;
+@property(nonatomic, readonly, strong) UIView<TabStripContaining>* view;
 
 // Delegate for the long press gesture recognizer triggering popup menu.
 @property(nonatomic, weak) id<PopupMenuLongPressDelegate> longPressDelegate;
@@ -31,6 +33,9 @@ class Browser;
 
 // Used to check if the tabstrip is visible before starting an animation.
 @property(nonatomic, assign) id<TabStripPresentation> presentationProvider;
+
+// Pan gesture handler for the tab strip.
+@property(nonatomic, weak) ViewRevealingVerticalPanHandler* panGestureHandler;
 
 // Designated initializer, |dispatcher| is not retained.
 - (instancetype)initWithBrowser:(Browser*)browser
@@ -45,6 +50,9 @@ class Browser;
 // It is an error for the receiver to dealloc without this having been called
 // first.
 - (void)disconnect;
+
+// Notifies of a forced resizing layout of the tab strip.
+- (void)tabStripSizeDidChange;
 
 @end
 

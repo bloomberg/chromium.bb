@@ -35,12 +35,12 @@ private:
                           GrPaint&&,
                           GrAAType,
                           const GrUserStencilSettings&,
-                          const GrClip&,
+                          const GrClip*,
                           const SkMatrix& viewMatrix,
                           const GrStyledShape&,
                           bool stencilOnly);
 
-    typedef GrPathRenderer INHERITED;
+    using INHERITED = GrPathRenderer;
 };
 
 #endif

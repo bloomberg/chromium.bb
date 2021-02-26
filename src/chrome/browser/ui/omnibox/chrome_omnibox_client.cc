@@ -11,20 +11,17 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback.h"
-#include "base/macros.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -33,10 +30,8 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
-#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
@@ -48,41 +43,27 @@
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.h"
 #include "chrome/browser/ui/omnibox/omnibox_tab_helper.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/search/instant_types.h"
-#include "chrome/common/url_constants.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/favicon/core/favicon_service.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "components/prefs/pref_service.h"
-#include "components/search/search.h"
-#include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
-#endif
 
 using predictors::AutocompleteActionPredictor;
 
@@ -267,12 +248,15 @@ void ChromeOmniboxClient::OnFocusChanged(
           OmniboxTabHelper::FromWebContents(controller_->GetWebContents())) {
     helper->OnFocusChanged(state, reason);
   }
+  WakeupDecoder();
 }
 
 void ChromeOmniboxClient::OnResultChanged(
     const AutocompleteResult& result,
     bool default_match_changed,
     const BitmapFetchedCallback& on_bitmap_fetched) {
+  auto now = base::TimeTicks::Now();
+
   BitmapFetcherService* bitmap_fetcher_service =
       BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
 
@@ -290,9 +274,11 @@ void ChromeOmniboxClient::OnResultChanged(
     }
 
     request_ids_.push_back(bitmap_fetcher_service->RequestImage(
-        match.ImageUrl(), base::BindOnce(&ChromeOmniboxClient::OnBitmapFetched,
-                                         weak_factory_.GetWeakPtr(),
-                                         on_bitmap_fetched, result_index)));
+        match.ImageUrl(),
+        base::BindOnce(
+            &ChromeOmniboxClient::OnBitmapFetched, weak_factory_.GetWeakPtr(),
+            on_bitmap_fetched, result_index,
+            bitmap_fetcher_service->IsCached(match.ImageUrl()), now)));
   }
 }
 
@@ -322,12 +308,6 @@ gfx::Image ChromeOmniboxClient::GetFaviconForKeywordSearchProvider(
 
   return favicon_cache_.GetFaviconForIconUrl(template_url->favicon_url(),
                                              std::move(on_favicon_fetched));
-}
-
-void ChromeOmniboxClient::OnCurrentMatchChanged(
-    const AutocompleteMatch& match) {
-  if (!prerender::IsNoStatePrefetchEnabled())
-    DoPreconnect(match);
 }
 
 void ChromeOmniboxClient::OnTextChanged(const AutocompleteMatch& current_match,
@@ -373,6 +353,7 @@ void ChromeOmniboxClient::OnTextChanged(const AutocompleteMatch& current_match,
     case AutocompleteActionPredictor::ACTION_NONE:
       break;
   }
+  WakeupDecoder();
 }
 
 void ChromeOmniboxClient::OnRevert() {
@@ -383,20 +364,6 @@ void ChromeOmniboxClient::OnRevert() {
 }
 
 void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
-// The new tab tracker tracks when a user starts a session in the same
-// tab as a previous one. If ShouldDisplayURL() is true, that's a good
-// signal that the previous page was part of some other session.
-// We could go further to try to analyze the difference between the previous
-// and current URLs, but users edit URLs rarely enough that this is a
-// reasonable approximation.
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-  if (controller_->GetLocationBarModel()->ShouldDisplayURL()) {
-    feature_engagement::NewTabTrackerFactory::GetInstance()
-        ->GetForProfile(profile_)
-        ->OnOmniboxNavigation();
-  }
-#endif
-
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)
       ->OnOmniboxOpenedUrl(*log);
 }
@@ -420,14 +387,8 @@ void ChromeOmniboxClient::PromptPageTranslation() {
     ChromeTranslateClient* translate_client =
         ChromeTranslateClient::FromWebContents(contents);
     if (translate_client) {
-      const translate::LanguageState& state =
-          translate_client->GetLanguageState();
-      // Here we pass triggered_from_menu as true because that is meant to
-      // capture whether the user explicitly requested the translation.
-      translate_client->ShowTranslateUI(
-          translate::TRANSLATE_STEP_BEFORE_TRANSLATE, state.original_language(),
-          state.AutoTranslateTo(), translate::TranslateErrors::NONE,
-          /*triggered_from_menu=*/true);
+      DCHECK_NE(nullptr, translate_client->GetTranslateManager());
+      translate_client->GetTranslateManager()->InitiateManualTranslation(true);
     }
   }
 }
@@ -486,8 +447,28 @@ void ChromeOmniboxClient::DoPreconnect(const AutocompleteMatch& match) {
   // the OS DNS cache could suffer eviction problems for minimal gain.
 }
 
+void ChromeOmniboxClient::WakeupDecoder() {
+  if (base::GetFieldTrialParamByFeatureAsBool(
+          omnibox::kEntitySuggestionsReduceLatency,
+          OmniboxFieldTrial::kEntitySuggestionsReduceLatencyDecoderWakeupParam,
+          false)) {
+    if (auto* service =
+            BitmapFetcherServiceFactory::GetForBrowserContext(profile_)) {
+      service->WakeupDecoder();
+    }
+  }
+}
+
 void ChromeOmniboxClient::OnBitmapFetched(const BitmapFetchedCallback& callback,
                                           int result_index,
+                                          bool is_cached,
+                                          base::TimeTicks start_time,
                                           const SkBitmap& bitmap) {
+  auto time_delta = base::TimeTicks::Now() - start_time;
+  UMA_HISTOGRAM_TIMES("Omnibox.BitmapFetchLatency", time_delta);
+  if (is_cached)
+    UMA_HISTOGRAM_TIMES("Omnibox.BitmapFetchLatency.Cached", time_delta);
+  else
+    UMA_HISTOGRAM_TIMES("Omnibox.BitmapFetchLatency.Uncached", time_delta);
   callback.Run(result_index, bitmap);
 }

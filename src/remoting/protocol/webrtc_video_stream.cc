@@ -20,6 +20,7 @@
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/api/notifier.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/media/base/vp9_profile.h"
 
 #if defined(USE_H264_ENCODER)
 #include "remoting/codec/webrtc_video_encoder_gpu.h"
@@ -99,7 +100,13 @@ WebrtcVideoStream::WebrtcVideoStream(const SessionOptions& session_options)
   encoder_selector_.RegisterEncoder(
       base::BindRepeating(&WebrtcVideoEncoderVpx::IsSupportedByVP9),
       base::BindRepeating(&WebrtcVideoStream::CreateVP9Encoder,
-                          base::Unretained(this)));
+                          base::Unretained(this),
+                          /*lossless_color=*/false));
+  encoder_selector_.RegisterEncoder(
+      base::BindRepeating(&WebrtcVideoEncoderVpx::IsSupportedByVP9),
+      base::BindRepeating(&WebrtcVideoStream::CreateVP9Encoder,
+                          base::Unretained(this),
+                          /*lossless_color=*/true));
 #if defined(USE_H264_ENCODER)
   encoder_selector_.RegisterEncoder(
       base::BindRepeating(&WebrtcVideoEncoderGpu::IsSupportedByH264),
@@ -131,8 +138,8 @@ void WebrtcVideoStream::Start(
   webrtc_transport_ = webrtc_transport;
 
   webrtc_transport_->video_encoder_factory()->RegisterEncoderSelectedCallback(
-      base::Bind(&WebrtcVideoStream::OnEncoderCreated,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&WebrtcVideoStream::OnEncoderCreated,
+                          weak_factory_.GetWeakPtr()));
 
   capturer_->Start(this);
 
@@ -152,9 +159,9 @@ void WebrtcVideoStream::Start(
   webrtc_transport_->OnVideoTransceiverCreated(transceiver);
 
   scheduler_.reset(new WebrtcFrameSchedulerSimple(session_options_));
-  scheduler_->Start(
-      webrtc_transport_->video_encoder_factory(),
-      base::Bind(&WebrtcVideoStream::CaptureNextFrame, base::Unretained(this)));
+  scheduler_->Start(webrtc_transport_->video_encoder_factory(),
+                    base::BindRepeating(&WebrtcVideoStream::CaptureNextFrame,
+                                        base::Unretained(this)));
 
   video_stats_dispatcher_.Init(webrtc_transport_->CreateOutgoingChannel(
                                    video_stats_dispatcher_.channel_name()),
@@ -183,10 +190,8 @@ void WebrtcVideoStream::SetLosslessEncode(bool want_lossless) {
 }
 
 void WebrtcVideoStream::SetLosslessColor(bool want_lossless) {
-  lossless_color_ = want_lossless;
-  if (encoder_) {
-    encoder_->SetLosslessColor(want_lossless);
-  }
+  NOTIMPLEMENTED() << "Changing lossless-color for VP9 requires SDP "
+                      "offer/answer exchange.";
 }
 
 void WebrtcVideoStream::SetObserver(Observer* observer) {
@@ -226,7 +231,6 @@ void WebrtcVideoStream::OnCaptureResult(
     encoder_selector_.SetDesktopFrame(*frame);
     encoder_ = encoder_selector_.CreateEncoder();
     encoder_->SetLosslessEncode(lossless_encode_);
-    encoder_->SetLosslessColor(lossless_color_);
 
     // TODO(zijiehe): Permanently stop the video stream if we cannot create an
     // encoder for the |frame|.
@@ -343,20 +347,36 @@ void WebrtcVideoStream::OnFrameEncoded(
   }
 }
 
-void WebrtcVideoStream::OnEncoderCreated(webrtc::VideoCodecType codec_type) {
+void WebrtcVideoStream::OnEncoderCreated(
+    webrtc::VideoCodecType codec_type,
+    const webrtc::SdpVideoFormat::Parameters& parameters) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Reset the encoder in case a previous one was being used and SDP
+  // re-negotiation selected a different one. The proper codec will be
+  // created after the next frame is captured.
+  // An optimization would be to reset only if the new encoder is different
+  // from the current one. However, SDP renegotiation is expected to occur
+  // infrequently (only when the user changes a setting), and should typically
+  // not cause the same codec to be repeatedly selected.
+  encoder_.reset();
+
   // The preferred codec id depends on the order of
   // |encoder_selector_|.RegisterEncoder().
   if (codec_type == webrtc::kVideoCodecVP8) {
-    LOG(WARNING) << "VP8 video codec is preferred.";
+    VLOG(0) << "VP8 video codec is preferred.";
     encoder_selector_.SetPreferredCodec(0);
   } else if (codec_type == webrtc::kVideoCodecVP9) {
-    LOG(WARNING) << "VP9 video codec is preferred.";
     encoder_selector_.SetPreferredCodec(1);
+    const auto iter = parameters.find(webrtc::kVP9FmtpProfileId);
+    bool losslessColor = iter != parameters.end() && iter->second == "1";
+    VLOG(0) << "VP9 video codec is preferred, losslessColor="
+            << (losslessColor ? "true" : "false");
+    encoder_selector_.SetPreferredCodec(losslessColor ? 2 : 1);
   } else if (codec_type == webrtc::kVideoCodecH264) {
 #if defined(USE_H264_ENCODER)
-    LOG(WARNING) << "H264 video codec is preferred.";
-    encoder_selector_.SetPreferredCodec(2);
+    VLOG(0) << "H264 video codec is preferred.";
+    encoder_selector_.SetPreferredCodec(3);
 #else
     NOTIMPLEMENTED();
 #endif
@@ -370,9 +390,12 @@ std::unique_ptr<WebrtcVideoEncoder> WebrtcVideoStream::CreateVP8Encoder() {
       WebrtcVideoEncoderVpx::CreateForVP8(), encode_task_runner_);
 }
 
-std::unique_ptr<WebrtcVideoEncoder> WebrtcVideoStream::CreateVP9Encoder() {
-  return std::make_unique<WebrtcVideoEncoderProxy>(
-      WebrtcVideoEncoderVpx::CreateForVP9(), encode_task_runner_);
+std::unique_ptr<WebrtcVideoEncoder> WebrtcVideoStream::CreateVP9Encoder(
+    bool lossless_color) {
+  auto vp9encoder = WebrtcVideoEncoderVpx::CreateForVP9();
+  vp9encoder->SetLosslessColor(lossless_color);
+  return std::make_unique<WebrtcVideoEncoderProxy>(std::move(vp9encoder),
+                                                   encode_task_runner_);
 }
 
 }  // namespace protocol

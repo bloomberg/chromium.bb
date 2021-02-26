@@ -12,7 +12,6 @@
 #include "include/gpu/GrBackendSurface.h"
 #include "include/private/SkNoncopyable.h"
 #include "src/gpu/GrGpuResource.h"
-#include "src/gpu/GrNonAtomicRef.h"
 #include "src/gpu/GrSurface.h"
 #include "src/gpu/GrTexture.h"
 
@@ -70,7 +69,7 @@ public:
         SkISize fDimensions;
         SkBackingFit fFit;
         GrRenderable fRenderable;
-        GrMipMapped fMipMapped;
+        GrMipmapped fMipmapped;
         int fSampleCnt;
         const GrBackendFormat& fFormat;
         GrProtected fProtected;
@@ -268,11 +267,6 @@ public:
         return fSurfaceFlags & GrInternalSurfaceFlags::kRequiresManualMSAAResolve;
     }
 
-    void setLastRenderTask(GrRenderTask*);
-    GrRenderTask* getLastRenderTask() { return fLastRenderTask; }
-
-    GrOpsTask* getLastOpsTask();
-
     /**
      * Retrieves the amount of GPU memory that will be or currently is used by this resource
      * in bytes. It is approximate since we aren't aware of additional padding or copies made
@@ -280,13 +274,13 @@ public:
      *
      * @return the amount of GPU memory used in bytes
      */
-    size_t gpuMemorySize(const GrCaps& caps) const {
+    size_t gpuMemorySize() const {
         SkASSERT(!this->isFullyLazy());
         if (fTarget) {
             return fTarget->gpuMemorySize();
         }
         if (kInvalidGpuMemorySize == fGpuMemorySize) {
-            fGpuMemorySize = this->onUninstantiatedGpuMemorySize(caps);
+            fGpuMemorySize = this->onUninstantiatedGpuMemorySize();
             SkASSERT(kInvalidGpuMemorySize != fGpuMemorySize);
         }
         return fGpuMemorySize;
@@ -307,7 +301,7 @@ public:
     static sk_sp<GrSurfaceProxy> Copy(GrRecordingContext*,
                                       GrSurfaceProxy* src,
                                       GrSurfaceOrigin,
-                                      GrMipMapped,
+                                      GrMipmapped,
                                       SkIRect srcRect,
                                       SkBackingFit,
                                       SkBudgeted,
@@ -317,7 +311,7 @@ public:
     static sk_sp<GrSurfaceProxy> Copy(GrRecordingContext*,
                                       GrSurfaceProxy* src,
                                       GrSurfaceOrigin,
-                                      GrMipMapped,
+                                      GrMipmapped,
                                       SkBackingFit,
                                       SkBudgeted);
 
@@ -330,7 +324,7 @@ public:
 
     // Provides access to functions that aren't part of the public API.
     inline GrSurfaceProxyPriv priv();
-    inline const GrSurfaceProxyPriv priv() const;
+    inline const GrSurfaceProxyPriv priv() const;  // NOLINT(readability-const-return-type)
 
     GrProtected isProtected() const { return fIsProtected; }
 
@@ -373,7 +367,7 @@ protected:
     void assign(sk_sp<GrSurface> surface);
 
     sk_sp<GrSurface> createSurfaceImpl(GrResourceProvider*, int sampleCnt, GrRenderable,
-                                       GrMipMapped) const;
+                                       GrMipmapped) const;
 
     // Once the dimensions of a fully-lazy proxy are decided, and before it gets instantiated, the
     // client can use this optional method to specify the proxy's dimensions. (A proxy's dimensions
@@ -386,7 +380,7 @@ protected:
     }
 
     bool instantiateImpl(GrResourceProvider* resourceProvider, int sampleCnt, GrRenderable,
-                         GrMipMapped, const GrUniqueKey*);
+                         GrMipmapped, const GrUniqueKey*);
 
     // For deferred proxies this will be null until the proxy is instantiated.
     // For wrapped proxies it will point to the wrapped resource.
@@ -424,7 +418,7 @@ private:
     static const size_t kInvalidGpuMemorySize = ~static_cast<size_t>(0);
     SkDEBUGCODE(size_t getRawGpuMemorySize_debugOnly() const { return fGpuMemorySize; })
 
-    virtual size_t onUninstantiatedGpuMemorySize(const GrCaps&) const = 0;
+    virtual size_t onUninstantiatedGpuMemorySize() const = 0;
 
     virtual LazySurfaceDesc callbackDesc() const = 0;
 
@@ -436,15 +430,6 @@ private:
     // If the proxy computes its own answer that answer is checked (in debug mode) in
     // the instantiation method.
     mutable size_t         fGpuMemorySize;
-
-    // The last GrRenderTask that wrote to or is currently going to write to this surface
-    // The GrRenderTask can be closed (e.g., no surface context is currently bound
-    // to this proxy).
-    // This back-pointer is required so that we can add a dependancy between
-    // the GrRenderTask used to create the current contents of this surface
-    // and the GrRenderTask of a destination surface to which this one is being drawn or copied.
-    // This pointer is unreffed. GrRenderTasks own a ref on their surface proxies.
-    GrRenderTask*          fLastRenderTask = nullptr;
 };
 
 GR_MAKE_BITFIELD_CLASS_OPS(GrSurfaceProxy::ResolveFlags)

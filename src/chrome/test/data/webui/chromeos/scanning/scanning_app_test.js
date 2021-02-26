@@ -1,0 +1,493 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import 'chrome://scanning/scanning_app.js';
+
+import {setScanServiceForTesting} from 'chrome://scanning/mojo_interface_provider.js';
+import {ScannerArr} from 'chrome://scanning/scanning_app_types.js';
+import {tokenToString} from 'chrome://scanning/scanning_app_util.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {flushTasks, isVisible} from '../../test_util.m.js';
+
+import {changeSelect, createScanner, createScannerSource} from './scanning_app_test_utils.js';
+
+const ColorMode = {
+  BLACK_AND_WHITE: chromeos.scanning.mojom.ColorMode.kBlackAndWhite,
+  GRAYSCALE: chromeos.scanning.mojom.ColorMode.kGrayscale,
+  COLOR: chromeos.scanning.mojom.ColorMode.kColor,
+};
+
+const FileType = {
+  JPG: chromeos.scanning.mojom.FileType.kJpg,
+  PDF: chromeos.scanning.mojom.FileType.kPdf,
+  PNG: chromeos.scanning.mojom.FileType.kPng,
+};
+
+const PageSize = {
+  A4: chromeos.scanning.mojom.PageSize.kIsoA4,
+  Letter: chromeos.scanning.mojom.PageSize.kNaLetter,
+  Max: chromeos.scanning.mojom.PageSize.kMax,
+};
+
+const SourceType = {
+  FLATBED: chromeos.scanning.mojom.SourceType.kFlatbed,
+  ADF_SIMPLEX: chromeos.scanning.mojom.SourceType.kAdfSimplex,
+  ADF_DUPLEX: chromeos.scanning.mojom.SourceType.kAdfDuplex,
+};
+
+const pageSizes = [PageSize.A4, PageSize.Letter, PageSize.Max];
+
+const firstScannerId =
+    /** @type {!mojoBase.mojom.UnguessableToken} */ ({high: 0, low: 1});
+const firstScannerName = 'Scanner 1';
+
+const secondScannerId =
+    /** @type {!mojoBase.mojom.UnguessableToken} */ ({high: 0, low: 2});
+const secondScannerName = 'Scanner 2';
+
+const firstCapabilities = {
+  sources: [
+    createScannerSource(SourceType.ADF_DUPLEX, 'adf duplex', pageSizes),
+    createScannerSource(SourceType.FLATBED, 'platen', pageSizes),
+  ],
+  colorModes: [ColorMode.BLACK_AND_WHITE, ColorMode.COLOR],
+  resolutions: [75, 100, 300]
+};
+
+const secondCapabilities = {
+  sources:
+      [createScannerSource(SourceType.ADF_SIMPLEX, 'adf simplex', pageSizes)],
+  colorModes: [ColorMode.GRAYSCALE],
+  resolutions: [150, 600]
+};
+
+/** @implements {chromeos.scanning.mojom.ScanServiceInterface} */
+class FakeScanService {
+  constructor() {
+    /** @private {!Map<string, !PromiseResolver>} */
+    this.resolverMap_ = new Map();
+
+    /** @private {!ScannerArr} */
+    this.scanners_ = [];
+
+    /**
+     * @private {!Map<!mojoBase.mojom.UnguessableToken,
+     *     !chromeos.scanning.mojom.ScannerCapabilities>}
+     */
+    this.capabilities_ = new Map();
+
+    /** @private {?chromeos.scanning.mojom.ScanJobObserverRemote} */
+    this.scanJobObserverRemote_ = null;
+
+    this.resetForTest();
+  }
+
+  resetForTest() {
+    this.scanners_ = [];
+    this.capabilities_ = new Map();
+    this.scanJobObserverRemote_ = null;
+    this.resolverMap_.set('getScanners', new PromiseResolver());
+    this.resolverMap_.set('getScannerCapabilities', new PromiseResolver());
+    this.resolverMap_.set('startScan', new PromiseResolver());
+  }
+
+  /**
+   * @param {string} methodName
+   * @return {!PromiseResolver}
+   * @private
+   */
+  getResolver_(methodName) {
+    let method = this.resolverMap_.get(methodName);
+    assert(!!method, `Method '${methodName}' not found.`);
+    return method;
+  }
+
+  /**
+   * @param {string} methodName
+   * @protected
+   */
+  methodCalled(methodName) {
+    this.getResolver_(methodName).resolve();
+  }
+
+  /**
+   * @param {string} methodName
+   * @return {!Promise}
+   */
+  whenCalled(methodName) {
+    return this.getResolver_(methodName).promise.then(() => {
+      // Support sequential calls to whenCalled() by replacing the promise.
+      this.resolverMap_.set(methodName, new PromiseResolver());
+    });
+  }
+
+  /** @param {!ScannerArr} scanners */
+  setScanners(scanners) {
+    this.scanners_ = scanners;
+  }
+
+  /** @param {chromeos.scanning.mojom.Scanner} scanner */
+  addScanner(scanner) {
+    this.scanners_ = this.scanners_.concat(scanner);
+  }
+
+  /**
+   * @param {!Map<!mojoBase.mojom.UnguessableToken,
+   *     !chromeos.scanning.mojom.ScannerCapabilities>} capabilities
+   */
+  setCapabilities(capabilities) {
+    this.capabilities_ = capabilities;
+  }
+
+  /**
+   * @param {number} pageNumber
+   * @param {number} progressPercent
+   * @return {!Promise}
+   */
+  simulateProgress(pageNumber, progressPercent) {
+    this.scanJobObserverRemote_.onPageProgress(pageNumber, progressPercent);
+    return flushTasks();
+  }
+
+  /**
+   * @param {number} pageNumber
+   * @return {!Promise}
+   */
+  simulatePageComplete(pageNumber) {
+    this.scanJobObserverRemote_.onPageProgress(pageNumber, 100);
+    const fakePageData = [2, 57, 13, 289];
+    this.scanJobObserverRemote_.onPageComplete(fakePageData);
+    return flushTasks();
+  }
+
+  /**
+   * @param {boolean} success
+   * @return {!Promise}
+   */
+  simulateScanComplete(success) {
+    this.scanJobObserverRemote_.onScanComplete(success);
+    return flushTasks();
+  }
+
+  // scanService methods:
+
+  /** @return {!Promise<{scanners: !ScannerArr}>} */
+  getScanners() {
+    return new Promise(resolve => {
+      this.methodCalled('getScanners');
+      resolve({scanners: this.scanners_ || []});
+    });
+  }
+
+  /**
+   * @param {!mojoBase.mojom.UnguessableToken} scanner_id
+   * @return {!Promise<{capabilities:
+   *    !chromeos.scanning.mojom.ScannerCapabilities}>}
+   */
+  getScannerCapabilities(scanner_id) {
+    return new Promise(resolve => {
+      this.methodCalled('getScannerCapabilities');
+      resolve({capabilities: this.capabilities_.get(scanner_id)});
+    });
+  }
+
+  /**
+   * @param {!mojoBase.mojom.UnguessableToken} scanner_id
+   * @param {!chromeos.scanning.mojom.ScanSettings} settings
+   * @param {!chromeos.scanning.mojom.ScanJobObserverRemote} remote
+   * @return {!Promise<{success: boolean}>}
+   */
+  startScan(scanner_id, settings, remote) {
+    return new Promise(resolve => {
+      this.scanJobObserverRemote_ = remote;
+      this.methodCalled('startScan');
+      resolve({success: true});
+    });
+  }
+}
+
+export function scanningAppTest() {
+  /** @type {?ScanningAppElement} */
+  let scanningApp = null;
+
+  /** @type {?FakeScanService} */
+  let fakeScanService_ = null;
+
+  suiteSetup(() => {
+    fakeScanService_ = new FakeScanService();
+    setScanServiceForTesting(fakeScanService_);
+  });
+
+  setup(function() {
+    document.body.innerHTML = '';
+  });
+
+  teardown(function() {
+    fakeScanService_.resetForTest();
+    scanningApp.remove();
+    scanningApp = null;
+  });
+
+  /**
+   * @param {!ScannerArr} scanners
+   * @param {!Map<!mojoBase.mojom.UnguessableToken,
+   *     !chromeos.scanning.mojom.ScannerCapabilities>} capabilities
+   * @return {!Promise}
+   */
+  function initializeScanningApp(scanners, capabilities) {
+    fakeScanService_.setScanners(scanners);
+    fakeScanService_.setCapabilities(capabilities);
+    scanningApp = /** @type {!ScanningAppElement} */ (
+        document.createElement('scanning-app'));
+    document.body.appendChild(scanningApp);
+    assert(!!scanningApp);
+    return fakeScanService_.whenCalled('getScanners');
+  }
+
+  /**
+   * Returns the "More settings" button.
+   * @return {!CrButtonElement}
+   */
+  function getMoreSettingsButton() {
+    const button =
+        /** @type {!CrButtonElement} */ (scanningApp.$$('#moreSettingsButton'));
+    assertTrue(!!button);
+    return button;
+  }
+
+  /**
+   * Clicks the "More settings" button.
+   * @return {!Promise}
+   */
+  function clickMoreSettingsButton() {
+    getMoreSettingsButton().click();
+    return flushTasks();
+  }
+
+  /**
+   * Clicks the "Done" button.
+   * @return {!Promise}
+   */
+  function clickDoneButton() {
+    const button = scanningApp.$$('#doneButton');
+    assertTrue(!!button);
+    button.click();
+    return flushTasks();
+  }
+
+  /**
+   * Returns whether the "More settings" section is expanded or not.
+   * @return {boolean}
+   */
+  function isSettingsOpen() {
+    return scanningApp.$$('#collapse').opened;
+  }
+
+  test('Scan', () => {
+    const expectedScanners = [
+      createScanner(firstScannerId, firstScannerName),
+      createScanner(secondScannerId, secondScannerName)
+    ];
+
+    let capabilities = new Map();
+    capabilities.set(firstScannerId, firstCapabilities);
+    capabilities.set(secondScannerId, secondCapabilities);
+
+    /** @type {!HTMLSelectElement} */
+    let scannerSelect;
+    /** @type {!HTMLSelectElement} */
+    let sourceSelect;
+    /** @type {!HTMLSelectElement} */
+    let fileTypeSelect;
+    /** @type {!HTMLSelectElement} */
+    let colorModeSelect;
+    /** @type {!HTMLSelectElement} */
+    let pageSizeSelect;
+    /** @type {!HTMLSelectElement} */
+    let resolutionSelect;
+    /** @type {!CrButtonElement} */
+    let scanButton;
+    /** @type {!HTMLElement} */
+    let statusText;
+    /** @type {!HTMLElement} */
+    let helperText;
+    /** @type {!HTMLElement} */
+    let scanProgress;
+    /** @type {!HTMLElement} */
+    let progressText;
+    /** @type {!HTMLElement} */
+    let progressBar;
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          scannerSelect = scanningApp.$$('#scannerSelect').$$('select');
+          sourceSelect = scanningApp.$$('#sourceSelect').$$('select');
+          fileTypeSelect = scanningApp.$$('#fileTypeSelect').$$('select');
+          colorModeSelect = scanningApp.$$('#colorModeSelect').$$('select');
+          pageSizeSelect = scanningApp.$$('#pageSizeSelect').$$('select');
+          resolutionSelect = scanningApp.$$('#resolutionSelect').$$('select');
+          scanButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#scanButton'));
+          statusText =
+              /** @type {!HTMLElement} */ (scanningApp.$$('#statusText'));
+          helperText = scanningApp.$$('#scanPreview').$$('#helperText');
+          scanProgress = scanningApp.$$('#scanPreview').$$('#scanProgress');
+          progressText = scanningApp.$$('#scanPreview').$$('#progressText');
+          progressBar = scanningApp.$$('#scanPreview').$$('paper-progress');
+          return fakeScanService_.whenCalled('getScannerCapabilities');
+        })
+        .then(() => {
+          assertEquals(
+              tokenToString(firstScannerId), scanningApp.selectedScannerId);
+          // A scanner with type "FLATBED" will be used as the selectedSource
+          // if it exists.
+          assertEquals(
+              firstCapabilities.sources[1].name, scanningApp.selectedSource);
+          assertEquals(FileType.PNG.toString(), scanningApp.selectedFileType);
+          assertEquals(
+              firstCapabilities.colorModes[0].toString(),
+              scanningApp.selectedColorMode);
+          assertEquals(
+              firstCapabilities.sources[0].pageSizes[1].toString(),
+              scanningApp.selectedPageSize);
+          assertEquals(
+              firstCapabilities.resolutions[0].toString(),
+              scanningApp.selectedResolution);
+
+          // Before the scan button is clicked, the settings and scan button
+          // should be enabled, and the helper text should be displayed.
+          assertFalse(scannerSelect.disabled);
+          assertFalse(sourceSelect.disabled);
+          assertFalse(fileTypeSelect.disabled);
+          assertFalse(colorModeSelect.disabled);
+          assertFalse(pageSizeSelect.disabled);
+          assertFalse(resolutionSelect.disabled);
+          assertFalse(scanButton.disabled);
+          assertEquals('', statusText.textContent.trim());
+          assertTrue(isVisible(helperText));
+          assertFalse(isVisible(scanProgress));
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#fileSaved'))));
+
+          // Click the Scan button and wait till the scan is started.
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          // After the scan button is clicked and the scan has started, the
+          // settings and scan button should be disabled, and the progress bar
+          // and text should be visible and indicate that scanning is in
+          // progress.
+          assertTrue(scannerSelect.disabled);
+          assertTrue(sourceSelect.disabled);
+          assertTrue(fileTypeSelect.disabled);
+          assertTrue(colorModeSelect.disabled);
+          assertTrue(pageSizeSelect.disabled);
+          assertTrue(resolutionSelect.disabled);
+          assertTrue(scanButton.disabled);
+          assertFalse(isVisible(helperText));
+          assertTrue(isVisible(scanProgress));
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#fileSaved'))));
+          assertEquals('Scanning page 1', progressText.textContent.trim());
+          assertEquals(0, progressBar.value);
+
+          // Simulate a progress update and verify the progress bar and text are
+          // updated correctly.
+          return fakeScanService_.simulateProgress(1, 17);
+        })
+        .then(() => {
+          assertEquals('Scanning page 1', progressText.textContent.trim());
+          assertEquals(17, progressBar.value);
+
+          // Simulate a page complete update and verify the progress bar and
+          // text are updated correctly.
+          return fakeScanService_.simulatePageComplete(1);
+        })
+        .then(() => {
+          assertEquals('Scanning page 1', progressText.textContent.trim());
+          assertEquals(100, progressBar.value);
+
+          // Simulate a progress update for a second page and verify the
+          // progress bar and text are updated correctly.
+          return fakeScanService_.simulateProgress(2, 53);
+        })
+        .then(() => {
+          assertEquals('Scanning page 2', progressText.textContent.trim());
+          assertEquals(53, progressBar.value);
+
+          // Complete the page.
+          return fakeScanService_.simulatePageComplete(2);
+        })
+        .then(() => {
+          // Complete the scan.
+          return fakeScanService_.simulateScanComplete(true);
+        })
+        .then(() => {
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#fileSaved'))));
+          assertEquals(
+              'Scanned files saved!',
+              scanningApp.$$('#fileSaved').textContent.trim());
+
+          // Click the Done button to return to READY state.
+          return clickDoneButton();
+        })
+        .then(() => {
+          // After scanning is complete, the settings and scan button should be
+          // enabled. The progress bar and text should no longer be visible.
+          assertFalse(scannerSelect.disabled);
+          assertFalse(sourceSelect.disabled);
+          assertFalse(fileTypeSelect.disabled);
+          assertFalse(colorModeSelect.disabled);
+          assertFalse(pageSizeSelect.disabled);
+          assertFalse(resolutionSelect.disabled);
+          assertFalse(scanButton.disabled);
+          assertTrue(isVisible(helperText));
+          assertFalse(isVisible(scanProgress));
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#fileSaved'))));
+        });
+  });
+
+  test('PanelContainerContent', () => {
+    const scanners = [];
+    const capabilities = new Map();
+    return initializeScanningApp(scanners, capabilities).then(() => {
+      const panelContainer = scanningApp.$$('.panel-container');
+      assertTrue(!!panelContainer);
+
+      const leftPanel = scanningApp.$$('.panel-container > .left-panel');
+      const rightPanel = scanningApp.$$('.panel-container > .right-panel');
+
+      assertTrue(!!leftPanel);
+      assertTrue(!!rightPanel);
+    });
+  });
+
+  test('MoreSettingsToggle', () => {
+    const scanners = [createScanner(firstScannerId, firstScannerName)];
+    const capabilities = new Map();
+    capabilities.set(firstScannerId, firstCapabilities);
+    return initializeScanningApp(scanners, capabilities)
+        .then(() => {
+          return fakeScanService_.whenCalled('getScannerCapabilities');
+        })
+        .then(() => {
+          // Verify that expandable section is closed by default.
+          assertFalse(isSettingsOpen());
+          // Expand more settings section.
+          return clickMoreSettingsButton();
+        })
+        .then(() => {
+          assertTrue(isSettingsOpen());
+          // Close more settings section.
+          return clickMoreSettingsButton();
+        })
+        .then(() => {
+          assertFalse(isSettingsOpen());
+        });
+  });
+}

@@ -4,19 +4,22 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O_MR1;
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
-import static android.support.test.espresso.matcher.ViewMatchers.Visibility.GONE;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withParent;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
+import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
+import static androidx.test.espresso.matcher.ViewMatchers.Visibility.GONE;
+import static androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
+import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withParent;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.core.AllOf.allOf;
@@ -24,15 +27,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import static org.chromium.base.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
+import static org.chromium.base.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabInTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.finishActivity;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.leaveTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.mergeAllNormalTabsToAGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.switchTabModel;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
@@ -40,8 +48,6 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import static org.chromium.components.embedder_support.util.UrlConstants.NTP_URL;
-import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
-import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -50,12 +56,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.Espresso;
-import android.support.test.espresso.NoMatchingViewException;
-import android.support.test.espresso.ViewAssertion;
-import android.support.test.espresso.contrib.AccessibilityChecks;
-import android.support.test.espresso.contrib.RecyclerViewActions;
-import android.support.test.filters.MediumTest;
+import android.support.test.uiautomator.UiDevice;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -63,40 +64,56 @@ import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.Espresso;
+import androidx.test.espresso.NoMatchingViewException;
+import androidx.test.espresso.ViewAssertion;
+import androidx.test.espresso.contrib.AccessibilityChecks;
+import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.feed.shared.FeedFeatures;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
+import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabStateExtractor;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorTestingRobot;
 import org.chromium.chrome.browser.tasks.tab_management.TabSuggestionMessageService;
@@ -104,10 +121,13 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCoordinator;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.undo_tab_close_snackbar.UndoBarController;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
@@ -116,8 +136,6 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -149,6 +167,8 @@ import java.util.concurrent.atomic.AtomicReference;
         ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
 @Restriction(
         {UiRestriction.RESTRICTION_TYPE_PHONE, Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+@DisableIf.Build(message = "Flaky on emulators; see https://crbug.com/1130830",
+        supported_abis_includes = "x86")
 public class StartSurfaceLayoutTest {
     // clang-format on
     private static final String BASE_PARAMS = "force-fieldtrial-params="
@@ -164,10 +184,8 @@ public class StartSurfaceLayoutTest {
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Rule
-    public TestRule mProcessor = new Features.InstrumentationProcessor();
-
-    @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     @SuppressWarnings("FieldCanBeLocal")
     private EmbeddedTestServer mTestServer;
@@ -199,11 +217,8 @@ public class StartSurfaceLayoutTest {
         mActivityTestRule.getActivity().getTabContentManager().setCaptureMinRequestTimeForTesting(
                 0);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
 
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
     }
@@ -212,6 +227,10 @@ public class StartSurfaceLayoutTest {
     public void tearDown() {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        TestThreadUtils.runOnUiThreadBlocking(
+                ChromeNightModeTestUtils::tearDownNightModeAfterChromeActivityDestroyed);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(null));
     }
 
     @Test
@@ -229,8 +248,6 @@ public class StartSurfaceLayoutTest {
 
         ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
         enterTabSwitcher(cta);
-        // See crbug.com/1063619
-        mRenderTestRule.setPixelDiffThreshold(2);
         mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "3_web_tabs");
     }
 
@@ -250,8 +267,6 @@ public class StartSurfaceLayoutTest {
 
         ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
         enterTabSwitcher(cta);
-        // See crbug.com/1063619
-        mRenderTestRule.setPixelDiffThreshold(2);
         mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "10_web_tabs");
     }
 
@@ -260,6 +275,7 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisabledTest(message = "https://crbug.com/1139807")
     @DisableIf.Build(sdk_is_greater_than = O_MR1, message = "crbug.com/1077552")
     public void testRenderGrid_10WebTabs_InitialScroll() throws IOException {
         // clang-format on
@@ -267,8 +283,6 @@ public class StartSurfaceLayoutTest {
         prepareTabs(10, 0, "about:blank");
         assertEquals(9, cta.getTabModelSelector().getCurrentModel().index());
         enterGTSWithThumbnailRetry();
-        // See crbug.com/1063619
-        mRenderTestRule.setPixelDiffThreshold(2);
         // Make sure the grid tab switcher is scrolled down to show the selected tab.
         mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "10_web_tabs-select_last");
     }
@@ -290,8 +304,6 @@ public class StartSurfaceLayoutTest {
 
         ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
         enterTabSwitcher(cta);
-        // See crbug.com/1063619
-        mRenderTestRule.setPixelDiffThreshold(2);
         mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "3_incognito_web_tabs");
     }
 
@@ -336,7 +348,6 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS})
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/991852 This test is flaky")
     public void testTabToGridFromLiveTabAnimation() throws InterruptedException {
         assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
@@ -507,7 +518,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToCurrentLiveWithAnimation() throws InterruptedException {
         assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
@@ -527,7 +537,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToOtherLiveWithAnimation() throws InterruptedException {
         assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
@@ -570,8 +579,8 @@ public class StartSurfaceLayoutTest {
                         !mActivityTestRule.getActivity().getLayoutManager().overviewVisible();
                 if (!doneHiding) {
                     // Before overview hiding animation is done, the tab index should not change.
-                    assertEquals(
-                            index, mActivityTestRule.getActivity().getCurrentTabModel().index());
+                    Criteria.checkThat(mActivityTestRule.getActivity().getCurrentTabModel().index(),
+                            Matchers.is(index));
                 }
                 return doneHiding;
             }, "Overview not hidden yet");
@@ -814,15 +823,19 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("TabSuggestion")
     @EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true/min_time_between_prefetches/0"})
     public void testTabSuggestionMessageCard_dismiss() throws InterruptedException {
+        // clang-format on
         prepareTabs(3, 0, null);
 
         // TODO(meiliang): Avoid using static variable for tracking state,
         // TabSuggestionMessageService.isSuggestionAvailableForTesting(). Instead, we can add a
         // dummy MessageObserver to track the availability of the suggestions.
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(3)));
 
         enterGTSWithThumbnailChecking();
 
@@ -840,12 +853,16 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("TabSuggestion")
     @EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true/min_time_between_prefetches/0"})
     public void testTabSuggestionMessageCard_review() throws InterruptedException {
+        // clang-format on
         prepareTabs(3, 0, null);
 
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(3)));
 
         enterGTSWithThumbnailChecking();
 
@@ -866,9 +883,12 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("TabSuggestion")
     @EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
-    @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000/baseline_tab_suggestions/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true/min_time_between_prefetches/0"})
     public void testShowOnlyOneTabSuggestionMessageCard_withSoftCleanup()
             throws InterruptedException {
+        // clang-format on
         verifyOnlyOneTabSuggestionMessageCardIsShowing();
     }
 
@@ -876,9 +896,12 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("TabSuggestion")
     @EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true/min_time_between_prefetches/0"})
     public void testShowOnlyOneTabSuggestionMessageCard_withHardCleanup()
             throws InterruptedException {
+        // clang-format on
         verifyOnlyOneTabSuggestionMessageCardIsShowing();
     }
 
@@ -886,11 +909,15 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("TabSuggestion")
     @EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true/min_time_between_prefetches/0"})
     public void testTabSuggestionMessageCardDismissAfterTabClosing() throws InterruptedException {
+        // clang-format on
         prepareTabs(3, 0, mUrl);
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(3)));
 
         enterGTSWithThumbnailChecking();
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
@@ -900,7 +927,8 @@ public class StartSurfaceLayoutTest {
 
         CriteriaHelper.pollUiThread(
                 () -> !TabSuggestionMessageService.isSuggestionAvailableForTesting());
-        CriteriaHelper.pollUiThread(Criteria.equals(2, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(2)));
 
         onView(withId(R.id.tab_list_view))
                 .check(TabUiTestHelper.ChildrenCountAssertion.havingTabSuggestionMessageCardCount(
@@ -967,13 +995,17 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("TabSuggestion")
     @EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true/min_time_between_prefetches/0"})
     public void testTabSuggestionMessageCard_orientation() throws InterruptedException {
+        // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         prepareTabs(3, 0, null);
 
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(3)));
 
         enterGTSWithThumbnailChecking();
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
@@ -1051,6 +1083,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisabledTest(message = "https://crbug.com/1122657")
     public void testThumbnailAspectRatio_default() {
         prepareTabs(2, 0, mUrl);
         enterTabSwitcher(mActivityTestRule.getActivity());
@@ -1061,6 +1094,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.75"})
+    @DisabledTest(message = "https://crbug.com/1122657")
     public void testThumbnailAspectRatio_point75() {
         prepareTabs(2, 0, mUrl);
         enterTabSwitcher(mActivityTestRule.getActivity());
@@ -1079,6 +1113,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/2.0/allow_to_refetch/true"})
+    @DisabledTest(message = "Flaky - https://crbug.com/1124041")
     public void testThumbnailAspectRatio_fromTwoToPoint75() throws Exception {
         prepareTabs(2, 0, mUrl);
         enterTabSwitcher(mActivityTestRule.getActivity());
@@ -1103,6 +1138,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisabledTest(message = "https://crbug.com/1138739")
     public void testThumbnailFetchingResult_defaultAspectRatio() throws Exception {
         prepareTabs(2, 0, mUrl);
         int oldJpegCount = RecordHistogram.getHistogramValueCountForTesting(
@@ -1178,6 +1214,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/2.0/allow_to_refetch/true"})
+    @DisabledTest(message = "http://crbug/1119527 - Flaky on bots.")
     public void testThumbnailFetchingResult_changingAspectRatio() throws Exception {
         prepareTabs(2, 0, mUrl);
         int oldJpegCount = RecordHistogram.getHistogramValueCountForTesting(
@@ -1291,7 +1328,27 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @Feature({"RenderTest"})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.85"})
+    public void testRenderGrid_withAspectRatioPoint85() throws IOException {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        prepareTabs(3, 0, "about:blank");
+        TabModel normalTabModel = cta.getTabModelSelector().getModel(false);
+        List<Tab> tabGroup = new ArrayList<>(
+                Arrays.asList(normalTabModel.getTabAt(0), normalTabModel.getTabAt(1)));
+        createTabGroup(cta, false, tabGroup);
+        // Make sure all tabs have thumbnail.
+        enterGTSWithThumbnailRetry();
+        mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "aspect_ratio_point_85");
+    }
+
+    @Test
+    @MediumTest
     @Feature("NewTabVariation")
+    @DisabledTest(message = "https://crbug.com/1144666")
     // clang-format off
     @Features.DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
             ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
@@ -1358,13 +1415,15 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @DisabledTest
     public void testCloseTabViaCloseButton() throws Exception {
         // clang-format on
         mActivityTestRule.getActivity().getSnackbarManager().disableForTesting();
         prepareTabs(1, 0, null);
         enterGTSWithThumbnailChecking();
 
-        onView(allOf(withId(R.id.action_button), withParent(withId(R.id.content_view))))
+        onView(allOf(withId(R.id.action_button), withParent(withId(R.id.content_view)),
+                       withEffectiveVisibility(VISIBLE)))
                 .perform(click());
     }
 
@@ -1372,6 +1431,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @DisabledTest(message = "Flaky - https://crbug.com/1124041")
     public void testSwipeToDismiss_GTS() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Create 3 tabs and merge the first two tabs into one group.
@@ -1397,6 +1457,59 @@ public class StartSurfaceLayoutTest {
                         0, getSwipeToDismissAction(true)));
         verifyTabSwitcherCardCount(cta, 0);
         verifyTabModelTabCount(cta, 0, 0);
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @DisabledTest(message = "https://crbug.com/1144666")
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+        ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @CommandLineFlags.Add({BASE_PARAMS + "/enable_launch_polish/true"})
+    public void testCloseButtonDescription() {
+        String expectedDescription = "Close New tab tab";
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        enterTabSwitcher(cta);
+
+        // Test single tab.
+        onView(allOf(withParent(withId(R.id.content_view)), withId(R.id.action_button),
+                       withEffectiveVisibility(VISIBLE)))
+                .check(ViewContentDescription.havingDescription(expectedDescription));
+
+        // Create 2 tabs and merge them into one group.
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        TabModel normalTabModel = cta.getTabModelSelector().getModel(false);
+        List<Tab> tabGroup = new ArrayList<>(
+                Arrays.asList(normalTabModel.getTabAt(0), normalTabModel.getTabAt(1)));
+        createTabGroup(cta, false, tabGroup);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Test group tab.
+        expectedDescription = "Close tab group with 2 tabs";
+        onView(allOf(withParent(withId(R.id.content_view)), withId(R.id.action_button),
+                       withEffectiveVisibility(VISIBLE)))
+                .check(ViewContentDescription.havingDescription(expectedDescription));
+    }
+
+    private static class ViewContentDescription implements ViewAssertion {
+        private String mExpectedDescription;
+
+        public static ViewContentDescription havingDescription(String description) {
+            return new ViewContentDescription(description);
+        }
+
+        public ViewContentDescription(String description) {
+            mExpectedDescription = description;
+        }
+
+        @Override
+        public void check(View view, NoMatchingViewException noMatchException) {
+            if (noMatchException != null) throw noMatchException;
+
+            assertEquals(mExpectedDescription, view.getContentDescription());
+        }
     }
 
     private static class TabCountAssertion implements ViewAssertion {
@@ -1457,8 +1570,10 @@ public class StartSurfaceLayoutTest {
     }
 
     private void waitForLastSearchTerm(Tab tab, String expected) {
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(expected, () -> TabAttributeCache.getLastSearchTerm(tab.getId())));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    TabAttributeCache.getLastSearchTerm(tab.getId()), Matchers.is(expected));
+        });
     }
 
     @Test
@@ -1472,7 +1587,7 @@ public class StartSurfaceLayoutTest {
         enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
-        onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.page_info_button)).check(matches(not(isDisplayed())));
     }
 
     @Test
@@ -1480,6 +1595,7 @@ public class StartSurfaceLayoutTest {
     // Disable TAB_TO_GTS_ANIMATION to make it less flaky.
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/enable_search_term_chip/true"})
+    @DisabledTest(message = "http://crbug/1120822 - Flaky on bots.")
     public void testSearchTermChip_withChip() throws InterruptedException {
         assertTrue(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue());
         // Make sure we support RTL and CJKV languages.
@@ -1504,7 +1620,7 @@ public class StartSurfaceLayoutTest {
         enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
-        onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.page_info_button)).check(matches(not(isDisplayed())));
         Espresso.pressBack();
 
         // Navigate, and verify the chip is shown.
@@ -1513,7 +1629,7 @@ public class StartSurfaceLayoutTest {
         enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
-        onView(withId(R.id.search_button))
+        onView(withId(R.id.page_info_button))
                 .check(waitForView(allOf(withText(expectedTerm), isDisplayed())));
         Espresso.pressBack();
 
@@ -1529,7 +1645,7 @@ public class StartSurfaceLayoutTest {
         enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
-        onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.page_info_button)).check(matches(not(isDisplayed())));
         Espresso.pressBack();
 
         // Back to previous page, and verify the chip is back.
@@ -1538,15 +1654,15 @@ public class StartSurfaceLayoutTest {
         enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
-        onView(withId(R.id.search_button))
+        onView(withId(R.id.page_info_button))
                 .check(waitForView(allOf(withText(expectedTerm), isDisplayed())));
 
         // Click the chip and check the tab navigates back to the search result page.
-        assertEquals(mUrl, currentTab.getUrlString());
+        assertEquals(mUrl, ChromeTabUtils.getUrlStringOnUiThread(currentTab));
         OverviewModeBehaviorWatcher hideWatcher = TabUiTestHelper.createOverviewHideWatcher(cta);
-        onView(withId(R.id.search_button))
+        onView(withId(R.id.page_info_button))
                 .check(waitForView(allOf(withText(expectedTerm), isDisplayed())));
-        onView(withId(R.id.search_button)).perform(click());
+        onView(withId(R.id.page_info_button)).perform(click());
         hideWatcher.waitForBehavior();
         ChromeTabUtils.waitForTabPageLoaded(currentTab, searchUrl.get());
 
@@ -1555,7 +1671,7 @@ public class StartSurfaceLayoutTest {
         enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
-        onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.page_info_button)).check(matches(not(isDisplayed())));
     }
 
     @Test
@@ -1584,7 +1700,7 @@ public class StartSurfaceLayoutTest {
         enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
-        onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.page_info_button)).check(matches(not(isDisplayed())));
         Espresso.pressBack();
 
         // Navigate, and verify the chip is shown.
@@ -1593,7 +1709,7 @@ public class StartSurfaceLayoutTest {
         enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
-        onView(withId(R.id.search_button))
+        onView(withId(R.id.page_info_button))
                 .check(waitForView(allOf(withText(searchTerm), isDisplayed())));
 
         // Switch the default search engine from google.com to yahoo.com, the search chip icon
@@ -1601,7 +1717,7 @@ public class StartSurfaceLayoutTest {
         RecyclerView tabListRecyclerView = cta.findViewById(R.id.tab_list_view);
         ChipView chipView =
                 tabListRecyclerView.findViewHolderForAdapterPosition(0).itemView.findViewById(
-                        R.id.search_button);
+                        R.id.page_info_button);
         ChromeImageView iconImageView = (ChromeImageView) chipView.getChildAt(0);
         Drawable googleDrawable = iconImageView.getDrawable();
 
@@ -1615,6 +1731,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @FlakyTest(message = "crbug.com/1096997")
     public void testTabGroupManualSelection() throws InterruptedException {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         TabSelectionEditorTestingRobot robot = new TabSelectionEditorTestingRobot();
@@ -1640,11 +1757,64 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1144666")
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    public void testTabGroupManualSelection_DisabledForSingleTab() {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Group option should be disabled when there is only one single tab.
+        // We are using UiDevice to finish the click here since there seems to be more than one menu
+        // button in the view hierarchy, and we couldn't locate it using espresso approach. Also,
+        // performClick() won't work as the logic that handles menu button lies in onTouchListener.
+        View menuButton =
+                cta.findViewById(R.id.tab_switcher_toolbar).findViewById(R.id.menu_button);
+        int[] location = new int[2];
+        menuButton.getLocationOnScreen(location);
+        UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+                .click(location[0], location[1]);
+        onView(withText("Group tabs"))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .check(matches(not(isEnabled())));
+
+        // Group option should be enabled when there is more than one single tab.
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+        UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+                .click(location[0], location[1]);
+        onView(withText("Group tabs"))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .check(matches(isEnabled()));
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    public void testTabGroupManualSelection_SystemBackDismiss() {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        TabSelectionEditorTestingRobot robot = new TabSelectionEditorTestingRobot();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+                .check(TabCountAssertion.havingTabCount(2));
+        enterTabGroupManualSelection(cta);
+        robot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        // Pressing system back should dismiss the selection editor.
+        Espresso.pressBack();
+        robot.resultRobot.verifyTabSelectionEditorIsHidden();
+    }
+
+    @Test
+    @MediumTest
     // clang-format off
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true/min_time_between_prefetches/0"})
     public void testTabGroupManualSelection_AfterReviewTabSuggestion() throws InterruptedException {
         // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -1653,7 +1823,8 @@ public class StartSurfaceLayoutTest {
 
         // Review closing tab suggestion.
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(3)));
 
         // Entering GTS with thumbnail checking here is trying to reduce flakiness that is caused by
         // the TabContextObserver. TabContextObserver listens to
@@ -1671,8 +1842,10 @@ public class StartSurfaceLayoutTest {
 
         robot.actionRobot.clickToolbarActionButton();
         robot.resultRobot.verifyTabSelectionEditorIsHidden();
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(0, mActivityTestRule.getActivity().getCurrentTabModel()::getCount));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity().getCurrentTabModel().getCount(),
+                    Matchers.is(0));
+        });
 
         // Show Manual Selection Mode.
         createTabs(cta, false, 3);
@@ -1694,7 +1867,6 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = N_MR1, message = "crbug.com/1077191, crbug.com/1081909")
     public void testActivityCanBeGarbageCollectedAfterFinished() throws Exception {
         prepareTabs(1, 0, "about:blank");
 
@@ -1709,7 +1881,12 @@ public class StartSurfaceLayoutTest {
         mTabListDelegate = null;
         mActivityTestRule.setActivity(activity);
 
-        assertTrue(GarbageCollectionTestUtils.canBeGarbageCollected(activityRef));
+        // TODO(crbug.com/1129187): Looks like this doesn't work with FeedV2.
+        if (!FeedFeatures.isV2Enabled()) {
+            // A longer timeout is needed. Achieve that by using the CriteriaHelper.pollUiThread.
+            CriteriaHelper.pollUiThread(
+                    () -> GarbageCollectionTestUtils.canBeGarbageCollected(activityRef));
+        }
     }
 
     /**
@@ -1733,7 +1910,7 @@ public class StartSurfaceLayoutTest {
         // Need to wait for contentsState to be initialized for the tab to restore correctly.
         CriteriaHelper.pollUiThread(
                 ()
-                        -> TabState.from(mActivityTestRule.getActivity().getActivityTab())
+                        -> TabStateExtractor.from(mActivityTestRule.getActivity().getActivityTab())
                                    .contentsState
                         != null,
                 "Incognito tab contentsState is null");
@@ -1746,7 +1923,7 @@ public class StartSurfaceLayoutTest {
         // Need to wait for contentsState to be initialized for the tab to restore correctly.
         CriteriaHelper.pollUiThread(
                 ()
-                        -> TabState.from(mActivityTestRule.getActivity().getActivityTab())
+                        -> TabStateExtractor.from(mActivityTestRule.getActivity().getActivityTab())
                                    .contentsState
                         != null,
                 "Incognito tab contentsState is null");
@@ -1756,6 +1933,7 @@ public class StartSurfaceLayoutTest {
         AtomicBoolean tabModelRestoreCompleted = new AtomicBoolean(false);
         AtomicBoolean normalModelIsEmpty = new AtomicBoolean(true);
 
+        DeferredStartupHandler.setExpectingActivityStartupForTesting();
         ChromeTabbedActivity newActivity =
                 ApplicationTestUtils.recreateActivity(mActivityTestRule.getActivity());
 
@@ -1791,10 +1969,9 @@ public class StartSurfaceLayoutTest {
                 "New Activity current TabModel is not incognito");
         TestThreadUtils.runOnUiThreadBlocking(IncognitoUtils::closeAllIncognitoTabs);
 
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp(),
-                "Deferred startup never completed");
+        assertTrue("Deferred startup never completed",
+                DeferredStartupHandler.waitForDeferredStartupCompleteForTesting(
+                        ScalableTimeout.scaleTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL)));
 
         CriteriaHelper.pollUiThread(()
                                             -> tabModelRestoreCompleted.get(),
@@ -1805,6 +1982,123 @@ public class StartSurfaceLayoutTest {
         // With the fix, StaticLayout guarantees to be shown. Otherwise, StartSurfaceLayout could be
         // shown, not guaranteed.
         assertTrue(newActivity.getLayoutManager().getActiveLayout() instanceof StaticLayout);
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
+    public void testTabGroupNotFormDuringRestore() throws Exception {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        mActivityTestRule.loadUrl(mUrl);
+        Tab parentTab = cta.getTabModelSelector().getCurrentTab();
+
+        // Create a tab whose parent tab is parentTab.
+        TabCreator tabCreator = cta.getTabCreator(false);
+        LoadUrlParams loadUrlParams = new LoadUrlParams(mUrl);
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> tabCreator.createNewTab(
+                                loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND, parentTab));
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Restart activity with tab group enabled, and the tabs should remain as single tabs.
+        finishActivity(cta);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
+        mActivityTestRule.startMainActivityOnBlankPage();
+        cta = mActivityTestRule.getActivity();
+        assertTrue(cta.getTabModelSelector().getTabModelFilterProvider().getCurrentTabModelFilter()
+                           instanceof TabGroupModelFilter);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 3);
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    public void verifyTabGroupStateAfterReparenting() throws Exception {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        assertTrue(cta.getTabModelSelector().getTabModelFilterProvider().getCurrentTabModelFilter()
+                           instanceof TabGroupModelFilter);
+        mActivityTestRule.loadUrl(mUrl);
+        Tab parentTab = cta.getTabModelSelector().getCurrentTab();
+
+        // Create a tab whose parent tab is parentTab.
+        TabCreator tabCreator = cta.getTabCreator(false);
+        LoadUrlParams loadUrlParams = new LoadUrlParams(mUrl);
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> tabCreator.createNewTab(
+                                loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND, parentTab));
+        Tab childTab = cta.getTabModelSelector().getCurrentModel().getTabAt(1);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        TabGroupModelFilter filter = (TabGroupModelFilter) cta.getTabModelSelector()
+                                             .getTabModelFilterProvider()
+                                             .getCurrentTabModelFilter();
+        TestThreadUtils.runOnUiThreadBlocking(() -> filter.moveTabOutOfGroup(childTab.getId()));
+        verifyTabSwitcherCardCount(cta, 2);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeNightModeTestUtils.setUpNightModeForChromeActivity(true));
+        cta = ActivityUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), ChromeTabbedActivity.class);
+        assertTrue(cta.getNightModeStateProvider().isInNightMode());
+        CriteriaHelper.pollUiThread(cta.getTabModelSelector()::isTabStateInitialized);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    public void testUndoClosure_AccessibilityMode() throws Exception {
+        // clang-format on
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true));
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        SnackbarManager snackbarManager = mActivityTestRule.getActivity().getSnackbarManager();
+        createTabs(cta, false, 3);
+
+        // When grid tab switcher is enabled for accessibility mode, tab closure should still show
+        // undo snack bar.
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 3);
+        assertNull(snackbarManager.getCurrentSnackbarForTesting());
+        closeFirstTabInTabSwitcher();
+        assertTrue(snackbarManager.getCurrentSnackbarForTesting().getController()
+                           instanceof UndoBarController);
+        verifyTabSwitcherCardCount(cta, 2);
+        CriteriaHelper.pollInstrumentationThread(TabUiTestHelper::verifyUndoBarShowingAndClickUndo);
+        verifyTabSwitcherCardCount(cta, 3);
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID, ChromeFeatureList.INSTANT_START})
+    // TODO(crbug.com/1112557): Remove this test when critical tests in StartSurfaceLayoutTest are
+    // running with InstantStart on.
+    public void testSetup_WithInstantStart() throws Exception {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Verify TabModelObserver is correctly setup by checking if tab switcher changes with tab
+        // closure.
+        closeFirstTabInTabSwitcher();
+        verifyTabSwitcherCardCount(cta, 0);
+
+        // Verify TabGroupModelFilter is correctly setup by checking if tab switcher changes with
+        // tab grouping.
+        createTabs(cta, false, 3);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
     }
 
     private void enterTabGroupManualSelection(ChromeTabbedActivity cta) {
@@ -1911,11 +2205,13 @@ public class StartSurfaceLayoutTest {
 
     private void checkCaptureCount(int expectedDelta, int initCount) {
         // TODO(wychen): With animation, the 2nd capture might be skipped if the 1st takes too long.
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(expectedDelta, () -> getCaptureCount() - initCount));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(getCaptureCount() - initCount, Matchers.is(expectedDelta));
+        });
     }
 
     private int getCaptureCount() {
+        // TODO(crbug/1110961): Find a replacement for depending on Compositing.CopyFromSurfaceTime.
         return RecordHistogram.getHistogramTotalCountForTesting("Compositing.CopyFromSurfaceTime");
     }
 
@@ -1976,7 +2272,8 @@ public class StartSurfaceLayoutTest {
                 String.format(Locale.getDefault(), suggestionMessageTemplate, "3");
         prepareTabs(3, 0, mUrl);
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(3)));
 
         enterGTSWithThumbnailChecking();
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);

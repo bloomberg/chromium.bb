@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -68,7 +69,14 @@ Error GetSSLError(const SSL* ssl, int return_code) {
     return Error::None();
   }
 
-  std::string message = ERR_reason_error_string(ERR_get_error());
+  // Create error message w/ unwind of error stack + original SSL error string.
+  std::stringstream msg;
+  msg << "boringssl error (" << error_code
+      << "): " << SSL_error_description(error_code);
+  while (uint32_t packed_error = ERR_get_error()) {
+    msg << "\nerr stack: " << ERR_reason_error_string(packed_error);
+  }
+  std::string message = msg.str();
   switch (error_code) {
     case SSL_ERROR_ZERO_RETURN:
       return Error(Error::Code::kSocketClosedFailure, std::move(message));

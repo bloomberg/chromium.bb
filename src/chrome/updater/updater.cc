@@ -8,10 +8,14 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/message_loop/message_pump_type.h"
+#include "base/task/single_thread_task_executor.h"
 #include "build/build_config.h"
 #include "chrome/updater/app/app.h"
+#include "chrome/updater/app/app_install.h"
 #include "chrome/updater/app/app_uninstall.h"
-#include "chrome/updater/app/app_update_all.h"
+#include "chrome/updater/app/app_update.h"
+#include "chrome/updater/app/app_wake.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crash_client.h"
@@ -21,21 +25,18 @@
 #include "components/crash/core/common/crash_key.h"
 
 #if defined(OS_WIN)
-#include "chrome/updater/server/win/server.h"
-#include "chrome/updater/server/win/service_main.h"
-#include "chrome/updater/win/install_app.h"
+#include "chrome/updater/app/server/win/server.h"
+#include "chrome/updater/app/server/win/service_main.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "chrome/updater/mac/setup/install_app.h"
-#include "chrome/updater/mac/setup/swap_app.h"
-#include "chrome/updater/server/mac/server.h"
+#if defined(OS_MAC)
+#include "chrome/updater/app/server/mac/server.h"
 #endif
 
 // Instructions For Windows.
 // - To install only the updater, run "updatersetup.exe" from the build out dir.
-// - To install Chrome and the updater, do the same but use the --appid:
-//    updatersetup.exe --appid={8A69D345-D564-463C-AFF1-A69D9E530F96}
+// - To install Chrome and the updater, do the same but use the --app-id:
+//    updatersetup.exe --app-id={8A69D345-D564-463c-AFF1-A69D9E530F96}
 // - To uninstall, run "updater.exe --uninstall" from its install directory,
 // which is under %LOCALAPPDATA%\Google\GoogleUpdater, or from the |out|
 // directory of the build.
@@ -53,7 +54,7 @@ namespace {
 void InitLogging(const base::CommandLine& command_line) {
   logging::LoggingSettings settings;
   base::FilePath log_dir;
-  GetProductDirectory(&log_dir);
+  GetBaseDirectory(&log_dir);
   const auto log_file = log_dir.Append(FILE_PATH_LITERAL("updater.log"));
   settings.log_file_path = log_file.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;
@@ -82,6 +83,7 @@ void InitializeCrashReporting() {
 
 int HandleUpdaterCommands(const base::CommandLine* command_line) {
   DCHECK(!command_line->HasSwitch(kCrashHandlerSwitch));
+  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
 
   if (command_line->HasSwitch(kCrashMeSwitch)) {
     // Records a backtrace in the log, crashes the program, saves a crash dump,
@@ -90,27 +92,31 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
   }
 
   if (command_line->HasSwitch(kServerSwitch)) {
-    return AppServerInstance()->Run();
+#if defined(OS_WIN)
+    // By design, Windows uses a leaky singleton server for its RPC server.
+    return AppServerSingletonInstance()->Run();
+#else
+    return MakeAppServer()->Run();
+#endif
   }
+
+  if (command_line->HasSwitch(kUpdateSwitch))
+    return MakeAppUpdate()->Run();
 
 #if defined(OS_WIN)
   if (command_line->HasSwitch(kComServiceSwitch))
     return ServiceMain::RunComService(command_line);
 #endif  // OS_WIN
 
-  if (command_line->HasSwitch(kInstallSwitch))
-    return AppInstallInstance()->Run();
-
-#if defined(OS_MACOSX)
-  if (command_line->HasSwitch(kSwapUpdaterSwitch))
-    return AppSwapUpdaterInstance()->Run();
-#endif  // OS_MACOSX
+  if (command_line->HasSwitch(kInstallSwitch) ||
+      command_line->HasSwitch(kTagSwitch))
+    return MakeAppInstall()->Run();
 
   if (command_line->HasSwitch(kUninstallSwitch))
-    return AppUninstallInstance()->Run();
+    return MakeAppUninstall()->Run();
 
-  if (command_line->HasSwitch(kUpdateAppsSwitch)) {
-    return AppUpdateAllInstance()->Run();
+  if (command_line->HasSwitch(kWakeSwitch)) {
+    return MakeAppWake()->Run();
   }
 
   VLOG(1) << "Unknown command line switch.";
@@ -134,7 +140,9 @@ int UpdaterMain(int argc, const char* const* argv) {
 
   InitializeCrashReporting();
 
-  return HandleUpdaterCommands(command_line);
+  const int retval = HandleUpdaterCommands(command_line);
+  DVLOG(1) << __func__ << " returned " << retval << ".";
+  return retval;
 }
 
 }  // namespace updater

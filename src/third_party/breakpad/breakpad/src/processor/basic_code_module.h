@@ -66,11 +66,11 @@ class BasicCodeModule : public CodeModule {
         is_unloaded_(that->is_unloaded()) {}
 
   BasicCodeModule(uint64_t base_address, uint64_t size,
-                  const string &code_file,
-                  const string &code_identifier,
-                  const string &debug_file,
-                  const string &debug_identifier,
-                  const string &version,
+                  const string& code_file,
+                  const string& code_identifier,
+                  const string& debug_file,
+                  const string& debug_identifier,
+                  const string& version,
                   const bool is_unloaded = false)
       : base_address_(base_address),
         size_(size),
@@ -112,8 +112,8 @@ class BasicCodeModule : public CodeModule {
   bool is_unloaded_;
 
   // Disallow copy constructor and assignment operator.
-  BasicCodeModule(const BasicCodeModule &that);
-  void operator=(const BasicCodeModule &that);
+  BasicCodeModule(const BasicCodeModule& that);
+  void operator=(const BasicCodeModule& that);
 };
 
 }  // namespace google_breakpad

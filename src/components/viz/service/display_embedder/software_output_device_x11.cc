@@ -16,19 +16,12 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/base/x/x11_shm_image_pool.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/base/x/x11_util_internal.h"
-#include "ui/gfx/x/x11.h"
-#include "ui/gfx/x/x11_error_tracker.h"
-#include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xproto_types.h"
 
 namespace viz {
 
-SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(
-    gfx::AcceleratedWidget widget,
-    scoped_refptr<base::SequencedTaskRunner> gpu_task_runner)
-    : x11_software_bitmap_presenter_(widget,
-                                     task_runner_.get(),
-                                     std::move(gpu_task_runner)) {
+SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
+    : x11_software_bitmap_presenter_(x11::Connection::Get(), widget, true) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 

@@ -307,27 +307,22 @@ std::string DescriptionForNSEvent(NSEvent* event) {
                                                  DescriptionForNSEvent(event));
 
   base::mac::CallWithEHFrame(^{
-    switch (event.type) {
-      case NSLeftMouseDown:
-      case NSRightMouseDown: {
-        // In kiosk mode, we want to prevent context menus from appearing,
-        // so simply discard menu-generating events instead of passing them
-        // along.
-        bool kioskMode = base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kKioskMode);
-        bool ctrlDown = [event modifierFlags] & NSControlKeyMask;
-        if (kioskMode && ([event type] == NSRightMouseDown || ctrlDown))
-          break;
-        FALLTHROUGH;  // Not menu-generating, so pass on the event.
-      }
-
-      default: {
-        base::mac::ScopedSendingEvent sendingEventScoper;
-        content::ScopedNotifyNativeEventProcessorObserver
-            scopedObserverNotifier(&_observers, event);
-        [super sendEvent:event];
-      }
+    static const bool kKioskMode =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
+    if (kKioskMode) {
+      // In kiosk mode, we want to prevent context menus from appearing,
+      // so simply discard menu-generating events instead of passing them
+      // along.
+      BOOL couldTriggerContextMenu = event.type == NSRightMouseDown ||
+                                     (event.type == NSLeftMouseDown &&
+                                      (event.modifierFlags & NSControlKeyMask));
+      if (couldTriggerContextMenu)
+        return;
     }
+    base::mac::ScopedSendingEvent sendingEventScoper;
+    content::ScopedNotifyNativeEventProcessorObserver scopedObserverNotifier(
+        &_observers, event);
+    [super sendEvent:event];
   });
 }
 

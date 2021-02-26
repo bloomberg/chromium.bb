@@ -48,18 +48,22 @@ class ChromeUpdaterNetworkMacTest : public ::testing::Test {
     EXPECT_LE(current, 100);
   }
 
-  void PostRequestCompleteCallback(std::unique_ptr<std::string> response_body,
+  void PostRequestCompleteCallback(const std::string& expected_body,
+                                   std::unique_ptr<std::string> response_body,
                                    int net_error,
                                    const std::string& header_etag,
+                                   const std::string& header_x_cup_server_proof,
                                    int64_t xheader_retry_after_sec) {
+    EXPECT_STREQ(response_body->c_str(), expected_body.c_str());
     EXPECT_EQ(net_error, 0);
-    EXPECT_GT(header_etag.length(), 0u);
+    EXPECT_STREQ(header_etag.c_str(), "Wfhw789h");
+    EXPECT_STREQ(header_x_cup_server_proof.c_str(), "server-proof");
     EXPECT_EQ(xheader_retry_after_sec, 67);
     PostRequestCompleted();
   }
 
   void DownloadCallback(int net_error, int64_t content_size) {
-    EXPECT_EQ(net_error, 200);
+    EXPECT_EQ(net_error, 0);
     EXPECT_GT(content_size, 0);
     EXPECT_FALSE(testFilePath.empty());
     EXPECT_TRUE(base::PathExists(testFilePath));
@@ -71,10 +75,18 @@ class ChromeUpdaterNetworkMacTest : public ::testing::Test {
     auto http_response =
         std::make_unique<net::test_server::BasicHttpResponse>();
     http_response->set_code(net::HTTP_OK);
-    http_response->set_content("hello");
-    http_response->set_content_type("text/plain");
+
+    if (request.content.size() > 0) {
+      // Echo the posted data back if there's any.
+      http_response->set_content(request.content);
+    } else {
+      http_response->set_content("hello");
+    }
+    http_response->set_content_type("application/octet-stream");
+
     http_response->AddCustomHeader("X-Retry-After", "67");
     http_response->AddCustomHeader("ETag", "Wfhw789h");
+    http_response->AddCustomHeader("X-Cup-Server-Proof", "server-proof");
     return http_response;
   }
 
@@ -107,14 +119,16 @@ TEST_F(ChromeUpdaterNetworkMacTest, NetworkFetcherMacPostRequest) {
   ASSERT_TRUE(test_server.Start());
   const GURL url = test_server.GetURL("/echo");
 
+  constexpr char kPostData[] = {0x01, 0x00, 0x55, 0x33, 0xda, 0x10, 0x44};
+  const std::string post_data(kPostData, sizeof(kPostData));
   fetcher->PostRequest(
-      url, "", {},
+      url, post_data, {}, {},
       base::BindOnce(&ChromeUpdaterNetworkMacTest::StartedCallback,
                      base::Unretained(this)),
       base::BindRepeating(&ChromeUpdaterNetworkMacTest::ProgressCallback,
                           base::Unretained(this)),
       base::BindOnce(&ChromeUpdaterNetworkMacTest::PostRequestCompleteCallback,
-                     base::Unretained(this)));
+                     base::Unretained(this), post_data));
 
   run_loop.Run();
 }

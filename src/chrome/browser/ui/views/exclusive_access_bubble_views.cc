@@ -51,18 +51,37 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
       bubble_first_hide_callback_(std::move(bubble_first_hide_callback)),
       animation_(new gfx::SlideAnimation(this)) {
   // Create the contents view.
+  auto content_view = std::make_unique<SubtleNotificationView>();
+  view_ = content_view.get();
+
+#if defined(OS_CHROMEOS)
+  // Technically the exit fullscreen key on ChromeOS is F11 and the
+  // "Fullscreen" key on the keyboard is just translated to F11 or F4 (which
+  // is also a toggle-fullscreen command on ChromeOS). However most Chromebooks
+  // have media keys - including "fullscreen" - but not function keys, so
+  // instructing the user to "Press [F11] to exit fullscreen" isn't useful.
+  //
+  // An obvious solution might be to change the primary accelerator to the
+  // fullscreen key, but since translation to a function key is done at system
+  // level we can't actually do that. Instead we provide specific messaging for
+  // the platform here. (See crbug.com/1110468 for details.)
+  browser_fullscreen_exit_accelerator_ =
+      l10n_util::GetStringUTF16(IDS_APP_FULLSCREEN_KEY);
+#else
   ui::Accelerator accelerator(ui::VKEY_UNKNOWN, ui::EF_NONE);
   bool got_accelerator =
       bubble_view_context_->GetAcceleratorProvider()
           ->GetAcceleratorForCommandId(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
-  view_ = new SubtleNotificationView();
   browser_fullscreen_exit_accelerator_ = accelerator.GetShortcutText();
+#endif
+
   UpdateViewContent(bubble_type_);
 
   // Initialize the popup.
   popup_ = SubtleNotificationView::CreatePopupWidget(
-      bubble_view_context_->GetBubbleParentView(), view_);
+      bubble_view_context_->GetBubbleParentView(), std::move(content_view));
+
   gfx::Size size = GetPopupRect(true).size();
   // Bounds are in screen coordinates.
   popup_->SetBounds(GetPopupRect(false));
@@ -102,6 +121,7 @@ ExclusiveAccessBubbleViews::~ExclusiveAccessBubbleViews() {
   // itself.
   popup_->Close();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, popup_);
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 void ExclusiveAccessBubbleViews::UpdateContent(
@@ -136,7 +156,16 @@ void ExclusiveAccessBubbleViews::UpdateContent(
 }
 
 void ExclusiveAccessBubbleViews::RepositionIfVisible() {
+#if defined(OS_MAC)
+  // Due to a quirk on the Mac, the popup will not be visible for a short period
+  // of time after it is shown (it's asynchronous) so if we don't check the
+  // value of the animation we'll have a stale version of the bounds when we
+  // show it and it will appear in the wrong place - typically where the window
+  // was located before going to fullscreen.
+  if (popup_->IsVisible() || animation_->GetCurrentValue() > 0.0)
+#else
   if (popup_->IsVisible())
+#endif
     UpdateBounds();
 }
 
@@ -191,7 +220,7 @@ void ExclusiveAccessBubbleViews::UpdateViewContent(
   } else {
     accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
   }
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Mac keyboards use lowercase for everything except function keys, which are
   // typically reserved for system use. Since |accelerator| is placed in a box
   // to make it look like a keyboard key it looks weird to not follow suit.

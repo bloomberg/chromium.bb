@@ -57,7 +57,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
         new Launchd::ScopedInstance(mock_launchd_.get()));
     ASSERT_TRUE(service_process_state_.Initialize());
     ASSERT_TRUE(service_process_state_.SignalReady(
-        io_thread_.task_runner().get(), base::Closure()));
+        io_thread_.task_runner().get(), base::OnceClosure()));
     task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
         FROM_HERE, run_loop_.QuitWhenIdleClosure(),
         TestTimeouts::action_max_timeout());
@@ -88,7 +88,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
 };
 
 void DeleteFunc(const base::FilePath& file) {
-  EXPECT_TRUE(base::DeleteFileRecursively(file));
+  EXPECT_TRUE(base::DeletePathRecursively(file));
 }
 
 void MoveFunc(const base::FilePath& from, const base::FilePath& to) {
@@ -178,7 +178,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, TrashBundle) {
   ASSERT_TRUE(mock_launchd()->delete_called());
   std::string path(base::SysNSStringToUTF8([trashed_url_ path]));
   base::FilePath file_path(path);
-  ASSERT_TRUE(base::DeleteFileRecursively(file_path));
+  ASSERT_TRUE(base::DeletePathRecursively(file_path));
 }
 
 TEST_F(ServiceProcessStateFileManipulationTest, ChangeAttr) {

@@ -16,6 +16,9 @@
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/time_clamper.h"
 #include "third_party/blink/renderer/modules/video_rvfc/video_frame_request_callback_collection.h"
+#include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_system.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -32,8 +35,7 @@ static bool IsFrameRateRelativelyHigh(base::TimeDelta rendering_interval,
 
   constexpr double kThreshold = 0.05;
   return kThreshold >
-         std::abs(1.0 - (rendering_interval.InMillisecondsF() /
-                         average_frame_duration.InMillisecondsF()));
+         std::abs(1.0 - (rendering_interval / average_frame_duration));
 }
 
 }  // namespace
@@ -44,6 +46,8 @@ VideoFrameCallbackRequesterImpl::VideoFrameCallbackRequesterImpl(
       callback_collection_(
           MakeGarbageCollected<VideoFrameRequestCallbackCollection>(
               element.GetExecutionContext())) {}
+
+VideoFrameCallbackRequesterImpl::~VideoFrameCallbackRequesterImpl() = default;
 
 // static
 VideoFrameCallbackRequesterImpl& VideoFrameCallbackRequesterImpl::From(
@@ -81,21 +85,86 @@ void VideoFrameCallbackRequesterImpl::OnWebMediaPlayerCreated() {
     GetSupplementable()->GetWebMediaPlayer()->RequestVideoFrameCallback();
 }
 
-void VideoFrameCallbackRequesterImpl::ScheduleCallbackExecution() {
-  TRACE_EVENT1("blink",
-               "VideoFrameCallbackRequesterImpl::ScheduleCallbackExecution",
+void VideoFrameCallbackRequesterImpl::ScheduleWindowRaf() {
+  GetSupplementable()
+      ->GetDocument()
+      .GetScriptedAnimationController()
+      .ScheduleVideoFrameCallbacksExecution(
+          WTF::Bind(&VideoFrameCallbackRequesterImpl::OnExecution,
+                    WrapWeakPersistent(this)));
+}
+
+void VideoFrameCallbackRequesterImpl::ScheduleExecution() {
+  TRACE_EVENT1("blink", "VideoFrameCallbackRequesterImpl::ScheduleExecution",
                "did_schedule", !pending_execution_);
 
   if (pending_execution_)
     return;
 
   pending_execution_ = true;
-  GetSupplementable()
-      ->GetDocument()
-      .GetScriptedAnimationController()
-      .ScheduleVideoFrameCallbacksExecution(
-          WTF::Bind(&VideoFrameCallbackRequesterImpl::OnRenderingSteps,
-                    WrapWeakPersistent(this)));
+
+  if (TryScheduleImmersiveXRSessionRaf())
+    return;
+
+  ScheduleWindowRaf();
+}
+
+void VideoFrameCallbackRequesterImpl::OnImmersiveSessionStart() {
+  in_immersive_session_ = true;
+
+  if (pending_execution_ && !callback_collection_->IsEmpty())
+    TryScheduleImmersiveXRSessionRaf();
+}
+
+void VideoFrameCallbackRequesterImpl::OnImmersiveSessionEnd() {
+  in_immersive_session_ = false;
+
+  if (pending_execution_ && !callback_collection_->IsEmpty())
+    ScheduleWindowRaf();
+}
+
+void VideoFrameCallbackRequesterImpl::OnImmersiveFrame() {
+  if (callback_collection_->IsEmpty())
+    return;
+
+  if (auto* player = GetSupplementable()->GetWebMediaPlayer())
+    player->UpdateFrameIfStale();
+}
+
+XRFrameProvider* VideoFrameCallbackRequesterImpl::GetXRFrameProvider() {
+  // Do not force the lazy creation of the XRSystem.
+  // If it doesn't exist already exist, the webpage isn't using XR.
+  auto* system = XRSystem::FromIfExists(GetSupplementable()->GetDocument());
+  return system ? system->frameProvider() : nullptr;
+}
+
+bool VideoFrameCallbackRequesterImpl::TryScheduleImmersiveXRSessionRaf() {
+  // Nothing to do here, we will be notified via OnImmersiveSessionStart() when
+  // a new immersive session starts.
+  if (observing_immersive_session_ && !in_immersive_session_)
+    return false;
+
+  auto* frame_provider = GetXRFrameProvider();
+
+  if (!frame_provider)
+    return false;
+
+  if (!observing_immersive_session_) {
+    frame_provider->AddImmersiveSessionObserver(this);
+    observing_immersive_session_ = true;
+  }
+
+  XRSession* session = frame_provider->immersive_session();
+
+  in_immersive_session_ = session && !session->ended();
+
+  if (!in_immersive_session_)
+    return false;
+
+  session->ScheduleVideoFrameCallbacksExecution(WTF::Bind(
+      &VideoFrameCallbackRequesterImpl::OnExecution, WrapWeakPersistent(this)));
+
+  return true;
 }
 
 void VideoFrameCallbackRequesterImpl::OnRequestVideoFrameCallback() {
@@ -108,7 +177,7 @@ void VideoFrameCallbackRequesterImpl::OnRequestVideoFrameCallback() {
   if (callback_collection_->IsEmpty())
     return;
 
-  ScheduleCallbackExecution();
+  ScheduleExecution();
 }
 
 void VideoFrameCallbackRequesterImpl::ExecuteVideoFrameCallbacks(
@@ -139,30 +208,25 @@ void VideoFrameCallbackRequesterImpl::ExecuteVideoFrameCallbacks(
 
   metadata->setMediaTime(frame_metadata->media_time.InSecondsF());
 
-  base::TimeDelta processing_duration;
-  if (frame_metadata->metadata.GetTimeDelta(
-          media::VideoFrameMetadata::PROCESSING_TIME, &processing_duration)) {
-    metadata->setProcessingDuration(
-        GetCoarseClampedTimeInSeconds(processing_duration));
+  if (frame_metadata->metadata.processing_time) {
+    metadata->setProcessingDuration(GetCoarseClampedTimeInSeconds(
+        *frame_metadata->metadata.processing_time));
   }
 
-  base::TimeTicks capture_time;
-  if (frame_metadata->metadata.GetTimeTicks(
-          media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &capture_time)) {
+  if (frame_metadata->metadata.capture_begin_time) {
     metadata->setCaptureTime(GetClampedTimeInMillis(
-        time_converter.MonotonicTimeToZeroBasedDocumentTime(capture_time)));
+        time_converter.MonotonicTimeToZeroBasedDocumentTime(
+            *frame_metadata->metadata.capture_begin_time)));
   }
 
-  base::TimeTicks receive_time;
-  if (frame_metadata->metadata.GetTimeTicks(
-          media::VideoFrameMetadata::RECEIVE_TIME, &receive_time)) {
+  if (frame_metadata->metadata.receive_time) {
     metadata->setReceiveTime(GetClampedTimeInMillis(
-        time_converter.MonotonicTimeToZeroBasedDocumentTime(receive_time)));
+        time_converter.MonotonicTimeToZeroBasedDocumentTime(
+            *frame_metadata->metadata.receive_time)));
   }
 
-  double rtp_timestamp;
-  if (frame_metadata->metadata.GetDouble(
-          media::VideoFrameMetadata::RTP_TIMESTAMP, &rtp_timestamp)) {
+  if (frame_metadata->metadata.rtp_timestamp) {
+    double rtp_timestamp = *frame_metadata->metadata.rtp_timestamp;
     base::CheckedNumeric<uint32_t> uint_rtp_timestamp = rtp_timestamp;
     if (uint_rtp_timestamp.IsValid())
       metadata->setRtpTimestamp(rtp_timestamp);
@@ -171,15 +235,15 @@ void VideoFrameCallbackRequesterImpl::ExecuteVideoFrameCallbacks(
   callback_collection_->ExecuteFrameCallbacks(high_res_now_ms, metadata);
 }
 
-void VideoFrameCallbackRequesterImpl::OnRenderingSteps(double high_res_now_ms) {
-  DCHECK(pending_execution_);
+void VideoFrameCallbackRequesterImpl::OnExecution(double high_res_now_ms) {
   TRACE_EVENT1("blink", "VideoFrameCallbackRequesterImpl::OnRenderingSteps",
                "has_callbacks", !callback_collection_->IsEmpty());
-
   pending_execution_ = false;
 
   // Callbacks could have been canceled from the time we scheduled their
   // execution.
+  // We could also be executing a leftover callback scheduled through the
+  // ScriptedAnimationController, right after exiting an immersive XR session.
   if (callback_collection_->IsEmpty())
     return;
 
@@ -210,30 +274,29 @@ void VideoFrameCallbackRequesterImpl::OnRenderingSteps(double high_res_now_ms) {
   // extra rendering steps would be wasteful.
   if (is_hfr && !callback_collection_->IsEmpty() &&
       consecutive_stale_frames_ < 2) {
-    ScheduleCallbackExecution();
+    ScheduleExecution();
   }
 }
 
 // static
 double VideoFrameCallbackRequesterImpl::GetClampedTimeInMillis(
     base::TimeDelta time) {
-  constexpr double kSecondsToMillis = 1000.0;
-  return Performance::ClampTimeResolution(time.InSecondsF()) * kSecondsToMillis;
+  return Performance::ClampTimeResolution(time.InSecondsF()) *
+         base::Time::kMillisecondsPerSecond;
 }
 
 // static
 double VideoFrameCallbackRequesterImpl::GetCoarseClampedTimeInSeconds(
     base::TimeDelta time) {
-  constexpr double kCoarseResolutionInSeconds = 100e-6;
+  constexpr auto kCoarseResolution = base::TimeDelta::FromMicroseconds(100);
   // Add this assert, in case TimeClamper's resolution were to change to be
   // stricter.
-  static_assert(kCoarseResolutionInSeconds >= TimeClamper::kResolutionSeconds,
-                "kCoarseResolutionInSeconds should be at least "
-                "as coarse as other clock resolutions");
-  double interval = floor(time.InSecondsF() / kCoarseResolutionInSeconds);
-  double clamped_time = interval * kCoarseResolutionInSeconds;
+  static_assert(kCoarseResolution >= base::TimeDelta::FromSecondsD(
+                                         TimeClamper::kResolutionSeconds),
+                "kCoarseResolution should be at least as coarse as other clock "
+                "resolutions");
 
-  return clamped_time;
+  return time.FloorToMultiple(kCoarseResolution).InSecondsF();
 }
 
 int VideoFrameCallbackRequesterImpl::requestVideoFrameCallback(
@@ -261,7 +324,7 @@ void VideoFrameCallbackRequesterImpl::cancelVideoFrameCallback(int id) {
   callback_collection_->CancelFrameCallback(id);
 }
 
-void VideoFrameCallbackRequesterImpl::Trace(Visitor* visitor) {
+void VideoFrameCallbackRequesterImpl::Trace(Visitor* visitor) const {
   visitor->Trace(callback_collection_);
   Supplement<HTMLVideoElement>::Trace(visitor);
 }

@@ -73,10 +73,10 @@ void RecyclableCompositorMac::UpdateSurface(
     size_pixels_ = size_pixels;
     scale_factor_ = scale_factor;
     local_surface_id_allocator_.GenerateId();
-    viz::LocalSurfaceIdAllocation local_surface_id_allocation =
-        local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
+    viz::LocalSurfaceId local_surface_id =
+        local_surface_id_allocator_.GetCurrentLocalSurfaceId();
     compositor()->SetScaleAndSize(scale_factor_, size_pixels_,
-                                  local_surface_id_allocation);
+                                  local_surface_id);
   }
   if (display_color_spaces != display_color_spaces_) {
     display_color_spaces_ = display_color_spaces;
@@ -91,7 +91,7 @@ void RecyclableCompositorMac::InvalidateSurface() {
   display_color_spaces_ = gfx::DisplayColorSpaces();
   compositor()->SetScaleAndSize(
       scale_factor_, size_pixels_,
-      local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
+      local_surface_id_allocator_.GetCurrentLocalSurfaceId());
   compositor()->SetDisplayColorSpaces(gfx::DisplayColorSpaces());
 }
 
@@ -130,6 +130,8 @@ void RecyclableCompositorMacFactory::RecycleCompositor(
   if (recycling_disabled_)
     return;
 
+  // Invalidate the surface before suspending it.
+  compositor->InvalidateSurface();
   compositor->accelerated_widget_mac_->SetSuspended(true);
 
   // Make this RecyclableCompositorMac recyclable for future instances.
@@ -154,7 +156,10 @@ void RecyclableCompositorMacFactory::RecycleCompositor(
 }
 
 RecyclableCompositorMacFactory::RecyclableCompositorMacFactory()
-    : weak_factory_(this) {}
+    : weak_factory_(this) {
+  if (features::IsUsingSkiaRenderer())
+    recycling_disabled_ = true;
+}
 
 RecyclableCompositorMacFactory::~RecyclableCompositorMacFactory() = default;
 

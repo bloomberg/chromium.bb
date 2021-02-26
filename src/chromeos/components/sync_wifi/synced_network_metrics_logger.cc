@@ -98,10 +98,19 @@ SyncedNetworkMetricsLogger::SyncedNetworkMetricsLogger(
 }
 
 SyncedNetworkMetricsLogger::~SyncedNetworkMetricsLogger() {
-  if (network_connection_handler_)
-    network_connection_handler_->RemoveObserver(this);
-  if (network_state_handler_)
+  OnShuttingDown();
+}
+
+void SyncedNetworkMetricsLogger::OnShuttingDown() {
+  if (network_state_handler_) {
     network_state_handler_->RemoveObserver(this, FROM_HERE);
+    network_state_handler_ = nullptr;
+  }
+
+  if (network_connection_handler_) {
+    network_connection_handler_->RemoveObserver(this);
+    network_connection_handler_ = nullptr;
+  }
 }
 
 void SyncedNetworkMetricsLogger::ConnectSucceeded(
@@ -124,12 +133,8 @@ void SyncedNetworkMetricsLogger::ConnectFailed(const std::string& service_path,
   // Get the the current state and error info.
   NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
       service_path,
-      base::BindOnce(
-          &SyncedNetworkMetricsLogger::ConnectErrorPropertiesSucceeded,
-          weak_ptr_factory_.GetWeakPtr(), error_name),
-      base::BindRepeating(
-          &SyncedNetworkMetricsLogger::ConnectErrorPropertiesFailed,
-          weak_ptr_factory_.GetWeakPtr(), error_name, service_path));
+      base::BindOnce(&SyncedNetworkMetricsLogger::OnConnectErrorGetProperties,
+                     weak_ptr_factory_.GetWeakPtr(), error_name));
 }
 
 void SyncedNetworkMetricsLogger::NetworkConnectionStateChanged(
@@ -161,45 +166,50 @@ void SyncedNetworkMetricsLogger::NetworkConnectionStateChanged(
 }
 
 bool SyncedNetworkMetricsLogger::IsEligible(const NetworkState* network) {
-  return network &&
-         NetworkHandler::Get()->network_metadata_store()->GetIsConfiguredBySync(
-             network->guid());
+  // Only non-tether Wi-Fi networks are eligible for logging.
+  if (!network || network->type() != shill::kTypeWifi ||
+      !network->tether_guid().empty()) {
+    return false;
+  }
+
+  NetworkMetadataStore* metadata_store =
+      NetworkHandler::Get()->network_metadata_store();
+  if (!metadata_store) {
+    return false;
+  }
+
+  return metadata_store->GetIsConfiguredBySync(network->guid());
 }
 
-void SyncedNetworkMetricsLogger::ConnectErrorPropertiesSucceeded(
+void SyncedNetworkMetricsLogger::OnConnectErrorGetProperties(
     const std::string& error_name,
     const std::string& service_path,
-    const base::DictionaryValue& shill_properties) {
-  std::string state;
-  shill_properties.GetStringWithoutPathExpansion(shill::kStateProperty, &state);
-  if (NetworkState::StateIsConnected(state) ||
-      NetworkState::StateIsConnecting(state)) {
+    base::Optional<base::Value> shill_properties) {
+  if (!shill_properties) {
+    base::UmaHistogramBoolean(kConnectionResultManualHistogram, false);
+    base::UmaHistogramEnumeration(kConnectionFailureReasonManualHistogram,
+                                  ConnectionFailureReasonToEnum(error_name));
+    return;
+  }
+  const std::string* state =
+      shill_properties->FindStringKey(shill::kStateProperty);
+  if (state && (NetworkState::StateIsConnected(*state) ||
+                NetworkState::StateIsConnecting(*state))) {
     // If network is no longer in an error state, don't record it.
     return;
   }
 
-  std::string shill_error;
-  shill_properties.GetStringWithoutPathExpansion(shill::kErrorProperty,
-                                                 &shill_error);
-  if (!NetworkState::ErrorIsValid(shill_error)) {
-    shill_properties.GetStringWithoutPathExpansion(
-        shill::kPreviousErrorProperty, &shill_error);
-    if (!NetworkState::ErrorIsValid(shill_error))
-      shill_error = error_name;
+  const std::string* shill_error =
+      shill_properties->FindStringKey(shill::kErrorProperty);
+  if (!shill_error || !NetworkState::ErrorIsValid(*shill_error)) {
+    shill_error =
+        shill_properties->FindStringKey(shill::kPreviousErrorProperty);
+    if (!shill_error || !NetworkState::ErrorIsValid(*shill_error))
+      shill_error = &error_name;
   }
   base::UmaHistogramBoolean(kConnectionResultManualHistogram, false);
   base::UmaHistogramEnumeration(kConnectionFailureReasonManualHistogram,
-                                ConnectionFailureReasonToEnum(shill_error));
-}
-
-void SyncedNetworkMetricsLogger::ConnectErrorPropertiesFailed(
-    const std::string& error_name,
-    const std::string& service_path,
-    const std::string& request_error,
-    std::unique_ptr<base::DictionaryValue> shill_error_data) {
-  base::UmaHistogramBoolean(kConnectionResultManualHistogram, false);
-  base::UmaHistogramEnumeration(kConnectionFailureReasonManualHistogram,
-                                ConnectionFailureReasonToEnum(error_name));
+                                ConnectionFailureReasonToEnum(*shill_error));
 }
 
 void SyncedNetworkMetricsLogger::RecordApplyNetworkSuccess() {

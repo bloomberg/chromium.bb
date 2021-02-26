@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_WINRT_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_WINRT_H_
 
+#include <windows.devices.bluetooth.genericattributeprofile.h>
 #include <windows.devices.bluetooth.h>
 #include <wrl/client.h>
 
@@ -14,10 +15,13 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "base/win/windows_version.h"
+#include "device/base/features.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 
@@ -44,6 +48,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
   // BluetoothDevice:
   uint32_t GetBluetoothClass() const override;
   std::string GetAddress() const override;
+  AddressType GetAddressType() const override;
   VendorIDSource GetVendorIDSource() const override;
   uint16_t GetVendorID() const override;
   uint16_t GetProductID() const override;
@@ -58,10 +63,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
   bool ExpectingPinCode() const override;
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;
-  void GetConnectionInfo(const ConnectionInfoCallback& callback) override;
+  void GetConnectionInfo(ConnectionInfoCallback callback) override;
   void SetConnectionLatency(ConnectionLatency connection_latency,
-                            const base::Closure& callback,
-                            const ErrorCallback& error_callback) override;
+                            base::OnceClosure callback,
+                            ErrorCallback error_callback) override;
   void Connect(PairingDelegate* pairing_delegate,
                base::OnceClosure callback,
                ConnectErrorCallback error_callback) override;
@@ -73,18 +78,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
   void ConfirmPairing() override;
   void RejectPairing() override;
   void CancelPairing() override;
-  void Disconnect(const base::Closure& callback,
-                  const ErrorCallback& error_callback) override;
-  void Forget(const base::Closure& callback,
-              const ErrorCallback& error_callback) override;
-  void ConnectToService(
-      const BluetoothUUID& uuid,
-      const ConnectToServiceCallback& callback,
-      const ConnectToServiceErrorCallback& error_callback) override;
+  void Disconnect(base::OnceClosure callback,
+                  ErrorCallback error_callback) override;
+  void Forget(base::OnceClosure callback,
+              ErrorCallback error_callback) override;
+  void ConnectToService(const BluetoothUUID& uuid,
+                        ConnectToServiceCallback callback,
+                        ConnectToServiceErrorCallback error_callback) override;
   void ConnectToServiceInsecurely(
       const device::BluetoothUUID& uuid,
-      const ConnectToServiceCallback& callback,
-      const ConnectToServiceErrorCallback& error_callback) override;
+      ConnectToServiceCallback callback,
+      ConnectToServiceErrorCallback error_callback) override;
 
   // Returns the |address| in the canonical format: XX:XX:XX:XX:XX:XX, where
   // each 'X' is a hex digit.
@@ -100,18 +104,37 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
   void UpgradeToFullDiscovery() override;
   void DisconnectGatt() override;
 
-  // This is declared virtual so that they can be overridden by tests.
+  // Declared virtual so that it can be overridden by tests.
   virtual HRESULT GetBluetoothLEDeviceStaticsActivationFactory(
       ABI::Windows::Devices::Bluetooth::IBluetoothLEDeviceStatics** statics)
       const;
 
+  // Declared virtual so that it can be overridden by tests.
+  virtual HRESULT GetGattSessionStaticsActivationFactory(
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+          IGattSessionStatics** statics) const;
+
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice>
       ble_device_;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattSession>
+      gatt_session_;
 
  private:
-  void OnFromBluetoothAddress(
+  void OnBluetoothLEDeviceFromBluetoothAddress(
       Microsoft::WRL::ComPtr<
           ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice> ble_device);
+
+  void OnGattSessionFromDeviceId(
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattSession>
+          gatt_session);
+
+  void OnGattSessionStatusChanged(
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattSession*
+          gatt_session,
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+          IGattSessionStatusChangedEventArgs* event_args);
 
   void OnConnectionStatusChanged(
       ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice* ble_device,
@@ -127,23 +150,42 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
 
   void StartGattDiscovery();
   void OnGattDiscoveryComplete(bool success);
+  void NotifyGattConnectFailure();
 
   void ClearGattServices();
   void ClearEventRegistrations();
 
   ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus
       connection_status_;
+  ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattSessionStatus
+      gatt_session_status_;
   uint64_t raw_address_;
   std::string address_;
   base::Optional<std::string> local_name_;
 
   std::unique_ptr<BluetoothPairingWinrt> pairing_;
 
-  bool pending_on_from_bluetooth_address_ = false;
+  // Indicates whether the device should subscribe to GattSession
+  // SessionStatusChanged events. Doing so requires calling
+  // BluetoothLEDevice::GetDeviceId() which is only available on 1709
+  // (RS3) or newer. If false, GATT connection reliability may be
+  // degraded.
+  bool observe_gatt_session_status_change_events_ =
+      base::FeatureList::IsEnabled(kNewBLEGattSessionHandling) &&
+      base::win::GetVersion() >= base::win::Version::WIN10_RS3;
+
+  // Indicates whether a GATT service discovery is imminent. Discovery
+  // begins once GattSessionStatus for the device changes to |Active|
+  // if |observe_gatt_session_status_change_events_| is true, or once
+  // the BluetoothLEDevice has been obtained from
+  // FromBluetoothAddressAsync() otherwise.
+  bool pending_gatt_service_discovery_start_ = false;
+
   base::Optional<BluetoothUUID> target_uuid_;
   std::unique_ptr<BluetoothGattDiscovererWinrt> gatt_discoverer_;
 
   base::Optional<EventRegistrationToken> connection_changed_token_;
+  base::Optional<EventRegistrationToken> gatt_session_status_changed_token_;
   base::Optional<EventRegistrationToken> gatt_services_changed_token_;
   base::Optional<EventRegistrationToken> name_changed_token_;
 

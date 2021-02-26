@@ -17,6 +17,8 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
+#include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
+#include "third_party/blink/renderer/core/css/resolver/style_cascade.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -84,7 +86,7 @@ TEST(ComputedStyleTest, FocusRingWidth) {
   } else {
     style->SetEffectiveZoom(3.5);
     style->SetOutlineStyle(EBorderStyle::kSolid);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     EXPECT_EQ(3, style->GetOutlineStrokeWidthForFocusRing());
 #else
     style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
@@ -109,7 +111,7 @@ TEST(ComputedStyleTest, FocusRingOutset) {
   if (::features::IsFormControlsRefreshEnabled()) {
     EXPECT_EQ(4, style->OutlineOutsetExtent());
   } else {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     EXPECT_EQ(4, style->OutlineOutsetExtent());
 #else
     EXPECT_EQ(3, style->OutlineOutsetExtent());
@@ -119,8 +121,8 @@ TEST(ComputedStyleTest, FocusRingOutset) {
 
 TEST(ComputedStyleTest, SVGStackingContext) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->UpdateIsStackingContext(false, false, true);
-  EXPECT_TRUE(style->IsStackingContext());
+  style->UpdateIsStackingContextWithoutContainment(false, false, true);
+  EXPECT_TRUE(style->IsStackingContextWithoutContainment());
 }
 
 TEST(ComputedStyleTest, Preserve3dForceStackingContext) {
@@ -128,20 +130,24 @@ TEST(ComputedStyleTest, Preserve3dForceStackingContext) {
   style->SetTransformStyle3D(ETransformStyle3D::kPreserve3d);
   style->SetOverflowX(EOverflow::kHidden);
   style->SetOverflowY(EOverflow::kHidden);
-  style->UpdateIsStackingContext(false, false, false);
+  style->UpdateIsStackingContextWithoutContainment(false, false, false);
   EXPECT_EQ(ETransformStyle3D::kFlat, style->UsedTransformStyle3D());
-  EXPECT_TRUE(style->IsStackingContext());
+  EXPECT_TRUE(style->IsStackingContextWithoutContainment());
 }
 
 TEST(ComputedStyleTest, LayoutContainmentStackingContext) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  EXPECT_FALSE(style->IsStackingContext());
+  EXPECT_FALSE(style->IsStackingContextWithoutContainment());
   style->SetContain(kContainsLayout);
-  style->UpdateIsStackingContext(false, false, false);
-  EXPECT_TRUE(style->IsStackingContext());
+  style->UpdateIsStackingContextWithoutContainment(false, false, false);
+  // Containment doesn't change IsStackingContextWithoutContainment
+  EXPECT_FALSE(style->IsStackingContextWithoutContainment());
 }
 
 TEST(ComputedStyleTest, FirstPublicPseudoStyle) {
+  static_assert(kFirstPublicPseudoId == kPseudoIdFirstLine,
+                "Make sure we are testing the first public pseudo id");
+
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->SetHasPseudoElementStyle(kPseudoIdFirstLine);
   EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdFirstLine));
@@ -149,9 +155,12 @@ TEST(ComputedStyleTest, FirstPublicPseudoStyle) {
 }
 
 TEST(ComputedStyleTest, LastPublicPseudoElementStyle) {
+  static_assert(kFirstInternalPseudoId - 1 == kPseudoIdTargetText,
+                "Make sure we are testing the last public pseudo id");
+
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetHasPseudoElementStyle(kPseudoIdScrollbar);
-  EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdScrollbar));
+  style->SetHasPseudoElementStyle(kPseudoIdTargetText);
+  EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdTargetText));
   EXPECT_TRUE(style->HasAnyPseudoElementStyles());
 }
 
@@ -457,7 +466,7 @@ TEST(ComputedStyleTest, BorderStyle) {
   } while (false)
 
 TEST(ComputedStyleTest, AnimationFlags) {
-  Persistent<Document> document = MakeGarbageCollected<Document>();
+  Persistent<Document> document = Document::CreateForTest();
   TEST_ANIMATION_FLAG(HasCurrentTransformAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentOpacityAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentFilterAnimation, kNonInherited);
@@ -656,7 +665,6 @@ TEST(ComputedStyleTest, CustomPropertiesInheritance_StyleRecalc) {
 }
 
 TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
-  ScopedCSSColorSchemeForTest scoped_property_enabled(true);
   ScopedCSSColorSchemeUARenderingForTest scoped_ua_enabled(true);
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
@@ -664,7 +672,8 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
 
   ColorSchemeHelper color_scheme_helper(dummy_page_holder_->GetDocument());
-  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
                            *dummy_page_holder_->GetDocument().documentElement(),
                            initial, initial);
@@ -681,35 +690,27 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
   light_value->Append(*CSSIdentifierValue::Create(CSSValueID::kLight));
 
   To<Longhand>(ref.GetProperty()).ApplyValue(state, *dark_value);
-  EXPECT_EQ(WebColorScheme::kDark, style->UsedColorScheme());
+  EXPECT_EQ(mojom::blink::ColorScheme::kDark, style->UsedColorScheme());
 
   To<Longhand>(ref.GetProperty()).ApplyValue(state, *light_value);
-  EXPECT_EQ(WebColorScheme::kLight, style->UsedColorScheme());
+  EXPECT_EQ(mojom::blink::ColorScheme::kLight, style->UsedColorScheme());
 }
 
 TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
   using css_test_helpers::ParseDeclarationBlock;
 
-  ScopedCSSColorSchemeForTest scoped_property_enabled(true);
   ScopedCSSColorSchemeUARenderingForTest scoped_ua_enabled(true);
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
 
-  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
-      kUASheetMode, SecureContextMode::kInsecureContext);
-  const CSSValue* internal_light_dark = CSSParser::ParseSingleValue(
-      CSSPropertyID::kColor, "-internal-light-dark(black, white)", ua_context);
-
   ColorSchemeHelper color_scheme_helper(dummy_page_holder_->GetDocument());
-  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
                            *dummy_page_holder_->GetDocument().documentElement(),
                            initial, initial);
-
-  StyleResolver& resolver =
-      dummy_page_holder_->GetDocument().EnsureStyleResolver();
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   state.SetStyle(style);
@@ -720,51 +721,27 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
   CSSValueList* light_value = CSSValueList::CreateSpaceSeparated();
   light_value->Append(*CSSIdentifierValue::Create(CSSValueID::kLight));
 
-  {
-    ScopedCSSCascadeForTest scoped_cascade_enabled(false);
+  auto* color_declaration = ParseDeclarationBlock(
+      "color:-internal-light-dark(black, white)", CSSParserMode::kUASheetMode);
+  auto* dark_declaration = ParseDeclarationBlock("color-scheme:dark");
+  auto* light_declaration = ParseDeclarationBlock("color-scheme:light");
 
-    To<Longhand>(GetCSSPropertyColor()).ApplyValue(state, *internal_light_dark);
-    To<Longhand>(GetCSSPropertyColorScheme()).ApplyValue(state, *dark_value);
-    resolver.ApplyCascadedColorValue(state);
-    EXPECT_EQ(Color::kWhite,
-              style->VisitedDependentColor(GetCSSPropertyColor()));
+  StyleCascade cascade1(state);
+  cascade1.MutableMatchResult().AddMatchedProperties(color_declaration);
+  cascade1.MutableMatchResult().AddMatchedProperties(dark_declaration);
+  cascade1.Apply();
+  EXPECT_EQ(Color::kWhite, style->VisitedDependentColor(GetCSSPropertyColor()));
 
-    To<Longhand>(GetCSSPropertyColor()).ApplyValue(state, *internal_light_dark);
-    To<Longhand>(GetCSSPropertyColorScheme()).ApplyValue(state, *light_value);
-    resolver.ApplyCascadedColorValue(state);
-    EXPECT_EQ(Color::kBlack,
-              style->VisitedDependentColor(GetCSSPropertyColor()));
-  }
-
-  {
-    ScopedCSSCascadeForTest scoped_cascade_enabled(true);
-
-    auto* color_declaration =
-        ParseDeclarationBlock("color:-internal-light-dark(black, white)");
-    auto* dark_declaration = ParseDeclarationBlock("color-scheme:dark");
-    auto* light_declaration = ParseDeclarationBlock("color-scheme:light");
-
-    StyleCascade cascade1(state);
-    cascade1.MutableMatchResult().AddMatchedProperties(color_declaration);
-    cascade1.MutableMatchResult().AddMatchedProperties(dark_declaration);
-    cascade1.Apply();
-    EXPECT_EQ(Color::kWhite,
-              style->VisitedDependentColor(GetCSSPropertyColor()));
-
-    StyleCascade cascade2(state);
-    cascade2.MutableMatchResult().AddMatchedProperties(color_declaration);
-    cascade2.MutableMatchResult().AddMatchedProperties(light_declaration);
-    cascade2.Apply();
-    EXPECT_EQ(Color::kBlack,
-              style->VisitedDependentColor(GetCSSPropertyColor()));
-  }
+  StyleCascade cascade2(state);
+  cascade2.MutableMatchResult().AddMatchedProperties(color_declaration);
+  cascade2.MutableMatchResult().AddMatchedProperties(light_declaration);
+  cascade2.Apply();
+  EXPECT_EQ(Color::kBlack, style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
 TEST(ComputedStyleTest, ApplyInternalLightDarkBackgroundImage) {
   using css_test_helpers::ParseDeclarationBlock;
 
-  ScopedCSSCascadeForTest scoped_cascade_enabled(true);
-  ScopedCSSColorSchemeForTest scoped_property_enabled(true);
   ScopedCSSColorSchemeUARenderingForTest scoped_ua_enabled(true);
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
@@ -772,7 +749,8 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkBackgroundImage) {
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
 
   ColorSchemeHelper color_scheme_helper(dummy_page_holder_->GetDocument());
-  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
                            *dummy_page_holder_->GetDocument().documentElement(),
                            initial, initial);
@@ -974,6 +952,174 @@ TEST(ComputedStyleTest, BorderWidthZoom) {
       EXPECT_EQ(test.expected_px, numeric_value->DoubleValue()) << prop_name;
     }
   }
+}
+
+TEST(ComputedStyleTest, TextDecorationEqualDoesNotRequireRecomputeInkOverflow) {
+  using css_test_helpers::ParseDeclarationBlock;
+
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
+      std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
+  const ComputedStyle* initial = &ComputedStyle::InitialStyle();
+
+  StyleResolverState state(dummy_page_holder_->GetDocument(),
+                           *dummy_page_holder_->GetDocument().documentElement(),
+                           initial, initial);
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+
+  // Set up the initial text decoration properties
+  style->SetTextDecorationStyle(ETextDecorationStyle::kSolid);
+  style->SetTextDecorationColor(StyleColor(CSSValueID::kGreen));
+  style->SetTextDecoration(TextDecoration::kUnderline);
+  style->SetTextDecorationThickness(
+      TextDecorationThickness(Length(5, Length::Type::kFixed)));
+  style->SetTextUnderlineOffset(Length(2, Length::Type::kFixed));
+  style->SetTextUnderlinePosition(kTextUnderlinePositionUnder);
+  state.SetStyle(style);
+  StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
+  EXPECT_EQ(TextDecoration::kUnderline, style->TextDecorationsInEffect());
+
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+  StyleDifference diff1;
+  style->UpdatePropertySpecificDifferences(*other, diff1);
+  EXPECT_FALSE(diff1.NeedsRecomputeVisualOverflow());
+
+  // Change the color, and it should not invalidate
+  other->SetTextDecorationColor(StyleColor(CSSValueID::kBlue));
+  state.SetStyle(other);
+  StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
+  StyleDifference diff2;
+  style->UpdatePropertySpecificDifferences(*other, diff2);
+  EXPECT_FALSE(diff2.NeedsRecomputeVisualOverflow());
+}
+
+TEST(ComputedStyleTest, TextDecorationNotEqualRequiresRecomputeInkOverflow) {
+  using css_test_helpers::ParseDeclarationBlock;
+
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
+      std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
+  const ComputedStyle* initial = &ComputedStyle::InitialStyle();
+
+  StyleResolverState state(dummy_page_holder_->GetDocument(),
+                           *dummy_page_holder_->GetDocument().documentElement(),
+                           initial, initial);
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+
+  // Set up the initial text decoration properties
+  style->SetTextDecorationStyle(ETextDecorationStyle::kSolid);
+  style->SetTextDecorationColor(StyleColor(CSSValueID::kGreen));
+  style->SetTextDecoration(TextDecoration::kUnderline);
+  style->SetTextDecorationThickness(
+      TextDecorationThickness(Length(5, Length::Type::kFixed)));
+  style->SetTextUnderlineOffset(Length(2, Length::Type::kFixed));
+  style->SetTextUnderlinePosition(kTextUnderlinePositionUnder);
+  state.SetStyle(style);
+  StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
+
+  // Change decoration style
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+  other->SetTextDecorationStyle(ETextDecorationStyle::kWavy);
+  state.SetStyle(other);
+  StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
+  StyleDifference diff_decoration_style;
+  style->UpdatePropertySpecificDifferences(*other, diff_decoration_style);
+  EXPECT_TRUE(diff_decoration_style.NeedsRecomputeVisualOverflow());
+
+  // Change decoration line
+  other = ComputedStyle::Clone(*style);
+  other->SetTextDecoration(TextDecoration::kOverline);
+  state.SetStyle(other);
+  StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
+  StyleDifference diff_decoration_line;
+  style->UpdatePropertySpecificDifferences(*other, diff_decoration_line);
+  EXPECT_TRUE(diff_decoration_line.NeedsRecomputeVisualOverflow());
+
+  // Change decoration thickness
+  other = ComputedStyle::Clone(*style);
+  other->SetTextDecorationThickness(
+      TextDecorationThickness(Length(3, Length::Type::kFixed)));
+  state.SetStyle(other);
+  StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
+  StyleDifference diff_decoration_thickness;
+  style->UpdatePropertySpecificDifferences(*other, diff_decoration_thickness);
+  EXPECT_TRUE(diff_decoration_thickness.NeedsRecomputeVisualOverflow());
+
+  // Change underline offset
+  other = ComputedStyle::Clone(*style);
+  other->SetTextUnderlineOffset(Length(4, Length::Type::kFixed));
+  state.SetStyle(other);
+  StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
+  StyleDifference diff_underline_offset;
+  style->UpdatePropertySpecificDifferences(*other, diff_underline_offset);
+  EXPECT_TRUE(diff_underline_offset.NeedsRecomputeVisualOverflow());
+
+  // Change underline position
+  other = ComputedStyle::Clone(*style);
+  other->SetTextUnderlinePosition(kTextUnderlinePositionLeft);
+  state.SetStyle(other);
+  StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
+  StyleDifference diff_underline_position;
+  style->UpdatePropertySpecificDifferences(*other, diff_underline_position);
+  EXPECT_TRUE(diff_underline_position.NeedsRecomputeVisualOverflow());
+}
+
+// Verify that cloned ComputedStyle is independent from source, i.e.
+// copy-on-write works as expected.
+TEST(ComputedStyleTest, ClonedStyleAnimationsAreIndependent) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+
+  auto& animations = style->AccessAnimations();
+  animations.DelayList().clear();
+  animations.DelayList().push_back(CSSAnimationData::InitialDelay());
+  EXPECT_EQ(1u, style->Animations()->DelayList().size());
+
+  scoped_refptr<ComputedStyle> cloned_style = ComputedStyle::Clone(*style);
+  auto& cloned_style_animations = cloned_style->AccessAnimations();
+  EXPECT_EQ(1u, cloned_style_animations.DelayList().size());
+  cloned_style_animations.DelayList().push_back(
+      CSSAnimationData::InitialDelay());
+
+  EXPECT_EQ(2u, cloned_style->Animations()->DelayList().size());
+  EXPECT_EQ(1u, style->Animations()->DelayList().size());
+}
+
+TEST(ComputedStyleTest, ClonedStyleTransitionsAreIndependent) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+
+  auto& transitions = style->AccessTransitions();
+  transitions.PropertyList().clear();
+  transitions.PropertyList().push_back(CSSTransitionData::InitialProperty());
+  EXPECT_EQ(1u, style->Transitions()->PropertyList().size());
+
+  scoped_refptr<ComputedStyle> cloned_style = ComputedStyle::Clone(*style);
+  auto& cloned_style_transitions = cloned_style->AccessTransitions();
+  EXPECT_EQ(1u, cloned_style_transitions.PropertyList().size());
+  cloned_style_transitions.PropertyList().push_back(
+      CSSTransitionData::InitialProperty());
+
+  EXPECT_EQ(2u, cloned_style->Transitions()->PropertyList().size());
+  EXPECT_EQ(1u, style->Transitions()->PropertyList().size());
+}
+
+TEST(ComputedStyleTest, ApplyInitialAnimationNameAndTransitionProperty) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
+      std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
+
+  const ComputedStyle* initial = &ComputedStyle::InitialStyle();
+  StyleResolverState state(dummy_page_holder_->GetDocument(),
+                           *dummy_page_holder_->GetDocument().documentElement(),
+                           initial, initial);
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  state.SetStyle(style);
+  EXPECT_FALSE(style->Animations());
+  EXPECT_FALSE(style->Transitions());
+
+  To<Longhand>(GetCSSPropertyAnimationName()).ApplyInitial(state);
+  To<Longhand>(GetCSSPropertyTransitionProperty()).ApplyInitial(state);
+  EXPECT_FALSE(style->Animations());
+  EXPECT_FALSE(style->Transitions());
 }
 
 }  // namespace blink

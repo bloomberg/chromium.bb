@@ -7,10 +7,10 @@
  * for testing.
  */
 
-// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 // #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-// #import {FakeChromeEvent} from 'chrome://test/fake_chrome_event.m.js';
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// #import {FakeChromeEvent} from '../fake_chrome_event.m.js';
+// #import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 
 cr.define('settings', function() {
   /**
@@ -24,31 +24,38 @@ cr.define('settings', function() {
         'getSpellcheckWords',
       ]);
 
+      // /** @type {!SettingsPrefsElement} */
+      this.settingsPrefs_ = null;
+
       /**
        * Called when the pref for the dictionaries used for spell checking
        * changes or the status of one of the spell check dictionaries changes.
-       * @type {ChromeEvent}
+       * @type {!ChromeEvent}
        */
-      this.onSpellcheckDictionariesChanged = new FakeChromeEvent();
+      this.onSpellcheckDictionariesChanged =
+          /** @type {!ChromeEvent} */ (new FakeChromeEvent());
 
       /**
        * Called when words are added to and/or removed from the custom spell
        * check dictionary.
-       * @type {ChromeEvent}
+       * @type {!ChromeEvent}
        */
-      this.onCustomDictionaryChanged = new FakeChromeEvent();
+      this.onCustomDictionaryChanged =
+          /** @type {!ChromeEvent} */ (new FakeChromeEvent());
 
       /**
        * Called when an input method is added.
-       * @type {ChromeEvent}
+       * @type {!ChromeEvent}
        */
-      this.onInputMethodAdded = new FakeChromeEvent();
+      this.onInputMethodAdded =
+          /** @type {!ChromeEvent} */ (new FakeChromeEvent());
 
       /**
        * Called when an input method is removed.
-       * @type {ChromeEvent}
+       * @type {!ChromeEvent}
        */
-      this.onInputMethodRemoved = new FakeChromeEvent();
+      this.onInputMethodRemoved =
+          /** @type {!ChromeEvent} */ (new FakeChromeEvent());
 
       /** @type {!Array<!chrome.languageSettingsPrivate.Language>} */
       this.languages = [
@@ -134,33 +141,55 @@ cr.define('settings', function() {
       /** @type {!Array<!chrome.languageSettingsPrivate.InputMethod>} */
       this.componentExtensionImes = [
         {
-          id: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng',
+          id: '_comp_ime_jkghodnilhceideoidjikpgommlajknkxkb:us::eng',
           displayName: 'US keyboard',
           languageCodes: ['en', 'en-US'],
+          tags: ['US keyboard', 'English', 'English(United States)'],
           enabled: true,
         },
         {
           id: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
           displayName: 'US Dvorak keyboard',
           languageCodes: ['en', 'en-US'],
+          tags: ['US Dvorak keyboard', 'English', 'English(United States)'],
           enabled: true,
         },
         {
           id: '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:sw:sw',
           displayName: 'Swahili keyboard',
           languageCodes: ['sw', 'tk'],
+          tags: ['Swahili keyboard', 'Swahili', 'Turkmen'],
           enabled: false,
         },
         {
-          id: '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:us:sw',
+          id: 'ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:us:sw',
           displayName: 'US Swahili keyboard',
           languageCodes: ['en', 'en-US', 'sw'],
+          tags: [
+            'US Swahili keyboard', 'English', 'English(United States)',
+            'Swahili'
+          ],
           enabled: false,
-        }
+        },
+        {
+          id: '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:us:intl',
+          displayName: 'US International keyboard',
+          languageCodes: ['en-US'],
+          tags: ['US International keyboard', 'English(United States)'],
+          enabled: false,
+          isProhibitedByPolicy: true,
+        },
+        {
+          id: '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:vi:vi',
+          displayName: 'Vietnamese keyboard',
+          languageCodes: ['vi'],
+          tags: ['Vietnamese keyboard', 'Vietnamese'],
+          enabled: false,
+        },
       ];
     }
 
-    /** @param {SettingsPrefsElement} */
+    /** @param {SettingsPrefsElement} settingsPrefs */
     setSettingsPrefs(settingsPrefs) {
       this.settingsPrefs_ = settingsPrefs;
     }
@@ -174,7 +203,9 @@ cr.define('settings', function() {
      */
     getLanguageList(callback) {
       setTimeout(function() {
-        callback(JSON.parse(JSON.stringify(this.languages)));
+        callback(
+            /** @type {!Array<!chrome.languageSettingsPrivate.Language>} */ (
+                JSON.parse(JSON.stringify(this.languages))));
       }.bind(this));
     }
 
@@ -184,7 +215,8 @@ cr.define('settings', function() {
      * @param {string} languageCode
      */
     enableLanguage(languageCode) {
-      let languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
+      let languageCodes =
+          this.settingsPrefs_.get('prefs.intl.accept_languages.value');
       const languages = languageCodes.split(',');
       if (languages.indexOf(languageCode) !== -1) {
         return;
@@ -204,7 +236,8 @@ cr.define('settings', function() {
      * @param {string} languageCode
      */
     disableLanguage(languageCode) {
-      let languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
+      let languageCodes =
+          this.settingsPrefs_.get('prefs.intl.accept_languages.value');
       const languages = languageCodes.split(',');
       const index = languages.indexOf(languageCode);
       if (index === -1) {
@@ -229,8 +262,8 @@ cr.define('settings', function() {
      */
     setEnableTranslationForLanguage(languageCode, enable) {
       const index =
-          this.settingsPrefs_.prefs.translate_blocked_languages.value.indexOf(
-              languageCode);
+          this.settingsPrefs_.get('prefs.translate_blocked_languages.value')
+              .indexOf(languageCode);
       if (enable) {
         if (index === -1) {
           return;
@@ -253,7 +286,8 @@ cr.define('settings', function() {
      * @param {chrome.languageSettingsPrivate.MoveType} moveType
      */
     moveLanguage(languageCode, moveType) {
-      let languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
+      let languageCodes =
+          this.settingsPrefs_.get('prefs.intl.accept_languages.value');
       const languages = languageCodes.split(',');
       const index = languages.indexOf(languageCode);
 
@@ -315,7 +349,8 @@ cr.define('settings', function() {
      * @param {string} word
      */
     addSpellcheckWord(word) {
-      this.onCustomDictionaryChanged.callListeners([word], []);
+      /** @type {FakeChromeEvent} */ (this.onCustomDictionaryChanged)
+          .callListeners([word], []);
     }
 
     /**
@@ -323,7 +358,8 @@ cr.define('settings', function() {
      * @param {string} word
      */
     removeSpellcheckWord(word) {
-      this.onCustomDictionaryChanged.callListeners([], [word]);
+      /** @type {FakeChromeEvent} */ (this.onCustomDictionaryChanged)
+          .callListeners([], [word]);
     }
 
     /**
@@ -346,7 +382,8 @@ cr.define('settings', function() {
       }
       callback({
         componentExtensionImes:
-            JSON.parse(JSON.stringify(this.componentExtensionImes)),
+            /** @type {!Array<!chrome.languageSettingsPrivate.InputMethod>} */ (
+                JSON.parse(JSON.stringify(this.componentExtensionImes))),
         thirdPartyExtensionImes: [],
       });
     }
@@ -383,7 +420,8 @@ cr.define('settings', function() {
       inputMethod.enabled = false;
       this.settingsPrefs_.set(
           'prefs.settings.language.preload_engines.value',
-          this.settingsPrefs_.prefs.settings.language.preload_engines.value
+          this.settingsPrefs_
+              .get('prefs.settings.language.preload_engines.value')
               .replace(inputMethodId, ''));
     }
 
@@ -392,12 +430,14 @@ cr.define('settings', function() {
      * @param {string} languageCode
      */
     retryDownloadDictionary(languageCode) {
-      this.onSpellcheckDictionariesChanged.callListeners([
-        {languageCode, isReady: false, isDownlading: true},
-      ]);
-      this.onSpellcheckDictionariesChanged.callListeners([
-        {languageCode, isReady: false, downloadFailed: true},
-      ]);
+      /** @type {FakeChromeEvent} */ (this.onSpellcheckDictionariesChanged)
+          .callListeners([
+            {languageCode, isReady: false, isDownlading: true},
+          ]);
+      /** @type {FakeChromeEvent} */ (this.onSpellcheckDictionariesChanged)
+          .callListeners([
+            {languageCode, isReady: false, downloadFailed: true},
+          ]);
     }
   }
 
@@ -459,7 +499,7 @@ cr.define('settings', function() {
       fakePrefs.push({
         key: 'settings.language.preload_engines',
         type: chrome.settingsPrivate.PrefType.STRING,
-        value: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng,' +
+        value: '_comp_ime_jkghodnilhceideoidjikpgommlajknkxkb:us::eng,' +
             '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
       });
       fakePrefs.push({
@@ -471,6 +511,11 @@ cr.define('settings', function() {
         key: 'settings.language.ime_menu_activated',
         type: chrome.settingsPrivate.PrefType.BOOLEAN,
         value: false,
+      });
+      fakePrefs.push({
+        key: 'settings.language.allowed_input_methods',
+        type: chrome.settingsPrivate.PrefType.LIST,
+        value: [],
       });
     }
     return fakePrefs;

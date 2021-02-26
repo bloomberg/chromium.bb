@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -15,6 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_action.h"
+#include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
@@ -23,6 +23,7 @@
 namespace extensions {
 namespace {
 
+const std::string kSubscribePageAction = "subscribe_page_action/src";
 const std::string kFeedPage = "/feeds/feed.html";
 const std::string kNoFeedPage = "/feeds/no_feed.html";
 
@@ -53,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action")));
+      test_data_dir_.AppendASCII(kSubscribePageAction)));
 
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 
@@ -100,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   base::FilePath extension_path(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Navigation prompts the location bar to load page actions.

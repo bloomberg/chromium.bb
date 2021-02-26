@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
@@ -42,7 +42,7 @@ void JingleThreadWrapper::EnsureForCurrentMessageLoop() {
     std::unique_ptr<JingleThreadWrapper> wrapper =
         JingleThreadWrapper::WrapTaskRunner(
             base::ThreadTaskRunnerHandle::Get());
-    base::MessageLoopCurrent::Get()->AddDestructionObserver(wrapper.release());
+    base::CurrentThread::Get()->AddDestructionObserver(wrapper.release());
   }
 
   DCHECK_EQ(rtc::Thread::Current(), current());

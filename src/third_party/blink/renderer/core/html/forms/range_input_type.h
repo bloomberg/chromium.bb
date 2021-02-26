@@ -40,12 +40,10 @@ class ExceptionState;
 class SliderThumbElement;
 
 class RangeInputType final : public InputType, public InputTypeView {
-  USING_GARBAGE_COLLECTED_MIXIN(RangeInputType);
-
  public:
   explicit RangeInputType(HTMLInputElement&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   using InputType::GetElement;
 
  private:

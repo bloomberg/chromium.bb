@@ -35,8 +35,6 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
     return host_;
   }
 
-  EmbeddedWorkerTestHelper* helper() { return helper_; }
-
   void Bind(mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver);
 
   // Returns after InitializeGlobalScope() is called.
@@ -49,6 +47,9 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
   FetchHandlerExistence fetch_handler_existence() const {
     return fetch_handler_existence_;
   }
+
+  // Flush messages in the message pipe.
+  void FlushForTesting();
 
  protected:
   // blink::mojom::ServiceWorker overrides:

@@ -8,6 +8,7 @@
 #include <cfloat>
 #include <string>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
@@ -357,10 +358,10 @@ double UserClassifier::GetHoursSinceLastTime(Metric metric) const {
     return 0;
   }
 
-  base::TimeDelta since_last_time =
+  const base::TimeDelta since_last_time =
       clock_->Now() - DeserializeTime(pref_service_->GetInt64(
                           kLastTimeKeys[static_cast<int>(metric)]));
-  return since_last_time.InSecondsF() / 3600;
+  return since_last_time / base::TimeDelta::FromHours(1);
 }
 
 bool UserClassifier::HasLastTime(Metric metric) const {

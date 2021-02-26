@@ -7,7 +7,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/default_color_constants.h"
 #include "ash/system/privacy_screen/privacy_screen_toast_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
@@ -50,8 +49,7 @@ class PrivacyScreenToastManagedView : public views::View {
 
     const AshColorProvider* color_provider = AshColorProvider::Get();
     const SkColor label_color = color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextSecondary,
-        AshColorProvider::AshColorMode::kDark);
+        AshColorProvider::ContentLayerType::kTextColorSecondary);
     ConfigureLabel(label, label_color, kPrivacyScreenToastSubLabelFontSize);
 
     label->SetText(l10n_util::GetStringUTF16(
@@ -61,8 +59,7 @@ class PrivacyScreenToastManagedView : public views::View {
         gfx::Size(kUnifiedSystemInfoHeight, kUnifiedSystemInfoHeight));
 
     const SkColor icon_color = color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextSecondary,
-        AshColorProvider::AshColorMode::kDark);
+        AshColorProvider::ContentLayerType::kTextColorSecondary);
     icon->SetImage(gfx::CreateVectorIcon(kSystemTrayManagedIcon, icon_color));
 
     AddChildView(label);
@@ -88,8 +85,7 @@ class PrivacyScreenToastLabelView : public views::View {
 
     const AshColorProvider* color_provider = AshColorProvider::Get();
     const SkColor primary_text_color = color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextPrimary,
-        AshColorProvider::AshColorMode::kDark);
+        AshColorProvider::ContentLayerType::kTextColorPrimary);
 
     ConfigureLabel(label_, primary_text_color,
                    kPrivacyScreenToastMainLabelFontSize);
@@ -115,7 +111,8 @@ class PrivacyScreenToastLabelView : public views::View {
 };
 
 PrivacyScreenToastView::PrivacyScreenToastView(
-    PrivacyScreenToastController* controller)
+    PrivacyScreenToastController* controller,
+    views::Button::PressedCallback callback)
     : controller_(controller) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, kPrivacyScreenToastInsets,
@@ -123,7 +120,8 @@ PrivacyScreenToastView::PrivacyScreenToastView(
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  button_ = new FeaturePodIconButton(controller, /*is_togglable=*/true);
+  button_ =
+      new FeaturePodIconButton(std::move(callback), /*is_togglable=*/true);
   button_->SetVectorIcon(kPrivacyScreenIcon);
   button_->SetToggled(false);
   button_->AddObserver(this);

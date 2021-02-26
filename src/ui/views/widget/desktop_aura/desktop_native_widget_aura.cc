@@ -25,10 +25,12 @@
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
@@ -358,9 +360,6 @@ void DesktopNativeWidgetAura::OnDesktopWindowTreeHostDestroyed(
   aura::client::SetScreenPositionClient(host->window(), nullptr);
   position_client_.reset();
 
-  aura::client::SetDragDropClient(host->window(), nullptr);
-  drag_drop_client_.reset();
-
   aura::client::SetEventClient(host->window(), nullptr);
   event_client_.reset();
 }
@@ -431,6 +430,13 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
       GetInputMethod()->OnBlur();
     }
   }
+}
+
+void DesktopNativeWidgetAura::OnHostWillClose() {
+  // The host is going to close, but our DnD client may use it, so we need to
+  // detach the DnD client and destroy it to avoid uses after free.
+  aura::client::SetDragDropClient(host_->window(), nullptr);
+  drag_drop_client_.reset();
 }
 
 gfx::NativeWindow DesktopNativeWidgetAura::GetNativeWindow() const {
@@ -517,6 +523,9 @@ void DesktopNativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
     if (!cursor_manager_) {
       cursor_manager_ = new wm::CursorManager(
           std::unique_ptr<wm::NativeCursorManager>(native_cursor_manager_));
+      cursor_manager_->SetDisplay(
+          display::Screen::GetScreen()->GetDisplayNearestWindow(
+              host_->window()));
     }
     native_cursor_manager_->AddHost(host());
     aura::client::SetCursorClient(host_->window(), cursor_manager_);
@@ -596,7 +605,8 @@ void DesktopNativeWidgetAura::OnWidgetInitDone() {
   desktop_window_tree_host_->OnWidgetInitDone();
 }
 
-NonClientFrameView* DesktopNativeWidgetAura::CreateNonClientFrameView() {
+std::unique_ptr<NonClientFrameView>
+DesktopNativeWidgetAura::CreateNonClientFrameView() {
   return desktop_window_tree_host_->CreateNonClientFrameView();
 }
 
@@ -919,7 +929,7 @@ void DesktopNativeWidgetAura::RunShellDrag(
     std::unique_ptr<ui::OSExchangeData> data,
     const gfx::Point& location,
     int operation,
-    ui::DragDropTypes::DragEventSource source) {
+    ui::mojom::DragEventSource source) {
   views::RunShellDrag(content_window_, std::move(data), location, operation,
                       source);
 }

@@ -40,12 +40,10 @@
 namespace blink {
 
 class ExecutionContext;
-class LocalFrame;
 class ScriptState;
 class ScriptStateProtectingContext;
 class ScriptValue;
 class V8Function;
-class WorkerGlobalScope;
 
 class ScheduledAction final : public GarbageCollected<ScheduledAction>,
                               public NameClient {
@@ -66,14 +64,11 @@ class ScheduledAction final : public GarbageCollected<ScheduledAction>,
 
   void Execute(ExecutionContext*);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   const char* NameInHeapSnapshot() const override { return "ScheduledAction"; }
 
  private:
-  void Execute(LocalFrame*);
-  void Execute(WorkerGlobalScope*);
-
   Member<ScriptStateProtectingContext> script_state_;
   Member<V8Function> function_;
   HeapVector<ScriptValue> arguments_;

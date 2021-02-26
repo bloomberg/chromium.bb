@@ -22,6 +22,10 @@
 extern "C" {
 #endif
 
+/*! @file */
+
+/*!\cond */
+
 // Border for Loop restoration buffer
 #define AOM_RESTORATION_FRAME_BORDER 32
 #define CLIP(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
@@ -183,12 +187,27 @@ typedef struct {
   int r[2];  // radii
   int s[2];  // sgr parameters for r[0] and r[1], based on GenSgrprojVtable()
 } sgr_params_type;
+/*!\endcond */
 
+/*!\brief Parameters related to Restoration Unit Info */
 typedef struct {
+  /*!
+   * restoration type
+   */
   RestorationType restoration_type;
+
+  /*!
+   * Wiener filter parameters if restoration_type indicates Wiener
+   */
   WienerInfo wiener_info;
+
+  /*!
+   * Sgrproj filter parameters if restoration_type indicates Sgrproj
+   */
   SgrprojInfo sgrproj_info;
 } RestorationUnitInfo;
+
+/*!\cond */
 
 // A restoration line buffer needs space for two lines plus a horizontal filter
 // margin of RESTORATION_EXTRA_HORZ on each side.
@@ -207,32 +226,88 @@ typedef struct {
   uint16_t tmp_save_above[RESTORATION_BORDER][RESTORATION_LINEBUFFER_WIDTH];
   uint16_t tmp_save_below[RESTORATION_BORDER][RESTORATION_LINEBUFFER_WIDTH];
 } RestorationLineBuffers;
+/*!\endcond */
 
+/*!\brief Parameters related to Restoration Stripe boundaries */
 typedef struct {
+  /*!
+   * stripe boundary above
+   */
   uint8_t *stripe_boundary_above;
+
+  /*!
+   * stripe boundary below
+   */
   uint8_t *stripe_boundary_below;
+
+  /*!
+   * strides for stripe boundaries above and below
+   */
   int stripe_boundary_stride;
+
+  /*!
+   * size of stripe boundaries above and below
+   */
   int stripe_boundary_size;
 } RestorationStripeBoundaries;
 
+/*!\brief Parameters related to Restoration Info */
 typedef struct {
+  /*!
+   * Restoration type for frame
+   */
   RestorationType frame_restoration_type;
+
+  /*!
+   * Restoration unit size
+   */
   int restoration_unit_size;
 
-  // Fields below here are allocated and initialised by
-  // av1_alloc_restoration_struct. (horz_)units_per_tile give the number of
-  // restoration units in (one row of) the largest tile in the frame. The data
-  // in unit_info is laid out with units_per_tile entries for each tile, which
-  // have stride horz_units_per_tile.
-  //
-  // Even if there are tiles of different sizes, the data in unit_info is laid
-  // out as if all tiles are of full size.
+  /**
+   * \name Fields allocated and initialised by av1_alloc_restoration_struct.
+   * (horz_)units_per_tile give the number of restoration units in
+   * (one row of) the largest tile in the frame.
+   */
+  /**@{*/
+  /*!
+   * Number of units per tile for the largest tile in the frame
+   */
   int units_per_tile;
-  int vert_units_per_tile, horz_units_per_tile;
+
+  /*!
+   * Number of vertical units per tile
+   */
+  int vert_units_per_tile;
+
+  /*!
+   * Number of horizontal units per tile for the largest tile in the frame
+   */
+  int horz_units_per_tile;
+  /**@}*/
+
+  /*!
+   * List of info for units in tile.
+   * The data in unit_info is laid out with units_per_tile entries for each
+   * tile, which have stride horz_units_per_tile.
+   * Even if there are tiles of different sizes, the data in unit_info is
+   * laid out as if all tiles are of full size.
+   */
   RestorationUnitInfo *unit_info;
+
+  /*!
+   * Restoration Stripe boundary info
+   */
   RestorationStripeBoundaries boundaries;
+
+  /*!
+   * Whether optimized lr can be used for speed.
+   * That includes cases of no cdef and no superres, or if fast trial runs
+   * are used on the encoder side.
+   */
   int optimized_lr;
 } RestorationInfo;
+
+/*!\cond */
 
 static INLINE void set_default_sgrproj(SgrprojInfo *sgrproj_info) {
   sgrproj_info->xqd[0] = (SGRPROJ_PRJ_MIN0 + SGRPROJ_PRJ_MAX0) / 2;
@@ -291,25 +366,39 @@ void av1_extend_frame(uint8_t *data, int width, int height, int stride,
                       int border_horz, int border_vert, int highbd);
 void av1_decode_xq(const int *xqd, int *xq, const sgr_params_type *params);
 
-// Filter a single loop restoration unit.
-//
-// limits is the limits of the unit. rui gives the mode to use for this unit
-// and its coefficients. If striped loop restoration is enabled, rsb contains
-// deblocked pixels to use for stripe boundaries; rlbs is just some space to
-// use as a scratch buffer. tile_rect gives the limits of the tile containing
-// this unit. tile_stripe0 is the index of the first stripe in this tile.
-//
-// ss_x and ss_y are flags which should be 1 if this is a plane with
-// horizontal/vertical subsampling, respectively. highbd is a flag which should
-// be 1 in high bit depth mode, in which case bit_depth is the bit depth.
-//
-// data8 is the frame data (pointing at the top-left corner of the frame, not
-// the restoration unit) and stride is its stride. dst8 is the buffer where the
-// results will be written and has stride dst_stride. Like data8, dst8 should
-// point at the top-left corner of the frame.
-//
-// Finally tmpbuf is a scratch buffer used by the sgrproj filter which should
-// be at least SGRPROJ_TMPBUF_SIZE big.
+/*!\endcond */
+
+/*!\brief Function for applying loop restoration filter to a single unit.
+ *
+ * \ingroup in_loop_restoration
+ * This function applies the loop restoration filter to a single
+ * loop restoration unit.
+ *
+ * \param[in]  limits        Limits of the unit
+ * \param[in]  rui           The parameters to use for this unit and its
+ *                           coefficients
+ * \param[in]  rsb           Deblocked pixels to use for stripe boundaries
+ * \param[in]  rlbs          Space to use as a scratch buffer
+ * \param[in]  tile_rect     Limits of the tile containing this unit
+ * \param[in]  tile_stripe0  Index of the first stripe in this tile
+ * \param[in]  ss_x          Horizontal subsampling for plane
+ * \param[in]  ss_y          Vertical subsampling for plane
+ * \param[in]  highbd        Whether high bitdepth pipeline is used
+ * \param[in]  bit_depth     Bit-depth of the video
+ * \param[in]  data8         Frame data (pointing at the top-left corner of
+ *                           the frame, not the restoration unit).
+ * \param[in]  stride        Stride of \c data8
+ * \param[out] dst8          Buffer where the results will be written. Like
+ *                           \c data8, \c dst8 should point at the top-left
+ *                           corner of the frame
+ * \param[in]  dst_stride    Stride of \c dst8
+ * \param[in]  tmpbuf        Scratch buffer used by the sgrproj filter which
+ *                           should be at least SGRPROJ_TMPBUF_SIZE big.
+ * \param[in]  optimized_lr  Whether to use fast optimized Loop Restoration
+ *
+ * \return Nothing is returned. Instead, the filtered unit is output in
+ * \c dst8 at the proper restoration unit offset.
+ */
 void av1_loop_restoration_filter_unit(
     const RestorationTileLimits *limits, const RestorationUnitInfo *rui,
     const RestorationStripeBoundaries *rsb, RestorationLineBuffers *rlbs,
@@ -317,9 +406,24 @@ void av1_loop_restoration_filter_unit(
     int highbd, int bit_depth, uint8_t *data8, int stride, uint8_t *dst8,
     int dst_stride, int32_t *tmpbuf, int optimized_lr);
 
+/*!\brief Function for applying loop restoration filter to a frame
+ *
+ * \ingroup in_loop_restoration
+ * This function applies the loop restoration filter to a frame.
+ *
+ * \param[in, out]  frame         Compressed frame buffer
+ * \param[in, out]  cm            Pointer to top level common structure
+ * \param[in]       optimized_lr  Whether to use fast optimized Loop Restoration
+ * \param[in]       lr_ctxt       Loop restoration context
+ *
+ * \return Nothing is returned. Instead, the filtered frame is output in
+ * \c frame.
+ */
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
                                        struct AV1Common *cm, int optimized_lr,
                                        void *lr_ctxt);
+/*!\cond */
+
 void av1_loop_restoration_precal();
 
 typedef void (*rest_tile_start_visitor_t)(int tile_row, int tile_col,
@@ -373,6 +477,9 @@ int av1_lr_count_units_in_tile(int unit_size, int tile_size);
 void av1_lr_sync_read_dummy(void *const lr_sync, int r, int c, int plane);
 void av1_lr_sync_write_dummy(void *const lr_sync, int r, int c,
                              const int sb_cols, int plane);
+
+/*!\endcond */
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

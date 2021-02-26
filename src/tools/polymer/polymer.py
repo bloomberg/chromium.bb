@@ -54,6 +54,7 @@ import io
 import os
 import re
 import sys
+from collections import OrderedDict
 
 _CWD = os.getcwd()
 _HERE_PATH = os.path.dirname(__file__)
@@ -78,15 +79,20 @@ _ignore_imports = []
 
 _migrated_imports = []
 
-_chrome_redirects = {
-    'chrome://resources/polymer/v1_0/': POLYMER_V1_DIR,
-    'chrome://resources/html/': 'ui/webui/resources/html/',
-    'chrome://resources/cr_elements/': 'ui/webui/resources/cr_elements/',
-}
+# Populated from command line arguments. Specifies whether "chrome://" URLs
+# should be preserved, or whether they should be converted to scheme-relative
+# URLs "//" (default behavior).
+_preserve_url_scheme = False
+
+# Use an OrderedDict, since the order these redirects are applied matters.
+_chrome_redirects = OrderedDict([
+    ('//resources/polymer/v1_0/', POLYMER_V1_DIR),
+    ('//resources/', 'ui/webui/resources/'),
+])
 
 _chrome_reverse_redirects = {
-  POLYMER_V3_DIR: 'chrome://resources/polymer/v3_0/',
-  'ui/webui/resources/': 'chrome://resources/',
+    POLYMER_V3_DIR: '//resources/polymer/v3_0/',
+    'ui/webui/resources/': '//resources/',
 }
 
 
@@ -94,18 +100,27 @@ _chrome_reverse_redirects = {
 # imports. |to_js_import()| is the only public method exposed by this class.
 # Internally an HTML import path is
 #
-# 1) normalized, meaning converted from a chrome or relative URL to to an
-#    absolute path starting at the repo's root
+# 1) normalized, meaning converted from a chrome or scheme-relative or relative
+#    URL to to an absolute path starting at the repo's root
 # 2) converted to an equivalent JS normalized path
-# 3) de-normalized, meaning converted back to a relative or chrome URL
+# 3) de-normalized, meaning converted back to a scheme or scheme-relative or
+#    relative URL
 # 4) converted to a JS import statement
 class Dependency:
   def __init__(self, src, dst):
     self.html_file = src
     self.html_path = dst
 
-    self.input_format = (
-        'chrome' if self.html_path.startswith('chrome://') else 'relative')
+    if self.html_path.startswith('chrome://'):
+      self.input_format = 'scheme'
+      self.input_scheme = 'chrome'
+    elif self.html_path.startswith('chrome-extension://'):
+      self.input_format = 'scheme'
+      self.input_scheme = 'chrome-extension'
+    elif self.html_path.startswith('//'):
+      self.input_format = 'scheme-relative'
+    else:
+      self.input_format = 'relative'
     self.output_format = self.input_format
 
     self.html_path_normalized = self._to_html_normalized()
@@ -113,12 +128,18 @@ class Dependency:
     self.js_path = self._to_js()
 
   def _to_html_normalized(self):
-    if self.input_format == 'chrome':
+    if self.input_format == 'scheme' or self.input_format == 'scheme-relative':
       self.html_path_normalized = self.html_path
+
+      if self.input_format == 'scheme':
+        # Strip the URL scheme.
+        colon_index = self.html_path_normalized.find(':')
+        self.html_path_normalized = self.html_path_normalized[colon_index + 1:]
+
       for r in _chrome_redirects:
-        if self.html_path.startswith(r):
-          self.html_path_normalized = (
-              self.html_path.replace(r, _chrome_redirects[r]))
+        if self.html_path_normalized.startswith(r):
+          self.html_path_normalized = (self.html_path_normalized.replace(
+              r, _chrome_redirects[r]))
           break
       return self.html_path_normalized
 
@@ -133,7 +154,9 @@ class Dependency:
           .replace(r'.html', '.js'))
 
     if self.html_path_normalized == 'ui/webui/resources/html/polymer.html':
-      self.output_format = 'chrome'
+      if self.output_format == 'relative':
+        self.output_format = 'scheme'
+        self.input_scheme = 'chrome'
       return POLYMER_V3_DIR + 'polymer/polymer_bundled.min.js'
 
     if re.match(r'ui/webui/resources/html/', self.html_path_normalized):
@@ -148,14 +171,19 @@ class Dependency:
   def _to_js(self):
     js_path = self.js_path_normalized
 
-    if self.output_format == 'chrome':
+    if self.output_format == 'scheme' or self.output_format == 'scheme-relative':
       for r in _chrome_reverse_redirects:
         if self.js_path_normalized.startswith(r):
           js_path = self.js_path_normalized.replace(
               r, _chrome_reverse_redirects[r])
           break
+
+      # Restore the original scheme if |preserve_url_scheme| is enabled.
+      if _preserve_url_scheme and self.output_format == 'scheme':
+        js_path = self.input_scheme + ":" + js_path
       return js_path
 
+    assert self.output_format == 'relative'
     input_dir = os.path.relpath(os.path.dirname(self.html_file), _ROOT)
     relpath = os.path.relpath(
         self.js_path_normalized, input_dir).replace("\\", "/")
@@ -176,24 +204,26 @@ class Dependency:
 
 def _generate_js_imports(html_file):
   output = []
+  imports_start_offset = -1
   imports_end_index = -1
   imports_found = False
   with io.open(html_file, encoding='utf-8', mode='r') as f:
     lines = f.readlines()
-    deps = []
     for i, line in enumerate(lines):
       match = re.search(r'\s*<link rel="import" href="(.*)"', line)
       if match:
         if not imports_found:
           imports_found = True
+          imports_start_offset = i
           # Include the previous line if it is an opening <if> tag.
           if (i > 0):
             previous_line = lines[i - 1]
             if re.search(r'^\s*<if', previous_line):
+              imports_start_offset -= 1
               previous_line = '// ' + previous_line
               output.append(previous_line.rstrip('\n'))
 
-        imports_end_index = i
+        imports_end_index = i - imports_start_offset
 
         # Convert HTML import URL to equivalent JS import URL.
         dep = Dependency(html_file, match.group(1))
@@ -507,6 +537,7 @@ def main(argv):
   parser.add_argument('--ignore_imports', required=False, nargs="*")
   parser.add_argument('--auto_imports', required=False, nargs="*")
   parser.add_argument('--migrated_imports', required=False, nargs="*")
+  parser.add_argument('--preserve_url_scheme', action="store_true")
   parser.add_argument(
       '--html_type', choices=['dom-module', 'style-module', 'custom-style',
       'iron-iconset', 'v3-ready'],
@@ -537,6 +568,10 @@ def main(argv):
     assert args.html_type != 'v3-ready'
     global _migrated_imports
     _migrated_imports = args.migrated_imports
+
+  # Extract |preserve_url_scheme| from arguments.
+  global _preserve_url_scheme
+  _preserve_url_scheme = args.preserve_url_scheme
 
   in_folder = os.path.normpath(os.path.join(_CWD, args.in_folder))
   out_folder = os.path.normpath(os.path.join(_CWD, args.out_folder))

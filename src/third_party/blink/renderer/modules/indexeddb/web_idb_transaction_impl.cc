@@ -4,11 +4,12 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction_impl.h"
 
+#include <cstddef>
 #include <memory>
 #include <utility>
 
 #include "base/format_macros.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
@@ -56,6 +57,8 @@ void WebIDBTransactionImpl::Put(int64_t object_store_id,
   for (const auto& index_key : index_keys) {
     index_keys_size++;  // Account for index_key.first (int64_t).
     for (const auto& key : index_key.keys) {
+      // Because all size estimates are based on RAM usage, it is impossible to
+      // overflow index_keys_size.
       index_keys_size += key->SizeEstimate();
     }
   }
@@ -90,6 +93,59 @@ void WebIDBTransactionImpl::PutCallback(
 
   if (result->is_key()) {
     callbacks->SuccessKey(std::move(result->get_key()));
+    callbacks.reset();
+    return;
+  }
+}
+
+void WebIDBTransactionImpl::PutAll(int64_t object_store_id,
+                                   Vector<mojom::blink::IDBPutParamsPtr> puts,
+                                   std::unique_ptr<WebIDBCallbacks> callbacks) {
+  IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id_, nullptr);
+  base::CheckedNumeric<size_t> index_keys_size = 0;
+  for (auto& put : puts) {
+    index_keys_size++;
+    for (const auto& index_key : put->index_keys) {
+      for (const auto& key : index_key.keys) {
+        index_keys_size += key->SizeEstimate();
+      }
+    }
+  }
+
+  base::CheckedNumeric<size_t> arg_size;
+  for (auto& put : puts) {
+    arg_size += put->value->DataSize();
+    arg_size += put->key->SizeEstimate();
+  }
+  arg_size += index_keys_size.ValueOrDie();
+  if (arg_size.ValueOrDie() >= max_put_value_size_) {
+    callbacks->Error(
+        mojom::blink::IDBException::kUnknownError,
+        String::Format("The serialized keys and/or values are too large"
+                       " (size=%" PRIuS " bytes, max=%" PRIuS " bytes).",
+                       base::checked_cast<size_t>(arg_size.ValueOrDie()),
+                       max_put_value_size_));
+    return;
+  }
+
+  callbacks->SetState(nullptr, transaction_id_);
+  transaction_->PutAll(object_store_id, std::move(puts),
+                       WTF::Bind(&WebIDBTransactionImpl::PutAllCallback,
+                                 WTF::Unretained(this), std::move(callbacks)));
+}
+
+void WebIDBTransactionImpl::PutAllCallback(
+    std::unique_ptr<WebIDBCallbacks> callbacks,
+    mojom::blink::IDBTransactionPutAllResultPtr result) {
+  if (result->is_error_result()) {
+    callbacks->Error(result->get_error_result()->error_code,
+                     std::move(result->get_error_result()->error_message));
+    callbacks.reset();
+    return;
+  }
+
+  if (result->is_keys()) {
+    callbacks->SuccessKey(IDBKey::CreateArray(std::move(result->get_keys())));
     callbacks.reset();
     return;
   }

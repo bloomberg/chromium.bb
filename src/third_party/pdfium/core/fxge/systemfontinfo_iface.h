@@ -7,8 +7,6 @@
 #ifndef CORE_FXGE_SYSTEMFONTINFO_IFACE_H_
 #define CORE_FXGE_SYSTEMFONTINFO_IFACE_H_
 
-#include <memory>
-
 #include "core/fxge/cfx_fontmapper.h"
 #include "third_party/base/span.h"
 
@@ -17,9 +15,6 @@ constexpr uint32_t kTableTTCF = CFX_FontMapper::MakeTag('t', 't', 'c', 'f');
 
 class SystemFontInfoIface {
  public:
-  static std::unique_ptr<SystemFontInfoIface> CreateDefault(
-      const char** pUserPaths);
-
   virtual ~SystemFontInfoIface() = default;
 
   virtual bool EnumFontList(CFX_FontMapper* pMapper) = 0;
@@ -34,7 +29,6 @@ class SystemFontInfoIface {
                                pdfium::span<uint8_t> buffer) = 0;
   virtual bool GetFaceName(void* hFont, ByteString* name) = 0;
   virtual bool GetFontCharset(void* hFont, int* charset) = 0;
-  virtual int GetFaceIndex(void* hFont);
   virtual void DeleteFont(void* hFont) = 0;
 };
 

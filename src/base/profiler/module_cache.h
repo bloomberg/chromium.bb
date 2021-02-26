@@ -84,19 +84,32 @@ class BASE_EXPORT ModuleCache {
   // GetModuleForAddress() will return the non-native module rather than the
   // native module for the memory region it occupies.
   //
-  // Modules in |to_remove| are removed from the set of active modules;
+  // Modules in |defunct_modules| are removed from the set of active modules;
   // specifically they no longer participate in the GetModuleForAddress()
   // lookup. They continue to exist for the lifetime of the ModuleCache,
   // however, so that existing references to them remain valid. Modules in
-  // |to_add| are added to the set of active non-native modules.
+  // |new_modules| are added to the set of active non-native modules. Modules in
+  // |new_modules| may not overlap with any non-native Modules already present
+  // in ModuleCache, unless those modules are provided in |defunct_modules| in
+  // the same call.
   void UpdateNonNativeModules(
-      const std::vector<const Module*>& to_remove,
-      std::vector<std::unique_ptr<const Module>> to_add);
+      const std::vector<const Module*>& defunct_modules,
+      std::vector<std::unique_ptr<const Module>> new_modules);
 
   // Adds a custom native module to the cache. This is intended to support
   // native modules that require custom handling. In general, native modules
   // will be found and added automatically when invoking GetModuleForAddress().
+  // |module| may not overlap with any native Modules already present in
+  // ModuleCache.
   void AddCustomNativeModule(std::unique_ptr<const Module> module);
+
+  // Gets the module containing |address| if one already exists, or nullptr
+  // otherwise. The returned module remains owned by and has the same lifetime
+  // as the ModuleCache object.
+  // NOTE: Only users that create their own modules and need control over native
+  // module creation should use this function. Everyone else should use
+  // GetModuleForAddress().
+  const Module* GetExistingModuleForAddress(uintptr_t address) const;
 
  private:
   // Heterogenously compares modules by base address, and modules and

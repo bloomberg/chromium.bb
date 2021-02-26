@@ -54,6 +54,25 @@ void DWriteFontTypeface::onGetFamilyName(SkString* familyName) const {
     sk_get_locale_string(familyNames.get(), nullptr/*fMgr->fLocaleName.get()*/, familyName);
 }
 
+bool DWriteFontTypeface::onGetPostScriptName(SkString* skPostScriptName) const {
+    SkString localSkPostScriptName;
+    SkTScopedComPtr<IDWriteLocalizedStrings> postScriptNames;
+    BOOL exists = FALSE;
+    if (FAILED(fDWriteFont->GetInformationalStrings(
+                    DWRITE_INFORMATIONAL_STRING_POSTSCRIPT_NAME,
+                    &postScriptNames,
+                    &exists)) ||
+        !exists ||
+        FAILED(sk_get_locale_string(postScriptNames.get(), nullptr, &localSkPostScriptName)))
+    {
+        return false;
+    }
+    if (skPostScriptName) {
+        *skPostScriptName = localSkPostScriptName;
+    }
+    return true;
+}
+
 void DWriteFontTypeface::onGetFontDescriptor(SkFontDescriptor* desc,
                                              bool* isLocalStream) const {
     // Get the family name.
@@ -495,7 +514,7 @@ std::unique_ptr<SkAdvancedTypefaceMetrics> DWriteFontTypeface::onGetAdvancedMetr
     // but no means to indicate that such a typeface is a variation.
     AutoTDWriteTable<SkOTTableFontVariations> fvarTable(fDWriteFontFace.get());
     if (fvarTable.fExists) {
-        info->fFlags |= SkAdvancedTypefaceMetrics::kMultiMaster_FontFlag;
+        info->fFlags |= SkAdvancedTypefaceMetrics::kVariable_FontFlag;
     }
 
     //There exist CJK fonts which set the IsFixedPitch and Monospace bits,

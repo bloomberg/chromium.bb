@@ -48,7 +48,7 @@ class QUIC_NO_EXPORT MasqueServerSession
   MasqueServerSession& operator=(const MasqueServerSession&) = delete;
 
   // From QuicSession.
-  void OnMessageReceived(quiche::QuicheStringPiece message) override;
+  void OnMessageReceived(absl::string_view message) override;
   void OnMessageAcked(QuicMessageId message_id,
                       QuicTime receive_timestamp) override;
   void OnMessageLost(QuicMessageId message_id) override;
@@ -58,7 +58,7 @@ class QUIC_NO_EXPORT MasqueServerSession
   // From MasqueServerBackend::BackendClient.
   std::unique_ptr<QuicBackendResponse> HandleMasqueRequest(
       const std::string& masque_path,
-      const spdy::SpdyHeaderBlock& request_headers,
+      const spdy::Http2HeaderBlock& request_headers,
       const std::string& request_body,
       QuicSimpleServerBackend::RequestHandler* request_handler) override;
 

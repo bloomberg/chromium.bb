@@ -256,8 +256,13 @@ void VideoCaptureDeviceFuchsia::InitializeBufferCollection(
   // Request just one buffer in collection constraints: each frame is copied as
   // soon as it's received.
   const size_t kMaxUsedOutputFrames = 1;
+
+  // Sysmem calculates buffer size based on image constraints, so it doesn't
+  // need to specified explicitly.
   fuchsia::sysmem::BufferCollectionConstraints constraints =
-      SysmemBufferReader::GetRecommendedConstraints(kMaxUsedOutputFrames);
+      SysmemBufferReader::GetRecommendedConstraints(
+          kMaxUsedOutputFrames,
+          /*min_buffer_size=*/base::nullopt);
   buffer_collection_creator_->Create(
       std::move(constraints),
       base::BindOnce(&VideoCaptureDeviceFuchsia::OnBufferCollectionCreated,
@@ -268,6 +273,11 @@ void VideoCaptureDeviceFuchsia::OnBufferCollectionCreated(
     std::unique_ptr<SysmemBufferPool> collection) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  // Buffer collection allocation has failed. This case is not treated as an
+  // error because the camera may create a new collection.
+  if (!collection)
+    return;
+
   buffer_collection_ = std::move(collection);
   buffer_collection_->CreateReader(
       base::BindOnce(&VideoCaptureDeviceFuchsia::OnBufferReaderCreated,
@@ -277,6 +287,13 @@ void VideoCaptureDeviceFuchsia::OnBufferCollectionCreated(
 void VideoCaptureDeviceFuchsia::OnBufferReaderCreated(
     std::unique_ptr<SysmemBufferReader> reader) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // Buffer collection allocation has failed. This case is not treated as an
+  // error because the camera may create a new collection.
+  if (!reader) {
+    buffer_collection_.reset();
+    return;
+  }
 
   buffer_reader_ = std::move(reader);
   if (!buffer_reader_->buffer_settings().has_image_format_constraints) {
@@ -362,12 +379,12 @@ void VideoCaptureDeviceFuchsia::ProcessNewFrame(
   base::TimeDelta timestamp =
       std::max(reference_time - start_time_, base::TimeDelta());
 
+  ++frames_received_;
   float frame_rate =
       (timestamp > base::TimeDelta())
           ? static_cast<float>(frames_received_) / timestamp.InSecondsF()
           : 0.0;
   VideoCaptureFormat capture_format(output_size, frame_rate, PIXEL_FORMAT_I420);
-  capture_format.pixel_format = PIXEL_FORMAT_I420;
 
   Client::Buffer buffer;
   Client::ReserveResult result = client_->ReserveOutputBuffer(

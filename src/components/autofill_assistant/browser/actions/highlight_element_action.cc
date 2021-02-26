@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/actions/action_delegate_util.h"
 #include "components/autofill_assistant/browser/client_status.h"
 
 namespace autofill_assistant {
@@ -23,18 +24,21 @@ HighlightElementAction::~HighlightElementAction() {}
 
 void HighlightElementAction::InternalProcessAction(
     ProcessActionCallback callback) {
-  Selector selector =
-      Selector(proto_.highlight_element().element()).MustBeVisible();
+  Selector selector = Selector(proto_.highlight_element().element());
   if (selector.empty()) {
     VLOG(1) << __func__ << ": empty selector";
     UpdateProcessedAction(INVALID_SELECTOR);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
+
   delegate_->ShortWaitForElement(
-      selector, base::BindOnce(&HighlightElementAction::OnWaitForElement,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               std::move(callback), selector));
+      selector,
+      base::BindOnce(&HighlightElementAction::OnWaitForElementTimed,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::BindOnce(&HighlightElementAction::OnWaitForElement,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(callback), selector)));
 }
 
 void HighlightElementAction::OnWaitForElement(
@@ -47,8 +51,10 @@ void HighlightElementAction::OnWaitForElement(
     return;
   }
 
-  delegate_->HighlightElement(
-      selector,
+  action_delegate_util::FindElementAndPerform(
+      delegate_, selector,
+      base::BindOnce(&ActionDelegate::HighlightElement,
+                     delegate_->GetWeakPtr()),
       base::BindOnce(&HighlightElementAction::OnHighlightElement,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

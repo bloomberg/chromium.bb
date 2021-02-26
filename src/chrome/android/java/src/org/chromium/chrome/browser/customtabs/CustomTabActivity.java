@@ -7,9 +7,8 @@ package org.chromium.chrome.browser.customtabs;
 import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
 import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
 
-import static org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason.USER_NAVIGATION;
-
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -25,24 +24,18 @@ import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
-import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
-import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
-import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
-import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.features.CustomTabNavigationBarController;
-import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -52,7 +45,6 @@ import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
 import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -60,12 +52,10 @@ import org.chromium.content_public.browser.WebContents;
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
  */
-public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityComponent> {
+public class CustomTabActivity extends BaseCustomTabActivity {
     private CustomTabsSessionToken mSession;
-    private CustomTabActivityTabController mTabController;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
-
 
     private CustomTabActivityTabProvider.Observer mTabChangeObserver =
             new CustomTabActivityTabProvider.Observer() {
@@ -104,12 +94,17 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
 
         mSession = mIntentDataProvider.getSession();
 
-        CustomTabNavigationBarController.updateNavigationBarColor(this, mIntentDataProvider);
-    }
+        // shouldHideOmniboxSuggestionsForCctVisits() can not be called immediately as it depends
+        // upon FeatureList, which has not been initialized yet.
+        getStartupTabPreloader().setTabCreatedCallback(new Callback<Tab>() {
+            @Override
+            public void onResult(Tab tab) {
+                CustomTabActivityNavigationController.applyExperimentsToNewTab(
+                        tab, mIntentDataProvider);
+            }
+        });
 
-    @Override
-    public boolean shouldAllocateChildConnection() {
-        return mTabController.shouldAllocateChildConnection();
+        CustomTabNavigationBarController.update(getWindow(), mIntentDataProvider, getResources());
     }
 
     @Override
@@ -126,8 +121,9 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         }
 
         // Setting task title and icon to be null will preserve the client app's title and icon.
-        ApiCompatibilityUtils.setTaskDescription(this, null, null,
-                mIntentDataProvider.getToolbarColor());
+        setTaskDescription(new ActivityManager.TaskDescription(
+                null, null, mIntentDataProvider.getToolbarColor()));
+
         getComponent().resolveBottomBarDelegate().showBottomBarIfNecessary();
     }
 
@@ -158,18 +154,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     public void createContextualSearchTab(String searchUrl) {
         if (getActivityTab() == null) return;
         getActivityTab().loadUrl(new LoadUrlParams(searchUrl));
-    }
-
-    @Override
-    public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
-        return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
-                getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), mBookmarkBridgeSupplier,
-                mIntentDataProvider.getUiType(), mIntentDataProvider.getMenuTitles(),
-                mIntentDataProvider.isOpenedByChrome(),
-                mIntentDataProvider.shouldShowShareMenuItem(),
-                mIntentDataProvider.shouldShowStarButton(),
-                mIntentDataProvider.shouldShowDownloadButton(), mIntentDataProvider.isIncognito());
     }
 
     @Override
@@ -205,6 +189,11 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
             if (mNavigationController.openCurrentUrlInBrowser(false)) {
                 RecordUserAction.record("CustomTabsMenuOpenInChrome");
                 WebContents webContents = tab == null ? null : tab.getWebContents();
+                if (tab != null) {
+                    tab.setAddApi2TransitionToFutureNavigations(false);
+                    tab.setHideFutureNavigations(false);
+                    tab.setShouldBlockNewNotificationRequests(false);
+                }
                 mConnection.notifyOpenInBrowser(mSession, webContents);
             }
             return true;
@@ -227,6 +216,9 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     @Override
     protected BrowserServicesIntentDataProvider buildIntentDataProvider(
             Intent intent, @CustomTabsIntent.ColorScheme int colorScheme) {
+        if (IncognitoCustomTabIntentDataProvider.isValidIncognitoIntent(intent)) {
+            return new IncognitoCustomTabIntentDataProvider(intent, this, colorScheme);
+        }
         return new CustomTabIntentDataProvider(intent, this, colorScheme);
     }
 
@@ -292,42 +284,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         String publisherUrlPackage = mConnection.getTrustedCdnPublisherUrlPackage();
         return publisherUrlPackage != null
                 && publisherUrlPackage.equals(mConnection.getClientPackageNameForSession(mSession));
-    }
-
-    @Override
-    protected CustomTabActivityComponent createComponent(
-            ChromeActivityCommonsModule commonsModule) {
-        // mIntentHandler comes from the base class.
-        IntentIgnoringCriterion intentIgnoringCriterion =
-                (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
-
-        BaseCustomTabActivityModule baseCustomTabsModule = new BaseCustomTabActivityModule(
-                mIntentDataProvider, mNightModeStateController, intentIgnoringCriterion);
-        CustomTabActivityModule customTabsModule =
-                new CustomTabActivityModule(getStartupTabPreloader());
-
-        CustomTabActivityComponent component =
-                ChromeApplication.getComponent().createCustomTabActivityComponent(
-                        commonsModule, baseCustomTabsModule, customTabsModule);
-
-        onComponentCreated(component);
-
-        mTabController = component.resolveTabController();
-        component.resolveUmaTracker();
-        CustomTabActivityClientConnectionKeeper connectionKeeper =
-                component.resolveConnectionKeeper();
-        mNavigationController.setFinishHandler((reason) -> {
-            if (reason == USER_NAVIGATION) connectionKeeper.recordClientConnectionStatus();
-            handleFinishAndClose();
-        });
-        component.resolveSessionHandler();
-        component.resolveCustomTabIncognitoManager();
-
-        if (mIntentDataProvider.isTrustedWebActivity()) {
-            mTwaCoordinator = component.resolveTrustedWebActivityCoordinator();
-        }
-
-        return component;
     }
 
     /**

@@ -4,10 +4,12 @@
 
 #include "core/fpdfapi/edit/cpdf_stringarchivestream.h"
 
+#include "third_party/base/notreached.h"
+
 CPDF_StringArchiveStream::CPDF_StringArchiveStream(std::ostringstream* stream)
     : stream_(stream) {}
 
-CPDF_StringArchiveStream::~CPDF_StringArchiveStream() {}
+CPDF_StringArchiveStream::~CPDF_StringArchiveStream() = default;
 
 bool CPDF_StringArchiveStream::WriteByte(uint8_t byte) {
   NOTREACHED();

@@ -61,8 +61,11 @@ namespace perfetto {
 namespace {
 
 FtraceDataSourceConfig EmptyConfig() {
-  return FtraceDataSourceConfig{
-      EventFilter{}, DisabledCompactSchedConfigForTesting(), {}, {}};
+  return FtraceDataSourceConfig{EventFilter{},
+                                DisabledCompactSchedConfigForTesting(),
+                                {},
+                                {},
+                                false /*symbolize_ksyms*/};
 }
 
 constexpr uint64_t kNanoInSecond = 1000 * 1000 * 1000;
@@ -112,24 +115,20 @@ class CpuReaderTableTest : public ::testing::Test {
 template <class ZeroT, class ProtoT>
 class ProtoProvider {
  public:
-  explicit ProtoProvider(size_t chunk_size)
-      : chunk_size_(chunk_size), delegate_(chunk_size_), stream_(&delegate_) {
-    delegate_.set_writer(&stream_);
-    writer_.Reset(&stream_);
-  }
+  explicit ProtoProvider(size_t chunk_size) : chunk_size_(chunk_size) {}
   ~ProtoProvider() = default;
 
-  ZeroT* writer() { return &writer_; }
+  ZeroT* writer() { return writer_.get(); }
+  void ResetWriter() { writer_.Reset(); }
 
   // Stitch together the scattered chunks into a single buffer then attempt
   // to parse the buffer as a FtraceEventBundle. Returns the FtraceEventBundle
   // on success and nullptr on failure.
   std::unique_ptr<ProtoT> ParseProto() {
     auto bundle = std::unique_ptr<ProtoT>(new ProtoT());
-    std::vector<uint8_t> buffer = delegate_.StitchSlices();
-    if (!bundle->ParseFromArray(buffer.data(), buffer.size())) {
+    std::vector<uint8_t> buffer = writer_.SerializeAsArray();
+    if (!bundle->ParseFromArray(buffer.data(), buffer.size()))
       return nullptr;
-    }
     return bundle;
   }
 
@@ -138,9 +137,7 @@ class ProtoProvider {
   ProtoProvider& operator=(const ProtoProvider&) = delete;
 
   size_t chunk_size_;
-  protozero::ScatteredHeapBuffer delegate_;
-  protozero::ScatteredStreamWriter stream_;
-  ZeroT writer_;
+  protozero::HeapBuffered<ZeroT> writer_;
 };
 
 using BundleProvider = ProtoProvider<protos::pbzero::FtraceEventBundle,
@@ -818,8 +815,11 @@ TEST(CpuReaderTest, ParseSixSchedSwitchCompactFormat) {
   ProtoTranslationTable* table = GetTable(test_case->name);
   auto page = PageFromXxd(test_case->data);
 
-  FtraceDataSourceConfig ds_config{
-      EventFilter{}, EnabledCompactSchedConfigForTesting(), {}, {}};
+  FtraceDataSourceConfig ds_config{EventFilter{},
+                                   EnabledCompactSchedConfigForTesting(),
+                                   {},
+                                   {},
+                                   false /* symbolize_ksyms*/};
   ds_config.event_filter.AddEnabledEvent(
       table->EventToFtraceId(GroupAndName("sched", "sched_switch")));
 
@@ -846,6 +846,7 @@ TEST(CpuReaderTest, ParseSixSchedSwitchCompactFormat) {
   ASSERT_TRUE(bundle);
   EXPECT_EQ(0u, bundle->event().size());
   EXPECT_FALSE(bundle->has_compact_sched());
+  bundle_provider.ResetWriter();
 
   // Instead, sched switch fields were buffered:
   EXPECT_LT(0u, compact_buffer.sched_switch().size());
@@ -1076,7 +1077,7 @@ TEST_F(CpuReaderTableTest, ParseAllFields) {
             static_cast<uint32_t>(kUserspaceBlockDeviceId));
   EXPECT_EQ(event->all_fields().field_inode_32(), 98u);
 // TODO(primiano): for some reason this fails on mac.
-#if !PERFETTO_BUILDFLAG(PERFETTO_OS_MACOSX)
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
   EXPECT_EQ(event->all_fields().field_dev_64(), k64BitUserspaceBlockDeviceId);
 #endif
   EXPECT_EQ(event->all_fields().field_inode_64(), 99u);
@@ -1165,7 +1166,8 @@ TEST(CpuReaderTest, NewPacketOnLostEvents) {
 
   TraceWriterForTesting trace_writer;
   CpuReader::ProcessPagesForDataSource(&trace_writer, &metadata, /*cpu=*/1,
-                                       &ds_config, buf, kTestPages, table);
+                                       &ds_config, buf, kTestPages, table,
+                                       /*symbolizer=*/nullptr);
 
   // Each packet should contain the parsed contents of a contiguous run of pages
   // without data loss.

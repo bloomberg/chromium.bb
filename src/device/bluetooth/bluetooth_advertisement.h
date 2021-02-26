@@ -42,7 +42,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
                                    // through a platform API.
     ERROR_RESET_ADVERTISING,       // Error while resetting advertising.
     ERROR_ADAPTER_POWERED_OFF,     // Error because the adapter is off
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     ERROR_INVALID_ADVERTISEMENT_INTERVAL,  // Advertisement interval specified
                                            // is out of valid range.
 #endif
@@ -62,6 +62,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
   using UUIDList = std::vector<std::string>;
   using ManufacturerData = std::map<uint16_t, std::vector<uint8_t>>;
   using ServiceData = std::map<std::string, std::vector<uint8_t>>;
+  using ScanResponseData = std::map<uint8_t, std::vector<uint8_t>>;
 
   // Structure that holds the data for an advertisement.
   class DEVICE_BLUETOOTH_EXPORT Data {
@@ -82,6 +83,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
     std::unique_ptr<ServiceData> service_data() {
       return std::move(service_data_);
     }
+    std::unique_ptr<ScanResponseData> scan_response_data() {
+      return std::move(scan_response_data_);
+    }
 
     void set_service_uuids(std::unique_ptr<UUIDList> service_uuids) {
       service_uuids_ = std::move(service_uuids);
@@ -96,6 +100,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
     void set_service_data(std::unique_ptr<ServiceData> service_data) {
       service_data_ = std::move(service_data);
     }
+    void set_scan_response_data(
+        std::unique_ptr<ScanResponseData> scan_response_data) {
+      scan_response_data_ = std::move(scan_response_data);
+    }
 
     void set_include_tx_power(bool include_tx_power) {
       include_tx_power_ = include_tx_power;
@@ -109,6 +117,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
     std::unique_ptr<ManufacturerData> manufacturer_data_;
     std::unique_ptr<UUIDList> solicit_uuids_;
     std::unique_ptr<ServiceData> service_data_;
+    std::unique_ptr<ScanResponseData> scan_response_data_;
     bool include_tx_power_;
 
     DISALLOW_COPY_AND_ASSIGN(Data);
@@ -131,10 +140,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
   // Unregisters this advertisement. Called on destruction of this object
   // automatically but can be called directly to explicitly unregister this
   // object.
-  using SuccessCallback = base::Closure;
-  using ErrorCallback = base::Callback<void(ErrorCode)>;
-  virtual void Unregister(const SuccessCallback& success_callback,
-                          const ErrorCallback& error_callback) = 0;
+  using SuccessCallback = base::OnceClosure;
+  using ErrorCallback = base::OnceCallback<void(ErrorCode)>;
+  virtual void Unregister(SuccessCallback success_callback,
+                          ErrorCallback error_callback) = 0;
 
  protected:
   friend class base::RefCounted<BluetoothAdvertisement>;

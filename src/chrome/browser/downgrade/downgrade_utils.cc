@@ -6,6 +6,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/downgrade/user_data_downgrade.h"
 
@@ -96,7 +97,7 @@ base::Optional<int> MoveContents(const base::FilePath& source,
         MoveContents(path, this_target, ExclusionPredicate()).value_or(0);
     // If everything within the directory was moved, it may be possible to
     // delete it now.
-    if (!base::DeleteFile(path, /*recursive=*/false))
+    if (!base::DeleteFile(path))
       ++failure_count;
   }
   return failure_count;

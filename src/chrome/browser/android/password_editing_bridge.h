@@ -13,12 +13,12 @@
 #include "base/macros.h"
 #include "components/password_manager/core/browser/password_store.h"
 
-namespace autofill {
-struct PasswordForm;
-}
-
 class PasswordEditDelegate;
 class Profile;
+
+namespace password_manager {
+struct PasswordForm;
+}  // namespace password_manager
 
 // A bridge that allows communication between Android UI and the native
 // side. It can be used to launch the password editing activity from the
@@ -39,7 +39,8 @@ class PasswordEditingBridge {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& context,
       Profile* profile,
-      base::span<const std::unique_ptr<autofill::PasswordForm>> forms_to_change,
+      base::span<const std::unique_ptr<password_manager::PasswordForm>>
+          forms_to_change,
       std::vector<base::string16> existing_usernames);
 
   void HandleEditSavedPasswordEntry(

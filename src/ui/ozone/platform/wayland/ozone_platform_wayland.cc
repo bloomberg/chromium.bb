@@ -12,27 +12,33 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/base/buildflags.h"
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/common/features.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_overlay_manager.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_connector.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context_factory.h"
+#include "ui/ozone/platform/wayland/host/wayland_menu_utils.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_menu_utils.h"
 #include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
@@ -47,7 +53,7 @@
 
 #if defined(WAYLAND_GBM)
 #include "ui/base/ui_base_features.h"
-#include "ui/gfx/linux/gbm_wrapper.h"
+#include "ui/gfx/linux/gbm_wrapper.h"  // nogncheck
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_handle.h"
 #endif
 
@@ -60,33 +66,9 @@ namespace ui {
 
 namespace {
 
-constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
-    /*needs_view_token=*/false,
-
-    // Supporting server-side decorations requires a support of
-    // xdg-decorations. But this protocol has been accepted into the upstream
-    // recently, and it will take time before it is taken by compositors. For
-    // now, always use custom frames and disallow switching to server-side
-    // frames.
-    // https://github.com/wayland-project/wayland-protocols/commit/76d1ae8c65739eff3434ef219c58a913ad34e988
-    /*custom_frame_pref_default=*/true,
-    /*use_system_title_bar=*/false,
-
-    /*message_pump_type_for_gpu=*/base::MessagePumpType::DEFAULT,
-
-    /*supports_vulkan_swap_chain=*/false,
-
-    // Wayland doesn't provide clients with global screen coordinates. Instead,
-    // it forces clients to position windows relative to their top level windows
-    // if the have child-parent relationship. In case of toplevel windows,
-    // clients simply don't know their position on screens and always assume
-    // they are located at some arbitrary position.
-    /*ignore_screen_bounds_for_menus=*/true,
-};
-
 class OzonePlatformWayland : public OzonePlatform {
  public:
-  OzonePlatformWayland() {}
+  OzonePlatformWayland() { CHECK(features::IsUsingOzonePlatform()); }
   ~OzonePlatformWayland() override {}
 
   // OzonePlatform
@@ -98,9 +80,7 @@ class OzonePlatformWayland : public OzonePlatform {
     return overlay_manager_.get();
   }
 
-  CursorFactoryOzone* GetCursorFactoryOzone() override {
-    return cursor_factory_.get();
-  }
+  CursorFactory* GetCursorFactory() override { return cursor_factory_.get(); }
 
   InputController* GetInputController() override {
     return input_controller_.get();
@@ -156,6 +136,10 @@ class OzonePlatformWayland : public OzonePlatform {
     return std::make_unique<InputMethodAuraLinux>(delegate);
   }
 
+  PlatformMenuUtils* GetPlatformMenuUtils() override {
+    return menu_utils_.get();
+  }
+
   bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
                                      gfx::BufferUsage usage) const override {
     // If there is no drm render node device available, native pixmaps are not
@@ -188,7 +172,6 @@ class OzonePlatformWayland : public OzonePlatform {
     buffer_manager_connector_ = std::make_unique<WaylandBufferManagerConnector>(
         connection_->buffer_manager_host());
     cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
-    overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
@@ -200,12 +183,17 @@ class OzonePlatformWayland : public OzonePlatform {
         std::make_unique<GtkUiDelegateWayland>(connection_.get());
     GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
 #endif
+
+    menu_utils_ = std::make_unique<WaylandMenuUtils>(connection_.get());
+
+    // TODO(crbug.com/1138740): report which Wayland compositor is used.
   }
 
   void InitializeGPU(const InitParams& args) override {
     buffer_manager_ = std::make_unique<WaylandBufferManagerGpu>();
     surface_factory_ = std::make_unique<WaylandSurfaceFactory>(
         connection_.get(), buffer_manager_.get());
+    overlay_manager_ = std::make_unique<WaylandOverlayManager>();
 #if defined(WAYLAND_GBM)
     const base::FilePath drm_node_path = path_finder_.GetDrmRenderNodePath();
     if (drm_node_path.empty()) {
@@ -225,7 +213,47 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   const PlatformProperties& GetPlatformProperties() override {
-    return kWaylandPlatformProperties;
+    static base::NoDestructor<OzonePlatform::PlatformProperties> properties;
+    static bool initialised = false;
+    if (!initialised) {
+      // Supporting server-side decorations requires a support of
+      // xdg-decorations. But this protocol has been accepted into the upstream
+      // recently, and it will take time before it is taken by compositors. For
+      // now, always use custom frames and disallow switching to server-side
+      // frames.
+      // https://github.com/wayland-project/wayland-protocols/commit/76d1ae8c65739eff3434ef219c58a913ad34e988
+      properties->custom_frame_pref_default = true;
+
+      // Wayland doesn't provide clients with global screen coordinates.
+      // Instead, it forces clients to position windows relative to their top
+      // level windows if the have child-parent relationship. In case of
+      // toplevel windows, clients simply don't know their position on screens
+      // and always assume they are located at some arbitrary position.
+      properties->ignore_screen_bounds_for_menus = true;
+      properties->app_modal_dialogs_use_event_blocker = true;
+
+      // Primary planes can be transluscent due to underlay strategy. As a
+      // result Wayland server draws contents occluded by an accelerated widget.
+      // To prevent this, an opaque background image is stacked below the
+      // accelerated widget to occlude contents below.
+      properties->needs_background_image =
+          ui::IsWaylandOverlayDelegationEnabled();
+
+      initialised = true;
+    }
+
+    return *properties;
+  }
+
+  const InitializedHostProperties& GetInitializedHostProperties() override {
+    static base::NoDestructor<OzonePlatform::InitializedHostProperties>
+        properties;
+    static bool initialized = false;
+    if (!initialized) {
+      properties->supports_overlays = ui::IsWaylandOverlayDelegationEnabled();
+      initialized = true;
+    }
+    return *properties;
   }
 
   void AddInterfaces(mojo::BinderMap* binders) override {
@@ -241,6 +269,12 @@ class OzonePlatformWayland : public OzonePlatform {
     buffer_manager_->AddBindingWaylandBufferManagerGpu(std::move(receiver));
   }
 
+  void PostMainMessageLoopStart(
+      base::OnceCallback<void()> shutdown_cb) override {
+    DCHECK(connection_);
+    connection_->SetShutdownCb(std::move(shutdown_cb));
+  }
+
  private:
 #if BUILDFLAG(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;
@@ -249,16 +283,17 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<WaylandConnection> connection_;
   std::unique_ptr<WaylandSurfaceFactory> surface_factory_;
-  std::unique_ptr<BitmapCursorFactoryOzone> cursor_factory_;
-  std::unique_ptr<StubOverlayManager> overlay_manager_;
+  std::unique_ptr<CursorFactory> cursor_factory_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<WaylandInputMethodContextFactory>
       input_method_context_factory_;
   std::unique_ptr<WaylandBufferManagerConnector> buffer_manager_connector_;
+  std::unique_ptr<WaylandMenuUtils> menu_utils_;
 
   // Objects, which solely live in the GPU process.
   std::unique_ptr<WaylandBufferManagerGpu> buffer_manager_;
+  std::unique_ptr<WaylandOverlayManager> overlay_manager_;
 
   // Provides supported buffer formats for native gpu memory buffers
   // framework.

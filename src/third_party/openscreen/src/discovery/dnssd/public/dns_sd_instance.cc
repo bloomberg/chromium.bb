@@ -4,13 +4,19 @@
 
 #include "discovery/dnssd/public/dns_sd_instance.h"
 
+#include <algorithm>
 #include <cctype>
+#include <utility>
+#include <vector>
 
 #include "util/osp_logging.h"
 
 namespace openscreen {
 namespace discovery {
 namespace {
+
+// Maximum number of octets allowed in a single domain name label.
+constexpr size_t kMaxLabelLength = 63;
 
 bool IsValidUtf8(const std::string& string) {
   for (size_t i = 0; i < string.size(); i++) {
@@ -51,18 +57,36 @@ DnsSdInstance::DnsSdInstance(std::string instance_id,
                              std::string service_id,
                              std::string domain_id,
                              DnsSdTxtRecord txt,
-                             uint16_t port)
+                             uint16_t port,
+                             std::vector<Subtype> subtypes)
     : instance_id_(std::move(instance_id)),
       service_id_(std::move(service_id)),
       domain_id_(std::move(domain_id)),
       txt_(std::move(txt)),
-      port_(port) {
-  OSP_DCHECK(IsInstanceValid(instance_id_));
-  OSP_DCHECK(IsServiceValid(service_id_));
-  OSP_DCHECK(IsDomainValid(domain_id_));
+      port_(port),
+      subtypes_(std::move(subtypes)) {
+  OSP_DCHECK(IsInstanceValid(instance_id_))
+      << instance_id_ << " is an invalid instance id";
+  OSP_DCHECK(IsServiceValid(service_id_))
+      << service_id_ << " is an invalid service id";
+  OSP_DCHECK(IsDomainValid(domain_id_))
+      << domain_id_ << " is an invalid domain";
+  for (const Subtype& subtype : subtypes_) {
+    OSP_DCHECK(IsSubtypeValid(subtype)) << subtype << " is an invalid subtype";
+  }
+
+  std::sort(subtypes_.begin(), subtypes_.end());
 }
 
+DnsSdInstance::DnsSdInstance(const DnsSdInstance& other) = default;
+
+DnsSdInstance::DnsSdInstance(DnsSdInstance&& other) = default;
+
 DnsSdInstance::~DnsSdInstance() = default;
+
+DnsSdInstance& DnsSdInstance::operator=(const DnsSdInstance& rhs) = default;
+
+DnsSdInstance& DnsSdInstance::operator=(DnsSdInstance&& rhs) = default;
 
 // static
 bool IsInstanceValid(const std::string& instance) {
@@ -71,8 +95,8 @@ bool IsInstanceValid(const std::string& instance) {
   // - NOT contain ASCII control characters
   // - Be no longer than 63 octets.
 
-  return instance.size() <= 63 && !HasControlCharacters(instance) &&
-         IsValidUtf8(instance);
+  return instance.size() <= kMaxLabelLength &&
+         !HasControlCharacters(instance) && IsValidUtf8(instance);
 }
 
 // static
@@ -109,8 +133,11 @@ bool IsServiceValid(const std::string& service) {
       }
       last_char_hyphen = true;
     } else if (std::isalpha(service[i])) {
+      last_char_hyphen = false;
       seen_letter = true;
-    } else if (!std::isdigit(service[i])) {
+    } else if (std::isdigit(service[i])) {
+      last_char_hyphen = false;
+    } else {
       return false;
     }
   }
@@ -134,13 +161,27 @@ bool IsDomainValid(const std::string& domain) {
   size_t label_start = 0;
   for (size_t next_dot = domain.find('.'); next_dot != std::string::npos;
        next_dot = domain.find('.', label_start)) {
-    if (next_dot - label_start > 63) {
+    if (next_dot - label_start > kMaxLabelLength) {
       return false;
     }
     label_start = next_dot + 1;
   }
 
   return !HasControlCharacters(domain) && IsValidUtf8(domain);
+}
+
+// static
+bool IsSubtypeValid(const DnsSdInstance::Subtype& subtype) {
+  // As specified in RFC6763 section 9.1, all subtypes may be arbitrary bit
+  // data. Despite this, this implementation has chosen to limit valid subtypes
+  // to only UTF8 character strings. Therefore, the subtype must:
+  // - Be encoded in Net-Unicode (which required UTF-8 formatting).
+  // - NOT contain ASCII control characters
+  // - Be no longer than 63 octets.
+  // - Be of length one label.
+  return subtype.size() <= kMaxLabelLength &&
+         subtype.find('.') == std::string::npos &&
+         !HasControlCharacters(subtype) && IsValidUtf8(subtype);
 }
 
 bool operator<(const DnsSdInstance& lhs, const DnsSdInstance& rhs) {
@@ -161,6 +202,17 @@ bool operator<(const DnsSdInstance& lhs, const DnsSdInstance& rhs) {
   comp = lhs.domain_id_.compare(rhs.domain_id_);
   if (comp != 0) {
     return comp < 0;
+  }
+
+  if (lhs.subtypes_.size() != rhs.subtypes_.size()) {
+    return lhs.subtypes_.size() < rhs.subtypes_.size();
+  }
+
+  for (size_t i = 0; i < lhs.subtypes_.size(); i++) {
+    comp = lhs.subtypes_[i].compare(rhs.subtypes_[i]);
+    if (comp != 0) {
+      return comp < 0;
+    }
   }
 
   return lhs.txt_ < rhs.txt_;

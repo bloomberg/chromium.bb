@@ -25,22 +25,16 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkActivationHandlerImpl
 
  private:
   // NetworkActivationHandler:
-  void Activate(const std::string& service_path,
-                const std::string& carrier,
-                const base::Closure& success_callback,
-                const network_handler::ErrorCallback& error_callback) override;
   void CompleteActivation(
       const std::string& service_path,
-      const base::Closure& success_callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      base::OnceClosure success_callback,
+      network_handler::ErrorCallback error_callback) override;
 
  private:
   friend class NetworkHandler;
 
   NetworkActivationHandlerImpl();
 
-  // Handle success from Shill.Service.ActivateCellularModem or
-  // Shill.Service.CompleteCellularActivation.
   void HandleShillSuccess(base::OnceClosure success_callback);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkActivationHandlerImpl);

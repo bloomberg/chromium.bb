@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.background_sync;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -18,16 +19,15 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.background_sync.BackgroundSyncBackgroundTaskScheduler.BackgroundSyncTask;
-import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
-import org.chromium.components.signin.test.util.AccountManagerTestRule;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
+import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.BackgroundSyncNetworkUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.ConnectionType;
@@ -45,10 +45,8 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public final class BackgroundSyncTest {
     @Rule
-    public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-    @Rule
-    public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
+    public final ChromeTabbedActivityTestRule mActivityTestRule =
+            new ChromeTabbedActivityTestRule();
 
     // loadNativeLibraryNoBrowserProcess will access AccountManagerFacade, so we need
     // to mock AccountManagerFacade
@@ -60,6 +58,8 @@ public final class BackgroundSyncTest {
             "/chrome/test/data/background_sync/background_sync_test.html";
     private static final int TITLE_UPDATE_TIMEOUT_SECONDS = (int) scaleTimeout(10);
     private static final long WAIT_TIME_MS = scaleTimeout(5000);
+    private static final String DISABLE_ANDROID_NETWORK_DETECTION =
+            "BackgroundSync.RelyOnAndroidNetworkDetection:rely_on_android_network_detection/false";
 
     private CountDownLatch mScheduleLatch;
     private CountDownLatch mCancelLatch;
@@ -75,8 +75,8 @@ public final class BackgroundSyncTest {
         // fixed.
         // Note that this should be done before the startMainActivityOnBlankPage(), because Chrome
         // will otherwise run this check on startup and disable BackgroundSync code.
-        if (!ExternalAuthUtils.canUseGooglePlayServices()) {
-            mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
+        if (!AppHooks.get().getExternalAuthUtils().canUseGooglePlayServices()) {
+            NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
             disableGooglePlayServicesVersionCheck();
         }
 
@@ -97,6 +97,7 @@ public final class BackgroundSyncTest {
     @Test
     @MediumTest
     @Feature({"BackgroundSync"})
+    @CommandLineFlags.Add({"force-fieldtrial-params=" + DISABLE_ANDROID_NETWORK_DETECTION})
     public void onSyncCalledWithNetworkConnectivity() throws Exception {
         forceConnectionType(ConnectionType.CONNECTION_NONE);
 

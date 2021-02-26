@@ -9,9 +9,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
@@ -19,7 +22,6 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/installable/installable_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_handle.h"
@@ -251,13 +253,14 @@ bool AppBannerManager::CheckIfShouldShowBanner() {
   return false;
 }
 
-bool AppBannerManager::ShouldDeferToRelatedApplication() const {
+bool AppBannerManager::ShouldDeferToRelatedNonWebApp() const {
   for (const auto& related_app : manifest_.related_applications) {
     if (manifest_.prefer_related_applications &&
-        IsSupportedAppPlatform(related_app.platform.string())) {
+        IsSupportedNonWebAppPlatform(
+            related_app.platform.value_or(base::string16()))) {
       return true;
     }
-    if (IsRelatedAppInstalled(related_app))
+    if (IsRelatedNonWebAppInstalled(related_app))
       return true;
   }
   return false;
@@ -269,7 +272,7 @@ std::string AppBannerManager::GetAppIdentifier() {
 }
 
 base::string16 AppBannerManager::GetAppName() const {
-  return manifest_.name.string();
+  return manifest_.name.value_or(base::string16());
 }
 
 std::string AppBannerManager::GetBannerType() {
@@ -298,7 +301,35 @@ bool AppBannerManager::ShouldAllowWebAppReplacementInstall() {
   return false;
 }
 
+bool AppBannerManager::DidRetryInstallableManagerRequest(
+    const InstallableData& result) {
+  if (result.errors.empty())
+    return false;
+  if (result.errors[0] != MANIFEST_URL_CHANGED)
+    return false;
+  ReportStatus(MANIFEST_URL_CHANGED);
+  switch (state_) {
+    case State::FETCHING_MANIFEST:
+    case State::PENDING_INSTALLABLE_CHECK:
+      UpdateState(State::INACTIVE);
+      RequestAppBanner(validated_url_);
+      return true;
+    case State::INACTIVE:
+    case State::ACTIVE:
+    case State::FETCHING_NATIVE_DATA:
+    case State::PENDING_ENGAGEMENT:
+    case State::SENDING_EVENT:
+    case State::SENDING_EVENT_GOT_EARLY_PROMPT:
+    case State::PENDING_PROMPT:
+    case State::COMPLETE:
+      NOTREACHED();
+      return false;
+  }
+}
+
 void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
+  if (DidRetryInstallableManagerRequest(data))
+    return;
   UpdateState(State::ACTIVE);
   if (!data.errors.empty()) {
     Stop(data.errors[0]);
@@ -342,6 +373,8 @@ void AppBannerManager::PerformInstallableWebAppCheck() {
 
 void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     const InstallableData& data) {
+  if (DidRetryInstallableManagerRequest(data))
+    return;
   UpdateState(State::ACTIVE);
   if (data.has_worker && data.valid_manifest)
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
@@ -364,7 +397,7 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     return;
   }
 
-  if (ShouldDeferToRelatedApplication()) {
+  if (ShouldDeferToRelatedNonWebApp()) {
     SetInstallableWebAppCheckResult(
         InstallableWebAppCheckResult::kByUserRequest);
     Stop(PREFER_RELATED_APPLICATIONS);
@@ -499,8 +532,9 @@ void AppBannerManager::Stop(InstallableStatusCode code) {
   ReportStatus(code);
 
   if (installable_web_app_check_result_ ==
-      InstallableWebAppCheckResult::kUnknown)
+      InstallableWebAppCheckResult::kUnknown) {
     SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kNo);
+  }
   InvalidateWeakPtrs();
   ResetBindings();
   UpdateState(State::COMPLETE);
@@ -562,7 +596,8 @@ void AppBannerManager::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
   // Don't start the banner flow unless the main frame has finished loading.
-  if (render_frame_host->GetParent())
+  // |render_frame_host| can be null during retry attempts.
+  if (render_frame_host && render_frame_host->GetParent())
     return;
 
   load_finished_ = true;
@@ -580,6 +615,48 @@ void AppBannerManager::DidFinishLoad(
   // Start the pipeline immediately if we haven't already started it.
   if (state_ == State::INACTIVE)
     RequestAppBanner(validated_url);
+}
+
+void AppBannerManager::DidActivatePortal(
+    content::WebContents* predecessor_contents,
+    base::TimeTicks activation_time) {
+  // If this page was loaded in a portal, AppBannerManager may have been
+  // instantiated after DidFinishLoad. Trigger the banner pipeline now (on
+  // portal activation) if we missed the load event.
+  if (!load_finished_ && !web_contents()->IsLoadingToDifferentDocument()) {
+    DidFinishLoad(web_contents()->GetMainFrame(),
+                  web_contents()->GetLastCommittedURL());
+  }
+}
+
+void AppBannerManager::DidUpdateWebManifestURL(
+    content::RenderFrameHost* target_frame,
+    const base::Optional<GURL>& manifest_url) {
+  GURL url = validated_url_;
+  switch (state_) {
+    case State::INACTIVE:
+    case State::FETCHING_MANIFEST:
+    case State::PENDING_INSTALLABLE_CHECK:
+      return;
+    case State::ACTIVE:
+    case State::FETCHING_NATIVE_DATA:
+    case State::PENDING_ENGAGEMENT:
+    case State::SENDING_EVENT:
+    case State::SENDING_EVENT_GOT_EARLY_PROMPT:
+    case State::PENDING_PROMPT:
+      Terminate();
+      FALLTHROUGH;
+    case State::COMPLETE:
+      if (manifest_url.has_value()) {
+        // This call resets has_sufficient_engagement_data_. In order to
+        // re-compute that, instead of calling RequestAppBanner, DidFinishLoad
+        // is called. That method will re-fetch the engagement data and re-set
+        // that field.
+        ResetCurrentPageData();
+        DidFinishLoad(nullptr, url);
+      }
+      return;
+  }
 }
 
 void AppBannerManager::MediaStartedPlaying(const MediaPlayerInfo& media_info,
@@ -784,10 +861,11 @@ void AppBannerManager::ShowBanner() {
 
   // If this is the first time that we are showing the banner for this site,
   // record how long it's been since the first visit.
-  if (AppBannerSettingsHelper::GetSingleBannerEvent(
+  base::Optional<base::Time> did_show_time =
+      AppBannerSettingsHelper::GetSingleBannerEvent(
           web_contents(), validated_url_, GetAppIdentifier(),
-          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW)
-          .is_null()) {
+          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW);
+  if (did_show_time && did_show_time->is_null()) {
     AppBannerSettingsHelper::RecordMinutesFromFirstVisitToShow(
         web_contents(), validated_url_, GetAppIdentifier(), GetCurrentTime());
   }

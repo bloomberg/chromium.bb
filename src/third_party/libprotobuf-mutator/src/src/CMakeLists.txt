@@ -30,13 +30,16 @@ if (LIB_PROTO_MUTATOR_TESTING)
                         mutator_test_proto2.proto
                         mutator_test_proto3.proto)
 
+  add_library(mutator-test-proto
+              ${PROTO_SRCS})
+
   add_executable(mutator_test
                  mutator_test.cc
                  utf8_fix_test.cc
-                 weighted_reservoir_sampler_test.cc
-                 ${PROTO_SRCS})
+                 weighted_reservoir_sampler_test.cc)
   target_link_libraries(mutator_test
                         protobuf-mutator
+                        mutator-test-proto
                         ${ZLIB_LIBRARIES}
                         ${GTEST_BOTH_LIBRARIES}
                         ${CMAKE_THREAD_LIBS_INIT})

@@ -10,6 +10,10 @@
 namespace web {
 namespace features {
 
+// Reduces the size of the session to persist when enabled. Specific size is
+// obtained from "session-size" Finch parameter.
+extern const base::Feature kReduceSessionSize;
+
 // Used to crash the browser if unexpected URL change is detected.
 // https://crbug.com/841105.
 extern const base::Feature kCrashOnUnexpectedURLChange;
@@ -29,9 +33,6 @@ extern const base::Feature kKeepsRenderProcessAlive;
 // (crbug.com/1010765).  Clear older pending navigation records when a
 // navigation finishes.
 extern const base::Feature kClearOldNavigationRecordsWorkaround;
-
-// Used to enable committed interstitials for SSL errors.
-extern const base::Feature kSSLCommittedInterstitials;
 
 // Feature flag enabling persistent downloads.
 extern const base::Feature kEnablePersistentDownloads;
@@ -53,14 +54,30 @@ extern const base::Feature kPreserveScrollViewProperties;
 // When enabled, display an interstitial on lookalike URL navigations.
 extern const base::Feature kIOSLookalikeUrlNavigationSuggestionsUI;
 
-// Level at which battery power is considered low, and some cosmetic features
-// can be turned off.
-const float kLowBatteryLevelThreshold = 0.2;
+// When enabled, supports dropping URLs on the web content area to navigate to
+// the URL.
+extern const base::Feature kAddWebContentDropInteraction;
+
+// When enabled, opening a URL with a text fragment (e.g.,
+// example.com/#:~:text=examples) will cause matching text in the page to be
+// highlighted and scrolled into view.
+// See also: https://wicg.github.io/scroll-to-text-fragment/
+extern const base::Feature kScrollToTextIOS;
+
+// When enabled, display an interstitial on legacy TLS connections.
+extern const base::Feature kIOSLegacyTLSInterstitial;
+
+// When enabled, use the native context menu in web content, for the iOS version
+// that supports it.
+extern const base::Feature kWebViewNativeContextMenu;
 
 // When true, for each navigation, the default user agent is chosen by the
 // WebClient GetDefaultUserAgent() method. If it is false, the mobile version
 // is requested by default.
 bool UseWebClientDefaultUserAgent();
+
+// When true, the native context menu for the web content are used.
+bool UseWebViewNativeContextMenu();
 
 }  // namespace features
 }  // namespace web

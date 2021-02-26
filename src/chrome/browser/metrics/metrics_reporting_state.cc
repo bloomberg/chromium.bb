@@ -13,6 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/crash/core/common/crash_keys.h"
+#include "components/metrics/entropy_state.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
@@ -55,7 +56,7 @@ bool SetGoogleUpdateSettings(bool enabled) {
 // Update considers to be successful if |to_update_pref| and |updated_pref| are
 // the same.
 void SetMetricsReporting(bool to_update_pref,
-                         const OnMetricsReportingCallbackType& callback_fn,
+                         OnMetricsReportingCallbackType callback_fn,
                          bool updated_pref) {
   g_browser_process->local_state()->SetBoolean(
       metrics::prefs::kMetricsReportingEnabled, updated_pref);
@@ -72,7 +73,7 @@ void SetMetricsReporting(bool to_update_pref,
     RecordMetricsReportingHistogramValue(METRICS_REPORTING_ERROR);
   }
   if (!callback_fn.is_null())
-    callback_fn.Run(updated_pref);
+    std::move(callback_fn).Run(updated_pref);
 }
 
 }  // namespace
@@ -86,12 +87,13 @@ void ChangeMetricsReportingState(bool enabled) {
 // the pref and register for notifications for the rest of the changes.
 void ChangeMetricsReportingStateWithReply(
     bool enabled,
-    const OnMetricsReportingCallbackType& callback_fn) {
+    OnMetricsReportingCallbackType callback_fn) {
 #if !defined(OS_ANDROID)
   if (IsMetricsReportingPolicyManaged()) {
     if (!callback_fn.is_null()) {
-      callback_fn.Run(
-          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
+      const bool metrics_enabled =
+          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
+      std::move(callback_fn).Run(metrics_enabled);
     }
     return;
   }
@@ -99,7 +101,7 @@ void ChangeMetricsReportingStateWithReply(
   base::PostTaskAndReplyWithResult(
       GoogleUpdateSettings::CollectStatsConsentTaskRunner(), FROM_HERE,
       base::BindOnce(&SetGoogleUpdateSettings, enabled),
-      base::BindOnce(&SetMetricsReporting, enabled, callback_fn));
+      base::BindOnce(&SetMetricsReporting, enabled, std::move(callback_fn)));
 }
 
 void UpdateMetricsPrefsOnPermissionChange(bool metrics_enabled) {
@@ -109,11 +111,12 @@ void UpdateMetricsPrefsOnPermissionChange(bool metrics_enabled) {
     // before a user opts in and all reported data is accurate.
     g_browser_process->metrics_service()->ClearSavedStabilityMetrics();
   } else {
-    // Clear the client id pref when opting out.
-    // Note: Clearing client id will not affect the running state (e.g. field
-    // trial randomization), as the pref is only read on startup.
+    // Clear the client id and low entropy sources pref when opting out.
+    // Note: This will not affect the running state (e.g. field trial
+    // randomization), as the pref is only read on startup.
     g_browser_process->local_state()->ClearPref(
         metrics::prefs::kMetricsClientID);
+    metrics::EntropyState::ClearPrefs(g_browser_process->local_state());
     g_browser_process->local_state()->ClearPref(
         metrics::prefs::kMetricsReportingEnabledTimestamp);
     crash_keys::ClearMetricsClientId();

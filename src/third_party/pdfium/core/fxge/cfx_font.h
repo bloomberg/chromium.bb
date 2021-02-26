@@ -18,15 +18,16 @@
 #include "core/fxge/fx_freetype.h"
 #include "third_party/base/span.h"
 
-#if defined _SKIA_SUPPORT_ || defined _SKIA_SUPPORT_PATHS_
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
 #include "core/fxge/fx_font.h"
 #endif
 
-class CFX_GlyphCache;
 class CFX_GlyphBitmap;
+class CFX_GlyphCache;
 class CFX_PathData;
 class CFX_SubstFont;
 class IFX_SeekableReadStream;
+struct CFX_TextRenderOptions;
 
 class CFX_Font {
  public:
@@ -59,7 +60,7 @@ class CFX_Font {
   int GetSubstFontItalicAngle() const;
 
 #if defined(PDF_ENABLE_XFA)
-  bool LoadFile(const RetainPtr<IFX_SeekableReadStream>& pFile, int nFaceIndex);
+  bool LoadFile(RetainPtr<IFX_SeekableReadStream> pFile, int nFaceIndex);
 
 #if !defined(OS_WIN)
   void SetFace(RetainPtr<CFX_Face> face);
@@ -68,27 +69,27 @@ class CFX_Font {
 #endif  // !defined(OS_WIN)
 #endif  // defined(PDF_ENABLE_XFA)
 
-  const CFX_GlyphBitmap* LoadGlyphBitmap(uint32_t glyph_index,
-                                         bool bFontStyle,
-                                         const CFX_Matrix& matrix,
-                                         uint32_t dest_width,
-                                         int anti_alias,
-                                         int* pTextFlags) const;
-  const CFX_PathData* LoadGlyphPath(uint32_t glyph_index,
-                                    uint32_t dest_width) const;
+  const CFX_GlyphBitmap* LoadGlyphBitmap(
+      uint32_t glyph_index,
+      bool bFontStyle,
+      const CFX_Matrix& matrix,
+      int dest_width,
+      int anti_alias,
+      CFX_TextRenderOptions* text_options) const;
+  const CFX_PathData* LoadGlyphPath(uint32_t glyph_index, int dest_width) const;
 
-#if defined _SKIA_SUPPORT_ || defined _SKIA_SUPPORT_PATHS_
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
   CFX_TypeFace* GetDeviceCache() const;
 #endif
 
-  uint32_t GetGlyphWidth(uint32_t glyph_index);
+  int GetGlyphWidth(uint32_t glyph_index);
   int GetAscent() const;
   int GetDescent() const;
   bool GetGlyphBBox(uint32_t glyph_index, FX_RECT* pBBox);
   bool IsItalic() const;
   bool IsBold() const;
   bool IsFixedWidth() const;
-#if defined _SKIA_SUPPORT_ || defined _SKIA_SUPPORT_PATHS_
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
   bool IsSubstFontBold() const;
 #endif
   bool IsVertical() const { return m_bVertical; }
@@ -103,19 +104,17 @@ class CFX_Font {
   void SetSubData(uint8_t* data) { m_pGsubData.reset(data); }
   pdfium::span<uint8_t> GetFontSpan() const { return m_FontData; }
   void AdjustMMParams(int glyph_index, int dest_width, int weight) const;
-  CFX_PathData* LoadGlyphPathImpl(uint32_t glyph_index,
-                                  uint32_t dest_width) const;
-#if defined(OS_MACOSX)
+  CFX_PathData* LoadGlyphPathImpl(uint32_t glyph_index, int dest_width) const;
+#if defined(OS_APPLE)
   void* GetPlatformFont() const { return m_pPlatformFont; }
   void SetPlatformFont(void* font) { m_pPlatformFont = font; }
 #endif
 
-  static constexpr size_t kAngleSkewArraySize = 30;
-  static const char s_AngleSkew[kAngleSkewArraySize];
-  static constexpr size_t kWeightPowArraySize = 100;
-  static const uint8_t s_WeightPow[kWeightPowArraySize];
-  static const uint8_t s_WeightPow_11[kWeightPowArraySize];
-  static const uint8_t s_WeightPow_SHIFTJIS[kWeightPowArraySize];
+  // Returns negative values on failure.
+  static int GetWeightLevel(int charset, size_t index);
+
+  // |angle| is typically negative.
+  static int GetSkewFromAngle(int angle);
 
   // This struct should be the same as FPDF_CharsetFontMap.
   struct CharsetFontMap {
@@ -123,23 +122,23 @@ class CFX_Font {
     const char* fontname;  // Name of default font to use with that charset.
   };
 
-  /**
-   *    Pointer to the default character set to TT Font name map. The
-   *    map is an array of CharsetFontMap structs, with its end indicated
-   *    by a { -1, NULL } entry.
-   **/
-  static const CharsetFontMap defaultTTFMap[];
+  // Pointer to the default character set to TT Font name map. The map is an
+  // array of CharsetFontMap structs, with its end indicated by a {-1, nullptr}
+  // entry.
+  static const CharsetFontMap kDefaultTTFMap[];
 
  private:
   RetainPtr<CFX_GlyphCache> GetOrCreateGlyphCache() const;
   void ClearGlyphCache();
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void ReleasePlatformResource();
 #endif
   ByteString GetFamilyNameOrUntitled() const;
 
 #if defined(PDF_ENABLE_XFA)
-  std::unique_ptr<FXFT_StreamRec> m_pOwnedStream;  // Must outlive |m_Face|.
+  // |m_pOwnedFile| must outlive |m_pOwnedStreamRec|.
+  RetainPtr<IFX_SeekableReadStream> m_pOwnedFile;
+  std::unique_ptr<FXFT_StreamRec> m_pOwnedStreamRec;  // Must outlive |m_Face|.
 #endif
   mutable RetainPtr<CFX_Face> m_Face;
   mutable RetainPtr<CFX_GlyphCache> m_GlyphCache;
@@ -149,7 +148,7 @@ class CFX_Font {
   pdfium::span<uint8_t> m_FontData;
   bool m_bEmbedded = false;
   bool m_bVertical = false;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void* m_pPlatformFont = nullptr;
 #endif
 };

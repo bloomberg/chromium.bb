@@ -16,10 +16,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
+#include "chrome/browser/extensions/api/tabs/tabs_util.h"
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -44,7 +46,6 @@
 #include "chrome/browser/ui/bluetooth/chrome_extension_bluetooth_chooser.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -67,7 +68,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -86,6 +86,10 @@ const char kJsonUrlPath[] = "/service/update2/json";
 // If true, the extensions client will behave as though there is always a
 // new chrome update.
 bool g_did_chrome_update_for_testing = false;
+
+// The fake metrics logger instance to use for testing.
+MediaRouterExtensionAccessLogger* g_media_router_access_logger_for_testing =
+    nullptr;
 
 bool ExtensionsDisabled(const base::CommandLine& command_line) {
   return command_line.HasSwitch(::switches::kDisableExtensions) ||
@@ -136,17 +140,17 @@ bool ChromeExtensionsBrowserClient::IsSameContext(
     content::BrowserContext* second) {
   Profile* first_profile = Profile::FromBrowserContext(first);
   Profile* second_profile = Profile::FromBrowserContext(second);
-  return first_profile->IsSameProfile(second_profile);
+  return first_profile->IsSameOrParent(second_profile);
 }
 
 bool ChromeExtensionsBrowserClient::HasOffTheRecordContext(
     content::BrowserContext* context) {
-  return static_cast<Profile*>(context)->HasOffTheRecordProfile();
+  return static_cast<Profile*>(context)->HasPrimaryOTRProfile();
 }
 
 content::BrowserContext* ChromeExtensionsBrowserClient::GetOffTheRecordContext(
     content::BrowserContext* context) {
-  return static_cast<Profile*>(context)->GetOffTheRecordProfile();
+  return static_cast<Profile*>(context)->GetPrimaryOTRProfile();
 }
 
 content::BrowserContext* ChromeExtensionsBrowserClient::GetOriginalContext(
@@ -171,15 +175,14 @@ bool ChromeExtensionsBrowserClient::IsGuestSession(
 bool ChromeExtensionsBrowserClient::IsExtensionIncognitoEnabled(
     const std::string& extension_id,
     content::BrowserContext* context) const {
-  return IsGuestSession(context)
-      || util::IsIncognitoEnabled(extension_id, context);
+  return IsGuestSession(context) ||
+         util::IsIncognitoEnabled(extension_id, context);
 }
 
 bool ChromeExtensionsBrowserClient::CanExtensionCrossIncognito(
     const Extension* extension,
     content::BrowserContext* context) const {
-  return IsGuestSession(context)
-      || util::CanCrossIncognito(extension, context);
+  return IsGuestSession(context) || util::CanCrossIncognito(extension, context);
 }
 
 base::FilePath ChromeExtensionsBrowserClient::GetBundleResourcePath(
@@ -546,19 +549,41 @@ bool ChromeExtensionsBrowserClient::ShouldSchemeBypassNavigationChecks(
   return ExtensionsBrowserClient::ShouldSchemeBypassNavigationChecks(scheme);
 }
 
-bool ChromeExtensionsBrowserClient::ShouldForceWebRequestExtraHeaders(
-    content::BrowserContext* context) const {
-  // If OOR-CORS is disabled, we never apply this enforcement.
-  if (!context->ShouldEnableOutOfBlinkCors())
-    return false;
+base::FilePath ChromeExtensionsBrowserClient::GetSaveFilePath(
+    content::BrowserContext* context) {
+  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(context);
+  return download_prefs->SaveFilePath();
+}
 
-  // Enables the enforcement if the prefs is managed by the enterprise policy.
-  bool apply_cors_mitigation_list =
-      !base::FeatureList::IsEnabled(
-          features::kHideCorsMitigationListPolicySupport) &&
-      Profile::FromBrowserContext(context)->GetPrefs()->IsManagedPreference(
-          prefs::kCorsMitigationList);
-  return apply_cors_mitigation_list;
+void ChromeExtensionsBrowserClient::SetLastSaveFilePath(
+    content::BrowserContext* context,
+    const base::FilePath& path) {
+  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(context);
+  download_prefs->SetSaveFilePath(path);
+}
+
+const MediaRouterExtensionAccessLogger*
+ChromeExtensionsBrowserClient::GetMediaRouterAccessLogger() const {
+  return g_media_router_access_logger_for_testing
+             ? g_media_router_access_logger_for_testing
+             : &media_router_access_logger_;
+}
+
+bool ChromeExtensionsBrowserClient::HasIsolatedStorage(
+    const std::string& extension_id,
+    content::BrowserContext* context) {
+  return extensions::util::HasIsolatedStorage(extension_id, context);
+}
+
+bool ChromeExtensionsBrowserClient::IsScreenshotRestricted(
+    content::WebContents* web_contents) const {
+  return tabs_util::IsScreenshotRestricted(web_contents);
+}
+
+// static
+void ChromeExtensionsBrowserClient::SetMediaRouterAccessLoggerForTesting(
+    MediaRouterExtensionAccessLogger* media_router_access_logger) {
+  g_media_router_access_logger_for_testing = media_router_access_logger;
 }
 
 // static

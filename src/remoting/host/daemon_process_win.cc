@@ -8,10 +8,11 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -27,6 +28,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/branding.h"
@@ -38,6 +40,8 @@
 #include "remoting/host/pairing_registry_delegate_win.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/host/switches.h"
+#include "remoting/host/win/etw_trace_consumer.h"
+#include "remoting/host/win/host_event_file_logger.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/security_descriptor.h"
 #include "remoting/host/win/unprivileged_process_delegate.h"
@@ -48,6 +52,8 @@ using base::TimeDelta;
 
 namespace {
 
+constexpr char kEtwTracingThreadName[] = "ETW Trace Consumer";
+
 // Duplicates |key| and returns the value that can be sent over IPC.
 IPC::PlatformFileForTransit GetRegistryKeyForTransit(
     const base::win::RegKey& key) {
@@ -55,6 +61,15 @@ IPC::PlatformFileForTransit GetRegistryKeyForTransit(
       reinterpret_cast<base::PlatformFile>(key.Handle());
   return IPC::GetPlatformFileForTransit(handle, false);
 }
+
+#if defined(OFFICIAL_BUILD)
+constexpr wchar_t kLoggingRegistryKeyName[] =
+    L"SOFTWARE\\Google\\Chrome Remote Desktop\\logging";
+#else
+constexpr wchar_t kLoggingRegistryKeyName[] = L"SOFTWARE\\Chromoting\\logging";
+#endif
+
+constexpr wchar_t kLogToFileRegistryValue[] = L"LogToFile";
 
 }  // namespace
 
@@ -72,10 +87,9 @@ const char* kCopiedSwitchNames[] = {switches::kV, switches::kVModule,
 
 class DaemonProcessWin : public DaemonProcess {
  public:
-  DaemonProcessWin(
-      scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-      const base::Closure& stopped_callback);
+  DaemonProcessWin(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+                   scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+                   base::OnceClosure stopped_callback);
   ~DaemonProcessWin() override;
 
   // WorkerProcessIpcDelegate implementation.
@@ -88,6 +102,12 @@ class DaemonProcessWin : public DaemonProcess {
       int terminal_id,
       int session_id,
       const IPC::ChannelHandle& desktop_pipe) override;
+
+  // If event logging has been configured, creates an ETW trace consumer which
+  // listens for logged events from our host processes.  Tracing stops when
+  // |etw_trace_consumer_| is destroyed.  Logging destinations are configured
+  // via the registry.
+  void ConfigureHostLogging();
 
  protected:
   // DaemonProcess implementation.
@@ -122,19 +142,22 @@ class DaemonProcessWin : public DaemonProcess {
   base::win::RegKey pairing_registry_privileged_key_;
   base::win::RegKey pairing_registry_unprivileged_key_;
 
+  std::unique_ptr<EtwTraceConsumer> etw_trace_consumer_;
+
   DISALLOW_COPY_AND_ASSIGN(DaemonProcessWin);
 };
 
 DaemonProcessWin::DaemonProcessWin(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-    const base::Closure& stopped_callback)
-    : DaemonProcess(caller_task_runner, io_task_runner, stopped_callback),
+    base::OnceClosure stopped_callback)
+    : DaemonProcess(caller_task_runner,
+                    io_task_runner,
+                    std::move(stopped_callback)),
       ipc_support_(io_task_runner->task_runner(),
                    mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST) {}
 
-DaemonProcessWin::~DaemonProcessWin() {
-}
+DaemonProcessWin::~DaemonProcessWin() = default;
 
 void DaemonProcessWin::OnChannelConnected(int32_t peer_pid) {
   // Obtain the handle of the network process.
@@ -230,10 +253,15 @@ void DaemonProcessWin::LaunchNetworkProcess() {
 std::unique_ptr<DaemonProcess> DaemonProcess::Create(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-    const base::Closure& stopped_callback) {
-  std::unique_ptr<DaemonProcessWin> daemon_process(new DaemonProcessWin(
-      caller_task_runner, io_task_runner, stopped_callback));
+    base::OnceClosure stopped_callback) {
+  auto daemon_process = std::make_unique<DaemonProcessWin>(
+      caller_task_runner, io_task_runner, std::move(stopped_callback));
+
+  // Configure host logging first so we can capture subsequent events.
+  daemon_process->ConfigureHostLogging();
+
   daemon_process->Initialize();
+
   return std::move(daemon_process);
 }
 
@@ -377,6 +405,49 @@ bool DaemonProcessWin::OpenPairingRegistry() {
   pairing_registry_privileged_key_.Set(privileged.Take());
   pairing_registry_unprivileged_key_.Set(unprivileged.Take());
   return true;
+}
+
+void DaemonProcessWin::ConfigureHostLogging() {
+  DCHECK(!etw_trace_consumer_);
+
+  base::win::RegKey logging_reg_key;
+  LONG result = logging_reg_key.Open(HKEY_LOCAL_MACHINE,
+                                     kLoggingRegistryKeyName, KEY_READ);
+  if (result != ERROR_SUCCESS) {
+    ::SetLastError(result);
+    PLOG(ERROR) << "Failed to open HKLM\\" << kLoggingRegistryKeyName;
+    return;
+  }
+
+  std::vector<std::unique_ptr<HostEventLogger>> loggers;
+
+  // Check to see if file logging has been enabled.
+  if (logging_reg_key.HasValue(kLogToFileRegistryValue)) {
+    DWORD enabled = 0;
+    result = logging_reg_key.ReadValueDW(kLogToFileRegistryValue, &enabled);
+    if (result == ERROR_SUCCESS) {
+      auto file_logger = HostEventFileLogger::Create();
+      if (file_logger) {
+        loggers.push_back(std::move(file_logger));
+      }
+    } else {
+      ::SetLastError(result);
+      PLOG(ERROR) << "Failed to read HKLM\\" << kLoggingRegistryKeyName << "\\"
+                  << kLogToFileRegistryValue;
+    }
+  }
+
+  // TODO(joedow): Hook up a Windows Event Logger here.
+
+  if (loggers.empty()) {
+    VLOG(1) << "No host event loggers have been configured.";
+    return;
+  }
+
+  etw_trace_consumer_ = EtwTraceConsumer::Create(
+      AutoThread::CreateWithType(kEtwTracingThreadName, caller_task_runner(),
+                                 base::MessagePumpType::IO),
+      std::move(loggers));
 }
 
 }  // namespace remoting

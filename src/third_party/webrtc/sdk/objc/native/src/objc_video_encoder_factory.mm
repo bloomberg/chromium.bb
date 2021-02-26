@@ -17,7 +17,6 @@
 #import "base/RTCVideoEncoderFactory.h"
 #import "components/video_codec/RTCCodecSpecificInfoH264+Private.h"
 #import "sdk/objc/api/peerconnection/RTCEncodedImage+Private.h"
-#import "sdk/objc/api/peerconnection/RTCRtpFragmentationHeader+Private.h"
 #import "sdk/objc/api/peerconnection/RTCVideoCodecInfo+Private.h"
 #import "sdk/objc/api/peerconnection/RTCVideoEncoderSettings+Private.h"
 #import "sdk/objc/api/video_codec/RTCVideoCodecConstants.h"
@@ -62,10 +61,7 @@ class ObjCVideoEncoder : public VideoEncoder {
             [(RTC_OBJC_TYPE(RTCCodecSpecificInfoH264) *)info nativeCodecSpecificInfo];
       }
 
-      std::unique_ptr<RTPFragmentationHeader> fragmentationHeader =
-          [header createNativeFragmentationHeader];
-      EncodedImageCallback::Result res =
-          callback->OnEncodedImage(encodedImage, &codecSpecificInfo, fragmentationHeader.get());
+      EncodedImageCallback::Result res = callback->OnEncodedImage(encodedImage, &codecSpecificInfo);
       return res.error == EncodedImageCallback::Result::OK;
     }];
 
@@ -174,26 +170,13 @@ std::vector<SdpVideoFormat> ObjCVideoEncoderFactory::GetImplementations() const 
   return GetSupportedFormats();
 }
 
-VideoEncoderFactory::CodecInfo ObjCVideoEncoderFactory::QueryVideoEncoder(
-    const SdpVideoFormat &format) const {
-  // TODO(andersc): This is a hack until we figure out how this should be done properly.
-  NSString *formatName = [NSString stringForStdString:format.name];
-  NSSet *wrappedSoftwareFormats =
-      [NSSet setWithObjects:kRTCVideoCodecVp8Name, kRTCVideoCodecVp9Name, nil];
-
-  CodecInfo codec_info;
-  codec_info.is_hardware_accelerated = ![wrappedSoftwareFormats containsObject:formatName];
-  codec_info.has_internal_source = false;
-  return codec_info;
-}
-
 std::unique_ptr<VideoEncoder> ObjCVideoEncoderFactory::CreateVideoEncoder(
     const SdpVideoFormat &format) {
   RTC_OBJC_TYPE(RTCVideoCodecInfo) *info =
       [[RTC_OBJC_TYPE(RTCVideoCodecInfo) alloc] initWithNativeSdpVideoFormat:format];
   id<RTC_OBJC_TYPE(RTCVideoEncoder)> encoder = [encoder_factory_ createEncoder:info];
-  if ([encoder isKindOfClass:[RTCWrappedNativeVideoEncoder class]]) {
-    return [(RTCWrappedNativeVideoEncoder *)encoder releaseWrappedEncoder];
+  if ([encoder isKindOfClass:[RTC_OBJC_TYPE(RTCWrappedNativeVideoEncoder) class]]) {
+    return [(RTC_OBJC_TYPE(RTCWrappedNativeVideoEncoder) *)encoder releaseWrappedEncoder];
   } else {
     return std::unique_ptr<ObjCVideoEncoder>(new ObjCVideoEncoder(encoder));
   }

@@ -18,12 +18,19 @@ namespace extensions {
 
 class BookmarkManagerPrivateApiUnitTest : public ExtensionServiceTestBase {
  public:
-  BookmarkManagerPrivateApiUnitTest() {}
+  BookmarkManagerPrivateApiUnitTest() = default;
+  BookmarkManagerPrivateApiUnitTest(const BookmarkManagerPrivateApiUnitTest&) =
+      delete;
+  BookmarkManagerPrivateApiUnitTest& operator=(
+      const BookmarkManagerPrivateApiUnitTest&) = delete;
 
   void SetUp() override {
     ExtensionServiceTestBase::SetUp();
-    InitializeEmptyExtensionService();
-    profile_->CreateBookmarkModel(false);
+
+    ExtensionServiceInitParams params = CreateDefaultInitParams();
+    params.enable_bookmark_model = true;
+    InitializeExtensionService(params);
+
     model_ = BookmarkModelFactory::GetForBrowserContext(profile());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
 
@@ -40,8 +47,6 @@ class BookmarkManagerPrivateApiUnitTest : public ExtensionServiceTestBase {
  private:
   bookmarks::BookmarkModel* model_ = nullptr;
   std::string node_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkManagerPrivateApiUnitTest);
 };
 
 // Tests that running ExtensionFunction-s on deleted bookmark node gracefully

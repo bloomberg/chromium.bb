@@ -29,7 +29,16 @@ struct TabLoadingFrameNavigationThrottlesParams {
   // non-primary content frames.
   base::TimeDelta minimum_throttle_timeout;
   base::TimeDelta maximum_throttle_timeout;
+
+  // The multiple of elapsed time from navigation start until
+  // FirstContentfulPaint (FCP) that is used in calculating the timeout to apply
+  // to the throttles.
+  double fcp_multiple;
 };
+
+// A feature that gates the inclusion of service worker relationships in the
+// graph. This is a temporary feature, see https://crbug.com/1143281.
+extern const base::Feature kServiceWorkerRelationshipsInGraph;
 
 }  // namespace features
 }  // namespace performance_manager

@@ -1,0 +1,32 @@
+<style include="profile-picker-shared">
+  cr-view-manager {
+    display: flex;
+    font-size: 100%;
+    margin: 0;
+  }
+
+  cr-view-manager > [slot='view'] {
+    min-height: var(--view-min-size);
+    min-width: var(--view-min-size);
+  }
+</style>
+<cr-view-manager id="viewManager">
+  <profile-picker-main-view id="mainView" slot="view">
+  </profile-picker-main-view>
+
+  <cr-lazy-render id="profileTypeChoice">
+    <template>
+      <profile-type-choice slot="view"
+          profile-theme-info="[[newProfileThemeInfo]]">
+      </profile-type-choice>
+    </template>
+  </cr-lazy-render>
+
+  <cr-lazy-render id="localProfileCustomization">
+    <template>
+      <local-profile-customization slot="view"
+          profile-theme-info="{{newProfileThemeInfo}}">
+      </local-profile-customizatione>
+    </template>
+  </cr-lazy-render>
+</cr-view-manager>

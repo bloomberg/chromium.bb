@@ -23,15 +23,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/pref_names.h"
-#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
-#include "components/content_settings/core/common/pref_names.h"
 #include "components/permissions/chooser_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
@@ -39,9 +38,12 @@
 #include "components/permissions/permission_util.h"
 #include "components/permissions/permissions_client.h"
 #include "components/prefs/pref_service.h"
+#include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
+#include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "url/origin.h"
@@ -103,8 +105,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::BLUETOOTH_SCANNING, "bluetooth-scanning"},
     {ContentSettingsType::HID_GUARD, "hid-devices"},
     {ContentSettingsType::HID_CHOOSER_DATA, kHidChooserDataGroupType},
-    {ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-     "native-file-system-write"},
+    {ContentSettingsType::FILE_SYSTEM_WRITE_GUARD, "file-system-write"},
     {ContentSettingsType::MIXEDSCRIPT, "mixed-script"},
     {ContentSettingsType::VR, "vr"},
     {ContentSettingsType::AR, "ar"},
@@ -112,6 +113,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::BLUETOOTH_CHOOSER_DATA,
      kBluetoothChooserDataGroupType},
     {ContentSettingsType::WINDOW_PLACEMENT, "window-placement"},
+    {ContentSettingsType::FONT_ACCESS, "font-access"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions do have UI in
@@ -132,7 +134,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::CLIENT_HINTS, nullptr},
     {ContentSettingsType::ACCESSIBILITY_EVENTS, nullptr},
     {ContentSettingsType::CLIPBOARD_SANITIZED_WRITE, nullptr},
-    {ContentSettingsType::PLUGINS_DATA, nullptr},
     {ContentSettingsType::BACKGROUND_FETCH, nullptr},
     {ContentSettingsType::INTENT_PICKER_DISPLAY, nullptr},
     {ContentSettingsType::PERIODIC_BACKGROUND_SYNC, nullptr},
@@ -142,9 +143,12 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::INSTALLED_WEB_APP_METADATA, nullptr},
     {ContentSettingsType::NFC, nullptr},
     {ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA, nullptr},
-    {ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD, nullptr},
+    {ContentSettingsType::FILE_SYSTEM_READ_GUARD, nullptr},
     {ContentSettingsType::STORAGE_ACCESS, nullptr},
     {ContentSettingsType::CAMERA_PAN_TILT_ZOOM, nullptr},
+    {ContentSettingsType::INSECURE_PRIVATE_NETWORK, nullptr},
+    {ContentSettingsType::PERMISSION_AUTOREVOCATION_DATA, nullptr},
+    {ContentSettingsType::FILE_SYSTEM_LAST_PICKED_DIRECTORY, nullptr},
 };
 static_assert(base::size(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.
@@ -158,7 +162,8 @@ struct SiteSettingSourceStringMapping {
 };
 
 const SiteSettingSourceStringMapping kSiteSettingSourceStringMapping[] = {
-    {SiteSettingSource::kAdsFilterBlacklist, "ads-filter-blacklist"},
+    {SiteSettingSource::kAllowlist, "allowlist"},
+    {SiteSettingSource::kAdsFilterBlocklist, "ads-filter-blacklist"},
     {SiteSettingSource::kDefault, "default"},
     {SiteSettingSource::kDrmDisabled, "drm-disabled"},
     {SiteSettingSource::kEmbargo, "embargo"},
@@ -197,53 +202,58 @@ static_assert(base::size(kPolicyIndicatorTypeStringMapping) ==
 
 // Retrieves the corresponding string, according to the following precedence
 // order from highest to lowest priority:
-//    1. Kill-switch.
-//    2. Insecure origins (some permissions are denied to insecure origins).
-//    3. Enterprise policy.
-//    4. Extensions.
-//    5. Activated for ads filtering (for Ads ContentSettingsType only).
-//    6. DRM disabled (for CrOS's Protected Content ContentSettingsType only).
-//    7. User-set per-origin setting.
-//    8. Embargo.
-//    9. User-set patterns.
-//   10. User-set global default for a ContentSettingsType.
-//   11. Chrome's built-in default.
+//    1. Allowlisted WebUI content setting.
+//    2. Kill-switch.
+//    3. Insecure origins (some permissions are denied to insecure origins).
+//    4. Enterprise policy.
+//    5. Extensions.
+//    6. Activated for ads filtering (for Ads ContentSettingsType only).
+//    7. DRM disabled (for CrOS's Protected Content ContentSettingsType only).
+//    8. User-set per-origin setting.
+//    9. Embargo.
+//   10. User-set patterns.
+//   11. User-set global default for a ContentSettingsType.
+//   12. Chrome's built-in default.
 SiteSettingSource CalculateSiteSettingSource(
     Profile* profile,
     const ContentSettingsType content_type,
     const GURL& origin,
     const content_settings::SettingInfo& info,
     const permissions::PermissionResult result) {
+  if (info.source == content_settings::SETTING_SOURCE_ALLOWLIST)
+    return SiteSettingSource::kAllowlist;  // Source #1.
+
   if (result.source == permissions::PermissionStatusSource::KILL_SWITCH)
-    return SiteSettingSource::kKillSwitch;  // Source #1.
+    return SiteSettingSource::kKillSwitch;  // Source #2.
 
   if (result.source == permissions::PermissionStatusSource::INSECURE_ORIGIN)
-    return SiteSettingSource::kInsecureOrigin;  // Source #2.
+    return SiteSettingSource::kInsecureOrigin;  // Source #3.
 
   if (info.source == content_settings::SETTING_SOURCE_POLICY ||
       info.source == content_settings::SETTING_SOURCE_SUPERVISED) {
-    return SiteSettingSource::kPolicy;  // Source #3.
+    return SiteSettingSource::kPolicy;  // Source #4.
   }
 
   if (info.source == content_settings::SETTING_SOURCE_EXTENSION)
-    return SiteSettingSource::kExtension;  // Source #4.
+    return SiteSettingSource::kExtension;  // Source #5.
 
   if (content_type == ContentSettingsType::ADS &&
       base::FeatureList::IsEnabled(
           subresource_filter::kSafeBrowsingSubresourceFilter)) {
-    HostContentSettingsMap* map =
-        HostContentSettingsMapFactory::GetForProfile(profile);
-    if (map->GetWebsiteSetting(origin, GURL(), ContentSettingsType::ADS_DATA,
-                               /*resource_identifier=*/std::string(),
-                               /*setting_info=*/nullptr) != nullptr) {
-      return SiteSettingSource::kAdsFilterBlacklist;  // Source #5.
+    subresource_filter::SubresourceFilterContentSettingsManager*
+        settings_manager =
+            SubresourceFilterProfileContextFactory::GetForProfile(profile)
+                ->settings_manager();
+
+    if (settings_manager->GetSiteActivationFromMetadata(origin)) {
+      return SiteSettingSource::kAdsFilterBlocklist;  // Source #6.
     }
   }
 
   // Protected Content will be blocked if the |kEnableDRM| pref is off.
   if (content_type == ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER &&
       !profile->GetPrefs()->GetBoolean(prefs::kEnableDRM)) {
-    return SiteSettingSource::kDrmDisabled;  // Source #6.
+    return SiteSettingSource::kDrmDisabled;  // Source #7.
   }
 
   DCHECK_NE(content_settings::SETTING_SOURCE_NONE, info.source);
@@ -252,18 +262,18 @@ SiteSettingSource CalculateSiteSettingSource(
             permissions::PermissionStatusSource::MULTIPLE_DISMISSALS ||
         result.source ==
             permissions::PermissionStatusSource::MULTIPLE_IGNORES) {
-      return SiteSettingSource::kEmbargo;  // Source #8.
+      return SiteSettingSource::kEmbargo;  // Source #9.
     }
     if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
         info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
-      return SiteSettingSource::kDefault;  // Source #10, #11.
+      return SiteSettingSource::kDefault;  // Source #11, #12.
     }
 
-    // Source #7, #9. When #7 is the source, |result.source| won't
-    // be set to any of the source #7 enum values, as PermissionManager is
-    // aware of the difference between these two sources internally. The
-    // subtlety here should go away when PermissionManager can handle all
-    // content settings and all possible sources.
+    // Source #8, #10. When #8 is the source, |result.source| won't be set to
+    // any of the source #8 enum values, as PermissionManager is aware of the
+    // difference between these two sources internally. The subtlety here should
+    // go away when PermissionManager can handle all content settings and all
+    // possible sources.
     return SiteSettingSource::kPreference;
   }
 
@@ -277,13 +287,21 @@ bool PatternAppliesToSingleOrigin(const ContentSettingPatternSource& pattern) {
   // Default settings and other patterns apply to multiple origins.
   if (url::Origin::Create(url).opaque())
     return false;
-  // Embedded content settings only when |url| is embedded in another origin, so
-  // ignore non-wildcard secondary patterns that are different to the primary.
-  if (pattern.primary_pattern != pattern.secondary_pattern &&
-      pattern.secondary_pattern != ContentSettingsPattern::Wildcard()) {
+  // Embedded content settings only match when |url| is embedded in another
+  // origin, so ignore non-wildcard secondary patterns.
+  if (pattern.secondary_pattern != ContentSettingsPattern::Wildcard()) {
     return false;
   }
   return true;
+}
+
+bool PatternAppliesToWebUISchemes(const ContentSettingPatternSource& pattern) {
+  return pattern.primary_pattern.GetScheme() ==
+             ContentSettingsPattern::SchemeType::SCHEME_CHROME ||
+         pattern.primary_pattern.GetScheme() ==
+             ContentSettingsPattern::SchemeType::SCHEME_CHROMEUNTRUSTED ||
+         pattern.primary_pattern.GetScheme() ==
+             ContentSettingsPattern::SchemeType::SCHEME_DEVTOOLS;
 }
 
 // Retrieves the source of a chooser exception as a string. This method uses the
@@ -344,31 +362,12 @@ const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
     {&GetHidChooserContext, kHidChooserDataGroupType},
     {&GetBluetoothChooserContext, kBluetoothChooserDataGroupType}};
 
-PolicyIndicatorType GetPolicyIndicatorFromSettingSource(
-    content_settings::SettingSource setting_source) {
-  switch (setting_source) {
-    case content_settings::SETTING_SOURCE_POLICY:
-      return PolicyIndicatorType::kDevicePolicy;
-    case content_settings::SETTING_SOURCE_SUPERVISED:
-      return PolicyIndicatorType::kParent;
-    case content_settings::SETTING_SOURCE_EXTENSION:
-      return PolicyIndicatorType::kExtension;
-    case content_settings::SETTING_SOURCE_USER:
-    case content_settings::SETTING_SOURCE_ALLOWLIST:
-    case content_settings::SETTING_SOURCE_NONE:
-      return PolicyIndicatorType::kNone;
-    case content_settings::SETTING_SOURCE_INSTALLED_WEBAPP:
-      NOTREACHED();
-      return PolicyIndicatorType::kNone;
-  }
-}
-
 }  // namespace
 
 bool HasRegisteredGroupName(ContentSettingsType type) {
   for (size_t i = 0; i < base::size(kContentSettingsTypeGroupNames); ++i) {
     if (type == kContentSettingsTypeGroupNames[i].type &&
-        kContentSettingsTypeGroupNames[i].name != nullptr) {
+        kContentSettingsTypeGroupNames[i].name) {
       return true;
     }
   }
@@ -389,7 +388,7 @@ std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
   for (size_t i = 0; i < base::size(kContentSettingsTypeGroupNames); ++i) {
     if (type == kContentSettingsTypeGroupNames[i].type) {
       const char* name = kContentSettingsTypeGroupNames[i].name;
-      if (name != nullptr)
+      if (name)
         return name;
       break;
     }
@@ -455,7 +454,9 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
     const std::string& display_name,
     const ContentSetting& setting,
     const std::string& provider_name,
-    bool incognito) {
+    bool incognito,
+    bool is_embargoed,
+    bool is_discarded) {
   auto exception = std::make_unique<base::DictionaryValue>();
   exception->SetString(kOrigin, pattern.ToString());
   exception->SetString(kDisplayName, display_name);
@@ -471,6 +472,8 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
   exception->SetString(kSetting, setting_string);
   exception->SetString(kSource, provider_name);
   exception->SetBoolean(kIncognito, incognito);
+  exception->SetBoolean(kIsEmbargoed, is_embargoed);
+  exception->SetBoolean(kIsDiscarded, is_discarded);
   return exception;
 }
 
@@ -537,7 +540,12 @@ void GetExceptionsForContentType(
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
 
-  map->GetSettingsForOneType(type, std::string(), &all_settings);
+  map->GetSettingsForOneType(type, &all_settings);
+
+  // Will return only regular settings for a regular profile and only incognito
+  // settings for an incognito Profile.
+  ContentSettingsForOneType discarded_settings;
+  map->GetDiscardedSettingsForOneType(type, &discarded_settings);
 
   // Group settings by primary_pattern.
   AllPatternsSettings all_patterns_settings;
@@ -556,6 +564,11 @@ void GetExceptionsForContentType(
     if (map->IsOffTheRecord() && !setting.incognito)
       continue;
 
+    // Don't add WebUI settings.
+    if (PatternAppliesToWebUISchemes(setting)) {
+      continue;
+    }
+
     all_patterns_settings[std::make_pair(
         setting.primary_pattern, setting.source)][setting.secondary_pattern] =
         setting.GetContentSetting();
@@ -563,11 +576,13 @@ void GetExceptionsForContentType(
 
   ContentSettingsForOneType embargo_settings;
   map->GetSettingsForOneType(ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,
-                             std::string(), &embargo_settings);
+                             &embargo_settings);
 
   permissions::PermissionDecisionAutoBlocker* auto_blocker =
       permissions::PermissionsClient::Get()->GetPermissionDecisionAutoBlocker(
           profile);
+
+  std::set<ContentSettingsPattern> origins_under_embargo;
 
   for (const auto& setting : embargo_settings) {
     // Off-the-record HostContentSettingsMap contains incognito content
@@ -582,6 +597,7 @@ void GetExceptionsForContentType(
     if (auto_blocker
             ->GetEmbargoResult(GURL(setting.primary_pattern.ToString()), type)
             .content_setting == CONTENT_SETTING_BLOCK) {
+      origins_under_embargo.insert(setting.primary_pattern);
       all_patterns_settings[std::make_pair(
           setting.primary_pattern, setting.source)][setting.secondary_pattern] =
           CONTENT_SETTING_BLOCK;
@@ -620,9 +636,10 @@ void GetExceptionsForContentType(
         parent == one_settings.end() ? CONTENT_SETTING_DEFAULT : parent->second;
     const ContentSettingsPattern& secondary_pattern =
         parent == one_settings.end() ? primary_pattern : parent->first;
-    this_provider_exceptions.push_back(
-        GetExceptionForPage(primary_pattern, secondary_pattern, display_name,
-                            parent_setting, source, incognito));
+    this_provider_exceptions.push_back(GetExceptionForPage(
+        primary_pattern, secondary_pattern, display_name, parent_setting,
+        source, incognito,
+        base::Contains(origins_under_embargo, primary_pattern)));
 
     // Add the "children" for any embedded settings.
     for (auto j = one_settings.begin(); j != one_settings.end(); ++j) {
@@ -631,9 +648,9 @@ void GetExceptionsForContentType(
         continue;
 
       ContentSetting content_setting = j->second;
-      this_provider_exceptions.push_back(
-          GetExceptionForPage(primary_pattern, j->first, display_name,
-                              content_setting, source, incognito));
+      this_provider_exceptions.push_back(GetExceptionForPage(
+          primary_pattern, j->first, display_name, content_setting, source,
+          incognito, base::Contains(origins_under_embargo, primary_pattern)));
     }
   }
 
@@ -652,6 +669,15 @@ void GetExceptionsForContentType(
   for (auto& one_provider_exceptions : all_provider_exceptions) {
     for (auto& exception : one_provider_exceptions)
       exceptions->Append(std::move(exception));
+  }
+
+  for (auto& discarded_rule : discarded_settings) {
+    exceptions->Append(GetExceptionForPage(
+        discarded_rule.primary_pattern, discarded_rule.secondary_pattern,
+        GetDisplayNameForPattern(discarded_rule.primary_pattern,
+                                 extension_registry),
+        discarded_rule.GetContentSetting(), discarded_rule.source, incognito,
+        false /*is_embargoed*/, true /*is_discarded*/));
   }
 }
 
@@ -680,8 +706,8 @@ ContentSetting GetContentSettingForOrigin(
   // content settings, not just the permissions, plus all the possible sources,
   // and the calls to HostContentSettingsMap should be removed.
   content_settings::SettingInfo info;
-  std::unique_ptr<base::Value> value = map->GetWebsiteSetting(
-      origin, origin, content_type, std::string(), &info);
+  std::unique_ptr<base::Value> value =
+      map->GetWebsiteSetting(origin, origin, content_type, &info);
 
   // Retrieve the content setting.
   permissions::PermissionResult result(
@@ -703,6 +729,11 @@ ContentSetting GetContentSettingForOrigin(
       CalculateSiteSettingSource(profile, content_type, origin, info, result));
   *display_name = GetDisplayNameForGURL(origin, extension_registry);
 
+  if (info.session_model == content_settings::SessionModel::OneTime) {
+    DCHECK_EQ(content_type, ContentSettingsType::GEOLOCATION);
+    DCHECK_EQ(result.content_setting, CONTENT_SETTING_ALLOW);
+    return CONTENT_SETTING_DEFAULT;
+  }
   return result.content_setting;
 }
 
@@ -710,10 +741,11 @@ std::vector<ContentSettingPatternSource> GetSiteExceptionsForContentType(
     HostContentSettingsMap* map,
     ContentSettingsType content_type) {
   ContentSettingsForOneType entries;
-  map->GetSettingsForOneType(content_type, std::string(), &entries);
+  map->GetSettingsForOneType(content_type, &entries);
   entries.erase(std::remove_if(entries.begin(), entries.end(),
                                [](const ContentSettingPatternSource& e) {
-                                 return !PatternAppliesToSingleOrigin(e);
+                                 return !PatternAppliesToSingleOrigin(e) ||
+                                        PatternAppliesToWebUISchemes(e);
                                }),
                 entries.end());
   return entries;
@@ -864,6 +896,10 @@ base::Value GetChooserExceptionListFromProfile(
   std::map<std::pair<base::string16, base::Value>, ChooserExceptionDetails>
       all_chooser_objects;
   for (const auto& object : objects) {
+    // Don't include WebUI settings.
+    if (content::HasWebUIScheme(object->requesting_origin))
+      continue;
+
     base::string16 name = chooser_context->GetObjectDisplayName(object->value);
     auto& chooser_exception_details =
         all_chooser_objects[std::make_pair(name, object->value.Clone())];
@@ -891,121 +927,6 @@ base::Value GetChooserExceptionListFromProfile(
   }
 
   return exceptions;
-}
-
-CookieControlsManagedState GetCookieControlsManagedState(Profile* profile) {
-  // Setup a default unmanaged state that is updated based on the actual
-  // managed state.
-  CookieControlsManagedState managed_state;
-
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  std::string content_setting_provider;
-  auto content_setting = map->GetDefaultContentSetting(
-      ContentSettingsType::COOKIES, &content_setting_provider);
-  auto content_setting_source =
-      HostContentSettingsMap::GetSettingSourceFromProviderName(
-          content_setting_provider);
-  bool content_setting_enforced =
-      content_setting_source !=
-      content_settings::SettingSource::SETTING_SOURCE_USER;
-
-  // Both the content setting and the block_third_party preference can
-  // be controlled via policy.
-  const PrefService::Preference* block_third_party_pref =
-      profile->GetPrefs()->FindPreference(prefs::kBlockThirdPartyCookies);
-  bool block_third_party_on = block_third_party_pref->GetValue()->GetBool();
-  bool block_third_party_enforced = !block_third_party_pref->IsUserModifiable();
-  // IsRecommended() cannot be used as we care if a recommended value exists at
-  // all, even if a user has overwritten it.
-  bool block_third_party_recommended =
-      (block_third_party_pref && block_third_party_pref->GetRecommendedValue());
-  bool block_third_party_recommended_on =
-      block_third_party_recommended &&
-      block_third_party_pref->GetRecommendedValue()->GetBool();
-
-  // kCookieControlsMode == kOn should imply block_third_party is on.
-  auto control_mode = static_cast<content_settings::CookieControlsMode>(
-      profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode));
-  DCHECK(control_mode !=
-             content_settings::CookieControlsMode::kBlockThirdParty ||
-         block_third_party_on);
-
-  // Get indicators representing each settings source. These may or may not
-  // be used depending on the determined managed state.
-  auto content_setting_source_indicator =
-      GetPolicyIndicatorFromSettingSource(content_setting_source);
-  auto block_third_party_source_indicator =
-      GetPolicyIndicatorFromPref(block_third_party_pref);
-
-  if (!content_setting_enforced && !block_third_party_enforced &&
-      !block_third_party_recommended) {
-    // No cookie controls are managed or recommended.
-    return managed_state;
-  }
-
-  if (content_setting_enforced) {
-    // Block and session only managed state only depend on the content setting.
-    managed_state.block_all = {/*disabled*/ true,
-                               content_setting_source_indicator};
-    managed_state.session_only = {/*disabled*/ true,
-                                  content_setting_source_indicator};
-  }
-
-  if (content_setting_enforced && content_setting == CONTENT_SETTING_BLOCK) {
-    // All remaining controls are managed by the content setting source.
-    managed_state.allow_all = {/*disabled*/ true,
-                               content_setting_source_indicator};
-    managed_state.block_third_party_incognito = {
-        /*disabled*/ true, content_setting_source_indicator};
-    managed_state.block_third_party = {/*disabled*/ true,
-                                       content_setting_source_indicator};
-    return managed_state;
-  }
-  if (content_setting_enforced && block_third_party_enforced) {
-    // All remaining controls are managed by the block_third_party source.
-    managed_state.allow_all = {/*disabled*/ true,
-                               block_third_party_source_indicator};
-    managed_state.block_third_party_incognito = {
-        /*disabled*/ true, block_third_party_source_indicator};
-    managed_state.block_third_party = {/*disabled*/ true,
-                                       block_third_party_source_indicator};
-    return managed_state;
-  }
-  DCHECK(!content_setting_enforced ||
-         content_setting == CONTENT_SETTING_ALLOW ||
-         content_setting == CONTENT_SETTING_SESSION_ONLY);
-  DCHECK(!content_setting_enforced || !block_third_party_enforced);
-  // At this stage the content setting is not enforcing a BLOCK state. Given
-  // this, allow and block_third_party are still valid choices that do not
-  // contradict the content setting. They can thus be controlled or recommended
-  // by the block_third_party preference.
-  if (block_third_party_enforced) {
-    DCHECK(!content_setting_enforced);
-    managed_state.block_third_party_incognito = {
-        true, block_third_party_source_indicator};
-    if (block_third_party_on) {
-      managed_state.allow_all = {/*disabled*/ true,
-                                 block_third_party_source_indicator};
-    } else {
-      managed_state.block_third_party = {/*disabled*/ true,
-                                         block_third_party_source_indicator};
-    }
-    return managed_state;
-  }
-  if (block_third_party_recommended) {
-    if (block_third_party_recommended_on) {
-      managed_state.block_third_party = {/*disabled*/ false,
-                                         block_third_party_source_indicator};
-    } else {
-      managed_state.allow_all = {/*disabled*/ false,
-                                 block_third_party_source_indicator};
-    }
-    return managed_state;
-  }
-  DCHECK(content_setting_enforced && !block_third_party_enforced &&
-         !block_third_party_recommended);
-  return managed_state;
 }
 
 std::string PolicyIndicatorTypeToString(const PolicyIndicatorType type) {

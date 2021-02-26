@@ -12,11 +12,11 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.widget.ScrimView;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,20 +29,20 @@ import java.util.Map;
 class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandler {
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
-    private final ChromeFullscreenManager mFullscreenManager;
+    private final BrowserControlsStateProvider mBrowserControls;
     private final CompositorViewHolder mCompositorViewHolder;
     private final ActivityTabProvider mActivityTabProvider;
-    private final ScrimView mScrimView;
+    private final ScrimCoordinator mScrim;
 
     AutofillAssistantActionHandlerImpl(Context context, BottomSheetController bottomSheetController,
-            ChromeFullscreenManager fullscreenManager, CompositorViewHolder compositorViewHolder,
-            ActivityTabProvider activityTabProvider, ScrimView scrimView) {
+            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
+            ActivityTabProvider activityTabProvider, ScrimCoordinator scrim) {
         mContext = context;
         mBottomSheetController = bottomSheetController;
-        mFullscreenManager = fullscreenManager;
+        mBrowserControls = browserControls;
         mCompositorViewHolder = compositorViewHolder;
         mActivityTabProvider = activityTabProvider;
-        mScrimView = scrimView;
+        mScrim = scrim;
     }
 
     @Override
@@ -82,12 +82,12 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
     public void performOnboarding(
             String experimentIds, Bundle arguments, Callback<Boolean> callback) {
         Map<String, String> parameters = toArgumentMap(arguments);
-        AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator(
-                experimentIds, parameters, mContext, mBottomSheetController, mFullscreenManager,
-                mCompositorViewHolder, mScrimView);
-        coordinator.show(accepted -> {
+        BottomSheetOnboardingCoordinator coordinator =
+                new BottomSheetOnboardingCoordinator(experimentIds, parameters, mContext,
+                        mBottomSheetController, mBrowserControls, mCompositorViewHolder, mScrim);
+        coordinator.show(result -> {
             coordinator.hide();
-            callback.onResult(accepted);
+            callback.onResult(result == AssistantOnboardingResult.ACCEPTED);
         });
     }
 
@@ -101,17 +101,17 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
         }
 
         Map<String, String> argumentMap = toArgumentMap(arguments);
-        Callback<AssistantOnboardingCoordinator> afterOnboarding = (onboardingCoordinator) -> {
+        Callback<BottomSheetOnboardingCoordinator> afterOnboarding = (onboardingCoordinator) -> {
             callback.onResult(client.performDirectAction(
                     name, experimentIds, argumentMap, onboardingCoordinator));
         };
 
         if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) {
-            AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator(
-                    experimentIds, argumentMap, mContext, mBottomSheetController,
-                    mFullscreenManager, mCompositorViewHolder, mScrimView);
-            coordinator.show(accepted -> {
-                if (!accepted) {
+            BottomSheetOnboardingCoordinator coordinator = new BottomSheetOnboardingCoordinator(
+                    experimentIds, argumentMap, mContext, mBottomSheetController, mBrowserControls,
+                    mCompositorViewHolder, mScrim);
+            coordinator.show(result -> {
+                if (result != AssistantOnboardingResult.ACCEPTED) {
                     coordinator.hide();
                     callback.onResult(false);
                     return;

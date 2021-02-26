@@ -39,8 +39,6 @@ class XPathResult;
 class CORE_EXPORT DocumentXPathEvaluator final
     : public GarbageCollected<DocumentXPathEvaluator>,
       public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);
-
  public:
   static const char kSupplementName[];
 
@@ -60,7 +58,7 @@ class CORE_EXPORT DocumentXPathEvaluator final
                                ExceptionState&);
 
   explicit DocumentXPathEvaluator(Document&);
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<XPathEvaluator> xpath_evaluator_;

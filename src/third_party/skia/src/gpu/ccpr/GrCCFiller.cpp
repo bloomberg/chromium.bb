@@ -37,7 +37,7 @@ GrCCFiller::GrCCFiller(Algorithm algorithm, int numPaths, int numSkPoints, int n
 void GrCCFiller::parseDeviceSpaceFill(const SkPath& path, const SkPoint* deviceSpacePts,
                                       GrScissorTest scissorTest, const SkIRect& clippedDevIBounds,
                                       const SkIVector& devToAtlasOffset) {
-    SkASSERT(!fInstanceBuffer.gpuBuffer());  // Can't call after prepareToDraw().
+    SkASSERT(!fInstanceBuffer.hasGpuBuffer());  // Can't call after prepareToDraw().
     SkASSERT(!path.isEmpty());
 
     int currPathPointsIdx = fGeometry.points().count();
@@ -206,7 +206,7 @@ void GrCCFiller::PathInfo::tessellateFan(
 }
 
 GrCCFiller::BatchID GrCCFiller::closeCurrentBatch() {
-    SkASSERT(!fInstanceBuffer.gpuBuffer());
+    SkASSERT(!fInstanceBuffer.hasGpuBuffer());
     SkASSERT(!fBatches.empty());
 
     const auto& lastBatch = fBatches.back();
@@ -295,7 +295,7 @@ void GrCCFiller::emitTessellatedFan(
 
 bool GrCCFiller::prepareToDraw(GrOnFlushResourceProvider* onFlushRP) {
     using Verb = GrCCFillGeometry::Verb;
-    SkASSERT(!fInstanceBuffer.gpuBuffer());
+    SkASSERT(!fInstanceBuffer.hasGpuBuffer());
     SkASSERT(fBatches.back().fEndNonScissorIndices == // Call closeCurrentBatch().
              fTotalPrimitiveCounts[(int)GrScissorTest::kDisabled]);
     SkASSERT(fBatches.back().fEndScissorSubBatchIdx == fScissorSubBatches.count());
@@ -342,7 +342,7 @@ bool GrCCFiller::prepareToDraw(GrOnFlushResourceProvider* onFlushRP) {
     int quadEndIdx = fBaseInstances[1].fConics + fTotalPrimitiveCounts[1].fConics;
 
     fInstanceBuffer.resetAndMapBuffer(onFlushRP, quadEndIdx * sizeof(QuadPointInstance));
-    if (!fInstanceBuffer.gpuBuffer()) {
+    if (!fInstanceBuffer.hasGpuBuffer()) {
         SkDebugf("WARNING: failed to allocate CCPR fill instance buffer.\n");
         return false;
     }
@@ -433,7 +433,7 @@ bool GrCCFiller::prepareToDraw(GrOnFlushResourceProvider* onFlushRP) {
                     SkASSERT(!currFan.empty());
                     currFan.pop_back();
                 }
-            // fallthru.
+                [[fallthrough]];
             case Verb::kEndOpenContour:  // endPt != startPt.
                 SkASSERT(!currFanIsTessellated || currFan.empty());
                 if (!currFanIsTessellated && currFan.count() >= 3) {
@@ -472,10 +472,10 @@ bool GrCCFiller::prepareToDraw(GrOnFlushResourceProvider* onFlushRP) {
 
 void GrCCFiller::drawFills(
         GrOpFlushState* flushState, GrCCCoverageProcessor* proc, const GrPipeline& pipeline,
-        BatchID batchID, const SkIRect& drawBounds) const {
+        BatchID batchID, const SkIRect& drawBounds, const GrUserStencilSettings* stencil) const {
     using PrimitiveType = GrCCCoverageProcessor::PrimitiveType;
 
-    SkASSERT(fInstanceBuffer.gpuBuffer());
+    SkASSERT(fInstanceBuffer.hasGpuBuffer());
 
     GrResourceProvider* rp = flushState->resourceProvider();
     const PrimitiveTallies& batchTotalCounts = fBatches[batchID].fTotalPrimitiveCounts;
@@ -485,7 +485,7 @@ void GrCCFiller::drawFills(
     if (batchTotalCounts.fTriangles) {
         for (int i = 0; i < numSubpasses; ++i) {
             proc->reset(PrimitiveType::kTriangles, i, rp);
-            this->drawPrimitives(flushState, *proc, pipeline, batchID,
+            this->drawPrimitives(flushState, *proc, pipeline, stencil, batchID,
                                  &PrimitiveTallies::fTriangles, drawBounds);
         }
     }
@@ -494,7 +494,7 @@ void GrCCFiller::drawFills(
         SkASSERT(Algorithm::kStencilWindingCount != fAlgorithm);
         for (int i = 0; i < numSubpasses; ++i) {
             proc->reset(PrimitiveType::kWeightedTriangles, i, rp);
-            this->drawPrimitives(flushState, *proc, pipeline, batchID,
+            this->drawPrimitives(flushState, *proc, pipeline, stencil, batchID,
                                  &PrimitiveTallies::fWeightedTriangles, drawBounds);
         }
     }
@@ -502,7 +502,7 @@ void GrCCFiller::drawFills(
     if (batchTotalCounts.fQuadratics) {
         for (int i = 0; i < numSubpasses; ++i) {
             proc->reset(PrimitiveType::kQuadratics, i, rp);
-            this->drawPrimitives(flushState, *proc, pipeline, batchID,
+            this->drawPrimitives(flushState, *proc, pipeline, stencil, batchID,
                                  &PrimitiveTallies::fQuadratics, drawBounds);
         }
     }
@@ -510,27 +510,28 @@ void GrCCFiller::drawFills(
     if (batchTotalCounts.fCubics) {
         for (int i = 0; i < numSubpasses; ++i) {
             proc->reset(PrimitiveType::kCubics, i, rp);
-            this->drawPrimitives(flushState, *proc, pipeline, batchID, &PrimitiveTallies::fCubics,
-                                 drawBounds);
+            this->drawPrimitives(flushState, *proc, pipeline, stencil, batchID,
+                                 &PrimitiveTallies::fCubics, drawBounds);
         }
     }
 
     if (batchTotalCounts.fConics) {
         for (int i = 0; i < numSubpasses; ++i) {
             proc->reset(PrimitiveType::kConics, i, rp);
-            this->drawPrimitives(flushState, *proc, pipeline, batchID, &PrimitiveTallies::fConics,
-                                 drawBounds);
+            this->drawPrimitives(flushState, *proc, pipeline, stencil, batchID,
+                                 &PrimitiveTallies::fConics, drawBounds);
         }
     }
 }
 
 void GrCCFiller::drawPrimitives(
         GrOpFlushState* flushState, const GrCCCoverageProcessor& proc, const GrPipeline& pipeline,
-        BatchID batchID, int PrimitiveTallies::*instanceType, const SkIRect& drawBounds) const {
+        const GrUserStencilSettings* stencil, BatchID batchID, int PrimitiveTallies::*instanceType,
+        const SkIRect& drawBounds) const {
     SkASSERT(pipeline.isScissorTestEnabled());
 
     GrOpsRenderPass* renderPass = flushState->opsRenderPass();
-    proc.bindPipeline(flushState, pipeline, SkRect::Make(drawBounds));
+    proc.bindPipeline(flushState, pipeline, SkRect::Make(drawBounds), stencil);
     proc.bindBuffers(renderPass, fInstanceBuffer.gpuBuffer());
 
     SkASSERT(batchID > 0);

@@ -61,7 +61,7 @@ angle::Result Framebuffer9::clearImpl(const gl::Context *context,
                                       const ClearParameters &clearParams)
 {
     ANGLE_TRY(mRenderer->applyRenderTarget(context, mRenderTargetCache.getColors()[0],
-                                           mRenderTargetCache.getDepthStencil(true)));
+                                           mRenderTargetCache.getDepthStencil()));
 
     const gl::State &glState = context->getState();
     float nearZ              = glState.getNearPlane();
@@ -72,7 +72,7 @@ angle::Result Framebuffer9::clearImpl(const gl::Context *context,
     mRenderer->setScissorRectangle(glState.getScissor(), glState.isScissorTestEnabled());
 
     mRenderer->clear(clearParams, mRenderTargetCache.getColors()[0],
-                     mRenderTargetCache.getDepthStencil(true));
+                     mRenderTargetCache.getDepthStencil());
     return angle::Result::Continue;
 }
 
@@ -82,6 +82,7 @@ angle::Result Framebuffer9::readPixelsImpl(const gl::Context *context,
                                            GLenum type,
                                            size_t outputPitch,
                                            const gl::PixelPackState &pack,
+                                           gl::Buffer *packBuffer,
                                            uint8_t *pixels)
 {
     const gl::FramebufferAttachment *colorbuffer = mState.getColorAttachment(0);
@@ -405,9 +406,10 @@ angle::Result Framebuffer9::getSamplePosition(const gl::Context *context,
 
 angle::Result Framebuffer9::syncState(const gl::Context *context,
                                       GLenum binding,
-                                      const gl::Framebuffer::DirtyBits &dirtyBits)
+                                      const gl::Framebuffer::DirtyBits &dirtyBits,
+                                      gl::Command command)
 {
-    ANGLE_TRY(FramebufferD3D::syncState(context, binding, dirtyBits));
+    ANGLE_TRY(FramebufferD3D::syncState(context, binding, dirtyBits, command));
     ANGLE_TRY(mRenderTargetCache.update(context, mState, dirtyBits));
     return angle::Result::Continue;
 }

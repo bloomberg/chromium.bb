@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
@@ -39,18 +40,18 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
 struct SameSizeAsNodeRareData {
-  Member<void*> willbe_member_[4];
+  Member<void*> willbe_member_[5];
   unsigned bitfields_;
 };
 
-static_assert(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData),
-              "NodeRareData should stay small");
+ASSERT_SIZE(NodeRareData, SameSizeAsNodeRareData);
 
-void NodeMutationObserverData::Trace(Visitor* visitor) {
+void NodeMutationObserverData::Trace(Visitor* visitor) const {
   visitor->Trace(registry_);
   visitor->Trace(transient_registry_);
 }
@@ -77,14 +78,14 @@ void NodeMutationObserverData::RemoveRegistration(
   registry_.EraseAt(registry_.Find(registration));
 }
 
-void NodeData::Trace(Visitor* visitor) {
+void NodeData::Trace(Visitor* visitor) const {
   if (bit_field_.get_concurrently<IsRareData>()) {
     if (bit_field_.get_concurrently<IsElementRareData>())
-      static_cast<ElementRareData*>(this)->TraceAfterDispatch(visitor);
+      static_cast<const ElementRareData*>(this)->TraceAfterDispatch(visitor);
     else
-      static_cast<NodeRareData*>(this)->TraceAfterDispatch(visitor);
+      static_cast<const NodeRareData*>(this)->TraceAfterDispatch(visitor);
   } else {
-    static_cast<NodeRenderingData*>(this)->TraceAfterDispatch(visitor);
+    static_cast<const NodeRenderingData*>(this)->TraceAfterDispatch(visitor);
   }
 }
 
@@ -108,11 +109,23 @@ NodeRenderingData& NodeRenderingData::SharedEmptyData() {
   return *shared_empty_data;
 }
 
+void NodeRareData::RegisterScrollTimeline(ScrollTimeline* timeline) {
+  if (!scroll_timelines_) {
+    scroll_timelines_ =
+        MakeGarbageCollected<HeapHashSet<Member<ScrollTimeline>>>();
+  }
+  scroll_timelines_->insert(timeline);
+}
+void NodeRareData::UnregisterScrollTimeline(ScrollTimeline* timeline) {
+  scroll_timelines_->erase(timeline);
+}
+
 void NodeRareData::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(mutation_observer_data_);
   visitor->Trace(flat_tree_node_data_);
   visitor->Trace(node_layout_data_);
   visitor->Trace(node_lists_);
+  visitor->Trace(scroll_timelines_);
   NodeData::TraceAfterDispatch(visitor);
 }
 
@@ -124,7 +137,7 @@ void NodeRareData::FinalizeGarbageCollectedObject() {
 }
 
 void NodeRareData::IncrementConnectedSubframeCount() {
-  SECURITY_CHECK((connected_frame_count_ + 1) <= Page::kMaxNumberOfFrames);
+  SECURITY_CHECK((connected_frame_count_ + 1) <= Page::MaxNumberOfFrames());
   ++connected_frame_count_;
 }
 
@@ -139,10 +152,6 @@ FlatTreeNodeData& NodeRareData::EnsureFlatTreeNodeData() {
   return *flat_tree_node_data_;
 }
 
-// Ensure the 10 bits reserved for the connected_frame_count_ cannot overflow.
-static_assert(Page::kMaxNumberOfFrames <
-                  (1 << NodeRareData::kConnectedFrameCountBits),
-              "Frame limit should fit in rare data count");
 static_assert(static_cast<int>(NodeRareData::kNumberOfElementFlags) ==
                   static_cast<int>(ElementFlags::kNumberOfElementFlags),
               "kNumberOfElementFlags must match.");

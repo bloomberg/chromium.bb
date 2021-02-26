@@ -9,6 +9,8 @@
 #import "base/test/ios/wait_util.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#import "components/previous_session_info/previous_session_info.h"
+#import "components/previous_session_info/previous_session_info_private.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator_testing.h"
@@ -21,18 +23,20 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/metrics/previous_session_info.h"
-#import "ios/chrome/browser/metrics/previous_session_info_private.h"
+#import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/main/scene_controller.h"
 #import "ios/chrome/browser/ui/main/scene_controller_testing.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
+#include "net/base/mac/url_conversions.h"
 #import "third_party/breakpad/breakpad/src/client/ios/BreakpadController.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -55,6 +59,20 @@
 - (dispatch_queue_t)queue {
   return queue_;
 }
+@end
+
+// A subclass to pass instances of UIOpenURLContext to scene delegate during
+// testing. UIOpenURLContext has no init available, so this can only be
+// allocated. It uses obscuring properties for URL and options.
+// TODO(crbug.com/1115018) Explore improving this which can become brittle.
+API_AVAILABLE(ios(13.0)) @interface FakeUIOpenURLContext : UIOpenURLContext
+@property(nonatomic, copy) NSURL* URL;
+@property(nonatomic, strong) UISceneOpenURLOptions* options;
+@end
+
+@implementation FakeUIOpenURLContext
+@synthesize URL = _URL;
+@synthesize options = _options;
 @end
 
 namespace {
@@ -89,6 +107,13 @@ SceneState* GetForegroundActiveScene() {
 SceneController* GetForegroundActiveSceneController() {
   return MainApplicationDelegate.sharedAppState.foregroundActiveScene
       .controller;
+}
+
+NSUInteger RegularBrowserCount() {
+  return static_cast<NSUInteger>(
+      BrowserListFactory::GetForBrowserState(GetOriginalBrowserState())
+          ->AllRegularBrowsers()
+          .size());
 }
 
 ChromeBrowserState* GetOriginalBrowserState() {
@@ -210,12 +235,31 @@ void WaitForBreakpadQueue() {
 }
 
 void OpenChromeFromExternalApp(const GURL& url) {
-  [[[UIApplication sharedApplication] delegate]
-      applicationWillResignActive:[UIApplication sharedApplication]];
-  [GetMainController() setStartupParametersWithURL:url];
+  if (IsMultiwindowSupported()) {
+    if (@available(iOS 13, *)) {
+      UIScene* scene =
+          [[UIApplication sharedApplication].connectedScenes anyObject];
+      [scene.delegate sceneWillResignActive:scene];
 
-  [[[UIApplication sharedApplication] delegate]
-      applicationDidBecomeActive:[UIApplication sharedApplication]];
+      // FakeUIOpenURLContext cannot be instanciated, but it is just needed
+      // for carrying the properties over to the scene delegate.
+      FakeUIOpenURLContext* context = [FakeUIOpenURLContext alloc];
+      context.URL = net::NSURLWithGURL(url);
+
+      NSSet<UIOpenURLContext*>* URLContexts =
+          [[NSSet alloc] initWithArray:@[ context ]];
+
+      [scene.delegate scene:scene openURLContexts:URLContexts];
+      [scene.delegate sceneDidBecomeActive:scene];
+    }
+  } else {
+    [[[UIApplication sharedApplication] delegate]
+        applicationWillResignActive:[UIApplication sharedApplication]];
+    [GetMainController() setStartupParametersWithURL:url];
+
+    [[[UIApplication sharedApplication] delegate]
+        applicationDidBecomeActive:[UIApplication sharedApplication]];
+  }
 }
 
 bool PurgeCachedWebViewPages() {

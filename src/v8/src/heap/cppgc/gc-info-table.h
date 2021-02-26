@@ -22,6 +22,8 @@ namespace internal {
 // inherit from GarbageCollected.
 struct GCInfo final {
   FinalizationCallback finalize;
+  TraceCallback trace;
+  NameCallback name;
   bool has_v_table;
 };
 

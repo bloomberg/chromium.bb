@@ -38,6 +38,7 @@
 .macro asm_function fname
 #ifdef __APPLE__
     .globl _\fname
+    .private_extern _\fname
 _\fname:
 #else
     .global \fname
@@ -50,6 +51,7 @@ _\fname:
 .endm
 
 asm_function PushAllRegisters
+        .p2align 2
         /* Save return address. */
         sub sp, sp, #96
         stp x19, x20, [sp, #80]

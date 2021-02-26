@@ -384,8 +384,8 @@ interesting attributes supported today.
     a response. This makes it so that callers of the method can wait
     synchronously for a response. See
     [Synchronous Calls](/mojo/public/cpp/bindings/README.md#Synchronous-Calls)
-    in the C++ bindings documentation. Note that sync calls are not currently
-    supported in other target languages.
+    in the C++ bindings documentation. Note that sync methods are only actually
+    synchronous when called from C++.
 
 **`[Extensible]`**
 :   The `Extensible` attribute may be specified for any enum definition. This
@@ -406,6 +406,24 @@ interesting attributes supported today.
 :   The `MinVersion` attribute is used to specify the version at which a given
     field, enum value, interface method, or method parameter was introduced.
     See [Versioning](#Versioning) for more details.
+
+**`[Stable]`**
+:   The `Stable` attribute specifies that a given mojom type or interface
+    definition can be considered stable over time, meaning it is safe to use for
+    things like persistent storage or communication between independent
+    version-skewed binaries. Stable definitions may only depend on builtin mojom
+    types or other stable definitions, and changes to such definitions MUST
+    preserve backward-compatibility through appropriate use of versioning.
+    Backward-compatibility of changes is enforced in the Chromium tree using a
+    strict presubmit check. See [Versioning](#Versioning) for more details on
+    backward-compatibility constraints.
+
+**`[Uuid=<UUID>]`**
+:  Specifies a UUID to be associated with a given interface. The UUID is
+   intended to remain stable across all changes to the interface definition,
+   including name changes. The value given for this attribute should be a
+   standard UUID string representation as specified by RFC 4122. New UUIDs can
+   be generated with common tools such as `uuidgen`.
 
 **`[EnableIf=value]`**
 :   The `EnableIf` attribute is used to conditionally enable definitions when
@@ -544,13 +562,14 @@ struct Employee {
 };
 ```
 
-and you would like to add a birthday field. You can do:
+and you would like to add birthday and nickname fields. You can do:
 
 ``` cpp
 struct Employee {
   uint64 employee_id;
   string name;
   [MinVersion=1] Date? birthday;
+  [MinVersion=1] string? nickname;
 };
 ```
 
@@ -559,10 +578,14 @@ struct definition (*i.e*., existing fields must not change **ordinal value**)
 with the `MinVersion` attribute set to a number greater than any previous
 existing versions.
 
+The value of `MinVersion` is unrelated to ordinals. The choice of a particular
+version number is arbitrary. All its usage means is that a field isn't present
+before the numbered version.
+
 *** note
 **NOTE:** do not change existing fields in versioned structs, as this is
 not backwards-compatible. Instead, rename the old field to make its
-deprecation clear and add a new field with the new version number.
+deprecation clear and add a new field with a new `MinVersion` number.
 ***
 
 **Ordinal value** refers to the relative positional layout of a struct's fields
@@ -578,7 +601,9 @@ the following hard constraints:
     an ordinal value, all fields or methods must explicitly specify an ordinal
     value.
 * For an *N*-field struct or *N*-method interface, the set of explicitly
-    assigned ordinal values must be limited to the range *[0, N-1]*.
+    assigned ordinal values must be limited to the range *[0, N-1]*. Interfaces
+    should include placeholder methods to fill the ordinal positions of removed
+    methods (for example "Unused_Message_7@7()" or "RemovedMessage@42()", etc).
 
 You may reorder fields, but you must ensure that the ordinal values of existing
 fields remain unchanged. For example, the following struct remains
@@ -589,6 +614,7 @@ struct Employee {
   uint64 employee_id@0;
   [MinVersion=1] Date? birthday@2;
   string name@1;
+  [MinVersion=1] string? nickname@3;
 };
 ```
 
@@ -692,6 +718,24 @@ With extensible enums, bound interface implementations may receive unknown enum
 values and will need to deal with them gracefully. See
 [C++ Versioning Considerations](/mojo/public/cpp/bindings/README.md#Versioning-Considerations)
 for details.
+
+### Renaming versioned structs
+It's possible to rename versioned structs by using the `[RenamedFrom]` attribute.
+RenamedFrom
+
+``` cpp
+module asdf.mojom;
+
+// Old version:
+[Stable]
+struct OldStruct {
+};
+
+// New version:
+[Stable, RenamedFrom="asdf.mojom.OldStruct"]
+struct NewStruct {
+};
+```
 
 ## Grammar Reference
 

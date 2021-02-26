@@ -11,14 +11,16 @@
 
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
+#include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_popup.h"
-#include "ui/ozone/platform/wayland/host/wayland_surface.h"
+#include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
 #include "ui/ozone/platform/wayland/host/xdg_surface_wrapper_impl.h"
 
 namespace ui {
@@ -286,8 +288,8 @@ bool XDGPopupWrapperImpl::Initialize(WaylandConnection* connection,
         static_cast<XDGPopupWrapperImpl*>(wayland_popup->shell_popup());
     parent_xdg_surface = popup->xdg_surface();
   } else {
-    WaylandSurface* wayland_surface =
-        static_cast<WaylandSurface*>(wayland_window_->parent_window());
+    WaylandToplevelWindow* wayland_surface =
+        static_cast<WaylandToplevelWindow*>(wayland_window_->parent_window());
     parent_xdg_surface =
         static_cast<XDGSurfaceWrapperImpl*>(wayland_surface->shell_surface());
   }
@@ -295,10 +297,17 @@ bool XDGPopupWrapperImpl::Initialize(WaylandConnection* connection,
   if (!xdg_surface_ || !parent_xdg_surface)
     return false;
 
+  auto new_bounds = bounds;
+  // Wayland doesn't allow empty bounds. If a zero or negative size is set, the
+  // invalid_input error is raised. Thus, use the least possible one.
+  // WaylandPopup will update its bounds upon the following configure event.
+  if (new_bounds.IsEmpty())
+    new_bounds.set_size({1, 1});
+
   if (connection->shell())
-    return InitializeStable(connection, bounds, parent_xdg_surface);
+    return InitializeStable(connection, new_bounds, parent_xdg_surface);
   else if (connection->shell_v6())
-    return InitializeV6(connection, bounds, parent_xdg_surface);
+    return InitializeV6(connection, new_bounds, parent_xdg_surface);
   return false;
 }
 
@@ -324,45 +333,12 @@ bool XDGPopupWrapperImpl::InitializeStable(
 
   xdg_positioner_destroy(positioner);
 
-  // According to the spec, the grab call can only be done on a key press, mouse
-  // press or touch down. However, there is a problem with popup windows and
-  // touch events so long as Chromium creates them only on consequent touch up
-  // events. That results in Wayland compositors dismissing popups. To fix
-  // the issue, do not use grab with touch events. Please note that explicit
-  // grab means that a Wayland compositor dismisses a popup whenever the user
-  // clicks outside the created surfaces. If the explicit grab is not used, the
-  // popups are not dismissed in such cases. What is more, current non-ozone X11
-  // implementation does the same. This means there is no functionality changes
-  // and we do things right.
-  //
-  // We cannot know what was the last event. Instead, we can check if the window
-  // has pointer or keyboard focus. If so, the popup will be explicitly grabbed.
-  //
-  // There is a bug in the gnome/mutter - if explicit grab is not used,
-  // unmapping of a wl_surface (aka destroying xdg_popup and surface) to hide a
-  // window results in weird behaviour. That is, a popup continues to be visible
-  // on a display and it results in a crash of the entire session. Thus, just
-  // continue to use grab here and avoid showing popups for touch events on
-  // gnome/mutter. That is better than crashing the entire system. Otherwise,
-  // Chromium has to change the way how it reacts on touch events - instead of
-  // creating a menu on touch up, it must do it on touch down events.
-  // https://gitlab.gnome.org/GNOME/mutter/issues/698#note_562601.
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  if ((base::nix::GetDesktopEnvironment(env.get()) ==
-       base::nix::DESKTOP_ENVIRONMENT_GNOME) ||
-      (wayland_window_->parent_window()->has_pointer_focus() ||
-       wayland_window_->parent_window()->has_keyboard_focus())) {
-    // When drag process starts, as described the protocol -
-    // https://goo.gl/1Mskq3, the client must have an active implicit grab. If
-    // we try to create a popup and grab it, it will be immediately dismissed.
-    // Thus, do not take explicit grab during drag process.
-    if (!connection->IsDragInProgress())
-      xdg_popup_grab(xdg_popup_.get(), connection->seat(),
-                     connection->serial());
+  if (CanGrabPopup(connection)) {
+    xdg_popup_grab(xdg_popup_.get(), connection->seat(), connection->serial());
   }
   xdg_popup_add_listener(xdg_popup_.get(), &xdg_popup_listener, this);
 
-  wl_surface_commit(wayland_window_->surface());
+  wayland_window_->root_surface()->Commit();
   return true;
 }
 
@@ -375,18 +351,11 @@ struct xdg_positioner* XDGPopupWrapperImpl::CreatePositionerStable(
   if (!positioner)
     return nullptr;
 
-  bool is_right_click_menu =
-      connection->event_source()->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON);
+  auto menu_type = GetMenuTypeForPositioner(connection, parent_window);
 
-  // Different types of menu require different anchors, constraint adjustments,
-  // gravity and etc.
-  MenuType menu_type = MenuType::TYPE_UNKNOWN;
-  if (is_right_click_menu)
-    menu_type = MenuType::TYPE_RIGHT_CLICK;
-  else if (wl::IsMenuType(parent_window->type()))
-    menu_type = MenuType::TYPE_3DOT_CHILD_MENU;
-  else
-    menu_type = MenuType::TYPE_3DOT_PARENT_MENU;
+  // The parent we got must be the topmost in the stack of the same family
+  // windows.
+  DCHECK_EQ(parent_window->GetTopMostChildWindow(), parent_window);
 
   // Place anchor to the end of the possible position.
   gfx::Rect anchor_rect = GetAnchorRect(
@@ -426,41 +395,14 @@ bool XDGPopupWrapperImpl::InitializeV6(
 
   zxdg_positioner_v6_destroy(positioner);
 
-  // According to the spec, the grab call can only be done on a key press, mouse
-  // press or touch down. However, there is a problem with popup windows and
-  // touch events so long as Chromium creates them only on consequent touch up
-  // events. That results in Wayland compositors dismissing popups. To fix
-  // the issue, do not use grab with touch events. Please note that explicit
-  // grab means that a Wayland compositor dismisses a popup whenever the user
-  // clicks outside the created surfaces. If the explicit grab is not used, the
-  // popups are not dismissed in such cases. What is more, current non-ozone X11
-  // implementation does the same. This means there is no functionality changes
-  // and we do things right.
-  //
-  // We cannot know what was the last event. Instead, we can check if the window
-  // has pointer or keyboard focus. If so, the popup will be explicitly grabbed.
-  //
-  // There is a bug in the gnome/mutter - if explicit grab is not used,
-  // unmapping of a wl_surface (aka destroying xdg_popup and surface) to hide a
-  // window results in weird behaviour. That is, a popup continues to be visible
-  // on a display and it results in a crash of the entire session. Thus, just
-  // continue to use grab here and avoid showing popups for touch events on
-  // gnome/mutter. That is better than crashing the entire system. Otherwise,
-  // Chromium has to change the way how it reacts on touch events - instead of
-  // creating a menu on touch up, it must do it on touch down events.
-  // https://gitlab.gnome.org/GNOME/mutter/issues/698#note_562601.
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  if ((base::nix::GetDesktopEnvironment(env.get()) ==
-       base::nix::DESKTOP_ENVIRONMENT_GNOME) ||
-      (wayland_window_->parent_window()->has_pointer_focus() ||
-       wayland_window_->parent_window()->has_keyboard_focus())) {
+  if (CanGrabPopup(connection)) {
     zxdg_popup_v6_grab(zxdg_popup_v6_.get(), connection->seat(),
                        connection->serial());
   }
   zxdg_popup_v6_add_listener(zxdg_popup_v6_.get(), &zxdg_popup_v6_listener,
                              this);
 
-  wl_surface_commit(wayland_window_->surface());
+  wayland_window_->root_surface()->Commit();
   return true;
 }
 
@@ -473,18 +415,11 @@ zxdg_positioner_v6* XDGPopupWrapperImpl::CreatePositionerV6(
   if (!positioner)
     return nullptr;
 
-  bool is_right_click_menu =
-      connection->event_source()->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON);
+  auto menu_type = GetMenuTypeForPositioner(connection, parent_window);
 
-  // Different types of menu require different anchors, constraint adjustments,
-  // gravity and etc.
-  MenuType menu_type = MenuType::TYPE_UNKNOWN;
-  if (is_right_click_menu)
-    menu_type = MenuType::TYPE_RIGHT_CLICK;
-  else if (wl::IsMenuType(parent_window->type()))
-    menu_type = MenuType::TYPE_3DOT_CHILD_MENU;
-  else
-    menu_type = MenuType::TYPE_3DOT_PARENT_MENU;
+  // The parent we got must be the topmost in the stack of the same family
+  // windows.
+  DCHECK_EQ(parent_window->GetTopMostChildWindow(), parent_window);
 
   // Place anchor to the end of the possible position.
   gfx::Rect anchor_rect = GetAnchorRect(
@@ -503,6 +438,40 @@ zxdg_positioner_v6* XDGPopupWrapperImpl::CreatePositionerV6(
   zxdg_positioner_v6_set_constraint_adjustment(
       positioner, GetConstraintAdjustment(menu_type, false));
   return positioner;
+}
+
+MenuType XDGPopupWrapperImpl::GetMenuTypeForPositioner(
+    WaylandConnection* connection,
+    WaylandWindow* parent_window) const {
+  bool is_right_click_menu =
+      connection->event_source()->last_pointer_button_pressed() &
+      EF_RIGHT_MOUSE_BUTTON;
+
+  // Different types of menu require different anchors, constraint adjustments,
+  // gravity and etc.
+  if (is_right_click_menu)
+    return MenuType::TYPE_RIGHT_CLICK;
+  else if (!wl::IsMenuType(parent_window->type()))
+    return MenuType::TYPE_3DOT_PARENT_MENU;
+  else
+    return MenuType::TYPE_3DOT_CHILD_MENU;
+}
+
+bool XDGPopupWrapperImpl::CanGrabPopup(WaylandConnection* connection) const {
+  // When drag process starts, as described the protocol -
+  // https://goo.gl/1Mskq3, the client must have an active implicit grab. If
+  // we try to create a popup and grab it, it will be immediately dismissed.
+  // Thus, do not take explicit grab during drag process.
+  if (connection->IsDragInProgress() || !connection->seat())
+    return false;
+
+  // According to the definition of the xdg protocol, the grab request must be
+  // used in response to some sort of user action like a button press, key
+  // press, or touch down event.
+  EventType last_event_type = connection->event_serial().event_type;
+  return last_event_type == ET_TOUCH_PRESSED ||
+         last_event_type == ET_KEY_PRESSED ||
+         last_event_type == ET_MOUSE_PRESSED;
 }
 
 void XDGPopupWrapperImpl::Configure(void* data,

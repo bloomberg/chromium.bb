@@ -24,12 +24,14 @@ before_script:
   - bash dav1d.cmd
   - bash libgav1.cmd
   - bash rav1e.cmd
+  - bash svt.cmd
+  - bash libyuv.cmd
   - cd ..
   - mkdir build
   - cd build
-  - cmake -DCMAKE_BUILD_TYPE=$config -DBUILD_SHARED_LIBS=OFF -DAVIF_CODEC_AOM=ON -DAVIF_LOCAL_AOM=ON -DAVIF_CODEC_DAV1D=ON -DAVIF_LOCAL_DAV1D=ON -DAVIF_CODEC_RAV1E=ON -DAVIF_LOCAL_RAV1E=ON -DAVIF_CODEC_LIBGAV1=ON -DAVIF_LOCAL_LIBGAV1=ON -DAVIF_BUILD_EXAMPLES=ON -DAVIF_BUILD_APPS=ON -DAVIF_BUILD_TESTS=ON ..
 script:
-  - make
+  - cmake -G Ninja -DCMAKE_BUILD_TYPE=$config -DBUILD_SHARED_LIBS=OFF -DAVIF_CODEC_AOM=ON -DAVIF_LOCAL_AOM=ON -DAVIF_CODEC_DAV1D=ON -DAVIF_LOCAL_DAV1D=ON -DAVIF_CODEC_RAV1E=ON -DAVIF_LOCAL_RAV1E=ON -DAVIF_CODEC_LIBGAV1=ON -DAVIF_LOCAL_LIBGAV1=ON -DAVIF_CODEC_SVT=ON -DAVIF_LOCAL_SVT=ON -DAVIF_LOCAL_LIBYUV=ON -DAVIF_BUILD_EXAMPLES=ON -DAVIF_BUILD_APPS=ON -DAVIF_BUILD_TESTS=ON ..
+  - ninja
 
 matrix:
   include:
@@ -42,6 +44,43 @@ matrix:
   - name: "Clang Debug"
     compiler: clang
     config: Debug
+  - name: "Clang Debug (aom decode only)"
+    compiler: clang
+    config: Debug
+    script:
+      - cmake -G Ninja -DCMAKE_BUILD_TYPE=$config -DBUILD_SHARED_LIBS=OFF -DAVIF_CODEC_AOM=ON -DAVIF_LOCAL_AOM=ON -DAVIF_CODEC_AOM_ENCODE=0 -DAVIF_BUILD_APPS=ON ..
+      - ninja
+  - name: "Clang Debug (aom encode only)"
+    compiler: clang
+    config: Debug
+    script:
+      - cmake -G Ninja -DCMAKE_BUILD_TYPE=$config -DBUILD_SHARED_LIBS=OFF -DAVIF_CODEC_AOM=ON -DAVIF_LOCAL_AOM=ON -DAVIF_CODEC_AOM_DECODE=0 -DAVIF_BUILD_APPS=ON ..
+      - ninja
   - name: "Clang Release"
     compiler: clang
     config: Release
+  - &freebsd_common
+    name: "Clang 10 + system libraries"
+    os: freebsd
+    compiler: clang
+    before_install:
+      - | # FreeBSD 12.2 has Clang 10 but TravisCI uses FreeBSD 12.1
+        if [[ $(${CC:-clang} --version) =~ 8.0 ]]; then
+          export CC=clang10 CXX=clang++10
+          sudo pkg install -y llvm10
+        fi
+    before_script:
+      - sudo pkg install -y aom dav1d libgav1 librav1e ninja
+      - $WRAPPER cmake -B build -G Ninja -DAVIF_{CODEC_{AOM,DAV1D,LIBGAV1,RAV1E},BUILD_{APPS,TESTS}}=ON
+    script:
+      - $WRAPPER cmake --build build
+  - <<: *freebsd_common
+    name: "GCC 10 + system libraries"
+    compiler: gcc
+    before_install:
+      - sudo pkg upgrade -y gcc10-devel
+  - <<: *freebsd_common
+    name: "Clang Static Analyzer"
+    env: WRAPPER="scan-build11 --status-bugs"
+    before_install:
+      - sudo pkg install -y llvm11

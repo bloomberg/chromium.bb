@@ -36,7 +36,13 @@ class Accelerator;
 // Implement this class to receive notifications.
 class WEB_DIALOGS_EXPORT WebDialogDelegate {
  public:
-  // Returns true if the contents needs to be run in a modal dialog.
+  enum class FrameKind {
+    kDialog,     // Does not include a title bar or frame caption buttons.
+    kNonClient,  // Includes a non client frame view with title & buttons.
+  };
+
+  // Returns the modal type for this dialog. Only called once, during
+  // WebDialogView creation.
   virtual ModalType GetDialogModalType() const = 0;
 
   // Returns the title of the dialog.
@@ -71,15 +77,19 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // Gets the JSON string input to use when showing the dialog.
   virtual std::string GetDialogArgs() const = 0;
 
-  // Returns true to signal that the dialog can be closed. Specialized
-  // WebDialogDelegate subclasses can override this default behavior to allow
-  // the close to be blocked until the user corrects mistakes, accepts an
-  // agreement, etc.
-  virtual bool CanCloseDialog() const;
-
   // Returns true if the dialog can ever be resized. Default implementation
   // returns true.
-  virtual bool CanResizeDialog() const;
+  bool can_resize() const { return can_resize_; }
+  void set_can_resize(bool can_resize) { can_resize_ = can_resize; }
+
+  // Returns true if the dialog can ever be maximized. Default implementation
+  // returns false.
+  virtual bool CanMaximizeDialog() const;
+
+  // Returns true if the dialog can ever be minimized. Default implementation
+  // returns false.
+  bool can_minimize() const { return can_minimize_; }
+  void set_can_minimize(bool can_minimize) { can_minimize_ = can_minimize; }
 
   // A callback to notify the delegate that |source|'s loading state has
   // changed.
@@ -93,6 +103,13 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // closed.  If this returns true, the dialog is closed, otherwise the
   // dialog remains open. Default implementation returns true.
   virtual bool OnDialogCloseRequested();
+  // Use `OnDialogCloseRequested()` instead. This one is called too late in the
+  // closing process, so returning false here will leave you a half-broken
+  // dialog. Currently, `AddSupervisionDialog` relies on this to record
+  // histogram correctly.
+  //
+  // TODO(crbug.com/1110759): remove this function.
+  virtual bool DeprecatedOnDialogCloseRequested();
 
   // A callback to notify the delegate that the dialog is about to close due to
   // the user pressing the ESC key.
@@ -163,7 +180,24 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   virtual void OnMainFrameResourceLoadComplete(
       const blink::mojom::ResourceLoadInfo& resource_load_info) {}
 
-  virtual ~WebDialogDelegate() {}
+  virtual void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      content::MediaResponseCallback callback) {}
+
+  virtual bool CheckMediaAccessPermission(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& security_origin,
+      blink::mojom::MediaStreamType type);
+
+  // Whether to use dialog frame view for non client frame view.
+  virtual FrameKind GetWebDialogFrameKind() const;
+
+  virtual ~WebDialogDelegate() = default;
+
+ private:
+  bool can_minimize_ = false;
+  bool can_resize_ = true;
 };
 
 }  // namespace ui

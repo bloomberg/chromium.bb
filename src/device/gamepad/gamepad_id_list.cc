@@ -139,9 +139,13 @@ constexpr struct GamepadInfo {
     {0x054c, 0x05c5, kXInputTypeNone},
     {0x054c, 0x09cc, kXInputTypeNone},
     {0x054c, 0x0ba0, kXInputTypeNone},
+    {0x054c, 0x0ce6, kXInputTypeNone},
     // Elecom Co., Ltd
     {0x056e, 0x2003, kXInputTypeNone},
     {0x056e, 0x2004, kXInputTypeXbox360},
+    {0x056e, 0x200f, kXInputTypeNone},
+    {0x056e, 0x2010, kXInputTypeNone},
+    {0x056e, 0x2013, kXInputTypeXbox360},
     // Nintendo Co., Ltd
     {0x057e, 0x0306, kXInputTypeNone},
     {0x057e, 0x0330, kXInputTypeNone},
@@ -371,6 +375,7 @@ constexpr struct GamepadInfo {
     {0x0f0d, 0x008a, kXInputTypeNone},
     {0x0f0d, 0x008b, kXInputTypeNone},
     {0x0f0d, 0x0090, kXInputTypeNone},
+    {0x0f0d, 0x00c1, kXInputTypeNone},
     {0x0f0d, 0x00ee, kXInputTypeNone},
     // Jess Technology Co., Ltd
     {0x0f30, 0x010b, kXInputTypeXbox},
@@ -649,9 +654,16 @@ GamepadId GamepadIdList::GetGamepadId(base::StringPiece product_name,
                                       uint16_t vendor_id,
                                       uint16_t product_id) const {
   const auto* entry = GetGamepadInfo(vendor_id, product_id);
-  // The ID value combines the vendor and product IDs.
-  return entry ? static_cast<GamepadId>((vendor_id << 16) | product_id)
-               : GamepadId::kUnknownGamepad;
+  if (entry) {
+    // The ID value combines the vendor and product IDs.
+    return static_cast<GamepadId>((vendor_id << 16) | product_id);
+  }
+  // Special cases for devices which don't report a valid vendor ID.
+  if (vendor_id == 0x0 && product_id == 0x0 &&
+      product_name == "Lic Pro Controller") {
+    return GamepadId::kPowerALicPro;
+  }
+  return GamepadId::kUnknownGamepad;
 }
 
 std::vector<std::tuple<uint16_t, uint16_t, XInputType>>

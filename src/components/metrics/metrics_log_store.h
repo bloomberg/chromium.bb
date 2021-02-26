@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_base.h"
+#include "base/optional.h"
 #include "components/metrics/log_store.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/unsent_log_store.h"
@@ -17,18 +19,42 @@ class PrefRegistrySimple;
 
 namespace metrics {
 
+class MetricsServiceClient;
+
 // A LogStore implementation for storing UMA logs.
 // This implementation keeps track of two types of logs, initial and ongoing,
 // each stored in UnsentLogStore. It prioritizes staging initial logs over
 // ongoing logs.
 class MetricsLogStore : public LogStore {
  public:
+  // Configurable limits for ensuring and restricting local log storage.
+  //
+  // |min_{initial,ongoing}_log_queue_count| are the minimum numbers of unsent
+  // logs that UnsentLogStore must persist before deleting old logs.
+  //
+  // |min_{initial,ongoing}_log_queue_size| are the minimum numbers of bytes in
+  // total across all logs within the initial or ongoing log queue that
+  // UnsentLogStore must persist before deleting old logs.
+  //
+  // If both |min_..._log_queue_count| and |min_..._log_queue_size| are 0, then
+  // this LogStore won't persist unsent logs to local storage.
+  //
+  // |max_ongoing_log_size| is the maximum size of any individual ongoing log.
+  // When set to 0, no limits are imposed, i.e. individual logs can be any size.
+  struct StorageLimits {
+    size_t min_initial_log_queue_count = 0;
+    size_t min_initial_log_queue_size = 0;
+    size_t min_ongoing_log_queue_count = 0;
+    size_t min_ongoing_log_queue_size = 0;
+    size_t max_ongoing_log_size = 0;
+  };
+
   // Constructs a MetricsLogStore that persists data into |local_state|.
-  // If max_log_size is non-zero, it will not persist ongoing logs larger than
-  // |max_ongoing_log_size| bytes. |signing_key| is used to generate a signature
-  // of a log, which will be uploaded to validate data integrity.
+  // |storage_limits| provides log count and size limits to enforce when
+  // persisting logs to local storage. |signing_key| is used to generate a
+  // signature of a log, which will be uploaded to validate data integrity.
   MetricsLogStore(PrefService* local_state,
-                  size_t max_ongoing_log_size,
+                  StorageLimits storage_limits,
                   const std::string& signing_key);
   ~MetricsLogStore();
 
@@ -36,7 +62,9 @@ class MetricsLogStore : public LogStore {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Saves |log_data| as the given type.
-  void StoreLog(const std::string& log_data, MetricsLog::LogType log_type);
+  void StoreLog(const std::string& log_data,
+                MetricsLog::LogType log_type,
+                base::Optional<base::HistogramBase::Count> samples_count);
 
   // LogStore:
   bool has_unsent_logs() const override;
@@ -46,7 +74,8 @@ class MetricsLogStore : public LogStore {
   const std::string& staged_log_signature() const override;
   void StageNextLog() override;
   void DiscardStagedLog() override;
-  void PersistUnsentLogs() const override;
+  void MarkStagedLogAsSent() override;
+  void TrimAndPersistUnsentLogs() override;
   void LoadPersistedUnsentLogs() override;
 
   // Inspection methods for tests.

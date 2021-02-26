@@ -5,43 +5,44 @@
 #include "services/network/public/cpp/isolation_info_mojom_traits.h"
 
 #include "base/notreached.h"
+#include "services/network/public/cpp/crash_keys.h"
 #include "services/network/public/cpp/site_for_cookies_mojom_traits.h"
 
 namespace mojo {
 
-bool EnumTraits<network::mojom::IsolationInfoRedirectMode,
-                net::IsolationInfo::RedirectMode>::
-    FromMojom(network::mojom::IsolationInfoRedirectMode redirect_mode,
-              net::IsolationInfo::RedirectMode* out) {
-  switch (redirect_mode) {
-    case network::mojom::IsolationInfoRedirectMode::kUpdateTopFrame:
-      *out = net::IsolationInfo::RedirectMode::kUpdateTopFrame;
+bool EnumTraits<network::mojom::IsolationInfoRequestType,
+                net::IsolationInfo::RequestType>::
+    FromMojom(network::mojom::IsolationInfoRequestType request_type,
+              net::IsolationInfo::RequestType* out) {
+  switch (request_type) {
+    case network::mojom::IsolationInfoRequestType::kMainFrame:
+      *out = net::IsolationInfo::RequestType::kMainFrame;
       return true;
-    case network::mojom::IsolationInfoRedirectMode::kUpdateFrameOnly:
-      *out = net::IsolationInfo::RedirectMode::kUpdateFrameOnly;
+    case network::mojom::IsolationInfoRequestType::kSubFrame:
+      *out = net::IsolationInfo::RequestType::kSubFrame;
       return true;
-    case network::mojom::IsolationInfoRedirectMode::kUpdateNothing:
-      *out = net::IsolationInfo::RedirectMode::kUpdateNothing;
+    case network::mojom::IsolationInfoRequestType::kOther:
+      *out = net::IsolationInfo::RequestType::kOther;
       return true;
   }
   return false;
 }
 
-network::mojom::IsolationInfoRedirectMode EnumTraits<
-    network::mojom::IsolationInfoRedirectMode,
-    net::IsolationInfo::RedirectMode>::ToMojom(net::IsolationInfo::RedirectMode
-                                                   redirect_mode) {
-  switch (redirect_mode) {
-    case net::IsolationInfo::RedirectMode::kUpdateTopFrame:
-      return network::mojom::IsolationInfoRedirectMode::kUpdateTopFrame;
-    case net::IsolationInfo::RedirectMode::kUpdateFrameOnly:
-      return network::mojom::IsolationInfoRedirectMode::kUpdateFrameOnly;
-    case net::IsolationInfo::RedirectMode::kUpdateNothing:
-      return network::mojom::IsolationInfoRedirectMode::kUpdateNothing;
+network::mojom::IsolationInfoRequestType EnumTraits<
+    network::mojom::IsolationInfoRequestType,
+    net::IsolationInfo::RequestType>::ToMojom(net::IsolationInfo::RequestType
+                                                  request_type) {
+  switch (request_type) {
+    case net::IsolationInfo::RequestType::kMainFrame:
+      return network::mojom::IsolationInfoRequestType::kMainFrame;
+    case net::IsolationInfo::RequestType::kSubFrame:
+      return network::mojom::IsolationInfoRequestType::kSubFrame;
+    case net::IsolationInfo::RequestType::kOther:
+      return network::mojom::IsolationInfoRequestType::kOther;
   }
 
   NOTREACHED();
-  return network::mojom::IsolationInfoRedirectMode::kUpdateNothing;
+  return network::mojom::IsolationInfoRequestType::kOther;
 }
 
 bool StructTraits<network::mojom::IsolationInfoDataView, net::IsolationInfo>::
@@ -49,21 +50,29 @@ bool StructTraits<network::mojom::IsolationInfoDataView, net::IsolationInfo>::
   base::Optional<url::Origin> top_frame_origin;
   base::Optional<url::Origin> frame_origin;
   net::SiteForCookies site_for_cookies;
-  net::IsolationInfo::RedirectMode redirect_mode;
+  net::IsolationInfo::RequestType request_type;
 
-  if (!data.ReadTopFrameOrigin(&top_frame_origin) ||
-      !data.ReadFrameOrigin(&frame_origin) ||
-      !data.ReadSiteForCookies(&site_for_cookies) ||
-      !data.ReadRedirectMode(&redirect_mode)) {
+  if (!data.ReadTopFrameOrigin(&top_frame_origin)) {
+    network::debug::SetDeserializationCrashKeyString("isolation_top_origin");
+    return false;
+  }
+  if (!data.ReadFrameOrigin(&frame_origin)) {
+    network::debug::SetDeserializationCrashKeyString("isolation_frame_origin");
+    return false;
+  }
+  if (!data.ReadSiteForCookies(&site_for_cookies) ||
+      !data.ReadRequestType(&request_type)) {
     return false;
   }
 
   base::Optional<net::IsolationInfo> isolation_info =
-      net::IsolationInfo::CreateIfConsistent(redirect_mode, top_frame_origin,
+      net::IsolationInfo::CreateIfConsistent(request_type, top_frame_origin,
                                              frame_origin, site_for_cookies,
                                              data.opaque_and_non_transient());
-  if (!isolation_info)
+  if (!isolation_info) {
+    network::debug::SetDeserializationCrashKeyString("isolation_inconsistent");
     return false;
+  }
 
   *out = std::move(*isolation_info);
   return true;

@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/task/post_task.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/site_instance_impl.h"
@@ -84,6 +83,8 @@ blink::ServiceWorkerStatusCode
 ServiceWorkerProcessManager::AllocateWorkerProcess(
     int embedded_worker_id,
     const GURL& script_url,
+    const base::Optional<network::CrossOriginEmbedderPolicy>&
+        cross_origin_embedder_policy,
     bool can_use_existing_process,
     AllocatedProcessInfo* out_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -116,14 +117,24 @@ ServiceWorkerProcessManager::AllocateWorkerProcess(
   // (e.g., <webview>).
   const bool is_guest =
       storage_partition_ &&
-      !storage_partition_->site_for_guest_service_worker().is_empty();
+      !storage_partition_->site_for_guest_service_worker_or_shared_worker()
+           .is_empty();
   const GURL service_worker_url =
-      is_guest ? storage_partition_->site_for_guest_service_worker()
-               : script_url;
+      is_guest
+          ? storage_partition_->site_for_guest_service_worker_or_shared_worker()
+          : script_url;
+  const bool is_coop_coep_cross_origin_isolated =
+      !is_guest && cross_origin_embedder_policy.has_value() &&
+      (cross_origin_embedder_policy->value ==
+       network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp);
   scoped_refptr<SiteInstanceImpl> site_instance =
       SiteInstanceImpl::CreateForServiceWorker(
-          browser_context_, service_worker_url, can_use_existing_process,
-          is_guest);
+          browser_context_, service_worker_url,
+          is_coop_coep_cross_origin_isolated
+              ? CoopCoepCrossOriginIsolatedInfo::CreateIsolated(
+                    url::Origin::Create(service_worker_url))
+              : CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated(),
+          can_use_existing_process, is_guest);
 
   // Get the process from the SiteInstance.
   RenderProcessHost* rph = site_instance->GetProcess();
@@ -202,6 +213,6 @@ namespace std {
 // thread.
 void default_delete<content::ServiceWorkerProcessManager>::operator()(
     content::ServiceWorkerProcessManager* ptr) const {
-  base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI}, ptr);
+  content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, ptr);
 }
 }  // namespace std

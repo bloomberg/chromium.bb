@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_extras.h"
 
 #include "fxjs/xfa/cjx_extras.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -29,6 +29,8 @@ CXFA_Extras::CXFA_Extras(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Extras,
                 {},
                 kExtrasAttributeData,
-                pdfium::MakeUnique<CJX_Extras>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Extras>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Extras::~CXFA_Extras() = default;

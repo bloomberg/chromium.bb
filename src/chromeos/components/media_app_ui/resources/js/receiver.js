@@ -6,21 +6,33 @@
 const parentMessagePipe = new MessagePipe('chrome://media-app', window.parent);
 
 /**
- * A file received from the privileged context.
+ * Placeholder Blob used when a null file is received. For null files we only
+ * know the name until the file is navigated to.
+ */
+const PLACEHOLDER_BLOB = new Blob([]);
+
+/**
+ * A file received from the privileged context, and decorated with IPC methods
+ * added in the untrusted (this) context to communicate back.
  * @implements {mediaApp.AbstractFile}
  */
 class ReceivedFile {
-  /**
-   * @param {?File} file The received file.
-   * @param {number} token A token that identifies the file.
-   * @param {string} fallbackName The name to use when `file` is null/empty.
-   */
-  constructor(file, token, fallbackName) {
-    this.blob = file || new File([], fallbackName);
-    this.name = this.blob.name;
+  /** @param {!FileContext} file */
+  constructor(file) {
+    this.blob = file.file || PLACEHOLDER_BLOB;
+    this.name = file.name;
     this.size = this.blob.size;
     this.mimeType = this.blob.type;
-    this.token = token;
+    this.token = file.token;
+    this.error = file.error;
+    this.fromClipboard = false;
+    if (file.canDelete) {
+      this.deleteOriginalFile = () => this.deleteOriginalFileImpl();
+    }
+    if (file.canRename) {
+      this.renameOriginalFile = (/** string */ newName) =>
+          this.renameOriginalFileImpl(newName);
+    }
   }
 
   /**
@@ -28,22 +40,29 @@ class ReceivedFile {
    * @param{!Blob} blob
    */
   async overwriteOriginal(blob) {
-    /** @type{OverwriteFileMessage} */
+    /** @type {!OverwriteFileMessage} */
     const message = {token: this.token, blob: blob};
 
-    await parentMessagePipe.sendMessage(Message.OVERWRITE_FILE, message);
-
+    const result = /** @type {!OverwriteViaFilePickerResponse} */ (
+        await parentMessagePipe.sendMessage(Message.OVERWRITE_FILE, message));
     // Note the following are skipped if an exception is thrown above.
+    if (result.renamedTo) {
+      this.name = result.renamedTo;
+      // Assume a rename could have moved the file to a new folder via a file
+      // picker, which will break rename/delete functionality.
+      delete this.deleteOriginalFile;
+      delete this.renameOriginalFile;
+    }
+    this.error = result.errorName || '';
     this.blob = blob;
     this.size = blob.size;
     this.mimeType = blob.type;
   }
 
   /**
-   * @override
    * @return {!Promise<number>}
    */
-  async deleteOriginalFile() {
+  async deleteOriginalFileImpl() {
     const deleteResponse =
         /** @type {!DeleteFileResponse} */ (await parentMessagePipe.sendMessage(
             Message.DELETE_FILE, {token: this.token}));
@@ -51,17 +70,48 @@ class ReceivedFile {
   }
 
   /**
-   * @override
    * @param {string} newName
    * @return {!Promise<number>}
    */
-  async renameOriginalFile(newName) {
+  async renameOriginalFileImpl(newName) {
     const renameResponse =
         /** @type {!RenameFileResponse} */ (await parentMessagePipe.sendMessage(
             Message.RENAME_FILE, {token: this.token, newFilename: newName}));
+    if (renameResponse.renameResult === RenameResult.SUCCESS) {
+      this.name = newName;
+    }
     return renameResponse.renameResult;
   }
+
+  /**
+   * @override
+   * @param {!Blob} blob
+   * @param {number} pickedFileToken
+   * @return {!Promise<undefined>}
+   */
+  async saveAs(blob, pickedFileToken) {
+    /** @type {!SaveAsMessage} */
+    const message = {blob, oldFileToken: this.token, pickedFileToken};
+    const result = /** @type {!SaveAsResponse} */ (
+        await parentMessagePipe.sendMessage(Message.SAVE_AS, message));
+    this.name = result.newFilename;
+    this.blob = blob;
+    this.size = blob.size;
+    this.mimeType = blob.type;
+    // Files obtained by a file picker currently can not be renamed/deleted.
+    // TODO(b/163285659): Detect when the new file is in the same folder as an
+    // on-launch file. Those should still be able to be renamed/deleted.
+    delete this.deleteOriginalFile;
+    delete this.renameOriginalFile;
+  }
 }
+
+/**
+ * Source of truth for what files are loaded in the app and writable. This can
+ * be appended to via `ReceivedFileList.addFiles()`.
+ * @type {?ReceivedFileList}
+ */
+let lastLoadedReceivedFileList = null;
 
 /**
  * A file list consisting of all files received from the parent. Exposes the
@@ -84,10 +134,13 @@ class ReceivedFileList {
     }
 
     this.length = files.length;
+    this.currentFileIndex = files.length ? 0 : -1;
     /** @type {!Array<!ReceivedFile>} */
-    this.files = files.map(f => new ReceivedFile(f.file, f.token, f.name));
+    this.files = files.map(f => new ReceivedFile(f));
     /** @type {number} */
     this.writableFileIndex = 0;
+    /** @type {!Array<function(!mediaApp.AbstractFileList): void>} */
+    this.observers = [];
   }
 
   /** @override */
@@ -97,37 +150,69 @@ class ReceivedFileList {
 
   /**
    * Returns the file which is currently writable or null if there isn't one.
+   * @override
    * @return {?mediaApp.AbstractFile}
    */
   getCurrentlyWritable() {
     return this.item(this.writableFileIndex);
   }
 
-  /**
-   * Loads in the next file in the list as a writable.
-   * @return {!Promise<undefined>}
-   */
-  async loadNext() {
+  /** @override */
+  async loadNext(currentFileToken) {
     // Awaiting this message send allows callers to wait for the full effects of
     // the navigation to complete. This may include a call to load a new set of
     // files, and the initial decode, which replaces this AbstractFileList and
     // alters other app state.
-    await parentMessagePipe.sendMessage(Message.NAVIGATE, {direction: 1});
+    await parentMessagePipe.sendMessage(
+        Message.NAVIGATE, {currentFileToken, direction: 1});
   }
 
-  /**
-   * Loads in the previous file in the list as a writable.
-   * @return {!Promise<undefined>}
-   */
-  async loadPrev() {
-    await parentMessagePipe.sendMessage(Message.NAVIGATE, {direction: -1});
+  /** @override */
+  async loadPrev(currentFileToken) {
+    await parentMessagePipe.sendMessage(
+        Message.NAVIGATE, {currentFileToken, direction: -1});
+  }
+
+  /** @override */
+  addObserver(observer) {
+    this.observers.push(observer);
+  }
+
+  async openFile() {
+    await parentMessagePipe.sendMessage(Message.OPEN_FILE);
+  }
+
+  /** @param {!Array<!ReceivedFile>} files */
+  addFiles(files) {
+    if (files.length === 0) {
+      return;
+    }
+    this.files = [...this.files, ...files];
+    this.length = this.files.length;
+    // Call observers with the new underlying files.
+    this.observers.map(o => o(this));
   }
 }
 
 parentMessagePipe.registerHandler(Message.LOAD_FILES, async (message) => {
   const filesMessage = /** @type {!LoadFilesMessage} */ (message);
-  await loadFiles(new ReceivedFileList(filesMessage));
+  lastLoadedReceivedFileList = new ReceivedFileList(filesMessage);
+  await loadFiles(lastLoadedReceivedFileList);
 });
+
+// Load extra files by appending to the current `ReceivedFileList`.
+parentMessagePipe.registerHandler(Message.LOAD_EXTRA_FILES, async (message) => {
+  if (!lastLoadedReceivedFileList) {
+    return;
+  }
+  const extraFilesMessage = /** @type {!LoadFilesMessage} */ (message);
+  const newFiles = extraFilesMessage.files.map(f => new ReceivedFile(f));
+  lastLoadedReceivedFileList.addFiles(newFiles);
+});
+
+// As soon as the LOAD_FILES handler is installed, signal readiness to the
+// parent frame (privileged context).
+parentMessagePipe.sendMessage(Message.IFRAME_READY);
 
 /**
  * A delegate which exposes privileged WebUI functionality to the media
@@ -140,13 +225,42 @@ const DELEGATE = {
         await parentMessagePipe.sendMessage(Message.OPEN_FEEDBACK_DIALOG);
     return /** @type {?string} */ (response['errorMessage']);
   },
-  async saveCopy(/** !mediaApp.AbstractFile */ abstractFile) {
-    /** @type {!SaveCopyMessage} */
-    const msg = {blob: abstractFile.blob, suggestedName: abstractFile.name};
+  /**
+   * @param {string} suggestedName
+   * @param {string} mimeType
+   * @return {!Promise<!mediaApp.AbstractFile>}
+   */
+  async requestSaveFile(suggestedName, mimeType) {
+    /** @type {!RequestSaveFileMessage} */
+    const msg = {suggestedName, mimeType};
     const response =
-        /** @type {!SaveCopyResponse} */ (
-            await parentMessagePipe.sendMessage(Message.SAVE_COPY, msg));
-    return response.errorMessage;
+        /** @type {!RequestSaveFileResponse} */ (
+            await parentMessagePipe.sendMessage(
+                Message.REQUEST_SAVE_FILE, msg));
+    return new ReceivedFile(response.pickedFileContext);
+  },
+  /**
+   * @return {!Promise<undefined>}
+   */
+  async openFile() {
+    await parentMessagePipe.sendMessage(Message.OPEN_FILE);
+  },
+  /**
+   * @param {!Blob} file
+   * @return {!Promise<!File>}
+   */
+  async extractPreview(file) {
+    try {
+      const [buffer] = /** @type {!Array<!ArrayBuffer>} */ (
+          await Promise.all([file.arrayBuffer(), loadPiex()]));
+      return await extractFromRawImageBuffer(buffer);
+    } catch (/** @type {!Error} */ e) {
+      console.warn(e);
+      if (e.name === 'Error') {
+        e.name = 'JpegNotFound';
+      }
+      throw e;
+    }
   }
 };
 
@@ -170,7 +284,7 @@ async function loadFiles(fileList) {
     await app.loadFiles(fileList);
   } else {
     // Note we don't await in this case, which may affect b/152729704.
-    window.customLaunchData = {files: fileList};
+    window.customLaunchData.files = fileList;
   }
 }
 
@@ -199,6 +313,15 @@ function mutationCallback(mutationsList, observer) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  // TODO(crbug/1138798): Reorder .js deps so this can be done at load time.
+  // Note: go/bbsrc/flags.ts processes this, `window.features` variable.
+  /** @type{{features: Object<string, boolean>}} */ (window).features = {
+    imageAnnotation: loadTimeData.getBoolean('imageAnnotation'),
+    pdfInInk: loadTimeData.getBoolean('pdfInInk'),
+    flagsMenu: loadTimeData.getBoolean('flagsMenu'),
+    isDevChannel: loadTimeData.getBoolean('isDevChannel'),
+  };
+
   const app = getApp();
   if (app) {
     initializeApp(app);
@@ -210,10 +333,18 @@ window.addEventListener('DOMContentLoaded', () => {
   observer.observe(document.body, {childList: true});
 });
 
-// Attempting to execute chooseFileSystemEntries is guaranteed to result in a
-// SecurityError due to the fact that we are running in a unprivileged iframe.
-// Note, we can not do window.chooseFileSystemEntries due to the fact that
-// closure does not yet know that 'chooseFileSystemEntries' is on the window.
+// Ensure that if no files are loaded into the media app there is a default
+// empty file list available.
+window.customLaunchData = {
+  delegate: DELEGATE,
+  files: new ReceivedFileList({files: [], writableFileIndex: 0})
+};
+
+// Attempting to show file pickers in the sandboxed <iframe> is guaranteed to
+// result in a SecurityError: hide them.
 // TODO(crbug/1040328): Remove this when we have a polyfill that allows us to
 // talk to the privileged frame.
 window['chooseFileSystemEntries'] = null;
+window['showOpenFilePicker'] = null;
+window['showSaveFilePicker'] = null;
+window['showDirectoryPicker'] = null;

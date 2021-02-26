@@ -4,6 +4,11 @@ for debugging. Here's some tips.
 
 [TOC]
 
+## Instructions for Google Employees
+
+See also
+[go/clankium/06-debugging-clank](https://goto.google.com/clankium/06-debugging-clank).
+
 ## Launching
 You can run the app by using one of the wrappers.
 
@@ -202,7 +207,6 @@ that crashed was built. When building locally, these are found in:
 
 ```shell
 out/Default/apks/ChromePublic.apk.mapping
-out/Default/apks/ChromeModernPublic.apk.mapping
 etc.
 ```
 

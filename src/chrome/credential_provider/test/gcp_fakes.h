@@ -6,16 +6,22 @@
 #define CHROME_CREDENTIAL_PROVIDER_TEST_GCP_FAKES_H_
 
 #include <deque>
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/scoped_handle.h"
+#include "chrome/credential_provider/extension/os_service_manager.h"
+#include "chrome/credential_provider/extension/task_manager.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/chrome_availability_checker.h"
+#include "chrome/credential_provider/gaiacp/device_policies_manager.h"
 #include "chrome/credential_provider/gaiacp/event_logging_api_manager.h"
 #include "chrome/credential_provider/gaiacp/event_logs_upload_manager.h"
 #include "chrome/credential_provider/gaiacp/gem_device_details_manager.h"
@@ -25,7 +31,10 @@
 #include "chrome/credential_provider/gaiacp/password_recovery_manager.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
+#include "chrome/credential_provider/gaiacp/token_generator.h"
+#include "chrome/credential_provider/gaiacp/user_policies_manager.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
+#include "chrome/credential_provider/setup/gcpw_files.h"
 
 namespace base {
 class WaitableEvent;
@@ -126,6 +135,9 @@ class FakeOSUserManager : public OSUserManager {
   HRESULT ModifyUserAccessWithLogonHours(const wchar_t* domain,
                                          const wchar_t* username,
                                          bool allow) override;
+
+  HRESULT SetDefaultPasswordChangePolicies(const wchar_t* domain,
+                                           const wchar_t* username) override;
 
   bool IsDeviceDomainJoined() override;
 
@@ -301,6 +313,12 @@ class FakeWinHttpUrlFetcherFactory {
   FakeWinHttpUrlFetcherFactory();
   ~FakeWinHttpUrlFetcherFactory();
 
+  // Returns the fetcher callback function being used. This can be used to
+  // install the same fake explicitly in all the components being used. Those
+  // components would otherwise have different fakes created automatically when
+  // they get initialized.
+  WinHttpUrlFetcher::CreatorCallback GetCreatorCallback();
+
   // Sets the given |response| for any number of HTTP requests made for |url|.
   void SetFakeResponse(
       const GURL& url,
@@ -346,6 +364,7 @@ class FakeWinHttpUrlFetcherFactory {
   std::unique_ptr<WinHttpUrlFetcher> Create(const GURL& url);
 
   WinHttpUrlFetcher::CreatorCallback original_creator_;
+  WinHttpUrlFetcher::CreatorCallback fake_creator_;
 
   struct Response {
     Response();
@@ -583,6 +602,166 @@ class FakeEventLogsUploadManager : public EventLogsUploadManager {
   EventLogsUploadManager* original_manager_ = nullptr;
   FakeEventLoggingApiManager api_manager_;
 };
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeUserPoliciesManager : public UserPoliciesManager {
+ public:
+  FakeUserPoliciesManager();
+  explicit FakeUserPoliciesManager(bool cloud_policies_enabled);
+  ~FakeUserPoliciesManager() override;
+
+  HRESULT FetchAndStoreCloudUserPolicies(
+      const base::string16& sid,
+      const std::string& access_token) override;
+
+  // Specify the policy to use for a user.
+  void SetUserPolicies(const base::string16& sid, const UserPolicies& policies);
+
+  bool GetUserPolicies(const base::string16& sid,
+                       UserPolicies* policies) const override;
+
+  // Specify whether user policy is valid for a user.
+  void SetUserPolicyStaleOrMissing(const base::string16& sid, bool status);
+
+  bool IsUserPolicyStaleOrMissing(const base::string16& sid) const override;
+
+  // Returns the number of times FetchAndStoreCloudUserPolicies method was
+  // called.
+  int GetNumTimesFetchAndStoreCalled() const;
+
+ private:
+  UserPoliciesManager* original_manager_ = nullptr;
+  std::map<base::string16, UserPolicies> user_policies_;
+  int num_times_fetch_called_ = 0;
+  std::map<base::string16, bool> user_policies_stale_;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeDevicePoliciesManager : public DevicePoliciesManager {
+ public:
+  explicit FakeDevicePoliciesManager(bool cloud_policies_enabled);
+  ~FakeDevicePoliciesManager() override;
+
+  // Specify the policy to use for the device.
+  void SetDevicePolicies(const DevicePolicies& policies);
+
+  void GetDevicePolicies(DevicePolicies* device_policies) override;
+
+ private:
+  DevicePoliciesManager* original_manager_ = nullptr;
+  DevicePolicies device_policies_;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeGCPWFiles : public GCPWFiles {
+ public:
+  FakeGCPWFiles();
+  ~FakeGCPWFiles() override;
+
+  std::vector<base::FilePath::StringType> GetEffectiveInstallFiles() override;
+
+ private:
+  GCPWFiles* original_files = nullptr;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeOSServiceManager : public extension::OSServiceManager {
+ public:
+  FakeOSServiceManager();
+  ~FakeOSServiceManager() override;
+
+  DWORD GetServiceStatus(SERVICE_STATUS* service_status) override;
+
+  DWORD InstallService(const base::FilePath& service_binary_path,
+                       extension::ScopedScHandle* sc_handle) override;
+
+  DWORD StartServiceCtrlDispatcher(
+      LPSERVICE_MAIN_FUNCTION service_main) override;
+
+  DWORD RegisterCtrlHandler(
+      LPHANDLER_FUNCTION handler_proc,
+      SERVICE_STATUS_HANDLE* service_status_handle) override;
+
+  DWORD SetServiceStatus(SERVICE_STATUS_HANDLE service_status_handle,
+                         SERVICE_STATUS service) override;
+
+  void SendControlRequestForTesting(DWORD control_request) {
+    std::unique_lock<std::mutex> lock(m);
+    queue.push_back(control_request);
+    cv.notify_one();
+  }
+
+  DWORD DeleteService() override;
+
+  DWORD ChangeServiceConfig(DWORD dwServiceType,
+                            DWORD dwStartType,
+                            DWORD dwErrorControl) override;
+
+ private:
+  DWORD GetControlRequestForTesting() {
+    std::unique_lock<std::mutex> lock(m);
+    cv.wait(lock, [&]() { return !queue.empty(); });
+    DWORD result = queue.front();
+    queue.pop_front();
+    return result;
+  }
+
+  struct ServiceInfo {
+    LPHANDLER_FUNCTION control_handler_cb_;
+    SERVICE_STATUS service_status_;
+  };
+
+  // Primitives that are used to synchronize with the thread running service
+  // main and the thread testing the code.
+  std::list<DWORD> queue;
+  std::mutex m;
+  std::condition_variable cv;
+
+  // Original instance of OSServiceManager.
+  extension::OSServiceManager* os_service_manager_ = nullptr;
+  std::map<base::string16, ServiceInfo> service_lookup_from_name_;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeTaskManager : public extension::TaskManager {
+ public:
+  FakeTaskManager();
+  ~FakeTaskManager() override;
+
+  int NumOfTimesExecuted() { return num_of_times_executed_; }
+
+ private:
+  void RunTasksInternal() override;
+
+  // Original instance of TaskManager.
+  extension::TaskManager* task_manager_ = nullptr;
+
+  int num_of_times_executed_;
+  base::Time start_time_;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeTokenGenerator : public TokenGenerator {
+ public:
+  FakeTokenGenerator();
+  ~FakeTokenGenerator() override;
+
+  std::string GenerateToken() override;
+
+  void SetTokensForTesting(const std::vector<std::string>& test_tokens);
+
+ private:
+  TokenGenerator* token_generator_ = nullptr;
+  std::vector<std::string> test_tokens_;
+};
+
+///////////////////////////////////////////////////////////////////////////////
 
 }  // namespace credential_provider
 

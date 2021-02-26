@@ -7,12 +7,18 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 namespace payments {
 
 // Returns a developer-facing error message that the given payment |methods| are
 // not supported.
 std::string GetNotSupportedErrorMessage(const std::set<std::string>& methods);
+
+// Returns a developer-facing error message that the apps are skipped because
+// they do not support full delegation.
+std::string GetAppsSkippedForPartialDelegationErrorMessage(
+    const std::vector<std::string>& skipped_apps);
 
 }  // namespace payments
 

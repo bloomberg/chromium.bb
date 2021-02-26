@@ -17,9 +17,9 @@
 #include "base/i18n/streaming_utf8_validator.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_frame.h"
@@ -42,6 +42,7 @@ class URLRequest;
 class URLRequestContext;
 struct WebSocketHandshakeRequestInfo;
 struct WebSocketHandshakeResponseInfo;
+struct NetworkTrafficAnnotationTag;
 
 // Transport-independent implementation of WebSockets. Implements protocol
 // semantics that do not depend on the underlying transport. Provides the
@@ -61,6 +62,7 @@ class NET_EXPORT WebSocketChannel {
       const HttpRequestHeaders&,
       URLRequestContext*,
       const NetLogWithSource&,
+      NetworkTrafficAnnotationTag,
       std::unique_ptr<WebSocketStream::ConnectDelegate>)>
       WebSocketStreamRequestCreationCallback;
 
@@ -83,7 +85,8 @@ class NET_EXPORT WebSocketChannel {
       const url::Origin& origin,
       const SiteForCookies& site_for_cookies,
       const IsolationInfo& isolation_info,
-      const HttpRequestHeaders& additional_headers);
+      const HttpRequestHeaders& additional_headers,
+      NetworkTrafficAnnotationTag traffic_annotation);
 
   // Sends a data frame to the remote side. It is the responsibility of the
   // caller to ensure that they have sufficient send quota to send this data,
@@ -118,12 +121,6 @@ class NET_EXPORT WebSocketChannel {
   ChannelState StartClosingHandshake(uint16_t code, const std::string& reason)
       WARN_UNUSED_RESULT;
 
-  // Returns the current send quota. This value is unsafe to use outside of the
-  // browser IO thread because it changes asynchronously.  The value is only
-  // valid for the execution of the current Task or until SendFrame() is called,
-  // whichever happens sooner.
-  int current_send_quota() const { return current_send_quota_; }
-
   // Starts the connection process, using a specified creator callback rather
   // than the default. This is exposed for testing.
   void SendAddChannelRequestForTesting(
@@ -133,6 +130,7 @@ class NET_EXPORT WebSocketChannel {
       const SiteForCookies& site_for_cookies,
       const IsolationInfo& isolation_info,
       const HttpRequestHeaders& additional_headers,
+      NetworkTrafficAnnotationTag traffic_annotation,
       WebSocketStreamRequestCreationCallback callback);
 
   // The default timout for the closing handshake is a sensible value (see
@@ -149,16 +147,6 @@ class NET_EXPORT WebSocketChannel {
   // This method is public for testing.
   void OnStartOpeningHandshake(
       std::unique_ptr<WebSocketHandshakeRequestInfo> request);
-
-  // The renderer calls AddReceiveFlowControlQuota() to the browser per
-  // recerving this amount of data so that the browser can continue sending
-  // remaining data to the renderer.
-#if defined(OS_ANDROID)
-  static const uint64_t kReceiveQuotaThreshold = 1 << 15;
-#else
-  // |2^n - delta| is better than 2^n on Linux. See crrev.com/c/1792208.
-  static const uint64_t kReceiveQuotaThreshold = 65500;
-#endif
 
  private:
   // The object passes through a linear progression of states from
@@ -195,6 +183,7 @@ class NET_EXPORT WebSocketChannel {
       const SiteForCookies& site_for_cookies,
       const IsolationInfo& isolation_info,
       const HttpRequestHeaders& additional_headers,
+      NetworkTrafficAnnotationTag traffic_annotation,
       WebSocketStreamRequestCreationCallback callback);
 
   // Called when a URLRequest is created for handshaking.
@@ -208,7 +197,9 @@ class NET_EXPORT WebSocketChannel {
 
   // Failure callback from WebSocketStream::CreateAndConnectStream(). Reports
   // failure to the event interface. May delete |this|.
-  void OnConnectFailure(const std::string& message);
+  void OnConnectFailure(const std::string& message,
+                        int net_error,
+                        base::Optional<int> response_code);
 
   // SSL certificate error callback from
   // WebSocketStream::CreateAndConnectStream(). Forwards the request to the
@@ -359,17 +350,6 @@ class NET_EXPORT WebSocketChannel {
   // during the connection process.
   std::unique_ptr<WebSocketStreamRequest> stream_request_;
 
-  // If the renderer's send quota reaches this level, it is sent a quota
-  // refresh. "quota units" are currently bytes. TODO(ricea): Update the
-  // definition of quota units when necessary.
-  int send_quota_low_water_mark_;
-  // The level the quota is refreshed to when it reaches the low_water_mark
-  // (quota units).
-  int send_quota_high_water_mark_;
-  // The current amount of quota that the renderer has available for sending
-  // on this logical channel (quota units).
-  int current_send_quota_;
-
   // Timer for the closing handshake.
   base::OneShotTimer close_timer_;
 
@@ -411,8 +391,6 @@ class NET_EXPORT WebSocketChannel {
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketChannel);
 };
-
-NET_EXPORT extern const char kWebSocketReceiveQuotaThreshold[];
 
 }  // namespace net
 

@@ -21,6 +21,7 @@
  */
 
 #define JPEG_INTERNALS
+#include "../../../jconfigint.h"
 #include "../../../jinclude.h"
 #include "../../../jpeglib.h"
 #include "../../../jsimd.h"
@@ -183,7 +184,7 @@ void jsimd_idct_2x2_neon(void *dct_table,
  *       exact compatibility with jpeg-6b.
  */
 
-__attribute__ ((aligned(8))) static int16_t jsimd_idct_4x4_neon_consts[] = {
+ALIGN(16) static const int16_t jsimd_idct_4x4_neon_consts[] = {
                                         F_1_847, -F_0_765, -F_0_211,  F_1_451,
                                        -F_2_172,  F_1_061, -F_0_509, -F_0_601,
                                         F_0_899,  F_2_562,        0,        0
@@ -217,8 +218,8 @@ void jsimd_idct_4x4_neon(void *dct_table,
   bitmap = vorrq_s16(bitmap, row6);
   bitmap = vorrq_s16(bitmap, row7);
 
-  int64_t left_ac_bitmap = vreinterpret_s64_s16(vget_low_s16(bitmap));
-  int64_t right_ac_bitmap = vreinterpret_s64_s16(vget_high_s16(bitmap));
+  int64_t left_ac_bitmap = vgetq_lane_s64(vreinterpretq_s64_s16(bitmap), 0);
+  int64_t right_ac_bitmap = vgetq_lane_s64(vreinterpretq_s64_s16(bitmap), 1);
 
   /* Load constants for IDCT computation. */
   const int16x4x3_t consts = vld1_s16_x3(jsimd_idct_4x4_neon_consts);
@@ -452,7 +453,9 @@ void jsimd_idct_4x4_neon(void *dct_table,
   /* Interleaving store completes the transpose. */
   uint8x8x2_t output_0123 = vzip_u8(vqmovun_s16(output_cols_02),
                                     vqmovun_s16(output_cols_13));
-  uint16x4x2_t output_01_23 = { output_0123.val[0], output_0123.val[1] };
+  uint16x4x2_t output_01_23 = { vreinterpret_u16_u8(output_0123.val[0]),
+                                vreinterpret_u16_u8(output_0123.val[1])
+                              };
 
   /* Store 4x4 block to memory. */
   JSAMPROW outptr0 = output_buf[0] + output_col;

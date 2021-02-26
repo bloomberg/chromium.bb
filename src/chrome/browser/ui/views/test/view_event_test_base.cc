@@ -19,12 +19,15 @@
 
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
 #include "ui/display/screen.h"
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
 
 #if defined(USE_X11)
 #include "ui/views/test/test_desktop_screen_x11.h"
-#else
-#include "ui/views/widget/desktop_aura/desktop_screen.h"
-#endif
+#endif  // defined(USE_X11)
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_OZONE)
+#include "ui/views/test/test_desktop_screen_ozone.h"
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_OZONE)
 #endif
 
 namespace {
@@ -53,18 +56,21 @@ class TestView : public views::View {
 class TestBaseWidgetDelegate : public views::WidgetDelegate {
  public:
   explicit TestBaseWidgetDelegate(ViewEventTestBase* harness)
-      : harness_(harness) {}
+      : harness_(harness) {
+    SetCanResize(true);
+    SetOwnedByWidget(true);
+  }
   TestBaseWidgetDelegate(const TestBaseWidgetDelegate&) = delete;
   TestBaseWidgetDelegate& operator=(const TestBaseWidgetDelegate&) = delete;
   ~TestBaseWidgetDelegate() override = default;
 
   // views::WidgetDelegate:
-  bool CanResize() const override { return true; }
   void WindowClosing() override { harness_->window_ = nullptr; }
-  void DeleteDelegate() override { delete this; }
-  views::Widget* GetWidget() override { return contents_->GetWidget(); }
+  views::Widget* GetWidget() override {
+    return contents_ ? contents_->GetWidget() : nullptr;
+  }
   const views::Widget* GetWidget() const override {
-    return contents_->GetWidget();
+    return contents_ ? contents_->GetWidget() : nullptr;
   }
   views::View* GetContentsView() override {
     // This will first be called by Widget::Init(), which passes the returned
@@ -95,19 +101,20 @@ ViewEventTestBase::ViewEventTestBase() {
   // tests.
   DCHECK(!display::Screen::GetScreen());
 #if defined(USE_X11)
-  display::Screen::SetScreenInstance(
-      views::test::TestDesktopScreenX11::GetInstance());
-#else
-  screen_.reset(views::CreateDesktopScreen());
-  display::Screen::SetScreenInstance(screen_.get());
+  if (!features::IsUsingOzonePlatform())
+    views::test::TestDesktopScreenX11::GetInstance();
+#endif  // defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_OZONE)
+  if (!display::Screen::GetScreen())
+    display::Screen::SetScreenInstance(
+        views::test::TestDesktopScreenOzone::GetInstance());
 #endif
+  if (!display::Screen::GetScreen())
+    screen_.reset(views::CreateDesktopScreen());
 #endif
 }
 
 ViewEventTestBase::~ViewEventTestBase() {
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
-  display::Screen::SetScreenInstance(nullptr);
-#endif
   TestingBrowserProcess::DeleteInstance();
 }
 

@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -45,9 +45,8 @@ struct CustomHomePagesTableModel::Entry {
 
 CustomHomePagesTableModel::CustomHomePagesTableModel(Profile* profile)
     : profile_(profile),
-      observer_(NULL),
-      num_outstanding_title_lookups_(0) {
-}
+      observer_(nullptr),
+      num_outstanding_title_lookups_(0) {}
 
 CustomHomePagesTableModel::~CustomHomePagesTableModel() {
 }

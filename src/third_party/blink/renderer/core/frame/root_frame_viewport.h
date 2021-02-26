@@ -9,7 +9,7 @@
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
-#include "third_party/blink/renderer/platform/graphics/scroll_types.h"
+#include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -29,13 +29,11 @@ struct PhysicalRect;
 class CORE_EXPORT RootFrameViewport final
     : public GarbageCollected<RootFrameViewport>,
       public ScrollableArea {
-  USING_GARBAGE_COLLECTED_MIXIN(RootFrameViewport);
-
  public:
   RootFrameViewport(ScrollableArea& visual_viewport,
                     ScrollableArea& layout_viewport);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void SetLayoutViewport(ScrollableArea&);
   ScrollableArea& LayoutViewport() const;
@@ -97,12 +95,10 @@ class CORE_EXPORT RootFrameViewport final
   cc::Layer* LayerForHorizontalScrollbar() const override;
   cc::Layer* LayerForVerticalScrollbar() const override;
   cc::Layer* LayerForScrollCorner() const override;
-  int HorizontalScrollbarHeight(
-      OverlayScrollbarClipBehavior =
-          kIgnorePlatformOverlayScrollbarSize) const override;
-  int VerticalScrollbarWidth(
-      OverlayScrollbarClipBehavior =
-          kIgnorePlatformOverlayScrollbarSize) const override;
+  int HorizontalScrollbarHeight(OverlayScrollbarClipBehavior =
+                                    kIgnoreOverlayScrollbarSize) const override;
+  int VerticalScrollbarWidth(OverlayScrollbarClipBehavior =
+                                 kIgnoreOverlayScrollbarSize) const override;
   ScrollResult UserScroll(ScrollGranularity,
                           const FloatSize&,
                           ScrollableArea::ScrollCallback on_finish) override;
@@ -116,7 +112,7 @@ class CORE_EXPORT RootFrameViewport final
   void UpdateCompositorScrollAnimations() override;
   void CancelProgrammaticScrollAnimation() override;
   mojom::blink::ScrollBehavior ScrollBehaviorStyle() const override;
-  WebColorScheme UsedColorScheme() const override;
+  mojom::blink::ColorScheme UsedColorScheme() const override;
   void ClearScrollableArea() override;
   LayoutBox* GetLayoutBox() const override;
   FloatQuad LocalToVisibleContentQuad(const FloatQuad&,

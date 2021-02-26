@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 
 class ProfileManager;
@@ -20,6 +19,8 @@ class CommandLine;
 
 class ProfileShortcutManager {
  public:
+  ProfileShortcutManager(const ProfileShortcutManager&) = delete;
+  ProfileShortcutManager& operator=(const ProfileShortcutManager&) = delete;
   virtual ~ProfileShortcutManager();
 
   // Create a profile icon for the profile with path |profile_path|.
@@ -30,6 +31,11 @@ class ProfileShortcutManager {
   // update the original profile shortcut if |profile_path| is the second
   // profile created.
   virtual void CreateProfileShortcut(const base::FilePath& profile_path) = 0;
+
+  // Create an incognito desktop shortcut for the profile with path
+  // |profile_path|
+  virtual void CreateIncognitoProfileShortcut(
+      const base::FilePath& profile_path) = 0;
 
   // Removes any desktop profile shortcuts for the profile corresponding to
   // |profile_path|.
@@ -58,9 +64,6 @@ class ProfileShortcutManager {
 
  protected:
   ProfileShortcutManager();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileShortcutManager);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_H_

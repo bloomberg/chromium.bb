@@ -70,6 +70,12 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
     VideoFrame::StorageType dst_storage_type = VideoFrame::STORAGE_OWNED_MEMORY,
     base::Optional<gfx::BufferUsage> dst_buffer_usage = base::nullopt);
 
+// Create Dmabuf-backed VideoFrame from |src_frame|. The created VideoFrame
+// doesn't depend on |src_frame|'s lifetime. |src_frame| should be a
+// GpuMemoryBuffer-backed VideoFrame.
+scoped_refptr<VideoFrame> CreateDmabufVideoFrame(
+    const VideoFrame* const src_frame);
+
 // Create GpuMemoryBuffer-based VideoFrame from |frame|. The created VideoFrame
 // doesn't depend on |frame|'s lifetime.
 // |frame| should be a DMABUF-backed VideoFrame. |buffer_usage| is a
@@ -85,12 +91,15 @@ scoped_refptr<VideoFrame> CreateGpuMemoryBufferVideoFrame(
 // own the data and thus must not be changed.
 scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image);
 
-// Create a video frame layout for the specified |pixel_format| and
-// |coded_size|. The created VideoFrameLayout represents all the planes are
-//  stored in a single physical buffer.
+// Create a video frame layout for the specified |pixel_format|, |dimension|
+// and |alignment|. |plane_rows| is optional. If it is not nullptr, this fills
+// the number of rows of each plane into it. The created VideoFrameLayout
+// represents all the planes stored in a single physical buffer.
 base::Optional<VideoFrameLayout> CreateVideoFrameLayout(
     VideoPixelFormat pixel_format,
-    const gfx::Size& size);
+    const gfx::Size& dimension,
+    const uint32_t alignment = VideoFrame::kFrameAddressAlignment,
+    std::vector<size_t>* plane_rows = nullptr);
 }  // namespace test
 }  // namespace media
 

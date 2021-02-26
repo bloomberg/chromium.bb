@@ -15,10 +15,11 @@
 // See http://dev.chromium.org/developers/testing/threadsanitizer-tsan-v2
 // for the instructions on writing suppressions.
 char kTSanDefaultSuppressions[] =
-    // False positives in libdconfsettings.so, libflashplayer.so, libgio.so,
-    // libglib.so and libgobject.so.
+    // False positives in libdbus.so, libdconfsettings.so, libflashplayer.so,
+    // libgio.so, libglib.so and libgobject.so.
     // Since we don't instrument them, we cannot reason about the
     // synchronization in them.
+    "race:libdbus*.so\n"
     "race:libdconfsettings*.so\n"
     "race:libflashplayer.so\n"
     "race:libgio*.so\n"
@@ -67,8 +68,7 @@ char kTSanDefaultSuppressions[] =
     "deadlock:cc::VideoLayerImpl::WillDraw\n"
 
     // http://crbug.com/328826
-    "race:gLCDOrder\n"
-    "race:gLCDOrientation\n"
+    "race:skia::(anonymous namespace)::g_pixel_geometry\n"
 
     // http://crbug.com/328868
     "race:PR_Lock\n"

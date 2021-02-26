@@ -61,8 +61,6 @@ MenuItem::ContextList GetContexts(const std::vector<
 MenuItem::Type GetType(extensions::api::context_menus::ItemType type,
                        MenuItem::Type default_type);
 
-bool HasLazyContext(const Extension* extension);
-
 // Creates and adds a menu item from |create_properties|.
 template <typename PropertyWithEnumT>
 bool CreateMenuItem(const PropertyWithEnumT& create_properties,
@@ -79,7 +77,7 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
     return false;
   }
 
-  if (!is_webview && HasLazyContext(extension) &&
+  if (!is_webview && BackgroundInfo::HasLazyContext(extension) &&
       create_properties.onclick.get()) {
     *error = kOnclickDisallowedError;
     return false;
@@ -101,7 +99,8 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
   }
 
   if (contexts.Contains(MenuItem::BROWSER_ACTION) ||
-      contexts.Contains(MenuItem::PAGE_ACTION)) {
+      contexts.Contains(MenuItem::PAGE_ACTION) ||
+      contexts.Contains(MenuItem::ACTION)) {
     // Action items are not allowed for <webview>.
     if (!extension->is_extension() || is_webview) {
       *error = kActionNotAllowedError;

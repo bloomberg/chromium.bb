@@ -117,6 +117,8 @@ inline SkPoint FloatPointToSkPoint(const FloatPoint& point) {
 }
 
 SkMatrix PLATFORM_EXPORT AffineTransformToSkMatrix(const AffineTransform&);
+SkMatrix PLATFORM_EXPORT
+TransformationMatrixToSkMatrix(const TransformationMatrix&);
 
 bool NearlyIntegral(float value);
 
@@ -147,12 +149,11 @@ void DrawPlatformFocusRing(const PrimitiveType&,
                            float width,
                            float border_radius);
 
-// TODO(fmalita): remove in favor of direct SrcRectConstraint use.
-inline cc::PaintCanvas::SrcRectConstraint
-WebCoreClampingModeToSkiaRectConstraint(Image::ImageClampingMode clamp_mode) {
+inline SkCanvas::SrcRectConstraint WebCoreClampingModeToSkiaRectConstraint(
+    Image::ImageClampingMode clamp_mode) {
   return clamp_mode == Image::kClampImageToSourceRect
-             ? cc::PaintCanvas::kStrict_SrcRectConstraint
-             : cc::PaintCanvas::kFast_SrcRectConstraint;
+             ? SkCanvas::kStrict_SrcRectConstraint
+             : SkCanvas::kFast_SrcRectConstraint;
 }
 
 // Attempts to allocate an SkData on the PartitionAlloc buffer partition.

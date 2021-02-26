@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
+import * as Common from '../common/common.js';
 import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
 
 /**
  * @unrestricted
@@ -25,16 +28,15 @@ export class RemoteObjectPreviewFormatter {
     function sortValue(property) {
       // TODO(einbinder) expose whether preview properties are actually internal.
       const internalName = _internalName;
-      if (property.name === internalName.PromiseStatus) {
+      if (property.name === internalName.PromiseState) {
         return 1;
       }
-      if (property.name === internalName.PromiseValue) {
+      if (property.name === internalName.PromiseResult) {
         return 2;
       }
-      if (property.name === internalName.GeneratorStatus || property.name === internalName.PrimitiveValue) {
+      if (property.name === internalName.GeneratorState || property.name === internalName.PrimitiveValue) {
         return 3;
       }
-      // TODO(einbinder) expose whether preview properties are actually private.
       if (property.type !== 'function' && !property.name.startsWith('#')) {
         return 4;
       }
@@ -49,9 +51,10 @@ export class RemoteObjectPreviewFormatter {
    */
   appendObjectPreview(parentElement, preview, isEntry) {
     const description = preview.description;
-    const subTypesWithoutValuePreview = new Set(['null', 'regexp', 'error', 'internal#entry']);
+    const subTypesWithoutValuePreview = new Set(['null', 'regexp', 'error', 'internal#entry', 'trustedtype']);
     if (preview.type !== 'object' || subTypesWithoutValuePreview.has(preview.subtype) || isEntry) {
-      parentElement.appendChild(this.renderPropertyPreview(preview.type, preview.subtype, description));
+      parentElement.appendChild(
+          this.renderPropertyPreview(preview.type, preview.subtype, preview.className, description));
       return;
     }
     const isArrayOrTypedArray = preview.subtype === 'array' || preview.subtype === 'typedarray';
@@ -72,7 +75,7 @@ export class RemoteObjectPreviewFormatter {
     }
 
     const propertiesElement = parentElement.createChild('span', 'object-properties-preview');
-    propertiesElement.createTextChild(isArrayOrTypedArray ? '[' : '{');
+    UI.UIUtils.createTextChild(propertiesElement, isArrayOrTypedArray ? '[' : '{');
     if (preview.entries) {
       this._appendEntriesPreview(propertiesElement, preview);
     } else if (isArrayOrTypedArray) {
@@ -84,7 +87,7 @@ export class RemoteObjectPreviewFormatter {
       const ellipsisText = propertiesElement.textContent.length > 1 ? ',\xA0…' : '…';
       propertiesElement.createChild('span').textContent = ellipsisText;
     }
-    propertiesElement.createTextChild(isArrayOrTypedArray ? ']' : '}');
+    UI.UIUtils.createTextChild(propertiesElement, isArrayOrTypedArray ? ']' : '}');
   }
 
   /**
@@ -109,29 +112,29 @@ export class RemoteObjectPreviewFormatter {
                            .sort(RemoteObjectPreviewFormatter._objectPropertyComparator);
     for (let i = 0; i < properties.length; ++i) {
       if (i > 0) {
-        parentElement.createTextChild(', ');
+        UI.UIUtils.createTextChild(parentElement, ', ');
       }
 
       const property = properties[i];
       const name = property.name;
       // Internal properties are given special formatting, e.g. Promises `<rejected>: 123`.
-      if (preview.subtype === 'promise' && name === internalName.PromiseStatus) {
+      if (preview.subtype === 'promise' && name === internalName.PromiseState) {
         parentElement.appendChild(this._renderDisplayName('<' + property.value + '>'));
         const nextProperty = i + 1 < properties.length ? properties[i + 1] : null;
-        if (nextProperty && nextProperty.name === internalName.PromiseValue) {
+        if (nextProperty && nextProperty.name === internalName.PromiseResult) {
           if (property.value !== 'pending') {
-            parentElement.createTextChild(': ');
+            UI.UIUtils.createTextChild(parentElement, ': ');
             parentElement.appendChild(this._renderPropertyPreviewOrAccessor([nextProperty]));
           }
           i++;
         }
-      } else if (preview.subtype === 'generator' && name === internalName.GeneratorStatus) {
+      } else if (preview.subtype === 'generator' && name === internalName.GeneratorState) {
         parentElement.appendChild(this._renderDisplayName('<' + property.value + '>'));
       } else if (name === internalName.PrimitiveValue) {
         parentElement.appendChild(this._renderPropertyPreviewOrAccessor([property]));
       } else {
         parentElement.appendChild(this._renderDisplayName(name));
-        parentElement.createTextChild(': ');
+        UI.UIUtils.createTextChild(parentElement, ': ');
         parentElement.appendChild(this._renderPropertyPreviewOrAccessor([property]));
       }
     }
@@ -174,18 +177,18 @@ export class RemoteObjectPreviewFormatter {
     let elementsAdded = false;
     for (let i = 0; i < indexProperties.length; ++i) {
       if (elementsAdded) {
-        parentElement.createTextChild(', ');
+        UI.UIUtils.createTextChild(parentElement, ', ');
       }
 
       const property = indexProperties[i];
       const index = toArrayIndex(property.name);
       if (canShowGaps && index - lastNonEmptyArrayIndex > 1) {
         appendUndefined(index);
-        parentElement.createTextChild(', ');
+        UI.UIUtils.createTextChild(parentElement, ', ');
       }
       if (!canShowGaps && i !== index) {
         parentElement.appendChild(this._renderDisplayName(property.name));
-        parentElement.createTextChild(': ');
+        UI.UIUtils.createTextChild(parentElement, ': ');
       }
       parentElement.appendChild(this._renderPropertyPreviewOrAccessor([property]));
       lastNonEmptyArrayIndex = index;
@@ -194,19 +197,19 @@ export class RemoteObjectPreviewFormatter {
 
     if (canShowGaps && arrayLength - lastNonEmptyArrayIndex > 1) {
       if (elementsAdded) {
-        parentElement.createTextChild(', ');
+        UI.UIUtils.createTextChild(parentElement, ', ');
       }
       appendUndefined(arrayLength);
     }
 
     for (let i = 0; i < otherProperties.length; ++i) {
       if (elementsAdded) {
-        parentElement.createTextChild(', ');
+        UI.UIUtils.createTextChild(parentElement, ', ');
       }
 
       const property = otherProperties[i];
       parentElement.appendChild(this._renderDisplayName(property.name));
-      parentElement.createTextChild(': ');
+      UI.UIUtils.createTextChild(parentElement, ': ');
       parentElement.appendChild(this._renderPropertyPreviewOrAccessor([property]));
       elementsAdded = true;
     }
@@ -230,13 +233,13 @@ export class RemoteObjectPreviewFormatter {
   _appendEntriesPreview(parentElement, preview) {
     for (let i = 0; i < preview.entries.length; ++i) {
       if (i > 0) {
-        parentElement.createTextChild(', ');
+        UI.UIUtils.createTextChild(parentElement, ', ');
       }
 
       const entry = preview.entries[i];
       if (entry.key) {
         this.appendObjectPreview(parentElement, entry.key, true /* isEntry */);
-        parentElement.createTextChild(' => ');
+        UI.UIUtils.createTextChild(parentElement, ' => ');
       }
       this.appendObjectPreview(parentElement, entry.value, true /* isEntry */);
     }
@@ -260,17 +263,19 @@ export class RemoteObjectPreviewFormatter {
    */
   _renderPropertyPreviewOrAccessor(propertyPath) {
     const property = propertyPath.peekLast();
-    return this.renderPropertyPreview(property.type, /** @type {string} */ (property.subtype), property.value);
+    return this.renderPropertyPreview(
+        property.type, /** @type {string} */ (property.subtype), property.className, property.value);
   }
 
   /**
    * @param {string} type
    * @param {string=} subtype
+   * @param {(?string|undefined)=} className
    * @param {string=} description
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
-  renderPropertyPreview(type, subtype, description) {
-    const span = document.createElement('span');
+  renderPropertyPreview(type, subtype, className, description) {
+    const span = /** @type {!HTMLElement} */ (document.createElement('span'));
     span.classList.add('object-value-' + (subtype || type));
     description = description || '';
 
@@ -285,13 +290,18 @@ export class RemoteObjectPreviewFormatter {
       return span;
     }
 
+    if (type === 'object' && subtype === 'trustedtype' && className) {
+      createSpanForTrustedType(span, description, className);
+      return span;
+    }
+
     if (type === 'object' && subtype === 'node' && description) {
       createSpansForNodeTitle(span, description);
       return span;
     }
 
     if (type === 'string') {
-      span.createTextChildren('"', description.replace(/\n/g, '\u21B5'), '"');
+      UI.UIUtils.createTextChildren(span, '"', description.replace(/\n/g, '\u21B5'), '"');
       return span;
     }
 
@@ -312,10 +322,10 @@ export class RemoteObjectPreviewFormatter {
 
 /** @enum {string} */
 const _internalName = {
-  GeneratorStatus: '[[GeneratorStatus]]',
+  GeneratorState: '[[GeneratorState]]',
   PrimitiveValue: '[[PrimitiveValue]]',
-  PromiseStatus: '[[PromiseStatus]]',
-  PromiseValue: '[[PromiseValue]]'
+  PromiseState: '[[PromiseState]]',
+  PromiseResult: '[[PromiseResult]]'
 };
 
 /**
@@ -331,4 +341,17 @@ export const createSpansForNodeTitle = function(container, nodeTitle) {
   if (match[3]) {
     container.createChild('span', 'webkit-html-attribute-name').textContent = match[3];
   }
+};
+
+/**
+ * @param {!Element} span
+ * @param {string} description
+ * @param {string} className
+ */
+export const createSpanForTrustedType = function(span, description, className) {
+  UI.UIUtils.createTextChildren(span, `${className} `);
+  const trustedContentSpan = document.createElement('span');
+  trustedContentSpan.classList.add('object-value-string');
+  UI.UIUtils.createTextChildren(trustedContentSpan, '"', description.replace(/\n/g, '\u21B5'), '"');
+  span.appendChild(trustedContentSpan);
 };

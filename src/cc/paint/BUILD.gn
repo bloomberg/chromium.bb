@@ -8,6 +8,8 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 cc_component("paint") {
   output_name = "cc_paint"
   sources = [
+    "clear_for_opaque_raster.cc",
+    "clear_for_opaque_raster.h",
     "decode_stashing_image_provider.cc",
     "decode_stashing_image_provider.h",
     "decoded_draw_image.cc",
@@ -100,6 +102,7 @@ cc_component("paint") {
     "//cc/base",
     "//cc/debug",
     "//skia",
+    "//skia:skcms",
     "//ui/gfx:color_space",
     "//ui/gfx:geometry_skia",
     "//ui/gfx/geometry",
@@ -107,6 +110,7 @@ cc_component("paint") {
 
   deps = [
     "//base",
+    "//gpu/command_buffer/common:mailbox",
     "//ui/gfx/animation",
     "//ui/gfx/ipc/color",
   ]

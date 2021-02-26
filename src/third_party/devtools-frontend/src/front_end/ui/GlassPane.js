@@ -2,26 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
+import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 
 import {Size} from './Geometry.js';  // eslint-disable-line no-unused-vars
 import {Icon} from './Icon.js';
+import {deepElementFromEvent} from './UIUtils.js';
 import {measuredScrollbarWidth} from './utils/measured-scrollbar-width.js';
 import {Widget} from './Widget.js';
 
-export class GlassPane {
+export class GlassPane extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
+    super();
     this._widget = new Widget(true);
     this._widget.markAsRoot();
     this.element = this._widget.element;
     this.contentElement = this._widget.contentElement;
     this._arrowElement = Icon.create('', 'arrow hidden');
-    this.element.shadowRoot.appendChild(this._arrowElement);
+    if (this.element.shadowRoot) {
+      this.element.shadowRoot.appendChild(this._arrowElement);
+    }
 
-    this.registerRequiredCSS('ui/glassPane.css');
+    this.registerRequiredCSS('ui/glassPane.css', {enableLegacyPatching: true});
     this.setPointerEventsBehavior(PointerEventsBehavior.PierceGlassPane);
 
     this._onMouseDownBound = this._onMouseDown.bind(this);
@@ -49,9 +51,10 @@ export class GlassPane {
 
   /**
    * @param {string} cssFile
+  * @param {!{enableLegacyPatching:boolean}} options
    */
-  registerRequiredCSS(cssFile) {
-    this._widget.registerRequiredCSS(cssFile);
+  registerRequiredCSS(cssFile, options) {
+    this._widget.registerRequiredCSS(cssFile, options);
   }
 
   /**
@@ -90,7 +93,7 @@ export class GlassPane {
    */
   setMaxContentSize(size) {
     this._maxSize = size;
-    this._positionContent();
+    this.positionContent();
   }
 
   /**
@@ -98,7 +101,7 @@ export class GlassPane {
    */
   setSizeBehavior(sizeBehavior) {
     this._sizeBehavior = sizeBehavior;
-    this._positionContent();
+    this.positionContent();
   }
 
   /**
@@ -109,7 +112,7 @@ export class GlassPane {
   setContentPosition(x, y) {
     this._positionX = x;
     this._positionY = y;
-    this._positionContent();
+    this.positionContent();
   }
 
   /**
@@ -118,7 +121,7 @@ export class GlassPane {
    */
   setContentAnchorBox(anchorBox) {
     this._anchorBox = anchorBox;
-    this._positionContent();
+    this.positionContent();
   }
 
   /**
@@ -145,11 +148,11 @@ export class GlassPane {
     }
     // TODO(crbug.com/1006759): Extract the magic number
     // Deliberately starts with 3000 to hide other z-indexed elements below.
-    this.element.style.zIndex = 3000 + 1000 * _panes.size;
+    this.element.style.zIndex = `${3000 + 1000 * _panes.size}`;
     document.body.addEventListener('mousedown', this._onMouseDownBound, true);
     this._widget.show(document.body);
     _panes.add(this);
-    this._positionContent();
+    this.positionContent();
   }
 
   hide() {
@@ -168,14 +171,14 @@ export class GlassPane {
     if (!this._onClickOutsideCallback) {
       return;
     }
-    const node = event.deepElementFromPoint();
+    const node = deepElementFromEvent(event);
     if (!node || this.contentElement.isSelfOrAncestor(node)) {
       return;
     }
     this._onClickOutsideCallback.call(null, event);
   }
 
-  _positionContent() {
+  positionContent() {
     if (!this.isShowing()) {
       return;
     }
@@ -185,7 +188,8 @@ export class GlassPane {
     const scrollbarSize = measuredScrollbarWidth(this.element.ownerDocument);
     const arrowSize = 10;
 
-    const container = _containers.get(/** @type {!Document} */ (this.element.ownerDocument));
+    const container =
+        /** @type {!HTMLElement} */ (_containers.get(/** @type {!Document} */ (this.element.ownerDocument)));
     if (this._sizeBehavior === SizeBehavior.MeasureContent) {
       this.contentElement.positionAt(0, 0);
       this.contentElement.style.width = '';
@@ -375,7 +379,7 @@ export class GlassPane {
    * @return {!Element}
    */
   static container(document) {
-    return _containers.get(document);
+    return /** @type {!Element} */ (_containers.get(document));
   }
 
   /**
@@ -384,7 +388,7 @@ export class GlassPane {
   static containerMoved(element) {
     for (const pane of _panes) {
       if (pane.isShowing() && pane.element.ownerDocument === element.ownerDocument) {
-        pane._positionContent();
+        pane.positionContent();
       }
     }
   }

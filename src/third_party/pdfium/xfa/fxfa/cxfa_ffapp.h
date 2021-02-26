@@ -7,61 +7,46 @@
 #ifndef XFA_FXFA_CXFA_FFAPP_H_
 #define XFA_FXFA_CXFA_FFAPP_H_
 
-#include <memory>
-
 #include "core/fxcrt/unowned_ptr.h"
+#include "fxjs/gc/heap.h"
+#include "v8/include/cppgc/garbage-collected.h"
+#include "v8/include/cppgc/member.h"
 #include "xfa/fwl/cfwl_app.h"
-#include "xfa/fxfa/cxfa_fontmgr.h"
 #include "xfa/fxfa/fxfa.h"
 
 class CFGAS_FontMgr;
 class CFWL_WidgetMgr;
+class CXFA_FontMgr;
 class CXFA_FWLAdapterWidgetMgr;
 class CXFA_FWLTheme;
 
-class CXFA_FFApp : public CFWL_App::AdapterIface {
+class CXFA_FFApp : public cppgc::GarbageCollected<CXFA_FFApp>,
+                   public CFWL_App::AdapterIface {
  public:
-  static void SkipFontLoadForTesting(bool skip);
-
-  explicit CXFA_FFApp(IXFA_AppProvider* pProvider);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_FFApp() override;
 
   // CFWL_App::AdapterIface:
+  void Trace(cppgc::Visitor* visitor) const override;
   CFWL_WidgetMgr::AdapterIface* GetWidgetMgrAdapter() override;
-  TimerHandlerIface* GetTimerHandler() override;
+  CFX_Timer::HandlerIface* GetTimerHandler() override;
+  IFWL_ThemeProvider* GetThemeProvider() override;
+  cppgc::Heap* GetHeap() override;
 
+  bool LoadFWLTheme(CXFA_FFDoc* doc);
   CFWL_WidgetMgr* GetFWLWidgetMgr() const { return m_pFWLApp->GetWidgetMgr(); }
-  CFGAS_FontMgr* GetFDEFontMgr();
-  CXFA_FWLTheme* GetFWLTheme(CXFA_FFDoc* doc);
-
   IXFA_AppProvider* GetAppProvider() const { return m_pProvider.Get(); }
-  const CFWL_App* GetFWLApp() const { return m_pFWLApp.get(); }
-  CXFA_FontMgr* GetXFAFontMgr() { return &m_pFontMgr; }
-
-  void ClearEventTargets();
+  CFWL_App* GetFWLApp() const { return m_pFWLApp; }
+  CXFA_FontMgr* GetXFAFontMgr() const { return m_pXFAFontMgr; }
 
  private:
+  explicit CXFA_FFApp(IXFA_AppProvider* pProvider);
+
   UnownedPtr<IXFA_AppProvider> const m_pProvider;
-
-  // The fonts stored in the font manager may have been created by the default
-  // font manager. The GEFont::LoadFont call takes the manager as a param and
-  // stores it internally. When you destroy the GEFont it tries to unregister
-  // from the font manager and if the default font manager was destroyed first
-  // you get a use-after-free. The m_pFWLTheme can try to cleanup a GEFont
-  // when it frees, so make sure it gets cleaned up first. That requires
-  // m_pFWLApp to be cleaned up as well.
-  //
-  // TODO(dsinclair): The GEFont should have the FontMgr as the pointer instead
-  // of the DEFFontMgr so this goes away. Bug 561.
-  std::unique_ptr<CFGAS_FontMgr> m_pFDEFontMgr;
-  CXFA_FontMgr m_pFontMgr;
-
-  std::unique_ptr<CXFA_FWLAdapterWidgetMgr> m_pAdapterWidgetMgr;
-
-  // |m_pFWLApp| has to be released first, then |m_pFWLTheme| since the former
-  // may refers to theme manager and the latter refers to font manager.
-  std::unique_ptr<CXFA_FWLTheme> m_pFWLTheme;
-  std::unique_ptr<CFWL_App> m_pFWLApp;
+  cppgc::Member<CXFA_FontMgr> m_pXFAFontMgr;
+  cppgc::Member<CXFA_FWLAdapterWidgetMgr> m_pAdapterWidgetMgr;
+  cppgc::Member<CXFA_FWLTheme> m_pFWLTheme;
+  cppgc::Member<CFWL_App> m_pFWLApp;
 };
 
 #endif  // XFA_FXFA_CXFA_FFAPP_H_

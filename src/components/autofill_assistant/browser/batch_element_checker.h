@@ -11,12 +11,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/selector.h"
+#include "components/autofill_assistant/browser/web/element_finder.h"
 
 namespace autofill_assistant {
 class WebController;
@@ -28,10 +29,13 @@ class BatchElementChecker {
   explicit BatchElementChecker();
   virtual ~BatchElementChecker();
 
-  // Callback for AddElementCheck. Argument is true if the check passed.
+  // Callback for AddElementCheck. Arguments are an ok client status if the
+  // check passed and an |ElementFinder::Result|.
   //
   // An ElementCheckCallback must not delete its calling BatchElementChecker.
-  using ElementCheckCallback = base::OnceCallback<void(const ClientStatus&)>;
+  using ElementCheckCallback =
+      base::OnceCallback<void(const ClientStatus&,
+                              const ElementFinder::Result&)>;
 
   // Callback for AddFieldValueCheck. Argument is true is the element exists.
   // The string contains the field value, or an empty string if accessing the
@@ -68,11 +72,16 @@ class BatchElementChecker {
   void Run(WebController* web_controller);
 
  private:
+  // Gets called for each ElementCheck.
   void OnElementChecked(std::vector<ElementCheckCallback>* callbacks,
-                        const ClientStatus& element_status);
-  void OnGetFieldValue(std::vector<GetFieldValueCallback>* callbacks,
-                       const ClientStatus& element_status,
-                       const std::string& value);
+                        const ClientStatus& element_status,
+                        std::unique_ptr<ElementFinder::Result> element_result);
+
+  // Gets called for each FieldValueCheck.
+  void OnFieldValueChecked(std::vector<GetFieldValueCallback>* callbacks,
+                           const ClientStatus& status,
+                           const std::string& value);
+
   void CheckDone();
 
   // A map of ElementCheck arguments (check_type, selector) to callbacks that

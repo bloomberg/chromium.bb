@@ -8,10 +8,10 @@ import androidx.annotation.NonNull;
 
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier;
 import org.chromium.chrome.browser.browserservices.ui.SharedActivityCoordinator;
+import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVerifier;
 import org.chromium.chrome.browser.browserservices.ui.splashscreen.webapps.WebappSplashController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -33,7 +33,6 @@ public class WebappActivityCoordinator
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final WebappInfo mWebappInfo;
     private final ChromeActivity<?> mActivity;
-    private final WebappSplashController mSplashController;
     private final WebappDeferredStartupWithStorageHandler mDeferredStartupWithStorageHandler;
 
     // Whether the current page is within the webapp's scope.
@@ -47,13 +46,12 @@ public class WebappActivityCoordinator
             WebappDeferredStartupWithStorageHandler deferredStartupWithStorageHandler,
             WebappActionsNotificationManager actionsNotificationManager,
             ActivityLifecycleDispatcher lifecycleDispatcher) {
-        // We don't need to do anything with |sharedActivityCoordinator| or
+        // We don't need to do anything with |sharedActivityCoordinator|, |splashController| or
         // |actionsNotificationManager|. We just need to resolve it so that it starts working.
 
         mIntentDataProvider = intentDataProvider;
         mWebappInfo = WebappInfo.create(mIntentDataProvider);
         mActivity = activity;
-        mSplashController = splashController;
         mDeferredStartupWithStorageHandler = deferredStartupWithStorageHandler;
 
         // WebappActiveTabUmaTracker sets itself as an observer of |activityTabProvider|.
@@ -83,13 +81,6 @@ public class WebappActivityCoordinator
      */
     public void initDeferredStartupForActivity() {
         mDeferredStartupWithStorageHandler.initDeferredStartupForActivity();
-    }
-
-    /**
-     * Called once the Activity's main layout is inflated and added to the content view.
-     */
-    public void onInitialLayoutInflationComplete() {
-        mSplashController.onInitialLayoutInflationComplete();
     }
 
     @Override

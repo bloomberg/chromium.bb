@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/lock_table.h"
 #include "components/services/filesystem/public/mojom/directory.mojom.h"
@@ -52,8 +52,8 @@ DirectoryTestHelper::~DirectoryTestHelper() = default;
 
 mojo::Remote<mojom::Directory> DirectoryTestHelper::CreateTempDir() {
   mojo::Remote<mojom::Directory> remote;
-  blocking_state_.Post(FROM_HERE, &BlockingState::BindNewTempDirectory,
-                       remote.BindNewPipeAndPassReceiver());
+  blocking_state_.AsyncCall(&BlockingState::BindNewTempDirectory)
+      .WithArgs(remote.BindNewPipeAndPassReceiver());
   return remote;
 }
 

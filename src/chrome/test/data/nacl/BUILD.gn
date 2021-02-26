@@ -86,7 +86,7 @@ group("nacl") {
       ":sysconf_nprocessors_onln_test($glibc)",
     ]
   }
-  if (is_linux && enable_nacl_nonsfi) {
+  if ((is_linux || is_chromeos) && enable_nacl_nonsfi) {
     nonsfi = "//build/toolchain/nacl:newlib_pnacl_nonsfi"
     data_deps += [
       ":irt_exception_test($nonsfi)",
@@ -428,7 +428,7 @@ if (is_nacl && !is_nacl_nonsfi) {
   }
 }
 
-if (is_linux && is_clang) {
+if ((is_linux || is_chromeos) && is_clang) {
   if (target_cpu == "x86") {
     arch = "x86_32"
   } else if (target_cpu == "x64") {
@@ -509,6 +509,9 @@ if (is_linux && is_clang) {
     # Do not use any sanitizers or coverage tools, which require a few symbols.
     configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
     configs -= [ "//build/config/coverage:default_coverage" ]
+
+    # Do not use PGO as it also requires a few symbols.
+    configs -= [ "//build/config/compiler/pgo:default_pgo_flags" ]
 
     # Disable default_init_stack_vars because it inserts memset() calls, but
     # memset() is not available in this libc-free context.

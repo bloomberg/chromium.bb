@@ -4,14 +4,21 @@
 
 #include "gpu/vulkan/vulkan_util.h"
 
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/pattern.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
+#include "gpu/config/gpu_info.h"  // nogncheck
+#include "gpu/config/vulkan_info.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
 namespace gpu {
 namespace {
-uint64_t g_submit_count = 0;
+uint64_t g_submit_count = 0u;
+uint64_t g_import_semaphore_into_gl_count = 0u;
 }
 
 bool SubmitSignalVkSemaphores(VkQueue vk_queue,
@@ -60,12 +67,24 @@ bool SubmitWaitVkSemaphore(VkQueue vk_queue,
 VkSemaphore CreateExternalVkSemaphore(
     VkDevice vk_device,
     VkExternalSemaphoreHandleTypeFlags handle_types) {
-  VkExportSemaphoreCreateInfo export_info = {
-      VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO};
-  export_info.handleTypes = handle_types;
+  base::ScopedClosureRunner uma_runner(base::BindOnce(
+      [](base::Time time) {
+        UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+            "GPU.Vulkan.CreateExternalVkSemaphore", base::Time::Now() - time,
+            base::TimeDelta::FromMicroseconds(1),
+            base::TimeDelta::FromMicroseconds(200), 50);
+      },
+      base::Time::Now()));
 
-  VkSemaphoreCreateInfo sem_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-                                    &export_info};
+  VkExportSemaphoreCreateInfo export_info = {
+      .sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO,
+      .handleTypes = handle_types,
+  };
+
+  VkSemaphoreCreateInfo sem_info = {
+      .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+      .pNext = &export_info,
+  };
 
   VkSemaphore semaphore = VK_NULL_HANDLE;
   VkResult result =
@@ -93,11 +112,108 @@ VkResult QueueSubmitHook(VkQueue queue,
   return vkQueueSubmit(queue, submitCount, pSubmits, fence);
 }
 
-void ReportQueueSubmitPerSwapBuffers() {
-  static uint64_t last_count = 0;
+void RecordImportingVKSemaphoreIntoGL() {
+  g_import_semaphore_into_gl_count++;
+}
+
+void ReportUMAPerSwapBuffers() {
+  static uint64_t last_submit_count = 0u;
+  static uint64_t last_semaphore_count = 0u;
   UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.Vulkan.QueueSubmitPerSwapBuffers",
-                              g_submit_count - last_count, 1, 50, 50);
-  last_count = g_submit_count;
+                              g_submit_count - last_submit_count, 1, 50, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "GPU.Vulkan.ImportSemaphoreGLPerSwapBuffers",
+      g_import_semaphore_into_gl_count - last_semaphore_count, 1, 50, 50);
+  last_submit_count = g_submit_count;
+  last_semaphore_count = g_import_semaphore_into_gl_count;
+}
+
+bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,
+                              const GPUInfo& gpu_info) {
+// Android uses AHB and SyncFD for interop. They are imported into GL with other
+// API.
+#if !defined(OS_ANDROID)
+#if defined(OS_WIN)
+  constexpr char kMemoryObjectExtension[] = "GL_EXT_memory_object_win32";
+  constexpr char kSemaphoreExtension[] = "GL_EXT_semaphore_win32";
+#elif defined(OS_FUCHSIA)
+  constexpr char kMemoryObjectExtension[] = "GL_ANGLE_memory_object_fuchsia";
+  constexpr char kSemaphoreExtension[] = "GL_ANGLE_semaphore_fuchsia";
+#else
+  constexpr char kMemoryObjectExtension[] = "GL_EXT_memory_object_fd";
+  constexpr char kSemaphoreExtension[] = "GL_EXT_semaphore_fd";
+#endif
+  // If both Vulkan and GL are using native GPU (non swiftshader), check
+  // necessary extensions for GL and Vulkan interop.
+  const auto extensions = gfx::MakeExtensionSet(gpu_info.gl_extensions);
+  if (!gfx::HasExtension(extensions, kMemoryObjectExtension) ||
+      !gfx::HasExtension(extensions, kSemaphoreExtension)) {
+    DLOG(ERROR) << kMemoryObjectExtension << " or " << kSemaphoreExtension
+                << " is not supported.";
+    return false;
+  }
+#endif  // !defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+  if (vulkan_info.physical_devices.empty())
+    return false;
+
+  const auto& device_info = vulkan_info.physical_devices.front();
+
+  constexpr uint32_t kVendorARM = 0x13b5;
+  if (device_info.properties.vendorID == kVendorARM) {
+    // https://crbug.com/1096222: Display problem with Huawei and Honor devices
+    // with Mali GPU. The Mali driver version is < 19.0.0.
+    if (device_info.properties.driverVersion < VK_MAKE_VERSION(19, 0, 0))
+      return false;
+
+    // Remove "Mali-" prefix.
+    base::StringPiece device_name(device_info.properties.deviceName);
+    if (!base::StartsWith(device_name, "Mali-")) {
+      LOG(ERROR) << "Unexpected device_name " << device_name;
+      return false;
+    }
+    device_name.remove_prefix(5);
+
+    // Remove anything trailing a space (e.g. "G76 MC4" => "G76").
+    device_name = device_name.substr(0, device_name.find(" "));
+
+    // Older Mali GPUs are not performant with Vulkan -- this blocks all Utgard
+    // gen, Midgard gen, and some Bifrost 1st & 2nd gen.
+    std::vector<const char*> slow_gpus = {"2??", "3??", "4??", "T???",
+                                          "G31", "G51", "G52"};
+    for (base::StringPiece slow_gpu : slow_gpus) {
+      if (base::MatchPattern(device_name, slow_gpu))
+        return false;
+    }
+  }
+
+  constexpr uint32_t kVendorQualcomm = 0x5143;
+  if (device_info.properties.vendorID == kVendorQualcomm) {
+    // Remove "Adreno (TM) " prefix.
+    base::StringPiece device_name(device_info.properties.deviceName);
+    if (!base::StartsWith(device_name, "Adreno (TM) ")) {
+      LOG(ERROR) << "Unexpected device_name " << device_name;
+      return false;
+    }
+    device_name.remove_prefix(12);
+
+    // Older Adreno GPUs are not performant with Vulkan.
+    std::vector<const char*> slow_gpus = {"4??", "50?", "51?"};
+    for (base::StringPiece slow_gpu : slow_gpus) {
+      if (base::MatchPattern(device_name, slow_gpu))
+        return false;
+    }
+  }
+
+  // https://crbug.com/1122650: Poor performance and untriaged crashes with
+  // Imagination GPUs.
+  constexpr uint32_t kVendorImagination = 0x1010;
+  if (device_info.properties.vendorID == kVendorImagination)
+    return false;
+#endif  // defined(OS_ANDROID)
+
+  return true;
 }
 
 }  // namespace gpu

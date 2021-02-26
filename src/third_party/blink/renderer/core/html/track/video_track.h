@@ -14,7 +14,6 @@ namespace blink {
 
 class CORE_EXPORT VideoTrack final : public ScriptWrappable, public TrackBase {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(VideoTrack);
 
  public:
   VideoTrack(const String& id,
@@ -23,7 +22,7 @@ class CORE_EXPORT VideoTrack final : public ScriptWrappable, public TrackBase {
              const AtomicString& language,
              bool selected);
   ~VideoTrack() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool selected() const { return selected_; }
   void setSelected(bool);

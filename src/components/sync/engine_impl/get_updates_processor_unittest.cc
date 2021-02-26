@@ -18,7 +18,6 @@
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/engine_impl/get_updates_delegate.h"
 #include "components/sync/engine_impl/update_handler.h"
-#include "components/sync/test/engine/fake_model_worker.h"
 #include "components/sync/test/engine/mock_update_handler.h"
 #include "components/sync/test/mock_invalidation.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -478,21 +477,5 @@ class DownloadUpdatesDebugInfoTest : public ::testing::Test {
   StatusController status_;
   MockDebugInfoGetter debug_info_getter_;
 };
-
-// Verify CopyClientDebugInfo when there are no events to upload.
-TEST_F(DownloadUpdatesDebugInfoTest, VerifyCopyClientDebugInfo_Empty) {
-  sync_pb::DebugInfo debug_info;
-  GetUpdatesProcessor::CopyClientDebugInfo(debug_info_getter(), &debug_info);
-  EXPECT_EQ(0, debug_info.events_size());
-}
-
-TEST_F(DownloadUpdatesDebugInfoTest, VerifyCopyOverwrites) {
-  sync_pb::DebugInfo debug_info;
-  AddDebugEvent();
-  GetUpdatesProcessor::CopyClientDebugInfo(debug_info_getter(), &debug_info);
-  EXPECT_EQ(1, debug_info.events_size());
-  GetUpdatesProcessor::CopyClientDebugInfo(debug_info_getter(), &debug_info);
-  EXPECT_EQ(1, debug_info.events_size());
-}
 
 }  // namespace syncer

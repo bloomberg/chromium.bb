@@ -29,6 +29,8 @@ class CustomLayoutChild : public ScriptWrappable {
 
  public:
   CustomLayoutChild(const CSSLayoutDefinition&, NGLayoutInputNode);
+  CustomLayoutChild(const CustomLayoutChild&) = delete;
+  CustomLayoutChild& operator=(const CustomLayoutChild&) = delete;
   ~CustomLayoutChild() override = default;
 
   // LayoutChild.idl
@@ -46,14 +48,12 @@ class CustomLayoutChild : public ScriptWrappable {
 
   void SetCustomLayoutToken(CustomLayoutToken* token) { token_ = token; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   NGLayoutInputNode node_;
   Member<PrepopulatedComputedStylePropertyMap> style_map_;
   Member<CustomLayoutToken> token_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomLayoutChild);
 };
 
 }  // namespace blink

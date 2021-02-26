@@ -63,7 +63,7 @@ enum ClientAction {
   STOP_SYNC_FOR_DISABLED_ACCOUNT,
 
   // Generated in response to CLIENT_DATA_OBSOLETE error. ProfileSyncService
-  // should stop sync engine, delete directory and restart sync engine.
+  // should stop sync engine, delete the data and restart sync engine.
   RESET_LOCAL_SYNC_DATA,
 
   // The default. No action.
@@ -73,7 +73,6 @@ enum ClientAction {
 struct SyncProtocolError {
   SyncProtocolErrorType error_type;
   std::string error_description;
-  std::string url;
   ClientAction action;
   ModelTypeSet error_data_types;
   SyncProtocolError();

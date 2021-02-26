@@ -43,7 +43,6 @@ AndroidCdmFactory::~AndroidCdmFactory() {
 
 void AndroidCdmFactory::Create(
     const std::string& key_system,
-    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -55,11 +54,6 @@ void AndroidCdmFactory::Create(
   // Bound |cdm_created_cb| so we always fire it asynchronously.
   CdmCreatedCB bound_cdm_created_cb =
       BindToCurrentLoop(std::move(cdm_created_cb));
-
-  if (security_origin.opaque()) {
-    std::move(bound_cdm_created_cb).Run(nullptr, "Invalid origin.");
-    return;
-  }
 
   // Create AesDecryptor here to support External Clear Key key system.
   // This is used for testing.
@@ -88,13 +82,14 @@ void AndroidCdmFactory::Create(
   auto* raw_factory = factory.get();
 
   creation_id_++;
-  pending_creations_.emplace(
+  auto result = pending_creations_.emplace(
       creation_id_,
       PendingCreation(std::move(factory), std::move(bound_cdm_created_cb)));
+  CHECK(result.second);
 
-  raw_factory->Create(key_system, security_origin, cdm_config,
-                      session_message_cb, session_closed_cb,
-                      session_keys_change_cb, session_expiration_update_cb,
+  raw_factory->Create(key_system, cdm_config, session_message_cb,
+                      session_closed_cb, session_keys_change_cb,
+                      session_expiration_update_cb,
                       base::BindOnce(&AndroidCdmFactory::OnCdmCreated,
                                      weak_factory_.GetWeakPtr(), creation_id_));
 }

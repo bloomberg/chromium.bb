@@ -24,6 +24,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
 
@@ -39,8 +40,7 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   // identify it when calling out to other services (e.g. the SemanticsManager).
   ScenicWindow(ScenicWindowManager* window_manager,
                PlatformWindowDelegate* delegate,
-               fuchsia::ui::views::ViewToken view_token,
-               scenic::ViewRefPair view_ref_pair);
+               PlatformWindowInitProperties properties);
   ~ScenicWindow() override;
 
   scenic::Session* scenic_session() { return &scenic_session_; }
@@ -50,7 +50,7 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   void AttachSurfaceView(fuchsia::ui::views::ViewHolderToken token);
 
   // PlatformWindow implementation.
-  gfx::Rect GetBounds() override;
+  gfx::Rect GetBounds() const override;
   void SetBounds(const gfx::Rect& bounds) override;
   void SetTitle(const base::string16& title) override;
   void Show(bool inactive) override;
@@ -119,10 +119,6 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   // Node in |scenic_session_| for rendering (hit testing disabled).
   scenic::EntityNode render_node_;
 
-  // Node in |scenic_session_| for rendering a solid color, placed just behind
-  // |render_node_| in the Z order.
-  scenic::ShapeNode background_node_;
-
   std::unique_ptr<scenic::ViewHolder> surface_view_holder_;
 
   // The ratio used for translating device-independent coordinates to absolute
@@ -132,8 +128,13 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   // Current view size in DIPs.
   gfx::SizeF size_dips_;
 
-  // Current view size in device pixels.
-  gfx::Size size_pixels_;
+  // Current view size in device pixels. The size is set to
+  // |PlatformWindowInitProperties.bounds.size()| value until Show() is called
+  // for the first time. After that the size is set to the size of the
+  // corresponding Scenic view.
+  gfx::Rect bounds_;
+
+  bool visible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScenicWindow);
 };

@@ -372,6 +372,18 @@ char* Debug::RestoreDebug(char* storage) {
   ClearOneShot();
 
   if (thread_local_.last_step_action_ != StepNone) {
+    int current_frame_count = CurrentFrameCount();
+    int target_frame_count = thread_local_.target_frame_count_;
+    DCHECK(current_frame_count >= target_frame_count);
+    StackTraceFrameIterator frames_it(isolate_);
+    while (current_frame_count > target_frame_count) {
+      current_frame_count -= frames_it.FrameFunctionCount();
+      frames_it.Advance();
+    }
+    DCHECK(current_frame_count == target_frame_count);
+    // Set frame to what it was at Step break
+    thread_local_.break_frame_id_ = frames_it.frame()->id();
+
     // Reset the previous step action for this thread.
     PrepareStep(thread_local_.last_step_action_);
   }
@@ -437,12 +449,14 @@ void Debug::Break(JavaScriptFrame* frame, Handle<JSFunction> break_target) {
   MaybeHandle<FixedArray> break_points_hit =
       CheckBreakPoints(debug_info, &location);
   if (!break_points_hit.is_null() || break_on_next_function_call()) {
+    StepAction lastStepAction = last_step_action();
     // Clear all current stepping setup.
     ClearStepping();
     // Notify the debug event listeners.
     OnDebugBreak(!break_points_hit.is_null()
                      ? break_points_hit.ToHandleChecked()
-                     : isolate_->factory()->empty_fixed_array());
+                     : isolate_->factory()->empty_fixed_array(),
+                 lastStepAction);
     return;
   }
 
@@ -503,12 +517,13 @@ void Debug::Break(JavaScriptFrame* frame, Handle<JSFunction> break_target) {
     }
   }
 
+  StepAction lastStepAction = last_step_action();
   // Clear all current stepping setup.
   ClearStepping();
 
   if (step_break) {
     // Notify the debug event listeners.
-    OnDebugBreak(isolate_->factory()->empty_fixed_array());
+    OnDebugBreak(isolate_->factory()->empty_fixed_array(), lastStepAction);
   } else {
     // Re-prepare to continue.
     PrepareStep(step_action);
@@ -820,7 +835,10 @@ void Debug::ClearAllBreakPoints() {
       HeapObject raw_wasm_script;
       if (wasm_scripts_with_breakpoints_->Get(idx).GetHeapObject(
               &raw_wasm_script)) {
-        WasmScript::ClearAllBreakpoints(Script::cast(raw_wasm_script));
+        Script wasm_script = Script::cast(raw_wasm_script);
+        WasmScript::ClearAllBreakpoints(wasm_script);
+        wasm_script.wasm_native_module()->GetDebugInfo()->RemoveIsolate(
+            isolate_);
       }
     }
     wasm_scripts_with_breakpoints_ = Handle<WeakArrayList>{};
@@ -977,7 +995,7 @@ void Debug::PrepareStepOnThrow() {
         // If it only contains one function, we already found the handler.
         if (summaries.size() > 1) {
           Handle<AbstractCode> code = summary.AsJavaScript().abstract_code();
-          CHECK_EQ(AbstractCode::INTERPRETED_FUNCTION, code->kind());
+          CHECK_EQ(CodeKind::INTERPRETED_FUNCTION, code->kind());
           HandlerTable table(code->GetBytecodeArray());
           int code_offset = summary.code_offset();
           HandlerTable::CatchPrediction prediction;
@@ -1023,7 +1041,7 @@ void Debug::PrepareStep(StepAction step_action) {
   thread_local_.last_step_action_ = step_action;
 
   StackTraceFrameIterator frames_it(isolate_, frame_id);
-  StandardFrame* frame = frames_it.frame();
+  CommonFrame* frame = frames_it.frame();
 
   BreakLocation location = BreakLocation::Invalid();
   Handle<SharedFunctionInfo> shared;
@@ -1309,7 +1327,8 @@ void Debug::InstallDebugBreakTrampoline() {
         }
       } else if (obj.IsJSObject()) {
         JSObject object = JSObject::cast(obj);
-        DescriptorArray descriptors = object.map().instance_descriptors();
+        DescriptorArray descriptors =
+            object.map().instance_descriptors(kRelaxedLoad);
 
         for (InternalIndex i : object.map().IterateOwnDescriptors()) {
           if (descriptors.GetDetails(i).kind() == PropertyKind::kAccessor) {
@@ -1425,7 +1444,7 @@ bool Debug::GetPossibleBreakpoints(Handle<Script> script, int start_position,
 
     bool was_compiled = false;
     for (const auto& candidate : candidates) {
-      IsCompiledScope is_compiled_scope(candidate->is_compiled_scope());
+      IsCompiledScope is_compiled_scope(candidate->is_compiled_scope(isolate_));
       if (!is_compiled_scope.is_compiled()) {
         // Code that cannot be compiled lazily are internal and not debuggable.
         DCHECK(candidate->allows_lazy_compilation());
@@ -1530,7 +1549,7 @@ Handle<Object> Debug::FindSharedFunctionInfoInScript(Handle<Script> script,
       shared = finder.Result();
       if (shared.is_null()) break;
       // We found it if it's already compiled.
-      is_compiled_scope = shared.is_compiled_scope();
+      is_compiled_scope = shared.is_compiled_scope(isolate_);
       if (is_compiled_scope.is_compiled()) {
         Handle<SharedFunctionInfo> shared_handle(shared, isolate_);
         // If the iteration count is larger than 1, we had to compile the outer
@@ -1564,7 +1583,7 @@ bool Debug::EnsureBreakInfo(Handle<SharedFunctionInfo> shared) {
   if (!shared->IsSubjectToDebugging() && !CanBreakAtEntry(shared)) {
     return false;
   }
-  IsCompiledScope is_compiled_scope = shared->is_compiled_scope();
+  IsCompiledScope is_compiled_scope = shared->is_compiled_scope(isolate_);
   if (!is_compiled_scope.is_compiled() &&
       !Compiler::Compile(shared, Compiler::CLEAR_EXCEPTION,
                          &is_compiled_scope)) {
@@ -1685,7 +1704,8 @@ void Debug::FreeDebugInfoListNode(DebugInfoListNode* prev,
   // Pack script back into the
   // SFI::script_or_debug_info field.
   Handle<DebugInfo> debug_info(node->debug_info());
-  debug_info->shared().set_script_or_debug_info(debug_info->script());
+  debug_info->shared().set_script_or_debug_info(debug_info->script(),
+                                                kReleaseStore);
 
   delete node;
 }
@@ -1824,7 +1844,12 @@ void Debug::OnException(Handle<Object> exception, Handle<Object> promise,
                         Just(ShouldThrow::kThrowOnError))
         .Assert();
     // Check whether the promise reject is considered an uncaught exception.
-    uncaught = !isolate_->PromiseHasUserDefinedRejectHandler(jspromise);
+    if (jspromise->IsJSPromise()) {
+      uncaught = !isolate_->PromiseHasUserDefinedRejectHandler(
+          Handle<JSPromise>::cast(jspromise));
+    } else {
+      uncaught = true;
+    }
   }
 
   if (!debug_delegate_) return;
@@ -1863,7 +1888,8 @@ void Debug::OnException(Handle<Object> exception, Handle<Object> promise,
       v8::Utils::ToLocal(promise), uncaught, exception_type);
 }
 
-void Debug::OnDebugBreak(Handle<FixedArray> break_points_hit) {
+void Debug::OnDebugBreak(Handle<FixedArray> break_points_hit,
+                         StepAction lastStepAction) {
   DCHECK(!break_points_hit.is_null());
   // The caller provided for DebugScope.
   AssertDebugContext();
@@ -1878,6 +1904,13 @@ void Debug::OnDebugBreak(Handle<FixedArray> break_points_hit) {
   DCHECK(in_debug_scope());
   HandleScope scope(isolate_);
   DisableBreak no_recursive_break(this);
+
+  if ((lastStepAction == StepAction::StepNext ||
+       lastStepAction == StepAction::StepIn) &&
+      ShouldBeSkipped()) {
+    PrepareStep(lastStepAction);
+    return;
+  }
 
   std::vector<int> inspector_break_points_hit;
   int inspector_break_points_count = 0;
@@ -1932,6 +1965,27 @@ bool Debug::IsBlackboxed(Handle<SharedFunctionInfo> shared) {
   return debug_info->debug_is_blackboxed();
 }
 
+bool Debug::ShouldBeSkipped() {
+  SuppressDebug while_processing(this);
+  PostponeInterruptsScope no_interrupts(isolate_);
+  DisableBreak no_recursive_break(this);
+
+  StackTraceFrameIterator iterator(isolate_);
+  CommonFrame* frame = iterator.frame();
+  FrameSummary summary = FrameSummary::GetTop(frame);
+  Handle<Object> script_obj = summary.script();
+  if (!script_obj->IsScript()) return false;
+
+  Handle<Script> script = Handle<Script>::cast(script_obj);
+  summary.EnsureSourcePositionsAvailable();
+  int source_position = summary.SourcePosition();
+  int line = Script::GetLineNumber(script, source_position);
+  int column = Script::GetColumnNumber(script, source_position);
+
+  return debug_delegate_->ShouldBeSkipped(ToApiHandle<debug::Script>(script),
+                                          line, column);
+}
+
 bool Debug::AllFramesOnStackAreBlackboxed() {
   HandleScope scope(isolate_);
   for (StackTraceFrameIterator it(isolate_); !it.done(); it.Advance()) {
@@ -1970,6 +2024,8 @@ void Debug::OnAfterCompile(Handle<Script> script) {
 }
 
 void Debug::ProcessCompileEvent(bool has_compile_error, Handle<Script> script) {
+  // Ignore temporary scripts.
+  if (script->id() == Script::kTemporaryScriptId) return;
   // TODO(kozyatinskiy): teach devtools to work with liveedit scripts better
   // first and then remove this fast return.
   if (running_live_edit_) return;
@@ -1998,15 +2054,8 @@ int Debug::CurrentFrameCount() {
     while (!it.done() && it.frame()->id() != break_frame_id()) it.Advance();
   }
   int counter = 0;
-  while (!it.done()) {
-    if (it.frame()->is_optimized()) {
-      std::vector<SharedFunctionInfo> infos;
-      OptimizedFrame::cast(it.frame())->GetFunctions(&infos);
-      counter += infos.size();
-    } else {
-      counter++;
-    }
-    it.Advance();
+  for (; !it.done(); it.Advance()) {
+    counter += it.FrameFunctionCount();
   }
   return counter;
 }
@@ -2071,13 +2120,15 @@ void Debug::HandleDebugBreak(IgnoreBreakMode ignore_break_mode) {
     }
   }
 
+  StepAction lastStepAction = last_step_action();
+
   // Clear stepping to avoid duplicate breaks.
   ClearStepping();
 
   HandleScope scope(isolate_);
   DebugScope debug_scope(this);
 
-  OnDebugBreak(isolate_->factory()->empty_fixed_array());
+  OnDebugBreak(isolate_->factory()->empty_fixed_array(), lastStepAction);
 }
 
 #ifdef DEBUG
@@ -2086,7 +2137,7 @@ void Debug::PrintBreakLocation() {
   HandleScope scope(isolate_);
   StackTraceFrameIterator iterator(isolate_);
   if (iterator.done()) return;
-  StandardFrame* frame = iterator.frame();
+  CommonFrame* frame = iterator.frame();
   FrameSummary summary = FrameSummary::GetTop(frame);
   summary.EnsureSourcePositionsAvailable();
   int source_position = summary.SourcePosition();
@@ -2269,7 +2320,8 @@ bool Debug::PerformSideEffectCheck(Handle<JSFunction> function,
                                    Handle<Object> receiver) {
   DCHECK_EQ(isolate_->debug_execution_mode(), DebugInfo::kSideEffects);
   DisallowJavascriptExecution no_js(isolate_);
-  IsCompiledScope is_compiled_scope(function->shared().is_compiled_scope());
+  IsCompiledScope is_compiled_scope(
+      function->shared().is_compiled_scope(isolate_));
   if (!function->is_compiled() &&
       !Compiler::Compile(function, Compiler::KEEP_EXCEPTION,
                          &is_compiled_scope)) {
@@ -2327,7 +2379,7 @@ bool Debug::PerformSideEffectCheckForCallback(
   // TODO(7515): always pass a valid callback info object.
   if (!callback_info.is_null()) {
     if (callback_info->IsAccessorInfo()) {
-      // List of whitelisted internal accessors can be found in accessors.h.
+      // List of allowlisted internal accessors can be found in accessors.h.
       AccessorInfo info = AccessorInfo::cast(*callback_info);
       DCHECK_NE(kNotAccessor, accessor_kind);
       switch (accessor_kind == kSetter ? info.setter_side_effect_type()

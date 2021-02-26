@@ -112,7 +112,7 @@ const addSubmitButtonTouchEndHandler = function(form) {
  */
 const onSubmitButtonTouchEnd = function(evt) {
   const form = evt.currentTarget.form;
-  const formData = __gCrWeb.passwords.getPasswordFormData(form);
+  const formData = __gCrWeb.passwords.getPasswordFormData(form, window);
   if (!formData) {
     return;
   }
@@ -128,7 +128,7 @@ const onSubmitButtonTouchEnd = function(evt) {
  * @return {HTMLInputElement}
  */
 const findInputByUniqueFieldId = function(inputs, identifier) {
-  const uniqueID = Symbol.for('__gChrome~uniqueID');
+  const uniqueID = Symbol.for(__gCrWeb.fill.UNIQUE_ID_SYMBOL_NAME);
   for (let i = 0; i < inputs.length; ++i) {
     if (identifier === inputs[i][uniqueID]) {
       return inputs[i];
@@ -181,7 +181,7 @@ __gCrWeb.passwords['getPasswordFormDataAsString'] = function(identifier) {
   if (!el) {
     return '{}';
   }
-  const formData = __gCrWeb.passwords.getPasswordFormData(el);
+  const formData = __gCrWeb.passwords.getPasswordFormData(el, window);
   if (!formData) {
     return '{}';
   }
@@ -225,11 +225,15 @@ __gCrWeb.passwords['fillPasswordForm'] = function(
 __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
     formIdentifier, newPasswordIdentifier, confirmPasswordIdentifier,
     password) {
+  const hasFormTag =
+      formIdentifier.toString() !== __gCrWeb.fill.RENDERER_ID_NOT_SET;
   const form = __gCrWeb.form.getFormElementFromUniqueFormId(formIdentifier);
-  if (!form) {
+  if (!form && hasFormTag) {
     return false;
   }
-  const inputs = getFormInputElements(form);
+  const inputs = hasFormTag ?
+      getFormInputElements(form) :
+      __gCrWeb.fill.getUnownedAutofillableFormFieldElements(document.all, []);
   const newPasswordField =
       findInputByUniqueFieldId(inputs, newPasswordIdentifier);
   if (!newPasswordField) {
@@ -341,7 +345,7 @@ const getPasswordFormDataList = function(formDataList, win) {
   const doc = win.document;
   const forms = doc.forms;
   for (let i = 0; i < forms.length; i++) {
-    const formData = __gCrWeb.passwords.getPasswordFormData(forms[i]);
+    const formData = __gCrWeb.passwords.getPasswordFormData(forms[i], win);
     if (formData) {
       formDataList.push(formData);
       addSubmitButtonTouchEndHandler(forms[i]);
@@ -384,13 +388,14 @@ function getPasswordFormDataFromUnownedElements_(formDataList, window) {
 /**
  * Returns a JS object containing the data from |formElement|.
  * @param {HTMLFormElement} formElement An HTML Form element.
+ * @param {Window} win A window or a frame containing formData.
  * @return {Object} Object of data from formElement.
  */
-__gCrWeb.passwords.getPasswordFormData = function(formElement) {
+__gCrWeb.passwords.getPasswordFormData = function(formElement, win) {
   const extractMask = __gCrWeb.fill.EXTRACT_MASK_VALUE;
   const formData = {};
   const ok = __gCrWeb.fill.webFormElementToFormData(
-      window, formElement, null /* formControlElement */, extractMask, formData,
+      win, formElement, null /* formControlElement */, extractMask, formData,
       null /* field */);
   return ok ? formData : null;
 };

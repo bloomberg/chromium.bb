@@ -12,7 +12,8 @@
 #include "components/viz/common/viz_vulkan_context_provider_export.h"
 #include "third_party/vulkan_headers/include/vulkan/vulkan.h"
 
-class GrContext;
+struct GrContextOptions;
+class GrDirectContext;
 class GrVkSecondaryCBDrawContext;
 
 namespace gpu {
@@ -26,9 +27,10 @@ namespace viz {
 class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanContextProvider
     : public base::RefCountedThreadSafe<VulkanContextProvider> {
  public:
+  virtual bool InitializeGrContext(const GrContextOptions& context_options) = 0;
   virtual gpu::VulkanImplementation* GetVulkanImplementation() = 0;
   virtual gpu::VulkanDeviceQueue* GetDeviceQueue() = 0;
-  virtual GrContext* GetGrContext() = 0;
+  virtual GrDirectContext* GetGrContext() = 0;
 
   // Get the current SecondaryCBDrawContext for the default render target.
   virtual GrVkSecondaryCBDrawContext* GetGrSecondaryCBDrawContext() = 0;
@@ -41,6 +43,13 @@ class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanContextProvider
   // Enqueue task which will be executed after the GrSecondaryCB and post submit
   // semphores are submitted.
   virtual void EnqueueSecondaryCBPostSubmitTask(base::OnceClosure closure) = 0;
+
+  // Returns a valid limit in MB if there is a memory limit where GPU work
+  // should be synchronized with the CPU in order to free previously released
+  // memory immediately. In other words, the CPU will wait for GPU work to
+  // complete before proceeding when the current amount of allocated memory
+  // exceeds this limit.
+  virtual base::Optional<uint32_t> GetSyncCpuMemoryLimit() const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<VulkanContextProvider>;

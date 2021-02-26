@@ -60,6 +60,12 @@ namespace dawn_native { namespace vulkan {
                 return "VK_ERROR_FORMAT_NOT_SUPPORTED";
             case VK_ERROR_FRAGMENTED_POOL:
                 return "VK_ERROR_FRAGMENTED_POOL";
+
+            case VK_ERROR_SURFACE_LOST_KHR:
+                return "VK_ERROR_SURFACE_LOST_KHR";
+            case VK_ERROR_NATIVE_WINDOW_IN_USE_KHR:
+                return "VK_ERROR_NATIVE_WINDOW_IN_USE_KHR";
+
             case VK_FAKE_DEVICE_OOM_FOR_TESTING:
                 return "VK_FAKE_DEVICE_OOM_FOR_TESTING";
             case VK_FAKE_ERROR_FOR_TESTING:
@@ -90,7 +96,8 @@ namespace dawn_native { namespace vulkan {
 
         std::string message = std::string(context) + " failed with " + VkResultAsString(result);
 
-        if (result == VK_ERROR_OUT_OF_DEVICE_MEMORY || result == VK_FAKE_DEVICE_OOM_FOR_TESTING) {
+        if (result == VK_ERROR_OUT_OF_DEVICE_MEMORY || result == VK_ERROR_OUT_OF_HOST_MEMORY ||
+            result == VK_FAKE_DEVICE_OOM_FOR_TESTING) {
             return DAWN_OUT_OF_MEMORY_ERROR(message);
         } else if (result == VK_ERROR_DEVICE_LOST) {
             return DAWN_DEVICE_LOST_ERROR(message);

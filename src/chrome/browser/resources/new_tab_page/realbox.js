@@ -7,11 +7,12 @@ import './realbox_dropdown.js';
 import './realbox_icon.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {skColorToRgba} from 'chrome://resources/js/color_utils.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
-import {decodeString16, mojoString16, mojoTimeDelta, skColorToRgba} from './utils.js';
+import {decodeString16, mojoString16, mojoTimeDelta} from './utils.js';
 
 /** @typedef {{text: string, inline: string,}} */
 let Input;
@@ -313,6 +314,16 @@ class RealboxElement extends PolymerElement {
   //============================================================================
   // Event handlers
   //============================================================================
+
+  /**
+   * @private
+   */
+  onHeaderFocusin_() {
+    // The header got focus. Unselect the selected match and clear the input.
+    assert(this.lastQueriedInput_ === '');
+    this.$.matches.unselect();
+    this.updateInput_({text: '', inline: ''});
+  }
 
   /**
    * @param {!Event} e

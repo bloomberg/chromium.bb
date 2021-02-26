@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/safe_browsing/password_reuse_modal_warning_dialog.h"
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -14,7 +14,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -88,11 +87,7 @@ base::string16 GetOkButtonLabel(
     case safe_browsing::ReusedPasswordAccountType::NON_GAIA_ENTERPRISE:
       return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON);
     case safe_browsing::ReusedPasswordAccountType::SAVED_PASSWORD:
-      if (base::FeatureList::IsEnabled(
-              password_manager::features::kPasswordCheck)) {
-        return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHECK_PASSWORDS_BUTTON);
-      }
-      return l10n_util::GetStringUTF16(IDS_CLOSE);
+      return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHECK_PASSWORDS_BUTTON);
     default:
       return l10n_util::GetStringUTF16(IDS_PAGE_INFO_PROTECT_ACCOUNT_BUTTON);
   }
@@ -126,11 +121,10 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
       password_type_(password_type) {
   bool show_check_passwords = false;
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  show_check_passwords = base::FeatureList::IsEnabled(
-                             password_manager::features::kPasswordCheck) &&
-                         password_type_.account_type() ==
-                             ReusedPasswordAccountType::SAVED_PASSWORD;
+  show_check_passwords = password_type_.account_type() ==
+                         ReusedPasswordAccountType::SAVED_PASSWORD;
 #endif
+  SetShowIcon(true);
   if (password_type.account_type() !=
           ReusedPasswordAccountType::SAVED_PASSWORD ||
       show_check_passwords) {
@@ -208,7 +202,8 @@ void PasswordReuseModalWarningDialog::
 
   // Bold the domains in the message body label.
   views::StyledLabel* const styled_message_body_label =
-      new views::StyledLabel(message_body, nullptr);
+      content->AddChildView(std::make_unique<views::StyledLabel>());
+  styled_message_body_label->SetText(message_body);
   views::StyledLabel::RangeStyleInfo bold_style;
   bold_style.text_style = STYLE_EMPHASIZED;
   for (size_t idx = 0; idx < placeholder_offsets.size(); idx++) {
@@ -218,7 +213,6 @@ void PasswordReuseModalWarningDialog::
         bold_style);
   }
   styled_message_body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  content->AddChildView(std::move(styled_message_body_label));
   AddChildView(std::move(illustration));
   AddChildView(std::move(content));
 }
@@ -274,10 +268,6 @@ gfx::ImageSkia PasswordReuseModalWarningDialog::GetWindowIcon() {
                    ChromeLayoutProvider::Get()->GetDistanceMetric(
                        DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE),
                    gfx::kChromeIconGrey);
-}
-
-bool PasswordReuseModalWarningDialog::ShouldShowWindowIcon() const {
-  return true;
 }
 
 void PasswordReuseModalWarningDialog::OnGaiaPasswordChanged() {

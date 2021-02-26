@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <array>
 #include <cstring>
 #include <memory>
 #include <string>
@@ -91,6 +92,7 @@ struct TextToDisplayIndex {
 };
 using TextToDisplaySequence = std::vector<TextToDisplayIndex>;
 using GraphemeIterator = TextToDisplaySequence::const_iterator;
+using StyleArray = std::array<BreakList<bool>, TEXT_STYLE_COUNT>;
 
 // Internal helper class used to iterate colors, baselines, and styles.
 class StyleIterator {
@@ -99,7 +101,7 @@ class StyleIterator {
                 const BreakList<BaselineStyle>* baselines,
                 const BreakList<int>* font_size_overrides,
                 const BreakList<Font::Weight>* weights,
-                const std::vector<BreakList<bool>>* styles);
+                const StyleArray* styles);
   StyleIterator(const StyleIterator& style);
   ~StyleIterator();
   StyleIterator& operator=(const StyleIterator& style);
@@ -128,13 +130,13 @@ class StyleIterator {
   const BreakList<BaselineStyle>* baselines_;
   const BreakList<int>* font_size_overrides_;
   const BreakList<Font::Weight>* weights_;
-  const std::vector<BreakList<bool>>* styles_;
+  const StyleArray* styles_;
 
   BreakList<SkColor>::const_iterator color_;
   BreakList<BaselineStyle>::const_iterator baseline_;
   BreakList<int>::const_iterator font_size_override_;
   BreakList<Font::Weight>::const_iterator weight_;
-  std::vector<BreakList<bool>::const_iterator> style_;
+  std::array<BreakList<bool>::const_iterator, TEXT_STYLE_COUNT> style_;
 };
 
 // Line segments are slices of the display text to be rendered on a single line.
@@ -172,6 +174,9 @@ struct Line {
 
   // Maximum baseline of all segments on this line.
   int baseline;
+
+  // The text index of this line in |text_|.
+  int display_text_index = 0;
 };
 
 // Internal class that contains the results of the text layout and shaping.
@@ -205,7 +210,7 @@ void ApplyRenderParams(const FontRenderParams& params,
 // for rendering and translation between logical and visual data.
 class GFX_EXPORT RenderText {
  public:
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On Mac, while selecting text if the cursor is outside the vertical text
   // bounds, drag to the end of the text.
   static constexpr bool kDragToEndIfOutsideVerticalBounds = true;
@@ -216,6 +221,19 @@ class GFX_EXPORT RenderText {
   static constexpr bool kDragToEndIfOutsideVerticalBounds = false;
   static constexpr bool kSelectionIsAlwaysDirected = true;
 #endif
+
+  // Default color used for the text and cursor.
+  static constexpr SkColor kDefaultColor = SK_ColorBLACK;
+
+  // Default color used for drawing selection background.
+  static constexpr SkColor kDefaultSelectionBackgroundColor = SK_ColorGRAY;
+
+  // Invalid value of baseline.  Assigning this value to |baseline_| causes
+  // re-calculation of baseline.
+  static constexpr int kInvalidBaseline = INT_MAX;
+
+  // Default fraction of the text size to use for a strike-through or underline.
+  static constexpr SkScalar kLineThicknessFactor = (SK_Scalar1 / 18);
 
   // The character used for displaying obscured text. Use a bullet character.
   // TODO(pbos): This is highly font dependent, consider replacing the character
@@ -297,6 +315,10 @@ class GFX_EXPORT RenderText {
 
   // Returns the actual number of lines, broken by |lines_|.
   size_t GetNumLines();
+
+  // Returns the text index of the given line |line|. Returns the text length
+  // for any |line| above the number of lines.
+  size_t GetTextIndexOfLine(size_t line);
 
   // TODO(mukai): ELIDE_LONG_WORDS is not supported.
   WordWrapBehavior word_wrap_behavior() const { return word_wrap_behavior_; }
@@ -434,6 +456,8 @@ class GFX_EXPORT RenderText {
   DirectionalityMode directionality_mode() const {
     return directionality_mode_;
   }
+
+  base::i18n::TextDirection GetTextDirection() const;
   base::i18n::TextDirection GetDisplayTextDirection();
 
   // Returns the visual movement direction corresponding to the logical
@@ -460,7 +484,7 @@ class GFX_EXPORT RenderText {
   virtual SizeF GetStringSizeF() = 0;
 
   // Returns the size of the line containing |caret|.
-  virtual Size GetLineSize(const SelectionModel& caret) = 0;
+  virtual SizeF GetLineSizeF(const SelectionModel& caret) = 0;
 
   // Returns the sum of all the line widths.
   float TotalLineWidth();
@@ -539,15 +563,14 @@ class GFX_EXPORT RenderText {
   void set_shadows(const ShadowValues& shadows) { shadows_ = shadows; }
   const ShadowValues& shadows() const { return shadows_; }
 
-  // Returns rectangle surrounding the current string (from origin to size)
-  RectF GetStringRect();
-
   // Get the visual bounds containing the logical substring within the |range|.
-  // If |range| is empty, the result is empty. These bounds could be visually
-  // discontinuous if the substring is split by a LTR/RTL level change.
-  // These bounds are in local coordinates, but may be outside the visible
-  // region if the text is longer than the textfield. Subsequent text, cursor,
-  // or bounds changes may invalidate returned values.
+  // If |range| is empty, the result is empty. This method rounds internally so
+  // the returned bounds may be slightly larger than the |range|, but are
+  // guaranteed not to be smaller. These bounds could be visually discontinuous
+  // if the substring is split by a LTR/RTL level change. These bounds are in
+  // local coordinates, but may be outside the visible region if the text is
+  // larger than the available space. Subsequent text, cursor, or bounds changes
+  // may invalidate returned values.
   virtual std::vector<Rect> GetSubstringBounds(const Range& range) = 0;
 
   // Gets the horizontal span (relative to the left of the text, not the view)
@@ -632,7 +655,7 @@ class GFX_EXPORT RenderText {
     return font_size_overrides_;
   }
   const BreakList<Font::Weight>& weights() const { return weights_; }
-  const std::vector<BreakList<bool>>& styles() const { return styles_; }
+  const internal::StyleArray& styles() const { return styles_; }
   SkScalar strike_thickness_factor() const { return strike_thickness_factor_; }
 
   const BreakList<SkColor>& layout_colors() const { return layout_colors_; }
@@ -730,7 +753,7 @@ class GFX_EXPORT RenderText {
 
   // Draw all text and make the given ranges appear selected.
   virtual void DrawVisualText(internal::SkiaTextRenderer* renderer,
-                              const std::vector<Range> selections) = 0;
+                              const std::vector<Range>& selections) = 0;
 
   // Update the display text.
   void UpdateDisplayText(float text_width);
@@ -756,7 +779,8 @@ class GFX_EXPORT RenderText {
 
   // Get the text direction for the current directionality mode and given
   // |text|.
-  base::i18n::TextDirection GetTextDirection(const base::string16& text);
+  base::i18n::TextDirection GetTextDirectionForGivenText(
+      const base::string16& text) const;
 
   // Adjust ranged styles to accommodate a new |text_| length.
   void UpdateStyleLengths();
@@ -784,6 +808,10 @@ class GFX_EXPORT RenderText {
   static gfx::Rect ExpandToBeVerticallySymmetric(const gfx::Rect& rect,
                                                  const gfx::Rect& display_rect);
 
+  // Given |rects|, sort them along the x-axis and merge intersecting rects
+  // using union. Expects all selections in the text to be from the same line.
+  static void MergeIntersectingRects(std::vector<Rect>& rects);
+
   // Resets |cached_cursor_x_| to null. When non-null, CURSOR_UP, CURSOR_DOWN
   // movements use this value instead of the current cursor x position to
   // determine the next cursor x position.
@@ -794,6 +822,8 @@ class GFX_EXPORT RenderText {
 
   // Fixed width of glyphs. This should only be set in test environments.
   float glyph_width_for_test_ = 0;
+  // Fixed height of glyphs. This should only be set in test environments.
+  float glyph_height_for_test_ = 0;
 
  private:
   friend class test::RenderTextTestApi;
@@ -821,7 +851,7 @@ class GFX_EXPORT RenderText {
   void UpdateCachedBoundsAndOffset();
 
   // Draws the specified ranges of text with a selected appearance.
-  void DrawSelections(Canvas* canvas, const std::vector<Range> selections);
+  void DrawSelections(Canvas* canvas, const std::vector<Range>& selections);
 
   // Returns a grapheme iterator that contains the codepoint at |index|.
   internal::GraphemeIterator GetGraphemeIteratorAtIndex(
@@ -847,28 +877,35 @@ class GFX_EXPORT RenderText {
   virtual bool GetDecoratedTextForRange(const Range& range,
                                         DecoratedText* decorated_text) = 0;
 
-  // Specify the width of a glyph for test. The width of glyphs is very
-  // platform-dependent and environment-dependent. Otherwise multiline text
+  // Specify the width/height of a glyph for test. The width/height of glyphs is
+  // very platform-dependent and environment-dependent. Otherwise multiline text
   // will become really flaky.
   void set_glyph_width_for_test(float width) { glyph_width_for_test_ = width; }
+  void set_glyph_height_for_test(float height) {
+    glyph_height_for_test_ = height;
+  }
 
   // Logical UTF-16 string data to be drawn.
   base::string16 text_;
 
   // Horizontal alignment of the text with respect to |display_rect_|.  The
   // default is to align left if the application UI is LTR and right if RTL.
-  HorizontalAlignment horizontal_alignment_;
+  HorizontalAlignment horizontal_alignment_{base::i18n::IsRTL() ? ALIGN_RIGHT
+                                                                : ALIGN_LEFT};
 
   // Vertical alignment of the text with respect to |display_rect_|. Only
   // applicable when |multiline_| is true. The default is to align center.
-  VerticalAlignment vertical_alignment_;
+  VerticalAlignment vertical_alignment_ = ALIGN_MIDDLE;
 
   // The text directionality mode, defaults to DIRECTIONALITY_FROM_TEXT.
-  DirectionalityMode directionality_mode_;
+  DirectionalityMode directionality_mode_ = DIRECTIONALITY_FROM_TEXT;
 
   // The cached text direction, potentially computed from the text or UI locale.
   // Use GetTextDirection(), do not use this potentially invalid value directly!
-  base::i18n::TextDirection text_direction_;
+  mutable base::i18n::TextDirection text_direction_ =
+      base::i18n::UNKNOWN_DIRECTION;
+  mutable base::i18n::TextDirection display_text_direction_ =
+      base::i18n::UNKNOWN_DIRECTION;
 
   // A list of fonts used to render |text_|.
   FontList font_list_;
@@ -881,19 +918,20 @@ class GFX_EXPORT RenderText {
 
   // Specifies whether the cursor is enabled. If disabled, no space is reserved
   // for the cursor when positioning text.
-  bool cursor_enabled_;
+  bool cursor_enabled_ = true;
 
   // Whether the current selection has a known direction. That is, whether a
   // directional input (e.g. arrow key) has been received for the current
   // selection to indicate which end of the selection has the caret. When true,
   // directed inputs preserve (rather than replace) the selection affinity.
-  bool has_directed_selection_;
+  bool has_directed_selection_ = kSelectionIsAlwaysDirected;
 
   // The color used for drawing selected text.
-  SkColor selection_color_;
+  SkColor selection_color_ = kDefaultColor;
 
   // The background color used for drawing the selection when focused.
-  SkColor selection_background_focused_color_;
+  SkColor selection_background_focused_color_ =
+      kDefaultSelectionBackgroundColor;
 
   // Whether the selection visual bounds should be expanded vertically to be
   // vertically symmetric with respect to the display rect. Note this flag has
@@ -901,25 +939,25 @@ class GFX_EXPORT RenderText {
   bool symmetric_selection_visual_bounds_ = false;
 
   // The focus state of the text.
-  bool focused_;
+  bool focused_ = false;
 
   // Composition text range.
-  Range composition_range_;
+  Range composition_range_ = Range::InvalidRange();
 
   // Color, baseline, and style breaks, used to modify ranges of text.
   // BreakList positions are stored with text indices, not display indices.
   // TODO(msw): Expand to support cursor, selection, background, etc. colors.
-  BreakList<SkColor> colors_;
-  BreakList<BaselineStyle> baselines_;
-  BreakList<int> font_size_overrides_;
-  BreakList<Font::Weight> weights_;
-  std::vector<BreakList<bool>> styles_;
+  BreakList<SkColor> colors_{kDefaultColor};
+  BreakList<BaselineStyle> baselines_{NORMAL_BASELINE};
+  BreakList<int> font_size_overrides_{0};
+  BreakList<Font::Weight> weights_{Font::Weight::NORMAL};
+  internal::StyleArray styles_;
 
   mutable BreakList<SkColor> layout_colors_;
   mutable BreakList<BaselineStyle> layout_baselines_;
   mutable BreakList<int> layout_font_size_overrides_;
   mutable BreakList<Font::Weight> layout_weights_;
-  mutable std::vector<BreakList<bool>> layout_styles_;
+  mutable internal::StyleArray layout_styles_;
 
   // A mapping from text to display text indices for each grapheme. The vector
   // contains an ordered sequence of indice pairs. Both sequence |text_index|
@@ -927,12 +965,12 @@ class GFX_EXPORT RenderText {
   mutable internal::TextToDisplaySequence text_to_display_indices_;
 
   // A flag to obscure actual text with asterisks for password fields.
-  bool obscured_;
+  bool obscured_ = false;
   // The index at which the char should be revealed in the obscured text.
-  int obscured_reveal_index_;
+  int obscured_reveal_index_ = -1;
 
   // The maximum length of text to display, 0 forgoes a hard limit.
-  size_t truncate_length_;
+  size_t truncate_length_ = 0;
 
   // The obscured and/or truncated text used to layout the text to display.
   mutable base::string16 layout_text_;
@@ -945,31 +983,31 @@ class GFX_EXPORT RenderText {
   mutable base::string16 display_text_;
 
   // The behavior for eliding, fading, or truncating.
-  ElideBehavior elide_behavior_;
+  ElideBehavior elide_behavior_ = NO_ELIDE;
 
   // The behavior for eliding whitespace when eliding or truncating.
-  base::Optional<bool> whitespace_elision_ = base::nullopt;
+  base::Optional<bool> whitespace_elision_;
 
   // True if the text is elided given the current behavior and display area.
-  bool text_elided_;
+  bool text_elided_ = false;
 
   // The minimum height a line should have.
-  int min_line_height_;
+  int min_line_height_ = 0;
 
   // Whether the text should be broken into multiple lines. Uses the width of
   // |display_rect_| as the width cap.
-  bool multiline_;
+  bool multiline_ = false;
 
   // If multiple lines, the maximum number of lines to render, or 0.
-  size_t max_lines_;
+  size_t max_lines_ = 0;
 
   // The wrap behavior when the text is broken into lines. Do nothing unless
   // |multiline_| is set. The default value is IGNORE_LONG_WORDS.
-  WordWrapBehavior word_wrap_behavior_;
+  WordWrapBehavior word_wrap_behavior_ = IGNORE_LONG_WORDS;
 
   // Set to true to suppress subpixel rendering due to non-font reasons (eg.
   // if the background is transparent). The default value is false.
-  bool subpixel_rendering_suppressed_;
+  bool subpixel_rendering_suppressed_ = false;
 
   // The local display area for rendering the text.
   Rect display_rect_;
@@ -978,7 +1016,7 @@ class GFX_EXPORT RenderText {
   // that results in incorrect clipping when drawing to the document margins.
   // This field allows disabling clipping to work around the issue.
   // TODO(asvitkine): Remove this when the underlying Skia bug is fixed.
-  bool clip_to_display_rect_;
+  bool clip_to_display_rect_ = true;
 
   // The offset for the text to be drawn, relative to the display area.
   // Get this point with GetUpdatedDisplayOffset (or risk using a stale value).
@@ -987,11 +1025,11 @@ class GFX_EXPORT RenderText {
   // The baseline of the text.  This is determined from the height of the
   // display area and the cap height of the font list so the text is vertically
   // centered.
-  int baseline_;
+  int baseline_ = kInvalidBaseline;
 
   // The cached bounds and offset are invalidated by changes to the cursor,
   // selection, font, and other operations that adjust the visible text bounds.
-  bool cached_bounds_and_offset_valid_;
+  bool cached_bounds_and_offset_valid_ = false;
 
   // Text shadows to be drawn.
   ShadowValues shadows_;
@@ -1004,7 +1042,7 @@ class GFX_EXPORT RenderText {
   std::unique_ptr<internal::ShapedText> shaped_text_;
 
   // The ratio of strike-through line thickness to text height.
-  SkScalar strike_thickness_factor_;
+  SkScalar strike_thickness_factor_ = kLineThicknessFactor;
 
   // Extra spacing placed between glyphs; used only for obscured text styling.
   int obscured_glyph_spacing_ = 0;

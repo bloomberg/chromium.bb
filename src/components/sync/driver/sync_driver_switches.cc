@@ -29,9 +29,6 @@ const char kSyncDisableDeferredStartup[] = "sync-disable-deferred-startup";
 // chrome://sync-internals is enabled.
 const char kSyncIncludeSpecificsInProtocolLog[] = "sync-include-specifics";
 
-// Overrides the default server used for profile sync.
-const char kSyncServiceURL[] = "sync-url";
-
 // This flag causes sync to retry very quickly (see polling_constants.h) the
 // when it encounters an error, as the first step towards exponential backoff.
 const char kSyncShortInitialRetryOverride[] =
@@ -43,29 +40,44 @@ const char kSyncShortInitialRetryOverride[] =
 // sure that it's what you want.
 const char kSyncShortNudgeDelayForTest[] = "sync-short-nudge-delay-for-test";
 
+// If enabled, the sync engine will be shut down in the "paused" state.
+const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Allows custom passphrase users to receive Wallet data for secondary accounts
 // while in transport-only mode.
 const base::Feature kSyncAllowWalletDataInTransportModeWithCustomPassphrase{
     "SyncAllowAutofillWalletDataInTransportModeWithCustomPassphrase",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, the sync engine will be shut down in the "paused" state.
-const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable USS implementation of Nigori datatype.
-const base::Feature kSyncUSSNigori{"SyncUSSNigori",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
+// Controls whether to enable syncing of Autofill Wallet offer data.
+const base::Feature kSyncAutofillWalletOfferData{
+    "SyncAutofillWalletOfferData", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable syncing of Wi-Fi configurations.
 const base::Feature kSyncWifiConfigurations{"SyncWifiConfigurations",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kSyncDeviceInfoInTransportMode{
-    "SyncDeviceInfoInTransportMode", base::FEATURE_ENABLED_BY_DEFAULT};
+// Stops honoring the Android master sync toggle.
+const base::Feature kDecoupleSyncFromAndroidMasterSync{
+    "DecoupleSyncFromAndroidMasterSync", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the running of backend ProfileSyncService tasks on the ThreadPool.
-const base::Feature kProfileSyncServiceUsesThreadPool{
-    "ProfileSyncServiceUsesThreadPool", base::FEATURE_ENABLED_BY_DEFAULT};
+// Allows trusted vault implementation to follow key rotation (including device
+// registration).
+const base::Feature kFollowTrustedVaultKeyRotation{
+    "FollowTrustedVaultKeyRotation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Sync requires policies to be loaded before starting.
+const base::Feature kSyncRequiresPoliciesLoaded{
+    "SyncRequiresPoliciesLoaded", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Max time to delay the sync startup while waiting for policies to load.
+const base::FeatureParam<base::TimeDelta> kSyncPolicyLoadTimeout{
+    &kSyncRequiresPoliciesLoaded, "SyncPolicyLoadTimeout",
+    base::TimeDelta::FromSeconds(10)};
+
+const base::Feature kSyncSupportTrustedVaultPassphraseRecovery{
+    "SyncSupportTrustedVaultPassphraseRecovery",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace switches

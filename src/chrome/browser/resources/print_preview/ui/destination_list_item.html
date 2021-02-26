@@ -65,13 +65,20 @@
       :host([stale_]) :-webkit-any(iron-icon, .name, .connection-status) {
         opacity: 0.4;
       }
+
+<if expr="chromeos">
+      :host([is-destination-cros-local_]) .connection-status {
+        color: var(--google-red-600);
+      }
+</if>
     </style>
-    <iron-icon icon$="[[destination.icon]]"></iron-icon>
+    <iron-icon icon="[[destinationIcon_]]"></iron-icon>
     <span class="name searchable">[[destination.displayName]]</span>
-    <span class="search-hint searchable">[[searchHint_]]</span>
-    <span class="connection-status"
-        hidden$="[[!destination.isOfflineOrInvalid]]">
-      [[destination.connectionStatusText]]
+    <span class="search-hint searchable" hidden="[[!searchHint_]]">
+      [[searchHint_]]
+    </span>
+    <span class="connection-status" hidden="[[!statusText_]]">
+      [[statusText_]]
     </span>
     <a href="$i18n{gcpCertificateErrorLearnMoreURL}"
         target="_blank" class="learn-more-link"

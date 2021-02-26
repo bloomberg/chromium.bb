@@ -17,8 +17,8 @@ class WebContents;
 // web.Frame.
 class FrameWindowTreeHost : public aura::WindowTreeHostPlatform {
  public:
-  // |web_contents| must to outlive |FrameWindowTreeHost|.
   FrameWindowTreeHost(fuchsia::ui::views::ViewToken view_token,
+                      scenic::ViewRefPair view_ref_pair,
                       content::WebContents* web_contents);
   ~FrameWindowTreeHost() final;
 
@@ -35,9 +35,9 @@ class FrameWindowTreeHost : public aura::WindowTreeHostPlatform {
   void OnActivationChanged(bool active) final;
   void OnWindowStateChanged(ui::PlatformWindowState new_state) final;
 
-  fuchsia::ui::views::ViewRef view_ref_;
+  const fuchsia::ui::views::ViewRef view_ref_;
   std::unique_ptr<WindowParentingClientImpl> window_parenting_client_;
-  content::WebContents* web_contents_;
+  content::WebContents* const web_contents_;
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_FRAME_WINDOW_TREE_HOST_H_

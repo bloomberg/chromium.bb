@@ -9,10 +9,10 @@
 #include <lib/fidl/cpp/binding_set.h>
 #include <lib/fit/function.h>
 #include <lib/sys/cpp/component_context.h>
+#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "fuchsia/runners/common/web_content_runner.h"
@@ -25,9 +25,9 @@ WebComponent::WebComponent(
     : runner_(runner),
       startup_context_(std::move(context)),
       controller_binding_(this),
-      module_context_(startup_context()
-                          ->svc()
-                          ->Connect<fuchsia::modular::ModuleContext>()) {
+      module_context_(
+          startup_context()->svc()->Connect<fuchsia::modular::ModuleContext>()),
+      navigation_listener_binding_(this) {
   DCHECK(runner);
 
   // If the ComponentController request is valid then bind it, and configure it
@@ -65,14 +65,22 @@ void WebComponent::StartComponent() {
   // Create the underlying Frame and get its NavigationController.
   fuchsia::web::CreateFrameParams create_params;
   create_params.set_enable_remote_debugging(enable_remote_debugging_);
-  frame_ = runner_->CreateFrame(std::move(create_params));
+  create_params.set_autoplay_policy(
+      fuchsia::web::AutoplayPolicy::REQUIRE_USER_ACTIVATION);
+  runner_->CreateFrameWithParams(std::move(create_params), frame_.NewRequest());
 
-  // If the Frame unexpectedly disconnect us then tear-down this Component.
+  // If the Frame unexpectedly disconnects then tear-down this Component.
+  // ZX_OK indicates intentional termination (e.g. via window.close()).
+  // ZX_ERR_PEER_CLOSED will usually indicate a crash, reported elsewhere.
+  // Therefore only log other, more unusual, |status| codes.
   frame_.set_error_handler([this](zx_status_t status) {
-    ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
-        << " Frame disconnected";
-    DestroyComponent(0, fuchsia::sys::TerminationReason::EXITED);
+    if (status != ZX_OK && status != ZX_ERR_PEER_CLOSED)
+      ZX_LOG(ERROR, status) << " Frame disconnected";
+    DestroyComponent(status, fuchsia::sys::TerminationReason::EXITED);
   });
+
+  // Observe the Frame for failures, via navigation state change events.
+  frame_->SetNavigationEventListener(navigation_listener_binding_.NewBinding());
 
   if (startup_context()->has_outgoing_directory_request()) {
     // Publish outgoing services and start serving component's outgoing
@@ -110,8 +118,8 @@ void WebComponent::LoadUrl(
 }
 
 void WebComponent::Kill() {
-  // Signal abnormal process termination.
-  DestroyComponent(1, fuchsia::sys::TerminationReason::RUNNER_TERMINATED);
+  // Signal normal termination, since the caller requested it.
+  DestroyComponent(ZX_OK, fuchsia::sys::TerminationReason::EXITED);
 }
 
 void WebComponent::Detach() {
@@ -122,19 +130,53 @@ void WebComponent::CreateView(
     zx::eventpair view_token_value,
     fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
     fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
+  scenic::ViewRefPair view_ref_pair = scenic::ViewRefPair::New();
+  CreateViewWithViewRef(std::move(view_token_value),
+                        std::move(view_ref_pair.control_ref),
+                        std::move(view_ref_pair.view_ref));
+}
+
+void WebComponent::CreateViewWithViewRef(
+    zx::eventpair view_token_value,
+    fuchsia::ui::views::ViewRefControl control_ref,
+    fuchsia::ui::views::ViewRef view_ref) {
   DCHECK(frame_);
-  DCHECK(!view_is_bound_);
+  if (view_is_bound_) {
+    LOG(ERROR) << "CreateView() called more than once.";
+    DestroyComponent(ZX_ERR_BAD_STATE, fuchsia::sys::TerminationReason::EXITED);
+    return;
+  }
 
   fuchsia::ui::views::ViewToken view_token;
   view_token.value = std::move(view_token_value);
-  frame_->CreateView(std::move(view_token));
+  frame_->CreateViewWithViewRef(std::move(view_token), std::move(control_ref),
+                                std::move(view_ref));
 
   view_is_bound_ = true;
 }
 
-void WebComponent::DestroyComponent(int termination_exit_code,
+void WebComponent::OnNavigationStateChanged(
+    fuchsia::web::NavigationState change,
+    OnNavigationStateChangedCallback callback) {
+  if (change.has_page_type()) {
+    switch (change.page_type()) {
+      case fuchsia::web::PageType::ERROR:
+        DestroyComponent(ZX_ERR_INTERNAL,
+                         fuchsia::sys::TerminationReason::EXITED);
+        break;
+      case fuchsia::web::PageType::NORMAL:
+        break;
+    }
+  }
+  // Do not touch |this|, which may have been deleted by DestroyComponent().
+
+  // |callback| is safe to run, since it is on the stack.
+  callback();
+}
+
+void WebComponent::DestroyComponent(int64_t exit_code,
                                     fuchsia::sys::TerminationReason reason) {
   termination_reason_ = reason;
-  termination_exit_code_ = termination_exit_code;
+  termination_exit_code_ = exit_code;
   runner_->DestroyComponent(this);
 }

@@ -22,7 +22,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/frame_navigate_params.h"
 
 using blink::mojom::PresentationConnectionState;
 using blink::mojom::PresentationError;
@@ -118,8 +117,8 @@ std::unique_ptr<PresentationServiceImpl> PresentationServiceImpl::Create(
 
 void PresentationServiceImpl::Bind(
     mojo::PendingReceiver<blink::mojom::PresentationService> receiver) {
-  presentation_service_receiver_.Bind(std::move(receiver));
-  presentation_service_receiver_.set_disconnect_handler(base::BindOnce(
+  presentation_service_receivers_.Add(this, std::move(receiver));
+  presentation_service_receivers_.set_disconnect_handler(base::BindRepeating(
       &PresentationServiceImpl::OnConnectionError, base::Unretained(this)));
 }
 
@@ -497,7 +496,7 @@ void PresentationServiceImpl::Reset() {
 
   pending_reconnect_presentation_cbs_.clear();
 
-  presentation_service_receiver_.reset();
+  presentation_service_receivers_.Clear();
   presentation_controller_remote_.reset();
   presentation_receiver_remote_.reset();
 }

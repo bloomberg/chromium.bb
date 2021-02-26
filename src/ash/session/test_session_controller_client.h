@@ -80,9 +80,9 @@ class TestSessionControllerClient : public SessionControllerClient {
   void AddUserSession(
       const std::string& display_email,
       user_manager::UserType user_type = user_manager::USER_TYPE_REGULAR,
-      bool enable_settings = true,
       bool provide_pref_service = true,
-      bool is_new_profile = false);
+      bool is_new_profile = false,
+      const std::string& given_name = std::string());
 
   // Creates a test PrefService and associates it with the user.
   void ProvidePrefServiceForUser(const AccountId& account_id);
@@ -109,12 +109,20 @@ class TestSessionControllerClient : public SessionControllerClient {
   // ash::SessionControllerClient:
   void RequestLockScreen() override;
   void RequestSignOut() override;
+  void AttemptRestartChrome() override;
   void SwitchActiveUser(const AccountId& account_id) override;
   void CycleActiveUser(CycleUserDirection direction) override;
   void ShowMultiProfileLogin() override;
   void EmitAshInitialized() override;
   PrefService* GetSigninScreenPrefService() override;
   PrefService* GetUserPrefService(const AccountId& account_id) override;
+
+  // By default `LockScreen()` only changes the session state but no UI views
+  // will be created.  If your tests requires the lock screen to be created,
+  // please set this to true.
+  void set_show_lock_screen_views(bool should_show) {
+    should_show_lock_screen_ = should_show;
+  }
 
  private:
   void DoSwitchUser(const AccountId& account_id, bool switch_user);
@@ -127,6 +135,8 @@ class TestSessionControllerClient : public SessionControllerClient {
 
   bool use_lower_case_user_id_ = true;
   int request_sign_out_count_ = 0;
+
+  bool should_show_lock_screen_ = false;
 
   std::unique_ptr<views::Widget> multi_profile_login_widget_;
 

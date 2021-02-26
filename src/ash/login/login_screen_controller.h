@@ -11,6 +11,7 @@
 #include "ash/login/security_token_request_controller.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "base/macros.h"
@@ -23,6 +24,7 @@ class PrefRegistrySimple;
 namespace ash {
 
 class SystemTrayNotifier;
+enum class SupervisedAction;
 
 // LoginScreenController implements LoginScreen and wraps the LoginScreenClient
 // interface. This lets a consumer of ash provide a LoginScreenClient, which we
@@ -63,9 +65,6 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
                                          const std::string& password,
                                          bool authenticated_by_pin,
                                          OnAuthenticateCallback callback);
-  void AuthenticateUserWithExternalBinary(const AccountId& account_id,
-                                          OnAuthenticateCallback callback);
-  void EnrollUserWithExternalBinary(OnAuthenticateCallback callback);
   void AuthenticateUserWithEasyUnlock(const AccountId& account_id);
   void AuthenticateUserWithChallengeResponse(const AccountId& account_id,
                                              OnAuthenticateCallback callback);
@@ -83,7 +82,6 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   void OnMaxIncorrectPasswordAttempted(const AccountId& account_id);
   void FocusLockScreenApps(bool reverse);
   void ShowGaiaSignin(const AccountId& prefilled_account);
-  void HideGaiaSignin();
   void OnRemoveUserWarningShown();
   void RemoveUser(const AccountId& account_id);
   void LaunchPublicSession(const AccountId& account_id,
@@ -91,8 +89,7 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
                            const std::string& input_method);
   void RequestPublicSessionKeyboardLayouts(const AccountId& account_id,
                                            const std::string& locale);
-  void ShowFeedback();
-  void ShowResetScreen();
+  void HandleAccelerator(ash::LoginAcceleratorAction action);
   void ShowAccountAccessHelpApp(gfx::NativeWindow parent_window);
   void ShowParentAccessHelpApp(gfx::NativeWindow parent_window);
   void ShowLockScreenNotificationSettings();
@@ -115,20 +112,12 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   bool IsReadyForPassword() override;
   void EnableAddUserButton(bool enable) override;
   void EnableShutdownButton(bool enable) override;
-  void ShowGuestButtonInOobe(bool show) override;
+  void SetIsFirstSigninStep(bool is_first) override;
   void ShowParentAccessButton(bool show) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
   std::unique_ptr<ScopedGuestButtonBlocker> GetScopedGuestButtonBlocker()
       override;
 
-  // TODO(agawronska): Change all callers of this to use
-  // Shell::Get()->parent_access_controller()->ShowWidget() directly and delete
-  // this method.
-  void ShowParentAccessWidget(const AccountId& child_account_id,
-                              base::OnceCallback<void(bool success)> callback,
-                              ParentAccessRequestReason reason,
-                              bool extra_dimmer,
-                              base::Time validation_time) override;
   void RequestSecurityTokenPin(SecurityTokenPinRequest request) override;
   void ClearSecurityTokenPinRequest() override;
   bool SetLoginShelfGestureHandler(const base::string16& nudge_text,
@@ -139,14 +128,16 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   // KioskAppMenu:
   void SetKioskApps(
       const std::vector<KioskAppMenuEntry>& kiosk_apps,
-      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app)
-      override;
+      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
+      const base::RepeatingClosure& on_show_menu) override;
 
   AuthenticationStage authentication_stage() const {
     return authentication_stage_;
   }
 
   LoginDataDispatcher* data_dispatcher() { return &login_data_dispatcher_; }
+
+  void NotifyLoginScreenShown();
 
  private:
   void OnAuthenticateComplete(OnAuthenticateCallback callback, bool success);

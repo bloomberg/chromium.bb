@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -28,12 +29,24 @@ CompositingInputsUpdater::CompositingInputsUpdater(
     PaintLayer* root_layer,
     PaintLayer* compositing_inputs_root)
     : root_layer_(root_layer),
-      compositing_inputs_root_(compositing_inputs_root) {}
+      compositing_inputs_root_(compositing_inputs_root) {
+  if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled())
+    geometry_map_.emplace();
+}
 
 CompositingInputsUpdater::~CompositingInputsUpdater() = default;
 
 bool CompositingInputsUpdater::LayerOrDescendantShouldBeComposited(
     PaintLayer* layer) {
+  if (auto* layout_view = DynamicTo<LayoutView>(layer->GetLayoutObject())) {
+    if (layout_view->AdditionalCompositingReasons())
+      return true;
+    // The containing frame may call this function for the root layer of a
+    // throttled frame. Return the current compositing status.
+    if (layout_view->GetFrameView()->ShouldThrottleRendering())
+      return layout_view->UsesCompositing();
+  }
+  DCHECK(!layer->GetLayoutObject().GetFrameView()->ShouldThrottleRendering());
   PaintLayerCompositor* compositor =
       layer->GetLayoutObject().View()->Compositor();
   return layer->DescendantHasDirectOrScrollingCompositingReason() ||
@@ -87,11 +100,12 @@ void CompositingInputsUpdater::ApplyAncestorInfoToSelfAndAncestorsRecursively(
   // update this information).
   ApplyAncestorInfoToSelfAndAncestorsRecursively(layer->Parent(), update_type,
                                                  info);
-  geometry_map_.PushMappingsToAncestor(layer, layer->Parent());
+  if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled())
+    geometry_map_->PushMappingsToAncestor(layer, layer->Parent());
   UpdateAncestorInfo(layer, update_type, info);
   if (layer != compositing_inputs_root_ &&
-      (layer->IsRootLayer() || layer->GetLayoutObject().HasOverflowClip()))
-    info.last_overflow_clip_layer = layer;
+      layer->GetLayoutObject().IsScrollContainer())
+    info.last_scroll_container_layer = layer;
 }
 
 void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
@@ -101,27 +115,30 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
   LayoutBoxModelObject& layout_object = layer->GetLayoutObject();
   const ComputedStyle& style = layout_object.StyleRef();
 
-  const PaintLayer* previous_overflow_layer = layer->AncestorOverflowLayer();
-  layer->UpdateAncestorOverflowLayer(info.last_overflow_clip_layer);
-  if (info.last_overflow_clip_layer && layer->NeedsCompositingInputsUpdate() &&
+  const PaintLayer* previous_scroll_container_layer =
+      layer->AncestorScrollContainerLayer();
+  layer->UpdateAncestorScrollContainerLayer(info.last_scroll_container_layer);
+  if (info.last_scroll_container_layer &&
+      layer->NeedsCompositingInputsUpdate() &&
       style.HasStickyConstrainedPosition()) {
-    if (info.last_overflow_clip_layer != previous_overflow_layer) {
+    if (info.last_scroll_container_layer != previous_scroll_container_layer) {
       // Old ancestor scroller should no longer have these constraints.
-      DCHECK(!previous_overflow_layer ||
-             !previous_overflow_layer->GetScrollableArea() ||
-             !previous_overflow_layer->GetScrollableArea()
+      DCHECK(!previous_scroll_container_layer ||
+             !previous_scroll_container_layer->GetScrollableArea() ||
+             !previous_scroll_container_layer->GetScrollableArea()
                   ->GetStickyConstraintsMap()
                   .Contains(layer));
 
       // If our ancestor scroller has changed and the previous one was the
       // root layer, we are no longer viewport constrained.
-      if (previous_overflow_layer && previous_overflow_layer->IsRootLayer()) {
+      if (previous_scroll_container_layer &&
+          previous_scroll_container_layer->IsRootLayer()) {
         layout_object.View()->GetFrameView()->RemoveViewportConstrainedObject(
             layout_object, LocalFrameView::ViewportConstrainedType::kSticky);
       }
     }
 
-    if (info.last_overflow_clip_layer->IsRootLayer()) {
+    if (info.last_scroll_container_layer->IsRootLayer()) {
       layout_object.View()->GetFrameView()->AddViewportConstrainedObject(
           layout_object, LocalFrameView::ViewportConstrainedType::kSticky);
     }
@@ -139,11 +156,12 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
   // UpdateAncestorInfo has been already computed in ApplyAncestorInfo() for
   // layers from root_layer_ down to compositing_inputs_root_ both included.
   if (layer != root_layer_ && layer != compositing_inputs_root_) {
-    geometry_map_.PushMappingsToAncestor(layer, layer->Parent());
+    if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled())
+      geometry_map_->PushMappingsToAncestor(layer, layer->Parent());
     UpdateAncestorInfo(layer, update_type, info);
   }
-  if (layer->IsRootLayer() || layout_object.HasOverflowClip())
-    info.last_overflow_clip_layer = layer;
+  if (layout_object.IsScrollContainer())
+    info.last_scroll_container_layer = layer;
 
   PaintLayerCompositor* compositor =
       layer->GetLayoutObject().View()->Compositor();
@@ -172,8 +190,7 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
   // Note that prepaint may use the compositing information, so only skip
   // recursing it if we're skipping prepaint.
   bool recursion_blocked_by_display_lock =
-      layer->GetLayoutObject().PrePaintBlockedByDisplayLock(
-          DisplayLockLifecycleTarget::kChildren);
+      layer->GetLayoutObject().ChildPrePaintBlockedByDisplayLock();
 
   bool should_recurse = (layer->ChildNeedsCompositingInputsUpdate() ||
                          update_type == kForceUpdate);
@@ -189,10 +206,20 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
     descendant_has_direct_compositing_reason |=
         LayerOrDescendantShouldBeComposited(child);
   }
+  if (!descendant_has_direct_compositing_reason &&
+      layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
+    if (LayoutView* embedded_layout_view =
+            To<LayoutEmbeddedContent>(layer->GetLayoutObject())
+                .ChildLayoutView()) {
+      descendant_has_direct_compositing_reason |=
+          LayerOrDescendantShouldBeComposited(embedded_layout_view->Layer());
+    }
+  }
   layer->SetDescendantHasDirectOrScrollingCompositingReason(
       descendant_has_direct_compositing_reason);
 
-  if (layer->IsRootLayer() && layer->ScrollsOverflow() &&
+  if ((layer->IsRootLayer() || layer->NeedsReorderOverlayOverflowControls()) &&
+      layer->ScrollsOverflow() &&
       layer->DescendantHasDirectOrScrollingCompositingReason() &&
       !layer->NeedsCompositedScrolling())
     layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(true);
@@ -203,7 +230,8 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
   if (!recursion_blocked_by_display_lock)
     layer->ClearChildNeedsCompositingInputsUpdate();
 
-  geometry_map_.PopMappingsToAncestor(layer->Parent());
+  if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled())
+    geometry_map_->PopMappingsToAncestor(layer->Parent());
 
   if (layer->SelfPaintingStatusChanged()) {
     layer->ClearSelfPaintingStatusChanged();
@@ -217,6 +245,45 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
   }
 
   compositor->ClearCompositingInputsRoot();
+
+  DisableCompositingQueryAsserts disabler;
+
+  bool previously_needed_paint_offset_translation =
+      layer->NeedsPaintOffsetTranslationForCompositing();
+
+  layer->SetNeedsPaintOffsetTranslationForCompositing(
+      NeedsPaintOffsetTranslationForCompositing(layer));
+
+  // Invalidate if needed to affect NeedsPaintOffsetTranslation().
+  if (previously_needed_paint_offset_translation !=
+      layer->NeedsPaintOffsetTranslationForCompositing())
+    layout_object.SetNeedsPaintPropertyUpdate();
+}
+
+bool CompositingInputsUpdater::NeedsPaintOffsetTranslationForCompositing(
+    PaintLayer* layer) {
+  PaintLayerCompositor* compositor =
+      layer->GetLayoutObject().View()->Compositor();
+
+  /// Allocate when the developer indicated compositing via a direct
+  // method.
+  if ((compositor->CanBeComposited(layer) &&
+       layer->DirectCompositingReasons()) ||
+      layer->NeedsCompositedScrolling())
+    return true;
+
+  // Allocate when there is a need for a cc effect that applies to
+  // descendants.
+  // TODO(chrishtr): this should not be necessary, but currently at least
+  // cc mask layers don't apply correctly otherwise.
+  // compositing/clip-path-with-composited-descendants.html is one test
+  // that demonstrates this.
+  if ((layer->PotentialCompositingReasonsFromStyle() &
+       CompositingReason::kComboCompositedDescendants) &&
+      layer->DescendantHasDirectOrScrollingCompositingReason())
+    return true;
+
+  return false;
 }
 
 void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
@@ -229,6 +296,8 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
       info.enclosing_stacking_composited_layer;
   PaintLayer* enclosing_squashing_composited_layer =
       info.enclosing_squashing_composited_layer;
+
+  DisableCompositingQueryAsserts disabler;
 
   if (layer->NeedsCompositingInputsUpdate()) {
     if (enclosing_stacking_composited_layer) {
@@ -244,12 +313,11 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
     update_type = kForceUpdate;
   }
 
-
   switch (layer->GetCompositingState()) {
     case kNotComposited:
       break;
     case kPaintsIntoOwnBacking:
-      if (style.IsStackingContext())
+      if (layout_object.IsStackingContext())
         enclosing_stacking_composited_layer = layer;
       break;
     case kPaintsIntoGroupedBacking:
@@ -336,7 +404,7 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
   if (layout_object.HasClip())
     info.clip_chain_parent_for_fixed = layer;
 
-  if (style.IsStackingContext()) {
+  if (layout_object.IsStackingContext()) {
     info.escape_clip_to = nullptr;
     const LayoutBoxModelObject* clipping_container =
         ClippingContainerFromClipChainParent(layer);
@@ -360,14 +428,12 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
     //     <div style="position:absolute;"></div>
     //   </div>
     // </div>
-    if (info.escape_clip_to_for_absolute && style.ZIndex() < 0 &&
+    if (info.escape_clip_to_for_absolute && style.EffectiveZIndex() < 0 &&
         !info.escape_clip_to_for_absolute->GetLayoutObject()
-             .StyleRef()
              .IsStackingContext())
       info.escape_clip_to_for_absolute = nullptr;
-    if (info.escape_clip_to_for_fixed && style.ZIndex() < 0 &&
+    if (info.escape_clip_to_for_fixed && style.EffectiveZIndex() < 0 &&
         !info.escape_clip_to_for_fixed->GetLayoutObject()
-             .StyleRef()
              .IsStackingContext())
       info.escape_clip_to_for_fixed = nullptr;
 
@@ -391,51 +457,54 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   PaintLayer::AncestorDependentCompositingInputs properties;
   LayoutBoxModelObject& layout_object = layer->GetLayoutObject();
 
-  // The final value for |unclipped_absolute_bounding_box| needs to be
-  // in absolute, unscrolled space, without any scroll applied.
-  properties.unclipped_absolute_bounding_box =
-      EnclosingIntRect(geometry_map_.AbsoluteRect(
-          layer->BoundingBoxForCompositingOverlapTest()));
+  if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled()) {
+    // The final value for |unclipped_absolute_bounding_box| needs to be
+    // in absolute, unscrolled space, without any scroll applied.
 
-  bool affected_by_scroll = root_layer_->GetScrollableArea() &&
-                            layer->IsAffectedByScrollOf(root_layer_);
+    properties.unclipped_absolute_bounding_box =
+        EnclosingIntRect(geometry_map_->AbsoluteRect(
+            layer->BoundingBoxForCompositingOverlapTest()));
 
-  // At ths point, |unclipped_absolute_bounding_box| is in viewport space.
-  // To convert to absolute space, add scroll offset for non-fixed layers.
-  if (affected_by_scroll) {
-    properties.unclipped_absolute_bounding_box.Move(
-        RoundedIntSize(root_layer_->GetScrollableArea()->GetScrollOffset()));
-  }
+    bool affected_by_scroll = root_layer_->GetScrollableArea() &&
+                              layer->IsAffectedByScrollOf(root_layer_);
 
-  // For sticky-positioned elements, the scroll offset is sometimes included and
-  // sometimes not, depending on whether the sticky element is affixed or still
-  // scrolling. This makes caching difficult, as compared to Fixed position
-  // elements which have consistent behavior. So we disable caching for
-  // sticky-positioned subtrees.
-  ClipRectsCacheSlot cache_slot = info.is_under_position_sticky
-                                      ? kUncachedClipRects
+    // At ths point, |unclipped_absolute_bounding_box| is in viewport space.
+    // To convert to absolute space, add scroll offset for non-fixed layers.
+    if (affected_by_scroll) {
+      properties.unclipped_absolute_bounding_box.Move(
+          RoundedIntSize(root_layer_->GetScrollableArea()->GetScrollOffset()));
+    }
+
+    // For sticky-positioned elements, the scroll offset is sometimes included
+    // and sometimes not, depending on whether the sticky element is affixed or
+    // still scrolling. This makes caching difficult, as compared to Fixed
+    // position elements which have consistent behavior. So we disable caching
+    // for sticky-positioned subtrees.
+    ClipRectsCacheSlot cache_slot =
+        info.is_under_position_sticky ? kUncachedClipRects
                                       : kAbsoluteClipRectsIgnoringViewportClip;
 
-  ClipRect clip_rect;
-  layer->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
-      .CalculateBackgroundClipRect(
-          ClipRectsContext(root_layer_,
-                           &root_layer_->GetLayoutObject().FirstFragment(),
-                           cache_slot, kIgnorePlatformOverlayScrollbarSize,
-                           kIgnoreOverflowClipAndScroll),
-          clip_rect);
-  IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
-  // |snapped_clip_rect| is in absolute space space, but with scroll applied.
-  // To convert to absolute, unscrolled space, subtract scroll offsets for
-  // fixed layers.
-  if (root_layer_->GetScrollableArea() && !affected_by_scroll) {
-    snapped_clip_rect.Move(
-        RoundedIntSize(-root_layer_->GetScrollableArea()->GetScrollOffset()));
-  }
+    ClipRect clip_rect;
+    layer->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
+        .CalculateBackgroundClipRect(
+            ClipRectsContext(root_layer_,
+                             &root_layer_->GetLayoutObject().FirstFragment(),
+                             cache_slot, kIgnoreOverlayScrollbarSize,
+                             kIgnoreOverflowClipAndScroll),
+            clip_rect);
+    IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
+    // |snapped_clip_rect| is in absolute space space, but with scroll applied.
+    // To convert to absolute, unscrolled space, subtract scroll offsets for
+    // fixed layers.
+    if (root_layer_->GetScrollableArea() && !affected_by_scroll) {
+      snapped_clip_rect.Move(
+          RoundedIntSize(-root_layer_->GetScrollableArea()->GetScrollOffset()));
+    }
 
-  properties.clipped_absolute_bounding_box =
-      properties.unclipped_absolute_bounding_box;
-  properties.clipped_absolute_bounding_box.Intersect(snapped_clip_rect);
+    properties.clipped_absolute_bounding_box =
+        properties.unclipped_absolute_bounding_box;
+    properties.clipped_absolute_bounding_box.Intersect(snapped_clip_rect);
+  }
 
   const PaintLayer* parent = layer->Parent();
   properties.opacity_ancestor =
@@ -465,7 +534,7 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   properties.clip_parent = info.escape_clip_to;
 
   properties.ancestor_scrolling_layer = info.scrolling_ancestor;
-  if (info.needs_reparent_scroll && layout_object.StyleRef().IsStacked())
+  if (info.needs_reparent_scroll && layout_object.IsStacked())
     properties.scroll_parent = info.scrolling_ancestor;
 
   properties.nearest_contained_layout_layer =
@@ -479,8 +548,7 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
 void CompositingInputsUpdater::AssertNeedsCompositingInputsUpdateBitsCleared(
     PaintLayer* layer) {
   bool recursion_blocked_by_display_lock =
-      layer->GetLayoutObject().PrePaintBlockedByDisplayLock(
-          DisplayLockLifecycleTarget::kChildren);
+      layer->GetLayoutObject().ChildPrePaintBlockedByDisplayLock();
 
   DCHECK(recursion_blocked_by_display_lock ||
          !layer->ChildNeedsCompositingInputsUpdate());

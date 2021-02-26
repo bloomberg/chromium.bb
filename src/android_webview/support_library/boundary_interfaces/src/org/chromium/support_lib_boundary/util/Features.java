@@ -47,6 +47,9 @@ public class Features {
     // WebViewCompat.startSafeBrowsing
     public static final String START_SAFE_BROWSING = "START_SAFE_BROWSING";
 
+    // WebViewCompat.setSafeBrowsingAllowlist
+    public static final String SAFE_BROWSING_ALLOWLIST = "SAFE_BROWSING_ALLOWLIST";
+
     // WebViewCompat.setSafeBrowsingWhitelist
     public static final String SAFE_BROWSING_WHITELIST = "SAFE_BROWSING_WHITELIST";
 
@@ -178,5 +181,5 @@ public class Features {
     public static final String SET_SUPPORT_LIBRARY_VERSION = "SET_SUPPORT_LIBRARY_VERSION";
 
     // WebViewCompat.addDocumentStartJavascript
-    public static final String DOCUMENT_START_SCRIPT = "DOCUMENT_START_SCRIPT";
+    public static final String DOCUMENT_START_SCRIPT = "DOCUMENT_START_SCRIPT:1";
 }

@@ -579,6 +579,7 @@
               'unicode/umsg.h',
               'unicode/unirepl.h',
               'unicode/unumberformatter.h',
+              'unicode/unumberrangeformatter.h',
               'unicode/unum.h',
               'unicode/unumsys.h',
               'unicode/upluralrules.h',

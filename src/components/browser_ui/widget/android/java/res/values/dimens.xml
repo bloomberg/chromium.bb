@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Miscellaneous -->
     <dimen name="action_bar_shadow_height">10dp</dimen>
     <dimen name="card_padding">16dp</dimen>
@@ -16,7 +16,7 @@
     <!-- Dialogs -->
     <dimen name="dialog_max_width">600dp</dimen>
     <dimen name="dialog_header_margin">14dp</dimen>
-    <dimen name="promo_dialog_illustration_margin">24dp</dimen>
+    <dimen name="promo_dialog_illustration_margin">8dp</dimen>
     <dimen name="promo_dialog_illustration_width">150dp</dimen>
     <dimen name="promo_dialog_padding">16dp</dimen>
     <dimen name="promo_dialog_stacked_margin">16dp</dimen>
@@ -27,8 +27,11 @@
     <dimen name="radio_button_with_description_lateral_padding">16dp</dimen>
     <dimen name="radio_button_with_description_vertical_padding">10dp</dimen>
 
-    <!-- RadioButton(WithDescription)Layout dimensions -->
-    <dimen name="default_vertical_margin_between_items">8dp</dimen>
+    <!-- RadioButtonWithDescriptionAndAuxButton -->
+    <dimen name="radio_button_with_description_and_aux_button_spacing">10dp</dimen>
+    <!-- The total width of expand_arrow_with_separator.xml, not used on WebView. -->
+    <dimen name="radio_button_with_description_and_aux_button_aux_button_length"
+        tools:ignore="UnusedResources">61dp</dimen>
 
     <dimen name="list_menu_width">180dp</dimen>
 
@@ -88,6 +91,10 @@
 
     <!-- Default list dimensions -->
     <dimen name="default_list_row_padding">16dp</dimen>
+
+    <!-- Swipe gesture listener dimensions -->
+    <dimen name="swipe_vertical_drag_threshold">5dp</dimen>
+    <dimen name="swipe_horizontal_drag_threshold">10dp</dimen>
 
   <!-- Query tile dimensions -->
   <dimen name="tile_ideal_width">80dp</dimen>

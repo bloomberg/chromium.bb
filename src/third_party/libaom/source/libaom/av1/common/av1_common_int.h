@@ -79,6 +79,8 @@ extern "C" {
 #define TXCOEFF_TIMER 0
 #define TXCOEFF_COST_TIMER 0
 
+/*!\cond */
+
 enum {
   SINGLE_REFERENCE = 0,
   COMPOUND_REFERENCE = 1,
@@ -186,13 +188,19 @@ typedef struct BufferPool {
   InternalFrameBufferList int_frame_buffers;
 } BufferPool;
 
+/*!\endcond */
+
+/*!\brief Parameters related to CDEF */
 typedef struct {
-  int cdef_damping;
-  int nb_cdef_strengths;
-  int cdef_strengths[CDEF_MAX_STRENGTHS];
-  int cdef_uv_strengths[CDEF_MAX_STRENGTHS];
-  int cdef_bits;
+  int cdef_damping;                       /*!< CDEF damping factor */
+  int nb_cdef_strengths;                  /*!< Number of CDEF strength values */
+  int cdef_strengths[CDEF_MAX_STRENGTHS]; /*!< CDEF strength values for luma */
+  int cdef_uv_strengths[CDEF_MAX_STRENGTHS]; /*!< CDEF strength values for
+                                                chroma */
+  int cdef_bits; /*!< Number of CDEF strength values in bits */
 } CdefInfo;
+
+/*!\cond */
 
 typedef struct {
   int delta_q_present_flag;
@@ -230,6 +238,10 @@ typedef struct SequenceHeader {
   int num_bits_height;
   int max_frame_width;
   int max_frame_height;
+  // Whether current and reference frame IDs are signaled in the bitstream.
+  // Frame id numbers are additional information that do not affect the
+  // decoding process, but provide decoders with a way of detecting missing
+  // reference frames so that appropriate action can be taken.
   uint8_t frame_id_numbers_present_flag;
   int frame_id_length;
   int delta_frame_id_length;
@@ -314,410 +326,711 @@ typedef struct {
   int frame_refs_short_signaling;
 } CurrentFrame;
 
-// Struct containing some frame level features.
+/*!\endcond */
+
+/*!
+ * \brief Frame level features.
+ */
 typedef struct {
+  /*!
+   * If true, CDF update in the symbol encoding/decoding process is disabled.
+   */
   bool disable_cdf_update;
+  /*!
+   * If true, motion vectors are specified to eighth pel precision; and
+   * if false, motion vectors are specified to quarter pel precision.
+   */
   bool allow_high_precision_mv;
-  bool cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
+  /*!
+   * If true, force integer motion vectors; if false, use the default.
+   */
+  bool cur_frame_force_integer_mv;
+  /*!
+   * If true, palette tool and/or intra block copy tools may be used.
+   */
   bool allow_screen_content_tools;
-  bool allow_intrabc;
-  bool allow_warped_motion;
-  // Whether to use previous frames' motion vectors for prediction.
+  bool allow_intrabc;       /*!< If true, intra block copy tool may be used. */
+  bool allow_warped_motion; /*!< If true, frame may use warped motion mode. */
+  /*!
+   * If true, using previous frames' motion vectors for prediction is allowed.
+   */
   bool allow_ref_frame_mvs;
-  bool coded_lossless;  // frame is fully lossless at the coded resolution.
-  bool all_lossless;    // frame is fully lossless at the upscaled resolution.
+  /*!
+   * If true, frame is fully lossless at coded resolution.
+   * */
+  bool coded_lossless;
+  /*!
+   * If true, frame is fully lossless at upscaled resolution.
+   */
+  bool all_lossless;
+  /*!
+   * If true, the frame is restricted to a reduced subset of the full set of
+   * transform types.
+   */
   bool reduced_tx_set_used;
+  /*!
+   * If true, error resilient mode is enabled.
+   * Note: Error resilient mode allows the syntax of a frame to be parsed
+   * independently of previously decoded frames.
+   */
   bool error_resilient_mode;
+  /*!
+   * If false, only MOTION_MODE that may be used is SIMPLE_TRANSLATION;
+   * if true, all MOTION_MODES may be used.
+   */
   bool switchable_motion_mode;
-  TX_MODE tx_mode;
-  InterpFilter interp_filter;
+  TX_MODE tx_mode;            /*!< Transform mode at frame level. */
+  InterpFilter interp_filter; /*!< Interpolation filter at frame level. */
+  /*!
+   * The reference frame that contains the CDF values and other state that
+   * should be loaded at the start of the frame.
+   */
   int primary_ref_frame;
+  /*!
+   * Byte alignment of the planes in the reference buffers.
+   */
   int byte_alignment;
-  // Flag signaling how frame contexts should be updated at the end of
-  // a frame decode
+  /*!
+   * Flag signaling how frame contexts should be updated at the end of
+   * a frame decode.
+   */
   REFRESH_FRAME_CONTEXT_MODE refresh_frame_context;
 } FeatureFlags;
 
-// Struct containing params related to tiles.
+/*!
+ * \brief Params related to tiles.
+ */
 typedef struct CommonTileParams {
-  int cols;           // number of tile columns that frame is divided into
-  int rows;           // number of tile rows that frame is divided into
-  int max_width_sb;   // maximum tile width in superblock units.
-  int max_height_sb;  // maximum tile height in superblock units.
-  // Min width of non-rightmost tile in MI units. Only valid if cols > 1.
+  int cols;          /*!< number of tile columns that frame is divided into */
+  int rows;          /*!< number of tile rows that frame is divided into */
+  int max_width_sb;  /*!< maximum tile width in superblock units. */
+  int max_height_sb; /*!< maximum tile height in superblock units. */
+
+  /*!
+   * Min width of non-rightmost tile in MI units. Only valid if cols > 1.
+   */
   int min_inner_width;
 
-  // If true, tiles are uniformly spaced with power-of-two number of rows and
-  // columns.
-  // If false, tiles have explicitly configured widths and heights.
+  /*!
+   * If true, tiles are uniformly spaced with power-of-two number of rows and
+   * columns.
+   * If false, tiles have explicitly configured widths and heights.
+   */
   int uniform_spacing;
 
-  // Following members are only valid when uniform_spacing == 1
-  int log2_cols;  // log2 of 'cols'.
-  int log2_rows;  // log2 of 'rows'.
-  int width;      // tile width in MI units
-  int height;     // tile height in MI units
-  // End of members that are only valid when uniform_spacing == 1
+  /**
+   * \name Members only valid when uniform_spacing == 1
+   */
+  /**@{*/
+  int log2_cols; /*!< log2 of 'cols'. */
+  int log2_rows; /*!< log2 of 'rows'. */
+  int width;     /*!< tile width in MI units */
+  int height;    /*!< tile height in MI units */
+  /**@}*/
 
-  // Min num of tile columns possible based on 'max_width_sb' and frame width.
+  /*!
+   * Min num of tile columns possible based on 'max_width_sb' and frame width.
+   */
   int min_log2_cols;
-  // Min num of tile rows possible based on 'max_height_sb' and frame height.
+  /*!
+   * Min num of tile rows possible based on 'max_height_sb' and frame height.
+   */
   int min_log2_rows;
-  // Min num of tile columns possible based on frame width.
+  /*!
+   * Min num of tile columns possible based on frame width.
+   */
   int max_log2_cols;
-  // Max num of tile columns possible based on frame width.
+  /*!
+   * Max num of tile columns possible based on frame width.
+   */
   int max_log2_rows;
-  // log2 of min number of tiles (same as min_log2_cols + min_log2_rows).
+  /*!
+   * log2 of min number of tiles (same as min_log2_cols + min_log2_rows).
+   */
   int min_log2;
-  // col_start_sb[i] is the start position of tile column i in superblock units.
-  // valid for 0 <= i <= cols
+  /*!
+   * col_start_sb[i] is the start position of tile column i in superblock units.
+   * valid for 0 <= i <= cols
+   */
   int col_start_sb[MAX_TILE_COLS + 1];
-  // row_start_sb[i] is the start position of tile row i in superblock units.
-  // valid for 0 <= i <= rows
+  /*!
+   * row_start_sb[i] is the start position of tile row i in superblock units.
+   * valid for 0 <= i <= rows
+   */
   int row_start_sb[MAX_TILE_ROWS + 1];
-  // If true, we are using large scale tile mode.
+  /*!
+   * If true, we are using large scale tile mode.
+   */
   unsigned int large_scale;
-  // Only relevant when large_scale == 1.
-  // If true, the independent decoding of a single tile or a section of a frame
-  // is allowed.
+  /*!
+   * Only relevant when large_scale == 1.
+   * If true, the independent decoding of a single tile or a section of a frame
+   * is allowed.
+   */
   unsigned int single_tile_decoding;
 } CommonTileParams;
 
-// Struct containing params related to MB_MODE_INFO arrays and related info.
 typedef struct CommonModeInfoParams CommonModeInfoParams;
+/*!
+ * \brief Params related to MB_MODE_INFO arrays and related info.
+ */
 struct CommonModeInfoParams {
-  // Number of rows/cols in the frame in 16 pixel units.
-  // This is computed from frame width and height aligned to a multiple of 8.
+  /*!
+   * Number of rows in the frame in 16 pixel units.
+   * This is computed from frame height aligned to a multiple of 8.
+   */
   int mb_rows;
+  /*!
+   * Number of cols in the frame in 16 pixel units.
+   * This is computed from frame width aligned to a multiple of 8.
+   */
   int mb_cols;
-  // Total MBs = mb_rows * mb_cols.
+
+  /*!
+   * Total MBs = mb_rows * mb_cols.
+   */
   int MBs;
 
-  // Number of rows/cols in the frame in 4 pixel (MB_MODE_INFO) units.
-  // This is computed from frame width and height aligned to a multiple of 8.
+  /*!
+   * Number of rows in the frame in 4 pixel (MB_MODE_INFO) units.
+   * This is computed from frame height aligned to a multiple of 8.
+   */
   int mi_rows;
+  /*!
+   * Number of cols in the frame in 4 pixel (MB_MODE_INFO) units.
+   * This is computed from frame width aligned to a multiple of 8.
+   */
   int mi_cols;
 
-  // An array of MB_MODE_INFO structs for every 'mi_alloc_bsize' sized block
-  // in the frame.
-  // Note: This array should be treated like a scratch memory, and should NOT be
-  // accessed directly, in most cases. Please use 'mi_grid_base' array instead.
+  /*!
+   * An array of MB_MODE_INFO structs for every 'mi_alloc_bsize' sized block
+   * in the frame.
+   * Note: This array should be treated like a scratch memory, and should NOT be
+   * accessed directly, in most cases. Please use 'mi_grid_base' array instead.
+   */
   MB_MODE_INFO *mi_alloc;
-  // Number of allocated elements in 'mi_alloc'.
+  /*!
+   * Number of allocated elements in 'mi_alloc'.
+   */
   int mi_alloc_size;
-  // Stride for 'mi_alloc' array.
+  /*!
+   * Stride for 'mi_alloc' array.
+   */
   int mi_alloc_stride;
-  // The minimum block size that each element in 'mi_alloc' can correspond to.
-  // For decoder, this is always BLOCK_4X4.
-  // For encoder, this is currently set to BLOCK_4X4 for resolution < 4k,
-  // and BLOCK_8X8 for resolution >= 4k.
+  /*!
+   * The minimum block size that each element in 'mi_alloc' can correspond to.
+   * For decoder, this is always BLOCK_4X4.
+   * For encoder, this is currently set to BLOCK_4X4 for resolution < 4k,
+   * and BLOCK_8X8 for resolution >= 4k.
+   */
   BLOCK_SIZE mi_alloc_bsize;
 
-  // Grid of pointers to 4x4 MB_MODE_INFO structs allocated in 'mi_alloc'.
-  // It's possible that:
-  // - Multiple pointers in the grid point to the same element in 'mi_alloc'
-  // (for example, for all 4x4 blocks that belong to the same partition block).
-  // - Some pointers can be NULL (for example, for blocks outside visible area).
+  /*!
+   * Grid of pointers to 4x4 MB_MODE_INFO structs allocated in 'mi_alloc'.
+   * It's possible that:
+   * - Multiple pointers in the grid point to the same element in 'mi_alloc'
+   * (for example, for all 4x4 blocks that belong to the same partition block).
+   * - Some pointers can be NULL (for example, for blocks outside visible area).
+   */
   MB_MODE_INFO **mi_grid_base;
-  // Number of allocated elements in 'mi_grid_base' (and 'tx_type_map' also).
+  /*!
+   * Number of allocated elements in 'mi_grid_base' (and 'tx_type_map' also).
+   */
   int mi_grid_size;
-  // Stride for 'mi_grid_base' (and 'tx_type_map' also).
+  /*!
+   * Stride for 'mi_grid_base' (and 'tx_type_map' also).
+   */
   int mi_stride;
 
-  // An array of tx types for each 4x4 block in the frame.
-  // Number of allocated elements is same as 'mi_grid_size', and stride is
-  // same as 'mi_grid_size'. So, indexing into 'tx_type_map' is same as that of
-  // 'mi_grid_base'.
+  /*!
+   * An array of tx types for each 4x4 block in the frame.
+   * Number of allocated elements is same as 'mi_grid_size', and stride is
+   * same as 'mi_grid_size'. So, indexing into 'tx_type_map' is same as that of
+   * 'mi_grid_base'.
+   */
   TX_TYPE *tx_type_map;
 
-  // Function pointers to allow separate logic for encoder and decoder.
+  /**
+   * \name Function pointers to allow separate logic for encoder and decoder.
+   */
+  /**@{*/
+  /*!
+   * Free the memory allocated to arrays in 'mi_params'.
+   * \param[in,out]   mi_params   object containing common mode info parameters
+   */
   void (*free_mi)(struct CommonModeInfoParams *mi_params);
+  /*!
+   * Initialize / reset appropriate arrays in 'mi_params'.
+   * \param[in,out]   mi_params   object containing common mode info parameters
+   */
   void (*setup_mi)(struct CommonModeInfoParams *mi_params);
+  /*!
+   * Allocate required memory for arrays in 'mi_params'.
+   * \param[in,out]   mi_params   object containing common mode info parameters
+   * \param           width       frame width
+   * \param           height      frame height
+   */
   void (*set_mb_mi)(struct CommonModeInfoParams *mi_params, int width,
                     int height);
+  /**@}*/
 };
 
-// Parameters related to quantization at the frame level.
 typedef struct CommonQuantParams CommonQuantParams;
+/*!
+ * \brief Parameters related to quantization at the frame level.
+ */
 struct CommonQuantParams {
-  // Base qindex of the frame in the range 0 to 255.
+  /*!
+   * Base qindex of the frame in the range 0 to 255.
+   */
   int base_qindex;
 
-  // Delta of qindex (from base_qindex) for Y plane DC coefficient.
-  // Note: y_ac_delta_q is implicitly 0.
+  /*!
+   * Delta of qindex (from base_qindex) for Y plane DC coefficient.
+   * Note: y_ac_delta_q is implicitly 0.
+   */
   int y_dc_delta_q;
 
-  // Delta of qindex (from base_qindex) for U plane DC and AC coefficients.
+  /*!
+   * Delta of qindex (from base_qindex) for U plane DC coefficients.
+   */
   int u_dc_delta_q;
+  /*!
+   * Delta of qindex (from base_qindex) for U plane AC coefficients.
+   */
   int v_dc_delta_q;
 
-  // Delta of qindex (from base_qindex) for V plane DC and AC coefficients.
-  // Same as those for U plane if cm->seq_params.separate_uv_delta_q == 0.
+  /*!
+   * Delta of qindex (from base_qindex) for V plane DC coefficients.
+   * Same as those for U plane if cm->seq_params.separate_uv_delta_q == 0.
+   */
   int u_ac_delta_q;
+  /*!
+   * Delta of qindex (from base_qindex) for V plane AC coefficients.
+   * Same as those for U plane if cm->seq_params.separate_uv_delta_q == 0.
+   */
   int v_ac_delta_q;
 
-  // Note: The qindex per superblock may have a delta from the qindex obtained
-  // at frame level from parameters above, based on 'cm->delta_q_info'.
+  /*
+   * Note: The qindex per superblock may have a delta from the qindex obtained
+   * at frame level from parameters above, based on 'cm->delta_q_info'.
+   */
 
-  // The dequantizers below are true dequantizers used only in the
-  // dequantization process.  They have the same coefficient
-  // shift/scale as TX.
-  int16_t y_dequant_QTX[MAX_SEGMENTS][2];
-  int16_t u_dequant_QTX[MAX_SEGMENTS][2];
-  int16_t v_dequant_QTX[MAX_SEGMENTS][2];
+  /**
+   * \name True dequantizers.
+   * The dequantizers below are true dequantizers used only in the
+   * dequantization process.  They have the same coefficient
+   * shift/scale as TX.
+   */
+  /**@{*/
+  int16_t y_dequant_QTX[MAX_SEGMENTS][2]; /*!< Dequant for Y plane */
+  int16_t u_dequant_QTX[MAX_SEGMENTS][2]; /*!< Dequant for U plane */
+  int16_t v_dequant_QTX[MAX_SEGMENTS][2]; /*!< Dequant for V plane */
+  /**@}*/
 
-  // Global quant matrix tables
+  /**
+   * \name Global quantization matrix tables.
+   */
+  /**@{*/
+  /*!
+   * Global dquantization matrix table.
+   */
   const qm_val_t *giqmatrix[NUM_QM_LEVELS][3][TX_SIZES_ALL];
+  /*!
+   * Global quantization matrix table.
+   */
   const qm_val_t *gqmatrix[NUM_QM_LEVELS][3][TX_SIZES_ALL];
+  /**@}*/
 
-  // Local quant matrix tables for each frame
+  /**
+   * \name Local dequantization matrix tables for each frame.
+   */
+  /**@{*/
+  /*!
+   * Local dequant matrix for Y plane.
+   */
   const qm_val_t *y_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
+  /*!
+   * Local dequant matrix for U plane.
+   */
   const qm_val_t *u_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
+  /*!
+   * Local dequant matrix for V plane.
+   */
   const qm_val_t *v_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
+  /**@}*/
 
-  // Flag indicating whether quantization matrices are being used:
-  //  - If true, qm_level_y, qm_level_u and qm_level_v indicate the level
-  //    indices to be used to access appropriate global quant matrix tables.
-  //  - If false, we implicitly use level index 'NUM_QM_LEVELS - 1'.
+  /*!
+   * Flag indicating whether quantization matrices are being used:
+   *  - If true, qm_level_y, qm_level_u and qm_level_v indicate the level
+   *    indices to be used to access appropriate global quant matrix tables.
+   *  - If false, we implicitly use level index 'NUM_QM_LEVELS - 1'.
+   */
   bool using_qmatrix;
-  int qmatrix_level_y;
-  int qmatrix_level_u;
-  int qmatrix_level_v;
+  /**
+   * \name Valid only when using_qmatrix == true
+   * Indicate the level indices to be used to access appropriate global quant
+   * matrix tables.
+   */
+  /**@{*/
+  int qmatrix_level_y; /*!< Level index for Y plane */
+  int qmatrix_level_u; /*!< Level index for U plane */
+  int qmatrix_level_v; /*!< Level index for V plane */
+  /**@}*/
 };
 
-// Context used for transmitting various symbols in the bistream.
 typedef struct CommonContexts CommonContexts;
+/*!
+ * \brief Contexts used for transmitting various symbols in the bitstream.
+ */
 struct CommonContexts {
-  // Context used by 'FRAME_CONTEXT.partition_cdf' to transmit partition type.
-  // partition[i][j] is the context for ith tile row, jth mi_col.
+  /*!
+   * Context used by 'FRAME_CONTEXT.partition_cdf' to transmit partition type.
+   * partition[i][j] is the context for ith tile row, jth mi_col.
+   */
   PARTITION_CONTEXT **partition;
 
-  // Context used to derive context for multiple symbols:
-  // - 'TXB_CTX.txb_skip_ctx' used by 'FRAME_CONTEXT.txb_skip_cdf' to transmit
-  // to transmit skip_txfm flag.
-  // - 'TXB_CTX.dc_sign_ctx' used by 'FRAME_CONTEXT.dc_sign_cdf' to transmit
-  // sign.
-  // entropy[i][j][k] is the context for ith plane, jth tile row, kth mi_col.
+  /*!
+   * Context used to derive context for multiple symbols:
+   * - 'TXB_CTX.txb_skip_ctx' used by 'FRAME_CONTEXT.txb_skip_cdf' to transmit
+   * to transmit skip_txfm flag.
+   * - 'TXB_CTX.dc_sign_ctx' used by 'FRAME_CONTEXT.dc_sign_cdf' to transmit
+   * sign.
+   * entropy[i][j][k] is the context for ith plane, jth tile row, kth mi_col.
+   */
   ENTROPY_CONTEXT **entropy[MAX_MB_PLANE];
 
-  // Context used to derive context for 'FRAME_CONTEXT.txfm_partition_cdf' to
-  // transmit 'is_split' flag to indicate if this transform block should be
-  // split into smaller sub-blocks.
-  // txfm[i][j] is the context for ith tile row, jth mi_col.
+  /*!
+   * Context used to derive context for 'FRAME_CONTEXT.txfm_partition_cdf' to
+   * transmit 'is_split' flag to indicate if this transform block should be
+   * split into smaller sub-blocks.
+   * txfm[i][j] is the context for ith tile row, jth mi_col.
+   */
   TXFM_CONTEXT **txfm;
 
-  // Dimensions that were used to allocate the arrays above.
-  // If these dimensions change, the arrays may have to be re-allocated.
-  int num_planes;     // Corresponds to av1_num_planes(cm)
-  int num_tile_rows;  // Corresponds to cm->tiles.row
-  int num_mi_cols;    // Corresponds to cm->mi_params.mi_cols
+  /*!
+   * Dimensions that were used to allocate the arrays above.
+   * If these dimensions change, the arrays may have to be re-allocated.
+   */
+  int num_planes;    /*!< Corresponds to av1_num_planes(cm) */
+  int num_tile_rows; /*!< Corresponds to cm->tiles.row */
+  int num_mi_cols;   /*!< Corresponds to cm->mi_params.mi_cols */
 };
 
+/*!
+ * \brief Top level common structure used by both encoder and decoder.
+ */
 typedef struct AV1Common {
-  // Information about the current frame that is being coded.
+  /*!
+   * Information about the current frame that is being coded.
+   */
   CurrentFrame current_frame;
-  // Code and details about current error status.
+  /*!
+   * Code and details about current error status.
+   */
   struct aom_internal_error_info error;
 
-  // AV1 allows two types of frame scaling operations:
-  // (1) Frame super-resolution: that allows coding a frame at lower resolution
-  // and after decoding the frame, normatively uscales and restores the frame --
-  // inside the coding loop.
-  // (2) Frame resize: that allows coding frame at lower/higher resolution, and
-  // then non-normatively upscale the frame at the time of rendering -- outside
-  // the coding loop.
-  // Hence, the need for 3 types of dimensions.
+  /*!
+   * AV1 allows two types of frame scaling operations:
+   * 1. Frame super-resolution: that allows coding a frame at lower resolution
+   * and after decoding the frame, normatively uscales and restores the frame --
+   * inside the coding loop.
+   * 2. Frame resize: that allows coding frame at lower/higher resolution, and
+   * then non-normatively upscale the frame at the time of rendering -- outside
+   * the coding loop.
+   * Hence, the need for 3 types of dimensions.
+   */
 
-  // Coded frame dimensions.
-  int width;
-  int height;
+  /**
+   * \name Coded frame dimensions.
+   */
+  /**@{*/
+  int width;  /*!< Coded frame width */
+  int height; /*!< Coded frame height */
+  /**@}*/
 
-  // Rendered frame dimensions, after applying both super-resolution and resize
-  // to the coded frame.
-  // Different from coded dimensions if super-resolution and/or resize are
-  // being used for this frame.
-  int render_width;
-  int render_height;
+  /**
+   * \name Rendered frame dimensions.
+   * Dimensions after applying both super-resolution and resize to the coded
+   * frame. Different from coded dimensions if super-resolution and/or resize
+   * are being used for this frame.
+   */
+  /**@{*/
+  int render_width;  /*!< Rendered frame width */
+  int render_height; /*!< Rendered frame height */
+  /**@}*/
 
-  // Frame dimensions after applying super-resolution to the coded frame (if
-  // present), but before applying resize.
-  // Larger than the coded dimensions if super-resolution is being used for
-  // this frame.
-  // Different from rendered dimensions if resize is being used for this frame.
-  int superres_upscaled_width;
-  int superres_upscaled_height;
+  /**
+   * \name Super-resolved frame dimensions.
+   * Frame dimensions after applying super-resolution to the coded frame (if
+   * present), but before applying resize.
+   * Larger than the coded dimensions if super-resolution is being used for
+   * this frame.
+   * Different from rendered dimensions if resize is being used for this frame.
+   */
+  /**@{*/
+  int superres_upscaled_width;  /*!< Super-resolved frame width */
+  int superres_upscaled_height; /*!< Super-resolved frame height */
+  /**@}*/
 
-  // The denominator of the superres scale used by this frame.
-  // Note: The numerator is fixed to be SCALE_NUMERATOR.
+  /*!
+   * The denominator of the superres scale used by this frame.
+   * Note: The numerator is fixed to be SCALE_NUMERATOR.
+   */
   uint8_t superres_scale_denominator;
 
-  // If true, buffer removal times are present.
+  /*!
+   * If true, buffer removal times are present.
+   */
   bool buffer_removal_time_present;
-  // buffer_removal_times[op_num] specifies the frame removal time in units of
-  // DecCT clock ticks counted from the removal time of the last random access
-  // point for operating point op_num.
-  // TODO(urvang): We probably don't need the +1 here.
+  /*!
+   * buffer_removal_times[op_num] specifies the frame removal time in units of
+   * DecCT clock ticks counted from the removal time of the last random access
+   * point for operating point op_num.
+   * TODO(urvang): We probably don't need the +1 here.
+   */
   uint32_t buffer_removal_times[MAX_NUM_OPERATING_POINTS + 1];
-  // Presentation time of the frame in clock ticks DispCT counted from the
-  // removal time of the last random access point for the operating point that
-  // is being decoded.
+  /*!
+   * Presentation time of the frame in clock ticks DispCT counted from the
+   * removal time of the last random access point for the operating point that
+   * is being decoded.
+   */
   uint32_t frame_presentation_time;
 
-  // Buffer where previous frame is stored.
+  /*!
+   * Buffer where previous frame is stored.
+   */
   RefCntBuffer *prev_frame;
 
-  // Buffer into which the current frame will be stored and other related info.
-  // TODO(hkuang): Combine this with cur_buf in macroblockd.
+  /*!
+   * Buffer into which the current frame will be stored and other related info.
+   * TODO(hkuang): Combine this with cur_buf in macroblockd.
+   */
   RefCntBuffer *cur_frame;
 
-  // For encoder, we have a two-level mapping from reference frame type to the
-  // corresponding buffer in the buffer pool:
-  // * 'remapped_ref_idx[i - 1]' maps reference type 'i' (range: LAST_FRAME ...
-  // EXTREF_FRAME) to a remapped index 'j' (in range: 0 ... REF_FRAMES - 1)
-  // * Later, 'cm->ref_frame_map[j]' maps the remapped index 'j' to a pointer to
-  // the reference counted buffer structure RefCntBuffer, taken from the buffer
-  // pool cm->buffer_pool->frame_bufs.
-  //
-  // LAST_FRAME,                        ...,      EXTREF_FRAME
-  //      |                                           |
-  //      v                                           v
-  // remapped_ref_idx[LAST_FRAME - 1],  ...,  remapped_ref_idx[EXTREF_FRAME - 1]
-  //      |                                           |
-  //      v                                           v
-  // ref_frame_map[],                   ...,     ref_frame_map[]
-  //
-  // Note: INTRA_FRAME always refers to the current frame, so there's no need to
-  // have a remapped index for the same.
+  /*!
+   * For encoder, we have a two-level mapping from reference frame type to the
+   * corresponding buffer in the buffer pool:
+   * * 'remapped_ref_idx[i - 1]' maps reference type 'i' (range: LAST_FRAME ...
+   * EXTREF_FRAME) to a remapped index 'j' (in range: 0 ... REF_FRAMES - 1)
+   * * Later, 'cm->ref_frame_map[j]' maps the remapped index 'j' to a pointer to
+   * the reference counted buffer structure RefCntBuffer, taken from the buffer
+   * pool cm->buffer_pool->frame_bufs.
+   *
+   * LAST_FRAME,                        ...,      EXTREF_FRAME
+   *      |                                           |
+   *      v                                           v
+   * remapped_ref_idx[LAST_FRAME - 1],  ...,  remapped_ref_idx[EXTREF_FRAME - 1]
+   *      |                                           |
+   *      v                                           v
+   * ref_frame_map[],                   ...,     ref_frame_map[]
+   *
+   * Note: INTRA_FRAME always refers to the current frame, so there's no need to
+   * have a remapped index for the same.
+   */
   int remapped_ref_idx[REF_FRAMES];
 
-  // Scale of the current frame with respect to itself.
-  // This is currently used for intra block copy, which behaves like an inter
-  // prediction mode, where the reference frame is the current frame itself.
+  /*!
+   * Scale of the current frame with respect to itself.
+   * This is currently used for intra block copy, which behaves like an inter
+   * prediction mode, where the reference frame is the current frame itself.
+   */
   struct scale_factors sf_identity;
 
-  // Scale factors of the reference frame with respect to the current frame.
-  // This is required for generating inter prediction and will be non-identity
-  // for a reference frame, if it has different dimensions than the coded
-  // dimensions of the current frame.
+  /*!
+   * Scale factors of the reference frame with respect to the current frame.
+   * This is required for generating inter prediction and will be non-identity
+   * for a reference frame, if it has different dimensions than the coded
+   * dimensions of the current frame.
+   */
   struct scale_factors ref_scale_factors[REF_FRAMES];
 
-  // For decoder, ref_frame_map[i] maps reference type 'i' to a pointer to
-  // the buffer in the buffer pool 'cm->buffer_pool.frame_bufs'.
-  // For encoder, ref_frame_map[j] (where j = remapped_ref_idx[i]) maps
-  // remapped reference index 'j' (that is, original reference type 'i') to
-  // a pointer to the buffer in the buffer pool 'cm->buffer_pool.frame_bufs'.
+  /*!
+   * For decoder, ref_frame_map[i] maps reference type 'i' to a pointer to
+   * the buffer in the buffer pool 'cm->buffer_pool.frame_bufs'.
+   * For encoder, ref_frame_map[j] (where j = remapped_ref_idx[i]) maps
+   * remapped reference index 'j' (that is, original reference type 'i') to
+   * a pointer to the buffer in the buffer pool 'cm->buffer_pool.frame_bufs'.
+   */
   RefCntBuffer *ref_frame_map[REF_FRAMES];
 
-  // If true, this frame is actually shown after decoding.
-  // If false, this frame is coded in the bitstream, but not shown. It is only
-  // used as a reference for other frames coded later.
+  /*!
+   * If true, this frame is actually shown after decoding.
+   * If false, this frame is coded in the bitstream, but not shown. It is only
+   * used as a reference for other frames coded later.
+   */
   int show_frame;
 
-  // If true, this frame can be used as a show-existing frame for other frames
-  // coded later.
-  // When 'show_frame' is true, this is always true for all non-keyframes.
-  // When 'show_frame' is false, this value is transmitted in the bitstream.
+  /*!
+   * If true, this frame can be used as a show-existing frame for other frames
+   * coded later.
+   * When 'show_frame' is true, this is always true for all non-keyframes.
+   * When 'show_frame' is false, this value is transmitted in the bitstream.
+   */
   int showable_frame;
 
-  // If true, show an existing frame coded before, instead of actually coding a
-  // frame. The existing frame comes from one of the existing reference buffers,
-  // as signaled in the bitstream.
+  /*!
+   * If true, show an existing frame coded before, instead of actually coding a
+   * frame. The existing frame comes from one of the existing reference buffers,
+   * as signaled in the bitstream.
+   */
   int show_existing_frame;
 
-  // Whether some features are allowed or not.
+  /*!
+   * Whether some features are allowed or not.
+   */
   FeatureFlags features;
 
-  // Params related to MB_MODE_INFO arrays and related info.
+  /*!
+   * Params related to MB_MODE_INFO arrays and related info.
+   */
   CommonModeInfoParams mi_params;
 
 #if CONFIG_ENTROPY_STATS
+  /*!
+   * Context type used by token CDFs, in the range 0 .. (TOKEN_CDF_Q_CTXS - 1).
+   */
   int coef_cdf_category;
-#endif
-  // Quantization params.
+#endif  // CONFIG_ENTROPY_STATS
+
+  /*!
+   * Quantization params.
+   */
   CommonQuantParams quant_params;
 
-  // Segmentation info for current frame.
+  /*!
+   * Segmentation info for current frame.
+   */
   struct segmentation seg;
 
-  // Segmentation map for previous frame.
+  /*!
+   * Segmentation map for previous frame.
+   */
   uint8_t *last_frame_seg_map;
 
-  // Deblocking filter parameters.
-  loop_filter_info_n lf_info;
-  struct loopfilter lf;
+  /**
+   * \name Deblocking filter parameters.
+   */
+  /**@{*/
+  loop_filter_info_n lf_info; /*!< Loop filter info */
+  struct loopfilter lf;       /*!< Loop filter parameters */
+  /**@}*/
 
-  // Loop Restoration filter parameters.
-  RestorationInfo rst_info[MAX_MB_PLANE];  // Loop Restoration filter info.
-  int32_t *rst_tmpbuf;  // Scratch buffer for self-guided restoration filter.
-  RestorationLineBuffers *rlbs;  // Line buffers required by loop restoration.
-  YV12_BUFFER_CONFIG rst_frame;  // Stores the output of loop restoration.
+  /**
+   * \name Loop Restoration filter parameters.
+   */
+  /**@{*/
+  RestorationInfo rst_info[MAX_MB_PLANE]; /*!< Loop Restoration filter info */
+  int32_t *rst_tmpbuf; /*!< Scratch buffer for self-guided restoration */
+  RestorationLineBuffers *rlbs; /*!< Line buffers needed by loop restoration */
+  YV12_BUFFER_CONFIG rst_frame; /*!< Stores the output of loop restoration */
+  /**@}*/
 
-  // CDEF (Constrained Directional Enhancement Filter) parameters.
+  /*!
+   * CDEF (Constrained Directional Enhancement Filter) parameters.
+   */
   CdefInfo cdef_info;
 
-  // Parameters for film grain synthesis.
+  /*!
+   * Parameters for film grain synthesis.
+   */
   aom_film_grain_t film_grain_params;
 
-  // Parameters for delta quantization and delta loop filter level.
+  /*!
+   * Parameters for delta quantization and delta loop filter level.
+   */
   DeltaQInfo delta_q_info;
 
-  // Global motion parameters for each reference frame.
+  /*!
+   * Global motion parameters for each reference frame.
+   */
   WarpedMotionParams global_motion[REF_FRAMES];
 
-  // Elements part of the sequence header, that are applicable for all the
-  // frames in the video.
+  /*!
+   * Elements part of the sequence header, that are applicable for all the
+   * frames in the video.
+   */
   SequenceHeader seq_params;
 
-  // Current CDFs of all the symbols for the current frame.
+  /*!
+   * Current CDFs of all the symbols for the current frame.
+   */
   FRAME_CONTEXT *fc;
-  // Default CDFs used when features.primary_ref_frame = PRIMARY_REF_NONE
-  // (e.g. for a keyframe). These default CDFs are defined by the bitstream and
-  // copied from default CDF tables for each symbol.
+  /*!
+   * Default CDFs used when features.primary_ref_frame = PRIMARY_REF_NONE
+   * (e.g. for a keyframe). These default CDFs are defined by the bitstream and
+   * copied from default CDF tables for each symbol.
+   */
   FRAME_CONTEXT *default_frame_context;
 
-  // Parameters related to tiling.
+  /*!
+   * Parameters related to tiling.
+   */
   CommonTileParams tiles;
 
-  // External BufferPool passed from outside.
+  /*!
+   * External BufferPool passed from outside.
+   */
   BufferPool *buffer_pool;
 
-  // Above context buffers and their sizes.
-  // Note: above contexts are allocated in this struct, as their size is
-  // dependent on frame width, while left contexts are declared and allocated in
-  // MACROBLOCKD struct, as they have a fixed size.
+  /*!
+   * Above context buffers and their sizes.
+   * Note: above contexts are allocated in this struct, as their size is
+   * dependent on frame width, while left contexts are declared and allocated in
+   * MACROBLOCKD struct, as they have a fixed size.
+   */
   CommonContexts above_contexts;
 
-  // When cm->seq_params.frame_id_numbers_present_flag == 1, current and
-  // reference frame IDs are signaled in the bitstream.
-  int current_frame_id;
-  int ref_frame_id[REF_FRAMES];
+  /**
+   * \name Signaled when cm->seq_params.frame_id_numbers_present_flag == 1
+   */
+  /**@{*/
+  int current_frame_id;         /*!< frame ID for the current frame. */
+  int ref_frame_id[REF_FRAMES]; /*!< frame IDs for the reference frames. */
+  /**@}*/
 
-  // Motion vectors provided by motion field estimation.
-  // tpl_mvs[row * stride + col] stores MV for block at [mi_row, mi_col] where:
-  // mi_row = 2 * row,
-  // mi_col = 2 * col, and
-  // stride = cm->mi_params.mi_stride / 2
+  /*!
+   * Motion vectors provided by motion field estimation.
+   * tpl_mvs[row * stride + col] stores MV for block at [mi_row, mi_col] where:
+   * mi_row = 2 * row,
+   * mi_col = 2 * col, and
+   * stride = cm->mi_params.mi_stride / 2
+   */
   TPL_MV_REF *tpl_mvs;
-  // Allocated size of 'tpl_mvs' array. Refer to 'ensure_mv_buffer()' function.
+  /*!
+   * Allocated size of 'tpl_mvs' array. Refer to 'ensure_mv_buffer()' function.
+   */
   int tpl_mvs_mem_size;
-  // ref_frame_sign_bias[k] is 1 if relative distance between reference 'k' and
-  // current frame is positive; and 0 otherwise.
+  /*!
+   * ref_frame_sign_bias[k] is 1 if relative distance between reference 'k' and
+   * current frame is positive; and 0 otherwise.
+   */
   int ref_frame_sign_bias[REF_FRAMES];
-  // ref_frame_side[k] is 1 if relative distance between reference 'k' and
-  // current frame is positive, -1 if relative distance is 0; and 0 otherwise.
-  // TODO(jingning): This can be combined with sign_bias later.
+  /*!
+   * ref_frame_side[k] is 1 if relative distance between reference 'k' and
+   * current frame is positive, -1 if relative distance is 0; and 0 otherwise.
+   * TODO(jingning): This can be combined with sign_bias later.
+   */
   int8_t ref_frame_side[REF_FRAMES];
 
-  // Number of temporal layers: may be > 1 for SVC (scalable vector coding).
+  /*!
+   * Number of temporal layers: may be > 1 for SVC (scalable vector coding).
+   */
   unsigned int number_temporal_layers;
-  // Temporal layer ID of this frame
-  // (in the range 0 ... (number_temporal_layers - 1)).
+  /*!
+   * Temporal layer ID of this frame
+   * (in the range 0 ... (number_temporal_layers - 1)).
+   */
   int temporal_layer_id;
 
-  // Number of spatial layers: may be > 1 for SVC (scalable vector coding).
+  /*!
+   * Number of spatial layers: may be > 1 for SVC (scalable vector coding).
+   */
   unsigned int number_spatial_layers;
-  // Spatial layer ID of this frame
-  // (in the range 0 ... (number_spatial_layers - 1)).
+  /*!
+   * Spatial layer ID of this frame
+   * (in the range 0 ... (number_spatial_layers - 1)).
+   */
   int spatial_layer_id;
 
 #if TXCOEFF_TIMER
@@ -736,6 +1049,8 @@ typedef struct AV1Common {
   int is_decoding;
 #endif  // CONFIG_LPF_MASK
 } AV1_COMMON;
+
+/*!\cond */
 
 // TODO(hkuang): Don't need to lock the whole pool after implementing atomic
 // frame reference count.
@@ -976,7 +1291,7 @@ static INLINE void set_entropy_context(MACROBLOCKD *xd, int mi_row, int mi_col,
   for (i = 0; i < num_planes; ++i) {
     struct macroblockd_plane *const pd = &xd->plane[i];
     // Offset the buffer pointer
-    const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
+    const BLOCK_SIZE bsize = xd->mi[0]->bsize;
     if (pd->subsampling_y && (mi_row & 0x01) && (mi_size_high[bsize] == 1))
       row_offset = mi_row - 1;
     if (pd->subsampling_x && (mi_col & 0x01) && (mi_size_wide[bsize] == 1))
@@ -1445,7 +1760,7 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
 
   const int offset = mi_row * mi_params->mi_stride + mi_col;
   MB_MODE_INFO **mi = mi_params->mi_grid_base + offset;
-  const BLOCK_SIZE subsize = mi[0]->sb_type;
+  const BLOCK_SIZE subsize = mi[0]->bsize;
 
   assert(bsize < BLOCK_SIZES_ALL);
 
@@ -1470,7 +1785,7 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
       if (sshigh * 4 == bhigh) return PARTITION_HORZ_4;
       assert(sshigh * 2 == bhigh);
 
-      if (mbmi_below->sb_type == subsize)
+      if (mbmi_below->bsize == subsize)
         return PARTITION_HORZ;
       else
         return PARTITION_HORZ_B;
@@ -1481,7 +1796,7 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
       if (sswide * 4 == bwide) return PARTITION_VERT_4;
       assert(sswide * 2 == bhigh);
 
-      if (mbmi_right->sb_type == subsize)
+      if (mbmi_right->bsize == subsize)
         return PARTITION_VERT;
       else
         return PARTITION_VERT_B;
@@ -1495,8 +1810,8 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
       // it's PARTITION_SPLIT.
       if (sswide * 2 != bwide || sshigh * 2 != bhigh) return PARTITION_SPLIT;
 
-      if (mi_size_wide[mbmi_below->sb_type] == bwide) return PARTITION_HORZ_A;
-      if (mi_size_high[mbmi_right->sb_type] == bhigh) return PARTITION_VERT_A;
+      if (mi_size_wide[mbmi_below->bsize] == bwide) return PARTITION_HORZ_A;
+      if (mi_size_high[mbmi_right->bsize] == bhigh) return PARTITION_VERT_A;
 
       return PARTITION_SPLIT;
     }
@@ -1549,6 +1864,8 @@ static INLINE int is_valid_seq_level_idx(AV1_LEVEL seq_level_idx) {
           seq_level_idx != SEQ_LEVEL_7_0 && seq_level_idx != SEQ_LEVEL_7_1 &&
           seq_level_idx != SEQ_LEVEL_7_2 && seq_level_idx != SEQ_LEVEL_7_3);
 }
+
+/*!\endcond */
 
 #ifdef __cplusplus
 }  // extern "C"

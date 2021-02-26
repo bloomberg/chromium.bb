@@ -6,6 +6,7 @@
       "id": "security",
       "title": "Security",
       "order": 80,
+      "persistence": "closeable",
       "className": "Security.SecurityPanel"
     }
   ],
@@ -15,12 +16,11 @@
     "ui",
     "sdk"
   ],
-  "scripts": [],
   "modules": [
-    "security.js",
-    "security-legacy.js",
-    "SecurityModel.js",
-    "SecurityPanel.js"
+    "security-legacy.js"
+  ],
+  "skip_compilation": [
+    "security-legacy.js"
   ],
   "resources": [
     "lockIcon.css",

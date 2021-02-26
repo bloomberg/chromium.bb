@@ -11,13 +11,13 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
-import android.os.Build;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,14 +33,15 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Promise;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.TabViewManager;
+import org.chromium.chrome.browser.tab.TabViewProvider;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -52,7 +53,6 @@ import java.util.Arrays;
 /** Unit tests for PageViewObserver. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@MinAndroidSdkLevel(Build.VERSION_CODES.P)
 public final class PageViewObserverTest {
     private static final String STARTING_URL = "http://starting.url";
     private static final String DIFFERENT_URL = "http://different.url";
@@ -90,6 +90,25 @@ public final class PageViewObserverTest {
     private UserDataHost mDestroyedUserDataHost;
     private WeakReference<Activity> mActivityRef;
 
+    private class MockTabViewManager implements TabViewManager {
+        private TabViewProvider mTabViewProvider;
+
+        @Override
+        public boolean isShowing(TabViewProvider tabViewProvider) {
+            return mTabViewProvider != null && mTabViewProvider == tabViewProvider;
+        }
+
+        @Override
+        public void addTabViewProvider(TabViewProvider tabViewProvider) {
+            mTabViewProvider = tabViewProvider;
+        }
+
+        @Override
+        public void removeTabViewProvider(TabViewProvider tabViewProvider) {
+            if (mTabViewProvider == tabViewProvider) mTabViewProvider = null;
+        }
+    }
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -103,6 +122,8 @@ public final class PageViewObserverTest {
         doReturn(null).when(mTab).getUrlString();
         doReturn(Robolectric.buildActivity(Activity.class).get()).when(mTab).getContext();
         doReturn(Robolectric.buildActivity(Activity.class).get()).when(mTab2).getContext();
+        doReturn(new MockTabViewManager()).when(mTab).getTabViewManager();
+        doReturn(new MockTabViewManager()).when(mTab2).getTabViewManager();
         doReturn(true).when(mTab).isInitialized();
         doReturn(true).when(mTab2).isInitialized();
         doReturn(Arrays.asList(mTabModel)).when(mTabModelSelector).getModels();
@@ -196,6 +217,22 @@ public final class PageViewObserverTest {
         doReturn(true).when(mTab2).isHidden();
         didSelectTab(mTab2, TabSelectionType.FROM_USER);
         verify(mEventTracker, times(0)).addWebsiteEvent(argThat(isStartEvent(DIFFERENT_FQDN)));
+    }
+
+    @Test
+    public void switchToSuspendedTab_startNotReported() {
+        PageViewObserver observer = createPageViewObserver();
+        updateUrl(mTab, STARTING_URL);
+
+        doReturn(STARTING_URL).when(mTab).getUrlString();
+        doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
+        observer.notifySiteSuspensionChanged(STARTING_FQDN, true);
+        assertTrue(SuspendedTab.from(mTab).isShowing());
+        reset(mEventTracker);
+
+        onHidden(mTab, TabHidingType.ACTIVITY_HIDDEN);
+        onShown(mTab, TabSelectionType.FROM_USER);
+        verify(mEventTracker, never()).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
     }
 
     @Test
@@ -454,6 +491,15 @@ public final class PageViewObserverTest {
 
         doReturn(mDestroyedUserDataHost).when(mTab).getUserDataHost();
         doReturn(false).when(mTab).isInitialized();
+        observer.notifySiteSuspensionChanged(STARTING_FQDN, true);
+    }
+
+    @Test
+    public void eagerSuspension_nullTab() {
+        PageViewObserver observer = createPageViewObserver();
+        updateUrl(mTab, STARTING_URL);
+
+        didSelectTab(null, TabSelectionType.FROM_USER);
         observer.notifySiteSuspensionChanged(STARTING_FQDN, true);
     }
 

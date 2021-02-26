@@ -2,12 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(crbug.com.1052397): Remove this and |chromeos_is_browser_only| usage once
+# |is_chromeos| is true in a LaCrOS build.
+import("//build/config/chromeos/ui_mode.gni")
+
 # This file contains common system config stuff for the Android build.
 
 # NOTE: Because Chrome OS builds may depend on targets built with the Android
 # toolchain, this GNI file may be read and processed from within Chrome OS
 # toolchains. Checking |is_android| here would therefore be too restrictive.
-if (is_android || is_chromeos) {
+if (is_android || is_chromeos ||
+    (is_linux && chromeos_is_browser_only && also_build_ash_chrome)) {
   import("//build/config/chromecast_build.gni")
   import("//build_overrides/build.gni")
   import("abi.gni")
@@ -45,6 +50,10 @@ if (is_android || is_chromeos) {
     # repositories to support both public only and internal builds.
     enable_chrome_android_internal = has_chrome_android_internal
 
+    # The default to use for android:minSdkVersion for targets that do
+    # not explicitly set it.
+    default_min_sdk_version = 21
+
     # Android API level for 32 bits platforms
     android32_ndk_api_level = 16
 
@@ -68,9 +77,6 @@ if (is_android || is_chromeos) {
     }
   }
 
-  # Our build rules support only KitKat+.
-  default_min_sdk_version = 19
-
   if (!defined(default_android_ndk_root)) {
     default_android_ndk_root = "//third_party/android_ndk"
     default_android_ndk_version = "r20"
@@ -81,18 +87,23 @@ if (is_android || is_chromeos) {
   }
 
   public_android_sdk_root = "//third_party/android_sdk/public"
-  if (android_sdk_release == "q") {
+  if (android_sdk_release == "r") {
     default_android_sdk_root = public_android_sdk_root
-    default_android_sdk_version = 29
-    default_android_sdk_build_tools_version = "29.0.2"
+    default_android_sdk_version = "30"
+    default_android_sdk_build_tools_version = "30.0.1"
     public_android_sdk = true
+  }
+
+  # For use downstream when we are building with preview Android SDK
+  if (!defined(final_android_sdk)) {
+    final_android_sdk = public_android_sdk
   }
 
   if (!defined(default_lint_android_sdk_root)) {
     # Purposefully repeated so that downstream can change
     # default_android_sdk_root without changing lint version.
     default_lint_android_sdk_root = public_android_sdk_root
-    default_lint_android_sdk_version = 29
+    default_lint_android_sdk_version = 30
   }
 
   if (!defined(default_extras_android_sdk_root)) {
@@ -118,6 +129,17 @@ if (is_android || is_chromeos) {
     }
   }
 
+  if (!defined(material_design_target)) {
+    material_design_target =
+        "//third_party/android_deps:com_google_android_material_material_java"
+  }
+
+  if (!defined(android_protoc_bin)) {
+    android_protoc_bin = "//third_party/android_protoc/protoc"
+    android_proto_runtime =
+        "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java"
+  }
+
   webview_public_framework_dep =
       "//third_party/android_sdk:public_framework_system_java"
   if (!defined(webview_framework_dep)) {
@@ -126,9 +148,6 @@ if (is_android || is_chromeos) {
 
   assert(defined(default_android_sdk_root),
          "SDK release " + android_sdk_release + " not recognized.")
-
-  # Where to write failed expectations for bots to read.
-  android_configuration_failure_dir = "$root_build_dir/failed_expectations"
 
   declare_args() {
     android_ndk_root = default_android_ndk_root
@@ -202,12 +221,14 @@ if (is_android || is_chromeos) {
     # stderr and writes a failure file to $android_configuration_failure_dir:
     fail_on_android_expectations = false
 
-    # Enable the chrome build for devices without touchscreens.
-    notouch_build = false
-
     # Controls whether proguard obfuscation is enabled for targets
     # configured to use it.
     enable_proguard_obfuscation = true
+
+    # Controls whether |short_resource_paths| and |strip_resource_names| are
+    # respected. Useful when trying to analyze APKs using tools that do not
+    # support mapping these names.
+    enable_arsc_obfuscation = true
 
     # The target to use as the system WebView implementation.
     system_webview_apk_target = "//android_webview:system_webview_apk"
@@ -228,20 +249,14 @@ if (is_android || is_chromeos) {
     # Use hashed symbol names to reduce JNI symbol overhead.
     use_hashed_jni_names = !is_java_debug
 
-    # For local development, it's nice to not fail builds on warnings.
-    java_warnings_as_errors = !is_java_debug
-
     # Desugar lambdas and interfaces methods using Desugar.jar rather than
     # D8/R8. D8/R8 will still be used for backported method desugaring.
     enable_bazel_desugar = true
 
     # Enables Java library desugaring.
-    # This will cause an extra 1MB classes.dex file to appear in every apk.
-    enable_jdk_library_desugaring = false
+    # This will cause an extra classes.dex file to appear in every apk.
+    enable_jdk_library_desugaring = true
   }
-
-  # Path to where selected build variables are written to.
-  android_build_vars = "$root_build_dir/build_vars.txt"
 
   # Host stuff -----------------------------------------------------------------
 

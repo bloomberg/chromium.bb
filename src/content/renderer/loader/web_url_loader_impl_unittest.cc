@@ -20,10 +20,7 @@
 #include "base/time/time.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/request_peer.h"
-#include "content/renderer/loader/navigation_response_override_parameters.h"
-#include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
-#include "content/renderer/loader/sync_load_response.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/host_port_pair.h"
@@ -39,12 +36,17 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/sync_load_response.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_url_request_extra_data.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "url/gurl.h"
@@ -70,12 +72,14 @@ class TestResourceDispatcher : public ResourceDispatcher {
       int routing_id,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       uint32_t loader_options,
-      SyncLoadResponse* response,
+      blink::SyncLoadResponse* response,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       base::TimeDelta timeout,
       mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
-      std::unique_ptr<RequestPeer> peer) override {
+      std::unique_ptr<RequestPeer> peer,
+      std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
+          resource_load_info_notifier_wrapper) override {
     *response = std::move(sync_load_response_);
   }
 
@@ -88,15 +92,13 @@ class TestResourceDispatcher : public ResourceDispatcher {
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
-      std::unique_ptr<NavigationResponseOverrideParameters>
-          navigation_response_override_params) override {
+      std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
+          resource_load_info_notifier_wrapper) override {
     EXPECT_FALSE(peer_);
     if (sync_load_response_.head->encoded_body_length != -1)
       EXPECT_TRUE(loader_options & network::mojom::kURLLoadOptionSynchronous);
     peer_ = std::move(peer);
     url_ = request->url;
-    navigation_response_override_params_ =
-        std::move(navigation_response_override_params);
     return 1;
   }
 
@@ -114,18 +116,14 @@ class TestResourceDispatcher : public ResourceDispatcher {
   const GURL& url() { return url_; }
   const GURL& stream_url() { return stream_url_; }
 
-  void SetDefersLoading(int request_id, bool value) override {
-    defers_loading_ = value;
+  void SetDefersLoading(int request_id,
+                        blink::WebURLLoader::DeferType value) override {
+    defers_loading_ = (value != blink::WebURLLoader::DeferType::kNotDeferred);
   }
   bool defers_loading() const { return defers_loading_; }
 
-  void set_sync_load_response(SyncLoadResponse&& sync_load_response) {
+  void set_sync_load_response(blink::SyncLoadResponse&& sync_load_response) {
     sync_load_response_ = std::move(sync_load_response);
-  }
-
-  std::unique_ptr<NavigationResponseOverrideParameters>
-  TakeNavigationResponseOverrideParams() {
-    return std::move(navigation_response_override_params_);
   }
 
  private:
@@ -134,9 +132,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
   bool defers_loading_;
   GURL url_;
   GURL stream_url_;
-  SyncLoadResponse sync_load_response_;
-  std::unique_ptr<NavigationResponseOverrideParameters>
-      navigation_response_override_params_;
+  blink::SyncLoadResponse sync_load_response_;
 
   DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcher);
 };
@@ -171,6 +167,9 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   TestWebURLLoaderClient(ResourceDispatcher* dispatcher)
       : loader_(new WebURLLoaderImpl(
             dispatcher,
+            blink::scheduler::WebResourceLoadingTaskRunnerHandle::
+                CreateUnprioritized(
+                    blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
             blink::scheduler::WebResourceLoadingTaskRunnerHandle::
                 CreateUnprioritized(
                     blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
@@ -249,6 +248,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   }
 
   void DidFail(const blink::WebURLError& error,
+               base::TimeTicks finishTime,
                int64_t totalEncodedDataLength,
                int64_t totalEncodedBodyLength,
                int64_t totalDecodedBodyLength) override {
@@ -313,8 +313,11 @@ class WebURLLoaderImplTest : public testing::Test {
         static_cast<int>(blink::mojom::ResourceType::kSubResource);
     request->priority = net::IDLE;
     client()->loader()->LoadAsynchronously(
-        std::move(request), /*extra_data=*/nullptr, /*requestor_id=*/0,
-        /*download_to_network_cache_only=*/false, /*no_mime_sniffing=*/false,
+        std::move(request), /*url_request_extra_data=*/nullptr,
+        /*requestor_id=*/0,
+        /*no_mime_sniffing=*/false,
+        std::make_unique<blink::ResourceLoadInfoNotifierWrapper>(
+            /*resource_load_info_notifier=*/nullptr),
         client());
     ASSERT_TRUE(peer());
   }
@@ -460,79 +463,108 @@ TEST_F(WebURLLoaderImplTest, DeleteOnFail) {
 }
 
 TEST_F(WebURLLoaderImplTest, DefersLoadingBeforeStart) {
-  client()->loader()->SetDefersLoading(true);
+  client()->loader()->SetDefersLoading(
+      blink::WebURLLoader::DeferType::kDeferred);
   EXPECT_FALSE(dispatcher()->defers_loading());
   DoStartAsyncRequest();
   EXPECT_TRUE(dispatcher()->defers_loading());
 }
 
-// Checks that the response override parameters are properly applied.
-TEST_F(WebURLLoaderImplTest, ResponseOverride) {
-  // Initialize the request and the stream override.
-  const GURL kRequestURL = GURL(kTestURL);
-  const std::string kMimeType = "application/javascript";
-  auto response_override =
-      std::make_unique<NavigationResponseOverrideParameters>();
-  response_override->response_head->mime_type = kMimeType;
-  auto extra_data = base::MakeRefCounted<RequestExtraData>();
-  extra_data->set_navigation_response_override(std::move(response_override));
-
-  auto request = std::make_unique<network::ResourceRequest>();
-  request->url = kRequestURL;
-  request->resource_type =
-      static_cast<int>(blink::mojom::ResourceType::kScript);
-
-  client()->loader()->LoadAsynchronously(
-      std::move(request), std::move(extra_data), /*requestor_id=*/0,
-      /*download_to_network_cache_only=*/false, /*no_mime_sniffing=*/false,
-      client());
-
-  ASSERT_TRUE(peer());
-  EXPECT_EQ(kRequestURL, dispatcher()->url());
-  EXPECT_FALSE(client()->did_receive_response());
-
-  response_override = dispatcher()->TakeNavigationResponseOverrideParams();
-  ASSERT_TRUE(response_override);
-  peer()->OnReceivedResponse(std::move(response_override->response_head));
-
-  EXPECT_TRUE(client()->did_receive_response());
-
-  // The response info should have been overriden.
-  ASSERT_FALSE(client()->response().IsNull());
-  EXPECT_EQ(kMimeType, client()->response().MimeType().Latin1());
-
-  DoStartLoadingResponseBody();
-  DoCompleteRequest();
-  EXPECT_FALSE(dispatcher()->canceled());
-  EXPECT_TRUE(client()->did_receive_response_body());
-}
-
-TEST_F(WebURLLoaderImplTest, ResponseIPAddress) {
+TEST_F(WebURLLoaderImplTest, ResponseIPEndpoint) {
   GURL url("http://example.test/");
 
   struct TestCase {
     const char* ip;
-    const char* expected;
+    uint16_t port;
   } cases[] = {
-      {"127.0.0.1", "127.0.0.1"},
-      {"123.123.123.123", "123.123.123.123"},
-      {"::1", "[::1]"},
-      {"2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-       "[2001:db8:85a3::8a2e:370:7334]"},
-      {"2001:db8:85a3:0:0:8a2e:370:7334", "[2001:db8:85a3::8a2e:370:7334]"},
-      {"2001:db8:85a3::8a2e:370:7334", "[2001:db8:85a3::8a2e:370:7334]"},
-      {"::ffff:192.0.2.128", "[::ffff:c000:280]"}};
+      {"127.0.0.1", 443},
+      {"123.123.123.123", 80},
+      {"::1", 22},
+      {"2001:0db8:85a3:0000:0000:8a2e:0370:7334", 1337},
+      {"2001:db8:85a3:0:0:8a2e:370:7334", 12345},
+      {"2001:db8:85a3::8a2e:370:7334", 8080},
+      {"::ffff:192.0.2.128", 8443},
+  };
 
   for (const auto& test : cases) {
     SCOPED_TRACE(test.ip);
-    network::mojom::URLResponseHead head;
+
     net::IPAddress address;
     ASSERT_TRUE(address.AssignFromIPLiteral(test.ip));
-    head.remote_endpoint = net::IPEndPoint(address, 443);
+
+    network::mojom::URLResponseHead head;
+    head.remote_endpoint = net::IPEndPoint(address, test.port);
+
     blink::WebURLResponse response;
     WebURLLoaderImpl::PopulateURLResponse(url, head, &response, true, -1);
-    EXPECT_EQ(test.expected, response.RemoteIPAddress().Utf8());
+    EXPECT_EQ(head.remote_endpoint, response.RemoteIPEndpoint());
   };
+}
+
+TEST_F(WebURLLoaderImplTest, ResponseAddressSpace) {
+  using AddressSpace = network::mojom::IPAddressSpace;
+
+  struct TestCase {
+    std::string url;
+    std::string ip;
+    AddressSpace expected;
+  } cases[] = {
+      {"http://localhost", "127.0.0.1", AddressSpace::kLocal},
+      {"http://localhost", "::1", AddressSpace::kLocal},
+      {"file:///a/path", "", AddressSpace::kLocal},
+      {"file:///a/path", "8.8.8.8", AddressSpace::kLocal},
+      {"http://router.local", "10.1.0.1", AddressSpace::kPrivate},
+      {"http://router.local", "::ffff:192.0.2.128", AddressSpace::kPrivate},
+      {"https://bleep.test", "8.8.8.8", AddressSpace::kPublic},
+      {"http://a.test", "2001:db8:85a3::8a2e:370:7334", AddressSpace::kPublic},
+      {"http://invalid", "", AddressSpace::kUnknown},
+  };
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(test.url + ", " + test.ip);
+
+    GURL url(test.url);
+
+    // We are forced to use the result of AssignFromIPLiteral(), and we cannot
+    // just assign it to an unused variable. Check that all non-empty literals
+    // are correctly parsed.
+    net::IPAddress address;
+    EXPECT_EQ(!test.ip.empty(), address.AssignFromIPLiteral(test.ip));
+
+    network::mojom::URLResponseHead head;
+    head.remote_endpoint = net::IPEndPoint(address, 443);
+
+    blink::WebURLResponse response;
+    WebURLLoaderImpl::PopulateURLResponse(url, head, &response, true, -1);
+
+    EXPECT_EQ(test.expected, response.AddressSpace());
+  }
+}
+
+// This test verifies that the IPAddressSpace set on WebURLResponse takes into
+// account WebURLResponse::ResponseUrl() instead of
+// WebURLResponse::CurrentRequestUrl().
+TEST_F(WebURLLoaderImplTest, ResponseAddressSpaceConsidersResponseUrl) {
+  GURL request_url("http://request.test");
+
+  // The remote endpoint contains a public IP address, but the response was
+  // ultimately fetched by a service worker from a file URL.
+  network::mojom::URLResponseHead head;
+  head.remote_endpoint = net::IPEndPoint(net::IPAddress(8, 8, 8, 8), 80);
+  head.was_fetched_via_service_worker = true;
+  head.url_list_via_service_worker = {
+      GURL("http://redirect.test"),
+      GURL("file:///a/path"),
+  };
+
+  blink::WebURLResponse response;
+  WebURLLoaderImpl::PopulateURLResponse(request_url, head, &response, true, -1);
+
+  // The address space of the response reflects the fact the it was fetched
+  // from a file, even though the request was initially to a public website.
+  EXPECT_EQ(GURL("http://request.test"), GURL(response.CurrentRequestUrl()));
+  EXPECT_EQ(GURL("file:///a/path"), GURL(response.ResponseUrl()));
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal, response.AddressSpace());
 }
 
 TEST_F(WebURLLoaderImplTest, ResponseCert) {
@@ -626,10 +658,10 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   request->priority = net::HIGHEST;
 
   // Prepare a mock response
-  SyncLoadResponse sync_load_response;
+  blink::SyncLoadResponse sync_load_response;
   sync_load_response.error_code = net::OK;
   sync_load_response.url = url;
-  sync_load_response.data = kBodyData;
+  sync_load_response.data.Assign(blink::WebData(kBodyData));
   ASSERT_EQ(17u, sync_load_response.data.size());
   sync_load_response.head->encoded_body_length = kEncodedBodyLength;
   sync_load_response.head->encoded_data_length = kEncodedDataLength;
@@ -643,11 +675,13 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   blink::WebBlobInfo downloaded_blob;
 
   client()->loader()->LoadSynchronously(
-      std::move(request), /*extra_data=*/nullptr, /*requestor_id=*/0,
-      /*download_to_network_cache_only=*/false,
+      std::move(request), /*url_request_extra_data=*/nullptr,
+      /*requestor_id=*/0,
       /*pass_response_pipe_to_client=*/false, /*no_mime_sniffing=*/false,
       base::TimeDelta(), nullptr, response, error, data, encoded_data_length,
-      encoded_body_length, downloaded_blob);
+      encoded_body_length, downloaded_blob,
+      std::make_unique<blink::ResourceLoadInfoNotifierWrapper>(
+          /*resource_load_info_notifier=*/nullptr));
 
   EXPECT_EQ(kEncodedBodyLength, encoded_body_length);
   EXPECT_EQ(kEncodedDataLength, encoded_data_length);

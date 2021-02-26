@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "media/base/callback_registry.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_initialized_promise.h"
 #include "media/base/cdm_promise_adapter.h"
@@ -29,10 +30,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace url {
-class Origin;
-}
-
 namespace media {
 
 class MojoDecryptor;
@@ -40,22 +37,19 @@ class MojoDecryptor;
 // A ContentDecryptionModule that proxies to a mojom::ContentDecryptionModule.
 // That mojom::ContentDecryptionModule proxies back to the MojoCdm via the
 // mojom::ContentDecryptionModuleClient interface.
-class MojoCdm : public ContentDecryptionModule,
-                public CdmContext,
-                public mojom::ContentDecryptionModuleClient {
+class MojoCdm final : public ContentDecryptionModule,
+                      public CdmContext,
+                      public mojom::ContentDecryptionModuleClient {
  public:
   using MessageType = CdmMessageType;
 
-  static void Create(
-      const std::string& key_system,
-      const url::Origin& security_origin,
-      const CdmConfig& cdm_config,
-      mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
-      const SessionMessageCB& session_message_cb,
-      const SessionClosedCB& session_closed_cb,
-      const SessionKeysChangeCB& session_keys_change_cb,
-      const SessionExpirationUpdateCB& session_expiration_update_cb,
-      CdmCreatedCB cdm_created_cb);
+  MojoCdm(mojo::Remote<mojom::ContentDecryptionModule> remote_cdm,
+          const base::Optional<base::UnguessableToken>& cdm_id,
+          mojo::PendingRemote<mojom::Decryptor> decryptor_remote,
+          const SessionMessageCB& session_message_cb,
+          const SessionClosedCB& session_closed_cb,
+          const SessionKeysChangeCB& session_keys_change_cb,
+          const SessionExpirationUpdateCB& session_expiration_update_cb);
 
   // ContentDecryptionModule implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
@@ -81,22 +75,12 @@ class MojoCdm : public ContentDecryptionModule,
 
   // CdmContext implementation. Can be called on a different thread.
   // All GetDecryptor() calls must be made on the same thread.
+  std::unique_ptr<CallbackRegistration> RegisterEventCB(EventCB event_cb) final;
   Decryptor* GetDecryptor() final;
-  int GetCdmId() const final;
+  base::Optional<base::UnguessableToken> GetCdmId() const final;
 
  private:
-  MojoCdm(mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
-          const SessionMessageCB& session_message_cb,
-          const SessionClosedCB& session_closed_cb,
-          const SessionKeysChangeCB& session_keys_change_cb,
-          const SessionExpirationUpdateCB& session_expiration_update_cb);
-
   ~MojoCdm() final;
-
-  void InitializeCdm(const std::string& key_system,
-                     const url::Origin& security_origin,
-                     const CdmConfig& cdm_config,
-                     std::unique_ptr<CdmInitializedPromise> promise);
 
   void OnConnectionError(uint32_t custom_reason,
                          const std::string& description);
@@ -112,14 +96,6 @@ class MojoCdm : public ContentDecryptionModule,
       std::vector<std::unique_ptr<CdmKeyInformation>> keys_info) final;
   void OnSessionExpirationUpdate(const std::string& session_id,
                                  double new_expiry_time_sec) final;
-
-  // Callback for InitializeCdm.
-  void OnCdmInitialized(mojom::CdmPromiseResultPtr result,
-                        int cdm_id,
-                        mojo::PendingRemote<mojom::Decryptor> decryptor);
-
-  // Callback when new decryption key is available.
-  void OnKeyAdded();
 
   // Callbacks to handle CDM promises.
   void OnSimpleCdmPromiseResult(uint32_t promise_id,
@@ -144,7 +120,7 @@ class MojoCdm : public ContentDecryptionModule,
 
   // CDM ID of the remote CDM. Set after initialization is completed. Must not
   // be invalid if initialization succeeded.
-  int cdm_id_;
+  base::Optional<base::UnguessableToken> cdm_id_;
 
   // The mojo::PendingRemote<mojom::Decryptor> exposed by the remote CDM. Set
   // after initialization is completed and cleared after |decryptor_| is
@@ -164,14 +140,13 @@ class MojoCdm : public ContentDecryptionModule,
   SessionKeysChangeCB session_keys_change_cb_;
   SessionExpirationUpdateCB session_expiration_update_cb_;
 
-  // Pending promise for InitializeCdm().
-  std::unique_ptr<CdmInitializedPromise> pending_init_promise_;
-
   // Keep track of current sessions.
   CdmSessionTracker cdm_session_tracker_;
 
   // Keep track of outstanding promises.
   CdmPromiseAdapter cdm_promise_adapter_;
+
+  CallbackRegistry<EventCB::RunType> event_callbacks_;
 
   // This must be the last member.
   base::WeakPtrFactory<MojoCdm> weak_factory_{this};

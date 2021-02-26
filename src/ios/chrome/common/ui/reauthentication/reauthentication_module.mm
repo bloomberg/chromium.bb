@@ -5,13 +5,21 @@
 
 #import <LocalAuthentication/LocalAuthentication.h>
 
-#import "base/logging.h"
+#include "base/check.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 constexpr char kPasscodeArticleURL[] = "https://support.apple.com/HT204060";
+
+@interface ReauthenticationModule () <SuccessfulReauthTimeAccessor>
+
+// Date kept to decide if last auth can be reused when
+// |lastSuccessfulReauthTime| is |self|.
+@property(nonatomic, strong) NSDate* lastSuccessfulReauthTime;
+
+@end
 
 @implementation ReauthenticationModule {
   // Block that creates a new |LAContext| object everytime one is required,
@@ -22,6 +30,11 @@ constexpr char kPasscodeArticleURL[] = "https://support.apple.com/HT204060";
   // successful re-authentication was performed and to get the time of the last
   // successful re-authentication.
   __weak id<SuccessfulReauthTimeAccessor> _successfulReauthTimeAccessor;
+}
+
+- (instancetype)init {
+  self = [self initWithSuccessfulReauthTimeAccessor:self];
+  return self;
 }
 
 - (instancetype)initWithSuccessfulReauthTimeAccessor:
@@ -89,6 +102,12 @@ constexpr char kPasscodeArticleURL[] = "https://support.apple.com/HT204060";
     }
   }
   return previousAuthValid;
+}
+
+#pragma mark - SuccessfulReauthTimeAccessor
+
+- (void)updateSuccessfulReauthTime {
+  self.lastSuccessfulReauthTime = [[NSDate alloc] init];
 }
 
 #pragma mark - ForTesting

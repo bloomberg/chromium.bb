@@ -16,13 +16,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage_cache_observer.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_scheduler_types.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage_cache.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
@@ -187,11 +187,11 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
   void OpenCacheImpl(const std::string& cache_name,
                      int64_t trace_id,
                      CacheAndErrorCallback callback);
-  void CreateCacheDidCreateCache(
-      const std::string& cache_name,
-      int64_t trace_id,
-      CacheAndErrorCallback callback,
-      std::unique_ptr<LegacyCacheStorageCache> cache);
+  void CreateCacheDidCreateCache(const std::string& cache_name,
+                                 int64_t trace_id,
+                                 CacheAndErrorCallback callback,
+                                 std::unique_ptr<LegacyCacheStorageCache> cache,
+                                 blink::mojom::CacheStorageError status);
   void CreateCacheDidWriteIndex(CacheAndErrorCallback callback,
                                 CacheStorageCacheHandle cache_handle,
                                 int64_t trace_id,

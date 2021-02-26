@@ -9,7 +9,6 @@
 #include "base/clang_profiling_buildflags.h"
 #include "base/location.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "components/viz/test/gpu_host_impl_test_api.h"
@@ -108,6 +107,7 @@ class TestGpuService : public viz::mojom::GpuService {
   void GpuSwitched(gl::GpuPreference active_gpu_heuristic) override {}
   void DisplayAdded() override {}
   void DisplayRemoved() override {}
+  void DisplayMetricsChanged() override {}
   void DestroyAllChannels() override {}
   void OnBackgroundCleanup() override {}
   void OnBackgrounded() override {}
@@ -116,7 +116,7 @@ class TestGpuService : public viz::mojom::GpuService {
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level) override {}
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void BeginCATransaction() override {}
   void CommitCATransaction(CommitCATransactionCallback callback) override {}
 #endif
@@ -136,8 +136,8 @@ class TestGpuService : public viz::mojom::GpuService {
 // task has ran.
 void PostTaskToIOThreadAndWait(base::OnceClosure task) {
   base::RunLoop run_loop;
-  base::PostTaskAndReply(FROM_HERE, {content::BrowserThread::IO},
-                         std::move(task), run_loop.QuitClosure());
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE, std::move(task), run_loop.QuitClosure());
   run_loop.Run();
 }
 

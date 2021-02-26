@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -36,6 +37,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 
 using base::DictionaryValue;
@@ -56,8 +58,8 @@ void OperationCompleteCallback(WeakPtr<ServiceWorkerInternalsUI> internals,
                                int callback_id,
                                blink::ServiceWorkerStatusCode status) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(OperationCompleteCallback, internals,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(OperationCompleteCallback, internals,
                                   callback_id, status));
     return;
   }
@@ -159,9 +161,9 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
   for (auto& it : version.clients) {
     auto client = DictionaryValue();
     client.SetStringPath("client_id", it.first);
-    if (it.second.type == blink::mojom::ServiceWorkerClientType::kWindow) {
+    if (it.second.type() == blink::mojom::ServiceWorkerClientType::kWindow) {
       WebContents* web_contents =
-          WebContents::FromFrameTreeNodeId(it.second.frame_tree_node_id);
+          WebContents::FromFrameTreeNodeId(it.second.GetFrameTreeNodeId());
       if (web_contents)
         client.SetStringPath("url", web_contents->GetURL().spec());
     }
@@ -221,8 +223,8 @@ void DidGetStoredRegistrationsOnCoreThread(
     blink::ServiceWorkerStatusCode status,
     const std::vector<ServiceWorkerRegistrationInfo>& stored_registrations) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), context->GetAllLiveRegistrationInfo(),
                      context->GetAllLiveVersionInfo(), stored_registrations));
 }
@@ -256,6 +258,14 @@ void DidGetRegistrations(
       "serviceworker.onPartitionData", ConvertToRawPtrVector(args));
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ServiceWorkerInternalsLinkQuery {
+  kDevTools = 0,
+  kOther = 1,
+  kMaxValue = kOther,
+};
+
 }  // namespace
 
 class ServiceWorkerInternalsUI::PartitionObserver
@@ -273,7 +283,8 @@ class ServiceWorkerInternalsUI::PartitionObserver
   void OnStarted(int64_t version_id,
                  const GURL& scope,
                  int process_id,
-                 const GURL& script_url) override {
+                 const GURL& script_url,
+                 const blink::ServiceWorkerToken& token) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(
         "serviceworker.onRunningStateChanged");
@@ -296,8 +307,10 @@ class ServiceWorkerInternalsUI::PartitionObserver
         "serviceworker.onVersionStateChanged", Value(partition_id_),
         Value(base::NumberToString(version_id)));
   }
-  void OnErrorReported(int64_t version_id,
-                       const ErrorInfo& info) override {
+  void OnErrorReported(
+      int64_t version_id,
+      const GURL& scope,
+      const ServiceWorkerContextObserver::ErrorInfo& info) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::vector<std::unique_ptr<const Value>> args;
     args.push_back(std::make_unique<Value>(partition_id_));
@@ -312,6 +325,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
                                           ConvertToRawPtrVector(args));
   }
   void OnReportConsoleMessage(int64_t version_id,
+                              const GURL& scope,
                               const ConsoleMessage& message) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::vector<std::unique_ptr<const Value>> args;
@@ -347,10 +361,22 @@ class ServiceWorkerInternalsUI::PartitionObserver
 
 ServiceWorkerInternalsUI::ServiceWorkerInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui), next_partition_id_(0) {
+  std::string query = web_ui->GetWebContents()->GetURL().query();
+  ServiceWorkerInternalsLinkQuery query_type =
+      ServiceWorkerInternalsLinkQuery::kOther;
+  if (query == "devtools") {
+    query_type = ServiceWorkerInternalsLinkQuery::kDevTools;
+  }
+  base::UmaHistogramEnumeration("ServiceWorker.InternalsPageAccessed",
+                                query_type);
   WebUIDataSource* source =
       WebUIDataSource::Create(kChromeUIServiceWorkerInternalsHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types jstemplate;");
   source->UseStringsJs();
   source->AddResourcePath("serviceworker_internals.js",
                           IDR_SERVICE_WORKER_INTERNALS_JS);
@@ -584,7 +610,7 @@ void ServiceWorkerInternalsUI::StartWorker(const ListValue* args) {
   }
   base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback =
       base::BindOnce(OperationCompleteCallback, AsWeakPtr(), callback_id);
-  context->StartServiceWorker(GURL(scope_string), std::move(callback));
+  context->StartActiveServiceWorker(GURL(scope_string), std::move(callback));
 }
 
 void ServiceWorkerInternalsUI::StopWorkerWithId(

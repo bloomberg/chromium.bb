@@ -4,7 +4,7 @@
  * @export
  */
 {{module.namespace}}.{{struct.name}}_{{constant.name}} =
-    {{constant.value|expression_to_text_lite}};
+    {{constant|constant_value}};
 {%  endfor %}
 
 {%- from "lite/enum_definition.tmpl" import enum_def with context %}
@@ -40,15 +40,15 @@ mojo.internal.Struct(
 
 {%  if generate_closure_exports -%}
 goog.provide('{{module.namespace}}.{{struct.name}}');
+{%- endif %}
 
 /** @record */
 {{module.namespace}}.{{struct.name}} = class {
   constructor() {
 {%- for packed_field in struct.packed.packed_fields %}
-    /** @type { {{packed_field.field.kind|lite_closure_field_type}} } */
+    /** @export { {{packed_field.field.kind|lite_closure_field_type}} } */
     this.{{packed_field.field.name}};
 {%-  endfor %}
   }
 };
 
-{%- endif %}

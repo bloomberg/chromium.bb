@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/audio_focus_web_contents_observer.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -29,7 +28,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/color_chooser.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/browser/ui/web_contents_sizer.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/zoom/zoom_controller.h"
@@ -176,12 +174,11 @@ ChromeAppDelegate::NewWindowContentsDelegate::OpenURLFromTab(
     // tasks.
     scoped_refptr<shell_integration::DefaultBrowserWorker>
         check_if_default_browser_worker =
-            new shell_integration::DefaultBrowserWorker(
-                base::Bind(&OpenURLAfterCheckIsDefaultBrowser,
-                           base::Passed(&owned_source), params));
-    check_if_default_browser_worker->StartCheckIsDefault();
+            new shell_integration::DefaultBrowserWorker();
+    check_if_default_browser_worker->StartCheckIsDefault(base::BindOnce(
+        &OpenURLAfterCheckIsDefaultBrowser, std::move(owned_source), params));
   }
-  return NULL;
+  return nullptr;
 }
 
 ChromeAppDelegate::ChromeAppDelegate(bool keep_alive)
@@ -241,7 +238,7 @@ void ChromeAppDelegate::RenderViewCreated(
 
 void ChromeAppDelegate::ResizeWebContents(content::WebContents* web_contents,
                                           const gfx::Size& size) {
-  ::ResizeWebContents(web_contents, gfx::Rect(size));
+  web_contents->Resize(gfx::Rect(size));
 }
 
 content::WebContents* ChromeAppDelegate::OpenURLFromTab(
@@ -287,7 +284,7 @@ content::ColorChooser* ChromeAppDelegate::ShowColorChooser(
 
 void ChromeAppDelegate::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
-    std::unique_ptr<content::FileSelectListener> listener,
+    scoped_refptr<content::FileSelectListener> listener,
     const blink::mojom::FileChooserParams& params) {
   FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
                                    params);
@@ -354,8 +351,8 @@ void ChromeAppDelegate::OnHide() {
 
   // Hold on to the keep alive for some time to give the app a chance to show
   // the window.
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&ChromeAppDelegate::RelinquishKeepAliveAfterTimeout,
                      weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kAppWindowFirstShowTimeoutSeconds));

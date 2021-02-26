@@ -16,9 +16,12 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switch_dependent_feature_overrides.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/weblayer_variations_service_client.h"
+
+#if defined(OS_ANDROID)
+#include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
+#endif
 
 #if defined(OS_ANDROID)
 namespace switches {
@@ -85,13 +88,12 @@ void FeatureListCreator::SetUpFieldTrials() {
   variations_service_->OverridePlatform(
       variations::Study::PLATFORM_ANDROID_WEBLAYER, "android_weblayer");
 
-  std::set<std::string> unforceable_field_trials;
   std::vector<std::string> variation_ids;
   auto feature_list = std::make_unique<base::FeatureList>();
 
   variations_service_->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
-      switches::kDisableFeatures, unforceable_field_trials, variation_ids,
+      switches::kDisableFeatures, variation_ids,
       content::GetSwitchDependentFeatureOverrides(
           *base::CommandLine::ForCurrentProcess()),
       std::move(feature_list), &weblayer_field_trials_);

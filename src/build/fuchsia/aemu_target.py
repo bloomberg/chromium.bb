@@ -4,6 +4,7 @@
 
 """Implements commands for running and interacting with Fuchsia on AEMU."""
 
+import emu_target
 import os
 import platform
 import qemu_target
@@ -11,13 +12,27 @@ import logging
 
 from common import GetEmuRootForPlatform
 
+
+def GetTargetType():
+  return AemuTarget
+
+
 class AemuTarget(qemu_target.QemuTarget):
-  def __init__(self, output_dir, target_cpu, system_log_file, emu_type,
-               cpu_cores, require_kvm, ram_size_mb, enable_graphics,
-               hardware_gpu):
-    super(AemuTarget, self).__init__(output_dir, target_cpu, system_log_file,
-                                     emu_type, cpu_cores, require_kvm,
-                                     ram_size_mb)
+  EMULATOR_NAME = 'aemu'
+
+  def __init__(self,
+               out_dir,
+               target_cpu,
+               system_log_file,
+               cpu_cores,
+               require_kvm,
+               ram_size_mb,
+               enable_graphics,
+               hardware_gpu,
+               fuchsia_out_dir=None):
+    super(AemuTarget,
+          self).__init__(out_dir, target_cpu, system_log_file, cpu_cores,
+                         require_kvm, ram_size_mb, fuchsia_out_dir)
 
     # TODO(crbug.com/1000907): Enable AEMU for arm64.
     if platform.machine() == 'aarch64':
@@ -25,12 +40,27 @@ class AemuTarget(qemu_target.QemuTarget):
     self._enable_graphics = enable_graphics
     self._hardware_gpu = hardware_gpu
 
+  @staticmethod
+  def RegisterArgs(arg_parser):
+    emu_target.EmuTarget.RegisterArgs(arg_parser)
+    aemu_args = arg_parser.add_argument_group('aemu', 'AEMU Arguments')
+    aemu_args.add_argument('--enable-graphics',
+                           action='store_true',
+                           default=False,
+                           help='Start AEMU with graphics instead of '\
+                                'headless.')
+    aemu_args.add_argument('--hardware-gpu',
+                           action='store_true',
+                           default=False,
+                           help='Use local GPU hardware instead of '\
+                                'Swiftshader.')
+
   def _EnsureEmulatorExists(self, path):
     assert os.path.exists(path), \
-          'This checkout is missing %s.' % (self._emu_type)
+          'This checkout is missing %s.' % (self.EMULATOR_NAME)
 
   def _BuildCommand(self):
-    aemu_folder = GetEmuRootForPlatform(self._emu_type)
+    aemu_folder = GetEmuRootForPlatform(self.EMULATOR_NAME)
 
     self._EnsureEmulatorExists(aemu_folder)
     aemu_path = os.path.join(aemu_folder, 'emulator')
@@ -60,7 +90,7 @@ class AemuTarget(qemu_target.QemuTarget):
     # All args after -fuchsia flag gets passed to QEMU
     aemu_command.extend([
         '-feature', aemu_features, '-window-size', '1024x600', '-gpu',
-        gpu_target, '-fuchsia'
+        gpu_target, '-verbose', '-fuchsia'
     ])
 
     aemu_command.extend(self._BuildQemuConfig())
@@ -73,3 +103,19 @@ class AemuTarget(qemu_target.QemuTarget):
       '-device', 'ich9-ahci,id=ahci'])
     logging.info(' '.join(aemu_command))
     return aemu_command
+
+  def _GetVulkanIcdFile(self):
+    return os.path.join(GetEmuRootForPlatform(self.EMULATOR_NAME), 'lib64',
+                        'vulkan', 'vk_swiftshader_icd.json')
+
+  def _SetEnv(self):
+    env = os.environ.copy()
+    aemu_logging_env = {
+        "ANDROID_EMU_VK_NO_CLEANUP": "1",
+        "ANDROID_EMUGL_LOG_PRINT": "1",
+        "ANDROID_EMUGL_VERBOSE": "1",
+        "VK_ICD_FILENAMES": self._GetVulkanIcdFile(),
+        "VK_LOADER_DEBUG": "info,error",
+    }
+    env.update(aemu_logging_env)
+    return env

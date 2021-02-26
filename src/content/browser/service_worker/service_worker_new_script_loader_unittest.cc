@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -16,7 +16,6 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/test/browser_task_environment.h"
@@ -95,11 +94,9 @@ class MockNetwork {
         mock_server_->Get(url_request.url);
 
     // Pass the response header to the client.
-    net::HttpResponseInfo info;
-    info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(response.headers));
     auto response_head = network::mojom::URLResponseHead::New();
-    response_head->headers = info.headers;
+    response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(response.headers));
     response_head->headers->GetMimeType(&response_head->mime_type);
     response_head->network_accessed = access_network_;
     if (response.has_certificate_error) {
@@ -155,8 +152,6 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
 
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
-
-    context()->storage()->LazyInitializeForTest();
 
     mock_server_.Set(GURL(kNormalScriptURL),
                      MockHTTPServer::Response(
@@ -218,7 +213,7 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     int routing_id = 0;
     int request_id = 10;
     uint32_t options = 0;
-    int64_t resource_id = GetNewResourceIdSync(context()->storage());
+    int64_t resource_id = GetNewResourceIdSync(context()->GetStorageControl());
 
     network::ResourceRequest request;
     request.url = url;
@@ -239,7 +234,7 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
   // Returns false if the entry for |url| doesn't exist in the storage.
   bool VerifyStoredResponse(const GURL& url) {
     return ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
-        LookupResourceId(url), context()->storage(),
+        LookupResourceId(url), context()->GetStorageControl(),
         mock_server_.Get(url).body);
   }
 

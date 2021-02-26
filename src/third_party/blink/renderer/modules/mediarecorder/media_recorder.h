@@ -25,7 +25,6 @@ class MODULES_EXPORT MediaRecorder
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<MediaRecorder>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -87,7 +86,7 @@ class MODULES_EXPORT MediaRecorder
   // be sent, unless recording isn't active in which case nothing happens.
   void OnAllTracksEnded();
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   void CreateBlobEvent(Blob* blob, double timecode);

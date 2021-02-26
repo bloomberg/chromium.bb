@@ -25,9 +25,11 @@ android_library("java") {
     "//base:base_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//third_party/android_deps:androidx_preference_preference_java",
     "//ui/android:ui_java",
   ]
+  resources_package = "org.chromium.components.browser_ui.settings"
 }
 
 android_resources("java_resources") {
@@ -38,26 +40,25 @@ android_resources("java_resources") {
     "//ui/android:ui_java_resources",
   ]
   sources = [
-    "java/res/drawable-hdpi/controlled_setting_mandatory.png",
     "java/res/drawable-hdpi/ic_account_child_grey600_36dp.png",
-    "java/res/drawable-mdpi/controlled_setting_mandatory.png",
+    "java/res/drawable-hdpi/ic_business_small.png",
     "java/res/drawable-mdpi/ic_account_child_grey600_36dp.png",
-    "java/res/drawable-xhdpi/controlled_setting_mandatory.png",
+    "java/res/drawable-mdpi/ic_business_small.png",
     "java/res/drawable-xhdpi/ic_account_child_grey600_36dp.png",
-    "java/res/drawable-xxhdpi/controlled_setting_mandatory.png",
+    "java/res/drawable-xhdpi/ic_business_small.png",
     "java/res/drawable-xxhdpi/ic_account_child_grey600_36dp.png",
+    "java/res/drawable-xxhdpi/ic_business_small.png",
     "java/res/drawable-xxxhdpi/ic_account_child_grey600_36dp.png",
     "java/res/layout/button_preference_button.xml",
     "java/res/layout/button_preference_layout.xml",
     "java/res/layout/checkable_image_view_widget.xml",
     "java/res/layout/preference_chrome_image_view.xml",
-    "java/res/layout/preference_compat.xml",
     "java/res/layout/preference_spinner.xml",
     "java/res/layout/preference_spinner_single_line.xml",
     "java/res/layout/preference_spinner_single_line_item.xml",
+    "java/res/layout/settings_action_bar_shadow.xml",
     "java/res/values/attrs.xml",
-    "java/res/values/dimens.xml",
+    "java/res/values/ids.xml",
     "java/res/values/styles.xml",
   ]
-  custom_package = "org.chromium.components.browser_ui.settings"
 }

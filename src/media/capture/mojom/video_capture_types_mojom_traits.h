@@ -5,7 +5,9 @@
 #ifndef MEDIA_CAPTURE_MOJOM_VIDEO_CAPTURE_TYPES_MOJOM_TRAITS_H_
 #define MEDIA_CAPTURE_MOJOM_VIDEO_CAPTURE_TYPES_MOJOM_TRAITS_H_
 
+#include "base/optional.h"
 #include "media/base/video_facing.h"
+#include "media/base/video_frame_feedback.h"
 #include "media/capture/mojom/video_capture_types.mojom-shared.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video/video_capture_device_info.h"
@@ -103,6 +105,26 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 
 template <>
 struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
+    StructTraits<media::mojom::VideoCaptureControlSupportDataView,
+                 media::VideoCaptureControlSupport> {
+  static bool pan(const media::VideoCaptureControlSupport& input) {
+    return input.pan;
+  }
+
+  static bool tilt(const media::VideoCaptureControlSupport& input) {
+    return input.tilt;
+  }
+
+  static bool zoom(const media::VideoCaptureControlSupport& input) {
+    return input.zoom;
+  }
+
+  static bool Read(media::mojom::VideoCaptureControlSupportDataView data,
+                   media::VideoCaptureControlSupport* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
     StructTraits<media::mojom::VideoCaptureFormatDataView,
                  media::VideoCaptureFormat> {
   static const gfx::Size& frame_size(const media::VideoCaptureFormat& format) {
@@ -184,6 +206,11 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
     return input.capture_api;
   }
 
+  static media::VideoCaptureControlSupport control_support(
+      const media::VideoCaptureDeviceDescriptor& input) {
+    return input.control_support();
+  }
+
   static media::VideoCaptureTransportType transport_type(
       const media::VideoCaptureDeviceDescriptor& input) {
     return input.transport_type;
@@ -209,6 +236,27 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 
   static bool Read(media::mojom::VideoCaptureDeviceInfoDataView data,
                    media::VideoCaptureDeviceInfo* output);
+};
+
+template <>
+struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
+    StructTraits<media::mojom::VideoFrameFeedbackDataView,
+                 media::VideoFrameFeedback> {
+  static double resource_utilization(
+      const media::VideoFrameFeedback& feedback) {
+    return feedback.resource_utilization;
+  }
+
+  static float max_framerate_fps(const media::VideoFrameFeedback& feedback) {
+    return feedback.max_framerate_fps;
+  }
+
+  static int max_pixels(const media::VideoFrameFeedback& feedback) {
+    return feedback.max_pixels;
+  }
+
+  static bool Read(media::mojom::VideoFrameFeedbackDataView data,
+                   media::VideoFrameFeedback* output);
 };
 }  // namespace mojo
 

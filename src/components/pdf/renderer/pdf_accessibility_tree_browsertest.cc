@@ -247,6 +247,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
     link.url = kChromiumTestUrl;
     link.text_run_index = 0;
     link.text_run_count = 1;
+    link.index_in_page = 0;
     page_objects_.links.push_back(std::move(link));
   }
 
@@ -362,6 +363,7 @@ TEST_F(PdfAccessibilityTreeTest, TestOverlappingAnnots) {
     link.url = kChromiumTestUrl;
     link.text_run_index = 0;
     link.text_run_count = 3;
+    link.index_in_page = 0;
     page_objects_.links.push_back(std::move(link));
   }
 
@@ -371,6 +373,7 @@ TEST_F(PdfAccessibilityTreeTest, TestOverlappingAnnots) {
     link.url = kChromiumTestUrl;
     link.text_run_index = 1;
     link.text_run_count = 2;
+    link.index_in_page = 1;
     page_objects_.links.push_back(std::move(link));
   }
 
@@ -442,12 +445,8 @@ TEST_F(PdfAccessibilityTreeTest, TestOverlappingAnnots) {
 }
 
 TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
-  // Enable feature flag
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      chrome_pdf::features::kAccessiblePDFHighlight);
-
   constexpr uint32_t kHighlightWhiteColor = MakeARGB(255, 255, 255, 255);
+  const char kPopupNoteText[] = "Text Note";
 
   text_runs_.emplace_back(kFirstTextRun);
   text_runs_.emplace_back(kSecondTextRun);
@@ -459,7 +458,9 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
     highlight.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
     highlight.text_run_index = 0;
     highlight.text_run_count = 2;
+    highlight.index_in_page = 0;
     highlight.color = kHighlightWhiteColor;
+    highlight.note_text = kPopupNoteText;
     page_objects_.highlights.push_back(std::move(highlight));
   }
 
@@ -486,6 +487,8 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
    * ++++ Paragraph
    * ++++++ Highlight
    * ++++++++ Static Text
+   * ++++++++ Note
+   * ++++++++++ Static Text
    */
 
   ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
@@ -517,12 +520,33 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
   EXPECT_EQ(kHighlightWhiteColor,
             static_cast<uint32_t>(highlight_node->GetIntAttribute(
                 ax::mojom::IntAttribute::kBackgroundColor)));
-  ASSERT_EQ(1u, highlight_node->children().size());
+  ASSERT_EQ(2u, highlight_node->children().size());
 
   ui::AXNode* static_text_node = highlight_node->children()[0];
   ASSERT_TRUE(static_text_node);
   EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
   ASSERT_EQ(2u, static_text_node->children().size());
+
+  ui::AXNode* popup_note_node = highlight_node->children()[1];
+  ASSERT_TRUE(popup_note_node);
+  EXPECT_EQ(ax::mojom::Role::kNote, popup_note_node->data().role);
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_POPUP_NOTE),
+            popup_note_node->GetStringAttribute(
+                ax::mojom::StringAttribute::kRoleDescription));
+  EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
+            popup_note_node->data().relative_bounds.bounds);
+  ASSERT_EQ(1u, popup_note_node->children().size());
+
+  ui::AXNode* static_popup_note_text_node = popup_note_node->children()[0];
+  ASSERT_TRUE(static_popup_note_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText,
+            static_popup_note_text_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            static_popup_note_text_node->data().GetNameFrom());
+  EXPECT_EQ(kPopupNoteText, static_popup_note_text_node->GetStringAttribute(
+                                ax::mojom::StringAttribute::kName));
+  EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
+            static_popup_note_text_node->data().relative_bounds.bounds);
 }
 
 TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
@@ -545,7 +569,7 @@ TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
     text_field.is_read_only = false;
     text_field.is_required = false;
     text_field.is_password = false;
-    page_objects_.text_fields.push_back(std::move(text_field));
+    page_objects_.form_fields.text_fields.push_back(std::move(text_field));
   }
 
   {
@@ -558,7 +582,7 @@ TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
     text_field.is_read_only = true;
     text_field.is_required = true;
     text_field.is_password = true;
-    page_objects_.text_fields.push_back(std::move(text_field));
+    page_objects_.form_fields.text_fields.push_back(std::move(text_field));
   }
 
   page_info_.text_run_count = text_runs_.size();
@@ -652,6 +676,648 @@ TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
   EXPECT_EQ(0u, text_field_node->children().size());
 }
 
+TEST_F(PdfAccessibilityTreeTest, TestButtonNodeCreation) {
+  // Enable feature flag
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chrome_pdf::features::kAccessiblePDFForm);
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  {
+    ppapi::PdfAccessibilityButtonInfo check_box;
+    check_box.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    check_box.index_in_page = 0;
+    check_box.text_run_index = 2;
+    check_box.name = "Read Only Checkbox";
+    check_box.value = "Yes";
+    check_box.is_read_only = true;
+    check_box.is_checked = true;
+    check_box.control_count = 1;
+    check_box.control_index = 0;
+    check_box.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_CHECKBOX;
+    page_objects_.form_fields.buttons.push_back(std::move(check_box));
+  }
+
+  {
+    ppapi::PdfAccessibilityButtonInfo radio_button;
+    radio_button.bounds = PP_MakeFloatRectFromXYWH(1.0f, 2.0f, 5.0f, 6.0f);
+    radio_button.index_in_page = 1;
+    radio_button.text_run_index = 2;
+    radio_button.name = "Radio Button";
+    radio_button.value = "value 1";
+    radio_button.is_read_only = false;
+    radio_button.is_checked = false;
+    radio_button.control_count = 2;
+    radio_button.control_index = 0;
+    radio_button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON;
+    page_objects_.form_fields.buttons.push_back(std::move(radio_button));
+  }
+
+  {
+    ppapi::PdfAccessibilityButtonInfo radio_button;
+    radio_button.bounds = PP_MakeFloatRectFromXYWH(1.0f, 3.0f, 5.0f, 6.0f);
+    radio_button.index_in_page = 2;
+    radio_button.text_run_index = 2;
+    radio_button.name = "Radio Button";
+    radio_button.value = "value 2";
+    radio_button.is_read_only = false;
+    radio_button.is_checked = true;
+    radio_button.control_count = 2;
+    radio_button.control_index = 1;
+    radio_button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON;
+    page_objects_.form_fields.buttons.push_back(std::move(radio_button));
+  }
+
+  {
+    ppapi::PdfAccessibilityButtonInfo push_button;
+    push_button.bounds = PP_MakeFloatRectFromXYWH(1.0f, 4.0f, 5.0f, 6.0f);
+    push_button.index_in_page = 3;
+    push_button.text_run_index = 2;
+    push_button.name = "Push Button";
+    push_button.is_read_only = false;
+    push_button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_PUSHBUTTON;
+    page_objects_.form_fields.buttons.push_back(std::move(push_button));
+  }
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  ASSERT_TRUE(render_frame);
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, page_objects_);
+
+  /*
+   * Expected tree structure
+   * Document
+   * ++ Region
+   * ++++ Paragraph
+   * ++++++ Static Text
+   * ++++ Paragraph
+   * ++++++ Static Text
+   * ++++++ Check Box
+   * ++++++ Radio Button
+   * ++++++ Radio Button
+   * ++++++ Button
+   */
+
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+  EXPECT_EQ(ax::mojom::Role::kDocument, root_node->data().role);
+  ASSERT_EQ(1u, root_node->children().size());
+
+  ui::AXNode* page_node = root_node->children()[0];
+  ASSERT_TRUE(page_node);
+  EXPECT_EQ(ax::mojom::Role::kRegion, page_node->data().role);
+  ASSERT_EQ(2u, page_node->children().size());
+
+  ui::AXNode* paragraph_node = page_node->children()[0];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  ASSERT_EQ(1u, paragraph_node->children().size());
+
+  ui::AXNode* static_text_node = paragraph_node->children()[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(1u, static_text_node->children().size());
+
+  paragraph_node = page_node->children()[1];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  const std::vector<ui::AXNode*>& child_nodes = paragraph_node->children();
+  ASSERT_EQ(5u, child_nodes.size());
+
+  static_text_node = child_nodes[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(1u, static_text_node->children().size());
+
+  ui::AXNode* check_box_node = child_nodes[1];
+  ASSERT_TRUE(check_box_node);
+  EXPECT_EQ(ax::mojom::Role::kCheckBox, check_box_node->data().role);
+  EXPECT_EQ("Read Only Checkbox", check_box_node->GetStringAttribute(
+                                      ax::mojom::StringAttribute::kName));
+  EXPECT_EQ("Yes", check_box_node->GetStringAttribute(
+                       ax::mojom::StringAttribute::kValue));
+  EXPECT_EQ(ax::mojom::CheckedState::kTrue,
+            check_box_node->data().GetCheckedState());
+  EXPECT_EQ(1,
+            check_box_node->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  EXPECT_EQ(
+      1, check_box_node->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
+  EXPECT_EQ(ax::mojom::Restriction::kReadOnly,
+            check_box_node->data().GetRestriction());
+  EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
+            check_box_node->data().relative_bounds.bounds);
+  EXPECT_EQ(0u, check_box_node->children().size());
+
+  ui::AXNode* radio_button_node = child_nodes[2];
+  ASSERT_TRUE(radio_button_node);
+  EXPECT_EQ(ax::mojom::Role::kRadioButton, radio_button_node->data().role);
+  EXPECT_EQ("Radio Button", radio_button_node->GetStringAttribute(
+                                ax::mojom::StringAttribute::kName));
+  EXPECT_EQ("value 1", radio_button_node->GetStringAttribute(
+                           ax::mojom::StringAttribute::kValue));
+  EXPECT_EQ(ax::mojom::CheckedState::kNone,
+            radio_button_node->data().GetCheckedState());
+  EXPECT_EQ(
+      2, radio_button_node->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  EXPECT_EQ(1, radio_button_node->GetIntAttribute(
+                   ax::mojom::IntAttribute::kPosInSet));
+  EXPECT_NE(ax::mojom::Restriction::kReadOnly,
+            radio_button_node->data().GetRestriction());
+  EXPECT_EQ(gfx::RectF(1.0f, 2.0f, 5.0f, 6.0f),
+            radio_button_node->data().relative_bounds.bounds);
+  EXPECT_EQ(0u, radio_button_node->children().size());
+
+  radio_button_node = child_nodes[3];
+  ASSERT_TRUE(radio_button_node);
+  EXPECT_EQ(ax::mojom::Role::kRadioButton, radio_button_node->data().role);
+  EXPECT_EQ("Radio Button", radio_button_node->GetStringAttribute(
+                                ax::mojom::StringAttribute::kName));
+  EXPECT_EQ("value 2", radio_button_node->GetStringAttribute(
+                           ax::mojom::StringAttribute::kValue));
+  EXPECT_EQ(ax::mojom::CheckedState::kTrue,
+            radio_button_node->data().GetCheckedState());
+  EXPECT_EQ(
+      2, radio_button_node->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  EXPECT_EQ(2, radio_button_node->GetIntAttribute(
+                   ax::mojom::IntAttribute::kPosInSet));
+  EXPECT_EQ(ax::mojom::Restriction::kNone,
+            radio_button_node->data().GetRestriction());
+  EXPECT_EQ(gfx::RectF(1.0f, 3.0f, 5.0f, 6.0f),
+            radio_button_node->data().relative_bounds.bounds);
+  EXPECT_EQ(0u, radio_button_node->children().size());
+
+  ui::AXNode* push_button_node = child_nodes[4];
+  ASSERT_TRUE(push_button_node);
+  EXPECT_EQ(ax::mojom::Role::kButton, push_button_node->data().role);
+  EXPECT_EQ("Push Button", push_button_node->GetStringAttribute(
+                               ax::mojom::StringAttribute::kName));
+  EXPECT_EQ(gfx::RectF(1.0f, 4.0f, 5.0f, 6.0f),
+            push_button_node->data().relative_bounds.bounds);
+  EXPECT_EQ(0u, push_button_node->children().size());
+}
+
+TEST_F(PdfAccessibilityTreeTest, TestListboxNodeCreation) {
+  // Enable feature flag
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chrome_pdf::features::kAccessiblePDFForm);
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  struct ListboxOptionInfo {
+    std::string name;
+    bool is_selected;
+  };
+
+  const ListboxOptionInfo kExpectedOptions[][3] = {
+      {{"Alpha", false}, {"Beta", true}, {"Gamma", true}},
+      {{"Foo", false}, {"Bar", true}, {"Qux", false}}};
+
+  const gfx::RectF kExpectedBounds[] = {{1.0f, 1.0f, 5.0f, 6.0f},
+                                        {1.0f, 10.0f, 5.0f, 6.0f}};
+
+  {
+    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
+    choice_field.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    choice_field.index_in_page = 0;
+    choice_field.text_run_index = 2;
+    choice_field.type = PP_PRIVATECHOICEFIELD_LISTBOX;
+    choice_field.name = "List Box";
+    choice_field.is_read_only = false;
+    choice_field.is_multi_select = true;
+    choice_field.has_editable_text_box = false;
+    for (const ListboxOptionInfo& expected_option : kExpectedOptions[0]) {
+      ppapi::PdfAccessibilityChoiceFieldOptionInfo choice_field_option;
+      choice_field_option.name = expected_option.name;
+      choice_field_option.is_selected = expected_option.is_selected;
+      choice_field.options.push_back(std::move(choice_field_option));
+    }
+    page_objects_.form_fields.choice_fields.push_back(std::move(choice_field));
+  }
+
+  {
+    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
+    choice_field.bounds = PP_MakeFloatRectFromXYWH(1.0f, 10.0f, 5.0f, 6.0f);
+    choice_field.index_in_page = 1;
+    choice_field.text_run_index = 2;
+    choice_field.type = PP_PRIVATECHOICEFIELD_LISTBOX;
+    choice_field.name = "Read Only List Box";
+    choice_field.is_read_only = true;
+    choice_field.is_multi_select = false;
+    choice_field.has_editable_text_box = false;
+    for (const ListboxOptionInfo& expected_option : kExpectedOptions[1]) {
+      ppapi::PdfAccessibilityChoiceFieldOptionInfo choice_field_option;
+      choice_field_option.name = expected_option.name;
+      choice_field_option.is_selected = expected_option.is_selected;
+      choice_field.options.push_back(std::move(choice_field_option));
+    }
+    page_objects_.form_fields.choice_fields.push_back(std::move(choice_field));
+  }
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  ASSERT_TRUE(render_frame);
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, page_objects_);
+
+  /*
+   * Expected tree structure
+   * Document
+   * ++ Region
+   * ++++ Paragraph
+   * ++++++ Static Text
+   * ++++ Paragraph
+   * ++++++ Static Text
+   * ++++++ Listbox
+   * ++++++++ Listbox Option
+   * ++++++++ Listbox Option
+   * ++++++++ Listbox Option
+   * ++++++ Listbox
+   * ++++++++ Listbox Option
+   * ++++++++ Listbox Option
+   * ++++++++ Listbox Option
+   */
+
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+  EXPECT_EQ(ax::mojom::Role::kDocument, root_node->data().role);
+  ASSERT_EQ(1u, root_node->children().size());
+
+  ui::AXNode* page_node = root_node->children()[0];
+  ASSERT_TRUE(page_node);
+  EXPECT_EQ(ax::mojom::Role::kRegion, page_node->data().role);
+  ASSERT_EQ(2u, page_node->children().size());
+
+  ui::AXNode* paragraph_node = page_node->children()[0];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  ASSERT_EQ(1u, paragraph_node->children().size());
+
+  ui::AXNode* static_text_node = paragraph_node->children()[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(1u, static_text_node->children().size());
+
+  paragraph_node = page_node->children()[1];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  const std::vector<ui::AXNode*>& child_nodes = paragraph_node->children();
+  ASSERT_EQ(3u, child_nodes.size());
+
+  static_text_node = child_nodes[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(1u, static_text_node->children().size());
+
+  {
+    ui::AXNode* listbox_node = child_nodes[1];
+    ASSERT_TRUE(listbox_node);
+    EXPECT_EQ(ax::mojom::Role::kListBox, listbox_node->data().role);
+    EXPECT_NE(ax::mojom::Restriction::kReadOnly,
+              listbox_node->data().GetRestriction());
+    EXPECT_EQ("List Box", listbox_node->GetStringAttribute(
+                              ax::mojom::StringAttribute::kName));
+    EXPECT_TRUE(
+        listbox_node->data().HasState(ax::mojom::State::kMultiselectable));
+    EXPECT_TRUE(listbox_node->data().HasState(ax::mojom::State::kFocusable));
+    EXPECT_EQ(kExpectedBounds[0], listbox_node->data().relative_bounds.bounds);
+    ASSERT_EQ(base::size(kExpectedOptions[0]), listbox_node->children().size());
+    const std::vector<ui::AXNode*>& listbox_child_nodes =
+        listbox_node->children();
+    for (size_t i = 0; i < listbox_child_nodes.size(); i++) {
+      EXPECT_EQ(ax::mojom::Role::kListBoxOption,
+                listbox_child_nodes[i]->data().role);
+      EXPECT_NE(ax::mojom::Restriction::kReadOnly,
+                listbox_child_nodes[i]->data().GetRestriction());
+      EXPECT_EQ(kExpectedOptions[0][i].name,
+                listbox_child_nodes[i]->GetStringAttribute(
+                    ax::mojom::StringAttribute::kName));
+      EXPECT_EQ(kExpectedOptions[0][i].is_selected,
+                listbox_child_nodes[i]->GetBoolAttribute(
+                    ax::mojom::BoolAttribute::kSelected));
+      EXPECT_TRUE(listbox_child_nodes[i]->data().HasState(
+          ax::mojom::State::kFocusable));
+      EXPECT_EQ(kExpectedBounds[0],
+                listbox_child_nodes[i]->data().relative_bounds.bounds);
+    }
+  }
+
+  {
+    ui::AXNode* listbox_node = child_nodes[2];
+    ASSERT_TRUE(listbox_node);
+    EXPECT_EQ(ax::mojom::Role::kListBox, listbox_node->data().role);
+    EXPECT_EQ(ax::mojom::Restriction::kReadOnly,
+              listbox_node->data().GetRestriction());
+    EXPECT_EQ("Read Only List Box", listbox_node->GetStringAttribute(
+                                        ax::mojom::StringAttribute::kName));
+    EXPECT_FALSE(
+        listbox_node->data().HasState(ax::mojom::State::kMultiselectable));
+    EXPECT_TRUE(listbox_node->data().HasState(ax::mojom::State::kFocusable));
+    EXPECT_EQ(kExpectedBounds[1], listbox_node->data().relative_bounds.bounds);
+    ASSERT_EQ(base::size(kExpectedOptions[1]), listbox_node->children().size());
+    const std::vector<ui::AXNode*>& listbox_child_nodes =
+        listbox_node->children();
+    for (size_t i = 0; i < listbox_child_nodes.size(); i++) {
+      EXPECT_EQ(ax::mojom::Role::kListBoxOption,
+                listbox_child_nodes[i]->data().role);
+      EXPECT_EQ(ax::mojom::Restriction::kReadOnly,
+                listbox_child_nodes[i]->data().GetRestriction());
+      EXPECT_EQ(kExpectedOptions[1][i].name,
+                listbox_child_nodes[i]->GetStringAttribute(
+                    ax::mojom::StringAttribute::kName));
+      EXPECT_EQ(kExpectedOptions[1][i].is_selected,
+                listbox_child_nodes[i]->GetBoolAttribute(
+                    ax::mojom::BoolAttribute::kSelected));
+      EXPECT_TRUE(listbox_child_nodes[i]->data().HasState(
+          ax::mojom::State::kFocusable));
+      EXPECT_EQ(kExpectedBounds[1],
+                listbox_child_nodes[i]->data().relative_bounds.bounds);
+    }
+  }
+}
+
+TEST_F(PdfAccessibilityTreeTest, TestComboboxNodeCreation) {
+  // Enable feature flag
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chrome_pdf::features::kAccessiblePDFForm);
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  struct ComboboxOptionInfo {
+    std::string name;
+    bool is_selected;
+  };
+
+  const ComboboxOptionInfo kExpectedOptions[][3] = {
+      {{"Albania", false}, {"Belgium", true}, {"Croatia", true}},
+      {{"Apple", false}, {"Banana", true}, {"Cherry", false}}};
+
+  const gfx::RectF kExpectedBounds[] = {{1.0f, 1.0f, 5.0f, 6.0f},
+                                        {1.0f, 10.0f, 5.0f, 6.0f}};
+
+  {
+    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
+    choice_field.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    choice_field.index_in_page = 0;
+    choice_field.text_run_index = 2;
+    choice_field.type = PP_PRIVATECHOICEFIELD_COMBOBOX;
+    choice_field.name = "Editable Combo Box";
+    choice_field.is_read_only = false;
+    choice_field.is_multi_select = true;
+    choice_field.has_editable_text_box = true;
+    for (const ComboboxOptionInfo& expected_option : kExpectedOptions[0]) {
+      ppapi::PdfAccessibilityChoiceFieldOptionInfo choice_field_option;
+      choice_field_option.name = expected_option.name;
+      choice_field_option.is_selected = expected_option.is_selected;
+      choice_field.options.push_back(std::move(choice_field_option));
+    }
+    page_objects_.form_fields.choice_fields.push_back(std::move(choice_field));
+  }
+
+  {
+    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
+    choice_field.bounds = PP_MakeFloatRectFromXYWH(1.0f, 10.0f, 5.0f, 6.0f);
+    choice_field.index_in_page = 1;
+    choice_field.text_run_index = 2;
+    choice_field.type = PP_PRIVATECHOICEFIELD_COMBOBOX;
+    choice_field.name = "Read Only Combo Box";
+    choice_field.is_read_only = true;
+    choice_field.is_multi_select = false;
+    choice_field.has_editable_text_box = false;
+    for (const ComboboxOptionInfo& expected_option : kExpectedOptions[1]) {
+      ppapi::PdfAccessibilityChoiceFieldOptionInfo choice_field_option;
+      choice_field_option.name = expected_option.name;
+      choice_field_option.is_selected = expected_option.is_selected;
+      choice_field.options.push_back(std::move(choice_field_option));
+    }
+    page_objects_.form_fields.choice_fields.push_back(std::move(choice_field));
+  }
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  ASSERT_TRUE(render_frame);
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, page_objects_);
+  /*
+   * Expected tree structure
+   * Document
+   * ++ Region
+   * ++++ Paragraph
+   * ++++++ Static Text
+   * ++++ Paragraph
+   * ++++++ Static Text
+   * ++++++ Combobox Grouping
+   * ++++++++ Text Field With Combobox
+   * ++++++++ Listbox
+   * ++++++++++ Listbox Option
+   * ++++++++++ Listbox Option
+   * ++++++++++ Listbox Option
+   * ++++++ Combobox Grouping
+   * ++++++++ Combobox Menu Button
+   * ++++++++ Listbox
+   * ++++++++++ Listbox Option
+   * ++++++++++ Listbox Option
+   * ++++++++++ Listbox Option
+   */
+
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+  EXPECT_EQ(ax::mojom::Role::kDocument, root_node->data().role);
+  ASSERT_EQ(1u, root_node->children().size());
+
+  ui::AXNode* page_node = root_node->children()[0];
+  ASSERT_TRUE(page_node);
+  EXPECT_EQ(ax::mojom::Role::kRegion, page_node->data().role);
+  ASSERT_EQ(2u, page_node->children().size());
+
+  ui::AXNode* paragraph_node = page_node->children()[0];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  ASSERT_EQ(1u, paragraph_node->children().size());
+
+  ui::AXNode* static_text_node = paragraph_node->children()[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(1u, static_text_node->children().size());
+
+  paragraph_node = page_node->children()[1];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  const std::vector<ui::AXNode*>& child_nodes = paragraph_node->children();
+  ASSERT_EQ(3u, child_nodes.size());
+
+  static_text_node = child_nodes[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(1u, static_text_node->children().size());
+
+  {
+    ui::AXNode* combobox_node = child_nodes[1];
+    ASSERT_TRUE(combobox_node);
+    EXPECT_EQ(ax::mojom::Role::kComboBoxGrouping, combobox_node->data().role);
+    EXPECT_NE(ax::mojom::Restriction::kReadOnly,
+              combobox_node->data().GetRestriction());
+    EXPECT_TRUE(combobox_node->data().HasState(ax::mojom::State::kFocusable));
+    EXPECT_EQ(kExpectedBounds[0], combobox_node->data().relative_bounds.bounds);
+    ASSERT_EQ(2u, combobox_node->children().size());
+    const std::vector<ui::AXNode*>& combobox_child_nodes =
+        combobox_node->children();
+
+    ui::AXNode* combobox_input_node = combobox_child_nodes[0];
+    EXPECT_EQ(ax::mojom::Role::kTextFieldWithComboBox,
+              combobox_input_node->data().role);
+    EXPECT_NE(ax::mojom::Restriction::kReadOnly,
+              combobox_input_node->data().GetRestriction());
+    EXPECT_EQ("Editable Combo Box", combobox_input_node->GetStringAttribute(
+                                        ax::mojom::StringAttribute::kName));
+    EXPECT_EQ("Belgium", combobox_input_node->GetStringAttribute(
+                             ax::mojom::StringAttribute::kValue));
+    EXPECT_TRUE(
+        combobox_input_node->data().HasState(ax::mojom::State::kFocusable));
+    EXPECT_EQ(kExpectedBounds[0],
+              combobox_input_node->data().relative_bounds.bounds);
+
+    ui::AXNode* combobox_popup_node = combobox_child_nodes[1];
+    EXPECT_EQ(ax::mojom::Role::kListBox, combobox_popup_node->data().role);
+    EXPECT_NE(ax::mojom::Restriction::kReadOnly,
+              combobox_popup_node->data().GetRestriction());
+    EXPECT_TRUE(combobox_popup_node->data().HasState(
+        ax::mojom::State::kMultiselectable));
+    EXPECT_EQ(kExpectedBounds[0],
+              combobox_popup_node->data().relative_bounds.bounds);
+    ASSERT_EQ(base::size(kExpectedOptions[0]),
+              combobox_popup_node->children().size());
+    const std::vector<ui::AXNode*>& popup_child_nodes =
+        combobox_popup_node->children();
+    for (size_t i = 0; i < popup_child_nodes.size(); i++) {
+      EXPECT_EQ(ax::mojom::Role::kListBoxOption,
+                popup_child_nodes[i]->data().role);
+      EXPECT_NE(ax::mojom::Restriction::kReadOnly,
+                popup_child_nodes[i]->data().GetRestriction());
+      EXPECT_EQ(kExpectedOptions[0][i].name,
+                popup_child_nodes[i]->GetStringAttribute(
+                    ax::mojom::StringAttribute::kName));
+      EXPECT_EQ(kExpectedOptions[0][i].is_selected,
+                popup_child_nodes[i]->GetBoolAttribute(
+                    ax::mojom::BoolAttribute::kSelected));
+      EXPECT_TRUE(
+          popup_child_nodes[i]->data().HasState(ax::mojom::State::kFocusable));
+      EXPECT_EQ(kExpectedBounds[0],
+                popup_child_nodes[i]->data().relative_bounds.bounds);
+    }
+    EXPECT_EQ(popup_child_nodes[1]->data().id,
+              combobox_input_node->GetIntAttribute(
+                  ax::mojom::IntAttribute::kActivedescendantId));
+    const auto& controls_ids = combobox_input_node->GetIntListAttribute(
+        ax::mojom::IntListAttribute::kControlsIds);
+    ASSERT_EQ(1u, controls_ids.size());
+    EXPECT_EQ(controls_ids[0], combobox_popup_node->data().id);
+  }
+
+  {
+    ui::AXNode* combobox_node = child_nodes[2];
+    ASSERT_TRUE(combobox_node);
+    EXPECT_EQ(ax::mojom::Role::kComboBoxGrouping, combobox_node->data().role);
+    EXPECT_EQ(ax::mojom::Restriction::kReadOnly,
+              combobox_node->data().GetRestriction());
+    EXPECT_TRUE(combobox_node->data().HasState(ax::mojom::State::kFocusable));
+    EXPECT_EQ(kExpectedBounds[1], combobox_node->data().relative_bounds.bounds);
+    ASSERT_EQ(2u, combobox_node->children().size());
+    const std::vector<ui::AXNode*>& combobox_child_nodes =
+        combobox_node->children();
+
+    ui::AXNode* combobox_input_node = combobox_child_nodes[0];
+    EXPECT_EQ(ax::mojom::Role::kComboBoxMenuButton,
+              combobox_input_node->data().role);
+    EXPECT_EQ(ax::mojom::Restriction::kReadOnly,
+              combobox_input_node->data().GetRestriction());
+    EXPECT_EQ("Read Only Combo Box", combobox_input_node->GetStringAttribute(
+                                         ax::mojom::StringAttribute::kName));
+    EXPECT_EQ("Banana", combobox_input_node->GetStringAttribute(
+                            ax::mojom::StringAttribute::kValue));
+    EXPECT_TRUE(
+        combobox_input_node->data().HasState(ax::mojom::State::kFocusable));
+    EXPECT_EQ(kExpectedBounds[1],
+              combobox_input_node->data().relative_bounds.bounds);
+
+    ui::AXNode* combobox_popup_node = combobox_child_nodes[1];
+    EXPECT_EQ(ax::mojom::Role::kListBox, combobox_popup_node->data().role);
+    EXPECT_EQ(ax::mojom::Restriction::kReadOnly,
+              combobox_popup_node->data().GetRestriction());
+    EXPECT_EQ(kExpectedBounds[1],
+              combobox_popup_node->data().relative_bounds.bounds);
+    ASSERT_EQ(base::size(kExpectedOptions[1]),
+              combobox_popup_node->children().size());
+    const std::vector<ui::AXNode*>& popup_child_nodes =
+        combobox_popup_node->children();
+    for (size_t i = 0; i < popup_child_nodes.size(); i++) {
+      EXPECT_EQ(ax::mojom::Role::kListBoxOption,
+                popup_child_nodes[i]->data().role);
+      EXPECT_EQ(ax::mojom::Restriction::kReadOnly,
+                popup_child_nodes[i]->data().GetRestriction());
+      EXPECT_EQ(kExpectedOptions[1][i].name,
+                popup_child_nodes[i]->GetStringAttribute(
+                    ax::mojom::StringAttribute::kName));
+      EXPECT_EQ(kExpectedOptions[1][i].is_selected,
+                popup_child_nodes[i]->GetBoolAttribute(
+                    ax::mojom::BoolAttribute::kSelected));
+      EXPECT_TRUE(
+          popup_child_nodes[i]->data().HasState(ax::mojom::State::kFocusable));
+      EXPECT_EQ(kExpectedBounds[1],
+                popup_child_nodes[i]->data().relative_bounds.bounds);
+    }
+    EXPECT_EQ(popup_child_nodes[1]->data().id,
+              combobox_input_node->GetIntAttribute(
+                  ax::mojom::IntAttribute::kActivedescendantId));
+    const auto& controls_ids = combobox_input_node->GetIntListAttribute(
+        ax::mojom::IntListAttribute::kControlsIds);
+    ASSERT_EQ(1u, controls_ids.size());
+    EXPECT_EQ(controls_ids[0], combobox_popup_node->data().id);
+  }
+}
+
 TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   text_runs_.emplace_back(kFirstRunMultiLine);
   text_runs_.emplace_back(kSecondRunMultiLine);
@@ -666,6 +1332,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
     link.url = kChromiumTestUrl;
     link.text_run_index = 2;
     link.text_run_count = 2;
+    link.index_in_page = 0;
     page_objects_.links.push_back(std::move(link));
   }
 
@@ -719,17 +1386,23 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   ui::AXNode* static_text_node = paragraph_node->children()[0];
   ASSERT_TRUE(static_text_node);
   EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            static_text_node->data().GetNameFrom());
   ASSERT_EQ(2u, static_text_node->children().size());
 
   ui::AXNode* previous_inline_node = static_text_node->children()[0];
   ASSERT_TRUE(previous_inline_node);
   EXPECT_EQ(ax::mojom::Role::kInlineTextBox, previous_inline_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            previous_inline_node->data().GetNameFrom());
   ASSERT_FALSE(previous_inline_node->HasIntAttribute(
       ax::mojom::IntAttribute::kPreviousOnLineId));
 
   ui::AXNode* next_inline_node = static_text_node->children()[1];
   ASSERT_TRUE(next_inline_node);
   EXPECT_EQ(ax::mojom::Role::kInlineTextBox, next_inline_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            next_inline_node->data().GetNameFrom());
   ASSERT_TRUE(next_inline_node->HasIntAttribute(
       ax::mojom::IntAttribute::kNextOnLineId));
 
@@ -750,11 +1423,15 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   static_text_node = link_node->children()[0];
   ASSERT_TRUE(static_text_node);
   EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            static_text_node->data().GetNameFrom());
   ASSERT_EQ(2u, static_text_node->children().size());
 
   previous_inline_node = static_text_node->children()[0];
   ASSERT_TRUE(previous_inline_node);
   EXPECT_EQ(ax::mojom::Role::kInlineTextBox, previous_inline_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            previous_inline_node->data().GetNameFrom());
   ASSERT_TRUE(previous_inline_node->HasIntAttribute(
       ax::mojom::IntAttribute::kPreviousOnLineId));
   // Test that text and link on the same line are connected.
@@ -765,6 +1442,8 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   next_inline_node = static_text_node->children()[1];
   ASSERT_TRUE(next_inline_node);
   EXPECT_EQ(ax::mojom::Role::kInlineTextBox, next_inline_node->data().role);
+  EXPECT_EQ(ax::mojom::NameFrom::kContents,
+            next_inline_node->data().GetNameFrom());
   ASSERT_FALSE(next_inline_node->HasIntAttribute(
       ax::mojom::IntAttribute::kNextOnLineId));
 
@@ -860,6 +1539,7 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundLink) {
     ppapi::PdfAccessibilityLinkInfo link;
     link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
     link.text_run_index = 3;
+    link.index_in_page = 0;
     link.text_run_count = 0;
     page_objects_.links.push_back(std::move(link));
   }
@@ -974,6 +1654,7 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedHighlightVector) {
     highlight.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 1.0f, 1.0f);
     highlight.text_run_index = 2;
     highlight.text_run_count = 0;
+    highlight.index_in_page = 0;
     page_objects_.highlights.push_back(std::move(highlight));
   }
 
@@ -983,6 +1664,7 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedHighlightVector) {
     highlight.bounds = PP_MakeFloatRectFromXYWH(2.0f, 2.0f, 1.0f, 1.0f);
     highlight.text_run_index = 0;
     highlight.text_run_count = 1;
+    highlight.index_in_page = 1;
     page_objects_.highlights.push_back(std::move(highlight));
   }
 
@@ -1019,6 +1701,7 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundHighlight) {
     highlight.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 1.0f, 1.0f);
     highlight.text_run_index = 3;
     highlight.text_run_count = 0;
+    highlight.index_in_page = 0;
     page_objects_.highlights.push_back(std::move(highlight));
   }
 
@@ -1262,7 +1945,6 @@ TEST_F(PdfAccessibilityTreeTest, TestEmptyPdfAxActions) {
   EXPECT_FALSE(pdf_action_target->SetSelected(false));
   EXPECT_FALSE(pdf_action_target->SetSequentialFocusNavigationStartingPoint());
   EXPECT_FALSE(pdf_action_target->SetValue("test"));
-  EXPECT_FALSE(pdf_action_target->ShowContextMenu());
   EXPECT_FALSE(pdf_action_target->ScrollToMakeVisible());
 }
 
@@ -1420,6 +2102,38 @@ TEST_F(PdfAccessibilityTreeTest, TestSelectionActionDataConversion) {
   ASSERT_EQ(ui::AXActionTarget::Type::kPdf, pdf_focus_action_target->GetType());
   EXPECT_FALSE(pdf_anchor_action_target->SetSelection(
       pdf_anchor_action_target.get(), 1, pdf_focus_action_target.get(), 5));
+}
+
+TEST_F(PdfAccessibilityTreeTest, TestShowContextMenuAction) {
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  ASSERT_TRUE(render_frame);
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame(),
+                             &fake_pepper_instance);
+  PP_Instance instance = 0;
+  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, page_objects_);
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+
+  std::unique_ptr<ui::AXActionTarget> pdf_action_target =
+      pdf_accessibility_tree.CreateActionTarget(*root_node);
+  ASSERT_EQ(ui::AXActionTarget::Type::kPdf, pdf_action_target->GetType());
+  EXPECT_TRUE(pdf_action_target->ShowContextMenu());
 }
 
 }  // namespace pdf

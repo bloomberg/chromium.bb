@@ -15,8 +15,8 @@ class IOSTrustedVaultClient : public syncer::TrustedVaultClient {
   ~IOSTrustedVaultClient() override;
 
   // TrustedVaultClient implementation.
-  std::unique_ptr<Subscription> AddKeysChangedObserver(
-      const base::RepeatingClosure& closure) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
   void FetchKeys(
       const CoreAccountInfo& account_info,
       base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)>
@@ -27,6 +27,12 @@ class IOSTrustedVaultClient : public syncer::TrustedVaultClient {
   void RemoveAllStoredKeys() override;
   void MarkKeysAsStale(const CoreAccountInfo& account_info,
                        base::OnceCallback<void(bool)> callback) override;
+  void GetIsRecoverabilityDegraded(
+      const CoreAccountInfo& account_info,
+      base::OnceCallback<void(bool)> callback) override;
+  void AddTrustedRecoveryMethod(const std::string& gaia_id,
+                                const std::vector<uint8_t>& public_key,
+                                base::OnceClosure callback) override;
 
   // Not copyable or movable
   IOSTrustedVaultClient(const IOSTrustedVaultClient&) = delete;

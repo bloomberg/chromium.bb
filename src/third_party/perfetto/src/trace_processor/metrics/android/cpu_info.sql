@@ -14,31 +14,32 @@
 -- limitations under the License.
 --
 
-CREATE VIEW IF NOT EXISTS core_layout_mapping AS
-SELECT
-  CASE
-    WHEN (
-      str_value LIKE '%flame%' OR
-      str_value LIKE '%coral%'
-    ) THEN 'big_little_bigger'
-    WHEN (
-      str_value LIKE '%taimen%' OR
-      str_value LIKE '%walleye%' OR
-      str_value LIKE '%bonito%' OR
-      str_value LIKE '%sargo%' OR
-      str_value LIKE '%blueline%' OR
-      str_value LIKE '%crosshatch%'
-    ) THEN 'big_little'
-    ELSE 'unknown'
-  END AS layout
-FROM metadata
-WHERE name = 'android_build_fingerprint';
+SELECT RUN_METRIC('android/power_profile_data.sql');
 
-CREATE TABLE IF NOT EXISTS core_layout_type AS
-SELECT *
-FROM (
-  SELECT layout from core_layout_mapping
-  UNION
-  SELECT 'unknown'
-)
-LIMIT 1;
+CREATE TABLE IF NOT EXISTS cluster_core_type AS
+    SELECT 0 as cluster, 'little' as core_type
+    UNION ALL
+    SELECT 1, 'big'
+    UNION ALL
+    SELECT 2, 'bigger';
+
+CREATE VIEW IF NOT EXISTS device_power_profile AS
+SELECT cpu, cluster, freq, power
+FROM power_profile pp
+WHERE EXISTS (
+  SELECT 1 FROM metadata
+  WHERE name = 'android_build_fingerprint' AND str_value LIKE '%' || pp.device || '%');
+
+CREATE VIEW IF NOT EXISTS core_cluster_per_cpu AS
+SELECT DISTINCT cpu, cluster
+FROM device_power_profile;
+
+CREATE VIEW IF NOT EXISTS core_type_per_cpu AS
+SELECT
+  cpu,
+  core_type
+FROM core_cluster_per_cpu JOIN cluster_core_type USING(cluster);
+
+CREATE VIEW IF NOT EXISTS cpu_cluster_power AS
+SELECT DISTINCT core_type, freq, power
+FROM device_power_profile pp JOIN cluster_core_type USING(cluster);

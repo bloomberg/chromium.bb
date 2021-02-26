@@ -10,4 +10,15 @@ uint32_t SharedImageInterface::UsageForMailbox(const Mailbox& mailbox) {
   return 0u;
 }
 
+void SharedImageInterface::NotifyMailboxAdded(const Mailbox& /*mailbox*/,
+                                              uint32_t /*usage*/) {}
+
+Mailbox SharedImageInterface::CreateSharedImageWithAHB(
+    const Mailbox& mailbox,
+    uint32_t usage,
+    const SyncToken& sync_token) {
+  NOTREACHED();
+  return Mailbox();
+}
+
 }  // namespace gpu

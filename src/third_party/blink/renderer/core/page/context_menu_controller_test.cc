@@ -4,16 +4,18 @@
 
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 
+#include "base/optional.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
@@ -22,6 +24,8 @@
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -45,7 +49,8 @@ class MockWebMediaPlayerForContextMenu : public EmptyWebMediaPlayer {
 
 class TestWebFrameClientImpl : public frame_test_helpers::TestWebFrameClient {
  public:
-  void ShowContextMenu(const WebContextMenuData& data) override {
+  void ShowContextMenu(const WebContextMenuData& data,
+                       const base::Optional<gfx::Point>&) override {
     context_menu_data_ = data;
   }
 
@@ -74,7 +79,8 @@ class ContextMenuControllerTest : public testing::Test {
     web_view_helper_.Initialize(&web_frame_client_);
 
     WebLocalFrameImpl* local_main_frame = web_view_helper_.LocalMainFrame();
-    local_main_frame->ViewImpl()->MainFrameWidget()->Resize(WebSize(640, 480));
+    local_main_frame->ViewImpl()->MainFrameViewWidget()->Resize(
+        gfx::Size(640, 480));
     local_main_frame->ViewImpl()->MainFrameWidget()->UpdateAllLifecyclePhases(
         DocumentUpdateReason::kTest);
   }
@@ -365,10 +371,10 @@ TEST_F(ContextMenuControllerTest, MediaStreamVideoLoaded) {
   // Setup video element.
   Persistent<HTMLVideoElement> video =
       MakeGarbageCollected<HTMLVideoElement>(*GetDocument());
-  blink::WebMediaStream web_media_stream;
-  blink::WebVector<blink::WebMediaStreamTrack> dummy_tracks;
-  web_media_stream.Initialize(dummy_tracks, dummy_tracks);
-  video->SetSrcObject(web_media_stream);
+  MediaStreamComponentVector dummy_components;
+  auto* media_stream_descriptor = MakeGarbageCollected<MediaStreamDescriptor>(
+      dummy_components, dummy_components);
+  video->SetSrcObject(media_stream_descriptor);
   GetDocument()->body()->AppendChild(video);
   test::RunPendingTasks();
   SetReadyState(video.Get(), HTMLMediaElement::kHaveMetadata);
@@ -574,11 +580,11 @@ TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
   EXPECT_EQ(context_menu_data.selected_text, "Sample");
 
   // Adjust the selection from the start of |input| to the middle.
-  LayoutPoint middle_point((rect->left() + rect->right()) / 2,
-                           (rect->top() + rect->bottom()) / 2);
-  LocalMainFrame()->MoveRangeSelectionExtent(
-      gfx::Point(middle_point.X().ToInt(), middle_point.Y().ToInt()));
-  GetWebView()->MainFrameWidget()->ShowContextMenu(kMenuSourceTouchHandle);
+  gfx::Point middle_point((rect->left() + rect->right()) / 2,
+                          (rect->top() + rect->bottom()) / 2);
+  LocalMainFrame()->MoveRangeSelectionExtent(middle_point);
+  LocalMainFrame()->LocalRootFrameWidget()->ShowContextMenu(
+      ui::mojom::MenuSourceType::TOUCH_HANDLE, middle_point);
 
   context_menu_data = GetWebFrameClient().GetContextMenuData();
   EXPECT_NE(context_menu_data.selected_text, "");
@@ -590,11 +596,45 @@ TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
   // invisible.
   LocalMainFrame()->MoveRangeSelectionExtent(
       gfx::Point(rect->right(), rect->bottom()));
-  GetWebView()->MainFrameWidget()->ShowContextMenu(kMenuSourceTouchHandle);
+  LocalMainFrame()->LocalRootFrameWidget()->ShowContextMenu(
+      ui::mojom::MenuSourceType::TOUCH_HANDLE,
+      gfx::Point(rect->right() / 2, rect->bottom() / 2));
 
   context_menu_data = GetWebFrameClient().GetContextMenuData();
   EXPECT_EQ(context_menu_data.selected_text, "Sample Input Text");
 }
+
+#if !defined(OS_MAC)
+// Mac has no way to open a context menu based on a keyboard event.
+TEST_F(ContextMenuControllerTest,
+       ValidateNonLocatedContextMenuOnLargeImageElement) {
+  GetDocument()->documentElement()->setInnerHTML(
+      "<img src=\"http://example.test/cat.jpg\" id=\"sample_image\" "
+      "width=\"200\" height=\"10000\" tabindex=\"-1\" />");
+
+  Document* document = GetDocument();
+  Element* image_element = document->getElementById("sample_image");
+  // Set focus on the image element.
+  image_element->focus();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+
+  // Simulate Shift + F10 key event.
+  WebKeyboardEvent key_event(WebInputEvent::Type::kRawKeyDown,
+                             WebInputEvent::kShiftKey,
+                             WebInputEvent::GetStaticTimeStampForTests());
+
+  key_event.windows_key_code = ui::VKEY_F10;
+  GetWebView()->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event, ui::LatencyInfo()));
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
+  GetWebView()->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event, ui::LatencyInfo()));
+
+  WebContextMenuData context_menu_data =
+      GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.media_type, ContextMenuDataMediaType::kImage);
+}
+#endif
 
 TEST_F(ContextMenuControllerTest, SelectionRectClipped) {
   GetDocument()->documentElement()->setInnerHTML(

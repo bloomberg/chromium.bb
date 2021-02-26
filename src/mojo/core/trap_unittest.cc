@@ -14,7 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
@@ -34,8 +34,8 @@ class TriggerHelper {
  public:
   using ContextCallback = base::RepeatingCallback<void(const MojoTrapEvent&)>;
 
-  TriggerHelper() {}
-  ~TriggerHelper() {}
+  TriggerHelper() = default;
+  ~TriggerHelper() = default;
 
   MojoResult CreateTrap(MojoHandle* handle) {
     return MojoCreateTrap(&Notify, nullptr, handle);
@@ -65,7 +65,7 @@ class TriggerHelper {
     explicit NotificationContext(const ContextCallback& callback)
         : callback_(callback) {}
 
-    ~NotificationContext() {}
+    ~NotificationContext() = default;
 
     void SetCancelCallback(base::OnceClosure cancel_callback) {
       cancel_callback_ = std::move(cancel_callback);
@@ -97,7 +97,7 @@ class ThreadedRunner : public base::SimpleThread {
  public:
   explicit ThreadedRunner(base::OnceClosure callback)
       : SimpleThread("ThreadedRunner"), callback_(std::move(callback)) {}
-  ~ThreadedRunner() override {}
+  ~ThreadedRunner() override = default;
 
   void Run() override { std::move(callback_).Run(); }
 

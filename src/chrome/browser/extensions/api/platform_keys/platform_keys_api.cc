@@ -9,12 +9,15 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service_factory.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
 #include "chrome/common/extensions/api/platform_keys_internal.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -30,13 +33,14 @@ namespace api_pki = api::platform_keys_internal;
 
 namespace {
 
-const char kErrorAlgorithmNotSupported[] = "Algorithm not supported.";
 const char kErrorAlgorithmNotPermittedByCertificate[] =
     "The requested Algorithm is not permitted by the certificate.";
 const char kErrorInteractiveCallFromBackground[] =
     "Interactive calls must happen in the context of a browser tab or a "
     "window.";
 
+const char kWebCryptoEcdsa[] = "ECDSA";
+const char kWebCryptoNamedCurveP256[] = "P-256";
 const char kWebCryptoRSASSA_PKCS1_v1_5[] = "RSASSA-PKCS1-v1_5";
 
 struct PublicKeyInfo {
@@ -58,17 +62,23 @@ struct PublicKeyInfo {
 void BuildWebCryptoRSAAlgorithmDictionary(const PublicKeyInfo& key_info,
                                           base::DictionaryValue* algorithm) {
   CHECK_EQ(net::X509Certificate::kPublicKeyTypeRSA, key_info.key_type);
-  algorithm->SetKey("name", base::Value(kWebCryptoRSASSA_PKCS1_v1_5));
+  algorithm->SetStringKey("name", kWebCryptoRSASSA_PKCS1_v1_5);
   algorithm->SetKey("modulusLength",
                     base::Value(static_cast<int>(key_info.key_size_bits)));
 
   // Equals 65537.
-  const unsigned char defaultPublicExponent[] = {0x01, 0x00, 0x01};
-  algorithm->SetWithoutPathExpansion(
-      "publicExponent",
-      base::Value::CreateWithCopiedBuffer(
-          reinterpret_cast<const char*>(defaultPublicExponent),
-          base::size(defaultPublicExponent)));
+  static constexpr uint8_t kDefaultPublicExponent[] = {0x01, 0x00, 0x01};
+  algorithm->SetKey("publicExponent",
+                    base::Value(base::make_span(kDefaultPublicExponent)));
+}
+
+void BuildWebCryptoEcdsaAlgorithmDictionary(const PublicKeyInfo& key_info,
+                                            base::DictionaryValue* algorithm) {
+  CHECK_EQ(net::X509Certificate::kPublicKeyTypeECDSA, key_info.key_type);
+  algorithm->SetStringKey("name", kWebCryptoEcdsa);
+
+  // Only P-256 named curve is supported.
+  algorithm->SetStringKey("namedCurve", kWebCryptoNamedCurveP256);
 }
 
 const struct NameValuePair {
@@ -84,35 +94,32 @@ const struct NameValuePair {
 
 namespace platform_keys {
 
+const char kErrorInvalidSpki[] = "The SubjectPublicKeyInfo is not valid.";
 const char kErrorInvalidToken[] = "The token is not valid.";
 const char kErrorInvalidX509Cert[] =
     "Certificate is not a valid X.509 certificate.";
 const char kTokenIdUser[] = "user";
 const char kTokenIdSystem[] = "system";
 
-// Returns whether |token_id| references a known Token.
-bool ValidateToken(const std::string& token_id,
-                   std::string* platform_keys_token_id) {
-  platform_keys_token_id->clear();
-  if (token_id == kTokenIdUser) {
-    *platform_keys_token_id = chromeos::platform_keys::kTokenIdUser;
-    return true;
-  }
-  if (token_id == kTokenIdSystem) {
-    *platform_keys_token_id = chromeos::platform_keys::kTokenIdSystem;
-    return true;
-  }
-  return false;
+base::Optional<chromeos::platform_keys::TokenId> ApiIdToPlatformKeysTokenId(
+    const std::string& token_id) {
+  if (token_id == kTokenIdUser)
+    return chromeos::platform_keys::TokenId::kUser;
+
+  if (token_id == kTokenIdSystem)
+    return chromeos::platform_keys::TokenId::kSystem;
+
+  return base::nullopt;
 }
 
 std::string PlatformKeysTokenIdToApiId(
-    const std::string& platform_keys_token_id) {
-  if (platform_keys_token_id == chromeos::platform_keys::kTokenIdUser)
-    return kTokenIdUser;
-  if (platform_keys_token_id == chromeos::platform_keys::kTokenIdSystem)
-    return kTokenIdSystem;
-
-  return std::string();
+    chromeos::platform_keys::TokenId platform_keys_token_id) {
+  switch (platform_keys_token_id) {
+    case chromeos::platform_keys::TokenId::kUser:
+      return kTokenIdUser;
+    case chromeos::platform_keys::TokenId::kSystem:
+      return kTokenIdSystem;
+  }
 }
 
 }  // namespace platform_keys
@@ -145,25 +152,88 @@ PlatformKeysInternalGetPublicKeyFunction::Run() {
       chromeos::platform_keys::GetSubjectPublicKeyInfo(cert_x509);
   if (!chromeos::platform_keys::GetPublicKey(cert_x509, &key_info.key_type,
                                              &key_info.key_size_bits) ||
+      (key_info.key_type != net::X509Certificate::kPublicKeyTypeRSA &&
+       key_info.key_type != net::X509Certificate::kPublicKeyTypeECDSA)) {
+    return RespondNow(Error(StatusToString(
+        chromeos::platform_keys::Status::kErrorAlgorithmNotSupported)));
+  }
+
+  // Currently, the only supported combinations are:
+  // 1- A certificate declaring rsaEncryption in the SubjectPublicKeyInfo used
+  // with the RSASSA-PKCS1-v1.5 algorithm.
+  // 2- A certificate declaring id-ecPublicKey in the SubjectPublicKeyInfo used
+  // with the ECDSA algorithm.
+  if (params->algorithm_name == kWebCryptoRSASSA_PKCS1_v1_5) {
+    if (key_info.key_type != net::X509Certificate::kPublicKeyTypeRSA) {
+      return RespondNow(Error(kErrorAlgorithmNotPermittedByCertificate));
+    }
+
+    api_pki::GetPublicKey::Results::Algorithm algorithm;
+    BuildWebCryptoRSAAlgorithmDictionary(key_info,
+                                         &algorithm.additional_properties);
+
+    return RespondNow(ArgumentList(api_pki::GetPublicKey::Results::Create(
+        std::vector<uint8_t>(key_info.public_key_spki_der.begin(),
+                             key_info.public_key_spki_der.end()),
+        algorithm)));
+  }
+
+  if (params->algorithm_name == kWebCryptoEcdsa) {
+    if (key_info.key_type != net::X509Certificate::kPublicKeyTypeECDSA) {
+      return RespondNow(Error(kErrorAlgorithmNotPermittedByCertificate));
+    }
+
+    api_pki::GetPublicKey::Results::Algorithm algorithm;
+    BuildWebCryptoEcdsaAlgorithmDictionary(key_info,
+                                           &algorithm.additional_properties);
+
+    return RespondNow(ArgumentList(api_pki::GetPublicKey::Results::Create(
+        std::vector<uint8_t>(key_info.public_key_spki_der.begin(),
+                             key_info.public_key_spki_der.end()),
+        algorithm)));
+  }
+
+  return RespondNow(Error(kErrorAlgorithmNotPermittedByCertificate));
+}
+
+PlatformKeysInternalGetPublicKeyBySpkiFunction::
+    ~PlatformKeysInternalGetPublicKeyBySpkiFunction() = default;
+
+ExtensionFunction::ResponseAction
+PlatformKeysInternalGetPublicKeyBySpkiFunction::Run() {
+  std::unique_ptr<api_pki::GetPublicKeyBySpki::Params> params(
+      api_pki::GetPublicKeyBySpki::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const auto& public_key_spki_der = params->public_key_spki_der;
+  if (public_key_spki_der.empty())
+    return RespondNow(Error(platform_keys::kErrorInvalidSpki));
+
+  PublicKeyInfo key_info;
+  key_info.public_key_spki_der.assign(std::begin(public_key_spki_der),
+                                      std::end(public_key_spki_der));
+
+  if (!chromeos::platform_keys::GetPublicKeyBySpki(key_info.public_key_spki_der,
+                                                   &key_info.key_type,
+                                                   &key_info.key_size_bits) ||
       key_info.key_type != net::X509Certificate::kPublicKeyTypeRSA) {
-    return RespondNow(Error(kErrorAlgorithmNotSupported));
+    return RespondNow(Error(StatusToString(
+        chromeos::platform_keys::Status::kErrorAlgorithmNotSupported)));
   }
 
   // Currently, the only supported combination is:
-  //   A certificate declaring rsaEncryption in the SubjectPublicKeyInfo used
-  //   with the RSASSA-PKCS1-v1.5 algorithm.
+  //   A SPKI declaring rsaEncryption used with the RSASSA-PKCS1-v1.5 algorithm.
   if (params->algorithm_name != kWebCryptoRSASSA_PKCS1_v1_5) {
-    return RespondNow(Error(kErrorAlgorithmNotPermittedByCertificate));
+    return RespondNow(Error(StatusToString(
+        chromeos::platform_keys::Status::kErrorAlgorithmNotSupported)));
   }
 
-  api_pki::GetPublicKey::Results::Algorithm algorithm;
+  api_pki::GetPublicKeyBySpki::Results::Algorithm algorithm;
   BuildWebCryptoRSAAlgorithmDictionary(key_info,
                                        &algorithm.additional_properties);
 
-  return RespondNow(ArgumentList(api_pki::GetPublicKey::Results::Create(
-      std::vector<uint8_t>(key_info.public_key_spki_der.begin(),
-                           key_info.public_key_spki_der.end()),
-      algorithm)));
+  return RespondNow(ArgumentList(api_pki::GetPublicKeyBySpki::Results::Create(
+      public_key_spki_der, algorithm)));
 }
 
 PlatformKeysInternalSelectClientCertificatesFunction::
@@ -248,11 +318,11 @@ PlatformKeysInternalSelectClientCertificatesFunction::Run() {
 
 void PlatformKeysInternalSelectClientCertificatesFunction::
     OnSelectedCertificates(std::unique_ptr<net::CertificateList> matches,
-                           const std::string& error_message) {
+                           chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!error_message.empty()) {
-    Respond(Error(error_message));
+  if (status != chromeos::platform_keys::Status::kSuccess) {
+    Respond(Error(chromeos::platform_keys::StatusToString(status)));
     return;
   }
   DCHECK(matches);
@@ -291,11 +361,16 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
   std::unique_ptr<api_pki::Sign::Params> params(
       api_pki::Sign::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  std::string platform_keys_token_id;
-  if (!params->token_id.empty() &&
-      !platform_keys::ValidateToken(params->token_id,
-                                    &platform_keys_token_id)) {
-    return RespondNow(Error(platform_keys::kErrorInvalidToken));
+
+  base::Optional<chromeos::platform_keys::TokenId> platform_keys_token_id;
+  // If |params->token_id| is not specified (empty string), the key will be
+  // searched for in all available tokens.
+  if (!params->token_id.empty()) {
+    platform_keys_token_id =
+        platform_keys::ApiIdToPlatformKeysTokenId(params->token_id);
+    if (!platform_keys_token_id) {
+      return RespondNow(Error(platform_keys::kErrorInvalidToken));
+    }
   }
 
   chromeos::ExtensionPlatformKeysService* service =
@@ -305,8 +380,9 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
 
   if (params->hash_algorithm_name == "none") {
     // Signing without digesting is only supported for RSASSA-PKCS1-v1_5.
-    if (params->algorithm_name != "RSASSA-PKCS1-v1_5")
-      return RespondNow(Error(kErrorAlgorithmNotSupported));
+    if (params->algorithm_name != kWebCryptoRSASSA_PKCS1_v1_5)
+      return RespondNow(Error(StatusToString(
+          chromeos::platform_keys::Status::kErrorAlgorithmNotSupported)));
 
     service->SignRSAPKCS1Raw(
         platform_keys_token_id,
@@ -325,16 +401,18 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
     } else if (params->hash_algorithm_name == "SHA-512") {
       hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA512;
     } else {
-      return RespondNow(Error(kErrorAlgorithmNotSupported));
+      return RespondNow(Error(StatusToString(
+          chromeos::platform_keys::Status::kErrorAlgorithmNotSupported)));
     }
 
     chromeos::platform_keys::KeyType key_type;
-    if (params->algorithm_name == "RSASSA-PKCS1-v1_5") {
+    if (params->algorithm_name == kWebCryptoRSASSA_PKCS1_v1_5) {
       key_type = chromeos::platform_keys::KeyType::kRsassaPkcs1V15;
-    } else if (params->algorithm_name == "ECDSA") {
+    } else if (params->algorithm_name == kWebCryptoEcdsa) {
       key_type = chromeos::platform_keys::KeyType::kEcdsa;
     } else {
-      return RespondNow(Error(kErrorAlgorithmNotSupported));
+      return RespondNow(Error(StatusToString(
+          chromeos::platform_keys::Status::kErrorAlgorithmNotSupported)));
     }
 
     service->SignDigest(
@@ -350,14 +428,14 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
 
 void PlatformKeysInternalSignFunction::OnSigned(
     const std::string& signature,
-    const std::string& error_message) {
+    chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (error_message.empty())
+  if (status == chromeos::platform_keys::Status::kSuccess)
     Respond(ArgumentList(api_pki::Sign::Results::Create(
         std::vector<uint8_t>(signature.begin(), signature.end()))));
   else
-    Respond(Error(error_message));
+    Respond(Error(chromeos::platform_keys::StatusToString(status)));
 }
 
 PlatformKeysVerifyTLSServerCertificateFunction::

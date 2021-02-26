@@ -47,10 +47,14 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   virtual void RemoveAllClientsFromCache() = 0;
 
   // Remove any cached data for the |client|, and return true if so.
-  virtual bool RemoveClientFromCache(SVGResourceClient&) { return false; }
+  virtual bool RemoveClientFromCache(SVGResourceClient&) {
+    NOT_DESTROYED();
+    return false;
+  }
 
   void UpdateLayout() override;
   bool IsOfType(LayoutObjectType type) const override {
+    NOT_DESTROYED();
     return type == kLayoutObjectSVGResourceContainer ||
            LayoutSVGHiddenContainer::IsOfType(type);
   }
@@ -58,6 +62,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   virtual LayoutSVGResourceType ResourceType() const = 0;
 
   bool IsSVGPaintServer() const {
+    NOT_DESTROYED();
     LayoutSVGResourceType resource_type = ResourceType();
     return resource_type == kPatternResourceType ||
            resource_type == kLinearGradientResourceType ||
@@ -73,9 +78,12 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   static void MarkForLayoutAndParentResourceInvalidation(
       LayoutObject&,
       bool needs_layout = true);
-  static void MarkClientForInvalidation(LayoutObject&, InvalidationModeMask);
+  static void StyleDidChange(LayoutObject&, StyleDifference);
 
-  void ClearInvalidationMask() { completed_invalidations_mask_ = 0; }
+  void ClearInvalidationMask() {
+    NOT_DESTROYED();
+    completed_invalidations_mask_ = 0;
+  }
 
  protected:
   // Used from RemoveAllClientsFromCache methods.
@@ -92,8 +100,6 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void WillBeDestroyed() override;
 
-  bool is_in_layout_;
-
  private:
   // Track global (markAllClientsForInvalidation) invalidations to avoid
   // redundant crawls.
@@ -103,8 +109,12 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   // 23 padding bits available
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceContainer,
-                                IsSVGResourceContainer());
+template <>
+struct DowncastTraits<LayoutSVGResourceContainer> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsSVGResourceContainer();
+  }
+};
 
 #define DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(thisType, typeName)   \
   DEFINE_TYPE_CASTS(thisType, LayoutSVGResourceContainer, resource, \

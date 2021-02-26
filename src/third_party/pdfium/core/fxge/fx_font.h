@@ -39,13 +39,12 @@
 
 /* Other font flags */
 #define FXFONT_USEEXTERNATTR 0x80000
-#define FXFONT_CIDFONT 0x100000
 
 #define GET_TT_SHORT(w) (uint16_t)(((w)[0] << 8) | (w)[1])
 #define GET_TT_LONG(w) \
   (uint32_t)(((w)[0] << 24) | ((w)[1] << 16) | ((w)[2] << 8) | (w)[3])
 
-#if defined _SKIA_SUPPORT_ || defined _SKIA_SUPPORT_PATHS_
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
 class SkTypeface;
 
 using CFX_TypeFace = SkTypeface;

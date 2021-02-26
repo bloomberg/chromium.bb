@@ -19,12 +19,14 @@
 
 #include <inttypes.h>
 #include <stdio.h>
+#include <sstream>
 
 #include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <deque>
 #include <limits>
+#include <memory>
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/ext/base/string_splitter.h"
@@ -81,46 +83,10 @@ const char kLegacyEventUnscopedIdKey[] = "unscoped_id";
 const char kLegacyEventGlobalIdKey[] = "global_id";
 const char kLegacyEventLocalIdKey[] = "local_id";
 const char kLegacyEventIdScopeKey[] = "id_scope";
-const char kLegacyEventBindIdKey[] = "bind_id";
-const char kLegacyEventBindToEnclosingKey[] = "bind_to_enclosing";
-const char kLegacyEventFlowDirectionKey[] = "flow_direction";
-const char kFlowDirectionValueIn[] = "in";
-const char kFlowDirectionValueOut[] = "out";
-const char kFlowDirectionValueInout[] = "inout";
 const char kStrippedArgument[] = "__stripped__";
 
 const char* GetNonNullString(const TraceStorage* storage, StringId id) {
   return id == kNullStringId ? "" : storage->GetString(id).c_str();
-}
-
-std::string PrintUint64(uint64_t x) {
-  char hex_str[19];
-  sprintf(hex_str, "0x%" PRIx64, x);
-  return hex_str;
-}
-
-void ConvertLegacyFlowEventArgs(const Json::Value& legacy_args,
-                                Json::Value* event) {
-  if (legacy_args.isMember(kLegacyEventBindIdKey)) {
-    (*event)["bind_id"] =
-        PrintUint64(legacy_args[kLegacyEventBindIdKey].asUInt64());
-  }
-
-  if (legacy_args.isMember(kLegacyEventBindToEnclosingKey))
-    (*event)["bp"] = "e";
-
-  if (legacy_args.isMember(kLegacyEventFlowDirectionKey)) {
-    const char* val = legacy_args[kLegacyEventFlowDirectionKey].asCString();
-    if (strcmp(val, kFlowDirectionValueIn) == 0) {
-      (*event)["flow_in"] = true;
-    } else if (strcmp(val, kFlowDirectionValueOut) == 0) {
-      (*event)["flow_out"] = true;
-    } else {
-      PERFETTO_DCHECK(strcmp(val, kFlowDirectionValueInout) == 0);
-      (*event)["flow_in"] = true;
-      (*event)["flow_out"] = true;
-    }
-  }
 }
 
 class JsonExporter {
@@ -151,6 +117,10 @@ class JsonExporter {
     if (!status.ok())
       return status;
 
+    status = ExportFlows();
+    if (!status.ok())
+      return status;
+
     status = ExportRawEvents();
     if (!status.ok())
       return status;
@@ -164,6 +134,10 @@ class JsonExporter {
       return status;
 
     status = ExportStats();
+    if (!status.ok())
+      return status;
+
+    status = ExportMemorySnapshots();
     if (!status.ok())
       return status;
 
@@ -182,6 +156,9 @@ class JsonExporter {
           metadata_filter_(metadata_filter),
           label_filter_(label_filter),
           first_event_(true) {
+      Json::StreamWriterBuilder b;
+      b.settings_["indentation"] = "";
+      writer_.reset(b.newStreamWriter());
       WriteHeader();
     }
 
@@ -340,11 +317,10 @@ class JsonExporter {
       if (label_filter_ && !label_filter_("traceEvents"))
         return;
 
+      std::ostringstream ss;
       if (!first_event_)
-        output_->AppendString(",\n");
+        ss << ",\n";
 
-      Json::FastWriter writer;
-      writer.omitEndingLineFeed();
       Json::Value value;
       value["ph"] = "M";
       value["cat"] = "__metadata";
@@ -357,7 +333,8 @@ class JsonExporter {
       args["name"] = metadata_value;
       value["args"] = args;
 
-      output_->AppendString(writer.write(value));
+      writer_->write(value, &ss);
+      output_->AppendString(ss.str());
       first_event_ = false;
     }
 
@@ -380,7 +357,7 @@ class JsonExporter {
     }
 
     void SetTelemetryMetadataTimestamp(const char* key, int64_t value) {
-      metadata_["telemetry"][key] = value / 1000.0;
+      metadata_["telemetry"][key] = static_cast<double>(value) / 1000.0;
     }
 
     void SetStats(const char* key, int64_t value) {
@@ -434,14 +411,17 @@ class JsonExporter {
         }
       }
 
-      Json::FastWriter writer;
-      writer.omitEndingLineFeed();
       if ((!label_filter_ || label_filter_("traceEvents")) &&
           !user_trace_data_.empty()) {
         user_trace_data_ += "]";
-        Json::Reader reader;
+
+        Json::CharReaderBuilder builder;
+        auto reader =
+            std::unique_ptr<Json::CharReader>(builder.newCharReader());
         Json::Value result;
-        if (reader.parse(user_trace_data_, result)) {
+        if (reader->parse(user_trace_data_.data(),
+                          user_trace_data_.data() + user_trace_data_.length(),
+                          &result, nullptr)) {
           for (const auto& event : result) {
             WriteCommonEvent(event);
           }
@@ -451,27 +431,32 @@ class JsonExporter {
               user_trace_data_.c_str());
         }
       }
+
+      std::ostringstream ss;
       if (!label_filter_)
-        output_->AppendString("]");
+        ss << "]";
+
       if ((!label_filter_ || label_filter_("systemTraceEvents")) &&
           !system_trace_data_.empty()) {
-        output_->AppendString(",\"systemTraceEvents\":\n");
-        output_->AppendString(writer.write(Json::Value(system_trace_data_)));
+        ss << ",\"systemTraceEvents\":\n";
+        writer_->write(Json::Value(system_trace_data_), &ss);
       }
+
       if ((!label_filter_ || label_filter_("metadata")) && !metadata_.empty()) {
-        output_->AppendString(",\"metadata\":\n");
-        output_->AppendString(writer.write(metadata_));
+        ss << ",\"metadata\":\n";
+        writer_->write(metadata_, &ss);
       }
+
       if (!label_filter_)
-        output_->AppendString("}");
+        ss << "}";
+
+      output_->AppendString(ss.str());
     }
 
     void DoWriteEvent(const Json::Value& event) {
+      std::ostringstream ss;
       if (!first_event_)
-        output_->AppendString(",\n");
-
-      Json::FastWriter writer;
-      writer.omitEndingLineFeed();
+        ss << ",\n";
 
       ArgumentNameFilterPredicate argument_name_filter;
       bool strip_args =
@@ -489,11 +474,13 @@ class JsonExporter {
               args[member] = kStrippedArgument;
           }
         }
-        output_->AppendString(writer.write(event_copy));
+        writer_->write(event_copy, &ss);
       } else {
-        output_->AppendString(writer.write(event));
+        writer_->write(event, &ss);
       }
       first_event_ = false;
+
+      output_->AppendString(ss.str());
     }
 
     OutputWriter* output_;
@@ -501,6 +488,7 @@ class JsonExporter {
     MetadataFilterPredicate metadata_filter_;
     LabelFilterPredicate label_filter_;
 
+    std::unique_ptr<Json::StreamWriter> writer_;
     bool first_event_;
     Json::Value metadata_;
     std::string system_trace_data_;
@@ -565,13 +553,16 @@ class JsonExporter {
             return variadic.real_value;
           }
         case Variadic::kPointer:
-          return PrintUint64(variadic.pointer_value);
+          return base::Uint64ToHexString(variadic.pointer_value);
         case Variadic::kBool:
           return variadic.bool_value;
         case Variadic::kJson:
-          Json::Reader reader;
+          Json::CharReaderBuilder b;
+          auto reader = std::unique_ptr<Json::CharReader>(b.newCharReader());
+
           Json::Value result;
-          reader.parse(GetNonNullString(storage_, variadic.json_value), result);
+          std::string v = GetNonNullString(storage_, variadic.json_value);
+          reader->parse(v.data(), v.data() + v.length(), &result, nullptr);
           return result;
       }
       PERFETTO_FATAL("Not reached");  // For gcc.
@@ -746,7 +737,6 @@ class JsonExporter {
       event["args"] =
           args_builder_.GetArgs(slices.arg_set_id()[i]);  // Makes a copy.
       if (event["args"].isMember(kLegacyEventArgsKey)) {
-        ConvertLegacyFlowEventArgs(event["args"][kLegacyEventArgsKey], &event);
 
         if (event["args"][kLegacyEventArgsKey].isMember(
                 kLegacyEventPassthroughUtidKey)) {
@@ -886,13 +876,13 @@ class JsonExporter {
           bool source_id_is_process_scoped =
               (*track_args)["source_id_is_process_scoped"].asBool();
           if (source_id_is_process_scoped) {
-            event["id2"]["local"] = PrintUint64(source_id);
+            event["id2"]["local"] = base::Uint64ToHexString(source_id);
           } else {
             // Some legacy importers don't understand "id2" fields, so we use
             // the "usually" global "id" field instead. This works as long as
             // the event phase is not in {'N', 'D', 'O', '(', ')'}, see
             // "LOCAL_ID_PHASES" in catapult.
-            event["id"] = PrintUint64(source_id);
+            event["id"] = base::Uint64ToHexString(source_id);
           }
         } else {
           if (opt_thread_track_row) {
@@ -900,7 +890,7 @@ class JsonExporter {
             auto pid_and_tid = UtidToPidAndTid(utid);
             event["pid"] = Json::Int(pid_and_tid.first);
             event["tid"] = Json::Int(pid_and_tid.second);
-            event["id2"]["local"] = PrintUint64(track_id.value);
+            event["id2"]["local"] = base::Uint64ToHexString(track_id.value);
           } else if (opt_process_row) {
             uint32_t upid = process_track.upid()[*opt_process_row];
             uint32_t exported_pid = UpidToPid(upid);
@@ -908,7 +898,7 @@ class JsonExporter {
             event["tid"] =
                 Json::Int(legacy_utid ? UtidToPidAndTid(*legacy_utid).second
                                       : exported_pid);
-            event["id2"]["local"] = PrintUint64(track_id.value);
+            event["id2"]["local"] = base::Uint64ToHexString(track_id.value);
           } else {
             if (legacy_utid) {
               auto pid_and_tid = UtidToPidAndTid(*legacy_utid);
@@ -920,7 +910,7 @@ class JsonExporter {
             // the "usually" global "id" field instead. This works as long as
             // the event phase is not in {'N', 'D', 'O', '(', ')'}, see
             // "LOCAL_ID_PHASES" in catapult.
-            event["id"] = PrintUint64(track_id.value);
+            event["id"] = base::Uint64ToHexString(track_id.value);
           }
         }
 
@@ -988,6 +978,83 @@ class JsonExporter {
     return util::OkStatus();
   }
 
+  base::Optional<Json::Value> CreateFlowEventV1(uint32_t flow_id,
+                                                SliceId slice_id,
+                                                std::string name,
+                                                std::string cat,
+                                                Json::Value args,
+                                                bool flow_begin) {
+    const auto& slices = storage_->slice_table();
+    const auto& thread_tracks = storage_->thread_track_table();
+
+    auto opt_slice_idx = slices.id().IndexOf(slice_id);
+    if (!opt_slice_idx)
+      return base::nullopt;
+    uint32_t slice_idx = opt_slice_idx.value();
+
+    TrackId track_id = storage_->slice_table().track_id()[slice_idx];
+    auto opt_thread_track_idx = thread_tracks.id().IndexOf(track_id);
+    // catapult only supports flow events attached to thread-track slices
+    if (!opt_thread_track_idx)
+      return base::nullopt;
+
+    UniqueTid utid = thread_tracks.utid()[opt_thread_track_idx.value()];
+    auto pid_and_tid = UtidToPidAndTid(utid);
+    Json::Value event;
+    event["id"] = flow_id;
+    event["pid"] = Json::Int(pid_and_tid.first);
+    event["tid"] = Json::Int(pid_and_tid.second);
+    event["cat"] = cat;
+    event["name"] = name;
+    event["ph"] = (flow_begin ? "s" : "f");
+    event["ts"] = Json::Int64(slices.ts()[slice_idx] / 1000);
+    if (!flow_begin) {
+      event["bp"] = "e";
+    }
+    event["args"] = std::move(args);
+    return std::move(event);
+  }
+
+  util::Status ExportFlows() {
+    const auto& flow_table = storage_->flow_table();
+    const auto& slice_table = storage_->slice_table();
+    for (uint32_t i = 0; i < flow_table.row_count(); i++) {
+      SliceId slice_out = flow_table.slice_out()[i];
+      SliceId slice_in = flow_table.slice_in()[i];
+      uint32_t arg_set_id = flow_table.arg_set_id()[i];
+
+      std::string cat;
+      std::string name;
+      auto args = args_builder_.GetArgs(arg_set_id);
+      if (arg_set_id != kInvalidArgSetId) {
+        cat = args["cat"].asString();
+        name = args["name"].asString();
+        // Don't export these args since they are only used for this export and
+        // weren't part of the original event.
+        args.removeMember("name");
+        args.removeMember("cat");
+      } else {
+        auto opt_slice_out_idx = slice_table.id().IndexOf(slice_out);
+        PERFETTO_DCHECK(opt_slice_out_idx.has_value());
+        StringId cat_id = slice_table.category()[opt_slice_out_idx.value()];
+        StringId name_id = slice_table.name()[opt_slice_out_idx.value()];
+        cat = GetNonNullString(storage_, cat_id);
+        name = GetNonNullString(storage_, name_id);
+      }
+
+      auto out_event = CreateFlowEventV1(i, slice_out, name, cat, args,
+                                         /* flow_begin = */ true);
+      auto in_event = CreateFlowEventV1(i, slice_in, name, cat, std::move(args),
+                                        /* flow_begin = */ false);
+
+      if (out_event && in_event) {
+        writer_.WriteCommonEvent(out_event.value());
+        writer_.WriteCommonEvent(in_event.value());
+      }
+    }
+    return util::OkStatus();
+  }
+
   Json::Value ConvertLegacyRawEventToJson(uint32_t index) {
     const auto& events = storage_->raw_table();
 
@@ -1043,24 +1110,22 @@ class JsonExporter {
       event["use_async_tts"] = legacy_args[kLegacyEventUseAsyncTtsKey];
 
     if (legacy_args.isMember(kLegacyEventUnscopedIdKey)) {
-      event["id"] =
-          PrintUint64(legacy_args[kLegacyEventUnscopedIdKey].asUInt64());
+      event["id"] = base::Uint64ToHexString(
+          legacy_args[kLegacyEventUnscopedIdKey].asUInt64());
     }
 
     if (legacy_args.isMember(kLegacyEventGlobalIdKey)) {
-      event["id2"]["global"] =
-          PrintUint64(legacy_args[kLegacyEventGlobalIdKey].asUInt64());
+      event["id2"]["global"] = base::Uint64ToHexString(
+          legacy_args[kLegacyEventGlobalIdKey].asUInt64());
     }
 
     if (legacy_args.isMember(kLegacyEventLocalIdKey)) {
-      event["id2"]["local"] =
-          PrintUint64(legacy_args[kLegacyEventLocalIdKey].asUInt64());
+      event["id2"]["local"] = base::Uint64ToHexString(
+          legacy_args[kLegacyEventLocalIdKey].asUInt64());
     }
 
     if (legacy_args.isMember(kLegacyEventIdScopeKey))
       event["scope"] = legacy_args[kLegacyEventIdScopeKey];
-
-    ConvertLegacyFlowEventArgs(legacy_args, &event);
 
     event["args"].removeMember(kLegacyEventArgsKey);
 
@@ -1129,7 +1194,7 @@ class JsonExporter {
       // want the samples to show up on their own track in the trace-viewer but
       // not nested together.
       static size_t g_id_counter = 0;
-      event["id"] = PrintUint64(++g_id_counter);
+      event["id"] = base::Uint64ToHexString(++g_id_counter);
 
       const auto& callsites = storage_->stack_profile_callsite_table();
       const auto& frames = storage_->stack_profile_frame_table();
@@ -1158,7 +1223,7 @@ class JsonExporter {
         char frame_entry[1024];
         snprintf(frame_entry, sizeof(frame_entry), "%s - %s [%s]\n",
                  (symbol_name.empty()
-                      ? PrintUint64(
+                      ? base::Uint64ToHexString(
                             static_cast<uint64_t>(frames.rel_pc()[frame_row]))
                             .c_str()
                       : symbol_name.c_str()),
@@ -1197,16 +1262,16 @@ class JsonExporter {
     const auto& str_values = trace_metadata.str_value();
 
     // Create a mapping from key string ids to keys.
-    std::unordered_map<StringId, metadata::KeyIDs> key_map;
+    std::unordered_map<StringId, metadata::KeyId> key_map;
     for (uint32_t i = 0; i < metadata::kNumKeys; ++i) {
       auto id = *storage_->string_pool().GetId(metadata::kNames[i]);
-      key_map[id] = static_cast<metadata::KeyIDs>(i);
+      key_map[id] = static_cast<metadata::KeyId>(i);
     }
 
     for (uint32_t pos = 0; pos < trace_metadata.row_count(); pos++) {
       // Cast away from enum type, as otherwise -Wswitch-enum will demand an
       // exhaustive list of cases, even if there's a default case.
-      metadata::KeyIDs key = key_map[keys[pos]];
+      metadata::KeyId key = key_map[keys[pos]];
       switch (static_cast<size_t>(key)) {
         case metadata::benchmark_description:
           writer_.AppendTelemetryMetadataString(
@@ -1274,6 +1339,202 @@ class JsonExporter {
     return util::OkStatus();
   }
 
+  util::Status ExportMemorySnapshots() {
+    const auto& memory_snapshots = storage_->memory_snapshot_table();
+    base::Optional<StringId> private_footprint_id =
+        storage_->string_pool().GetId("chrome.private_footprint_kb");
+    base::Optional<StringId> peak_resident_set_id =
+        storage_->string_pool().GetId("chrome.peak_resident_set_kb");
+
+    for (uint32_t memory_index = 0; memory_index < memory_snapshots.row_count();
+         ++memory_index) {
+      Json::Value event_base;
+
+      event_base["ph"] = "v";
+      event_base["cat"] = "disabled-by-default-memory-infra";
+      auto snapshot_id = memory_snapshots.id()[memory_index].value;
+      event_base["id"] = base::Uint64ToHexString(snapshot_id);
+      int64_t snapshot_ts = memory_snapshots.timestamp()[memory_index];
+      event_base["ts"] = Json::Int64(snapshot_ts / 1000);
+      // TODO(crbug:1116359): Add dump type to the snapshot proto
+      // to properly fill event_base["name"]
+      event_base["name"] = "periodic_interval";
+      event_base["args"]["dumps"]["level_of_detail"] = GetNonNullString(
+          storage_, memory_snapshots.detail_level()[memory_index]);
+
+      // Export OS dump events for processes with relevant data.
+      const auto& process_table = storage_->process_table();
+      for (UniquePid upid = 0; upid < process_table.row_count(); ++upid) {
+        Json::Value event =
+            FillInProcessEventDetails(event_base, process_table.pid()[upid]);
+        Json::Value& totals = event["args"]["dumps"]["process_totals"];
+
+        const auto& process_counters = storage_->process_counter_track_table();
+
+        for (uint32_t counter_index = 0;
+             counter_index < process_counters.row_count(); ++counter_index) {
+          if (process_counters.upid()[counter_index] != upid)
+            continue;
+          TrackId track_id = process_counters.id()[counter_index];
+          if (private_footprint_id && (process_counters.name()[counter_index] ==
+                                       private_footprint_id)) {
+            totals["private_footprint_bytes"] = base::Uint64ToHexStringNoPrefix(
+                GetCounterValue(track_id, snapshot_ts));
+          } else if (peak_resident_set_id &&
+                     (process_counters.name()[counter_index] ==
+                      peak_resident_set_id)) {
+            totals["peak_resident_set_size"] = base::Uint64ToHexStringNoPrefix(
+                GetCounterValue(track_id, snapshot_ts));
+          }
+        }
+
+        auto process_args_id = process_table.arg_set_id()[upid];
+        if (process_args_id) {
+          const Json::Value* process_args =
+              &args_builder_.GetArgs(process_args_id);
+          if (process_args->isMember("is_peak_rss_resettable")) {
+            totals["is_peak_rss_resettable"] =
+                (*process_args)["is_peak_rss_resettable"];
+          }
+        }
+
+        Json::Value& smaps =
+            event["args"]["dumps"]["process_mmaps"]["vm_regions"];
+        const auto& smaps_table = storage_->profiler_smaps_table();
+        for (uint32_t smaps_index = 0; smaps_index < smaps_table.row_count();
+             ++smaps_index) {
+          if (smaps_table.upid()[smaps_index] != upid)
+            continue;
+          if (smaps_table.ts()[smaps_index] != snapshot_ts)
+            continue;
+          Json::Value region;
+          region["mf"] =
+              GetNonNullString(storage_, smaps_table.file_name()[smaps_index]);
+          region["pf"] =
+              Json::Int64(smaps_table.protection_flags()[smaps_index]);
+          region["sa"] = base::Uint64ToHexStringNoPrefix(
+              static_cast<uint64_t>(smaps_table.start_address()[smaps_index]));
+          region["sz"] = base::Uint64ToHexStringNoPrefix(
+              static_cast<uint64_t>(smaps_table.size_kb()[smaps_index]));
+          region["ts"] =
+              Json::Int64(smaps_table.module_timestamp()[smaps_index]);
+          region["id"] = GetNonNullString(
+              storage_, smaps_table.module_debugid()[smaps_index]);
+          region["df"] = GetNonNullString(
+              storage_, smaps_table.module_debug_path()[smaps_index]);
+          region["bs"]["pc"] =
+              base::Uint64ToHexStringNoPrefix(static_cast<uint64_t>(
+                  smaps_table.private_clean_resident_kb()[smaps_index]));
+          region["bs"]["pd"] =
+              base::Uint64ToHexStringNoPrefix(static_cast<uint64_t>(
+                  smaps_table.private_dirty_kb()[smaps_index]));
+          region["bs"]["pss"] =
+              base::Uint64ToHexStringNoPrefix(static_cast<uint64_t>(
+                  smaps_table.proportional_resident_kb()[smaps_index]));
+          region["bs"]["sc"] =
+              base::Uint64ToHexStringNoPrefix(static_cast<uint64_t>(
+                  smaps_table.shared_clean_resident_kb()[smaps_index]));
+          region["bs"]["sd"] =
+              base::Uint64ToHexStringNoPrefix(static_cast<uint64_t>(
+                  smaps_table.shared_dirty_resident_kb()[smaps_index]));
+          region["bs"]["sw"] = base::Uint64ToHexStringNoPrefix(
+              static_cast<uint64_t>(smaps_table.swap_kb()[smaps_index]));
+          smaps.append(region);
+        }
+
+        if (!totals.empty() || !smaps.empty())
+          writer_.WriteCommonEvent(event);
+      }
+
+      // Export chrome dump events for process snapshots in current memory
+      // snapshot.
+      const auto& process_snapshots = storage_->process_memory_snapshot_table();
+
+      for (uint32_t process_index = 0;
+           process_index < process_snapshots.row_count(); ++process_index) {
+        if (process_snapshots.snapshot_id()[process_index].value != snapshot_id)
+          continue;
+
+        auto process_snapshot_id = process_snapshots.id()[process_index].value;
+        UniquePid upid = process_snapshots.upid()[process_index];
+        Json::Value event =
+            FillInProcessEventDetails(event_base, UpidToPid(upid));
+
+        const auto& snapshot_nodes = storage_->memory_snapshot_node_table();
+
+        for (uint32_t node_index = 0; node_index < snapshot_nodes.row_count();
+             ++node_index) {
+          if (snapshot_nodes.process_snapshot_id()[node_index].value !=
+              process_snapshot_id) {
+            continue;
+          }
+          const char* path =
+              GetNonNullString(storage_, snapshot_nodes.path()[node_index]);
+          event["args"]["dumps"]["allocators"][path]["guid"] =
+              base::Uint64ToHexStringNoPrefix(
+                  static_cast<uint64_t>(snapshot_nodes.id()[node_index].value));
+          if (snapshot_nodes.size()[node_index]) {
+            AddAttributeToMemoryNode(&event, path, "size",
+                                     snapshot_nodes.size()[node_index],
+                                     "bytes");
+          }
+          if (snapshot_nodes.effective_size()[node_index]) {
+            AddAttributeToMemoryNode(
+                &event, path, "effective_size",
+                snapshot_nodes.effective_size()[node_index], "bytes");
+          }
+
+          auto node_args_id = snapshot_nodes.arg_set_id()[node_index];
+          if (!node_args_id)
+            continue;
+          const Json::Value* node_args =
+              &args_builder_.GetArgs(node_args_id.value());
+          for (const auto& arg_name : node_args->getMemberNames()) {
+            const Json::Value& arg_value = (*node_args)[arg_name]["value"];
+            if (arg_value.empty())
+              continue;
+            if (arg_value.isString()) {
+              AddAttributeToMemoryNode(&event, path, arg_name,
+                                       arg_value.asString());
+            } else if (arg_value.isInt64()) {
+              Json::Value unit = (*node_args)[arg_name]["unit"];
+              if (unit.empty())
+                unit = "unknown";
+              AddAttributeToMemoryNode(&event, path, arg_name,
+                                       arg_value.asInt64(), unit.asString());
+            }
+          }
+        }
+
+        const auto& snapshot_edges = storage_->memory_snapshot_edge_table();
+
+        for (uint32_t edge_index = 0; edge_index < snapshot_edges.row_count();
+             ++edge_index) {
+          SnapshotNodeId source_node_id =
+              snapshot_edges.source_node_id()[edge_index];
+          uint32_t source_node_row =
+              *snapshot_nodes.id().IndexOf(source_node_id);
+
+          if (snapshot_nodes.process_snapshot_id()[source_node_row].value !=
+              process_snapshot_id) {
+            continue;
+          }
+          Json::Value edge;
+          edge["source"] = base::Uint64ToHexStringNoPrefix(
+              snapshot_edges.source_node_id()[edge_index].value);
+          edge["target"] = base::Uint64ToHexStringNoPrefix(
+              snapshot_edges.target_node_id()[edge_index].value);
+          edge["importance"] =
+              Json::Int(snapshot_edges.importance()[edge_index]);
+          edge["type"] = "ownership";
+          event["args"]["dumps"]["allocators_graph"].append(edge);
+        }
+        writer_.WriteCommonEvent(event);
+      }
+    }
+    return util::OkStatus();
+  }
+
   uint32_t UpidToPid(UniquePid upid) {
     auto pid_it = upids_to_exported_pids_.find(upid);
     PERFETTO_DCHECK(pid_it != upids_to_exported_pids_.end());
@@ -1308,6 +1569,62 @@ class JsonExporter {
     }
 
     return false;
+  }
+
+  Json::Value FillInProcessEventDetails(const Json::Value& event,
+                                        uint32_t pid) {
+    Json::Value output = event;
+    output["pid"] = Json::Int(pid);
+    output["tid"] = Json::Int(-1);
+    return output;
+  }
+
+  void AddAttributeToMemoryNode(Json::Value* event,
+                                const std::string& path,
+                                const std::string& key,
+                                int64_t value,
+                                const std::string& units) {
+    (*event)["args"]["dumps"]["allocators"][path]["attrs"][key]["value"] =
+        base::Uint64ToHexStringNoPrefix(static_cast<uint64_t>(value));
+    (*event)["args"]["dumps"]["allocators"][path]["attrs"][key]["type"] =
+        "scalar";
+    (*event)["args"]["dumps"]["allocators"][path]["attrs"][key]["units"] =
+        units;
+  }
+
+  void AddAttributeToMemoryNode(Json::Value* event,
+                                const std::string& path,
+                                const std::string& key,
+                                const std::string& value,
+                                const std::string& units = "") {
+    (*event)["args"]["dumps"]["allocators"][path]["attrs"][key]["value"] =
+        value;
+    (*event)["args"]["dumps"]["allocators"][path]["attrs"][key]["type"] =
+        "string";
+    (*event)["args"]["dumps"]["allocators"][path]["attrs"][key]["units"] =
+        units;
+  }
+
+  uint64_t GetCounterValue(TrackId track_id, int64_t ts) {
+    const auto& counter_table = storage_->counter_table();
+    auto begin = counter_table.ts().begin();
+    auto end = counter_table.ts().end();
+    PERFETTO_DCHECK(counter_table.ts().IsSorted() &&
+                    counter_table.ts().IsColumnType<int64_t>());
+    // The timestamp column is sorted, so we can binary search for a matching
+    // timestamp. Note that we don't use RowMap operations like FilterInto()
+    // here because they bloat trace processor's binary size in Chrome too much.
+    auto it = std::lower_bound(begin, end, ts,
+                               [](const SqlValue& value, int64_t expected_ts) {
+                                 return value.AsLong() < expected_ts;
+                               });
+    for (; it < end; ++it) {
+      if ((*it).AsLong() != ts)
+        break;
+      if (counter_table.track_id()[it.row()].value == track_id.value)
+        return static_cast<uint64_t>(counter_table.value()[it.row()]);
+    }
+    return 0;
   }
 
   const TraceStorage* storage_;

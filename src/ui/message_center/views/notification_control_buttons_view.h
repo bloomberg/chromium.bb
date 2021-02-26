@@ -10,24 +10,14 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/padded_button.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
-
-namespace ui {
-class Event;
-}
-
-namespace views {
-class Button;
-}
 
 namespace message_center {
 
 class MessageView;
 
 class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
-    : public views::View,
-      public views::ButtonListener {
+    : public views::View {
  public:
   // String to be returned by GetClassName() method.
   static const char kViewClassName[];
@@ -52,10 +42,13 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   // Sets the icon color for the close, settings, and snooze buttons.
   void SetButtonIconColors(SkColor color);
 
+  // Sets the background color to ensure proper readability.
+  void SetBackgroundColor(SkColor color);
+
   // Methods for retrieving the control buttons directly.
-  views::Button* close_button() { return close_button_; }
-  views::Button* settings_button() { return settings_button_; }
-  views::Button* snooze_button() { return snooze_button_; }
+  PaddedButton* close_button() { return close_button_; }
+  PaddedButton* settings_button() { return settings_button_; }
+  PaddedButton* snooze_button() { return snooze_button_; }
 
   // views::View
   const char* GetClassName() const override;
@@ -63,10 +56,14 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   void OnThemeChanged() override;
 #endif
 
-  // views::ButtonListener
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
  private:
+  // Updates the button icon colors to the value of DetermineButtonIconColor().
+  void UpdateButtonIconColors();
+
+  // Determines the button icon color to use given |icon_color_| and
+  // |background_color_| ensuring readability.
+  SkColor DetermineButtonIconColor() const;
+
   MessageView* message_view_;
 
   PaddedButton* close_button_ = nullptr;
@@ -75,6 +72,8 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
 
   // The color used for the close, settings, and snooze icons.
   SkColor icon_color_;
+  // The background color for readability of the icons.
+  SkColor background_color_ = SK_ColorTRANSPARENT;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationControlButtonsView);
 };

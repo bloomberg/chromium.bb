@@ -10,7 +10,7 @@
 
 #import "ARDSignalingMessage.h"
 
-#import <WebRTC/RTCLogging.h>
+#import "sdk/objc/base/RTCLogging.h"
 
 #import "ARDUtilities.h"
 #import "RTCIceCandidate+JSON.h"
@@ -125,6 +125,7 @@ static NSString * const kARDTypeValueRemoveCandidates = @"remove-candidates";
       messageType = kARDSignalingMessageTypeAnswer;
       break;
     case RTCSdpTypePrAnswer:
+    case RTCSdpTypeRollback:
       NSAssert(
           NO, @"Unexpected type: %@", [RTC_OBJC_TYPE(RTCSessionDescription) stringForType:sdpType]);
       break;

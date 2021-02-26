@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_manager.h"
 #include "ios/web/public/browser_state.h"
 
 void BreadcrumbManagerKeyedService::AddEvent(const std::string& event) {
@@ -24,9 +25,39 @@ void BreadcrumbManagerKeyedService::RemoveObserver(
   breadcrumb_manager_->RemoveObserver(observer);
 }
 
+size_t BreadcrumbManagerKeyedService::GetEventCount() {
+  return breadcrumb_manager_->GetEventCount();
+}
+
 const std::list<std::string> BreadcrumbManagerKeyedService::GetEvents(
     size_t event_count_limit) const {
   return breadcrumb_manager_->GetEvents(event_count_limit);
+}
+
+void BreadcrumbManagerKeyedService::StartPersisting(
+    BreadcrumbPersistentStorageManager* persistent_storage_manager) {
+  DCHECK(persistent_storage_manager);
+
+  if (persistent_storage_manager_) {
+    StopPersisting();
+  }
+
+  persistent_storage_manager_ = persistent_storage_manager;
+  persistent_storage_manager_->MonitorBreadcrumbManagerService(this);
+}
+
+void BreadcrumbManagerKeyedService::StopPersisting() {
+  if (!persistent_storage_manager_) {
+    return;
+  }
+
+  persistent_storage_manager_->StopMonitoringBreadcrumbManagerService(this);
+  persistent_storage_manager_ = nullptr;
+}
+
+BreadcrumbPersistentStorageManager*
+BreadcrumbManagerKeyedService::GetPersistentStorageManager() {
+  return persistent_storage_manager_;
 }
 
 BreadcrumbManagerKeyedService::BreadcrumbManagerKeyedService(

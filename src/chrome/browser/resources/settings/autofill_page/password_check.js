@@ -26,7 +26,6 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {loadTimeData} from '../i18n_setup.js';
 import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
-import {PluralStringProxyImpl} from '../plural_string_proxy.js';
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
 import {Route, Router, RouteObserverBehavior} from '../router.m.js';
 import {routes} from '../route.js';
@@ -72,6 +71,12 @@ Polymer({
       computed: 'computeIsSignedOut_(syncStatus_, storedAccounts_)',
     },
 
+    /** @private */
+    isSyncingPasswords_: {
+      type: Boolean,
+      computed: 'computeIsSyncingPasswords_(syncPrefs_, syncStatus_)',
+    },
+
     canUsePasswordCheckup_: {
       type: Boolean,
       computed: 'computeCanUsePasswordCheckup_(syncPrefs_, syncStatus_)',
@@ -80,7 +85,7 @@ Polymer({
     /** @private */
     isButtonHidden_: {
       type: Boolean,
-      computed: 'computeIsButtonHidden_(status, isSignedOut_)',
+      computed: 'computeIsButtonHidden_(status, isSignedOut_, isInitialStatus)',
     },
 
     /** @private {SyncPrefs} */
@@ -100,15 +105,22 @@ Polymer({
 
     /**
      * The password that the user is interacting with now.
-     * @private {?PasswordManagerProxy.CompromisedCredential}
+     * @private {?PasswordManagerProxy.InsecureCredential}
      */
     activePassword_: Object,
 
     /** @private */
+    showCompromisedCredentialsBody_: {
+      type: Boolean,
+      computed: 'computeShowCompromisedCredentialsBody_(isSignedOut_, ' +
+          'leakedPasswords, passwordsWeaknessCheckEnabled)',
+    },
+
+    /** @private */
     showNoCompromisedPasswordsLabel_: {
       type: Boolean,
-      computed: 'computeShowNoCompromisedPasswordsLabel(' +
-          'syncStatus_, prefs.*, status, leakedPasswords)',
+      computed: 'computeShowNoCompromisedPasswordsLabel_(syncStatus_, ' +
+          'prefs.*, status, leakedPasswords, passwordsWeaknessCheckEnabled)',
     },
 
     /** @private */
@@ -117,9 +129,16 @@ Polymer({
       computed: 'computeShowHideMenuTitle(activePassword_)',
     },
 
+    /** @private */
+    iconHaloClass_: {
+      type: String,
+      computed: 'computeIconHaloClass_(status, isSignedOut_, ' +
+          'leakedPasswords, weakPasswords)',
+    },
+
     /**
-     * The ids of compromised credentials for which user clicked "Change
-     * Password" button
+     * The ids of insecure credentials for which user clicked "Change Password"
+     * button
      * @private
      */
     clickedChangePasswordIds_: {
@@ -191,12 +210,13 @@ Polymer({
     const syncStatusChanged = syncStatus => this.syncStatus_ = syncStatus;
     const syncPrefsChanged = syncPrefs => this.syncPrefs_ = syncPrefs;
 
-    // Request initial data.
-    syncBrowserProxy.getSyncStatus().then(syncStatusChanged);
-
     // Listen for changes.
     this.addWebUIListener('sync-status-changed', syncStatusChanged);
     this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
+
+    // Request initial data.
+    syncBrowserProxy.getSyncStatus().then(syncStatusChanged);
+    syncBrowserProxy.sendSyncPrefsChanged();
 
     // For non-ChromeOS, also check whether accounts are available.
     // <if expr="not chromeos">
@@ -220,9 +240,9 @@ Polymer({
   currentRouteChanged(currentRoute) {
     const router = Router.getInstance();
 
-    if (currentRoute.path == routes.CHECK_PASSWORDS.path &&
+    if (currentRoute.path === routes.CHECK_PASSWORDS.path &&
         !this.startCheckAutomaticallySucceeded &&
-        router.getQueryParameters().get('start') == 'true') {
+        router.getQueryParameters().get('start') === 'true') {
       this.passwordManager.recordPasswordCheckInteraction(
           PasswordManagerProxy.PasswordCheckInteraction
               .START_CHECK_AUTOMATICALLY);
@@ -253,11 +273,21 @@ Polymer({
       case CheckState.IDLE:
       case CheckState.CANCELED:
       case CheckState.OFFLINE:
-      case CheckState.SIGNED_OUT:
       case CheckState.OTHER_ERROR:
         this.passwordManager.recordPasswordCheckInteraction(
             PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY);
         this.passwordManager.startBulkPasswordCheck();
+        return;
+      case CheckState.SIGNED_OUT:
+        // Runs the startBulkPasswordCheck to check passwords for weakness that
+        // works for both sign in and sign out users.
+        this.passwordManager.recordPasswordCheckInteraction(
+            PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY);
+        this.passwordManager.startBulkPasswordCheck().then(
+            () => {},
+            error => {
+                // Catching error
+            });
         return;
       case CheckState.NO_PASSWORDS:
       case CheckState.QUOTA_LIMIT:
@@ -273,6 +303,36 @@ Polymer({
    */
   hasLeakedCredentials_() {
     return !!this.leakedPasswords.length;
+  },
+
+  /**
+   * Returns true if there are any weak credentials.
+   * @return {boolean}
+   * @private
+   */
+  hasWeakCredentials_() {
+    return this.passwordsWeaknessCheckEnabled && !!this.weakPasswords.length;
+  },
+
+  /**
+   * Returns true if there are any insecure credentials.
+   * @return {boolean}
+   * @private
+   */
+  hasInsecureCredentials_() {
+    return !!this.leakedPasswords.length || this.hasWeakCredentials_();
+  },
+
+  /**
+   * Returns a relevant help text for weak passwords. Contains a link that
+   * depends on whether the user is syncing passwords or not.
+   * @return {string}
+   * @private
+   */
+  getWeakPasswordsHelpText_() {
+    return this.i18nAdvanced(
+        this.isSyncingPasswords_ ? 'weakPasswordsDescriptionGeneration' :
+                                   'weakPasswordsDescription');
   },
 
   /**
@@ -299,12 +359,12 @@ Polymer({
   /** @private */
   onEditPasswordClick_() {
     this.passwordManager
-        .getPlaintextCompromisedPassword(
+        .getPlaintextInsecurePassword(
             assert(this.activePassword_),
             chrome.passwordsPrivate.PlaintextReason.EDIT)
         .then(
-            compromisedCredential => {
-              this.activePassword_ = compromisedCredential;
+            insecureCredential => {
+              this.activePassword_ = insecureCredential;
               this.showPasswordEditDialog_ = true;
             },
             error => {
@@ -370,15 +430,25 @@ Polymer({
   },
 
   /**
+   * @return {string}
+   * @private
+   */
+  computeIconHaloClass_() {
+    return !this.isCheckInProgress_() && this.hasInsecureCredentials_() ?
+        'warning-halo' :
+        '';
+  },
+
+  /**
    * Returns the icon (warning, info or error) indicating the check status.
    * @return {string}
    * @private
    */
   getStatusIcon_() {
-    if (!this.hasLeaksOrErrors_()) {
+    if (!this.hasInsecureCredentialsOrErrors_()) {
       return 'settings:check-circle';
     }
-    if (this.hasLeakedCredentials_()) {
+    if (this.hasInsecureCredentials_()) {
       return 'cr:warning';
     }
     return 'cr:info';
@@ -390,11 +460,11 @@ Polymer({
    * @private
    */
   getStatusIconClass_() {
-    if (!this.hasLeaksOrErrors_()) {
-      return this.waitsForFirstCheck_() ? 'hidden' : 'no-leaks';
+    if (!this.hasInsecureCredentialsOrErrors_()) {
+      return this.waitsForFirstCheck_() ? 'hidden' : 'no-security-issues';
     }
-    if (this.hasLeakedCredentials_()) {
-      return 'has-leaks';
+    if (this.hasInsecureCredentials_()) {
+      return 'has-security-issues';
     }
     return '';
   },
@@ -423,7 +493,13 @@ Polymer({
       case CheckState.OFFLINE:
         return this.i18n('checkPasswordsErrorOffline');
       case CheckState.SIGNED_OUT:
-        return this.i18n('checkPasswordsErrorSignedOut');
+        // When user is signed out and |passwordsWeaknessCheckEnabled| is
+        // true, we run the password weakness check. Since it works very fast,
+        // we always shows "Checked passwords" in this case.
+        return this.i18n(
+            this.passwordsWeaknessCheckEnabled ?
+                'checkedPasswords' :
+                'checkPasswordsErrorSignedOut');
       case CheckState.NO_PASSWORDS:
         return this.i18n('checkPasswordsErrorNoPasswords');
       case CheckState.QUOTA_LIMIT:
@@ -445,7 +521,7 @@ Polymer({
    * @private
    */
   isCheckInProgress_() {
-    return this.status.state == CheckState.RUNNING;
+    return this.status.state === CheckState.RUNNING;
   },
 
   /**
@@ -454,8 +530,10 @@ Polymer({
    * @private
    */
   showsTimestamp_() {
-    return this.status.state == CheckState.IDLE &&
-        !!this.status.elapsedTimeSinceLastCheck;
+    return !!this.status.elapsedTimeSinceLastCheck &&
+        (this.status.state === CheckState.IDLE ||
+         (this.status.state === CheckState.SIGNED_OUT &&
+          this.passwordsWeaknessCheckEnabled));
   },
 
   /**
@@ -473,10 +551,17 @@ Polymer({
       case CheckState.RUNNING:
         return this.i18n('checkPasswordsStop');
       case CheckState.OFFLINE:
-      case CheckState.SIGNED_OUT:
       case CheckState.NO_PASSWORDS:
       case CheckState.OTHER_ERROR:
         return this.i18n('checkPasswordsAgainAfterError');
+      case CheckState.SIGNED_OUT:
+        // When |passwordsWeaknessCheckEnabled| is true, we should allow signed
+        // out users to click the "Check again" button to run the passwords
+        // weakness check.
+        return this.i18n(
+            this.passwordsWeaknessCheckEnabled ?
+                'checkPasswordsAgain' :
+                'checkPasswordsAgainAfterError');
       case CheckState.QUOTA_LIMIT:
         return '';  // Undefined behavior. Don't show any misleading text.
     }
@@ -501,13 +586,16 @@ Polymer({
   computeIsButtonHidden_() {
     switch (this.status.state) {
       case CheckState.IDLE:
+        return this.isInitialStatus;  // Only a native IDLE state allows checks.
       case CheckState.CANCELED:
       case CheckState.RUNNING:
       case CheckState.OFFLINE:
       case CheckState.OTHER_ERROR:
         return false;
       case CheckState.SIGNED_OUT:
-        return this.isSignedOut_;
+        // When |passwordsWeaknessCheckEnabled| is true, we should allow signed
+        // out users to run the passwords weakness check.
+        return !this.passwordsWeaknessCheckEnabled && this.isSignedOut_;
       case CheckState.NO_PASSWORDS:
       case CheckState.QUOTA_LIMIT:
         return true;
@@ -524,7 +612,7 @@ Polymer({
    */
   bannerImageSrc_(isDarkMode) {
     const type =
-        (this.status.state == CheckState.IDLE && !this.waitsForFirstCheck_()) ?
+        (this.status.state === CheckState.IDLE && !this.waitsForFirstCheck_()) ?
         'positive' :
         'neutral';
     const suffix = isDarkMode ? '_dark' : '';
@@ -537,21 +625,21 @@ Polymer({
    * @private
    */
   shouldShowBanner_() {
-    if (this.hasLeakedCredentials_()) {
+    if (this.hasInsecureCredentials_()) {
       return false;
     }
-    return this.status.state == CheckState.CANCELED ||
-        !this.hasLeaksOrErrors_();
+    return this.status.state === CheckState.CANCELED ||
+        !this.hasInsecureCredentialsOrErrors_();
   },
 
   /**
-   * Returns true if there are leaked credentials or the status is unexpected
+   * Returns true if there are insecure credentials or the status is unexpected
    * for a regular password check.
    * @return {boolean}
    * @private
    */
-  hasLeaksOrErrors_() {
-    if (this.hasLeakedCredentials_()) {
+  hasInsecureCredentialsOrErrors_() {
+    if (this.hasInsecureCredentials_()) {
       return true;
     }
     switch (this.status.state) {
@@ -560,24 +648,27 @@ Polymer({
         return false;
       case CheckState.CANCELED:
       case CheckState.OFFLINE:
-      case CheckState.SIGNED_OUT:
       case CheckState.NO_PASSWORDS:
       case CheckState.QUOTA_LIMIT:
       case CheckState.OTHER_ERROR:
         return true;
+      case CheckState.SIGNED_OUT:
+        // If |passwordsWeaknessCheckEnabled| is true and user is signed out,
+        // this is not an error and we can run the password weakness check.
+        return !this.passwordsWeaknessCheckEnabled;
     }
     assertNotReached(
         'Not specified whether to state is an error: ' + this.status.state);
   },
 
   /**
-   * Returns true if there are leaked credentials or the status is unexpected
+   * Returns true if there are insecure credentials or the status is unexpected
    * for a regular password check.
    * @return {boolean}
    * @private
    */
   showsPasswordsCount_() {
-    if (this.hasLeakedCredentials_()) {
+    if (this.hasInsecureCredentials_()) {
       return true;
     }
     switch (this.status.state) {
@@ -586,15 +677,51 @@ Polymer({
       case CheckState.CANCELED:
       case CheckState.RUNNING:
       case CheckState.OFFLINE:
-      case CheckState.SIGNED_OUT:
       case CheckState.NO_PASSWORDS:
       case CheckState.QUOTA_LIMIT:
       case CheckState.OTHER_ERROR:
         return false;
+      case CheckState.SIGNED_OUT:
+        // Shows "No security issues found" if user is signed out and doesn't
+        // have insecure credentials.
+        return this.passwordsWeaknessCheckEnabled;
     }
     assertNotReached(
         'Not specified whether to show passwords for state: ' +
         this.status.state);
+  },
+
+  /**
+   * Returns a localized and pluralized string of the passwords count, depending
+   * on whether the weak check feature is enabled, whether the user is signed in
+   * and whether other compromised passwords exist.
+   * @return {string}
+   * @private
+   */
+  getPasswordsCount_() {
+    if (!this.passwordsWeaknessCheckEnabled) {
+      return this.compromisedPasswordsCount;
+    }
+
+    return this.isSignedOut_ && this.leakedPasswords.length === 0 ?
+        this.weakPasswordsCount :
+        this.insecurePasswordsCount;
+  },
+
+  /**
+   * Returns the label that should be shown in the compromised password section
+   * if a user is signed out. This label depends on whether the user already had
+   * compromised credentials that were found in the past.
+   * @return {string}
+   * @private
+   */
+  getSignedOutUserLabel_() {
+    // This label contains the link, thus we need to use i18nAdvanced() here as
+    // well as the `inner-h-t-m-l` attribute in the DOM.
+    return this.i18nAdvanced(
+        this.hasLeakedCredentials_() ?
+            'signedOutUserHasCompromisedCredentialsLabel' :
+            'signedOutUserLabel');
   },
 
   /**
@@ -603,19 +730,35 @@ Polymer({
    * @private
    */
   waitsForFirstCheck_() {
+    // We don't run the compromise check if user is signed out and don't need to
+    // wait for the first check.
+    if (this.passwordsWeaknessCheckEnabled && this.isSignedOut_) {
+      return false;
+    }
     return !this.status.elapsedTimeSinceLastCheck;
   },
 
   /**
-   * Returns true iff the user is signed in.
+   * Returns true iff the user is signed out.
    * @return {boolean}
    * @private
    */
   computeIsSignedOut_() {
     if (!this.syncStatus_ || !this.syncStatus_.signedIn) {
-      return !this.storedAccounts_ || this.storedAccounts_.length == 0;
+      return !this.storedAccounts_ || this.storedAccounts_.length === 0;
     }
     return !!this.syncStatus_.hasError;
+  },
+
+  /**
+   * Returns true iff the user is syncing passwords.
+   * @return {boolean}
+   * @private
+   */
+  computeIsSyncingPasswords_() {
+    return !!this.syncStatus_ && !!this.syncStatus_.signedIn &&
+        !this.syncStatus_.hasError && !!this.syncPrefs_ &&
+        this.syncPrefs_.passwordsSynced;
   },
 
   /**
@@ -632,7 +775,20 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShowNoCompromisedPasswordsLabel() {
+  computeShowCompromisedCredentialsBody_() {
+    // Always shows compromised credetnials section if
+    // |passwordsWeaknessCheckEnabled| is true and user is signed out.
+    if (this.passwordsWeaknessCheckEnabled && this.isSignedOut_) {
+      return true;
+    }
+    return this.hasLeakedCredentials_();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowNoCompromisedPasswordsLabel_() {
     // Check if user isn't signed in.
     if (!this.syncStatus_ || !this.syncStatus_.signedIn) {
       return false;
@@ -659,7 +815,7 @@ Polymer({
   },
 
   /**
-   * @param {!PasswordManagerProxy.CompromisedCredential} item
+   * @param {!PasswordManagerProxy.InsecureCredential} item
    * @return {boolean}
    * @private
    */

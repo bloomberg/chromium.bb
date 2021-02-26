@@ -12,24 +12,27 @@
 .sensors-view input {
   width: 100%;
   max-width: 120px;
-  margin: -5px 10px 0px 0px;
+  margin: -5px 10px 0 0;
   text-align: end;
 }
 
 .sensors-view input[readonly] {
-  background-color: rgb(235, 235, 228);
+  background-color: rgb(235 235 228);
 }
 
 .sensors-view fieldset {
   border: none;
-  padding: 10px 0px;
-  margin-left: 0;
+  padding: 10px 0;
   flex: 0 0 auto;
   margin: 0;
 }
 
 .sensors-view fieldset[disabled] {
-  opacity: 0.5;
+  opacity: 50%;
+}
+
+.orientation-axis-input-container input {
+  max-width: 120px;
 }
 
 .sensors-view input:focus::-webkit-input-placeholder {
@@ -81,25 +84,25 @@
 }
 
 .orientation-stage {
-  -webkit-perspective: 700px;
-  -webkit-perspective-origin: 50% 50%;
+  perspective: 700px;
+  perspective-origin: 50% 50%;
   width: 160px;
   height: 150px;
-  background: linear-gradient(#E1F5FE 0%, #E1F5FE 64%, #b0Ebf3 64%, #DEF6F9 100%);
-  transition: 0.2s ease opacity, 0.2s ease -webkit-filter;
+  background: linear-gradient(#e1f5fe 0%, #e1f5fe 64%, #b0ebf3 64%, #def6f9 100%);
+  transition: 0.2s ease opacity, 0.2s ease filter;
   overflow: hidden;
   margin-bottom: 10px;
 }
 
 .orientation-stage.disabled {
-  -webkit-filter: grayscale();
-  opacity: 0.5;
+  filter: grayscale();
+  opacity: 50%;
   cursor: default !important;
 }
 
 .orientation-element,
 .orientation-element::before,
-.orientation-element::after{
+.orientation-element::after {
   position: absolute;
   box-sizing: border-box;
   transform-style: preserve-3d;
@@ -119,19 +122,19 @@
   transform: rotate3d(1, 0, 0, 90deg);
 }
 
-.orientation-box.is-animating, .is-animating .orientation-layer {
-  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-}
-
 .orientation-layer {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
 }
 
+.orientation-box.is-animating,
+.is-animating .orientation-layer {
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
+
 .orientation-front,
-.orientation-back
-{
+.orientation-back {
   width: 62px;
   height: 122px;
   border-radius: 8px;
@@ -145,7 +148,6 @@
   transform: rotateY(180deg) translateZ(8px);
   background-image: url(Images/accelerometer-back.svg);
 }
-
 
 .orientation-left,
 .orientation-right {
@@ -162,7 +164,6 @@
   background-image: url(Images/accelerometer-left.png);
 }
 
-
 .orientation-right {
   right: -8px;
   transform-origin: left center;
@@ -173,22 +174,19 @@
 .orientation-left::before,
 .orientation-left::after,
 .orientation-right::before,
-.orientation-right::after
-{
+.orientation-right::after {
   content: '';
   width: 8px;
   height: 6px;
 }
 
 .orientation-left::before,
-.orientation-left::after
-{
+.orientation-left::after {
   background-image: url(Images/accelerometer-left.png);
 }
 
 .orientation-right::before,
-.orientation-right::after
-{
+.orientation-right::after {
   background-image: url(Images/accelerometer-right.png);
 }
 
@@ -223,7 +221,6 @@
   background-image: url(Images/accelerometer-top.png);
 }
 
-
 .orientation-bottom {
   bottom: -8px;
   transform-origin: center top;
@@ -231,26 +228,22 @@
   background-image: url(Images/accelerometer-bottom.png);
 }
 
-
 .orientation-top::before,
 .orientation-top::after,
 .orientation-bottom::before,
-.orientation-bottom::after
-{
+.orientation-bottom::after {
   content: '';
   width: 8px;
   height: 8px;
 }
 
 .orientation-top::before,
-.orientation-top::after
-{
+.orientation-top::after {
   background-image: url(Images/accelerometer-top.png);
 }
 
 .orientation-bottom::before,
-.orientation-bottom::after
-{
+.orientation-bottom::after {
   background-image: url(Images/accelerometer-bottom.png);
 }
 
@@ -274,10 +267,6 @@
   margin-bottom: 10px;
 }
 
-.orientation-axis-input-container input {
-  max-width: 120px;
-}
-
 .orientation-reset-button {
   min-width: 80px;
 }
@@ -293,17 +282,16 @@ fieldset.device-orientation-override-section {
   background: #f1f1f1;
 }
 
-.reload-warning {
-  align-self: center;
-  margin-left: 10px;
-}
-
 button.text-button {
   margin: 0 10px;
 }
 
 @media (forced-colors: active) {
   .sensors-view fieldset[disabled] {
-    opacity: 1;
+    opacity: 100%;
   }
+}
+
+.chrome-select-label {
+  margin-bottom: 16px;
 }

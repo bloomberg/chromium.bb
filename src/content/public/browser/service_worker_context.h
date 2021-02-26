@@ -67,6 +67,9 @@ class CONTENT_EXPORT ServiceWorkerContext {
  public:
   using ResultCallback = base::OnceCallback<void(bool success)>;
 
+  using GetInstalledRegistrationOriginsCallback =
+      base::OnceCallback<void(const std::vector<url::Origin>& origins)>;
+
   using GetUsageInfoCallback =
       base::OnceCallback<void(const std::vector<StorageUsageInfo>& usage_info)>;
 
@@ -74,7 +77,8 @@ class CONTENT_EXPORT ServiceWorkerContext {
       base::OnceCallback<void(ServiceWorkerCapability capability)>;
 
   using CheckOfflineCapabilityCallback =
-      base::OnceCallback<void(OfflineCapability capability)>;
+      base::OnceCallback<void(OfflineCapability capability,
+                              int64_t registration_id)>;
 
   using CountExternalRequestsCallback =
       base::OnceCallback<void(size_t external_request_count)>;
@@ -154,8 +158,26 @@ class CONTENT_EXPORT ServiceWorkerContext {
   // specified |origin| via |callback|. Must be called from the UI thread. The
   // callback is called on the UI thread.
   virtual void CountExternalRequestsForTest(
-      const GURL& origin,
+      const url::Origin& origin,
       CountExternalRequestsCallback callback) = 0;
+
+  // Whether |origin| has any registrations. Uninstalling and uninstalled
+  // registrations do not cause this to return true, that is, only registrations
+  // with status ServiceWorkerRegistration::Status::kIntact are considered, such
+  // as even if the corresponding live registrations may still exist. Also,
+  // returns true if it doesn't know (registrations are not yet initialized).
+  // Must be called on the UI thread.
+  virtual bool MaybeHasRegistrationForOrigin(const url::Origin& origin) = 0;
+
+  // Returns a set of origins which have at least one stored registration.
+  // The set doesn't include installing/uninstalling/uninstalled registrations.
+  // When |host_filter| is specified the set only includes origins whose host
+  // matches |host_filter|.
+  // This function can be called from any thread and the callback is called on
+  // that thread.
+  virtual void GetInstalledRegistrationOrigins(
+      base::Optional<std::string> host_filter,
+      GetInstalledRegistrationOriginsCallback callback) = 0;
 
   // May be called from any thread, and the callback is called on that thread.
   virtual void GetAllOriginsInfo(GetUsageInfoCallback callback) = 0;
@@ -165,7 +187,7 @@ class CONTENT_EXPORT ServiceWorkerContext {
   // service workers belonging to the registrations. All clients controlled by
   // those service workers will lose their controllers immediately after this
   // operation.
-  virtual void DeleteForOrigin(const GURL& origin_url,
+  virtual void DeleteForOrigin(const url::Origin& origin_url,
                                ResultCallback callback) = 0;
 
   // Performs internal storage cleanup. Operations to the storage in the past
@@ -187,8 +209,8 @@ class CONTENT_EXPORT ServiceWorkerContext {
       CheckHasServiceWorkerCallback callback) = 0;
 
   // Simulates a navigation request in the offline state and dispatches a fetch
-  // event. Returns OfflineCapability::kSupported if the response's status code
-  // is 200.
+  // event. Returns OfflineCapability::kSupported and the registration id if
+  // the response's status code is 200.
   //
   // This function can be called from any thread, but the callback will always
   // be called on the UI thread.
@@ -209,9 +231,12 @@ class CONTENT_EXPORT ServiceWorkerContext {
 
   // Starts the active worker of the registration for the given |scope|. If
   // there is no active worker, starts the installing worker.
-  // |info_callback| is passed information about the started worker.
+  // |info_callback| is passed information about the started worker if
+  // successful, otherwise |failure_callback| is called.
   //
-  // May be called on any thread, and the callback is called on that thread.
+  // Must be called on the core thread, and the callback is called on that
+  // thread. There is no guarantee about whether the callback is called
+  // synchronously or asynchronously.
   virtual void StartWorkerForScope(const GURL& scope,
                                    StartWorkerCallback info_callback,
                                    base::OnceClosure failure_callback) = 0;
@@ -237,7 +262,7 @@ class CONTENT_EXPORT ServiceWorkerContext {
   // Stops all running workers on the given |origin|.
   //
   // This function can be called from any thread.
-  virtual void StopAllServiceWorkersForOrigin(const GURL& origin) = 0;
+  virtual void StopAllServiceWorkersForOrigin(const url::Origin& origin) = 0;
 
   // Stops all running service workers.
   //

@@ -6,6 +6,7 @@
 #define DISCOVERY_MDNS_MDNS_PROBE_MANAGER_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "discovery/mdns/mdns_domain_confirmed_provider.h"
@@ -62,8 +63,8 @@ class MdnsProbeManagerImpl : public MdnsProbe::Observer,
                        MdnsRandom* random_delay,
                        TaskRunner* task_runner,
                        ClockNowFunctionPtr now_function);
-  MdnsProbeManagerImpl(const MdnsProbeManager& other) = delete;
-  MdnsProbeManagerImpl(MdnsProbeManager&& other) = delete;
+  MdnsProbeManagerImpl(const MdnsProbeManager& other) = delete;  // NOLINT
+  MdnsProbeManagerImpl(MdnsProbeManager&& other) = delete;       // NOLINT
   ~MdnsProbeManagerImpl() override;
 
   MdnsProbeManagerImpl& operator=(const MdnsProbeManagerImpl& other) = delete;

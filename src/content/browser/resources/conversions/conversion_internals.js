@@ -28,7 +28,7 @@ let reports = null;
  * @param {!HTMLElement} table DOM element corresponding to table body.
  */
 function clearTable(table) {
-  table.innerHTML = '';
+  table.innerHTML = trustedTypes.emptyHTML;
 }
 
 /**
@@ -43,7 +43,8 @@ function UrlToText(origin) {
 
   let result = origin.scheme + '://' + origin.host;
 
-  if (origin.scheme == 'https' && origin.port != '443') {
+  if ((origin.scheme == 'https' && origin.port != '443') ||
+      (origin.scheme == 'http' && origin.port != '80')) {
     result += ':' + origin.port;
   }
   return result;

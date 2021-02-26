@@ -33,8 +33,8 @@ ServiceKey::ServiceKey(const DomainName& domain) {
 ServiceKey::ServiceKey(absl::string_view service, absl::string_view domain)
     : service_id_(service.data(), service.size()),
       domain_id_(domain.data(), domain.size()) {
-  OSP_DCHECK(IsServiceValid(service_id_));
-  OSP_DCHECK(IsDomainValid(domain_id_));
+  OSP_DCHECK(IsServiceValid(service_id_)) << "invalid service id: " << service;
+  OSP_DCHECK(IsDomainValid(domain_id_)) << "invalid domain id: " << domain;
 }
 
 ServiceKey::ServiceKey(const ServiceKey& other) = default;
@@ -42,6 +42,12 @@ ServiceKey::ServiceKey(ServiceKey&& other) = default;
 
 ServiceKey& ServiceKey::operator=(const ServiceKey& rhs) = default;
 ServiceKey& ServiceKey::operator=(ServiceKey&& rhs) = default;
+
+DomainName ServiceKey::GetName() const {
+  std::string service_type = service_id().substr(0, service_id().size() - 5);
+  std::string protocol = service_id().substr(service_id().size() - 4);
+  return DomainName{std::move(service_type), std::move(protocol), domain_id_};
+}
 
 // static
 ErrorOr<ServiceKey> ServiceKey::TryCreate(const MdnsRecord& record) {

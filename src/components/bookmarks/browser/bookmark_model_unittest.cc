@@ -11,9 +11,6 @@
 #include <unordered_set>
 #include <utility>
 
-#include <memory>
-#include <unordered_set>
-
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -27,7 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_undo_delegate.h"
@@ -37,6 +33,8 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/favicon_base/favicon_callback.h"
+#include "components/favicon_base/favicon_types.h"
+#include "components/query_parser/query_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/tree_node_iterator.h"
@@ -746,16 +744,27 @@ TEST_F(BookmarkModelTest, RemoveAllUserBookmarks) {
 TEST_F(BookmarkModelTest, SetTitle) {
   const BookmarkNode* root = model_->bookmark_bar_node();
   base::string16 title(ASCIIToUTF16("foo"));
-  const GURL url("http://foo.com");
+  const GURL url("http://url.com");
   const BookmarkNode* node = model_->AddURL(root, 0, title, url);
 
   ClearCounts();
 
-  title = ASCIIToUTF16("foo2");
+  title = ASCIIToUTF16("goo");
   model_->SetTitle(node, title);
   AssertObserverCount(0, 0, 0, 1, 0, 0, 1, 0, 0);
   observer_details_.ExpectEquals(node, nullptr, size_t{-1}, size_t{-1});
   EXPECT_EQ(title, node->GetTitle());
+
+  // Should update the index.
+  auto matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT);
+  EXPECT_TRUE(matches.empty());
+  matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("goo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT);
+  ASSERT_EQ(1u, matches.size());
+  EXPECT_EQ(url, matches[0].node->GetTitledUrlNodeUrl());
 }
 
 TEST_F(BookmarkModelTest, SetTitleWithWhitespace) {
@@ -770,6 +779,39 @@ TEST_F(BookmarkModelTest, SetTitleWithWhitespace) {
     EXPECT_EQ(ASCIIToUTF16(title_whitespace_test_cases[i].expected_title),
               node->GetTitle());
   }
+}
+
+TEST_F(BookmarkModelTest, SetFolderTitle) {
+  const BookmarkNode* root = model_->bookmark_bar_node();
+  const BookmarkNode* folder =
+      model_->AddFolder(root, 0, ASCIIToUTF16("folder"));
+  const base::string16 title(ASCIIToUTF16("foo"));
+  const GURL url("http://foo.com");
+  const BookmarkNode* node = model_->AddURL(folder, 0, title, url);
+  ClearCounts();
+
+  model_->SetTitle(folder, base::UTF8ToUTF16("golder"));
+
+  // Should not change the hierarchy.
+  EXPECT_EQ(root->children().size(), 1u);
+  EXPECT_EQ(root->children().front().get(), folder);
+  EXPECT_EQ(folder->children().size(), 1u);
+  EXPECT_EQ(folder->children().front().get(), node);
+  EXPECT_EQ(node->parent(), folder);
+
+  // Should update the index.
+  auto matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("folder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT,
+                                   /*match_ancestor_titles= */ true);
+  EXPECT_TRUE(matches.empty());
+  matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("golder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT,
+                                   /*match_ancestor_titles= */ true);
+  ASSERT_EQ(matches.size(), 1u);
+  EXPECT_EQ(matches[0].node, node);
+  EXPECT_EQ(matches[0].node->GetTitledUrlNodeUrl(), url);
 }
 
 TEST_F(BookmarkModelTest, SetURL) {
@@ -807,7 +849,8 @@ TEST_F(BookmarkModelTest, Move) {
   const base::string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
   const BookmarkNode* node = model_->AddURL(root, 0, title, url);
-  const BookmarkNode* folder1 = model_->AddFolder(root, 0, ASCIIToUTF16("foo"));
+  const BookmarkNode* folder1 =
+      model_->AddFolder(root, 0, ASCIIToUTF16("folder"));
   ClearCounts();
 
   model_->Move(node, folder1, 0);
@@ -820,6 +863,12 @@ TEST_F(BookmarkModelTest, Move) {
   EXPECT_EQ(1u, folder1->children().size());
   EXPECT_EQ(node, folder1->children().front().get());
 
+  auto matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("folder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT,
+                                   /*match_ancestor_titles= */ true);
+  EXPECT_EQ(matches[0].node, node);
+
   // And remove the folder.
   ClearCounts();
   model_->Remove(root->children().front().get());
@@ -827,6 +876,11 @@ TEST_F(BookmarkModelTest, Move) {
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
   EXPECT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == nullptr);
   EXPECT_EQ(0u, root->children().size());
+
+  matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT);
+  EXPECT_TRUE(matches.empty());
 }
 
 TEST_F(BookmarkModelTest, NonMovingMoveCall) {
@@ -843,6 +897,111 @@ TEST_F(BookmarkModelTest, NonMovingMoveCall) {
 
   // Check that the modification date is kept untouched.
   EXPECT_EQ(old_date, root->date_folder_modified());
+}
+
+TEST_F(BookmarkModelTest, MoveURLFromFolder) {
+  const BookmarkNode* root = model_->bookmark_bar_node();
+  const BookmarkNode* folder1 =
+      model_->AddFolder(root, 0, ASCIIToUTF16("folder"));
+  const BookmarkNode* folder2 =
+      model_->AddFolder(root, 0, ASCIIToUTF16("golder"));
+  const base::string16 title(ASCIIToUTF16("foo"));
+  const GURL url("http://foo.com");
+  const BookmarkNode* node = model_->AddURL(folder1, 0, title, url);
+  ClearCounts();
+
+  model_->Move(node, folder2, 0);
+
+  // Should update the hierarchy.
+  AssertObserverCount(0, 1, 0, 0, 0, 0, 0, 0, 0);
+  observer_details_.ExpectEquals(folder1, folder2, 0, 0);
+  EXPECT_EQ(root->children().size(), 2u);
+  EXPECT_EQ(folder1->children().size(), 0u);
+  EXPECT_EQ(folder2->children().size(), 1u);
+  EXPECT_EQ(folder2->children().front().get(), node);
+
+  auto matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("folder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT,
+                                   /*match_ancestor_titles= */ true);
+  EXPECT_TRUE(matches.empty());
+  matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("golder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT,
+                                   /*match_ancestor_titles= */ true);
+  EXPECT_EQ(matches[0].node, node);
+  matches.clear();
+
+  // Move back.
+  ClearCounts();
+  model_->Move(node, folder1, 0);
+
+  // Should update the hierarchy.
+  AssertObserverCount(0, 1, 0, 0, 0, 0, 0, 0, 0);
+  observer_details_.ExpectEquals(folder2, folder1, 0, 0);
+  EXPECT_EQ(root->children().size(), 2u);
+  EXPECT_EQ(folder1->children().size(), 1u);
+  EXPECT_EQ(folder2->children().size(), 0u);
+  EXPECT_EQ(folder1->children().front().get(), node);
+
+  matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("folder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT,
+                                   /*match_ancestor_titles= */ true);
+  EXPECT_EQ(matches[0].node, node);
+  matches.clear();
+  matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("golder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT,
+                                   /*match_ancestor_titles= */ true);
+  EXPECT_TRUE(matches.empty());
+}
+
+TEST_F(BookmarkModelTest, MoveFolder) {
+  const BookmarkNode* root = model_->bookmark_bar_node();
+  const BookmarkNode* folder1 =
+      model_->AddFolder(root, 0, ASCIIToUTF16("folder"));
+  const BookmarkNode* folder2 =
+      model_->AddFolder(root, 1, ASCIIToUTF16("golder"));
+  const BookmarkNode* folder3 =
+      model_->AddFolder(folder1, 0, ASCIIToUTF16("holder"));
+  const base::string16 title(ASCIIToUTF16("foo"));
+  const GURL url("http://foo.com");
+  const BookmarkNode* node = model_->AddURL(folder3, 0, title, url);
+  ClearCounts();
+
+  model_->Move(folder3, folder2, 0);
+
+  // Should update the hierarchy.
+  AssertObserverCount(0, 1, 0, 0, 0, 0, 0, 0, 0);
+  observer_details_.ExpectEquals(folder1, folder2, 0, 0);
+  EXPECT_EQ(root->children().size(), 2u);
+  EXPECT_EQ(root->children()[0].get(), folder1);
+  EXPECT_EQ(root->children()[1].get(), folder2);
+  EXPECT_EQ(folder1->children().size(), 0u);
+  EXPECT_EQ(folder2->children().size(), 1u);
+  EXPECT_EQ(folder2->children()[0].get(), folder3);
+  EXPECT_EQ(folder3->children().size(), 1u);
+  EXPECT_EQ(folder3->children()[0].get(), node);
+
+  // Should update the index.
+  auto matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("folder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT,
+                                   /*match_ancestor_titles= */ true);
+  EXPECT_TRUE(matches.empty());
+  matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("golder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT,
+                                   /*match_ancestor_titles= */ true);
+  EXPECT_EQ(matches[0].node, node);
+  matches.clear();
+  matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("holder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT,
+                                   /*match_ancestor_titles= */ true);
+  EXPECT_EQ(matches[0].node, node);
+  matches.clear();
 }
 
 TEST_F(BookmarkModelTest, Copy) {
@@ -1230,11 +1389,127 @@ TEST_F(BookmarkModelTest, RenamedFolderNodeExcludedFromIndex) {
   model_->SetTitle(folder, ASCIIToUTF16("MyBookmarks"));
 
   // There should be no matching bookmarks.
-  std::vector<TitledUrlMatch> matches;
-  model_->GetBookmarksMatching(ASCIIToUTF16("MyB"), /*max_count = */ 1,
-                               query_parser::MatchingAlgorithm::DEFAULT,
-                               &matches);
+  std::vector<TitledUrlMatch> matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("MyB"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT);
   EXPECT_TRUE(matches.empty());
+}
+
+TEST_F(BookmarkModelTest, GetBookmarksMatching) {
+  const BookmarkNode* root = model_->bookmark_bar_node();
+  const BookmarkNode* folder =
+      model_->AddFolder(root, 0, ASCIIToUTF16("folder"));
+  const base::string16 title(ASCIIToUTF16("foo"));
+  const GURL url("http://foo.com");
+  const BookmarkNode* node = model_->AddURL(folder, 0, title, url);
+
+  // Should not match paths by default.
+  auto matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("folder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT);
+  EXPECT_TRUE(matches.empty());
+
+  // Should not match incorrect paths.
+  matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("golder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT,
+                                   /*match_ancestor_titles= */ true);
+  EXPECT_TRUE(matches.empty());
+
+  // Should match correct paths.
+  matches =
+      model_->GetBookmarksMatching(ASCIIToUTF16("folder foo"), /*max_count=*/1,
+                                   query_parser::MatchingAlgorithm::DEFAULT,
+                                   /*match_ancestor_titles= */ true);
+  EXPECT_EQ(matches[0].node, node);
+}
+
+// Verifies that TitledUrlIndex is updated when a bookmark is removed.
+TEST_F(BookmarkModelTest, TitledUrlIndexUpdatedOnRemove) {
+  const base::string16 title = base::ASCIIToUTF16("Title");
+  const GURL url("http://google.com");
+  const BookmarkNode* root = model_->bookmark_bar_node();
+
+  model_->AddURL(root, 0, title, url);
+  ASSERT_EQ(1U, model_
+                    ->GetBookmarksMatching(
+                        title, 1, query_parser::MatchingAlgorithm::DEFAULT)
+                    .size());
+
+  // Remove the node and make sure we don't get back any results.
+  model_->Remove(root->children().front().get());
+  EXPECT_EQ(0U, model_
+                    ->GetBookmarksMatching(
+                        title, 1, query_parser::MatchingAlgorithm::DEFAULT)
+                    .size());
+}
+
+// Verifies that TitledUrlIndex is updated when a bookmark's title changes.
+TEST_F(BookmarkModelTest, TitledUrlIndexUpdatedOnChangeTitle) {
+  const base::string16 initial_title = base::ASCIIToUTF16("Initial");
+  const base::string16 new_title = base::ASCIIToUTF16("New");
+  const GURL url("http://google.com");
+  const BookmarkNode* root = model_->bookmark_bar_node();
+
+  model_->AddURL(root, 0, initial_title, url);
+  ASSERT_EQ(1U,
+            model_
+                ->GetBookmarksMatching(initial_title, 1,
+                                       query_parser::MatchingAlgorithm::DEFAULT)
+                .size());
+  ASSERT_EQ(0U, model_
+                    ->GetBookmarksMatching(
+                        new_title, 1, query_parser::MatchingAlgorithm::DEFAULT)
+                    .size());
+
+  // Change the title.
+  model_->SetTitle(root->children().front().get(), new_title);
+
+  // Verify that we only get results for the new title.
+  EXPECT_EQ(0U,
+            model_
+                ->GetBookmarksMatching(initial_title, 1,
+                                       query_parser::MatchingAlgorithm::DEFAULT)
+                .size());
+  EXPECT_EQ(1U, model_
+                    ->GetBookmarksMatching(
+                        new_title, 1, query_parser::MatchingAlgorithm::DEFAULT)
+                    .size());
+}
+
+// Verifies that TitledUrlIndex is updated when a bookmark's URL changes.
+TEST_F(BookmarkModelTest, TitledUrlIndexUpdatedOnChangeURL) {
+  const base::string16 title = base::ASCIIToUTF16("Title");
+  const GURL initial_url("http://initial");
+  const GURL new_url("http://new");
+  const BookmarkNode* root = model_->bookmark_bar_node();
+
+  model_->AddURL(root, 0, title, initial_url);
+  ASSERT_EQ(1U,
+            model_
+                ->GetBookmarksMatching(base::ASCIIToUTF16("initial"), 1,
+                                       query_parser::MatchingAlgorithm::DEFAULT)
+                .size());
+  ASSERT_EQ(0U,
+            model_
+                ->GetBookmarksMatching(base::ASCIIToUTF16("new"), 1,
+                                       query_parser::MatchingAlgorithm::DEFAULT)
+                .size());
+
+  // Change the URL.
+  model_->SetURL(root->children().front().get(), new_url);
+
+  // Verify that we only get results for the new URL.
+  EXPECT_EQ(0U,
+            model_
+                ->GetBookmarksMatching(base::ASCIIToUTF16("initial"), 1,
+                                       query_parser::MatchingAlgorithm::DEFAULT)
+                .size());
+  EXPECT_EQ(1U,
+            model_
+                ->GetBookmarksMatching(base::ASCIIToUTF16("new"), 1,
+                                       query_parser::MatchingAlgorithm::DEFAULT)
+                .size());
 }
 
 // Verifies the TitledUrlIndex is probably loaded.
@@ -1242,30 +1517,28 @@ TEST(BookmarkModelLoadTest, TitledUrlIndexPopulatedOnLoad) {
   // Create a model with a single url.
   base::ScopedTempDir tmp_dir;
   ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  base::test::TaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<BookmarkModel> model =
       std::make_unique<BookmarkModel>(std::make_unique<TestBookmarkClient>());
-  model->Load(nullptr, tmp_dir.GetPath(), base::ThreadTaskRunnerHandle::Get(),
-              base::ThreadTaskRunnerHandle::Get());
+  model->Load(nullptr, tmp_dir.GetPath());
   test::WaitForBookmarkModelToLoad(model.get());
   const GURL node_url("http://google.com");
   model->AddURL(model->bookmark_bar_node(), 0, base::ASCIIToUTF16("User"),
                 node_url);
+
   // This is necessary to ensure the save completes.
-  base::RunLoop().RunUntilIdle();
+  task_environment.FastForwardUntilNoTasksRemain();
 
   // Recreate the model and ensure GetBookmarksMatching() returns the url that
   // was added.
   model =
       std::make_unique<BookmarkModel>(std::make_unique<TestBookmarkClient>());
-  model->Load(nullptr, tmp_dir.GetPath(), base::ThreadTaskRunnerHandle::Get(),
-              base::ThreadTaskRunnerHandle::Get());
+  model->Load(nullptr, tmp_dir.GetPath());
   test::WaitForBookmarkModelToLoad(model.get());
 
-  std::vector<TitledUrlMatch> matches;
-  model->GetBookmarksMatching(base::ASCIIToUTF16("user"), 1,
-                              query_parser::MatchingAlgorithm::DEFAULT,
-                              &matches);
+  std::vector<TitledUrlMatch> matches = model->GetBookmarksMatching(
+      base::ASCIIToUTF16("user"), 1, query_parser::MatchingAlgorithm::DEFAULT);
   ASSERT_EQ(1u, matches.size());
   EXPECT_EQ(node_url, matches[0].node->GetTitledUrlNodeUrl());
 }
@@ -1365,8 +1638,7 @@ class BookmarkModelFaviconTest : public testing::Test,
       favicon_base::FaviconImageResult image_result;
       image_result.image = image;
       image_result.icon_url = icon_url;
-      model_->OnFaviconDataAvailable(node, favicon_base::IconType::kFavicon,
-                                     image_result);
+      model_->OnFaviconDataAvailable(node, image_result);
   }
 
   bool WasNodeUpdated(const BookmarkNode* node) {

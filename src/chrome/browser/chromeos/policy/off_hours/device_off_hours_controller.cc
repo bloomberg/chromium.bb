@@ -30,7 +30,7 @@ namespace policy {
 namespace off_hours {
 
 DeviceOffHoursController::DeviceOffHoursController()
-    : timer_(std::make_unique<base::OneShotTimer>()),
+    : timer_(std::make_unique<util::WallClockTimer>()),
       clock_(base::DefaultClock::GetInstance()) {
   auto* system_clock_client = chromeos::SystemClockClient::Get();
   if (system_clock_client) {
@@ -39,17 +39,11 @@ DeviceOffHoursController::DeviceOffHoursController()
         base::BindOnce(&DeviceOffHoursController::SystemClockInitiallyAvailable,
                        weak_ptr_factory_.GetWeakPtr()));
   }
-
-  if (chromeos::PowerManagerClient::Get())
-    chromeos::PowerManagerClient::Get()->AddObserver(this);
 }
 
 DeviceOffHoursController::~DeviceOffHoursController() {
   if (chromeos::SystemClockClient::Get())
     chromeos::SystemClockClient::Get()->RemoveObserver(this);
-
-  if (chromeos::PowerManagerClient::Get())
-    chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 void DeviceOffHoursController::AddObserver(Observer* observer) {
@@ -64,7 +58,7 @@ void DeviceOffHoursController::SetClockForTesting(
     base::Clock* clock,
     const base::TickClock* timer_clock) {
   clock_ = clock;
-  timer_ = std::make_unique<base::OneShotTimer>(timer_clock);
+  timer_ = std::make_unique<util::WallClockTimer>(clock, timer_clock);
 }
 
 bool DeviceOffHoursController::IsCurrentSessionAllowedOnlyForOffHours() const {
@@ -111,13 +105,6 @@ void DeviceOffHoursController::UpdateOffHoursPolicy(
   UpdateOffHoursMode();
 }
 
-void DeviceOffHoursController::SuspendDone(
-    const base::TimeDelta& sleep_duration) {
-  // Triggered when device wakes up. "OffHours" state could be changed during
-  // sleep mode and should be updated after that.
-  UpdateOffHoursMode();
-}
-
 void DeviceOffHoursController::NotifyOffHoursEndTimeChanged() const {
   VLOG(1) << "OffHours end time is changed to " << off_hours_end_time_;
   for (auto& observer : observers_)
@@ -147,7 +134,7 @@ void DeviceOffHoursController::UpdateOffHoursMode() {
     if (interval.Contains(current_time)) {
       base::TimeDelta remaining_off_hours_duration =
           current_time.GetDurationTo(interval.end());
-      SetOffHoursEndTime(base::TimeTicks::Now() + remaining_off_hours_duration);
+      SetOffHoursEndTime(base::Time::Now() + remaining_off_hours_duration);
       StartOffHoursTimer(remaining_off_hours_duration);
       SetOffHoursMode(true);
       return;
@@ -159,7 +146,7 @@ void DeviceOffHoursController::UpdateOffHoursMode() {
 }
 
 void DeviceOffHoursController::SetOffHoursEndTime(
-    base::TimeTicks off_hours_end_time) {
+    base::Time off_hours_end_time) {
   if (off_hours_end_time == off_hours_end_time_)
     return;
   off_hours_end_time_ = off_hours_end_time;
@@ -172,14 +159,14 @@ void DeviceOffHoursController::SetOffHoursMode(bool off_hours_enabled) {
   off_hours_mode_ = off_hours_enabled;
   DVLOG(1) << "OffHours mode: " << off_hours_mode_;
   if (!off_hours_mode_)
-    SetOffHoursEndTime(base::TimeTicks());
+    SetOffHoursEndTime(base::Time());
   OffHoursModeIsChanged();
 }
 
 void DeviceOffHoursController::StartOffHoursTimer(base::TimeDelta delay) {
   DCHECK_GT(delay, base::TimeDelta());
   DVLOG(1) << "OffHours mode timer starts for " << delay;
-  timer_->Start(FROM_HERE, delay,
+  timer_->Start(FROM_HERE, clock_->Now() + delay,
                 base::BindOnce(&DeviceOffHoursController::UpdateOffHoursMode,
                                weak_ptr_factory_.GetWeakPtr()));
 }

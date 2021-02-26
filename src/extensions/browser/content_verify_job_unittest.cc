@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/version.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -157,7 +156,7 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
         observer.WaitForOnHashesReady();
         run_content_read_step(verify_job.get(), &resource_contents);
         break;
-    };
+    }
     return observer.WaitForJobFinished();
   }
 
@@ -241,8 +240,8 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
 
  private:
   void StartJob(scoped_refptr<ContentVerifyJob> job) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&ContentVerifyJob::Start, job,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ContentVerifyJob::Start, job,
                                   base::Unretained(content_verifier_.get())));
   }
 
@@ -281,8 +280,7 @@ TEST_F(ContentVerifyJobUnittest, DeletedAndMissingFiles) {
   {
     // Once background.js is deleted, verification will result in HASH_MISMATCH.
     // Delete the existent file first.
-    EXPECT_TRUE(
-        base::DeleteFile(unzipped_path.Append(existent_resource_path), false));
+    EXPECT_TRUE(base::DeleteFile(unzipped_path.Append(existent_resource_path)));
 
     // Deleted file will serve empty contents.
     std::string empty_contents;
@@ -362,8 +360,7 @@ void WriteIncorrectComputedHashes(const base::FilePath& extension_path,
   ASSERT_TRUE(
       base::PathExists(file_util::GetComputedHashesPath(extension_path)));
 
-  base::DeleteFile(file_util::GetComputedHashesPath(extension_path),
-                   false /* recursive */);
+  base::DeleteFile(file_util::GetComputedHashesPath(extension_path));
 
   int block_size = extension_misc::kContentVerificationDefaultBlockSize;
   ComputedHashes::Data incorrect_computed_hashes_data;
@@ -387,8 +384,7 @@ void WriteEmptyComputedHashes(const base::FilePath& extension_path) {
   ASSERT_TRUE(
       base::PathExists(file_util::GetComputedHashesPath(extension_path)));
 
-  base::DeleteFile(file_util::GetComputedHashesPath(extension_path),
-                   false /* recursive */);
+  base::DeleteFile(file_util::GetComputedHashesPath(extension_path));
 
   ComputedHashes::Data incorrect_computed_hashes_data;
 
@@ -419,7 +415,7 @@ TEST_F(ContentVerifyJobUnittest, DeletedResourceAndCorruptedComputedHashes) {
   base::FilePath unzipped_path = temp_dir.GetPath();
   WriteIncorrectComputedHashes(unzipped_path, resource_path);
   EXPECT_TRUE(
-      base::DeleteFile(unzipped_path.Append(base::FilePath(kResource)), false));
+      base::DeleteFile(unzipped_path.Append(base::FilePath(kResource))));
   content_verifier()->ClearCacheForTesting();
 
   {
@@ -452,7 +448,7 @@ TEST_F(ContentVerifyJobUnittest, DeletedResourceAndCleanedComputedHashes) {
   base::FilePath unzipped_path = temp_dir.GetPath();
   WriteEmptyComputedHashes(unzipped_path);
   EXPECT_TRUE(
-      base::DeleteFile(unzipped_path.Append(base::FilePath(kResource)), false));
+      base::DeleteFile(unzipped_path.Append(base::FilePath(kResource))));
   content_verifier()->ClearCacheForTesting();
 
   {
@@ -601,8 +597,7 @@ TEST_F(ContentVerifyJobWithoutSignedHashesUnittest, ComputedHashesLoad) {
 
   {
     // Case where computed_hashes.json doesn't exist.
-    base::DeleteFile(file_util::GetComputedHashesPath(unzipped_path),
-                     false /* recursive */);
+    base::DeleteFile(file_util::GetComputedHashesPath(unzipped_path));
 
     TestContentVerifySingleJobObserver observer(extension->id(), kResourcePath);
     content_verifier()->ClearCacheForTesting();
@@ -801,15 +796,15 @@ class ContentVerifyJobWithHashFetchUnittest : public ContentVerifyJobUnittest {
     verified_contents_ = GetVerifiedContents(extension);
 
     // Delete verified_contents.json.
-    EXPECT_TRUE(base::DeleteFile(
-        file_util::GetVerifiedContentsPath(extension.path()), true));
+    EXPECT_TRUE(base::DeletePathRecursively(
+        file_util::GetVerifiedContentsPath(extension.path())));
 
     // Clear cache so that next extension resource load will fetch hashes as
     // we've already deleted verified_contents.json.
     // Use this opportunity to
     base::RunLoop run_loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(
             [](scoped_refptr<ContentVerifier> content_verifier) {
               content_verifier->ClearCacheForTesting();
@@ -880,8 +875,8 @@ TEST_F(ContentVerifyJobWithHashFetchUnittest, ReadErrorBeforeHashReady) {
         };
 
     base::RunLoop run_loop;
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(do_read_abort_and_done, verify_job,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(do_read_abort_and_done, verify_job,
                                   content_verifier(), run_loop.QuitClosure()));
     run_loop.Run();
 

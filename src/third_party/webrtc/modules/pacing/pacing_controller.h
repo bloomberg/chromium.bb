@@ -31,7 +31,6 @@
 #include "modules/rtp_rtcp/include/rtp_packet_sender.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
-#include "rtc_base/critical_section.h"
 #include "rtc_base/experiments/field_trial_parser.h"
 #include "rtc_base/thread_annotations.h"
 
@@ -55,8 +54,10 @@ class PacingController {
   class PacketSender {
    public:
     virtual ~PacketSender() = default;
-    virtual void SendRtpPacket(std::unique_ptr<RtpPacketToSend> packet,
-                               const PacedPacketInfo& cluster_info) = 0;
+    virtual void SendPacket(std::unique_ptr<RtpPacketToSend> packet,
+                            const PacedPacketInfo& cluster_info) = 0;
+    // Should be called after each call to SendPacket().
+    virtual std::vector<std::unique_ptr<RtpPacketToSend>> FetchFec() = 0;
     virtual std::vector<std::unique_ptr<RtpPacketToSend>> GeneratePadding(
         DataSize size) = 0;
   };
@@ -146,6 +147,8 @@ class PacingController {
 
   bool Congested() const;
 
+  bool IsProbing() const;
+
  private:
   void EnqueuePacketInternal(std::unique_ptr<RtpPacketToSend> packet,
                              int priority);
@@ -156,7 +159,7 @@ class PacingController {
   void UpdateBudgetWithElapsedTime(TimeDelta delta);
   void UpdateBudgetWithSentData(DataSize size);
 
-  DataSize PaddingToAdd(absl::optional<DataSize> recommended_probe_size,
+  DataSize PaddingToAdd(DataSize recommended_probe_size,
                         DataSize data_sent) const;
 
   std::unique_ptr<RtpPacketToSend> GetPendingPacket(

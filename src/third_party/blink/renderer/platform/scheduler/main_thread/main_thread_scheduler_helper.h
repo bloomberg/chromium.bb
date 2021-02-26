@@ -32,9 +32,12 @@ class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
   scoped_refptr<MainThreadTaskQueue> ControlMainThreadTaskQueue();
   scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner();
 
+  const scoped_refptr<base::SingleThreadTaskRunner>& DefaultTaskRunner()
+      override;
+  const scoped_refptr<base::SingleThreadTaskRunner>& ControlTaskRunner()
+      override;
+
  protected:
-  scoped_refptr<base::sequence_manager::TaskQueue> DefaultTaskQueue() override;
-  scoped_refptr<base::sequence_manager::TaskQueue> ControlTaskQueue() override;
   void ShutdownAllQueues() override;
 
  private:
@@ -42,6 +45,10 @@ class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
 
   const scoped_refptr<MainThreadTaskQueue> default_task_queue_;
   const scoped_refptr<MainThreadTaskQueue> control_task_queue_;
+
+#if DCHECK_IS_ON()
+  bool created_compositor_task_queue_ = false;
+#endif  // DCHECK_IS_ON()
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadSchedulerHelper);
 };

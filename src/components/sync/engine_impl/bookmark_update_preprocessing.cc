@@ -24,18 +24,6 @@ namespace syncer {
 
 namespace {
 
-// Enumeration of possible values for the positioning schemes used in Sync
-// entities. Used in UMA metrics. Do not re-order or delete these entries; they
-// are used in a UMA histogram. Please edit SyncPositioningScheme in enums.xml
-// if a value is added.
-enum class SyncPositioningScheme {
-  kUniquePosition = 0,
-  kPositionInParent = 1,
-  kInsertAfterItemId = 2,
-  kMissing = 3,
-  kMaxValue = kMissing
-};
-
 // Used in metric "Sync.BookmarkGUIDSource2". These values are persisted to
 // logs. Entries should not be renumbered and numeric values should never be
 // reused.
@@ -121,12 +109,8 @@ void AdaptUniquePositionForBookmark(const sync_pb::SyncEntity& update_entity,
     return;
   }
 
-  bool has_position_scheme = false;
-  SyncPositioningScheme sync_positioning_scheme;
   if (update_entity.has_unique_position()) {
     data->unique_position = update_entity.unique_position();
-    has_position_scheme = true;
-    sync_positioning_scheme = SyncPositioningScheme::kUniquePosition;
   } else if (update_entity.has_position_in_parent() ||
              update_entity.has_insert_after_item_id()) {
     bool missing_originator_fields = false;
@@ -146,24 +130,14 @@ void AdaptUniquePositionForBookmark(const sync_pb::SyncEntity& update_entity,
       data->unique_position =
           UniquePosition::FromInt64(update_entity.position_in_parent(), suffix)
               .ToProto();
-      has_position_scheme = true;
-      sync_positioning_scheme = SyncPositioningScheme::kPositionInParent;
     } else {
       // If update_entity has insert_after_item_id, use 0 index.
       DCHECK(update_entity.has_insert_after_item_id());
       data->unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
-      has_position_scheme = true;
-      sync_positioning_scheme = SyncPositioningScheme::kInsertAfterItemId;
     }
   } else {
     DLOG(ERROR) << "Missing required position information in update: "
                 << update_entity.id_string();
-    has_position_scheme = true;
-    sync_positioning_scheme = SyncPositioningScheme::kMissing;
-  }
-  if (has_position_scheme) {
-    UMA_HISTOGRAM_ENUMERATION("Sync.Entities.PositioningScheme",
-                              sync_positioning_scheme);
   }
 }
 
@@ -186,20 +160,22 @@ void AdaptTitleForBookmark(const sync_pb::SyncEntity& update_entity,
   }
 }
 
-void AdaptGuidForBookmark(const sync_pb::SyncEntity& update_entity,
+bool AdaptGuidForBookmark(const sync_pb::SyncEntity& update_entity,
                           sync_pb::EntitySpecifics* specifics) {
   DCHECK(specifics);
   // Tombstones and permanent entities don't have a GUID.
   if (update_entity.deleted() ||
       !update_entity.server_defined_unique_tag().empty()) {
-    return;
+    return false;
   }
   // Legacy clients don't populate the guid field in the BookmarkSpecifics, so
   // we use the originator_client_item_id instead, if it is a valid GUID.
   // Otherwise, we leave the field empty.
   if (specifics->bookmark().has_guid()) {
     LogGuidSource(BookmarkGuidSource::kSpecifics);
-  } else if (base::IsValidGUID(update_entity.originator_client_item_id())) {
+    return false;
+  }
+  if (base::IsValidGUID(update_entity.originator_client_item_id())) {
     // Bookmarks created around 2016, between [M44..M52) use an uppercase GUID
     // as originator client item ID, so it needs to be lowercased to adhere to
     // the invariant that GUIDs in specifics are canonicalized.
@@ -214,6 +190,7 @@ void AdaptGuidForBookmark(const sync_pb::SyncEntity& update_entity,
     DCHECK(base::IsValidGUIDOutputString(specifics->bookmark().guid()));
     LogGuidSource(BookmarkGuidSource::kInferred);
   }
+  return true;
 }
 
 std::string InferGuidForLegacyBookmarkForTesting(

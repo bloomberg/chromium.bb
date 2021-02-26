@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -27,14 +27,13 @@ static const size_t kMaxOngoingRtpDumpsAllowed = 5;
 // Must be accessed on the browser IO thread.
 static size_t g_ongoing_rtp_dumps = 0;
 
-void FireGenericDoneCallback(
-    const WebRtcRtpDumpHandler::GenericDoneCallback& callback,
-    bool success,
-    const std::string& error_message) {
+void FireGenericDoneCallback(WebRtcRtpDumpHandler::GenericDoneCallback callback,
+                             bool success,
+                             const std::string& error_message) {
   DCHECK(!callback.is_null());
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, success, error_message));
+      FROM_HERE, base::BindOnce(std::move(callback), success, error_message));
 }
 
 bool DumpTypeContainsIncoming(RtpDumpType type) {
@@ -64,15 +63,13 @@ WebRtcRtpDumpHandler::~WebRtcRtpDumpHandler() {
   if (incoming_state_ != STATE_NONE && !incoming_dump_path_.empty()) {
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                       incoming_dump_path_, false));
+        base::BindOnce(base::GetDeleteFileCallback(), incoming_dump_path_));
   }
 
   if (outgoing_state_ != STATE_NONE && !outgoing_dump_path_.empty()) {
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                       outgoing_dump_path_, false));
+        base::BindOnce(base::GetDeleteFileCallback(), outgoing_dump_path_));
   }
 }
 
@@ -123,19 +120,17 @@ bool WebRtcRtpDumpHandler::StartDump(RtpDumpType type,
     // created. So we assign both incoming and outgoing dump path even if only
     // one type of dumping has been started.
     // For "Unretained(this)", see comments StopDump.
-    dump_writer_.reset(new WebRtcRtpDumpWriter(
-        incoming_dump_path_,
-        outgoing_dump_path_,
-        kMaxDumpSize,
-        base::Bind(&WebRtcRtpDumpHandler::OnMaxDumpSizeReached,
-                   base::Unretained(this))));
+    dump_writer_ = std::make_unique<WebRtcRtpDumpWriter>(
+        incoming_dump_path_, outgoing_dump_path_, kMaxDumpSize,
+        base::BindRepeating(&WebRtcRtpDumpHandler::OnMaxDumpSizeReached,
+                            base::Unretained(this)));
   }
 
   return true;
 }
 
 void WebRtcRtpDumpHandler::StopDump(RtpDumpType type,
-                                    const GenericDoneCallback& callback) {
+                                    GenericDoneCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);
 
   // Returns an error if any type of dump specified by the caller cannot be
@@ -144,7 +139,7 @@ void WebRtcRtpDumpHandler::StopDump(RtpDumpType type,
       (DumpTypeContainsOutgoing(type) && outgoing_state_ != STATE_STARTED)) {
     if (!callback.is_null()) {
       FireGenericDoneCallback(
-          callback, false,
+          std::move(callback), false,
           "RTP dump not started or already stopped for type " +
               base::NumberToString(type));
     }
@@ -164,12 +159,12 @@ void WebRtcRtpDumpHandler::StopDump(RtpDumpType type,
   // the other posted tasks bound to the writer.
   dump_writer_->EndDump(
       type,
-      base::Bind(&WebRtcRtpDumpHandler::OnDumpEnded,
-                 base::Unretained(this),
-                 callback.is_null()
-                     ? base::Closure()
-                     : base::Bind(&FireGenericDoneCallback, callback, true, ""),
-                 type));
+      base::BindOnce(&WebRtcRtpDumpHandler::OnDumpEnded, base::Unretained(this),
+                     callback.is_null()
+                         ? base::NullCallback()
+                         : base::BindOnce(&FireGenericDoneCallback,
+                                          std::move(callback), true, ""),
+                     type));
 }
 
 bool WebRtcRtpDumpHandler::ReadyToRelease() const {
@@ -217,14 +212,14 @@ void WebRtcRtpDumpHandler::OnRtpPacket(const uint8_t* packet_header,
       packet_header, header_length, packet_length, incoming);
 }
 
-void WebRtcRtpDumpHandler::StopOngoingDumps(const base::Closure& callback) {
+void WebRtcRtpDumpHandler::StopOngoingDumps(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);
   DCHECK(!callback.is_null());
 
   // No ongoing dumps, return directly.
   if ((incoming_state_ == STATE_NONE || incoming_state_ == STATE_STOPPED) &&
       (outgoing_state_ == STATE_NONE || outgoing_state_ == STATE_STOPPED)) {
-    callback.Run();
+    std::move(callback).Run();
     return;
   }
 
@@ -234,7 +229,7 @@ void WebRtcRtpDumpHandler::StopOngoingDumps(const base::Closure& callback) {
     dump_writer_->background_task_runner()->PostTaskAndReply(
         FROM_HERE, base::DoNothing(),
         base::BindOnce(&WebRtcRtpDumpHandler::StopOngoingDumps,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
 
@@ -253,11 +248,9 @@ void WebRtcRtpDumpHandler::StopOngoingDumps(const base::Closure& callback) {
 
   DVLOG(2) << "Stopping ongoing dumps: type = " << type;
 
-  dump_writer_->EndDump(type,
-                        base::Bind(&WebRtcRtpDumpHandler::OnDumpEnded,
-                                   base::Unretained(this),
-                                   callback,
-                                   type));
+  dump_writer_->EndDump(
+      type, base::BindOnce(&WebRtcRtpDumpHandler::OnDumpEnded,
+                           base::Unretained(this), std::move(callback), type));
 }
 
 void WebRtcRtpDumpHandler::SetDumpWriterForTesting(
@@ -282,7 +275,7 @@ void WebRtcRtpDumpHandler::OnMaxDumpSizeReached() {
   StopDump(type, GenericDoneCallback());
 }
 
-void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
+void WebRtcRtpDumpHandler::OnDumpEnded(base::OnceClosure callback,
                                        RtpDumpType ended_type,
                                        bool incoming_success,
                                        bool outgoing_success) {
@@ -295,8 +288,7 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
     if (!incoming_success) {
       base::ThreadPool::PostTask(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                         incoming_dump_path_, false));
+          base::BindOnce(base::GetDeleteFileCallback(), incoming_dump_path_));
 
       DVLOG(2) << "Deleted invalid incoming dump "
                << incoming_dump_path_.value();
@@ -311,8 +303,7 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
     if (!outgoing_success) {
       base::ThreadPool::PostTask(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                         outgoing_dump_path_, false));
+          base::BindOnce(base::GetDeleteFileCallback(), outgoing_dump_path_));
 
       DVLOG(2) << "Deleted invalid outgoing dump "
                << outgoing_dump_path_.value();
@@ -329,5 +320,5 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
 
   // This object might be deleted after running the callback.
   if (!callback.is_null())
-    callback.Run();
+    std::move(callback).Run();
 }

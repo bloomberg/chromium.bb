@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_type.h"
 #import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
+#include "ios/chrome/browser/ui/authentication/signin_notification_infobar_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,10 +25,13 @@ ConfirmBannerRequestConfig::ConfirmBannerRequestConfig(
   DCHECK(infobar_);
   ConfirmInfoBarDelegate* delegate =
       static_cast<ConfirmInfoBarDelegate*>(infobar_->delegate());
+  title_text_ = delegate->GetTitleText();
   message_text_ = delegate->GetMessageText();
   button_label_text_ =
       delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK);
   icon_image_ = delegate->GetIcon();
+  is_high_priority_ = static_cast<InfoBarIOS*>(infobar)->high_priority();
+  use_icon_background_tint_ = delegate->UseIconBackgroundTint();
 }
 
 ConfirmBannerRequestConfig::~ConfirmBannerRequestConfig() = default;
@@ -36,7 +40,7 @@ void ConfirmBannerRequestConfig::CreateAuxiliaryData(
     base::SupportsUserData* user_data) {
   InfobarOverlayRequestConfig::CreateForUserData(
       user_data, static_cast<InfoBarIOS*>(infobar_),
-      InfobarOverlayType::kBanner);
+      InfobarOverlayType::kBanner, is_high_priority_);
 }
 
 }  // namespace confirm_infobar_overlays

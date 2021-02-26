@@ -30,6 +30,14 @@ bool ChromeIdentityService::HandleApplicationOpenURL(UIApplication* application,
   return false;
 }
 
+bool ChromeIdentityService::HandleSessionOpenURLContexts(UIScene* scene,
+                                                         NSSet* URLContexts) {
+  return false;
+}
+
+void ChromeIdentityService::ApplicationDidDiscardSceneSessions(
+    NSSet* scene_sessions) {}
+
 DismissASMViewControllerBlock
 ChromeIdentityService::PresentAccountDetailsController(
     ChromeIdentity* identity,
@@ -53,36 +61,34 @@ ChromeIdentityService::CreateChromeIdentityInteractionManager(
   return nil;
 }
 
-bool ChromeIdentityService::IsValidIdentity(ChromeIdentity* identity) const {
+bool ChromeIdentityService::IsValidIdentity(ChromeIdentity* identity) {
   return false;
-}
-
-ChromeIdentity* ChromeIdentityService::GetIdentityWithEmail(
-    const std::string& email) const {
-  return nil;
 }
 
 ChromeIdentity* ChromeIdentityService::GetIdentityWithGaiaID(
-    const std::string& gaia_id) const {
+    const std::string& gaia_id) {
   return nil;
 }
 
-std::vector<std::string>
-ChromeIdentityService::GetCanonicalizeEmailsForAllIdentities() const {
-  return std::vector<std::string>();
-}
-
-bool ChromeIdentityService::HasIdentities() const {
+bool ChromeIdentityService::HasIdentities() {
   return false;
 }
 
-NSArray* ChromeIdentityService::GetAllIdentities() const {
+NSArray* ChromeIdentityService::GetAllIdentities() {
   return nil;
 }
 
-NSArray* ChromeIdentityService::GetAllIdentitiesSortedForDisplay() const {
+NSArray* ChromeIdentityService::GetAllIdentitiesSortedForDisplay() {
   return nil;
 }
+
+void ChromeIdentityService::RunAfterCacheIsPopulated(
+    base::OnceClosure callback) {
+  if (!callback.is_null())
+    std::move(callback).Run();
+}
+
+void ChromeIdentityService::WaitUntilCacheIsPopulated() {}
 
 void ChromeIdentityService::ForgetIdentity(ChromeIdentity* identity,
                                            ForgetIdentityCallback callback) {}

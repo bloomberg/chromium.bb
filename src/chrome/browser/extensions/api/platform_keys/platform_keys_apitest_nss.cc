@@ -12,15 +12,19 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service_factory.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions/extension_key_permissions_service.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions/extension_key_permissions_service_factory.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_service.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_service_factory.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_test_base.h"
 #include "chrome/browser/net/nss_context.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
@@ -53,8 +57,8 @@ class PlatformKeysTest : public PlatformKeysTestBase {
       // |PlatformKeysTestBase::SetUpOnMainThread| triggers the user sign-in.
       ASSERT_TRUE(user_private_slot_db_.is_open());
       base::RunLoop loop;
-      base::PostTaskAndReply(
-          FROM_HERE, {content::BrowserThread::IO},
+      content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+          FROM_HERE,
           base::BindOnce(&PlatformKeysTest::SetPrivateSoftwareSlotOnIO,
                          base::Unretained(this),
                          crypto::ScopedPK11Slot(
@@ -72,8 +76,8 @@ class PlatformKeysTest : public PlatformKeysTestBase {
       base::RunLoop loop;
       GetNSSCertDatabaseForProfile(
           profile(),
-          base::BindRepeating(&PlatformKeysTest::SetupTestCerts,
-                              base::Unretained(this), loop.QuitClosure()));
+          base::BindOnce(&PlatformKeysTest::SetupTestCerts,
+                         base::Unretained(this), loop.QuitClosure()));
       loop.Run();
     }
 
@@ -89,14 +93,12 @@ class PlatformKeysTest : public PlatformKeysTestBase {
 
     // Set up the test policy that gives |extension_| the permission to access
     // corporate keys.
-    std::unique_ptr<base::DictionaryValue> key_permissions_policy =
-        std::make_unique<base::DictionaryValue>();
+    base::Value key_permissions_policy(base::Value::Type::DICTIONARY);
     {
-      std::unique_ptr<base::DictionaryValue> cert1_key_permission(
-          new base::DictionaryValue);
-      cert1_key_permission->SetKey("allowCorporateKeyUsage", base::Value(true));
-      key_permissions_policy->SetWithoutPathExpansion(
-          extension_->id(), std::move(cert1_key_permission));
+      base::Value cert1_key_permission(base::Value::Type::DICTIONARY);
+      cert1_key_permission.SetKey("allowCorporateKeyUsage", base::Value(true));
+      key_permissions_policy.SetKey(extension_->id(),
+                                    std::move(cert1_key_permission));
     }
 
     policy.Set(policy::key::kKeyPermissions, policy::POLICY_LEVEL_MANDATORY,
@@ -133,21 +135,18 @@ class PlatformKeysTest : public PlatformKeysTestBase {
     const extensions::Extension* const fake_gen_extension =
         LoadExtension(test_data_dir_.AppendASCII("platform_keys_genkey"));
 
-    policy::ProfilePolicyConnector* const policy_connector =
-        profile()->GetProfilePolicyConnector();
+    chromeos::platform_keys::KeyPermissionsService* const
+        key_permissions_service = chromeos::platform_keys::
+            KeyPermissionsServiceFactory::GetForBrowserContext(profile());
 
-    extensions::StateStore* const state_store =
-        extensions::ExtensionSystem::Get(profile())->state_store();
-
-    chromeos::KeyPermissions permissions(
-        policy_connector->IsManaged(), profile()->GetPrefs(),
-        policy_connector->policy_service(), state_store);
+    ASSERT_TRUE(key_permissions_service);
 
     base::RunLoop run_loop;
-    permissions.GetPermissionsForExtension(
-        fake_gen_extension->id(),
-        base::Bind(&PlatformKeysTest::GotPermissionsForExtension,
-                   base::Unretained(this), run_loop.QuitClosure()));
+    chromeos::platform_keys::ExtensionKeyPermissionsServiceFactory::
+        GetForBrowserContextAndExtension(
+            base::BindOnce(&PlatformKeysTest::GotPermissionsForExtension,
+                           base::Unretained(this), run_loop.QuitClosure()),
+            profile(), fake_gen_extension->id(), key_permissions_service);
     run_loop.Run();
   }
 
@@ -168,15 +167,29 @@ class PlatformKeysTest : public PlatformKeysTestBase {
     crypto::SetPrivateSoftwareSlotForChromeOSUserForTesting(std::move(slot));
   }
 
+  void OnKeyRegisteredForCorporateUsage(
+      std::unique_ptr<chromeos::platform_keys::ExtensionKeyPermissionsService>
+          extension_key_permissions_service,
+      const base::Closure& done_callback,
+      chromeos::platform_keys::Status status) {
+    ASSERT_EQ(status, chromeos::platform_keys::Status::kSuccess);
+    done_callback.Run();
+  }
+
   void GotPermissionsForExtension(
       const base::Closure& done_callback,
-      std::unique_ptr<chromeos::KeyPermissions::PermissionsForExtension>
-          permissions_for_ext) {
+      std::unique_ptr<chromeos::platform_keys::ExtensionKeyPermissionsService>
+          extension_key_permissions_service) {
+    auto* extension_key_permissions_service_unowned =
+        extension_key_permissions_service.get();
     std::string client_cert1_spki =
         chromeos::platform_keys::GetSubjectPublicKeyInfo(client_cert1_);
-    permissions_for_ext->RegisterKeyForCorporateUsage(
-        client_cert1_spki, {chromeos::KeyPermissions::KeyLocation::kUserSlot});
-    done_callback.Run();
+    extension_key_permissions_service_unowned->RegisterKeyForCorporateUsage(
+        client_cert1_spki,
+        base::BindOnce(&PlatformKeysTest::OnKeyRegisteredForCorporateUsage,
+                       base::Unretained(this),
+                       std::move(extension_key_permissions_service),
+                       done_callback));
   }
 
   void SetupTestCerts(const base::Closure& done_callback,

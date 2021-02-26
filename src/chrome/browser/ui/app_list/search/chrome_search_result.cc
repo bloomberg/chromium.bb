@@ -8,8 +8,15 @@
 
 #include "base/containers/adapters.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
-#include "chrome/common/string_matching/tokenized_string.h"
-#include "chrome/common/string_matching/tokenized_string_match.h"
+#include "chromeos/components/string_matching/tokenized_string.h"
+#include "chromeos/components/string_matching/tokenized_string_match.h"
+
+namespace {
+
+using chromeos::string_matching::TokenizedString;
+using chromeos::string_matching::TokenizedStringMatch;
+
+}  // namespace
 
 ChromeSearchResult::ChromeSearchResult()
     : metadata_(std::make_unique<ash::SearchResultMetadata>()) {}
@@ -77,6 +84,11 @@ void ChromeSearchResult::SetResultType(ResultType result_type) {
   SetSearchResultMetadata();
 }
 
+void ChromeSearchResult::SetMetricsType(MetricsType metrics_type) {
+  metadata_->metrics_type = metrics_type;
+  SetSearchResultMetadata();
+}
+
 void ChromeSearchResult::SetDisplayIndex(DisplayIndex display_index) {
   metadata_->display_index = display_index;
   SetSearchResultMetadata();
@@ -94,6 +106,11 @@ void ChromeSearchResult::SetIsOmniboxSearch(bool is_omnibox_search) {
 
 void ChromeSearchResult::SetIsRecommendation(bool is_recommendation) {
   metadata_->is_recommendation = is_recommendation;
+  SetSearchResultMetadata();
+}
+
+void ChromeSearchResult::SetIsAnswer(bool is_answer) {
+  metadata_->is_answer = is_answer;
   SetSearchResultMetadata();
 }
 
@@ -141,7 +158,7 @@ void ChromeSearchResult::SetSearchResultMetadata() {
     updater->SetSearchResultMetadata(id(), CloneMetadata());
 }
 
-void ChromeSearchResult::InvokeAction(int action_index, int event_flags) {}
+void ChromeSearchResult::InvokeAction(int action_index) {}
 
 void ChromeSearchResult::OnVisibilityChanged(bool visibility) {
   VLOG(1) << " Visibility change to " << visibility << " and ID is " << id();

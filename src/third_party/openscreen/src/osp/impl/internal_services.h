@@ -57,7 +57,7 @@ class InternalServices : UdpSocket::Client {
     ~InternalPlatformLinkage() override;
 
     std::vector<BoundInterface> RegisterInterfaces(
-        const std::vector<NetworkInterfaceIndex>& whitelist) override;
+        const std::vector<NetworkInterfaceIndex>& allowlist) override;
     void DeregisterInterfaces(
         const std::vector<BoundInterface>& registered_interfaces) override;
 

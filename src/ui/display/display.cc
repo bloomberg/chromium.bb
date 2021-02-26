@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -306,7 +307,7 @@ void Display::SetScaleAndBounds(float device_scale_factor,
                                 const gfx::Rect& bounds_in_pixel) {
   gfx::Insets insets = bounds_.InsetsFrom(work_area_);
   if (!HasForceDeviceScaleFactor()) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // Unless an explicit scale factor was provided for testing, ensure the
     // scale is integral.
     device_scale_factor = static_cast<int>(device_scale_factor);

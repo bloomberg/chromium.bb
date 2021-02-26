@@ -19,8 +19,8 @@
 #include "base/base_paths_fuchsia.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -29,13 +29,16 @@
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/path_service.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "fuchsia/engine/context_provider_impl.h"
 #include "fuchsia/engine/fake_context.h"
 #include "fuchsia/engine/switches.h"
+#include "services/network/public/cpp/network_switches.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -43,8 +46,14 @@ namespace {
 
 constexpr char kTestDataFileIn[] = "DataFileIn";
 constexpr char kTestDataFileOut[] = "DataFileOut";
+
 constexpr char kUrl[] = "chrome://:emorhc";
 constexpr char kTitle[] = "Palindrome";
+
+constexpr uint64_t kTestQuotaBytes = 1024;
+constexpr char kTestQuotaBytesSwitchValue[] = "1024";
+
+constexpr char kCommandLineArgs[] = "command-line-args";
 
 MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
   base::test::SingleThreadTaskEnvironment task_environment(
@@ -85,8 +94,8 @@ MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
   // Quit the process when the context is destroyed.
   base::RunLoop run_loop;
   context_binding.set_error_handler([&run_loop](zx_status_t status) {
-    EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
     run_loop.Quit();
+    EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
   });
   run_loop.Run();
 
@@ -104,10 +113,28 @@ base::Process LaunchFakeContextProcess(const base::CommandLine& command_line,
 fuchsia::web::CreateContextParams BuildCreateContextParams() {
   fuchsia::web::CreateContextParams output;
   zx_status_t result = fdio_service_connect(
-      base::fuchsia::kServiceDirectoryPath,
+      base::kServiceDirectoryPath,
       output.mutable_service_directory()->NewRequest().TakeChannel().release());
   ZX_CHECK(result == ZX_OK, result) << "Failed to open /svc";
   return output;
+}
+
+base::Value CreateConfigWithSwitchValue(std::string switch_name,
+                                        std::string switch_value) {
+  base::Value config_dict(base::Value::Type::DICTIONARY);
+  base::Value args(base::Value::Type::DICTIONARY);
+  args.SetStringKey(switch_name, switch_value);
+  config_dict.SetKey(kCommandLineArgs, std::move(args));
+  return config_dict;
+}
+
+fidl::InterfaceHandle<fuchsia::io::Directory> OpenCacheDirectory() {
+  fidl::InterfaceHandle<fuchsia::io::Directory> cache_handle;
+  zx_status_t result =
+      fdio_service_connect(base::kPersistedCacheDirectoryPath,
+                           cache_handle.NewRequest().TakeChannel().release());
+  ZX_CHECK(result == ZX_OK, result) << "Failed to open /cache";
+  return cache_handle;
 }
 
 }  // namespace
@@ -133,16 +160,16 @@ class ContextProviderImplTest : public base::MultiProcessTest {
     // Call a Context method and wait for it to invoke a listener call.
     base::RunLoop run_loop;
     context->set_error_handler([&run_loop](zx_status_t status) {
+      run_loop.Quit();
       ZX_LOG(ERROR, status) << " Context lost.";
       ADD_FAILURE();
-      run_loop.Quit();
     });
 
     fuchsia::web::FramePtr frame_ptr;
     frame_ptr.set_error_handler([&run_loop](zx_status_t status) {
+      run_loop.Quit();
       ZX_LOG(ERROR, status) << " Frame lost.";
       ADD_FAILURE();
-      run_loop.Quit();
     });
     (*context)->CreateFrame(frame_ptr.NewRequest());
 
@@ -164,8 +191,8 @@ class ContextProviderImplTest : public base::MultiProcessTest {
       fidl::InterfacePtr<fuchsia::web::Context>* context) {
     base::RunLoop run_loop;
     context->set_error_handler([&run_loop](zx_status_t status) {
-      EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
       run_loop.Quit();
+      EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
     });
 
     fuchsia::web::FramePtr frame;
@@ -222,8 +249,8 @@ TEST_F(ContextProviderImplTest, CreateValidatesServiceDirectory) {
   provider_ptr_->Create(std::move(create_params), context.NewRequest());
   base::RunLoop run_loop;
   context.set_error_handler([&run_loop](zx_status_t status) {
-    EXPECT_EQ(status, ZX_ERR_INVALID_ARGS);
     run_loop.Quit();
+    EXPECT_EQ(status, ZX_ERR_INVALID_ARGS);
   });
   run_loop.Run();
 }
@@ -240,8 +267,8 @@ TEST_F(ContextProviderImplTest, CreateValidatesDataDirectory) {
   provider_ptr_->Create(std::move(create_params), context.NewRequest());
   base::RunLoop run_loop;
   context.set_error_handler([&run_loop](zx_status_t status) {
-    EXPECT_EQ(status, ZX_ERR_INVALID_ARGS);
     run_loop.Quit();
+    EXPECT_EQ(status, ZX_ERR_INVALID_ARGS);
   });
   run_loop.Run();
 }
@@ -254,11 +281,12 @@ TEST_F(ContextProviderImplTest, CreateValidatesDrmFlags) {
         BuildCreateContextParams();
     *create_params.mutable_features() =
         fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
+    *create_params.mutable_cdm_data_directory() = OpenCacheDirectory();
     provider_ptr_->Create(std::move(create_params), context.NewRequest());
     base::RunLoop run_loop;
     context.set_error_handler([&run_loop](zx_status_t status) {
-      EXPECT_EQ(status, ZX_ERR_NOT_SUPPORTED);
       run_loop.Quit();
+      EXPECT_EQ(status, ZX_ERR_NOT_SUPPORTED);
     });
     run_loop.Run();
   }
@@ -269,11 +297,12 @@ TEST_F(ContextProviderImplTest, CreateValidatesDrmFlags) {
     fuchsia::web::CreateContextParams create_params =
         BuildCreateContextParams();
     create_params.set_playready_key_system("foo");
+    *create_params.mutable_cdm_data_directory() = OpenCacheDirectory();
     provider_ptr_->Create(std::move(create_params), context.NewRequest());
     base::RunLoop run_loop;
     context.set_error_handler([&run_loop](zx_status_t status) {
-      EXPECT_EQ(status, ZX_ERR_NOT_SUPPORTED);
       run_loop.Quit();
+      EXPECT_EQ(status, ZX_ERR_NOT_SUPPORTED);
     });
     run_loop.Run();
   }
@@ -286,12 +315,13 @@ TEST_F(ContextProviderImplTest, CreateValidatesDrmFlags) {
     *create_params.mutable_features() =
         fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM |
         fuchsia::web::ContextFeatureFlags::HEADLESS;
+    *create_params.mutable_cdm_data_directory() = OpenCacheDirectory();
     provider_ptr_->Create(std::move(create_params), context.NewRequest());
     base::RunLoop run_loop;
     context.set_error_handler([&run_loop](zx_status_t status) {
+      run_loop.Quit();
       ZX_LOG(ERROR, status);
       ADD_FAILURE();
-      run_loop.Quit();
     });
     // Spin the loop to allow CreateContext() to be handled, and the |context|
     // channel to be disconnected, in case of failure.
@@ -330,7 +360,7 @@ TEST_F(ContextProviderImplTest, WithProfileDir) {
   fuchsia::web::CreateContextParams create_params = BuildCreateContextParams();
 
   // Setup data dir.
-  EXPECT_TRUE(profile_temp_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(profile_temp_dir.CreateUniqueTempDir());
   ASSERT_EQ(
       base::WriteFile(profile_temp_dir.GetPath().AppendASCII(kTestDataFileIn),
                       nullptr, 0),
@@ -338,7 +368,7 @@ TEST_F(ContextProviderImplTest, WithProfileDir) {
 
   // Pass a handle data dir to the context.
   create_params.set_data_directory(
-      base::fuchsia::OpenDirectory(profile_temp_dir.GetPath()));
+      base::OpenDirectoryHandle(profile_temp_dir.GetPath()));
 
   provider_ptr_->Create(std::move(create_params), context.NewRequest());
 
@@ -358,8 +388,7 @@ TEST_F(ContextProviderImplTest, FailsDataDirectoryIsFile) {
 
   // Pass in a handle to a file instead of a directory.
   CHECK(base::CreateTemporaryFile(&temp_file_path));
-  create_params.set_data_directory(
-      base::fuchsia::OpenDirectory(temp_file_path));
+  create_params.set_data_directory(base::OpenDirectoryHandle(temp_file_path));
 
   provider_ptr_->Create(std::move(create_params), context.NewRequest());
 
@@ -413,12 +442,9 @@ TEST(ContextProviderImplConfigTest, WithConfigWithCommandLineArgs) {
   const base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
-  base::Value config_dict(base::Value::Type::DICTIONARY);
-
   // Specify a configuration that sets valid args with valid strings.
-  base::Value args(base::Value::Type::DICTIONARY);
-  args.SetStringKey("renderer-process-limit", "0");
-  config_dict.SetKey("command-line-args", std::move(args));
+  base::Value config_dict =
+      CreateConfigWithSwitchValue("renderer-process-limit", "0");
 
   base::RunLoop loop;
   ContextProviderImpl context_provider;
@@ -426,16 +452,16 @@ TEST(ContextProviderImplConfigTest, WithConfigWithCommandLineArgs) {
   context_provider.SetLaunchCallbackForTest(
       base::BindLambdaForTesting([&loop](const base::CommandLine& command,
                                          const base::LaunchOptions& options) {
-        EXPECT_TRUE(command.HasSwitch("renderer-process-limit"));
         loop.Quit();
+        EXPECT_TRUE(command.HasSwitch("renderer-process-limit"));
         return base::Process();
       }));
 
   fuchsia::web::ContextPtr context;
   context.set_error_handler([&loop](zx_status_t status) {
+    loop.Quit();
     ZX_LOG(ERROR, status);
     ADD_FAILURE();
-    loop.Quit();
   });
   context_provider.Create(BuildCreateContextParams(), context.NewRequest());
 
@@ -446,12 +472,9 @@ TEST(ContextProviderImplConfigTest, WithConfigWithDisallowedCommandLineArgs) {
   const base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
-  base::Value config_dict(base::Value::Type::DICTIONARY);
-
   // Specify a configuration that sets a disallowed command-line argument.
-  base::Value args(base::Value::Type::DICTIONARY);
-  args.SetStringKey("kittens-are-nice", "0");
-  config_dict.SetKey("command-line-args", std::move(args));
+  base::Value config_dict =
+      CreateConfigWithSwitchValue("kittens-are-nice", "0");
 
   base::RunLoop loop;
   ContextProviderImpl context_provider;
@@ -459,16 +482,16 @@ TEST(ContextProviderImplConfigTest, WithConfigWithDisallowedCommandLineArgs) {
   context_provider.SetLaunchCallbackForTest(
       base::BindLambdaForTesting([&loop](const base::CommandLine& command,
                                          const base::LaunchOptions& options) {
-        EXPECT_FALSE(command.HasSwitch("kittens-are-nice"));
         loop.Quit();
+        EXPECT_FALSE(command.HasSwitch("kittens-are-nice"));
         return base::Process();
       }));
 
   fuchsia::web::ContextPtr context;
   context.set_error_handler([&loop](zx_status_t status) {
+    loop.Quit();
     ZX_LOG(ERROR, status);
     ADD_FAILURE();
-    loop.Quit();
   });
   context_provider.Create(BuildCreateContextParams(), context.NewRequest());
 
@@ -484,7 +507,7 @@ TEST(ContextProviderImplConfigTest, WithConfigWithWronglyTypedCommandLineArgs) {
   // Specify a configuration that sets valid args with invalid value.
   base::Value args(base::Value::Type::DICTIONARY);
   args.SetBoolKey("renderer-process-limit", false);
-  config_dict.SetKey("command-line-args", std::move(args));
+  config_dict.SetKey(kCommandLineArgs, std::move(args));
 
   base::RunLoop loop;
   ContextProviderImpl context_provider;
@@ -492,49 +515,160 @@ TEST(ContextProviderImplConfigTest, WithConfigWithWronglyTypedCommandLineArgs) {
   context_provider.SetLaunchCallbackForTest(
       base::BindLambdaForTesting([&](const base::CommandLine& command,
                                      const base::LaunchOptions& options) {
-        ADD_FAILURE();
         loop.Quit();
+        ADD_FAILURE();
         return base::Process();
       }));
 
   fuchsia::web::ContextPtr context;
   context.set_error_handler([&loop](zx_status_t status) {
-    EXPECT_EQ(status, ZX_ERR_INTERNAL);
     loop.Quit();
+    EXPECT_EQ(status, ZX_ERR_INTERNAL);
   });
   context_provider.Create(BuildCreateContextParams(), context.NewRequest());
 
   loop.Run();
 }
 
-// Tests setting the custom Cast Streaming Receiver feature flag properly adds
-// the Cast Streaming Receiver switch.
-TEST(ContextProviderImplReceiverTest, CastStreamingReceiverFeatureFlag) {
+// Tests that unsafely_treat_insecure_origins_as_secure properly adds the right
+// command-line arguments to the Context process.
+TEST(ContextProviderImplParamsTest, WithInsecureOriginsAsSecure) {
   const base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
-
-  constexpr auto kCastStreamingFeatureFlag =
-      static_cast<fuchsia::web::ContextFeatureFlags>(1ULL << 63);
 
   base::RunLoop loop;
   ContextProviderImpl context_provider;
   context_provider.SetLaunchCallbackForTest(
       base::BindLambdaForTesting([&](const base::CommandLine& command,
                                      const base::LaunchOptions& options) {
-        EXPECT_TRUE(command.HasSwitch(switches::kEnableCastStreamingReceiver));
         loop.Quit();
+        EXPECT_TRUE(command.HasSwitch(switches::kAllowRunningInsecureContent));
+        EXPECT_THAT(command.GetSwitchValueASCII(switches::kDisableFeatures),
+                    testing::HasSubstr("AutoupgradeMixedContent"));
+        EXPECT_EQ(command.GetSwitchValueASCII(
+                      network::switches::kUnsafelyTreatInsecureOriginAsSecure),
+                  "http://example.com");
         return base::Process();
       }));
 
   fuchsia::web::ContextPtr context;
   context.set_error_handler([&loop](zx_status_t status) {
-    ADD_FAILURE();
     loop.Quit();
+    ZX_LOG(ERROR, status);
+    ADD_FAILURE();
   });
 
-  fuchsia::web::CreateContextParams params = BuildCreateContextParams();
-  params.set_features(kCastStreamingFeatureFlag);
-  context_provider.Create(std::move(params), context.NewRequest());
+  fuchsia::web::CreateContextParams create_params = BuildCreateContextParams();
+  std::vector<std::string> insecure_origins;
+  insecure_origins.push_back(switches::kAllowRunningInsecureContent);
+  insecure_origins.push_back("disable-mixed-content-autoupgrade");
+  insecure_origins.push_back("http://example.com");
+  create_params.set_unsafely_treat_insecure_origins_as_secure(
+      std::move(insecure_origins));
+  context_provider.Create(std::move(create_params), context.NewRequest());
 
   loop.Run();
 }
+
+TEST(ContextProviderImplConfigTest, WithDataQuotaBytes) {
+  const base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+
+  base::RunLoop loop;
+  ContextProviderImpl context_provider;
+  context_provider.SetLaunchCallbackForTest(
+      base::BindLambdaForTesting([&loop](const base::CommandLine& command,
+                                         const base::LaunchOptions& options) {
+        loop.Quit();
+        EXPECT_EQ(command.GetSwitchValueASCII("data-quota-bytes"),
+                  kTestQuotaBytesSwitchValue);
+        return base::Process();
+      }));
+
+  fuchsia::web::ContextPtr context;
+  context.set_error_handler([&loop](zx_status_t status) {
+    loop.Quit();
+    ZX_LOG(ERROR, status);
+    ADD_FAILURE();
+  });
+
+  fuchsia::web::CreateContextParams create_params = BuildCreateContextParams();
+  base::ScopedTempDir profile_temp_dir;
+  ASSERT_TRUE(profile_temp_dir.CreateUniqueTempDir());
+  create_params.set_data_directory(
+      base::OpenDirectoryHandle(profile_temp_dir.GetPath()));
+  create_params.set_data_quota_bytes(kTestQuotaBytes);
+  context_provider.Create(std::move(create_params), context.NewRequest());
+
+  loop.Run();
+}
+
+TEST(ContextProviderImplConfigTest, WithGoogleApiKeyValue) {
+  constexpr char kDummyApiKey[] = "apikey123";
+  const base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+
+  base::Value config_dict =
+      CreateConfigWithSwitchValue("google-api-key", kDummyApiKey);
+
+  base::RunLoop loop;
+  ContextProviderImpl context_provider;
+  context_provider.set_config_for_test(std::move(config_dict));
+  context_provider.SetLaunchCallbackForTest(base::BindLambdaForTesting(
+      [&loop, kDummyApiKey](const base::CommandLine& command,
+                            const base::LaunchOptions& options) {
+        loop.Quit();
+        EXPECT_EQ(command.GetSwitchValueASCII(switches::kGoogleApiKey),
+                  kDummyApiKey);
+        return base::Process();
+      }));
+
+  fuchsia::web::ContextPtr context;
+  context.set_error_handler([&loop](zx_status_t status) {
+    loop.Quit();
+    ZX_LOG(ERROR, status);
+    ADD_FAILURE();
+  });
+  context_provider.Create(BuildCreateContextParams(), context.NewRequest());
+
+  loop.Run();
+}
+
+// TODO(crbug.com/1013412): This test doesn't actually exercise DRM, so could
+// be executed everywhere if DRM support were configurable.
+#if defined(ARCH_CPU_ARM64)
+TEST(ContextProviderImplConfigTest, WithCdmDataQuotaBytes) {
+  const base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+
+  base::RunLoop loop;
+  ContextProviderImpl context_provider;
+  context_provider.SetLaunchCallbackForTest(
+      base::BindLambdaForTesting([&loop](const base::CommandLine& command,
+                                         const base::LaunchOptions& options) {
+        loop.Quit();
+        EXPECT_EQ(command.GetSwitchValueASCII("cdm-data-quota-bytes"),
+                  kTestQuotaBytesSwitchValue);
+        return base::Process();
+      }));
+
+  fuchsia::web::ContextPtr context;
+  context.set_error_handler([&loop](zx_status_t status) {
+    loop.Quit();
+    ZX_LOG(ERROR, status);
+    ADD_FAILURE();
+  });
+
+  fuchsia::web::CreateContextParams create_params = BuildCreateContextParams();
+  base::ScopedTempDir profile_temp_dir;
+  ASSERT_TRUE(profile_temp_dir.CreateUniqueTempDir());
+  create_params.set_cdm_data_directory(
+      base::OpenDirectoryHandle(profile_temp_dir.GetPath()));
+  create_params.set_features(fuchsia::web::ContextFeatureFlags::HEADLESS |
+                             fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM);
+  create_params.set_cdm_data_quota_bytes(kTestQuotaBytes);
+  context_provider.Create(std::move(create_params), context.NewRequest());
+
+  loop.Run();
+}
+#endif  // defined(ARCH_CPU_ARM64)

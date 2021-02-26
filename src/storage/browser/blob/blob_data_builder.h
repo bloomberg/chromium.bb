@@ -16,10 +16,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/checked_math.h"
+#include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_entry.h"
-#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -28,6 +28,7 @@ namespace storage {
 class BlobSliceTest;
 class BlobStorageContext;
 class BlobStorageRegistry;
+class FileSystemURL;
 
 // This class is used to build blobs. It also facilitates the operation of
 // 'pending' data, where the user knows the size and existence of a file or
@@ -136,7 +137,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataBuilder {
                   const BlobStorageRegistry& blob_registry);
 
   void AppendFileSystemFile(
-      const GURL& url,
+      const FileSystemURL& url,
       uint64_t offset,
       uint64_t length,
       const base::Time& expected_modification_time,

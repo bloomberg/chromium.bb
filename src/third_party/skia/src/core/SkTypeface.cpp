@@ -25,16 +25,6 @@ SkTypeface::SkTypeface(const SkFontStyle& style, bool isFixedPitch)
 
 SkTypeface::~SkTypeface() { }
 
-#ifdef SK_WHITELIST_SERIALIZED_TYPEFACES
-extern void WhitelistSerializeTypeface(const SkTypeface*, SkWStream* );
-#define SK_TYPEFACE_DELEGATE WhitelistSerializeTypeface
-#else
-#define SK_TYPEFACE_DELEGATE nullptr
-#endif
-
-void (*gSerializeTypefaceDelegate)(const SkTypeface*, SkWStream* ) = SK_TYPEFACE_DELEGATE;
-sk_sp<SkTypeface> (*gDeserializeTypefaceDelegate)(SkStream* ) = nullptr;
-
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace {
@@ -72,6 +62,9 @@ protected:
     };
     void onGetFamilyName(SkString* familyName) const override {
         familyName->reset();
+    }
+    bool onGetPostScriptName(SkString*) const override {
+        return false;
     }
     SkTypeface::LocalizedStrings* onCreateFamilyNameIterator() const override {
         return new EmptyLocalizedStrings;
@@ -161,16 +154,6 @@ sk_sp<SkTypeface> SkTypeface::MakeFromData(sk_sp<SkData> data, int index) {
     return SkFontMgr::RefDefault()->makeFromData(std::move(data), index);
 }
 
-sk_sp<SkTypeface> SkTypeface::MakeFromFontData(std::unique_ptr<SkFontData> data) {
-    if (data->hasStream()) {
-        if (auto tf = SkCustomTypefaceBuilder::Deserialize(data->getStream())) {
-            return tf;
-        }
-    }
-
-    return SkFontMgr::RefDefault()->makeFromFontData(std::move(data));
-}
-
 sk_sp<SkTypeface> SkTypeface::MakeFromFile(const char path[], int index) {
     return SkFontMgr::RefDefault()->makeFromFile(path, index);
 }
@@ -182,11 +165,6 @@ sk_sp<SkTypeface> SkTypeface::makeClone(const SkFontArguments& args) const {
 ///////////////////////////////////////////////////////////////////////////////
 
 void SkTypeface::serialize(SkWStream* wstream, SerializeBehavior behavior) const {
-    if (gSerializeTypefaceDelegate) {
-        (*gSerializeTypefaceDelegate)(this, wstream);
-        return;
-    }
-
     bool isLocalData = false;
     SkFontDescriptor desc;
     this->onGetFontDescriptor(&desc, &isLocalData);
@@ -198,11 +176,20 @@ void SkTypeface::serialize(SkWStream* wstream, SerializeBehavior behavior) const
         case SerializeBehavior::kIncludeDataIfLocal: shouldSerializeData = isLocalData; break;
     }
 
-    // TODO: why do we check hasFontData() and allow the data to pass through even if the caller
-    //       has said they don't want the fontdata? Does this actually happen (getDescriptor returns
-    //       fontdata as well?)
-    if (shouldSerializeData && !desc.hasFontData()) {
-        desc.setFontData(this->onMakeFontData());
+    if (shouldSerializeData) {
+        int index;
+        desc.setStream(this->openStream(&index));
+        if (desc.hasStream()) {
+            desc.setCollectionIndex(index);
+        }
+
+        int numAxes = this->getVariationDesignPosition(nullptr, 0);
+        if (0 < numAxes) {
+            numAxes = this->getVariationDesignPosition(desc.setVariationCoordinates(numAxes), numAxes);
+            if (numAxes <= 0) {
+                desc.setVariationCoordinates(0);
+            }
+        }
     }
     desc.serialize(wstream);
 }
@@ -214,18 +201,34 @@ sk_sp<SkData> SkTypeface::serialize(SerializeBehavior behavior) const {
 }
 
 sk_sp<SkTypeface> SkTypeface::MakeDeserialize(SkStream* stream) {
-    if (gDeserializeTypefaceDelegate) {
-        return (*gDeserializeTypefaceDelegate)(stream);
-    }
-
     SkFontDescriptor desc;
     if (!SkFontDescriptor::Deserialize(stream, &desc)) {
         return nullptr;
     }
 
-    std::unique_ptr<SkFontData> data = desc.detachFontData();
+    if (desc.hasStream()) {
+        if (auto tf = SkCustomTypefaceBuilder::Deserialize(desc.dupStream().get())) {
+            return tf;
+        }
+    }
+
+    // Have to check for old data format first.
+    std::unique_ptr<SkFontData> data = desc.maybeAsSkFontData();
     if (data) {
-        sk_sp<SkTypeface> typeface(SkTypeface::MakeFromFontData(std::move(data)));
+        // Should only get here with old skps.
+        sk_sp<SkFontMgr> defaultFm = SkFontMgr::RefDefault();
+        sk_sp<SkTypeface> typeface(defaultFm->makeFromFontData(std::move(data)));
+        if (typeface) {
+            return typeface;
+        }
+    }
+
+    if (desc.hasStream()) {
+        SkFontArguments args;
+        args.setCollectionIndex(desc.getCollectionIndex());
+        args.setVariationDesignPosition({desc.getVariation(), desc.getVariationCoordinateCount()});
+        sk_sp<SkFontMgr> defaultFm = SkFontMgr::RefDefault();
+        sk_sp<SkTypeface> typeface = defaultFm->makeFromStream(desc.detachStream(), args);
         if (typeface) {
             return typeface;
         }
@@ -288,20 +291,6 @@ std::unique_ptr<SkStreamAsset> SkTypeface::openStream(int* ttcIndex) const {
     return this->onOpenStream(ttcIndex);
 }
 
-std::unique_ptr<SkFontData> SkTypeface::makeFontData() const {
-    return this->onMakeFontData();
-}
-
-// This implementation is temporary until this method can be made pure virtual.
-std::unique_ptr<SkFontData> SkTypeface::onMakeFontData() const {
-    int index;
-    std::unique_ptr<SkStreamAsset> stream(this->onOpenStream(&index));
-    if (!stream) {
-        return nullptr;
-    }
-    return std::make_unique<SkFontData>(std::move(stream), index, nullptr, 0);
-};
-
 void SkTypeface::unicharsToGlyphs(const SkUnichar uni[], int count, SkGlyphID glyphs[]) const {
     if (count > 0 && glyphs && uni) {
         this->onCharsToGlyphs(uni, count, glyphs);
@@ -344,6 +333,10 @@ SkTypeface::LocalizedStrings* SkTypeface::createFamilyNameIterator() const {
 void SkTypeface::getFamilyName(SkString* name) const {
     SkASSERT(name);
     this->onGetFamilyName(name);
+}
+
+bool SkTypeface::getPostScriptName(SkString* name) const {
+    return this->onGetPostScriptName(name);
 }
 
 void SkTypeface::getGlyphToUnicodeMap(SkUnichar* dst) const {
@@ -414,6 +407,9 @@ bool SkTypeface::onComputeBounds(SkRect* bounds) const {
 
     SkFontMetrics fm;
     ctx->getFontMetrics(&fm);
+    if (!fm.hasBounds()) {
+        return false;
+    }
     bounds->setLTRB(fm.fXMin * invTextSize, fm.fTop * invTextSize,
                     fm.fXMax * invTextSize, fm.fBottom * invTextSize);
     return true;

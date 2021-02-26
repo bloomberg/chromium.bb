@@ -33,11 +33,14 @@ path_to_file = os.path.realpath(__file__)
 if path_to_file.endswith('.pyc'):  # pragma: no cover
     path_to_file = path_to_file[:-1]
 dir_above_typ = os.path.dirname(os.path.dirname(path_to_file))
-if dir_above_typ not in sys.path:  # pragma: no cover
-    sys.path.append(dir_above_typ)
+dir_cov = os.path.join(os.path.dirname(dir_above_typ), 'coverage')
+for path in (dir_above_typ, dir_cov):
+  if path not in sys.path:  # pragma: no cover
+    sys.path.append(path)
 
 from typ import artifacts
 from typ import json_results
+from typ import result_sink
 from typ.arg_parser import ArgumentParser
 from typ.expectations_parser import TestExpectations, Expectation
 from typ.host import Host
@@ -432,7 +435,7 @@ class Runner(object):
             return 1
         contents = self.host.read_text_file(args.expectations_files[0])
 
-        expectations = TestExpectations(set(args.tags))
+        expectations = TestExpectations(set(args.tags), args.ignored_tags)
         err, msg = expectations.parse_tagged_list(
             contents, args.expectations_files[0])
         if err:
@@ -622,9 +625,10 @@ class Runner(object):
                                                       int(h.time()),
                                                       all_tests, result_set,
                                                       self.path_delimiter)
+        retcode = (json_results.exit_code_from_full_results(full_results)
+                   | result_sink.result_sink_retcode_from_result_set(result_set))
 
-        return (json_results.exit_code_from_full_results(full_results),
-                full_results)
+        return (retcode, full_results)
 
     def _run_one_set(self, stats, result_set, test_set, jobs, pool):
         self._skip_tests(stats, result_set, test_set.tests_to_skip)
@@ -946,10 +950,14 @@ class _Child(object):
         self.expectations = parent.expectations
         self.test_name_prefix = parent.args.test_name_prefix
         self.artifact_output_dir = parent.artifact_output_dir
+        self.result_sink_reporter = None
+        self.disable_resultsink = parent.args.disable_resultsink
 
 
 def _setup_process(host, worker_num, child):
     child.host = host
+    child.result_sink_reporter = result_sink.ResultSinkReporter(
+            host, child.disable_resultsink)
     child.worker_num = worker_num
     # pylint: disable=protected-access
 
@@ -1067,13 +1075,21 @@ def _run_one_test(child, test_input):
             suite.run(test_result)
     finally:
         out, err = h.restore_output()
+        # Clear the artifact implementation so that later tests don't try to
+        # use a stale instance.
+        if isinstance(test_case, TypTestCase):
+          test_case.set_artifacts(None)
 
     took = h.time() - started
-    return (_result_from_test_result(test_result, test_name, started, took, out,
+    result = _result_from_test_result(test_result, test_name, started, took, out,
                                     err, child.worker_num, pid,
                                     expected_results, child.has_expectations,
-                                    art.artifacts),
-            should_retry_on_failure)
+                                    art.artifacts)
+    result.result_sink_retcode =\
+            child.result_sink_reporter.report_individual_test_result(
+                child.test_name_prefix, result, child.artifact_output_dir,
+                child.expectations.tags if child.expectations else [])
+    return (result, should_retry_on_failure)
 
 
 def _run_under_debugger(host, test_case, suite,
@@ -1082,7 +1098,7 @@ def _run_under_debugger(host, test_case, suite,
     test_func = getattr(test_case, test_case._testMethodName)
     fname = inspect.getsourcefile(test_func)
     lineno = inspect.getsourcelines(test_func)[1] + 1
-    dbg = pdb.Pdb(stdout=host.stdout.original_stream)
+    dbg = pdb.Pdb(stdout=host.stdout.stream)
     dbg.set_break(fname, lineno)
     dbg.runcall(suite.run, test_result)
 

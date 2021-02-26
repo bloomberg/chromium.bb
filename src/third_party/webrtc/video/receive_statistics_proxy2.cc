@@ -782,10 +782,10 @@ void ReceiveStatisticsProxy::RtcpPacketTypesCounterUpdated(
     return;
 
   if (!IsCurrentTaskQueueOrThread(worker_thread_)) {
-    // RtpRtcp::Configuration has a single RtcpPacketTypeCounterObserver and
-    // that same configuration may be used for both receiver and sender
-    // (see ModuleRtpRtcpImpl::ModuleRtpRtcpImpl).
-    // The RTCPSender implementation currently makes calls to this function on a
+    // RtpRtcpInterface::Configuration has a single
+    // RtcpPacketTypeCounterObserver and that same configuration may be used for
+    // both receiver and sender (see ModuleRtpRtcpImpl::ModuleRtpRtcpImpl). The
+    // RTCPSender implementation currently makes calls to this function on a
     // process thread whereas the RTCPReceiver implementation calls back on the
     // [main] worker thread.
     // So until the sender implementation has been updated, we work around this
@@ -1002,7 +1002,8 @@ void ReceiveStatisticsProxy::OnCompleteFrame(bool is_keyframe,
 }
 
 void ReceiveStatisticsProxy::OnDroppedFrames(uint32_t frames_dropped) {
-  RTC_DCHECK_RUN_ON(&decode_queue_);
+  // Can be called on either the decode queue or the worker thread
+  // See FrameBuffer2 for more details.
   worker_thread_->PostTask(ToQueuedTask(task_safety_, [frames_dropped, this]() {
     RTC_DCHECK_RUN_ON(&main_thread_);
     stats_.frames_dropped += frames_dropped;

@@ -31,11 +31,16 @@ def compile_swiftshader(api, extra_tokens, swiftshader_root, cc, cxx, out):
       '-DSWIFTSHADER_BUILD_TESTS=OFF',
       '-DSWIFTSHADER_WARNINGS_AS_ERRORS=0',
   ]
-  cmake_bin = str(api.vars.slave_dir.join('cmake_linux', 'bin'))
+  cmake_bin = str(api.vars.workdir.join('cmake_linux', 'bin'))
   env = {
       'CC': cc,
       'CXX': cxx,
-      'PATH': '%%(PATH)s:%s' % cmake_bin
+      'PATH': '%%(PATH)s:%s' % cmake_bin,
+      # We arrange our MSAN/TSAN prebuilts a little differently than
+      # SwiftShader's CMakeLists.txt expects, so we'll just keep our custom
+      # setup (everything mentioning libcxx below) and point SwiftShader's
+      # CMakeLists.txt at a harmless non-existent path.
+      'SWIFTSHADER_MSAN_INSTRUMENTED_LIBCXX_PATH': '/totally/phony/path',
   }
 
   # Extra flags for MSAN/TSAN, if necessary.
@@ -47,7 +52,7 @@ def compile_swiftshader(api, extra_tokens, swiftshader_root, cc, cxx, out):
 
   if san:
     short,full = san
-    clang_linux = str(api.vars.slave_dir.join('clang_linux'))
+    clang_linux = str(api.vars.workdir.join('clang_linux'))
     libcxx = clang_linux + '/' + short
     cflags = ' '.join([
       '-fsanitize=' + full,
@@ -80,8 +85,8 @@ def compile_fn(api, checkout_root, out_dir):
   os            = api.vars.builder_cfg.get('os',            '')
   target_arch   = api.vars.builder_cfg.get('target_arch',   '')
 
-  clang_linux      = str(api.vars.slave_dir.join('clang_linux'))
-  win_toolchain    = str(api.vars.slave_dir.join('win_toolchain'))
+  clang_linux      = str(api.vars.workdir.join('clang_linux'))
+  win_toolchain    = str(api.vars.workdir.join('win_toolchain'))
 
   cc, cxx, ccache = None, None, None
   extra_cflags = []
@@ -89,15 +94,21 @@ def compile_fn(api, checkout_root, out_dir):
   args = {'werror': 'true'}
   env = {}
 
-  if os == 'Mac':
+  if os == 'Mac' or os == 'Mac10.15.5' or os == 'Mac10.15.7':
     # XCode build is listed in parentheses after the version at
     # https://developer.apple.com/news/releases/, or on Wikipedia here:
     # https://en.wikipedia.org/wiki/Xcode#Version_comparison_table
     # Use lowercase letters.
     XCODE_BUILD_VERSION = '11c29'
+    if os == 'Mac10.15.5':
+      XCODE_BUILD_VERSION = '11e503a'
+    if os == 'Mac10.15.7':
+      # https://chrome-infra-packages.appspot.com/p/infra_internal/ios/xcode
+      # '12b45b' is not available, so we use '12b5044c'.
+      XCODE_BUILD_VERSION = '12b5044c'
     extra_cflags.append(
         '-DDUMMY_xcode_build_version=%s' % XCODE_BUILD_VERSION)
-    mac_toolchain_cmd = api.vars.slave_dir.join(
+    mac_toolchain_cmd = api.vars.workdir.join(
         'mac_toolchain', 'mac_toolchain')
     xcode_app_path = api.vars.cache_dir.join('Xcode.app')
     # Copied from
@@ -132,17 +143,18 @@ def compile_fn(api, checkout_root, out_dir):
   if 'CheckGeneratedFiles' in extra_tokens:
     compiler = 'Clang'
     args['skia_compile_processors'] = 'true'
+    args['skia_compile_sksl_tests'] = 'true'
     args['skia_generate_workarounds'] = 'true'
 
   # ccache + clang-tidy.sh chokes on the argument list.
-  if (api.vars.is_linux or os == 'Mac') and 'Tidy' not in extra_tokens:
+  if (api.vars.is_linux or os == 'Mac' or os == 'Mac10.15.5' or os == 'Mac10.15.7') and 'Tidy' not in extra_tokens:
     if api.vars.is_linux:
-      ccache = api.vars.slave_dir.join('ccache_linux', 'bin', 'ccache')
+      ccache = api.vars.workdir.join('ccache_linux', 'bin', 'ccache')
       # As of 2020-02-07, the sum of each Debian10-Clang-x86
       # non-flutter/android/chromebook build takes less than 75G cache space.
       env['CCACHE_MAXSIZE'] = '75G'
     else:
-      ccache = api.vars.slave_dir.join('ccache_mac', 'bin', 'ccache')
+      ccache = api.vars.workdir.join('ccache_mac', 'bin', 'ccache')
       # As of 2020-02-10, the sum of each Build-Mac-Clang- non-android build
       # takes ~30G cache space.
       env['CCACHE_MAXSIZE'] = '50G'
@@ -174,6 +186,14 @@ def compile_fn(api, checkout_root, out_dir):
     # Swap in clang-tidy.sh for clang++, but update PATH so it can find clang++.
     cxx = skia_dir.join("tools/clang-tidy.sh")
     env['PATH'] = '%s:%%(PATH)s' % (clang_linux + '/bin')
+    # Increase ClangTidy code coverage by enabling features.
+    args.update({
+      'skia_enable_fontmgr_empty':     'true',
+      'skia_enable_pdf':               'true',
+      'skia_use_expat':                'true',
+      'skia_use_freetype':             'true',
+      'skia_use_vulkan':               'true',
+    })
 
   if 'Coverage' in extra_tokens:
     # See https://clang.llvm.org/docs/SourceBasedCodeCoverage.html for
@@ -278,12 +298,12 @@ def compile_fn(api, checkout_root, out_dir):
     args['skia_use_opencl'] = 'true'
     if api.vars.is_linux:
       extra_cflags.append(
-          '-isystem%s' % api.vars.slave_dir.join('opencl_headers'))
+          '-isystem%s' % api.vars.workdir.join('opencl_headers'))
       extra_ldflags.append(
-          '-L%s' % api.vars.slave_dir.join('opencl_ocl_icd_linux'))
+          '-L%s' % api.vars.workdir.join('opencl_ocl_icd_linux'))
     elif 'Win' in os:
       extra_cflags.append(
-          '-imsvc%s' % api.vars.slave_dir.join('opencl_headers'))
+          '-imsvc%s' % api.vars.workdir.join('opencl_headers'))
       extra_ldflags.append(
           '/LIBPATH:%s' %
           skia_dir.join('third_party', 'externals', 'opencl-lib', '3-0', 'lib',
@@ -292,11 +312,11 @@ def compile_fn(api, checkout_root, out_dir):
     # Bots use Chromium signing cert.
     args['skia_ios_identity'] = '".*GS9WA.*"'
     # Get mobileprovision via the CIPD package.
-    args['skia_ios_profile'] = '"%s"' % api.vars.slave_dir.join(
+    args['skia_ios_profile'] = '"%s"' % api.vars.workdir.join(
         'provisioning_profile_ios',
         'Upstream_Testing_Provisioning_Profile.mobileprovision')
   if compiler == 'Clang' and 'Win' in os:
-    args['clang_win'] = '"%s"' % api.vars.slave_dir.join('clang_win')
+    args['clang_win'] = '"%s"' % api.vars.workdir.join('clang_win')
     extra_cflags.append('-DDUMMY_clang_win_version=%s' %
                         api.run.asset_version('clang_win', skia_dir))
 

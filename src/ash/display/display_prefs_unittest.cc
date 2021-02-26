@@ -473,7 +473,7 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_FALSE(property->GetInteger("width", &width));
   EXPECT_FALSE(property->GetInteger("height", &height));
 
-  display::ManagedDisplayMode mode(gfx::Size(300, 200), 60.0f, false, true,
+  display::ManagedDisplayMode mode(gfx::Size(300, 200), 60.0f, false, false,
                                    1.25f /* device_scale_factor */);
   display_manager()->SetDisplayMode(id2, mode);
 
@@ -605,7 +605,6 @@ TEST_F(DisplayPrefsTest, BasicStores) {
 }
 
 TEST_F(DisplayPrefsTest, PreventStore) {
-  ResolutionNotificationController::SuppressTimerForTest();
   LoggedInAsUser();
   UpdateDisplay("400x300#500x400|400x300|300x200");
   int64_t id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -613,8 +612,9 @@ TEST_F(DisplayPrefsTest, PreventStore) {
   // display preferences should not stored meanwhile.
   Shell* shell = Shell::Get();
 
-  display::ManagedDisplayMode old_mode(gfx::Size(400, 300));
-  display::ManagedDisplayMode new_mode(gfx::Size(500, 400));
+  display::ManagedDisplayMode old_mode(gfx::Size(400, 300), 60.0f, false,
+                                       false);
+  display::ManagedDisplayMode new_mode(gfx::Size(500, 400), 60.0f, false, true);
   EXPECT_TRUE(shell->resolution_notification_controller()
                   ->PrepareNotificationAndSetDisplayMode(
                       id, old_mode, new_mode, mojom::DisplayConfigSource::kUser,
@@ -843,19 +843,17 @@ TEST_F(DisplayPrefsTest, DontSaveTabletModeControllerRotations) {
 
   // Open up 270 degrees to trigger tablet mode
   scoped_refptr<AccelerometerUpdate> update(new AccelerometerUpdate());
-  update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, false, 0.0f, 0.0f,
+  update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, 0.0f, 0.0f,
               -base::kMeanGravityFloat);
-  update->Set(ACCELEROMETER_SOURCE_SCREEN, false, 0.0f, base::kMeanGravityFloat,
-              0.0f);
+  update->Set(ACCELEROMETER_SOURCE_SCREEN, 0.0f, base::kMeanGravityFloat, 0.0f);
   TabletModeController* controller = Shell::Get()->tablet_mode_controller();
   controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(controller->InTabletMode());
 
   // Trigger 90 degree rotation
-  update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, false,
-              base::kMeanGravityFloat, 0.0f, 0.0f);
-  update->Set(ACCELEROMETER_SOURCE_SCREEN, false, base::kMeanGravityFloat, 0.0f,
-              0.0f);
+  update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, base::kMeanGravityFloat,
+              0.0f, 0.0f);
+  update->Set(ACCELEROMETER_SOURCE_SCREEN, base::kMeanGravityFloat, 0.0f, 0.0f);
   controller->OnAccelerometerUpdated(update);
   shell->screen_orientation_controller()->OnAccelerometerUpdated(update);
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
@@ -993,10 +991,9 @@ TEST_F(DisplayPrefsTest, LoadRotationNoLogin) {
 
   // Open up 270 degrees to trigger tablet mode
   scoped_refptr<AccelerometerUpdate> update(new AccelerometerUpdate());
-  update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, false, 0.0f, 0.0f,
+  update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, 0.0f, 0.0f,
               -base::kMeanGravityFloat);
-  update->Set(ACCELEROMETER_SOURCE_SCREEN, false, 0.0f, base::kMeanGravityFloat,
-              0.0f);
+  update->Set(ACCELEROMETER_SOURCE_SCREEN, 0.0f, base::kMeanGravityFloat, 0.0f);
   TabletModeController* tablet_mode_controller =
       Shell::Get()->tablet_mode_controller();
   tablet_mode_controller->OnAccelerometerUpdated(update);

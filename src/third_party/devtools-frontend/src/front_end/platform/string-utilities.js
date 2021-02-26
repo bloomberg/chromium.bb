@@ -143,14 +143,14 @@ export const tokenizeFormatString = function(formatString, formatters) {
 };
 
 /**
+ * @template T, U
  * @param {string} formatString
- * @param {?ArrayLike<*>} substitutions
- * @param {!Object.<string, function(string, ...*):*>} formatters
+ * @param {?ArrayLike<U>} substitutions
+ * @param {!Object.<string, function((string|!{description: string}|undefined|U), !FORMATTER_TOKEN):*>} formatters
  * @param {!T} initialValue
  * @param {function(T, *): T} append
- * @param {!Array.<!Object>=} tokenizedFormat
- * @return {!{formattedResult: T, unusedSubstitutions: ?ArrayLike<*>}};
- * @template T
+ * @param {!Array.<!FORMATTER_TOKEN>=} tokenizedFormat
+ * @return {!{formattedResult: T, unusedSubstitutions: ?ArrayLike<U>}};
  */
 export const format = function(formatString, substitutions, formatters, initialValue, append, tokenizedFormat) {
   if (!formatString || ((!substitutions || !substitutions.length) && formatString.search(/\u001b\[(\d+)m/) === -1)) {
@@ -459,4 +459,80 @@ export const stripLineBreaks = inputStr => {
  */
 export const toTitleCase = inputStr => {
   return inputStr.substring(0, 1).toUpperCase() + inputStr.substring(1);
+};
+
+/**
+ * @param {string} inputStr
+ * @return {string}
+ */
+export const removeURLFragment = inputStr => {
+  const url = new URL(inputStr);
+  url.hash = '';
+  return url.toString();
+};
+
+/**
+ * @return {string}
+ */
+export const regexSpecialCharacters = function() {
+  return '^[]{}()\\.^$*+?|-,';
+};
+
+/**
+ * @param {string} query
+ * @return {!RegExp}
+ */
+export const filterRegex = function(query) {
+  const toEscape = regexSpecialCharacters();
+  let regexString = '';
+  for (let i = 0; i < query.length; ++i) {
+    let c = query.charAt(i);
+    if (toEscape.indexOf(c) !== -1) {
+      c = '\\' + c;
+    }
+    if (i) {
+      regexString += '[^\\0' + c + ']*';
+    }
+    regexString += c;
+  }
+  return new RegExp(regexString, 'i');
+};
+
+/**
+ * @param {string} query
+ * @param {boolean} caseSensitive
+ * @param {boolean} isRegex
+ * @return {!RegExp}
+ */
+export const createSearchRegex = function(query, caseSensitive, isRegex) {
+  const regexFlags = caseSensitive ? 'g' : 'gi';
+  let regexObject;
+
+  if (isRegex) {
+    try {
+      regexObject = new RegExp(query, regexFlags);
+    } catch (e) {
+      // Silent catch.
+    }
+  }
+
+  if (!regexObject) {
+    regexObject = self.createPlainTextSearchRegex(query, regexFlags);
+  }
+
+  return regexObject;
+};
+
+/**
+ * @param {string} a
+ * @param {string} b
+ * @return {number}
+ */
+export const caseInsensetiveComparator = function(a, b) {
+  a = a.toUpperCase();
+  b = b.toUpperCase();
+  if (a === b) {
+    return 0;
+  }
+  return a > b ? 1 : -1;
 };

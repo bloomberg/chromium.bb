@@ -9,14 +9,14 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
-#include "chrome/browser/media/router/media_router.h"
-#include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/route_request_result.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/media_router/browser/media_router.h"
+#include "components/media_router/browser/media_router_factory.h"
+#include "components/media_router/common/media_source.h"
+#include "components/media_router/common/route_request_result.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -83,8 +83,8 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(
   // Wait for MediaSinks compatible with |source| to be discovered.
   ASSERT_TRUE(ConditionalWait(
       base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
-      base::Bind(&MediaRouterE2EBrowserTest::IsSinkDiscovered,
-                 base::Unretained(this))));
+      base::BindRepeating(&MediaRouterE2EBrowserTest::IsSinkDiscovered,
+                          base::Unretained(this))));
 
   const auto& sink_map = observer_->sink_map;
   const auto it = sink_map.find(receiver_);
@@ -100,8 +100,8 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(
   // Wait for the route request to be fulfilled (and route to be started).
   ASSERT_TRUE(ConditionalWait(
       base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
-      base::Bind(&MediaRouterE2EBrowserTest::IsRouteCreated,
-                 base::Unretained(this))));
+      base::BindRepeating(&MediaRouterE2EBrowserTest::IsRouteCreated,
+                          base::Unretained(this))));
 }
 
 void MediaRouterE2EBrowserTest::StopMediaRoute() {

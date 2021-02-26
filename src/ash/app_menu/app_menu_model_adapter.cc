@@ -5,12 +5,12 @@
 #include "ash/app_menu/app_menu_model_adapter.h"
 
 #include "ash/app_menu/notification_menu_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -65,7 +65,7 @@ void AppMenuModelAdapter::Run(const gfx::Rect& menu_anchor_rect,
 
   menu_open_time_ = base::TimeTicks::Now();
   root_ = CreateMenu();
-  if (features::IsNotificationIndicatorEnabled()) {
+  if (ash::features::IsNotificationsInContextMenuEnabled()) {
     notification_menu_controller_ =
         std::make_unique<NotificationMenuController>(app_id_, root_, this);
   }
@@ -84,14 +84,22 @@ void AppMenuModelAdapter::Cancel() {
   menu_runner_->Cancel();
 }
 
+int AppMenuModelAdapter::GetCommandIdForHistograms(int command_id) {
+  return command_id;
+}
+
 base::TimeTicks AppMenuModelAdapter::GetClosingEventTime() {
   DCHECK(menu_runner_);
   return menu_runner_->closing_event_time();
 }
 
 void AppMenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
+  // Note that the command execution may cause this to get deleted - for
+  // example, for search result menus, the command could open an app window
+  // causing the app list search to get cleared, destroying non-zero state
+  // search results.
+  RecordExecuteCommandHistogram(GetCommandIdForHistograms(id));
   views::MenuModelAdapter::ExecuteCommand(id, mouse_event_flags);
-  RecordExecuteCommandHistogram(id);
 }
 
 void AppMenuModelAdapter::OnMenuClosed(views::MenuItemView* menu) {

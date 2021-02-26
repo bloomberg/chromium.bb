@@ -10,13 +10,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -36,12 +35,12 @@
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/entity_data.h"
-#include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/model_impl/in_memory_metadata_change_list.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync/test/model/mock_model_type_change_processor.h"
 #include "components/sync/test/test_matchers.h"
 #include "components/webdata/common/web_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -105,7 +104,9 @@ std::string WalletMaskedCreditCardSpecificsAsDebugString(
          << ", exp_year: " << specifics.masked_card().exp_year()
          << ", billing_address_id: "
          << specifics.masked_card().billing_address_id()
-         << ", bank_name: " << specifics.masked_card().bank_name() << "]";
+         << ", bank_name: " << specifics.masked_card().bank_name()
+         << ", instrument_id: " << specifics.masked_card().instrument_id()
+         << "]";
   return output.str();
 }
 
@@ -880,6 +881,7 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   EXPECT_EQ(card.billing_address_id(), cards[0]->billing_address_id());
   EXPECT_EQ(card.nickname(), cards[0]->nickname());
   EXPECT_EQ(card.card_issuer(), cards[0]->card_issuer());
+  EXPECT_EQ(card.instrument_id(), cards[0]->instrument_id());
 
   // Also make sure that those types are not empty, to exercice all the code
   // paths.
@@ -888,6 +890,7 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   EXPECT_NE(0, card.expiration_month());
   EXPECT_NE(0, card.expiration_year());
   EXPECT_FALSE(card.nickname().empty());
+  EXPECT_NE(0, card.instrument_id());
 }
 
 // Test that all field values for a cloud token data sent from the server are
@@ -979,6 +982,28 @@ TEST_F(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_KeepData) {
   bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
 
   EXPECT_FALSE(GetAllLocalData().empty());
+}
+
+// This test ensures that an int64 -> int conversion bug we encountered is
+// fixed.
+TEST_F(AutofillWalletSyncBridgeTest,
+       LargeInstrumentIdProvided_CorrectDataStored) {
+  // Create a card to be synced from the server.
+  CreditCard card = test::GetMaskedServerCard();
+  // Set instrument_id to be the largest int64_t.
+  card.set_instrument_id(INT64_MAX);
+  AutofillWalletSpecifics card_specifics;
+  SetAutofillWalletSpecificsFromServerCard(card, &card_specifics);
+
+  StartSyncing({card_specifics});
+
+  std::vector<std::unique_ptr<CreditCard>> cards;
+  table()->GetServerCreditCards(&cards);
+  ASSERT_EQ(1U, cards.size());
+
+  // Make sure that the correct instrument_id was set.
+  EXPECT_EQ(card.instrument_id(), cards[0]->instrument_id());
+  EXPECT_EQ(INT64_MAX, cards[0]->instrument_id());
 }
 
 }  // namespace autofill

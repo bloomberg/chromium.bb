@@ -136,7 +136,7 @@ StackFrame* StackwalkerX86::GetContextFrame() {
 }
 
 StackFrameX86* StackwalkerX86::GetCallerByWindowsFrameInfo(
-    const vector<StackFrame*> &frames,
+    const vector<StackFrame*>& frames,
     WindowsFrameInfo* last_frame_info,
     bool stack_scan_allowed) {
   StackFrame::FrameTrust trust = StackFrame::FRAME_TRUST_NONE;
@@ -514,7 +514,7 @@ StackFrameX86* StackwalkerX86::GetCallerByWindowsFrameInfo(
 }
 
 StackFrameX86* StackwalkerX86::GetCallerByCFIFrameInfo(
-    const vector<StackFrame*> &frames,
+    const vector<StackFrame*>& frames,
     CFIFrameInfo* cfi_frame_info) {
   StackFrameX86* last_frame = static_cast<StackFrameX86*>(frames.back());
   last_frame->cfi_frame_info = cfi_frame_info;
@@ -539,7 +539,7 @@ StackFrameX86* StackwalkerX86::GetCallerByCFIFrameInfo(
 }
 
 StackFrameX86* StackwalkerX86::GetCallerByEBPAtBase(
-    const vector<StackFrame*> &frames,
+    const vector<StackFrame*>& frames,
     bool stack_scan_allowed) {
   StackFrame::FrameTrust trust;
   StackFrameX86* last_frame = static_cast<StackFrameX86*>(frames.back());
@@ -632,7 +632,7 @@ StackFrame* StackwalkerX86::GetCallerFrame(const CallStack* stack,
     return NULL;
   }
 
-  const vector<StackFrame*> &frames = *stack->frames();
+  const vector<StackFrame*>& frames = *stack->frames();
   StackFrameX86* last_frame = static_cast<StackFrameX86*>(frames.back());
   scoped_ptr<StackFrameX86> new_frame;
 

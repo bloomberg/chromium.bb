@@ -55,11 +55,12 @@
 namespace blink {
 
 class
-    ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormDataOrURLSearchParams;
+    DocumentOrBlobOrArrayBufferOrArrayBufferViewOrFormDataOrURLSearchParamsOrUSVString;
 class Blob;
 class BlobDataHandle;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
+class DOMWrapperWorld;
 class Document;
 class DocumentParser;
 class ExceptionState;
@@ -77,7 +78,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
                              public ActiveScriptWrappable<XMLHttpRequest>,
                              public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 
  public:
   static XMLHttpRequest* Create(ScriptState*);
@@ -85,8 +85,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   XMLHttpRequest(ExecutionContext*,
                  v8::Isolate*,
-                 bool is_isolated_world,
-                 scoped_refptr<SecurityOrigin>);
+                 scoped_refptr<const DOMWrapperWorld> world);
   ~XMLHttpRequest() override;
 
   // These exact numeric values are important because JS expects them.
@@ -136,7 +135,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
             bool async,
             ExceptionState&);
   void send(
-      const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormDataOrURLSearchParams&,
+      const DocumentOrBlobOrArrayBufferOrArrayBufferViewOrFormDataOrURLSearchParamsOrUSVString&,
       ExceptionState&);
   void abort();
   void Dispose();
@@ -175,13 +174,11 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange, kReadystatechange)
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "XMLHttpRequest"; }
 
  private:
   class BlobLoader;
-
-  Document* GetDocument() const;
 
   void DidSendData(uint64_t bytes_sent,
                    uint64_t total_bytes_to_be_sent) override;
@@ -351,10 +348,11 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   ResponseTypeCode response_type_code_ = kResponseTypeDefault;
 
   v8::Isolate* const isolate_;
-  // Set to true if the XMLHttpRequest was created in an isolated world.
-  bool is_isolated_world_;
-  // Stores the SecurityOrigin associated with the isolated world if any.
-  scoped_refptr<SecurityOrigin> isolated_world_security_origin_;
+  // The DOMWrapperWorld in which the request initiated. Can be null.
+  scoped_refptr<const DOMWrapperWorld> world_;
+  // Stores the SecurityOrigin associated with the |world_| if it's an isolated
+  // world.
+  scoped_refptr<const SecurityOrigin> isolated_world_security_origin_;
 
   // This blob loader will be used if |m_downloadingToFile| is true and
   // |m_responseTypeCode| is NOT ResponseTypeBlob.

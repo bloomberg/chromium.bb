@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -39,10 +39,9 @@ using extensions::TestManagementPolicyProvider;
 ExtensionSettingsUIBrowserTest::ExtensionSettingsUIBrowserTest()
     : policy_provider_(TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS |
                        TestManagementPolicyProvider::MUST_REMAIN_ENABLED |
-                       TestManagementPolicyProvider::MUST_REMAIN_INSTALLED) {
-  CHECK(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
-  test_data_dir_ = test_data_dir_.AppendASCII("extensions");
-}
+                       TestManagementPolicyProvider::MUST_REMAIN_INSTALLED),
+      test_data_dir_(base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+                         .AppendASCII("extensions")) {}
 
 ExtensionSettingsUIBrowserTest::~ExtensionSettingsUIBrowserTest() {}
 
@@ -107,7 +106,7 @@ void ExtensionSettingsUIBrowserTest::ShrinkWebContentsView() {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   CHECK(web_contents);
-  ResizeWebContents(web_contents, gfx::Rect(0, 0, 400, 400));
+  web_contents->Resize(gfx::Rect(0, 0, 400, 400));
 }
 
 const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
@@ -131,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ViewSource) {
     options_contents = options_contents_added_observer.GetWebContents();
   }
   ASSERT_TRUE(options_contents);
-  content::WaitForLoadStop(options_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(options_contents));
   EXPECT_EQ(extension->GetResourceURL("options.html"),
             options_contents->GetLastCommittedURL());
 
@@ -142,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ViewSource) {
   content::WebContents* view_source_contents =
       view_source_contents_added_observer.GetWebContents();
   ASSERT_TRUE(view_source_contents);
-  content::WaitForLoadStop(view_source_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(view_source_contents));
 
   // Verify that the view-source is present in the tab-strip.
   int new_tabs_count = browser()->tab_strip_model()->count();
@@ -220,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ListenerRegistration) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest,
                        ActivityLogInactiveWithoutSwitch) {
-  // Navigate to chrome://extensions which is a whitelisted URL for the
+  // Navigate to chrome://extensions which is a allowlisted URL for the
   // chrome.activityLogPrivate API.
   GURL extensions_url("chrome://extensions");
   ui_test_utils::NavigateToURL(browser(), extensions_url);
@@ -237,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest,
     )"));
 
   // Activity log will be inactive as the command line switch is not present and
-  // no whitelisted extensions for activityLogPrivate are enabled.
+  // no allowlisted extensions for activityLogPrivate are enabled.
   extensions::ActivityLog* activity_log =
       extensions::ActivityLog::GetInstance(browser()->profile());
   ASSERT_FALSE(activity_log->is_active());

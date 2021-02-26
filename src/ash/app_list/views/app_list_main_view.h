@@ -10,15 +10,11 @@
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/model/app_list_model_observer.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/search_box/search_box_view_delegate.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "ui/chromeos/search_box/search_box_view_delegate.h"
 #include "ui/views/view.h"
-
-namespace search_box {
-class SearchBoxViewBase;
-}  // namespace search_box
 
 namespace ash {
 
@@ -30,13 +26,13 @@ class ApplicationDragAndDropHost;
 class ContentsView;
 class PaginationModel;
 class SearchBoxView;
+class SearchBoxViewBase;
 
 // AppListMainView contains the normal view of the app list, which is shown
 // when the user is signed in.
-class APP_LIST_EXPORT AppListMainView
-    : public views::View,
-      public AppListModelObserver,
-      public search_box::SearchBoxViewDelegate {
+class APP_LIST_EXPORT AppListMainView : public views::View,
+                                        public AppListModelObserver,
+                                        public SearchBoxViewDelegate {
  public:
   AppListMainView(AppListViewDelegate* delegate, AppListView* app_list_view);
   ~AppListMainView() override;
@@ -90,11 +86,11 @@ class APP_LIST_EXPORT AppListMainView
   PaginationModel* GetAppsPaginationModel();
 
   // Overridden from SearchBoxViewDelegate:
-  void QueryChanged(search_box::SearchBoxViewBase* sender) override;
+  void QueryChanged(SearchBoxViewBase* sender) override;
   void AssistantButtonPressed() override;
   void BackButtonPressed() override;
-  void ActiveChanged(search_box::SearchBoxViewBase* sender) override;
-  void SearchBoxFocusChanged(search_box::SearchBoxViewBase* sender) override;
+  void ActiveChanged(SearchBoxViewBase* sender) override;
+  void SearchBoxFocusChanged(SearchBoxViewBase* sender) override;
 
   AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
   AppListModel* model_;        // Unowned; ownership is handled by |delegate_|.

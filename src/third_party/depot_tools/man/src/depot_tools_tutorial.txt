@@ -280,7 +280,11 @@ you started on.
 
 [NOTE]
 Running `git rebase-update` will update all your branches, but it will not
-automatically run `gclient sync` to update your dependencies.
+automatically run `gclient sync` to update your dependencies. Use caution when
+running `git reset` on branches managed by 'depot_tools'. These tools track the
+set of "commits contained in the branch" from a branch's "merge point" to the
+current branch value. See `git help mark-merge-base` for more discussion of the
+merge base.
 
 
 MANAGING MULTIPLE CLS

@@ -26,6 +26,8 @@
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 
 #include <memory>
+
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/loader/fetch/buffering_bytes_consumer.h"
@@ -54,7 +56,7 @@ RawResource* RawResource::FetchSynchronously(FetchParameters& params,
 RawResource* RawResource::FetchImport(FetchParameters& params,
                                       ResourceFetcher* fetcher,
                                       RawResourceClient* client) {
-  params.SetRequestContext(mojom::RequestContextType::IMPORT);
+  params.SetRequestContext(mojom::blink::RequestContextType::IMPORT);
   params.SetRequestDestination(network::mojom::RequestDestination::kEmpty);
   return ToRawResource(fetcher->RequestResource(
       params, RawResourceFactory(ResourceType::kImportResource), client));
@@ -64,7 +66,7 @@ RawResource* RawResource::Fetch(FetchParameters& params,
                                 ResourceFetcher* fetcher,
                                 RawResourceClient* client) {
   DCHECK_NE(params.GetResourceRequest().GetRequestContext(),
-            mojom::RequestContextType::UNSPECIFIED);
+            mojom::blink::RequestContextType::UNSPECIFIED);
   return ToRawResource(fetcher->RequestResource(
       params, RawResourceFactory(ResourceType::kRaw), client));
 }
@@ -73,9 +75,9 @@ RawResource* RawResource::FetchMedia(FetchParameters& params,
                                      ResourceFetcher* fetcher,
                                      RawResourceClient* client) {
   auto context = params.GetResourceRequest().GetRequestContext();
-  DCHECK(context == mojom::RequestContextType::AUDIO ||
-         context == mojom::RequestContextType::VIDEO);
-  ResourceType type = (context == mojom::RequestContextType::AUDIO)
+  DCHECK(context == mojom::blink::RequestContextType::AUDIO ||
+         context == mojom::blink::RequestContextType::VIDEO);
+  ResourceType type = (context == mojom::blink::RequestContextType::AUDIO)
                           ? ResourceType::kAudio
                           : ResourceType::kVideo;
   return ToRawResource(
@@ -85,7 +87,7 @@ RawResource* RawResource::FetchMedia(FetchParameters& params,
 RawResource* RawResource::FetchTextTrack(FetchParameters& params,
                                          ResourceFetcher* fetcher,
                                          RawResourceClient* client) {
-  params.SetRequestContext(mojom::RequestContextType::TRACK);
+  params.SetRequestContext(mojom::blink::RequestContextType::TRACK);
   params.SetRequestDestination(network::mojom::RequestDestination::kTrack);
   return ToRawResource(fetcher->RequestResource(
       params, RawResourceFactory(ResourceType::kTextTrack), client));
@@ -95,7 +97,7 @@ RawResource* RawResource::FetchManifest(FetchParameters& params,
                                         ResourceFetcher* fetcher,
                                         RawResourceClient* client) {
   DCHECK_EQ(params.GetResourceRequest().GetRequestContext(),
-            mojom::RequestContextType::MANIFEST);
+            mojom::blink::RequestContextType::MANIFEST);
   return ToRawResource(fetcher->RequestResource(
       params, RawResourceFactory(ResourceType::kManifest), client));
 }
@@ -115,8 +117,6 @@ void RawResource::AppendData(const char* data, size_t length) {
 class RawResource::PreloadBytesConsumerClient final
     : public GarbageCollected<PreloadBytesConsumerClient>,
       public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(PreloadBytesConsumerClient);
-
  public:
   PreloadBytesConsumerClient(BytesConsumer& bytes_consumer,
                              RawResource& resource,
@@ -148,7 +148,7 @@ class RawResource::PreloadBytesConsumerClient final
 
   String DebugName() const override { return "PreloadBytesConsumerClient"; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(bytes_consumer_);
     visitor->Trace(resource_);
     visitor->Trace(client_);
@@ -242,7 +242,7 @@ scoped_refptr<BlobDataHandle> RawResource::DownloadedBlob() const {
   return downloaded_blob_;
 }
 
-void RawResource::Trace(Visitor* visitor) {
+void RawResource::Trace(Visitor* visitor) const {
   visitor->Trace(bytes_consumer_for_preload_);
   Resource::Trace(visitor);
 }

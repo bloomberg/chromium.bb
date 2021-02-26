@@ -4,6 +4,8 @@
 
 import * as Common from '../common/common.js';
 import * as Formatter from '../formatter/formatter.js';
+import * as Persistence from '../persistence/persistence.js';
+import * as SourceFrame from '../source_frame/source_frame.js';  // eslint-disable-line no-unused-vars
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
 
@@ -14,6 +16,12 @@ import {EditorAction, Events, SourcesView} from './SourcesView.js';  // eslint-d
  * @unrestricted
  */
 export class InplaceFormatterEditorAction {
+  constructor() {
+    /** @type {!UI.Toolbar.ToolbarButton} */
+    this._button;
+    /** @type {!SourcesView} */
+    this._sourcesView;
+  }
   /**
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
@@ -38,7 +46,7 @@ export class InplaceFormatterEditorAction {
   _updateButton(uiSourceCode) {
     const isFormattable = this._isFormattable(uiSourceCode);
     this._button.element.classList.toggle('hidden', !isFormattable);
-    if (isFormattable) {
+    if (uiSourceCode && isFormattable) {
       this._button.setTitle(Common.UIString.UIString(`Format ${uiSourceCode.name()}`));
     }
   }
@@ -75,7 +83,7 @@ export class InplaceFormatterEditorAction {
     if (uiSourceCode.project().canSetFileContent()) {
       return true;
     }
-    if (self.Persistence.persistence.binding(uiSourceCode)) {
+    if (Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode)) {
       return true;
     }
     return uiSourceCode.contentType().isStyleSheet();
@@ -86,7 +94,7 @@ export class InplaceFormatterEditorAction {
    */
   _formatSourceInPlace(event) {
     const uiSourceCode = this._sourcesView.currentUISourceCode();
-    if (!this._isFormattable(uiSourceCode)) {
+    if (!uiSourceCode || !this._isFormattable(uiSourceCode)) {
       return;
     }
 
@@ -94,34 +102,36 @@ export class InplaceFormatterEditorAction {
       this._contentLoaded(uiSourceCode, uiSourceCode.workingCopy());
     } else {
       uiSourceCode.requestContent().then(deferredContent => {
-        this._contentLoaded(uiSourceCode, deferredContent.content);
+        this._contentLoaded(
+            /** @type {!Workspace.UISourceCode.UISourceCode} */ (uiSourceCode), deferredContent.content || '');
       });
     }
   }
 
   /**
-   * @param {?Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @param {string} content
    */
   _contentLoaded(uiSourceCode, content) {
     const highlighterType = uiSourceCode.mimeType();
     Formatter.ScriptFormatter.FormatterInterface.format(
-        uiSourceCode.contentType(), highlighterType, content, (formattedContent, formatterMapping) => {
+        uiSourceCode.contentType(), highlighterType, content, async (formattedContent, formatterMapping) => {
           this._formattingComplete(uiSourceCode, formattedContent, formatterMapping);
         });
   }
 
   /**
-     * Post-format callback
-     * @param {?Workspace.UISourceCode.UISourceCode} uiSourceCode
-     * @param {string} formattedContent
-     * @param {!Formatter.ScriptFormatter.FormatterSourceMapping} formatterMapping
-     */
+   * Post-format callback
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @param {string} formattedContent
+   * @param {!Formatter.ScriptFormatter.FormatterSourceMapping} formatterMapping
+   */
   _formattingComplete(uiSourceCode, formattedContent, formatterMapping) {
     if (uiSourceCode.workingCopy() === formattedContent) {
       return;
     }
-    const sourceFrame = this._sourcesView.viewForFile(uiSourceCode);
+    const sourceFrame =
+        /** @type {!SourceFrame.SourceFrame.SourceFrameImpl} */ (this._sourcesView.viewForFile(uiSourceCode));
     let start = [0, 0];
     if (sourceFrame) {
       const selection = sourceFrame.selection();

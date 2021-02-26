@@ -65,7 +65,6 @@ class MODULES_EXPORT IDBTransaction final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<IDBTransaction>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -102,7 +101,7 @@ class MODULES_EXPORT IDBTransaction final
                  const IDBDatabaseMetadata&);
   ~IDBTransaction() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   static mojom::IDBTransactionMode StringToMode(const String&);
 

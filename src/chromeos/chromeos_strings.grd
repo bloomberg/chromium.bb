@@ -168,7 +168,17 @@ Try tapping the mic to ask me anything.
 
       <!-- Managed user session warning -->
       <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_USER_WARNING" desc="Text shown in the user pod in case the user is managed.">
-        <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> manages this user. It may remotely manage settings and monitor user activity.
+        <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> manages this user and may remotely manage settings and monitor user activity.
+      </message>
+
+      <!-- Pop-up enterprise management. -->
+      <message name="IDS_ASH_LOGIN_ENTERPRISE_MANAGED_POP_UP" desc="Text shown in the management pop-up when user clicks on status tray enterprise management.">
+        This <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is managed by <ph name="ENROLLMENT_DOMAIN">$2<ex>example.com</ex></ph>. Administrators may remotely configure the device.
+      </message>
+
+      <!-- Pop-up secondary login screen. -->
+      <message name="IDS_ASH_LOGIN_USER_ADDING_BANNER" desc="Text shown on a banner in user adding screen.">
+        Add an account to multiple sign-in. All signed-in accounts can be accessed without a password, so this feature should only be used with trusted accounts.
       </message>
 
       <!-- Status tray enterprise management. -->
@@ -209,6 +219,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_ASH_SHELF_APPS_BUTTON" desc="Text shown on apps button on login screen.">
         Apps
+      </message>
+      <message name="IDS_ASH_ENTERPRISE_ENROLLMENT_BUTTON" desc="Text shown on enterprise enrollment button on oobe screen.">
+        Enterprise enrollment
       </message>
 
       <message name="IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE" desc="The title used for the Ash Launcher in the Shelf (not mentioning 'Apps' since this is a general launcher).">
@@ -313,18 +326,11 @@ Try tapping the mic to ask me anything.
       </message>
 
       <!-- Print Management App -->
-      <!-- TODO(crbug/1067465): Update with finalized copies of the strings -->
-      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_FAILED" desc="Displayed text status if the print job failed." translateable="false">
-        Failed
-      </message>
-      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_CANCELED" desc="Displayed text status if the print job was canceled." translateable="false">
+      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_CANCELED" desc="Displayed text status if the print job was canceled.">
         Canceled
       </message>
-      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_PRINTED" desc="Displayed text status if the print job was printed succesfully." translateable="false">
+      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_PRINTED" desc="Displayed text status if the print job was printed succesfully.">
         Printed
-      </message>
-      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_UNKNOWN_ERROR" desc="Displayed text status if the print job had an unknown error." translateable="false">
-        Unknown Error
       </message>
       <message name="IDS_PRINT_MANAGEMENT_FILE_NAME_COLUMN" desc="The label for the column header that displays the file name of the print job.">
         File name
@@ -339,6 +345,9 @@ Try tapping the mic to ask me anything.
         Status
       </message>
       <message name="IDS_PRINT_MANAGEMENT_TITLE" desc="The title of the print management app.">
+        Print jobs
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_APP_NAME" desc="The app name of the print management app.">
         Print Jobs
       </message>
       <message name="IDS_PRINT_MANAGEMENT_CLEAR_ALL_HISTORY_BUTTON_TEXT" desc="The label for the button that clears the print job history.">
@@ -352,6 +361,432 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PRINT_MANAGEMENT_CLEAR_BUTTON_LABEL" desc="The label for the action button that confirms clearing a user's print history in the clear print history dialog.">
         Clear
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_HISTORY_HEADER_LABEL" desc="The header label that indicates that print jobs below this header are the user's print history.">
+        History
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_HISTORY_TOOL_TIP_INDEFINITE" desc="The tooltip that states that the user's print jobs are stored indefinitely.">
+        Print jobs will appear in history unless they are removed manually
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_HISTORY_TOOL_TIP_MULTIPLE_DAYS_EXPIRATION" desc="The tooltip that states that the user's print jobs are automatically deleted after a variable amount of days.">
+        Print jobs older than <ph name="NUMBER_OF_DAYS">$1<ex>45</ex></ph> days will be removed
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_HISTORY_TOOL_TIP_SINGLE_DAY_EXPIRATION" desc="The tooltip that states that the user's print jobs are automatically deleted after one day.">
+        Print jobs older than 1 day will be removed
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_PRINTED_PAGES_ARIA_LABEL" desc="The aria label that describes the current page printed printed versus the total number of pages.">
+        Printed page <ph name="PRINTED_PAGES">$1<ex>1</ex></ph> out of <ph name="TOTAL_PAGES">$2<ex>2</ex></ph>.
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_PRINTED_PAGES_PROGRESS_FRACTION" desc="A fraction-based progress indicator that lets users know how many pages are print versus how many pages total to be printed. Example: 5/7 (where 5 pages haves been printed out of 7 total pages">
+        <ph name="PRINTED_PAGES_NUMBER">$1<ex>5</ex></ph>/<ph name="TOTAL_PAGES_NUMBER">$2<ex>7</ex></ph>
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_COMPLETED_JOB_ARIA_LABEL" desc="The aria label that describes a completed print job that includes the print job documenet title, printer name, creation time, and completion status. This is a sentence with commas and spaces (minor pause) between placeholders.">
+        <ph name="DOCUMENT_TITLE">$1<ex>my_essay.doc</ex></ph>, <ph name="PRINTER_NAME">$2<ex>canon 6450</ex></ph>, <ph name="CREATION_TIME">$3<ex>February 8, 2020</ex></ph>, <ph name="COMPLETION_STATUS">$4<ex>Printed</ex></ph>
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_ONGOING_JOB_ARIA_LABEL" desc="The aria label that describes an ongoing print job that includes the print job documenet title, printer name, creation time, and ongoing status. Also notifies users that the ongoing print job can be cancelled with the 'Enter' key. This is only used for ChromeVox voice transcriptions.">
+        <ph name="DOCUMENT_TITLE">$1<ex>my_essay.doc</ex></ph>, <ph name="PRINTER_NAME">$2<ex>canon 6450</ex></ph>, <ph name="CREATION_TIME">$3<ex>February 8, 2020</ex></ph>, <ph name="PRINTED_PAGE_NUMBER">$4<ex>5</ex></ph> out of <ph name="TOTAL_PAGE_NUMBER">$5<ex>7</ex></ph>. Press enter to cancel the print job.
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_STOPPED_ONGOING_JOB_ARIA_LABEL" desc="The aria label that describes a stopped print job that includes the print job documenet title, printer name, creation time, and error status. This is a sentence with commas and spaces (minor pause) between placeholders.">
+        <ph name="DOCUMENT_TITLE">$1<ex>my_essay.doc</ex></ph>, <ph name="PRINTER_NAME">$2<ex>canon 6450</ex></ph>, <ph name="CREATION_TIME">$3<ex>February 8, 2020</ex></ph>, <ph name="ERROR_STATUS">$4<ex>Stopped - Out of paper</ex></ph>
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_PAPER_JAM_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because of a printer paper jam.">
+        Failed - Paper jam
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_OUT_OF_PAPER_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job faied because their printer is out out of paper.">
+        Failed - Out of paper
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_OUT_OF_INK_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer is out of ink.">
+        Failed - Out of ink
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_DOOR_OPEN_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer door is open.">
+        Failed - Door open
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_PRINTER_UNREACHABLE_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer is unreachable.">
+        Failed - Printer unreachable
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_TRAY_MISSING_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer's tray is missing.">
+        Failed - Tray missing
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_OUTPUT_FULL_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer's output is full .">
+        Failed - Output full
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer has stopped the print job.">
+        Failed - Stopped
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_FILTERED_FAILED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer's filter has failed.">
+        Failed - Filter failed
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_UNKNOWN_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed due to an unknown error.">
+        Failed - Unknown error
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_NO_PRINT_JOBS_IN_PROGRESS_MESSAGE" desc="The message shown to users if they do not have any print jobs in progress i.e. being printed.">
+        No print jobs in progress
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_PAPER_JAM_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job has stopped because of a printer paper jam.">
+        Stopped - Paper jam
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_OUT_OF_PAPER_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job has stopped because their printer is out out of paper.">
+        Stopped - Out of paper
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_OUT_OF_INK_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job has stopped because their printer is out of ink.">
+        Stopped - Out of ink
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_DOOR_OPEN_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job stopped because their printer door is open.">
+        Stopped - Door open
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_TRAY_MISSING_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job stopped because their printer's tray is missing.">
+        Stopped - Tray missing
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_OUTPUT_FULL_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job stopped because their printer's output is full .">
+        Stopped - Output full
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_GENERIC_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job stopped.">
+        Stopped
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_UNKNOWN_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job stopped due to an unknown error.">
+        Stopped - Unknown error
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_CLEAR_ALL_POLICY_PRINT_JOB_INDICATOR_MESSAGE" desc="The message shown to indicate that a user policy is in place to prevent the user from deleting their print job history.">
+        This action is managed by your administrator
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_CANCEL_PRINT_JOB_BUTTON_LABEL" desc="The label for the button that cancels a print job.">
+        Cancel print job
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_CANCELED_PRINT_JOB_ARIA_ANNOUNCEMENT" desc="The announcement said to notify ChromeVox that a print job was recently cancelled.">
+        Cancelled print job <ph name="DOCUMENT_TITLE">$1<ex>my_essay.doc</ex></ph>
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_COLLAPSE_PRINTING_STATUS" desc="A text that indicates to the user that the print job is currently printing. This text only appears if the width of the app's window is small and cannot display the entire ongoing printing status.">
+        Printing
+      </message>
+
+      <!-- Scanning App -->
+      <message name="IDS_SCANNING_APP_TITLE" desc="The title of the scanning app.">
+        Scan
+      </message>
+      <message name="IDS_SCANNING_APP_SCANNER_DROPDOWN_LABEL" desc="The label for the dropdown that displays connected scanners.">
+        Scanner
+      </message>
+      <message name="IDS_SCANNING_APP_NO_SCANNERS_HELP_LINK_LABEL" desc="The help label link displayed below the scanner dropdown when no scanners are available.">
+        Learn more
+      </message>
+      <message name="IDS_SCANNING_APP_NO_SCANNERS_HELP_TEXT" desc="The help text displayed below the scanner dropdown when no scanners are available.">
+        Can't connect to scanners?
+      </message>
+      <message name="IDS_SCANNING_APP_NO_SCANNERS_TEXT" desc="The text displayed in the scanner dropdown when no scanners are available.">
+        No available scanners
+      </message>
+      <message name="IDS_SCANNING_APP_SOURCE_DROPDOWN_LABEL" desc="The label for the dropdown that displays available scan sources (e.g. flatbed, document feeder, etc.).">
+        Source
+      </message>
+      <message name="IDS_SCANNING_APP_ONE_SIDED_DOC_FEEDER_OPTION_TEXT" desc="The text displayed for the one-sided document feeder source option.">
+        Document Feeder (One-sided)
+      </message>
+      <message name="IDS_SCANNING_APP_TWO_SIDED_DOC_FEEDER_OPTION_TEXT" desc="The text displayed for the two-sided document feeder source option.">
+        Document Feeder (Two-sided)
+      </message>
+      <message name="IDS_SCANNING_APP_FLATBED_OPTION_TEXT" desc="The text displayed for the flatbed source option.">
+        Flatbed
+      </message>
+      <message name="IDS_SCANNING_APP_FILE_TYPE_DROPDOWN_LABEL" desc="The label for the dropdown that displays available file types.">
+        File type
+      </message>
+      <message name="IDS_SCANNING_APP_JPG_OPTION_TEXT" desc="The text displayed for the JPG file type option.">
+        JPG
+      </message>
+      <message name="IDS_SCANNING_APP_PDF_OPTION_TEXT" desc="The text displayed for the PDF file type option.">
+        PDF
+      </message>
+      <message name="IDS_SCANNING_APP_PNG_OPTION_TEXT" desc="The text displayed for the PNG file type option.">
+        PNG
+      </message>
+      <message name="IDS_SCANNING_APP_COLOR_MODE_DROPDOWN_LABEL" desc="The label for the dropdown that displays available color modes (e.g. color, grayscale, black and white, etc.).">
+        Color
+      </message>
+      <message name="IDS_SCANNING_APP_BLACK_AND_WHITE_OPTION_TEXT" desc="The text displayed for the black and white option in the color mode dropdown.">
+        Black and white
+      </message>
+      <message name="IDS_SCANNING_APP_COLOR_OPTION_TEXT" desc="The text displayed for the color option in the color mode dropdown.">
+        Color
+      </message>
+      <message name="IDS_SCANNING_APP_GRAYSCALE_OPTION_TEXT" desc="The text displayed for the grayscale option in the color mode dropdown.">
+        Grayscale
+      </message>
+      <message name="IDS_SCANNING_APP_PAGE_SIZE_DROPDOWN_LABEL" desc="The label for the dropdown that displays available page sizes.">
+        Page size
+      </message>
+      <message name="IDS_SCANNING_APP_A4_OPTION_TEXT" desc="The text displayed for the A4 option in the page size dropdown.">
+        A4
+      </message>
+      <message name="IDS_SCANNING_APP_LETTER_OPTION_TEXT" desc="The text displayed for the Letter option in the page size dropdown.">
+        Letter
+      </message>
+      <message name="IDS_SCANNING_APP_FIT_TO_SCAN_AREA_OPTION_TEXT" desc="The text displayed for the fit to scan area option in the page size dropdown.">
+        Fit to scan area
+      </message>
+      <message name="IDS_SCANNING_APP_RESOLUTION_DROPDOWN_LABEL" desc="The label for the dropdown that displays available resolutions (e.g. 150 dpi, 300 dpi, etc.).">
+        Resolution
+      </message>
+      <message name="IDS_SCANNING_APP_RESOLUTION_OPTION_TEXT" desc="The text displayed for an option in the resolution dropdown.">
+        <ph name="RESOLUTION_VALUE">$1<ex>300</ex></ph> dpi
+      </message>
+      <message name="IDS_SCANNING_APP_SCAN_TO_DROPDOWN_LABEL" desc="The label for the dropdown that displays the chosen directory to save scans.">
+        Scan to
+      </message>
+      <message name="IDS_SCANNING_APP_MY_FILES_SELECT_OPTION" desc="The text displayed in the Scan To dropdown when the user chooses the local 'My files' folder from the select dialog.">
+        My files
+      </message>
+      <message name="IDS_SCANNING_APP_SELECT_FOLDER_OPTION" desc="The text displayed in the Scan To dropdown option which the user can click to open the select dialog for choosing the folder to save completed scans.">
+        Select folder in Files app...
+      </message>
+      <message name="IDS_SCANNING_APP_SELECT_DIALOG_TITLE" desc="The text used as the title of the select dialog used for choosing the folder to save completed scans.">
+        Select a folder to save to
+      </message>
+      <message name="IDS_SCANNING_APP_MORE_SETTINGS" desc="The text displayed for the button that shows and hides additional settings.">
+        More settings
+      </message>
+      <message name="IDS_SCANNING_APP_SCAN_PREVIEW_HELPER_TEXT" desc="The text displayed in the scan preview that explains how to scan a document.">
+        Place your document on the scanner and select <ph name="SPAN_BEGIN">&lt;span id="boldHelperText"&gt;</ph>Scan<ph name="SPAN_END">&lt;/span&gt;</ph> to get started
+      </message>
+      <message name="IDS_SCANNING_APP_SCAN_BUTTON_TEXT" desc="The text displayed for the button that starts a scan.">
+        Scan
+      </message>
+      <message name="IDS_SCANNING_APP_MY_DRIVE" desc="The text displayed in the Scan To dropdown when the user selects to save completed scans to their Google Drive 'My Drive' folder.">
+        My Drive
+      </message>
+      <message name="IDS_SCANNING_APP_DEFAULT_SOURCE_OPTION_TEXT" desc="The text displayed for the default source option.">
+        Default
+      </message>
+      <message name="IDS_SCANNING_APP_SCAN_PREVIEW_PROGRESS_TEXT" desc="The text displayed in the scan preview to indicate which page is currently being scanned.">
+        Scanning page <ph name="PAGE_NUMBER">$1<ex>4</ex></ph>
+      </message>
+      <message name="IDS_SCANNING_APP_FILE_SAVED_TEXT" desc="The text displayed in the Scanning App when a scan job is completed and the file is saved.">
+        Scanned file saved!
+      </message>
+      <message name="IDS_SCANNING_APP_FILE_SAVED_TEXT_PLURAL" desc="The text displayed in the Scanning App when a scan job is completed and the files are saved.">
+        Scanned files saved!
+      </message>
+      <message name="IDS_SCANNING_APP_DONE_BUTTON_TEXT" desc="The text displayed for the button the user clicks to return to the intial Scanning App page after a scan job is completed.">
+        Done
+      </message>
+
+      <!-- Diagnostics App -->
+      <!-- TODO(michaelcheco): Update with finalized copies of the strings -->
+      <message name="IDS_DIAGNOSTICS_TITLE" desc="The title of the diagnostics app." translateable="false">
+        Diagnostics
+      </message>
+      <message name="IDS_DIAGNOSTICS_MEMORY_TITLE" desc="The title of the diagnostics memory section which shows users' information about their computer memory." translateable="false">
+        Memory
+      </message>
+      <message name="IDS_DIAGNOSTICS_BATTERY_TITLE" desc="The title of the diagnostics battery section which shows users' information about their computer battery." translateable="false">
+        Battery
+      </message>
+      <message name="IDS_DIAGNOSTICS_CPU_TITLE" desc="The title of the diagnostics CPU section which shows users' information about their computer CPU usage." translateable="false">
+        CPU
+      </message>
+      <message name="IDS_DIAGNOSTICS_CPU_USAGE_LABEL" desc="The label for the percentage of CPU that is currently being used." translateable="false">
+        Currently using
+      </message>
+      <message name="IDS_DIAGNOSTICS_CPU_USAGE_SYSTEM_LABEL" desc="The label for the percentage of CPU that is currently being used by the system." translateable="false">
+        System
+      </message>
+      <message name="IDS_DIAGNOSTICS_CPU_USAGE_USER_LABEL" desc="The label for the percentage of CPU that is currently being used by the user." translateable="false">
+        User
+      </message>
+      <message name="IDS_DIAGNOSTICS_CPU_TEMPERATURE_LABEL" desc="The label for the current CPU temperature." translateable="false">
+        Temperature
+      </message>
+      <message name="IDS_DIAGNOSTICS_TOTAL_MEMORY_LABEL" desc="The label for the total amount of memory on a device." translateable="false">
+        Total Memory
+      </message>
+      <message name="IDS_DIAGNOSTICS_MEMORY_AVAILABLE_LABEL" desc="The label for the amount of memory available on a device." translateable="false">
+        Memory available
+      </message>
+      <message name="IDS_DIAGNOSTICS_PERCENTAGE_LABEL" desc="The label displaying localized percentage." translateable="true">
+        <ph name="PERCENTAGE_VALUE">$1<ex>50</ex></ph>%
+      </message>
+      <message name="IDS_DIAGNOSTICS_POWER_LABEL" desc="The label for the power adapter status." translateable="false">
+        Power
+      </message>
+      <message name="IDS_DIAGNOSTICS_POWER_TIME_LABEL" desc="The label for the time until the battery is fully charged." translateable="false">
+        Time until full
+      </message>
+      <message name="IDS_DIAGNOSTICS_CHARGE_NOW_LABEL" desc="The label for a battery's current battery level represented in milliamps." translateable="false">
+        Now charge
+      </message>
+      <message name="IDS_DIAGNOSTICS_CURRENT_NOW_LABEL" desc="The label for a battery's current power consumption represented in milliamps." translateable="false">
+        Now current
+      </message>
+      <message name="IDS_DIAGNOSTICS_DESIGNED_FULL_CHARGE_LABEL" desc="The label for a battery's designed full charge capacity represented in milliamp hours." translateable="false">
+        Designed full charge
+      </message>
+      <message name="IDS_DIAGNOSTICS_NOW_FULL_CHARGE_LABEL" desc="The label for a battery's full charge capacity represented in milliamp hours." translateable="false">
+        Now full charge
+      </message>
+      <message name="IDS_DIAGNOSTICS_CYCLE_COUNT_LABEL" desc="The label for a battery's cycle count. The cycle count is the number of times the battery has been drained and recharged." translateable="false">
+        Cycle count
+      </message>
+      <message name="IDS_DIAGNOSTICS_REMAINING_CHARGE_LABEL" desc="The label for the progress bar that displays users' remaining battery charge." translateable="false">
+        Remaining charge
+      </message>
+      <message name="IDS_DIAGNOSTICS_SESSION_LOG_LABEL" desc="The label for the button that opens the session log for the diagnostics app." translateable="false">
+        Session log
+      </message>
+      <message name="IDS_DIAGNOSTICS_USED_MEMORY_LABEL" desc="The label for the progress bar that displays the amount of used memory on a users' device." translateable="false">
+        Used memory
+      </message>
+
+      <!-- Quick Answers -->
+      <message name="IDS_QUICK_ANSWERS_DEFINITION_TITLE_TEXT" desc="The title text format string used for Quick Answers definition result card. The first placeholder contains the source query text and the second placeholder contains the phonetics.">
+        <ph name="QUERY_TEXT">$1<ex>unfathomable</ex></ph> · /<ph name="PHONETICS">$2<ex>ˌənˈfaT͟Həməb(ə)</ex></ph>/
+      </message>
+      <message name="IDS_QUICK_ANSWERS_RATING_REVIEW_TITLE_TEXT" desc="The title text format string used for Quick Answers rating review result card. The first placeholder contains the average rating score and the second placeholder contains the aggregated count of reviews.">
+        <ph name="AVERAGE_SCORE">$1<ex>4.6</ex></ph> ★ (<ph name="AGGREGATED_COUNT">$2<ex>100</ex></ph> reviews)
+      </message>
+      <message name="IDS_QUICK_ANSWERS_TRANSLATION_TITLE_TEXT" desc="The title text format string used for Quick Answers translation result card. The first placeholder contains the source text in foreign language and the second placeholder contains the detected source language name displayed in system locale.">
+        <ph name="QUERY_TEXT">$1<ex>prodotto</ex></ph> · <ph name="SOURCE_LANGUAGE_NAME">$2<ex>Italian</ex></ph>
+      </message>
+
+      <!-- Network / Connectivity Diagnostics -->
+      <message name="IDS_CONNECTIVITY_DIAGNOSTICS_TITLE" desc="The label for connectivity diagnostics application that shows potential issues with the network connections">
+        Connectivity Diagnostics
+      </message>
+      <message name="IDS_CONNECTIVITY_DIAGNOSTICS_RERUN_ROUTINES" desc="Label for connectivity diagnostics application rerun routines button">
+        Rerun Routines
+      </message>
+      <message name="IDS_CONNECTIVITY_DIAGNOSTICS_CLOSE" desc="Label for connectivity diagnostics application close button">
+        Close
+      </message>
+      <message name="IDS_CONNECTIVITY_DIAGNOSTICS_SEND_FEEDBACK" desc="Label for connectivity diagnostics application send feedback button">
+        Send Feedback
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_LAN_CONNECTIVITY" desc="Label for Network diagnostics `LAN connectivity` test. This test determines if the device is connected to a Local Area Network (LAN)">
+        Lan Connectivity
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_SIGNAL_STRENGTH" desc="Label for Network diagnostics `signal strength` test. This test ensures that a WiFi signal is strong enough for a stable connection.">
+        Signal Strength
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_GATEWAY_CAN_BE_PINGED" desc="Label for Network diagnostics `gateway can be pinged` test. This test ensures that there is a connection to the network gateway.">
+        Gateway can be Pinged
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_HAS_SECURE_WIFI_CONNECTION" desc="Label for Network diagnostics `has secure WiFi connection` test. This test ensures that the WiFi connection is properly secure.">
+        Secure WiFi Connection
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_DNS_RESOLVER_PRESENT" desc="Label for Network diagnostics `DNS resolver present` test. This test ensures that the Domain Name Service (DNS) exists.">
+        DNS Resolver Present
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_DNS_LATENCY" desc="Label for Network diagnostics `DNS latency` test. This test makes sure the latency between the device and the Domain Name Server (DNS) is acceptable.">
+        DNS Latency
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_DNS_RESOLUTION" desc="Label for Network diagnostics `DNS resolution` test. This test ensures that the Domain Name Server (DNS) can resolve network requests.">
+        DNS Resolution
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_HTTP_FIREWALL" desc="Label for Network diagnostics `HTTP Firewall` test. This test ensures that the device's firewall can resolve HTTP requests">
+        HTTP Firewall
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_HTTPS_FIREWALL" desc="Label for Network diagnostics `HTTPS Firewall` test. This test ensures that the device's firewall can resolve HTTPS requests">
+        HTTPS Firewall
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_HTTPS_LATENCY" desc="Label for Network diagnostics `HTTPS Latency` test. This test ensures that the device's https requests have an acceptable amount of latency">
+        HTTPS Latency
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_PASSED" desc="Label shown when a Network diagnostics routine passed">
+        Passed
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_FAILED" desc="Label shown when a Network diagnostics routine failed">
+        Failed
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_NOT_RUN" desc="Label shown when a Network diagnostics routine did not run">
+        Not Run
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_RUNNING" desc="Label shown when a network diagnostics routine is currently running">
+        Running
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_RESULT_PLACEHOLDER" desc="Symbol shown for a network diagnostics routine result that seperates the verdict and problem strings">
+        <ph name="VERDICT">$1<ex>Failed</ex></ph>: <ph name="PROBLEMS">$2<ex>Weak signal</ex></ph>
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_RUN" desc="Label for Network diagnostics run routine button">
+        Run
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_RUN_ALL" desc="Label for Network diagnostics run all routines button">
+        Run All Routines
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_SEND_FEEDBACK" desc="Label for Network diagnostics send feedback report button">
+        Send Feedback Report
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_SIGNAL_STRENGTH_PROBLEM_NOT_FOUND" desc="Error message shown when a WiFi signal could not be detected">
+        Signal not found
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_SIGNAL_STRENGTH_PROBLEM_WEAK" desc="Error message shown when a only a weak WiFi signal could be detected">
+        Weak signal
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_GATEWAY_CAN_BE_PINGED_PROBLEM_UNREACHABLE" desc="Error message shown when a network gateway is not reachable">
+        Gateway is unreachable
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_GATEWAY_CAN_BE_PINGED_PROBLEM_PING_DEFAULT_FAILED" desc="Error message shown when the default network gateway cannot be pinged">
+        Failed to ping the default network gateway
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_GATEWAY_CAN_BE_PINGED_PROBLEM_DEFAULT_ABOVE_LATENCY" desc="Error message shown when the latency of the default network gateway is too high">
+        Default network above latency threshold
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_GATEWAY_CAN_BE_PINGED_PROBLEM_PING_NON_DEFAULT_FAILED" desc="Error message shown when the non-default network gateway cannot be pinged">
+        Failed to ping the non-default network gateway
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_GATEWAY_CAN_BE_PINGED_PROBLEM_NON_DEFAULT_ABOVE_LATENCY" desc="Error message shown when the latency of the non-default network gateway is too high">
+        Non-default network above latency threshold
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_SECURE_WIFI_PROBLEM_NOT_SECURE" desc="Error message shown when the current WiFi network is not secure">
+        WiFi network is not secure
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_SECURE_WIFI_PROBLEM_WEP_8021x" desc="Error message shown when the current WiFi network is secured with the weak protocol WEP 802.1x">
+        WiFi network is secured with weak protocol WEP 802.1x
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_SECURE_WIFI_PROBLEM_WEP_PSK" desc="Error message shown when the current WiFi network is secured with the weak protocol WEP PSK">
+        WiFi network is secured with weak protocol WEP PSK
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_SECURE_WIFI_PROBLEM_UNKNOWN" desc="Error message shown when the current WiFi network is secured with an unknown protocol">
+        Unknown WiFi security protocol
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_DNS_RESOLVER_PROBLEM_NO_NAME_SERVERS" desc="Error message shown when the no domain name servers (DNS) are found">
+        No name servers found
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_DNS_RESOLVER_PROBLEM_MALFORMED_NAME_SERVERS" desc="Error message shown when the domain name servers (DNS) are malformed">
+        Malformed name servers
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_DNS_RESOLVER_PROBLEM_EMPTY_NAME_SERVERS" desc="Error message shown when the domain name servers (DNS) are empty">
+        Empty name servers
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_DNS_LATENCY_PROBLEM_FAILED_TO_RESOLVE_ALL_HOSTS" desc="Error message shown when the domain name servers (DNS) failed to resolve all hosts">
+        Failed to resolve all hosts
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_DNS_LATENCY_PROBLEM_SLIGHTLY_ABOVE_THRESHOLD" desc="Error message shown when the latency for the domain name server (DNS) is slightly above an allowable threshold">
+        DNS latency slightly above allowable threshold
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_DNS_LATENCY_PROBLEM_SIGNIFICANTLY_ABOVE_THRESHOLD" desc="Error message shown when the latency for the domain name server (DNS) is significantly above an allowable threshold">
+        DNS latency significantly above allowable threshold
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_DNS_RESOLUTION_PROBLEM_FAILED_TO_RESOLVE_HOST" desc="Error message shown when the domain name server (DNS) failed to resolve a host">
+        Failed to resolve host
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_FIREWALL_PROBLEM_DNS_RESOLUTION_FAILURE_RATE" desc="Error message shown when the domain name server (DNS) has a high failure rate">
+        High DNS resolution failure rate
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_FIREWALL_PROBLEM_FIREWALL_DETECTED" desc="Error message shown when a firewall is detected">
+        Firewall detected
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_FIREWALL_PROBLEM_FIREWALL_SUSPECTED" desc="Error message shown when a firewall is suspected">
+        Firewall suspected
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_HTTPS_LATENCY_PROBLEM_FAILED_DNS_RESOLUTIONS" desc="Error message shown when there are one or more failed DNS resolution">
+        Failed DNS resolutions
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_HTTPS_LATENCY_PROBLEM_FAILED_HTTPS_REQUESTS" desc="Error message shown when there are one or more failed HTTPS requests">
+        Failed HTTP requests
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_HTTPS_LATENCY_PROBLEM_HIGH_LATENCY" desc="Error message shown when HTTPS requests have a high latency">
+        High HTTPS latency
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_HTTPS_LATENCY_PROBLEM_VERY_HIGH_LATENCY" desc="Error message shown when HTTPS requests have a very high latency">
+        Very high HTTPS latency
       </message>
     </messages>
   </release>

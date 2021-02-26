@@ -5,7 +5,7 @@
 #include "chrome/chrome_cleaner/parsers/target/parser_impl.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
@@ -126,10 +126,11 @@ TEST_F(ParserImplTest, ParseJsonError) {
 }
 
 TEST_F(ParserImplTest, ParseCorrectShortcutTest) {
+  const int32_t icon_index = 1;
   base::win::ShortcutProperties shortcut_properties;
   shortcut_properties.set_target(not_lnk_file_path_);
-  shortcut_properties.set_icon(not_lnk_file_path_, /*icon_index=*/0);
-  const base::string16 lnk_arguments = L"argument1 -f -t -a -o";
+  shortcut_properties.set_icon(not_lnk_file_path_, icon_index);
+  const std::wstring lnk_arguments = L"argument1 -f -t -a -o";
   shortcut_properties.set_arguments(lnk_arguments);
 
   base::win::ScopedHandle lnk_file_handle = CreateAndOpenShortcutInTempDir(
@@ -145,7 +146,8 @@ TEST_F(ParserImplTest, ParseCorrectShortcutTest) {
 
   ASSERT_EQ(test_result_code_, mojom::LnkParsingResult::SUCCESS);
   EXPECT_TRUE(CheckParsedShortcut(test_parsed_shortcut_, not_lnk_file_path_,
-                                  lnk_arguments, not_lnk_file_path_));
+                                  lnk_arguments, not_lnk_file_path_,
+                                  icon_index));
 }
 
 TEST_F(ParserImplTest, ParseIncorrectShortcutTest) {
@@ -166,6 +168,7 @@ TEST_F(ParserImplTest, ParseIncorrectShortcutTest) {
 
   ASSERT_NE(test_result_code_, mojom::LnkParsingResult::SUCCESS);
   EXPECT_TRUE(CheckParsedShortcut(test_parsed_shortcut_, base::FilePath(L""),
-                                  L"", base::FilePath(L"")));
+                                  L"", base::FilePath(L""),
+                                  /*icon_index=*/-1));
 }
 }  // namespace chrome_cleaner

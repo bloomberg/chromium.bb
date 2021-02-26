@@ -26,17 +26,16 @@ rtc_library("common_video") {
     "h264/sps_parser.h",
     "h264/sps_vui_rewriter.cc",
     "h264/sps_vui_rewriter.h",
-    "i420_buffer_pool.cc",
     "include/bitrate_adjuster.h",
-    "include/i420_buffer_pool.h",
     "include/incoming_video_stream.h",
     "include/quality_limitation_reason.h",
-    "include/video_frame.h",
     "include/video_frame_buffer.h",
+    "include/video_frame_buffer_pool.h",
     "incoming_video_stream.cc",
     "libyuv/include/webrtc_libyuv.h",
     "libyuv/webrtc_libyuv.cc",
     "video_frame_buffer.cc",
+    "video_frame_buffer_pool.cc",
     "video_render_frames.cc",
     "video_render_frames.h",
   ]
@@ -50,7 +49,7 @@ rtc_library("common_video") {
     "../api/video:video_bitrate_allocation",
     "../api/video:video_bitrate_allocator",
     "../api/video:video_frame",
-    "../api/video:video_frame_i420",
+    "../api/video:video_frame_nv12",
     "../api/video:video_rtp_headers",
     "../api/video_codecs:bitstream_parser_api",
     "../media:rtc_h264_profile_id",
@@ -58,11 +57,18 @@ rtc_library("common_video") {
     "../rtc_base:checks",
     "../rtc_base:rtc_task_queue",
     "../rtc_base:safe_minmax",
+    "../rtc_base/synchronization:mutex",
     "../rtc_base/system:rtc_export",
     "../system_wrappers:metrics",
-    "//third_party/abseil-cpp/absl/types:optional",
     "//third_party/libyuv",
   ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
+}
+
+rtc_source_set("frame_counts") {
+  visibility = [ "*" ]
+
+  sources = [ "frame_counts.h" ]
 }
 
 if (rtc_include_tests) {
@@ -87,19 +93,18 @@ if (rtc_include_tests) {
       "h264/profile_level_id_unittest.cc",
       "h264/sps_parser_unittest.cc",
       "h264/sps_vui_rewriter_unittest.cc",
-      "i420_buffer_pool_unittest.cc",
       "libyuv/libyuv_unittest.cc",
+      "video_frame_buffer_pool_unittest.cc",
       "video_frame_unittest.cc",
     ]
 
     deps = [
       ":common_video",
-      "../:webrtc_common",
       "../api:scoped_refptr",
       "../api/units:time_delta",
       "../api/video:video_frame",
       "../api/video:video_frame_i010",
-      "../api/video:video_frame_i420",
+      "../api/video:video_frame_nv12",
       "../api/video:video_rtp_headers",
       "../media:rtc_h264_profile_id",
       "../rtc_base",
@@ -113,6 +118,7 @@ if (rtc_include_tests) {
       "../test:test_support",
       "../test:video_test_common",
       "//testing/gtest",
+      "//third_party/abseil-cpp/absl/types:optional",
       "//third_party/libyuv",
     ]
 

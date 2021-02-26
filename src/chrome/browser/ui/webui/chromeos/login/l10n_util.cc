@@ -98,9 +98,9 @@ std::unique_ptr<base::DictionaryValue> CreateLanguageEntry(
   return dictionary;
 }
 
-// Gets the list of languages with |descriptors| based on |base_language_codes|.
-// The |most_relevant_language_codes| will be first in the list. If
-// |insert_divider| is true, an entry with its "code" attribute set to
+// Gets the list of languages with `descriptors` based on `base_language_codes`.
+// The `most_relevant_language_codes` will be first in the list. If
+// `insert_divider` is true, an entry with its "code" attribute set to
 // kMostRelevantLanguagesDivider is placed between the most relevant languages
 // and all others.
 std::unique_ptr<base::ListValue> GetLanguageList(
@@ -186,7 +186,7 @@ std::unique_ptr<base::ListValue> GetLanguageList(
   // Translate language codes, generated from input methods.
   for (std::set<std::string>::const_iterator it = language_codes.begin();
        it != language_codes.end(); ++it) {
-     // Exclude the language which is not in |base_langauge_codes| even it has
+     // Exclude the language which is not in `base_langauge_codes` even it has
      // input methods.
      if (!base::Contains(base_language_codes, *it))
        continue;
@@ -253,7 +253,7 @@ std::unique_ptr<base::ListValue> GetLanguageList(
   base::string16 divider16;
   if (insert_divider && !out_display_names.empty()) {
     // Insert a divider if requested, but only if
-    // |most_relevant_locales_display_names| is not empty.
+    // `most_relevant_locales_display_names` is not empty.
     divider16 = base::ASCIIToUTF16(kMostRelevantLanguagesDivider);
     out_display_names.push_back(divider16);
   }
@@ -283,7 +283,7 @@ std::unique_ptr<base::ListValue> GetLanguageList(
   return language_list;
 }
 
-// Note: this method updates |selected_locale| only if it is empty.
+// Note: this method updates `selected_locale` only if it is empty.
 void GetAndMergeKeyboardLayoutsForLocale(input_method::InputMethodUtil* util,
                                          const std::string& locale,
                                          std::string* selected_locale,
@@ -299,8 +299,8 @@ void GetAndMergeKeyboardLayoutsForLocale(input_method::InputMethodUtil* util,
   }
 }
 
-// Invokes |callback| with a list of keyboard layouts that can be used for
-// |resolved_locale|.
+// Invokes `callback` with a list of keyboard layouts that can be used for
+// `resolved_locale`.
 void GetKeyboardLayoutsForResolvedLocale(
     const std::string& requested_locale,
     const GetKeyboardLayoutsForLocaleCallback& callback,
@@ -496,18 +496,6 @@ std::string FindMostRelevantLocale(
   return fallback_locale;
 }
 
-std::unique_ptr<base::ListValue> GetAcceptLanguageList() {
-  // Collect the language codes from the supported accept-languages.
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  std::vector<std::string> accept_language_codes;
-  l10n_util::GetAcceptLanguagesForLocale(app_locale, &accept_language_codes);
-  return GetLanguageList(
-      *input_method::InputMethodManager::Get()->GetSupportedInputMethods(),
-      accept_language_codes,
-      StartupCustomizationDocument::GetInstance()->configured_locales(),
-      false);
-}
-
 std::unique_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
     const std::string& locale,
     const std::string& selected,
@@ -581,7 +569,7 @@ std::unique_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
 void GetKeyboardLayoutsForLocale(
     const GetKeyboardLayoutsForLocaleCallback& callback,
     const std::string& locale) {
-  // Resolve |locale| on a background thread, then continue on the current
+  // Resolve `locale` on a background thread, then continue on the current
   // thread.
   std::string (*get_application_locale)(const std::string&, bool) =
       &l10n_util::GetApplicationLocale;
@@ -591,15 +579,6 @@ void GetKeyboardLayoutsForLocale(
       base::BindOnce(get_application_locale, locale,
                      false /* set_icu_locale */),
       base::BindOnce(&GetKeyboardLayoutsForResolvedLocale, locale, callback));
-}
-
-std::unique_ptr<base::DictionaryValue> GetCurrentKeyboardLayout() {
-  const input_method::InputMethodDescriptor current_input_method =
-      input_method::InputMethodManager::Get()
-          ->GetActiveIMEState()
-          ->GetCurrentInputMethod();
-  return CreateInputMethodsEntry(current_input_method,
-                                 current_input_method.id());
 }
 
 }  // namespace chromeos

@@ -24,6 +24,7 @@ const State = {
   BACKUP_SUCCEEDED: 'backupSucceeded',
   PRECHECKS_FAILED: 'prechecksFailed',
   UPGRADING: 'upgrading',
+  UPGRADE_ERROR: 'upgrade_error',
   OFFER_RESTORE: 'offerRestore',
   RESTORE: 'restore',
   RESTORE_SUCCEEDED: 'restoreSucceeded',
@@ -31,6 +32,8 @@ const State = {
   CANCELING: 'canceling',
   SUCCEEDED: 'succeeded',
 };
+
+const kMaxUpgradeAttempts = 3;
 
 
 Polymer({
@@ -89,6 +92,12 @@ Polymer({
     progressLineDisplayMs_: {
       type: Number,
       value: 300,
+    },
+
+    /** @private */
+    upgradeAttemptCount_: {
+      type: Number,
+      value: 0,
     },
 
     /**
@@ -155,10 +164,14 @@ Polymer({
       }),
       callbackRouter.onUpgradeFailed.addListener(() => {
         assert(this.state_ === State.UPGRADING);
+        if (this.upgradeAttemptCount_ < kMaxUpgradeAttempts) {
+          this.precheckThenUpgrade_();
+          return;
+        }
         if (this.backupCheckboxChecked_) {
           this.state_ = State.OFFER_RESTORE;
         } else {
-          this.state_ = State.ERROR;
+          this.state_ = State.UPGRADE_ERROR;
         }
       }),
       callbackRouter.onRestoreProgress.addListener((percent) => {
@@ -178,8 +191,13 @@ Polymer({
           this.state_ = State.ERROR;
           return;
         }
-        this.closeDialog_();
+        this.closePage_();
       }),
+      callbackRouter.requestClose.addListener(() => {
+        if (this.canCancel_(this.state_)) {
+          this.onCancelButtonClick_();
+        }
+      })
     ];
 
     document.addEventListener('keyup', event => {
@@ -199,24 +217,28 @@ Polymer({
   },
 
   /** @private */
+  precheckThenUpgrade_() {
+    this.startPrechecks_(() => {
+      this.startUpgrade_();
+    }, () => {});
+  },
+
+  /** @private */
   onActionButtonClick_() {
     switch (this.state_) {
       case State.SUCCEEDED:
       case State.RESTORE_SUCCEEDED:
         BrowserProxy.getInstance().handler.launch();
-        this.closeDialog_();
+        this.closePage_();
         break;
       case State.PRECHECKS_FAILED:
-        this.startPrechecks_(() => {
-          this.startUpgrade_();
-        }, () => {});
+        this.precheckThenUpgrade_();
+        break;
       case State.PROMPT:
         if (this.backupCheckboxChecked_) {
           this.startBackup_(/*showFileChooser=*/ false);
         } else {
-          this.startPrechecks_(() => {
-            this.startUpgrade_();
-          }, () => {});
+          this.precheckThenUpgrade_();
         }
         break;
       case State.OFFER_RESTORE:
@@ -236,10 +258,11 @@ Polymer({
         BrowserProxy.getInstance().handler.cancel();
         break;
       case State.PRECHECKS_FAILED:
+      case State.UPGRADE_ERROR:
       case State.ERROR:
       case State.OFFER_RESTORE:
       case State.SUCCEEDED:
-        this.closeDialog_();
+        this.closePage_();
         break;
       case State.CANCELING:
         break;
@@ -271,6 +294,7 @@ Polymer({
   /** @private */
   startUpgrade_() {
     this.state_ = State.UPGRADING;
+    this.upgradeAttemptCount_++;
     BrowserProxy.getInstance().handler.upgrade();
   },
 
@@ -281,8 +305,8 @@ Polymer({
   },
 
   /** @private */
-  closeDialog_() {
-    BrowserProxy.getInstance().handler.close();
+  closePage_() {
+    BrowserProxy.getInstance().handler.onPageClosed();
   },
 
   /**
@@ -293,6 +317,23 @@ Polymer({
    */
   isState_(state1, state2) {
     return state1 === state2;
+  },
+
+  /**
+   * @param {State} state
+   * @return {boolean}
+   * @private
+   */
+  isProgressMessageHidden_(state) {
+    return this.isState_(this.state_, State.PROMPT) ||
+        this.isState_(this.state_, State.UPGRADE_ERROR) ||
+        this.isState_(this.state_, State.OFFER_RESTORE);
+  },
+
+  isErrorLogsHidden_(state) {
+    return !(
+        this.isState_(this.state_, State.UPGRADE_ERROR) ||
+        this.isState_(this.state_, State.OFFER_RESTORE));
   },
 
   /**
@@ -319,7 +360,6 @@ Polymer({
    */
   canCancel_(state) {
     switch (state) {
-      case State.UPGRADING:  // TODO(nverne): remove once we have OK from UX.
       case State.BACKUP:
       case State.RESTORE:
       case State.BACKUP_SUCCEEDED:
@@ -353,6 +393,7 @@ Polymer({
         titleId = 'upgradingTitle';
         break;
       case State.OFFER_RESTORE:
+      case State.UPGRADE_ERROR:
       case State.ERROR:
         titleId = 'errorTitle';
         break;
@@ -385,6 +426,7 @@ Polymer({
         return loadTimeData.getString('upgrade');
       case State.PRECHECKS_FAILED:
         return loadTimeData.getString('retry');
+      case State.UPGRADE_ERROR:
       case State.ERROR:
         return loadTimeData.getString('cancel');
       case State.SUCCEEDED:
@@ -406,6 +448,8 @@ Polymer({
       case State.SUCCEEDED:
       case State.RESTORE_SUCCEEDED:
         return loadTimeData.getString('close');
+      case State.PROMPT:
+        return loadTimeData.getString('notNow');
       default:
         return loadTimeData.getString('cancel');
     }
@@ -466,11 +510,8 @@ Polymer({
    * @return {string}
    * @private
    */
-  getErrorMessage_(state) {
-    // TODO(nverne): Surface error messages once we have better details.
-    let messageId = null;
-    return messageId ? loadTimeData.getString(messageId) :
-                       this.lastProgressLine_;
+  getErrorLogs_(state) {
+    return this.progressMessages_.join('\n');
   },
 
   /**
@@ -483,8 +524,11 @@ Polymer({
       case State.BACKUP_SUCCEEDED:
       case State.RESTORE_SUCCEEDED:
       case State.PRECHECKS_FAILED:
-      case State.ERROR:
         return 'img-square-illustration';
+      case State.OFFER_RESTORE:
+      case State.UPGRADE_ERROR:
+      case State.ERROR:
+        return 'img-square-error-illustration';
     }
     return 'img-rect-illustration';
   },
@@ -500,10 +544,26 @@ Polymer({
       case State.RESTORE_SUCCEEDED:
         return 'images/success_illustration.svg';
       case State.PRECHECKS_FAILED:
+      case State.OFFER_RESTORE:
+      case State.UPGRADE_ERROR:
       case State.ERROR:
         return 'images/error_illustration.png';
     }
     return 'images/linux_illustration.png';
+  },
+
+  /**
+   * @param {State} state
+   * @return {boolean}
+   * @private
+   */
+  hideIllustration_(state) {
+    switch (state) {
+      case State.BACKUP:
+      case State.UPGRADING:
+        return true;
+    }
+    return false;
   },
 
   /** @private */

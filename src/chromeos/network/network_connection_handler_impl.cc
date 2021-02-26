@@ -5,7 +5,7 @@
 #include "chromeos/network/network_connection_handler_impl.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -20,10 +20,13 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_util.h"
+#include "chromeos/network/prohibited_technologies_handler.h"
 #include "chromeos/network/shill_property_util.h"
 #include "dbus/object_path.h"
 #include "net/cert/x509_certificate.h"
@@ -41,19 +44,17 @@ bool IsAuthenticationError(const std::string& error) {
           error == shill::kErrorEapAuthenticationFailed);
 }
 
-std::string GetStringFromDictionary(const base::DictionaryValue& dict,
+std::string GetStringFromDictionary(const base::Value& dict,
                                     const std::string& key) {
-  std::string s;
-  dict.GetStringWithoutPathExpansion(key, &s);
-  return s;
+  const std::string* s = dict.FindStringKey(key);
+  return s ? *s : std::string();
 }
 
 bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
-                             const base::DictionaryValue& service_properties) {
+                             const base::Value& properties) {
   // VPN certificate properties are read from the Provider dictionary.
-  const base::DictionaryValue* provider_properties = NULL;
-  service_properties.GetDictionaryWithoutPathExpansion(shill::kProviderProperty,
-                                                       &provider_properties);
+  const base::Value* provider_properties =
+      properties.FindDictKey(shill::kProviderProperty);
   switch (cert_config_type) {
     case client_cert::CONFIG_TYPE_NONE:
       return true;
@@ -66,18 +67,17 @@ bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
       if (!provider_properties)
         return false;
 
-      std::string client_cert_id;
-      provider_properties->GetStringWithoutPathExpansion(
-          shill::kL2tpIpsecClientCertIdProperty, &client_cert_id);
+      std::string client_cert_id = GetStringFromDictionary(
+          *provider_properties, shill::kL2tpIpsecClientCertIdProperty);
       return !client_cert_id.empty();
     }
     case client_cert::CONFIG_TYPE_EAP: {
-      std::string cert_id = GetStringFromDictionary(service_properties,
-                                                    shill::kEapCertIdProperty);
+      std::string cert_id =
+          GetStringFromDictionary(properties, shill::kEapCertIdProperty);
       std::string key_id =
-          GetStringFromDictionary(service_properties, shill::kEapKeyIdProperty);
-      std::string identity = GetStringFromDictionary(
-          service_properties, shill::kEapIdentityProperty);
+          GetStringFromDictionary(properties, shill::kEapKeyIdProperty);
+      std::string identity =
+          GetStringFromDictionary(properties, shill::kEapIdentityProperty);
       return !cert_id.empty() && !key_id.empty() && !identity.empty();
     }
   }
@@ -85,17 +85,13 @@ bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
   return false;
 }
 
-std::string VPNCheckCredentials(
-    const std::string& service_path,
-    const std::string& provider_type,
-    const base::DictionaryValue& provider_properties) {
+std::string VPNCheckCredentials(const std::string& service_path,
+                                const std::string& provider_type,
+                                const base::Value& provider_properties) {
   if (provider_type == shill::kProviderOpenVpn) {
-    std::string username;
-    provider_properties.GetStringWithoutPathExpansion(
-        shill::kOpenVPNUserProperty, &username);
-    bool passphrase_required = false;
-    provider_properties.GetBooleanWithoutPathExpansion(
-        shill::kPassphraseRequiredProperty, &passphrase_required);
+    bool passphrase_required =
+        provider_properties.FindBoolKey(shill::kPassphraseRequiredProperty)
+            .value_or(false);
     if (passphrase_required) {
       NET_LOG(ERROR) << "OpenVPN: Passphrase Required for: "
                      << NetworkPathId(service_path);
@@ -103,16 +99,17 @@ std::string VPNCheckCredentials(
     }
     NET_LOG(EVENT) << "OpenVPN Is Configured: " << NetworkPathId(service_path);
   } else {
-    bool passphrase_required = false;
-    provider_properties.GetBooleanWithoutPathExpansion(
-        shill::kL2tpIpsecPskRequiredProperty, &passphrase_required);
+    bool passphrase_required =
+        provider_properties.FindBoolKey(shill::kL2tpIpsecPskRequiredProperty)
+            .value_or(false);
     if (passphrase_required) {
       NET_LOG(ERROR) << "VPN: PSK Required for: "
                      << NetworkPathId(service_path);
       return NetworkConnectionHandler::kErrorConfigurationRequired;
     }
-    provider_properties.GetBooleanWithoutPathExpansion(
-        shill::kPassphraseRequiredProperty, &passphrase_required);
+    passphrase_required =
+        provider_properties.FindBoolKey(shill::kPassphraseRequiredProperty)
+            .value_or(false);
     if (passphrase_required) {
       NET_LOG(ERROR) << "VPN: Passphrase Required for: "
                      << NetworkPathId(service_path);
@@ -128,13 +125,24 @@ std::string GetDefaultUserProfilePath(const NetworkState* network) {
       (LoginState::IsInitialized() &&
        !LoginState::Get()->UserHasNetworkProfile()) ||
       (network && network->type() == shill::kTypeWifi &&
-       network->security_class() == shill::kSecurityNone)) {
+       !network->IsSecure())) {
     return NetworkProfileHandler::GetSharedProfilePath();
   }
   const NetworkProfile* profile =
       NetworkHandler::Get()->network_profile_handler()->GetDefaultUserProfile();
   return profile ? profile->path
                  : NetworkProfileHandler::GetSharedProfilePath();
+}
+
+bool IsVpnProhibited() {
+  if (!NetworkHandler::IsInitialized())
+    return false;
+
+  std::vector<std::string> prohibited_technologies =
+      NetworkHandler::Get()
+          ->prohibited_technologies_handler()
+          ->GetCurrentlyProhibitedTechnologies();
+  return base::Contains(prohibited_technologies, shill::kTypeVPN);
 }
 
 }  // namespace
@@ -144,13 +152,13 @@ NetworkConnectionHandlerImpl::ConnectRequest::ConnectRequest(
     const std::string& service_path,
     const std::string& profile_path,
     base::OnceClosure success_callback,
-    const network_handler::ErrorCallback& error)
+    network_handler::ErrorCallback error)
     : mode(mode),
       service_path(service_path),
       profile_path(profile_path),
       connect_state(CONNECT_REQUESTED),
       success_callback(std::move(success_callback)),
-      error_callback(error) {}
+      error_callback(std::move(error)) {}
 
 NetworkConnectionHandlerImpl::ConnectRequest::~ConnectRequest() = default;
 
@@ -158,9 +166,9 @@ NetworkConnectionHandlerImpl::ConnectRequest::ConnectRequest(ConnectRequest&&) =
     default;
 
 NetworkConnectionHandlerImpl::NetworkConnectionHandlerImpl()
-    : network_cert_loader_(NULL),
-      network_state_handler_(NULL),
-      configuration_handler_(NULL),
+    : network_cert_loader_(nullptr),
+      network_state_handler_(nullptr),
+      configuration_handler_(nullptr),
       logged_in_(false),
       certificates_loaded_(false) {}
 
@@ -226,7 +234,7 @@ void NetworkConnectionHandlerImpl::OnCertificatesLoaded() {
 void NetworkConnectionHandlerImpl::ConnectToNetwork(
     const std::string& service_path,
     base::OnceClosure success_callback,
-    const network_handler::ErrorCallback& error_callback,
+    network_handler::ErrorCallback error_callback,
     bool check_error_state,
     ConnectCallbackMode mode) {
   NET_LOG(USER) << "ConnectToNetworkRequested: " << NetworkPathId(service_path);
@@ -243,7 +251,8 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   if (HasConnectingNetwork(service_path)) {
     NET_LOG(USER) << "Connect Request while pending: "
                   << NetworkPathId(service_path);
-    InvokeConnectErrorCallback(service_path, error_callback, kErrorConnecting);
+    InvokeConnectErrorCallback(service_path, std::move(error_callback),
+                               kErrorConnecting);
     return;
   }
 
@@ -260,11 +269,12 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
     if (NetworkState::StateIsConnected(connection_state)) {
       NET_LOG(ERROR) << "Connect Request while connected: "
                      << NetworkId(network);
-      InvokeConnectErrorCallback(service_path, error_callback, kErrorConnected);
+      InvokeConnectErrorCallback(service_path, std::move(error_callback),
+                                 kErrorConnected);
       return;
     }
     if (NetworkState::StateIsConnecting(connection_state)) {
-      InvokeConnectErrorCallback(service_path, error_callback,
+      InvokeConnectErrorCallback(service_path, std::move(error_callback),
                                  kErrorConnecting);
       return;
     }
@@ -272,12 +282,12 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
     if (check_error_state) {
       const std::string& error = network->GetError();
       if (error == shill::kErrorBadPassphrase) {
-        InvokeConnectErrorCallback(service_path, error_callback,
+        InvokeConnectErrorCallback(service_path, std::move(error_callback),
                                    kErrorBadPassphrase);
         return;
       }
       if (IsAuthenticationError(error)) {
-        InvokeConnectErrorCallback(service_path, error_callback,
+        InvokeConnectErrorCallback(service_path, std::move(error_callback),
                                    kErrorAuthenticationRequired);
         return;
       }
@@ -287,12 +297,20 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
       if (tether_delegate_) {
         const std::string& tether_network_guid = network->guid();
         DCHECK(!tether_network_guid.empty());
-        InitiateTetherNetworkConnection(
-            tether_network_guid, std::move(success_callback), error_callback);
+        InitiateTetherNetworkConnection(tether_network_guid,
+                                        std::move(success_callback),
+                                        std::move(error_callback));
       } else {
-        InvokeConnectErrorCallback(service_path, error_callback,
+        InvokeConnectErrorCallback(service_path, std::move(error_callback),
                                    kErrorTetherAttemptWithNoDelegate);
       }
+      return;
+    }
+
+    if (NetworkTypePattern::VPN().MatchesType(network->type()) &&
+        IsVpnProhibited()) {
+      InvokeConnectErrorCallback(service_path, std::move(error_callback),
+                                 kErrorBlockedByPolicy);
       return;
     }
   }
@@ -310,7 +328,7 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   // TODO(stevenjb): Shill needs to properly set Connectable for VPN.
   if (network && network->connectable() && network->type() != shill::kTypeVPN) {
     if (network->blocked_by_policy()) {
-      InvokeConnectErrorCallback(service_path, error_callback,
+      InvokeConnectErrorCallback(service_path, std::move(error_callback),
                                  kErrorBlockedByPolicy);
       return;
     }
@@ -322,7 +340,7 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   pending_requests_.emplace(
       service_path,
       ConnectRequest(mode, service_path, profile_path,
-                     std::move(success_callback), error_callback));
+                     std::move(success_callback), std::move(error_callback)));
 
   // Indicate that a connect was requested. This will be updated by
   // NetworkStateHandler when the connection state changes, or cleared if
@@ -340,15 +358,13 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   configuration_handler_->GetShillProperties(
       service_path,
       base::BindOnce(&NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect,
-                     AsWeakPtr(), check_error_state),
-      base::Bind(&NetworkConnectionHandlerImpl::HandleConfigurationFailure,
-                 AsWeakPtr(), service_path));
+                     AsWeakPtr(), check_error_state));
 }
 
 void NetworkConnectionHandlerImpl::DisconnectNetwork(
     const std::string& service_path,
     base::OnceClosure success_callback,
-    const network_handler::ErrorCallback& error_callback) {
+    network_handler::ErrorCallback error_callback) {
   NET_LOG(USER) << "DisconnectNetwork";
   for (auto& observer : observers_)
     observer.DisconnectRequested(service_path);
@@ -358,7 +374,7 @@ void NetworkConnectionHandlerImpl::DisconnectNetwork(
   if (!network) {
     NET_LOG(ERROR) << "Disconnect Error: Not Found: "
                    << NetworkPathId(service_path);
-    network_handler::RunErrorCallback(error_callback, service_path,
+    network_handler::RunErrorCallback(std::move(error_callback), service_path,
                                       kErrorNotFound, "");
     return;
   }
@@ -366,7 +382,7 @@ void NetworkConnectionHandlerImpl::DisconnectNetwork(
   if (!NetworkState::StateIsConnected(connection_state) &&
       !NetworkState::StateIsConnecting(connection_state)) {
     NET_LOG(ERROR) << "Disconnect Error: Not Connected: " << NetworkId(network);
-    network_handler::RunErrorCallback(error_callback, service_path,
+    network_handler::RunErrorCallback(std::move(error_callback), service_path,
                                       kErrorNotConnected, "");
     return;
   }
@@ -374,17 +390,18 @@ void NetworkConnectionHandlerImpl::DisconnectNetwork(
     if (tether_delegate_) {
       const std::string& tether_network_guid = network->guid();
       DCHECK(!tether_network_guid.empty());
-      InitiateTetherNetworkDisconnection(
-          tether_network_guid, std::move(success_callback), error_callback);
+      InitiateTetherNetworkDisconnection(tether_network_guid,
+                                         std::move(success_callback),
+                                         std::move(error_callback));
     } else {
-      InvokeConnectErrorCallback(service_path, error_callback,
+      InvokeConnectErrorCallback(service_path, std::move(error_callback),
                                  kErrorTetherAttemptWithNoDelegate);
     }
     return;
   }
   ClearPendingRequest(service_path);
   CallShillDisconnect(service_path, std::move(success_callback),
-                      error_callback);
+                      std::move(error_callback));
 }
 
 void NetworkConnectionHandlerImpl::NetworkListChanged() {
@@ -407,7 +424,7 @@ NetworkConnectionHandlerImpl::GetPendingRequest(
     const std::string& service_path) {
   std::map<std::string, ConnectRequest>::iterator iter =
       pending_requests_.find(service_path);
-  return iter != pending_requests_.end() ? &(iter->second) : NULL;
+  return iter != pending_requests_.end() ? &(iter->second) : nullptr;
 }
 
 // ConnectToNetwork implementation
@@ -415,32 +432,38 @@ NetworkConnectionHandlerImpl::GetPendingRequest(
 void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     bool check_error_state,
     const std::string& service_path,
-    const base::DictionaryValue& service_properties) {
+    base::Optional<base::Value> properties) {
+  if (!properties) {
+    HandleConfigurationFailure(service_path, "GetShillProperties failed",
+                               nullptr);
+    return;
+  }
   NET_LOG(EVENT) << "VerifyConfiguredAndConnect: "
                  << NetworkPathId(service_path)
                  << " check_error_state: " << check_error_state;
 
   // If 'passphrase_required' is still true, then the 'Passphrase' property
   // has not been set to a minimum length value.
-  bool passphrase_required = false;
-  service_properties.GetBooleanWithoutPathExpansion(
-      shill::kPassphraseRequiredProperty, &passphrase_required);
+  bool passphrase_required =
+      properties->FindBoolKey(shill::kPassphraseRequiredProperty)
+          .value_or(false);
   if (passphrase_required) {
     ErrorCallbackForPendingRequest(service_path, kErrorPassphraseRequired);
     return;
   }
 
-  std::string type, security_class;
-  service_properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
-  service_properties.GetStringWithoutPathExpansion(
-      shill::kSecurityClassProperty, &security_class);
-  bool connectable = false;
-  service_properties.GetBooleanWithoutPathExpansion(shill::kConnectableProperty,
-                                                    &connectable);
+  const std::string* type = properties->FindStringKey(shill::kTypeProperty);
+  if (!type) {
+    HandleConfigurationFailure(service_path, "Properties with no type",
+                               nullptr);
+    return;
+  }
+  bool connectable =
+      properties->FindBoolKey(shill::kConnectableProperty).value_or(false);
 
   // In case NetworkState was not available in ConnectToNetwork (e.g. it had
   // been recently configured), we need to check Connectable again.
-  if (connectable && type != shill::kTypeVPN) {
+  if (connectable && *type != shill::kTypeVPN) {
     // TODO(stevenjb): Shill needs to properly set Connectable for VPN.
     CallShillConnect(service_path);
     return;
@@ -448,19 +471,19 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
 
   // Get VPN provider type and host (required for configuration) and ensure
   // that required VPN non-cert properties are set.
-  const base::DictionaryValue* provider_properties = NULL;
+  const base::Value* provider_properties =
+      properties->FindDictKey(shill::kProviderProperty);
   std::string vpn_provider_type, vpn_provider_host, vpn_client_cert_id;
-  if (type == shill::kTypeVPN) {
+  if (*type == shill::kTypeVPN) {
     // VPN Provider values are read from the "Provider" dictionary, not the
     // "Provider.Type", etc keys (which are used only to set the values).
-    if (service_properties.GetDictionaryWithoutPathExpansion(
-            shill::kProviderProperty, &provider_properties)) {
-      provider_properties->GetStringWithoutPathExpansion(shill::kTypeProperty,
-                                                         &vpn_provider_type);
-      provider_properties->GetStringWithoutPathExpansion(shill::kHostProperty,
-                                                         &vpn_provider_host);
-      provider_properties->GetStringWithoutPathExpansion(
-          shill::kL2tpIpsecClientCertIdProperty, &vpn_client_cert_id);
+    if (provider_properties) {
+      vpn_provider_type =
+          GetStringFromDictionary(*provider_properties, shill::kTypeProperty);
+      vpn_provider_host =
+          GetStringFromDictionary(*provider_properties, shill::kHostProperty);
+      vpn_client_cert_id = GetStringFromDictionary(
+          *provider_properties, shill::kL2tpIpsecClientCertIdProperty);
     }
     if (vpn_provider_type.empty() || vpn_provider_host.empty()) {
       NET_LOG(ERROR) << "VPN Provider missing for: "
@@ -470,29 +493,28 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     }
   }
 
-  std::string guid;
-  service_properties.GetStringWithoutPathExpansion(shill::kGuidProperty, &guid);
-  std::string profile;
-  service_properties.GetStringWithoutPathExpansion(shill::kProfileProperty,
-                                                   &profile);
+  const std::string* guid = properties->FindStringKey(shill::kGuidProperty);
+  const std::string* profile =
+      properties->FindStringKey(shill::kProfileProperty);
   ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
-  const base::DictionaryValue* policy =
-      managed_configuration_handler_->FindPolicyByGuidAndProfile(guid, profile,
-                                                                 &onc_source);
-
+  const base::Value* policy = nullptr;
+  if (guid && profile) {
+    policy = managed_configuration_handler_->FindPolicyByGuidAndProfile(
+        *guid, *profile, &onc_source);
+  }
   // Check if network is blocked by policy.
-  if (type == shill::kTypeWifi &&
+  if (*type == shill::kTypeWifi &&
       onc_source != ::onc::ONCSource::ONC_SOURCE_DEVICE_POLICY &&
       onc_source != ::onc::ONCSource::ONC_SOURCE_USER_POLICY) {
-    const base::Value* hex_ssid_value = service_properties.FindKeyOfType(
-        shill::kWifiHexSsid, base::Value::Type::STRING);
-    if (!hex_ssid_value) {
+    const std::string* hex_ssid =
+        properties->FindStringKey(shill::kWifiHexSsid);
+    if (!hex_ssid) {
       ErrorCallbackForPendingRequest(service_path, kErrorHexSsidRequired);
       return;
     }
     if (network_state_handler_->OnlyManagedWifiNetworksAllowed() ||
-        base::Contains(managed_configuration_handler_->GetBlacklistedHexSSIDs(),
-                       hex_ssid_value->GetString())) {
+        base::Contains(managed_configuration_handler_->GetBlockedHexSSIDs(),
+                       *hex_ssid)) {
       ErrorCallbackForPendingRequest(service_path, kErrorBlockedByPolicy);
       return;
     }
@@ -500,12 +522,13 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
 
   client_cert::ClientCertConfig cert_config_from_policy;
   if (policy) {
-    client_cert::OncToClientCertConfig(onc_source, *policy,
+    client_cert::OncToClientCertConfig(onc_source,
+                                       base::Value::AsDictionaryValue(*policy),
                                        &cert_config_from_policy);
   }
 
   client_cert::ConfigType client_cert_type = client_cert::CONFIG_TYPE_NONE;
-  if (type == shill::kTypeVPN) {
+  if (*type == shill::kTypeVPN) {
     if (vpn_provider_type == shill::kProviderOpenVpn) {
       client_cert_type = client_cert::CONFIG_TYPE_OPENVPN;
     } else {
@@ -523,9 +546,11 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
         client_cert_type = client_cert::CONFIG_TYPE_IPSEC;
       }
     }
-  } else if (type == shill::kTypeWifi &&
-             security_class == shill::kSecurity8021x) {
-    client_cert_type = client_cert::CONFIG_TYPE_EAP;
+  } else if (*type == shill::kTypeWifi) {
+    const std::string* security_class =
+        properties->FindStringKey(shill::kSecurityClassProperty);
+    if (security_class && *security_class == shill::kSecurity8021x)
+      client_cert_type = client_cert::CONFIG_TYPE_EAP;
   }
 
   base::DictionaryValue config_properties;
@@ -562,7 +587,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
         return;
       }
     } else if (check_error_state &&
-               !IsCertificateConfigured(client_cert_type, service_properties)) {
+               !IsCertificateConfigured(client_cert_type, *properties)) {
       // Network may not be configured.
       NET_LOG(ERROR) << "Certificate not configured for: "
                      << NetworkPathId(service_path);
@@ -571,7 +596,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     }
   }
 
-  if (type == shill::kTypeVPN) {
+  if (*type == shill::kTypeVPN) {
     // VPN may require a username, and/or passphrase to be set. (Check after
     // ensuring that any required certificates are configured).
     DCHECK(provider_properties);
@@ -594,14 +619,15 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     NET_LOG(EVENT) << "Configuring Network: " << NetworkPathId(service_path);
     configuration_handler_->SetShillProperties(
         service_path, config_properties,
-        base::Bind(&NetworkConnectionHandlerImpl::CallShillConnect, AsWeakPtr(),
-                   service_path),
-        base::Bind(&NetworkConnectionHandlerImpl::HandleConfigurationFailure,
-                   AsWeakPtr(), service_path));
+        base::BindOnce(&NetworkConnectionHandlerImpl::CallShillConnect,
+                       AsWeakPtr(), service_path),
+        base::BindOnce(
+            &NetworkConnectionHandlerImpl::HandleConfigurationFailure,
+            AsWeakPtr(), service_path));
     return;
   }
 
-  if (type != shill::kTypeVPN && check_error_state) {
+  if (*type != shill::kTypeVPN && check_error_state) {
     // For non VPNs, 'Connectable' must be false here, so fail immediately if
     // |check_error_state| is true. (For VPNs 'Connectable' is not reliable).
     NET_LOG(ERROR) << "Non VPN is unconfigured: "
@@ -629,15 +655,16 @@ void NetworkConnectionHandlerImpl::QueueConnectRequest(
   if (dtime > base::TimeDelta::FromSeconds(kMaxCertLoadTimeSeconds)) {
     NET_LOG(ERROR) << "Certificate load timeout: "
                    << NetworkPathId(service_path);
-    InvokeConnectErrorCallback(service_path, request->error_callback,
+    InvokeConnectErrorCallback(service_path, std::move(request->error_callback),
                                kErrorCertLoadTimeout);
     return;
   }
 
   NET_LOG(EVENT) << "Connect Request Queued: " << NetworkPathId(service_path);
-  queued_connect_.reset(new ConnectRequest(
-      request->mode, service_path, request->profile_path,
-      std::move(request->success_callback), request->error_callback));
+  queued_connect_.reset(new ConnectRequest(request->mode, service_path,
+                                           request->profile_path,
+                                           std::move(request->success_callback),
+                                           std::move(request->error_callback)));
   pending_requests_.erase(service_path);
 
   // Post a delayed task to check to see if certificates have loaded. If they
@@ -668,7 +695,7 @@ void NetworkConnectionHandlerImpl::CheckCertificatesLoaded() {
   NET_LOG(ERROR) << "Certificate load timeout: "
                  << NetworkPathId(queued_connect_->service_path);
   InvokeConnectErrorCallback(queued_connect_->service_path,
-                             queued_connect_->error_callback,
+                             std::move(queued_connect_->error_callback),
                              kErrorCertLoadTimeout);
   queued_connect_.reset();
   network_state_handler_->SetNetworkConnectRequested(
@@ -684,12 +711,13 @@ void NetworkConnectionHandlerImpl::ConnectToQueuedNetwork() {
   base::OnceClosure success_callback =
       std::move(queued_connect_->success_callback);
   network_handler::ErrorCallback error_callback =
-      queued_connect_->error_callback;
+      std::move(queued_connect_->error_callback);
 
   NET_LOG(EVENT) << "Connecting to Queued Network: "
                  << NetworkPathId(service_path);
-  ConnectToNetwork(service_path, std::move(success_callback), error_callback,
-                   false /* check_error_state */, queued_connect_->mode);
+  ConnectToNetwork(service_path, std::move(success_callback),
+                   std::move(error_callback), false /* check_error_state */,
+                   queued_connect_->mode);
 }
 
 void NetworkConnectionHandlerImpl::CallShillConnect(
@@ -718,9 +746,10 @@ void NetworkConnectionHandlerImpl::HandleConfigurationFailure(
         << NetworkPathId(service_path);
     return;
   }
-  network_handler::ErrorCallback error_callback = request->error_callback;
+  network_handler::ErrorCallback error_callback =
+      std::move(request->error_callback);
   ClearPendingRequest(service_path);
-  InvokeConnectErrorCallback(service_path, error_callback,
+  InvokeConnectErrorCallback(service_path, std::move(error_callback),
                              kErrorConfigureFailed);
 }
 
@@ -762,7 +791,8 @@ void NetworkConnectionHandlerImpl::HandleShillConnectFailure(
         << NetworkPathId(service_path);
     return;
   }
-  network_handler::ErrorCallback error_callback = request->error_callback;
+  network_handler::ErrorCallback error_callback =
+      std::move(request->error_callback);
   ClearPendingRequest(service_path);
 
   std::string error;
@@ -775,7 +805,7 @@ void NetworkConnectionHandlerImpl::HandleShillConnectFailure(
   }
   NET_LOG(ERROR) << "Connect Failure: " << NetworkPathId(service_path)
                  << " Error: " << error << " Shill error: " << dbus_error_name;
-  InvokeConnectErrorCallback(service_path, error_callback, error);
+  InvokeConnectErrorCallback(service_path, std::move(error_callback), error);
 }
 
 void NetworkConnectionHandlerImpl::CheckPendingRequest(
@@ -824,9 +854,11 @@ void NetworkConnectionHandlerImpl::CheckPendingRequest(
                      << " for: " << NetworkPathId(service_path);
   }
 
-  network_handler::ErrorCallback error_callback = request->error_callback;
+  network_handler::ErrorCallback error_callback =
+      std::move(request->error_callback);
   ClearPendingRequest(service_path);
-  InvokeConnectErrorCallback(service_path, error_callback, error_name);
+  InvokeConnectErrorCallback(service_path, std::move(error_callback),
+                             error_name);
 }
 
 void NetworkConnectionHandlerImpl::CheckAllPendingRequests() {
@@ -855,10 +887,12 @@ void NetworkConnectionHandlerImpl::ErrorCallbackForPendingRequest(
     return;
   }
   // Remove the entry before invoking the callback in case it triggers a retry.
-  network_handler::ErrorCallback error_callback = request->error_callback;
+  network_handler::ErrorCallback error_callback =
+      std::move(request->error_callback);
   ClearPendingRequest(service_path);
 
-  InvokeConnectErrorCallback(service_path, error_callback, error_name);
+  InvokeConnectErrorCallback(service_path, std::move(error_callback),
+                             error_name);
 }
 
 // Disconnect
@@ -866,7 +900,7 @@ void NetworkConnectionHandlerImpl::ErrorCallbackForPendingRequest(
 void NetworkConnectionHandlerImpl::CallShillDisconnect(
     const std::string& service_path,
     base::OnceClosure success_callback,
-    const network_handler::ErrorCallback& error_callback) {
+    network_handler::ErrorCallback error_callback) {
   NET_LOG(USER) << "Disconnect Request: " << NetworkPathId(service_path);
   ShillServiceClient::Get()->Disconnect(
       dbus::ObjectPath(service_path),
@@ -874,7 +908,8 @@ void NetworkConnectionHandlerImpl::CallShillDisconnect(
           &NetworkConnectionHandlerImpl::HandleShillDisconnectSuccess,
           AsWeakPtr(), service_path, std::move(success_callback)),
       base::BindOnce(&network_handler::ShillErrorCallbackFunction,
-                     kErrorDisconnectFailed, service_path, error_callback));
+                     kErrorDisconnectFailed, service_path,
+                     std::move(error_callback)));
 }
 
 void NetworkConnectionHandlerImpl::HandleShillDisconnectSuccess(

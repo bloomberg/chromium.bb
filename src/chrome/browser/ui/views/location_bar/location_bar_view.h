@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/location_bar/permission_chip.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/security_state/core/security_state.h"
@@ -33,7 +34,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/animation/animation_delegate_views.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/drag_controller.h"
 
@@ -69,7 +69,6 @@ class LocationBarView : public LocationBar,
                         public views::AnimationDelegateViews,
                         public ChromeOmniboxEditController,
                         public DropdownBarHostDelegate,
-                        public views::ButtonListener,
                         public IconLabelBubbleView::Delegate,
                         public LocationIconView::Delegate,
                         public ContentSettingImageView::Delegate,
@@ -154,11 +153,14 @@ class LocationBarView : public LocationBar,
   }
 
   OmniboxViewViews* omnibox_view() { return omnibox_view_; }
-  const OmniboxViewViews* omnibox_view() const { return omnibox_view_; }
+
+  // Sets the additional omnibox text. E.g. the title corresponding to the URL
+  // displayed in the OmniboxView.
+  void SetOmniboxAdditionalText(const base::string16& text);
 
   // Updates the controller, and, if |contents| is non-null, restores saved
   // state that the tab holds.
-  void Update(const content::WebContents* contents);
+  void Update(content::WebContents* contents);
 
   // Clears the location bar's state for |contents|.
   void ResetTabState(content::WebContents* contents);
@@ -166,6 +168,8 @@ class LocationBarView : public LocationBar,
   // Activates the first visible but inactive PageActionIconView for
   // accessibility.
   bool ActivateFirstInactiveBubbleForAccessibility();
+
+  PermissionChip* permission_chip() { return permission_chip_; }
 
   // LocationBar:
   void FocusLocation(bool is_user_initiated) override;
@@ -196,9 +200,6 @@ class LocationBarView : public LocationBar,
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   static bool IsVirtualKeyboardVisible(views::Widget* widget);
 
   // Returns the height available for user-entered text in the location bar.
@@ -224,7 +225,7 @@ class LocationBarView : public LocationBar,
   bool ShowPageInfoDialog() override;
   SkColor GetSecurityChipColor(
       security_state::SecurityLevel security_level) const override;
-  gfx::ImageSkia GetLocationIcon(LocationIconView::Delegate::IconFetchedCallback
+  ui::ImageModel GetLocationIcon(LocationIconView::Delegate::IconFetchedCallback
                                      on_icon_fetched) const override;
 
  private:
@@ -270,6 +271,8 @@ class LocationBarView : public LocationBar,
   // Gets the OmniboxPopupView associated with the model in |omnibox_view_|.
   OmniboxPopupView* GetOmniboxPopupView();
 
+  void KeywordHintViewPressed(const ui::Event& event);
+
   // Called when the page info bubble is closed.
   void OnPageInfoBubbleClosed(views::Widget::ClosedReason closed_reason,
                               bool reload_prompt);
@@ -298,6 +301,13 @@ class LocationBarView : public LocationBar,
   void OnVisibleBoundsChanged() override;
   void OnFocus() override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
+  // LocationBarView directs mouse button events from OmniboxAdditionalTextView
+  // to OmniboxView so that e.g., clicking the former will focus the latter.
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // views::DragController:
   void WriteDragDataForView(View* sender,
@@ -345,10 +355,20 @@ class LocationBarView : public LocationBar,
   // May be nullptr in tests.
   Profile* const profile_;
 
+  // The omnibox view where the user types and the current page URL is displayed
+  // when user input is not in progress.
   OmniboxViewViews* omnibox_view_ = nullptr;
+  // The complementary omnibox label displaying the selected suggestion's title
+  // or URL when the omnibox view is displaying the other and when user input is
+  // in progress. Will remain a nullptr if the rich autocompletion
+  // feature flag is disabled.
+  views::Label* omnibox_additional_text_view_ = nullptr;
 
   // Our delegate.
   Delegate* delegate_;
+
+  // A view that contains a chip button that shows a permission request.
+  PermissionChip* permission_chip_ = nullptr;
 
   // An icon to the left of the edit field: the HTTPS lock, blank page icon,
   // search icon, EV HTTPS bubble, etc.
@@ -393,7 +413,7 @@ class LocationBarView : public LocationBar,
   const bool is_popup_mode_;
 
   // The focus ring, if one is in use.
-  std::unique_ptr<views::FocusRing> focus_ring_;
+  views::FocusRing* focus_ring_ = nullptr;
 
   bool is_initialized_ = false;
 

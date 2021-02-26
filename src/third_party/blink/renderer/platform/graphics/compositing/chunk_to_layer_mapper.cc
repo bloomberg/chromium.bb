@@ -9,19 +9,16 @@
 
 namespace blink {
 
-ChunkToLayerMapper::ChunkToLayerMapper(
-    const PropertyTreeState& layer_state,
-    const gfx::Vector2dF& layer_offset,
-    const FloatSize& visual_rect_subpixel_offset)
-    : layer_state_(layer_state.Unalias()),
+ChunkToLayerMapper::ChunkToLayerMapper(const PropertyTreeState& layer_state,
+                                       const gfx::Vector2dF& layer_offset)
+    : layer_state_(layer_state),
       layer_offset_(layer_offset),
-      visual_rect_subpixel_offset_(visual_rect_subpixel_offset),
       chunk_state_(layer_state_),
       translation_2d_or_matrix_(
           FloatSize(-layer_offset.x(), -layer_offset.y())) {}
 
 void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
-  outset_for_raster_effects_ = chunk.outset_for_raster_effects;
+  raster_effect_outset_ = chunk.raster_effect_outset;
 
   const auto& new_chunk_state =
       chunk.properties.GetPropertyTreeState().Unalias();
@@ -49,7 +46,7 @@ void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
     new_has_filter_that_moves_pixels = false;
     for (const auto* effect = &new_chunk_state.Effect();
          effect && effect != &layer_state_.Effect();
-         effect = SafeUnalias(effect->Parent())) {
+         effect = effect->UnaliasedParent()) {
       if (effect->HasFilterThatMovesPixels()) {
         new_has_filter_that_moves_pixels = true;
         break;
@@ -85,8 +82,7 @@ IntRect ChunkToLayerMapper::MapVisualRect(const IntRect& rect) const {
 
   IntRect result;
   if (!mapped_rect.IsEmpty()) {
-    mapped_rect.Inflate(outset_for_raster_effects_);
-    AdjustVisualRectBySubpixelOffset(mapped_rect);
+    InflateForRasterEffectOutset(mapped_rect);
     result = EnclosingIntRect(mapped_rect);
   }
 #if DCHECK_IS_ON()
@@ -112,19 +108,15 @@ IntRect ChunkToLayerMapper::MapUsingGeometryMapper(const IntRect& rect) const {
     return IntRect();
 
   visual_rect.Rect().Move(-layer_offset_.x(), -layer_offset_.y());
-  visual_rect.Rect().Inflate(outset_for_raster_effects_);
-  AdjustVisualRectBySubpixelOffset(visual_rect.Rect());
+  InflateForRasterEffectOutset(visual_rect.Rect());
   return EnclosingIntRect(visual_rect.Rect());
 }
 
-void ChunkToLayerMapper::AdjustVisualRectBySubpixelOffset(
-    FloatRect& rect) const {
-  // Add back the layer's subpixel accumulation that was excluded from the
-  // visual rect by
-  // PaintInvalidator::ExcludeCompositedLayerSubpixelAccumulation().
-  // The condition below should be kept consistent with that function.
-  if (&chunk_state_.Transform() == &layer_state_.Transform())
-    rect.Move(visual_rect_subpixel_offset_);
+void ChunkToLayerMapper::InflateForRasterEffectOutset(FloatRect& rect) const {
+  if (raster_effect_outset_ == RasterEffectOutset::kHalfPixel)
+    rect.Inflate(0.5);
+  else if (raster_effect_outset_ == RasterEffectOutset::kWholePixel)
+    rect.Inflate(1);
 }
 
 }  // namespace blink

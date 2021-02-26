@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_date.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -28,6 +28,8 @@ CXFA_Date::CXFA_Date(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Date,
                 {},
                 kDateAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Date::~CXFA_Date() = default;

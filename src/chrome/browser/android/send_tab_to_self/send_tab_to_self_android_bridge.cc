@@ -9,14 +9,14 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "chrome/android/chrome_jni_headers/SendTabToSelfAndroidBridge_jni.h"
-#include "chrome/android/chrome_jni_headers/TargetDeviceInfo_jni.h"
 #include "chrome/browser/android/send_tab_to_self/send_tab_to_self_entry_bridge.h"
 #include "chrome/browser/android/send_tab_to_self/send_tab_to_self_infobar.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_client_service_factory.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
+#include "chrome/browser/share/android/jni_headers/SendTabToSelfAndroidBridge_jni.h"
+#include "chrome/browser/share/android/jni_headers/TargetDeviceInfo_jni.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
 #include "components/send_tab_to_self/send_tab_to_self_infobar_delegate.h"
@@ -50,16 +50,11 @@ ScopedJavaLocalRef<jobject> CreateJavaTargetDeviceInfo(
       device_info.device_type, device_info.last_updated_timestamp.ToJavaTime());
 }
 
-void LogModelLoadedInTime(bool status) {
-  UMA_HISTOGRAM_BOOLEAN("SendTabToSelf.Sync.ModelLoadedInTime", status);
-}
-
 SendTabToSelfModel* GetModel(const JavaParamRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   SendTabToSelfModel* model = SendTabToSelfSyncServiceFactory::GetInstance()
                                   ->GetForProfile(profile)
                                   ->GetSendTabToSelfModel();
-  LogModelLoadedInTime(model->IsReady());
   return model;
 }
 

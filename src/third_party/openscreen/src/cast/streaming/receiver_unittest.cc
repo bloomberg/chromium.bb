@@ -35,12 +35,8 @@
 #include "platform/base/udp_packet.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
+#include "util/chrono_helpers.h"
 #include "util/osp_logging.h"
-
-using std::chrono::duration_cast;
-using std::chrono::microseconds;
-using std::chrono::milliseconds;
-using std::chrono::seconds;
 
 using testing::_;
 using testing::AtLeast;
@@ -404,11 +400,10 @@ TEST_F(ReceiverTest, ReceivesAndSendsRtcpPackets) {
   // from the wire-format NtpTimestamps. See the unit tests in
   // ntp_time_unittest.cc for further discussion.
   constexpr auto kAllowedNtpRoundingError = microseconds(2);
-  EXPECT_NEAR(duration_cast<microseconds>(kOneWayNetworkDelay).count(),
-              duration_cast<microseconds>(receiver_reference_time -
-                                          sender_reference_time)
-                  .count(),
-              kAllowedNtpRoundingError.count());
+  EXPECT_NEAR(
+      to_microseconds(kOneWayNetworkDelay).count(),
+      to_microseconds(receiver_reference_time - sender_reference_time).count(),
+      kAllowedNtpRoundingError.count());
 
   // Without the Sender doing anything, the Receiver should continue providing
   // RTCP reports at regular intervals. Simulate three intervals of time,

@@ -7,6 +7,7 @@
 #include <string>
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
@@ -25,14 +26,8 @@
 namespace ash {
 
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
-    : HoverHighlightView(listener, true) {}
-
-HoverHighlightView::HoverHighlightView(ViewClickListener* listener,
-                                       bool use_unified_theme)
-    : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
-      listener_(listener),
-      use_unified_theme_(use_unified_theme) {
-  set_notify_enter_exit_on_child(true);
+    : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS), listener_(listener) {
+  SetNotifyEnterExitOnChild(true);
   SetInkDropMode(InkDropMode::ON);
 }
 
@@ -86,23 +81,15 @@ void HoverHighlightView::SetSubText(const base::string16& sub_text) {
     tri_view_->AddView(TriView::Container::CENTER, sub_text_label_);
   }
 
-  TrayPopupItemStyle sub_style(TrayPopupItemStyle::FontStyle::CAPTION,
-                               use_unified_theme_);
-  sub_style.set_color_style(TrayPopupItemStyle::ColorStyle::INACTIVE);
-  sub_style.SetupLabel(sub_text_label_);
+  sub_text_label_->SetEnabledColor(
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextColorSecondary));
+  sub_text_label_->SetAutoColorReadabilityEnabled(false);
   sub_text_label_->SetText(sub_text);
 }
 
 void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
                                          const base::string16& text) {
-  DoAddIconAndLabel(image, text,
-                    TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
-}
-
-void HoverHighlightView::DoAddIconAndLabel(
-    const gfx::ImageSkia& image,
-    const base::string16& text,
-    TrayPopupItemStyle::FontStyle font_style) {
   DCHECK(!is_populated_);
   is_populated_ = true;
 
@@ -118,8 +105,10 @@ void HoverHighlightView::DoAddIconAndLabel(
   text_label_ = TrayPopupUtils::CreateUnfocusableLabel();
   text_label_->SetText(text);
   text_label_->SetEnabled(GetEnabled());
-  TrayPopupItemStyle style(font_style, use_unified_theme_);
-  style.SetupLabel(text_label_);
+  text_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
+  TrayPopupUtils::SetLabelFontList(
+      text_label_, TrayPopupUtils::FontStyle::kDetailedViewLabel);
   tri_view_->AddView(TriView::Container::CENTER, text_label_);
   // By default, END container is invisible, so labels in the CENTER should have
   // an extra padding at the end.
@@ -141,10 +130,10 @@ void HoverHighlightView::AddLabelRow(const base::string16& text) {
 
   text_label_ = TrayPopupUtils::CreateUnfocusableLabel();
   text_label_->SetText(text);
-
-  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL,
-                           use_unified_theme_);
-  style.SetupLabel(text_label_);
+  text_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
+  TrayPopupUtils::SetLabelFontList(
+      text_label_, TrayPopupUtils::FontStyle::kDetailedViewLabel);
   tri_view_->AddView(TriView::Container::CENTER, text_label_);
 
   SetAccessibleName(text);
@@ -180,7 +169,7 @@ void HoverHighlightView::OnSetTooltipText(const base::string16& tooltip_text) {
   if (sub_text_label_)
     sub_text_label_->SetTooltipText(tooltip_text);
   if (left_icon_)
-    left_icon_->set_tooltip_text(tooltip_text);
+    left_icon_->SetTooltipText(tooltip_text);
 }
 
 bool HoverHighlightView::PerformAction(const ui::Event& event) {

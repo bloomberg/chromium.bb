@@ -1,4 +1,4 @@
-// After editing this file, run "go generate" in the parent directory.
+// After editing this file, run "go generate" in the ../data directory.
 
 // Copyright 2017 The Wuffs Authors.
 //
@@ -15,3 +15,15 @@
 // limitations under the License.
 
 // ---------------- Images
+
+WUFFS_BASE__MAYBE_STATIC uint64_t  //
+wuffs_base__pixel_swizzler__swizzle_interleaved_from_reader(
+    const wuffs_base__pixel_swizzler* p,
+    wuffs_base__slice_u8 dst,
+    wuffs_base__slice_u8 dst_palette,
+    const uint8_t** ptr_iop_r,
+    const uint8_t* io2_r);
+
+// ---------------- Images (Utility)
+
+#define wuffs_base__utility__make_pixel_format wuffs_base__make_pixel_format

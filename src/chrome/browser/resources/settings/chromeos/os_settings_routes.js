@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {Route} from '../router.m.js';
+
 /**
  * Specifies all possible os routes in settings.
  *
@@ -11,9 +13,12 @@
  *   ACCOUNTS: !settings.Route,
  *   ACCOUNT_MANAGER: !settings.Route,
  *   ADVANCED: !settings.Route,
+ *   AMBIENT_MODE: !settings.Route,
+ *   AMBIENT_MODE_PHOTOS: !settings.Route,
  *   APP_MANAGEMENT: !settings.Route,
  *   APP_MANAGEMENT_DETAIL: !settings.Route,
  *   APP_MANAGEMENT_PLUGIN_VM_SHARED_PATHS: !settings.Route,
+ *   APP_MANAGEMENT_PLUGIN_VM_SHARED_USB_DEVICES: !settings.Route,
  *   APPS: !settings.Route,
  *   ANDROID_APPS_DETAILS: !settings.Route,
  *   CROSTINI: !settings.Route,
@@ -33,7 +38,6 @@
  *   DETAILED_BUILD_INFO: !settings.Route,
  *   DEVICE: !settings.Route,
  *   DISPLAY: !settings.Route,
- *   DOWNLOADED_CONTENT: !settings.Route,
  *   EXTERNAL_STORAGE_PREFERENCES: !settings.Route,
  *   FINGERPRINT: !settings.Route,
  *   FILES: !settings.Route,
@@ -50,11 +54,16 @@
  *   MANAGE_TTS_SETTINGS: !settings.Route,
  *   MULTIDEVICE: !settings.Route,
  *   MULTIDEVICE_FEATURES: !settings.Route,
+ *   NEARBY_SHARE: !settings.Route,
  *   NETWORK_DETAIL: !settings.Route,
  *   OS_ACCESSIBILITY: !settings.Route,
  *   OS_LANGUAGES: !settings.Route,
  *   OS_LANGUAGES_DETAILS: !settings.Route,
+ *   OS_LANGUAGES_EDIT_DICTIONARY: !settings.Route,
+ *   OS_LANGUAGES_INPUT: !settings.Route,
  *   OS_LANGUAGES_INPUT_METHODS: !settings.Route,
+ *   OS_LANGUAGES_INPUT_METHOD_OPTIONS: !settings.Route,
+ *   OS_LANGUAGES_LANGUAGES: !settings.Route,
  *   OS_LANGUAGES_SMART_INPUTS: !settings.Route,
  *   OS_PRINTING: !settings.Route,
  *   OS_PRIVACY: !settings.Route,

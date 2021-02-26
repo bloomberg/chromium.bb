@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/views/crostini/crostini_recovery_view.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -29,102 +31,66 @@ constexpr char kCrostiniRecoverySourceHistogram[] = "Crostini.RecoverySource";
 
 }  // namespace
 
-bool crostini::ShowCrostiniRecoveryView(
+void crostini::ShowCrostiniRecoveryView(
     Profile* profile,
     crostini::CrostiniUISurface ui_surface,
     const std::string& app_id,
     int64_t display_id,
-    crostini::LaunchCrostiniAppCallback callback) {
-  bool allow_app_launch = CrostiniRecoveryView::Show(
-      profile, app_id, display_id, std::move(callback));
-  if (!allow_app_launch) {
-    // App launches are prevented by the view's can_launch_apps_. In this case,
-    // we want to sample the Show call.
-    base::UmaHistogramEnumeration(kCrostiniRecoverySourceHistogram, ui_surface,
-                                  crostini::CrostiniUISurface::kCount);
-  }
-  return allow_app_launch;
+    const std::vector<crostini::LaunchArg>& args,
+    crostini::CrostiniSuccessCallback callback) {
+  CrostiniRecoveryView::Show(profile, app_id, display_id, args,
+                             std::move(callback));
+  base::UmaHistogramEnumeration(kCrostiniRecoverySourceHistogram, ui_surface,
+                                crostini::CrostiniUISurface::kCount);
 }
 
-bool CrostiniRecoveryView::Show(Profile* profile,
+void CrostiniRecoveryView::Show(Profile* profile,
                                 const std::string& app_id,
                                 int64_t display_id,
-                                crostini::LaunchCrostiniAppCallback callback) {
+                                const std::vector<crostini::LaunchArg>& args,
+                                crostini::CrostiniSuccessCallback callback) {
   DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
-  if (!g_crostini_recovery_view) {
+  // Any new apps launched during recovery are immediately cancelled.
+  if (g_crostini_recovery_view) {
+    std::move(callback).Run(false, "recovery in progress");
+  } else {
     g_crostini_recovery_view = new CrostiniRecoveryView(
-        profile, app_id, display_id, std::move(callback));
+        profile, app_id, display_id, args, std::move(callback));
     CreateDialogWidget(g_crostini_recovery_view, nullptr, nullptr);
   }
+  // Always call Show to bring the dialog to the front of the screen.
   g_crostini_recovery_view->GetWidget()->Show();
-  return g_crostini_recovery_view->can_launch_apps_;
-}
-
-base::string16 CrostiniRecoveryView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_CROSTINI_RECOVERY_TITLE);
-}
-
-bool CrostiniRecoveryView::ShouldShowCloseButton() const {
-  return false;
-}
-
-bool CrostiniRecoveryView::IsDialogButtonEnabled(
-    ui::DialogButton button) const {
-  // Buttons are disabled after Accept or Cancel have been clicked.
-  return closed_reason_ == views::Widget::ClosedReason::kUnspecified;
-}
-
-gfx::Size CrostiniRecoveryView::CalculatePreferredSize() const {
-  const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               DISTANCE_STANDALONE_BUBBLE_PREFERRED_WIDTH) -
-                           margins().width();
-  return gfx::Size(dialog_width, GetHeightForWidth(dialog_width));
 }
 
 bool CrostiniRecoveryView::Accept() {
-  closed_reason_ = views::Widget::ClosedReason::kAcceptButtonClicked;
-  if (can_launch_apps_) {
-    return true;
-  }
+  SetButtonEnabled(ui::DIALOG_BUTTON_OK, false);
+  SetButtonEnabled(ui::DIALOG_BUTTON_CANCEL, false);
   crostini::CrostiniManager::GetForProfile(profile_)->StopVm(
       crostini::kCrostiniDefaultVmName,
-      base::BindOnce(
-          [](base::WeakPtr<CrostiniRecoveryView> weak_this,
-             crostini::CrostiniResult result) {
-            if (weak_this) {
-              weak_this->ScheduleAppLaunch();
-            }
-          },
-          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&CrostiniRecoveryView::OnStopVm,
+                     weak_ptr_factory_.GetWeakPtr()));
   DialogModelChanged();
   return false;
 }
 
-void CrostiniRecoveryView::ScheduleAppLaunch() {
+void CrostiniRecoveryView::OnStopVm(crostini::CrostiniResult result) {
   VLOG(1) << "Scheduling app launch " << app_id_;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&CrostiniRecoveryView::CompleteAppLaunch,
-                                weak_ptr_factory_.GetWeakPtr()));
-}
-
-void CrostiniRecoveryView::CompleteAppLaunch() {
-  can_launch_apps_ = true;
-  if (!app_id_.empty()) {
-    crostini::LaunchCrostiniApp(profile_, app_id_, display_id_, {},
-                                std::move(callback_));
+  if (result != crostini::CrostiniResult::SUCCESS) {
+    LOG(ERROR) << "Error stopping VM for recovery: " << (int)result;
   }
-  GetWidget()->CloseWithReason(closed_reason_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&crostini::LaunchCrostiniApp, profile_, app_id_,
+                                display_id_, args_, std::move(callback_)));
+  GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kAcceptButtonClicked);
 }
 
 bool CrostiniRecoveryView::Cancel() {
-  closed_reason_ = views::Widget::ClosedReason::kCancelButtonClicked;
-  if (can_launch_apps_) {
-    return true;
+  if (callback_) {
+    std::move(callback_).Run(false, "cancelled for recovery");
+    crostini::LaunchTerminal(profile_, display_id_);
   }
-  app_id_ = crostini::GetTerminalId();
-  ScheduleAppLaunch();
-  DialogModelChanged();
-  return false;
+  return true;
 }
 
 // static
@@ -136,10 +102,12 @@ CrostiniRecoveryView::CrostiniRecoveryView(
     Profile* profile,
     const std::string& app_id,
     int64_t display_id,
-    crostini::LaunchCrostiniAppCallback callback)
+    const std::vector<crostini::LaunchArg>& args,
+    crostini::CrostiniSuccessCallback callback)
     : profile_(profile),
       app_id_(app_id),
       display_id_(display_id),
+      args_(args),
       callback_(std::move(callback)),
       weak_ptr_factory_(this) {
   SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
@@ -149,6 +117,10 @@ CrostiniRecoveryView::CrostiniRecoveryView(
   SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_CROSTINI_RECOVERY_TERMINAL_BUTTON));
+  SetShowCloseButton(false);
+  SetTitle(IDS_CROSTINI_RECOVERY_TITLE);
+  set_fixed_width(ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_STANDALONE_BUBBLE_PREFERRED_WIDTH));
 
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(

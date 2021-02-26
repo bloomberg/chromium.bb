@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.view.ContextThemeWrapper;
 import android.view.InflateException;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
@@ -20,7 +19,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.NativeMethods;
@@ -28,12 +26,13 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.LayoutInflaterUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -143,16 +142,12 @@ public class WarmupManager {
      */
     public static ViewGroup inflateViewHierarchy(
             Context baseContext, int toolbarContainerId, int toolbarId) {
-        // Inflating the view hierarchy causes StrictMode violations on some
-        // devices. Since layout inflation should happen on the UI thread, allow
-        // the disk reads. crbug.com/644243.
-        try (TraceEvent e = TraceEvent.scoped("WarmupManager.inflateViewHierarchy");
-                StrictModeContext c = StrictModeContext.allowDiskReads()) {
+        try (TraceEvent e = TraceEvent.scoped("WarmupManager.inflateViewHierarchy")) {
             ContextThemeWrapper context =
                     new ContextThemeWrapper(baseContext, ChromeActivity.getThemeId());
             FrameLayout contentHolder = new FrameLayout(context);
             ViewGroup mainView =
-                    (ViewGroup) LayoutInflater.from(context).inflate(R.layout.main, contentHolder);
+                    (ViewGroup) LayoutInflaterUtils.inflate(context, R.layout.main, contentHolder);
             if (toolbarContainerId != ChromeActivity.NO_CONTROL_CONTAINER) {
                 ViewStub stub = (ViewStub) mainView.findViewById(R.id.control_container_stub);
                 stub.setLayoutResource(toolbarContainerId);
@@ -337,12 +332,9 @@ public class WarmupManager {
     public void createSpareRenderProcessHost(Profile profile) {
         ThreadUtils.assertOnUiThread();
         if (!LibraryLoader.getInstance().isInitialized()) return;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SPARE_RENDERER)) {
-            // Spare WebContents should not be used with spare RenderProcessHosts, but if one
-            // has been created, destroy it in order not to consume too many processes.
-            destroySpareWebContents();
-            WarmupManagerJni.get().warmupSpareRenderer(profile);
-        }
+
+        destroySpareWebContents();
+        WarmupManagerJni.get().warmupSpareRenderer(profile);
     }
 
     /**
@@ -359,7 +351,7 @@ public class WarmupManager {
 
         mWebContentsCreatedForCCT = forCCT;
         mSpareWebContents = new WebContentsFactory().createWebContentsWithWarmRenderer(
-                false /* incognito */, true /* initiallyHidden */);
+                Profile.getLastUsedRegularProfile(), true /* initiallyHidden */);
         mObserver = new RenderProcessGoneObserver();
         mSpareWebContents.addObserver(mObserver);
         mWebContentsCreationTimeMs = SystemClock.elapsedRealtime();

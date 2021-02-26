@@ -6,7 +6,6 @@
 
 #include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/navigation_controls.h"
-#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
@@ -17,7 +16,7 @@
 namespace blink {
 
 MediaValues* MediaValuesDynamic::Create(Document& document) {
-  return MediaValuesDynamic::Create(document.GetFrameOfMasterDocument());
+  return MediaValuesDynamic::Create(document.GetFrameOfTreeRootDocument());
 }
 
 MediaValues* MediaValuesDynamic::Create(LocalFrame* frame) {
@@ -100,7 +99,7 @@ int MediaValuesDynamic::MonochromeBitsPerComponent() const {
   return CalculateMonochromeBitsPerComponent(frame_);
 }
 
-PointerType MediaValuesDynamic::PrimaryPointerType() const {
+ui::PointerType MediaValuesDynamic::PrimaryPointerType() const {
   return CalculatePrimaryPointerType(frame_);
 }
 
@@ -108,7 +107,7 @@ int MediaValuesDynamic::AvailablePointerTypes() const {
   return CalculateAvailablePointerTypes(frame_);
 }
 
-HoverType MediaValuesDynamic::PrimaryHoverType() const {
+ui::HoverType MediaValuesDynamic::PrimaryHoverType() const {
   return CalculatePrimaryHoverType(frame_);
 }
 
@@ -136,20 +135,26 @@ bool MediaValuesDynamic::StrictMode() const {
   return CalculateStrictMode(frame_);
 }
 
-DisplayShape MediaValuesDynamic::GetDisplayShape() const {
-  return CalculateDisplayShape(frame_);
-}
-
 ColorSpaceGamut MediaValuesDynamic::ColorGamut() const {
   return CalculateColorGamut(frame_);
 }
 
-PreferredColorScheme MediaValuesDynamic::GetPreferredColorScheme() const {
+mojom::blink::PreferredColorScheme MediaValuesDynamic::GetPreferredColorScheme()
+    const {
   return CalculatePreferredColorScheme(frame_);
+}
+
+mojom::blink::PreferredContrast MediaValuesDynamic::GetPreferredContrast()
+    const {
+  return CalculatePreferredContrast(frame_);
 }
 
 bool MediaValuesDynamic::PrefersReducedMotion() const {
   return CalculatePrefersReducedMotion(frame_);
+}
+
+bool MediaValuesDynamic::PrefersReducedData() const {
+  return CalculatePrefersReducedData(frame_);
 }
 
 ForcedColors MediaValuesDynamic::GetForcedColors() const {
@@ -172,7 +177,7 @@ bool MediaValuesDynamic::HasValues() const {
   return frame_;
 }
 
-void MediaValuesDynamic::Trace(Visitor* visitor) {
+void MediaValuesDynamic::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   MediaValues::Trace(visitor);
 }

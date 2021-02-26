@@ -12,6 +12,7 @@
 #include "include/core/SkTypes.h"
 #include "include/private/SkFixed.h"
 #include "include/private/SkTFitsIn.h"
+#include "include/private/SkTPin.h"
 #include "include/private/SkTo.h"
 #include "src/core/SkOSFile.h"
 #include "src/core/SkSafeMath.h"
@@ -72,14 +73,14 @@ void SkWStream::flush()
 
 bool SkWStream::writeDecAsText(int32_t dec)
 {
-    char buffer[SkStrAppendS32_MaxSize];
+    char buffer[kSkStrAppendS32_MaxSize];
     char* stop = SkStrAppendS32(buffer, dec);
     return this->write(buffer, stop - buffer);
 }
 
 bool SkWStream::writeBigDecAsText(int64_t dec, int minDigits)
 {
-    char buffer[SkStrAppendU64_MaxSize];
+    char buffer[kSkStrAppendU64_MaxSize];
     char* stop = SkStrAppendU64(buffer, dec, minDigits);
     return this->write(buffer, stop - buffer);
 }
@@ -93,7 +94,7 @@ bool SkWStream::writeHexAsText(uint32_t hex, int digits)
 
 bool SkWStream::writeScalarAsText(SkScalar value)
 {
-    char buffer[SkStrAppendScalar_MaxSize];
+    char buffer[kSkStrAppendScalar_MaxSize];
     char* stop = SkStrAppendScalar(buffer, value);
     return this->write(buffer, stop - buffer);
 }
@@ -151,16 +152,26 @@ bool SkWStream::writeStream(SkStream* stream, size_t length) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SkFILEStream::SkFILEStream(std::shared_ptr<FILE> file, size_t size,
-                           size_t offset, size_t originalOffset)
+SkFILEStream::SkFILEStream(std::shared_ptr<FILE> file, size_t end, size_t start, size_t current)
     : fFILE(std::move(file))
-    , fSize(size)
-    , fOffset(std::min(offset, fSize))
-    , fOriginalOffset(std::min(originalOffset, fSize))
+    , fEnd(end)
+    , fStart(std::min(start, fEnd))
+    , fCurrent(SkTPin(current, fStart, fEnd))
+{
+    SkASSERT(fStart == start);
+    SkASSERT(fCurrent == current);
+}
+
+SkFILEStream::SkFILEStream(std::shared_ptr<FILE> file, size_t end, size_t start)
+    : SkFILEStream(std::move(file), end, start, start)
 { }
 
-SkFILEStream::SkFILEStream(std::shared_ptr<FILE> file, size_t size, size_t offset)
-    : SkFILEStream(std::move(file), size, offset, offset)
+SkFILEStream::SkFILEStream(FILE* file, size_t size, size_t start)
+    : SkFILEStream(std::shared_ptr<FILE>(file, sk_fclose), SkSafeMath::Add(start, size), start)
+{ }
+
+SkFILEStream::SkFILEStream(FILE* file, size_t size)
+    : SkFILEStream(file, size, file ? sk_ftell(file) : 0)
 { }
 
 SkFILEStream::SkFILEStream(FILE* file)
@@ -168,7 +179,6 @@ SkFILEStream::SkFILEStream(FILE* file)
                    file ? sk_fgetsize(file) : 0,
                    file ? sk_ftell(file) : 0)
 { }
-
 
 SkFILEStream::SkFILEStream(const char path[])
     : SkFILEStream(path ? sk_fopen(path, kRead_SkFILE_Flag) : nullptr)
@@ -180,76 +190,78 @@ SkFILEStream::~SkFILEStream() {
 
 void SkFILEStream::close() {
     fFILE.reset();
-    fSize = 0;
-    fOffset = 0;
+    fEnd = 0;
+    fStart = 0;
+    fCurrent = 0;
 }
 
 size_t SkFILEStream::read(void* buffer, size_t size) {
-    if (size > fSize - fOffset) {
-        size = fSize - fOffset;
+    if (size > fEnd - fCurrent) {
+        size = fEnd - fCurrent;
     }
     size_t bytesRead = size;
     if (buffer) {
-        bytesRead = sk_qread(fFILE.get(), buffer, size, fOffset);
+        bytesRead = sk_qread(fFILE.get(), buffer, size, fCurrent);
     }
     if (bytesRead == SIZE_MAX) {
         return 0;
     }
-    fOffset += bytesRead;
+    fCurrent += bytesRead;
     return bytesRead;
 }
 
 bool SkFILEStream::isAtEnd() const {
-    if (fOffset == fSize) {
+    if (fCurrent == fEnd) {
         return true;
     }
-    return fOffset >= sk_fgetsize(fFILE.get());
+    return fCurrent >= sk_fgetsize(fFILE.get());
 }
 
 bool SkFILEStream::rewind() {
-    fOffset = fOriginalOffset;
+    fCurrent = fStart;
     return true;
 }
 
 SkStreamAsset* SkFILEStream::onDuplicate() const {
-    return new SkFILEStream(fFILE, fSize, fOriginalOffset, fOriginalOffset);
+    return new SkFILEStream(fFILE, fEnd, fStart, fStart);
 }
 
 size_t SkFILEStream::getPosition() const {
-    SkASSERT(fOffset >= fOriginalOffset);
-    return fOffset - fOriginalOffset;
+    SkASSERT(fCurrent >= fStart);
+    return fCurrent - fStart;
 }
 
 bool SkFILEStream::seek(size_t position) {
-    fOffset = std::min(SkSafeMath::Add(position, fOriginalOffset), fSize);
+    fCurrent = std::min(SkSafeMath::Add(position, fStart), fEnd);
     return true;
 }
 
 bool SkFILEStream::move(long offset) {
     if (offset < 0) {
-        if (offset == std::numeric_limits<long>::min()
-                || !SkTFitsIn<size_t>(-offset)
-                || (size_t) (-offset) >= this->getPosition()) {
-            fOffset = fOriginalOffset;
+        if (offset == std::numeric_limits<long>::min() ||
+            !SkTFitsIn<size_t>(-offset) ||
+            (size_t) (-offset) >= this->getPosition())
+        {
+            fCurrent = fStart;
         } else {
-            fOffset += offset;
+            fCurrent += offset;
         }
     } else if (!SkTFitsIn<size_t>(offset)) {
-        fOffset = fSize;
+        fCurrent = fEnd;
     } else {
-        fOffset = std::min(SkSafeMath::Add(fOffset, (size_t) offset), fSize);
+        fCurrent = std::min(SkSafeMath::Add(fCurrent, (size_t) offset), fEnd);
     }
 
-    SkASSERT(fOffset >= fOriginalOffset && fOffset <= fSize);
+    SkASSERT(fCurrent >= fStart && fCurrent <= fEnd);
     return true;
 }
 
 SkStreamAsset* SkFILEStream::onFork() const {
-    return new SkFILEStream(fFILE, fSize, fOffset, fOriginalOffset);
+    return new SkFILEStream(fFILE, fEnd, fStart, fCurrent);
 }
 
 size_t SkFILEStream::getLength() const {
-    return fSize - fOriginalOffset;
+    return fEnd - fStart;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -726,7 +738,7 @@ class SkBlockMemoryRefCnt : public SkRefCnt {
 public:
     explicit SkBlockMemoryRefCnt(SkDynamicMemoryWStream::Block* head) : fHead(head) { }
 
-    virtual ~SkBlockMemoryRefCnt() {
+    ~SkBlockMemoryRefCnt() override {
         SkDynamicMemoryWStream::Block* block = fHead;
         while (block != nullptr) {
             SkDynamicMemoryWStream::Block* next = block->fNext;

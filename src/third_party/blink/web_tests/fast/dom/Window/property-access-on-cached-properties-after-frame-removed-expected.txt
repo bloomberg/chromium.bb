@@ -1,18 +1,8 @@
-CONSOLE WARNING: line 138: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 138: Application Cache API use is deprecated and will be removed in M85, around August 2020. See https://www.chromestatus.com/features/6192449487634432 for more details.
+CONSOLE WARNING: line 148: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 Tests access of cached DOMWindow properties after the associated frame is no longer in a web page. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS window.cached_applicationCache.oncached is null
-PASS window.cached_applicationCache.onchecking is null
-PASS window.cached_applicationCache.ondownloading is null
-PASS window.cached_applicationCache.onerror is null
-PASS window.cached_applicationCache.onnoupdate is null
-PASS window.cached_applicationCache.onobsolete is null
-PASS window.cached_applicationCache.onprogress is null
-PASS window.cached_applicationCache.onupdateready is null
-PASS window.cached_applicationCache.status is 0
 PASS window.cached_cookieStore.onchange is null
 FAIL window.cached_location.hash should be  (of type string). Was undefined (of type undefined).
 FAIL window.cached_location.host should be  (of type string). Was undefined (of type undefined).
@@ -59,6 +49,7 @@ PASS window.cached_navigator_serviceWorker.controller is null
 PASS window.cached_navigator_serviceWorker.oncontrollerchange is null
 PASS window.cached_navigator_serviceWorker.onmessage is null
 PASS window.cached_navigator_serviceWorker.onmessageerror is null
+PASS window.cached_navigator_storage.onquotachange is null
 PASS window.cached_navigator_usb.onconnect is null
 PASS window.cached_navigator_usb.ondisconnect is null
 PASS window.cached_navigator_userActivation.hasBeenActive is false
@@ -66,7 +57,15 @@ PASS window.cached_navigator_userActivation.isActive is false
 PASS window.cached_navigator_userAgentData.brands[0].brand is ''
 PASS window.cached_navigator_userAgentData.brands[0].version is ''
 PASS window.cached_navigator_userAgentData.mobile is false
-PASS window.cached_navigator_virtualKeyboard.onoverlaygeometrychange is null
+PASS window.cached_navigator_virtualKeyboard.boundingRect.bottom is 0
+PASS window.cached_navigator_virtualKeyboard.boundingRect.height is 0
+PASS window.cached_navigator_virtualKeyboard.boundingRect.left is 0
+PASS window.cached_navigator_virtualKeyboard.boundingRect.right is 0
+PASS window.cached_navigator_virtualKeyboard.boundingRect.top is 0
+PASS window.cached_navigator_virtualKeyboard.boundingRect.width is 0
+PASS window.cached_navigator_virtualKeyboard.boundingRect.x is 0
+PASS window.cached_navigator_virtualKeyboard.boundingRect.y is 0
+PASS window.cached_navigator_virtualKeyboard.ongeometrychange is null
 PASS window.cached_navigator_virtualKeyboard.overlaysContent is false
 PASS window.cached_navigator_xr.ondevicechange is null
 PASS window.cached_performance.onresourcetimingbufferfull is null
@@ -104,14 +103,7 @@ PASS window.cached_screen.availTop is 0
 PASS window.cached_screen.availWidth is 0
 PASS window.cached_screen.colorDepth is 0
 PASS window.cached_screen.height is 0
-PASS window.cached_screen.id is ''
-PASS window.cached_screen.internal is false
-PASS window.cached_screen.left is 0
 PASS window.cached_screen.pixelDepth is 0
-PASS window.cached_screen.primary is false
-PASS window.cached_screen.scaleFactor is 0
-PASS window.cached_screen.top is 0
-PASS window.cached_screen.touchSupport is false
 PASS window.cached_screen.width is 0
 PASS window.cached_screen_orientation.angle is 0
 PASS window.cached_screen_orientation.onchange is null
@@ -125,6 +117,7 @@ PASS window.cached_statusbar.visible is false
 PASS window.cached_styleMedia.type is ''
 PASS window.cached_toolbar.visible is false
 PASS window.cached_trustedTypes.defaultPolicy is null
+PASS window.cached_trustedTypes.onbeforecreatepolicy is null
 PASS window.cached_visualViewport.height is 0
 PASS window.cached_visualViewport.offsetLeft is 0
 PASS window.cached_visualViewport.offsetTop is 0

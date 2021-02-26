@@ -71,6 +71,11 @@ class ThreadPool(object):
   When the priority of tasks match, it works in strict FIFO mode.
   """
   QUEUE_CLASS = Queue.PriorityQueue
+  # Enqueueing None causes the worker to stop.
+  # Python3 doesn't support to compare None with any integer, so putting None
+  # in priority queue will cause exception. Switch to use sys.maxsize, since
+  # lower priority takes precedence.
+  TASK_END_SENTINEL = (sys.maxsize,)
 
   def __init__(self, initial_threads, max_threads, queue_size, prefix=None):
     """Immediately starts |initial_threads| threads.
@@ -188,7 +193,7 @@ class ThreadPool(object):
         with self._lock:
           self._ready -= 1
       try:
-        if task == sys.maxsize:
+        if task == self.TASK_END_SENTINEL:
           # We're done.
           return
         _priority, _index, func, args, kwargs = task
@@ -292,11 +297,7 @@ class ThreadPool(object):
         raise ThreadPoolClosed('Can not close already closed ThreadPool')
       self._is_closed = True
     for _ in range(len(self._workers)):
-      # Enqueueing None causes the worker to stop.
-      # Python3 doesn't support to compare None with any integer, so putting
-      # None in priority queue will cause exception. Switch to use sys.maxsize,
-      # since lower priority takes precedence.
-      self.tasks.put(sys.maxsize)
+      self.tasks.put(self.TASK_END_SENTINEL)
     for t in self._workers:
       # 'join' without timeout blocks signal handlers, spin with timeout.
       while t.is_alive():
@@ -801,6 +802,10 @@ class TaskChannel(object):
     if item_type == self._ITEM_DONE:
       raise StopIteration()
     assert False, 'Impossible queue item type: %r' % item_type
+
+  def __next__(self):
+    # For python3 compatibility
+    return self.next()
 
   def wrap_task(self, task):
     """Decorator that makes a function push results into this channel."""

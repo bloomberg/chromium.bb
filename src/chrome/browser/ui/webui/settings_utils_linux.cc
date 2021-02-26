@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/nix/xdg_util.h"
 #include "base/process/launch.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
@@ -44,7 +43,7 @@ const char* const kKDE5ProxyConfigCommand[] = {"kcmshell5", "proxy", nullptr};
 
 // The URL for Linux proxy configuration help when not running under a
 // supported desktop environment.
-constexpr char kLinuxProxyConfigUrl[] = "about:linux-proxy-config";
+constexpr char kLinuxProxyConfigUrl[] = "chrome://linux-proxy-config";
 
 // Show the proxy config URL in the given tab.
 void ShowLinuxProxyConfigUrl(int render_process_id, int render_view_id) {
@@ -134,8 +133,8 @@ void DetectAndStartProxyConfigUtil(int render_process_id,
 
   if (launched)
     return;
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&ShowLinuxProxyConfigUrl, render_process_id,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ShowLinuxProxyConfigUrl, render_process_id,
                                 render_view_id));
 }
 
@@ -146,9 +145,13 @@ namespace settings_utils {
 void ShowNetworkProxySettings(content::WebContents* web_contents) {
   base::ThreadPool::PostTask(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&DetectAndStartProxyConfigUtil,
-                     web_contents->GetRenderViewHost()->GetProcess()->GetID(),
-                     web_contents->GetRenderViewHost()->GetRoutingID()));
+      base::BindOnce(
+          &DetectAndStartProxyConfigUtil,
+          web_contents->GetMainFrame()
+              ->GetRenderViewHost()
+              ->GetProcess()
+              ->GetID(),
+          web_contents->GetMainFrame()->GetRenderViewHost()->GetRoutingID()));
 }
 
 }  // namespace settings_utils

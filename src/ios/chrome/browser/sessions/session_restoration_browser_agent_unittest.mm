@@ -191,7 +191,8 @@ TEST_F(SessionRestorationBrowserAgentTest, DISABLED_RestoreSessionOnNTPTest) {
 
   // Create NTPTabHelper to ensure VisibleURL is set to kChromeUINewTabURL.
   id delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
-  NewTabPageTabHelper::CreateForWebState(web_state, delegate);
+  NewTabPageTabHelper::CreateForWebState(web_state);
+  NewTabPageTabHelper::FromWebState(web_state)->SetDelegate(delegate);
 
   SessionWindowIOS* window(
       CreateSessionWindow(/*sessions_count=*/3, /*selected_index=*/2));
@@ -316,12 +317,12 @@ TEST_F(SessionRestorationBrowserAgentTest,
   // Removing a non active webState.
   web_state_list_->CloseWebStateAt(/*index=*/1,
                                    WebStateList::CLOSE_USER_ACTION);
-  EXPECT_EQ(test_session_service_.saveSessionCallsCount, 3);
+  EXPECT_EQ(test_session_service_.saveSessionCallsCount, 4);
 
   // Removing the last active webState.
   web_state_list_->CloseWebStateAt(/*index=*/0,
                                    WebStateList::CLOSE_USER_ACTION);
-  EXPECT_EQ(test_session_service_.saveSessionCallsCount, 4);
+  EXPECT_EQ(test_session_service_.saveSessionCallsCount, 5);
 }
 
 }  // anonymous namespace

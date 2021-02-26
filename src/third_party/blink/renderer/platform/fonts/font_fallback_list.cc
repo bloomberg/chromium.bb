@@ -47,12 +47,12 @@ FontFallbackList::FontFallbackList(FontSelector* font_selector)
       generation_(FontCache::GetFontCache()->Generation()),
       has_loading_fallback_(false),
       has_custom_font_(false),
+      has_advance_override_(false),
       can_shape_word_by_word_(false),
       can_shape_word_by_word_computed_(false),
       is_invalid_(false) {}
 
 void FontFallbackList::RevalidateDeprecated() {
-  DCHECK(RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled());
   DCHECK(!RuntimeEnabledFeatures::
              CSSReducedFontLoadingLayoutInvalidationsEnabled());
   ReleaseFontData();
@@ -61,6 +61,7 @@ void FontFallbackList::RevalidateDeprecated() {
   family_index_ = 0;
   has_loading_fallback_ = false;
   has_custom_font_ = false;
+  has_advance_override_ = false;
   can_shape_word_by_word_ = false;
   can_shape_word_by_word_computed_ = false;
   font_selector_version_ = font_selector_ ? font_selector_->Version() : 0;
@@ -79,25 +80,11 @@ void FontFallbackList::ReleaseFontData() {
   shape_cache_.reset();  // Clear the weak pointer to the cache instance.
 }
 
-bool FontFallbackList::LoadingCustomFonts() const {
-  // This function is only used for style and layout invalidation purposes. We
-  // don't need it for invalidation when the feature below is enabled.
-  if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled())
-    return false;
-
-  if (!has_loading_fallback_)
-    return false;
-
-  unsigned num_fonts = font_list_.size();
-  for (unsigned i = 0; i < num_fonts; ++i) {
-    if (font_list_[i]->IsLoading())
-      return true;
-  }
-  return false;
-}
-
 bool FontFallbackList::ShouldSkipDrawing() const {
-  DCHECK(IsValid());
+  // The DCHECK hit will be fixed by the runtime enabled feature below, so we
+  // don't fix it in the legacy code paths.
+  DCHECK(IsValid() || !RuntimeEnabledFeatures::
+                          CSSReducedFontLoadingLayoutInvalidationsEnabled());
 
   if (!has_loading_fallback_)
     return false;
@@ -175,9 +162,16 @@ scoped_refptr<FontData> FontFallbackList::GetFontData(
       if (font_selector_)
         result = font_selector_->GetFontData(font_description,
                                              curr_family->Family());
-      if (!result)
+
+      if (!result) {
         result = FontCache::GetFontCache()->GetFontData(font_description,
                                                         curr_family->Family());
+        if (font_selector_) {
+          font_selector_->ReportFontLookupByUniqueOrFamilyName(
+              curr_family->Family(), font_description,
+              DynamicTo<SimpleFontData>(result.get()));
+        }
+      }
       if (result) {
         if (font_selector_) {
           font_selector_->ReportSuccessfulFontFamilyMatch(
@@ -200,7 +194,13 @@ scoped_refptr<FontData> FontFallbackList::GetFontData(
   }
 
   // Still no result. Hand back our last resort fallback font.
-  return FontCache::GetFontCache()->GetLastResortFallbackFont(font_description);
+  auto last_resort =
+      FontCache::GetFontCache()->GetLastResortFallbackFont(font_description);
+  if (font_selector_) {
+    font_selector_->ReportLastResortFallbackFontLookup(font_description,
+                                                       last_resort.get());
+  }
+  return last_resort;
 }
 
 FallbackListCompositeKey FontFallbackList::CompositeKey(
@@ -262,6 +262,8 @@ const FontData* FontFallbackList::FontDataAt(
       has_loading_fallback_ = true;
     if (result->IsCustomFont())
       has_custom_font_ = true;
+    if (result->HasAdvanceOverride())
+      has_advance_override_ = true;
   }
   return result.get();
 }

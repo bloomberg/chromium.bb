@@ -360,7 +360,8 @@ sk_sp<PaintShader> PaintShader::CreateDecodedImage(
     ImageProvider* image_provider,
     uint32_t* transfer_cache_entry_id,
     SkFilterQuality* raster_quality,
-    bool* needs_mips) const {
+    bool* needs_mips,
+    gpu::Mailbox* mailbox) const {
   DCHECK_EQ(shader_type_, Type::kImage);
   if (!image_)
     return nullptr;
@@ -370,7 +371,8 @@ sk_sp<PaintShader> PaintShader::CreateDecodedImage(
   SkRect src_rect = SkRect::MakeIWH(image_.width(), image_.height());
   SkIRect int_src_rect;
   src_rect.roundOut(&int_src_rect);
-  DrawImage draw_image(image_, int_src_rect, quality, total_image_matrix);
+  DrawImage draw_image(image_, false, int_src_rect, quality,
+                       total_image_matrix);
   auto decoded_draw_image = image_provider->GetRasterContent(draw_image);
   if (!decoded_draw_image)
     return nullptr;
@@ -387,6 +389,9 @@ sk_sp<PaintShader> PaintShader::CreateDecodedImage(
   if (decoded_image.transfer_cache_entry_id()) {
     decoded_paint_image = image_;
     *transfer_cache_entry_id = *decoded_image.transfer_cache_entry_id();
+  } else if (!decoded_image.mailbox().IsZero()) {
+    decoded_paint_image = image_;
+    *mailbox = decoded_image.mailbox();
   } else {
     DCHECK(decoded_image.image());
 
@@ -395,7 +400,8 @@ sk_sp<PaintShader> PaintShader::CreateDecodedImage(
     decoded_paint_image =
         PaintImageBuilder::WithDefault()
             .set_id(image_.stable_id())
-            .set_image(std::move(sk_image), image_.GetContentIdForFrame(0u))
+            .set_texture_image(std::move(sk_image),
+                               image_.GetContentIdForFrame(0u))
             .TakePaintImage();
   }
 

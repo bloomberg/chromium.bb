@@ -7,6 +7,10 @@ import hashlib
 from recipe_engine import recipe_test_api
 
 class GclientTestApi(recipe_test_api.RecipeTestApi):
+  def diff_deps_test_data(self, files):
+    return self.m.raw_io.stream_output(
+        '\n'.join(['10>%s' % fname for fname in files]))
+
   def output_json(self, projects):
     """Deterministically synthesize json.output test data for gclient's
     --output-json option.

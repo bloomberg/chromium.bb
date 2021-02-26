@@ -68,20 +68,16 @@ class CORE_EXPORT FlexibleArrayBufferView {
     return IsFull() ? full_->BaseAddressMaybeShared() : small_data_;
   }
 
-  size_t ByteLengthAsSizeT() const {
+  size_t ByteLength() const {
     DCHECK(!IsNull());
-    return IsFull() ? full_->byteLengthAsSizeT() : small_length_;
+    return IsFull() ? full_->byteLength() : small_length_;
   }
 
   unsigned DeprecatedByteLengthAsUnsigned() const {
     DCHECK(!IsNull());
-    return IsFull() ? base::checked_cast<unsigned>(full_->byteLengthAsSizeT())
+    return IsFull() ? base::checked_cast<unsigned>(full_->byteLength())
                     : base::checked_cast<unsigned>(small_length_);
   }
-
-  // TODO(crbug.com/1050474): Remove this cast operator and make the callsites
-  // explicitly call IsNull().
-  operator bool() const { return !IsNull(); }
 
  private:
   DOMArrayBufferView* full_ = nullptr;

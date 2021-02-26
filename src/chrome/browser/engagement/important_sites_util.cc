@@ -18,9 +18,9 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/installable/installable_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -30,6 +30,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/site_engagement/core/mojom/site_engagement_details.mojom.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/mojom/site_engagement/site_engagement.mojom.h"
 #include "url/gurl.h"
@@ -106,21 +107,21 @@ void RecordIgnore(base::DictionaryValue* dict) {
 }
 
 // If we should blacklist the item with the given dictionary ignored record.
-bool ShouldSuppressItem(base::DictionaryValue* dict) {
-  double last_ignored_time = 0;
-  if (dict->GetDouble(kTimeLastIgnored, &last_ignored_time)) {
+bool ShouldSuppressItem(base::Value* dict) {
+  base::Optional<double> last_ignored_time =
+      dict->FindDoubleKey(kTimeLastIgnored);
+  if (last_ignored_time) {
     base::TimeDelta diff =
-        base::Time::Now() - base::Time::FromDoubleT(last_ignored_time);
+        base::Time::Now() - base::Time::FromDoubleT(*last_ignored_time);
     if (diff >= base::TimeDelta::FromDays(kBlacklistExpirationTimeDays)) {
-      dict->SetInteger(kNumTimesIgnoredName, 0);
-      dict->Remove(kTimeLastIgnored, nullptr);
+      dict->SetIntKey(kNumTimesIgnoredName, 0);
+      dict->RemoveKey(kTimeLastIgnored);
       return false;
     }
   }
 
-  int times_ignored = 0;
-  return dict->GetInteger(kNumTimesIgnoredName, &times_ignored) &&
-         times_ignored >= kTimesIgnoredForBlacklist;
+  base::Optional<int> times_ignored = dict->FindIntKey(kNumTimesIgnoredName);
+  return times_ignored && *times_ignored >= kTimesIgnoredForBlacklist;
 }
 
 CrossedReason GetCrossedReasonFromBitfield(int32_t reason_bitfield) {
@@ -214,24 +215,19 @@ std::unordered_set<std::string> GetBlacklistedImportantDomains(
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
   map->GetSettingsForOneType(ContentSettingsType::IMPORTANT_SITE_INFO,
-                             content_settings::ResourceIdentifier(),
+
                              &content_settings_list);
   std::unordered_set<std::string> ignoring_domains;
-  for (const ContentSettingPatternSource& site : content_settings_list) {
+  for (ContentSettingPatternSource& site : content_settings_list) {
     GURL origin(site.primary_pattern.ToString());
     if (!origin.is_valid() || base::Contains(ignoring_domains, origin.host())) {
       continue;
     }
 
-    std::unique_ptr<base::DictionaryValue> dict =
-        base::DictionaryValue::From(map->GetWebsiteSetting(
-            origin, origin, ContentSettingsType::IMPORTANT_SITE_INFO, "",
-            nullptr));
-
-    if (!dict)
+    if (!site.setting_value.is_dict())
       continue;
 
-    if (ShouldSuppressItem(dict.get()))
+    if (ShouldSuppressItem(&site.setting_value))
       ignoring_domains.insert(origin.host());
   }
   return ignoring_domains;
@@ -253,7 +249,6 @@ void PopulateInfoMapWithEngagement(
   // with the highest engagement score.
   for (const auto& detail : engagement_details) {
     if (detail.installed_bonus > 0) {
-      // This origin was recently launched from the home screen.
       MaybePopulateImportantInfoForReason(detail.origin, &content_origins,
                                           ImportantReason::HOME_SCREEN,
                                           base::nullopt, output);
@@ -284,8 +279,7 @@ void PopulateInfoMapWithContentTypeAllowed(
   // Grab our content settings list.
   ContentSettingsForOneType content_settings_list;
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
-      content_type, content_settings::ResourceIdentifier(),
-      &content_settings_list);
+      content_type, &content_settings_list);
 
   // Extract a set of urls, using the primary pattern. We don't handle
   // wildcard patterns.
@@ -366,7 +360,7 @@ void PopulateInfoMapWithBookmarks(
 // used to warn about clearing data for installed apps can be excluded from the
 // Android build.
 #if !defined(OS_ANDROID)
-void PopulateInfoMapWithInstalled(
+void PopulateInfoMapWithInstalledEngagedInTimePeriod(
     browsing_data::TimePeriod time_period,
     Profile* profile,
     std::map<std::string, ImportantDomainInfo>* output) {
@@ -436,6 +430,19 @@ void ImportantSitesUtil::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(prefs::kImportantSitesDialogHistory);
 }
 
+// static
+std::set<std::string> ImportantSitesUtil::GetInstalledRegisterableDomains(
+    Profile* profile) {
+  std::set<GURL> installed_origins = GetOriginsWithInstalledWebApps(profile);
+  std::set<std::string> registerable_domains;
+
+  for (auto& origin : installed_origins) {
+    registerable_domains.emplace(
+        ImportantSitesUtil::GetRegisterableDomainOrIP(origin));
+  }
+  return registerable_domains;
+}
+
 std::vector<ImportantDomainInfo>
 ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
                                                     size_t max_results) {
@@ -490,7 +497,8 @@ ImportantSitesUtil::GetInstalledRegisterableDomains(
     size_t max_results) {
   std::vector<ImportantDomainInfo> installed_domains;
   std::map<std::string, ImportantDomainInfo> installed_app_info;
-  PopulateInfoMapWithInstalled(time_period, profile, &installed_app_info);
+  PopulateInfoMapWithInstalledEngagedInTimePeriod(time_period, profile,
+                                                  &installed_app_info);
 
   std::unordered_set<std::string> excluded_domains =
       GetBlacklistedImportantDomains(profile);
@@ -539,7 +547,7 @@ void ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
       GURL origin("http://" + ignored_site);
       std::unique_ptr<base::DictionaryValue> dict =
           base::DictionaryValue::From(map->GetWebsiteSetting(
-              origin, origin, ContentSettingsType::IMPORTANT_SITE_INFO, "",
+              origin, origin, ContentSettingsType::IMPORTANT_SITE_INFO,
               nullptr));
 
       if (!dict)
@@ -548,7 +556,7 @@ void ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
       RecordIgnore(dict.get());
 
       map->SetWebsiteSettingDefaultScope(
-          origin, origin, ContentSettingsType::IMPORTANT_SITE_INFO, "",
+          origin, origin, ContentSettingsType::IMPORTANT_SITE_INFO,
           std::move(dict));
     }
   } else {
@@ -566,7 +574,7 @@ void ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
     dict->Remove(kTimeLastIgnored, nullptr);
     map->SetWebsiteSettingDefaultScope(origin, origin,
                                        ContentSettingsType::IMPORTANT_SITE_INFO,
-                                       "", std::move(dict));
+                                       std::move(dict));
   }
 
   // Finally, record our old crossed-stats.

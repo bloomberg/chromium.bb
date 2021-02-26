@@ -183,12 +183,12 @@ class BackgroundSyncManagerTest
     // Hang onto the registrations as they need to be "live" when
     // calling BackgroundSyncManager::Register.
     helper_->context_wrapper()->FindReadyRegistrationForId(
-        sw_registration_id_1_, GURL(kScope1).GetOrigin(),
+        sw_registration_id_1_, url::Origin::Create(GURL(kScope1)),
         base::BindOnce(FindServiceWorkerRegistrationCallback,
                        &sw_registration_1_));
 
     helper_->context_wrapper()->FindReadyRegistrationForId(
-        sw_registration_id_2_, GURL(kScope1).GetOrigin(),
+        sw_registration_id_2_, url::Origin::Create(GURL(kScope1)),
         base::BindOnce(FindServiceWorkerRegistrationCallback,
                        &sw_registration_2_));
     base::RunLoop().RunUntilIdle();
@@ -361,14 +361,14 @@ class BackgroundSyncManagerTest
     if (GetBackgroundSyncType(options) ==
         blink::mojom::BackgroundSyncType::ONE_SHOT) {
       test_background_sync_manager()->Register(
-          sw_registration_id, std::move(options),
+          sw_registration_id, options,
           base::BindOnce(&BackgroundSyncManagerTest::
                              StatusAndOneShotSyncRegistrationCallback,
                          base::Unretained(this), &was_called));
       callback_status = &one_shot_sync_callback_status_;
     } else {
       test_background_sync_manager()->Register(
-          sw_registration_id, std::move(options),
+          sw_registration_id, options,
           base::BindOnce(&BackgroundSyncManagerTest::
                              StatusAndPeriodicSyncRegistrationCallback,
                          base::Unretained(this), &was_called));
@@ -885,16 +885,16 @@ TEST_F(BackgroundSyncManagerTest, RegistrationIntact) {
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterWithoutLiveSWRegistration) {
-  // Get a provider host which is used to install the service worker.
+  // Get a worker host which is used to install the service worker.
   ASSERT_TRUE(sw_registration_1_->active_version());
   ASSERT_FALSE(sw_registration_1_->waiting_version());
   ASSERT_FALSE(sw_registration_1_->installing_version());
-  ServiceWorkerProviderHost* provider_host =
-      sw_registration_1_->active_version()->provider_host();
-  ASSERT_TRUE(provider_host);
+  ServiceWorkerHost* worker_host =
+      sw_registration_1_->active_version()->worker_host();
+  ASSERT_TRUE(worker_host);
 
   // Remove the registration object host.
-  provider_host->container_host()->registration_object_hosts_.clear();
+  worker_host->container_host()->registration_object_hosts_.clear();
 
   // Ensure |sw_registration_1_| is the last reference to the registration.
   ASSERT_TRUE(sw_registration_1_->HasOneRef());

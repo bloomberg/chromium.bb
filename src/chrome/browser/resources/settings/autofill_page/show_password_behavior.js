@@ -5,6 +5,7 @@
 // <if expr="chromeos">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
+import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 
 /**
@@ -17,10 +18,9 @@ export const ShowPasswordBehavior = {
 
   properties: {
     /**
-     * The password that is being displayed.
-     * @type {!ShowPasswordBehavior.UiEntryWithPassword}
+     * @type {!MultiStorePasswordUiEntry}
      */
-    item: Object,
+    entry: Object,
 
     // <if expr="chromeos">
     /** @type BlockingRequestManager */
@@ -31,11 +31,11 @@ export const ShowPasswordBehavior = {
   /**
    * Gets the password input's type. Should be 'text' when password is visible
    * or when there's federated text otherwise 'password'.
-   * @private
+   * @return {string}
    */
-  getPasswordInputType_() {
-    return this.item.password || this.item.entry.federationText ? 'text' :
-                                                                  'password';
+  getPasswordInputType() {
+    return this.entry.password || this.entry.federationText ? 'text' :
+                                                              'password';
   },
 
   /**
@@ -43,67 +43,59 @@ export const ShowPasswordBehavior = {
    * @param {string} password
    * @param {string} hide The i18n text to use for 'Hide'
    * @param {string} show The i18n text to use for 'Show'
-   * @private
    */
-  showPasswordTitle_(password, hide, show) {
+  showPasswordTitle(password, hide, show) {
     return password ? hide : show;
   },
 
   /**
    * Get the right icon to display when hiding/showing a password.
    * @return {string}
-   * @private
    */
-  getIconClass_() {
-    return this.item.password ? 'icon-visibility-off' : 'icon-visibility';
+  getIconClass() {
+    return this.entry.password ? 'icon-visibility-off' : 'icon-visibility';
   },
 
   /**
    * Gets the text of the password. Will use the value of |password| unless it
    * cannot be shown, in which case it will be a fixed number of spaces. It can
    * also be the federated text.
-   * @private
+   * @return {string}
    */
-  getPassword_() {
-    if (!this.item) {
-      return '';
-    }
-
+  getPassword() {
     const NUM_PLACEHOLDERS = 10;
-    return this.item.entry.federationText || this.item.password ||
+    return this.entry.federationText || this.entry.password ||
         ' '.repeat(NUM_PLACEHOLDERS);
   },
 
   /**
    * Handler for tapping the show/hide button.
-   * @private
    */
-  onShowPasswordButtonTap_() {
-    if (this.item.password) {
-      this.set('item.password', '');
+  onShowPasswordButtonTap() {
+    if (this.entry.password) {
+      this.hide();
       return;
     }
     PasswordManagerImpl.getInstance()
         .requestPlaintextPassword(
-            this.item.entry.id, chrome.passwordsPrivate.PlaintextReason.VIEW)
+            this.entry.getAnyId(), chrome.passwordsPrivate.PlaintextReason.VIEW)
         .then(
             password => {
-              this.set('item.password', password);
+              this.set('entry.password', password);
             },
             error => {
               // <if expr="chromeos">
               // If no password was found, refresh auth token and retry.
               this.tokenRequestManager.request(
-                  this.onShowPasswordButtonTap_.bind(this));
+                  this.onShowPasswordButtonTap.bind(this));
               // </if>
             });
   },
-};
 
-/**
- * @typedef {{
- *    entry: !chrome.passwordsPrivate.PasswordUiEntry,
- *    password: string
- * }}
- */
-ShowPasswordBehavior.UiEntryWithPassword;
+  /**
+   * Hides the password.
+   */
+  hide() {
+    this.set('entry.password', '');
+  }
+};

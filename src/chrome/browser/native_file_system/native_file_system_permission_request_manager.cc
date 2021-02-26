@@ -5,11 +5,11 @@
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 
 #include "base/command_line.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/ui/native_file_system_dialogs.h"
 #include "components/permissions/permission_util.h"
 #include "components/permissions/switches.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -17,14 +17,14 @@ bool RequestsAreIdentical(
     const NativeFileSystemPermissionRequestManager::RequestData& a,
     const NativeFileSystemPermissionRequestManager::RequestData& b) {
   return a.origin == b.origin && a.path == b.path &&
-         a.is_directory == b.is_directory && a.access == b.access;
+         a.handle_type == b.handle_type && a.access == b.access;
 }
 
 bool RequestsAreForSamePath(
     const NativeFileSystemPermissionRequestManager::RequestData& a,
     const NativeFileSystemPermissionRequestManager::RequestData& b) {
   return a.origin == b.origin && a.path == b.path &&
-         a.is_directory == b.is_directory;
+         a.handle_type == b.handle_type;
 }
 
 }  // namespace
@@ -101,8 +101,8 @@ void NativeFileSystemPermissionRequestManager::ScheduleShowRequest() {
   if (!CanShowRequest())
     return;
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &NativeFileSystemPermissionRequestManager::DequeueAndShowRequest,
           weak_factory_.GetWeakPtr()));

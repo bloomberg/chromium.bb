@@ -100,8 +100,12 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
     suggestion->set_relevance(i->relevance);
     if (i->typed_count != -1)
       suggestion->set_typed_count(i->typed_count);
-    if (i->subtype_identifier > 0)
-      suggestion->set_result_subtype_identifier(i->subtype_identifier);
+
+    // TODO(https://crbug.com/1103056): send the entire set of subtypes.
+    if (!i->subtypes.empty()) {
+      suggestion->set_result_subtype_identifier(*i->subtypes.begin());
+    }
+
     suggestion->set_has_tab_match(i->has_tab_match);
     suggestion->set_is_keyword_suggestion(i->from_keyword);
   }
@@ -113,4 +117,10 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   omnibox_event->set_in_keyword_mode(log.in_keyword_mode);
   if (log.in_keyword_mode)
     omnibox_event->set_keyword_mode_entry_method(log.keyword_mode_entry_method);
+  if (log.is_query_started_from_tile)
+    omnibox_event->set_is_query_started_from_tile(true);
+  for (auto feature : log.feature_triggered_in_session) {
+    omnibox_event->add_feature_triggered_in_session(
+        static_cast<size_t>(feature));
+  }
 }

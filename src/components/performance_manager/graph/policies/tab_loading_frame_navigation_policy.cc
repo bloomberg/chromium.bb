@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/public/features.h"
@@ -60,6 +59,7 @@ TabLoadingFrameNavigationPolicy::TabLoadingFrameNavigationPolicy()
   auto params = features::TabLoadingFrameNavigationThrottlesParams::GetParams();
   timeout_min_ = params.minimum_throttle_timeout;
   timeout_max_ = params.maximum_throttle_timeout;
+  fcp_multiple_ = params.fcp_multiple;
 }
 
 TabLoadingFrameNavigationPolicy::~TabLoadingFrameNavigationPolicy() {
@@ -123,6 +123,24 @@ bool TabLoadingFrameNavigationPolicy::ShouldThrottleNavigation(
   return true;
 }
 
+base::TimeTicks TabLoadingFrameNavigationPolicy::GetPageTimeoutForTesting(
+    const PageNode* page_node) const {
+  size_t i = 0;
+  for (; i < timeouts_.size(); ++i) {
+    if (timeouts_[i].page_node == page_node)
+      return timeouts_[i].timeout;
+  }
+  return base::TimeTicks();
+}
+
+base::TimeDelta TabLoadingFrameNavigationPolicy::CalculateTimeoutFromFCP(
+    base::TimeDelta fcp) const {
+  // No need to cap the timeout with |timeout_max_|, as the timeout starts with
+  // that by default, and timeout updates can only make the timeout decrease.
+  // See MaybeUpdatePageTimeout for details.
+  return std::max(fcp * (fcp_multiple_ - 1.0), timeout_min_);
+}
+
 void TabLoadingFrameNavigationPolicy::OnBeforePageNodeRemoved(
     const PageNode* page_node) {
   // There's no public graph accessor. We could cache this in OnPassedToGraph,
@@ -142,22 +160,19 @@ void TabLoadingFrameNavigationPolicy::OnFirstContentfulPaint(
   if (!frame_node->IsMainFrame() || !frame_node->IsCurrent())
     return;
 
-  // Wait for another FCP time period, but enforce a lower bound.
-  double fcp_ms = time_since_navigation_start.InMillisecondsF();
-  double delta_ms = std::max(timeout_min_.InMillisecondsF(), fcp_ms);
+  // Update the timer if needed.
   MaybeUpdatePageTimeout(frame_node->GetPageNode(),
-                         base::TimeDelta::FromMillisecondsD(delta_ms));
+                         CalculateTimeoutFromFCP(time_since_navigation_start));
 }
 
 void TabLoadingFrameNavigationPolicy::OnPassedToGraph(Graph* graph) {
   DCHECK(NothingRegistered(graph));
-  base::PostTask(FROM_HERE,
-                 {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-                 base::BindOnce(
-                     [](MechanismDelegate* mechanism) {
-                       mechanism->SetThrottlingEnabled(true);
-                     },
-                     base::Unretained(mechanism_)));
+  content::GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+      ->PostTask(FROM_HERE, base::BindOnce(
+                                [](MechanismDelegate* mechanism) {
+                                  mechanism->SetThrottlingEnabled(true);
+                                },
+                                base::Unretained(mechanism_)));
   graph->AddFrameNodeObserver(this);
   graph->AddPageNodeObserver(this);
   graph->RegisterObject(this);
@@ -165,13 +180,12 @@ void TabLoadingFrameNavigationPolicy::OnPassedToGraph(Graph* graph) {
 
 void TabLoadingFrameNavigationPolicy::OnTakenFromGraph(Graph* graph) {
   DCHECK(IsRegistered(graph));
-  base::PostTask(FROM_HERE,
-                 {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-                 base::BindOnce(
-                     [](MechanismDelegate* mechanism) {
-                       mechanism->SetThrottlingEnabled(false);
-                     },
-                     base::Unretained(mechanism_)));
+  content::GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+      ->PostTask(FROM_HERE, base::BindOnce(
+                                [](MechanismDelegate* mechanism) {
+                                  mechanism->SetThrottlingEnabled(false);
+                                },
+                                base::Unretained(mechanism_)));
   graph->UnregisterObject(this);
   graph->RemovePageNodeObserver(this);
   graph->RemoveFrameNodeObserver(this);
@@ -232,7 +246,7 @@ void TabLoadingFrameNavigationPolicy::CreatePageTimeout(
 void TabLoadingFrameNavigationPolicy::MaybeUpdatePageTimeout(
     const PageNode* page_node,
     base::TimeDelta timeout) {
-  // Find or create an entry for the given |page_node|.
+  // Find the entry for the given |page_node|.
   size_t i = 0;
   for (; i < timeouts_.size(); ++i) {
     if (timeouts_[i].page_node == page_node)
@@ -324,16 +338,18 @@ void TabLoadingFrameNavigationPolicy::StopThrottlingExpiredPages() {
     // the contents. Note that |mechanism_| is expected to effectively live
     // forever (it is only a testing seam, in production it is a static
     // singleton), so passing base::Unretained is safe.
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(
-            [](MechanismDelegate* mechanism, const WebContentsProxy& proxy) {
-              auto* contents = proxy.Get();
-              if (contents)
-                mechanism->StopThrottling(contents, proxy.LastNavigationId());
-            },
-            base::Unretained(mechanism_), page_node->GetContentsProxy()));
+    content::GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+        ->PostTask(FROM_HERE, base::BindOnce(
+                                  [](MechanismDelegate* mechanism,
+                                     const WebContentsProxy& proxy) {
+                                    auto* contents = proxy.Get();
+                                    if (contents)
+                                      mechanism->StopThrottling(
+                                          contents,
+                                          proxy.LastNewDocNavigationId());
+                                  },
+                                  base::Unretained(mechanism_),
+                                  page_node->GetContentsProxy()));
   }
 }
 

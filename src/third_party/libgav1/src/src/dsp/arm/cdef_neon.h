@@ -23,7 +23,7 @@
 namespace libgav1 {
 namespace dsp {
 
-// Initializes Dsp::cdef_direction and Dsp::cdef_filter. This function is not
+// Initializes Dsp::cdef_direction and Dsp::cdef_filters. This function is not
 // thread-safe.
 void CdefInit_NEON();
 
@@ -32,7 +32,7 @@ void CdefInit_NEON();
 
 #if LIBGAV1_ENABLE_NEON
 #define LIBGAV1_Dsp8bpp_CdefDirection LIBGAV1_CPU_NEON
-#define LIBGAV1_Dsp8bpp_CdefFilter LIBGAV1_CPU_NEON
+#define LIBGAV1_Dsp8bpp_CdefFilters LIBGAV1_CPU_NEON
 #endif  // LIBGAV1_ENABLE_NEON
 
 #endif  // LIBGAV1_SRC_DSP_ARM_CDEF_NEON_H_

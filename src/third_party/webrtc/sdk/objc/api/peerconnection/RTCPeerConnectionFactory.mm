@@ -25,6 +25,9 @@
 #import "base/RTCVideoDecoderFactory.h"
 #import "base/RTCVideoEncoderFactory.h"
 #import "helpers/NSString+StdString.h"
+#include "sdk/objc/native/api/network_monitor_factory.h"
+#include "system_wrappers/include/field_trial.h"
+
 #ifndef HAVE_NO_MEDIA
 #import "components/video_codec/RTCVideoDecoderFactoryH264.h"
 #import "components/video_codec/RTCVideoEncoderFactoryH264.h"
@@ -34,6 +37,7 @@
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"     // nogncheck
 #include "api/rtc_event_log/rtc_event_log_factory.h"
 #include "api/task_queue/default_task_queue_factory.h"
+#include "api/transport/field_trial_based_config.h"
 #include "modules/audio_device/include/audio_device.h"          // nogncheck
 #include "modules/audio_processing/include/audio_processing.h"  // nogncheck
 
@@ -52,7 +56,6 @@
 // C++ target.
 // TODO(zhihuang): Remove nogncheck once MediaEngineInterface is moved to C++
 // API layer.
-#include "api/transport/media/media_transport_interface.h"
 #include "media/engine/webrtc_media_engine.h"  // nogncheck
 
 @implementation RTC_OBJC_TYPE (RTCPeerConnectionFactory) {
@@ -84,15 +87,13 @@
               nativeVideoDecoderFactory:webrtc::ObjCToNativeVideoDecoderFactory([[RTC_OBJC_TYPE(
                                             RTCVideoDecoderFactoryH264) alloc] init])
                       audioDeviceModule:[self audioDeviceModule]
-                  audioProcessingModule:nullptr
-                  mediaTransportFactory:nullptr];
+                  audioProcessingModule:nullptr];
 #endif
 }
 
 - (instancetype)
     initWithEncoderFactory:(nullable id<RTC_OBJC_TYPE(RTCVideoEncoderFactory)>)encoderFactory
-            decoderFactory:(nullable id<RTC_OBJC_TYPE(RTCVideoDecoderFactory)>)decoderFactory
-     mediaTransportFactory:(std::unique_ptr<webrtc::MediaTransportFactory>)mediaTransportFactory {
+            decoderFactory:(nullable id<RTC_OBJC_TYPE(RTCVideoDecoderFactory)>)decoderFactory {
 #ifdef HAVE_NO_MEDIA
   return [self initWithNoMedia];
 #else
@@ -109,18 +110,9 @@
                        nativeVideoEncoderFactory:std::move(native_encoder_factory)
                        nativeVideoDecoderFactory:std::move(native_decoder_factory)
                                audioDeviceModule:[self audioDeviceModule]
-                           audioProcessingModule:nullptr
-                           mediaTransportFactory:std::move(mediaTransportFactory)];
+                           audioProcessingModule:nullptr];
 #endif
 }
-- (instancetype)
-    initWithEncoderFactory:(nullable id<RTC_OBJC_TYPE(RTCVideoEncoderFactory)>)encoderFactory
-            decoderFactory:(nullable id<RTC_OBJC_TYPE(RTCVideoDecoderFactory)>)decoderFactory {
-  return [self initWithEncoderFactory:encoderFactory
-                       decoderFactory:decoderFactory
-                mediaTransportFactory:nullptr];
-}
-
 - (instancetype)initNative {
   if (self = [super init]) {
     _networkThread = rtc::Thread::CreateWithSocketServer();
@@ -147,6 +139,9 @@
     dependencies.network_thread = _networkThread.get();
     dependencies.worker_thread = _workerThread.get();
     dependencies.signaling_thread = _signalingThread.get();
+    if (webrtc::field_trial::IsEnabled("WebRTC-Network-UseNWPathMonitor")) {
+      dependencies.network_monitor_factory = webrtc::CreateNetworkMonitorFactory();
+    }
     _nativeFactory = webrtc::CreateModularPeerConnectionFactory(std::move(dependencies));
     NSAssert(_nativeFactory, @"Failed to initialize PeerConnectionFactory!");
   }
@@ -170,30 +165,7 @@
                        nativeVideoDecoderFactory:std::move(videoDecoderFactory)
                                audioDeviceModule:audioDeviceModule
                            audioProcessingModule:audioProcessingModule
-                           mediaTransportFactory:nullptr];
-}
-
-- (instancetype)initWithNativeAudioEncoderFactory:
-                    (rtc::scoped_refptr<webrtc::AudioEncoderFactory>)audioEncoderFactory
-                        nativeAudioDecoderFactory:
-                            (rtc::scoped_refptr<webrtc::AudioDecoderFactory>)audioDecoderFactory
-                        nativeVideoEncoderFactory:
-                            (std::unique_ptr<webrtc::VideoEncoderFactory>)videoEncoderFactory
-                        nativeVideoDecoderFactory:
-                            (std::unique_ptr<webrtc::VideoDecoderFactory>)videoDecoderFactory
-                                audioDeviceModule:(webrtc::AudioDeviceModule *)audioDeviceModule
-                            audioProcessingModule:
-                                (rtc::scoped_refptr<webrtc::AudioProcessing>)audioProcessingModule
-                            mediaTransportFactory:(std::unique_ptr<webrtc::MediaTransportFactory>)
-                                                      mediaTransportFactory {
-  return [self initWithNativeAudioEncoderFactory:audioEncoderFactory
-                       nativeAudioDecoderFactory:audioDecoderFactory
-                       nativeVideoEncoderFactory:std::move(videoEncoderFactory)
-                       nativeVideoDecoderFactory:std::move(videoDecoderFactory)
-                               audioDeviceModule:audioDeviceModule
-                           audioProcessingModule:audioProcessingModule
-                        networkControllerFactory:nullptr
-                           mediaTransportFactory:std::move(mediaTransportFactory)];
+                        networkControllerFactory:nullptr];
 }
 - (instancetype)initWithNativeAudioEncoderFactory:
                     (rtc::scoped_refptr<webrtc::AudioEncoderFactory>)audioEncoderFactory
@@ -208,16 +180,18 @@
                                 (rtc::scoped_refptr<webrtc::AudioProcessing>)audioProcessingModule
                          networkControllerFactory:
                              (std::unique_ptr<webrtc::NetworkControllerFactoryInterface>)
-                                 networkControllerFactory
-                            mediaTransportFactory:(std::unique_ptr<webrtc::MediaTransportFactory>)
-                                                      mediaTransportFactory {
+                                 networkControllerFactory {
   if (self = [self initNative]) {
     webrtc::PeerConnectionFactoryDependencies dependencies;
     dependencies.network_thread = _networkThread.get();
     dependencies.worker_thread = _workerThread.get();
     dependencies.signaling_thread = _signalingThread.get();
+    if (webrtc::field_trial::IsEnabled("WebRTC-Network-UseNWPathMonitor")) {
+      dependencies.network_monitor_factory = webrtc::CreateNetworkMonitorFactory();
+    }
 #ifndef HAVE_NO_MEDIA
     dependencies.task_queue_factory = webrtc::CreateDefaultTaskQueueFactory();
+    dependencies.trials = std::make_unique<webrtc::FieldTrialBasedConfig>();
     cricket::MediaEngineDependencies media_deps;
     media_deps.adm = std::move(audioDeviceModule);
     media_deps.task_queue_factory = dependencies.task_queue_factory.get();
@@ -230,12 +204,12 @@
     } else {
       media_deps.audio_processing = webrtc::AudioProcessingBuilder().Create();
     }
+    media_deps.trials = dependencies.trials.get();
     dependencies.media_engine = cricket::CreateMediaEngine(std::move(media_deps));
     dependencies.call_factory = webrtc::CreateCallFactory();
     dependencies.event_log_factory =
         std::make_unique<webrtc::RtcEventLogFactory>(dependencies.task_queue_factory.get());
     dependencies.network_controller_factory = std::move(networkControllerFactory);
-    dependencies.media_transport_factory = std::move(mediaTransportFactory);
 #endif
     _nativeFactory = webrtc::CreateModularPeerConnectionFactory(std::move(dependencies));
     NSAssert(_nativeFactory, @"Failed to initialize PeerConnectionFactory!");

@@ -30,20 +30,14 @@ def RunSteps(api, patch_project, patch_repository_url):
 
 
 def GenTests(api):
-  yield (
-      api.test('basic') +
-      api.runtime(is_experimental=False, is_luci=True) +
-      api.buildbucket.try_build(project='infra') +
-      api.post_process(post_process.StatusSuccess) +
-      api.post_process(post_process.DropExpectation)
-  )
+  yield (api.test('basic') + api.runtime(is_experimental=False) +
+         api.buildbucket.try_build(project='infra') +
+         api.post_process(post_process.StatusSuccess) +
+         api.post_process(post_process.DropExpectation))
 
-  yield (
-      api.test('runhooks') +
-      api.runtime(is_experimental=False, is_luci=True) +
-      api.buildbucket.try_build(project='infra') +
-      api.presubmit(runhooks=True) +
-      api.post_process(post_process.MustRun, 'gclient runhooks') +
-      api.post_process(post_process.StatusSuccess) +
-      api.post_process(post_process.DropExpectation)
-  )
+  yield (api.test('runhooks') + api.runtime(is_experimental=False) +
+         api.buildbucket.try_build(project='infra') +
+         api.presubmit(runhooks=True) +
+         api.post_process(post_process.MustRun, 'gclient runhooks') +
+         api.post_process(post_process.StatusSuccess) +
+         api.post_process(post_process.DropExpectation))

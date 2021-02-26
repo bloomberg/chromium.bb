@@ -10,7 +10,6 @@
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -41,8 +40,7 @@ class ShelfControlButtonHighlightPathGenerator
     gfx::RectF visual_bounds = rect;
     visual_bounds.ClampToCenteredSize(
         gfx::SizeF(shelf_config->control_size(), shelf_config->control_size()));
-    if (chromeos::switches::ShouldShowShelfHotseat() &&
-        Shell::Get()->IsInTabletMode() && shelf_config->is_in_app()) {
+    if (Shell::Get()->IsInTabletMode() && shelf_config->is_in_app()) {
       visual_bounds.Inset(0,
                           shelf_config->in_app_control_button_height_inset());
     }
@@ -56,7 +54,7 @@ ShelfControlButton::ShelfControlButton(
     Shelf* shelf,
     ShelfButtonDelegate* shelf_button_delegate)
     : ShelfButton(shelf, shelf_button_delegate) {
-  set_has_ink_drop_action_on_click(true);
+  SetHasInkDropActionOnClick(true);
   SetInstallFocusRingOnFocus(true);
   views::HighlightPathGenerator::Install(
       this, std::make_unique<ShelfControlButtonHighlightPathGenerator>());
@@ -94,8 +92,7 @@ void ShelfControlButton::PaintBackground(gfx::Canvas* canvas,
                                          const gfx::Rect& bounds) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(
-      ShelfConfig::Get()->shelf_control_permanent_highlight_background());
+  flags.setColor(ShelfConfig::Get()->GetShelfControlButtonColor());
   canvas->DrawRoundRect(bounds, ShelfConfig::Get()->control_border_radius(),
                         flags);
 }

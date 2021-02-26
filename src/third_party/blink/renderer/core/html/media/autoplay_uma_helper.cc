@@ -213,7 +213,8 @@ void AutoplayUmaHelper::MaybeStartRecordingMutedVideoPlayMethodBecomeVisible() {
       WTF::BindRepeating(
           &AutoplayUmaHelper::
               OnIntersectionChangedForMutedVideoPlayMethodBecomeVisible,
-          WrapWeakPersistent(this)));
+          WrapWeakPersistent(this)),
+      LocalFrameUkmAggregator::kMediaIntersectionObserver);
   muted_video_play_method_intersection_observer_->observe(element_);
   SetExecutionContext(element_->GetExecutionContext());
 }
@@ -246,7 +247,8 @@ void AutoplayUmaHelper::MaybeStartRecordingMutedVideoOffscreenDuration() {
           WTF::BindRepeating(
               &AutoplayUmaHelper::
                   OnIntersectionChangedForMutedVideoOffscreenDuration,
-              WrapWeakPersistent(this)));
+              WrapWeakPersistent(this)),
+          LocalFrameUkmAggregator::kMediaIntersectionObserver);
   muted_video_offscreen_duration_intersection_observer_->observe(element_);
   element_->addEventListener(event_type_names::kPause, this, false);
   SetExecutionContext(element_->GetExecutionContext());
@@ -278,9 +280,9 @@ void AutoplayUmaHelper::MaybeStopRecordingMutedVideoOffscreenDuration() {
 
 void AutoplayUmaHelper::MaybeUnregisterContextDestroyedObserver() {
   // TODO(keishi): Remove IsIteratingOverObservers() check when
-  // HeapObserverList() supports removal while iterating.
+  // HeapObserverSet() supports removal while iterating.
   if (!ShouldListenToContextDestroyed() && !GetExecutionContext()
-                                                ->ContextLifecycleObserverList()
+                                                ->ContextLifecycleObserverSet()
                                                 .IsIteratingOverObservers()) {
     SetExecutionContext(nullptr);
   }
@@ -297,7 +299,7 @@ bool AutoplayUmaHelper::ShouldListenToContextDestroyed() const {
          muted_video_offscreen_duration_intersection_observer_;
 }
 
-void AutoplayUmaHelper::Trace(Visitor* visitor) {
+void AutoplayUmaHelper::Trace(Visitor* visitor) const {
   NativeEventListener::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(element_);

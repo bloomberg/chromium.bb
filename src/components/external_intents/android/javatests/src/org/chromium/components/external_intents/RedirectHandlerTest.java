@@ -10,8 +10,9 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.SystemClock;
 import android.provider.Browser;
-import android.support.test.filters.SmallTest;
 import android.test.mock.MockPackageManager;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,7 +25,6 @@ import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.ui.base.PageTransition;
 
 import java.net.URISyntaxException;
@@ -353,7 +353,6 @@ public class RedirectHandlerTest {
     @Test
     @SmallTest
     @Feature({"IntentHandling"})
-    @RetryOnFailure
     public void testNavigationFromLinkWithoutUserGesture() {
         RedirectHandler handler = RedirectHandler.create();
         handler.updateIntent(sYtIntent, false, false, false);
@@ -361,12 +360,11 @@ public class RedirectHandlerTest {
         Assert.assertFalse(handler.shouldStayInApp(false));
         Assert.assertFalse(handler.shouldStayInApp(true));
 
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 0);
+        long lastUserInteractionTime = SystemClock.elapsedRealtime();
+        handler.updateNewUrlLoading(PageTransition.LINK, false, false, lastUserInteractionTime, 0);
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertTrue(handler.shouldStayInApp(true));
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 1);
+        handler.updateNewUrlLoading(PageTransition.LINK, false, false, lastUserInteractionTime, 1);
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertTrue(handler.shouldStayInApp(true));
 
@@ -386,7 +384,6 @@ public class RedirectHandlerTest {
     @Test
     @SmallTest
     @Feature({"IntentHandling"})
-    @RetryOnFailure
     public void testNavigationFromReload() {
         RedirectHandler handler = RedirectHandler.create();
         handler.updateIntent(sYtIntent, false, false, false);
@@ -394,12 +391,12 @@ public class RedirectHandlerTest {
         Assert.assertFalse(handler.shouldStayInApp(false));
         Assert.assertFalse(handler.shouldStayInApp(true));
 
+        long lastUserInteractionTime = SystemClock.elapsedRealtime();
         handler.updateNewUrlLoading(
-                PageTransition.RELOAD, false, false, SystemClock.elapsedRealtime(), 0);
+                PageTransition.RELOAD, false, false, lastUserInteractionTime, 0);
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertTrue(handler.shouldStayInApp(true));
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 1);
+        handler.updateNewUrlLoading(PageTransition.LINK, false, false, lastUserInteractionTime, 1);
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertTrue(handler.shouldStayInApp(true));
 
@@ -419,7 +416,6 @@ public class RedirectHandlerTest {
     @Test
     @SmallTest
     @Feature({"IntentHandling"})
-    @RetryOnFailure
     public void testNavigationWithForwardBack() {
         RedirectHandler handler = RedirectHandler.create();
         handler.updateIntent(sYtIntent, false, false, false);
@@ -427,12 +423,12 @@ public class RedirectHandlerTest {
         Assert.assertFalse(handler.shouldStayInApp(false));
         Assert.assertFalse(handler.shouldStayInApp(true));
 
+        long lastUserInteractionTime = SystemClock.elapsedRealtime();
         handler.updateNewUrlLoading(PageTransition.FORM_SUBMIT | PageTransition.FORWARD_BACK, false,
-                true, SystemClock.elapsedRealtime(), 0);
+                true, lastUserInteractionTime, 0);
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertTrue(handler.shouldStayInApp(true));
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 1);
+        handler.updateNewUrlLoading(PageTransition.LINK, false, false, lastUserInteractionTime, 1);
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertTrue(handler.shouldStayInApp(true));
 

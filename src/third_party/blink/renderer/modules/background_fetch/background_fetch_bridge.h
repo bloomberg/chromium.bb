@@ -27,8 +27,6 @@ class BackgroundFetchRegistration;
 class BackgroundFetchBridge final
     : public GarbageCollected<BackgroundFetchBridge>,
       public Supplement<ServiceWorkerRegistration> {
-  USING_GARBAGE_COLLECTED_MIXIN(BackgroundFetchBridge);
-
  public:
   static const char kSupplementName[];
 
@@ -44,7 +42,7 @@ class BackgroundFetchBridge final
 
   explicit BackgroundFetchBridge(ServiceWorkerRegistration& registration);
   virtual ~BackgroundFetchBridge();
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   // Creates a new Background Fetch registration identified by |developer_id|
   // for the sequence of |requests|. The |callback| will be invoked when the

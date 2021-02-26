@@ -26,8 +26,42 @@
 namespace libgav1 {
 namespace dsp {
 
-LIBGAV1_ALWAYS_INLINE __m128i Transpose4x4_U8(const __m128i* const in) {
+LIBGAV1_ALWAYS_INLINE void Transpose2x16_U16(const __m128i* const in,
+                                             __m128i* const out) {
   // Unpack 16 bit elements. Goes from:
+  // in[0]:  00 01 10 11  20 21 30 31
+  // in[0]:  40 41 50 51  60 61 70 71
+  // in[0]:  80 81 90 91  a0 a1 b0 b1
+  // in[0]:  c0 c1 d0 d1  e0 e1 f0 f1
+  // to:
+  // a0:     00 40 01 41  10 50 11 51
+  // a1:     20 60 21 61  30 70 31 71
+  // a2:     80 c0 81 c1  90 d0 91 d1
+  // a3:     a0 e0 a1 e1  b0 f0 b1 f1
+  const __m128i a0 = _mm_unpacklo_epi16(in[0], in[1]);
+  const __m128i a1 = _mm_unpackhi_epi16(in[0], in[1]);
+  const __m128i a2 = _mm_unpacklo_epi16(in[2], in[3]);
+  const __m128i a3 = _mm_unpackhi_epi16(in[2], in[3]);
+  // b0:     00 20 40 60  01 21 41 61
+  // b1:     10 30 50 70  11 31 51 71
+  // b2:     80 a0 c0 e0  81 a1 c1 e1
+  // b3:     90 b0 d0 f0  91 b1 d1 f1
+  const __m128i b0 = _mm_unpacklo_epi16(a0, a1);
+  const __m128i b1 = _mm_unpackhi_epi16(a0, a1);
+  const __m128i b2 = _mm_unpacklo_epi16(a2, a3);
+  const __m128i b3 = _mm_unpackhi_epi16(a2, a3);
+  // out[0]: 00 10 20 30  40 50 60 70
+  // out[1]: 01 11 21 31  41 51 61 71
+  // out[2]: 80 90 a0 b0  c0 d0 e0 f0
+  // out[3]: 81 91 a1 b1  c1 d1 e1 f1
+  out[0] = _mm_unpacklo_epi16(b0, b1);
+  out[1] = _mm_unpackhi_epi16(b0, b1);
+  out[2] = _mm_unpacklo_epi16(b2, b3);
+  out[3] = _mm_unpackhi_epi16(b2, b3);
+}
+
+LIBGAV1_ALWAYS_INLINE __m128i Transpose4x4_U8(const __m128i* const in) {
+  // Unpack 8 bit elements. Goes from:
   // in[0]: 00 01 02 03
   // in[1]: 10 11 12 13
   // in[2]: 20 21 22 23
@@ -43,10 +77,10 @@ LIBGAV1_ALWAYS_INLINE __m128i Transpose4x4_U8(const __m128i* const in) {
   return _mm_unpacklo_epi16(a0, a1);
 }
 
-LIBGAV1_ALWAYS_INLINE void Transpose8x8_U8(const __m128i* const in,
-                                           __m128i* out) {
-  // Unpack 16 bit elements. Goes from:
-  // in[0]: 00 01 02 03 04 05 06 07
+LIBGAV1_ALWAYS_INLINE void Transpose8x8To4x16_U8(const __m128i* const in,
+                                                 __m128i* out) {
+  // Unpack 8 bit elements. Goes from:
+  // in[0]:  00 01 02 03 04 05 06 07
   // in[1]:  10 11 12 13 14 15 16 17
   // in[2]:  20 21 22 23 24 25 26 27
   // in[3]:  30 31 32 33 34 35 36 37

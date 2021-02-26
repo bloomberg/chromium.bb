@@ -70,14 +70,15 @@ class TestSafeBrowsingService : public SafeBrowsingService,
   void SetUseTestUrlLoaderFactory(bool use_test_url_loader_factory);
 
   std::unique_ptr<SafeBrowsingService::StateSubscription> RegisterStateCallback(
-      const base::Callback<void(void)>& callback) override;
+      const base::RepeatingClosure& callback) override;
   network::TestURLLoaderFactory* GetTestUrlLoaderFactory();
 
  protected:
   // SafeBrowsingService overrides
   ~TestSafeBrowsingService() override;
   SafeBrowsingUIManager* CreateUIManager() override;
-  void SendSerializedDownloadReport(const std::string& report) override;
+  void SendSerializedDownloadReport(Profile* profile,
+                                    const std::string& report) override;
 
   // ServicesDelegate::ServicesCreator:
   bool CanCreateDatabaseManager() override;
@@ -94,6 +95,8 @@ class TestSafeBrowsingService : public SafeBrowsingService,
   ResourceRequestDetector* CreateResourceRequestDetector() override;
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
+      Profile* profile) override;
 
  private:
   std::unique_ptr<V4ProtocolConfig> v4_protocol_config_;
@@ -146,7 +149,8 @@ class TestSafeBrowsingUIManager : public SafeBrowsingUIManager {
   TestSafeBrowsingUIManager();
   explicit TestSafeBrowsingUIManager(
       const scoped_refptr<SafeBrowsingService>& service);
-  void SendSerializedThreatDetails(const std::string& serialized) override;
+  void SendSerializedThreatDetails(content::BrowserContext* browser_context,
+                                   const std::string& serialized) override;
   void SetSafeBrowsingService(SafeBrowsingService* sb_service);
   std::list<std::string>* GetThreatDetails();
 

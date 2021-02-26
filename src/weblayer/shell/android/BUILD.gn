@@ -20,23 +20,32 @@ android_assets("weblayer_shell_assets") {
 
 android_resources("weblayer_shell_resources") {
   sources = [
+    "shell_apk/res/drawable-mdpi/avatar_sunglasses.png",
+    "shell_apk/res/layout/alt_shell_browser_controls.xml",
     "shell_apk/res/layout/bottom_controls.xml",
+    "shell_apk/res/layout/main.xml",
     "shell_apk/res/layout/shell_browser_controls.xml",
     "shell_apk/res/menu/app_menu.xml",
+    "shell_apk/res/menu/controls_menu.xml",
     "shell_apk/res/values/strings.xml",
     "shell_apk/res/values/styles.xml",
   ]
-  custom_package = "org.chromium.weblayer.shell"
 }
 
 android_library("weblayer_shell_java") {
   testonly = true
+  resources_package = "org.chromium.weblayer.shell"
 
+  # The google_play_services_base_java dependency is necessary for the
+  # google_play_services_version definition in the manifest.
   deps = [
     ":weblayer_shell_resources",
+    "$google_play_services_package:google_play_services_base_java",
     "//base:base_java",
+    "//components/strictmode/android:java",
     "//third_party/android_deps:android_support_v4_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//weblayer/public/java",
   ]
   sources = [
@@ -106,47 +115,77 @@ generate_wrapper("run_weblayer_shell") {
   ]
 }
 
-if (public_android_sdk) {
-  generate_wrapper("run_weblayer_shell_trichrome") {
+generate_wrapper("run_weblayer_shell_trichrome") {
+  testonly = true
+  wrapper_script = "$root_out_dir/bin/run_weblayer_shell_trichrome"
+  executable = "//weblayer/tools/run_weblayer_shell.py"
+  executable_args = [
+    "--shell-apk-path",
+    "@WrappedPath(apks/WebLayerShellSystemWebView.apk)",
+    "--support-apk-path",
+    "@WrappedPath(apks/TrichromeLibrary.apk)",
+    "--switch-webview-to",
+    "@WrappedPath(apks/TrichromeWebView.apk)",
+  ]
+
+  deps = [
+    ":weblayer_shell_system_webview_apk",
+    "//android_webview:trichrome_webview_apk",
+    "//chrome/android:trichrome_library_apk",
+  ]
+}
+
+if (enable_chrome_android_internal) {
+  generate_wrapper("run_weblayer_shell_monochrome") {
     testonly = true
-    wrapper_script = "$root_out_dir/bin/run_weblayer_shell_trichrome"
+    wrapper_script = "$root_out_dir/bin/run_weblayer_shell_monochrome"
     executable = "//weblayer/tools/run_weblayer_shell.py"
     executable_args = [
       "--shell-apk-path",
       "@WrappedPath(apks/WebLayerShellSystemWebView.apk)",
-      "--support-apk-path",
-      "@WrappedPath(apks/TrichromeLibrary.apk)",
-      "--support-apk-path",
-      "@WrappedPath(apks/TrichromeWebView.apk)",
       "--switch-webview-to",
-      system_webview_package_name,
+      "@WrappedPath(apks/Monochrome.apk)",
     ]
 
     deps = [
       ":weblayer_shell_system_webview_apk",
-      "//android_webview:trichrome_webview_apk",
-      "//chrome/android:trichrome_library_apk",
+      "//clank/java:monochrome_apk",
     ]
   }
 
-  generate_wrapper("run_weblayer_shell_webview") {
+  generate_wrapper("run_weblayer_shell_webview_google") {
     testonly = true
-    wrapper_script = "$root_out_dir/bin/run_weblayer_shell_webview"
+    wrapper_script = "$root_out_dir/bin/run_weblayer_shell_webview_google"
     executable = "//weblayer/tools/run_weblayer_shell.py"
     executable_args = [
       "--shell-apk-path",
       "@WrappedPath(apks/WebLayerShellSystemWebView.apk)",
-      "--support-apk-path",
-      "@WrappedPath(apks/SystemWebView.apk)",
       "--switch-webview-to",
-      system_webview_package_name,
+      "@WrappedPath(apks/SystemWebViewGoogle.apk)",
     ]
 
     deps = [
       ":weblayer_shell_system_webview_apk",
-      "//android_webview:system_webview_apk",
+      "//clank/android_webview:system_webview_google_apk",
     ]
   }
+}
+
+generate_wrapper("run_weblayer_shell_webview") {
+  testonly = true
+  wrapper_script = "$root_out_dir/bin/run_weblayer_shell_webview"
+  executable = "//weblayer/tools/run_weblayer_shell.py"
+  executable_args = [
+    "--shell-apk-path",
+    "@WrappedPath(apks/WebLayerShellSystemWebView.apk)",
+    "--switch-webview-to",
+    "@WrappedPath(apks/SystemWebView.apk)",
+  ]
+
+  deps = [
+    ":weblayer_shell_system_webview_apk",
+    "//android_webview:system_webview_apk",
+  ]
 }
 
 weblayer_support_manifest =
@@ -187,6 +226,11 @@ android_apk("weblayer_support_apk") {
   # default upstream safebrowsing related classes
   deps += [ "//weblayer/browser/java:gms_bridge_upstream_impl_java" ]
 
+  # Add the Chromium linker for WebView compatibility support on L-M.
+  deps += [ "//base/android/linker:chromium_android_linker" ]
+  loadable_modules =
+      [ "$root_out_dir/libchromium_android_linker$shlib_extension" ]
+
   apk_name = "WebLayerSupport"
   android_manifest = weblayer_support_manifest
   min_sdk_version = 21
@@ -203,7 +247,7 @@ android_apk("weblayer_support_apk") {
       rebase_path("$root_gen_dir/CHROME_VERSION.json", root_build_dir)
   native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
 
-  shared_libraries = [ "//weblayer:libweblayer" ]
+  shared_libraries = [ "//weblayer:libweblayer_test" ]
 }
 
 python_library("weblayer_shell_wpt") {

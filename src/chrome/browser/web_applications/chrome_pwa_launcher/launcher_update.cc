@@ -46,12 +46,11 @@ bool CreateHardLinkOrCopyCallback(const base::FilePath& launcher_path,
 // A callback invoked by |work_item| that deletes the file at |launcher_path|.
 void DeleteHardLinkOrCopyCallback(const base::FilePath& launcher_path,
                                   const CallbackWorkItem& work_item) {
-  base::DeleteFile(launcher_path, /*recursive=*/false);
+  base::DeleteFile(launcher_path);
 }
 
 void RecordWebAppLauncherUpdateResult(WebAppLauncherUpdateResult result) {
-  base::UmaHistogramEnumeration("WebApp.Launcher.WebAppLauncherUpdateResult",
-                                result);
+  base::UmaHistogramEnumeration("WebApp.Launcher.UpdateResult", result);
 }
 
 // Replaces |launcher_path| with the one at |latest_version_path|. This is done
@@ -78,8 +77,7 @@ void ReplaceLauncherWithLatestVersion(const base::FilePath& launcher_path,
 
   // Move |launcher_path| to |old_path|.
   std::unique_ptr<WorkItemList> change_list(WorkItem::CreateWorkItemList());
-  change_list->AddMoveTreeWorkItem(launcher_path.value(), old_path.value(),
-                                   temp_dir.GetPath().value(),
+  change_list->AddMoveTreeWorkItem(launcher_path, old_path, temp_dir.GetPath(),
                                    WorkItem::ALWAYS_MOVE);
 
   // Create a hardlink or copy of |latest_version_path| at |launcher_path|.
@@ -115,7 +113,7 @@ void CleanUpOldLauncherVersions(const base::FilePath& old_path) {
   const base::FilePath unique_path = base::GetUniquePath(old_path);
   if (!unique_path.empty() && unique_path != old_path) {
     base::Move(old_path, unique_path);
-    base::DeleteFile(unique_path, /*recursive=*/false);
+    base::DeleteFile(unique_path);
   }
 
   // Delete any old versions of |unique_path| that may exist from failed delete
@@ -126,7 +124,7 @@ void CleanUpOldLauncherVersions(const base::FilePath& old_path) {
           .InsertBeforeExtension(FILE_PATH_LITERAL(" (*)"))
           .value());
   for (base::FilePath file = files.Next(); !file.empty(); file = files.Next()) {
-    base::DeleteFile(file, /*recursive=*/false);
+    base::DeleteFile(file);
   }
 }
 
@@ -146,7 +144,8 @@ void UpdatePwaLaunchers(std::vector<base::FilePath> launcher_paths) {
 
     // Make a hardlink or copy of |latest_version_path|, and replace the current
     // launcher with it.
-    ReplaceLauncherWithLatestVersion(path, latest_version_path, old_path);
+    if (base::PathExists(path))
+      ReplaceLauncherWithLatestVersion(path, latest_version_path, old_path);
   }
 }
 

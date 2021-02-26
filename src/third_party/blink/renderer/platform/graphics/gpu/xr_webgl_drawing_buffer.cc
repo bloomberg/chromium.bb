@@ -216,9 +216,21 @@ IntSize XRWebGLDrawingBuffer::AdjustSize(const IntSize& new_size) {
 
 void XRWebGLDrawingBuffer::UseSharedBuffer(
     const gpu::MailboxHolder& buffer_mailbox_holder) {
-  DVLOG(3) << __FUNCTION__;
-
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+
+  // Ensure that the mailbox holder is ready to use, the following actions need
+  // to be sequenced after setup steps that were done through a different
+  // process's GPU command buffer context.
+  //
+  // TODO(https://crbug.com/1111526): Investigate handling context loss and
+  // recovery for cases where these assumptions may not be accurate.
+  DCHECK(buffer_mailbox_holder.sync_token.HasData());
+  DCHECK(!buffer_mailbox_holder.mailbox.IsZero());
+  DVLOG(3) << __func__
+           << ": mailbox=" << buffer_mailbox_holder.mailbox.ToDebugString()
+           << ", SyncToken="
+           << buffer_mailbox_holder.sync_token.ToDebugString();
+  gl->WaitSyncTokenCHROMIUM(buffer_mailbox_holder.sync_token.GetConstData());
 
   // Create a texture backed by the shared buffer image.
   DCHECK(!shared_buffer_texture_id_);
@@ -444,9 +456,10 @@ XRWebGLDrawingBuffer::CreateColorBuffer() {
   uint32_t usage = gpu::SHARED_IMAGE_USAGE_DISPLAY |
                    gpu::SHARED_IMAGE_USAGE_GLES2 |
                    gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
-  gpu::Mailbox mailbox =
-      sii->CreateSharedImage(alpha_ ? viz::RGBA_8888 : viz::RGBX_8888,
-                             gfx::Size(size_), gfx::ColorSpace(), usage);
+  gpu::Mailbox mailbox = sii->CreateSharedImage(
+      alpha_ ? viz::RGBA_8888 : viz::RGBX_8888, gfx::Size(size_),
+      gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
+      gpu::kNullSurfaceHandle);
 
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
   gl->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());

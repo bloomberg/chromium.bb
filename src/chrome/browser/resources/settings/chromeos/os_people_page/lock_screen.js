@@ -18,6 +18,7 @@ Polymer({
   is: 'settings-lock-screen',
 
   behaviors: [
+    DeepLinkingBehavior,
     I18nBehavior,
     LockStateBehavior,
     WebUIListenerBehavior,
@@ -29,12 +30,11 @@ Polymer({
     prefs: {type: Object},
 
     /**
-     * setModes_ is a partially applied function that stores the current auth
+     * setModes is a partially applied function that stores the current auth
      * token. It's defined only when the user has entered a valid password.
      * @type {Object|undefined}
-     * @private
      */
-    setModes_: {
+    setModes: {
       type: Object,
       observer: 'onSetModesChanged_',
     },
@@ -46,7 +46,6 @@ Polymer({
     authToken: {
       type: Object,
       notify: true,
-      observer: 'onAuthTokenChanged_',
     },
 
     /**
@@ -131,14 +130,36 @@ Polymer({
       readOnly: true,
     },
 
-    /** @private */
-    showPasswordPromptDialog_: {
+    /**
+     * True if quick unlock settings should be displayed on this machine.
+     * @private
+     */
+    quickUnlockPinAutosubmitFeatureEnabled_: {
       type: Boolean,
-      value: false,
+      value() {
+        return loadTimeData.getBoolean(
+            'quickUnlockPinAutosubmitFeatureEnabled');
+      },
+      readOnly: true,
     },
 
     /** @private */
     showSetupPinDialog_: Boolean,
+
+    /** @private */
+    showPinAutosubmitDialog_: Boolean,
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kLockScreen,
+        chromeos.settings.mojom.Setting.kChangeAuthPin,
+      ]),
+    },
   },
 
   /** @private {?settings.FingerprintBrowserProxy} */
@@ -149,11 +170,6 @@ Polymer({
 
   /** @override */
   attached() {
-    if (this.shouldAskForPassword_(
-            settings.Router.getInstance().getCurrentRoute())) {
-      this.openPasswordPromptDialog_();
-    }
-
     this.fingerprintBrowserProxy_ =
         settings.FingerprintBrowserProxyImpl.getInstance();
     this.updateNumFingerprints_();
@@ -166,13 +182,15 @@ Polymer({
    * @protected
    */
   currentRouteChanged(newRoute, oldRoute) {
-    if (newRoute == settings.routes.LOCK_SCREEN) {
+    if (newRoute === settings.routes.LOCK_SCREEN) {
       this.updateUnlockType(/*activeModesChanged=*/ false);
       this.updateNumFingerprints_();
+      this.attemptDeepLink();
     }
 
-    if (this.shouldAskForPassword_(newRoute)) {
-      this.openPasswordPromptDialog_();
+    if (this.requestPasswordIfApplicable_()) {
+      this.showSetupPinDialog_ = false;
+      this.showPinAutosubmitDialog_ = false;
     }
   },
 
@@ -191,25 +209,50 @@ Polymer({
   },
 
   /**
+   * @param {!Event} event
+   * @private
+   */
+  onPinAutosubmitChange_(event) {
+    const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
+    if (!this.authToken) {
+      console.error('PIN autosubmit setting changed with expired token.');
+      target.checked = !target.checked;
+      return;
+    }
+
+    // Read-only preference. Changes will be reflected directly on the toggle.
+    const autosubmitEnabled = target.checked;
+    target.resetToPrefValue();
+
+    if (autosubmitEnabled) {
+      this.showPinAutosubmitDialog_ = true;
+    } else {
+      // Call quick unlock to disable the auto-submit option.
+      this.quickUnlockPrivate.setPinAutosubmitEnabled(
+          this.authToken.token, '' /* PIN */, false /*enabled*/, function() {});
+    }
+  },
+
+  /**
    * Called when the unlock type has changed.
    * @param {!string} selected The current unlock type.
    * @private
    */
   selectedUnlockTypeChanged_(selected) {
-    if (selected == LockScreenUnlockType.VALUE_PENDING) {
+    if (selected === LockScreenUnlockType.VALUE_PENDING) {
       return;
     }
 
-    if (selected != LockScreenUnlockType.PIN_PASSWORD && this.setModes_) {
+    if (selected !== LockScreenUnlockType.PIN_PASSWORD && this.setModes) {
       // If the user selects PASSWORD only (which sends an asynchronous
-      // setModes_.call() to clear the quick unlock capability), indicate to the
+      // setModes.call() to clear the quick unlock capability), indicate to the
       // user immediately that the quick unlock capability is cleared by setting
       // |hasPin| to false. If there is an error clearing quick unlock, revert
       // |hasPin| to true. This prevents setupPinButton UI delays, except in the
       // small chance that CrOS fails to remove the quick unlock capability. See
       // https://crbug.com/1054327 for details.
       this.hasPin = false;
-      this.setModes_.call(null, [], [], function(result) {
+      this.setModes.call(null, [], [], function(result) {
         assert(result, 'Failed to clear quick unlock modes');
         // Revert |hasPin| to true in the event setModes fails to set lock state
         // to PASSWORD only.
@@ -219,38 +262,33 @@ Polymer({
   },
 
   /** @private */
+  focusDefaultElement_() {
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      if (!this.$$('#unlockType').disabled) {
+        cr.ui.focusWithoutInk(assert(this.$$('#unlockType')));
+      } else {
+        cr.ui.focusWithoutInk(assert(this.$$('#enableLockScreen')));
+      }
+    });
+  },
+
+  /** @private */
   onSetModesChanged_() {
-    this.maybeReturnToLockPage_();
-
-    if (this.shouldAskForPassword_(
-            settings.Router.getInstance().getCurrentRoute())) {
+    if (this.requestPasswordIfApplicable_()) {
       this.showSetupPinDialog_ = false;
-      this.openPasswordPromptDialog_();
+      this.showPinAutosubmitDialog_ = false;
+      return;
     }
-  },
 
-  /** @private */
-  maybeReturnToLockPage_() {
-    const route = settings.Router.getInstance().getCurrentRoute();
-    if (route == settings.routes.FINGERPRINT && !this.setModes_) {
-      settings.Router.getInstance().navigateTo(settings.routes.LOCK_SCREEN);
-    }
-  },
-
-  /** @private */
-  openPasswordPromptDialog_() {
-    this.showPasswordPromptDialog_ = true;
-  },
-
-  /** @private */
-  onPasswordPromptDialogClose_() {
-    this.showPasswordPromptDialog_ = false;
-    if (!this.setModes_) {
-      settings.Router.getInstance().navigateToPreviousRoute();
-    } else if (!this.$$('#unlockType').disabled) {
-      cr.ui.focusWithoutInk(assert(this.$$('#unlockType')));
-    } else {
-      cr.ui.focusWithoutInk(assert(this.$$('#enableLockScreen')));
+    if (settings.Router.getInstance().getCurrentRoute() ===
+        settings.routes.LOCK_SCREEN) {
+      // Show deep links again if the user authentication dialog just closed.
+      this.attemptDeepLink().then(result => {
+        // If there were no supported deep links, focus the default element.
+        if (result.pendingSettingId == null) {
+          this.focusDefaultElement_();
+        }
+      });
     }
   },
 
@@ -268,6 +306,12 @@ Polymer({
   onSetupPinDialogClose_() {
     this.showSetupPinDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$$('#setupPinButton')));
+  },
+
+  /** @private */
+  onPinAutosubmitDialogClose_() {
+    this.showPinAutosubmitDialog_ = false;
+    cr.ui.focusWithoutInk(assert(this.$$('#enablePinAutoSubmit')));
   },
 
   /**
@@ -307,12 +351,16 @@ Polymer({
   },
 
   /**
-   * @param {!settings.Route} route
-   * @return {boolean} Whether the password dialog should be shown.
+   * @return {boolean} Whether an event was fired to show the password dialog.
    * @private
    */
-  shouldAskForPassword_(route) {
-    return route == settings.routes.LOCK_SCREEN && !this.setModes_;
+  requestPasswordIfApplicable_() {
+    const currentRoute = settings.Router.getInstance().getCurrentRoute();
+    if (currentRoute === settings.routes.LOCK_SCREEN && !this.setModes) {
+      this.fire('password-requested');
+      return true;
+    }
+    return false;
   },
 
   /** @private */
@@ -335,33 +383,5 @@ Polymer({
       return this.i18n('lockScreenOptionsLoginLock');
     }
     return this.i18n('lockScreenOptionsLock');
-  },
-
-  /**
-   * @param {!CustomEvent<!chrome.quickUnlockPrivate.TokenInfo>} e
-   * @private
-   * */
-  onAuthTokenObtained_(e) {
-    this.authToken = e.detail;
-  },
-
-  /** @private */
-  onAuthTokenChanged_() {
-    if (this.authToken === undefined) {
-      this.setModes_ = undefined;
-      return;
-    }
-    this.setModes_ = (modes, credentials, onComplete) => {
-      this.quickUnlockPrivate.setModes(
-          this.authToken.token, modes, credentials, () => {
-            let result = true;
-            if (chrome.runtime.lastError) {
-              console.error(
-                  'setModes failed: ' + chrome.runtime.lastError.message);
-              result = false;
-            }
-            onComplete(result);
-          });
-    };
   },
 });

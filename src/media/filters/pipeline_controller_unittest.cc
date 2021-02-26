@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/notreached.h"
@@ -546,6 +546,15 @@ TEST_F(PipelineControllerTest, ResumePlaybackDuringSwitchingTracksState) {
   pipeline_controller_.Resume();
   pipeline_controller_.FireOnTrackChangeCompleteForTesting(
       PipelineController::State::SUSPENDED);
+}
+
+TEST_F(PipelineControllerTest, PreservesPitch) {
+  Complete(StartPipeline());
+  EXPECT_CALL(*pipeline_, SetPreservesPitch(false));
+  pipeline_controller_.SetPreservesPitch(false);
+
+  EXPECT_CALL(*pipeline_, SetPreservesPitch(true));
+  pipeline_controller_.SetPreservesPitch(true);
 }
 
 }  // namespace media

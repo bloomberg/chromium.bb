@@ -219,8 +219,8 @@ void ImageDownloaderImpl::FetchImage(const KURL& image_url,
   image_fetchers_.push_back(
       std::make_unique<MultiResolutionImageResourceFetcher>(
           image_url, GetSupplementable(),
-          is_favicon ? blink::mojom::RequestContextType::FAVICON
-                     : blink::mojom::RequestContextType::IMAGE,
+          is_favicon ? mojom::blink::RequestContextType::FAVICON
+                     : mojom::blink::RequestContextType::IMAGE,
           bypass_cache ? blink::mojom::FetchCacheMode::kBypassCache
                        : blink::mojom::FetchCacheMode::kDefault,
           WTF::Bind(&ImageDownloaderImpl::DidFetchImage, WrapPersistent(this),
@@ -253,7 +253,7 @@ void ImageDownloaderImpl::DidFetchImage(
   std::move(callback).Run(http_status_code, images);
 }
 
-void ImageDownloaderImpl::Trace(Visitor* visitor) {
+void ImageDownloaderImpl::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   Supplement<LocalFrame>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

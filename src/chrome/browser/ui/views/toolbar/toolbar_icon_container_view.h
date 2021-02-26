@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ICON_CONTAINER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ICON_CONTAINER_VIEW_H_
 
+#include <list>
+
 #include "base/observer_list.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/button_observer.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view.h"
@@ -16,7 +17,6 @@
 // A general view container for any type of toolbar icons.
 class ToolbarIconContainerView : public views::View,
                                  public gfx::AnimationDelegate,
-                                 public views::ButtonObserver,
                                  public views::ViewObserver {
  public:
   class Observer : public base::CheckedObserver {
@@ -35,6 +35,10 @@ class ToolbarIconContainerView : public views::View,
   // Adds the RHS child as well as setting its margins.
   void AddMainButton(views::Button* main_button);
 
+  // Begins observing |button| for changes that should affect the container's
+  // highlight state.
+  void ObserveButton(views::Button* button);
+
   void AddObserver(Observer* obs);
   void RemoveObserver(const Observer* obs);
 
@@ -42,12 +46,6 @@ class ToolbarIconContainerView : public views::View,
   SkColor GetIconColor() const;
 
   bool IsHighlighted();
-
-  // views::ButtonObserver:
-  void OnHighlightChanged(views::Button* observed_button,
-                          bool highlighted) override;
-  void OnStateChanged(views::Button* observed_button,
-                      views::Button::ButtonState old_state) override;
 
   // views::ViewObserver:
   void OnViewFocused(views::View* observed_view) override;
@@ -70,12 +68,14 @@ class ToolbarIconContainerView : public views::View,
 
  private:
   friend class ToolbarAccountIconContainerViewBrowserTest;
+  class WidgetRestoreObserver;
 
   // views::View:
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   gfx::Insets GetInsets() const override;
   const char* GetClassName() const override;
+  void AddedToWidget() override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -84,6 +84,9 @@ class ToolbarIconContainerView : public views::View,
   bool ShouldDisplayHighlight();
   void UpdateHighlight();
   void SetHighlightBorder();
+
+  // Called by |button| when its ink drop highlighted state changes.
+  void OnButtonHighlightedChanged(views::Button* button);
 
   // Determine whether the container shows its highlight border.
   const bool uses_highlight_;
@@ -103,6 +106,11 @@ class ToolbarIconContainerView : public views::View,
 
   // Fade-in/out animation for the highlight border.
   gfx::SlideAnimation highlight_animation_{this};
+
+  // Tracks when the widget is restored and resets the layout.
+  std::unique_ptr<WidgetRestoreObserver> restore_observer_;
+
+  std::list<views::PropertyChangedSubscription> subscriptions_;
 
   base::ObserverList<Observer> observers_;
 };

@@ -6,8 +6,6 @@
 
 #include "core/fpdfdoc/cpdf_formcontrol.h"
 
-#include <algorithm>
-
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
@@ -17,6 +15,7 @@
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
+#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -129,7 +128,7 @@ CPDF_FormControl::HighlightingMode CPDF_FormControl::GetHighlightingMode()
     return Invert;
 
   ByteString csH = m_pWidgetDict->GetStringFor("H", "I");
-  for (size_t i = 0; i < FX_ArraySize(kHighlightModes); ++i) {
+  for (size_t i = 0; i < pdfium::size(kHighlightModes); ++i) {
     if (csH == kHighlightModes[i])
       return static_cast<HighlightingMode>(i);
   }
@@ -177,26 +176,6 @@ CPDF_IconFit CPDF_FormControl::GetIconFit() const {
 
 int CPDF_FormControl::GetTextPosition() const {
   return GetMK().GetTextPosition();
-}
-
-CPDF_Action CPDF_FormControl::GetAction() const {
-  if (!m_pWidgetDict)
-    return CPDF_Action(nullptr);
-
-  if (m_pWidgetDict->KeyExist("A"))
-    return CPDF_Action(m_pWidgetDict->GetDictFor("A"));
-
-  CPDF_Object* pObj = CPDF_FormField::GetFieldAttr(m_pField->GetDict(), "A");
-  return CPDF_Action(pObj ? pObj->GetDict() : nullptr);
-}
-
-CPDF_AAction CPDF_FormControl::GetAdditionalAction() const {
-  if (!m_pWidgetDict)
-    return CPDF_AAction(nullptr);
-
-  if (m_pWidgetDict->KeyExist("AA"))
-    return CPDF_AAction(m_pWidgetDict->GetDictFor("AA"));
-  return m_pField->GetAdditionalAction();
 }
 
 CPDF_DefaultAppearance CPDF_FormControl::GetDefaultAppearance() const {

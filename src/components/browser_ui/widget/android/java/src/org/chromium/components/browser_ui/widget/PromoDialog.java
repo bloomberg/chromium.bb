@@ -50,6 +50,12 @@ public abstract class PromoDialog extends AlwaysDismissedDialog
         public int headerStringResource;
 
         /**
+         * Optional: CharSequence to show as promo title.
+         * This parameter takes precedence over {@link #headerStringResoruce}
+         */
+        public CharSequence headerCharSequence;
+
+        /**
          * Optional: CharSequence to show as descriptive text.
          * This parameter takes precedence over {@link #subheaderStringResoruce}
          */
@@ -67,6 +73,12 @@ public abstract class PromoDialog extends AlwaysDismissedDialog
         /** Optional: Resource ID of the String to show on the primary/ok button. */
         public int primaryButtonStringResource;
 
+        /**
+         * Optional: CharSequence to show on the primary/ok button.
+         * This parameter takes precedence over {@link #primaryButtonStringResource}
+         */
+        public CharSequence primaryButtonCharSequence;
+
         /** Optional: Resource ID of the String to show on the secondary/cancel button. */
         public int secondaryButtonStringResource;
     }
@@ -74,7 +86,7 @@ public abstract class PromoDialog extends AlwaysDismissedDialog
     private static final int[] CLICKABLE_BUTTON_IDS = {R.id.button_primary, R.id.button_secondary};
 
     private final FrameLayout mScrimView;
-    private final PromoDialogLayout mDialogLayout;
+    private PromoDialogLayout mDialogLayout;
 
     protected PromoDialog(Activity activity) {
         super(activity, R.style.PromoDialog);
@@ -85,17 +97,15 @@ public abstract class PromoDialog extends AlwaysDismissedDialog
         LayoutInflater.from(activity).inflate(R.layout.promo_dialog_layout, mScrimView, true);
 
         mDialogLayout = (PromoDialogLayout) mScrimView.findViewById(R.id.promo_dialog_layout);
-        mDialogLayout.initialize(getDialogParams());
     }
 
     /**
      * Force the promo dialog to have a fully opaque background hiding any underlying content.
      */
     protected void forceOpaqueBackground() {
-        LayerDrawable background = ApiCompatibilityUtils.createLayerDrawable(
-                new Drawable[] {new ColorDrawable(Color.WHITE),
-                        new ColorDrawable(ApiCompatibilityUtils.getColor(
-                                getContext().getResources(), R.color.modal_dialog_scrim_color))});
+        LayerDrawable background = new LayerDrawable(new Drawable[] {new ColorDrawable(Color.WHITE),
+                new ColorDrawable(ApiCompatibilityUtils.getColor(
+                        getContext().getResources(), R.color.modal_dialog_scrim_color))});
         mScrimView.setBackground(background);
     }
 
@@ -111,6 +121,8 @@ public abstract class PromoDialog extends AlwaysDismissedDialog
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(mScrimView);
+
+        mDialogLayout.initialize(getDialogParams());
 
         // Force the window to allow the dialog contents be as wide as necessary.
         getWindow().setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);

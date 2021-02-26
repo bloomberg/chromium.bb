@@ -28,7 +28,6 @@ class CORE_EXPORT PerformanceObserver final
       public ActiveScriptWrappable<PerformanceObserver>,
       public ExecutionContextLifecycleStateObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PerformanceObserver);
   friend class Performance;
   friend class PerformanceTest;
   friend class PerformanceObserverTest;
@@ -56,7 +55,7 @@ class CORE_EXPORT PerformanceObserver final
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
   void ContextDestroyed() final {}
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // This describes the types of parameters that an observer can have in its

@@ -16,7 +16,7 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_stream_blob.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -29,7 +29,7 @@ IOHandler::IOHandler(DevToolsIOContext* io_context)
       browser_context_(nullptr),
       storage_partition_(nullptr) {}
 
-IOHandler::~IOHandler() {}
+IOHandler::~IOHandler() = default;
 
 void IOHandler::Wire(UberDispatcher* dispatcher) {
   frontend_.reset(new IO::Frontend(dispatcher->channel()));

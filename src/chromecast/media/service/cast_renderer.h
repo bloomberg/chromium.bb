@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/common/mojom/service_connector.mojom.h"
@@ -61,7 +62,7 @@ class CastRenderer : public ::media::Renderer,
                   ::media::RendererClient* client,
                   ::media::PipelineStatusCallback init_cb) final;
   void SetCdm(::media::CdmContext* cdm_context,
-              ::media::CdmAttachedCB cdm_attached_cb) final;
+              CdmAttachedCB cdm_attached_cb) final;
   void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) final;
   void Flush(base::OnceClosure flush_cb) final;
   void StartPlayingFrom(base::TimeDelta time) final;
@@ -140,6 +141,8 @@ class CastRenderer : public ::media::Renderer,
         g_overlay_composited_callback;
     return *g_overlay_composited_callback;
   }
+
+  base::Optional<float> pending_volume_;
 
   base::WeakPtrFactory<CastRenderer> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(CastRenderer);

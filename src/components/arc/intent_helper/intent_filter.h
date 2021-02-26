@@ -70,9 +70,19 @@ class IntentFilter {
   IntentFilter();
   IntentFilter(IntentFilter&& other);
   IntentFilter(const std::string& package_name,
+               std::vector<std::string> actions,
                std::vector<AuthorityEntry> authorities,
                std::vector<PatternMatcher> paths,
-               std::vector<std::string> schemes);
+               std::vector<std::string> schemes,
+               std::vector<std::string> mime_types);
+  IntentFilter(const std::string& package_name,
+               const std::string& activity_name,
+               const std::string& activity_label,
+               std::vector<std::string> actions,
+               std::vector<IntentFilter::AuthorityEntry> authorities,
+               std::vector<IntentFilter::PatternMatcher> paths,
+               std::vector<std::string> schemes,
+               std::vector<std::string> mime_types);
   ~IntentFilter();
 
   IntentFilter& operator=(IntentFilter&& other);
@@ -80,20 +90,28 @@ class IntentFilter {
   bool Match(const GURL& url) const;
 
   const std::string& package_name() const { return package_name_; }
+  const std::string& activity_name() const { return activity_name_; }
+  const std::string& activity_label() const { return activity_label_; }
+  const std::vector<std::string>& actions() const { return actions_; }
   const std::vector<AuthorityEntry>& authorities() const {
     return authorities_;
   }
   const std::vector<PatternMatcher>& paths() const { return paths_; }
   const std::vector<std::string>& schemes() const { return schemes_; }
+  const std::vector<std::string>& mime_types() const { return mime_types_; }
 
  private:
   bool MatchDataAuthority(const GURL& url) const;
   bool HasDataPath(const GURL& url) const;
 
   std::string package_name_;
+  std::string activity_name_;
+  std::string activity_label_;
+  std::vector<std::string> actions_;
   std::vector<AuthorityEntry> authorities_;
   std::vector<PatternMatcher> paths_;
   std::vector<std::string> schemes_;
+  std::vector<std::string> mime_types_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentFilter);
 };

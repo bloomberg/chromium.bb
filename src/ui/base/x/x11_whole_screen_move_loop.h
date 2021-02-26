@@ -20,7 +20,7 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/connection.h"
 
 namespace ui {
 class MouseEvent;
@@ -42,20 +42,20 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WholeScreenMoveLoop
 
   // X11MoveLoop:
   bool RunMoveLoop(bool can_grab_pointer,
-                   ::Cursor old_cursor,
-                   ::Cursor new_cursor) override;
-  void UpdateCursor(::Cursor cursor) override;
+                   scoped_refptr<ui::X11Cursor> old_cursor,
+                   scoped_refptr<ui::X11Cursor> new_cursor) override;
+  void UpdateCursor(scoped_refptr<ui::X11Cursor> cursor) override;
   void EndMoveLoop() override;
 
  private:
   // Grabs the pointer, setting the mouse cursor to |cursor|. Returns true if
   // successful.
-  bool GrabPointer(::Cursor cursor);
+  bool GrabPointer(scoped_refptr<X11Cursor> cursor);
 
   void GrabEscKey();
 
   // Creates an input-only window to be used during the drag.
-  void CreateDragInputWindow(XDisplay* display);
+  void CreateDragInputWindow(x11::Connection* connection);
 
   // Dispatch mouse movement event to |delegate_| in a posted task.
   void DispatchMouseMovement();
@@ -70,11 +70,11 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WholeScreenMoveLoop
 
   // Cursor in use prior to the move loop starting. Restored when the move loop
   // quits.
-  ::Cursor initial_cursor_;
+  scoped_refptr<X11Cursor> initial_cursor_ = nullptr;
 
   // An invisible InputOnly window. Keyboard grab and sometimes mouse grab
   // are set on this window.
-  XID grab_input_window_;
+  x11::Window grab_input_window_;
 
   // Events selected on |grab_input_window_|.
   std::unique_ptr<ui::XScopedEventSelector> grab_input_window_events_;

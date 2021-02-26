@@ -10,7 +10,7 @@
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/fx_system.h"
-#include "core/fxge/fx_dib.h"
+#include "core/fxge/dib/fx_dib.h"
 #include "third_party/base/span.h"
 
 class CFX_RenderDevice;
@@ -18,6 +18,7 @@ class CFX_GraphStateData;
 class CFX_PathData;
 class CPDF_RenderOptions;
 class CPDF_Font;
+struct CFX_FillRenderOptions;
 
 class CPDF_TextRenderer {
  public:
@@ -42,7 +43,7 @@ class CPDF_TextRenderer {
                            FX_ARGB fill_argb,
                            FX_ARGB stroke_argb,
                            CFX_PathData* pClippingPath,
-                           int nFlag);
+                           const CFX_FillRenderOptions& fill_options);
 
   static bool DrawNormalText(CFX_RenderDevice* pDevice,
                              pdfium::span<const uint32_t> char_codes,

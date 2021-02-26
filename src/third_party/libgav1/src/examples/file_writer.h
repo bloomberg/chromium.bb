@@ -21,9 +21,8 @@
 #include <cstdint>
 #include <cstdio>
 #include <memory>
+#include <string>
 
-#include "absl/base/attributes.h"
-#include "absl/strings/string_view.h"
 #include "gav1/decoder_buffer.h"
 
 namespace libgav1 {
@@ -70,7 +69,7 @@ class FileWriter {
   // Returns a FileWriter instance after the file is opened successfully for
   // kFileTypeRaw files, and after the Y4M file header bytes are written for
   // kFileTypeY4m files. Returns nullptr upon failure.
-  static std::unique_ptr<FileWriter> Open(absl::string_view file_name,
+  static std::unique_ptr<FileWriter> Open(const std::string& file_name,
                                           FileType type,
                                           const Y4mParameters* y4m_parameters);
 
@@ -86,7 +85,8 @@ class FileWriter {
 
   // Writes the frame data in |frame_buffer| to |file_|. Returns true after
   // successful write of |frame_buffer| data.
-  ABSL_MUST_USE_RESULT bool WriteFrame(const DecoderBuffer& frame_buffer);
+  /*LIBGAV1_MUST_USE_RESULT*/ bool WriteFrame(
+      const DecoderBuffer& frame_buffer);
 
  private:
   explicit FileWriter(FILE* file) : file_(file) {}

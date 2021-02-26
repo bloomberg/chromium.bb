@@ -9,6 +9,7 @@
 #include "chrome/browser/sessions/session_common_utils.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/content/content_live_tab.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -36,14 +37,15 @@ sessions::LiveTabContext* ChromeTabRestoreServiceClient::CreateLiveTabContext(
     const std::string& app_name,
     const gfx::Rect& bounds,
     ui::WindowShowState show_state,
-    const std::string& workspace) {
+    const std::string& workspace,
+    const std::string& user_title) {
 #if defined(OS_ANDROID)
   // Android does not support creating a LiveTabContext here.
   NOTREACHED();
   return nullptr;
 #else
   return BrowserLiveTabContext::Create(profile_, app_name, bounds, show_state,
-                                       workspace);
+                                       workspace, user_title);
 #endif
 }
 
@@ -65,6 +67,16 @@ ChromeTabRestoreServiceClient::FindLiveTabContextWithID(SessionID desired_id) {
   return AndroidLiveTabContext::FindContextWithID(desired_id);
 #else
   return BrowserLiveTabContext::FindContextWithID(desired_id);
+#endif
+}
+
+sessions::LiveTabContext*
+ChromeTabRestoreServiceClient::FindLiveTabContextWithGroup(
+    tab_groups::TabGroupId group) {
+#if defined(OS_ANDROID)
+  return nullptr;
+#else
+  return BrowserLiveTabContext::FindContextWithGroup(group, profile_);
 #endif
 }
 
@@ -110,12 +122,11 @@ bool ChromeTabRestoreServiceClient::HasLastSession() {
 }
 
 void ChromeTabRestoreServiceClient::GetLastSession(
-    sessions::GetLastSessionCallback callback,
-    base::CancelableTaskTracker* tracker) {
+    sessions::GetLastSessionCallback callback) {
   DCHECK(HasLastSession());
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   SessionServiceFactory::GetForProfile(profile_)->GetLastSession(
-      std::move(callback), tracker);
+      std::move(callback));
 #endif
 }
 

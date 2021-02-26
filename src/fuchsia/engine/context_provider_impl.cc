@@ -42,6 +42,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/switches.h"
 #include "content/public/common/content_switches.h"
 #include "fuchsia/base/config_reader.h"
 #include "fuchsia/base/string_util.h"
@@ -49,17 +50,27 @@
 #include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "gpu/config/gpu_switches.h"
 #include "media/base/key_system_names.h"
 #include "media/base/media_switches.h"
 #include "net/http/http_util.h"
+#include "sandbox/policy/fuchsia/sandbox_policy_fuchsia.h"
 #include "services/network/public/cpp/features.h"
-#include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
+#include "services/network/public/cpp/network_switches.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/ozone/public/ozone_switches.h"
 
 namespace {
+
+// Use a constexpr instead of the existing base::Feature, because of the
+// additional dependencies required.
+constexpr char kMixedContentAutoupgradeFeatureName[] =
+    "AutoupgradeMixedContent";
+constexpr char kDisableMixedContentAutoupgradeOrigin[] =
+    "disable-mixed-content-autoupgrade";
 
 // Returns the underlying channel if |directory| is a client endpoint for a
 // |fuchsia::io::Directory| protocol. Otherwise, returns an empty channel.
@@ -118,17 +129,6 @@ bool SetContentDirectoriesInCommandLine(
   return true;
 }
 
-base::Value LoadConfig() {
-  const base::Optional<base::Value>& config = cr_fuchsia::LoadPackageConfig();
-  if (!config) {
-    DLOG(WARNING) << "Configuration data not found. Using default "
-                     "WebEngine configuration.";
-    return base::Value(base::Value::Type::DICTIONARY);
-  }
-
-  return config->Clone();
-}
-
 void AppendFeature(base::StringPiece features_flag,
                    base::StringPiece feature_string,
                    base::CommandLine* command_line) {
@@ -154,25 +154,36 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
     return true;
 
   static const base::StringPiece kAllowedArgs[] = {
+      blink::switches::kGpuRasterizationMSAASampleCount,
+      blink::switches::kMinHeightForGpuRasterTile,
       cc::switches::kEnableGpuBenchmarking,
-      switches::kAcceleratedCanvas2dMSAASampleCount,
+      cc::switches::kEnableClippedImageScaling,
       switches::kDisableFeatures,
       switches::kDisableGpuWatchdog,
+      switches::kDisableMipmapGeneration,
+      // TODO(crbug.com/1082821): Remove this switch from the allow-list.
+      switches::kEnableCastStreamingReceiver,
       switches::kEnableFeatures,
       switches::kEnableLowEndDeviceMode,
       switches::kForceGpuMemAvailableMb,
       switches::kForceGpuMemDiscardableLimitMb,
       switches::kForceMaxTextureSize,
-      switches::kGpuRasterizationMSAASampleCount,
-      switches::kMinHeightForGpuRasterTile,
+      switches::kGoogleApiKey,
+      switches::kMaxDecodedImageSizeMb,
       switches::kRendererProcessLimit,
+      switches::kUseLegacyAndroidUserAgent,
+      switches::kWebglAntialiasingMode,
+      switches::kWebglMSAASampleCount,
+      switches::kVulkanHeapMemoryLimitMb,
+      switches::kVulkanSyncCpuMemoryLimitMb,
   };
 
   for (const auto& arg : args->DictItems()) {
     if (!base::Contains(kAllowedArgs, arg.first)) {
-      LOG(ERROR) << "Unknown command-line arg: " << arg.first;
-      // TODO(https://crbug.com/1032439): Return false here once we are done
-      // experimenting with memory-related command-line options.
+      // TODO(https://crbug.com/1032439): Increase severity and return false
+      // once we have a mechanism for soft transitions of supported arguments.
+      LOG(WARNING) << "Unknown command-line arg: '" << arg.first
+                   << "'. Config file and WebEngine version may not match.";
       continue;
     }
 
@@ -191,7 +202,7 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
     // which
     // we don't yet support.
     if (arg.first == switches::kEnableLowEndDeviceMode)
-      command_line->AppendSwitch(switches::kDisableRGBA4444Textures);
+      command_line->AppendSwitch(blink::switches::kDisableRGBA4444Textures);
   }
 
   return true;
@@ -210,12 +221,6 @@ bool IsFuchsiaCdmSupported() {
   return false;
 #endif
 }
-
-// Use the most significant bit to enable cast streaming receiver features.
-// TODO(crbug.com/1078919): Remove this when we have a better way of enabling
-// this feature.
-constexpr auto kCastStreamingFeatureFlag =
-    static_cast<fuchsia::web::ContextFeatureFlags>(1ULL << 63);
 
 }  // namespace
 
@@ -251,8 +256,8 @@ void ContextProviderImpl::Create(
   base::LaunchOptions launch_options;
   launch_options.process_name_suffix = ":context";
 
-  service_manager::SandboxPolicyFuchsia sandbox_policy(
-      service_manager::SandboxType::kWebContext);
+  sandbox::policy::SandboxPolicyFuchsia sandbox_policy(
+      sandbox::policy::SandboxType::kWebContext);
   sandbox_policy.SetServiceDirectory(std::move(service_directory));
   sandbox_policy.UpdateLaunchOptionsForSandbox(&launch_options);
 
@@ -264,11 +269,14 @@ void ContextProviderImpl::Create(
   launch_options.handles_to_transfer.push_back(
       {kContextRequestHandleId, context_request.channel().get()});
 
+  base::CommandLine launch_command(*base::CommandLine::ForCurrentProcess());
+
   // Bind |data_directory| to /data directory, if provided.
+  zx::channel data_directory_channel;
   if (params.has_data_directory()) {
-    zx::channel data_directory_channel = ValidateDirectoryAndTakeChannel(
+    data_directory_channel = ValidateDirectoryAndTakeChannel(
         std::move(*params.mutable_data_directory()));
-    if (data_directory_channel.get() == ZX_HANDLE_INVALID) {
+    if (!data_directory_channel) {
       DLOG(ERROR)
           << "Invalid argument |data_directory| in CreateContextParams.";
       context_request.Close(ZX_ERR_INVALID_ARGS);
@@ -283,14 +291,23 @@ void ContextProviderImpl::Create(
     }
     launch_options.paths_to_transfer.push_back(
         base::PathToTransfer{data_path, data_directory_channel.release()});
+
+    if (params.has_data_quota_bytes()) {
+      launch_command.AppendSwitchNative(
+          switches::kDataQuotaBytes,
+          base::NumberToString(params.data_quota_bytes()));
+    }
   }
 
-  base::CommandLine launch_command = *base::CommandLine::ForCurrentProcess();
-  std::vector<zx::channel> devtools_listener_channels;
-
-  base::Value web_engine_config =
-      config_for_test_.is_none() ? LoadConfig() : std::move(config_for_test_);
-
+  // Process command-line settings specified in our package config-data.
+  base::Value web_engine_config;
+  if (config_for_test_.is_none()) {
+    const base::Optional<base::Value>& config = cr_fuchsia::LoadPackageConfig();
+    web_engine_config =
+        config ? config->Clone() : base::Value(base::Value::Type::DICTIONARY);
+  } else {
+    web_engine_config = std::move(config_for_test_);
+  }
   if (!MaybeAddCommandLineArgsFromConfig(web_engine_config, &launch_command)) {
     context_request.Close(ZX_ERR_INTERNAL);
     return;
@@ -302,6 +319,7 @@ void ContextProviderImpl::Create(
         base::NumberToString(params.remote_debugging_port()));
   }
 
+  std::vector<zx::channel> devtools_listener_channels;
   if (devtools_listeners_.size() != 0) {
     // Connect DevTools listeners to the new Context process.
     std::vector<std::string> handles_ids;
@@ -354,6 +372,13 @@ void ContextProviderImpl::Create(
     context_request.Close(ZX_ERR_NOT_SUPPORTED);
     return;
   }
+  if ((enable_widevine || enable_playready) &&
+      !params.has_cdm_data_directory()) {
+    LOG(ERROR) << "WIDEVINE_CDM and PLAYREADY_CDM features require a "
+                  "|cdm_data_directory|.";
+    context_request.Close(ZX_ERR_NOT_SUPPORTED);
+    return;
+  }
 
   // If the system doesn't actually support DRM then disable it. This may result
   // in the Context being able to run without using protected buffers.
@@ -375,9 +400,15 @@ void ContextProviderImpl::Create(
   bool enable_protected_graphics =
       ((enable_playready || enable_widevine) && allow_protected_graphics) ||
       force_protected_graphics;
+  bool use_overlays_for_video =
+      web_engine_config.FindBoolPath("use-overlays-for-video").value_or(false);
 
   if (enable_protected_graphics) {
-    launch_command.AppendSwitch(switches::kEnforceVulkanProtectedMemory);
+    launch_command.AppendSwitch(switches::kEnableVulkanProtectedMemory);
+    // TODO(crbug.com/1143764): Remove this after underlays are stable.
+    if (force_protected_graphics || !use_overlays_for_video) {
+      launch_command.AppendSwitch(switches::kEnforceVulkanProtectedMemory);
+    }
     launch_command.AppendSwitch(switches::kEnableProtectedVideoBuffers);
     bool force_protected_video_buffers =
         web_engine_config.FindBoolPath("force-protected-video-buffers")
@@ -385,6 +416,19 @@ void ContextProviderImpl::Create(
     if (force_protected_video_buffers) {
       launch_command.AppendSwitch(switches::kForceProtectedVideoOutputBuffers);
     }
+  }
+
+  if (use_overlays_for_video) {
+    // Overlays are only available if OutputPresenterFuchsia is in use.
+    AppendFeature(switches::kEnableFeatures,
+                  features::kUseSkiaOutputDeviceBufferQueue.name,
+                  &launch_command);
+    AppendFeature(switches::kEnableFeatures,
+                  features::kUseRealBuffersForPageFlipTest.name,
+                  &launch_command);
+    launch_command.AppendSwitchASCII(switches::kEnableHardwareOverlays,
+                                     "underlay");
+    launch_command.AppendSwitch(switches::kUseOverlaysForVideo);
   }
 
   if (enable_vulkan) {
@@ -405,18 +449,8 @@ void ContextProviderImpl::Create(
     // SkiaRenderer requires out-of-process rasterization be enabled.
     launch_command.AppendSwitch(switches::kEnableOopRasterization);
 
-    if (!enable_protected_graphics) {
-      launch_command.AppendSwitchASCII(switches::kUseGL,
-                                       gl::kGLImplementationANGLEName);
-    } else {
-      DLOG(WARNING) << "ANGLE is not compatible with "
-                    << switches::kEnforceVulkanProtectedMemory
-                    << ", disabling GL";
-      // TODO(crbug.com/1059010): Fix this; probably don't protect canvas
-      // resources.
-      launch_command.AppendSwitchASCII(switches::kUseGL,
-                                       gl::kGLImplementationStubName);
-    }
+    launch_command.AppendSwitchASCII(switches::kUseGL,
+                                     gl::kGLImplementationANGLEName);
   } else {
     VLOG(1) << "Disabling GPU acceleration.";
     // Disable use of Vulkan GPU, and use of the software-GL rasterizer. The
@@ -442,13 +476,57 @@ void ContextProviderImpl::Create(
                                       key_system);
   }
 
+  bool enable_audio = (features & fuchsia::web::ContextFeatureFlags::AUDIO) ==
+                      fuchsia::web::ContextFeatureFlags::AUDIO;
+  if (!enable_audio) {
+    // TODO(fxbug.dev/58902): Split up audio input and output in
+    // ContextFeatureFlags.
+    launch_command.AppendSwitch(switches::kDisableAudioOutput);
+    launch_command.AppendSwitch(switches::kDisableAudioInput);
+  }
+
+  zx::channel cdm_data_directory_channel;
+  if (enable_widevine || enable_playready) {
+    DCHECK(params.has_cdm_data_directory());
+    const char kCdmDataPath[] = "/cdm_data";
+
+    cdm_data_directory_channel = ValidateDirectoryAndTakeChannel(
+        std::move(*params.mutable_cdm_data_directory()));
+    if (!cdm_data_directory_channel) {
+      LOG(ERROR)
+          << "Invalid argument |cdm_data_directory| in CreateContextParams.";
+      context_request.Close(ZX_ERR_INVALID_ARGS);
+      return;
+    }
+
+    launch_command.AppendSwitchNative(switches::kCdmDataDirectory,
+                                      kCdmDataPath);
+    launch_options.paths_to_transfer.push_back(base::PathToTransfer{
+        base::FilePath(kCdmDataPath), cdm_data_directory_channel.get()});
+
+    if (params.has_cdm_data_quota_bytes()) {
+      launch_command.AppendSwitchNative(
+          switches::kCdmDataQuotaBytes,
+          base::NumberToString(params.cdm_data_quota_bytes()));
+    }
+  }
+
+  bool enable_hardware_video_decoder =
+      (features & fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER) ==
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER;
+  if (!enable_hardware_video_decoder)
+    launch_command.AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+
+  if (enable_hardware_video_decoder && !enable_vulkan) {
+    DLOG(ERROR) << "HARDWARE_VIDEO_DECODER requires VULKAN.";
+    context_request.Close(ZX_ERR_NOT_SUPPORTED);
+    return;
+  }
+
   bool disable_software_video_decoder =
       (features &
        fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY) ==
       fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY;
-  bool enable_hardware_video_decoder =
-      (features & fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER) ==
-      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER;
   if (disable_software_video_decoder) {
     if (!enable_hardware_video_decoder) {
       LOG(ERROR) << "Software video decoding may only be disabled if hardware "
@@ -459,11 +537,6 @@ void ContextProviderImpl::Create(
 
     launch_command.AppendSwitch(switches::kDisableSoftwareVideoDecoders);
   }
-
-  const bool enable_cast_streaming_receiver =
-      (features & kCastStreamingFeatureFlag) == kCastStreamingFeatureFlag;
-  if (enable_cast_streaming_receiver)
-    launch_command.AppendSwitch(switches::kEnableCastStreamingReceiver);
 
   // Validate embedder-supplied product, and optional version, and pass it to
   // the Context to include in the UserAgent.
@@ -502,13 +575,18 @@ void ContextProviderImpl::Create(
   if (params.has_unsafely_treat_insecure_origins_as_secure()) {
     const std::vector<std::string>& insecure_origins =
         params.unsafely_treat_insecure_origins_as_secure();
-    if (std::find(insecure_origins.begin(), insecure_origins.end(),
-                  switches::kAllowRunningInsecureContent) !=
-        insecure_origins.end()) {
-      launch_command.AppendSwitch(switches::kAllowRunningInsecureContent);
+    for (auto origin : insecure_origins) {
+      if (origin == switches::kAllowRunningInsecureContent) {
+        launch_command.AppendSwitch(switches::kAllowRunningInsecureContent);
+      } else if (origin == kDisableMixedContentAutoupgradeOrigin) {
+        AppendFeature(switches::kDisableFeatures,
+                      kMixedContentAutoupgradeFeatureName, &launch_command);
+      } else {
+        // Pass the rest of the list to the Context process.
+        AppendFeature(network::switches::kUnsafelyTreatInsecureOriginAsSecure,
+                      origin, &launch_command);
+      }
     }
-    // TODO(crbug.com/1023510): Pass the rest of the list to the Context
-    // process.
   }
 
   if (params.has_cors_exempt_headers()) {
@@ -522,16 +600,20 @@ void ContextProviderImpl::Create(
         base::JoinString(cors_exempt_headers, ","));
   }
 
-  if (launch_for_test_)
-    launch_for_test_.Run(launch_command, launch_options);
-  else
-    base::LaunchProcess(launch_command, launch_options);
+  base::Process context_process;
+  if (launch_for_test_) {
+    context_process = launch_for_test_.Run(launch_command, launch_options);
+  } else {
+    context_process = base::LaunchProcess(launch_command, launch_options);
+  }
 
-  // |context_request| and any DevTools channels were transferred (not copied)
-  // to the Context process.
+  // |context_request|, any DevTools channels and data directory channels were
+  // transferred (not copied) to the Context process.
   ignore_result(context_request.TakeChannel().release());
   for (auto& channel : devtools_listener_channels)
     ignore_result(channel.release());
+  ignore_result(data_directory_channel.release());
+  ignore_result(cdm_data_directory_channel.release());
 }
 
 void ContextProviderImpl::SetLaunchCallbackForTest(

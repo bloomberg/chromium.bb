@@ -21,9 +21,12 @@ extern "C" {
 #endif
 
 typedef struct {
-  double psnr[4];       // total/y/u/v
-  uint64_t sse[4];      // total/y/u/v
-  uint32_t samples[4];  // total/y/u/v
+  double psnr[4];           // total/y/u/v
+  uint64_t sse[4];          // total/y/u/v
+  uint32_t samples[4];      // total/y/u/v
+  double psnr_hbd[4];       // total/y/u/v when input-bit-depth < bit-depth
+  uint64_t sse_hbd[4];      // total/y/u/v when input-bit-depth < bit-depth
+  uint32_t samples_hbd[4];  // total/y/u/v when input-bit-depth < bit-depth
 } PSNR_STATS;
 
 /*!\brief Converts SSE to PSNR

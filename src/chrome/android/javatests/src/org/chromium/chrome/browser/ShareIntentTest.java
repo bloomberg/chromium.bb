@@ -10,8 +10,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.support.test.filters.LargeTest;
 import android.view.Window;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -20,20 +21,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareDelegateImpl;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
@@ -141,11 +141,6 @@ public class ShareIntentTest {
         }
 
         @Override
-        public BottomSheetController getBottomSheetController() {
-            return mActivity.getBottomSheetController();
-        }
-
-        @Override
         public TabModelSelector getTabModelSelector() {
             // TabModelSelector remains uninitialized for this test. Return a mock instead.
             return new MockTabModelSelector(1, 0, null);
@@ -166,7 +161,6 @@ public class ShareIntentTest {
 
     @Test
     @LargeTest
-    @RetryOnFailure
     public void testShareIntent() throws ExecutionException, InterruptedException {
         MockChromeActivity mockActivity = TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Sets a test component as last shared and "shareDirectly" option is set so that
@@ -177,7 +171,8 @@ public class ShareIntentTest {
         RootUiCoordinator rootUiCoordinator = TestThreadUtils.runOnUiThreadBlocking(() -> {
             return new RootUiCoordinator(mockActivity, null,
                     mockActivity.getShareDelegateSupplier(), mockActivity.getActivityTabProvider(),
-                    null, null);
+                    null, null, null, null, new OneshotSupplierImpl<>(),
+                    new OneshotSupplierImpl<>(), new OneshotSupplierImpl<>(), () -> null);
         });
         ShareHelper.setLastShareComponentName(new ComponentName("test.package", "test.activity"));
         // Skips the capture of screenshot and notifies with an empty file.
@@ -192,7 +187,7 @@ public class ShareIntentTest {
             };
         });
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> ((TabImpl) mockActivity.getActivityTab()).updateAttachment(window, null));
+                () -> mockActivity.getActivityTab().updateAttachment(window, null));
 
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
@@ -202,6 +197,10 @@ public class ShareIntentTest {
         mockActivity.waitForFileCheck();
 
         ShareHelper.setLastShareComponentName(new ComponentName("", ""));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mockActivity.getActivityTab().updateAttachment(null, null);
+            window.destroy();
+        });
     }
 
     @Before

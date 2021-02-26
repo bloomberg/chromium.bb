@@ -11,10 +11,10 @@ chrome/test/functional/special_tabs.py. -->
 <link rel="stylesheet" href="chrome://resources/css/tree.css">
 <link rel="stylesheet" href="about.css">
 <link rel="stylesheet" href="events.css">
-<link rel="stylesheet" href="types.css">
 <link rel="stylesheet" href="sync_search.css">
 <link rel="stylesheet" href="sync_node_browser.css">
 <link rel="stylesheet" href="traffic_log.css">
+<link rel="stylesheet" href="invalidations.css">
 
 <if expr="is_ios">
 <!-- TODO(crbug.com/487000): Remove this once injected by web. -->
@@ -30,6 +30,7 @@ chrome/test/functional/special_tabs.py. -->
 <script src="chrome://resources/js/load_time_data.js"></script>
 
 <!-- List stuff. -->
+<script src="chrome://resources/js/assert.js"></script>
 <script src="chrome://resources/js/cr/ui/array_data_model.js"></script>
 <script src="chrome://resources/js/cr/ui/list_item.js"></script>
 <script src="chrome://resources/js/cr/ui/list_selection_controller.js"></script>
@@ -41,13 +42,13 @@ chrome/test/functional/special_tabs.py. -->
 <script src="chrome_sync.js"></script>
 <script src="about.js"></script>
 <script src="events.js"></script>
-<script src="types.js"></script>
 <script src="sync_log.js"></script>
 <script src="sync_node_browser.js"></script>
 <script src="sync_search.js"></script>
 <script src="user_events.js"></script>
 <script src="traffic_log.js"></script>
 <script src="strings.js"></script>
+<script src="invalidations.js"></script>
 </head>
 <body>
 
@@ -66,20 +67,17 @@ chrome/test/functional/special_tabs.py. -->
 <tabbox id="sync-page">
   <tabs>
     <tab id="sync-about-tab">About</tab>
-    <tab id="sync-types-tab">Types</tab>
     <tab id="sync-data-tab">Data</tab>
     <tab id="sync-events-tab">Events</tab>
     <tab id="sync-browser-tab">Sync Node Browser</tab>
     <tab id="sync-search-tab">Search</tab>
     <tab id="sync-user-events-tab" hidden>User Events</tab>
     <tab id="sync-traffic-log-tab">Traffic Log</tab>
+    <tab id="sync-invalidations-tab">Invalidations</tab>
   </tabs>
   <tabpanels>
     <tabpanel>
       <include src="about.html">
-    </tabpanel>
-    <tabpanel>
-      <include src="types.html">
     </tabpanel>
     <tabpanel>
       <include src="data.html">
@@ -98,6 +96,9 @@ chrome/test/functional/special_tabs.py. -->
     </tabpanel>
     <tabpanel>
       <include src="traffic_log.html">
+    </tabpanel>
+    <tabpanel>
+      <include src="invalidations.html">
     </tabpanel>
   </tabpanels>
 </tabbox>

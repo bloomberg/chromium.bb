@@ -30,6 +30,7 @@ class InputEngineContext {
 };
 
 // A basic implementation of InputEngine without using any decoder.
+// TODO(https://crbug.com/1019541): Rename this to RuleBasedEngine.
 class InputEngine : public mojom::InputChannel {
  public:
   InputEngine();
@@ -45,19 +46,37 @@ class InputEngine : public mojom::InputChannel {
   // mojom::InputChannel overrides:
   void ProcessMessage(const std::vector<uint8_t>& message,
                       ProcessMessageCallback callback) override;
+  void OnInputMethodChanged(const std::string& engine_id) override;
+  void OnFocus(mojom::InputFieldInfoPtr input_field_info) override;
+  void OnBlur() override;
+  void OnSurroundingTextChanged(
+      const std::string& text,
+      uint32_t offset,
+      mojom::SelectionRangePtr selection_range) override;
+  void OnCompositionCanceled() override;
   void ProcessKeypressForRulebased(
-      mojom::KeypressInfoForRulebasedPtr keypress_info,
+      mojom::PhysicalKeyEventPtr event,
       ProcessKeypressForRulebasedCallback callback) override;
+  void OnKeyEvent(mojom::PhysicalKeyEventPtr event,
+                  OnKeyEventCallback callback) override;
   void ResetForRulebased() override;
   void GetRulebasedKeypressCountForTesting(
       GetRulebasedKeypressCountForTestingCallback callback) override;
+  void CommitText(const std::string& text) override;
+  void SetComposition(const std::string& text) override;
+  void SetCompositionRange(uint32_t start_byte_index,
+                           uint32_t end_byte_index) override;
+  void FinishComposition() override;
+  void DeleteSurroundingText(uint32_t num_bytes_before_cursor,
+                             uint32_t num_bytes_after_cursor) override;
 
   // TODO(https://crbug.com/837156): Implement a state for the interface.
 
- private:
+ protected:
   // Returns whether the given ime_spec is supported by rulebased engine.
   bool IsImeSupportedByRulebased(const std::string& ime_spec);
 
+ private:
   mojo::ReceiverSet<mojom::InputChannel, std::unique_ptr<InputEngineContext>>
       channel_receivers_;
 

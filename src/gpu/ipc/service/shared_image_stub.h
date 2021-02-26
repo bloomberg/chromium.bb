@@ -64,9 +64,18 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
                          SurfaceHandle surface_handle,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
+                         GrSurfaceOrigin surface_origin,
+                         SkAlphaType alpha_type,
                          uint32_t usage);
+
+#if defined(OS_ANDROID)
+  bool CreateSharedImageWithAHB(const Mailbox& out_mailbox,
+                                const Mailbox& in_mailbox,
+                                uint32_t usage);
+#endif
+
   bool UpdateSharedImage(const Mailbox& mailbox,
-                         const gfx::GpuFenceHandle& in_fence_handle);
+                         gfx::GpuFenceHandle in_fence_handle);
 
  private:
   SharedImageStub(GpuChannel* channel, int32_t route_id);
@@ -78,7 +87,13 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   void OnCreateGMBSharedImage(GpuChannelMsg_CreateGMBSharedImage_Params params);
   void OnUpdateSharedImage(const Mailbox& mailbox,
                            uint32_t release_id,
-                           const gfx::GpuFenceHandle& in_fence_handle);
+                           gfx::GpuFenceHandle in_fence_handle);
+#if defined(OS_ANDROID)
+  void OnCreateSharedImageWithAHB(const Mailbox& out_mailbox,
+                                  const Mailbox& in_mailbox,
+                                  uint32_t usage,
+                                  uint32_t release_id);
+#endif
   void OnDestroySharedImage(const Mailbox& mailbox);
   void OnRegisterSharedImageUploadBuffer(base::ReadOnlySharedMemoryRegion shm);
 #if defined(OS_WIN)
@@ -87,11 +102,14 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
 #endif  // OS_WIN
 #if defined(OS_FUCHSIA)
   void OnRegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
-                                        zx::channel token);
+                                        zx::channel token,
+                                        gfx::BufferFormat format,
+                                        gfx::BufferUsage usage,
+                                        bool register_with_image_pipe);
   void OnReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id);
 #endif  // OS_FUCHSIA
 
-  bool MakeContextCurrent();
+  bool MakeContextCurrent(bool needs_gl = false);
   ContextResult MakeContextCurrentAndCreateFactory();
   void OnError();
 

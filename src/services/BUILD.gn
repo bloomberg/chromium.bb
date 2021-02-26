@@ -12,6 +12,8 @@ import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 # To add tests for a new service, please define a "tests" source_set in the
 # service subdirectory and add it as a dependency here.
 test("services_unittests") {
+  use_xvfb = use_xvfb_in_this_config
+
   # The tracing unittests require this for testing unwinding. See
   # stack_unwinder_android_unittest.cc.
   if (is_android && can_unwind_with_cfi_table && is_official_build) {
@@ -23,7 +25,6 @@ test("services_unittests") {
   deps = [
     "//services/cert_verifier:tests",
     "//services/cert_verifier/cert_net_url_loader:tests",
-    "//services/content:tests",
     "//services/metrics/public/cpp:tests",
     "//services/network:tests",
     "//services/network/public/cpp:tests",
@@ -94,7 +95,7 @@ if (!is_ios) {
 }
 
 if (is_android) {
-  junit_binary("service_junit_tests") {
+  junit_binary("services_junit_tests") {
     sources = [
       "device/generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java",
       "device/geolocation/android/junit/src/org/chromium/device/geolocation/LocationProviderTest.java",
@@ -105,11 +106,13 @@ if (is_android) {
     deps = [
       "$google_play_services_package:google_play_services_base_java",
       "$google_play_services_package:google_play_services_basement_java",
+      "$google_play_services_package:google_play_services_location_java",
       "$google_play_services_package:google_play_services_vision_common_java",
       "$google_play_services_package:google_play_services_vision_java",
       "//base:base_java",
       "//base:base_java_test_support",
       "//base:base_junit_test_support",
+      "//mojo/public/java:base_java",
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",
       "//services/device/generic_sensor:java",
@@ -125,7 +128,7 @@ if (is_android) {
     ]
   }
 
-  android_library("service_javatests") {
+  android_library("services_javatests") {
     testonly = true
     sources = [
       "shape_detection/android/javatests/src/org/chromium/shape_detection/BarcodeDetectionImplTest.java",
@@ -148,6 +151,7 @@ if (is_android) {
       "//skia/public/mojom:mojom_java",
       "//third_party/android_deps:androidx_test_monitor_java",
       "//third_party/android_deps:androidx_test_runner_java",
+      "//third_party/android_deps:chromium_play_services_availability_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/junit",
       "//ui/gfx/geometry/mojom:mojom_java",

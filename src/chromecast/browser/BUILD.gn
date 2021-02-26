@@ -52,6 +52,17 @@ cast_source_set("feature_list") {
   ]
 }
 
+cast_source_set("web_preferences") {
+  sources = [
+    "cast_web_preferences.cc",
+    "cast_web_preferences.h",
+  ]
+  deps = [
+    "//base",
+    "//content/public/common",
+  ]
+}
+
 cast_source_set("browser") {
   sources = [
     "application_media_capabilities.cc",
@@ -119,21 +130,22 @@ cast_source_set("browser") {
     "media/media_caps_impl.h",
     "media/supported_codec_finder.cc",
     "media/supported_codec_finder.h",
-    "queryable_data_host_cast.cc",
-    "queryable_data_host_cast.h",
     "renderer_prelauncher.cc",
     "renderer_prelauncher.h",
     "service/cast_service_simple.cc",
     "service/cast_service_simple.h",
     "service_connector.cc",
     "service_connector.h",
-    "tts/tts_controller.h",
-    "tts/tts_controller_impl.cc",
-    "tts/tts_controller_impl.h",
-    "tts/tts_platform.cc",
-    "tts/tts_platform.h",
-    "tts/tts_platform_stub.cc",
-    "tts/tts_platform_stub.h",
+    "webui/cast_resource_data_source.cc",
+    "webui/cast_resource_data_source.h",
+    "webui/cast_webui.cc",
+    "webui/cast_webui.h",
+    "webui/cast_webui_controller_factory.cc",
+    "webui/cast_webui_controller_factory.h",
+    "webui/cast_webui_message_handler.cc",
+    "webui/cast_webui_message_handler.h",
+    "webui/constants.cc",
+    "webui/constants.h",
   ]
 
   if (chromecast_branding == "public") {
@@ -154,6 +166,7 @@ cast_source_set("browser") {
 
   deps = [
     ":browser_buildflags",
+    ":web_preferences",
     "//base",
     "//base:i18n",
     "//base/util/memory_pressure",
@@ -168,6 +181,8 @@ cast_source_set("browser") {
     "//chromecast/base:cast_version",
     "//chromecast/browser/bluetooth/public/mojom",
     "//chromecast/browser/general_audience_browsing/mojom",
+    "//chromecast/browser/mojom",
+    "//chromecast/browser/webui/mojom",
     "//chromecast/common",
     "//chromecast/common:queryable_data",
     "//chromecast/common/media",
@@ -177,6 +192,7 @@ cast_source_set("browser") {
     "//chromecast/media:libcast_media",
     "//chromecast/media/base:media_codec_support",
     "//chromecast/media/base:video_plane_controller",
+    "//chromecast/media/cdm:cdm_origin_provider",
     "//chromecast/media/service",
     "//chromecast/media/service/mojom",
     "//chromecast/net",
@@ -186,8 +202,9 @@ cast_source_set("browser") {
     "//components/download/public/common:public",
     "//components/media_control/browser",
     "//components/metrics",
-    "//components/metrics:gpu",
+    "//components/metrics:content",
     "//components/metrics:net",
+    "//components/on_load_script_injector/browser",
     "//components/variations/net",
 
     # TODO(gfhuang): Eliminate this dependency if ScreenInfoMetricsProvider
@@ -208,9 +225,12 @@ cast_source_set("browser") {
     "//gpu",
     "//ipc",
     "//media",
+    "//media/mojo/mojom:remoting",
     "//media/mojo/services",
+    "//mojo/public/cpp/bindings",
     "//net",
     "//services/media_session/public/mojom",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
     "//third_party/blink/public/common:headers",
@@ -247,7 +267,7 @@ cast_source_set("browser") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "cast_system_memory_pressure_evaluator.cc",
       "cast_system_memory_pressure_evaluator.h",
@@ -366,7 +386,8 @@ cast_source_set("browser") {
       "extensions/cast_kiosk_delegate.h",
       "extensions/cast_prefs.cc",
       "extensions/cast_prefs.h",
-      "extensions/stub_storage_monitor.cc",
+      "webui/cast_extension_webui.cc",
+      "webui/cast_extension_webui.h",
     ]
     if (use_aura) {
       sources += [
@@ -404,9 +425,11 @@ cast_source_set("browser") {
       "//ui/views:views",
       "//ui/wm/public:public",
     ]
+  } else {
+    sources += [ "webui/cast_webui_default.cc" ]
   }
 
-  if (is_linux && use_ozone) {
+  if ((is_linux || is_chromeos) && use_ozone) {
     sources += [
       "exo/cast_wm_helper.cc",
       "exo/cast_wm_helper.h",
@@ -424,8 +447,12 @@ cast_source_set("browser") {
       "webview/platform_views_rpc_instance.h",
       "webview/web_content_controller.cc",
       "webview/web_content_controller.h",
+      "webview/webview_browser_context.cc",
+      "webview/webview_browser_context.h",
       "webview/webview_controller.cc",
       "webview/webview_controller.h",
+      "webview/webview_input_method_observer.cc",
+      "webview/webview_input_method_observer.h",
       "webview/webview_navigation_throttle.cc",
       "webview/webview_navigation_throttle.h",
       "webview/webview_rpc_instance.cc",
@@ -608,6 +635,22 @@ if (is_android) {
   java_cpp_enum("java_enums") {
     sources = [ "cast_content_window.h" ]
   }
+}
+
+# Could be used in the internal build if the internal implementation won't be
+# included, for example, some unit tests.
+cast_source_set("simple_browser") {
+  sources = [
+    "cast_browser_main_parts_simple.cc",
+    "cast_content_browser_client_simple.cc",
+    "pref_service_helper_simple.cc",
+  ]
+
+  deps = [
+    ":browser",
+    ":prefs",
+    "//chromecast/base:default_create_sys_info",
+  ]
 }
 
 cast_source_set("web_contents_provider") {

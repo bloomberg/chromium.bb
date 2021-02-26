@@ -103,23 +103,19 @@ class ActiveDirectoryLoginAutocompleteTest : public ActiveDirectoryLoginTest {
 
 // Test successful Active Directory login.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginSuccess) {
-  OobeBaseTest::WaitForSigninScreen();
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
   ad_login_.TestNoError();
   ad_login_.TestDomainHidden();
   ad_login_.SubmitActiveDirectoryCredentials(test_user_, kPassword);
-  test::WaitForLastScreenAndTapGetStarted();
   test::WaitForPrimaryUserSessionStart();
 }
 
 // Tests that the Kerberos SSO environment variables are set correctly after
 // an Active Directory log in.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, KerberosVarsCopied) {
-  OobeBaseTest::WaitForSigninScreen();
   ad_login_.TestNoError();
   ad_login_.TestDomainHidden();
   ad_login_.SubmitActiveDirectoryCredentials(test_user_, kPassword);
-  test::WaitForLastScreenAndTapGetStarted();
   test::WaitForPrimaryUserSessionStart();
 
   base::FilePath dir;
@@ -134,7 +130,6 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, KerberosVarsCopied) {
 
 // Test different UI errors for Active Directory login.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
-  OobeBaseTest::WaitForSigninScreen();
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
   ad_login_.TestNoError();
   ad_login_.TestDomainHidden();
@@ -173,9 +168,26 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
   ad_login_.TestDomainHidden();
 }
 
+// Test back button clears the input and error from the login screen.
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, Back) {
+  ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
+  ad_login_.TestNoError();
+  ad_login_.TestDomainHidden();
+
+  ad_login_.SubmitActiveDirectoryCredentials(
+      std::string(kTestActiveDirectoryUser) + "@", kPassword);
+  ad_login_.WaitForAuthError();
+  ad_login_.TestUserError();
+  ad_login_.TestDomainHidden();
+
+  ad_login_.ClickBackButton();
+  ad_login_.TestUserInput("");
+  ad_login_.TestNoError();
+  ad_login_.TestDomainHidden();
+}
+
 // Test successful Active Directory login from the password change screen.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_LoginSuccess) {
-  OobeBaseTest::WaitForSigninScreen();
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
   ad_login_.TestLoginVisible();
   ad_login_.TestDomainHidden();
@@ -186,13 +198,11 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_LoginSuccess) {
   fake_authpolicy_client()->set_auth_error(authpolicy::ERROR_NONE);
   ad_login_.SubmitActiveDirectoryPasswordChangeCredentials(
       kPassword, kNewPassword, kNewPassword);
-  test::WaitForLastScreenAndTapGetStarted();
   test::WaitForPrimaryUserSessionStart();
 }
 
 // Test different UI errors for Active Directory password change screen.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_UIErrors) {
-  OobeBaseTest::WaitForSigninScreen();
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
   ad_login_.TestLoginVisible();
   ad_login_.TestDomainHidden();
@@ -227,7 +237,6 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_UIErrors) {
 // Test reopening Active Directory password change screen clears errors.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest,
                        PasswordChange_ReopenClearErrors) {
-  OobeBaseTest::WaitForSigninScreen();
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
   ad_login_.TestLoginVisible();
   ad_login_.TestDomainHidden();
@@ -246,20 +255,17 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest,
 
 // Tests that autocomplete works. Submits username without domain.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginAutocompleteTest, LoginSuccess) {
-  OobeBaseTest::WaitForSigninScreen();
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
   ad_login_.TestNoError();
   ad_login_.TestDomainVisible();
 
   ad_login_.SubmitActiveDirectoryCredentials(kTestActiveDirectoryUser,
                                              kPassword);
-  test::WaitForLastScreenAndTapGetStarted();
   test::WaitForPrimaryUserSessionStart();
 }
 
 // Tests that user could override autocomplete domain.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginAutocompleteTest, TestAutocomplete) {
-  OobeBaseTest::WaitForSigninScreen();
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
 
   ad_login_.TestLoginVisible();

@@ -5,6 +5,8 @@
 #ifndef QUICHE_QUIC_CORE_QUIC_RECEIVED_PACKET_MANAGER_H_
 #define QUICHE_QUIC_CORE_QUIC_RECEIVED_PACKET_MANAGER_H_
 
+#include <cstddef>
+#include "net/third_party/quiche/src/quic/core/frames/quic_ack_frequency_frame.h"
 #include "net/third_party/quiche/src/quic/core/quic_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
@@ -62,7 +64,6 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
   // Otherwise, ACK needs to be sent by the specified time.
   void MaybeUpdateAckTimeout(bool should_last_packet_instigate_acks,
                              QuicPacketNumber last_received_packet_number,
-                             QuicTime time_of_last_received_packet,
                              QuicTime now,
                              const RttStats* rtt_stats);
 
@@ -113,20 +114,18 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
     min_received_before_ack_decimation_ = new_value;
   }
 
-  size_t ack_frequency_before_ack_decimation() const {
-    return ack_frequency_before_ack_decimation_;
-  }
-  void set_ack_frequency_before_ack_decimation(size_t new_value) {
+  void set_ack_frequency(size_t new_value) {
     DCHECK_GT(new_value, 0u);
-    ack_frequency_before_ack_decimation_ = new_value;
+    ack_frequency_ = new_value;
   }
 
-  QuicTime::Delta local_max_ack_delay() const { return local_max_ack_delay_; }
   void set_local_max_ack_delay(QuicTime::Delta local_max_ack_delay) {
     local_max_ack_delay_ = local_max_ack_delay;
   }
 
   QuicTime ack_timeout() const { return ack_timeout_; }
+
+  void OnAckFrequencyFrame(const QuicAckFrequencyFrame& frame);
 
  private:
   friend class test::QuicConnectionPeer;
@@ -135,6 +134,16 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
 
   // Sets ack_timeout_ to |time| if ack_timeout_ is not initialized or > time.
   void MaybeUpdateAckTimeoutTo(QuicTime time);
+
+  // Maybe update ack_frequency_ when condition meets.
+  void MaybeUpdateAckFrequency(QuicPacketNumber last_received_packet_number);
+
+  QuicTime::Delta GetMaxAckDelay(QuicPacketNumber last_received_packet_number,
+                                 const RttStats& rtt_stats) const;
+
+  bool AckFrequencyFrameReceived() const {
+    return last_ack_frequency_frame_sequence_number_ >= 0;
+  }
 
   // Least packet number of the the packet sent by the peer for which it
   // hasn't received an ack.
@@ -163,23 +172,21 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
 
   QuicConnectionStats* stats_;
 
-  AckMode ack_mode_;
   // How many retransmittable packets have arrived without sending an ack.
   QuicPacketCount num_retransmittable_packets_received_since_last_ack_sent_;
   // Ack decimation will start happening after this many packets are received.
   size_t min_received_before_ack_decimation_;
-  // Before ack decimation starts (if enabled), we ack every n-th packet.
-  size_t ack_frequency_before_ack_decimation_;
+  // Ack every n-th packet.
+  size_t ack_frequency_;
   // The max delay in fraction of min_rtt to use when sending decimated acks.
   float ack_decimation_delay_;
   // When true, removes ack decimation's max number of packets(10) before
   // sending an ack.
   bool unlimited_ack_decimation_;
-  // When true, use a 1ms delayed ack timer if it's been an SRTT since a packet
-  // was received.
-  bool fast_ack_after_quiescence_;
   // When true, only send 1 immediate ACK when reordering is detected.
   bool one_immediate_ack_;
+  // When true, do not ack immediately upon observation of packet reordering.
+  bool ignore_order_;
 
   // The local node's maximum ack delay time. This is the maximum amount of
   // time to wait before sending an acknowledgement.
@@ -195,6 +202,10 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
 
   // Last sent largest acked, which gets updated when ACK was successfully sent.
   QuicPacketNumber last_sent_largest_acked_;
+
+  // The sequence number of the last received AckFrequencyFrame. Negative if
+  // none received.
+  int64_t last_ack_frequency_frame_sequence_number_;
 };
 
 }  // namespace quic

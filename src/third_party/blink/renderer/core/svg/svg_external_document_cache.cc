@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/loader/resource/text_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 
@@ -48,7 +49,7 @@ void SVGExternalDocumentCache::Entry::AddClient(Client* client) {
     clients_.insert(client);
     return;
   }
-  context_document_->GetTaskRunner(TaskType::kInternalLoading)
+  context_->GetTaskRunner(TaskType::kInternalLoading)
       ->PostTask(
           FROM_HERE,
           WTF::Bind(&SVGExternalDocumentCache::Client::NotifyFinished,
@@ -70,16 +71,16 @@ Document* SVGExternalDocumentCache::Entry::GetDocument() {
     document_ = XMLDocument::CreateSVG(
         DocumentInit::Create()
             .WithURL(resource->GetResponse().CurrentRequestUrl())
-            .WithContextDocument(context_document_));
+            .WithExecutionContext(context_.Get()));
     document_->SetContent(resource->DecodedText());
   }
   return document_.Get();
 }
 
-void SVGExternalDocumentCache::Entry::Trace(Visitor* visitor) {
+void SVGExternalDocumentCache::Entry::Trace(Visitor* visitor) const {
   ResourceClient::Trace(visitor);
   visitor->Trace(document_);
-  visitor->Trace(context_document_);
+  visitor->Trace(context_);
   visitor->Trace(clients_);
 }
 
@@ -104,7 +105,9 @@ SVGExternalDocumentCache::Entry* SVGExternalDocumentCache::Get(
     const KURL& url,
     const AtomicString& initiator_name,
     network::mojom::blink::CSPDisposition csp_disposition) {
-  ResourceLoaderOptions options;
+  Document* context_document = GetSupplementable();
+  ResourceLoaderOptions options(
+      context_document->GetExecutionContext()->GetCurrentWorld());
   options.initiator_info.name = initiator_name;
   FetchParameters params(ResourceRequest(url), options);
   params.SetContentSecurityCheck(csp_disposition);
@@ -113,8 +116,8 @@ SVGExternalDocumentCache::Entry* SVGExternalDocumentCache::Get(
   params.SetRequestContext(mojom::blink::RequestContextType::IMAGE);
   params.SetRequestDestination(network::mojom::RequestDestination::kImage);
 
-  Document* context_document = GetSupplementable();
-  Entry* entry = MakeGarbageCollected<Entry>(context_document);
+  Entry* entry =
+      MakeGarbageCollected<Entry>(context_document->GetExecutionContext());
   Resource* resource = TextResource::FetchSVGDocument(
       params, context_document->Fetcher(), entry);
   // TODO(fs): Handle revalidations that return a new/different resource without
@@ -126,7 +129,7 @@ SVGExternalDocumentCache::Entry* SVGExternalDocumentCache::Get(
   return entry;
 }
 
-void SVGExternalDocumentCache::Trace(Visitor* visitor) {
+void SVGExternalDocumentCache::Trace(Visitor* visitor) const {
   Supplement<Document>::Trace(visitor);
   visitor->Trace(entries_);
 }

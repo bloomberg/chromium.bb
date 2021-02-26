@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -40,6 +41,7 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/grit/extensions_browser_resources.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -57,11 +59,6 @@ constexpr char kInDevModeKey[] = "inDevMode";
 constexpr char kShowActivityLogKey[] = "showActivityLog";
 constexpr char kLoadTimeClassesKey[] = "loadTimeClasses";
 
-#if !BUILDFLAG(OPTIMIZE_WEBUI)
-constexpr char kGeneratedPath[] =
-    "@out_folder@/gen/chrome/browser/resources/extensions/";
-#endif
-
 std::string GetLoadTimeClasses(bool in_dev_mode) {
   return in_dev_mode ? "in-dev-mode" : std::string();
 }
@@ -70,18 +67,9 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
                                                    bool in_dev_mode) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-  webui::SetupBundledWebUIDataSource(source, "extensions.js",
-                                     IDR_EXTENSIONS_EXTENSIONS_ROLLUP_JS,
-                                     IDR_EXTENSIONS_EXTENSIONS_HTML);
-  source->AddResourcePath("checkup_image.svg", IDR_EXTENSIONS_CHECKUP_IMAGE);
-  source->AddResourcePath("checkup_image_dark.svg",
-                          IDR_EXTENSIONS_CHECKUP_IMAGE_DARK);
-#else
   webui::SetupWebUIDataSource(
       source, base::make_span(kExtensionsResources, kExtensionsResourcesSize),
-      kGeneratedPath, IDR_EXTENSIONS_EXTENSIONS_HTML);
-#endif
+      "", IDR_EXTENSIONS_EXTENSIONS_HTML);
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     // Add common strings.
@@ -111,8 +99,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
     {"toolbarTitle", IDS_EXTENSIONS_TOOLBAR_TITLE},
     {"mainMenu", IDS_EXTENSIONS_MENU_BUTTON_LABEL},
     {"search", IDS_EXTENSIONS_SEARCH},
-    // TODO(dpapad): Use a single merged string resource for "Clear search".
-    {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
+    {"clearSearch", IDS_CLEAR_SEARCH},
     {"sidebarExtensions", IDS_EXTENSIONS_SIDEBAR_EXTENSIONS},
     {"appsTitle", IDS_EXTENSIONS_APPS_TITLE},
     {"noExtensionsOrApps", IDS_EXTENSIONS_NO_INSTALLED_ITEMS},
@@ -249,6 +236,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
     {"shortcutIncludeStartModifier", IDS_EXTENSIONS_INCLUDE_START_MODIFIER},
     {"shortcutTooManyModifiers", IDS_EXTENSIONS_TOO_MANY_MODIFIERS},
     {"shortcutNeedCharacter", IDS_EXTENSIONS_NEED_CHARACTER},
+    {"subpageArrowRoleDescription", IDS_EXTENSIONS_SUBPAGE_BUTTON},
     {"toolbarDevMode", IDS_EXTENSIONS_DEVELOPER_MODE},
     {"toolbarLoadUnpacked", IDS_EXTENSIONS_TOOLBAR_LOAD_UNPACKED},
     {"toolbarPack", IDS_EXTENSIONS_TOOLBAR_PACK},
@@ -263,6 +251,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
     {"viewIncognito", IDS_EXTENSIONS_VIEW_INCOGNITO},
     {"viewInactive", IDS_EXTENSIONS_VIEW_INACTIVE},
     {"viewIframe", IDS_EXTENSIONS_VIEW_IFRAME},
+    {"viewServiceWorker", IDS_EXTENSIONS_SERVICE_WORKER_BACKGROUND},
 
 #if defined(OS_CHROMEOS)
     {"manageKioskApp", IDS_EXTENSIONS_MANAGE_KIOSK_APP},
@@ -361,14 +350,14 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui)
     : WebContentsObserver(web_ui->GetWebContents()),
       WebUIController(web_ui),
       webui_load_timer_(web_ui->GetWebContents(),
-                        "Extensions.WebUi.DocumentLoadedInMainFrameTime.MD",
-                        "Extensions.WebUi.LoadCompletedInMainFrame.MD") {
+                        "Extensions.WebUi.DocumentLoadedInMainFrameTime",
+                        "Extensions.WebUi.LoadCompletedInMainFrame") {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source = nullptr;
 
-  in_dev_mode_.Init(
-      prefs::kExtensionsUIDeveloperMode, profile->GetPrefs(),
-      base::Bind(&ExtensionsUI::OnDevModeChanged, base::Unretained(this)));
+  in_dev_mode_.Init(prefs::kExtensionsUIDeveloperMode, profile->GetPrefs(),
+                    base::BindRepeating(&ExtensionsUI::OnDevModeChanged,
+                                        base::Unretained(this)));
 
   source = CreateMdExtensionsSource(profile, *in_dev_mode_);
   ManagedUIHandler::Initialize(web_ui, source);
@@ -382,7 +371,8 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui)
 
   // Need to allow <object> elements so that the <extensionoptions> browser
   // plugin can be loaded within chrome://extensions.
-  source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ObjectSrc, "object-src 'self';");
 
   content::WebUIDataSource::Add(profile, source);
 
@@ -391,8 +381,8 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui)
   // GetVisibleURL() because the load hasn't committed and this check isn't used
   // for a security decision, however a stronger check will be implemented if we
   // decide to invest more in this experiment.
-  if (web_ui->GetWebContents()->GetVisibleURL().query_piece().starts_with(
-          "checkup")) {
+  if (base::StartsWith(web_ui->GetWebContents()->GetVisibleURL().query_piece(),
+                       "checkup")) {
     ExtensionPrefs::Get(profile)->SetUserHasSeenExtensionsCheckupOnStartup(
         true);
   }

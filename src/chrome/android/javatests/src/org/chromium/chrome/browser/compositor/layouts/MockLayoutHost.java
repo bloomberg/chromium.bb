@@ -9,8 +9,11 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.browser.compositor.TitleCache;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -25,6 +28,8 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
 
     private final Context mContext;
     private boolean mPortrait = true;
+    private final BrowserControlsManager mBrowserControlsManager;
+    private final ObservableSupplierImpl<BrowserControlsManager> mBrowserControlsManagerSupplier;
 
     static class MockTitleCache implements TitleCache {
         @Override
@@ -43,6 +48,10 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
 
     MockLayoutHost(Context context) {
         mContext = context;
+        mBrowserControlsManager =
+                new BrowserControlsManager(null, BrowserControlsManager.ControlsPosition.TOP);
+        mBrowserControlsManagerSupplier = new ObservableSupplierImpl<>();
+        mBrowserControlsManagerSupplier.set(mBrowserControlsManager);
     }
 
     public void setOrientation(boolean portrait) {
@@ -133,7 +142,17 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     }
 
     @Override
-    public ChromeFullscreenManager getFullscreenManager() {
+    public BrowserControlsManager getBrowserControlsManager() {
+        return mBrowserControlsManager;
+    }
+
+    @Override
+    public ObservableSupplier<BrowserControlsManager> getBrowserControlsManagerSupplier() {
+        return mBrowserControlsManagerSupplier;
+    }
+
+    @Override
+    public FullscreenManager getFullscreenManager() {
         return null;
     }
 

@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/threading/thread.h"
 #include "ui/gl/gl_export.h"
+#include "ui/gl/vsync_provider_win.h"
 
 namespace base {
 template <typename T>
@@ -35,6 +36,8 @@ class GL_EXPORT VSyncThreadWin {
   void AddObserver(VSyncObserver* obs);
   void RemoveObserver(VSyncObserver* obs);
 
+  gfx::VSyncProvider* vsync_provider() { return &vsync_provider_; }
+
  private:
   friend struct base::DefaultSingletonTraits<VSyncThreadWin>;
 
@@ -46,6 +49,7 @@ class GL_EXPORT VSyncThreadWin {
   base::Thread vsync_thread_;
 
   // Used on vsync thread only after initialization.
+  VSyncProviderWin vsync_provider_;
   const Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   HMONITOR primary_monitor_ = nullptr;
   Microsoft::WRL::ComPtr<IDXGIOutput> primary_output_;

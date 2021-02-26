@@ -7,16 +7,22 @@ import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import './icons.js';
+import './shared-css.js';
 import './viewer-bookmark.js';
+import './viewer-download-controls.js';
 import './viewer-page-selector.js';
 import './viewer-toolbar-dropdown.js';
 
-// <if expr="chromeos">
-import './viewer-pen-options.js';
-// </if>
-
+import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {Bookmark} from '../bookmark_type.js';
+// <if expr="chromeos">
+import {InkController} from '../ink_controller.js';
+import {ViewerAnnotationsBarElement} from './viewer-annotations-bar.js';
+// </if>
 
 Polymer({
   is: 'viewer-pdf-toolbar',
@@ -29,10 +35,7 @@ Polymer({
      * example the PDF is encrypted or password protected. Note, this is
      * true regardless of whether the feature flag is enabled.
      */
-    annotationAvailable: {
-      type: Boolean,
-      value: true,
-    },
+    annotationAvailable: Boolean,
 
     /** Whether the viewer is currently in annotation mode. */
     annotationMode: {
@@ -40,13 +43,6 @@ Polymer({
       notify: true,
       value: false,
       reflectToAttribute: true,
-    },
-
-    /** @type {?AnnotationTool} */
-    annotationTool: {
-      type: Object,
-      value: null,
-      notify: true,
     },
 
     /**
@@ -58,21 +54,21 @@ Polymer({
       value: () => [],
     },
 
-    canRedoAnnotation: {
-      type: Boolean,
-      value: false,
-    },
-
-    canUndoAnnotation: {
-      type: Boolean,
-      value: false,
-    },
-
-    /** The number of pages in the PDF document. */
     docLength: Number,
 
     /** The title of the PDF document. */
     docTitle: String,
+
+    hasEdits: Boolean,
+
+    hasEnteredAnnotationMode: Boolean,
+
+    // <if expr="chromeos">
+    /** @type {?InkController} */
+    inkController: Object,
+    // </if>
+
+    isFormFieldFocused: Boolean,
 
     /** The current loading progress of the PDF document (0 - 100). */
     loadProgress: {
@@ -86,22 +82,16 @@ Polymer({
       value: true,
     },
 
-    /** The number of the page being viewed (1-based). */
     pageNo: Number,
 
     /** Whether the PDF Annotations feature is enabled. */
-    pdfAnnotationsEnabled: {
-      type: Boolean,
-      value: false,
-    },
+    pdfAnnotationsEnabled: Boolean,
 
     /** Whether the Printing feature is enabled. */
-    printingEnabled: {
-      type: Boolean,
-      value: false,
-    },
+    printingEnabled: Boolean,
 
-    strings: Object,
+    /** Whether the PDF Form save feature is enabled. */
+    pdfFormSaveEnabled: Boolean,
   },
 
   /** @type {?Object} */
@@ -119,7 +109,10 @@ Polymer({
       this.$.pageselector.classList.toggle('invisible', !loaded);
       this.$.buttons.classList.toggle('invisible', !loaded);
       this.$.progress.style.opacity = loaded ? 0 : 1;
-      this.$['annotations-bar'].hidden = !loaded || !this.annotationMode;
+      // <if expr="chromeos">
+      this.$$('viewer-annotations-bar').hidden =
+          !loaded || !this.annotationMode;
+      // </if>
     }
   },
 
@@ -168,7 +161,8 @@ Polymer({
   /** @return {boolean} Whether the toolbar should be kept open. */
   shouldKeepOpen() {
     return this.$.bookmarks.dropdownOpen || this.loadProgress < 100 ||
-        this.$.pageselector.isActive() || this.annotationMode;
+        this.$.pageselector.isActive() || this.annotationMode ||
+        this.$.downloads.isMenuOpen();
   },
 
   /** @return {boolean} Whether a dropdown was open and was hidden. */
@@ -178,14 +172,18 @@ Polymer({
       this.$.bookmarks.toggleDropdown();
       result = true;
     }
-    if (this.$.pen.dropdownOpen) {
-      this.$.pen.toggleDropdown();
+    if (this.$.downloads.isMenuOpen()) {
+      this.$.downloads.closeMenu();
       result = true;
     }
-    if (this.$.highlighter.dropdownOpen) {
-      this.$.highlighter.toggleDropdown();
+    // <if expr="chromeos">
+    const annotationBar = /** @type {!ViewerAnnotationsBarElement} */ (
+        this.$$('viewer-annotations-bar'));
+    if (annotationBar.hasOpenDropdown()) {
+      annotationBar.closeDropdowns();
       result = true;
     }
+    // </if>
     return result;
   },
 
@@ -198,84 +196,15 @@ Polymer({
     this.fire('rotate-right');
   },
 
-  download() {
-    this.fire('save');
-  },
-
   print() {
     this.fire('print');
   },
 
-  undo() {
-    this.fire('undo');
-  },
-
-  redo() {
-    this.fire('redo');
-  },
-
+  // <if expr="chromeos">
   toggleAnnotation() {
     this.annotationMode = !this.annotationMode;
-    if (this.annotationMode) {
-      // Select pen tool when entering annotation mode.
-      this.updateAnnotationTool_(/** @type {!HTMLElement} */ (this.$.pen));
-    }
-    this.dispatchEvent(new CustomEvent('annotation-mode-toggled', {
-      detail: {
-        value: this.annotationMode,
-      },
-    }));
+    this.dispatchEvent(new CustomEvent(
+        'annotation-mode-toggled', {detail: this.annotationMode}));
   },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  annotationToolClicked_(e) {
-    this.updateAnnotationTool_(/** @type {!HTMLElement} */ (e.currentTarget));
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  annotationToolOptionChanged_(e) {
-    const element = e.currentTarget.parentElement;
-    if (!this.annotationTool || element.id !== this.annotationTool.tool) {
-      return;
-    }
-    this.updateAnnotationTool_(e.currentTarget.parentElement);
-  },
-
-  /**
-   * @param {!HTMLElement} element
-   * @private
-   */
-  updateAnnotationTool_(element) {
-    const tool = element.id;
-    const options = element.querySelector('viewer-pen-options') || {
-      selectedSize: 1,
-      selectedColor: null,
-    };
-    const attributeStyleMap = element.attributeStyleMap;
-    attributeStyleMap.set('--pen-tip-fill', options.selectedColor);
-    attributeStyleMap.set(
-        '--pen-tip-border',
-        options.selectedColor === '#000000' ? 'currentcolor' :
-                                              options.selectedColor);
-    this.annotationTool = {
-      tool: tool,
-      size: options.selectedSize,
-      color: options.selectedColor,
-    };
-  },
-
-  /**
-   * @param {string} toolName
-   * @return {boolean} Whether the annotation tool is using tool |toolName|.
-   * @private
-   */
-  isAnnotationTool_(toolName) {
-    return !!this.annotationTool && this.annotationTool.tool === toolName;
-  },
+  // </if>
 });

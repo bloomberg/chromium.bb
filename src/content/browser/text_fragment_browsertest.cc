@@ -21,6 +21,19 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
+// RunUntilInputProcessed will force a Blink lifecycle which is needed
+// because did_scroll is set in an onscroll handler which may be delayed from
+// the scroll by a frame.
+#define EXPECT_DID_SCROLL(scrolled)                        \
+  RunUntilInputProcessed(GetWidgetHost());                 \
+  EXPECT_EQ(scrolled, EvalJs(main_contents, "did_scroll;", \
+                             EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+#define ASSERT_DID_SCROLL(scrolled)                        \
+  RunUntilInputProcessed(GetWidgetHost());                 \
+  ASSERT_EQ(scrolled, EvalJs(main_contents, "did_scroll;", \
+                             EXECUTE_SCRIPT_NO_USER_GESTURE));
+
 namespace content {
 
 class TextFragmentAnchorBrowserTest : public ContentBrowserTest {
@@ -85,7 +98,6 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
 
   WebContents* main_contents = shell()->web_contents();
   TestNavigationObserver observer(main_contents);
-  RenderFrameSubmissionObserver frame_observer(main_contents);
 
   // We need to wait until hit test data is available.
   HitTestRegionObserver hittest_observer(GetWidgetHost()->GetFrameSinkId());
@@ -95,11 +107,15 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
   observer.Wait();
   EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());
 
+  // Observe the frame after page is loaded. Note that we need to initialize
+  // this after navigation because the main RenderFrameHost might have changed
+  // from before the navigation started.
+  RenderFrameSubmissionObserver frame_observer(main_contents);
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(
       /*expected_scroll_offset_at_top=*/false);
-  RunUntilInputProcessed(GetWidgetHost());
-  EXPECT_EQ(true, EvalJs(main_contents, "did_scroll;"));
+
+  EXPECT_DID_SCROLL(true);
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
@@ -115,8 +131,7 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(
       /*expected_scroll_offset_at_top=*/false);
-  RunUntilInputProcessed(GetWidgetHost());
-  EXPECT_EQ(true, EvalJs(main_contents, "did_scroll;"));
+  EXPECT_DID_SCROLL(true);
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
@@ -130,46 +145,112 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
 
   WebContents* main_contents = shell()->web_contents();
   TestNavigationObserver observer(main_contents);
-  RenderFrameSubmissionObserver frame_observer(main_contents);
 
   // ExecuteScript executes with a user gesture
   EXPECT_TRUE(ExecuteScript(main_contents,
                             "location = '" + target_text_url.spec() + "';"));
   observer.Wait();
   EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());
+  // Observe the frame after page is loaded. Note that we need to initialize
+  // this after navigation because the main RenderFrameHost might have changed
+  // from before the navigation started.
+  RenderFrameSubmissionObserver frame_observer(main_contents);
 
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(
       /*expected_scroll_offset_at_top=*/false);
-  RunUntilInputProcessed(GetWidgetHost());
-  EXPECT_EQ(true, EvalJs(main_contents, "did_scroll;"));
+  EXPECT_DID_SCROLL(true);
 }
 
+// Ensures that a simulated redirect service works correctly. That is, only the
+// initial NavigateToURL has a user gesture but this should be propagated
+// through the window.location navigation which doesn't have a user gesture.
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
-                       DisabledOnScriptNavigation) {
+                       UserGesturePassedThroughRedirect) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   GURL target_text_url(embedded_test_server()->GetURL(
       "/scrollable_page_with_content.html#:~:text=text"));
 
+  // This navigtion is simulated as if it came from the omnibox, hence it is
+  // considered to be user initiated.
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   WebContents* main_contents = shell()->web_contents();
   TestNavigationObserver observer(main_contents);
+
+  // This navigation occurs without a user gesture, simulating a client
+  // redirect. However, because the above navigation didn't activate a text
+  // fragment, permission should be propagated to this navigation.
   EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
       main_contents, "location = '" + target_text_url.spec() + "';"));
   observer.Wait();
   EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());
 
   WaitForPageLoad(main_contents);
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+  frame_observer.WaitForScrollOffsetAtTop(
+      /*expected_scroll_offset_at_top=*/false);
+  EXPECT_DID_SCROLL(true);
+}
 
-  // Wait a short amount of time to ensure the page does not scroll.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-  run_loop.Run();
-  RunUntilInputProcessed(GetWidgetHost());
-  EXPECT_EQ(false, EvalJs(main_contents, "did_scroll;"));
+// Ensures that a text fragment activation consumes a user gesture so that
+// future navigations cannot activate a text fragment without a new user
+// gesture.
+IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, UserGestureConsumed) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL empty_page_url(embedded_test_server()->GetURL("/empty.html"));
+  GURL target_text_url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_content.html#:~:text=text"));
+
+  WebContents* main_contents = shell()->web_contents();
+
+  // This navigtion is simulated as if it came from the omnibox, hence it is
+  // considered to be user initiated.
+  {
+    TestNavigationObserver observer(main_contents);
+    ASSERT_TRUE(NavigateToURL(shell(), target_text_url));
+    observer.Wait();
+    ASSERT_EQ(target_text_url, main_contents->GetLastCommittedURL());
+
+    // Ensure the page did scroll to the text fragment. Note, we can't use
+    // WaitForPageLoad since the WaitForRenderFrameReady executes javascript
+    // with a user gesture.
+    WaitForLoadStop(main_contents);
+    RenderFrameSubmissionObserver frame_observer(main_contents);
+    frame_observer.WaitForScrollOffsetAtTop(
+        /*expected_scroll_offset_at_top=*/false);
+    ASSERT_DID_SCROLL(true);
+  }
+
+  // We now want to try a second text fragment navigation. Same document
+  // navigations are blocked so we'll navigate away first.
+  {
+    TestNavigationObserver observer(main_contents);
+    ASSERT_TRUE(ExecuteScriptWithoutUserGesture(
+        main_contents, "location = '" + empty_page_url.spec() + "';"));
+    observer.Wait();
+    ASSERT_EQ(empty_page_url, main_contents->GetLastCommittedURL());
+    WaitForLoadStop(main_contents);
+  }
+
+  // Now try another text fragment navigation. Since we haven't had a user
+  // gesture since the last one, it should be blocked.
+  {
+    TestNavigationObserver observer(main_contents);
+    ASSERT_TRUE(ExecuteScriptWithoutUserGesture(
+        main_contents, "location = '" + target_text_url.spec() + "';"));
+    observer.Wait();
+    ASSERT_EQ(target_text_url, main_contents->GetLastCommittedURL());
+    WaitForLoadStop(main_contents);
+
+    // Wait a short amount of time to ensure the page does not scroll.
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+    EXPECT_DID_SCROLL(false);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
@@ -182,13 +263,18 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), target_text_url));
 
   WebContents* main_contents = shell()->web_contents();
-  RenderFrameSubmissionObserver frame_observer(main_contents);
-  frame_observer.WaitForScrollOffsetAtTop(false);
+  {
+    // The RenderFrameSubmissionObserver destructor expects the RenderFrameHost
+    // stays the same until it gets destructed, so we need to scope this to make
+    // sure it gets destructed before the next navigation.
+    RenderFrameSubmissionObserver frame_observer(main_contents);
+    frame_observer.WaitForScrollOffsetAtTop(false);
 
-  // Scroll the page back to top so scroll restoration does not scroll the
-  // target back into view.
-  EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 0)"));
-  frame_observer.WaitForScrollOffsetAtTop(true);
+    // Scroll the page back to top so scroll restoration does not scroll the
+    // target back into view.
+    EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 0)"));
+    frame_observer.WaitForScrollOffsetAtTop(true);
+  }
 
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -204,16 +290,18 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
-  RunUntilInputProcessed(GetWidgetHost());
 
   // Note: we use a scroll handler in the page to check whether any scrolls
   // happened at all, rather than checking the current scroll offset. This is
   // to ensure that if the offset is reset back to the top for other reasons
   // (e.g. history restoration) we still fail this test. See
   // https://crbug.com/1042986 for why this matters.
-  EXPECT_EQ(false, EvalJs(main_contents, "did_scroll;"));
+  EXPECT_DID_SCROLL(false);
 }
 
+// Normally, same document navigations don't allow invoking the text fragment.
+// We make an exception for browser-initiated (e.g. typing a URL into the
+// omnibox) navigations. This test ensures we allow the latter.
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
                        EnabledOnSameDocumentBrowserNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -232,6 +320,7 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   // fragment.
   EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 0)"));
   frame_observer.WaitForScrollOffsetAtTop(true);
+  RunUntilInputProcessed(GetWidgetHost());
   EXPECT_TRUE(ExecJs(main_contents, "did_scroll = false;"));
 
   // Perform a same-document browser initiated navigation
@@ -242,8 +331,139 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(
       /*expected_scroll_offset_at_top=*/false);
-  RunUntilInputProcessed(GetWidgetHost());
-  EXPECT_EQ(true, EvalJs(main_contents, "did_scroll;"));
+  EXPECT_DID_SCROLL(true);
+}
+
+// Similar to the above test, we're checking that browser-initiated
+// same-document navigations invoke the text fragment. However, this time, the
+// initial landing on the page is via a non-user-activated script navigation.
+// This ensure we're not inappropriately blocking a text-fragment based on the
+// state of the initial document load.
+IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
+                       SameDocumentBrowserNavigationOnScriptNavigatedDocument) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+
+  // Load an initial page
+  {
+    GURL initial_url(embedded_test_server()->GetURL("/empty.html"));
+    EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+    WaitForPageLoad(main_contents);
+  }
+
+  // Now navigate to the target document without a user gesture. We provide a
+  // text-fragment here and expect it to be invoked because the initial load
+  // was browser-initiated so its transferred to this load via the text fragment
+  // token. This navigation ensures the token is consumed.
+  {
+    GURL target_url(embedded_test_server()->GetURL(
+        "/scrollable_page_with_content.html#:~:text=text"));
+    TestNavigationObserver observer(main_contents);
+    EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+        main_contents, "location = '" + target_url.spec() + "';"));
+    observer.Wait();
+    EXPECT_EQ(target_url, main_contents->GetLastCommittedURL());
+    frame_observer.WaitForScrollOffsetAtTop(false);
+    EXPECT_DID_SCROLL(true);
+  }
+
+  // Scroll the page back to top. Make sure we reset the |did_scroll| variable
+  // we'll use below to ensure the same-document navigation invokes the text
+  // fragment.
+  {
+    EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 0)"));
+    frame_observer.WaitForScrollOffsetAtTop(true);
+    RunUntilInputProcessed(GetWidgetHost());
+    EXPECT_TRUE(ExecJs(main_contents, "did_scroll = false;"));
+  }
+
+  // Perform a same-document browser initiated navigation. This should cause a
+  // scroll because the navigation is browser-initiated, despite the fact that
+  // the document was loaded without a user gesture.
+  {
+    GURL same_doc_url(embedded_test_server()->GetURL(
+        "/scrollable_page_with_content.html#:~:text=some"));
+    EXPECT_TRUE(NavigateToURL(shell(), same_doc_url));
+
+    WaitForPageLoad(main_contents);
+
+    frame_observer.WaitForScrollOffsetAtTop(
+        /*expected_scroll_offset_at_top=*/false);
+    EXPECT_DID_SCROLL(true);
+  }
+}
+
+// Ensure a text fragment token isn't generated via history.back() navigation.
+// This is a tricky case because all history navigations (including script
+// initiated) appear to the renderer as "browser-initiated".
+IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
+                       HistoryDoesntGenerateToken) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+  GURL url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_content.html#:~:text=text"));
+
+  // Load a page with a text-fragment
+  {
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+    WaitForPageLoad(main_contents);
+    frame_observer.WaitForScrollOffsetAtTop(false);
+  }
+
+  // Scroll the page back to top. Make sure we reset the |did_scroll| variable
+  // we'll use below to ensure the same-document navigation invokes the text
+  // fragment.
+  {
+    EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 0)"));
+    frame_observer.WaitForScrollOffsetAtTop(true);
+    RunUntilInputProcessed(GetWidgetHost());
+    EXPECT_TRUE(ExecJs(main_contents, "did_scroll = false;"));
+  }
+
+  // Perform a scripted same-document navigation to a non-existent fragment to
+  // generate a history entry.
+  {
+    GURL temp_url(embedded_test_server()->GetURL(
+        "/scrollable_page_with_content.html#doesntexist"));
+    TestNavigationObserver observer(main_contents);
+    EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+        main_contents, "location = '" + temp_url.spec() + "';"));
+    observer.Wait();
+    EXPECT_EQ(temp_url, main_contents->GetLastCommittedURL());
+  }
+
+  // Navigate back using history.back().
+  {
+    TestNavigationObserver observer(main_contents);
+    EXPECT_TRUE(
+        ExecuteScriptWithoutUserGesture(main_contents, "history.back();"));
+    observer.Wait();
+    EXPECT_EQ(url, main_contents->GetLastCommittedURL());
+
+    // The page should be restored to where we left off at the top.
+    RunUntilInputProcessed(GetWidgetHost());
+    ASSERT_TRUE(
+        frame_observer.LastRenderFrameMetadata().is_scroll_offset_at_top);
+    ASSERT_DID_SCROLL(false);
+  }
+
+  // Now try to navigate to a same-document text-fragment. This should be
+  // blocked because the token was consumed in the initial load at the top and
+  // a new one should not have been generated by the same document navigations
+  // above.
+  {
+    GURL new_url(embedded_test_server()->GetURL(
+        "/scrollable_page_with_content.html#:~:text=Some"));
+    TestNavigationObserver observer(main_contents);
+    EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+        main_contents, "location = '" + new_url.spec() + "';"));
+    observer.Wait();
+    EXPECT_EQ(new_url, main_contents->GetLastCommittedURL());
+    frame_observer.WaitForScrollOffsetAtTop(true);
+    EXPECT_DID_SCROLL(false);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
@@ -270,8 +490,7 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
-  RunUntilInputProcessed(GetWidgetHost());
-  EXPECT_EQ(false, EvalJs(main_contents, "did_scroll;"));
+  EXPECT_DID_SCROLL(false);
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledByDocumentPolicy) {
@@ -296,7 +515,7 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledByDocumentPolicy) {
   response.Send(
       "HTTP/1.1 200 OK\r\n"
       "Content-Type: text/html; charset=utf-8\r\n"
-      "Document-Policy: no-force-load-at-top\r\n"
+      "Document-Policy: force-load-at-top=?0\r\n"
       "\r\n"
       "<script>"
       "  let did_scroll = false;"
@@ -314,8 +533,7 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledByDocumentPolicy) {
   WaitForPageLoad(main_contents);
   frame_observer.WaitForScrollOffsetAtTop(
       /*expected_scroll_offset_at_top=*/false);
-  RunUntilInputProcessed(GetWidgetHost());
-  EXPECT_EQ(true, EvalJs(main_contents, "did_scroll;"));
+  EXPECT_DID_SCROLL(true);
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
@@ -361,8 +579,7 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
-  RunUntilInputProcessed(GetWidgetHost());
-  EXPECT_EQ(false, EvalJs(main_contents, "did_scroll;"));
+  EXPECT_DID_SCROLL(false);
 }
 
 class ForceLoadAtTopBrowserTest : public TextFragmentAnchorBrowserTest {
@@ -407,9 +624,10 @@ IN_PROC_BROWSER_TEST_F(ForceLoadAtTopBrowserTest, ScrollRestorationDisabled) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
-  RunUntilInputProcessed(RenderWidgetHostImpl::From(
-      main_contents->GetRenderViewHost()->GetWidget()));
-  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+  RunUntilInputProcessed(GetWidgetHost());
+  const cc::RenderFrameMetadata& last_metadata =
+      RenderFrameSubmissionObserver(main_contents).LastRenderFrameMetadata();
+  EXPECT_TRUE(last_metadata.is_scroll_offset_at_top);
 }
 
 // Test that element fragment anchor scrolling is disabled with ForceLoadAtTop
@@ -426,9 +644,33 @@ IN_PROC_BROWSER_TEST_F(ForceLoadAtTopBrowserTest, FragmentAnchorDisabled) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
-  RunUntilInputProcessed(RenderWidgetHostImpl::From(
-      main_contents->GetRenderViewHost()->GetWidget()));
-  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+  RunUntilInputProcessed(GetWidgetHost());
+  const cc::RenderFrameMetadata& last_metadata =
+      RenderFrameSubmissionObserver(main_contents).LastRenderFrameMetadata();
+  EXPECT_TRUE(last_metadata.is_scroll_offset_at_top);
+}
+
+IN_PROC_BROWSER_TEST_F(ForceLoadAtTopBrowserTest, SameDocumentNavigation) {
+  GURL url(
+      embedded_test_server()->GetURL("/scrollable_page_with_content.html"));
+  WebContents* main_contents = shell()->web_contents();
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+  {
+    const cc::RenderFrameMetadata& last_metadata =
+        RenderFrameSubmissionObserver(main_contents).LastRenderFrameMetadata();
+    EXPECT_TRUE(last_metadata.is_scroll_offset_at_top);
+  }
+
+  ClickElementWithId(main_contents, "link");
+
+  RunUntilInputProcessed(GetWidgetHost());
+  {
+    const cc::RenderFrameMetadata& last_metadata =
+        RenderFrameSubmissionObserver(main_contents).LastRenderFrameMetadata();
+    EXPECT_FALSE(last_metadata.is_scroll_offset_at_top);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ForceLoadAtTopBrowserTest, TextFragmentAnchorDisabled) {
@@ -445,9 +687,32 @@ IN_PROC_BROWSER_TEST_F(ForceLoadAtTopBrowserTest, TextFragmentAnchorDisabled) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
-  RunUntilInputProcessed(RenderWidgetHostImpl::From(
-      main_contents->GetRenderViewHost()->GetWidget()));
-  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+  RunUntilInputProcessed(GetWidgetHost());
+  const cc::RenderFrameMetadata& last_metadata =
+      RenderFrameSubmissionObserver(main_contents).LastRenderFrameMetadata();
+  EXPECT_TRUE(last_metadata.is_scroll_offset_at_top);
+}
+
+// Test that Tab key press puts focus from the start of selection.
+IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, TabFocus) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_anchor.html#:~:text=text"));
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  WaitForPageLoad(main_contents);
+  frame_observer.WaitForScrollOffsetAtTop(
+      /*expected_scroll_offset_at_top=*/false);
+
+  DOMMessageQueue msg_queue;
+  SimulateKeyPress(main_contents, ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, false, false, false);
+
+  // Wait for focus to happen.
+  std::string message;
+  EXPECT_TRUE(msg_queue.WaitForMessage(&message));
+  EXPECT_EQ("\"FocusDone2\"", message);
 }
 
 }  // namespace content

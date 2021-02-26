@@ -13,6 +13,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/dcheck_is_on.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -31,6 +32,7 @@
 #include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/components/recovery_component.h"
+#include "chrome/chrome_cleaner/components/reset_shortcuts_component.h"
 #include "chrome/chrome_cleaner/components/system_report_component.h"
 #include "chrome/chrome_cleaner/components/system_restore_point_component.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
@@ -125,6 +127,12 @@ void AddComponents(chrome_cleaner::MainController* main_controller,
   main_controller->AddComponent(
       std::make_unique<chrome_cleaner::SystemReportComponent>(json_parser,
                                                               shortcut_parser));
+
+  if (command_line->HasSwitch(chrome_cleaner::kResetShortcutsSwitch)) {
+    main_controller->AddComponent(
+        std::make_unique<chrome_cleaner::ResetShortcutsComponent>(
+            shortcut_parser));
+  }
 }
 
 void SendLogsToSafeBrowsing(chrome_cleaner::ResultCode exit_code,
@@ -330,7 +338,7 @@ chrome_cleaner::ResultCode ReturnWithResultCode(
     // Embedded libraries may have been extracted. Try to delete them and ignore
     // errors.
     base::FilePath exe_dir = exe_path.DirName();
-    std::set<base::string16> embedded_libraries =
+    std::set<std::wstring> embedded_libraries =
         chrome_cleaner::GetLibrariesToLoad(
             chrome_cleaner::Settings::GetInstance()->engine());
     for (const auto& library : embedded_libraries) {
@@ -358,6 +366,10 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
   chrome_cleaner::EnableSecureDllLoading();
 
   base::AtExitManager at_exit;
+
+#if !DCHECK_IS_ON()
+  base::win::DisableHandleVerifier();
+#endif
 
   // This must be done BEFORE constructing ScopedLogging, which call InitLogging
   // to set the name of the log file, which needs to read from the command line.
@@ -414,7 +426,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
       sandbox::SandboxFactory::GetTargetServices();
   const bool is_sandbox_target = (sandbox_target_services != nullptr);
 
-  base::string16 log_suffix =
+  std::wstring log_suffix =
       command_line->HasSwitch(chrome_cleaner::kElevatedSwitch)
           ? kElevatedLogFileSuffix
           : L"";
@@ -428,7 +440,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
   // Only start the crash reporter for the main process, the sandboxed process
   // will use the same crash reporter.
   if (is_sandbox_target) {
-    const base::string16 ipc_pipe_name = command_line->GetSwitchValueNative(
+    const std::wstring ipc_pipe_name = command_line->GetSwitchValueNative(
         chrome_cleaner::kUseCrashHandlerWithIdSwitch);
     CHECK(!ipc_pipe_name.empty());
     UseCrashReporter(ipc_pipe_name);
@@ -504,7 +516,6 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
   // Setup Cleaner registry values.
   registry_logger.ClearExitCode();
   registry_logger.ClearEndTime();
-  registry_logger.WriteVersion();
   registry_logger.WriteStartTime();
 
   // CoInitialize into the MTA since we desire to use the System Restore Point
@@ -547,7 +558,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
       // GetNextLogFilePath returns the same file and never gets to return an
       // empty one. This might leave some log file behind, in very rare error
       // cases, but it's better than an infinite loop.
-      std::set<base::string16> log_files;
+      std::set<std::wstring> log_files;
       while (true) {
         base::FilePath log_file;
         registry_logger.GetNextLogFilePath(&log_file);

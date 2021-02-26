@@ -45,6 +45,8 @@ ANGLE_UTIL_EXPORT GLuint LoadBinaryProgramOES(const std::vector<uint8_t> &binary
 ANGLE_UTIL_EXPORT GLuint LoadBinaryProgramES3(const std::vector<uint8_t> &binary,
                                               GLenum binaryFormat);
 
+ANGLE_UTIL_EXPORT void EnableDebugCallback(const void *userParam);
+
 namespace angle
 {
 
@@ -77,8 +79,13 @@ ANGLE_UTIL_EXPORT const char *Texture2D();
 namespace fs
 {
 
-// A shader that renders a simple checker pattern of red and green. X axis and y axis separate the
-// different colors. Needs varying v_position.
+// A shader that renders a simple checker pattern of different colors. X axis and Y axis separate
+// the different colors. Needs varying v_position.
+//
+// - X < 0 && y < 0: Red
+// - X < 0 && y >= 0: Green
+// - X >= 0 && y < 0: Blue
+// - X >= 0 && y >= 0: Yellow
 ANGLE_UTIL_EXPORT const char *Checkered();
 
 // A shader that fills with color taken from uniform named "color".
@@ -103,6 +110,8 @@ namespace essl3_shaders
 {
 
 ANGLE_UTIL_EXPORT const char *PositionAttrib();
+ANGLE_UTIL_EXPORT const char *Texture2DUniform();
+ANGLE_UTIL_EXPORT const char *LodUniform();
 
 namespace vs
 {
@@ -117,6 +126,10 @@ ANGLE_UTIL_EXPORT const char *Simple();
 // v_position.
 ANGLE_UTIL_EXPORT const char *Passthrough();
 
+// A shader that simply passes through attribute a_position, setting it to gl_Position and varying
+// texcoord.
+ANGLE_UTIL_EXPORT const char *Texture2DLod();
+
 }  // namespace vs
 
 namespace fs
@@ -130,6 +143,9 @@ ANGLE_UTIL_EXPORT const char *Green();
 
 // A shader that fills with 100% opaque blue.
 ANGLE_UTIL_EXPORT const char *Blue();
+
+// A shader that samples the texture at a given lod.
+ANGLE_UTIL_EXPORT const char *Texture2DLod();
 
 }  // namespace fs
 }  // namespace essl3_shaders
@@ -162,6 +178,9 @@ ANGLE_UTIL_EXPORT const char *Red();
 
 // A shader that fills with 100% opaque green.
 ANGLE_UTIL_EXPORT const char *Green();
+
+// A shader that renders a simple gradient of red to green. Needs varying v_position.
+ANGLE_UTIL_EXPORT const char *RedGreenGradient();
 
 }  // namespace fs
 }  // namespace essl31_shaders

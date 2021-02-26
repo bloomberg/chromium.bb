@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as ProtocolClientModule from '../protocol_client/protocol_client.js';
+import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
 
 /**
@@ -231,7 +236,9 @@ let _resolveOnFinishInits;
  * @return {!Promise<undefined>}
  */
 export async function loadModule(module) {
-  const promise = new Promise(resolve => _resolveOnFinishInits = resolve);
+  const promise = new Promise(resolve => {
+    _resolveOnFinishInits = resolve;
+  });
   await self.runtime.loadModulePromise(module);
   if (!_pendingInits) {
     return;
@@ -241,10 +248,10 @@ export async function loadModule(module) {
 
 /**
  * @param {string} panel
- * @return {!Promise.<?UI.Panel>}
+ * @return {!Promise.<?UI.Panel.Panel>}
  */
 export function showPanel(panel) {
-  return self.UI.viewManager.showView(panel);
+  return UI.ViewManager.ViewManager.instance().showView(panel);
 }
 
 /**
@@ -877,7 +884,7 @@ export function dump(value, customFormatters, prefix, prefixWithName) {
 }
 
 /**
- * @param {!UI.TreeElement} treeElement
+ * @param {!UI.TreeOutline.TreeElement} treeElement
  */
 export function dumpObjectPropertyTreeElement(treeElement) {
   const expandedSubstring = treeElement.expanded ? '[expanded]' : '[collapsed]';
@@ -1211,7 +1218,7 @@ export function clearSpecificInfoFromStackFrames(text) {
 }
 
 export function hideInspectorView() {
-  self.UI.inspectorView.element.setAttribute('style', 'display:none !important');
+  UI.InspectorView.InspectorView.instance().element.setAttribute('style', 'display:none !important');
 }
 
 /**
@@ -1366,7 +1373,7 @@ export function url(url = '') {
 export function dumpSyntaxHighlight(str, mimeType) {
   const node = document.createElement('span');
   node.textContent = str;
-  const javascriptSyntaxHighlighter = new UI.SyntaxHighlighter(mimeType, false);
+  const javascriptSyntaxHighlighter = new UI.SyntaxHighlighter.SyntaxHighlighter(mimeType, false);
   return javascriptSyntaxHighlighter.syntaxHighlightNode(node).then(dumpSyntax);
 
   function dumpSyntax() {
@@ -1435,8 +1442,8 @@ export async function dumpInspectedPageElementText(querySelector) {
  * once all currently-pending updates (at call time) are completed.
  */
 export async function waitForPendingLiveLocationUpdates() {
-  await self.Bindings.debuggerWorkspaceBinding.pendingLiveLocationChangesPromise();
-  await self.Bindings.cssWorkspaceBinding.pendingLiveLocationChangesPromise();
+  await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().pendingLiveLocationChangesPromise();
+  await Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().pendingLiveLocationChangesPromise();
 }
 
 /** @type {!{logToStderr: function(), navigateSecondaryWindow: function(string), notifyDone: function()}|undefined} */
@@ -1518,6 +1525,8 @@ TestRunner.runAsyncTestSuite = runAsyncTestSuite;
 TestRunner.dumpInspectedPageElementText = dumpInspectedPageElementText;
 TestRunner.waitForPendingLiveLocationUpdates = waitForPendingLiveLocationUpdates;
 TestRunner.findLineEndingIndexes = findLineEndingIndexes;
+
+TestRunner.isScrolledToBottom = UI.UIUtils.isScrolledToBottom;
 
 /**
  * @typedef {!Object<string, string>}

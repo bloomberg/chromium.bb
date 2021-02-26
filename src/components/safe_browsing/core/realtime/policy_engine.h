@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SAFE_BROWSING_CORE_REALTIME_POLICY_ENGINE_H_
 #define COMPONENTS_SAFE_BROWSING_CORE_REALTIME_POLICY_ENGINE_H_
 
+#include <string>
+
 #include "build/build_config.h"
 
 class PrefService;
@@ -15,6 +17,10 @@ class SyncService;
 
 namespace signin {
 class IdentityManager;
+}
+
+namespace variations {
+class VariationsService;
 }
 
 namespace safe_browsing {
@@ -39,16 +45,20 @@ class RealTimePolicyEngine {
   RealTimePolicyEngine() = delete;
   ~RealTimePolicyEngine() = delete;
 
-  // Return true if full URL lookups are enabled for |resource_type|.
+  // Return true if full URL lookups are enabled for |resource_type|. If
+  // |can_rt_check_subresource_url| is set to false, return true only if
+  // |resource_type| is |kMainFrame|.
   static bool CanPerformFullURLLookupForResourceType(
       ResourceType resource_type,
-      bool enhanced_protection_enabled);
+      bool can_rt_check_subresource_url);
 
   // Return true if the feature to enable full URL lookups is enabled and the
   // allowlist fetch is enabled for the profile represented by
   // |pref_service|.
-  static bool CanPerformFullURLLookup(PrefService* pref_service,
-                                      bool is_off_the_record);
+  static bool CanPerformFullURLLookup(
+      PrefService* pref_service,
+      bool is_off_the_record,
+      variations::VariationsService* variations_service);
 
   // Return true if the OAuth token should be associated with the URL lookup
   // pings.
@@ -56,12 +66,18 @@ class RealTimePolicyEngine {
       PrefService* pref_service,
       bool is_off_the_record,
       syncer::SyncService* sync_service,
-      signin::IdentityManager* identity_manager);
+      signin::IdentityManager* identity_manager,
+      variations::VariationsService* variations_service);
+
+  static bool CanPerformEnterpriseFullURLLookup(const PrefService* pref_service,
+                                                bool has_valid_dm_token,
+                                                bool is_off_the_record);
 
   friend class SafeBrowsingService;
-  friend class SafeBrowsingUIHandler;
 
  private:
+  static bool IsInExcludedCountry(const std::string& country_code);
+
   // Is the feature to perform real-time URL lookup enabled?
   static bool IsUrlLookupEnabled();
 

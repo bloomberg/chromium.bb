@@ -41,6 +41,9 @@ class MediaStreamUI {
   virtual gfx::NativeViewId OnStarted(
       base::OnceClosure stop_callback,
       content::MediaStreamUI::SourceCallback source_callback) = 0;
+
+  // Replaces the stop callback set in OnStarted(), if any.
+  virtual void SetStopCallback(base::OnceClosure stop) = 0;
 };
 
 // Keeps track of which WebContents are capturing media streams. Used to display
@@ -60,8 +63,10 @@ class MediaStreamCaptureIndicator
                                            bool is_capturing_audio) {}
     virtual void OnIsBeingMirroredChanged(content::WebContents* web_contents,
                                           bool is_being_mirrored) {}
-    virtual void OnIsCapturingDesktopChanged(content::WebContents* web_contents,
-                                             bool is_capturing_desktop) {}
+    virtual void OnIsCapturingWindowChanged(content::WebContents* web_contents,
+                                            bool is_capturing_window) {}
+    virtual void OnIsCapturingDisplayChanged(content::WebContents* web_contents,
+                                             bool is_capturing_display) {}
 
    protected:
     ~Observer() override;
@@ -94,9 +99,11 @@ class MediaStreamCaptureIndicator
   // media for remote broadcast).
   bool IsBeingMirrored(content::WebContents* web_contents) const;
 
-  // Returns true if |web_contents| is capturing the desktop (screen, window,
-  // audio).
-  bool IsCapturingDesktop(content::WebContents* web_contents) const;
+  // Returns true if |web_contents| is capturing a desktop window or audio.
+  bool IsCapturingWindow(content::WebContents* web_contents) const;
+
+  // Returns true if |web_contents| is capturing a display.
+  bool IsCapturingDisplay(content::WebContents* web_contents) const;
 
   // Called when STOP button in media capture notification is clicked.
   void NotifyStopped(content::WebContents* web_contents) const;
@@ -134,6 +141,13 @@ class MediaStreamCaptureIndicator
                              bool video,
                              gfx::ImageSkia* image,
                              base::string16* tool_tip);
+
+  // Checks if |web_contents| or any portal WebContents in its tree is using
+  // a device for capture. The type of capture is specified using |pred|.
+  using WebContentsDeviceUsagePredicate =
+      base::RepeatingCallback<bool(const WebContentsDeviceUsage*)>;
+  bool CheckUsage(content::WebContents* web_contents,
+                  const WebContentsDeviceUsagePredicate& pred) const;
 
   // Reference to our status icon - owned by the StatusTray. If null,
   // the platform doesn't support status icons.

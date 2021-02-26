@@ -15,7 +15,6 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
 
 class CommandUpdaterImpl;
@@ -26,6 +25,7 @@ class LocationBarModel;
 namespace views {
 class WebView;
 class Widget;
+class WidgetDelegate;
 }  // namespace views
 
 namespace chromeos {
@@ -37,8 +37,7 @@ class StubBubbleModelDelegate;
 // bar. Location bar is shown in read only mode, because this view is designed
 // to be used for sign in to captive portal on login screen (when Browser
 // isn't running).
-class SimpleWebViewDialog : public views::ButtonListener,
-                            public views::WidgetDelegateView,
+class SimpleWebViewDialog : public views::View,
                             public LocationBarView::Delegate,
                             public ChromeLocationBarModelDelegate,
                             public CommandUpdaterDelegate,
@@ -53,15 +52,6 @@ class SimpleWebViewDialog : public views::ButtonListener,
 
   // Inits view. Should be attached to a Widget before call.
   void Init();
-
-  // Overridden from views::View:
-  void Layout() override;
-
-  // Overridden from views::WidgetDelegate:
-  views::View* GetInitiallyFocusedView() override;
-
-  // Implements views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Implements content::PageNavigator:
   content::WebContents* OpenURL(const content::OpenURLParams& params) override;
@@ -85,6 +75,8 @@ class SimpleWebViewDialog : public views::ButtonListener,
   // Implements CommandUpdaterDelegate:
   void ExecuteCommandWithDisposition(int id, WindowOpenDisposition) override;
 
+  virtual std::unique_ptr<views::WidgetDelegate> MakeWidgetDelegate();
+
  private:
   friend class SimpleWebViewDialogTest;
 
@@ -103,7 +95,8 @@ class SimpleWebViewDialog : public views::ButtonListener,
   LocationBarView* location_bar_ = nullptr;
   views::WebView* web_view_ = nullptr;
 
-  // Contains |web_view_| while it isn't owned by the view.
+  // Will own the `web_view_` until it is added as a child to the to the simple
+  // web view dialog.
   std::unique_ptr<views::WebView> web_view_container_;
 
   std::unique_ptr<StubBubbleModelDelegate> bubble_model_delegate_;

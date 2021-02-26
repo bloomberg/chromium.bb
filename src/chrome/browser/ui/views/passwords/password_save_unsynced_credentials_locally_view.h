@@ -11,8 +11,9 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/bubble_controllers/save_unsynced_credentials_locally_bubble_controller.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
-#include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/view.h"
 
 // A dialog that shows up on sign out in case there are passwords not committed
@@ -26,17 +27,19 @@ class PasswordSaveUnsyncedCredentialsLocallyView
   ~PasswordSaveUnsyncedCredentialsLocallyView() override;
 
  private:
-  // PasswordBubbleViewBase
+  // PasswordBubbleViewBase:
   PasswordBubbleControllerBase* GetController() override;
   const PasswordBubbleControllerBase* GetController() const override;
 
   void CreateLayout();
 
-  // LocationBarBubbleDelegateView:
-  bool ShouldShowCloseButton() const override;
-  gfx::Size CalculatePreferredSize() const override;
+  void ButtonPressed(views::Checkbox* checkbox);
+
+  void OnSaveClicked();
 
   SaveUnsyncedCredentialsLocallyBubbleController controller_;
+  int num_selected_checkboxes_ = 0;
+  std::vector<views::Checkbox*> checkboxes_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_SAVE_UNSYNCED_CREDENTIALS_LOCALLY_VIEW_H_

@@ -5,13 +5,14 @@
 #include "ui/platform_window/fuchsia/initialize_presenter_api_view.h"
 
 #include <fuchsia/ui/policy/cpp/fidl.h>
-#include <fuchsia/ui/views/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <lib/ui/scenic/cpp/view_token_pair.h>
 
-#include "base/fuchsia/default_context.h"
+#include <utility>
+
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 
 namespace ui {
 namespace fuchsia {
@@ -21,19 +22,19 @@ void InitializeViewTokenAndPresentView(
   DCHECK(window_properties_out);
 
   // Generate ViewToken and ViewHolderToken for the new view.
-  ::fuchsia::ui::views::ViewHolderToken view_holder_token;
-  std::tie(window_properties_out->view_token, view_holder_token) =
-      scenic::NewViewTokenPair();
+  auto view_tokens = scenic::ViewTokenPair::New();
+  window_properties_out->view_token = std::move(view_tokens.view_token);
 
   // Create a ViewRefPair so the view can be registered to the SemanticsManager.
   window_properties_out->view_ref_pair = scenic::ViewRefPair::New();
 
   // Request Presenter to show the view full-screen.
-  auto presenter = base::fuchsia::ComponentContextForCurrentProcess()
+  auto presenter = base::ComponentContextForProcess()
                        ->svc()
                        ->Connect<::fuchsia::ui::policy::Presenter>();
 
-  presenter->PresentView(std::move(view_holder_token), nullptr);
+  presenter->PresentOrReplaceView(std::move(view_tokens.view_holder_token),
+                                  nullptr);
 }
 
 }  // namespace fuchsia

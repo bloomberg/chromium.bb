@@ -45,7 +45,9 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
                       StartCallback callback) override;
   void OnSyncStopping(SyncStopMetadataFate metadata_fate) override;
   void GetAllNodesForDebugging(AllNodesCallback callback) override;
-  void GetStatusCountersForDebugging(StatusCountersCallback callback) override;
+  void GetTypeEntitiesCountForDebugging(
+      base::OnceCallback<void(const TypeEntitiesCount&)> callback)
+      const override;
   void RecordMemoryUsageAndCountsHistograms() override;
 
   // NigoriLocalChangeProcessor implementation.

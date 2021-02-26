@@ -17,7 +17,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/filename_util.h"
-#include "ui/resources/grit/webui_resources.h"
+#include "ui/resources/grit/webui_generated_resources.h"
 
 namespace content {
 
@@ -41,8 +41,8 @@ class WebUIResourceBrowserTest : public ContentBrowserTest {
   }
 
   void RunMediaInternalsTest(const base::FilePath::CharType* file) {
-    AddLibrary(IDR_WEBUI_JS_UTIL);
-    AddLibrary(IDR_WEBUI_JS_CR);
+    AddLibrary(IDR_WEBUI_JS_UTIL_JS);
+    AddLibrary(IDR_WEBUI_JS_CR_JS);
     AddLibrary(IDR_MEDIA_INTERNALS_JS);
     RunTest(GetTestFilePath("media", "webui").Append(file));
   }

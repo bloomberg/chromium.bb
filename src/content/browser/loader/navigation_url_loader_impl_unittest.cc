@@ -12,12 +12,11 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
-#include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
+#include "content/browser/renderer_host/navigation_request_info.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
@@ -97,7 +96,8 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
         base::BindOnce(&TestNavigationLoaderInterceptor::DeleteURLLoader,
                        base::Unretained(this)),
         std::move(receiver), 0 /* options */, resource_request,
-        std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+        std::move(client), /*reponse_body_use_tracker=*/base::nullopt,
+        TRAFFIC_ANNOTATION_FOR_TESTS, &params,
         /*coep_reporter=*/nullptr, 0, /* request_id */
         0 /* keepalive_request_size */, resource_scheduler_client_,
         nullptr /* keepalive_statistics_recorder */,
@@ -137,9 +137,10 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
 class NavigationURLLoaderImplTest : public testing::Test {
  public:
   NavigationURLLoaderImplTest()
-      : network_change_notifier_(
-            net::test::MockNetworkChangeNotifier::Create()),
-        task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {
+      : task_environment_(std::make_unique<BrowserTaskEnvironment>(
+            base::test::TaskEnvironment::MainThreadType::IO)),
+        network_change_notifier_(
+            net::test::MockNetworkChangeNotifier::Create()) {
     // Because the network service is enabled we need a system Connector or
     // BrowserContext::GetDefaultStoragePartition will segfault when
     // ContentBrowserClient::CreateNetworkContext tries to call
@@ -160,6 +161,11 @@ class NavigationURLLoaderImplTest : public testing::Test {
   ~NavigationURLLoaderImplTest() override {
     browser_context_.reset();
     SetSystemConnectorForTesting(nullptr);
+    // Reset the BrowserTaskEnvironment to force destruction of the local
+    // NetworkService, which is held in SequenceLocalStorage. This must happen
+    // before destruction of |network_change_notifier_|, to allow observers to
+    // be unregistered.
+    task_environment_.reset();
   }
 
   std::unique_ptr<NavigationURLLoader> CreateTestLoader(
@@ -184,7 +190,9 @@ class NavigationURLLoaderImplTest : public testing::Test {
             GURL() /* client_side_redirect_url */,
             base::nullopt /* devtools_initiator_info */,
             false /* attach_same_site_cookie */,
-            nullptr /* trust_token_params */, base::nullopt /* impression */);
+            nullptr /* trust_token_params */, base::nullopt /* impression */,
+            base::TimeTicks() /* renderer_before_unload_start */,
+            base::TimeTicks() /* renderer_before_unload_end */);
 
     auto common_params = CreateCommonNavigationParams();
     common_params->url = url;
@@ -197,8 +205,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
         new NavigationRequestInfo(
             std::move(common_params), std::move(begin_params),
             net::IsolationInfo::Create(
-                net::IsolationInfo::RedirectMode::kUpdateTopFrame, origin,
-                origin, net::SiteForCookies::FromUrl(url)),
+                net::IsolationInfo::RequestType::kMainFrame, origin, origin,
+                net::SiteForCookies::FromUrl(url)),
             is_main_frame, false /* parent_is_main_frame */,
             false /* are_ancestors_secure */, -1 /* frame_tree_node_id */,
             false /* is_for_guests_only */, false /* report_raw_headers */,
@@ -207,7 +215,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
             nullptr /* blob_url_loader_factory */,
             base::UnguessableToken::Create() /* devtools_navigation_token */,
             base::UnguessableToken::Create() /* devtools_frame_token */,
-            false /* obey_origin_policy */, {} /* cors_exempt_headers */));
+            false /* obey_origin_policy */, {} /* cors_exempt_headers */,
+            nullptr /* client_security_state */));
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors;
     most_recent_resource_request_ = base::nullopt;
     interceptors.push_back(std::make_unique<TestNavigationLoaderInterceptor>(
@@ -242,7 +251,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
                            redirect_url.GetOrigin().spec().c_str()),
         request_method, &delegate);
     delegate.WaitForRequestRedirected();
-    loader->FollowRedirect({}, {}, {}, PREVIEWS_OFF);
+    loader->FollowRedirect({}, {}, {}, blink::PreviewsTypes::PREVIEWS_OFF);
 
     EXPECT_EQ(expected_redirect_method, delegate.redirect_info().new_method);
 
@@ -270,25 +279,6 @@ class NavigationURLLoaderImplTest : public testing::Test {
     }
   }
 
-  net::RequestPriority NavigateAndReturnRequestPriority(const GURL& url,
-                                                        bool is_main_frame) {
-    TestNavigationURLLoaderDelegate delegate;
-    base::test::ScopedFeatureList scoped_feature_list_;
-
-    scoped_feature_list_.InitAndEnableFeature(features::kLowPriorityIframes);
-
-    std::unique_ptr<NavigationURLLoader> loader = CreateTestLoader(
-        url,
-        base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
-                           url.GetOrigin().spec().c_str()),
-        "GET", &delegate, NavigationDownloadPolicy(), is_main_frame);
-    delegate.WaitForRequestRedirected();
-    loader->FollowRedirect({}, {}, {}, PREVIEWS_OFF);
-    delegate.WaitForResponseStarted();
-
-    return most_recent_resource_request_.value().priority;
-  }
-
   net::RedirectInfo NavigateAndReturnRedirectInfo(const GURL& url,
                                                   bool upgrade_if_insecure,
                                                   bool expect_request_fail) {
@@ -300,7 +290,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
         "GET", &delegate, NavigationDownloadPolicy(), true /*is_main_frame*/,
         upgrade_if_insecure);
     delegate.WaitForRequestRedirected();
-    loader->FollowRedirect({}, {}, {}, PREVIEWS_OFF);
+    loader->FollowRedirect({}, {}, {}, blink::PreviewsTypes::PREVIEWS_OFF);
     if (expect_request_fail) {
       delegate.WaitForRequestFailed();
     } else {
@@ -310,23 +300,13 @@ class NavigationURLLoaderImplTest : public testing::Test {
   }
 
  protected:
+  std::unique_ptr<BrowserTaskEnvironment> task_environment_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier>
       network_change_notifier_;
-  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   net::EmbeddedTestServer http_test_server_;
   base::Optional<network::ResourceRequest> most_recent_resource_request_;
 };
-
-TEST_F(NavigationURLLoaderImplTest, RequestPriority) {
-  ASSERT_TRUE(http_test_server_.Start());
-  const GURL url = http_test_server_.GetURL("/redirect301-to-echo");
-
-  EXPECT_EQ(net::HIGHEST,
-            NavigateAndReturnRequestPriority(url, true /* is_main_frame */));
-  EXPECT_EQ(net::LOWEST,
-            NavigateAndReturnRequestPriority(url, false /* is_main_frame */));
-}
 
 TEST_F(NavigationURLLoaderImplTest, IsolationInfoOfMainFrameNavigation) {
   ASSERT_TRUE(http_test_server_.Start());
@@ -346,9 +326,9 @@ TEST_F(NavigationURLLoaderImplTest, IsolationInfoOfMainFrameNavigation) {
   ASSERT_TRUE(most_recent_resource_request_);
   ASSERT_TRUE(most_recent_resource_request_->trusted_params);
   EXPECT_TRUE(
-      net::IsolationInfo::Create(
-          net::IsolationInfo::RedirectMode::kUpdateTopFrame, origin, origin,
-          net::SiteForCookies::FromOrigin(origin))
+      net::IsolationInfo::Create(net::IsolationInfo::RequestType::kMainFrame,
+                                 origin, origin,
+                                 net::SiteForCookies::FromOrigin(origin))
           .IsEqualForTesting(
               most_recent_resource_request_->trusted_params->isolation_info));
 }
@@ -365,9 +345,9 @@ TEST_F(NavigationURLLoaderImplTest,
 
   ASSERT_TRUE(most_recent_resource_request_->trusted_params);
   EXPECT_TRUE(
-      net::IsolationInfo::Create(
-          net::IsolationInfo::RedirectMode::kUpdateTopFrame, origin, origin,
-          net::SiteForCookies::FromOrigin(origin))
+      net::IsolationInfo::Create(net::IsolationInfo::RequestType::kMainFrame,
+                                 origin, origin,
+                                 net::SiteForCookies::FromOrigin(origin))
           .IsEqualForTesting(
               most_recent_resource_request_->trusted_params->isolation_info));
 }
@@ -468,7 +448,8 @@ TEST_F(NavigationURLLoaderImplTest, RedirectModifiedHeaders) {
   net::HttpRequestHeaders redirect_headers;
   redirect_headers.SetHeader("Header2", "");
   redirect_headers.SetHeader("Header3", "Value3");
-  loader->FollowRedirect({}, redirect_headers, {}, PREVIEWS_OFF);
+  loader->FollowRedirect({}, redirect_headers, {},
+                         blink::PreviewsTypes::PREVIEWS_OFF);
   delegate.WaitForResponseStarted();
 
   // Redirected request should also have modified headers.

@@ -20,7 +20,6 @@
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/callback_registry.h"
 #include "media/base/video_decoder.h"
-#include "media/base/win/d3d11_create_device_cb.h"
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
@@ -83,8 +82,10 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   // D3D11VideoDecoderClient implementation.
   D3D11PictureBuffer* GetPicture() override;
+  void UpdateTimestamp(D3D11PictureBuffer* picture_buffer) override;
   bool OutputResult(const CodecPicture* picture,
                     D3D11PictureBuffer* picture_buffer) override;
+  void SetDecoderCB(const SetAcceleratorDecoderCB&) override;
 
   static bool GetD3D11FeatureLevel(
       ComD3D11Device dev,
@@ -141,6 +142,12 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   // really should have an async interface since it must do some work on the
   // gpu main thread.
   void CreatePictureBuffers();
+
+  // Create a D3D11VideoDecoder, if possible, based on the current config.
+  // TODO(liberato): we use a tuple only because StatusOr<ComD3D111VideoDecoder>
+  // doesn't work.  Something about base::Optional trying to convert to void*,
+  // but the conversion is ambiguous.
+  StatusOr<std::tuple<ComD3D11VideoDecoder>> CreateD3D11Decoder();
 
   enum class NotSupportedReason {
     kVideoIsSupported = 0,
@@ -205,8 +212,10 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   };
 
   // Enter the kError state.  This will fail any pending |init_cb_| and / or
-  // pending decode as well.
+  // pending decode as well.  Do not add new uses of the char* overload; send a
+  // Status instead.
   void NotifyError(const char* reason);
+  void NotifyError(const Status& reason);
 
   // The implementation, which lives on the GPU main thread.
   base::SequenceBound<D3D11VideoDecoderImpl> impl_;
@@ -281,7 +290,15 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   SupportedConfigs supported_configs_;
 
   // Should we assume that we're outputting to an HDR display?
-  bool is_hdr_supported_;
+  bool is_hdr_supported_ = false;
+
+  // Should we use multiple single textures for the decoder output (true) or one
+  // texture with multiple array slices (false)?
+  bool use_single_video_decoder_texture_ = false;
+
+  // Word-salad callback to set / update D3D11 Video callback to the
+  // accelerator.  Needed for config changes.
+  SetAcceleratorDecoderCB set_accelerator_decoder_cb_;
 
   base::WeakPtrFactory<D3D11VideoDecoder> weak_factory_{this};
 

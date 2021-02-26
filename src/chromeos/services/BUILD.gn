@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//chromeos/assistant/assistant.gni")
+import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//testing/test.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
@@ -29,4 +30,8 @@ source_set("unit_tests") {
     "//chromeos/services/network_config:unit_tests",
     "//chromeos/services/secure_channel:unit_tests",
   ]
+  if (is_cfm) {
+    deps +=
+        [ "//chromeos/services/chromebox_for_meetings/public/cpp:unit_tests" ]
+  }
 }

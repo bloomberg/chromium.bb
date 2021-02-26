@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -19,7 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread.h"
@@ -1224,8 +1224,7 @@ TEST_F(TemplateURLServiceWithoutFallbackTest, ManualCountrySpecificGoogleURL) {
 // Make sure TemplateURLService generates a KEYWORD_GENERATED visit for
 // KEYWORD visits.
 TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
-  test_util()->profile()->CreateBookmarkModel(false);
-  ASSERT_TRUE(test_util()->profile()->CreateHistoryService(true, false));
+  ASSERT_TRUE(test_util()->profile()->CreateHistoryService());
   test_util()->ResetModel(true);
 
   // Create a keyword.
@@ -1241,7 +1240,8 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
                        TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("blah")),
                        search_terms_data())),
                    Time::Now(), NULL, 0, GURL(), history::RedirectList(),
-                   ui::PAGE_TRANSITION_KEYWORD, history::SOURCE_BROWSED, false);
+                   ui::PAGE_TRANSITION_KEYWORD, history::SOURCE_BROWSED, false,
+                   false);
 
   // Wait for history to finish processing the request.
   test_util()->profile()->BlockUntilHistoryProcessesPendingRequests();

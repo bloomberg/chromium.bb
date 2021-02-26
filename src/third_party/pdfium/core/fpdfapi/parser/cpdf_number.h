@@ -7,8 +7,6 @@
 #ifndef CORE_FPDFAPI_PARSER_CPDF_NUMBER_H_
 #define CORE_FPDFAPI_PARSER_CPDF_NUMBER_H_
 
-#include <memory>
-
 #include "core/fpdfapi/parser/cpdf_object.h"
 #include "core/fxcrt/fx_number.h"
 #include "core/fxcrt/fx_string.h"
@@ -16,8 +14,7 @@
 
 class CPDF_Number final : public CPDF_Object {
  public:
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
+  CONSTRUCT_VIA_MAKE_RETAIN;
 
   // CPDF_Object:
   Type GetType() const override;

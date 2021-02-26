@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/version.h"
 #include "tools/traffic_annotation/auditor/auditor_result.h"
 #include "tools/traffic_annotation/traffic_annotation.pb.h"
 
@@ -73,13 +74,18 @@ class AnnotationInstance : public InstanceBase {
       int content_hash_code,
       const std::set<int>& semantics_fields,
       const std::set<int>& policy_fields,
-      const std::string& file_path);
+      const std::string& file_path,
+      int added_in_milestone);
 
   // Checks if an annotation has all required fields.
   AuditorResult IsComplete() const;
 
   // Checks if annotation fields are consistent.
   AuditorResult IsConsistent() const;
+
+  // Checks if annotation appears in summary/grouping.xml
+  AuditorResult InGroupingXML(
+      const std::set<std::string>& grouping_annotation_unique_ids) const;
 
   // Checks to see if this annotation can be completed with the |other|
   // annotation, based on their unique ids, types, and extra ids. |*this| should
@@ -130,6 +136,10 @@ class AnnotationInstance : public InstanceBase {
 
   // The hash code of annotation content for archived annotations.
   int archive_content_hash_code;
+
+  // The milestone (Chrome version) where this annotation was first added to
+  // Chromium code.
+  int archive_added_in_milestone;
 
   // Flag stating if annotation is loaded from annotations.xml.
   bool is_loaded_from_archive;

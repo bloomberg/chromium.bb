@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_id.h"
@@ -67,6 +68,13 @@ class TemplateURLRef {
   // the |post_data|. See http://tools.ietf.org/html/rfc2046 for the details.
   typedef std::pair<std::string, std::string> PostContent;
 
+  // Enumeration of the known search or suggest request sources.
+  enum RequestSource {
+    SEARCHBOX,          // Omnibox or the NTP realbox. The default.
+    CROS_APP_LIST,      // Chrome OS app list search box.
+    NON_SEARCHBOX_NTP,  // Non-searchbox NTP surfaces.
+  };
+
   // This struct encapsulates arguments passed to
   // TemplateURLRef::ReplaceSearchTerms methods.  By default, only search_terms
   // is required and is passed in the constructor.
@@ -75,21 +83,6 @@ class TemplateURLRef {
     explicit SearchTermsArgs(const base::string16& search_terms);
     SearchTermsArgs(const SearchTermsArgs& other);
     ~SearchTermsArgs();
-
-    // If the search request is from the omnibox, this enum may specify details
-    // about how the user last interacted with the omnibox.
-    //
-    // These values are used as HTTP GET parameter values. Entries should not be
-    // renumbered and numeric values should never be reused.
-    enum class OmniboxFocusType {
-      // The default value. This is used for any search requests without any
-      // special interaction annotation, including: normal omnibox searches,
-      // as-you-type omnibox suggestions, as well as non-omnibox searches.
-      DEFAULT = 0,
-
-      // This search request is triggered by the user focusing the omnibox.
-      ON_FOCUS = 1,
-    };
 
     struct ContextualSearchParams {
       ContextualSearchParams();
@@ -118,6 +111,14 @@ class TemplateURLRef {
       // The |target_lang| specifies the best language to translate into for
       // the user, which also indicates when translation is appropriate or
       // helpful.  This comes from the Chrome Language Model.
+      // The |fluent_languages| string specifies the languages the user
+      // is fluent in reading.  This acts as an alternate set of languages
+      // to consider translating into.  The languages are ordered by
+      // fluency, and encoded as a comma-separated list of BCP 47 languages.
+      // The |related_searches_stamp| string contains an information that
+      // indicates experiment status and server processing results so that
+      // can be logged in GWS Sawmill logs for offline analysis for the
+      // Related Searches MVP experiment.
       ContextualSearchParams(int version,
                              int contextual_cards_version,
                              std::string home_country,
@@ -125,7 +126,9 @@ class TemplateURLRef {
                              int previous_event_results,
                              bool is_exact_search,
                              std::string source_lang,
-                             std::string target_lang);
+                             std::string target_lang,
+                             std::string fluent_languages,
+                             std::string related_searches_stamp);
       ContextualSearchParams(const ContextualSearchParams& other);
       ~ContextualSearchParams();
 
@@ -162,6 +165,15 @@ class TemplateURLRef {
 
       // Target language string to be translated into.
       std::string target_lang;
+
+      // Alternate target languages that the user is fluent in, encoded in a
+      // single string.
+      std::string fluent_languages;
+
+      // Experiment arm and processing information for the Related Searches
+      // experiment. The value is an arbitrary string that starts with a
+      // schema version number.
+      std::string related_searches_stamp;
     };
 
     // Estimates dynamic memory usage.
@@ -177,9 +189,8 @@ class TemplateURLRef {
     // The type the original input query was identified as.
     metrics::OmniboxInputType input_type = metrics::OmniboxInputType::EMPTY;
 
-    // If the search request is from the omnibox, this may specify how the user
-    // last interacted with the omnibox.
-    OmniboxFocusType omnibox_focus_type = OmniboxFocusType::DEFAULT;
+    // Specifies how the user last interacted with the searchbox UI element.
+    OmniboxFocusType focus_type = OmniboxFocusType::DEFAULT;
 
     // The optional assisted query stats, aka AQS, used for logging purposes.
     // This string contains impressions of all autocomplete matches shown
@@ -234,9 +245,8 @@ class TemplateURLRef {
     // When searching for an image, the original size of the image.
     gfx::Size image_original_size;
 
-    // True if the search was made using the app list search box. Otherwise, the
-    // search was made using the omnibox.
-    bool from_app_list = false;
+    // Source of the search or suggest request.
+    RequestSource request_source = SEARCHBOX;
 
     ContextualSearchParams contextual_search_params;
   };
@@ -567,15 +577,19 @@ class TemplateURL {
   using TemplateURLVector = std::vector<TemplateURL*>;
   using OwnedTemplateURLVector = std::vector<std::unique_ptr<TemplateURL>>;
 
+  // These values are not persisted and can be freely changed.
+  // Their integer values are used for choosing the best engine during keyword
+  // conflicts, so their relative ordering should not be changed without careful
+  // thought about what happens during version skew.
   enum Type {
-    // Regular search engine.
-    NORMAL,
+    // Installed only on this device. Should not be synced. This is not common.
+    LOCAL = 0,
+    // Regular search engine. This is the most common.
+    NORMAL = 1,
     // Installed by extension through Override Settings API.
-    NORMAL_CONTROLLED_BY_EXTENSION,
+    NORMAL_CONTROLLED_BY_EXTENSION = 2,
     // The keyword associated with an extension that uses the Omnibox API.
-    OMNIBOX_API_EXTENSION,
-    // Installed only on this device. Should not be synced.
-    LOCAL,
+    OMNIBOX_API_EXTENSION = 3,
   };
 
   // An AssociatedExtensionInfo represents information about the extension that
@@ -611,6 +625,25 @@ class TemplateURL {
               bool wants_to_be_default_engine);
 
   ~TemplateURL();
+
+  // For two engines with the same keyword, |this| and |other|,
+  // returns true if |this| is strictly better than |other|.
+  //
+  // While normal engines must all have distinct keywords, policy-created,
+  // extension-controlled and omnibox API engines may have the same keywords as
+  // each other or as normal engines.  In these cases, policy-create engines
+  // override omnibox API engines, which override extension-controlled engines,
+  // which override normal engines.
+  //
+  // If there is still a conflict after this, compare by safe-for-autoreplace,
+  // then last modified date, then use the sync guid as a tiebreaker.
+  //
+  // TODO(tommycli): I'd like to use this to resolve Sync conflicts in the
+  // future, but we need a total ordering of TemplateURLs. That's not the case
+  // today, because the sync GUIDs are not actually globally unique, so there
+  // can be a genuine tie, which is not good, because then two different clients
+  // could choose to resolve the conflict in two different ways.
+  bool IsBetterThanEngineWithConflictingKeyword(const TemplateURL* other) const;
 
   // Generates a suitable keyword for the specified url, which must be valid.
   // This is guaranteed not to return an empty string, since TemplateURLs should

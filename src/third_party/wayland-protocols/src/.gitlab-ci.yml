@@ -1,0 +1,27 @@
+variables:
+  DEBIAN_TAG: 2019-11-21.0
+  DEBIAN_VERSION: stable
+  TEST_IMAGE: "$CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$DEBIAN_TAG"
+
+include:
+  - project: 'wayland/ci-templates'
+    ref: f69acac60d5dde0410124fd5674764600821b7a6
+    file: '/templates/debian.yml'
+
+stages:
+  - containers-build
+  - test
+
+container_build:
+  extends: .debian@container-ifnot-exists
+  stage: containers-build
+  variables:
+    GIT_STRATEGY: none # no need to pull the whole tree for rebuilding the image
+    DEBIAN_DEBS: 'build-essential automake autoconf libtool pkg-config libwayland-dev'
+
+test:
+  stage: test
+  image: $TEST_IMAGE
+  script:
+    - ./autogen.sh
+    - make check

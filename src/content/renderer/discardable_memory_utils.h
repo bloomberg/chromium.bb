@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_memory_allocator.h"
@@ -20,13 +19,12 @@
 #include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 
 namespace content {
 
-CONTENT_EXPORT std::unique_ptr<base::DiscardableMemoryAllocator>
+CONTENT_EXPORT
+scoped_refptr<discardable_memory::ClientDiscardableSharedMemoryManager>
 CreateDiscardableMemoryAllocator();
 
 }  // namespace content

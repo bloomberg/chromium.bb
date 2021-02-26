@@ -15,6 +15,7 @@
 #include "net/base/isolation_info.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_request_headers.h"
@@ -85,13 +86,12 @@ class WebSocketStreamClientUseCookieTest
     base::RunLoop().RunUntilIdle();
   }
 
-  static void SetCookieHelperFunction(
-      const base::RepeatingClosure& task,
-      base::WeakPtr<bool> weak_is_called,
-      base::WeakPtr<bool> weak_result,
-      CanonicalCookie::CookieInclusionStatus status) {
+  static void SetCookieHelperFunction(const base::RepeatingClosure& task,
+                                      base::WeakPtr<bool> weak_is_called,
+                                      base::WeakPtr<bool> weak_result,
+                                      CookieAccessResult access_result) {
     *weak_is_called = true;
-    *weak_result = status.IsInclude();
+    *weak_result = access_result.status.IsInclude();
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
   }
 };
@@ -122,10 +122,10 @@ class WebSocketStreamServerSetCookieTest
       base::OnceClosure task,
       base::WeakPtr<bool> weak_is_called,
       base::WeakPtr<CookieList> weak_result,
-      const CookieStatusList& cookie_list,
-      const CookieStatusList& excluded_cookies) {
+      const CookieAccessResultList& cookie_list,
+      const CookieAccessResultList& excluded_cookies) {
     *weak_is_called = true;
-    *weak_result = cookie_util::StripStatuses(cookie_list);
+    *weak_result = cookie_util::StripAccessResults(cookie_list);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
   }
 };
@@ -144,8 +144,8 @@ TEST_P(WebSocketStreamClientUseCookieTest, ClientUseCookie) {
       url::Origin::Create(GURL("http://www.example.com"));
   const SiteForCookies site_for_cookies = SiteForCookies::FromOrigin(origin);
   const IsolationInfo isolation_info =
-      IsolationInfo::Create(IsolationInfo::RedirectMode::kUpdateNothing, origin,
-                            origin, SiteForCookies::FromOrigin(origin));
+      IsolationInfo::Create(IsolationInfo::RequestType::kOther, origin, origin,
+                            SiteForCookies::FromOrigin(origin));
   const std::string cookie_line(GetParam().cookie_line);
   const std::string cookie_header(AddCRLFIfNotEmpty(GetParam().cookie_header));
 
@@ -184,8 +184,8 @@ TEST_P(WebSocketStreamServerSetCookieTest, ServerSetCookie) {
       url::Origin::Create(GURL("http://www.example.com"));
   const SiteForCookies site_for_cookies = SiteForCookies::FromOrigin(origin);
   const IsolationInfo isolation_info =
-      IsolationInfo::Create(IsolationInfo::RedirectMode::kUpdateNothing, origin,
-                            origin, SiteForCookies::FromOrigin(origin));
+      IsolationInfo::Create(IsolationInfo::RequestType::kOther, origin, origin,
+                            SiteForCookies::FromOrigin(origin));
   const std::string cookie_line(GetParam().cookie_line);
   const std::string cookie_header(AddCRLFIfNotEmpty(GetParam().cookie_header));
 

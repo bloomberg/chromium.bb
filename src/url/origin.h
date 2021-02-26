@@ -58,6 +58,7 @@ struct UrlOriginAdapter;
 namespace net {
 class NetworkIsolationKey;
 class OpaqueNonTransientNetworkIsolationKeyTest;
+class SchemefulSite;
 }  // namespace net
 
 namespace url {
@@ -172,8 +173,8 @@ class COMPONENT_EXPORT(URL) Origin {
   // Copyable and movable.
   Origin(const Origin&);
   Origin& operator=(const Origin&);
-  Origin(Origin&&);
-  Origin& operator=(Origin&&);
+  Origin(Origin&&) noexcept;
+  Origin& operator=(Origin&&) noexcept;
 
   // Creates an Origin from a |scheme|, |host|, and |port|. All the parameters
   // must be valid and canonicalized. Returns nullopt if any parameter is not
@@ -288,7 +289,7 @@ class COMPONENT_EXPORT(URL) Origin {
   // Creates a string representation of the object that can be used for logging
   // and debugging. It serializes the internal state, such as the nonce value
   // and precursor information.
-  std::string GetDebugString() const;
+  std::string GetDebugString(bool include_nonce = true) const;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> CreateJavaObject() const;
@@ -299,6 +300,9 @@ class COMPONENT_EXPORT(URL) Origin {
  private:
   friend class blink::SecurityOrigin;
   friend class net::NetworkIsolationKey;
+  // SchemefulSite needs access to the serialization/deserialization logic which
+  // includes the nonce.
+  friend class net::SchemefulSite;
   friend class net::OpaqueNonTransientNetworkIsolationKeyTest;
   friend class OriginTest;
   friend struct mojo::UrlOriginAdapter;
@@ -338,8 +342,8 @@ class COMPONENT_EXPORT(URL) Origin {
     // moving it does not.
     Nonce(const Nonce&);
     Nonce& operator=(const Nonce&);
-    Nonce(Nonce&&);
-    Nonce& operator=(Nonce&&);
+    Nonce(Nonce&&) noexcept;
+    Nonce& operator=(Nonce&&) noexcept;
 
     // Note that operator<, used by maps type containers, will trigger |token_|
     // lazy-initialization. Equality comparisons do not.
@@ -395,10 +399,16 @@ class COMPONENT_EXPORT(URL) Origin {
   base::Optional<base::UnguessableToken> GetNonceForSerialization() const;
 
   // Serializes this Origin, including its nonce if it is opaque. If an opaque
-  // origin's |tuple_| is invalid or the nonce isn't initialized, nullopt is
-  // returned. Use of this method should be limited as an opaque origin will
-  // never be matchable in future browser sessions.
+  // origin's |tuple_| is invalid nullopt is returned. If the nonce is not
+  // initialized, a nonce of 0 is used. Use of this method should be limited as
+  // an opaque origin will never be matchable in future browser sessions.
   base::Optional<std::string> SerializeWithNonce() const;
+
+  // Like SerializeWithNonce(), but forces |nonce_| to be initialized prior to
+  // serializing.
+  base::Optional<std::string> SerializeWithNonceAndInitIfNeeded();
+
+  base::Optional<std::string> SerializeWithNonceImpl() const;
 
   // Deserializes an origin from |ToValueWithNonce|. Returns nullopt if the
   // value was invalid in any way.

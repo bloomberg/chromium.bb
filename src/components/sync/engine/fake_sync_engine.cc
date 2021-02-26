@@ -56,21 +56,15 @@ void FakeSyncEngine::Shutdown(ShutdownReason reason) {}
 
 void FakeSyncEngine::ConfigureDataTypes(ConfigureParams params) {}
 
-void FakeSyncEngine::EnableEncryptEverything() {}
-
-void FakeSyncEngine::ActivateNonBlockingDataType(
+void FakeSyncEngine::ActivateDataType(
     ModelType type,
     std::unique_ptr<DataTypeActivationResponse> activation_response) {}
 
-void FakeSyncEngine::DeactivateNonBlockingDataType(ModelType type) {}
+void FakeSyncEngine::DeactivateDataType(ModelType type) {}
 
 void FakeSyncEngine::ActivateProxyDataType(ModelType type) {}
 
 void FakeSyncEngine::DeactivateProxyDataType(ModelType type) {}
-
-UserShare* FakeSyncEngine::GetUserShare() const {
-  return nullptr;
-}
 
 const SyncStatus& FakeSyncEngine::GetDetailedStatus() const {
   return default_sync_status_;
@@ -79,17 +73,9 @@ const SyncStatus& FakeSyncEngine::GetDetailedStatus() const {
 void FakeSyncEngine::HasUnsyncedItemsForTest(
     base::OnceCallback<void(bool)> cb) const {}
 
-void FakeSyncEngine::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const {}
-
-void FakeSyncEngine::FlushDirectory() const {}
-
 void FakeSyncEngine::RequestBufferedProtocolEventsAndEnableForwarding() {}
 
 void FakeSyncEngine::DisableProtocolEventForwarding() {}
-
-void FakeSyncEngine::EnableDirectoryTypeDebugInfoForwarding() {}
-
-void FakeSyncEngine::DisableDirectoryTypeDebugInfoForwarding() {}
 
 void FakeSyncEngine::set_fail_initial_download(bool should_fail) {
   fail_initial_download_ = should_fail;

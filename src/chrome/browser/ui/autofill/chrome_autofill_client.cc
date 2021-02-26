@@ -10,10 +10,12 @@
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
+#include "chrome/browser/autofill/autofill_offer_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
@@ -99,6 +101,9 @@
 
 namespace autofill {
 
+using AutoselectFirstSuggestion =
+    AutofillClient::PopupOpenArgs::AutoselectFirstSuggestion;
+
 ChromeAutofillClient::~ChromeAutofillClient() {
   // NOTE: It is too late to clean up the autofill popup; that cleanup process
   // requires that the WebContents instance still be valid and it is not at
@@ -169,9 +174,16 @@ ukm::SourceId ChromeAutofillClient::GetUkmSourceId() {
 }
 
 AddressNormalizer* ChromeAutofillClient::GetAddressNormalizer() {
-  if (base::FeatureList::IsEnabled(features::kAutofillAddressNormalizer))
-    return AddressNormalizerFactory::GetInstance();
-  return nullptr;
+  return AddressNormalizerFactory::GetInstance();
+}
+
+AutofillOfferManager* ChromeAutofillClient::GetAutofillOfferManager() {
+  return AutofillOfferManagerFactory::GetForBrowserContext(
+      web_contents()->GetBrowserContext());
+}
+
+const GURL& ChromeAutofillClient::GetLastCommittedURL() {
+  return web_contents()->GetLastCommittedURL();
 }
 
 security_state::SecurityLevel
@@ -188,14 +200,14 @@ ChromeAutofillClient::GetSecurityLevelForUmaHistograms() {
   return helper->GetSecurityLevel();
 }
 
-std::string ChromeAutofillClient::GetPageLanguage() const {
+const translate::LanguageState* ChromeAutofillClient::GetLanguageState() {
   // TODO(crbug.com/912597): iOS vs other platforms extracts language from
   // the top level frame vs whatever frame directly holds the form.
   auto* translate_manager =
       ChromeTranslateClient::GetManagerFromWebContents(web_contents());
   if (translate_manager)
-    return translate_manager->GetLanguageState().original_language();
-  return std::string();
+    return translate_manager->GetLanguageState();
+  return nullptr;
 }
 
 std::string ChromeAutofillClient::GetVariationConfigCountryCode() const {
@@ -256,7 +268,7 @@ void ChromeAutofillClient::OnUnmaskVerificationResult(
 
 #if !defined(OS_ANDROID)
 std::vector<std::string>
-ChromeAutofillClient::GetMerchantWhitelistForVirtualCards() {
+ChromeAutofillClient::GetAllowedMerchantsForVirtualCards() {
   if (!prefs::IsAutofillCreditCardEnabled(GetPrefs()))
     return std::vector<std::string>();
 
@@ -265,7 +277,7 @@ ChromeAutofillClient::GetMerchantWhitelistForVirtualCards() {
 }
 
 std::vector<std::string>
-ChromeAutofillClient::GetBinRangeWhitelistForVirtualCards() {
+ChromeAutofillClient::GetAllowedBinRangesForVirtualCards() {
   if (!prefs::IsAutofillCreditCardEnabled(GetPrefs()))
     return std::vector<std::string>();
 
@@ -392,7 +404,8 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
               /*upload=*/false, options, card, LegalMessageLines(),
               /*upload_save_card_callback=*/
               AutofillClient::UploadSaveCardPromptCallback(),
-              /*local_save_card_callback=*/std::move(callback), GetPrefs())));
+              /*local_save_card_callback=*/std::move(callback), GetPrefs()),
+          base::nullopt));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
@@ -416,9 +429,30 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
               /*upload_save_card_callback=*/std::move(callback),
               /*local_save_card_callback=*/
               AutofillClient::LocalSaveCardPromptCallback(), GetPrefs());
+  bool sync_disabled_wallet_transport_enabled =
+      GetPersonalDataManager()->GetSyncSigninState() ==
+      autofill::AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled;
+
+  base::Optional<AccountInfo> account_info = base::nullopt;
+  // AccountInfo data should be passed down only if the following conditions are
+  // satisfied:
+  // 1) Sync is off or the
+  //   kAutofillEnableInfoBarAccountIndicationFooterForSyncUsers flag is on.
+  // 2) User has multiple accounts or the
+  //   kAutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers is on.
+  if ((sync_disabled_wallet_transport_enabled ||
+       base::FeatureList::IsEnabled(
+           features::
+               kAutofillEnableInfoBarAccountIndicationFooterForSyncUsers)) &&
+      (IsMultipleAccountUser() ||
+       base::FeatureList::IsEnabled(
+           features::
+               kAutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers))) {
+    account_info = GetAccountInfo();
+  }
   InfoBarService::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
-          std::move(save_card_info_bar_delegate_mobile)));
+          std::move(save_card_info_bar_delegate_mobile), account_info));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
@@ -473,24 +507,28 @@ void ChromeAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
 }
 
 void ChromeAutofillClient::ShowAutofillPopup(
-    const gfx::RectF& element_bounds,
-    base::i18n::TextDirection text_direction,
-    const std::vector<Suggestion>& suggestions,
-    bool autoselect_first_suggestion,
-    PopupType popup_type,
+    const autofill::AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
   // Convert element_bounds to be in screen space.
   gfx::Rect client_area = web_contents()->GetContainerBounds();
   gfx::RectF element_bounds_in_screen_space =
-      element_bounds + client_area.OffsetFromOrigin();
+      open_args.element_bounds + client_area.OffsetFromOrigin();
 
   // Will delete or reuse the old |popup_controller_|.
   popup_controller_ = AutofillPopupControllerImpl::GetOrCreate(
       popup_controller_, delegate, web_contents(),
       web_contents()->GetNativeView(), element_bounds_in_screen_space,
-      text_direction);
+      open_args.text_direction);
 
-  popup_controller_->Show(suggestions, autoselect_first_suggestion, popup_type);
+  popup_controller_->Show(open_args.suggestions,
+                          open_args.autoselect_first_suggestion.value(),
+                          open_args.popup_type);
+
+  // When testing, try to keep popup open when the reason to hide is from an
+  // external browser frame resize that is extraneous to our testing goals.
+  if (keep_popup_open_for_testing_ && popup_controller_.get()) {
+    popup_controller_->KeepPopupOpenForTesting();
+  }
 }
 
 void ChromeAutofillClient::UpdateAutofillPopupDataListValues(
@@ -509,6 +547,25 @@ base::span<const Suggestion> ChromeAutofillClient::GetPopupSuggestions() const {
 void ChromeAutofillClient::PinPopupView() {
   if (popup_controller_.get())
     popup_controller_->PinView();
+}
+
+autofill::AutofillClient::PopupOpenArgs
+ChromeAutofillClient::GetReopenPopupArgs() const {
+  const AutofillPopupController* controller = popup_controller_.get();
+  if (!controller)
+    return autofill::AutofillClient::PopupOpenArgs();
+
+  // By calculating the screen space-independent values, bounds can be passed to
+  // |ShowAutofillPopup| which always computes the bounds in the screen space.
+  gfx::Rect client_area = web_contents()->GetContainerBounds();
+  gfx::RectF screen_space_independent_bounds =
+      controller->element_bounds() - client_area.OffsetFromOrigin();
+  return autofill::AutofillClient::PopupOpenArgs(
+      screen_space_independent_bounds,
+      controller->IsRTL() ? base::i18n::RIGHT_TO_LEFT
+                          : base::i18n::LEFT_TO_RIGHT,
+      controller->GetSuggestions(), AutoselectFirstSuggestion(false),
+      controller->GetPopupType());
 }
 
 void ChromeAutofillClient::UpdatePopup(
@@ -630,10 +687,6 @@ void ChromeAutofillClient::WebContentsDestroyed() {
   HideAutofillPopup(PopupHidingReason::kTabGone);
 }
 
-void ChromeAutofillClient::DidAttachInterstitialPage() {
-  HideAutofillPopup(PopupHidingReason::kAttachInterstitialPage);
-}
-
 #if !defined(OS_ANDROID)
 void ChromeAutofillClient::OnZoomChanged(
     const zoom::ZoomController::ZoomChangedEventData& data) {
@@ -656,15 +709,16 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
           GetPersonalDataManager(),
           GetPersonalDataManager()->app_locale())),
       unmask_controller_(
-          user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
-          Profile::FromBrowserContext(web_contents->GetBrowserContext())
-              ->IsOffTheRecord()) {
+          user_prefs::UserPrefs::Get(web_contents->GetBrowserContext())) {
   // TODO(crbug.com/928595): Replace the closure with a callback to the renderer
   // that indicates if log messages should be sent from the renderer.
   log_manager_ =
       LogManager::Create(AutofillLogRouterFactory::GetForBrowserContext(
                              web_contents->GetBrowserContext()),
                          base::Closure());
+  // Initialize StrikeDatabase so its cache will be loaded and ready to use when
+  // when requested by other Autofill classes.
+  GetStrikeDatabase();
 
 #if !defined(OS_ANDROID)
   // Since ZoomController is also a WebContentsObserver, we need to be careful
@@ -684,6 +738,22 @@ Profile* ChromeAutofillClient::GetProfile() const {
   if (!web_contents())
     return nullptr;
   return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+}
+
+base::Optional<AccountInfo> ChromeAutofillClient::GetAccountInfo() {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(GetProfile());
+  CoreAccountId account_id =
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
+  return identity_manager
+      ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+          account_id);
+}
+
+bool ChromeAutofillClient::IsMultipleAccountUser() {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(GetProfile());
+  return identity_manager->GetAccountsWithRefreshTokens().size() > 1;
 }
 
 base::string16 ChromeAutofillClient::GetAccountHolderName() {

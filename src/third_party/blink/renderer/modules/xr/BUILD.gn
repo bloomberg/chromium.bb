@@ -7,8 +7,6 @@ import("//third_party/blink/renderer/modules/modules.gni")
 blink_modules_sources("xr") {
   sources = [
     "element_xr.h",
-    "navigator_xr.cc",
-    "navigator_xr.h",
     "type_converters.cc",
     "type_converters.h",
     "xr_anchor.cc",
@@ -21,6 +19,8 @@ blink_modules_sources("xr") {
     "xr_canvas_input_provider.h",
     "xr_cube_map.cc",
     "xr_cube_map.h",
+    "xr_depth_information.cc",
+    "xr_depth_information.h",
     "xr_dom_overlay_state.cc",
     "xr_dom_overlay_state.h",
     "xr_frame.cc",
@@ -35,6 +35,8 @@ blink_modules_sources("xr") {
     "xr_hit_test_result.h",
     "xr_hit_test_source.cc",
     "xr_hit_test_source.h",
+    "xr_image_tracking_result.cc",
+    "xr_image_tracking_result.h",
     "xr_input_source.cc",
     "xr_input_source.h",
     "xr_input_source_array.cc",
@@ -74,6 +76,8 @@ blink_modules_sources("xr") {
     "xr_session.h",
     "xr_session_event.cc",
     "xr_session_event.h",
+    "xr_session_viewport_scaler.cc",
+    "xr_session_viewport_scaler.h",
     "xr_setlike.h",
     "xr_space.cc",
     "xr_space.h",
@@ -96,6 +100,7 @@ blink_modules_sources("xr") {
     "xr_webgl_binding.h",
     "xr_webgl_layer.cc",
     "xr_webgl_layer.h",
+    "xr_webgl_rendering_context.h",
     "xr_world_information.cc",
     "xr_world_information.h",
     "xr_world_tracking_state.cc",
@@ -103,7 +108,9 @@ blink_modules_sources("xr") {
   ]
 
   deps = [
-    "//device/vr/public/mojom:mojom_blink",
+    "//device/vr/public/mojom:vr_service_blink",
     "//services/metrics/public/cpp:ukm_builders",
   ]
+
+  public_deps = [ "//third_party/blink/renderer/modules/gamepad:gamepad" ]
 }

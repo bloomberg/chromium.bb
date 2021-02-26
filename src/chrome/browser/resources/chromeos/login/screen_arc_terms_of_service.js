@@ -92,6 +92,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       }]);
 
       this.getElement_('arcPolicyLink').onclick = function() {
+        chrome.send('login.ArcTermsOfServiceScreen.userActed', ['policy-link']);
         termsView.executeScript(
             {code: 'getPrivacyPolicyLink();'}, function(results) {
               if (results && results.length == 1 &&
@@ -454,7 +455,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     onBeforeShow(data) {
       this.focusButton_();
 
-      $('arc-tos-root').onBeforeShow();
+      cr.ui.login.invokePolymerMethod($('arc-tos-root'), 'onBeforeShow');
 
       var isDemoModeSetup = this.isDemoModeSetup_();
       if (isDemoModeSetup) {
@@ -532,6 +533,16 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      */
     isDemoModeSetup_() {
       return $('arc-tos-root').demoMode;
+    },
+
+    /**
+     * Shows loading screen for debugging purpose
+     */
+    showLoadingScreenForTesting() {
+      this.removeClass_('arc-tos-loaded');
+      this.removeClass_('error');
+      this.addClass_('arc-tos-loading');
+      this.enableButtons_(false);
     }
   };
 });

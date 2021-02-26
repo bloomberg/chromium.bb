@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/page/page_animator.h"
 
 #include "base/auto_reset.h"
+#include "cc/animation/animation_host.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
@@ -39,7 +39,7 @@ PageAnimator::PageAnimator(Page& page)
       servicing_animations_(false),
       updating_layout_and_style_for_painting_(false) {}
 
-void PageAnimator::Trace(Visitor* visitor) {
+void PageAnimator::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
 }
 
@@ -57,45 +57,12 @@ void PageAnimator::ServiceScriptedAnimations(
   for (auto& document : documents) {
     ScopedFrameBlamer frame_blamer(document->GetFrame());
     TRACE_EVENT0("blink,rail", "PageAnimator::serviceScriptedAnimations");
-    if (document->View()) {
-      if (document->View()->ShouldThrottleRendering()) {
-        document->GetDocumentAnimations()
-            .UpdateAnimationTimingForAnimationFrame();
-        document->SetCurrentFrameIsThrottled(true);
-        continue;
-      }
-      // Disallow throttling in case any script needs to do a synchronous
-      // lifecycle update in other frames which are throttled.
-      DocumentLifecycle::DisallowThrottlingScope no_throttling_scope(
-          document->Lifecycle());
-      if (ScrollableArea* scrollable_area =
-              document->View()->GetScrollableArea()) {
-        scrollable_area->ServiceScrollAnimations(
-            monotonic_animation_start_time.since_origin().InSecondsF());
-      }
-
-      if (const LocalFrameView::ScrollableAreaSet* animating_scrollable_areas =
-              document->View()->AnimatingScrollableAreas()) {
-        // Iterate over a copy, since ScrollableAreas may deregister
-        // themselves during the iteration.
-        HeapVector<Member<PaintLayerScrollableArea>>
-            animating_scrollable_areas_copy;
-        CopyToVector(*animating_scrollable_areas,
-                     animating_scrollable_areas_copy);
-        for (PaintLayerScrollableArea* scrollable_area :
-             animating_scrollable_areas_copy) {
-          scrollable_area->ServiceScrollAnimations(
-              monotonic_animation_start_time.since_origin().InSecondsF());
-        }
-      }
-      document->GetFrame()->AnimateSnapFling(monotonic_animation_start_time);
-      SVGDocumentExtensions::ServiceOnAnimationFrame(*document);
+    if (!document->View() || document->View()->CanThrottleRendering()) {
+      document->GetDocumentAnimations()
+          .UpdateAnimationTimingForAnimationFrame();
+      continue;
     }
-    document->GetDocumentAnimations().UpdateAnimationTimingForAnimationFrame();
-    // TODO(skyostil): This function should not run for documents without views.
-    DocumentLifecycle::DisallowThrottlingScope no_throttling_scope(
-        document->Lifecycle());
-    document->ServiceScriptedAnimations(monotonic_animation_start_time);
+    document->View()->ServiceScriptedAnimations(monotonic_animation_start_time);
   }
 
   page_->GetValidationMessageClient().LayoutOverlay();
@@ -109,11 +76,6 @@ void PageAnimator::PostAnimate() {
       documents.push_back(To<LocalFrame>(frame)->GetDocument());
   }
 
-  // Run the post-animation frame callbacks. See
-  // https://github.com/WICG/requestPostAnimationFrame
-  for (auto& document : documents)
-    document->RunPostAnimationFrameCallbacks();
-
   // If we don't have an imminently incoming frame, we need to let the
   // AnimationClock update its own time to properly service out-of-lifecycle
   // events such as setInterval (see https://crbug.com/995806). This isn't a
@@ -126,6 +88,19 @@ void PageAnimator::PostAnimate() {
     Clock().SetAllowedToDynamicallyUpdateTime(true);
 }
 
+void PageAnimator::SetHasCanvasInvalidation() {
+  has_canvas_invalidation_ = true;
+}
+
+void PageAnimator::ReportFrameAnimations(cc::AnimationHost* animation_host) {
+  if (animation_host) {
+    animation_host->SetHasCanvasInvalidation(has_canvas_invalidation_);
+    animation_host->SetHasInlineStyleMutation(has_inline_style_mutation_);
+  }
+  has_canvas_invalidation_ = false;
+  has_inline_style_mutation_ = false;
+}
+
 void PageAnimator::SetSuppressFrameRequestsWorkaroundFor704763Only(
     bool suppress_frame_requests) {
   // If we are enabling the suppression and it was already enabled then we must
@@ -133,6 +108,10 @@ void PageAnimator::SetSuppressFrameRequestsWorkaroundFor704763Only(
   DCHECK(!suppress_frame_requests_workaround_for704763_only_ ||
          !suppress_frame_requests);
   suppress_frame_requests_workaround_for704763_only_ = suppress_frame_requests;
+}
+
+void PageAnimator::SetHasInlineStyleMutation() {
+  has_inline_style_mutation_ = true;
 }
 
 DISABLE_CFI_PERF

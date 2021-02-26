@@ -8,6 +8,7 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
+#include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #import "components/handoff/handoff_manager.h"
@@ -16,6 +17,7 @@
 #include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 #include "components/language/core/browser/language_prefs.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/metrics/demographics/user_demographics.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
@@ -30,7 +32,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/browser/url_blacklist_manager.h"
+#include "components/policy/core/browser/url_blocklist_manager.h"
 #include "components/policy/core/common/policy_statistics_collector.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -59,10 +61,13 @@
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
 #include "ios/chrome/browser/notification_promo.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/prerender/prerender_pref.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
+#import "ios/chrome/browser/ui/first_run/location_permissions_field_trial.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #import "ios/chrome/browser/web/font_size_tab_helper.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -90,6 +95,13 @@ const char kGCMChannelLastCheckTime[] = "gcm.check_time";
 const char kInvalidatorClientId[] = "invalidator.client_id";
 const char kInvalidatorInvalidationState[] = "invalidator.invalidation_state";
 const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
+
+// Deprecated 9/2020
+const char kPasswordManagerOnboardingState[] =
+    "profile.password_manager_onboarding_state";
+
+const char kWasOnboardingFeatureCheckedBefore[] =
+    "profile.was_pwm_onboarding_feature_checked_before";
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -106,6 +118,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   sessions::SessionIdGenerator::RegisterPrefs(registry);
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
+  location_permissions_field_trial::RegisterLocalStatePrefs(registry);
 
   // Preferences related to the browser state manager.
   registry->RegisterStringPref(prefs::kBrowserStateLastUsed, std::string());
@@ -136,6 +149,11 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kInvalidatorSavedInvalidations);
   registry->RegisterStringPref(kInvalidatorInvalidationState, std::string());
   registry->RegisterStringPref(kInvalidatorClientId, std::string());
+
+  registry->RegisterBooleanPref(enterprise_reporting::kCloudReportingEnabled,
+                                false);
+  registry->RegisterTimePref(enterprise_reporting::kLastUploadTimestamp,
+                             base::Time());
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -147,6 +165,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   ios::NotificationPromo::RegisterProfilePrefs(registry);
   language::LanguagePrefs::RegisterProfilePrefs(registry);
+  metrics::RegisterDemographicsProfilePrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
   ntp_snippets::ContentSuggestionsService::RegisterProfilePrefs(registry);
   ntp_snippets::RemoteSuggestionsProviderImpl::RegisterProfilePrefs(registry);
@@ -157,8 +176,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ntp_tiles::PopularSitesImpl::RegisterProfilePrefs(registry);
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
   payments::RegisterProfilePrefs(registry);
-  policy::URLBlacklistManager::RegisterProfilePrefs(registry);
+  policy::URLBlocklistManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
+  prerender_prefs::RegisterNetworkPredictionPrefs(registry);
   RegisterVoiceSearchBrowserStatePrefs(registry);
   safe_browsing::RegisterProfilePrefs(registry);
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
@@ -174,6 +194,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   [BookmarkMediator registerBrowserStatePrefs:registry];
   [BookmarkPathCache registerBrowserStatePrefs:registry];
+  [ContentSuggestionsMediator registerBrowserStatePrefs:registry];
   [SigninPromoViewMediator registerBrowserStatePrefs:registry];
   [HandoffManager registerBrowserStatePrefs:registry];
 
@@ -187,12 +208,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kDefaultCharset,
                                l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kNetworkPredictionEnabled, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kNetworkPredictionWifiOnly, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kContextualSearchEnabled, std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
@@ -219,6 +234,11 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(kInvalidatorSavedInvalidations);
   registry->RegisterStringPref(kInvalidatorInvalidationState, std::string());
   registry->RegisterStringPref(kInvalidatorClientId, std::string());
+
+  registry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
+
+  registry->RegisterIntegerPref(kPasswordManagerOnboardingState, 0);
+  registry->RegisterBooleanPref(kWasOnboardingFeatureCheckedBefore, false);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -241,7 +261,6 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 07/2019.
   syncer::MigrateSyncSuppressedPref(prefs);
-  syncer::ClearObsoleteMemoryPressurePrefs(prefs);
   syncer::MigrateSessionsToProxyTabsPrefs(prefs);
   syncer::ClearObsoleteUserTypePrefs(prefs);
   syncer::ClearObsoleteClearServerDataPrefs(prefs);
@@ -255,9 +274,6 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   prefs->ClearPref(kGoogleServicesUsername);
   prefs->ClearPref(kGoogleServicesUserAccountId);
 
-  // Added 10/2019.
-  syncer::DeviceInfoPrefs::MigrateRecentLocalCacheGuidsPref(prefs);
-
   // Added 1/2020.
   prefs->ClearPref(kGCMChannelStatus);
   prefs->ClearPref(kGCMChannelPollIntervalSeconds);
@@ -267,4 +283,9 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   prefs->ClearPref(kInvalidatorSavedInvalidations);
   prefs->ClearPref(kInvalidatorInvalidationState);
   prefs->ClearPref(kInvalidatorClientId);
+
+  // Added 9/2020.
+  prefs->ClearPref(kPasswordManagerOnboardingState);
+  prefs->ClearPref(kWasOnboardingFeatureCheckedBefore);
+  prerender_prefs::MigrateNetworkPredictionPrefs(prefs);
 }

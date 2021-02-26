@@ -15,7 +15,7 @@ goog.provide('ScriptInstaller');
  * URL pattern where we do not allow script installation.
  * @type {RegExp}
  */
-ScriptInstaller.blacklistPattern = /chrome:\/\/|chrome-extension:\/\//;
+ScriptInstaller.denylistPattern = /chrome:\/\/|chrome-extension:\/\//;
 
 /**
  * Installs a script in the web page.
@@ -31,13 +31,13 @@ ScriptInstaller.blacklistPattern = /chrome:\/\/|chrome-extension:\/\//;
  */
 ScriptInstaller.installScript = function(
     srcs, uid, opt_onload, opt_chromevoxScriptBase) {
-  if (ScriptInstaller.blacklistPattern.test(document.URL)) {
+  if (ScriptInstaller.denylistPattern.test(document.URL)) {
     return false;
   }
   if (document.querySelector('script[' + uid + ']')) {
     ScriptInstaller.uninstallScript(uid);
   }
-  if (!srcs || srcs.length == 0) {
+  if (!srcs || srcs.length === 0) {
     return false;
   }
 
@@ -89,7 +89,7 @@ ScriptInstaller.installScriptHelper_ = function(
   const xhr = new XMLHttpRequest();
   const url = scriptSrc + '?' + new Date().getTime();
   xhr.onreadystatechange = function() {
-    if (xhr.readyState == 4) {
+    if (xhr.readyState === 4) {
       const scriptText = xhr.responseText;
       const apiScript = document.createElement('script');
       apiScript.type = 'text/javascript';

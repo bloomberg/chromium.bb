@@ -34,7 +34,7 @@ TEST(SyncPolicyHandlerTest, Enabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kSyncDisabled, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(false), nullptr);
+             base::Value(false), nullptr);
   SyncPolicyHandler handler;
   PrefValueMap prefs;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -47,7 +47,7 @@ TEST(SyncPolicyHandlerTest, Disabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kSyncDisabled, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(true), nullptr);
+             base::Value(true), nullptr);
   SyncPolicyHandler handler;
   PrefValueMap prefs;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -77,8 +77,7 @@ TEST(SyncPolicyHandlerTest, SyncTypesListDisabled) {
   disabled_types.AppendString("preferences");
   policy.Set(policy::key::kSyncTypesListDisabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, disabled_types.CreateDeepCopy(),
-             nullptr);
+             policy::POLICY_SOURCE_CLOUD, disabled_types.Clone(), nullptr);
   SyncPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
 
@@ -118,11 +117,10 @@ TEST_F(SyncPolicyHandlerOsTest, SyncTypesListDisabled_OsTypes) {
   base::ListValue disabled_types;
   disabled_types.AppendString("osApps");
   disabled_types.AppendString("osPreferences");
-  disabled_types.AppendString("wifiConfigurations");
+  disabled_types.AppendString("osWifiConfigurations");
   policy.Set(policy::key::kSyncTypesListDisabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, disabled_types.CreateDeepCopy(),
-             nullptr);
+             policy::POLICY_SOURCE_CLOUD, disabled_types.Clone(), nullptr);
   SyncPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
 
@@ -147,17 +145,19 @@ TEST_F(SyncPolicyHandlerOsTest, SyncTypesListDisabled_MigratedTypes) {
   policy::PolicyMap policy;
   base::ListValue disabled_types;
   disabled_types.AppendString("apps");
+  disabled_types.AppendString("wifiConfigurations");
   disabled_types.AppendString("preferences");
   policy.Set(policy::key::kSyncTypesListDisabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, disabled_types.CreateDeepCopy(),
-             nullptr);
+             policy::POLICY_SOURCE_CLOUD, disabled_types.Clone(), nullptr);
   SyncPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
 
   // The equivalent OS types are disabled.
   bool enabled;
   ASSERT_TRUE(prefs.GetBoolean(prefs::kSyncOsApps, &enabled));
+  EXPECT_FALSE(enabled);
+  ASSERT_TRUE(prefs.GetBoolean(prefs::kSyncWifiConfigurations, &enabled));
   EXPECT_FALSE(enabled);
   ASSERT_TRUE(prefs.GetBoolean(prefs::kSyncOsPreferences, &enabled));
   EXPECT_FALSE(enabled);

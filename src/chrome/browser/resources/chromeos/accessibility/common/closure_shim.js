@@ -9,7 +9,7 @@
 var goog = {};
 
 goog.provide = function(n) {
-  window[n] = {};
+  globalThis[n] = {};
 };
 
 goog.require = function() {};

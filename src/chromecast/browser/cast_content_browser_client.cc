@@ -11,6 +11,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_pump_type.h"
@@ -26,6 +27,7 @@
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/chromecast_switches.h"
+#include "chromecast/base/pref_names.h"
 #include "chromecast/browser/application_media_info_manager.h"
 #include "chromecast/browser/browser_buildflags.h"
 #include "chromecast/browser/cast_browser_context.h"
@@ -39,6 +41,7 @@
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_session_id_map.h"
 #include "chromecast/browser/cast_web_contents.h"
+#include "chromecast/browser/cast_web_preferences.h"
 #include "chromecast/browser/default_navigation_throttle.h"
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
 #include "chromecast/browser/general_audience_browsing_navigation_throttle.h"
@@ -46,17 +49,18 @@
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/service_connector.h"
-#include "chromecast/browser/tts/tts_controller.h"
 #include "chromecast/common/cast_content_client.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/cdm/cast_cdm_factory.h"
+#include "chromecast/media/cdm/cast_cdm_origin_provider.h"
 #include "chromecast/media/cma/backend/cma_backend_factory_impl.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/media/service/cast_renderer.h"
 #include "chromecast/media/service/mojom/video_geometry_setter.mojom.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -75,31 +79,33 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/web_preferences.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/services/mojo_renderer_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/service_manager/embedder/descriptors.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gl/gl_switches.h"
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include "components/crash/content/browser/crash_handler_host_linux.h"
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "components/crash/core/app/breakpad_linux.h"
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
+#include "chromecast/media/audio/cast_audio_manager_android.h"  // nogncheck
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/core/app/crashpad.h"
+#include "media/audio/android/audio_manager_android.h"
 #else
 #include "chromecast/browser/memory_pressure_controller_impl.h"
 #endif  // defined(OS_ANDROID)
@@ -114,21 +120,19 @@
 #include "extensions/browser/extension_message_filter.h"           // nogncheck
 #include "extensions/browser/extension_protocols.h"                // nogncheck
 #include "extensions/browser/extension_registry.h"                 // nogncheck
-#include "extensions/browser/extension_system.h"                   // nogncheck
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"  // nogncheck
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"  // nogncheck
-#include "extensions/browser/info_map.h"                            // nogncheck
 #include "extensions/browser/process_map.h"                         // nogncheck
 #include "extensions/common/constants.h"                            // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
-#include "chromecast/external_mojo/broker_service/broker_service.h"
+#include "chromecast/external_mojo/broker_service/broker_service.h"  // nogncheck
 #endif
 
-#if defined(OS_LINUX) && defined(USE_OZONE)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_OZONE)
 #include "chromecast/browser/webview/webview_controller.h"
-#endif  // defined(OS_LINUX) && defined(USE_OZONE)
+#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_OZONE)
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 #include "base/sequenced_task_runner.h"
@@ -158,6 +162,9 @@ CastContentBrowserClient::CastContentBrowserClient(
       cast_feature_list_creator_(cast_feature_list_creator) {
   cast_feature_list_creator_->SetExtraEnableFeatures({
     ::media::kInternalMediaSession, features::kNetworkServiceInProcess,
+        // TODO(b/161486194): Can be removed when it's enabled by default in
+        // Chrome.
+        features::kWebAssemblySimd,
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_VIDEO_CAPTURE_SERVICE)
         features::kMojoVideoCapture,
 #endif
@@ -191,8 +198,7 @@ std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
     PrefService* pref_service,
     media::VideoPlaneController* video_plane_controller,
     CastWindowManager* window_manager) {
-  return std::make_unique<CastServiceSimple>(browser_context, pref_service,
-                                             window_manager);
+  return std::make_unique<CastServiceSimple>(browser_context, window_manager);
 }
 
 media::VideoModeSwitcher* CastContentBrowserClient::GetVideoModeSwitcher() {
@@ -270,6 +276,20 @@ CastContentBrowserClient::CreateAudioManager(
       GetMediaTaskRunner(),
       ServiceConnector::MakeRemote(kBrowserProcessClientId),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
+#elif defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(kEnableChromeAudioManagerAndroid)) {
+    LOG(INFO) << "Use AudioManagerAndroid instead of CastAudioManagerAndroid.";
+    return std::make_unique<::media::AudioManagerAndroid>(
+        std::move(audio_thread), audio_log_factory);
+  }
+
+  return std::make_unique<media::CastAudioManagerAndroid>(
+      std::move(audio_thread), audio_log_factory,
+      base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
+                          base::Unretained(this)),
+      base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
+      GetMediaTaskRunner(),
+      ServiceConnector::MakeRemote(kBrowserProcessClientId));
 #else
   return std::make_unique<media::CastAudioManager>(
       std::move(audio_thread), audio_log_factory,
@@ -280,7 +300,7 @@ CastContentBrowserClient::CreateAudioManager(
       GetMediaTaskRunner(),
       ServiceConnector::MakeRemote(kBrowserProcessClientId),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
-#endif  // defined(USE_ALSA)
+#endif
 }
 
 bool CastContentBrowserClient::OverridesAudioManager() {
@@ -289,8 +309,12 @@ bool CastContentBrowserClient::OverridesAudioManager() {
 
 std::unique_ptr<::media::CdmFactory> CastContentBrowserClient::CreateCdmFactory(
     ::media::mojom::FrameInterfaceFactory* frame_interfaces) {
-  return std::make_unique<media::CastCdmFactory>(GetMediaTaskRunner(),
-                                                 media_resource_tracker());
+  url::Origin cdm_origin;
+  if (!CastCdmOriginProvider::GetCdmOrigin(frame_interfaces, &cdm_origin))
+    return nullptr;
+
+  return std::make_unique<media::CastCdmFactory>(
+      GetMediaTaskRunner(), cdm_origin, media_resource_tracker());
 }
 
 media::MediaCapsImpl* CastContentBrowserClient::media_caps() {
@@ -399,19 +423,9 @@ void CastContentBrowserClient::SiteInstanceGotProcess(
           site_instance->GetSiteURL());
   if (!extension)
     return;
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(
-          cast_browser_main_parts_->browser_context());
-
   extensions::ProcessMap::Get(cast_browser_main_parts_->browser_context())
       ->Insert(extension->id(), site_instance->GetProcess()->GetID(),
                site_instance->GetId());
-
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&extensions::InfoMap::RegisterExtensionProcess,
-                                extension_system->info_map(), extension->id(),
-                                site_instance->GetProcess()->GetID(),
-                                site_instance->GetId()));
 #endif
 }
 
@@ -457,7 +471,7 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
                                           switches::kAudioOutputChannels));
     }
   } else if (process_type == switches::kGpuProcess) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     // Necessary for accelerated 2d canvas.  By default on Linux, Chromium
     // assumes GLES2 contexts can be lost to a power-save mode, which breaks GPU
     // canvas apps.
@@ -511,7 +525,7 @@ CastContentBrowserClient::GetSystemNetworkContext() {
 
 void CastContentBrowserClient::OverrideWebkitPrefs(
     content::RenderViewHost* render_view_host,
-    content::WebPreferences* prefs) {
+    blink::web_pref::WebPreferences* prefs) {
   prefs->allow_scripts_to_close_windows = true;
   // TODO(halliwell): http://crbug.com/391089. This pref defaults to to true
   // because some content providers such as YouTube use plain http requests
@@ -534,7 +548,7 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
   // 1280px wide layout viewport by default.
   DCHECK(prefs->viewport_enabled);
   DCHECK(prefs->viewport_meta_enabled);
-  prefs->viewport_style = content::ViewportStyle::TELEVISION;
+  prefs->viewport_style = blink::mojom::ViewportStyle::kTelevision;
 #endif  // defined(OS_ANDROID)
 
   // Disable WebSQL databases by default.
@@ -548,6 +562,19 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
       prefs->databases_enabled = true;
     }
   }
+
+  prefs->preferred_color_scheme =
+      static_cast<blink::mojom::PreferredColorScheme>(
+          CastBrowserProcess::GetInstance()->pref_service()->GetInteger(
+              prefs::kWebColorScheme));
+
+  // After all other default settings are set, check and see if there are any
+  // specific overrides for the WebContents.
+  CastWebPreferences* web_preferences =
+      static_cast<CastWebPreferences*>(web_contents->GetUserData(
+          CastWebPreferences::kCastWebPreferencesDataKey));
+  if (web_preferences)
+    web_preferences->Update(prefs);
 }
 
 std::string CastContentBrowserClient::GetApplicationLocale() {
@@ -716,7 +743,7 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   // TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
-    mappings->Share(service_manager::kCrashDumpSignal, crash_signal_fd);
+    mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
 #endif  // !defined(OS_FUCHSIA)
 }
@@ -827,18 +854,19 @@ CastContentBrowserClient::CreateThrottlesForNavigation(
             handle, general_audience_browsing_service_.get()));
   }
 
-#if defined(OS_LINUX) && defined(USE_OZONE)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_OZONE)
   auto webview_throttle = WebviewController::MaybeGetNavigationThrottle(handle);
   if (webview_throttle) {
     throttles.push_back(std::move(webview_throttle));
   }
-#endif  // defined(OS_LINUX) && defined(USE_OZONE)
+#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_OZONE)
 
   return throttles;
 }
 
 void CastContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
     int frame_tree_node_id,
+    ukm::SourceIdObj ukm_source_id,
     NonNetworkURLLoaderFactoryMap* factories) {
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   content::WebContents* web_contents =
@@ -846,10 +874,10 @@ void CastContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
   auto* browser_context = web_contents->GetBrowserContext();
   auto extension_factory =
       extensions::CreateExtensionNavigationURLLoaderFactory(
-          browser_context,
+          browser_context, ukm_source_id,
           !!extensions::WebViewGuest::FromWebContents(web_contents));
   factories->emplace(extensions::kExtensionScheme,
-                     std::make_unique<CastExtensionURLLoaderFactory>(
+                     CastExtensionURLLoaderFactory::Create(
                          browser_context, std::move(extension_factory)));
 #endif
 }
@@ -870,13 +898,13 @@ void CastContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
   auto extension_factory = extensions::CreateExtensionURLLoaderFactory(
       render_process_id, render_frame_id);
   factories->emplace(extensions::kExtensionScheme,
-                     std::make_unique<CastExtensionURLLoaderFactory>(
+                     CastExtensionURLLoaderFactory::Create(
                          browser_context, std::move(extension_factory)));
 #endif
 
   factories->emplace(
       kChromeResourceScheme,
-      content::CreateWebUIURLLoader(
+      content::CreateWebUIURLLoaderFactory(
           frame_host, kChromeResourceScheme,
           /*allowed_webui_hosts=*/base::flat_set<std::string>()));
 }

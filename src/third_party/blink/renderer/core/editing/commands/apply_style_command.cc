@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/editing/commands/apply_style_command.h"
 
+#include "mojo/public/mojom/base/text_direction.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -48,7 +49,6 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
-#include "third_party/blink/renderer/core/editing/writing_direction.h"
 #include "third_party/blink/renderer/core/html/html_font_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -566,7 +566,7 @@ void ApplyStyleCommand::CleanupUnstyledAppleStyleSpans(
 HTMLElement* ApplyStyleCommand::SplitAncestorsWithUnicodeBidi(
     Node* node,
     bool before,
-    WritingDirection allowed_direction) {
+    mojo_base::mojom::blink::TextDirection allowed_direction) {
   // We are allowed to leave the highest ancestor with unicode-bidi unsplit if
   // it is unicode-bidi: embed and direction: allowedDirection. In that case, we
   // return the unsplit ancestor. Otherwise, we return 0.
@@ -597,10 +597,11 @@ HTMLElement* ApplyStyleCommand::SplitAncestorsWithUnicodeBidi(
 
   HTMLElement* unsplit_ancestor = nullptr;
 
-  WritingDirection highest_ancestor_direction;
+  mojo_base::mojom::blink::TextDirection highest_ancestor_direction;
   auto* highest_ancestor_html_element =
       DynamicTo<HTMLElement>(highest_ancestor_with_unicode_bidi);
-  if (allowed_direction != WritingDirection::kNatural &&
+  if (allowed_direction !=
+          mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION &&
       highest_ancestor_unicode_bidi != CSSValueID::kBidiOverride &&
       highest_ancestor_html_element &&
       MakeGarbageCollected<EditingStyle>(highest_ancestor_with_unicode_bidi,
@@ -750,7 +751,8 @@ void ApplyStyleCommand::ApplyInlineStyle(EditingStyle* style,
   // selection and prevent us from adding redundant ones, as described in:
   // <rdar://problem/3724344> Bolding and unbolding creates extraneous tags
   Position remove_start = MostBackwardCaretPosition(start);
-  WritingDirection text_direction = WritingDirection::kNatural;
+  mojo_base::mojom::blink::TextDirection text_direction =
+      mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION;
   bool has_text_direction = style->GetTextDirection(text_direction);
   EditingStyle* style_without_embedding = nullptr;
   EditingStyle* embedding_style = nullptr;
@@ -787,7 +789,7 @@ void ApplyStyleCommand::ApplyInlineStyle(EditingStyle* style,
     if (embedding_remove_end != remove_start || embedding_remove_end != end) {
       style_without_embedding = style->Copy();
       embedding_style = style_without_embedding->ExtractAndRemoveTextDirection(
-          GetDocument().GetSecureContextMode());
+          GetDocument().GetExecutionContext()->GetSecureContextMode());
 
       if (ComparePositions(embedding_remove_start, embedding_remove_end) <= 0) {
         RemoveInlineStyle(
@@ -858,7 +860,7 @@ void ApplyStyleCommand::ApplyInlineStyle(EditingStyle* style,
         style_without_embedding = style->Copy();
         embedding_style =
             style_without_embedding->ExtractAndRemoveTextDirection(
-                GetDocument().GetSecureContextMode());
+                GetDocument().GetExecutionContext()->GetSecureContextMode());
       }
       FixRangeAndApplyInlineStyle(embedding_style, embedding_apply_start,
                                   embedding_apply_end, editing_state);
@@ -956,7 +958,7 @@ class InlineRunToApplyStyle {
     return start && end && start->isConnected() && end->isConnected();
   }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(start);
     visitor->Trace(end);
     visitor->Trace(past_end_node);
@@ -1041,11 +1043,12 @@ void ApplyStyleCommand::ApplyInlineStyleToNodeRange(
     DCHECK(run_end);
     next = NodeTraversal::NextSkippingChildren(*run_end);
 
-    Node* past_end_node = NodeTraversal::NextSkippingChildren(*run_end);
-    if (!ShouldApplyInlineStyleToRun(style, run_start, past_end_node))
+    Node* past_run_end_node = NodeTraversal::NextSkippingChildren(*run_end);
+    if (!ShouldApplyInlineStyleToRun(style, run_start, past_run_end_node))
       continue;
 
-    runs.push_back(InlineRunToApplyStyle(run_start, run_end, past_end_node));
+    runs.push_back(
+        InlineRunToApplyStyle(run_start, run_end, past_run_end_node));
   }
 
   for (auto& run : runs) {
@@ -1335,18 +1338,19 @@ void ApplyStyleCommand::ApplyInlineStyleToPushDown(
                                                 EditingStyle::kOverrideValues);
   }
 
+  const auto* layout_object = node->GetLayoutObject();
   // Since addInlineStyleIfNeeded can't add styles to block-flow layout objects,
   // add style attribute instead.
   // FIXME: applyInlineStyleToRange should be used here instead.
-  if ((node->GetLayoutObject()->IsLayoutBlockFlow() || node->hasChildren()) &&
+  if ((layout_object->IsLayoutBlockFlow() || node->hasChildren()) &&
       html_element) {
     SetNodeAttribute(html_element, html_names::kStyleAttr,
                      AtomicString(new_inline_style->Style()->AsText()));
     return;
   }
 
-  if (node->GetLayoutObject()->IsText() &&
-      ToLayoutText(node->GetLayoutObject())->IsAllCollapsibleWhitespace())
+  if (layout_object->IsText() &&
+      To<LayoutText>(layout_object)->IsAllCollapsibleWhitespace())
     return;
 
   // We can't wrap node with the styled element here because new styled element
@@ -1498,13 +1502,13 @@ void ApplyStyleCommand::RemoveInlineStyle(EditingStyle* style,
 
   Node* node = start.AnchorNode();
   while (node) {
-    Node* next = nullptr;
+    Node* next_to_process = nullptr;
     if (EditingIgnoresContent(*node)) {
       DCHECK(node == end.AnchorNode() || !node->contains(end.AnchorNode()))
           << node << " " << end;
-      next = NodeTraversal::NextSkippingChildren(*node);
+      next_to_process = NodeTraversal::NextSkippingChildren(*node);
     } else {
-      next = NodeTraversal::Next(*node);
+      next_to_process = NodeTraversal::Next(*node);
     }
     auto* elem = DynamicTo<HTMLElement>(node);
     if (elem && ElementFullySelected(*elem, start, end)) {
@@ -1553,7 +1557,7 @@ void ApplyStyleCommand::RemoveInlineStyle(EditingStyle* style,
     }
     if (node == end.AnchorNode())
       break;
-    node = next;
+    node = next_to_process;
   }
 
   UpdateStartEnd(EphemeralRange(s, e));
@@ -2094,7 +2098,7 @@ void ApplyStyleCommand::JoinChildTextNodes(ContainerNode* node,
   UpdateStartEnd(EphemeralRange(new_start, new_end));
 }
 
-void ApplyStyleCommand::Trace(Visitor* visitor) {
+void ApplyStyleCommand::Trace(Visitor* visitor) const {
   visitor->Trace(style_);
   visitor->Trace(start_);
   visitor->Trace(end_);

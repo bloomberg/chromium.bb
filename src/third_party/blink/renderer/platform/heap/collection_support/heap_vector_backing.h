@@ -5,14 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_COLLECTION_SUPPORT_HEAP_VECTOR_BACKING_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_COLLECTION_SUPPORT_HEAP_VECTOR_BACKING_H_
 
-#include "base/logging.h"
-#include "third_party/blink/renderer/platform/heap/finalizer_traits.h"
-#include "third_party/blink/renderer/platform/heap/gc_info.h"
+#include "base/check_op.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/impl/finalizer_traits.h"
+#include "third_party/blink/renderer/platform/heap/impl/gc_info.h"
+#include "third_party/blink/renderer/platform/heap/impl/threading_traits.h"
+#include "third_party/blink/renderer/platform/heap/impl/trace_traits.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
-#include "third_party/blink/renderer/platform/heap/threading_traits.h"
-#include "third_party/blink/renderer/platform/heap/trace_traits.h"
 #include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -109,8 +109,9 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
   }
 
   static void Trace(Visitor* visitor, const void* self) {
-    if (!Traits::kCanTraceConcurrently) {
-      if (visitor->DeferredTraceIfConcurrent({self, &Trace}))
+    if (!Traits::kCanTraceConcurrently && self) {
+      if (visitor->DeferredTraceIfConcurrent({self, &Trace},
+                                             GetBackingStoreSize(self)))
         return;
     }
 
@@ -121,6 +122,16 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
                                   HeapVectorBacking<T, Traits>,
                                   void>::Trace(visitor, self);
     }
+  }
+
+ private:
+  static size_t GetBackingStoreSize(const void* backing_store) {
+    const HeapObjectHeader* header =
+        HeapObjectHeader::FromPayload(backing_store);
+    return header->IsLargeObject<HeapObjectHeader::AccessMode::kAtomic>()
+               ? static_cast<LargeObjectPage*>(PageFromObject(header))
+                     ->ObjectSize()
+               : header->size<HeapObjectHeader::AccessMode::kAtomic>();
   }
 };
 

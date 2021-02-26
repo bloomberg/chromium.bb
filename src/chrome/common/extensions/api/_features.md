@@ -211,7 +211,9 @@ The only accepted value is the bool `false` (since true is the default).
 
 The `contexts` property specifies which JavaScript contexts can access the
 feature. All API features must specify at least one context, and only API
-features can specify contexts.
+features can specify contexts. The only exception to this are dummy namespaces
+like `manifestTypes` etc. which can specify an empty list as its `contexts`
+property.
 
 Accepted values are a list of strings from `blessed_extension`,
 `blessed_web_page`, `content_script`, `extension_service_worker`,
@@ -312,8 +314,8 @@ The only accepted value is the bool `true`.
 The `platforms` property specifies the properties the feature should be
 available on.
 
-The accepted values are lists of strings from `chromeos`, `mac`, `linux`, and
-`win`.
+The accepted values are lists of strings from `chromeos`, `mac`, 'lacros',
+`linux`, and `win`.
 
 ### session\_types
 

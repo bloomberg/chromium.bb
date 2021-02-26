@@ -9,13 +9,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_blocklist.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
-#include "components/blacklist/opt_out_blacklist/sql/opt_out_store_sql.h"
+#include "components/blocklist/opt_out_blocklist/sql/opt_out_store_sql.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -39,16 +38,15 @@ void HeavyAdService::Initialize(const base::FilePath& profile_path) {
   if (!base::FeatureList::IsEnabled(features::kHeavyAdPrivacyMitigations))
     return;
 
-  std::unique_ptr<blacklist::OptOutStoreSQL> opt_out_store;
+  std::unique_ptr<blocklist::OptOutStoreSQL> opt_out_store;
   if (!HeavyAdOptOutStoreDisabled()) {
     // Get the background thread to run SQLite on.
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::ThreadPool::CreateSequencedTaskRunner(
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
-    opt_out_store = std::make_unique<blacklist::OptOutStoreSQL>(
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
-        background_task_runner,
+    opt_out_store = std::make_unique<blocklist::OptOutStoreSQL>(
+        content::GetUIThreadTaskRunner({}), background_task_runner,
         profile_path.Append(chrome::kHeavyAdInterventionOptOutDBFilename));
   }
 

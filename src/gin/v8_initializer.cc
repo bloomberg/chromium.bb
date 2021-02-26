@@ -31,7 +31,7 @@
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "base/mac/foundation_util.h"
 #endif
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
@@ -76,7 +76,9 @@ const char kSnapshotFileName32[] = "snapshot_blob_32.bin";
 #endif
 
 #else  // defined(OS_ANDROID)
-const char kV8ContextSnapshotFileName[] = "v8_context_snapshot.bin";
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
+const char kV8ContextSnapshotFileName[] = V8_CONTEXT_SNAPSHOT_FILENAME;
+#endif
 const char kSnapshotFileName[] = "snapshot_blob.bin";
 #endif  // defined(OS_ANDROID)
 
@@ -86,7 +88,12 @@ const char* GetSnapshotFileName(
     case V8Initializer::V8SnapshotFileType::kDefault:
       return kSnapshotFileName;
     case V8Initializer::V8SnapshotFileType::kWithAdditionalContext:
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
       return kV8ContextSnapshotFileName;
+#else
+      NOTREACHED();
+      return nullptr;
+#endif
   }
   NOTREACHED();
   return nullptr;
@@ -97,7 +104,7 @@ void GetV8FilePath(const char* file_name, base::FilePath* path_out) {
   // This is the path within the .apk.
   *path_out =
       base::FilePath(FILE_PATH_LITERAL("assets")).AppendASCII(file_name);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   base::ScopedCFTypeRef<CFStringRef> bundle_resource(
       base::SysUTF8ToCFStringRef(file_name));
   *path_out = base::mac::PathForFrameworkBundleResource(bundle_resource);
@@ -238,6 +245,47 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
         "--stress-per-context-marking-worklist";
     v8::V8::SetFlagsFromString(stress_per_context_marking_worklist,
                                sizeof(stress_per_context_marking_worklist) - 1);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8FlushEmbeddedBlobICache)) {
+    static const char experimental_flush_embedded_blob_icache[] =
+        "--experimental-flush-embedded-blob-icache";
+    v8::V8::SetFlagsFromString(
+        experimental_flush_embedded_blob_icache,
+        sizeof(experimental_flush_embedded_blob_icache) - 1);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8ReduceConcurrentMarkingTasks)) {
+    static const char gc_experiment_reduce_concurrent_marking_tasks[] =
+        "--gc-experiment-reduce-concurrent-marking-tasks";
+    v8::V8::SetFlagsFromString(
+        gc_experiment_reduce_concurrent_marking_tasks,
+        sizeof(gc_experiment_reduce_concurrent_marking_tasks) - 1);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8NoReclaimUnmodifiedWrappers)) {
+    static constexpr char no_reclaim_unmodified_wrappers[] =
+        "--no-reclaim-unmodified-wrappers";
+    v8::V8::SetFlagsFromString(no_reclaim_unmodified_wrappers,
+                               sizeof(no_reclaim_unmodified_wrappers) - 1);
+  }
+
+  if (!base::FeatureList::IsEnabled(features::kV8LocalHeaps)) {
+    // The --local-heaps flag is enabled by default, so we need to explicitly
+    // disable it if kV8LocalHeaps is disabled.
+    static constexpr char no_local_heaps[] = "--no-local-heaps";
+    v8::V8::SetFlagsFromString(no_local_heaps, sizeof(no_local_heaps) - 1);
+
+    // Also disable TurboFan's direct access if local heaps are not enabled.
+    static constexpr char no_direct_access[] = "--no-turbo-direct-heap-access";
+    v8::V8::SetFlagsFromString(no_direct_access, sizeof(no_direct_access) - 1);
+  }
+
+  if (!base::FeatureList::IsEnabled(features::kV8TurboDirectHeapAccess)) {
+    // The --turbo-direct-heap-access flag is enabled by default, so we need to
+    // explicitly disable it if kV8TurboDirectHeapAccess is disabled.
+    static constexpr char no_direct_access[] = "--no-turbo-direct-heap-access";
+    v8::V8::SetFlagsFromString(no_direct_access, sizeof(no_direct_access) - 1);
   }
 
   if (IsolateHolder::kStrictMode == mode) {

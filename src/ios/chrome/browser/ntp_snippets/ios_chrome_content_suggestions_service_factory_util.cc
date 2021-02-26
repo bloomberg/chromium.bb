@@ -44,7 +44,6 @@
 #include "ios/chrome/browser/json_parser/in_process_json_parser.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -159,7 +158,6 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       std::make_unique<RemoteSuggestionsDatabase>(db_provider, database_dir),
       std::make_unique<RemoteSuggestionsStatusServiceImpl>(
           identity_manager->HasPrimaryAccount(), prefs, pref_name),
-      /*prefetched_pages_tracker=*/nullptr,
       std::make_unique<base::OneShotTimer>());
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());

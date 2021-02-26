@@ -10,12 +10,12 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/chrome_render_frame.mojom-forward.h"
+#include "chrome/common/web_page_metadata.mojom-forward.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 
@@ -51,6 +51,8 @@ class WebAppDataRetriever : content::WebContentsObserver {
   using GetIconsCallback = base::OnceCallback<void(IconsMap)>;
 
   WebAppDataRetriever();
+  WebAppDataRetriever(const WebAppDataRetriever&) = delete;
+  WebAppDataRetriever& operator=(const WebAppDataRetriever&) = delete;
   ~WebAppDataRetriever() override;
 
   // Runs |callback| with the result of retrieving the WebApplicationInfo from
@@ -77,18 +79,20 @@ class WebAppDataRetriever : content::WebContentsObserver {
   void RenderProcessGone(base::TerminationStatus status) override;
 
  private:
-  void OnGetWebApplicationInfo(
+  void OnGetWebPageMetadata(
       mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
           chrome_render_frame,
       int last_committed_nav_entry_unique_id,
-      const WebApplicationInfo& web_app_info);
+      chrome::mojom::WebPageMetadataPtr web_page_metadata);
   void OnDidPerformInstallableCheck(const InstallableData& data);
   void OnIconsDownloaded(bool success, IconsMap icons_map);
 
   void CallCallbackOnError();
   bool ShouldStopRetrieval() const;
 
+  std::unique_ptr<WebApplicationInfo> default_web_application_info_;
   GetWebApplicationInfoCallback get_web_app_info_callback_;
+
   CheckInstallabilityCallback check_installability_callback_;
   GetIconsCallback get_icons_callback_;
 
@@ -96,7 +100,6 @@ class WebAppDataRetriever : content::WebContentsObserver {
 
   base::WeakPtrFactory<WebAppDataRetriever> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(WebAppDataRetriever);
 };
 
 }  // namespace web_app

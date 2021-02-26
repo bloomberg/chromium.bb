@@ -90,6 +90,32 @@ static GridTrackSizingDirection GridDirectionForAxis(GridAxis axis) {
   return axis == kGridRowAxis ? kForColumns : kForRows;
 }
 
+template <typename F>
+static void IterateGridItemsInTrackIndices(const Grid& grid,
+                                           GridTrackSizingDirection direction,
+                                           Vector<size_t>& track_indices,
+                                           F callback) {
+#if DCHECK_IS_ON()
+  HashSet<LayoutBox*> items_set;
+#endif
+  for (size_t i = 0; i < track_indices.size(); ++i) {
+    auto iterator = grid.CreateIterator(direction, track_indices[i]);
+    while (LayoutBox* grid_item = iterator->NextGridItem()) {
+      const GridSpan& span = grid.GridItemSpan(*grid_item, direction);
+      if (i > 0) {
+        // Skip items already processed in an earlier track.
+        DCHECK_LT(track_indices[i - 1], track_indices[i]);
+        if (span.StartLine() <= track_indices[i - 1])
+          continue;
+      }
+#if DCHECK_IS_ON()
+      DCHECK(items_set.insert(grid_item).is_new_entry);
+#endif
+      callback(grid_item, span);
+    }
+  }
+}
+
 class IndefiniteSizeStrategy final : public GridTrackSizingAlgorithmStrategy {
  public:
   IndefiniteSizeStrategy(GridTrackSizingAlgorithm& algorithm)
@@ -174,10 +200,10 @@ bool GridTrackSizingAlgorithmStrategy::HasRelativeOrIntrinsicSizeForChild(
       GridLayoutUtils::FlowAwareDirectionForChild(grid, child, kForColumns);
   if (direction == child_inline_direction) {
     return child.HasRelativeLogicalWidth() ||
-           child.StyleRef().LogicalWidth().IsIntrinsicOrAuto();
+           !child.StyleRef().LogicalWidth().IsSpecified();
   }
   return child.HasRelativeLogicalHeight() ||
-         child.StyleRef().LogicalHeight().IsIntrinsicOrAuto();
+         !child.StyleRef().LogicalHeight().IsSpecified();
 }
 
 bool GridTrackSizingAlgorithmStrategy::
@@ -694,27 +720,19 @@ double IndefiniteSizeStrategy::FindUsedFlexFraction(
   if (!grid.HasGridItems())
     return flex_fraction;
 
-  for (size_t i = 0; i < flexible_sized_tracks_index.size(); ++i) {
-    auto iterator =
-        grid.CreateIterator(direction, flexible_sized_tracks_index[i]);
-    while (LayoutBox* grid_item = iterator->NextGridItem()) {
-      const GridSpan& span = grid.GridItemSpan(*grid_item, direction);
-
-      // Do not include already processed items.
-      if (i > 0 && span.StartLine() <= flexible_sized_tracks_index[i - 1])
-        continue;
-
-      // Removing gutters from the max-content contribution of the item,
-      // so they are not taken into account in FindFrUnitSize().
-      LayoutUnit left_over_space =
-          MaxContentForChild(*grid_item) -
-          GetLayoutGrid()->GuttersSize(algorithm_.GetGrid(), direction,
-                                       span.StartLine(), span.IntegerSpan(),
-                                       AvailableSpace());
-      flex_fraction =
-          std::max(flex_fraction, FindFrUnitSize(span, left_over_space));
-    }
-  }
+  IterateGridItemsInTrackIndices(
+      grid, direction, flexible_sized_tracks_index,
+      [&](LayoutBox* grid_item, const GridSpan& span) {
+        // Removing gutters from the max-content contribution of the item,
+        // so they are not taken into account in FindFrUnitSize().
+        LayoutUnit left_over_space =
+            MaxContentForChild(*grid_item) -
+            GetLayoutGrid()->GuttersSize(algorithm_.GetGrid(), direction,
+                                         span.StartLine(), span.IntegerSpan(),
+                                         AvailableSpace());
+        flex_fraction =
+            std::max(flex_fraction, FindFrUnitSize(span, left_over_space));
+      });
 
   return flex_fraction;
 }
@@ -798,7 +816,9 @@ LayoutUnit IndefiniteSizeStrategy::MaxContentForChild(LayoutBox& child) const {
   DCHECK(GridLayoutUtils::IsOrthogonalChild(*GetLayoutGrid(), child));
 
   return child.LogicalHeight() +
-         GridLayoutUtils::MarginLogicalHeightForChild(*GetLayoutGrid(), child);
+         GridLayoutUtils::MarginLogicalHeightForChild(*GetLayoutGrid(), child) +
+         algorithm_.BaselineOffsetForChild(child,
+                                           GridAxisForDirection(Direction()));
 }
 
 bool IndefiniteSizeStrategy::IsComputingSizeContainment() const {
@@ -854,14 +874,15 @@ const GridTrackSize& GridTrackSizingAlgorithm::RawGridTrackSize(
     size_t translated_index) const {
   bool is_row_axis = direction == kForColumns;
   const Vector<GridTrackSize>& track_styles =
-      is_row_axis ? layout_grid_->StyleRef().GridTemplateColumns()
-                  : layout_grid_->StyleRef().GridTemplateRows();
+      is_row_axis
+          ? layout_grid_->StyleRef().GridTemplateColumns().LegacyTrackList()
+          : layout_grid_->StyleRef().GridTemplateRows().LegacyTrackList();
   const Vector<GridTrackSize>& auto_repeat_track_styles =
       is_row_axis ? layout_grid_->StyleRef().GridAutoRepeatColumns()
                   : layout_grid_->StyleRef().GridAutoRepeatRows();
   const Vector<GridTrackSize>& auto_track_styles =
-      is_row_axis ? layout_grid_->StyleRef().GridAutoColumns()
-                  : layout_grid_->StyleRef().GridAutoRows();
+      is_row_axis ? layout_grid_->StyleRef().GridAutoColumns().LegacyTrackList()
+                  : layout_grid_->StyleRef().GridAutoRows().LegacyTrackList();
   size_t insertion_point =
       is_row_axis
           ? layout_grid_->StyleRef().GridAutoRepeatColumnsInsertionPoint()
@@ -875,7 +896,7 @@ const GridTrackSize& GridTrackSizingAlgorithm::RawGridTrackSize(
   size_t explicit_tracks_count = track_styles.size() + auto_repeat_tracks_count;
 
   int untranslated_index_as_int =
-      translated_index + grid_.SmallestTrackStart(direction);
+      translated_index - grid_.ExplicitGridStart(direction);
   size_t auto_track_styles_size = auto_track_styles.size();
   if (untranslated_index_as_int < 0) {
     int index =
@@ -946,8 +967,20 @@ GridTrackSize GridTrackSizingAlgorithm::CalculateGridTrackSize(
   // values are treated as <auto>.
   if (IsRelativeSizedTrackAsAuto(track_size, direction)) {
     if (direction == kForRows) {
-      UseCounter::Count(layout_grid_->GetDocument(),
-                        WebFeature::kGridRowTrackPercentIndefiniteHeight);
+      // We avoid counting the cases in which it doesn't matter if we resolve
+      // the percentages row tracks against the intrinsic height of the grid
+      // container or we treat them as auto. Basically if we have just one row,
+      // it has 100% size and the max-block-size is none.
+      if ((grid_.NumTracks(direction) != 1) || !min_track_breadth.IsLength() ||
+          !min_track_breadth.length().IsPercent() ||
+          (min_track_breadth.length().Percent() != 100.0f) ||
+          !max_track_breadth.IsLength() ||
+          !max_track_breadth.length().IsPercent() ||
+          (max_track_breadth.length().Percent() != 100.0f) ||
+          !layout_grid_->StyleRef().LogicalMaxHeight().IsNone()) {
+        UseCounter::Count(layout_grid_->GetDocument(),
+                          WebFeature::kGridRowTrackPercentIndefiniteHeight);
+      }
     }
     if (min_track_breadth.HasPercentage())
       min_track_breadth = Length::Auto();
@@ -1244,9 +1277,9 @@ LayoutUnit GridTrackSizingAlgorithm::ItemSizeForTrackSizeComputationPhase(
     LayoutBox& grid_item) const {
   switch (phase) {
     case kResolveIntrinsicMinimums:
-    case kResolveIntrinsicMaximums:
       return strategy_->MinSizeForChild(grid_item);
     case kResolveContentBasedMinimums:
+    case kResolveIntrinsicMaximums:
       return strategy_->MinContentForChild(grid_item);
     case kResolveMaxContentMinimums:
     case kResolveMaxContentMaximums:
@@ -1434,22 +1467,17 @@ void GridTrackSizingAlgorithm::ResolveIntrinsicTrackSizes() {
   Vector<GridTrack>& all_tracks = Tracks(direction_);
   Vector<GridItemWithSpan> items_sorted_by_increasing_span;
   if (grid_.HasGridItems()) {
-    HashSet<LayoutBox*> items_set;
-    for (const auto& track_index : content_sized_tracks_index_) {
-      auto iterator = grid_.CreateIterator(direction_, track_index);
-      GridTrack& track = all_tracks[track_index];
-      while (auto* grid_item = iterator->NextGridItem()) {
-        if (items_set.insert(grid_item).is_new_entry) {
-          const GridSpan& span = grid_.GridItemSpan(*grid_item, direction_);
+    IterateGridItemsInTrackIndices(
+        grid_, direction_, content_sized_tracks_index_,
+        [&](LayoutBox* grid_item, const GridSpan& span) {
           if (span.IntegerSpan() == 1) {
-            SizeTrackToFitNonSpanningItem(span, *grid_item, track);
+            SizeTrackToFitNonSpanningItem(span, *grid_item,
+                                          all_tracks[span.StartLine()]);
           } else if (!SpanningItemCrossesFlexibleSizedTracks(span)) {
             items_sorted_by_increasing_span.push_back(
                 GridItemWithSpan(*grid_item, span));
           }
-        }
-      }
-    }
+        });
     std::sort(items_sorted_by_increasing_span.begin(),
               items_sorted_by_increasing_span.end());
   }

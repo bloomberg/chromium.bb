@@ -21,8 +21,8 @@ constexpr uint32_t kRTSize = 4;
 
 class DestroyTest : public DawnTest {
   protected:
-    void TestSetUp() override {
-        DawnTest::TestSetUp();
+    void SetUp() override {
+        DawnTest::SetUp();
         DAWN_SKIP_TEST_IF(IsDawnValidationSkipped());
 
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
@@ -46,7 +46,7 @@ class DestroyTest : public DawnTest {
         utils::ComboRenderPipelineDescriptor descriptor(device);
         descriptor.vertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleStrip;
+        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
         descriptor.cVertexState.vertexBufferCount = 1;
         descriptor.cVertexState.cVertexBuffers[0].arrayStride = 4 * sizeof(float);
         descriptor.cVertexState.cVertexBuffers[0].attributeCount = 1;
@@ -157,4 +157,8 @@ TEST_P(DestroyTest, TextureSubmitDestroySubmit) {
     ASSERT_DEVICE_ERROR(queue.Submit(1, &commands));
 }
 
-DAWN_INSTANTIATE_TEST(DestroyTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(DestroyTest,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend());

@@ -15,8 +15,6 @@ import static org.mockito.Mockito.when;
 
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.MediumTest;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -27,11 +25,12 @@ import androidx.fragment.app.Fragment;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceScreen;
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.MediumTest;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import org.hamcrest.Matchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,22 +41,20 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragment.DialogOption;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.browser_ui.settings.SpinnerPreference;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
@@ -68,11 +65,9 @@ import java.util.Set;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@RetryOnFailure
 public class ClearBrowsingDataFragmentTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Rule
     public SettingsActivityTestRule<ClearBrowsingDataFragmentAdvanced> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(ClearBrowsingDataFragmentAdvanced.class);
@@ -80,6 +75,9 @@ public class ClearBrowsingDataFragmentTest {
     public SettingsActivityTestRule<ClearBrowsingDataTabsFragment>
             mSettingsActivityTabFragmentTestRule =
                     new SettingsActivityTestRule<>(ClearBrowsingDataTabsFragment.class);
+
+    @Rule
+    public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     @Rule
     public JniMocker mJniMocker = new JniMocker();
@@ -108,8 +106,6 @@ public class ClearBrowsingDataFragmentTest {
         when(mBrowsingDataBridgeMock.getBrowsingDataDeletionTimePeriod(any(), anyInt()))
                 .thenReturn(DEFAULT_TIME_PERIOD);
 
-        SigninTestUtil.setUpAuthForTesting();
-
         mActivityTestRule.startMainActivityOnBlankPage();
 
         // There can be some left-over notification channels from other tests.
@@ -122,11 +118,6 @@ public class ClearBrowsingDataFragmentTest {
         }
     }
 
-    @After
-    public void tearDown() {
-        SigninTestUtil.tearDownAuthForTesting();
-    }
-
     /**  Waits for the progress dialog to disappear from the given CBD preference. */
     private void waitForProgressToComplete(final ClearBrowsingDataFragment preferences) {
         // For pre-M, give it a bit more time to complete.
@@ -134,11 +125,8 @@ public class ClearBrowsingDataFragmentTest {
                 ? 10000L
                 : CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return preferences.getProgressDialog() == null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(preferences.getProgressDialog(), Matchers.nullValue());
         }, kDelay, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
@@ -316,7 +304,7 @@ public class ClearBrowsingDataFragmentTest {
      * A criterion that is satisfied when a ClearBrowsingDataFragment fragment in the given
      * Settings activity is closed.
      */
-    static class PreferenceScreenClosedCriterion extends Criteria {
+    static class PreferenceScreenClosedCriterion implements Runnable {
         final SettingsActivity mSettingsActivity;
 
         /**
@@ -329,10 +317,11 @@ public class ClearBrowsingDataFragmentTest {
         }
 
         @Override
-        public boolean isSatisfied() {
+        public void run() {
             ClearBrowsingDataFragment fragment =
                     (ClearBrowsingDataFragment) mSettingsActivity.getMainFragment();
-            return fragment == null || !fragment.isVisible();
+            if (fragment == null) return;
+            Criteria.checkThat(fragment.isVisible(), Matchers.is(false));
         }
     }
 
@@ -345,7 +334,7 @@ public class ClearBrowsingDataFragmentTest {
     @LargeTest
     public void testDialogAboutOtherFormsOfBrowsingHistory() {
         // Sign in.
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         OtherFormsOfHistoryDialogFragment.clearShownPreferenceForTesting();
 
         // History is not selected. We still need to select some other datatype, otherwise the
@@ -367,15 +356,13 @@ public class ClearBrowsingDataFragmentTest {
                 new OpenPreferencesEnableDialogAndClickClearRunnable(settingsActivity2));
 
         // The dialog about other forms of history should now be shown.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                ClearBrowsingDataFragment fragment =
-                        (ClearBrowsingDataFragment) settingsActivity2.getMainFragment();
-                OtherFormsOfHistoryDialogFragment dialog =
-                        fragment.getDialogAboutOtherFormsOfBrowsingHistory();
-                return dialog != null && dialog.getActivity() != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            ClearBrowsingDataFragment fragment =
+                    (ClearBrowsingDataFragment) settingsActivity2.getMainFragment();
+            OtherFormsOfHistoryDialogFragment dialog =
+                    fragment.getDialogAboutOtherFormsOfBrowsingHistory();
+            Criteria.checkThat(dialog, Matchers.notNullValue());
+            Criteria.checkThat(dialog.getActivity(), Matchers.notNullValue());
         });
 
         // Close that dialog.
@@ -444,14 +431,16 @@ public class ClearBrowsingDataFragmentTest {
     private void waitForImportantDialogToShow(
             final ClearBrowsingDataFragment preferences, final int numImportantSites) {
         CriteriaHelper.pollUiThread(() -> {
-            Assert.assertNotNull(preferences);
-            Assert.assertNotNull(preferences.getImportantSitesDialogFragment());
-            Assert.assertTrue(
-                    preferences.getImportantSitesDialogFragment().getDialog().isShowing());
+            Criteria.checkThat(preferences, Matchers.notNullValue());
+            Criteria.checkThat(
+                    preferences.getImportantSitesDialogFragment(), Matchers.notNullValue());
+            Criteria.checkThat(
+                    preferences.getImportantSitesDialogFragment().getDialog().isShowing(),
+                    Matchers.is(true));
 
             ListView sitesList = preferences.getImportantSitesDialogFragment().getSitesList();
-            Assert.assertEquals(numImportantSites, sitesList.getAdapter().getCount());
-            Assert.assertThat(
+            Criteria.checkThat(sitesList.getAdapter().getCount(), Matchers.is(numImportantSites));
+            Criteria.checkThat(
                     sitesList.getChildCount(), Matchers.greaterThanOrEqualTo(numImportantSites));
         });
     }
@@ -481,7 +470,7 @@ public class ClearBrowsingDataFragmentTest {
     @Feature({"SiteEngagement"})
     public void testImportantSitesDialogNoFiltering() throws Exception {
         // Sign in.
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
 
         final String[] importantOrigins = {"http://www.facebook.com", "https://www.google.com"};
         // First mark our origins as important.
@@ -514,7 +503,7 @@ public class ClearBrowsingDataFragmentTest {
     @Feature({"SiteEngagement"})
     public void testImportantSitesDialogNoopOnCancel() throws Exception {
         // Sign in.
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
 
         final String[] importantOrigins = {"http://www.facebook.com", "http://www.google.com"};
         // First mark our origins as important.
@@ -546,7 +535,7 @@ public class ClearBrowsingDataFragmentTest {
     @Feature({"SiteEngagement"})
     public void testImportantSitesDialog() throws Exception {
         // Sign in.
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
 
         final String kKeepDomain = "https://www.chrome.com";
         final String kClearDomain = "https://www.google.com";
@@ -572,13 +561,9 @@ public class ClearBrowsingDataFragmentTest {
         });
 
         // Check that our server origin is in the set of deselected domains.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                ConfirmImportantSitesDialogFragment dialog =
-                        fragment.getImportantSitesDialogFragment();
-                return dialog.getDeselectedDomains().contains(kKeepDomain);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            ConfirmImportantSitesDialogFragment dialog = fragment.getImportantSitesDialogFragment();
+            Criteria.checkThat(dialog.getDeselectedDomains(), Matchers.hasItem(kKeepDomain));
         });
 
         // Click the clear button.

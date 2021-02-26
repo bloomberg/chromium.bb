@@ -112,11 +112,12 @@ class WorkerSchedulerProxyTest : public testing::Test {
                 task_environment_.GetMainThreadTaskRunner(),
                 task_environment_.GetMockTickClock()),
             base::nullopt)),
+        agent_group_scheduler_(
+            main_thread_scheduler_->CreateAgentGroupScheduler()),
         page_scheduler_(
-            std::make_unique<PageSchedulerImpl>(nullptr,
-                                                main_thread_scheduler_.get())),
-        frame_scheduler_(FrameSchedulerImpl::Create(
-            page_scheduler_.get(),
+            agent_group_scheduler_->AsAgentGroupScheduler().CreatePageScheduler(
+                nullptr)),
+        frame_scheduler_(page_scheduler_->CreateFrameScheduler(
             nullptr,
             nullptr,
             FrameScheduler::FrameType::kMainFrame)) {}
@@ -124,14 +125,16 @@ class WorkerSchedulerProxyTest : public testing::Test {
   ~WorkerSchedulerProxyTest() override {
     frame_scheduler_.reset();
     page_scheduler_.reset();
+    agent_group_scheduler_.reset();
     main_thread_scheduler_->Shutdown();
   }
 
  protected:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MainThreadSchedulerImpl> main_thread_scheduler_;
-  std::unique_ptr<PageSchedulerImpl> page_scheduler_;
-  std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
+  std::unique_ptr<WebAgentGroupScheduler> agent_group_scheduler_;
+  std::unique_ptr<PageScheduler> page_scheduler_;
+  std::unique_ptr<FrameScheduler> frame_scheduler_;
 };
 
 TEST_F(WorkerSchedulerProxyTest, VisibilitySignalReceived) {

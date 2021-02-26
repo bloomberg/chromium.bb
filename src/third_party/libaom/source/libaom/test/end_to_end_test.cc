@@ -199,13 +199,13 @@ TEST_P(EndToEndTestLarge, EndtoEndPSNRTest) { DoTest(); }
 
 TEST_P(EndToEndTest, EndtoEndPSNRTest) { DoTest(); }
 
-AV1_INSTANTIATE_TEST_CASE(EndToEndTestLarge,
-                          ::testing::ValuesIn(kEncodingModeVectors),
-                          ::testing::ValuesIn(kTestVectors),
-                          ::testing::ValuesIn(kCpuUsedVectors));
+AV1_INSTANTIATE_TEST_SUITE(EndToEndTestLarge,
+                           ::testing::ValuesIn(kEncodingModeVectors),
+                           ::testing::ValuesIn(kTestVectors),
+                           ::testing::ValuesIn(kCpuUsedVectors));
 
-AV1_INSTANTIATE_TEST_CASE(EndToEndTest,
-                          ::testing::Values(kEncodingModeVectors[0]),
-                          ::testing::Values(kTestVectors[2]),  // 444
-                          ::testing::Values(kCpuUsedVectors[2]));
+AV1_INSTANTIATE_TEST_SUITE(EndToEndTest,
+                           ::testing::Values(kEncodingModeVectors[0]),
+                           ::testing::Values(kTestVectors[2]),  // 444
+                           ::testing::Values(kCpuUsedVectors[2]));
 }  // namespace

@@ -13,13 +13,25 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "components/previews/core/previews_black_list.h"
+#include "components/previews/core/previews_block_list.h"
 #include "components/previews/core/previews_experiments.h"
-#include "content/public/common/previews_state.h"
+#include "content/public/browser/render_document_host_user_data.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace previews {
 
-// A representation of previews information related to a navigation.
+// A representation of previews information related to a navigation. We create
+// a PreviewsUserData on every navigation, and when the navigation finishes, we
+// make a copy of it and hold it in DocumentDataHolder so that the lifetime
+// is tied to the document.
+// For normal navigations, we will use the PreviewsUserData we made during the
+// navigation.
+// For navigations where we restore the page from the back-forward cache, we
+// should instead used the cached PreviewsUserData that's associated with the
+// document (the PreviewsUserData that's made during the original navigation
+// the page, instead of the back navigation that triggers the restoration of
+// the page so that the Previews UI will be consistent with the preserved
+// page contents).
 // TODO(ryansturm): rename this to remove UserData.
 class PreviewsUserData {
  public:
@@ -72,12 +84,12 @@ class PreviewsUserData {
   }
 
   // Whether a lite page preview was prevented from being shown due to the
-  // blacklist.
-  bool black_listed_for_lite_page() const {
-    return black_listed_for_lite_page_;
+  // blocklist.
+  bool block_listed_for_lite_page() const {
+    return block_listed_for_lite_page_;
   }
-  void set_black_listed_for_lite_page(bool black_listed_for_lite_page) {
-    black_listed_for_lite_page_ = black_listed_for_lite_page;
+  void set_block_listed_for_lite_page(bool block_listed_for_lite_page) {
+    block_listed_for_lite_page_ = block_listed_for_lite_page;
   }
 
   // Returns whether the Cache-Control:no-transform directive has been
@@ -109,35 +121,28 @@ class PreviewsUserData {
   // Sets the committed previews type for testing. Can be called multiple times.
   void SetCommittedPreviewsTypeForTesting(previews::PreviewsType previews_type);
 
-  bool offline_preview_used() const { return offline_preview_used_; }
-  // Whether an offline preview is being served.
-  void set_offline_preview_used(bool offline_preview_used) {
-    offline_preview_used_ = offline_preview_used;
-  }
-
   // The PreviewsState that was allowed for the navigation. This should be used
   // for metrics only since it does not respect the coin flip holdback.
-  content::PreviewsState PreHoldbackAllowedPreviewsState() const;
+  blink::PreviewsState PreHoldbackAllowedPreviewsState() const;
 
   // The PreviewsState that was allowed for the navigation. Returns PREVIEWS_OFF
   // if the coin flip holdback is kHoldback.
-  content::PreviewsState AllowedPreviewsState() const;
+  blink::PreviewsState AllowedPreviewsState() const;
 
-  void set_allowed_previews_state(
-      content::PreviewsState allowed_previews_state) {
+  void set_allowed_previews_state(blink::PreviewsState allowed_previews_state) {
     allowed_previews_state_without_holdback_ = allowed_previews_state;
   }
 
   // The PreviewsState that was committed for the navigation. This should be
   // used for metrics only since it does not respect the coin flip holdback.
-  content::PreviewsState PreHoldbackCommittedPreviewsState() const;
+  blink::PreviewsState PreHoldbackCommittedPreviewsState() const;
 
   // The PreviewsState that was committed for the navigation. Returns
   // PREVIEWS_OFF if the coin flip holdback is kHoldback.
-  content::PreviewsState CommittedPreviewsState() const;
+  blink::PreviewsState CommittedPreviewsState() const;
 
   void set_committed_previews_state(
-      content::PreviewsState committed_previews_state) {
+      blink::PreviewsState committed_previews_state) {
     committed_previews_state_without_holdback_ = committed_previews_state;
   }
 
@@ -149,6 +154,33 @@ class PreviewsUserData {
       CoinFlipHoldbackResult coin_flip_holdback_result) {
     coin_flip_holdback_result_ = coin_flip_holdback_result;
   }
+
+  void CopyData(const PreviewsUserData& other);
+
+  class DocumentDataHolder
+      : public content::RenderDocumentHostUserData<DocumentDataHolder> {
+   public:
+    ~DocumentDataHolder() override;
+    PreviewsUserData* GetPreviewsUserData() {
+      return previews_user_data_.get();
+    }
+    void SetPreviewsUserData(
+        std::unique_ptr<PreviewsUserData> previews_user_data) {
+      previews_user_data_ = std::move(previews_user_data);
+    }
+
+    using content::RenderDocumentHostUserData<
+        DocumentDataHolder>::GetOrCreateForCurrentDocument;
+    using content::RenderDocumentHostUserData<
+        DocumentDataHolder>::GetForCurrentDocument;
+
+   private:
+    explicit DocumentDataHolder(content::RenderFrameHost* render_frame_host);
+    friend class content::RenderDocumentHostUserData<DocumentDataHolder>;
+
+    std::unique_ptr<PreviewsUserData> previews_user_data_;
+    RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
+  };
 
  private:
   // A session unique ID related to this navigation.
@@ -172,12 +204,9 @@ class PreviewsUserData {
   // Whether the origin provided a no-transform directive.
   bool cache_control_no_transform_directive_ = false;
 
-  // Whether an offline preview is being served.
-  bool offline_preview_used_ = false;
-
   // Whether a lite page preview was prevented from being shown due to the
-  // blacklist.
-  bool black_listed_for_lite_page_ = false;
+  // blocklist.
+  bool block_listed_for_lite_page_ = false;
 
   // The committed previews type, if any. Is not influenced by the coin flip
   // holdback.
@@ -186,13 +215,13 @@ class PreviewsUserData {
 
   // The PreviewsState that was allowed for the navigation. Is not influenced by
   // the coin flip holdback.
-  content::PreviewsState allowed_previews_state_without_holdback_ =
-      content::PREVIEWS_UNSPECIFIED;
+  blink::PreviewsState allowed_previews_state_without_holdback_ =
+      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED;
 
   // The PreviewsState that was committed for the navigation. Is not influenced
   // by the coin flip holdback.
-  content::PreviewsState committed_previews_state_without_holdback_ =
-      content::PREVIEWS_OFF;
+  blink::PreviewsState committed_previews_state_without_holdback_ =
+      blink::PreviewsTypes::PREVIEWS_OFF;
 
   // The state of a random coin flip holdback, if any.
   CoinFlipHoldbackResult coin_flip_holdback_result_ =

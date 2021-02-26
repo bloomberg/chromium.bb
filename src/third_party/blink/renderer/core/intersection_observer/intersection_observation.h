@@ -43,6 +43,9 @@ class CORE_EXPORT IntersectionObservation final
     // If this bit is set, we can skip tracking the sticky frame during
     // UpdateViewportIntersectionsForSubtree.
     kCanSkipStickyFrameTracking = 1 << 4,
+    // If this bit is set, we only process intersection observations that
+    // require post-layout delivery.
+    kPostLayoutDeliveryOnly = 1 << 5,
   };
 
   IntersectionObservation(IntersectionObserver&, Element&);
@@ -58,7 +61,7 @@ class CORE_EXPORT IntersectionObservation final
   void Disconnect();
   void InvalidateCachedRects();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
   bool CanUseCachedRectsForTesting() const { return CanUseCachedRects(); }
 

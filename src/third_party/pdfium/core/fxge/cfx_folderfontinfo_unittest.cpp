@@ -6,8 +6,9 @@
 
 #include <utility>
 
+#include "core/fxcrt/fx_codepage.h"
+#include "core/fxge/fx_font.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -18,35 +19,27 @@ constexpr char kSymbol[] = "Symbol";
 constexpr char kBookshelfSymbol7[] = "Bookshelf Symbol 7";
 constexpr char kCalibri[] = "Calibri";
 constexpr char kBookshelf[] = "Bookshelf";
+constexpr char kBook[] = "Book";
+constexpr char kTofuBold[] = "Tofu, Bold Italic";
+constexpr char kTofu[] = "Tofu";
+constexpr char kLatoUltraBold[] = "Lato Ultra-Bold";
+constexpr char kLato[] = "Lato";
+constexpr char kOxygenSansSansBold[] = "Oxygen-Sans Sans-Bold";
+constexpr char kOxygenSans[] = "Oxygen-Sans";
+constexpr char kOxygen[] = "Oxygen";
 
 }  // namespace
 
 class CFX_FolderFontInfoTest : public ::testing::Test {
  public:
   CFX_FolderFontInfoTest() {
-    auto arial_info = pdfium::MakeUnique<CFX_FolderFontInfo::FontFaceInfo>(
-        /*filePath=*/"", kArial, /*fontTables=*/"",
-        /*fontOffset=*/0, /*fileSize=*/0);
-    arial_info->m_Charsets = 2;
-    auto times_new_roman_info =
-        pdfium::MakeUnique<CFX_FolderFontInfo::FontFaceInfo>(
-            /*filePath=*/"", kTimesNewRoman, /*fontTables=*/"",
-            /*fontOffset=*/0, /*fileSize=*/0);
-    auto bookshelf_symbol7_info =
-        pdfium::MakeUnique<CFX_FolderFontInfo::FontFaceInfo>(
-            /*filePath=*/"", kBookshelfSymbol7, /*fontTables=*/"",
-            /*fontOffset=*/0, /*fileSize=*/0);
-    bookshelf_symbol7_info->m_Charsets = 2;
-    auto symbol_info = pdfium::MakeUnique<CFX_FolderFontInfo::FontFaceInfo>(
-        /*filePath=*/"", kSymbol, /*fontTables=*/"",
-        /*fontOffset=*/0, /*fileSize=*/0);
-    symbol_info->m_Charsets = 2;
-
-    font_info_.m_FontList[kArial] = std::move(arial_info);
-    font_info_.m_FontList[kTimesNewRoman] = std::move(times_new_roman_info);
-    font_info_.m_FontList[kBookshelfSymbol7] =
-        std::move(bookshelf_symbol7_info);
-    font_info_.m_FontList[kSymbol] = std::move(symbol_info);
+    AddDummyFont(kArial, CHARSET_FLAG_ANSI);
+    AddDummyFont(kTimesNewRoman, 0);
+    AddDummyFont(kBookshelfSymbol7, CHARSET_FLAG_SYMBOL);
+    AddDummyFont(kSymbol, CHARSET_FLAG_SYMBOL);
+    AddDummyFont(kTofuBold, CHARSET_FLAG_SYMBOL);
+    AddDummyFont(kLatoUltraBold, CHARSET_FLAG_ANSI);
+    AddDummyFont(kOxygenSansSansBold, CHARSET_FLAG_ANSI);
   }
 
   void* FindFont(int weight,
@@ -64,31 +57,71 @@ class CFX_FolderFontInfoTest : public ::testing::Test {
   }
 
  private:
+  void AddDummyFont(const char* font_name, uint32_t charsets) {
+    auto info = std::make_unique<CFX_FolderFontInfo::FontFaceInfo>(
+        /*filePath=*/"", font_name, /*fontTables=*/"",
+        /*fontOffset=*/0, /*fileSize=*/0);
+    info->m_Charsets = charsets;
+    font_info_.m_FontList[font_name] = std::move(info);
+  }
+
   CFX_FolderFontInfo font_info_;
 };
 
 TEST_F(CFX_FolderFontInfoTest, TestFindFont) {
   // Find "Symbol" font
-  void* font = FindFont(/*weight=*/0, /*bItalic=*/false, /*charset=*/2,
-                        /*pitch_family=*/2, kSymbol, /*bMatchName=*/true);
+  void* font = FindFont(/*weight=*/0, /*bItalic=*/false, FX_CHARSET_Symbol,
+                        FXFONT_FF_ROMAN, kSymbol, /*bMatchName=*/true);
   ASSERT_TRUE(font);
   EXPECT_EQ(GetFaceName(font), kSymbol);
 
   // Find "Calibri" font that is not present in the installed fonts
-  EXPECT_FALSE(FindFont(/*weight=*/0, /*bItalic=*/false, /*charset=*/2,
-                        /*pitch_family=*/2, kCalibri,
-                        /*bMatchName=*/true));
+  EXPECT_FALSE(FindFont(/*weight=*/0, /*bItalic=*/false, FX_CHARSET_Symbol,
+                        FXFONT_FF_ROMAN, kCalibri, /*bMatchName=*/true));
 
-  // Find the closest matching font to "Bookself" font that is present in the
+  // Find the closest matching font to "Bookshelf" font that is present in the
   // installed fonts
-  font = FindFont(/*weight=*/0, /*bItalic=*/false, /*charset=*/2,
-                  /*pitch_family=*/2, kBookshelf, /*bMatchName=*/true);
+  font = FindFont(/*weight=*/0, /*bItalic=*/false, FX_CHARSET_Symbol,
+                  FXFONT_FF_ROMAN, kBookshelf, /*bMatchName=*/true);
   ASSERT_TRUE(font);
   EXPECT_EQ(GetFaceName(font), kBookshelfSymbol7);
 
-  // Find "Symbol" font when name matching is false
-  font = FindFont(/*weight=*/0, /*bItalic=*/false, /*charset=*/2,
-                  /*pitch_family=*/2, kSymbol, /*bMatchName=*/false);
+  // Find "Book" font is expected to fail, because none of the installed fonts
+  // is in the same font family.
+  EXPECT_FALSE(FindFont(/*weight=*/0, /*bItalic=*/false, FX_CHARSET_Symbol,
+                        FXFONT_FF_ROMAN, kBook, /*bMatchName=*/true));
+
+  // Find the closest matching font for "Tofu" in the installed fonts, which
+  // has "," following the string "Tofu".
+  font = FindFont(/*weight=*/0, /*bItalic=*/false, FX_CHARSET_Symbol,
+                  FXFONT_FF_ROMAN, kTofu, /*bMatchName=*/true);
   ASSERT_TRUE(font);
-  EXPECT_EQ(GetFaceName(font), kArial);
+  EXPECT_EQ(GetFaceName(font), kTofuBold);
+
+  // Find the closest matching font for "Lato" in the installed fonts, which
+  // has a space character following the string "Lato".
+  font = FindFont(/*weight=*/0, /*bItalic=*/false, FX_CHARSET_ANSI,
+                  FXFONT_FF_ROMAN, kLato, /*bMatchName=*/true);
+  ASSERT_TRUE(font);
+  EXPECT_EQ(GetFaceName(font), kLatoUltraBold);
+
+  // Find the closest matching font for "Oxygen" in the installed fonts,
+  // which has "-" following the string "Oxygen".
+  font = FindFont(/*weight=*/0, /*bItalic=*/false, FX_CHARSET_ANSI,
+                  FXFONT_FF_ROMAN, kOxygen, /*bMatchName=*/true);
+  ASSERT_TRUE(font);
+  EXPECT_EQ(GetFaceName(font), kOxygenSansSansBold);
+
+  // Find the closest matching font for "Oxygen-Sans" in the installed fonts,
+  // to test matching a family name with "-".
+  font = FindFont(/*weight=*/0, /*bItalic=*/false, FX_CHARSET_ANSI,
+                  FXFONT_FF_ROMAN, kOxygenSans, /*bMatchName=*/true);
+  ASSERT_TRUE(font);
+  EXPECT_EQ(GetFaceName(font), kOxygenSansSansBold);
+
+  // Find "Symbol" font when name matching is false
+  font = FindFont(/*weight=*/0, /*bItalic=*/false, FX_CHARSET_Symbol,
+                  FXFONT_FF_ROMAN, kSymbol, /*bMatchName=*/false);
+  ASSERT_TRUE(font);
+  EXPECT_EQ(GetFaceName(font), kBookshelfSymbol7);
 }

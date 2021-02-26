@@ -7,7 +7,6 @@
 
 #include "base/strings/string16.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/controls/styled_label_listener.h"
 
 class Browser;
 
@@ -15,8 +14,7 @@ namespace media_router {
 
 // Dialog that asks the user whether they want to enable cloud services for the
 // Cast feature.
-class CloudServicesDialogView : public views::BubbleDialogDelegateView,
-                                public views::StyledLabelListener {
+class CloudServicesDialogView : public views::BubbleDialogDelegateView {
  public:
   // Instantiates and shows the singleton dialog.
   static void ShowDialog(views::View* anchor_view, Browser* browser);
@@ -29,15 +27,6 @@ class CloudServicesDialogView : public views::BubbleDialogDelegateView,
   // Called by tests. Returns the singleton dialog instance.
   static CloudServicesDialogView* GetDialogForTest();
 
-  // views::WidgetDelegateView:
-  bool ShouldShowCloseButton() const override;
-
-  // views::WidgetDelegate:
-  base::string16 GetWindowTitle() const override;
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-
  private:
   CloudServicesDialogView(views::View* anchor_view, Browser* browser);
   ~CloudServicesDialogView() override;
@@ -47,11 +36,6 @@ class CloudServicesDialogView : public views::BubbleDialogDelegateView,
   // views::BubbleDialogDelegateView:
   void Init() override;
   void WindowClosing() override;
-
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
 
   // The singleton dialog instance. This is a nullptr when a dialog is not
   // shown.

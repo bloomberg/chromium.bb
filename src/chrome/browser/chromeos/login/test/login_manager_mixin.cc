@@ -23,9 +23,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/known_user.h"
-#include "components/user_manager/scoped_user_manager.h"
 
 namespace chromeos {
 
@@ -36,7 +34,6 @@ bool g_instance_created = false;
 
 constexpr char kGmailDomain[] = "@gmail.com";
 constexpr char kManagedDomain[] = "@example.com";
-constexpr char kLegacySupervisedDomain[] = "@locally-managed.localhost";
 
 void AppendUsers(LoginManagerMixin::UserList* users,
                  const std::string& domain,
@@ -68,18 +65,20 @@ void LoginManagerMixin::AppendManagedUsers(int n) {
   AppendUsers(&initial_users_, kManagedDomain, n);
 }
 
-void LoginManagerMixin::AppendLegacySupervisedUsers(int n) {
-  AppendUsers(&initial_users_, kLegacySupervisedDomain, n);
-}
-
 LoginManagerMixin::LoginManagerMixin(InProcessBrowserTestMixinHost* host)
     : LoginManagerMixin(host, UserList()) {}
 
 LoginManagerMixin::LoginManagerMixin(InProcessBrowserTestMixinHost* host,
                                      const UserList& initial_users)
+    : LoginManagerMixin(host, initial_users, nullptr) {}
+
+LoginManagerMixin::LoginManagerMixin(InProcessBrowserTestMixinHost* host,
+                                     const UserList& initial_users,
+                                     FakeGaiaMixin* gaia_mixin)
     : InProcessBrowserTestMixin(host),
       initial_users_(initial_users),
-      local_state_mixin_(host, this) {
+      local_state_mixin_(host, this),
+      fake_gaia_mixin_(gaia_mixin) {
   DCHECK(!g_instance_created);
   g_instance_created = true;
 }
@@ -102,38 +101,28 @@ bool LoginManagerMixin::SetUpUserDataDirectory() {
 }
 
 void LoginManagerMixin::SetUpLocalState() {
-  // SaveKnownUser depends on UserManager to get the local state that has to
-  // be updated, and do ephemeral user checks.
-  // Given that user manager does not exist yet (by design), create a
-  // temporary fake user manager instance.
-  {
-    auto user_manager = std::make_unique<user_manager::FakeUserManager>();
-    user_manager->set_local_state(g_browser_process->local_state());
-    user_manager::ScopedUserManager scoper(std::move(user_manager));
-    for (const auto& user : initial_users_) {
-      ListPrefUpdate users_pref(g_browser_process->local_state(),
-                                "LoggedInUsers");
-      users_pref->AppendIfNotPresent(
-          std::make_unique<base::Value>(user.account_id.GetUserEmail()));
+  for (const auto& user : initial_users_) {
+    ListPrefUpdate users_pref(g_browser_process->local_state(),
+                              "LoggedInUsers");
+    users_pref->AppendIfNotPresent(
+        std::make_unique<base::Value>(user.account_id.GetUserEmail()));
 
-      DictionaryPrefUpdate user_type_update(g_browser_process->local_state(),
-                                            "UserType");
-      user_type_update->SetKey(user.account_id.GetAccountIdKey(),
-                               base::Value(static_cast<int>(user.user_type)));
+    DictionaryPrefUpdate user_type_update(g_browser_process->local_state(),
+                                          "UserType");
+    user_type_update->SetKey(user.account_id.GetAccountIdKey(),
+                             base::Value(static_cast<int>(user.user_type)));
 
-      DictionaryPrefUpdate user_token_update(g_browser_process->local_state(),
-                                             "OAuthTokenStatus");
-      user_token_update->SetKey(
-          user.account_id.GetUserEmail(),
-          base::Value(static_cast<int>(user.token_status)));
+    DictionaryPrefUpdate user_token_update(g_browser_process->local_state(),
+                                           "OAuthTokenStatus");
+    user_token_update->SetKey(user.account_id.GetUserEmail(),
+                              base::Value(static_cast<int>(user.token_status)));
 
-      user_manager::known_user::UpdateId(user.account_id);
+    user_manager::known_user::UpdateId(user.account_id);
 
-      if (user.user_type == user_manager::USER_TYPE_CHILD) {
-        user_manager::known_user::SetProfileRequiresPolicy(
-            user.account_id,
-            user_manager::known_user::ProfileRequiresPolicy::kPolicyRequired);
-      }
+    if (user.user_type == user_manager::USER_TYPE_CHILD) {
+      user_manager::known_user::SetProfileRequiresPolicy(
+          user.account_id,
+          user_manager::known_user::ProfileRequiresPolicy::kPolicyRequired);
     }
   }
 
@@ -145,7 +134,8 @@ void LoginManagerMixin::SetUpOnMainThread() {
       UserSessionManager::GetInstance());
   session_manager_test_api.SetShouldLaunchBrowserInTests(
       should_launch_browser_);
-  session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
+  session_manager_test_api.SetShouldObtainTokenHandleInTests(
+      should_obtain_handles_);
 }
 
 void LoginManagerMixin::TearDownOnMainThread() {
@@ -183,12 +173,26 @@ void LoginManagerMixin::LoginWithDefaultContext(const TestUserInfo& user_info) {
       user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
 }
 
-void LoginManagerMixin::LoginAsNewReguarUser() {
+void LoginManagerMixin::LoginAsNewRegularUser() {
   ASSERT_FALSE(session_manager::SessionManager::Get()->IsSessionStarted());
-  const std::string email = "test_user" + std::string(kGmailDomain);
-  const std::string gaia_id = "111111111";
-  TestUserInfo test_user(AccountId::FromUserEmailGaiaId(email, gaia_id));
+  TestUserInfo test_user(
+      AccountId::FromUserEmailGaiaId(test::kTestEmail, test::kTestGaiaId));
   UserContext user_context = CreateDefaultUserContext(test_user);
+  AttemptLoginUsingAuthenticator(
+      user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
+}
+
+void LoginManagerMixin::LoginAsNewChildUser() {
+  ASSERT_FALSE(session_manager::SessionManager::Get()->IsSessionStarted());
+  TestUserInfo test_child_user_(
+      AccountId::FromUserEmailGaiaId(test::kTestEmail, test::kTestGaiaId),
+      user_manager::USER_TYPE_CHILD);
+  UserContext user_context = CreateDefaultUserContext(test_child_user_);
+  user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
+  fake_gaia_mixin_->SetupFakeGaiaForChildUser(
+      test_child_user_.account_id.GetUserEmail(),
+      test_child_user_.account_id.GetGaiaId(), FakeGaiaMixin::kFakeRefreshToken,
+      false /*issue_any_scope_token*/);
   AttemptLoginUsingAuthenticator(
       user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
 }

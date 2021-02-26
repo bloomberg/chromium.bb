@@ -28,8 +28,7 @@ const char kAttemptRollback[] = "AttemptRollback";
 const char kCanRollback[] = "CanRollback";
 const char kSetUpdateOverCellularPermission[] =
     "SetUpdateOverCellularPermission";
-const char kSetUpdateOverCellularTarget[] =
-    "SetUpdateOverCellularTarget";
+const char kSetUpdateOverCellularTarget[] = "SetUpdateOverCellularTarget";
 
 // Signals.
 const char kStatusUpdateAdvanced[] = "StatusUpdateAdvanced";
@@ -39,7 +38,7 @@ const char kStatusUpdateAdvanced[] = "StatusUpdateAdvanced";
 //
 // Flags used in the |AttemptUpdateWithFlags()| D-Bus method.
 typedef enum {
-  kAttemptUpdateFlagNonInteractive = (1 << 0)
+  kAttemptUpdateFlagNonInteractive = (1 << 0),
 } AttemptUpdateFlags;
 
 // Operations contained in |StatusUpdate| signals.
@@ -59,6 +58,8 @@ const char kUpdateStatusAttemptingRollback[] =
 const char kUpdateStatusDisabled[] = "UPDATE_STATUS_DISABLED";
 const char kUpdateStatusNeedPermissionToUpdate[] =
     "UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE";
+const char kUpdateStatusCleanupPreviousUpdate[] =
+    "UPDATE_STATUS_CLEANUP_PREVIOUS_UPDATE";
 }  // namespace update_engine
 
 #endif  // SYSTEM_API_DBUS_UPDATE_ENGINE_DBUS_CONSTANTS_H_

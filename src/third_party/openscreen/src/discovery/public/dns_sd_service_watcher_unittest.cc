@@ -32,8 +32,9 @@ std::vector<std::string> ConvertRefs(
 
 static const IPAddress kAddressV4(192, 168, 0, 0);
 static const IPEndpoint kEndpointV4{kAddressV4, 0};
-static const std::string kCastServiceId = "_googlecast._tcp";
-static const std::string kCastDomainId = "local";
+constexpr char kCastServiceId[] = "_googlecast._tcp";
+constexpr char kCastDomainId[] = "local";
+constexpr NetworkInterfaceIndex kNetworkInterface = 0;
 
 class MockDnsSdService : public DnsSdService {
  public:
@@ -260,7 +261,8 @@ TEST(DnsSdServiceWatcherTest, RefreshFailsBeforeDiscoveryStarts) {
 
 TEST_F(DnsSdServiceWatcherTests, RefreshDiscoveryWorks) {
   const DnsSdInstanceEndpoint record("Instance", kCastServiceId, kCastDomainId,
-                                     DnsSdTxtRecord{}, kEndpointV4, 0);
+                                     DnsSdTxtRecord{}, kNetworkInterface,
+                                     kEndpointV4);
   CreateNewInstance(record);
 
   // Refresh services.
@@ -277,10 +279,11 @@ TEST_F(DnsSdServiceWatcherTests, RefreshDiscoveryWorks) {
 
 TEST_F(DnsSdServiceWatcherTests, CreatingUpdatingDeletingInstancesWork) {
   const DnsSdInstanceEndpoint record("Instance", kCastServiceId, kCastDomainId,
-                                     DnsSdTxtRecord{}, kEndpointV4, 0);
+                                     DnsSdTxtRecord{}, kNetworkInterface,
+                                     kEndpointV4);
   const DnsSdInstanceEndpoint record2("Instance2", kCastServiceId,
                                       kCastDomainId, DnsSdTxtRecord{},
-                                      kEndpointV4, 0);
+                                      kNetworkInterface, kEndpointV4);
 
   EXPECT_FALSE(ContainsService(record));
   EXPECT_FALSE(ContainsService(record2));

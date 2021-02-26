@@ -323,12 +323,16 @@ std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
                                                   channel);
 }
 
-ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate,
-                               chromeos::SchedulerConfigurationManagerBase*
-                                   scheduler_configuration_manager)
+ArcSessionImpl::ArcSessionImpl(
+    std::unique_ptr<Delegate> delegate,
+    chromeos::SchedulerConfigurationManagerBase*
+        scheduler_configuration_manager,
+    AdbSideloadingAvailabilityDelegate* adb_sideloading_availability_delegate)
     : delegate_(std::move(delegate)),
       client_(delegate_->CreateClient()),
-      scheduler_configuration_manager_(scheduler_configuration_manager) {
+      scheduler_configuration_manager_(scheduler_configuration_manager),
+      adb_sideloading_availability_delegate_(
+          adb_sideloading_availability_delegate) {
   DCHECK(client_);
   client_->AddObserver(this);
 }
@@ -375,14 +379,12 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
       base::FeatureList::IsEnabled(arc::kNativeBridgeToggleFeature);
   params.arc_file_picker_experiment =
       base::FeatureList::IsEnabled(arc::kFilePickerExperimentFeature);
-  // Enable Custom Tabs only on Dev and Cannary, and only when Mash is enabled.
+  // Enable Custom Tabs only on Dev and Canary.
   const bool is_custom_tab_enabled =
       base::FeatureList::IsEnabled(arc::kCustomTabsExperimentFeature) &&
       delegate_->GetChannel() != version_info::Channel::STABLE &&
       delegate_->GetChannel() != version_info::Channel::BETA;
   params.arc_custom_tabs_experiment = is_custom_tab_enabled;
-  params.arc_print_spooler_experiment =
-      base::FeatureList::IsEnabled(arc::kPrintSpoolerExperimentFeature);
   params.lcd_density = lcd_density_;
   params.num_cores_disabled = num_cores_disabled;
 
@@ -425,6 +427,8 @@ void ArcSessionImpl::RequestUpgrade(UpgradeParams params) {
   upgrade_requested_ = true;
   upgrade_params_ = std::move(params);
 
+  VLOG(1) << "Upgrade requested. state: " << state_;
+
   switch (state_) {
     case State::NOT_STARTED:
       NOTREACHED();
@@ -432,7 +436,6 @@ void ArcSessionImpl::RequestUpgrade(UpgradeParams params) {
     case State::WAITING_FOR_LCD_DENSITY:
     case State::WAITING_FOR_NUM_CORES:
     case State::STARTING_MINI_INSTANCE:
-      VLOG(2) << "Requested to upgrade a starting ARC mini instance";
       // OnMiniInstanceStarted() will restart a full instance.
       break;
     case State::RUNNING_MINI_INSTANCE:
@@ -496,6 +499,16 @@ void ArcSessionImpl::OnFreeDiskSpace(int64_t space) {
     StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/false);
     return;
   }
+
+  adb_sideloading_availability_delegate_->CanChangeAdbSideloading(
+      base::BindOnce(&ArcSessionImpl::OnCanChangeAdbSideloading,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void ArcSessionImpl::OnCanChangeAdbSideloading(
+    bool can_change_adb_sideloading) {
+  upgrade_params_.is_managed_adb_sideloading_allowed =
+      can_change_adb_sideloading;
 
   delegate_->CreateSocket(base::BindOnce(&ArcSessionImpl::OnSocketCreated,
                                          weak_factory_.GetWeakPtr()));
@@ -602,6 +615,7 @@ void ArcSessionImpl::Stop() {
     case State::WAITING_FOR_LCD_DENSITY:
       // If |Stop()| is called while waiting for LCD density or CPU cores
       // information, it can directly move to stopped state.
+      VLOG(1) << "ARC session is not started. state: " << state_;
       OnStopped(ArcStopReason::SHUTDOWN);
       return;
     case State::STARTING_MINI_INSTANCE:
@@ -630,6 +644,7 @@ void ArcSessionImpl::Stop() {
       return;
 
     case State::STOPPED:
+      VLOG(1) << "ARC session is already stopped.";
       // The instance is already stopped. Do nothing.
       return;
   }
@@ -645,7 +660,9 @@ void ArcSessionImpl::StopArcInstance(bool on_shutdown, bool should_backup_log) {
          state_ == State::CONNECTING_MOJO ||
          state_ == State::RUNNING_FULL_INSTANCE);
 
-  VLOG(2) << "Requesting session_manager to stop ARC instance";
+  VLOG(1) << "Requesting session_manager to stop ARC instance"
+          << " on_shutdown: " << on_shutdown
+          << " should_backup_log: " << should_backup_log;
 
   // When the instance is full instance, change the |state_| in
   // ArcInstanceStopped().
@@ -690,7 +707,9 @@ void ArcSessionImpl::OnStopped(ArcStopReason reason) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // OnStopped() should be called once per instance.
   DCHECK_NE(state_, State::STOPPED);
-  VLOG(2) << "ARC session is stopped.";
+  VLOG(1) << "ARC session is stopped."
+          << " reason: " << reason << " state: " << state_;
+
   const bool was_running = (state_ == State::RUNNING_FULL_INSTANCE);
   arc_bridge_host_.reset();
   state_ = State::STOPPED;

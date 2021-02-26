@@ -27,6 +27,8 @@ class Widget;
 
 namespace ash {
 
+class AppListView;
+class AssistantOnboardingSuggestionView;
 class AssistantTestApi;
 class SuggestionChipView;
 class TestAssistantClient;
@@ -37,16 +39,23 @@ class TestAssistantWebViewFactory;
 // Helper class to make testing the Assistant Ash UI easier.
 class AssistantAshTestBase : public AshTestBase {
  public:
-  using AssistantEntryPoint = chromeos::assistant::mojom::AssistantEntryPoint;
-  using AssistantExitPoint = chromeos::assistant::mojom::AssistantExitPoint;
+  using AssistantEntryPoint = chromeos::assistant::AssistantEntryPoint;
+  using AssistantExitPoint = chromeos::assistant::AssistantExitPoint;
+  using AssistantOnboardingMode =
+      chromeos::assistant::prefs::AssistantOnboardingMode;
   using ConsentStatus = chromeos::assistant::prefs::ConsentStatus;
 
   AssistantAshTestBase();
   explicit AssistantAshTestBase(base::test::TaskEnvironment::TimeSource time);
   ~AssistantAshTestBase() override;
 
+  // AshTestBase:
   void SetUp() override;
   void TearDown() override;
+
+  // Creates and switches to a new active user.
+  void CreateAndSwitchActiveUser(const std::string& display_email,
+                                 const std::string& given_name);
 
   // Show the Assistant UI. The optional |entry_point| can be used to emulate
   // the different ways of launching the Assistant.
@@ -66,11 +75,20 @@ class AssistantAshTestBase : public AshTestBase {
   void SetTabletMode(bool enable);
 
   // Change the user preference controlling the status of user consent.
-  void SetConsentStatus(ConsentStatus);
+  void SetConsentStatus(ConsentStatus consent_status);
+
+  // Sets the number of user sessions where Assistant onboarding was shown.
+  void SetNumberOfSessionsWhereOnboardingShown(int number_of_sessions);
+
+  // Changes the user preference controlling the mode of the onboarding UX.
+  void SetOnboardingMode(AssistantOnboardingMode onboarding_mode);
 
   // Change the user setting controlling whether the user prefers voice or
   // keyboard.
   void SetPreferVoice(bool value);
+
+  // Sets the time of the user's last interaction with Assistant.
+  void SetTimeOfLastInteraction(const base::Time& time);
 
   void StartOverview();
 
@@ -87,7 +105,7 @@ class AssistantAshTestBase : public AshTestBase {
 
   // Return the app list view hosting the Assistant page view.
   // Can only be used after |ShowAssistantUi| has been called.
-  views::View* app_list_view();
+  AppListView* app_list_view();
 
   // Return the root view hosting the Assistant page view.
   // Can only be used after |ShowAssistantUi| has been called.
@@ -123,7 +141,7 @@ class AssistantAshTestBase : public AshTestBase {
 
   // Return the current interaction. Returns |base::nullopt| if no interaction
   // is in progress.
-  base::Optional<chromeos::assistant::mojom::AssistantInteractionMetadata>
+  base::Optional<chromeos::assistant::AssistantInteractionMetadata>
   current_interaction();
 
   // Create a new App window, and activate it.
@@ -155,14 +173,21 @@ class AssistantAshTestBase : public AshTestBase {
   // Return the button to enable text mode.
   views::View* keyboard_input_toggle();
 
-  // Return the button to launch Assistant onboarding.
+  // Return the Assistant onboarding view.
+  views::View* onboarding_view();
+
+  // Return the button to launch Assistant setup.
   views::View* opt_in_view();
 
   // Return the container with all the suggestion chips.
   views::View* suggestion_chip_container();
 
+  // Return the onboarding suggestions that are currently displayed.
+  std::vector<AssistantOnboardingSuggestionView*>
+  GetOnboardingSuggestionViews();
+
   // Return the suggestion chips that are currently displayed.
-  std::vector<ash::SuggestionChipView*> GetSuggestionChips();
+  std::vector<SuggestionChipView*> GetSuggestionChips();
 
   // Show/Dismiss the on-screen keyboard.
   void ShowKeyboard();
@@ -178,6 +203,8 @@ class AssistantAshTestBase : public AshTestBase {
   TestAssistantService* assistant_service();
 
  private:
+  void SetUpActiveUser();
+
   std::unique_ptr<AssistantTestApi> test_api_;
   std::unique_ptr<TestAssistantSetup> test_setup_;
   std::unique_ptr<TestAssistantWebViewFactory> test_web_view_factory_;

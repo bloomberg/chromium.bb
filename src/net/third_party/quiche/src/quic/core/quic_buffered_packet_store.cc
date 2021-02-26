@@ -12,9 +12,9 @@
 
 namespace quic {
 
-typedef QuicBufferedPacketStore::BufferedPacket BufferedPacket;
-typedef QuicBufferedPacketStore::BufferedPacketList BufferedPacketList;
-typedef QuicBufferedPacketStore::EnqueuePacketResult EnqueuePacketResult;
+using BufferedPacket = QuicBufferedPacketStore::BufferedPacket;
+using BufferedPacketList = QuicBufferedPacketStore::BufferedPacketList;
+using EnqueuePacketResult = QuicBufferedPacketStore::EnqueuePacketResult;
 
 // Max number of connections this store can keep track.
 static const size_t kDefaultMaxConnectionsInStore = 100;
@@ -57,7 +57,7 @@ BufferedPacket::~BufferedPacket() {}
 BufferedPacketList::BufferedPacketList()
     : creation_time(QuicTime::Zero()),
       ietf_quic(false),
-      version(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED) {}
+      version(ParsedQuicVersion::Unsupported()) {}
 
 BufferedPacketList::BufferedPacketList(BufferedPacketList&& other) = default;
 
@@ -94,13 +94,13 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
       << "Shouldn't buffer duplicated CHLO on connection " << connection_id;
   QUIC_BUG_IF(!is_chlo && !alpns.empty())
       << "Shouldn't have an ALPN defined for a non-CHLO packet.";
-  QUIC_BUG_IF(is_chlo && version.transport_version == QUIC_VERSION_UNSUPPORTED)
+  QUIC_BUG_IF(is_chlo && !version.IsKnown())
       << "Should have version for CHLO packet.";
 
   const bool is_first_packet =
       !QuicContainsKey(undecryptable_packets_, connection_id);
   if (is_first_packet) {
-    if (ShouldBufferPacket(is_chlo)) {
+    if (ShouldNotBufferPacket(is_chlo)) {
       // Drop the packet if the upper limit of undecryptable packets has been
       // reached or the whole capacity of the store has been reached.
       return TOO_MANY_CONNECTIONS;
@@ -217,7 +217,7 @@ void QuicBufferedPacketStore::MaybeSetExpirationAlarm() {
   }
 }
 
-bool QuicBufferedPacketStore::ShouldBufferPacket(bool is_chlo) {
+bool QuicBufferedPacketStore::ShouldNotBufferPacket(bool is_chlo) {
   bool is_store_full =
       undecryptable_packets_.size() >= kDefaultMaxConnectionsInStore;
 

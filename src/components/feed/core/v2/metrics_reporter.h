@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_FEED_CORE_V2_METRICS_REPORTER_H_
 #define COMPONENTS_FEED_CORE_V2_METRICS_REPORTER_H_
 
+#include <climits>
+#include <map>
+
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -15,46 +18,18 @@ namespace base {
 class TickClock;
 }  // namespace base
 namespace feed {
-namespace internal {
-// This enum is used for a UMA histogram. Keep in sync with FeedEngagementType
-// in enums.xml.
-enum class FeedEngagementType {
-  kFeedEngaged = 0,
-  kFeedEngagedSimple = 1,
-  kFeedInteracted = 2,
-  kFeedScrolled = 3,
-  kMaxValue = FeedEngagementType::kFeedScrolled,
-};
-
-// This enum must match FeedUserActionType in enums.xml.
-// Note that most of these have a corresponding UserMetricsAction reported here.
-// Exceptions are described below.
-enum class FeedUserActionType {
-  kTappedOnCard = 0,
-  // This is not an actual user action, so there will be no UserMetricsAction
-  // reported for this.
-  kShownCard = 1,
-  kTappedSendFeedback = 2,
-  kTappedLearnMore = 3,
-  kTappedHideStory = 4,
-  kTappedNotInterestedIn = 5,
-  kTappedManageInterests = 6,
-  kTappedDownload = 7,
-  kTappedOpenInNewTab = 8,
-  kOpenedContextMenu = 9,
-  // User action not reported here. See Suggestions.SurfaceVisible.
-  kOpenedFeedSurface = 10,
-  kTappedOpenInNewIncognitoTab = 11,
-  kMaxValue = kTappedOpenInNewIncognitoTab,
-};
-
-}  // namespace internal
 
 // Reports UMA metrics for feed.
 // Note this is inherited only for testing.
 class MetricsReporter {
  public:
-  explicit MetricsReporter(const base::TickClock* clock);
+  // For 'index_in_stream' parameters, when the card index is unknown.
+  // This is most likely to happen when the action originates from the bottom
+  // sheet.
+  static const int kUnknownCardIndex = INT_MAX;
+
+  explicit MetricsReporter(const base::TickClock* clock,
+                           PrefService* profile_prefs);
   virtual ~MetricsReporter();
   MetricsReporter(const MetricsReporter&) = delete;
   MetricsReporter& operator=(const MetricsReporter&) = delete;
@@ -62,7 +37,9 @@ class MetricsReporter {
   // User interactions. See |FeedStreamApi| for definitions.
 
   virtual void ContentSliceViewed(SurfaceId surface_id, int index_in_stream);
+  void FeedViewed(SurfaceId surface_id);
   void OpenAction(int index_in_stream);
+  void OpenVisitComplete(base::TimeDelta visit_time);
   void OpenInNewTabAction(int index_in_stream);
   void OpenInNewIncognitoTabAction();
   void SendFeedbackAction();
@@ -74,9 +51,15 @@ class MetricsReporter {
   void NotInterestedInAction();
   void ManageInterestsAction();
   void ContextMenuOpened();
+  void EphemeralStreamChange();
+  void EphemeralStreamChangeRejected();
+  void TurnOnAction();
+  void TurnOffAction();
+
   // Indicates the user scrolled the feed by |distance_dp| and then stopped
   // scrolling.
   void StreamScrolled(int distance_dp);
+  void StreamScrollStart();
 
   // Called when the Feed surface is opened and closed.
   void SurfaceOpened(SurfaceId surface_id);
@@ -90,9 +73,10 @@ class MetricsReporter {
   // Stream events.
 
   virtual void OnLoadStream(LoadStreamStatus load_from_store_status,
-                            LoadStreamStatus final_status);
+                            LoadStreamStatus final_status,
+                            std::unique_ptr<LoadLatencyTimes> load_latencies);
   virtual void OnBackgroundRefresh(LoadStreamStatus final_status);
-  void OnLoadMoreBegin(SurfaceId surface_id);
+  virtual void OnLoadMoreBegin(SurfaceId surface_id);
   virtual void OnLoadMore(LoadStreamStatus final_status);
   virtual void OnClearAll(base::TimeDelta time_since_last_clear);
   // Called each time the surface receives new content.
@@ -100,20 +84,37 @@ class MetricsReporter {
   // Called when Chrome is entering the background.
   void OnEnterBackground();
 
+  static void OnImageFetched(int net_error_or_http_status);
+
+  // Actions upload.
+  static void OnUploadActionsBatch(UploadActionsBatchStatus status);
+  virtual void OnUploadActions(UploadActionsStatus status);
+
+  static void ActivityLoggingEnabled(bool response_has_logging_enabled);
+  static void NoticeCardFulfilled(bool response_has_notice_card);
+  static void NoticeCardFulfilledObsolete(bool response_has_notice_card);
+
  private:
   base::WeakPtr<MetricsReporter> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
+  void ReportPersistentDataIfDayIsDone();
   void CardOpenBegin();
   void CardOpenTimeout(base::TimeTicks start_ticks);
   void ReportCardOpenEndIfNeeded(bool success);
   void RecordEngagement(int scroll_distance_dp, bool interacted);
+  void TrackTimeSpentInFeed(bool interacted_or_scrolled);
   void RecordInteraction();
   void ReportOpenFeedIfNeeded(SurfaceId surface_id, bool success);
   void ReportGetMoreIfNeeded(SurfaceId surface_id, bool success);
   void FinalizeMetrics();
+  void FinalizeVisit();
 
   const base::TickClock* clock_;
+  PrefService* profile_prefs_;
+  // Persistent data stored in prefs. Data is read in the constructor, and then
+  // written back to prefs on backgrounding.
+  PersistentMetricsData persistent_data_;
 
   base::TimeTicks visit_start_time_;
   bool engaged_simple_reported_ = false;
@@ -131,6 +132,14 @@ class MetricsReporter {
   // |ChromeStopping()|, the open is considered failed. Otherwise, if the
   // loading the page succeeds, the open is considered successful.
   base::Optional<base::TimeTicks> pending_open_;
+
+  // For tracking time spent in the Feed.
+  base::Optional<base::TimeTicks> time_in_feed_start_;
+  // For TimeSpentOnFeed.
+  base::TimeDelta tracked_visit_time_in_feed_;
+  // Non-null only directly after a stream load.
+  std::unique_ptr<LoadLatencyTimes> load_latencies_;
+  bool load_latencies_recorded_ = false;
 
   base::WeakPtrFactory<MetricsReporter> weak_ptr_factory_{this};
 };

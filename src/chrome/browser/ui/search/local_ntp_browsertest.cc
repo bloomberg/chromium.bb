@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/memory/weak_ptr.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/instant_service_observer.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -40,7 +40,9 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
+#include "components/search/ntp_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -74,7 +76,7 @@ const int kDefaultCustomLinkMaxCount = 10;
 // Name for the Most Visited iframe in the NTP.
 const char kMostVisitedIframe[] = "mv-single";
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 // Name for the edit/add custom link iframe in the NTP.
 const char kEditCustomLinkIframe[] = "custom-links-edit";
 #endif
@@ -108,16 +110,18 @@ class LocalNTPTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
+// Disabled for being flaky. crbug.com/1096976
+IN_PROC_BROWSER_TEST_F(LocalNTPTest,
+                       DISABLED_EmbeddedSearchAPIOnlyAvailableOnNTP) {
   // Set up a test server, so we have some arbitrary non-NTP URL to navigate to.
   net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   test_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(test_server.Start());
   const GURL other_url = test_server.GetURL("/simple.html");
 
-  // Open an NTP.
+  // Open a local NTP.
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
+      browser(), GURL(chrome::kChromeSearchLocalNtpUrl));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
   // Check that the embeddedSearch API is available.
   bool result = false;
@@ -155,8 +159,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
       active_tab, "!!window.chrome.embeddedSearch", &result));
   EXPECT_FALSE(result);
 
-  // Navigate to a new NTP instance.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  // Navigate to a new local NTP instance.
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
   // Now the API should be available again.
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
@@ -180,10 +185,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, SpareProcessDoesntInterfereWithSearchAPI) {
   content::RenderProcessHost* old_process =
       active_tab->GetMainFrame()->GetProcess();
 
-  // Navigate to an NTP while a spare process is present.
+  // Navigate to a local NTP while a spare process is present.
   content::RenderProcessHost::WarmupSpareRenderProcessHost(
       browser()->profile());
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
 
   // Verify that a process swap has taken place.  This is an indirect indication
@@ -205,9 +211,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, SpareProcessDoesntInterfereWithSearchAPI) {
 
 // Regression test for crbug.com/776660 and crbug.com/776655.
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIExposesStaticFunctions) {
-  // Open an NTP.
+  // Open a local NTP.
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
+      browser(), GURL(chrome::kChromeSearchLocalNtpUrl));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
 
   struct TestCase {
@@ -311,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIAfterDownload) {
 
   // This should have changed the visible URL, but not the last committed one.
   ASSERT_EQ(download_url, active_tab->GetVisibleURL());
-  ASSERT_EQ(GURL(chrome::kChromeUINewTabURL),
+  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
             active_tab->GetLastCommittedURL());
 
   // Make sure the same number of items is available in JS.
@@ -346,9 +352,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NTPRespectsBrowserLanguageSetting) {
     return;
   }
 
-  // Open a new tab.
+  // Open a local NTP.
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
+      browser(), GURL(chrome::kChromeSearchLocalNtpUrl));
 
   // Verify that the NTP is in French.
   EXPECT_EQ(base::ASCIIToUTF16("Nouvel onglet"), active_tab->GetTitle());
@@ -920,9 +926,9 @@ class LocalNTPRTLTest : public LocalNTPTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPRTLTest, RightToLeft) {
-  // Open an NTP.
+  // Open a local NTP.
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
+      browser(), GURL(chrome::kChromeSearchLocalNtpUrl));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
   // Check that the "dir" attribute on the main "html" element says "rtl".
   std::string dir;
@@ -933,7 +939,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPRTLTest, RightToLeft) {
 
 // TODO(crbug/980638): Update/Remove when Linux and/or ChromeOS support dark
 // mode.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 
 // Tests that dark mode styling is properly applied to the local NTP.
 class LocalNTPDarkModeTest : public LocalNTPTest, public DarkModeTestBase {
@@ -1078,9 +1084,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
       "/set-cookie?same-site-cookie=1;SameSite=Strict;httponly"));
   ui_test_utils::NavigateToURL(browser(), cookie_url);
 
-  // Open an NTP.
+  // Open a local NTP.
   content::WebContents* ntp_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
+      browser(), GURL(chrome::kChromeSearchLocalNtpUrl));
 
   // Inject and click a link to foo.com/echoall and wait for the navigation to
   // succeed.
@@ -1121,9 +1127,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, PendingNavigations) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  // Open an NTP.
+  // Open a local NTP.
   content::WebContents* ntp_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
+      browser(), GURL(chrome::kChromeSearchLocalNtpUrl));
 
   // Inject and click a link to foo.com/hung and wait for the navigation to
   // start.
@@ -1157,10 +1163,17 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, PendingNavigations) {
 
   // Verify that the omnibox displays |slow_url|.
   OmniboxView* view = browser()->window()->GetLocationBar()->GetOmniboxView();
-  std::string omnibox_text = base::UTF16ToUTF8(view->GetText());
-  EXPECT_THAT(omnibox_text, ::testing::StartsWith(slow_url.host()));
-  EXPECT_THAT(omnibox_text, ::testing::EndsWith(slow_url.path()));
-  EXPECT_THAT(slow_url.spec(), ::testing::EndsWith(omnibox_text));
+  // Depending on field trial configuration, the omnibox text might contain the
+  // full URL or just a portion of it.
+  if (base::FeatureList::IsEnabled(
+          omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover)) {
+    EXPECT_EQ(base::ASCIIToUTF16(slow_url.spec()), view->GetText());
+  } else {
+    std::string omnibox_text = base::UTF16ToUTF8(view->GetText());
+    EXPECT_THAT(omnibox_text, ::testing::StartsWith(slow_url.host()));
+    EXPECT_THAT(omnibox_text, ::testing::EndsWith(slow_url.path()));
+    EXPECT_THAT(slow_url.spec(), ::testing::EndsWith(omnibox_text));
+  }
 }
 
 // Verifies that Chrome won't spawn a separate renderer process for
@@ -1171,7 +1184,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, PendingNavigations) {
 //
 // [1] https://chromium.googlesource.com/chromium/src/+/09911bf300f1a419907a9412154760efd0b7abc3/chrome/browser/browsing_instance.cc#55
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, ProcessPerSite) {
-  GURL ntp_url("chrome-search://local-ntp/local-ntp.html");
+  GURL ntp_url(base::FeatureList::IsEnabled(ntp_features::kWebUI)
+                   ? chrome::kChromeUINewTabPageURL
+                   : chrome::kChromeSearchLocalNtpUrl);
 
   // Open NTP in |tab1|.
   content::WebContents* tab1;
@@ -1217,7 +1232,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ProcessPerSite) {
 // Just like LocalNTPTest.ProcessPerSite, but for an incognito window.
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, ProcessPerSite_Incognito) {
   GURL ntp_url("chrome://newtab");
-  Browser* incognito_browser = new Browser(Browser::CreateParams(
+  Browser* incognito_browser = Browser::Create(Browser::CreateParams(
       browser()->profile()->GetPrimaryOTRProfile(), true));
 
   // Open NTP in |tab1|.

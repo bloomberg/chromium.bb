@@ -91,7 +91,7 @@ String EmptyChromeClient::AcceptLanguages() {
 void EmptyLocalFrameClient::BeginNavigation(
     const ResourceRequest&,
     mojom::RequestContextFrameType,
-    Document* origin_document,
+    LocalDOMWindow*,
     DocumentLoader*,
     WebNavigationType,
     NavigationPolicy,
@@ -128,13 +128,11 @@ LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,
   return nullptr;
 }
 
-std::pair<RemoteFrame*, base::UnguessableToken>
-EmptyLocalFrameClient::CreatePortal(
+std::pair<RemoteFrame*, PortalToken> EmptyLocalFrameClient::CreatePortal(
     HTMLPortalElement*,
     mojo::PendingAssociatedReceiver<mojom::blink::Portal>,
     mojo::PendingAssociatedRemote<mojom::blink::PortalClient>) {
-  return std::pair<RemoteFrame*, base::UnguessableToken>(
-      nullptr, base::UnguessableToken());
+  return std::pair<RemoteFrame*, PortalToken>(nullptr, PortalToken());
 }
 
 RemoteFrame* EmptyLocalFrameClient::AdoptPortal(HTMLPortalElement*) {

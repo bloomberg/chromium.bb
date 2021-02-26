@@ -46,6 +46,8 @@
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
@@ -275,12 +277,10 @@ static bool ParseDescriptors(const String& attribute,
                              DescriptorParsingResult& result,
                              Document* document) {
   // FIXME: See if StringView can't be extended to replace DescriptorToken here.
-  if (attribute.Is8Bit()) {
-    return ParseDescriptors(attribute.Characters8(), descriptors, result,
-                            document);
-  }
-  return ParseDescriptors(attribute.Characters16(), descriptors, result,
-                          document);
+  return WTF::VisitCharacters(
+      attribute, [&](const auto* chars, unsigned length) {
+        return ParseDescriptors(chars, descriptors, result, document);
+      });
 }
 
 // http://picture.responsiveimages.org/#parse-srcset-attr
@@ -413,7 +413,7 @@ static unsigned AvoidDownloadIfHigherDensityResourceIsInCache(
     KURL url = document->CompleteURL(
         StripLeadingAndTrailingHTMLSpaces(image_candidates[i]->Url()));
     if (GetMemoryCache()->ResourceForURL(
-            url, document->Fetcher()->GetCacheIdentifier()) ||
+            url, document->Fetcher()->GetCacheIdentifier(url)) ||
         url.ProtocolIsData())
       return i;
   }
@@ -426,9 +426,19 @@ static ImageCandidate PickBestImageCandidate(
     Vector<ImageCandidate>& image_candidates,
     Document* document = nullptr) {
   const float kDefaultDensityValue = 1.0;
+  // The srcset image source selection mechanism is user-agent specific:
+  // https://html.spec.whatwg.org/multipage/images.html#selecting-an-image-source
+  //
+  // Setting max density value based on https://github.com/whatwg/html/pull/5901
+  const float kMaxDensity = 2.2;
   bool ignore_src = false;
   if (image_candidates.IsEmpty())
     return ImageCandidate();
+
+  if (RuntimeEnabledFeatures::SrcsetMaxDensityEnabled() &&
+      device_scale_factor > kMaxDensity) {
+    device_scale_factor = kMaxDensity;
+  }
 
   // http://picture.responsiveimages.org/#normalize-source-densities
   for (ImageCandidate& image : image_candidates) {

@@ -20,10 +20,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/attestation.pb.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/attestation/attestation_client.h"
+#include "chromeos/dbus/attestation/interface.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -52,25 +52,13 @@ const char kAttestationAvailableHistogram[] =
     "ChromeOS.PlatformVerification.Available";
 const int kOpportunisticRenewalThresholdInDays = 30;
 
-// A callback method to handle DBus errors.
-void DBusCallback(const base::Callback<void(bool)>& on_success,
-                  const base::Closure& on_failure,
-                  base::Optional<bool> result) {
-  if (result.has_value()) {
-    on_success.Run(result.value());
-  } else {
-    LOG(ERROR) << "PlatformVerificationFlow: DBus call failed!";
-    on_failure.Run();
-  }
-}
-
 // A helper to call a ChallengeCallback with an error result.
 void ReportError(
-    const PlatformVerificationFlow::ChallengeCallback& callback,
+    PlatformVerificationFlow::ChallengeCallback callback,
     chromeos::attestation::PlatformVerificationFlow::Result error) {
   UMA_HISTOGRAM_ENUMERATION(kAttestationResultHistogram, error,
                             PlatformVerificationFlow::RESULT_MAX);
-  callback.Run(error, std::string(), std::string(), std::string());
+  std::move(callback).Run(error, std::string(), std::string(), std::string());
 }
 
 }  // namespace
@@ -134,27 +122,26 @@ PlatformVerificationFlow::ChallengeContext::ChallengeContext(
     content::WebContents* web_contents,
     const std::string& service_id,
     const std::string& challenge,
-    const ChallengeCallback& callback)
+    ChallengeCallback callback)
     : web_contents(web_contents),
       service_id(service_id),
       challenge(challenge),
-      callback(callback) {}
+      callback(std::move(callback)) {}
 
 PlatformVerificationFlow::ChallengeContext::ChallengeContext(
-    const ChallengeContext& other) = default;
+    ChallengeContext&& other) = default;
 
-PlatformVerificationFlow::ChallengeContext::~ChallengeContext() {}
+PlatformVerificationFlow::ChallengeContext::~ChallengeContext() = default;
 
 PlatformVerificationFlow::PlatformVerificationFlow()
     : attestation_flow_(NULL),
-      async_caller_(cryptohome::AsyncMethodCaller::GetInstance()),
-      cryptohome_client_(CryptohomeClient::Get()),
+      attestation_client_(AttestationClient::Get()),
       delegate_(NULL),
       timeout_delay_(base::TimeDelta::FromSeconds(kTimeoutInSeconds)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::unique_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());
-  default_attestation_flow_.reset(new AttestationFlow(
-      async_caller_, cryptohome_client_, std::move(attestation_ca_client)));
+  default_attestation_flow_.reset(
+      new AttestationFlow(std::move(attestation_ca_client)));
   attestation_flow_ = default_attestation_flow_.get();
   default_delegate_.reset(new DefaultDelegate());
   delegate_ = default_delegate_.get();
@@ -162,12 +149,10 @@ PlatformVerificationFlow::PlatformVerificationFlow()
 
 PlatformVerificationFlow::PlatformVerificationFlow(
     AttestationFlow* attestation_flow,
-    cryptohome::AsyncMethodCaller* async_caller,
-    CryptohomeClient* cryptohome_client,
+    AttestationClient* attestation_client,
     Delegate* delegate)
     : attestation_flow_(attestation_flow),
-      async_caller_(async_caller),
-      cryptohome_client_(cryptohome_client),
+      attestation_client_(attestation_client),
       delegate_(delegate),
       timeout_delay_(base::TimeDelta::FromSeconds(kTimeoutInSeconds)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -177,19 +162,18 @@ PlatformVerificationFlow::PlatformVerificationFlow(
   }
 }
 
-PlatformVerificationFlow::~PlatformVerificationFlow() {
-}
+PlatformVerificationFlow::~PlatformVerificationFlow() = default;
 
 void PlatformVerificationFlow::ChallengePlatformKey(
     content::WebContents* web_contents,
     const std::string& service_id,
     const std::string& challenge,
-    const ChallengeCallback& callback) {
+    ChallengeCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!delegate_->GetURL(web_contents).is_valid()) {
     LOG(WARNING) << "PlatformVerificationFlow: Invalid URL.";
-    ReportError(callback, INTERNAL_ERROR);
+    ReportError(std::move(callback), INTERNAL_ERROR);
     return;
   }
 
@@ -204,58 +188,70 @@ void PlatformVerificationFlow::ChallengePlatformKey(
 
   if (!IsAttestationAllowedByPolicy()) {
     VLOG(1) << "Platform verification not allowed by device policy.";
-    ReportError(callback, POLICY_REJECTED);
+    ReportError(std::move(callback), POLICY_REJECTED);
     return;
   }
 
   if (!delegate_->IsInSupportedMode(web_contents)) {
     LOG(ERROR) << "Platform verification not supported in the current mode.";
-    ReportError(callback, PLATFORM_NOT_VERIFIED);
+    ReportError(std::move(callback), PLATFORM_NOT_VERIFIED);
     return;
   }
 
   if (!delegate_->IsPermittedByUser(web_contents)) {
     VLOG(1) << "Platform verification not permitted by user.";
-    ReportError(callback, USER_REJECTED);
+    ReportError(std::move(callback), USER_REJECTED);
     return;
   }
 
-  ChallengeContext context(web_contents, service_id, challenge, callback);
+  ChallengeContext context(web_contents, service_id, challenge,
+                           std::move(callback));
 
   // Check if the device has been prepared to use attestation.
-  cryptohome_client_->TpmAttestationIsPrepared(base::BindOnce(
-      &DBusCallback,
-      base::Bind(&PlatformVerificationFlow::OnAttestationPrepared, this,
-                 context),
-      base::Bind(&ReportError, callback, INTERNAL_ERROR)));
+  ::attestation::GetEnrollmentPreparationsRequest request;
+  attestation_client_->GetEnrollmentPreparations(
+      request, base::BindOnce(&PlatformVerificationFlow::OnAttestationPrepared,
+                              this, std::move(context)));
 }
 
 void PlatformVerificationFlow::OnAttestationPrepared(
-    const ChallengeContext& context,
-    bool attestation_prepared) {
+    ChallengeContext context,
+    const ::attestation::GetEnrollmentPreparationsReply& reply) {
+  if (reply.status() != ::attestation::STATUS_SUCCESS) {
+    LOG(ERROR)
+        << "Platform verification failed to check if attestation is prepared.";
+    ReportError(std::move(context).callback, INTERNAL_ERROR);
+    return;
+  }
+  const bool attestation_prepared =
+      AttestationClient::IsAttestationPrepared(reply);
   UMA_HISTOGRAM_BOOLEAN(kAttestationAvailableHistogram, attestation_prepared);
 
   if (!attestation_prepared) {
     // This device is not currently able to use attestation features.
-    ReportError(context.callback, PLATFORM_NOT_VERIFIED);
+    ReportError(std::move(context).callback, PLATFORM_NOT_VERIFIED);
     return;
   }
 
   // Permission allowed. Now proceed to get certificate.
   const user_manager::User* user = delegate_->GetUser(context.web_contents);
   if (!user) {
-    ReportError(context.callback, INTERNAL_ERROR);
+    ReportError(std::move(context).callback, INTERNAL_ERROR);
     LOG(ERROR) << "Profile does not map to a valid user.";
     return;
   }
 
-  GetCertificate(context, user->GetAccountId(),
+  auto shared_context =
+      base::MakeRefCounted<base::RefCountedData<ChallengeContext>>(
+          std::move(context));
+  GetCertificate(std::move(shared_context), user->GetAccountId(),
                  false /* Don't force a new key */);
 }
 
-void PlatformVerificationFlow::GetCertificate(const ChallengeContext& context,
-                                              const AccountId& account_id,
-                                              bool force_new_key) {
+void PlatformVerificationFlow::GetCertificate(
+    scoped_refptr<base::RefCountedData<ChallengeContext>> context,
+    const AccountId& account_id,
+    bool force_new_key) {
   auto timer = std::make_unique<base::OneShotTimer>();
   base::OnceClosure timeout_callback = base::BindOnce(
       &PlatformVerificationFlow::OnCertificateTimeout, this, context);
@@ -265,13 +261,13 @@ void PlatformVerificationFlow::GetCertificate(const ChallengeContext& context,
       base::BindOnce(&PlatformVerificationFlow::OnCertificateReady, this,
                      context, account_id, std::move(timer));
   attestation_flow_->GetCertificate(PROFILE_CONTENT_PROTECTION_CERTIFICATE,
-                                    account_id, context.service_id,
+                                    account_id, context->data.service_id,
                                     force_new_key, std::string() /*key_name*/,
                                     std::move(certificate_callback));
 }
 
 void PlatformVerificationFlow::OnCertificateReady(
-    const ChallengeContext& context,
+    scoped_refptr<base::RefCountedData<ChallengeContext>> context,
     const AccountId& account_id,
     std::unique_ptr<base::OneShotTimer> timer,
     AttestationStatus operation_status,
@@ -288,53 +284,57 @@ void PlatformVerificationFlow::OnCertificateReady(
   }
   timer->Stop();
   if (operation_status != ATTESTATION_SUCCESS) {
-    ReportError(context.callback, PLATFORM_NOT_VERIFIED);
+    ReportError(std::move(*context).data.callback, PLATFORM_NOT_VERIFIED);
     return;
   }
   ExpiryStatus expiry_status = CheckExpiry(certificate_chain);
   if (expiry_status == EXPIRY_STATUS_EXPIRED) {
-    GetCertificate(context, account_id, true /* Force a new key */);
+    GetCertificate(std::move(context), account_id, true /* Force a new key */);
     return;
   }
   bool is_expiring_soon = (expiry_status == EXPIRY_STATUS_EXPIRING_SOON);
-  cryptohome::AsyncMethodCaller::DataCallback cryptohome_callback =
-      base::BindOnce(&PlatformVerificationFlow::OnChallengeReady, this, context,
-                     account_id, certificate_chain, is_expiring_soon);
-  std::string key_name = kContentProtectionKeyPrefix;
-  key_name += context.service_id;
-  async_caller_->TpmAttestationSignSimpleChallenge(
-      KEY_USER, cryptohome::Identification(account_id), key_name,
-      context.challenge, std::move(cryptohome_callback));
+  std::string key_name = kContentProtectionKeyPrefix + context->data.service_id;
+  std::string challenge = context->data.challenge;
+  ::attestation::SignSimpleChallengeRequest request;
+  request.set_username(cryptohome::Identification(account_id).id());
+  request.set_key_label(std::move(key_name));
+  request.set_challenge(std::move(challenge));
+  AttestationClient::Get()->SignSimpleChallenge(
+      request, base::BindOnce(&PlatformVerificationFlow::OnChallengeReady, this,
+                              std::move(*context).data, account_id,
+                              certificate_chain, is_expiring_soon));
 }
 
 void PlatformVerificationFlow::OnCertificateTimeout(
-    const ChallengeContext& context) {
+    scoped_refptr<base::RefCountedData<ChallengeContext>> context) {
   LOG(WARNING) << "PlatformVerificationFlow: Timing out.";
-  ReportError(context.callback, TIMEOUT);
+  ReportError(std::move(*context).data.callback, TIMEOUT);
 }
 
 void PlatformVerificationFlow::OnChallengeReady(
-    const ChallengeContext& context,
+    ChallengeContext context,
     const AccountId& account_id,
     const std::string& certificate_chain,
     bool is_expiring_soon,
-    bool operation_success,
-    const std::string& response_data) {
-  if (!operation_success) {
-    LOG(ERROR) << "PlatformVerificationFlow: Failed to sign challenge.";
-    ReportError(context.callback, INTERNAL_ERROR);
+    const ::attestation::SignSimpleChallengeReply& reply) {
+  if (reply.status() != ::attestation::STATUS_SUCCESS) {
+    LOG(ERROR) << "PlatformVerificationFlow: Failed to sign challenge: "
+               << reply.status();
+    ReportError(std::move(context).callback, INTERNAL_ERROR);
     return;
   }
   chromeos::attestation::SignedData signed_data_pb;
-  if (response_data.empty() || !signed_data_pb.ParseFromString(response_data)) {
+  if (reply.challenge_response().empty() ||
+      !signed_data_pb.ParseFromString(reply.challenge_response())) {
     LOG(ERROR) << "PlatformVerificationFlow: Failed to parse response data.";
-    ReportError(context.callback, INTERNAL_ERROR);
+    ReportError(std::move(context).callback, INTERNAL_ERROR);
     return;
   }
   VLOG(1) << "Platform verification successful.";
   UMA_HISTOGRAM_ENUMERATION(kAttestationResultHistogram, SUCCESS, RESULT_MAX);
-  context.callback.Run(SUCCESS, signed_data_pb.data(),
-                       signed_data_pb.signature(), certificate_chain);
+  std::move(context).callback.Run(SUCCESS, signed_data_pb.data(),
+                                  signed_data_pb.signature(),
+                                  certificate_chain);
   if (is_expiring_soon && renewals_in_progress_.count(certificate_chain) == 0) {
     renewals_in_progress_.insert(certificate_chain);
     // Fire off a certificate request so next time we'll have a new one.

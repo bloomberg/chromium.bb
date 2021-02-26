@@ -49,7 +49,7 @@ class FindTaskController::FindTask final : public GarbageCollected<FindTask> {
     }
   }
 
-  void Trace(Visitor* visitor) {
+  void Trace(Visitor* visitor) const {
     visitor->Trace(controller_);
     visitor->Trace(document_);
   }
@@ -105,10 +105,10 @@ class FindTaskController::FindTask final : public GarbageCollected<FindTask> {
     blink::FindOptions find_options =
         (options_->forward ? 0 : kBackwards) |
         (options_->match_case ? 0 : kCaseInsensitive) |
-        (options_->find_next ? 0 : kStartInSelection);
+        (options_->new_session ? kStartInSelection : 0);
     auto start_time = base::TimeTicks::Now();
 
-    while (search_start != search_end) {
+    while (search_start < search_end) {
       // Find in the whole block.
       FindBuffer buffer(EphemeralRangeInFlatTree(search_start, search_end));
       FindBuffer::Results match_results =
@@ -320,7 +320,7 @@ void FindTaskController::DidFindMatch(int identifier, Range* result_range) {
   text_finder_->DidFindMatch(identifier, current_match_count_, result_range);
 }
 
-void FindTaskController::Trace(Visitor* visitor) {
+void FindTaskController::Trace(Visitor* visitor) const {
   visitor->Trace(owner_frame_);
   visitor->Trace(text_finder_);
   visitor->Trace(find_task_);

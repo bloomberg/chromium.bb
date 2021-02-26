@@ -8,9 +8,7 @@
  */
 
 // Include test fixture.
-GEN_INCLUDE([
-  '../testing/chromevox_e2e_test_base.js', '../testing/assert_additions.js'
-]);
+GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js']);
 
 ChromeVoxLibLouisTest = class extends ChromeVoxE2ETest {
   createLiblouis() {
@@ -62,13 +60,12 @@ LIBLOUIS_TEST_F('testTranslateComputerBraille', function(liblouis) {
 LIBLOUIS_TEST_F_WITH_PREAMBLE(
     `
 #if defined(MEMORY_SANITIZER)
-#define MAYBE_checkAllTables DISABLED_checkAllTables
+#define MAYBE_CheckAllTables DISABLED_CheckAllTables
 #else
-// Flaky, see crbug.com/1048585.
-#define MAYBE_checkAllTables DISABLED_checkAllTables
+#define MAYBE_CheckAllTables CheckAllTables
 #endif
 `,
-    'MAYBE_checkAllTables', function(liblouis) {
+    'MAYBE_CheckAllTables', function(liblouis) {
       BrailleTable.getAll(this.newCallback(function(tables) {
         let i = 0;
         const checkNextTable = function() {

@@ -19,6 +19,7 @@ goog.require('CommandStore');
 goog.require('KeyMap');
 goog.require('KeyUtil');
 goog.require('LibLouis');
+goog.require('NavBraille');
 
 /**
  * Class to manage the keyboard explorer.
@@ -55,9 +56,9 @@ KbExplorer = class {
             .backgroundWindow['BrailleBackground']['getInstance']()['getTranslatorManager']()['getDefaultTranslator']();
 
     ChromeVoxKbHandler.commandHandler = KbExplorer.onCommand;
-    $('instruction').focus();
 
-    KbExplorer.output(Msgs.getMsg('learn_mode_intro'));
+    $('instruction').textContent = Msgs.getMsg('learn_mode_intro');
+    KbExplorer.shouldFlushSpeech_ = true;
   }
 
   /**
@@ -67,23 +68,21 @@ KbExplorer = class {
    * @return {boolean} True if the default action should be performed.
    */
   static onKeyDown(evt) {
-    if (KbExplorer.keydownWithoutKeyupEvents_.size == 0) {
-      ChromeVox.tts.stop();
-    }
-    KbExplorer.keydownWithoutKeyupEvents_.add(evt.keyCode);
-    ChromeVox.tts.speak(
-        KeyUtil.getReadableNameForKeyCode(evt.keyCode),
-        window.backgroundWindow.QueueMode.QUEUE,
-        AbstractTts.PERSONALITY_ANNOTATION);
+    // Process this event only once; it isn't a repeat (i.e. a user is holding a
+    // key down).
+    if (!evt.repeat) {
+      KbExplorer.output(KeyUtil.getReadableNameForKeyCode(evt.keyCode));
 
-    // Allow Ctrl+W or escape to be handled.
-    if ((evt.key == 'w' && evt.ctrlKey) || evt.key == 'Escape') {
-      KbExplorer.close_();
-      return true;
+      // Allow Ctrl+W or escape to be handled.
+      if ((evt.key === 'w' && evt.ctrlKey) || evt.key === 'Escape') {
+        KbExplorer.close_();
+        return true;
+      }
+
+      ChromeVoxKbHandler.basicKeyDownActionsListener(evt);
+      KbExplorer.clearRange();
     }
 
-    ChromeVoxKbHandler.basicKeyDownActionsListener(evt);
-    KbExplorer.clearRange();
     evt.preventDefault();
     evt.stopPropagation();
     return false;
@@ -94,7 +93,7 @@ KbExplorer = class {
    * @param {Event} evt key event.
    */
   static onKeyUp(evt) {
-    KbExplorer.keydownWithoutKeyupEvents_.delete(evt.keyCode);
+    KbExplorer.shouldFlushSpeech_ = true;
     KbExplorer.maybeClose_();
     KbExplorer.clearRange();
     evt.preventDefault();
@@ -115,6 +114,7 @@ KbExplorer = class {
    * @param {BrailleKeyEvent} evt The key event.
    */
   static onBrailleKeyEvent(evt) {
+    KbExplorer.shouldFlushSpeech_ = true;
     KbExplorer.maybeClose_();
     let msgid;
     const msgArgs = [];
@@ -161,11 +161,11 @@ KbExplorer = class {
         if (mods) {
           const outputs = [];
           for (const mod in mods) {
-            if (mod == 'ctrlKey') {
+            if (mod === 'ctrlKey') {
               outputs.push('control');
-            } else if (mod == 'altKey') {
+            } else if (mod === 'altKey') {
               outputs.push('alt');
-            } else if (mod == 'shiftKey') {
+            } else if (mod === 'shiftKey') {
               outputs.push('shift');
             }
           }
@@ -210,10 +210,29 @@ KbExplorer = class {
    *     ax::mojom::Gesture enum defined in ui/accessibility/ax_enums.mojom
    */
   static onAccessibilityGesture(gesture) {
+    KbExplorer.shouldFlushSpeech_ = true;
     KbExplorer.maybeClose_();
+
+    if (gesture === 'touchExplore') {
+      if ((new Date() - KbExplorer.lastTouchExplore_) <
+          KbExplorer.MIN_TOUCH_EXPLORE_OUTPUT_TIME_MS_) {
+        return;
+      }
+      KbExplorer.lastTouchExplore_ = new Date();
+    }
+
+
     const gestureData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
     if (gestureData) {
-      KbExplorer.onCommand(gestureData.command);
+      if (gestureData.msgId) {
+        KbExplorer.output(Msgs.getMsg(gestureData.msgId));
+      }
+      if (gestureData.command) {
+        KbExplorer.onCommand(gestureData.command);
+      }
+      if (gestureData.commandDescriptionMsgId) {
+        KbExplorer.output(Msgs.getMsg(gestureData.commandDescriptionMsgId));
+      }
     }
   }
 
@@ -237,8 +256,14 @@ KbExplorer = class {
    * @param {string=} opt_braille If different from text.
    */
   static output(text, opt_braille) {
-    ChromeVox.tts.speak(text, window.backgroundWindow.QueueMode.QUEUE);
-    ChromeVox.braille.write({text: new Spannable(opt_braille || text)});
+    ChromeVox.tts.speak(
+        text,
+        KbExplorer.shouldFlushSpeech_ ?
+            window.backgroundWindow.QueueMode.FLUSH :
+            window.backgroundWindow.QueueMode.QUEUE);
+    ChromeVox.braille.write(
+        new NavBraille({text: new Spannable(opt_braille || text)}));
+    KbExplorer.shouldFlushSpeech_ = false;
   }
 
   /** Clears ChromeVox range. */
@@ -272,7 +297,7 @@ KbExplorer = class {
     chrome.windows.getLastFocused({populate: true}, (focusedWindow) => {
       if (focusedWindow && focusedWindow.focused &&
           focusedWindow.tabs.find((tab) => {
-            return tab.url == location.href;
+            return tab.url === location.href;
           })) {
         return;
       }
@@ -290,8 +315,19 @@ KbExplorer = class {
 };
 
 /**
- * Tracks all keydown events (keyed by key code) for which keyup events have
- * yet to be received.
- * @type {!Set<number>}
+ * Indicates when speech output should flush previous speech.
+ * @private {boolean}
  */
-KbExplorer.keydownWithoutKeyupEvents_ = new Set();
+KbExplorer.shouldFlushSpeech_ = false;
+
+/**
+ * Last time a touch explore gesture was described.
+ * @private {!Date}
+ */
+KbExplorer.lastTouchExplore_ = new Date();
+
+/**
+ * The minimum time to wait before describing another touch explore gesture.
+ * @private {number}
+ */
+KbExplorer.MIN_TOUCH_EXPLORE_OUTPUT_TIME_MS_ = 1000;

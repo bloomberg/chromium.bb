@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/files/file_util.h"
+#include "chrome/browser/chromeos/service_sandbox_type.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/ime/constants.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -23,10 +24,6 @@ namespace chromeos {
 namespace input_method {
 
 namespace {
-
-// TODO(crbug.com/1019541): Investigate if this can be removed or replaced by a
-// compile time flag.
-bool g_disable_ime_sandbox_for_testing = false;
 
 constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
     net::DefineNetworkTrafficAnnotation("ime_url_downloader", R"(
@@ -59,17 +56,13 @@ bool IsDownloadPathValid(const base::FilePath& file_path) {
 }
 
 bool IsDownloadURLValid(const GURL& url) {
-  // TODO(https://crbug.com/837156): Whitelist all URLs instead of some general
+  // TODO(https://crbug.com/837156): Allowlist all URLs instead of some general
   // checks below.
   return url.SchemeIs(url::kHttpsScheme) &&
          url.DomainIs(chromeos::ime::kGoogleKeyboardDownloadDomain);
 }
 
 }  // namespace
-
-void DisableImeSandboxForTesting() {
-  g_disable_ime_sandbox_for_testing = true;
-}
 
 ImeServiceConnector::ImeServiceConnector(Profile* profile)
     : profile_(profile), url_loader_factory_(profile->GetURLLoaderFactory()) {}
@@ -115,17 +108,10 @@ void ImeServiceConnector::DownloadImeFileTo(
 void ImeServiceConnector::SetupImeService(
     mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
   if (!remote_service_) {
-    auto kImeServiceSandboxType =
-        chromeos::features::IsImeDecoderWithSandboxEnabled()
-            ? service_manager::SandboxType::kIme
-            : service_manager::SandboxType::kUtility;
     content::ServiceProcessHost::Launch(
         remote_service_.BindNewPipeAndPassReceiver(),
         content::ServiceProcessHost::Options()
             .WithDisplayName(IDS_IME_SERVICE_DISPLAY_NAME)
-            .WithSandboxType(g_disable_ime_sandbox_for_testing
-                                 ? service_manager::SandboxType::kNoSandbox
-                                 : kImeServiceSandboxType)
             .Pass());
     remote_service_.reset_on_disconnect();
 

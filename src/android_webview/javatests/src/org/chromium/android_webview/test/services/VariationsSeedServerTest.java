@@ -12,7 +12,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -36,7 +37,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Test VariationsSeedServer.
+ * Test VariationsSeedServer. These tests are not batched to make sure all unbinded services are
+ * properly killed between tests.
  */
 @RunWith(AwJUnit4ClassRunner.class)
 @OnlyRunIn(SINGLE_PROCESS)

@@ -6,23 +6,21 @@
 
 #include "xfa/fxfa/cxfa_fftext.h"
 
+#include "xfa/fgas/graphics/cfgas_gegraphics.h"
 #include "xfa/fgas/layout/cfx_linkuserdata.h"
 #include "xfa/fwl/fwl_widgethit.h"
 #include "xfa/fxfa/cxfa_ffapp.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_ffpageview.h"
 #include "xfa/fxfa/cxfa_ffwidget.h"
-#include "xfa/fxfa/cxfa_pieceline.h"
 #include "xfa/fxfa/cxfa_textlayout.h"
-#include "xfa/fxfa/cxfa_textpiece.h"
 #include "xfa/fxfa/parser/cxfa_margin.h"
-#include "xfa/fxgraphics/cxfa_graphics.h"
 
 CXFA_FFText::CXFA_FFText(CXFA_Node* pNode) : CXFA_FFWidget(pNode) {}
 
-CXFA_FFText::~CXFA_FFText() {}
+CXFA_FFText::~CXFA_FFText() = default;
 
-void CXFA_FFText::RenderWidget(CXFA_Graphics* pGS,
+void CXFA_FFText::RenderWidget(CFGAS_GEGraphics* pGS,
                                const CFX_Matrix& matrix,
                                HighlightOption highlight) {
   if (!HasVisibleStatus())
@@ -133,8 +131,7 @@ bool CXFA_FFText::OnLButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
   if (!wsURLContent)
     return false;
 
-  CXFA_FFDoc* pDoc = GetDoc();
-  pDoc->GetDocEnvironment()->GotoURL(pDoc, wsURLContent);
+  GetDoc()->GotoURL(wsURLContent);
   return true;
 }
 
@@ -152,13 +149,5 @@ const wchar_t* CXFA_FFText::GetLinkURLAtPoint(const CFX_PointF& point) {
     return nullptr;
 
   CFX_RectF rect = GetRectWithoutRotate();
-  for (const auto& pPieceLine : *pTextLayout->GetPieceLines()) {
-    for (const auto& pPiece : pPieceLine->m_textPieces) {
-      if (pPiece->pLinkData &&
-          pPiece->rtPiece.Contains(point - rect.TopLeft())) {
-        return pPiece->pLinkData->GetLinkURL();
-      }
-    }
-  }
-  return nullptr;
+  return pTextLayout->GetLinkURLAtPoint(point - rect.TopLeft());
 }

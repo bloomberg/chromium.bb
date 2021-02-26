@@ -28,11 +28,13 @@ struct SkV2 {
     SkV2 operator*(SkV2 v) const { return {x*v.x, y*v.y}; }
     friend SkV2 operator*(SkV2 v, SkScalar s) { return {v.x*s, v.y*s}; }
     friend SkV2 operator*(SkScalar s, SkV2 v) { return {v.x*s, v.y*s}; }
+    friend SkV2 operator/(SkV2 v, SkScalar s) { return {v.x/s, v.y/s}; }
 
     void operator+=(SkV2 v) { *this = *this + v; }
     void operator-=(SkV2 v) { *this = *this - v; }
     void operator*=(SkV2 v) { *this = *this * v; }
     void operator*=(SkScalar s) { *this = *this * s; }
+    void operator/=(SkScalar s) { *this = *this / s; }
 
     SkScalar lengthSquared() const { return Dot(*this, *this); }
     SkScalar length() const { return SkScalarSqrt(this->lengthSquared()); }
@@ -109,6 +111,15 @@ struct SkV4 {
 
     const float* ptr() const { return &x; }
     float* ptr() { return &x; }
+
+    float operator[](int i) const {
+        SkASSERT(i >= 0 && i < 4);
+        return this->ptr()[i];
+    }
+    float& operator[](int i) {
+        SkASSERT(i >= 0 && i < 4);
+        return this->ptr()[i];
+    }
 };
 
 /**
@@ -143,7 +154,7 @@ public:
     enum NaN_Constructor {
         kNaN_Constructor
     };
-    SkM44(NaN_Constructor)
+    constexpr SkM44(NaN_Constructor)
         : fMat{SK_ScalarNaN, SK_ScalarNaN, SK_ScalarNaN, SK_ScalarNaN,
                SK_ScalarNaN, SK_ScalarNaN, SK_ScalarNaN, SK_ScalarNaN,
                SK_ScalarNaN, SK_ScalarNaN, SK_ScalarNaN, SK_ScalarNaN,
@@ -151,18 +162,18 @@ public:
     {}
 
     /**
-     *  Parameters are treated as row-major.
+     *  The constructor parameters are in row-major order.
      */
-    SkM44(SkScalar m0, SkScalar m4, SkScalar m8,  SkScalar m12,
-          SkScalar m1, SkScalar m5, SkScalar m9,  SkScalar m13,
-          SkScalar m2, SkScalar m6, SkScalar m10, SkScalar m14,
-          SkScalar m3, SkScalar m7, SkScalar m11, SkScalar m15)
-    {
-        fMat[0] = m0; fMat[4] = m4; fMat[8]  = m8;  fMat[12] = m12;
-        fMat[1] = m1; fMat[5] = m5; fMat[9]  = m9;  fMat[13] = m13;
-        fMat[2] = m2; fMat[6] = m6; fMat[10] = m10; fMat[14] = m14;
-        fMat[3] = m3; fMat[7] = m7; fMat[11] = m11; fMat[15] = m15;
-    }
+    constexpr SkM44(SkScalar m0, SkScalar m4, SkScalar m8,  SkScalar m12,
+                    SkScalar m1, SkScalar m5, SkScalar m9,  SkScalar m13,
+                    SkScalar m2, SkScalar m6, SkScalar m10, SkScalar m14,
+                    SkScalar m3, SkScalar m7, SkScalar m11, SkScalar m15)
+        // fMat is column-major order in memory.
+        : fMat{m0,  m1,  m2,  m3,
+               m4,  m5,  m6,  m7,
+               m8,  m9,  m10, m11,
+               m12, m13, m14, m15}
+    {}
 
     static SkM44 Rows(const SkV4& r0, const SkV4& r1, const SkV4& r2, const SkV4& r3) {
         SkM44 m(kUninitialized_Constructor);

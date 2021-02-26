@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_wsdlconnection.h"
 
 #include "fxjs/xfa/cjx_wsdlconnection.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -36,6 +36,8 @@ CXFA_WsdlConnection::CXFA_WsdlConnection(CXFA_Document* doc,
                 XFA_Element::WsdlConnection,
                 kWsdlConnectionPropertyData,
                 kWsdlConnectionAttributeData,
-                pdfium::MakeUnique<CJX_WsdlConnection>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_WsdlConnection>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_WsdlConnection::~CXFA_WsdlConnection() = default;

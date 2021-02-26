@@ -15,7 +15,7 @@
 
 #if defined(OS_WIN)
 #include "content/public/child/dwrite_font_proxy_init_win.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "components/services/font/public/cpp/font_loader.h"
 #endif
 
@@ -25,17 +25,18 @@ PaintPreviewCompositorCollectionImpl::PaintPreviewCompositorCollectionImpl(
     mojo::PendingReceiver<mojom::PaintPreviewCompositorCollection> receiver,
     bool initialize_environment,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : io_task_runner_(std ::move(io_task_runner)) {
+    : initialize_environment_(initialize_environment),
+      io_task_runner_(std ::move(io_task_runner)) {
   if (receiver)
     receiver_.Bind(std::move(receiver));
 
-  if (!initialize_environment)
+  if (!initialize_environment_)
     return;
 
     // Initialize font access for Skia.
 #if defined(OS_WIN)
   content::InitializeDWriteFontProxy();
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   mojo::PendingRemote<font_service::mojom::FontService> font_service;
   content::UtilityThread::Get()->BindHostReceiver(
       font_service.InitWithNewPipeAndPassReceiver());
@@ -54,7 +55,7 @@ PaintPreviewCompositorCollectionImpl::PaintPreviewCompositorCollectionImpl(
   // encoding to PNG or we could provide our own codec implementations.
 
   // Sanity check that fonts are working.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // No WebSandbox is provided on Linux so the local fonts aren't accessible.
   // This is fine since since the subsetted fonts are provided in the SkPicture.
   // However, we still need to check that the SkFontMgr starts as it is used by
@@ -76,7 +77,7 @@ void PaintPreviewCompositorCollectionImpl::SetDiscardableSharedMemoryManager(
         discardable_memory::mojom::DiscardableSharedMemoryManager> manager) {
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
       manager_remote(std::move(manager));
-  discardable_shared_memory_manager_ = std::make_unique<
+  discardable_shared_memory_manager_ = base::MakeRefCounted<
       discardable_memory::ClientDiscardableSharedMemoryManager>(
       std::move(manager_remote), io_task_runner_);
   base::DiscardableMemoryAllocator::SetInstance(
@@ -86,11 +87,12 @@ void PaintPreviewCompositorCollectionImpl::SetDiscardableSharedMemoryManager(
 void PaintPreviewCompositorCollectionImpl::CreateCompositor(
     mojo::PendingReceiver<mojom::PaintPreviewCompositor> receiver,
     PaintPreviewCompositorCollectionImpl::CreateCompositorCallback callback) {
+  DCHECK(discardable_shared_memory_manager_ || !initialize_environment_);
   base::UnguessableToken token = base::UnguessableToken::Create();
   compositors_.insert(
       {token,
        std::make_unique<PaintPreviewCompositorImpl>(
-           std::move(receiver),
+           std::move(receiver), discardable_shared_memory_manager_,
            base::BindOnce(&PaintPreviewCompositorCollectionImpl::OnDisconnect,
                           weak_ptr_factory_.GetWeakPtr(), token))});
   std::move(callback).Run(token);

@@ -5,6 +5,7 @@
 #include "discovery/dnssd/impl/publisher_impl.h"
 
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -26,20 +27,16 @@ DnsSdInstanceEndpoint CreateEndpoint(
     DnsSdInstance instance,
     InstanceKey key,
     const NetworkInterfaceConfig& network_config) {
-  if (!network_config.HasAddressV4() || !network_config.HasAddressV6()) {
-    const IPAddress& address = network_config.GetAddress();
-    OSP_DCHECK(address);
-    IPEndpoint endpoint{address, instance.port()};
-    return DnsSdInstanceEndpoint(key.instance_id(), key.service_id(),
-                                 key.domain_id(), instance.txt(), endpoint,
-                                 network_config.network_interface());
-  } else {
-    IPEndpoint endpoint_v4{network_config.address_v4(), instance.port()};
-    IPEndpoint endpoint_v6{network_config.address_v6(), instance.port()};
-    return DnsSdInstanceEndpoint(
-        key.instance_id(), key.service_id(), key.domain_id(), instance.txt(),
-        endpoint_v4, endpoint_v6, network_config.network_interface());
+  std::vector<IPEndpoint> endpoints;
+  if (network_config.HasAddressV4()) {
+    endpoints.push_back({network_config.address_v4(), instance.port()});
   }
+  if (network_config.HasAddressV6()) {
+    endpoints.push_back({network_config.address_v6(), instance.port()});
+  }
+  return DnsSdInstanceEndpoint(
+      key.instance_id(), key.service_id(), key.domain_id(), instance.txt(),
+      network_config.network_interface(), std::move(endpoints));
 }
 
 DnsSdInstanceEndpoint UpdateDomain(

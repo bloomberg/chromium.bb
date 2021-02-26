@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/input/touch_action_filter.h"
-#include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "ui/events/blink/blink_features.h"
 
+using blink::SyntheticWebGestureEventBuilder;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 
@@ -33,8 +33,8 @@ class TouchActionFilterTest : public testing::Test {
   }
   void ResetTouchAction() { filter_.ResetTouchAction(); }
   void ResetActiveTouchAction() { filter_.active_touch_action_.reset(); }
-  void ResetWhiteListedTouchAction() {
-    filter_.white_listed_touch_action_ = cc::TouchAction::kAuto;
+  void ResetCompositorAllowedTouchAction() {
+    filter_.compositor_allowed_touch_action_ = cc::TouchAction::kAuto;
   }
   void SetNoDeferredEvents() { filter_.has_deferred_events_ = false; }
   void SetGestureSequenceInProgress() {
@@ -336,6 +336,57 @@ TEST_F(TouchActionFilterTest, SimpleFilter) {
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
             FilterGestureEventResult::kFilterGestureEventFiltered);
   filter_.DecreaseActiveTouches();
+
+  // horizontal scroll
+  scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(3, 2, kSourceDevice);
+
+  // kInternalPanXScrolls has no effect when active touch action is available.
+  {
+    ResetTouchAction();
+    // With kInternalPanXScrolls
+    filter_.OnSetTouchAction(cc::TouchAction::kPanX |
+                             cc::TouchAction::kInternalPanXScrolls);
+    filter_.IncreaseActiveTouches();
+    EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
+              FilterGestureEventResult::kFilterGestureEventAllowed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
+              FilterGestureEventResult::kFilterGestureEventAllowed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),
+              FilterGestureEventResult::kFilterGestureEventAllowed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
+              FilterGestureEventResult::kFilterGestureEventAllowed);
+    filter_.DecreaseActiveTouches();
+
+    ResetTouchAction();
+    // Without kInternalPanXScrolls
+    filter_.OnSetTouchAction(cc::TouchAction::kPanX);
+    filter_.IncreaseActiveTouches();
+    EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
+              FilterGestureEventResult::kFilterGestureEventAllowed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
+              FilterGestureEventResult::kFilterGestureEventAllowed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),
+              FilterGestureEventResult::kFilterGestureEventAllowed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
+              FilterGestureEventResult::kFilterGestureEventAllowed);
+    filter_.DecreaseActiveTouches();
+
+    ResetTouchAction();
+    // We only set kInternalPanXScrolls when kPanX is set, so there is no
+    // kInternalPanXScrolls with kPanY case.
+    filter_.OnSetTouchAction(cc::TouchAction::kPanY);
+    filter_.IncreaseActiveTouches();
+    EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
+              FilterGestureEventResult::kFilterGestureEventAllowed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
+              FilterGestureEventResult::kFilterGestureEventFiltered);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),
+              FilterGestureEventResult::kFilterGestureEventFiltered);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
+              FilterGestureEventResult::kFilterGestureEventFiltered);
+    filter_.DecreaseActiveTouches();
+  }
 }
 
 TEST_F(TouchActionFilterTest, PanLeft) {
@@ -489,11 +540,13 @@ TEST_F(TouchActionFilterTest, BitMath) {
   EXPECT_EQ(cc::TouchAction::kPan,
             cc::TouchAction::kAuto & cc::TouchAction::kPan);
   EXPECT_EQ(cc::TouchAction::kManipulation,
-            cc::TouchAction::kAuto & ~cc::TouchAction::kDoubleTapZoom);
+            cc::TouchAction::kAuto & ~(cc::TouchAction::kDoubleTapZoom |
+                                       cc::TouchAction::kInternalPanXScrolls));
   EXPECT_EQ(cc::TouchAction::kPanX,
             cc::TouchAction::kPanLeft | cc::TouchAction::kPanRight);
-  EXPECT_EQ(cc::TouchAction::kAuto,
-            cc::TouchAction::kManipulation | cc::TouchAction::kDoubleTapZoom);
+  EXPECT_EQ(cc::TouchAction::kAuto, cc::TouchAction::kManipulation |
+                                        cc::TouchAction::kDoubleTapZoom |
+                                        cc::TouchAction::kInternalPanXScrolls);
 }
 
 TEST_F(TouchActionFilterTest, MultiTouch) {
@@ -1179,13 +1232,14 @@ TEST_F(TouchActionFilterTest, GestureArrivesBeforeHasHandlerSet) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
 
-TEST_F(TouchActionFilterTest, PinchGesturesAllowedByWhiteListedTouchAction) {
+TEST_F(TouchActionFilterTest,
+       PinchGesturesAllowedByCompositorAllowedTouchAction) {
   filter_.OnHasTouchEventHandlers(true);
   EXPECT_FALSE(ActiveTouchAction().has_value());
   EXPECT_FALSE(filter_.allowed_touch_action().has_value());
 
-  // white listed touch action has a default value of Auto, and pinch related
-  // gestures should be allowed.
+  // Compositor allowed touch action has a default value of Auto, and pinch
+  // related gestures should be allowed.
   WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::Type::kGesturePinchBegin, kSourceDevice);
   WebGestureEvent pinch_update =
@@ -1201,9 +1255,9 @@ TEST_F(TouchActionFilterTest, PinchGesturesAllowedByWhiteListedTouchAction) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
 
-// Test gesture event filtering with white listed touch action. It should test
-// all 3 kinds of results: Allowed / Dropped / Delayed.
-TEST_F(TouchActionFilterTest, FilterWithWhiteListedTouchAction) {
+// Test gesture event filtering with compositor allowed touch action. It should
+// test all 3 kinds of results: Allowed / Dropped / Delayed.
+TEST_F(TouchActionFilterTest, FilterWithCompositorAllowedListedTouchAction) {
   filter_.OnHasTouchEventHandlers(true);
   EXPECT_FALSE(ActiveTouchAction().has_value());
   EXPECT_FALSE(filter_.allowed_touch_action().has_value());
@@ -1218,8 +1272,26 @@ TEST_F(TouchActionFilterTest, FilterWithWhiteListedTouchAction) {
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
-  filter_.OnSetWhiteListedTouchAction(cc::TouchAction::kPan);
-  EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kPan);
+  // Vertical scroll, kInternalPanXScrolls doesn't have effect.
+  filter_.OnSetCompositorAllowedTouchAction(
+      cc::TouchAction::kPan | cc::TouchAction::kInternalPanXScrolls);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(),
+            cc::TouchAction::kPan | cc::TouchAction::kInternalPanXScrolls);
+  SetGestureSequenceInProgress();
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+
+  // Don't have kInternalPanXScrolls, but this is a vertical scroll, so all the
+  // events are allowed.
+  ResetTouchAction();
+  ResetActiveTouchAction();
+  ResetCompositorAllowedTouchAction();
+  filter_.OnSetCompositorAllowedTouchAction(cc::TouchAction::kPan);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(), cc::TouchAction::kPan);
   SetGestureSequenceInProgress();
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
             FilterGestureEventResult::kFilterGestureEventAllowed);
@@ -1231,9 +1303,9 @@ TEST_F(TouchActionFilterTest, FilterWithWhiteListedTouchAction) {
   // Pinch related gestures are always delayed.
   ResetTouchAction();
   ResetActiveTouchAction();
-  ResetWhiteListedTouchAction();
-  filter_.OnSetWhiteListedTouchAction(cc::TouchAction::kPan);
-  EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kPan);
+  ResetCompositorAllowedTouchAction();
+  filter_.OnSetCompositorAllowedTouchAction(cc::TouchAction::kPan);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(), cc::TouchAction::kPan);
   WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::Type::kGesturePinchBegin, kSourceDevice);
   WebGestureEvent pinch_update =
@@ -1248,14 +1320,15 @@ TEST_F(TouchActionFilterTest, FilterWithWhiteListedTouchAction) {
   EXPECT_EQ(filter_.FilterGestureEvent(&pinch_end),
             FilterGestureEventResult::kFilterGestureEventDelayed);
 
-  // Scroll updates should be delayed if white listed touch action is PanY,
-  // because there are delta along the direction that is not allowed.
+  // Scroll updates should be delayed if the compositor allowed listed touch
+  // action is PanY, because there are delta along the direction that is not
+  // allowed.
   ResetTouchAction();
   ResetActiveTouchAction();
-  ResetWhiteListedTouchAction();
-  filter_.OnSetWhiteListedTouchAction(cc::TouchAction::kPanY);
+  ResetCompositorAllowedTouchAction();
+  filter_.OnSetCompositorAllowedTouchAction(cc::TouchAction::kPanY);
   SetNoDeferredEvents();
-  EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kPanY);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(), cc::TouchAction::kPanY);
   SetGestureSequenceInProgress();
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
             FilterGestureEventResult::kFilterGestureEventAllowed);
@@ -1264,12 +1337,13 @@ TEST_F(TouchActionFilterTest, FilterWithWhiteListedTouchAction) {
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
             FilterGestureEventResult::kFilterGestureEventDelayed);
 
+  // Horizontal scroll, don't have kInternalPanXScrolls, delay scroll events.
   ResetTouchAction();
   ResetActiveTouchAction();
-  ResetWhiteListedTouchAction();
-  filter_.OnSetWhiteListedTouchAction(cc::TouchAction::kPanX);
+  ResetCompositorAllowedTouchAction();
+  filter_.OnSetCompositorAllowedTouchAction(cc::TouchAction::kPanX);
   SetNoDeferredEvents();
-  EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kPanX);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(), cc::TouchAction::kPanX);
 
   dy = 0;
   scroll_begin =
@@ -1278,11 +1352,11 @@ TEST_F(TouchActionFilterTest, FilterWithWhiteListedTouchAction) {
       dx, dy, 0, kSourceDevice);
   SetGestureSequenceInProgress();
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
-            FilterGestureEventResult::kFilterGestureEventAllowed);
+            FilterGestureEventResult::kFilterGestureEventDelayed);
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),
-            FilterGestureEventResult::kFilterGestureEventAllowed);
+            FilterGestureEventResult::kFilterGestureEventDelayed);
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
-            FilterGestureEventResult::kFilterGestureEventAllowed);
+            FilterGestureEventResult::kFilterGestureEventDelayed);
 
   dx = 0;
   dy = 5;
@@ -1290,8 +1364,8 @@ TEST_F(TouchActionFilterTest, FilterWithWhiteListedTouchAction) {
       SyntheticWebGestureEventBuilder::BuildScrollBegin(dx, dy, kSourceDevice);
   scroll_update = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
       dx, dy, 0, kSourceDevice);
-  filter_.OnSetWhiteListedTouchAction(cc::TouchAction::kPanX);
-  EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kPanX);
+  filter_.OnSetCompositorAllowedTouchAction(cc::TouchAction::kPanX);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(), cc::TouchAction::kPanX);
   SetGestureSequenceInProgress();
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
             FilterGestureEventResult::kFilterGestureEventDelayed);
@@ -1301,21 +1375,21 @@ TEST_F(TouchActionFilterTest, FilterWithWhiteListedTouchAction) {
             FilterGestureEventResult::kFilterGestureEventDelayed);
 }
 
-TEST_F(TouchActionFilterTest, WhiteListedTouchActionResetToAuto) {
+TEST_F(TouchActionFilterTest, CompositorAllowedTouchActionResetToAuto) {
   filter_.OnHasTouchEventHandlers(true);
 
-  filter_.OnSetWhiteListedTouchAction(cc::TouchAction::kPan);
-  EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kPan);
+  filter_.OnSetCompositorAllowedTouchAction(cc::TouchAction::kPan);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(), cc::TouchAction::kPan);
   ResetTouchAction();
-  EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kAuto);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(), cc::TouchAction::kAuto);
 }
 
-TEST_F(TouchActionFilterTest, WhiteListedTouchActionAutoNoHasHandlers) {
+TEST_F(TouchActionFilterTest, CompositorAllowedTouchActionAutoNoHasHandlers) {
   filter_.OnHasTouchEventHandlers(false);
-  EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kAuto);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(), cc::TouchAction::kAuto);
 
   ResetTouchAction();
-  EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kAuto);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(), cc::TouchAction::kAuto);
 }
 
 TEST_F(TouchActionFilterTest, ResetBeforeHasHandlerSet) {
@@ -1328,11 +1402,11 @@ TEST_F(TouchActionFilterTest, ResetBeforeHasHandlerSet) {
 }
 
 TEST_F(TouchActionFilterTest,
-       WhiteListedTouchActionNotResetAtGestureScrollEnd) {
+       CompositorAllowedTouchActionNotResetAtGestureScrollEnd) {
   filter_.OnHasTouchEventHandlers(true);
 
-  filter_.OnSetWhiteListedTouchAction(cc::TouchAction::kPan);
-  EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kPan);
+  filter_.OnSetCompositorAllowedTouchAction(cc::TouchAction::kPan);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(), cc::TouchAction::kPan);
 
   int dx = 2, dy = 5;
   WebGestureEvent scroll_begin =
@@ -1351,34 +1425,21 @@ TEST_F(TouchActionFilterTest,
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
             FilterGestureEventResult::kFilterGestureEventAllowed);
 
-  EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kPan);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(), cc::TouchAction::kPan);
 }
 
-// Having a gesture scroll begin without tap down should set touch action to
-// Auto.
+// Having a gesture scroll begin without tap down should assume touch action is
+// auto;
 TEST_F(TouchActionFilterTest, ScrollBeginWithoutTapDown) {
   filter_.OnHasTouchEventHandlers(true);
   EXPECT_FALSE(ActiveTouchAction().has_value());
   EXPECT_FALSE(filter_.allowed_touch_action().has_value());
 
-  filter_.OnSetWhiteListedTouchAction(cc::TouchAction::kPan);
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(5, 0, kSourceDevice);
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
             FilterGestureEventResult::kFilterGestureEventAllowed);
-  EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kPan);
-
-  ResetTouchAction();
-  ResetActiveTouchAction();
-  ResetGestureSequenceInProgress();
-  EXPECT_FALSE(ActiveTouchAction().has_value());
-  EXPECT_FALSE(filter_.allowed_touch_action().has_value());
-
-  // Ensure that there is no crash at GSB if both |allowed_| and |active_|
-  // touch action have no value.
-  filter_.OnSetWhiteListedTouchAction(cc::TouchAction::kPan);
-  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
-            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.compositor_allowed_touch_action(), cc::TouchAction::kAuto);
 }
 
 // This tests a gesture tap down with |num_of_active_touches_| == 0

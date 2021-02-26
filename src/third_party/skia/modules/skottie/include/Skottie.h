@@ -14,6 +14,7 @@
 #include "include/core/SkString.h"
 #include "include/core/SkTypes.h"
 #include "modules/skottie/include/ExternalLayer.h"
+#include "modules/skottie/include/SkottieProperty.h"
 #include "modules/skresources/include/SkResources.h"
 
 #include <memory>
@@ -38,8 +39,6 @@ namespace internal { class Animator; }
 
 using ImageAsset = skresources::ImageAsset;
 using ResourceProvider = skresources::ResourceProvider;
-
-class PropertyObserver;
 
 /**
  * A Logger subclass can be used to receive Animation::Builder parsing errors and warnings.
@@ -68,9 +67,11 @@ public:
     class Builder final {
     public:
         enum Flags : uint32_t {
-            kDeferImageLoading = 0x01, // Normally, all static image frames are resolved at
-                                       // load time via ImageAsset::getFrame(0).  With this flag,
-                                       // frames are only resolved when needed, at seek() time.
+            kDeferImageLoading   = 0x01, // Normally, all static image frames are resolved at
+                                         // load time via ImageAsset::getFrame(0).  With this flag,
+                                         // frames are only resolved when needed, at seek() time.
+            kPreferEmbeddedFonts = 0x02, // Attempt to use the embedded fonts (glyph paths,
+                                         // normally used as fallback) over native Skia typefaces.
         };
 
         explicit Builder(uint32_t flags = 0);
@@ -159,7 +160,11 @@ public:
         // When rendering into a known transparent buffer, clients can pass
         // this flag to avoid some unnecessary compositing overhead for
         // animations using layer blend modes.
-        kSkipTopLevelIsolation = 0x01,
+        kSkipTopLevelIsolation   = 0x01,
+        // By default, content is clipped to the intrinsic animation
+        // bounds (as determined by its size).  If this flag is set,
+        // then the animation can draw outside of the bounds.
+        kDisableTopLevelClipping = 0x02,
     };
     using RenderFlags = uint32_t;
 
@@ -216,6 +221,16 @@ public:
      */
     double fps() const { return fFPS; }
 
+    /**
+     * Animation in point, in frame index units.
+     */
+    double inPoint()  const { return fInPoint;  }
+
+    /**
+     * Animation out point, in frame index units.
+     */
+    double outPoint() const { return fOutPoint; }
+
     const SkString& version() const { return fVersion; }
     const SkSize&      size() const { return fSize;    }
 
@@ -239,7 +254,7 @@ private:
                                                  fFPS;
     const uint32_t                               fFlags;
 
-    typedef SkNVRefCnt<Animation> INHERITED;
+    using INHERITED = SkNVRefCnt<Animation>;
 };
 
 } // namespace skottie

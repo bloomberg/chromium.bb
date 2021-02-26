@@ -11,12 +11,13 @@ enum DocumentPolicyFeature {
   kFontDisplay = 1,
   // Takes a parameter, |bpp|, i.e. byte-per-pixel ratio, that images
   // needs to obey.
-  kUnoptimizedLosslessImages = 2,
+  kLosslessImagesMaxBpp = 2,
   // Controls whether the browser should allow navigations that cause the page to scroll.
   kForceLoadAtTop = 3,
-
-  kUnoptimizedLosslessImagesStrict = 4,
-  kUnoptimizedLossyImages = 5,
+  // Takes a parameter, |bpp|, i.e. byte-per-pixel ratio, that images
+  // needs to obey.
+  kLosslessImagesStrictMaxBpp = 4,
+  kLossyImagesMaxBpp = 5,
   // Takes a parameter, |scale_ratio|, and restricts source image sizes to be
   // no more than |scale_ratio| x larger than the image's containing block.
   kOversizedImages = 6,
@@ -25,6 +26,12 @@ enum DocumentPolicyFeature {
   kUnsizedMedia = 7,
   // Restricts the usage of layout-causing animations in a document.
   kLayoutAnimations = 8,
+  // Controls the ability of the document to use several dynamic markup API
+  // which interfere with document's input stream (document.write(),
+  // document.close(), etc.).
+  kDocumentWrite = 9,
+  // Controls whether synchronous script elements will run.
+  kSyncScript = 10,
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.
   // Also, run update_document_policy_enum.py in

@@ -4,11 +4,13 @@
 
 #include "ash/assistant/assistant_notification_expiry_monitor.h"
 
-#include "ash/assistant/assistant_notification_controller.h"
+#include <algorithm>
+
+#include "ash/assistant/assistant_notification_controller_impl.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "base/bind.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace ash {
 
@@ -37,19 +39,20 @@ base::Optional<base::Time> Min(base::Optional<base::Time> left,
 class AssistantNotificationExpiryMonitor::Observer
     : public AssistantNotificationModelObserver {
  public:
-  Observer(AssistantNotificationExpiryMonitor* monitor) : monitor_(monitor) {}
+  explicit Observer(AssistantNotificationExpiryMonitor* monitor)
+      : monitor_(monitor) {}
   ~Observer() override = default;
 
-  void OnNotificationAdded(const AssistantNotification* notification) override {
+  void OnNotificationAdded(const AssistantNotification& notification) override {
     monitor_->UpdateTimer();
   }
 
   void OnNotificationUpdated(
-      const AssistantNotification* notification) override {
+      const AssistantNotification& notification) override {
     monitor_->UpdateTimer();
   }
 
-  void OnNotificationRemoved(const AssistantNotification* notification,
+  void OnNotificationRemoved(const AssistantNotification& notification,
                              bool from_server) override {
     monitor_->UpdateTimer();
   }
@@ -65,10 +68,10 @@ class AssistantNotificationExpiryMonitor::Observer
 };
 
 AssistantNotificationExpiryMonitor::AssistantNotificationExpiryMonitor(
-    AssistantNotificationController* controller)
+    AssistantNotificationControllerImpl* controller)
     : controller_(controller), observer_(std::make_unique<Observer>(this)) {
   DCHECK(controller_);
-  controller_->AddModelObserver(observer_.get());
+  controller_->model()->AddObserver(observer_.get());
 }
 
 AssistantNotificationExpiryMonitor::~AssistantNotificationExpiryMonitor() =

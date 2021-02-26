@@ -8,25 +8,34 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/memory/memory_pressure_listener.h"
+#include "base/memory/memory_pressure_monitor.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "components/paint_preview/browser/file_manager.h"
+#include "components/paint_preview/browser/warm_compositor.h"
+#include "content/public/browser/render_process_host.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/logging.h"
-#include "chrome/android/chrome_jni_headers/PaintPreviewTabService_jni.h"
+#include "chrome/browser/paint_preview/android/jni_headers/PaintPreviewTabService_jni.h"
 #endif  // defined(OS_ANDROID)
 
 namespace paint_preview {
 
 namespace {
 
-constexpr size_t kMaxPerCaptureSizeBytes = 5 * 1000L * 1000L;  // 5 MB.
+constexpr size_t kMaxPerCaptureSizeBytes = 5 * 1000L * 1000L;    // 5 MB.
+constexpr size_t kMaximumTotalCaptureSize = 25 * 1000L * 1000L;  // 25 MB.
+// The time horizon after which unused paint previews will be deleted.
+constexpr int kExpiryHorizonHrs = 72;
 
 #if defined(OS_ANDROID)
 void JavaBooleanCallbackAdapter(base::OnceCallback<void(bool)> callback,
@@ -60,6 +69,14 @@ PaintPreviewTabService::PaintPreviewTabService(
       FROM_HERE, base::BindOnce(&FileManager::ListUsedKeys, GetFileManager()),
       base::BindOnce(&PaintPreviewTabService::InitializeCache,
                      weak_ptr_factory_.GetWeakPtr()));
+  GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::GetTotalDiskUsage, GetFileManager()),
+      base::BindOnce([](size_t size_bytes) {
+        base::UmaHistogramMemoryKB(
+            "Browser.PaintPreview.TabService.DiskUsageAtStartup",
+            size_bytes / 1000);
+      }));
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   java_ref_.Reset(Java_PaintPreviewTabService_Constructor(
@@ -81,6 +98,13 @@ void PaintPreviewTabService::CaptureTab(int tab_id,
                                         FinishedCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // If the system is under memory pressure don't try to capture.
+  auto* memory_monitor = base::MemoryPressureMonitor::Get();
+  if (memory_monitor &&
+      memory_monitor->GetCurrentPressureLevel() >=
+          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE)
+    return;
+
   // Mark |contents| as being captured so that the renderer doesn't go away
   // until the capture is finished. This is done even before a file is created
   // to ensure the renderer doesn't go away while that happens.
@@ -95,6 +119,7 @@ void PaintPreviewTabService::CaptureTab(int tab_id,
       base::BindOnce(&PaintPreviewTabService::CaptureTabInternal,
                      weak_ptr_factory_.GetWeakPtr(), tab_id, key,
                      contents->GetMainFrame()->GetFrameTreeNodeId(),
+                     contents->GetMainFrame()->GetGlobalFrameRoutingId(),
                      std::move(callback)));
 }
 
@@ -142,6 +167,18 @@ void PaintPreviewTabService::AuditArtifacts(
                      weak_ptr_factory_.GetWeakPtr(), active_tab_ids));
 }
 
+void PaintPreviewTabService::GetCapturedPaintPreviewProto(
+    const DirectoryKey& key,
+    base::Optional<base::TimeDelta> expiry_horizon,
+    PaintPreviewBaseService::OnReadProtoCallback on_read_proto_callback) {
+  PaintPreviewBaseService::GetCapturedPaintPreviewProto(
+      key,
+      expiry_horizon.has_value()
+          ? expiry_horizon.value()
+          : base::TimeDelta::FromHours(kExpiryHorizonHrs),
+      std::move(on_read_proto_callback));
+}
+
 #if defined(OS_ANDROID)
 void PaintPreviewTabService::CaptureTabAndroid(
     JNIEnv* env,
@@ -174,6 +211,16 @@ void PaintPreviewTabService::AuditArtifactsAndroid(
   base::android::JavaIntArrayToIntVector(env, j_tab_ids, &tab_ids);
   AuditArtifacts(tab_ids);
 }
+
+jboolean PaintPreviewTabService::IsCacheInitializedAndroid(JNIEnv* env) {
+  return static_cast<jboolean>(CacheInitialized());
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+PaintPreviewTabService::GetPathAndroid(JNIEnv* env) {
+  return base::android::ConvertUTF8ToJavaString(
+      env, GetFileManager()->GetPath().AsUTF8Unsafe());
+}
 #endif  // defined(OS_ANDROID)
 
 void PaintPreviewTabService::InitializeCache(
@@ -192,6 +239,7 @@ void PaintPreviewTabService::CaptureTabInternal(
     int tab_id,
     const DirectoryKey& key,
     int frame_tree_node_id,
+    content::GlobalFrameRoutingId frame_routing_id,
     FinishedCallback callback,
     const base::Optional<base::FilePath>& file_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -201,12 +249,16 @@ void PaintPreviewTabService::CaptureTabInternal(
   }
   auto* contents =
       content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-  if (!contents) {
+  auto* rfh = content::RenderFrameHost::FromID(frame_routing_id);
+  if (!contents || !rfh || contents->IsBeingDestroyed() ||
+      contents->GetMainFrame() != rfh || !rfh->IsCurrent() ||
+      !rfh->IsRenderFrameCreated() || !rfh->IsRenderFrameLive()) {
     std::move(callback).Run(Status::kWebContentsGone);
     return;
   }
   CapturePaintPreview(
-      contents, file_path.value(), gfx::Rect(), kMaxPerCaptureSizeBytes,
+      contents, rfh, file_path.value(), gfx::Rect(), true,
+      kMaxPerCaptureSizeBytes,
       base::BindOnce(&PaintPreviewTabService::OnCaptured,
                      weak_ptr_factory_.GetWeakPtr(), tab_id, key,
                      frame_tree_node_id, std::move(callback)));
@@ -218,14 +270,15 @@ void PaintPreviewTabService::OnCaptured(
     int frame_tree_node_id,
     FinishedCallback callback,
     PaintPreviewBaseService::CaptureStatus status,
-    std::unique_ptr<PaintPreviewProto> proto) {
+    std::unique_ptr<CaptureResult> result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto* web_contents =
       content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   if (web_contents)
     web_contents->DecrementCapturerCount(true);
 
-  if (status != PaintPreviewBaseService::CaptureStatus::kOk || !proto) {
+  if (status != PaintPreviewBaseService::CaptureStatus::kOk ||
+      !result->capture_success) {
     std::move(callback).Run(Status::kCaptureFailed);
     return;
   }
@@ -233,7 +286,7 @@ void PaintPreviewTabService::OnCaptured(
   GetTaskRunner()->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&FileManager::SerializePaintPreviewProto, GetFileManager(),
-                     key, *proto, true),
+                     key, result->proto, true),
       base::BindOnce(&PaintPreviewTabService::OnFinished,
                      weak_ptr_factory_.GetWeakPtr(), tab_id,
                      std::move(callback)));
@@ -247,6 +300,34 @@ void PaintPreviewTabService::OnFinished(int tab_id,
     captured_tab_ids_.insert(tab_id);
   std::move(callback).Run(success ? Status::kOk
                                   : Status::kProtoSerializationFailed);
+  auto file_manager = GetFileManager();
+  GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::GetOldestArtifactsForCleanup, file_manager,
+                     kMaximumTotalCaptureSize,
+                     base::TimeDelta::FromHours(kExpiryHorizonHrs)),
+      base::BindOnce(&PaintPreviewTabService::CleanupOldestFiles,
+                     weak_ptr_factory_.GetWeakPtr(), tab_id));
+}
+
+void PaintPreviewTabService::CleanupOldestFiles(
+    int tab_id,
+    const std::vector<DirectoryKey>& keys) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  std::vector<DirectoryKey> keys_to_delete;
+  keys_to_delete.reserve(keys.size());
+  for (const auto& key : keys) {
+    auto id = TabIdFromDirectoryKey(key);
+    if (id == tab_id)
+      continue;
+
+    captured_tab_ids_.erase(id);
+    keys_to_delete.push_back(key);
+  }
+
+  GetTaskRunner()->PostTask(FROM_HERE,
+                            base::BindOnce(&FileManager::DeleteArtifactSets,
+                                           GetFileManager(), keys_to_delete));
 }
 
 void PaintPreviewTabService::RunAudit(

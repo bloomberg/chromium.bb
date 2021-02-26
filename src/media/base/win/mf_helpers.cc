@@ -4,6 +4,8 @@
 
 #include "media/base/win/mf_helpers.h"
 
+#include "base/check_op.h"
+
 namespace media {
 
 Microsoft::WRL::ComPtr<IMFSample> CreateEmptySampleWithBuffer(
@@ -75,6 +77,21 @@ HRESULT DXGIDeviceScopedHandle::LockDevice(REFIID riid, void** device_out) {
   hr = device_manager_->LockDevice(device_handle_, riid, device_out,
                                    /*block=*/FALSE);
   return hr;
+}
+
+HRESULT CopyCoTaskMemWideString(LPCWSTR in_string, LPWSTR* out_string) {
+  if (!in_string || !out_string) {
+    return E_INVALIDARG;
+  }
+
+  size_t size = (wcslen(in_string) + 1) * sizeof(wchar_t);
+  LPWSTR copy = reinterpret_cast<LPWSTR>(CoTaskMemAlloc(size));
+  if (!copy)
+    return E_OUTOFMEMORY;
+
+  wcscpy(copy, in_string);
+  *out_string = copy;
+  return S_OK;
 }
 
 }  // namespace media

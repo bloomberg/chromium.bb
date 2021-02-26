@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
+#include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -23,7 +23,6 @@
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

@@ -23,6 +23,10 @@
 #include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(OS_WIN)
+#include <dxgi.h>
+#endif
+
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/config/vulkan_info.h"
 #endif
@@ -187,29 +191,15 @@ enum class OverlaySupport {
 
 GPU_EXPORT const char* OverlaySupportToString(OverlaySupport support);
 
-struct GPU_EXPORT Dx12VulkanVersionInfo {
-  bool IsEmpty() const { return !d3d12_feature_level && !vulkan_version; }
-
-  // True if the GPU driver supports DX12.
-  bool supports_dx12 = false;
-
-  // True if the GPU driver supports Vulkan.
-  bool supports_vulkan = false;
-
-  // The supported d3d feature level in the gpu driver;
-  uint32_t d3d12_feature_level = 0;
-
-  // The support Vulkan API version in the gpu driver;
-  uint32_t vulkan_version = 0;
-};
-
 struct GPU_EXPORT OverlayInfo {
   OverlayInfo& operator=(const OverlayInfo& other) = default;
   bool operator==(const OverlayInfo& other) const {
     return direct_composition == other.direct_composition &&
            supports_overlays == other.supports_overlays &&
            yuy2_overlay_support == other.yuy2_overlay_support &&
-           nv12_overlay_support == other.nv12_overlay_support;
+           nv12_overlay_support == other.nv12_overlay_support &&
+           bgra8_overlay_support == other.bgra8_overlay_support &&
+           rgb10a2_overlay_support == other.rgb10a2_overlay_support;
   }
   bool operator!=(const OverlayInfo& other) const { return !(*this == other); }
 
@@ -220,13 +210,15 @@ struct GPU_EXPORT OverlayInfo {
   bool supports_overlays = false;
   OverlaySupport yuy2_overlay_support = OverlaySupport::kNone;
   OverlaySupport nv12_overlay_support = OverlaySupport::kNone;
+  OverlaySupport bgra8_overlay_support = OverlaySupport::kNone;
+  OverlaySupport rgb10a2_overlay_support = OverlaySupport::kNone;
 };
 
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 GPU_EXPORT bool ValidateMacOSSpecificTextureTarget(int target);
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 struct GPU_EXPORT GPUInfo {
   struct GPU_EXPORT GPUDevice {
@@ -251,10 +243,19 @@ struct GPU_EXPORT GPUInfo {
 
     // The graphics card revision number.
     uint32_t revision = 0u;
+
+    // The graphics card LUID. This is a unique identifier for the graphics card
+    // that is guaranteed to be unique until the computer is restarted. The LUID
+    // is used over the vendor id and device id because the device id is only
+    // unique relative its vendor, not to each other. If there are more than one
+    // of the same exact graphics card, they all have the same vendor id and
+    // device id but different LUIDs.
+    LUID luid;
 #endif  // OS_WIN
 
     // Whether this GPU is the currently used one.
-    // Currently this field is only supported and meaningful on OS X.
+    // Currently this field is only supported and meaningful on OS X and on
+    // Windows using Angle with D3D11.
     bool active = false;
 
     // The strings that describe the GPU.
@@ -368,17 +369,21 @@ struct GPU_EXPORT GPUInfo {
   // is only implemented on Android.
   bool can_support_threaded_texture_mailbox = false;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Enum describing which texture target is used for native GpuMemoryBuffers on
   // MacOS. Valid values are GL_TEXTURE_2D and GL_TEXTURE_RECTANGLE_ARB.
   uint32_t macos_specific_texture_target;
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(OS_WIN)
   // The information returned by the DirectX Diagnostics Tool.
   DxDiagNode dx_diagnostics;
 
-  Dx12VulkanVersionInfo dx12_vulkan_version_info;
+  // The supported d3d feature level in the gpu driver;
+  uint32_t d3d12_feature_level = 0;
+
+  // The support Vulkan API version in the gpu driver;
+  uint32_t vulkan_version = 0;
 
   // The GPU hardware overlay info.
   OverlayInfo overlay_info;
@@ -445,9 +450,6 @@ struct GPU_EXPORT GPUInfo {
     // (according to the DevTools protocol) are being described.
     virtual void BeginAuxAttributes() = 0;
     virtual void EndAuxAttributes() = 0;
-
-    virtual void BeginDx12VulkanVersionInfo() = 0;
-    virtual void EndDx12VulkanVersionInfo() = 0;
 
     virtual void BeginOverlayInfo() = 0;
     virtual void EndOverlayInfo() = 0;

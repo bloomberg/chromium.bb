@@ -12,4 +12,13 @@ void WaylandWindowObserver::OnWindowAdded(WaylandWindow* window) {}
 
 void WaylandWindowObserver::OnWindowRemoved(WaylandWindow* window) {}
 
+void WaylandWindowObserver::OnWindowConfigured(WaylandWindow* window) {}
+
+void WaylandWindowObserver::OnSubsurfaceAdded(WaylandWindow* window,
+                                              WaylandSubsurface* subsurface) {}
+
+void WaylandWindowObserver::OnSubsurfaceRemoved(WaylandWindow* window,
+                                                WaylandSubsurface* subsurface) {
+}
+
 }  // namespace ui

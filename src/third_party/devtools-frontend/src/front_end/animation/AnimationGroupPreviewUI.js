@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as UI from '../ui/ui.js';
 import {AnimationGroup} from './AnimationModel.js';  // eslint-disable-line no-unused-vars
 import {AnimationUI} from './AnimationUI.js';
 
@@ -20,7 +21,7 @@ export class AnimationGroupPreviewUI {
     this._removeButton = this.element.createChild('div', 'animation-remove-button');
     this._removeButton.textContent = '\u2715';
     this._replayOverlayElement = this.element.createChild('div', 'animation-buffer-preview-animation');
-    this._svg = this.element.createSVGChild('svg');
+    this._svg = UI.UIUtils.createSVGChild(this.element, 'svg');
     this._svg.setAttribute('width', '100%');
     this._svg.setAttribute('preserveAspectRatio', 'none');
     this._svg.setAttribute('height', '100%');
@@ -67,13 +68,16 @@ export class AnimationGroupPreviewUI {
     const timeToPixelRatio = 100 / Math.max(this._groupDuration(), 750);
     for (let i = 0; i < numberOfAnimations; i++) {
       const effect = this._model.animations()[i].source();
-      const line = this._svg.createSVGChild('line');
-      line.setAttribute('x1', effect.delay() * timeToPixelRatio);
-      line.setAttribute('x2', (effect.delay() + effect.duration()) * timeToPixelRatio);
-      const y = Math.floor(this._viewBoxHeight / Math.max(6, numberOfAnimations) * i + 1);
+      const line = UI.UIUtils.createSVGChild(this._svg, 'line');
+      line.setAttribute('x1', String(effect.delay() * timeToPixelRatio));
+      line.setAttribute('x2', String((effect.delay() + effect.duration()) * timeToPixelRatio));
+      const y = String(Math.floor(this._viewBoxHeight / Math.max(6, numberOfAnimations) * i + 1));
       line.setAttribute('y1', y);
       line.setAttribute('y2', y);
-      line.style.stroke = AnimationUI.Color(this._model.animations()[i]);
+      // TODO(crbug.com/1011811): Switch to SVGLineElement, since Closure doesn't know about that particular
+      // type. We are using `HTMLElement` now, since it has the same interface that the code here is
+      // concerned about.
+      /** @type {!HTMLElement} */ (line).style.stroke = AnimationUI.Color(this._model.animations()[i]);
     }
   }
 }

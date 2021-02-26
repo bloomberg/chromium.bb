@@ -39,6 +39,16 @@ class VirtualAuthenticator {
     return clearRegistrationsResponse.keys;
   }
 
+  async setLargeBlob(keyHandle, blob) {
+    let setLargeBlobResponse = await this.virtualAuthenticator_.setLargeBlob(keyHandle, blob);
+    return setLargeBlobResponse.set;
+  }
+
+  async getLargeBlob(keyHandle) {
+    let getLargeBlobResponse = await this.virtualAuthenticator_.getLargeBlob(keyHandle);
+    return getLargeBlobResponse.blob;
+  }
+
   async setUserPresence(present) {
     return this.virtualAuthenticator_.setUserPresence(present);
   }
@@ -59,13 +69,17 @@ class VirtualAuthenticatorManager {
   }
 
   async createAuthenticator(options = {}) {
-    options = Object.assign({
-      protocol: blink.test.mojom.ClientToAuthenticatorProtocol.CTAP2,
-      transport: blink.mojom.AuthenticatorTransport.USB,
-      attachment: blink.mojom.AuthenticatorAttachment.CROSS_PLATFORM,
-      hasResidentKey: true,
-      hasUserVerification: true,
-    }, options);
+    options = Object.assign(
+        {
+          protocol: blink.test.mojom.ClientToAuthenticatorProtocol.CTAP2,
+          ctap2Version: blink.test.mojom.ClientToAuthenticatorProtocol.CTAP2_0,
+          transport: blink.mojom.AuthenticatorTransport.USB,
+          attachment: blink.mojom.AuthenticatorAttachment.CROSS_PLATFORM,
+          hasResidentKey: true,
+          hasUserVerification: true,
+          hasLargeBlob: false,
+        },
+        options);
     let createAuthenticatorResponse =
         await this.virtualAuthenticatorManager_.createAuthenticator(options);
     return new VirtualAuthenticator(createAuthenticatorResponse.authenticator);

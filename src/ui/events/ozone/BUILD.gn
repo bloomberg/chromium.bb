@@ -11,8 +11,6 @@ component("ozone") {
   output_name = "events_ozone"
 
   sources = [
-    "chromeos/cursor_controller.cc",
-    "chromeos/cursor_controller.h",
     "device/device_event.cc",
     "device/device_event.h",
     "device/device_event_observer.h",
@@ -42,6 +40,13 @@ component("ozone") {
 
   defines = [ "IS_EVENTS_OZONE_IMPL" ]
 
+  if (is_chromeos) {
+    sources += [
+      "chromeos/cursor_controller.cc",
+      "chromeos/cursor_controller.h",
+    ]
+  }
+
   if (use_udev) {
     sources += [
       "device/udev/device_manager_udev.cc",
@@ -70,7 +75,7 @@ source_set("unittests") {
     sources += [ "chromeos/cursor_controller_unittest.cc" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//ui/events/ozone/evdev:unittests" ]
   }
 }

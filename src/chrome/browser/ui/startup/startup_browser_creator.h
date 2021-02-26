@@ -5,17 +5,18 @@
 #ifndef CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_H_
 #define CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/startup/startup_types.h"
 
 class Browser;
 class GURL;
+class LaunchModeRecorder;
 class PrefRegistrySimple;
 
 namespace base {
@@ -29,6 +30,8 @@ class StartupBrowserCreator {
   typedef std::vector<Profile*> Profiles;
 
   StartupBrowserCreator();
+  StartupBrowserCreator(const StartupBrowserCreator&) = delete;
+  StartupBrowserCreator& operator=(const StartupBrowserCreator&) = delete;
   ~StartupBrowserCreator();
 
   // Adds a url to be opened during first run. This overrides the standard
@@ -75,11 +78,14 @@ class StartupBrowserCreator {
   // implies that the directory of the executable should be used.
   // |process_startup| indicates whether this is the first browser.
   // |is_first_run| indicates that this is a new profile.
+  // If |launch_mode_recorder| is non null, and a browser is launched, a launch
+  // mode histogram will be recorded.
   bool LaunchBrowser(const base::CommandLine& command_line,
                      Profile* profile,
                      const base::FilePath& cur_dir,
                      chrome::startup::IsProcessStartup is_process_startup,
-                     chrome::startup::IsFirstRun is_first_run);
+                     chrome::startup::IsFirstRun is_first_run,
+                     std::unique_ptr<LaunchModeRecorder> launch_mode_recorder);
 
   // When called the first time, reads the value of the preference kWasRestarted
   // and resets it to false. Subsequent calls return the value which was read
@@ -88,7 +94,7 @@ class StartupBrowserCreator {
 
   static SessionStartupPref GetSessionStartupPref(
       const base::CommandLine& command_line,
-      Profile* profile);
+      const Profile* profile);
 
   // For faking that no profiles have been launched yet.
   static void ClearLaunchedProfilesForTesting();
@@ -108,6 +114,10 @@ class StartupBrowserCreator {
                            ReadingWasRestartedAfterRestart);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, UpdateWithTwoProfiles);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, LastUsedProfileActivated);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
+                           ValidNotificationLaunchId);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
+                           InvalidNotificationLaunchId);
 
   bool ProcessCmdLineImpl(const base::CommandLine& command_line,
                           const base::FilePath& cur_dir,
@@ -175,8 +185,6 @@ class StartupBrowserCreator {
   static bool was_restarted_read_;
 
   static bool in_synchronous_profile_launch_;
-
-  DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreator);
 };
 
 // Returns true if |profile| has exited uncleanly and has not been launched

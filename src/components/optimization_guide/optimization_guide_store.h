@@ -204,6 +204,11 @@ class OptimizationGuideStore {
   virtual void LoadPredictionModel(const EntryKey& prediction_model_entry_key,
                                    PredictionModelLoadedCallback callback);
 
+  // Removes the prediction model specified by |entry_key| if it exists. Returns
+  // true if |entry_key| is found and the remove operation is initiated, and
+  // false otherwise.
+  bool RemovePredictionModelFromEntryKey(const EntryKey& entry_key);
+
   // Creates and returns a StoreUpdateData object for host model features. This
   // object is used to collect a batch of host model features in a format that
   // is usable to update the store on a background thread. This is always
@@ -252,6 +257,9 @@ class OptimizationGuideStore {
 
   // Clears all host model features from the database and resets the entry keys.
   void ClearHostModelFeaturesFromDatabase();
+
+  // Returns true if the current status is Status::kAvailable.
+  bool IsAvailable() const;
 
  private:
   friend class OptimizationGuideStoreTest;
@@ -311,9 +319,6 @@ class OptimizationGuideStore {
   // transition, and destroys the database in the case where the status
   // transitions to Status::kFailed.
   void UpdateStatus(Status new_status);
-
-  // Returns true if the current status is Status::kAvailable.
-  bool IsAvailable() const;
 
   // Asynchronously purges all existing entries from the database and runs the
   // callback after it completes. This should only be run during initialization.
@@ -409,6 +414,12 @@ class OptimizationGuideStore {
   void OnLoadPredictionModel(PredictionModelLoadedCallback callback,
                              bool success,
                              std::unique_ptr<proto::StoreEntry> entry);
+
+  // Callback that runs after a removal attempt for the prediction model
+  // specified by |entry_key| with status |success|. It removes |entry_key| from
+  // |entry_keys_| if |success| is true, and no-op if false.
+  void OnRemovePredictionModelFromEntryKey(const EntryKey& entry_key,
+                                           bool success);
 
   // Callback that runs after a host model features entry is loaded from the
   // database. If there's currently an in-flight update, then the data could be

@@ -1,7 +1,6 @@
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
-
 """subprocess42 is the answer to life the universe and everything.
 
 It has the particularity of having a Popen implementation that can yield output
@@ -41,21 +40,20 @@ import subprocess
 from subprocess import CalledProcessError, PIPE, STDOUT  # pylint: disable=W0611
 from subprocess import list2cmdline
 
+import six
+
 
 # Default maxsize argument.
 MAX_SIZE = 16384
 
-
 # Set to True when inhibit_crash_dump() has been called.
 _OS_ERROR_REPORTING_INHIBITED = False
-
 
 if sys.platform == 'win32':
   import ctypes
   import msvcrt  # pylint: disable=F0401
   from ctypes import wintypes
   from ctypes import windll
-
 
   # Which to be received depends on how this process was called and outside the
   # control of this script. See Popen docstring for more details.
@@ -95,51 +93,49 @@ if sys.platform == 'win32':
   JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK = 0x1000
   JOB_OBJECT_LIMIT_SUBSET_AFFINITY = 0x4000
   JOB_OBJECT_LIMIT_WORKINGSET = 0x1
+
   class JOBOBJECT_BASIC_LIMIT_INFORMATION(ctypes.Structure):
     _fields_ = [
-      ('PerProcessUserTimeLimit', ctypes.wintypes.LARGE_INTEGER),
-      ('PerJobUserTimeLimit', ctypes.wintypes.LARGE_INTEGER),
-      ('LimitFlags', ctypes.wintypes.DWORD),
-      ('MinimumWorkingSetSize', ctypes.c_size_t),
-      ('MaximumWorkingSetSize', ctypes.c_size_t),
-      ('ActiveProcessLimit', ctypes.wintypes.DWORD),
-      ('Affinity', ctypes.POINTER(ctypes.wintypes.ULONG)),
-      ('PriorityClass', ctypes.wintypes.DWORD),
-      ('SchedulingClass', ctypes.wintypes.DWORD),
+        ('PerProcessUserTimeLimit', ctypes.wintypes.LARGE_INTEGER),
+        ('PerJobUserTimeLimit', ctypes.wintypes.LARGE_INTEGER),
+        ('LimitFlags', ctypes.wintypes.DWORD),
+        ('MinimumWorkingSetSize', ctypes.c_size_t),
+        ('MaximumWorkingSetSize', ctypes.c_size_t),
+        ('ActiveProcessLimit', ctypes.wintypes.DWORD),
+        ('Affinity', ctypes.POINTER(ctypes.wintypes.ULONG)),
+        ('PriorityClass', ctypes.wintypes.DWORD),
+        ('SchedulingClass', ctypes.wintypes.DWORD),
     ]
 
     @property
     def info_type(self):
       return JobObjectBasicLimitInformation
 
-
   # https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-io_counters
   class IO_COUNTERS(ctypes.Structure):
     _fields_ = [
-      ('ReadOperationCount', ctypes.c_ulonglong),
-      ('WriteOperationCount', ctypes.c_ulonglong),
-      ('OtherOperationCount', ctypes.c_ulonglong),
-      ('ReadTransferCount', ctypes.c_ulonglong),
-      ('WriteTransferCount', ctypes.c_ulonglong),
-      ('OtherTransferCount', ctypes.c_ulonglong),
+        ('ReadOperationCount', ctypes.c_ulonglong),
+        ('WriteOperationCount', ctypes.c_ulonglong),
+        ('OtherOperationCount', ctypes.c_ulonglong),
+        ('ReadTransferCount', ctypes.c_ulonglong),
+        ('WriteTransferCount', ctypes.c_ulonglong),
+        ('OtherTransferCount', ctypes.c_ulonglong),
     ]
-
 
   # https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-_jobobject_extended_limit_information
   class JOBOBJECT_EXTENDED_LIMIT_INFORMATION(ctypes.Structure):
     _fields_ = [
-      ('BasicLimitInformation', JOBOBJECT_BASIC_LIMIT_INFORMATION),
-      ('IoInfo', IO_COUNTERS),
-      ('ProcessMemoryLimit', ctypes.c_size_t),
-      ('JobMemoryLimit', ctypes.c_size_t),
-      ('PeakProcessMemoryUsed', ctypes.c_size_t),
-      ('PeakJobMemoryUsed', ctypes.c_size_t),
+        ('BasicLimitInformation', JOBOBJECT_BASIC_LIMIT_INFORMATION),
+        ('IoInfo', IO_COUNTERS),
+        ('ProcessMemoryLimit', ctypes.c_size_t),
+        ('JobMemoryLimit', ctypes.c_size_t),
+        ('PeakProcessMemoryUsed', ctypes.c_size_t),
+        ('PeakJobMemoryUsed', ctypes.c_size_t),
     ]
 
     @property
     def info_type(self):
       return JobObjectExtendedLimitInformation
-
 
   # https://docs.microsoft.com/en-us/windows/desktop/api/winnt/ns-winnt-jobobject_basic_ui_restrictions
   JOB_OBJECT_UILIMIT_DESKTOP = 0x40
@@ -147,6 +143,7 @@ if sys.platform == 'win32':
   JOB_OBJECT_UILIMIT_EXITWINDOWS = 0x80
   JOB_OBJECT_UILIMIT_GLOBALATOMS = 0x20
   JOB_OBJECT_UILIMIT_HANDLES = 0x1
+
   class JOBOBJECT_BASIC_UI_RESTRICTIONS(ctypes.Structure):
     _fields_ = [('UIRestrictionsClass', ctypes.wintypes.DWORD)]
 
@@ -154,14 +151,13 @@ if sys.platform == 'win32':
     def info_type(self):
       return JobObjectBasicUIRestrictions
 
-
   def ReadFile(handle, desired_bytes):
     """Calls kernel32.ReadFile()."""
     c_read = wintypes.DWORD()
-    buff = wintypes.create_string_buffer(desired_bytes+1)
+    buff = wintypes.create_string_buffer(desired_bytes + 1)
     # If it fails, the buffer will probably(?) not be affected.
-    windll.kernel32.ReadFile(
-        handle, buff, desired_bytes, wintypes.byref(c_read), None)
+    windll.kernel32.ReadFile(handle, buff, desired_bytes,
+                             wintypes.byref(c_read), None)
     # NULL terminate it.
     buff[c_read.value] = '\x00'
     return wintypes.GetLastError(), buff.value
@@ -170,9 +166,9 @@ if sys.platform == 'win32':
     """Calls kernel32.PeekNamedPipe(). Simplified version."""
     c_avail = wintypes.DWORD()
     c_message = wintypes.DWORD()
-    success = windll.kernel32.PeekNamedPipe(
-        handle, None, 0, None, wintypes.byref(c_avail),
-        wintypes.byref(c_message))
+    success = windll.kernel32.PeekNamedPipe(handle, None, 0, None,
+                                            wintypes.byref(c_avail),
+                                            wintypes.byref(c_message))
     if not success:
       raise OSError(wintypes.GetLastError())
     return c_avail.value
@@ -204,7 +200,7 @@ if sys.platform == 'win32':
     # object in Popen or the file object.
     start = time.time()
     handles = [
-      (i, msvcrt.get_osfhandle(c.fileno())) for i, c in enumerate(conns)
+        (i, msvcrt.get_osfhandle(c.fileno())) for i, c in enumerate(conns)
     ]
     while True:
       for index, handle in handles:
@@ -221,9 +217,9 @@ if sys.platform == 'win32':
       # Polling rocks.
       time.sleep(0.001)
 
-
   class _JobObject(object):
     """Manages a job object."""
+
     def __init__(self, containment):
       # The first process to be added to the job object.
       self._proc = None
@@ -231,8 +227,8 @@ if sys.platform == 'win32':
       self._hjob = ctypes.windll.kernel32.CreateJobObjectW(None, None)
       if not self._hjob:
         # pylint: disable=undefined-variable
-        raise WindowsError(
-            'Failed to create job object: %s' % ctypes.GetLastError())
+        raise WindowsError('Failed to create job object: %s' %
+                           ctypes.GetLastError())
 
       # TODO(maruel): Use a completion port to listen to messages as described
       # at
@@ -242,8 +238,8 @@ if sys.platform == 'win32':
       # processes, working set size.
       obj = JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
       obj.BasicLimitInformation.LimitFlags = (
-          JOB_OBJECT_LIMIT_DIE_ON_UNHANDLED_EXCEPTION|
-          JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE)
+          JOB_OBJECT_LIMIT_DIE_ON_UNHANDLED_EXCEPTION
+          | JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE)
       if containment.limit_processes:
         obj.BasicLimitInformation.ActiveProcessLimit = (
             containment.limit_processes)
@@ -258,11 +254,9 @@ if sys.platform == 'win32':
       # testing needs. For example many unit tests use the clipboard, or change
       # the display settings (!)
       obj = JOBOBJECT_BASIC_UI_RESTRICTIONS(
-          UIRestrictionsClass=
-              JOB_OBJECT_UILIMIT_DESKTOP|
-              JOB_OBJECT_UILIMIT_EXITWINDOWS|
-              JOB_OBJECT_UILIMIT_GLOBALATOMS|
-              JOB_OBJECT_UILIMIT_HANDLES)
+          UIRestrictionsClass=JOB_OBJECT_UILIMIT_DESKTOP
+          | JOB_OBJECT_UILIMIT_EXITWINDOWS | JOB_OBJECT_UILIMIT_GLOBALATOMS
+          | JOB_OBJECT_UILIMIT_HANDLES)
       self._set_information(obj)
 
     def close(self):
@@ -286,32 +280,27 @@ if sys.platform == 'win32':
       if not ctypes.windll.kernel32.AssignProcessToJobObject(
           self._hjob, int(proc._handle)):
         # pylint: disable=undefined-variable
-        raise WindowsError(
-            'Failed to assign job object: %s' % ctypes.GetLastError())
+        raise WindowsError('Failed to assign job object: %s' %
+                           ctypes.GetLastError())
       if not ctypes.windll.kernel32.ResumeThread(int(proc._handle_thread)):
         # pylint: disable=undefined-variable
-        raise WindowsError(
-            'Failed to resume child process thread: %s' %
-            ctypes.GetLastError())
+        raise WindowsError('Failed to resume child process thread: %s' %
+                           ctypes.GetLastError())
 
     def _set_information(self, obj):
       # https://docs.microsoft.com/windows/desktop/api/jobapi2/nf-jobapi2-setinformationjobobject
       if not ctypes.windll.kernel32.SetInformationJobObject(
           self._hjob, obj.info_type, ctypes.byref(obj), ctypes.sizeof(obj)):
         # pylint: disable=undefined-variable
-        raise WindowsError(
-            'Failed to adjust job object with type %s: %s' %
-            (obj.info_type, ctypes.GetLastError()))
-
+        raise WindowsError('Failed to adjust job object with type %s: %s' %
+                           (obj.info_type, ctypes.GetLastError()))
 
 else:
   import fcntl  # pylint: disable=F0401
   import select
 
-
   # Signals that mean this process should exit quickly.
   STOP_SIGNALS = (signal.SIGINT, signal.SIGTERM)
-
 
   def recv_multi_impl(conns, maxsize, timeout):
     """Reads from the first available pipe.
@@ -367,18 +356,24 @@ else:
         fcntl.fcntl(conn, fcntl.F_SETFL, flags)
 
 
-class TimeoutExpired(Exception):
-  """Compatible with python3 subprocess."""
-  def __init__(self, cmd, timeout, output=None, stderr=None):
-    self.cmd = cmd
-    self.timeout = timeout
-    self.output = output
-    # Non-standard:
-    self.stderr = stderr
-    super(TimeoutExpired, self).__init__(str(self))
+if six.PY3:
+  TimeoutExpired = subprocess.TimeoutExpired
+else:
 
-  def __str__(self):
-    return "Command '%s' timed out after %s seconds" % (self.cmd, self.timeout)
+  class TimeoutExpired(Exception):
+    """Compatible with python3 subprocess."""
+
+    def __init__(self, cmd, timeout, output=None, stderr=None):
+      self.cmd = cmd
+      self.timeout = timeout
+      self.output = output
+      # Non-standard:
+      self.stderr = stderr
+      super(TimeoutExpired, self).__init__(str(self))
+
+    def __str__(self):
+      return "Command '%s' timed out after %s seconds" % (self.cmd,
+                                                          self.timeout)
 
 
 class Containment(object):
@@ -399,16 +394,15 @@ class Containment(object):
   NONE, AUTO, JOB_OBJECT = range(3)
 
   NAMES = {
-    NONE: 'NONE',
-    AUTO: 'AUTO',
-    JOB_OBJECT: 'JOB_OBJECT',
+      NONE: 'NONE',
+      AUTO: 'AUTO',
+      JOB_OBJECT: 'JOB_OBJECT',
   }
 
-  def __init__(
-      self,
-      containment_type=NONE,
-      limit_processes=0,
-      limit_total_committed_memory=0):
+  def __init__(self,
+               containment_type=NONE,
+               limit_processes=0,
+               limit_total_committed_memory=0):
     self.containment_type = containment_type
     # Limit on the number of active processes.
     self.limit_processes = limit_processes
@@ -423,10 +417,9 @@ class Containment(object):
         self.limit_total_committed_memory == rhs.limit_total_committed_memory)
 
   def __str__(self):
-    return 'Containment<%s, %s, %s>' % (
-        self.NAMES[self.containment_type],
-        self.limit_processes,
-        self.limit_total_committed_memory)
+    return 'Containment<%s, %s, %s>' % (self.NAMES[self.containment_type],
+                                        self.limit_processes,
+                                        self.limit_total_committed_memory)
 
   def __repr__(self):
     return self.__str__()
@@ -458,7 +451,7 @@ class Popen(subprocess.Popen):
   - start: timestamp when this process started.
   - end: timestamp when this process exited, as seen by this process.
   - detached: If True, the child process was started as a detached process.
-  - gid: process group id, if any.
+  - pgid: process group id, if any.
   - duration: time in seconds the process lasted.
 
   Additional methods:
@@ -478,14 +471,12 @@ class Popen(subprocess.Popen):
     # Windows version of subprocess.Popen() really doens't like unicode. In
     # practice we should use the current ANSI code page, but settle for utf-8
     # across all OSes for consistency.
-    to_str = lambda i: i if isinstance(i, str) else i.encode('utf-8')
+    to_str = lambda i: i if isinstance(i, str) else six.ensure_str(i)
     args = [to_str(i) for i in args]
     if kwargs.get('cwd') is not None:
       kwargs['cwd'] = to_str(kwargs['cwd'])
     if kwargs.get('env'):
-      kwargs['env'] = {
-        to_str(k): to_str(v) for k, v in kwargs['env'].items()
-      }
+      kwargs['env'] = {to_str(k): to_str(v) for k, v in kwargs['env'].items()}
 
     # Set via contrived monkey patching below, because stdlib doesn't expose
     # thread handle. Only set on Windows.
@@ -502,10 +493,12 @@ class Popen(subprocess.Popen):
         kwargs['creationflags'] = prev | CREATE_NEW_PROCESS_GROUP
       else:
         old_preexec_fn_1 = kwargs.get('preexec_fn')
+
         def new_preexec_fn_1():
           if old_preexec_fn_1:
             old_preexec_fn_1()
           os.setpgid(0, 0)
+
         kwargs['preexec_fn'] = new_preexec_fn_1
 
     if kwargs.pop('lower_priority', False):
@@ -516,10 +509,12 @@ class Popen(subprocess.Popen):
         kwargs['creationflags'] = prev | BELOW_NORMAL_PRIORITY_CLASS
       else:
         old_preexec_fn_2 = kwargs.get('preexec_fn')
+
         def new_preexec_fn_2():
           if old_preexec_fn_2:
             old_preexec_fn_2()
           os.nice(1)
+
         kwargs['preexec_fn'] = new_preexec_fn_2
 
     self.containment = kwargs.pop('containment', None) or Containment()
@@ -538,16 +533,19 @@ class Popen(subprocess.Popen):
         kwargs['creationflags'] = prev | CREATE_SUSPENDED
 
     self.end = None
-    self.gid = None
+    self.pgid = None
     self.start = time.time()
     try:
       with self.popen_lock:
         if sys.platform == 'win32':
           # We need the thread handle, save it.
           old = subprocess._subprocess.CreateProcess
+
           class FakeHandle(object):
+
             def Close(self):
               pass
+
           def patch_CreateProcess(*args, **kwargs):
             hp, ht, pid, tid = old(*args, **kwargs)
             # Save the thread handle, and return a fake one that
@@ -568,7 +566,7 @@ class Popen(subprocess.Popen):
     self.args = args
     if self.detached and sys.platform != 'win32':
       try:
-        self.gid = os.getpgid(self.pid)
+        self.pgid = os.getpgid(self.pid)
       except OSError:
         # sometimes the process can run+finish before we collect its pgid. fun.
         pass
@@ -605,22 +603,28 @@ class Popen(subprocess.Popen):
     if not timeout:
       return super(Popen, self).communicate(input=input)
 
-    assert isinstance(timeout, (int, float)), timeout
+    if six.PY3:
+      return super(Popen, self).communicate(  # pylint: disable=unexpected-keyword-arg
+          input=input,
+          timeout=timeout,
+      )
 
+    assert isinstance(timeout, (int, float)), timeout
     if self.stdin or self.stdout or self.stderr:
-      stdout = '' if self.stdout else None
-      stderr = '' if self.stderr else None
+      stdout = b'' if self.stdout else None
+      stderr = b'' if self.stderr else None
       t = None
       if input is not None:
-        assert self.stdin, (
-            'Can\'t use communicate(input) if not using '
-            'Popen(stdin=subprocess42.PIPE')
+        assert self.stdin, ('Can\'t use communicate(input) if not using '
+                            'Popen(stdin=subprocess42.PIPE')
+
         # TODO(maruel): Switch back to non-threading.
         def write():
           try:
             self.stdin.write(input)
           except IOError:
             pass
+
         t = threading.Thread(name='Popen.communicate', target=write)
         t.daemon = True
         t.start()
@@ -629,8 +633,10 @@ class Popen(subprocess.Popen):
         if self.stdout or self.stderr:
           start = time.time()
           end = start + timeout
+
           def remaining():
             return max(end - time.time(), 0)
+
           for pipe, data in self.yield_any(timeout=remaining):
             if pipe is None:
               raise TimeoutExpired(self.args, timeout, stdout, stderr)
@@ -658,7 +664,8 @@ class Popen(subprocess.Popen):
     self.wait()
     return stdout, stderr
 
-  def wait(self, timeout=None,
+  def wait(self,
+           timeout=None,
            poll_initial_interval=0.001,
            poll_max_interval=0.05):  # pylint: disable=arguments-differ
     """Implements python3's timeout support.
@@ -670,6 +677,8 @@ class Popen(subprocess.Popen):
     assert timeout is None or isinstance(timeout, (int, float)), timeout
     if timeout is None:
       super(Popen, self).wait()
+    elif six.PY3:
+      super(Popen, self).wait(timeout)
     elif self.returncode is None:
       if sys.platform == 'win32':
         WAIT_TIMEOUT = 258
@@ -686,8 +695,8 @@ class Popen(subprocess.Popen):
         delay = poll_initial_interval
         while True:
           try:
-            pid, sts = subprocess._eintr_retry_call(
-                os.waitpid, self.pid, os.WNOHANG)
+            pid, sts = subprocess._eintr_retry_call(os.waitpid, self.pid,
+                                                    os.WNOHANG)
           except OSError as e:
             if e.errno != errno.ECHILD:
               raise
@@ -799,7 +808,7 @@ class Popen(subprocess.Popen):
     # to simplify call sites.
     while True:
       pipes = [
-        x for x in ((self.stderr, 'stderr'), (self.stdout, 'stdout')) if x[0]
+          x for x in ((self.stderr, 'stderr'), (self.stdout, 'stdout')) if x[0]
       ]
       # If both stdout and stderr have the exact file handle, they are
       # effectively the same pipe. Deduplicate it since otherwise it confuses
@@ -823,7 +832,11 @@ class Popen(subprocess.Popen):
           continue
 
       if self.universal_newlines and data:
-        data = self._translate_newlines(data)
+        if six.PY3:
+          data = self._translate_newlines(
+              six.ensure_binary(data), encoding='utf-8', errors='strict')
+        else:
+          data = self._translate_newlines(data)
       return names[index], data
 
   def recv_out(self, maxsize=None, timeout=None):
@@ -864,27 +877,39 @@ class Popen(subprocess.Popen):
 
     This process may be asynchronous. The user should still call wait() to
     ensure the process is indeed terminated.
+
+    Note that if this Popen uses job containment (e.g. Job Objects on Windows or
+    a process group on Linux/macOS), then `kill()` will have an effect even if
+    `wait()` already returned. Namely, even though the immediate child process
+    finished, there can still be indirect subprocesses in the Job Object or
+    process group which need to be killed.
     """
+    # First check if there's some sort of containment (job object or process
+    # group)
     if self._job:
       # Use the equivalent of SIGKILL on linux. signal.SIGKILL is not available
       # on Windows.
       return self._job.kill(-9)
 
+    if self.pgid:
+      try:
+        os.killpg(self.pgid, signal.SIGKILL)
+        return True
+      except OSError:
+        return False
+
+    # At this point we only have tracking information for the process itself;
+    # Return True if we have a returncode (i.e. it's already been wait()'d),
+    # otherwise defer to subprocess.Popen.kill()
     if self.returncode is not None:
       # If a return code was recorded, it means there's nothing to kill as there
       # was no containment.
       return True
 
-    if self.gid:
-      try:
-        os.killpg(self.gid, signal.SIGKILL)
-      except OSError:
-        return False
-    else:
-      try:
-        super(Popen, self).kill()
-      except OSError:
-        return False
+    try:
+      super(Popen, self).kill()
+    except OSError:
+      return False
     return True
 
   def _close(self, which):
@@ -993,9 +1018,9 @@ def inhibit_os_error_reporting():
       SEM_FAILCRITICALERRORS = 1
       SEM_NOGPFAULTERRORBOX = 2
       SEM_NOALIGNMENTFAULTEXCEPT = 0x8000
-      ctypes.windll.kernel32.SetErrorMode(
-          SEM_FAILCRITICALERRORS|SEM_NOGPFAULTERRORBOX|
-            SEM_NOALIGNMENTFAULTEXCEPT)
+      ctypes.windll.kernel32.SetErrorMode(SEM_FAILCRITICALERRORS
+                                          | SEM_NOGPFAULTERRORBOX
+                                          | SEM_NOALIGNMENTFAULTEXCEPT)
   # TODO(maruel): Other OSes.
   # - OSX, need to figure out a way to make the following process tree local:
   #     defaults write com.apple.CrashReporter UseUNC 1
@@ -1003,11 +1028,11 @@ def inhibit_os_error_reporting():
   # - Ubuntu, disable apport if needed.
 
 
-def split(data, sep='\n'):
+def split(data, sep=b'\n'):
   """Splits pipe data by |sep|. Does some buffering.
 
-  For example, [('stdout', 'a\nb'), ('stdout', '\n'), ('stderr', 'c\n')] ->
-  [('stdout', 'a'), ('stdout', 'b'), ('stderr', 'c')].
+  For example, [('stdout', b'a\nb'), ('stdout', b'\n'), ('stderr', b'c\n')] ->
+  [('stdout', b'a'), ('stdout', b'b'), ('stderr', b'c')].
 
   Args:
     data: iterable of tuples (pipe_name, bytes).
@@ -1035,7 +1060,7 @@ def split(data, sep='\n'):
       start = j + 1
       if pending:
         # prepend and forget
-        to_emit = ''.join(pending) + to_emit
+        to_emit = b''.join(pending) + to_emit
         pending = []
         pending_chunks[pipe_name] = pending
       yield pipe_name, to_emit
@@ -1043,4 +1068,4 @@ def split(data, sep='\n'):
   # Emit remaining chunks that don't end with separators as is.
   for pipe_name, chunks in sorted(pending_chunks.items()):
     if chunks:
-      yield pipe_name, ''.join(chunks)
+      yield pipe_name, b''.join(chunks)

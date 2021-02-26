@@ -11,12 +11,10 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.StrictMode.ThreadPolicy;
 import android.os.StrictMode.VmPolicy;
-import android.text.InputType;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -26,8 +24,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.components.strictmode.ThreadStrictModeInterceptor;
 import org.chromium.weblayer.Browser;
-import org.chromium.weblayer.NavigationController;
+import org.chromium.weblayer.FullscreenCallback;
 import org.chromium.weblayer.NewTabCallback;
 import org.chromium.weblayer.NewTabType;
 import org.chromium.weblayer.Profile;
@@ -35,6 +34,7 @@ import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.TabListCallback;
 import org.chromium.weblayer.UnsupportedVersionException;
+import org.chromium.weblayer.UrlBarOptions;
 import org.chromium.weblayer.WebLayer;
 
 import java.util.ArrayList;
@@ -43,28 +43,51 @@ import java.util.List;
 /**
  * Activity for running instrumentation tests.
  */
+// This isn't part of Chrome, so using explicit colors/sizes is ok.
+@SuppressWarnings("checkstyle:SetTextColorAndSetTextSizeCheck")
 public class InstrumentationActivity extends FragmentActivity {
     private static final String TAG = "WLInstrumentation";
     private static final String KEY_MAIN_VIEW_ID = "mainViewId";
 
     public static final String EXTRA_PERSISTENCE_ID = "EXTRA_PERSISTENCE_ID";
     public static final String EXTRA_PROFILE_NAME = "EXTRA_PROFILE_NAME";
+    public static final String EXTRA_IS_INCOGNITO = "EXTRA_IS_INCOGNITO";
+    private static final float DEFAULT_TEXT_SIZE = 15.0F;
 
     // Used in tests to specify whether WebLayer should be created automatically on launch.
     // True by default. If set to false, the test should call loadWebLayerSync.
     public static final String EXTRA_CREATE_WEBLAYER = "EXTRA_CREATE_WEBLAYER";
 
+    public static final String EXTRA_TOP_VIEW_MIN_HEIGHT = "EXTRA_TOP_VIEW_MIN_HEIGHT";
+    public static final String EXTRA_ONLY_EXPAND_CONTROLS_AT_TOP =
+            "EXTRA_ONLY_EXPAND_CONTROLS_AT_TOP";
+
+    // Used in tests to specify whether WebLayer URL bar should set default click listeners
+    // that show Page Info UI on its TextView.
+    public static final String EXTRA_URLBAR_TEXT_CLICKABLE = "EXTRA_URLBAR_TEXT_CLICKABLE";
+
+    // Used in tests to specify whether WebLayer URL bar should show publisher url.
+    public static final String EXTRA_URLBAR_SHOW_PUBLISHER_URL = "EXTRA_URLBAR_SHOW_PUBLISHER_URL";
+
+    private static OnCreatedCallback sOnCreatedCallback;
+
+    // If true, multiple fragments may be created. Only the first is attached. This is useful for
+    // tests that need to create multiple BrowserFragments.
+    public static boolean sAllowMultipleFragments;
+
     private Profile mProfile;
     private Fragment mFragment;
     private Browser mBrowser;
     private Tab mTab;
-    private EditText mUrlView;
     private View mMainView;
     private int mMainViewId;
     private ViewGroup mTopContentsContainer;
+    private View mUrlBarView;
     private IntentInterceptor mIntentInterceptor;
     private Bundle mSavedInstanceState;
-    private TabCallback mTabCallback;
+    private TabCallback mRendererCrashListener;
+    private Runnable mExitFullscreenRunnable;
+    private boolean mIgnoreRendererCrashes;
     private TabListCallback mTabListCallback;
     private List<Tab> mPreviousTabList = new ArrayList<>();
 
@@ -77,6 +100,25 @@ public class InstrumentationActivity extends FragmentActivity {
         } catch (LinkageError | ClassNotFoundException e) {
         }
         return false;
+    }
+
+    /**
+     * Use this callback for tests that need to be notified synchronously when the Browser has been
+     * created.
+     */
+    public static interface OnCreatedCallback {
+        // Notification that a Browser was created.
+        // This is called on the UI thread.
+        public void onCreated(Browser browser);
+    }
+
+    // Registers a callback that is notified on the UI thread when a Browser is created.
+    public static void registerOnCreatedCallback(OnCreatedCallback callback) {
+        sOnCreatedCallback = callback;
+        // Ideally |callback| would be registered in the Intent, but that isn't possible as to do so
+        // |callback| would have to be a Parceable (which doesn't make sense). As at this time each
+        // test runs in its own process a static is used, if multiple tests were to run in the same
+        // binary, then some state would need to be put in the intent.
     }
 
     public Tab getTab() {
@@ -151,8 +193,8 @@ public class InstrumentationActivity extends FragmentActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         // JaCoCo injects code that does file access, which doesn't work well with strict mode.
         if (!isJaCoCoEnabled()) {
-            StrictMode.setThreadPolicy(
-                    new ThreadPolicy.Builder().detectAll().penaltyLog().penaltyDeath().build());
+            ThreadStrictModeInterceptor.buildWithDeathPenaltyAndKnownViolationExemptions().install(
+                    new ThreadPolicy.Builder().detectAll().build());
             // This doesn't use detectAll() as the untagged sockets policy is encountered in tests
             // using TestServer.
             StrictMode.setVmPolicy(new VmPolicy.Builder()
@@ -174,20 +216,8 @@ public class InstrumentationActivity extends FragmentActivity {
         mMainView = mainView;
         setContentView(mainView);
 
-        mUrlView = new EditText(this);
-        mUrlView.setId(View.generateViewId());
-        mUrlView.setSelectAllOnFocus(true);
-        mUrlView.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
-        mUrlView.setImeOptions(EditorInfo.IME_ACTION_GO);
-        // The background of the top-view must be opaque, otherwise it bleeds through to the
-        // cc::Layer that mirrors the contents of the top-view.
-        mUrlView.setBackgroundColor(0xFFa9a9a9);
-
         // The progress bar sits above the URL bar in Z order and at its bottom in Y.
         mTopContentsContainer = new RelativeLayout(this);
-        mTopContentsContainer.addView(mUrlView,
-                new RelativeLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
         if (getIntent().getBooleanExtra(EXTRA_CREATE_WEBLAYER, true)) {
             // If activity is re-created during process restart, FragmentManager attaches
@@ -213,9 +243,10 @@ public class InstrumentationActivity extends FragmentActivity {
     }
 
     private void removeCallbacks() {
-        if (mTabCallback != null) {
-            mTab.unregisterTabCallback(mTabCallback);
-            mTabCallback = null;
+        if (mBrowser != null && mRendererCrashListener != null) {
+            for (Tab tab : mBrowser.getTabs()) {
+                tab.unregisterTabCallback(mRendererCrashListener);
+            }
         }
         if (mTabListCallback != null) {
             mBrowser.unregisterTabListCallback(mTabListCallback);
@@ -249,7 +280,29 @@ public class InstrumentationActivity extends FragmentActivity {
         mBrowser = Browser.fromFragment(mFragment);
         mProfile = mBrowser.getProfile();
 
-        mBrowser.setTopView(mTopContentsContainer);
+        final boolean onlyExpandControlsAtTop =
+                getIntent().getBooleanExtra(EXTRA_ONLY_EXPAND_CONTROLS_AT_TOP, false);
+        final int minTopViewHeight = getIntent().getIntExtra(EXTRA_TOP_VIEW_MIN_HEIGHT, -1);
+
+        if (onlyExpandControlsAtTop || minTopViewHeight != -1) {
+            // This was added in 86.
+            mBrowser.setTopView(mTopContentsContainer, Math.max(0, minTopViewHeight),
+                    onlyExpandControlsAtTop,
+                    /* animate */ false);
+        } else {
+            mBrowser.setTopView(mTopContentsContainer);
+        }
+
+        mRendererCrashListener = new TabCallback() {
+            @Override
+            public void onRenderProcessGone() {
+                if (mIgnoreRendererCrashes) return;
+
+                // Throws an exception if a tab crashes. Otherwise tests might pass while ignoring
+                // renderer crashes.
+                throw new RuntimeException("Unexpected renderer crashed");
+            }
+        };
 
         mTabListCallback = new TabListCallback() {
             @Override
@@ -258,6 +311,7 @@ public class InstrumentationActivity extends FragmentActivity {
                 if (mTab == null) {
                     setTab(tab);
                 }
+                setTabCallbacks(tab);
             }
 
             @Override
@@ -272,6 +326,7 @@ public class InstrumentationActivity extends FragmentActivity {
 
                     setTab(prevTab);
                 }
+                tab.unregisterTabCallback(mRendererCrashListener);
             }
         };
 
@@ -281,35 +336,91 @@ public class InstrumentationActivity extends FragmentActivity {
             // This happens with session restore enabled.
             assert mBrowser.getTabs().size() == 0;
         } else {
+            setTabCallbacks(mBrowser.getActiveTab());
             setTab(mBrowser.getActiveTab());
         }
+
+        if (sOnCreatedCallback != null) {
+            sOnCreatedCallback.onCreated(mBrowser);
+            // Don't reset |sOnCreatedCallback| as it's needed for tests that exercise activity
+            // recreation.
+        }
+    }
+
+    private void setTabCallbacks(Tab tab) {
+        tab.registerTabCallback(mRendererCrashListener);
+
+        tab.setFullscreenCallback(new FullscreenCallback() {
+            private int mSystemVisibilityToRestore;
+
+            @Override
+            public void onEnterFullscreen(Runnable exitFullscreenRunnable) {
+                mExitFullscreenRunnable = exitFullscreenRunnable;
+                // This comes from Chrome code to avoid an extra resize.
+                final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+                attrs.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+                getWindow().setAttributes(attrs);
+
+                View decorView = getWindow().getDecorView();
+                // Caching the system ui visibility is ok for shell, but likely not ok for
+                // real code.
+                mSystemVisibilityToRestore = decorView.getSystemUiVisibility();
+                decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        | View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            }
+
+            @Override
+            public void onExitFullscreen() {
+                mExitFullscreenRunnable = null;
+                View decorView = getWindow().getDecorView();
+                decorView.setSystemUiVisibility(mSystemVisibilityToRestore);
+
+                final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+                if ((attrs.flags & WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) != 0) {
+                    attrs.flags &= ~WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+                    getWindow().setAttributes(attrs);
+                }
+            }
+        });
+    }
+
+    private void createUrlBarView() {
+        UrlBarOptions.Builder optionsBuilder = UrlBarOptions.builder()
+                                                       .setTextSizeSP(DEFAULT_TEXT_SIZE)
+                                                       .setTextColor(android.R.color.black)
+                                                       .setIconColor(android.R.color.black);
+        if (getIntent().getBooleanExtra(EXTRA_URLBAR_TEXT_CLICKABLE, true)) {
+            optionsBuilder = optionsBuilder.showPageInfoWhenTextIsClicked();
+        }
+        if (getIntent().getBooleanExtra(EXTRA_URLBAR_SHOW_PUBLISHER_URL, false)) {
+            optionsBuilder = optionsBuilder.showPublisherUrl();
+        }
+
+        mUrlBarView = mBrowser.getUrlBarController().createUrlBarView(optionsBuilder.build());
+
+        // The background of the top-view must be opaque, otherwise it bleeds through to the
+        // cc::Layer that mirrors the contents of the top-view.
+        mUrlBarView.setBackgroundColor(0xFFa9a9a9);
+
+        mTopContentsContainer.removeAllViews();
+        mTopContentsContainer.addView(mUrlBarView,
+                new RelativeLayout.LayoutParams(
+                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
     }
 
     // Clears the state associated with |mTab| and sets |tab|, if non-null, as |mTab| and the
     // active tab in the browser.
     private void setTab(Tab tab) {
         if (mTab != null) {
-            mTab.unregisterTabCallback(mTabCallback);
-            mTabCallback = null;
             mTab = null;
         }
 
         mTab = tab;
-
         if (mTab == null) return;
-
-        // TODO(crbug.com/1066382): This will not be correct in the case where the initial
-        // navigation in |tab| was a failed navigation and there have been no more navigations since
-        // then.
-        mUrlView.setText(getLastCommittedUrlInTab(mTab));
-
-        mTabCallback = new TabCallback() {
-            @Override
-            public void onVisibleUriChanged(Uri uri) {
-                mUrlView.setText(uri.toString());
-            }
-        };
-        mTab.registerTabCallback(mTabCallback);
 
         mTab.setNewTabCallback(new NewTabCallback() {
             @Override
@@ -317,11 +428,10 @@ public class InstrumentationActivity extends FragmentActivity {
                 mPreviousTabList.add(mTab);
                 setTab(newTab);
             }
-            @Override
-            public void onCloseTab() {
-                assert false;
-            }
         });
+
+        // Creates and adds a new UrlBarView to |mTopContentsContainer|.
+        createUrlBarView();
 
         // Will be a no-op if this tab is already the active tab.
         mBrowser.setActiveTab(mTab);
@@ -333,9 +443,18 @@ public class InstrumentationActivity extends FragmentActivity {
             // FragmentManager could have re-created the fragment.
             List<Fragment> fragments = fragmentManager.getFragments();
             if (fragments.size() > 1) {
-                throw new IllegalStateException("More than one fragment added, shouldn't happen");
+                if (!sAllowMultipleFragments) {
+                    throw new IllegalStateException(
+                            "More than one fragment added, shouldn't happen");
+                }
+                if (sOnCreatedCallback != null) {
+                    for (int i = 1; i < fragments.size(); ++i) {
+                        sOnCreatedCallback.onCreated(Browser.fromFragment(fragments.get(i)));
+                    }
+                }
+                return fragments.get(0);
             }
-            if (fragments.size() == 1) {
+            if (fragments.size() > 0) {
                 return fragments.get(0);
             }
         }
@@ -343,14 +462,23 @@ public class InstrumentationActivity extends FragmentActivity {
     }
 
     public Fragment createBrowserFragment(int viewId) {
+        return createBrowserFragment(viewId, getIntent());
+    }
+
+    public Fragment createBrowserFragment(int viewId, Intent intent) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        String profileName = getIntent().hasExtra(EXTRA_PROFILE_NAME)
-                ? getIntent().getStringExtra(EXTRA_PROFILE_NAME)
+        String profileName = intent.hasExtra(EXTRA_PROFILE_NAME)
+                ? intent.getStringExtra(EXTRA_PROFILE_NAME)
                 : "DefaultProfile";
-        String persistenceId = getIntent().hasExtra(EXTRA_PERSISTENCE_ID)
-                ? getIntent().getStringExtra(EXTRA_PERSISTENCE_ID)
+        String persistenceId = intent.hasExtra(EXTRA_PERSISTENCE_ID)
+                ? intent.getStringExtra(EXTRA_PERSISTENCE_ID)
                 : null;
-        Fragment fragment = WebLayer.createBrowserFragment(profileName, persistenceId);
+        boolean incognito = intent.hasExtra(EXTRA_IS_INCOGNITO)
+                ? intent.getBooleanExtra(EXTRA_IS_INCOGNITO, false)
+                : (profileName == null);
+        Fragment fragment = incognito
+                ? WebLayer.createBrowserFragmentWithIncognitoProfile(profileName, persistenceId)
+                : WebLayer.createBrowserFragment(profileName, persistenceId);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(viewId, fragment);
 
@@ -358,30 +486,28 @@ public class InstrumentationActivity extends FragmentActivity {
         // activity synchronously, so we can use all the functionality immediately. Otherwise we'd
         // have to wait until the commit is executed.
         transaction.commitNow();
+
+        if (viewId != mMainViewId && sOnCreatedCallback != null) {
+            sOnCreatedCallback.onCreated(Browser.fromFragment(fragment));
+        }
+
         return fragment;
-    }
-
-    // Returns the display URL of the last committed navigation entry in |tab|. This will
-    // return an empty URL if there have been no committed navigations in |tab|.
-    public String getLastCommittedUrlInTab(Tab tab) {
-        NavigationController navController = tab.getNavigationController();
-        int currentIndex = navController.getNavigationListCurrentIndex();
-        return currentIndex == -1
-                ? ""
-                : navController.getNavigationEntryDisplayUri(currentIndex).toString();
-    }
-
-    public String getCurrentDisplayUrl() {
-        return mUrlView.getText().toString();
     }
 
     public void loadUrl(String url) {
         mTab.getNavigationController().navigate(Uri.parse(url));
-        mUrlView.clearFocus();
     }
 
     public void setRetainInstance(boolean retain) {
         mFragment.setRetainInstance(retain);
+    }
+
+    public View getUrlBarView() {
+        return mUrlBarView;
+    }
+
+    public void setIgnoreRendererCrashes() {
+        mIgnoreRendererCrashes = true;
     }
 
     private static String getUrlFromIntent(Intent intent) {

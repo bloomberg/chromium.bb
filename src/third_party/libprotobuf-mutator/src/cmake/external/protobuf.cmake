@@ -30,11 +30,16 @@ ELSE()
 ENDIF()
 
 foreach(lib ${PROTOBUF_LIBRARIES})
-  list(APPEND PROTOBUF_BUILD_BYPRODUCTS ${PROTOBUF_INSTALL_DIR}/lib/lib${lib}.a)
+  if (MSVC)
+    set(LIB_PATH ${PROTOBUF_INSTALL_DIR}/lib/lib${lib}.lib)
+  else()
+    set(LIB_PATH ${PROTOBUF_INSTALL_DIR}/lib/lib${lib}.a)
+  endif()
+  list(APPEND PROTOBUF_BUILD_BYPRODUCTS ${LIB_PATH})
 
   add_library(${lib} STATIC IMPORTED)
   set_property(TARGET ${lib} PROPERTY IMPORTED_LOCATION
-               ${PROTOBUF_INSTALL_DIR}/lib/lib${lib}.a)
+               ${LIB_PATH})
   add_dependencies(${lib} ${PROTOBUF_TARGET})
 endforeach(lib)
 
@@ -58,7 +63,7 @@ include (ExternalProject)
 ExternalProject_Add(${PROTOBUF_TARGET}
     PREFIX ${PROTOBUF_TARGET}
     GIT_REPOSITORY https://github.com/google/protobuf.git
-    GIT_TAG 96f7c53
+    GIT_TAG 214c77e1b76e63e512bd675d1c300c80438642b6
     UPDATE_COMMAND ""
     CONFIGURE_COMMAND ${CMAKE_COMMAND} ${PROTOBUF_INSTALL_DIR}/src/${PROTOBUF_TARGET}/cmake
         -G${CMAKE_GENERATOR}

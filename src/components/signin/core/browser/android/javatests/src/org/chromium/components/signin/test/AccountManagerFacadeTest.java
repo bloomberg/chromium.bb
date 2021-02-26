@@ -9,14 +9,17 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 
+import androidx.test.filters.SmallTest;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -26,13 +29,12 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * Tests for {@link AccountManagerFacade}. See also {@link AccountManagerFacadeRobolectricTest}.
- * TODO(https://crbug.com/1064565): Move this test to Robolectric test set
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@Batch(Batch.UNIT_TESTS)
 public class AccountManagerFacadeTest {
-    private FakeAccountManagerDelegate mDelegate =
-            new FakeAccountManagerDelegate(FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE,
-                    FakeAccountManagerDelegate.ENABLE_BLOCK_GET_ACCOUNTS);
+    private final FakeAccountManagerDelegate mDelegate =
+            new FakeAccountManagerDelegate(FakeAccountManagerDelegate.ENABLE_BLOCK_GET_ACCOUNTS);
 
     @Before
     public void setUp() {
@@ -40,6 +42,11 @@ public class AccountManagerFacadeTest {
             AccountManagerFacadeProvider.setInstanceForTests(
                     new AccountManagerFacadeImpl(mDelegate));
         });
+    }
+
+    @After
+    public void tearDown() {
+        AccountManagerFacadeProvider.resetInstanceForTests();
     }
 
     @Test

@@ -9,6 +9,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/testing/embedded_test_server_handlers.h"
+#include "ios/web/common/features.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -79,7 +80,9 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
 
 // Returns the platform name of the current device.
 std::string platform() {
-  return base::SysNSStringToUTF8([[UIDevice currentDevice] model]);
+  return [ChromeEarlGrey isMobileModeByDefault]
+             ? base::SysNSStringToUTF8([[UIDevice currentDevice] model])
+             : "MacIntel";
 }
 
 }  // namespace
@@ -136,9 +139,10 @@ std::string platform() {
 
 // Tests the platform when the page is inside an iframe.
 - (void)testIFrameNavigation {
-  // TODO(crbug.com/1076233): Test is failing when running on iOS 13.4.
-  if (base::ios::IsRunningOnOrLater(13, 4, 0)) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 13.4 and later.");
+  // This test fails in iOS 13.4 but is fixed in iOS 14. See crbug.com//1076233.
+  if (base::ios::IsRunningOnOrLater(13, 4, 0) &&
+      !base::ios::IsRunningOnIOS14OrLater()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 13.4 but enabled in iOS 14");
   }
 
   [ChromeEarlGrey loadURL:self.testServer->GetURL(kIFramePage)];

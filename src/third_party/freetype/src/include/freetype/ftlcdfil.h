@@ -20,9 +20,8 @@
 #ifndef FTLCDFIL_H_
 #define FTLCDFIL_H_
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_PARAMETER_TAGS_H
+#include <freetype/freetype.h>
+#include <freetype/ftparams.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -196,7 +195,7 @@ FT_BEGIN_HEADER
    *   FreeType error code.  0~means success.
    *
    * @note:
-   *   Since 2.11 the LCD filtering is enabled with @FT_LCD_FILTER_DEFAULT.
+   *   Since 2.10.3 the LCD filtering is enabled with @FT_LCD_FILTER_DEFAULT.
    *   It is no longer necessary to call this function explicitly except
    *   to choose a different filter or disable filtering altogether with
    *   @FT_LCD_FILTER_NONE.

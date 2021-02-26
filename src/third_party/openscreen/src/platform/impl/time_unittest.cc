@@ -4,11 +4,11 @@
 
 #include "platform/api/time.h"
 
+#include <chrono>
 #include <ctime>
 
 #include "gtest/gtest.h"
-
-using std::chrono::seconds;
+#include "util/chrono_helpers.h"
 
 namespace openscreen {
 

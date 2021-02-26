@@ -36,20 +36,6 @@ namespace printing {
 
 namespace {
 
-// Convert from a ColorMode setting to a print-color-mode value from PWG 5100.13
-const char* GetColorModelForMode(int color_mode) {
-  const char* mode_string;
-  base::Optional<bool> is_color = IsColorModelSelected(color_mode);
-  if (is_color.has_value()) {
-    mode_string = is_color.value() ? CUPS_PRINT_COLOR_MODE_COLOR
-                                   : CUPS_PRINT_COLOR_MODE_MONOCHROME;
-  } else {
-    mode_string = nullptr;
-  }
-
-  return mode_string;
-}
-
 // Returns a new char buffer which is a null-terminated copy of |value|.  The
 // caller owns the returned string.
 char* DuplicateString(const base::StringPiece value) {
@@ -117,78 +103,6 @@ void ReportEnumUsage(const std::string& attribute_name) {
   base::UmaHistogramEnumeration("Printing.CUPS.IppAttributes", it->second);
 }
 
-// This records UMA for advanced attributes usage, so only call once per job.
-std::vector<ScopedCupsOption> SettingsToCupsOptions(
-    const PrintSettings& settings) {
-  const char* sides = nullptr;
-  switch (settings.duplex_mode()) {
-    case mojom::DuplexMode::kSimplex:
-      sides = CUPS_SIDES_ONE_SIDED;
-      break;
-    case mojom::DuplexMode::kLongEdge:
-      sides = CUPS_SIDES_TWO_SIDED_PORTRAIT;
-      break;
-    case mojom::DuplexMode::kShortEdge:
-      sides = CUPS_SIDES_TWO_SIDED_LANDSCAPE;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  std::vector<ScopedCupsOption> options;
-  options.push_back(
-      ConstructOption(kIppColor,
-                      GetColorModelForMode(settings.color())));  // color
-  options.push_back(ConstructOption(kIppDuplex, sides));         // duplexing
-  options.push_back(
-      ConstructOption(kIppMedia,
-                      settings.requested_media().vendor_id));  // paper size
-  options.push_back(
-      ConstructOption(kIppCopies,
-                      base::NumberToString(settings.copies())));  // copies
-  options.push_back(
-      ConstructOption(kIppCollate,
-                      GetCollateString(settings.collate())));  // collate
-  if (!settings.pin_value().empty()) {
-    options.push_back(ConstructOption(kIppPin, settings.pin_value()));
-    options.push_back(ConstructOption(kIppPinEncryption, kPinEncryptionNone));
-  }
-
-  if (base::FeatureList::IsEnabled(
-          printing::features::kAdvancedPpdAttributes)) {
-    size_t regular_attr_count = options.size();
-    std::map<std::string, std::vector<std::string>> multival;
-    for (const auto& setting : settings.advanced_settings()) {
-      const std::string& key = setting.first;
-      const std::string& value = setting.second.GetString();
-      if (value.empty())
-        continue;
-
-      // Check for multivalue enum ("attribute/value").
-      size_t pos = key.find('/');
-      if (pos == std::string::npos) {
-        // Regular value.
-        ReportEnumUsage(key);
-        options.push_back(ConstructOption(key, value));
-        continue;
-      }
-      // Store selected enum values.
-      if (value == kOptionTrue)
-        multival[key.substr(0, pos)].push_back(key.substr(pos + 1));
-    }
-    // Pass multivalue enums as comma-separated lists.
-    for (const auto& it : multival) {
-      ReportEnumUsage(it.first);
-      options.push_back(
-          ConstructOption(it.first, base::JoinString(it.second, ",")));
-    }
-    base::UmaHistogramCounts1000("Printing.CUPS.IppAttributesUsed",
-                                 options.size() - regular_attr_count);
-  }
-
-  return options;
-}
-
 // Given an integral |value| expressed in PWG units (1/100 mm), returns
 // the same value expressed in device units.
 int PwgUnitsToDeviceUnits(int value, float micrometers_per_device_unit) {
@@ -242,6 +156,84 @@ void SetPrintableArea(PrintSettings* settings,
 }
 
 }  // namespace
+
+std::vector<ScopedCupsOption> SettingsToCupsOptions(
+    const PrintSettings& settings) {
+  const char* sides = nullptr;
+  switch (settings.duplex_mode()) {
+    case mojom::DuplexMode::kSimplex:
+      sides = CUPS_SIDES_ONE_SIDED;
+      break;
+    case mojom::DuplexMode::kLongEdge:
+      sides = CUPS_SIDES_TWO_SIDED_PORTRAIT;
+      break;
+    case mojom::DuplexMode::kShortEdge:
+      sides = CUPS_SIDES_TWO_SIDED_LANDSCAPE;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  std::vector<ScopedCupsOption> options;
+  options.push_back(
+      ConstructOption(kIppColor,
+                      GetIppColorModelForModel(settings.color())));  // color
+  options.push_back(ConstructOption(kIppDuplex, sides));         // duplexing
+  options.push_back(
+      ConstructOption(kIppMedia,
+                      settings.requested_media().vendor_id));  // paper size
+  options.push_back(
+      ConstructOption(kIppCopies,
+                      base::NumberToString(settings.copies())));  // copies
+  options.push_back(
+      ConstructOption(kIppCollate,
+                      GetCollateString(settings.collate())));  // collate
+  if (!settings.pin_value().empty()) {
+    options.push_back(ConstructOption(kIppPin, settings.pin_value()));
+    options.push_back(ConstructOption(kIppPinEncryption, kPinEncryptionNone));
+  }
+
+  if (settings.dpi_horizontal() > 0 && settings.dpi_vertical() > 0) {
+    std::string dpi = base::NumberToString(settings.dpi_horizontal());
+    if (settings.dpi_horizontal() != settings.dpi_vertical())
+      dpi += "x" + base::NumberToString(settings.dpi_vertical());
+    options.push_back(ConstructOption(kIppResolution, dpi + "dpi"));
+  }
+
+  if (base::FeatureList::IsEnabled(
+          printing::features::kAdvancedPpdAttributes)) {
+    size_t regular_attr_count = options.size();
+    std::map<std::string, std::vector<std::string>> multival;
+    for (const auto& setting : settings.advanced_settings()) {
+      const std::string& key = setting.first;
+      const std::string& value = setting.second.GetString();
+      if (value.empty())
+        continue;
+
+      // Check for multivalue enum ("attribute/value").
+      size_t pos = key.find('/');
+      if (pos == std::string::npos) {
+        // Regular value.
+        ReportEnumUsage(key);
+        options.push_back(ConstructOption(key, value));
+        continue;
+      }
+      // Store selected enum values.
+      if (value == kOptionTrue)
+        multival[key.substr(0, pos)].push_back(key.substr(pos + 1));
+    }
+    // Pass multivalue enums as comma-separated lists.
+    for (const auto& it : multival) {
+      ReportEnumUsage(it.first);
+      options.push_back(
+          ConstructOption(it.first, base::JoinString(it.second, ",")));
+    }
+    base::UmaHistogramCounts1000("Printing.CUPS.IppAttributesUsed",
+                                 options.size() - regular_attr_count);
+  }
+
+  return options;
+}
 
 // static
 std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
@@ -367,8 +359,8 @@ PrintingContext::Result PrintingContextChromeos::UpdatePrinterSettings(
     DCHECK(printer_);
     std::string uri_string = printer_->GetUri();
     const base::StringPiece uri(uri_string);
-    if (!uri.starts_with("ipps:") && !uri.starts_with("https:") &&
-        !uri.starts_with("usb:") && !uri.starts_with("ippusb:")) {
+    if (!base::StartsWith(uri, "ipps:") && !base::StartsWith(uri, "https:") &&
+        !base::StartsWith(uri, "usb:") && !base::StartsWith(uri, "ippusb:")) {
       return OnError();
     }
   }

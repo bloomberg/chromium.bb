@@ -16,6 +16,13 @@
 
 namespace media_message_center {
 
+enum class SourceType {
+  kLocalMediaSession,
+  kCast,
+  kPresentationRequest,
+  kMaxValue = kPresentationRequest,
+};
+
 class MediaNotificationView;
 
 // MediaNotificationItem manages hiding/showing a MediaNotificationView.
@@ -57,6 +64,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem {
 
   // Hides the media notification.
   virtual void Dismiss() = 0;
+
+  // Returns the type of source.
+  virtual media_message_center::SourceType SourceType() = 0;
 };
 
 }  // namespace media_message_center

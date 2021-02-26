@@ -6,7 +6,7 @@
 #define BASE_SYNCHRONIZATION_LOCK_IMPL_H_
 
 #include "base/base_export.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
@@ -21,13 +21,26 @@
 #endif
 
 namespace base {
+class Lock;
+class ConditionVariable;
+
+namespace win {
+namespace internal {
+class AutoNativeLock;
+class ScopedHandleVerifier;
+}  // namespace internal
+}  // namespace win
+
 namespace internal {
 
 // This class implements the underlying platform-specific spin-lock mechanism
-// used for the Lock class.  Most users should not use LockImpl directly, but
-// should instead use Lock.
+// used for the Lock class. Do not use, use Lock instead.
 class BASE_EXPORT LockImpl {
- public:
+  friend class base::Lock;
+  friend class base::ConditionVariable;
+  friend class base::win::internal::AutoNativeLock;
+  friend class base::win::internal::ScopedHandleVerifier;
+
 #if defined(OS_WIN)
   using NativeHandle = CHROME_SRWLOCK;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -39,10 +52,10 @@ class BASE_EXPORT LockImpl {
 
   // If the lock is not held, take it and return true.  If the lock is already
   // held by something else, immediately return false.
-  bool Try();
+  inline bool Try();
 
   // Take the lock, blocking until it is available if necessary.
-  void Lock();
+  inline void Lock();
 
   // Release the lock.  This must only be called by the lock's holder: after
   // a successful call to Try, or a call to Lock.
@@ -58,17 +71,47 @@ class BASE_EXPORT LockImpl {
   static bool PriorityInheritanceAvailable();
 #endif
 
- private:
+  void LockInternalWithTracking();
   NativeHandle native_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(LockImpl);
 };
 
+void LockImpl::Lock() {
+  // The ScopedLockAcquireActivity in LockInternalWithTracking() (not inlined
+  // here because of circular includes) is relatively expensive and so its
+  // actions can become significant due to the very large number of locks that
+  // tend to be used throughout the build. It is also not needed unless the lock
+  // is contended.
+  //
+  // To avoid this cost in the vast majority of the calls, simply "try" the lock
+  // first and only do the (tracked) blocking call if that fails. |Try()| is
+  // cheap on platforms with futex-type locks, as it doesn't call into the
+  // kernel.
+  if (LIKELY(Try()))
+    return;
+
+  LockInternalWithTracking();
+}
+
 #if defined(OS_WIN)
+bool LockImpl::Try() {
+  return !!::TryAcquireSRWLockExclusive(
+      reinterpret_cast<PSRWLOCK>(&native_handle_));
+}
+
 void LockImpl::Unlock() {
   ::ReleaseSRWLockExclusive(reinterpret_cast<PSRWLOCK>(&native_handle_));
 }
+
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+
+bool LockImpl::Try() {
+  int rv = pthread_mutex_trylock(&native_handle_);
+  DCHECK(rv == 0 || rv == EBUSY) << ". " << strerror(rv);
+  return rv == 0;
+}
+
 void LockImpl::Unlock() {
   int rv = pthread_mutex_unlock(&native_handle_);
   DCHECK_EQ(rv, 0) << ". " << strerror(rv);

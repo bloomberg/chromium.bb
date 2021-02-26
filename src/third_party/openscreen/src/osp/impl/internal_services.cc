@@ -98,16 +98,16 @@ InternalServices::InternalPlatformLinkage::~InternalPlatformLinkage() {
 
 std::vector<MdnsPlatformService::BoundInterface>
 InternalServices::InternalPlatformLinkage::RegisterInterfaces(
-    const std::vector<NetworkInterfaceIndex>& whitelist) {
+    const std::vector<NetworkInterfaceIndex>& allowlist) {
   const std::vector<InterfaceInfo> interfaces = GetNetworkInterfaces();
-  const bool do_filter_using_whitelist = !whitelist.empty();
+  const bool do_filter_using_allowlist = !allowlist.empty();
   std::vector<NetworkInterfaceIndex> index_list;
   for (const auto& interface : interfaces) {
     OSP_VLOG << "Found interface: " << interface;
-    if (do_filter_using_whitelist &&
-        std::find(whitelist.begin(), whitelist.end(), interface.index) ==
-            whitelist.end()) {
-      OSP_VLOG << "Ignoring interface not in whitelist: " << interface;
+    if (do_filter_using_allowlist &&
+        std::find(allowlist.begin(), allowlist.end(), interface.index) ==
+            allowlist.end()) {
+      OSP_VLOG << "Ignoring interface not in allowed list: " << interface;
       continue;
     }
     if (!interface.addresses.empty())

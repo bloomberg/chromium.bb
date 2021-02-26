@@ -64,6 +64,7 @@ class LayerChassisDispatchGeneratorOptions(GeneratorOptions):
                  conventions = None,
                  filename = None,
                  directory = '.',
+                 genpath = None,
                  apiname = None,
                  profile = None,
                  versions = '.*',
@@ -84,9 +85,20 @@ class LayerChassisDispatchGeneratorOptions(GeneratorOptions):
                  indentFuncPointer = False,
                  alignFuncParam = 0,
                  expandEnumerants = True):
-        GeneratorOptions.__init__(self, conventions, filename, directory, apiname, profile,
-                                  versions, emitversions, defaultExtensions,
-                                  addExtensions, removeExtensions, emitExtensions, sortProcedure)
+        GeneratorOptions.__init__(self,
+                conventions = conventions,
+                filename = filename,
+                directory = directory,
+                genpath = genpath,
+                apiname = apiname,
+                profile = profile,
+                versions = versions,
+                emitversions = emitversions,
+                defaultExtensions = defaultExtensions,
+                addExtensions = addExtensions,
+                removeExtensions = removeExtensions,
+                emitExtensions = emitExtensions,
+                sortProcedure = sortProcedure)
         self.prefixText      = prefixText
         self.genFuncPointers = genFuncPointers
         self.protectFile     = protectFile
@@ -1000,6 +1012,142 @@ VkResult DispatchGetPhysicalDeviceToolPropertiesEXT(
     return result;
 }
 
+bool NotDispatchableHandle(VkObjectType object_type) {
+    bool not_dispatchable = true;
+    if ((object_type == VK_OBJECT_TYPE_INSTANCE)        ||
+        (object_type == VK_OBJECT_TYPE_PHYSICAL_DEVICE) ||
+        (object_type == VK_OBJECT_TYPE_DEVICE)          ||
+        (object_type == VK_OBJECT_TYPE_QUEUE)           ||
+        (object_type == VK_OBJECT_TYPE_COMMAND_BUFFER)) {
+        not_dispatchable = false;
+    }
+    return not_dispatchable;
+}
+
+VkResult DispatchSetPrivateDataEXT(
+    VkDevice                                    device,
+    VkObjectType                                objectType,
+    uint64_t                                    objectHandle,
+    VkPrivateDataSlotEXT                        privateDataSlot,
+    uint64_t                                    data)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.SetPrivateDataEXT(device, objectType, objectHandle, privateDataSlot, data);
+    privateDataSlot = layer_data->Unwrap(privateDataSlot);
+    if (NotDispatchableHandle(objectType)) {
+        objectHandle = layer_data->Unwrap(objectHandle);
+    }
+    VkResult result = layer_data->device_dispatch_table.SetPrivateDataEXT(device, objectType, objectHandle, privateDataSlot, data);
+    return result;
+}
+
+void DispatchGetPrivateDataEXT(
+    VkDevice                                    device,
+    VkObjectType                                objectType,
+    uint64_t                                    objectHandle,
+    VkPrivateDataSlotEXT                        privateDataSlot,
+    uint64_t*                                   pData)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.GetPrivateDataEXT(device, objectType, objectHandle, privateDataSlot, pData);
+    privateDataSlot = layer_data->Unwrap(privateDataSlot);
+    if (NotDispatchableHandle(objectType)) {
+        objectHandle = layer_data->Unwrap(objectHandle);
+    }
+    layer_data->device_dispatch_table.GetPrivateDataEXT(device, objectType, objectHandle, privateDataSlot, pData);
+}
+
+std::unordered_map<VkCommandBuffer, VkCommandPool> secondary_cb_map{};
+
+ReadWriteLock dispatch_secondary_cb_map_mutex;
+
+read_lock_guard_t dispatch_cb_read_lock() {
+    return read_lock_guard_t(dispatch_secondary_cb_map_mutex);
+}
+
+write_lock_guard_t dispatch_cb_write_lock() {
+    return write_lock_guard_t(dispatch_secondary_cb_map_mutex);
+}
+
+VkResult DispatchAllocateCommandBuffers(VkDevice device, const VkCommandBufferAllocateInfo* pAllocateInfo, VkCommandBuffer* pCommandBuffers) {
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.AllocateCommandBuffers(device, pAllocateInfo, pCommandBuffers);
+    safe_VkCommandBufferAllocateInfo var_local_pAllocateInfo;
+    safe_VkCommandBufferAllocateInfo *local_pAllocateInfo = NULL;
+    if (pAllocateInfo) {
+        local_pAllocateInfo = &var_local_pAllocateInfo;
+        local_pAllocateInfo->initialize(pAllocateInfo);
+        if (pAllocateInfo->commandPool) {
+            local_pAllocateInfo->commandPool = layer_data->Unwrap(pAllocateInfo->commandPool);
+        }
+    }
+    VkResult result = layer_data->device_dispatch_table.AllocateCommandBuffers(device, (const VkCommandBufferAllocateInfo*)local_pAllocateInfo, pCommandBuffers);
+    if ((result == VK_SUCCESS) && pAllocateInfo && (pAllocateInfo->level == VK_COMMAND_BUFFER_LEVEL_SECONDARY)) {
+        auto lock = dispatch_cb_write_lock();
+        for (uint32_t cb_index = 0; cb_index < pAllocateInfo->commandBufferCount; cb_index++) {
+            secondary_cb_map.insert({ pCommandBuffers[cb_index], pAllocateInfo->commandPool });
+        }
+    }
+    return result;
+}
+
+void DispatchFreeCommandBuffers(VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers) {
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.FreeCommandBuffers(device, commandPool, commandBufferCount, pCommandBuffers);
+    commandPool = layer_data->Unwrap(commandPool);
+    layer_data->device_dispatch_table.FreeCommandBuffers(device, commandPool, commandBufferCount, pCommandBuffers);
+    auto lock = dispatch_cb_write_lock();
+    for (uint32_t cb_index = 0; cb_index < commandBufferCount; cb_index++) {
+        secondary_cb_map.erase(pCommandBuffers[cb_index]);
+    }
+}
+
+void DispatchDestroyCommandPool(VkDevice device, VkCommandPool commandPool, const VkAllocationCallbacks* pAllocator) {
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.DestroyCommandPool(device, commandPool, pAllocator);
+    uint64_t commandPool_id = reinterpret_cast<uint64_t &>(commandPool);
+    auto iter = unique_id_mapping.pop(commandPool_id);
+    if (iter != unique_id_mapping.end()) {
+        commandPool = (VkCommandPool)iter->second;
+    } else {
+        commandPool = (VkCommandPool)0;
+    }
+    layer_data->device_dispatch_table.DestroyCommandPool(device, commandPool, pAllocator);
+    auto lock = dispatch_cb_write_lock();
+    for (auto item = secondary_cb_map.begin(); item != secondary_cb_map.end();) {
+        if (item->second == commandPool) {
+            item = secondary_cb_map.erase(item);
+        } else {
+            ++item;
+        }
+    }
+}
+
+VkResult DispatchBeginCommandBuffer(VkCommandBuffer commandBuffer, const VkCommandBufferBeginInfo* pBeginInfo) {
+    bool cb_is_primary;
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    {
+        auto lock = dispatch_cb_read_lock();
+        cb_is_primary = (secondary_cb_map.find(commandBuffer) == secondary_cb_map.end());
+    }
+    if (!wrap_handles || cb_is_primary) return layer_data->device_dispatch_table.BeginCommandBuffer(commandBuffer, pBeginInfo);
+    safe_VkCommandBufferBeginInfo var_local_pBeginInfo;
+    safe_VkCommandBufferBeginInfo *local_pBeginInfo = NULL;
+    if (pBeginInfo) {
+        local_pBeginInfo = &var_local_pBeginInfo;
+        local_pBeginInfo->initialize(pBeginInfo);
+        if (local_pBeginInfo->pInheritanceInfo) {
+            if (pBeginInfo->pInheritanceInfo->renderPass) {
+                local_pBeginInfo->pInheritanceInfo->renderPass = layer_data->Unwrap(pBeginInfo->pInheritanceInfo->renderPass);
+            }
+            if (pBeginInfo->pInheritanceInfo->framebuffer) {
+                local_pBeginInfo->pInheritanceInfo->framebuffer = layer_data->Unwrap(pBeginInfo->pInheritanceInfo->framebuffer);
+            }
+        }
+    }
+    VkResult result = layer_data->device_dispatch_table.BeginCommandBuffer(commandBuffer, (const VkCommandBufferBeginInfo*)local_pBeginInfo);
+    return result;
+}
 """
     # Separate generated text for source and headers
     ALL_SECTIONS = ['source_file', 'header_file']
@@ -1055,6 +1203,13 @@ VkResult DispatchGetPhysicalDeviceToolPropertiesEXT(
             'vkEnumerateDeviceLayerProperties',
             'vkEnumerateInstanceVersion',
             'vkGetPhysicalDeviceToolPropertiesEXT',
+            'vkSetPrivateDataEXT',
+            'vkGetPrivateDataEXT',
+            # These are for special-casing the pInheritanceInfo issue (must be ignored for primary CBs)
+            'vkAllocateCommandBuffers',
+            'vkFreeCommandBuffers',
+            'vkDestroyCommandPool',
+            'vkBeginCommandBuffer',
             ]
         self.headerVersion = None
         # Internal state - accumulators for different inner block text
@@ -1133,9 +1288,7 @@ VkResult DispatchGetPhysicalDeviceToolPropertiesEXT(
             write('#include "chassis.h"', file=self.outFile)
             write('#include "layer_chassis_dispatch.h"', file=self.outFile)
             write('#include "vk_layer_utils.h"', file=self.outFile)
-            self.newline()
-            write('// This intentionally includes a cpp file', file=self.outFile)
-            write('#include "vk_safe_struct.cpp"', file=self.outFile)
+            write('#include "vk_safe_struct.h"', file=self.outFile)
             self.newline()
             write('ReadWriteLock dispatch_lock;', file=self.outFile)
             self.newline()
@@ -1701,8 +1854,8 @@ VkResult DispatchGetPhysicalDeviceToolPropertiesEXT(
             elif type in struct_member_dict:
                 if self.struct_contains_ndo(type) == True:
                     islocal = True
-            isdestroy = True if True in [destroy_txt in cmdname for destroy_txt in ['Destroy', 'Free']] else False
-            iscreate = True if True in [create_txt in cmdname for create_txt in ['Create', 'Allocate', 'GetRandROutputDisplayEXT', 'RegisterDeviceEvent', 'RegisterDisplayEvent']] else False
+            isdestroy = True if True in [destroy_txt in cmdname for destroy_txt in ['Destroy', 'Free', 'ReleasePerformanceConfigurationINTEL']] else False
+            iscreate = True if True in [create_txt in cmdname for create_txt in ['Create', 'Allocate', 'GetRandROutputDisplayEXT', 'RegisterDeviceEvent', 'RegisterDisplayEvent', 'AcquirePerformanceConfigurationINTEL']] else False
             extstructs = self.registry.validextensionstructs[type] if name == 'pNext' else None
             membersInfo.append(self.CommandParam(type=type,
                                                  name=name,

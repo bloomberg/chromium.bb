@@ -15,7 +15,8 @@
 
 #include <sstream>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 
@@ -1164,6 +1165,9 @@ uint32_t GLES2Util::GetChannelsForFormat(int format) {
     case GL_RGB16_EXT:
     case GL_RGB16_SNORM_EXT:
       return kRGB;
+    case GL_RGB_YCRCB_420_CHROMIUM:
+    case GL_RGB_YCBCR_420V_CHROMIUM:
+    case GL_RGB_YCBCR_P010_CHROMIUM:
     case GL_BGRA_EXT:
     case GL_BGRA8_EXT:
     case GL_RGBA16F_EXT:

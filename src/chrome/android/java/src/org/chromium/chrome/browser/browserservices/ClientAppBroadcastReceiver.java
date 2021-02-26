@@ -7,15 +7,14 @@ package org.chromium.chrome.browser.browserservices;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.PermissionUpdater;
 import org.chromium.chrome.browser.metrics.WebApkUma;
+import org.chromium.chrome.browser.version.ChromeVersionInfo;
 import org.chromium.components.embedder_support.util.Origin;
-import org.chromium.webapk.lib.common.WebApkConstants;
+import org.chromium.components.webapk.lib.common.WebApkConstants;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -155,10 +154,7 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
             String appName = register.getAppNameForRegisteredUid(uid);
             Intent intent = ClearDataDialogActivity
                     .createIntent(context, appName, domains, origins, uninstalled);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
             context.startActivity(intent);
         }
     }

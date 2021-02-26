@@ -17,12 +17,12 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/sandbox_type.h"
 #include "content/public/browser/service_process_info.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "sandbox/policy/sandbox_type.h"
 
 namespace content {
 
@@ -31,8 +31,8 @@ namespace content {
 // services that use other sandbox types, consult
 // security-dev@chromium.org and add to an appropriate |service_sandbox_type.h|.
 template <typename Interface>
-inline content::SandboxType GetServiceSandboxType() {
-  return SandboxType::kUtility;
+inline sandbox::policy::SandboxType GetServiceSandboxType() {
+  return sandbox::policy::SandboxType::kUtility;
 }
 
 // ServiceProcessHost is used to launch new service processes given basic
@@ -60,11 +60,6 @@ class CONTENT_EXPORT ServiceProcessHost {
 
     Options(Options&&);
 
-    // Specifies the sandbox type with which to launch the service process.
-    // Defaults to a generic, restrictive utility process sandbox.
-    // TODO(1065087) Deprecate.
-    Options& WithSandboxType(SandboxType type);
-
     // Specifies the display name of the service process. This should generally
     // be a human readable and meaningful application or service name and will
     // appear in places like the system task viewer.
@@ -84,7 +79,8 @@ class CONTENT_EXPORT ServiceProcessHost {
     // to |Launch()|.
     Options Pass();
 
-    SandboxType sandbox_type = SandboxType::kUtility;
+    sandbox::policy::SandboxType sandbox_type =
+        sandbox::policy::SandboxType::kUtility;
     base::string16 display_name;
     base::Optional<int> child_flags;
     std::vector<std::string> extra_switches;
@@ -126,9 +122,7 @@ class CONTENT_EXPORT ServiceProcessHost {
   template <typename Interface>
   static void Launch(mojo::PendingReceiver<Interface> receiver,
                      Options options = {}) {
-    // TODO(1065087) remove this test once all services are migrated.
-    if (options.sandbox_type == SandboxType::kUtility)
-      options.sandbox_type = content::GetServiceSandboxType<Interface>();
+    options.sandbox_type = content::GetServiceSandboxType<Interface>();
     Launch(mojo::GenericPendingReceiver(std::move(receiver)),
            std::move(options));
   }
@@ -139,9 +133,7 @@ class CONTENT_EXPORT ServiceProcessHost {
   // May be called from any thread.
   template <typename Interface>
   static mojo::Remote<Interface> Launch(Options options = {}) {
-    // TODO(1065087) remove this test once all services are migrated.
-    if (options.sandbox_type == SandboxType::kUtility)
-      options.sandbox_type = content::GetServiceSandboxType<Interface>();
+    options.sandbox_type = content::GetServiceSandboxType<Interface>();
     mojo::Remote<Interface> remote;
     Launch(remote.BindNewPipeAndPassReceiver(), std::move(options));
     return remote;

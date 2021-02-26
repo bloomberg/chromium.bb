@@ -10,13 +10,16 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "build/buildflag.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/ime/constants.h"
 #include "chromeos/services/ime/decoder/decoder_engine.h"
+#include "chromeos/services/ime/decoder/system_engine.h"
 #include "chromeos/services/ime/public/cpp/buildflags.h"
 
 namespace chromeos {
@@ -35,9 +38,16 @@ enum SimpleDownloadError {
 ImeService::ImeService(mojo::PendingReceiver<mojom::ImeService> receiver)
     : receiver_(this, std::move(receiver)),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
-  input_engine_ = chromeos::features::IsImeDecoderWithSandboxEnabled()
-                      ? std::make_unique<DecoderEngine>(this)
-                      : std::make_unique<InputEngine>();
+  if (chromeos::features::IsImeSandboxEnabled()) {
+    if (base::FeatureList::IsEnabled(
+            chromeos::features::kSystemLatinPhysicalTyping)) {
+      input_engine_ = std::make_unique<SystemEngine>(this);
+    } else {
+      input_engine_ = std::make_unique<DecoderEngine>(this);
+    }
+  } else {
+    input_engine_ = std::make_unique<InputEngine>();
+  }
 }
 
 ImeService::~ImeService() = default;
@@ -69,7 +79,7 @@ void ImeService::SimpleDownloadFinished(SimpleDownloadCallback callback,
   if (file.empty()) {
     callback(SIMPLE_DOWNLOAD_ERROR_FAILED, "");
   } else {
-    // Convert downloaded file path to an whitelisted path.
+    // Convert downloaded file path to an allowlisted path.
     base::FilePath target(kUserInputMethodsDirPath);
     target = target.Append(kLanguageDataDirName).Append(file.BaseName());
     callback(SIMPLE_DOWNLOAD_ERROR_OK, target.MaybeAsASCII().c_str());
@@ -82,6 +92,7 @@ const char* ImeService::GetImeBundleDir() {
 
 const char* ImeService::GetImeGlobalDir() {
   // Global IME data is supported yet.
+  NOTIMPLEMENTED();
   return "";
 }
 
@@ -95,6 +106,14 @@ void ImeService::RunInMainSequence(ImeSequencedTask task, int task_id) {
   // invoked Mojo call from other threads (sequences) should be posted to
   // main_task_runner_ by this function.
   main_task_runner_->PostTask(FROM_HERE, base::BindOnce(task, task_id));
+}
+
+bool ImeService::IsFeatureEnabled(const char* feature_name) {
+  if (strcmp(feature_name, "SystemLatinPhysicalTyping") == 0) {
+    return base::FeatureList::IsEnabled(
+        chromeos::features::kSystemLatinPhysicalTyping);
+  }
+  return false;
 }
 
 int ImeService::SimpleDownloadToFile(const char* url,
@@ -125,6 +144,7 @@ int ImeService::SimpleDownloadToFile(const char* url,
 ImeCrosDownloader* ImeService::GetDownloader() {
   // TODO(https://crbug.com/837156): Create an ImeCrosDownloader based on its
   // specification defined in interfaces. The caller should free it after use.
+  NOTIMPLEMENTED();
   return nullptr;
 }
 

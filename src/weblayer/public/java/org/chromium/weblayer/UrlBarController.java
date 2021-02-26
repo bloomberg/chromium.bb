@@ -36,12 +36,16 @@ public class UrlBarController {
     @NonNull
     public View createUrlBarView(@NonNull UrlBarOptions options) {
         ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 82) {
-            throw new UnsupportedOperationException();
-        }
-
         try {
-            return ObjectWrapper.unwrap(mImpl.createUrlBarView(options.getBundle()), View.class);
+            if (WebLayer.getSupportedMajorVersionInternal() < 86) {
+                return ObjectWrapper.unwrap(
+                        mImpl.deprecatedCreateUrlBarView(options.getBundle()), View.class);
+            }
+            return ObjectWrapper.unwrap(
+                    mImpl.createUrlBarView(options.getBundle(),
+                            ObjectWrapper.wrap(options.getTextClickListener()),
+                            ObjectWrapper.wrap(options.getTextLongClickListener())),
+                    View.class);
         } catch (RemoteException exception) {
             throw new APICallException(exception);
         }

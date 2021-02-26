@@ -16,6 +16,8 @@
 #include "av1/common/blockd.h"
 #include "av1/common/enums.h"
 
+#include "av1/encoder/global_motion.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -41,7 +43,6 @@ void av1_encode_tile(struct AV1_COMP *cpi, struct ThreadData *td, int tile_row,
                      int tile_col);
 void av1_encode_sb_row(struct AV1_COMP *cpi, struct ThreadData *td,
                        int tile_row, int tile_col, int mi_row);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif

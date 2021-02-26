@@ -19,10 +19,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "chromecast/browser/cast_media_blocker.h"
 #include "chromecast/browser/cast_web_contents.h"
+#include "components/on_load_script_injector/browser/on_load_script_injector_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -32,8 +32,6 @@
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 
 namespace chromecast {
-
-class QueryableDataHost;
 
 namespace shell {
 class RemoteDebuggingServer;
@@ -51,10 +49,9 @@ class CastWebContentsImpl : public CastWebContents,
   PageState page_state() const override;
   base::Optional<pid_t> GetMainFrameRenderProcessPid() const override;
 
-  QueryableDataHost* queryable_data_host() const override;
-
   // CastWebContents implementation:
   int tab_id() const override;
+  int id() const override;
   void AddRendererFeatures(std::vector<RendererFeature> features) override;
   void AllowWebAndMojoWebUiBindings() override;
   void ClearRenderWidgetHostView() override;
@@ -69,10 +66,9 @@ class CastWebContentsImpl : public CastWebContents,
   void BlockMediaLoading(bool blocked) override;
   void BlockMediaStarting(bool blocked) override;
   void EnableBackgroundVideoPlayback(bool enabled) override;
-  void AddBeforeLoadJavaScript(base::StringPiece id,
-                               const std::vector<std::string>& origins,
-                               base::StringPiece script) override;
-  void RemoveBeforeLoadJavaScript(base::StringPiece id) override;
+  on_load_script_injector::OnLoadScriptInjectorHost<std::string>*
+  script_injector() override;
+  void InjectScriptsIntoMainFrame() override;
   void PostMessageToMainFrame(
       const std::string& target_origin,
       const std::string& data,
@@ -126,6 +122,7 @@ class CastWebContentsImpl : public CastWebContents,
   void DidFirstVisuallyNonEmptyPaint() override;
   void WebContentsDestroyed() override;
   void DidUpdateFaviconURL(
+      content::RenderFrameHost* render_frame_host,
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
   void MediaStartedPlaying(const MediaPlayerInfo& video_type,
                            const content::MediaPlayerId& id) override;
@@ -135,22 +132,6 @@ class CastWebContentsImpl : public CastWebContents,
       content::WebContentsObserver::MediaStoppedReason reason) override;
 
  private:
-  struct OriginScopedScript {
-    OriginScopedScript();
-    OriginScopedScript(const std::vector<std::string>& origins,
-                       std::string script);
-    OriginScopedScript& operator=(OriginScopedScript&& other);
-    ~OriginScopedScript();
-
-    const std::vector<std::string>& origins() const { return origins_; }
-    const std::string script() const { return script_; }
-
-    std::vector<std::string> origins_;
-    std::string script_;
-
-    DISALLOW_COPY_AND_ASSIGN(OriginScopedScript);
-  };
-
   void OnPageLoading();
   void OnPageLoaded();
   void UpdatePageState();
@@ -181,6 +162,7 @@ class CastWebContentsImpl : public CastWebContents,
   std::vector<RendererFeature> renderer_features_;
 
   const int tab_id_;
+  const int id_;
   bool is_websql_enabled_;
   bool is_mixer_audio_enabled_;
   base::TimeTicks start_loading_ticks_;
@@ -191,8 +173,8 @@ class CastWebContentsImpl : public CastWebContents,
   bool notifying_;
   int last_error_;
 
-  std::map<std::string, OriginScopedScript> before_load_scripts_;
-  std::vector<std::string> before_load_scripts_order_;
+  on_load_script_injector::OnLoadScriptInjectorHost<std::string>
+      script_injector_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 
@@ -203,8 +185,6 @@ class CastWebContentsImpl : public CastWebContents,
   // Map of InterfaceSet -> InterfaceProvider pointer.
   base::flat_map<InterfaceSet, service_manager::InterfaceProvider*>
       interface_providers_map_;
-
-  std::unique_ptr<QueryableDataHost> queryable_data_host_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CastWebContentsImpl> weak_factory_;

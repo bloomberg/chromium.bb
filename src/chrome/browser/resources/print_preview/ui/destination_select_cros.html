@@ -1,4 +1,12 @@
 <style include="print-preview-shared throbber md-select destination-select cr-hidden-style">
+  :host([is-current-destination-cros-local_]) #statusText {
+    color: var(--google-red-600);
+    font-size: calc(10 / 13 * 1em);
+    overflow: hidden;
+    padding: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 </style>
 <print-preview-settings-section>
   <span slot="title">$i18n{destinationLabel}</span>
@@ -7,8 +15,8 @@
       <div class="throbber"></div>
     </div>
     <template is="dom-if" if="[[!printerStatusFlagEnabled_]]">
-      <select class="md-select" aria-label$="[[i18n(destinationLabel)]]"
-          hidden$="[[!loaded]]"
+      <select id="dropdown" class="md-select"
+          aria-label="$i18n{destinationLabel}" hidden$="[[!loaded]]"
           style="background-image:[[backgroundImages_]];"
           disabled$="[[disabled]]"
           value="{{selectedValue::change}}">
@@ -27,13 +35,23 @@
           $i18n{noDestinationsMessage}
         </option>
         <option value="seeMore"
-            aria-label$="[[i18n(seeMoreDestinationsLabel)]]">
+            aria-label="$i18n{seeMoreDestinationsLabel}">
           $i18n{seeMore}
         </option>
       </select>
     </template>
     <template is="dom-if" if="[[printerStatusFlagEnabled_]]">
-      <div>print-preview-destination-select-cros</div>
+      <print-preview-destination-dropdown-cros id="dropdown"
+          value="[[destination]]" hidden$="[[!loaded]]"
+          item-list="[[recentDestinationList]]"
+          pdf-destination-key="[[pdfDestinationKey_]]"
+          drive-destination-key="[[driveDestinationKey]]"
+          no-destinations="[[noDestinations]]"
+          pdf-printer-disabled="[[pdfPrinterDisabled]]"
+          destination-icon="[[destinationIcon_]]" disabled="[[disabled]]"
+          on-dropdown-value-selected="onDropdownValueSelected_"
+          destination-status-text="[[statusText_]]">
+      </print-preview-destination-dropdown-cros>
     </template>
   </div>
 </print-preview-settings-section>
@@ -41,7 +59,9 @@
     hidden$="[[!statusText_]]">
   <div slot="title"></div>
   <div slot="controls">
-    <div class="destination-status">[[statusText_]]</div>
+    <div id="statusText" class="destination-status" title="[[statusText_]]"
+        aria-hidden="[[isCurrentDestinationCrosLocal_]]">
+    </div>
   </div>
 </print-preview-settings-section>
 <print-preview-settings-section class="destination-additional-info"

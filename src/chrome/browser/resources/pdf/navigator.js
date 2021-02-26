@@ -2,14 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
 import {Viewport} from './viewport.js';
 
-/**
- * NavigatorDelegate for calling browser-specific functions to do the actual
- * navigating.
- */
+// NavigatorDelegate for calling browser-specific functions to do the actual
+// navigating.
+/** @interface */
 export class NavigatorDelegate {
+  /**
+   * Called when navigation should happen in the current tab.
+   * @param {string} url The url to be opened in the current tab.
+   */
+  navigateInCurrentTab(url) {}
+
+  /**
+   * Called when navigation should happen in the new tab.
+   * @param {string} url The url to be opened in the new tab.
+   * @param {boolean} active Indicates if the new tab should be the active tab.
+   */
+  navigateInNewTab(url, active) {}
+
+  /**
+   * Called when navigation should happen in the new window.
+   * @param {string} url The url to be opened in the new window.
+   */
+  navigateInNewWindow(url) {}
+}
+
+// NavigatorDelegate for calling browser-specific functions to do the actual
+// navigating.
+/** @implements {NavigatorDelegate} */
+export class NavigatorDelegateImpl {
   /**
    * @param {number} tabId The tab ID of the PDF viewer or -1 if the viewer is
    *     not displayed in a tab.
@@ -19,10 +43,7 @@ export class NavigatorDelegate {
     this.tabId_ = tabId;
   }
 
-  /**
-   * Called when navigation should happen in the current tab.
-   * @param {string} url The url to be opened in the current tab.
-   */
+  /** @override */
   navigateInCurrentTab(url) {
     // When the PDFviewer is inside a browser tab, prefer the tabs API because
     // it can navigate from one file:// URL to another.
@@ -33,11 +54,7 @@ export class NavigatorDelegate {
     }
   }
 
-  /**
-   * Called when navigation should happen in the new tab.
-   * @param {string} url The url to be opened in the new tab.
-   * @param {boolean} active Indicates if the new tab should be the active tab.
-   */
+  /** @override */
   navigateInNewTab(url, active) {
     // Prefer the tabs API because it guarantees we can just open a new tab.
     // window.open doesn't have this guarantee.
@@ -48,10 +65,7 @@ export class NavigatorDelegate {
     }
   }
 
-  /**
-   * Called when navigation should happen in the new window.
-   * @param {string} url The url to be opened in the new window.
-   */
+  /** @override */
   navigateInNewWindow(url) {
     // Prefer the windows API because it guarantees we can just open a new
     // window. window.open with '_blank' argument doesn't have this guarantee.
@@ -63,7 +77,7 @@ export class NavigatorDelegate {
   }
 }
 
-/** Navigator for navigating to links inside or outside the PDF. */
+// Navigator for navigating to links inside or outside the PDF.
 export class PdfNavigator {
   /**
    * @param {string} originalUrl The original page URL.
@@ -90,13 +104,21 @@ export class PdfNavigator {
 
     /** @private {!NavigatorDelegate} */
     this.navigatorDelegate_ = navigatorDelegate;
+
+    /** @private {!EventTarget} */
+    this.eventTarget_ = new EventTarget();
+  }
+
+  /** @return {!EventTarget} */
+  getEventTarget() {
+    return this.eventTarget_;
   }
 
   /**
    * Function to navigate to the given URL. This might involve navigating
    * within the PDF page or opening a new url (in the same tab or a new tab).
    * @param {string} urlString The URL to navigate to.
-   * @param {!PdfNavigator.WindowOpenDisposition} disposition The window open
+   * @param {!WindowOpenDisposition} disposition The window open
    *     disposition when navigating to the new URL.
    */
   navigate(urlString, disposition) {
@@ -131,20 +153,20 @@ export class PdfNavigator {
     }
 
     switch (disposition) {
-      case PdfNavigator.WindowOpenDisposition.CURRENT_TAB:
+      case WindowOpenDisposition.CURRENT_TAB:
         this.paramsParser_.getViewportFromUrlParams(
             url.href, this.onViewportReceived_.bind(this));
         break;
-      case PdfNavigator.WindowOpenDisposition.NEW_BACKGROUND_TAB:
+      case WindowOpenDisposition.NEW_BACKGROUND_TAB:
         this.navigatorDelegate_.navigateInNewTab(url.href, false);
         break;
-      case PdfNavigator.WindowOpenDisposition.NEW_FOREGROUND_TAB:
+      case WindowOpenDisposition.NEW_FOREGROUND_TAB:
         this.navigatorDelegate_.navigateInNewTab(url.href, true);
         break;
-      case PdfNavigator.WindowOpenDisposition.NEW_WINDOW:
+      case WindowOpenDisposition.NEW_WINDOW:
         this.navigatorDelegate_.navigateInNewWindow(url.href);
         break;
-      case PdfNavigator.WindowOpenDisposition.SAVE_TO_DISK:
+      case WindowOpenDisposition.SAVE_TO_DISK:
         // TODO(jaepark): Alt + left clicking a link in PDF should
         // download the link.
         this.paramsParser_.getViewportFromUrlParams(
@@ -153,6 +175,9 @@ export class PdfNavigator {
       default:
         break;
     }
+
+    // Dispatch events for tests.
+    this.eventTarget_.dispatchEvent(new CustomEvent('navigate-for-testing'));
   }
 
   /**
@@ -255,7 +280,7 @@ export class PdfNavigator {
  * the only values that are passed from Plugin.
  * @enum {number}
  */
-PdfNavigator.WindowOpenDisposition = {
+export const WindowOpenDisposition = {
   CURRENT_TAB: 1,
   NEW_FOREGROUND_TAB: 3,
   NEW_BACKGROUND_TAB: 4,
@@ -266,3 +291,4 @@ PdfNavigator.WindowOpenDisposition = {
 // Export on |window| such that scripts injected from pdf_extension_test.cc can
 // access it.
 window.PdfNavigator = PdfNavigator;
+window.WindowOpenDisposition = WindowOpenDisposition;

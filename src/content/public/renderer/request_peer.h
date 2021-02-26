@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-forward.h"
 
 namespace net {
 struct RedirectInfo;
@@ -72,9 +73,11 @@ class CONTENT_EXPORT RequestPeer {
   // the resource load.
   virtual void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) = 0;
-
-  // Returns the task runner on which this request peer is running.
-  virtual scoped_refptr<base::TaskRunner> GetTaskRunner() = 0;
+  
+  // Called when the page is in BackForwardCache, and when the network request
+  // is redirected or the datapipe is already drained. This method evicts the
+  // entry.
+  virtual void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason) = 0;
 
   virtual ~RequestPeer() {}
 };

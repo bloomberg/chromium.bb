@@ -34,10 +34,11 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
 
   bool WillDraw(DrawMode draw_mode,
                 viz::ClientResourceProvider* resource_provider) override;
-  void AppendQuads(viz::RenderPass* render_pass,
+  void AppendQuads(viz::CompositorRenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
   gfx::Rect GetEnclosingRectInTargetSpace() const override;
 
+  void SetJumpOnTrackClick(bool jump_on_track_click);
   void SetSupportsDragSnapBack(bool supports_drag_snap_back);
   void SetBackButtonRect(gfx::Rect back_button_rect);
   void SetForwardButtonRect(gfx::Rect forward_button_rect);
@@ -63,6 +64,7 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
     internal_content_bounds_ = content_bounds;
   }
 
+  bool JumpOnTrackClick() const override;
   bool SupportsDragSnapBack() const override;
   gfx::Rect BackButtonRect() const override;
   gfx::Rect ForwardButtonRect() const override;
@@ -98,6 +100,7 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
   float internal_contents_scale_;
   gfx::Size internal_content_bounds_;
 
+  bool jump_on_track_click_;
   bool supports_drag_snap_back_;
   int thumb_thickness_;
   int thumb_length_;

@@ -14,8 +14,8 @@
 #include "base/unguessable_token.h"
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
-#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/webrtc_connections_observer.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -36,8 +36,8 @@
 #include "base/android/content_uri_utils.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "base/message_loop/message_loop_current.h"
+#if defined(OS_MAC)
+#include "base/task/current_thread.h"
 #endif
 
 namespace content {
@@ -64,16 +64,16 @@ NetworkServiceClient::NetworkServiceClient(
 #endif
 {
 
-#if defined(OS_MACOSX)
-  if (base::MessageLoopCurrentForUI::IsSet())  // Not set in some unit tests.
+#if defined(OS_MAC)
+  if (base::CurrentUIThread::IsSet())  // Not set in some unit tests.
     net::CertDatabase::GetInstance()->StartListeningForKeychainEvents();
 #endif
 
   if (IsOutOfProcessNetworkService()) {
     net::CertDatabase::GetInstance()->AddObserver(this);
-    memory_pressure_listener_ =
-        std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
-            &NetworkServiceClient::OnMemoryPressure, base::Unretained(this)));
+    memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+        FROM_HERE, base::BindRepeating(&NetworkServiceClient::OnMemoryPressure,
+                                       base::Unretained(this)));
 
 #if defined(OS_ANDROID)
     DCHECK(!net::NetworkChangeNotifier::CreateIfNeeded());
@@ -211,10 +211,10 @@ void NetworkServiceClient::OnRawRequest(
     int32_t process_id,
     int32_t routing_id,
     const std::string& devtools_request_id,
-    const net::CookieStatusList& cookies_with_status,
+    const net::CookieAccessResultList& cookies_with_access_result,
     std::vector<network::mojom::HttpRawHeaderPairPtr> headers) {
   devtools_instrumentation::OnRequestWillBeSentExtraInfo(
-      process_id, routing_id, devtools_request_id, cookies_with_status,
+      process_id, routing_id, devtools_request_id, cookies_with_access_result,
       headers);
 }
 
@@ -222,12 +222,12 @@ void NetworkServiceClient::OnRawResponse(
     int32_t process_id,
     int32_t routing_id,
     const std::string& devtools_request_id,
-    const net::CookieAndLineStatusList& cookies_with_status,
+    const net::CookieAndLineAccessResultList& cookies_with_access_result,
     std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
     const base::Optional<std::string>& raw_response_headers) {
   devtools_instrumentation::OnResponseReceivedExtraInfo(
-      process_id, routing_id, devtools_request_id, cookies_with_status, headers,
-      raw_response_headers);
+      process_id, routing_id, devtools_request_id, cookies_with_access_result,
+      headers, raw_response_headers);
 }
 
 void NetworkServiceClient::OnCorsPreflightRequest(
@@ -257,15 +257,6 @@ void NetworkServiceClient::OnCorsPreflightRequestCompleted(
     const network::URLLoaderCompletionStatus& status) {
   devtools_instrumentation::OnCorsPreflightRequestCompleted(
       process_id, render_frame_id, devtools_request_id, status);
-}
-
-void NetworkServiceClient::LogCrossOriginFetchFromContentScript3(
-    const std::string& isolated_world_host) {
-  ContentBrowserClient* client = GetContentClient()->browser();
-  if (client) {
-    client->LogUkmEventForCrossOriginFetchFromContentScript3(
-        isolated_world_host);
-  }
 }
 
 }  // namespace content

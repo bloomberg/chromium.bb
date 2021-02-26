@@ -41,14 +41,8 @@ template("ios_eg2_test_app_host") {
       ldflags = []
     }
     ldflags += [
-      "-Xlinker",
-      "-rpath",
-      "-Xlinker",
-      "@executable_path/Frameworks",
-      "-Xlinker",
-      "-rpath",
-      "-Xlinker",
-      "@loader_path/Frameworks",
+      "-Wl,-rpath,@executable_path/Frameworks",
+      "-Wl,-rpath,@loader_path/Frameworks",
     ]
   }
 }
@@ -122,10 +116,6 @@ template("ios_eg2_test") {
       "--host-app",
       "@WrappedPath(${_root_build_dir}/${xcode_test_application_name}.app)",
     ]
-
-    # All EG2 tests require xcode-parallelization. EG2 doesn't use xctest, so we
-    # leave undefined
-    executable_args += [ "--xcode-parallelization" ]
   }
 }
 

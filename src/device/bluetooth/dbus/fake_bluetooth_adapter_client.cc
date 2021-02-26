@@ -7,8 +7,8 @@
 #include <map>
 #include <utility>
 
-#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -77,21 +77,19 @@ FakeBluetoothAdapterClient::FakeBluetoothAdapterClient()
     : visible_(true),
       second_visible_(false),
       discovering_count_(0),
-      pause_count_(0),
-      unpause_count_(0),
       set_discovery_filter_should_fail_(false),
       simulation_interval_ms_(kSimulationIntervalMs),
       last_handle_(0) {
-  properties_.reset(new Properties(base::Bind(
-      &FakeBluetoothAdapterClient::OnPropertyChanged, base::Unretained(this))));
+  properties_ = std::make_unique<Properties>(base::BindRepeating(
+      &FakeBluetoothAdapterClient::OnPropertyChanged, base::Unretained(this)));
 
   properties_->address.ReplaceValue(kAdapterAddress);
   properties_->name.ReplaceValue("Fake Adapter (Name)");
   properties_->alias.ReplaceValue(kAdapterName);
   properties_->pairable.ReplaceValue(true);
 
-  second_properties_.reset(new Properties(base::Bind(
-      &FakeBluetoothAdapterClient::OnPropertyChanged, base::Unretained(this))));
+  second_properties_ = std::make_unique<Properties>(base::BindRepeating(
+      &FakeBluetoothAdapterClient::OnPropertyChanged, base::Unretained(this)));
 
   second_properties_->address.ReplaceValue(kSecondAdapterAddress);
   second_properties_->name.ReplaceValue("Second Fake Adapter (Name)");
@@ -160,7 +158,9 @@ void FakeBluetoothAdapterClient::StartDiscovery(
     FakeBluetoothDeviceClient* device_client =
         static_cast<FakeBluetoothDeviceClient*>(
             bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient());
-    device_client->BeginDiscoverySimulation(dbus::ObjectPath(kAdapterPath));
+    if (enable_discovery_simulation_) {
+      device_client->BeginDiscoverySimulation(dbus::ObjectPath(kAdapterPath));
+    }
   }
 }
 
@@ -207,22 +207,6 @@ void FakeBluetoothAdapterClient::UpdateDiscoveringProperty(bool discovering) {
   properties_->discovering.ReplaceValue(discovering);
 }
 
-void FakeBluetoothAdapterClient::PauseDiscovery(
-    const dbus::ObjectPath& object_path,
-    base::OnceClosure callback,
-    ErrorCallback error_callback) {
-  ++pause_count_;
-  std::move(callback).Run();
-}
-
-void FakeBluetoothAdapterClient::UnpauseDiscovery(
-    const dbus::ObjectPath& object_path,
-    base::OnceClosure callback,
-    ErrorCallback error_callback) {
-  ++unpause_count_;
-  std::move(callback).Run();
-}
-
 void FakeBluetoothAdapterClient::RemoveDevice(
     const dbus::ObjectPath& object_path,
     const dbus::ObjectPath& device_path,
@@ -249,6 +233,10 @@ void FakeBluetoothAdapterClient::MakeSetDiscoveryFilterFail() {
 
 void FakeBluetoothAdapterClient::MakeStartDiscoveryFail() {
   set_start_discovery_should_fail_ = true;
+}
+
+void FakeBluetoothAdapterClient::SetDiscoverySimulation(bool enabled) {
+  enable_discovery_simulation_ = enabled;
 }
 
 void FakeBluetoothAdapterClient::SetDiscoveryFilter(
@@ -300,6 +288,15 @@ void FakeBluetoothAdapterClient::RemoveServiceRecord(
   }
   records_.erase(it);
   std::move(callback).Run();
+}
+
+void FakeBluetoothAdapterClient::ConnectDevice(
+    const dbus::ObjectPath& object_path,
+    const std::string& address,
+    const base::Optional<AddressType>& address_type,
+    ConnectDeviceCallback callback,
+    ErrorCallback error_callback) {
+  NOTIMPLEMENTED();
 }
 
 void FakeBluetoothAdapterClient::SetSimulationIntervalMs(int interval_ms) {

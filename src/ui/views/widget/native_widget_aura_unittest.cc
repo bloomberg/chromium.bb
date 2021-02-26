@@ -149,6 +149,25 @@ TEST_F(NativeWidgetAuraTest, CreateMinimized) {
   widget->CloseNow();
 }
 
+// Tests that GetRestoreBounds returns the window bounds even if the window is
+// transformed.
+TEST_F(NativeWidgetAuraTest, RestoreBounds) {
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.parent = nullptr;
+  params.context = root_window();
+  params.bounds.SetRect(0, 0, 400, 400);
+  auto widget = std::make_unique<Widget>();
+  widget->Init(std::move(params));
+  widget->Show();
+  EXPECT_EQ(gfx::Rect(400, 400), widget->GetRestoredBounds());
+
+  gfx::Transform transform;
+  transform.Translate(100.f, 100.f);
+  widget->GetNativeWindow()->SetTransform(transform);
+  EXPECT_EQ(gfx::Rect(400, 400), widget->GetRestoredBounds());
+}
+
 // A WindowObserver that counts kShowStateKey property changes.
 class TestWindowObserver : public aura::WindowObserver {
  public:
@@ -316,24 +335,6 @@ class PropertyTestLayoutManager : public TestLayoutManagerBase {
   DISALLOW_COPY_AND_ASSIGN(PropertyTestLayoutManager);
 };
 
-class PropertyTestWidgetDelegate : public WidgetDelegate {
- public:
-  explicit PropertyTestWidgetDelegate(Widget* widget) : widget_(widget) {}
-  ~PropertyTestWidgetDelegate() override = default;
-
- private:
-  // WidgetDelegate:
-  bool CanMaximize() const override { return true; }
-  bool CanMinimize() const override { return true; }
-  bool CanResize() const override { return true; }
-  void DeleteDelegate() override { delete this; }
-  Widget* GetWidget() override { return widget_; }
-  const Widget* GetWidget() const override { return widget_; }
-
-  Widget* widget_;
-  DISALLOW_COPY_AND_ASSIGN(PropertyTestWidgetDelegate);
-};
-
 // Verifies the resize behavior when added to the layout manager.
 TEST_F(NativeWidgetAuraTest, TestPropertiesWhenAddedToLayout) {
   root_window()->SetBounds(gfx::Rect(0, 0, 640, 480));
@@ -342,7 +343,9 @@ TEST_F(NativeWidgetAuraTest, TestPropertiesWhenAddedToLayout) {
   std::unique_ptr<TestWidget> widget(new TestWidget());
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.delegate = new PropertyTestWidgetDelegate(widget.get());
+  params.delegate = new WidgetDelegate();
+  params.delegate->SetOwnedByWidget(true);
+  params.delegate->SetHasWindowSizeControls(true);
   params.parent = nullptr;
   params.context = root_window();
   widget->Init(std::move(params));
@@ -399,18 +402,18 @@ class GestureTrackingView : public View {
 TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
   // Create two views (both sized the same). |child| is configured not to
   // consume the gesture event.
-  GestureTrackingView* view = new GestureTrackingView();
+  auto content_view = std::make_unique<GestureTrackingView>();
   GestureTrackingView* child = new GestureTrackingView();
   child->set_consume_gesture_event(false);
-  view->SetLayoutManager(std::make_unique<FillLayout>());
-  view->AddChildView(child);
+  content_view->SetLayoutManager(std::make_unique<FillLayout>());
+  content_view->AddChildView(child);
   std::unique_ptr<TestWidget> widget(new TestWidget());
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = root_window();
   params.bounds = gfx::Rect(0, 0, 100, 200);
   widget->Init(std::move(params));
-  widget->SetContentsView(view);
+  GestureTrackingView* view = widget->SetContentsView(std::move(content_view));
   widget->Show();
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(41, 51),
@@ -441,13 +444,12 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
 // Verifies views with layers are targeted for events properly.
 TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
   // Create two widgets: |parent| and |child|. |child| is a child of |parent|.
-  View* parent_root = new View;
   std::unique_ptr<Widget> parent(new Widget());
   Widget::InitParams parent_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   parent_params.context = root_window();
   parent->Init(std::move(parent_params));
-  parent->SetContentsView(parent_root);
+  View* parent_root = parent->SetContentsView(std::make_unique<View>());
   parent->SetBounds(gfx::Rect(0, 0, 400, 400));
   parent->Show();
 
@@ -499,13 +501,12 @@ TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
 TEST_F(NativeWidgetAuraTest,
        ShouldDescendIntoChildForEventHandlingChecksVisibleBounds) {
   // Create two widgets: |parent| and |child|. |child| is a child of |parent|.
-  View* parent_root_view = new View;
   Widget parent;
   Widget::InitParams parent_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   parent_params.context = root_window();
   parent.Init(std::move(parent_params));
-  parent.SetContentsView(parent_root_view);
+  View* parent_root_view = parent.SetContentsView(std::make_unique<View>());
   parent.SetBounds(gfx::Rect(0, 0, 400, 400));
   parent.Show();
 
@@ -660,25 +661,6 @@ TEST_F(NativeWidgetAuraTest, VisibilityOfChildBubbleWindow) {
   EXPECT_TRUE(child.IsVisible());
 }
 
-class ModalWidgetDelegate : public WidgetDelegate {
- public:
-  explicit ModalWidgetDelegate(Widget* widget) : widget_(widget) {}
-  ~ModalWidgetDelegate() override = default;
-
-  // WidgetDelegate:
-  void DeleteDelegate() override { delete this; }
-  Widget* GetWidget() override { return widget_; }
-  const Widget* GetWidget() const override { return widget_; }
-  ui::ModalType GetModalType() const override {
-    return ui::ModalType::MODAL_TYPE_WINDOW;
-  }
-
- private:
-  Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModalWidgetDelegate);
-};
-
 // Tests that for a child transient window, if its modal type is
 // ui::MODAL_TYPE_WINDOW, then its visibility is controlled by its transient
 // parent's visibility.
@@ -698,7 +680,9 @@ TEST_F(NativeWidgetAuraTest, TransientChildModalWindowVisibility) {
   Widget::InitParams child_params(Widget::InitParams::TYPE_WINDOW);
   child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   child_params.parent = parent.GetNativeWindow();
-  child_params.delegate = new ModalWidgetDelegate(&child);
+  child_params.delegate = new WidgetDelegate;
+  child_params.delegate->SetOwnedByWidget(true);
+  child_params.delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
   child.Init(std::move(child_params));
   child.SetBounds(gfx::Rect(0, 0, 200, 200));
   child.Show();

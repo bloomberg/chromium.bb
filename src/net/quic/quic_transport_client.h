@@ -13,11 +13,14 @@
 #include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_chromium_packet_writer.h"
 #include "net/quic/quic_context.h"
+#include "net/quic/quic_event_logger.h"
+#include "net/quic/quic_transport_error.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_client_session.h"
+#include "net/third_party/quiche/src/quic/quic_transport/web_transport_fingerprint_proof_verifier.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -26,29 +29,6 @@ namespace net {
 class ProxyResolutionRequest;
 class QuicChromiumAlarmFactory;
 class URLRequestContext;
-
-struct NET_EXPORT QuicTransportError {
-  // |net_error| is always set to a meaningful value.
-  int net_error = OK;
-
-  // |quic_error| is set to a QUIC error, or to quic::QUIC_NO_ERROR if the error
-  // originates non-QUIC parts of the stack.
-  quic::QuicErrorCode quic_error = quic::QUIC_NO_ERROR;
-
-  // Human-readable error summary.
-  std::string details;
-
-  // QuicTransport requires that the connection errors have to be
-  // undistinguishable until the peer is confirmed to be a QuicTransport
-  // endpoint.  See https://wicg.github.io/web-transport/#protocol-security
-  bool safe_to_report_details = false;
-};
-
-NET_EXPORT
-std::string QuicTransportErrorToString(const QuicTransportError& error);
-
-NET_EXPORT
-std::ostream& operator<<(std::ostream& os, const QuicTransportError& error);
 
 // QuicTransportClient is the top-level API for QuicTransport in //net.
 class NET_EXPORT QuicTransportClient
@@ -65,6 +45,9 @@ class NET_EXPORT QuicTransportClient
   //              |                |
   //              +---> FAILED <---+
   //
+  // These values are logged to UMA. Entries should not be renumbered and
+  // numeric values should never be reused. Please keep in sync with
+  // "QuicTransportClientState" in src/tools/metrics/histograms/enums.xml.
   enum State {
     // The client object has been created but Connect() has not been called.
     NEW,
@@ -78,6 +61,9 @@ class NET_EXPORT QuicTransportClient
     CLOSED,
     // The connection has been closed abruptly.
     FAILED,
+
+    // Total number of possible states.
+    NUM_STATES,
   };
 
   class NET_EXPORT Visitor {
@@ -97,17 +83,35 @@ class NET_EXPORT QuicTransportClient
     virtual void OnCanCreateNewOutgoingUnidirectionalStream() = 0;
   };
 
-  // QUIC protocol version that is used in the origin trial.
-  static constexpr quic::ParsedQuicVersion kQuicVersionForOriginTrial =
-      quic::ParsedQuicVersion(quic::PROTOCOL_TLS1_3,
-                              quic::QUIC_VERSION_IETF_DRAFT_27);
+  struct NET_EXPORT Parameters {
+    Parameters();
+    ~Parameters();
+    Parameters(const Parameters&);
+    Parameters(Parameters&&);
+
+    // A vector of fingerprints for expected server certificates, as described
+    // in
+    // https://wicg.github.io/web-transport/#dom-quictransportconfiguration-server_certificate_fingerprints
+    // When empty, Web PKI is used.
+    std::vector<quic::CertificateFingerprint> server_certificate_fingerprints;
+  };
+
+  // QUIC protocol versions that are used in the origin trial.
+  static quic::ParsedQuicVersionVector
+  QuicVersionsForWebTransportOriginTrial() {
+    return quic::ParsedQuicVersionVector{
+        quic::ParsedQuicVersion::Draft29(),  // Enabled in M85.
+        quic::ParsedQuicVersion::Draft27()   // Enabled in M84.
+    };
+  }
 
   // |visitor| and |context| must outlive this object.
   QuicTransportClient(const GURL& url,
                       const url::Origin& origin,
                       Visitor* visitor,
                       const NetworkIsolationKey& isolation_key,
-                      URLRequestContext* context);
+                      URLRequestContext* context,
+                      const Parameters& parameters);
   ~QuicTransportClient() override;
 
   State state() const { return state_; }
@@ -123,7 +127,7 @@ class NET_EXPORT QuicTransportClient
   void OnSessionReady() override;
   void OnIncomingBidirectionalStreamAvailable() override;
   void OnIncomingUnidirectionalStreamAvailable() override;
-  void OnDatagramReceived(quiche::QuicheStringPiece datagram) override;
+  void OnDatagramReceived(absl::string_view datagram) override;
   void OnCanCreateNewOutgoingBidirectionalStream() override;
   void OnCanCreateNewOutgoingUnidirectionalStream() override;
 
@@ -154,6 +158,11 @@ class NET_EXPORT QuicTransportClient
 
  private:
   // State of the connection establishment process.
+  //
+  // These values are logged to UMA. Entries should not be renumbered and
+  // numeric values should never be reused. Please keep in sync with
+  // "QuicTransportClientConnectState" in
+  // src/tools/metrics/histograms/enums.xml.
   enum ConnectState {
     CONNECT_STATE_NONE,
     CONNECT_STATE_INIT,
@@ -163,6 +172,8 @@ class NET_EXPORT QuicTransportClient
     CONNECT_STATE_RESOLVE_HOST_COMPLETE,
     CONNECT_STATE_CONNECT,
     CONNECT_STATE_CONFIRM_CONNECTION,
+
+    CONNECT_STATE_NUM_STATES,
   };
 
   // DoLoop processing the Connect() call.
@@ -177,6 +188,7 @@ class NET_EXPORT QuicTransportClient
   int DoResolveHostComplete(int rv);
   // Establishes the QUIC connection.
   int DoConnect();
+  void CreateConnection();
   // Verifies that the connection has succeeded.
   int DoConfirmConnection();
 
@@ -201,6 +213,7 @@ class NET_EXPORT QuicTransportClient
   State state_ = NEW;
   ConnectState next_connect_state_ = CONNECT_STATE_NONE;
   QuicTransportError error_;
+  bool retried_with_new_version_ = false;
 
   ProxyInfo proxy_info_;
   std::unique_ptr<ProxyResolutionRequest> proxy_resolution_request_;
@@ -210,6 +223,7 @@ class NET_EXPORT QuicTransportClient
   std::unique_ptr<quic::QuicConnection> connection_;
   std::unique_ptr<quic::QuicTransportClientSession> session_;
   std::unique_ptr<QuicChromiumPacketReader> packet_reader_;
+  std::unique_ptr<QuicEventLogger> event_logger_;
 
   base::WeakPtrFactory<QuicTransportClient> weak_factory_{this};
 };

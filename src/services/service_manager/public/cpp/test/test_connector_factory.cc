@@ -7,10 +7,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -122,16 +121,18 @@ std::unique_ptr<Connector> TestConnectorFactory::CreateConnector() {
   return std::make_unique<Connector>(std::move(proxy));
 }
 
-mojom::ServiceRequest TestConnectorFactory::RegisterInstance(
+mojo::PendingReceiver<mojom::Service> TestConnectorFactory::RegisterInstance(
     const std::string& service_name) {
-  mojom::ServicePtr proxy;
-  mojom::ServiceRequest request = mojo::MakeRequest(&proxy);
-  proxy->OnStart(Identity(service_name, test_instance_group_, base::Token{},
-                          base::Token::CreateRandom()),
-                 base::BindOnce(&TestConnectorFactory::OnStartResponseHandler,
-                                base::Unretained(this), service_name));
-  service_proxies_[service_name] = std::move(proxy);
-  return request;
+  mojo::Remote<mojom::Service> proxy_remote;
+  mojo::PendingReceiver<mojom::Service> receiver =
+      proxy_remote.BindNewPipeAndPassReceiver();
+  proxy_remote->OnStart(
+      Identity(service_name, test_instance_group_, base::Token{},
+               base::Token::CreateRandom()),
+      base::BindOnce(&TestConnectorFactory::OnStartResponseHandler,
+                     base::Unretained(this), service_name));
+  service_proxies_[service_name] = std::move(proxy_remote);
+  return receiver;
 }
 
 void TestConnectorFactory::OnStartResponseHandler(

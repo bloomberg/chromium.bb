@@ -1,6 +1,6 @@
 Name: libjpeg-turbo
 URL: https://github.com/libjpeg-turbo/libjpeg-turbo/
-Version: 2.0.1
+Version: 2.0.5
 License: Custom license
 License File: LICENSE.md
 Security Critical: yes
@@ -8,19 +8,17 @@ License Android Compatible: yes
 
 Description:
 This consists of the components:
-* libjpeg-turbo 2.0.1
+* libjpeg-turbo 2.0.5
 * This file (README.chromium)
 * A build file (BUILD.gn)
 * An OWNERS file
 * A codereview.settings file
 * Patched header files used by Chromium
-* Cherry picked an unused variable/function warning from upstream master:
-  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/b46af82cc159bbd05312417d003cfab67c340156
-* Cherry picked checking the maximum supported CPUID leaf:
-  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/aa9db616774e24af7ab2fbcddd5711057b8a901e
-* Deleted unused directories: ci, cmakescripts, doc, java, md5, release, sharedlib,
-  simd/loongson, simd/mips, simd/powerpc, testimages, and win
-* Deleted unused files: appveyor.yml, Brewfile, CMakeLists.txt, doxygen.config,
+* Cherry picked a fix from upstream master to enable AArch64 Windows builds:
+  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/6ee5d5f568fda1a7c6a49dd8995f2d89866ee42d
+* Deleted unused directories: ci, cmakescripts, doc, java, release, sharedlib,
+  simd/loongson, simd/mips, simd/powerpc, and win
+* Deleted unused files: appveyor.yml, CMakeLists.txt, doxygen.config,
   doxygen-extra.css, .gitattributes, tjexample.c, tjexampletest.java.in,
   .travis.yml
 
@@ -48,7 +46,11 @@ following changes which are not merged to upstream:
   in the header instead of static const and moving the definition to
   a new .c file fixes this so only one copy is referenced. Also added
   extern wrappers around usage in asm files. The jpeg_nbits_table.inc
-  file was also deleted.
+  file was also deleted. It was also necessary to give this table hidden
+  visibility to avoid invalid relocations (ignored by ld but rejected by
+  lld) arising from attempts to reference the table from assembler on
+  32-bit x86. This only affects shared libraries, but that's important
+  for downstream Android builds.
 * Arm NEON patches to improve performance and maintainability. These changes
   are tracked by the following Chromium issue: https://crbug.com/922430
   - Add memory alignment size check in jmemmgr.c
@@ -69,6 +71,33 @@ following changes which are not merged to upstream:
   - Implement slow IDCT using Arm NEON intrinsics
   - Precompute DCT block output pointers in IDCT functions
   - Implement fast IDCT using Arm NEON intrinsics
+  - Add Arm NEON implementation of h2v1_downsample
+  - Add Arm NEON implementation of h2v2_downsample
+  - Implement RGB->YCbCr using Arm NEON intrinsics
+  - Add Arm NEON implementation of RGB->Grayscale
+  - Add compiler-independent alignment macro
+  - Implement sample conversion using Arm NEON intrinsics
+  - Implement quantization using Arm NEON intrinsics
+  - Implement fast DCT using Arm NEON intrinsics
+  - Implement accurate DCT using Arm NEON intrinsics
+* Patches to enable running the upstream unit tests through gtest.
+  The upstream unit tests are defined here under the section 'TESTS':
+  https://github.com/libjpeg-turbo/libjpeg-turbo/blob/master/CMakeLists.txt
+  These changes are tracked by Chromium issue: https://crbug.com/993876
+  - Refactor tjunittest.c to provide test interface
+  - Add gtest wrapper for tjunittests
+  - Move tjunittest logs from stdout to stderr
+  - Refactor tjbench.c to provide test interface
+  - Add gtest wrapper for tjbench tests
+  - Move tbench logs from stdout to stderr
+  - Write tjunittest output files to sdcard on Android
+  - Refactor cjpeg.c to provide test interface
+  - Add gtest wrapper for cjpeg tests
+  - Refactor jpegtran.c to provide test interface
+  - Add input JPEG images for djpeg and jpegtran tests
+  - Add gtest wrapper for jpegtran tests
+  - Refactor djpeg.c to provide test interface
+  - Add gtest wrapper for djpeg tests
 
 Refer to working-with-nested-repos [1] for details of how to setup your git
 svn client to update the code (for making local changes, cherry picking from

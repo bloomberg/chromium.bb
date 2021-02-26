@@ -22,8 +22,6 @@ class IntersectionObserverController
     : public GarbageCollected<IntersectionObserverController>,
       public ExecutionContextClient,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);
-
  public:
   explicit IntersectionObserverController(ExecutionContext*);
   virtual ~IntersectionObserverController();
@@ -39,7 +37,8 @@ class IntersectionObserverController
   // whether an IntersectionObserver needs to do any work. The return value
   // communicates whether observer->trackVisibility() is true for any tracked
   // observer.
-  bool ComputeIntersections(unsigned flags);
+  bool ComputeIntersections(unsigned flags,
+                            LocalFrameUkmAggregator& ukm_aggregator);
 
   // The second argument indicates whether the Element is a target of any
   // observers for which observer->trackVisibility() is true.
@@ -50,7 +49,7 @@ class IntersectionObserverController
 
   bool NeedsOcclusionTracking() const { return needs_occlusion_tracking_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "IntersectionObserverController";
   }

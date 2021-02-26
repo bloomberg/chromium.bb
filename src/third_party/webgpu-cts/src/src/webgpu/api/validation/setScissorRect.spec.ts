@@ -2,7 +2,7 @@ export const description = `
 setScissorRect validation tests.
 `;
 
-import { TestGroup } from '../../../common/framework/test_group.js';
+import { makeTestGroup } from '../../../common/framework/test_group.js';
 
 import { ValidationTest } from './validation_test.js';
 
@@ -29,23 +29,25 @@ class F extends ValidationTest {
   }
 }
 
-export const g = new TestGroup(F);
+export const g = makeTestGroup(F);
 
-g.test('use of setScissorRect', async t => {
-  const { x, y, width, height, _success } = t.params;
+g.test('use_of_setScissorRect')
+  .params([
+    { x: 0, y: 0, width: 1, height: 1, _success: true }, // Basic use
+    { x: 0, y: 0, width: 0, height: 1, _success: false }, // Width of zero is not allowed
+    { x: 0, y: 0, width: 1, height: 0, _success: false }, // Height of zero is not allowed
+    { x: 0, y: 0, width: 0, height: 0, _success: false }, // Both width and height of zero are not allowed
+    { x: 0, y: 0, width: TEXTURE_WIDTH + 1, height: TEXTURE_HEIGHT + 1, _success: false }, // Scissor larger than the framebuffer is not allowed
+  ])
+  .fn(async t => {
+    const { x, y, width, height, _success } = t.params;
 
-  const commandEncoder = t.device.createCommandEncoder();
-  const renderPass = t.beginRenderPass(commandEncoder);
-  renderPass.setScissorRect(x, y, width, height);
-  renderPass.endPass();
+    const commandEncoder = t.device.createCommandEncoder();
+    const renderPass = t.beginRenderPass(commandEncoder);
+    renderPass.setScissorRect(x, y, width, height);
+    renderPass.endPass();
 
-  t.expectValidationError(() => {
-    commandEncoder.finish();
-  }, !_success);
-}).params([
-  { x: 0, y: 0, width: 1, height: 1, _success: true }, // Basic use
-  { x: 0, y: 0, width: 0, height: 1, _success: false }, // Width of zero is not allowed
-  { x: 0, y: 0, width: 1, height: 0, _success: false }, // Height of zero is not allowed
-  { x: 0, y: 0, width: 0, height: 0, _success: false }, // Both width and height of zero are not allowed
-  { x: 0, y: 0, width: TEXTURE_WIDTH + 1, height: TEXTURE_HEIGHT + 1, _success: true }, // Scissor larger than the framebuffer is allowed
-]);
+    t.expectValidationError(() => {
+      commandEncoder.finish();
+    }, !_success);
+  });

@@ -42,7 +42,17 @@ enum class SoftwareFeature {
   // Messages for Web, which gives the user the ability to sync messages (e.g.,
   // SMS) between an Android phone and a Chromebook.
   kMessagesForWebHost = 7,
-  kMessagesForWebClient = 8
+  kMessagesForWebClient = 8,
+
+  // Phone Hub, which allows users to view phone metadata and send commands to
+  // their phone directly from the Chrome OS UI.
+  kPhoneHubHost = 9,
+  kPhoneHubClient = 10,
+
+  // Wifi Sync with Android, which allows users to sync wifi network
+  // configurations between Chrome OS devices and a connected Android phone
+  kWifiSyncHost = 11,
+  kWifiSyncClient = 12
 };
 
 SoftwareFeature FromCryptAuthFeature(

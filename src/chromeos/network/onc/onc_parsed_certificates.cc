@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -225,10 +226,8 @@ bool OncParsedCertificates::ParseCertificate(
           onc_certificate);
     case CertificateType::kClient:
       return ParseClientCertificate(guid, onc_certificate);
-    default:
-      NOTREACHED();
-      return false;
   }
+  NOTREACHED();
   return false;
 }
 

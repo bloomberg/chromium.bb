@@ -9,16 +9,18 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/message_center/arc_notification_manager_base.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/message_center/arc/arc_notification_manager.h"
 #include "ash/system/message_center/arc_notification_manager_delegate_impl.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/fullscreen_notification_blocker.h"
 #include "ash/system/message_center/inactive_user_notification_blocker.h"
 #include "ash/system/message_center/session_state_notification_blocker.h"
+#include "ash/system/phonehub/phone_hub_notification_controller.h"
 #include "base/command_line.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -41,6 +43,9 @@ void MessageCenterController::RegisterProfilePrefs(
   registry->RegisterStringPref(
       prefs::kMessageCenterLockScreenMode,
       prefs::kMessageCenterLockScreenModeHide,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAppNotificationBadgingEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 }
 
@@ -94,6 +99,11 @@ MessageCenterController::MessageCenterController() {
         std::make_unique<PopupNotificationBlocker>(MessageCenter::Get());
   }
 
+  if (chromeos::features::IsPhoneHubEnabled()) {
+    phone_hub_notification_controller_ =
+        std::make_unique<PhoneHubNotificationController>();
+  }
+
   // Set the system notification source display name ("Chrome OS" or "Chromium
   // OS").
   message_center::MessageCenter::Get()->SetSystemNotificationAppName(
@@ -117,22 +127,25 @@ MessageCenterController::~MessageCenterController() {
   message_center::MessageCenter::Shutdown();
 }
 
-void MessageCenterController::SetArcNotificationsInstance(
-    mojo::PendingRemote<arc::mojom::NotificationsInstance>
-        arc_notification_instance) {
-  if (!arc_notification_manager_) {
-    arc_notification_manager_ = std::make_unique<ArcNotificationManager>(
-        std::make_unique<ArcNotificationManagerDelegateImpl>(),
-        Shell::Get()
-            ->session_controller()
-            ->GetPrimaryUserSession()
-            ->user_info.account_id,
-        message_center::MessageCenter::Get());
-  }
-  arc_notification_manager_->SetInstance(std::move(arc_notification_instance));
+void MessageCenterController::SetArcNotificationManagerInstance(
+    std::unique_ptr<ArcNotificationManagerBase> manager_instance) {
+  CHECK(!arc_notification_manager_);
+  arc_notification_manager_ = std::move(manager_instance);
+  arc_notification_manager_->Init(
+      std::make_unique<ArcNotificationManagerDelegateImpl>(),
+      Shell::Get()
+          ->session_controller()
+          ->GetPrimaryUserSession()
+          ->user_info.account_id,
+      message_center::MessageCenter::Get());
 
   for (auto& observer : observers_)
     observer.OnSetArcNotificationsInstance(arc_notification_manager_.get());
+}
+
+ArcNotificationManagerBase*
+MessageCenterController::GetArcNotificationManagerInstance() {
+  return arc_notification_manager_.get();
 }
 
 void MessageCenterController::AddObserver(Observer* observer) {

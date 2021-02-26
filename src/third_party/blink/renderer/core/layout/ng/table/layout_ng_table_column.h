@@ -20,14 +20,19 @@ class CORE_EXPORT LayoutNGTableColumn : public LayoutBox {
   LayoutNGTable* Table() const;
 
   bool IsColumn() const {
+    NOT_DESTROYED();
     return StyleRef().Display() == EDisplay::kTableColumn;
   }
 
   bool IsColumnGroup() const {
+    NOT_DESTROYED();
     return StyleRef().Display() == EDisplay::kTableColumnGroup;
   }
 
-  unsigned Span() const { return span_; }
+  unsigned Span() const {
+    NOT_DESTROYED();
+    return span_;
+  }
 
   // Clears needs-layout for child columns too.
   void ClearNeedsLayoutForChildren() const;
@@ -35,32 +40,39 @@ class CORE_EXPORT LayoutNGTableColumn : public LayoutBox {
   // LayoutObject methods start.
 
   const char* GetName() const override {
+    NOT_DESTROYED();
     if (IsColumn())
       return "LayoutNGTableCol";
     else
       return "LayoutNGTableColGroup";
   }
 
-  bool IsLayoutNGObject() const final { return true; }
+  bool IsLayoutNGObject() const final {
+    NOT_DESTROYED();
+    return true;
+  }
 
   void StyleDidChange(StyleDifference diff,
                       const ComputedStyle* old_style) final;
 
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) final;
 
-  LayoutObject* FirstChild() const { return children_.FirstChild(); }
-
-  void SlowFirstChild() const = delete;
+  bool VisualRectRespectsVisibility() const final {
+    NOT_DESTROYED();
+    return false;
+  }
 
  protected:
   // Required by LayoutBox, but not used.
   MinMaxSizes ComputeIntrinsicLogicalWidths() const override {
+    NOT_DESTROYED();
     NOTIMPLEMENTED();
     return MinMaxSizes();
   }
 
   bool IsOfType(LayoutObjectType type) const override {
-    return type == kLayoutObjectLayoutTableCol || LayoutBox::IsOfType(type);
+    NOT_DESTROYED();
+    return type == kLayoutObjectTableCol || LayoutBox::IsOfType(type);
   }
 
  private:
@@ -70,12 +82,24 @@ class CORE_EXPORT LayoutNGTableColumn : public LayoutBox {
 
   void UpdateFromElement() override;
 
-  PaintLayerType LayerTypeRequired() const override { return kNoPaintLayer; }
+  PaintLayerType LayerTypeRequired() const override {
+    NOT_DESTROYED();
+    return kNoPaintLayer;
+  }
 
-  LayoutObjectChildList* VirtualChildren() override { return &children_; }
+  LayoutObjectChildList* VirtualChildren() override {
+    NOT_DESTROYED();
+    return &children_;
+  }
+
+  const LayoutObjectChildList* VirtualChildren() const override {
+    NOT_DESTROYED();
+    return &children_;
+  }
 
   // LayoutObject methods end
 
+ private:
   unsigned span_ = 1;
   LayoutObjectChildList children_;
 };

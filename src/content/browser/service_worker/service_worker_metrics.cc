@@ -19,8 +19,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
-#include "net/url_request/url_request.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -123,6 +121,8 @@ const char* EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_PERIODIC_SYNC";
     case ServiceWorkerMetrics::EventType::CONTENT_DELETE:
       return "_CONTENT_DELETE";
+    case ServiceWorkerMetrics::EventType::PUSH_SUBSCRIPTION_CHANGE:
+      return "_PUSH_SUBSCRIPTION_CHANGE";
   }
   return "_UNKNOWN";
 }
@@ -181,6 +181,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Periodic Sync";
     case EventType::CONTENT_DELETE:
       return "Content Delete";
+    case EventType::PUSH_SUBSCRIPTION_CHANGE:
+      return "Push Subscription Change";
   }
   NOTREACHED() << "Got unexpected event type: " << static_cast<int>(event_type);
   return "error";
@@ -235,10 +237,6 @@ ServiceWorkerMetrics::Site ServiceWorkerMetrics::SiteFromURL(const GURL& url) {
   return ServiceWorkerMetrics::Site::OTHER;
 }
 
-void ServiceWorkerMetrics::CountInitDiskCacheResult(bool result) {
-  UMA_HISTOGRAM_BOOLEAN("ServiceWorker.DiskCache.InitResult", result);
-}
-
 void ServiceWorkerMetrics::CountReadResponseResult(
     ServiceWorkerMetrics::ReadResponseResult result) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.DiskCache.ReadResponseResult",
@@ -249,17 +247,6 @@ void ServiceWorkerMetrics::CountWriteResponseResult(
     ServiceWorkerMetrics::WriteResponseResult result) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.DiskCache.WriteResponseResult",
                             result, NUM_WRITE_RESPONSE_RESULT_TYPES);
-}
-
-void ServiceWorkerMetrics::RecordPurgeResourceResult(int net_error) {
-  base::UmaHistogramSparse("ServiceWorker.Storage.PurgeResourceResult",
-                           std::abs(net_error));
-}
-
-void ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
-    DeleteAndStartOverResult result) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Storage.DeleteAndStartOverResult",
-                            result, NUM_DELETE_AND_START_OVER_RESULT_TYPES);
 }
 
 void ServiceWorkerMetrics::CountControlledPageLoad(Site site,
@@ -328,19 +315,33 @@ void ServiceWorkerMetrics::RecordActivateEventStatus(
 }
 
 void ServiceWorkerMetrics::RecordInstallEventStatus(
-    blink::ServiceWorkerStatusCode status) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.InstallEventStatus", status);
+    blink::ServiceWorkerStatusCode status,
+    uint32_t fetch_count) {
+  base::UmaHistogramEnumeration("ServiceWorker.InstallEvent.All.Status",
+                                status);
+  base::UmaHistogramCounts1000("ServiceWorker.InstallEvent.All.FetchCount",
+                               fetch_count);
+  if (fetch_count > 0) {
+    base::UmaHistogramEnumeration("ServiceWorker.InstallEvent.WithFetch.Status",
+                                  status);
+  }
 }
 
 void ServiceWorkerMetrics::RecordEventDuration(EventType event,
                                                base::TimeDelta time,
-                                               bool was_handled) {
+                                               bool was_handled,
+                                               uint32_t fetch_count) {
   switch (event) {
     case EventType::ACTIVATE:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.ActivateEvent.Time", time);
       break;
     case EventType::INSTALL:
-      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.InstallEvent.Time", time);
+      base::UmaHistogramMediumTimes("ServiceWorker.InstallEvent.All.Time",
+                                    time);
+      if (fetch_count) {
+        base::UmaHistogramMediumTimes(
+            "ServiceWorker.InstallEvent.WithFetch.Time", time);
+      }
       break;
     case EventType::FETCH_MAIN_FRAME:
     case EventType::FETCH_SUB_FRAME:
@@ -417,7 +418,10 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::CONTENT_DELETE:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.ContentDeleteEvent.Time", time);
       break;
-
+    case EventType::PUSH_SUBSCRIPTION_CHANGE:
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.PushSubscriptionChangeEvent.Time", time);
+      break;
     case EventType::NAVIGATION_HINT:
     // The navigation hint should not be sent as an event.
     case EventType::UNKNOWN:
@@ -436,11 +440,6 @@ void ServiceWorkerMetrics::RecordFetchEventStatus(
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.FetchEvent.Subresource.Status",
                               status);
   }
-}
-
-void ServiceWorkerMetrics::RecordProcessCreated(bool is_new_process) {
-  UMA_HISTOGRAM_BOOLEAN("EmbeddedWorkerInstance.ProcessCreated",
-                        is_new_process);
 }
 
 void ServiceWorkerMetrics::RecordStartWorkerTiming(const StartTimes& times,
@@ -543,12 +542,6 @@ void ServiceWorkerMetrics::RecordStartStatusAfterFailure(
   }
 }
 
-void ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
-    size_t size) {
-  UMA_HISTOGRAM_COUNTS_100000("ServiceWorker.NavigationPreload.HeaderSize",
-                              size);
-}
-
 void ServiceWorkerMetrics::RecordRuntime(base::TimeDelta time) {
   // Start at 1 second since we expect service worker to last at least this
   // long: the update timer and idle timeout timer run on the order of seconds.
@@ -570,10 +563,6 @@ void ServiceWorkerMetrics::RecordStartServiceWorkerForNavigationHintResult(
                             result);
 }
 
-void ServiceWorkerMetrics::RecordRegisteredOriginCount(size_t origin_count) {
-  UMA_HISTOGRAM_COUNTS_1M("ServiceWorker.RegisteredOriginCount", origin_count);
-}
-
 void ServiceWorkerMetrics::RecordLookupRegistrationTime(
     blink::ServiceWorkerStatusCode status,
     base::TimeDelta duration) {
@@ -590,15 +579,8 @@ void ServiceWorkerMetrics::RecordLookupRegistrationTime(
   }
 }
 
-void ServiceWorkerMetrics::RecordByteForByteUpdateCheckStatus(
-    blink::ServiceWorkerStatusCode status,
-    bool has_found_update) {
-  DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.UpdateCheck.Result", status);
-  if (status == blink::ServiceWorkerStatusCode::kOk) {
-    UMA_HISTOGRAM_BOOLEAN("ServiceWorker.UpdateCheck.UpdateFound",
-                          has_found_update);
-  }
+void ServiceWorkerMetrics::RecordGetAllOriginsInfoTime(base::TimeDelta time) {
+  base::UmaHistogramMediumTimes("ServiceWorker.GetAllOriginsInfoTime", time);
 }
 
 }  // namespace content

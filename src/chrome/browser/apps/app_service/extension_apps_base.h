@@ -18,11 +18,11 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/services/app_service/public/cpp/publisher_base.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/services/app_service/public/cpp/publisher_base.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry.h"
@@ -50,7 +50,7 @@ class ExtensionAppsEnableFlow;
 //
 // In the future, desktop PWAs will be migrated to a new system.
 //
-// See chrome/services/app_service/README.md.
+// See components/services/app_service/README.md.
 class ExtensionAppsBase : public apps::PublisherBase,
                           public extensions::ExtensionPrefsObserver,
                           public extensions::ExtensionRegistryObserver,
@@ -125,7 +125,7 @@ class ExtensionAppsBase : public apps::PublisherBase,
                apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,
-                apps::mojom::IconCompression icon_compression,
+                apps::mojom::IconType icon_type,
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,
                 LoadIconCallback callback) override;
@@ -145,13 +145,16 @@ class ExtensionAppsBase : public apps::PublisherBase,
                            int64_t display_id) override;
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
+  void Uninstall(const std::string& app_id,
+                 apps::mojom::UninstallSource uninstall_source,
+                 bool clear_site_data,
+                 bool report_abuse) override;
   void OpenNativeSettings(const std::string& app_id) override;
 
   // content_settings::Observer overrides.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,
-                               ContentSettingsType content_type,
-                               const std::string& resource_identifier) override;
+                               ContentSettingsType content_type) override;
 
   // extensions::ExtensionPrefsObserver overrides.
   void OnExtensionLastLaunchTimeChanged(
@@ -184,7 +187,7 @@ class ExtensionAppsBase : public apps::PublisherBase,
   bool RunExtensionEnableFlow(const std::string& app_id,
                               base::OnceClosure callback);
 
-  content::WebContents* LaunchImpl(const AppLaunchParams& params);
+  content::WebContents* LaunchImpl(AppLaunchParams&& params);
 
   virtual bool ShouldShownInLauncher(
       const extensions::Extension* extension) = 0;

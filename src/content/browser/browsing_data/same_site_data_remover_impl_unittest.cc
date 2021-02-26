@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/time/time.h"
 #include "content/browser/browsing_data/browsing_data_test_utils.h"
 #include "content/browser/browsing_data/same_site_data_remover_impl.h"
@@ -17,9 +17,9 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_storage_partition.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_util.h"
-#include "net/url_request/url_request_context.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -220,15 +220,13 @@ TEST_F(SameSiteDataRemoverImplTest, TestCookieRemovalUnaffectedByParameters) {
   net::CanonicalCookie cookie1("TestCookie1", "20", "google.com", "/",
                                base::Time::Now(), base::Time(), base::Time(),
                                true, true, net::CookieSameSite::NO_RESTRICTION,
-                               net::COOKIE_PRIORITY_HIGH);
+                               net::COOKIE_PRIORITY_HIGH, /*same_party=*/true);
   cookie_manager->SetCanonicalCookie(
       cookie1, net::cookie_util::SimulatedCookieSource(cookie1, "https"),
-      options,
-      base::BindLambdaForTesting(
-          [&](net::CanonicalCookie::CookieInclusionStatus result) {
-            result_out = result.IsInclude();
-            run_loop1.Quit();
-          }));
+      options, base::BindLambdaForTesting([&](net::CookieAccessResult result) {
+        result_out = result.status.IsInclude();
+        run_loop1.Quit();
+      }));
   run_loop1.Run();
   EXPECT_TRUE(result_out);
 
@@ -241,15 +239,13 @@ TEST_F(SameSiteDataRemoverImplTest, TestCookieRemovalUnaffectedByParameters) {
   net::CanonicalCookie cookie2("TestCookie2", "10", "gmail.google.com", "/",
                                base::Time(), base::Time::Max(), base::Time(),
                                false, true, net::CookieSameSite::LAX_MODE,
-                               net::COOKIE_PRIORITY_HIGH);
+                               net::COOKIE_PRIORITY_HIGH, false);
   cookie_manager->SetCanonicalCookie(
       cookie2, net::cookie_util::SimulatedCookieSource(cookie2, "https"),
-      options,
-      base::BindLambdaForTesting(
-          [&](net::CanonicalCookie::CookieInclusionStatus result) {
-            result_out = result.IsInclude();
-            run_loop2.Quit();
-          }));
+      options, base::BindLambdaForTesting([&](net::CookieAccessResult result) {
+        result_out = result.status.IsInclude();
+        run_loop2.Quit();
+      }));
   run_loop2.Run();
   EXPECT_TRUE(result_out);
 

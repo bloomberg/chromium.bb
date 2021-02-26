@@ -5,14 +5,18 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 
 #include "base/ios/block_types.h"
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
+#import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
+#import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
@@ -21,22 +25,31 @@
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_consumer.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view.h"
+#import "ios/chrome/browser/ui/commands/security_alert_commands.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/chrome/common/ui/reauthentication/reauthentication_event.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface FormInputAccessoryMediator () <FormActivityObserver,
+using base::UmaHistogramEnumeration;
+
+@interface FormInputAccessoryMediator () <AppStateObserver,
+                                          FormActivityObserver,
                                           FormInputAccessoryViewDelegate,
                                           CRWWebStateObserver,
                                           KeyboardObserverHelperConsumer,
@@ -83,6 +96,16 @@
 // The WebState this instance is observing. Can be null.
 @property(nonatomic, assign) web::WebState* webState;
 
+// Contains information about the application state, for example the last window
+// that was tapped.
+@property(nonatomic, weak) AppState* appState;
+
+// Reauthentication Module used for re-authentication.
+@property(nonatomic, strong) ReauthenticationModule* reauthenticationModule;
+
+// Used to present alerts.
+@property(nonatomic, weak) id<SecurityAlertCommands> securityAlertHandler;
+
 @end
 
 @implementation FormInputAccessoryMediator {
@@ -119,12 +142,15 @@
 }
 
 - (instancetype)
-       initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
-               delegate:(id<FormInputAccessoryMediatorDelegate>)delegate
-           webStateList:(WebStateList*)webStateList
-    personalDataManager:(autofill::PersonalDataManager*)personalDataManager
-          passwordStore:
-              (scoped_refptr<password_manager::PasswordStore>)passwordStore {
+          initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
+                  delegate:(id<FormInputAccessoryMediatorDelegate>)delegate
+              webStateList:(WebStateList*)webStateList
+       personalDataManager:(autofill::PersonalDataManager*)personalDataManager
+             passwordStore:
+                 (scoped_refptr<password_manager::PasswordStore>)passwordStore
+                  appState:(AppState*)appState
+      securityAlertHandler:(id<SecurityAlertCommands>)securityAlertHandler
+    reauthenticationModule:(ReauthenticationModule*)reauthenticationModule {
   self = [super init];
   if (self) {
     _consumer = consumer;
@@ -173,6 +199,10 @@
                       selector:@selector(applicationDidEnterBackground:)
                           name:UIApplicationDidEnterBackgroundNotification
                         object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(windowDidBecomeKey:)
+                          name:UIWindowDidBecomeKeyNotification
+                        object:nil];
 
     _keyboardObserver = [[KeyboardObserverHelper alloc] init];
     _keyboardObserver.consumer = self;
@@ -204,6 +234,12 @@
       consumer.creditCardButtonHidden = YES;
       consumer.addressButtonHidden = YES;
     }
+    _appState = appState;
+    if (!base::ios::IsRunningOnIOS14OrLater()) {
+      [_appState addObserver:self];
+    }
+    _reauthenticationModule = reauthenticationModule;
+    _securityAlertHandler = securityAlertHandler;
   }
   return self;
 }
@@ -228,6 +264,9 @@
     _webStateListObserver.reset();
     _webStateList = nullptr;
   }
+  if (!base::ios::IsRunningOnIOS14OrLater()) {
+    [_appState removeObserver:self];
+  }
 }
 
 - (void)detachFromWebState {
@@ -249,9 +288,8 @@
 - (void)keyboardWillChangeToState:(KeyboardState)keyboardState {
   if (keyboardState.isVisible) {
     [self verifyFirstResponderAndUpdateCustomKeyboardView];
+    [self updateSuggestionsIfNeeded];
   }
-
-  [self updateSuggestionsIfNeeded];
   [self.consumer keyboardWillChangeToState:keyboardState];
   if (!keyboardState.isVisible) {
     [self.delegate mediatorDidDetectKeyboardHide:self];
@@ -511,8 +549,7 @@
     // If suggestions are enabled update |currentProvider|.
     self.currentProvider = provider;
     // Post it to the consumer.
-    [self.consumer showAccessorySuggestions:suggestions
-                           suggestionClient:provider];
+    [self.consumer showAccessorySuggestions:suggestions];
   }
 }
 
@@ -521,26 +558,51 @@
   [self.delegate mediatorDidDetectMovingToBackground:self];
 }
 
+- (void)windowDidBecomeKey:(NSNotification*)notification {
+  [self verifyFirstResponderAndUpdateCustomKeyboardView];
+}
+
 // Verifies that the first responder is a child of WKWebView and that is is not
 // a child of SSOSignInViewController. Pause or try to continue the keyboard
 // custom view depending on the validity of the first responder.
 - (void)verifyFirstResponderAndUpdateCustomKeyboardView {
-  UIResponder* firstResponder = GetFirstResponder();
+  if (!self.webState) {
+    self.firstResponderIsValid = NO;
+    [self pauseCustomKeyboardView];
+    return;
+  }
+
   BOOL ancestorIsSSOSignInViewController = NO;
   BOOL ancestorIsWkWebView = NO;
-  while (firstResponder) {
-    if ([firstResponder isKindOfClass:NSClassFromString(@"WKWebView")]) {
-      ancestorIsWkWebView = YES;
-    }
-    if ([firstResponder
-            isKindOfClass:NSClassFromString(@"SSOSignInViewController")]) {
-      ancestorIsSSOSignInViewController = YES;
-      break;
-    }
-    firstResponder = firstResponder.nextResponder;
+
+  UIView* webStateContainerView = self.webState->GetView();
+  BOOL webStateInKeyWindow = webStateContainerView.window.isKeyWindow;
+  if (!base::ios::IsRunningOnIOS14OrLater()) {
+    // This is a workaround for a bug in iOS multiwindow, in which you can touch
+    // a webView without the window getting the keyboard focus. The result is
+    // that you focus a field in the new window gains focus, but keyboard typing
+    // continue to happen in the other window.
+    // TODO(crbug.com/1109124): Remove this workaround.
+    webStateInKeyWindow =
+        webStateInKeyWindow &&
+        webStateContainerView.window == self.appState.lastTappedWindow;
   }
-  self.firstResponderIsValid =
-      ancestorIsWkWebView && !ancestorIsSSOSignInViewController;
+  if (webStateInKeyWindow) {
+    UIResponder* firstResponder = GetFirstResponder();
+    while (firstResponder) {
+      if ([firstResponder isKindOfClass:NSClassFromString(@"WKWebView")]) {
+        ancestorIsWkWebView = YES;
+      }
+      if ([firstResponder
+              isKindOfClass:NSClassFromString(@"SSOSignInViewController")]) {
+        ancestorIsSSOSignInViewController = YES;
+        break;
+      }
+      firstResponder = firstResponder.nextResponder;
+    }
+  }
+  self.firstResponderIsValid = webStateInKeyWindow && ancestorIsWkWebView &&
+                               !ancestorIsSSOSignInViewController;
   if (self.firstResponderIsValid) {
     [self continueCustomKeyboardView];
   } else {
@@ -564,11 +626,49 @@
   [self verifyFirstResponderAndUpdateCustomKeyboardView];
 }
 
+#pragma mark - FormSuggestionClient
+
+- (void)didSelectSuggestion:(FormSuggestion*)formSuggestion {
+  UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
+                          ReauthenticationEvent::kAttempt);
+
+  if (!formSuggestion.requiresReauth) {
+    UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
+                            ReauthenticationEvent::kSuccess);
+    [self.currentProvider didSelectSuggestion:formSuggestion];
+    return;
+  }
+  if ([self.reauthenticationModule canAttemptReauth]) {
+    NSString* reason = l10n_util::GetNSString(IDS_IOS_AUTOFILL_REAUTH_REASON);
+    __weak __typeof(self) weakSelf = self;
+    auto completionHandler = ^(ReauthenticationResult result) {
+      if (result != ReauthenticationResult::kFailure) {
+        UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
+                                ReauthenticationEvent::kSuccess);
+        [weakSelf.currentProvider didSelectSuggestion:formSuggestion];
+      } else {
+        UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
+                                ReauthenticationEvent::kFailure);
+      }
+    };
+
+    [self.reauthenticationModule
+        attemptReauthWithLocalizedReason:reason
+                    canReusePreviousAuth:YES
+                                 handler:completionHandler];
+  } else {
+    UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
+                            ReauthenticationEvent::kMissingPasscode);
+    [self.securityAlertHandler showSetPasscodeDialog];
+  }
+}
+
 #pragma mark - PasswordFetcherDelegate
 
 - (void)passwordFetcher:(PasswordFetcher*)passwordFetcher
       didFetchPasswords:
-          (std::vector<std::unique_ptr<autofill::PasswordForm>>)passwords {
+          (std::vector<std::unique_ptr<password_manager::PasswordForm>>)
+              passwords {
   self.consumer.passwordButtonHidden = passwords.empty();
 }
 
@@ -582,6 +682,11 @@
 
   self.consumer.addressButtonHidden =
       _personalDataManager->GetProfilesToSuggest().empty();
+}
+
+#pragma mark - AppStateObserver
+- (void)appState:(AppState*)appState lastTappedWindowChanged:(UIWindow*)window {
+  [self verifyFirstResponderAndUpdateCustomKeyboardView];
 }
 
 #pragma mark - Tests

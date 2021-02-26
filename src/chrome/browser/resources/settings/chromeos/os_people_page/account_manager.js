@@ -12,6 +12,7 @@ Polymer({
   is: 'settings-account-manager',
 
   behaviors: [
+    DeepLinkingBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
     settings.RouteObserverBehavior,
@@ -53,7 +54,19 @@ Polymer({
       value() {
         return loadTimeData.getBoolean('secondaryGoogleAccountSigninAllowed');
       },
-    }
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kAddAccount,
+        chromeos.settings.mojom.Setting.kRemoveAccount,
+      ]),
+    },
   },
 
   /** @private {?settings.AccountManagerBrowserProxy} */
@@ -75,9 +88,12 @@ Polymer({
    * @param {settings.Route} oldRoute
    */
   currentRouteChanged(newRoute, oldRoute) {
-    if (newRoute == settings.routes.ACCOUNT_MANAGER) {
-      this.browserProxy_.showWelcomeDialogIfRequired();
+    if (newRoute !== settings.routes.ACCOUNT_MANAGER) {
+      return;
     }
+
+    this.browserProxy_.showWelcomeDialogIfRequired();
+    this.attemptDeepLink();
   },
 
   /**
@@ -85,8 +101,7 @@ Polymer({
    * @private
    */
   getAccountManagerDescription_() {
-    if (this.isChildUser_ && this.isSecondaryGoogleAccountSigninAllowed_ &&
-        loadTimeData.getBoolean('isEduCoexistenceEnabled')) {
+    if (this.isChildUser_ && this.isSecondaryGoogleAccountSigninAllowed_) {
       return loadTimeData.getString('accountManagerChildDescription');
     }
     return loadTimeData.getString('accountManagerDescription');
@@ -97,8 +112,7 @@ Polymer({
    * @private
    */
   getAddAccountLabel_() {
-    if (this.isChildUser_ && this.isSecondaryGoogleAccountSigninAllowed_ &&
-        loadTimeData.getBoolean('isEduCoexistenceEnabled')) {
+    if (this.isChildUser_ && this.isSecondaryGoogleAccountSigninAllowed_) {
       return loadTimeData.getString('addSchoolAccountLabel');
     }
     return loadTimeData.getString('addAccountLabel');
@@ -147,6 +161,9 @@ Polymer({
    * @private
    */
   addAccount_(event) {
+    settings.recordSettingChange(
+        chromeos.settings.mojom.Setting.kAddAccount,
+        {intValue: this.accounts_.length + 1});
     this.browserProxy_.addAccount();
   },
 
@@ -168,12 +185,11 @@ Polymer({
    * @param {!settings.Account} account
    * @return {string} An appropriate management status label. e.g.
    *    "Primary account" for unmanaged accounts, "Managed by <Domain>"
-   *    for Enterprise managed accounts etc. Child accounts get the label
-   *    for unmanaged accounts.
+   *    for Enterprise managed accounts etc.
    * @private
    */
   getManagementLabel_(account) {
-    if (!this.isChildUser_ && account.organization) {
+    if (account.organization) {
       return this.i18n('accountManagerManagedLabel', account.organization);
     }
 

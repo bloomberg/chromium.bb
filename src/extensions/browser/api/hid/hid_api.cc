@@ -93,7 +93,7 @@ ExtensionFunction::ResponseAction HidGetDevicesFunction::Run() {
 
 void HidGetDevicesFunction::OnEnumerationComplete(
     std::unique_ptr<base::ListValue> devices) {
-  Respond(OneArgument(std::move(devices)));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(devices))));
 }
 
 HidGetUserSelectedDevicesFunction::HidGetUserSelectedDevicesFunction() {
@@ -109,7 +109,7 @@ ExtensionFunction::ResponseAction HidGetUserSelectedDevicesFunction::Run() {
 
   content::WebContents* web_contents = GetSenderWebContents();
   if (!web_contents || !user_gesture()) {
-    return RespondNow(OneArgument(std::make_unique<base::ListValue>()));
+    return RespondNow(OneArgument(base::Value(base::Value::Type::LIST)));
   }
 
   bool multiple = false;
@@ -138,8 +138,8 @@ void HidGetUserSelectedDevicesFunction::OnDevicesChosen(
     std::vector<device::mojom::HidDeviceInfoPtr> devices) {
   HidDeviceManager* device_manager = HidDeviceManager::Get(browser_context());
   CHECK(device_manager);
-  Respond(
-      OneArgument(device_manager->GetApiDevicesFromList(std::move(devices))));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(
+      device_manager->GetApiDevicesFromList(std::move(devices)))));
 }
 
 HidConnectFunction::HidConnectFunction() : connection_manager_(nullptr) {
@@ -185,7 +185,8 @@ void HidConnectFunction::OnConnectComplete(
   DCHECK(connection_manager_);
   int connection_id = connection_manager_->Add(
       new HidConnectionResource(extension_id(), std::move(connection)));
-  Respond(OneArgument(PopulateHidConnection(connection_id)));
+  Respond(OneArgument(
+      base::Value::FromUniquePtrValue(PopulateHidConnection(connection_id))));
 }
 
 HidDisconnectFunction::HidDisconnectFunction() {}
@@ -259,10 +260,7 @@ void HidReceiveFunction::OnFinished(
     const base::Optional<std::vector<uint8_t>>& buffer) {
   if (success) {
     DCHECK(buffer);
-    Respond(TwoArguments(
-        std::make_unique<base::Value>(report_id),
-        base::Value::CreateWithCopiedBuffer(
-            reinterpret_cast<const char*>(buffer->data()), buffer->size())));
+    Respond(TwoArguments(base::Value(report_id), base::Value(*buffer)));
   } else {
     Respond(Error(kErrorTransfer));
   }
@@ -324,8 +322,7 @@ void HidReceiveFeatureReportFunction::OnFinished(
     const base::Optional<std::vector<uint8_t>>& buffer) {
   if (success) {
     DCHECK(buffer);
-    Respond(OneArgument(base::Value::CreateWithCopiedBuffer(
-        reinterpret_cast<const char*>(buffer->data()), buffer->size())));
+    Respond(OneArgument(base::Value(*buffer)));
   } else {
     Respond(Error(kErrorTransfer));
   }

@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -89,6 +90,10 @@ class ArcFileSystemBridge
   void OnDocumentChanged(int64_t watcher_id,
                          storage::WatcherManager::ChangeType type) override;
   void OnRootsChanged() override;
+  void GetVirtualFileId(const std::string& url,
+                        GetVirtualFileIdCallback callback) override;
+  void HandleIdReleased(const std::string& id,
+                        HandleIdReleasedCallback callback) override;
   void OpenFileToRead(const std::string& url,
                       OpenFileToReadCallback callback) override;
   void SelectFiles(mojom::SelectFilesRequestPtr request,
@@ -103,16 +108,63 @@ class ArcFileSystemBridge
   void OnConnectionClosed() override;
 
  private:
-  // Used to implement OpenFileToRead().
-  void OpenFileToReadAfterGetFileSize(const GURL& url_decoded,
-                                      OpenFileToReadCallback callback,
-                                      int64_t size);
+  FRIEND_TEST_ALL_PREFIXES(ArcFileSystemBridgeTest,
+                           GetLinuxVFSPathFromExternalFileURL);
+  FRIEND_TEST_ALL_PREFIXES(ArcFileSystemBridgeTest,
+                           GetLinuxVFSPathForPathOnFileSystemType);
+
+  using GenerateVirtualFileIdCallback =
+      base::OnceCallback<void(const base::Optional<std::string>& id)>;
+
+  // Used to implement GetFileSize().
+  void GetFileSizeInternal(const GURL& url_decoded,
+                           GetFileSizeCallback callback);
+
+  // Used to implement GetVirtualFileId().
+  void GetVirtualFileIdInternal(const GURL& url_decoded,
+                                GetVirtualFileIdCallback callback);
+
+  // Used to implement GetVirtualFileId().
+  void GenerateVirtualFileId(const GURL& url_decoded,
+                             GenerateVirtualFileIdCallback callback,
+                             int64_t size);
+
+  // Used to implement GetVirtualFileId().
+  void OnGenerateVirtualFileId(const GURL& url_decoded,
+                               GenerateVirtualFileIdCallback callback,
+                               const base::Optional<std::string>& id);
 
   // Used to implement OpenFileToRead().
-  void OnOpenFile(const GURL& url_decoded,
-                  OpenFileToReadCallback callback,
-                  const std::string& id,
-                  base::ScopedFD fd);
+  void OpenFileById(const GURL& url_decoded,
+                    OpenFileToReadCallback callback,
+                    const base::Optional<std::string>& id);
+
+  // Used to implement OpenFileToRead().
+  void OnOpenFileById(const GURL& url_decoded,
+                      OpenFileToReadCallback callback,
+                      const std::string& id,
+                      base::ScopedFD fd);
+
+  // Used to implement OpenFileToRead(), needs to be testable.
+  //
+  // Decode a percent-encoded externalfile: URL to an absolute path on
+  // the Linux VFS (virtual file system). This returns a non-empty path
+  // for FUSE filesystems (ie. DriveFS, SmbFs, archives) that utilise FD
+  // passing and externalfile: in file_manager::util::ConvertPathToArcUrl().
+  // Returns an empty path for Chrome's virtual filesystems that are not exposed
+  // on the Linux VFS (ie. MTP, FSP).
+  base::FilePath GetLinuxVFSPathFromExternalFileURL(Profile* const profile,
+                                                    const GURL& url);
+
+  // Used to implement OpenFileToRead(), needs to be testable.
+  //
+  // Takes a path within the mount namespace of a specific FileSystemType and
+  // returns the path on the Linux VFS, if it exists, or an empty path
+  // otherwise.
+  base::FilePath GetLinuxVFSPathForPathOnFileSystemType(
+      Profile* const profile,
+      const base::FilePath& path,
+      storage::FileSystemType file_system_type);
 
   // Called when FileStreamForwarder completes read request.
   void OnReadRequestCompleted(const std::string& id,

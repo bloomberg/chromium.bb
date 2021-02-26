@@ -5,6 +5,7 @@
 #include "ash/system/accessibility/switch_access_menu_button.h"
 
 #include "ash/style/ash_color_provider.h"
+#include "base/bind.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/mojom/ax_node_data.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -14,6 +15,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 
 namespace ash {
@@ -34,32 +36,36 @@ constexpr int kTextLineHeightDip = 20;
 SwitchAccessMenuButton::SwitchAccessMenuButton(std::string action_name,
                                                const gfx::VectorIcon& icon,
                                                int label_text_id)
-    : views::Button(this),
-      action_name_(action_name),
-      image_view_(new views::ImageView()),
-      label_(new views::Label(l10n_util::GetStringUTF16(label_text_id),
-                              views::style::CONTEXT_BUTTON)) {
+    : views::Button(
+          base::BindRepeating(&SwitchAccessMenuButton::OnButtonPressed,
+                              base::Unretained(this))),
+      action_name_(action_name) {
+  SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconColorPrimary);
+  SkColor label_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary);
+
+  views::Builder<SwitchAccessMenuButton>(this)
+      .SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY)
+      .AddChildren(
+          {views::Builder<views::ImageView>()
+               .CopyAddressTo(&image_view_)
+               .SetImage(gfx::CreateVectorIcon(icon, kIconSizeDip, icon_color)),
+           views::Builder<views::Label>()
+               .CopyAddressTo(&label_)
+               .SetText(l10n_util::GetStringUTF16(label_text_id))
+               .SetTextContext(views::style::CONTEXT_BUTTON)
+               .SetAutoColorReadabilityEnabled(false)
+               .SetEnabledColor(label_color)
+               .SetMultiLine(true)
+               .SetMaximumWidth(kLabelMaxWidthDip)})
+      .BuildChildren();
+
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
       gfx::Insets(kButtonTopPaddingDip, kLabelMinSidePaddingDip,
                   kButtonBottomPaddingDefaultDip, kLabelMinSidePaddingDip),
       kLabelTopPaddingDefaultDip);
-
-  SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconPrimary,
-      AshColorProvider::AshColorMode::kDark);
-  SkColor label_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextPrimary,
-      AshColorProvider::AshColorMode::kDark);
-
-  image_view_->SetImage(gfx::CreateVectorIcon(icon, kIconSizeDip, icon_color));
-  label_->SetAutoColorReadabilityEnabled(false);
-  label_->SetEnabledColor(label_color);
-  label_->SetMultiLine(true);
-  label_->SetMaximumWidth(kLabelMaxWidthDip);
-
-  AddChildView(image_view_);
-  AddChildView(label_);
 
   // The layout padding changes with the size of the text label.
   gfx::Size label_size = label_->CalculatePreferredSize();
@@ -76,16 +82,18 @@ SwitchAccessMenuButton::SwitchAccessMenuButton(std::string action_name,
   SetLayoutManager(std::move(layout));
 }
 
-void SwitchAccessMenuButton::ButtonPressed(views::Button* sender,
-                                           const ui::Event& event) {
-  NotifyAccessibilityEvent(ax::mojom::Event::kClicked,
-                           /*send_native_event=*/false);
-}
-
 void SwitchAccessMenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::Button::GetAccessibleNodeData(node_data);
   node_data->AddStringAttribute(ax::mojom::StringAttribute::kValue,
                                 action_name_);
 }
+
+void SwitchAccessMenuButton::OnButtonPressed() {
+  NotifyAccessibilityEvent(ax::mojom::Event::kClicked,
+                           /*send_native_event=*/false);
+}
+
+BEGIN_METADATA(SwitchAccessMenuButton, views::Button)
+END_METADATA
 
 }  // namespace ash

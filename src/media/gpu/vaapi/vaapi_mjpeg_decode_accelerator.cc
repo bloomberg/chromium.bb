@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
@@ -47,22 +46,6 @@
 namespace media {
 
 namespace {
-
-// UMA errors that the VaapiMjpegDecodeAccelerator class reports.
-enum VAJDAFailure {
-  VAAPI_ERROR = 0,
-  VAJDA_FAILURES_MAX,
-};
-
-static void ReportToVAJDADecoderFailureUMA(VAJDAFailure failure) {
-  UMA_HISTOGRAM_ENUMERATION("Media.VAJDA.DecoderFailure", failure,
-                            VAJDA_FAILURES_MAX + 1);
-}
-
-static void ReportToVAJDAVppFailureUMA(VAJDAFailure failure) {
-  UMA_HISTOGRAM_ENUMERATION("Media.VAJDA.VppFailure", failure,
-                            VAJDA_FAILURES_MAX + 1);
-}
 
 static void ReportToVAJDAResponseToClientUMA(
     chromeos_camera::MjpegDecodeAccelerator::Error response) {
@@ -150,14 +133,16 @@ bool VaapiMjpegDecodeAccelerator::Initialize(
 
   client_ = client;
 
-  if (!decoder_.Initialize(
-          base::BindRepeating(&ReportToVAJDADecoderFailureUMA, VAAPI_ERROR))) {
+  if (!decoder_.Initialize(base::BindRepeating(
+          &ReportVaapiErrorToUMA,
+          "Media.VaapiMjpegDecodeAccelerator.VAAPIError"))) {
     return false;
   }
 
   vpp_vaapi_wrapper_ = VaapiWrapper::Create(
       VaapiWrapper::kVideoProcess, VAProfileNone,
-      base::BindRepeating(&ReportToVAJDAVppFailureUMA, VAAPI_ERROR));
+      base::BindRepeating(&ReportVaapiErrorToUMA,
+                          "Media.VaapiMjpegDecodeAccelerator.Vpp.VAAPIError"));
   if (!vpp_vaapi_wrapper_) {
     VLOGF(1) << "Failed initializing VAAPI for VPP";
     return false;

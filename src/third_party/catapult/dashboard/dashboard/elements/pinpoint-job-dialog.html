@@ -52,6 +52,7 @@ found in the LICENSE file.
     <paper-dialog id="container" autoCloseDisabled="true">
       <form>
         <paper-input id="test-path" label="Test Path" value="{{test_path::input}}" disabled></paper-input>
+        <paper-input id="project-id" label="Monorail Project" value="{{project_id::input}}"></paper-input>
         <paper-input id="bug-id" label="Bug ID" value="{{bug_id::input}}"></paper-input>
         <paper-input id="start_commit" label="Start Commit" value="{{start_commit::input}}" allowed-pattern="[A-Fa-f0-9]" required auto-validate prevent-invalid-input></paper-input>
         <paper-input id="end_commit" label="End Commit" value="{{end_commit::input}}" allowed-pattern="[A-Fa-f0-9]" required auto-validate prevent-invalid-input></paper-input>
@@ -86,6 +87,10 @@ Polymer({
     alerts: {},
     bug_id: {
       type: Number,
+    },
+    project_id: {
+      type: String,
+      value: 'chromium',
     },
     test_path: {
       type: String,
@@ -138,6 +143,7 @@ Polymer({
       start_commit: this.start_commit,
       end_commit: this.end_commit,
       bug_id: this.bug_id,
+      project_id: this.project_id,
       story_filter: this.story_filter,
       pin: this.pin,
       bisect_mode: this.$.bisect_mode.selected,

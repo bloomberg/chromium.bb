@@ -177,7 +177,6 @@ class AudioScheduledSourceHandler
 class AudioScheduledSourceNode
     : public AudioNode,
       public ActiveScriptWrappable<AudioScheduledSourceNode> {
-  USING_GARBAGE_COLLECTED_MIXIN(AudioScheduledSourceNode);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -192,7 +191,7 @@ class AudioScheduledSourceNode
   // ScriptWrappable:
   bool HasPendingActivity() const final;
 
-  void Trace(Visitor* visitor) override { AudioNode::Trace(visitor); }
+  void Trace(Visitor* visitor) const override { AudioNode::Trace(visitor); }
 
   AudioScheduledSourceHandler& GetAudioScheduledSourceHandler() const;
 

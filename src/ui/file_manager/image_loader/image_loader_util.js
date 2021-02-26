@@ -26,11 +26,6 @@ ImageLoaderUtil.shouldProcess = function(width, height, request) {
     return true;
   }
 
-  // Non-standard color space has to be converted.
-  if (request.colorSpace && request.colorSpace !== ColorSpace.SRGB) {
-    return true;
-  }
-
   // No changes required.
   return false;
 };
@@ -185,59 +180,4 @@ ImageLoaderUtil.calculateCopyParameters = function(source, request) {
       height: targetCanvasDimensions.height
     }
   };
-};
-
-/**
- * Matrix converts AdobeRGB color space into sRGB color space.
- * @const {!Array<number>}
- */
-ImageLoaderUtil.MATRIX_FROM_ADOBE_TO_STANDARD = [
-  1.39836, -0.39836, 0.00000,
-  0.00000,  1.00000, 0.00000,
-  0.00000, -0.04293, 1.04293
-];
-
-/**
- * Converts the canvas of color space into sRGB.
- * @param {HTMLCanvasElement} target Target canvas.
- * @param {ColorSpace} colorSpace Current color space.
- */
-ImageLoaderUtil.convertColorSpace = function(target, colorSpace) {
-  if (colorSpace === ColorSpace.SRGB) {
-    return;
-  }
-  if (colorSpace === ColorSpace.ADOBE_RGB) {
-    const matrix = ImageLoaderUtil.MATRIX_FROM_ADOBE_TO_STANDARD;
-    const context =
-        assertInstanceof(target.getContext('2d'), CanvasRenderingContext2D);
-    const imageData = context.getImageData(0, 0, target.width, target.height);
-    const data = imageData.data;
-    for (let i = 0; i < data.length; i += 4) {
-      // Scale to [0, 1].
-      let adobeR = data[i] / 255;
-      let adobeG = data[i + 1] / 255;
-      let adobeB = data[i + 2] / 255;
-
-      // Revert gannma transformation.
-      adobeR = adobeR <= 0.0556 ? adobeR / 32 : Math.pow(adobeR, 2.2);
-      adobeG = adobeG <= 0.0556 ? adobeG / 32 : Math.pow(adobeG, 2.2);
-      adobeB = adobeB <= 0.0556 ? adobeB / 32 : Math.pow(adobeB, 2.2);
-
-      // Convert color space.
-      let sR = matrix[0] * adobeR + matrix[1] * adobeG + matrix[2] * adobeB;
-      let sG = matrix[3] * adobeR + matrix[4] * adobeG + matrix[5] * adobeB;
-      let sB = matrix[6] * adobeR + matrix[7] * adobeG + matrix[8] * adobeB;
-
-      // Gannma transformation.
-      sR = sR <= 0.0031308 ? 12.92 * sR : 1.055 * Math.pow(sR, 1 / 2.4) - 0.055;
-      sG = sG <= 0.0031308 ? 12.92 * sG : 1.055 * Math.pow(sG, 1 / 2.4) - 0.055;
-      sB = sB <= 0.0031308 ? 12.92 * sB : 1.055 * Math.pow(sB, 1 / 2.4) - 0.055;
-
-      // Scale to [0, 255].
-      data[i] = Math.max(0, Math.min(255, sR * 255));
-      data[i + 1] = Math.max(0, Math.min(255, sG * 255));
-      data[i + 2] = Math.max(0, Math.min(255, sB * 255));
-    }
-    context.putImageData(imageData, 0, 0);
-  }
 };

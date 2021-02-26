@@ -31,10 +31,9 @@ class MediaRouterIntegrationOneUABrowserTest
 
     // Set up embedded test server to serve offscreen presentation with relative
     // URL "presentation_receiver.html".
-    base::FilePath base_dir;
-    CHECK(base::PathService::Get(base::DIR_MODULE, &base_dir));
-    base::FilePath resource_dir = base_dir.Append(
-        FILE_PATH_LITERAL("media_router/browser_test_resources/"));
+    base::FilePath resource_dir =
+        base::PathService::CheckedGet(base::DIR_MODULE)
+            .Append(FILE_PATH_LITERAL("media_router/browser_test_resources/"));
     embedded_test_server()->ServeFilesFromDirectory(resource_dir);
     ASSERT_TRUE(embedded_test_server()->Start());
   }
@@ -44,7 +43,13 @@ class MediaRouterIntegrationOneUABrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, Basic) {
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
+#if defined(OS_CHROMEOS)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, MAYBE_Basic) {
   RunBasicTest();
 }
 
@@ -62,15 +67,25 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
   ExecuteJavaScriptAPI(web_contents, kInitiateCloseFromReceiverPageScript);
 }
 
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
+#if defined(OS_CHROMEOS)
+#define MAYBE_Fail_SendMessage DISABLED_Fail_SendMessage
+#else
+#define MAYBE_Fail_SendMessage Fail_SendMessage
+#endif
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       Fail_SendMessage) {
+                       MAYBE_Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
+#undef MAYBE_Fail_SendMessage
 
-#if defined(OS_LINUX) &&                                        \
-    (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) || \
-     BUILDFLAG(CFI_ENFORCEMENT_TRAP) || BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC))
+#if defined(OS_CHROMEOS) ||                                      \
+    (defined(OS_LINUX) &&                                        \
+     (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) || \
+      BUILDFLAG(CFI_ENFORCEMENT_TRAP) ||                         \
+      BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC)))
 // https://crbug.com/966827. Flaky on Linux CFI.
+// TODO(https://crbug.com/822231): Flaky in Chromium OS waterfall.
 #define MAYBE_ReconnectSession DISABLED_ReconnectSession
 #else
 #define MAYBE_ReconnectSession ReconnectSession
@@ -81,10 +96,17 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
 }
 #undef MAYBE_ReconnectSession
 
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
+#if defined(OS_CHROMEOS)
+#define MAYBE_ReconnectSessionSameTab DISABLED_ReconnectSessionSameTab
+#else
+#define MAYBE_ReconnectSessionSameTab ReconnectSessionSameTab
+#endif
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       ReconnectSessionSameTab) {
+                       MAYBE_ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
+#undef MAYBE_ReconnectSessionSameTab
 
 class MediaRouterIntegrationOneUANoReceiverBrowserTest
     : public MediaRouterIntegrationOneUABrowserTest {
@@ -95,24 +117,51 @@ class MediaRouterIntegrationOneUANoReceiverBrowserTest
   }
 };
 
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
+#if defined(OS_CHROMEOS)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       Basic) {
+                       MAYBE_Basic) {
   RunBasicTest();
 }
+#undef MAYBE_Basic
 
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
+#if defined(OS_CHROMEOS)
+#define MAYBE_Fail_SendMessage DISABLED_Fail_SendMessage
+#else
+#define MAYBE_Fail_SendMessage Fail_SendMessage
+#endif
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       Fail_SendMessage) {
+                       MAYBE_Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
+#undef MAYBE_Fail_SendMessage
 
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
+#if defined(OS_CHROMEOS)
+#define MAYBE_ReconnectSession DISABLED_ReconnectSession
+#else
+#define MAYBE_ReconnectSession ReconnectSession
+#endif
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       ReconnectSession) {
+                       MAYBE_ReconnectSession) {
   RunReconnectSessionTest();
 }
 
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
+#if defined(OS_CHROMEOS)
+#define MAYBE_ReconnectSessionSameTab DISABLED_ReconnectSessionSameTab
+#else
+#define MAYBE_ReconnectSessionSameTab ReconnectSessionSameTab
+#endif
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       ReconnectSessionSameTab) {
+                       MAYBE_ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
+#undef MAYBE_ReconnectSessionSameTab
 
 }  // namespace media_router

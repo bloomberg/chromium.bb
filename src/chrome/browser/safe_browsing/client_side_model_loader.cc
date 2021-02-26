@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -20,6 +21,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/proto/client_model.pb.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
@@ -62,7 +64,11 @@ const char ModelLoader::kClientModelUrlPrefix[] =
 const char ModelLoader::kClientModelNamePattern[] =
     "client_model_v5%s_variation_%d.pb";
 const char ModelLoader::kClientModelFinchExperiment[] =
+#if BUILDFLAG(FULL_SAFE_BROWSING)
     "ClientSideDetectionModel";
+#else
+    "ClientSideDetectionModelOnAndroid";
+#endif
 const char ModelLoader::kClientModelFinchParam[] =
     "ModelNum";
 const char kUmaModelDownloadResponseMetricName[] =
@@ -78,7 +84,7 @@ int ModelLoader::GetModelNumber() {
       kClientModelFinchExperiment, kClientModelFinchParam);
   int model_number = 0;
   if (!base::StringToInt(num_str, &model_number)) {
-    model_number = 0;  // Default model
+    model_number = 4;  // Default model
   }
   return model_number;
 }
@@ -111,7 +117,7 @@ bool ModelLoader::ModelHasValidHashIds(const ClientSideModel& model) {
 
 // Model name and URL are a function of is_extended_reporting and Finch.
 ModelLoader::ModelLoader(
-    base::Closure update_renderers_callback,
+    base::RepeatingClosure update_renderers_callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     bool is_extended_reporting)
     : name_(FillInModelName(is_extended_reporting, GetModelNumber())),
@@ -120,11 +126,12 @@ ModelLoader::ModelLoader(
       url_loader_factory_(url_loader_factory),
       last_client_model_status_(ClientModelStatus::MODEL_NEVER_FETCHED) {
   DCHECK(url_.is_valid());
+  StartFetch(/*only_from_cache=*/true);
 }
 
 // For testing only
 ModelLoader::ModelLoader(
-    base::Closure update_renderers_callback,
+    base::RepeatingClosure update_renderers_callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& model_name)
     : name_(model_name),
@@ -141,12 +148,16 @@ ModelLoader::~ModelLoader() {
   DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
 }
 
-void ModelLoader::StartFetch() {
+void ModelLoader::StartFetch(bool only_from_cache) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kOverrideCsdModelFlag)) {
     OverrideModelWithLocalFile();
     return;
   }
+
+  // |url_loader_factory_| can be null in tests.
+  if (!url_loader_factory_)
+    return;
 
   // Start fetching the model either from the cache or possibly from the
   // network if the model isn't in the cache.
@@ -186,6 +197,8 @@ void ModelLoader::StartFetch() {
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url_;
+  if (only_from_cache)
+    resource_request->load_flags = net::LOAD_ONLY_FROM_CACHE;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
@@ -239,6 +252,8 @@ void ModelLoader::OnURLLoaderComplete(
     model_str_.assign(data);
     model_.swap(model);
     model_status = MODEL_SUCCESS;
+    base::UmaHistogramSparse("SBClientPhishing.ClientModelVersionFetched",
+                             model_->version());
   }
   EndFetch(model_status, max_age);
 }
@@ -274,7 +289,8 @@ void ModelLoader::ScheduleFetch(int64_t delay_ms) {
   DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&ModelLoader::StartFetch, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ModelLoader::StartFetch, weak_factory_.GetWeakPtr(),
+                     /*only_from_cache=*/false),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
@@ -301,12 +317,18 @@ void ModelLoader::OverrideModelWithLocalFile() {
 }
 
 void ModelLoader::OnGetOverridenModelData(std::string model_data) {
-  if (model_data.empty())
+  if (model_data.empty()) {
+    VLOG(2) << "Overriden model data is empty";
     return;
+  }
 
   std::unique_ptr<ClientSideModel> model(new ClientSideModel());
-  if (!model->ParseFromArray(model_data.data(), model_data.size()))
+  if (!model->ParseFromArray(model_data.data(), model_data.size())) {
+    VLOG(2) << "Overriden model data is not a valid ClientSideModel proto";
     return;
+  }
+
+  VLOG(2) << "Model overriden successfully";
 
   model_.swap(model);
   model_str_.assign(model_data);

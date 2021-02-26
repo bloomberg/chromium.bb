@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -19,7 +19,6 @@
 #include "base/process/launch.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -86,13 +85,9 @@ void ConnectAsyncWithBackoff(
 
 // ServiceProcessControl implementation.
 ServiceProcessControl::ServiceProcessControl()
-    : apply_changes_from_upgrade_observer_(false) {
-  UpgradeDetector::GetInstance()->AddObserver(this);
-}
+    : apply_changes_from_upgrade_observer_(false) {}
 
-ServiceProcessControl::~ServiceProcessControl() {
-  UpgradeDetector::GetInstance()->RemoveObserver(this);
-}
+ServiceProcessControl::~ServiceProcessControl() = default;
 
 void ServiceProcessControl::ConnectInternal() {
   // If the channel has already been established then we run the task
@@ -208,6 +203,7 @@ void ServiceProcessControl::Disconnect() {
   mojo_connection_.reset();
   remote_interfaces_.Close();
   service_process_.reset();
+  UpgradeDetector::GetInstance()->RemoveObserver(this);
 }
 
 void ServiceProcessControl::OnProcessLaunched() {
@@ -241,6 +237,8 @@ void ServiceProcessControl::OnChannelConnected() {
 
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                             SERVICE_EVENT_CHANNEL_CONNECTED, SERVICE_EVENT_MAX);
+
+  UpgradeDetector::GetInstance()->AddObserver(this);
 
   // We just established a channel with the service process. Notify it if an
   // upgrade is available.
@@ -306,8 +304,8 @@ bool ServiceProcessControl::GetHistograms(
   // Run timeout task to make sure |histograms_callback| is called.
   histograms_timeout_callback_.Reset(base::Bind(
       &ServiceProcessControl::RunHistogramsCallback, base::Unretained(this)));
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
-                        histograms_timeout_callback_.callback(), timeout);
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, histograms_timeout_callback_.callback(), timeout);
 
   histograms_callback_ = histograms_callback;
   return true;
@@ -351,7 +349,7 @@ void ServiceProcessControl::Launcher::Notify() {
   notify_task_.Reset();
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 void ServiceProcessControl::Launcher::DoDetectLaunched() {
   DCHECK(!notify_task_.is_null());
 
@@ -362,8 +360,8 @@ void ServiceProcessControl::Launcher::DoDetectLaunched() {
   if (launched_ || (retry_count_ >= kMaxLaunchDetectRetries) ||
       process_.WaitForExitWithTimeout(base::TimeDelta(), &exit_code)) {
     process_.Close();
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&Launcher::Notify, this));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&Launcher::Notify, this));
     return;
   }
   retry_count_++;
@@ -385,11 +383,11 @@ void ServiceProcessControl::Launcher::DoRun() {
   process_ = base::LaunchProcess(*cmd_line_, options);
   if (process_.IsValid()) {
     saved_pid_ = process_.Pid();
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&Launcher::DoDetectLaunched, this));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&Launcher::DoDetectLaunched, this));
   } else {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&Launcher::Notify, this));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&Launcher::Notify, this));
   }
 }
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC

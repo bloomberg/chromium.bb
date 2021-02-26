@@ -33,6 +33,7 @@
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {GlassPane, PointerEventsBehavior} from './GlassPane.js';
+import {InspectorView} from './InspectorView.js';
 import {KeyboardShortcut, Keys} from './KeyboardShortcut.js';
 import {SplitWidget} from './SplitWidget.js';  // eslint-disable-line no-unused-vars
 import {WidgetFocusRestorer} from './Widget.js';
@@ -40,7 +41,7 @@ import {WidgetFocusRestorer} from './Widget.js';
 export class Dialog extends GlassPane {
   constructor() {
     super();
-    this.registerRequiredCSS('ui/dialog.css');
+    this.registerRequiredCSS('ui/dialog.css', {enableLegacyPatching: true});
     this.contentElement.tabIndex = 0;
     this.contentElement.addEventListener('focus', () => this.widget().focus(), false);
     this.widget().setDefaultFocusedElement(this.contentElement);
@@ -60,6 +61,8 @@ export class Dialog extends GlassPane {
     /** @type {?Document} */
     this._targetDocument;
     this._targetDocumentKeyDownHandler = this._onKeyDown.bind(this);
+    /** @type {?function(!Event)} */
+    this._escapeKeyCallback = null;
   }
 
   /**
@@ -71,11 +74,11 @@ export class Dialog extends GlassPane {
 
   /**
    * @override
-   * @param {!Document|!Element=} where
+   * @param {(!Document|!Element)=} where
    */
   show(where) {
     const document = /** @type {!Document} */ (
-        where instanceof Document ? where : (where || self.UI.inspectorView.element).ownerDocument);
+        where instanceof Document ? where : (where || InspectorView.instance().element).ownerDocument);
     this._targetDocument = document;
     this._targetDocument.addEventListener('keydown', this._targetDocumentKeyDownHandler, true);
 
@@ -99,6 +102,7 @@ export class Dialog extends GlassPane {
       this._targetDocument.removeEventListener('keydown', this._targetDocumentKeyDownHandler, true);
     }
     this._restoreTabIndexOnElements();
+    this.dispatchEventToListeners('hidden');
     delete Dialog._instance;
   }
 
@@ -107,6 +111,13 @@ export class Dialog extends GlassPane {
    */
   setCloseOnEscape(close) {
     this._closeOnEscape = close;
+  }
+
+  /**
+   * @param {function(!Event)} callback
+   */
+  setEscapeKeyCallback(callback) {
+    this._escapeKeyCallback = callback;
   }
 
   addCloseButton() {
@@ -132,7 +143,7 @@ export class Dialog extends GlassPane {
 
     let exclusionSet = /** @type {?Set.<!HTMLElement>} */ (null);
     if (this._tabIndexBehavior === OutsideTabIndexBehavior.PreserveMainViewTabIndex) {
-      exclusionSet = this._getMainWidgetTabIndexElements(self.UI.inspectorView.ownerSplit());
+      exclusionSet = this._getMainWidgetTabIndexElements(InspectorView.instance().ownerSplit());
     }
 
     this._tabIndexMap.clear();
@@ -191,9 +202,19 @@ export class Dialog extends GlassPane {
    * @param {!Event} event
    */
   _onKeyDown(event) {
-    if (this._closeOnEscape && event.keyCode === Keys.Esc.code && KeyboardShortcut.hasNoModifiers(event)) {
-      event.consume(true);
-      this.hide();
+    if (event.keyCode === Keys.Esc.code && KeyboardShortcut.hasNoModifiers(event)) {
+      if (this._escapeKeyCallback) {
+        this._escapeKeyCallback(event);
+      }
+
+      if (event.handled) {
+        return;
+      }
+
+      if (this._closeOnEscape) {
+        event.consume(true);
+        this.hide();
+      }
     }
   }
 }

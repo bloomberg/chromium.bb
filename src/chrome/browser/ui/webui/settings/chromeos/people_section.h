@@ -5,8 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_PEOPLE_SECTION_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_PEOPLE_SECTION_H_
 
+#include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
+#include "chromeos/components/account_manager/account_manager.h"
+#include "components/account_manager_core/account.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/sync_service_observer.h"
 
 class PrefService;
@@ -38,6 +43,7 @@ class SearchTagRegistry;
 // they are allowed by policy/flags. Different sets of Sync tags are shown
 // depending on whether the feature is enabed or disabled.
 class PeopleSection : public OsSettingsSection,
+                      public AccountManager::Observer,
                       public syncer::SyncServiceObserver,
                       public KerberosCredentialsManager::Observer {
  public:
@@ -54,6 +60,16 @@ class PeopleSection : public OsSettingsSection,
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
   void AddHandlers(content::WebUI* web_ui) override;
+  int GetSectionNameMessageId() const override;
+  mojom::Section GetSection() const override;
+  mojom::SearchResultIcon GetSectionIcon() const override;
+  std::string GetSectionPath() const override;
+  bool LogMetric(mojom::Setting setting, base::Value& value) const override;
+  void RegisterHierarchy(HierarchyGenerator* generator) const override;
+
+  // AccountManager::Observer:
+  void OnTokenUpserted(const ::account_manager::Account& account) override;
+  void OnAccountRemoved(const ::account_manager::Account& account) override;
 
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync_service) override;
@@ -61,15 +77,20 @@ class PeopleSection : public OsSettingsSection,
   // KerberosCredentialsManager::Observer:
   void OnKerberosEnabledStateChanged() override;
 
-  void AddKerberosAccountsPageStrings(
-      content::WebUIDataSource* html_source) const;
   bool AreFingerprintSettingsAllowed();
+  void FetchAccounts();
+  void UpdateAccountManagerSearchTags(
+      const std::vector<::account_manager::Account>& accounts);
+  void UpdateRemoveFingerprintSearchTags();
 
+  AccountManager* account_manager_ = nullptr;
   syncer::SyncService* sync_service_;
   SupervisedUserService* supervised_user_service_;
   KerberosCredentialsManager* kerberos_credentials_manager_;
   signin::IdentityManager* identity_manager_;
   PrefService* pref_service_;
+  PrefChangeRegistrar fingerprint_pref_change_registrar_;
+  base::WeakPtrFactory<PeopleSection> weak_factory_{this};
 };
 
 }  // namespace settings

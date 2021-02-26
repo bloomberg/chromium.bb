@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/history/core/browser/history_client.h"
+#include "components/history/core/browser/history_service.h"
 
 class GURL;
 
@@ -57,11 +58,11 @@ class ChromeHistoryClient : public history::HistoryClient,
   bookmarks::BookmarkModel* bookmark_model_;
 
   // Callback invoked when URLs are removed from BookmarkModel.
-  base::Callback<void(const std::set<GURL>&)> on_bookmarks_removed_;
+  base::RepeatingCallback<void(const std::set<GURL>&)> on_bookmarks_removed_;
 
   // Subscription for notifications of changes to favicons.
-  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
-                                          const GURL&)>::Subscription>
+  std::unique_ptr<
+      history::HistoryService::FaviconsChangedCallbackList::Subscription>
       favicons_changed_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeHistoryClient);

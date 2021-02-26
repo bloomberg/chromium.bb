@@ -18,8 +18,6 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom.h"
 #include "url/gurl.h"
@@ -163,8 +161,11 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
     if (!rph)
       return;
 
+    // TODO(https://crbug.com/993805): Pass in the appropriate
+    // NetworkIsolationKey.
     rph->GetStoragePartition()->GetNetworkContext()->QueueReport(
-        type, group, url, /*user_agent=*/base::nullopt,
+        type, group, url, net::NetworkIsolationKey::Todo(),
+        /*user_agent=*/base::nullopt,
         base::Value::FromUniquePtrValue(std::move(body)));
   }
 

@@ -6,12 +6,14 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/stability_metrics_helper.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
 #if defined(OS_ANDROID)
@@ -64,9 +66,11 @@ void StabilityMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
                                 0);
   registry->RegisterIntegerPref(prefs::kStabilityDebuggerPresent, 0);
   registry->RegisterIntegerPref(prefs::kStabilityDebuggerNotPresent, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityDeferredCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityDiscardCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityVersionMismatchCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityFileMetricsUnsentFilesCount,
+                                0);
+  registry->RegisterIntegerPref(prefs::kStabilityFileMetricsUnsentSamplesCount,
+                                0);
+
 #if defined(OS_ANDROID)
   registry->RegisterStringPref(prefs::kStabilityGmsCoreVersion, "");
   registry->RegisterIntegerPref(prefs::kStabilityCrashCountDueToGmsCoreUpdate,
@@ -94,10 +98,12 @@ void StabilityMetricsProvider::ClearSavedStabilityMetrics() {
   local_state_->SetInteger(prefs::kStabilityDebuggerNotPresent, 0);
   local_state_->SetInteger(prefs::kStabilityLaunchCount, 0);
   local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
-  local_state_->SetInteger(prefs::kStabilityDeferredCount, 0);
-  // Note: kStabilityDiscardCount is not cleared as its intent is to measure
-  // the number of times data is discarded, even across versions.
-  local_state_->SetInteger(prefs::kStabilityVersionMismatchCount, 0);
+
+  // The 0 is a valid value for the below prefs, clears pref instead
+  // of setting to default value.
+  local_state_->ClearPref(prefs::kStabilityFileMetricsUnsentFilesCount);
+  local_state_->ClearPref(prefs::kStabilityFileMetricsUnsentSamplesCount);
+
 #if defined(OS_WIN)
   local_state_->SetInteger(prefs::kStabilitySystemCrashCount, 0);
 #endif
@@ -141,23 +147,23 @@ void StabilityMetricsProvider::ProvideStabilityMetrics(
   if (GetAndClearPrefValue(prefs::kStabilityDebuggerNotPresent, &pref_value))
     stability->set_debugger_not_present_count(pref_value);
 
-  // Note: only logging the following histograms for non-zero values.
-  if (GetAndClearPrefValue(prefs::kStabilityDeferredCount, &pref_value)) {
+  if (local_state_->HasPrefPath(prefs::kStabilityFileMetricsUnsentFilesCount)) {
     UMA_STABILITY_HISTOGRAM_COUNTS_100(
-        "Stability.Internals.InitialStabilityLogDeferredCount", pref_value);
+        "Stability.Internals.FileMetricsProvider.BrowserMetrics."
+        "UnsentFilesCount",
+        local_state_->GetInteger(prefs::kStabilityFileMetricsUnsentFilesCount));
+    local_state_->ClearPref(prefs::kStabilityFileMetricsUnsentFilesCount);
   }
 
-  // Note: only logging the following histograms for non-zero values.
-  if (GetAndClearPrefValue(prefs::kStabilityDiscardCount, &pref_value)) {
-    UMA_STABILITY_HISTOGRAM_COUNTS_100("Stability.Internals.DataDiscardCount",
-                                       pref_value);
-  }
-
-  // Note: only logging the following histograms for non-zero values.
-  if (GetAndClearPrefValue(prefs::kStabilityVersionMismatchCount,
-                           &pref_value)) {
-    UMA_STABILITY_HISTOGRAM_COUNTS_100(
-        "Stability.Internals.VersionMismatchCount", pref_value);
+  if (local_state_->HasPrefPath(
+          prefs::kStabilityFileMetricsUnsentSamplesCount)) {
+    UMA_STABILITY_HISTOGRAM_CUSTOM_COUNTS(
+        "Stability.Internals.FileMetricsProvider.BrowserMetrics."
+        "UnsentSamplesCount",
+        local_state_->GetInteger(
+            prefs::kStabilityFileMetricsUnsentSamplesCount),
+        0, 1000000, 50);
+    local_state_->ClearPref(prefs::kStabilityFileMetricsUnsentSamplesCount);
   }
 
 #if defined(OS_WIN)
@@ -214,20 +220,8 @@ void StabilityMetricsProvider::LogCrash(base::Time last_live_timestamp) {
 #endif
 }
 
-void StabilityMetricsProvider::LogStabilityLogDeferred() {
-  IncrementPrefValue(prefs::kStabilityDeferredCount);
-}
-
-void StabilityMetricsProvider::LogStabilityDataDiscarded() {
-  IncrementPrefValue(prefs::kStabilityDiscardCount);
-}
-
 void StabilityMetricsProvider::LogLaunch() {
   IncrementPrefValue(prefs::kStabilityLaunchCount);
-}
-
-void StabilityMetricsProvider::LogStabilityVersionMismatch() {
-  IncrementPrefValue(prefs::kStabilityVersionMismatchCount);
 }
 
 #if defined(OS_WIN)

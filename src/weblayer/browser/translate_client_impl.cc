@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/translate/content/browser/content_translate_driver.h"
@@ -20,6 +21,11 @@
 #include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/translate_accept_languages_factory.h"
 #include "weblayer/browser/translate_ranker_factory.h"
+
+#if defined(OS_ANDROID)
+#include "weblayer/browser/infobar_service.h"
+#include "weblayer/browser/translate_compact_infobar.h"
+#endif
 
 namespace weblayer {
 
@@ -54,13 +60,14 @@ TranslateClientImpl::TranslateClientImpl(content::WebContents* web_contents)
           TranslateRankerFactory::GetForBrowserContext(
               web_contents->GetBrowserContext()),
           /*language_model=*/nullptr)) {
+  observer_.Add(&translate_driver_);
   translate_driver_.set_translate_manager(translate_manager_.get());
 }
 
 TranslateClientImpl::~TranslateClientImpl() = default;
 
-translate::LanguageState& TranslateClientImpl::GetLanguageState() {
-  return translate_manager_->GetLanguageState();
+const translate::LanguageState& TranslateClientImpl::GetLanguageState() {
+  return *translate_manager_->GetLanguageState();
 }
 
 bool TranslateClientImpl::ShowTranslateUI(
@@ -69,6 +76,18 @@ bool TranslateClientImpl::ShowTranslateUI(
     const std::string& target_language,
     translate::TranslateErrors::Type error_type,
     bool triggered_from_menu) {
+  if (error_type != translate::TranslateErrors::NONE)
+    step = translate::TRANSLATE_STEP_TRANSLATE_ERROR;
+
+#if defined(OS_ANDROID)
+  translate::TranslateInfoBarDelegate::Create(
+      step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
+      translate_manager_->GetWeakPtr(),
+      InfoBarService::FromWebContents(web_contents()),
+      web_contents()->GetBrowserContext()->IsOffTheRecord(), step,
+      source_language, target_language, error_type, triggered_from_menu);
+  return true;
+#endif
   return false;
 }
 
@@ -100,8 +119,7 @@ TranslateClientImpl::GetTranslateAcceptLanguages() {
 #if defined(OS_ANDROID)
 std::unique_ptr<infobars::InfoBar> TranslateClientImpl::CreateInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
-  NOTREACHED();
-  return nullptr;
+  return std::make_unique<TranslateCompactInfoBar>(std::move(delegate));
 }
 
 int TranslateClientImpl::GetInfobarIconID() const {
@@ -114,9 +132,30 @@ bool TranslateClientImpl::IsTranslatableURL(const GURL& url) {
   return translate::IsTranslatableURL(url);
 }
 
+bool TranslateClientImpl::IsAutofillAssistantRunning() const {
+  // TODO(crbug.com/1051559): Revise if/when WebLayer supports Autobot.
+  return false;
+}
+
 void TranslateClientImpl::ShowReportLanguageDetectionErrorUI(
     const GURL& report_url) {
   NOTREACHED();
+}
+
+void TranslateClientImpl::OnLanguageDetermined(
+    const translate::LanguageDetectionDetails& details) {
+  if (manual_translate_on_ready_) {
+    GetTranslateManager()->InitiateManualTranslation();
+    manual_translate_on_ready_ = false;
+  }
+}
+
+void TranslateClientImpl::ManualTranslateWhenReady() {
+  if (GetLanguageState().original_language().empty()) {
+    manual_translate_on_ready_ = true;
+  } else {
+    GetTranslateManager()->InitiateManualTranslation();
+  }
 }
 
 void TranslateClientImpl::WebContentsDestroyed() {

@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 
+#include <tuple>
 #include <utility>
 
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
@@ -20,6 +21,10 @@ namespace dnr_api = api::declarative_net_request;
 dnr_api::HeaderOperation ConvertFlatHeaderOperation(
     flat::HeaderOperation operation) {
   switch (operation) {
+    case flat::HeaderOperation_append:
+      return dnr_api::HEADER_OPERATION_APPEND;
+    case flat::HeaderOperation_set:
+      return dnr_api::HEADER_OPERATION_SET;
     case flat::HeaderOperation_remove:
       return dnr_api::HEADER_OPERATION_REMOVE;
   }
@@ -28,12 +33,27 @@ dnr_api::HeaderOperation ConvertFlatHeaderOperation(
 }  // namespace
 
 RequestAction::HeaderInfo::HeaderInfo(std::string header,
-                                      dnr_api::HeaderOperation operation)
-    : header(std::move(header)), operation(operation) {}
+                                      dnr_api::HeaderOperation operation,
+                                      base::Optional<std::string> value)
+    : header(std::move(header)),
+      operation(operation),
+      value(std::move(value)) {}
 
 RequestAction::HeaderInfo::HeaderInfo(const flat::ModifyHeaderInfo& info)
     : header(CreateString<std::string>(*info.header())),
-      operation(ConvertFlatHeaderOperation(info.operation())) {}
+      operation(ConvertFlatHeaderOperation(info.operation())) {
+  if (info.value())
+    value = CreateString<std::string>(*info.value());
+}
+
+RequestAction::HeaderInfo::~HeaderInfo() = default;
+RequestAction::HeaderInfo::HeaderInfo(const RequestAction::HeaderInfo& other) =
+    default;
+RequestAction::HeaderInfo& RequestAction::HeaderInfo::operator=(
+    const RequestAction::HeaderInfo& other) = default;
+RequestAction::HeaderInfo::HeaderInfo(RequestAction::HeaderInfo&&) = default;
+RequestAction::HeaderInfo& RequestAction::HeaderInfo::operator=(
+    RequestAction::HeaderInfo&&) = default;
 
 RequestAction::RequestAction(RequestAction::Type type,
                              uint32_t rule_id,
@@ -56,6 +76,16 @@ RequestAction RequestAction::Clone() const {
 
 RequestAction::RequestAction(const RequestAction&) = default;
 
+bool operator<(const RequestAction& lhs, const RequestAction& rhs) {
+  return std::tie(lhs.index_priority, lhs.ruleset_id, lhs.rule_id) <
+         std::tie(rhs.index_priority, rhs.ruleset_id, rhs.rule_id);
+}
+
+bool operator>(const RequestAction& lhs, const RequestAction& rhs) {
+  return std::tie(lhs.index_priority, lhs.ruleset_id, lhs.rule_id) >
+         std::tie(rhs.index_priority, rhs.ruleset_id, rhs.rule_id);
+}
+
 base::Optional<RequestAction> GetMaxPriorityAction(
     base::Optional<RequestAction> lhs,
     base::Optional<RequestAction> rhs) {
@@ -63,8 +93,7 @@ base::Optional<RequestAction> GetMaxPriorityAction(
     return rhs;
   if (!rhs)
     return lhs;
-  return lhs->index_priority >= rhs->index_priority ? std::move(lhs)
-                                                    : std::move(rhs);
+  return lhs > rhs ? std::move(lhs) : std::move(rhs);
 }
 
 }  // namespace declarative_net_request

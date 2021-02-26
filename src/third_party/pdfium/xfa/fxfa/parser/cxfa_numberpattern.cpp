@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_numberpattern.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -27,6 +27,8 @@ CXFA_NumberPattern::CXFA_NumberPattern(CXFA_Document* doc,
                 XFA_Element::NumberPattern,
                 {},
                 kNumberPatternAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_NumberPattern::~CXFA_NumberPattern() = default;

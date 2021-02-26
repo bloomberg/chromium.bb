@@ -12,8 +12,9 @@ import sys
 import tempfile
 import time
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
+CLIENT_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, CLIENT_DIR)
 
 from utils import tools
@@ -29,10 +30,9 @@ from utils import tools
 
 def task_to_name(name, dimensions, isolated_hash):
   """Returns a task name the same way swarming.py generates them."""
-  return '%s/%s/%s' % (
-      name,
-      '_'.join('%s=%s' % (k, v) for k, v in sorted(dimensions.items())),
-      isolated_hash[:8])
+  return '%s/%s/%s' % (name, '_'.join(
+      '%s=%s' % (k, v) for k, v in sorted(dimensions.items())),
+                       isolated_hash[:8])
 
 
 def capture(cmd):
@@ -50,12 +50,18 @@ def trigger(swarming_server, isolate_server, task_name, isolated_hash, args):
   os.close(fd)
   try:
     cmd = [
-      'swarming.py', 'trigger',
-      '--swarming', swarming_server,
-      '--isolate-server', isolate_server,
-      '--task-name', task_name,
-      '--dump-json', jsonfile,
-      '-s', isolated_hash,
+        'swarming.py',
+        'trigger',
+        '--swarming',
+        swarming_server,
+        '--isolate-server',
+        isolate_server,
+        '--task-name',
+        task_name,
+        '--dump-json',
+        jsonfile,
+        '-s',
+        isolated_hash,
     ]
     returncode, out, duration = capture(cmd + args)
     with open(jsonfile) as f:
@@ -83,8 +89,9 @@ class Runner(object):
     self.progress = progress
     self.extra_trigger_args = extra_trigger_args
 
-  def trigger(self, task_name, isolated_hash, dimensions, env):
+  def trigger(self, task_name, isolated_hash, dimensions, caches, env):
     args = sum((['--dimension', k, v] for k, v in dimensions.items()), [])
+    args.extend(sum((['--named-cache', k, v] for k, v in caches), []))
     args.extend(sum((['--env', k, v] for k, v in env), []))
     returncode, stdout, duration, task_id = trigger(
         self.swarming_server,
@@ -112,8 +119,8 @@ class Runner(object):
     return None, None, None
 
 
-def run_swarming_tasks_parallel(
-    swarming_server, isolate_server, extra_trigger_args, tasks):
+def run_swarming_tasks_parallel(swarming_server, isolate_server,
+                                extra_trigger_args, tasks):
   """Triggers swarming tasks in parallel and gets results.
 
   This is done by using one thread per task and shelling out swarming.py.
@@ -121,8 +128,9 @@ def run_swarming_tasks_parallel(
   Arguments:
     extra_trigger_args: list of additional flags to pass down to
         'swarming.py trigger'
-    tasks: list of tuple(task_name, isolated_hash, dimensions) where dimension
-        are --dimension flags to provide when triggering the task.
+    tasks: list of tuple(task_name, isolated_hash, dimensions, caches, env)
+        where dimension are --dimension flags to provide when triggering the
+        task and caches are --named-cache flags.
 
   Yields:
     tuple(name, dimensions, stdout) for the tasks that failed.
@@ -134,15 +142,14 @@ def run_swarming_tasks_parallel(
   progress = threading_utils.Progress([('index', 0), ('size', total)])
   progress.use_cr_only = False
   start = time.time()
-  with threading_utils.ThreadPoolWithProgress(
-      progress, runs, runs, total) as pool:
-    runner = Runner(
-        swarming_server, isolate_server, pool.add_task, progress,
-        extra_trigger_args)
+  with threading_utils.ThreadPoolWithProgress(progress, runs, runs,
+                                              total) as pool:
+    runner = Runner(swarming_server, isolate_server, pool.add_task, progress,
+                    extra_trigger_args)
 
-    for task_name, isolated_hash, dimensions, env in tasks:
-      pool.add_task(
-          0, runner.trigger, task_name, isolated_hash, dimensions, env)
+    for task_name, isolated_hash, dimensions, caches, env in tasks:
+      pool.add_task(0, runner.trigger, task_name, isolated_hash, dimensions,
+                    caches, env)
 
     # Runner.collect() only return task failures.
     for failed_task in pool.iter_results():
@@ -159,12 +166,15 @@ def run_swarming_tasks_parallel(
 
 
 class OptionParser(logging_utils.OptionParserWithLogging):
+
   def __init__(self, **kwargs):
     logging_utils.OptionParserWithLogging.__init__(self, **kwargs)
     self.server_group = optparse.OptionGroup(self, 'Server')
     self.server_group.add_option(
-        '-S', '--swarming',
-        metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
+        '-S',
+        '--swarming',
+        metavar='URL',
+        default=os.environ.get('SWARMING_SERVER', ''),
         help='Swarming server to use')
     isolateserver.add_isolate_server_options(self.server_group)
     self.add_option_group(self.server_group)
@@ -174,17 +184,33 @@ class OptionParser(logging_utils.OptionParserWithLogging):
         dest='dimensions', metavar='FOO bar',
         help='dimension to filter on')
     self.add_option(
-        '--priority', type='int',
+        '-n',
+        '--named-cache',
+        default=[],
+        action='append',
+        nargs=2,
+        dest='caches',
+        metavar='FOO bar',
+        help='named caches for swarming to have present')
+    self.add_option(
+        '--priority',
+        type='int',
         help='The lower value, the more important the task is. It may be '
-            'important to specify a higher priority since the default value '
-            'will make the task to be triggered only when the bots are idle.')
+        'important to specify a higher priority since the default value '
+        'will make the task to be triggered only when the bots are idle.')
     self.add_option(
-        '--deadline', type='int', default=6*60*60,
+        '--deadline',
+        type='int',
+        default=6 * 60 * 60,
         help='Seconds to allow the task to be pending for a bot to run before '
-            'this task request expires.')
+        'this task request expires.')
     self.add_option(
-        '--env', default=[], action='append', nargs=2,
-        metavar='ENV VAL', help='environment variables')
+        '--env',
+        default=[],
+        action='append',
+        nargs=2,
+        metavar='ENV VAL',
+        help='environment variables')
 
   def parse_args(self, *args, **kwargs):
     options, args = logging_utils.OptionParserWithLogging.parse_args(
@@ -193,7 +219,7 @@ class OptionParser(logging_utils.OptionParserWithLogging):
     if not options.swarming:
       self.error('--swarming is required.')
     auth.process_auth_options(self, options)
-    isolateserver.process_isolate_server_options(self, options, False, True)
+    isolateserver.process_isolate_server_options(self, options, True)
     options.dimensions = dict(options.dimensions)
     return options, args
 

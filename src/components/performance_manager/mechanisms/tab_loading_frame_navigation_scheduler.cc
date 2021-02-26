@@ -8,6 +8,7 @@
 #include "components/performance_manager/public/graph/policies/tab_loading_frame_navigation_policy.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/performance_manager_main_thread_mechanism.h"
+#include "components/performance_manager/public/performance_manager_owned.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -87,13 +88,21 @@ class MainThreadMechanism : public PerformanceManagerMainThreadMechanism {
 
 }  // namespace
 
-// A very simple throttle that always defers until Resume is called.
+// A very simple throttle that always defers until Resume is called. The
+// scheduler that issued the throttle will always outlive all of the throttles
+// themselves, or explicitly detach from the throttle.
 class TabLoadingFrameNavigationScheduler::Throttle
     : public content::NavigationThrottle {
  public:
-  explicit Throttle(content::NavigationHandle* handle)
-      : content::NavigationThrottle(handle) {}
-  ~Throttle() override = default;
+  Throttle(content::NavigationHandle* handle,
+           TabLoadingFrameNavigationScheduler* scheduler)
+      : content::NavigationThrottle(handle), scheduler_(scheduler) {
+    DCHECK(scheduler);
+  }
+  ~Throttle() override {
+    if (scheduler_)
+      scheduler_->NotifyThrottleDestroyed(this);
+  }
 
   // content::NavigationThrottle implementation
   const char* GetNameForLogging() override {
@@ -105,8 +114,20 @@ class TabLoadingFrameNavigationScheduler::Throttle
     return content::NavigationThrottle::DEFER;
   }
 
-  // Make this public so the scheduler can invoke it.
+  // Make this public so the scheduler can invoke it. Care must be taken in
+  // calling this as it can synchronously destroy this Throttle and others!
   using content::NavigationThrottle::Resume;
+
+  // Detaches this Throttle from its scheduler, so it doesn't callback into it
+  // when it is destroyed.
+  void DetachFromScheduler() {
+    // This should only be called once.
+    DCHECK(scheduler_);
+    scheduler_ = nullptr;
+  }
+
+ private:
+  TabLoadingFrameNavigationScheduler* scheduler_ = nullptr;
 };
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(TabLoadingFrameNavigationScheduler)
@@ -186,7 +207,7 @@ TabLoadingFrameNavigationScheduler::MaybeCreateThrottleForNavigation(
 
   // Getting here indicates that the navigation is to be throttled. Create a
   // throttle and remember it.
-  std::unique_ptr<Throttle> throttle(new Throttle(handle));
+  std::unique_ptr<Throttle> throttle(new Throttle(handle, scheduler));
   auto result =
       scheduler->throttles_.insert(std::make_pair(handle, throttle.get()));
   DCHECK(result.second);
@@ -228,8 +249,10 @@ void TabLoadingFrameNavigationScheduler::StopThrottling(
   // a StopThrottling notification.
   auto* scheduler = FromWebContents(contents);
   // There is a race between renavigations and policy messages. Only dispatch
-  // this if its intended for the appropriate navigation ID.
-  if (scheduler->navigation_id_ != last_navigation_id)
+  // this if the contents is still being throttled (the logic in
+  // MaybeCreateThrottleForNavigation can cause the scheduler to be deleted),
+  // and if its intended for the appropriate navigation ID.
+  if (!scheduler || scheduler->navigation_id_ != last_navigation_id)
     return;
   scheduler->StopThrottlingImpl();
 }
@@ -264,26 +287,57 @@ TabLoadingFrameNavigationScheduler::TabLoadingFrameNavigationScheduler(
 
 void TabLoadingFrameNavigationScheduler::DidFinishNavigation(
     content::NavigationHandle* handle) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // If we're throttling a canceled navigation then stop tracking it. The
-  // |handle| becomes invalid shortly after this function returns.
-  throttles_.erase(handle);
+  DCHECK(handle);
+  RemoveThrottleForHandle(handle);
 }
 
 void TabLoadingFrameNavigationScheduler::StopThrottlingImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Release all of the throttles.
-  for (auto& entry : throttles_) {
-    auto* throttle = entry.second;
+  // Release all of the throttles. Note that releasing a throttle may cause
+  // that throttle and others to immediately be invalidated (we'll learn about
+  // it via DidFinishNavigation() or NavigationThrottleDestroyed()).
+  while (!throttles_.empty()) {
+    // Remove the first throttle.
+    auto it = throttles_.end() - 1;
+    auto* throttle = it->second;
+    throttles_.erase(it);
+
+    // We've already erased this throttle and don't need it to notify us via
+    // NotifyThrottleDestroyed.
+    throttle->DetachFromScheduler();
+
+    // Resume the throttle.
+    if (resume_callback_)
+      resume_callback_.Run(throttle);
     throttle->Resume();
   }
-  throttles_.clear();
 
   // Tear down this object. This must be called last so as not to UAF ourselves.
   // Note that this is always called from static functions in this translation
   // unit, thus there are no other frames on the stack belonging to this object.
   web_contents()->RemoveUserData(UserDataKey());
+}
+
+void TabLoadingFrameNavigationScheduler::NotifyThrottleDestroyed(
+    Throttle* throttle) {
+  DCHECK(throttle);
+  DCHECK(throttle->navigation_handle());
+  RemoveThrottleForHandle(throttle->navigation_handle());
+}
+
+void TabLoadingFrameNavigationScheduler::RemoveThrottleForHandle(
+    content::NavigationHandle* handle) {
+  DCHECK(handle);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto it = throttles_.find(handle);
+  if (it == throttles_.end())
+    return;
+  // If we're throttling a canceled navigation then stop tracking it. The
+  // |handle| becomes invalid shortly after this function returns. Explicitly
+  // detach from the throttle so we don't get multiple callbacks from it.
+  it->second->DetachFromScheduler();
+  throttles_.erase(it);
 }
 
 }  // namespace mechanisms

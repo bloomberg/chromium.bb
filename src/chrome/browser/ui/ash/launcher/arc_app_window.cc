@@ -11,9 +11,7 @@
 #include "chrome/browser/ui/app_list/app_service/app_service_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_delegate.h"
 #include "components/arc/arc_util.h"
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/shell_surface_util.h"
@@ -44,44 +42,37 @@ ArcAppWindow::ArcAppWindow(int task_id,
   DCHECK(owner_);
 
   // AppService uses app_shelf_id as the app_id to construct ShelfID.
-  if (base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    set_shelf_id(ash::ShelfID(app_shelf_id.ToString()));
+  set_shelf_id(ash::ShelfID(app_shelf_id.ToString()));
 
   SetDefaultAppIcon();
 }
 
-ArcAppWindow::~ArcAppWindow() {
-  ImageDecoder::Cancel(this);
-}
+ArcAppWindow::~ArcAppWindow() = default;
 
 void ArcAppWindow::SetFullscreenMode(FullScreenMode mode) {
   DCHECK(mode != FullScreenMode::kNotDefined);
   fullscreen_mode_ = mode;
 }
 
-void ArcAppWindow::SetDescription(
-    const std::string& title,
-    const std::vector<uint8_t>& unsafe_icon_data_png) {
+void ArcAppWindow::SetDescription(const std::string& title,
+                                  const gfx::ImageSkia& icon) {
   if (!title.empty())
     GetNativeWindow()->SetTitle(base::UTF8ToUTF16(title));
-  ImageDecoder::Cancel(this);
-  if (unsafe_icon_data_png.empty()) {
+  if (icon.isNull()) {
     // Reset custom icon. Switch back to default.
     SetDefaultAppIcon();
     return;
   }
 
-  if (ArcAppIcon::IsSafeDecodingDisabledForTesting()) {
-    SkBitmap bitmap;
-    if (gfx::PNGCodec::Decode(&unsafe_icon_data_png[0],
-                              unsafe_icon_data_png.size(), &bitmap)) {
-      OnImageDecoded(bitmap);
-    } else {
-      OnDecodeImageFailed();
-    }
-  } else {
-    ImageDecoder::Start(this, unsafe_icon_data_png);
+  app_icon_loader_.reset();
+  if (kArcAppWindowIconSize > icon.width() ||
+      kArcAppWindowIconSize > icon.height()) {
+    LOG(WARNING) << "An icon of size " << icon.width() << "x" << icon.height()
+                 << " is being scaled up and will look blurry.";
   }
+  SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
+      icon, skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(kArcAppWindowIconSize, kArcAppWindowIconSize)));
 }
 
 bool ArcAppWindow::IsActive() const {
@@ -132,19 +123,4 @@ void ArcAppWindow::SetIcon(const gfx::ImageSkia& icon) {
   if (!shell_surface)
     return;
   shell_surface->SetIcon(icon);
-}
-
-void ArcAppWindow::OnImageDecoded(const SkBitmap& decoded_bitmap) {
-  // Use the custom icon and stop observing updates.
-  app_icon_loader_.reset();
-  const gfx::ImageSkia decoded_image(gfx::ImageSkiaRep(decoded_bitmap, 1.0f));
-  if (kArcAppWindowIconSize > decoded_image.width() ||
-      kArcAppWindowIconSize > decoded_image.height()) {
-    LOG(WARNING) << "An icon of size " << decoded_image.width() << "x"
-                 << decoded_image.height()
-                 << " is being scaled up and will look blurry.";
-  }
-  SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
-      decoded_image, skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(kArcAppWindowIconSize, kArcAppWindowIconSize)));
 }

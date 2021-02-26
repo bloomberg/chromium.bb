@@ -8,8 +8,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
+#include "chrome/browser/ui/global_media_controls/cast_media_session_controller.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "components/media_message_center/media_notification_controller.h"
+#include "components/media_router/browser/media_router_factory.h"
+#include "components/media_router/browser/test/mock_media_router.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,6 +35,7 @@ namespace {
 
 const char kTestNotificationId[] = "testid";
 const char kOtherTestNotificationId[] = "othertestid";
+const char kRouteId[] = "route_id";
 
 class MockMediaNotificationContainerObserver
     : public MediaNotificationContainerObserver {
@@ -36,7 +44,7 @@ class MockMediaNotificationContainerObserver
   ~MockMediaNotificationContainerObserver() = default;
 
   // MediaNotificationContainerObserver implementation.
-  MOCK_METHOD1(OnContainerExpanded, void(bool expanded));
+  MOCK_METHOD0(OnContainerSizeChanged, void());
   MOCK_METHOD0(OnContainerMetadataChanged, void());
   MOCK_METHOD0(OnContainerActionsChanged, void());
   MOCK_METHOD1(OnContainerClicked, void(const std::string& id));
@@ -44,11 +52,50 @@ class MockMediaNotificationContainerObserver
   MOCK_METHOD1(OnContainerDestroyed, void(const std::string& id));
   MOCK_METHOD2(OnContainerDraggedOut,
                void(const std::string& id, gfx::Rect bounds));
+  MOCK_METHOD2(OnAudioSinkChosen,
+               void(const std::string& id, const std::string& sink_id));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaNotificationContainerObserver);
 };
 
+media_router::MediaRoute CreateMediaRoute() {
+  media_router::MediaRoute route(kRouteId,
+                                 media_router::MediaSource("source_id"),
+                                 "sink_id", "route_description",
+                                 /* is_local */ true, /* for_display */ true);
+  route.set_media_sink_name("sink_name");
+  return route;
+}
+
+class MockSessionController : public CastMediaSessionController {
+ public:
+  MockSessionController(
+      mojo::Remote<media_router::mojom::MediaController> remote)
+      : CastMediaSessionController(std::move(remote)) {}
+
+  MOCK_METHOD1(Send, void(media_session::mojom::MediaSessionAction));
+  MOCK_METHOD1(OnMediaStatusUpdated, void(media_router::mojom::MediaStatusPtr));
+};
+
+class MockMediaNotificationController
+    : public media_message_center::MediaNotificationController {
+ public:
+  MockMediaNotificationController() = default;
+  ~MockMediaNotificationController() = default;
+
+  MOCK_METHOD(void, ShowNotification, (const std::string&));
+  MOCK_METHOD(void, HideNotification, (const std::string&));
+  MOCK_METHOD(void, RemoveItem, (const std::string&));
+
+  MOCK_METHOD(scoped_refptr<base::SequencedTaskRunner>,
+              GetTaskRunner,
+              (),
+              (const));
+  MOCK_METHOD(void,
+              LogMediaSessionActionButtonPressed,
+              (const std::string&, MediaSessionAction));
+};
 }  // anonymous namespace
 
 class MediaNotificationContainerImplViewTest : public ChromeViewsTestBase {
@@ -59,14 +106,16 @@ class MediaNotificationContainerImplViewTest : public ChromeViewsTestBase {
   // ViewsTestBase:
   void SetUp() override {
     ViewsTestBase::SetUp();
+    SetUpCommon(std::make_unique<MediaNotificationContainerImplView>(
+        kTestNotificationId, nullptr, nullptr));
+  }
 
+  void SetUpCommon(std::unique_ptr<MediaNotificationContainerImplView>
+                       notification_container) {
     widget_ = CreateTestWidget();
 
-    auto notification_container =
-        std::make_unique<MediaNotificationContainerImplView>(
-            kTestNotificationId, nullptr);
-    notification_container_ = notification_container.get();
-    widget_->SetContentsView(notification_container.release());
+    notification_container_ =
+        widget_->SetContentsView(std::move(notification_container));
 
     observer_ = std::make_unique<MockMediaNotificationContainerObserver>();
     notification_container_->AddObserver(observer_.get());
@@ -134,11 +183,11 @@ class MediaNotificationContainerImplViewTest : public ChromeViewsTestBase {
         notification_container_->GetDismissButtonForTesting());
 
 // On Mac OS, we need to use the space bar to press a button.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     ui::KeyboardCode button_press_keycode = ui::VKEY_SPACE;
 #else
     ui::KeyboardCode button_press_keycode = ui::VKEY_RETURN;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
     ui::test::EventGenerator generator(GetRootWindow(widget_.get()));
     generator.PressKey(button_press_keycode, 0);
@@ -254,25 +303,104 @@ class MediaNotificationContainerImplViewOverlayControlsTest
     MediaNotificationContainerImplViewTest::SetUp();
   }
 
-  void SimulateMouseDrag(gfx::Vector2d drag_distance) {
+  void SimulateMouseDragAndRelease(gfx::Vector2d drag_distance) {
     gfx::Rect start_bounds = notification_container()->bounds();
     gfx::Point drag_start = start_bounds.CenterPoint();
     gfx::Point drag_end = drag_start + drag_distance;
 
+    SimulateMousePressed(drag_start);
+    SimulateMouseDragged(drag_end);
+    SimulateMouseReleased(drag_end);
+  }
+
+  void SimulateMousePressed(gfx::Point point) {
     notification_container()->OnMousePressed(
-        ui::MouseEvent(ui::ET_MOUSE_PRESSED, drag_start, drag_start,
+        ui::MouseEvent(ui::ET_MOUSE_PRESSED, point, point,
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  }
+
+  void SimulateMouseDragged(gfx::Point point) {
     notification_container()->OnMouseDragged(
-        ui::MouseEvent(ui::ET_MOUSE_DRAGGED, drag_end, drag_end,
+        ui::MouseEvent(ui::ET_MOUSE_DRAGGED, point, point,
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  }
+
+  void SimulateMouseReleased(gfx::Point point) {
     notification_container()->OnMouseReleased(
-        ui::MouseEvent(ui::ET_MOUSE_RELEASED, drag_end, drag_end,
+        ui::MouseEvent(ui::ET_MOUSE_RELEASED, point, point,
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  }
+
+  views::Widget* GetDragImageWidget() {
+    return notification_container()->drag_image_widget_for_testing();
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
 };
+
+// TODO(b/161612403): Remove this class once
+// |media_router::kGlobalMediaControlsCastStartStop| is enabled by default.
+class MediaNotificationContainerImplViewCastTest
+    : public MediaNotificationContainerImplViewTest {
+ public:
+  void SetUp() override {
+    ViewsTestBase::SetUp();
+    feature_list_.InitWithFeatures(
+        {media::kGlobalMediaControlsForCast,
+         media_router::kGlobalMediaControlsCastStartStop,
+         media::kGlobalMediaControlsOverlayControls},
+        {});
+
+    media_router::MediaRouterFactory::GetInstance()->SetTestingFactory(
+        &profile_, base::BindRepeating(&media_router::MockMediaRouter::Create));
+
+    auto session_controller = std::make_unique<MockSessionController>(
+        mojo::Remote<media_router::mojom::MediaController>());
+    session_controller_ = session_controller.get();
+    item_ = std::make_unique<CastMediaNotificationItem>(
+        CreateMediaRoute(), &notification_controller_,
+        std::move(session_controller), &profile_);
+
+    SetUpCommon(std::make_unique<MediaNotificationContainerImplView>(
+        kTestNotificationId, item_->GetWeakPtr(), nullptr));
+  }
+
+  void TearDown() override {
+    // Delete |item_| before |notification_controller_|.
+    item_.reset();
+    MediaNotificationContainerImplViewTest::TearDown();
+  }
+
+  void SimulateStopCastingButtonClicked() {
+    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                         ui::EventTimeForNow(), 0, 0);
+    views::test::ButtonTestApi(
+        notification_container()->GetStopCastingButtonForTesting())
+        .NotifyClick(event);
+  }
+
+  CastMediaNotificationItem* item() { return item_.get(); }
+  Profile* profile() { return &profile_; }
+  MockMediaNotificationController* notification_controller() {
+    return &notification_controller_;
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  TestingProfile profile_;
+  std::unique_ptr<CastMediaNotificationItem> item_;
+  MockMediaNotificationController notification_controller_;
+  MockSessionController* session_controller_ = nullptr;
+};
+
+TEST_F(MediaNotificationContainerImplViewCastTest, StopCasting) {
+  auto* mock_router = static_cast<media_router::MockMediaRouter*>(
+      media_router::MediaRouterFactory::GetApiForBrowserContext(profile()));
+  EXPECT_CALL(*mock_router, TerminateRoute(kRouteId));
+
+  SimulateStopCastingButtonClicked();
+}
 
 TEST_F(MediaNotificationContainerImplViewTest, SwipeToDismiss) {
   EXPECT_CALL(observer(), OnContainerDismissed(kTestNotificationId));
@@ -334,30 +462,24 @@ TEST_F(MediaNotificationContainerImplViewTest, KeyboardToDismiss) {
 }
 
 TEST_F(MediaNotificationContainerImplViewTest, ForceExpandedState) {
-  bool notification_expanded = false;
-  EXPECT_CALL(observer(), OnContainerExpanded(_))
-      .WillRepeatedly([&notification_expanded](bool expanded) {
-        notification_expanded = expanded;
-      });
-
   // When we have many actions enabled, we should be forced into the expanded
   // state.
   SimulateAllActionsEnabled();
-  EXPECT_TRUE(notification_expanded);
+  EXPECT_TRUE(notification_container()->is_expanded_for_testing());
 
   // When we don't have many actions enabled, we should be forced out of the
   // expanded state.
   SimulateOnlyPlayPauseEnabled();
-  EXPECT_FALSE(notification_expanded);
+  EXPECT_FALSE(notification_container()->is_expanded_for_testing());
 
   // We will also be forced into the expanded state when artwork is present.
   SimulateHasArtwork();
-  EXPECT_TRUE(notification_expanded);
+  EXPECT_TRUE(notification_container()->is_expanded_for_testing());
 
   // Once the artwork is gone, we should be forced back out of the expanded
   // state.
   SimulateHasNoArtwork();
-  EXPECT_FALSE(notification_expanded);
+  EXPECT_FALSE(notification_container()->is_expanded_for_testing());
 }
 
 TEST_F(MediaNotificationContainerImplViewTest, SendsMetadataUpdates) {
@@ -367,7 +489,7 @@ TEST_F(MediaNotificationContainerImplViewTest, SendsMetadataUpdates) {
 
 TEST_F(MediaNotificationContainerImplViewTest, SendsDestroyedUpdates) {
   auto container = std::make_unique<MediaNotificationContainerImplView>(
-      kOtherTestNotificationId, nullptr);
+      kOtherTestNotificationId, nullptr, nullptr);
   MockMediaNotificationContainerObserver observer;
   container->AddObserver(&observer);
 
@@ -388,6 +510,13 @@ TEST_F(MediaNotificationContainerImplViewTest, SendsClicks) {
   SimulateHeaderClicked();
 }
 
+TEST_F(MediaNotificationContainerImplViewTest, SendsSinkUpdates) {
+  // The container should notify its observers when an audio output device has
+  // been chosen.
+  EXPECT_CALL(observer(), OnAudioSinkChosen(kTestNotificationId, "foobar"));
+  notification_container()->OnAudioSinkChosen("foobar");
+}
+
 TEST_F(MediaNotificationContainerImplViewOverlayControlsTest,
        Dragging_VeryShortSendsClick) {
   // If the user presses and releases the mouse with only a very short drag,
@@ -395,7 +524,7 @@ TEST_F(MediaNotificationContainerImplViewOverlayControlsTest,
   EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId));
   EXPECT_CALL(observer(), OnContainerDraggedOut(kTestNotificationId, _))
       .Times(0);
-  SimulateMouseDrag(gfx::Vector2d(1, 1));
+  SimulateMouseDragAndRelease(gfx::Vector2d(1, 1));
   testing::Mock::VerifyAndClearExpectations(&observer());
 }
 
@@ -407,7 +536,7 @@ TEST_F(MediaNotificationContainerImplViewOverlayControlsTest,
   EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId)).Times(0);
   EXPECT_CALL(observer(), OnContainerDraggedOut(kTestNotificationId, _))
       .Times(0);
-  SimulateMouseDrag(gfx::Vector2d(20, 20));
+  SimulateMouseDragAndRelease(gfx::Vector2d(20, 20));
   testing::Mock::VerifyAndClearExpectations(&observer());
 }
 
@@ -418,7 +547,24 @@ TEST_F(MediaNotificationContainerImplViewOverlayControlsTest,
   // |OnContainerDraggedOut()| notification.
   EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId)).Times(0);
   EXPECT_CALL(observer(), OnContainerDraggedOut(kTestNotificationId, _));
-  SimulateMouseDrag(
+  SimulateMouseDragAndRelease(
       notification_container()->bounds().bottom_right().OffsetFromOrigin());
   testing::Mock::VerifyAndClearExpectations(&observer());
+}
+
+TEST_F(MediaNotificationContainerImplViewOverlayControlsTest, DragImage) {
+  gfx::Point start_point =
+      notification_container()->GetBoundsInScreen().CenterPoint();
+  gfx::Point end_point = start_point + gfx::Vector2d(50, 50);
+
+  EXPECT_EQ(GetDragImageWidget(), nullptr);
+
+  SimulateMousePressed(start_point);
+  SimulateMouseDragged(end_point);
+  EXPECT_NE(GetDragImageWidget(), nullptr);
+  EXPECT_EQ(GetDragImageWidget()->GetWindowBoundsInScreen().CenterPoint(),
+            end_point);
+
+  SimulateMouseReleased(end_point);
+  EXPECT_EQ(GetDragImageWidget(), nullptr);
 }

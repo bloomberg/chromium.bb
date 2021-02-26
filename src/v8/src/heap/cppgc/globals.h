@@ -16,6 +16,13 @@ namespace internal {
 using Address = uint8_t*;
 using ConstAddress = const uint8_t*;
 
+constexpr size_t kKB = 1024;
+constexpr size_t kMB = kKB * 1024;
+constexpr size_t kGB = kMB * 1024;
+
+// AccessMode used for choosing between atomic and non-atomic accesses.
+enum class AccessMode : uint8_t { kNonAtomic, kAtomic };
+
 // See 6.7.6 (http://eel.is/c++draft/basic.align) for alignment restrictions. We
 // do not fully support all alignment restrictions (following
 // alignof(std​::​max_­align_­t)) but limit to alignof(double).
@@ -41,6 +48,9 @@ constexpr size_t kLargeObjectSizeThreshold = kPageSize / 2;
 
 constexpr GCInfoIndex kFreeListGCInfoIndex = 0;
 constexpr size_t kFreeListEntrySize = 2 * sizeof(uintptr_t);
+
+constexpr size_t kCagedHeapReservationSize = static_cast<size_t>(4) * kGB;
+constexpr size_t kCagedHeapReservationAlignment = kCagedHeapReservationSize;
 
 }  // namespace internal
 }  // namespace cppgc

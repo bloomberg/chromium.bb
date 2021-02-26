@@ -20,8 +20,8 @@
       }
 
       :host([files-ng]) #box {
-        line-height: 40px;
-        margin: 0;
+        line-height: 20px;
+        margin: 10px 0;
       }
 
       #box[hidden] {
@@ -48,13 +48,18 @@
 
       #value[loading]::after {
         animation: ellipsis 1s steps(4,end) 100ms infinite;
-        content: '\2026'; /* Unicode horizontal ellipsis */
+        content: '…';
         display: inline-block;
         overflow: hidden;
         transform: scale(2.5) translate(0, 1px);
         transform-origin: left bottom;
         vertical-align: bottom;
         width: 0;
+      }
+
+      #value span {
+        display: inline-block;
+        overflow-wrap: anywhere;
       }
 
       @keyframes ellipsis {
@@ -80,10 +85,10 @@
     <div id="box" hidden="[[!value]]">
       <div id="key">[[key]]</div>
       <div id="value" loading$="{{loading}}">
-        <div hidden="[[loading]]">[[value]]</div>
+        <div id="valueContainer" hidden="[[loading]]"></div>
       </div>
     </div>
   </template>
-</dom-module>
 
-<script src="files_metadata_entry.js"></script>
+  <script src="files_metadata_entry.js"></script>
+</dom-module>

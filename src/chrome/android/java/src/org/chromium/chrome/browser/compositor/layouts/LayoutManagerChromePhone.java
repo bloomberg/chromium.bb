@@ -7,16 +7,20 @@ package org.chromium.chrome.browser.compositor.layouts;
 import android.content.Context;
 import android.view.ViewGroup;
 
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.OneshotSupplierImpl;
+import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.phone.SimpleAnimationLayout;
-import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
@@ -31,35 +35,42 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     /**
      * Creates an instance of a {@link LayoutManagerChromePhone}.
      * @param host         A {@link LayoutManagerHost} instance.
+     * @param contentContainer A {@link ViewGroup} for Android views to be bound to.
      * @param startSurface An interface to talk to the Grid Tab Switcher. If it's NULL, VTS
      *                     should be used, otherwise GTS should be used.
+     * @param tabContentManagerSupplier Supplier of the {@link TabContentManager} instance.
      */
-    public LayoutManagerChromePhone(LayoutManagerHost host, StartSurface startSurface) {
-        super(host, true, startSurface);
-
+    public LayoutManagerChromePhone(LayoutManagerHost host, ViewGroup contentContainer,
+            StartSurface startSurface,
+            ObservableSupplier<TabContentManager> tabContentManagerSupplier,
+            Supplier<LayerTitleCache> layerTitleCacheSupplier,
+            OneshotSupplierImpl<OverviewModeBehavior> overviewModeBehaviorSupplier,
+            OneshotSupplierImpl<LayoutStateProvider> layoutStateProviderOneshotSupplier) {
+        super(host, contentContainer, true, startSurface, tabContentManagerSupplier,
+                layerTitleCacheSupplier, overviewModeBehaviorSupplier,
+                layoutStateProviderOneshotSupplier);
     }
 
     @Override
     public void init(TabModelSelector selector, TabCreatorManager creator,
-            TabContentManager content, ViewGroup androidContentContainer,
-            ContextualSearchManagementDelegate contextualSearchDelegate,
-            DynamicResourceLoader dynamicResourceLoader) {
+            ControlContainer controlContainer, DynamicResourceLoader dynamicResourceLoader) {
         Context context = mHost.getContext();
         LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
 
         // Build Layouts
         mSimpleAnimationLayout = new SimpleAnimationLayout(context, this, renderHost);
 
+        super.init(selector, creator, controlContainer, dynamicResourceLoader);
+
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(false);
-
-        super.init(selector, creator, content, androidContentContainer, contextualSearchDelegate,
-                dynamicResourceLoader);
 
         mToolbarSwipeLayout.setMovesToolbar(true);
 
         // Initialize Layouts
-        mSimpleAnimationLayout.setTabModelSelector(selector, content);
+        TabContentManager tabContentManager = mTabContentManagerSupplier.get();
+        assert tabContentManager != null;
+        mSimpleAnimationLayout.setTabModelSelector(selector, tabContentManager);
     }
 
     @Override
@@ -81,12 +92,6 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
                 if (animate) tabClosing(tab.getId());
             }
         };
-    }
-
-    @Override
-    protected void addGlobalSceneOverlay(SceneOverlay helper) {
-        super.addGlobalSceneOverlay(helper);
-        mSimpleAnimationLayout.addSceneOverlay(helper);
     }
 
     @Override
@@ -130,14 +135,15 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
 
     @Override
     protected void tabCreating(int sourceId, String url, boolean isIncognito) {
-        if (!getActiveLayout().isHiding() && getActiveLayout().handlesTabCreating()) {
+        if (getActiveLayout() != null && !getActiveLayout().isStartingToHide()
+                && overlaysHandleTabCreating() && getActiveLayout().handlesTabCreating()) {
             // If the current layout in the foreground, let it handle the tab creation animation.
             // This check allows us to switch from the StackLayout to the SimpleAnimationLayout
             // smoothly.
             getActiveLayout().onTabCreating(sourceId);
         } else if (animationsEnabled()) {
             if (!overviewVisible()) {
-                if (getActiveLayout() != null && getActiveLayout().isHiding()) {
+                if (getActiveLayout() != null && getActiveLayout().isStartingToHide()) {
                     setNextLayout(mSimpleAnimationLayout);
                     // The method Layout#doneHiding() will automatically show the next layout.
                     getActiveLayout().doneHiding();
@@ -145,8 +151,29 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
                     startShowing(mSimpleAnimationLayout, false);
                 }
             }
-            getActiveLayout().onTabCreating(sourceId);
+            if (getActiveLayout() != null) {
+                getActiveLayout().onTabCreating(sourceId);
+            }
         }
+    }
+
+    /** @return Whether the {@link SceneOverlay}s handle tab creation. */
+    private boolean overlaysHandleTabCreating() {
+        Layout layout = getActiveLayout();
+        if (layout == null || layout.getLayoutTabsToRender() == null
+                || layout.getLayoutTabsToRender().length != 1) {
+            return false;
+        }
+        for (int i = 0; i < mSceneOverlays.size(); i++) {
+            if (!mSceneOverlays.get(i).isSceneOverlayTreeShowing()) continue;
+            if (mSceneOverlays.get(i).handlesTabCreating()) {
+                // Prevent animation from happening if the overlay handles creation.
+                startHiding(layout.getLayoutTabsToRender()[0].getId(), false);
+                doneHiding();
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

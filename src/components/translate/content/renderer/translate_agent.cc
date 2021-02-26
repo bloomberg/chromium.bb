@@ -4,6 +4,7 @@
 
 #include "components/translate/content/renderer/translate_agent.h"
 
+#include <stddef.h>
 #include <utility>
 
 #include "base/bind.h"
@@ -17,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/translate/content/renderer/isolated_world_util.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
@@ -26,7 +28,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_language_detection_details.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -38,7 +39,6 @@ using blink::WebDocument;
 using blink::WebLanguageDetectionDetails;
 using blink::WebLocalFrame;
 using blink::WebScriptSource;
-using blink::WebSecurityOrigin;
 using blink::WebString;
 using blink::WebVector;
 
@@ -58,10 +58,6 @@ const int kTranslateStatusCheckDelayMs = 400;
 
 // Language name passed to the Translate element for it to detect the language.
 const char kAutoDetectionLanguage[] = "auto";
-
-// Isolated world sets following content-security-policy.
-const char kContentSecurityPolicy[] = "script-src 'self' 'unsafe-eval'";
-
 }  // namespace
 
 namespace translate {
@@ -235,10 +231,13 @@ std::string TranslateAgent::ExecuteScriptAndGetStringResult(
   }
 
   v8::Local<v8::String> v8_str = result.As<v8::String>();
-  int length = v8_str->Utf8Length(isolate) + 1;
-  std::unique_ptr<char[]> str(new char[length]);
-  v8_str->WriteUtf8(isolate, str.get(), length);
-  return std::string(str.get());
+  int length = v8_str->Utf8Length(isolate);
+  if (length <= 0)
+    return std::string();
+
+  std::string str(static_cast<size_t>(length), '\0');
+  v8_str->WriteUtf8(isolate, &str[0], length);
+  return str;
 }
 
 double TranslateAgent::ExecuteScriptAndGetDoubleResult(
@@ -320,13 +319,8 @@ void TranslateAgent::TranslateFrame(const std::string& translate_script,
   GURL url(main_frame->GetDocument().Url());
   ReportPageScheme(url.scheme());
 
-  // Set up v8 isolated world with proper content-security-policy and
-  // security-origin.
-  blink::WebIsolatedWorldInfo info;
-  info.security_origin =
-      WebSecurityOrigin::Create(GetTranslateSecurityOrigin());
-  info.content_security_policy = WebString::FromUTF8(kContentSecurityPolicy);
-  main_frame->SetIsolatedWorldInfo(world_id_, info);
+  // Set up v8 isolated world.
+  EnsureIsolatedWorldInitialized(world_id_);
 
   if (!IsTranslateLibAvailable()) {
     // Evaluate the script to add the translation related method to the global

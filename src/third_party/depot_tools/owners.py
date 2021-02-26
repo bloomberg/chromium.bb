@@ -82,6 +82,9 @@ BASIC_EMAIL_REGEXP = r'^[\w\-\+\%\.]+\@[\w\-\+\%\.]+$'
 # pathname.
 GLOBAL_STATUS = '*'
 
+# Returned if there is no owner and anyone +1
+ANYONE='<anyone>'
+
 
 def _assert_is_collection(obj):
   assert not isinstance(obj, str)
@@ -184,7 +187,7 @@ class Database(object):
       if len(suggested_owners) > 1:
         suggested_owners.remove(EVERYONE)
       else:
-        suggested_owners = set(['<anyone>'])
+        suggested_owners = set([ANYONE])
     return suggested_owners
 
   def files_not_covered_by(self, files, reviewers):
@@ -571,6 +574,7 @@ class Database(object):
     subsequent math easier).
     """
 
+    self.load_data_needed_for(dirs_and_files)
     all_possible_owners_for_dir_or_file_cache = {}
     all_possible_owners = {}
     for current_dir in dirs_and_files:

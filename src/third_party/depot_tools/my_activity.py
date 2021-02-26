@@ -100,6 +100,9 @@ gerrit_instances = [
   {
     'url': 'skia-review.googlesource.com',
   },
+  {
+    'url': 'review.coreboot.org',
+  },
 ]
 
 monorail_projects = {
@@ -795,7 +798,8 @@ def main():
   output_format_group.add_option(
       '--output-format-heading', metavar='<format>',
       default=u'{heading}:',
-      help='Specifies the format to use when printing headings.')
+      help='Specifies the format to use when printing headings. '
+           'Supports the variable {heading}.')
   output_format_group.add_option(
       '--output-format-no-url', default='{title}',
       help='Specifies the format to use when printing activity without url.')

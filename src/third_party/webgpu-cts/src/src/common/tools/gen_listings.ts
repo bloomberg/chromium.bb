@@ -1,5 +1,3 @@
-// tslint:disable: no-console
-
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
@@ -28,6 +26,7 @@ if (!fs.existsSync(myself)) {
     const listing = await crawl(suite);
 
     const outFile = path.normalize(`out/${suite}/listing.js`);
+    fs.mkdirSync(`out/${suite}`, { recursive: true });
     fs.writeFileSync(
       outFile,
       `\
@@ -38,6 +37,7 @@ export const listing = ${JSON.stringify(listing, undefined, 2)};
     );
     try {
       fs.unlinkSync(outFile + '.map');
+      /* eslint-disable-next-line no-empty */
     } catch (ex) {}
   }
 })();

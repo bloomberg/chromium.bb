@@ -89,15 +89,6 @@ void TranslateInfoBarDelegate::Create(
     }
   }
 
-  // Do not create the after translate infobar for navigation if we are auto
-  // translating.
-  if (((step == translate::TRANSLATE_STEP_AFTER_TRANSLATE) ||
-       (step == translate::TRANSLATE_STEP_TRANSLATING)) &&
-      translate_manager->GetLanguageState().InTranslateNavigation() &&
-      !triggered_from_menu) {
-    return;
-  }
-
   // Find any existing translate infobar delegate.
   infobars::InfoBar* old_infobar = NULL;
   TranslateInfoBarDelegate* old_delegate = NULL;
@@ -115,6 +106,7 @@ void TranslateInfoBarDelegate::Create(
   if (old_delegate) {
     old_delegate->step_ = step;
     for (auto& observer : old_delegate->observers_) {
+      observer.OnTargetLanguageChanged(target_language);
       observer.OnTranslateStepChanged(step, error_type);
     }
     return;
@@ -126,10 +118,7 @@ void TranslateInfoBarDelegate::Create(
       base::WrapUnique(new TranslateInfoBarDelegate(
           translate_manager, is_off_the_record, step, original_language,
           target_language, error_type, triggered_from_menu))));
-  if (old_delegate)
-    infobar_manager->ReplaceInfoBar(old_infobar, std::move(infobar));
-  else
-    infobar_manager->AddInfoBar(std::move(infobar));
+  infobar_manager->AddInfoBar(std::move(infobar));
 }
 
 size_t TranslateInfoBarDelegate::num_languages() const {
@@ -148,6 +137,10 @@ base::string16 TranslateInfoBarDelegate::original_language_name() const {
   return language_name_at(ui_delegate_.GetOriginalLanguageIndex());
 }
 
+base::string16 TranslateInfoBarDelegate::target_language_name() const {
+  return language_name_at(ui_delegate_.GetTargetLanguageIndex());
+}
+
 void TranslateInfoBarDelegate::UpdateOriginalLanguage(
     const std::string& language_code) {
   ui_delegate_.UpdateOriginalLanguage(language_code);
@@ -156,6 +149,10 @@ void TranslateInfoBarDelegate::UpdateOriginalLanguage(
 void TranslateInfoBarDelegate::UpdateTargetLanguage(
     const std::string& language_code) {
   ui_delegate_.UpdateTargetLanguage(language_code);
+}
+
+void TranslateInfoBarDelegate::OnErrorShown(TranslateErrors::Type error_type) {
+  ui_delegate_.OnErrorShown(error_type);
 }
 
 void TranslateInfoBarDelegate::Translate() {
@@ -220,44 +217,6 @@ void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
   DCHECK(!ui_delegate_.IsLanguageBlocked());
   ui_delegate_.SetLanguageBlocked(true);
   infobar()->RemoveSelf();
-}
-
-base::string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
-  if (step_ == translate::TRANSLATE_STEP_TRANSLATING) {
-    return l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_TRANSLATING_TO,
-                                      target_language_name());
-  }
-
-  DCHECK_EQ(translate::TRANSLATE_STEP_TRANSLATE_ERROR, step_);
-  UMA_HISTOGRAM_ENUMERATION("Translate.ShowErrorInfobar", error_type_,
-                            TranslateErrors::TRANSLATE_ERROR_MAX);
-  ui_delegate_.OnErrorShown(error_type_);
-  switch (error_type_) {
-    case TranslateErrors::NETWORK:
-      return l10n_util::GetStringUTF16(
-          IDS_TRANSLATE_INFOBAR_ERROR_CANT_CONNECT);
-    case TranslateErrors::INITIALIZATION_ERROR:
-    case TranslateErrors::TRANSLATION_ERROR:
-    case TranslateErrors::TRANSLATION_TIMEOUT:
-    case TranslateErrors::UNEXPECTED_SCRIPT_ERROR:
-    case TranslateErrors::BAD_ORIGIN:
-    case TranslateErrors::SCRIPT_LOAD_ERROR:
-      return l10n_util::GetStringUTF16(
-          IDS_TRANSLATE_INFOBAR_ERROR_CANT_TRANSLATE);
-    case TranslateErrors::UNKNOWN_LANGUAGE:
-      return l10n_util::GetStringUTF16(
-          IDS_TRANSLATE_INFOBAR_UNKNOWN_PAGE_LANGUAGE);
-    case TranslateErrors::UNSUPPORTED_LANGUAGE:
-      return l10n_util::GetStringFUTF16(
-          IDS_TRANSLATE_INFOBAR_UNSUPPORTED_PAGE_LANGUAGE,
-          target_language_name());
-    case TranslateErrors::IDENTICAL_LANGUAGES:
-      return l10n_util::GetStringFUTF16(
-          IDS_TRANSLATE_INFOBAR_ERROR_SAME_LANGUAGE, target_language_name());
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
 }
 
 base::string16 TranslateInfoBarDelegate::GetMessageInfoBarButtonText() {
@@ -470,6 +429,8 @@ int TranslateInfoBarDelegate::GetIconId() const {
 }
 
 void TranslateInfoBarDelegate::InfoBarDismissed() {
+  OnInfoBarClosedByUser();
+
   bool declined = false;
   bool has_observer = false;
   for (auto& observer : observers_) {
@@ -515,6 +476,10 @@ int TranslateInfoBarDelegate::GetMaximumNumberOfAutoNever() {
   static constexpr base::FeatureParam<int> auto_never_maximum{
       &kTranslateAutoSnackbars, "AutoNeverMaximum", kMaxNumberOfAutoNever};
   return auto_never_maximum.Get();
+}
+
+void TranslateInfoBarDelegate::OnInfoBarClosedByUser() {
+  ui_delegate_.OnUIClosedByUser();
 }
 
 }  // namespace translate

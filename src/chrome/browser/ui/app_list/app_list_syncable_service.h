@@ -10,9 +10,9 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/one_shot_event.h"
@@ -82,19 +82,22 @@ class AppListSyncableService : public syncer::SyncableService,
    public:
     explicit ScopedModelUpdaterFactoryForTest(
         const ModelUpdaterFactoryCallback& factory);
+    ScopedModelUpdaterFactoryForTest(const ScopedModelUpdaterFactoryForTest&) =
+        delete;
+    ScopedModelUpdaterFactoryForTest& operator=(
+        const ScopedModelUpdaterFactoryForTest&) = delete;
     ~ScopedModelUpdaterFactoryForTest();
 
    private:
     ModelUpdaterFactoryCallback factory_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedModelUpdaterFactoryForTest);
   };
 
   using SyncItemMap = std::map<std::string, std::unique_ptr<SyncItem>>;
 
   // Populates the model when |profile|'s extension system is ready.
   explicit AppListSyncableService(Profile* profile);
-
+  AppListSyncableService(const AppListSyncableService&) = delete;
+  AppListSyncableService& operator=(const AppListSyncableService&) = delete;
   ~AppListSyncableService() override;
 
   // Registers prefs to support local storage.
@@ -284,7 +287,23 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // Handles model update start/finish.
   void HandleUpdateStarted();
-  void HandleUpdateFinished();
+  void HandleUpdateFinished(bool clean_up_after_init_sync);
+
+  // Cleans up the folder sync item with only one item in it.
+  // There are some edge cases with synch which will create a folder with only
+  // one item in it, which is not legitimate and the folder should be removed.
+  // We will find such folders after the initial sync and clean them up.
+  void CleanUpSingleItemSyncFolder();
+
+  // Returns child item if |sync_item| is a user created folder with only one
+  // child item in it; otherwise, returns nullptr.
+  SyncItem* GetOnlyChildOfUserCreatedFolder(SyncItem* sync_item);
+
+  // Returns true if |sync_item| is a user created folder with only one
+  // child item in it, the child item will be removed out of the folder and
+  // place at the same location of its original folder.
+  // Otherwise, return false, no change will be made.
+  bool RemoveOnlyChildOutOfUserCreatedFolderIfNecessary(SyncItem* sync_item);
 
   // Returns true if extension service is ready.
   bool IsExtensionServiceReady() const;
@@ -329,8 +348,8 @@ class AppListSyncableService : public syncer::SyncableService,
   // another.
   SyncItemMap pending_transfer_map_;
   syncer::SyncableService::StartSyncFlare flare_;
-  bool initial_sync_data_processed_;
-  bool first_app_list_sync_;
+  bool initial_sync_data_processed_ = false;
+  bool first_app_list_sync_ = true;
   std::string oem_folder_name_;
   // Callback to install default page breaks.
   // Only set for first time user for tablet form devices.
@@ -342,8 +361,6 @@ class AppListSyncableService : public syncer::SyncableService,
   base::OneShotEvent on_initialized_;
 
   base::WeakPtrFactory<AppListSyncableService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppListSyncableService);
 };
 
 }  // namespace app_list

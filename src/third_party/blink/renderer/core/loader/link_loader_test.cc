@@ -10,10 +10,13 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/link_rel_attribute.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -37,12 +40,12 @@ namespace {
 class MockLinkLoaderClient final
     : public GarbageCollected<MockLinkLoaderClient>,
       public LinkLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockLinkLoaderClient);
-
  public:
   explicit MockLinkLoaderClient(bool should_load) : should_load_(should_load) {}
 
-  void Trace(Visitor* visitor) override { LinkLoaderClient::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    LinkLoaderClient::Trace(visitor);
+  }
 
   bool ShouldLoadLink() override { return should_load_; }
   bool IsLinkCreatedByParser() override { return true; }
@@ -92,7 +95,7 @@ class LinkLoaderPreloadTestBase : public testing::Test,
  public:
   struct Expectations {
     ResourceLoadPriority priority;
-    mojom::RequestContextType context;
+    mojom::blink::RequestContextType context;
     bool link_loader_should_load_value;
     KURL load_url;
     network::mojom::ReferrerPolicy referrer_policy;
@@ -147,17 +150,17 @@ struct PreloadTestParams {
   const char* href;
   const char* as;
   const ResourceLoadPriority priority;
-  const mojom::RequestContextType context;
+  const mojom::blink::RequestContextType context;
   const bool expecting_load;
 };
 
 constexpr PreloadTestParams kPreloadTestParams[] = {
     {"http://example.test/cat.jpg", "image", ResourceLoadPriority::kLow,
-     mojom::RequestContextType::IMAGE, true},
+     mojom::blink::RequestContextType::IMAGE, true},
     {"http://example.test/cat.js", "script", ResourceLoadPriority::kHigh,
-     mojom::RequestContextType::SCRIPT, true},
+     mojom::blink::RequestContextType::SCRIPT, true},
     {"http://example.test/cat.css", "style", ResourceLoadPriority::kVeryHigh,
-     mojom::RequestContextType::STYLE, true},
+     mojom::blink::RequestContextType::STYLE, true},
     // TODO(yoav): It doesn't seem like the audio context is ever used. That
     // should probably be fixed (or we can consolidate audio and video).
     //
@@ -167,23 +170,23 @@ constexpr PreloadTestParams kPreloadTestParams[] = {
     // https://github.com/w3c/preload/issues/97 is resolved and implemented we
     // need to disable these preloads.
     {"http://example.test/cat.wav", "audio", ResourceLoadPriority::kLow,
-     mojom::RequestContextType::AUDIO, false},
+     mojom::blink::RequestContextType::AUDIO, false},
     {"http://example.test/cat.mp4", "video", ResourceLoadPriority::kLow,
-     mojom::RequestContextType::VIDEO, false},
+     mojom::blink::RequestContextType::VIDEO, false},
     {"http://example.test/cat.vtt", "track", ResourceLoadPriority::kLow,
-     mojom::RequestContextType::TRACK, true},
+     mojom::blink::RequestContextType::TRACK, true},
     {"http://example.test/cat.woff", "font", ResourceLoadPriority::kHigh,
-     mojom::RequestContextType::FONT, true},
+     mojom::blink::RequestContextType::FONT, true},
     // TODO(yoav): subresource should be *very* low priority (rather than
     // low).
     {"http://example.test/cat.empty", "fetch", ResourceLoadPriority::kHigh,
-     mojom::RequestContextType::SUBRESOURCE, true},
+     mojom::blink::RequestContextType::SUBRESOURCE, true},
     {"http://example.test/cat.blob", "blabla", ResourceLoadPriority::kLow,
-     mojom::RequestContextType::SUBRESOURCE, false},
+     mojom::blink::RequestContextType::SUBRESOURCE, false},
     {"http://example.test/cat.blob", "", ResourceLoadPriority::kLow,
-     mojom::RequestContextType::SUBRESOURCE, false},
+     mojom::blink::RequestContextType::SUBRESOURCE, false},
     {"bla://example.test/cat.gif", "image", ResourceLoadPriority::kUnresolved,
-     mojom::RequestContextType::IMAGE, false}};
+     mojom::blink::RequestContextType::IMAGE, false}};
 
 class LinkLoaderPreloadTest
     : public LinkLoaderPreloadTestBase,
@@ -212,27 +215,29 @@ struct PreloadMimeTypeTestParams {
   const char* as;
   const char* type;
   const ResourceLoadPriority priority;
-  const mojom::RequestContextType context;
+  const mojom::blink::RequestContextType context;
   const bool expecting_load;
 };
 
 constexpr PreloadMimeTypeTestParams kPreloadMimeTypeTestParams[] = {
     {"http://example.test/cat.webp", "image", "image/webp",
-     ResourceLoadPriority::kLow, mojom::RequestContextType::IMAGE, true},
+     ResourceLoadPriority::kLow, mojom::blink::RequestContextType::IMAGE, true},
     {"http://example.test/cat.svg", "image", "image/svg+xml",
-     ResourceLoadPriority::kLow, mojom::RequestContextType::IMAGE, true},
+     ResourceLoadPriority::kLow, mojom::blink::RequestContextType::IMAGE, true},
     {"http://example.test/cat.jxr", "image", "image/jxr",
-     ResourceLoadPriority::kUnresolved, mojom::RequestContextType::IMAGE,
+     ResourceLoadPriority::kUnresolved, mojom::blink::RequestContextType::IMAGE,
      false},
     {"http://example.test/cat.js", "script", "text/javascript",
-     ResourceLoadPriority::kHigh, mojom::RequestContextType::SCRIPT, true},
+     ResourceLoadPriority::kHigh, mojom::blink::RequestContextType::SCRIPT,
+     true},
     {"http://example.test/cat.js", "script", "text/coffeescript",
-     ResourceLoadPriority::kUnresolved, mojom::RequestContextType::SCRIPT,
-     false},
+     ResourceLoadPriority::kUnresolved,
+     mojom::blink::RequestContextType::SCRIPT, false},
     {"http://example.test/cat.css", "style", "text/css",
-     ResourceLoadPriority::kVeryHigh, mojom::RequestContextType::STYLE, true},
+     ResourceLoadPriority::kVeryHigh, mojom::blink::RequestContextType::STYLE,
+     true},
     {"http://example.test/cat.css", "style", "text/sass",
-     ResourceLoadPriority::kUnresolved, mojom::RequestContextType::STYLE,
+     ResourceLoadPriority::kUnresolved, mojom::blink::RequestContextType::STYLE,
      false},
     // Until the preload cache is defined in terms of range requests and media
     // fetches we can't reliably preload audio/video content and expect it to be
@@ -240,30 +245,35 @@ constexpr PreloadMimeTypeTestParams kPreloadMimeTypeTestParams[] = {
     // https://github.com/w3c/preload/issues/97 is resolved and implemented we
     // need to disable these preloads.
     {"http://example.test/cat.wav", "audio", "audio/wav",
-     ResourceLoadPriority::kLow, mojom::RequestContextType::AUDIO, false},
+     ResourceLoadPriority::kLow, mojom::blink::RequestContextType::AUDIO,
+     false},
     {"http://example.test/cat.wav", "audio", "audio/mp57",
-     ResourceLoadPriority::kUnresolved, mojom::RequestContextType::AUDIO,
+     ResourceLoadPriority::kUnresolved, mojom::blink::RequestContextType::AUDIO,
      false},
     {"http://example.test/cat.webm", "video", "video/webm",
-     ResourceLoadPriority::kLow, mojom::RequestContextType::VIDEO, false},
+     ResourceLoadPriority::kLow, mojom::blink::RequestContextType::VIDEO,
+     false},
     {"http://example.test/cat.mp199", "video", "video/mp199",
-     ResourceLoadPriority::kUnresolved, mojom::RequestContextType::VIDEO,
+     ResourceLoadPriority::kUnresolved, mojom::blink::RequestContextType::VIDEO,
      false},
     {"http://example.test/cat.vtt", "track", "text/vtt",
-     ResourceLoadPriority::kLow, mojom::RequestContextType::TRACK, true},
+     ResourceLoadPriority::kLow, mojom::blink::RequestContextType::TRACK, true},
     {"http://example.test/cat.vtt", "track", "text/subtitlething",
-     ResourceLoadPriority::kUnresolved, mojom::RequestContextType::TRACK,
+     ResourceLoadPriority::kUnresolved, mojom::blink::RequestContextType::TRACK,
      false},
     {"http://example.test/cat.woff", "font", "font/woff2",
-     ResourceLoadPriority::kHigh, mojom::RequestContextType::FONT, true},
+     ResourceLoadPriority::kHigh, mojom::blink::RequestContextType::FONT, true},
     {"http://example.test/cat.woff", "font", "font/woff84",
-     ResourceLoadPriority::kUnresolved, mojom::RequestContextType::FONT, false},
+     ResourceLoadPriority::kUnresolved, mojom::blink::RequestContextType::FONT,
+     false},
     {"http://example.test/cat.empty", "fetch", "foo/bar",
-     ResourceLoadPriority::kHigh, mojom::RequestContextType::SUBRESOURCE, true},
+     ResourceLoadPriority::kHigh, mojom::blink::RequestContextType::SUBRESOURCE,
+     true},
     {"http://example.test/cat.blob", "blabla", "foo/bar",
-     ResourceLoadPriority::kLow, mojom::RequestContextType::SUBRESOURCE, false},
+     ResourceLoadPriority::kLow, mojom::blink::RequestContextType::SUBRESOURCE,
+     false},
     {"http://example.test/cat.blob", "", "foo/bar", ResourceLoadPriority::kLow,
-     mojom::RequestContextType::SUBRESOURCE, false}};
+     mojom::blink::RequestContextType::SUBRESOURCE, false}};
 
 class LinkLoaderPreloadMimeTypeTest
     : public LinkLoaderPreloadTestBase,
@@ -311,7 +321,7 @@ TEST_P(LinkLoaderPreloadMediaTest, Preload) {
       network::mojom::ReferrerPolicy::kDefault,
       KURL(NullURL(), "http://example.test/cat.gif"), String(), String());
   Expectations expectations = {
-      test_case.priority, mojom::RequestContextType::IMAGE,
+      test_case.priority, mojom::blink::RequestContextType::IMAGE,
       test_case.link_loader_should_load_value,
       test_case.expecting_load ? params.href : NullURL(),
       network::mojom::ReferrerPolicy::kDefault};
@@ -341,7 +351,7 @@ TEST_P(LinkLoaderPreloadReferrerPolicyTest, Preload) {
       "image", String(), String(), String(), String(), referrer_policy,
       KURL(NullURL(), "http://example.test/cat.gif"), String(), String());
   Expectations expectations = {ResourceLoadPriority::kLow,
-                               mojom::RequestContextType::IMAGE, true,
+                               mojom::blink::RequestContextType::IMAGE, true,
                                params.href, referrer_policy};
   TestPreload(params, expectations);
 }
@@ -368,8 +378,9 @@ class LinkLoaderPreloadNonceTest
 
 TEST_P(LinkLoaderPreloadNonceTest, Preload) {
   const auto& test_case = GetParam();
-  dummy_page_holder_->GetDocument()
-      .GetContentSecurityPolicy()
+  dummy_page_holder_->GetFrame()
+      .DomWindow()
+      ->GetContentSecurityPolicy()
       ->DidReceiveHeader(test_case.content_security_policy,
                          network::mojom::ContentSecurityPolicyType::kEnforce,
                          network::mojom::ContentSecurityPolicySource::kHTTP);
@@ -379,7 +390,7 @@ TEST_P(LinkLoaderPreloadNonceTest, Preload) {
       network::mojom::ReferrerPolicy::kDefault,
       KURL(NullURL(), "http://example.test/cat.js"), String(), String());
   Expectations expectations = {
-      ResourceLoadPriority::kHigh, mojom::RequestContextType::SCRIPT,
+      ResourceLoadPriority::kHigh, mojom::blink::RequestContextType::SCRIPT,
       test_case.expecting_load,
       test_case.expecting_load ? params.href : NullURL(),
       network::mojom::ReferrerPolicy::kDefault};
@@ -432,7 +443,7 @@ TEST_P(LinkLoaderPreloadImageSrcsetTest, Preload) {
       network::mojom::ReferrerPolicy::kDefault, KURL(NullURL(), test_case.href),
       test_case.image_srcset, test_case.image_sizes);
   Expectations expectations = {ResourceLoadPriority::kLow,
-                               mojom::RequestContextType::IMAGE, true,
+                               mojom::blink::RequestContextType::IMAGE, true,
                                KURL(NullURL(), test_case.expected_url),
                                network::mojom::ReferrerPolicy::kDefault};
   TestPreload(params, expectations);
@@ -589,12 +600,12 @@ TEST_P(LinkLoaderTestPrefetchPrivacyChanges, PrefetchPrivacyChanges) {
     EXPECT_EQ(resource->GetResourceRequest().GetRedirectMode(),
               network::mojom::RedirectMode::kFollow);
     EXPECT_EQ(resource->GetResourceRequest().GetReferrerPolicy(),
-              RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()
-                  ? network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin
-                  : network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade);
+              ReferrerUtils::MojoReferrerPolicyResolveDefault(
+                  network::mojom::ReferrerPolicy::kDefault));
   }
 
-  platform_->GetURLLoaderMockFactory()->UnregisterAllURLsAndClearMemoryCache();
+  WebURLLoaderMockFactory::GetSingletonInstance()
+      ->UnregisterAllURLsAndClearMemoryCache();
 }
 
 class LinkLoaderTest : public testing::Test,
@@ -660,7 +671,7 @@ TEST_F(LinkLoaderTest, Prefetch) {
                   resource->GetResourceRequest().GetReferrerPolicy());
       }
     }
-    platform_->GetURLLoaderMockFactory()
+    WebURLLoaderMockFactory::GetSingletonInstance()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 }

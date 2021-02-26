@@ -25,6 +25,30 @@ enum class UADefinedVariable {
   kSafeAreaInsetLeft,
   kSafeAreaInsetBottom,
   kSafeAreaInsetRight,
+
+  // The keyboard area insets are six environment variables that define a
+  // virtual keyboard rectangle by its top, right, bottom, left, width and
+  // height insets
+  // from the edge of the viewport.
+  // Explainers:
+  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/main/VirtualKeyboardAPI/explainer.md
+  kKeyboardInsetTop,
+  kKeyboardInsetLeft,
+  kKeyboardInsetBottom,
+  kKeyboardInsetRight,
+  kKeyboardInsetWidth,
+  kKeyboardInsetHeight,
+
+  // The fold environment variables define a rectangle that is splitting the
+  // layout viewport.
+  // Explainers:
+  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/Foldables/explainer.md
+  kFoldTop,
+  kFoldRight,
+  kFoldBottom,
+  kFoldLeft,
+  kFoldWidth,
+  kFoldHeight,
 };
 
 // StyleEnvironmentVariables stores user agent and user defined CSS environment
@@ -61,6 +85,10 @@ class CORE_EXPORT StyleEnvironmentVariables
 
   // Detach |this| from |parent|.
   void DetachFromParent();
+
+  // Stringify |value| and append 'px'. Helper for setting variables that are
+  // CSS lengths.
+  static String FormatPx(int value);
 
  protected:
   friend class StyleEnvironmentVariablesTest;

@@ -81,7 +81,7 @@ TestEnumOrTestEnumOrNullSequence::TestEnumOrTestEnumOrNullSequence(const TestEnu
 TestEnumOrTestEnumOrNullSequence::~TestEnumOrTestEnumOrNullSequence() = default;
 TestEnumOrTestEnumOrNullSequence& TestEnumOrTestEnumOrNullSequence::operator=(const TestEnumOrTestEnumOrNullSequence&) = default;
 
-void TestEnumOrTestEnumOrNullSequence::Trace(Visitor* visitor) {
+void TestEnumOrTestEnumOrNullSequence::Trace(Visitor* visitor) const {
 }
 
 void V8TestEnumOrTestEnumOrNullSequence::ToImpl(
@@ -102,7 +102,7 @@ void V8TestEnumOrTestEnumOrNullSequence::ToImpl(
     if (exception_state.HadException())
       return;
     if (!script_iterator.IsNull()) {
-      Vector<String> cpp_value = NativeValueTraits<IDLSequence<IDLStringOrNull>>::NativeValue(isolate, std::move(script_iterator), exception_state);
+      Vector<String> cpp_value{ NativeValueTraits<IDLSequence<IDLStringOrNull>>::NativeValue(isolate, std::move(script_iterator), exception_state) };
       if (exception_state.HadException())
         return;
       const char* const kValidValues[] = {
@@ -121,7 +121,7 @@ void V8TestEnumOrTestEnumOrNullSequence::ToImpl(
   }
 
   {
-    V8StringResource<> cpp_value = v8_value;
+    V8StringResource<> cpp_value{ v8_value };
     if (!cpp_value.Prepare(exception_state))
       return;
     const char* const kValidValues[] = {

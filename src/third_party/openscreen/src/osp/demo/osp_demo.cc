@@ -50,7 +50,7 @@ void sigusr1_dump_services(int) {
 }
 
 void sigint_stop(int) {
-  OSP_LOG << "caught SIGINT, exiting...";
+  OSP_LOG_INFO << "caught SIGINT, exiting...";
   g_done = true;
 }
 
@@ -70,7 +70,7 @@ void SignalThings() {
   sigaction(SIGUSR1, &usr1_sa, &unused);
   sigaction(SIGINT, &int_sa, &unused);
 
-  OSP_LOG << "signal handlers setup" << std::endl << "pid: " << getpid();
+  OSP_LOG_INFO << "signal handlers setup" << std::endl << "pid: " << getpid();
 }
 
 }  // namespace
@@ -81,21 +81,21 @@ namespace osp {
 class DemoListenerObserver final : public ServiceListener::Observer {
  public:
   ~DemoListenerObserver() override = default;
-  void OnStarted() override { OSP_LOG << "listener started!"; }
-  void OnStopped() override { OSP_LOG << "listener stopped!"; }
-  void OnSuspended() override { OSP_LOG << "listener suspended!"; }
-  void OnSearching() override { OSP_LOG << "listener searching!"; }
+  void OnStarted() override { OSP_LOG_INFO << "listener started!"; }
+  void OnStopped() override { OSP_LOG_INFO << "listener stopped!"; }
+  void OnSuspended() override { OSP_LOG_INFO << "listener suspended!"; }
+  void OnSearching() override { OSP_LOG_INFO << "listener searching!"; }
 
   void OnReceiverAdded(const ServiceInfo& info) override {
-    OSP_LOG << "found! " << info.friendly_name;
+    OSP_LOG_INFO << "found! " << info.friendly_name;
   }
   void OnReceiverChanged(const ServiceInfo& info) override {
-    OSP_LOG << "changed! " << info.friendly_name;
+    OSP_LOG_INFO << "changed! " << info.friendly_name;
   }
   void OnReceiverRemoved(const ServiceInfo& info) override {
-    OSP_LOG << "removed! " << info.friendly_name;
+    OSP_LOG_INFO << "removed! " << info.friendly_name;
   }
-  void OnAllReceiversRemoved() override { OSP_LOG << "all removed!"; }
+  void OnAllReceiversRemoved() override { OSP_LOG_INFO << "all removed!"; }
   void OnError(ServiceListenerError) override {}
   void OnMetrics(ServiceListener::Metrics) override {}
 };
@@ -124,13 +124,13 @@ class DemoReceiverObserver final : public ReceiverObserver {
                            const std::string& service_id) override {
     std::string safe_service_id = SanitizeServiceId(service_id);
     safe_service_ids_.emplace(safe_service_id, service_id);
-    OSP_LOG << "available! " << safe_service_id;
+    OSP_LOG_INFO << "available! " << safe_service_id;
   }
   void OnReceiverUnavailable(const std::string& presentation_url,
                              const std::string& service_id) override {
     std::string safe_service_id = SanitizeServiceId(service_id);
     safe_service_ids_.erase(safe_service_id);
-    OSP_LOG << "unavailable! " << safe_service_id;
+    OSP_LOG_INFO << "unavailable! " << safe_service_id;
   }
 
   const std::string& GetServiceId(const std::string& safe_service_id) {
@@ -148,9 +148,9 @@ class DemoPublisherObserver final : public ServicePublisher::Observer {
  public:
   ~DemoPublisherObserver() override = default;
 
-  void OnStarted() override { OSP_LOG << "publisher started!"; }
-  void OnStopped() override { OSP_LOG << "publisher stopped!"; }
-  void OnSuspended() override { OSP_LOG << "publisher suspended!"; }
+  void OnStarted() override { OSP_LOG_INFO << "publisher started!"; }
+  void OnStopped() override { OSP_LOG_INFO << "publisher stopped!"; }
+  void OnSuspended() override { OSP_LOG_INFO << "publisher suspended!"; }
 
   void OnError(ServicePublisherError) override {}
   void OnMetrics(ServicePublisher::Metrics) override {}
@@ -259,17 +259,17 @@ class DemoReceiverConnectionDelegate final : public Connection::Delegate {
   ~DemoReceiverConnectionDelegate() override = default;
 
   void OnConnected() override {
-    OSP_LOG << "presentation connection connected";
+    OSP_LOG_INFO << "presentation connection connected";
   }
   void OnClosedByRemote() override {
-    OSP_LOG << "presentation connection closed by remote";
+    OSP_LOG_INFO << "presentation connection closed by remote";
   }
   void OnDiscarded() override {}
   void OnError(const absl::string_view message) override {}
-  void OnTerminated() override { OSP_LOG << "presentation terminated"; }
+  void OnTerminated() override { OSP_LOG_INFO << "presentation terminated"; }
 
   void OnStringMessage(const absl::string_view message) override {
-    OSP_LOG << "got message: " << message;
+    OSP_LOG_INFO << "got message: " << message;
     connection->SendString("--echo-- " + std::string(message));
   }
   void OnBinaryMessage(const std::vector<uint8_t>& data) override {}
@@ -288,7 +288,7 @@ class DemoReceiverDelegate final : public ReceiverDelegate {
     std::vector<msgs::UrlAvailability> result;
     result.reserve(urls.size());
     for (const auto& url : urls) {
-      OSP_LOG << "got availability request for: " << url;
+      OSP_LOG_INFO << "got availability request for: " << url;
       result.push_back(msgs::UrlAvailability::kAvailable);
     }
     return result;
@@ -415,7 +415,7 @@ void RunControllerPollLoop(Controller* controller) {
       request_delegate.connection->Terminate(
           TerminationReason::kControllerTerminateCalled);
     }
-  };
+  }
 
   watch = Controller::ReceiverWatch();
 }
@@ -644,7 +644,8 @@ int main(int argc, char** argv) {
   // TODO(jophba): Mac on Mojave hangs on this command forever.
   openscreen::SetLogFifoOrDie(log_filename);
 
-  PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50});
+  PlatformClientPosix::Create(std::chrono::milliseconds(50),
+                              std::chrono::milliseconds(50));
 
   if (is_receiver_demo) {
     OSP_LOG_INFO << "Running publisher demo...";

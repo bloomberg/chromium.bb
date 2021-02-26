@@ -5,15 +5,13 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_misc.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
-#include <algorithm>
-#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
 
 #include "ash/public/cpp/multi_user_window_manager.h"
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -63,7 +61,6 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/zoom/page_zoom.h"
@@ -234,7 +231,8 @@ FileManagerPrivateGetPreferencesFunction::Run() {
   result.arc_removable_media_access_enabled =
       service->GetBoolean(arc::prefs::kArcHasAccessToRemovableMedia);
 
-  return RespondNow(OneArgument(result.ToValue()));
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
 }
 
 ExtensionFunction::ResponseAction
@@ -325,7 +323,7 @@ FileManagerPrivateInternalZipSelectionFunction::Run() {
 }
 
 void FileManagerPrivateInternalZipSelectionFunction::OnZipDone(bool success) {
-  Respond(OneArgument(std::make_unique<base::Value>(success)));
+  Respond(OneArgument(base::Value(success)));
 }
 
 ExtensionFunction::ResponseAction FileManagerPrivateZoomFunction::Run() {
@@ -404,7 +402,7 @@ void FileManagerPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
     DCHECK(access_token == auth_service_->access_token());
     if (logger)
       logger->Log(logging::LOG_INFO, "CWS OAuth token fetch succeeded.");
-    Respond(OneArgument(std::make_unique<base::Value>(access_token)));
+    Respond(OneArgument(base::Value(access_token)));
   } else {
     if (logger) {
       logger->Log(logging::LOG_ERROR,
@@ -518,7 +516,7 @@ FileManagerPrivateInternalGetMimeTypeFunction::Run() {
 
 void FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType(
     const std::string& mimeType) {
-  Respond(OneArgument(std::make_unique<base::Value>(mimeType)));
+  Respond(OneArgument(base::Value(mimeType)));
 }
 
 FileManagerPrivateGetProvidersFunction::FileManagerPrivateGetProvidersFunction()
@@ -551,16 +549,13 @@ FileManagerPrivateGetProvidersFunction::Run() {
     result_item.multiple_mounts = capabilities.multiple_mounts;
     switch (capabilities.source) {
       case SOURCE_FILE:
-        result_item.source =
-            api::manifest_types::FILE_SYSTEM_PROVIDER_SOURCE_FILE;
+        result_item.source = api::file_manager_private::PROVIDER_SOURCE_FILE;
         break;
       case SOURCE_DEVICE:
-        result_item.source =
-            api::manifest_types::FILE_SYSTEM_PROVIDER_SOURCE_DEVICE;
+        result_item.source = api::file_manager_private::PROVIDER_SOURCE_DEVICE;
         break;
       case SOURCE_NETWORK:
-        result_item.source =
-            api::manifest_types::FILE_SYSTEM_PROVIDER_SOURCE_NETWORK;
+        result_item.source = api::file_manager_private::PROVIDER_SOURCE_NETWORK;
         break;
     }
     result.push_back(std::move(result_item));
@@ -664,7 +659,7 @@ FileManagerPrivateMountCrostiniFunction::Run() {
       Profile::FromBrowserContext(browser_context())->GetOriginalProfile();
   DCHECK(crostini::CrostiniFeatures::Get()->IsEnabled(profile));
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
-      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
+      crostini::ContainerId::GetDefault(),
       base::BindOnce(&FileManagerPrivateMountCrostiniFunction::RestartCallback,
                      this));
   return RespondLater();
@@ -702,9 +697,7 @@ FileManagerPrivateInternalImportCrostiniImageFunction::Run() {
   base::FilePath path = file_system_context->CrackURL(GURL(params->url)).path();
 
   crostini::CrostiniExportImport::GetForProfile(profile)->ImportContainer(
-      crostini::ContainerId{crostini::kCrostiniDefaultVmName,
-                            crostini::kCrostiniDefaultContainerName},
-      path,
+      crostini::ContainerId::GetDefault(), path,
       base::BindOnce(
           [](base::FilePath path, crostini::CrostiniResult result) {
             if (result != crostini::CrostiniResult::SUCCESS) {
@@ -782,10 +775,15 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
       Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
+  // TODO(crbug.com/1057591): Unexpected crashes in
+  // GuestOsSharePath::GetPersistedSharedPaths with null profile_.
+  CHECK(browser_context());
   Profile* profile = Profile::FromBrowserContext(browser_context());
+  CHECK(profile);
 
   auto* guest_os_share_path =
       guest_os::GuestOsSharePath::GetForProfile(profile);
+  CHECK(guest_os_share_path);
   bool first_for_session = params->observe_first_for_session &&
                            guest_os_share_path->GetAndSetFirstForSession();
   auto shared_paths =
@@ -816,8 +814,9 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
     entry->SetBoolean("fileIsDirectory", true);
     entries->Append(std::move(entry));
   }
-  return RespondNow(TwoArguments(
-      std::move(entries), std::make_unique<base::Value>(first_for_session)));
+  return RespondNow(
+      TwoArguments(base::Value::FromUniquePtrValue(std::move(entries)),
+                   base::Value(first_for_session)));
 }
 
 ExtensionFunction::ResponseAction
@@ -832,7 +831,7 @@ FileManagerPrivateInternalGetLinuxPackageInfoFunction::Run() {
           profile, render_frame_host());
 
   crostini::CrostiniPackageService::GetForProfile(profile)->GetLinuxPackageInfo(
-      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
+      crostini::ContainerId::GetDefault(),
       file_system_context->CrackURL(GURL(params->url)),
       base::BindOnce(&FileManagerPrivateInternalGetLinuxPackageInfoFunction::
                          OnGetLinuxPackageInfo,
@@ -873,8 +872,7 @@ FileManagerPrivateInternalInstallLinuxPackageFunction::Run() {
 
   crostini::CrostiniPackageService::GetForProfile(profile)
       ->QueueInstallLinuxPackage(
-          crostini::kCrostiniDefaultVmName,
-          crostini::kCrostiniDefaultContainerName,
+          crostini::ContainerId::GetDefault(),
           file_system_context->CrackURL(GURL(params->url)),
           base::BindOnce(
               &FileManagerPrivateInternalInstallLinuxPackageFunction::
@@ -1088,8 +1086,9 @@ void FileManagerPrivateInternalGetRecentFilesFunction::
             entry_definition_list) {
   DCHECK(entry_definition_list);
 
-  Respond(OneArgument(file_manager::util::ConvertEntryDefinitionListToListValue(
-      *entry_definition_list)));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(
+      file_manager::util::ConvertEntryDefinitionListToListValue(
+          *entry_definition_list))));
 }
 
 ExtensionFunction::ResponseAction
@@ -1104,8 +1103,8 @@ FileManagerPrivateDetectCharacterEncodingFunction::Run() {
 
   std::string encoding;
   bool success = base::DetectEncoding(input, &encoding);
-  return RespondNow(OneArgument(std::make_unique<base::Value>(
-      success ? std::move(encoding) : std::string())));
+  return RespondNow(
+      OneArgument(base::Value(success ? std::move(encoding) : std::string())));
 }
 
 }  // namespace extensions

@@ -5,11 +5,14 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/input_method/assistive_window_controller.h"
+#include "chrome/browser/chromeos/input_method/ui/input_method_menu_item.h"
+#include "chrome/browser/chromeos/input_method/ui/input_method_menu_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -26,20 +29,19 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
+#include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/dummy_text_input_client.h"
-#include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
-#include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/text_input_flags.h"
-#include "ui/chromeos/ime/input_method_menu_item.h"
-#include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/test/event_generator.h"
 
 namespace chromeos {
 namespace input_method {
@@ -102,7 +104,7 @@ class InputMethodEngineBrowserTest
     // extension IME.
     // Note: Even extension is loaded by LoadExtensionAsComponent as above, the
     // IME does not managed by ComponentExtensionIMEManager or it's id won't
-    // start with __comp__. The component extension IME is whitelisted and
+    // start with __comp__. The component extension IME is allowlisted and
     // managed by ComponentExtensionIMEManager, but its framework is same as
     // normal extension IME.
     EXPECT_EQ(3U, extension_imes.size());
@@ -521,7 +523,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        send_key_events_test_script));
 
-    const ui::KeyEvent& key_event = mock_input_context->last_sent_key_event();
+    ASSERT_EQ(1u, mock_input_context->sent_key_events().size());
+    const ui::KeyEvent& key_event =
+        mock_input_context->sent_key_events().back();
     EXPECT_EQ(ui::ET_KEY_PRESSED, key_event.type());
     EXPECT_EQ(L'z', key_event.GetCharacter());
     EXPECT_EQ(ui::DomCode::US_Z, key_event.code());
@@ -547,7 +551,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        send_key_events_test_script));
 
-    const ui::KeyEvent& key_event = mock_input_context->last_sent_key_event();
+    ASSERT_EQ(1u, mock_input_context->sent_key_events().size());
+    const ui::KeyEvent& key_event =
+        mock_input_context->sent_key_events().back();
     EXPECT_EQ(ui::ET_KEY_RELEASED, key_event.type());
     EXPECT_EQ(L'a', key_event.GetCharacter());
     EXPECT_EQ(ui::DomCode::US_Q, key_event.code());
@@ -574,7 +580,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        send_key_events_test_script));
 
-    const ui::KeyEvent& key_event = mock_input_context->last_sent_key_event();
+    ASSERT_EQ(1u, mock_input_context->sent_key_events().size());
+    const ui::KeyEvent& key_event =
+        mock_input_context->sent_key_events().back();
     EXPECT_EQ(ui::ET_KEY_RELEASED, key_event.type());
     EXPECT_EQ(L'a', key_event.GetCharacter());
     EXPECT_EQ(ui::DomCode::US_Q, key_event.code());
@@ -649,6 +657,168 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     const ui::CompositionText& composition_text =
         mock_input_context->last_update_composition_arg().composition_text;
     EXPECT_TRUE(composition_text.text.empty());
+  }
+  {
+    SCOPED_TRACE(
+        "setAssistiveWindowProperties:window_undo visibility_true test");
+
+    const char set_assistive_window_test_script[] = R"(
+      chrome.input.ime.setAssistiveWindowProperties({
+        contextID: engineBridge.getFocusedContextID().contextID,
+        properties: {
+          type: 'undo',
+          visible: true
+        }
+      });
+    )";
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       set_assistive_window_test_script));
+    auto* assistive_window_controller =
+        static_cast<chromeos::input_method::AssistiveWindowController*>(
+            ui::IMEBridge::Get()->GetAssistiveWindowHandler());
+
+    ui::ime::UndoWindow* undo_window =
+        assistive_window_controller->GetUndoWindowForTesting();
+    ASSERT_TRUE(undo_window);
+
+    views::Widget* undo_window_widget = undo_window->GetWidget();
+    ASSERT_TRUE(undo_window_widget);
+    EXPECT_TRUE(undo_window_widget->IsVisible());
+  }
+  {
+    SCOPED_TRACE(
+        "setAssistiveWindowProperties:window_undo visibility_false test");
+
+    const char set_assistive_window_test_script[] = R"(
+      chrome.input.ime.setAssistiveWindowProperties({
+        contextID: engineBridge.getFocusedContextID().contextID,
+        properties: {
+          type: 'undo',
+          visible: false
+        }
+      });
+    )";
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       set_assistive_window_test_script));
+    auto* assistive_window_controller =
+        static_cast<chromeos::input_method::AssistiveWindowController*>(
+            ui::IMEBridge::Get()->GetAssistiveWindowHandler());
+
+    ui::ime::UndoWindow* undo_window =
+        assistive_window_controller->GetUndoWindowForTesting();
+    EXPECT_FALSE(undo_window);
+  }
+  {
+    SCOPED_TRACE(
+        "setAssistiveWindowProperties:window_undo visibility_false test");
+
+    const char set_assistive_window_test_script[] = R"(
+      chrome.input.ime.setAssistiveWindowProperties({
+        contextID: engineBridge.getFocusedContextID().contextID,
+        properties: {
+          type: 'undo',
+          visible: true
+        }
+      });
+    )";
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       set_assistive_window_test_script));
+    auto* assistive_window_controller =
+        static_cast<chromeos::input_method::AssistiveWindowController*>(
+            ui::IMEBridge::Get()->GetAssistiveWindowHandler());
+
+    ui::ime::UndoWindow* undo_window =
+        assistive_window_controller->GetUndoWindowForTesting();
+    ASSERT_TRUE(undo_window);
+    ExtensionTestMessageListener button_listener(
+        "undo button in undo window clicked", false);
+
+    aura::Window* window = browser()->window()->GetNativeWindow();
+    ui::test::EventGenerator event_generator(window->GetRootWindow());
+    views::Button* undo_button = undo_window->GetUndoButtonForTesting();
+    event_generator.MoveMouseTo(undo_button->GetBoundsInScreen().CenterPoint());
+    event_generator.ClickLeftButton();
+
+    ASSERT_TRUE(button_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(button_listener.was_satisfied());
+  }
+  {
+    SCOPED_TRACE(
+        "setAssistiveWindowButtonHighlighted:button_undo highlighted_true "
+        "test");
+    const char set_assistive_window_test_script[] = R"(
+      chrome.input.ime.setAssistiveWindowProperties({
+        contextID: engineBridge.getFocusedContextID().contextID,
+        properties: {
+          type: 'undo',
+          visible: true
+        }
+      });
+    )";
+    const char set_assistive_window_button_highlighted_test_script[] = R"(
+      chrome.input.ime.setAssistiveWindowButtonHighlighted({
+        contextID: engineBridge.getFocusedContextID().contextID,
+        buttonID: 'undo',
+        windowType: 'undo',
+        announceString: 'undo button highlighted',
+        highlighted: true
+      });
+    )";
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       set_assistive_window_test_script));
+    ASSERT_TRUE(content::ExecuteScript(
+        host->host_contents(),
+        set_assistive_window_button_highlighted_test_script));
+    auto* assistive_window_controller =
+        static_cast<chromeos::input_method::AssistiveWindowController*>(
+            ui::IMEBridge::Get()->GetAssistiveWindowHandler());
+
+    ui::ime::UndoWindow* undo_window =
+        assistive_window_controller->GetUndoWindowForTesting();
+    ASSERT_TRUE(undo_window);
+
+    views::Button* undo_button = undo_window->GetUndoButtonForTesting();
+
+    EXPECT_TRUE(undo_button->background() != nullptr);
+  }
+  {
+    SCOPED_TRACE(
+        "setAssistiveWindowButtonHighlighted:button_undo highlighted_false "
+        "test");
+
+    const char set_assistive_window_test_script[] = R"(
+      chrome.input.ime.setAssistiveWindowProperties({
+        contextID: engineBridge.getFocusedContextID().contextID,
+        properties: {
+          type: 'undo',
+          visible: true
+        }
+      });
+    )";
+    const char set_assistive_window_button_highlighted_test_script[] = R"(
+      chrome.input.ime.setAssistiveWindowButtonHighlighted({
+        contextID: engineBridge.getFocusedContextID().contextID,
+        buttonID: 'undo',
+        windowType: 'undo',
+        highlighted: false
+      });
+    )";
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       set_assistive_window_test_script));
+    ASSERT_TRUE(content::ExecuteScript(
+        host->host_contents(),
+        set_assistive_window_button_highlighted_test_script));
+    auto* assistive_window_controller =
+        static_cast<chromeos::input_method::AssistiveWindowController*>(
+            ui::IMEBridge::Get()->GetAssistiveWindowHandler());
+
+    ui::ime::UndoWindow* undo_window =
+        assistive_window_controller->GetUndoWindowForTesting();
+    ASSERT_TRUE(undo_window);
+
+    views::Button* undo_button = undo_window->GetUndoButtonForTesting();
+
+    EXPECT_TRUE(undo_button->background() == nullptr);
   }
   {
     SCOPED_TRACE("setCandidateWindowProperties:visibility test");

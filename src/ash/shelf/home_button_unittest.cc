@@ -30,9 +30,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -45,29 +43,17 @@ ui::GestureEvent CreateGestureEvent(ui::GestureEventDetails details) {
   return ui::GestureEvent(0, 0, ui::EF_NONE, base::TimeTicks(), details);
 }
 
-class HomeButtonTest
-    : public AshTestBase,
-      public testing::WithParamInterface<std::tuple<bool, bool>> {
+class HomeButtonTest : public AshTestBase,
+                       public testing::WithParamInterface<bool> {
  public:
   HomeButtonTest() = default;
   ~HomeButtonTest() override = default;
 
   // AshTestBase:
   void SetUp() override {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
-
-    if (IsHotseatEnabled())
-      enabled_features.push_back(chromeos::features::kShelfHotseat);
-    else
-      disabled_features.push_back(chromeos::features::kShelfHotseat);
-
-    if (IsHideShelfControlsInTabletModeEnabled())
-      enabled_features.push_back(features::kHideShelfControlsInTabletMode);
-    else
-      disabled_features.push_back(features::kHideShelfControlsInTabletMode);
-
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+    scoped_feature_list_.InitWithFeatureState(
+        features::kHideShelfControlsInTabletMode,
+        IsHideShelfControlsInTabletModeEnabled());
 
     AshTestBase::SetUp();
   }
@@ -94,11 +80,7 @@ class HomeButtonTest
         ->OnGestureEvent(event);
   }
 
-  bool IsHotseatEnabled() const { return std::get<0>(GetParam()); }
-
-  bool IsHideShelfControlsInTabletModeEnabled() const {
-    return std::get<1>(GetParam());
-  }
+  bool IsHideShelfControlsInTabletModeEnabled() const { return GetParam(); }
 
   const HomeButton* home_button() const {
     return GetPrimaryShelf()
@@ -123,10 +105,8 @@ class HomeButtonTest
 class HomeButtonAnimationTest : public AshTestBase {
  public:
   HomeButtonAnimationTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kShelfHotseat,
-         features::kHideShelfControlsInTabletMode},
-        {});
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kHideShelfControlsInTabletMode);
   }
   ~HomeButtonAnimationTest() override = default;
 
@@ -163,10 +143,8 @@ class HomeButtonVisibilityWithAccessibilityFeaturesTest
       public ::testing::WithParamInterface<TestAccessibilityFeature> {
  public:
   HomeButtonVisibilityWithAccessibilityFeaturesTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kShelfHotseat,
-         features::kHideShelfControlsInTabletMode},
-        {});
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kHideShelfControlsInTabletMode);
   }
   ~HomeButtonVisibilityWithAccessibilityFeaturesTest() override = default;
 
@@ -182,10 +160,11 @@ class HomeButtonVisibilityWithAccessibilityFeaturesTest
             enabled, A11Y_NOTIFICATION_NONE);
         break;
       case TestAccessibilityFeature::kAutoclick:
-        Shell::Get()->accessibility_controller()->SetAutoclickEnabled(enabled);
+        Shell::Get()->accessibility_controller()->autoclick().SetEnabled(
+            enabled);
         break;
       case TestAccessibilityFeature::kSwitchAccess:
-        Shell::Get()->accessibility_controller()->SetSwitchAccessEnabled(
+        Shell::Get()->accessibility_controller()->switch_access().SetEnabled(
             enabled);
         break;
     }
@@ -197,11 +176,9 @@ class HomeButtonVisibilityWithAccessibilityFeaturesTest
 
 }  // namespace
 
-// The parameters indicate whether the kShelfHotseat and
-// kHideShelfControlsInTabletMode features are enabled.
-INSTANTIATE_TEST_SUITE_P(All,
-                         HomeButtonTest,
-                         testing::Combine(testing::Bool(), testing::Bool()));
+// The parameter indicates whether the kHideShelfControlsInTabletMode feature
+// is enabled.
+INSTANTIATE_TEST_SUITE_P(All, HomeButtonTest, testing::Bool());
 
 TEST_P(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
   Shelf* shelf = GetPrimaryShelf();
@@ -286,9 +263,9 @@ TEST_P(HomeButtonTest, ClickToOpenAppListInTabletMode) {
   ShelfNavigationWidget::TestApi test_api(shelf->navigation_widget());
 
   // Home button is expected to be hidden in tablet mode if shelf controls
-  // should be hidden - this feature is available only with hotseat enabled.
+  // should be hidden.
   const bool should_show_home_button =
-      !(IsHotseatEnabled() && IsHideShelfControlsInTabletModeEnabled());
+      !IsHideShelfControlsInTabletModeEnabled();
   EXPECT_EQ(should_show_home_button, test_api.IsHomeButtonVisible());
   ASSERT_EQ(should_show_home_button, static_cast<bool>(home_button()));
   if (!should_show_home_button)
@@ -329,31 +306,27 @@ TEST_P(HomeButtonTest, ButtonPositionInTabletMode) {
   ShelfNavigationWidget::TestApi test_api(shelf->navigation_widget());
 
   // Home button is expected to be hidden in tablet mode if shelf controls
-  // should be hidden - this feature is available only with hotseat enabled.
+  // should be hidden.
   const bool should_show_home_button =
-      !(IsHotseatEnabled() && IsHideShelfControlsInTabletModeEnabled());
+      !IsHideShelfControlsInTabletModeEnabled();
   EXPECT_EQ(should_show_home_button, test_api.IsHomeButtonVisible());
   EXPECT_EQ(should_show_home_button, static_cast<bool>(home_button()));
 
-  // When hotseat is enabled, home button position changes between in-app shelf
-  // and home shelf, so test in-app when hotseat is enabled.
-  if (IsHotseatEnabled()) {
-    // Wait for the navigation widget's animation.
-    shelf_test_api.RunMessageLoopUntilAnimationsDone(
-        test_api.GetBoundsAnimator());
+  // Wait for the navigation widget's animation.
+  shelf_test_api.RunMessageLoopUntilAnimationsDone(
+      test_api.GetBoundsAnimator());
 
-    EXPECT_EQ(should_show_home_button, test_api.IsHomeButtonVisible());
-    ASSERT_EQ(should_show_home_button, static_cast<bool>(home_button()));
+  EXPECT_EQ(should_show_home_button, test_api.IsHomeButtonVisible());
+  ASSERT_EQ(should_show_home_button, static_cast<bool>(home_button()));
 
-    if (should_show_home_button) {
-      EXPECT_EQ(home_button()->bounds().x(),
-                ShelfConfig::Get()->control_button_edge_spacing(
-                    true /* is_primary_axis_edge */));
-    }
-
-    // Switch to in-app shelf.
-    std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  if (should_show_home_button) {
+    EXPECT_EQ(home_button()->bounds().x(),
+              ShelfConfig::Get()->control_button_edge_spacing(
+                  true /* is_primary_axis_edge */));
   }
+
+  // Switch to in-app shelf.
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   // Wait for the navigation widget's animation.
   shelf_test_api.RunMessageLoopUntilAnimationsDone(
@@ -551,7 +524,7 @@ TEST_P(HomeButtonTest, LongPressGesture) {
             AssistantUiController::Get()->GetModel()->visibility());
 
   AssistantUiController::Get()->CloseUi(
-      chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
+      chromeos::assistant::AssistantExitPoint::kUnspecified);
   // Test long press gesture on secondary display.
   SendGestureEventToSecondaryDisplay(&long_press);
   GetAppListTestHelper()->WaitUntilIdle();
@@ -575,7 +548,7 @@ TEST_P(HomeButtonTest, LongPressGestureInTabletMode) {
   ShelfNavigationWidget::TestApi test_api(
       GetPrimaryShelf()->navigation_widget());
   const bool should_show_home_button =
-      !(IsHotseatEnabled() && IsHideShelfControlsInTabletModeEnabled());
+      !IsHideShelfControlsInTabletModeEnabled();
   EXPECT_EQ(should_show_home_button, test_api.IsHomeButtonVisible());
   ASSERT_EQ(should_show_home_button, static_cast<bool>(home_button()));
 
@@ -607,7 +580,7 @@ TEST_P(HomeButtonTest, LongPressGestureInTabletMode) {
             AssistantUiController::Get()->GetModel()->visibility());
 
   AssistantUiController::Get()->CloseUi(
-      chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
+      chromeos::assistant::AssistantExitPoint::kUnspecified);
 }
 
 TEST_P(HomeButtonTest, LongPressGestureWithSecondaryUser) {
@@ -741,6 +714,88 @@ TEST_P(HomeButtonTest, ClickOnCornerPixel) {
   GetEventGenerator()->ClickLeftButton();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
+}
+
+// Test that for a gesture tap which covers both the shelf navigation widget
+// and the home button, the home button is returned as the event target. When
+// the home button is the only button within the widget,
+// ViewTageterDelegate::TargetForRect() can return the incorrect view. Ensuring
+// the center point of the home button is the same as the content view's center
+// point will avoid this problem. See http://crbug.com/1083713
+TEST_P(HomeButtonTest, GestureHomeButtonHitTest) {
+  ShelfNavigationWidget* nav_widget =
+      AshTestBase::GetPrimaryShelf()->navigation_widget();
+  ShelfNavigationWidget::TestApi test_api(nav_widget);
+  gfx::Rect nav_widget_bounds = nav_widget->GetRootView()->bounds();
+
+  // The home button should be the only shown button.
+  EXPECT_TRUE(test_api.IsHomeButtonVisible());
+  EXPECT_FALSE(test_api.IsBackButtonVisible());
+
+  // The center point of the widget and the center point of the home button
+  // should be equally close to the event location.
+  gfx::Point home_button_center(
+      nav_widget->GetHomeButton()->bounds().CenterPoint());
+  gfx::Point nav_widget_center(nav_widget_bounds.CenterPoint());
+  EXPECT_EQ(home_button_center, nav_widget_center);
+
+  ui::GestureEventDetails details = ui::GestureEventDetails(ui::ET_GESTURE_TAP);
+
+  // Create and test a gesture-event targeting >60% of the navigation widget,
+  // as well as ~60% of the home button.
+  gfx::RectF gesture_event_rect(0, 0, .7f * nav_widget_bounds.width(),
+                                nav_widget_bounds.height());
+  details.set_bounding_box(gesture_event_rect);
+  {
+    const gfx::Point event_center(gesture_event_rect.width() / 2,
+                                  gesture_event_rect.height() / 2);
+
+    ui::GestureEvent gesture(event_center.x(), event_center.y(), 0,
+                             base::TimeTicks(), details);
+
+    ui::EventTargeter* targeter = nav_widget->GetRootView()->GetEventTargeter();
+    ui::EventTarget* target =
+        targeter->FindTargetForEvent(nav_widget->GetRootView(), &gesture);
+    EXPECT_TRUE(target);
+
+    // Check that the event target is the home button.
+    EXPECT_EQ(target, nav_widget->GetHomeButton());
+  }
+
+  // Test a gesture event centered on the top corner of the home button.
+  {
+    const gfx::Point event_center(nav_widget->GetHomeButton()->bounds().x(),
+                                  nav_widget->GetHomeButton()->bounds().y());
+
+    ui::GestureEvent gesture(event_center.x(), event_center.y(), 0,
+                             base::TimeTicks(), details);
+
+    ui::EventTargeter* targeter = nav_widget->GetRootView()->GetEventTargeter();
+    ui::EventTarget* target =
+        targeter->FindTargetForEvent(nav_widget->GetRootView(), &gesture);
+    EXPECT_TRUE(target);
+
+    // Check that the event target is the home button.
+    EXPECT_EQ(target, nav_widget->GetHomeButton());
+  }
+
+  // Test a gesture event centered to the left of the nav_widget's center
+  // point.
+  {
+    const gfx::Point event_center(nav_widget_center.x() - 1,
+                                  nav_widget_center.y());
+
+    ui::GestureEvent gesture(event_center.x(), event_center.y(), 0,
+                             base::TimeTicks(), details);
+
+    ui::EventTargeter* targeter = nav_widget->GetRootView()->GetEventTargeter();
+    ui::EventTarget* target =
+        targeter->FindTargetForEvent(nav_widget->GetRootView(), &gesture);
+    EXPECT_TRUE(target);
+
+    // Check that the event target is the home button.
+    EXPECT_EQ(target, nav_widget->GetHomeButton());
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(

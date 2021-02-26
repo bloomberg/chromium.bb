@@ -7,7 +7,7 @@
  */
 
 Polymer({
-  is: 'oobe-welcome-md',
+  is: 'oobe-welcome-element',
 
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
@@ -80,6 +80,10 @@ Polymer({
   /** Overridden from LoginScreenBehavior. */
   EXTERNAL_API: [
     'onInputMethodIdSetFromBackend',
+    'refreshA11yInfo',
+    'showDemoModeConfirmationDialog',
+    'showEditRequisitionDialog',
+    'showRemoraRequisitionDialog',
   ],
 
   /**
@@ -92,10 +96,6 @@ Polymer({
   ready() {
     this.initializeLoginScreen('WelcomeScreen', {
       resetAllowed: true,
-      enableDebuggingAllowed: true,
-      enterDemoModeAllowed: true,
-      noAnimatedTransition: true,
-      postponeEnrollmentAllowed: true,
     });
     this.updateLocalizedContent();
   },
@@ -106,21 +106,10 @@ Polymer({
    * @param {Object} data Screen init payload.
    */
   onBeforeShow(data) {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
-
     this.debuggingLinkVisible_ =
         data && 'isDeveloperMode' in data && data['isDeveloperMode'];
 
-    if (this.fullScreenDialog)
-      this.$.welcomeScreen.fullScreenDialog = true;
-
-    this.$.welcomeScreen.onBeforeShow();
-    let dialogs = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
-    for (let dialog of dialogs)
-      dialog.onBeforeShow();
+    cr.ui.login.invokePolymerMethod(this.$.welcomeScreen, 'onBeforeShow');
 
     let activeScreen = this.getActiveScreen_();
     if (activeScreen.show)
@@ -195,8 +184,9 @@ Polymer({
     if (configuration.welcomeNext)
       this.onWelcomeNextButtonClicked_();
 
-    if (configuration.enableDemoMode)
-      Oobe.getInstance().startDemoModeFlow();
+    if (configuration.enableDemoMode) {
+      this.userActed('setupDemoModeGesture');
+    }
 
     this.configuration_applied_ = true;
   },
@@ -292,7 +282,7 @@ Polymer({
    * @private
    */
   onEnableDebuggingClicked_() {
-    cr.ui.Oobe.handleAccelerator(ACCELERATOR_ENABLE_DEBBUGING);
+    this.userActed('enableDebugging');
   },
 
   /**
@@ -400,6 +390,81 @@ Polymer({
     this.onKeyboardsChanged_();
   },
 
+  /**
+   * Refreshes a11y menu state.
+   * @param {!OobeTypes.A11yStatuses} data New dictionary with a11y features
+   *     state.
+   */
+  refreshA11yInfo(data) {
+    this.a11yStatus = data;
+  },
+
+  /**
+   * Shows confirmation dialog for starting Demo mode
+   */
+  showDemoModeConfirmationDialog() {
+    if (!this.enableDemoModeDialog_) {
+      this.enableDemoModeDialog_ =
+          new cr.ui.dialogs.ConfirmDialog(document.body);
+      this.enableDemoModeDialog_.setOkLabel(
+          loadTimeData.getString('enableDemoModeDialogConfirm'));
+      this.enableDemoModeDialog_.setCancelLabel(
+          loadTimeData.getString('enableDemoModeDialogCancel'));
+    }
+    this.enableDemoModeDialog_.showWithTitle(
+        loadTimeData.getString('enableDemoModeDialogTitle'),
+        loadTimeData.getString('enableDemoModeDialogText'), () => {
+          this.userActed('setupDemoMode');
+        });
+  },
+
+  onSetupDemoModeGesture() {
+    this.userActed('setupDemoModeGesture');
+  },
+
+  /**
+   * Shows the device requisition prompt.
+   */
+  showEditRequisitionDialog(requisition) {
+    if (!this.deviceRequisitionDialog_) {
+      this.deviceRequisitionDialog_ =
+          new cr.ui.dialogs.PromptDialog(document.body);
+      this.deviceRequisitionDialog_.setOkLabel(
+          loadTimeData.getString('deviceRequisitionPromptOk'));
+      this.deviceRequisitionDialog_.setCancelLabel(
+          loadTimeData.getString('deviceRequisitionPromptCancel'));
+    }
+    this.deviceRequisitionDialog_.show(
+        loadTimeData.getString('deviceRequisitionPromptText'), requisition,
+        function(value) {
+          chrome.send(
+              'WelcomeScreen.setDeviceRequisition',
+              [value == '' ? 'none' : value]);
+        });
+  },
+
+  /**
+   * Shows the special remora/shark device requisition prompt.
+   */
+  showRemoraRequisitionDialog() {
+    if (!this.deviceRequisitionRemoraDialog_) {
+      this.deviceRequisitionRemoraDialog_ =
+          new cr.ui.dialogs.ConfirmDialog(document.body);
+      this.deviceRequisitionRemoraDialog_.setOkLabel(
+          loadTimeData.getString('deviceRequisitionRemoraPromptOk'));
+      this.deviceRequisitionRemoraDialog_.setCancelLabel(
+          loadTimeData.getString('deviceRequisitionRemoraPromptCancel'));
+    }
+    this.deviceRequisitionRemoraDialog_.show(
+        loadTimeData.getString('deviceRequisitionRemoraPromptText'),
+        function() {  // onShow
+          chrome.send('WelcomeScreen.setDeviceRequisition', ['remora']);
+        },
+        function() {  // onCancel
+          chrome.send('WelcomeScreen.setDeviceRequisition', ['none']);
+        });
+  },
+
   onKeyboardsChanged_() {
     this.currentKeyboard = getSelectedTitle(this.keyboards);
   },
@@ -435,7 +500,11 @@ Polymer({
   onA11yOptionChanged_(event) {
     var a11ytarget = /** @type {{chromeMessage: string, checked: boolean}} */ (
         event.currentTarget);
-    chrome.send(a11ytarget.chromeMessage, [a11ytarget.checked]);
+    if (a11ytarget.checked) {
+      this.userActed(a11ytarget.id + '-enable');
+    } else {
+      this.userActed(a11ytarget.id + '-disable');
+    }
   },
 
   /** ******************** Timezone section ******************* */

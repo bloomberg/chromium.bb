@@ -8,9 +8,8 @@
 
 #include "ash/public/ash_interfaces.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,9 +30,9 @@ bool TouchSupportAvailable(const display::Display& display) {
 // TODO(felixe): More context at crbug.com/738885
 const uint16_t kDeviceIds[] = {0x0457, 0x266e, 0x222a};
 
-// Returns true if |vendor_id| is a valid vendor id that may be made the primary
+// Returns true if `vendor_id` is a valid vendor id that may be made the primary
 // display.
-bool IsWhiteListedVendorId(uint16_t vendor_id) {
+bool IsAllowListedVendorId(uint16_t vendor_id) {
   return base::Contains(kDeviceIds, vendor_id);
 }
 
@@ -58,8 +57,8 @@ void OobeDisplayChooser::TryToPlaceUiOnTouchDisplay() {
       display::Screen::GetScreen()->GetPrimaryDisplay();
 
   if (primary_display.is_valid() && !TouchSupportAvailable(primary_display)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&OobeDisplayChooser::MaybeMoveToTouchDisplay,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&OobeDisplayChooser::MaybeMoveToTouchDisplay,
                                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
@@ -84,7 +83,7 @@ void OobeDisplayChooser::MoveToTouchDisplay() {
       ui::DeviceDataManager::GetInstance();
   for (const ui::TouchscreenDevice& device :
        device_data_manager->GetTouchscreenDevices()) {
-    if (IsWhiteListedVendorId(device.vendor_id) &&
+    if (IsAllowListedVendorId(device.vendor_id) &&
         device.target_display_id != display::kInvalidDisplayId) {
       auto config_properties = ash::mojom::DisplayConfigProperties::New();
       config_properties->set_primary = true;

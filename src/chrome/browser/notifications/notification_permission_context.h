@@ -94,13 +94,15 @@ class NotificationPermissionContext
       content::BrowserContext* browser_context);
   ~NotificationPermissionContext() override;
 
+  static void SetBlockNewNotificationRequests(
+      content::WebContents* web_contents,
+      bool value);
+
   // PermissionContextBase implementation.
   ContentSetting GetPermissionStatusInternal(
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
-  void ResetPermission(const GURL& requesting_origin,
-                       const GURL& embedder_origin) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationPermissionContextTest,
@@ -122,9 +124,6 @@ class NotificationPermissionContext
       const GURL& embedding_origin,
       bool user_gesture,
       permissions::BrowserPermissionCallback callback) override;
-  void UpdateContentSetting(const GURL& requesting_origin,
-                            const GURL& embedder_origin,
-                            ContentSetting content_setting) override;
   bool IsRestrictedToSecureOrigins() const override;
 
   base::WeakPtrFactory<NotificationPermissionContext> weak_factory_ui_thread_{

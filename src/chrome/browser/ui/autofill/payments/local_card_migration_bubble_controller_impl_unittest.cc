@@ -281,15 +281,25 @@ TEST_F(LocalCardMigrationBubbleControllerImplTest,
           Bucket(AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_SHOWN, 1)));
 }
 
+class LocalCardMigrationBubbleControllerImplTestWithStickyPaymentsBubble
+    : public LocalCardMigrationBubbleControllerImplTest {
+ public:
+  LocalCardMigrationBubbleControllerImplTestWithStickyPaymentsBubble() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAutofillEnableStickyPaymentsBubble);
+  }
+  ~LocalCardMigrationBubbleControllerImplTestWithStickyPaymentsBubble()
+      override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Ensures the bubble should still stick around even if the time since bubble
 // showing is longer than kCardBubbleSurviveNavigationTime (5 seconds) when the
 // feature is enabled.
-TEST_F(LocalCardMigrationBubbleControllerImplTest,
+TEST_F(LocalCardMigrationBubbleControllerImplTestWithStickyPaymentsBubble,
        StickyBubble_ShouldNotDismissUponNavigation) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAutofillEnableStickyPaymentsBubble);
-
   ShowBubble();
   base::HistogramTester histogram_tester;
   controller()->set_elapsed(base::TimeDelta::FromSeconds(10));
@@ -307,19 +317,11 @@ class LocalCardMigrationBubbleLoggingTest
     : public LocalCardMigrationBubbleControllerImplTest,
       public ::testing::WithParamInterface<bool> {
  public:
-  LocalCardMigrationBubbleLoggingTest() = default;
-  ~LocalCardMigrationBubbleLoggingTest() override = default;
-
-  void SetUp() override {
-    LocalCardMigrationBubbleControllerImplTest::SetUp();
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kAutofillEnableFixedPaymentsBubbleLogging);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kAutofillEnableFixedPaymentsBubbleLogging);
-    }
+  LocalCardMigrationBubbleLoggingTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kAutofillEnableFixedPaymentsBubbleLogging, GetParam());
   }
+  ~LocalCardMigrationBubbleLoggingTest() override = default;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -379,6 +381,21 @@ TEST_P(LocalCardMigrationBubbleLoggingTest, FirstShow_BubbleLostFocus) {
     histogram_tester.ExpectUniqueSample(
         "Autofill.LocalCardMigrationBubbleResult.FirstShow",
         AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_LOST_FOCUS, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow", 0);
+  }
+}
+
+TEST_P(LocalCardMigrationBubbleLoggingTest, FirstShow_Unknown) {
+  base::HistogramTester histogram_tester;
+  ShowBubble();
+  CloseBubble(PaymentsBubbleClosedReason::kUnknown);
+
+  if (GetParam()) {
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_RESULT_UNKNOWN, 1);
   } else {
     histogram_tester.ExpectTotalCount(
         "Autofill.LocalCardMigrationBubbleResult.FirstShow", 0);
@@ -461,6 +478,27 @@ TEST_P(LocalCardMigrationBubbleLoggingTest, Reshows_BubbleLostFocus) {
     histogram_tester.ExpectUniqueSample(
         "Autofill.LocalCardMigrationBubbleResult.Reshows",
         AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_LOST_FOCUS, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.Reshows", 0);
+  }
+}
+
+TEST_P(LocalCardMigrationBubbleLoggingTest, Reshows_Unknown) {
+  base::HistogramTester histogram_tester;
+  ShowBubble();
+  CloseAndReshowBubble();
+  CloseBubble(PaymentsBubbleClosedReason::kUnknown);
+
+  if (GetParam()) {
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_NOT_INTERACTED, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.Reshows",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_RESULT_UNKNOWN, 1);
   } else {
     histogram_tester.ExpectTotalCount(
         "Autofill.LocalCardMigrationBubbleResult.FirstShow", 0);

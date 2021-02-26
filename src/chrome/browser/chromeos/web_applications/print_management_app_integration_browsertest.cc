@@ -27,11 +27,8 @@ IN_PROC_BROWSER_TEST_P(PrintManagementAppIntegrationTest,
                        PrintManagementAppInLauncher) {
   const GURL url(chromeos::kChromeUIPrintManagementAppUrl);
   EXPECT_NO_FATAL_FAILURE(ExpectSystemWebAppValid(
-      web_app::SystemAppType::PRINT_MANAGEMENT, url, "Print Management App"));
+      web_app::SystemAppType::PRINT_MANAGEMENT, url, "Print Jobs"));
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         PrintManagementAppIntegrationTest,
-                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
-                                           web_app::ProviderType::kWebApps),
-                         web_app::ProviderTypeParamToString);
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_WEB_APP_INFO_INSTALL_P(
+    PrintManagementAppIntegrationTest);

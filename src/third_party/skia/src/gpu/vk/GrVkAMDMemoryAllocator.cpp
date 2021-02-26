@@ -19,7 +19,8 @@ sk_sp<GrVkMemoryAllocator> GrVkAMDMemoryAllocator::Make(VkInstance instance,
                                                         VkDevice device,
                                                         uint32_t physicalDeviceVersion,
                                                         const GrVkExtensions* extensions,
-                                                        sk_sp<const GrVkInterface> interface) {
+                                                        sk_sp<const GrVkInterface> interface,
+                                                        const GrVkCaps* caps) {
     return nullptr;
 }
 #else
@@ -29,7 +30,8 @@ sk_sp<GrVkMemoryAllocator> GrVkAMDMemoryAllocator::Make(VkInstance instance,
                                                         VkDevice device,
                                                         uint32_t physicalDeviceVersion,
                                                         const GrVkExtensions* extensions,
-                                                        sk_sp<const GrVkInterface> interface) {
+                                                        sk_sp<const GrVkInterface> interface,
+                                                        const GrVkCaps* caps) {
 #define GR_COPY_FUNCTION(NAME) functions.vk##NAME = interface->fFunctions.f##NAME
 #define GR_COPY_FUNCTION_KHR(NAME) functions.vk##NAME##KHR = interface->fFunctions.f##NAME
 
@@ -84,22 +86,24 @@ sk_sp<GrVkMemoryAllocator> GrVkAMDMemoryAllocator::Make(VkInstance instance,
     VmaAllocator allocator;
     vmaCreateAllocator(&info, &allocator);
 
-    return sk_sp<GrVkAMDMemoryAllocator>(new GrVkAMDMemoryAllocator(allocator,
-                                                                    std::move(interface)));
+    return sk_sp<GrVkAMDMemoryAllocator>(new GrVkAMDMemoryAllocator(
+            allocator, std::move(interface), caps->preferCachedCpuMemory()));
 }
 
 GrVkAMDMemoryAllocator::GrVkAMDMemoryAllocator(VmaAllocator allocator,
-                                               sk_sp<const GrVkInterface> interface)
+                                               sk_sp<const GrVkInterface> interface,
+                                               bool preferCachedCpuMemory)
         : fAllocator(allocator)
-        , fInterface(std::move(interface)) {}
+        , fInterface(std::move(interface))
+        , fPreferCachedCpuMemory(preferCachedCpuMemory) {}
 
 GrVkAMDMemoryAllocator::~GrVkAMDMemoryAllocator() {
     vmaDestroyAllocator(fAllocator);
     fAllocator = VK_NULL_HANDLE;
 }
 
-bool GrVkAMDMemoryAllocator::allocateMemoryForImage(VkImage image, AllocationPropertyFlags flags,
-                                                    GrVkBackendMemory* backendMemory) {
+VkResult GrVkAMDMemoryAllocator::allocateImageMemory(VkImage image, AllocationPropertyFlags flags,
+                                                     GrVkBackendMemory* backendMemory) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     VmaAllocationCreateInfo info;
     info.flags = 0;
@@ -124,16 +128,15 @@ bool GrVkAMDMemoryAllocator::allocateMemoryForImage(VkImage image, AllocationPro
 
     VmaAllocation allocation;
     VkResult result = vmaAllocateMemoryForImage(fAllocator, image, &info, &allocation, nullptr);
-    if (VK_SUCCESS != result) {
-        return false;
+    if (VK_SUCCESS == result) {
+        *backendMemory = (GrVkBackendMemory)allocation;
     }
-    *backendMemory = (GrVkBackendMemory)allocation;
-    return true;
+    return result;
 }
 
-bool GrVkAMDMemoryAllocator::allocateMemoryForBuffer(VkBuffer buffer, BufferUsage usage,
-                                                     AllocationPropertyFlags flags,
-                                                     GrVkBackendMemory* backendMemory) {
+VkResult GrVkAMDMemoryAllocator::allocateBufferMemory(VkBuffer buffer, BufferUsage usage,
+                                                      AllocationPropertyFlags flags,
+                                                      GrVkBackendMemory* backendMemory) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     VmaAllocationCreateInfo info;
     info.flags = 0;
@@ -153,9 +156,12 @@ bool GrVkAMDMemoryAllocator::allocateMemoryForBuffer(VkBuffer buffer, BufferUsag
             info.preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
             break;
         case BufferUsage::kCpuWritesGpuReads:
-            // First attempt to try memory is also cached
-            info.requiredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                 VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+            info.requiredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+            if (fPreferCachedCpuMemory) {
+                // First we will attempt to use memory that is also cached. If there is no cached
+                // version we will fall back to non cached.
+                info.requiredFlags |= VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+            }
             info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
             break;
         case BufferUsage::kGpuWritesCpuReads:
@@ -187,12 +193,11 @@ bool GrVkAMDMemoryAllocator::allocateMemoryForBuffer(VkBuffer buffer, BufferUsag
             result = vmaAllocateMemoryForBuffer(fAllocator, buffer, &info, &allocation, nullptr);
         }
     }
-    if (VK_SUCCESS != result) {
-        return false;
+    if (VK_SUCCESS == result) {
+        *backendMemory = (GrVkBackendMemory)allocation;
     }
 
-    *backendMemory = (GrVkBackendMemory)allocation;
-    return true;
+    return result;
 }
 
 void GrVkAMDMemoryAllocator::freeMemory(const GrVkBackendMemory& memoryHandle) {
@@ -225,12 +230,10 @@ void GrVkAMDMemoryAllocator::getAllocInfo(const GrVkBackendMemory& memoryHandle,
     alloc->fBackendMemory = memoryHandle;
 }
 
-void* GrVkAMDMemoryAllocator::mapMemory(const GrVkBackendMemory& memoryHandle) {
+VkResult GrVkAMDMemoryAllocator::mapMemory(const GrVkBackendMemory& memoryHandle, void** data) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     const VmaAllocation allocation = (const VmaAllocation)memoryHandle;
-    void* mapPtr;
-    vmaMapMemory(fAllocator, allocation, &mapPtr);
-    return mapPtr;
+    return vmaMapMemory(fAllocator, allocation, data);
 }
 
 void GrVkAMDMemoryAllocator::unmapMemory(const GrVkBackendMemory& memoryHandle) {
@@ -239,18 +242,18 @@ void GrVkAMDMemoryAllocator::unmapMemory(const GrVkBackendMemory& memoryHandle) 
     vmaUnmapMemory(fAllocator, allocation);
 }
 
-void GrVkAMDMemoryAllocator::flushMappedMemory(const GrVkBackendMemory& memoryHandle,
-                                               VkDeviceSize offset, VkDeviceSize size) {
+VkResult GrVkAMDMemoryAllocator::flushMemory(const GrVkBackendMemory& memoryHandle,
+                                             VkDeviceSize offset, VkDeviceSize size) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     const VmaAllocation allocation = (const VmaAllocation)memoryHandle;
-    vmaFlushAllocation(fAllocator, allocation, offset, size);
+    return vmaFlushAllocation(fAllocator, allocation, offset, size);
 }
 
-void GrVkAMDMemoryAllocator::invalidateMappedMemory(const GrVkBackendMemory& memoryHandle,
-                                                    VkDeviceSize offset, VkDeviceSize size) {
+VkResult GrVkAMDMemoryAllocator::invalidateMemory(const GrVkBackendMemory& memoryHandle,
+                                                  VkDeviceSize offset, VkDeviceSize size) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     const VmaAllocation allocation = (const VmaAllocation)memoryHandle;
-    vmaFlushAllocation(fAllocator, allocation, offset, size);
+    return vmaFlushAllocation(fAllocator, allocation, offset, size);
 }
 
 uint64_t GrVkAMDMemoryAllocator::totalUsedMemory() const {

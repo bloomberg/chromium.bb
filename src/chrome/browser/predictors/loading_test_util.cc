@@ -8,9 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "net/http/http_response_headers.h"
+#include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_test_util.h"
 
 namespace {
 
@@ -95,9 +94,11 @@ NavigationID CreateNavigationID(SessionID tab_id,
 PageRequestSummary CreatePageRequestSummary(
     const std::string& main_frame_url,
     const std::string& initial_url,
-    const std::vector<blink::mojom::ResourceLoadInfoPtr>& resource_load_infos) {
+    const std::vector<blink::mojom::ResourceLoadInfoPtr>& resource_load_infos,
+    base::TimeTicks navigation_started) {
   NavigationID navigation_id;
   navigation_id.main_frame_url = GURL(main_frame_url);
+  navigation_id.creation_time = navigation_started;
   PageRequestSummary summary(navigation_id);
   summary.initial_url = GURL(initial_url);
   for (const auto& resource_load_info : resource_load_infos)

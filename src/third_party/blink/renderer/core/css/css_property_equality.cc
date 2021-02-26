@@ -184,6 +184,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.LightingColor() == b.LightingColor();
     case CSSPropertyID::kLineHeight:
       return a.SpecifiedLineHeight() == b.SpecifiedLineHeight();
+    case CSSPropertyID::kTabSize:
+      return a.GetTabSize() == b.GetTabSize();
     case CSSPropertyID::kListStyleImage:
       return DataEquivalent(a.ListStyleImage(), b.ListStyleImage());
     case CSSPropertyID::kMarginBottom:
@@ -387,6 +389,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.ContainIntrinsicSize() == b.ContainIntrinsicSize();
     case CSSPropertyID::kAspectRatio:
       return a.AspectRatio() == b.AspectRatio();
+    case CSSPropertyID::kMathDepth:
+      return a.MathDepth() == b.MathDepth();
     default:
       NOTREACHED();
       return true;

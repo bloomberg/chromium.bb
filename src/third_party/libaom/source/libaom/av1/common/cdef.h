@@ -40,11 +40,20 @@ extern "C" {
 int av1_cdef_compute_sb_list(const CommonModeInfoParams *const mi_params,
                              int mi_row, int mi_col, cdef_list *dlist,
                              BLOCK_SIZE bsize);
-void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd);
 
-void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
-                     AV1_COMMON *cm, MACROBLOCKD *xd, int pick_method,
-                     int rdmult);
+/*!\brief Function for applying CDEF to a frame
+ *
+ * \ingroup in_loop_cdef
+ * This function applies CDEF to a frame.
+ *
+ * \param[in, out]  frame       Compressed frame buffer
+ * \param[in, out]  cm          Pointer to top level common structure
+ * \param[in]       xd          Pointer to common current coding block structure
+ *
+ * \return Nothing is returned. Instead, the filtered frame is output in
+ * \c frame.
+ */
+void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd);
 
 #ifdef __cplusplus
 }  // extern "C"

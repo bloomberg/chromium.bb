@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.feed;
 import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -34,11 +34,11 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.components.prefs.PrefService;
 
 /**
  * Unit tests for {@link StreamLifecycleManager}.
@@ -53,7 +53,7 @@ public class NtpStreamLifecycleManagerTest {
     @Mock
     private Stream mStream;
     @Mock
-    private PrefServiceBridge mPrefServiceBridge;
+    private PrefService mPrefService;
 
     private NtpStreamLifecycleManager mNtpStreamLifecycleManager;
 
@@ -61,10 +61,10 @@ public class NtpStreamLifecycleManagerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        // Initialize a test instance for PrefServiceBridge.
-        when(mPrefServiceBridge.getBoolean(anyInt())).thenReturn(true);
-        doNothing().when(mPrefServiceBridge).setBoolean(anyInt(), anyBoolean());
-        PrefServiceBridge.setInstanceForTesting(mPrefServiceBridge);
+        // Initialize a test instance for PrefService.
+        when(mPrefService.getBoolean(anyString())).thenReturn(true);
+        doNothing().when(mPrefService).setBoolean(anyString(), anyBoolean());
+        NtpStreamLifecycleManager.setPrefServiceForTesting(mPrefService);
 
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.CREATED);
         mNtpStreamLifecycleManager = new NtpStreamLifecycleManager(mStream, mActivity, mTab);
@@ -73,7 +73,7 @@ public class NtpStreamLifecycleManagerTest {
 
     @After
     public void tearDown() {
-        PrefServiceBridge.setInstanceForTesting(null);
+        NtpStreamLifecycleManager.setPrefServiceForTesting(null);
     }
 
     @Test
@@ -104,7 +104,7 @@ public class NtpStreamLifecycleManagerTest {
     @SmallTest
     public void testShow_ArticlesNotVisible() {
         // Verify that onShow is not called when articles are set hidden by the user.
-        when(mPrefServiceBridge.getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)).thenReturn(false);
+        when(mPrefService.getBoolean(Pref.ARTICLES_LIST_VISIBLE)).thenReturn(false);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
         when((mTab).isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
@@ -112,7 +112,7 @@ public class NtpStreamLifecycleManagerTest {
         verify(mStream, times(0)).onShow();
 
         // Verify that onShow is called when articles are set shown by the user.
-        when(mPrefServiceBridge.getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)).thenReturn(true);
+        when(mPrefService.getBoolean(Pref.ARTICLES_LIST_VISIBLE)).thenReturn(true);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         verify(mStream, times(1)).onShow();
 
@@ -123,123 +123,17 @@ public class NtpStreamLifecycleManagerTest {
 
     @Test
     @SmallTest
-    public void testActivate() {
-        // Verify that stream is not active before activity resumed.
-        when((mTab).isHidden()).thenReturn(false);
-        when(mTab.isUserInteractable()).thenReturn(true);
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
-        verify(mStream, times(1)).onShow();
-        verify(mStream, times(0)).onActive();
-
-        // Verify that stream is not active before tab is user interactable.
-        when(mTab.isUserInteractable()).thenReturn(false);
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
-        verify(mStream, times(1)).onShow();
-        verify(mStream, times(0)).onActive();
-
-        // Verify that stream is active when tab is user interactable and activity is resumed.
-        when(mTab.isUserInteractable()).thenReturn(true);
-        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, true);
-        verify(mStream, times(1)).onShow();
-        verify(mStream, times(1)).onActive();
-
-        // When the Stream is active, it won't call Stream#onShow() again.
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
-        verify(mStream, times(1)).onShow();
-
-        // When the Stream is active, it won't call Stream#onActive() again.
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
-        verify(mStream, times(1)).onActive();
-    }
-
-    @Test
-    @SmallTest
-    public void testActivateAfterCreateAndHideAfterActivate() {
-        // Activate the stream from created state.
-        InOrder inOrder = Mockito.inOrder(mStream);
-        when((mTab).isHidden()).thenReturn(false);
-        when(mTab.isUserInteractable()).thenReturn(true);
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
-        inOrder.verify(mStream).onShow();
-        inOrder.verify(mStream).onActive();
-        verify(mStream, times(1)).onShow();
-        verify(mStream, times(1)).onActive();
-
-        // Verify that the stream is deactivated before hidden.
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STOPPED);
-        inOrder.verify(mStream).onInactive();
-        inOrder.verify(mStream).onHide();
-        verify(mStream, times(1)).onShow();
-        verify(mStream, times(1)).onActive();
-        verify(mStream, times(1)).onInactive();
-        verify(mStream, times(1)).onHide();
-    }
-
-    @Test
-    @SmallTest
-    public void testDeactivate() {
-        // Verify that the Stream cannot be set inactive from created.
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.PAUSED);
-        verify(mStream, times(0)).onInactive();
-
-        // Show the stream.
-        when((mTab).isHidden()).thenReturn(false);
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
-        verify(mStream, times(1)).onShow();
-
-        // Verify that the Stream cannot be set inactive from shown.
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.PAUSED);
-        verify(mStream, times(0)).onInactive();
-
-        // Activate the stream.
-        when(mTab.isUserInteractable()).thenReturn(true);
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
-        verify(mStream, times(1)).onActive();
-
-        // Verify that the Stream can be set inactive from active on activity paused.
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.PAUSED);
-        verify(mStream, times(1)).onInactive();
-
-        // When the Stream is inactive, it won't call Stream#onInactive() again.
-        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, false);
-        verify(mStream, times(1)).onInactive();
-
-        // Verify that the Stream cannot be set shown from inactive.
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
-        verify(mStream, times(1)).onShow();
-
-        // Verify that the Stream can be set active from inactive.
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
-        verify(mStream, times(2)).onActive();
-
-        // Verify that the Stream can be set inactive from active on tab interactability changed.
-        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, false);
-        verify(mStream, times(2)).onInactive();
-    }
-
-    @Test
-    @SmallTest
     public void testHideFromActivityStopped() {
         // Activate the Stream.
         when((mTab).isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
         verify(mStream, times(1)).onShow();
-        verify(mStream, times(1)).onActive();
 
         // Deactivate the Stream.
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.PAUSED);
-        verify(mStream, times(1)).onInactive();
 
         // Verify that the Stream can be set hidden from inactive.
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STOPPED);
-        verify(mStream, times(1)).onHide();
-
-        // Verify that the Stream cannot be set inactive from hidden.
-        ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.PAUSED);
-        verify(mStream, times(1)).onInactive();
-
-        // When the Stream is hidden, it won't call Stream#onHide() again.
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STOPPED);
         verify(mStream, times(1)).onHide();
     }
@@ -252,12 +146,10 @@ public class NtpStreamLifecycleManagerTest {
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
         verify(mStream, times(1)).onShow();
 
-        // Verify that onActive and onInactive are skipped when Stream is set hidden from shown.
+        // Hide the stream.
         mNtpStreamLifecycleManager.getTabObserverForTesting().onHidden(
                 mTab, TabHidingType.CHANGED_TABS);
         verify(mStream, times(1)).onShow();
-        verify(mStream, times(0)).onActive();
-        verify(mStream, times(0)).onInactive();
         verify(mStream, times(1)).onHide();
     }
 
@@ -284,8 +176,6 @@ public class NtpStreamLifecycleManagerTest {
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STOPPED);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.DESTROYED);
         verify(mStream, times(0)).onShow();
-        verify(mStream, times(0)).onActive();
-        verify(mStream, times(0)).onInactive();
         verify(mStream, times(0)).onHide();
         verify(mStream, times(1)).onDestroy();
     }
@@ -300,16 +190,12 @@ public class NtpStreamLifecycleManagerTest {
         // Activate the Stream.
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
         inOrder.verify(mStream).onShow();
-        inOrder.verify(mStream).onActive();
         verify(mStream, times(1)).onShow();
-        verify(mStream, times(1)).onActive();
 
         // Verify that onInactive and onHide is called before onDestroy.
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.DESTROYED);
-        inOrder.verify(mStream).onInactive();
         inOrder.verify(mStream).onHide();
         inOrder.verify(mStream).onDestroy();
-        verify(mStream, times(1)).onInactive();
         verify(mStream, times(1)).onHide();
         verify(mStream, times(1)).onDestroy();
     }
@@ -325,42 +211,30 @@ public class NtpStreamLifecycleManagerTest {
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
         inOrder.verify(mStream).onShow();
-        inOrder.verify(mStream).onActive();
         verify(mStream, times(1)).onShow();
-        verify(mStream, times(1)).onActive();
 
         // On activity pause and then resume (simulates multi-window mode).
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.PAUSED);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
-        inOrder.verify(mStream).onInactive();
-        inOrder.verify(mStream).onActive();
-        verify(mStream, times(1)).onInactive();
-        verify(mStream, times(2)).onActive();
 
         // On activity stop (simulates app switched to background).
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.PAUSED);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STOPPED);
-        inOrder.verify(mStream).onInactive();
         inOrder.verify(mStream).onHide();
-        verify(mStream, times(2)).onInactive();
         verify(mStream, times(1)).onHide();
 
         // On activity start (simulates app switched back to foreground).
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
         inOrder.verify(mStream).onShow();
-        inOrder.verify(mStream).onActive();
         verify(mStream, times(2)).onShow();
-        verify(mStream, times(3)).onActive();
 
         // On activity pause, stop, and destroy (simulates app removed from Android recents).
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.PAUSED);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STOPPED);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.DESTROYED);
-        inOrder.verify(mStream).onInactive();
         inOrder.verify(mStream).onHide();
         inOrder.verify(mStream).onDestroy();
-        verify(mStream, times(3)).onInactive();
         verify(mStream, times(2)).onHide();
         verify(mStream, times(1)).onDestroy();
     }
@@ -386,29 +260,21 @@ public class NtpStreamLifecycleManagerTest {
         // On tab interactable.
         when(mTab.isUserInteractable()).thenReturn(true);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, true);
-        inOrder.verify(mStream).onActive();
-        verify(mStream, times(1)).onActive();
 
         // On tab un-interactable (simulates user enter the tab switcher).
         when(mTab.isUserInteractable()).thenReturn(false);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, false);
-        inOrder.verify(mStream).onInactive();
-        verify(mStream, times(1)).onInactive();
 
         // On tab interactable (simulates user exit the tab switcher).
         when(mTab.isUserInteractable()).thenReturn(true);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, true);
-        inOrder.verify(mStream).onActive();
-        verify(mStream, times(2)).onActive();
 
         // On tab un-interactable and hidden (simulates user switch to another tab).
         when((mTab).isHidden()).thenReturn(true);
         when(mTab.isUserInteractable()).thenReturn(false);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(mTab, false);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onHidden(mTab, CHANGED_TABS);
-        inOrder.verify(mStream).onInactive();
         inOrder.verify(mStream).onHide();
-        verify(mStream, times(2)).onInactive();
         verify(mStream, times(1)).onHide();
 
         // On tab shown (simulates user switch back to this tab).

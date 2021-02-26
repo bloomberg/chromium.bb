@@ -23,6 +23,10 @@
 #include "aom_dsp/prob.h"
 #include "av1/common/odintrin.h"
 
+#if CONFIG_BITSTREAM_DEBUG
+#include "aom_util/debug_util.h"
+#endif  // CONFIG_BITSTREAM_DEBUG
+
 #if CONFIG_ACCOUNTING
 #include "av1/decoder/accounting.h"
 #define ACCT_STR_NAME acct_str

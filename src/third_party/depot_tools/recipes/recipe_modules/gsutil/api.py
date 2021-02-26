@@ -24,8 +24,7 @@ class GSUtilApi(recipe_api.RecipeApi):
     Note also that gsutil does its own wildcard processing, so wildcards are
     valid in file-like portions of the cmd. See 'gsutil help wildcards'.
 
-    Arguments:
-
+    Args:
       * cmd (List[str|Path]) - Arguments to pass to gsutil. Include gsutil-level
           options first (see 'gsutil help options').
       * name (str) - Name of the step to use. Defaults to the first non-flag

@@ -109,6 +109,7 @@ void TestAutofillManager::AddSeenForm(
   std::unique_ptr<TestFormStructure> form_structure =
       std::make_unique<TestFormStructure>(empty_form);
   form_structure->SetFieldTypes(heuristic_types, server_types);
+  form_structure->identify_sections_for_testing();
   AddSeenFormStructure(std::move(form_structure));
 
   form_interactions_ukm_logger()->OnFormsParsed(client()->GetUkmSourceId());
@@ -116,8 +117,8 @@ void TestAutofillManager::AddSeenForm(
 
 void TestAutofillManager::AddSeenFormStructure(
     std::unique_ptr<FormStructure> form_structure) {
-  const auto signature = form_structure->form_signature();
-  (*mutable_form_structures())[signature] = std::move(form_structure);
+  const auto renderer_id = form_structure->unique_renderer_id();
+  (*mutable_form_structures())[renderer_id] = std::move(form_structure);
 }
 
 void TestAutofillManager::ClearFormStructures() {

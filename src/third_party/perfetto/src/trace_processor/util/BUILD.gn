@@ -48,6 +48,7 @@ source_set("descriptors") {
     "../../../gn:default_deps",
     "../../../include/perfetto/trace_processor",
     "../../../protos/perfetto/common:zero",
+    "../../../protos/perfetto/trace_processor:zero",
     "../../base",
     "../../protozero",
   ]
@@ -57,6 +58,7 @@ source_set("unittests") {
   sources = [ "protozero_to_text_unittests.cc" ]
   testonly = true
   deps = [
+    ":descriptors",
     ":protozero_to_text",
     "..:track_event_descriptor",
     "../../../gn:default_deps",

@@ -15,6 +15,7 @@
 #include <windows.h>
 #include <wrl/client.h>
 
+#include "modules/desktop_capture/desktop_capturer.h"
 #include "modules/desktop_capture/desktop_geometry.h"
 #include "rtc_base/constructor_magic.h"
 
@@ -40,7 +41,7 @@ bool GetWindowRect(HWND window, DesktopRect* result);
 // This function should only be used by CroppingWindowCapturerWin. Instead a
 // DesktopRect CropWindowRect(const DesktopRect& rect)
 // should be added as a utility function to help CroppingWindowCapturerWin and
-// WindowCapturerWin to crop out the borders or shadow according to their
+// WindowCapturerWinGdi to crop out the borders or shadow according to their
 // scenarios. But this function is too generic and easy to be misused.
 bool GetCroppedWindowRect(HWND window,
                           bool avoid_cropping_border,
@@ -66,6 +67,25 @@ bool GetDcSize(HDC hdc, DesktopSize* size);
 // function returns false if native APIs fail.
 bool IsWindowMaximized(HWND window, bool* result);
 
+// Checks that the HWND is for a valid window, that window's visibility state is
+// visible, and that it is not minimized.
+bool IsWindowValidAndVisible(HWND window);
+
+enum GetWindowListFlags {
+  kNone = 0x00,
+  kIgnoreUntitled = 1 << 0,
+  kIgnoreUnresponsive = 1 << 1,
+};
+
+// Retrieves the list of top-level windows on the screen.
+// Some windows will be ignored:
+// - Those that are invisible or minimized.
+// - Program Manager & Start menu.
+// - [with kIgnoreUntitled] windows with no title.
+// - [with kIgnoreUnresponsive] windows that unresponsive.
+// Returns false if native APIs failed.
+bool GetWindowList(int flags, DesktopCapturer::SourceList* windows);
+
 typedef HRESULT(WINAPI* DwmIsCompositionEnabledFunc)(BOOL* enabled);
 typedef HRESULT(WINAPI* DwmGetWindowAttributeFunc)(HWND hwnd,
                                                    DWORD flag,
@@ -84,6 +104,7 @@ class WindowCaptureHelperWin {
   bool IsWindowOnCurrentDesktop(HWND hwnd);
   bool IsWindowVisibleOnCurrentDesktop(HWND hwnd);
   bool IsWindowCloaked(HWND hwnd);
+  bool EnumerateCapturableWindows(DesktopCapturer::SourceList* results);
 
  private:
   HMODULE dwmapi_library_ = nullptr;

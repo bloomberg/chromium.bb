@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -206,9 +205,9 @@ void DownloadRequestLimiter::TabDownloadState::DidFinishNavigation(
 }
 
 void DownloadRequestLimiter::TabDownloadState::DidGetUserInteraction(
-    const blink::WebInputEvent::Type type) {
+    const blink::WebInputEvent& event) {
   if (is_showing_prompt() ||
-      type == blink::WebInputEvent::Type::kGestureScrollBegin) {
+      event.GetType() == blink::WebInputEvent::Type::kGestureScrollBegin) {
     // Don't change state if a prompt is showing or if the user has scrolled.
     return;
   }
@@ -236,7 +235,10 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
   permissions::PermissionRequestManager* permission_request_manager =
       permissions::PermissionRequestManager::FromWebContents(web_contents_);
   if (permission_request_manager) {
+    // TODO(https://crbug.com/1061899): We should pass the frame which initiated
+    // the action instead of assuming that it was the current main frame.
     permission_request_manager->AddRequest(
+        web_contents_->GetMainFrame(),
         new DownloadPermissionRequest(factory_.GetWeakPtr(), request_origin));
   } else {
     // Call CancelOnce() so we don't set the content settings.
@@ -257,7 +259,7 @@ void DownloadRequestLimiter::TabDownloadState::SetContentSetting(
     return;
   settings->SetContentSettingDefaultScope(
       request_origin.GetURL(), GURL(), ContentSettingsType::AUTOMATIC_DOWNLOADS,
-      std::string(), setting);
+      setting);
 }
 
 void DownloadRequestLimiter::TabDownloadState::Cancel(
@@ -335,8 +337,7 @@ void DownloadRequestLimiter::TabDownloadState::OnUserInteraction() {
 void DownloadRequestLimiter::TabDownloadState::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier) {
+    ContentSettingsType content_type) {
   if (content_type != ContentSettingsType::AUTOMATIC_DOWNLOADS)
     return;
 
@@ -344,9 +345,9 @@ void DownloadRequestLimiter::TabDownloadState::OnContentSettingChanged(
     return;
 
   GURL origin = origin_.GetURL();
-  // Analogous to TabSpecificContentSettings::OnContentSettingChanged:
+  // Analogous to PageSpecificContentSettings::OnContentSettingChanged:
   const ContentSettingsDetails details(primary_pattern, secondary_pattern,
-                                       content_type, resource_identifier);
+                                       content_type);
 
   // Check if the settings change affects the most recent origin passed
   // to SetDownloadStatusAndNotify(). If so, we need to update the omnibox
@@ -370,7 +371,7 @@ void DownloadRequestLimiter::TabDownloadState::OnContentSettingChanged(
     return;
 
   ContentSetting setting = content_settings->GetContentSetting(
-      origin, origin, ContentSettingsType::AUTOMATIC_DOWNLOADS, std::string());
+      origin, origin, ContentSettingsType::AUTOMATIC_DOWNLOADS);
 
   // Update the internal state to match if necessary.
   SetDownloadStatusAndNotifyImpl(origin_, GetDownloadStatusFromSetting(setting),
@@ -401,8 +402,8 @@ bool DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
 
   for (auto& callback : callbacks) {
     // When callback runs, it can cause the WebContents to be destroyed.
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(std::move(callback), allow));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), allow));
   }
 
   return throttled;
@@ -575,7 +576,7 @@ ContentSetting DownloadRequestLimiter::GetAutoDownloadContentSetting(
   if (content_settings) {
     setting = content_settings->GetContentSetting(
         request_initiator, request_initiator,
-        ContentSettingsType::AUTOMATIC_DOWNLOADS, std::string());
+        ContentSettingsType::AUTOMATIC_DOWNLOADS);
   }
   return setting;
 }

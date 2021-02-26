@@ -10,6 +10,7 @@
 #include "base/android/build_info.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/bind.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -39,6 +40,18 @@ std::string BuildSurfaceName(const char* suffix) {
       {base::android::BuildInfo::GetInstance()->package_name(), "/", suffix});
 }
 
+base::TimeTicks GetSignalTime(const base::ScopedFD& fence) {
+  if (!fence.is_valid())
+    return base::TimeTicks();
+
+  base::TimeTicks signal_time;
+  auto status = gfx::GpuFence::GetStatusChangeTime(fence.get(), &signal_time);
+  if (status != gfx::GpuFence::kSignaled)
+    return base::TimeTicks();
+
+  return signal_time;
+}
+
 }  // namespace
 
 GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
@@ -51,7 +64,8 @@ GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
                    ANativeWindow_getWidth(window),
                    ANativeWindow_getHeight(window)),
       root_surface_(
-          new SurfaceControl::Surface(window, root_surface_name_.c_str())),
+          new gfx::SurfaceControl::Surface(window, root_surface_name_.c_str())),
+      transaction_ack_timeout_manager_(task_runner),
       gpu_task_runner_(std::move(task_runner)) {}
 
 GLSurfaceEGLSurfaceControl::~GLSurfaceEGLSurfaceControl() {
@@ -187,7 +201,8 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
     LOG(ERROR) << "CommitPendingTransaction failed because surface is lost";
 
     surface_lost_ = true;
-    std::move(completion_callback).Run(gfx::SwapResult::SWAP_FAILED, nullptr);
+    std::move(completion_callback)
+        .Run(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_FAILED));
     std::move(present_callback).Run(gfx::PresentationFeedback::Failure());
     return;
   }
@@ -209,10 +224,11 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
   // the next transaction.
   DCHECK_LE(pending_surfaces_count_, surface_list_.size());
   for (size_t i = pending_surfaces_count_; i < surface_list_.size(); ++i) {
-    const auto& surface_state = surface_list_[i];
+    auto& surface_state = surface_list_[i];
     pending_transaction_->SetBuffer(*surface_state.surface, nullptr,
                                     base::ScopedFD());
     pending_transaction_->SetVisibility(*surface_state.surface, false);
+    surface_state.visibility = false;
   }
 
   // TODO(khushalsagar): Consider using the SetDamageRect API for partial
@@ -229,16 +245,13 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
   current_frame_resources_.swap(pending_frame_resources_);
   pending_frame_resources_.clear();
 
-  SurfaceControl::Transaction::OnCompleteCb callback = base::BindOnce(
+  gfx::SurfaceControl::Transaction::OnCompleteCb callback = base::BindOnce(
       &GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread,
       weak_factory_.GetWeakPtr(), std::move(completion_callback),
-      std::move(present_callback), std::move(resources_to_release));
+      std::move(present_callback), std::move(resources_to_release),
+      std::move(primary_plane_fences_));
+  primary_plane_fences_.reset();
   pending_transaction_->SetOnCompleteCb(std::move(callback), gpu_task_runner_);
-
-  // Cache only those surfaces which were used in this transaction. The surfaces
-  // removed here are persisted in |resources_to_release| so we can release
-  // them after receiving read fences from the framework.
-  surface_list_.resize(pending_surfaces_count_);
   pending_surfaces_count_ = 0u;
   frame_rate_update_pending_ = false;
 
@@ -247,6 +260,7 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
   } else {
     transaction_ack_pending_ = true;
     pending_transaction_->Apply();
+    transaction_ack_timeout_manager_.ScheduleHangDetection();
   }
 
   pending_transaction_.reset();
@@ -275,7 +289,7 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   }
 
   const auto& image_color_space = GetNearestSupportedImageColorSpace(image);
-  if (!SurfaceControl::SupportsColorSpace(image_color_space)) {
+  if (!gfx::SurfaceControl::SupportsColorSpace(image_color_space)) {
     LOG(ERROR) << "Not supported color space used with overlay : "
                << image_color_space.ToString();
   }
@@ -291,6 +305,12 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   pending_surfaces_count_++;
   auto& surface_state = surface_list_.at(pending_surfaces_count_ - 1);
 
+  // Make the surface visible if its hidden or uninitialized..
+  if (uninitialized || !surface_state.visibility) {
+    pending_transaction_->SetVisibility(*surface_state.surface, true);
+    surface_state.visibility = true;
+  }
+
   if (uninitialized || surface_state.z_order != z_order) {
     surface_state.z_order = z_order;
     pending_transaction_->SetZOrder(*surface_state.surface, z_order);
@@ -299,9 +319,21 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   AHardwareBuffer* hardware_buffer = nullptr;
   base::ScopedFD fence_fd;
   auto scoped_hardware_buffer = image->GetAHardwareBuffer();
+  bool is_primary_plane = false;
   if (scoped_hardware_buffer) {
     hardware_buffer = scoped_hardware_buffer->buffer();
     fence_fd = scoped_hardware_buffer->TakeFence();
+
+    // We currently only promote the display compositor's buffer or a video
+    // buffer to an overlay. So if this buffer is not for video then it implies
+    // its the primary plane.
+    is_primary_plane = !scoped_hardware_buffer->is_video();
+    DCHECK(!is_primary_plane || !primary_plane_fences_);
+    if (is_primary_plane) {
+      primary_plane_fences_.emplace();
+      primary_plane_fences_->available_fence =
+          scoped_hardware_buffer->TakeAvailableFence();
+    }
 
     auto* a_surface = surface_state.surface->surface();
     DCHECK_EQ(pending_frame_resources_.count(a_surface), 0u);
@@ -317,11 +349,15 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     surface_state.hardware_buffer = hardware_buffer;
 
     if (gpu_fence && surface_state.hardware_buffer) {
-      auto fence_handle =
-          gfx::CloneHandleForIPC(gpu_fence->GetGpuFenceHandle());
+      auto fence_handle = gpu_fence->GetGpuFenceHandle().Clone();
       DCHECK(!fence_handle.is_null());
-      fence_fd = MergeFDs(std::move(fence_fd),
-                          base::ScopedFD(fence_handle.native_fd.fd));
+      fence_fd =
+          MergeFDs(std::move(fence_fd), std::move(fence_handle.owned_fd));
+    }
+
+    if (is_primary_plane) {
+      primary_plane_fences_->ready_fence =
+          base::ScopedFD(HANDLE_EINTR(dup(fence_fd.get())));
     }
 
     pending_transaction_->SetBuffer(*surface_state.surface,
@@ -330,30 +366,12 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   }
 
   if (hardware_buffer) {
-    gfx::Rect dst = bounds_rect;
-
-    // Get the crop rectangle from the image which is the actual region of valid
-    // pixels. This region could be smaller than the buffer dimensions. Hence
-    // scale the |crop_rect| according to the valid pixel area rather than
-    // buffer dimensions. crbug.com/1027766 for more details.
-    gfx::Rect valid_pixel_rect = image->GetCropRect();
     gfx::Size buffer_size = GetBufferSize(hardware_buffer);
+    gfx::RectF scaled_rect =
+        gfx::ScaleRect(crop_rect, buffer_size.width(), buffer_size.height());
 
-    // If the image doesn't provide a |valid_pixel_rect|, assume the entire
-    // buffer is valid.
-    if (valid_pixel_rect.IsEmpty()) {
-      valid_pixel_rect.set_size(buffer_size);
-    } else {
-      // Clamp the |valid_pixel_rect| to the buffer dimensions to make sure for
-      // some reason it does not overflows.
-      valid_pixel_rect.Intersect(gfx::Rect(buffer_size));
-    }
-    gfx::RectF scaled_rect = gfx::RectF(
-        crop_rect.x() * valid_pixel_rect.width() + valid_pixel_rect.x(),
-        crop_rect.y() * valid_pixel_rect.height() + valid_pixel_rect.y(),
-        crop_rect.width() * valid_pixel_rect.width(),
-        crop_rect.height() * valid_pixel_rect.height());
     gfx::Rect src = gfx::ToEnclosedRect(scaled_rect);
+    gfx::Rect dst = bounds_rect;
 
     if (uninitialized || surface_state.src != src || surface_state.dst != dst ||
         surface_state.transform != transform) {
@@ -411,13 +429,15 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
     SwapCompletionCallback completion_callback,
     PresentationCallback presentation_callback,
     ResourceRefs released_resources,
-    SurfaceControl::TransactionStats transaction_stats) {
+    base::Optional<PrimaryPlaneFences> primary_plane_fences,
+    gfx::SurfaceControl::TransactionStats transaction_stats) {
   TRACE_EVENT0("gpu",
                "GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread");
 
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK(transaction_ack_pending_);
 
+  transaction_ack_timeout_manager_.OnTransactionAck();
   transaction_ack_pending_ = false;
 
   const bool has_context = context_->MakeCurrent(this);
@@ -448,9 +468,15 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
   released_resources.clear();
 
   // The presentation feedback callback must run after swap completion.
-  std::move(completion_callback).Run(gfx::SwapResult::SWAP_ACK, nullptr);
+  std::move(completion_callback)
+      .Run(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK));
 
   PendingPresentationCallback pending_cb;
+  if (primary_plane_fences) {
+    pending_cb.available_time =
+        GetSignalTime(primary_plane_fences->available_fence);
+    pending_cb.ready_time = GetSignalTime(primary_plane_fences->ready_fence);
+  }
   pending_cb.latch_time = transaction_stats.latch_time;
   pending_cb.present_fence = std::move(transaction_stats.present_fence);
   pending_cb.callback = std::move(presentation_callback);
@@ -462,6 +488,7 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
     transaction_ack_pending_ = true;
     pending_transaction_queue_.front().Apply();
     pending_transaction_queue_.pop();
+    transaction_ack_timeout_manager_.ScheduleHangDetection();
   }
 }
 
@@ -474,17 +501,16 @@ void GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks() {
     auto& pending_cb = pending_presentation_callback_queue_.front();
 
     base::TimeTicks signal_time;
-    auto status =
-        pending_cb.present_fence.is_valid()
-            ? GLFenceAndroidNativeFenceSync::GetStatusChangeTimeForFence(
-                  pending_cb.present_fence.get(), &signal_time)
-            : GLFenceAndroidNativeFenceSync::kInvalid;
-    if (status == GLFenceAndroidNativeFenceSync::kNotSignaled)
+    auto status = pending_cb.present_fence.is_valid()
+                      ? gfx::GpuFence::GetStatusChangeTime(
+                            pending_cb.present_fence.get(), &signal_time)
+                      : gfx::GpuFence::kInvalid;
+    if (status == gfx::GpuFence::kNotSignaled)
       break;
 
     auto flags = gfx::PresentationFeedback::kHWCompletion |
                  gfx::PresentationFeedback::kVSync;
-    if (status == GLFenceAndroidNativeFenceSync::kInvalid) {
+    if (status == gfx::GpuFence::kInvalid) {
       signal_time = pending_cb.latch_time;
       flags = 0u;
     }
@@ -495,6 +521,10 @@ void GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks() {
         "presentation_feedback",
         TRACE_EVENT_SCOPE_THREAD);
     gfx::PresentationFeedback feedback(signal_time, base::TimeDelta(), flags);
+    feedback.available_timestamp = pending_cb.available_time;
+    feedback.ready_timestamp = pending_cb.ready_time;
+    feedback.latch_timestamp = pending_cb.latch_time;
+
     std::move(pending_cb.callback).Run(feedback);
     pending_presentation_callback_queue_.pop();
   }
@@ -560,9 +590,9 @@ GLSurfaceEGLSurfaceControl::GetNearestSupportedImageColorSpace(
 }
 
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState(
-    const SurfaceControl::Surface& parent,
+    const gfx::SurfaceControl::Surface& parent,
     const std::string& name)
-    : surface(new SurfaceControl::Surface(parent, name.c_str())) {}
+    : surface(new gfx::SurfaceControl::Surface(parent, name.c_str())) {}
 
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState() = default;
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState(SurfaceState&& other) =
@@ -590,5 +620,69 @@ GLSurfaceEGLSurfaceControl::PendingPresentationCallback::
 GLSurfaceEGLSurfaceControl::PendingPresentationCallback&
 GLSurfaceEGLSurfaceControl::PendingPresentationCallback::operator=(
     PendingPresentationCallback&& other) = default;
+
+GLSurfaceEGLSurfaceControl::PrimaryPlaneFences::PrimaryPlaneFences() = default;
+GLSurfaceEGLSurfaceControl::PrimaryPlaneFences::~PrimaryPlaneFences() = default;
+GLSurfaceEGLSurfaceControl::PrimaryPlaneFences::PrimaryPlaneFences(
+    PrimaryPlaneFences&& other) = default;
+GLSurfaceEGLSurfaceControl::PrimaryPlaneFences&
+GLSurfaceEGLSurfaceControl::PrimaryPlaneFences::operator=(
+    PrimaryPlaneFences&& other) = default;
+
+GLSurfaceEGLSurfaceControl::TransactionAckTimeoutManager::
+    TransactionAckTimeoutManager(
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : gpu_task_runner_(std::move(task_runner)) {}
+GLSurfaceEGLSurfaceControl::TransactionAckTimeoutManager::
+    ~TransactionAckTimeoutManager() = default;
+
+void GLSurfaceEGLSurfaceControl::TransactionAckTimeoutManager::
+    ScheduleHangDetection() {
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
+
+  ++current_transaction_id_;
+  if (!hang_detection_cb_.IsCancelled())
+    return;
+
+  constexpr int kIdleDelaySeconds = 5;
+  hang_detection_cb_.Reset(
+      base::BindOnce(&GLSurfaceEGLSurfaceControl::TransactionAckTimeoutManager::
+                         OnTransactionTimeout,
+                     base::Unretained(this), current_transaction_id_));
+  gpu_task_runner_->PostDelayedTask(
+      FROM_HERE, hang_detection_cb_.callback(),
+      base::TimeDelta::FromSeconds(kIdleDelaySeconds));
+}
+
+void GLSurfaceEGLSurfaceControl::TransactionAckTimeoutManager::
+    OnTransactionAck() {
+  // Since only one transaction is in flight at a time, an ack is for the latest
+  // transaction.
+  last_acked_transaction_id_ = current_transaction_id_;
+}
+
+void GLSurfaceEGLSurfaceControl::TransactionAckTimeoutManager::
+    OnTransactionTimeout(TransactionId transaction_id) {
+  hang_detection_cb_.Cancel();
+
+  // If the last transaction was already acked, we do not need to schedule
+  // any checks until a new transaction comes.
+  if (current_transaction_id_ == last_acked_transaction_id_)
+    return;
+
+  // If more transactions have happened since the last task, schedule another
+  // hang detection check.
+  if (transaction_id < current_transaction_id_) {
+    // Decrement the |current_transaction_id_| since ScheduleHangDetection()
+    // will increment it again.
+    --current_transaction_id_;
+    ScheduleHangDetection();
+    return;
+  }
+
+  LOG(ERROR) << "Transaction id " << transaction_id
+             << " haven't received any ack from past 5 second which indicates "
+                "it hanged";
+}
 
 }  // namespace gl

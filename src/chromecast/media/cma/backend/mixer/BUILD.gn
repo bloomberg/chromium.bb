@@ -18,6 +18,17 @@ cast_source_set("post_processor_paths") {
   deps = [ "//base" ]
 }
 
+cast_source_set("post_processor_registry") {
+  sources = [
+    "post_processor_registry.cc",
+    "post_processor_registry.h",
+  ]
+  deps = [
+    "//base",
+    "//chromecast/public/media",
+  ]
+}
+
 cast_source_set("loopback") {
   sources = [
     "loopback_handler.cc",
@@ -67,11 +78,13 @@ cast_source_set("mixer") {
   deps = [
     ":loopback",
     ":post_processor_paths",
+    ":post_processor_registry",
     "//base",
     "//chromecast/base",
     "//chromecast/base:chromecast_switches",
     "//chromecast/base:thread_health_checker",
     "//chromecast/media/audio:audio_io_thread",
+    "//chromecast/media/audio:audio_log",
     "//chromecast/media/audio:interleaved_channel_mixer",
     "//chromecast/media/audio:libcast_external_audio_pipeline_1.0",
     "//chromecast/media/audio:processing",

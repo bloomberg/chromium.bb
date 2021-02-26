@@ -8,7 +8,9 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -178,7 +180,7 @@ class TextureLayerTest : public testing::Test {
         &fake_client_, &task_graph_runner_, animation_host_.get());
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
     layer_tree_host_->SetViewportRectAndScale(gfx::Rect(10, 10), 1.f,
-                                              viz::LocalSurfaceIdAllocation());
+                                              viz::LocalSurfaceId());
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   }
 
@@ -270,8 +272,8 @@ TEST_F(TextureLayerTest, ShutdownWithResource) {
 
     viz::ParentLocalSurfaceIdAllocator allocator;
     allocator.GenerateId();
-    host->SetViewportRectAndScale(
-        gfx::Rect(10, 10), 1.f, allocator.GetCurrentLocalSurfaceIdAllocation());
+    host->SetViewportRectAndScale(gfx::Rect(10, 10), 1.f,
+                                  allocator.GetCurrentLocalSurfaceId());
     host->SetVisible(true);
     host->SetRootLayer(layer);
 
@@ -595,8 +597,9 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
     return std::make_unique<TestLayerTreeFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
-        gpu_memory_buffer_manager(), renderer_settings, ImplThreadTaskRunner(),
-        synchronous_composite, disable_display_vsync, refresh_rate);
+        gpu_memory_buffer_manager(), renderer_settings, &debug_settings_,
+        ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync,
+        refresh_rate);
   }
 
   void AdvanceTestCase() {
@@ -715,7 +718,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     root_->AddChild(layer_);
     layer_tree_host()->SetRootLayer(root_);
     layer_tree_host()->SetViewportRectAndScale(gfx::Rect(bounds), 1.f,
-                                               viz::LocalSurfaceIdAllocation());
+                                               viz::LocalSurfaceId());
     SetMailbox('1');
     EXPECT_EQ(0, callback_count_);
 
@@ -741,107 +744,6 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerImplWithMailboxThreadedCallback);
-
-class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
- protected:
-  void ReleaseCallback(const gpu::SyncToken& original_sync_token,
-                       const gpu::SyncToken& release_sync_token,
-                       bool lost_resource) {
-    released_count_++;
-    switch (released_count_) {
-      case 1:
-        break;
-      case 2:
-        EXPECT_EQ(3, layer_tree_host()->SourceFrameNumber());
-        EndTest();
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
-  void SetMailbox(char mailbox_char) {
-    const gpu::SyncToken sync_token =
-        SyncTokenFromUInt(static_cast<uint32_t>(mailbox_char));
-    std::unique_ptr<viz::SingleReleaseCallback> callback =
-        viz::SingleReleaseCallback::Create(base::BindOnce(
-            &TextureLayerMailboxIsActivatedDuringCommit::ReleaseCallback,
-            base::Unretained(this), sync_token));
-    constexpr gfx::Size size(64, 64);
-    auto resource = viz::TransferableResource::MakeGL(
-        MailboxFromChar(mailbox_char), GL_LINEAR, GL_TEXTURE_2D, sync_token,
-        size, false /* is_overlay_candidate */);
-    layer_->SetTransferableResource(resource, std::move(callback));
-  }
-
-  void BeginTest() override {
-    gfx::Size bounds(100, 100);
-    root_ = Layer::Create();
-    root_->SetBounds(bounds);
-
-    layer_ = TextureLayer::CreateForMailbox(nullptr);
-    layer_->SetIsDrawable(true);
-    layer_->SetBounds(bounds);
-
-    root_->AddChild(layer_);
-    layer_tree_host()->SetRootLayer(root_);
-    layer_tree_host()->SetViewportRectAndScale(gfx::Rect(bounds), 1.f,
-                                               viz::LocalSurfaceIdAllocation());
-    SetMailbox('1');
-
-    PostSetNeedsCommitToMainThread();
-  }
-
-  void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    base::AutoLock lock(activate_count_lock_);
-    ++activate_count_;
-  }
-
-  void DidCommit() override {
-    // The first frame doesn't cause anything to be returned so it does not
-    // need to wait for activation.
-    if (layer_tree_host()->SourceFrameNumber() > 1) {
-      base::AutoLock lock(activate_count_lock_);
-      // The activate happened before commit is done on the main side.
-      EXPECT_EQ(activate_count_, layer_tree_host()->SourceFrameNumber());
-    }
-
-    switch (layer_tree_host()->SourceFrameNumber()) {
-      case 1:
-        // The first mailbox has been activated. Set a new mailbox, and
-        // expect the next commit to finish *after* it is activated.
-        SetMailbox('2');
-        break;
-      case 2:
-        // The second mailbox has been activated. Remove the layer from
-        // the tree to cause another commit/activation. The commit should
-        // finish *after* the layer is removed from the active tree.
-        layer_->RemoveFromParent();
-        break;
-      case 3:
-        // This ensures all texture mailboxes are released before the end of the
-        // test.
-        layer_->ClearClient();
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
-  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    // The activate didn't happen before commit is done on the impl side (but it
-    // should happen before the main thread is done).
-    EXPECT_EQ(activate_count_, host_impl->sync_tree()->source_frame_number());
-  }
-
-  base::Lock activate_count_lock_;
-  int activate_count_ = 0;
-  scoped_refptr<Layer> root_;
-  scoped_refptr<TextureLayer> layer_;
-  int released_count_ = 0;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerMailboxIsActivatedDuringCommit);
 
 class TextureLayerImplWithResourceTest : public TextureLayerTest {
  protected:
@@ -1318,7 +1220,7 @@ class TextureLayerWithResourceMainThreadDeleted : public LayerTreeTest {
     root_->AddChild(layer_);
     layer_tree_host()->SetRootLayer(root_);
     layer_tree_host()->SetViewportRectAndScale(gfx::Rect(bounds), 1.f,
-                                               viz::LocalSurfaceIdAllocation());
+                                               viz::LocalSurfaceId());
   }
 
   void BeginTest() override {
@@ -1390,7 +1292,7 @@ class TextureLayerWithResourceImplThreadDeleted : public LayerTreeTest {
     root_->AddChild(layer_);
     layer_tree_host()->SetRootLayer(root_);
     layer_tree_host()->SetViewportRectAndScale(gfx::Rect(bounds), 1.f,
-                                               viz::LocalSurfaceIdAllocation());
+                                               viz::LocalSurfaceId());
   }
 
   void BeginTest() override {
@@ -1495,8 +1397,8 @@ class SoftwareTextureLayerTest : public LayerTreeTest {
         !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
     auto sink = std::make_unique<TestLayerTreeFrameSink>(
         nullptr, nullptr, gpu_memory_buffer_manager(), renderer_settings,
-        ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync,
-        refresh_rate);
+        &debug_settings_, ImplThreadTaskRunner(), synchronous_composite,
+        disable_display_vsync, refresh_rate);
     frame_sink_ = sink.get();
     num_frame_sinks_created_++;
     return sink;

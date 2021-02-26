@@ -12,11 +12,9 @@
 
 #include "base/macros.h"
 
-namespace autofill {
-struct PasswordForm;
-}
-
 namespace password_manager {
+
+struct PasswordForm;
 
 // Static-only class bundling together the API for serializing passwords into
 // CSV format.
@@ -25,13 +23,13 @@ class PasswordCSVWriter {
   // Creates a CSV representation of the forms stored in |password|. Note that
   // this loses all the metadata except for the origin, username and password.
   static std::string SerializePasswords(
-      const std::vector<std::unique_ptr<autofill::PasswordForm>>& passwords);
+      const std::vector<std::unique_ptr<PasswordForm>>& passwords);
 
  private:
   // Converts |form| into a single line in the CSV format. Metadata are lost,
   // see SerializePasswords.
   static std::map<std::string, std::string> PasswordFormToRecord(
-      const autofill::PasswordForm& form);
+      const PasswordForm& form);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PasswordCSVWriter);
 };

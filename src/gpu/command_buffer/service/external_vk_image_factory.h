@@ -10,6 +10,7 @@
 
 #include "gpu/command_buffer/service/external_vk_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 class SharedContextState;
@@ -20,9 +21,11 @@ class VulkanCommandPool;
 // can be exported out of Vulkan and be used in GL. Synchronization between
 // Vulkan and GL is done using VkSemaphores that are created with special flags
 // that allow it to be exported out and shared with GL.
-class ExternalVkImageFactory : public SharedImageBackingFactory {
+class GPU_GLES2_EXPORT ExternalVkImageFactory
+    : public SharedImageBackingFactory {
  public:
-  explicit ExternalVkImageFactory(SharedContextState* context_state);
+  explicit ExternalVkImageFactory(
+      scoped_refptr<SharedContextState> context_state);
   ~ExternalVkImageFactory() override;
 
   // SharedImageBackingFactory implementation.
@@ -32,6 +35,8 @@ class ExternalVkImageFactory : public SharedImageBackingFactory {
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       bool is_thread_safe) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -39,6 +44,8 @@ class ExternalVkImageFactory : public SharedImageBackingFactory {
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       base::span<const uint8_t> pixel_data) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -49,6 +56,8 @@ class ExternalVkImageFactory : public SharedImageBackingFactory {
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage) override;
   bool CanImportGpuMemoryBuffer(
       gfx::GpuMemoryBufferType memory_buffer_type) override;
@@ -60,7 +69,7 @@ class ExternalVkImageFactory : public SharedImageBackingFactory {
 
   void TransitionToColorAttachment(VkImage image);
 
-  SharedContextState* const context_state_;
+  scoped_refptr<SharedContextState> context_state_;
   std::unique_ptr<VulkanCommandPool> command_pool_;
 
   const VulkanImageUsageCache image_usage_cache_;

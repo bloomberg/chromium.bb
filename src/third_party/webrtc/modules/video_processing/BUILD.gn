@@ -29,7 +29,6 @@ rtc_library("video_processing") {
     "..:module_api",
     "../../api:scoped_refptr",
     "../../api/video:video_frame",
-    "../../api/video:video_frame_i420",
     "../../api/video:video_rtp_headers",
     "../../common_audio",
     "../../common_video",
@@ -37,7 +36,7 @@ rtc_library("video_processing") {
     "../../rtc_base:checks",
     "../../rtc_base:rtc_base_approved",
     "../../rtc_base/system:arch",
-    "../../system_wrappers:cpu_features_api",
+    "../../system_wrappers",
     "//third_party/libyuv",
   ]
   if (build_video_processing_sse2) {
@@ -100,7 +99,6 @@ if (rtc_include_tests) {
       ":video_processing",
       "../../api:scoped_refptr",
       "../../api/video:video_frame",
-      "../../api/video:video_frame_i420",
       "../../api/video:video_rtp_headers",
       "../../common_video",
       "../../test:fileutils",

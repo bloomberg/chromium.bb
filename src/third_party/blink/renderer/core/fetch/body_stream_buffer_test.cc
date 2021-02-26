@@ -23,12 +23,14 @@
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
 #include "third_party/blink/renderer/platform/blob/testing/fake_blob.h"
+#include "third_party/blink/renderer/platform/blob/testing/fake_blob_registry.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/loader/testing/replaying_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -133,8 +135,8 @@ TEST_F(BodyStreamBufferTest, Tee) {
   BodyStreamBuffer* new2;
   buffer->Tee(&new1, &new2, exception_state);
 
-  EXPECT_TRUE(buffer->IsStreamLocked(exception_state).value_or(false));
-  EXPECT_TRUE(buffer->IsStreamDisturbed(exception_state).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamLocked());
+  EXPECT_TRUE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
 
   EXPECT_EQ(nullptr, buffer->GetSideDataBlobForTest());
@@ -199,18 +201,18 @@ TEST_F(BodyStreamBufferTest, TeeFromHandleMadeFromStream) {
   BodyStreamBuffer* new2;
   buffer->Tee(&new1, &new2, exception_state);
 
-  EXPECT_TRUE(buffer->IsStreamLocked(exception_state).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamLocked());
   // Note that this behavior is slightly different from for the behavior of
   // a BodyStreamBuffer made from a BytesConsumer. See the above test. In this
   // test, the stream will get disturbed when the microtask is performed.
   // TODO(yhirano): A uniformed behavior is preferred.
-  EXPECT_FALSE(buffer->IsStreamDisturbed(exception_state).value_or(true));
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
 
-  EXPECT_TRUE(buffer->IsStreamLocked(exception_state).value_or(false));
-  EXPECT_TRUE(buffer->IsStreamDisturbed(exception_state).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamLocked());
+  EXPECT_TRUE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
 
   new1->StartLoading(FetchDataLoader::CreateLoaderAsString(
@@ -238,17 +240,16 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle) {
                                               blob_data_handle),
       /* abort_signal = */ nullptr, side_data_blob);
 
-  EXPECT_FALSE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(true));
-  EXPECT_FALSE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));
+  EXPECT_FALSE(buffer->IsStreamLocked());
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(side_data_blob, buffer->GetSideDataBlobForTest());
   scoped_refptr<BlobDataHandle> output_blob_data_handle =
       buffer->DrainAsBlobDataHandle(
-          BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize,
-          ASSERT_NO_EXCEPTION);
+          BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
 
-  EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
-  EXPECT_TRUE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamLocked());
+  EXPECT_TRUE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(nullptr, buffer->GetSideDataBlobForTest());
   EXPECT_EQ(blob_data_handle, output_blob_data_handle);
@@ -264,17 +265,16 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandleReturnsNull) {
       BodyStreamBuffer::Create(scope.GetScriptState(), src,
                                /* abort_signal = */ nullptr, side_data_blob);
 
-  EXPECT_FALSE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(true));
-  EXPECT_FALSE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));
+  EXPECT_FALSE(buffer->IsStreamLocked());
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(side_data_blob, buffer->GetSideDataBlobForTest());
 
   EXPECT_FALSE(buffer->DrainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize,
-      ASSERT_NO_EXCEPTION));
+      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize));
 
-  EXPECT_FALSE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(true));
-  EXPECT_FALSE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));
+  EXPECT_FALSE(buffer->IsStreamLocked());
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(side_data_blob, buffer->GetSideDataBlobForTest());
 }
@@ -290,18 +290,17 @@ TEST_F(BodyStreamBufferTest,
       MakeGarbageCollected<BodyStreamBuffer>(scope.GetScriptState(), stream);
 
   EXPECT_FALSE(buffer->HasPendingActivity());
-  EXPECT_FALSE(buffer->IsStreamLocked(exception_state).value_or(true));
-  EXPECT_FALSE(buffer->IsStreamDisturbed(exception_state).value_or(true));
-  EXPECT_TRUE(buffer->IsStreamReadable(exception_state).value_or(false));
+  EXPECT_FALSE(buffer->IsStreamLocked());
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
+  EXPECT_TRUE(buffer->IsStreamReadable());
 
   EXPECT_FALSE(buffer->DrainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize,
-      exception_state));
+      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize));
 
   EXPECT_FALSE(buffer->HasPendingActivity());
-  EXPECT_FALSE(buffer->IsStreamLocked(exception_state).value_or(true));
-  EXPECT_FALSE(buffer->IsStreamDisturbed(exception_state).value_or(true));
-  EXPECT_TRUE(buffer->IsStreamReadable(exception_state).value_or(false));
+  EXPECT_FALSE(buffer->IsStreamLocked());
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
+  EXPECT_TRUE(buffer->IsStreamReadable());
 }
 
 TEST_F(BodyStreamBufferTest, DrainAsFormData) {
@@ -319,15 +318,14 @@ TEST_F(BodyStreamBufferTest, DrainAsFormData) {
                                                   input_form_data),
       /* abort_signal = */ nullptr, side_data_blob);
 
-  EXPECT_FALSE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(true));
-  EXPECT_FALSE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));
+  EXPECT_FALSE(buffer->IsStreamLocked());
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(side_data_blob, buffer->GetSideDataBlobForTest());
-  scoped_refptr<EncodedFormData> output_form_data =
-      buffer->DrainAsFormData(ASSERT_NO_EXCEPTION);
+  scoped_refptr<EncodedFormData> output_form_data = buffer->DrainAsFormData();
 
-  EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
-  EXPECT_TRUE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamLocked());
+  EXPECT_TRUE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(nullptr, buffer->GetSideDataBlobForTest());
   EXPECT_EQ(output_form_data->FlattenToString(),
@@ -344,15 +342,15 @@ TEST_F(BodyStreamBufferTest, DrainAsFormDataReturnsNull) {
       BodyStreamBuffer::Create(scope.GetScriptState(), src,
                                /* abort_signal = */ nullptr, side_data_blob);
 
-  EXPECT_FALSE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(true));
-  EXPECT_FALSE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));
+  EXPECT_FALSE(buffer->IsStreamLocked());
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(side_data_blob, buffer->GetSideDataBlobForTest());
 
-  EXPECT_FALSE(buffer->DrainAsFormData(ASSERT_NO_EXCEPTION));
+  EXPECT_FALSE(buffer->DrainAsFormData());
 
-  EXPECT_FALSE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(true));
-  EXPECT_FALSE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));
+  EXPECT_FALSE(buffer->IsStreamLocked());
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(side_data_blob, buffer->GetSideDataBlobForTest());
 }
@@ -367,16 +365,16 @@ TEST_F(BodyStreamBufferTest,
       MakeGarbageCollected<BodyStreamBuffer>(scope.GetScriptState(), stream);
 
   EXPECT_FALSE(buffer->HasPendingActivity());
-  EXPECT_FALSE(buffer->IsStreamLocked(exception_state).value_or(true));
-  EXPECT_FALSE(buffer->IsStreamDisturbed(exception_state).value_or(true));
-  EXPECT_TRUE(buffer->IsStreamReadable(exception_state).value_or(false));
+  EXPECT_FALSE(buffer->IsStreamLocked());
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
+  EXPECT_TRUE(buffer->IsStreamReadable());
 
-  EXPECT_FALSE(buffer->DrainAsFormData(exception_state));
+  EXPECT_FALSE(buffer->DrainAsFormData());
 
   EXPECT_FALSE(buffer->HasPendingActivity());
-  EXPECT_FALSE(buffer->IsStreamLocked(exception_state).value_or(true));
-  EXPECT_FALSE(buffer->IsStreamDisturbed(exception_state).value_or(true));
-  EXPECT_TRUE(buffer->IsStreamReadable(exception_state).value_or(false));
+  EXPECT_FALSE(buffer->IsStreamLocked());
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
+  EXPECT_TRUE(buffer->IsStreamReadable());
 }
 
 TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsArrayBuffer) {
@@ -405,23 +403,46 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsArrayBuffer) {
                        ASSERT_NO_EXCEPTION);
 
   EXPECT_EQ(nullptr, buffer->GetSideDataBlobForTest());
-  EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
-  EXPECT_TRUE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamLocked());
+  EXPECT_TRUE(buffer->IsStreamDisturbed());
   EXPECT_TRUE(buffer->HasPendingActivity());
 
   checkpoint.Call(1);
   test::RunPendingTasks();
   checkpoint.Call(2);
 
-  EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
-  EXPECT_TRUE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));
+  EXPECT_TRUE(buffer->IsStreamLocked());
+  EXPECT_TRUE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   ASSERT_TRUE(array_buffer);
   EXPECT_EQ("hello", String(static_cast<const char*>(array_buffer->Data()),
-                            array_buffer->ByteLengthAsSizeT()));
+                            array_buffer->ByteLength()));
 }
 
-TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsBlob) {
+class BodyStreamBufferBlobTest : public BodyStreamBufferTest {
+ public:
+  BodyStreamBufferBlobTest()
+      : fake_task_runner_(base::MakeRefCounted<scheduler::FakeTaskRunner>()),
+        blob_registry_receiver_(
+            &fake_blob_registry_,
+            blob_registry_remote_.BindNewPipeAndPassReceiver()) {
+    BlobDataHandle::SetBlobRegistryForTesting(blob_registry_remote_.get());
+  }
+
+  ~BodyStreamBufferBlobTest() override {
+    BlobDataHandle::SetBlobRegistryForTesting(nullptr);
+  }
+
+ protected:
+  scoped_refptr<scheduler::FakeTaskRunner> fake_task_runner_;
+
+ private:
+  FakeBlobRegistry fake_blob_registry_;
+  mojo::Remote<mojom::blink::BlobRegistry> blob_registry_remote_;
+  mojo::Receiver<mojom::blink::BlobRegistry> blob_registry_receiver_;
+};
+
+TEST_F(BodyStreamBufferBlobTest, LoadBodyStreamBufferAsBlob) {
   V8TestingScope scope;
   Checkpoint checkpoint;
   auto* client = MakeGarbageCollected<MockFetchDataLoaderClient>();
@@ -443,20 +464,22 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsBlob) {
       BodyStreamBuffer::Create(scope.GetScriptState(), src,
                                /* abort_signal = */ nullptr, side_data_blob);
   EXPECT_EQ(side_data_blob, buffer->GetSideDataBlobForTest());
-  buffer->StartLoading(FetchDataLoader::CreateLoaderAsBlobHandle("text/plain"),
+  buffer->StartLoading(FetchDataLoader::CreateLoaderAsBlobHandle(
+                           "text/plain", fake_task_runner_),
                        client, ASSERT_NO_EXCEPTION);
 
   EXPECT_EQ(nullptr, buffer->GetSideDataBlobForTest());
-  EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
-  EXPECT_TRUE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamLocked());
+  EXPECT_TRUE(buffer->IsStreamDisturbed());
   EXPECT_TRUE(buffer->HasPendingActivity());
 
   checkpoint.Call(1);
+  fake_task_runner_->RunUntilIdle();
   test::RunPendingTasks();
   checkpoint.Call(2);
 
-  EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
-  EXPECT_TRUE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamLocked());
+  EXPECT_TRUE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(5u, blob_data_handle->size());
 }
@@ -486,16 +509,16 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsString) {
                        client, ASSERT_NO_EXCEPTION);
 
   EXPECT_EQ(nullptr, buffer->GetSideDataBlobForTest());
-  EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
-  EXPECT_TRUE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamLocked());
+  EXPECT_TRUE(buffer->IsStreamDisturbed());
   EXPECT_TRUE(buffer->HasPendingActivity());
 
   checkpoint.Call(1);
   test::RunPendingTasks();
   checkpoint.Call(2);
 
-  EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
-  EXPECT_TRUE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamLocked());
+  EXPECT_TRUE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
 }
 
@@ -514,10 +537,10 @@ TEST_F(BodyStreamBufferTest, LoadClosedHandle) {
       scope.GetScriptState(), BytesConsumer::CreateClosed(),
       /* abort_signal = */ nullptr, side_data_blob);
 
-  EXPECT_TRUE(buffer->IsStreamClosed(ASSERT_NO_EXCEPTION).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamClosed());
 
-  EXPECT_FALSE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(true));
-  EXPECT_FALSE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));
+  EXPECT_FALSE(buffer->IsStreamLocked());
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(nullptr, buffer->GetSideDataBlobForTest());
 
@@ -527,8 +550,8 @@ TEST_F(BodyStreamBufferTest, LoadClosedHandle) {
                        client, ASSERT_NO_EXCEPTION);
   checkpoint.Call(2);
 
-  EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
-  EXPECT_TRUE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamLocked());
+  EXPECT_TRUE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
 }
 
@@ -548,10 +571,10 @@ TEST_F(BodyStreamBufferTest, LoadErroredHandle) {
       BytesConsumer::CreateErrored(BytesConsumer::Error()),
       /* abort_signal = */ nullptr, side_data_blob);
 
-  EXPECT_TRUE(buffer->IsStreamErrored(ASSERT_NO_EXCEPTION).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamErrored());
 
-  EXPECT_FALSE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(true));
-  EXPECT_FALSE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));
+  EXPECT_FALSE(buffer->IsStreamLocked());
+  EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(nullptr, buffer->GetSideDataBlobForTest());
 
@@ -561,8 +584,8 @@ TEST_F(BodyStreamBufferTest, LoadErroredHandle) {
                        client, ASSERT_NO_EXCEPTION);
   checkpoint.Call(2);
 
-  EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
-  EXPECT_TRUE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(false));
+  EXPECT_TRUE(buffer->IsStreamLocked());
+  EXPECT_TRUE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
 }
 

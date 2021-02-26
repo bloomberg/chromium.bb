@@ -1,23 +1,10 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
-mojom("mojom") {
-  sources = [ "blob/mojom/blob_storage_context.mojom" ]
-
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//third_party/blink/public/mojom:mojom_core",
-  ]
-
-  overridden_deps = [ "//third_party/blink/public/mojom:mojom_core" ]
-  component_deps = [ "//third_party/blink/public/common" ]
-}
-
-jumbo_component("browser") {
+component("browser") {
   output_name = "storage_browser"
   sources = [
     "blob/blob_builder_from_stream.cc",
@@ -54,6 +41,8 @@ jumbo_component("browser") {
     "blob/blob_url_loader.h",
     "blob/blob_url_loader_factory.cc",
     "blob/blob_url_loader_factory.h",
+    "blob/blob_url_registry.cc",
+    "blob/blob_url_registry.h",
     "blob/blob_url_store_impl.cc",
     "blob/blob_url_store_impl.h",
     "blob/blob_url_utils.cc",
@@ -122,6 +111,8 @@ jumbo_component("browser") {
     "file_system/file_system_usage_cache.h",
     "file_system/file_writer_delegate.cc",
     "file_system/file_writer_delegate.h",
+    "file_system/filesystem_proxy_file_stream_reader.cc",
+    "file_system/filesystem_proxy_file_stream_reader.h",
     "file_system/isolated_context.cc",
     "file_system/isolated_context.h",
     "file_system/isolated_file_system_backend.cc",
@@ -208,6 +199,8 @@ jumbo_component("browser") {
     "quota/quota_manager.h",
     "quota/quota_manager_proxy.cc",
     "quota/quota_manager_proxy.h",
+    "quota/quota_override_handle.cc",
+    "quota/quota_override_handle.h",
     "quota/quota_settings.cc",
     "quota/quota_settings.h",
     "quota/quota_task.cc",
@@ -227,14 +220,16 @@ jumbo_component("browser") {
   ]
 
   public_deps = [
-    ":mojom",
     "//components/services/filesystem/public/mojom",
+    "//components/services/storage/public/mojom",
     "//storage/common",
   ]
   deps = [
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//build:chromeos_buildflags",
+    "//components/services/storage/public/cpp/filesystem",
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/network:network_service",
@@ -276,6 +271,7 @@ source_set("unittests") {
     "blob/blob_storage_context_unittest.cc",
     "blob/blob_storage_registry_unittest.cc",
     "blob/blob_transport_strategy_unittest.cc",
+    "blob/blob_url_registry_unittest.cc",
     "blob/blob_url_store_impl_unittest.cc",
     "database/database_quota_client_unittest.cc",
     "database/database_tracker_unittest.cc",
@@ -285,8 +281,12 @@ source_set("unittests") {
     "file_system/copy_or_move_operation_delegate_unittest.cc",
     "file_system/dragged_file_util_unittest.cc",
     "file_system/external_mount_points_unittest.cc",
+    "file_system/file_stream_reader_test.cc",
+    "file_system/file_stream_reader_test.h",
     "file_system/file_stream_test_utils.cc",
     "file_system/file_stream_test_utils.h",
+    "file_system/file_stream_writer_test.cc",
+    "file_system/file_stream_writer_test.h",
     "file_system/file_system_context_unittest.cc",
     "file_system/file_system_file_stream_reader_unittest.cc",
     "file_system/file_system_operation_impl_unittest.cc",
@@ -295,6 +295,7 @@ source_set("unittests") {
     "file_system/file_system_url_unittest.cc",
     "file_system/file_system_usage_cache_unittest.cc",
     "file_system/file_writer_delegate_unittest.cc",
+    "file_system/filesystem_proxy_file_stream_reader_unittest.cc",
     "file_system/isolated_context_unittest.cc",
     "file_system/local_file_stream_reader_unittest.cc",
     "file_system/local_file_stream_writer_unittest.cc",
@@ -309,6 +310,7 @@ source_set("unittests") {
     "file_system/quota/quota_reservation_manager_unittest.cc",
     "file_system/recursive_operation_delegate_unittest.cc",
     "file_system/sandbox_directory_database_unittest.cc",
+    "file_system/sandbox_file_stream_writer_unittest.cc",
     "file_system/sandbox_file_system_backend_delegate_unittest.cc",
     "file_system/sandbox_file_system_backend_unittest.cc",
     "file_system/sandbox_isolated_origin_database_unittest.cc",
@@ -327,8 +329,10 @@ source_set("unittests") {
     ":browser",
     ":test_support",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//components/services/filesystem/public/mojom",
-    "//mojo/core/embedder",
+    "//components/services/storage/public/cpp/filesystem",
+    "//mojo/public/cpp/system",
     "//net:test_support",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
@@ -339,7 +343,7 @@ source_set("unittests") {
   ]
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [
@@ -387,8 +391,9 @@ jumbo_static_library("test_support") {
 
   deps = [
     ":browser",
-    ":mojom",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
+    "//components/services/storage/public/mojom",
     "//net:test_support",
     "//services/network:network_service",
     "//testing/gtest",

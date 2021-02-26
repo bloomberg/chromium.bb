@@ -48,7 +48,7 @@ class PerfettoCmd : public Consumer {
   // perfetto::Consumer implementation.
   void OnConnect() override;
   void OnDisconnect() override;
-  void OnTracingDisabled() override;
+  void OnTracingDisabled(const std::string& error) override;
   void OnTraceData(std::vector<TracePacket>, bool has_more) override;
   void OnDetach(bool) override;
   void OnAttach(bool, const TraceConfig&) override;
@@ -78,7 +78,6 @@ class PerfettoCmd : public Consumer {
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
   static base::ScopedFile OpenDropboxTmpFile();
   void SaveTraceIntoDropboxAndIncidentOrCrash();
-  void SaveOutputToDropboxOrCrash();
   void SaveOutputToIncidentTraceOrCrash();
   void LogUploadEventAndroid(PerfettoStatsdAtom atom);
 #endif
@@ -95,7 +94,7 @@ class PerfettoCmd : public Consumer {
 
   std::string trace_out_path_;
   base::EventFd ctrl_c_evt_;
-  std::string dropbox_tag_;
+  bool is_uploading_ = false;
   bool did_process_full_trace_ = false;
   uint64_t bytes_written_ = 0;
   std::string detach_key_;

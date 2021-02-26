@@ -16,7 +16,6 @@ class AppMenuModel;
 class Browser;
 
 namespace views {
-class ButtonListener;
 class MenuButtonController;
 }  // namespace views
 
@@ -25,7 +24,7 @@ class MenuButtonController;
 // displays the app menu.
 class AppMenuButton : public ToolbarButton {
  public:
-  explicit AppMenuButton(views::ButtonListener* button_listener);
+  explicit AppMenuButton(PressedCallback callback);
   ~AppMenuButton() override;
 
   views::MenuButtonController* menu_button_controller() const {
@@ -53,6 +52,10 @@ class AppMenuButton : public ToolbarButton {
                Browser* browser,
                int run_flags,
                bool alert_reopen_tab_items);
+
+  // Provided for subclasses to handle menu close, before observers are
+  // notified. Default implementation does nothing.
+  virtual void HandleMenuClosed();
 
  private:
   // App model and menu.

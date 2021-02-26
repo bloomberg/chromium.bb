@@ -63,7 +63,8 @@ void CreateAndSwitchToProfile(const std::string& basepath) {
   base::FilePath path = profile_manager->user_data_dir().AppendASCII(basepath);
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
-      path, base::Bind(&UnblockOnProfileInitialized, run_loop.QuitClosure()),
+      path,
+      base::BindRepeating(&UnblockOnProfileInitialized, run_loop.QuitClosure()),
       base::string16(), std::string());
   // Run the message loop to allow profile creation to take place; the loop is
   // terminated by UnblockOnProfileCreation when the profile is created.
@@ -109,8 +110,11 @@ void ExpectUserManagerToShow() {
 
 class StartupBrowserCreatorCorruptProfileTest : public InProcessBrowserTest {
  public:
-  StartupBrowserCreatorCorruptProfileTest()
-      : test_body_has_run_(false), expect_test_body_to_run_(true) {}
+  StartupBrowserCreatorCorruptProfileTest() = default;
+  StartupBrowserCreatorCorruptProfileTest(
+      const StartupBrowserCreatorCorruptProfileTest&) = delete;
+  StartupBrowserCreatorCorruptProfileTest& operator=(
+      const StartupBrowserCreatorCorruptProfileTest&) = delete;
 
   void SetExpectTestBodyToRun(bool expected_result) {
     expect_test_body_to_run_ = expected_result;
@@ -123,7 +127,7 @@ class StartupBrowserCreatorCorruptProfileTest : public InProcessBrowserTest {
 
     base::FilePath dir_to_delete = user_data_dir.AppendASCII(basepath);
     return base::DirectoryExists(dir_to_delete) &&
-           base::DeleteFileRecursively(dir_to_delete);
+           base::DeletePathRecursively(dir_to_delete);
   }
 
   bool RemoveCreateDirectoryPermissionForUserDataDirectory() {
@@ -206,9 +210,8 @@ if (testing::UnitTest::GetInstance()->current_test_info()->name() == \
   }
 
  private:
-  bool test_body_has_run_;
-  bool expect_test_body_to_run_;
-  DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorCorruptProfileTest);
+  bool test_body_has_run_ = false;
+  bool expect_test_body_to_run_ = true;
 };
 
 // Most of the tests below have three sections:

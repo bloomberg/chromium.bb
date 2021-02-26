@@ -9,11 +9,12 @@
 #include <tuple>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/task_runner_util.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
+#include "content/browser/conversions/conversion_storage_context.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -28,6 +29,11 @@ const char kDefaultReportOrigin[] = "https://report.test/";
 const int64_t kExpiryTime = 30;
 
 }  // namespace
+
+bool ConversionDisallowingContentBrowserClient::AllowConversionMeasurement(
+    BrowserContext* context) {
+  return false;
+}
 
 ConfigurableStorageDelegate::ConfigurableStorageDelegate() = default;
 ConfigurableStorageDelegate::~ConfigurableStorageDelegate() = default;
@@ -232,16 +238,12 @@ std::vector<ConversionReport> GetConversionsToReportForTesting(
     base::Time max_report_time) {
   base::RunLoop run_loop;
   std::vector<ConversionReport> conversion_reports;
-  base::PostTaskAndReplyWithResult(
-      manager->storage_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&ConversionStorage::GetConversionsToReport,
-                     base::Unretained(manager->storage_.get()),
-                     max_report_time),
-      base::BindOnce(base::BindLambdaForTesting(
-          [&](std::vector<ConversionReport> reports) {
-            conversion_reports = std::move(reports);
-            run_loop.Quit();
-          })));
+  manager->conversion_storage_context_->GetConversionsToReport(
+      max_report_time, base::BindOnce(base::BindLambdaForTesting(
+                           [&](std::vector<ConversionReport> reports) {
+                             conversion_reports = std::move(reports);
+                             run_loop.Quit();
+                           })));
   run_loop.Run();
   return conversion_reports;
 }

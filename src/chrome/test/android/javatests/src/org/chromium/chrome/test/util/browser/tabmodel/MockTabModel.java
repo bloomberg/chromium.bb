@@ -11,6 +11,8 @@ import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
+import org.chromium.chrome.browser.tabmodel.IncognitoTabModel;
+import org.chromium.chrome.browser.tabmodel.IncognitoTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 
@@ -19,7 +21,7 @@ import java.util.ArrayList;
 /**
  * Almost empty implementation to mock a TabModel. It only handles tab creation and queries.
  */
-public class MockTabModel extends EmptyTabModel {
+public class MockTabModel extends EmptyTabModel implements IncognitoTabModel {
     /**
      * Used to create different kinds of Tabs.  If a MockTabModelDelegate is not provided, regular
      * Tabs are produced.
@@ -40,6 +42,7 @@ public class MockTabModel extends EmptyTabModel {
     private final ArrayList<Tab> mTabs = new ArrayList<Tab>();
     private final boolean mIncognito;
     private final MockTabModelDelegate mDelegate;
+    private boolean mIsActiveModel;
 
     public MockTabModel(boolean incognito, MockTabModelDelegate delegate) {
         mIncognito = incognito;
@@ -56,6 +59,8 @@ public class MockTabModel extends EmptyTabModel {
     @Override
     public void addTab(
             Tab tab, int index, @TabLaunchType int type, @TabCreationState int creationState) {
+        for (TabModelObserver observer : mObservers) observer.willAddTab(tab, type);
+
         if (index == -1) {
             mTabs.add(tab);
         } else {
@@ -113,5 +118,20 @@ public class MockTabModel extends EmptyTabModel {
     @Override
     public void removeObserver(TabModelObserver observer) {
         mObservers.removeObserver(observer);
+    }
+
+    @Override
+    public void addIncognitoObserver(IncognitoTabModelObserver observer) {}
+
+    @Override
+    public void removeIncognitoObserver(IncognitoTabModelObserver observer) {}
+
+    @Override
+    public boolean isActiveModel() {
+        return mIsActiveModel;
+    }
+
+    public void setAsActiveModelForTesting() {
+        mIsActiveModel = true;
     }
 }

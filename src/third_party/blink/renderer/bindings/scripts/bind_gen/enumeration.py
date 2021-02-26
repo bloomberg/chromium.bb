@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import web_idl
+
 from . import name_style
 from .blink_v8_bridge import blink_class_name
 from .code_node import EmptyNode
@@ -22,7 +24,9 @@ from .codegen_utils import make_forward_declarations
 from .codegen_utils import make_header_include_directives
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
+from .package_initializer import package_initializer
 from .path_manager import PathManager
+from .task_queue import TaskQueue
 
 
 def make_factory_methods(cg_context):
@@ -233,10 +237,16 @@ def make_enum_string_table(cg_context):
     return decls, defs
 
 
-def generate_enumeration(enumeration):
+def generate_enumeration(enumeration_identifier):
+    assert isinstance(enumeration_identifier, web_idl.Identifier)
+
+    web_idl_database = package_initializer().web_idl_database()
+    enumeration = web_idl_database.find(enumeration_identifier)
+
     path_manager = PathManager(enumeration)
     assert path_manager.api_component == path_manager.impl_component
     api_component = path_manager.api_component
+    for_testing = enumeration.code_generator_info.for_testing
 
     # Class names
     class_name = blink_class_name(enumeration)
@@ -263,11 +273,11 @@ def generate_enumeration(enumeration):
     source_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
 
     # Class definition
-    class_def = CxxClassDefNode(
-        cg_context.class_name,
-        base_class_names=["bindings::EnumerationBase"],
-        final=True,
-        export=component_export(api_component))
+    class_def = CxxClassDefNode(cg_context.class_name,
+                                base_class_names=["bindings::EnumerationBase"],
+                                final=True,
+                                export=component_export(
+                                    api_component, for_testing))
     class_def.set_base_template_vars(cg_context.template_bindings())
 
     # Implementation parts
@@ -307,13 +317,14 @@ def generate_enumeration(enumeration):
         make_forward_declarations(source_node.accumulator),
         EmptyNode(),
     ])
+
+    # Assemble the parts.
     header_node.accumulator.add_include_headers([
-        component_export_header(api_component),
+        component_export_header(api_component, for_testing),
         "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h",
         "third_party/blink/renderer/platform/bindings/enumeration_base.h",
     ])
 
-    # Assemble the parts.
     header_blink_ns.body.append(class_def)
     header_blink_ns.body.append(EmptyNode())
 
@@ -355,6 +366,10 @@ def generate_enumeration(enumeration):
     write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
 
 
-def generate_enumerations(web_idl_database):
+def generate_enumerations(task_queue):
+    assert isinstance(task_queue, TaskQueue)
+
+    web_idl_database = package_initializer().web_idl_database()
+
     for enumeration in web_idl_database.enumerations:
-        generate_enumeration(enumeration)
+        task_queue.post_task(generate_enumeration, enumeration.identifier)

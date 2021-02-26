@@ -43,12 +43,11 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 // |account_keys| is the set of accounts that need to be translated.
 // |account_tracker_service| is an unowned pointer.
 std::vector<CoreAccountId> GetOAuthAccountIdsFromAccountKeys(
-    const std::set<chromeos::AccountManager::AccountKey>& account_keys,
+    const std::set<account_manager::AccountKey>& account_keys,
     const AccountTrackerService* const account_tracker_service) {
   std::vector<CoreAccountId> accounts;
   for (auto& account_key : account_keys) {
-    if (account_key.account_type !=
-        chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
+    if (account_key.account_type != account_manager::AccountType::kGaia) {
       continue;
     }
 
@@ -120,11 +119,10 @@ ProfileOAuth2TokenServiceDelegateChromeOS::CreateAccessTokenFetcher(
   }
 
   return account_manager_->CreateAccessTokenFetcher(
-      chromeos::AccountManager::AccountKey{
+      account_manager::AccountKey{
           account_tracker_service_->GetAccountInfo(account_id).gaia,
-          chromeos::account_manager::AccountType::
-              ACCOUNT_TYPE_GAIA} /* account_key */,
-      url_loader_factory, consumer);
+          account_manager::AccountType::kGaia} /* account_key */,
+      consumer);
 }
 
 // Note: This method should use the same logic for filtering accounts as
@@ -148,6 +146,13 @@ bool ProfileOAuth2TokenServiceDelegateChromeOS::RefreshTokenIsAvailable(
 void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthError(
     const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
+  UpdateAuthErrorInternal(account_id, error, /*fire_auth_error_changed=*/true);
+}
+
+void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthErrorInternal(
+    const CoreAccountId& account_id,
+    const GoogleServiceAuthError& error,
+    bool fire_auth_error_changed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   backoff_entry_.InformOfRequest(!error.IsTransientError());
@@ -166,11 +171,15 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthError(
       errors_.erase(it);
     else
       it->second.last_auth_error = error;
-    FireAuthErrorChanged(account_id, error);
+    if (fire_auth_error_changed) {
+      FireAuthErrorChanged(account_id, error);
+    }
   } else if (error.state() != GoogleServiceAuthError::NONE) {
     // Add a new error.
     errors_.emplace(account_id, AccountErrorStatus{error});
-    FireAuthErrorChanged(account_id, error);
+    if (fire_auth_error_changed) {
+      FireAuthErrorChanged(account_id, error);
+    }
   }
 }
 
@@ -235,78 +244,18 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::LoadCredentials(
 void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateCredentials(
     const CoreAccountId& account_id,
     const std::string& refresh_token) {
-  // This API could have been called for upserting the Device/Primary
-  // |account_id| or a Secondary |account_id|.
-
-  // Account insertion:
-  // Device Account insertion on Chrome OS happens as a 2 step process:
-  // 1. The account is inserted into PrimaryAccountManager /
-  // AccountTrackerService, via IdentityManager, with a valid Gaia id and email
-  // but an invalid refresh token.
-  // 2. This API is called to update the aforementioned account with a valid
-  // refresh token.
-  // Secondary Account insertion on Chrome OS happens atomically in
-  // |InlineLoginHandlerChromeOS::<anon>::SigninHelper::OnClientOAuthSuccess|.
-  // In both of the aforementioned cases, we can be sure that when this API is
-  // called, |account_id| is guaranteed to be present in
-  // |AccountTrackerService|. This guarantee is important because
-  // |ProfileOAuth2TokenServiceDelegateChromeOS| relies on
-  // |AccountTrackerService| to convert |account_id| to an email id.
-
-  // Account update:
-  // If an account is being updated, it must be present in
-  // |AccountTrackerService|.
-
-  // Hence for all cases (insertion and updates for Device and Secondary
-  // Accounts) we can be sure that |account_id| is present in
-  // |AccountTrackerService|.
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(
-      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-      load_credentials_state());
-  DCHECK(!account_id.empty());
-  DCHECK(!refresh_token.empty());
-
-  ValidateAccountId(account_id);
-
-  const AccountInfo& account_info =
-      account_tracker_service_->GetAccountInfo(account_id);
-  LOG_IF(FATAL, account_info.gaia.empty())
-      << "account_id must be present in AccountTrackerService before "
-         "UpdateCredentials is called";
-
-  // Will result in chromeos::AccountManager calling
-  // |ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted|.
-  account_manager_->UpsertAccount(
-      chromeos::AccountManager::AccountKey{
-          account_info.gaia, chromeos::account_manager::AccountType::
-                                 ACCOUNT_TYPE_GAIA} /* account_key */,
-      account_info.email /* email */, refresh_token);
+  // UpdateCredentials should not be called on Chrome OS. Credentials should be
+  // updated through Chrome OS Account Manager.
+  NOTREACHED();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ProfileOAuth2TokenServiceDelegateChromeOS::GetURLLoaderFactory() const {
-  if (!is_regular_profile_) {
-    // Signin and Lock Screen profiles (non-|is_regular_profile_|s) have weird
-    // expectations around token loading. They do not have an account associated
-    // with them but expect calls like |LoadCredentials| and
-    // |GetURLLoaderFactory| to successfully complete.
-    // We *can* return a |nullptr| here because the return value of
-    // |GetURLLoaderFactory| is never used by Signin and Lock Screen profiles.
-    // They get a hard-coded |GoogleServiceAuthError::USER_NOT_SIGNED_UP| error
-    // returned to them by access token fetchers.
-    // We *must* return a |nullptr| here because otherwise |AccountManager|
-    // DCHECKs as it has not been initialized for non-|is_regular_profile_| and
-    // crashes for this weird case (Non-regular profiles expecting to act on
-    // accounts).
-    // See https://crbug.com/996615 for details.
     return nullptr;
-  }
-  return account_manager_->GetUrlLoaderFactory();
 }
 
 void ProfileOAuth2TokenServiceDelegateChromeOS::OnGetAccounts(
-    const std::vector<chromeos::AccountManager::Account>& accounts) {
+    const std::vector<account_manager::Account>& accounts) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // This callback should only be triggered during |LoadCredentials|, which
@@ -330,36 +279,20 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnGetAccounts(
   FireRefreshTokensLoaded();
 }
 
-void ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted(
-    const chromeos::AccountManager::Account& account) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  account_keys_.insert(account.key);
-
-  if (account.key.account_type !=
-      chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
-    return;
-  }
-
-  // All Gaia accounts in Chrome OS Account Manager must have an email
-  // associated with them (https://crbug.com/933307).
-  DCHECK(!account.raw_email.empty());
-  CoreAccountId account_id = account_tracker_service_->SeedAccountInfo(
-      account.key.id /* gaia_id */, account.raw_email);
-  DCHECK(!account_id.empty());
-
-  // Clear any previously cached errors for |account_id|.
-  // We cannot directly use |UpdateAuthError| because it does not invoke
-  // |FireAuthErrorChanged| if |account_id|'s error state was already
-  // |GoogleServiceAuthError::State::NONE|, but |FireAuthErrorChanged| must be
-  // invoked here, regardless. See the comment above |FireAuthErrorChanged| few
-  // lines down.
-  errors_.erase(account_id);
+void ProfileOAuth2TokenServiceDelegateChromeOS::ContinueTokenUpsertProcessing(
+    const CoreAccountId& account_id,
+    bool has_dummy_token) {
   GoogleServiceAuthError error(GoogleServiceAuthError::AuthErrorNone());
+  // Clear any previously cached errors for |account_id|.
+  // Don't call |FireAuthErrorChanged|, since we call it at the end of this
+  // function.
+  UpdateAuthErrorInternal(account_id, error,
+                          /*fire_auth_error_changed=*/false);
 
   // However, if we know that |account_key| has a dummy token, store a
   // persistent error against it, so that we can pre-emptively reject access
   // token requests for it.
-  if (account_manager_->HasDummyGaiaToken(account.key)) {
+  if (has_dummy_token) {
     error = GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
         GoogleServiceAuthError::InvalidGaiaCredentialsReason::
             CREDENTIALS_REJECTED_BY_CLIENT);
@@ -374,8 +307,30 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted(
   FireAuthErrorChanged(account_id, error);
 }
 
+void ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted(
+    const account_manager::Account& account) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  account_keys_.insert(account.key);
+
+  if (account.key.account_type != account_manager::AccountType::kGaia) {
+    return;
+  }
+
+  // All Gaia accounts in Chrome OS Account Manager must have an email
+  // associated with them (https://crbug.com/933307).
+  DCHECK(!account.raw_email.empty());
+  CoreAccountId account_id = account_tracker_service_->SeedAccountInfo(
+      account.key.id /* gaia_id */, account.raw_email);
+  DCHECK(!account_id.empty());
+
+  account_manager_->HasDummyGaiaToken(
+      account.key, base::BindOnce(&ProfileOAuth2TokenServiceDelegateChromeOS::
+                                      ContinueTokenUpsertProcessing,
+                                  weak_factory_.GetWeakPtr(), account_id));
+}
+
 void ProfileOAuth2TokenServiceDelegateChromeOS::OnAccountRemoved(
-    const chromeos::AccountManager::Account& account) {
+    const account_manager::Account& account) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(
       signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
@@ -387,8 +342,7 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnAccountRemoved(
   }
   account_keys_.erase(it);
 
-  if (account.key.account_type !=
-      chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
+  if (account.key.account_type != account_manager::AccountType::kGaia) {
     return;
   }
   CoreAccountId account_id =
@@ -396,6 +350,8 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnAccountRemoved(
           ->FindAccountInfoByGaiaId(account.key.id /* gaia_id */)
           .account_id;
   DCHECK(!account_id.empty());
+  UpdateAuthErrorInternal(account_id, GoogleServiceAuthError::AuthErrorNone(),
+                          /*fire_auth_error_changed=*/false);
 
   ScopedBatchChange batch(this);
 

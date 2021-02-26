@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -25,7 +26,8 @@
 namespace ui {
 
 // OSExchangeDataProvider implementation for Mac.
-class UI_BASE_EXPORT OSExchangeDataProviderMac : public OSExchangeDataProvider {
+class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderMac
+    : public OSExchangeDataProvider {
  public:
   ~OSExchangeDataProviderMac() override;
 
@@ -73,6 +75,9 @@ class UI_BASE_EXPORT OSExchangeDataProviderMac : public OSExchangeDataProvider {
   // Returns an array of pasteboard types that can be supported by
   // OSExchangeData.
   static NSArray* SupportedPasteboardTypes();
+
+  void SetSource(std::unique_ptr<DataTransferEndpoint> data_source) override;
+  DataTransferEndpoint* GetSource() const override;
 
  protected:
   OSExchangeDataProviderMac();

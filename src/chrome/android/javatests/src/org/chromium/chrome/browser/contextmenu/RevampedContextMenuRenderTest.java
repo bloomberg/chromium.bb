@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.contextmenu;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.support.test.filters.LargeTest;
 import android.view.View;
+import android.view.ViewStub;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,7 +48,8 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
             new NightModeTestUtils.NightModeParams().getParameters();
 
     @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     private ModelListAdapter mAdapter;
     private ModelList mListItems;
@@ -64,8 +67,9 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
         mListItems = new ModelList();
         mAdapter = new ModelListAdapter(mListItems);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            getActivity().setContentView(R.layout.revamped_context_menu);
+            getActivity().setContentView(R.layout.context_menu_fullscreen_container);
             mView = getActivity().findViewById(android.R.id.content);
+            ((ViewStub) mView.findViewById(R.id.context_menu_stub)).inflate();
             mFrame = mView.findViewById(R.id.context_menu_frame);
             RevampedContextMenuListView listView = mView.findViewById(R.id.context_menu_list_view);
             listView.setAdapter(mAdapter);
@@ -85,9 +89,9 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
                     new LayoutViewBuilder(R.layout.revamped_context_menu_row),
                     RevampedContextMenuItemViewBinder::bind);
             mAdapter.registerType(
-                    ListItemType.CONTEXT_MENU_SHARE_ITEM,
+                    ListItemType.CONTEXT_MENU_ITEM_WITH_ICON_BUTTON,
                     new LayoutViewBuilder(R.layout.revamped_context_menu_share_row),
-                    RevampedContextMenuShareItemViewBinder::bind);
+                    RevampedContextMenuItemWithIconButtonViewBinder::bind);
             // clang-format on
         });
     }
@@ -115,8 +119,8 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
                     ListItemType.CONTEXT_MENU_ITEM, getItemModel("Open in incognito tab"))));
             mListItems.add((new ListItem(
                     ListItemType.CONTEXT_MENU_ITEM, getItemModel("Copy link address"))));
-            mListItems.add((new ListItem(
-                    ListItemType.CONTEXT_MENU_SHARE_ITEM, getShareItemModel("Share link"))));
+            mListItems.add((new ListItem(ListItemType.CONTEXT_MENU_ITEM_WITH_ICON_BUTTON,
+                    getShareItemModel("Share link"))));
         });
         mRenderTestRule.render(mFrame, "revamped_context_menu_with_link");
     }
@@ -135,15 +139,15 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
                     ListItemType.CONTEXT_MENU_ITEM, getItemModel("Open in incognito tab"))));
             mListItems.add((new ListItem(
                     ListItemType.CONTEXT_MENU_ITEM, getItemModel("Copy link address"))));
-            mListItems.add((new ListItem(
-                    ListItemType.CONTEXT_MENU_SHARE_ITEM, getShareItemModel("Share link"))));
+            mListItems.add((new ListItem(ListItemType.CONTEXT_MENU_ITEM_WITH_ICON_BUTTON,
+                    getShareItemModel("Share link"))));
             mListItems.add(new ListItem(ListItemType.DIVIDER, new PropertyModel()));
             mListItems.add((new ListItem(
                     ListItemType.CONTEXT_MENU_ITEM, getItemModel("Open image in new tab"))));
             mListItems.add(
                     (new ListItem(ListItemType.CONTEXT_MENU_ITEM, getItemModel("Download image"))));
-            mListItems.add((new ListItem(
-                    ListItemType.CONTEXT_MENU_SHARE_ITEM, getShareItemModel("Share image"))));
+            mListItems.add((new ListItem(ListItemType.CONTEXT_MENU_ITEM_WITH_ICON_BUTTON,
+                    getShareItemModel("Share image"))));
 
         });
         mRenderTestRule.render(mFrame, "revamped_context_menu_with_image_link");
@@ -182,9 +186,9 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
         final BitmapDrawable drawable = new BitmapDrawable(getActivity().getResources(),
                 BitmapFactory.decodeFile(UrlUtils.getIsolatedTestFilePath(
                         "chrome/test/data/android/UiCapture/dots.png")));
-        return new PropertyModel.Builder(RevampedContextMenuShareItemProperties.ALL_KEYS)
-                .with(RevampedContextMenuShareItemProperties.TEXT, title)
-                .with(RevampedContextMenuShareItemProperties.IMAGE, drawable)
+        return new PropertyModel.Builder(RevampedContextMenuItemWithIconButtonProperties.ALL_KEYS)
+                .with(RevampedContextMenuItemWithIconButtonProperties.TEXT, title)
+                .with(RevampedContextMenuItemWithIconButtonProperties.BUTTON_IMAGE, drawable)
                 .build();
     }
 }

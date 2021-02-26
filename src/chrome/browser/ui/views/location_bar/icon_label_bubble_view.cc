@@ -129,31 +129,28 @@ class IconLabelBubbleView::HighlightPathGenerator
 
 IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
                                          Delegate* delegate)
-    : LabelButton(nullptr, base::string16()),
-      delegate_(delegate),
-      separator_view_(new SeparatorView(this)) {
+    : delegate_(delegate),
+      separator_view_(AddChildView(std::make_unique<SeparatorView>(this))) {
   DCHECK(delegate_);
 
   SetFontList(font_list);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   separator_view_->SetVisible(ShouldShowSeparator());
-  AddChildView(separator_view_);
 
-  set_ink_drop_visible_opacity(
-      GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
-  set_ink_drop_highlight_opacity(
-      GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
+  SetInkDropVisibleOpacity(GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
+  SetInkDropHighlightOpacity(GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
 
   views::HighlightPathGenerator::Install(
       this, std::make_unique<HighlightPathGenerator>());
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
   UpdateBorder();
 
-  set_notify_enter_exit_on_child(true);
+  SetNotifyEnterExitOnChild(true);
 
   // Flip the canvas in RTL so the separator is drawn on the correct side.
-  separator_view_->EnableCanvasFlippingForRTLUI(true);
+  separator_view_->SetFlipCanvasOnPaintForRTLUI(true);
 
   auto alert_view = std::make_unique<views::AXVirtualView>();
   alert_view->GetCustomData().role = ax::mojom::Role::kAlert;
@@ -393,9 +390,9 @@ void IconLabelBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetNameExplicitlyEmpty();
 }
 
-void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
-  DCHECK(!image_skia.isNull());
-  LabelButton::SetImage(STATE_NORMAL, image_skia);
+void IconLabelBubbleView::SetImageModel(const ui::ImageModel& image_model) {
+  DCHECK(!image_model.IsEmpty());
+  LabelButton::SetImageModel(STATE_NORMAL, image_model);
 }
 
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {

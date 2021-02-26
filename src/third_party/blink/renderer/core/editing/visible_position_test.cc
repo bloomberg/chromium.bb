@@ -12,6 +12,132 @@ namespace blink {
 
 class VisiblePositionTest : public EditingTestBase {};
 
+TEST_F(VisiblePositionTest, EmptyEditable) {
+  SetBodyContent("<div id=target contenteditable></div>");
+  const Element& target = *GetElementById("target");
+
+  EXPECT_EQ(Position(target, 0),
+            CreateVisiblePosition(Position(target, 0)).DeepEquivalent());
+  EXPECT_EQ(Position(target, 0),
+            CreateVisiblePosition(Position::FirstPositionInNode(target))
+                .DeepEquivalent());
+  EXPECT_EQ(Position(target, 0),
+            CreateVisiblePosition(Position::LastPositionInNode(target))
+                .DeepEquivalent());
+}
+
+TEST_F(VisiblePositionTest, EmptyEditableWithBlockChild) {
+  // Note: Placeholder <br> is needed to have non-zero editable.
+  SetBodyContent("<div id=target contenteditable><div><br></div></div>");
+  const Element& target = *GetElementById("target");
+  const Node& div = *target.firstChild();
+  const Node& br = *div.firstChild();
+
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position(target, 0)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::FirstPositionInNode(target))
+                .DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::LastPositionInNode(target))
+                .DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position(target, 1)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position(div, 0)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::BeforeNode(div)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::AfterNode(div)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::BeforeNode(br)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::AfterNode(br)).DeepEquivalent());
+}
+
+TEST_F(VisiblePositionTest, EmptyEditableWithInlineChild) {
+  SetBodyContent("<div id=target contenteditable><span></span></div>");
+  const Element& target = *GetElementById("target");
+  const Node& span = *target.firstChild();
+
+  EXPECT_EQ(Position(target, 0),
+            CreateVisiblePosition(Position(target, 0)).DeepEquivalent());
+  EXPECT_EQ(Position(target, 0),
+            CreateVisiblePosition(Position::FirstPositionInNode(target))
+                .DeepEquivalent());
+  EXPECT_EQ(Position(target, 0),
+            CreateVisiblePosition(Position::LastPositionInNode(target))
+                .DeepEquivalent());
+  EXPECT_EQ(Position(target, 0),
+            CreateVisiblePosition(Position(target, 1)).DeepEquivalent());
+  EXPECT_EQ(Position(target, 0),
+            CreateVisiblePosition(Position(span, 0)).DeepEquivalent());
+  EXPECT_EQ(Position(target, 0),
+            CreateVisiblePosition(Position::BeforeNode(span)).DeepEquivalent());
+  EXPECT_EQ(Position(target, 0),
+            CreateVisiblePosition(Position::AfterNode(span)).DeepEquivalent());
+}
+
+TEST_F(VisiblePositionTest, PlaceholderBR) {
+  SetBodyContent("<div id=target><br id=br></div>");
+  const Element& target = *GetElementById("target");
+  const Element& br = *GetElementById("br");
+
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position(target, 0)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::FirstPositionInNode(target))
+                .DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::LastPositionInNode(target))
+                .DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position(target, 1)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position(br, 0)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::BeforeNode(br)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::AfterNode(br)).DeepEquivalent());
+}
+
+TEST_F(VisiblePositionTest, PlaceholderBRWithCollapsedSpace) {
+  SetBodyContent("<div id=target> <br id=br> </div>");
+  const Element& target = *GetElementById("target");
+  const Element& br = *GetElementById("br");
+
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position(target, 0)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::FirstPositionInNode(target))
+                .DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::LastPositionInNode(target))
+                .DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position(target, 1)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position(target, 2)).DeepEquivalent());
+  EXPECT_EQ(
+      Position::BeforeNode(br),
+      CreateVisiblePosition(Position(target.firstChild(), 0)).DeepEquivalent());
+  EXPECT_EQ(
+      Position::BeforeNode(br),
+      CreateVisiblePosition(Position(target.firstChild(), 1)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position(br, 0)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::BeforeNode(br)).DeepEquivalent());
+  EXPECT_EQ(Position::BeforeNode(br),
+            CreateVisiblePosition(Position::AfterNode(br)).DeepEquivalent());
+  EXPECT_EQ(
+      Position::BeforeNode(br),
+      CreateVisiblePosition(Position(target.lastChild(), 0)).DeepEquivalent());
+  EXPECT_EQ(
+      Position::BeforeNode(br),
+      CreateVisiblePosition(Position(target.lastChild(), 1)).DeepEquivalent());
+}
+
 TEST_F(VisiblePositionTest, ShadowV0DistributedNodes) {
   const char* body_content =
       "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
@@ -31,18 +157,34 @@ TEST_F(VisiblePositionTest, ShadowV0DistributedNodes) {
   EXPECT_EQ(Position(one->firstChild(), 0),
             CanonicalPositionOf(Position(one, 0)));
   EXPECT_EQ(Position(one->firstChild(), 0),
+            SnapBackward(Position(one, 0)).GetPosition());
+  EXPECT_EQ(Position(one->firstChild(), 0),
+            SnapForward(Position(one, 0)).GetPosition());
+  EXPECT_EQ(Position(one->firstChild(), 0),
             CreateVisiblePosition(Position(one, 0)).DeepEquivalent());
   EXPECT_EQ(Position(one->firstChild(), 2),
             CanonicalPositionOf(Position(two, 0)));
+  EXPECT_EQ(Position(one->firstChild(), 2),
+            SnapBackward(Position(two, 0)).GetPosition());
+  EXPECT_EQ(Position(two->firstChild(), 0),
+            SnapForward(Position(two, 0)).GetPosition());
   EXPECT_EQ(Position(one->firstChild(), 2),
             CreateVisiblePosition(Position(two, 0)).DeepEquivalent());
 
   EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2),
             CanonicalPositionOf(PositionInFlatTree(one, 0)));
   EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2),
+            SnapBackward(PositionInFlatTree(one, 0)).GetPosition());
+  EXPECT_EQ(PositionInFlatTree(one->firstChild(), 0),
+            SnapForward(PositionInFlatTree(one, 0)).GetPosition());
+  EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2),
             CreateVisiblePosition(PositionInFlatTree(one, 0)).DeepEquivalent());
   EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2),
             CanonicalPositionOf(PositionInFlatTree(two, 0)));
+  EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2),
+            SnapBackward(PositionInFlatTree(two, 0)).GetPosition());
+  EXPECT_EQ(PositionInFlatTree(two->firstChild(), 0),
+            SnapForward(PositionInFlatTree(two, 0)).GetPosition());
   EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2),
             CreateVisiblePosition(PositionInFlatTree(two, 0)).DeepEquivalent());
 }

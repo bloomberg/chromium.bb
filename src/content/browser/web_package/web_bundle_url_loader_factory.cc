@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "components/web_package/web_bundle_utils.h"
 #include "content/browser/web_package/web_bundle_reader.h"
 #include "content/browser/web_package/web_bundle_source.h"
 #include "content/public/browser/content_browser_client.h"
@@ -30,39 +30,9 @@ namespace content {
 
 namespace {
 
-constexpr char kCrLf[] = "\r\n";
-
-network::mojom::URLResponseHeadPtr CreateResourceResponse(
-    const data_decoder::mojom::BundleResponsePtr& response) {
-  DCHECK_EQ(net::HTTP_OK, response->response_code);
-
-  std::vector<std::string> header_strings;
-  header_strings.push_back("HTTP/1.1 ");
-  header_strings.push_back(base::NumberToString(response->response_code));
-  header_strings.push_back(" ");
-  header_strings.push_back(net::GetHttpReasonPhrase(
-      static_cast<net::HttpStatusCode>(response->response_code)));
-  header_strings.push_back(kCrLf);
-  for (const auto& it : response->response_headers) {
-    header_strings.push_back(it.first);
-    header_strings.push_back(": ");
-    header_strings.push_back(it.second);
-    header_strings.push_back(kCrLf);
-  }
-  header_strings.push_back(kCrLf);
-
-  auto response_head = network::mojom::URLResponseHead::New();
-
-  response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(base::JoinString(header_strings, "")));
-  response_head->headers->GetMimeTypeAndCharset(&response_head->mime_type,
-                                                &response_head->charset);
-  return response_head;
-}
-
 void AddResponseParseErrorMessageToConsole(
     int frame_tree_node_id,
-    const data_decoder::mojom::BundleResponseParseErrorPtr& error) {
+    const web_package::mojom::BundleResponseParseErrorPtr& error) {
   WebContents* web_contents =
       WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   if (!web_contents)
@@ -121,8 +91,8 @@ class WebBundleURLLoaderFactory::EntryLoader final
   void PauseReadingBodyFromNet() override {}
   void ResumeReadingBodyFromNet() override {}
 
-  void OnResponseReady(data_decoder::mojom::BundleResponsePtr response,
-                       data_decoder::mojom::BundleResponseParseErrorPtr error) {
+  void OnResponseReady(web_package::mojom::BundleResponsePtr response,
+                       web_package::mojom::BundleResponseParseErrorPtr error) {
     if (!factory_ || !loader_client_.is_connected())
       return;
 
@@ -136,7 +106,7 @@ class WebBundleURLLoaderFactory::EntryLoader final
       return;
     }
 
-    auto response_head = CreateResourceResponse(response);
+    auto response_head = web_package::CreateResourceResponse(response);
     if (byte_range_) {
       if (byte_range_->ComputeBounds(response->payload_length)) {
         response_head->headers->UpdateWithNewRange(

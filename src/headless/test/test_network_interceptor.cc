@@ -5,20 +5,18 @@
 #include "headless/test/test_network_interceptor.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace headless {
-
-using content::BrowserThread;
 
 namespace {
 
@@ -54,8 +52,7 @@ class RedirectLoader : public network::mojom::URLLoader {
   void NotifyRedirect(const std::string& location) {
     auto redirect_info = net::RedirectInfo::ComputeRedirectInfo(
         url_request_.method, url_request_.url, url_request_.site_for_cookies,
-        net::URLRequest::FirstPartyURLPolicy::
-            UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
+        net::RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT,
         url_request_.referrer_policy, url_request_.referrer.spec(),
         response_->headers->response_code(), url_.Resolve(location),
         net::RedirectUtil::GetReferrerPolicyHeader(response_->headers.get()),
@@ -94,8 +91,8 @@ class TestNetworkInterceptor::Impl {
   }
 
   Response* FindResponse(const std::string& method, const std::string& url) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&TestNetworkInterceptor::LogRequest,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&TestNetworkInterceptor::LogRequest,
                                   interceptor_, method, url));
     auto it = response_map_.find(StripFragment(url));
     return it == response_map_.end() ? nullptr : it->second.get();
@@ -176,14 +173,14 @@ TestNetworkInterceptor::TestNetworkInterceptor() {
 }
 
 TestNetworkInterceptor::~TestNetworkInterceptor() {
-  base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, impl_.release());
+  content::GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE, impl_.release());
   interceptor_.reset();
 }
 
 void TestNetworkInterceptor::InsertResponse(std::string url,
                                             Response response) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&Impl::InsertResponse, base::Unretained(impl_.get()),
                      std::move(url), std::move(response)));
 }

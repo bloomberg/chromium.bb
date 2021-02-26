@@ -42,6 +42,7 @@ class WaylandServerController;
 #if defined(USE_AURA)
 class CastWindowManagerAura;
 class CastScreen;
+class RoundedWindowCornersManager;
 namespace shell {
 class CastUIDevTools;
 }  // namespace shell
@@ -100,6 +101,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
   std::unique_ptr<CastScreen> cast_screen_;
   std::unique_ptr<CastWindowManagerAura> window_manager_;
+  std::unique_ptr<RoundedWindowCornersManager> rounded_window_corners_manager_;
 #else
   std::unique_ptr<CastWindowManager> window_manager_;
 #endif  //  defined(USE_AURA)
@@ -129,7 +131,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<PrefService> user_pref_service_;
 #endif
 
-#if defined(OS_LINUX) && defined(USE_OZONE)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_OZONE)
   std::unique_ptr<WaylandServerController> wayland_server_controller_;
 #endif
 

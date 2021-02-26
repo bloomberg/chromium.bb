@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -84,6 +84,12 @@ void RasterDecoderTestBase::SetUp() {
   InitDecoder(InitState());
 }
 
+void RasterDecoderTestBase::AddExpectationsForGetCapabilities() {
+  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_TEXTURE_SIZE, _))
+      .WillOnce(SetArgPointee<1>(8192u))
+      .RetiresOnSaturation();
+}
+
 void RasterDecoderTestBase::AddExpectationsForRestoreAttribState(
     GLuint attrib) {
   EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, _))
@@ -135,7 +141,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   for (const std::string& extension : init.extensions) {
     all_extensions += extension + " ";
   }
-  const ContextType context_type = CONTEXT_TYPE_OPENGLES2;
+  const ContextType context_type = init.context_type;
 
   // For easier substring/extension matching
   gl::SetGLGetProcAddressProc(gl::MockGLInterface::GetGLProcAddress);
@@ -155,7 +161,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   context_->SetExtensionsString(all_extensions.c_str());
   context_->SetGLVersionString(init.gl_version.c_str());
 
-  context_->GLContextStub::MakeCurrent(surface_.get());
+  context_->GLContextStub::MakeCurrentImpl(surface_.get());
 
   GpuFeatureInfo gpu_feature_info;
   feature_info_ = base::MakeRefCounted<gles2::FeatureInfo>(init.workarounds,
@@ -163,7 +169,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   gles2::TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
       gl_.get(), all_extensions.c_str(), "", init.gl_version.c_str(),
       context_type);
-  feature_info_->Initialize(gpu::CONTEXT_TYPE_OPENGLES2,
+  feature_info_->Initialize(context_type,
                             gpu_preferences_.use_passthrough_cmd_decoder &&
                                 gles2::PassthroughCommandDecoderSupported(),
                             gles2::DisallowedFeatures());
@@ -187,7 +193,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
       new gl::GLShareGroup(), surface_, context_,
       feature_info()->workarounds().use_virtualized_gl_contexts,
       base::DoNothing(), GpuPreferences().gr_context_type);
-
+  shared_context_state_->disable_check_reset_status_throttling_for_test_ = true;
   shared_context_state_->InitializeGL(GpuPreferences(), feature_info_);
 
   command_buffer_service_.reset(new FakeCommandBufferServiceBase());
@@ -212,11 +218,16 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
                                  true, gles2::DisallowedFeatures(), attribs),
             gpu::ContextResult::kSuccess);
 
-  EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(true));
+  EXPECT_CALL(*context_, MakeCurrentImpl(surface_.get()))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   if (context_->HasRobustness()) {
     EXPECT_CALL(*gl_, GetGraphicsResetStatusARB())
         .WillOnce(Return(GL_NO_ERROR));
   }
+
   decoder_->MakeCurrent();
   decoder_->BeginDecoding();
 
@@ -255,7 +266,7 @@ void RasterDecoderTestBase::ResetDecoder() {
   for (auto& image : shared_images_)
     image->OnContextLost();
   shared_images_.clear();
-  context_->GLContextStub::MakeCurrent(surface_.get());
+  context_->GLContextStub::MakeCurrentImpl(surface_.get());
   shared_context_state_.reset();
   ::gl::MockGLInterface::SetGLInterface(nullptr);
   gl_.reset();

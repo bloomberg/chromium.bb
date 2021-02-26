@@ -57,11 +57,18 @@ class WebState;
 // Reloads the content of the NewTabPage.
 - (void)reload;
 
+// Calls when the visibility of the NTP changes.
+- (void)ntpDidChangeVisibility:(BOOL)visible;
+
 // The location bar has lost focus.
 - (void)locationBarDidResignFirstResponder;
 
 // Tell location bar has taken focus.
 - (void)locationBarDidBecomeFirstResponder;
+
+// Constrains the named layout guide for the Discover header menu button.
+- (void)constrainDiscoverHeaderMenuButtonNamedGuide;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_COORDINATOR_H_

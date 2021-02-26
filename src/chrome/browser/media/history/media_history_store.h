@@ -21,6 +21,7 @@
 #include "content/public/browser/media_player_watch_time.h"
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
+#include "url/origin.h"
 
 namespace media_session {
 struct MediaImage;
@@ -41,7 +42,7 @@ class MediaHistorySessionImagesTable;
 class MediaHistoryImagesTable;
 class MediaHistoryFeedsTable;
 class MediaHistoryFeedItemsTable;
-class MediaHistoryFeedAssociatedOriginsTable;
+class MediaHistoryKaleidoscopeDataTable;
 
 // Refcounted as it is created, initialized and destroyed on a different thread
 // from the DB sequence provided to the constructor of this class that is
@@ -59,6 +60,7 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
                                    const base::TimeDelta& position)>;
 
   static const char kInitResultHistogramName[];
+  static const char kInitResultAfterDeleteHistogramName[];
   static const char kPlaybackWriteResultHistogramName[];
   static const char kSessionWriteResultHistogramName[];
   static const char kDatabaseSizeKbHistogramName[];
@@ -122,7 +124,7 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   // Returns a flag indicating whether the origin id was created successfully.
   bool CreateOriginId(const url::Origin& origin);
 
-  void SavePlayback(const content::MediaPlayerWatchTime& watch_time);
+  void SavePlayback(std::unique_ptr<content::MediaPlayerWatchTime> watch_time);
 
   mojom::MediaHistoryStatsPtr GetMediaHistoryStats();
   int GetTableRowCount(const std::string& table_name);
@@ -132,8 +134,14 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   std::vector<mojom::MediaHistoryPlaybackRowPtr>
   GetMediaHistoryPlaybackRowsForDebug();
 
+  std::vector<media_feeds::mojom::MediaFeedItemPtr> GetMediaFeedItems(
+      const MediaHistoryKeyedService::GetMediaFeedItemsRequest& request);
+
   std::vector<media_feeds::mojom::MediaFeedPtr> GetMediaFeeds(
       const MediaHistoryKeyedService::GetMediaFeedsRequest& request);
+
+  std::vector<url::Origin> GetHighWatchTimeOrigins(
+      const base::TimeDelta& audio_video_watchtime_min);
 
   void SavePlaybackSession(
       const GURL& url,
@@ -155,20 +163,22 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   void StoreMediaFeedFetchResult(
       MediaHistoryKeyedService::MediaFeedFetchResult result);
 
-  std::vector<media_feeds::mojom::MediaFeedItemPtr>
-  GetItemsForMediaFeedForDebug(const int64_t feed_id);
-
   MediaHistoryKeyedService::PendingSafeSearchCheckList
   GetPendingSafeSearchCheckMediaFeedItems();
 
   void StoreMediaFeedItemSafeSearchResults(
-      std::map<int64_t, media_feeds::mojom::SafeSearchResult> results);
+      std::map<MediaHistoryKeyedService::SafeSearchID,
+               media_feeds::mojom::SafeSearchResult> results);
 
   void UpdateMediaFeedDisplayTime(const int64_t feed_id);
 
   void ResetMediaFeed(const url::Origin& origin,
-                      media_feeds::mojom::ResetReason reason,
-                      const bool include_subdomains);
+                      media_feeds::mojom::ResetReason reason);
+
+  void ResetMediaFeedDueToCookies(const url::Origin& origin,
+                                  const bool include_subdomains,
+                                  const std::string& name,
+                                  const net::CookieChangeCause& cause);
 
   void ResetMediaFeedDueToCacheClearing(
       const base::Time& start_time,
@@ -189,6 +199,17 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
 
   base::Optional<MediaHistoryKeyedService::MediaFeedFetchDetails>
   GetMediaFeedFetchDetails(const int64_t feed_id);
+
+  void UpdateFeedUserStatus(const int64_t feed_id,
+                            media_feeds::mojom::FeedUserStatus status);
+
+  void SetKaleidoscopeData(media::mojom::GetCollectionsResponsePtr data,
+                           const std::string& gaia_id);
+
+  media::mojom::GetCollectionsResponsePtr GetKaleidoscopeData(
+      const std::string& gaia_id);
+
+  void DeleteKaleidoscopeData();
 
  private:
   friend class base::RefCountedThreadSafe<MediaHistoryStore>;
@@ -212,7 +233,7 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   scoped_refptr<MediaHistoryImagesTable> images_table_;
   scoped_refptr<MediaHistoryFeedsTable> feeds_table_;
   scoped_refptr<MediaHistoryFeedItemsTable> feed_items_table_;
-  scoped_refptr<MediaHistoryFeedAssociatedOriginsTable> feed_origins_table_;
+  scoped_refptr<MediaHistoryKaleidoscopeDataTable> kaleidoscope_table_;
   bool initialization_successful_;
   base::AtomicFlag cancelled_;
 };

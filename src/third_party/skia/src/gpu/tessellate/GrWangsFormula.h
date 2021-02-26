@@ -9,93 +9,113 @@
 #define GrWangsFormula_DEFINED
 
 #include "include/core/SkPoint.h"
-#include "include/private/SkNx.h"
+#include "include/private/SkFloatingPoint.h"
+#include "src/gpu/GrVx.h"
 #include "src/gpu/tessellate/GrVectorXform.h"
 
-// Wang's formulas for cubics and quadratics (1985) give us the minimum number of evenly spaced (in
-// the parametric sense) line segments that a curve must be chopped into in order to guarantee all
-// lines stay within a distance of "1/intolerance" pixels from the true curve.
+// Wang's formula gives the minimum number of evenly spaced (in the parametric sense) line segments
+// that a bezier curve must be chopped into in order to guarantee all lines stay within a distance
+// of "1/intolerance" pixels from the true curve. Its definition for a bezier curve of degree "n" is
+// as follows:
+//
+//     maxLength = max([length(p[i+2] - 2p[i+1] + p[i]) for (0 <= i <= n-2)])
+//     numParametricSegments = sqrt(maxLength * intolerance * n*(n - 1)/8)
+//
+// (Goldman, Ron. (2003). 5.6.3 Wang's Formula. "Pyramid Algorithms: A Dynamic Programming Approach
+// to Curves and Surfaces for Geometric Modeling". Morgan Kaufmann Publishers.)
 namespace GrWangsFormula {
 
-SK_ALWAYS_INLINE static float length(const Sk2f& n) {
-    Sk2f nn = n*n;
-    return std::sqrt(nn[0] + nn[1]);
+// Returns the value by which to multiply length in Wang's formula. (See above.)
+template<int Degree> constexpr float length_term(float intolerance) {
+    return (Degree * (Degree - 1) / 8.f) * intolerance;
+}
+template<int Degree> constexpr float length_term_pow2(float intolerance) {
+    return ((Degree * Degree) * ((Degree - 1) * (Degree - 1)) / 64.f) * (intolerance * intolerance);
 }
 
-// Returns the minimum number of evenly spaced (in the parametric sense) line segments that the
-// quadratic must be chopped into in order to guarantee all lines stay within a distance of
-// "1/intolerance" pixels from the true curve.
-SK_ALWAYS_INLINE static float quadratic(float intolerance, const SkPoint pts[]) {
-    Sk2f p0 = Sk2f::Load(pts);
-    Sk2f p1 = Sk2f::Load(pts + 1);
-    Sk2f p2 = Sk2f::Load(pts + 2);
-    float k = intolerance * .25f;
-    return SkScalarSqrt(k * length(p0 - p1*2 + p2));
+SK_ALWAYS_INLINE static float root4(float x) {
+    return sqrtf(sqrtf(x));
 }
 
-// Returns the minimum number of evenly spaced (in the parametric sense) line segments that the
-// cubic must be chopped into in order to guarantee all lines stay within a distance of
-// "1/intolerance" pixels from the true curve.
-SK_ALWAYS_INLINE static float cubic(float intolerance, const SkPoint pts[]) {
-    Sk2f p0 = Sk2f::Load(pts);
-    Sk2f p1 = Sk2f::Load(pts + 1);
-    Sk2f p2 = Sk2f::Load(pts + 2);
-    Sk2f p3 = Sk2f::Load(pts + 3);
-    float k = intolerance * .75f;
-    return SkScalarSqrt(k * length(Sk2f::Max((p0 - p1*2 + p2).abs(),
-                                             (p1 - p2*2 + p3).abs())));
-}
-
-// Returns the log2 of the provided value, were that value to be rounded up to the next power of 2.
-// Returns 0 if value <= 0:
-// Never returns a negative number, even if value is NaN.
+// Returns nextlog2(sqrt(sqrt(x))):
 //
-//     nextlog2((-inf..1]) -> 0
-//     nextlog2((1..2]) -> 1
-//     nextlog2((2..4]) -> 2
-//     nextlog2((4..8]) -> 3
-//     ...
-SK_ALWAYS_INLINE static int nextlog2(float value) {
-    uint32_t bits;
-    memcpy(&bits, &value, 4);
-    bits += (1u << 23) - 1u;  // Increment the exponent for non-powers-of-2.
-    int exp = ((int32_t)bits >> 23) - 127;
-    return exp & ~(exp >> 31);  // Return 0 for negative or denormalized floats, and exponents < 0.
+//   log2(sqrt(sqrt(x))) == log2(x^(1/4)) == log2(x)/4 == log2(x)/log2(16) == log16(x)
+//
+SK_ALWAYS_INLINE static int nextlog16(float x) {
+    return (sk_float_nextlog2(x) + 3) >> 2;
 }
 
-// Returns the minimum log2 number of evenly spaced (in the parametric sense) line segments that the
-// transformed quadratic must be chopped into in order to guarantee all lines stay within a distance
-// of "1/intolerance" pixels from the true curve.
+// Returns Wang's formula, raised to the 4th power, specialized for a quadratic curve.
+SK_ALWAYS_INLINE static float quadratic_pow4(float intolerance, const SkPoint pts[],
+                                             const GrVectorXform& vectorXform = GrVectorXform()) {
+    using grvx::float2, skvx::bit_pun;
+    float2 p0 = bit_pun<float2>(pts[0]);
+    float2 p1 = bit_pun<float2>(pts[1]);
+    float2 p2 = bit_pun<float2>(pts[2]);
+    float2 v = grvx::fast_madd<2>(-2, p1, p0) + p2;
+    v = vectorXform(v);
+    float2 vv = v*v;
+    return (vv[0] + vv[1]) * length_term_pow2<2>(intolerance);
+}
+
+// Returns Wang's formula specialized for a quadratic curve.
+SK_ALWAYS_INLINE static float quadratic(float intolerance, const SkPoint pts[],
+                                        const GrVectorXform& vectorXform = GrVectorXform()) {
+    return root4(quadratic_pow4(intolerance, pts, vectorXform));
+}
+
+// Returns the log2 value of Wang's formula specialized for a quadratic curve, rounded up to the
+// next int.
 SK_ALWAYS_INLINE static int quadratic_log2(float intolerance, const SkPoint pts[],
                                            const GrVectorXform& vectorXform = GrVectorXform()) {
-    Sk2f p0 = Sk2f::Load(pts);
-    Sk2f p1 = Sk2f::Load(pts + 1);
-    Sk2f p2 = Sk2f::Load(pts + 2);
-    Sk2f v = p0 + p1*-2 + p2;
-    v = vectorXform(v);
-    Sk2f vv = v*v;
-    float k = intolerance * .25f;
-    float f = k*k * (vv[0] + vv[1]);
-    return (nextlog2(f) + 3) >> 2;  // ceil(log2(sqrt(sqrt(f))))
+    // nextlog16(x) == ceil(log2(sqrt(sqrt(x))))
+    return nextlog16(quadratic_pow4(intolerance, pts, vectorXform));
 }
 
-// Returns the minimum log2 number of evenly spaced (in the parametric sense) line segments that the
-// transformed cubic must be chopped into in order to guarantee all lines stay within a distance of
-// "1/intolerance" pixels from the true curve.
+// Returns Wang's formula, raised to the 4th power, specialized for a cubic curve.
+SK_ALWAYS_INLINE static float cubic_pow4(float intolerance, const SkPoint pts[],
+                                         const GrVectorXform& vectorXform = GrVectorXform()) {
+    using grvx::float4;
+    float4 p01 = float4::Load(pts);
+    float4 p12 = float4::Load(pts + 1);
+    float4 p23 = float4::Load(pts + 2);
+    float4 v = grvx::fast_madd<4>(-2, p12, p01) + p23;
+    v = vectorXform(v);
+    float4 vv = v*v;
+    return std::max(vv[0] + vv[1], vv[2] + vv[3]) * length_term_pow2<3>(intolerance);
+}
+
+// Returns Wang's formula specialized for a cubic curve.
+SK_ALWAYS_INLINE static float cubic(float intolerance, const SkPoint pts[],
+                                    const GrVectorXform& vectorXform = GrVectorXform()) {
+    return root4(cubic_pow4(intolerance, pts, vectorXform));
+}
+
+// Returns the log2 value of Wang's formula specialized for a cubic curve, rounded up to the next
+// int.
 SK_ALWAYS_INLINE static int cubic_log2(float intolerance, const SkPoint pts[],
                                        const GrVectorXform& vectorXform = GrVectorXform()) {
-    Sk4f p01 = Sk4f::Load(pts);
-    Sk4f p12 = Sk4f::Load(pts + 1);
-    Sk4f p23 = Sk4f::Load(pts + 2);
-    Sk4f v = p01 + p12*-2 + p23;
-    v = vectorXform(v);
-    Sk4f vv = v*v;
-    vv = Sk4f::Max(vv, SkNx_shuffle<2,3,0,1>(vv));
-    float k = intolerance * .75f;
-    float f = k*k * (vv[0] + vv[1]);
-    return (nextlog2(f) + 3) >> 2;  // ceil(log2(sqrt(sqrt(f))))
+    // nextlog16(x) == ceil(log2(sqrt(sqrt(x))))
+    return nextlog16(cubic_pow4(intolerance, pts, vectorXform));
 }
 
-}  // namespace
+// Returns the maximum number of line segments a cubic with the given device-space bounding box size
+// would ever need to be divided into. This is simply a special case of the cubic formula where we
+// maximize its value by placing control points on specific corners of the bounding box.
+SK_ALWAYS_INLINE static float worst_case_cubic(float intolerance, float devWidth, float devHeight) {
+    float k = length_term<3>(intolerance);
+    return sqrtf(2*k * SkVector::Length(devWidth, devHeight));
+}
+
+// Returns the maximum log2 number of line segments a cubic with the given device-space bounding box
+// size would ever need to be divided into.
+SK_ALWAYS_INLINE static int worst_case_cubic_log2(float intolerance, float devWidth,
+                                                  float devHeight) {
+    float kk = length_term_pow2<3>(intolerance);
+    // nextlog16(x) == ceil(log2(sqrt(sqrt(x))))
+    return nextlog16(4*kk * (devWidth * devWidth + devHeight * devHeight));
+}
+
+}  // namespace GrWangsFormula
 
 #endif

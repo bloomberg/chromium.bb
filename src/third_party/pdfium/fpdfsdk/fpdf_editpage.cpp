@@ -34,8 +34,7 @@
 #include "core/fxcrt/fx_extension.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "public/fpdf_formfill.h"
-#include "third_party/base/logging.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/notreached.h"
 #include "third_party/base/stl_util.h"
 
 #ifdef PDF_ENABLE_XFA
@@ -150,9 +149,9 @@ const CPDF_PageObjectHolder* CPDFPageObjHolderFromFPDFFormObject(
 }  // namespace
 
 FPDF_EXPORT FPDF_DOCUMENT FPDF_CALLCONV FPDF_CreateNewDocument() {
-  auto pDoc = pdfium::MakeUnique<CPDF_Document>(
-      pdfium::MakeUnique<CPDF_DocRenderData>(),
-      pdfium::MakeUnique<CPDF_DocPageData>());
+  auto pDoc =
+      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
+                                      std::make_unique<CPDF_DocPageData>());
   pDoc->CreateNewDoc();
 
   time_t currentTime;
@@ -176,7 +175,7 @@ FPDF_EXPORT FPDF_DOCUMENT FPDF_CALLCONV FPDF_CreateNewDocument() {
   }
 
 #ifdef PDF_ENABLE_XFA
-  pDoc->SetExtension(pdfium::MakeUnique<CPDFXFA_Context>(pDoc.get()));
+  pDoc->SetExtension(std::make_unique<CPDFXFA_Context>(pDoc.get()));
 #endif  // PDF_ENABLE_XFA
 
   // Caller takes ownership of pDoc.
@@ -225,7 +224,7 @@ FPDF_EXPORT FPDF_PAGE FPDF_CALLCONV FPDFPage_New(FPDF_DOCUMENT document,
 #endif  // PDF_ENABLE_XFA
 
   auto pPage = pdfium::MakeRetain<CPDF_Page>(pDoc, pPageDict);
-  pPage->SetRenderCache(pdfium::MakeUnique<CPDF_PageRenderCache>(pPage.Get()));
+  pPage->SetRenderCache(std::make_unique<CPDF_PageRenderCache>(pPage.Get()));
   pPage->ParseContent();
 
   return FPDFPageFromIPDFPage(pPage.Leak());  // Caller takes ownership.
@@ -346,11 +345,10 @@ FPDFPageObjMark_GetName(FPDF_PAGEOBJECTMARK mark,
                         void* buffer,
                         unsigned long buflen,
                         unsigned long* out_buflen) {
-  if (!mark || !out_buflen)
-    return false;
-
   const CPDF_ContentMarkItem* pMarkItem =
       CPDFContentMarkItemFromFPDFPageObjectMark(mark);
+  if (!pMarkItem || !out_buflen)
+    return false;
 
   *out_buflen = Utf16EncodeMaybeCopyAndReturnLength(
       WideString::FromUTF8(pMarkItem->GetName().AsStringView()), buffer,
@@ -360,11 +358,10 @@ FPDFPageObjMark_GetName(FPDF_PAGEOBJECTMARK mark,
 
 FPDF_EXPORT int FPDF_CALLCONV
 FPDFPageObjMark_CountParams(FPDF_PAGEOBJECTMARK mark) {
-  if (!mark)
-    return -1;
-
   const CPDF_ContentMarkItem* pMarkItem =
       CPDFContentMarkItemFromFPDFPageObjectMark(mark);
+  if (!pMarkItem)
+    return -1;
 
   const CPDF_Dictionary* pParams = pMarkItem->GetParam();
   return pParams ? pParams->size() : 0;

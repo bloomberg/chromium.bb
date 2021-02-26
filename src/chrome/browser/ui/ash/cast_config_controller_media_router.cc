@@ -8,22 +8,22 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/media/router/media_router.h"
-#include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/media/router/media_routes_observer.h"
-#include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/media_router/media_source.h"
 #include "chrome/common/url_constants.h"
+#include "components/media_router/browser/media_router.h"
+#include "components/media_router/browser/media_router_factory.h"
+#include "components/media_router/browser/media_routes_observer.h"
+#include "components/media_router/browser/media_sinks_observer.h"
+#include "components/media_router/common/media_source.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -101,7 +101,7 @@ CastDeviceCache::CastDeviceCache(
     const base::RepeatingClosure& update_devices_callback)
     : MediaRoutesObserver(GetMediaRouter()),
       MediaSinksObserver(GetMediaRouter(),
-                         media_router::MediaSource::ForDesktop(),
+                         media_router::MediaSource::ForUnchosenDesktop(),
                          url::Origin()),
       update_devices_callback_(update_devices_callback) {}
 
@@ -245,7 +245,7 @@ CastConfigControllerMediaRouter::GetSinksAndRoutes() {
 void CastConfigControllerMediaRouter::CastToSink(const std::string& sink_id) {
   // TODO(imcheng): Pass in tab casting timeout.
   GetMediaRouter()->CreateRoute(
-      media_router::MediaSource::ForDesktop().id(), sink_id,
+      media_router::MediaSource::ForUnchosenDesktop().id(), sink_id,
       url::Origin::Create(GURL("http://cros-cast-origin/")), nullptr,
       base::DoNothing(), base::TimeDelta(), false);
 }

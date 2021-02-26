@@ -10,10 +10,43 @@
         </cr-link-row>
 </if>
 <if expr="not chromeos">
-        <cr-link-row class="hr" id="captions" label="$i18n{captionsTitle}"
-            on-click="onCaptionsClick_"
-            external$="[[captionSettingsOpensExternally_]]">
-        </cr-link-row>
+        <template is="dom-if" if="[[captionSettingsOpensExternally_]]">
+          <cr-link-row class="hr" id="captions"
+              label="$i18n{captionsPreferencesTitle}"
+              sub-label="$i18n{captionsPreferencesSubtitle}"
+              on-click="onCaptionsClick_"
+              external$="[[captionSettingsOpensExternally_]]">
+          </cr-link-row>
+          <template is="dom-if" if="[[enableLiveCaption_]]">
+            <settings-toggle-button
+                pref="{{prefs.accessibility.captions.live_caption_enabled}}"
+                on-change="onA11yLiveCaptionChange_"
+                label="$i18n{captionsEnableLiveCaptionTitle}"
+                sub-label="[[enableLiveCaptionSubtitle_]]">
+            </settings-toggle-button>
+          </template>
+        </template>
+        <template is="dom-if" if="[[!captionSettingsOpensExternally_]]">
+          <cr-link-row class="first" id="captions"
+              label="$i18n{captionsTitle}"
+              on-click="onCaptionsClick_"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
+        </template>
+        <settings-toggle-button
+            class="hr"
+            hidden$="[[!showFocusHighlightOption_]]"
+            pref="{{prefs.settings.a11y.focus_highlight}}"
+            on-setting-boolean-control-change="onFocusHighlightChange_"
+            label="$i18n{focusHighlightLabel}">
+        </settings-toggle-button>
+        <settings-toggle-button
+            class="hr"
+            pref="{{prefs.settings.a11y.caretbrowsing.enabled}}"
+            on-change="onA11yCaretBrowsingChange_"
+            label="$i18n{caretBrowsingTitle}"
+            sub-label="$i18n{caretBrowsingSubtitle}">
+        </settings-toggle-button>
         <settings-toggle-button
             class="hr"
             hidden$="[[!showAccessibilityLabelsSetting_]]"
@@ -23,14 +56,6 @@
             sub-label="$i18n{accessibleImageLabelsSubtitle}">
         </settings-toggle-button>
 </if>
-        <template is="dom-if" if="[[enableLiveCaption_]]">
-          <settings-toggle-button
-              pref="{{prefs.accessibility.captions.live_caption_enabled}}"
-              on-change="onA11yLiveCaptionChange_"
-              label="$i18n{captionsEnableLiveCaptionTitle}"
-              sub-label="$i18n{captionsEnableLiveCaptionSubtitle}">
-          </settings-toggle-button>
-        </template>
         <cr-link-row class="hr" label="$i18n{moreFeaturesLink}"
             on-click="onMoreFeaturesLinkClick_" sub-label="$i18n{a11yWebStore}"
             external>

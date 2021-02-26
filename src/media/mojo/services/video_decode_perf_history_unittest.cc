@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -170,6 +170,10 @@ class VideoDecodePerfHistoryTest : public testing::Test {
 
   double GetMaxSmoothDroppedFramesPercent(bool is_eme = false) {
     return VideoDecodePerfHistory::GetMaxSmoothDroppedFramesPercent(is_eme);
+  }
+
+  static base::FieldTrialParams GetFieldTrialParams() {
+    return VideoDecodePerfHistory::GetFieldTrialParams();
   }
 
   // Tests may set this as the callback for VideoDecodePerfHistory::GetPerfInfo
@@ -822,10 +826,7 @@ TEST_P(VideoDecodePerfHistoryParamTest,
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       media::kMediaCapabilitiesWithParameters, trial_params);
 
-  base::FieldTrialParams actual_trial_params;
-  EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
-      media::kMediaCapabilitiesWithParameters, &actual_trial_params));
-  EXPECT_EQ(trial_params, actual_trial_params);
+  EXPECT_EQ(GetFieldTrialParams(), trial_params);
 
   // Non EME threshold is overridden.
   EXPECT_EQ(new_smooth_dropped_frames_threshold,
@@ -940,10 +941,7 @@ TEST_P(VideoDecodePerfHistoryParamTest,
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       media::kMediaCapabilitiesWithParameters, trial_params);
 
-  base::FieldTrialParams actual_trial_params;
-  EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
-      media::kMediaCapabilitiesWithParameters, &actual_trial_params));
-  EXPECT_EQ(trial_params, actual_trial_params);
+  EXPECT_EQ(GetFieldTrialParams(), trial_params);
 
   // Both thresholds should be overridden.
   EXPECT_EQ(new_CLEAR_smooth_dropped_frames_threshold,

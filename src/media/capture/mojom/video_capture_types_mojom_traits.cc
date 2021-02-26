@@ -701,6 +701,9 @@ EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::ToMojom(
       return media::mojom::VideoCaptureError::kFuchsiaUnsupportedPixelFormat;
     case media::VideoCaptureError::kFuchsiaFailedToMapSysmemBuffer:
       return media::mojom::VideoCaptureError::kFuchsiaFailedToMapSysmemBuffer;
+    case media::VideoCaptureError::kCrosHalV3DeviceContextDuplicatedClient:
+      return media::mojom::VideoCaptureError::
+          kCrosHalV3DeviceContextDuplicatedClient;
   }
   NOTREACHED();
   return media::mojom::VideoCaptureError::kNone;
@@ -1243,6 +1246,11 @@ bool EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::
     case media::mojom::VideoCaptureError::kFuchsiaFailedToMapSysmemBuffer:
       *output = media::VideoCaptureError::kFuchsiaFailedToMapSysmemBuffer;
       return true;
+    case media::mojom::VideoCaptureError::
+        kCrosHalV3DeviceContextDuplicatedClient:
+      *output =
+          media::VideoCaptureError::kCrosHalV3DeviceContextDuplicatedClient;
+      return true;
   }
   NOTREACHED();
   return false;
@@ -1639,6 +1647,17 @@ bool EnumTraits<media::mojom::VideoCaptureTransportType,
 }
 
 // static
+bool StructTraits<media::mojom::VideoCaptureControlSupportDataView,
+                  media::VideoCaptureControlSupport>::
+    Read(media::mojom::VideoCaptureControlSupportDataView data,
+         media::VideoCaptureControlSupport* out) {
+  out->pan = data.pan();
+  out->tilt = data.tilt();
+  out->zoom = data.zoom();
+  return true;
+}
+
+// static
 bool StructTraits<media::mojom::VideoCaptureFormatDataView,
                   media::VideoCaptureFormat>::
     Read(media::mojom::VideoCaptureFormatDataView data,
@@ -1685,6 +1704,10 @@ bool StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
     return false;
   if (!data.ReadCaptureApi(&(output->capture_api)))
     return false;
+  media::VideoCaptureControlSupport control_support;
+  if (!data.ReadControlSupport(&control_support))
+    return false;
+  output->set_control_support(control_support);
   if (!data.ReadTransportType(&(output->transport_type)))
     return false;
   return true;
@@ -1699,6 +1722,17 @@ bool StructTraits<media::mojom::VideoCaptureDeviceInfoDataView,
     return false;
   if (!data.ReadSupportedFormats(&(output->supported_formats)))
     return false;
+  return true;
+}
+
+// static
+bool StructTraits<media::mojom::VideoFrameFeedbackDataView,
+                  media::VideoFrameFeedback>::
+    Read(media::mojom::VideoFrameFeedbackDataView data,
+         media::VideoFrameFeedback* output) {
+  output->max_framerate_fps = data.max_framerate_fps();
+  output->max_pixels = data.max_pixels();
+  output->resource_utilization = data.resource_utilization();
   return true;
 }
 

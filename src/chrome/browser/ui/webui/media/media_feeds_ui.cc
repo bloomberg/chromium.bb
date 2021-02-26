@@ -64,13 +64,16 @@ void MediaFeedsUI::GetMediaFeeds(GetMediaFeedsCallback callback) {
 
 void MediaFeedsUI::GetItemsForMediaFeed(int64_t feed_id,
                                         GetItemsForMediaFeedCallback callback) {
-  GetMediaHistoryService()->GetItemsForMediaFeedForDebug(feed_id,
-                                                         std::move(callback));
+  GetMediaHistoryService()->GetMediaFeedItems(
+      media_history::MediaHistoryKeyedService::GetMediaFeedItemsRequest::
+          CreateItemsForDebug(feed_id),
+      std::move(callback));
 }
 
 void MediaFeedsUI::FetchMediaFeed(int64_t feed_id,
                                   FetchMediaFeedCallback callback) {
-  GetMediaFeedsService()->FetchMediaFeed(feed_id, std::move(callback));
+  GetMediaFeedsService()->FetchMediaFeed(feed_id, /*bypass_cache=*/false,
+                                         nullptr, std::move(callback));
 }
 
 void MediaFeedsUI::GetDebugInformation(GetDebugInformationCallback callback) {
@@ -81,6 +84,11 @@ void MediaFeedsUI::GetDebugInformation(GetDebugInformationCallback callback) {
   info->safe_search_pref_value =
       GetProfile()->GetPrefs()->GetBoolean(prefs::kMediaFeedsSafeSearchEnabled);
 
+  info->background_fetching_feature_enabled =
+      base::FeatureList::IsEnabled(media::kMediaFeedsBackgroundFetching);
+  info->background_fetching_pref_value = GetProfile()->GetPrefs()->GetBoolean(
+      prefs::kMediaFeedsBackgroundFetching);
+
   std::move(callback).Run(std::move(info));
 }
 
@@ -88,6 +96,15 @@ void MediaFeedsUI::SetSafeSearchEnabledPref(
     bool value,
     SetSafeSearchEnabledPrefCallback callback) {
   GetProfile()->GetPrefs()->SetBoolean(prefs::kMediaFeedsSafeSearchEnabled,
+                                       value);
+
+  std::move(callback).Run();
+}
+
+void MediaFeedsUI::SetBackgroundFetchingPref(
+    bool value,
+    SetBackgroundFetchingPrefCallback callback) {
+  GetProfile()->GetPrefs()->SetBoolean(prefs::kMediaFeedsBackgroundFetching,
                                        value);
 
   std::move(callback).Run();

@@ -13,15 +13,13 @@
 #include "base/callback.h"
 #include "build/build_config.h"
 #include "components/viz/common/vertical_scroll_direction.h"
-#include "content/browser/renderer_host/input_event_shim.h"
 #include "content/common/content_export.h"
-#include "content/common/drag_event_source_info.h"
 #include "content/public/common/drop_data.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
-#include "third_party/blink/public/platform/web_drag_operation.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace blink {
@@ -32,6 +30,7 @@ class WebGestureEvent;
 
 namespace gfx {
 class Point;
+class Rect;
 class Size;
 }
 
@@ -42,6 +41,7 @@ class Sample;
 namespace content {
 
 class BrowserAccessibilityManager;
+class FrameTree;
 class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
@@ -71,18 +71,11 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // The RenderWidgetHost is going to be deleted.
   virtual void RenderWidgetDeleted(RenderWidgetHostImpl* render_widget_host) {}
 
-  // The RenderWidgetHost got the focus.
-  virtual void RenderWidgetGotFocus(RenderWidgetHostImpl* render_widget_host) {}
-
   // If a main frame navigation is in progress, this will return the zoom level
   // for the pending page. Otherwise, this returns the zoom level for the
   // current page. Note that subframe navigations do not affect the zoom level,
   // which is tracked at the level of the page.
   virtual double GetPendingPageZoomLevel();
-
-  // The RenderWidgetHost lost the focus.
-  virtual void RenderWidgetLostFocus(
-      RenderWidgetHostImpl* render_widget_host) {}
 
   // The RenderWidget was resized.
   virtual void RenderWidgetWasResized(RenderWidgetHostImpl* render_widget_host,
@@ -123,7 +116,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Notification that an input event from the user was dispatched to the
   // widget.
   virtual void DidReceiveInputEvent(RenderWidgetHostImpl* render_widget_host,
-                                    const blink::WebInputEvent::Type type) {}
+                                    const blink::WebInputEvent& event) {}
 
   // Asks whether the page is in a state of ignoring input events.
   virtual bool ShouldIgnoreInputEvents();
@@ -214,7 +207,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void UnlockMouse(RenderWidgetHostImpl* render_widget_host) {}
 
   // Returns whether the associated tab is in fullscreen mode.
-  virtual bool IsFullscreenForCurrentTab();
+  virtual bool IsFullscreen();
 
   // Returns true if the widget's frame content needs to be stored before
   // eviction and displayed until a new frame is generated. If false, a white
@@ -272,11 +265,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // Returns the associated RenderViewHostDelegateView*, if possible.
   virtual RenderViewHostDelegateView* GetDelegateView();
-
-  // Returns the current Flash fullscreen RenderWidgetHostImpl if any. This is
-  // not intended for use with other types of fullscreen, such as HTML
-  // fullscreen, and will return nullptr for those cases.
-  virtual RenderWidgetHostImpl* GetFullscreenRenderWidgetHost() const;
 
   // Allow the delegate to handle the cursor update. Returns true if handled.
   virtual bool OnUpdateDragCursor();
@@ -337,6 +325,18 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // Notify the delegate that the screen orientation has been changed.
   virtual void DidChangeScreenOrientation() {}
+
+  // Returns the FrameTree that this RenderWidgetHost is attached to. If the
+  // RenderWidgetHost is attached to a frame, then its RenderFrameHost will be
+  // in the tree. Otherwise, the RenderWidgetHost is for a popup which was
+  // opened by a frame in the FrameTree.
+  virtual FrameTree* GetFrameTree();
+
+  // Show the newly created widget with the specified bounds.
+  // The widget is identified by the route_id passed to CreateNewWidget.
+  virtual void ShowCreatedWidget(int process_id,
+                                 int widget_route_id,
+                                 const gfx::Rect& initial_rect_in_dips) {}
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

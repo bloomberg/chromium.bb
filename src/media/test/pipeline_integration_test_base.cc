@@ -28,10 +28,6 @@
 #include "media/test/test_media_source.h"
 #include "third_party/libaom/libaom_buildflags.h"
 
-#if BUILDFLAG(ENABLE_LIBAOM)
-#include "media/filters/aom_video_decoder.h"
-#endif
-
 #if BUILDFLAG(ENABLE_DAV1D_DECODER)
 #include "media/filters/dav1d_video_decoder.h"
 #endif
@@ -89,8 +85,6 @@ static std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest(
 #if BUILDFLAG(ENABLE_DAV1D_DECODER)
     video_decoders.push_back(
         std::make_unique<OffloadingDav1dVideoDecoder>(media_log));
-#elif BUILDFLAG(ENABLE_LIBAOM)
-    video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif
   }
 
@@ -126,7 +120,7 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
 // Use a UI type message loop on macOS, because it doesn't seem to schedule
 // callbacks with enough precision to drive our fake audio output. See
 // https://crbug.com/1014646 for more details.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
 #endif
       hashing_enabled_(false),
@@ -529,7 +523,7 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateDefaultRenderer(
       base::BindRepeating(&CreateAudioDecodersForTest, &media_log_,
                           task_environment_.GetMainThreadTaskRunner(),
                           prepend_audio_decoders_cb_),
-      &media_log_, AudioRendererImpl::TranscribeAudioCallback()));
+      &media_log_, nullptr));
   if (hashing_enabled_) {
     if (clockless_playback_)
       clockless_audio_sink_->StartAudioHashForTesting();

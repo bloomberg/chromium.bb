@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tab;
 
 import android.graphics.Bitmap;
-import android.view.ContextMenu;
 
 import androidx.annotation.Nullable;
 
@@ -153,6 +152,12 @@ public interface TabObserver {
     void onRestoreFailed(Tab tab);
 
     /**
+     * Called when the WebContents of a {@link Tab} is about to be swapped.
+     * @param tab The notifying {@link Tab}
+     */
+    void webContentsWillSwap(Tab tab);
+
+    /**
      * Called when the WebContents of a {@link Tab} have been swapped.
      * @param tab The notifying {@link Tab}.
      * @param didStartLoad Whether WebContentsObserver::DidStartProvisionalLoadForFrame() has
@@ -164,11 +169,8 @@ public interface TabObserver {
     /**
      * Called when a context menu is shown for a {@link WebContents} owned by a {@link Tab}.
      * @param tab  The notifying {@link Tab}.
-     * @param menu The {@link ContextMenu} that is being shown. Deprecated: The menu param is only
-     *             used for some tests and new context menu implementations don't extend
-     *             ContextMenu.
      */
-    void onContextMenuShown(Tab tab, ContextMenu menu);
+    void onContextMenuShown(Tab tab);
 
     // WebContentsDelegateAndroid methods ---------------------------------------------------------
 
@@ -259,18 +261,6 @@ public interface TabObserver {
     void onDidChangeThemeColor(Tab tab, int color);
 
     /**
-     * Called when an interstitial page gets attached to the tab content.
-     * @param tab The notifying {@link Tab}.
-     */
-    void onDidAttachInterstitialPage(Tab tab);
-
-    /**
-     * Called when an interstitial page gets detached from the tab content.
-     * @param tab The notifying {@link Tab}.
-     */
-    void onDidDetachInterstitialPage(Tab tab);
-
-    /**
      * Called when the background color for the tab has changed.
      * @param tab The notifying {@link Tab}.
      * @param color The current background color.
@@ -332,12 +322,6 @@ public interface TabObserver {
     void onFindMatchRectsAvailable(FindMatchRectsDetails result);
 
     /**
-     * Called when the root Id of tab is changed.
-     * @param newRootId New root ID to be set.
-     */
-    void onRootIdChanged(Tab tab, int newRootId);
-
-    /**
      * Called when offset values related with the browser controls have been changed by the
      * renderer.
      * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
@@ -349,4 +333,10 @@ public interface TabObserver {
     void onBrowserControlsOffsetChanged(Tab tab, int topControlsOffsetY, int bottomControlsOffsetY,
             int contentOffsetY, int topControlsMinHeightOffsetY,
             int bottomControlsMinHeightOffsetY);
+
+    /**
+     * Called when scrolling state of Tab's content view changes.
+     * @param scrolling {@code true} if scrolling started; {@code false} if stopped.
+     */
+    void onContentViewScrollingStateChanged(boolean scrolling);
 }

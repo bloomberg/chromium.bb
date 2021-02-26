@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "content/browser/frame_host/render_frame_host_delegate.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/render_frame_host.h"
@@ -70,12 +70,6 @@ void FlingingRenderer::Initialize(media::MediaResource* media_resource,
   DVLOG(2) << __func__;
   client_ = client;
   std::move(init_cb).Run(media::PIPELINE_OK);
-}
-
-void FlingingRenderer::SetCdm(media::CdmContext* cdm_context,
-                              media::CdmAttachedCB cdm_attached_cb) {
-  // The flinging renderer does not support playing encrypted content.
-  NOTREACHED();
 }
 
 void FlingingRenderer::SetLatencyHint(

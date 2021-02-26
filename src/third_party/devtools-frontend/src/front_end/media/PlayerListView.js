@@ -2,44 +2,78 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
 import * as UI from '../ui/ui.js';
 
-import {TriggerDispatcher} from './MainView.js';  // eslint-disable-line no-unused-vars
+import {MainView, TriggerDispatcher} from './MainView.js';  // eslint-disable-line no-unused-vars
 import {PlayerEvent} from './MediaModel.js';      // eslint-disable-line no-unused-vars
 import {PlayerPropertyKeys} from './PlayerPropertiesView.js';
 
 /**
  * @typedef {{playerTitle: string, playerID: string, exists: boolean, playing: boolean, titleEdited: boolean}}
  */
+// @ts-ignore typedef
 export let PlayerStatus;
 
 /**
  * @typedef {{playerStatus: !PlayerStatus, playerTitleElement: ?HTMLElement}}
  */
+// @ts-ignore typedef
 export let PlayerStatusMapElement;
 
 
 export class PlayerEntryTreeElement extends UI.TreeOutline.TreeElement {
   /**
    * @param {!PlayerStatus} playerStatus
-   * @param {!Media.MainView} displayContainer
+   * @param {!MainView} displayContainer
+   * @param {string} playerID
    */
-  constructor(playerStatus, displayContainer) {
+  constructor(playerStatus, displayContainer, playerID) {
     super(playerStatus.playerTitle, false);
     this.titleFromUrl = true;
     this._playerStatus = playerStatus;
     this._displayContainer = displayContainer;
     this.setLeadingIcons([UI.Icon.Icon.create('smallicon-videoplayer-playing', 'media-player')]);
     this.listItemElement.classList.add('player-entry-tree-element');
+    this.listItemElement.addEventListener('contextmenu', this._rightClickContextMenu.bind(this, playerID), false);
   }
 
   /**
    * @override
+   * @param {boolean=} selectedByUser
    * @return {boolean}
    */
   onselect(selectedByUser) {
     this._displayContainer.renderMainPanel(this._playerStatus.playerID);
     return true;
+  }
+
+  /**
+   * @param {string} playerID
+   * @param {!Event} event
+   */
+  _rightClickContextMenu(playerID, event) {
+    const contextMenu = new UI.ContextMenu.ContextMenu(event);
+    contextMenu.headerSection().appendItem(ls`Hide player`, this._hidePlayer.bind(this, playerID));
+    contextMenu.headerSection().appendItem(ls`Hide all others`, this._hideOthers.bind(this, playerID));
+    contextMenu.headerSection().appendItem(ls`Save player info`, this._savePlayer.bind(this, playerID));
+    contextMenu.show();
+    return true;
+  }
+
+  /** @param {string} playerID */
+  _hidePlayer(playerID) {
+    this._displayContainer.markPlayerForDeletion(playerID);
+  }
+
+  /** @param {string} playerID */
+  _savePlayer(playerID) {
+    this._displayContainer.exportPlayerData(playerID);
+  }
+
+  /** @param {string} playerID */
+  _hideOthers(playerID) {
+    this._displayContainer.markOtherPlayersForDeletion(playerID);
   }
 }
 
@@ -49,7 +83,7 @@ export class PlayerEntryTreeElement extends UI.TreeOutline.TreeElement {
  */
 export class PlayerListView extends UI.Widget.VBox {
   /**
-   * @param {!Media.MainView} mainContainer
+   * @param {!MainView} mainContainer
    */
   constructor(mainContainer) {
     super(true);
@@ -62,17 +96,17 @@ export class PlayerListView extends UI.Widget.VBox {
     // The parent tree for storing sections
     this._sidebarTree = new UI.TreeOutline.TreeOutlineInShadow();
     this.contentElement.appendChild(this._sidebarTree.element);
-    this._sidebarTree.registerRequiredCSS('media/playerListView.css');
-
-    // Audio capture / output devices.
-    this._audioDevices = this._addListSection(Common.UIString('Audio I/O'));
-
-    // Video capture devices.
-    this._videoDevices = this._addListSection(Common.UIString('Video Capture Devices'));
+    this._sidebarTree.registerRequiredCSS('media/playerListView.css', {enableLegacyPatching: true});
 
     // Players active in this tab.
-    this._playerList = this._addListSection(Common.UIString('Players'));
+    this._playerList = this._addListSection(Common.UIString.UIString('Players'));
     this._playerList.listItemElement.classList.add('player-entry-header');
+  }
+
+  /** @param {string} playerID */
+  deletePlayer(playerID) {
+    this._playerList.removeChild(this._playerStatuses.get(playerID));
+    this._playerStatuses.delete(playerID);
   }
 
   /**
@@ -93,7 +127,7 @@ export class PlayerListView extends UI.Widget.VBox {
    */
   addMediaElementItem(playerID) {
     const playerStatus = {playerTitle: playerID, playerID: playerID, exists: true, playing: false, titleEdited: false};
-    const playerElement = new PlayerEntryTreeElement(playerStatus, this._mainContainer);
+    const playerElement = new PlayerEntryTreeElement(playerStatus, this._mainContainer, playerID);
     this._playerStatuses.set(playerID, playerElement);
     this._playerList.appendChild(playerElement);
   }

@@ -22,7 +22,6 @@ source_set("internal") {
   sources = [
     "all_download_event_notifier.cc",
     "base_file.cc",
-    "base_file_win.cc",
     "download_create_info.cc",
     "download_db_cache.cc",
     "download_db_cache.h",
@@ -102,6 +101,10 @@ source_set("internal") {
     deps += [ ":jni_headers" ]
   }
 
+  if (is_win) {
+    sources += [ "base_file_win.cc" ]
+  }
+
   if (is_posix || is_fuchsia) {
     sources += [ "base_file_posix.cc" ]
   }
@@ -117,6 +120,7 @@ if (is_android) {
     deps = [
       "//base:base_java",
       "//base:jni_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/android_provider:android_provider_java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -148,7 +152,6 @@ source_set("unit_tests") {
   sources = [
     "all_download_event_notifier_unittest.cc",
     "base_file_unittest.cc",
-    "base_file_win_unittest.cc",
     "download_db_cache_unittest.cc",
     "download_file_unittest.cc",
     "download_item_impl_unittest.cc",
@@ -159,6 +162,10 @@ source_set("unit_tests") {
     "parallel_download_utils_unittest.cc",
     "rate_estimator_unittest.cc",
   ]
+
+  if (is_win) {
+    sources += [ "base_file_win_unittest.cc" ]
+  }
 
   deps = [
     ":for_tests",

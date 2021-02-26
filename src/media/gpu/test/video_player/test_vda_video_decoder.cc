@@ -15,6 +15,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "media/base/media_log.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/base/waiting.h"
@@ -65,9 +66,7 @@ TestVDAVideoDecoder::TestVDAVideoDecoder(
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
-TestVDAVideoDecoder::~TestVDAVideoDecoder() = default;
-
-void TestVDAVideoDecoder::Destroy() {
+TestVDAVideoDecoder::~TestVDAVideoDecoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
 
   // Invalidate all scheduled tasks.
@@ -77,8 +76,6 @@ void TestVDAVideoDecoder::Destroy() {
 
   // Delete all video frames and related textures and the decoder.
   video_frames_.clear();
-
-  delete this;
 }
 
 std::string TestVDAVideoDecoder::GetDisplayName() const {
@@ -102,18 +99,18 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // Create decoder factory.
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> decoder_factory;
   bool hasGLContext = frame_renderer_->GetGLContext() != nullptr;
+  GpuVideoDecodeGLClient gl_client;
   if (hasGLContext) {
-    decoder_factory = GpuVideoDecodeAcceleratorFactory::Create(
-        base::BindRepeating(&FrameRenderer::GetGLContext,
-                            base::Unretained(frame_renderer_)),
-        base::BindRepeating(&FrameRenderer::AcquireGLContext,
-                            base::Unretained(frame_renderer_)),
-        base::BindRepeating([](uint32_t, uint32_t,
-                               const scoped_refptr<gl::GLImage>&,
-                               bool) { return true; }));
-  } else {
-    decoder_factory = GpuVideoDecodeAcceleratorFactory::CreateWithNoGL();
+    gl_client.get_context = base::BindRepeating(
+        &FrameRenderer::GetGLContext, base::Unretained(frame_renderer_));
+    gl_client.make_context_current = base::BindRepeating(
+        &FrameRenderer::AcquireGLContext, base::Unretained(frame_renderer_));
+    gl_client.bind_image = base::BindRepeating(
+        [](uint32_t, uint32_t, const scoped_refptr<gl::GLImage>&, bool) {
+          return true;
+        });
   }
+  decoder_factory = GpuVideoDecodeAcceleratorFactory::Create(gl_client);
 
   if (!decoder_factory) {
     ASSERT_TRUE(decoder_) << "Failed to create VideoDecodeAccelerator factory";
@@ -361,8 +358,7 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
   DCHECK(wrapped_video_frame);
 
   // Flag that the video frame was decoded in a power efficient way.
-  wrapped_video_frame->metadata()->SetBoolean(
-      VideoFrameMetadata::POWER_EFFICIENT, true);
+  wrapped_video_frame->metadata()->power_efficient = true;
 
   // It's important to bind the original video frame to the destruction callback
   // of the wrapped frame, to avoid deleting it before rendering of the wrapped

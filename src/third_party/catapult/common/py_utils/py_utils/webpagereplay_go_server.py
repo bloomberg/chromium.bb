@@ -17,7 +17,6 @@ import py_utils
 from py_utils import atexit_with_log
 from py_utils import binary_manager
 
-
 _WPR_DIR = os.path.abspath(os.path.join(
     py_utils.GetCatapultDir(), 'web_page_replay_go'))
 
@@ -31,6 +30,8 @@ CHROME_BINARY_CONFIG = os.path.join(
 
 RECORD = '--record'
 INJECT_SCRIPTS = '--inject_scripts='
+USE_LOCAL_WPR = '--use-local-wpr'
+DISABLE_FUZZY_URL_MATCHING = '--disable-fuzzy-url-matching'
 
 class ReplayError(Exception):
   """Catch-all exception for the module."""
@@ -102,16 +103,10 @@ class ReplayServer(object):
     # subprocess.
     self._temp_log_file_path = None
 
-    # Assign the downloader func and binary_manager
-    downloader = None
-    if binary_downloader:
-      downloader = binary_downloader
-    else:
-      configs = [CHROME_BINARY_CONFIG, TELEMETRY_PROJECT_CONFIG]
-      downloader = binary_manager.BinaryManager(configs).FetchPath
-
+    self._downloader = binary_downloader
+    self._replay_options = replay_options
     self._cmd_line = self._GetCommandLine(
-        self._GetGoBinaryPath(downloader=downloader), http_port, https_port,
+        self._GetGoBinaryPath(replay_options), http_port, https_port,
         replay_options, archive_path)
 
     if RECORD in replay_options or 'record' in replay_options:
@@ -122,12 +117,58 @@ class ReplayServer(object):
 
     self.replay_process = None
 
-  @classmethod
-  def _GetGoBinaryPath(cls, downloader):
-    if not cls._go_binary_path:
-      cls._go_binary_path = downloader(
+  def _GetDownloader(self):
+    """Gets the downloader used to download wpr_go binary from GCS."""
+    if ReplayServer._go_binary_path:
+      # If the _go_binary_path was already set, then no need to use downloader
+      # to download via binary_manager.
+      self._downloader = None
+    elif not self._downloader:
+      configs = [CHROME_BINARY_CONFIG, TELEMETRY_PROJECT_CONFIG]
+      self._downloader = binary_manager.BinaryManager(configs).FetchPath
+    return self._downloader
+
+  def _GetGoBinaryPath(self, replay_options):
+    """Gets the _go_binary_path if it already set, or downloads it."""
+    if USE_LOCAL_WPR in replay_options:
+      # Build WPR
+      go_folder = os.path.join(_WPR_DIR, 'src')
+      cur_cwd = os.getcwd()
+      os.chdir(go_folder)
+      try:
+        print subprocess.check_output(['go', 'build', os.path.join(go_folder, 'wpr.go')])
+      except subprocess.CalledProcessError:
+        exit(1)
+      os.chdir(cur_cwd)
+
+      return os.path.join(go_folder, 'wpr')
+
+    if not ReplayServer._go_binary_path:
+      downloader = self._GetDownloader()
+      if not downloader:
+        raise RuntimeError('downloader should not be None '
+                           'while _go_binary_path is None')
+      ReplayServer._go_binary_path = downloader(
           'wpr_go', py_utils.GetHostOsName(), py_utils.GetHostArchName())
-    return cls._go_binary_path
+    return ReplayServer._go_binary_path
+
+  @classmethod
+  def SetGoBinaryPath(cls, go_binary_path):
+    """Overrides the _go_binary_path.
+
+    This allows the server to use WPRGO files retrieved from somewhere
+    other than GCS via binary_manager, such as test isolation.
+
+    For chromium project to use WPR, it is encourage to use test isolation,
+    and therefore should call SetGoBinaryPath to set _go_binary_path.
+
+    For Catapult/Telemetry project, the tradition is to download wpr_go
+    binary via binary_manager. So do not call SetGoBinaryPath.
+    """
+    if not os.path.exists(go_binary_path):
+      raise ValueError('SetGoBinaryPath could not set {} as it does not exist'
+                       .format(go_binary_path))
+    cls._go_binary_path = go_binary_path
 
   @property
   def http_port(self):
@@ -154,7 +195,8 @@ class ReplayServer(object):
     """
     bad_options = []
     for option in options:
-      if option not in [RECORD, INJECT_SCRIPTS]:
+      if option not in [RECORD, INJECT_SCRIPTS,
+                        USE_LOCAL_WPR, DISABLE_FUZZY_URL_MATCHING]:
         bad_options.append(option)
     if len(bad_options) > 0:
       raise ValueError("Invalid replay options %s" % bad_options)
@@ -164,6 +206,8 @@ class ReplayServer(object):
       cmd_line.append('record')
     else:
       cmd_line.append('replay')
+    if DISABLE_FUZZY_URL_MATCHING in options:
+      cmd_line.append('--disable_fuzzy_url_matching')
     key_file = os.path.join(_WPR_DIR, 'wpr_key.pem')
     cert_file = os.path.join(_WPR_DIR, 'wpr_cert.pem')
     inject_script = os.path.join(_WPR_DIR, 'deterministic.js')
@@ -339,13 +383,17 @@ class ReplayServer(object):
   def _CleanUpTempLogFilePath(self, log_level):
     if not self._temp_log_file_path:
       return ''
-    if logging.getLogger('').isEnabledFor(log_level):
+    if logging.getLogger('').isEnabledFor(log_level) or USE_LOCAL_WPR in self._replay_options:
       with open(self._temp_log_file_path, 'r') as f:
         wpr_log_output = f.read()
-      logging.log(log_level, '\n'.join([
-          '************************** WPR LOG *****************************',
-          wpr_log_output,
-          '************************** END OF WPR LOG **********************']))
+      output = ('************************** WPR LOG *****************************\n' +
+                '\n'.join(wpr_log_output.split('\n')) +
+                '************************** END OF WPR LOG **********************')
+      if logging.getLogger('').isEnabledFor(log_level):
+        logging.log(log_level, output)
+      else:
+        print output
+
     os.remove(self._temp_log_file_path)
     self._temp_log_file_path = None
 

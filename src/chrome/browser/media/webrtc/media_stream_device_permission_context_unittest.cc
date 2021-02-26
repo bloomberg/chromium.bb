@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -55,17 +54,17 @@ class MediaStreamDevicePermissionContextTests
               HostContentSettingsMapFactory::GetForProfile(profile())
                   ->GetContentSetting(insecure_url.GetOrigin(),
                                       insecure_url.GetOrigin(),
-                                      content_settings_type, std::string()));
+                                      content_settings_type));
     EXPECT_EQ(CONTENT_SETTING_ASK,
               HostContentSettingsMapFactory::GetForProfile(profile())
                   ->GetContentSetting(secure_url.GetOrigin(),
                                       insecure_url.GetOrigin(),
-                                      content_settings_type, std::string()));
-    EXPECT_EQ(CONTENT_SETTING_ASK,
-              HostContentSettingsMapFactory::GetForProfile(profile())
-                  ->GetContentSetting(insecure_url.GetOrigin(),
-                                      secure_url.GetOrigin(),
-                                      content_settings_type, std::string()));
+                                      content_settings_type));
+    EXPECT_EQ(
+        CONTENT_SETTING_ASK,
+        HostContentSettingsMapFactory::GetForProfile(profile())
+            ->GetContentSetting(insecure_url.GetOrigin(),
+                                secure_url.GetOrigin(), content_settings_type));
 
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
               permission_context
@@ -85,12 +84,11 @@ class MediaStreamDevicePermissionContextTests
     GURL secure_url("https://www.example.com");
 
     // Check that there is no saved content settings.
-    EXPECT_EQ(CONTENT_SETTING_ASK,
-              HostContentSettingsMapFactory::GetForProfile(profile())
-                  ->GetContentSetting(secure_url.GetOrigin(),
-                                      secure_url.GetOrigin(),
-                                      content_settings_type,
-                                      std::string()));
+    EXPECT_EQ(
+        CONTENT_SETTING_ASK,
+        HostContentSettingsMapFactory::GetForProfile(profile())
+            ->GetContentSetting(secure_url.GetOrigin(), secure_url.GetOrigin(),
+                                content_settings_type));
 
     EXPECT_EQ(CONTENT_SETTING_ASK,
               permission_context

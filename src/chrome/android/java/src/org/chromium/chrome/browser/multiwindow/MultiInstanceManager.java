@@ -20,11 +20,13 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -34,7 +36,6 @@ import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.lifecycle.RecreateObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
@@ -85,6 +86,7 @@ public class MultiInstanceManager
     private boolean mShouldMergeOnConfigurationChange;
     private boolean mIsRecreating;
     private int mDisplayId;
+    private static List<Integer> sTestDisplayIds;
 
     /**
      * Create a new {@link MultiInstanceManager}.
@@ -220,7 +222,13 @@ public class MultiInstanceManager
 
             @Override
             public void onDisplayChanged(int displayId) {
-                // TODO(crbug.com/824954): try to merge tabs sharing logic w/ onDisplayRemoved
+                if (displayId == mDisplayId) return;
+                List<Integer> ids = sTestDisplayIds != null
+                    ? sTestDisplayIds
+                    : ApiCompatibilityUtils.getTargetableDisplayIds(mActivity);
+                if (ids.size() == 1 && ids.get(0).equals(mDisplayId)) {
+                    maybeMergeTabs();
+                }
             }
         };
         displayManager.registerDisplayListener(mDisplayListener, null);
@@ -432,5 +440,10 @@ public class MultiInstanceManager
     @VisibleForTesting
     public DisplayManager.DisplayListener getDisplayListenerForTesting() {
         return mDisplayListener;
+    }
+
+    @VisibleForTesting
+    public static void setTestDisplayIds(List<Integer> testDisplayIds) {
+        sTestDisplayIds = testDisplayIds;
     }
 }

@@ -192,9 +192,9 @@ def add_oauth_options(parser):
       '--auth-disabled',
       action='store_true',
       default=False,
-      help='Use it to disable OAuth and rely only on IP whitelist for '
-           'authentication. OAuth gets disabled by default on bots that '
-           'do not have credentials.')
+      help='Use it to disable OAuth and rely only on IP allowlist for '
+      'authentication. OAuth gets disabled by default on bots that '
+      'do not have credentials.')
   parser.oauth_group.add_option(
       '--auth-tokens-cache',
       default=default_config.tokens_cache,
@@ -738,7 +738,7 @@ def _get_luci_context_access_token(local_auth):
 
   if error_code or not access_token:
     logging.error(
-        'local_auth: Error %d in retrieving access token: %s',
+        'local_auth: Error %s in retrieving access token: %s',
         error_code, error_message)
     return None
 

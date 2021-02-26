@@ -5,18 +5,7 @@
 import("//remoting/build/config/remoting_build.gni")
 
 source_set("file_transfer") {
-  sources = [
-    "ensure_user_mac.cc",
-    "ensure_user_win.cc",
-    "file_chooser_chromeos.cc",
-    "file_chooser_common_win.h",
-    "file_chooser_mac.mm",
-    "file_chooser_main_win.cc",
-    "file_chooser_win.cc",
-    "get_desktop_directory.cc",
-    "get_desktop_directory.h",
-    "get_desktop_directory_win.cc",
-  ]
+  sources = [ "get_desktop_directory.h" ]
 
   public_deps = [ ":common" ]
 
@@ -27,7 +16,11 @@ source_set("file_transfer") {
   ]
 
   if (is_mac) {
-    libs = [ "AppKit.framework" ]
+    sources += [
+      "ensure_user_mac.cc",
+      "file_chooser_mac.mm",
+    ]
+    frameworks = [ "AppKit.framework" ]
   }
 
   if (!is_mac && !is_win) {
@@ -35,12 +28,24 @@ source_set("file_transfer") {
   }
 
   if (is_win) {
-    sources -= [ "get_desktop_directory.cc" ]
+    sources += [
+      "ensure_user_win.cc",
+      "file_chooser_common_win.h",
+      "file_chooser_main_win.cc",
+      "file_chooser_win.cc",
+      "get_desktop_directory_win.cc",
+    ]
+  } else {
+    sources += [ "get_desktop_directory.cc" ]
   }
 
-  if (is_desktop_linux) {
+  if (is_linux) {
     sources += [ "file_chooser_linux.cc" ]
     deps += [ "//build/config/linux/gtk" ]
+  }
+
+  if (is_chromeos) {
+    sources += [ "file_chooser_chromeos.cc" ]
   }
 }
 
@@ -50,6 +55,7 @@ source_set("common") {
     "file_transfer_message_handler.h",
     "ipc_file_operations.h",
     "local_file_operations.h",
+    "rtc_log_file_operations.h",
     "session_file_operations_handler.h",
   ]
 
@@ -61,6 +67,7 @@ source_set("common") {
     "file_transfer_message_handler.cc",
     "ipc_file_operations.cc",
     "local_file_operations.cc",
+    "rtc_log_file_operations.cc",
     "session_file_operations_handler.cc",
   ]
 
@@ -80,6 +87,7 @@ source_set("test_support") {
     "fake_file_operations.cc",
     "fake_file_operations.h",
     "get_desktop_directory.cc",
+    "test_byte_vector_utils.h",
   ]
   deps = [
     ":common",
@@ -95,6 +103,7 @@ source_set("unit_tests") {
     "file_transfer_message_handler_unittest.cc",
     "ipc_file_operations_unittest.cc",
     "local_file_operations_unittest.cc",
+    "rtc_log_file_operations_unittest.cc",
   ]
 
   deps = [

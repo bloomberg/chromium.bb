@@ -5,10 +5,12 @@
 #include "util/alarm.h"
 
 #include <algorithm>
+#include <chrono>
 
 #include "gtest/gtest.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
+#include "util/chrono_helpers.h"
 
 namespace openscreen {
 namespace {
@@ -26,7 +28,7 @@ class AlarmTest : public testing::Test {
 };
 
 TEST_F(AlarmTest, RunsTaskAsClockAdvances) {
-  constexpr Clock::duration kDelay = std::chrono::milliseconds(20);
+  constexpr Clock::duration kDelay = milliseconds(20);
 
   const Clock::time_point alarm_time = FakeClock::now() + kDelay;
   Clock::time_point actual_run_time{};
@@ -61,12 +63,12 @@ TEST_F(AlarmTest, RunsTaskImmediately) {
   ASSERT_EQ(expected_run_time, actual_run_time);
 
   // Confirm the lambda is only run once.
-  clock()->Advance(std::chrono::seconds(2));
+  clock()->Advance(seconds(2));
   ASSERT_EQ(expected_run_time, actual_run_time);
 }
 
 TEST_F(AlarmTest, CancelsTaskWhenGoingOutOfScope) {
-  constexpr Clock::duration kDelay = std::chrono::milliseconds(20);
+  constexpr Clock::duration kDelay = milliseconds(20);
   constexpr Clock::time_point kNever{};
 
   Clock::time_point actual_run_time{};
@@ -85,7 +87,7 @@ TEST_F(AlarmTest, CancelsTaskWhenGoingOutOfScope) {
 }
 
 TEST_F(AlarmTest, Cancels) {
-  constexpr Clock::duration kDelay = std::chrono::milliseconds(20);
+  constexpr Clock::duration kDelay = milliseconds(20);
 
   const Clock::time_point alarm_time = FakeClock::now() + kDelay;
   Clock::time_point actual_run_time{};
@@ -104,8 +106,8 @@ TEST_F(AlarmTest, Cancels) {
 }
 
 TEST_F(AlarmTest, CancelsAndRearms) {
-  constexpr Clock::duration kShorterDelay = std::chrono::milliseconds(10);
-  constexpr Clock::duration kLongerDelay = std::chrono::milliseconds(100);
+  constexpr Clock::duration kShorterDelay = milliseconds(10);
+  constexpr Clock::duration kLongerDelay = milliseconds(100);
 
   // Run the test twice: Once when scheduling first with a long delay, then a
   // shorter delay; and once when scheduling first with a short delay, then a

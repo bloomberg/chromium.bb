@@ -6,8 +6,14 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
+#include <utility>
+
+#include "base/callback.h"
 #include "base/notreached.h"
 #include "pdf/document_layout.h"
+#include "pdf/ppapi_migration/url_loader.h"
 
 namespace chrome_pdf {
 
@@ -18,11 +24,11 @@ void PreviewModeClient::ProposeDocumentLayout(const DocumentLayout& layout) {
   // occurs if and only if loading a non-PDF document with more than 1 page.
 }
 
-void PreviewModeClient::Invalidate(const pp::Rect& rect) {
+void PreviewModeClient::Invalidate(const gfx::Rect& rect) {
   NOTREACHED();
 }
 
-void PreviewModeClient::DidScroll(const pp::Point& point) {
+void PreviewModeClient::DidScroll(const gfx::Vector2d& point) {
   NOTREACHED();
 }
 
@@ -35,7 +41,7 @@ void PreviewModeClient::ScrollToY(int y_in_screen_coords,
   NOTREACHED();
 }
 
-void PreviewModeClient::ScrollBy(const pp::Point& point) {
+void PreviewModeClient::ScrollBy(const gfx::Vector2d& scroll_delta) {
   NOTREACHED();
 }
 
@@ -53,7 +59,7 @@ void PreviewModeClient::UpdateCursor(PP_CursorType_Dev cursor) {
 }
 
 void PreviewModeClient::UpdateTickMarks(
-    const std::vector<pp::Rect>& tickmarks) {
+    const std::vector<gfx::Rect>& tickmarks) {
   NOTREACHED();
 }
 
@@ -68,8 +74,8 @@ void PreviewModeClient::NotifySelectedFindResultChanged(
 }
 
 void PreviewModeClient::GetDocumentPassword(
-    pp::CompletionCallbackWithOutput<pp::Var> callback) {
-  callback.Run(PP_ERROR_FAILED);
+    base::OnceCallback<void(const std::string&)> callback) {
+  std::move(callback).Run("");
 }
 
 void PreviewModeClient::Alert(const std::string& message) {
@@ -110,9 +116,9 @@ void PreviewModeClient::SubmitForm(const std::string& url,
   NOTREACHED();
 }
 
-pp::URLLoader PreviewModeClient::CreateURLLoader() {
+std::unique_ptr<UrlLoader> PreviewModeClient::CreateUrlLoader() {
   NOTREACHED();
-  return pp::URLLoader();
+  return nullptr;
 }
 
 std::vector<PDFEngine::Client::SearchStringResult>
@@ -146,8 +152,7 @@ void PreviewModeClient::FormTextFieldFocusChange(bool in_focus) {
 }
 
 bool PreviewModeClient::IsPrintPreview() {
-  NOTREACHED();
-  return false;
+  return true;
 }
 
 float PreviewModeClient::GetToolbarHeightInScreenCoords() {
@@ -157,6 +162,20 @@ float PreviewModeClient::GetToolbarHeightInScreenCoords() {
 uint32_t PreviewModeClient::GetBackgroundColor() {
   NOTREACHED();
   return 0;
+}
+
+void PreviewModeClient::SetSelectedText(const std::string& selected_text) {
+  NOTREACHED();
+}
+
+void PreviewModeClient::SetLinkUnderCursor(
+    const std::string& link_under_cursor) {
+  NOTREACHED();
+}
+
+bool PreviewModeClient::IsValidLink(const std::string& url) {
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace chrome_pdf

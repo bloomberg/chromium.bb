@@ -12,34 +12,43 @@ import android.provider.Settings;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
-import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.ScaleAnimation;
+import android.widget.FrameLayout;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
+import org.chromium.ui.widget.AnchoredPopupWindow;
+import org.chromium.ui.widget.RectProvider;
 
 /**
  * ContextMenuDialog is a subclass of AlwaysDismissedDialog that ensures that the proper scale
  * animation is played upon calling {@link #show()} and {@link #dismiss()}.
  */
 public class ContextMenuDialog extends AlwaysDismissedDialog {
+    public static final int NO_CUSTOM_MARGIN = -1;
+
     private static final long ENTER_ANIMATION_DURATION_MS = 250;
     // Exit animation duration should be set to 60% of the enter animation duration.
     private static final long EXIT_ANIMATION_DURATION_MS = 150;
-
     private final Activity mActivity;
     private final View mContentView;
     private final float mTouchPointXPx;
     private final float mTouchPointYPx;
     private final float mTopContentOffsetPx;
+    private final boolean mIsPopup;
 
     private float mContextMenuSourceXPx;
     private float mContextMenuSourceYPx;
     private int mContextMenuFirstLocationYPx;
+    private AnchoredPopupWindow mPopupWindow;
+    private View mLayout;
+
+    private int mTopMarginPx;
+    private int mBottomMarginPx;
 
     /**
      * Creates an instance of the ContextMenuDialog.
@@ -49,46 +58,74 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
      * @param touchPointXPx The x-coordinate of the touch that triggered the context menu.
      * @param touchPointYPx The y-coordinate of the touch that triggered the context menu.
      * @param topContentOffsetPx The offset of the content from the top.
+     * @param topMarginPx An explicit top margin for the dialog, or -1 to use default
+     *                    defined in XML.
+     * @param bottomMarginPx An explicit bottom margin for the dialog, or -1 to use default
+     *                       defined in XML.
+     * @param layout The context menu layout that will house the menu.
      * @param contentView The context menu view to display on the dialog.
+     * @param isPopup Whether the context menu is being shown in a {@link AnchoredPopupWindow}.
      */
     public ContextMenuDialog(Activity ownerActivity, int theme, float touchPointXPx,
-            float touchPointYPx, float topContentOffsetPx, View contentView) {
+            float touchPointYPx, float topContentOffsetPx, int topMarginPx, int bottomMarginPx,
+            View layout, View contentView, boolean isPopup) {
         super(ownerActivity, theme);
         mActivity = ownerActivity;
         mTouchPointXPx = touchPointXPx;
         mTouchPointYPx = touchPointYPx;
         mTopContentOffsetPx = topContentOffsetPx;
+        mTopMarginPx = topMarginPx;
+        mBottomMarginPx = bottomMarginPx;
         mContentView = contentView;
+        mLayout = layout;
+        mIsPopup = isPopup;
     }
 
     @Override
-    public void show() {
+    public void onStart() {
+        super.onStart();
         Window dialogWindow = getWindow();
         dialogWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialogWindow.setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
-        mContentView.setVisibility(View.INVISIBLE);
-        mContentView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+        // Both bottom margin and top margin must be set together to ensure default
+        // values are not relied upon for custom behavior.
+        if (mTopMarginPx != NO_CUSTOM_MARGIN && mBottomMarginPx != NO_CUSTOM_MARGIN) {
+            // TODO(benwgold): Update to relative layout to avoid have to set fixed margin.
+            FrameLayout.LayoutParams layoutParams =
+                    (FrameLayout.LayoutParams) mContentView.getLayoutParams();
+            if (layoutParams == null) return;
+            layoutParams.bottomMargin = mBottomMarginPx;
+            layoutParams.topMargin = mTopMarginPx;
+        }
+
+        (mIsPopup ? mLayout : mContentView).addOnLayoutChangeListener(new OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                if (v instanceof ViewGroup) {
-                    ViewGroup group = (ViewGroup) v;
-                    for (int i = 0; i < group.getChildCount(); i++) {
-                        if (group.getChildAt(i).getMeasuredHeight() == 0
-                                && group.getChildAt(i).getVisibility() == View.VISIBLE) {
-                            // Return early because not all the views have been measured, so
-                            // animation pivots will be off.
-                            return;
-                        }
-                    }
+                if (mIsPopup) {
+                    // If the menu is a popup, wait for the layout to be measured, then proceed with
+                    // showing the popup window.
+                    if (v.getMeasuredHeight() == 0) return;
+
+                    final int posX = (int) mTouchPointXPx;
+                    final int posY = (int) (mTouchPointYPx + mTopContentOffsetPx);
+                    final Rect rect = new Rect(posX, posY, posX, posY);
+                    mPopupWindow = new AnchoredPopupWindow(mActivity, mLayout,
+                            new ColorDrawable(Color.TRANSPARENT), mContentView,
+                            new RectProvider(rect));
+                    mPopupWindow.setOutsideTouchable(false);
+                    mPopupWindow.show();
+                } else {
+                    // Otherwise, the menu will already be in the hierarchy, and we need to make
+                    // sure the menu itself is measured before starting the animation.
+                    if (v.getMeasuredHeight() == 0) return;
+
+                    startEnterAnimation();
                 }
-                mContentView.setVisibility(View.VISIBLE);
-                startEnterAnimation();
-                mContentView.removeOnLayoutChangeListener(this);
+                v.removeOnLayoutChangeListener(this);
             }
         });
-        super.show();
     }
 
     private void startEnterAnimation() {
@@ -113,6 +150,13 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
 
     @Override
     public void dismiss() {
+        if (mIsPopup) {
+            mPopupWindow.dismiss();
+            super.dismiss();
+
+            return;
+        }
+
         int[] contextMenuFinalLocationPx = new int[2];
         mContentView.getLocationOnScreen(contextMenuFinalLocationPx);
         // Recalculate mContextMenuDestinationY because the context menu's final location may not be

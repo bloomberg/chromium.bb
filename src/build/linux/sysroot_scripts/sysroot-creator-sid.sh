@@ -63,8 +63,6 @@ DEBIAN_PACKAGES="\
   libblkid1
   libbluetooth-dev
   libbluetooth3
-  libbrlapi-dev
-  libbrlapi0.7
   libbrotli1
   libbsd0
   libc6
@@ -206,6 +204,9 @@ DEBIAN_PACKAGES="\
   libnss-db
   libnss3
   libnss3-dev
+  libncurses-dev
+  libncurses6
+  libncursesw6
   libogg-dev
   libogg0
   libopengl0
@@ -270,6 +271,7 @@ DEBIAN_PACKAGES="\
   libtasn1-6
   libthai0
   libtiff5
+  libtinfo6
   libudev-dev
   libudev1
   libunbound8
@@ -359,7 +361,6 @@ DEBIAN_PACKAGES="\
   libzstd1
   linux-libc-dev
   mesa-common-dev
-  python-xcbgen
   shared-mime-info
   speech-dispatcher
   uuid-dev
@@ -376,7 +377,6 @@ DEBIAN_PACKAGES="\
   x11proto-scrnsaver-dev
   x11proto-xext-dev
   x11proto-xinerama-dev
-  xcb-proto
   zlib1g
   zlib1g-dev
 "

@@ -20,7 +20,6 @@
 namespace content {
 class RenderFrameHost;
 class RenderProcessHost;
-class ResourceContext;
 class VpnServiceProxy;
 }
 
@@ -51,8 +50,8 @@ class ChromeContentBrowserClientExtensionsPart
   static bool DoesSiteRequireDedicatedProcess(
       content::BrowserContext* browser_context,
       const GURL& effective_site_url);
-  static bool ShouldLockToOrigin(content::BrowserContext* browser_context,
-                                 const GURL& effective_site_url);
+  static bool ShouldLockProcessToSite(content::BrowserContext* browser_context,
+                                      const GURL& effective_site_url);
   static bool CanCommitURL(content::RenderProcessHost* process_host,
                            const GURL& url);
   static bool IsSuitableHost(Profile* profile,
@@ -66,15 +65,10 @@ class ChromeContentBrowserClientExtensionsPart
       content::SiteInstance* site_instance,
       const GURL& current_effective_url,
       const GURL& destination_effective_url);
-  // TODO(crbug.com/824858): Remove the OnIO method.
-  static bool AllowServiceWorkerOnIO(const GURL& scope,
-                                     const GURL& first_party_url,
-                                     const GURL& script_url,
-                                     content::ResourceContext* context);
-  static bool AllowServiceWorkerOnUI(const GURL& scope,
-                                     const GURL& first_party_url,
-                                     const GURL& script_url,
-                                     content::BrowserContext* context);
+  static bool AllowServiceWorker(const GURL& scope,
+                                 const GURL& first_party_url,
+                                 const GURL& script_url,
+                                 content::BrowserContext* context);
   static std::vector<url::Origin> GetOriginsRequiringDedicatedProcess();
 
   // Helper function to call InfoMap::SetSigninProcess().
@@ -103,7 +97,7 @@ class ChromeContentBrowserClientExtensionsPart
   void SiteInstanceGotProcess(content::SiteInstance* site_instance) override;
   void SiteInstanceDeleting(content::SiteInstance* site_instance) override;
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
-                           content::WebPreferences* web_prefs) override;
+                           blink::web_pref::WebPreferences* web_prefs) override;
   void BrowserURLHandlerCreated(content::BrowserURLHandler* handler) override;
   void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_allowed_schemes) override;

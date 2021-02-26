@@ -7,24 +7,26 @@
 """Deploys and runs a test package on a Fuchsia target."""
 
 import argparse
-import json
-import logging
 import os
-import socket
-import subprocess
+import runner_logs
 import sys
-import tempfile
-import time
 
 from common_args import AddCommonArgs, ConfigureLogging, GetDeploymentTargetForArgs
 from net_test_server import SetupTestServer
-from run_package import RunPackage, RunPackageArgs, SystemLogReader
+from run_test_package import RunTestPackage, RunTestPackageArgs, SystemLogReader
 from runner_exceptions import HandleExceptionAndReturnExitCode
+from runner_logs import RunnerLogManager
+from symbolizer import BuildIdsPaths
 
 DEFAULT_TEST_SERVER_CONCURRENCY = 4
 
-TEST_RESULT_PATH = '/data/test_summary.json'
-TEST_FILTER_PATH = '/data/test_filter.txt'
+TEST_DATA_DIR = '/tmp'
+TEST_RESULT_PATH = TEST_DATA_DIR + '/test_summary.json'
+TEST_PERF_RESULT_PATH = TEST_DATA_DIR + '/test_perf_summary.json'
+TEST_FILTER_PATH = TEST_DATA_DIR + '/test_filter.txt'
+
+TEST_REALM_NAME = 'chromium_tests'
+
 
 def main():
   parser = argparse.ArgumentParser()
@@ -60,7 +62,7 @@ def main():
                       type=int,
                       help='Sets the limit of test batch to run in a single '
                       'process.')
-  # --test-launcher-filter-file is specified relative to --output-directory,
+  # --test-launcher-filter-file is specified relative to --out-dir,
   # so specifying type=os.path.* will break it.
   parser.add_argument('--test-launcher-filter-file',
                       default=None,
@@ -82,11 +84,20 @@ def main():
                       help='Arguments for the test process.')
   parser.add_argument('child_args', nargs='*',
                       help='Arguments for the test process.')
+  parser.add_argument('--isolated-script-test-output',
+                      help='If present, store test results on this path.')
+  parser.add_argument('--isolated-script-test-perf-output',
+                      help='If present, store chartjson results on this path.')
+  parser.add_argument('--use-run-test-component',
+                      default=False,
+                      action='store_true',
+                      help='Run the test package hermetically using '
+                      'run-test-component, rather than run.')
   args = parser.parse_args()
 
-  # Flag output_directory is required for tests launched with this script.
-  if not args.output_directory:
-    raise ValueError("output-directory must be specified.")
+  # Flag out_dir is required for tests launched with this script.
+  if not args.out_dir:
+    raise ValueError("out-dir must be specified.")
 
   ConfigureLogging(args)
 
@@ -117,7 +128,7 @@ def main():
     if args.device == 'device':
       test_concurrency = DEFAULT_TEST_SERVER_CONCURRENCY
     else:
-      test_concurrency = args.qemu_cpu_cores
+      test_concurrency = args.cpu_cores
   if test_concurrency:
     child_args.append('--test-launcher-jobs=%d' % test_concurrency)
 
@@ -133,44 +144,73 @@ def main():
     child_args.append('--gtest_break_on_failure')
   if args.test_launcher_summary_output:
     child_args.append('--test-launcher-summary-output=' + TEST_RESULT_PATH)
+  if args.isolated_script_test_output:
+    child_args.append('--isolated-script-test-output=' + TEST_RESULT_PATH)
+  if args.isolated_script_test_perf_output:
+    child_args.append('--isolated-script-test-perf-output=' +
+                      TEST_PERF_RESULT_PATH)
 
   if args.child_arg:
     child_args.extend(args.child_arg)
   if args.child_args:
     child_args.extend(args.child_args)
 
+  test_realms = []
+  if args.use_run_test_component:
+    test_realms = [TEST_REALM_NAME]
+
   try:
-    with GetDeploymentTargetForArgs(args) as target:
-      with SystemLogReader() as system_logger:
-        target.Start()
+    with GetDeploymentTargetForArgs() as target, \
+         SystemLogReader() as system_logger, \
+         RunnerLogManager(args.runner_logs_dir, BuildIdsPaths(args.package)):
+      target.Start()
 
-        if args.system_log_file and args.system_log_file != '-':
-          system_logger.Start(target, args.package, args.system_log_file)
+      if args.system_log_file and args.system_log_file != '-':
+        system_logger.Start(target, args.package, args.system_log_file)
 
-        if args.test_launcher_filter_file:
-          target.PutFile(args.test_launcher_filter_file, TEST_FILTER_PATH,
-                        for_package=args.package_name)
-          child_args.append('--test-launcher-filter-file=' + TEST_FILTER_PATH)
+      if args.test_launcher_filter_file:
+        target.PutFile(args.test_launcher_filter_file,
+                       TEST_FILTER_PATH,
+                       for_package=args.package_name,
+                       for_realms=test_realms)
+        child_args.append('--test-launcher-filter-file=' + TEST_FILTER_PATH)
 
-        test_server = None
-        if args.enable_test_server:
-          assert test_concurrency
-          test_server = SetupTestServer(target, test_concurrency,
-                                        args.package_name)
+      test_server = None
+      if args.enable_test_server:
+        assert test_concurrency
+        test_server = SetupTestServer(target, test_concurrency,
+                                      args.package_name, test_realms)
 
-        run_package_args = RunPackageArgs.FromCommonArgs(args)
-        returncode = RunPackage(
-            args.output_directory, target, args.package, args.package_name,
-            child_args, run_package_args)
+      run_package_args = RunTestPackageArgs.FromCommonArgs(args)
+      if args.use_run_test_component:
+        run_package_args.test_realm_label = TEST_REALM_NAME
+        run_package_args.use_run_test_component = True
+      returncode = RunTestPackage(args.out_dir, target, args.package,
+                                  args.package_name, child_args,
+                                  run_package_args)
 
-        if test_server:
-          test_server.Stop()
+      if test_server:
+        test_server.Stop()
 
-        if args.test_launcher_summary_output:
-          target.GetFile(TEST_RESULT_PATH, args.test_launcher_summary_output,
-                        for_package=args.package_name)
+      if args.test_launcher_summary_output:
+        target.GetFile(TEST_RESULT_PATH,
+                       args.test_launcher_summary_output,
+                       for_package=args.package_name,
+                       for_realms=test_realms)
 
-        return returncode
+      if args.isolated_script_test_output:
+        target.GetFile(TEST_RESULT_PATH,
+                       args.isolated_script_test_output,
+                       for_package=args.package_name,
+                       for_realms=test_realms)
+
+      if args.isolated_script_test_perf_output:
+        target.GetFile(TEST_PERF_RESULT_PATH,
+                       args.isolated_script_test_perf_output,
+                       for_package=args.package_name,
+                       for_realms=test_realms)
+
+      return returncode
 
   except:
     return HandleExceptionAndReturnExitCode()

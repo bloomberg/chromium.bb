@@ -24,7 +24,6 @@
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_random.h"
 #include "core/fxcrt/fx_safe_types.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -147,9 +146,9 @@ CPDF_Creator::CPDF_Creator(CPDF_Document* pDoc,
       m_pEncryptDict(m_pParser ? m_pParser->GetEncryptDict() : nullptr),
       m_pSecurityHandler(m_pParser ? m_pParser->GetSecurityHandler() : nullptr),
       m_dwLastObjNum(m_pDocument->GetLastObjNum()),
-      m_Archive(pdfium::MakeUnique<CFX_FileBufferArchive>(archive)) {}
+      m_Archive(std::make_unique<CFX_FileBufferArchive>(archive)) {}
 
-CPDF_Creator::~CPDF_Creator() {}
+CPDF_Creator::~CPDF_Creator() = default;
 
 bool CPDF_Creator::WriteIndirectObj(uint32_t objnum, const CPDF_Object* pObj) {
   if (!m_Archive->WriteDWord(objnum) || !m_Archive->WriteString(" 0 obj\r\n"))
@@ -157,7 +156,7 @@ bool CPDF_Creator::WriteIndirectObj(uint32_t objnum, const CPDF_Object* pObj) {
 
   std::unique_ptr<CPDF_Encryptor> encryptor;
   if (GetCryptoHandler() && pObj != m_pEncryptDict)
-    encryptor = pdfium::MakeUnique<CPDF_Encryptor>(GetCryptoHandler(), objnum);
+    encryptor = std::make_unique<CPDF_Encryptor>(GetCryptoHandler(), objnum);
 
   if (!pObj->WriteTo(m_Archive.get(), encryptor.get()))
     return false;
@@ -342,7 +341,7 @@ CPDF_Creator::Stage CPDF_Creator::WriteDoc_Stage3() {
     if (!m_IsIncremental || !m_pParser->IsXRefStream()) {
       if (!m_IsIncremental || m_pParser->GetLastXRefOffset() == 0) {
         ByteString str;
-        str = pdfium::ContainsKey(m_ObjectOffsets, 1)
+        str = pdfium::Contains(m_ObjectOffsets, 1)
                   ? "xref\r\n"
                   : "xref\r\n0 1\r\n0000000000 65535 f\r\n";
         if (!m_Archive->WriteString(str.AsStringView()))
@@ -366,14 +365,14 @@ CPDF_Creator::Stage CPDF_Creator::WriteDoc_Stage3() {
     uint32_t i = m_CurObjNum;
     uint32_t j;
     while (i <= dwLastObjNum) {
-      while (i <= dwLastObjNum && !pdfium::ContainsKey(m_ObjectOffsets, i))
+      while (i <= dwLastObjNum && !pdfium::Contains(m_ObjectOffsets, i))
         i++;
 
       if (i > dwLastObjNum)
         break;
 
       j = i;
-      while (j <= dwLastObjNum && pdfium::ContainsKey(m_ObjectOffsets, j))
+      while (j <= dwLastObjNum && pdfium::Contains(m_ObjectOffsets, j))
         j++;
 
       if (i == 1)
@@ -522,7 +521,7 @@ CPDF_Creator::Stage CPDF_Creator::WriteDoc_Stage4() {
     if (m_IsIncremental && m_pParser && m_pParser->GetLastXRefOffset() == 0) {
       uint32_t i = 0;
       for (i = 0; i < m_dwLastObjNum; i++) {
-        if (!pdfium::ContainsKey(m_ObjectOffsets, i))
+        if (!pdfium::Contains(m_ObjectOffsets, i))
           continue;
         if (!m_Archive->WriteDWord(i) || !m_Archive->WriteString(" 1 "))
           return Stage::kInvalid;

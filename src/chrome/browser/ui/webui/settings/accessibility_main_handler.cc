@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
@@ -15,9 +17,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#if !defined(OS_CHROMEOS)
-#include "content/public/browser/browser_accessibility_state.h"
-#endif  // !defined(OS_CHROMEOS)
 
 namespace settings {
 
@@ -27,8 +26,8 @@ AccessibilityMainHandler::~AccessibilityMainHandler() = default;
 
 void AccessibilityMainHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getScreenReaderState",
-      base::BindRepeating(&AccessibilityMainHandler::HandleGetScreenReaderState,
+      "a11yPageReady",
+      base::BindRepeating(&AccessibilityMainHandler::HandleA11yPageReady,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "confirmA11yImageLabels",
@@ -53,7 +52,7 @@ void AccessibilityMainHandler::OnJavascriptDisallowed() {
 #endif  // defined(OS_CHROMEOS)
 }
 
-void AccessibilityMainHandler::HandleGetScreenReaderState(
+void AccessibilityMainHandler::HandleA11yPageReady(
     const base::ListValue* args) {
   AllowJavascript();
   SendScreenReaderStateChanged();

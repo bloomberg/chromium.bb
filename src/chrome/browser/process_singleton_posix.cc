@@ -80,7 +80,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -95,7 +94,7 @@
 #include "net/base/network_interfaces.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "chrome/browser/ui/process_singleton_dialog_linux.h"
 #endif
 
@@ -296,11 +295,11 @@ bool DisplayProfileInUseError(const base::FilePath& lock_path,
   if (g_disable_prompt)
     return g_user_opted_unlock_in_use_profile;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   base::string16 relaunch_button_text = l10n_util::GetStringUTF16(
       IDS_PROFILE_IN_USE_LINUX_RELAUNCH);
   return ShowProcessSingletonDialog(error, relaunch_button_text);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   // On Mac, always usurp the lock.
   return true;
 #endif
@@ -406,7 +405,7 @@ bool ConnectSocket(ScopedSocket* socket,
   }
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 bool ReplaceOldSingletonLock(const base::FilePath& symlink_content,
                              const base::FilePath& lock_path) {
   // Try taking an flock(2) on the file. Failure means the lock is taken so we
@@ -432,14 +431,14 @@ bool ReplaceOldSingletonLock(const base::FilePath& symlink_content,
   // lock. We never flock() the lock file from now on. I.e. we assume that an
   // old version of Chrome will not run with the same user data dir after this
   // version has run.
-  if (!base::DeleteFile(lock_path, false)) {
+  if (!base::DeleteFile(lock_path)) {
     PLOG(ERROR) << "Could not delete old singleton lock.";
     return false;
   }
 
   return SymlinkPath(symlink_content, lock_path);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 void SendRemoteProcessInteractionResultHistogram(
     ProcessSingleton::RemoteProcessInteractionResult result) {
@@ -479,8 +478,8 @@ class ProcessSingleton::LinuxWatcher
       DCHECK_CURRENTLY_ON(BrowserThread::IO);
       // Wait for reads.
       fd_watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
-          fd, base::Bind(&SocketReader::OnSocketCanReadWithoutBlocking,
-                         base::Unretained(this)));
+          fd, base::BindRepeating(&SocketReader::OnSocketCanReadWithoutBlocking,
+                                  base::Unretained(this)));
       // If we haven't completed in a reasonable amount of time, give up.
       timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimeoutInSeconds),
                    this, &SocketReader::CleanupAndDeleteSelf);
@@ -591,8 +590,8 @@ void ProcessSingleton::LinuxWatcher::StartListening(int socket) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Watch for client connections on this socket.
   socket_watcher_ = base::FileDescriptorWatcher::WatchReadable(
-      socket, base::Bind(&LinuxWatcher::OnSocketCanReadWithoutBlocking,
-                         base::Unretained(this), socket));
+      socket, base::BindRepeating(&LinuxWatcher::OnSocketCanReadWithoutBlocking,
+                                  base::Unretained(this), socket));
 }
 
 void ProcessSingleton::LinuxWatcher::HandleMessage(
@@ -700,8 +699,8 @@ void ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK(
   if (shutdown(fd_, SHUT_WR) < 0)
     PLOG(ERROR) << "shutdown() failed";
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ProcessSingleton::LinuxWatcher::RemoveSocketReader,
                      parent_, this));
   // We will be deleted once the posted RemoveSocketReader task runs.
@@ -720,8 +719,8 @@ ProcessSingleton::ProcessSingleton(
   lock_path_ = user_data_dir.Append(chrome::kSingletonLockFilename);
   cookie_path_ = user_data_dir.Append(chrome::kSingletonCookieFilename);
 
-  kill_callback_ = base::Bind(&ProcessSingleton::KillProcess,
-                              base::Unretained(this));
+  kill_callback_ = base::BindRepeating(&ProcessSingleton::KillProcess,
+                                       base::Unretained(this));
 }
 
 ProcessSingleton::~ProcessSingleton() {
@@ -749,7 +748,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   for (int retries = 0; retries <= retry_attempts; ++retries) {
     // Try to connect to the socket.
     if (ConnectSocket(&socket, socket_path_, cookie_path_)) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       // On Mac, we want the open process' pid in case there are
       // Apple Events to forward. See crbug.com/777863.
       std::string hostname;
@@ -813,7 +812,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     base::PlatformThread::Sleep(sleep_interval);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (pid > 0 && WaitForAndForwardOpenURLEvent(pid)) {
     return PROCESS_NOTIFIED;
   }
@@ -945,7 +944,7 @@ void ProcessSingleton::OverrideCurrentPidForTesting(base::ProcessId pid) {
 }
 
 void ProcessSingleton::OverrideKillCallbackForTesting(
-    const base::Callback<void(int)>& callback) {
+    const base::RepeatingCallback<void(int)>& callback) {
   kill_callback_ = callback;
 }
 
@@ -980,7 +979,7 @@ bool ProcessSingleton::Create() {
   if (!SymlinkPath(symlink_content, lock_path_)) {
     // TODO(jackhou): Remove this case once this code is stable on Mac.
     // http://crbug.com/367612
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // On Mac, an existing non-symlink lock file means the lock could be held by
     // the old process singleton code. If we can successfully replace the lock,
     // continue as normal.
@@ -1043,8 +1042,8 @@ bool ProcessSingleton::Create() {
     NOTREACHED() << "listen failed: " << base::safe_strerror(errno);
 
   DCHECK(BrowserThread::IsThreadInitialized(BrowserThread::IO));
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&ProcessSingleton::LinuxWatcher::StartListening,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ProcessSingleton::LinuxWatcher::StartListening,
                                 watcher_, sock));
 
   return true;

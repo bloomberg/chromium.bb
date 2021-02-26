@@ -6,6 +6,7 @@
  */
 
 #include "src/gpu/GrGpuResourcePriv.h"
+#include "src/gpu/d3d/GrD3DAMDMemoryAllocator.h"
 #include "src/gpu/d3d/GrD3DGpu.h"
 #include "src/gpu/d3d/GrD3DTextureResource.h"
 
@@ -16,14 +17,12 @@ void GrD3DTextureResource::setResourceState(const GrD3DGpu* gpu,
         return;
     }
 
-    SkAutoTMalloc<D3D12_RESOURCE_TRANSITION_BARRIER> barriers(fInfo.fLevelCount);
-    for (uint32_t mipLevel = 0; mipLevel < fInfo.fLevelCount; ++mipLevel) {
-        barriers[mipLevel].pResource = this->d3dResource();
-        barriers[mipLevel].Subresource = mipLevel;
-        barriers[mipLevel].StateBefore = currentResourceState;
-        barriers[mipLevel].StateAfter = newResourceState;
-    }
-    gpu->addResourceBarriers(this->resource(), fInfo.fLevelCount, barriers.get());
+    D3D12_RESOURCE_TRANSITION_BARRIER barrier;
+    barrier.pResource = this->d3dResource();
+    barrier.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    barrier.StateBefore = currentResourceState;
+    barrier.StateAfter = newResourceState;
+    gpu->addResourceBarriers(this->resource(), 1, &barrier);
 
     this->updateResourceState(newResourceState);
 }
@@ -44,46 +43,78 @@ bool GrD3DTextureResource::InitTextureResourceInfo(GrD3DGpu* gpu, const D3D12_RE
     // number of levels supported and use that -- we don't support that.
     SkASSERT(desc.MipLevels > 0);
 
-    ID3D12Resource* resource = nullptr;
-
-    D3D12_HEAP_PROPERTIES heapProperties = {};
-    heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
-    heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-    heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-    heapProperties.CreationNodeMask = 1;
-    heapProperties.VisibleNodeMask = 1;
-    HRESULT hr = gpu->device()->CreateCommittedResource(
-        &heapProperties,
-        D3D12_HEAP_FLAG_NONE,
-        &desc,
-        initialState,
-        clearValue,
-        IID_PPV_ARGS(&resource));
-    if (!SUCCEEDED(hr)) {
+    info->fResource = gpu->memoryAllocator()->createResource(
+            D3D12_HEAP_TYPE_DEFAULT, &desc, initialState, &info->fAlloc, clearValue);
+    if (!info->fResource) {
         return false;
     }
 
-    info->fResource.reset(resource);
     info->fResourceState = initialState;
     info->fFormat = desc.Format;
     info->fLevelCount = desc.MipLevels;
-    info->fSampleQualityLevel = desc.SampleDesc.Quality;
+    info->fSampleCount = desc.SampleDesc.Count;
+    info->fSampleQualityPattern = desc.SampleDesc.Quality;
     info->fProtected = isProtected;
 
     return true;
 }
 
+std::pair<GrD3DTextureResourceInfo, sk_sp<GrD3DResourceState>> GrD3DTextureResource::CreateMSAA(
+        GrD3DGpu* gpu, SkISize dimensions, int sampleCnt, const GrD3DTextureResourceInfo& info,
+        SkColor4f clearColor) {
+    GrD3DTextureResourceInfo msInfo;
+    sk_sp<GrD3DResourceState> msState;
+
+    // create msaa surface
+    D3D12_RESOURCE_DESC msTextureDesc = {};
+    msTextureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    msTextureDesc.Alignment = 0;  // Default alignment (64KB)
+    msTextureDesc.Width = dimensions.fWidth;
+    msTextureDesc.Height = dimensions.fHeight;
+    msTextureDesc.DepthOrArraySize = 1;
+    msTextureDesc.MipLevels = 1;
+    msTextureDesc.Format = info.fFormat;
+    msTextureDesc.SampleDesc.Count = sampleCnt;
+    msTextureDesc.SampleDesc.Quality = DXGI_STANDARD_MULTISAMPLE_QUALITY_PATTERN;
+    msTextureDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;  // Use default for dxgi format
+    msTextureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+    D3D12_CLEAR_VALUE clearValue = {};
+    clearValue.Format = info.fFormat;
+    clearValue.Color[0] = clearColor.fR;
+    clearValue.Color[1] = clearColor.fG;
+    clearValue.Color[2] = clearColor.fB;
+    clearValue.Color[3] = clearColor.fA;
+
+    if (!InitTextureResourceInfo(gpu, msTextureDesc, D3D12_RESOURCE_STATE_RENDER_TARGET,
+                                 info.fProtected, &clearValue, &msInfo)) {
+        return {};
+    }
+
+    msState.reset(new GrD3DResourceState(
+            static_cast<D3D12_RESOURCE_STATES>(msInfo.fResourceState)));
+
+    return std::make_pair(msInfo, msState);
+}
+
 GrD3DTextureResource::~GrD3DTextureResource() {
     // Should have been reset() before
     SkASSERT(!fResource);
+    SkASSERT(!fInfo.fResource);
+}
+
+void GrD3DTextureResource::prepareForPresent(GrD3DGpu* gpu) {
+    this->setResourceState(gpu, D3D12_RESOURCE_STATE_PRESENT);
 }
 
 void GrD3DTextureResource::releaseResource(GrD3DGpu* gpu) {
     // TODO: do we need to migrate resource state if we change queues?
     if (fResource) {
         fResource->removeOwningTexture();
-        fResource.reset(nullptr);
+        fResource.reset();
     }
+    fInfo.fResource.reset();
+    fInfo.fAlloc.reset();
 }
 
 void GrD3DTextureResource::setResourceRelease(sk_sp<GrRefCntedCallback> releaseHelper) {
@@ -95,4 +126,5 @@ void GrD3DTextureResource::setResourceRelease(sk_sp<GrRefCntedCallback> releaseH
 void GrD3DTextureResource::Resource::freeGPUData() const {
     this->invokeReleaseProc();
     fResource.reset();  // Release our ref to the resource
+    fAlloc.reset(); // Release our ref to the allocation
 }

@@ -21,6 +21,13 @@ PeerConnectionTrackerHost::PeerConnectionTrackerHost(RenderProcessHost* rph)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PowerMonitor::AddObserver(this);
   rph->BindReceiver(tracker_.BindNewPipeAndPassReceiver());
+  // Ensure that the initial thermal state is known by the |tracker_|.
+  base::PowerObserver::DeviceThermalState initial_thermal_state =
+      base::PowerMonitor::GetCurrentThermalState();
+  if (initial_thermal_state !=
+      base::PowerObserver::DeviceThermalState::kUnknown) {
+    OnThermalStateChange(initial_thermal_state);
+  }
 }
 
 PeerConnectionTrackerHost::~PeerConnectionTrackerHost() {
@@ -141,6 +148,12 @@ void PeerConnectionTrackerHost::WebRtcEventLogWrite(
 void PeerConnectionTrackerHost::OnSuspend() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_->OnSuspend();
+}
+
+void PeerConnectionTrackerHost::OnThermalStateChange(
+    base::PowerObserver::DeviceThermalState new_state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  tracker_->OnThermalStateChange(new_state);
 }
 
 void PeerConnectionTrackerHost::StartEventLog(int lid, int output_period_ms) {

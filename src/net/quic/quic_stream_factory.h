@@ -17,7 +17,6 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/tick_clock.h"
@@ -35,13 +34,13 @@
 #include "net/quic/network_connection.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_clock_skew_detector.h"
+#include "net/quic/quic_connectivity_monitor.h"
 #include "net/quic/quic_context.h"
 #include "net/quic/quic_crypto_client_config_handle.h"
 #include "net/quic/quic_session_key.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_client_push_promise_index.h"
 #include "net/third_party/quiche/src/quic/core/quic_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
@@ -75,6 +74,7 @@ class QuicCryptoClientStreamFactory;
 class QuicServerInfo;
 class QuicStreamFactory;
 class QuicContext;
+class SCTAuditingDelegate;
 class SocketPerformanceWatcherFactory;
 class SocketTag;
 class TransportSecurityState;
@@ -99,6 +99,12 @@ enum QuicPlatformNotification {
   NETWORK_SOON_TO_DISCONNECT,
   NETWORK_IP_ADDRESS_CHANGED,
   NETWORK_NOTIFICATION_MAX
+};
+
+enum AllActiveSessionsGoingAwayReason {
+  kClockSkewDetected,
+  kIPAddressChanged,
+  kCertDBChanged
 };
 
 // Encapsulates a pending request for a QuicChromiumClientSession.
@@ -237,6 +243,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       CTPolicyEnforcer* ct_policy_enforcer,
       TransportSecurityState* transport_security_state,
       CTVerifier* cert_transparency_verifier,
+      SCTAuditingDelegate* sct_auditing_delegate,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
       QuicContext* context);
@@ -337,6 +344,11 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   bool allow_server_migration() const { return params_.allow_server_migration; }
 
+  // Returns true is gQUIC 0-RTT is disabled from quic_context.
+  bool gquic_zero_rtt_disabled() const {
+    return params_.disable_gquic_zero_rtt;
+  }
+
   void set_is_quic_known_to_work_on_current_network(
       bool is_quic_known_to_work_on_current_network);
 
@@ -396,7 +408,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                     NetworkChangeNotifier::NetworkHandle* network);
   void ActivateSession(const QuicSessionAliasKey& key,
                        QuicChromiumClientSession* session);
-  void MarkAllActiveSessionsGoingAway();
+  // Go away all active sessions. May disable session's connectivity monitoring
+  // based on the |reason|.
+  void MarkAllActiveSessionsGoingAway(AllActiveSessionsGoingAwayReason reason);
 
   void ConfigureInitialRttEstimate(
       const quic::QuicServerId& server_id,
@@ -457,6 +471,14 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   void OnAllCryptoClientRefReleased(
       QuicCryptoClientConfigMap::iterator& map_iterator);
 
+  // Called when a network change happens.
+  // Collect platform notification metrics, and if the change affects the
+  // original default network interface, collect connectivity degradation
+  // metrics from |connectivity_monitor_| and add to histograms.
+  void CollectDataOnPlatformNotification(
+      enum QuicPlatformNotification notification,
+      NetworkChangeNotifier::NetworkHandle affected_network) const;
+
   std::unique_ptr<QuicCryptoClientConfigHandle> GetCryptoConfigForTesting(
       const NetworkIsolationKey& network_isolation_key);
 
@@ -479,6 +501,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   CTPolicyEnforcer* const ct_policy_enforcer_;
   TransportSecurityState* const transport_security_state_;
   CTVerifier* const cert_transparency_verifier_;
+  SCTAuditingDelegate* const sct_auditing_delegate_;
   QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory_;
   quic::QuicRandom* random_generator_;  // Unowned.
   const quic::QuicClock* clock_;        // Unowned.
@@ -556,7 +579,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   int num_push_streams_created_;
 
-  quic::QuicClientPushPromiseIndex push_promise_index_;
+  QuicConnectivityMonitor connectivity_monitor_;
 
   const base::TickClock* tick_clock_;
 

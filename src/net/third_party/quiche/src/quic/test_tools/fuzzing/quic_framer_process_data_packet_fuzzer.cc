@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <string>
 
+#include "absl/base/macros.h"
 #include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
@@ -18,7 +19,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_framer_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
 
 using quic::DiversificationNonce;
 using quic::EncryptionLevel;
@@ -60,13 +60,12 @@ ParsedQuicVersion ConsumeParsedQuicVersion(FuzzedDataProvider* provider) {
   const QuicTransportVersion transport_versions[] = {
       quic::QUIC_VERSION_43,
       quic::QUIC_VERSION_46,
-      quic::QUIC_VERSION_48,
   };
 
   return ParsedQuicVersion(
       quic::PROTOCOL_QUIC_CRYPTO,
       transport_versions[provider->ConsumeIntegralInRange<uint8_t>(
-          0, QUICHE_ARRAYSIZE(transport_versions) - 1)]);
+          0, ABSL_ARRAYSIZE(transport_versions) - 1)]);
 }
 
 // QuicSelfContainedPacketHeader is a QuicPacketHeader with built-in stroage for

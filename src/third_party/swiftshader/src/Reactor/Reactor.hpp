@@ -24,7 +24,7 @@
 #include <cstdio>
 #include <limits>
 #include <tuple>
-#include <unordered_set>
+#include <unordered_map>
 
 #ifdef ENABLE_RR_DEBUG_INFO
 // Functions used for generating JIT debug info.
@@ -50,6 +50,18 @@ void FlushDebug();
 namespace rr {
 int DebugPrintf(const char *format, ...);
 }
+#endif
+
+// A Clang extension to determine compiler features.
+// We use it to detect Sanitizer builds (e.g. -fsanitize=memory).
+#ifndef __has_feature
+#	define __has_feature(x) 0
+#endif
+
+// Whether Reactor routine instrumentation is enabled for MSan builds.
+// TODO(b/155148722): Remove when unconditionally instrumenting for all build systems.
+#if !defined REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION
+#	define REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION 0
 #endif
 
 namespace rr {
@@ -120,6 +132,10 @@ public:
 
 	virtual Type *getType() const = 0;
 
+	// This function is only public for testing purposes, as it affects performance.
+	// It is not considered part of Reactor's public API.
+	static void materializeAll();
+
 protected:
 	Variable();
 	Variable(const Variable &) = default;
@@ -127,14 +143,27 @@ protected:
 	virtual ~Variable();
 
 private:
-	static void materializeAll();
 	static void killUnmaterialized();
 
 	virtual Value *allocate() const;
 
+	// Set of variables that do not have a stack location yet.
+	class UnmaterializedVariables
+	{
+	public:
+		void add(const Variable *v);
+		void remove(const Variable *v);
+		void clear();
+		void materializeAll();
+
+	private:
+		int counter = 0;
+		std::unordered_map<const Variable *, int> variables;
+	};
+
 	// This has to be a raw pointer because glibc 2.17 doesn't support __cxa_thread_atexit_impl
 	// for destructing objects at exit. See crbug.com/1074222
-	static thread_local std::unordered_set<const Variable *> *unmaterializedVariables;
+	static thread_local UnmaterializedVariables *unmaterializedVariables;
 
 	mutable Value *rvalue = nullptr;
 	mutable Value *address = nullptr;
@@ -2096,7 +2125,7 @@ public:
 	template<int T>
 	Float(const SwizzleMask1<Float4, T> &rhs);
 
-	//	RValue<Float> operator=(float rhs);   // FIXME: Implement
+	RValue<Float> operator=(float rhs);
 	RValue<Float> operator=(RValue<Float> rhs);
 	RValue<Float> operator=(const Float &rhs);
 	RValue<Float> operator=(const Reference<Float> &rhs);
@@ -2254,6 +2283,7 @@ public:
 	Float4(const Swizzle2<Float4, X> &x, const SwizzleMask2<Float4, Y> &y);
 	template<int X, int Y>
 	Float4(const SwizzleMask2<Float4, X> &x, const SwizzleMask2<Float4, Y> &y);
+	Float4(RValue<Float2> lo, RValue<Float2> hi);
 
 	RValue<Float4> operator=(float replicate);
 	RValue<Float4> operator=(RValue<Float4> rhs);
@@ -2345,13 +2375,20 @@ RValue<Float4> Frac(RValue<Float4> x);
 RValue<Float4> Floor(RValue<Float4> x);
 RValue<Float4> Ceil(RValue<Float4> x);
 
+enum class Precision
+{
+	Full,
+	Relaxed,
+	//Half,
+};
+
 // Trigonometric functions
 // TODO: Currently unimplemented for Subzero.
 RValue<Float4> Sin(RValue<Float4> x);
 RValue<Float4> Cos(RValue<Float4> x);
 RValue<Float4> Tan(RValue<Float4> x);
-RValue<Float4> Asin(RValue<Float4> x);
-RValue<Float4> Acos(RValue<Float4> x);
+RValue<Float4> Asin(RValue<Float4> x, Precision p);
+RValue<Float4> Acos(RValue<Float4> x, Precision p);
 RValue<Float4> Atan(RValue<Float4> x);
 RValue<Float4> Sinh(RValue<Float4> x);
 RValue<Float4> Cosh(RValue<Float4> x);
@@ -3496,8 +3533,8 @@ enum
 	IFELSE_NUM__
 };
 
-#define If(cond)                                                        \
-	for(IfElseData ifElse__(cond); ifElse__ < IFELSE_NUM__; ++ifElse__) \
+#define If(cond)                                                          \
+	for(IfElseData ifElse__{ cond }; ifElse__ < IFELSE_NUM__; ++ifElse__) \
 		if(ifElse__ == IF_BLOCK__)
 
 #define Else                           \

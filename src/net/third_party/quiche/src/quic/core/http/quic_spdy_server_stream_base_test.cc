@@ -4,6 +4,7 @@
 
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_server_stream_base.h"
 
+#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
@@ -33,6 +34,9 @@ class QuicSpdyServerStreamBaseTest : public QuicTest {
                                         &alarm_factory_,
                                         Perspective::IS_SERVER)) {
     session_.Initialize();
+    session_.connection()->SetEncrypter(
+        ENCRYPTION_FORWARD_SECURE,
+        std::make_unique<NullEncrypter>(session_.perspective()));
     stream_ =
         new TestQuicSpdyServerStream(GetNthClientInitiatedBidirectionalStreamId(
                                          session_.transport_version(), 0),
@@ -50,7 +54,19 @@ class QuicSpdyServerStreamBaseTest : public QuicTest {
 TEST_F(QuicSpdyServerStreamBaseTest,
        SendQuicRstStreamNoErrorWithEarlyResponse) {
   stream_->StopReading();
-  EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(1);
+
+  if (!session_.split_up_send_rst()) {
+    EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _, _))
+        .Times(1);
+  } else {
+    if (session_.version().UsesHttp3()) {
+      EXPECT_CALL(session_, MaybeSendStopSendingFrame(_, QUIC_STREAM_NO_ERROR))
+          .Times(1);
+    } else {
+      EXPECT_CALL(session_, MaybeSendRstStreamFrame(_, QUIC_STREAM_NO_ERROR, _))
+          .Times(1);
+    }
+  }
   QuicStreamPeer::SetFinSent(stream_);
   stream_->CloseWriteSide();
 }
@@ -59,21 +75,26 @@ TEST_F(QuicSpdyServerStreamBaseTest,
        DoNotSendQuicRstStreamNoErrorWithRstReceived) {
   EXPECT_FALSE(stream_->reading_stopped());
 
-  EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
+  EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _, _)).Times(0);
 
-  if (!VersionHasIetfQuicFrames(session_.transport_version())) {
-    EXPECT_CALL(session_, SendRstStream(_, QUIC_RST_ACKNOWLEDGEMENT, _))
+  if (!session_.split_up_send_rst()) {
+    EXPECT_CALL(
+        session_,
+        SendRstStream(_,
+                      VersionHasIetfQuicFrames(session_.transport_version())
+                          ? QUIC_STREAM_CANCELLED
+                          : QUIC_RST_ACKNOWLEDGEMENT,
+                      _, _))
         .Times(1);
   } else {
-    // Intercept & check that the call to the QuicConnection's OnStreamReast
-    // has correct stream ID and error code -- for V99/IETF Quic, it should
-    // have the STREAM_CANCELLED error code, not RST_ACK... Capture
-    // OnStreamReset (rather than SendRstStream) because the V99 path bypasses
-    // SendRstStream, calling SendRstStreamInner directly. Mocking
-    // SendRstStreamInner is problematic since the test relies on it to perform
-    // the closing operations and getting the stream in the correct state.
-    EXPECT_CALL(*(static_cast<MockQuicConnection*>(session_.connection())),
-                OnStreamReset(stream_->id(), QUIC_STREAM_CANCELLED));
+    EXPECT_CALL(session_,
+                MaybeSendRstStreamFrame(
+                    _,
+                    VersionHasIetfQuicFrames(session_.transport_version())
+                        ? QUIC_STREAM_CANCELLED
+                        : QUIC_RST_ACKNOWLEDGEMENT,
+                    _))
+        .Times(1);
   }
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream_->id(),
                                QUIC_STREAM_CANCELLED, 1234);
@@ -81,9 +102,8 @@ TEST_F(QuicSpdyServerStreamBaseTest,
   if (VersionHasIetfQuicFrames(session_.transport_version())) {
     // Create and inject a STOP SENDING frame to complete the close
     // of the stream. This is only needed for version 99/IETF QUIC.
-    QuicStopSendingFrame stop_sending(
-        kInvalidControlFrameId, stream_->id(),
-        static_cast<QuicApplicationErrorCode>(QUIC_STREAM_CANCELLED));
+    QuicStopSendingFrame stop_sending(kInvalidControlFrameId, stream_->id(),
+                                      QUIC_STREAM_CANCELLED);
     session_.OnStopSendingFrame(stop_sending);
   }
 

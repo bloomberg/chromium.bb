@@ -40,7 +40,7 @@
       <if expr="not is_android">
         <include name="IDR_FEEDBACK_BLUETOOTHLOGSINFO_HTML" file="feedback/html/bluetooth_logs_info.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_FEEDBACK_ASSISTANTLOGSINFO_HTML" file="feedback/html/assistant_logs_info.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_FEEDBACK_DEFAULT_HTML" file="feedback/html/default.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_FEEDBACK_DEFAULT_HTML" file="feedback/html/default.html" preprocess="true" type="BINDATA" />
         <include name="IDR_FEEDBACK_SYSINFO_HTML" file="feedback/html/sys_info.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_FEEDBACK_ASSISTANT_LOGS_INFO_JS" file="feedback/js/assistant_logs_info.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FEEDBACK_FEEDBACK_UTIL_JS" file="feedback/js/feedback_util.js" flattenhtml="true" type="BINDATA" />
@@ -54,6 +54,18 @@
         <include name="IDR_FEEDBACK_SYSINFO_CSS" file="feedback/css/sys_info.css" type="BINDATA" />
         <include name="IDR_FEEDBACK_ICON_48" file="feedback/images/icon48.png" type="BINDATA" />
         <include name="IDR_FEEDBACK_ICON_192" file="feedback/images/icon192.png" type="BINDATA" />
+        <include name="IDR_FEEDBACK_BUTTON_BUTTER_BAR_CLOSE_PNG"
+                 file="feedback/images/button_butter_bar_close.png" type="BINDATA" />
+        <include name="IDR_FEEDBACK_BUTTON_BUTTER_BAR_CLOSE_HOVER_PNG"
+                 file="feedback/images/button_butter_bar_close_hover.png" type="BINDATA" />
+        <include name="IDR_FEEDBACK_BUTTON_BUTTER_BAR_CLOSE_PRESSED_PNG"
+                 file="feedback/images/button_butter_bar_close_pressed.png" type="BINDATA" />
+        <include name="IDR_FEEDBACK_BUTTON_BUTTER_BAR_CLOSE_2X_PNG"
+                 file="feedback/images/2x/button_butter_bar_close.png" type="BINDATA" />
+        <include name="IDR_FEEDBACK_BUTTON_BUTTER_BAR_CLOSE_HOVER_2X_PNG"
+                 file="feedback/images/2x/button_butter_bar_close_hover.png" type="BINDATA" />
+        <include name="IDR_FEEDBACK_BUTTON_BUTTER_BAR_CLOSE_PRESSED_2X_PNG"
+                 file="feedback/images/2x/button_butter_bar_close_pressed.png" type="BINDATA" />
       </if>
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_BACKGROUND_JS" file="identity_scope_approval_dialog/background.js" type="BINDATA" />
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_DIALOG_CSS" file="identity_scope_approval_dialog/scope_approval_dialog.css" type="BINDATA" />
@@ -101,8 +113,10 @@
         <include name="IDR_PDF_INDEX_HTML" file="pdf/index.html" type="BINDATA" preprocess="true" />
         <include name="IDR_PDF_INDEX_CSS" file="pdf/index.css" type="BINDATA" />
         <include name="IDR_PDF_MAIN_JS" file="pdf/main.js" type="BINDATA" preprocess="true" />
-        <include name="IDR_PDF_MAIN_UTIL_JS" file="pdf/main_util.js" type="BINDATA" />
-        <include name="IDR_PDF_PDF_VIEWER_JS" file="pdf/pdf_viewer.js" type="BINDATA" />
+        <include name="IDR_PDF_PDF_VIEWER_UTILS_JS" file="pdf/pdf_viewer_utils.js" type="BINDATA" />
+        <include name="IDR_PDF_PDF_VIEWER_BASE_JS" file="pdf/pdf_viewer_base.js" type="BINDATA" />
+        <include name="IDR_PDF_PDF_VIEWER_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/pdf_viewer.js" use_base_dir="false" type="BINDATA" preprocess="true" />
+        <include name="IDR_PDF_PDF_VIEWER_SHARED_STYLE_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/pdf_viewer_shared_style.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_BOOKMARK_TYPE_JS" file="pdf/bookmark_type.js" type="BINDATA" />
         <include name="IDR_PDF_CONSTANTS_JS" file="pdf/constants.js" type="BINDATA" />
         <include name="IDR_PDF_CONTROLLER_JS" file="pdf/controller.js" type="BINDATA" />
@@ -116,12 +130,19 @@
         <include name="IDR_PDF_GESTURE_DETECTOR_JS" file="pdf/gesture_detector.js" type="BINDATA" />
         <include name="IDR_PDF_BROWSER_API_JS" file="pdf/browser_api.js" type="BINDATA" />
         <include name="IDR_PDF_METRICS_JS" file="pdf/metrics.js" type="BINDATA" />
+        <include name="IDR_PDF_LOCAL_STORAGE_PROXY_JS" file="pdf/local_storage_proxy.js" type="BINDATA" />
 
+        <include name="IDR_PDF_ELEMENTS_SHARED_CSS_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/shared-css.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_SHARED_VARS_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/shared-vars.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_ICONS_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/icons.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-bookmark.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_DOCUMENT_OUTLINE_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-document-outline.js" use_base_dir="false" type="BINDATA"/>
+        <include name="IDR_PDF_VIEWER_DOWNLOADS_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-download-controls.js" use_base_dir="false" type="BINDATA"/>
         <include name="IDR_PDF_VIEWER_ERROR_SCREEN_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-error-screen.js" use_base_dir="false" type="BINDATA" />
         <if expr="chromeos">
+          <include name="IDR_PDF_VIEWER_ANNOTATIONS_MODE_DIALOG_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-annotations-mode-dialog.js" use_base_dir="false" type="BINDATA"/>
+          <include name="IDR_PDF_VIEWER_ANNOTATIONS_BAR_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-annotations-bar.js" use_base_dir="false" type="BINDATA"/>
+          <include name="IDR_PDF_VIEWER_INK_CONTROLLER_JS" file="pdf/ink_controller.js" type="BINDATA" />
           <include name="IDR_PDF_VIEWER_INK_INDEX_HTML" file="pdf/ink/index.html" type="BINDATA" />
           <include name="IDR_PDF_VIEWER_INK_INK_API_JS" file="pdf/ink/ink_api.js" type="BINDATA" />
           <include name="IDR_PDF_VIEWER_INK_HOST_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-ink-host.js" use_base_dir="false" type="BINDATA" />
@@ -130,7 +151,11 @@
         </if>
         <include name="IDR_PDF_VIEWER_PAGE_SELECTOR_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-page-selector.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-password-screen.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PDF_SIDENAV_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-pdf-sidenav.js" use_base_dir="false" type="BINDATA"/>
         <include name="IDR_PDF_VIEWER_PDF_TOOLBAR_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-pdf-toolbar.js" use_base_dir="false" type="BINDATA" preprocess="true"/>
+        <include name="IDR_PDF_VIEWER_PDF_TOOLBAR_NEW_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-pdf-toolbar-new.js" use_base_dir="false" type="BINDATA" preprocess="true"/>
+        <include name="IDR_PDF_VIEWER_THUMBNAIL_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-thumbnail.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_THUMBNAIL_BAR_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-thumbnail-bar.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-toolbar-dropdown.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_ZOOM_BUTTON_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-zoom-button.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_ZOOM_SELECTOR_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-zoom-toolbar.js" use_base_dir="false" type="BINDATA" />

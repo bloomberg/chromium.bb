@@ -4,6 +4,7 @@
 
 assert(is_win)
 
+import("//build/config/python.gni")
 import("//build/config/win/visual_studio_version.gni")
 
 # This template defines a rule to invoke the MS IDL compiler. The generated
@@ -25,8 +26,15 @@ import("//build/config/win/visual_studio_version.gni")
 #       Directory where generated files were previously persisted.
 #       Defaults to third_party\win_build_output\midl\|out_dir|.
 #
-#   dynamic_guid (optional)
-#       If the GUID is not constant across builds, the current GUID.
+#   dynamic_guids (optional)
+#       If the GUIDs are not constant across builds, the current GUID
+#       substitutions.
+#       |dynamic_guids| is of the form:
+#         "PLACEHOLDER-GUID-158428a4-6014-4978-83ba-9fad0dabe791="
+#         "3d852661-c795-4d20-9b95-5561e9a1d2d9,"
+#         "PLACEHOLDER-GUID-63B8FFB1-5314-48C9-9C57-93EC8BC6184B="
+#         "D0E1CACC-C63C-4192-94AB-BF8EAD0E3B83".
+#       See midl.py for more details.
 #
 #   writes_tlb (optional)
 #       Whether a .tlb file should be added to outputs. Defaults to false.
@@ -55,13 +63,13 @@ template("midl") {
   } else {
     # midl.py expects 'gen' to be replaced with 'midl'.
     generated_dir = rebase_path("//third_party/win_build_output") + "/midl/" +
-                    rebase_path(rebase_path(out_dir, root_build_dir), "gen")
+                    rebase_path(out_dir, root_gen_dir)
   }
 
-  if (defined(invoker.dynamic_guid)) {
-    dynamic_guid = invoker.dynamic_guid
+  if (defined(invoker.dynamic_guids)) {
+    dynamic_guids = invoker.dynamic_guids
   } else {
-    dynamic_guid = "none"
+    dynamic_guids = "none"
   }
 
   if (defined(invoker.header_file)) {
@@ -81,7 +89,8 @@ template("midl") {
   proxy_file = "{{source_name_part}}_p.c"
   type_library_file = "{{source_name_part}}.tlb"
 
-  action_foreach(action_name) {
+  # TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
+  python2_action_foreach(action_name) {
     visibility = [ ":$source_set_name" ]
     script = "//build/toolchain/win/midl.py"
 
@@ -117,12 +126,14 @@ template("midl") {
       win_tool_arch,
       generated_dir,
       rebase_path(out_dir, root_build_dir),
-      dynamic_guid,
+      dynamic_guids,
       type_library_file,
       header_file,
       dlldata_file,
       interface_identifier_file,
       proxy_file,
+      rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang-cl.exe",
+                  root_build_dir),
       "{{source}}",
       "/char",
       "signed",

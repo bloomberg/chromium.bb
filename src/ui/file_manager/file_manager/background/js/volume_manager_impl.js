@@ -2,11 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {EntryLocationImpl} from './entry_location_impl.m.js';
+// #import {VolumeInfoListImpl} from './volume_info_list_impl.m.js';
+// #import * as wrappedVolumeManagerUtil from './volume_manager_util.m.js'; const {volumeManagerUtil} = wrappedVolumeManagerUtil;
+// #import * as wrappedVolumeManagerCommon from '../../../base/js/volume_manager_types.m.js'; const {VolumeManagerCommon} = wrappedVolumeManagerCommon;
+// #import * as wrappedAsyncUtil from '../../common/js/async_util.m.js'; const {AsyncUtil} = wrappedAsyncUtil;
+// #import * as wrappedUtil from '../../common/js/util.m.js'; const {util} = wrappedUtil;
+// #import {VolumeInfo} from '../../../externs/volume_info.m.js';
+// #import {VolumeManager} from '../../../externs/volume_manager.m.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
+// #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+// clang-format on
+
 /**
  * VolumeManager is responsible for tracking list of mounted volumes.
  * @implements {VolumeManager}
  */
-class VolumeManagerImpl extends cr.EventTarget {
+/* #export */ class VolumeManagerImpl extends cr.EventTarget {
   constructor() {
     super();
 
@@ -38,7 +52,8 @@ class VolumeManagerImpl extends cr.EventTarget {
     this.driveConnectionState_ = {
       type: chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE,
       reason: chrome.fileManagerPrivate.DriveOfflineReason.NO_SERVICE,
-      hasCellularNetworkAccess: false
+      hasCellularNetworkAccess: false,
+      canPinHostedFiles: false,
     };
 
     chrome.fileManagerPrivate.onDriveConnectionStatusChanged.addListener(
@@ -193,6 +208,12 @@ class VolumeManagerImpl extends cr.EventTarget {
               return;
             }
 
+            case VolumeManagerCommon.VolumeError.NEED_PASSWORD: {
+              console.warn(`'Cannot mount ${sourcePath}': ${status}`);
+              this.finishRequest_(requestKey, status);
+              return;
+            }
+
             default:
               console.error(`Cannot mount '${sourcePath}': ${status}`);
               this.finishRequest_(requestKey, status);
@@ -249,9 +270,9 @@ class VolumeManagerImpl extends cr.EventTarget {
   }
 
   /** @override */
-  async mountArchive(fileUrl) {
+  async mountArchive(fileUrl, password) {
     const path = await new Promise(resolve => {
-      chrome.fileManagerPrivate.addMount(fileUrl, resolve);
+      chrome.fileManagerPrivate.addMount(fileUrl, password, resolve);
     });
     console.debug(`Mounting '${path}'`);
     const key = this.makeRequestKey_('mount', path);
@@ -415,8 +436,8 @@ class VolumeManagerImpl extends cr.EventTarget {
         return null;
       }
     } else {
-      rootType =
-          VolumeManagerCommon.getRootTypeFromVolumeType(volumeInfo.volumeType);
+      rootType = VolumeManagerCommon.getRootTypeFromVolumeType(
+          assert(volumeInfo.volumeType));
       isRootEntry = util.isSameEntry(entry, volumeInfo.fileSystem.root);
       // Although "Play files" root directory is writable in file system level,
       // we prohibit write operations on it in the UI level to avoid confusion.
@@ -503,7 +524,7 @@ class VolumeManagerImpl extends cr.EventTarget {
 
   /**
    * @param {string} key Key produced by |makeRequestKey_|.
-   * @param {VolumeManagerCommon.VolumeError|string} status Status received
+   * @param {!VolumeManagerCommon.VolumeError|string} status Status received
    *     from the API.
    * @param {VolumeInfo=} opt_volumeInfo Volume info of the mounted volume.
    * @private
@@ -521,7 +542,7 @@ class VolumeManagerImpl extends cr.EventTarget {
 
   /**
    * @param {Object} request Structure created in |startRequest_|.
-   * @param {VolumeManagerCommon.VolumeError|string} status If status ===
+   * @param {!VolumeManagerCommon.VolumeError|string} status If status ===
    *     'success' success callbacks are called.
    * @param {VolumeInfo=} opt_volumeInfo Volume info of the mounted volume.
    * @private

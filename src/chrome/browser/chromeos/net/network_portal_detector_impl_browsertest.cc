@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -47,10 +47,6 @@ namespace {
 
 const char* const kNotificationId =
     NetworkPortalNotificationController::kNotificationId;
-const char* const kNotificationMetric =
-    NetworkPortalNotificationController::kNotificationMetric;
-const char* const kUserActionMetric =
-    NetworkPortalNotificationController::kUserActionMetric;
 
 constexpr char kTestUser[] = "test-user@gmail.com";
 constexpr char kTestUserGaiaId[] = "1234567890";
@@ -163,13 +159,6 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
                        InSessionDetection) {
-  typedef NetworkPortalNotificationController Controller;
-
-  EnumHistogramChecker ui_checker(
-      kNotificationMetric, Controller::NOTIFICATION_METRIC_COUNT, nullptr);
-  EnumHistogramChecker action_checker(
-      kUserActionMetric, Controller::USER_ACTION_METRIC_COUNT, nullptr);
-
   LoginUser(test_account_id_);
   content::RunAllPendingInMessageLoop();
 
@@ -184,25 +173,15 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
   EXPECT_EQ(kProbeUrl, get_probe_url());
   CompleteURLFetch(net::OK, 200, nullptr);
 
-  // Check that wifi is marked as behind the portal and that notification
-  // is displayed.
+  // Check that the default network is detected as behind a portal and that
+  // notification is displayed.
   EXPECT_TRUE(display_service_->GetNotification(kNotificationId));
-  ASSERT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
-            network_portal_detector::GetInstance()
-                ->GetCaptivePortalState(kWifiGuid)
-                .status);
-
-  ASSERT_TRUE(
-      ui_checker.Expect(Controller::NOTIFICATION_METRIC_DISPLAYED, 1)->Check());
-  ASSERT_TRUE(action_checker.Check());
+  EXPECT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
+            network_portal_detector::GetInstance()->GetCaptivePortalStatus());
 
   // User explicitly closes the notification.
   display_service_->RemoveNotification(NotificationHandler::Type::TRANSIENT,
                                        kNotificationId, true);
-
-  ASSERT_TRUE(ui_checker.Check());
-  ASSERT_TRUE(
-      action_checker.Expect(Controller::USER_ACTION_METRIC_CLOSED, 1)->Check());
 }
 
 class NetworkPortalDetectorImplBrowserTestIgnoreProxy
@@ -220,13 +199,6 @@ class NetworkPortalDetectorImplBrowserTestIgnoreProxy
 
 void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
     const bool preference_value) {
-  using Controller = NetworkPortalNotificationController;
-
-  EnumHistogramChecker ui_checker(
-      kNotificationMetric, Controller::NOTIFICATION_METRIC_COUNT, nullptr);
-  EnumHistogramChecker action_checker(
-      kUserActionMetric, Controller::USER_ACTION_METRIC_COUNT, nullptr);
-
   LoginUser(test_account_id_);
   content::RunAllPendingInMessageLoop();
 
@@ -245,17 +217,10 @@ void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
   RestartDetection();
   CompleteURLFetch(net::OK, 200, nullptr);
 
-  // Check that WiFi is marked as behind a portal and that a notification
-  // is displayed.
-  ASSERT_TRUE(display_service_->GetNotification(kNotificationId));
+  // Check that the network is behind a portal and a notification is displayed.
+  EXPECT_TRUE(display_service_->GetNotification(kNotificationId));
   EXPECT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
-            network_portal_detector::GetInstance()
-                ->GetCaptivePortalState(kWifiGuid)
-                .status);
-
-  EXPECT_TRUE(
-      ui_checker.Expect(Controller::NOTIFICATION_METRIC_DISPLAYED, 1)->Check());
-  EXPECT_TRUE(action_checker.Check());
+            network_portal_detector::GetInstance()->GetCaptivePortalStatus());
 
   display_service_->GetNotification(kNotificationId)
       ->delegate()

@@ -75,11 +75,11 @@ std::unique_ptr<InterpolableShadow> InterpolableShadow::MaybeConvertCSSValue(
   if (!shadow)
     return nullptr;
 
-  ShadowStyle shadow_style = kNormal;
+  ShadowStyle shadow_style = ShadowStyle::kNormal;
   if (shadow->style) {
     if (shadow->style->GetValueID() != CSSValueID::kInset)
       return nullptr;
-    shadow_style = kInset;
+    shadow_style = ShadowStyle::kInset;
   }
 
   std::unique_ptr<InterpolableLength> x = MaybeConvertLength(shadow->x.Get());
@@ -143,7 +143,8 @@ ShadowData InterpolableShadow::CreateShadowData(
   return ShadowData(
       FloatPoint(shadow_x.Value(), shadow_y.Value()), shadow_blur.Value(),
       shadow_spread.Value(), shadow_style_,
-      CSSColorInterpolationType::ResolveInterpolableColor(*color_, state));
+      StyleColor(
+          CSSColorInterpolationType::ResolveInterpolableColor(*color_, state)));
 }
 
 InterpolableShadow* InterpolableShadow::RawClone() const {

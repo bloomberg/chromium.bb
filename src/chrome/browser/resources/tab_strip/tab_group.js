@@ -5,7 +5,7 @@
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {CustomElement} from './custom_element.js';
-import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
+import {TabStripEmbedderProxy, TabStripEmbedderProxyImpl} from './tab_strip_embedder_proxy.js';
 import {TabGroupVisualData} from './tabs_api_proxy.js';
 
 export class TabGroupElement extends CustomElement {
@@ -17,18 +17,42 @@ export class TabGroupElement extends CustomElement {
     super();
 
     /** @private @const {!TabStripEmbedderProxy} */
-    this.embedderApi_ = TabStripEmbedderProxy.getInstance();
+    this.embedderApi_ = TabStripEmbedderProxyImpl.getInstance();
 
     /** @private @const {!HTMLElement} */
     this.chip_ = /** @type {!HTMLElement} */ (this.$('#chip'));
     this.chip_.addEventListener('click', () => this.onClickChip_());
     this.chip_.addEventListener(
         'keydown', e => this.onKeydownChip_(/** @type {!KeyboardEvent} */ (e)));
+
+    /**
+     * Flag indicating if this element can accept dragover events. This flag
+     * is updated by TabListElement while animating.
+     * @private {boolean}
+     */
+    this.isValidDragOverTarget_ = true;
+  }
+
+  /** @return {boolean} */
+  get isValidDragOverTarget() {
+    return !this.hasAttribute('dragging_') && this.isValidDragOverTarget_;
+  }
+
+  /** @param {boolean} isValid */
+  set isValidDragOverTarget(isValid) {
+    this.isValidDragOverTarget_ = isValid;
   }
 
   /** @return {!HTMLElement} */
   getDragImage() {
     return /** @type {!HTMLElement} */ (this.$('#dragImage'));
+  }
+
+  /** @return {!HTMLElement} */
+  getDragImageCenter() {
+    // Since the drag handle is #chip, the drag image should be centered
+    // relatively to it.
+    return /** @type {!HTMLElement} */ (this.$('#chip'));
   }
 
   /** @private */
@@ -66,6 +90,16 @@ export class TabGroupElement extends CustomElement {
     requestAnimationFrame(() => {
       this.toggleAttribute('dragging', enabled);
     });
+  }
+
+  /** @param {boolean} isDraggedOut */
+  setDraggedOut(isDraggedOut) {
+    this.toggleAttribute('dragged-out_', isDraggedOut);
+  }
+
+  /** @return {boolean} */
+  isDraggedOut() {
+    return this.hasAttribute('dragged-out_');
   }
 
   /**

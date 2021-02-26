@@ -43,6 +43,8 @@ component("public") {
     "download_response_handler.h",
     "download_save_info.cc",
     "download_save_info.h",
+    "download_schedule.cc",
+    "download_schedule.h",
     "download_source.h",
     "download_start_observer.h",
     "download_stats.h",
@@ -94,6 +96,10 @@ component("public") {
     "//components/download/internal/common:internal",
     "//components/download/database",
   ]
+
+  if (is_win && is_component_build) {
+    ldflags = [ "/IGNORE:4217" ]
+  }
 }
 
 if (is_android) {
@@ -102,6 +108,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
+      "//components/download/internal/common:internal_java",
       "//third_party/android_deps:androidx_annotation_annotation_java",
     ]
   }
@@ -156,7 +163,10 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [ "auto_resumption_handler_unittest.cc" ]
+  sources = [
+    "auto_resumption_handler_unittest.cc",
+    "download_schedule_unittest.cc",
+  ]
 
   deps = [
     ":public",

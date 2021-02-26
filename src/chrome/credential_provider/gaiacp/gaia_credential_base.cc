@@ -38,6 +38,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
+#include "chrome/credential_provider/gaiacp/device_policies_manager.h"
 #include "chrome/credential_provider/gaiacp/event_logs_upload_manager.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
@@ -55,6 +56,7 @@
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
+#include "chrome/credential_provider/gaiacp/user_policies_manager.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "content/public/common/content_switches.h"
@@ -69,8 +71,6 @@ namespace credential_provider {
 
 namespace {
 
-constexpr wchar_t kEmailDomainsKey[] = L"ed";  // deprecated.
-constexpr wchar_t kEmailDomainsKeyNew[] = L"domains_allowed_to_login";
 constexpr wchar_t kPermittedAccounts[] = L"permitted_accounts";
 constexpr wchar_t kPermittedAccountsSeparator[] = L",";
 constexpr char kGetAccessTokenBodyWithScopeFormat[] =
@@ -114,27 +114,17 @@ base::string16 GetEmailDomains(
 }
 
 base::string16 GetEmailDomains() {
+  if (DevicePoliciesManager::Get()->CloudPoliciesEnabled()) {
+    DevicePolicies device_policies;
+    DevicePoliciesManager::Get()->GetDevicePolicies(&device_policies);
+    return device_policies.GetAllowedDomainsStr();
+  }
+
+  // TODO (crbug.com/1135458): Clean up directly reading from registry after
+  // cloud policies is launched.
   base::string16 email_domains_reg = GetEmailDomains(kEmailDomainsKey);
   base::string16 email_domains_reg_new = GetEmailDomains(kEmailDomainsKeyNew);
   return email_domains_reg.empty() ? email_domains_reg_new : email_domains_reg;
-}
-
-// Get a pretty-printed string of the list of email domains that we can display
-// to the end-user.
-base::string16 GetEmailDomainsPrintableString() {
-  base::string16 email_domains_reg = GetEmailDomains();
-  if (email_domains_reg.empty())
-    return email_domains_reg;
-
-  std::vector<base::string16> domains =
-      base::SplitString(base::ToLowerASCII(email_domains_reg),
-                        base::ASCIIToUTF16(kEmailDomainsSeparator),
-                        base::WhitespaceHandling::TRIM_WHITESPACE,
-                        base::SplitResult::SPLIT_WANT_NONEMPTY);
-  base::string16 email_domains_str =
-      base::JoinString(domains, base::string16(L", "));
-
-  return email_domains_str;
 }
 
 // Use WinHttpUrlFetcher to communicate with the admin sdk and fetch the active
@@ -263,9 +253,11 @@ HRESULT GetUserAndDomainInfo(
     BSTR* error_text) {
   base::string16 user_name;
   base::string16 domain_name;
+  OSUserManager* os_user_manager = OSUserManager::Get();
+  DCHECK(os_user_manager);
 
   bool is_ad_user =
-      OSUserManager::Get()->IsDeviceDomainJoined() && !sam_account_name.empty();
+      os_user_manager->IsDeviceDomainJoined() && !sam_account_name.empty();
   // Login via existing AD account mapping when the device is domain joined if
   // the AD account mapping is available.
   if (is_ad_user) {
@@ -307,6 +299,7 @@ HRESULT GetUserAndDomainInfo(
     std::vector<base::string16> filtered_local_account_names_no_sn;
 
     for (auto local_account_name : local_account_names) {
+      LOGFN(VERBOSE) << "CD local account name : " << local_account_name;
       // The format for local_account_name custom attribute is
       // "un:abcd,sn:1234" where "un:abcd" would always exist and "sn:1234" is
       // optional.
@@ -314,12 +307,24 @@ HRESULT GetUserAndDomainInfo(
       std::string serial_number;
       // Note: "?:" is used to signify non-capturing groups. For more details,
       // look at https://github.com/google/re2/wiki/Syntax link.
-      re2::RE2::FullMatch(local_account_name, "un:([^,]+)(?:,sn:(\\w+))?",
+      re2::RE2::FullMatch(local_account_name, "un:([^,]+)(?:,sn:([^,]+))?",
                           &username, &serial_number);
+
+      // Only collect those user names that exist on the windows device.
+      base::string16 existing_sid;
+      HRESULT hr = os_user_manager->GetUserSID(
+          OSUserManager::GetLocalDomain().c_str(),
+          base::UTF8ToUTF16(username).c_str(), &existing_sid);
+      if (FAILED(hr))
+        continue;
+
+      LOGFN(VERBOSE) << "RE2 username : " << username;
+      LOGFN(VERBOSE) << "RE2 serial_number : " << serial_number;
 
       if (!username.empty() && !serial_number.empty()) {
         std::string device_serial_number =
             base::UTF16ToUTF8(GetSerialNumber().c_str());
+        LOGFN(VERBOSE) << "Device serial_number : " << device_serial_number;
         if (base::EqualsCaseInsensitiveASCII(serial_number,
                                              device_serial_number))
           filtered_local_account_names.push_back(base::UTF8ToUTF16(username));
@@ -345,8 +350,6 @@ HRESULT GetUserAndDomainInfo(
     domain_name = OSUserManager::GetLocalDomain();
   }
 
-  OSUserManager* os_user_manager = OSUserManager::Get();
-  DCHECK(os_user_manager);
   LOGFN(VERBOSE) << "Get user sid for user " << user_name << " and domain name "
                  << domain_name;
   HRESULT hr = os_user_manager->GetUserSID(domain_name.c_str(),
@@ -547,22 +550,40 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
     std::string username_utf8 =
         gaia::SanitizeEmail(base::UTF16ToUTF8(os_username));
 
-    size_t tld_length =
-        net::registry_controlled_domains::GetCanonicalHostRegistryLength(
-            gaia::ExtractDomainName(username_utf8),
-            net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    if (GetGlobalFlagOrDefault(kRegUseShorterAccountName, 0)) {
+      size_t separator_pos = username_utf8.find('@');
 
-    // If an TLD is found strip it off, plus 1 to remove the separating dot too.
-    if (tld_length > 0) {
-      username_utf8.resize(username_utf8.length() - tld_length - 1);
-      os_username = base::UTF8ToUTF16(username_utf8);
+      // os_username carries the email. Fall through if not find "@" in the
+      // email.
+      if (separator_pos != username_utf8.npos) {
+        username_utf8 = username_utf8.substr(0, separator_pos);
+        os_username = base::UTF8ToUTF16(username_utf8);
+      }
+    } else {
+      size_t tld_length =
+          net::registry_controlled_domains::GetCanonicalHostRegistryLength(
+              gaia::ExtractDomainName(username_utf8),
+              net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+              net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
+      // If an TLD is found strip it off, plus 1 to remove the separating dot
+      // too.
+      if (tld_length > 0) {
+        username_utf8.resize(username_utf8.length() - tld_length - 1);
+        os_username = base::UTF8ToUTF16(username_utf8);
+      }
     }
   }
 
   // If the username is longer than 20 characters, truncate.
   if (os_username.size() > kWindowsUsernameBufferLength - 1)
     os_username.resize(kWindowsUsernameBufferLength - 1);
+
+  // After resizing the os user name above, the last char may be a '.' which is
+  // illegal as the last character per Microsoft documentation.
+  // https://docs.microsoft.com/en-us/windows/win32/api/lmaccess/ns-lmaccess-user_info_1#remarks
+  if (os_username.size() > 0 && os_username.back() == '.')
+    os_username.resize(os_username.size() - 1);
 
   // Replace invalid characters.  While @ is not strictly invalid according to
   // MSDN docs, it causes trouble.
@@ -643,7 +664,7 @@ HRESULT ValidateResult(const base::Value& result, BSTR* status_text) {
         break;
       case kUiecInvalidEmailDomain:
         *status_text = CGaiaCredentialBase::AllocErrorString(
-            IDS_INVALID_EMAIL_DOMAIN_BASE, {GetEmailDomainsPrintableString()});
+            IDS_INVALID_EMAIL_DOMAIN_BASE);
         break;
       case kUiecMissingSigninData:
         *status_text =
@@ -2045,6 +2066,11 @@ HRESULT CGaiaCredentialBase::PerformActions(const base::Value& properties) {
   if (FAILED(hr) && hr != E_NOTIMPL)
     LOGFN(ERROR) << "StoreWindowsPasswordIfNeeded hr=" << putHR(hr);
 
+  hr = GenerateGCPWDmToken(sid);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "GenerateGCPWDmToken hr=" << putHR(hr);
+  }
+
   // Upload device details to gem database.
   hr = GemDeviceDetailsManager::Get()->UploadDeviceDetails(access_token, sid,
                                                            username, domain);
@@ -2086,6 +2112,11 @@ HRESULT CGaiaCredentialBase::PerformPostSigninActions(
     hr = credential_provider::EnrollToGoogleMdmIfNeeded(properties);
     if (FAILED(hr))
       LOGFN(ERROR) << "EnrollToGoogleMdmIfNeeded hr=" << putHR(hr);
+  }
+
+  // Ensure GCPW gets updated to the correct version.
+  if (DevicePoliciesManager::Get()->CloudPoliciesEnabled()) {
+    DevicePoliciesManager::Get()->EnforceGcpwUpdatePolicy();
   }
 
   // TODO(crbug.com/976744): Use the down scoped kKeyMdmAccessToken instead
@@ -2318,6 +2349,14 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
         if (FAILED(hr))
           LOGFN(ERROR) << "SetUserFullname hr=" << putHR(hr);
       }
+
+      // Set disable password change policy here as well. This flow would
+      // make sure password change is disabled even if any end user tries
+      // to enable it via registry after user create or association flow.
+      // Note: We donot fail the login flow if password policies were not
+      // applied for unknown reasons.
+      OSUserManager::Get()->SetDefaultPasswordChangePolicies(found_domain,
+                                                             found_username);
     } else {
       LOGFN(ERROR) << "GetUserFullname hr=" << putHR(hr);
     }
@@ -2451,13 +2490,28 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
         kKeyIsAdJoinedUser,
         base::Value(OSUserManager::Get()->IsUserDomainJoined(sid) ? "true"
                                                                   : "false"));
-    // Update the time at which the login attempt happened. This would help
-    // track the last time an online login happened via GCPW.
-    int64_t current_time = static_cast<int64_t>(
-        base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds());
-    authentication_results_->SetKey(
-        kKeyLastSuccessfulOnlineLoginMillis,
-        base::Value(base::NumberToString(current_time)));
+  }
+
+  base::string16 sid = OLE2CW(user_sid_);
+  if (UserPoliciesManager::Get()->CloudPoliciesEnabled() &&
+      UserPoliciesManager::Get()->IsUserPolicyStaleOrMissing(sid)) {
+    // Save gaia id since it is needed for the cloud policies server request.
+    base::string16 gaia_id = GetDictString(*authentication_results_, kKeyId);
+    HRESULT hr = SetUserProperty(sid, kUserId, gaia_id);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "SetUserProperty(id) hr=" << putHR(hr);
+    }
+
+    // TODO(crbug.com/976744) Use downscoped token here.
+    base::string16 access_token =
+        GetDictString(*authentication_results_, kKeyAccessToken);
+    hr = UserPoliciesManager::Get()->FetchAndStoreCloudUserPolicies(
+        sid, base::UTF16ToUTF8(access_token));
+    SecurelyClearString(access_token);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "Failed fetching user policies for user " << sid
+                   << " Error: " << putHR(hr);
+    }
   }
 
   base::string16 local_password =

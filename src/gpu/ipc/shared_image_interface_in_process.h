@@ -11,10 +11,7 @@
 #include "gpu/ipc/in_process_command_buffer.h"
 
 namespace gpu {
-class CommandBufferTaskExecutor;
-class ImageFactory;
 class MailboxManager;
-class MemoryTracker;
 class SyncPointClientState;
 struct SyncToken;
 class SharedContextState;
@@ -22,7 +19,7 @@ class SharedImageFactory;
 class SharedImageManager;
 class SingleTaskSequence;
 
-// This is an implementation of the SharedImageInterface to be used on viz
+// This is an implementation of the SharedImageInterface to be used on the viz
 // compositor thread. This class also implements the corresponding parts
 // happening on gpu thread.
 // TODO(weiliangc): Currently this is implemented as backed by
@@ -33,24 +30,21 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   using CommandBufferHelper =
       InProcessCommandBuffer::SharedImageInterfaceHelper;
   SharedImageInterfaceInProcess(
-      CommandBufferTaskExecutor* task_executor,
       SingleTaskSequence* task_sequence,
-      CommandBufferId command_buffer_id,
-      MailboxManager* mailbox_manager,
-      ImageFactory* image_factory,
-      MemoryTracker* memory_tracker,
+      DisplayCompositorMemoryAndTaskControllerOnGpu* display_controller,
       std::unique_ptr<CommandBufferHelper> command_buffer_helper);
   ~SharedImageInterfaceInProcess() override;
 
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
   // the GPU channel is lost).
-  Mailbox CreateSharedImage(
-      viz::ResourceFormat format,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage,
-      gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle) override;
+  Mailbox CreateSharedImage(viz::ResourceFormat format,
+                            const gfx::Size& size,
+                            const gfx::ColorSpace& color_space,
+                            GrSurfaceOrigin surface_origin,
+                            SkAlphaType alpha_type,
+                            uint32_t usage,
+                            gpu::SurfaceHandle surface_handle) override;
 
   // Same behavior as the above, except that this version takes |pixel_data|
   // which is used to populate the SharedImage.  |pixel_data| should have the
@@ -59,6 +53,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   Mailbox CreateSharedImage(viz::ResourceFormat format,
                             const gfx::Size& size,
                             const gfx::ColorSpace& color_space,
+                            GrSurfaceOrigin surface_origin,
+                            SkAlphaType alpha_type,
                             uint32_t usage,
                             base::span<const uint8_t> pixel_data) override;
 
@@ -76,7 +72,15 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   Mailbox CreateSharedImage(gfx::GpuMemoryBuffer* gpu_memory_buffer,
                             GpuMemoryBufferManager* gpu_memory_buffer_manager,
                             const gfx::ColorSpace& color_space,
+                            GrSurfaceOrigin surface_origin,
+                            SkAlphaType alpha_type,
                             uint32_t usage) override;
+
+#if defined(OS_ANDROID)
+  Mailbox CreateSharedImageWithAHB(const Mailbox& mailbox,
+                                   uint32_t usage,
+                                   const SyncToken& sync_token) override;
+#endif
 
   // Updates a shared image after its GpuMemoryBuffer (if any) was modified on
   // the CPU or through external devices, after |sync_token| has been released.
@@ -103,6 +107,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,
                                      const gfx::Size& size,
                                      const gfx::ColorSpace& color_space,
+                                     GrSurfaceOrigin surface_origin,
+                                     SkAlphaType alpha_type,
                                      uint32_t usage) override;
 
   // Swaps front and back buffer of a swap chain. Not reached in this
@@ -113,7 +119,10 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
 #if defined(OS_FUCHSIA)
   // Registers a sysmem buffer collection. Not reached in this implementation.
   void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
-                                      zx::channel token) override;
+                                      zx::channel token,
+                                      gfx::BufferFormat format,
+                                      gfx::BufferUsage usage,
+                                      bool register_with_image_pipe) override;
 
   // Not reached in this implementation.
   void ReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id) override;
@@ -127,6 +136,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   // commands on this interface have executed on the service side.
   SyncToken GenVerifiedSyncToken() override;
 
+  void WaitSyncToken(const SyncToken& sync_token) override;
+
   // Flush the SharedImageInterface, issuing any deferred IPCs.
   void Flush() override;
 
@@ -136,9 +147,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
  private:
   struct SharedImageFactoryInput;
 
-  void SetUpOnGpu(CommandBufferTaskExecutor* task_executor,
-                  ImageFactory* image_factory,
-                  MemoryTracker* memory_tracker);
+  void SetUpOnGpu(
+      DisplayCompositorMemoryAndTaskControllerOnGpu* display_controller);
   void DestroyOnGpu(base::WaitableEvent* completion);
 
   SyncToken MakeSyncToken(uint64_t release_id) {
@@ -150,19 +160,23 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
                        std::vector<SyncToken> sync_token_fences);
 
   // Only called on the gpu thread.
-  bool MakeContextCurrent();
+  bool MakeContextCurrent(bool needs_gl = false);
   void LazyCreateSharedImageFactory();
   void CreateSharedImageOnGpuThread(const Mailbox& mailbox,
                                     viz::ResourceFormat format,
                                     gpu::SurfaceHandle surface_handle,
                                     const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
+                                    GrSurfaceOrigin surface_origin,
+                                    SkAlphaType alpha_type,
                                     uint32_t usage,
                                     const SyncToken& sync_token);
   void CreateSharedImageWithDataOnGpuThread(const Mailbox& mailbox,
                                             viz::ResourceFormat format,
                                             const gfx::Size& size,
                                             const gfx::ColorSpace& color_space,
+                                            GrSurfaceOrigin surface_origin,
+                                            SkAlphaType alpha_type,
                                             uint32_t usage,
                                             const SyncToken& sync_token,
                                             std::vector<uint8_t> pixel_data);
@@ -172,12 +186,21 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
                                        gfx::BufferFormat format,
                                        const gfx::Size& size,
                                        const gfx::ColorSpace& color_space,
+                                       GrSurfaceOrigin surface_origin,
+                                       SkAlphaType alpha_type,
                                        uint32_t usage,
                                        const SyncToken& sync_token);
   void UpdateSharedImageOnGpuThread(const Mailbox& mailbox,
                                     const SyncToken& sync_token);
   void DestroySharedImageOnGpuThread(const Mailbox& mailbox);
+  void WaitSyncTokenOnGpuThread(const SyncToken& sync_token);
   void WrapTaskWithGpuUrl(base::OnceClosure task);
+#if defined(OS_ANDROID)
+  void CreateSharedImageWithAHBOnGpuThread(const Mailbox& out_mailbox,
+                                           const Mailbox& in_mailbox,
+                                           uint32_t usage,
+                                           const SyncToken& sync_token);
+#endif
 
   // Used to schedule work on the gpu thread. This is a raw pointer for now
   // since the ownership of SingleTaskSequence would be the same as the

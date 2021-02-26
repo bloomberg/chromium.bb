@@ -41,15 +41,13 @@ typedef void (*Libgav1ReleaseInputBufferCallback)(void* callback_private_data,
                                                   void* buffer_private_data);
 
 typedef struct Libgav1DecoderSettings {
-  // Number of threads to use when decoding. Must be greater than 0. The
-  // library will create at most |threads|-1 new threads, the calling thread is
-  // considered part of the library's thread count. Defaults to 1 (no new
-  // threads will be created).
+  // Number of threads to use when decoding. Must be greater than 0. The library
+  // will create at most |threads| new threads. Defaults to 1 (no new threads
+  // will be created).
   int threads;
-  // A boolean. Do frame parallel decoding.
-  //
-  // NOTE: Frame parallel decoding is not implemented, this setting is
-  // currently ignored.
+  // A boolean. Indicate to the decoder that frame parallel decoding is allowed.
+  // Note that this is just a request and the decoder will decide the number of
+  // frames to be decoded in parallel based on the video stream being decoded.
   int frame_parallel;
   // A boolean. In frame parallel mode, should Libgav1DecoderDequeueFrame wait
   // until a enqueued frame is available for dequeueing.
@@ -68,8 +66,15 @@ typedef struct Libgav1DecoderSettings {
   Libgav1ReleaseInputBufferCallback release_input_buffer;
   // Passed as the private_data argument to the callbacks.
   void* callback_private_data;
+  // A boolean. If set to 1, the decoder will output all the spatial and
+  // temporal layers.
+  int output_all_layers;
+  // Index of the operating point to decode.
+  int operating_point;
   // Mask indicating the post processing filters that need to be applied to the
-  // reconstructed frame. From LSB:
+  // reconstructed frame. Note this is an advanced setting and does not
+  // typically need to be changed.
+  // From LSB:
   //   Bit 0: Loop filter (deblocking filter).
   //   Bit 1: Cdef.
   //   Bit 2: SuperRes.
@@ -91,15 +96,13 @@ using ReleaseInputBufferCallback = Libgav1ReleaseInputBufferCallback;
 
 // Applications must populate this structure before creating a decoder instance.
 struct DecoderSettings {
-  // Number of threads to use when decoding. Must be greater than 0. The
-  // library will create at most |threads|-1 new threads, the calling thread is
-  // considered part of the library's thread count. Defaults to 1 (no new
-  // threads will be created).
+  // Number of threads to use when decoding. Must be greater than 0. The library
+  // will create at most |threads| new threads. Defaults to 1 (no new threads
+  // will be created).
   int threads = 1;
-  // Do frame parallel decoding.
-  //
-  // NOTE: Frame parallel decoding is not implemented, this setting is
-  // currently ignored.
+  // Indicate to the decoder that frame parallel decoding is allowed. Note that
+  // this is just a request and the decoder will decide the number of frames to
+  // be decoded in parallel based on the video stream being decoded.
   bool frame_parallel = false;
   // In frame parallel mode, should DequeueFrame wait until a enqueued frame is
   // available for dequeueing.
@@ -118,8 +121,15 @@ struct DecoderSettings {
   ReleaseInputBufferCallback release_input_buffer = nullptr;
   // Passed as the private_data argument to the callbacks.
   void* callback_private_data = nullptr;
+  // If set to true, the decoder will output all the spatial and temporal
+  // layers.
+  bool output_all_layers = false;
+  // Index of the operating point to decode.
+  int operating_point = 0;
   // Mask indicating the post processing filters that need to be applied to the
-  // reconstructed frame. From LSB:
+  // reconstructed frame. Note this is an advanced setting and does not
+  // typically need to be changed.
+  // From LSB:
   //   Bit 0: Loop filter (deblocking filter).
   //   Bit 1: Cdef.
   //   Bit 2: SuperRes.

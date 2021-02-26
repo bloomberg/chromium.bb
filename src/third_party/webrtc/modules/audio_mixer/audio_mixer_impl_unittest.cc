@@ -74,11 +74,13 @@ class MockMixerAudioSource : public ::testing::NiceMock<AudioMixer::Source> {
         .WillByDefault(Return(kDefaultSampleRateHz));
   }
 
-  MOCK_METHOD2(GetAudioFrameWithInfo,
-               AudioFrameInfo(int sample_rate_hz, AudioFrame* audio_frame));
+  MOCK_METHOD(AudioFrameInfo,
+              GetAudioFrameWithInfo,
+              (int sample_rate_hz, AudioFrame* audio_frame),
+              (override));
 
-  MOCK_CONST_METHOD0(PreferredSampleRate, int());
-  MOCK_CONST_METHOD0(Ssrc, int());
+  MOCK_METHOD(int, PreferredSampleRate, (), (const, override));
+  MOCK_METHOD(int, Ssrc, (), (const, override));
 
   AudioFrame* fake_frame() { return &fake_frame_; }
   AudioFrameInfo fake_info() { return fake_audio_frame_info_; }
@@ -103,7 +105,8 @@ class MockMixerAudioSource : public ::testing::NiceMock<AudioMixer::Source> {
 class CustomRateCalculator : public OutputRateCalculator {
  public:
   explicit CustomRateCalculator(int rate) : rate_(rate) {}
-  int CalculateOutputRate(const std::vector<int>& preferred_rates) override {
+  int CalculateOutputRateFromRange(
+      rtc::ArrayView<const int> preferred_rates) override {
     return rate_;
   }
 
@@ -596,15 +599,15 @@ TEST(AudioMixer, MultipleChannelsManyParticipants) {
 class HighOutputRateCalculator : public OutputRateCalculator {
  public:
   static const int kDefaultFrequency = 76000;
-  int CalculateOutputRate(
-      const std::vector<int>& preferred_sample_rates) override {
+  int CalculateOutputRateFromRange(
+      rtc::ArrayView<const int> preferred_sample_rates) override {
     return kDefaultFrequency;
   }
   ~HighOutputRateCalculator() override {}
 };
 const int HighOutputRateCalculator::kDefaultFrequency;
 
-TEST(AudioMixer, MultipleChannelsAndHighRate) {
+TEST(AudioMixerDeathTest, MultipleChannelsAndHighRate) {
   constexpr size_t kSamplesPerChannel =
       HighOutputRateCalculator::kDefaultFrequency / 100;
   // As many channels as an AudioFrame can fit:

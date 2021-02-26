@@ -9,6 +9,7 @@
 
 #include "libANGLE/renderer/d3d/d3d9/Context9.h"
 
+#include "common/entry_points_enum_autogen.h"
 #include "common/string_utils.h"
 #include "libANGLE/renderer/OverlayImpl.h"
 #include "libANGLE/renderer/d3d/CompilerD3D.h"
@@ -283,6 +284,75 @@ angle::Result Context9::drawElementsIndirect(const gl::Context *context,
     return angle::Result::Stop;
 }
 
+angle::Result Context9::multiDrawArrays(const gl::Context *context,
+                                        gl::PrimitiveMode mode,
+                                        const GLint *firsts,
+                                        const GLsizei *counts,
+                                        GLsizei drawcount)
+{
+    return rx::MultiDrawArraysGeneral(this, context, mode, firsts, counts, drawcount);
+}
+
+angle::Result Context9::multiDrawArraysInstanced(const gl::Context *context,
+                                                 gl::PrimitiveMode mode,
+                                                 const GLint *firsts,
+                                                 const GLsizei *counts,
+                                                 const GLsizei *instanceCounts,
+                                                 GLsizei drawcount)
+{
+    return rx::MultiDrawArraysInstancedGeneral(this, context, mode, firsts, counts, instanceCounts,
+                                               drawcount);
+}
+
+angle::Result Context9::multiDrawElements(const gl::Context *context,
+                                          gl::PrimitiveMode mode,
+                                          const GLsizei *counts,
+                                          gl::DrawElementsType type,
+                                          const GLvoid *const *indices,
+                                          GLsizei drawcount)
+{
+    return rx::MultiDrawElementsGeneral(this, context, mode, counts, type, indices, drawcount);
+}
+
+angle::Result Context9::multiDrawElementsInstanced(const gl::Context *context,
+                                                   gl::PrimitiveMode mode,
+                                                   const GLsizei *counts,
+                                                   gl::DrawElementsType type,
+                                                   const GLvoid *const *indices,
+                                                   const GLsizei *instanceCounts,
+                                                   GLsizei drawcount)
+{
+    return rx::MultiDrawElementsInstancedGeneral(this, context, mode, counts, type, indices,
+                                                 instanceCounts, drawcount);
+}
+
+angle::Result Context9::multiDrawArraysInstancedBaseInstance(const gl::Context *context,
+                                                             gl::PrimitiveMode mode,
+                                                             const GLint *firsts,
+                                                             const GLsizei *counts,
+                                                             const GLsizei *instanceCounts,
+                                                             const GLuint *baseInstances,
+                                                             GLsizei drawcount)
+{
+    ANGLE_HR_UNREACHABLE(this);
+    return angle::Result::Stop;
+}
+
+angle::Result Context9::multiDrawElementsInstancedBaseVertexBaseInstance(
+    const gl::Context *context,
+    gl::PrimitiveMode mode,
+    const GLsizei *counts,
+    gl::DrawElementsType type,
+    const GLvoid *const *indices,
+    const GLsizei *instanceCounts,
+    const GLint *baseVertices,
+    const GLuint *baseInstances,
+    GLsizei drawcount)
+{
+    ANGLE_HR_UNREACHABLE(this);
+    return angle::Result::Stop;
+}
+
 gl::GraphicsResetStatus Context9::getResetStatus()
 {
     return mRenderer->getResetStatus();
@@ -306,7 +376,7 @@ angle::Result Context9::insertEventMarker(GLsizei length, const char *marker)
 
 angle::Result Context9::pushGroupMarker(GLsizei length, const char *marker)
 {
-    mRenderer->getAnnotator()->beginEvent(marker, marker);
+    mRenderer->getAnnotator()->beginEvent(nullptr, gl::EntryPoint::Begin, marker, marker);
     mMarkerStack.push(std::string(marker));
     return angle::Result::Continue;
 }
@@ -318,7 +388,7 @@ angle::Result Context9::popGroupMarker()
     {
         marker = mMarkerStack.top().c_str();
         mMarkerStack.pop();
-        mRenderer->getAnnotator()->endEvent(marker);
+        mRenderer->getAnnotator()->endEvent(nullptr, marker, gl::EntryPoint::Begin);
     }
     return angle::Result::Continue;
 }

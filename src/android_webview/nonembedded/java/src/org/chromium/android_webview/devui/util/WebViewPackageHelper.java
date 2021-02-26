@@ -12,6 +12,8 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.webkit.WebView;
 
+import androidx.annotation.VisibleForTesting;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
 
@@ -19,6 +21,8 @@ import java.util.Locale;
  * A helper class to get info about WebView package.
  */
 public final class WebViewPackageHelper {
+    private static PackageInfo sWebViewCurrentPackage;
+
     /**
      * If WebView has already been loaded into the current process this method will return the
      * package that was used to load it. Otherwise, the package that would be used if the WebView
@@ -32,7 +36,11 @@ public final class WebViewPackageHelper {
      */
     // This method is copied from androidx.webkit.WebViewCompat.
     // TODO(crbug.com/1020024) use androidx.webkit.WebViewCompat#getCurrentWebViewPackage instead.
+    @SuppressWarnings("WebViewApiAvailability")
     public static PackageInfo getCurrentWebViewPackage(Context context) {
+        if (sWebViewCurrentPackage != null) {
+            return sWebViewCurrentPackage;
+        }
         // There was no WebView Package before Lollipop, the WebView code was part of the framework
         // back then.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
@@ -157,6 +165,15 @@ public final class WebViewPackageHelper {
         } catch (PackageManager.NameNotFoundException e) {
             return appLabel;
         }
+    }
+
+    /**
+     * Inject a {@link PackageInfo} as the current webview package for testing. This PackageInfo
+     * will be returned by {@link #getCurrentWebViewPackage}.
+     */
+    @VisibleForTesting
+    public static void setCurrentWebViewPackageForTesting(PackageInfo currentWebView) {
+        sWebViewCurrentPackage = currentWebView;
     }
 
     // Do not instantiate this class.

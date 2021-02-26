@@ -111,7 +111,7 @@ SetupOptions(int argc, const char *argv[], Options *options) {
   extern int optind;
   int ch;
 
-  while ((ch = getopt(argc, (char * const *)argv, "p:u:v:x:h?")) != -1) {
+  while ((ch = getopt(argc, (char * const*)argv, "p:u:v:x:h?")) != -1) {
     switch (ch) {
       case 'p':
         options->product = optarg;

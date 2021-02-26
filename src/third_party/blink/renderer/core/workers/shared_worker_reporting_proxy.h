@@ -27,7 +27,6 @@ class SharedWorkerReportingProxy final
 
   // WorkerReportingProxy methods:
   void CountFeature(WebFeature) override;
-  void CountDeprecation(WebFeature) override;
   void ReportException(const WTF::String&,
                        std::unique_ptr<SourceLocation>,
                        int exception_id) override;
@@ -37,13 +36,12 @@ class SharedWorkerReportingProxy final
                             SourceLocation*) override;
   void DidFailToFetchClassicScript() override;
   void DidFailToFetchModuleScript() override;
-  void DidEvaluateClassicScript(bool success) override;
-  void DidEvaluateModuleScript(bool success) override;
+  void DidEvaluateTopLevelScript(bool success) override;
   void DidCloseWorkerGlobalScope() override;
   void WillDestroyWorkerGlobalScope() override {}
   void DidTerminateWorkerThread() override;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   // Not owned because this outlives the reporting proxy.

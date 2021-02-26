@@ -14,7 +14,7 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
-#include "content/public/common/screen_info.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer_observer.h"
@@ -85,7 +85,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
       bool auto_resize_enabled,
       float new_device_scale_factor,
       const gfx::Size& new_size_in_pixels,
-      const viz::LocalSurfaceIdAllocation& child_local_surface_id_allocation);
+      const viz::LocalSurfaceId& child_local_surface_id);
 
   // This is used to ensure that the ui::Compositor be attached to the
   // DelegatedFrameHost while the RWHImpl is visible.
@@ -109,10 +109,10 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   }
 
   const gfx::Size& GetRendererSize() const { return dfh_size_dip_; }
-  void GetRendererScreenInfo(ScreenInfo* screen_info) const;
+  void GetRendererScreenInfo(blink::ScreenInfo* screen_info) const;
   viz::ScopedSurfaceIdAllocator GetScopedRendererSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task);
-  const viz::LocalSurfaceIdAllocation& GetRendererLocalSurfaceIdAllocation();
+  const viz::LocalSurfaceId& GetRendererLocalSurfaceId();
   void TransformPointToRootSurface(gfx::PointF* point);
 
   // Indicate that the recyclable compositor should be destroyed, and no future

@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_length.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -64,7 +65,7 @@ SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
   UseCounter::Count(document, WebFeature::kSVGForeignObjectElement);
 }
 
-void SVGForeignObjectElement::Trace(Visitor* visitor) {
+void SVGForeignObjectElement::Trace(Visitor* visitor) const {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);

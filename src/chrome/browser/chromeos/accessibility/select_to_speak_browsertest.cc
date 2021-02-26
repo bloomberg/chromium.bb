@@ -47,7 +47,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
     }
   }
 
-  void OnSelectToSpeakStateChanged() {
+  void SetSelectToSpeakState() {
     if (tray_loop_runner_) {
       tray_loop_runner_->Quit();
     }
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SpeakStatusTray) {
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, ActivatesWithTapOnSelectToSpeakTray) {
   base::RepeatingCallback<void()> callback = base::BindRepeating(
-      &SelectToSpeakTest::OnSelectToSpeakStateChanged, GetWeakPtr());
+      &SelectToSpeakTest::SetSelectToSpeakState, GetWeakPtr());
   chromeos::AccessibilityManager::Get()->SetSelectToSpeakStateObserverForTest(
       callback);
   // Click in the tray bounds to start 'selection' mode.
@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, ActivatesWithTapOnSelectToSpeakTray) {
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SelectToSpeakTrayNotSpoken) {
   base::RepeatingCallback<void()> callback = base::BindRepeating(
-      &SelectToSpeakTest::OnSelectToSpeakStateChanged, GetWeakPtr());
+      &SelectToSpeakTest::SetSelectToSpeakState, GetWeakPtr());
   chromeos::AccessibilityManager::Get()->SetSelectToSpeakStateObserverForTest(
       callback);
 
@@ -306,6 +306,27 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTestWithLanguageDetection,
   sm_.Replay();
 }
 
+IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, DoesNotCrashWithMousewheelEvent) {
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("data:text/html;charset=utf-8,<p>This is some text</p>"));
+  gfx::Rect bounds = GetWebContentsBounds();
+
+  // Hold down Search and drag over the web contents to select everything.
+  generator_->PressKey(ui::VKEY_LWIN, 0 /* flags */);
+  generator_->MoveMouseTo(bounds.x(), bounds.y());
+  generator_->PressLeftButton();
+  // Ensure this does not crash. It should have no effect.
+  generator_->MoveMouseWheel(10, 10);
+  generator_->MoveMouseTo(bounds.x() + bounds.width(),
+                          bounds.y() + bounds.height());
+  generator_->MoveMouseWheel(100, 5);
+  generator_->ReleaseLeftButton();
+  generator_->ReleaseKey(ui::VKEY_LWIN, 0 /* flags */);
+
+  sm_.ExpectSpeechPattern("This is some text*");
+  sm_.Replay();
+}
+
 // Flaky test: crbug.com/950049.
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, DISABLED_FocusRingMovesWithMouse) {
   // Create a callback for the focus ring observer.
@@ -382,10 +403,12 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, DISABLED_FocusRingMovesWithMouse) {
   EXPECT_EQ(focus_rings.size(), 0u);
 }
 
-IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, ContinuesReadingDuringResize) {
+// TODO(https://crbug.com/1114854): test is flaky.
+IN_PROC_BROWSER_TEST_F(SelectToSpeakTest,
+                       DISABLED_ContinuesReadingDuringResize) {
   ActivateSelectToSpeakInWindowBounds(
       "data:text/html;charset=utf-8,<p>First paragraph</p>"
-      "<div id='resize' style='width:300px; font-size: 10em'>"
+      "<div id='resize' style='width:300px; font-size: 1em'>"
       "<p>Second paragraph is longer than 300 pixels and will wrap when "
       "resized</p></div>");
 

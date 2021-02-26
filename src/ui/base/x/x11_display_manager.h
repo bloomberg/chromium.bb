@@ -14,7 +14,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_change_notifier.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/event.h"
 
 namespace views {
 class DesktopScreenX11Test;
@@ -34,7 +34,7 @@ class X11ScreenOzoneTest;
 // Scale Factor information and simple hooks are delegated to API clients
 // through |XDisplayManager::Delegate| interface. To get notifications about
 // dynamic display changes, clients must register |DisplayObserver| instances
-// and feed |XDisplayManager| with |XEvent|s.
+// and feed |XDisplayManager| with |x11::Event|s.
 //
 // All bounds and size values are assumed to be expressed in pixels.
 class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager
@@ -47,8 +47,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager
 
   void Init();
   bool IsXrandrAvailable() const;
-  bool CanProcessEvent(const XEvent& xev);
-  bool ProcessEvent(XEvent* xev);
+  bool ProcessEvent(x11::Event* xev);
   void UpdateDisplayList();
   void DispatchDelayedDisplayListUpdate();
   display::Display GetPrimaryDisplay() const;
@@ -76,8 +75,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager
   std::vector<display::Display> displays_;
   display::DisplayChangeNotifier change_notifier_;
 
-  XDisplay* const xdisplay_;
-  XID x_root_window_;
+  x11::Connection* const connection_;
+  x11::Window x_root_window_;
   int64_t primary_display_index_ = 0;
 
   // XRandR version. MAJOR * 100 + MINOR. Zero if no xrandr is present.

@@ -14,6 +14,7 @@ goog.provide('ChromeVoxStateObserver');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('BrailleKeyEvent');
+goog.require('UserActionMonitor');
 
 /**
  * An interface implemented by objects that want to observe ChromeVox state
@@ -41,7 +42,7 @@ ChromeVoxState = function() {
   // Only install the singleton instance if we are within the background page
   // context. Otherwise, take the instance from the background page (e.g. for
   // the panel page).
-  if (backgroundWindow == window) {
+  if (backgroundWindow === window) {
     ChromeVoxState.instance = this;
   } else {
     Object.defineProperty(ChromeVoxState, 'instance', {
@@ -54,6 +55,8 @@ ChromeVoxState = function() {
 
   /** @private {!Array<!chrome.accessibilityPrivate.ScreenRect>} */
   this.focusBounds_ = [];
+  /** @private {UserActionMonitor} */
+  this.userActionMonitor_ = null;
 };
 
 /**
@@ -101,8 +104,8 @@ ChromeVoxState.prototype = {
    * @param {!cursors.Range} range The new range.
    * @param {boolean=} opt_focus Focus the range; defaults to true.
    * @param {Object=} opt_speechProps Speech properties.
-   * @param {boolean=} opt_skipSettingSelection If true, does not set
-   *     the selection, otherwise it does by default.
+   * @param {boolean=} opt_shouldSetSelection If true, does set
+   *     the selection.
    */
   navigateToRange: goog.abstractMethod,
 
@@ -138,7 +141,34 @@ ChromeVoxState.prototype = {
       type: chrome.accessibilityPrivate.FocusType.GLOW,
       color: constants.FOCUS_COLOR
     }]);
-  }
+  },
+
+  /**
+   * Gets the user action monitor.
+   * @return {UserActionMonitor}
+   */
+  getUserActionMonitor() {
+    return this.userActionMonitor_;
+  },
+
+  /**
+   * Creates a new user action monitor.
+   * @param {!Array<{
+   *    type: string,
+   *    value: (string|Object),
+   *    beforeActionMsg: (string|undefined),
+   *    afterActionMsg: (string|undefined)
+   * }>} actions
+   * @param {function(): void} callback
+   */
+  createUserActionMonitor(actions, callback) {
+    this.userActionMonitor_ = new UserActionMonitor(actions, callback);
+  },
+
+  /** Destroys the user action monitor */
+  destroyUserActionMonitor() {
+    this.userActionMonitor_ = null;
+  },
 };
 
 /** @type {!Array<ChromeVoxStateObserver>} */

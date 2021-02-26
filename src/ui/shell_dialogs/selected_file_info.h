@@ -35,8 +35,16 @@ struct SHELL_DIALOGS_EXPORT SelectedFileInfo {
 
   // If set, this URL may be used to access the file. If the user is capable of
   // using a URL to access the file, it should be used in preference to
-  // |local_path|.
+  // |local_path|. For example, when opening a .gdoc file from Google Drive the
+  // file is opened by navigating to a docs.google.com URL.
   base::Optional<GURL> url;
+
+  // If set, this virtual path may be used to access the file. If the user is
+  // capable of using a virtual path to access the file (using the file system
+  // abstraction in //storage/browser/file_system with a
+  // storage::kFileSystemTypeExternal FileSystemURL), it should be used in
+  // preference over |local_path| and |url|.
+  base::Optional<base::FilePath> virtual_path;
 
   SelectedFileInfo();
   SelectedFileInfo(const base::FilePath& in_file_path,

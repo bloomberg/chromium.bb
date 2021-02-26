@@ -30,6 +30,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   // TabStripModelObserver:
   void OnTabGroupChanged(const TabGroupChange& change) override;
   void TabGroupedStateChanged(base::Optional<tab_groups::TabGroupId> group,
+                              content::WebContents* contents,
                               int index) override;
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,
@@ -59,6 +60,8 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveTab);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveTabAcrossProfiles);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveTabAcrossWindows);
+  FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest,
+                           RemoveTabIfInvalidContextMenu);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, UngroupTab);
 
   void HandleCreateNewTab(const base::ListValue* args);

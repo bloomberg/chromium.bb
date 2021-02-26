@@ -29,7 +29,7 @@
 
 static int cost_and_tokenize_map(Av1ColorMapParam *param, TokenExtra **t,
                                  int plane, int calc_rate, int allow_update_cdf,
-                                 FRAME_COUNTS *counts, MapCdf map_pb_cdf) {
+                                 FRAME_COUNTS *counts) {
   const uint8_t *const color_map = param->color_map;
   MapCdf map_cdf = param->map_cdf;
   ColorCost color_cost = param->color_cost;
@@ -54,7 +54,7 @@ static int cost_and_tokenize_map(Av1ColorMapParam *param, TokenExtra **t,
         this_rate += (*color_cost)[palette_size_idx][color_ctx][color_new_idx];
       } else {
         (*t)->token = color_new_idx;
-        (*t)->color_map_cdf = map_pb_cdf[palette_size_idx][color_ctx];
+        (*t)->color_ctx = color_ctx;
         ++(*t);
         if (allow_update_cdf)
           update_cdf(map_cdf[palette_size_idx][color_ctx], color_new_idx, n);
@@ -82,13 +82,14 @@ static void get_palette_params(const MACROBLOCK *const x, int plane,
   params->color_map = xd->plane[plane].color_index_map;
   params->map_cdf = plane ? xd->tile_ctx->palette_uv_color_index_cdf
                           : xd->tile_ctx->palette_y_color_index_cdf;
-  params->color_cost =
-      plane ? &x->palette_uv_color_cost : &x->palette_y_color_cost;
+  params->color_cost = plane ? &x->mode_costs.palette_uv_color_cost
+                             : &x->mode_costs.palette_y_color_cost;
   params->n_colors = pmi->palette_size[plane];
   av1_get_block_dimensions(bsize, plane, xd, &params->plane_width, NULL,
                            &params->rows, &params->cols);
 }
 
+// TODO(any): Remove this function
 static void get_color_map_params(const MACROBLOCK *const x, int plane,
                                  BLOCK_SIZE bsize, TX_SIZE tx_size,
                                  COLOR_MAP_TYPE type,
@@ -106,10 +107,7 @@ int av1_cost_color_map(const MACROBLOCK *const x, int plane, BLOCK_SIZE bsize,
   assert(plane == 0 || plane == 1);
   Av1ColorMapParam color_map_params;
   get_color_map_params(x, plane, bsize, tx_size, type, &color_map_params);
-  MapCdf map_pb_cdf = plane ? x->tile_pb_ctx->palette_uv_color_index_cdf
-                            : x->tile_pb_ctx->palette_y_color_index_cdf;
-  return cost_and_tokenize_map(&color_map_params, NULL, plane, 1, 0, NULL,
-                               map_pb_cdf);
+  return cost_and_tokenize_map(&color_map_params, NULL, plane, 1, 0, NULL);
 }
 
 void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
@@ -121,12 +119,10 @@ void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
   get_color_map_params(x, plane, bsize, tx_size, type, &color_map_params);
   // The first color index does not use context or entropy.
   (*t)->token = color_map_params.color_map[0];
-  (*t)->color_map_cdf = NULL;
+  (*t)->color_ctx = -1;
   ++(*t);
-  MapCdf map_pb_cdf = plane ? x->tile_pb_ctx->palette_uv_color_index_cdf
-                            : x->tile_pb_ctx->palette_y_color_index_cdf;
   cost_and_tokenize_map(&color_map_params, t, plane, 0, allow_update_cdf,
-                        counts, map_pb_cdf);
+                        counts);
 }
 
 static void tokenize_vartx(ThreadData *td, TX_SIZE tx_size,
@@ -142,14 +138,14 @@ static void tokenize_vartx(ThreadData *td, TX_SIZE tx_size,
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
   const TX_SIZE plane_tx_size =
-      plane ? av1_get_max_uv_txsize(mbmi->sb_type, pd->subsampling_x,
+      plane ? av1_get_max_uv_txsize(mbmi->bsize, pd->subsampling_x,
                                     pd->subsampling_y)
             : mbmi->inter_tx_size[av1_get_txb_size_index(plane_bsize, blk_row,
                                                          blk_col)];
 
   if (tx_size == plane_tx_size || plane) {
-    plane_bsize = get_plane_block_size(mbmi->sb_type, pd->subsampling_x,
-                                       pd->subsampling_y);
+    plane_bsize =
+        get_plane_block_size(mbmi->bsize, pd->subsampling_x, pd->subsampling_y);
     av1_update_and_record_txb_context(plane, block, blk_row, blk_col,
                                       plane_bsize, tx_size, arg);
 

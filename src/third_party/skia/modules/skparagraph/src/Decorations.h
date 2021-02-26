@@ -12,7 +12,7 @@ namespace textlayout {
 
 class Decorations {
     public:
-    void paint(SkCanvas* canvas, const TextStyle& textStyle, const TextLine::ClipContext& context, SkScalar baseline, SkScalar shift);
+    void paint(SkCanvas* canvas, const TextStyle& textStyle, const TextLine::ClipContext& context, SkScalar baseline);
 
     private:
 
@@ -20,7 +20,7 @@ class Decorations {
     void calculatePosition(TextDecoration decoration, SkScalar ascent);
     void calculatePaint(const TextStyle& textStyle);
     void calculateWaves(const TextStyle& textStyle, SkRect clip);
-    void calculateGaps(const TextLine::ClipContext& context, SkScalar x0, SkScalar x1, SkScalar y0, SkScalar y1, SkScalar baseline, SkScalar halo);
+    void calculateGaps(const TextLine::ClipContext& context, const SkRect& rect, SkScalar baseline, SkScalar halo);
 
     SkScalar fThickness;
     SkScalar fPosition;
@@ -29,6 +29,6 @@ class Decorations {
     SkPaint fPaint;
     SkPath fPath;
 };
-}
-}
+}  // namespace textlayout
+}  // namespace skia
 #endif

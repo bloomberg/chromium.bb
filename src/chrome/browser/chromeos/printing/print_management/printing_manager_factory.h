@@ -8,6 +8,7 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+class PrefRegistrySimple;
 class Profile;
 
 namespace chromeos {
@@ -21,6 +22,10 @@ class PrintingManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
   static PrintingManager* GetForProfile(Profile* profile);
   static PrintingManagerFactory* GetInstance();
+  static KeyedService* BuildInstanceFor(content::BrowserContext* profile);
+
+  // Register the delete print job history preferences with the |registry|.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   friend struct base::DefaultSingletonTraits<PrintingManagerFactory>;
@@ -34,6 +39,10 @@ class PrintingManagerFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
+  content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 };
 
 }  // namespace print_management

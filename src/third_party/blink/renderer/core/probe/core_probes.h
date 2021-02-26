@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -74,6 +75,15 @@ class CORE_EXPORT AsyncTask {
   STACK_ALLOCATED();
 
  public:
+  // Represents how this AsyncTask should be reported to the AdTracker.
+  enum class AdTrackingType {
+    // Don't report this task to the ad tracker.
+    kIgnore,
+    // Causes all scripts and tasks executed within this task to be considered
+    // executing as ads.
+    kReport,
+  };
+
   // Args:
   //   context: The ExecutionContext in which the task is executed.
   //   task: An identifier for the AsyncTask.
@@ -81,16 +91,19 @@ class CORE_EXPORT AsyncTask {
   //     indicates a recurring task with the value used for tracing events.
   //   enabled: Whether the task is asynchronous. If false, the task is not
   //     reported to the debugger and AdTracker.
+  //   ad_tracking_type: Whether this is reported to the AdTracker.
   AsyncTask(ExecutionContext* context,
             AsyncTaskId* task,
             const char* step = nullptr,
-            bool enabled = true);
+            bool enabled = true,
+            AdTrackingType ad_tracking_type = AdTrackingType::kReport);
   ~AsyncTask();
 
  private:
   ThreadDebugger* debugger_;
   AsyncTaskId* task_;
   bool recurring_;
+  bool tracing_ = false;
 
   // This persistent is safe since the class is STACK_ALLOCATED.
   Persistent<AdTracker> ad_tracker_;

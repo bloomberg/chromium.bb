@@ -50,10 +50,20 @@ StreamProducerImpl *DisplayGL::createStreamProducerD3DTexture(
     return nullptr;
 }
 
-egl::Error DisplayGL::makeCurrent(egl::Surface *drawSurface,
+ShareGroupImpl *DisplayGL::createShareGroup()
+{
+    return new ShareGroupGL();
+}
+
+egl::Error DisplayGL::makeCurrent(egl::Display *display,
+                                  egl::Surface *drawSurface,
                                   egl::Surface *readSurface,
                                   gl::Context *context)
 {
+    // Ensure that the correct global DebugAnnotator is installed when the end2end tests change
+    // the ANGLE back-end (done frequently).
+    display->setGlobalDebugAnnotator();
+
     if (!context)
     {
         return egl::NoError();

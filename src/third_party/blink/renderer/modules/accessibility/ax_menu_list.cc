@@ -65,7 +65,7 @@ void AXMenuList::ClearChildren() {
   // There's no reason to clear our AXMenuListPopup child. If we get a
   // call to clearChildren, it's because the options might have changed,
   // so call it on our popup.
-  DCHECK(children_.size() == 1);
+  DCHECK_EQ(ChildCountIncludingIgnored(), 1);
   children_[0]->ClearChildren();
 }
 
@@ -74,10 +74,8 @@ void AXMenuList::AddChildren() {
   have_children_ = true;
 
   AXObjectCacheImpl& cache = AXObjectCache();
-
   AXObject* popup = cache.GetOrCreate(ax::mojom::Role::kMenuListPopup);
-  if (!popup)
-    return;
+  DCHECK(popup);
 
   To<AXMockObject>(popup)->SetParent(this);
   if (!popup->AccessibilityIsIncludedInTree()) {
@@ -86,7 +84,6 @@ void AXMenuList::AddChildren() {
   }
 
   children_.push_back(popup);
-
   popup->AddChildren();
 }
 
@@ -111,7 +108,7 @@ void AXMenuList::DidUpdateActiveOption(int option_index) {
       (GetNode() && !GetNode()->IsFinishedParsingChildren());
 
   if (HasChildren()) {
-    const auto& child_objects = Children();
+    const auto& child_objects = ChildrenIncludingIgnored();
     if (!child_objects.IsEmpty()) {
       DCHECK_EQ(child_objects.size(), 1ul);
       DCHECK(IsA<AXMenuListPopup>(child_objects[0].Get()));
@@ -126,18 +123,18 @@ void AXMenuList::DidUpdateActiveOption(int option_index) {
 }
 
 void AXMenuList::DidShowPopup() {
-  if (Children().size() != 1)
+  if (ChildCountIncludingIgnored() != 1)
     return;
 
-  auto* popup = To<AXMenuListPopup>(Children()[0].Get());
+  auto* popup = To<AXMenuListPopup>(ChildAtIncludingIgnored(0));
   popup->DidShow();
 }
 
 void AXMenuList::DidHidePopup() {
-  if (Children().size() != 1)
+  if (ChildCountIncludingIgnored() != 1)
     return;
 
-  auto* popup = To<AXMenuListPopup>(Children()[0].Get());
+  auto* popup = To<AXMenuListPopup>(ChildAtIncludingIgnored(0));
   popup->DidHide();
 
   if (GetNode() && GetNode()->IsFocused())

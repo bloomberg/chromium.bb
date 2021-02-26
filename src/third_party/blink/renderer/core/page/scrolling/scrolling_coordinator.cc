@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
@@ -64,15 +65,10 @@ ScrollingCoordinator::~ScrollingCoordinator() {
   DCHECK(!page_);
 }
 
-void ScrollingCoordinator::Trace(Visitor* visitor) {
+void ScrollingCoordinator::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
   visitor->Trace(horizontal_scrollbars_);
   visitor->Trace(vertical_scrollbars_);
-}
-
-void ScrollingCoordinator::NotifyGeometryChanged(LocalFrameView* frame_view) {
-  frame_view->GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
-  frame_view->GetScrollingContext()->SetTouchEventTargetRectsAreDirty(true);
 }
 
 ScrollableArea*
@@ -126,103 +122,6 @@ void ScrollingCoordinator::DidChangeScrollbarsHidden(
     if (scrollable->GetPageScrollbarTheme().BlinkControlsOverlayVisibility())
       scrollable->SetScrollbarsHiddenIfOverlay(hidden);
   }
-}
-
-void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
-  LocalFrame* frame = &frame_view->GetFrame();
-  DCHECK(frame->IsLocalRoot());
-
-  bool scroll_gesture_region_dirty =
-      frame_view->GetScrollingContext()->ScrollGestureRegionIsDirty();
-  bool touch_event_rects_dirty =
-      frame_view->GetScrollingContext()->TouchEventTargetRectsAreDirty();
-
-  if (!scroll_gesture_region_dirty && !touch_event_rects_dirty)
-    return;
-
-  SCOPED_UMA_AND_UKM_TIMER(frame_view->EnsureUkmAggregator(),
-                           LocalFrameUkmAggregator::kScrollingCoordinator);
-  TRACE_EVENT0("input", "ScrollingCoordinator::UpdateAfterPaint");
-
-  if (scroll_gesture_region_dirty) {
-    UpdateNonFastScrollableRegions(frame);
-    frame_view->GetScrollingContext()->SetScrollGestureRegionIsDirty(false);
-  }
-
-  if (touch_event_rects_dirty) {
-    UpdateTouchEventTargetRectsIfNeeded(frame);
-    frame_view->GetScrollingContext()->SetTouchEventTargetRectsAreDirty(false);
-  }
-}
-
-template <typename Function>
-static void ForAllPaintingGraphicsLayers(GraphicsLayer& layer,
-                                         const Function& function) {
-  // Don't recurse into display-locked elements.
-  if (layer.Client().PaintBlockedByDisplayLockIncludingAncestors(
-          DisplayLockContextLifecycleTarget::kSelf)) {
-    return;
-  }
-
-  if (layer.PaintsContentOrHitTest())
-    function(layer);
-
-  for (auto* child : layer.Children())
-    ForAllPaintingGraphicsLayers(*child, function);
-}
-
-// Set the non-fast scrollable regions on |layer|'s cc layer.
-static void UpdateLayerNonFastScrollableRegions(GraphicsLayer& layer) {
-  // CompositeAfterPaint does this update in PaintArtifactCompositor.
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
-  DCHECK(layer.PaintsContentOrHitTest());
-
-  if (layer.Client().ShouldThrottleRendering()) {
-    layer.CcLayer()->SetNonFastScrollableRegion(cc::Region());
-    return;
-  }
-
-  auto offset = layer.GetOffsetFromTransformNode();
-  gfx::Vector2dF layer_offset = gfx::Vector2dF(offset.X(), offset.Y());
-  PaintChunkSubset paint_chunks =
-      PaintChunkSubset(layer.GetPaintController().PaintChunks());
-  PaintArtifactCompositor::UpdateNonFastScrollableRegions(
-      layer.CcLayer(), layer_offset, layer.GetPropertyTreeState(),
-      paint_chunks);
-}
-
-// Compute the regions of the page where we can't handle scroll gestures on
-// the impl thread. This currently includes:
-// 1. All scrollable areas, such as subframes, overflow divs and list boxes,
-//    whose composited scrolling are not enabled. We need to do this even if
-//    the frame view whose layout was updated is not the main frame.
-// 2. Resize control areas, e.g. the small rect at the right bottom of
-//    div/textarea/iframe when CSS property "resize" is enabled.
-// 3. Plugin areas.
-void ScrollingCoordinator::UpdateNonFastScrollableRegions(LocalFrame* frame) {
-  auto* view_layer = frame->View()->GetLayoutView()->Layer();
-  if (auto* root = view_layer->Compositor()->PaintRootGraphicsLayer())
-    ForAllPaintingGraphicsLayers(*root, UpdateLayerNonFastScrollableRegions);
-}
-
-// Set the touch action rects on the cc layer from the touch action data stored
-// on the GraphicsLayer's paint chunks.
-static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
-  if (layer.Client().ShouldThrottleRendering()) {
-    layer.CcLayer()->SetTouchActionRegion(cc::TouchActionRegion());
-    return;
-  }
-
-  auto offset = layer.GetOffsetFromTransformNode();
-  gfx::Vector2dF layer_offset = gfx::Vector2dF(offset.X(), offset.Y());
-  PaintChunkSubset paint_chunks =
-      PaintChunkSubset(layer.GetPaintController().PaintChunks());
-  PaintArtifactCompositor::UpdateTouchActionRects(layer.CcLayer(), layer_offset,
-                                                  layer.GetPropertyTreeState(),
-                                                  paint_chunks);
 }
 
 void ScrollingCoordinator::WillDestroyScrollableArea(
@@ -394,50 +293,9 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
       scrollable_area->GetCompositorAnimationTimeline());
 }
 
-void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
-    LocalFrame* frame) {
-  TRACE_EVENT0("input",
-               "ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded");
-
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
-  auto* view_layer = frame->View()->GetLayoutView()->Layer();
-  if (auto* root = view_layer->Compositor()->PaintRootGraphicsLayer())
-    ForAllPaintingGraphicsLayers(*root, UpdateLayerTouchActionRects);
-}
-
 void ScrollingCoordinator::Reset(LocalFrame* frame) {
   horizontal_scrollbars_.clear();
   vertical_scrollbars_.clear();
-}
-
-void ScrollingCoordinator::TouchEventTargetRectsDidChange(LocalFrame* frame) {
-  if (!frame)
-    return;
-
-  // If frame is not a local root, then the call to StaleInCompositingMode()
-  // below may unexpectedly fail.
-  DCHECK(frame->IsLocalRoot());
-  LocalFrameView* frame_view = frame->View();
-  if (!frame_view)
-    return;
-
-  // Wait until after layout to update.
-  // TODO(pdr): This check is wrong as we need to mark the rects as dirty
-  // regardless of whether the frame view needs layout. Remove this check.
-  if (frame_view->NeedsLayout())
-    return;
-
-  // FIXME: scheduleAnimation() is just a method of forcing the compositor to
-  // realize that it needs to commit here. We should expose a cleaner API for
-  // this.
-  auto* layout_view = frame->ContentLayoutObject();
-  if (layout_view && layout_view->Compositor() &&
-      layout_view->Compositor()->StaleInCompositingMode()) {
-    frame_view->ScheduleAnimation();
-  }
-
-  frame_view->GetScrollingContext()->SetTouchEventTargetRectsAreDirty(true);
 }
 
 void ScrollingCoordinator::AnimationHostInitialized(
@@ -477,17 +335,7 @@ void ScrollingCoordinator::WillCloseAnimationHost(LocalFrameView* view) {
 void ScrollingCoordinator::WillBeDestroyed() {
   DCHECK(page_);
   page_ = nullptr;
-}
-
-bool ScrollingCoordinator::CoordinatesScrollingForFrameView(
-    LocalFrameView* frame_view) const {
-  DCHECK(IsMainThread());
-
-  // We currently only support composited mode.
-  auto* layout_view = frame_view->GetFrame().ContentLayoutObject();
-  if (!layout_view)
-    return false;
-  return layout_view->UsesCompositing();
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 bool ScrollingCoordinator::IsForMainFrame(
@@ -498,17 +346,6 @@ bool ScrollingCoordinator::IsForMainFrame(
   // FIXME(305811): Refactor for OOPI.
   return scrollable_area ==
          page_->DeprecatedLocalMainFrame()->View()->LayoutViewport();
-}
-
-void ScrollingCoordinator::FrameViewRootLayerDidChange(
-    LocalFrameView* frame_view) {
-  DCHECK(IsMainThread());
-  DCHECK(page_);
-
-  if (!CoordinatesScrollingForFrameView(frame_view))
-    return;
-
-  NotifyGeometryChanged(frame_view);
 }
 
 }  // namespace blink

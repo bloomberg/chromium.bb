@@ -14,6 +14,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
 #include "components/strings/grit/components_strings.h"
@@ -26,22 +27,30 @@
 namespace policy {
 
 class SystemFeaturesPolicyTest : public PolicyTest {
+ public:
+  SystemFeaturesPolicyTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        chromeos::features::kCameraSystemWebApp);
+  }
+
  protected:
   base::string16 GetWebUITitle(const GURL& url) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     ui_test_utils::NavigateToURL(browser(), url);
 
-    content::WaitForLoadStop(web_contents);
+    EXPECT_TRUE(content::WaitForLoadStop(web_contents));
     return web_contents->GetTitle();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraBeforeInstall) {
   PolicyMap policies;
-  std::unique_ptr<base::Value> system_features =
-      std::make_unique<base::Value>(base::Value::Type::LIST);
-  system_features->Append(kCameraFeature);
+  base::Value system_features(base::Value::Type::LIST);
+  system_features.Append(kCameraFeature);
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::move(system_features), nullptr);
@@ -73,8 +82,7 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraBeforeInstall) {
       });
 
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(), nullptr);
   UpdateProviderPolicy(policies);
 
   ASSERT_TRUE(
@@ -99,9 +107,8 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraAfterInstall) {
   base::RunLoop().RunUntilIdle();
 
   PolicyMap policies;
-  std::unique_ptr<base::Value> system_features =
-      std::make_unique<base::Value>(base::Value::Type::LIST);
-  system_features->Append(kCameraFeature);
+  base::Value system_features(base::Value::Type::LIST);
+  system_features.Append(kCameraFeature);
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::move(system_features), nullptr);
@@ -124,8 +131,7 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraAfterInstall) {
       });
 
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(), nullptr);
   UpdateProviderPolicy(policies);
 
   ASSERT_TRUE(
@@ -142,9 +148,8 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraAfterInstall) {
 
 IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, RedirectChromeSettingsURL) {
   PolicyMap policies;
-  std::unique_ptr<base::Value> system_features =
-      std::make_unique<base::Value>(base::Value::Type::LIST);
-  system_features->Append(kBrowserSettingsFeature);
+  base::Value system_features(base::Value::Type::LIST);
+  system_features.Append(kBrowserSettingsFeature);
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::move(system_features), nullptr);
@@ -155,8 +160,7 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, RedirectChromeSettingsURL) {
             GetWebUITitle(settings_url));
 
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(), nullptr);
   UpdateProviderPolicy(policies);
 
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SETTINGS_SETTINGS),

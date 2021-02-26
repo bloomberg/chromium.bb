@@ -8,6 +8,13 @@
 class PrefRegistrySimple;
 
 namespace crostini {
+
+// Enum that specifies allowance modes for the adb sideloading user policy
+enum class CrostiniArcAdbSideloadingUserAllowanceMode {
+  kDisallow = 0,
+  kAllow = 1,
+};
+
 namespace prefs {
 
 extern const char kCrostiniEnabled[];
@@ -26,6 +33,7 @@ extern const char kUserCrostiniRootAccessAllowedByPolicy[];
 extern const char kCrostiniAnsiblePlaybookFilePath[];
 extern const char kCrostiniDefaultContainerConfigured[];
 extern const char kCrostiniArcAdbSideloadingUserPref[];
+extern const char kCrostiniPortForwardingAllowedByPolicy[];
 
 extern const char kReportCrostiniUsageEnabled[];
 extern const char kCrostiniLastLaunchTerminaComponentVersion[];

@@ -58,6 +58,15 @@ message NetworkAddress {
 // should listen for requests.
 message FileDescriptor {}
 
+// An id mapping that the server should use when reporting ids to its clients.
+message IdMap {
+  // The id value on the server.
+  uint32 server = 1;
+  // The value that should be reported to the client instead of the value in
+  // `server`.
+  uint32 client = 2;
+}
+
 // Information that must be included with every StartServer dbus request.
 message StartServerRequest {
   // The address on which the server should listen for requests.
@@ -67,6 +76,12 @@ message StartServerRequest {
     NetworkAddress net = 3;
     FileDescriptor fd = 4;
   }
+
+  // Uid translations that should be performed by the server.
+  repeated IdMap uid_maps = 5;
+
+  // Gid translations to be performed by the server.
+  repeated IdMap gid_maps = 6;
 }
 
 // Information sent back by seneschal in response to a StartServer message.
@@ -111,6 +126,7 @@ message SharePathRequest {
   // The location where the path to be shared lives.
   enum StorageLocation {
     // The user's Downloads/ directory /home/user/<owner_id>/Downloads.
+    // Note: This field is deprecated.  MY_FILES should be used.
     DOWNLOADS = 0;
     // DriveFS directory /media/fuse/<drivefs_mount_name>/root.
     DRIVEFS_MY_DRIVE = 1;
@@ -127,21 +143,31 @@ message SharePathRequest {
     MY_FILES = 5;
     // The user's PlayFiles/ directory /run/arc/sdcard/write/emulated/0.
     PLAY_FILES = 6;
-    // The user's LinuxFiles/ directory /media/fuse/crostini_<username>_terminal_penguin.
+    // The user's LinuxFiles/ directory /media/fuse/crostini_<owner_id>_termina_penguin.
     LINUX_FILES = 7;
-    // The system fonts directory /usr/share/fonts
+    // The system fonts directory /usr/share/fonts.
     FONTS = 8;
+    // Archive mount directory /media/archive.
+    ARCHIVE = 9;
+    // SmbFs mount.
+    SMBFS = 10;
   }
   StorageLocation storage_location = 3;
 
   // The user's cryptohome.  This is the <hash> part of /home/user/<hash>.
-  // This field is required when storage_location=DOWNLOADS.
+  // This field is required when storage_location is DOWNLOADS, MY_FILES, or
+  // LINUX_FILES.
   string owner_id = 4;
 
   // DriveFS mount name.  This is the directory name mounted at /media/fuse with
   // format 'drivefs-<drivefs-hash>'.
   // This field is required when storage_location=DRIVEFS_*.
   string drivefs_mount_name = 5;
+
+  // SmbFs mount name. This is the directory name mounted at /media/fuse with
+  // format 'smbfs-<share-hash>'.
+  // This field is required when storage_location=SMBFS.
+  string smbfs_mount_name = 6;
 }
 
 // Information sent back by seneschal when it receives a SharePath request.

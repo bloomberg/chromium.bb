@@ -21,7 +21,6 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/capabilities.h"
-#include "chrome/test/chromedriver/chrome/automation_extension.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
@@ -78,14 +77,24 @@ Status EvaluateScriptAndIgnoreResult(Session* session,
   return web_view->EvaluateScript(frame_id, expression, awaitPromise, &result);
 }
 
+void InitSessionForWebSocketConnection(SessionConnectionMap* session_map,
+                                       std::string session_id) {
+  session_map->insert({session_id, -1});
+}
+
 }  // namespace
 
-InitSessionParams::InitSessionParams(network::mojom::URLLoaderFactory* factory,
-                                     const SyncWebSocketFactory& socket_factory,
-                                     DeviceManager* device_manager)
+InitSessionParams::InitSessionParams(
+    network::mojom::URLLoaderFactory* factory,
+    const SyncWebSocketFactory& socket_factory,
+    DeviceManager* device_manager,
+    const scoped_refptr<base::SingleThreadTaskRunner> cmd_task_runner,
+    SessionConnectionMap* session_map)
     : url_loader_factory(factory),
       socket_factory(socket_factory),
-      device_manager(device_manager) {}
+      device_manager(device_manager),
+      cmd_task_runner(cmd_task_runner),
+      session_map(session_map) {}
 
 InitSessionParams::InitSessionParams(const InitSessionParams& other) = default;
 
@@ -181,7 +190,9 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
 
   // Extensions defined by the W3C.
   // See https://w3c.github.io/webauthn/#sctn-automation-webdriver-capability
-  caps->SetBoolean("webauthn:virtualAuthenticators", !capabilities.IsAndroid());
+  caps->SetBoolPath("webauthn:virtualAuthenticators",
+                    !capabilities.IsAndroid());
+  caps->SetBoolPath("webauthn:extension:largeBlob", !capabilities.IsAndroid());
 
   // Chrome-specific extensions.
   const std::string chromedriverVersionKey = base::StringPrintf(
@@ -222,6 +233,11 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
     caps->SetBoolean("acceptSslCerts", capabilities.accept_insecure_certs);
     caps->SetBoolean("nativeEvents", true);
     caps->SetBoolean("hasTouchScreen", session->chrome->HasTouchScreen());
+  }
+
+  if (session->webSocketUrl) {
+    caps->SetString("webSocketUrl",
+                    "ws://" + session->host + "/session/" + session->id);
   }
 
   return caps;
@@ -359,13 +375,12 @@ Status ConfigureSession(Session* session,
         session->w3c_compliant ? kDismissAndNotify : kIgnore;
   }
 
-  session->enable_launch_app = capabilities->enable_launch_app;
-
   session->implicit_wait = capabilities->implicit_wait_timeout;
   session->page_load_timeout = capabilities->page_load_timeout;
   session->script_timeout = capabilities->script_timeout;
   session->strict_file_interactability =
       capabilities->strict_file_interactability;
+  session->webSocketUrl = capabilities->webSocketUrl;
   Log::Level driver_level = Log::kWarning;
   if (capabilities->logging_prefs.count(WebDriverLog::kDriverType))
     driver_level = capabilities->logging_prefs[WebDriverLog::kDriverType];
@@ -424,8 +439,8 @@ bool MergeCapabilities(const base::DictionaryValue* always_match,
 // Implementation of "matching capabilities", as defined in W3C spec at
 // https://www.w3.org/TR/webdriver/#dfn-matching-capabilities.
 // It checks some requested capabilities and make sure they are supported.
-// Currently, we only check "browserName", "platformName", and
-// "webauthn:virtualAuthenticators" but more can be added as necessary.
+// Currently, we only check "browserName", "platformName", and webauthn
+// capabilities but more can be added as necessary.
 bool MatchCapabilities(const base::DictionaryValue* capabilities) {
   const base::Value* name;
   if (capabilities->Get("browserName", &name) && !name->is_none()) {
@@ -476,12 +491,20 @@ bool MatchCapabilities(const base::DictionaryValue* capabilities) {
     }
   }
 
-  const base::Value* virtual_authenticators_value;
-  if (capabilities->Get("webauthn:virtualAuthenticators",
-                        &virtual_authenticators_value) &&
-      !virtual_authenticators_value->is_none()) {
+  const base::Value* virtual_authenticators_value =
+      capabilities->FindPath("webauthn:virtualAuthenticators");
+  if (virtual_authenticators_value) {
     if (!virtual_authenticators_value->is_bool() ||
         (virtual_authenticators_value->GetBool() && is_android)) {
+      return false;
+    }
+  }
+
+  const base::Value* large_blob_value =
+      capabilities->FindPath("webauthn:extension:largeBlob");
+  if (large_blob_value) {
+    if (!large_blob_value->is_bool() ||
+        (large_blob_value->GetBool() && is_android)) {
       return false;
     }
   }
@@ -598,6 +621,10 @@ Status ExecuteInitSession(const InitSessionParams& bound_params,
     session->quit = true;
     if (session->chrome != NULL)
       session->chrome->Quit();
+  } else if (session->webSocketUrl) {
+    bound_params.cmd_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&InitSessionForWebSocketConnection,
+                                  bound_params.session_map, session->id));
   }
   return status;
 }
@@ -632,31 +659,6 @@ Status ExecuteGetCurrentWindowHandle(Session* session,
     return status;
   value->reset(new base::Value(WebViewIdToWindowHandle(web_view->GetId())));
   return Status(kOk);
-}
-
-Status ExecuteLaunchApp(Session* session,
-                        const base::DictionaryValue& params,
-                        std::unique_ptr<base::Value>* value) {
-  if (!session->enable_launch_app) {
-    return Status(kUnsupportedOperation,
-                  R"(LaunchApp command has been removed. See:
-      https://blog.chromium.org/2020/01/moving-forward-from-chrome-apps.html)");
-  }
-  std::string id;
-  if (!params.GetString("id", &id))
-    return Status(kInvalidArgument, "'id' must be a string");
-
-  ChromeDesktopImpl* desktop = nullptr;
-  Status status = session->chrome->GetAsDesktop(&desktop);
-  if (status.IsError())
-    return status;
-
-  AutomationExtension* extension = nullptr;
-  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
-  if (status.IsError())
-    return status;
-
-  return extension->LaunchApp(id);
 }
 
 Status ExecuteClose(Session* session,
@@ -714,12 +716,16 @@ Status ExecuteClose(Session* session,
   if (status.IsError())
     return status;
 
-  status = ExecuteGetWindowHandles(session, base::DictionaryValue(), value);
-  if ((status.code() == kChromeNotReachable && is_last_web_view) ||
-      (status.IsOk() && (*value)->GetList().empty())) {
-    // If the only open window was closed, close is the same as calling "quit".
+  if (!is_last_web_view) {
+    status = ExecuteGetWindowHandles(session, base::DictionaryValue(), value);
+    if (status.IsError())
+      return status;
+  } else {
+    // If there is only one window left, call quit as well.
     session->quit = true;
-    return session->chrome->Quit();
+    status = session->chrome->Quit();
+    if (status.IsOk())
+      value->reset(new base::ListValue());
   }
 
   return status;
@@ -846,7 +852,8 @@ Status ExecuteSwitchToWindow(Session* session,
 }
 
 // Handles legacy format SetTimeout command.
-// TODO(johnchen@chromium.org): Remove when we stop supporting legacy protocol.
+// TODO(crbug.com/chromedriver/2596): Remove when we stop supporting legacy
+// protocol.
 Status ExecuteSetTimeoutLegacy(Session* session,
                                const base::DictionaryValue& params,
                                std::unique_ptr<base::Value>* value) {
@@ -907,8 +914,8 @@ Status ExecuteSetTimeoutsW3C(Session* session,
 Status ExecuteSetTimeouts(Session* session,
                           const base::DictionaryValue& params,
                           std::unique_ptr<base::Value>* value) {
-  // TODO(johnchen@chromium.org): Remove legacy version support when we stop
-  // supporting non-W3C protocol. At that time, we can delete the legacy
+  // TODO(crbug.com/chromedriver/2596): Remove legacy version support when we
+  // stop supporting non-W3C protocol. At that time, we can delete the legacy
   // function and merge the W3C function into this function.
   if (params.HasKey("ms")) {
     return ExecuteSetTimeoutLegacy(session, params, value);
@@ -969,8 +976,7 @@ Status ExecuteIsLoading(Session* session,
     return status;
 
   bool is_pending;
-  status = web_view->IsPendingNavigation(
-      session->GetCurrentFrameId(), nullptr, &is_pending);
+  status = web_view->IsPendingNavigation(nullptr, &is_pending);
   if (status.IsError())
     return status;
   value->reset(new base::Value(is_pending));
@@ -1266,5 +1272,25 @@ Status ExecuteGenerateTestReport(Session* session,
   body.SetString("group", group);
 
   web_view->SendCommandAndGetResult("Page.generateTestReport", body, value);
+  return Status(kOk);
+}
+
+Status ExecuteSetTimezone(Session* session,
+                          const base::DictionaryValue& params,
+                          std::unique_ptr<base::Value>* value) {
+  WebView* web_view = nullptr;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+
+  std::string timezone;
+  if (!params.GetString("timezone", &timezone))
+    return Status(kInvalidArgument, "missing parameter 'timezone'");
+
+  base::DictionaryValue body;
+  body.SetString("timezoneId", timezone);
+
+  web_view->SendCommandAndGetResult("Emulation.setTimezoneOverride", body,
+                                    value);
   return Status(kOk);
 }

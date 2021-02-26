@@ -6,12 +6,12 @@
 
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 
-CPDF_PageObjectAvail::~CPDF_PageObjectAvail() {}
+CPDF_PageObjectAvail::~CPDF_PageObjectAvail() = default;
 
 bool CPDF_PageObjectAvail::ExcludeObject(const CPDF_Object* object) const {
   if (CPDF_ObjectAvail::ExcludeObject(object))
     return true;
 
   return object->IsDictionary() &&
-         object->GetDict()->GetStringFor("Type") == "Page";
+         object->GetDict()->GetNameFor("Type") == "Page";
 }

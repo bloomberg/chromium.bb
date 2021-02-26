@@ -13,14 +13,15 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper_info.h"
 #include "ash/public/cpp/wallpaper_types.h"
-#include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -41,7 +42,6 @@ struct ColorProfile;
 namespace ash {
 
 class WallpaperColorCalculator;
-struct WallpaperProperty;
 class WallpaperResizer;
 class WallpaperWindowStateManager;
 
@@ -68,6 +68,7 @@ class ASH_EXPORT WallpaperControllerImpl
       public WallpaperColorCalculatorObserver,
       public SessionObserver,
       public TabletModeObserver,
+      public OverviewObserver,
       public ui::CompositorLockClient {
  public:
   enum WallpaperResolution {
@@ -142,6 +143,12 @@ class ASH_EXPORT WallpaperControllerImpl
   // always return true thereafter.
   bool HasShownAnyWallpaper() const;
 
+  // Ash cannot close the chrome side of the wallpaper preview so this function
+  // tells the chrome side to do so. Also Ash cannot tell whether or not the
+  // wallpaper picker is currently open so this will close the wallpaper preview
+  // if it is open and do nothing if it is not open.
+  void MaybeClosePreviewWallpaper();
+
   // Shows the wallpaper and alerts observers of changes.
   // Does not show the image if:
   // 1)  |preview_mode| is false and the current wallpaper is still being
@@ -161,15 +168,19 @@ class ASH_EXPORT WallpaperControllerImpl
   // existing blur is removed.
   void UpdateWallpaperBlurForLockState(bool blur);
 
-  // Restores the wallpaper property from lock state.
-  void RestoreWallpaperPropertyForLockState(const WallpaperProperty& property);
+  // Restores the wallpaper blur from lock state.
+  void RestoreWallpaperBlurForLockState(float blur);
 
-  // Wallpaper should be dimmed for login, lock, OOBE and add user screens.
-  bool ShouldApplyDimming() const;
+  // A color filter should be applied on the wallpaper for overview, login,
+  // lock, OOBE and add user screens.
+  bool ShouldApplyColorFilter() const;
 
   // Returns whether the current wallpaper is allowed to be blurred on
   // lock/login screen. See https://crbug.com/775591.
   bool IsBlurAllowedForLockState() const;
+
+  // True if the wallpaper is set.
+  bool is_wallpaper_set() const { return !!current_wallpaper_.get(); }
 
   // Sets wallpaper info for |account_id| and saves it to local state if the
   // user is not ephemeral. Returns false if it fails (which happens if local
@@ -290,6 +301,9 @@ class ASH_EXPORT WallpaperControllerImpl
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
+  // OverviewObserver:
+  void OnOverviewModeWillStart() override;
+
   // CompositorLockClient:
   void CompositorLockTimedOut() override;
 
@@ -310,6 +324,8 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Proxy to private ReloadWallpaper().
   void ReloadWallpaperForTesting(bool clear_cache);
+
+  void set_bypass_decode_for_testing() { bypass_decode_for_testing_ = true; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest, BasicReparenting);
@@ -336,7 +352,8 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Update a Wallpaper for |root_window|.
   void UpdateWallpaperForRootWindow(aura::Window* root_window,
-                                    bool lock_state_changed);
+                                    bool lock_state_changed,
+                                    bool new_root);
 
   // Update a Wallpaper for all root windows.
   void UpdateWallpaperForAllRootWindows(bool lock_state_changed);

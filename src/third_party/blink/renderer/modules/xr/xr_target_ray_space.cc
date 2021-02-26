@@ -16,8 +16,8 @@ XRTargetRaySpace::XRTargetRaySpace(XRSession* session, XRInputSource* source)
     : XRSpace(session), input_source_(source) {}
 
 base::Optional<TransformationMatrix> XRTargetRaySpace::MojoFromNative() {
-  auto mojo_from_viewer =
-      session()->GetMojoFrom(XRReferenceSpace::Type::kTypeViewer);
+  auto mojo_from_viewer = session()->GetMojoFrom(
+      device::mojom::blink::XRReferenceSpaceType::kViewer);
   switch (input_source_->TargetRayMode()) {
     case device::mojom::XRTargetRayMode::TAPPING: {
       // If the pointer origin is the screen, we need mojo_from_viewer, as the
@@ -46,17 +46,17 @@ base::Optional<TransformationMatrix> XRTargetRaySpace::MojoFromNative() {
   }
 }
 
-base::Optional<TransformationMatrix> XRTargetRaySpace::NativeFromMojo() {
-  return XRSpace::TryInvert(MojoFromNative());
-}
-
 bool XRTargetRaySpace::EmulatedPosition() const {
   return input_source_->emulatedPosition();
 }
 
-base::Optional<XRNativeOriginInformation> XRTargetRaySpace::NativeOrigin()
-    const {
+base::Optional<device::mojom::blink::XRNativeOriginInformation>
+XRTargetRaySpace::NativeOrigin() const {
   return input_source_->nativeOrigin();
+}
+
+std::string XRTargetRaySpace::ToString() const {
+  return "XRTargetRaySpace";
 }
 
 bool XRTargetRaySpace::IsStationary() const {
@@ -65,7 +65,7 @@ bool XRTargetRaySpace::IsStationary() const {
   return false;
 }
 
-void XRTargetRaySpace::Trace(Visitor* visitor) {
+void XRTargetRaySpace::Trace(Visitor* visitor) const {
   visitor->Trace(input_source_);
   XRSpace::Trace(visitor);
 }

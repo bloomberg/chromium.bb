@@ -23,7 +23,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_path_override.h"
@@ -90,7 +89,8 @@ TEST_F(ServiceUtilCleanerRunningServiceTest, DeleteService) {
   EXPECT_FALSE(DoesServiceExist(service_handle.service_name()));
 }
 
-TEST_F(ServiceUtilCleanerRunningServiceTest, StopAndDeleteRunningService) {
+// TODO(crbug.com/1061171): Test is flaky.
+TEST_F(ServiceUtilCleanerRunningServiceTest, DISABLED_StopAndDeleteRunningService) {
   // Install and launch the service.
   TestScopedServiceHandle service_handle;
   ASSERT_TRUE(service_handle.InstallService());
@@ -113,7 +113,8 @@ TEST_F(ServiceUtilCleanerRunningServiceTest, StopAndDeleteRunningService) {
   EXPECT_FALSE(IsProcessRunning(kTestServiceExecutableName));
 }
 
-TEST_F(ServiceUtilCleanerRunningServiceTest, DeleteRunningService) {
+// TODO(crbug.com/1061171): Test is flaky.
+TEST_F(ServiceUtilCleanerRunningServiceTest, DISABLED_DeleteRunningService) {
   // Install and launch the service.
   TestScopedServiceHandle service_handle;
   ASSERT_TRUE(service_handle.InstallService());
@@ -144,7 +145,7 @@ TEST_F(ServiceUtilCleanerRunningServiceTest, QuarantineFolderPermission) {
   // Get the ownership and ACL of the quarantine folder and check the values.
   ASSERT_EQ(static_cast<DWORD>(ERROR_SUCCESS),
             ::GetNamedSecurityInfo(
-                quarantine_path.AsUTF16Unsafe().c_str(), SE_FILE_OBJECT,
+                quarantine_path.value().c_str(), SE_FILE_OBJECT,
                 OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
                 &owner_sid, /*psidGroup=*/nullptr, &dacl,
                 /*pSacl=*/nullptr, &security_descriptor));

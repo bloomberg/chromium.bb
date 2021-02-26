@@ -36,10 +36,10 @@ ParseCommitmentsFromCommandLine() {
           raw_commitments)) {
     return std::move(*parsed);
   } else {
-    // Crash loudly here because the user presumably only provides key
+    // Complain loudly here because the user presumably only provides key
     // commitments through the command line out of a desire to _use_ the key
     // commitments.
-    LOG(FATAL)
+    LOG(ERROR)
         << "Couldn't parse Trust Tokens key commitments from the command line: "
         << raw_commitments;
   }
@@ -51,8 +51,8 @@ ParseCommitmentsFromCommandLine() {
 mojom::TrustTokenKeyCommitmentResultPtr FilterCommitments(
     mojom::TrustTokenKeyCommitmentResultPtr result) {
   if (result) {
-    RetainSoonestToExpireTrustTokenKeys(
-        &result->keys, kMaximumConcurrentlyValidTrustTokenVerificationKeys);
+    size_t max_keys = TrustTokenMaxKeysForVersion(result->protocol_version);
+    RetainSoonestToExpireTrustTokenKeys(&result->keys, max_keys);
   }
 
   return result;
@@ -117,7 +117,7 @@ mojom::TrustTokenKeyCommitmentResultPtr TrustTokenKeyCommitments::GetSync(
 
   if (!additional_commitments_from_command_line_.empty()) {
     auto it = additional_commitments_from_command_line_.find(*suitable_origin);
-    if (it != commitments_.end()) {
+    if (it != additional_commitments_from_command_line_.end()) {
       return FilterCommitments(it->second->Clone());
     }
   }

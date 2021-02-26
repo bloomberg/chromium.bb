@@ -32,6 +32,11 @@
     #endif
 #endif
 
+static bool runtime_cpu_detection = true;
+void skcms_DisableRuntimeCPUDetection() {
+    runtime_cpu_detection = false;
+}
+
 // sizeof(x) will return size_t, which is 32-bit on some machines and 64-bit on others.
 // We have better testing on 64-bit machines, so force 32-bit machines to behave like 64-bit.
 //
@@ -84,11 +89,12 @@ static float exp2f_(float x) {
 
     // Before we cast fbits to int32_t, check for out of range values to pacify UBSAN.
     // INT_MAX is not exactly representable as a float, so exclude it as effectively infinite.
-    // INT_MIN is a power of 2 and exactly representable as a float, so it's fine.
+    // Negative values are effectively underflow - we'll end up returning a (different) negative
+    // value, which makes no sense. So clamp to zero.
     if (fbits >= (float)INT_MAX) {
         return INFINITY_;
-    } else if (fbits < (float)INT_MIN) {
-        return -INFINITY_;
+    } else if (fbits < 0) {
+        return 0;
     }
 
     int32_t bits = (int32_t)fbits;
@@ -160,11 +166,21 @@ static TFKind classify(const skcms_TransferFunction& tf, TF_PQish*   pq = nullpt
     return Bad;
 }
 
+bool skcms_TransferFunction_isSRGBish(const skcms_TransferFunction* tf) {
+    return classify(*tf) == sRGBish;
+}
+bool skcms_TransferFunction_isPQish(const skcms_TransferFunction* tf) {
+    return classify(*tf) == PQish;
+}
+bool skcms_TransferFunction_isHLGish(const skcms_TransferFunction* tf) {
+    return classify(*tf) == HLGish;
+}
+
 bool skcms_TransferFunction_makePQish(skcms_TransferFunction* tf,
                                       float A, float B, float C,
                                       float D, float E, float F) {
     *tf = { TFKind_marker(PQish), A,B,C,D,E,F };
-    assert(classify(*tf) == PQish);
+    assert(skcms_TransferFunction_isPQish(tf));
     return true;
 }
 
@@ -172,7 +188,7 @@ bool skcms_TransferFunction_makeHLGish(skcms_TransferFunction* tf,
                                        float R, float G,
                                        float a, float b, float c) {
     *tf = { TFKind_marker(HLGish), R,G, a,b,c, 0 };
-    assert(classify(*tf) == HLGish);
+    assert(skcms_TransferFunction_isHLGish(tf));
     return true;
 }
 
@@ -479,7 +495,7 @@ static bool read_curve_para(const uint8_t* buf, uint32_t size,
             curve->parametric.f = read_big_fixed(paraTag->variable + 24);
             break;
     }
-    return classify(curve->parametric) == sRGBish;
+    return skcms_TransferFunction_isSRGBish(&curve->parametric);
 }
 
 typedef struct {
@@ -1298,7 +1314,10 @@ bool skcms_ApproximatelyEqualProfiles(const skcms_ICCProfile* A, const skcms_ICC
     // skcms_252_random_bytes are 252 of a random shuffle of all possible bytes.
     // 252 is evenly divisible by 3 and 4.  Only 192, 10, 241, and 43 are missing.
 
-    if (A->data_color_space != B->data_color_space) {
+    // We want to allow otherwise equivalent profiles tagged as grayscale and RGB
+    // to be treated as equal.  But CMYK profiles are a totally different ballgame.
+    const auto CMYK = skcms_Signature_CMYK;
+    if ((A->data_color_space == CMYK) != (B->data_color_space == CMYK)) {
         return false;
     }
 
@@ -2142,6 +2161,9 @@ namespace baseline {
         enum class CpuType { None, HSW, SKX };
         static CpuType cpu_type() {
             static const CpuType type = []{
+                if (!runtime_cpu_detection) {
+                    return CpuType::None;
+                }
                 // See http://www.sandpile.org/x86/cpuid.htm
 
                 // First, a basic cpuid(1) lets us check prerequisites for HSW, SKX.

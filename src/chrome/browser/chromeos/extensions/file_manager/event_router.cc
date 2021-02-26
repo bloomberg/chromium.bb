@@ -52,6 +52,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
@@ -166,6 +167,8 @@ MountErrorToMountCompletedStatus(chromeos::MountError error) {
           MOUNT_COMPLETED_STATUS_ERROR_UNSUPPORTED_FILESYSTEM;
     case chromeos::MOUNT_ERROR_INVALID_ARCHIVE:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_INVALID_ARCHIVE;
+    case chromeos::MOUNT_ERROR_NEED_PASSWORD:
+      return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_NEED_PASSWORD;
     // Not a real error.
     case chromeos::MOUNT_ERROR_COUNT:
       NOTREACHED();
@@ -447,6 +450,8 @@ void EventRouter::Shutdown() {
 
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
 
+  extensions::ExtensionRegistry::Get(profile_)->RemoveObserver(this);
+
   DriveIntegrationService* const integration_service =
       DriveIntegrationServiceFactory::FindForProfile(profile_);
   if (integration_service) {
@@ -502,6 +507,8 @@ void EventRouter::ObserveEvents() {
 
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
 
+  extensions::ExtensionRegistry::Get(profile_)->AddObserver(this);
+
   pref_change_registrar_->Init(profile_->GetPrefs());
   base::Closure callback =
       base::Bind(&EventRouter::OnFileManagerPrefsChanged,
@@ -548,7 +555,7 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
     std::unique_ptr<FileWatcher> watcher(new FileWatcher(virtual_path));
     watcher->AddExtension(extension_id);
     watcher->WatchLocalFile(
-        local_path,
+        profile_, local_path,
         base::Bind(&EventRouter::HandleFileWatchNotification,
                    weak_factory_.GetWeakPtr()),
         std::move(callback));
@@ -649,14 +656,19 @@ void EventRouter::OnWatcherManagerNotification(
 }
 
 void EventRouter::OnConnectionChanged(network::mojom::ConnectionType type) {
-  DCHECK(profile_);
-  DCHECK(extensions::EventRouter::Get(profile_));
+  NotifyDriveConnectionStatusChanged();
+}
 
-  BroadcastEvent(
-      profile_, extensions::events::
-                    FILE_MANAGER_PRIVATE_ON_DRIVE_CONNECTION_STATUS_CHANGED,
-      file_manager_private::OnDriveConnectionStatusChanged::kEventName,
-      file_manager_private::OnDriveConnectionStatusChanged::Create());
+void EventRouter::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                    const extensions::Extension* extension) {
+  NotifyDriveConnectionStatusChanged();
+}
+
+void EventRouter::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionReason reason) {
+  NotifyDriveConnectionStatusChanged();
 }
 
 void EventRouter::TimezoneChanged(const icu::TimeZone& timezone) {
@@ -830,6 +842,20 @@ void EventRouter::OnFormatCompleted(const std::string& device_path,
   // Do nothing.
 }
 
+void EventRouter::OnPartitionStarted(const std::string& device_path,
+                                     const std::string& device_label,
+                                     bool success) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Do nothing.
+}
+
+void EventRouter::OnPartitionCompleted(const std::string& device_path,
+                                       const std::string& device_label,
+                                       bool success) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Do nothing.
+}
+
 void EventRouter::OnRenameStarted(const std::string& device_path,
                                   const std::string& device_label,
                                   bool success) {
@@ -913,6 +939,18 @@ void EventRouter::OnCrostiniChanged(
         file_manager_private::OnCrostiniChanged::kEventName,
         file_manager_private::OnCrostiniChanged::Create(event));
   }
+}
+
+void EventRouter::NotifyDriveConnectionStatusChanged() {
+  DCHECK(profile_);
+  DCHECK(extensions::EventRouter::Get(profile_));
+
+  BroadcastEvent(
+      profile_,
+      extensions::events::
+          FILE_MANAGER_PRIVATE_ON_DRIVE_CONNECTION_STATUS_CHANGED,
+      file_manager_private::OnDriveConnectionStatusChanged::kEventName,
+      file_manager_private::OnDriveConnectionStatusChanged::Create());
 }
 
 base::WeakPtr<EventRouter> EventRouter::GetWeakPtr() {

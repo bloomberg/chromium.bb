@@ -12,15 +12,14 @@ namespace blink {
 NavigatorContentUtilsClient::NavigatorContentUtilsClient(LocalFrame* frame)
     : frame_(frame) {}
 
-void NavigatorContentUtilsClient::Trace(Visitor* visitor) {
+void NavigatorContentUtilsClient::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
 }
 
 void NavigatorContentUtilsClient::RegisterProtocolHandler(const String& scheme,
-                                                          const KURL& url,
-                                                          const String& title) {
+                                                          const KURL& url) {
   bool user_gesture = LocalFrame::HasTransientUserActivation(frame_);
-  frame_->GetLocalFrameHostRemote().RegisterProtocolHandler(scheme, url, title,
+  frame_->GetLocalFrameHostRemote().RegisterProtocolHandler(scheme, url,
                                                             user_gesture);
 }
 

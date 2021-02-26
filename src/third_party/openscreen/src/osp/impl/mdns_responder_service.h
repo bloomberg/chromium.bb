@@ -43,12 +43,12 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
       const std::string& service_protocol,
       std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory,
       std::unique_ptr<MdnsPlatformService> platform);
-  virtual ~MdnsResponderService() override;
+  ~MdnsResponderService() override;
 
   void SetServiceConfig(const std::string& hostname,
                         const std::string& instance,
                         uint16_t port,
-                        const std::vector<NetworkInterfaceIndex> whitelist,
+                        const std::vector<NetworkInterfaceIndex> allowlist,
                         const std::map<std::string, std::string>& txt_data);
 
   // UdpSocket::Client overrides.
@@ -171,7 +171,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
   std::string service_hostname_;
   std::string service_instance_name_;
   uint16_t service_port_;
-  std::vector<NetworkInterfaceIndex> interface_index_whitelist_;
+  std::vector<NetworkInterfaceIndex> interface_index_allowlist_;
   std::map<std::string, std::string> service_txt_data_;
 
   std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory_;

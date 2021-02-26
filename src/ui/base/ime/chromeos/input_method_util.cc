@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -175,9 +176,9 @@ const struct EnglishToResouceId {
     {"xkb:tr:f:tur", IDS_STATUSBAR_LAYOUT_TURKEY_F},
     {"xkb:ua::ukr", IDS_STATUSBAR_LAYOUT_UKRAINE},
     {"xkb:us::eng", IDS_STATUSBAR_LAYOUT_USA},
-    {"xkb:us::fil", IDS_STATUSBAR_LAYOUT_USA},
-    {"xkb:us::ind", IDS_STATUSBAR_LAYOUT_USA},
-    {"xkb:us::msa", IDS_STATUSBAR_LAYOUT_USA},
+    {"xkb:us::fil", IDS_IME_NAME_KEYBOARD_FILIPINO},
+    {"xkb:us::ind", IDS_IME_NAME_KEYBOARD_INDONESIAN},
+    {"xkb:us::msa", IDS_IME_NAME_KEYBOARD_MALAY},
     {"xkb:us:altgr-intl:eng", IDS_STATUSBAR_LAYOUT_USA_EXTENDED},
     {"xkb:us:colemak:eng", IDS_STATUSBAR_LAYOUT_USA_COLEMAK},
     {"xkb:us:dvorak:eng", IDS_STATUSBAR_LAYOUT_USA_DVORAK},
@@ -229,7 +230,9 @@ const struct InputMethodNameMap {
     {"__MSG_KEYBOARD_ARMENIAN_PHONETIC__",
      IDS_IME_NAME_KEYBOARD_ARMENIAN_PHONETIC},
     {"__MSG_KEYBOARD_BELARUSIAN__", IDS_IME_NAME_KEYBOARD_BELARUSIAN},
-    {"__MSG_KEYBOARD_BELGIAN__", IDS_IME_NAME_KEYBOARD_BELGIAN},
+    {"__MSG_KEYBOARD_BELGIAN_DUTCH__", IDS_IME_NAME_KEYBOARD_BELGIAN_DUTCH},
+    {"__MSG_KEYBOARD_BELGIAN_FRENCH__", IDS_IME_NAME_KEYBOARD_BELGIAN_FRENCH},
+    {"__MSG_KEYBOARD_BELGIAN_GERMAN__", IDS_IME_NAME_KEYBOARD_BELGIAN_GERMAN},
     {"__MSG_KEYBOARD_BENGALI_PHONETIC__",
      IDS_IME_NAME_KEYBOARD_BENGALI_PHONETIC},
     {"__MSG_KEYBOARD_BRAZILIAN__", IDS_IME_NAME_KEYBOARD_BRAZILIAN},
@@ -251,6 +254,7 @@ const struct InputMethodNameMap {
     {"__MSG_KEYBOARD_ESTONIAN__", IDS_IME_NAME_KEYBOARD_ESTONIAN},
     {"__MSG_KEYBOARD_ETHIOPIC__", IDS_IME_NAME_KEYBOARD_ETHIOPIC},
     {"__MSG_KEYBOARD_FAROESE__", IDS_IME_NAME_KEYBOARD_FAROESE},
+    {"__MSG_KEYBOARD_FILIPINO__", IDS_IME_NAME_KEYBOARD_FILIPINO},
     {"__MSG_KEYBOARD_FINNISH__", IDS_IME_NAME_KEYBOARD_FINNISH},
     {"__MSG_KEYBOARD_FRENCH_BEPO__", IDS_IME_NAME_KEYBOARD_FRENCH_BEPO},
     {"__MSG_KEYBOARD_FRENCH__", IDS_IME_NAME_KEYBOARD_FRENCH},
@@ -265,6 +269,7 @@ const struct InputMethodNameMap {
      IDS_IME_NAME_KEYBOARD_HUNGARIAN_QWERTY},
     {"__MSG_KEYBOARD_HUNGARIAN__", IDS_IME_NAME_KEYBOARD_HUNGARIAN},
     {"__MSG_KEYBOARD_ICELANDIC__", IDS_IME_NAME_KEYBOARD_ICELANDIC},
+    {"__MSG_KEYBOARD_INDONESIAN__", IDS_IME_NAME_KEYBOARD_INDONESIAN},
     {"__MSG_KEYBOARD_IRISH__", IDS_IME_NAME_KEYBOARD_IRISH},
     {"__MSG_KEYBOARD_ITALIAN__", IDS_IME_NAME_KEYBOARD_ITALIAN},
     {"__MSG_KEYBOARD_JAPANESE__", IDS_IME_NAME_KEYBOARD_JAPANESE},
@@ -279,16 +284,23 @@ const struct InputMethodNameMap {
     {"__MSG_KEYBOARD_MACEDONIAN__", IDS_IME_NAME_KEYBOARD_MACEDONIAN},
     {"__MSG_KEYBOARD_MALAYALAM_PHONETIC__",
      IDS_IME_NAME_KEYBOARD_MALAYALAM_PHONETIC},
+    {"__MSG_KEYBOARD_MALAY__", IDS_IME_NAME_KEYBOARD_MALAY},
     {"__MSG_KEYBOARD_MALTESE__", IDS_IME_NAME_KEYBOARD_MALTESE},
     {"__MSG_KEYBOARD_MONGOLIAN__", IDS_IME_NAME_KEYBOARD_MONGOLIAN},
     {"__MSG_KEYBOARD_MYANMAR_MYANSAN__", IDS_IME_NAME_KEYBOARD_MYANMAR_MYANSAN},
     {"__MSG_KEYBOARD_MYANMAR__", IDS_IME_NAME_KEYBOARD_MYANMAR},
     {"__MSG_KEYBOARD_NEPALI_INSCRIPT__", IDS_IME_NAME_KEYBOARD_NEPALI_INSCRIPT},
     {"__MSG_KEYBOARD_NEPALI_PHONETIC__", IDS_IME_NAME_KEYBOARD_NEPALI_PHONETIC},
+    {"__MSG_KEYBOARD_NETHERLANDS_US_INTERNATIONAL_PC__",
+     IDS_IME_NAME_KEYBOARD_NETHERLANDS_US_INTERNATIONAL_PC},
     {"__MSG_KEYBOARD_NETHERLANDS__", IDS_IME_NAME_KEYBOARD_NETHERLANDS},
     {"__MSG_KEYBOARD_NORWEGIAN__", IDS_IME_NAME_KEYBOARD_NORWEGIAN},
     {"__MSG_KEYBOARD_PERSIAN__", IDS_IME_NAME_KEYBOARD_PERSIAN},
     {"__MSG_KEYBOARD_POLISH__", IDS_IME_NAME_KEYBOARD_POLISH},
+    {"__MSG_KEYBOARD_PORTUGUESE_US_INTERNATIONAL_PC__",
+     IDS_IME_NAME_KEYBOARD_PORTUGUESE_US_INTERNATIONAL_PC},
+    {"__MSG_KEYBOARD_PORTUGUESE_US_INTERNATIONAL__",
+     IDS_IME_NAME_KEYBOARD_PORTUGUESE_US_INTERNATIONAL},
     {"__MSG_KEYBOARD_PORTUGUESE__", IDS_IME_NAME_KEYBOARD_PORTUGUESE},
     {"__MSG_KEYBOARD_ROMANIAN_STANDARD__",
      IDS_IME_NAME_KEYBOARD_ROMANIAN_STANDARD},
@@ -415,13 +427,21 @@ std::string InputMethodUtil::GetLocalizedDisplayName(
   return disp;
 }
 
+// Gets legacy xkb id (e.g. xkb:us::eng) from the new extension based xkb id
+// (e.g. _comp_ime_...xkb:us::eng). If the given id is not prefixed with
+// 'xkb:', just return the same as the given id.
+std::string MaybeGetLegacyXkbId(const std::string& input_method_id) {
+  if (extension_ime_util::IsKeyboardLayoutExtension(input_method_id))
+    return extension_ime_util::GetComponentIDByInputMethodID(input_method_id);
+  return input_method_id;
+}
+
 bool InputMethodUtil::TranslateStringInternal(
     const std::string& english_string, base::string16 *out_string) const {
   DCHECK(out_string);
   // |english_string| could be an input method id. So legacy xkb id is required
   // to get the translated string.
-  std::string key_string = extension_ime_util::MaybeGetLegacyXkbId(
-      english_string);
+  std::string key_string = MaybeGetLegacyXkbId(english_string);
   auto iter = english_to_resource_id_.find(key_string);
 
   if (iter == english_to_resource_id_.end()) {
@@ -462,28 +482,6 @@ bool InputMethodUtil::IsKeyboardLayout(const std::string& input_method_id) {
          extension_ime_util::IsKeyboardLayoutExtension(input_method_id);
 }
 
-std::string InputMethodUtil::GetKeyboardLayoutName(
-    const std::string& input_method_id) const {
-  auto iter = id_to_descriptor_.find(input_method_id);
-  return (iter == id_to_descriptor_.end()) ?
-      "" : iter->second.GetPreferredKeyboardLayout();
-}
-
-std::string InputMethodUtil::GetInputMethodDisplayNameFromId(
-    const std::string& input_method_id) const {
-  base::string16 display_name;
-  if (!extension_ime_util::IsExtensionIME(input_method_id) &&
-      TranslateStringInternal(input_method_id, &display_name)) {
-    return base::UTF16ToUTF8(display_name);
-  }
-  const InputMethodDescriptor* descriptor =
-      GetInputMethodDescriptorFromId(input_method_id);
-  if (descriptor)
-    return GetLocalizedDisplayName(*descriptor);
-  // Return an empty string if the input method is not found.
-  return "";
-}
-
 base::string16 InputMethodUtil::GetInputMethodShortName(
     const InputMethodDescriptor& input_method) const {
   // TODO(shuchen): remove this method, as the client can directly use
@@ -513,23 +511,9 @@ base::string16 InputMethodUtil::GetInputMethodLongNameInternal(
     return base::UTF8ToUTF16(localized_display_name);
   }
 
-  // We don't show language here.  Name of keyboard layout or input method
-  // usually imply (or explicitly include) its language.
-  // Special case for German, French and Dutch: these languages have multiple
-  // keyboard layouts and share the same layout of keyboard (Belgian). We need
-  // to show explicitly the language for the layout.
-  DCHECK(!input_method.language_codes().empty());
-  const std::string language_code = input_method.language_codes().at(0);
-
   base::string16 text = (short_name || localized_display_name.empty())
                             ? TranslateString(input_method.id())
                             : base::UTF8ToUTF16(localized_display_name);
-  if (language_code == "de" || language_code == "fr" || language_code == "nl") {
-    const base::string16 language_name = delegate_->GetDisplayLanguageName(
-        language_code);
-    text = language_name + base::UTF8ToUTF16(" - ") + text;
-  }
-
   DCHECK(!text.empty());
   return text;
 }
@@ -808,7 +792,7 @@ void InputMethodUtil::InitXkbInputMethodsForTesting(
 }
 
 const InputMethodUtil::InputMethodIdToDescriptorMap&
-InputMethodUtil::GetIdToDesciptorMapForTesting() {
+InputMethodUtil::GetIdToDescriptorMapForTesting() {
   return id_to_descriptor_;
 }
 

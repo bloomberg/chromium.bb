@@ -53,6 +53,21 @@ class NodeUtils {
   }
 
   /**
+   * Returns true if the node should be ignored by Select-to-Speak because
+   * it was marked with user-select:none. For Inline Text elements, the
+   * parent is marked with this attribute, hence the check.
+   *
+   * @param {!AutomationNode} node The node to test
+   * @return {boolean} whether this node was marked user-select:none
+   */
+  static isNotSelectable(node) {
+    return !!(
+        node &&
+        (node.notUserSelectableStyle ||
+         (node.parent && node.parent.notUserSelectableStyle)));
+  }
+
+  /**
    * Returns true if a node is invisible for any reason.
    * @param {!AutomationNode} node The node to test
    * @param {boolean} includeOffscreen Whether to include offscreen nodes
@@ -72,11 +87,12 @@ class NodeUtils {
    */
   static getNearestContainingWindow(node) {
     // Go upwards to root nodes' parents until we find the first window.
-    if (node.root.role == RoleType.ROOT_WEB_AREA) {
+    if (node.root.role === RoleType.ROOT_WEB_AREA) {
       let nextRootParent = node;
-      while (nextRootParent != null && nextRootParent.role != RoleType.WINDOW &&
+      while (nextRootParent != null &&
+             nextRootParent.role !== RoleType.WINDOW &&
              nextRootParent.root != null &&
-             nextRootParent.root.role == RoleType.ROOT_WEB_AREA) {
+             nextRootParent.root.role === RoleType.ROOT_WEB_AREA) {
         nextRootParent = nextRootParent.root.parent;
       }
       return nextRootParent;
@@ -84,7 +100,8 @@ class NodeUtils {
     // If the parent isn't a root web area, just walk up the tree to find the
     // nearest window.
     let parent = node;
-    while (parent != null && parent.role != chrome.automation.RoleType.WINDOW) {
+    while (parent != null &&
+           parent.role !== chrome.automation.RoleType.WINDOW) {
       parent = parent.parent;
     }
     return parent;
@@ -107,8 +124,8 @@ class NodeUtils {
    * @return {boolean} True if the node is a text field type.
    */
   static isTextField(node) {
-    return node.role == RoleType.TEXT_FIELD ||
-        node.role == RoleType.TEXT_FIELD_WITH_COMBO_BOX;
+    return node.role === RoleType.TEXT_FIELD ||
+        node.role === RoleType.TEXT_FIELD_WITH_COMBO_BOX;
   }
 
   /**
@@ -168,9 +185,9 @@ class NodeUtils {
       return false;
     }
 
-    if (RectUtils.overlaps(node.location, rect)) {
-      if (!node.children || node.children.length == 0 ||
-          node.children[0].role != RoleType.INLINE_TEXT_BOX) {
+    if (RectUtil.overlaps(node.location, rect)) {
+      if (!node.children || node.children.length === 0 ||
+          node.children[0].role !== RoleType.INLINE_TEXT_BOX) {
         // Only add a node if it has no inlineTextBox children. If
         // it has text children, they will be more precisely bounded
         // and specific, so no need to add the parent node.
@@ -195,14 +212,48 @@ class NodeUtils {
    * @return {!NodeUtils.Position} The node matching the selected offset.
    */
   static getDeepEquivalentForSelection(parent, offset, isStart) {
-    if (parent.children.length == 0) {
+    const automationPosition = parent.createPosition(offset);
+    if (!automationPosition.node) {
+      // TODO(accessibility): Bugs in AXPosition cause this; for example, a
+      // selection on a text field.
+      return this.getDeepEquivalentForSelectionDeprecated(
+          parent, offset, isStart);
+    }
+
+    automationPosition.asLeafTextPosition();
+
+    if (!automationPosition.node ||
+        automationPosition.node.role === RoleType.IMAGE) {
+      // TODO(accessibility): Bugs in AXPosition cause this; for example, a
+      // selection on a image has incorrect text offsets.
+      return this.getDeepEquivalentForSelectionDeprecated(
+          parent, offset, isStart);
+    }
+
+    return {
+      node: automationPosition.node,
+      offset: automationPosition.textOffset
+    };
+  }
+
+  /**
+   * TODO(accessibility): remove once AXPosition bugs are fixed; see above.
+   * @param {!AutomationNode} parent The parent node of the selection,
+   * similar to chrome.automation.selectionStartObject or selectionEndObject.
+   * @param {number} offset The integer offset of the selection. This is
+   * similar to chrome.automation.selectionStartOffset or selectionEndOffset.
+   * @param {boolean} isStart whether this is the start or end of a selection.
+   * @return {!NodeUtils.Position} The node matching the selected offset.
+   */
+  static getDeepEquivalentForSelectionDeprecated(parent, offset, isStart) {
+    if (parent.children.length === 0) {
       return {node: parent, offset};
     }
 
     // Non-text nodes with children.
-    if (parent.role != RoleType.STATIC_TEXT &&
-        parent.role != RoleType.INLINE_TEXT_BOX && parent.children.length > 0 &&
-        !NodeUtils.isTextField(parent)) {
+    if (parent.role !== RoleType.STATIC_TEXT &&
+        parent.role !== RoleType.INLINE_TEXT_BOX &&
+        parent.children.length > 0 && !NodeUtils.isTextField(parent)) {
       const index = isStart ? offset : offset - 1;
       if (parent.children.length > index && index >= 0) {
         let child = parent.children[index];
@@ -263,14 +314,14 @@ class NodeUtils {
         continue;
       }
       if (node.children.length > 0) {
-        if (node.role != RoleType.STATIC_TEXT) {
+        if (node.role !== RoleType.STATIC_TEXT) {
           index += 1;
         } else {
           nodesToCheck = nodesToCheck.concat(node.children.slice().reverse());
         }
       } else {
-        if (node.parent.role == RoleType.STATIC_TEXT ||
-            node.parent.role == RoleType.INLINE_TEXT_BOX) {
+        if (node.parent.role === RoleType.STATIC_TEXT ||
+            node.parent.role === RoleType.INLINE_TEXT_BOX) {
           // How many characters are in the name.
           index += NodeUtils.nameLength(node);
         } else {
@@ -317,6 +368,95 @@ class NodeUtils {
       }
     }
     return {node, offset: NodeUtils.nameLength(node)};
+  }
+
+  /**
+   * Sorts given nodes by visual reading order. Expects nodes to be leaf nodes
+   * with text.
+   * @param {!Array<!AutomationNode>} nodes
+   */
+  static sortNodesByReadingOrder(nodes) {
+    // Pre-compute ancestors for each node.
+    const nodeAncestorMap = new Map();
+    for (const node of nodes) {
+      nodeAncestorMap.set(node, AutomationUtil.getAncestors(node));
+    }
+
+    // Sort nodes by bounds of their divergent ancestors. This will ensure all
+    // nodes with the same parent are grouped together.
+    nodes.sort((a, b) => {
+      const ancestorsA = nodeAncestorMap.get(a);
+      const ancestorsB = nodeAncestorMap.get(b);
+      const divergence = AutomationUtil.getDivergence(ancestorsA, ancestorsB);
+      if (divergence === -1 || divergence >= ancestorsA.length ||
+          divergence >= ancestorsB.length) {
+        // Nodes do not have any ancestors in common (different trees) or one
+        // node is the ancestor of another.
+        console.warn(
+            'Nodes are directly related or have no common ancestors', a, b);
+        return 0;
+      }
+      const divA = ancestorsA[divergence];
+      const divB = ancestorsB[divergence];
+
+      if (RectUtil.sameRow(divA.unclippedLocation, divB.unclippedLocation)) {
+        // Nodes are on the same line, sort by LTR reading order.
+        // TODO(joelriley@google.com): Handle RTL.
+        if (divA.unclippedLocation.left < divB.unclippedLocation.left) {
+          return -1;
+        }
+        if (divB.unclippedLocation.left < divA.unclippedLocation.left) {
+          return 1;
+        }
+        return 0;
+      }
+      // Nodes are on different lines, sort top-to-bottom.
+      if (divA.unclippedLocation.top < divB.unclippedLocation.top) {
+        return -1;
+      }
+      if (divB.unclippedLocation.top < divA.unclippedLocation.top) {
+        return 1;
+      }
+      return 0;
+    });
+  }
+
+  /**
+   * Sorts a specific range of a given array of nodes by visual reading order.
+   * Expects nodes to be leaf nodes with text.
+   * @param {!Array<!AutomationNode>} nodes
+   * @param {number} startIndex Index specifying start of range.
+   * @param {number} endIndex  Index specifying end of range, non-inclusive.
+   */
+  static sortNodeRangeByReadingOrder(nodes, startIndex, endIndex) {
+    const nodesToSort = nodes.slice(startIndex, endIndex);
+    NodeUtils.sortNodesByReadingOrder(nodesToSort);
+    nodes.splice(startIndex, endIndex - startIndex, ...nodesToSort);
+  }
+
+  /**
+   * Sorts SVG nodes with the same SVG root parent by visual reading order.
+   * @param {!Array<!AutomationNode>} nodes
+   */
+  static sortSvgNodesByReadingOrder(nodes) {
+    let lastSvgRoot = null;
+    let startIndex = 0;
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      const svgRoot =
+          AutomationUtil.getFirstAncestorWithRole(node, RoleType.SVG_ROOT);
+      if (svgRoot !== lastSvgRoot) {
+        if (lastSvgRoot !== null) {
+          NodeUtils.sortNodeRangeByReadingOrder(nodes, startIndex, i);
+        } else if (svgRoot !== null) {
+          startIndex = i;
+        }
+        lastSvgRoot = svgRoot;
+      }
+    }
+    if (lastSvgRoot !== null) {
+      NodeUtils.sortNodeRangeByReadingOrder(nodes, startIndex, nodes.length);
+    }
   }
 }
 

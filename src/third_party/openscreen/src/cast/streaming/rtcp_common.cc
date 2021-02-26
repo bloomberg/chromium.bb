@@ -4,6 +4,7 @@
 
 #include "cast/streaming/rtcp_common.h"
 
+#include <algorithm>
 #include <limits>
 
 #include "cast/streaming/packet_util.h"
@@ -187,7 +188,7 @@ void RtcpReportBlock::SetDelaySinceLastReport(
   // math (well, only for unusually large inputs).
   constexpr Delay kMaxValidReportedDelay{std::numeric_limits<uint32_t>::max()};
   constexpr auto kMaxValidLocalClockDelay =
-      std::chrono::duration_cast<Clock::duration>(kMaxValidReportedDelay);
+      Clock::to_duration(kMaxValidReportedDelay);
   if (local_clock_delay > kMaxValidLocalClockDelay) {
     delay_since_last_report = kMaxValidReportedDelay;
     return;

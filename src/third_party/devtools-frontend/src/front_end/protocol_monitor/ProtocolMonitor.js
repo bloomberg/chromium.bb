@@ -13,21 +13,33 @@ import * as UI from '../ui/ui.js';
 export class ProtocolMonitorImpl extends UI.Widget.VBox {
   constructor() {
     super(true);
+    /**
+     * @type {!Array<!ProtocolNode>}
+     */
     this._nodes = [];
     this._started = false;
     this._startTime = 0;
-    this._nodeForId = {};
+    /**
+     * @type {!Map<number, !ProtocolNode>}
+     */
+    this._nodeForId = new Map();
+    /**
+     * @param {!ProtocolNode} node
+     */
     this._filter = node => true;
+    /**
+     * @type {!Array<!ProtocolColumnConfig>}
+     */
     this._columns = [
-      {id: 'method', title: ls`Method`, visible: true, sortable: true, weight: 60},
+      {id: 'method', title: ls`Method`, visible: true, sortable: true, hideable: false, weight: 60},
       {id: 'direction', title: ls`Direction`, visible: false, sortable: true, hideable: true, weight: 30},
-      {id: 'request', title: ls`Request`, visible: true, hideable: true, weight: 60},
-      {id: 'response', title: ls`Response`, visible: true, hideable: true, weight: 60},
+      {id: 'request', title: ls`Request`, visible: true, sortable: false, hideable: true, weight: 60},
+      {id: 'response', title: ls`Response`, visible: true, sortable: false, hideable: true, weight: 60},
       {id: 'timestamp', title: ls`Timestamp`, visible: false, sortable: true, hideable: true, weight: 30},
       {id: 'target', title: ls`Target`, visible: false, sortable: true, hideable: true, weight: 30}
     ];
 
-    this.registerRequiredCSS('protocol_monitor/protocolMonitor.css');
+    this.registerRequiredCSS('protocol_monitor/protocolMonitor.css', {enableLegacyPatching: true});
     const topToolbar = new UI.Toolbar.Toolbar('protocol-monitor-toolbar', this.contentElement);
     const recordButton =
         new UI.Toolbar.ToolbarToggle(ls`Record`, 'largeicon-start-recording', 'largeicon-stop-recording');
@@ -43,14 +55,36 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
     clearButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
       this._dataGrid.rootNode().removeChildren();
       this._nodes = [];
-      this._nodeForId = {};
+      this._nodeForId.clear();
     });
     topToolbar.appendToolbarItem(clearButton);
 
     const split = new UI.SplitWidget.SplitWidget(true, true, 'protocol-monitor-panel-split', 250);
     split.show(this.contentElement);
-    this._dataGrid =
-        new DataGrid.SortableDataGrid.SortableDataGrid({displayName: ls`Protocol Monitor`, columns: this._columns});
+    this._dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({
+      displayName: ls`Protocol Monitor`,
+      columns: this._columns.map(column => ({
+                                   id: column.id,
+                                   title: column.title,
+                                   sortable: column.sortable,
+                                   weight: column.weight,
+                                   titleDOMFragment: undefined,
+                                   sort: undefined,
+                                   align: undefined,
+                                   width: undefined,
+                                   fixedWidth: undefined,
+                                   editable: undefined,
+                                   nonSelectable: undefined,
+                                   longText: undefined,
+                                   disclosure: undefined,
+                                   allowInSortByEvenWhenHidden: undefined,
+                                   dataType: undefined,
+                                   defaultWeight: undefined,
+                                 })),
+      editCallback: undefined,
+      deleteCallback: undefined,
+      refreshCallback: undefined,
+    });
     this._dataGrid.element.style.flex = '1';
     this._infoWidget = new InfoWidget();
     split.setMainWidget(this._dataGrid.asWidget());
@@ -73,11 +107,14 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
     this._suggestionBuilder = new UI.FilterSuggestionBuilder.FilterSuggestionBuilder(keys);
 
     this._textFilterUI = new UI.Toolbar.ToolbarInput(
-        ls`Filter`, '', 1, .2, '', this._suggestionBuilder.completions.bind(this._suggestionBuilder));
+        ls`Filter`, '', 1, .2, '', this._suggestionBuilder.completions.bind(this._suggestionBuilder), true);
     this._textFilterUI.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, event => {
       const query = /** @type {string} */ (event.data);
       const filters = this._filterParser.parse(query);
-      this._filter = node => {
+      /**
+       * @param {!ProtocolNode} node
+       */
+      const filter = node => {
         for (const {key, text, negative} of filters) {
           if (!text) {
             continue;
@@ -93,6 +130,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
         }
         return true;
       };
+      this._filter = filter;
       this._filterNodes();
     });
     topToolbar.appendToolbarItem(this._textFilterUI);
@@ -123,7 +161,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
 
   /**
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
-   * @param {!ProtocolNode} node
+   * @param {!DataGrid.DataGrid.DataGridNode<!DataGrid.ViewportDataGrid.ViewportDataGridNode<!DataGrid.SortableDataGrid.SortableDataGridNode<!ProtocolNode>>>} node
    */
   _innerRowContextMenu(contextMenu, node) {
     contextMenu.defaultSection().appendItem(ls`Filter`, () => {
@@ -138,7 +176,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!Object} columnConfig
+   * @param {!ProtocolColumnConfig} columnConfig
    */
   _toggleColumnVisibility(columnConfig) {
     columnConfig.visible = !columnConfig.visible;
@@ -146,9 +184,11 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
   }
 
   _updateColumnVisibility() {
-    const visibleColumns = /** @type {!Object.<string, boolean>} */ ({});
+    const visibleColumns = new Set();
     for (const columnConfig of this._columns) {
-      visibleColumns[columnConfig.id] = columnConfig.visible;
+      if (columnConfig.visible) {
+        visibleColumns.add(columnConfig.id);
+      }
     }
     this._dataGrid.setColumnsVisiblity(visibleColumns);
   }
@@ -189,12 +229,19 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
    * @param {boolean} recording
    */
   _setRecording(recording) {
+    const test = ProtocolClient.InspectorBackend.test;
     if (recording) {
-      ProtocolClient.InspectorBackend.test.onMessageSent = this._messageSent.bind(this);
-      ProtocolClient.InspectorBackend.test.onMessageReceived = this._messageReceived.bind(this);
+      // TODO: TS thinks that properties are read-only because
+      // in TS test is defined as a namespace.
+      // @ts-ignore
+      test.onMessageSent = this._messageSent.bind(this);
+      // @ts-ignore
+      test.onMessageReceived = this._messageReceived.bind(this);
     } else {
-      ProtocolClient.InspectorBackend.test.onMessageSent = null;
-      ProtocolClient.InspectorBackend.test.onMessageReceived = null;
+      // @ts-ignore
+      test.onMessageSent = null;
+      // @ts-ignore
+      test.onMessageReceived = null;
     }
   }
 
@@ -211,12 +258,12 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!Object} message
+   * @param {*} message
    * @param {?ProtocolClient.InspectorBackend.TargetBase} target
    */
   _messageReceived(message, target) {
     if ('id' in message) {
-      const node = this._nodeForId[message.id];
+      const node = this._nodeForId.get(message.id);
       if (!node) {
         return;
       }
@@ -224,7 +271,10 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
       node.hasError = !!message.error;
       node.refresh();
       if (this._dataGrid.selectedNode === node) {
-        this._infoWidget.render(node.data);
+        const data =
+            /** @type {?{method: string, direction: string, request: ?Object, response: ?Object, timestamp: number}}*/ (
+                node.data);
+        this._infoWidget.render(data);
       }
       return;
     }
@@ -259,15 +309,20 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
       id: message.id,
       target: this._targetToString(sdkTarget)
     });
-    this._nodeForId[message.id] = node;
+    this._nodeForId.set(message.id, node);
     this._nodes.push(node);
     if (this._filter(node)) {
       this._dataGrid.insertChild(node);
     }
   }
 }
-
+/**
+ * @extends {DataGrid.SortableDataGrid.SortableDataGridNode<ProtocolNode>}
+ */
 export class ProtocolNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
+  /**
+   * @param {?Object.<string, *>=} data
+   */
   constructor(data) {
     super(data);
     this.hasError = false;
@@ -276,25 +331,28 @@ export class ProtocolNode extends DataGrid.SortableDataGrid.SortableDataGridNode
   /**
    * @override
    * @param {string} columnId
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   createCell(columnId) {
+    const createSourceCell = () => {
+      const cell = this.createTD(columnId);
+      const obj = SDK.RemoteObject.RemoteObject.fromLocalObject(this.data[columnId]);
+      cell.textContent = obj.description ? obj.description.trimEndWithMaxLength(50) : '';
+      cell.classList.add('source-code');
+      return cell;
+    };
     switch (columnId) {
-      case 'response':
+      case 'response': {
         if (!this.data[columnId] && this.data.direction === 'send') {
           const cell = this.createTD(columnId);
           cell.textContent = '(pending)';
           return cell;
         }
-      // fall through
-      case 'request': {
-        const cell = this.createTD(columnId);
-        const obj = SDK.RemoteObject.RemoteObject.fromLocalObject(this.data[columnId]);
-        cell.textContent = obj.description.trimEndWithMaxLength(50);
-        cell.classList.add('source-code');
-        return cell;
+        return createSourceCell();
       }
-
+      case 'request': {
+        return createSourceCell();
+      }
       case 'timestamp': {
         const cell = this.createTD(columnId);
         cell.textContent = ls`${this.data[columnId]} ms`;
@@ -346,3 +404,16 @@ export class InfoWidget extends UI.Widget.VBox {
     this._tabbedPane.changeTabView('response', SourceFrame.JSONView.JSONView.createViewSync(data.response));
   }
 }
+
+/**
+ * @typedef {{
+ *  id: string,
+ *  title: string,
+ *  visible: boolean,
+ *  sortable: boolean,
+ *  hideable: boolean,
+ *  weight: number,
+ * }}
+ */
+// @ts-ignore typedef
+export let ProtocolColumnConfig;

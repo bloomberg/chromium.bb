@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_manager.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -24,7 +24,7 @@ WakeLockManager::WakeLockManager(ExecutionContext* execution_context,
 }
 
 void WakeLockManager::AcquireWakeLock(ScriptPromiseResolver* resolver) {
-  // https://w3c.github.io/wake-lock/#acquire-wake-lock-algorithm
+  // https://w3c.github.io/screen-wake-lock/#acquire-wake-lock-algorithm
   // 1. If the wake lock for type type is not applicable, return false.
   // 2. Set active to true if the platform wake lock has an active wake lock for
   // type.
@@ -51,8 +51,13 @@ void WakeLockManager::AcquireWakeLock(ScriptPromiseResolver* resolver) {
     wake_lock_.set_disconnect_handler(WTF::Bind(
         &WakeLockManager::OnWakeLockConnectionError, WrapWeakPersistent(this)));
     wake_lock_->RequestWakeLock();
+
+    feature_handle_for_scheduler_ =
+        execution_context_->GetScheduler()->RegisterFeature(
+            SchedulingPolicy::Feature::kWakeLock,
+            {SchedulingPolicy::RecordMetricsForBackForwardCache()});
   }
-  // https://w3c.github.io/wake-lock/#the-request-method
+  // https://w3c.github.io/screen-wake-lock/#the-request-method
   // 5.2. Let lock be a new WakeLockSentinel object with its type attribute set
   // to type.
   // 5.4. Resolve promise with lock.
@@ -63,7 +68,7 @@ void WakeLockManager::AcquireWakeLock(ScriptPromiseResolver* resolver) {
 }
 
 void WakeLockManager::UnregisterSentinel(WakeLockSentinel* sentinel) {
-  // https://w3c.github.io/wake-lock/#release-wake-lock-algorithm
+  // https://w3c.github.io/screen-wake-lock/#release-wake-lock-algorithm
   // 1. Let document be the responsible document of the current settings object.
   // 2. Let record be the platform wake lock's state record associated with
   // document and type.
@@ -86,6 +91,9 @@ void WakeLockManager::UnregisterSentinel(WakeLockSentinel* sentinel) {
     // 5.2. If success is true and type is "screen" run the following:
     // 5.2.1. Reset the platform-specific inactivity timer after which the
     //        screen is actually turned off.
+
+    // Make the page bfcache-eligible if there is no WakeLock held.
+    feature_handle_for_scheduler_.reset();
   }
 }
 
@@ -99,7 +107,7 @@ void WakeLockManager::OnWakeLockConnectionError() {
   ClearWakeLocks();
 }
 
-void WakeLockManager::Trace(Visitor* visitor) {
+void WakeLockManager::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
   visitor->Trace(wake_lock_sentinels_);
   visitor->Trace(wake_lock_);

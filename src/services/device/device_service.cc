@@ -13,6 +13,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/binder_overrides.h"
@@ -43,9 +44,43 @@
 #include "services/device/vibration/vibration_manager_impl.h"
 #endif
 
-#if defined(OS_LINUX) && defined(USE_UDEV)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
 #include "services/device/hid/input_service_linux.h"
 #endif
+
+#if BUILDFLAG(IS_LACROS)
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#endif
+
+namespace {
+
+#if !defined(OS_ANDROID)
+constexpr bool IsLaCrOS() {
+#if BUILDFLAG(IS_LACROS)
+  return true;
+#else
+  return false;
+#endif
+}
+#endif
+
+#if !defined(OS_ANDROID)
+void BindLaCrOSHidManager(
+    mojo::PendingReceiver<device::mojom::HidManager> receiver) {
+#if BUILDFLAG(IS_LACROS)
+  // LaCrOS does not have direct access to the permission_broker service over
+  // D-Bus. Use the HidManager interface from ash-chrome instead.
+  auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
+  DCHECK(lacros_chrome_service);
+  // If the Hid manager is not available, then the pending receiver is deleted.
+  if (lacros_chrome_service->IsHidManagerAvailable())
+    lacros_chrome_service->hid_manager_remote()->AddReceiver(
+        std::move(receiver));
+#endif
+}
+#endif
+
+}  // namespace
 
 namespace device {
 
@@ -125,11 +160,11 @@ DeviceService::DeviceService(
       geolocation_api_key_(geolocation_api_key),
       wake_lock_provider_(file_task_runner_, wake_lock_context_callback_) {
   receivers_.Add(this, std::move(receiver));
-#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
-    defined(OS_MACOSX)
+#if ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)) || \
+    defined(OS_WIN) || defined(OS_MAC)
   serial_port_manager_ = std::make_unique<SerialPortManagerImpl>(
       io_task_runner_, base::ThreadTaskRunnerHandle::Get());
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On macOS the SerialDeviceEnumerator needs to run on the UI thread so that
   // it has access to a CFRunLoop where it can register a notification source.
   serial_port_manager_task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -148,15 +183,15 @@ DeviceService::DeviceService(
 #endif
 
 DeviceService::~DeviceService() {
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_ASH)
   // NOTE: We don't call this on Chrome OS due to https://crbug.com/856771, as
   // Shutdown() implicitly depends on DBusThreadManager, which may already be
   // destroyed by the time DeviceService is destroyed. Fortunately on Chrome OS
   // it's not really important that this runs anyway.
   device::BatteryStatusService::GetInstance()->Shutdown();
 #endif
-#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
-    defined(OS_MACOSX)
+#if ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)) || \
+    defined(OS_WIN) || defined(OS_MAC)
   serial_port_manager_task_runner_->DeleteSoon(FROM_HERE,
                                                std::move(serial_port_manager_));
 #endif
@@ -210,13 +245,17 @@ void DeviceService::BindVibrationManager(
 #if !defined(OS_ANDROID)
 void DeviceService::BindHidManager(
     mojo::PendingReceiver<mojom::HidManager> receiver) {
-  if (!hid_manager_)
-    hid_manager_ = std::make_unique<HidManagerImpl>();
-  hid_manager_->AddReceiver(std::move(receiver));
+  if (IsLaCrOS() && !HidManagerImpl::IsHidServiceTesting()) {
+    BindLaCrOSHidManager(std::move(receiver));
+  } else {
+    if (!hid_manager_)
+      hid_manager_ = std::make_unique<HidManagerImpl>();
+    hid_manager_->AddReceiver(std::move(receiver));
+  }
 }
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 void DeviceService::BindBluetoothSystemFactory(
     mojo::PendingReceiver<mojom::BluetoothSystemFactory> receiver) {
   BluetoothSystemFactory::CreateFactory(std::move(receiver));
@@ -230,7 +269,7 @@ void DeviceService::BindMtpManager(
 }
 #endif
 
-#if defined(OS_LINUX) && defined(USE_UDEV)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
 void DeviceService::BindInputDeviceManager(
     mojo::PendingReceiver<mojom::InputDeviceManager> receiver) {
   file_task_runner_->PostTask(
@@ -311,8 +350,11 @@ void DeviceService::BindSensorProvider(
 
 void DeviceService::BindSerialPortManager(
     mojo::PendingReceiver<mojom::SerialPortManager> receiver) {
-#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
-    defined(OS_MACOSX)
+#if ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)) || \
+    defined(OS_WIN) || defined(OS_MAC)
+  // TODO(crbug.com/1109621): SerialPortManagerImpl depends on the
+  // permission_broker service on Chromium OS. We will need to redirect
+  // connections for LaCrOS here.
   DCHECK(serial_port_manager_task_runner_);
   serial_port_manager_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SerialPortManagerImpl::Bind,
@@ -337,6 +379,9 @@ void DeviceService::BindWakeLockProvider(
 
 void DeviceService::BindUsbDeviceManager(
     mojo::PendingReceiver<mojom::UsbDeviceManager> receiver) {
+  // TODO(crbug.com/1109621): usb::DeviceManagerImpl depends on the
+  // permission_broker service on Chromium OS. We will need to redirect
+  // connections for LaCrOS here.
   if (!usb_device_manager_)
     usb_device_manager_ = std::make_unique<usb::DeviceManagerImpl>();
 
@@ -345,6 +390,9 @@ void DeviceService::BindUsbDeviceManager(
 
 void DeviceService::BindUsbDeviceManagerTest(
     mojo::PendingReceiver<mojom::UsbDeviceManagerTest> receiver) {
+  // TODO(crbug.com/1109621): usb::DeviceManagerImpl depends on the
+  // permission_broker service on Chromium OS. We will need to redirect
+  // connections for LaCrOS here.
   if (!usb_device_manager_)
     usb_device_manager_ = std::make_unique<usb::DeviceManagerImpl>();
 

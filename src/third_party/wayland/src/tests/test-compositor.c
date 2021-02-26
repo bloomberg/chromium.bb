@@ -45,7 +45,8 @@ struct test_compositor;
 
 static const struct wl_message tc_requests[] = {
 	/* this request serves as a barrier for synchronizing*/
-	{ "stop_display", "u", NULL }
+	{ "stop_display", "u", NULL },
+	{ "noop", "", NULL },
 };
 
 static const struct wl_message tc_events[] = {
@@ -54,7 +55,7 @@ static const struct wl_message tc_events[] = {
 
 const struct wl_interface test_compositor_interface = {
 	"test", 1,
-	1, tc_requests,
+	2, tc_requests,
 	1, tc_events
 };
 
@@ -62,6 +63,8 @@ struct test_compositor_interface {
 	void (*stop_display)(struct wl_client *client,
 			     struct wl_resource *resource,
 			     uint32_t num);
+	void (*noop)(struct wl_client *client,
+			     struct wl_resource *resource);
 };
 
 struct test_compositor_listener {
@@ -70,7 +73,8 @@ struct test_compositor_listener {
 };
 
 enum {
-	STOP_DISPLAY = 0
+	STOP_DISPLAY = 0,
+	TEST_NOOP = 1
 };
 
 enum {
@@ -294,8 +298,16 @@ handle_stop_display(struct wl_client *client,
 		wl_display_terminate(d->wl_display);
 }
 
+static void
+handle_noop(struct wl_client *client, struct wl_resource *resource)
+{
+	(void)client;
+	(void)resource;
+}
+
 static const struct test_compositor_interface tc_implementation = {
-	handle_stop_display
+	handle_stop_display,
+	handle_noop,
 };
 
 static void
@@ -354,7 +366,7 @@ display_run(struct display *d)
 }
 
 void
-display_resume(struct display *d)
+display_post_resume_events(struct display *d)
 {
 	struct wfr *wfr, *next;
 
@@ -368,7 +380,12 @@ display_resume(struct display *d)
 
 	assert(wl_list_empty(&d->waiting_for_resume));
 	d->wfr_num = 0;
+}
 
+void
+display_resume(struct display *d)
+{
+	display_post_resume_events(d);
 	wl_display_run(d->wl_display);
 }
 
@@ -508,4 +525,10 @@ stop_display(struct client *c, int num)
 	}
 
 	return n;
+}
+
+void
+noop_request(struct client *c)
+{
+	wl_proxy_marshal((struct wl_proxy *) c->tc, TEST_NOOP);
 }

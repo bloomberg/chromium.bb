@@ -23,6 +23,11 @@ _CHROME_PROCESS_REGEX = [re.compile(r'^/opt/google/chrome/chrome '),
 
 _CHROME_MOUNT_NAMESPACE_PATH = "/run/namespaces/mnt_chrome"
 
+_IGNORE_FILETYPES_FOR_MINIDUMP_PULLS = [
+    '.lock',
+    '.dat',
+]
+
 
 def RunCmd(args, cwd=None, quiet=False):
   return cmd_util.RunCmd(args, cwd, quiet)
@@ -68,6 +73,21 @@ def _Unquote(s):
     return s
   # Repeated to handle both "'foo'" and '"foo"'
   return s.strip("'").strip('"').strip("'")
+
+
+def _IsIgnoredFileType(filename):
+  """Returns whether a given file should be ignored when pulling minidumps.
+
+  Args:
+    filename: A string containing the filename of the file to check.
+
+  Returns:
+    True if the file should be ignored, otherwise False.
+  """
+  for extension in _IGNORE_FILETYPES_FOR_MINIDUMP_PULLS:
+    if filename.endswith(extension):
+      return True
+  return False
 
 
 class CrOSInterface(object):
@@ -390,9 +410,9 @@ class CrOSInterface(object):
     device_dumps = stdout.splitlines()
     for dump_filename in device_dumps:
       host_path = os.path.join(host_dir, dump_filename)
-      # Skip any .lock files since they're not useful and could be deleted by
+      # Skip any ignored files since they're not useful and could be deleted by
       # the time we try to pull them.
-      if dump_filename.endswith('.lock'):
+      if _IsIgnoredFileType(dump_filename):
         continue
       if os.path.exists(host_path):
         continue
@@ -410,7 +430,11 @@ class CrOSInterface(object):
         logging.debug('Not pulling file %s because a .lock file exists for it',
                       device_path)
         continue
-      self.GetFile(device_path, host_path)
+      try:
+        self.GetFile(device_path, host_path)
+      except Exception as e:  # pylint: disable=broad-except
+        logging.error('Failed to get file %s: %s', device_path, e)
+        continue
       # Set the local version's modification time to the device's.
       stdout, _ = self.RunCmdOnDevice(
           ['ls', '--time-style', '+%s', '-l', device_path])
@@ -631,14 +655,49 @@ class CrOSInterface(object):
     return False
 
   def TakeScreenshot(self, file_path):
-    """Takes a screenshot, saves to |file_path|."""
+    """Takes a screenshot, saves to |file_path|.
+
+    Also Saves a copy of the screenshot to //var/log/screenshots for additional
+    debug scenarios.
+
+    If running in remote mode, also pulls the file to the same location on the
+    host.
+
+    Returns:
+      True if the screenshot was taken successfully, otherwise False.
+    """
+    # When running remotely, taking a screenshot to the specified |file_path|
+    # may fail due to differences between the device and host. We also want
+    # to save a copy to /var/log/ on the device, as it is saved by CrOS bots.
+    # Address both by taking the screenshot to /var/log/ and either copying
+    # to the correct location in local mode or pulling to the correct location
+    # in remote mode.
+    basename = os.path.basename(file_path)
+    var_path = '/var/log/screenshots/%s' % basename
+    dir_name = os.path.dirname(file_path)
+    self.RunCmdOnDevice(['mkdir', '-p', '/var/log/screenshots'])
     stdout, stderr = self.RunCmdOnDevice(['/usr/local/sbin/screenshot',
-                                          file_path])
-    return stdout == '' and stderr == ''
+                                          var_path,
+                                          '&&',
+                                          'echo',
+                                          'screenshot return value:$?'])
+    if self.local:
+      self.RunCmdOnDevice(['mkdir', '-p', dir_name])
+      self.RunCmdOnDevice(['cp', var_path, file_path])
+    else:
+      try:
+        if not os.path.exists(dir_name):
+          os.makedirs(dir_name)
+        self.GetFile(var_path, file_path)
+      except OSError as e:
+        logging.error('Unable to pull screenshot file %s to %s: %s',
+                      var_path, file_path, e)
+        logging.error('Screenshot capture output: %s\n%s', stdout, stderr)
+    return 'screenshot return value:0' in stdout
 
   def TakeScreenshotWithPrefix(self, screenshot_prefix):
     """Takes a screenshot, useful for debugging failures."""
-    screenshot_dir = '/var/log/screenshots/'
+    screenshot_dir = '/tmp/telemetry/screenshots/'
     screenshot_ext = '.png'
 
     self.RunCmdOnDevice(['mkdir', '-p', screenshot_dir])

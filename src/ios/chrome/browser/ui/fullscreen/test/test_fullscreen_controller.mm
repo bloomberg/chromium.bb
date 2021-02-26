@@ -122,3 +122,7 @@ void TestFullscreenController::OnFullscreenWillAnimate(
     observer.FullscreenWillAnimate(this, animator);
   }
 }
+
+void TestFullscreenController::ResizeHorizontalViewport() {
+  // NOOP in tests.
+}

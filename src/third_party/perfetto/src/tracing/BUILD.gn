@@ -31,6 +31,8 @@ group("client_api") {
   ]
   if (enable_perfetto_ipc) {
     public_deps += [ ":system_backend" ]
+  } else {
+    public_deps += [ ":system_backend_fake" ]
   }
 }
 
@@ -135,6 +137,15 @@ if (enable_perfetto_ipc) {
     ]
     sources = [ "internal/system_tracing_backend.cc" ]
   }
+} else {
+  source_set("system_backend_fake") {
+    public_deps = [ "../../include/perfetto/tracing" ]
+    deps = [
+      "../../gn:default_deps",
+      "../base",
+    ]
+    sources = [ "internal/system_tracing_backend_fake.cc" ]
+  }
 }
 
 # In-process backend: starts the tracing service in-process on a dedicated
@@ -158,8 +169,8 @@ if (enable_perfetto_benchmarks) {
     deps = [
       ":platform_posix",
       "../..:libperfetto_client_experimental",
-      "../../../../../gn:benchmark",
-      "../../../../../gn:default_deps",
+      "../../gn:benchmark",
+      "../../gn:default_deps",
     ]
     sources = [ "api_benchmark.cc" ]
   }

@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/metrics/metrics_log_store.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
@@ -130,6 +131,10 @@ class MetricsServiceClient {
   // Returns whether cellular logic is enabled for metrics reporting.
   virtual bool IsUMACellularUploadLogicEnabled();
 
+  // Returns whether the allowlist for external experiment ids is enabled. Some
+  // embedders like WebLayer disable it. For Chrome, it should be enabled.
+  virtual bool IsExternalExperimentAllowlistEnabled();
+
   // Returns true iff UKM is allowed for all profiles.
   // See //components/ukm/observers/ukm_consent_state_observer.h for details.
   virtual bool IsUkmAllowedForAllProfiles();
@@ -154,6 +159,9 @@ class MetricsServiceClient {
 
   // Checks if the cloned install detector says that client ids should be reset.
   virtual bool ShouldResetClientIdsOnClonedInstall();
+
+  // Specifies local log storage requirements and restrictions.
+  virtual MetricsLogStore::StorageLimits GetStorageLimits() const;
 
   // Sets the callback to run MetricsServiceManager::UpdateRunningServices.
   void SetUpdateRunningServicesCallback(const base::RepeatingClosure& callback);

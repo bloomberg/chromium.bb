@@ -10,7 +10,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
-#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
@@ -64,7 +64,7 @@ void VideoFrameResourceProvider::OnContextLost() {
 }
 
 void VideoFrameResourceProvider::AppendQuads(
-    viz::RenderPass* render_pass,
+    viz::CompositorRenderPass* render_pass,
     scoped_refptr<media::VideoFrame> frame,
     media::VideoRotation rotation,
     bool is_opaque) {
@@ -110,15 +110,15 @@ void VideoFrameResourceProvider::AppendQuads(
 
   gfx::Rect visible_quad_rect = quad_rect;
   gfx::Rect clip_rect;
-  gfx::RRectF rounded_corner_bounds;
+  gfx::MaskFilterInfo mask_filter_info;
   bool is_clipped = false;
   float draw_opacity = 1.0f;
   int sorting_context_id = 0;
 
   resource_updater_->AppendQuads(render_pass, std::move(frame), transform,
-                                 quad_rect, visible_quad_rect,
-                                 rounded_corner_bounds, clip_rect, is_clipped,
-                                 is_opaque, draw_opacity, sorting_context_id);
+                                 quad_rect, visible_quad_rect, mask_filter_info,
+                                 clip_rect, is_clipped, is_opaque, draw_opacity,
+                                 sorting_context_id);
 }
 
 void VideoFrameResourceProvider::ReleaseFrameResources() {

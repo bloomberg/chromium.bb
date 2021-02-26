@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/files/file.h"
@@ -210,12 +210,12 @@ bool ManifestResolveKey(PP_Instance instance,
                         std::string* full_url,
                         PP_PNaClOptions* pnacl_options);
 
-typedef base::Callback<void(int32_t, const PP_NaClFileInfo&)>
-DownloadFileCallback;
+typedef base::OnceCallback<void(int32_t, const PP_NaClFileInfo&)>
+    DownloadFileCallback;
 
 void DownloadFile(PP_Instance instance,
                   const std::string& url,
-                  const DownloadFileCallback& callback);
+                  DownloadFileCallback callback);
 
 PP_Bool StartPpapiProxy(PP_Instance instance);
 
@@ -257,7 +257,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
 
   void OpenResource(
       const std::string& key,
-      const ManifestServiceChannel::OpenResourceCallback& callback) override {
+      ManifestServiceChannel::OpenResourceCallback callback) override {
     DCHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
                BelongsToCurrentThread());
 
@@ -268,7 +268,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
         process_type_ != kPNaClTranslatorProcessType) {
       // Return an error.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(callback, base::File(), 0, 0));
+          FROM_HERE, base::BindOnce(std::move(callback), base::File(), 0, 0));
       return;
     }
 
@@ -284,7 +284,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
     if (!ManifestResolveKey(pp_instance_, is_helper_process, key, &url,
                             &pnacl_options)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(callback, base::File(), 0, 0));
+          FROM_HERE, base::BindOnce(std::move(callback), base::File(), 0, 0));
       return;
     }
 
@@ -296,7 +296,8 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
     // TODO(teravest): Make a type like PP_NaClFileInfo to use for DownloadFile
     // that would close the file handle on destruction.
     DownloadFile(pp_instance_, url,
-                 base::Bind(&ManifestServiceProxy::DidDownloadFile, callback));
+                 base::BindOnce(&ManifestServiceProxy::DidDownloadFile,
+                                std::move(callback)));
   }
 
  private:
@@ -305,12 +306,11 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
       int32_t pp_error,
       const PP_NaClFileInfo& file_info) {
     if (pp_error != PP_OK) {
-      callback.Run(base::File(), 0, 0);
+      std::move(callback).Run(base::File(), 0, 0);
       return;
     }
-    callback.Run(base::File(file_info.handle),
-                 file_info.token_lo,
-                 file_info.token_hi);
+    std::move(callback).Run(base::File(file_info.handle), file_info.token_lo,
+                            file_info.token_hi);
   }
 
   PP_Instance pp_instance_;
@@ -318,7 +318,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
   DISALLOW_COPY_AND_ASSIGN(ManifestServiceProxy);
 };
 
-blink::WebAssociatedURLLoader* CreateAssociatedURLLoader(
+std::unique_ptr<blink::WebAssociatedURLLoader> CreateAssociatedURLLoader(
     const blink::WebDocument& document,
     const GURL& gurl) {
   blink::WebAssociatedURLLoaderOptions options;
@@ -545,7 +545,7 @@ void PPBNaClPrivate::LaunchSelLdr(
     std::unique_ptr<ManifestServiceChannel> manifest_service_channel(
         new ManifestServiceChannel(
             launch_result.manifest_service_ipc_channel_handle,
-            base::Bind(&PostPPCompletionCallback, callback),
+            base::BindOnce(&PostPPCompletionCallback, callback),
             std::move(manifest_service_proxy),
             content::RenderThread::Get()->GetShutdownEvent()));
     load_manager->set_manifest_service_channel(
@@ -688,12 +688,12 @@ void GetNexeFd(PP_Instance instance,
                const std::string& etag,
                bool has_no_store_header,
                bool use_subzero,
-               base::Callback<void(int32_t, bool, PP_FileHandle)> callback) {
+               PnaclTranslationResourceHost::RequestNexeFdCallback callback) {
   if (!InitializePnaclResourceHost()) {
     ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, static_cast<int32_t>(PP_ERROR_FAILED), false,
-                       PP_kInvalidFileHandle));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  static_cast<int32_t>(PP_ERROR_FAILED), false,
+                                  PP_kInvalidFileHandle));
     return;
   }
 
@@ -710,11 +710,8 @@ void GetNexeFd(PP_Instance instance,
   cache_info.sandbox_isa = GetSandboxArch();
   cache_info.extra_flags = GetCpuFeatures();
 
-  g_pnacl_resource_host.Get()->RequestNexeFd(
-      GetRoutingID(instance),
-      instance,
-      cache_info,
-      callback);
+  g_pnacl_resource_host.Get()->RequestNexeFd(GetRoutingID(instance), instance,
+                                             cache_info, std::move(callback));
 }
 
 void LogTranslationFinishedUMA(const std::string& uma_suffix,
@@ -1021,8 +1018,8 @@ void DownloadManifestToBuffer(PP_Instance instance,
   // ManifestDownloader deletes itself after invoking the callback.
   ManifestDownloader* manifest_downloader = new ManifestDownloader(
       std::move(url_loader), load_manager->is_installed(),
-      base::Bind(DownloadManifestToBufferCompletion, instance, callback,
-                 base::Time::Now()));
+      base::BindOnce(DownloadManifestToBufferCompletion, instance, callback,
+                     base::Time::Now()));
   manifest_downloader->Load(request);
 }
 
@@ -1376,9 +1373,9 @@ void PPBNaClPrivate::DownloadNexe(PP_Instance instance,
   // FileDownloader deletes itself after invoking DownloadNexeCompletion.
   FileDownloader* file_downloader = new FileDownloader(
       std::move(url_loader), std::move(target_file),
-      base::Bind(&DownloadNexeCompletion, request, out_file_info),
-      base::Bind(&ProgressEventRateLimiter::ReportProgress,
-                 base::Owned(tracker), std::string(url)));
+      base::BindOnce(&DownloadNexeCompletion, request, out_file_info),
+      base::BindRepeating(&ProgressEventRateLimiter::ReportProgress,
+                          base::Owned(tracker), std::string(url)));
   file_downloader->Load(url_request);
 }
 
@@ -1422,11 +1419,10 @@ void DownloadNexeCompletion(const DownloadNexeRequest& request,
   request.callback.func(request.callback.user_data, pp_error);
 }
 
-void DownloadFileCompletion(
-    const DownloadFileCallback& callback,
-    FileDownloader::Status status,
-    base::File file,
-    int http_status) {
+void DownloadFileCompletion(DownloadFileCallback callback,
+                            FileDownloader::Status status,
+                            base::File file,
+                            int http_status) {
   int32_t pp_error = FileDownloaderToPepperError(status);
   PP_NaClFileInfo file_info;
   if (pp_error == PP_OK) {
@@ -1437,12 +1433,12 @@ void DownloadFileCompletion(
     file_info = kInvalidNaClFileInfo;
   }
 
-  callback.Run(pp_error, file_info);
+  std::move(callback).Run(pp_error, file_info);
 }
 
 void DownloadFile(PP_Instance instance,
                   const std::string& url,
-                  const DownloadFileCallback& callback) {
+                  DownloadFileCallback callback) {
   DCHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
              BelongsToCurrentThread());
 
@@ -1450,9 +1446,9 @@ void DownloadFile(PP_Instance instance,
   DCHECK(load_manager);
   if (!load_manager) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, static_cast<int32_t>(PP_ERROR_FAILED),
-                       kInvalidNaClFileInfo));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  static_cast<int32_t>(PP_ERROR_FAILED),
+                                  kInvalidNaClFileInfo));
     return;
   }
 
@@ -1467,15 +1463,15 @@ void DownloadFile(PP_Instance instance,
                                               &file_info.token_hi);
     if (handle == PP_kInvalidFileHandle) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(callback, static_cast<int32_t>(PP_ERROR_FAILED),
-                         kInvalidNaClFileInfo));
+          FROM_HERE, base::BindOnce(std::move(callback),
+                                    static_cast<int32_t>(PP_ERROR_FAILED),
+                                    kInvalidNaClFileInfo));
       return;
     }
     file_info.handle = handle;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, static_cast<int32_t>(PP_OK), file_info));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  static_cast<int32_t>(PP_OK), file_info));
     return;
   }
 
@@ -1484,9 +1480,9 @@ void DownloadFile(PP_Instance instance,
   const GURL& test_gurl = load_manager->plugin_base_url().Resolve(url);
   if (!test_gurl.is_valid()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, static_cast<int32_t>(PP_ERROR_FAILED),
-                       kInvalidNaClFileInfo));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  static_cast<int32_t>(PP_ERROR_FAILED),
+                                  kInvalidNaClFileInfo));
     return;
   }
 
@@ -1503,8 +1499,8 @@ void DownloadFile(PP_Instance instance,
     file_info.token_lo = file_token_lo;
     file_info.token_hi = file_token_hi;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, static_cast<int32_t>(PP_OK), file_info));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  static_cast<int32_t>(PP_OK), file_info));
     return;
   }
 
@@ -1517,9 +1513,9 @@ void DownloadFile(PP_Instance instance,
       content::PepperPluginInstance::Get(instance);
   if (!plugin_instance) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, static_cast<int32_t>(PP_ERROR_FAILED),
-                       kInvalidNaClFileInfo));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  static_cast<int32_t>(PP_ERROR_FAILED),
+                                  kInvalidNaClFileInfo));
     return;
   }
   const blink::WebDocument& document =
@@ -1531,11 +1527,11 @@ void DownloadFile(PP_Instance instance,
   ProgressEventRateLimiter* tracker = new ProgressEventRateLimiter(instance);
 
   // FileDownloader deletes itself after invoking DownloadNexeCompletion.
-  FileDownloader* file_downloader =
-      new FileDownloader(std::move(url_loader), std::move(target_file),
-                         base::Bind(&DownloadFileCompletion, callback),
-                         base::Bind(&ProgressEventRateLimiter::ReportProgress,
-                                    base::Owned(tracker), std::string(url)));
+  FileDownloader* file_downloader = new FileDownloader(
+      std::move(url_loader), std::move(target_file),
+      base::BindOnce(&DownloadFileCompletion, std::move(callback)),
+      base::BindRepeating(&ProgressEventRateLimiter::ReportProgress,
+                          base::Owned(tracker), std::string(url)));
   file_downloader->Load(url_request);
 }
 
@@ -1632,10 +1628,10 @@ class PexeDownloader : public blink::WebAssociatedURLLoaderClient {
         has_no_store_header = true;
     }
 
-    GetNexeFd(
-        instance_, pexe_url_, pexe_opt_level_, last_modified_time, etag,
-        has_no_store_header, use_subzero_,
-        base::Bind(&PexeDownloader::didGetNexeFd, weak_factory_.GetWeakPtr()));
+    GetNexeFd(instance_, pexe_url_, pexe_opt_level_, last_modified_time, etag,
+              has_no_store_header, use_subzero_,
+              base::BindOnce(&PexeDownloader::didGetNexeFd,
+                             weak_factory_.GetWeakPtr()));
   }
 
   void didGetNexeFd(int32_t pp_error,

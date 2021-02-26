@@ -11,7 +11,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -59,6 +58,8 @@ void RecordOptInAndOptOutRates(const bool user_opted_in,
 
   base::UmaHistogramEnumeration("OOBE.MarketingOptInScreen.Event." + country,
                                 event);
+  // Generic event aggregating data from all countries.
+  base::UmaHistogramEnumeration("OOBE.MarketingOptInScreen.Event", event);
 }
 
 void RecordGeolocationResolve(MarketingOptInScreen::GeolocationEvent event) {
@@ -99,15 +100,10 @@ MarketingOptInScreen::~MarketingOptInScreen() {
   view_->Bind(nullptr);
 }
 
-// static
-MarketingOptInScreen* MarketingOptInScreen::Get(ScreenManager* manager) {
-  return static_cast<MarketingOptInScreen*>(
-      manager->GetScreen(MarketingOptInScreenView::kScreenId));
-}
-
-bool MarketingOptInScreen::MaybeSkip() {
+bool MarketingOptInScreen::MaybeSkip(WizardContext* context) {
   if (!base::FeatureList::IsEnabled(features::kOobeMarketingScreen) ||
-      chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+      chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
+      IsCurrentUserManaged() /*skip for enterprise and supervised users*/) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
   }

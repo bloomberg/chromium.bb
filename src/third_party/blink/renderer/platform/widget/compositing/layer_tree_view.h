@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
@@ -24,6 +23,7 @@
 
 namespace cc {
 class AnimationHost;
+class RasterDarkModeFilter;
 class LayerTreeFrameSink;
 class LayerTreeHost;
 class LayerTreeSettings;
@@ -43,20 +43,20 @@ class PLATFORM_EXPORT LayerTreeView
       public cc::LayerTreeHostSingleThreadClient,
       public cc::LayerTreeHostSchedulingClient {
  public:
+  LayerTreeView(LayerTreeViewDelegate* delegate,
+                scheduler::WebThreadScheduler* scheduler);
+  ~LayerTreeView() override;
+
   // The |main_thread| is the task runner that the compositor will use for the
   // main thread (where it is constructed). The |compositor_thread| is the task
   // runner for the compositor thread, but is null if the compositor will run in
   // single-threaded mode (in tests only).
-  LayerTreeView(LayerTreeViewDelegate* delegate,
-                scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-                scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
-                cc::TaskGraphRunner* task_graph_runner,
-                scheduler::WebThreadScheduler* scheduler);
-  ~LayerTreeView() override;
-
   // The |ukm_recorder_factory| may be null to disable recording (in tests
   // only).
   void Initialize(const cc::LayerTreeSettings& settings,
+                  scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+                  scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
+                  cc::TaskGraphRunner* task_graph_runner,
                   std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
 
   // Drops any references back to the delegate in preparation for being
@@ -104,6 +104,11 @@ class PLATFORM_EXPORT LayerTreeView
       override;
   void NotifyThroughputTrackerResults(
       cc::CustomTrackerResults results) override;
+  void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) override;
+  void RunPaintBenchmark(int repeat_count,
+                         cc::PaintBenchmarkResult& result) override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
@@ -131,11 +136,9 @@ class PLATFORM_EXPORT LayerTreeView
       std::unique_ptr<cc::RenderFrameMetadataObserver>
           render_frame_metadata_observer);
 
-  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  const scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_;
-  cc::TaskGraphRunner* const task_graph_runner_;
   scheduler::WebThreadScheduler* const web_main_thread_scheduler_;
   const std::unique_ptr<cc::AnimationHost> animation_host_;
+  std::unique_ptr<cc::RasterDarkModeFilter> dark_mode_filter_;
 
   // The delegate_ becomes null when Disconnect() is called. After that, the
   // class should do nothing in calls from the LayerTreeHost, and just wait to

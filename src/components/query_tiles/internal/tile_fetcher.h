@@ -39,6 +39,9 @@ class TileFetcher {
       const std::string& client_version,
       const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
+  // For testing only.
+  static void SetOverrideURLForTesting(const GURL& url);
+
   // Start the fetch to download tiles.
   virtual void StartFetchForTiles(FinishedCallback callback) = 0;
 
@@ -46,6 +49,9 @@ class TileFetcher {
 
   TileFetcher(const TileFetcher& other) = delete;
   TileFetcher& operator=(const TileFetcher& other) = delete;
+
+  // Sets the server URL.
+  virtual void SetServerUrl(const GURL& url) = 0;
 
  protected:
   TileFetcher();

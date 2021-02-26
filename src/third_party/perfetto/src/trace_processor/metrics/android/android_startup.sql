@@ -82,6 +82,7 @@ WHERE slice.name IN (
   'ActivityThreadMain',
   'bindApplication',
   'activityStart',
+  'activityRestart',
   'activityResume',
   'Choreographer#doFrame',
   'inflate')
@@ -199,6 +200,10 @@ SELECT
         SELECT slice_proto FROM main_process_slice
         WHERE launch_id = launches.id AND name = 'activityResume'
       ),
+      'time_activity_restart', (
+        SELECT slice_proto FROM main_process_slice
+        WHERE launch_id = launches.id AND name = 'activityRestart'
+      ),
       'time_choreographer', (
         SELECT slice_proto FROM main_process_slice
         WHERE launch_id = launches.id AND name = 'Choreographer#doFrame'
@@ -219,7 +224,7 @@ SELECT
       )
     ),
     'hsc', (
-      SELECT AndroidStartupMetric_HscMetrics(
+      SELECT NULL_IF_EMPTY(AndroidStartupMetric_HscMetrics(
         'full_startup', (
           SELECT AndroidStartupMetric_Slice(
             'dur_ns', hsc_based_startup_times.ts_total,
@@ -227,12 +232,12 @@ SELECT
           )
           FROM hsc_based_startup_times WHERE id = launches.id
         )
-      )
+      ))
     )
   ) as startup
 FROM launches;
 
-CREATE VIEW android_startup_annotations AS
+CREATE VIEW android_startup_event AS
 SELECT
   'slice' as track_type,
   'Android App Startups' as track_name,

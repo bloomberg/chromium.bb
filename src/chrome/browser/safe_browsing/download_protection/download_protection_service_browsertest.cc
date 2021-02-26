@@ -5,7 +5,6 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
@@ -128,6 +127,25 @@ IN_PROC_BROWSER_TEST_F(DownloadProtectionServiceBrowserTest,
 
   GURL url = embedded_test_server()->GetURL(
       "/safe_browsing/rar/multipart.part0001.rar");
+  DownloadAndWait(url);
+
+  const std::vector<std::unique_ptr<ClientDownloadRequest>>& requests =
+      WebUIInfoSingleton::GetInstance()->client_download_requests_sent();
+
+  ASSERT_EQ(1u, requests.size());
+  ASSERT_EQ(1, requests[0]->archived_binary_size());
+  EXPECT_EQ("random.exe", requests[0]->archived_binary(0).file_basename());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadProtectionServiceBrowserTest,
+                       MultipartRarInspectionSecondPart) {
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  WebUIInfoSingleton::GetInstance()->AddListenerForTesting();
+
+  GURL url = embedded_test_server()->GetURL(
+      "/safe_browsing/rar/multipart.part0002.rar");
   DownloadAndWait(url);
 
   const std::vector<std::unique_ptr<ClientDownloadRequest>>& requests =

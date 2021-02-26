@@ -25,14 +25,17 @@ class PaymentRequestDialogView;
 class ErrorMessageViewController : public PaymentRequestSheetController {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
-  ErrorMessageViewController(PaymentRequestSpec* spec,
-                             PaymentRequestState* state,
-                             PaymentRequestDialogView* dialog);
+  ErrorMessageViewController(base::WeakPtr<PaymentRequestSpec> spec,
+                             base::WeakPtr<PaymentRequestState> state,
+                             base::WeakPtr<PaymentRequestDialogView> dialog);
   ~ErrorMessageViewController() override;
 
  private:
   // PaymentRequestSheetController:
-  std::unique_ptr<views::Button> CreatePrimaryButton() override;
+  base::string16 GetPrimaryButtonLabel() override;
+  views::Button::PressedCallback GetPrimaryButtonCallback() override;
+  int GetPrimaryButtonId() override;
+  bool GetPrimaryButtonEnabled() override;
   bool ShouldShowHeaderBackArrow() override;
   bool ShouldShowSecondaryButton() override;
   base::string16 GetSheetTitle() override;

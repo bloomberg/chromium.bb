@@ -34,7 +34,7 @@
 namespace {
 const char* test_app_name1 = "TestApp1";
 const char* test_app_name2 = "TestApp2";
-}
+}  // namespace
 
 class SessionRestoreTestChromeOS : public InProcessBrowserTest {
  public:
@@ -54,7 +54,7 @@ class SessionRestoreTestChromeOS : public InProcessBrowserTest {
   }
 
   Browser* CreateBrowserWithParams(Browser::CreateParams params) {
-    Browser* browser = new Browser(params);
+    Browser* browser = Browser::Create(params);
     AddBlankTabAndShow(browser);
     return browser;
   }
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreBrowserWindows) {
   CreateBrowserWithParams(Browser::CreateParams(profile(), true));
   // Create a third incognito browser window which should not get restored.
   CreateBrowserWithParams(
-      Browser::CreateParams(profile()->GetOffTheRecordProfile(), true));
+      Browser::CreateParams(profile()->GetPrimaryOTRProfile(), true));
   TurnOnSessionRestore();
 }
 
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreAppsPopup) {
       ++app2_count;
   }
   EXPECT_EQ(1u, app1_count);
-  EXPECT_EQ(2u, app2_count);  // Only the trusted app windows are restored.
+  EXPECT_EQ(2u, app2_count);   // Only the trusted app windows are restored.
   EXPECT_EQ(4u, total_count);  // Default browser() + 3 app windows
 }
 
@@ -268,7 +268,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreMinimized) {
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_OmitTerminalApp) {
   const std::string terminal_app_name =
-      web_app::GenerateApplicationNameFromAppId(crostini::GetTerminalId());
+      web_app::GenerateApplicationNameFromAppId(
+          crostini::kCrostiniTerminalSystemAppId);
   CreateBrowserWithParams(CreateParamsForApp(test_app_name1, true));
   CreateBrowserWithParams(CreateParamsForApp(terminal_app_name, true));
   TurnOnSessionRestore();
@@ -276,7 +277,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_OmitTerminalApp) {
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, OmitTerminalApp) {
   const std::string terminal_app_name =
-      web_app::GenerateApplicationNameFromAppId(crostini::GetTerminalId());
+      web_app::GenerateApplicationNameFromAppId(
+          crostini::kCrostiniTerminalSystemAppId);
   size_t total_count = 0;
   for (auto* browser : *BrowserList::GetInstance()) {
     ++total_count;
@@ -292,7 +294,8 @@ class SystemWebAppSessionRestoreTestChromeOS
   SystemWebAppSessionRestoreTestChromeOS()
       : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
     maybe_installation_ =
-        web_app::TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
+        web_app::TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp(
+            install_from_web_app_info());
     maybe_installation_->set_update_policy(
         web_app::SystemWebAppManager::UpdatePolicy::kOnVersionChange);
   }
@@ -307,10 +310,12 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppSessionRestoreTestChromeOS,
                        PRE_OmitSystemWebApps) {
   // Wait for the app to install, launch, and load, otherwise the app might not
   // be restored.
-  WaitForSystemAppInstallAndLoad(GetMockAppType());
+  WaitForTestSystemAppInstall();
+  LaunchApp(GetMockAppType());
+
   auto app_params = Browser::CreateParams::CreateForApp(
       test_app_name1, true, gfx::Rect(), browser()->profile(), true);
-  Browser* app_browser = new Browser(app_params);
+  Browser* app_browser = Browser::Create(app_params);
   AddBlankTabAndShow(app_browser);
 
   // There should be three browsers:
@@ -335,8 +340,5 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppSessionRestoreTestChromeOS,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppSessionRestoreTestChromeOS,
-                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
-                                           web_app::ProviderType::kWebApps),
-                         web_app::ProviderTypeParamToString);
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_MANIFEST_INSTALL_P(
+    SystemWebAppSessionRestoreTestChromeOS);

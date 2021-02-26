@@ -17,5 +17,4 @@ const char kUpdateListeningPortsMethod[] = "UpdateListeningPorts";
 }  // namespace chunneld
 }  // namespace vm_tools
 
-
 #endif  // SYSTEM_API_DBUS_CHUNNELD_DBUS_CONSTANTS_H_

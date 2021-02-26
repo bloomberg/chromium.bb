@@ -48,3 +48,7 @@ subzero=4b1bdae3955769f62e563e826065d10ddfe040ea
 # Three lines avoid merge conflicts.
 #
 binutils_x86=1d8592cc9f02cc9aeaef992c296376a8fd4c8761
+#
+# Three lines avoid merge conflicts.
+#
+llvm_saigo=6b8af4429029010fc6d2e27d488baf02b6f91105

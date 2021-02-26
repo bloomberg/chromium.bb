@@ -8,10 +8,12 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../strings.m.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Destination} from '../data/destination.js';
+import {getPrinterTypeForDestination, PrinterType} from '../data/destination_match.js';
 import {State} from '../data/state.js';
 
 Polymer({
@@ -50,7 +52,6 @@ Polymer({
     /** @private */
     errorMessage_: {
       type: String,
-      computed: 'computeErrorMessage_(destination.id, maxSheets, sheetCount)',
       observer: 'errorMessageChanged_',
     },
     // </if>
@@ -59,6 +60,9 @@ Polymer({
   observers: [
     'updatePrintButtonLabel_(destination.id)',
     'updatePrintButtonEnabled_(state, destination.id, maxSheets, sheetCount)',
+    // <if expr="chromeos">
+    'updateErrorMessage_(state, destination.id, maxSheets, sheetCount)',
+    // </if>
   ],
 
   /** @private {!State} */
@@ -80,7 +84,8 @@ Polymer({
    */
   isPdfOrDrive_() {
     return this.destination &&
-        (this.destination.id === Destination.GooglePromotedId.SAVE_AS_PDF ||
+        (getPrinterTypeForDestination(this.destination) ===
+             PrinterType.PDF_PRINTER ||
          this.destination.id === Destination.GooglePromotedId.DOCS);
   },
 
@@ -140,19 +145,17 @@ Polymer({
     return this.sheetCount > 0 && this.printButtonDisabled_();
   },
 
-  /**
-   * @return {string} Localized message to show as an error.
-   * @private
-   */
-  computeErrorMessage_() {
+  /** @private */
+  updateErrorMessage_() {
     if (!this.showSheetsError_()) {
-      return '';
+      this.errorMessage_ = '';
+      return;
     }
-
-    const singularOrPlural = this.maxSheets > 1 ? 'Plural' : 'Singular';
-    const label = loadTimeData.getString(`sheetsLimitLabel${singularOrPlural}`);
-    return loadTimeData.getStringF(
-        'sheetsLimitErrorMessage', this.maxSheets.toLocaleString(), label);
+    PluralStringProxyImpl.getInstance()
+        .getPluralString('sheetsLimitErrorMessage', this.maxSheets)
+        .then(label => {
+          this.errorMessage_ = label;
+        });
   },
 
   /**

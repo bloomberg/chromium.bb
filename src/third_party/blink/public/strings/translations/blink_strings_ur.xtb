@@ -13,13 +13,18 @@
 <translation id="1211441953136645838">اختتامی نوٹ</translation>
 <translation id="1281252709823657822">ڈئیلاگ</translation>
 <translation id="1306460908038601864">آف</translation>
+<translation id="1311894908970423688">قدر <ph name="VALUE_DATE_OR_TIME" /> ہونی چاہیے۔</translation>
 <translation id="1335095011850992622">کریڈٹس</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">بینر</translation>
+<translation id="145015347812617860"><ph name="COUNT" /> آئٹمز</translation>
+<translation id="1480676835519562650">متعدد قابل انتخاب، <ph name="COUNT" /> میں سے <ph name="SELECTED" /> کو منتخب کیا گیا۔</translation>
 <translation id="1589122976691792535">علاقہ</translation>
 <translation id="1591562245178063882">اس مہینے</translation>
 <translation id="1637811476055996098">فائلوں کا انتخاب کریں</translation>
 <translation id="1650423536718072820">اقوال زریں</translation>
+<translation id="1681022320378710418">موجودہ وقت</translation>
+<translation id="1727839386348365796">آئی ڈراپر</translation>
 <translation id="1727886345390570319">سب ٹائٹلز مینو چھپائیں</translation>
 <translation id="1729654308190250600">براہ کرم ایک غیر خالی ای میل پتہ درج کریں</translation>
 <translation id="1758486001363313524">دیگر…</translation>
@@ -27,6 +32,7 @@
 <translation id="1806710327868736751">alert_dialog</translation>
 <translation id="1821985195704844674">ٹری گرڈ</translation>
 <translation id="1822429046913737220">AM/PM</translation>
+<translation id="1823704031293214298">صفحے کا فٹر</translation>
 <translation id="1832974991323546415">ریموٹ آلہ پر چلائیں</translation>
 <translation id="190587075670221089">حذف کرنا</translation>
 <translation id="1907737156431278478">مثال</translation>
@@ -44,6 +50,7 @@
 <translation id="2247351761944213033">ہفتہ <ph name="WEEKNUMBER" />، <ph name="YEAR" /></translation>
 <translation id="2277199496770840904"><ph name="NUMBER" /> کو ٹریک کریں</translation>
 <translation id="2291999235780842123">چیک باکس</translation>
+<translation id="2307576640803031502">فہرست میں موجود، <ph name="COUNT" /> آئٹم میں سے <ph name="INDEX" /></translation>
 <translation id="2311842470354187719">صفحہ کا انقطاع</translation>
 <translation id="2335594187091864976">تاریخ اور وقت کا منتخب کنندہ</translation>
 <translation id="2393030564806080191">رنگ کی ہیگسا ڈیسیمل قدر</translation>
@@ -51,6 +58,7 @@
 <translation id="248395913932153421">دن</translation>
 <translation id="2507943997699731163">براہ کرم یہ فیلڈ پُر کریں۔</translation>
 <translation id="2508569020611168319">ٹیب کی فہرست</translation>
+<translation id="2530182415807757784">متعدد قابل انتخاب، کوئی بھی منتخب نہیں کیا گیا۔</translation>
 <translation id="2561842179657104141">مزید میڈیا کنٹرولز دکھائیں</translation>
 <translation id="2572483411312390101">چلائیں</translation>
 <translation id="2613802280814924224">براہ کرم ایک درست قدر درج کریں۔ قریب ترین درست قدر <ph name="VALID_VALUE" /> ہے۔</translation>
@@ -75,6 +83,7 @@
 <translation id="310520048233152454">‏براہ کرم ایک URL درج کریں۔</translation>
 <translation id="3175736971608411871">ٹائمر</translation>
 <translation id="3199563858620722075">کومبو باکس</translation>
+<translation id="3220661731597678625">موجودہ قدم</translation>
 <translation id="3329013043687509092">سیرابی</translation>
 <translation id="3450233048674729344">قدر <ph name="MAXIMUM" /> سے کم یا اس کے برابر ہونی چاہیے۔</translation>
 <translation id="3486220673238053218">وضاحت</translation>
@@ -100,12 +109,14 @@
 <translation id="4201051445878709314">پچھلا مہینہ دکھائیں</translation>
 <translation id="421884353938374759">رنگ کا منتخب کنندہ</translation>
 <translation id="4248100235867064564">مینو بار</translation>
+<translation id="4293574643247337246">صفحے کا ہیڈر</translation>
 <translation id="4360991593054037559">براہ کرم ایک درست قدر درج کریں۔ دو قریب ترین درست اقدار <ph name="VALID_VALUE_LOW" /> اور <ph name="VALID_VALUE_HIGHER" /> ہیں۔</translation>
+<translation id="4384249794467006333">یہ تصویر لیبل شدہ نہیں ہے۔ تصویر کی تفصیلات حاصل کرنے کے لیے اوپر دائيں جانب مزید اختیارات کا مینو کھولیں۔</translation>
 <translation id="4384583879834880242">سوال و جواب</translation>
-<translation id="4413860115965805769">مینو بٹن</translation>
 <translation id="4444765639179266822">بظاہر یہ لکھا ہے: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">فرہنگ کا حوالہ</translation>
 <translation id="4522570452068850558">تفصیلات</translation>
+<translation id="4576178047100686001">یہ تصویر لیبل شدہ نہیں ہے۔ تصویر کی تفصیلات حاصل کرنے کے لیے اوپر بائيں جانب مزید اختیارات کا مینو کھولیں۔</translation>
 <translation id="4597532268155981612">فارم</translation>
 <translation id="4661075872484491155">ٹری</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' کے بعد کے حصہ میں علامت '<ph name="INVALIDCHARACTER" />' شامل نہیں ہونی چاہیے۔</translation>
@@ -118,6 +129,7 @@
 <translation id="4763480195061959176">ویڈیو</translation>
 <translation id="479989351350248267">تلاش کریں</translation>
 <translation id="4812940957355064477">براہ کرم ایک نمبر درج کریں۔</translation>
+<translation id="4912200001568447310">موجودہ آئٹم</translation>
 <translation id="4912536737030637138">کتابیات کا اندراج</translation>
 <translation id="4915360478455618802">وقت منتخب کرنے والا دکھائیں</translation>
 <translation id="492244087561876220">تبصرہ</translation>
@@ -140,6 +152,7 @@
 <translation id="5334352251556557839">میڈیا چلانے سے قاصر۔</translation>
 <translation id="537648784377940524">کم سے کم تاریخ (<ph name="MIN_DATE_OR_TIME" />) زیادہ سے زیادہ تاریخ (<ph name="MAX_DATE_OR_TIME" />) سے پہلے آنی چاہیے۔</translation>
 <translation id="5406322316791861025">فیگر</translation>
+<translation id="5425179576310518467">موجودہ تاریخ</translation>
 <translation id="5453733299334684579">ٹری آئٹم</translation>
 <translation id="5466621249238537318">براہ کرم ایک یا مزید فائلیں منتخب کریں۔</translation>
 <translation id="5468998798572797635">پوری اسکرین سے خارج ہوں</translation>
@@ -154,9 +167,11 @@
 <translation id="5677946354068040947">مزید اختیارات</translation>
 <translation id="576709008726043716">تعارف</translation>
 <translation id="57838592816432529">آواز بند کریں</translation>
+<translation id="5860033963881614850">آف</translation>
 <translation id="588258955323874662">پوری اسکرین</translation>
 <translation id="5888666972993069672">اب <ph name="DEVICE_FRIENDLY_NAME" /> پر کاسٹ ہو رہی ہے</translation>
 <translation id="591047860372322273">تلاش کا خانہ</translation>
+<translation id="5916664084637901428">آن</translation>
 <translation id="5939518447894949180">دوبارہ ترتیب دیں</translation>
 <translation id="5966707198760109579">ہفتہ</translation>
 <translation id="5987525920412732405">اسپن بٹن</translation>
@@ -167,6 +182,7 @@
 <translation id="6164829606128959761">میٹر</translation>
 <translation id="6166809985690652833">پسِ نوشت</translation>
 <translation id="6209276755895393898">بظاہر: <ph name="DESCRIPTION" /></translation>
+<translation id="6212595056017402527">موجودہ صفحہ</translation>
 <translation id="6213469881011901533">فرہنگ</translation>
 <translation id="6281588256137006900">روشن</translation>
 <translation id="6281763101136022427">URL</translation>
@@ -184,6 +200,7 @@
 <translation id="6643016212128521049">صاف کریں</translation>
 <translation id="668171684555832681">دیگر…</translation>
 <translation id="6692633176391053278">تیز رفتار</translation>
+<translation id="6709093583001123835">قدر <ph name="VALUE" /> ہونی چاہیے۔</translation>
 <translation id="6709570249143506788">پلے بیک کا خراب معیار</translation>
 <translation id="6755330956360078551">ٹول ٹپ</translation>
 <translation id="6790428901817661496">چلائیں</translation>
@@ -200,6 +217,7 @@
 <translation id="6989848892321993519">براہ کرم اس متن کو <ph name="MIN_CHARACTERS" /> حروف یا اس سے زیادہ تک بڑھائیں (آپ فی الحال 1 حرف استعمال کر رہے ہیں)۔</translation>
 <translation id="7034405885550056553">تجویز</translation>
 <translation id="709897737746224366">براہ کرم مطلوبہ فارمیٹ کا مماثل بنائیں۔</translation>
+<translation id="7102274145889307184">موجودہ مقام</translation>
 <translation id="7118469954320184356">کوئی تفصیل دستیاب نہیں ہے۔</translation>
 <translation id="7139483182332611405">دیباچہ</translation>
 <translation id="7214187073215825913">مواد کی معلومات</translation>
@@ -284,6 +302,7 @@
 <translation id="9155987714137265666"><ph name="WEEK" />، <ph name="WEEK_START_DATE" /> سے</translation>
 <translation id="916607977885256133">تصویر میں تصویر</translation>
 <translation id="9168329111483466115">فٹ نوٹ</translation>
+<translation id="945780513535800434">جزوی طور پر نشان زد</translation>
 <translation id="954003015749068518">'تصویر میں تصویر' میں داخل ہوں</translation>
 <translation id="966787709310836684">مینو</translation>
 </translationbundle>

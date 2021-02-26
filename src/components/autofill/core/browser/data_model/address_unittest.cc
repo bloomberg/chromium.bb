@@ -20,14 +20,34 @@ using base::ASCIIToUTF16;
 
 namespace autofill {
 
-class AddressTest : public testing::Test {
+class AddressTest : public testing::Test,
+                    public testing::WithParamInterface<bool> {
  public:
   AddressTest() { CountryNames::SetLocaleString("en-US"); }
+
+  bool StructuredAddresses() const { return structured_addresses_enabled_; }
+
+ private:
+  void SetUp() override { InitializeFeatures(); }
+
+  void InitializeFeatures() {
+    structured_addresses_enabled_ = GetParam();
+    if (structured_addresses_enabled_) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kAutofillEnableSupportForMoreStructureInAddresses);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kAutofillEnableSupportForMoreStructureInAddresses);
+    }
+  }
+
+  bool structured_addresses_enabled_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Test that country data can be properly returned as either a country code or a
 // localized country name.
-TEST_F(AddressTest, GetCountry) {
+TEST_P(AddressTest, GetCountry) {
   Address address;
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
@@ -60,15 +80,9 @@ TEST_F(AddressTest, GetCountry) {
 
 // Test that country data can be properly returned as either a country code or a
 // full country name that can even be localized.
-TEST_F(AddressTest, SetHtmlCountryCodeTypeWithFullCountryName) {
+TEST_P(AddressTest, SetHtmlCountryCodeTypeWithFullCountryName) {
   Address address;
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
-
-  // Enable the feature that allows for full country names although the
-  // field type explicitly set to HTML_TYPE_COUNTRY_CODE.
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(
-      features::kAutofillAllowHtmlTypeCountryCodesWithFullNames);
 
   // Create an autofill type from HTML_TYPE_COUNTRY_CODE.
   AutofillType autofill_type(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE);
@@ -111,22 +125,10 @@ TEST_F(AddressTest, SetHtmlCountryCodeTypeWithFullCountryName) {
       AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE), "en-US");
   EXPECT_EQ(ASCIIToUTF16("DE"), actual_country_code);
   EXPECT_EQ(ASCIIToUTF16("Germany"), actual_country);
-
-  // By disabling the feature, test that the country name deduction actually
-  // uses the path for HTML_TYPE_COUNTRY_CODE.
-  feature.Reset();
-  feature.InitAndDisableFeature(
-      features::kAutofillAllowHtmlTypeCountryCodesWithFullNames);
-  address.SetInfo(autofill_type, ASCIIToUTF16("Germany"), "en-US");
-  actual_country = address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
-  actual_country_code = address.GetInfo(
-      AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE), "en-US");
-  EXPECT_EQ(ASCIIToUTF16(""), actual_country);
-  EXPECT_EQ(ASCIIToUTF16(""), actual_country_code);
 }
 
 // Test that we properly detect country codes appropriate for each country.
-TEST_F(AddressTest, SetCountry) {
+TEST_P(AddressTest, SetCountry) {
   Address address;
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
@@ -188,8 +190,177 @@ TEST_F(AddressTest, SetCountry) {
   EXPECT_EQ(base::string16(), country);
 }
 
+// Test setting and getting the new structured address tokens
+TEST_P(AddressTest, StructuredAddressTokens) {
+  // Activate the feature to support the new structured address tokens.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillAddressEnhancementVotes);
+  Address address;
+
+  // Set the address tokens.
+  address.SetRawInfo(ADDRESS_HOME_STREET_NAME,
+                     base::ASCIIToUTF16("StreetName"));
+  address.SetRawInfo(ADDRESS_HOME_HOUSE_NUMBER,
+                     base::ASCIIToUTF16("HouseNumber"));
+  address.SetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                     base::ASCIIToUTF16("DependentStreetName"));
+  address.SetRawInfo(ADDRESS_HOME_PREMISE_NAME,
+                     base::ASCIIToUTF16("PremiseNmae"));
+  address.SetRawInfo(ADDRESS_HOME_SUBPREMISE, base::ASCIIToUTF16("SubPremise"));
+
+  // Retrieve the tokens and verify that they are correct.
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_NAME),
+            base::ASCIIToUTF16("StreetName"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER),
+            base::ASCIIToUTF16("HouseNumber"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME),
+            base::ASCIIToUTF16("DependentStreetName"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_PREMISE_NAME),
+            base::ASCIIToUTF16("PremiseNmae"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_SUBPREMISE),
+            base::ASCIIToUTF16("SubPremise"));
+}
+
+// Test setting and getting the new structured address tokens
+TEST_P(AddressTest,
+       StructuredAddressTokens_ResetOnChangedUnstructuredInformation) {
+  // Activate the feature to support the new structured address tokens for
+  // voting. The feature to actively support structured addresses must be turned
+  // of.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kAutofillAddressEnhancementVotes},
+      {features::kAutofillEnableSupportForMoreStructureInAddresses});
+  Address address;
+
+  // Set the address tokens.
+  address.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+                     base::ASCIIToUTF16("Line1\nLine2"));
+  address.SetRawInfo(ADDRESS_HOME_STREET_NAME,
+                     base::ASCIIToUTF16("StreetName"));
+  address.SetRawInfo(ADDRESS_HOME_HOUSE_NUMBER,
+                     base::ASCIIToUTF16("HouseNumber"));
+  address.SetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                     base::ASCIIToUTF16("DependentStreetName"));
+  address.SetRawInfo(ADDRESS_HOME_PREMISE_NAME,
+                     base::ASCIIToUTF16("PremiseNmae"));
+  address.SetRawInfo(ADDRESS_HOME_SUBPREMISE, base::ASCIIToUTF16("SubPremise"));
+
+  // Retrieve the tokens and verify that they are correct.
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_LINE1),
+            base::ASCIIToUTF16("Line1"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_LINE2),
+            base::ASCIIToUTF16("Line2"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS),
+            base::ASCIIToUTF16("Line1\nLine2"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_NAME),
+            base::ASCIIToUTF16("StreetName"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER),
+            base::ASCIIToUTF16("HouseNumber"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME),
+            base::ASCIIToUTF16("DependentStreetName"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_PREMISE_NAME),
+            base::ASCIIToUTF16("PremiseNmae"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_SUBPREMISE),
+            base::ASCIIToUTF16("SubPremise"));
+
+  // Set the unstructured address information to the same values as they already
+  // are.
+  address.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+                     base::ASCIIToUTF16("Line1\nLine2"));
+  address.SetRawInfo(ADDRESS_HOME_LINE1, base::ASCIIToUTF16("Line1"));
+  address.SetRawInfo(ADDRESS_HOME_LINE2, base::ASCIIToUTF16("Line2"));
+
+  // Verify that the structured tokens are still set.
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_NAME),
+            base::ASCIIToUTF16("StreetName"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER),
+            base::ASCIIToUTF16("HouseNumber"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME),
+            base::ASCIIToUTF16("DependentStreetName"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_PREMISE_NAME),
+            base::ASCIIToUTF16("PremiseNmae"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_SUBPREMISE),
+            base::ASCIIToUTF16("SubPremise"));
+
+  // Now, change the address by changing HOME_ADDRESS_LINE1 and verify that the
+  // structured tokens are reset.
+  address.SetRawInfo(ADDRESS_HOME_LINE1, base::ASCIIToUTF16("NewLine1"));
+
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_LINE1),
+            base::ASCIIToUTF16("NewLine1"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_LINE2),
+            base::ASCIIToUTF16("Line2"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS),
+            base::ASCIIToUTF16("NewLine1\nLine2"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_NAME), base::string16());
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER), base::string16());
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME),
+            base::string16());
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_PREMISE_NAME), base::string16());
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_SUBPREMISE), base::string16());
+
+  // Reset the structured tokens and perform the same step for
+  // HOME_ADDRESS_LINE2.
+  address.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+                     base::ASCIIToUTF16("Line1\nLine2"));
+  address.SetRawInfo(ADDRESS_HOME_STREET_NAME,
+                     base::ASCIIToUTF16("StreetName"));
+  address.SetRawInfo(ADDRESS_HOME_HOUSE_NUMBER,
+                     base::ASCIIToUTF16("HouseNumber"));
+  address.SetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                     base::ASCIIToUTF16("DependentStreetName"));
+  address.SetRawInfo(ADDRESS_HOME_PREMISE_NAME,
+                     base::ASCIIToUTF16("PremiseNmae"));
+  address.SetRawInfo(ADDRESS_HOME_SUBPREMISE, base::ASCIIToUTF16("SubPremise"));
+
+  address.SetRawInfo(ADDRESS_HOME_LINE2, base::ASCIIToUTF16("NewLine2"));
+
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_LINE1),
+            base::ASCIIToUTF16("Line1"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_LINE2),
+            base::ASCIIToUTF16("NewLine2"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS),
+            base::ASCIIToUTF16("Line1\nNewLine2"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_NAME), base::string16());
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER), base::string16());
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME),
+            base::string16());
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_PREMISE_NAME), base::string16());
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_SUBPREMISE), base::string16());
+
+  // And once again for ADDRESS_HOME_STREET_ADDRESS.
+  address.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+                     base::ASCIIToUTF16("Line1\nLine2"));
+  address.SetRawInfo(ADDRESS_HOME_STREET_NAME,
+                     base::ASCIIToUTF16("StreetName"));
+  address.SetRawInfo(ADDRESS_HOME_HOUSE_NUMBER,
+                     base::ASCIIToUTF16("HouseNumber"));
+  address.SetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                     base::ASCIIToUTF16("DependentStreetName"));
+  address.SetRawInfo(ADDRESS_HOME_PREMISE_NAME,
+                     base::ASCIIToUTF16("PremiseNmae"));
+  address.SetRawInfo(ADDRESS_HOME_SUBPREMISE, base::ASCIIToUTF16("SubPremise"));
+
+  address.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+                     base::ASCIIToUTF16("NewLine1\nNewLine2"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_LINE1),
+            base::ASCIIToUTF16("NewLine1"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_LINE2),
+            base::ASCIIToUTF16("NewLine2"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS),
+            base::ASCIIToUTF16("NewLine1\nNewLine2"));
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_NAME), base::string16());
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER), base::string16());
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME),
+            base::string16());
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_PREMISE_NAME), base::string16());
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_SUBPREMISE), base::string16());
+}
+
 // Test that we properly match typed values to stored country data.
-TEST_F(AddressTest, IsCountry) {
+TEST_P(AddressTest, IsCountry) {
   Address address;
   address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
 
@@ -220,7 +391,7 @@ TEST_F(AddressTest, IsCountry) {
 }
 
 // Verifies that Address::GetInfo() correctly combines address lines.
-TEST_F(AddressTest, GetStreetAddress) {
+TEST_P(AddressTest, GetStreetAddress) {
   const AutofillType type = AutofillType(ADDRESS_HOME_STREET_ADDRESS);
 
   // Address has no address lines.
@@ -280,7 +451,7 @@ TEST_F(AddressTest, GetStreetAddress) {
 
 // Verifies that overwriting an address with N lines with one that has fewer
 // than N lines does not result in an address with blank lines at the end.
-TEST_F(AddressTest, GetStreetAddressAfterOverwritingLongAddressWithShorterOne) {
+TEST_P(AddressTest, GetStreetAddressAfterOverwritingLongAddressWithShorterOne) {
   // Start with an address that has two lines.
   Address address;
   address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
@@ -297,7 +468,7 @@ TEST_F(AddressTest, GetStreetAddressAfterOverwritingLongAddressWithShorterOne) {
 }
 
 // Verifies that Address::SetRawInfo() is able to split address lines correctly.
-TEST_F(AddressTest, SetRawStreetAddress) {
+TEST_P(AddressTest, SetRawStreetAddress) {
   const base::string16 empty_street_address;
   const base::string16 short_street_address = ASCIIToUTF16("456 Nowhere Ln.");
   const base::string16 long_street_address = ASCIIToUTF16(
@@ -330,7 +501,7 @@ TEST_F(AddressTest, SetRawStreetAddress) {
 }
 
 // Street addresses should be set properly.
-TEST_F(AddressTest, SetStreetAddress) {
+TEST_P(AddressTest, SetStreetAddress) {
   const base::string16 empty_street_address;
   const base::string16 multi_line_street_address = ASCIIToUTF16(
       "789 Fancy Pkwy.\n"
@@ -376,7 +547,7 @@ TEST_F(AddressTest, SetStreetAddress) {
 
 // Verifies that Address::SetInfio() rejects setting data for
 // ADDRESS_HOME_STREET_ADDRESS if the data has any interior blank lines.
-TEST_F(AddressTest, SetStreetAddressRejectsAddressesWithInteriorBlankLines) {
+TEST_P(AddressTest, SetStreetAddressRejectsAddressesWithInteriorBlankLines) {
   // Start with a non-empty address.
   Address address;
   address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
@@ -399,7 +570,7 @@ TEST_F(AddressTest, SetStreetAddressRejectsAddressesWithInteriorBlankLines) {
 
 // Verifies that Address::SetInfio() rejects setting data for
 // ADDRESS_HOME_STREET_ADDRESS if the data has any leading blank lines.
-TEST_F(AddressTest, SetStreetAddressRejectsAddressesWithLeadingBlankLines) {
+TEST_P(AddressTest, SetStreetAddressRejectsAddressesWithLeadingBlankLines) {
   // Start with a non-empty address.
   Address address;
   address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
@@ -422,7 +593,7 @@ TEST_F(AddressTest, SetStreetAddressRejectsAddressesWithLeadingBlankLines) {
 
 // Verifies that Address::SetInfio() rejects setting data for
 // ADDRESS_HOME_STREET_ADDRESS if the data has any trailing blank lines.
-TEST_F(AddressTest, SetStreetAddressRejectsAddressesWithTrailingBlankLines) {
+TEST_P(AddressTest, SetStreetAddressRejectsAddressesWithTrailingBlankLines) {
   // Start with a non-empty address.
   Address address;
   address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
@@ -442,5 +613,131 @@ TEST_F(AddressTest, SetStreetAddressRejectsAddressesWithTrailingBlankLines) {
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
 }
+
+// Verifies that the merging-related methods for structured addresses are
+// implemented correctly. This is not a test of the merging logic itself.
+TEST_P(AddressTest, TestMergeStructuredAddresses) {
+  // This test is only applicable for structured addresses.
+  if (!StructuredAddresses())
+    return;
+
+  Address address1;
+  Address address2;
+
+  // Two empty addresses are mergeable by default.
+  EXPECT_TRUE(address1.IsStructuredAddressMergeable(address2));
+
+  // The two zip codes have a is-substring relation and are mergeable.
+  address1.SetRawInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("12345"));
+  address2.SetRawInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("1234"));
+  EXPECT_TRUE(address2.IsStructuredAddressMergeable(address1));
+  EXPECT_TRUE(address1.IsStructuredAddressMergeable(address2));
+
+  // The merging should maintain the value because address2 is not more
+  // recently used.
+  address1.MergeStructuredAddress(address2,
+                                  /*newer_use_more_recently_used=*/false);
+  EXPECT_EQ(address1.GetRawInfo(ADDRESS_HOME_ZIP), base::UTF8ToUTF16("12345"));
+
+  // Once it is more recently used, the value from address2 should be copied
+  // into address1.
+  address1.MergeStructuredAddress(address2,
+                                  /*newer_use_more_recently_used=*/true);
+  EXPECT_EQ(address1.GetRawInfo(ADDRESS_HOME_ZIP), base::UTF8ToUTF16("1234"));
+
+  // With a second incompatible ZIP code the addresses are not mergeable
+  // anymore.
+  Address address3;
+  address3.SetRawInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("67890"));
+  EXPECT_FALSE(address1.IsStructuredAddressMergeable(address3));
+}
+
+// Tests the retrieval of the structured address.
+TEST_P(AddressTest, TestGettingTheStructuredAddress) {
+  // This test is only applicable for structured addresses.
+  if (!StructuredAddresses())
+    return;
+
+  // Create the address and set a test value.
+  Address address1;
+  address1.SetRawInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("12345"));
+
+  // Get the structured address and verify that it has the same test value set.
+  structured_address::Address structured_address =
+      address1.GetStructuredAddress();
+  EXPECT_EQ(structured_address.GetValueForType(ADDRESS_HOME_ZIP),
+            base::UTF8ToUTF16("12345"));
+}
+
+// For structured address, test that the structured information is wiped
+// correctly when the unstructured street address changes.
+TEST_P(AddressTest, ResetStructuredTokens) {
+  // This test is only applicable for structured addresses.
+  if (!StructuredAddresses())
+    return;
+
+  Address address;
+  // Set a structured address line and call the finalization routine.
+  address.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_STREET_ADDRESS, base::ASCIIToUTF16("Erika-Mann-Str 12"),
+      structured_address::VerificationStatus::kUserVerified);
+  address.FinalizeAfterImport();
+
+  // Verify that structured tokens have been assigned correctly.
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_NAME),
+            base::ASCIIToUTF16("Erika-Mann-Str"));
+  EXPECT_EQ(address.GetVerificationStatus(ADDRESS_HOME_STREET_NAME),
+            structured_address::VerificationStatus::kParsed);
+  ASSERT_EQ(address.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER),
+            base::ASCIIToUTF16("12"));
+  EXPECT_EQ(address.GetVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER),
+            structured_address::VerificationStatus::kParsed);
+
+  // Lift the verification status of the house number to be |kObserved|.
+  address.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_HOUSE_NUMBER, base::ASCIIToUTF16("12"),
+      structured_address::VerificationStatus::kObserved);
+  EXPECT_EQ(address.GetVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER),
+            structured_address::VerificationStatus::kObserved);
+
+  // Now, set a new unstructured street address that has the same tokens in a
+  // different order.
+  address.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_STREET_ADDRESS, base::ASCIIToUTF16("12 Erika-Mann-Str"),
+      structured_address::VerificationStatus::kUserVerified);
+
+  // After this operation, the structure should be maintained including the
+  // observed status of the house number.
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_NAME),
+            base::ASCIIToUTF16("Erika-Mann-Str"));
+  EXPECT_EQ(address.GetVerificationStatus(ADDRESS_HOME_STREET_NAME),
+            structured_address::VerificationStatus::kParsed);
+  ASSERT_EQ(address.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER),
+            base::ASCIIToUTF16("12"));
+  EXPECT_EQ(address.GetVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER),
+            structured_address::VerificationStatus::kObserved);
+
+  // Now set a different street address.
+  address.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_STREET_ADDRESS, base::ASCIIToUTF16("Marienplatz"),
+      structured_address::VerificationStatus::kUserVerified);
+
+  // The set address is not parsable and the this should unset both the street
+  // name and the house number.
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STREET_NAME),
+            base::ASCIIToUTF16(""));
+  EXPECT_EQ(address.GetVerificationStatus(ADDRESS_HOME_STREET_NAME),
+            structured_address::VerificationStatus::kNoStatus);
+  ASSERT_EQ(address.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER),
+            base::ASCIIToUTF16(""));
+  EXPECT_EQ(address.GetVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER),
+            structured_address::VerificationStatus::kNoStatus);
+}
+
+// Runs the suite with the feature
+// |kAutofillSupportForStructuredStructuredNames| enabled and disabled.
+// TODO(crbug.com/1130194): Remove parameterized test once structured addresses
+// are fully launched.
+INSTANTIATE_TEST_SUITE_P(, AddressTest, testing::Bool());
 
 }  // namespace autofill

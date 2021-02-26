@@ -9,6 +9,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
+#include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_dedicated_worker.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
@@ -47,7 +49,6 @@ class CORE_EXPORT DedicatedWorker final
       public ActiveScriptWrappable<DedicatedWorker>,
       public WebDedicatedWorker {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(DedicatedWorker);
   // Pre-finalization is needed to notify the parent object destruction of the
   // GC-managed messaging proxy and to initiate worker termination.
   USING_PRE_FINALIZER(DedicatedWorker, Dispose);
@@ -86,22 +87,32 @@ class CORE_EXPORT DedicatedWorker final
   // Implements WebDedicatedWorker.
   // Called only when PlzDedicatedWorker is enabled.
   void OnWorkerHostCreated(
-      mojo::ScopedMessagePipeHandle browser_interface_broker) override;
-  void OnScriptLoadStarted() override;
+      CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
+          browser_interface_broker) override;
+  void OnScriptLoadStarted(std::unique_ptr<WorkerMainScriptLoadParameters>
+                               worker_main_script_load_params) override;
   void OnScriptLoadStartFailed() override;
 
   void DispatchErrorEventForScriptFetchFailure();
 
+  // Returns a unique identifier for this worker, shared between the browser
+  // process and this renderer. This is generated in the renderer process when
+  // the worker is created, and it is subsequently communicated to the browser
+  // process.
+  const blink::DedicatedWorkerToken& GetToken() const { return token_; }
+
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Starts the worker.
   void Start();
   void ContinueStart(
       const KURL& script_url,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
       network::mojom::ReferrerPolicy,
       base::Optional<network::mojom::IPAddressSpace> response_address_space,
       const String& source_code,
@@ -125,6 +136,11 @@ class CORE_EXPORT DedicatedWorker final
 
   // Implements EventTarget (via AbstractWorker -> EventTargetWithInlineData).
   const AtomicString& InterfaceName() const final;
+
+  // The unique identifier for this DedicatedWorker. This is created in the
+  // renderer process, and passed to the browser. This must be initialized
+  // before |context_proxy_|.
+  blink::DedicatedWorkerToken token_;
 
   const KURL script_request_url_;
   Member<const WorkerOptions> options_;

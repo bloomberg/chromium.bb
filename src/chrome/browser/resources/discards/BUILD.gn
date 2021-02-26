@@ -7,6 +7,8 @@ import("//tools/polymer/polymer.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
+  closure_flags = default_closure_args + mojom_js_args +
+                  [ "js_module_root=" + rebase_path(".", root_build_dir) ]
   deps = [
     ":database_tab",
     ":discards",
@@ -14,14 +16,11 @@ js_type_check("closure_compile") {
     ":discards_tab",
     ":graph_doc",
     ":graph_tab_template",
-    ":mojo_api",
   ]
 }
 
 js_library("discards") {
-  deps = [
-    "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
-  ]
+  deps = [ "//chrome/browser/ui/webui/discards:mojo_bindings_webui_js" ]
 }
 
 js_library("discards_main") {
@@ -34,7 +33,7 @@ js_library("database_tab") {
   deps = [
     ":discards",
     ":sorted_table_behavior",
-    "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
+    "//chrome/browser/ui/webui/discards:mojo_bindings_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
   ]
@@ -44,7 +43,7 @@ js_library("discards_tab") {
   deps = [
     ":discards",
     ":sorted_table_behavior",
-    "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
+    "//chrome/browser/ui/webui/discards:mojo_bindings_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:icon.m",
@@ -53,20 +52,15 @@ js_library("discards_tab") {
 
 js_library("graph_tab_template") {
   deps = [
-    "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
+    "//chrome/browser/ui/webui/discards:mojo_bindings_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
 js_library("graph_doc") {
-  deps = [
-    "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
-  ]
+  deps = [ "//chrome/browser/ui/webui/discards:mojo_bindings_webui_js" ]
 
   externs_list = [ "../../../../third_party/d3/src/externs.js" ]
-}
-
-js_library("mojo_api") {
 }
 
 js_library("sorted_table_behavior") {

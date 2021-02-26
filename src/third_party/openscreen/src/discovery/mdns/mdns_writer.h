@@ -5,7 +5,9 @@
 #ifndef DISCOVERY_MDNS_MDNS_WRITER_H_
 #define DISCOVERY_MDNS_MDNS_WRITER_H_
 
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "discovery/mdns/mdns_records.h"
 #include "util/big_endian.h"
@@ -32,6 +34,7 @@ class MdnsWriter : public BigEndianWriter {
   bool Write(const PtrRecordRdata& rdata);
   bool Write(const TxtRecordRdata& rdata);
   bool Write(const NsecRecordRdata& rdata);
+  bool Write(const OptRecordRdata& rdata);
   // Writes a DNS resource record with its RDATA.
   // The correct type of RDATA to be written is contained in the type
   // specified in the record.

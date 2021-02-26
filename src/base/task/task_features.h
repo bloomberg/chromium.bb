@@ -23,13 +23,35 @@ extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
 // instead of waiting for a threshold in the foreground thread group.
 extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
 
-// Under this feature, best effort capacity is never increased.
-// While it's unlikely we'd ship this as-is, this experiment allows us to
-// determine whether blocked worker replacement logic on best-effort tasks has
-// any impact on guardian metrics.
-extern const BASE_EXPORT Feature kFixedMaxBestEffortTasks;
+// Under this feature, ThreadPool::ShouldYield() always returns false
+extern const BASE_EXPORT Feature kDisableJobYield;
+// Under this feature, JobTaskSource doesn't use worker count in its sort key
+// such that worker threads are not distributed among running jobs equally.
+extern const BASE_EXPORT Feature kDisableFairJobScheduling;
+// Under this feature, priority update on Jobs is disabled.
+extern const BASE_EXPORT Feature kDisableJobUpdatePriority;
+// Under this feature, another WorkerThread is signaled only after the current
+// thread was assigned work.
+extern const BASE_EXPORT Feature kWakeUpAfterGetWork;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+// Strategy affecting how WorkerThreads are signaled to pick up pending work.
+enum class WakeUpStrategy {
+  // A single thread scheduling new work signals all required WorkerThreads.
+  kCentralizedWakeUps,
+  // Each thread signals at most a single thread, either when scheduling new
+  // work or picking up pending work.
+  kSerializedWakeUps,
+  // Each thread signals at most 2 threads, either when scheduling new
+  // work or picking up pending work.
+  kExponentialWakeUps,
+};
+
+// Under this feature, a given WakeUpStrategy param is used.
+extern const BASE_EXPORT Feature kWakeUpStrategyFeature;
+extern const BASE_EXPORT base::FeatureParam<WakeUpStrategy>
+    kWakeUpStrategyParam;
+
+#if defined(OS_WIN) || defined(OS_APPLE)
 #define HAS_NATIVE_THREAD_POOL() 1
 #else
 #define HAS_NATIVE_THREAD_POOL() 0

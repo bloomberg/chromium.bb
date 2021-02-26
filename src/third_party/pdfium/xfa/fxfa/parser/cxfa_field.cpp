@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_field.h"
 
 #include "fxjs/xfa/cjx_field.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -63,6 +63,8 @@ CXFA_Field::CXFA_Field(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Field,
                 kFieldPropertyData,
                 kFieldAttributeData,
-                pdfium::MakeUnique<CJX_Field>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Field>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Field::~CXFA_Field() = default;

@@ -120,8 +120,8 @@ static INLINE int get_switchable_rate(MACROBLOCK *const x,
   int inter_filter_cost;
   const InterpFilter filter0 = filters.as_filters.y_filter;
   const InterpFilter filter1 = filters.as_filters.x_filter;
-  inter_filter_cost = x->switchable_interp_costs[ctx[0]][filter0];
-  inter_filter_cost += x->switchable_interp_costs[ctx[1]][filter1];
+  inter_filter_cost = x->mode_costs.switchable_interp_costs[ctx[0]][filter0];
+  inter_filter_cost += x->mode_costs.switchable_interp_costs[ctx[1]][filter1];
   return SWITCHABLE_INTERP_RATE_FACTOR * inter_filter_cost;
 }
 
@@ -136,7 +136,7 @@ static INLINE void interp_model_rd_eval(
   RD_STATS tmp_rd_stats;
   av1_init_rd_stats(&tmp_rd_stats);
 
-  // Skip inter predictor if the predictor is already avilable.
+  // Skip inter predictor if the predictor is already available.
   if (!is_skip_build_pred) {
     const int mi_row = xd->mi_row;
     const int mi_col = xd->mi_col;
@@ -604,6 +604,43 @@ static INLINE void calc_interp_skip_pred_flag(MACROBLOCK *const x,
   }
 }
 
+/*!\brief AV1 interpolation filter search
+ *
+ * \ingroup inter_mode_search
+ *
+ * \param[in]     cpi               Top-level encoder structure.
+ * \param[in]     tile_data         Pointer to struct holding adaptive
+ *                                  data/contexts/models for the tile during
+ *                                  encoding.
+ * \param[in]     x                 Pointer to struc holding all the data for
+ *                                  the current macroblock.
+ * \param[in]     bsize             Current block size.
+ * \param[in]     tmp_dst           A temporary prediction buffer to hold a
+ *                                  computed prediction.
+ * \param[in,out] orig_dst          A prediction buffer to hold a computed
+ *                                  prediction. This will eventually hold the
+ *                                  final prediction, and the tmp_dst info will
+ *                                  be copied here.
+ * \param[in,out] rd                The RD cost associated with the selected
+ *                                  interpolation filter parameters.
+ * \param[in,out] switchable_rate   The rate associated with using a SWITCHABLE
+ *                                  filter mode.
+ * \param[in,out] skip_build_pred   Indicates whether or not to build the inter
+ *                                  predictor. If this is 0, the inter predictor
+ *                                  has already been built and thus we can avoid
+ *                                  repeating computation.
+ * \param[in]     args              HandleInterModeArgs struct holding
+ *                                  miscellaneous arguments for inter mode
+ *                                  search. See the documentation for this
+ *                                  struct for a description of each member.
+ * \param[in]     ref_best_rd       Best RD found so far for this block.
+ *                                  It is used for early termination of this
+ *                                  search if the RD exceeds this value.
+ *
+ * \return Returns INT64_MAX if the filter parameters are invalid and the
+ * current motion mode being tested should be skipped. It returns 0 if the
+ * parameter search is a success.
+ */
 int64_t av1_interpolation_filter_search(
     MACROBLOCK *const x, const AV1_COMP *const cpi,
     const TileDataEnc *tile_data, BLOCK_SIZE bsize,

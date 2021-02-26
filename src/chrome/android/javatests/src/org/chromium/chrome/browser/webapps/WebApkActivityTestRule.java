@@ -7,17 +7,17 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 
+import org.hamcrest.Matchers;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /** Custom {@link ChromeActivityTestRule} for tests using a WebAPK {@link WebappActivity}. */
@@ -52,24 +52,38 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebappActivit
             BrowserServicesIntentDataProvider webApkIntentDataProvider) {
         WebappInfo webApkInfo = WebappInfo.create(webApkIntentDataProvider);
         Intent intent = createIntent(webApkInfo);
-
         WebappActivity.setIntentDataProviderForTesting(webApkIntentDataProvider);
+
+        return startWebApkActivity(intent, webApkInfo.url());
+    }
+
+    /**
+     * Launches a WebAPK Activity and waits for the page to have finished loading and for the splash
+     * screen to be hidden.
+     */
+    public WebappActivity startWebApkActivity(final String startUrl) {
+        Intent intent =
+                new Intent(InstrumentationRegistry.getTargetContext(), WebappActivity.class);
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, "org.chromium.webapk.test");
+        intent.putExtra(ShortcutHelper.EXTRA_URL, startUrl);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        return startWebApkActivity(intent, startUrl);
+    }
+
+    private WebappActivity startWebApkActivity(final Intent intent, final String startUrl) {
         final WebappActivity webApkActivity =
                 (WebappActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
                         intent);
         setActivity(webApkActivity);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return webApkActivity.getActivityTab() != null;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(webApkActivity.getActivityTab(), Matchers.notNullValue());
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
-        ChromeTabUtils.waitForTabPageLoaded(webApkActivity.getActivityTab(), webApkInfo.url());
+        ChromeTabUtils.waitForTabPageLoaded(webApkActivity.getActivityTab(), startUrl);
         WebappActivityTestRule.waitUntilSplashHides(webApkActivity);
-
         return webApkActivity;
     }
 
@@ -79,8 +93,7 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebappActivit
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkInfo.webApkPackageName());
         intent.putExtra(ShortcutHelper.EXTRA_ID, webApkInfo.id());
         intent.putExtra(ShortcutHelper.EXTRA_URL, webApkInfo.url());
-        intent.addFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         return intent;
     }
 }

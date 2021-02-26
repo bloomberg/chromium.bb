@@ -305,6 +305,25 @@ Day.prototype.next = function(offset) {
 };
 
 /**
+ * @return {!Day}
+ */
+Day.prototype.nextHome = function() {
+  if (this.date !== 1)
+    return new Day(this.year, this.month, 1);
+  return new Day(this.year, this.month - 1, 1);
+};
+
+/**
+ * @return {!Day}
+ */
+Day.prototype.nextEnd = function() {
+  let tomorrow = this.next();
+  if (tomorrow.month === this.month)
+    return new Day(this.year, this.month + 1, 1).previous();
+  return new Day(tomorrow.year, tomorrow.month + 1, 1).previous();
+};
+
+/**
  * Given that 'this' is the Nth day of the month, returns the Nth
  * day of the month that is specified by the parameter.
  * Clips the date if necessary, e.g. if 'this' Day is October 31st and
@@ -604,6 +623,30 @@ Week.prototype.next = function(offset) {
 };
 
 /**
+ * @return {!Week}
+ */
+Week.prototype.nextHome = function() {
+  // Go back weeks until we find the one that is the first week of a month. Do
+  // that by finding the first day in the current week, then go back a day. We
+  // want the first week of the month for that day.
+  var desiredDay = this.firstDay().previous();
+  desiredDay.date = 1;
+  return Week.createFromDay(desiredDay);
+};
+
+/**
+ * @return {!Week}
+ */
+Week.prototype.nextEnd = function() {
+  // Go forward weeks until we find the one that is the last week of a month. Do
+  // that by finding the week containing the last day of the month for the day
+  // following the last day included in the current week.
+  var desiredDay = this.lastDay().next();
+  desiredDay = new Day(desiredDay.year, desiredDay.month + 1, 1).previous();
+  return Week.createFromDay(desiredDay);
+};
+
+/**
  * Given that 'this' is the Nth week of the month, returns
  * the Week that is the Nth week in the month specified
  * by the parameter.
@@ -826,6 +869,24 @@ Month.prototype.next = function(offset) {
   if (typeof offset === 'undefined')
     offset = 1;
   return new Month(this.year, this.month + offset);
+};
+
+/**
+ * @return {!Month}
+ */
+Month.prototype.nextHome = function() {
+  if (this.month !== 0)
+    return new Month(this.year, 0);
+  return new Month(this.year - 1, 0);
+};
+
+/**
+ * @return {!Month}
+ */
+Month.prototype.nextEnd = function() {
+  if (this.month !== MonthsPerYear - 1)
+    return new Month(this.year, MonthsPerYear - 1);
+  return new Month(this.year + 1, MonthsPerYear - 1);
 };
 
 /**
@@ -3168,6 +3229,23 @@ YearListView.prototype.onKeyDown = function(event) {
       if (newSelection) {
         this.setSelectedMonthAndUpdateView(newSelection);
       }
+    } else if (key == 'Home') {
+      var newMonth = this._selectedMonth.month === 0 ?
+          new Month(this._selectedMonth.year - 1, 0) :
+          new Month(this._selectedMonth.year, 0);
+      var newSelection = this.getNearestValidRangeLookingBackward(newMonth);
+      if (newSelection) {
+        this.setSelectedMonthAndUpdateView(newSelection);
+      }
+    } else if (key == 'End') {
+      var lastMonthNum = MonthsPerYear - 1;
+      var newMonth = this._selectedMonth.month === lastMonthNum ?
+          new Month(this._selectedMonth.year + 1, lastMonthNum) :
+          new Month(this._selectedMonth.year, lastMonthNum);
+      var newSelection = this.getNearestValidRangeLookingForward(newMonth);
+      if (newSelection) {
+        this.setSelectedMonthAndUpdateView(newSelection);
+      }
     } else if (this.type !== 'month') {
       if (key == 'Enter') {
         this.dispatchEvent(
@@ -3479,6 +3557,26 @@ CalendarNavigationButton.prototype.onRepeatingClick = function(event) {
 };
 
 /**
+ * @param {!Day} day
+ * @param {!Day} minDay
+ * @param {!Day} maxDay
+ * @return {boolean}
+ */
+function isDayOutsideOfRange(day, minDay, maxDay) {
+  return day < minDay || maxDay < day;
+}
+
+/**
+ * @param {!Week} week
+ * @param {!Week} minWeek
+ * @param {!Week} maxWeek
+ * @return {boolean}
+ */
+function isWeekOutsideOfRange(week, minWeek, maxWeek) {
+  return week < minWeek || maxWeek < week;
+}
+
+/**
  * @constructor
  * @extends View
  * @param {!CalendarPicker} calendarPicker
@@ -3532,10 +3630,15 @@ function CalendarHeaderView(calendarPicker) {
         this.onNavigationButtonClick);
     this._todayButton.element.classList.add(
         CalendarHeaderView.GetClassNameTodayButton());
-    var monthContainingToday = Month.createFromToday();
-    this._todayButton.setDisabled(
-        monthContainingToday < this.calendarPicker.minimumMonth ||
-        monthContainingToday > this.calendarPicker.maximumMonth);
+    if (this.calendarPicker.type === 'week') {
+      this._todayButton.setDisabled(isWeekOutsideOfRange(
+          Week.createFromToday(), this.calendarPicker.config.minimum,
+          this.calendarPicker.config.maximum));
+    } else {
+      this._todayButton.setDisabled(isDayOutsideOfRange(
+          Day.createFromToday(), this.calendarPicker.config.minimum,
+          this.calendarPicker.config.maximum));
+    }
     this._todayButton.element.setAttribute(
         'aria-label', global.params.todayLabel);
   }
@@ -3573,7 +3676,7 @@ CalendarHeaderView.prototype = Object.create(View.prototype);
 CalendarHeaderView.Height = 24;
 CalendarHeaderView.BottomMargin = 10;
 CalendarHeaderView.ClassNameCalendarNavigationButtonIconRefresh =
-    'today-button-icon-refresh';
+    'navigation-button-icon-refresh';
 CalendarHeaderView._ForwardTriangle =
     '<svg width=\'4\' height=\'7\'><polygon points=\'0,7 0,0, 4,3.5\' style=\'fill:#6e6e6e;\' /></svg>';
 CalendarHeaderView._ForwardTriangleRefresh = `<svg class="${
@@ -3660,11 +3763,17 @@ CalendarHeaderView.prototype.setDisabled = function(disabled) {
       this.disabled ||
       this.calendarPicker.currentMonth() >= this.calendarPicker.maximumMonth);
   if (this._todayButton) {
-    var monthContainingToday = Month.createFromToday();
-    this._todayButton.setDisabled(
-        this.disabled ||
-        monthContainingToday < this.calendarPicker.minimumMonth ||
-        monthContainingToday > this.calendarPicker.maximumMonth);
+    if (this.disabled) {
+      this._todayButton.setDisabled(true);
+    } else if (this.calendarPicker.type === 'week') {
+      this._todayButton.setDisabled(isWeekOutsideOfRange(
+          Week.createFromToday(), this.calendarPicker.config.minimum,
+          this.calendarPicker.config.maximum));
+    } else {
+      this._todayButton.setDisabled(isDayOutsideOfRange(
+          Day.createFromToday(), this.calendarPicker.config.minimum,
+          this.calendarPicker.config.maximum));
+    }
   }
 };
 
@@ -4041,10 +4150,15 @@ function CalendarTableView(calendarPicker) {
     todayButton.element.textContent = global.params.todayLabel;
     todayButton.element.classList.add(
         CalendarHeaderView.GetClassNameTodayButton());
-    var monthContainingToday = Month.createFromToday();
-    todayButton.setDisabled(
-        monthContainingToday < this.calendarPicker.minimumMonth ||
-        monthContainingToday > this.calendarPicker.maximumMonth);
+    if (this.calendarPicker.type === 'week') {
+      todayButton.setDisabled(isWeekOutsideOfRange(
+          Week.createFromToday(), this.calendarPicker.config.minimum,
+          this.calendarPicker.config.maximum));
+    } else {
+      todayButton.setDisabled(isDayOutsideOfRange(
+          Day.createFromToday(), this.calendarPicker.config.minimum,
+          this.calendarPicker.config.maximum));
+    }
     todayButton.element.setAttribute('aria-label', global.params.todayLabel);
   }
 
@@ -4984,6 +5098,20 @@ CalendarPicker.prototype.onCalendarTableKeyDownRefresh = function(event) {
           }
         }
         break;
+      case 'Home':
+        var newSelection = this.getNearestValidRangeLookingBackward(
+            this._selection.nextHome());
+        if (newSelection) {
+          this.setSelection(newSelection);
+        }
+        break;
+      case 'End':
+        var newSelection =
+            this.getNearestValidRangeLookingForward(this._selection.nextEnd());
+        if (newSelection) {
+          this.setSelection(newSelection);
+        }
+        break;
     };
   }
     // else if there is no selection it must be the case that there are no
@@ -5085,7 +5213,7 @@ CalendarPicker.prototype.onBodyClick = function(event) {
   if (global.params.isFormControlsRefreshEnabled &&
       this.type !== 'datetime-local') {
     if (event.target.matches(
-            '.calendar-navigation-button, .today-button-icon-refresh, .month-button')) {
+            '.calendar-navigation-button, .navigation-button-icon-refresh, .month-button')) {
       window.pagePopupController.setValue(this.getSelectedValue());
     }
   }
@@ -5127,6 +5255,8 @@ CalendarPicker.prototype.onBodyKeyDown = function(event) {
     case 'ArrowRight':
     case 'PageUp':
     case 'PageDown':
+    case 'Home':
+    case 'End':
       if (global.params.isFormControlsRefreshEnabled &&
           this.type !== 'datetime-local' &&
           event.target.matches('.calendar-table-view') && this._selection) {

@@ -21,14 +21,17 @@ group("v8_context_snapshot") {
   if (use_v8_context_snapshot) {
     public_deps = [ ":generate_v8_context_snapshot" ]
     if (!is_android) {
-      data = [ "$root_out_dir/v8_context_snapshot.bin" ]
+      data = [ "$root_out_dir/$v8_context_snapshot_filename" ]
     }
   }
 }
 
 config("use_v8_context_snapshot") {
   if (use_v8_context_snapshot) {
-    defines = [ "USE_V8_CONTEXT_SNAPSHOT" ]
+    defines = [
+      "USE_V8_CONTEXT_SNAPSHOT",
+      "V8_CONTEXT_SNAPSHOT_FILENAME=\"$v8_context_snapshot_filename\"",
+    ]
   }
 }
 
@@ -36,7 +39,7 @@ if (use_v8_context_snapshot) {
   if (is_android && enable_java_templates) {
     android_assets("v8_context_snapshot_assets") {
       deps = [ ":v8_context_snapshot" ]
-      renaming_sources = [ "$root_out_dir/v8_context_snapshot.bin" ]
+      renaming_sources = [ "$root_out_dir/$v8_context_snapshot_filename" ]
       if (current_cpu == "arm" || current_cpu == "x86" ||
           current_cpu == "mipsel") {
         renaming_destinations = [ "v8_context_snapshot_32.bin" ]
@@ -49,7 +52,7 @@ if (use_v8_context_snapshot) {
 
   action("generate_v8_context_snapshot") {
     script = "//build/gn_run_binary.py"
-    output_file = "$root_out_dir/v8_context_snapshot.bin"
+    output_file = "$root_out_dir/$v8_context_snapshot_filename"
     output_path = rebase_path(output_file, root_build_dir)
 
     args = [
@@ -64,12 +67,21 @@ if (use_v8_context_snapshot) {
     deps = [ ":v8_context_snapshot_generator($v8_snapshot_toolchain)" ]
 
     if (is_component_build) {
-      # In component builds, this forces the generator to rerun whenever the v8
-      # shared library is rebuilt. Without it would only regenerate if the
-      # generator itself was rebuilt.
-      inputs = [ "$root_out_dir/${shlib_prefix}v8${shlib_extension}" ]
+      # In the component build mode, the snapshot should be updated when any of
+      # the generator executable or the shared libraries get updated.  Note that
+      # it's possible that some of the shared libraries are updated without
+      # having the executable updated.
+      inputs = [
+        "$root_out_dir/${shlib_prefix}blink_core${shlib_extension}",
+        "$root_out_dir/${shlib_prefix}blink_modules${shlib_extension}",
+        "$root_out_dir/${shlib_prefix}blink_platform${shlib_extension}",
+        "$root_out_dir/${shlib_prefix}v8${shlib_extension}",
+      ]
 
-      deps += [ "//v8" ]
+      deps += [
+        "//third_party/blink/renderer/bindings:v8_context_snapshot_influential_libs",
+        "//v8",
+      ]
     }
 
     outputs = [ output_file ]

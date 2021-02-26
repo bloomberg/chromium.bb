@@ -97,11 +97,6 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
   void RecordSwitchToTab(content::WebContents* old_contents,
                          content::WebContents* new_contents);
 
-  // Record expected task queueing durations of foreground tabs in session
-  // restore.
-  void RecordExpectedTaskQueueingDuration(content::WebContents* contents,
-                                          base::TimeDelta queueing_time);
-
   // Record background tab count for BackgroundTabOpening.
   void RecordBackgroundTabCount();
 
@@ -170,12 +165,9 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTabSwitchTest,
                            HistogramsTabSwitchLoadTime);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorParameterizedTest,
-                           HistogramsExpectedTaskQueueingDuration);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorParameterizedTest,
                            HistogramsTabCount);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest,
                            HistogramsSessionOverlap);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest, PeriodicSamplingWorks);
 
   // Returns true if the browser is currently in more than one session with
   // different types. We do not want to report metrics in this situation to have
@@ -195,25 +187,12 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
   // Update session and sequence information for UKM recording.
   void UpdateSessionAndSequence();
 
-  // This is called sometime after startup, and initiates periodic CanFreeze/
-  // CanDiscard metric sampling. It posts a delayed task to
-  // PerformPeriodicSample.
-  void StartPeriodicSampling();
-
-  // This is called when a sample should be taken. First call is via
-  // StartPeriodicSampling and then it posts a delayed task to call itself.
-  void PerformPeriodicSample();
-
   // Helper function for RecordSampledTabData. Records a single UKM entry for
   // the provided DecisionDetails and destination lifecycle state.
   static void RecordDecisionDetails(LifecycleUnit* lifecycle_unit,
                                     const DecisionDetails& decision_details,
                                     LifecycleUnitState new_state);
 
-  static const char
-      kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration[];
-  static const char
-      kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration[];
   static const char kHistogramSessionRestoreSwitchToTab[];
   static const char kHistogramBackgroundTabOpeningSwitchToTab[];
   static const char kHistogramSessionRestoreTabSwitchLoadTime[];
@@ -258,9 +237,6 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
       foreground_contents_switched_to_times_;
 
   BackgroundTabCountStats background_tab_count_stats_;
-
-  // The start time of an ongoing periodic sample.
-  base::TimeTicks sample_start_time_;
 
   base::WeakPtrFactory<TabManagerStatsCollector> weak_factory_{this};
 };

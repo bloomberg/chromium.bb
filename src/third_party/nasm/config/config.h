@@ -6,6 +6,7 @@
 #include "config-mac.h"
 #elif _WIN32
 #include "msvc.h"
+#include "unconfig.h"
 #else
 #include "config-linux.h"
 #endif

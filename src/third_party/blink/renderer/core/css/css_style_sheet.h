@@ -22,7 +22,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_SHEET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_SHEET_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_rule.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
@@ -44,7 +43,6 @@ class Document;
 class ExceptionState;
 class MediaQuerySet;
 class ScriptPromise;
-class ScriptPromiseResolver;
 class ScriptState;
 class StyleSheetContents;
 
@@ -80,6 +78,8 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
       Node& owner_node,
       bool is_inline_stylesheet = false,
       const TextPosition& start_position = TextPosition::MinimumPosition());
+  CSSStyleSheet(const CSSStyleSheet&) = delete;
+  CSSStyleSheet& operator=(const CSSStyleSheet&) = delete;
   ~CSSStyleSheet() override;
 
   CSSStyleSheet* parentStyleSheet() const override;
@@ -107,7 +107,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   ScriptPromise replace(ScriptState* script_state, const String& text);
   void replaceSync(const String& text, ExceptionState&);
-  void ResolveReplacePromiseIfNeeded(bool load_error_occured);
 
   // For CSSRuleList.
   unsigned length() const;
@@ -144,10 +143,13 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     adopted_tree_scopes_.erase(&tree_scope);
   }
 
-  Document* AssociatedDocument() { return associated_document_; }
+  // Associated document for constructed stylesheet. Always non-null for
+  // constructed stylesheets, always null otherwise.
+  Document* ConstructorDocument() const { return constructor_document_; }
 
-  void SetAssociatedDocument(Document* document) {
-    associated_document_ = document;
+  // Set constructor document for constructed stylesheet.
+  void SetConstructorDocument(Document& document) {
+    constructor_document_ = &document;
   }
 
   void AddToCustomElementTagNames(const AtomicString& local_tag_name) {
@@ -160,27 +162,35 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
    public:
     explicit RuleMutationScope(CSSStyleSheet*);
     explicit RuleMutationScope(CSSRule*);
+    RuleMutationScope(const RuleMutationScope&) = delete;
+    RuleMutationScope& operator=(const RuleMutationScope&) = delete;
     ~RuleMutationScope();
 
    private:
     CSSStyleSheet* style_sheet_;
-    DISALLOW_COPY_AND_ASSIGN(RuleMutationScope);
   };
 
   void WillMutateRules();
-  void DidMutateRules();
-  void DidMutate();
+
+  enum class Mutation {
+    // Properties on the CSSStyleSheet object changed.
+    kSheet,
+    // Rules in the CSSStyleSheet changed.
+    kRules,
+  };
+  void DidMutate(Mutation mutation);
 
   class InspectorMutationScope {
     STACK_ALLOCATED();
 
    public:
     explicit InspectorMutationScope(CSSStyleSheet*);
+    InspectorMutationScope(const InspectorMutationScope&) = delete;
+    InspectorMutationScope& operator=(const InspectorMutationScope&) = delete;
     ~InspectorMutationScope();
 
    private:
     CSSStyleSheet* style_sheet_;
-    DISALLOW_COPY_AND_ASSIGN(InspectorMutationScope);
   };
 
   void EnableRuleAccessForInspector();
@@ -198,14 +208,9 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void SetMedia(MediaList*);
   void SetAlternateFromConstructor(bool);
   bool CanBeActivated(const String& current_preferrable_name) const;
+  bool IsConstructed() const { return ConstructorDocument(); }
 
-  void SetIsConstructed(bool is_constructed) {
-    is_constructed_ = is_constructed;
-  }
-
-  bool IsConstructed() { return is_constructed_; }
-
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   bool IsAlternate() const;
@@ -249,8 +254,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool alternate_from_constructor_ = false;
   bool enable_rule_access_for_inspector_ = false;
 
-  bool is_constructed_ = false;
-
   String title_;
   scoped_refptr<MediaQuerySet> media_queries_;
   MediaQueryResultList viewport_dependent_media_query_results_;
@@ -259,15 +262,15 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   Member<Node> owner_node_;
   Member<CSSRule> owner_rule_;
   HeapHashSet<WeakMember<TreeScope>> adopted_tree_scopes_;
-  Member<Document> associated_document_;
+  // The Document this stylesheet was constructed for. Always non-null for
+  // constructed stylesheets. Always null for other sheets.
+  Member<Document> constructor_document_;
   HashSet<AtomicString> custom_element_tag_names_;
-  Member<ScriptPromiseResolver> resolver_;
 
   TextPosition start_position_;
   Member<MediaList> media_cssom_wrapper_;
   mutable HeapVector<Member<CSSRule>> child_rule_cssom_wrappers_;
   mutable Member<CSSRuleList> rule_list_cssom_wrapper_;
-  DISALLOW_COPY_AND_ASSIGN(CSSStyleSheet);
 };
 
 inline CSSStyleSheet::RuleMutationScope::RuleMutationScope(CSSStyleSheet* sheet)
@@ -283,7 +286,7 @@ inline CSSStyleSheet::RuleMutationScope::RuleMutationScope(CSSRule* rule)
 
 inline CSSStyleSheet::RuleMutationScope::~RuleMutationScope() {
   if (style_sheet_)
-    style_sheet_->DidMutateRules();
+    style_sheet_->DidMutate(Mutation::kRules);
 }
 
 template <>

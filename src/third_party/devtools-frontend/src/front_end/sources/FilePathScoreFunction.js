@@ -28,9 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @unrestricted
- */
 export class FilePathScoreFunction {
   /**
    * @param {string} query
@@ -96,7 +93,7 @@ export class FilePathScoreFunction {
     }
 
     const prevChar = data.charAt(j - 1);
-    return prevChar === '_' || prevChar === '-' || prevChar === '/' ||
+    return prevChar === '_' || prevChar === '-' || prevChar === '/' || prevChar === '.' || prevChar === ' ' ||
         (data[j - 1] !== this._dataUpperCase[j - 1] && data[j] === this._dataUpperCase[j]);
   }
 

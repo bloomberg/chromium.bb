@@ -112,4 +112,8 @@ bool GrMtlFormatIsCompressed(MTLPixelFormat mtlFormat);
  */
 SkImage::CompressionType GrMtlFormatToCompressionType(MTLPixelFormat mtlFormat);
 
+size_t GrMtlFormatBytesPerBlock(MTLPixelFormat);
+
+int GrMtlFormatStencilBits(MTLPixelFormat);
+
 #endif

@@ -19,6 +19,7 @@
 #include "core/fpdfapi/render/cpdf_rendercontext.h"
 #include "core/fpdfapi/render/cpdf_renderstatus.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
+#include "third_party/base/numerics/safe_conversions.h"
 
 namespace {
 
@@ -54,7 +55,7 @@ RetainPtr<CFX_DIBBase> CPDF_ImageCacheEntry::DetachMask() {
 }
 
 CPDF_DIB::LoadState CPDF_ImageCacheEntry::StartGetCachedBitmap(
-    CPDF_Dictionary* pPageResources,
+    const CPDF_Dictionary* pPageResources,
     const CPDF_RenderStatus* pRenderStatus,
     bool bStdCS) {
   if (m_pCachedBitmap) {

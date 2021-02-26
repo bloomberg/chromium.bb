@@ -17,40 +17,10 @@
 #include "build/build_config.h"
 #include "remoting/protocol/video_channel_state_observer.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
-
-#if defined(USE_H264_ENCODER)
-#include "media/video/h264_parser.h"
-#endif
+#include "third_party/webrtc/media/base/vp9_profile.h"
 
 namespace remoting {
 namespace protocol {
-
-#if defined(USE_H264_ENCODER)
-namespace {
-
-// Populates struct webrtc::RTPFragmentationHeader for H264 codec.
-// Each entry specifies the offset and length (excluding start code) of a NALU.
-// Returns true if successful.
-bool GetRTPFragmentationHeaderH264(webrtc::RTPFragmentationHeader* header,
-                                   const uint8_t* data, uint32_t length) {
-  std::vector<media::H264NALU> nalu_vector;
-  if (!media::H264Parser::ParseNALUs(data, length, &nalu_vector)) {
-    // H264Parser::ParseNALUs() has logged the errors already.
-    return false;
-  }
-
-  // TODO(zijiehe): Find a right place to share the following logic between
-  // //content and //remoting.
-  header->VerifyAndAllocateFragmentationHeader(nalu_vector.size());
-  for (size_t i = 0; i < nalu_vector.size(); ++i) {
-    header->fragmentationOffset[i] = nalu_vector[i].data - data;
-    header->fragmentationLength[i] = nalu_vector[i].size;
-  }
-  return true;
-}
-
-}  // namespace
-#endif
 
 WebrtcDummyVideoEncoder::WebrtcDummyVideoEncoder(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -144,7 +114,6 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
       webrtc::EncodedImageBuffer::Create(buffer, buffer_size));
   encoded_image._encodedWidth = frame.size.width();
   encoded_image._encodedHeight = frame.size.height();
-  encoded_image._completeFrame = true;
   encoded_image._frameType = frame.key_frame
                                  ? webrtc::VideoFrameType::kVideoFrameKey
                                  : webrtc::VideoFrameType::kVideoFrameDelta;
@@ -200,25 +169,8 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     NOTREACHED();
   }
 
-  webrtc::RTPFragmentationHeader header;
-  if (frame.codec == webrtc::kVideoCodecH264) {
-#if defined(USE_H264_ENCODER)
-    if (!GetRTPFragmentationHeaderH264(&header, buffer, buffer_size)) {
-      return webrtc::EncodedImageCallback::Result(
-          webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED);
-    }
-#else
-    NOTREACHED();
-#endif
-  } else {
-    header.VerifyAndAllocateFragmentationHeader(1);
-    header.fragmentationOffset[0] = 0;
-    header.fragmentationLength[0] = buffer_size;
-  }
-
   DCHECK(encoded_callback_);
-  return encoded_callback_->OnEncodedImage(encoded_image, &codec_specific_info,
-                                           &header);
+  return encoded_callback_->OnEncodedImage(encoded_image, &codec_specific_info);
 }
 
 webrtc::VideoEncoder::EncoderInfo WebrtcDummyVideoEncoder::GetEncoderInfo()
@@ -235,7 +187,11 @@ WebrtcDummyVideoEncoderFactory::WebrtcDummyVideoEncoderFactory()
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   formats_.push_back(webrtc::SdpVideoFormat("VP8"));
   formats_.push_back(webrtc::SdpVideoFormat("VP9"));
+  formats_.push_back(
+      webrtc::SdpVideoFormat("VP9", {{webrtc::kVP9FmtpProfileId, "1"}}));
+#if defined(USE_H264_ENCODER)
   formats_.push_back(webrtc::SdpVideoFormat("H264"));
+#endif
 }
 
 WebrtcDummyVideoEncoderFactory::~WebrtcDummyVideoEncoderFactory() {
@@ -253,7 +209,8 @@ WebrtcDummyVideoEncoderFactory::CreateVideoEncoder(
   encoders_.push_back(encoder.get());
   if (encoder_created_callback_) {
     main_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(encoder_created_callback_, type));
+        FROM_HERE,
+        base::BindOnce(encoder_created_callback_, type, format.parameters));
   }
   return encoder;
 }
@@ -267,7 +224,6 @@ WebrtcDummyVideoEncoderFactory::CodecInfo
 WebrtcDummyVideoEncoderFactory::QueryVideoEncoder(
     const webrtc::SdpVideoFormat& format) const {
   CodecInfo codec_info;
-  codec_info.is_hardware_accelerated = true;
   // Set internal source to true to directly provide encoded frames to webrtc.
   codec_info.has_internal_source = true;
   return codec_info;
@@ -291,7 +247,9 @@ WebrtcDummyVideoEncoderFactory::SendEncodedFrame(
 }
 
 void WebrtcDummyVideoEncoderFactory::RegisterEncoderSelectedCallback(
-    const base::Callback<void(webrtc::VideoCodecType)>& callback) {
+    const base::RepeatingCallback<
+        void(webrtc::VideoCodecType,
+             const webrtc::SdpVideoFormat::Parameters&)>& callback) {
   encoder_created_callback_ = callback;
 }
 

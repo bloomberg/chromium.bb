@@ -7,10 +7,10 @@ package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import androidx.annotation.IdRes;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -26,6 +27,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.R;
@@ -36,8 +39,6 @@ import org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessoryS
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.widget.ChipView;
 
@@ -82,7 +83,7 @@ public class CreditCardAccessorySheetViewTest {
                             R.dimen.keyboard_accessory_sheet_height));
             accessorySheet.show();
         });
-        CriteriaHelper.pollUiThread(Criteria.equals(true, () -> mView.get() != null));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get(), notNullValue()));
     }
 
     @After
@@ -100,7 +101,7 @@ public class CreditCardAccessorySheetViewTest {
                     "Credit Cards", AccessorySheetDataPiece.Type.TITLE));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(1)));
         View title = mView.get().findViewById(R.id.tab_title);
         assertThat(title, is(not(nullValue())));
         assertThat(title, instanceOf(TextView.class));
@@ -122,7 +123,7 @@ public class CreditCardAccessorySheetViewTest {
                     AccessorySheetDataPiece.Type.FOOTER_COMMAND));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(2, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(2)));
 
         // Check that the titles are correct:
         assertThat(getChipText(R.id.cc_number), is("4111111111111111"));
@@ -157,7 +158,7 @@ public class CreditCardAccessorySheetViewTest {
                     AccessorySheetDataPiece.Type.FOOTER_COMMAND));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(2, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(2)));
 
         assertThat(getChipText(R.id.cc_number), is("4111111111111111"));
         assertThat(findChipView(R.id.cc_number).isShown(), is(true));
@@ -180,7 +181,7 @@ public class CreditCardAccessorySheetViewTest {
                     AccessorySheetDataPiece.Type.FOOTER_COMMAND));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(2, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(2)));
 
         assertThat(findChipView(R.id.cardholder).isShown(), is(false));
     }
@@ -198,7 +199,7 @@ public class CreditCardAccessorySheetViewTest {
                     AccessorySheetDataPiece.Type.FOOTER_COMMAND));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(2, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(2)));
 
         assertThat(mView.get().getChildAt(0), instanceOf(LinearLayout.class));
         LinearLayout warning = (LinearLayout) mView.get().getChildAt(0);

@@ -35,6 +35,7 @@
 namespace perfetto {
 
 class PatchList;
+class Patch;
 class TraceWriter;
 class TraceWriterImpl;
 
@@ -126,10 +127,6 @@ class SharedMemoryArbiterImpl : public SharedMemoryArbiter {
                    MaybeUnboundBufferID target_buffer,
                    PatchList* patch_list);
 
-  // Forces a synchronous commit of the completed packets without waiting for
-  // the next task.
-  void FlushPendingCommitDataRequests(std::function<void()> callback = {});
-
   SharedMemoryABI* shmem_abi_for_testing() { return &shmem_abi_; }
 
   static void set_default_layout_for_testing(SharedMemoryABI::PageLayout l) {
@@ -150,6 +147,16 @@ class SharedMemoryArbiterImpl : public SharedMemoryArbiter {
   void AbortStartupTracingForReservation(
       uint16_t target_buffer_reservation_id) override;
   void NotifyFlushComplete(FlushRequestID) override;
+
+  void SetBatchCommitsDuration(uint32_t batch_commits_duration_ms) override;
+
+  bool EnableDirectSMBPatching() override;
+
+  void SetDirectSMBPatchingSupportedByService() override;
+
+  void FlushPendingCommitDataRequests(
+      std::function<void()> callback = {}) override;
+  bool TryShutdown() override;
 
   base::TaskRunner* task_runner() const { return task_runner_; }
   size_t page_size() const { return shmem_abi_.page_size(); }
@@ -183,6 +190,18 @@ class SharedMemoryArbiterImpl : public SharedMemoryArbiter {
                                MaybeUnboundBufferID target_buffer,
                                PatchList* patch_list);
 
+  // Search the chunks that are being batched in |commit_data_req_| for a chunk
+  // that needs patching and that matches the provided |writer_id| and
+  // |patch.chunk_id|. If found, apply |patch| to that chunk, and if
+  // |chunk_needs_more_patching| is true, clear the needs patching flag of the
+  // chunk and mark it as complete - to allow the service to read it (and other
+  // chunks after it) during scraping. Returns true if the patch was applied,
+  // false otherwise.
+  //
+  // Note: the caller must be holding |lock_| for the duration of the call.
+  bool TryDirectPatchLocked(WriterID writer_id,
+                            const Patch& patch,
+                            bool chunk_needs_more_patching);
   std::unique_ptr<TraceWriter> CreateTraceWriterInternal(
       MaybeUnboundBufferID target_buffer,
       BufferExhaustedPolicy);
@@ -209,6 +228,7 @@ class SharedMemoryArbiterImpl : public SharedMemoryArbiter {
   bool UpdateFullyBoundLocked();
 
   const bool initially_bound_;
+
   // Only accessed on |task_runner_| after the producer endpoint was bound.
   TracingService::ProducerEndpoint* producer_endpoint_ = nullptr;
 
@@ -222,6 +242,7 @@ class SharedMemoryArbiterImpl : public SharedMemoryArbiter {
   std::unique_ptr<CommitDataRequest> commit_data_req_;
   size_t bytes_pending_commit_ = 0;  // SUM(chunk.size() : commit_data_req_).
   IdAllocator<WriterID> active_writer_ids_;
+  bool did_shutdown_ = false;
 
   // Whether the arbiter itself and all startup target buffer reservations are
   // bound. Note that this can become false again later if a new target buffer
@@ -237,6 +258,24 @@ class SharedMemoryArbiterImpl : public SharedMemoryArbiter {
   // Callbacks for flush requests issued while the arbiter or a target buffer
   // reservation was unbound.
   std::vector<std::function<void()>> pending_flush_callbacks_;
+
+  // See SharedMemoryArbiter::SetBatchCommitsDuration.
+  uint32_t batch_commits_duration_ms_ = 0;
+
+  // See SharedMemoryArbiter::EnableDirectSMBPatching.
+  bool direct_patching_enabled_ = false;
+
+  // See SharedMemoryArbiter::SetDirectSMBPatchingSupportedByService.
+  bool direct_patching_supported_by_service_ = false;
+
+  // Indicates whether we have already scheduled a delayed flush for the
+  // purposes of batching. Set to true at the beginning of a batching period and
+  // cleared at the end of the period. Immediate flushes that happen during a
+  // batching period will empty the |commit_data_req| (triggering an immediate
+  // IPC to the service), but will not clear this flag and the
+  // previously-scheduled delayed flush will still occur at the end of the
+  // batching period.
+  bool delayed_flush_scheduled_ = false;
 
   // Stores target buffer reservations for writers created via
   // CreateStartupTraceWriter(). A bound reservation sets

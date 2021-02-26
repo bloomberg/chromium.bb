@@ -12,7 +12,7 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -190,7 +190,7 @@ class MEDIA_EXPORT DecoderBuffer
   bool MatchesForTesting(const DecoderBuffer& buffer) const;
 
   // Returns a human-readable string describing |*this|.
-  std::string AsHumanReadableString() const;
+  std::string AsHumanReadableString(bool verbose = false) const;
 
   // Replaces any existing side data with data copied from |side_data|.
   void CopySideDataFrom(const uint8_t* side_data, size_t side_data_size);

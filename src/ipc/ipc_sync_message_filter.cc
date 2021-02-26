@@ -69,24 +69,25 @@ bool SyncMessageFilter::Send(Message* message) {
     }
   }
 
-  bool done = false;
-  bool shutdown = false;
-  scoped_refptr<mojo::SyncHandleRegistry> registry =
-      mojo::SyncHandleRegistry::current();
-  auto on_shutdown_callback = base::BindRepeating(&OnEventReady, &shutdown);
-  auto on_done_callback = base::BindRepeating(&OnEventReady, &done);
-  registry->RegisterEvent(shutdown_event_, on_shutdown_callback);
-  registry->RegisterEvent(&done_event, on_done_callback);
+  {
+    bool done = false;
+    bool shutdown = false;
+    scoped_refptr<mojo::SyncHandleRegistry> registry =
+        mojo::SyncHandleRegistry::current();
+    mojo::SyncHandleRegistry::EventCallbackSubscription shutdown_subscription =
+        registry->RegisterEvent(shutdown_event_,
+                                base::BindRepeating(&OnEventReady, &shutdown));
+    mojo::SyncHandleRegistry::EventCallbackSubscription done_subscription =
+        registry->RegisterEvent(&done_event,
+                                base::BindRepeating(&OnEventReady, &done));
 
-  const bool* stop_flags[] = { &done, &shutdown };
-  registry->Wait(stop_flags, 2);
-  if (done) {
-    TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-                          "SyncMessageFilter::Send", &done_event);
+    const bool* stop_flags[] = {&done, &shutdown};
+    registry->Wait(stop_flags, 2);
+    if (done) {
+      TRACE_EVENT_FLOW_END0("toplevel.flow", "SyncMessageFilter::Send",
+                            &done_event);
+    }
   }
-
-  registry->UnregisterEvent(shutdown_event_, on_shutdown_callback);
-  registry->UnregisterEvent(&done_event, on_done_callback);
 
   {
     base::AutoLock auto_lock(lock_);
@@ -131,7 +132,7 @@ bool SyncMessageFilter::OnMessageReceived(const Message& message) {
         (*iter)->send_result =
             (*iter)->deserializer->SerializeOutputParameters(message);
       }
-      TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+      TRACE_EVENT_FLOW_BEGIN0("toplevel.flow",
                               "SyncMessageFilter::OnMessageReceived",
                               (*iter)->done_event);
       (*iter)->done_event->Signal();
@@ -169,7 +170,7 @@ void SyncMessageFilter::SignalAllEvents() {
   lock_.AssertAcquired();
   for (PendingSyncMessages::iterator iter = pending_sync_messages_.begin();
        iter != pending_sync_messages_.end(); ++iter) {
-    TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+    TRACE_EVENT_FLOW_BEGIN0("toplevel.flow",
                             "SyncMessageFilter::SignalAllEvents",
                             (*iter)->done_event);
     (*iter)->done_event->Signal();

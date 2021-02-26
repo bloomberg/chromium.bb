@@ -4,13 +4,15 @@
 
 #include "chrome/browser/web_applications/web_app_registrar.h"
 
-#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 
 namespace web_app {
@@ -20,12 +22,27 @@ WebAppRegistrar::WebAppRegistrar(Profile* profile) : AppRegistrar(profile) {}
 WebAppRegistrar::~WebAppRegistrar() = default;
 
 const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
+  if (registry_profile_being_deleted_)
+    return nullptr;
+
   auto it = registry_.find(app_id);
   return it == registry_.end() ? nullptr : it->second.get();
 }
 
+void WebAppRegistrar::Start() {
+  // Profile manager can be null in unit tests.
+  if (g_browser_process->profile_manager())
+    g_browser_process->profile_manager()->AddObserver(this);
+}
+
+void WebAppRegistrar::Shutdown() {
+  if (g_browser_process->profile_manager())
+    g_browser_process->profile_manager()->RemoveObserver(this);
+}
+
 bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {
-  return GetAppById(app_id) != nullptr;
+  const WebApp* web_app = GetAppById(app_id);
+  return web_app && !web_app->is_in_sync_install();
 }
 
 bool WebAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
@@ -40,7 +57,7 @@ bool WebAppRegistrar::WasInstalledByUser(const AppId& app_id) const {
 
 int WebAppRegistrar::CountUserInstalledApps() const {
   int num_user_installed = 0;
-  for (const WebApp& app : AllApps()) {
+  for (const WebApp& app : GetAppsIncludingStubs()) {
     if (app.is_locally_installed() && app.WasInstalledByUser())
       ++num_user_installed;
   }
@@ -63,9 +80,29 @@ base::Optional<SkColor> WebAppRegistrar::GetAppThemeColor(
   return web_app ? web_app->theme_color() : base::nullopt;
 }
 
-const GURL& WebAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
+base::Optional<SkColor> WebAppRegistrar::GetAppBackgroundColor(
+    const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->launch_url() : GURL::EmptyGURL();
+  return web_app ? web_app->background_color() : base::nullopt;
+}
+
+const GURL& WebAppRegistrar::GetAppStartUrl(const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->start_url() : GURL::EmptyGURL();
+}
+
+const std::string* WebAppRegistrar::GetAppLaunchQueryParams(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->launch_query_params() : nullptr;
+}
+
+const apps::ShareTarget* WebAppRegistrar::GetAppShareTarget(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return (web_app && web_app->share_target().has_value())
+             ? &web_app->share_target().value()
+             : nullptr;
 }
 
 base::Optional<GURL> WebAppRegistrar::GetAppScopeInternal(
@@ -94,6 +131,23 @@ DisplayMode WebAppRegistrar::GetAppUserDisplayMode(const AppId& app_id) const {
   return web_app ? web_app->user_display_mode() : DisplayMode::kUndefined;
 }
 
+std::vector<DisplayMode> WebAppRegistrar::GetAppDisplayModeOverride(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->display_mode_override()
+                 : std::vector<DisplayMode>();
+}
+
+base::Time WebAppRegistrar::GetAppLastLaunchTime(const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->last_launch_time() : base::Time();
+}
+
+base::Time WebAppRegistrar::GetAppInstallTime(const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->install_time() : base::Time();
+}
+
 std::vector<WebApplicationIconInfo> WebAppRegistrar::GetAppIconInfos(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
@@ -101,29 +155,67 @@ std::vector<WebApplicationIconInfo> WebAppRegistrar::GetAppIconInfos(
                  : std::vector<WebApplicationIconInfo>();
 }
 
-std::vector<SquareSizePx> WebAppRegistrar::GetAppDownloadedIconSizes(
+SortedSizesPx WebAppRegistrar::GetAppDownloadedIconSizesAny(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->downloaded_icon_sizes()
-                 : std::vector<SquareSizePx>();
+  return web_app ? web_app->downloaded_icon_sizes(IconPurpose::ANY)
+                 : SortedSizesPx();
+}
+
+std::vector<WebApplicationShortcutsMenuItemInfo>
+WebAppRegistrar::GetAppShortcutsMenuItemInfos(const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->shortcuts_menu_item_infos()
+                 : std::vector<WebApplicationShortcutsMenuItemInfo>();
+}
+
+std::vector<std::vector<SquareSizePx>>
+WebAppRegistrar::GetAppDownloadedShortcutsMenuIconsSizes(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->downloaded_shortcuts_menu_icons_sizes()
+                 : std::vector<std::vector<SquareSizePx>>();
 }
 
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {
   std::vector<AppId> app_ids;
-  app_ids.reserve(registry_.size());
 
-  for (const WebApp& app : AllApps())
+  for (const WebApp& app : GetApps())
     app_ids.push_back(app.app_id());
 
   return app_ids;
+}
+
+RunOnOsLoginMode WebAppRegistrar::GetAppRunOnOsLoginMode(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->run_on_os_login_mode()
+                 : RunOnOsLoginMode::kUndefined;
 }
 
 WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() {
   return this;
 }
 
-WebAppRegistrar::AppSet::AppSet(const WebAppRegistrar* registrar)
-    : registrar_(registrar)
+void WebAppRegistrar::OnProfileMarkedForPermanentDeletion(
+    Profile* profile_to_be_deleted) {
+  if (profile() != profile_to_be_deleted)
+    return;
+
+  for (const auto& app : GetAppsIncludingStubs()) {
+    NotifyWebAppProfileWillBeDeleted(app.app_id());
+    os_integration_manager().UninstallAllOsHooks(app.app_id(),
+                                                  base::DoNothing());
+  }
+  // We can't do registry_.clear() here because it makes in-memory registry
+  // diverged from the sync server registry and from the on-disk registry
+  // (WebAppDatabase/LevelDB and "Web Applications" profile directory).
+  registry_profile_being_deleted_ = true;
+}
+
+WebAppRegistrar::AppSet::AppSet(const WebAppRegistrar* registrar, Filter filter)
+    : registrar_(registrar),
+      filter_(filter)
 #if DCHECK_IS_ON()
       ,
       mutations_count_(registrar->mutations_count_)
@@ -138,27 +230,41 @@ WebAppRegistrar::AppSet::~AppSet() {
 }
 
 WebAppRegistrar::AppSet::iterator WebAppRegistrar::AppSet::begin() {
-  return iterator(registrar_->registry_.begin());
+  return iterator(registrar_->registry_.begin(), registrar_->registry_.end(),
+                  filter_);
 }
 
 WebAppRegistrar::AppSet::iterator WebAppRegistrar::AppSet::end() {
-  return iterator(registrar_->registry_.end());
+  return iterator(registrar_->registry_.end(), registrar_->registry_.end(),
+                  filter_);
 }
 
 WebAppRegistrar::AppSet::const_iterator WebAppRegistrar::AppSet::begin() const {
-  return const_iterator(registrar_->registry_.begin());
+  return const_iterator(registrar_->registry_.begin(),
+                        registrar_->registry_.end(), filter_);
 }
 
 WebAppRegistrar::AppSet::const_iterator WebAppRegistrar::AppSet::end() const {
-  return const_iterator(registrar_->registry_.end());
+  return const_iterator(registrar_->registry_.end(),
+                        registrar_->registry_.end(), filter_);
 }
 
-const WebAppRegistrar::AppSet WebAppRegistrar::AllApps() const {
-  return AppSet(this);
+const WebAppRegistrar::AppSet WebAppRegistrar::GetAppsIncludingStubs() const {
+  return AppSet(this, nullptr);
+}
+
+const WebAppRegistrar::AppSet WebAppRegistrar::GetApps() const {
+  return AppSet(this, [](const WebApp& web_app) {
+    return !web_app.is_in_sync_install();
+  });
 }
 
 void WebAppRegistrar::SetRegistry(Registry&& registry) {
   registry_ = std::move(registry);
+}
+
+const WebAppRegistrar::AppSet WebAppRegistrar::FilterApps(Filter filter) const {
+  return AppSet(this, filter);
 }
 
 void WebAppRegistrar::CountMutation() {
@@ -181,8 +287,19 @@ WebApp* WebAppRegistrarMutable::GetAppByIdMutable(const AppId& app_id) {
   return const_cast<WebApp*>(GetAppById(app_id));
 }
 
-WebAppRegistrar::AppSet WebAppRegistrarMutable::AllAppsMutable() {
-  return AppSet(this);
+WebAppRegistrar::AppSet WebAppRegistrarMutable::FilterAppsMutable(
+    Filter filter) {
+  return AppSet(this, filter);
+}
+
+WebAppRegistrar::AppSet WebAppRegistrarMutable::GetAppsIncludingStubsMutable() {
+  return AppSet(this, nullptr);
+}
+
+WebAppRegistrar::AppSet WebAppRegistrarMutable::GetAppsMutable() {
+  return AppSet(this, [](const WebApp& web_app) {
+    return !web_app.is_in_sync_install();
+  });
 }
 
 bool IsRegistryEqual(const Registry& registry, const Registry& registry2) {

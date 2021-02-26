@@ -86,8 +86,10 @@ _FILE_LIST_SCRIPT = """
   }
   for dir in %s
   do
-    echo "$dir"
-    list_files "$dir"
+    if [ -d "$dir" ]; then
+      echo "$dir"
+      list_files "$dir"
+    fi
   done
 """
 
@@ -103,7 +105,7 @@ _RESTART_ADBD_SCRIPT = """
 """
 
 # Not all permissions can be set.
-_PERMISSIONS_BLACKLIST_RE = re.compile('|'.join(
+_PERMISSIONS_DENYLIST_RE = re.compile('|'.join(
     fnmatch.translate(p) for p in [
         'android.permission.ACCESS_LOCATION_EXTRA_COMMANDS',
         'android.permission.ACCESS_MOCK_LOCATION',
@@ -130,6 +132,7 @@ _PERMISSIONS_BLACKLIST_RE = re.compile('|'.join(
         'android.permission.MANAGE_ACCOUNTS',
         'android.permission.MODIFY_AUDIO_SETTINGS',
         'android.permission.NFC',
+        'android.permission.QUERY_ALL_PACKAGES',
         'android.permission.READ_SYNC_SETTINGS',
         'android.permission.READ_SYNC_STATS',
         'android.permission.RECEIVE_BOOT_COMPLETED',
@@ -256,7 +259,6 @@ Result: Parcel(
 """
 _PARCEL_RESULT_RE = re.compile(
     r'0x[0-9a-f]{8}\: (?:[0-9a-f]{8}\s+){1,4}\'(.{16})\'')
-_EBUSY_RE = re.compile(r'mkdir failed for ([^,]*), Device or resource busy')
 
 # http://bit.ly/2WLZhUF added a timeout to adb wait-for-device. We sometimes
 # want to wait longer than the implicit call within adb root allows.
@@ -275,6 +277,15 @@ _WEBVIEW_SYSUPDATE_MIN_VERSION_CODE = re.compile(
     r'Minimum WebView version code: (\d+)')
 
 _GOOGLE_FEATURES_RE = re.compile(r'^\s*com\.google\.')
+
+_EMULATOR_RE = re.compile(r'^generic_.*$')
+
+# Regular expressions for determining if a package is installed using the
+# output of `dumpsys package`.
+# Matches lines like "Package [com.google.android.youtube] (c491050):".
+# or "Package [org.chromium.trichromelibrary_425300033] (e476383):"
+_DUMPSYS_PACKAGE_RE_STR =\
+    r'^\s*Package\s*\[%s(_(?P<version_code>\d*))?\]\s*\(\w*\):$'
 
 PS_COLUMNS = ('name', 'pid', 'ppid')
 ProcessInfo = collections.namedtuple('ProcessInfo', PS_COLUMNS)
@@ -469,6 +480,7 @@ class DeviceUtils(object):
     self._cache = {}
     self._client_caches = {}
     self._cache_lock = threading.RLock()
+    self._skip_root_user_build = None
     assert hasattr(self, decorators.DEFAULT_TIMEOUT_ATTR)
     assert hasattr(self, decorators.DEFAULT_RETRIES_ATTR)
 
@@ -555,22 +567,14 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    try:
-      if self.build_type == 'eng':
-        # 'eng' builds have root enabled by default and the adb session cannot
-        # be unrooted.
-        return True
-      # Devices using the system-as-root partition layout appear to not have
-      # a /root directory. See http://bit.ly/37F34sx for more context.
-      if (self.build_system_root_image == 'true'
-          or self.build_version_sdk >= version_codes.Q
-          # This may be redundant with the checks above.
-          or self.product_name in _SPECIAL_ROOT_DEVICE_LIST):
-        return self.GetProp('service.adb.root') == '1'
-      self.RunShellCommand(['ls', '/root'], check_return=True)
+    if self.build_type == 'eng':
+      # 'eng' builds have root enabled by default and the adb session cannot
+      # be unrooted.
       return True
-    except device_errors.AdbCommandFailedError:
-      return False
+    # Check if uid is 0. Such behavior has remained unchanged since
+    # android 2.2.3 (https://bit.ly/2QQzg67)
+    output = self.RunShellCommand(['id'], single_line=True)
+    return output.startswith('uid=0(root)')
 
   def NeedsSU(self, timeout=DEFAULT, retries=DEFAULT):
     """Checks whether 'su' is needed to access protected resources.
@@ -637,8 +641,7 @@ class DeviceUtils(object):
       self.adb.Root()
     except device_errors.AdbCommandFailedError as e:
       if self.IsUserBuild():
-        raise device_errors.CommandFailedError(
-            'Unable to root device with user build.', str(self))
+        raise device_errors.RootUserBuildError(device_serial=str(self))
       elif e.output and _WAIT_FOR_DEVICE_TIMEOUT_STR in e.output:
         # adb 1.0.41 added a call to wait-for-device *inside* root
         # with a timeout that can be too short in some cases.
@@ -679,6 +682,9 @@ class DeviceUtils(object):
   def GetExternalStoragePath(self, timeout=None, retries=None):
     """Get the device's path to its SD card.
 
+    Note: this path is read-only by apps in R+. Use GetAppWritablePath() to
+    obtain a path writable by apps.
+
     Args:
       timeout: timeout in seconds
       retries: number of retries
@@ -696,6 +702,30 @@ class DeviceUtils(object):
       raise device_errors.CommandFailedError('$EXTERNAL_STORAGE is not set',
                                              str(self))
     return self._cache['external_storage']
+
+  def GetAppWritablePath(self, timeout=None, retries=None):
+    """Get a path that on the device's SD card that apps can write.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+
+    Returns:
+      A app-writeable path on the device's SD card.
+
+    Raises:
+      CommandFailedError if the external storage path could not be determined.
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
+    """
+    if self.build_version_sdk >= version_codes.Q:
+      # On Q+ apps don't require permissions to access well-defined media
+      # locations like /sdcard/Download. On R+ the WRITE_EXTERNAL_STORAGE
+      # permission no longer provides access to the external storage root. See
+      # https://developer.android.com/preview/privacy/storage#permissions-target-11
+      # So use /sdcard/Download for the app-writable path on those versions.
+      return posixpath.join(self.GetExternalStoragePath(), 'Download')
+    return self.GetExternalStoragePath()
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetIMEI(self, timeout=None, retries=None):
@@ -740,21 +770,50 @@ class DeviceUtils(object):
     raise device_errors.CommandFailedError('Unable to fetch IMEI.')
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def IsApplicationInstalled(self, package, timeout=None, retries=None):
+  def IsApplicationInstalled(
+      self, package, version_code=None, timeout=None, retries=None):
     """Determines whether a particular package is installed on the device.
 
     Args:
       package: Name of the package.
+      version_code: The version of the package to check for as an int, if
+          applicable. Only used for static shared libraries, otherwise ignored.
 
     Returns:
       True if the application is installed, False otherwise.
     """
-    # `pm list packages` allows matching substrings, but we want exact matches
-    # only.
-    matching_packages = self.RunShellCommand(
-        ['pm', 'list', 'packages', package], check_return=True)
-    desired_line = 'package:' + package
-    return desired_line in matching_packages
+    # `pm list packages` doesn't include the version code, so if it was
+    # provided, skip this since we can't guarantee that the installed
+    # version is the requested version.
+    if version_code is None:
+      # `pm list packages` allows matching substrings, but we want exact matches
+      # only.
+      matching_packages = self.RunShellCommand(
+          ['pm', 'list', 'packages', package], check_return=True)
+      desired_line = 'package:' + package
+      found_package = desired_line in matching_packages
+      if found_package:
+        return True
+
+    # Some packages do not properly show up via `pm list packages`, so fall back
+    # to checking via `dumpsys package`.
+    matcher = re.compile(_DUMPSYS_PACKAGE_RE_STR % package)
+    dumpsys_output = self.RunShellCommand(
+        ['dumpsys', 'package'], check_return=True, large_output=True)
+    for line in dumpsys_output:
+      match = matcher.match(line)
+      # We should have one of these cases:
+      # 1. The package is a regular app, in which case it will show up without
+      #    its version code in the line we're filtering for.
+      # 2. The package is a static shared library, in which case one or more
+      #    entries with the version code can show up, but not one without the
+      #    version code.
+      if match:
+        installed_version_code = match.groupdict().get('version_code')
+        if (installed_version_code is None
+            or installed_version_code == str(version_code)):
+          return True
+    return False
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetApplicationPaths(self, package, timeout=None, retries=None):
@@ -1092,10 +1151,10 @@ class DeviceUtils(object):
       retries: number of retries
       modules: An iterable containing specific bundle modules to install.
           Error if set and |apk| points to an APK instead of a bundle.
-      fake_modules: An iterable containing specific bundle modules that
-          should have their apks copied to |MODULES_SRC_DIRECTORY_PATH| rather
-          than installed. Thus the app can emulate SplitCompat while running.
-          This should not have any overlap with |modules|.
+      fake_modules: An iterable containing specific bundle modules that should
+          have their apks copied to |MODULES_SRC_DIRECTORY_PATH| subdirectory
+          rather than installed. Thus the app can emulate SplitCompat while
+          running. This should not have any overlap with |modules|.
       additional_locales: An iterable with additional locales to install for a
         bundle.
 
@@ -1110,12 +1169,17 @@ class DeviceUtils(object):
     assert modules_set.isdisjoint(fake_modules_set), (
         'These modules overlap: %s' % (modules_set & fake_modules_set))
     all_modules = modules_set | fake_modules_set
+    package_name = apk.GetPackageName()
+
     with apk.GetApkPaths(self,
                          modules=all_modules,
                          additional_locales=additional_locales) as apk_paths:
-      fake_apk_paths = self._GetFakeInstallPaths(apk_paths, fake_modules)
-      apk_paths_to_install = [p for p in apk_paths if p not in fake_apk_paths]
-      self._FakeInstall(fake_apk_paths, fake_modules)
+      if apk.SupportsSplits():
+        fake_apk_paths = self._GetFakeInstallPaths(apk_paths, fake_modules)
+        self._FakeInstall(fake_apk_paths, fake_modules, package_name)
+        apk_paths_to_install = [p for p in apk_paths if p not in fake_apk_paths]
+      else:
+        apk_paths_to_install = apk_paths
       self._InstallInternal(
           apk,
           apk_paths_to_install,
@@ -1133,11 +1197,12 @@ class DeviceUtils(object):
       return set()
     return set(p for p in apk_paths if IsFakeModulePath(p))
 
-  def _FakeInstall(self, fake_apk_paths, fake_modules):
+  def _FakeInstall(self, fake_apk_paths, fake_modules, package_name):
     with tempfile_ext.NamedTemporaryDirectory() as modules_dir:
+      device_dir = posixpath.join(self.MODULES_SRC_DIRECTORY_PATH, package_name)
       if not fake_modules:
         # Push empty module dir to clear device dir and update the cache.
-        self.PushChangedFiles([(modules_dir, self.MODULES_SRC_DIRECTORY_PATH)],
+        self.PushChangedFiles([(modules_dir, device_dir)],
                               delete_device_stale=True)
         return
 
@@ -1159,7 +1224,7 @@ class DeviceUtils(object):
 
       assert not still_need_master, (
           'Missing master apk file for %s' % still_need_master)
-      self.PushChangedFiles([(modules_dir, self.MODULES_SRC_DIRECTORY_PATH)],
+      self.PushChangedFiles([(modules_dir, device_dir)],
                             delete_device_stale=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance(
@@ -1275,6 +1340,15 @@ class DeviceUtils(object):
       # Running adb install terminates running instances of the app, so to be
       # consistent, we explicitly terminate it when skipping the install.
       self.ForceStop(package_name)
+
+    # There have been cases of APKs not being detected after being explicitly
+    # installed, so perform a sanity check now and fail early if the
+    # installation somehow failed.
+    apk_version = apk.GetVersionCode()
+    if not self.IsApplicationInstalled(package_name, apk_version):
+      raise device_errors.CommandFailedError(
+          'Package %s with version %s not installed on device after explicit '
+          'install attempt.' % (package_name, apk_version))
 
     if (permissions is None
         and self.build_version_sdk >= version_codes.MARSHMALLOW):
@@ -1464,9 +1538,24 @@ class DeviceUtils(object):
     if run_as:
       cmd = 'run-as %s sh -c %s' % (cmd_helper.SingleQuote(run_as),
                                     cmd_helper.SingleQuote(cmd))
-    if (as_root is _FORCE_SU) or (as_root and self.NeedsSU()):
-      # "su -c sh -c" allows using shell features in |cmd|
-      cmd = self._Su('sh -c %s' % cmd_helper.SingleQuote(cmd))
+    if as_root:
+      # Explicitly check the root status as the device may have lost it after
+      # reboot.
+      # For devices with user build, if the first root attempt fails, a warning
+      # will be issued and the following root attempts will be skipped because
+      # some commands that set as_root as True may still work without the root
+      # privilege.
+      if not self.HasRoot() and not self._skip_root_user_build:
+        try:
+          self.EnableRoot()
+        except device_errors.RootUserBuildError as e:
+          logger.warning('%s The adb shell command to run may fail with '
+                         'permission issues.', str(e))
+          self._skip_root_user_build = True
+
+      if (as_root is _FORCE_SU) or self.NeedsSU():
+        # "su -c sh -c" allows using shell features in |cmd|
+        cmd = self._Su('sh -c %s' % cmd_helper.SingleQuote(cmd))
 
     output = handle_large_output(cmd, large_output)
 
@@ -1828,10 +1917,13 @@ class DeviceUtils(object):
         # sync-unaware implementation.
         logging.warning(str(e))
 
-    changed_files, cache_commit_func = (
-        self._GetChangedFiles(host_device_tuples, delete_device_stale))
+    changed_files, missing_dirs, cache_commit_func = (self._GetChangedFiles(
+        host_device_tuples, delete_device_stale))
 
     if changed_files:
+      if missing_dirs:
+        self.RunShellCommand(['mkdir', '-p'] + list(missing_dirs),
+                             check_return=True)
       self._PushFilesImpl(host_device_tuples, changed_files)
     cache_commit_func()
 
@@ -1884,9 +1976,10 @@ class DeviceUtils(object):
       delete_stale: Whether to delete stale files
 
     Returns:
-      a four-element tuple
+      a three-element tuple
       1st element: a list of (host_files_path, device_files_path) tuples to push
-      2nd element: a cache commit function.
+      2nd element: a list of missing device directories to mkdir
+      3rd element: a cache commit function
     """
     # The fully expanded list of host/device tuples of files to push.
     file_tuples = []
@@ -1934,10 +2027,12 @@ class DeviceUtils(object):
       current_device_nodes = self._GetDeviceNodes(device_dirs_to_push_to)
       nodes_to_delete = current_device_nodes - expected_device_nodes
 
+    missing_dirs = device_dirs_to_push_to - current_device_nodes
+
     if not file_tuples:
       if delete_stale and nodes_to_delete:
         self.RemovePath(nodes_to_delete, force=True, recursive=True)
-      return (host_device_tuples, lambda: 0)
+      return (host_device_tuples, missing_dirs, lambda: 0)
 
     possibly_stale_device_nodes = current_device_nodes - nodes_to_delete
     possibly_stale_tuples = (
@@ -1975,7 +2070,7 @@ class DeviceUtils(object):
           (calculate_host_checksums, calculate_device_checksums))
     except device_errors.CommandFailedError as e:
       logger.warning('Error calculating md5: %s', e)
-      return (host_device_tuples, lambda: 0)
+      return (host_device_tuples, set(), lambda: 0)
 
     up_to_date = set()
 
@@ -2000,14 +2095,19 @@ class DeviceUtils(object):
         host_checksum = host_checksums.get(host_path, None)
         self._cache['device_path_checksums'][device_path] = host_checksum
 
-    return (to_push, cache_commit_func)
+    return (to_push, missing_dirs, cache_commit_func)
 
   def _ComputeDeviceChecksumsForApks(self, package_name):
     ret = self._cache['package_apk_checksums'].get(package_name)
     if ret is None:
-      device_paths = self._GetApplicationPathsInternal(package_name)
-      file_to_checksums = md5sum.CalculateDeviceMd5Sums(device_paths, self)
-      ret = set(file_to_checksums.values())
+      if self.PathExists('/data/data/' + package_name, as_root=True):
+        device_paths = self._GetApplicationPathsInternal(package_name)
+        file_to_checksums = md5sum.CalculateDeviceMd5Sums(device_paths, self)
+        ret = set(file_to_checksums.values())
+      else:
+        logger.info('Cannot reuse package %s (data directory missing)',
+                    package_name)
+        ret = set()
       self._cache['package_apk_checksums'][package_name] = ret
     return ret
 
@@ -2136,7 +2236,8 @@ class DeviceUtils(object):
 
     return True
 
-  # TODO(nednguyen): remove this and migrate the callsite to PathExists().
+  # TODO(crbug.com/1111556): remove this and migrate the callsite to
+  # PathExists().
   @decorators.WithTimeoutAndRetriesFromInstance()
   def FileExists(self, device_path, timeout=None, retries=None):
     """Checks whether the given file exists on the device.
@@ -2679,9 +2780,14 @@ class DeviceUtils(object):
   @property
   def pixel_density(self):
     density = self.GetProp('ro.sf.lcd_density', cache=True)
-    if not density and self.adb.is_emulator:
+    if not density:
+      # It might be an emulator, try the qemu prop.
       density = self.GetProp('qemu.sf.lcd_density', cache=True)
     return int(density)
+
+  @property
+  def is_emulator(self):
+    return _EMULATOR_RE.match(self.GetProp('ro.product.device', cache=True))
 
   @property
   def build_description(self):
@@ -2745,6 +2851,11 @@ class DeviceUtils(object):
           'Invalid build version sdk: %r' % value)
 
   @property
+  def tracing_path(self):
+    """Returns the tracing path of the device for atrace."""
+    return self.GetTracingPath()
+
+  @property
   def product_cpu_abi(self):
     """Returns the product cpu abi of the device (e.g. 'armeabi-v7a').
 
@@ -2799,6 +2910,39 @@ class DeviceUtils(object):
       for key, value in _GETPROP_RE.findall(''.join(output)):
         prop_cache[key] = value
       self._cache['token'] = token
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetTracingPath(self, timeout=None, retries=None):
+    """Gets tracing path from the device.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+
+    Returns:
+      /sys/kernel/debug/tracing for device with debugfs mount support;
+      /sys/kernel/tracing for device with tracefs support;
+      /sys/kernel/debug/tracing if support can't be determined.
+
+    Raises:
+      CommandTimeoutError on timeout.
+    """
+    tracing_path = self._cache['tracing_path']
+    if tracing_path:
+      return tracing_path
+    with self._cache_lock:
+      tracing_path = '/sys/kernel/debug/tracing'
+      try:
+        lines = self.RunShellCommand(['mount'],
+                                     check_return=True,
+                                     timeout=timeout,
+                                     retries=retries)
+        if not any('debugfs' in line for line in lines):
+          tracing_path = '/sys/kernel/tracing'
+      except device_errors.AdbCommandFailedError:
+        pass
+      self._cache['tracing_path'] = tracing_path
+    return tracing_path
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetProp(self, property_name, cache=False, timeout=None, retries=None):
@@ -3379,6 +3523,8 @@ class DeviceUtils(object):
         # Token used to detect when LoadCacheData is stale.
         'token': None,
         'prev_token': None,
+        # Path for tracing.
+        'tracing_path': None,
     }
 
   @decorators.WithTimeoutAndRetriesFromInstance()
@@ -3466,7 +3612,7 @@ class DeviceUtils(object):
 
   @classmethod
   def HealthyDevices(cls,
-                     blacklist=None,
+                     denylist=None,
                      device_arg='default',
                      retries=1,
                      enable_usb_resets=False,
@@ -3474,13 +3620,13 @@ class DeviceUtils(object):
                      **kwargs):
     """Returns a list of DeviceUtils instances.
 
-    Returns a list of DeviceUtils instances that are attached, not blacklisted,
+    Returns a list of DeviceUtils instances that are attached, not denylisted,
     and optionally filtered by --device flags or ANDROID_SERIAL environment
     variable.
 
     Args:
-      blacklist: A DeviceBlacklist instance (optional). Device serials in this
-          blacklist will never be returned, but a warning will be logged if they
+      denylist: A DeviceDenylist instance (optional). Device serials in this
+          denylist will never be returned, but a warning will be logged if they
           otherwise would have been.
       device_arg: The value of the --device flag. This can be:
           'default' -> Same as [], but returns an empty list rather than raise a
@@ -3490,9 +3636,9 @@ class DeviceUtils(object):
               attached device. Raises an exception if multiple devices are
               attached.
           'serial' -> Returns an instance for the given serial, if not
-              blacklisted.
+              denylisted.
           ['A', 'B', ...] -> Returns instances for the subset that is not
-              blacklisted.
+              denylisted.
       retries: Number of times to restart adb server and query it again if no
           devices are found on the previous attempts, with exponential backoffs
           up to 60s between each retry.
@@ -3507,7 +3653,7 @@ class DeviceUtils(object):
       A list of DeviceUtils instances.
 
     Raises:
-      NoDevicesError: Raised when no non-blacklisted devices exist and
+      NoDevicesError: Raised when no non-denylisted devices exist and
           device_arg is passed.
       MultipleDevicesError: Raise when multiple devices exist, but |device_arg|
           is None.
@@ -3523,16 +3669,16 @@ class DeviceUtils(object):
       if device_arg:
         device_arg = (device_arg, )
 
-    blacklisted_devices = blacklist.Read() if blacklist else []
+    denylisted_devices = denylist.Read() if denylist else []
 
     # adb looks for ANDROID_SERIAL, so support it as well.
     android_serial = os.environ.get('ANDROID_SERIAL')
     if not device_arg and android_serial:
       device_arg = (android_serial, )
 
-    def blacklisted(serial):
-      if serial in blacklisted_devices:
-        logger.warning('Device %s is blacklisted.', serial)
+    def denylisted(serial):
+      if serial in denylisted_devices:
+        logger.warning('Device %s is denylisted.', serial)
         return True
       return False
 
@@ -3544,12 +3690,12 @@ class DeviceUtils(object):
 
     def _get_devices():
       if device_arg:
-        devices = [cls(x, **kwargs) for x in device_arg if not blacklisted(x)]
+        devices = [cls(x, **kwargs) for x in device_arg if not denylisted(x)]
       else:
         devices = []
         for adb in adb_wrapper.AdbWrapper.Devices():
           serial = adb.GetDeviceSerial()
-          if not blacklisted(serial):
+          if not denylisted(serial):
             device = cls(_CreateAdbWrapper(adb), **kwargs)
             if supports_abi(device.GetABI(), serial):
               devices.append(device)
@@ -3607,8 +3753,8 @@ class DeviceUtils(object):
     if not permissions:
       return
 
-    permissions = set(
-        p for p in permissions if not _PERMISSIONS_BLACKLIST_RE.match(p))
+    permissions = set(p for p in permissions
+                      if not _PERMISSIONS_DENYLIST_RE.match(p))
 
     if ('android.permission.WRITE_EXTERNAL_STORAGE' in permissions
         and 'android.permission.READ_EXTERNAL_STORAGE' not in permissions):
@@ -3639,7 +3785,7 @@ class DeviceUtils(object):
 
     if failures:
       logger.warning(
-          'Failed to grant some permissions. Blacklist may need to be updated?')
+          'Failed to grant some permissions. Denylist may need to be updated?')
       for permission, output in failures:
         # Try to grab the relevant error message from the output.
         m = _PERMISSIONS_EXCEPTION_RE.search(output)

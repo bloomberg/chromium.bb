@@ -33,16 +33,29 @@ class LayoutFieldset final : public LayoutBlockFlow {
   explicit LayoutFieldset(Element*);
 
   static LayoutBox* FindInFlowLegend(const LayoutBlock& fieldset);
-  LayoutBox* FindInFlowLegend() const { return FindInFlowLegend(*this); }
+  LayoutBox* FindInFlowLegend() const {
+    NOT_DESTROYED();
+    return FindInFlowLegend(*this);
+  }
 
-  const char* GetName() const override { return "LayoutFieldset"; }
+  static LayoutBlock* FindLegendContainingBlock(const LayoutBox& legend,
+                                                AncestorSkipInfo* = nullptr);
 
-  bool CreatesNewFormattingContext() const final { return true; }
+  const char* GetName() const override {
+    NOT_DESTROYED();
+    return "LayoutFieldset";
+  }
+
+  bool CreatesNewFormattingContext() const final {
+    NOT_DESTROYED();
+    return true;
+  }
 
   bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const override;
 
  private:
   bool IsOfType(LayoutObjectType type) const override {
+    NOT_DESTROYED();
     return type == kLayoutObjectFieldset || LayoutBlockFlow::IsOfType(type);
   }
 

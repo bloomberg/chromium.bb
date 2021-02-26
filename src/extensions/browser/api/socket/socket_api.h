@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
@@ -33,9 +34,9 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "extensions/browser/api/socket/app_firewall_hole_manager.h"
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace content {
 class BrowserContext;
@@ -72,7 +73,7 @@ class SocketResourceManagerInterface {
 template <typename T>
 class SocketResourceManager : public SocketResourceManagerInterface {
  public:
-  SocketResourceManager() : manager_(NULL) {}
+  SocketResourceManager() : manager_(nullptr) {}
 
   bool SetBrowserContext(content::BrowserContext* context) override {
     manager_ = ApiResourceManager<T>::Get(context);
@@ -81,7 +82,7 @@ class SocketResourceManager : public SocketResourceManagerInterface {
            "If this assertion is failing during a test, then it is likely that "
            "TestExtensionSystem is failing to provide an instance of "
            "ApiResourceManager<Socket>.";
-    return manager_ != NULL;
+    return !!manager_;
   }
 
   int Add(Socket* socket) override {
@@ -138,7 +139,7 @@ class SocketAsyncApiFunction : public AsyncApiFunction {
                         Socket* socket);
 
  private:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void OpenFirewallHoleOnUIThread(AppFirewallHole::PortType type,
                                   uint16_t port,
                                   int socket_id);
@@ -146,7 +147,7 @@ class SocketAsyncApiFunction : public AsyncApiFunction {
       int socket_id,
       std::unique_ptr<AppFirewallHole, content::BrowserThread::DeleteOnUIThread>
           hole);
-#endif  // OS_CHROMEOS
+#endif  // IS_CHROMEOS_ASH
 
   std::unique_ptr<SocketResourceManagerInterface> manager_;
 };

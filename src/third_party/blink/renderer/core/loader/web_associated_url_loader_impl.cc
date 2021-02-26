@@ -101,8 +101,6 @@ void HTTPRequestHeaderValidator::VisitHeader(const WebString& name,
 class WebAssociatedURLLoaderImpl::ClientAdapter final
     : public GarbageCollected<ClientAdapter>,
       public ThreadableLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ClientAdapter);
-
  public:
   ClientAdapter(WebAssociatedURLLoaderImpl*,
                 WebAssociatedURLLoaderClient*,
@@ -117,7 +115,6 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   void DidReceiveResponse(uint64_t, const ResourceResponse&) override;
   void DidDownloadData(uint64_t /*dataLength*/) override;
   void DidReceiveData(const char*, unsigned /*dataLength*/) override;
-  void DidReceiveCachedMetadata(const char*, int /*dataLength*/) override;
   void DidFinishLoading(uint64_t /*identifier*/) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
@@ -258,15 +255,6 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveData(
   client_->DidReceiveData(data, data_length);
 }
 
-void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveCachedMetadata(
-    const char* data,
-    int data_length) {
-  if (!client_)
-    return;
-
-  client_->DidReceiveCachedMetadata(data, data_length);
-}
-
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidFinishLoading(
     uint64_t identifier) {
   if (!client_)
@@ -292,7 +280,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidFail(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidFailRedirectCheck() {
-  DidFail(WebURLError(ResourceError::Failure(NullURL())));
+  DidFail(ResourceError::Failure(NullURL()));
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::EnableErrorNotifications() {
@@ -317,8 +305,6 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::NotifyError(TimerBase* timer) {
 class WebAssociatedURLLoaderImpl::Observer final
     : public GarbageCollected<Observer>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(Observer);
-
  public:
   Observer(WebAssociatedURLLoaderImpl* parent, ExecutionContext* context)
       : ExecutionContextLifecycleObserver(context), parent_(parent) {}
@@ -326,9 +312,9 @@ class WebAssociatedURLLoaderImpl::Observer final
   void Dispose() {
     parent_ = nullptr;
     // TODO(keishi): Remove IsIteratingOverObservers() check when
-    // HeapObserverList() supports removal while iterating.
+    // HeapObserverSet() supports removal while iterating.
     if (!GetExecutionContext()
-             ->ContextLifecycleObserverList()
+             ->ContextLifecycleObserverSet()
              .IsIteratingOverObservers()) {
       SetExecutionContext(nullptr);
     }
@@ -339,7 +325,7 @@ class WebAssociatedURLLoaderImpl::Observer final
       parent_->ContextDestroyed();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     ExecutionContextLifecycleObserver::Trace(visitor);
   }
 
@@ -410,7 +396,8 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       std::move(task_runner));
 
   if (allow_load) {
-    ResourceLoaderOptions resource_loader_options;
+    ResourceLoaderOptions resource_loader_options(
+        observer_->GetExecutionContext()->GetCurrentWorld());
     resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
     if (options_.grant_universal_access) {
@@ -426,19 +413,20 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     }
 
     ResourceRequest& webcore_request = new_request.ToMutableResourceRequest();
-    mojom::RequestContextType context = webcore_request.GetRequestContext();
-    if (context == mojom::RequestContextType::UNSPECIFIED) {
+    mojom::blink::RequestContextType context =
+        webcore_request.GetRequestContext();
+    if (context == mojom::blink::RequestContextType::UNSPECIFIED) {
       // TODO(yoav): We load URLs without setting a TargetType (and therefore a
       // request context) in several places in content/
       // (P2PPortAllocatorSession::AllocateLegacyRelaySession, for example).
       // Remove this once those places are patched up.
-      new_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
+      new_request.SetRequestContext(mojom::blink::RequestContextType::INTERNAL);
       new_request.SetRequestDestination(
           network::mojom::RequestDestination::kEmpty);
-    } else if (context == mojom::RequestContextType::VIDEO) {
+    } else if (context == mojom::blink::RequestContextType::VIDEO) {
       resource_loader_options.initiator_info.name =
           fetch_initiator_type_names::kVideo;
-    } else if (context == mojom::RequestContextType::AUDIO) {
+    } else if (context == mojom::blink::RequestContextType::AUDIO) {
       resource_loader_options.initiator_info.name =
           fetch_initiator_type_names::kAudio;
     }
@@ -452,9 +440,8 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
   }
 
   if (!loader_) {
-    client_adapter_->DidFail(
-        WebURLError(ResourceError::CancelledDueToAccessCheckError(
-            request.Url(), ResourceRequestBlockedReason::kOther)));
+    client_adapter_->DidFail(ResourceError::CancelledDueToAccessCheckError(
+        request.Url(), ResourceRequestBlockedReason::kOther));
   }
   client_adapter_->EnableErrorNotifications();
 }

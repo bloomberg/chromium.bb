@@ -71,7 +71,7 @@ typedef struct MovieContext {
 
     AVFormatContext *format_ctx;
     int eof;
-    AVPacket pkt, pkt0;
+    AVPacket pkt;
 
     int max_stream_index; /**< max stream # actually used for output */
     MovieStream *st; /**< array of all streams, one per output */
@@ -155,7 +155,7 @@ static AVStream *find_stream(void *log, AVFormatContext *avf, const char *spec)
 
 static int open_stream(AVFilterContext *ctx, MovieStream *st)
 {
-    AVCodec *codec;
+    const AVCodec *codec;
     int ret;
 
     codec = avcodec_find_decoder(st->st->codecpar->codec_id);
@@ -213,7 +213,6 @@ static av_cold int movie_common_init(AVFilterContext *ctx)
     int64_t timestamp;
     int nb_streams = 1, ret, i;
     char default_streams[16], *stream_specs, *spec, *cursor;
-    char name[16];
     AVStream *st;
 
     if (!movie->file_name) {
@@ -305,9 +304,8 @@ static av_cold int movie_common_init(AVFilterContext *ctx)
     for (i = 0; i < nb_streams; i++) {
         AVFilterPad pad = { 0 };
         movie->out_index[movie->st[i].st->index] = i;
-        snprintf(name, sizeof(name), "out%d", i);
         pad.type          = movie->st[i].st->codecpar->codec_type;
-        pad.name          = av_strdup(name);
+        pad.name          = av_asprintf("out%d", i);
         if (!pad.name)
             return AVERROR(ENOMEM);
         pad.config_props  = movie_config_output_props;
@@ -346,6 +344,7 @@ static av_cold void movie_uninit(AVFilterContext *ctx)
     }
     av_freep(&movie->st);
     av_freep(&movie->out_index);
+    av_packet_unref(&movie->pkt);
     if (movie->format_ctx)
         avformat_close_input(&movie->format_ctx);
 }
@@ -365,19 +364,19 @@ static int movie_query_formats(AVFilterContext *ctx)
         switch (c->codec_type) {
         case AVMEDIA_TYPE_VIDEO:
             list[0] = c->format;
-            if ((ret = ff_formats_ref(ff_make_format_list(list), &outlink->in_formats)) < 0)
+            if ((ret = ff_formats_ref(ff_make_format_list(list), &outlink->incfg.formats)) < 0)
                 return ret;
             break;
         case AVMEDIA_TYPE_AUDIO:
             list[0] = c->format;
-            if ((ret = ff_formats_ref(ff_make_format_list(list), &outlink->in_formats)) < 0)
+            if ((ret = ff_formats_ref(ff_make_format_list(list), &outlink->incfg.formats)) < 0)
                 return ret;
             list[0] = c->sample_rate;
-            if ((ret = ff_formats_ref(ff_make_format_list(list), &outlink->in_samplerates)) < 0)
+            if ((ret = ff_formats_ref(ff_make_format_list(list), &outlink->incfg.samplerates)) < 0)
                 return ret;
             list64[0] = c->channel_layout;
-            if ((ret = ff_channel_layouts_ref(avfilter_make_format64_list(list64),
-                                   &outlink->in_channel_layouts)) < 0)
+            if ((ret = ff_channel_layouts_ref(ff_make_format64_list(list64),
+                                   &outlink->incfg.channel_layouts)) < 0)
                 return ret;
             break;
         }
@@ -495,26 +494,21 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
             pkt->stream_index = movie->st[out_id].st->index;
             /* packet is already ready for flushing */
         } else {
-            ret = av_read_frame(movie->format_ctx, &movie->pkt0);
+            ret = av_read_frame(movie->format_ctx, pkt);
             if (ret < 0) {
-                av_init_packet(&movie->pkt0); /* ready for flushing */
-                *pkt = movie->pkt0;
                 if (ret == AVERROR_EOF) {
                     movie->eof = 1;
                     return 0; /* start flushing */
                 }
                 return ret;
             }
-            *pkt = movie->pkt0;
         }
     }
 
     pkt_out_id = pkt->stream_index > movie->max_stream_index ? -1 :
                  movie->out_index[pkt->stream_index];
     if (pkt_out_id < 0) {
-        av_packet_unref(&movie->pkt0);
-        pkt->size = 0; /* ready for next run */
-        pkt->data = NULL;
+        av_packet_unref(pkt);
         return 0;
     }
     st = &movie->st[pkt_out_id];
@@ -539,9 +533,7 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
     if (ret < 0) {
         av_log(ctx, AV_LOG_WARNING, "Decode error: %s\n", av_err2str(ret));
         av_frame_free(&frame);
-        av_packet_unref(&movie->pkt0);
-        movie->pkt.size = 0;
-        movie->pkt.data = NULL;
+        av_packet_unref(pkt);
         return 0;
     }
     if (!ret || st->st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
@@ -549,11 +541,8 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
 
     pkt->data += ret;
     pkt->size -= ret;
-    if (pkt->size <= 0) {
-        av_packet_unref(&movie->pkt0);
-        pkt->size = 0; /* ready for next run */
-        pkt->data = NULL;
-    }
+    if (pkt->size <= 0)
+        av_packet_unref(pkt);
     if (!got_frame) {
         if (!ret)
             st->done = 1;

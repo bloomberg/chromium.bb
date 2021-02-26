@@ -10,6 +10,7 @@
 #include "absl/types/span.h"
 #include "gtest/gtest.h"
 #include "platform/api/time.h"
+#include "util/chrono_helpers.h"
 
 namespace openscreen {
 namespace cast {
@@ -280,28 +281,23 @@ TEST(RtcpCommonTest, ComputesDelayForReportBlocks) {
 
   // A duration less than or equal to zero should clamp to zero.
   EXPECT_EQ(Delay::zero(), ComputeDelay(Clock::duration::min()));
-  EXPECT_EQ(Delay::zero(), ComputeDelay(std::chrono::milliseconds(-1234)));
+  EXPECT_EQ(Delay::zero(), ComputeDelay(milliseconds{-1234}));
   EXPECT_EQ(Delay::zero(), ComputeDelay(Clock::duration::zero()));
 
   // Test conversion of various durations that should not clamp.
   EXPECT_EQ(Delay(32768 /* 1/2 second worth of ticks */),
-            ComputeDelay(std::chrono::milliseconds(500)));
+            ComputeDelay(milliseconds(500)));
   EXPECT_EQ(Delay(65536 /* 1 second worth of ticks */),
-            ComputeDelay(std::chrono::seconds(1)));
+            ComputeDelay(seconds(1)));
   EXPECT_EQ(Delay(655360 /* 10 seconds worth of ticks */),
-            ComputeDelay(std::chrono::seconds(10)));
-  EXPECT_EQ(Delay(4294967294),
-            ComputeDelay(std::chrono::microseconds(65535999983)));
-  EXPECT_EQ(Delay(4294967294),
-            ComputeDelay(std::chrono::microseconds(65535999984)));
+            ComputeDelay(seconds(10)));
+  EXPECT_EQ(Delay(4294967294), ComputeDelay(microseconds(65535999983)));
+  EXPECT_EQ(Delay(4294967294), ComputeDelay(microseconds(65535999984)));
 
   // A too-large duration should clamp to the maximum-possible Delay value.
-  EXPECT_EQ(Delay(4294967295),
-            ComputeDelay(std::chrono::microseconds(65535999985)));
-  EXPECT_EQ(Delay(4294967295),
-            ComputeDelay(std::chrono::microseconds(65535999986)));
-  EXPECT_EQ(Delay(4294967295),
-            ComputeDelay(std::chrono::microseconds(999999000000)));
+  EXPECT_EQ(Delay(4294967295), ComputeDelay(microseconds(65535999985)));
+  EXPECT_EQ(Delay(4294967295), ComputeDelay(microseconds(65535999986)));
+  EXPECT_EQ(Delay(4294967295), ComputeDelay(microseconds(999999000000)));
   EXPECT_EQ(Delay(4294967295), ComputeDelay(Clock::duration::max()));
 }
 

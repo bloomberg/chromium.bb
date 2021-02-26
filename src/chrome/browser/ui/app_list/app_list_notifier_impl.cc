@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/app_list/app_list_notifier_impl.h"
 
+#include "ash/public/cpp/app_list/app_list_controller.h"
+#include "base/check.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "ui/display/types/display_constants.h"
 
 namespace {
 
@@ -15,8 +18,18 @@ constexpr base::TimeDelta kImpressionTimer = base::TimeDelta::FromSeconds(1);
 
 }  // namespace
 
-AppListNotifierImpl::AppListNotifierImpl() = default;
-AppListNotifierImpl::~AppListNotifierImpl() = default;
+AppListNotifierImpl::AppListNotifierImpl(
+    ash::AppListController* app_list_controller)
+    : app_list_controller_(app_list_controller) {
+  DCHECK(app_list_controller_);
+  app_list_controller_->AddObserver(this);
+  OnAppListVisibilityWillChange(app_list_controller_->IsVisible(base::nullopt),
+                                display::kInvalidDisplayId);
+}
+
+AppListNotifierImpl::~AppListNotifierImpl() {
+  app_list_controller_->RemoveObserver(this);
+}
 
 void AppListNotifierImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
@@ -27,7 +40,7 @@ void AppListNotifierImpl::RemoveObserver(Observer* observer) {
 }
 
 void AppListNotifierImpl::NotifyLaunched(Location location,
-                                         const std::string& result) {
+                                         const Result& result) {
   launched_result_ = result;
 
   // Only two UI views appear at once: the app tiles and results list. If a
@@ -43,18 +56,49 @@ void AppListNotifierImpl::NotifyLaunched(Location location,
 
 void AppListNotifierImpl::NotifyResultsUpdated(
     Location location,
-    const std::vector<std::string>& results) {
+    const std::vector<Result>& results) {
   results_[location] = results;
 }
 
 void AppListNotifierImpl::NotifySearchQueryChanged(
     const base::string16& query) {
+  // In some cases the query can change after the launcher is closed, in
+  // particular this happens when abandoning the launcher with a non-empty
+  // query. Only do a state transition if the launcher is open.
+  if (view_ != ash::AppListViewState::kClosed) {
+    DoStateTransition(Location::kList, State::kShown);
+    DoStateTransition(Location::kTile, State::kShown);
+  }
+
+  // Update the stored |query_| after performing the state transitions, so that
+  // an abandon triggered by the query change correctly uses the pre-abandon
+  // query.
   query_ = query;
-  DoStateTransition(Location::kList, State::kShown);
-  DoStateTransition(Location::kTile, State::kShown);
 }
 
 void AppListNotifierImpl::NotifyUIStateChanged(ash::AppListViewState view) {
+  // We should ignore certain view state changes entirely:
+  //
+  //  1. noop transitions from and to the same view. These are caused by some
+  //     UI actions (like dragging the launcher around) that end up back in
+  //     the same location.
+  //
+  //  2. kHalf to kFullscreenSearch. This doesn't change the displayed tile and
+  //     list results.
+  //
+  //  3. kPeeking to kFullscreenAllApps. This doesn't change the displayed
+  //     chip results.
+  //
+  //  We should also ignore this if the call comes while the launcher is not
+  //  shown at all. This happens, for example, in the transition between
+  //  clamshell and tablet modes.
+  if (!shown_ || view_ == view ||
+      (view_ == ash::AppListViewState::kHalf &&
+       view == ash::AppListViewState::kFullscreenSearch) ||
+      (view_ == ash::AppListViewState::kPeeking &&
+       view == ash::AppListViewState::kFullscreenAllApps)) {
+    return;
+  }
   view_ = view;
 
   if (view == ash::AppListViewState::kHalf ||
@@ -71,6 +115,21 @@ void AppListNotifierImpl::NotifyUIStateChanged(ash::AppListViewState view) {
     DoStateTransition(Location::kChip, State::kShown);
   } else {
     DoStateTransition(Location::kChip, State::kNone);
+  }
+}
+
+void AppListNotifierImpl::OnAppListVisibilityWillChange(bool shown,
+                                                        int64_t display_id) {
+  if (shown_ == shown)
+    return;
+  shown_ = shown;
+
+  if (shown) {
+    DoStateTransition(Location::kChip, State::kShown);
+  } else {
+    DoStateTransition(Location::kChip, State::kNone);
+    DoStateTransition(Location::kList, State::kNone);
+    DoStateTransition(Location::kTile, State::kNone);
   }
 }
 
@@ -132,21 +191,23 @@ void AppListNotifierImpl::DoStateTransition(Location location,
   // Notify of impression on kShown -> {kSeen, kIgnored, kLaunched}.
   if (old_state == State::kShown &&
       (new_state == State::kSeen || new_state == State::kLaunched ||
-       new_state == State::kIgnored)) {
+       new_state == State::kIgnored) &&
+      !results_[location].empty()) {
     for (auto& observer : observers_) {
       observer.OnImpression(location, results_[location], query_);
     }
   }
 
   // Notify of launch on * -> kLaunched.
-  if (new_state == State::kLaunched) {
+  if (new_state == State::kLaunched && launched_result_.has_value()) {
     for (auto& observer : observers_) {
-      observer.OnLaunch(location, launched_result_, results_[location], query_);
+      observer.OnLaunch(location, launched_result_.value(), results_[location],
+                        query_);
     }
   }
 
   // Notify of ignore on * -> kIgnored.
-  if (new_state == State::kIgnored) {
+  if (new_state == State::kIgnored && !results_[location].empty()) {
     for (auto& observer : observers_) {
       observer.OnIgnore(location, results_[location], query_);
     }
@@ -154,7 +215,8 @@ void AppListNotifierImpl::DoStateTransition(Location location,
 
   // Notify of abandon on kSeen -> {kNone, kShown}.
   if (old_state == State::kSeen &&
-      (new_state == State::kNone || new_state == State::kShown)) {
+      (new_state == State::kNone || new_state == State::kShown) &&
+      !results_[location].empty()) {
     for (auto& observer : observers_) {
       observer.OnAbandon(location, results_[location], query_);
     }

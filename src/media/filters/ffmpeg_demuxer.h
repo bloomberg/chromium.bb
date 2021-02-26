@@ -34,7 +34,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decoder_buffer_queue.h"
@@ -115,7 +114,6 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   Type type() const override;
   Liveness liveness() const override;
   void Read(ReadCB read_cb) override;
-  bool IsReadPending() const override;
   void EnableBitstreamConverter() override;
   bool SupportsConfigChanges() override;
   AudioDecoderConfig audio_decoder_config() override;
@@ -174,7 +172,7 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   void InitBitstreamConverter();
 
   FFmpegDemuxer* demuxer_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   AVStream* stream_;
   base::TimeDelta start_time_;
   std::unique_ptr<AudioDecoderConfig> audio_config_;
@@ -211,7 +209,7 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
 
 class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
  public:
-  FFmpegDemuxer(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+  FFmpegDemuxer(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
                 DataSource* data_source,
                 const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
                 MediaTracksUpdatedCB media_tracks_updated_cb,
@@ -343,7 +341,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
 
   DemuxerHost* host_ = nullptr;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Task runner on which all blocking FFmpeg operations are executed; retrieved
   // from base::ThreadPoolInstance.

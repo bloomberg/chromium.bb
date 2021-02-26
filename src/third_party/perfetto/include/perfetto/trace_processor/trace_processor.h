@@ -23,6 +23,7 @@
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/export.h"
 #include "perfetto/trace_processor/basic_types.h"
+#include "perfetto/trace_processor/iterator.h"
 #include "perfetto/trace_processor/status.h"
 #include "perfetto/trace_processor/trace_processor_storage.h"
 
@@ -33,45 +34,9 @@ namespace trace_processor {
 // traces. See TraceProcessorStorage for parsing of trace files.
 class PERFETTO_EXPORT TraceProcessor : public TraceProcessorStorage {
  public:
-  class IteratorImpl;
-
-  // Iterator returning SQL rows satisfied by a query.
-  class Iterator {
-   public:
-    Iterator(std::unique_ptr<IteratorImpl> iterator);
-    ~Iterator();
-
-    Iterator(Iterator&) noexcept = delete;
-    Iterator& operator=(Iterator&) = delete;
-
-    Iterator(Iterator&&) noexcept;
-    Iterator& operator=(Iterator&&);
-
-    // Forwards the iterator to the next result row and returns a boolean of
-    // whether there is a next row. If this method returns false,
-    // |Status()| should be called to check if there was an error. If
-    // there was no error, this means the EOF was reached.
-    bool Next();
-
-    // Returns the value associated with the column |col|. Any call to
-    // |Get()| must be preceded by a call to |Next()| returning
-    // kHasNext. |col| must be less than the number returned by |ColumnCount()|.
-    SqlValue Get(uint32_t col);
-
-    // Returns the name of the column at index |col|. Can be called even before
-    // calling |Next()|.
-    std::string GetColumnName(uint32_t col);
-
-    // Returns the number of columns in this iterator's query. Can be called
-    // even before calling |Next()|.
-    uint32_t ColumnCount();
-
-    // Returns the status of the iterator.
-    util::Status Status();
-
-   private:
-    std::unique_ptr<IteratorImpl> iterator_;
-  };
+  // For legacy API clients. Iterator used to be a nested class here. Many API
+  // clients depends on it at this point.
+  using Iterator = ::perfetto::trace_processor::Iterator;
 
   // Creates a new instance of TraceProcessor.
   static std::unique_ptr<TraceProcessor> CreateInstance(const Config&);
@@ -100,6 +65,19 @@ class PERFETTO_EXPORT TraceProcessor : public TraceProcessorStorage {
       const std::vector<std::string>& metric_names,
       std::vector<uint8_t>* metrics_proto) = 0;
 
+  enum MetricResultFormat {
+    kProtoText = 0,
+    kJson = 1,
+  };
+
+  // Computes metrics as the ComputeMetric function above, but instead of
+  // producing proto encoded bytes, the output argument |metrics_string| is
+  // filled with the metric formatted in the requested |format|.
+  virtual util::Status ComputeMetricText(
+      const std::vector<std::string>& metric_names,
+      MetricResultFormat format,
+      std::string* metrics_string) = 0;
+
   // Interrupts the current query. Typically used by Ctrl-C handler.
   virtual void InterruptQuery() = 0;
 
@@ -115,6 +93,24 @@ class PERFETTO_EXPORT TraceProcessor : public TraceProcessorStorage {
   // argument originally passed to SetCurrentTraceName(), e.g., "file (42 MB)".
   virtual std::string GetCurrentTraceName() = 0;
   virtual void SetCurrentTraceName(const std::string&) = 0;
+
+  // Enables "meta-tracing" of trace processor.
+  // Metatracing involves tracing trace processor itself to root-cause
+  // performace issues in trace processor. See |DisableAndReadMetatrace| for
+  // more information on the format of the metatrace.
+  virtual void EnableMetatrace() = 0;
+
+  // Disables "meta-tracing" of trace processor and writes the trace as a
+  // sequence of |TracePackets| into |trace_proto| returning the status of this
+  // read.
+  virtual util::Status DisableAndReadMetatrace(
+      std::vector<uint8_t>* trace_proto) = 0;
+
+  // Gets all the currently loaded proto descriptors used in metric computation.
+  // This includes all compiled-in binary descriptors, and all proto descriptors
+  // loaded by trace processor shell at runtime. The message is encoded as
+  // DescriptorSet, defined in perfetto/trace_processor/trace_processor.proto.
+  virtual std::vector<uint8_t> GetMetricDescriptors() = 0;
 };
 
 // When set, logs SQLite actions on the console.

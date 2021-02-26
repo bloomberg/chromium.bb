@@ -85,8 +85,15 @@ BulkLeakCheckService::~BulkLeakCheckService() = default;
 void BulkLeakCheckService::CheckUsernamePasswordPairs(
     std::vector<password_manager::LeakCheckCredential> credentials) {
   DVLOG(0) << "Bulk password check, start " << credentials.size();
-  if (credentials.empty())
+  if (credentials.empty()) {
+    // Nothing to check. Still important to go through the running state, so the
+    // observers know that the results are available.
+    state_ = State::kRunning;
+    NotifyStateChanged();
+    state_ = State::kIdle;
+    NotifyStateChanged();
     return;
+  }
   if (!metrics_reporter_)
     metrics_reporter_ = std::make_unique<MetricsReporter>();
   metrics_reporter_->OnStartCheck(credentials.size());
@@ -134,7 +141,21 @@ size_t BulkLeakCheckService::GetPendingChecksCount() const {
   return bulk_leak_check_ ? bulk_leak_check_->GetPendingChecksCount() : 0;
 }
 
+BulkLeakCheckService::State BulkLeakCheckService::GetState() const {
+  return state_;
+}
+
+void BulkLeakCheckService::AddObserver(Observer* obs) {
+  observers_.AddObserver(obs);
+}
+
+void BulkLeakCheckService::RemoveObserver(Observer* obs) {
+  observers_.RemoveObserver(obs);
+}
+
 void BulkLeakCheckService::Shutdown() {
+  for (Observer& obs : observers_)
+    obs.OnBulkCheckServiceShutDown();
   observers_.Clear();
   metrics_reporter_.reset();
   bulk_leak_check_.reset();

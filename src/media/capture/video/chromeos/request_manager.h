@@ -16,7 +16,9 @@
 #include "base/optional.h"
 #include "media/capture/mojom/image_capture.mojom.h"
 #include "media/capture/video/chromeos/camera_app_device_impl.h"
+#include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_device_delegate.h"
+#include "media/capture/video/chromeos/capture_metadata_dispatcher.h"
 #include "media/capture/video/chromeos/mojom/camera3.mojom.h"
 #include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #include "media/capture/video/chromeos/request_builder.h"
@@ -28,7 +30,6 @@
 namespace media {
 
 class CameraBufferFactory;
-class CameraDeviceContext;
 
 // The JPEG transport header as defined by Android camera HAL v3 API.  The JPEG
 // transport header is at the end of the blob buffer filled by the HAL.
@@ -44,32 +45,6 @@ constexpr int32_t kMinConfiguredStreams = 1;
 // Maximum configured streams could contain two optional YUV streams.
 constexpr int32_t kMaxConfiguredStreams = 4;
 
-// Interface that provides API to let Camera3AController to update the metadata
-// that will be sent with capture request.
-class CAPTURE_EXPORT CaptureMetadataDispatcher {
- public:
-  class ResultMetadataObserver {
-   public:
-    virtual ~ResultMetadataObserver() {}
-    virtual void OnResultMetadataAvailable(
-        const cros::mojom::CameraMetadataPtr&) = 0;
-  };
-
-  virtual ~CaptureMetadataDispatcher() {}
-  virtual void AddResultMetadataObserver(ResultMetadataObserver* observer) = 0;
-  virtual void RemoveResultMetadataObserver(
-      ResultMetadataObserver* observer) = 0;
-  virtual void SetCaptureMetadata(cros::mojom::CameraMetadataTag tag,
-                                  cros::mojom::EntryType type,
-                                  size_t count,
-                                  std::vector<uint8_t> value) = 0;
-  virtual void SetRepeatingCaptureMetadata(cros::mojom::CameraMetadataTag tag,
-                                           cros::mojom::EntryType type,
-                                           size_t count,
-                                           std::vector<uint8_t> value) = 0;
-  virtual void UnsetRepeatingCaptureMetadata(
-      cros::mojom::CameraMetadataTag tag) = 0;
-};
 
 // RequestManager is responsible for managing the flow for sending capture
 // requests and receiving capture results. Having RequestBuilder to build
@@ -132,7 +107,8 @@ class CAPTURE_EXPORT RequestManager final
                  std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
                  BlobifyCallback blobify_callback,
                  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
-                 CameraAppDeviceImpl* camera_app_device);
+                 CameraAppDeviceImpl* camera_app_device,
+                 ClientType client_type);
   ~RequestManager() override;
 
   // Sets up the stream context and allocate buffers according to the
@@ -387,6 +363,8 @@ class CAPTURE_EXPORT RequestManager final
   std::map<StreamType, uint32_t> last_received_frame_number_map_;
 
   CameraAppDeviceImpl* camera_app_device_;  // Weak.
+
+  ClientType client_type_;
 
   base::WeakPtrFactory<RequestManager> weak_ptr_factory_{this};
 

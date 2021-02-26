@@ -10,11 +10,12 @@
  **************************************************************************************************/
 #ifndef GrClampedGradientEffect_DEFINED
 #define GrClampedGradientEffect_DEFINED
-#include "include/core/SkTypes.h"
-#include "include/core/SkM44.h"
 
-#include "src/gpu/GrCoordTransform.h"
+#include "include/core/SkM44.h"
+#include "include/core/SkTypes.h"
+
 #include "src/gpu/GrFragmentProcessor.h"
+
 class GrClampedGradientEffect : public GrFragmentProcessor {
 public:
     static std::unique_ptr<GrFragmentProcessor> Make(
@@ -31,8 +32,7 @@ public:
     GrClampedGradientEffect(const GrClampedGradientEffect& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "ClampedGradientEffect"; }
-    int colorizer_index = -1;
-    int gradLayout_index = -1;
+    bool usesExplicitReturn() const override;
     SkPMColor4f leftBorderColor;
     SkPMColor4f rightBorderColor;
     bool makePremul;
@@ -55,16 +55,17 @@ private:
             , makePremul(makePremul)
             , colorsAreOpaque(colorsAreOpaque) {
         SkASSERT(colorizer);
-        colorizer_index = this->numChildProcessors();
-        this->registerChildProcessor(std::move(colorizer));
+        this->registerChild(std::move(colorizer), SkSL::SampleUsage::Explicit());
         SkASSERT(gradLayout);
-        gradLayout_index = this->numChildProcessors();
-        this->registerChildProcessor(std::move(gradLayout));
+        this->registerChild(std::move(gradLayout), SkSL::SampleUsage::PassThrough());
     }
     GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
+#if GR_TEST_UTILS
+    SkString onDumpInfo() const override;
+#endif
     GR_DECLARE_FRAGMENT_PROCESSOR_TEST
-    typedef GrFragmentProcessor INHERITED;
+    using INHERITED = GrFragmentProcessor;
 };
 #endif

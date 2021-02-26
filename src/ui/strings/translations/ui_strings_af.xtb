@@ -23,6 +23,7 @@
 <translation id="1450753235335490080">Kan nie <ph name="CONTENT_TYPE" /> deel nie</translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> is geruil met <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Jy het voorheen hiervoor gesoek. As jy "<ph name="QUERY" />" in jou geskiedenis uitvee, word dit permanent op al jou toestelle van jou rekening af uitgevee.</translation>
+<translation id="1510238584712386396">Lanseerder</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuut en }other{# minute en }}</translation>
 <translation id="1643823602425662293">Kennisgewing</translation>
 <translation id="169515659049020177">Skuifsleutel</translation>
@@ -37,12 +38,13 @@
 <translation id="1842960171412779397">kies</translation>
 <translation id="1859234291848436338">Skryfrigting</translation>
 <translation id="1860796786778352021">Kennisgewing toemaak</translation>
+<translation id="186476001994626254">Webslimplak-inhoud</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Kies almal</translation>
+<translation id="19085484004813472">Dit is 'n nuwe kenmerk</translation>
 <translation id="2006524834898217237">Maak seker dat hierdie toestel aan die internet gekoppel is.</translation>
 <translation id="208586643495776849">Probeer asseblief weer</translation>
-<translation id="2090963878406559571">Om 'n nommer van <ph name="ORIGIN" /> af na jou Android-foon toe te stuur, moet jy vir albei toestelle <ph name="TROUBLESHOOT_LINK" /> in instellings.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d.}other{# d.}}</translation>
 <translation id="2148716181193084225">Vandag</translation>
 <translation id="2161656808144014275">Teks</translation>
@@ -64,14 +66,18 @@
 <translation id="2522350507219695259">Kalibrering is voltooi</translation>
 <translation id="252373100621549798">Onbekende skerm</translation>
 <translation id="2545651323591713692">Sluimer</translation>
+<translation id="2570734079541893434">Bestuur instellings</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{oor 1 u.}other{oor # u.}}</translation>
 <translation id="2583543531130364912">Kalibreer jou raakskerm</translation>
+<translation id="2586657967955657006">Knipbord</translation>
 <translation id="2666092431469916601">Top</translation>
 <translation id="2701330563083355633">Gedeel vanaf <ph name="DEVICE_NAME" /></translation>
+<translation id="271033894570825754">Nuut</translation>
 <translation id="2743387203779672305">Kopieer na knipbord</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Maak vouer oop</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 jaar gelede}other{# jaar gelede}}</translation>
+<translation id="2878511608894704031">Vee alles uit</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{oor 1 d.}other{oor # d.}}</translation>
 <translation id="2931838996092594335">klik</translation>
 <translation id="2981684127883932071">Wys tans voorstelle</translation>
@@ -94,6 +100,7 @@
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" />-lêer</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Soek “<ph name="LOOKUP_STRING" />” op</translation>
+<translation id="3622035490309591977">Knipbordgeskiedenis</translation>
 <translation id="364720409959344976">Kies vouer om op te laai</translation>
 <translation id="3660179305079774227">Oppyltjie</translation>
 <translation id="3670030362669914947">Nommer</translation>
@@ -112,6 +119,7 @@
 <translation id="4289300219472526559">Begin praat</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> is geskuif na vouer <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">ALLE PROGRAMME</translation>
+<translation id="4491109536499578614">Prent</translation>
 <translation id="4588090240171750605">Rollees na regs</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, stergradering <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, programaanbeveling</translation>
@@ -128,22 +136,26 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Openbaarmakingdriehoek</translation>
 <translation id="5278860589123563674">Kon nie stuur nie</translation>
+<translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> vereis jou aandag.</translation>
 <translation id="528468243742722775">Einde</translation>
-<translation id="5327567770033251652">skakel sinkronisering aan</translation>
 <translation id="5329858601952122676">Vee uit</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> bo-oor <ph name="IN_PLACE_APP" />; laat los om vouer te skep.</translation>
 <translation id="5463830097259460683">Emosiekone en simbole</translation>
 <translation id="5476505524087279545">ontmerk</translation>
 <translation id="547979256943495781">Rak aan regterkant</translation>
+<translation id="5528053674512161860">Bladsy kon nie laai nie omdat die ontwikkelaar-UI-modus (dev_ui) nie geïnstalleer is nie</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" />-stelsel</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Linkerpyltjie</translation>
+<translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> vereis jou aandag.</translation>
 <translation id="5675363643668471212">Rakitem</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min.}other{# min.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktief vandag}=1{1 dag gelede aktief}other{# dae gelede aktief}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dag en }other{# dae en }}</translation>
 <translation id="5789643057113097023">.</translation>
+<translation id="5843690142429128814">Prent.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{oor 1 j.}other{oor # j.}}</translation>
+<translation id="588258955323874662">Volskerm</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekonde oor}other{# sekondes oor}}</translation>
 <translation id="5941711191222866238">Maak kleiner</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 uur}other{# uur}}</translation>
@@ -152,10 +164,12 @@
 <translation id="6040143037577758943">Maak toe</translation>
 <translation id="6119846243427417423">aktiveer</translation>
 <translation id="6129953537138746214">Spasie</translation>
+<translation id="6134259848159370930">Deursoek jou toestel, programme en die web.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Brei uit na alle programme</translation>
 <translation id="6165508094623778733">Kom meer te wete</translation>
+<translation id="6166852626429024716">Deursoek jou toestel, programme, instellings en die web …</translation>
 <translation id="6264365405983206840">Kies alles</translation>
 <translation id="6351032674660237738">PROGRAMVOORSTELLE</translation>
 <translation id="6364916375976753737">Rollees na links</translation>
@@ -165,22 +179,22 @@
 <translation id="6417265370957905582">Google Assistent</translation>
 <translation id="6430678249303439055">Blokkeer alle kennisgewings van hierdie program af</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 sekonde gelede}other{# sekondes gelede}}</translation>
+<translation id="6503257047630241175">RTF-inhoud</translation>
 <translation id="6539092367496845964">Iets is fout. Probeer later weer.</translation>
 <translation id="654149438358937226">Blokkeer alle kennisgewings</translation>
 <translation id="6567071839949112727">klik voorsaat</translation>
 <translation id="6578407462441924264">Naamloos</translation>
 <translation id="6612467943526193239">Druk Esc om kalibrering te verlaat.</translation>
 <translation id="6620110761915583480">Stoor lêer</translation>
-<translation id="6656912866303152668">Maak seker dat sinkronisering in Chrome op <ph name="TARGET_DEVICE_NAME" /> aangeskakel is, en probeer dan weer stuur.</translation>
 <translation id="6699343763173986273">Media se volgende snit</translation>
 <translation id="6710213216561001401">Vorige</translation>
-<translation id="6779314412797872738">Om 'n nommer van hier af na jou Android-foon toe te stuur, moet jy vir albei toestelle in instellings <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">Maak vouer toe</translation>
 <translation id="6808150112686056157">Mediastop</translation>
 <translation id="6845383723252244143">Kies vouer</translation>
 <translation id="6845533974506654842">druk</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 uur oor}other{# uur oor}}</translation>
 <translation id="688711909580084195">Titellose webblad</translation>
+<translation id="6902419395050653510">HTML-inhoud.</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{1 jaar oor}other{# jaar oor}}</translation>
 <translation id="6945221475159498467">Kies</translation>
@@ -192,7 +206,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min. oor}other{# min. oor}}</translation>
 <translation id="7319740667687257810">Lanseerder, gedeeltelike aansig</translation>
-<translation id="7352651011704765696">Iets het verkeerd geloop</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min. gelede}other{# min. gelede}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minuut oor}other{# minute oor}}</translation>
@@ -205,6 +218,7 @@
 <translation id="7848989271541991537">Is geskuif na Bladsy <ph name="PAGE_NUMBER" />, ry <ph name="ROW_NUMBER" />, kolom <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Moenie blokkeer nie</translation>
 <translation id="7907591526440419938">Maak lêer oop</translation>
+<translation id="7952747673138230804">Chrome-bedryfstelsel wys voorstelle vir nuwe inhoud om te verken. Stuur net statistieke om gehalte beter te maak as jy gekies het om gebruiksdata te deel. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Meer as 1 ongelese kennisgewing}other{Meer as # ongelese kennisgewings}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{oor 1 m.}other{oor # m.}}</translation>
@@ -231,6 +245,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> Lêer (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Rak word altyd gewys</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Deursoek jou toestel, programme, instellings en die web. Gebruik die pylsleutels om deur jou programme te navigeer.</translation>
 <translation id="8725488761726303204">+nog <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Gedoen</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 u.}other{# u.}}</translation>

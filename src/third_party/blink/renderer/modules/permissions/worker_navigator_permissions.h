@@ -17,8 +17,6 @@ class Permissions;
 class WorkerNavigatorPermissions final
     : public GarbageCollected<WorkerNavigatorPermissions>,
       public Supplement<WorkerNavigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorPermissions);
-
  public:
   static const char kSupplementName[];
 
@@ -27,7 +25,7 @@ class WorkerNavigatorPermissions final
 
   WorkerNavigatorPermissions();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Permissions> permissions_;

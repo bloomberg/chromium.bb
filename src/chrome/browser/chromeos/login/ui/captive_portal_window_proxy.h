@@ -106,15 +106,15 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
     STATE_UNKNOWN
   };
 
-  // Initializes |captive_portal_view_| if it is not initialized and
+  // Initializes `captive_portal_view_` if it is not initialized and
   // starts loading Captive Portal redirect URL.
   void InitCaptivePortalView();
 
   // Returns symbolic state name based on internal state.
   State GetState() const;
 
-  // When |widget| is not NULL and the same as |widget_| stops to observe
-  // notifications from |widget_| and resets it.
+  // When `widget` is not NULL and the same as `widget_` stops to observe
+  // notifications from `widget_` and resets it.
   void DetachFromWidget(views::Widget* widget);
 
   CaptivePortalView* captive_portal_view_for_testing() {
@@ -129,7 +129,6 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   std::unique_ptr<CaptivePortalView> captive_portal_view_;
   CaptivePortalView* captive_portal_view_for_testing_ = nullptr;
 
-  base::Time started_loading_at_;
   base::ObserverList<Observer> observers_;
 };
 

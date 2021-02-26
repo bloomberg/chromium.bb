@@ -145,6 +145,10 @@ tr.exportTo('tr.metrics.v8.utils', function() {
     return event.title === 'V8.GCMarkCompactorMarkingSummary';
   }
 
+  function isScavengerStackScanningEvent(event) {
+    return event.title === 'V8.GCScavengerStackScanning';
+  }
+
   function isIncrementalMarkingEvent(event) {
     return event.title.startsWith('V8.GCIncrementalMarking');
   }
@@ -234,6 +238,7 @@ tr.exportTo('tr.metrics.v8.utils', function() {
       if (rendererHelper.isChromeTracingUI) continue;
       threads.push(rendererHelper.mainThread);
       threads = threads.concat(rendererHelper.dedicatedWorkerThreads);
+      threads = threads.concat(rendererHelper.serviceWorkerThreads);
       threads = threads.concat(rendererHelper.foregroundWorkerThreads);
     }
     return threads;
@@ -290,6 +295,29 @@ tr.exportTo('tr.metrics.v8.utils', function() {
       for (const event of thread.sliceGroup.childEvents()) {
         if (!filterCallback(event)) continue;
         events.push(event);
+      }
+    }
+    return events;
+  }
+
+  /**
+   * Returns a map of events that pass the |filterCallback| filter. The keys
+   * for the map are produced by |keyCallback|.
+   * @param {Function} filterCallback Takes an event and returns a boolean.
+   * @param {Function} keyCallback Takes an event and returns a string.
+   */
+  function filterAndOrderEvents(model, filterCallback, keyCallback) {
+    const threads = jsExecutionThreads(model);
+    const events = {};
+    for (const thread of threads) {
+      for (const event of thread.sliceGroup.childEvents()) {
+        if (!filterCallback(event)) continue;
+        const key = keyCallback(event);
+        if (events[key]) {
+          events[key].push(event);
+        } else {
+          events[key] = [event];
+        }
       }
     }
     return events;
@@ -513,6 +541,7 @@ tr.exportTo('tr.metrics.v8.utils', function() {
     findParent,
     forcedGCEventName,
     filterEvents,
+    filterAndOrderEvents,
     groupAndProcessEvents,
     isForcedGarbageCollectionEvent,
     isFullMarkCompactorEvent,
@@ -528,6 +557,7 @@ tr.exportTo('tr.metrics.v8.utils', function() {
     isNotForcedTopGarbageCollectionEvent,
     isNotForcedSubGarbageCollectionEvent,
     isScavengerEvent,
+    isScavengerStackScanningEvent,
     isSubGarbageCollectionEvent,
     isTopGarbageCollectionEvent,
     isTopV8ExecuteEvent,

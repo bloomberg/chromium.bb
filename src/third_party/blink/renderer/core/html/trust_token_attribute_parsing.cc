@@ -6,6 +6,7 @@
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_trust_token.h"
+#include "third_party/blink/renderer/core/fetch/trust_token_to_mojom.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -18,10 +19,10 @@ bool ParseType(const String& in, network::mojom::TrustTokenOperationType* out) {
   if (in == "token-request") {
     *out = network::mojom::TrustTokenOperationType::kIssuance;
     return true;
-  } else if (in == "srr-token-redemption") {
+  } else if (in == "token-redemption") {
     *out = network::mojom::TrustTokenOperationType::kRedemption;
     return true;
-  } else if (in == "send-srr") {
+  } else if (in == "send-redemption-record") {
     *out = network::mojom::TrustTokenOperationType::kSigning;
     return true;
   } else {
@@ -100,19 +101,29 @@ network::mojom::blink::TrustTokenParamsPtr TrustTokenParamsFromJson(
       return nullptr;
   }
 
-  // |issuer| is optional, but, if it's present, it must be a valid origin,
-  // potentially trustworthy, and HTTP or HTTPS.
-  if (JSONValue* issuer = object->Get("issuer")) {
-    String str_issuer;
-    if (!issuer->AsString(&str_issuer))
+  // |issuers| is optional; if it's provided, it should be nonempty and contain
+  // origins that are valid, potentially trustworthy, and HTTP or HTTPS.
+  if (JSONValue* issuers = object->Get("issuers")) {
+    JSONArray* issuers_array = JSONArray::Cast(issuers);
+    if (!issuers_array || !issuers_array->size())
       return nullptr;
-    ret->issuer = SecurityOrigin::CreateFromString(str_issuer);
-    if (!ret->issuer)
-      return nullptr;
-    if (!ret->issuer->IsPotentiallyTrustworthy())
-      return nullptr;
-    if (ret->issuer->Protocol() != "http" && ret->issuer->Protocol() != "https")
-      return nullptr;
+
+    // Because of the characteristics of the Trust Tokens protocol, we expect
+    // under 5 elements in this array.
+    for (size_t i = 0; i < issuers_array->size(); ++i) {
+      String str_issuer;
+      if (!issuers_array->at(i)->AsString(&str_issuer))
+        return nullptr;
+
+      ret->issuers.push_back(SecurityOrigin::CreateFromString(str_issuer));
+      const scoped_refptr<const SecurityOrigin>& issuer = ret->issuers.back();
+      if (!issuer)
+        return nullptr;
+      if (!issuer->IsPotentiallyTrustworthy())
+        return nullptr;
+      if (issuer->Protocol() != "http" && issuer->Protocol() != "https")
+        return nullptr;
+    }
   }
 
   // |additionalSignedHeaders| is optional.
@@ -131,6 +142,14 @@ network::mojom::blink::TrustTokenParamsPtr TrustTokenParamsFromJson(
         return nullptr;
       ret->additional_signed_headers.push_back(std::move(next));
     }
+  }
+
+  // |additionalSigningData| is optional.
+  if (JSONValue* additional_signing_data =
+          object->Get("additionalSigningData")) {
+    if (!additional_signing_data->AsString(
+            &ret->possibly_unsafe_additional_signing_data))
+      return nullptr;
   }
 
   return ret;

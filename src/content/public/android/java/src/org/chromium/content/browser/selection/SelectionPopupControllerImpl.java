@@ -76,11 +76,11 @@ import java.util.List;
  * Implementation of the interface {@link SelectionPopupController}.
  */
 @JNINamespace("content")
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         implements ImeEventObserver, SelectionPopupController, WindowEventObserver, HideablePopup,
                    ContainerViewObserver, UserData {
     private static final String TAG = "SelectionPopupCtlr"; // 20 char limit
+    private static final boolean DEBUG = false;
 
     /**
      * Android Intent size limitations prevent sending over a megabyte of data. Limit
@@ -377,6 +377,22 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     @Override
     public void setAllowedMenuItems(int allowedMenuItems) {
         mAllowedMenuItems = allowedMenuItems;
+    }
+
+    @Override
+    public int getAllowedMenuItemIfAny(ActionMode mode, MenuItem item) {
+        if (!isActionModeValid()) return 0;
+
+        int id = item.getItemId();
+        int groupId = item.getGroupId();
+        if (id == R.id.select_action_menu_share) {
+            return MENU_ITEM_SHARE;
+        } else if (id == R.id.select_action_menu_web_search) {
+            return MENU_ITEM_WEB_SEARCH;
+        } else if (groupId == R.id.select_action_menu_text_processing_menus) {
+            return MENU_ITEM_PROCESS_TEXT;
+        }
+        return 0;
     }
 
     @VisibleForTesting
@@ -887,7 +903,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     /**
      * Intialize the menu items for processing text, if there is any.
      */
-    private void initializeTextProcessingMenu(Menu menu) {
+    @VisibleForTesting
+    /* package */ void initializeTextProcessingMenu(Menu menu) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
                 || !isSelectActionModeAllowed(MENU_ITEM_PROCESS_TEXT)) {
             return;
@@ -897,6 +914,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 PackageManagerUtils.queryIntentActivities(createProcessTextIntent(), 0);
         for (int i = 0; i < supportedActivities.size(); i++) {
             ResolveInfo resolveInfo = supportedActivities.get(i);
+            if (resolveInfo.activityInfo == null || !resolveInfo.activityInfo.exported) continue;
+
             CharSequence label = resolveInfo.loadLabel(mContext.getPackageManager());
             menu.add(R.id.select_action_menu_text_processing_menus, Menu.NONE,
                         MENU_ITEM_ORDER_TEXT_PROCESS_START + i, label)
@@ -1116,7 +1135,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      */
     @VisibleForTesting
     public void share() {
-        RecordUserAction.record("MobileActionMode.Share");
+        RecordUserAction.record(UMA_MOBILE_ACTION_MODE_SHARE);
         String query = sanitizeQuery(getSelectedText(), MAX_SHARE_QUERY_LENGTH);
         if (TextUtils.isEmpty(query)) return;
 
@@ -1284,6 +1303,11 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     @CalledByNative
     void onSelectionEvent(
             @SelectionEventType int eventType, int left, int top, int right, int bottom) {
+        if (DEBUG) {
+            Log.i(TAG,
+                    "onSelectionEvent: " + eventType + "[(" + left + ", " + top + ")-(" + right
+                            + ", " + bottom + ")]");
+        }
         // Ensure the provided selection coordinates form a non-empty rect, as required by
         // the selection action mode.
         // NOTE: the native side ensures the rectangle is not empty, but that's done using floating

@@ -79,19 +79,18 @@ WGPUTexture SharedImageRepresentationDawnD3D::BeginAccess(
     return nullptr;
   }
 
-  WGPUTextureDescriptor texture_descriptor;
+  WGPUTextureDescriptor texture_descriptor = {};
   texture_descriptor.nextInChain = nullptr;
   texture_descriptor.format = wgpu_format;
   texture_descriptor.usage = usage;
   texture_descriptor.dimension = WGPUTextureDimension_2D;
   texture_descriptor.size = {size().width(), size().height(), 1};
-  texture_descriptor.arrayLayerCount = 1;
   texture_descriptor.mipLevelCount = 1;
   texture_descriptor.sampleCount = 1;
 
   dawn_native::d3d12::ExternalImageDescriptorDXGISharedHandle descriptor;
   descriptor.cTextureDescriptor = &texture_descriptor;
-  descriptor.isCleared = IsCleared();
+  descriptor.isInitialized = IsCleared();
   descriptor.sharedHandle = shared_handle;
   descriptor.acquireMutexKey = shared_mutex_acquire_key;
   descriptor.isSwapChainTexture =
@@ -99,11 +98,7 @@ WGPUTexture SharedImageRepresentationDawnD3D::BeginAccess(
        SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE);
 
   texture_ = dawn_native::d3d12::WrapSharedHandle(device_, &descriptor);
-  if (texture_) {
-    // Keep a reference to the texture so that it stays valid (its content
-    // might be destroyed).
-    dawn_procs_.textureReference(texture_);
-  } else {
+  if (!texture_) {
     d3d_image_backing->EndAccessD3D12();
   }
 
@@ -132,5 +127,25 @@ void SharedImageRepresentationDawnD3D::EndAccess() {
   d3d_image_backing->EndAccessD3D12();
 }
 #endif  // BUILDFLAG(USE_DAWN)
+
+SharedImageRepresentationOverlayD3D::SharedImageRepresentationOverlayD3D(
+    SharedImageManager* manager,
+    SharedImageBacking* backing,
+    MemoryTypeTracker* tracker)
+    : SharedImageRepresentationOverlay(manager, backing, tracker) {}
+
+bool SharedImageRepresentationOverlayD3D::BeginReadAccess(
+    std::vector<gfx::GpuFence>* acquire_fences,
+    std::vector<gfx::GpuFence>* release_fences) {
+  // Note: only the DX11 video decoder uses this overlay and does not need to
+  // synchronize read access from different devices.
+  return true;
+}
+
+void SharedImageRepresentationOverlayD3D::EndReadAccess() {}
+
+gl::GLImage* SharedImageRepresentationOverlayD3D::GetGLImage() {
+  return static_cast<SharedImageBackingD3D*>(backing())->GetGLImage();
+}
 
 }  // namespace gpu

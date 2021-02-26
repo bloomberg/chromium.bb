@@ -60,15 +60,23 @@ v8_header_set("cctest_headers") {
   sources = [ "cctest.h" ]
 }
 
+config("cctest_sources_config") {
+  if (is_clang) {
+    cflags = [ "-Wno-string-concatenation" ]
+  }
+}
+
 v8_source_set("cctest_sources") {
   testonly = true
 
   sources = [
     ### gcmole(all) ###
     "../common/assembler-tester.h",
+    "../common/flag-utils.h",
     "../common/wasm/flag-utils.h",
     "../common/wasm/test-signatures.h",
     "../common/wasm/wasm-macro-gen.h",
+    "cctest-utils.h",
     "collector.h",
     "compiler/c-signature.h",
     "compiler/call-tester.h",
@@ -148,6 +156,7 @@ v8_source_set("cctest_sources") {
     "heap/test-spaces.cc",
     "heap/test-unmapper.cc",
     "heap/test-weak-references.cc",
+    "heap/test-write-barrier.cc",
     "interpreter/bytecode-expectations-printer.cc",
     "interpreter/bytecode-expectations-printer.h",
     "interpreter/interpreter-tester.cc",
@@ -196,6 +205,11 @@ v8_source_set("cctest_sources") {
     "test-code-pages.cc",
     "test-code-stub-assembler.cc",
     "test-compiler.cc",
+    "test-concurrent-descriptor-array.cc",
+    "test-concurrent-feedback-vector.cc",
+    "test-concurrent-prototype.cc",
+    "test-concurrent-script-context-table.cc",
+    "test-concurrent-transition-array.cc",
     "test-constantpool.cc",
     "test-conversions.cc",
     "test-cpu-profiler.cc",
@@ -204,6 +218,7 @@ v8_source_set("cctest_sources") {
     "test-debug.cc",
     "test-decls.cc",
     "test-deoptimization.cc",
+    "test-descriptor-array.cc",
     "test-dictionary.cc",
     "test-diy-fp.cc",
     "test-double.cc",
@@ -262,9 +277,9 @@ v8_source_set("cctest_sources") {
     "test-unboxed-doubles.cc",
     "test-unscopables-hidden-prototype.cc",
     "test-unwinder-code-pages.cc",
-    "test-unwinder.cc",
     "test-usecounters.cc",
     "test-utils.cc",
+    "test-verifiers.cc",
     "test-version.cc",
     "test-weakmaps.cc",
     "test-weaksets.cc",
@@ -292,6 +307,7 @@ v8_source_set("cctest_sources") {
     "wasm/test-run-wasm-simd-liftoff.cc",
     "wasm/test-run-wasm-simd-scalar-lowering.cc",
     "wasm/test-run-wasm-simd.cc",
+    "wasm/test-run-wasm-wrappers.cc",
     "wasm/test-run-wasm.cc",
     "wasm/test-streaming-compilation.cc",
     "wasm/test-wasm-breakpoints.cc",
@@ -299,6 +315,7 @@ v8_source_set("cctest_sources") {
     "wasm/test-wasm-debug-evaluate.cc",
     "wasm/test-wasm-debug-evaluate.h",
     "wasm/test-wasm-import-wrapper-cache.cc",
+    "wasm/test-wasm-metrics.cc",
     "wasm/test-wasm-serialization.cc",
     "wasm/test-wasm-shared-engine.cc",
     "wasm/test-wasm-stack.cc",
@@ -393,9 +410,11 @@ v8_source_set("cctest_sources") {
   }
 
   configs = [
+    "../..:cppgc_base_config",
     "../..:external_config",
     "../..:internal_config_base",
     "../..:v8_tracing_config",
+    ":cctest_sources_config",
   ]
 
   public_deps = [
@@ -404,7 +423,7 @@ v8_source_set("cctest_sources") {
     "../..:v8_for_testing",
     "../..:v8_libbase",
     "../..:v8_libplatform",
-    "../..:wasm_module_runner",
+    "../..:wasm_test_common",
     "../../tools/debug_helper:v8_debug_helper",
     "//build/win:default_exe_manifest",
   ]

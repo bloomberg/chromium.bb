@@ -7,8 +7,20 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "components/navigation_metrics/navigation_metrics.h"
+#include "components/profile_metrics/browser_profile_type.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state_metrics/browser_state_metrics.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
+#include "ios/chrome/browser/web_state_list/session_metrics.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/web/public/browser_state.h"
+#include "ios/web/public/navigation/navigation_context.h"
+#include "ios/web/public/navigation/navigation_item.h"
+#include "ios/web/public/navigation/navigation_manager.h"
+#import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,33 +28,38 @@
 
 BROWSER_USER_DATA_KEY_IMPL(WebStateListMetricsBrowserAgent)
 
+// static
+void WebStateListMetricsBrowserAgent::CreateForBrowser(
+    Browser* browser,
+    SessionMetrics* session_metrics) {
+  if (!FromBrowser(browser)) {
+    browser->SetUserData(UserDataKey(),
+                         base::WrapUnique(new WebStateListMetricsBrowserAgent(
+                             browser, session_metrics)));
+  }
+}
+
 WebStateListMetricsBrowserAgent::WebStateListMetricsBrowserAgent(
-    Browser* browser)
-    : web_state_list_(browser->GetWebStateList()) {
-  browser->AddObserver(this);
+    Browser* browser,
+    SessionMetrics* session_metrics)
+    : web_state_list_(browser->GetWebStateList()),
+      session_metrics_(session_metrics) {
   DCHECK(web_state_list_);
+  DCHECK(session_metrics_);
+  browser->AddObserver(this);
   web_state_list_->AddObserver(this);
+  for (int index = 0; index < web_state_list_->count(); ++index) {
+    web::WebState* web_state = web_state_list_->GetWebStateAt(index);
+    web_state->AddObserver(this);
+  }
+
   SessionRestorationBrowserAgent* restoration_agent =
       SessionRestorationBrowserAgent::FromBrowser(browser);
   if (restoration_agent)
     restoration_agent->AddObserver(this);
 }
 
-WebStateListMetricsBrowserAgent::WebStateListMetricsBrowserAgent() {
-  ResetSessionMetrics();
-}
-
 WebStateListMetricsBrowserAgent::~WebStateListMetricsBrowserAgent() = default;
-
-void WebStateListMetricsBrowserAgent::RecordSessionMetrics() {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Session.ClosedTabCounts",
-                              detached_web_state_counter_, 1, 200, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Session.OpenedTabCounts",
-                              activated_web_state_counter_, 1, 200, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Session.NewTabCounts",
-                              inserted_web_state_counter_, 1, 200, 50);
-  ResetSessionMetrics();
-}
 
 void WebStateListMetricsBrowserAgent::WillStartSessionRestoration() {
   metric_collection_paused_ = true;
@@ -58,20 +75,22 @@ void WebStateListMetricsBrowserAgent::WebStateInsertedAt(
     web::WebState* web_state,
     int index,
     bool activating) {
+  web_state->AddObserver(this);
   if (metric_collection_paused_)
     return;
   base::RecordAction(base::UserMetricsAction("MobileNewTabOpened"));
-  ++inserted_web_state_counter_;
+  session_metrics_->OnWebStateInserted();
 }
 
 void WebStateListMetricsBrowserAgent::WebStateDetachedAt(
     WebStateList* web_state_list,
     web::WebState* web_state,
     int index) {
+  web_state->RemoveObserver(this);
   if (metric_collection_paused_)
     return;
   base::RecordAction(base::UserMetricsAction("MobileTabClosed"));
-  ++detached_web_state_counter_;
+  session_metrics_->OnWebStateDetached();
 }
 
 void WebStateListMetricsBrowserAgent::WebStateActivatedAt(
@@ -82,28 +101,92 @@ void WebStateListMetricsBrowserAgent::WebStateActivatedAt(
     ActiveWebStateChangeReason reason) {
   if (metric_collection_paused_)
     return;
-  ++activated_web_state_counter_;
+  session_metrics_->OnWebStateActivated();
   if (reason == ActiveWebStateChangeReason::Replaced)
     return;
 
   base::RecordAction(base::UserMetricsAction("MobileTabSwitched"));
 }
 
-void WebStateListMetricsBrowserAgent::ResetSessionMetrics() {
-  inserted_web_state_counter_ = 0;
-  detached_web_state_counter_ = 0;
-  activated_web_state_counter_ = 0;
-  metric_collection_paused_ = false;
+void WebStateListMetricsBrowserAgent::WebStateReplacedAt(
+    WebStateList* web_state_list,
+    web::WebState* old_web_state,
+    web::WebState* new_web_state,
+    int index) {
+  old_web_state->RemoveObserver(this);
+  new_web_state->AddObserver(this);
+}
+
+// web::WebStateObserver
+void WebStateListMetricsBrowserAgent::DidStartNavigation(
+    web::WebState* web_state,
+    web::NavigationContext* navigation_context) {
+  // In order to avoid false positive in the crash loop detection, disable the
+  // counter as soon as an URL is loaded. This requires an user action and is a
+  // significant source of crashes. Ignore NTP as it is loaded by default after
+  // a crash.
+  if (navigation_context->GetUrl().host_piece() != kChromeUINewTabHost) {
+    static dispatch_once_t dispatch_once_token;
+    dispatch_once(&dispatch_once_token, ^{
+      crash_util::ResetFailedStartupAttemptCount();
+    });
+  }
+}
+
+void WebStateListMetricsBrowserAgent::DidFinishNavigation(
+    web::WebState* web_state,
+    web::NavigationContext* navigation_context) {
+  if (!navigation_context->HasCommitted())
+    return;
+
+  if (!navigation_context->IsSameDocument() &&
+      !web_state->GetBrowserState()->IsOffTheRecord()) {
+    int tab_count = static_cast<int>(web_state_list_->count());
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tab_count, 1, 200, 50);
+  }
+
+  web::NavigationItem* item =
+      web_state->GetNavigationManager()->GetLastCommittedItem();
+  navigation_metrics::RecordMainFrameNavigation(
+      item ? item->GetVirtualURL() : GURL::EmptyGURL(),
+      navigation_context->IsSameDocument(),
+      web_state->GetBrowserState()->IsOffTheRecord(),
+      GetBrowserStateType(web_state->GetBrowserState()));
+}
+
+void WebStateListMetricsBrowserAgent::PageLoaded(
+    web::WebState* web_state,
+    web::PageLoadCompletionStatus load_completion_status) {
+  switch ([[UIApplication sharedApplication] statusBarOrientation]) {
+    case UIInterfaceOrientationPortrait:
+    case UIInterfaceOrientationPortraitUpsideDown:
+      UMA_HISTOGRAM_BOOLEAN("Tab.PageLoadInPortrait", YES);
+      break;
+    case UIInterfaceOrientationLandscapeLeft:
+    case UIInterfaceOrientationLandscapeRight:
+      UMA_HISTOGRAM_BOOLEAN("Tab.PageLoadInPortrait", NO);
+      break;
+    case UIInterfaceOrientationUnknown:
+      // TODO(crbug.com/228832): Convert from a boolean histogram to an
+      // enumerated histogram and log this case as well.
+      break;
+  }
 }
 
 void WebStateListMetricsBrowserAgent::BrowserDestroyed(Browser* browser) {
   DCHECK_EQ(browser->GetWebStateList(), web_state_list_);
 
-  web_state_list_->RemoveObserver(this);
-  browser->RemoveObserver(this);
   SessionRestorationBrowserAgent* restoration_agent =
       SessionRestorationBrowserAgent::FromBrowser(browser);
   if (restoration_agent)
     restoration_agent->RemoveObserver(this);
+
+  for (int index = 0; index < web_state_list_->count(); ++index) {
+    web::WebState* web_state = web_state_list_->GetWebStateAt(index);
+    web_state->RemoveObserver(this);
+  }
+  web_state_list_->RemoveObserver(this);
   web_state_list_ = nullptr;
+
+  browser->RemoveObserver(this);
 }

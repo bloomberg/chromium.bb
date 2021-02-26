@@ -13,6 +13,7 @@ import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behav
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
 import {routes} from '../route.js';
 import {Route, RouteObserverBehavior, Router} from '../router.m.js';
 
@@ -84,7 +85,7 @@ Polymer({
    * @protected
    */
   currentRouteChanged(route) {
-    if (Router.getInstance().getCurrentRoute() !=
+    if (Router.getInstance().getCurrentRoute() !==
         routes.SITE_SETTINGS_DATA_DETAILS) {
       return;
     }
@@ -149,10 +150,10 @@ Polymer({
     // Frequently there are multiple cookies per site. To avoid showing a list
     // of '1 cookie', '1 cookie', ... etc, it is better to show the title of the
     // cookie to differentiate them.
-    if (item.type == 'cookie') {
+    if (item.type === 'cookie') {
       return item.title;
     }
-    if (item.type == 'quota') {
+    if (item.type === 'quota') {
       return item.totalUsage;
     }
     return categoryLabels[item.type];
@@ -164,6 +165,8 @@ Polymer({
    * @private
    */
   onRemove_(event) {
+    MetricsBrowserProxyImpl.getInstance().recordSettingsPageHistogram(
+        PrivacyElementInteractions.COOKIE_DETAILS_REMOVE_ITEM);
     this.browserProxy_.removeCookie(
         /** @type {!CookieDetails} */ (event.currentTarget.dataset).idPath);
   },
@@ -172,6 +175,8 @@ Polymer({
    * A handler for when the user opts to remove all cookies.
    */
   removeAll() {
+    MetricsBrowserProxyImpl.getInstance().recordSettingsPageHistogram(
+        PrivacyElementInteractions.COOKIE_DETAILS_REMOVE_ALL);
     this.browserProxy_.removeCookie(this.siteId_);
   },
 });

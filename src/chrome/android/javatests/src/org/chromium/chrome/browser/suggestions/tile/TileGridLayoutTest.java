@@ -16,13 +16,13 @@ import static org.chromium.chrome.test.util.browser.suggestions.mostvisited.Fake
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.support.test.espresso.matcher.ViewMatchers;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.filters.MediumTest;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -35,11 +35,11 @@ import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
@@ -61,13 +61,12 @@ import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependencies
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.test.util.NightModeTestUtils;
+import org.chromium.url.GURL;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -92,7 +91,8 @@ public class TileGridLayoutTest {
     public EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
 
     @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     private static final String[] FAKE_MOST_VISITED_URLS = new String[] {
             "/chrome/test/data/android/navigate/one.html",
@@ -167,7 +167,6 @@ public class TileGridLayoutTest {
     @Test
     //@MediumTest
     @DisabledTest(message = "crbug.com/771648")
-    @RetryOnFailure
     @Feature({"NewTabPage", "RenderTest"})
     public void testModernTileGridAppearance_Two()
             throws IOException, InterruptedException {
@@ -193,7 +192,7 @@ public class TileGridLayoutTest {
     public void testTileAppearanceModern(boolean nightModeEnabled)
             throws IOException, InterruptedException, TimeoutException {
         List<SiteSuggestion> suggestions = makeSuggestions(2);
-        List<String> offlineAvailableUrls = Collections.singletonList(suggestions.get(0).url);
+        List<GURL> offlineAvailableUrls = Collections.singletonList(suggestions.get(0).url);
         ViewGroup tiles = renderTiles(suggestions, offlineAvailableUrls);
 
         mLoadCompleteHelper.waitForCallback(0);
@@ -243,12 +242,8 @@ public class TileGridLayoutTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> activity.setRequestedOrientation(requestedOrientation));
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return orientationMatchesRequest(activity, requestedOrientation);
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> orientationMatchesRequest(activity, requestedOrientation));
     }
 
     /**
@@ -283,8 +278,8 @@ public class TileGridLayoutTest {
      * Starts and sets up an activity to render the provided site suggestions in the activity.
      * @return the layout in which the suggestions are rendered.
      */
-    private TileGridLayout renderTiles(List<SiteSuggestion> siteSuggestions,
-            List<String> offlineUrls) throws InterruptedException {
+    private TileGridLayout renderTiles(List<SiteSuggestion> siteSuggestions, List<GURL> offlineUrls)
+            throws InterruptedException {
         // Launching the activity, that should now use the right UI.
         mActivityTestRule.startMainActivityOnBlankPage();
         ChromeActivity activity = mActivityTestRule.getActivity();
@@ -322,7 +317,7 @@ public class TileGridLayoutTest {
     }
 
     private SiteSection createSiteSection(
-            final SiteSectionViewHolder viewHolder, UiConfig uiConfig, List<String> offlineUrls) {
+            final SiteSectionViewHolder viewHolder, UiConfig uiConfig, List<GURL> offlineUrls) {
         ThreadUtils.assertOnUiThread();
 
         ChromeActivity activity = mActivityTestRule.getActivity();
@@ -330,14 +325,13 @@ public class TileGridLayoutTest {
         // TODO (https://crbug.com/1063807):  Add incognito mode tests.
         Profile profile = Profile.getLastUsedRegularProfile();
         SuggestionsUiDelegate uiDelegate =
-                new SuggestionsUiDelegateImpl(mSuggestionsDeps.getFactory().createEventReporter(),
-                        null, profile, null, activity.getSnackbarManager());
+                new SuggestionsUiDelegateImpl(null, profile, null, activity.getSnackbarManager());
 
         FakeOfflinePageBridge offlinePageBridge = new FakeOfflinePageBridge();
         List<OfflinePageItem> offlinePageItems = new ArrayList<>();
         for (int i = 0; i < offlineUrls.size(); i++) {
-            offlinePageItems.add(
-                    FakeOfflinePageBridge.createOfflinePageItem(offlineUrls.get(i), i + 1L));
+            offlinePageItems.add(FakeOfflinePageBridge.createOfflinePageItem(
+                    offlineUrls.get(i).getSpec(), i + 1L));
         }
         offlinePageBridge.setItems(offlinePageItems);
         offlinePageBridge.setIsOfflinePageModelLoaded(true);

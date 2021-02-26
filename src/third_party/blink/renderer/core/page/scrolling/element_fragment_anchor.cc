@@ -11,28 +11,13 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
-
-namespace {
-
-Node* FindAnchorFromFragment(const String& fragment, Document& doc) {
-  Element* anchor_node = doc.FindAnchor(fragment);
-
-  // Implement the rule that "" and "top" both mean top of page as in other
-  // browsers.
-  if (!anchor_node &&
-      (fragment.IsEmpty() || EqualIgnoringASCIICase(fragment, "top")))
-    return &doc;
-
-  return anchor_node;
-}
-
-}  // namespace
 
 ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
                                                         LocalFrame& frame,
@@ -50,28 +35,17 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
     return nullptr;
 
   String fragment = url.FragmentIdentifier();
-
-  Node* anchor_node = nullptr;
-
-  // Try the raw fragment for HTML documents, but skip it for `svgView()`:
-  if (!doc.IsSVGDocument())
-    anchor_node = FindAnchorFromFragment(fragment, doc);
-
-  // https://html.spec.whatwg.org/C/#the-indicated-part-of-the-document
-  // 5. Let decodedFragment be the result of running UTF-8 decode without BOM
-  // on fragmentBytes.
-  if (!anchor_node) {
-    fragment = DecodeURLEscapeSequences(fragment, DecodeURLMode::kUTF8);
-    anchor_node = FindAnchorFromFragment(fragment, doc);
-  }
+  Node* anchor_node = doc.FindAnchor(fragment);
 
   // Setting to null will clear the current target.
   auto* target = DynamicTo<Element>(anchor_node);
   doc.SetCSSTarget(target);
 
   if (doc.IsSVGDocument()) {
-    if (auto* svg = DynamicTo<SVGSVGElement>(doc.documentElement()))
-      svg->SetupInitialView(fragment, target);
+    if (auto* svg = DynamicTo<SVGSVGElement>(doc.documentElement())) {
+      String decoded = DecodeURLEscapeSequences(fragment, DecodeURLMode::kUTF8);
+      svg->SetupInitialView(decoded, target);
+    }
   }
 
   if (target) {
@@ -89,8 +63,11 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
   if (!should_scroll)
     return nullptr;
 
-  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled())
-    anchor_node->DispatchEvent(*Event::Create(event_type_names::kBeforematch));
+  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled(
+          frame.GetDocument()->GetExecutionContext())) {
+    anchor_node->DispatchEvent(
+        *Event::CreateBubble(event_type_names::kBeforematch));
+  }
 
   return MakeGarbageCollected<ElementFragmentAnchor>(*anchor_node, frame);
 }
@@ -171,7 +148,7 @@ void ElementFragmentAnchor::DidScroll(mojom::blink::ScrollType type) {
   needs_invoke_ = false;
 }
 
-void ElementFragmentAnchor::Trace(Visitor* visitor) {
+void ElementFragmentAnchor::Trace(Visitor* visitor) const {
   visitor->Trace(anchor_node_);
   visitor->Trace(frame_);
   FragmentAnchor::Trace(visitor);

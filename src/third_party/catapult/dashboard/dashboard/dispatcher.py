@@ -1,7 +1,6 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Dispatches requests to request handler classes."""
 from __future__ import print_function
 from __future__ import division
@@ -21,8 +20,6 @@ from dashboard import bug_details
 from dashboard import buildbucket_job_status
 from dashboard import create_health_report
 from dashboard import debug_alert
-from dashboard import delete_test_data
-from dashboard import deprecate_tests
 from dashboard import dump_graph_json
 from dashboard import edit_anomalies
 from dashboard import edit_anomaly_configs
@@ -54,6 +51,7 @@ from dashboard import speed_releasing
 from dashboard import update_dashboard_stats
 from dashboard import update_test_suite_descriptors
 from dashboard import update_test_suites
+from dashboard import uploads_info
 from dashboard.api import alerts as api_alerts
 from dashboard.api import bugs
 from dashboard.api import config
@@ -70,7 +68,6 @@ from dashboard.api import test_suites
 from dashboard.api import timeseries
 from dashboard.api import timeseries2
 
-
 _URL_MAPPING = [
     ('/_/jstsmon', jstsmon.JsTsMonHandler),
     ('/add_histograms', add_histograms.AddHistogramsHandler),
@@ -80,6 +77,7 @@ _URL_MAPPING = [
     ('/add_point_queue', add_point_queue.AddPointQueueHandler),
     ('/alerts', alerts.AlertsHandler),
     (r'/api/alerts', api_alerts.AlertsHandler),
+    (r'/api/bugs/p/(.+)/(.+)', bugs.BugsWithProjectHandler),
     (r'/api/bugs/(.*)', bugs.BugsHandler),
     (r'/api/config', config.ConfigHandler),
     (r'/api/describe', describe.DescribeHandler),
@@ -104,7 +102,6 @@ _URL_MAPPING = [
     ('/debug_alert', debug_alert.DebugAlertHandler),
     ('/delete_expired_entities',
      layered_cache_delete_expired.LayeredCacheDeleteExpiredHandler),
-    ('/delete_test_data', delete_test_data.DeleteTestDataHandler),
     ('/dump_graph_json', dump_graph_json.DumpGraphJsonHandler),
     ('/edit_anomalies', edit_anomalies.EditAnomaliesHandler),
     ('/edit_anomaly_configs', edit_anomaly_configs.EditAnomalyConfigsHandler),
@@ -124,10 +121,8 @@ _URL_MAPPING = [
      mark_recovered_alerts.MarkRecoveredAlertsHandler),
     ('/memory_report', memory_report.MemoryReportHandler),
     ('/migrate_test_names', migrate_test_names.MigrateTestNamesHandler),
-    ('/deprecate_tests', deprecate_tests.DeprecateTestsHandler),
     ('/navbar', navbar.NavbarHandler),
-    ('/pinpoint/new/bisect',
-     pinpoint_request.PinpointNewBisectRequestHandler),
+    ('/pinpoint/new/bisect', pinpoint_request.PinpointNewBisectRequestHandler),
     ('/pinpoint/new/perf_try',
      pinpoint_request.PinpointNewPerfTryRequestHandler),
     ('/pinpoint/new/prefill',
@@ -135,14 +130,14 @@ _URL_MAPPING = [
     ('/put_entities_task', put_entities_task.PutEntitiesTaskHandler),
     ('/report', report.ReportHandler),
     ('/short_uri', short_uri.ShortUriHandler),
-    (r'/speed_releasing/(.*)',
-     speed_releasing.SpeedReleasingHandler),
+    (r'/speed_releasing/(.*)', speed_releasing.SpeedReleasingHandler),
     ('/speed_releasing', speed_releasing.SpeedReleasingHandler),
     ('/update_dashboard_stats',
      update_dashboard_stats.UpdateDashboardStatsHandler),
     ('/update_test_suites', update_test_suites.UpdateTestSuitesHandler),
     ('/update_test_suite_descriptors',
      update_test_suite_descriptors.UpdateTestSuiteDescriptorsHandler),
+    ('/uploads/(.+)', uploads_info.UploadInfoHandler),
     (oauth2_decorator.DECORATOR.callback_path,
      oauth2_decorator.DECORATOR.callback_handler())
 ]

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/reading_list/features/reading_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::UserMetricsAction;
@@ -40,28 +41,35 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   int num_affected_tabs = affected_indices.size();
   AddItemWithStringId(TabStripModel::CommandNewTabToRight,
                       IDS_TAB_CXMENU_NEWTABTORIGHT);
-  if (base::FeatureList::IsEnabled(features::kTabGroups)) {
-    if (ExistingTabGroupSubMenuModel::ShouldShowSubmenu(tab_strip, index)) {
-      // Create submenu with existing groups
-      add_to_existing_group_submenu_ =
-          std::make_unique<ExistingTabGroupSubMenuModel>(delegate(), tab_strip,
-                                                         index);
-      AddSubMenu(TabStripModel::CommandAddToExistingGroup,
-                 l10n_util::GetPluralStringFUTF16(
-                     IDS_TAB_CXMENU_ADD_TAB_TO_GROUP, num_affected_tabs),
-                 add_to_existing_group_submenu_.get());
-    } else {
-      AddItem(TabStripModel::CommandAddToNewGroup,
-              l10n_util::GetPluralStringFUTF16(
-                  IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP, num_affected_tabs));
-    }
+  if (base::FeatureList::IsEnabled(reading_list::switches::kReadLater)) {
+    AddItem(TabStripModel::CommandAddToReadLater,
+            l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_READ_LATER,
+                                             num_affected_tabs));
+    SetEnabledAt(GetItemCount() - 1,
+                 tab_strip->IsReadLaterSupportedForAny(affected_indices));
+  }
+  if (ExistingTabGroupSubMenuModel::ShouldShowSubmenu(tab_strip, index)) {
+    // Create submenu with existing groups
+    add_to_existing_group_submenu_ =
+        std::make_unique<ExistingTabGroupSubMenuModel>(delegate(), tab_strip,
+                                                       index);
+    AddSubMenu(TabStripModel::CommandAddToExistingGroup,
+               l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_ADD_TAB_TO_GROUP,
+                                                num_affected_tabs),
+               add_to_existing_group_submenu_.get());
+    SetIsNewFeatureAt(GetItemCount() - 1, true);
+  } else {
+    AddItem(TabStripModel::CommandAddToNewGroup,
+            l10n_util::GetPluralStringFUTF16(
+                IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP, num_affected_tabs));
+    SetIsNewFeatureAt(GetItemCount() - 1, true);
+  }
 
-    for (size_t index = 0; index < affected_indices.size(); index++) {
-      if (tab_strip->GetTabGroupForTab(affected_indices[index]).has_value()) {
-        AddItemWithStringId(TabStripModel::CommandRemoveFromGroup,
-                            IDS_TAB_CXMENU_REMOVE_TAB_FROM_GROUP);
-        break;
-      }
+  for (size_t index = 0; index < affected_indices.size(); index++) {
+    if (tab_strip->GetTabGroupForTab(affected_indices[index]).has_value()) {
+      AddItemWithStringId(TabStripModel::CommandRemoveFromGroup,
+                          IDS_TAB_CXMENU_REMOVE_TAB_FROM_GROUP);
+      break;
     }
   }
 
@@ -104,12 +112,10 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                           IDS_TAB_CXMENU_SOUND_UNMUTE_SITE, num_affected_tabs));
   if (send_tab_to_self::ShouldOfferFeature(
           tab_strip->GetWebContentsAt(index))) {
-    send_tab_to_self::RecordSendTabToSelfClickResult(
-        send_tab_to_self::kTabMenu, SendTabToSelfClickResult::kShowItem);
     AddSeparator(ui::NORMAL_SEPARATOR);
 
     if (send_tab_to_self::GetValidDeviceCount(tab_strip->profile()) == 1) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       AddItem(TabStripModel::CommandSendTabToSelfSingleTarget,
               l10n_util::GetStringFUTF16(
                   IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
@@ -123,17 +129,12 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                               tab_strip->profile()))),
                       ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
-      send_tab_to_self::RecordSendTabToSelfClickResult(
-          send_tab_to_self::kTabMenu,
-          SendTabToSelfClickResult::kShowDeviceList);
-      send_tab_to_self::RecordSendTabToSelfDeviceCount(
-          send_tab_to_self::kTabMenu, 1);
     } else {
       send_tab_to_self_sub_menu_model_ =
           std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
               tab_strip->GetWebContentsAt(index),
               send_tab_to_self::SendTabToSelfMenuType::kTab);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       AddSubMenuWithStringId(TabStripModel::CommandSendTabToSelf,
                              IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
                              send_tab_to_self_sub_menu_model_.get());

@@ -83,11 +83,11 @@ class AutoPtr {
 // CheckParameters ensures that the parameters in |parameters| are safe for
 // use in an HTTP URL.  Returns true if they are, false if unsafe characters
 // are present.
-static bool CheckParameters(const map<wstring, wstring> *parameters) {
+static bool CheckParameters(const map<wstring, wstring>* parameters) {
   for (map<wstring, wstring>::const_iterator iterator = parameters->begin();
        iterator != parameters->end();
        ++iterator) {
-    const wstring &key = iterator->first;
+    const wstring& key = iterator->first;
     if (key.empty()) {
       // Disallow empty parameter names.
       return false;
@@ -99,7 +99,7 @@ static bool CheckParameters(const map<wstring, wstring> *parameters) {
       }
     }
 
-    const wstring &value = iterator->second;
+    const wstring& value = iterator->second;
     for (unsigned int i = 0; i < value.size(); ++i) {
       wchar_t c = value[i];
       if (c < 32 || c == '"' || c == '?' || c == '&' || c > 127) {
@@ -141,8 +141,8 @@ HttpClient* HTTPDownload::CreateHttpClient(const wchar_t* url) {
 }
 
 // static
-bool HTTPDownload::Download(const wstring &url,
-                            const map<wstring, wstring> *parameters,
+bool HTTPDownload::Download(const wstring& url,
+                            const map<wstring, wstring>* parameters,
                             string *content, int *status_code) {
   assert(content);
   AutoPtr<HttpClient> http_client(CreateHttpClient(url.c_str()));

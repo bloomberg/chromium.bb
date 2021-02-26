@@ -66,7 +66,7 @@ differences in behavior between the tryservers and waterfall bots. Since the
 tryservers mirror waterfall bots, if the waterfall bot is working, the
 tryserver must almost inherently be working as well.
 
-[chromium_trybot.py]: https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipes/chromium_trybot.py
+[chromium_trybot.py]: https://chromium.googlesource.com/chromium/tools/build/+/master/recipes/recipes/chromium_trybot.py
 
 There are some GPU configurations on the waterfall backed by only one machine,
 or a very small number of machines in the Swarming pool. A few examples are:
@@ -137,7 +137,7 @@ See [Adding new steps to the GPU bots] for details on this process.
 
 In the [`tools/build`][tools/build] workspace:
 
-*   `scripts/slave/recipe_modules/chromium_tests/`:
+*   `recipes/recipe_modules/chromium_tests/`:
     *   [`chromium_gpu.py`][chromium_gpu.py] and
         [`chromium_gpu_fyi.py`][chromium_gpu_fyi.py] define the following for
         each builder and tester:
@@ -177,9 +177,9 @@ In the [`tools/build`][tools/build] workspace:
                 specific hardware configuration.
 
 [tools/build]:         https://chromium.googlesource.com/chromium/tools/build/
-[chromium_gpu.py]:     https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/chromium_tests/chromium_gpu.py
-[chromium_gpu_fyi.py]: https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/chromium_tests/chromium_gpu_fyi.py
-[trybots.py]:          https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/chromium_tests/trybots.py
+[chromium_gpu.py]:     https://chromium.googlesource.com/chromium/tools/build/+/master/recipes/recipe_modules/chromium_tests/builders/chromium_gpu.py
+[chromium_gpu_fyi.py]: https://chromium.googlesource.com/chromium/tools/build/+/master/recipes/recipe_modules/chromium_tests/builders/chromium_gpu_fyi.py
+[trybots.py]:          https://chromium.googlesource.com/chromium/tools/build/+/master/recipes/recipe_modules/chromium_tests/trybots.py
 
 In the [`chromium/src`][chromium/src] workspace:
 
@@ -208,9 +208,6 @@ In the [`chromium/src`][chromium/src] workspace:
         behavior in the GN build.
 *   [`src/tools/mb/mb_config.pyl`][mb_config.pyl]
     *   Defines the GN arguments for all of the bots.
-*   [`src/tools/mb/mb_config_buckets.pyl`][mb_config_buckets.pyl]
-    *   A new version of [`mb_config.pyl`][mb_config.pyl] that should supersede
-        it.
 *   [`src/infra/config`][src/infra/config]:
     *   Definitions of how bots are organized on the waterfall,
         how builds are triggered, which VMs or machines are used for the
@@ -226,7 +223,6 @@ In the [`chromium/src`][chromium/src] workspace:
 [chromium.gpu.fyi.json]:                https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/chromium.gpu.fyi.json
 [gn_isolate_map.pyl]:                   https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/gn_isolate_map.pyl
 [mb_config.pyl]:                        https://chromium.googlesource.com/chromium/src/+/master/tools/mb/mb_config.pyl
-[mb_config_buckets.pyl]:                https://chromium.googlesource.com/chromium/src/+/master/tools/mb/mb_config_buckets.pyl
 [generate_buildbot_json.py]:            https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/generate_buildbot_json.py
 [mixins.pyl]:                           https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/mixins.pyl
 [waterfalls.pyl]:                       https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/waterfalls.pyl
@@ -245,20 +241,14 @@ sorry):
         GPUs. New GPU hardware should be added to this pool.
     *   Also defines the GCEs, Mac VMs and Mac machines used for CI builders
         on GPU and GPU.FYI waterfalls and trybots.
-*   [`chromium.star`][chromium.star]
-    *   Defines Swarming pools of GCEs, shared with Chromium, which are used
-        for CI builders on GPU and GPU.FYI waterfalls and trybots.
 *   [`pools.cfg`][pools.cfg]
     *   Defines the Swarming pools for GCEs and Mac VMs used for manually
         triggered trybots.
-*   [`bot_config.py`][bot_config.py]
-    *   Defines the stable GPU driver and OS versions in GPU Swarming pools.
 
 [infradata/config]:                https://chrome-internal.googlesource.com/infradata/config
 [gpu.star]:                        https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/starlark/bots/chromium/gpu.star
 [chromium.star]:                   https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/starlark/bots/chromium/chromium.star
 [pools.cfg]:                       https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/pools.cfg
-[bot_config.py]:                   https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/scripts/bot_config.py
 [main.star]:                       https://chrome-internal.googlesource.com/infradata/config/+/master/main.star
 [vms.cfg]:                         https://chrome-internal.googlesource.com/infradata/config/+/master/configs/gce-provider/vms.cfg
 
@@ -305,17 +295,14 @@ The process is:
    to be added to the right Swarming pools in a CL in the
    [`infradata/config`][infradata/config] (Google internal) workspace.
     1. GCEs for Windows CI builders and builder/testers should be added to
-       `luci-chromium-ci-win10-8` group in [`chromium.star`][chromium.star].
-       [Example](https://chrome-internal-review.googlesource.com/c/infradata/config/+/2077803).
+       `luci-chromium-gpu-ci-win10-8` group in [`gpu.star`][gpu.star].
     1. GCEs for Linux and Android CI builders and builder/testers should be added to
-       one of `luci-chromium-ci-xenial-*-8` groups (but not `*ssd-8`) in
-       [`chromium.star`][chromium.star].
-       [Example](https://chrome-internal-review.googlesource.com/c/infradata/config/+/2077803).
+       `luci-chromium-gpu-ci-xenial-8` group in [`gpu.star`][gpu.star].
     1. VMs for Mac CI builders and builder/testers should be added to
-       `gpu_ci_bots` group in [`gpu.star`][gpu.star].
+       `builderfull_gpu_ci_bots` group in [`gpu.star`][gpu.star].
        [Example](https://chrome-internal-review.googlesource.com/c/infradata/config/+/1166889).
     1. GCEs for CI testers for all OSes should be added to
-       `luci-chromium-ci-xenial-2` group in [`chromium.star`][chromium.star].
+       `luci-chromium-gpu-ci-xenial-2` group in [`gpu.star`][gpu.star].
        [Example](https://chrome-internal-review.googlesource.com/c/infradata/config/+/2016410).
     1. GCEs and VMs for CQ and optional CQ GPU trybots for should be added to
        a corresponding `gpu_try_bots` group in [`gpu.star`][gpu.star].
@@ -350,7 +337,8 @@ The process is:
        longer be necessary per [crbug.com/942301](http://crbug.com/942301),
        but consult with the Chrome Infra team to find out which of the
        [zones](https://cloud.google.com/compute/docs/regions-zones/) has
-       available capacity.
+       available capacity. This also can be checked on viceroy
+       [dashboard](https://viceroy.corp.google.com/chrome_infra/Quota/chrome?duration=7d).
     1. Get this reviewed and landed. This step associates the VM or pool of VMs
        with the bot's name on the waterfall for "builderful" bots or increases
        swarmed pool capacity for "builderless" bots.  
@@ -443,8 +431,7 @@ Builder].
     1.  Run `main.star` in [`src/infra/config`][src/infra/config] to update the
         generated files. Double-check your work there.
     1.  If you were adding a new builder, you would need to also add the new
-        machine to [`src/tools/mb/mb_config.pyl`][mb_config.pyl] and
-        [`src/tools/mb/mb_config_buckets.pyl`][mb_config_buckets.pyl].
+        machine to [`src/tools/mb/mb_config.pyl`][mb_config.pyl].
 
 1. After the Chromium-side CL lands it will take some time for all of
    the configuration changes to be picked up by the system. The bot
@@ -457,7 +444,7 @@ Builder].
    following. Here's an [example
    CL](https://chromium-review.googlesource.com/1041145).
     1.  Adds the new bot to [`chromium_gpu_fyi.py`][chromium_gpu_fyi.py] in
-        `scripts/slave/recipe_modules/chromium_tests/`. Make sure to set the
+        `recipes/recipe_modules/chromium_tests/builders/`. Make sure to set the
         `serialize_tests` property to `True`. This is specified for waterfall
         bots, but not trybots, and helps avoid overloading the physical
         hardware. Double-check the `BUILD_CONFIG` and `parent_buildername`
@@ -467,7 +454,7 @@ Builder].
         the newly-deployed waterfall bot, so it knows which JSON file to load
         out of src/testing/buildbot and which entry to look at.
     1.  Sometimes it is necessary to retrain recipe expectations
-        (`scripts/slave/recipes.py test train`). This is usually needed only
+        (`recipes/recipes.py test train`). This is usually needed only
         if the bot adds untested code flow in a recipe, but it's something
         to watch out for if your CL fails presubmit for some reason.
 
@@ -505,8 +492,8 @@ writing only NVIDIA). To do this:
     before proceeding.
 1.  Create a CL in the [`tools/build`][tools/build] workspace, adding the new
     Release tester to `win10_chromium_x64_rel_ng`'s `bot_ids` list
-    in `scripts/slave/recipe_modules/chromium_tests/trybots.py`. Rerun
-    `scripts/slave/recipes.py test train`.
+    in `recipes/recipe_modules/chromium_tests/trybots.py`. Rerun
+    `recipes/recipes.py test train`.
 1.  Once the above CL lands, the commit queue will **immediately** start
     running tests on the CoolNewGPUType configuration. Be vigilant and make
     sure that tryjobs are green. If they are red for any reason, revert the CL
@@ -560,7 +547,7 @@ trybot for the Win7 NVIDIA GPUs in Release mode. We will call the new bot
    CL](https://chromium-review.googlesource.com/c/chromium/tools/build/+/1979113).
 
     1.  Adds the new trybot to a "Manually-triggered GPU trybots" section in
-        `scripts/slave/recipe_modules/chromium_tests/trybots.py`. Create this
+        `recipes/recipe_modules/chromium_tests/tests/trybots.py`. Create this
         section after the "Optional GPU bots" section for the appropriate
         tryserver (`tryserver.chromium.win`, `tryserver.chromium.mac`,
         `tryserver.chromium.linux`, `tryserver.chromium.android`). Have the bot
@@ -573,7 +560,7 @@ trybot for the Win7 NVIDIA GPUs in Release mode. We will call the new bot
         tests to run and on what physical hardware.
     1.  It may be necessary to retrain recipe expectations for
         [`tools/build`][tools/build] workspace CLs
-        (`scripts/slave/recipes.py test train`). This shouldn't be necessary
+        (`recipes/recipes.py test train`). This shouldn't be necessary
         for just adding a manually triggered trybot, but it's something to
         watch out for if your CL fails presubmit for some reason.
 
@@ -631,15 +618,14 @@ Win10 Release (CoolNewGPUType)".
         [`luci-scheduler.cfg`][luci-scheduler.cfg],
         [`cr-buildbucket.cfg`][cr-buildbucket.cfg]. Double-check your work
         there.
-    1.  Update [`src/tools/mb/mb_config.pyl`][mb_config.pyl] and
-        [`src/tools/mb/mb_config_buckets.pyl`][mb_config_buckets.pyl]
+    1.  Update [`src/tools/mb/mb_config.pyl`][mb_config.pyl]
         to include `win-myproject-rel`.
 1. *After* the Chromium-side CL lands and the bot is on the console, create a CL
     in the [`tools/build`][tools/build] workspace which does the
     following. Here's an [example CL](https://crrev.com/c/1554272).
     1.  Adds "MyProject GPU Win10 Release
         (CoolNewGPUType)" to [`chromium_gpu_fyi.py`][chromium_gpu_fyi.py] in
-        `scripts/slave/recipe_modules/chromium_tests/`. You can copy a similar
+        `recipes/recipe_modules/chromium_tests/builders/`. You can copy a similar
         step.
     1.  Adds `win-myproject-rel` to [`trybots.py`][trybots.py] in the same folder.
         This is where you associate "MyProject GPU Win10 Release
@@ -666,10 +652,6 @@ or OS update. To do this:
 1.  Make sure that all of the current Swarming jobs for this OS and GPU
     configuration are targeted at the "stable" version of the driver and the OS
     in [`waterfalls.pyl`][waterfalls.pyl] and [`mixins.pyl`][mixins.pyl].
-    Make sure that there are "named" stable versions of the driver and the OS
-    there, which target the `_TARGETED_DRIVER_VERSIONS` and
-    `_TARGETED_OS_VERSIONS` dictionaries in [`bot_config.py`][bot_config.py]
-    (Google internal).
 1.  File a `Build Infrastructure` bug, component `Infra>Labs`, to have ~4 of
     the physical machines already in the Swarming pool upgraded to the new
     version of the driver or the OS.
@@ -684,51 +666,41 @@ or OS update. To do this:
     it'll be necessary to follow the instructions on
     [updating Gold baselines (step #4)][updating gold baselines].
 1.  Watch the new machine for a day or two to make sure it's stable.
-1.  When it is, update [`bot_config.py`][bot_config.py] (Google internal)
-    to *add* a mapping between the new driver version and the "stable" version.
-    For example:
+1.  When it is, add the experimental driver/OS to the `_stable` mixin using the
+    swarming OR operator `|`. For example:
 
     ```
-    _TARGETED_DRIVER_VERSIONS = {
-      # NVIDIA Quadro P400, Ubuntu Stable version
-      '10de:1cb3-384.90': 'nvidia-quadro-p400-ubuntu-stable',
-      # NVIDIA Quadro P400, new Ubuntu Stable version
-      '10de:1cb3-410.78': 'nvidia-quadro-p400-ubuntu-stable',
-      # ...
-    }
-    ```
-
-    And/or a mapping between the new OS version and the "stable" version.
-    For example:
-
-    ```
-    _TARGETED_OS_VERSIONS = {
-      # Linux NVIDIA Quadro P400
-      '10de:1cb3': {
-        'Ubuntu-14.04': 'linux-nvidia-stable',
-        'Ubuntu-19.04': 'linux-nvidia-stable',
+    'win10_intel_hd_630_stable': {
+      'swarming': {
+        'dimensions': {
+          'gpu': '8086:5912-26.20.100.7870|8086:5912-26.20.100.8141',
+          'os': 'Windows-10',
+          'pool': 'chromium.tests.gpu',
+        },
       },
-      # ...
     }
     ```
 
-    The new driver or OS version should match the one just added for the
-    experimental bot. Get this CL reviewed and landed.
-    [Sample CL (Google internal)][sample targeted version cl].
+    This will cause tests triggered using the `_stable` mixin to run on either
+    the old stable dimension or the experimental/new stable dimension.
+
+    **NOTE** There is a hard cap of 8 combinations in swarming, so you can only
+    use the OR operator in up to 3 dimensions if each dimension only has two
+    options. More than two options per dimension is allowed as long as the total
+    number of combinations is 8 or less.
 1.  After it lands, ask the Chrome Infrastructure Labs team to roll out the
     driver update across all of the similarly configured bots in the swarming
     pool.
 1.  If necessary, update pixel test expectations and remove the suppressions
     added above.
-1.  Remove the old driver or OS version from [`bot_config.py`][bot_config.py],
-    leaving the "stable" driver version pointing at the newly upgraded version.
+1.  Remove the old driver or OS version from the `_stable` mixin, leaving just
+    the new stable version.
 
 Note that we leave the experimental bot in place. We could reclaim it, but it
 seems worthwhile to continuously test the "next" version of graphics drivers as
 well as the current stable ones.
 
 [sample driver cl]: https://chromium-review.googlesource.com/c/chromium/src/+/1726875
-[sample targeted version cl]: https://chrome-internal-review.googlesource.com/c/infradata/config/+/1602377
 [updating gold baselines]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/gpu/pixel_wrangling.md#how-to-keep-the-bots-green
 
 ## Credentials for various servers

@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
@@ -61,7 +62,7 @@ size_t GetUnderestimatedStackSize() {
   //    low as 512k.
   //
   return 512 * 1024;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   // pthread_get_stacksize_np() returns too low a value for the main thread on
   // OSX 10.9,
   // http://mail.openjdk.java.net/pipermail/hotspot-dev/2013-October/011369.html
@@ -127,19 +128,20 @@ void* GetStackStart() {
   NOTREACHED();
   return nullptr;
 #endif
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return pthread_get_stackaddr_np(pthread_self());
 #elif defined(OS_WIN) && defined(COMPILER_MSVC)
 // On Windows stack limits for the current thread are available in
-// the thread information block (TIB). Its fields can be accessed through
-// FS segment register on x86 and GS segment register on x86_64.
+// the thread information block (TIB).
 // On Windows ARM64, stack limits could be retrieved by calling
 // GetCurrentThreadStackLimits. This API doesn't work on x86 and x86_64 here
 // because it requires Windows 8+.
 #if defined(ARCH_CPU_X86_64)
-  return reinterpret_cast<void*>(__readgsqword(offsetof(NT_TIB64, StackBase)));
+  return reinterpret_cast<void*>(
+      reinterpret_cast<NT_TIB64*>(NtCurrentTeb())->StackBase);
 #elif defined(ARCH_CPU_X86)
-  return reinterpret_cast<void*>(__readfsdword(offsetof(NT_TIB, StackBase)));
+  return reinterpret_cast<void*>(
+      reinterpret_cast<NT_TIB*>(NtCurrentTeb())->StackBase);
 #elif defined(ARCH_CPU_ARM64)
   ULONG_PTR lowLimit, highLimit;
   ::GetCurrentThreadStackLimits(&lowLimit, &highLimit);

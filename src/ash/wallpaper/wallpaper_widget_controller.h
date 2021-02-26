@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wallpaper/wallpaper_property.h"
+#include "ash/wallpaper/wallpaper_constants.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -39,9 +39,9 @@ class ASH_EXPORT WallpaperWidgetController
                             base::OnceClosure wallpaper_set_callback);
   ~WallpaperWidgetController() override;
 
-  // Initialize the widget. |container| specifies the id of the parent container
-  // the window will be added to.
-  void Init(int container);
+  // Initialize the widget. |lock| specifies if the wallpaper should be created
+  // for the locked state.
+  void Init(bool locked);
 
   views::Widget* GetWidget();
 
@@ -63,23 +63,28 @@ class ASH_EXPORT WallpaperWidgetController
   // Returns true if there was something to reparent.
   bool Reparent(int container);
 
-  // Sets/Gets the properties (blur and opacity) used to draw wallpaper.
-  // |animation_duration| specifies the animation to apply the change.
-  // If its zero duration, then no animation will be applied.
-  bool SetWallpaperProperty(
-      const WallpaperProperty& property,
+  // Sets/Gets the blur used to draw wallpaper. |animation_duration| specifies
+  // the animation to apply the change. If its zero duration, then no animation
+  // will be applied.
+  bool SetWallpaperBlur(
+      float blur,
       const base::TimeDelta& animation_duration = base::TimeDelta());
-  const WallpaperProperty& GetWallpaperProperty() const;
-
-  WallpaperView* wallpaper_view() const { return wallpaper_view_; }
+  float GetWallpaperBlur() const;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
+
+  WallpaperView* wallpaper_view() { return wallpaper_view_; }
+
+  ui::LayerTreeOwner* old_layer_tree_owner_for_testing() {
+    return old_layer_tree_owner_.get();
+  }
 
  private:
   // Runs callbacks in |animation_end_callbacks_|.
   void RunAnimationEndCallbacks();
 
+  // Copies and fades out the existing wallpaper.
   void ApplyCrossFadeAnimation(base::TimeDelta duration);
 
   aura::Window* root_window_;
@@ -90,7 +95,8 @@ class ASH_EXPORT WallpaperWidgetController
   // The current wallpaper widget.
   std::unique_ptr<views::Widget> widget_;
 
-  // The animating layer which contains old content.
+  // The animating layer which contains old content. This is the layer that is
+  // animated when changing wallpapers.
   std::unique_ptr<ui::LayerTreeOwner> old_layer_tree_owner_;
 
   // Pointer to the wallpaper view owned by |widget_|.

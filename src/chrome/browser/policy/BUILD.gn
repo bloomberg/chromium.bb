@@ -5,12 +5,15 @@
 import("//build/config/features.gni")
 
 source_set("path_parser") {
-  sources = [
-    "policy_path_parser.h",
-    "policy_path_parser_linux.cc",
-    "policy_path_parser_mac.mm",
-    "policy_path_parser_win.cc",
-  ]
+  sources = [ "policy_path_parser.h" ]
+
+  if (is_chromeos || is_linux) {
+    sources += [ "policy_path_parser_linux.cc" ]
+  } else if (is_mac) {
+    sources += [ "policy_path_parser_mac.mm" ]
+  } else if (is_win) {
+    sources += [ "policy_path_parser_win.cc" ]
+  }
 
   deps = [
     "//base",
@@ -18,13 +21,13 @@ source_set("path_parser") {
     "//components/policy:generated",
   ]
 
-  if (is_win) {
-    deps += [ "//chrome/install_static:install_static_util" ]
-
-    libs = [ "wtsapi32.lib" ]
-  }
-
   if (is_mac) {
     deps += [ "//build:branding_buildflags" ]
+  } else if (is_win) {
+    deps += [ "//chrome/install_static:install_static_util" ]
+  }
+
+  if (is_win) {
+    libs = [ "wtsapi32.lib" ]
   }
 }

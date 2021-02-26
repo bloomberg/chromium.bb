@@ -20,8 +20,8 @@
 #include "api/rtc_event_log/rtc_event_log_factory_interface.h"
 #include "api/task_queue/task_queue_factory.h"
 #include "api/test/peerconnection_quality_test_fixture.h"
-#include "api/transport/media/media_transport_interface.h"
 #include "api/transport/network_control.h"
+#include "api/transport/webrtc_key_value_config.h"
 #include "api/video_codecs/video_decoder_factory.h"
 #include "api/video_codecs/video_encoder_factory.h"
 #include "rtc_base/network.h"
@@ -47,13 +47,14 @@ struct PeerConnectionFactoryComponents {
   std::unique_ptr<RtcEventLogFactoryInterface> event_log_factory;
   std::unique_ptr<FecControllerFactoryInterface> fec_controller_factory;
   std::unique_ptr<NetworkControllerFactoryInterface> network_controller_factory;
-  std::unique_ptr<MediaTransportFactory> media_transport_factory;
   std::unique_ptr<NetEqFactory> neteq_factory;
 
   // Will be passed to MediaEngineInterface, that will be used in
   // PeerConnectionFactory.
   std::unique_ptr<VideoEncoderFactory> video_encoder_factory;
   std::unique_ptr<VideoDecoderFactory> video_decoder_factory;
+
+  std::unique_ptr<WebRtcKeyValueConfig> trials;
 };
 
 // Contains most parts from PeerConnectionDependencies. Also all fields are
@@ -114,7 +115,7 @@ struct Params {
   absl::optional<std::string> aec_dump_path;
 
   PeerConnectionInterface::RTCConfiguration rtc_configuration;
-  PeerConnectionInterface::BitrateParameters bitrate_params;
+  BitrateSettings bitrate_settings;
 };
 
 }  // namespace webrtc_pc_e2e

@@ -34,11 +34,12 @@ void CpuId(int leaf, uint32_t info[4]) {
 
 uint64_t Xgetbv() {
   const uint32_t ecx = 0;  // ecx specifies the extended control register
-  uint32_t eax, edx;
+  uint32_t eax;
+  uint32_t edx;
   __asm__ volatile("xgetbv" : "=a"(eax), "=d"(edx) : "c"(ecx));
   return (static_cast<uint64_t>(edx) << 32) | eax;
 }
-#else   // _MSC_VER
+#else  // _MSC_VER
 void CpuId(int leaf, uint32_t info[4]) {
   __cpuidex(reinterpret_cast<int*>(info), leaf, 0 /*ecx=subleaf*/);
 }

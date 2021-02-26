@@ -110,7 +110,7 @@ struct Configuration {
   // Returns the mojom::ActivationState that page loads that match this
   // configuration should activate with. |effective_activation_level| can be
   // different from this config's activation level due to things like warning
-  // mode or client whitelisting.
+  // mode or client allowlisting.
   mojom::ActivationState GetActivationState(
       mojom::ActivationLevel effective_activation_level) const;
 
@@ -186,6 +186,12 @@ extern const base::Feature kSafeBrowsingSubresourceFilter;
 // Enables the blocking of ads on sites that are abusive.
 extern const base::Feature kFilterAdsOnAbusiveSites;
 
+// Enables the blocking of ads on sites that have ads violations.
+extern const base::Feature kAdsInterventionsEnforced;
+
+// The duration that an ads intervention is active for.
+extern const base::FeatureParam<base::TimeDelta> kAdsInterventionDuration;
+
 // Name/values of the variation parameter controlling maximum activation level.
 extern const char kActivationLevelParameterName[];
 extern const char kActivationLevelDryRun[];
@@ -209,7 +215,7 @@ extern const char kPerformanceMeasurementRateParameterName[];
 
 extern const char kSuppressNotificationsParameterName[];
 
-extern const char kWhitelistSiteOnReloadParameterName[];
+extern const char kAllowlistSiteOnReloadParameterName[];
 
 extern const char kRulesetFlavorParameterName[];
 

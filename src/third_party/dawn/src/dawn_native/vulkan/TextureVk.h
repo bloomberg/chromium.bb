@@ -18,6 +18,7 @@
 #include "dawn_native/Texture.h"
 
 #include "common/vulkan_platform.h"
+#include "dawn_native/PassResourceUsage.h"
 #include "dawn_native/ResourceMemoryAllocation.h"
 #include "dawn_native/vulkan/ExternalHandle.h"
 #include "dawn_native/vulkan/external_memory/MemoryService.h"
@@ -40,15 +41,16 @@ namespace dawn_native { namespace vulkan {
     class Texture final : public TextureBase {
       public:
         // Used to create a regular texture from a descriptor.
-        static ResultOrError<Ref<TextureBase>> Create(Device* device,
-                                                      const TextureDescriptor* descriptor);
+        static ResultOrError<Ref<Texture>> Create(Device* device,
+                                                  const TextureDescriptor* descriptor,
+                                                  VkImageUsageFlags extraUsages = 0);
 
         // Creates a texture and initializes it with a VkImage that references an external memory
         // object. Before the texture can be used, the VkDeviceMemory associated with the external
         // image must be bound via Texture::BindExternalMemory.
         static ResultOrError<Texture*> CreateFromExternal(
             Device* device,
-            const ExternalImageDescriptor* descriptor,
+            const ExternalImageDescriptorVk* descriptor,
             const TextureDescriptor* textureDescriptor,
             external_memory::Service* externalMemoryService);
 
@@ -58,43 +60,63 @@ namespace dawn_native { namespace vulkan {
                                                VkImage nativeImage);
 
         VkImage GetHandle() const;
-        VkImageAspectFlags GetVkAspectMask() const;
+        VkImageAspectFlags GetVkAspectMask(wgpu::TextureAspect aspect) const;
 
         // Transitions the texture to be used as `usage`, recording any necessary barrier in
         // `commands`.
         // TODO(cwallez@chromium.org): coalesce barriers and do them early when possible.
-        void TransitionUsageNow(CommandRecordingContext* recordingContext,
-                                wgpu::TextureUsage usage);
-        void EnsureSubresourceContentInitialized(CommandRecordingContext* recordingContext,
-                                                 uint32_t baseMipLevel,
-                                                 uint32_t levelCount,
-                                                 uint32_t baseArrayLayer,
-                                                 uint32_t layerCount);
+        void TransitionFullUsage(CommandRecordingContext* recordingContext,
+                                 wgpu::TextureUsage usage);
 
-        MaybeError SignalAndDestroy(VkSemaphore* outSignalSemaphore);
+        void TransitionUsageNow(CommandRecordingContext* recordingContext,
+                                wgpu::TextureUsage usage,
+                                const SubresourceRange& range);
+        void TransitionUsageAndGetResourceBarrier(wgpu::TextureUsage usage,
+                                                  const SubresourceRange& range,
+                                                  std::vector<VkImageMemoryBarrier>* imageBarriers,
+                                                  VkPipelineStageFlags* srcStages,
+                                                  VkPipelineStageFlags* dstStages);
+        void TransitionUsageForPass(CommandRecordingContext* recordingContext,
+                                    const PassTextureUsage& textureUsages,
+                                    std::vector<VkImageMemoryBarrier>* imageBarriers,
+                                    VkPipelineStageFlags* srcStages,
+                                    VkPipelineStageFlags* dstStages);
+
+        void EnsureSubresourceContentInitialized(CommandRecordingContext* recordingContext,
+                                                 const SubresourceRange& range);
+
+        VkImageLayout GetCurrentLayoutForSwapChain() const;
+
         // Binds externally allocated memory to the VkImage and on success, takes ownership of
         // semaphores.
-        MaybeError BindExternalMemory(const ExternalImageDescriptor* descriptor,
+        MaybeError BindExternalMemory(const ExternalImageDescriptorVk* descriptor,
                                       VkSemaphore signalSemaphore,
                                       VkDeviceMemory externalMemoryAllocation,
                                       std::vector<VkSemaphore> waitSemaphores);
+
+        MaybeError ExportExternalTexture(VkImageLayout desiredLayout,
+                                         VkSemaphore* signalSemaphore,
+                                         VkImageLayout* releasedOldLayout,
+                                         VkImageLayout* releasedNewLayout);
 
       private:
         ~Texture() override;
         using TextureBase::TextureBase;
 
-        MaybeError InitializeAsInternalTexture();
-        MaybeError InitializeFromExternal(const ExternalImageDescriptor* descriptor,
+        MaybeError InitializeAsInternalTexture(VkImageUsageFlags extraUsages);
+        MaybeError InitializeFromExternal(const ExternalImageDescriptorVk* descriptor,
                                           external_memory::Service* externalMemoryService);
         void InitializeForSwapChain(VkImage nativeImage);
 
         void DestroyImpl() override;
         MaybeError ClearTexture(CommandRecordingContext* recordingContext,
-                                uint32_t baseMipLevel,
-                                uint32_t levelCount,
-                                uint32_t baseArrayLayer,
-                                uint32_t layerCount,
+                                const SubresourceRange& range,
                                 TextureBase::ClearValue);
+
+        void TweakTransitionForExternalUsage(CommandRecordingContext* recordingContext,
+                                             std::vector<VkImageMemoryBarrier>* barriers,
+                                             size_t transitionBarrierStart);
+        bool CanReuseWithoutBarrier(wgpu::TextureUsage lastUsage, wgpu::TextureUsage usage);
 
         VkImage mHandle = VK_NULL_HANDLE;
         ResourceMemoryAllocation mMemoryAllocation;
@@ -104,18 +126,23 @@ namespace dawn_native { namespace vulkan {
             InternalOnly,
             PendingAcquire,
             Acquired,
-            PendingRelease,
             Released
         };
         ExternalState mExternalState = ExternalState::InternalOnly;
         ExternalState mLastExternalState = ExternalState::InternalOnly;
 
+        VkImageLayout mPendingAcquireOldLayout;
+        VkImageLayout mPendingAcquireNewLayout;
+
         VkSemaphore mSignalSemaphore = VK_NULL_HANDLE;
         std::vector<VkSemaphore> mWaitRequirements;
 
+        bool mSameLastUsagesAcrossSubresources = true;
+
         // A usage of none will make sure the texture is transitioned before its first use as
         // required by the Vulkan spec.
-        wgpu::TextureUsage mLastUsage = wgpu::TextureUsage::None;
+        std::vector<wgpu::TextureUsage> mSubresourceLastUsages =
+            std::vector<wgpu::TextureUsage>(GetSubresourceCount(), wgpu::TextureUsage::None);
     };
 
     class TextureView final : public TextureViewBase {

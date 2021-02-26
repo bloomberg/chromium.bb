@@ -35,10 +35,17 @@ export class GraphManager extends Common.ObjectWrapper.ObjectWrapper {
     }
 
     const graph = this._graphMapByContextId.get(contextId);
+    if (!graph) {
+      return;
+    }
+
     graph.removeEventListener(ViewEvents.ShouldRedraw, this._notifyShouldRedraw, this);
     this._graphMapByContextId.delete(contextId);
   }
 
+  /**
+   * @param {string} contextId
+   */
   hasContext(contextId) {
     return this._graphMapByContextId.has(contextId);
   }
@@ -55,7 +62,7 @@ export class GraphManager extends Common.ObjectWrapper.ObjectWrapper {
    * @return {?GraphView}
    */
   getGraph(contextId) {
-    return this._graphMapByContextId.get(contextId);
+    return this._graphMapByContextId.get(contextId) || null;
   }
 
   /**

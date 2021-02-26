@@ -95,7 +95,7 @@ class CORE_EXPORT CSSAnimations final {
   enum class PropertyPass { kCustom, kStandard };
   static void CalculateTransitionUpdate(CSSAnimationUpdate&,
                                         PropertyPass,
-                                        const Element* animating_element,
+                                        Element* animating_element,
                                         const ComputedStyle&);
 
   static void SnapshotCompositorKeyframes(Element&,
@@ -115,7 +115,7 @@ class CORE_EXPORT CSSAnimations final {
   }
   void Cancel();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   class RunningAnimation final : public GarbageCollected<RunningAnimation> {
@@ -129,6 +129,8 @@ class CORE_EXPORT CSSAnimations final {
           style_rule_version(new_animation.style_rule_version),
           play_state_list(new_animation.play_state_list) {}
 
+    AnimationTimeline* Timeline() const { return animation->timeline(); }
+
     void Update(UpdatedCSSAnimation update) {
       DCHECK_EQ(update.animation, animation);
       style_rule = update.style_rule;
@@ -137,7 +139,7 @@ class CORE_EXPORT CSSAnimations final {
       specified_timing = update.specified_timing;
     }
 
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(animation);
       visitor->Trace(style_rule);
     }
@@ -151,11 +153,11 @@ class CORE_EXPORT CSSAnimations final {
     Vector<EAnimPlayState> play_state_list;
   };
 
-  struct RunningTransition {
-    DISALLOW_NEW();
-
+  struct RunningTransition : public GarbageCollected<RunningTransition> {
    public:
-    void Trace(Visitor* visitor) { visitor->Trace(animation); }
+    virtual ~RunningTransition() = default;
+
+    void Trace(Visitor* visitor) const { visitor->Trace(animation); }
 
     Member<Animation> animation;
     scoped_refptr<const ComputedStyle> from;
@@ -166,7 +168,7 @@ class CORE_EXPORT CSSAnimations final {
 
   HeapVector<Member<RunningAnimation>> running_animations_;
 
-  using TransitionMap = HeapHashMap<PropertyHandle, RunningTransition>;
+  using TransitionMap = HeapHashMap<PropertyHandle, Member<RunningTransition>>;
   TransitionMap transitions_;
 
   CSSAnimationUpdate pending_update_;
@@ -180,13 +182,14 @@ class CORE_EXPORT CSSAnimations final {
 
    public:
     CSSAnimationUpdate& update;
-    const Element* animating_element = nullptr;
+    Element* animating_element = nullptr;
     const ComputedStyle& old_style;
     const ComputedStyle& style;
+    scoped_refptr<const ComputedStyle> before_change_style;
     scoped_refptr<const ComputedStyle> cloned_style;
     const TransitionMap* active_transitions;
     HashSet<PropertyHandle>& listed_properties;
-    const CSSTransitionData& transition_data;
+    const CSSTransitionData* transition_data;
   };
 
   static void CalculateTransitionUpdateForCustomProperty(
@@ -212,6 +215,14 @@ class CORE_EXPORT CSSAnimations final {
       PropertyPass,
       const Element* animating_element);
 
+  // The before-change style is defined as the computed values of all properties
+  // on the element as of the previous style change event, except with any
+  // styles derived from declarative animations updated to the current time.
+  // https://drafts.csswg.org/css-transitions-1/#before-change-style
+  static scoped_refptr<const ComputedStyle> CalculateBeforeChangeStyle(
+      Element* animating_element,
+      const ComputedStyle& base_style);
+
   class AnimationEventDelegate final : public AnimationEffect::EventDelegate {
    public:
     AnimationEventDelegate(
@@ -232,7 +243,7 @@ class CORE_EXPORT CSSAnimations final {
       return previous_iteration_;
     }
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
    private:
     const Element& AnimationTarget() const { return *animation_target_; }
@@ -263,7 +274,7 @@ class CORE_EXPORT CSSAnimations final {
     bool IsTransitionEventDelegate() const override { return true; }
     Timing::Phase getPreviousPhase() const { return previous_phase_; }
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
    private:
     void EnqueueEvent(const WTF::AtomicString& type,

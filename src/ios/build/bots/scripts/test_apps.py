@@ -12,6 +12,9 @@ import shard_util
 import test_runner
 
 
+OUTPUT_DISABLED_TESTS_TEST_ARG = '--write-compiled-tests-json-to-writable-path'
+
+
 #TODO(crbug.com/1046911): Remove usage of KIF filters.
 def get_kif_test_filter(tests, invert=False):
   """Returns the KIF test filter to filter the given test cases.
@@ -111,6 +114,7 @@ class GTestsApp(object):
       self.env_vars[env_var[0]] = None if len(env_var) == 1 else env_var[1]
     self.included_tests = included_tests or []
     self.excluded_tests = excluded_tests or []
+    self.disabled_tests = []
     self.module_name = os.path.splitext(os.path.basename(test_app))[0]
     self.release = release
     self.host_app_path = host_app_path
@@ -147,14 +151,15 @@ class GTestsApp(object):
     module = self.module_name + '_module'
 
     # If --run-with-custom-webkit is passed as a test arg, set up
-    # DYLD_FRAMEWORK_PATH to load the custom webkit modules.
-    dyld_framework_path = self.project_path + ':'
+    # DYLD_FRAMEWORK_PATH and DYLD_LIBRARY_PATH to load the custom webkit
+    # modules.
+    dyld_path = self.project_path
     if '--run-with-custom-webkit' in self.test_args:
       if self.host_app_path:
         webkit_path = os.path.join(self.host_app_path, 'WebKitFrameworks')
       else:
         webkit_path = os.path.join(self.test_app_path, 'WebKitFrameworks')
-      dyld_framework_path = dyld_framework_path + webkit_path + ':'
+      dyld_path = dyld_path + ':' + webkit_path
 
     module_data = {
         'TestBundlePath': self.test_app_path,
@@ -163,10 +168,10 @@ class GTestsApp(object):
         'TestingEnvironmentVariables': {
             'DYLD_LIBRARY_PATH':
                 '%s:__PLATFORMS__/iPhoneSimulator.platform/Developer/Library' %
-                self.project_path,
+                dyld_path,
             'DYLD_FRAMEWORK_PATH':
                 '%s:__PLATFORMS__/iPhoneSimulator.platform/'
-                'Developer/Library/Frameworks' % dyld_framework_path,
+                'Developer/Library/Frameworks' % dyld_path,
         }
     }
 
@@ -237,16 +242,27 @@ class GTestsApp(object):
     # but they are not test-methods.
     # TODO(crbug.com/982435): Rename not test methods with test-suffix.
     none_tests = ['ChromeTestCase/testServer', 'FindInPageTestCase/testURL']
+    # TODO(crbug.com/1123681): Move all_tests to class var. Set all_tests,
+    # disabled_tests values in initialization to avoid multiple calls to otool.
     all_tests = []
+    # Only store the tests when there is the test arg.
+    store_disabled_tests = OUTPUT_DISABLED_TESTS_TEST_ARG in self.test_args
+    self.disabled_tests = []
     for test_class, test_method in shard_util.fetch_test_names(
-        self.test_app_path, self.host_app_path, self.release):
+        self.test_app_path,
+        self.host_app_path,
+        self.release,
+        enabled_tests_only=False):
       test_name = '%s/%s' % (test_class, test_method)
       if (test_name not in none_tests and
           # inlcuded_tests contains the tests to execute, which may be a subset
           # of all tests b/c of the iOS test sharding logic in run.py. Filter by
           # self.included_tests if specified
           (test_class in self.included_tests if self.included_tests else True)):
-        all_tests.append(test_name)
+        if test_method.startswith('test'):
+          all_tests.append(test_name)
+        elif store_disabled_tests:
+          self.disabled_tests.append(test_name)
     return all_tests
 
 
@@ -351,8 +367,7 @@ class EgtestsApp(GTestsApp):
 class DeviceXCTestUnitTestsApp(GTestsApp):
   """XCTest hosted unit tests to run on devices.
 
-  This is for the XCTest framework hosted unit tests, which run on iOS 13+
-  real devices now.
+  This is for the XCTest framework hosted unit tests running on devices.
 
   Stores data about tests:
     tests_app: full path to tests app.
@@ -380,13 +395,13 @@ class DeviceXCTestUnitTestsApp(GTestsApp):
          E.g.
           [ 'TestCaseClass1', 'TestCaseClass2/testMethod2']
       test_args: List of strings to pass as arguments to the test when
-        launching.
+        launching. Test arg to run as XCTest based unit test will be appended.
       env_vars: List of environment variables to pass to the test itself.
 
     Raises:
       AppNotFoundError: If the given app does not exist
     """
-    test_args = test_args or []
+    test_args = list(test_args or [])
     test_args.append('--enable-run-ios-unittests-with-xctest')
     super(DeviceXCTestUnitTestsApp,
           self).__init__(tests_app, included_tests, excluded_tests, test_args,
@@ -429,12 +444,126 @@ class DeviceXCTestUnitTestsApp(GTestsApp):
             'TestHostPath': '%s' % self.test_app_path,
             'TestingEnvironmentVariables': {
                 'DYLD_INSERT_LIBRARIES':
-                    '__PLATFORMS__/iPhoneOS.platform/Developer/usr/lib/'
-                    'libXCTestBundleInject.dylib',
+                    '__TESTHOST__/Frameworks/libXCTestBundleInject.dylib',
                 'DYLD_LIBRARY_PATH':
                     '__PLATFORMS__/iPhoneOS.platform/Developer/Library',
                 'DYLD_FRAMEWORK_PATH':
                     '__PLATFORMS__/iPhoneOS.platform/Developer/'
+                    'Library/Frameworks',
+                'XCInjectBundleInto':
+                    '__TESTHOST__/%s' % self.module_name
+            }
+        }
+    }
+
+    if self.env_vars:
+      self.xctestrun_data['TestTargetName'].update(
+          {'EnvironmentVariables': self.env_vars})
+
+    gtest_filter = []
+    if self.included_tests:
+      gtest_filter = get_gtest_filter(self.included_tests, invert=False)
+    elif self.excluded_tests:
+      gtest_filter = get_gtest_filter(self.excluded_tests, invert=True)
+    if gtest_filter:
+      # Removed previous gtest-filter if exists.
+      self.test_args = [
+          el for el in self.test_args if not el.startswith('--gtest_filter=')
+      ]
+      self.test_args.append('--gtest_filter=%s' % gtest_filter)
+
+    xctestrun_data['TestTargetName'].update(
+        {'CommandLineArguments': self.test_args})
+
+    return xctestrun_data
+
+
+class SimulatorXCTestUnitTestsApp(GTestsApp):
+  """XCTest hosted unit tests to run on simulators.
+
+  This is for the XCTest framework hosted unit tests running on simulators.
+
+  Stores data about tests:
+    tests_app: full path to tests app.
+    project_path: root project folder.
+    module_name: egtests module name.
+    included_tests: List of tests to run.
+    excluded_tests: List of tests not to run.
+  """
+
+  def __init__(self,
+               tests_app,
+               included_tests=None,
+               excluded_tests=None,
+               test_args=None,
+               env_vars=None,
+               release=False):
+    """Initialize the class.
+
+    Args:
+      tests_app: (str) full path to tests app.
+      included_tests: (list) Specific tests to run
+         E.g.
+          [ 'TestCaseClass1/testMethod1', 'TestCaseClass2/testMethod2']
+      excluded_tests: (list) Specific tests not to run
+         E.g.
+          [ 'TestCaseClass1', 'TestCaseClass2/testMethod2']
+      test_args: List of strings to pass as arguments to the test when
+        launching. Test arg to run as XCTest based unit test will be appended.
+      env_vars: List of environment variables to pass to the test itself.
+
+    Raises:
+      AppNotFoundError: If the given app does not exist
+    """
+    test_args = list(test_args or [])
+    test_args.append('--enable-run-ios-unittests-with-xctest')
+    super(SimulatorXCTestUnitTestsApp,
+          self).__init__(tests_app, included_tests, excluded_tests, test_args,
+                         env_vars, release, None)
+
+  # TODO(crbug.com/1077277): Refactor class structure and remove duplicate code.
+  def _xctest_path(self):
+    """Gets xctest-file from egtests/PlugIns folder.
+
+    Returns:
+      A path for xctest in the format of /PlugIns/file.xctest
+
+    Raises:
+      PlugInsNotFoundError: If no PlugIns folder found in egtests.app.
+      XCTestPlugInNotFoundError: If no xctest-file found in PlugIns.
+    """
+    plugins_dir = os.path.join(self.test_app_path, 'PlugIns')
+    if not os.path.exists(plugins_dir):
+      raise test_runner.PlugInsNotFoundError(plugins_dir)
+    plugin_xctest = None
+    if os.path.exists(plugins_dir):
+      for plugin in os.listdir(plugins_dir):
+        if plugin.endswith('.xctest'):
+          plugin_xctest = os.path.join(plugins_dir, plugin)
+    if not plugin_xctest:
+      raise test_runner.XCTestPlugInNotFoundError(plugin_xctest)
+    return plugin_xctest.replace(self.test_app_path, '')
+
+  def fill_xctestrun_node(self):
+    """Fills only required nodes for XCTest hosted unit tests in xctestrun file.
+
+    Returns:
+      A node with filled required fields about tests.
+    """
+    xctestrun_data = {
+        'TestTargetName': {
+            'IsAppHostedTestBundle': True,
+            'TestBundlePath': '__TESTHOST__/%s' % self._xctest_path(),
+            'TestHostBundleIdentifier': get_bundle_id(self.test_app_path),
+            'TestHostPath': '%s' % self.test_app_path,
+            'TestingEnvironmentVariables': {
+                'DYLD_INSERT_LIBRARIES':
+                    '__PLATFORMS__/iPhoneSimulator.platform/Developer/usr/lib/'
+                    'libXCTestBundleInject.dylib',
+                'DYLD_LIBRARY_PATH':
+                    '__PLATFORMS__/iPhoneSimulator.platform/Developer/Library',
+                'DYLD_FRAMEWORK_PATH':
+                    '__PLATFORMS__/iPhoneSimulator.platform/Developer/'
                     'Library/Frameworks',
                 'XCInjectBundleInto':
                     '__TESTHOST__/%s' % self.module_name

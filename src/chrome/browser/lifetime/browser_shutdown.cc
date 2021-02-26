@@ -24,6 +24,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/config/compiler/compiler_buildflags.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
@@ -67,10 +68,13 @@
 #endif
 
 #if BUILDFLAG(ENABLE_RLZ)
-#include "components/rlz/rlz_tracker.h"
+#include "components/rlz/rlz_tracker.h"  // nogncheck crbug.com/1125897
 #endif
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+#include "content/public/browser/browser_child_process_host_iterator.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/profiling_utils.h"
 #endif
@@ -157,6 +161,27 @@ void OnShutdownStarting(ShutdownType type) {
           base::Unretained(wait_for_profiling_data.GetNewWaitableEvent())));
     }
 
+    // Ask all the other child processes to dump their profiling data, this has
+    // to be done on the IO thread.
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE, base::BindOnce([]() {
+          // Use a nested WaitForProcessesToDumpProfilingInfo object to wait on
+          // the IO thread.
+          content::WaitForProcessesToDumpProfilingInfo
+              nested_wait_for_profiling_data;
+          for (content::BrowserChildProcessHostIterator browser_child_iter;
+               !browser_child_iter.Done(); ++browser_child_iter) {
+            browser_child_iter.GetHost()->DumpProfilingData(base::BindOnce(
+                &base::WaitableEvent::Signal,
+                base::Unretained(
+                    nested_wait_for_profiling_data.GetNewWaitableEvent())));
+          }
+          nested_wait_for_profiling_data.WaitForAll();
+        }),
+        base::BindOnce(
+            &base::WaitableEvent::Signal,
+            base::Unretained(wait_for_profiling_data.GetNewWaitableEvent())));
+
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kInProcessGPU)) {
       content::DumpGpuProfilingData(base::BindOnce(
@@ -168,7 +193,7 @@ void OnShutdownStarting(ShutdownType type) {
     // data to disk.
     wait_for_profiling_data.WaitForAll();
   }
-#endif  // defined(OS_WIN) && BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+#endif  // BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX) && BUILDFLAG(CLANG_PGO)
 
   // Call FastShutdown on all of the RenderProcessHosts.  This will be
   // a no-op in some cases, so we still need to go through the normal
@@ -347,7 +372,7 @@ void ReadLastShutdownFile(ShutdownType type,
   int64_t shutdown_ms = 0;
   if (base::ReadFileToString(shutdown_ms_file, &shutdown_ms_str))
     base::StringToInt64(shutdown_ms_str, &shutdown_ms);
-  base::DeleteFile(shutdown_ms_file, false);
+  base::DeleteFile(shutdown_ms_file);
 
   if (shutdown_ms == 0 || num_procs == 0)
     return;

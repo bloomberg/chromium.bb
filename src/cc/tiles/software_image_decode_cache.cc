@@ -61,7 +61,8 @@ class SoftwareImageDecodeTaskImpl : public TileTask {
       const PaintImage& paint_image,
       SoftwareImageDecodeCache::DecodeTaskType task_type,
       const ImageDecodeCache::TracingInfo& tracing_info)
-      : TileTask(true),
+      : TileTask(TileTask::SupportsConcurrentExecution::kYes,
+                 TileTask::SupportsBackgroundThreadPriority::kYes),
         cache_(cache),
         image_key_(image_key),
         paint_image_(paint_image),
@@ -82,7 +83,7 @@ class SoftwareImageDecodeTaskImpl : public TileTask {
     const ImageType image_type =
         image_metadata ? image_metadata->image_type : ImageType::kInvalid;
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
-        paint_image_.GetSkImage().get(),
+        paint_image_.GetSwSkImage().get(),
         devtools_instrumentation::ScopedImageDecodeTask::kSoftware,
         ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type),
         ImageDecodeCache::ToScopedImageType(image_type));
@@ -134,24 +135,6 @@ SkFilterQuality GetDecodedFilterQuality(
                                    : kLow_SkFilterQuality;
 }
 
-void RecordLockExistingCachedImageHistogram(TilePriority::PriorityBin bin,
-                                            bool success) {
-  switch (bin) {
-    case TilePriority::NOW:
-      UMA_HISTOGRAM_BOOLEAN("Renderer4.LockExistingCachedImage.Software.NOW",
-                            success);
-      break;
-    case TilePriority::SOON:
-      UMA_HISTOGRAM_BOOLEAN("Renderer4.LockExistingCachedImage.Software.SOON",
-                            success);
-      break;
-    case TilePriority::EVENTUALLY:
-      UMA_HISTOGRAM_BOOLEAN(
-          "Renderer4.LockExistingCachedImage.Software.EVENTUALLY", success);
-      break;
-  }
-}
-
 }  // namespace
 
 SoftwareImageDecodeCache::SoftwareImageDecodeCache(
@@ -199,7 +182,9 @@ SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
     const DrawImage& image,
     const TracingInfo& tracing_info,
     DecodeTaskType task_type) {
-  CacheKey key = CacheKey::FromDrawImage(image, color_type_);
+  CacheKey key = CacheKey::FromDrawImage(
+      image, GetColorTypeForPaintImage(image.target_color_space(),
+                                       image.paint_image()));
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::GetTaskForImageAndRefInternal", "key",
                key.ToString());
@@ -293,7 +278,9 @@ void SoftwareImageDecodeCache::RemoveBudgetForImage(const CacheKey& key,
 }
 
 void SoftwareImageDecodeCache::UnrefImage(const DrawImage& image) {
-  const CacheKey& key = CacheKey::FromDrawImage(image, color_type_);
+  const CacheKey& key = CacheKey::FromDrawImage(
+      image, GetColorTypeForPaintImage(image.target_color_space(),
+                                       image.paint_image()));
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::UnrefImage", "key", key.ToString());
 
@@ -357,9 +344,6 @@ SoftwareImageDecodeCache::DecodeImageIfNecessary(const CacheKey& key,
       return TaskProcessingResult::kLockOnly;
 
     bool lock_succeeded = entry->Lock();
-    // TODO(vmpstr): Deprecate the prepaint split, since it doesn't matter.
-    RecordLockExistingCachedImageHistogram(TilePriority::NOW, lock_succeeded);
-
     if (lock_succeeded)
       return TaskProcessingResult::kLockOnly;
   }
@@ -369,7 +353,9 @@ SoftwareImageDecodeCache::DecodeImageIfNecessary(const CacheKey& key,
   if (key.type() == CacheKey::kOriginal) {
     base::AutoUnlock release(lock_);
     local_cache_entry = Utils::DoDecodeImage(
-        key, paint_image, color_type_, generator_client_id_,
+        key, paint_image,
+        GetColorTypeForPaintImage(key.target_color_space(), paint_image),
+        generator_client_id_,
         base::BindOnce(&SoftwareImageDecodeCache::ClearCache,
                        base::Unretained(this)));
   } else {
@@ -399,7 +385,9 @@ SoftwareImageDecodeCache::DecodeImageIfNecessary(const CacheKey& key,
     if (should_decode_to_scale) {
       base::AutoUnlock release(lock_);
       local_cache_entry = Utils::DoDecodeImage(
-          key, paint_image, color_type_, generator_client_id_,
+          key, paint_image,
+          GetColorTypeForPaintImage(key.target_color_space(), paint_image),
+          generator_client_id_,
           base::BindOnce(&SoftwareImageDecodeCache::ClearCache,
                          base::Unretained(this)));
     }
@@ -427,10 +415,11 @@ SoftwareImageDecodeCache::DecodeImageIfNecessary(const CacheKey& key,
               ? SkIRect::MakeWH(paint_image.width(), paint_image.height())
               : gfx::RectToSkIRect(key.src_rect());
       DrawImage candidate_draw_image(
-          paint_image, src_rect, kNone_SkFilterQuality, SkMatrix::I(),
+          paint_image, false, src_rect, kNone_SkFilterQuality, SkMatrix::I(),
           key.frame_key().frame_index(), key.target_color_space());
-      candidate_key.emplace(
-          CacheKey::FromDrawImage(candidate_draw_image, color_type_));
+      candidate_key.emplace(CacheKey::FromDrawImage(
+          candidate_draw_image,
+          GetColorTypeForPaintImage(key.target_color_space(), paint_image)));
     }
 
     if (candidate_key) {
@@ -447,7 +436,8 @@ SoftwareImageDecodeCache::DecodeImageIfNecessary(const CacheKey& key,
         // already been done to generate the candidate.
         local_cache_entry = Utils::GenerateCacheEntryFromCandidate(
             key, decoded_draw_image,
-            candidate_key->type() == CacheKey::kOriginal, color_type_);
+            candidate_key->type() == CacheKey::kOriginal,
+            GetColorTypeForPaintImage(key.target_color_space(), paint_image));
       }
 
       // Unref to balance the GetDecodedImageForDrawInternal() call.
@@ -518,14 +508,14 @@ SoftwareImageDecodeCache::FindCachedCandidate(const CacheKey& key) {
 
 bool SoftwareImageDecodeCache::UseCacheForDrawImage(
     const DrawImage& draw_image) const {
-  sk_sp<SkImage> sk_image = draw_image.paint_image().GetSkImage();
+  PaintImage paint_image = draw_image.paint_image();
 
   // Software cache doesn't support using texture backed images.
-  if (sk_image->isTextureBacked())
+  if (paint_image.IsTextureBacked())
     return false;
 
   // Lazy generated images need to have their decode cached.
-  if (sk_image->isLazyGenerated())
+  if (paint_image.IsLazyGenerated())
     return true;
 
   // Cache images that need to be converted to a non-sRGB color space.
@@ -546,7 +536,9 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDraw(
 
   base::AutoLock hold(lock_);
   return GetDecodedImageForDrawInternal(
-      CacheKey::FromDrawImage(draw_image, color_type_),
+      CacheKey::FromDrawImage(
+          draw_image, GetColorTypeForPaintImage(draw_image.target_color_space(),
+                                                draw_image.paint_image())),
       draw_image.paint_image());
 }
 
@@ -573,10 +565,9 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
   if (!decoded_image)
     return DecodedDrawImage();
 
-  auto decoded_draw_image =
-      DecodedDrawImage(std::move(decoded_image), cache_entry->src_rect_offset(),
-                       GetScaleAdjustment(key), GetDecodedFilterQuality(key),
-                       cache_entry->is_budgeted);
+  auto decoded_draw_image = DecodedDrawImage(
+      std::move(decoded_image), nullptr, cache_entry->src_rect_offset(),
+      GetScaleAdjustment(key), GetDecodedFilterQuality(key));
   return decoded_draw_image;
 }
 
@@ -586,7 +577,10 @@ void SoftwareImageDecodeCache::DrawWithImageFinished(
   DCHECK(UseCacheForDrawImage(image));
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::DrawWithImageFinished", "key",
-               CacheKey::FromDrawImage(image, color_type_).ToString());
+               CacheKey::FromDrawImage(
+                   image, GetColorTypeForPaintImage(image.target_color_space(),
+                                                    image.paint_image()))
+                   .ToString());
   UnrefImage(image);
 }
 
@@ -697,6 +691,21 @@ SoftwareImageDecodeCache::CacheEntry* SoftwareImageDecodeCache::AddCacheEntry(
 size_t SoftwareImageDecodeCache::GetNumCacheEntriesForTesting() {
   base::AutoLock lock(lock_);
   return decoded_images_.size();
+}
+
+SkColorType SoftwareImageDecodeCache::GetColorTypeForPaintImage(
+    const gfx::ColorSpace& target_color_space,
+    const PaintImage& paint_image) {
+  // Decode HDR images to half float when targeting HDR.
+  //
+  // TODO(crbug.com/1076568): Once we have access to the display's buffer format
+  // via gfx::DisplayColorSpaces, we should also do this for HBD images.
+  if (paint_image.GetContentColorUsage() == gfx::ContentColorUsage::kHDR &&
+      target_color_space.IsHDR()) {
+    return kRGBA_F16_SkColorType;
+  }
+
+  return color_type_;
 }
 
 // MemoryBudget ----------------------------------------------------------------

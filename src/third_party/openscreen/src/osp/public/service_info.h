@@ -10,7 +10,6 @@
 
 #include "platform/api/network_interface.h"
 #include "platform/base/ip_address.h"
-#include "platform/base/macros.h"
 
 namespace openscreen {
 namespace osp {
@@ -19,11 +18,11 @@ namespace osp {
 // found on the network via our discovery mechanism (mDNS).
 struct ServiceInfo {
   ServiceInfo() = default;
-  ServiceInfo(ServiceInfo&&) MAYBE_NOEXCEPT = default;
-  ServiceInfo(const ServiceInfo&) MAYBE_NOEXCEPT = default;
+  ServiceInfo(ServiceInfo&&) noexcept = default;
+  ServiceInfo(const ServiceInfo&) = default;
 
-  ServiceInfo& operator=(ServiceInfo&&) MAYBE_NOEXCEPT = default;
-  ServiceInfo& operator=(const ServiceInfo&) MAYBE_NOEXCEPT = default;
+  ServiceInfo& operator=(ServiceInfo&&) = default;
+  ServiceInfo& operator=(const ServiceInfo&) = default;
 
   bool operator==(const ServiceInfo& other) const;
   bool operator!=(const ServiceInfo& other) const;

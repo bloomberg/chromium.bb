@@ -215,7 +215,7 @@ class TextInputClientForTesting : public DummyTextInputClient {
 
   bool HasCompositionText() const override { return !composition_text.empty(); }
 
-  void ConfirmCompositionText(bool keep_selection) override {
+  uint32_t ConfirmCompositionText(bool keep_selection) override {
     // TODO(b/134473433) Modify this function so that when keep_selection is
     // true, the selection is not changed when text committed
     if (keep_selection) {
@@ -225,7 +225,10 @@ class TextInputClientForTesting : public DummyTextInputClient {
         base::ASCIIToUTF16("compositionend"));
     TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16("textinput:") +
                                             composition_text);
+    const uint32_t composition_text_length =
+        static_cast<uint32_t>(composition_text.length());
     composition_text.clear();
+    return composition_text_length;
   }
 
   void ClearCompositionText() override {
@@ -271,19 +274,19 @@ class TextInputClientForTesting : public DummyTextInputClient {
 class InputMethodAuraLinuxTest : public testing::Test {
  protected:
   InputMethodAuraLinuxTest()
-      : factory_(NULL),
-        input_method_auralinux_(NULL),
-        delegate_(NULL),
-        context_(NULL),
-        context_simple_(NULL) {
+      : factory_(nullptr),
+        input_method_auralinux_(nullptr),
+        delegate_(nullptr),
+        context_(nullptr),
+        context_simple_(nullptr) {
     factory_ = new LinuxInputMethodContextFactoryForTesting();
     LinuxInputMethodContextFactory::SetInstance(factory_);
     test_result_ = TestResult::GetInstance();
   }
   ~InputMethodAuraLinuxTest() override {
     delete factory_;
-    factory_ = NULL;
-    test_result_ = NULL;
+    factory_ = nullptr;
+    test_result_ = nullptr;
   }
 
   void SetUp() override {
@@ -303,13 +306,13 @@ class InputMethodAuraLinuxTest : public testing::Test {
     context_simple_->SetSyncMode(false);
     context_simple_->SetEatKey(false);
 
-    context_ = NULL;
-    context_simple_ = NULL;
+    context_ = nullptr;
+    context_simple_ = nullptr;
 
     delete input_method_auralinux_;
-    input_method_auralinux_ = NULL;
+    input_method_auralinux_ = nullptr;
     delete delegate_;
-    delegate_ = NULL;
+    delegate_ = nullptr;
   }
 
   LinuxInputMethodContextFactoryForTesting* factory_;

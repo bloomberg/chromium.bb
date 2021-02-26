@@ -17,7 +17,7 @@ namespace gpu {
 #if defined(CYGPROFILE_INSTRUMENTATION)
 constexpr base::TimeDelta kGpuWatchdogTimeout =
     base::TimeDelta::FromSeconds(30);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 constexpr base::TimeDelta kGpuWatchdogTimeout =
     base::TimeDelta::FromSeconds(25);
 #elif defined(OS_WIN)
@@ -39,6 +39,12 @@ constexpr int kRestartFactor = 2;
 constexpr int kInitFactor = 2;
 #else
 constexpr int kInitFactor = 1;
+#endif
+
+// TODO(magchen@): To be removed. For kGpuWatchdogV2NewTimeout finch only.
+#if defined(OS_ANDROID)
+constexpr int kInitFactorFinch = 4;
+constexpr int kRestartFactorFinch = 4;
 #endif
 
 // Do not change this number. It's for histogram "GPU.GPUChannelHostWaitTime".

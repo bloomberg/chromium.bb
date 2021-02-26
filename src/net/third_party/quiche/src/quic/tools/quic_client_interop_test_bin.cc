@@ -41,12 +41,19 @@ enum class Feature {
   kConnectionClose,
   // The connection was established using TLS resumption.
   kResumption,
+  // 0-RTT data is being sent and acted on.
+  kZeroRtt,
   // A RETRY packet was successfully processed.
   kRetry,
+  // A handshake using a ClientHello that spans multiple packets completed
+  // successfully.
+  kQuantum,
 
   // Second row of features (anything else protocol-related)
   // We switched to a different port and the server migrated to it.
   kRebinding,
+  // One endpoint can update keys and its peer responds correctly.
+  kKeyUpdate,
 
   // Third row of features (H3 tests)
   // An H3 transaction succeeded.
@@ -68,10 +75,16 @@ char MatrixLetter(Feature f) {
       return 'C';
     case Feature::kResumption:
       return 'R';
+    case Feature::kZeroRtt:
+      return 'Z';
     case Feature::kRetry:
       return 'S';
+    case Feature::kQuantum:
+      return 'Q';
     case Feature::kRebinding:
       return 'B';
+    case Feature::kKeyUpdate:
+      return 'U';
     case Feature::kHttp3:
       return '3';
     case Feature::kDynamicEntryReferenced:
@@ -90,14 +103,24 @@ class QuicClientInteropRunner : QuicConnectionDebugVisitor {
   // Attempts a resumption using |client| by disconnecting and reconnecting. If
   // resumption is successful, |features_| is modified to add
   // Feature::kResumption to it, otherwise it is left unmodified.
-  void AttemptResumption(QuicClient* client);
+  void AttemptResumption(QuicClient* client, const std::string& authority);
 
   void AttemptRequest(QuicSocketAddress addr,
                       std::string authority,
                       QuicServerId server_id,
                       ParsedQuicVersion version,
                       bool test_version_negotiation,
-                      bool attempt_rebind);
+                      bool attempt_rebind,
+                      bool attempt_multi_packet_chlo,
+                      bool attempt_key_update);
+
+  // Constructs a SpdyHeaderBlock containing the pseudo-headers needed to make a
+  // GET request to "/" on the hostname |authority|.
+  spdy::Http2HeaderBlock ConstructHeaderBlock(const std::string& authority);
+
+  // Sends an HTTP request represented by |header_block| using |client|.
+  void SendRequest(QuicClient* client,
+                   const spdy::Http2HeaderBlock& header_block);
 
   void OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) override {
     switch (frame.close_type) {
@@ -134,19 +157,36 @@ class QuicClientInteropRunner : QuicConnectionDebugVisitor {
   std::set<Feature> features_;
 };
 
-void QuicClientInteropRunner::AttemptResumption(QuicClient* client) {
+void QuicClientInteropRunner::AttemptResumption(QuicClient* client,
+                                                const std::string& authority) {
   client->Disconnect();
   if (!client->Initialize()) {
     QUIC_LOG(ERROR) << "Failed to reinitialize client";
     return;
   }
-  if (!client->Connect() || !client->session()->OneRttKeysAvailable()) {
+  if (!client->Connect()) {
     return;
   }
+
+  bool zero_rtt_attempt = !client->session()->OneRttKeysAvailable();
+
+  spdy::Http2HeaderBlock header_block = ConstructHeaderBlock(authority);
+  SendRequest(client, header_block);
+
+  if (!client->session()->OneRttKeysAvailable()) {
+    return;
+  }
+
   if (static_cast<QuicCryptoClientStream*>(
           test::QuicSessionPeer::GetMutableCryptoStream(client->session()))
           ->IsResumption()) {
     InsertFeature(Feature::kResumption);
+  }
+  if (static_cast<QuicCryptoClientStream*>(
+          test::QuicSessionPeer::GetMutableCryptoStream(client->session()))
+          ->EarlyDataAccepted() &&
+      zero_rtt_attempt && client->latest_response_code() != -1) {
+    InsertFeature(Feature::kZeroRtt);
   }
 }
 
@@ -155,7 +195,9 @@ void QuicClientInteropRunner::AttemptRequest(QuicSocketAddress addr,
                                              QuicServerId server_id,
                                              ParsedQuicVersion version,
                                              bool test_version_negotiation,
-                                             bool attempt_rebind) {
+                                             bool attempt_rebind,
+                                             bool attempt_multi_packet_chlo,
+                                             bool attempt_key_update) {
   ParsedQuicVersionVector versions = {version};
   if (test_version_negotiation) {
     versions.insert(versions.begin(), QuicVersionReservedForNegotiation());
@@ -168,6 +210,15 @@ void QuicClientInteropRunner::AttemptRequest(QuicSocketAddress addr,
   QuicConfig config;
   QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(20);
   config.SetIdleNetworkTimeout(timeout);
+  if (attempt_multi_packet_chlo) {
+    // Make the ClientHello span multiple packets by adding a custom transport
+    // parameter.
+    constexpr auto kCustomParameter =
+        static_cast<TransportParameters::TransportParameterId>(0x173E);
+    std::string custom_value(2000, '?');
+    config.custom_transport_parameters_to_send()[kCustomParameter] =
+        custom_value;
+  }
   auto client = std::make_unique<QuicClient>(
       addr, server_id, versions, config, &epoll_server,
       std::move(proof_verifier), std::move(session_cache));
@@ -192,33 +243,27 @@ void QuicClientInteropRunner::AttemptRequest(QuicSocketAddress addr,
   if (test_version_negotiation && !connect_result) {
     // Failed to negotiate version, retry without version negotiation.
     AttemptRequest(addr, authority, server_id, version,
-                   /*test_version_negotiation=*/false, attempt_rebind);
+                   /*test_version_negotiation=*/false, attempt_rebind,
+                   attempt_multi_packet_chlo, attempt_key_update);
     return;
   }
   if (!client->session()->OneRttKeysAvailable()) {
+    if (attempt_multi_packet_chlo) {
+      // Failed to handshake with multi-packet client hello, retry without it.
+      AttemptRequest(addr, authority, server_id, version,
+                     test_version_negotiation, attempt_rebind,
+                     /*attempt_multi_packet_chlo=*/false, attempt_key_update);
+      return;
+    }
     return;
   }
   InsertFeature(Feature::kHandshake);
-
-  // Construct and send a request.
-  spdy::SpdyHeaderBlock header_block;
-  header_block[":method"] = "GET";
-  header_block[":scheme"] = "https";
-  header_block[":authority"] = authority;
-  header_block[":path"] = "/";
-  client->set_store_response(true);
-  client->SendRequestAndWaitForResponse(header_block, "", /*fin=*/true);
-
-  client_stats = connection->GetStats();
-  QuicSentPacketManager* sent_packet_manager =
-      test::QuicConnectionPeer::GetSentPacketManager(connection);
-  const bool received_forward_secure_ack =
-      sent_packet_manager != nullptr &&
-      sent_packet_manager->GetLargestAckedPacket(ENCRYPTION_FORWARD_SECURE)
-          .IsInitialized();
-  if (client_stats.stream_bytes_received > 0 && received_forward_secure_ack) {
-    InsertFeature(Feature::kStreamData);
+  if (attempt_multi_packet_chlo) {
+    InsertFeature(Feature::kQuantum);
   }
+
+  spdy::Http2HeaderBlock header_block = ConstructHeaderBlock(authority);
+  SendRequest(client.get(), header_block);
 
   if (!client->connected()) {
     return;
@@ -238,7 +283,8 @@ void QuicClientInteropRunner::AttemptRequest(QuicSocketAddress addr,
         if (!client->connected()) {
           // Rebinding does not work, retry without attempting it.
           AttemptRequest(addr, authority, server_id, version,
-                         test_version_negotiation, /*attempt_rebind=*/false);
+                         test_version_negotiation, /*attempt_rebind=*/false,
+                         attempt_multi_packet_chlo, attempt_key_update);
           return;
         }
         InsertFeature(Feature::kRebinding);
@@ -250,6 +296,28 @@ void QuicClientInteropRunner::AttemptRequest(QuicSocketAddress addr,
         QUIC_LOG(ERROR) << "Failed to change ephemeral port";
       }
     }
+
+    if (attempt_key_update) {
+      if (connection->IsKeyUpdateAllowed()) {
+        if (connection->InitiateKeyUpdate(
+                KeyUpdateReason::kLocalForInteropRunner)) {
+          client->SendRequestAndWaitForResponse(header_block, "", /*fin=*/true);
+          if (!client->connected()) {
+            // Key update does not work, retry without attempting it.
+            AttemptRequest(addr, authority, server_id, version,
+                           test_version_negotiation, attempt_rebind,
+                           attempt_multi_packet_chlo,
+                           /*attempt_key_update=*/false);
+            return;
+          }
+          InsertFeature(Feature::kKeyUpdate);
+        } else {
+          QUIC_LOG(ERROR) << "Failed to initiate key update";
+        }
+      } else {
+        QUIC_LOG(ERROR) << "Key update not allowed";
+      }
+    }
   }
 
   if (connection->connected()) {
@@ -259,7 +327,41 @@ void QuicClientInteropRunner::AttemptRequest(QuicSocketAddress addr,
     InsertFeature(Feature::kConnectionClose);
   }
 
-  AttemptResumption(client.get());
+  AttemptResumption(client.get(), authority);
+}
+
+spdy::Http2HeaderBlock QuicClientInteropRunner::ConstructHeaderBlock(
+    const std::string& authority) {
+  // Construct and send a request.
+  spdy::Http2HeaderBlock header_block;
+  header_block[":method"] = "GET";
+  header_block[":scheme"] = "https";
+  header_block[":authority"] = authority;
+  header_block[":path"] = "/";
+  return header_block;
+}
+
+void QuicClientInteropRunner::SendRequest(
+    QuicClient* client,
+    const spdy::Http2HeaderBlock& header_block) {
+  client->set_store_response(true);
+  client->SendRequestAndWaitForResponse(header_block, "", /*fin=*/true);
+
+  QuicConnection* connection = client->session()->connection();
+  if (connection == nullptr) {
+    QUIC_LOG(ERROR) << "No QuicConnection object";
+    return;
+  }
+  QuicConnectionStats client_stats = connection->GetStats();
+  QuicSentPacketManager* sent_packet_manager =
+      test::QuicConnectionPeer::GetSentPacketManager(connection);
+  const bool received_forward_secure_ack =
+      sent_packet_manager != nullptr &&
+      sent_packet_manager->GetLargestAckedPacket(ENCRYPTION_FORWARD_SECURE)
+          .IsInitialized();
+  if (client_stats.stream_bytes_received > 0 && received_forward_secure_ack) {
+    InsertFeature(Feature::kStreamData);
+  }
 }
 
 std::set<Feature> ServerSupport(std::string dns_host,
@@ -276,7 +378,7 @@ std::set<Feature> ServerSupport(std::string dns_host,
       break;
     }
   }
-  CHECK_NE(version.transport_version, QUIC_VERSION_UNSUPPORTED);
+  CHECK(version.IsKnown());
   QuicEnableVersion(version);
 
   // Build the client, and try to connect.
@@ -293,7 +395,9 @@ std::set<Feature> ServerSupport(std::string dns_host,
 
   runner.AttemptRequest(addr, authority, server_id, version,
                         /*test_version_negotiation=*/true,
-                        /*attempt_rebind=*/true);
+                        /*attempt_rebind=*/true,
+                        /*attempt_multi_packet_chlo=*/true,
+                        /*attempt_key_update=*/true);
 
   return runner.features();
 }

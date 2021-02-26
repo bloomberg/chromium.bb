@@ -39,7 +39,6 @@
 #endif
 
 class BatteryMetrics;
-class ChromeFeatureListCreator;
 class ChromeMetricsServicesManagerClient;
 class DevToolsAutoOpener;
 class RemoteDebuggingServer;
@@ -96,7 +95,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void SetQuitClosure(base::OnceClosure quit_closure);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Clears the quit closure. Shutdown will not be initiated should the
   // KeepAlive count reach zero. This function may be called more than once.
   // TODO(https://crbug.com/845966): Remove this once the Cocoa first run
@@ -159,7 +158,9 @@ class BrowserProcessImpl : public BrowserProcess,
   printing::PrintPreviewDialogController* print_preview_dialog_controller()
       override;
   printing::BackgroundPrintingManager* background_printing_manager() override;
+#if !defined(OS_ANDROID)
   IntranetRedirectDetector* intranet_redirect_detector() override;
+#endif
   const std::string& GetApplicationLocale() override;
   void SetApplicationLocale(const std::string& actual_locale) override;
   DownloadStatusUpdater* download_status_updater() override;
@@ -171,6 +172,8 @@ class BrowserProcessImpl : public BrowserProcess,
   safe_browsing::SafeBrowsingService* safe_browsing_service() override;
   subresource_filter::RulesetService* subresource_filter_ruleset_service()
       override;
+  federated_learning::FlocSortingLshClustersService*
+  floc_sorting_lsh_clusters_service() override;
   optimization_guide::OptimizationGuideService* optimization_guide_service()
       override;
 
@@ -188,7 +191,9 @@ class BrowserProcessImpl : public BrowserProcess,
   MediaFileSystemRegistry* media_file_system_registry() override;
   WebRtcLogUploader* webrtc_log_uploader() override;
   network_time::NetworkTimeTracker* network_time_tracker() override;
+#if !defined(OS_ANDROID)
   gcm::GCMDriver* gcm_driver() override;
+#endif
   resource_coordinator::TabManager* GetTabManager() override;
   resource_coordinator::ResourceCoordinatorParts* resource_coordinator_parts()
       override;
@@ -210,20 +215,19 @@ class BrowserProcessImpl : public BrowserProcess,
 
   void CreateWatchdogThread();
   void CreateProfileManager();
-  void CreateLocalState();
   void CreateIconManager();
-  void CreateIntranetRedirectDetector();
   void CreateNotificationPlatformBridge();
   void CreateNotificationUIManager();
   void CreatePrintPreviewDialogController();
   void CreateBackgroundPrintingManager();
   void CreateSafeBrowsingService();
   void CreateSubresourceFilterRulesetService();
+  void CreateFlocBlocklistService();
+  void CreateFlocSortingLshClustersService();
   void CreateOptimizationGuideService();
   void CreateStatusTray();
   void CreateBackgroundModeManager();
   void CreateGCMDriver();
-  void CreatePhysicalWebDataSource();
 
   void ApplyDefaultBrowserPolicy();
 
@@ -232,10 +236,11 @@ class BrowserProcessImpl : public BrowserProcess,
   void Pin();
   void Unpin();
 
+  StartupData* const startup_data_;
+
   bool created_watchdog_thread_ = false;
   std::unique_ptr<WatchDogThread> watchdog_thread_;
 
-  bool created_browser_policy_connector_ = false;
   // Must be destroyed after |local_state_|.
   std::unique_ptr<policy::ChromeBrowserPolicyConnector>
       browser_policy_connector_;
@@ -295,7 +300,9 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
 #endif
 
+#if !defined(OS_ANDROID)
   std::unique_ptr<IntranetRedirectDetector> intranet_redirect_detector_;
+#endif
 
   std::unique_ptr<StatusTray> status_tray_;
 
@@ -319,6 +326,9 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<subresource_filter::RulesetService>
       subresource_filter_ruleset_service_;
 
+  std::unique_ptr<federated_learning::FlocSortingLshClustersService>
+      floc_sorting_lsh_clusters_service_;
+
   bool created_optimization_guide_service_ = false;
   std::unique_ptr<optimization_guide::OptimizationGuideService>
       optimization_guide_service_;
@@ -338,12 +348,6 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<DownloadStatusUpdater> download_status_updater_;
 
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
-
-  // If non-null, this object holds a pref store that will be taken by
-  // BrowserProcessImpl to create the |local_state_|.
-  ChromeFeatureListCreator* chrome_feature_list_creator_;
-
-  StartupData* startup_data_;
 
   // Ensures that the observers of plugin/print disable/enable state
   // notifications are properly added and removed.

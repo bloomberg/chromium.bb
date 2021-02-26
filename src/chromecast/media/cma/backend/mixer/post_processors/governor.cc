@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chromecast/base/serializers.h"
 #include "chromecast/media/base/slew_volume.h"
+#include "chromecast/media/cma/backend/mixer/post_processor_registry.h"
 
 namespace chromecast {
 namespace media {
@@ -57,16 +58,13 @@ const AudioPostProcessor2::Status& Governor::GetStatus() {
   return status_;
 }
 
-void Governor::ProcessFrames(float* data,
-                             int frames,
-                             float volume,
-                             float volume_dbfs) {
+void Governor::ProcessFrames(float* data, int frames, Metadata* metadata) {
   DCHECK(data);
   status_.output_buffer = data;
 
   // If the volume has changed.
-  if (!base::IsApproximatelyEqual(volume, volume_, kEpsilon)) {
-    volume_ = volume;
+  if (!base::IsApproximatelyEqual(metadata->system_volume, volume_, kEpsilon)) {
+    volume_ = metadata->system_volume;
     slew_volume_.SetVolume(GetGovernorMultiplier());
   }
 
@@ -91,6 +89,8 @@ bool Governor::UpdateParameters(const std::string& message) {
 void Governor::SetSlewTimeMsForTest(int slew_time_ms) {
   slew_volume_.SetMaxSlewTimeMs(slew_time_ms);
 }
+
+REGISTER_POSTPROCESSOR(Governor, "libcast_governor_2.0.so");
 
 }  // namespace media
 }  // namespace chromecast

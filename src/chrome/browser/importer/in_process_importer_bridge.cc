@@ -16,8 +16,8 @@
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/importer_autofill_form_data_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/favicon_base/favicon_usage_data.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_parser.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -59,9 +59,33 @@ history::VisitSource ConvertImporterVisitSourceToHistoryVisitSource(
   return history::SOURCE_SYNCED;
 }
 
-}  // namespace
+password_manager::PasswordForm::Scheme ConvertToPasswordFormScheme(
+    importer::ImportedPasswordForm::Scheme scheme) {
+  switch (scheme) {
+    case importer::ImportedPasswordForm::Scheme::kHtml:
+      return password_manager::PasswordForm::Scheme::kHtml;
+    case importer::ImportedPasswordForm::Scheme::kBasic:
+      return password_manager::PasswordForm::Scheme::kBasic;
+  }
 
-namespace {
+  NOTREACHED();
+  return password_manager::PasswordForm::Scheme::kHtml;
+}
+
+password_manager::PasswordForm ConvertImportedPasswordForm(
+    const importer::ImportedPasswordForm& form) {
+  password_manager::PasswordForm result;
+  result.scheme = ConvertToPasswordFormScheme(form.scheme);
+  result.signon_realm = form.signon_realm;
+  result.url = form.url;
+  result.action = form.action;
+  result.username_element = form.username_element;
+  result.username_value = form.username_value;
+  result.password_element = form.password_element;
+  result.password_value = form.password_value;
+  result.blocked_by_user = form.blocked_by_user;
+  return result;
+}
 
 // Attempts to create a TemplateURL from the provided data. |title| is optional.
 // If TemplateURL creation fails, returns null.
@@ -126,8 +150,8 @@ void InProcessImporterBridge::SetKeywords(
 }
 
 void InProcessImporterBridge::SetPasswordForm(
-    const autofill::PasswordForm& form) {
-  writer_->AddPasswordForm(form);
+    const importer::ImportedPasswordForm& form) {
+  writer_->AddPasswordForm(ConvertImportedPasswordForm(form));
 }
 
 void InProcessImporterBridge::SetAutofillFormData(

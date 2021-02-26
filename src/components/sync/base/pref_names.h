@@ -23,7 +23,7 @@ extern const char kOsSyncFeatureEnabled[];
 extern const char kSyncAllOsTypes[];
 extern const char kSyncOsApps[];
 extern const char kSyncOsPreferences[];
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 extern const char kSyncApps[];
 extern const char kSyncAutofill[];
@@ -57,12 +57,9 @@ extern const char kSyncLastRunVersion[];
 extern const char kEnableLocalSyncBackend[];
 extern const char kLocalSyncBackendDir[];
 
-extern const char kSyncDemographics[];
-extern const char kSyncDemographicsBirthYearOffset[];
-
-// These are not prefs, they are paths inside of kSyncDemographics.
-extern const char kSyncDemographics_BirthYearPath[];
-extern const char kSyncDemographics_GenderPath[];
+#if defined(OS_ANDROID)
+extern const char kSyncDecoupledFromAndroidMasterSync[];
+#endif  // defined(OS_ANDROID)
 
 }  // namespace prefs
 

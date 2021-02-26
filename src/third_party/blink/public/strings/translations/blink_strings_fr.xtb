@@ -13,13 +13,18 @@
 <translation id="1211441953136645838">note de fin</translation>
 <translation id="1281252709823657822">boîte de dialogue</translation>
 <translation id="1306460908038601864">Désactivé</translation>
+<translation id="1311894908970423688">Veuillez indiquer la valeur <ph name="VALUE_DATE_OR_TIME" />.</translation>
 <translation id="1335095011850992622">crédits</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">bannière</translation>
+<translation id="145015347812617860"><ph name="COUNT" /> éléments</translation>
+<translation id="1480676835519562650">sélection multiple possible, <ph name="SELECTED" /> éléments sur <ph name="COUNT" /> sélectionnés.</translation>
 <translation id="1589122976691792535">région</translation>
 <translation id="1591562245178063882">Ce mois</translation>
 <translation id="1637811476055996098">Sélect. fichiers</translation>
 <translation id="1650423536718072820">témoignage</translation>
+<translation id="1681022320378710418">heure actuelle</translation>
+<translation id="1727839386348365796">Pipette</translation>
 <translation id="1727886345390570319">masquer le menu des sous-titres</translation>
 <translation id="1729654308190250600">Veuillez saisir une adresse e-mail dans le champ correspondant.</translation>
 <translation id="1758486001363313524">Autre…</translation>
@@ -27,6 +32,7 @@
 <translation id="1806710327868736751">alert_dialog</translation>
 <translation id="1821985195704844674">arborescence</translation>
 <translation id="1822429046913737220">AM/PM</translation>
+<translation id="1823704031293214298">pied de page</translation>
 <translation id="1832974991323546415">lire sur un appareil à distance</translation>
 <translation id="190587075670221089">suppression</translation>
 <translation id="1907737156431278478">exemple</translation>
@@ -44,6 +50,7 @@
 <translation id="2247351761944213033">Semaine <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Piste <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">case à cocher</translation>
+<translation id="2307576640803031502">dans la liste, élément <ph name="INDEX" /> sur <ph name="COUNT" /></translation>
 <translation id="2311842470354187719">saut de page</translation>
 <translation id="2335594187091864976">outil de sélection de la date et de l'heure</translation>
 <translation id="2393030564806080191">Valeur de couleur hexadécimale</translation>
@@ -51,6 +58,7 @@
 <translation id="248395913932153421">Jour</translation>
 <translation id="2507943997699731163">Veuillez renseigner ce champ.</translation>
 <translation id="2508569020611168319">liste d'onglets</translation>
+<translation id="2530182415807757784">sélection multiple possible, aucun élément sélectionné.</translation>
 <translation id="2561842179657104141">afficher plus de commandes multimédias</translation>
 <translation id="2572483411312390101">lire</translation>
 <translation id="2613802280814924224">Veuillez saisir une valeur valide. La valeur valide la plus proche est "<ph name="VALID_VALUE" />".</translation>
@@ -75,6 +83,7 @@
 <translation id="310520048233152454">Veuillez saisir une URL.</translation>
 <translation id="3175736971608411871">minuteur</translation>
 <translation id="3199563858620722075">boîte combinée</translation>
+<translation id="3220661731597678625">étape actuelle</translation>
 <translation id="3329013043687509092">Saturation</translation>
 <translation id="3450233048674729344">Cette valeur doit être inférieure ou égale à <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">définition</translation>
@@ -100,12 +109,14 @@
 <translation id="4201051445878709314">Afficher le mois précédent</translation>
 <translation id="421884353938374759">palette couleurs</translation>
 <translation id="4248100235867064564">barre de menu</translation>
+<translation id="4293574643247337246">en-tête de page</translation>
 <translation id="4360991593054037559">Veuillez saisir une valeur valide. Les deux valeurs valides les plus proches sont "<ph name="VALID_VALUE_LOW" />" et "<ph name="VALID_VALUE_HIGHER" />".</translation>
+<translation id="4384249794467006333">Aucun libellé n'est associé à cette image. Pour obtenir une description, accédez au menu "Plus d'options" situé en haut à droite.</translation>
 <translation id="4384583879834880242">Questions/Réponses</translation>
-<translation id="4413860115965805769">bouton de menu</translation>
 <translation id="4444765639179266822">Voici la mention que contient probablement l'image : <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">référence de glossaire</translation>
 <translation id="4522570452068850558">Détails</translation>
+<translation id="4576178047100686001">Aucun libellé n'est associé à cette image. Pour obtenir une description, accédez au menu "Plus d'options" situé en haut à gauche.</translation>
 <translation id="4597532268155981612">formulaire</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">La partie précédée du symbole "<ph name="ATSIGN" />" ne doit pas contenir le caractère "<ph name="INVALIDCHARACTER" />".</translation>
@@ -118,6 +129,7 @@
 <translation id="4763480195061959176">vidéo</translation>
 <translation id="479989351350248267">rechercher</translation>
 <translation id="4812940957355064477">Veuillez saisir un nombre.</translation>
+<translation id="4912200001568447310">élément actuel</translation>
 <translation id="4912536737030637138">entrée bibliographique</translation>
 <translation id="4915360478455618802">Afficher l'outil de sélection de l'heure</translation>
 <translation id="492244087561876220">commentaire</translation>
@@ -140,10 +152,11 @@
 <translation id="5334352251556557839">Impossible de lire les contenus multimédias.</translation>
 <translation id="537648784377940524">La date minimale (<ph name="MIN_DATE_OR_TIME" />) doit être antérieure à la date maximale (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">nombre</translation>
+<translation id="5425179576310518467">date actuelle</translation>
 <translation id="5453733299334684579">élément d'arborescence</translation>
 <translation id="5466621249238537318">Veuillez sélectionner un ou plusieurs fichiers.</translation>
 <translation id="5468998798572797635">quitter le mode plein écran</translation>
-<translation id="5516424706154626233">outil de sélection de la date</translation>
+<translation id="5516424706154626233">sélecteur de date</translation>
 <translation id="5537725057119320332">Caster</translation>
 <translation id="5546461542133609677">réactiver le son</translation>
 <translation id="5608153257855394627">mettre en surbrillance</translation>
@@ -154,9 +167,11 @@
 <translation id="5677946354068040947">plus d'options</translation>
 <translation id="576709008726043716">introduction</translation>
 <translation id="57838592816432529">Couper le son</translation>
+<translation id="5860033963881614850">Désactivé</translation>
 <translation id="588258955323874662">Plein écran</translation>
 <translation id="5888666972993069672">Diffusion en cours sur l'appareil "<ph name="DEVICE_FRIENDLY_NAME" />"</translation>
 <translation id="591047860372322273">champ de recherche</translation>
+<translation id="5916664084637901428">Activé</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
 <translation id="5966707198760109579">Semaine</translation>
 <translation id="5987525920412732405">bouton toupie</translation>
@@ -167,6 +182,7 @@
 <translation id="6164829606128959761">outil de mesure</translation>
 <translation id="6166809985690652833">postface</translation>
 <translation id="6209276755895393898">L'image représente probablement : <ph name="DESCRIPTION" /></translation>
+<translation id="6212595056017402527">page active</translation>
 <translation id="6213469881011901533">glossaire</translation>
 <translation id="6281588256137006900">Luminosité</translation>
 <translation id="6281763101136022427">URL</translation>
@@ -184,6 +200,7 @@
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="668171684555832681">Autre...</translation>
 <translation id="6692633176391053278">curseur</translation>
+<translation id="6709093583001123835">Veuillez indiquer la valeur <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Mauvaise qualité de lecture</translation>
 <translation id="6755330956360078551">info-bulle</translation>
 <translation id="6790428901817661496">Lire</translation>
@@ -200,6 +217,7 @@
 <translation id="6989848892321993519">Veuillez allonger ce texte pour qu'il comporte au moins <ph name="MIN_CHARACTERS" /> caractères. Il en compte actuellement un seul.</translation>
 <translation id="7034405885550056553">suggestion</translation>
 <translation id="709897737746224366">Veuillez respecter le format requis.</translation>
+<translation id="7102274145889307184">emplacement actuel</translation>
 <translation id="7118469954320184356">Aucune description disponible.</translation>
 <translation id="7139483182332611405">préface</translation>
 <translation id="7214187073215825913">informations sur le contenu</translation>
@@ -284,6 +302,7 @@
 <translation id="9155987714137265666"><ph name="WEEK" /> (premier jour de la semaine : <ph name="WEEK_START_DATE" />)</translation>
 <translation id="916607977885256133">Picture-in-picture</translation>
 <translation id="9168329111483466115">note de bas de page</translation>
+<translation id="945780513535800434">Partiellement cochée</translation>
 <translation id="954003015749068518">utiliser le mode PIP</translation>
 <translation id="966787709310836684">menu</translation>
 </translationbundle>

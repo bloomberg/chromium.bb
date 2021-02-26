@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_formatter.h"
 
+#include "base/notreached.h"
 #import "components/omnibox/browser/autocomplete_match.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -81,6 +82,7 @@ OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
       return CALCULATOR;
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
     case AutocompleteMatchType::TILE_SUGGESTION:
+    case AutocompleteMatchType::TILE_NAVSUGGEST:
     case AutocompleteMatchType::NUM_TYPES:
       NOTREACHED();
       return DEFAULT_FAVICON;

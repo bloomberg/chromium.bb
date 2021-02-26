@@ -11,10 +11,10 @@
 #include "base/sequence_checker.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/discovery/media_sink_service_base.h"
 #include "components/cast_channel/cast_message_handler.h"
 #include "components/cast_channel/cast_message_util.h"
+#include "components/media_router/common/discovery/media_sink_internal.h"
+#include "components/media_router/common/discovery/media_sink_service_base.h"
 
 namespace media_router {
 
@@ -58,9 +58,9 @@ class CastSessionTracker : public MediaSinkServiceBase::Observer,
 
  private:
   friend class CastSessionTrackerTest;
-  friend class CastActivityRecordTest;
   friend class CastActivityManagerTest;
   friend class CastMediaRouteProviderTest;
+  friend class CastActivityTestBase;
 
   // Use |GetInstance()| instead.
   CastSessionTracker(
@@ -102,7 +102,7 @@ class CastSessionTracker : public MediaSinkServiceBase::Observer,
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(CastSessionTracker);
-  FRIEND_TEST_ALL_PREFIXES(CastActivityRecordTest, SendAppMessageToReceiver);
+  FRIEND_TEST_ALL_PREFIXES(AppActivityTest, SendAppMessageToReceiver);
   FRIEND_TEST_ALL_PREFIXES(CastMediaRouteProviderTest, GetState);
   FRIEND_TEST_ALL_PREFIXES(CastSessionTrackerTest, RemoveSession);
   FRIEND_TEST_ALL_PREFIXES(CastSessionTrackerTest,

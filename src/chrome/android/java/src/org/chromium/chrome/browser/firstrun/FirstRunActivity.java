@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -24,6 +25,7 @@ import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.ui.base.LocalizationUtils;
@@ -42,7 +44,10 @@ import java.util.Set;
  * The activity might be run more than once, e.g. 1) for ToS and sign-in, and 2) for intro.
  */
 public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPageDelegate {
-    /** Alerted about various events when FirstRunActivity performs them. */
+    /**
+     * Alerted about various events when FirstRunActivity performs them.
+     * TODO(crbug.com/1114319): Rework and use a better testing setup.
+     * */
     public interface FirstRunActivityObserver {
         /** See {@link #onFlowIsKnown}. */
         void onFlowIsKnown(Bundle freProperties);
@@ -58,6 +63,9 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
         /** See {@link #abortFirstRunExperience}. */
         void onAbortFirstRunExperience();
+
+        /** See {@link #exitFirstRun()}. */
+        void onExitFirstRun();
     }
 
     // UMA constants.
@@ -100,6 +108,15 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
      * Android app list.
      */
     private boolean mLaunchedFromChromeIcon;
+    private boolean mLaunchedFromCCT;
+
+    /**
+     * {@link SystemClock} timestamp from when the FRE intent was initially created. This marks when
+     * we first knew an FRE was needed, and is used as a reference point for various timing metrics.
+     */
+    private long mIntentCreationElapsedRealtimeMs;
+
+    private final FirstRunAppRestrictionInfo mFirstRunAppRestrictionInfo;
 
     private final List<FirstRunPage> mPages = new ArrayList<>();
     private final List<Integer> mFreProgressStates = new ArrayList<>();
@@ -109,14 +126,29 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
      */
     private FirstRunPagerAdapter mPagerAdapter;
 
+    public FirstRunActivity() {
+        mFirstRunAppRestrictionInfo = FirstRunAppRestrictionInfo.takeMaybeInitialized();
+    }
+
     /**
      * Defines a sequence of pages to be shown (depending on parameters etc).
      */
     private void createPageSequence() {
-        mPages.add(new ToSAndUMAFirstRunFragment.Page());
+        mPages.add(shouldCreateEnterpriseCctTosPage()
+                        ? new TosAndUmaFirstRunFragmentWithEnterpriseSupport.Page()
+                        : new ToSAndUMAFirstRunFragment.Page());
         mFreProgressStates.add(FRE_PROGRESS_WELCOME_SHOWN);
         // Other pages will be created by createPostNativePageSequence() after
         // native has been initialized.
+    }
+
+    private boolean shouldCreateEnterpriseCctTosPage() {
+        // TODO(crbug.com/1111490): Revisit case when #shouldSkipWelcomePage = true.
+        //  If the client has already accepted ToS (FirstRunStatus#shouldSkipWelcomePage), do not
+        //  use the subclass ToSAndUmaCCTFirstRunFragment. Instead, use the base class
+        //  (ToSAndUMAFirstRunFragment) which simply shows a loading spinner while waiting for
+        //  native to be loaded.
+        return mLaunchedFromCCT && !FirstRunStatus.shouldSkipWelcomePage();
     }
 
     private void createPostNativePageSequence() {
@@ -180,6 +212,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     @Override
     public void triggerLayoutInflation() {
         initializeStateFromLaunchData();
+        RecordHistogram.recordTimesHistogram("MobileFre.FromLaunch.TriggerLayoutInflation",
+                SystemClock.elapsedRealtime() - mIntentCreationElapsedRealtimeMs);
 
         setFinishOnTouchOutside(true);
 
@@ -220,12 +254,30 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
                 if (sObserver != null) sObserver.onFlowIsKnown(mFreProperties);
                 recordFreProgressHistogram(mFreProgressStates.get(0));
+                long inflationCompletion = SystemClock.elapsedRealtime();
+                RecordHistogram.recordTimesHistogram("MobileFre.FromLaunch.FirstFragmentInflatedV2",
+                        inflationCompletion - mIntentCreationElapsedRealtimeMs);
+                mFirstRunAppRestrictionInfo.getCompletionElapsedRealtimeMs(
+                        restrictionsCompletion -> {
+                            if (restrictionsCompletion > inflationCompletion) {
+                                RecordHistogram.recordTimesHistogram(
+                                        "MobileFre.FragmentInflationSpeed.FasterThanAppRestriction",
+                                        restrictionsCompletion - inflationCompletion);
+                            } else {
+                                RecordHistogram.recordTimesHistogram(
+                                        "MobileFre.FragmentInflationSpeed.SlowerThanAppRestriction",
+                                        inflationCompletion - restrictionsCompletion);
+                            }
+                        });
             }
         };
         mFirstRunFlowSequencer.start();
         FirstRunStatus.setFirstRunTriggered(true);
         recordFreProgressHistogram(FRE_PROGRESS_STARTED);
         onInitialLayoutInflationComplete();
+
+        RecordHistogram.recordTimesHistogram("MobileFre.FromLaunch.ActivityInflated",
+                SystemClock.elapsedRealtime() - mIntentCreationElapsedRealtimeMs);
     }
 
     @Override
@@ -302,6 +354,14 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        // As first run is complete, we no longer need FirstRunAppRestrictionInfo.
+        mFirstRunAppRestrictionInfo.destroy();
+    }
+
+    @Override
     public void onBackPressed() {
         // Terminate if we are still waiting for the native or for Android EDU / GAIA Child checks.
         if (mPagerAdapter == null) {
@@ -318,7 +378,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         if (mPager.getCurrentItem() == 0) {
             abortFirstRunExperience();
         } else {
-            mPager.setCurrentItem(mPager.getCurrentItem() - 1, false);
+            setCurrentItemForPager(mPager.getCurrentItem() - 1);
         }
     }
 
@@ -347,6 +407,9 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
             mDeferredCompleteFRE = true;
             return;
         }
+
+        RecordHistogram.recordMediumTimesHistogram("MobileFre.FromLaunch.FreCompleted",
+                SystemClock.elapsedRealtime() - mIntentCreationElapsedRealtimeMs);
         if (!TextUtils.isEmpty(mResultSignInAccountName)) {
             final int choice;
             if (mResultShowSignInSettings) {
@@ -381,6 +444,26 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         SearchWidgetProvider.updateCachedEngineName();
         if (sObserver != null) sObserver.onUpdateCachedEngineName();
 
+        launchPendingIntentAndFinish();
+    }
+
+    @Override
+    public void exitFirstRun() {
+        // This is important because the first run, when completed, will re-launch the original
+        // intent. The re-launched intent will still need to know to avoid the FRE.
+        FirstRunStatus.setEphemeralSkipFirstRun(true);
+
+        // This pref is written to have a value of true during the FRE's startup. If the user
+        // presses the accept ToS button, this pref's value is overridden with their choice.
+        // However, when the FRE is skipped, that initial value is the opposite of what we want, so
+        // manually set it to false here.
+        // TODO(https://crbug.com/1128955): Remove this once the default is not written on startup.
+        PrivacyPreferencesManager.getInstance().setUsageAndCrashReporting(false);
+
+        launchPendingIntentAndFinish();
+    }
+
+    private void launchPendingIntentAndFinish() {
         if (!sendFirstRunCompletePendingIntent()) {
             finish();
         } else {
@@ -401,6 +484,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                 }
             });
         }
+
+        if (sObserver != null) sObserver.onExitFirstRun();
     }
 
     @Override
@@ -428,6 +513,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     public void acceptTermsOfService(boolean allowCrashUpload) {
         // If default is true then it corresponds to opt-out and false corresponds to opt-in.
         UmaUtils.recordMetricsReportingDefaultOptIn(!DEFAULT_METRICS_AND_CRASH_REPORTING);
+        RecordHistogram.recordMediumTimesHistogram("MobileFre.FromLaunch.TosAccepted",
+                SystemClock.elapsedRealtime() - mIntentCreationElapsedRealtimeMs);
         FirstRunUtils.acceptTermsOfService(allowCrashUpload);
         FirstRunStatus.setSkipWelcomePage(true);
         flushPersistentData();
@@ -440,13 +527,17 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         if (getIntent() != null) {
             mLaunchedFromChromeIcon =
                     getIntent().getBooleanExtra(EXTRA_COMING_FROM_CHROME_ICON, false);
+            mLaunchedFromCCT =
+                    getIntent().getBooleanExtra(EXTRA_CHROME_LAUNCH_INTENT_IS_CCT, false);
+            mIntentCreationElapsedRealtimeMs =
+                    getIntent().getLongExtra(EXTRA_FRE_INTENT_CREATION_ELAPSED_REALTIME_MS, 0);
         }
     }
 
     /**
      * Transitions to a given page.
-     * @return Whether the transition to a given page was allowed.
      * @param position A page index to transition to.
+     * @return Whether the transition to a given page was allowed.
      */
     private boolean jumpToPage(int position) {
         if (sObserver != null) sObserver.onJumpToPage(position);
@@ -454,12 +545,34 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         if (!didAcceptTermsOfService()) {
             return position == 0;
         }
+        if (!setCurrentItemForPager(position)) {
+            return false;
+        }
+        recordFreProgressHistogram(mFreProgressStates.get(position));
+        return true;
+    }
+
+    private boolean setCurrentItemForPager(int position) {
         if (position >= mPagerAdapter.getCount()) {
             completeFirstRunExperience();
             return false;
         }
+
         mPager.setCurrentItem(position, false);
-        recordFreProgressHistogram(mFreProgressStates.get(position));
+
+        // Set A11y focus if possible. See https://crbug.com/1094064 for more context.
+        // * Screen reader can lose focus when switching between pages with ViewPager;
+        // * FragmentPagerStateAdapter is trying to limit access for the real fragment that we are
+        // creating / created;
+        // * Note that despite the function name and javadoc,
+        // FragmentPagerStateAdapter#instantiateItem returns cached fragments when possible. This
+        // should always be the case here as ViewPager#setCurrentItem will trigger instantiation if
+        // needed. This function call to #instantiateItem is not creating new fragment here but
+        // rather reading the ones already created.
+        Object currentFragment = mPagerAdapter.instantiateItem(mPager, position);
+        if (currentFragment instanceof FirstRunFragment) {
+            ((FirstRunFragment) currentFragment).setInitialA11yFocus();
+        }
         return true;
     }
 
@@ -497,6 +610,11 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     public void showInfoPage(@StringRes int url) {
         CustomTabActivity.showInfoPage(
                 this, LocalizationUtils.substituteLocalePlaceholder(getString(url)));
+    }
+
+    @Override
+    public FirstRunAppRestrictionInfo getFirstRunAppRestrictionInfo() {
+        return mFirstRunAppRestrictionInfo;
     }
 
     @VisibleForTesting

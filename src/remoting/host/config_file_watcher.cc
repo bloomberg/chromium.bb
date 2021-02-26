@@ -8,9 +8,10 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -142,7 +143,7 @@ void ConfigFileWatcherImpl::WatchOnIoThread() {
   config_watcher_.reset(new base::FilePathWatcher());
   if (!config_watcher_->Watch(
           config_path_, false,
-          base::Bind(&ConfigFileWatcherImpl::OnConfigUpdated, this))) {
+          base::BindRepeating(&ConfigFileWatcherImpl::OnConfigUpdated, this))) {
     PLOG(ERROR) << "Couldn't watch file '" << config_path_.value() << "'";
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&ConfigFileWatcherImpl::NotifyError,

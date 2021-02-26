@@ -10,14 +10,15 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "media/base/video_frame_pool.h"
 #include "media/muxers/webm_muxer.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/blink/public/common/media/video_capture.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
@@ -68,6 +69,7 @@ namespace blink {
 
 class MediaStreamVideoTrack;
 class Thread;
+class WebGraphicsContext3DProvider;
 
 // Base class serving as interface for eventually saving encoded frames stemming
 // from media from a source.
@@ -83,6 +85,18 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
     LAST
   };
 
+  // Video codec and its encoding profile/level.
+  struct MODULES_EXPORT CodecProfile {
+    CodecId codec_id;
+    base::Optional<media::VideoCodecProfile> profile;
+    base::Optional<uint8_t> level;
+
+    explicit CodecProfile(CodecId codec_id);
+    CodecProfile(CodecId codec_id,
+                 media::VideoCodecProfile profile,
+                 uint8_t level);
+  };
+
   using OnEncodedVideoCB = base::RepeatingCallback<void(
       const media::WebmMuxer::VideoParameters& params,
       std::string encoded_data,
@@ -90,6 +104,9 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
       base::TimeTicks capture_timestamp,
       bool is_key_frame)>;
   using OnErrorCB = base::RepeatingClosure;
+
+  // MediaStreamVideoSink implementation
+  double GetRequiredMinFramesPerSec() const override { return 1; }
 
   // Wraps a counter in a class in order to enable use of base::WeakPtr<>.
   // See https://crbug.com/859610 for why this was added.
@@ -125,20 +142,21 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
    public:
     Encoder(const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
             int32_t bits_per_second,
-            scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-            scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner =
+            scoped_refptr<base::SequencedTaskRunner> main_task_runner,
+            scoped_refptr<base::SequencedTaskRunner> encoding_task_runner =
                 nullptr);
 
     // Start encoding |frame|, returning via |on_encoded_video_cb_|. This
     // call will also trigger an encode configuration upon first frame arrival
     // or parameter change, and an EncodeOnEncodingTaskRunner() to actually
     // encode the frame. If the |frame|'s data is not directly available (e.g.
-    // it's a texture) then RetrieveFrameOnMainThread() is called, and if even
-    // that fails, black frames are sent instead.
+    // it's a texture) then RetrieveFrameOnEncoderThread() is called, and if
+    // even that fails, black frames are sent instead.
     void StartFrameEncode(scoped_refptr<media::VideoFrame> frame,
                           base::TimeTicks capture_timestamp);
-    void RetrieveFrameOnMainThread(scoped_refptr<media::VideoFrame> video_frame,
-                                   base::TimeTicks capture_timestamp);
+    void RetrieveFrameOnEncodingTaskRunner(
+        scoped_refptr<media::VideoFrame> video_frame,
+        base::TimeTicks capture_timestamp);
 
     using OnEncodedVideoInternalCB = WTF::CrossThreadFunction<void(
         const media::WebmMuxer::VideoParameters& params,
@@ -182,17 +200,25 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
     // Used mainly by the software encoders since I420 is the only supported
     // pixel format.  The function is best-effort.  If for any reason the
     // conversion fails, the original |frame| will be returned.
-    static scoped_refptr<media::VideoFrame> ConvertToI420ForSoftwareEncoder(
+    scoped_refptr<media::VideoFrame> ConvertToI420ForSoftwareEncoder(
+        scoped_refptr<media::VideoFrame> frame);
+
+    // A helper function to map GpuMemoryBuffer-based VideoFrame. This function
+    // maps the given GpuMemoryBuffer of |frame| as-is without converting pixel
+    // format. The returned VideoFrame owns the |frame|.
+    static scoped_refptr<media::VideoFrame> WrapMappedGpuMemoryBufferVideoFrame(
         scoped_refptr<media::VideoFrame> frame);
 
     // Used to shutdown properly on the same thread we were created.
-    const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+    const scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
     // Task runner where frames to encode and reply callbacks must happen.
-    scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
+    scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
+    SEQUENCE_CHECKER(origin_sequence_checker_);
 
     // Task runner where encoding interactions happen.
-    scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner_;
+    scoped_refptr<base::SequencedTaskRunner> encoding_task_runner_;
+    SEQUENCE_CHECKER(encoding_sequence_checker_);
 
     // Optional thread for encoding. Active for the lifetime of VpxEncoder.
     std::unique_ptr<Thread> encoding_thread_;
@@ -218,6 +244,9 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
     std::unique_ptr<media::PaintCanvasVideoRenderer> video_renderer_;
     SkBitmap bitmap_;
     std::unique_ptr<cc::PaintCanvas> canvas_;
+    std::unique_ptr<WebGraphicsContext3DProvider> encoder_thread_context_;
+
+    media::VideoFramePool frame_pool_;
 
     DISALLOW_COPY_AND_ASSIGN(Encoder);
   };
@@ -234,6 +263,12 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
     // Returns the first CodecId that has an associated VEA VideoCodecProfile,
     // or VP8 if none available.
     CodecId GetPreferredCodecId() const;
+
+    // Returns supported VEA VideoCodecProfile which matches |codec| and
+    // |profile|.
+    media::VideoCodecProfile FindSupportedVideoCodecProfile(
+        CodecId codec,
+        media::VideoCodecProfile profile) const;
 
     // Returns VEA's first supported VideoCodedProfile for a given CodecId, or
     // VIDEO_CODEC_PROFILE_UNKNOWN otherwise.
@@ -285,12 +320,12 @@ class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
                                        double framerate = 0.0);
 
   VideoTrackRecorderImpl(
-      CodecId codec,
+      CodecProfile codec,
       MediaStreamComponent* track,
       OnEncodedVideoCB on_encoded_video_cb,
       base::OnceClosure on_track_source_ended_cb,
       int32_t bits_per_second,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> main_task_runner);
   ~VideoTrackRecorderImpl() override;
 
   void Pause() override;
@@ -300,7 +335,7 @@ class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
 
  private:
   friend class VideoTrackRecorderTest;
-  void InitializeEncoder(CodecId codec,
+  void InitializeEncoder(CodecProfile codec,
                          const OnEncodedVideoCB& on_encoded_video_cb,
                          int32_t bits_per_second,
                          bool allow_vea_encoder,
@@ -311,8 +346,8 @@ class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
   void ConnectToTrack(const VideoCaptureDeliverFrameCB& callback);
   void DisconnectFromTrack();
 
-  // Used to check that we are destroyed on the same thread we were created.
-  THREAD_CHECKER(main_thread_checker_);
+  // Used to check that we are destroyed on the same sequence we were created.
+  SEQUENCE_CHECKER(main_sequence_checker_);
 
   // We need to hold on to the Blink track to remove ourselves on dtor.
   Persistent<MediaStreamComponent> track_;
@@ -327,7 +362,7 @@ class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
 
   bool should_pause_encoder_on_initialization_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   base::WeakPtrFactory<VideoTrackRecorderImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorderImpl);
@@ -341,7 +376,7 @@ class MODULES_EXPORT VideoTrackRecorderPassthrough : public VideoTrackRecorder {
       MediaStreamComponent* track,
       OnEncodedVideoCB on_encoded_video_cb,
       base::OnceClosure on_track_source_ended_cb,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> main_task_runner);
   ~VideoTrackRecorderPassthrough() override;
 
   // VideoTrackRecorderBase
@@ -356,8 +391,8 @@ class MODULES_EXPORT VideoTrackRecorderPassthrough : public VideoTrackRecorder {
   void HandleEncodedVideoFrame(scoped_refptr<EncodedVideoFrame> encoded_frame,
                                base::TimeTicks estimated_capture_time);
 
-  // Used to check that we are destroyed on the same thread we were created.
-  THREAD_CHECKER(main_thread_checker_);
+  // Used to check that we are destroyed on the same sequence we were created.
+  SEQUENCE_CHECKER(main_sequence_checker_);
 
   // This enum class tracks encoded frame waiting and dispatching state. This
   // is needed to guarantee we're dispatching decodable content to
@@ -372,7 +407,7 @@ class MODULES_EXPORT VideoTrackRecorderPassthrough : public VideoTrackRecorder {
   // We need to hold on to the Blink track to remove ourselves on dtor.
   const Persistent<MediaStreamComponent> track_;
   KeyFrameState state_;
-  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   const OnEncodedVideoCB callback_;
   base::WeakPtrFactory<VideoTrackRecorderPassthrough> weak_factory_{this};
 

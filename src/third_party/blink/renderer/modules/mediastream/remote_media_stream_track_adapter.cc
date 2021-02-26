@@ -6,7 +6,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "media/base/limits.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/peerconnection/media_stream_remote_video_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -35,9 +35,9 @@ RemoteVideoTrackAdapter::~RemoteVideoTrackAdapter() {
   if (initialized()) {
     // TODO(crbug.com/704136): When moving RemoteVideoTrackAdapter out of the
     // public API, make this managed by Oilpan. Note that, the destructor will
-    // not allowed to touch other on-heap objects like web_track().
+    // not allowed to touch other on-heap objects like track().
     static_cast<MediaStreamRemoteVideoSource*>(
-        web_track()->Source().GetPlatformSource())
+        track()->Source()->GetPlatformSource())
         ->OnSourceTerminated();
   }
 }
@@ -49,14 +49,14 @@ void RemoteVideoTrackAdapter::InitializeWebVideoTrack(
   auto video_source_ptr =
       std::make_unique<MediaStreamRemoteVideoSource>(std::move(observer));
   MediaStreamRemoteVideoSource* video_source = video_source_ptr.get();
-  InitializeWebTrack(WebMediaStreamSource::kTypeVideo);
-  web_track()->Source().SetPlatformSource(std::move(video_source_ptr));
+  InitializeTrack(MediaStreamSource::kTypeVideo);
+  track()->Source()->SetPlatformSource(std::move(video_source_ptr));
 
-  WebMediaStreamSource::Capabilities capabilities;
+  MediaStreamSource::Capabilities capabilities;
   capabilities.device_id = id();
-  web_track()->Source().SetCapabilities(capabilities);
+  track()->Source()->SetCapabilities(capabilities);
 
-  web_track()->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+  track()->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       video_source, MediaStreamVideoSource::ConstraintsOnceCallback(),
       enabled));
 }
@@ -93,27 +93,25 @@ void RemoteAudioTrackAdapter::Unregister() {
 
 void RemoteAudioTrackAdapter::InitializeWebAudioTrack(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread) {
-  InitializeWebTrack(WebMediaStreamSource::kTypeAudio);
+  InitializeTrack(MediaStreamSource::kTypeAudio);
 
   auto source = std::make_unique<PeerConnectionRemoteAudioSource>(
       observed_track().get(), main_thread);
   auto* source_ptr = source.get();
-  web_track()->Source().SetPlatformSource(
-      std::move(source));  // Takes ownership.
+  track()->Source()->SetPlatformSource(std::move(source));
 
-  WebMediaStreamSource::Capabilities capabilities;
+  MediaStreamSource::Capabilities capabilities;
   capabilities.device_id = id();
-  bool values[] = {false};
-  capabilities.echo_cancellation = WebVector<bool>(values, 1u);
-  capabilities.auto_gain_control = WebVector<bool>(values, 1u);
-  capabilities.noise_suppression = WebVector<bool>(values, 1u);
+  capabilities.echo_cancellation = Vector<bool>({false});
+  capabilities.auto_gain_control = Vector<bool>({false});
+  capabilities.noise_suppression = Vector<bool>({false});
   capabilities.sample_size = {
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
   };
-  web_track()->Source().SetCapabilities(capabilities);
+  track()->Source()->SetCapabilities(capabilities);
 
-  source_ptr->ConnectToTrack(*(web_track()));
+  source_ptr->ConnectToTrack(track());
 }
 
 void RemoteAudioTrackAdapter::OnChanged() {
@@ -134,12 +132,10 @@ void RemoteAudioTrackAdapter::OnChangedOnMainThread(
 
   switch (state) {
     case webrtc::MediaStreamTrackInterface::kLive:
-      web_track()->Source().SetReadyState(
-          WebMediaStreamSource::kReadyStateLive);
+      track()->Source()->SetReadyState(MediaStreamSource::kReadyStateLive);
       break;
     case webrtc::MediaStreamTrackInterface::kEnded:
-      web_track()->Source().SetReadyState(
-          WebMediaStreamSource::kReadyStateEnded);
+      track()->Source()->SetReadyState(MediaStreamSource::kReadyStateEnded);
       break;
     default:
       NOTREACHED();

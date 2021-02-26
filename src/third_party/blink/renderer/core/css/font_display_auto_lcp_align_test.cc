@@ -30,12 +30,20 @@ class FontDisplayAutoLCPAlignTestBase : public SimTest {
         ->CopyAs<Vector<char>>();
   }
 
+  static Vector<char> ReadMaterialIconsWoff2() {
+    return test::ReadFromFile(
+               test::CoreTestDataPath("MaterialIcons-Regular.woff2"))
+        ->CopyAs<Vector<char>>();
+  }
+
  protected:
   Element* GetTarget() { return GetDocument().getElementById("target"); }
 
-  const Font& GetTargetFont() {
-    return GetTarget()->GetLayoutObject()->Style()->GetFont();
+  const Font& GetFont(const Element* element) {
+    return element->GetLayoutObject()->Style()->GetFont();
   }
+
+  const Font& GetTargetFont() { return GetFont(GetTarget()); }
 
   std::string intervention_mode_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -52,7 +60,8 @@ class FontDisplayAutoLCPAlignFailureModeTest
 
 TEST_F(FontDisplayAutoLCPAlignFailureModeTest, FontFinishesBeforeLCPLimit) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -85,7 +94,8 @@ TEST_F(FontDisplayAutoLCPAlignFailureModeTest, FontFinishesBeforeLCPLimit) {
 
 TEST_F(FontDisplayAutoLCPAlignFailureModeTest, FontFinishesAfterLCPLimit) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -129,7 +139,8 @@ TEST_F(FontDisplayAutoLCPAlignFailureModeTest, FontFinishesAfterLCPLimit) {
 
 TEST_F(FontDisplayAutoLCPAlignFailureModeTest, FontFaceAddedAfterLCPLimit) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Write("<!doctype html>");
@@ -164,7 +175,8 @@ TEST_F(FontDisplayAutoLCPAlignFailureModeTest, FontFaceAddedAfterLCPLimit) {
 TEST_F(FontDisplayAutoLCPAlignFailureModeTest,
        FontFaceInMemoryCacheAddedAfterLCPLimit) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Write(R"HTML(
@@ -204,7 +216,8 @@ TEST_F(FontDisplayAutoLCPAlignFailureModeTest,
 TEST_F(FontDisplayAutoLCPAlignFailureModeTest,
        TimeoutFiredAfterDocumentShutdown) {
   SimRequest main_resource("https://example.com/", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -221,7 +234,7 @@ TEST_F(FontDisplayAutoLCPAlignFailureModeTest,
     <span id=target style="position:relative">0123456789</span>
   )HTML");
 
-  font_resource.Finish();
+  font_resource.Complete();
 
   SimRequest next_page_resource("https://example2.com/", "text/html");
   LoadURL("https://example2.com/");
@@ -232,6 +245,70 @@ TEST_F(FontDisplayAutoLCPAlignFailureModeTest,
       features::kAlignFontDisplayAutoTimeoutWithLCPGoalTimeoutParam.Get()));
 
   next_page_resource.Finish();
+}
+
+TEST_F(FontDisplayAutoLCPAlignFailureModeTest, IconAndNonIconFonts) {
+  SimRequest main_resource("https://example.com", "text/html");
+  SimSubresourceRequest icon_font_resource(
+      "https://example.com/MaterialIcons-Regular.woff2", "font/woff2");
+  SimSubresourceRequest non_icon_font_resource("https://example.com/Ahem.woff2",
+                                               "font/woff2");
+
+  LoadURL("https://example.com");
+  main_resource.Complete(R"HTML(
+    <!doctype html>
+    <style>
+      @font-face {
+        font-family: custom-font;
+        src: url(https://example.com/Ahem.woff2) format("woff2");
+      }
+      @font-face {
+        font-family: icon-font;
+        font-style: normal;
+        font-weight: 400;
+        src: url(https://example.com/MaterialIcons-Regular.woff2) format("woff2");
+      }
+      #non-icon-text {
+        font: 25px/1 custom-font, monospace;
+      }
+      #icon-text {
+        font-family: icon-font;
+        font-weight: normal;
+        font-style: normal;
+        font-size: 24px;  /* Preferred icon size */
+        display: inline-block;
+        line-height: 1;
+      }
+    </style>
+    <div><span id=icon-text>face</span></div>
+    <div><span id=non-icon-text>0123456789</span></div>
+  )HTML");
+
+  Element* icon_text = GetDocument().getElementById("icon-text");
+  Element* non_icon_text = GetDocument().getElementById("non-icon-text");
+
+  // The first frame is rendered with invisible fallback, as the web fonts are
+  // still loading, and are in the block display period.
+  Compositor().BeginFrame();
+  EXPECT_NE(24, icon_text->OffsetWidth());
+  EXPECT_TRUE(GetFont(icon_text).ShouldSkipDrawing());
+  EXPECT_GT(250, non_icon_text->OffsetWidth());
+  EXPECT_TRUE(GetFont(non_icon_text).ShouldSkipDrawing());
+
+  // Wait until we reach the LCP limit, and the relevant timeout fires.
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(
+      features::kAlignFontDisplayAutoTimeoutWithLCPGoalTimeoutParam.Get()));
+
+  icon_font_resource.Complete(ReadMaterialIconsWoff2());
+  non_icon_font_resource.Complete(ReadAhemWoff2());
+
+  // After reaching the LCP limit, the non-icon web font should reach the
+  // failure period, while the icon font should be used.
+  Compositor().BeginFrame();
+  EXPECT_EQ(24, icon_text->OffsetWidth());
+  EXPECT_FALSE(GetFont(icon_text).ShouldSkipDrawing());
+  EXPECT_GT(250, non_icon_text->OffsetWidth());
+  EXPECT_FALSE(GetFont(non_icon_text).ShouldSkipDrawing());
 }
 
 class FontDisplayAutoLCPAlignSwapModeTest
@@ -245,7 +322,8 @@ class FontDisplayAutoLCPAlignSwapModeTest
 
 TEST_F(FontDisplayAutoLCPAlignSwapModeTest, FontFinishesBeforeLCPLimit) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -278,7 +356,8 @@ TEST_F(FontDisplayAutoLCPAlignSwapModeTest, FontFinishesBeforeLCPLimit) {
 
 TEST_F(FontDisplayAutoLCPAlignSwapModeTest, FontFinishesAfterLCPLimit) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Complete(R"HTML(
@@ -321,7 +400,8 @@ TEST_F(FontDisplayAutoLCPAlignSwapModeTest, FontFinishesAfterLCPLimit) {
 
 TEST_F(FontDisplayAutoLCPAlignSwapModeTest, FontFaceAddedAfterLCPLimit) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Write("<!doctype html>");
@@ -354,7 +434,8 @@ TEST_F(FontDisplayAutoLCPAlignSwapModeTest, FontFaceAddedAfterLCPLimit) {
 TEST_F(FontDisplayAutoLCPAlignSwapModeTest,
        FontFaceInMemoryCacheAddedAfterLCPLimit) {
   SimRequest main_resource("https://example.com", "text/html");
-  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+  SimSubresourceRequest font_resource("https://example.com/Ahem.woff2",
+                                      "font/woff2");
 
   LoadURL("https://example.com");
   main_resource.Write(R"HTML(

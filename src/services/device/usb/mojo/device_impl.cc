@@ -84,13 +84,34 @@ void OnIsochronousTransferOut(
   std::move(callback).Run(std::move(packets));
 }
 
+// IsAndroidSecurityKeyRequest returns true if |params| is attempting to
+// configure an Android phone to act as a security key.
+bool IsAndroidSecurityKeyRequest(
+    const mojom::UsbControlTransferParamsPtr& params,
+    const std::vector<uint8_t>& data) {
+  // This matches a request to send an AOA version string:
+  // https://source.android.com/devices/accessories/aoa#attempt-to-start-in-accessory-mode
+  //
+  // The magic version is matched as a prefix because sending trailing NULs etc
+  // would be considered equivalent by Android but would not be caught by an
+  // exact match here. Android is case-sensitive thus a byte-wise match is
+  // suitable.
+  const char* magic = mojom::UsbControlTransferParams::kSecurityKeyAOAVersion;
+  return params->type == mojom::UsbControlTransferType::VENDOR &&
+         params->request == 52 && params->index == 3 &&
+         data.size() >= strlen(magic) &&
+         memcmp(data.data(), magic, strlen(magic)) == 0;
+}
+
 }  // namespace
 
 // static
 void DeviceImpl::Create(scoped_refptr<device::UsbDevice> device,
                         mojo::PendingReceiver<mojom::UsbDevice> receiver,
-                        mojo::PendingRemote<mojom::UsbDeviceClient> client) {
-  auto* device_impl = new DeviceImpl(std::move(device), std::move(client));
+                        mojo::PendingRemote<mojom::UsbDeviceClient> client,
+                        bool allow_security_key_requests) {
+  auto* device_impl = new DeviceImpl(std::move(device), std::move(client),
+                                     allow_security_key_requests);
   device_impl->receiver_ = mojo::MakeSelfOwnedReceiver(
       base::WrapUnique(device_impl), std::move(receiver));
 }
@@ -100,8 +121,12 @@ DeviceImpl::~DeviceImpl() {
 }
 
 DeviceImpl::DeviceImpl(scoped_refptr<device::UsbDevice> device,
-                       mojo::PendingRemote<mojom::UsbDeviceClient> client)
-    : device_(std::move(device)), observer_(this), client_(std::move(client)) {
+                       mojo::PendingRemote<mojom::UsbDeviceClient> client,
+                       bool allow_security_key_requests)
+    : device_(std::move(device)),
+      observer_(this),
+      allow_security_key_requests_(allow_security_key_requests),
+      client_(std::move(client)) {
   DCHECK(device_);
   observer_.Add(device_.get());
 
@@ -160,6 +185,7 @@ void DeviceImpl::OnOpen(base::WeakPtr<DeviceImpl> self,
     return;
   }
 
+  self->opening_ = false;
   self->device_handle_ = std::move(handle);
   if (self->device_handle_ && self->client_)
     self->client_->OnDeviceOpened();
@@ -175,15 +201,18 @@ void DeviceImpl::OnPermissionGrantedForOpen(OpenCallback callback,
     device_->Open(base::BindOnce(
         &DeviceImpl::OnOpen, weak_factory_.GetWeakPtr(), std::move(callback)));
   } else {
+    opening_ = false;
     std::move(callback).Run(mojom::UsbOpenDeviceError::ACCESS_DENIED);
   }
 }
 
 void DeviceImpl::Open(OpenCallback callback) {
-  if (device_handle_) {
+  if (opening_ || device_handle_) {
     std::move(callback).Run(mojom::UsbOpenDeviceError::ALREADY_OPEN);
     return;
   }
+
+  opening_ = true;
 
   if (!device_->permission_granted()) {
     device_->RequestPermission(
@@ -309,7 +338,9 @@ void DeviceImpl::ControlTransferOut(UsbControlTransferParamsPtr params,
     return;
   }
 
-  if (HasControlTransferPermission(params->recipient, params->index)) {
+  if (HasControlTransferPermission(params->recipient, params->index) &&
+      (allow_security_key_requests_ ||
+       !IsAndroidSecurityKeyRequest(params, data))) {
     auto buffer = base::MakeRefCounted<base::RefCountedBytes>(data);
     device_handle_->ControlTransfer(
         UsbTransferDirection::OUTBOUND, params->type, params->recipient,

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 
-#include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/prerender/prerender_histograms.h"
+#include "chrome/browser/prefetch/no_state_prefetch/chrome_prerender_contents_delegate.h"
+#include "components/no_state_prefetch/browser/prerender_contents.h"
+#include "components/no_state_prefetch/browser/prerender_histograms.h"
 #include "content/public/browser/navigation_handle.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ui/base/window_open_disposition.h"
@@ -35,7 +36,7 @@ ChromeNavigationUIData::ChromeNavigationUIData(
 #endif
 
   auto* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(web_contents);
+      prerender::ChromePrerenderContentsDelegate::FromWebContents(web_contents);
   if (prerender_contents) {
     prerender_mode_ = prerender_contents->prerender_mode();
     prerender_histogram_prefix_ =

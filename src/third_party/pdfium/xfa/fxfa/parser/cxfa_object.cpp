@@ -6,8 +6,6 @@
 
 #include "xfa/fxfa/parser/cxfa_object.h"
 
-#include <utility>
-
 #include "core/fxcrt/fx_extension.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cfxjse_value.h"
@@ -22,21 +20,19 @@
 CXFA_Object::CXFA_Object(CXFA_Document* pDocument,
                          XFA_ObjectType objectType,
                          XFA_Element elementType,
-                         std::unique_ptr<CJX_Object> jsObject)
-    : m_pDocument(pDocument),
-      m_objectType(objectType),
+                         CJX_Object* jsObject)
+    : m_objectType(objectType),
       m_elementType(elementType),
       m_elementName(XFA_ElementToName(elementType)),
       m_elementNameHash(FX_HashCode_GetAsIfW(m_elementName, false)),
-      m_pJSObject(std::move(jsObject)) {}
+      m_pDocument(pDocument),
+      m_pJSObject(jsObject) {}
 
-CXFA_Object::~CXFA_Object() {
-  if (!GetDocument()->IsBeingDestroyed() && GetDocument()->HasScriptContext())
-    GetDocument()->GetScriptContext()->RemoveJSBindingFromMap(this);
-}
+CXFA_Object::~CXFA_Object() = default;
 
-CXFA_Object* CXFA_Object::AsCXFAObject() {
-  return this;
+void CXFA_Object::Trace(cppgc::Visitor* visitor) const {
+  visitor->Trace(m_pDocument);
+  visitor->Trace(m_pJSObject);
 }
 
 WideString CXFA_Object::GetSOMExpression() {

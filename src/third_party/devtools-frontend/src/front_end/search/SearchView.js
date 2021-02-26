@@ -15,7 +15,7 @@ export class SearchView extends UI.Widget.VBox {
   constructor(settingKey) {
     super(true);
     this.setMinimumSize(0, 40);
-    this.registerRequiredCSS('search/searchView.css');
+    this.registerRequiredCSS('search/searchView.css', {enableLegacyPatching: true});
 
     this._focusOnShow = false;
     this._isIndexing = false;
@@ -41,21 +41,22 @@ export class SearchView extends UI.Widget.VBox {
     this.contentElement.classList.add('search-view');
 
     this._searchPanelElement = this.contentElement.createChild('div', 'search-drawer-header');
-    this._searchPanelElement.addEventListener('keydown', this._onKeyDown.bind(this), false);
-
     this._searchResultsElement = this.contentElement.createChild('div');
     this._searchResultsElement.className = 'search-results';
 
-    const searchContainer = createElement('div');
+    const searchContainer = document.createElement('div');
     searchContainer.style.flex = 'auto';
     searchContainer.style.justifyContent = 'start';
     searchContainer.style.maxWidth = '300px';
     this._search = UI.HistoryInput.HistoryInput.create();
+    this._search.addEventListener('keydown', event => {
+      this._onKeyDown(/** @type {!KeyboardEvent} */ (event));
+    });
     searchContainer.appendChild(this._search);
     this._search.placeholder = Common.UIString.UIString('Search');
     this._search.setAttribute('type', 'text');
     this._search.setAttribute('results', '0');
-    this._search.setAttribute('size', 42);
+    this._search.setAttribute('size', '42');
     UI.ARIAUtils.setAccessibleName(this._search, ls`Search Query`);
     const searchItem = new UI.Toolbar.ToolbarItem(searchContainer);
 
@@ -68,7 +69,7 @@ export class SearchView extends UI.Widget.VBox {
     const clearButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Clear'), 'largeicon-clear');
     toolbar.appendToolbarItem(refreshButton);
     toolbar.appendToolbarItem(clearButton);
-    refreshButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._onAction.bind(this));
+    refreshButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this._onAction());
     clearButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
       this._resetSearch();
       this._onSearchInputClear();
@@ -109,7 +110,6 @@ export class SearchView extends UI.Widget.VBox {
   }
 
   /**
-   * @protected
    * @param {string} queryCandidate
    * @param {boolean=} searchImmediately
    */
@@ -154,6 +154,10 @@ export class SearchView extends UI.Widget.VBox {
   }
 
   _onIndexingFinished() {
+    if (!this._progressIndicator) {
+      return;
+    }
+
     const finished = !this._progressIndicator.isCanceled();
     this._progressIndicator.done();
     this._progressIndicator = null;
@@ -178,12 +182,15 @@ export class SearchView extends UI.Widget.VBox {
     this._progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
     this._searchMessageElement.textContent = Common.UIString.UIString('Indexing…');
     this._progressIndicator.show(this._searchProgressPlaceholderElement);
-    this._searchScope.performIndexing(
-        new Common.Progress.ProgressProxy(this._progressIndicator, this._onIndexingFinished.bind(this)));
+    if (this._searchScope) {
+      this._searchScope.performIndexing(
+          new Common.Progress.ProgressProxy(this._progressIndicator, this._onIndexingFinished.bind(this)));
+    }
   }
 
   _onSearchInputClear() {
     this._search.value = '';
+    this._save();
     this.focus();
   }
 
@@ -241,6 +248,10 @@ export class SearchView extends UI.Widget.VBox {
     this._pendingSearchConfig = searchConfig;
   }
 
+  /**
+   *
+   * @param {!SearchConfig} searchConfig
+   */
   _innerStartSearch(searchConfig) {
     this._searchConfig = searchConfig;
     if (this._progressIndicator) {
@@ -248,15 +259,23 @@ export class SearchView extends UI.Widget.VBox {
     }
     this._progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
     this._searchStarted(this._progressIndicator);
-    this._searchScope.performSearch(
-        searchConfig, this._progressIndicator, this._onSearchResult.bind(this, this._searchId),
-        this._onSearchFinished.bind(this, this._searchId));
+    if (this._searchScope) {
+      this._searchScope.performSearch(
+          searchConfig, this._progressIndicator, this._onSearchResult.bind(this, this._searchId),
+          this._onSearchFinished.bind(this, this._searchId));
+    }
   }
 
   _resetSearch() {
     this._stopSearch();
     this._showPane(null);
     this._searchResultsPane = null;
+    this._clearSearchMessage();
+  }
+
+  _clearSearchMessage() {
+    this._searchMessageElement.textContent = '';
+    this._searchResultsMessageElement.textContent = '';
   }
 
   _stopSearch() {
@@ -370,7 +389,7 @@ export class SearchView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!Event} event
+   * @param {!KeyboardEvent} event
    */
   _onKeyDown(event) {
     switch (event.keyCode) {

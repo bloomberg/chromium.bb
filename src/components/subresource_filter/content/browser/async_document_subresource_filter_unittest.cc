@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/task_environment.h"
@@ -33,8 +33,8 @@ class AsyncDocumentSubresourceFilterTest : public ::testing::Test {
  protected:
   void SetUp() override {
     std::vector<proto::UrlRule> rules;
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
-        "whitelisted.subframe.com", proto::ACTIVATION_TYPE_GENERICBLOCK,
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
+        "allowlisted.subframe.com", proto::ACTIVATION_TYPE_GENERICBLOCK,
         {"example.com"}));
     rules.push_back(testing::CreateSuffixRule("disallowed.html"));
 
@@ -178,7 +178,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsComputedCorrectly) {
   auto ruleset_handle = CreateRulesetHandle();
 
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("http://whitelisted.subframe.com"), mojom::ActivationLevel::kEnabled,
+      GURL("http://allowlisted.subframe.com"), mojom::ActivationLevel::kEnabled,
       false);
   params.parent_document_origin =
       url::Origin::Create(GURL("http://example.com"));
@@ -310,6 +310,31 @@ TEST_F(AsyncDocumentSubresourceFilterTest, UpdateActivationState) {
   load_policy_2.ExpectReceivedOnce(LoadPolicy::DISALLOW);
 }
 
+// Tests the second constructor.
+TEST_F(AsyncDocumentSubresourceFilterTest,
+       ActivationStateProvided_ActivationStateImmediatelyAvailable) {
+  dealer_handle()->TryOpenAndSetRulesetFile(
+      ruleset().path, /*expected_checksum=*/0, base::DoNothing());
+  auto ruleset_handle = CreateRulesetHandle();
+
+  mojom::ActivationState provided_state;
+  provided_state.activation_level = mojom::ActivationLevel::kEnabled;
+
+  auto filter = std::make_unique<AsyncDocumentSubresourceFilter>(
+      ruleset_handle.get(), url::Origin::Create(GURL("http://example.com")),
+      provided_state);
+
+  EXPECT_TRUE(filter->has_activation_state());
+  EXPECT_EQ(provided_state.activation_level,
+            filter->activation_state().activation_level);
+
+  // Ensure the activation is not overwritten.
+  RunUntilIdle();
+  EXPECT_TRUE(filter->has_activation_state());
+  EXPECT_EQ(provided_state.activation_level,
+            filter->activation_state().activation_level);
+}
+
 // Tests for ComputeActivationState:
 
 class SubresourceFilterComputeActivationStateTest : public ::testing::Test {
@@ -322,11 +347,11 @@ class SubresourceFilterComputeActivationStateTest : public ::testing::Test {
     constexpr int32_t kGenericBlock = proto::ACTIVATION_TYPE_GENERICBLOCK;
 
     std::vector<proto::UrlRule> rules;
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
         "child1.com", kDocument, {"parent1.com", "parent2.com"}));
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
         "child2.com", kGenericBlock, {"parent1.com", "parent2.com"}));
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
         "child3.com", kDocument | kGenericBlock,
         {"parent1.com", "parent2.com"}));
 

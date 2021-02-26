@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/os_settings.js';
+
+// #import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
+// #import {Router, routes, AccountManagerBrowserProxyImpl} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 cr.define('settings_people_page_account_manager', function() {
   /** @implements {settings.AccountManagerBrowserProxy} */
   class TestAccountManagerBrowserProxy extends TestBrowserProxy {
@@ -141,6 +152,7 @@ cr.define('settings_people_page_account_manager', function() {
 
     teardown(function() {
       accountManager.remove();
+      settings.Router.getInstance().resetRouteForTesting();
     });
 
     test('AccountListIsPopulatedAtStartup', function() {
@@ -203,6 +215,25 @@ cr.define('settings_people_page_account_manager', function() {
           assertEquals('456', account.id);
         });
       });
+    });
+
+    test('Deep link to remove account button', async () => {
+      loadTimeData.overrideValues({isDeepLinkingEnabled: true});
+      await browserProxy.whenCalled('getAccounts');
+      Polymer.dom.flush();
+
+      const params = new URLSearchParams;
+      params.append('settingId', '301');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.ACCOUNT_MANAGER, params);
+
+      const deepLinkElement =
+          accountManager.root.querySelectorAll('cr-icon-button')[0];
+      assertTrue(!!deepLinkElement);
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Kebab menu should be focused for settingId=301.');
     });
 
     test('AccountListIsUpdatedWhenAccountManagerUpdates', function() {
@@ -336,4 +367,7 @@ cr.define('settings_people_page_account_manager', function() {
           accountManager.$$('#user-message-text').textContent.trim());
     });
   });
+
+  // #cr_define_end
+  return {};
 });

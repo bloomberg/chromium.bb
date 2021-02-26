@@ -1395,6 +1395,16 @@ class GClientSmokeGIT(gclient_smoketest_base.GClientSmokeBase):
         '# ' + self.git_base + 'repo_14, DEPS',
     ], deps_contents.splitlines())
 
+  def testRelativeGNArgsFile(self):
+    self.gclient(['config', self.git_base + 'repo_17', '--name', 'src'])
+    self.gclient(['sync',])
+
+    tree = self.mangle_git_tree(('repo_17@1', 'src'))
+    tree['src/repo17_gclient.args'] = '\n'.join([
+        '# Generated from \'DEPS\'',
+        'toto = "tata"',
+    ])
+    self.assertTree(tree)
 
 if __name__ == '__main__':
   if '-v' in sys.argv:

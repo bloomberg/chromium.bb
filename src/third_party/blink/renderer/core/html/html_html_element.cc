@@ -76,21 +76,15 @@ void HTMLHtmlElement::MaybeSetupApplicationCache() {
   if (!document_loader ||
       !GetDocument().Parser()->DocumentWasLoadedAsPartOfNavigation())
     return;
-  const AtomicString& manifest = FastGetAttribute(html_names::kManifestAttr);
 
-  if (RuntimeEnabledFeatures::RestrictAppCacheToSecureContextsEnabled() &&
-      !GetDocument().IsSecureContext()) {
-    if (!manifest.IsEmpty()) {
-      Deprecation::CountDeprecation(
-          GetDocument(), WebFeature::kApplicationCacheAPIInsecureOrigin);
-    }
+  if (!GetExecutionContext()->IsSecureContext())
     return;
-  }
 
   ApplicationCacheHostForFrame* host =
       document_loader->GetApplicationCacheHost();
   DCHECK(host);
 
+  const AtomicString& manifest = FastGetAttribute(html_names::kManifestAttr);
   if (manifest.IsEmpty())
     host->SelectCacheWithoutManifest();
   else

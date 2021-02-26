@@ -11,12 +11,6 @@ source_set("common") {
   sources = [
     "daemon_controller.cc",
     "daemon_controller.h",
-    "daemon_controller_delegate_linux.cc",
-    "daemon_controller_delegate_linux.h",
-    "daemon_controller_delegate_mac.h",
-    "daemon_controller_delegate_mac.mm",
-    "daemon_controller_delegate_win.cc",
-    "daemon_controller_delegate_win.h",
     "me2me_native_messaging_host.cc",
     "me2me_native_messaging_host.h",
     "pin_validator.cc",
@@ -41,20 +35,34 @@ source_set("common") {
     "//remoting/base:authorization",
     "//remoting/host:common",
     "//remoting/host/native_messaging",
-    "//remoting/proto/remoting/v1:directory_grpc_library",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
   ]
 
+  if (is_linux || is_chromeos) {
+    sources += [
+      "daemon_controller_delegate_linux.cc",
+      "daemon_controller_delegate_linux.h",
+    ]
+  }
+
   if (is_mac) {
+    sources += [
+      "daemon_controller_delegate_mac.h",
+      "daemon_controller_delegate_mac.mm",
+    ]
     deps += [ "//remoting/host/mac:permission_checking" ]
   }
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     deps += [ "//remoting/host/mac:constants" ]
   }
 
   if (is_win) {
+    sources += [
+      "daemon_controller_delegate_win.cc",
+      "daemon_controller_delegate_win.h",
+    ]
     deps += [ "//remoting/host/win:remoting_lib_idl" ]
   }
 }

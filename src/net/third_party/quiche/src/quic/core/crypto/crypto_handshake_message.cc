@@ -7,16 +7,17 @@
 #include <memory>
 #include <string>
 
+#include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_framer.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_socket_address_coder.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "net/third_party/quiche/src/common/quiche_endian.h"
 
 namespace quic {
 
@@ -83,7 +84,7 @@ void CryptoHandshakeMessage::SetVersionVector(
     QuicTag tag,
     ParsedQuicVersionVector versions) {
   QuicVersionLabelVector version_labels;
-  for (ParsedQuicVersion version : versions) {
+  for (const ParsedQuicVersion& version : versions) {
     version_labels.push_back(
         quiche::QuicheEndian::HostToNet32(CreateQuicVersionLabel(version)));
   }
@@ -97,7 +98,7 @@ void CryptoHandshakeMessage::SetVersion(QuicTag tag,
 }
 
 void CryptoHandshakeMessage::SetStringPiece(QuicTag tag,
-                                            quiche::QuicheStringPiece value) {
+                                            absl::string_view value) {
   tag_value_map_[tag] = std::string(value);
 }
 
@@ -159,9 +160,8 @@ QuicErrorCode CryptoHandshakeMessage::GetVersionLabel(
   return QUIC_NO_ERROR;
 }
 
-bool CryptoHandshakeMessage::GetStringPiece(
-    QuicTag tag,
-    quiche::QuicheStringPiece* out) const {
+bool CryptoHandshakeMessage::GetStringPiece(QuicTag tag,
+                                            absl::string_view* out) const {
   auto it = tag_value_map_.find(tag);
   if (it == tag_value_map_.end()) {
     return false;
@@ -177,8 +177,8 @@ bool CryptoHandshakeMessage::HasStringPiece(QuicTag tag) const {
 QuicErrorCode CryptoHandshakeMessage::GetNthValue24(
     QuicTag tag,
     unsigned index,
-    quiche::QuicheStringPiece* out) const {
-  quiche::QuicheStringPiece value;
+    absl::string_view* out) const {
+  absl::string_view value;
   if (!GetStringPiece(tag, &value)) {
     return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
   }
@@ -203,7 +203,7 @@ QuicErrorCode CryptoHandshakeMessage::GetNthValue24(
     }
 
     if (i == index) {
-      *out = quiche::QuicheStringPiece(value.data(), size);
+      *out = absl::string_view(value.data(), size);
       return QUIC_NO_ERROR;
     }
 
@@ -371,7 +371,7 @@ std::string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
     if (!done) {
       // If there's no specific format for this tag, or the value is invalid,
       // then just use hex.
-      ret += "0x" + quiche::QuicheTextUtils::HexEncode(it->second);
+      ret += "0x" + absl::BytesToHexString(it->second);
     }
     ret += "\n";
   }

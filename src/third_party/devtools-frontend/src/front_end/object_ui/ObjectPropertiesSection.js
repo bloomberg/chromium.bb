@@ -24,6 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';  // eslint-disable-line no-unused-vars
 import * as Host from '../host/host.js';
@@ -35,6 +38,8 @@ import * as UI from '../ui/ui.js';
 import {CustomPreviewComponent} from './CustomPreviewComponent.js';
 import {JavaScriptREPL} from './JavaScriptREPL.js';
 import {createSpansForNodeTitle, RemoteObjectPreviewFormatter} from './RemoteObjectPreviewFormatter.js';
+
+const EXPANDABLE_MAX_LENGTH = 50;
 
 /**
  * @unrestricted
@@ -73,8 +78,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
     }
 
     this.element._section = this;
-    this.registerRequiredCSS('object_ui/objectValue.css');
-    this.registerRequiredCSS('object_ui/objectPropertiesSection.css');
+    this.registerRequiredCSS('object_ui/objectValue.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('object_ui/objectPropertiesSection.css', {enableLegacyPatching: true});
     this.rootElement().childrenListElement.classList.add('source-code', 'object-properties-section');
   }
 
@@ -104,7 +109,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
   static defaultObjectPropertiesSection(object, linkifier, skipProto, readOnly) {
     const titleElement = document.createElement('span');
     titleElement.classList.add('source-code');
-    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(titleElement, 'object_ui/objectValue.css');
+    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
+        titleElement, {cssFile: 'object_ui/objectValue.css', enableLegacyPatching: true, delegatesFocus: undefined});
     const propertyValue =
         ObjectPropertiesSection.createPropertyValue(object, /* wasThrown */ false, /* showPreview */ true);
     shadowRoot.appendChild(propertyValue.element);
@@ -268,9 +274,9 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         valueElement.createChild('span', 'object-value-function-prefix').textContent = prefix + ' ';
       }
       if (includePreview) {
-        valueElement.createTextChild(body.trim().trimEndWithMaxLength(maxFunctionBodyLength));
+        UI.UIUtils.createTextChild(valueElement, body.trim().trimEndWithMaxLength(maxFunctionBodyLength));
       } else {
-        valueElement.createTextChild(abbreviation.replace(/\n/g, ' '));
+        UI.UIUtils.createTextChild(valueElement, abbreviation.replace(/\n/g, ' '));
       }
     }
   }
@@ -305,6 +311,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
     const type = value.type;
     const subtype = value.subtype;
     const description = value.description;
+    const className = value.className;
     if (type === 'object' && subtype === 'internal#location') {
       const rawLocation = value.debuggerModel().createRawLocationByScriptId(
           value.value.scriptId, value.value.lineNumber, value.value.columnNumber);
@@ -314,6 +321,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
       propertyValue = new ObjectPropertyValue(createUnknownInternalLocationElement());
     } else if (type === 'string' && typeof description === 'string') {
       propertyValue = createStringElement();
+    } else if (type === 'object' && subtype === 'trustedtype') {
+      propertyValue = createTrustedTypeElement();
     } else if (type === 'function') {
       propertyValue = new ObjectPropertyValue(ObjectPropertiesSection.valueElementForFunctionDescription(description));
     } else if (type === 'object' && subtype === 'node' && description) {
@@ -335,7 +344,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
       } else if (
           description.length >
           (self.ObjectUI.ObjectPropertiesSection._maxRenderableStringLength || maxRenderableStringLength)) {
-        propertyValue = new ExpandableTextPropertyValue(valueElement, description, 50);
+        propertyValue = new ExpandableTextPropertyValue(valueElement, description, EXPANDABLE_MAX_LENGTH);
       } else {
         propertyValue = new ObjectPropertyValue(valueElement);
         propertyValue.element.textContent = description;
@@ -374,13 +383,35 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
       valueElement.createChild('span', 'object-value-string-quote').textContent = '"';
       if (description.length >
           (self.ObjectUI.ObjectPropertiesSection._maxRenderableStringLength || maxRenderableStringLength)) {
-        propertyValue = new ExpandableTextPropertyValue(valueElement, text, 50);
+        propertyValue = new ExpandableTextPropertyValue(valueElement, text, EXPANDABLE_MAX_LENGTH);
       } else {
-        valueElement.createTextChild(text);
+        UI.UIUtils.createTextChild(valueElement, text);
         propertyValue = new ObjectPropertyValue(valueElement);
         valueElement.title = description || '';
       }
       valueElement.createChild('span', 'object-value-string-quote').textContent = '"';
+      return propertyValue;
+    }
+
+    /**
+     * @return {!ObjectPropertyValue}
+     */
+    function createTrustedTypeElement() {
+      const valueElement = /** @type {!HTMLElement} */ (document.createElement('span'));
+      valueElement.classList.add('object-value-trustedtype');
+      const text = `${className} "${description}"`;
+      let propertyValue;
+      if (text.length >
+          (self.ObjectUI.ObjectPropertiesSection._maxRenderableStringLength || maxRenderableStringLength)) {
+        propertyValue = new ExpandableTextPropertyValue(valueElement, text, EXPANDABLE_MAX_LENGTH);
+      } else {
+        const contentString = createStringElement();
+        UI.UIUtils.createTextChild(valueElement, `${className} `);
+        valueElement.appendChild(contentString.element);
+        propertyValue = new ObjectPropertyValue(valueElement);
+        valueElement.title = text;
+      }
+
       return propertyValue;
     }
 
@@ -518,8 +549,8 @@ export class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutline.TreeOutl
    */
   constructor(options) {
     super();
-    this.registerRequiredCSS('object_ui/objectValue.css');
-    this.registerRequiredCSS('object_ui/objectPropertiesSection.css');
+    this.registerRequiredCSS('object_ui/objectValue.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('object_ui/objectPropertiesSection.css', {enableLegacyPatching: true});
     this._editable = !(options && options.readOnly);
     this.contentElement.classList.add('source-code');
     this.contentElement.classList.add('object-properties-section');
@@ -592,6 +623,10 @@ export class RootElement extends UI.TreeOutline.TreeElement {
   }
 }
 
+// Number of initially visible children in an ObjectPropertyTreeElement.
+// Remaining children are shown as soon as requested via a show more properties button.
+export const InitialVisibleChildrenLimit = 200;
+
 /**
  * @unrestricted
  */
@@ -609,7 +644,9 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     /** @type {!Array.<!Object>} */
     this._highlightChanges = [];
     this._linkifier = linkifier;
+    this._maxNumPropertiesToShow = InitialVisibleChildrenLimit;
     this.listItemElement.addEventListener('contextmenu', this._contextMenuFired.bind(this), false);
+    this.listItemElement.dataset.objectPropertyNameForTest = property.name;
   }
 
   /**
@@ -744,10 +781,10 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
    * @param {?SDK.RemoteObject.RemoteObject} object
    * @param {!Array.<string>} propertyPath
    * @param {function(!SDK.RemoteObject.CallFunctionResult)} callback
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   static createRemoteObjectAccessorPropertySpan(object, propertyPath, callback) {
-    const rootElement = createElement('span');
+    const rootElement = /** @type {!HTMLElement} */ (createElement('span'));
     const element = rootElement.createChild('span');
     element.textContent = Common.UIString.UIString('(...)');
     if (!object) {
@@ -819,6 +856,32 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     }
   }
 
+  /**
+   * @param {!UI.TreeOutline.TreeElement} element
+   * @return boolean
+   */
+  _showAllPropertiesElementSelected(element) {
+    this.removeChild(element);
+    this.children().forEach(x => {
+      x.hidden = false;
+    });
+    return false;
+  }
+
+  _createShowAllPropertiesButton() {
+    const element = document.createElement('div');
+    element.classList.add('object-value-calculate-value-button');
+    element.textContent = Common.UIString.UIString('(...)');
+    element.title = Common.UIString.UIString('Show all %d', this.childCount());
+    const children = this.children();
+    for (let i = this._maxNumPropertiesToShow; i < this.childCount(); ++i) {
+      children[i].hidden = true;
+    }
+    const showAllPropertiesButton = new UI.TreeOutline.TreeElement(element);
+    showAllPropertiesButton.onselect = this._showAllPropertiesElementSelected.bind(this, showAllPropertiesButton);
+    this.appendChild(showAllPropertiesButton);
+  }
+
   revertHighlightChanges() {
     UI.UIUtils.revertDomChanges(this._highlightChanges);
     this._highlightChanges = [];
@@ -835,6 +898,9 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     const targetValue = this.property.name !== '__proto__' ? propertyValue : this.property.parentObject;
     await ObjectPropertyTreeElement._populate(
         this, propertyValue, skipProto, this._linkifier, undefined, undefined, undefined, targetValue);
+    if (this.childCount() > this._maxNumPropertiesToShow) {
+      this._createShowAllPropertiesButton();
+    }
   }
 
   /**
@@ -1006,6 +1072,16 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     }
     if (this.property.value) {
       contextMenu.appendApplicableItems(this.property.value);
+      if (this.property.parentObject instanceof SDK.RemoteObject.LocalJSONObject) {
+        const {value: {value}} = this.property;
+        const propertyValue = typeof value === 'object' ? JSON.stringify(value, null, 2) : value;
+        const copyValueHandler = () => {
+          Host.userMetrics.actionTaken(Host.UserMetrics.Action.NetworkPanelCopyValue);
+          Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(
+              /** @type {string|undefined} */ (propertyValue));
+        };
+        contextMenu.clipboardSection().appendItem(ls`Copy value`, copyValueHandler);
+      }
     }
     if (!this.property.synthetic && this.nameElement && this.nameElement.title) {
       const copyPathHandler = Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(

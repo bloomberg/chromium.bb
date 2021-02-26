@@ -17,6 +17,9 @@
 
 #include "dawn_native/PipelineLayout.h"
 
+#include "common/ityp_array.h"
+#include "common/ityp_vector.h"
+#include "dawn_native/BindingInfo.h"
 #include "dawn_native/opengl/opengl_platform.h"
 
 namespace dawn_native { namespace opengl {
@@ -28,7 +31,7 @@ namespace dawn_native { namespace opengl {
         PipelineLayout(Device* device, const PipelineLayoutDescriptor* descriptor);
 
         using BindingIndexInfo =
-            std::array<std::array<GLuint, kMaxBindingsPerGroup>, kMaxBindGroups>;
+            ityp::array<BindGroupIndex, ityp::vector<BindingIndex, GLuint>, kMaxBindGroups>;
         const BindingIndexInfo& GetBindingIndexInfo() const;
 
         GLuint GetTextureUnitsUsed() const;

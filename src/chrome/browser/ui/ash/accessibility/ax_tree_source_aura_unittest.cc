@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -64,8 +65,7 @@ class AXTreeSourceAuraTest : public ChromeViewsTestBase {
     init_params.context = GetContext();
     widget_->Init(std::move(init_params));
 
-    content_ = new View();
-    widget_->SetContentsView(content_);
+    content_ = widget_->SetContentsView(std::make_unique<View>());
 
     textfield_ = new Textfield();
     textfield_->SetText(base::ASCIIToUTF16("Value"));
@@ -114,9 +114,7 @@ TEST_F(AXTreeSourceAuraTest, Accessors) {
   ASSERT_EQ(cached_textfield, textfield);
   std::vector<AXAuraObjWrapper*> textfield_children;
   ax_tree.GetChildren(textfield, &textfield_children);
-  // The textfield has an extra child in Harmony, the focus ring.
-  const size_t expected_children = 2;
-  ASSERT_EQ(expected_children, textfield_children.size());
+  ASSERT_EQ(0u, textfield_children.size());
 
   ASSERT_EQ(content, textfield->GetParent());
 

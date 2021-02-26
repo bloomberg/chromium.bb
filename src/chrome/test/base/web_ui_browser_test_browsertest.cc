@@ -5,9 +5,8 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
@@ -78,14 +77,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, MAYBE_TestFailsFast) {
 }
 
 // Test that bogus javascript fails fast - no timeout waiting for result.
-// Flaky timeouts on Win7 Tests (dbg)(1); see https://crbug.com/985255.
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_TestRuntimeErrorFailsFast DISABLED_TestRuntimeErrorFailsFast
-#else
-#define MAYBE_TestRuntimeErrorFailsFast TestRuntimeErrorFailsFast
-#endif
-IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest,
-                       MAYBE_TestRuntimeErrorFailsFast) {
+IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestRuntimeErrorFailsFast) {
   AddLibrary(base::FilePath(FILE_PATH_LITERAL("runtime_error.js")));
   ui_test_utils::NavigateToURL(browser(), DummyUrl());
   EXPECT_FATAL_FAILURE(RunJavascriptTestNoReturn("TestRuntimeErrorFailsFast"),
@@ -113,6 +105,8 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, MAYBE_TestFailsAsyncFast) {
 // Tests that the async framework works.
 class WebUIBrowserAsyncTest : public WebUIBrowserTest {
  public:
+  WebUIBrowserAsyncTest(const WebUIBrowserAsyncTest&) = delete;
+  WebUIBrowserAsyncTest& operator=(const WebUIBrowserAsyncTest&) = delete;
   // Calls the testDone() function from test_api.js
   void TestDone() {
     RunJavascriptFunction("testDone");
@@ -134,7 +128,10 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
   // Class to synchronize asynchronous javascript activity with the tests.
   class AsyncWebUIMessageHandler : public WebUIMessageHandler {
    public:
-    AsyncWebUIMessageHandler() {}
+    AsyncWebUIMessageHandler() = default;
+    AsyncWebUIMessageHandler(const AsyncWebUIMessageHandler&) = delete;
+    AsyncWebUIMessageHandler& operator=(const AsyncWebUIMessageHandler&) =
+        delete;
 
     MOCK_METHOD1(HandleTestContinues, void(const base::ListValue*));
     MOCK_METHOD1(HandleTestFails, void(const base::ListValue*));
@@ -166,8 +163,6 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
       ASSERT_TRUE(list_value->Get(0, &test_name));
       web_ui()->CallJavascriptFunctionUnsafe("runAsync", *test_name);
     }
-
-    DISALLOW_COPY_AND_ASSIGN(AsyncWebUIMessageHandler);
   };
 
   // Handler for this object.
@@ -185,8 +180,6 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("async.js")));
     ui_test_utils::NavigateToURL(browser(), DummyUrl());
   }
-
-  DISALLOW_COPY_AND_ASSIGN(WebUIBrowserAsyncTest);
 };
 
 // Test that assertions fail immediately after assertion fails (no testContinues

@@ -45,201 +45,213 @@ bool Error::operator!=(Code code) const {
 }
 
 std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
+  if (code == Error::Code::kNone) {
+    return os << "Success";
+  }
+  os << "Failure: ";
   switch (code) {
-    case Error::Code::kNone:
-      return os << "Success";
     case Error::Code::kAgain:
-      return os << "Transient Failure";
+      return os << "Transient";
     case Error::Code::kCborParsing:
-      return os << "Failure: CborParsing";
+      return os << "CborParsing";
     case Error::Code::kCborEncoding:
-      return os << "Failure: CborEncoding";
+      return os << "CborEncoding";
     case Error::Code::kCborIncompleteMessage:
-      return os << "Failure: CborIncompleteMessage";
+      return os << "CborIncompleteMessage";
     case Error::Code::kCborInvalidMessage:
-      return os << "Failure: CborInvalidMessage";
+      return os << "CborInvalidMessage";
     case Error::Code::kCborInvalidResponseId:
-      return os << "Failure: CborInvalidResponseId";
+      return os << "CborInvalidResponseId";
     case Error::Code::kNoAvailableReceivers:
-      return os << "Failure: NoAvailableReceivers";
+      return os << "NoAvailableReceivers";
     case Error::Code::kRequestCancelled:
-      return os << "Failure: RequestCancelled";
+      return os << "RequestCancelled";
     case Error::Code::kNoPresentationFound:
-      return os << "Failure: NoPresentationFound";
+      return os << "NoPresentationFound";
     case Error::Code::kPreviousStartInProgress:
-      return os << "Failure: PreviousStartInProgress";
+      return os << "PreviousStartInProgress";
     case Error::Code::kUnknownStartError:
-      return os << "Failure: UnknownStartError";
+      return os << "UnknownStartError";
     case Error::Code::kUnknownRequestId:
-      return os << "Failure: UnknownRequestId";
+      return os << "UnknownRequestId";
     case Error::Code::kAddressInUse:
-      return os << "Failure: AddressInUse";
+      return os << "AddressInUse";
     case Error::Code::kDomainNameTooLong:
-      return os << "Failure: DomainNameTooLong";
+      return os << "DomainNameTooLong";
     case Error::Code::kDomainNameLabelTooLong:
-      return os << "Failure: DomainNameLabelTooLong";
+      return os << "DomainNameLabelTooLong";
     case Error::Code::kIOFailure:
-      return os << "Failure: IOFailure";
+      return os << "IOFailure";
     case Error::Code::kInitializationFailure:
-      return os << "Failure: InitializationFailure";
+      return os << "InitializationFailure";
     case Error::Code::kInvalidIPV4Address:
-      return os << "Failure: InvalidIPV4Address";
+      return os << "InvalidIPV4Address";
     case Error::Code::kInvalidIPV6Address:
-      return os << "Failure: InvalidIPV6Address";
+      return os << "InvalidIPV6Address";
     case Error::Code::kConnectionFailed:
-      return os << "Failure: ConnectionFailed";
+      return os << "ConnectionFailed";
     case Error::Code::kSocketOptionSettingFailure:
-      return os << "Failure: SocketOptionSettingFailure";
+      return os << "SocketOptionSettingFailure";
     case Error::Code::kSocketAcceptFailure:
-      return os << "Failure: SocketAcceptFailure";
+      return os << "SocketAcceptFailure";
     case Error::Code::kSocketBindFailure:
-      return os << "Failure: SocketBindFailure";
+      return os << "SocketBindFailure";
     case Error::Code::kSocketClosedFailure:
-      return os << "Failure: SocketClosedFailure";
+      return os << "SocketClosedFailure";
     case Error::Code::kSocketConnectFailure:
-      return os << "Failure: SocketConnectFailure";
+      return os << "SocketConnectFailure";
     case Error::Code::kSocketInvalidState:
-      return os << "Failure: SocketInvalidState";
+      return os << "SocketInvalidState";
     case Error::Code::kSocketListenFailure:
-      return os << "Failure: SocketListenFailure";
+      return os << "SocketListenFailure";
     case Error::Code::kSocketReadFailure:
-      return os << "Failure: SocketReadFailure";
+      return os << "SocketReadFailure";
     case Error::Code::kSocketSendFailure:
-      return os << "Failure: SocketSendFailure";
+      return os << "SocketSendFailure";
     case Error::Code::kMdnsRegisterFailure:
-      return os << "Failure: MdnsRegisterFailure";
+      return os << "MdnsRegisterFailure";
+    case Error::Code::kMdnsReadFailure:
+      return os << "MdnsReadFailure";
+    case Error::Code::kMdnsNonConformingFailure:
+      return os << "kMdnsNonConformingFailure";
     case Error::Code::kParseError:
-      return os << "Failure: ParseError";
+      return os << "ParseError";
     case Error::Code::kUnknownMessageType:
-      return os << "Failure: UnknownMessageType";
+      return os << "UnknownMessageType";
     case Error::Code::kNoActiveConnection:
-      return os << "Failure: NoActiveConnection";
+      return os << "NoActiveConnection";
     case Error::Code::kAlreadyClosed:
-      return os << "Failure: AlreadyClosed";
+      return os << "AlreadyClosed";
     case Error::Code::kNoStartedPresentation:
-      return os << "Failure: NoStartedPresentation";
+      return os << "NoStartedPresentation";
     case Error::Code::kPresentationAlreadyStarted:
-      return os << "Failure: PresentationAlreadyStarted";
+      return os << "PresentationAlreadyStarted";
     case Error::Code::kInvalidConnectionState:
-      return os << "Failure: InvalidConnectionState";
+      return os << "InvalidConnectionState";
     case Error::Code::kJsonParseError:
-      return os << "Failure: JsonParseError";
+      return os << "JsonParseError";
     case Error::Code::kJsonWriteError:
-      return os << "Failure: JsonWriteError";
+      return os << "JsonWriteError";
     case Error::Code::kFatalSSLError:
-      return os << "Failure: FatalSSLError";
+      return os << "FatalSSLError";
     case Error::Code::kRSAKeyGenerationFailure:
-      return os << "Failure: RSAKeyGenerationFailure";
+      return os << "RSAKeyGenerationFailure";
     case Error::Code::kRSAKeyParseError:
-      return os << "Failure: RSAKeyParseError";
+      return os << "RSAKeyParseError";
     case Error::Code::kEVPInitializationError:
-      return os << "Failure: EVPInitializationError";
+      return os << "EVPInitializationError";
     case Error::Code::kCertificateCreationError:
-      return os << "Failure: CertificateCreationError";
+      return os << "CertificateCreationError";
     case Error::Code::kCertificateValidationError:
-      return os << "Failure: CertificateValidationError";
+      return os << "CertificateValidationError";
     case Error::Code::kSha256HashFailure:
-      return os << "Failure: Sha256HashFailure";
+      return os << "Sha256HashFailure";
     case Error::Code::kFileLoadFailure:
-      return os << "Failure: FileLoadFailure";
+      return os << "FileLoadFailure";
     case Error::Code::kErrCertsMissing:
-      return os << "Failure: ErrCertsMissing";
+      return os << "ErrCertsMissing";
     case Error::Code::kErrCertsParse:
-      return os << "Failure: ErrCertsParse";
+      return os << "ErrCertsParse";
     case Error::Code::kErrCertsRestrictions:
-      return os << "Failure: ErrCertsRestrictions";
+      return os << "ErrCertsRestrictions";
     case Error::Code::kErrCertsDateInvalid:
-      return os << "Failure: ErrCertsDateInvalid";
+      return os << "ErrCertsDateInvalid";
     case Error::Code::kErrCertsVerifyGeneric:
-      return os << "Failure: ErrCertsVerifyGeneric";
+      return os << "ErrCertsVerifyGeneric";
+    case Error::Code::kErrCertsVerifyUntrustedCert:
+      return os << "kErrCertsVerifyUntrustedCert";
     case Error::Code::kErrCrlInvalid:
-      return os << "Failure: ErrCrlInvalid";
+      return os << "ErrCrlInvalid";
     case Error::Code::kErrCertsRevoked:
-      return os << "Failure: ErrCertsRevoked";
+      return os << "ErrCertsRevoked";
     case Error::Code::kErrCertsPathlen:
-      return os << "Failure: ErrCertsPathlen";
+      return os << "ErrCertsPathlen";
     case Error::Code::kUnknownError:
-      return os << "Failure: UnknownError";
+      return os << "UnknownError";
     case Error::Code::kNotImplemented:
-      return os << "Failure: NotImplemented";
+      return os << "NotImplemented";
     case Error::Code::kInsufficientBuffer:
-      return os << "Failure: InsufficientBuffer";
+      return os << "InsufficientBuffer";
     case Error::Code::kParameterInvalid:
-      return os << "Failure: ParameterInvalid";
+      return os << "ParameterInvalid";
     case Error::Code::kParameterOutOfRange:
-      return os << "Failure: ParameterOutOfRange";
+      return os << "ParameterOutOfRange";
     case Error::Code::kParameterNullPointer:
-      return os << "Failure: ParameterNullPointer";
+      return os << "ParameterNullPointer";
     case Error::Code::kIndexOutOfBounds:
-      return os << "Failure: IndexOutOfBounds";
+      return os << "IndexOutOfBounds";
     case Error::Code::kItemAlreadyExists:
-      return os << "Failure: ItemAlreadyExists";
+      return os << "ItemAlreadyExists";
     case Error::Code::kItemNotFound:
-      return os << "Failure: ItemNotFound";
+      return os << "ItemNotFound";
     case Error::Code::kOperationInvalid:
-      return os << "Failure: OperationInvalid";
+      return os << "OperationInvalid";
     case Error::Code::kOperationInProgress:
-      return os << "Failure: OperationInProgress";
+      return os << "OperationInProgress";
     case Error::Code::kOperationCancelled:
-      return os << "Failure: OperationCancelled";
+      return os << "OperationCancelled";
     case Error::Code::kCastV2PeerCertEmpty:
-      return os << "Failure: kCastV2PeerCertEmpty";
+      return os << "kCastV2PeerCertEmpty";
     case Error::Code::kCastV2WrongPayloadType:
-      return os << "Failure: kCastV2WrongPayloadType";
+      return os << "kCastV2WrongPayloadType";
     case Error::Code::kCastV2NoPayload:
-      return os << "Failure: kCastV2NoPayload";
+      return os << "kCastV2NoPayload";
     case Error::Code::kCastV2PayloadParsingFailed:
-      return os << "Failure: kCastV2PayloadParsingFailed";
+      return os << "kCastV2PayloadParsingFailed";
     case Error::Code::kCastV2MessageError:
-      return os << "Failure: CastV2kMessageError";
+      return os << "CastV2kMessageError";
     case Error::Code::kCastV2NoResponse:
-      return os << "Failure: kCastV2NoResponse";
+      return os << "kCastV2NoResponse";
     case Error::Code::kCastV2FingerprintNotFound:
-      return os << "Failure: kCastV2FingerprintNotFound";
+      return os << "kCastV2FingerprintNotFound";
     case Error::Code::kCastV2CertNotSignedByTrustedCa:
-      return os << "Failure: kCastV2CertNotSignedByTrustedCa";
+      return os << "kCastV2CertNotSignedByTrustedCa";
     case Error::Code::kCastV2CannotExtractPublicKey:
-      return os << "Failure: kCastV2CannotExtractPublicKey";
+      return os << "kCastV2CannotExtractPublicKey";
     case Error::Code::kCastV2SignedBlobsMismatch:
-      return os << "Failure: kCastV2SignedBlobsMismatch";
+      return os << "kCastV2SignedBlobsMismatch";
     case Error::Code::kCastV2TlsCertValidityPeriodTooLong:
-      return os << "Failure: kCastV2TlsCertValidityPeriodTooLong";
+      return os << "kCastV2TlsCertValidityPeriodTooLong";
     case Error::Code::kCastV2TlsCertValidStartDateInFuture:
-      return os << "Failure: kCastV2TlsCertValidStartDateInFuture";
+      return os << "kCastV2TlsCertValidStartDateInFuture";
     case Error::Code::kCastV2TlsCertExpired:
-      return os << "Failure: kCastV2TlsCertExpired";
+      return os << "kCastV2TlsCertExpired";
     case Error::Code::kCastV2SenderNonceMismatch:
-      return os << "Failure: kCastV2SenderNonceMismatch";
+      return os << "kCastV2SenderNonceMismatch";
     case Error::Code::kCastV2DigestUnsupported:
-      return os << "Failure: kCastV2DigestUnsupported";
+      return os << "kCastV2DigestUnsupported";
     case Error::Code::kCastV2SignatureEmpty:
-      return os << "Failure: kCastV2SignatureEmpty";
+      return os << "kCastV2SignatureEmpty";
     case Error::Code::kCastV2ChannelNotOpen:
-      return os << "Failure: kCastV2ChannelNotOpen";
+      return os << "kCastV2ChannelNotOpen";
     case Error::Code::kCastV2AuthenticationError:
-      return os << "Failure: kCastV2AuthenticationError";
+      return os << "kCastV2AuthenticationError";
     case Error::Code::kCastV2ConnectError:
-      return os << "Failure: kCastV2ConnectError";
+      return os << "kCastV2ConnectError";
     case Error::Code::kCastV2CastSocketError:
-      return os << "Failure: kCastV2CastSocketError";
+      return os << "kCastV2CastSocketError";
     case Error::Code::kCastV2TransportError:
-      return os << "Failure: kCastV2TransportError";
+      return os << "kCastV2TransportError";
     case Error::Code::kCastV2InvalidMessage:
-      return os << "Failure: kCastV2InvalidMessage";
+      return os << "kCastV2InvalidMessage";
     case Error::Code::kCastV2InvalidChannelId:
-      return os << "Failure: kCastV2InvalidChannelId";
+      return os << "kCastV2InvalidChannelId";
     case Error::Code::kCastV2ConnectTimeout:
-      return os << "Failure: kCastV2ConnectTimeout";
+      return os << "kCastV2ConnectTimeout";
     case Error::Code::kCastV2PingTimeout:
-      return os << "Failure: kCastV2PingTimeout";
+      return os << "kCastV2PingTimeout";
     case Error::Code::kCastV2ChannelPolicyMismatch:
-      return os << "Failure: kCastV2ChannelPolicyMismatch";
+      return os << "kCastV2ChannelPolicyMismatch";
     case Error::Code::kCreateSignatureFailed:
-      return os << "Failure: kCreateSignatureFailed";
+      return os << "kCreateSignatureFailed";
     case Error::Code::kUpdateReceivedRecordFailure:
-      return os << "Failure: kUpdateReceivedRecordFailure";
+      return os << "kUpdateReceivedRecordFailure";
     case Error::Code::kRecordPublicationError:
-      return os << "Failure: kRecordPublicationError";
+      return os << "kRecordPublicationError";
+    case Error::Code::kProcessReceivedRecordFailure:
+      return os << "ProcessReceivedRecordFailure";
+    case Error::Code::kNone:
+      break;
   }
 
   // Unused 'return' to get around failure on GCC.

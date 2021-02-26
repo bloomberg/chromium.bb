@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/hash/md5.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_engine_exports.h"
@@ -17,6 +18,8 @@
 #include "printing/pdf_render_settings.h"
 #include "printing/units.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace chrome_pdf {
 
@@ -32,12 +35,7 @@ constexpr PP_Size kUSLetterSize = {612, 792};
 constexpr PP_Rect kUSLetterRect = {{0, 0}, kUSLetterSize};
 constexpr PP_Rect kPrintableAreaRect = {{18, 18}, {576, 733}};
 
-struct SizeDouble {
-  double width;
-  double height;
-};
-
-using ExpectedDimensions = std::vector<SizeDouble>;
+using ExpectedDimensions = std::vector<gfx::SizeF>;
 
 void CheckPdfDimensions(const std::vector<uint8_t>& pdf_data,
                         const ExpectedDimensions& expected_dimensions) {
@@ -48,35 +46,35 @@ void CheckPdfDimensions(const std::vector<uint8_t>& pdf_data,
   ASSERT_EQ(expected_dimensions.size(), static_cast<size_t>(page_count));
 
   for (int i = 0; i < page_count; ++i) {
-    double width;
-    double height;
-    ASSERT_TRUE(exports.GetPDFPageSizeByIndex(pdf_data, i, &width, &height));
-    EXPECT_DOUBLE_EQ(expected_dimensions[i].width, width);
-    EXPECT_DOUBLE_EQ(expected_dimensions[i].height, height);
+    base::Optional<gfx::SizeF> page_size =
+        exports.GetPDFPageSizeByIndex(pdf_data, i);
+    ASSERT_TRUE(page_size.has_value());
+    EXPECT_EQ(expected_dimensions[i], page_size.value());
   }
 }
 
 void CheckPdfRendering(const std::vector<uint8_t>& pdf_data,
                        int page_number,
-                       const SizeDouble& size_in_points,
+                       const gfx::SizeF& size_in_points,
                        const char* expected_md5_hash) {
-  int width_in_pixels = printing::ConvertUnit(
-      size_in_points.width, printing::kPointsPerInch, printing::kDefaultPdfDpi);
+  int width_in_pixels =
+      printing::ConvertUnit(size_in_points.width(), printing::kPointsPerInch,
+                            printing::kDefaultPdfDpi);
   int height_in_pixels =
-      printing::ConvertUnit(size_in_points.height, printing::kPointsPerInch,
+      printing::ConvertUnit(size_in_points.height(), printing::kPointsPerInch,
                             printing::kDefaultPdfDpi);
 
-  const pp::Rect page_rect(width_in_pixels, height_in_pixels);
+  const gfx::Rect page_rect(width_in_pixels, height_in_pixels);
   std::vector<uint8_t> page_bitmap_data(kColorChannels * page_rect.width() *
                                         page_rect.height());
 
   PDFEngineExports::RenderingSettings settings(
-      printing::kDefaultPdfDpi, printing::kDefaultPdfDpi, page_rect,
+      gfx::Size(printing::kDefaultPdfDpi, printing::kDefaultPdfDpi), page_rect,
       /*fit_to_bounds=*/true,
       /*stretch_to_bounds=*/false,
       /*keep_aspect_ratio=*/true,
       /*center_in_bounds=*/true,
-      /*autorotate=*/false, /*use_color=*/true);
+      /*autorotate=*/false, /*use_color=*/true, /*render_for_printing=*/true);
 
   PDFiumEngineExports exports;
   ASSERT_TRUE(exports.RenderPDFPageToBitmap(pdf_data, page_number, settings,

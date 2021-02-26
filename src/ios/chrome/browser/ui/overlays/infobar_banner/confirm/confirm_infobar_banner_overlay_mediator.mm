@@ -6,8 +6,11 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/confirm_infobar_banner_overlay_request_config.h"
+#include "ios/chrome/browser/overlays/public/infobar_banner/infobar_banner_overlay_responses.h"
+#include "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_consumer.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_overlay_mediator+consumer_support.h"
+#import "ios/chrome/browser/ui/overlays/overlay_request_mediator+subclassing.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -36,6 +39,11 @@ using confirm_infobar_overlays::ConfirmBannerRequestConfig;
   return ConfirmBannerRequestConfig::RequestSupport();
 }
 
+- (void)finishDismissal {
+  [self dispatchResponse:OverlayResponse::CreateWithInfo<
+                             InfobarBannerRemoveInfobarResponse>()];
+}
+
 @end
 
 @implementation ConfirmInfobarBannerOverlayMediator (ConsumerSupport)
@@ -45,14 +53,21 @@ using confirm_infobar_overlays::ConfirmBannerRequestConfig;
   if (!self.consumer || !config)
     return;
 
-  [self.consumer setBannerAccessibilityLabel:base::SysUTF16ToNSString(
-                                                 config->button_label_text())];
   [self.consumer
       setButtonText:base::SysUTF16ToNSString(config->button_label_text())];
-  if (!config->icon_image().IsEmpty())
+  if (!config->icon_image().IsEmpty()) {
     [self.consumer setIconImage:config->icon_image().ToUIImage()];
+    [self.consumer setUseIconBackgroundTint:config->use_icon_background_tint()];
+  }
   [self.consumer setPresentsModal:NO];
-  [self.consumer setTitleText:base::SysUTF16ToNSString(config->message_text())];
+  if (config->title_text().empty()) {
+    [self.consumer
+        setTitleText:base::SysUTF16ToNSString(config->message_text())];
+  } else {
+    [self.consumer setTitleText:base::SysUTF16ToNSString(config->title_text())];
+    [self.consumer
+        setSubtitleText:base::SysUTF16ToNSString(config->message_text())];
+  }
 }
 
 @end

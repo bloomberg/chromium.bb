@@ -35,7 +35,7 @@ using CreateVideoDecodersCB =
     base::RepeatingCallback<std::vector<std::unique_ptr<VideoDecoder>>()>;
 
 // The default factory class for creating RendererImpl.
-class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
+class MEDIA_EXPORT DefaultRendererFactory final : public RendererFactory {
  public:
   using GetGpuFactoriesCB =
       base::RepeatingCallback<GpuVideoAcceleratorFactories*()>;
@@ -60,8 +60,6 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       VideoRendererSink* video_renderer_sink,
       RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) final;
-
-  void TranscribeAudio(scoped_refptr<media::AudioBuffer> buffer);
 
  private:
   std::vector<std::unique_ptr<AudioDecoder>> CreateAudioDecoders(

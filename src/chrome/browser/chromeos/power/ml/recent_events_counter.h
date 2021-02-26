@@ -19,12 +19,13 @@ namespace ml {
 // the last hour.
 //
 // Rather than remembering the time stamp for each event, the event times are
-// bucketed. The buckets initially evenly divide a time period of |duration_|,
-// starting at base::TimeDelta(). For logging at a time later than |duration_|,
-// the buckets are reused, using the logging time modulo the |duration_| in the
-// calculation of the bucket to be used. The total is calculated by keeping
-// track of the |first_bucket_index_| and |first_bucket_time_| and zeroing
-// buckets with stale data.
+// bucketed. The number of requested buckets must exactly divide a time period
+// of |duration_| (within the precision of TimeDelta), and initially start at
+// base::TimeDelta(). For logging at a time later than |duration_|, the buckets
+// are reused, using the logging time modulo the |duration_| in the calculation
+// of the bucket to be used. The total is calculated by keeping track of the
+// |first_bucket_index_| and |first_bucket_time_| and zeroing buckets with stale
+// data.
 //
 // The bucketing determines the time precision of the count. This
 // means that the actual time period counted may be up to one bucket length
@@ -40,17 +41,18 @@ class RecentEventsCounter {
   // Log an event at timedelta |timestamp|. |timestamp| cannot be negative.
   void Log(base::TimeDelta timestamp);
 
-  // Return the count of events reported in the |duration_| preceeding |now|.
-  int GetTotal(base::TimeDelta now);
+  // Return the count of events reported in the |duration_| preceding |now|.
+  // |now| must be >= any |timestamp| previously passed to Log().
+  int GetTotal(base::TimeDelta now) const;
 
  private:
   // Return the index of the bucket containing |timestamp|.
   int GetBucketIndex(base::TimeDelta timestamp) const;
 
   // The length of time that events should be recorded.
-  base::TimeDelta duration_;
+  const base::TimeDelta duration_;
   // The number of buckets to use to record the events.
-  int num_buckets_;
+  const int num_buckets_;
   // The number of events in each bucket.
   std::vector<int> event_count_;
   // The index of the first bucket. |event_count_| is a circular array.

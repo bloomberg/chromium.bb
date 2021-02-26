@@ -45,17 +45,19 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   NGInlineNode inline_node(block_flow);
   LogicalSize size(LayoutUnit(50), LayoutUnit(20));
 
-  NGConstraintSpaceBuilder builder(WritingMode::kHorizontalTb,
-                                   WritingMode::kHorizontalTb,
-                                   /* is_new_fc */ false);
+  NGConstraintSpaceBuilder builder(
+      WritingMode::kHorizontalTb,
+      {WritingMode::kHorizontalTb, TextDirection::kLtr},
+      /* is_new_fc */ false);
   builder.SetAvailableSize(size);
   NGConstraintSpace constraint_space = builder.ToConstraintSpace();
 
   NGInlineChildLayoutContext context;
-  NGBoxFragmentBuilder container_builder(block_flow, block_flow->Style(),
-                                         block_flow->Style()->GetWritingMode(),
-                                         block_flow->Style()->Direction());
-  NGFragmentItemsBuilder items_builder(inline_node);
+  NGBoxFragmentBuilder container_builder(
+      block_flow, block_flow->Style(),
+      block_flow->Style()->GetWritingDirection());
+  NGFragmentItemsBuilder items_builder(inline_node,
+                                       container_builder.GetWritingDirection());
   if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     container_builder.SetItemsBuilder(&items_builder);
     context.SetItemsBuilder(&items_builder);
@@ -107,7 +109,7 @@ TEST_F(NGInlineLayoutAlgorithmTest,
   )HTML");
   auto* block_flow =
       To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
-  const NGPhysicalBoxFragment* container = block_flow->CurrentFragment();
+  const NGPhysicalBoxFragment* container = block_flow->GetPhysicalFragment(0);
   ASSERT_TRUE(container);
   EXPECT_EQ(LayoutUnit(), container->Size().height);
 
@@ -318,7 +320,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
 
   auto* block_flow =
       To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
-  const NGPhysicalBoxFragment* block_box = block_flow->CurrentFragment();
+  const NGPhysicalBoxFragment* block_box = block_flow->GetPhysicalFragment(0);
   ASSERT_TRUE(block_box);
 
   // Two lines.
@@ -450,7 +452,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, InkOverflow) {
   auto* block_flow =
       To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   const NGPaintFragment* paint_fragment = block_flow->PaintFragment();
-  const NGPhysicalBoxFragment& box_fragment = *block_flow->CurrentFragment();
+  const NGPhysicalBoxFragment& box_fragment =
+      *block_flow->GetPhysicalFragment(0);
   if (paint_fragment)
     ASSERT_EQ(&paint_fragment->PhysicalFragment(), &box_fragment);
   EXPECT_EQ(LayoutUnit(10), box_fragment.Size().height);
@@ -459,15 +462,6 @@ TEST_F(NGInlineLayoutAlgorithmTest, InkOverflow) {
   PhysicalRect ink_overflow = cursor.Current().InkOverflow();
   EXPECT_EQ(LayoutUnit(-5), ink_overflow.offset.top);
   EXPECT_EQ(LayoutUnit(20), ink_overflow.size.height);
-
-  if (paint_fragment) {
-    // |ContentsInkOverflow| should match to |InkOverflow|, except the width
-    // because |<div id=container>| might be wider than the content.
-    const PhysicalRect contents_ink_overflow =
-        paint_fragment->ContentsInkOverflow();
-    EXPECT_EQ(ink_overflow.offset, contents_ink_overflow.offset);
-    EXPECT_EQ(ink_overflow.size.height, contents_ink_overflow.size.height);
-  }
 }
 
 #undef MAYBE_VerticalAlignBottomReplaced

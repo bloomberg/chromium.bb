@@ -14,13 +14,17 @@ specific_include_rules = {
     "+chrome/test",
     "+content/public",
   ],
-  # TODO(mash): Fix. https://crbug.com/738531
   "candidate_window_controller_impl\.cc": [
     "+ash/shell.h",
     "+ash/wm/window_util.h",
   ],
   "assistive_window_controller\.cc": [
     "+ash/shell.h",
+    "+ash/wm/window_util.h",
+  ],
+
+  # Detect text input client host.
+  "input_host_helper\.cc": [
     "+ash/wm/window_util.h",
   ],
 

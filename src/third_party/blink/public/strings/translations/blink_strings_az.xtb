@@ -13,13 +13,18 @@
 <translation id="1211441953136645838">son qeyd</translation>
 <translation id="1281252709823657822">dialoq</translation>
 <translation id="1306460908038601864">Deaktiv</translation>
+<translation id="1311894908970423688">Dəyər <ph name="VALUE_DATE_OR_TIME" /> olmalıdır.</translation>
 <translation id="1335095011850992622">kreditlər</translation>
 <translation id="1342835525016946179">məqalə</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="145015347812617860"><ph name="COUNT" /> element</translation>
+<translation id="1480676835519562650">çox sayda seçilə bilər, <ph name="SELECTED" />/<ph name="COUNT" /> seçilib.</translation>
 <translation id="1589122976691792535">region</translation>
 <translation id="1591562245178063882">Bu ay</translation>
 <translation id="1637811476055996098">Faylları seçin</translation>
 <translation id="1650423536718072820">sitat</translation>
+<translation id="1681022320378710418">cari vaxt</translation>
+<translation id="1727839386348365796">Pipet</translation>
 <translation id="1727886345390570319">bağlanmış subtitrlər menyusunu gizlədin</translation>
 <translation id="1729654308190250600">Boş olmayan e-poçt ünvanı daxil edin.</translation>
 <translation id="1758486001363313524">Digər...</translation>
@@ -27,6 +32,7 @@
 <translation id="1806710327868736751">siqnal_dialoqu</translation>
 <translation id="1821985195704844674">ağac şəbəkəsi</translation>
 <translation id="1822429046913737220">AM/PM</translation>
+<translation id="1823704031293214298">səhifə altlığı</translation>
 <translation id="1832974991323546415">uzaqdann idarəetmə cihazında oxudun</translation>
 <translation id="190587075670221089">silinmə</translation>
 <translation id="1907737156431278478">məsələn</translation>
@@ -44,6 +50,7 @@
 <translation id="2247351761944213033"><ph name="WEEKNUMBER" /> həftə, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Trek <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">Qeyd xanası</translation>
+<translation id="2307576640803031502">siyahıda <ph name="INDEX" />/<ph name="COUNT" /> element</translation>
 <translation id="2311842470354187719">səhifə sonu</translation>
 <translation id="2335594187091864976">tarix və saat seçici</translation>
 <translation id="2393030564806080191">Altırəqəmli rəng dəyəri</translation>
@@ -51,6 +58,7 @@
 <translation id="248395913932153421">Gün</translation>
 <translation id="2507943997699731163">Lütfən, bu sahəni doldurun.</translation>
 <translation id="2508569020611168319">panel siyahısı</translation>
+<translation id="2530182415807757784">çox sayda seçilə bilər, heç biri seçilməyib.</translation>
 <translation id="2561842179657104141">daha çox media kontrolları göstərin</translation>
 <translation id="2572483411312390101">oxudun</translation>
 <translation id="2613802280814924224">Düzgün dəyər daxil edin. Ən yaxın düzgün dəyər: <ph name="VALID_VALUE" />.</translation>
@@ -75,6 +83,7 @@
 <translation id="310520048233152454">URL daxil edin.</translation>
 <translation id="3175736971608411871">taymer</translation>
 <translation id="3199563858620722075">kombo xanası</translation>
+<translation id="3220661731597678625">cari addım</translation>
 <translation id="3329013043687509092">Saturasiya</translation>
 <translation id="3450233048674729344">Qiymət <ph name="MAXIMUM" /> göstəricisindən kiçik və ya ona tay olmalıdır.</translation>
 <translation id="3486220673238053218">təsvir</translation>
@@ -100,12 +109,14 @@
 <translation id="4201051445878709314">Keçən ayı göstərin</translation>
 <translation id="421884353938374759">rəng seçən</translation>
 <translation id="4248100235867064564">menyu paneli</translation>
+<translation id="4293574643247337246">səhifə başlığı</translation>
 <translation id="4360991593054037559">Düzgün dəyər daxil edin. Ən uyğun düzgün dəyərlər: <ph name="VALID_VALUE_LOW" /> və <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4384249794467006333">Bu şəkil etiketlənməyib. Şəkil təsvirlərini əldə etmək üçün yuxarı sağdakı Daha Çox Seçim menyusunu açın.</translation>
 <translation id="4384583879834880242">Sual-Cavab</translation>
-<translation id="4413860115965805769">menyu düyməsi</translation>
 <translation id="4444765639179266822">Ola bilər: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">lüğət istinadı</translation>
 <translation id="4522570452068850558">Detallar</translation>
+<translation id="4576178047100686001">Bu şəkil etiketlənməyib. Şəkil təsvirlərini əldə etmək üçün yuxarı soldakı Daha Çox Seçim menyusunu açın.</translation>
 <translation id="4597532268155981612">forma</translation>
 <translation id="4661075872484491155">ağac</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' bir hissəsi '<ph name="INVALIDCHARACTER" />' simvolunu içərməməlidir.</translation>
@@ -118,6 +129,7 @@
 <translation id="4763480195061959176">video</translation>
 <translation id="479989351350248267">axtarın</translation>
 <translation id="4812940957355064477">Rəqəm daxil edin.</translation>
+<translation id="4912200001568447310">cari element</translation>
 <translation id="4912536737030637138">biblioqrafiya girişi</translation>
 <translation id="4915360478455618802">Vaxt seçicisini göstərin</translation>
 <translation id="492244087561876220">şərh</translation>
@@ -140,6 +152,7 @@
 <translation id="5334352251556557839">Medianı oxutmaq mümkün deyil.</translation>
 <translation id="537648784377940524">Minimum tarix (<ph name="MIN_DATE_OR_TIME" />) Maksimum tarixdən (<ph name="MAX_DATE_OR_TIME" />) əvvəl gəlməlidir.</translation>
 <translation id="5406322316791861025">rəqəm</translation>
+<translation id="5425179576310518467">cari tarix</translation>
 <translation id="5453733299334684579">ağac elementi</translation>
 <translation id="5466621249238537318">Bir və ya daha çox faylı seçin.</translation>
 <translation id="5468998798572797635">tam ekrandan çıxın</translation>
@@ -154,9 +167,11 @@
 <translation id="5677946354068040947">əlavə seçimlər</translation>
 <translation id="576709008726043716">giriş</translation>
 <translation id="57838592816432529">Səssiz</translation>
+<translation id="5860033963881614850">Deaktiv</translation>
 <translation id="588258955323874662">Tam ekran</translation>
 <translation id="5888666972993069672">İndi <ph name="DEVICE_FRIENDLY_NAME" /> cihazına yayımlanır</translation>
 <translation id="591047860372322273">axtarış xanası</translation>
+<translation id="5916664084637901428">Aktiv</translation>
 <translation id="5939518447894949180">Sıfırlayın</translation>
 <translation id="5966707198760109579">Həftə</translation>
 <translation id="5987525920412732405">fırlatma düyməsi</translation>
@@ -167,6 +182,7 @@
 <translation id="6164829606128959761">metr</translation>
 <translation id="6166809985690652833">son söz</translation>
 <translation id="6209276755895393898">Ola bilər: <ph name="DESCRIPTION" /></translation>
+<translation id="6212595056017402527">cari səhifə</translation>
 <translation id="6213469881011901533">lüğət</translation>
 <translation id="6281588256137006900">Açıqlıq</translation>
 <translation id="6281763101136022427">url</translation>
@@ -184,6 +200,7 @@
 <translation id="6643016212128521049">Silin</translation>
 <translation id="668171684555832681">Digər...</translation>
 <translation id="6692633176391053278">stepper</translation>
+<translation id="6709093583001123835">Dəyər <ph name="VALUE" /> olmalıdır.</translation>
 <translation id="6709570249143506788">Oxutma keyfiyyəti pisdir</translation>
 <translation id="6755330956360078551">ipucu</translation>
 <translation id="6790428901817661496">Oxudun</translation>
@@ -200,6 +217,7 @@
 <translation id="6989848892321993519">Bu mətni <ph name="MIN_CHARACTERS" /> və ya daha çox simvola qədər uzadın (hazırda 1 simvol istifadə edirsiniz).</translation>
 <translation id="7034405885550056553">təklif</translation>
 <translation id="709897737746224366">Tələb olunan formata uyğun edin.</translation>
+<translation id="7102274145889307184">cari məkan</translation>
 <translation id="7118469954320184356">Təsvir əlçatan deyil.</translation>
 <translation id="7139483182332611405">ön söz</translation>
 <translation id="7214187073215825913">kontent məlumatı</translation>
@@ -284,6 +302,7 @@
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> tarixində başlayır</translation>
 <translation id="916607977885256133">Şəkil içində Şəkil</translation>
 <translation id="9168329111483466115">qeyd</translation>
+<translation id="945780513535800434">Qismən Yoxlanılıb</translation>
 <translation id="954003015749068518">şəkil içində şəkil düyməsinə daxil olun</translation>
 <translation id="966787709310836684">menyu</translation>
 </translationbundle>

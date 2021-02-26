@@ -19,7 +19,7 @@ class SelectToSpeakOptionsPage {
     }.bind(this));
     this.syncSelectControlToPref_('voice', 'voice', 'voiceName');
     this.syncCheckboxControlToPref_(
-        'wordHighlight', 'wordHighlight', function(checked) {
+        'wordHighlight', 'wordHighlight', (checked) => {
           const elem = document.getElementById('highlightSubOption');
           const select = document.getElementById('highlightColor');
           if (checked) {
@@ -30,6 +30,17 @@ class SelectToSpeakOptionsPage {
             elem.classList.add('hidden');
             elem.setAttribute('aria-hidden', true);
             select.disabled = true;
+          }
+        });
+    this.syncCheckboxControlToPref_(
+        'backgroundShading', 'backgroundShading', (checked) => {
+          const elem = document.getElementById('backgroundPreviewContainer');
+          if (checked) {
+            elem.classList.remove('hidden');
+            elem.setAttribute('aria-hidden', false);
+          } else {
+            elem.classList.add('hidden');
+            elem.setAttribute('aria-hidden', true);
           }
         });
     this.setUpHighlightListener_();
@@ -54,7 +65,7 @@ class SelectToSpeakOptionsPage {
         throw new Error('Element has no msgid attribute: ' + elts[i]);
       }
       var translated = chrome.i18n.getMessage('select_to_speak_' + msgid);
-      if (elts[i].tagName == 'INPUT') {
+      if (elts[i].tagName === 'INPUT') {
         elts[i].setAttribute('placeholder', translated);
       } else {
         elts[i].textContent = translated;
@@ -165,7 +176,7 @@ class SelectToSpeakOptionsPage {
         var value = items[pref];
         element.selectedIndex = -1;
         for (var i = 0; i < element.options.length; ++i) {
-          if (element.options[i][valueKey] == value) {
+          if (element.options[i][valueKey] === value) {
             element.selectedIndex = i;
             break;
           }

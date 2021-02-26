@@ -471,6 +471,19 @@ void MixedRealityRenderLoop::EnsureStageBounds() {
   bounds_updated_ = (bounds_.size() != 0);
 }
 
+device::mojom::XREnvironmentBlendMode
+MixedRealityRenderLoop::GetEnvironmentBlendMode(
+    device::mojom::XRSessionMode session_mode) {
+  DCHECK_EQ(session_mode, mojom::XRSessionMode::kImmersiveVr);
+  return device::mojom::XREnvironmentBlendMode::kOpaque;
+}
+
+device::mojom::XRInteractionMode MixedRealityRenderLoop::GetInteractionMode(
+    device::mojom::XRSessionMode session_mode) {
+  DCHECK_EQ(session_mode, mojom::XRSessionMode::kImmersiveVr);
+  return device::mojom::XRInteractionMode::kWorldSpace;
+}
+
 void MixedRealityRenderLoop::OnSessionStart() {
   LogViewerType(VrViewerType::WINDOWS_MIXED_REALITY_UNKNOWN);
 
@@ -671,8 +684,6 @@ bool MixedRealityRenderLoop::UpdateDisplayInfo() {
 
   if (!current_display_info_) {
     current_display_info_ = mojom::VRDisplayInfo::New();
-    current_display_info_->id =
-        device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID;
     changed = true;
   }
 
@@ -729,20 +740,16 @@ bool MixedRealityRenderLoop::UpdateStageParameters() {
   // SpatialStageFrameOfReference.CurrentChanged to also re-calculate this.
   bool changed = false;
   if (stage_transform_needs_updating_) {
-    if (!(stage_origin_ && anchor_origin_) &&
-        current_display_info_->stage_parameters) {
+    if (!(stage_origin_ && anchor_origin_) && current_stage_parameters_) {
       changed = true;
-      current_display_info_->stage_parameters = nullptr;
+      current_stage_parameters_ = nullptr;
     } else if (stage_origin_ && anchor_origin_) {
       changed = true;
-      current_display_info_->stage_parameters = nullptr;
+      current_stage_parameters_ = nullptr;
 
-      mojom::VRStageParametersPtr stage_parameters =
-          mojom::VRStageParameters::New();
-
-      Matrix4x4 origin_to_stage;
-      if (!anchor_origin_->TryGetTransformTo(stage_origin_.get(),
-                                             &origin_to_stage)) {
+      Matrix4x4 stage_to_origin;
+      if (!stage_origin_->TryGetTransformTo(anchor_origin_.get(),
+                                            &stage_to_origin)) {
         // We failed to get a transform between the two, so force a
         // recalculation of the stage origin and leave the stage_parameters
         // null.
@@ -750,18 +757,17 @@ bool MixedRealityRenderLoop::UpdateStageParameters() {
         return changed;
       }
 
-      stage_parameters->standing_transform =
-          ConvertToGfxTransform(origin_to_stage);
-
-      current_display_info_->stage_parameters = std::move(stage_parameters);
+      current_stage_parameters_ = mojom::VRStageParameters::New();
+      current_stage_parameters_->mojo_from_floor =
+          ConvertToGfxTransform(stage_to_origin);
     }
 
     stage_transform_needs_updating_ = false;
   }
 
   EnsureStageBounds();
-  if (bounds_updated_ && current_display_info_->stage_parameters) {
-    current_display_info_->stage_parameters->bounds = bounds_;
+  if (bounds_updated_ && current_stage_parameters_) {
+    current_stage_parameters_->bounds = bounds_;
     changed = true;
     bounds_updated_ = false;
   }
@@ -862,8 +868,7 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
 
   bool stage_parameters_updated = UpdateStageParameters();
   if (stage_parameters_updated) {
-    ret->stage_parameters_updated = true;
-    ret->stage_parameters = current_display_info_->stage_parameters.Clone();
+    SetStageParameters(current_stage_parameters_.Clone());
   }
 
   if (send_new_display_info || stage_parameters_updated) {

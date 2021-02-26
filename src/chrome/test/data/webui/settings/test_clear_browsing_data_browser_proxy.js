@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {ClearBrowsingDataBrowserProxy, InstalledApp, LanguagesBrowserProxy} from 'chrome://settings/lazy_load.js';
+
+import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+
+// clang-format on
 
 /** @implements {ClearBrowsingDataBrowserProxy} */
 export class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
@@ -37,7 +42,7 @@ export class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
     webUIListenerCallback('browsing-data-removing', true);
     return this.clearBrowsingDataPromise_ !== null ?
         this.clearBrowsingDataPromise_ :
-        Promise.resolve();
+        Promise.resolve({showHistoryNotice: false, showPasswordsNotice: false});
   }
 
   /** @param {!Array<!InstalledApp>} apps */
@@ -54,6 +59,6 @@ export class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
   /** @override */
   initialize() {
     this.methodCalled('initialize');
-    return Promise.resolve(false);
+    return Promise.resolve();
   }
 }

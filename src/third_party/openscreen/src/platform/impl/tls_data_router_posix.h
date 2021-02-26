@@ -5,7 +5,9 @@
 #ifndef PLATFORM_IMPL_TLS_DATA_ROUTER_POSIX_H_
 #define PLATFORM_IMPL_TLS_DATA_ROUTER_POSIX_H_
 
+#include <memory>
 #include <mutex>
+#include <unordered_map>
 #include <vector>
 
 #include "absl/base/thread_annotations.h"
@@ -61,13 +63,9 @@ class TlsDataRouterPosix : public SocketHandleWaiter::Subscriber {
   void RegisterAcceptObserver(std::unique_ptr<StreamSocketPosix> socket,
                               SocketObserver* observer);
 
-  // Stops watching a TCP socket for incoming connections.
-  // NOTE: This will destroy the StreamSocket.
-  virtual void DeregisterAcceptObserver(StreamSocketPosix* socket);
-
-  // Method to be executed on TlsConnection destruction. This is expected to
-  // block until the networking thread is not using the provided connection.
-  void OnConnectionDestroyed(TlsConnectionPosix* connection);
+  // Stops watching TCP sockets added by a particular observer for incoming
+  // connections.
+  void DeregisterAcceptObserver(SocketObserver* observer);
 
   // SocketHandleWaiter::Subscriber overrides.
   void ProcessReadyHandle(SocketHandleWaiter::SocketHandleRef handle,
@@ -85,12 +83,9 @@ class TlsDataRouterPosix : public SocketHandleWaiter::Subscriber {
 
   friend class TestingDataRouter;
 
+  bool disable_locking_for_testing_ = false;
+
  private:
-  void OnSocketDestroyed(StreamSocketPosix* socket,
-                         bool skip_locking_for_testing);
-
-  void RemoveWatchedSocket(StreamSocketPosix* socket);
-
   SocketHandleWaiter* waiter_;
 
   // Mutex guarding connections_ vector.

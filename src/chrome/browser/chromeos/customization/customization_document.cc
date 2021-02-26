@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
@@ -23,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
@@ -241,17 +240,16 @@ bool CustomizationDocument::LoadManifestFromFile(
 
 bool CustomizationDocument::LoadManifestFromString(
     const std::string& manifest) {
-  int error_code = 0;
-  std::string error;
-  std::unique_ptr<base::Value> root =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          manifest, base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error);
-  if (error_code != base::JSONReader::JSON_NO_ERROR)
-    LOG(ERROR) << error;
-  if (!root) {
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(
+          manifest, base::JSON_ALLOW_TRAILING_COMMAS);
+  if (!parsed_json.value) {
+    LOG(ERROR) << parsed_json.error_message;
     NOTREACHED();
     return false;
   }
+  std::unique_ptr<base::Value> root =
+      base::Value::ToUniquePtrValue(std::move(*parsed_json.value));
 
   root_ = base::DictionaryValue::From(std::move(root));
   if (!root_) {
@@ -641,8 +639,8 @@ void ServicesCustomizationDocument::OnSimpleLoaderComplete(
   } else {
     if (num_retries_ < kMaxFetchRetries) {
       num_retries_++;
-      base::PostDelayedTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostDelayedTask(
+          FROM_HERE,
           base::BindOnce(&ServicesCustomizationDocument::StartFileFetch,
                          weak_ptr_factory_.GetWeakPtr()),
           base::TimeDelta::FromSeconds(kRetriesDelayInSec));

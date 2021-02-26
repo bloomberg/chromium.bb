@@ -23,7 +23,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FRAME_SET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FRAME_SET_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 
 namespace blink {
@@ -70,10 +69,12 @@ class LayoutFrameSet final : public LayoutBox {
   ~LayoutFrameSet() override;
 
   LayoutObject* FirstChild() const {
+    NOT_DESTROYED();
     DCHECK_EQ(Children(), VirtualChildren());
     return Children()->FirstChild();
   }
   LayoutObject* LastChild() const {
+    NOT_DESTROYED();
     DCHECK_EQ(Children(), VirtualChildren());
     return Children()->LastChild();
   }
@@ -82,8 +83,14 @@ class LayoutFrameSet final : public LayoutBox {
   void SlowFirstChild() const = delete;
   void SlowLastChild() const = delete;
 
-  const LayoutObjectChildList* Children() const { return &children_; }
-  LayoutObjectChildList* Children() { return &children_; }
+  const LayoutObjectChildList* Children() const {
+    NOT_DESTROYED();
+    return &children_;
+  }
+  LayoutObjectChildList* Children() {
+    NOT_DESTROYED();
+    return &children_;
+  }
 
   FrameEdgeInfo EdgeInfo() const;
 
@@ -100,6 +107,8 @@ class LayoutFrameSet final : public LayoutBox {
 
    public:
     GridAxis();
+    GridAxis(const GridAxis&) = delete;
+    GridAxis& operator=(const GridAxis&) = delete;
     void Resize(int);
 
     Vector<int> sizes_;
@@ -108,33 +117,48 @@ class LayoutFrameSet final : public LayoutBox {
     Vector<bool> allow_border_;
     int split_being_resized_;
     int split_resize_offset_;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(GridAxis);
   };
 
-  const GridAxis& Rows() const { return rows_; }
-  const GridAxis& Columns() const { return cols_; }
+  const GridAxis& Rows() const {
+    NOT_DESTROYED();
+    return rows_;
+  }
+  const GridAxis& Columns() const {
+    NOT_DESTROYED();
+    return cols_;
+  }
 
-  const char* GetName() const override { return "LayoutFrameSet"; }
+  const char* GetName() const override {
+    NOT_DESTROYED();
+    return "LayoutFrameSet";
+  }
 
  private:
   static const int kNoSplit = -1;
 
-  LayoutObjectChildList* VirtualChildren() override { return Children(); }
+  LayoutObjectChildList* VirtualChildren() override {
+    NOT_DESTROYED();
+    return Children();
+  }
   const LayoutObjectChildList* VirtualChildren() const override {
+    NOT_DESTROYED();
     return Children();
   }
 
   bool IsOfType(LayoutObjectType type) const override {
+    NOT_DESTROYED();
     return type == kLayoutObjectFrameSet || LayoutBox::IsOfType(type);
   }
 
   void UpdateLayout() override;
   void Paint(const PaintInfo&) const override;
 
-  MinMaxSizes PreferredLogicalWidths() const override { return MinMaxSizes(); }
+  MinMaxSizes PreferredLogicalWidths() const override {
+    NOT_DESTROYED();
+    return MinMaxSizes();
+  }
   MinMaxSizes ComputeIntrinsicLogicalWidths() const final {
+    NOT_DESTROYED();
     return MinMaxSizes();
   }
 

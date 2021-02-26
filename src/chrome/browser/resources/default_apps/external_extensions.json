@@ -7,8 +7,7 @@
 {
   "blpcfgokakmgnkcojhhkbfbldkacnbeo" : {
     "external_crx": "youtube.crx",
-    "external_version": "4.2.5",
-    "is_bookmark_app": true
+    "external_version": "4.2.5"
   },
   "pjkljhegncpnkpknbcohdijeoejaedia" : {
     "external_crx": "gmail.crx",
@@ -20,7 +19,8 @@
   },
   "aohghmighlieiainnegkcijnfilokake" : {
     "external_crx": "docs.crx",
-    "external_version": "0.0.0.6"
+    "external_version": "0.0.0.6",
+    "web_app_migration_flag": "MigrateDefaultChromeAppToWebAppsGSuite"
   },
   // Google Sheets
   "aapocclcgogkmnckokdopfmhonfmgoek" : {

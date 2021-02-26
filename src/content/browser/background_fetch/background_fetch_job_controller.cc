@@ -5,14 +5,14 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_request_match_params.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/origin_util.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 namespace content {
@@ -29,7 +29,7 @@ bool IsMixedContent(const BackgroundFetchRequestInfo& request) {
   if (request.fetch_request()->url.is_empty())
     return false;
 
-  return !IsOriginSecure(request.fetch_request()->url);
+  return !blink::network_utils::IsOriginSecure(request.fetch_request()->url);
 }
 
 // Whether the |request| needs CORS preflight.
@@ -377,6 +377,7 @@ void BackgroundFetchJobController::DidGetUploadData(
     Abort(BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE,
           base::DoNothing());
     std::move(callback).Run(nullptr);
+    return;
   }
 
   DCHECK(blob);

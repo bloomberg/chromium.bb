@@ -4,7 +4,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="device_page_browser_proxy.html">
-<link rel="import" href="dlc_subpage.html">
 <link rel="import" href="display.html">
 <link rel="import" href="keyboard.html">
 <link rel="import" href="pointers.html">
@@ -25,7 +24,8 @@
         focus-config="[[focusConfig_]]">
       <div id="main" route-path="default">
         <cr-link-row id="pointersRow"
-            label="[[getPointersTitle_(hasMouse_, hasTouchpad_)]]"
+            label="[[getPointersTitle_(hasMouse_, hasPointingStick_,
+                                       hasTouchpad_)]]"
             on-click="onPointersTap_"
             role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
         <cr-link-row class="hr" id="keyboardRow" label="$i18n{keyboardTitle}"
@@ -51,9 +51,12 @@
       <template is="dom-if" route-path="/pointer-overlay">
         <settings-subpage
             associated-control="[[$$('#pointersRow')]]"
-            page-title="[[getPointersTitle_(hasMouse_, hasTouchpad_)]]">
+            page-title="[[getPointersTitle_(hasMouse_, hasPointingStick_,
+                                            hasTouchpad_)]]">
           <settings-pointers prefs="{{prefs}}"
-              has-mouse="[[hasMouse_]]" has-touchpad="[[hasTouchpad_]]">
+              has-mouse="[[hasMouse_]]"
+              has-pointing-stick="[[hasPointingStick_]]"
+              has-touchpad="[[hasTouchpad_]]">
           </settings-pointers>
         </settings-subpage>
       </template>
@@ -61,7 +64,8 @@
         <settings-subpage
             associated-control="[[$$('#keyboardRow')]]"
             page-title="$i18n{keyboardTitle}">
-          <settings-keyboard prefs="{{prefs}}"></settings-keyboard>
+          <settings-keyboard prefs="{{prefs}}" focus-config="[[focusConfig_]]">
+          </settings-keyboard>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/stylus" no-search="[[!hasStylus_]]">
@@ -96,16 +100,6 @@
               page-title="$i18n{storageExternal}">
             <settings-storage-external prefs="{{prefs}}">
             </settings-storage-external>
-          </settings-subpage>
-        </template>
-      </template>
-      <template is="dom-if" if="[[allowDlcSubpage_]]">
-        <template is="dom-if" route-path="/storage/downloadedContent">
-          <settings-subpage
-              associated-control="[[$$('#storageRow')]]"
-              page-title="$i18n{dlcSubpageTitle}">
-            <os-settings-dlc-subpage>
-            </os-settings-dlc-subpage>
           </settings-subpage>
         </template>
       </template>

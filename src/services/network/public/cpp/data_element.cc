@@ -20,7 +20,6 @@ const uint64_t DataElement::kUnknownSize;
 
 DataElement::DataElement()
     : type_(mojom::DataElementType::kUnknown),
-      bytes_(NULL),
       offset_(0),
       length_(std::numeric_limits<uint64_t>::max()) {}
 
@@ -41,28 +40,6 @@ void DataElement::SetToFilePathRange(
   expected_modification_time_ = expected_modification_time;
 }
 
-void DataElement::SetToFileRange(base::File file,
-                                 const base::FilePath& path,
-                                 uint64_t offset,
-                                 uint64_t length,
-                                 const base::Time& expected_modification_time) {
-  type_ = mojom::DataElementType::kRawFile;
-  file_ = std::move(file);
-  path_ = path;
-  offset_ = offset;
-  length_ = length;
-  expected_modification_time_ = expected_modification_time;
-}
-
-void DataElement::SetToBlobRange(const std::string& blob_uuid,
-                                 uint64_t offset,
-                                 uint64_t length) {
-  type_ = mojom::DataElementType::kBlob;
-  blob_uuid_ = blob_uuid;
-  offset_ = offset;
-  length_ = length;
-}
-
 void DataElement::SetToDataPipe(
     mojo::PendingRemote<mojom::DataPipeGetter> data_pipe_getter) {
   DCHECK(data_pipe_getter);
@@ -77,8 +54,11 @@ void DataElement::SetToChunkedDataPipe(
   chunked_data_pipe_getter_ = std::move(chunked_data_pipe_getter);
 }
 
-base::File DataElement::ReleaseFile() {
-  return std::move(file_);
+void DataElement::SetToReadOnceStream(
+    mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
+        chunked_data_pipe_getter) {
+  type_ = mojom::DataElementType::kReadOnceStream;
+  chunked_data_pipe_getter_ = std::move(chunked_data_pipe_getter);
 }
 
 mojo::PendingRemote<mojom::DataPipeGetter>
@@ -101,9 +81,18 @@ mojo::PendingRemote<mojom::DataPipeGetter> DataElement::CloneDataPipeGetter()
   return clone;
 }
 
+const mojo::PendingRemote<mojom::ChunkedDataPipeGetter>&
+DataElement::chunked_data_pipe_getter() const {
+  DCHECK(type_ == mojom::DataElementType::kChunkedDataPipe ||
+         type_ == mojom::DataElementType::kReadOnceStream);
+  return chunked_data_pipe_getter_;
+}
+
 mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
 DataElement::ReleaseChunkedDataPipeGetter() {
-  DCHECK_EQ(mojom::DataElementType::kChunkedDataPipe, type_);
+  DCHECK(type_ == mojom::DataElementType::kChunkedDataPipe ||
+         type_ == mojom::DataElementType::kReadOnceStream)
+      << type_;
   return std::move(chunked_data_pipe_getter_);
 }
 
@@ -125,18 +114,14 @@ void PrintTo(const DataElement& x, std::ostream* os) {
       *os << "TYPE_FILE, path: " << x.path().AsUTF8Unsafe()
           << ", expected_modification_time: " << x.expected_modification_time();
       break;
-    case mojom::DataElementType::kRawFile:
-      *os << "TYPE_RAW_FILE, path: " << x.path().AsUTF8Unsafe()
-          << ", expected_modification_time: " << x.expected_modification_time();
-      break;
-    case mojom::DataElementType::kBlob:
-      *os << "TYPE_BLOB, uuid: " << x.blob_uuid();
-      break;
     case mojom::DataElementType::kDataPipe:
       *os << "TYPE_DATA_PIPE";
       break;
     case mojom::DataElementType::kChunkedDataPipe:
       *os << "TYPE_CHUNKED_DATA_PIPE";
+      break;
+    case mojom::DataElementType::kReadOnceStream:
+      *os << "TYPE_READ_ONCE_STREAM";
       break;
     case mojom::DataElementType::kUnknown:
       *os << "TYPE_UNKNOWN";
@@ -155,14 +140,11 @@ bool operator==(const DataElement& a, const DataElement& b) {
     case mojom::DataElementType::kFile:
       return a.path() == b.path() &&
              a.expected_modification_time() == b.expected_modification_time();
-    case mojom::DataElementType::kRawFile:
-      return a.path() == b.path() &&
-             a.expected_modification_time() == b.expected_modification_time();
-    case mojom::DataElementType::kBlob:
-      return a.blob_uuid() == b.blob_uuid();
     case mojom::DataElementType::kDataPipe:
       return false;
     case mojom::DataElementType::kChunkedDataPipe:
+      return false;
+    case mojom::DataElementType::kReadOnceStream:
       return false;
     case mojom::DataElementType::kUnknown:
       NOTREACHED();

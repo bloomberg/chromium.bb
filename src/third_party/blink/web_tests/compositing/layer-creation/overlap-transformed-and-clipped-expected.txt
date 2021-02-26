@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='container clips'",
-      "bounds": [100, 100],
-      "transform": 1
-    },
-    {
       "name": "LayoutNGBlockFlow (positioned) DIV class='under composited'",
       "bounds": [100, 100],
       "contentsOpaque": true,
@@ -21,6 +16,7 @@
     {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='over')",
       "bounds": [100, 100],
+      "backgroundColor": "#008000",
       "transform": 1
     }
   ],

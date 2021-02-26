@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -127,13 +128,34 @@ void AnimationHost::RemoveAnimationTimeline(
   SetNeedsPushProperties();
 }
 
+void AnimationHost::SetHasCanvasInvalidation(bool has_canvas_invalidation) {
+  has_canvas_invalidation_ = has_canvas_invalidation;
+}
+
+bool AnimationHost::HasCanvasInvalidation() const {
+  return has_canvas_invalidation_;
+}
+
+bool AnimationHost::HasJSAnimation() const {
+  return has_inline_style_mutation_;
+}
+
+void AnimationHost::SetHasInlineStyleMutation(bool has_inline_style_mutation) {
+  has_inline_style_mutation_ = has_inline_style_mutation;
+}
+
 void AnimationHost::UpdateRegisteredElementIds(ElementListType changed_list) {
   for (auto map_entry : element_to_animations_map_) {
+    // kReservedElementId is reserved for an paint worklet element that animates
+    // a custom property. This element is assumed to always be present as no
+    // element is needed to tick this animation.
     if (mutator_host_client()->IsElementInPropertyTrees(map_entry.first,
-                                                        changed_list))
+                                                        changed_list) ||
+        map_entry.first.GetStableId() == ElementId::kReservedElementId) {
       map_entry.second->ElementIdRegistered(map_entry.first, changed_list);
-    else
+    } else {
       map_entry.second->ElementIdUnregistered(map_entry.first, changed_list);
+    }
   }
 }
 
@@ -219,6 +241,8 @@ void AnimationHost::SetNeedsCommit() {
 }
 
 void AnimationHost::SetNeedsPushProperties() {
+  if (needs_push_properties_)
+    return;
   needs_push_properties_ = true;
   if (mutator_host_client_)
     mutator_host_client_->SetMutatorsNeedCommit();
@@ -226,6 +250,16 @@ void AnimationHost::SetNeedsPushProperties() {
 
 void AnimationHost::PushPropertiesTo(MutatorHost* mutator_host_impl) {
   auto* host_impl = static_cast<AnimationHost*>(mutator_host_impl);
+
+  // Update animation counts and whether raf was requested. These explicitly
+  // do not request push properties and are pushed as part of the next commit
+  // when it happens as requesting a commit leads to performance issues:
+  // https://crbug.com/1083244
+  host_impl->main_thread_animations_count_ = main_thread_animations_count_;
+  host_impl->current_frame_had_raf_ = current_frame_had_raf_;
+  host_impl->next_frame_has_pending_raf_ = next_frame_has_pending_raf_;
+  host_impl->has_canvas_invalidation_ = has_canvas_invalidation_;
+  host_impl->has_inline_style_mutation_ = has_inline_style_mutation_;
 
   if (needs_push_properties_) {
     needs_push_properties_ = false;
@@ -289,9 +323,6 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
   // Update the impl-only scroll offset animations.
   scroll_offset_animations_->PushPropertiesTo(
       host_impl->scroll_offset_animations_impl_.get());
-  host_impl->main_thread_animations_count_ = main_thread_animations_count_;
-  host_impl->current_frame_had_raf_ = current_frame_had_raf_;
-  host_impl->next_frame_has_pending_raf_ = next_frame_has_pending_raf_;
 
   // The pending info list is cleared in LayerTreeHostImpl::CommitComplete
   // and should be empty when pushing properties.
@@ -752,37 +783,25 @@ void AnimationHost::SetMutationUpdate(
   }
 }
 
-size_t AnimationHost::CompositedAnimationsCount() const {
-  size_t composited_animations_count = 0;
-  for (const auto& it : ticking_animations_)
-    composited_animations_count += it->TickingKeyframeModelsCount();
-  return composited_animations_count;
-}
-
 void AnimationHost::SetAnimationCounts(
     size_t total_animations_count,
     bool current_frame_had_raf,
     bool next_frame_has_pending_raf) {
+  // Though these changes are pushed as part of AnimationHost::PushPropertiesTo
+  // we don't SetNeedsPushProperties as pushing the values requires a commit.
+  // Instead we allow them to be pushed whenever the next required commit
+  // happens to avoid unnecessary work. See https://crbug.com/1083244.
+
   // If an animation is being run on the compositor, it will have a ticking
   // Animation (which will have a corresponding impl-thread version). Therefore
   // to find the count of main-only animations, we can simply subtract the
   // number of ticking animations from the total count.
   size_t ticking_animations_count = ticking_animations_.size();
-  if (main_thread_animations_count_ !=
-      total_animations_count - ticking_animations_count) {
-    main_thread_animations_count_ =
-        total_animations_count - ticking_animations_count;
-    DCHECK_GE(main_thread_animations_count_, 0u);
-    SetNeedsPushProperties();
-  }
-  if (current_frame_had_raf != current_frame_had_raf_) {
-    current_frame_had_raf_ = current_frame_had_raf;
-    SetNeedsPushProperties();
-  }
-  if (next_frame_has_pending_raf != next_frame_has_pending_raf_) {
-    next_frame_has_pending_raf_ = next_frame_has_pending_raf;
-    SetNeedsPushProperties();
-  }
+  main_thread_animations_count_ =
+      total_animations_count - ticking_animations_count;
+  DCHECK_GE(main_thread_animations_count_, 0u);
+  current_frame_had_raf_ = current_frame_had_raf;
+  next_frame_has_pending_raf_ = next_frame_has_pending_raf;
 }
 
 size_t AnimationHost::MainThreadAnimationsCount() const {

@@ -10,6 +10,7 @@
 #define CHROME_INSTALLER_UTIL_SHELL_UTIL_H_
 
 #include <windows.h>
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -19,8 +20,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
@@ -31,7 +32,7 @@ class RegistryEntry;
 namespace base {
 class AtomicFlag;
 class CommandLine;
-}
+}  // namespace base
 
 // This is a utility class that provides common shell integration methods
 // that can be used by installer as well as Chrome.
@@ -72,6 +73,7 @@ class ShellUtil {
     SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
     SHORTCUT_LOCATION_TASKBAR_PINS,   // base::win::Version::WIN7 +
     SHORTCUT_LOCATION_APP_SHORTCUTS,  // base::win::Version::WIN8 +
+    SHORTCUT_LOCATION_STARTUP,
     NUM_SHORTCUT_LOCATIONS
   };
 
@@ -174,25 +176,17 @@ class ShellUtil {
       pin_to_taskbar = pin_to_taskbar_in;
     }
 
-    bool has_target() const {
-      return (options & PROPERTIES_TARGET) != 0;
-    }
+    bool has_target() const { return (options & PROPERTIES_TARGET) != 0; }
 
-    bool has_arguments() const {
-      return (options & PROPERTIES_ARGUMENTS) != 0;
-    }
+    bool has_arguments() const { return (options & PROPERTIES_ARGUMENTS) != 0; }
 
     bool has_description() const {
       return (options & PROPERTIES_DESCRIPTION) != 0;
     }
 
-    bool has_icon() const {
-      return (options & PROPERTIES_ICON) != 0;
-    }
+    bool has_icon() const { return (options & PROPERTIES_ICON) != 0; }
 
-    bool has_app_id() const {
-      return (options & PROPERTIES_APP_ID) != 0;
-    }
+    bool has_app_id() const { return (options & PROPERTIES_APP_ID) != 0; }
 
     bool has_shortcut_name() const {
       return (options & PROPERTIES_SHORTCUT_NAME) != 0;
@@ -359,10 +353,9 @@ class ShellUtil {
   // SHORTCUT_LOCATION_QUICK_LAUNCH, SHORTCUT_LOCATION_START_MENU_ROOT,
   // SHORTCUT_LOCATION_START_MENU_CHROME_DIR, or
   // SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR.
-  static bool CreateOrUpdateShortcut(
-      ShortcutLocation location,
-      const ShortcutProperties& properties,
-      ShortcutOperation operation);
+  static bool CreateOrUpdateShortcut(ShortcutLocation location,
+                                     const ShortcutProperties& properties,
+                                     ShortcutOperation operation);
 
   // Returns the string "|icon_path|,|icon_index|" (see, for example,
   // http://msdn.microsoft.com/library/windows/desktop/dd391573.aspx).
@@ -420,7 +413,7 @@ class ShellUtil {
   // The returned appid is guaranteed to be no longer than
   // chrome::kMaxAppModelIdLength (some of the components might have been
   // shortened to enforce this).
-  static base::string16 BuildAppModelId(
+  static base::string16 BuildAppUserModelId(
       const std::vector<base::string16>& components);
 
   // Returns true if Chrome can make itself the default browser without relying
@@ -517,7 +510,7 @@ class ShellUtil {
   // best effort deal.
   // If write to HKLM is required, but fails, and:
   // - |elevate_if_not_admin| is true (and OS is Vista or above):
-  //   tries to launch setup.exe with admin priviledges (by prompting the user
+  //   tries to launch setup.exe with admin privileges (by prompting the user
   //   with a UAC) to do these tasks.
   // - |elevate_if_not_admin| is false (or OS is XP):
   //   adds the ProgId entries to HKCU. These entries will not make Chrome show
@@ -538,6 +531,11 @@ class ShellUtil {
   static bool RegisterChromeBrowser(const base::FilePath& chrome_exe,
                                     const base::string16& unique_suffix,
                                     bool elevate_if_not_admin);
+
+  // Same as RegisterChromeBrowser above, except that we don't stop early if
+  // there is an error adding registry entries and we disable rollback.
+  // |elevate_if_not_admin| is false and unique_suffix is empty.
+  static void RegisterChromeBrowserBestEffort(const base::FilePath& chrome_exe);
 
   // This method declares to Windows that Chrome is capable of handling the
   // given protocol. This function will call the RegisterChromeBrowser function
@@ -581,25 +579,32 @@ class ShellUtil {
   // redirected to |new_target_exe|.
   // Returns true if all updates to matching shortcuts are successful, including
   // the vacuous case where no matching shortcuts are found.
-  static bool RetargetShortcutsWithArgs(
-      ShortcutLocation location,
-      ShellChange level,
-      const base::FilePath& old_target_exe,
-      const base::FilePath& new_target_exe);
+  static bool RetargetShortcutsWithArgs(ShortcutLocation location,
+                                        ShellChange level,
+                                        const base::FilePath& old_target_exe,
+                                        const base::FilePath& new_target_exe);
 
   typedef base::RefCountedData<base::AtomicFlag> SharedCancellationFlag;
 
-  // Appends Chrome shortcuts with non-whitelisted arguments to |shortcuts| if
-  // not NULL. If |do_removal|, also removes non-whitelisted arguments from
+  // Appends Chrome shortcuts with disallowed arguments to |shortcuts| if
+  // not nullptr. If |do_removal|, also removes disallowed arguments from
   // those shortcuts. This method will abort and return false if |cancel| is
-  // non-NULL and gets set at any point during this call.
+  // non-nullptr and gets set at any point during this call.
   static bool ShortcutListMaybeRemoveUnknownArgs(
       ShortcutLocation location,
       ShellChange level,
       const base::FilePath& chrome_exe,
       bool do_removal,
       const scoped_refptr<SharedCancellationFlag>& cancel,
-      std::vector<std::pair<base::FilePath, base::string16> >* shortcuts);
+      std::vector<std::pair<base::FilePath, base::string16>>* shortcuts);
+
+  // Resets file attributes on shortcuts to a known good default value.
+  // Ensures that Chrome shortcuts are not hidden from the user.
+  // Returns true if all updates to matching shortcuts are successful or if no
+  // matching shortcuts were found.
+  static bool ResetShortcutFileAttributes(ShortcutLocation location,
+                                          ShellChange level,
+                                          const base::FilePath& chrome_exe);
 
   // Sets |suffix| to the base 32 encoding of the md5 hash of this user's sid
   // preceded by a dot.
@@ -633,8 +638,8 @@ class ShellUtil {
   // |prog_id| is the ProgId used by Windows for file associations with this
   // application. Must not be empty or start with a '.'.
   // |command_line| is the command to execute when opening a file via this
-  // association. It should contain "%1" (to tell Windows to pass the filename
-  // as an argument).
+  // association. It must not contain the Windows filename placeholder "%1";
+  // this function will register |command_line| plus the filename placeholder.
   // |application_name| is the friendly name displayed for this application in
   // the Open With menu.
   // |file_type_name| is the friendly name for files of these types when
@@ -660,6 +665,31 @@ class ShellUtil {
   // with this name will be deleted.
   static bool DeleteFileAssociations(const base::string16& prog_id);
 
+  // Adds an application entry and metadata sub-entries to
+  // HKCU\SOFTWARE\classes\<prog_id> capable of handling file type /
+  // protocol associations.
+  //
+  // |prog_id| is the ProgId used by Windows to uniquely identity this
+  // application. Must not be empty or start with a '.'.
+  // |shell_open_command_line| is the command to execute when opening the app
+  // via association.
+  // |application_name| is the friendly name displayed for this application in
+  // the Open With menu.
+  // |application_description| is the description for this application to be
+  // displayed by certain Windows settings dialogs.
+  // |icon_path| is the path of the icon displayed for this application in the
+  // Open With menu, and used for default files / protocols associated with this
+  // application.
+  static bool AddApplicationClass(
+      const base::string16& prog_id,
+      const base::CommandLine& shell_open_command_line,
+      const base::string16& application_name,
+      const base::string16& application_description,
+      const base::FilePath& icon_path);
+
+  // Removes all entries of an application at HKCU\SOFTWARE\classes\<prog_id>.
+  static bool DeleteApplicationClass(const base::string16& prog_id);
+
   // Returns the app name and file associations registered for a particular
   // application in the Windows registry. If there is no entry in the registry
   // for |prog_id|, nothing will be returned.
@@ -676,13 +706,15 @@ class ShellUtil {
 
   // This method converts all the RegistryEntries from the given list to
   // Set/CreateRegWorkItems and runs them using WorkItemList.
+  // |best_effort_no_rollback| is used to set WorkItemList::set_rollback_enabled
+  // and WorkItemList::set_best_effort.
   static bool AddRegistryEntries(
       HKEY root,
-      const std::vector<std::unique_ptr<RegistryEntry>>& entries);
+      const std::vector<std::unique_ptr<RegistryEntry>>& entries,
+      bool best_effort_no_rollback = false);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellUtil);
 };
-
 
 #endif  // CHROME_INSTALLER_UTIL_SHELL_UTIL_H_

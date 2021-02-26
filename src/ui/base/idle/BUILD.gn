@@ -8,12 +8,6 @@ if (is_mac) {
   import("//build/config/mac/rules.gni")
 }
 
-# Reset sources_assignment_filter for the BUILD.gn file to prevent
-# regression during the migration of Chromium away from the feature.
-# See docs/no_sources_assignment_filter.md for more information.
-# TODO(crbug.com/1018739): remove this when migration is done.
-set_sources_assignment_filter([])
-
 component("idle") {
   output_name = "ui_base_idle"
 
@@ -61,13 +55,13 @@ component("idle") {
   }
 
   if (use_x11 && !is_chromeos) {
-    configs += [ "//build/config/linux:xscrnsaver" ]
-    deps += [ "//ui/gfx/x" ]
-    sources += [
-      "idle_query_x11.cc",
-      "idle_query_x11.h",
-      "screensaver_window_finder_x11.cc",
-      "screensaver_window_finder_x11.h",
+    deps += [ "//ui/base/x" ]
+  }
+
+  if (use_ozone) {
+    deps += [
+      "//ui/base:features",
+      "//ui/display",
     ]
   }
 
@@ -78,7 +72,7 @@ component("idle") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "Carbon.framework",
       "Foundation.framework",

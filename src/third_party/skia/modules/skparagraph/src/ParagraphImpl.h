@@ -2,23 +2,59 @@
 #ifndef ParagraphImpl_DEFINED
 #define ParagraphImpl_DEFINED
 
-#include <unicode/brkiter.h>
-#include <unicode/ubidi.h>
-#include <unicode/unistr.h>
-#include <unicode/urename.h>
+#include "include/core/SkFont.h"
+#include "include/core/SkPaint.h"
 #include "include/core/SkPicture.h"
-#include "include/private/SkMutex.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkBitmaskEnum.h"
+#include "include/private/SkTArray.h"
 #include "include/private/SkTHash.h"
+#include "include/private/SkTemplates.h"
+#include "modules/skparagraph/include/DartTypes.h"
+#include "modules/skparagraph/include/FontCollection.h"
 #include "modules/skparagraph/include/Paragraph.h"
+#include "modules/skparagraph/include/ParagraphCache.h"
 #include "modules/skparagraph/include/ParagraphStyle.h"
+#include "modules/skparagraph/include/TextShadow.h"
 #include "modules/skparagraph/include/TextStyle.h"
 #include "modules/skparagraph/src/Run.h"
 #include "modules/skparagraph/src/TextLine.h"
+#include "modules/skshaper/src/SkUnicode.h"
+#include "src/core/SkSpan.h"
+
+#include <memory>
+#include <string>
+#include <vector>
 
 class SkCanvas;
 
 namespace skia {
 namespace textlayout {
+
+enum CodeUnitFlags {
+    kNoCodeUnitFlag = 0x0,
+    kPartOfWhiteSpace = 0x1,
+    kGraphemeStart = 0x2,
+    kSoftLineBreakBefore = 0x4,
+    kHardLineBreakBefore = 0x8,
+};
+}  // namespace textlayout
+}  // namespace skia
+
+namespace sknonstd {
+template <> struct is_bitmask_enum<skia::textlayout::CodeUnitFlags> : std::true_type {};
+}  // namespace sknonstd
+
+namespace skia {
+namespace textlayout {
+
+class LineMetrics;
+class TextLine;
 
 template <typename T> bool operator==(const SkSpan<T>& a, const SkSpan<T>& b) {
     return a.size() == b.size() && a.begin() == b.begin();
@@ -48,53 +84,14 @@ struct ResolvedFontDescriptor {
     SkFont fFont;
     TextIndex fTextStart;
 };
-
+/*
 struct BidiRegion {
     BidiRegion(size_t start, size_t end, uint8_t dir)
         : text(start, end), direction(dir) { }
     TextRange text;
     uint8_t direction;
 };
-
-class TextBreaker {
-public:
-    TextBreaker() : fInitialized(false), fPos(-1) {}
-
-    bool initialize(SkSpan<const char> text, UBreakIteratorType type);
-
-    bool initialized() const { return fInitialized; }
-
-    size_t first() {
-        fPos = ubrk_first(fIterator.get());
-        return eof() ? fSize : fPos;
-    }
-
-    size_t next() {
-        fPos = ubrk_next(fIterator.get());
-        return eof() ? fSize : fPos;
-    }
-
-    size_t preceding(size_t offset) {
-        auto pos = ubrk_preceding(fIterator.get(), offset);
-        return pos == icu::BreakIterator::DONE ? 0 : pos;
-    }
-
-    size_t following(size_t offset) {
-        auto pos = ubrk_following(fIterator.get(), offset);
-        return pos == icu::BreakIterator::DONE ? fSize : pos;
-    }
-
-    int32_t status() { return ubrk_getRuleStatus(fIterator.get()); }
-
-    bool eof() { return fPos == icu::BreakIterator::DONE; }
-
-private:
-    std::unique_ptr<UBreakIterator, SkFunctionWrapper<decltype(ubrk_close), ubrk_close>> fIterator;
-    bool fInitialized;
-    int32_t fPos;
-    size_t fSize;
-};
-
+*/
 class ParagraphImpl final : public Paragraph {
 
 public:
@@ -103,13 +100,15 @@ public:
                   ParagraphStyle style,
                   SkTArray<Block, true> blocks,
                   SkTArray<Placeholder, true> placeholders,
-                  sk_sp<FontCollection> fonts);
+                  sk_sp<FontCollection> fonts,
+                  std::unique_ptr<SkUnicode> unicode);
 
     ParagraphImpl(const std::u16string& utf16text,
                   ParagraphStyle style,
                   SkTArray<Block, true> blocks,
                   SkTArray<Placeholder, true> placeholders,
-                  sk_sp<FontCollection> fonts);
+                  sk_sp<FontCollection> fonts,
+                  std::unique_ptr<SkUnicode> unicode);
     ~ParagraphImpl() override;
 
     void layout(SkScalar width) override;
@@ -142,9 +141,13 @@ public:
     const ParagraphStyle& paragraphStyle() const { return fParagraphStyle; }
     SkSpan<Cluster> clusters() { return SkSpan<Cluster>(fClusters.begin(), fClusters.size()); }
     sk_sp<FontCollection> fontCollection() const { return fFontCollection; }
-    const SkTHashSet<size_t>& graphemes() const { return fGraphemes; }
-    SkSpan<Codepoint> codepoints(){ return SkSpan<Codepoint>(fCodePoints.begin(), fCodePoints.size()); }
     void formatLines(SkScalar maxWidth);
+    void ensureUTF16Mapping();
+    TextIndex findNextGraphemeBoundary(TextIndex utf8);
+    TextIndex findPreviousGraphemeBoundary(TextIndex utf8);
+    size_t getUTF16Index(TextIndex index) {
+        return fUTF16IndexForUTF8Index[index];
+    }
 
     bool strutEnabled() const { return paragraphStyle().getStrutStyle().getStrutEnabled(); }
     bool strutForceHeight() const {
@@ -155,10 +158,21 @@ public:
     }
     InternalLineMetrics strutMetrics() const { return fStrutMetrics; }
 
+    SkString getEllipsis() const;
+
     SkSpan<const char> text(TextRange textRange);
     SkSpan<Cluster> clusters(ClusterRange clusterRange);
     Cluster& cluster(ClusterIndex clusterIndex);
-    Run& run(RunIndex runIndex);
+    ClusterIndex clusterIndex(TextIndex textIndex) {
+        auto clusterIndex = this->fClustersIndexFromCodeUnit[textIndex];
+        SkASSERT(clusterIndex != EMPTY_INDEX);
+        return clusterIndex;
+    }
+    Run& run(RunIndex runIndex) {
+        SkASSERT(runIndex < fRuns.size());
+        return fRuns[runIndex];
+    }
+
     Run& runByCluster(ClusterIndex clusterIndex);
     SkSpan<Block> blocks(BlockRange blockRange);
     Block& block(BlockIndex blockIndex);
@@ -170,18 +184,20 @@ public:
 
     void setState(InternalState state);
     sk_sp<SkPicture> getPicture() { return fPicture; }
-    SkRect getBoundaries() const { return fOrigin; }
 
     SkScalar widthWithTrailingSpaces() { return fMaxWidthWithTrailingSpaces; }
 
     void resetContext();
     void resolveStrut();
+
+    bool computeCodeUnitProperties();
+
     void buildClusterTable();
-    void markLineBreaks();
     void spaceGlyphs();
     bool shapeTextIntoEndlessLine();
     void breakShapedTextIntoLines(SkScalar maxWidth);
-    void paintLinesIntoPicture();
+    void paintLinesIntoPicture(SkScalar x, SkScalar y);
+    void paintLines(SkCanvas* canvas, SkScalar x, SkScalar y);
 
     void updateTextAlign(TextAlign textAlign) override;
     void updateText(size_t from, SkString text) override;
@@ -201,6 +217,14 @@ public:
         }
     }
 
+    using CodeUnitRangeVisitor = std::function<bool(TextRange textRange)>;
+    void forEachCodeUnitPropertyRange(CodeUnitFlags property, CodeUnitRangeVisitor visitor);
+    size_t getWhitespacesLength(TextRange textRange);
+
+    bool codeUnitHasProperty(size_t index, CodeUnitFlags property) const { return (fCodeUnitProperties[index] & property) == property; }
+
+    SkUnicode* getUnicode() { return fUnicode.get(); }
+
 private:
     friend class ParagraphBuilder;
     friend class ParagraphCacheKey;
@@ -210,14 +234,7 @@ private:
     friend class TextWrapper;
     friend class OneLineShaper;
 
-    void calculateBoundaries();
-
-    void markGraphemes16();
-    void markGraphemes();
-
     void computeEmptyMetrics();
-
-    bool calculateBidiRegions(SkTArray<BidiRegion>* regions);
 
     // Input
     SkTArray<StyleBlock<SkScalar>> fLetterSpaceStyles;
@@ -234,12 +251,17 @@ private:
     InternalState fState;
     SkTArray<Run, false> fRuns;         // kShaped
     SkTArray<Cluster, true> fClusters;  // kClusterized (cached: text, word spacing, letter spacing, resolved fonts)
-    SkTArray<Grapheme, true> fGraphemes16;
-    SkTArray<Codepoint, true> fCodePoints;
-    SkTHashSet<size_t> fGraphemes;
+    SkTArray<CodeUnitFlags> fCodeUnitProperties;
+    SkTArray<size_t> fClustersIndexFromCodeUnit;
+    std::vector<size_t> fWords;
+    std::vector<SkUnicode::BidiRegion> fBidiRegions;
+    // These two arrays are used in measuring methods (getRectsForRange, getGlyphPositionAtCoordinate)
+    // They are filled lazily whenever they need and cached
+    SkTArray<TextIndex, true> fUTF8IndexForUTF16Index;
+    SkTArray<size_t, true> fUTF16IndexForUTF8Index;
     size_t fUnresolvedGlyphs;
 
-    SkTArray<TextLine, true> fLines;    // kFormatted   (cached: width, max lines, ellipsis, text align)
+    SkTArray<TextLine, false> fLines;   // kFormatted   (cached: width, max lines, ellipsis, text align)
     sk_sp<SkPicture> fPicture;          // kRecorded    (cached: text styles)
 
     SkTArray<ResolvedFontDescriptor> fFontSwitches;
@@ -250,10 +272,11 @@ private:
     SkScalar fOldWidth;
     SkScalar fOldHeight;
     SkScalar fMaxWidthWithTrailingSpaces;
-    SkRect fOrigin;
-    std::vector<size_t> fWords;
+
+    std::unique_ptr<SkUnicode> fUnicode;
 };
 }  // namespace textlayout
 }  // namespace skia
+
 
 #endif  // ParagraphImpl_DEFINED

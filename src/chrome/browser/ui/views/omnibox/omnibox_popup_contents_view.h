@@ -50,22 +50,21 @@ class OmniboxPopupContentsView : public views::View,
   gfx::Image GetMatchIcon(const AutocompleteMatch& match,
                           SkColor vector_icon_color) const;
 
-  // Sets the line specified by |index| as selected.
-  virtual void SetSelectedLine(size_t index);
+  // Sets the line specified by |index| as selected and, if |index| is
+  // different than the previous index, sets the line state to NORMAL.
+  virtual void SetSelectedLineForMouseOrTouch(size_t index);
 
   // Returns true if the line specified by |index| is selected.
   virtual bool IsSelectedIndex(size_t index) const;
-
-  // If the selected index has a tab switch button, whether it's "focused" via
-  // the tab key. Invalid if the selected index does not have a tab switch
-  // button.
-  bool IsButtonSelected() const;
 
   // Called by the active result view to inform model (due to mouse event).
   void UnselectButton();
 
   // Gets the OmniboxResultView for match |i|.
   OmniboxResultView* result_view_at(size_t i);
+
+  // Currently selected OmniboxResultView, or nullptr if nothing is selected.
+  OmniboxResultView* GetSelectedResultView();
 
   // Returns whether we're in experimental keyword mode and the input gives
   // sufficient confidence that the user wants keyword mode.
@@ -90,8 +89,11 @@ class OmniboxPopupContentsView : public views::View,
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
 
+  void FireAXEventsForNewActiveDescendant(View* descendant_view);
+
  private:
   friend class OmniboxPopupContentsViewTest;
+  friend class OmniboxSuggestionButtonRowBrowserTest;
   class AutocompletePopupWidget;
 
   // Returns the target popup bounds in screen coordinates based on the bounds
@@ -109,8 +111,8 @@ class OmniboxPopupContentsView : public views::View,
   // the specified point.
   size_t GetIndexForPoint(const gfx::Point& point);
 
-  // Update which result views are visible when the hidden group IDs change.
-  void OnHiddenGroupIdsUpdate();
+  // Update which result views are visible when the group visibility changes.
+  void OnSuggestionGroupVisibilityUpdate();
 
   // Gets the pref service for this view. May return nullptr in tests.
   PrefService* GetPrefService() const;

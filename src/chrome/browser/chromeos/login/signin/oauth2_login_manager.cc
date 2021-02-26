@@ -125,12 +125,6 @@ void OAuth2LoginManager::OnRefreshTokenUpdatedForAccount(
   // TODO(fgorski): Once ProfileOAuth2TokenService supports multi-login, make
   // sure to restore session cookies in the context of the correct user_email.
 
-  // Do not validate tokens for supervised users, as they don't actually have
-  // oauth2 token.
-  if (user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser()) {
-    VLOG(1) << "Logged in as supervised user, skip token validation.";
-    return;
-  }
   // Only restore session cookies for the primary account in the profile.
   if (GetUnconsentedPrimaryAccountId() == account_info.account_id) {
     // The refresh token has changed, so stop any ongoing actions that were
@@ -174,7 +168,7 @@ void OAuth2LoginManager::StoreOAuth2Token() {
   // We already have the refresh token at this
   // point, and will not get any additional callbacks from Account Manager or
   // Identity Manager about refresh tokens. Manually call
-  // |OnRefreshTokenUpdatedForAccount| to continue the flow.
+  // `OnRefreshTokenUpdatedForAccount` to continue the flow.
   // TODO(https://crbug.com/977137): Clean this up after cleaning
   // OAuth2LoginVerifier.
   OnRefreshTokenUpdatedForAccount(primary_account_info);

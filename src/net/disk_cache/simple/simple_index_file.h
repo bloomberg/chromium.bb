@@ -13,7 +13,6 @@
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/pickle.h"
 #include "net/base/cache_type.h"
@@ -107,8 +106,6 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                            SimpleIndex::IndexWriteToDiskReason reason,
                            const SimpleIndex::EntrySet& entry_set,
                            uint64_t cache_size,
-                           const base::TimeTicks& start,
-                           bool app_on_background,
                            base::OnceClosure callback);
 
  private:
@@ -178,9 +175,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                               const base::FilePath& cache_directory,
                               const base::FilePath& index_filename,
                               const base::FilePath& temp_index_filename,
-                              std::unique_ptr<base::Pickle> pickle,
-                              const base::TimeTicks& start_time,
-                              bool app_on_background);
+                              std::unique_ptr<base::Pickle> pickle);
 
   // Scan the index directory for entries, returning an EntrySet of all entries
   // found.

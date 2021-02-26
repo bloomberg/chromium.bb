@@ -5,13 +5,13 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/net/trial_comparison_cert_verifier_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/test/browser_test.h"
 #include "net/base/features.h"
@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(TrialComparisonCertVerifierTest, TrialDisabled) {
   base::HistogramTester histograms;
   ui_test_utils::NavigateToURL(browser(),
                                https_test_server_.GetURL("/title1.html"));
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
   histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
 }
@@ -65,21 +65,21 @@ IN_PROC_BROWSER_TEST_F(TrialComparisonCertVerifierFeatureEnabledTest,
   base::HistogramTester histograms;
   ui_test_utils::NavigateToURL(browser(),
                                https_test_server_.GetURL("/title1.html"));
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
   histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
 }
 
 IN_PROC_BROWSER_TEST_F(TrialComparisonCertVerifierFeatureEnabledTest,
                        TrialEnabledPrefEnabled) {
-  safe_browsing::SetExtendedReportingPref(browser()->profile()->GetPrefs(),
-                                          true);
+  safe_browsing::SetExtendedReportingPrefForTests(
+      browser()->profile()->GetPrefs(), true);
 
   ASSERT_TRUE(https_test_server_.Start());
   base::HistogramTester histograms;
   ui_test_utils::NavigateToURL(browser(),
                                https_test_server_.GetURL("/title1.html"));
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
   if (base::FeatureList::IsEnabled(
@@ -121,14 +121,14 @@ class TrialComparisonCertVerifierFeatureOverridenByBuiltinVerifierTest
 IN_PROC_BROWSER_TEST_F(
     TrialComparisonCertVerifierFeatureOverridenByBuiltinVerifierTest,
     TrialEnabledPrefEnabledBuiltVerifierEnabled) {
-  safe_browsing::SetExtendedReportingPref(browser()->profile()->GetPrefs(),
-                                          true);
+  safe_browsing::SetExtendedReportingPrefForTests(
+      browser()->profile()->GetPrefs(), true);
 
   ASSERT_TRUE(https_test_server_.Start());
   base::HistogramTester histograms;
   ui_test_utils::NavigateToURL(browser(),
                                https_test_server_.GetURL("/title1.html"));
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histograms.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
   // If both the dual cert verifier trial feature and the builtin verifier
   // feature are enabled, the dual cert verifier trial should not be used.

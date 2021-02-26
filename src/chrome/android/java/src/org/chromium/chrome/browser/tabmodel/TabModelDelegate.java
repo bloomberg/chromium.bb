@@ -27,12 +27,6 @@ public interface TabModelDelegate {
     boolean closeAllTabsRequest(boolean incognito);
 
     /**
-     * @param model The specified model.
-     * @return Whether the specified model is currently selected.
-     */
-    boolean isCurrentModel(TabModel model);
-
-    /**
      * @return Whether reparenting is currently in progress for this TabModel.
      */
     boolean isReparentingInProgress();
@@ -40,7 +34,6 @@ public interface TabModelDelegate {
     // TODO(aurimas): clean these methods up.
     TabModel getCurrentModel();
     TabModel getModel(boolean incognito);
-    boolean isInOverviewMode();
     boolean isSessionRestoreInProgress();
     void selectModel(boolean incognito);
 }

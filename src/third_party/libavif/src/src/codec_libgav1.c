@@ -13,7 +13,6 @@ struct avifCodecInternal
     Libgav1Decoder * gav1Decoder;
     const Libgav1DecoderBuffer * gav1Image;
     avifRange colorRange;
-    uint32_t inputSampleIndex;
 };
 
 static void gav1CodecDestroyInternal(avifCodec * codec)
@@ -24,48 +23,42 @@ static void gav1CodecDestroyInternal(avifCodec * codec)
     avifFree(codec->internal);
 }
 
-static avifBool gav1CodecOpen(avifCodec * codec, uint32_t firstSampleIndex)
+static avifBool gav1CodecOpen(avifCodec * codec, avifDecoder * decoder)
 {
     if (codec->internal->gav1Decoder == NULL) {
+        codec->internal->gav1Settings.threads = decoder->maxThreads;
+
         if (Libgav1DecoderCreate(&codec->internal->gav1Settings, &codec->internal->gav1Decoder) != kLibgav1StatusOk) {
             return AVIF_FALSE;
         }
     }
-
-    codec->internal->inputSampleIndex = firstSampleIndex;
     return AVIF_TRUE;
 }
 
-static avifBool gav1CodecGetNextImage(avifCodec * codec, avifImage * image)
+static avifBool gav1CodecGetNextImage(struct avifCodec * codec, const avifDecodeSample * sample, avifBool alpha, avifImage * image)
 {
-    const Libgav1DecoderBuffer * nextFrame = NULL;
-    // Check if there are more samples to feed
-    if (codec->internal->inputSampleIndex < codec->decodeInput->samples.count) {
-        // Feed another sample
-        avifSample * sample = &codec->decodeInput->samples.sample[codec->internal->inputSampleIndex];
-        ++codec->internal->inputSampleIndex;
-        if (Libgav1DecoderEnqueueFrame(codec->internal->gav1Decoder,
-                                       sample->data.data,
-                                       sample->data.size,
-                                       /*user_private_data=*/0,
-                                       /*buffer_private_data=*/NULL) != kLibgav1StatusOk) {
-            return AVIF_FALSE;
-        }
-        // Each Libgav1DecoderDequeueFrame() call invalidates the output frame
-        // returned by the previous Libgav1DecoderDequeueFrame() call. Clear
-        // our pointer to the previous output frame.
-        codec->internal->gav1Image = NULL;
-        if (Libgav1DecoderDequeueFrame(codec->internal->gav1Decoder, &nextFrame) != kLibgav1StatusOk) {
-            return AVIF_FALSE;
-        }
-        // Got an image!
+    if (Libgav1DecoderEnqueueFrame(codec->internal->gav1Decoder,
+                                   sample->data.data,
+                                   sample->data.size,
+                                   /*user_private_data=*/0,
+                                   /*buffer_private_data=*/NULL) != kLibgav1StatusOk) {
+        return AVIF_FALSE;
     }
+    // Each Libgav1DecoderDequeueFrame() call invalidates the output frame
+    // returned by the previous Libgav1DecoderDequeueFrame() call. Clear
+    // our pointer to the previous output frame.
+    codec->internal->gav1Image = NULL;
+    const Libgav1DecoderBuffer * nextFrame = NULL;
+    if (Libgav1DecoderDequeueFrame(codec->internal->gav1Decoder, &nextFrame) != kLibgav1StatusOk) {
+        return AVIF_FALSE;
+    }
+    // Got an image!
 
     if (nextFrame) {
         codec->internal->gav1Image = nextFrame;
         codec->internal->colorRange = (nextFrame->color_range == kLibgav1ColorRangeStudio) ? AVIF_RANGE_LIMITED : AVIF_RANGE_FULL;
     } else {
-        if (codec->decodeInput->alpha && codec->internal->gav1Image) {
+        if (alpha && codec->internal->gav1Image) {
             // Special case: reuse last alpha frame
         } else {
             return AVIF_FALSE;
@@ -73,13 +66,15 @@ static avifBool gav1CodecGetNextImage(avifCodec * codec, avifImage * image)
     }
 
     const Libgav1DecoderBuffer * gav1Image = codec->internal->gav1Image;
-    avifBool isColor = !codec->decodeInput->alpha;
+    avifBool isColor = !alpha;
     if (isColor) {
         // Color (YUV) planes - set image to correct size / format, fill color
 
         avifPixelFormat yuvFormat = AVIF_PIXEL_FORMAT_NONE;
         switch (gav1Image->image_format) {
             case kLibgav1ImageFormatMonochrome400:
+                yuvFormat = AVIF_PIXEL_FORMAT_YUV400;
+                break;
             case kLibgav1ImageFormatYuv420:
                 yuvFormat = AVIF_PIXEL_FORMAT_YUV420;
                 break;
@@ -105,6 +100,7 @@ static avifBool gav1CodecGetNextImage(avifCodec * codec, avifImage * image)
 
         image->yuvFormat = yuvFormat;
         image->yuvRange = codec->internal->colorRange;
+        image->yuvChromaSamplePosition = (avifChromaSamplePosition)gav1Image->chroma_sample_position;
 
         image->colorPrimaries = (avifColorPrimaries)gav1Image->color_primary;
         image->transferCharacteristics = (avifTransferCharacteristics)gav1Image->transfer_characteristics;
@@ -115,11 +111,12 @@ static avifBool gav1CodecGetNextImage(avifCodec * codec, avifImage * image)
 
         // Steal the pointers from the decoder's image directly
         avifImageFreePlanes(image, AVIF_PLANES_YUV);
-        for (int yuvPlane = 0; yuvPlane < 3; ++yuvPlane) {
+        int yuvPlaneCount = (yuvFormat == AVIF_PIXEL_FORMAT_YUV400) ? 1 : 3;
+        for (int yuvPlane = 0; yuvPlane < yuvPlaneCount; ++yuvPlane) {
             image->yuvPlanes[yuvPlane] = gav1Image->plane[yuvPlane];
             image->yuvRowBytes[yuvPlane] = gav1Image->stride[yuvPlane];
         }
-        image->decoderOwnsYUVPlanes = AVIF_TRUE;
+        image->imageOwnsYUVPlanes = AVIF_FALSE;
     } else {
         // Alpha plane - ensure image is correct size, fill color
 
@@ -138,7 +135,7 @@ static avifBool gav1CodecGetNextImage(avifCodec * codec, avifImage * image)
         image->alphaPlane = gav1Image->plane[0];
         image->alphaRowBytes = gav1Image->stride[0];
         image->alphaRange = codec->internal->colorRange;
-        image->decoderOwnsAlphaPlane = AVIF_TRUE;
+        image->imageOwnsAlphaPlane = AVIF_FALSE;
     }
 
     return AVIF_TRUE;
@@ -160,8 +157,5 @@ avifCodec * avifCodecCreateGav1(void)
     codec->internal = (struct avifCodecInternal *)avifAlloc(sizeof(struct avifCodecInternal));
     memset(codec->internal, 0, sizeof(struct avifCodecInternal));
     Libgav1DecoderSettingsInitDefault(&codec->internal->gav1Settings);
-    // The number of threads (default to 1) should depend on the number of
-    // processor cores. For now use a hardcoded value of 2.
-    codec->internal->gav1Settings.threads = 2;
     return codec;
 }

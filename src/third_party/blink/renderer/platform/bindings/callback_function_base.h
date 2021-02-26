@@ -28,7 +28,7 @@ class PLATFORM_EXPORT CallbackFunctionBase
  public:
   virtual ~CallbackFunctionBase() = default;
 
-  virtual void Trace(Visitor* visitor);
+  virtual void Trace(Visitor* visitor) const;
 
   v8::Local<v8::Object> CallbackObject() {
     return callback_function_.NewLocal(GetIsolate());
@@ -63,6 +63,8 @@ class PLATFORM_EXPORT CallbackFunctionBase
       const char* interface_name,
       const char* operation_name);
 
+  ScriptState* IncumbentScriptState() { return incumbent_script_state_; }
+
   DOMWrapperWorld& GetWorld() const { return incumbent_script_state_->World(); }
 
   // Returns true if the ES function has a [[Construct]] internal method.
@@ -93,12 +95,10 @@ class PLATFORM_EXPORT CallbackFunctionBase
     return callback_function_.NewLocal(GetIsolate()).As<v8::Function>();
   }
 
-  ScriptState* IncumbentScriptState() { return incumbent_script_state_; }
-
  private:
   // The "callback function type" value.
   // Use v8::Object instead of v8::Function in order to handle
-  // [TreatNonObjectAsNull].
+  // [LegacyTreatNonObjectAsNull].
   TraceWrapperV8Reference<v8::Object> callback_function_;
   // The associated Realm of the callback function type value iff it's the same
   // origin-domain. Otherwise, nullptr.

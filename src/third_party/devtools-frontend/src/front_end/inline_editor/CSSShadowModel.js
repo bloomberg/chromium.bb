@@ -19,6 +19,7 @@ export class CSSShadowModel {
     this._offsetY = CSSLength.zero();
     this._blurRadius = CSSLength.zero();
     this._spreadRadius = CSSLength.zero();
+    /** @type {!Common.Color.Color} */
     this._color = /** @type {!Common.Color.Color} */ (Common.Color.Color.parse('black'));
     this._format = [_Part.OffsetX, _Part.OffsetY];
   }

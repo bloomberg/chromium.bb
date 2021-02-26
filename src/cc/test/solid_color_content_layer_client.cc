@@ -19,8 +19,7 @@ gfx::Rect SolidColorContentLayerClient::PaintableRegion() {
 }
 
 scoped_refptr<DisplayItemList>
-SolidColorContentLayerClient::PaintContentsToDisplayList(
-    PaintingControlSetting painting_control) {
+SolidColorContentLayerClient::PaintContentsToDisplayList() {
   auto display_list = base::MakeRefCounted<DisplayItemList>();
   display_list->StartPaint();
   display_list->push<SaveOp>();
@@ -51,10 +50,6 @@ SolidColorContentLayerClient::PaintContentsToDisplayList(
 
 bool SolidColorContentLayerClient::FillsBoundsCompletely() const {
   return false;
-}
-
-size_t SolidColorContentLayerClient::GetApproximateUnsharedMemoryUsage() const {
-  return 0;
 }
 
 }  // namespace cc

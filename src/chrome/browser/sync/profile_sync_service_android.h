@@ -87,8 +87,6 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
   jboolean IsEncryptEverythingEnabled(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void EnableEncryptEverything(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj);
   jboolean IsPassphraseRequiredForPreferredDataTypes(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -116,8 +114,6 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
       const base::android::JavaParamRef<jobject>&);
   jlong GetExplicitPassphraseTime(JNIEnv* env,
                                   const base::android::JavaParamRef<jobject>&);
-  void FlushDirectory(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj);
   void GetAllNodes(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    const base::android::JavaParamRef<jobject>& callback);
@@ -131,6 +127,15 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
       const base::android::JavaParamRef<jobject>& obj,
       jboolean personalized);
   jboolean RequiresClientUpgrade(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void SetDecoupledFromAndroidMasterSync(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean GetDecoupledFromAndroidMasterSync(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsAuthenticatedAccountPrimary(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 

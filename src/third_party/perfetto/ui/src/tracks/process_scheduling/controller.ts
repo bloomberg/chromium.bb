@@ -13,8 +13,9 @@
 // limitations under the License.
 
 import {assertTrue} from '../../base/logging';
+import {RawQueryResult} from '../../common/protos';
+import {slowlyCountRows} from '../../common/query_iterator';
 import {fromNs, toNs} from '../../common/time';
-import {LIMIT} from '../../common/track_data';
 import {
   TrackController,
   trackControllerRegistry
@@ -24,110 +25,73 @@ import {
   Config,
   Data,
   PROCESS_SCHEDULING_TRACK_KIND,
-  SliceData,
-  SummaryData
 } from './common';
 
 // This summary is displayed for any processes that have CPU scheduling activity
 // associated with them.
-
 class ProcessSchedulingTrackController extends TrackController<Config, Data> {
   static readonly kind = PROCESS_SCHEDULING_TRACK_KIND;
-  private setup = false;
+
   private maxCpu = 0;
+  private maxDurNs = 0;
+  private cachedBucketNs = Number.MAX_SAFE_INTEGER;
+
+  async onSetup() {
+    await this.createSchedView();
+
+    const cpus = await this.engine.getCpus();
+
+    // A process scheduling track should only exist in a trace that has cpus.
+    assertTrue(cpus.length > 0);
+    this.maxCpu = Math.max(...cpus) + 1;
+
+    const result = await this.query(`
+      select max(dur), count(1)
+      from ${this.tableName('process_sched')}
+    `);
+    this.maxDurNs = result.columns[0].longValues![0];
+
+    const rowCount = result.columns[1].longValues![0];
+    const bucketNs = this.cachedBucketSizeNs(rowCount);
+    if (bucketNs === undefined) {
+      return;
+    }
+    await this.query(`
+      create table ${this.tableName('process_sched_cached')} as
+      select
+        (ts + ${bucketNs / 2}) / ${bucketNs} * ${bucketNs} as cached_tsq,
+        ts,
+        max(dur) as dur,
+        cpu,
+        utid
+      from ${this.tableName('process_sched')}
+      group by cached_tsq, cpu
+      order by cached_tsq, cpu
+    `);
+    this.cachedBucketNs = bucketNs;
+  }
 
   async onBoundsChange(start: number, end: number, resolution: number):
       Promise<Data> {
-    if (this.config.upid === null) {
-      throw new Error('Upid not set.');
-    }
+    assertTrue(this.config.upid !== null);
+
+    // The resolution should always be a power of two for the logic of this
+    // function to make sense.
+    const resolutionNs = toNs(resolution);
+    assertTrue(Math.log2(resolutionNs) % 1 === 0);
 
     const startNs = toNs(start);
     const endNs = toNs(end);
 
-    if (this.setup === false) {
-      await this.query(
-          `create virtual table ${this.tableName('window')} using window;`);
-      await this.query(`create view ${this.tableName('process')} as
-          select ts, dur, cpu, utid, upid from sched join (
-          select utid, upid from thread
-            where utid != 0 and upid = ${this.config.upid}) using(utid);`);
-      await this.query(`create virtual table ${this.tableName('span')}
-              using span_join(${this.tableName('process')} PARTITIONED utid,
-                              ${this.tableName('window')});`);
-      const cpus = await this.engine.getCpus();
-      // A process scheduling track should only exist in a trace that has cpus.
-      assertTrue(cpus.length > 0);
-      this.maxCpu = Math.max(...cpus) + 1;
-      this.setup = true;
-    }
+    // ns per quantization bucket (i.e. ns per pixel). /2 * 2 is to force it to
+    // be an even number, so we can snap in the middle.
+    const bucketNs =
+        Math.max(Math.round(resolutionNs * this.pxSize() / 2) * 2, 1);
 
-    const isQuantized = this.shouldSummarize(resolution);
-    // |resolution| is in s/px we want # ns for 20px window:
-    const bucketSizeNs = Math.round(resolution * 10 * 1e9 * 1.5);
-    let windowStartNs = startNs;
-    if (isQuantized) {
-      windowStartNs = Math.floor(windowStartNs / bucketSizeNs) * bucketSizeNs;
-    }
-    const windowDurNs = Math.max(1, endNs - windowStartNs);
+    const rawResult = await this.queryData(startNs, endNs, bucketNs);
 
-    this.query(`update ${this.tableName('window')} set
-      window_start=${windowStartNs},
-      window_dur=${windowDurNs},
-      quantum=${isQuantized ? bucketSizeNs : 0}
-      where rowid = 0;`);
-
-    if (isQuantized) {
-      return this.computeSummary(
-          fromNs(windowStartNs), end, resolution, bucketSizeNs);
-    } else {
-      return this.computeSlices(fromNs(windowStartNs), end, resolution);
-    }
-  }
-
-  private async computeSummary(
-      start: number, end: number, resolution: number,
-      bucketSizeNs: number): Promise<SummaryData> {
-    const startNs = toNs(start);
-    const endNs = toNs(end);
-    const numBuckets = Math.ceil((endNs - startNs) / bucketSizeNs);
-
-    const query = `select
-        quantum_ts as bucket,
-        sum(dur)/cast(${bucketSizeNs * this.maxCpu} as float) as utilization
-        from ${this.tableName('span')}
-        group by quantum_ts
-        limit ${LIMIT}`;
-
-    const rawResult = await this.query(query);
-    const numRows = +rawResult.numRecords;
-
-    const summary: Data = {
-      kind: 'summary',
-      start,
-      end,
-      resolution,
-      length: numRows,
-      bucketSizeSeconds: fromNs(bucketSizeNs),
-      utilizations: new Float64Array(numBuckets),
-    };
-    const cols = rawResult.columns;
-    for (let row = 0; row < numRows; row++) {
-      const bucket = +cols[0].longValues![row];
-      summary.utilizations[bucket] = +cols[1].doubleValues![row];
-    }
-    return summary;
-  }
-
-  private async computeSlices(start: number, end: number, resolution: number):
-      Promise<SliceData> {
-    const query = `select ts,dur,cpu,utid from ${this.tableName('span')}
-        order by cpu, ts
-        limit ${LIMIT};`;
-    const rawResult = await this.query(query);
-
-    const numRows = +rawResult.numRecords;
-    const slices: SliceData = {
+    const numRows = slowlyCountRows(rawResult);
+    const slices: Data = {
       kind: 'slice',
       start,
       end,
@@ -142,22 +106,60 @@ class ProcessSchedulingTrackController extends TrackController<Config, Data> {
 
     const cols = rawResult.columns;
     for (let row = 0; row < numRows; row++) {
-      const startSec = fromNs(+cols[0].longValues![row]);
-      slices.starts[row] = startSec;
-      slices.ends[row] = startSec + fromNs(+cols[1].longValues![row]);
-      slices.cpus[row] = +cols[2].longValues![row];
-      slices.utids[row] = +cols[3].longValues![row];
+      const startNsQ = +cols[0].longValues![row];
+      const startNs = +cols[1].longValues![row];
+      const durNs = +cols[2].longValues![row];
+      const endNs = startNs + durNs;
+
+      let endNsQ = Math.floor((endNs + bucketNs / 2 - 1) / bucketNs) * bucketNs;
+      endNsQ = Math.max(endNsQ, startNsQ + bucketNs);
+
+      if (startNsQ === endNsQ) {
+        throw new Error('Should never happen');
+      }
+
+      slices.starts[row] = fromNs(startNsQ);
+      slices.ends[row] = fromNs(endNsQ);
+      slices.cpus[row] = +cols[3].longValues![row];
+      slices.utids[row] = +cols[4].longValues![row];
       slices.end = Math.max(slices.ends[row], slices.end);
     }
     return slices;
   }
 
-  onDestroy(): void {
-    if (this.setup) {
-      this.query(`drop table ${this.tableName('window')}`);
-      this.query(`drop table ${this.tableName('span')}`);
-      this.setup = false;
-    }
+  private queryData(startNs: number, endNs: number, bucketNs: number):
+      Promise<RawQueryResult> {
+    const isCached = this.cachedBucketNs <= bucketNs;
+    const tsq = isCached ? `cached_tsq / ${bucketNs} * ${bucketNs}` :
+                           `(ts + ${bucketNs / 2}) / ${bucketNs} * ${bucketNs}`;
+    const queryTable = isCached ? this.tableName('process_sched_cached') :
+                                  this.tableName('process_sched');
+    const constainColumn = isCached ? 'cached_tsq' : 'ts';
+    return this.query(`
+      select
+        ${tsq} as tsq,
+        ts,
+        max(dur) as dur,
+        cpu,
+        utid
+      from ${queryTable}
+      where
+        ${constainColumn} >= ${startNs - this.maxDurNs} and
+        ${constainColumn} <= ${endNs}
+      group by tsq, cpu
+      order by tsq, cpu
+    `);
+  }
+
+  private async createSchedView() {
+    await this.query(`
+      create view ${this.tableName('process_sched')} as
+      select ts, dur, cpu, utid
+      from experimental_sched_upid
+      where
+        utid != 0 and
+        upid = ${this.config.upid}
+    `);
   }
 }
 

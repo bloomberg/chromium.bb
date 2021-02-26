@@ -22,12 +22,15 @@
 import("//build/config/python.gni")
 
 template("copy_ex") {
-  set_sources_assignment_filter([])
   action_with_pydeps(target_name) {
+    # TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
+    run_under_python2 = true
+
     forward_variables_from(invoker,
                            [
                              "data",
                              "deps",
+                             "public_deps",
                              "testonly",
                              "visibility",
                            ])

@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
 #include "build/build_config.h"
@@ -51,7 +52,7 @@ constexpr char kEventCapture[] = "Capture";
 constexpr char kEventSuffixFailRate[] = "FailRate";
 constexpr char kEventSuffixLatency[] = "Latency";
 constexpr char kEventCommitAndDrawCompositorFrame[] =
-    "RenderWidget::DidCommitAndDrawCompositorFrame";
+    "WidgetBase::DidCommitAndDrawCompositorFrame";
 const std::unordered_map<std::string, std::string> kEventToMetricMap(
     {{kEventCapture, kMetricCaptureMs},
      {std::string(kEventCapture) + kEventSuffixFailRate,

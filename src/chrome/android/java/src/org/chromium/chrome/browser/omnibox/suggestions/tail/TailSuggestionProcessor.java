@@ -10,16 +10,15 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionSpannable;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** A class that handles model and view creation for the tail suggestions. */
 public class TailSuggestionProcessor extends BaseSuggestionViewProcessor {
-    private final Context mContext;
     private final boolean mAlignTailSuggestions;
     private AlignmentManager mAlignmentManager;
 
@@ -29,12 +28,11 @@ public class TailSuggestionProcessor extends BaseSuggestionViewProcessor {
      */
     public TailSuggestionProcessor(Context context, SuggestionHost suggestionHost) {
         super(context, suggestionHost);
-        mContext = context;
         mAlignTailSuggestions = DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
     }
 
     @Override
-    public boolean doesProcessSuggestion(OmniboxSuggestion suggestion) {
+    public boolean doesProcessSuggestion(OmniboxSuggestion suggestion, int position) {
         return mAlignTailSuggestions
                 && suggestion.getType() == OmniboxSuggestionType.SEARCH_SUGGEST_TAIL;
     }
@@ -64,10 +62,10 @@ public class TailSuggestionProcessor extends BaseSuggestionViewProcessor {
 
         setSuggestionDrawableState(model,
                 SuggestionDrawableState.Builder
-                        .forDrawableRes(mContext, R.drawable.ic_suggestion_magnifier)
+                        .forDrawableRes(getContext(), R.drawable.ic_suggestion_magnifier)
                         .setAllowTint(true)
                         .build());
-        setRefineAction(model, suggestion);
+        setTabSwitchOrRefineAction(model, suggestion, position);
     }
 
     @Override

@@ -13,7 +13,6 @@
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "content/browser/media/audio_stream_broker.h"
@@ -36,6 +35,8 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "url/origin.h"
+
+using blink::mojom::MediaDeviceType;
 
 namespace content {
 
@@ -61,7 +62,7 @@ void EnumerateOutputDevices(MediaStreamManager* media_stream_manager,
                             MediaDevicesManager::EnumerationCallback cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaDevicesManager::BoolDeviceTypes device_types;
-  device_types[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  device_types[static_cast<size_t>(MediaDeviceType::MEDIA_AUDIO_OUTPUT)] = true;
   media_stream_manager->media_devices_manager()->EnumerateDevices(
       device_types, std::move(cb));
 }
@@ -72,7 +73,7 @@ void TranslateDeviceId(const std::string& device_id,
                        const MediaDeviceEnumeration& device_array) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (const auto& device_info :
-       device_array[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT]) {
+       device_array[static_cast<size_t>(MediaDeviceType::MEDIA_AUDIO_OUTPUT)]) {
     if (MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
             salt_and_origin.device_id_salt, salt_and_origin.origin, device_id,
             device_info.device_id)) {
@@ -90,29 +91,31 @@ void GetSaltOriginAndPermissionsOnUIThread(
                             bool has_access)> cb) {
   auto salt_and_origin = GetMediaDeviceSaltAndOrigin(process_id, frame_id);
   bool access = MediaDevicesPermissionChecker().CheckPermissionOnUIThread(
-      blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, process_id, frame_id);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+      MediaDeviceType::MEDIA_AUDIO_OUTPUT, process_id, frame_id);
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(cb), std::move(salt_and_origin), access));
 }
 
 }  // namespace
 
 class RenderFrameAudioInputStreamFactory::Core final
-    : public mojom::RendererAudioInputStreamFactory {
+    : public blink::mojom::RendererAudioInputStreamFactory {
  public:
-  Core(mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver,
+  Core(mojo::PendingReceiver<blink::mojom::RendererAudioInputStreamFactory>
+           receiver,
        MediaStreamManager* media_stream_manager,
        RenderFrameHost* render_frame_host);
 
   ~Core() final;
 
-  void Init(
-      mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver);
+  void Init(mojo::PendingReceiver<blink::mojom::RendererAudioInputStreamFactory>
+                receiver);
 
   // mojom::RendererAudioInputStreamFactory implementation.
   void CreateStream(
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+          client,
       const base::UnguessableToken& session_id,
       const media::AudioParameters& audio_params,
       bool automatic_gain_control,
@@ -123,7 +126,8 @@ class RenderFrameAudioInputStreamFactory::Core final
       const std::string& output_device_id) final;
 
   void CreateLoopbackStream(
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+          client,
       const media::AudioParameters& audio_params,
       uint32_t shared_memory_count,
       bool disable_local_echo,
@@ -154,7 +158,8 @@ class RenderFrameAudioInputStreamFactory::Core final
 };
 
 RenderFrameAudioInputStreamFactory::RenderFrameAudioInputStreamFactory(
-    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver,
+    mojo::PendingReceiver<blink::mojom::RendererAudioInputStreamFactory>
+        receiver,
     MediaStreamManager* media_stream_manager,
     RenderFrameHost* render_frame_host)
     : core_(new Core(std::move(receiver),
@@ -169,13 +174,14 @@ RenderFrameAudioInputStreamFactory::~RenderFrameAudioInputStreamFactory() {
   // as it doesn't post in case it is already executed on the right thread. That
   // causes issues in unit tests where the UI thread and the IO thread are the
   // same.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce([](std::unique_ptr<Core>) {}, std::move(core_)));
 }
 
 RenderFrameAudioInputStreamFactory::Core::Core(
-    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver,
+    mojo::PendingReceiver<blink::mojom::RendererAudioInputStreamFactory>
+        receiver,
     MediaStreamManager* media_stream_manager,
     RenderFrameHost* render_frame_host)
     : media_stream_manager_(media_stream_manager),
@@ -198,8 +204,8 @@ RenderFrameAudioInputStreamFactory::Core::Core(
 
   // Unretained is safe since the destruction of |this| is posted to the IO
   // thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&Core::Init, base::Unretained(this), std::move(receiver)));
 }
 
@@ -208,13 +214,15 @@ RenderFrameAudioInputStreamFactory::Core::~Core() {
 }
 
 void RenderFrameAudioInputStreamFactory::Core::Init(
-    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver) {
+    mojo::PendingReceiver<blink::mojom::RendererAudioInputStreamFactory>
+        receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   receiver_.Bind(std::move(receiver));
 }
 
 void RenderFrameAudioInputStreamFactory::Core::CreateStream(
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+        client,
     const base::UnguessableToken& session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
@@ -244,8 +252,8 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
     // TODO(qiangchen): Analyze audio constraints to make a duplicating or
     // diverting decision. It would give web developer more flexibility.
 
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+        FROM_HERE,
         base::BindOnce(&GetLoopbackSourceOnUIThread,
                        capture_id.render_process_id,
                        capture_id.main_render_frame_id),
@@ -274,7 +282,8 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
 }
 
 void RenderFrameAudioInputStreamFactory::Core::CreateLoopbackStream(
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+        client,
     const media::AudioParameters& audio_params,
     uint32_t shared_memory_count,
     bool disable_local_echo,
@@ -294,8 +303,8 @@ void RenderFrameAudioInputStreamFactory::Core::AssociateInputAndOutputForAec(
   if (!IsValidDeviceId(output_device_id))
     return;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &GetSaltOriginAndPermissionsOnUIThread, process_id_, frame_id_,
           base::BindOnce(

@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//extensions/buildflags/buildflags.gni")
 
 assert(enable_extensions)
@@ -33,12 +33,13 @@ source_set("browser_context_keyed_service_factories") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
+    "//build:chromeos_buildflags",
     "//extensions/browser:browser_sources",
     "//extensions/browser/api",
   ]
 }
 
-jumbo_source_set("browser_sources") {
+source_set("browser_sources") {
   visibility = [ "./*" ]
 
   sources = [
@@ -65,12 +66,12 @@ jumbo_source_set("browser_sources") {
     "app_window/size_constraints.h",
     "bad_message.cc",
     "bad_message.h",
-    "blacklist_state.h",
     "blob_holder.cc",
     "blob_holder.h",
     "blob_reader.cc",
     "blob_reader.h",
     "blocked_action_type.h",
+    "blocklist_state.h",
     "browser_context_keyed_api_factory.h",
     "component_extension_resource_manager.h",
     "computed_hashes.cc",
@@ -100,8 +101,8 @@ jumbo_source_set("browser_sources") {
     "declarative_user_script_manager.h",
     "declarative_user_script_manager_factory.cc",
     "declarative_user_script_manager_factory.h",
-    "declarative_user_script_master.cc",
-    "declarative_user_script_master.h",
+    "declarative_user_script_set.cc",
+    "declarative_user_script_set.h",
     "deferred_start_render_host.h",
     "device_local_account_util.cc",
     "device_local_account_util.h",
@@ -123,6 +124,8 @@ jumbo_source_set("browser_sources") {
     "events/lazy_event_dispatcher.h",
     "extension_action.cc",
     "extension_action.h",
+    "extension_action_manager.cc",
+    "extension_action_manager.h",
     "extension_api_frame_id_map.cc",
     "extension_api_frame_id_map.h",
     "extension_creator.cc",
@@ -268,6 +271,7 @@ jumbo_source_set("browser_sources") {
     "info_map.cc",
     "info_map.h",
     "install_flag.h",
+    "install_stage.h",
     "json_file_sanitizer.cc",
     "json_file_sanitizer.h",
     "lazy_background_task_queue.cc",
@@ -278,10 +282,14 @@ jumbo_source_set("browser_sources") {
     "lazy_context_id.h",
     "lazy_context_task_queue.cc",
     "lazy_context_task_queue.h",
+    "load_and_localize_file.cc",
+    "load_and_localize_file.h",
     "management_policy.cc",
     "management_policy.h",
     "media_capture_util.cc",
     "media_capture_util.h",
+    "media_router_extension_access_logger.cc",
+    "media_router_extension_access_logger.h",
     "mojo/keep_alive_impl.cc",
     "mojo/keep_alive_impl.h",
     "notification_types.h",
@@ -293,6 +301,8 @@ jumbo_source_set("browser_sources") {
     "policy_check.h",
     "pref_names.cc",
     "pref_names.h",
+    "pref_types.cc",
+    "pref_types.h",
     "preload_check.cc",
     "preload_check.h",
     "preload_check_group.cc",
@@ -329,12 +339,13 @@ jumbo_source_set("browser_sources") {
     "service_worker_task_queue.h",
     "service_worker_task_queue_factory.cc",
     "service_worker_task_queue_factory.h",
-    "shared_user_script_master.cc",
-    "shared_user_script_master.h",
+    "shared_user_script_manager.cc",
+    "shared_user_script_manager.h",
     "state_store.cc",
     "state_store.h",
     "suggest_permission_util.cc",
     "suggest_permission_util.h",
+    "supervised_user_extensions_delegate.h",
     "task_queue_util.cc",
     "task_queue_util.h",
     "ui_util.cc",
@@ -368,6 +379,7 @@ jumbo_source_set("browser_sources") {
 
   deps = [
     "//base:i18n",
+    "//build:chromeos_buildflags",
     "//components/cast_certificate",
     "//components/cast_channel",
     "//components/crx_file",
@@ -400,8 +412,11 @@ jumbo_source_set("browser_sources") {
     "//google_apis",
     "//ppapi/buildflags",
     "//services/device/public/mojom",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
+    "//skia",
+    "//skia/public/mojom",
     "//third_party/blink/public/common",
     "//third_party/blink/public/mojom/frame",
     "//ui/display",
@@ -418,7 +433,7 @@ jumbo_source_set("browser_sources") {
 
   if (is_mac) {
     # For LSCopyDisplayNameForURL, path_util.cc.
-    libs = [ "CoreServices.framework" ]
+    frameworks = [ "CoreServices.framework" ]
   }
 
   configs += [
@@ -486,6 +501,7 @@ source_set("browser_tests") {
   deps = [
     ":browser",
     "//base",
+    "//build:chromeos_buildflags",
     "//components/guest_view/browser:test_support",
     "//components/storage_monitor:test_support",
     "//content/test:test_support",
@@ -506,11 +522,10 @@ source_set("browser_tests") {
     "//ui/display:test_support",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     sources += [
       "api/audio/audio_apitest_chromeos.cc",
       "api/cec_private/cec_private_apitest.cc",
-      "api/crash_report_private/crash_report_private_apitest.cc",
       "api/media_perception_private/media_perception_private_apitest.cc",
       "api/system_power_source/system_power_source_apitest.cc",
       "api/virtual_keyboard/virtual_keyboard_apitest.cc",
@@ -528,13 +543,16 @@ source_set("browser_tests") {
       "//chromeos/dbus/upstart",
       "//chromeos/login/login_state",
       "//chromeos/network",
+      "//components/crash/content/browser/error_reporting:mock_crash_endpoint",
     ]
   }
 }
 
-jumbo_source_set("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
+    "api/sockets_udp/test_udp_echo_server.cc",
+    "api/sockets_udp/test_udp_echo_server.h",
     "browsertest_util.cc",
     "browsertest_util.h",
     "preload_check_test_util.cc",
@@ -571,10 +589,8 @@ jumbo_source_set("test_support") {
   public_deps =
       [ "//extensions/browser/api/declarative_net_request:test_support" ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     sources += [
-      "api/crash_report_private/mock_crash_endpoint.cc",
-      "api/crash_report_private/mock_crash_endpoint.h",
       "api/feedback_private/mock_feedback_service.cc",
       "api/feedback_private/mock_feedback_service.h",
     ]
@@ -585,7 +601,7 @@ jumbo_source_set("test_support") {
   }
 }
 
-jumbo_source_set("value_store_test_support") {
+source_set("value_store_test_support") {
   testonly = true
   sources = [
     "value_store/value_store_unittest.cc",
@@ -621,16 +637,10 @@ source_set("unit_tests") {
     "api/declarative_net_request/ruleset_matcher_unittest.cc",
     "api/declarative_webrequest/webrequest_condition_attribute_unittest.cc",
     "api/declarative_webrequest/webrequest_condition_unittest.cc",
-    "api/document_scan/document_scan_api_unittest.cc",
-    "api/document_scan/document_scan_interface_chromeos_unittest.cc",
-    "api/document_scan/fake_document_scan_interface.cc",
-    "api/document_scan/fake_document_scan_interface.h",
     "api/file_handlers/app_file_handler_util_unittest.cc",
     "api/file_handlers/directory_util_unittest.cc",
     "api/file_handlers/mime_util_unittest.cc",
     "api/idle/idle_api_unittest.cc",
-    "api/networking_config/networking_config_service_chromeos_unittest.cc",
-    "api/networking_private/networking_private_chromeos_unittest.cc",
     "api/power/power_api_unittest.cc",
     "api/runtime/restart_after_delay_api_unittest.cc",
     "api/socket/mojo_data_pump_unittest.cc",
@@ -656,6 +666,7 @@ source_set("unit_tests") {
     "error_map_unittest.cc",
     "event_listener_map_unittest.cc",
     "event_router_unittest.cc",
+    "extension_action_manager_unittest.cc",
     "extension_action_unittest.cc",
     "extension_creator_filter_unittest.cc",
     "extension_creator_unittest.cc",
@@ -745,7 +756,7 @@ source_set("unit_tests") {
     "//third_party/zlib/google:zip",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     sources += [
       "api/audio/audio_device_id_calculator_unittest.cc",
       "api/feedback_private/access_rate_limiter_chromeos_unittest.cc",
@@ -758,6 +769,7 @@ source_set("unit_tests") {
       "api/lock_screen_data/lock_screen_value_store_migrator_impl_unittest.cc",
       "api/media_perception_private/conversion_utils_unittest.cc",
       "api/media_perception_private/media_perception_api_manager_unittest.cc",
+      "api/networking_private/networking_private_chromeos_unittest.cc",
       "api/system_power_source/system_power_source_api_unittest.cc",
       "api/virtual_keyboard_private/virtual_keyboard_private_api_unittest.cc",
       "api/webcam_private/visca_webcam_unittest.cc",

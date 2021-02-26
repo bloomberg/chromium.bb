@@ -119,8 +119,10 @@
  * Skia consumers can provide their own definitions of these macros to
  * integrate with their histogram collection backend.
  */
-//#define SK_HISTOGRAM_BOOLEAN(name, value)
-//#define SK_HISTOGRAM_ENUMERATION(name, value, boundary_value)
+//#define SK_HISTOGRAM_BOOLEAN(name, sample)
+//#define SK_HISTOGRAM_EXACT_LINEAR(name, sample, value_max)
+//#define SK_HISTOGRAM_MEMORY_KB(name, sample)
+#include "skia/ext/skia_histogram.h"
 
 // ===== Begin Chrome-specific definitions =====
 
@@ -150,6 +152,13 @@ SK_API void SkDebugf_FileLine(const char* file,
                               int line,
                               const char* format,
                               ...);
+
+#define SK_ABORT(format, ...) SkAbort_FileLine(__FILE__, __LINE__, \
+                                               format,##__VA_ARGS__)
+[[noreturn]] SK_API void SkAbort_FileLine(const char* file,
+                                          int line,
+                                          const char* format,
+                                          ...);
 
 #if !defined(ANDROID)   // On Android, we use the skia default settings.
 #define SK_A32_SHIFT    24
@@ -195,20 +204,18 @@ SK_API void SkDebugf_FileLine(const char* file,
 #   define SK_SUPPORT_LEGACY_ANISOTROPIC_MIPMAP_SCALE
 #endif
 
+#ifndef SK_DISABLE_LEGACY_CONTEXT_FACTORIES
+#define SK_DISABLE_LEGACY_CONTEXT_FACTORIES
+#endif
+
+#ifndef SK_SUPPORT_LEGACY_ONDRAWIMAGERECT
+#define SK_SUPPORT_LEGACY_ONDRAWIMAGERECT
+#endif
+
 // For now, Chrome should only attempt to reduce opList splitting when recording
 // DDLs
 #ifndef SK_DISABLE_REDUCE_OPLIST_SPLITTING
 #define SK_DISABLE_REDUCE_OPLIST_SPLITTING
-#endif
-
-// Many layout tests and unit tests need to updated/rebased to move to less
-// buggy GPU blur.
-#ifndef SK_USE_LEGACY_GPU_BLUR
-#define SK_USE_LEGACY_GPU_BLUR
-#endif
-
-#ifndef SK_SUPPORT_LEGACY_MATRIX44
-#define SK_SUPPORT_LEGACY_MATRIX44
 #endif
 
 // Max. verb count for paths rendered by the edge-AA tessellating path renderer.
@@ -218,8 +225,15 @@ SK_API void SkDebugf_FileLine(const char* file,
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 #endif
 
+#ifndef GR_OP_ALLOCATE_USE_NEW
+#define GR_OP_ALLOCATE_USE_NEW
+#endif
+
 // Staging for lowp::bilerp_clamp_8888, and for planned misc. others.
 #define SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE
+
+// Staging for Skia requiring GrDirectContext in SkImage::readPixels.
+#define SK_IMAGE_READ_PIXELS_LEGACY_API
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 

@@ -10,8 +10,8 @@
 #include <tuple>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
@@ -26,6 +26,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -46,6 +47,7 @@
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/web_request.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
@@ -527,7 +529,7 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnAuthRequiredDelta) {
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeCancelOfResponses) {
   EventResponseDeltas deltas;
-  bool canceled = false;
+  base::Optional<extensions::ExtensionId> canceled_by_extension;
 
   // Single event that does not cancel.
   {
@@ -535,8 +537,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeCancelOfResponses) {
     d1.cancel = false;
     deltas.push_back(std::move(d1));
   }
-  MergeCancelOfResponses(deltas, &canceled);
-  EXPECT_FALSE(canceled);
+  MergeCancelOfResponses(deltas, &canceled_by_extension);
+  EXPECT_FALSE(canceled_by_extension);
 
   // Second event that cancels the request
   {
@@ -545,8 +547,9 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeCancelOfResponses) {
     deltas.push_back(std::move(d2));
   }
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
-  MergeCancelOfResponses(deltas, &canceled);
-  EXPECT_TRUE(canceled);
+  MergeCancelOfResponses(deltas, &canceled_by_extension);
+  EXPECT_TRUE(canceled_by_extension);
+  EXPECT_EQ("extid2", canceled_by_extension.value());
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses) {
@@ -746,6 +749,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses4) {
   EXPECT_EQ(GURL(), effective_new_url);
 }
 
+// TODO(crbug.com/1099066): Separate this test into subtests to improve
+// readability.
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   net::HttpRequestHeaders base_headers;
   base_headers.SetHeader("key1", "value 1");
@@ -766,9 +771,10 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   WebRequestInfoInitParams info_params;
   WebRequestInfo info(std::move(info_params));
   info.dnr_actions = std::vector<DNRRequestAction>();
-  MergeOnBeforeSendHeadersResponses(info, deltas, &headers0, &ignored_actions,
-                                    &ignore1, &ignore2,
-                                    &request_headers_modified0);
+  std::vector<const DNRRequestAction*> matched_dnr_actions;
+  MergeOnBeforeSendHeadersResponses(
+      info, deltas, &headers0, &ignored_actions, &ignore1, &ignore2,
+      &request_headers_modified0, &matched_dnr_actions);
   ASSERT_TRUE(headers0.GetHeader("key1", &header_value));
   EXPECT_EQ("value 1", header_value);
   ASSERT_TRUE(headers0.GetHeader("key2", &header_value));
@@ -791,9 +797,9 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   bool request_headers_modified1;
   net::HttpRequestHeaders headers1;
   headers1.MergeFrom(base_headers);
-  MergeOnBeforeSendHeadersResponses(info, deltas, &headers1, &ignored_actions,
-                                    &ignore1, &ignore2,
-                                    &request_headers_modified1);
+  MergeOnBeforeSendHeadersResponses(
+      info, deltas, &headers1, &ignored_actions, &ignore1, &ignore2,
+      &request_headers_modified1, &matched_dnr_actions);
   EXPECT_FALSE(headers1.HasHeader("key1"));
   ASSERT_TRUE(headers1.GetHeader("key2", &header_value));
   EXPECT_EQ("value 3", header_value);
@@ -818,9 +824,9 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   bool request_headers_modified2;
   net::HttpRequestHeaders headers2;
   headers2.MergeFrom(base_headers);
-  MergeOnBeforeSendHeadersResponses(info, deltas, &headers2, &ignored_actions,
-                                    &ignore1, &ignore2,
-                                    &request_headers_modified2);
+  MergeOnBeforeSendHeadersResponses(
+      info, deltas, &headers2, &ignored_actions, &ignore1, &ignore2,
+      &request_headers_modified2, &matched_dnr_actions);
   EXPECT_FALSE(headers2.HasHeader("key1"));
   ASSERT_TRUE(headers2.GetHeader("key2", &header_value));
   EXPECT_EQ("value 3", header_value);
@@ -849,9 +855,9 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   bool request_headers_modified3;
   net::HttpRequestHeaders headers3;
   headers3.MergeFrom(base_headers);
-  MergeOnBeforeSendHeadersResponses(info, deltas, &headers3, &ignored_actions,
-                                    &ignore1, &ignore2,
-                                    &request_headers_modified3);
+  MergeOnBeforeSendHeadersResponses(
+      info, deltas, &headers3, &ignored_actions, &ignore1, &ignore2,
+      &request_headers_modified3, &matched_dnr_actions);
   EXPECT_FALSE(headers3.HasHeader("key1"));
   ASSERT_TRUE(headers3.GetHeader("key2", &header_value));
   EXPECT_EQ("value 3", header_value);
@@ -864,6 +870,173 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
       HasIgnoredAction(ignored_actions, "extid2",
                        web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS));
   EXPECT_TRUE(request_headers_modified3);
+
+  // Check that headers removed by Declarative Net Request API can't be modified
+  // and result in a conflict.
+  ignored_actions.clear();
+  ignore1.clear();
+  ignore2.clear();
+  bool request_headers_modified4 = false;
+  net::HttpRequestHeaders headers4;
+  headers4.MergeFrom(base_headers);
+
+  DNRRequestAction modify_headers_action =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+  modify_headers_action.request_headers_to_modify = {
+      DNRRequestAction::HeaderInfo(
+          "key5", api::declarative_net_request::HEADER_OPERATION_REMOVE,
+          base::nullopt)};
+  info.dnr_actions = std::vector<DNRRequestAction>();
+  info.dnr_actions->push_back(std::move(modify_headers_action));
+
+  MergeOnBeforeSendHeadersResponses(
+      info, deltas, &headers4, &ignored_actions, &ignore1, &ignore2,
+      &request_headers_modified4, &matched_dnr_actions);
+  // Deleted by |d1|.
+  EXPECT_FALSE(headers4.HasHeader("key1"));
+  // Added by |d1|.
+  ASSERT_TRUE(headers4.GetHeader("key2", &header_value));
+  EXPECT_EQ("value 3", header_value);
+  // Removed by Declarative Net Request API.
+  EXPECT_FALSE(headers4.HasHeader("key5"));
+
+  EXPECT_EQ(2u, ignored_actions.size());
+  EXPECT_TRUE(
+      HasIgnoredAction(ignored_actions, "extid2",
+                       web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS));
+  EXPECT_TRUE(
+      HasIgnoredAction(ignored_actions, "extid3",
+                       web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS));
+  EXPECT_TRUE(request_headers_modified4);
+
+  // Check that headers set by Declarative Net Request API can't be further
+  // modified and result in a conflict.
+  ignored_actions.clear();
+  ignore1.clear();
+  ignore2.clear();
+  bool request_headers_modified5 = false;
+  net::HttpRequestHeaders headers5;
+  headers5.MergeFrom(base_headers);
+
+  DNRRequestAction set_headers_action =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+
+  // Since key2 is set to "value 3" by both |set_headers_action| and
+  // |extid1|, |extid1| should not be ignored.
+  // Conversely, |set_headers_action| and |extid3| set different values for
+  // key5, therefore |extid4| should be ignored.
+  set_headers_action.request_headers_to_modify = {
+      DNRRequestAction::HeaderInfo(
+          "key2", api::declarative_net_request::HEADER_OPERATION_SET,
+          "value 3"),
+      DNRRequestAction::HeaderInfo(
+          "key5", api::declarative_net_request::HEADER_OPERATION_SET,
+          "dnr_value")};
+  info.dnr_actions = std::vector<DNRRequestAction>();
+  info.dnr_actions->push_back(std::move(set_headers_action));
+
+  MergeOnBeforeSendHeadersResponses(
+      info, deltas, &headers5, &ignored_actions, &ignore1, &ignore2,
+      &request_headers_modified5, &matched_dnr_actions);
+  // Deleted by |d1|.
+  EXPECT_FALSE(headers5.HasHeader("key1"));
+  // Added by |d1| (same value as added by Declarative Net Request API).
+  ASSERT_TRUE(headers5.GetHeader("key2", &header_value));
+  EXPECT_EQ("value 3", header_value);
+  // Set by Declarative Net Request API.
+  ASSERT_TRUE(headers5.GetHeader("key5", &header_value));
+  EXPECT_EQ("dnr_value", header_value);
+
+  EXPECT_EQ(2u, ignored_actions.size());
+  EXPECT_TRUE(
+      HasIgnoredAction(ignored_actions, "extid2",
+                       web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS));
+  EXPECT_TRUE(
+      HasIgnoredAction(ignored_actions, "extid3",
+                       web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS));
+  EXPECT_TRUE(request_headers_modified4);
+}
+
+// Test conflict resolution for declarative net request actions from the same
+// extension modifying the same request header.
+TEST(ExtensionWebRequestHelpersTest,
+     TestMergeOnBeforeSendHeadersResponses_DeclarativeNetRequest) {
+  using RequestHeaderType =
+      extension_web_request_api_helpers::RequestHeaderType;
+  base::HistogramTester histogram_tester;
+
+  DNRRequestAction action_1 =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+  action_1.request_headers_to_modify = {
+      DNRRequestAction::HeaderInfo(
+          "referer", api::declarative_net_request::HEADER_OPERATION_SET,
+          "dnr_action_1"),
+      DNRRequestAction::HeaderInfo(
+          "cookie", api::declarative_net_request::HEADER_OPERATION_SET,
+          "dnr_action_1"),
+      DNRRequestAction::HeaderInfo(
+          "key3", api::declarative_net_request::HEADER_OPERATION_REMOVE,
+          base::nullopt)};
+
+  DNRRequestAction action_2 =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+  action_2.request_headers_to_modify = {
+      DNRRequestAction::HeaderInfo(
+          "referer", api::declarative_net_request::HEADER_OPERATION_REMOVE,
+          base::nullopt),
+      DNRRequestAction::HeaderInfo(
+          "cookie", api::declarative_net_request::HEADER_OPERATION_SET,
+          "dnr_action_2"),
+      DNRRequestAction::HeaderInfo(
+          "key3", api::declarative_net_request::HEADER_OPERATION_SET,
+          "dnr_action_2")};
+
+  WebRequestInfoInitParams info_params;
+  WebRequestInfo info(std::move(info_params));
+  info.dnr_actions = std::vector<DNRRequestAction>();
+  info.dnr_actions->push_back(std::move(action_1));
+  info.dnr_actions->push_back(std::move(action_2));
+
+  net::HttpRequestHeaders base_headers;
+  base_headers.SetHeader("referer", "original");
+  base_headers.SetHeader("key3", "value 3");
+  helpers::IgnoredActions ignored_actions;
+  std::string header_value;
+  EventResponseDeltas deltas;
+  bool request_headers_modified;
+  std::set<std::string> ignore1, ignore2;
+  std::vector<const DNRRequestAction*> matched_dnr_actions;
+
+  // Header modifications specified by |action1| are processed before those
+  // specified by |action2|.
+  MergeOnBeforeSendHeadersResponses(
+      info, deltas, &base_headers, &ignored_actions, &ignore1, &ignore2,
+      &request_headers_modified, &matched_dnr_actions);
+  // Header set by a prior action cannot be removed by a subsequent action.
+  ASSERT_TRUE(base_headers.GetHeader("referer", &header_value));
+  EXPECT_EQ("dnr_action_1", header_value);
+
+  // Header set by a prior action cannot be set to a different value by a
+  // subsequent action.
+  ASSERT_TRUE(base_headers.GetHeader("cookie", &header_value));
+  EXPECT_EQ("dnr_action_1", header_value);
+
+  // Header removed by a prior action cannot be set by a subsequent action.
+  EXPECT_FALSE(base_headers.HasHeader("key3"));
+
+  // Check that the appropriate values are recorded for histograms.
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.RequestHeaderAdded",
+      RequestHeaderType::kCookie, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.RequestHeaderChanged",
+      RequestHeaderType::kReferer, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.RequestHeaderRemoved",
+      RequestHeaderType::kOther, 1);
+
+  EXPECT_EQ(0u, ignored_actions.size());
+  EXPECT_TRUE(request_headers_modified);
 }
 
 // Ensure conflicts between different extensions are handled correctly with
@@ -897,9 +1070,10 @@ TEST(ExtensionWebRequestHelpersTest,
   net::HttpRequestHeaders headers;
   headers.SetHeader("key1", "value 1");
 
-  MergeOnBeforeSendHeadersResponses(info, deltas, &headers, &ignored_actions,
-                                    &removed_headers, &set_headers,
-                                    &request_headers_modified);
+  std::vector<const DNRRequestAction*> matched_dnr_actions;
+  MergeOnBeforeSendHeadersResponses(
+      info, deltas, &headers, &ignored_actions, &removed_headers, &set_headers,
+      &request_headers_modified, &matched_dnr_actions);
 
   std::string header_value;
   ASSERT_TRUE(headers.GetHeader("key1", &header_value));
@@ -962,9 +1136,11 @@ TEST(ExtensionWebRequestHelpersTest,
 
   WebRequestInfoInitParams info_params;
   WebRequestInfo info(std::move(info_params));
-  MergeOnBeforeSendHeadersResponses(info, deltas, &headers1, &ignored_actions,
-                                    &ignore1, &ignore2,
-                                    &request_headers_modified1);
+  info.dnr_actions = std::vector<DNRRequestAction>();
+  std::vector<const DNRRequestAction*> matched_dnr_actions;
+  MergeOnBeforeSendHeadersResponses(
+      info, deltas, &headers1, &ignored_actions, &ignore1, &ignore2,
+      &request_headers_modified1, &matched_dnr_actions);
   EXPECT_TRUE(headers1.HasHeader("Cookie"));
   ASSERT_TRUE(headers1.GetHeader("Cookie", &header_value));
   EXPECT_EQ("name=new value; name2=new value; name4=\"value 4\"", header_value);
@@ -1217,6 +1393,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
       "HTTP/1.0 200 OK\r\n"
       "Key1: Value1\r\n"
       "Key2: Value2, Foo\r\n"
+      "Key4: Value4\r\n"
       "\r\n";
   auto base_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(base_headers_string));
@@ -1233,11 +1410,12 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   info_params.url = GURL(kExampleUrl);
   WebRequestInfo info(std::move(info_params));
   info.dnr_actions = std::vector<DNRRequestAction>();
+  std::vector<const DNRRequestAction*> matched_dnr_actions;
 
   MergeOnHeadersReceivedResponses(
       info, deltas, base_headers.get(), &new_headers0,
       &preserve_fragment_on_redirect_url0, &ignored_actions,
-      &response_headers_modified0);
+      &response_headers_modified0, &matched_dnr_actions);
   EXPECT_FALSE(new_headers0.get());
   EXPECT_TRUE(preserve_fragment_on_redirect_url0.is_empty());
   EXPECT_EQ(0u, ignored_actions.size());
@@ -1260,12 +1438,13 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   MergeOnHeadersReceivedResponses(
       info, deltas, base_headers.get(), &new_headers1,
       &preserve_fragment_on_redirect_url1, &ignored_actions,
-      &response_headers_modified1);
+      &response_headers_modified1, &matched_dnr_actions);
   ASSERT_TRUE(new_headers1.get());
   EXPECT_TRUE(preserve_fragment_on_redirect_url1.is_empty());
   std::multimap<std::string, std::string> expected1;
-  expected1.insert(std::pair<std::string, std::string>("Key2", "Value3"));
-  expected1.insert(std::pair<std::string, std::string>("Key3", "Foo"));
+  expected1.emplace("Key2", "Value3");
+  expected1.emplace("Key3", "Foo");
+  expected1.emplace("Key4", "Value4");
   size_t iter = 0;
   std::string name;
   std::string value;
@@ -1295,7 +1474,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   MergeOnHeadersReceivedResponses(
       info, deltas, base_headers.get(), &new_headers2,
       &preserve_fragment_on_redirect_url2, &ignored_actions,
-      &response_headers_modified2);
+      &response_headers_modified2, &matched_dnr_actions);
   ASSERT_TRUE(new_headers2.get());
   EXPECT_TRUE(preserve_fragment_on_redirect_url2.is_empty());
   iter = 0;
@@ -1309,6 +1488,108 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
       HasIgnoredAction(ignored_actions, "extid2",
                        web_request::IGNORED_ACTION_TYPE_RESPONSE_HEADERS));
   EXPECT_TRUE(response_headers_modified2);
+
+  // Ensure headers removed by Declarative Net Request API can't be added by web
+  // request extensions and result in a conflict.
+  DNRRequestAction modify_headers_action =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+  modify_headers_action.response_headers_to_modify = {
+      DNRRequestAction::HeaderInfo(
+          "key3", api::declarative_net_request::HEADER_OPERATION_REMOVE,
+          base::nullopt)};
+
+  info.dnr_actions = std::vector<DNRRequestAction>();
+  info.dnr_actions->push_back(std::move(modify_headers_action));
+
+  ignored_actions.clear();
+  bool response_headers_modified3 = false;
+  scoped_refptr<net::HttpResponseHeaders> new_headers3;
+  GURL preserve_fragment_on_redirect_url3;
+  MergeOnHeadersReceivedResponses(
+      info, deltas, base_headers.get(), &new_headers3,
+      &preserve_fragment_on_redirect_url3, &ignored_actions,
+      &response_headers_modified3, &matched_dnr_actions);
+  ASSERT_TRUE(new_headers3.get());
+  EXPECT_TRUE(preserve_fragment_on_redirect_url3.is_empty());
+  iter = 0;
+  std::multimap<std::string, std::string> actual3;
+  while (new_headers3->EnumerateHeaderLines(&iter, &name, &value))
+    actual3.emplace(name, value);
+  std::multimap<std::string, std::string> expected3;
+  expected3.emplace("Key2", "Value4");
+  expected3.emplace("Key1", "Value1");
+  expected3.emplace("Key4", "Value4");
+  EXPECT_EQ(expected3, actual3);
+  EXPECT_EQ(1u, ignored_actions.size());
+
+  // The action specified by extid1 is ignored since it conflicted with
+  // |modify_headers_action| for the key3 header.
+  EXPECT_TRUE(
+      HasIgnoredAction(ignored_actions, "extid1",
+                       web_request::IGNORED_ACTION_TYPE_RESPONSE_HEADERS));
+  EXPECT_TRUE(response_headers_modified3);
+
+  // Ensure headers appended by Declarative Net Request API can't be removed by
+  // web request extensions and result in a conflict, but can be further
+  // appended by web request extensions.
+  {
+    EventResponseDelta d3("extid3", base::Time::FromInternalValue(1000));
+    d3.deleted_response_headers.push_back(ResponseHeader("Key4", "Value4"));
+    deltas.push_back(std::move(d3));
+  }
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+
+  modify_headers_action =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+  modify_headers_action.response_headers_to_modify = {
+      DNRRequestAction::HeaderInfo(
+          "key3", api::declarative_net_request::HEADER_OPERATION_APPEND,
+          "dnr_value_3"),
+      DNRRequestAction::HeaderInfo(
+          "key4", api::declarative_net_request::HEADER_OPERATION_APPEND,
+          "dnr_value_4")};
+
+  info.dnr_actions = std::vector<DNRRequestAction>();
+  info.dnr_actions->push_back(std::move(modify_headers_action));
+
+  ignored_actions.clear();
+  bool response_headers_modified4 = false;
+  scoped_refptr<net::HttpResponseHeaders> new_headers4;
+  GURL preserve_fragment_on_redirect_url4;
+  MergeOnHeadersReceivedResponses(
+      info, deltas, base_headers.get(), &new_headers4,
+      &preserve_fragment_on_redirect_url4, &ignored_actions,
+      &response_headers_modified4, &matched_dnr_actions);
+  ASSERT_TRUE(new_headers4.get());
+  EXPECT_TRUE(preserve_fragment_on_redirect_url4.is_empty());
+
+  iter = 0;
+  std::multimap<std::string, std::string> actual4;
+  while (new_headers4->EnumerateHeaderLines(&iter, &name, &value))
+    actual4.emplace(name, value);
+  std::multimap<std::string, std::string> expected4;
+
+  expected4.emplace("Key2", "Value3");
+  expected4.emplace("Key3", "Foo");
+  expected4.emplace("key3", "dnr_value_3");
+  expected4.emplace("Key4", "Value4");
+  expected4.emplace("key4", "dnr_value_4");
+  EXPECT_EQ(expected4, actual4);
+  EXPECT_EQ(2u, ignored_actions.size());
+
+  // The action specified by extid1 is not ignored since it adds to the same
+  // header that the Declarative Net Request appends. The action specified by
+  // extid2 is ignored since it tries to replace the same header replaced by
+  // extid1.
+  EXPECT_TRUE(
+      HasIgnoredAction(ignored_actions, "extid2",
+                       web_request::IGNORED_ACTION_TYPE_RESPONSE_HEADERS));
+  // The action specified by extid3 is ignored since it tries to remove Key4,
+  // which was appended by the Declarative Net Request API.
+  EXPECT_TRUE(
+      HasIgnoredAction(ignored_actions, "extid3",
+                       web_request::IGNORED_ACTION_TYPE_RESPONSE_HEADERS));
+  EXPECT_TRUE(response_headers_modified4);
 }
 
 // Check that we do not delete too much
@@ -1341,11 +1622,12 @@ TEST(ExtensionWebRequestHelpersTest,
   info_params.url = GURL(kExampleUrl);
   WebRequestInfo info(std::move(info_params));
   info.dnr_actions = std::vector<DNRRequestAction>();
+  std::vector<const DNRRequestAction*> matched_dnr_actions;
 
   MergeOnHeadersReceivedResponses(
       info, deltas, base_headers.get(), &new_headers1,
       &preserve_fragment_on_redirect_url1, &ignored_actions,
-      &response_headers_modified1);
+      &response_headers_modified1, &matched_dnr_actions);
   ASSERT_TRUE(new_headers1.get());
   EXPECT_TRUE(preserve_fragment_on_redirect_url1.is_empty());
   std::multimap<std::string, std::string> expected1;
@@ -1390,11 +1672,13 @@ TEST(ExtensionWebRequestHelpersTest,
   WebRequestInfoInitParams info_params;
   info_params.url = GURL(kExampleUrl);
   WebRequestInfo info(std::move(info_params));
+  info.dnr_actions = std::vector<DNRRequestAction>();
+  std::vector<const DNRRequestAction*> matched_dnr_actions;
 
   MergeOnHeadersReceivedResponses(
       info, deltas, base_headers.get(), &new_headers0,
       &preserve_fragment_on_redirect_url0, &ignored_actions,
-      &response_headers_modified0);
+      &response_headers_modified0, &matched_dnr_actions);
   EXPECT_FALSE(new_headers0.get());
   EXPECT_TRUE(preserve_fragment_on_redirect_url0.is_empty());
   EXPECT_EQ(0u, ignored_actions.size());
@@ -1415,13 +1699,252 @@ TEST(ExtensionWebRequestHelpersTest,
   MergeOnHeadersReceivedResponses(
       info, deltas, base_headers.get(), &new_headers1,
       &preserve_fragment_on_redirect_url1, &ignored_actions,
-      &response_headers_modified1);
+      &response_headers_modified1, &matched_dnr_actions);
 
   EXPECT_TRUE(new_headers1.get());
   EXPECT_TRUE(new_headers1->HasHeaderValue("Location", new_url_1.spec()));
   EXPECT_EQ(new_url_1, preserve_fragment_on_redirect_url1);
   EXPECT_TRUE(ignored_actions.empty());
   EXPECT_FALSE(response_headers_modified1);
+}
+
+// Test conflict resolution for declarative net request actions modifying the
+// same response header.
+TEST(ExtensionWebRequestHelpersTest,
+     TestMergeOnHeadersReceivedResponses_DeclarativeNetRequest) {
+  using HeaderInfo = DNRRequestAction::HeaderInfo;
+  const ExtensionId ext_1 = "ext_1";
+  const ExtensionId ext_2 = "ext_2";
+
+  // Test every combination of operations for two RequestActions from different
+  // extensions modifying the same header.
+  DNRRequestAction action_1 =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+  action_1.extension_id = ext_1;
+  action_1.response_headers_to_modify = {
+      HeaderInfo("key1", api::declarative_net_request::HEADER_OPERATION_APPEND,
+                 "dnr_action_1"),
+      HeaderInfo("key2", api::declarative_net_request::HEADER_OPERATION_APPEND,
+                 "dnr_action_1"),
+      HeaderInfo("key3", api::declarative_net_request::HEADER_OPERATION_APPEND,
+                 "dnr_action_1"),
+
+      HeaderInfo("key4", api::declarative_net_request::HEADER_OPERATION_SET,
+                 "dnr_action_1"),
+      HeaderInfo("key5", api::declarative_net_request::HEADER_OPERATION_SET,
+                 "dnr_action_1"),
+      HeaderInfo("key6", api::declarative_net_request::HEADER_OPERATION_SET,
+                 "dnr_action_1"),
+
+      HeaderInfo("key7", api::declarative_net_request::HEADER_OPERATION_REMOVE,
+                 base::nullopt),
+      HeaderInfo("key8", api::declarative_net_request::HEADER_OPERATION_REMOVE,
+                 base::nullopt),
+
+      HeaderInfo("same_ext_key",
+                 api::declarative_net_request::HEADER_OPERATION_SET,
+                 "dnr_action_1")};
+
+  DNRRequestAction action_2 =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+  action_2.extension_id = ext_1;
+  action_2.response_headers_to_modify = {HeaderInfo(
+      "same_ext_key", api::declarative_net_request::HEADER_OPERATION_APPEND,
+      "dnr_action_2")};
+
+  DNRRequestAction action_3 =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+  action_3.extension_id = ext_2;
+  action_3.response_headers_to_modify = {
+      HeaderInfo("key1", api::declarative_net_request::HEADER_OPERATION_APPEND,
+                 "dnr_action_3"),
+      HeaderInfo("key2", api::declarative_net_request::HEADER_OPERATION_SET,
+                 "dnr_action_3"),
+      HeaderInfo("key3", api::declarative_net_request::HEADER_OPERATION_REMOVE,
+                 base::nullopt),
+
+      HeaderInfo("key4", api::declarative_net_request::HEADER_OPERATION_APPEND,
+                 "dnr_action_3"),
+      HeaderInfo("key5", api::declarative_net_request::HEADER_OPERATION_SET,
+                 "dnr_action_3"),
+      HeaderInfo("key6", api::declarative_net_request::HEADER_OPERATION_REMOVE,
+                 base::nullopt),
+
+      HeaderInfo("key7", api::declarative_net_request::HEADER_OPERATION_APPEND,
+                 "dnr_action_3"),
+      HeaderInfo("key8", api::declarative_net_request::HEADER_OPERATION_SET,
+                 "dnr_action_3")};
+
+  WebRequestInfoInitParams info_params;
+  info_params.url = GURL(kExampleUrl);
+  WebRequestInfo info(std::move(info_params));
+
+  info.dnr_actions = std::vector<DNRRequestAction>();
+  info.dnr_actions->push_back(std::move(action_1));
+  info.dnr_actions->push_back(std::move(action_2));
+  info.dnr_actions->push_back(std::move(action_3));
+
+  helpers::IgnoredActions ignored_actions;
+  std::string header_value;
+  EventResponseDeltas deltas;
+
+  char base_headers_string[] =
+      "HTTP/1.0 200 OK\r\n"
+      "key1: Value1\r\n"
+      "key4: Value4\r\n"
+      "key7: Value7\r\n"
+      "key8: Value8\r\n"
+      "\r\n";
+  auto base_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(base_headers_string));
+
+  bool response_headers_modified;
+  scoped_refptr<net::HttpResponseHeaders> new_headers;
+  GURL preserve_fragment_on_redirect_url;
+  std::vector<const DNRRequestAction*> matched_dnr_actions;
+
+  MergeOnHeadersReceivedResponses(
+      info, deltas, base_headers.get(), &new_headers,
+      &preserve_fragment_on_redirect_url, &ignored_actions,
+      &response_headers_modified, &matched_dnr_actions);
+  EXPECT_TRUE(new_headers.get());
+  EXPECT_TRUE(response_headers_modified);
+
+  size_t iter = 0;
+  std::string name;
+  std::string value;
+  std::multimap<std::string, std::string> actual_headers;
+  while (new_headers->EnumerateHeaderLines(&iter, &name, &value))
+    actual_headers.emplace(name, value);
+
+  std::multimap<std::string, std::string> expected_headers;
+  // An append operation should allow subsequent appends, but not any other
+  // operations.
+  expected_headers.emplace("key1", "Value1");
+  expected_headers.emplace("key1", "dnr_action_1");
+  expected_headers.emplace("key1", "dnr_action_3");
+  expected_headers.emplace("key2", "dnr_action_1");
+  expected_headers.emplace("key3", "dnr_action_1");
+
+  // A set operation should not allow any subsequent operations from a different
+  // extension.
+  expected_headers.emplace("key4", "dnr_action_1");
+  expected_headers.emplace("key5", "dnr_action_1");
+  expected_headers.emplace("key6", "dnr_action_1");
+
+  // A remove operation should not allow any subsequent operations
+  // (key7 and key8 headers were removed by |action_1|).
+
+  // A {set, append} sequence is allowed if both operations are specified by the
+  // same extension.
+  expected_headers.emplace("same_ext_key", "dnr_action_1");
+  expected_headers.emplace("same_ext_key", "dnr_action_2");
+  EXPECT_EQ(expected_headers, actual_headers);
+
+  EXPECT_TRUE(preserve_fragment_on_redirect_url.is_empty());
+  EXPECT_EQ(0u, ignored_actions.size());
+}
+
+// Test that the appropriate metrics are logged for declarative net request
+// actions which modify response headers.
+TEST(ExtensionWebRequestHelpersTest,
+     TestMergeOnHeadersReceivedResponses_DeclarativeNetRequestMetrics) {
+  using HeaderInfo = DNRRequestAction::HeaderInfo;
+  using ResponseHeaderType =
+      extension_web_request_api_helpers::ResponseHeaderType;
+  base::HistogramTester histogram_tester;
+  const ExtensionId ext_1 = "ext_1";
+
+  DNRRequestAction action_1 =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+  action_1.extension_id = ext_1;
+
+  action_1.response_headers_to_modify = {
+      HeaderInfo("connection",
+                 api::declarative_net_request::HEADER_OPERATION_APPEND,
+                 "dnr_action_1"),
+      HeaderInfo("same_ext_key",
+                 api::declarative_net_request::HEADER_OPERATION_SET,
+                 "dnr_action_1"),
+      HeaderInfo("set-cookie",
+                 api::declarative_net_request::HEADER_OPERATION_REMOVE,
+                 base::nullopt),
+      HeaderInfo("warning",
+                 api::declarative_net_request::HEADER_OPERATION_REMOVE,
+                 base::nullopt)};
+
+  DNRRequestAction action_2 =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+  action_2.extension_id = ext_1;
+  action_2.response_headers_to_modify = {
+      HeaderInfo("connection",
+                 api::declarative_net_request::HEADER_OPERATION_APPEND,
+                 "dnr_action_2"),
+      HeaderInfo("same_ext_key",
+                 api::declarative_net_request::HEADER_OPERATION_APPEND,
+                 "dnr_action_2")};
+
+  WebRequestInfoInitParams info_params;
+  info_params.url = GURL(kExampleUrl);
+  WebRequestInfo info(std::move(info_params));
+
+  info.dnr_actions = std::vector<DNRRequestAction>();
+  info.dnr_actions->push_back(std::move(action_1));
+  info.dnr_actions->push_back(std::move(action_2));
+
+  helpers::IgnoredActions ignored_actions;
+  std::string header_value;
+  EventResponseDeltas deltas;
+
+  char base_headers_string[] =
+      "HTTP/1.0 200 OK\r\n"
+      "set-cookie: Value1\r\n"
+      "\r\n";
+  auto base_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(base_headers_string));
+
+  bool response_headers_modified;
+  scoped_refptr<net::HttpResponseHeaders> new_headers;
+  GURL preserve_fragment_on_redirect_url;
+  std::vector<const DNRRequestAction*> matched_dnr_actions;
+
+  MergeOnHeadersReceivedResponses(
+      info, deltas, base_headers.get(), &new_headers,
+      &preserve_fragment_on_redirect_url, &ignored_actions,
+      &response_headers_modified, &matched_dnr_actions);
+  EXPECT_TRUE(new_headers.get());
+  EXPECT_TRUE(response_headers_modified);
+
+  size_t iter = 0;
+  std::string name;
+  std::string value;
+  std::multimap<std::string, std::string> actual_headers;
+  while (new_headers->EnumerateHeaderLines(&iter, &name, &value))
+    actual_headers.emplace(name, value);
+
+  std::multimap<std::string, std::string> expected_headers;
+  expected_headers.emplace("connection", "dnr_action_1");
+  expected_headers.emplace("connection", "dnr_action_2");
+  expected_headers.emplace("same_ext_key", "dnr_action_1");
+  expected_headers.emplace("same_ext_key", "dnr_action_2");
+  EXPECT_EQ(expected_headers, actual_headers);
+
+  EXPECT_TRUE(preserve_fragment_on_redirect_url.is_empty());
+  EXPECT_EQ(0u, ignored_actions.size());
+
+  // Multiple appends on the same header should generate only one entry.
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.ResponseHeaderAdded",
+      ResponseHeaderType::kConnection, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.ResponseHeaderChanged",
+      ResponseHeaderType::kOther, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.ResponseHeaderRemoved",
+      ResponseHeaderType::kSetCookie, 1);
+
+  // There should be no entry for the "warning" header because it was not
+  // removed.
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {

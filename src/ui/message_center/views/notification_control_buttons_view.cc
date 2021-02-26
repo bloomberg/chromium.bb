@@ -10,6 +10,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/vector_icons.h"
@@ -43,10 +44,12 @@ NotificationControlButtonsView::~NotificationControlButtonsView() = default;
 
 void NotificationControlButtonsView::ShowCloseButton(bool show) {
   if (show && !close_button_) {
-    close_button_ = AddChildView(std::make_unique<PaddedButton>(this));
-    close_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kNotificationCloseButtonIcon, icon_color_));
+    close_button_ = AddChildView(std::make_unique<PaddedButton>(
+        base::BindRepeating(&MessageView::OnCloseButtonPressed,
+                            base::Unretained(message_view_))));
+    close_button_->SetImage(views::Button::STATE_NORMAL,
+                            gfx::CreateVectorIcon(kNotificationCloseButtonIcon,
+                                                  DetermineButtonIconColor()));
     close_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
     close_button_->SetTooltipText(l10n_util::GetStringUTF16(
@@ -66,10 +69,14 @@ void NotificationControlButtonsView::ShowSettingsButton(bool show) {
     // Add the button next right to the snooze button.
     const int position = snooze_button_ ? 1 : 0;
     settings_button_ =
-        AddChildViewAt(std::make_unique<PaddedButton>(this), position);
+        AddChildViewAt(std::make_unique<PaddedButton>(base::BindRepeating(
+                           &MessageView::OnSettingsButtonPressed,
+                           base::Unretained(message_view_))),
+                       position);
     settings_button_->SetImage(
         views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kNotificationSettingsButtonIcon, icon_color_));
+        gfx::CreateVectorIcon(kNotificationSettingsButtonIcon,
+                              DetermineButtonIconColor()));
     settings_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
     settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
@@ -87,10 +94,15 @@ void NotificationControlButtonsView::ShowSettingsButton(bool show) {
 void NotificationControlButtonsView::ShowSnoozeButton(bool show) {
   if (show && !snooze_button_) {
     // Snooze button should appear as the first child.
-    snooze_button_ = AddChildViewAt(std::make_unique<PaddedButton>(this), 0);
+    snooze_button_ =
+        AddChildViewAt(std::make_unique<PaddedButton>(base::BindRepeating(
+                           &MessageView::OnSnoozeButtonPressed,
+                           base::Unretained(message_view_))),
+                       0);
     snooze_button_->SetImage(
         views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kNotificationSnoozeButtonIcon, icon_color_));
+        gfx::CreateVectorIcon(kNotificationSnoozeButtonIcon,
+                              DetermineButtonIconColor()));
     snooze_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_NOTIFICATION_SNOOZE_BUTTON_TOOLTIP));
     snooze_button_->SetTooltipText(l10n_util::GetStringUTF16(
@@ -110,7 +122,7 @@ void NotificationControlButtonsView::ShowButtons(bool show) {
   // Manipulate the opacity instead of changing the visibility to keep the tab
   // order even when the view is invisible.
   layer()->SetOpacity(show ? 1. : 0.);
-  set_can_process_events_within_subtree(show);
+  SetCanProcessEventsWithinSubtree(show);
 }
 
 bool NotificationControlButtonsView::IsAnyButtonFocused() const {
@@ -123,22 +135,14 @@ void NotificationControlButtonsView::SetButtonIconColors(SkColor color) {
   if (color == icon_color_)
     return;
   icon_color_ = color;
+  UpdateButtonIconColors();
+}
 
-  if (close_button_) {
-    close_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kNotificationCloseButtonIcon, icon_color_));
-  }
-  if (settings_button_) {
-    settings_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kNotificationSettingsButtonIcon, icon_color_));
-  }
-  if (snooze_button_) {
-    snooze_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kNotificationSnoozeButtonIcon, icon_color_));
-  }
+void NotificationControlButtonsView::SetBackgroundColor(SkColor color) {
+  if (color == background_color_)
+    return;
+  background_color_ = color;
+  UpdateButtonIconColors();
 }
 
 const char* NotificationControlButtonsView::GetClassName() const {
@@ -153,15 +157,30 @@ void NotificationControlButtonsView::OnThemeChanged() {
 }
 #endif
 
-void NotificationControlButtonsView::ButtonPressed(views::Button* sender,
-                                                   const ui::Event& event) {
-  if (close_button_ && sender == close_button_) {
-    message_view_->OnCloseButtonPressed();
-  } else if (settings_button_ && sender == settings_button_) {
-    message_view_->OnSettingsButtonPressed(event);
-  } else if (snooze_button_ && sender == snooze_button_) {
-    message_view_->OnSnoozeButtonPressed(event);
+void NotificationControlButtonsView::UpdateButtonIconColors() {
+  SkColor icon_color = DetermineButtonIconColor();
+  if (close_button_) {
+    close_button_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kNotificationCloseButtonIcon, icon_color));
   }
+  if (settings_button_) {
+    settings_button_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kNotificationSettingsButtonIcon, icon_color));
+  }
+  if (snooze_button_) {
+    snooze_button_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kNotificationSnoozeButtonIcon, icon_color));
+  }
+}
+
+SkColor NotificationControlButtonsView::DetermineButtonIconColor() const {
+  if (SkColorGetA(background_color_) != SK_AlphaOPAQUE)
+    return icon_color_;
+
+  return color_utils::BlendForMinContrast(icon_color_, background_color_).color;
 }
 
 }  // namespace message_center

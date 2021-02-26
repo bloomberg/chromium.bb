@@ -32,7 +32,6 @@ class MODULES_EXPORT Sensor : public EventTargetWithInlineData,
                               public ActiveScriptWrappable<Sensor>,
                               public ExecutionContextLifecycleObserver,
                               public SensorProxy::Observer {
-  USING_GARBAGE_COLLECTED_MIXIN(Sensor);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -53,7 +52,7 @@ class MODULES_EXPORT Sensor : public EventTargetWithInlineData,
 
   // Getters
   bool activated() const;
-  bool hasReading() const;
+  virtual bool hasReading() const;
   base::Optional<DOMHighResTimeStamp> timestamp(ScriptState*) const;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
@@ -63,7 +62,7 @@ class MODULES_EXPORT Sensor : public EventTargetWithInlineData,
   // ActiveScriptWrappable overrides.
   bool HasPendingActivity() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   Sensor(ExecutionContext*,
@@ -86,7 +85,6 @@ class MODULES_EXPORT Sensor : public EventTargetWithInlineData,
   // parameters if needed.
   virtual SensorConfigurationPtr CreateSensorConfig();
 
-  bool IsActivated() const { return state_ == SensorState::kActivated; }
   bool IsIdleOrErrored() const;
   const device::SensorReading& GetReading() const;
 

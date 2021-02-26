@@ -77,8 +77,6 @@ class CORE_EXPORT SMILInstanceTimeList {
 
 // This class implements SMIL interval timing model as needed for SVG animation.
 class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
-  USING_GARBAGE_COLLECTED_MIXIN(SVGSMILElement);
-
  public:
   SVGSMILElement(const QualifiedName&, Document&);
   ~SVGSMILElement() override;
@@ -148,7 +146,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   wtf_size_t& PriorityQueueHandle() { return queue_handle_; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   enum BeginOrEnd { kBegin, kEnd };
@@ -169,6 +167,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
  private:
   bool IsPresentationAttribute(const QualifiedName&) const override;
+
+  void AddedEventListener(const AtomicString& event_type,
+                          RegisteredEventListener&) final;
 
   void BuildPendingResource() override;
   void ClearResourceAndEventBaseReferences();
@@ -215,7 +216,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
               unsigned repeat);
 
     ~Condition();
-    void Trace(Visitor*);
+    void Trace(Visitor*) const;
 
     Type GetType() const { return type_; }
     BeginOrEnd GetBeginOrEnd() const { return begin_or_end_; }

@@ -1,19 +1,14 @@
+/* eslint-disable node/no-unpublished-require */
+/* eslint-disable prettier/prettier */
+/* eslint-disable no-console */
+
 module.exports = function (grunt) {
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
     clean: {
-      constants: ['src/constants.ts', 'src/common/constants.ts'],
-      out: ['out/', 'out-wpt'],
-    },
-
-    mkdir: {
-      out: {
-        options: {
-          create: ['out'],
-        },
-      },
+      out: ['out/', 'out-wpt/'],
     },
 
     run: {
@@ -23,45 +18,73 @@ module.exports = function (grunt) {
       },
       'generate-listings': {
         cmd: 'node',
-        args: ['tools/gen_listings', 'webgpu', 'unittests'],
+        args: ['tools/gen_listings', 'webgpu', 'unittests', 'demo'],
       },
       'generate-wpt-cts-html': {
         cmd: 'node',
         args: ['tools/gen_wpt_cts_html', 'out-wpt/cts.html', 'src/common/templates/cts.html'],
       },
-      test: {
+      unittest: {
         cmd: 'node',
-        args: ['tools/run', 'unittests:'],
+        args: ['tools/run', 'unittests:*'],
       },
       'build-out': {
         cmd: 'node',
         args: [
           'node_modules/@babel/cli/bin/babel',
-          '--source-maps=true',
           '--extensions=.ts',
+          '--source-maps=true',
           '--out-dir=out/',
           'src/',
         ],
       },
-      'gts-check': {
+      'build-out-wpt': {
         cmd: 'node',
-        args: ['node_modules/gts/build/src/cli', 'check'],
+        args: [
+          'node_modules/@babel/cli/bin/babel',
+          '--extensions=.ts',
+          '--source-maps=false',
+          '--delete-dir-on-start',
+          '--out-dir=out-wpt/',
+          'src/',
+          '--only=src/common/framework/',
+          '--only=src/common/runtime/helper/',
+          '--only=src/common/runtime/wpt.ts',
+          '--only=src/webgpu/',
+          // These files will be generated, instead of compiled from TypeScript.
+          '--ignore=src/common/framework/version.ts',
+          '--ignore=src/webgpu/listing.ts',
+        ],
       },
-      'gts-fix': {
+      lint: {
         cmd: 'node',
-        args: ['node_modules/gts/build/src/cli', 'fix'],
+        args: ['node_modules/eslint/bin/eslint', 'src/**/*.ts', '--max-warnings=0'],
       },
+      fix: {
+        cmd: 'node',
+        args: ['node_modules/eslint/bin/eslint', 'src/**/*.ts', '--fix'],
+      },
+      'autoformat-out-wpt': {
+        cmd: 'node',
+        args: ['node_modules/prettier/bin-prettier', '--loglevel=warn', '--write', 'out-wpt/**/*.js'],
+      }
+    },
+
+    watch: {
+      src: {
+        files: ['src/**/*'],
+        tasks: ['build-standalone', 'ts:check', 'run:lint'],
+        options: {
+          spawn: false,
+        }
+      }
     },
 
     copy: {
-      'webgpu-constants': {
+      'out-wpt-generated': {
         files: [
-          {
-            expand: true,
-            cwd: 'node_modules/@webgpu/types/src',
-            src: 'constants.ts',
-            dest: 'src/common/',
-          },
+          { expand: true, cwd: 'out', src: 'common/framework/version.js', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'webgpu/listing.js', dest: 'out-wpt/' },
         ],
       },
       glslang: {
@@ -74,14 +97,9 @@ module.exports = function (grunt) {
           },
         ],
       },
-      'out-wpt': {
+      'out-wpt-htmlfiles': {
         files: [
-          { expand: true, cwd: '.', src: 'LICENSE.txt', dest: 'out-wpt/' },
-          { expand: true, cwd: 'out', src: 'common/constants.js', dest: 'out-wpt/' },
-          { expand: true, cwd: 'out', src: 'common/framework/**/*.js', dest: 'out-wpt/' },
-          { expand: true, cwd: 'out', src: 'webgpu/**/*.js', dest: 'out-wpt/' },
-          { expand: true, cwd: 'out', src: 'common/runtime/wpt.js', dest: 'out-wpt/' },
-          { expand: true, cwd: 'out', src: 'common/runtime/helper/**/*.js', dest: 'out-wpt/' },
+          { expand: true, cwd: 'src', src: 'webgpu/**/*.html', dest: 'out-wpt/' },
         ],
       },
     },
@@ -92,6 +110,19 @@ module.exports = function (grunt) {
         port: 8080,
         host: '127.0.0.1',
         cache: -1,
+      },
+      'background': {
+        root: '.',
+        port: 8080,
+        host: '127.0.0.1',
+        cache: -1,
+        runInBackground: true,
+        logFn(req, res, error) {
+          // Only log errors to not spam the console.
+          if (error) {
+            console.error(error);
+          }
+        },
       },
     },
 
@@ -108,9 +139,19 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-http-server');
-  grunt.loadNpmTasks('grunt-mkdir');
   grunt.loadNpmTasks('grunt-run');
   grunt.loadNpmTasks('grunt-ts');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+
+  grunt.event.on('watch', (action, filepath) => {
+    const buildArgs = grunt.config(['run', 'build-out', 'args']);
+    buildArgs[buildArgs.length - 1] = filepath;
+    grunt.config(['run', 'build-out', 'args'], buildArgs);
+
+    const lintArgs = grunt.config(['run', 'lint', 'args']);
+    lintArgs[lintArgs.length - 1] = filepath;
+    grunt.config(['run', 'lint', 'args'], lintArgs);
+  });
 
   const helpMessageTasks = [];
   function registerTaskAndAddToHelp(name, desc, deps) {
@@ -122,60 +163,70 @@ module.exports = function (grunt) {
   }
 
   grunt.registerTask('set-quiet-mode', () => {
-    grunt.log.write('Running other tasks');
+    grunt.log.write('Running tasks');
     require('quiet-grunt');
   });
 
-  grunt.registerTask('prebuild', 'Pre-build tasks (clean and re-copy)', [
-    'clean',
-    'mkdir:out',
-    'copy:webgpu-constants',
-    'copy:glslang',
-  ]);
-  grunt.registerTask('compile', 'Compile and generate (no checks, no WPT)', [
+  grunt.registerTask('build-standalone', 'Build out/ (no checks, no WPT)', [
     'run:build-out',
+    'copy:glslang',
     'run:generate-version',
     'run:generate-listings',
   ]);
-  grunt.registerTask('generate-wpt', 'Generate out-wpt/', [
-    'copy:out-wpt',
+  grunt.registerTask('build-wpt', 'Build out/ (no checks)', [
+    'run:build-out-wpt',
+    'run:autoformat-out-wpt',
+    'copy:glslang',
+    'run:generate-version',
+    'run:generate-listings',
+    'copy:out-wpt-generated',
+    'copy:out-wpt-htmlfiles',
     'run:generate-wpt-cts-html',
   ]);
-  grunt.registerTask('compile-done-message', () => {
+  grunt.registerTask('build-done-message', () => {
     process.stderr.write('\nBuild completed! Running checks/tests');
   });
 
-  registerTaskAndAddToHelp('pre', 'Run all presubmit checks: build+typecheck+test+lint', [
+  registerTaskAndAddToHelp('pre', 'Run all presubmit checks: standalone+wpt+typecheck+unittest+lint', [
     'set-quiet-mode',
-    'wpt',
-    'run:gts-check',
-  ]);
-  registerTaskAndAddToHelp('test', 'Quick development build: build+typecheck+test', [
-    'set-quiet-mode',
-    'prebuild',
-    'compile',
-    'compile-done-message',
+    'clean',
+    'build-standalone',
+    'build-wpt',
+    'build-done-message',
     'ts:check',
-    'run:test',
+    'run:unittest',
+    'run:lint',
   ]);
-  registerTaskAndAddToHelp('wpt', 'Build for WPT: build+typecheck+test+wpt', [
+  registerTaskAndAddToHelp('test', 'Quick development build: standalone+typecheck+unittest', [
     'set-quiet-mode',
-    'prebuild',
-    'compile',
-    'generate-wpt',
-    'compile-done-message',
+    'build-standalone',
+    'build-done-message',
     'ts:check',
-    'run:test',
+    'run:unittest',
+  ]);
+  registerTaskAndAddToHelp('wpt', 'Build for WPT: wpt+typecheck+unittest', [
+    'set-quiet-mode',
+    'build-wpt',
+    'build-done-message',
+    'ts:check',
+    'run:unittest',
   ]);
   registerTaskAndAddToHelp('check', 'Typecheck and lint', [
     'set-quiet-mode',
-    'copy:webgpu-constants',
     'ts:check',
-    'run:gts-check',
+    'run:lint',
+  ]);
+
+  registerTaskAndAddToHelp('dev', 'Start the dev server, and watch for changes', [
+    'build-standalone',
+    'http-server:background',
+    'watch',
   ]);
 
   registerTaskAndAddToHelp('serve', 'Serve out/ on 127.0.0.1:8080', ['http-server:.']);
-  registerTaskAndAddToHelp('fix', 'Fix lint and formatting', ['run:gts-fix']);
+  registerTaskAndAddToHelp('fix', 'Fix lint and formatting', ['run:fix']);
+
+  addExistingTaskToHelp('clean', 'Clean out/ and out-wpt/');
 
   grunt.registerTask('default', '', () => {
     console.error('\nAvailable tasks (see grunt --help for info):');

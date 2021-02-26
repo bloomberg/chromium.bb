@@ -41,7 +41,7 @@ class MockPendingScript : public PendingScript {
   }
   ~MockPendingScript() override {}
 
-  MOCK_CONST_METHOD0(GetScriptType, mojom::ScriptType());
+  MOCK_CONST_METHOD0(GetScriptType, mojom::blink::ScriptType());
   MOCK_CONST_METHOD1(CheckMIMETypeBeforeRunScript, bool(Document*));
   MOCK_CONST_METHOD1(GetSource, Script*(const KURL&));
   MOCK_CONST_METHOD0(IsExternal, bool());
@@ -49,8 +49,6 @@ class MockPendingScript : public PendingScript {
   MOCK_CONST_METHOD0(UrlForTracing, KURL());
   MOCK_METHOD0(RemoveFromMemoryCache, void());
   MOCK_METHOD1(ExecuteScriptBlock, void(const KURL&));
-
-  void StartStreamingIfPossible() override {}
 
   bool IsReady() const override { return is_ready_; }
   void SetIsReady(bool is_ready) { is_ready_ = is_ready; }

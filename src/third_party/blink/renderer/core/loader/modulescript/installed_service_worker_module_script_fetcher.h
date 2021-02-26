@@ -17,8 +17,6 @@ class WorkerGlobalScope;
 class CORE_EXPORT InstalledServiceWorkerModuleScriptFetcher final
     : public GarbageCollected<InstalledServiceWorkerModuleScriptFetcher>,
       public ModuleScriptFetcher {
-  USING_GARBAGE_COLLECTED_MIXIN(InstalledServiceWorkerModuleScriptFetcher);
-
  public:
   InstalledServiceWorkerModuleScriptFetcher(WorkerGlobalScope*,
                                             util::PassKey<ModuleScriptLoader>);
@@ -29,7 +27,7 @@ class CORE_EXPORT InstalledServiceWorkerModuleScriptFetcher final
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   String DebugName() const override {

@@ -91,16 +91,11 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   // WidgetDelegate:
   void OnWidgetMove() override;
   views::View* GetInitiallyFocusedView() override;
-  bool CanResize() const override;
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowWindowTitle() const override;
   void SaveWindowPlacement(const gfx::Rect& bounds,
                            ui::WindowShowState show_state) override;
   void DeleteDelegate() override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
   bool ShouldDescendIntoChildForEventHandling(
       gfx::NativeView child,
       const gfx::Point& location) override;
@@ -116,8 +111,6 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
                              content::RenderViewHost* new_host) override;
 
   // views::View:
-  void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
@@ -154,9 +147,14 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   void AddObserver(web_modal::ModalDialogHostObserver* observer) override;
   void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override;
 
+  void OnWidgetHasHitTestMaskChanged();
+
  private:
   // Informs modal dialogs that they need to update their positions.
   void OnViewWasResized();
+
+  bool CanMaximizeWindow() const;
+  bool CanResizeWindow() const;
 
   extensions::AppWindow* app_window_ = nullptr;  // Not owned.
   views::WebView* web_view_ = nullptr;

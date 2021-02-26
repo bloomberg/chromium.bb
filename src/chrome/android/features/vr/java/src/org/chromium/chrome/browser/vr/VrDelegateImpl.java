@@ -8,7 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 
 /**
  * {@link VrDelegate} implementation if the VR module is available. Mostly forwards calls to {@link
@@ -22,7 +22,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 
     @Override
     public boolean onActivityResultWithNative(int requestCode, int resultCode) {
-        return VrShellDelegate.onActivityResultWithNative(requestCode, resultCode);
+        return VrShellDelegate.onActivityResultWithNative(requestCode, resultCode)
+                || VrCoreInstallUtils.onActivityResultWithNative(requestCode, resultCode);
     }
 
     @Override
@@ -133,7 +134,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 
     @Override
     public boolean isDaydreamReadyDevice() {
-        return VrShellDelegate.isDaydreamReadyDevice();
+        return VrCoreInstallUtils.isDaydreamReadyDevice();
     }
 
     @Override

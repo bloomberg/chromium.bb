@@ -9,11 +9,11 @@
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/notreached.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "components/crx_file/id_util.h"
 
 namespace web_app {
@@ -41,12 +41,6 @@ void TestInstallFinalizer::FinalizeUpdate(
     InstallFinalizedCallback callback) {
   Finalize(web_app_info, InstallResultCode::kSuccessAlreadyInstalled,
            std::move(callback));
-}
-
-void TestInstallFinalizer::FinalizeFallbackInstallAfterSync(
-    const AppId& app_id,
-    InstallFinalizedCallback callback) {
-  NOTREACHED();
 }
 
 void TestInstallFinalizer::FinalizeUninstallAfterSync(
@@ -108,14 +102,6 @@ bool TestInstallFinalizer::WasExternalAppUninstalledByUser(
   return base::Contains(user_uninstalled_external_apps_, app_id);
 }
 
-bool TestInstallFinalizer::CanAddAppToQuickLaunchBar() const {
-  return true;
-}
-
-void TestInstallFinalizer::AddAppToQuickLaunchBar(const AppId& app_id) {
-  ++num_add_app_to_quick_launch_bar_calls_;
-}
-
 bool TestInstallFinalizer::CanReparentTab(const AppId& app_id,
                                           bool shortcut_created) const {
   return true;
@@ -150,7 +136,7 @@ void TestInstallFinalizer::SimulateExternalAppUninstalledByUser(
 void TestInstallFinalizer::Finalize(const WebApplicationInfo& web_app_info,
                                     InstallResultCode code,
                                     InstallFinalizedCallback callback) {
-  AppId app_id = GetAppIdForUrl(web_app_info.app_url);
+  AppId app_id = GetAppIdForUrl(web_app_info.start_url);
   if (next_app_id_.has_value()) {
     app_id = next_app_id_.value();
     next_app_id_.reset();

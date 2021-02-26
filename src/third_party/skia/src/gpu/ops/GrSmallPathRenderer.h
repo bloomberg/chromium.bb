@@ -8,62 +8,26 @@
 #ifndef GrSmallPathRenderer_DEFINED
 #define GrSmallPathRenderer_DEFINED
 
-#include "src/gpu/GrDrawOpAtlas.h"
-#include "src/gpu/GrOnFlushResourceProvider.h"
 #include "src/gpu/GrPathRenderer.h"
-#include "src/gpu/geometry/GrRect.h"
-#include "src/gpu/geometry/GrStyledShape.h"
+#include "src/gpu/ops/GrOp.h"
 
-#include "src/core/SkOpts.h"
-#include "src/core/SkTDynamicHash.h"
-
+class GrDrawOp;
 class GrRecordingContext;
+class GrStyledShape;
 
-class ShapeData;
-class ShapeDataKey;
-
-class GrSmallPathRenderer : public GrPathRenderer,
-                            public GrOnFlushCallbackObject,
-                            public GrDrawOpAtlas::EvictionCallback,
-                            public GrDrawOpAtlas::GenerationCounter {
+class GrSmallPathRenderer : public GrPathRenderer {
 public:
     GrSmallPathRenderer();
     ~GrSmallPathRenderer() override;
 
     const char* name() const final { return "Small"; }
 
-    // GrOnFlushCallbackObject overrides
-    //
-    // Note: because this class is associated with a path renderer we want it to be removed from
-    // the list of active OnFlushBackkbackObjects in an freeGpuResources call (i.e., we accept the
-    // default retainOnFreeGpuResources implementation).
-
-    void preFlush(GrOnFlushResourceProvider* onFlushRP, const uint32_t*, int) override {
-        if (fAtlas) {
-            fAtlas->instantiate(onFlushRP);
-        }
-    }
-
-    void postFlush(GrDeferredUploadToken startTokenForNextFlush,
-                   const uint32_t* /*opsTaskIDs*/, int /*numOpsTaskIDs*/) override {
-        if (fAtlas) {
-            fAtlas->compact(startTokenForNextFlush);
-        }
-    }
-
-    using ShapeCache = SkTDynamicHash<ShapeData, ShapeDataKey>;
-    typedef SkTInternalLList<ShapeData> ShapeDataList;
-
-    static std::unique_ptr<GrDrawOp> createOp_TestingOnly(GrRecordingContext*,
-                                                          GrPaint&&,
-                                                          const GrStyledShape&,
-                                                          const SkMatrix& viewMatrix,
-                                                          GrDrawOpAtlas* atlas,
-                                                          ShapeCache*,
-                                                          ShapeDataList*,
-                                                          bool gammaCorrect,
-                                                          const GrUserStencilSettings*);
-    struct PathTestStruct;
+    static GrOp::Owner createOp_TestingOnly(GrRecordingContext*,
+                                            GrPaint&&,
+                                            const GrStyledShape&,
+                                            const SkMatrix& viewMatrix,
+                                            bool gammaCorrect,
+                                            const GrUserStencilSettings*);
 
 private:
     class SmallPathOp;
@@ -76,13 +40,7 @@ private:
 
     bool onDrawPath(const DrawPathArgs&) override;
 
-    void evict(GrDrawOpAtlas::PlotLocator) override;
-
-    std::unique_ptr<GrDrawOpAtlas> fAtlas;
-    ShapeCache fShapeCache;
-    ShapeDataList fShapeList;
-
-    typedef GrPathRenderer INHERITED;
+    using INHERITED = GrPathRenderer;
 };
 
 #endif

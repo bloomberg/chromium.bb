@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -11,43 +12,17 @@
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
+#include "chrome/browser/web_applications/components/os_integration_manager.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "net/dns/mock_host_resolver.h"
 
 namespace web_app {
 
-std::string ControllerTypeParamToString(
-    const ::testing::TestParamInfo<ControllerType>& controller_type) {
-  switch (controller_type.param) {
-    case ControllerType::kHostedAppController:
-      return "HostedAppController";
-    case ControllerType::kUnifiedControllerWithBookmarkApp:
-      return "UnifiedControllerWithBookmarkApp";
-    case ControllerType::kUnifiedControllerWithWebApp:
-      return "UnifiedControllerWithWebApp";
-  }
-}
-
-WebAppControllerBrowserTestBase::WebAppControllerBrowserTestBase() {
-  if (GetParam() == ControllerType::kUnifiedControllerWithWebApp) {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAsWithoutExtensions}, {});
-  } else if (GetParam() == ControllerType::kUnifiedControllerWithBookmarkApp) {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAsUnifiedUiController},
-        {features::kDesktopPWAsWithoutExtensions});
-  } else {
-    scoped_feature_list_.InitWithFeatures(
-        {}, {features::kDesktopPWAsUnifiedUiController,
-             features::kDesktopPWAsWithoutExtensions});
-  }
-}
+WebAppControllerBrowserTestBase::WebAppControllerBrowserTestBase() = default;
 
 WebAppControllerBrowserTestBase::~WebAppControllerBrowserTestBase() = default;
 
@@ -57,10 +32,10 @@ WebAppProviderBase& WebAppControllerBrowserTestBase::provider() {
   return *provider;
 }
 
-AppId WebAppControllerBrowserTestBase::InstallPWA(const GURL& app_url) {
+AppId WebAppControllerBrowserTestBase::InstallPWA(const GURL& start_url) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
-  web_app_info->app_url = app_url;
-  web_app_info->scope = app_url.GetWithoutFilename();
+  web_app_info->start_url = start_url;
+  web_app_info->scope = start_url.GetWithoutFilename();
   web_app_info->open_as_window = true;
   web_app_info->title = base::ASCIIToUTF16("A Web App");
   return web_app::InstallWebApp(profile(), std::move(web_app_info));
@@ -109,8 +84,8 @@ bool WebAppControllerBrowserTestBase::NavigateAndAwaitInstallabilityCheck(
 Browser*
 WebAppControllerBrowserTestBase::NavigateInNewWindowAndAwaitInstallabilityCheck(
     const GURL& url) {
-  Browser* new_browser =
-      new Browser(Browser::CreateParams(Browser::TYPE_NORMAL, profile(), true));
+  Browser* new_browser = Browser::Create(
+      Browser::CreateParams(Browser::TYPE_NORMAL, profile(), true));
   AddBlankTabAndShow(new_browser);
   NavigateAndAwaitInstallabilityCheck(new_browser, url);
   return new_browser;
@@ -123,8 +98,8 @@ base::Optional<AppId> WebAppControllerBrowserTestBase::FindAppWithUrlInScope(
 
 WebAppControllerBrowserTest::WebAppControllerBrowserTest()
     : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-  scoped_feature_list_.InitWithFeatures(
-      {}, {predictors::kSpeculativePreconnectFeature});
+  scoped_feature_list_.InitAndDisableFeature(
+      predictors::kSpeculativePreconnectFeature);
 }
 
 WebAppControllerBrowserTest::~WebAppControllerBrowserTest() = default;
@@ -139,7 +114,7 @@ void WebAppControllerBrowserTest::SetUp() {
 content::WebContents* WebAppControllerBrowserTest::OpenApplication(
     const AppId& app_id) {
   ui_test_utils::UrlLoadObserver url_observer(
-      provider().registrar().GetAppLaunchURL(app_id),
+      provider().registrar().GetAppStartUrl(app_id),
       content::NotificationService::AllSources());
 
   apps::AppLaunchParams params(
@@ -149,7 +124,7 @@ content::WebContents* WebAppControllerBrowserTest::OpenApplication(
   content::WebContents* contents =
       apps::AppServiceProxyFactory::GetForProfile(profile())
           ->BrowserAppLauncher()
-          .LaunchAppWithParams(params);
+          ->LaunchAppWithParams(std::move(params));
   url_observer.Wait();
   return contents;
 }
@@ -189,7 +164,7 @@ void WebAppControllerBrowserTest::SetUpOnMainThread() {
   // By default, all SSL cert checks are valid. Can be overridden in tests.
   cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
 
-  provider().shortcut_manager().SuppressShortcutsForTesting();
+  os_hooks_suppress_ = OsIntegrationManager::ScopedSuppressOsHooksForTesting();
 }
 
 }  // namespace web_app

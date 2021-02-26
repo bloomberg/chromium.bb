@@ -10,7 +10,6 @@
 
 #include "base/base_export.h"
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace base {
@@ -61,6 +60,9 @@ class BASE_EXPORT BindStateBase
 
   using InvokeFuncStorage = void(*)();
 
+  BindStateBase(const BindStateBase&) = delete;
+  BindStateBase& operator=(const BindStateBase&) = delete;
+
  private:
   BindStateBase(InvokeFuncStorage polymorphic_invoke,
                 void (*destructor)(const BindStateBase*));
@@ -100,8 +102,6 @@ class BASE_EXPORT BindStateBase
   void (*destructor_)(const BindStateBase*);
   bool (*query_cancellation_traits_)(const BindStateBase*,
                                      CancellationQueryMode mode);
-
-  DISALLOW_COPY_AND_ASSIGN(BindStateBase);
 };
 
 // Holds the Callback methods that don't require specialization to reduce
@@ -187,6 +187,30 @@ class BASE_EXPORT CallbackBaseCopyable : public CallbackBase {
       : CallbackBase(bind_state) {}
   ~CallbackBaseCopyable() = default;
 };
+
+// Non-void return type is passed to the |then| callback.
+template <typename CallbackType,
+          typename ThenClosureType,
+          typename R,
+          typename... Args,
+          std::enable_if_t<!std::is_void<R>::value, int> = 0>
+auto ThenHelper() {
+  return [](CallbackType c1, ThenClosureType c2, Args... c1_args) {
+    return std::move(c2).Run(std::move(c1).Run(std::forward<Args>(c1_args)...));
+  };
+}
+// Void return type means nothing is passed to the |then| callback.
+template <typename CallbackType,
+          typename ThenClosureType,
+          typename R,
+          typename... Args,
+          std::enable_if_t<std::is_void<R>::value, int> = 0>
+auto ThenHelper() {
+  return [](CallbackType c1, ThenClosureType c2, Args... c1_args) {
+    std::move(c1).Run(std::forward<Args>(c1_args)...);
+    return std::move(c2).Run();
+  };
+}
 
 }  // namespace internal
 }  // namespace base

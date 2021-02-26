@@ -7,7 +7,6 @@
 #include "fpdfsdk/cpdfsdk_widgethandler.h"
 
 #include <memory>
-#include <vector>
 
 #include "constants/access_permissions.h"
 #include "constants/form_flags.h"
@@ -20,7 +19,6 @@
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
 #include "fpdfsdk/formfiller/cffl_formfiller.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 CPDFSDK_WidgetHandler::CPDFSDK_WidgetHandler() = default;
@@ -63,7 +61,7 @@ std::unique_ptr<CPDFSDK_Annot> CPDFSDK_WidgetHandler::NewAnnot(
   if (!pCtrl)
     return nullptr;
 
-  auto pWidget = pdfium::MakeUnique<CPDFSDK_Widget>(pAnnot, pPageView, pForm);
+  auto pWidget = std::make_unique<CPDFSDK_Widget>(pAnnot, pPageView, pForm);
   pForm->AddMap(pCtrl, pWidget.get());
   if (pPDFForm->NeedConstructAP())
     pWidget->ResetAppearance(pdfium::nullopt, false);
@@ -278,6 +276,10 @@ void CPDFSDK_WidgetHandler::ReplaceSelection(CPDFSDK_Annot* pAnnot,
     m_pFormFiller->ReplaceSelection(pAnnot, text);
 }
 
+bool CPDFSDK_WidgetHandler::SelectAllText(CPDFSDK_Annot* pAnnot) {
+  return !pAnnot->IsSignatureWidget() && m_pFormFiller->SelectAllText(pAnnot);
+}
+
 bool CPDFSDK_WidgetHandler::CanUndo(CPDFSDK_Annot* pAnnot) {
   return !pAnnot->IsSignatureWidget() && m_pFormFiller->CanUndo(pAnnot);
 }
@@ -306,6 +308,6 @@ bool CPDFSDK_WidgetHandler::IsFocusableAnnot(
     const CPDF_Annot::Subtype& annot_type) const {
   ASSERT(annot_type == CPDF_Annot::Subtype::WIDGET);
 
-  return pdfium::ContainsValue(m_pFormFillEnv->GetFocusableAnnotSubtypes(),
-                               annot_type);
+  return pdfium::Contains(m_pFormFillEnv->GetFocusableAnnotSubtypes(),
+                          annot_type);
 }

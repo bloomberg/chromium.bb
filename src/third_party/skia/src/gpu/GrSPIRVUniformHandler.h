@@ -8,7 +8,7 @@
 #ifndef GrSPIRVUniformHandler_DEFINED
 #define GrSPIRVUniformHandler_DEFINED
 
-#include "src/gpu/GrTAllocator.h"
+#include "src/gpu/GrTBlockList.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 
 /*
@@ -27,7 +27,7 @@ public:
     struct SPIRVUniformInfo : public UniformInfo {
         int fUBOOffset;
     };
-    typedef GrTAllocator<SPIRVUniformInfo> UniformInfoArray;
+    typedef GrTBlockList<SPIRVUniformInfo> UniformInfoArray;
     enum {
         kUniformBinding = 0,
         kUniformDescriptorSet = 0,
@@ -40,6 +40,9 @@ public:
     }
 
     UniformInfo& uniform(int idx) override {
+        return fUniforms.item(idx);
+    }
+    const UniformInfo& uniform(int idx) const override {
         return fUniforms.item(idx);
     }
 
@@ -71,7 +74,7 @@ private:
     friend class GrD3DPipelineStateBuilder;
     friend class GrDawnProgramBuilder;
 
-    typedef GrGLSLUniformHandler INHERITED;
+    using INHERITED = GrGLSLUniformHandler;
 };
 
 #endif

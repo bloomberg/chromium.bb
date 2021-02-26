@@ -15,6 +15,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/views/search_result_page_view.h"
+#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_notifier.h"
@@ -48,8 +49,6 @@ constexpr int kSeparatorLeftRightPadding = 4;
 constexpr int kSeparatorHeight = 46;
 constexpr int kSeparatorTopPadding = 10;
 
-constexpr SkColor kSeparatorColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
-
 // The Delay before recording play store app results impression, i.e., if the
 // play store results are displayed less than the duration, we assume user
 // won't have chance to see them clearly and click on them, and wont' log
@@ -75,8 +74,6 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     AppListViewDelegate* view_delegate)
     : SearchResultContainerView(view_delegate),
       search_box_(search_box),
-      is_play_store_app_search_enabled_(
-          app_list_features::IsPlayStoreAppSearchEnabled()),
       is_app_reinstall_recommendation_enabled_(
           app_list_features::IsAppReinstallZeroStateEnabled()),
       max_search_result_tiles_(
@@ -86,26 +83,23 @@ SearchResultTileItemListView::SearchResultTileItemListView(
       gfx::Insets(kItemListVerticalSpacing, kItemListHorizontalSpacing),
       kBetweenItemSpacing));
   for (size_t i = 0; i < max_search_result_tiles_; ++i) {
-    if (is_app_reinstall_recommendation_enabled_ ||
-        is_play_store_app_search_enabled_) {
-      views::Separator* separator =
-          AddChildView(std::make_unique<views::Separator>());
-      separator->SetVisible(false);
-      separator->SetBorder(views::CreateEmptyBorder(
-          kSeparatorTopPadding, kSeparatorLeftRightPadding,
-          AppListConfig::instance().search_tile_height() - kSeparatorHeight,
-          kSeparatorLeftRightPadding));
-      separator->SetColor(kSeparatorColor);
-      separator_views_.push_back(separator);
-      layout_->SetFlexForView(separator, 0);
-    }
+    views::Separator* separator =
+        AddChildView(std::make_unique<views::Separator>());
+    separator->SetVisible(false);
+    separator->SetBorder(views::CreateEmptyBorder(
+        kSeparatorTopPadding, kSeparatorLeftRightPadding,
+        AppListConfig::instance().search_tile_height() - kSeparatorHeight,
+        kSeparatorLeftRightPadding));
+    separator->SetColor(AppListColorProvider::Get()->GetSeparatorColor());
+    separator_views_.push_back(separator);
+    layout_->SetFlexForView(separator, 0);
 
     SearchResultTileItemView* tile_item =
         AddChildView(std::make_unique<SearchResultTileItemView>(
             view_delegate, false /* show_in_apps_page */));
     tile_item->set_index_in_container(i);
     tile_item->SetParentBackgroundColor(
-        AppListConfig::instance().card_background_color());
+        AppListColorProvider::Get()->GetSearchBoxCardBackgroundColor());
     tile_views_.push_back(tile_item);
     AddObservedResultView(tile_item);
   }
@@ -122,20 +116,6 @@ SearchResultTileItemView* SearchResultTileItemListView::GetResultViewAt(
   return tile_views_[index];
 }
 
-void SearchResultTileItemListView::NotifyFirstResultYIndex(int y_index) {
-  for (size_t i = 0; i < static_cast<size_t>(num_results()); ++i)
-    GetResultViewAt(i)->result()->set_distance_from_origin(i + y_index);
-}
-
-int SearchResultTileItemListView::GetYSize() {
-  return num_results() ? 1 : 0;
-}
-
-SearchResultBaseView* SearchResultTileItemListView::GetFirstResultView() {
-  DCHECK(!tile_views_.empty());
-  return num_results() <= 0 ? nullptr : tile_views_[0];
-}
-
 int SearchResultTileItemListView::DoUpdate() {
   if (!GetWidget() || !GetWidget()->IsVisible() || !GetWidget()->IsActive()) {
     for (size_t i = 0; i < max_search_result_tiles_; ++i) {
@@ -148,7 +128,6 @@ int SearchResultTileItemListView::DoUpdate() {
 
   std::vector<SearchResult*> display_results = GetDisplayResults();
 
-  std::vector<std::string> display_ids;
   std::set<std::string> result_id_removed, result_id_added;
   bool is_result_an_installable_app = false;
   bool is_previous_result_installable_app = false;
@@ -167,10 +146,7 @@ int SearchResultTileItemListView::DoUpdate() {
     }
 
     if (i >= display_results.size()) {
-      if (is_app_reinstall_recommendation_enabled_ ||
-          is_play_store_app_search_enabled_) {
-        separator_views_[i]->SetVisible(false);
-      }
+      separator_views_[i]->SetVisible(false);
 
       GetResultViewAt(i)->SetResult(nullptr);
       continue;
@@ -193,20 +169,16 @@ int SearchResultTileItemListView::DoUpdate() {
     GetResultViewAt(i)->SetResult(item);
     GetResultViewAt(i)->set_group_index_in_container_view(app_group_index);
     result_id_added.insert(item->id());
-    display_ids.push_back(item->id());
     is_result_an_installable_app = IsResultAnInstallableApp(item);
 
-    if (is_play_store_app_search_enabled_ ||
-        is_app_reinstall_recommendation_enabled_) {
-      if (i > 0 && (is_result_an_installable_app !=
-                    is_previous_result_installable_app)) {
-        // Add a separator between installed apps and installable apps.
-        // This assumes the search results are already separated in groups for
-        // installed and installable apps.
-        separator_views_[i]->SetVisible(true);
-      } else {
-        separator_views_[i]->SetVisible(false);
-      }
+    if (i > 0 &&
+        (is_result_an_installable_app != is_previous_result_installable_app)) {
+      // Add a separator between installed apps and installable apps.
+      // This assumes the search results are already separated in groups for
+      // installed and installable apps.
+      separator_views_[i]->SetVisible(true);
+    } else {
+      separator_views_[i]->SetVisible(false);
     }
 
     is_previous_result_installable_app = is_result_an_installable_app;
@@ -214,7 +186,11 @@ int SearchResultTileItemListView::DoUpdate() {
 
   auto* notifier = view_delegate()->GetNotifier();
   if (notifier) {
-    notifier->NotifyResultsUpdated(SearchResultDisplayType::kTile, display_ids);
+    std::vector<AppListNotifier::Result> notifier_results;
+    for (const auto* result : display_results)
+      notifier_results.emplace_back(result->id(), result->metrics_type());
+    notifier->NotifyResultsUpdated(SearchResultDisplayType::kTile,
+                                   notifier_results);
   }
 
   // Track play store results and start the timer for recording their impression
@@ -267,7 +243,9 @@ int SearchResultTileItemListView::DoUpdate() {
   }
 
   set_container_score(
-      display_results.empty() ? -1 : display_results.front()->display_score());
+      display_results.empty()
+          ? -1.0
+          : AppListConfig::instance().app_tiles_container_score());
 
   return display_results.size();
 }

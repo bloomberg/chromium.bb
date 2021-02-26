@@ -31,8 +31,7 @@ class UpdateClientImpl : public UpdateClient {
  public:
   UpdateClientImpl(scoped_refptr<Configurator> config,
                    scoped_refptr<PingManager> ping_manager,
-                   UpdateChecker::Factory update_checker_factory,
-                   CrxDownloader::Factory crx_downloader_factory);
+                   UpdateChecker::Factory update_checker_factory);
 
   // Overrides for UpdateClient.
   void AddObserver(Observer* observer) override;
@@ -54,6 +53,9 @@ class UpdateClientImpl : public UpdateClient {
                          const base::Version& version,
                          int reason,
                          Callback callback) override;
+  void SendRegistrationPing(const std::string& id,
+                            const base::Version& version,
+                            Callback callback) override;
 
  private:
   ~UpdateClientImpl() override;

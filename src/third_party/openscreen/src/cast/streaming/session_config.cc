@@ -4,6 +4,8 @@
 
 #include "cast/streaming/session_config.h"
 
+#include <utility>
+
 namespace openscreen {
 namespace cast {
 
@@ -19,8 +21,15 @@ SessionConfig::SessionConfig(Ssrc sender_ssrc,
       rtp_timebase(rtp_timebase),
       channels(channels),
       target_playout_delay(target_playout_delay),
-      aes_secret_key(aes_secret_key),
-      aes_iv_mask(aes_iv_mask) {}
+      aes_secret_key(std::move(aes_secret_key)),
+      aes_iv_mask(std::move(aes_iv_mask)) {}
+
+SessionConfig::SessionConfig(const SessionConfig& other) = default;
+SessionConfig::SessionConfig(SessionConfig&& other) noexcept = default;
+SessionConfig& SessionConfig::operator=(const SessionConfig& other) = default;
+SessionConfig& SessionConfig::operator=(SessionConfig&& other) noexcept =
+    default;
+SessionConfig::~SessionConfig() = default;
 
 }  // namespace cast
 }  // namespace openscreen

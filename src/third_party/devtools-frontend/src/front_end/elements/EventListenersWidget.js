@@ -32,6 +32,9 @@ import * as EventListeners from '../event_listeners/event_listeners.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
+/** @type {!EventListenersWidget} */
+let eventListenersWidgetInstance;
+
 /**
  * @implements {UI.Toolbar.ItemsProvider}
  * @unrestricted
@@ -83,8 +86,21 @@ export class EventListenersWidget extends UI.ThrottledWidget.ThrottledWidget {
     this._toolbarItems.push(new UI.Toolbar.ToolbarSettingCheckbox(
         this._showFrameworkListenersSetting, Common.UIString.UIString('Resolve event listeners bound with framework')));
 
-    self.UI.context.addFlavorChangeListener(SDK.DOMModel.DOMNode, this.update, this);
+    UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.update, this);
     this.update();
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}=} opts
+   * @return {!EventListenersWidget}
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!eventListenersWidgetInstance || forceNew) {
+      eventListenersWidgetInstance = new EventListenersWidget();
+    }
+
+    return eventListenersWidgetInstance;
   }
 
   /**
@@ -97,7 +113,7 @@ export class EventListenersWidget extends UI.ThrottledWidget.ThrottledWidget {
       this._lastRequestedNode.domModel().runtimeModel().releaseObjectGroup(_objectGroupName);
       delete this._lastRequestedNode;
     }
-    const node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
+    const node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
     if (!node) {
       this._eventListenersView.reset();
       this._eventListenersView.addEmptyHolderIfNeeded();
@@ -132,7 +148,8 @@ export class EventListenersWidget extends UI.ThrottledWidget.ThrottledWidget {
    * @param {!Event} event
    */
   _onDispatchFilterTypeChanged(event) {
-    this._dispatchFilterBySetting.set(event.target.value);
+    const filter = /** @type {!HTMLInputElement} */ (event.target);
+    this._dispatchFilterBySetting.set(filter.value);
   }
 
   _showFrameworkListenersChanged() {
@@ -149,7 +166,7 @@ export class EventListenersWidget extends UI.ThrottledWidget.ThrottledWidget {
    */
   _windowObjectInNodeContext(node) {
     const executionContexts = node.domModel().runtimeModel().executionContexts();
-    let context = null;
+    let context = executionContexts[0];
     if (node.frameId()) {
       for (let i = 0; i < executionContexts.length; ++i) {
         const executionContext = executionContexts[i];
@@ -157,9 +174,8 @@ export class EventListenersWidget extends UI.ThrottledWidget.ThrottledWidget {
           context = executionContext;
         }
       }
-    } else {
-      context = executionContexts[0];
     }
+
     return context
         .evaluate(
             {
@@ -168,11 +184,21 @@ export class EventListenersWidget extends UI.ThrottledWidget.ThrottledWidget {
               includeCommandLineAPI: false,
               silent: true,
               returnByValue: false,
-              generatePreview: false
+              generatePreview: false,
+              throwOnSideEffect: undefined,
+              timeout: undefined,
+              disableBreaks: undefined,
+              replMode: undefined,
+              allowUnsafeEvalBlockedByCSP: undefined,
             },
             /* userGesture */ false,
             /* awaitPromise */ false)
-        .then(result => result.object || null);
+        .then(result => {
+          if ('object' in result) {
+            return result.object;
+          }
+          return null;
+        });
   }
 
   _eventListenersArrivedForTest() {

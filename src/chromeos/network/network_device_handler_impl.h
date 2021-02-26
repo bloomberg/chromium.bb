@@ -32,46 +32,43 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   // NetworkDeviceHandler overrides
   void GetDeviceProperties(
       const std::string& device_path,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback) const override;
+      network_handler::ResultCallback callback) const override;
 
   void SetDeviceProperty(
       const std::string& device_path,
       const std::string& property_name,
       const base::Value& value,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      network_handler::ErrorCallback error_callback) override;
 
   void RegisterCellularNetwork(
       const std::string& device_path,
       const std::string& network_id,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      network_handler::ErrorCallback error_callback) override;
 
-  void RequirePin(
-      const std::string& device_path,
-      bool require_pin,
-      const std::string& pin,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
+  void RequirePin(const std::string& device_path,
+                  bool require_pin,
+                  const std::string& pin,
+                  base::OnceClosure callback,
+                  network_handler::ErrorCallback error_callback) override;
 
   void EnterPin(const std::string& device_path,
                 const std::string& pin,
-                const base::Closure& callback,
-                const network_handler::ErrorCallback& error_callback) override;
+                base::OnceClosure callback,
+                network_handler::ErrorCallback error_callback) override;
 
-  void UnblockPin(
-      const std::string& device_path,
-      const std::string& puk,
-      const std::string& new_pin,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
+  void UnblockPin(const std::string& device_path,
+                  const std::string& puk,
+                  const std::string& new_pin,
+                  base::OnceClosure callback,
+                  network_handler::ErrorCallback error_callback) override;
 
   void ChangePin(const std::string& device_path,
                  const std::string& old_pin,
                  const std::string& new_pin,
-                 const base::Closure& callback,
-                 const network_handler::ErrorCallback& error_callback) override;
+                 base::OnceClosure callback,
+                 network_handler::ErrorCallback error_callback) override;
 
   void SetCellularAllowRoaming(bool allow_roaming) override;
 
@@ -79,40 +76,29 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
 
   void SetUsbEthernetMacAddressSource(const std::string& source) override;
 
-  void SetWifiTDLSEnabled(
-      const std::string& ip_or_mac_address,
-      bool enabled,
-      const network_handler::StringResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) override;
-
-  void GetWifiTDLSStatus(
-      const std::string& ip_or_mac_address,
-      const network_handler::StringResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) override;
-
   void AddWifiWakeOnPacketConnection(
       const net::IPEndPoint& ip_endpoint,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      network_handler::ErrorCallback error_callback) override;
 
   void AddWifiWakeOnPacketOfTypes(
       const std::vector<std::string>& types,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      network_handler::ErrorCallback error_callback) override;
 
   void RemoveWifiWakeOnPacketConnection(
       const net::IPEndPoint& ip_endpoint,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      network_handler::ErrorCallback error_callback) override;
 
   void RemoveWifiWakeOnPacketOfTypes(
       const std::vector<std::string>& types,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      network_handler::ErrorCallback error_callback) override;
 
   void RemoveAllWifiWakeOnPacketConnections(
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      network_handler::ErrorCallback error_callback) override;
 
   // NetworkStateHandlerObserver overrides
   void DeviceListChanged() override;
@@ -160,7 +146,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
       const std::string& device_path,
       const std::string& device_mac_address,
       const std::string& mac_address_source,
-      const network_handler::ErrorCallback& error_callback,
+      network_handler::ErrorCallback error_callback,
       const std::string& shill_error_name,
       const std::string& shill_error_message);
 
@@ -178,11 +164,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   // supported, also apply |mac_addr_randomization_enabled_| to the
   // shill device.
   void HandleMACAddressRandomization(const std::string& device_path,
-                                     const base::DictionaryValue& properties);
+                                     base::Optional<base::Value> properties);
 
   // Get the DeviceState for the wifi device, if any.
-  const DeviceState* GetWifiDeviceState(
-      const network_handler::ErrorCallback& error_callback);
+  const DeviceState* GetWifiDeviceState();
 
   NetworkStateHandler* network_state_handler_ = nullptr;
   bool cellular_allow_roaming_ = false;

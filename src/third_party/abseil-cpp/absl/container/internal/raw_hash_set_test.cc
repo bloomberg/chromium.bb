@@ -26,6 +26,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/base/attributes.h"
+#include "absl/base/config.h"
 #include "absl/base/internal/cycleclock.h"
 #include "absl/base/internal/raw_logging.h"
 #include "absl/container/internal/container_memory.h"
@@ -846,7 +847,8 @@ TEST(Table, EraseMaintainsValidIterator) {
 std::vector<int64_t> CollectBadMergeKeys(size_t N) {
   static constexpr int kGroupSize = Group::kWidth - 1;
 
-  auto topk_range = [](size_t b, size_t e, IntTable* t) -> std::vector<int64_t> {
+  auto topk_range = [](size_t b, size_t e,
+                       IntTable* t) -> std::vector<int64_t> {
     for (size_t i = b; i != e; ++i) {
       t->emplace(i);
     }
@@ -1000,8 +1002,8 @@ using ProbeStatsPerSize = std::map<size_t, ProbeStats>;
 // 1. Create new table and reserve it to keys.size() * 2
 // 2. Insert all keys xored with seed
 // 3. Collect ProbeStats from final table.
-ProbeStats CollectProbeStatsOnKeysXoredWithSeed(const std::vector<int64_t>& keys,
-                                                size_t num_iters) {
+ProbeStats CollectProbeStatsOnKeysXoredWithSeed(
+    const std::vector<int64_t>& keys, size_t num_iters) {
   const size_t reserve_size = keys.size() * 2;
 
   ProbeStats stats;
@@ -1709,6 +1711,26 @@ TEST(Nodes, ExtractInsert) {
   EXPECT_FALSE(node);
 }
 
+TEST(Nodes, HintInsert) {
+  IntTable t = {1, 2, 3};
+  auto node = t.extract(1);
+  EXPECT_THAT(t, UnorderedElementsAre(2, 3));
+  auto it = t.insert(t.begin(), std::move(node));
+  EXPECT_THAT(t, UnorderedElementsAre(1, 2, 3));
+  EXPECT_EQ(*it, 1);
+  EXPECT_FALSE(node);
+
+  node = t.extract(2);
+  EXPECT_THAT(t, UnorderedElementsAre(1, 3));
+  // reinsert 2 to make the next insert fail.
+  t.insert(2);
+  EXPECT_THAT(t, UnorderedElementsAre(1, 2, 3));
+  it = t.insert(t.begin(), std::move(node));
+  EXPECT_EQ(*it, 2);
+  // The node was not emptied by the insert call.
+  EXPECT_TRUE(node);
+}
+
 IntTable MakeSimpleTable(size_t size) {
   IntTable t;
   while (t.size() < size) t.insert(t.size());
@@ -1791,11 +1813,11 @@ TEST(TableDeathTest, EraseOfEndAsserts) {
 
   IntTable t;
   // Extra simple "regexp" as regexp support is highly varied across platforms.
-  constexpr char kDeathMsg[] = "IsFull";
+  constexpr char kDeathMsg[] = "Invalid operation on iterator";
   EXPECT_DEATH_IF_SUPPORTED(t.erase(t.end()), kDeathMsg);
 }
 
-#if defined(ABSL_HASHTABLEZ_SAMPLE)
+#if defined(ABSL_INTERNAL_HASHTABLEZ_SAMPLE)
 TEST(RawHashSamplerTest, Sample) {
   // Enable the feature even if the prod default is off.
   SetHashtablezEnabled(true);
@@ -1816,7 +1838,7 @@ TEST(RawHashSamplerTest, Sample) {
   EXPECT_NEAR((end_size - start_size) / static_cast<double>(tables.size()),
               0.01, 0.005);
 }
-#endif  // ABSL_HASHTABLEZ_SAMPLER
+#endif  // ABSL_INTERNAL_HASHTABLEZ_SAMPLE
 
 TEST(RawHashSamplerTest, DoNotSampleCustomAllocators) {
   // Enable the feature even if the prod default is off.
@@ -1839,7 +1861,7 @@ TEST(RawHashSamplerTest, DoNotSampleCustomAllocators) {
               0.00, 0.001);
 }
 
-#ifdef ADDRESS_SANITIZER
+#ifdef ABSL_HAVE_ADDRESS_SANITIZER
 TEST(Sanitizer, PoisoningUnused) {
   IntTable t;
   t.reserve(5);
@@ -1863,7 +1885,7 @@ TEST(Sanitizer, PoisoningOnErase) {
   t.erase(0);
   EXPECT_TRUE(__asan_address_is_poisoned(&v));
 }
-#endif  // ADDRESS_SANITIZER
+#endif  // ABSL_HAVE_ADDRESS_SANITIZER
 
 }  // namespace
 }  // namespace container_internal

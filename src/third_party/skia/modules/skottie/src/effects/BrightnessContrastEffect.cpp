@@ -9,6 +9,7 @@
 
 #include "include/core/SkColorFilter.h"
 #include "include/effects/SkRuntimeEffect.h"
+#include "include/private/SkTPin.h"
 #include "modules/skottie/src/Adapter.h"
 #include "modules/skottie/src/SkottieJson.h"
 #include "modules/skottie/src/SkottieValue.h"
@@ -72,10 +73,13 @@ static constexpr char CONTRAST_EFFECT[] = R"(
     uniform half a;
     uniform half b;
     uniform half c;
+    uniform shader input;
 
-    void main(inout half4 color) {
+    half4 main() {
         // C' = a*C^3 + b*C^2 + c*C
+        half4 color = sample(input);
         color.rgb = ((a*color.rgb + b)*color.rgb + c)*color.rgb;
+        return color;
     }
 )";
 #else
@@ -93,9 +97,12 @@ static sk_sp<SkData> make_contrast_coeffs(float contrast) {
 
 static constexpr char CONTRAST_EFFECT[] = R"(
     uniform half a;
+    uniform shader input;
 
-    void main(inout half4 color) {
+    half4 main() {
+        half4 color = sample(input);
         color.rgb += a * sin(color.rgb * 6.283185);
+        return color;
     }
 )";
 
@@ -117,9 +124,12 @@ static sk_sp<SkData> make_brightness_coeffs(float brightness) {
 
 static constexpr char BRIGHTNESS_EFFECT[] = R"(
     uniform half a;
+    uniform shader input;
 
-    void main(inout half4 color) {
+    half4 main() {
+        half4 color = sample(input);
         color.rgb = 1 - pow(1 - color.rgb, half3(a));
+        return color;
     }
 )";
 
@@ -210,13 +220,15 @@ private:
         const auto brightness = SkTPin(fBrightness, -150.0f, 150.0f) / 150, // [-1.0 .. 1]
                      contrast = SkTPin(fContrast  ,  -50.0f, 100.0f) / 100; // [-0.5 .. 1]
 
+        sk_sp<SkColorFilter> input = nullptr;
 
         auto b_eff = SkScalarNearlyZero(brightness)
                    ? nullptr
-                   : fBrightnessEffect->makeColorFilter(make_brightness_coeffs(brightness)),
+                   : fBrightnessEffect->makeColorFilter(make_brightness_coeffs(brightness),
+                                                        &input, 1),
              c_eff = SkScalarNearlyZero(fContrast)
                    ? nullptr
-                   : fContrastEffect->makeColorFilter(make_contrast_coeffs(contrast));
+                   : fContrastEffect->makeColorFilter(make_contrast_coeffs(contrast), &input, 1);
 
         return SkColorFilters::Compose(std::move(c_eff), std::move(b_eff));
     }

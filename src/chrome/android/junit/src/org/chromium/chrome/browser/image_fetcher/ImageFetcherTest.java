@@ -48,14 +48,10 @@ public class ImageFetcherTest {
         }
 
         @Override
-        public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {}
+        public void fetchGif(final Params params, Callback<BaseGifImage> callback) {}
 
         @Override
-        public void fetchImage(
-                String url, String clientName, int width, int height, Callback<Bitmap> callback) {}
-
-        @Override
-        public void fetchImage(Params params, Callback<Bitmap> callback) {}
+        public void fetchImage(final Params params, Callback<Bitmap> callback) {}
 
         @Override
         public void clear() {}
@@ -112,7 +108,7 @@ public class ImageFetcherTest {
 
     @Test
     public void testFetchImageNoDimensionsAlias() {
-        mImageFetcher.fetchImage(URL, CLIENT_NAME, result -> {});
+        mImageFetcher.fetchImage(ImageFetcher.Params.create(URL, CLIENT_NAME), result -> {});
 
         // No arguments should alias to 0, 0.
         verify(mImageFetcher)

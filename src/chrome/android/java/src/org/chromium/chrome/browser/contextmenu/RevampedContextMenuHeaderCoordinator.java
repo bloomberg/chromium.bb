@@ -5,13 +5,9 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.Bitmap;
 import android.text.SpannableString;
 import android.text.TextUtils;
-import android.webkit.URLUtil;
 
-import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
@@ -26,14 +22,11 @@ class RevampedContextMenuHeaderCoordinator {
     private PropertyModel mModel;
     private RevampedContextMenuHeaderMediator mMediator;
 
-    private Context mContext;
-
     RevampedContextMenuHeaderCoordinator(Activity activity, @PerformanceClass int performanceClass,
-            ContextMenuParams params, Profile profile) {
-        mContext = activity;
-        mModel = buildModel(getTitle(params), getUrl(activity, params, profile));
+            ContextMenuParams params, Profile profile, ContextMenuNativeDelegate nativeDelegate) {
+        mModel = buildModel(ContextMenuUtils.getTitle(params), getUrl(activity, params, profile));
         mMediator = new RevampedContextMenuHeaderMediator(
-                activity, mModel, performanceClass, params, profile);
+                activity, mModel, performanceClass, params, profile, nativeDelegate);
     }
 
     private PropertyModel buildModel(String title, CharSequence url) {
@@ -49,19 +42,6 @@ class RevampedContextMenuHeaderCoordinator {
                 .with(RevampedContextMenuHeaderProperties.IMAGE, null)
                 .with(RevampedContextMenuHeaderProperties.CIRCLE_BG_VISIBLE, false)
                 .build();
-    }
-
-    private String getTitle(ContextMenuParams params) {
-        if (!TextUtils.isEmpty(params.getTitleText())) {
-            return params.getTitleText();
-        }
-        if (!TextUtils.isEmpty(params.getLinkText())) {
-            return params.getLinkText();
-        }
-        if (params.isImage() || params.isVideo() || params.isFile()) {
-            return URLUtil.guessFileName(params.getSrcUrl(), null, null);
-        }
-        return "";
     }
 
     private CharSequence getUrl(Activity activity, ContextMenuParams params, Profile profile) {
@@ -86,10 +66,6 @@ class RevampedContextMenuHeaderCoordinator {
             url = spannableUrl;
         }
         return url;
-    }
-
-    Callback<Bitmap> getOnImageThumbnailRetrievedReference() {
-        return mMediator::onImageThumbnailRetrieved;
     }
 
     PropertyModel getModel() {

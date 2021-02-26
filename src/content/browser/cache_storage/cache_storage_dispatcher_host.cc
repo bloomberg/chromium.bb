@@ -20,8 +20,6 @@
 #include "content/browser/cache_storage/cache_storage_trace_utils.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/origin_util.h"
-#include "content/public/common/referrer_type_converters.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "net/http/http_response_headers.h"
@@ -29,6 +27,7 @@
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -46,7 +45,8 @@ using network::mojom::RequestMode;
 
 // TODO(lucmult): Check this before binding.
 bool OriginCanAccessCacheStorage(const url::Origin& origin) {
-  return !origin.opaque() && IsOriginSecure(origin.GetURL());
+  return !origin.opaque() &&
+         blink::network_utils::IsOriginSecure(origin.GetURL());
 }
 
 // Verifies that the BatchOperation list conforms to the constraints imposed
@@ -77,10 +77,8 @@ bool ValidBatchOperations(
 
 blink::mojom::MatchResultPtr EagerlyReadResponseBody(
     blink::mojom::FetchAPIResponsePtr response) {
-  if (!response->blob ||
-      !base::FeatureList::IsEnabled(features::kCacheStorageEagerReading)) {
+  if (!response->blob)
     return blink::mojom::MatchResult::NewResponse(std::move(response));
-  }
 
   MojoCreateDataPipeOptions options;
   options.struct_size = sizeof(MojoCreateDataPipeOptions);
@@ -146,8 +144,8 @@ bool ResponseBlockedByCrossOriginResourcePolicy(
   return CrossOriginResourcePolicy::IsBlockedByHeaderValue(
              response->url_list.back(), response->url_list.front(),
              document_origin, corp_header_value, RequestMode::kNoCors,
-             document_origin, document_coep,
-             coep_reporter ? coep_reporter.get() : nullptr)
+             document_origin, network::mojom::RequestDestination::kEmpty,
+             document_coep, coep_reporter ? coep_reporter.get() : nullptr)
       .has_value();
 }
 
@@ -274,11 +272,8 @@ class CacheStorageDispatcherHost::CacheImpl
 
     CacheStorageSchedulerPriority priority =
         CacheStorageSchedulerPriority::kNormal;
-    if (in_related_fetch_event &&
-        base::FeatureList::IsEnabled(
-            features::kCacheStorageHighPriorityMatch)) {
+    if (in_related_fetch_event)
       priority = CacheStorageSchedulerPriority::kHigh;
-    }
 
     cache->Match(std::move(request), std::move(match_options), priority,
                  trace_id, std::move(cb));
@@ -727,11 +722,8 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
 
     CacheStorageSchedulerPriority priority =
         CacheStorageSchedulerPriority::kNormal;
-    if (in_related_fetch_event &&
-        base::FeatureList::IsEnabled(
-            features::kCacheStorageHighPriorityMatch)) {
+    if (in_related_fetch_event)
       priority = CacheStorageSchedulerPriority::kHigh;
-    }
 
     if (!match_options->cache_name) {
       cache_storage->MatchAllCaches(std::move(request),

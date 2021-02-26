@@ -36,15 +36,6 @@
 
 #include <cstring>
 
-class vk::CommandBuffer::Command
-{
-public:
-	// FIXME (b/119421344): change the commandBuffer argument to a CommandBuffer state
-	virtual void play(vk::CommandBuffer::ExecutionState &executionState) = 0;
-	virtual std::string description() = 0;
-	virtual ~Command() {}
-};
-
 namespace {
 
 class CmdBeginRenderPass : public vk::CommandBuffer::Command
@@ -547,7 +538,7 @@ public:
 
 		if(pipeline->hasDynamicState(VK_DYNAMIC_STATE_DEPTH_BIAS))
 		{
-			context.depthBias = executionState.dynamicState.depthBiasConstantFactor;
+			context.constantDepthBias = executionState.dynamicState.depthBiasConstantFactor;
 			context.slopeDepthBias = executionState.dynamicState.depthBiasSlopeFactor;
 			context.depthBiasClamp = executionState.dynamicState.depthBiasClamp;
 		}
@@ -1316,19 +1307,16 @@ CommandBuffer::CommandBuffer(Device *device, VkCommandBufferLevel pLevel)
     : device(device)
     , level(pLevel)
 {
-	// FIXME (b/119409619): replace this vector by an allocator so we can control all memory allocations
-	commands = new std::vector<std::unique_ptr<Command>>();
 }
 
 void CommandBuffer::destroy(const VkAllocationCallbacks *pAllocator)
 {
-	delete commands;
 }
 
 void CommandBuffer::resetState()
 {
 	// FIXME (b/119409619): replace this vector by an allocator so we can control all memory allocations
-	commands->clear();
+	commands.clear();
 
 	state = INITIAL;
 }
@@ -1377,7 +1365,7 @@ VkResult CommandBuffer::end()
 	if(debuggerContext)
 	{
 		std::string source;
-		for(auto &command : *commands)
+		for(auto &command : commands)
 		{
 			source += command->description() + "\n";
 		}
@@ -1401,14 +1389,22 @@ template<typename T, typename... Args>
 void CommandBuffer::addCommand(Args &&... args)
 {
 	// FIXME (b/119409619): use an allocator here so we can control all memory allocations
-	commands->push_back(std::make_unique<T>(std::forward<Args>(args)...));
+	commands.push_back(std::make_unique<T>(std::forward<Args>(args)...));
 }
 
 void CommandBuffer::beginRenderPass(RenderPass *renderPass, Framebuffer *framebuffer, VkRect2D renderArea,
-                                    uint32_t clearValueCount, const VkClearValue *clearValues, VkSubpassContents contents)
+                                    uint32_t clearValueCount, const VkClearValue *clearValues, VkSubpassContents contents,
+                                    const VkRenderPassAttachmentBeginInfo *attachmentInfo)
 {
 	ASSERT(state == RECORDING);
 
+	if(attachmentInfo)
+	{
+		for(uint32_t i = 0; i < attachmentInfo->attachmentCount; i++)
+		{
+			framebuffer->setAttachment(vk::Cast(attachmentInfo->pAttachments[i]), i);
+		}
+	}
 	addCommand<::CmdBeginRenderPass>(renderPass, framebuffer, renderArea, clearValueCount, clearValues);
 }
 
@@ -1810,17 +1806,15 @@ void CommandBuffer::submit(CommandBuffer::ExecutionState &executionState)
 	auto debuggerContext = device->getDebuggerContext();
 	if(debuggerContext)
 	{
-		auto lock = debuggerContext->lock();
-		debuggerThread = lock.currentThread();
+		debuggerThread = debuggerContext->lock().currentThread();
 		debuggerThread->setName("vkQueue processor");
-		debuggerThread->enter(lock, debuggerFile, "vkCommandBuffer::submit");
-		lock.unlock();
+		debuggerThread->enter(debuggerFile, "vkCommandBuffer::submit");
 	}
 	defer(if(debuggerThread) { debuggerThread->exit(); });
 	int line = 1;
 #endif  // ENABLE_VK_DEBUGGER
 
-	for(auto &command : *commands)
+	for(auto &command : commands)
 	{
 #ifdef ENABLE_VK_DEBUGGER
 		if(debuggerThread)
@@ -1840,7 +1834,7 @@ void CommandBuffer::submit(CommandBuffer::ExecutionState &executionState)
 
 void CommandBuffer::submitSecondary(CommandBuffer::ExecutionState &executionState) const
 {
-	for(auto &command : *commands)
+	for(auto &command : commands)
 	{
 		command->play(executionState);
 	}

@@ -19,6 +19,8 @@ class ChromeAppListItem;
 class FakeAppListModelUpdater : public AppListModelUpdater {
  public:
   explicit FakeAppListModelUpdater(Profile* profile = nullptr);
+  FakeAppListModelUpdater(const FakeAppListModelUpdater&) = delete;
+  FakeAppListModelUpdater& operator=(const FakeAppListModelUpdater&) = delete;
   ~FakeAppListModelUpdater() override;
 
   // For AppListModel:
@@ -63,19 +65,18 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
     return search_results_;
   }
 
-  void OnFolderCreated(
-      std::unique_ptr<ash::AppListItemMetadata> folder) override;
+  void OnItemAdded(std::unique_ptr<ash::AppListItemMetadata> item) override;
+  void OnItemUpdated(std::unique_ptr<ash::AppListItemMetadata> item) override;
   void OnFolderDeleted(
       std::unique_ptr<ash::AppListItemMetadata> item) override {}
-  void OnItemUpdated(std::unique_ptr<ash::AppListItemMetadata> item) override {}
-  void OnPageBreakItemAdded(const std::string& id,
-                            const syncer::StringOrdinal& position) override {}
   void OnPageBreakItemDeleted(const std::string& id) override {}
 
   void AddObserver(AppListModelUpdaterObserver* observer) override;
   void RemoveObserver(AppListModelUpdaterObserver* observer) override;
 
   void WaitForIconUpdates(size_t expected_updates);
+
+  size_t update_image_count() const { return update_image_count_; }
 
  private:
   bool search_engine_is_google_ = false;
@@ -92,8 +93,6 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
       const std::string& oem_folder_name,
       const syncer::StringOrdinal& preferred_oem_position);
   syncer::StringOrdinal GetOemFolderPos();
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAppListModelUpdater);
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_TEST_FAKE_APP_LIST_MODEL_UPDATER_H_

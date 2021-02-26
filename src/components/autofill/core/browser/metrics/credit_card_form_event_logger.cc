@@ -13,7 +13,6 @@
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/validation.h"
-#include "components/autofill/core/common/autofill_tick_clock.h"
 
 namespace autofill {
 
@@ -31,23 +30,29 @@ CreditCardFormEventLogger::CreditCardFormEventLogger(
 
 CreditCardFormEventLogger::~CreditCardFormEventLogger() = default;
 
+void CreditCardFormEventLogger::set_suggestions(
+    std::vector<Suggestion> suggestions) {
+  suggestions_.clear();
+  card_selected_has_offer_ = false;
+  for (auto suggestion : suggestions) {
+    suggestions_.emplace_back(suggestion);
+
+    // Track whether or not offers are being shown
+    if (!suggestion.offer_label.empty())
+      has_eligible_offer_ = true;
+  }
+}
+
 void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
     const CreditCard& credit_card,
     const FormStructure& form,
     AutofillSyncSigninState sync_state) {
   sync_state_ = sync_state;
 
-  // When server nicknames are available, if any card is selected, log the
-  // selection duration.
-  if (has_server_nickname_ && !has_logged_suggestion_selected_timestamp_) {
-    has_logged_suggestion_selected_timestamp_ = true;
-    base::TimeTicks now = AutofillTickClock::NowTicks();
-    // Suggestion selection should always chronologically follow suggestion
-    // shown.
-    DCHECK(now > first_suggestion_shown_timestamp_);
-    base::UmaHistogramMediumTimes(
-        "Autofill.FormEvents.CreditCard.WithServerNickname.SelectionDuration",
-        now - first_suggestion_shown_timestamp_);
+  if (has_eligible_offer_) {
+    card_selected_has_offer_ = DoesCardHaveOffer(credit_card);
+    base::UmaHistogramBoolean("Autofill.Offer.SelectedCardHasOffer",
+                              card_selected_has_offer_);
   }
 
   // No need to log selections for local/full-server cards -- a selection is
@@ -155,6 +160,11 @@ void CreditCardFormEventLogger::LogFormSubmitted(const FormStructure& form) {
   } else {
     Log(FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE, form);
   }
+
+  if (has_eligible_offer_) {
+    base::UmaHistogramBoolean("Autofill.Offer.SubmittedCardHasOffer",
+                              card_selected_has_offer_);
+  }
 }
 
 void CreditCardFormEventLogger::LogUkmInteractedWithForm(
@@ -165,8 +175,8 @@ void CreditCardFormEventLogger::LogUkmInteractedWithForm(
 }
 
 void CreditCardFormEventLogger::OnSuggestionsShownOnce() {
-  // Record the timestamp of the first suggestion shown.
-  first_suggestion_shown_timestamp_ = AutofillTickClock::NowTicks();
+  base::UmaHistogramBoolean("Autofill.Offer.SuggestedCardsHaveOffer",
+                            has_eligible_offer_);
 }
 
 void CreditCardFormEventLogger::OnSuggestionsShownSubmittedOnce(
@@ -188,12 +198,11 @@ void CreditCardFormEventLogger::OnLog(const std::string& name,
                                   NUM_FORM_EVENTS);
   }
 
-  // Log a different histogram for credit card forms with server nickname
-  // available so that selection rate with server nickname can be compared on
+  // Log a different histogram for credit card forms with credit card offers
+  // available so that selection rate with offers and rewards can be compared on
   // their own.
-  if (has_server_nickname_) {
-    base::UmaHistogramEnumeration(name + ".WithServerNickname", event,
-                                  NUM_FORM_EVENTS);
+  if (has_eligible_offer_) {
+    base::UmaHistogramEnumeration(name + ".WithOffer", event, NUM_FORM_EVENTS);
   }
 }
 
@@ -243,6 +252,15 @@ void CreditCardFormEventLogger::RecordCardUnmaskFlowEvent(
 
   base::UmaHistogramEnumeration("Autofill.BetterAuth.FlowEvents" + suffix,
                                 event);
+}
+
+bool CreditCardFormEventLogger::DoesCardHaveOffer(
+    const CreditCard& credit_card) {
+  for (auto& suggestion : suggestions_) {
+    if (suggestion.backend_id == credit_card.guid())
+      return !suggestion.offer_label.empty();
+  }
+  return false;
 }
 
 }  // namespace autofill

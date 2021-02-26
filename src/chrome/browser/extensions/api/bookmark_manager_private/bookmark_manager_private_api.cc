@@ -42,7 +42,7 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/view_type_utils.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -68,12 +68,12 @@ namespace StartDrag = api::bookmark_manager_private::StartDrag;
 namespace {
 
 // Returns a single bookmark node from the argument ID.
-// This returns NULL in case of failure.
+// This returns nullptr in case of failure.
 const BookmarkNode* GetNodeFromString(BookmarkModel* model,
                                       const std::string& id_string) {
   int64_t id;
   if (!base::StringToInt64(id_string, &id))
-    return NULL;
+    return nullptr;
   return bookmarks::GetBookmarkNodeByID(model, id);
 }
 
@@ -197,7 +197,7 @@ void BookmarkManagerPrivateEventRouter::BookmarkModelChanged() {}
 
 void BookmarkManagerPrivateEventRouter::BookmarkModelBeingDeleted(
     BookmarkModel* model) {
-  bookmark_model_ = NULL;
+  bookmark_model_ = nullptr;
 }
 
 BookmarkManagerPrivateAPI::BookmarkManagerPrivateAPI(
@@ -205,7 +205,7 @@ BookmarkManagerPrivateAPI::BookmarkManagerPrivateAPI(
     : browser_context_(browser_context) {
 }
 
-BookmarkManagerPrivateAPI::~BookmarkManagerPrivateAPI() {}
+BookmarkManagerPrivateAPI::~BookmarkManagerPrivateAPI() = default;
 
 void BookmarkManagerPrivateAPI::Shutdown() {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
@@ -304,7 +304,7 @@ const BookmarkNodeData*
 BookmarkManagerPrivateDragEventRouter::GetBookmarkNodeData() {
   if (bookmark_drag_data_.is_valid())
     return &bookmark_drag_data_;
-  return NULL;
+  return nullptr;
 }
 
 void BookmarkManagerPrivateDragEventRouter::ClearBookmarkNodeData() {
@@ -395,7 +395,7 @@ BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
 
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
   if (!prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled))
-    return OneArgument(std::make_unique<base::Value>(false));
+    return OneArgument(base::Value(false));
 
   BookmarkModel* model =
       BookmarkModelFactory::GetForBrowserContext(GetProfile());
@@ -403,7 +403,7 @@ BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
   if (!parent_node)
     return Error(bookmark_keys::kNoParentError);
   bool can_paste = bookmarks::CanPasteFromClipboard(model, parent_node);
-  return OneArgument(std::make_unique<base::Value>(can_paste));
+  return OneArgument(base::Value(can_paste));
 }
 
 ExtensionFunction::ResponseValue
@@ -449,10 +449,9 @@ BookmarkManagerPrivateStartDragFunction::RunOnReady() {
                  base::JoinString(params->id_list, ", "));
   }
 
-  ui::DragDropTypes::DragEventSource source =
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
+  ui::mojom::DragEventSource source = ui::mojom::DragEventSource::kMouse;
   if (params->is_from_touch)
-    source = ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
+    source = ui::mojom::DragEventSource::kTouch;
 
   chrome::DragBookmarks(GetProfile(),
                         {std::move(nodes), params->drag_node_index,
@@ -509,7 +508,7 @@ BookmarkManagerPrivateGetSubtreeFunction::RunOnReady() {
   if (!params)
     return BadMessage();
 
-  const BookmarkNode* node = NULL;
+  const BookmarkNode* node = nullptr;
 
   if (params->id.empty()) {
     BookmarkModel* model =

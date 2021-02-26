@@ -11,9 +11,11 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
+#include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/test/trust_token_request_handler.h"
 
 namespace network {
@@ -30,7 +32,9 @@ std::unique_ptr<net::test_server::HttpResponse>
 MakeTrustTokenFailureResponse() {
   // No need to report a failure HTTP code here: returning a vanilla OK should
   // fail the Trust Tokens operation client-side.
-  return std::make_unique<net::test_server::BasicHttpResponse>();
+  auto ret = std::make_unique<net::test_server::BasicHttpResponse>();
+  ret->AddCustomHeader("Access-Control-Allow-Origin", "*");
+  return ret;
 }
 
 // Constructs and returns an HTTP response bearing the given base64-encoded
@@ -44,6 +48,7 @@ std::unique_ptr<net::test_server::HttpResponse> MakeTrustTokenResponse(
 
   auto ret = std::make_unique<net::test_server::BasicHttpResponse>();
   ret->AddCustomHeader("Sec-Trust-Token", std::string(contents));
+  ret->AddCustomHeader("Access-Control-Allow-Origin", "*");
   return ret;
 }
 
@@ -59,7 +64,8 @@ void RegisterTrustTokenTestHandlers(net::EmbeddedTestServer* test_server,
         if (request.relative_url != kIssuanceRelativePath)
           return nullptr;
 
-        if (!base::Contains(request.headers, "Sec-Trust-Token"))
+        if (!base::Contains(request.headers, "Sec-Trust-Token") ||
+            !base::Contains(request.headers, "Sec-Trust-Token-Version"))
           return MakeTrustTokenFailureResponse();
 
         base::Optional<std::string> operation_result =
@@ -77,7 +83,8 @@ void RegisterTrustTokenTestHandlers(net::EmbeddedTestServer* test_server,
         if (request.relative_url != kRedemptionRelativePath)
           return nullptr;
 
-        if (!base::Contains(request.headers, "Sec-Trust-Token"))
+        if (!base::Contains(request.headers, "Sec-Trust-Token") ||
+            !base::Contains(request.headers, "Sec-Trust-Token-Version"))
           return MakeTrustTokenFailureResponse();
 
         base::Optional<std::string> operation_result =
@@ -95,18 +102,25 @@ void RegisterTrustTokenTestHandlers(net::EmbeddedTestServer* test_server,
         if (request.relative_url != kSignedRequestVerificationRelativePath)
           return nullptr;
 
-        std::string error;
+        GURL::Replacements replacements;
+        std::string host_and_maybe_port =
+            request.headers.at(net::HttpRequestHeaders::kHost);
+        if (base::Contains(host_and_maybe_port, ':'))
+          host_and_maybe_port.resize(host_and_maybe_port.find(':'));
+        replacements.SetHostStr(host_and_maybe_port);
+        GURL destination_url = request.GetURL().ReplaceComponents(replacements);
+
         net::HttpRequestHeaders headers;
         for (const auto& name_and_value : request.headers)
           headers.SetHeader(name_and_value.first, name_and_value.second);
 
-        bool success =
-            handler->VerifySignedRequest(request.GetURL(), headers, &error);
-        LOG_IF(ERROR, !success) << error;
+        handler->RecordSignedRequest(destination_url, headers);
 
         // Unlike issuance and redemption, there's no special state to return
         // on success for signing.
-        return std::make_unique<net::test_server::BasicHttpResponse>();
+        auto ret = std::make_unique<net::test_server::BasicHttpResponse>();
+        ret->AddCustomHeader("Access-Control-Allow-Origin", "*");
+        return ret;
       }));
 }
 

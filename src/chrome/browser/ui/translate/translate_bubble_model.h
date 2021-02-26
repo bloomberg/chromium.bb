@@ -27,19 +27,13 @@ class TranslateBubbleModel {
     // The view state when an error of Translate happens.
     VIEW_STATE_ERROR,
 
-    // The view state when the detailed settings is shown. This view appears
-    // when the user click a link 'Advanced' on other views.
-    VIEW_STATE_ADVANCED,
-
-    // The view state for TAB ui when the source language combobox is shown.
-    // This view appears when the user selects "Page is not in {source
-    // language}"
-    // under option menu.
+    // The view state for when the source language combobox is shown. This view
+    // appears when the user selects "Page is not in {source language}" under
+    // option menu.
     VIEW_STATE_SOURCE_LANGUAGE,
 
-    // The view state for TAB ui when the source language combobox is shown.
-    // This view appears when the user selects "More options..." under option
-    // menu.
+    // The view state for when the source language combobox is shown. This view
+    // appears when the user selects "More options..." under option menu.
     VIEW_STATE_TARGET_LANGUAGE
   };
 
@@ -127,8 +121,8 @@ class TranslateBubbleModel {
   // and target language.
   virtual bool IsPageTranslatedInCurrentLanguages() const = 0;
 
-  // True if the site of the current page can be blacklisted.
-  virtual bool CanBlacklistSite() = 0;
+  // True if the site of the current page can be blocklisted.
+  virtual bool CanBlocklistSite() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_BUBBLE_MODEL_H_

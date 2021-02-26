@@ -1,9 +1,0 @@
-{
-  "build_target": {
-    "name": "sludge"
-  },
-  "image_types": [
-    10,
-    11
-  ]
-}

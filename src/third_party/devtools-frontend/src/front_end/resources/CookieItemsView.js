@@ -30,7 +30,6 @@
 import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
 import * as Common from '../common/common.js';
 import * as CookieTable from '../cookie_table/cookie_table.js';
-import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -44,9 +43,10 @@ export class CookieItemsView extends StorageItemsView {
   constructor(model, cookieDomain) {
     super(Common.UIString.UIString('Cookies'), 'cookiesPanel');
 
-    this.registerRequiredCSS('resources/cookieItemsView.css');
+    this.registerRequiredCSS('resources/cookieItemsView.css', {enableLegacyPatching: true});
     this.element.classList.add('storage-view');
 
+    /** @type {!SDK.CookieModel.CookieModel} */
     this._model = model;
     this._cookieDomain = cookieDomain;
 
@@ -73,12 +73,7 @@ export class CookieItemsView extends StorageItemsView {
         ls`Only show cookies with an issue`, ls`Only show cookies which have an associated issue`, () => {
           this._updateWithCookies(this._allCookies);
         });
-    if (Root.Runtime.experiments.isEnabled('issuesPane')) {
-      this.appendToolbarItem(this._onlyIssuesFilterUI);
-    } else {
-      // Disable this filter if the experiment is disabled.
-      this._onlyIssuesFilterUI.setChecked(false);
-    }
+    this.appendToolbarItem(this._onlyIssuesFilterUI);
 
     this._refreshThrottler = new Common.Throttler.Throttler(300);
     /** @type {!Array<!Common.EventTarget.EventDescriptor>} */
@@ -106,10 +101,12 @@ export class CookieItemsView extends StorageItemsView {
     this.refreshItems();
     Common.EventTarget.EventTarget.removeEventListeners(this._eventDescriptors);
     const networkManager = model.target().model(SDK.NetworkManager.NetworkManager);
-    this._eventDescriptors = [
-      networkManager.addEventListener(SDK.NetworkManager.Events.ResponseReceived, this._onResponseReceived, this),
-      networkManager.addEventListener(SDK.NetworkManager.Events.LoadingFinished, this._onLoadingFinished, this),
-    ];
+    if (networkManager) {
+      this._eventDescriptors = [
+        networkManager.addEventListener(SDK.NetworkManager.Events.ResponseReceived, this._onResponseReceived, this),
+        networkManager.addEventListener(SDK.NetworkManager.Events.LoadingFinished, this._onLoadingFinished, this),
+      ];
+    }
 
     this._showPreview(null, null);
   }
@@ -129,6 +126,7 @@ export class CookieItemsView extends StorageItemsView {
 
     if (!preview) {
       preview = new UI.EmptyWidget.EmptyWidget(ls`Select a cookie to preview its value`);
+      preview.element.classList.add('cookie-value');
     }
 
     this._previewValue = value;
@@ -162,8 +160,12 @@ export class CookieItemsView extends StorageItemsView {
     function handleDblClickOnCookieValue() {
       const range = document.createRange();
       range.selectNode(value);
-      window.getSelection().removeAllRanges();
-      window.getSelection().addRange(range);
+      const selection = window.getSelection();
+      if (!selection) {
+        return;
+      }
+      selection.removeAllRanges();
+      selection.addRange(range);
     }
   }
 
@@ -172,12 +174,9 @@ export class CookieItemsView extends StorageItemsView {
    * @param {?SDK.Cookie.Cookie} oldCookie
    * @return {!Promise<boolean>}
    */
-  _saveCookie(newCookie, oldCookie) {
-    if (!this._model) {
-      return Promise.resolve(false);
-    }
+  async _saveCookie(newCookie, oldCookie) {
     if (oldCookie && newCookie.key() !== oldCookie.key()) {
-      this._model.deleteCookie(oldCookie);
+      await this._model.deleteCookie(oldCookie);
     }
     return this._model.saveCookie(newCookie);
   }
@@ -187,7 +186,7 @@ export class CookieItemsView extends StorageItemsView {
    * @param {function():void} callback
    */
   _deleteCookie(cookie, callback) {
-    this._model.deleteCookie(cookie, callback);
+    this._model.deleteCookie(cookie).then(callback);
   }
 
   /**
@@ -203,6 +202,7 @@ export class CookieItemsView extends StorageItemsView {
 
     const shownCookies = this.filter(allCookies, cookie => `${cookie.name()} ${cookie.value()} ${cookie.domain()}`);
     this._cookiesTable.setCookies(shownCookies, this._model.getCookieToBlockedReasonsMap());
+    UI.ARIAUtils.alert(ls`Number of cookies shown in table: ${shownCookies.length}`, this.element);
     this.setCanFilter(true);
     this.setCanDeleteAll(true);
     this.setCanDeleteSelected(!!this._cookiesTable.selectedCookie());
@@ -234,7 +234,8 @@ export class CookieItemsView extends StorageItemsView {
    * @override
    */
   deleteAllItems() {
-    this._model.clear(this._cookieDomain, () => this.refreshItems());
+    this._showPreview(null, null);
+    this._model.clear(this._cookieDomain).then(() => this.refreshItems());
   }
 
   /**
@@ -243,7 +244,8 @@ export class CookieItemsView extends StorageItemsView {
   deleteSelectedItem() {
     const selectedCookie = this._cookiesTable.selectedCookie();
     if (selectedCookie) {
-      this._model.deleteCookie(selectedCookie, () => this.refreshItems());
+      this._showPreview(null, null);
+      this._model.deleteCookie(selectedCookie).then(() => this.refreshItems());
     }
   }
 

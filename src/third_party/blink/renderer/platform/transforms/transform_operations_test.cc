@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/transforms/rotate_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/scale_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/skew_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix_test_helpers.h"
 #include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
 
 namespace blink {
@@ -570,35 +571,169 @@ TEST(TransformOperationsTest, PerspectiveOpsTest) {
   EXPECT_TRUE(ops.HasNonTrivial3DComponent());
 }
 
-TEST(TransformOperations, InterpolatedTransformBlendTest) {
-  // When interpolating transform lists of differing lengths,the length of the
-  // shorter list is padded with identity transforms. The Blend method accepts a
-  // null from operator when blending from an identity transform. This test
-  // verifies the correctness of an interpolated transform when the 'from
-  // transform' list is shorter than the 'to transform' list (crbug.com/998938).
-  TransformOperations empt_from, from_ops_padding;
-  TransformOperations to_ops, to_intrepolated;
-  double progress = 0.25, abs_difference = 1e-5;
-  to_ops.Operations().push_back(
-      ScaleTransformOperation::Create(5, 2, TransformOperation::kScale));
-  // to_interpolated is scale(2, 1.25)
-  to_intrepolated.Operations().push_back(
-      InterpolatedTransformOperation::Create(empt_from, to_ops, 0, progress));
-  // result is scale(1.25, 1.0625)
-  TransformOperations result = to_intrepolated.Blend(empt_from, progress);
-  from_ops_padding.Operations().push_back(TranslateTransformOperation::Create(
-      Length::Fixed(20), Length::Fixed(20), TransformOperation::kTranslate));
-  // Pad the from_ops_padding to have at least one operation, otherwise it would
-  // execute the matching prefix.
-  FloatPoint3D original_point(64, 64, 4);
-  FloatPoint3D expected_point(83, 80, 4);
-  TransformationMatrix blended_transform;
-  // result is scale(1.0625, 1.015625) and translate(15, 15)
-  result = result.Blend(from_ops_padding, progress);
-  result.Apply(FloatSize(), blended_transform);
-  FloatPoint3D final_point = blended_transform.MapPoint(original_point);
-  EXPECT_NEAR(expected_point.X(), final_point.X(), abs_difference);
-  EXPECT_NEAR(expected_point.Y(), final_point.Y(), abs_difference);
-  EXPECT_NEAR(expected_point.Z(), final_point.Z(), abs_difference);
+TEST(TransformOperationsTest, CanBlendWithSkewTest) {
+  TransformOperations ops_x, ops_y, ops_skew, ops_skew2;
+  ops_x.Operations().push_back(
+      SkewTransformOperation::Create(45, 0, TransformOperation::kSkewX));
+  ops_y.Operations().push_back(
+      SkewTransformOperation::Create(0, 45, TransformOperation::kSkewY));
+  ops_skew.Operations().push_back(
+      SkewTransformOperation::Create(45, 0, TransformOperation::kSkew));
+  ops_skew2.Operations().push_back(
+      SkewTransformOperation::Create(0, 45, TransformOperation::kSkew));
+
+  EXPECT_TRUE(ops_x.Operations()[0]->CanBlendWith(*ops_x.Operations()[0]));
+  EXPECT_TRUE(ops_y.Operations()[0]->CanBlendWith(*ops_y.Operations()[0]));
+
+  EXPECT_FALSE(ops_x.Operations()[0]->CanBlendWith(*ops_y.Operations()[0]));
+  EXPECT_FALSE(ops_x.Operations()[0]->CanBlendWith(*ops_skew.Operations()[0]));
+  EXPECT_FALSE(ops_y.Operations()[0]->CanBlendWith(*ops_skew.Operations()[0]));
+
+  EXPECT_TRUE(
+      ops_skew.Operations()[0]->CanBlendWith(*ops_skew2.Operations()[0]));
+
+  ASSERT_TRUE(IsA<SkewTransformOperation>(
+      *ops_skew.Blend(ops_skew2, 0.5).Operations()[0]));
+  ASSERT_TRUE(IsA<Matrix3DTransformOperation>(
+      *ops_x.Blend(ops_y, 0.5).Operations()[0]));
 }
+
+TEST(TransformOperationsTest, CanBlendWithMatrixTest) {
+  TransformOperations ops_a, ops_b;
+  ops_a.Operations().push_back(
+      MatrixTransformOperation::Create(1, 0, 0, 1, 0, 0));
+  ops_a.Operations().push_back(
+      RotateTransformOperation::Create(0, TransformOperation::kRotate));
+  ops_b.Operations().push_back(
+      MatrixTransformOperation::Create(2, 0, 0, 2, 0, 0));
+  ops_b.Operations().push_back(
+      RotateTransformOperation::Create(360, TransformOperation::kRotate));
+
+  EXPECT_TRUE(ops_a.Operations()[0]->CanBlendWith(*ops_b.Operations()[0]));
+
+  TransformOperations ops_blended = ops_a.Blend(ops_b, 0.5);
+  ASSERT_EQ(ops_blended.Operations().size(), 2u);
+  ASSERT_TRUE(IsA<MatrixTransformOperation>(*ops_blended.Operations()[0]));
+  ASSERT_TRUE(IsA<RotateTransformOperation>(*ops_blended.Operations()[1]));
+  EXPECT_EQ(To<RotateTransformOperation>(*ops_blended.Operations()[1]).Angle(),
+            180.0);
+}
+
+TEST(TransformOperationsTest, CanBlendWithMatrix3DTest) {
+  TransformOperations ops_a, ops_b;
+  ops_a.Operations().push_back(Matrix3DTransformOperation::Create(
+      TransformationMatrix(1, 0, 0, 1, 0, 0)));
+  ops_a.Operations().push_back(
+      RotateTransformOperation::Create(0, TransformOperation::kRotate));
+  ops_b.Operations().push_back(Matrix3DTransformOperation::Create(
+      TransformationMatrix(2, 0, 0, 2, 0, 0)));
+  ops_b.Operations().push_back(
+      RotateTransformOperation::Create(360, TransformOperation::kRotate));
+
+  EXPECT_TRUE(ops_a.Operations()[0]->CanBlendWith(*ops_b.Operations()[0]));
+
+  TransformOperations ops_blended = ops_a.Blend(ops_b, 0.5);
+  ASSERT_EQ(ops_blended.Operations().size(), 2u);
+  ASSERT_TRUE(IsA<Matrix3DTransformOperation>(*ops_blended.Operations()[0]));
+  ASSERT_TRUE(IsA<RotateTransformOperation>(*ops_blended.Operations()[1]));
+  EXPECT_EQ(To<RotateTransformOperation>(*ops_blended.Operations()[1]).Angle(),
+            180.0);
+}
+
+TEST(TransformOperationsTest, InterpolatedTransformBlendIdentityTest) {
+  // When interpolating transform lists of differing lengths, the length of the
+  // shorter list behaves as if it is padded with identity transforms.
+  // The Blend method accepts a null from operation when blending to/from an
+  // identity transform, with the direction of interpolation controlled by.
+  // the blend_to_identity parameter.
+  // This test verifies the correctness of interpolating between a deferred,
+  // box-size-dependent matrix interpolation and an empty transform list in
+  // both directions.
+  TransformOperations ops_a, ops_b, ops_empty;
+  ops_a.Operations().push_back(TranslateTransformOperation::Create(
+      Length::Percent(100), Length::Fixed(0), TransformOperation::kTranslate));
+  ops_b.Operations().push_back(
+      RotateTransformOperation::Create(90, TransformOperation::kRotate));
+
+  // Equivalent to translateX(50%) rotate(45deg) but a deferred interpolation
+  TransformOperations ops_c = ops_a.Blend(ops_b, 0.5);
+  ASSERT_EQ(ops_c.Operations().size(), 1u);
+  ASSERT_TRUE(IsA<InterpolatedTransformOperation>(*ops_c.Operations()[0]));
+  EXPECT_EQ(ops_c.BoxSizeDependencies(), TransformOperation::kDependsWidth);
+
+  // Both should be the same and equal to translateX(12.5%) rotate(11.25deg);
+  TransformOperations ops_d1 = ops_c.Blend(ops_empty, 0.25);
+  TransformOperations ops_d2 = ops_empty.Blend(ops_c, 0.75);
+
+  TransformOperations ops_d3;
+  ops_d3.Operations().push_back(TranslateTransformOperation::Create(
+      Length::Percent(12.5), Length::Fixed(0), TransformOperation::kTranslate));
+  ops_d3.Operations().push_back(
+      RotateTransformOperation::Create(11.25, TransformOperation::kRotate));
+
+  const FloatSize box_size(100, 100);
+  TransformationMatrix mat_d1, mat_d2, mat_d3;
+  ops_d1.Apply(box_size, mat_d1);
+  ops_d2.Apply(box_size, mat_d2);
+  ops_d3.Apply(box_size, mat_d3);
+
+  EXPECT_TRANSFORMATION_MATRIX(mat_d1, mat_d2);
+  EXPECT_TRANSFORMATION_MATRIX(mat_d1, mat_d3);
+  EXPECT_TRANSFORMATION_MATRIX(mat_d2, mat_d3);
+}
+
+TEST(TransformOperationsTest, BlendPercentPrefixTest) {
+  TransformOperations ops_a, ops_b;
+  ops_a.Operations().push_back(TranslateTransformOperation::Create(
+      Length::Percent(100), Length::Fixed(0), TransformOperation::kTranslate));
+  ops_a.Operations().push_back(
+      RotateTransformOperation::Create(180, TransformOperation::kRotate));
+
+  ops_b.Operations().push_back(TranslateTransformOperation::Create(
+      Length::Fixed(0), Length::Percent(50), TransformOperation::kTranslate));
+  ops_b.Operations().push_back(
+      ScaleTransformOperation::Create(2, 2, TransformOperation::kScale));
+
+  EXPECT_EQ(ops_a.BoxSizeDependencies(), TransformOperation::kDependsWidth);
+  EXPECT_EQ(ops_a.BoxSizeDependencies(1), TransformOperation::kDependsNone);
+  EXPECT_EQ(ops_b.BoxSizeDependencies(), TransformOperation::kDependsHeight);
+  EXPECT_EQ(ops_b.BoxSizeDependencies(1), TransformOperation::kDependsNone);
+
+  TransformOperations ops_c = ops_a.Blend(ops_b, 0.5);
+  EXPECT_EQ(ops_c.BoxSizeDependencies(), TransformOperation::kDependsBoth);
+  ASSERT_EQ(ops_c.Operations().size(), 2u);
+  ASSERT_TRUE(IsA<TranslateTransformOperation>(*ops_c.Operations()[0]));
+
+  // Even though both transform lists contain percents, the matrix interpolated
+  // part does not, so it should interpolate to a matrix and not defer to an
+  // InterpolatedTransformOperation.
+  ASSERT_TRUE(IsA<Matrix3DTransformOperation>(*ops_c.Operations()[1]));
+  TransformationMatrix mat_c =
+      To<Matrix3DTransformOperation>(*ops_c.Operations()[1]).Matrix();
+
+  auto translate_ref = TranslateTransformOperation::Create(
+      Length::Percent(50), Length::Percent(25), TransformOperation::kTranslate);
+  // scale(1.5) rotate(90deg)
+  TransformationMatrix matrix_ref(0, 1.5, -1.5, 0, 0, 0);
+  EXPECT_EQ(*ops_c.Operations()[0], *translate_ref);
+  EXPECT_TRANSFORMATION_MATRIX(mat_c, matrix_ref);
+}
+
+TEST(TransformOperationsTest, SizeDependenciesCombineTest) {
+  TransformOperations ops;
+  ops.Operations().push_back(
+      RotateTransformOperation::Create(90, TransformOperation::kRotate));
+  EXPECT_EQ(ops.BoxSizeDependencies(), TransformOperation::kDependsNone);
+
+  ops.Operations().push_back(TranslateTransformOperation::Create(
+      Length::Fixed(0), Length::Percent(50), TransformOperation::kTranslate));
+  EXPECT_EQ(ops.BoxSizeDependencies(), TransformOperation::kDependsHeight);
+
+  ops.Operations().push_back(TranslateTransformOperation::Create(
+      Length::Percent(100), Length::Fixed(0), TransformOperation::kTranslate));
+  EXPECT_EQ(ops.Operations()[2]->BoxSizeDependencies(),
+            TransformOperation::kDependsWidth);
+  EXPECT_EQ(ops.BoxSizeDependencies(), TransformOperation::kDependsBoth);
+}
+
 }  // namespace blink

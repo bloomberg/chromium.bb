@@ -8,8 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -119,6 +119,7 @@ class TestPlatformFieldTrials : public PlatformFieldTrials {
   void SetupFieldTrials() override {}
   void SetupFeatureControllingFieldTrials(
       bool has_seed,
+      const base::FieldTrial::EntropyProvider& low_entropy_provider,
       base::FeatureList* feature_list) override {}
 
  private:
@@ -246,10 +247,10 @@ class TestVariationsFieldTrialCreator : public VariationsFieldTrialCreator {
   bool SetupFieldTrials() {
     TestPlatformFieldTrials platform_field_trials;
     return VariationsFieldTrialCreator::SetupFieldTrials(
-        "", "", "", std::set<std::string>(), std::vector<std::string>(),
+        "", "", "", std::vector<std::string>(),
         std::vector<base::FeatureList::FeatureOverrideInfo>(), nullptr,
         std::make_unique<base::FeatureList>(), &platform_field_trials,
-        safe_seed_manager_);
+        safe_seed_manager_, base::nullopt);
   }
 
   TestVariationsSeedStore* seed_store() { return &seed_store_; }
@@ -487,7 +488,7 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_LoadsCountryOnFirstRun) {
   // the interaction between these two classes is what's being tested.
   auto seed_store = std::make_unique<VariationsSeedStore>(
       &prefs_, std::move(initial_seed),
-      /*on_initial_seed_stored=*/base::DoNothing());
+      /*signature_verification_enabled=*/false);
   VariationsFieldTrialCreator field_trial_creator(
       &prefs_, &variations_service_client, std::move(seed_store),
       UIStringOverrider());
@@ -497,10 +498,10 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_LoadsCountryOnFirstRun) {
   // |initial_seed| included the country code for India, this study should be
   // active.
   EXPECT_TRUE(field_trial_creator.SetupFieldTrials(
-      "", "", "", std::set<std::string>(), std::vector<std::string>(),
+      "", "", "", std::vector<std::string>(),
       std::vector<base::FeatureList::FeatureOverrideInfo>(), nullptr,
       std::make_unique<base::FeatureList>(), &platform_field_trials,
-      &safe_seed_manager));
+      &safe_seed_manager, base::nullopt));
 
   EXPECT_EQ(kTestSeedExperimentName,
             base::FieldTrialList::FindFullName(kTestSeedStudyName));

@@ -8,9 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "media/mojo/mojom/media_drm_storage.mojom.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 
 namespace media {

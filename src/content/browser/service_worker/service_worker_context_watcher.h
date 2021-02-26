@@ -33,10 +33,10 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
       const std::vector<ServiceWorkerRegistrationInfo>&)>;
   using WorkerVersionUpdatedCallback = base::RepeatingCallback<void(
       const std::vector<ServiceWorkerVersionInfo>&)>;
-  using WorkerErrorReportedCallback =
-      base::RepeatingCallback<void(int64_t /* registration_id */,
-                                   int64_t /* version_id */,
-                                   const ErrorInfo&)>;
+  using WorkerErrorReportedCallback = base::RepeatingCallback<void(
+      int64_t /* registration_id */,
+      int64_t /* version_id */,
+      const ServiceWorkerContextObserver::ErrorInfo&)>;
 
   ServiceWorkerContextWatcher(
       scoped_refptr<ServiceWorkerContextWrapper> context,
@@ -76,9 +76,10 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
           registrations);
   void RunWorkerVersionUpdatedCallback(
       std::unique_ptr<std::vector<ServiceWorkerVersionInfo>> versions);
-  void RunWorkerErrorReportedCallback(int64_t registration_id,
-                                      int64_t version_id,
-                                      std::unique_ptr<ErrorInfo> error_info);
+  void RunWorkerErrorReportedCallback(
+      int64_t registration_id,
+      int64_t version_id,
+      std::unique_ptr<ServiceWorkerContextObserver::ErrorInfo> error_info);
 
   // ServiceWorkerContextCoreObserver implements
   void OnNewLiveRegistration(int64_t registration_id,
@@ -88,7 +89,8 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
   void OnStarted(int64_t version_id,
                  const GURL& scope,
                  int process_id,
-                 const GURL& script_url) override;
+                 const GURL& script_url,
+                 const blink::ServiceWorkerToken& token) override;
   void OnStopping(int64_t version_id) override;
   void OnStopped(int64_t version_id) override;
   void OnVersionStateChanged(int64_t version_id,
@@ -100,16 +102,17 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
   void OnMainScriptResponseSet(int64_t version_id,
                                base::Time script_response_time,
                                base::Time script_last_modified) override;
-  void OnErrorReported(int64_t version_id,
-                       const ErrorInfo& info) override;
+  void OnErrorReported(
+      int64_t version_id,
+      const GURL& scope,
+      const ServiceWorkerContextObserver::ErrorInfo& info) override;
   void OnReportConsoleMessage(int64_t version_id,
+                              const GURL& scope,
                               const ConsoleMessage& message) override;
   void OnControlleeAdded(int64_t version_id,
-                         const GURL& scope,
                          const std::string& uuid,
                          const ServiceWorkerClientInfo& info) override;
   void OnControlleeRemoved(int64_t version_id,
-                           const GURL& scope,
                            const std::string& uuid) override;
   void OnRegistrationCompleted(int64_t registration_id,
                                const GURL& scope) override;

@@ -20,15 +20,24 @@ FROM debian:latest
 
 RUN set -ex; \
     export DEBIAN_FRONTEND=noninteractive; \
-    echo deb http://deb.debian.org/debian testing main > \
-             /etc/apt/sources.list.d/testing.list; \
+    echo deb http://deb.debian.org/debian buster-backports main > \
+            /etc/apt/sources.list.d/backports.list; \
     apt-get update; \
     apt-get -y install python git curl sudo lz4 tar ccache tini libpulse0 \
                        libgl1 libxml2 libc6-dev-i386 libtinfo5 gnupg2 \
-                       pkg-config zip g++ zlib1g-dev unzip python3; \
-    apt-get -y -t testing install gcc-7 g++-7 clang; \
+                       pkg-config zip g++ zlib1g-dev unzip python3 \
+                       python-distutils-extra python3-distutils; \
+    apt-get -y install gcc-7 g++-7; \
+    gcc-7 --version; \
+    g++-7 --version; \
+    apt-get -y -t buster-backports install clang-8; \
+    clang-8 --version; \
+    clang++-8 --version; \
     curl https://bootstrap.pypa.io/get-pip.py | python -; \
     pip install --quiet protobuf; \
+    curl https://bootstrap.pypa.io/get-pip.py | python3 -; \
+    pip3 install --quiet protobuf; \
+    pip3 install --quiet pandas; \
     curl -LO https://github.com/bazelbuild/bazel/releases/download/0.29.1/bazel-0.29.1-installer-linux-x86_64.sh; \
     chmod +x bazel-*-installer-linux-x86_64.sh; \
     ./bazel-*-installer-linux-x86_64.sh; \

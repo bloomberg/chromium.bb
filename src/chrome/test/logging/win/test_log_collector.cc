@@ -167,14 +167,13 @@ TestLogCollector::EventListener::~EventListener() {
 // TestLogCollector implementation
 
 TestLogCollector::TestLogCollector()
-    : unit_test_(NULL), also_emit_success_logs_(false) {
-}
+    : unit_test_(nullptr), also_emit_success_logs_(false) {}
 
 TestLogCollector::~TestLogCollector() {
 }
 
 void TestLogCollector::Initialize(testing::UnitTest* unit_test) {
-  if (unit_test_ != NULL) {
+  if (unit_test_ != nullptr) {
     CHECK_EQ(unit_test, unit_test_)
         << "Cannot install the test log collector in multiple unit tests.";
     return;  // Already initialized.
@@ -260,7 +259,7 @@ void TestLogCollector::ProcessSessionForTest(
       std::cerr.flush();
     }
 
-    if (!base::DeleteFile(log_file_, false))
+    if (!base::DeleteFile(log_file_))
       LOG(ERROR) << "Failed to delete log file " << log_file_.value();
   }
 

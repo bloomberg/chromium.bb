@@ -19,6 +19,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace chromeos {
 
@@ -114,6 +115,13 @@ const std::string& InternetConfigDialog::Id() {
   return dialog_id_;
 }
 
+void InternetConfigDialog::AdjustWidgetInitParams(
+    views::Widget::InitParams* params) {
+  params->type = views::Widget::InitParams::Type::TYPE_WINDOW_FRAMELESS;
+  params->shadow_type = views::Widget::InitParams::ShadowType::kDrop;
+  params->shadow_elevation = wm::kShadowElevationActiveWindow;
+}
+
 void InternetConfigDialog::GetDialogSize(gfx::Size* size) const {
   const NetworkState* network =
       network_id_.empty() ? nullptr
@@ -141,6 +149,8 @@ InternetConfigDialogUI::InternetConfigDialogUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI(web_ui) {
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIInternetConfigDialogHost);
+
+  source->DisableTrustedTypesCSP();
 
   AddInternetStrings(source);
   source->AddLocalizedString("title", IDS_SETTINGS_INTERNET_CONFIG);

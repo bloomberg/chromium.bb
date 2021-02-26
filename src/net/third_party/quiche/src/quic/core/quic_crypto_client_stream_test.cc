@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "absl/base/macros.h"
 #include "net/third_party/quiche/src/quic/core/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
@@ -22,7 +23,6 @@
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/simple_quic_framer.h"
 #include "net/third_party/quiche/src/quic/test_tools/simple_session_cache.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
 #include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
 
 using testing::_;
@@ -69,7 +69,8 @@ class QuicCryptoClientStreamTest : public QuicTest {
   void CompleteCryptoHandshake() {
     int proof_verify_details_calls = 1;
     if (stream()->handshake_protocol() != PROTOCOL_TLS1_3) {
-      EXPECT_CALL(*session_, OnProofValid(testing::_));
+      EXPECT_CALL(*session_, OnProofValid(testing::_))
+          .Times(testing::AtLeast(1));
       proof_verify_details_calls = 0;
     }
     EXPECT_CALL(*session_, OnProofVerifyDetailsAvailable(testing::_))
@@ -107,6 +108,7 @@ TEST_F(QuicCryptoClientStreamTest, ConnectedAfterSHLO) {
   EXPECT_TRUE(stream()->encryption_established());
   EXPECT_TRUE(stream()->one_rtt_keys_available());
   EXPECT_FALSE(stream()->IsResumption());
+  EXPECT_EQ(stream()->EarlyDataReason(), ssl_early_data_no_session_offered);
 }
 
 TEST_F(QuicCryptoClientStreamTest, MessageAfterHandshake) {
@@ -160,6 +162,25 @@ TEST_F(QuicCryptoClientStreamTest, ExpiredServerConfig) {
   // Check that a client hello was sent.
   ASSERT_EQ(1u, connection_->encrypted_packets_.size());
   EXPECT_EQ(ENCRYPTION_INITIAL, connection_->encryption_level());
+}
+
+TEST_F(QuicCryptoClientStreamTest, ClientTurnedOffZeroRtt) {
+  // Seed the config with a cached server config.
+  CompleteCryptoHandshake();
+
+  // Recreate connection with the new config.
+  CreateConnection();
+
+  // Set connection option.
+  QuicTagVector options;
+  options.push_back(kQNZ2);
+  session_->config()->SetClientConnectionOptions(options);
+
+  CompleteCryptoHandshake();
+  // Check that two client hellos were sent, one inchoate and one normal.
+  EXPECT_EQ(2, stream()->num_sent_client_hellos());
+  EXPECT_FALSE(stream()->EarlyDataAccepted());
+  EXPECT_EQ(stream()->EarlyDataReason(), ssl_early_data_disabled);
 }
 
 TEST_F(QuicCryptoClientStreamTest, ClockSkew) {
@@ -244,7 +265,7 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdate) {
   const std::string& cached_scfg = state->server_config();
   quiche::test::CompareCharArraysWithHexError(
       "scfg", cached_scfg.data(), cached_scfg.length(),
-      reinterpret_cast<char*>(scfg), QUICHE_ARRAYSIZE(scfg));
+      reinterpret_cast<char*>(scfg), ABSL_ARRAYSIZE(scfg));
 
   QuicStreamSequencer* sequencer = QuicStreamPeer::sequencer(stream());
   EXPECT_FALSE(QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
@@ -299,7 +320,6 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateWithCert) {
   // Recreate connection with the new config and verify a 0-RTT attempt.
   CreateConnection();
 
-  EXPECT_CALL(*connection_, OnCanWrite());
   EXPECT_CALL(*session_, OnProofValid(testing::_));
   EXPECT_CALL(*session_, OnProofVerifyDetailsAvailable(testing::_))
       .Times(testing::AnyNumber());

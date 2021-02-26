@@ -12,16 +12,13 @@ cr.define('gpu', function() {
   /**
    * Provides information on the GPU process and underlying graphics hardware.
    * @constructor
-   * @extends {cr.ui.TabPanel}
    */
-  const InfoView = cr.ui.define(cr.ui.TabPanel);
+  const InfoView = cr.ui.define('div');
 
   InfoView.prototype = {
-    __proto__: cr.ui.TabPanel.prototype,
+    __proto__: HTMLDivElement.prototype,
 
     decorate: function() {
-      cr.ui.TabPanel.prototype.decorate.apply(this);
-
       browserBridge.addEventListener('gpuInfoUpdate', this.refresh.bind(this));
       browserBridge.addEventListener(
           'logMessagesChange', this.refresh.bind(this));
@@ -251,9 +248,6 @@ cr.define('gpu', function() {
         'gpu_compositing': 'Compositing',
         'webgl': 'WebGL',
         'multisampling': 'WebGL multisampling',
-        'flash_3d': 'Flash',
-        'flash_stage3d': 'Flash Stage3D',
-        'flash_stage3d_baseline': 'Flash Stage3D Baseline profile',
         'texture_sharing': 'Texture Sharing',
         'video_decode': 'Video Decode',
         'rasterization': 'Rasterization',
@@ -537,7 +531,7 @@ cr.define('gpu', function() {
         throw new Error('Node ' + outputElementId + ' not found');
       }
 
-      peg.innerHTML = '';
+      peg.innerHTML = trustedTypes.emptyHTML;
       peg.appendChild(template);
     }
   };

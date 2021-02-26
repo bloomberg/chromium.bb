@@ -6,10 +6,23 @@
 #define ASH_STYLE_ASH_COLOR_PROVIDER_H_
 
 #include "ash/ash_export.h"
-#include "base/macros.h"
+#include "ash/public/cpp/session/session_observer.h"
+#include "base/observer_list.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/vector_icon_types.h"
+
+class PrefChangeRegistrar;
+class PrefRegistrySimple;
+class PrefService;
+
+namespace views {
+class ImageButton;
+class LabelButton;
+}  // namespace views
 
 namespace ash {
+class ColorModeObserver;
 
 // The color provider for system UI. It provides colors for Shield layer, Base
 // layer, Controls layer and Content layer. Shield layer is a combination of
@@ -21,22 +34,8 @@ namespace ash {
 // state of an interactive element (active/inactive states). Content layer means
 // the UI elements, e.g., separator, text, icon. The color of an element in
 // system UI will be the combination of the colors of the four layers.
-class ASH_EXPORT AshColorProvider {
+class ASH_EXPORT AshColorProvider : public SessionObserver {
  public:
-  // The color mode of system UI. Switch "--ash-color-mode" can only set
-  // |color_mode_| to |kLight| or |kDark|, |color_mode_| will be |kDefault| if
-  // the flag is not set.
-  enum class AshColorMode {
-    // This is the color mode of current system UI, which is a combination of
-    // dark and light mode. e.g, shelf and system tray are dark while many other
-    // elements like notification are light.
-    kDefault = 0,
-    // The text is black while the background is white or light.
-    kLight,
-    // The text is light color while the background is black or dark grey.
-    kDark
-  };
-
   // Types of Shield layer. Number at the end of each type indicates the alpha
   // value.
   enum class ShieldLayerType {
@@ -65,38 +64,65 @@ class ASH_EXPORT AshColorProvider {
 
     // Base layer is opaque.
     kOpaque,
-
-    // Base layer is red. e.g, the "sign out" button inside status area.
-    kRed,
   };
 
   // Types of Controls layer.
   enum class ControlsLayerType {
-    kHairlineBorder,
-    kActiveControlBackground,
-    kInactiveControlBackground,
-    kFocusRing,
+    kHairlineBorderColor,
+    kControlBackgroundColorActive,
+    kControlBackgroundColorInactive,
+    kControlBackgroundColorAlert,
+    kControlBackgroundColorWarning,
+    kControlBackgroundColorPositive,
+    kFocusAuraColor,
+    kFocusRingColor,
   };
 
   enum class ContentLayerType {
-    kSeparator,
-    kTextPrimary,
-    kTextSecondary,
-    kIconPrimary,
-    kIconSecondary,
-    kIconRed,
-    // Color for prominent icon button, e.g, "Add connection" icon button inside
+    kSeparatorColor,
+
+    kTextColorPrimary,
+    kTextColorSecondary,
+    kTextColorAlert,
+    kTextColorWarning,
+    kTextColorPositive,
+
+    kIconColorPrimary,
+    kIconColorSecondary,
+    kIconColorAlert,
+    kIconColorWarning,
+    kIconColorPositive,
+    // Color for prominent icon, e.g, "Add connection" icon button inside
     // VPN detailed view.
-    kProminentIconButton,
+    kIconColorProminent,
 
-    // Color for system menu icon buttons with inverted dark mode colors, e.g,
-    // FeaturePodIconButton
-    kIconSystemMenu,
-    kIconSystemMenuToggled,
+    // The default color for button labels.
+    kButtonLabelColor,
+    kButtonLabelColorPrimary,
 
-    // Color for sliders (volume, brightness etc.)
-    kSliderThumbEnabled,
-    kSliderThumbDisabled,
+    // Color for blue button labels, e.g, 'Retry' button of the system toast.
+    kButtonLabelColorBlue,
+
+    kButtonIconColor,
+    kButtonIconColorPrimary,
+
+    // Color for app state indicator.
+    kAppStateIndicatorColor,
+    kAppStateIndicatorColorInactive,
+
+    // Color for the shelf drag handle in tablet mode.
+    kShelfHandleColor,
+
+    // Color for slider.
+    kSliderColorActive,
+    kSliderColorInactive,
+
+    // Color for radio button.
+    kRadioColorActive,
+    kRadioColorInactive,
+
+    // Color for current active desk's border.
+    kCurrentDeskColor,
   };
 
   // Attributes of ripple, includes the base color, opacity of inkdrop and
@@ -114,7 +140,9 @@ class ASH_EXPORT AshColorProvider {
   };
 
   AshColorProvider();
-  ~AshColorProvider();
+  AshColorProvider(const AshColorProvider& other) = delete;
+  AshColorProvider operator=(const AshColorProvider& other) = delete;
+  ~AshColorProvider() override;
 
   static AshColorProvider* Get();
 
@@ -126,75 +154,91 @@ class ASH_EXPORT AshColorProvider {
   // power status icon inside status area is a dual tone icon.
   static SkColor GetSecondToneColor(SkColor color_of_first_tone);
 
-  // Gets color of Shield layer. See details at the corresponding function of
-  // Base layer.
-  SkColor DeprecatedGetShieldLayerColor(ShieldLayerType type,
-                                        SkColor default_color) const;
-  SkColor GetShieldLayerColor(ShieldLayerType type,
-                              AshColorMode given_color_mode) const;
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // Used by UI elements that need to support |kDefault| mode to get the color
-  // of base layer. |default_color| is provided while |color_mode_| is not set.
-  // Otherwise, gets the base layer color on |type| and |color_mode_|. Note,
-  // this function will be removed after launch dark/light mode.
-  SkColor DeprecatedGetBaseLayerColor(BaseLayerType type,
-                                      SkColor default_color) const;
-  // Used by new specs to get the color of base layer. |given_color_mode| is
-  // provided since the colors of new specs will always follow |kLight| or
-  // |kDark| mode. But |color_mode_| should have higher priority, gets the color
-  // on |color_mode_| instead if it is set.
-  SkColor GetBaseLayerColor(BaseLayerType type,
-                            AshColorMode given_color_mode) const;
+  // SessionObserver:
+  void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
+  void OnSessionStateChanged(session_manager::SessionState state) override;
 
-  // Gets color of Controls layer. See details at the corresponding function of
-  // Base layer.
-  SkColor DeprecatedGetControlsLayerColor(ControlsLayerType type,
-                                          SkColor default_color) const;
-  SkColor GetControlsLayerColor(ControlsLayerType type,
-                                AshColorMode given_color_mode) const;
-
-  // Gets color of Content layer. See details at the corresponding function of
-  // Base layer.
-  SkColor DeprecatedGetContentLayerColor(ContentLayerType type,
-                                         SkColor default_color) const;
-  SkColor GetContentLayerColor(ContentLayerType type,
-                               AshColorMode given_color_mode) const;
+  SkColor GetShieldLayerColor(ShieldLayerType type) const;
+  SkColor GetBaseLayerColor(BaseLayerType type) const;
+  SkColor GetControlsLayerColor(ControlsLayerType type) const;
+  SkColor GetContentLayerColor(ContentLayerType type) const;
 
   // Gets the attributes of ripple on |bg_color|. |bg_color| is the background
-  // color of the UI element that wants to show inkdrop.
-  RippleAttributes GetRippleAttributes(SkColor bg_color) const;
+  // color of the UI element that wants to show inkdrop. Applies the color from
+  // GetBackgroundColor if |bg_color| is not given. This means the background
+  // color of the UI element is from Shiled or Base layer. See
+  // GetShieldLayerColor and GetBaseLayerColor.
+  RippleAttributes GetRippleAttributes(
+      SkColor bg_color = gfx::kPlaceholderColor) const;
 
-  AshColorMode color_mode() const { return color_mode_; }
+  // Gets the background color that can be applied on any layer. The returned
+  // color will be different based on color mode and color theme (see
+  // |is_themed_|).
+  SkColor GetBackgroundColor() const;
+
+  // Helpers to style different types of buttons. Depending on the type may
+  // style text, icon and background colors for both enabled and disabled
+  // states. May overwrite an prior styles on |button|.
+  void DecoratePillButton(views::LabelButton* button,
+                          const gfx::VectorIcon* icon);
+  void DecorateCloseButton(views::ImageButton* button,
+                           int button_size,
+                           const gfx::VectorIcon& icon);
+  void DecorateIconButton(views::ImageButton* button,
+                          const gfx::VectorIcon& icon,
+                          bool toggled,
+                          int icon_size);
+  void DecorateFloatingIconButton(views::ImageButton* button,
+                                  const gfx::VectorIcon& icon);
+
+  void AddObserver(ColorModeObserver* observer);
+  void RemoveObserver(ColorModeObserver* observer);
+
+  // True if pref |kDarkModeEnabled| is true, which means the current color mode
+  // is dark.
+  bool IsDarkModeEnabled() const;
+
+  // Whether the system color mode is themed, by default is true. If true, the
+  // background color will be calculated based on extracted wallpaper color.
+  bool IsThemed() const;
+
+  // Toggles pref |kDarkModeEnabled|.
+  void ToggleColorMode();
+
+  // Updates pref |kColorModeThemed| to |is_themed|.
+  void UpdateColorModeThemed(bool is_themed);
 
  private:
-  // Gets Shield layer color on |type| and |color_mode|. This function will be
-  // merged into GetShieldLayerColor after DeprecatedGetShieldLayerColor got be
-  // removed.
-  SkColor GetShieldLayerColorImpl(ShieldLayerType type,
-                                  AshColorMode color_mode) const;
+  friend class ScopedLightModeAsDefault;
 
-  // Gets Base layer color on |type| and |color_mode|. This function will be
-  // merged into GetBaseLayerColor after DeprecatedGetBaseLayerColor got be
-  // removed.
-  SkColor GetBaseLayerColorImpl(BaseLayerType type,
-                                AshColorMode color_mode) const;
+  // Gets the background default color.
+  SkColor GetBackgroundDefaultColor() const;
 
-  // Gets Controls layer color on |type| and |color_mode|. This function will be
-  // merged into GetControlsLayerColor after DeprecatedGetControlsLayerColor got
-  // be removed.
-  SkColor GetControlsLayerColorImpl(ControlsLayerType type,
-                                    AshColorMode color_mode) const;
+  // Gets the background themed color that's calculated based on the color
+  // extracted from wallpaper. For dark mode, it will be dark muted wallpaper
+  // prominent color + SK_ColorBLACK 50%. For light mode, it will be light
+  // muted wallpaper prominent color + SK_ColorWHITE 75%.
+  SkColor GetBackgroundThemedColor() const;
 
-  // Gets Content layer color on |type| and |color_mode|. This function will be
-  // merged into GetContentLayerColor after DeprecatedGetContentLayerColor got
-  // be removed.
-  SkColor GetContentLayerColorImpl(ContentLayerType type,
-                                   AshColorMode color_mode) const;
+  // Notifies all the observers on |kDarkModeEnabled|'s change.
+  void NotifyDarkModeEnabledPrefChange();
 
-  // Current color mode of system UI.
-  AshColorMode color_mode_ = AshColorMode::kDefault;
+  // Notifies all the observers on |kColorModeThemed|'s change.
+  void NotifyColorModeThemedPrefChange();
 
-  DISALLOW_COPY_AND_ASSIGN(AshColorProvider);
+  // Default color mode is dark, which is controlled by pref |kDarkModeEnabled|
+  // currently. But we can also override it to light through
+  // ScopedLightModeAsDefault. This is done to help keeping some of the UI
+  // elements as light by default before launching dark/light mode. Overriding
+  // only if the kDarkLightMode feature is disabled. This variable will be
+  // removed once enabled dark/light mode.
+  bool override_light_mode_as_default_ = false;
+
+  base::ObserverList<ColorModeObserver> observers_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  PrefService* active_user_pref_service_ = nullptr;  // Not owned.
 };
 
 }  // namespace ash

@@ -4,8 +4,10 @@
 
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 
+#include "base/notreached.h"
 #import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_promo_signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/trusted_vault_reauthentication/trusted_vault_reauthentication_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/first_run_signin_logger.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/upgrade_signin_logger.h"
@@ -119,6 +121,15 @@ using signin_metrics::PromoAction;
                 retrievalTrigger:retrievalTrigger];
 }
 
++ (instancetype)
+    consistencyPromoSigninCoordinatorWithBaseViewController:
+        (UIViewController*)viewController
+                                                    browser:(Browser*)browser {
+  return [[ConsistencyPromoSigninCoordinator alloc]
+      initWithBaseViewController:viewController
+                         browser:browser];
+}
+
 - (void)dealloc {
   // -[SigninCoordinator runCompletionCallbackWithSigninResult:identity:
   // showAdvancedSettingsSignin:] has to be called by the subclass before
@@ -150,7 +161,6 @@ using signin_metrics::PromoAction;
 #pragma mark - Properties
 
 - (BOOL)isSettingsViewPresented {
-  // TODO(crbug.com/971989): Remove this method.
   return NO;
 }
 

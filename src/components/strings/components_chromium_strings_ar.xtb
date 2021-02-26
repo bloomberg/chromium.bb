@@ -5,6 +5,7 @@
 <translation id="275588974610408078">‏تقارير الأعطال غير متاحة في Chromium.</translation>
 <translation id="3064346599913645280">‏أنت تعرض صفحة Chromium آمنة</translation>
 <translation id="3550966579244642892">‏لم ينته نظام تشغيل Chromium من إعداده المبدئي.</translation>
+<translation id="358997566136285270">‏شعار Chromium</translation>
 <translation id="4365115785552740256">‏أصبح Chromium الآن متاحًا بفضل المشروع المفتوح المصدر <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> و<ph name="BEGIN_LINK_OSS" />برامج أخرى مفتوحة المصدر<ph name="END_LINK_OSS" />.</translation>
 <translation id="4559775032954821361">‏انتقل إلى
           قائمة Chromium &gt;
@@ -25,7 +26,7 @@
           <ph name="ADVANCED_TITLE" />
           &gt;
           <ph name="PROXIES_TITLE" />
-          وتأكد من ضبط التهيئة على "بلا خادم وكيل" أو "مباشر."</translation>
+          وتأكد من ضبط الإعداد على "بلا خادم وكيل" أو "مباشر."</translation>
 <translation id="6613594504749178791">‏ستسري التغييرات في المرة التالية التي تعيد فيها تشغيل Chromium.</translation>
 <translation id="7861509383340276692">‏انتقل إلى
         قائمة Chromium &gt;

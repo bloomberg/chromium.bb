@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/payments/profile_list_view_controller.h"
 
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
@@ -31,15 +32,6 @@ namespace payments {
 
 namespace {
 
-enum class ProfileListViewControllerTags : int {
-  // The tag for the button that triggers the "add address"
-  // flow. Starts at |PAYMENT_REQUEST_COMMON_TAG_MAX| not to conflict
-  // with tags common to all views.
-  ADD_SHIPPING_ADDRESS_BUTTON = static_cast<int>(
-      PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX),
-  ADD_CONTACT_BUTTON,
-};
-
 class ProfileItem : public PaymentRequestItemList::Item {
  public:
   // Constructs an object owned by |parent_list|, representing one element in
@@ -50,11 +42,11 @@ class ProfileItem : public PaymentRequestItemList::Item {
   // profile owned by |state|. |clickable| indicates whether or not this profile
   // can be clicked (i.e., whether it's enabled).
   ProfileItem(autofill::AutofillProfile* profile,
-              PaymentRequestSpec* spec,
-              PaymentRequestState* state,
+              base::WeakPtr<PaymentRequestSpec> spec,
+              base::WeakPtr<PaymentRequestState> state,
               PaymentRequestItemList* parent_list,
-              ProfileListViewController* controller,
-              PaymentRequestDialogView* dialog,
+              base::WeakPtr<ProfileListViewController> controller,
+              base::WeakPtr<PaymentRequestDialogView> dialog,
               bool selected,
               bool clickable)
       : PaymentRequestItemList::Item(spec,
@@ -104,7 +96,7 @@ class ProfileItem : public PaymentRequestItemList::Item {
 
   void EditButtonPressed() override { controller_->ShowEditor(profile_); }
 
-  ProfileListViewController* controller_;
+  base::WeakPtr<ProfileListViewController> controller_;
   autofill::AutofillProfile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileItem);
@@ -115,14 +107,20 @@ class ProfileItem : public PaymentRequestItemList::Item {
 class ShippingProfileViewController : public ProfileListViewController,
                                       public PaymentRequestSpec::Observer {
  public:
-  ShippingProfileViewController(PaymentRequestSpec* spec,
-                                PaymentRequestState* state,
-                                PaymentRequestDialogView* dialog)
+  // The `spec` parameter should not be null
+  ShippingProfileViewController(base::WeakPtr<PaymentRequestSpec> spec,
+                                base::WeakPtr<PaymentRequestState> state,
+                                base::WeakPtr<PaymentRequestDialogView> dialog)
       : ProfileListViewController(spec, state, dialog) {
+    DCHECK(spec);
     spec->AddObserver(this);
     PopulateList();
   }
-  ~ShippingProfileViewController() override { spec()->RemoveObserver(this); }
+
+  ~ShippingProfileViewController() override {
+    if (spec())
+      spec()->RemoveObserver(this);
+  }
 
  protected:
   // ProfileListViewController:
@@ -140,21 +138,18 @@ class ShippingProfileViewController : public ProfileListViewController,
     // of the profile list. When the spec comes back updated (in OnSpecUpdated),
     // the decision will be made to either stay on this screen or go back to the
     // payment sheet.
-    state()->SetSelectedShippingProfile(
-        profile, PaymentRequestState::SectionSelectionStatus::kSelected);
+    state()->SetSelectedShippingProfile(profile);
   }
 
   void ShowEditor(autofill::AutofillProfile* profile) override {
     dialog()->ShowShippingAddressEditor(
         BackNavigationType::kPaymentSheet,
         /*on_edited=*/
-        base::BindOnce(
-            &PaymentRequestState::SetSelectedShippingProfile,
-            state()->AsWeakPtr(), profile,
-            PaymentRequestState::SectionSelectionStatus::kEditedSelected),
+        base::BindOnce(&PaymentRequestState::SetSelectedShippingProfile,
+                       state(), profile),
         /*on_added=*/
         base::BindOnce(&PaymentRequestState::AddAutofillShippingProfile,
-                       state()->AsWeakPtr(), /*selected=*/true),
+                       state(), /*selected=*/true),
         profile);
   }
 
@@ -175,8 +170,8 @@ class ShippingProfileViewController : public ProfileListViewController,
   }
 
   std::unique_ptr<views::View> CreateHeaderView() override {
-    if (!spec()->GetShippingOptions().empty() &&
-        spec()->selected_shipping_option_error().empty()) {
+    if (!spec() || (!spec()->GetShippingOptions().empty() &&
+                    spec()->selected_shipping_option_error().empty())) {
       return nullptr;
     }
 
@@ -188,16 +183,12 @@ class ShippingProfileViewController : public ProfileListViewController,
   }
 
   base::string16 GetSheetTitle() override {
-    return GetShippingAddressSectionString(spec()->shipping_type());
+    return spec() ? GetShippingAddressSectionString(spec()->shipping_type())
+                  : base::string16();
   }
 
   base::string16 GetSecondaryButtonLabel() override {
     return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_ADDRESS);
-  }
-
-  int GetSecondaryButtonTag() override {
-    return static_cast<int>(
-        ProfileListViewControllerTags::ADD_SHIPPING_ADDRESS_BUTTON);
   }
 
   int GetSecondaryButtonId() override {
@@ -214,6 +205,9 @@ class ShippingProfileViewController : public ProfileListViewController,
 
  private:
   void OnSpecUpdated() override {
+    if (!spec())
+      return;
+
     // If there's an error, stay on this screen so the user can select a
     // different address. Otherwise, go back to the payment sheet.
     if (spec()->current_update_reason() ==
@@ -230,15 +224,19 @@ class ShippingProfileViewController : public ProfileListViewController,
     }
   }
 
+  base::WeakPtrFactory<ShippingProfileViewController> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(ShippingProfileViewController);
 };
 
 class ContactProfileViewController : public ProfileListViewController {
  public:
-  ContactProfileViewController(PaymentRequestSpec* spec,
-                               PaymentRequestState* state,
-                               PaymentRequestDialogView* dialog)
+  // The `spec` parameter should not be null.
+  ContactProfileViewController(base::WeakPtr<PaymentRequestSpec> spec,
+                               base::WeakPtr<PaymentRequestState> state,
+                               base::WeakPtr<PaymentRequestDialogView> dialog)
       : ProfileListViewController(spec, state, dialog) {
+    DCHECK(spec);
     PopulateList();
   }
   ~ContactProfileViewController() override {}
@@ -248,14 +246,17 @@ class ContactProfileViewController : public ProfileListViewController {
   std::unique_ptr<views::View> GetLabel(
       autofill::AutofillProfile* profile,
       base::string16* accessible_content) override {
+    DCHECK(profile);
     return GetContactInfoLabel(
         AddressStyleType::DETAILED, state()->GetApplicationLocale(), *profile,
-        *spec(), *(state()->profile_comparator()), accessible_content);
+        /*request_payer_name=*/spec() && spec()->request_payer_name(),
+        /*request_payer_email=*/spec() && spec()->request_payer_email(),
+        /*request_payer_phone=*/spec() && spec()->request_payer_phone(),
+        *(state()->profile_comparator()), accessible_content);
   }
 
   void SelectProfile(autofill::AutofillProfile* profile) override {
-    state()->SetSelectedContactProfile(
-        profile, PaymentRequestState::SectionSelectionStatus::kSelected);
+    state()->SetSelectedContactProfile(profile);
     dialog()->GoBack();
   }
 
@@ -263,13 +264,11 @@ class ContactProfileViewController : public ProfileListViewController {
     dialog()->ShowContactInfoEditor(
         BackNavigationType::kPaymentSheet,
         /*on_edited=*/
-        base::BindOnce(
-            &PaymentRequestState::SetSelectedContactProfile,
-            state()->AsWeakPtr(), profile,
-            PaymentRequestState::SectionSelectionStatus::kEditedSelected),
+        base::BindOnce(&PaymentRequestState::SetSelectedContactProfile, state(),
+                       profile),
         /*on_added=*/
-        base::BindOnce(&PaymentRequestState::AddAutofillContactProfile,
-                       state()->AsWeakPtr(), /*selected=*/true),
+        base::BindOnce(&PaymentRequestState::AddAutofillContactProfile, state(),
+                       /*selected=*/true),
         profile);
   }
 
@@ -298,10 +297,6 @@ class ContactProfileViewController : public ProfileListViewController {
     return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CONTACT);
   }
 
-  int GetSecondaryButtonTag() override {
-    return static_cast<int>(ProfileListViewControllerTags::ADD_CONTACT_BUTTON);
-  }
-
   int GetSecondaryButtonId() override {
     return static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CONTACT_BUTTON);
   }
@@ -315,25 +310,25 @@ class ContactProfileViewController : public ProfileListViewController {
 // static
 std::unique_ptr<ProfileListViewController>
 ProfileListViewController::GetShippingProfileViewController(
-    PaymentRequestSpec* spec,
-    PaymentRequestState* state,
-    PaymentRequestDialogView* dialog) {
+    base::WeakPtr<PaymentRequestSpec> spec,
+    base::WeakPtr<PaymentRequestState> state,
+    base::WeakPtr<PaymentRequestDialogView> dialog) {
   return std::make_unique<ShippingProfileViewController>(spec, state, dialog);
 }
 
 // static
 std::unique_ptr<ProfileListViewController>
 ProfileListViewController::GetContactProfileViewController(
-    PaymentRequestSpec* spec,
-    PaymentRequestState* state,
-    PaymentRequestDialogView* dialog) {
+    base::WeakPtr<PaymentRequestSpec> spec,
+    base::WeakPtr<PaymentRequestState> state,
+    base::WeakPtr<PaymentRequestDialogView> dialog) {
   return std::make_unique<ContactProfileViewController>(spec, state, dialog);
 }
 
 ProfileListViewController::ProfileListViewController(
-    PaymentRequestSpec* spec,
-    PaymentRequestState* state,
-    PaymentRequestDialogView* dialog)
+    base::WeakPtr<PaymentRequestSpec> spec,
+    base::WeakPtr<PaymentRequestState> state,
+    base::WeakPtr<PaymentRequestDialogView> dialog)
     : PaymentRequestSheetController(spec, state, dialog), list_(dialog) {}
 
 ProfileListViewController::~ProfileListViewController() {}
@@ -347,15 +342,28 @@ std::unique_ptr<views::View> ProfileListViewController::CreateHeaderView() {
 }
 
 void ProfileListViewController::PopulateList() {
+  if (!spec())
+    return;
+
   autofill::AutofillProfile* selected_profile = GetSelectedProfile();
 
   list_.Clear();
 
   for (auto* profile : GetProfiles()) {
     list_.AddItem(std::make_unique<ProfileItem>(
-        profile, spec(), state(), &list_, this, dialog(),
-        profile == selected_profile, IsEnabled(profile)));
+        profile, spec(), state(), &list_, weak_ptr_factory_.GetWeakPtr(),
+        dialog(), profile == selected_profile, IsEnabled(profile)));
   }
+}
+
+bool ProfileListViewController::ShouldShowPrimaryButton() {
+  return false;
+}
+
+views::Button::PressedCallback
+ProfileListViewController::GetSecondaryButtonCallback() {
+  return base::BindRepeating(&ProfileListViewController::ShowEditor,
+                             base::Unretained(this), nullptr);
 }
 
 void ProfileListViewController::FillContentView(views::View* content_view) {
@@ -371,14 +379,6 @@ void ProfileListViewController::FillContentView(views::View* content_view) {
   std::unique_ptr<views::View> list_view = list_.CreateListView();
   list_view->SetID(static_cast<int>(GetDialogViewId()));
   content_view->AddChildView(list_view.release());
-}
-
-void ProfileListViewController::ButtonPressed(views::Button* sender,
-                                              const ui::Event& event) {
-  if (sender->tag() == GetSecondaryButtonTag())
-    ShowEditor(nullptr);
-  else
-    PaymentRequestSheetController::ButtonPressed(sender, event);
 }
 
 }  // namespace payments

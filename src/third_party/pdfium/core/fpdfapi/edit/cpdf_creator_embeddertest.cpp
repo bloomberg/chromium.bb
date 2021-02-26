@@ -5,7 +5,6 @@
 #include <cstring>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "core/fxcrt/fx_system.h"
 #include "public/cpp/fpdf_scopers.h"
@@ -48,7 +47,7 @@ TEST_F(CPDF_CreatorEmbedderTest, SavedDocsAreEqualAfterParse) {
 }
 
 TEST_F(CPDF_CreatorEmbedderTest, BUG_873) {
-  EXPECT_TRUE(OpenDocument("embedded_attachments.pdf"));
+  ASSERT_TRUE(OpenDocument("embedded_attachments.pdf"));
   EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
 
   // Cannot match second part of the ID since it is randomly generated.

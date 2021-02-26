@@ -29,10 +29,15 @@ namespace internal {
 
 class CompilerDispatcherTestFlags {
  public:
+  CompilerDispatcherTestFlags(const CompilerDispatcherTestFlags&) = delete;
+  CompilerDispatcherTestFlags& operator=(const CompilerDispatcherTestFlags&) =
+      delete;
   static void SetFlagsForTest() {
     CHECK_NULL(save_flags_);
     save_flags_ = new SaveFlags();
     FLAG_single_threaded = true;
+    // TODO(leszeks): Support background finalization in compiler dispatcher.
+    FLAG_finalize_streaming_on_background = false;
     FlagList::EnforceFlagImplications();
     FLAG_compiler_dispatcher = true;
   }
@@ -45,8 +50,6 @@ class CompilerDispatcherTestFlags {
 
  private:
   static SaveFlags* save_flags_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(CompilerDispatcherTestFlags);
 };
 
 SaveFlags* CompilerDispatcherTestFlags::save_flags_ = nullptr;
@@ -55,6 +58,8 @@ class CompilerDispatcherTest : public TestWithNativeContext {
  public:
   CompilerDispatcherTest() = default;
   ~CompilerDispatcherTest() override = default;
+  CompilerDispatcherTest(const CompilerDispatcherTest&) = delete;
+  CompilerDispatcherTest& operator=(const CompilerDispatcherTest&) = delete;
 
   static void SetUpTestCase() {
     CompilerDispatcherTestFlags::SetFlagsForTest();
@@ -79,10 +84,11 @@ class CompilerDispatcherTest : public TestWithNativeContext {
 
     const AstRawString* function_name =
         ast_value_factory->GetOneByteString("f");
-    DeclarationScope* script_scope = new (outer_parse_info->zone())
-        DeclarationScope(outer_parse_info->zone(), ast_value_factory);
+    DeclarationScope* script_scope =
+        outer_parse_info->zone()->New<DeclarationScope>(
+            outer_parse_info->zone(), ast_value_factory);
     DeclarationScope* function_scope =
-        new (outer_parse_info->zone()) DeclarationScope(
+        outer_parse_info->zone()->New<DeclarationScope>(
             outer_parse_info->zone(), script_scope, FUNCTION_SCOPE);
     function_scope->set_start_position(shared->StartPosition());
     function_scope->set_end_position(shared->EndPosition());
@@ -99,9 +105,6 @@ class CompilerDispatcherTest : public TestWithNativeContext {
     return dispatcher->Enqueue(outer_parse_info.get(), function_name,
                                function_literal);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CompilerDispatcherTest);
 };
 
 namespace {
@@ -120,6 +123,8 @@ class MockPlatform : public v8::Platform {
     EXPECT_TRUE(worker_tasks_.empty());
     EXPECT_TRUE(idle_task_ == nullptr);
   }
+  MockPlatform(const MockPlatform&) = delete;
+  MockPlatform& operator=(const MockPlatform&) = delete;
 
   int NumberOfWorkerThreads() override { return 1; }
 
@@ -250,6 +255,8 @@ class MockPlatform : public v8::Platform {
                 std::vector<std::unique_ptr<Task>> tasks, bool signal)
         : platform_(platform), tasks_(std::move(tasks)), signal_(signal) {}
     ~TaskWrapper() override = default;
+    TaskWrapper(const TaskWrapper&) = delete;
+    TaskWrapper& operator=(const TaskWrapper&) = delete;
 
     void Run() override {
       for (auto& task : tasks_) {
@@ -264,8 +271,6 @@ class MockPlatform : public v8::Platform {
     MockPlatform* platform_;
     std::vector<std::unique_ptr<Task>> tasks_;
     bool signal_;
-
-    DISALLOW_COPY_AND_ASSIGN(TaskWrapper);
   };
 
   class MockForegroundTaskRunner final : public TaskRunner {
@@ -316,8 +321,6 @@ class MockPlatform : public v8::Platform {
   base::Semaphore sem_;
 
   v8::TracingController* tracing_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPlatform);
 };
 
 }  // namespace

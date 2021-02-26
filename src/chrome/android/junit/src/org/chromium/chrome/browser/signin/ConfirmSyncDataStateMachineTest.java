@@ -20,12 +20,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /** Tests for {@link ConfirmSyncDataStateMachine}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -45,6 +45,9 @@ public class ConfirmSyncDataStateMachineTest {
     @Mock
     private SigninManager mSigninManagerMock;
 
+    @Mock
+    private Profile mProfile;
+
     @Captor
     private ArgumentCaptor<Callback<Boolean>> mCallbackArgument;
 
@@ -57,7 +60,8 @@ public class ConfirmSyncDataStateMachineTest {
         initMocks(this);
         mocker.mock(SigninManagerJni.TEST_HOOKS, mSigninManagerNativeMock);
         IdentityServicesProvider.setInstanceForTests(mock(IdentityServicesProvider.class));
-        when(IdentityServicesProvider.get().getSigninManager()).thenReturn(mSigninManagerMock);
+        Profile.setLastUsedProfileForTesting(mProfile);
+        when(IdentityServicesProvider.get().getSigninManager(any())).thenReturn(mSigninManagerMock);
     }
 
     @Test(expected = AssertionError.class)
@@ -172,6 +176,6 @@ public class ConfirmSyncDataStateMachineTest {
             return null;
         })
                 .when(mSigninManagerMock)
-                .isAccountManaged(anyString(), Matchers.<Callback<Boolean>>any());
+                .isAccountManaged(anyString(), any());
     }
 }

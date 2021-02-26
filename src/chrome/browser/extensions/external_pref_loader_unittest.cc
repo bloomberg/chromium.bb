@@ -4,16 +4,27 @@
 
 #include "chrome/browser/extensions/external_pref_loader.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/sync/driver/test_sync_service.h"
+#include "components/sync/test/model/fake_sync_change_processor.h"
+#include "components/sync/test/model/sync_error_factory_mock.h"
+#include "components/sync_preferences/pref_model_associator.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,8 +78,8 @@ class TestExternalPrefLoader : public ExternalPrefLoader {
         load_callback_(std::move(load_callback)) {}
 
   void LoadOnFileThread() override {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   std::move(load_callback_));
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(load_callback_));
   }
 
  private:
@@ -83,15 +94,24 @@ class ExternalPrefLoaderTest : public testing::Test {
   ExternalPrefLoaderTest() {}
   ~ExternalPrefLoaderTest() override {}
 
-  void SetUp() override { profile_ = std::make_unique<TestingProfile>(); }
+  void SetUp() override {
+    profile_ = std::make_unique<TestingProfile>();
+    sync_service_ = static_cast<TestSyncService*>(
+        ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile(), base::BindRepeating(&TestingSyncFactoryFunction)));
+    sync_service_->SetFirstSetupComplete(true);
+  }
 
   void TearDown() override { profile_.reset(); }
 
-  Profile* profile() { return profile_.get(); }
+  TestingProfile* profile() { return profile_.get(); }
+
+  TestSyncService* sync_service() { return sync_service_; }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
+  TestSyncService* sync_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefLoaderTest);
 };
@@ -102,10 +122,9 @@ class ExternalPrefLoaderTest : public testing::Test {
 // Tests that we fire pref reading correctly after priority sync state
 // is resolved by ExternalPrefLoader.
 TEST_F(ExternalPrefLoaderTest, PrefReadInitiatesCorrectly) {
-  TestSyncService* test_service = static_cast<TestSyncService*>(
-      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(), base::BindRepeating(&TestingSyncFactoryFunction)));
-  test_service->SetFirstSetupComplete(true);
+  // This test is only relevant pre-SplitSettingsSync.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(chromeos::features::kSplitSettingsSync);
 
   base::RunLoop run_loop;
   scoped_refptr<ExternalPrefLoader> loader(
@@ -117,11 +136,96 @@ TEST_F(ExternalPrefLoaderTest, PrefReadInitiatesCorrectly) {
 
   // Initially CanSyncFeatureStart() returns true, returning false will let
   // |loader| proceed.
-  test_service->SetDisableReasons(
+  sync_service()->SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_USER_CHOICE);
-  ASSERT_FALSE(test_service->CanSyncFeatureStart());
-  test_service->FireOnStateChanged();
+  ASSERT_FALSE(sync_service()->CanSyncFeatureStart());
+  sync_service()->FireOnStateChanged();
   run_loop.Run();
+}
+
+class ExternalPrefLoaderSplitSettingsSyncTest : public ExternalPrefLoaderTest {
+ public:
+  ExternalPrefLoaderSplitSettingsSyncTest() {
+    feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+  }
+  ~ExternalPrefLoaderSplitSettingsSyncTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(ExternalPrefLoaderSplitSettingsSyncTest, OsSyncEnabled) {
+  base::RunLoop run_loop;
+  scoped_refptr<ExternalPrefLoader> loader =
+      base::MakeRefCounted<TestExternalPrefLoader>(
+          profile(), run_loop.QuitWhenIdleClosure());
+  ExternalProviderImpl provider(
+      /*service=*/nullptr, loader, profile(), Manifest::INVALID_LOCATION,
+      Manifest::INVALID_LOCATION, Extension::NO_FLAGS);
+  provider.VisitRegisteredExtension();
+
+  PrefService* prefs = profile()->GetPrefs();
+  ASSERT_FALSE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+
+  // Simulate OOBE screen completion with OS sync enabled.
+  sync_service()->GetUserSettings()->SetOsSyncFeatureEnabled(true);
+  prefs->SetBoolean(chromeos::prefs::kSyncOobeCompleted, true);
+
+  // Simulate OS prefs starting to sync.
+  sync_preferences::PrefServiceSyncable* pref_sync =
+      profile()->GetTestingPrefService();
+  // This is an ugly cast, but it's how other tests do it.
+  sync_preferences::PrefModelAssociator* pref_sync_service =
+      static_cast<sync_preferences::PrefModelAssociator*>(
+          pref_sync->GetSyncableService(syncer::OS_PRIORITY_PREFERENCES));
+  pref_sync_service->MergeDataAndStartSyncing(
+      syncer::OS_PRIORITY_PREFERENCES, syncer::SyncDataList(),
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
+
+  run_loop.Run();
+  // |loader| completed loading.
+}
+
+TEST_F(ExternalPrefLoaderSplitSettingsSyncTest, OsSyncDisable) {
+  base::RunLoop run_loop;
+  scoped_refptr<ExternalPrefLoader> loader =
+      base::MakeRefCounted<TestExternalPrefLoader>(
+          profile(), run_loop.QuitWhenIdleClosure());
+  ExternalProviderImpl provider(
+      /*service=*/nullptr, loader, profile(), Manifest::INVALID_LOCATION,
+      Manifest::INVALID_LOCATION, Extension::NO_FLAGS);
+  provider.VisitRegisteredExtension();
+
+  PrefService* prefs = profile()->GetPrefs();
+  ASSERT_FALSE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+
+  // Simulate OOBE screen completion with OS sync disabled.
+  sync_service()->GetUserSettings()->SetOsSyncFeatureEnabled(false);
+  prefs->SetBoolean(chromeos::prefs::kSyncOobeCompleted, true);
+
+  // Loader doesn't need to wait, since OS pref sync is disabled.
+  run_loop.Run();
+  // |loader| completed loading.
+}
+
+TEST_F(ExternalPrefLoaderSplitSettingsSyncTest, SyncDisabledByPolicy) {
+  sync_service()->SetDisableReasons(
+      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+  ASSERT_FALSE(sync_service()->CanSyncFeatureStart());
+
+  base::RunLoop run_loop;
+  scoped_refptr<ExternalPrefLoader> loader =
+      base::MakeRefCounted<TestExternalPrefLoader>(
+          profile(), run_loop.QuitWhenIdleClosure());
+  ExternalProviderImpl provider(
+      /*service=*/nullptr, loader, profile(), Manifest::INVALID_LOCATION,
+      Manifest::INVALID_LOCATION, Extension::NO_FLAGS);
+  provider.VisitRegisteredExtension();
+
+  // Loader doesn't need to wait, because sync will never enable.
+  run_loop.Run();
+  // |loader| completed loading.
 }
 
 }  // namespace extensions

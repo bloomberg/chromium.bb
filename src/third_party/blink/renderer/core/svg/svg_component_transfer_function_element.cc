@@ -20,6 +20,8 @@
 
 #include "third_party/blink/renderer/core/svg/svg_component_transfer_function_element.h"
 
+#include "third_party/blink/renderer/core/svg/svg_animated_number.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number_list.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg/svg_fe_component_transfer_element.h"
 #include "third_party/blink/renderer/core/svg/svg_number_list.h"
@@ -79,7 +81,7 @@ SVGComponentTransferFunctionElement::SVGComponentTransferFunctionElement(
   AddToPropertyMap(type_);
 }
 
-void SVGComponentTransferFunctionElement::Trace(Visitor* visitor) {
+void SVGComponentTransferFunctionElement::Trace(Visitor* visitor) const {
   visitor->Trace(table_values_);
   visitor->Trace(slope_);
   visitor->Trace(intercept_);
@@ -110,7 +112,7 @@ void SVGComponentTransferFunctionElement::SvgAttributeChanged(
 ComponentTransferFunction
 SVGComponentTransferFunctionElement::TransferFunction() const {
   ComponentTransferFunction func;
-  func.type = type_->CurrentValue()->EnumValue();
+  func.type = type_->CurrentEnumValue();
   func.slope = slope_->CurrentValue()->Value();
   func.intercept = intercept_->CurrentValue()->Value();
   func.amplitude = amplitude_->CurrentValue()->Value();

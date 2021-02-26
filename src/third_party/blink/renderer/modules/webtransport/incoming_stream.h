@@ -35,6 +35,12 @@ class MODULES_EXPORT IncomingStream final
   USING_PRE_FINALIZER(IncomingStream, Dispose);
 
  public:
+  enum class State {
+    kOpen,
+    kAborted,
+    kClosed,
+  };
+
   IncomingStream(ScriptState*,
                  base::OnceClosure on_abort,
                  mojo::ScopedDataPipeConsumerHandle);
@@ -68,7 +74,9 @@ class MODULES_EXPORT IncomingStream final
   // Does not execute JavaScript.
   void ContextDestroyed();
 
-  void Trace(Visitor*);
+  State GetState() const { return state_; }
+
+  void Trace(Visitor*) const;
 
  private:
   class UnderlyingSource;
@@ -135,6 +143,8 @@ class MODULES_EXPORT IncomingStream final
   // Promise returned by the |readingAborted| attribute.
   ScriptPromise reading_aborted_;
   Member<ScriptPromiseResolver> reading_aborted_resolver_;
+
+  State state_ = State::kOpen;
 
   // This is set when OnIncomingStreamClosed() is called.
   base::Optional<bool> fin_received_;

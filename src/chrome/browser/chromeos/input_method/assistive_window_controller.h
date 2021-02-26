@@ -8,39 +8,74 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/base/ime/ime_assistive_window_handler_interface.h"
-#include "ui/chromeos/ime/assistive_delegate.h"
-#include "ui/chromeos/ime/suggestion_window_view.h"
-#include "ui/chromeos/ime/undo_window.h"
+#include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
+#include "chrome/browser/chromeos/input_method/ui/assistive_delegate.h"
+#include "chrome/browser/chromeos/input_method/ui/suggestion_window_view.h"
+#include "chrome/browser/chromeos/input_method/ui/undo_window.h"
+#include "content/public/browser/tts_controller.h"
+#include "ui/base/ime/chromeos/ime_assistive_window_handler_interface.h"
 #include "ui/gfx/native_widget_types.h"
+
+class Profile;
 
 namespace views {
 class Widget;
 }  // namespace views
 
 namespace chromeos {
-struct AssistiveWindowProperties;
 
 namespace input_method {
+
+class TtsHandler : public content::UtteranceEventDelegate {
+ public:
+  explicit TtsHandler(Profile* profile);
+  ~TtsHandler() override;
+
+  // Announce |text| after some |delay|. The delay is to avoid conflict with
+  // other ChromeVox announcements. This should be no-op if ChromeVox is not
+  // enabled.
+  void Announce(const std::string& text,
+                const base::TimeDelta delay = base::TimeDelta());
+
+  // UtteranceEventDelegate implementation.
+  void OnTtsEvent(content::TtsUtterance* utterance,
+                  content::TtsEventType event_type,
+                  int char_index,
+                  int length,
+                  const std::string& error_message) override;
+
+ private:
+  virtual void Speak(const std::string& text);
+
+  Profile* const profile_;
+  std::unique_ptr<base::OneShotTimer> delay_timer_;
+};
+
+class AssistiveWindowControllerDelegate;
 
 // AssistiveWindowController controls different assistive windows.
 class AssistiveWindowController : public views::WidgetObserver,
                                   public IMEAssistiveWindowHandlerInterface,
                                   public ui::ime::AssistiveDelegate {
  public:
-  AssistiveWindowController();
+  explicit AssistiveWindowController(
+      AssistiveWindowControllerDelegate* delegate,
+      Profile* profile,
+      std::unique_ptr<TtsHandler> tts_handler = nullptr);
   ~AssistiveWindowController() override;
 
   ui::ime::SuggestionWindowView* GetSuggestionWindowViewForTesting();
+  ui::ime::UndoWindow* GetUndoWindowForTesting() const;
 
  private:
   // IMEAssistiveWindowHandlerInterface implementation.
-  void SetBounds(const gfx::Rect& cursor_bounds) override;
+  void SetBounds(const Bounds& bounds) override;
   void SetAssistiveWindowProperties(
       const AssistiveWindowProperties& window) override;
-  void ShowSuggestion(const base::string16& text,
-                      const size_t confirmed_length,
-                      const bool show_tab) override;
+  void ShowSuggestion(const ui::ime::SuggestionDetails& details) override;
+  void SetButtonHighlighted(const ui::ime::AssistiveWindowButton& button,
+                            bool highlighted) override;
+  void AcceptSuggestion(const base::string16& suggestion) override;
   void HideSuggestion() override;
   base::string16 GetSuggestionText() const override;
   size_t GetConfirmedLength() const override;
@@ -48,16 +83,21 @@ class AssistiveWindowController : public views::WidgetObserver,
   void OnWidgetClosing(views::Widget* widget) override;
 
   // ui::ime::AssistiveDelegate implementation.
-  void AssistiveWindowClicked(ui::ime::ButtonId id,
-                              ui::ime::AssistiveWindowType type) override;
+  void AssistiveWindowButtonClicked(
+      const ui::ime::AssistiveWindowButton& button) const override;
 
   void InitSuggestionWindow();
   void InitUndoWindow();
 
+  const AssistiveWindowControllerDelegate* delegate_;
+  // The handler to handle Text-to-Speech (TTS) request.
+  std::unique_ptr<TtsHandler> const tts_handler_;
+  AssistiveWindowProperties window_;
   ui::ime::SuggestionWindowView* suggestion_window_view_ = nullptr;
   ui::ime::UndoWindow* undo_window_ = nullptr;
   base::string16 suggestion_text_;
   size_t confirmed_length_ = 0;
+  Bounds bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistiveWindowController);
 };

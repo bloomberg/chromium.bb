@@ -146,9 +146,15 @@ export class LayersPanel extends UI.Panel.PanelWithSidebar {
   _update() {
     if (this._model) {
       this._layerViewHost.setLayerTree(this._model.layerTree());
-      const url = this._model.target().model(SDK.ResourceTreeModel.ResourceTreeModel).mainFrame.url;
-      // Add the currently visualized url as an attribute to make it accessibles to e2e tests
-      this.element.setAttribute('test-current-url', url);
+      const resourceModel = this._model.target().model(SDK.ResourceTreeModel.ResourceTreeModel);
+      if (resourceModel) {
+        const mainFrame = resourceModel.mainFrame;
+        if (mainFrame) {
+          const url = mainFrame.url;
+          // Add the currently visualized url as an attribute to make it accessibles to e2e tests
+          this.element.setAttribute('test-current-url', url);
+        }
+      }
     }
     return Promise.resolve();
   }
@@ -161,7 +167,8 @@ export class LayersPanel extends UI.Panel.PanelWithSidebar {
       return;
     }
     const layer = /** @type {!SDK.LayerTreeBase.Layer} */ (event.data);
-    if (this._layerViewHost.selection() && this._layerViewHost.selection().layer() === layer) {
+    const selection = this._layerViewHost.selection();
+    if (selection && selection.layer() === layer) {
       this._layerDetailsView.update();
     }
     this._layers3DView.updateLayerSnapshot(layer);
@@ -203,7 +210,9 @@ export class LayersPanel extends UI.Panel.PanelWithSidebar {
    * @param {string=} imageURL
    */
   _showImage(imageURL) {
-    this._layers3DView.showImageForLayer(this._layerBeingProfiled, imageURL);
+    if (this._layerBeingProfiled) {
+      this._layers3DView.showImageForLayer(this._layerBeingProfiled, imageURL);
+    }
   }
 
   /**

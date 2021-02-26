@@ -49,11 +49,12 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     auto common_params = CreateCommonNavigationParams();
     auto commit_params = CreateCommitNavigationParams();
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-        std::move(common_params), std::move(commit_params), 1 /* request_id */,
+        std::move(common_params), std::move(commit_params), /*request_id=*/1,
         network::mojom::URLResponseHead::New(),
         std::move(data_pipe_->consumer_handle), std::move(endpoints),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-        2 /* render_frame_id */, true /* is_main_frame */, &navigation_params);
+        /*render_frame_impl=*/nullptr, /*is_main_frame=*/true,
+        &navigation_params);
     loader_ = std::move(navigation_params.body_loader);
   }
 
@@ -109,8 +110,8 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     }
     if (toggle_defers_loading_) {
       toggle_defers_loading_ = false;
-      loader_->SetDefersLoading(false);
-      loader_->SetDefersLoading(true);
+      loader_->SetDefersLoading(blink::WebURLLoader::DeferType::kNotDeferred);
+      loader_->SetDefersLoading(blink::WebURLLoader::DeferType::kDeferred);
     }
     if (destroy_loader_) {
       destroy_loader_ = false;
@@ -170,8 +171,8 @@ class NavigationBodyLoaderTest : public ::testing::Test,
 
 TEST_F(NavigationBodyLoaderTest, SetDefersBeforeStart) {
   CreateBodyLoader();
-  loader_->SetDefersLoading(true);
-  loader_->SetDefersLoading(false);
+  loader_->SetDefersLoading(blink::WebURLLoader::DeferType::kDeferred);
+  loader_->SetDefersLoading(blink::WebURLLoader::DeferType::kNotDeferred);
   // Should not crash.
 }
 
@@ -216,11 +217,23 @@ TEST_F(NavigationBodyLoaderTest, SetDefersLoadingFromDataReceived) {
 
 TEST_F(NavigationBodyLoaderTest, StartDeferred) {
   CreateBodyLoader();
-  loader_->SetDefersLoading(true);
+  loader_->SetDefersLoading(blink::WebURLLoader::DeferType::kDeferred);
   StartLoading();
   Write("hello");
   ExpectDataReceived();
-  loader_->SetDefersLoading(false);
+  loader_->SetDefersLoading(blink::WebURLLoader::DeferType::kNotDeferred);
+  Wait();
+  EXPECT_EQ("hello", TakeDataReceived());
+}
+
+TEST_F(NavigationBodyLoaderTest, StartDeferredWithBackForwardCache) {
+  CreateBodyLoader();
+  loader_->SetDefersLoading(
+      blink::WebURLLoader::DeferType::kDeferredWithBackForwardCache);
+  StartLoading();
+  Write("hello");
+  ExpectDataReceived();
+  loader_->SetDefersLoading(blink::WebURLLoader::DeferType::kNotDeferred);
   Wait();
   EXPECT_EQ("hello", TakeDataReceived());
 }
@@ -321,10 +334,11 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
       mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
   ASSERT_EQ(MOJO_RESULT_OK, rv);
   NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-      std::move(common_params), std::move(commit_params), 1 /* request_id */,
+      std::move(common_params), std::move(commit_params), /*request_id=*/1,
       std::move(response), std::move(consumer_handle), std::move(endpoints),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-      2 /* render_frame_id */, true /* is_main_frame */, &navigation_params);
+      /*render_frame_impl=*/nullptr, /*is_main_frame=*/true,
+      &navigation_params);
   EXPECT_TRUE(
       navigation_params.response.SecurityDetailsForTesting().has_value());
 }

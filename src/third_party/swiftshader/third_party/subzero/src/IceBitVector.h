@@ -768,8 +768,10 @@ private:
     Capacity = std::max(NumBitWords(NewSize), Capacity * 2);
     assert(Capacity > 0 && "realloc-ing zero space");
     auto *NewBits = Alloc.allocate(Capacity);
-    std::memcpy(Bits, NewBits, OldCapacity * sizeof(BitWord));
-    Alloc.deallocate(Bits, OldCapacity);
+    if (Bits) {
+      std::memcpy(NewBits, Bits, OldCapacity * sizeof(BitWord));
+      Alloc.deallocate(Bits, OldCapacity);
+    }
     Bits = NewBits;
 
     clear_unused_bits();
@@ -823,6 +825,6 @@ template <template <typename> class AT>
 inline void swap(Ice::BitVectorTmpl<AT> &LHS, Ice::BitVectorTmpl<AT> &RHS) {
   LHS.swap(RHS);
 }
-}
+} // namespace std
 
 #endif // SUBZERO_SRC_ICEBITVECTOR_H

@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/renderer_host/navigation_request.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -23,7 +23,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/mojom/referrer.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/referrer.mojom-forward.h"
 #include "url/gurl.h"
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
@@ -71,9 +71,6 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void Commit() override;
   void AbortCommit() override;
   void AbortFromRenderer() override;
-  void FailWithResponseHeaders(
-      int error_code,
-      scoped_refptr<net::HttpResponseHeaders> response_headers) override;
   void Fail(int error_code) override;
   void CommitErrorPage() override;
   void CommitSameDocument() override;
@@ -97,6 +94,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver)
       override;
   void SetContentsMimeType(const std::string& contents_mime_type) override;
+  void SetResponseHeaders(
+      scoped_refptr<net::HttpResponseHeaders> response_headers) override;
   void SetAutoAdvance(bool auto_advance) override;
   void SetResolveErrorInfo(
       const net::ResolveErrorInfo& resolve_error_info) override;
@@ -165,7 +164,9 @@ class NavigationSimulatorImpl : public NavigationSimulator,
         block_invoking_before_unload_completed_callback;
   }
 
-  void set_page_state(const PageState& page_state) { page_state_ = page_state; }
+  void set_page_state(const blink::PageState& page_state) {
+    page_state_ = page_state;
+  }
 
   void set_origin(const url::Origin& origin) { origin_ = origin; }
 
@@ -303,13 +304,14 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker_receiver_;
   std::string contents_mime_type_;
+  scoped_refptr<net::HttpResponseHeaders> response_headers_;
   network::mojom::CSPDisposition should_check_main_world_csp_ =
       network::mojom::CSPDisposition::CHECK;
   net::HttpResponseInfo::ConnectionInfo http_connection_info_ =
       net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN;
   net::ResolveErrorInfo resolve_error_info_ = net::ResolveErrorInfo(net::OK);
   base::Optional<net::SSLInfo> ssl_info_;
-  base::Optional<PageState> page_state_;
+  base::Optional<blink::PageState> page_state_;
   base::Optional<url::Origin> origin_;
   base::Optional<Impression> impression_;
   int64_t post_id_ = -1;

@@ -28,22 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import {VBox} from './Widget.js';
 import {XLink} from './XLink.js';
 
-/**
- * @unrestricted
- */
+
 export class EmptyWidget extends VBox {
   /**
    * @param {string} text
    */
   constructor(text) {
     super();
-    this.registerRequiredCSS('ui/emptyWidget.css');
+    this.registerRequiredCSS('ui/emptyWidget.css', {enableLegacyPatching: true});
     this.element.classList.add('empty-view-scroller');
     this._contentElement = this.element.createChild('div', 'empty-view');
     this._textElement = this._contentElement.createChild('div', 'empty-bold-text');
@@ -62,7 +57,7 @@ export class EmptyWidget extends VBox {
    * @return {!Node}
    */
   appendLink(link) {
-    return this._contentElement.appendChild(XLink.create(link, 'Learn more'));
+    return this._contentElement.appendChild(XLink.create(link, ls`Learn more`));
   }
 
   /**

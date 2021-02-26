@@ -147,18 +147,14 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // conflict with positive-numbered node IDs from tree sources.
   int32_t GetNextNegativeInternalNodeId();
 
-  // Returns the pos_in_set of node. Looks in node_set_size_pos_in_set_info_map_
-  // for cached value. Calculates pos_in_set and set_size for node (and all
-  // other nodes in the same ordered set) if no value is present in the cache.
-  // This function is guaranteed to be only called on nodes that can hold
-  // pos_in_set values, minimizing the size of the cache.
-  int32_t GetPosInSet(const AXNode& node, const AXNode* ordered_set) override;
-  // Returns the set_size of node. Looks in node_set_size_pos_in_set_info_map_
-  // for cached value. Calculates pos_inset_set and set_size for node (and all
-  // other nodes in the same ordered set) if no value is present in the cache.
-  // This function is guaranteed to be only called on nodes that can hold
-  // set_size values, minimizing the size of the cache.
-  int32_t GetSetSize(const AXNode& node, const AXNode* ordered_set) override;
+  // Returns the PosInSet of |node|. Looks in node_set_size_pos_in_set_info_map_
+  // for cached value. Calls |ComputeSetSizePosInSetAndCache|if no value is
+  // present in the cache.
+  base::Optional<int> GetPosInSet(const AXNode& node) override;
+  // Returns the SetSize of |node|. Looks in node_set_size_pos_in_set_info_map_
+  // for cached value. Calls |ComputeSetSizePosInSetAndCache|if no value is
+  // present in the cache.
+  base::Optional<int> GetSetSize(const AXNode& node) override;
 
   Selection GetUnignoredSelection() const override;
 
@@ -174,8 +170,17 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   //                  When should we initialize this?
   std::unique_ptr<AXLanguageDetectionManager> language_detection_manager;
 
+  // A list of intents active during a tree update/unserialization.
+  const std::vector<AXEventIntent>& event_intents() const {
+    return event_intents_;
+  }
+
  private:
   friend class AXTableInfoTest;
+
+  // Accumulate errors as there can be more than one before Chrome is crashed
+  // via AccessibilityFatalError();
+  void RecordError(std::string new_error);
 
   // AXNode::OwnerTree override.
   //
@@ -332,8 +337,8 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
     NodeSetSizePosInSetInfo();
     ~NodeSetSizePosInSetInfo();
 
-    int32_t pos_in_set = 0;
-    int32_t set_size = 0;
+    base::Optional<int> pos_in_set;
+    base::Optional<int> set_size;
     base::Optional<int> lowest_hierarchical_level;
   };
 
@@ -388,6 +393,8 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   // Indicates if the tree represents a paginated document
   bool has_pagination_support_ = false;
+
+  std::vector<AXEventIntent> event_intents_;
 };
 
 }  // namespace ui

@@ -7,8 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -20,9 +22,9 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
@@ -41,6 +43,47 @@ WindowPerformance* GetPerformanceInstance(LocalFrame* frame) {
 
 }  // namespace
 
+class RecodingTimeAfterBackForwardCacheRestoreFrameCallback
+    : public FrameCallback {
+ public:
+  RecodingTimeAfterBackForwardCacheRestoreFrameCallback(
+      PaintTiming* paint_timing,
+      size_t record_index)
+      : paint_timing_(paint_timing), record_index_(record_index) {}
+  ~RecodingTimeAfterBackForwardCacheRestoreFrameCallback() override = default;
+
+  void Invoke(double high_res_time_ms) override {
+    // Instead of |high_res_time_ms|, use PaintTiming's |clock_->NowTicks()| for
+    // consistency and testability.
+    paint_timing_->SetRequestAnimationFrameAfterBackForwardCacheRestore(
+        record_index_, count_);
+
+    count_++;
+    if (count_ ==
+        WebPerformance::
+            kRequestAnimationFramesToRecordAfterBackForwardCacheRestore) {
+      paint_timing_->NotifyPaintTimingChanged();
+      return;
+    }
+
+    if (auto* frame = paint_timing_->GetFrame()) {
+      if (auto* document = frame->GetDocument()) {
+        document->RequestAnimationFrame(this);
+      }
+    }
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(paint_timing_);
+    FrameCallback::Trace(visitor);
+  }
+
+ private:
+  Member<PaintTiming> paint_timing_;
+  const size_t record_index_;
+  size_t count_ = 0;
+};
+
 // static
 const char PaintTiming::kSupplementName[] = "PaintTiming";
 
@@ -55,7 +98,7 @@ PaintTiming& PaintTiming::From(Document& document) {
 }
 
 void PaintTiming::MarkFirstPaint() {
-  // Test that m_firstPaint is non-zero here, as well as in setFirstPaint, so
+  // Test that |first_paint_| is non-zero here, as well as in setFirstPaint, so
   // we avoid invoking monotonicallyIncreasingTime() on every call to
   // markFirstPaint().
   if (!first_paint_.is_null())
@@ -64,7 +107,7 @@ void PaintTiming::MarkFirstPaint() {
 }
 
 void PaintTiming::MarkFirstContentfulPaint() {
-  // Test that m_firstContentfulPaint is non-zero here, as well as in
+  // Test that |first_contentful_paint_| is non-zero here, as well as in
   // setFirstContentfulPaint, so we avoid invoking
   // monotonicallyIncreasingTime() on every call to
   // markFirstContentfulPaint().
@@ -79,6 +122,26 @@ void PaintTiming::MarkFirstImagePaint() {
   first_image_paint_ = clock_->NowTicks();
   SetFirstContentfulPaint(first_image_paint_);
   RegisterNotifySwapTime(PaintEvent::kFirstImagePaint);
+}
+
+void PaintTiming::MarkFirstEligibleToPaint() {
+  if (!first_eligible_to_paint_.is_null())
+    return;
+
+  first_eligible_to_paint_ = clock_->NowTicks();
+  NotifyPaintTimingChanged();
+}
+
+// We deliberately use |first_paint_| here rather than |first_paint_swap_|,
+// because |first_paint_swap_| is set asynchronously and we need to be able to
+// rely on a synchronous check that SetFirstPaintSwap hasn't been scheduled or
+// run.
+void PaintTiming::MarkIneligibleToPaint() {
+  if (first_eligible_to_paint_.is_null() || !first_paint_.is_null())
+    return;
+
+  first_eligible_to_paint_ = base::TimeTicks();
+  NotifyPaintTimingChanged();
 }
 
 void PaintTiming::SetFirstMeaningfulPaintCandidate(base::TimeTicks timestamp) {
@@ -120,11 +183,22 @@ void PaintTiming::NotifyPaint(bool is_first_paint,
   fmp_detector_->NotifyPaint();
 }
 
+void PaintTiming::OnPortalActivate() {
+  last_portal_activated_swap_ = base::TimeTicks();
+  RegisterNotifySwapTime(PaintEvent::kPortalActivatedPaint);
+}
+
+void PaintTiming::SetPortalActivatedPaint(base::TimeTicks stamp) {
+  DCHECK(last_portal_activated_swap_.is_null());
+  last_portal_activated_swap_ = stamp;
+  NotifyPaintTimingChanged();
+}
+
 void PaintTiming::SetTickClockForTesting(const base::TickClock* clock) {
   clock_ = clock;
 }
 
-void PaintTiming::Trace(Visitor* visitor) {
+void PaintTiming::Trace(Visitor* visitor) const {
   visitor->Trace(fmp_detector_);
   Supplement<Document>::Trace(visitor);
 }
@@ -146,6 +220,15 @@ void PaintTiming::NotifyPaintTimingChanged() {
 void PaintTiming::SetFirstPaint(base::TimeTicks stamp) {
   if (!first_paint_.is_null())
     return;
+
+  LocalFrame* frame = GetFrame();
+  if (frame && frame->GetDocument()) {
+    Document* document = frame->GetDocument();
+    document->MarkFirstPaint();
+    if (frame->IsMainFrame())
+      document->Fetcher()->MarkFirstPaint();
+  }
+
   first_paint_ = stamp;
   RegisterNotifySwapTime(PaintEvent::kFirstPaint);
 }
@@ -163,6 +246,9 @@ void PaintTiming::SetFirstContentfulPaint(base::TimeTicks stamp) {
     return;
   frame->View()->OnFirstContentfulPaint();
 
+  if (frame->GetDocument() && frame->GetDocument()->Fetcher())
+    frame->GetDocument()->Fetcher()->MarkFirstContentfulPaint();
+
   if (frame->GetFrameScheduler())
     frame->GetFrameScheduler()->OnFirstContentfulPaint();
 }
@@ -171,6 +257,13 @@ void PaintTiming::RegisterNotifySwapTime(PaintEvent event) {
   RegisterNotifySwapTime(
       CrossThreadBindOnce(&PaintTiming::ReportSwapTime,
                           WrapCrossThreadWeakPersistent(this), event));
+}
+
+void PaintTiming::RegisterNotifyFirstPaintAfterBackForwardCacheRestoreSwapTime(
+    size_t index) {
+  RegisterNotifySwapTime(CrossThreadBindOnce(
+      &PaintTiming::ReportFirstPaintAfterBackForwardCacheRestoreSwapTime,
+      WrapCrossThreadWeakPersistent(this), index));
 }
 
 void PaintTiming::RegisterNotifySwapTime(ReportTimeCallback callback) {
@@ -210,9 +303,21 @@ void PaintTiming::ReportSwapTime(PaintEvent event,
     case PaintEvent::kFirstImagePaint:
       SetFirstImagePaintSwap(timestamp);
       return;
+    case PaintEvent::kPortalActivatedPaint:
+      SetPortalActivatedPaint(timestamp);
+      return;
     default:
       NOTREACHED();
   }
+}
+
+void PaintTiming::ReportFirstPaintAfterBackForwardCacheRestoreSwapTime(
+    size_t index,
+    WebSwapResult result,
+    base::TimeTicks timestamp) {
+  DCHECK(IsMainThread());
+  ReportSwapResultHistogram(result);
+  SetFirstPaintAfterBackForwardCacheRestoreSwap(timestamp, index);
 }
 
 void PaintTiming::SetFirstPaintSwap(base::TimeTicks stamp) {
@@ -261,12 +366,70 @@ void PaintTiming::SetFirstImagePaintSwap(base::TimeTicks stamp) {
   NotifyPaintTimingChanged();
 }
 
+void PaintTiming::SetFirstPaintAfterBackForwardCacheRestoreSwap(
+    base::TimeTicks stamp,
+    size_t index) {
+  // The elements are allocated when the page is restored from the cache.
+  DCHECK_GE(first_paints_after_back_forward_cache_restore_swap_.size(), index);
+  DCHECK(first_paints_after_back_forward_cache_restore_swap_[index].is_null());
+  first_paints_after_back_forward_cache_restore_swap_[index] = stamp;
+  NotifyPaintTimingChanged();
+}
+
+void PaintTiming::SetRequestAnimationFrameAfterBackForwardCacheRestore(
+    size_t index,
+    size_t count) {
+  auto now = clock_->NowTicks();
+
+  // The elements are allocated when the page is restored from the cache.
+  DCHECK_LT(index,
+            request_animation_frames_after_back_forward_cache_restore_.size());
+  auto& current_rafs =
+      request_animation_frames_after_back_forward_cache_restore_[index];
+  DCHECK_LT(count, current_rafs.size());
+  DCHECK_EQ(current_rafs[count], base::TimeTicks());
+  current_rafs[count] = now;
+}
+
 void PaintTiming::ReportSwapResultHistogram(WebSwapResult result) {
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, did_swap_histogram,
-      ("PageLoad.Internal.Renderer.PaintTiming.SwapResult",
-       static_cast<uint32_t>(WebSwapResult::kSwapResultLast) + 1));
-  did_swap_histogram.Count(static_cast<uint32_t>(result));
+  UMA_HISTOGRAM_ENUMERATION("PageLoad.Internal.Renderer.PaintTiming.SwapResult",
+                            result);
+}
+
+void PaintTiming::OnRestoredFromBackForwardCache() {
+  // Allocate the last element with 0, which indicates that the first paint
+  // after this navigation doesn't happen yet.
+  size_t index = first_paints_after_back_forward_cache_restore_swap_.size();
+  DCHECK_EQ(index,
+            request_animation_frames_after_back_forward_cache_restore_.size());
+
+  first_paints_after_back_forward_cache_restore_swap_.push_back(
+      base::TimeTicks());
+  RegisterNotifyFirstPaintAfterBackForwardCacheRestoreSwapTime(index);
+
+  request_animation_frames_after_back_forward_cache_restore_.push_back(
+      RequestAnimationFrameTimesAfterBackForwardCacheRestore{});
+
+  LocalFrame* frame = GetFrame();
+  if (!frame->IsMainFrame()) {
+    return;
+  }
+
+  Document* document = frame->GetDocument();
+  DCHECK(document);
+
+  // Cancel if there is already a registered callback.
+  if (raf_after_bfcache_restore_measurement_callback_id_) {
+    document->CancelAnimationFrame(
+        raf_after_bfcache_restore_measurement_callback_id_);
+    raf_after_bfcache_restore_measurement_callback_id_ = 0;
+  }
+
+  raf_after_bfcache_restore_measurement_callback_id_ =
+      document->RequestAnimationFrame(
+          MakeGarbageCollected<
+              RecodingTimeAfterBackForwardCacheRestoreFrameCallback>(this,
+                                                                     index));
 }
 
 }  // namespace blink

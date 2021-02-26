@@ -3,146 +3,85 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {isMac, isWindows, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {ClearBrowsingDataBrowserProxyImpl, CookieControlsMode, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Router, routes, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
-import {TestClearBrowsingDataBrowserProxy} from 'chrome://test/settings/test_clear_browsing_data_browser_proxy.js';
-import {TestHatsBrowserProxy} from 'chrome://test/settings/test_hats_browser_proxy.js';
-import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
-import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
-import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
-import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-import {flushTasks, isChildVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
+import {ClearBrowsingDataBrowserProxyImpl, ContentSettingsTypes, CookieControlsMode, SafeBrowsingSetting, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Route, Router, routes, SecureDnsMode, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {flushTasks, isChildVisible, isVisible} from '../test_util.m.js';
+
+import {TestClearBrowsingDataBrowserProxy} from './test_clear_browsing_data_browser_proxy.js';
+import {TestHatsBrowserProxy} from './test_hats_browser_proxy.js';
+import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
+import {TestPrivacyPageBrowserProxy} from './test_privacy_page_browser_proxy.js';
+import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
+import {TestSyncBrowserProxy} from './test_sync_browser_proxy.m.js';
 
 // clang-format on
 
-suite('PrivacyPageUMACheck', function() {
-  /** @type {TestPrivacyPageBrowserProxy} */
-  let testBrowserProxy;
+/** @type {!Array<!Route>} */
+const redesignedPages = [
+  routes.SITE_SETTINGS_ADS,
+  routes.SITE_SETTINGS_AR,
+  routes.SITE_SETTINGS_AUTOMATIC_DOWNLOADS,
+  routes.SITE_SETTINGS_BACKGROUND_SYNC,
+  routes.SITE_SETTINGS_CAMERA,
+  routes.SITE_SETTINGS_CLIPBOARD,
+  routes.SITE_SETTINGS_IMAGES,
+  routes.SITE_SETTINGS_JAVASCRIPT,
+  routes.SITE_SETTINGS_LOCATION,
+  routes.SITE_SETTINGS_MICROPHONE,
+  routes.SITE_SETTINGS_MIDI_DEVICES,
+  routes.SITE_SETTINGS_NOTIFICATIONS,
+  routes.SITE_SETTINGS_POPUPS,
+  routes.SITE_SETTINGS_SENSORS,
+  routes.SITE_SETTINGS_SERIAL_PORTS,
+  routes.SITE_SETTINGS_SOUND,
+  routes.SITE_SETTINGS_USB_DEVICES,
+  routes.SITE_SETTINGS_VR,
 
-  /** @type {TestMetricsBrowserProxy} */
-  let testMetricsBrowserProxy;
+  // TODO(crbug.com/1128902) After restructure add coverage for elements on
+  // routes which depend on flags being enabled.
+  // routes.SITE_SETTINGS_FILE_SYSTEM_WRITE,
+  // routes.SITE_SETTINGS_PAYMENT_HANDLER,
 
-  /** @type {SettingsPrivacyPageElement} */
-  let page;
+  // Doesn't contain toggle or radio buttons
+  // routes.SITE_SETTINGS_ZOOM_LEVELS,
+];
 
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
-    });
-  });
+/** @type {!Array<!Route>} */
+const notRedesignedPages = [
+  routes.SITE_SETTINGS_HID_DEVICES,
 
-  setup(function() {
-    testMetricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
-    testBrowserProxy = new TestPrivacyPageBrowserProxy();
-    PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
-    const testSyncBrowserProxy = new TestSyncBrowserProxy();
-    SyncBrowserProxyImpl.instance_ = testSyncBrowserProxy;
-    PolymerTest.clearBody();
-    page = document.createElement('settings-privacy-page');
-    page.prefs = {
-      profile: {password_manager_leak_detection: {value: true}},
-      signin: {
-        allowed_on_next_startup:
-            {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
-      },
-      safebrowsing: {
-        enabled: {value: true},
-        scout_reporting_enabled: {value: true},
-        enhanced: {value: false}
-      },
-    };
-    document.body.appendChild(page);
-    flush();
-  });
-
-  teardown(function() {
-    page.remove();
-  });
-
-  test('LogAllPrivacyPageClicks', async function() {
-    page.$$('#manageCertificates').click();
-    let result =
-        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
-
-    Router.getInstance().navigateTo(routes.PRIVACY);
-    testMetricsBrowserProxy.reset();
-
-    page.$$('#canMakePaymentToggle').click();
-    result =
-        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(PrivacyElementInteractions.PAYMENT_METHOD, result);
-
-    Router.getInstance().navigateTo(routes.PRIVACY);
-    testMetricsBrowserProxy.reset();
-
-    page.$$('#safeBrowsingToggle').click();
-    result =
-        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(PrivacyElementInteractions.SAFE_BROWSING, result);
-  });
-
-  test('LogSafeBrowsingReportingToggleClick', function() {
-    page.$$('#safeBrowsingReportingToggle').click();
-    return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
-        .then(result => {
-          assertEquals(PrivacyElementInteractions.IMPROVE_SECURITY, result);
-        });
-  });
-});
-
-suite('NativeCertificateManager', function() {
-  /** @type {TestPrivacyPageBrowserProxy} */
-  let testBrowserProxy;
-
-  /** @type {SettingsPrivacyPageElement} */
-  let page;
-
-  suiteSetup(function() {
-    assertTrue(isMac || isWindows);
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
-    });
-  });
-
-  setup(function() {
-    testBrowserProxy = new TestPrivacyPageBrowserProxy();
-    PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
-    PolymerTest.clearBody();
-    page = document.createElement('settings-privacy-page');
-    document.body.appendChild(page);
-  });
-
-  teardown(function() {
-    page.remove();
-  });
-
-  test('NativeCertificateManager', function() {
-    page.$$('#manageCertificates').click();
-    return testBrowserProxy.whenCalled('showManageSSLCertificates');
-  });
-});
+  // Content settings that depend on flags being enabled.
+  // routes.SITE_SETTINGS_BLUETOOTH_SCANNING,
+  // routes.SITE_SETTINGS_BLUETOOTH_DEVICES,
+  // routes.SITE_SETTINGS_WINDOW_PLACEMENT,
+  // routes.SITE_SETTINGS_FONT_ACCESS,
+];
 
 suite('PrivacyPage', function() {
-  /** @type {SettingsPrivacyPageElement} */
+  /** @type {!SettingsPrivacyPageElement} */
   let page;
 
-  /** @type {TestClearBrowsingDataBrowserProxy} */
+  /** @type {!TestClearBrowsingDataBrowserProxy} */
   let testClearBrowsingDataBrowserProxy;
+
+  /** @type {!TestSiteSettingsPrefsBrowserProxy}*/
+  let siteSettingsBrowserProxy;
+
+  /** @type {!Array<string>} */
+  const testLabels = ['test label 1', 'test label 2'];
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
+      enableContentSettingsRedesign: false,
     });
   });
 
   setup(async function() {
-    PolymerTest.clearBody();
-
     testClearBrowsingDataBrowserProxy = new TestClearBrowsingDataBrowserProxy();
     ClearBrowsingDataBrowserProxyImpl.instance_ =
         testClearBrowsingDataBrowserProxy;
@@ -150,8 +89,13 @@ suite('PrivacyPage', function() {
     PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
     const testSyncBrowserProxy = new TestSyncBrowserProxy();
     SyncBrowserProxyImpl.instance_ = testSyncBrowserProxy;
+    siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
+    siteSettingsBrowserProxy.setCookieSettingDescription(testLabels[0]);
 
-    page = document.createElement('settings-privacy-page');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsPrivacyPageElement} */
+        (document.createElement('settings-privacy-page'));
     page.prefs = {
       profile: {password_manager_leak_detection: {value: true}},
       signin: {
@@ -163,6 +107,8 @@ suite('PrivacyPage', function() {
         scout_reporting_enabled: {value: true},
         enhanced: {value: false}
       },
+      dns_over_https:
+          {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
     };
     document.body.appendChild(page);
     return testSyncBrowserProxy.whenCalled('getSyncStatus');
@@ -182,120 +128,6 @@ suite('PrivacyPage', function() {
     assertTrue(!!dialog);
   });
 
-  test('safeBrowsingReportingToggle', function() {
-    const safeBrowsingToggle = page.$$('#safeBrowsingToggle');
-    const safeBrowsingReportingToggle = page.$$('#safeBrowsingReportingToggle');
-    assertTrue(safeBrowsingToggle.checked);
-    assertFalse(safeBrowsingReportingToggle.disabled);
-    assertTrue(safeBrowsingReportingToggle.checked);
-    safeBrowsingToggle.click();
-    flush();
-
-    assertFalse(safeBrowsingToggle.checked);
-    assertTrue(safeBrowsingReportingToggle.disabled);
-    assertFalse(safeBrowsingReportingToggle.checked);
-    assertTrue(page.prefs.safebrowsing.scout_reporting_enabled.value);
-    safeBrowsingToggle.click();
-    flush();
-
-    assertTrue(safeBrowsingToggle.checked);
-    assertFalse(safeBrowsingReportingToggle.disabled);
-    assertTrue(safeBrowsingReportingToggle.checked);
-  });
-
-  test('ElementVisibility', async function() {
-    await flushTasks();
-    assertFalse(isChildVisible(page, '#cookiesLinkRow'));
-    assertFalse(isChildVisible(page, '#securityLinkRow'));
-    assertFalse(isChildVisible(page, '#permissionsLinkRow'));
-
-    assertTrue(isChildVisible(page, '#clearBrowsingData'));
-    assertTrue(isChildVisible(page, '#site-settings-subpage-trigger'));
-    assertTrue(isChildVisible(page, '#moreExpansion'));
-
-    page.$$('#moreExpansion').click();
-
-    assertTrue(isChildVisible(page, '#safeBrowsingToggle'));
-    assertTrue(isChildVisible(page, '#passwordsLeakDetectionToggle'));
-    assertTrue(isChildVisible(page, '#safeBrowsingReportingToggle'));
-    assertTrue(isChildVisible(page, '#doNotTrack'));
-    assertTrue(isChildVisible(page, '#canMakePaymentToggle'));
-    if (loadTimeData.getBoolean('enableSecurityKeysSubpage')) {
-      assertTrue(isChildVisible(page, '#security-keys-subpage-trigger'));
-    }
-  });
-
-  test('BlockThirdPartyCookiesToggle', async function() {
-    page.prefs.profile.block_third_party_cookies = {value: false};
-    page.prefs.profile.cookie_controls_mode = {value: CookieControlsMode.OFF};
-    Router.getInstance().navigateTo(routes.SITE_SETTINGS_COOKIES);
-    flush();
-
-    page.$$('#blockThirdPartyCookies').click();
-    flush();
-    assertTrue(page.prefs.profile.block_third_party_cookies.value);
-    assertEquals(
-        page.prefs.profile.cookie_controls_mode.value,
-        CookieControlsMode.BLOCK_THIRD_PARTY);
-
-    page.$$('#blockThirdPartyCookies').click();
-    flush();
-    assertFalse(page.prefs.profile.block_third_party_cookies.value);
-    assertEquals(
-        page.prefs.profile.cookie_controls_mode.value, CookieControlsMode.OFF);
-  });
-});
-
-suite('PrivacyPageRedesignEnabled', function() {
-  /** @type {SettingsPrivacyPageElement} */
-  let page;
-
-  /** @type {TestSiteSettingsPrefsBrowserProxy}*/
-  let siteSettingsBrowserProxy = null;
-
-  /** @type {Array<string>} */
-  const testLabels = ['test label 1', 'test label 2'];
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: true,
-    });
-  });
-
-  setup(function() {
-    siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
-    siteSettingsBrowserProxy.setCookieSettingDescription(testLabels[0]);
-    PolymerTest.clearBody();
-    page = document.createElement('settings-privacy-page');
-    document.body.appendChild(page);
-    return flushTasks();
-  });
-
-  teardown(function() {
-    page.remove();
-  });
-
-  test('ElementVisibility', function() {
-    assertTrue(isChildVisible(page, '#clearBrowsingData'));
-    assertTrue(isChildVisible(page, '#cookiesLinkRow'));
-    assertTrue(isChildVisible(page, '#securityLinkRow'));
-    assertTrue(isChildVisible(page, '#permissionsLinkRow'));
-
-    ['#site-settings-subpage-trigger',
-     '#moreExpansion',
-     '#safeBrowsingToggle',
-     '#passwordsLeakDetectionToggle',
-     '#safeBrowsingToggle',
-     '#safeBrowsingReportingToggle',
-     '#doNotTrack',
-     '#canMakePaymentToggle',
-     '#security-keys-subpage-trigger',
-    ].forEach(selector => {
-      assertFalse(isChildVisible(page, selector));
-    });
-  });
-
   test('CookiesLinkRowSublabel', async function() {
     await siteSettingsBrowserProxy.whenCalled('getCookieSettingDescription');
     flush();
@@ -304,13 +136,87 @@ suite('PrivacyPageRedesignEnabled', function() {
     webUIListenerCallback('cookieSettingDescriptionChanged', testLabels[1]);
     assertEquals(page.$$('#cookiesLinkRow').subLabel, testLabels[1]);
   });
+
+  test('ContentSettingsRedesignVisibility', async function() {
+    // Ensure pages are visited so that HTML components are stamped.
+    redesignedPages.forEach(route => Router.getInstance().navigateTo(route));
+    notRedesignedPages.forEach(route => Router.getInstance().navigateTo(route));
+    await flushTasks();
+
+    assertFalse(loadTimeData.getBoolean('enableContentSettingsRedesign'));
+    assertEquals(
+        page.root.querySelectorAll('category-default-setting').length,
+        redesignedPages.length + notRedesignedPages.length);
+    assertEquals(
+        page.root.querySelectorAll('settings-category-default-radio-group')
+            .length,
+        0);
+    assertFalse(isChildVisible(page, '#notficationRadioGroup'));
+  });
+});
+
+
+suite('ContentSettingsRedesign', function() {
+  /** @type {!SettingsPrivacyPageElement} */
+  let page;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      enableContentSettingsRedesign: true,
+    });
+  });
+
+  setup(async function() {
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsPrivacyPageElement} */
+        (document.createElement('settings-privacy-page'));
+    document.body.appendChild(page);
+    flush();
+  });
+
+  teardown(function() {
+    page.remove();
+    Router.getInstance().navigateTo(routes.BASIC);
+  });
+
+  test('ContentSettingsRedesignVisibility', async function() {
+    // Ensure pages are visited so that HTML components are stamped.
+    redesignedPages.forEach(route => Router.getInstance().navigateTo(route));
+    notRedesignedPages.forEach(route => Router.getInstance().navigateTo(route));
+    await flushTasks();
+
+    assertTrue(loadTimeData.getBoolean('enableContentSettingsRedesign'));
+    assertEquals(
+        page.root.querySelectorAll('category-default-setting').length,
+        notRedesignedPages.length);
+    // All redesigned pages, except notifications, will use a
+    // settings-category-default-radio-group.
+    assertEquals(
+        page.root.querySelectorAll('settings-category-default-radio-group')
+            .length,
+        redesignedPages.length - 1);
+  });
+
+  test('NotificationPageRedesign', async function() {
+    Router.getInstance().navigateTo(routes.SITE_SETTINGS_NOTIFICATIONS);
+    await flushTasks();
+
+    assertTrue(isChildVisible(page, '#notificationRadioGroup'));
+    const categorySettingExceptions =
+        /** @type {!CategorySettingExceptionsElement} */
+        (page.$$('category-setting-exceptions'));
+    assertTrue(isVisible(categorySettingExceptions));
+    assertEquals(
+        ContentSettingsTypes.NOTIFICATIONS, categorySettingExceptions.category);
+    assertFalse(isChildVisible(page, 'category-default-setting'));
+  });
 });
 
 suite('PrivacyPageSound', function() {
-  /** @type {TestPrivacyPageBrowserProxy} */
+  /** @type {!TestPrivacyPageBrowserProxy} */
   let testBrowserProxy;
 
-  /** @type {SettingsPrivacyPageElement} */
+  /** @type {!SettingsPrivacyPageElement} */
   let page;
 
   function flushAsync() {
@@ -326,21 +232,16 @@ suite('PrivacyPageSound', function() {
         .queryEffectiveChildren('#block-autoplay-setting');
   }
 
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
-    });
-  });
-
   setup(() => {
     loadTimeData.overrideValues({enableBlockAutoplayContentSetting: true});
 
     testBrowserProxy = new TestPrivacyPageBrowserProxy();
     PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
-    PolymerTest.clearBody();
 
     Router.getInstance().navigateTo(routes.SITE_SETTINGS_SOUND);
-    page = document.createElement('settings-privacy-page');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsPrivacyPageElement} */
+        (document.createElement('settings-privacy-page'));
     document.body.appendChild(page);
     return flushAsync();
   });
@@ -392,7 +293,8 @@ suite('PrivacyPageSound', function() {
     loadTimeData.overrideValues({enableBlockAutoplayContentSetting: false});
 
     page.remove();
-    page = document.createElement('settings-privacy-page');
+    page = /** @type {!SettingsPrivacyPageElement} */
+        (document.createElement('settings-privacy-page'));
     document.body.appendChild(page);
 
     return flushAsync().then(() => {
@@ -424,17 +326,36 @@ suite('PrivacyPageSound', function() {
 });
 
 suite('HappinessTrackingSurveys', function() {
-  /** @type {TestHatsBrowserProxy} */
+  /** @type {!TestHatsBrowserProxy} */
   let testHatsBrowserProxy;
 
-  /** @type {SettingsPrivacyPageElement} */
+  /** @type {!SettingsPrivacyPageElement} */
   let page;
 
   setup(function() {
     testHatsBrowserProxy = new TestHatsBrowserProxy();
     HatsBrowserProxyImpl.instance_ = testHatsBrowserProxy;
-    PolymerTest.clearBody();
-    page = document.createElement('settings-privacy-page');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsPrivacyPageElement} */
+        (document.createElement('settings-privacy-page'));
+    // Initialize the privacy page pref. Security page manually expands
+    // the initially selected safe browsing option so the pref object
+    // needs to be defined.
+    page.prefs = {
+      generated: {
+        safe_browsing: {
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: SafeBrowsingSetting.STANDARD,
+        },
+        cookie_session_only: {value: false},
+        cookie_primary_setting:
+            {type: chrome.settingsPrivate.PrefType.NUMBER, value: 0},
+        password_manager_leak_detection: {value: false},
+      },
+      profile: {password_manager_leak_detection: {value: false}},
+      dns_over_https:
+          {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
+    };
     document.body.appendChild(page);
     return flushTasks();
   });

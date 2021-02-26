@@ -11,10 +11,15 @@
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "fuchsia/base/mem_buffer_util.h"
+#include "fuchsia/cast_streaming/public/cast_streaming_session.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
+#include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom.h"
 
 ContextImpl::ContextImpl(content::BrowserContext* browser_context,
                          WebEngineDevToolsController* devtools_controller)
@@ -27,6 +32,10 @@ ContextImpl::ContextImpl(content::BrowserContext* browser_context,
   DCHECK(browser_context_);
   DCHECK(devtools_controller_);
   devtools_controller_->OnContextCreated();
+
+  cast_streaming::CastStreamingSession::SetNetworkContextGetter(
+      base::BindRepeating(&ContextImpl::GetNetworkContext,
+                          base::Unretained(this)));
 }
 
 ContextImpl::~ContextImpl() {
@@ -43,15 +52,6 @@ bool ContextImpl::IsJavaScriptInjectionAllowed() {
   return allow_javascript_injection_;
 }
 
-fidl::InterfaceHandle<fuchsia::web::Frame>
-ContextImpl::CreateFrameForPopupWebContents(
-    std::unique_ptr<content::WebContents> web_contents) {
-  fidl::InterfaceHandle<fuchsia::web::Frame> frame_handle;
-  frames_.insert(std::make_unique<FrameImpl>(std::move(web_contents), this,
-                                             frame_handle.NewRequest()));
-  return frame_handle;
-}
-
 void ContextImpl::CreateFrame(
     fidl::InterfaceRequest<fuchsia::web::Frame> frame) {
   CreateFrameWithParams(fuchsia::web::CreateFrameParams(), std::move(frame));
@@ -60,10 +60,35 @@ void ContextImpl::CreateFrame(
 void ContextImpl::CreateFrameWithParams(
     fuchsia::web::CreateFrameParams params,
     fidl::InterfaceRequest<fuchsia::web::Frame> frame) {
+  // FrameImpl clones the params used to create it when creating popup Frames.
+  // Ensure the params can be cloned to avoid problems when handling popups.
+  // TODO(fxbug.dev/65750): Consider removing this restriction if clients
+  // become responsible for providing parameters for [each] popup.
+  fuchsia::web::CreateFrameParams cloned_params;
+  zx_status_t status = params.Clone(&cloned_params);
+  if (status != ZX_OK) {
+    ZX_LOG(ERROR, status) << "CreateFrameParams Clone() failed";
+    frame.Close(ZX_ERR_INVALID_ARGS);
+    return;
+  }
+
   // Create a WebContents to host the new Frame.
   content::WebContents::CreateParams create_params(browser_context_, nullptr);
   create_params.initially_hidden = true;
   auto web_contents = content::WebContents::Create(create_params);
+
+  CreateFrameForWebContents(std::move(web_contents), std::move(params),
+                            std::move(frame));
+}
+
+void ContextImpl::CreateFrameForWebContents(
+    std::unique_ptr<content::WebContents> web_contents,
+    fuchsia::web::CreateFrameParams params,
+    fidl::InterfaceRequest<fuchsia::web::Frame> frame_request) {
+  DCHECK(frame_request.is_valid());
+
+  blink::web_pref::WebPreferences web_preferences =
+      web_contents->GetOrCreateWebPreferences();
 
   // Register the new Frame with the DevTools controller. The controller will
   // reject registration if user-debugging is requested, but it is not enabled
@@ -72,13 +97,66 @@ void ContextImpl::CreateFrameWithParams(
       params.has_enable_remote_debugging() && params.enable_remote_debugging();
   if (!devtools_controller_->OnFrameCreated(web_contents.get(),
                                             user_debugging_requested)) {
-    frame.Close(ZX_ERR_INVALID_ARGS);
+    frame_request.Close(ZX_ERR_INVALID_ARGS);
+    return;
+  }
+
+  // |params.debug_name| is not currently supported.
+  // TODO(crbug.com/1051533): Determine whether it is still needed.
+
+  // REQUIRE_USER_ACTIVATION is the default per the FIDL API.
+  web_preferences.autoplay_policy =
+      blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired;
+
+  if (params.has_autoplay_policy()) {
+    switch (params.autoplay_policy()) {
+      case fuchsia::web::AutoplayPolicy::ALLOW:
+        web_preferences.autoplay_policy =
+            blink::mojom::AutoplayPolicy::kNoUserGestureRequired;
+        break;
+      case fuchsia::web::AutoplayPolicy::REQUIRE_USER_ACTIVATION:
+        web_preferences.autoplay_policy =
+            blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired;
+        break;
+    }
+  }
+  web_contents->SetWebPreferences(web_preferences);
+
+  // Verify the explicit sites filter error page content. If the parameter is
+  // present, it will be provided to the FrameImpl after it is created below.
+  base::Optional<std::string> explicit_sites_filter_error_page;
+  if (params.has_explicit_sites_filter_error_page()) {
+    explicit_sites_filter_error_page.emplace();
+    if (!cr_fuchsia::StringFromMemData(
+            params.explicit_sites_filter_error_page(),
+            &explicit_sites_filter_error_page.value())) {
+      frame_request.Close(ZX_ERR_INVALID_ARGS);
+      return;
+    }
+  }
+
+  // FrameImpl clones the params used to create it when creating popup Frames.
+  // Ensure the params can be cloned to avoid problems when creating popups.
+  // TODO(http://fxbug.dev/65750): Remove this limitation once a soft migration
+  // to a new solution has been completed.
+  fuchsia::web::CreateFrameParams cloned_params;
+  zx_status_t status = params.Clone(&cloned_params);
+  if (status != ZX_OK) {
+    ZX_LOG(ERROR, status) << "CreateFrameParams clone failed";
+    frame_request.Close(ZX_ERR_INVALID_ARGS);
     return;
   }
 
   // Wrap the WebContents into a FrameImpl owned by |this|.
-  auto frame_impl = std::make_unique<FrameImpl>(std::move(web_contents), this,
-                                                std::move(frame));
+  auto frame_impl =
+      std::make_unique<FrameImpl>(std::move(web_contents), this,
+                                  std::move(params), std::move(frame_request));
+
+  if (explicit_sites_filter_error_page) {
+    frame_impl->EnableExplicitSitesFilter(
+        std::move(*explicit_sites_filter_error_page));
+  }
+
   frames_.insert(std::move(frame_impl));
 }
 
@@ -129,4 +207,10 @@ FrameImpl* ContextImpl::GetFrameImplForTest(
   }
 
   return nullptr;
+}
+
+network::mojom::NetworkContext* ContextImpl::GetNetworkContext() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+      ->GetNetworkContext();
 }

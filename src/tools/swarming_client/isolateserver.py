@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.9.0'
+from __future__ import print_function
 
 import collections
 import errno
@@ -47,6 +47,8 @@ from utils import subprocess42
 from utils import threading_utils
 
 
+__version__ = '0.9.0'
+
 # Version of isolate protocol passed to the server in /handshake request.
 ISOLATE_PROTOCOL_VERSION = '1.0'
 
@@ -74,22 +76,32 @@ ITEMS_PER_CONTAINS_QUERIES = (20, 20, 50, 50, 50, 100)
 # A list of already compressed extension types that should not receive any
 # compression before being uploaded.
 ALREADY_COMPRESSED_TYPES = [
-    '7z', 'avi', 'cur', 'gif', 'h264', 'jar', 'jpeg', 'jpg', 'mp4', 'pdf',
-    'png', 'wav', 'zip',
+    '7z',
+    'avi',
+    'cur',
+    'gif',
+    'h264',
+    'jar',
+    'jpeg',
+    'jpg',
+    'mp4',
+    'pdf',
+    'png',
+    'wav',
+    'zip',
 ]
 
-
-# The delay (in seconds) to wait between logging statements when retrieving
-# the required files. This is intended to let the user (or buildbot) know that
-# the program is still running.
+# The delay (in seconds) to wait between logging statements when retrieving the
+# required files. This is intended to let the user know that the program is
+# still running.
 DELAY_BETWEEN_UPDATES_IN_SECS = 30
 
 
-DEFAULT_BLACKLIST = (
-  # Temporary vim or python files.
-  r'^.+\.(?:pyc|swp)$',
-  # .git or .svn directory.
-  r'^(?:.+' + re.escape(os.path.sep) + r'|)\.(?:git|svn)$',
+DEFAULT_DENYLIST = (
+    # Temporary vim or python files.
+    r'^.+\.(?:pyc|swp)$',
+    # .git or .svn directory.
+    r'^(?:.+' + re.escape(os.path.sep) + r'|)\.(?:git|svn)$',
 )
 
 
@@ -371,6 +383,10 @@ class FileItem(isolate_storage.Item):
     return self._path
 
   @property
+  def algo(self):
+    return self._algo
+
+  @property
   def digest(self):
     if not self._digest:
       self._digest = isolated_format.hash_file(self._path, self._algo)
@@ -380,7 +396,7 @@ class FileItem(isolate_storage.Item):
   def meta(self):
     if not self._meta:
       # TODO(maruel): Inline.
-      self._meta = isolated_format.file_to_metadata(self.path, 0, False)
+      self._meta = isolated_format.file_to_metadata(self.path, False)
       # We need to hash right away.
       self._meta['h'] = self.digest
     return self._meta
@@ -820,11 +836,18 @@ class Storage(object):
         raise Aborted()
       self._storage_api.push(item, push_state, content)
       if verify_push:
-        self._fetch(
-            item.digest,
-            item.size,
-            # this consumes all elements from given generator.
-            lambda gen: collections.deque(gen, maxlen=0))
+        try:
+          self._fetch(
+              item.digest,
+              item.size,
+              # this consumes all elements from given generator.
+              lambda gen: collections.deque(gen, maxlen=0))
+        except Exception:
+          # reset push_state if failed to verify.
+          push_state.finalized = False
+          push_state.uploaded = False
+          raise
+
       return item
 
     # If zipping is not required, just start a push task. Don't pass 'content'
@@ -887,8 +910,8 @@ class Storage(object):
                                      size)
       # Verified stream goes to |sink|.
       sink(verifier.run())
-    except Exception as err:
-      logging.error('Failed to fetch %s: %s', digest, err)
+    except Exception:
+      logging.exception('Failed to fetch %s', digest)
       raise
 
   def async_fetch(self, channel, priority, digest, size, sink):
@@ -1116,7 +1139,6 @@ class IsolatedBundle(object):
 
     self.command = []
     self.files = {}
-    self.read_only = None
     self.relative_cwd = None
     # The main .isolated file, a IsolatedFile instance.
     self.root = None
@@ -1219,11 +1241,6 @@ class IsolatedBundle(object):
       if filepath not in self.files:
         self.files[filepath] = properties
 
-        # Make sure if the isolated is read only, the mode doesn't have write
-        # bits.
-        if 'm' in properties and self.read_only:
-          properties['m'] &= ~(stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH)
-
         # Preemptively request hashed files.
         if 'h' in properties:
           fetch_queue.add(
@@ -1241,8 +1258,6 @@ class IsolatedBundle(object):
       self.command = node.data['command']
       if self.command:
         self.command[0] = self.command[0].replace('/', os.path.sep)
-    if self.read_only is None and node.data.get('read_only') is not None:
-      self.read_only = node.data['read_only']
     if (self.relative_cwd is None and
         node.data.get('relative_cwd') is not None):
       self.relative_cwd = node.data['relative_cwd']
@@ -1263,7 +1278,7 @@ def get_storage(server_ref):
   return Storage(isolate_storage.get_storage_api(server_ref))
 
 
-def _map_file(dst, digest, props, cache, read_only, use_symlinks):
+def _map_file(dst, digest, props, cache, use_symlinks):
   """Put downloaded file to destination path. This function is used for multi
   threaded file putting.
   """
@@ -1274,9 +1289,6 @@ def _map_file(dst, digest, props, cache, read_only, use_symlinks):
       if filetype == 'basic':
         # Ignore all bits apart from the user.
         file_mode = (props.get('m') or 0o500) & 0o700
-        if read_only:
-          # Enforce read-only if the root bundle does.
-          file_mode &= 0o500
         putfile(srcfileobj, dst, file_mode, use_symlink=use_symlinks)
 
       elif filetype == 'tar':
@@ -1301,9 +1313,6 @@ def _map_file(dst, digest, props, cache, read_only, use_symlinks):
               file_path.ensure_tree(fp_dir)
               ensured_dirs.add(fp_dir)
             file_mode = ti.mode & 0o700
-            if read_only:
-              # Enforce read-only if the root bundle does.
-              file_mode &= 0o500
             putfile(ifd, fp, file_mode, ti.size)
 
       else:
@@ -1321,7 +1330,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
            locally.
     outdir: Output directory to map file tree to.
     use_symlinks: Use symlinks instead of hardlinks when True.
-    filter_cb: filter that works as whitelist for downloaded files.
+    filter_cb: filter that works as allowlist for downloaded files.
 
   Returns:
     IsolatedBundle object that holds details about loaded *.isolated file.
@@ -1337,9 +1346,10 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
   with tools.Profiler('GetIsolateds'):
     # Optionally support local files by manually adding them to cache.
     if not isolated_format.is_valid_hash(isolated_hash, algo):
-      logging.debug('%s is not a valid hash, assuming a file '
-                    '(algo was %s, hash size was %d)',
-                    isolated_hash, algo(), algo().digest_size)
+      logging.debug(
+          '%s is not a valid hash, assuming a file '
+          '(algo was %s, hash size was %d)', isolated_hash, algo(),
+          algo().digest_size)
       path = six.text_type(os.path.abspath(isolated_hash))
       try:
         isolated_hash = fetch_queue.inject_local_file(path, algo)
@@ -1387,9 +1397,8 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
             fullpath = os.path.join(outdir, filepath)
 
             putfile_thread_pool.add_task(threading_utils.PRIORITY_HIGH,
-                                         _map_file, fullpath, digest,
-                                         props, cache, bundle.read_only,
-                                         use_symlinks)
+                                         _map_file, fullpath, digest, props,
+                                         cache, use_symlinks)
 
           # Report progress.
           duration = time.time() - last_update
@@ -1415,7 +1424,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
   return bundle
 
 
-def _directory_to_metadata(root, algo, blacklist):
+def _directory_to_metadata(root, algo, denylist):
   """Yields every file and/or symlink found.
 
   Yields:
@@ -1428,13 +1437,13 @@ def _directory_to_metadata(root, algo, blacklist):
   for relpath, issymlink in isolated_format.expand_directory_and_symlink(
       root,
       u'.' + os.path.sep,
-      blacklist,
+      denylist,
       follow_symlinks=(sys.platform != 'win32')):
 
     filepath = os.path.join(root, relpath)
     if issymlink:
       # TODO(maruel): Do not call this.
-      meta = isolated_format.file_to_metadata(filepath, 0, False)
+      meta = isolated_format.file_to_metadata(filepath, False)
       yield None, relpath, meta
       continue
 
@@ -1473,15 +1482,13 @@ def _print_upload_stats(items, missing):
       cache_hit_size * 100. / total_size if total_size else 0)
   cache_miss = missing
   cache_miss_size = sum(f.size for f in cache_miss)
-  logging.info(
-      'cache miss: %6d, %9.1fkiB, %6.2f%% files, %6.2f%% size',
-      len(cache_miss),
-      cache_miss_size / 1024.,
-      len(cache_miss) * 100. / total,
-      cache_miss_size * 100. / total_size if total_size else 0)
+  logging.info('cache miss: %6d, %9.1fkiB, %6.2f%% files, %6.2f%% size',
+               len(cache_miss), cache_miss_size / 1024.,
+               len(cache_miss) * 100. / total,
+               cache_miss_size * 100. / total_size if total_size else 0)
 
 
-def _enqueue_dir(dirpath, blacklist, hash_algo, hash_algo_name):
+def _enqueue_dir(dirpath, denylist, hash_algo, hash_algo_name):
   """Called by archive_files_to_storage for a directory.
 
   Create an .isolated file.
@@ -1490,8 +1497,8 @@ def _enqueue_dir(dirpath, blacklist, hash_algo, hash_algo_name):
     FileItem for every file found, plus one for the .isolated file itself.
   """
   files = {}
-  for item, relpath, meta in _directory_to_metadata(
-      dirpath, hash_algo, blacklist):
+  for item, relpath, meta in _directory_to_metadata(dirpath, hash_algo,
+                                                    denylist):
     # item is None for a symlink.
     files[relpath] = meta
     if item:
@@ -1506,10 +1513,15 @@ def _enqueue_dir(dirpath, blacklist, hash_algo, hash_algo_name):
   # Keep the file in memory. This is fine because .isolated files are relatively
   # small.
   yield BufferItem(
-      tools.format_json(data, True), algo=hash_algo, high_priority=True)
+      tools.format_json(data, True).encode(),
+      algo=hash_algo,
+      high_priority=True)
 
 
-def archive_files_to_storage(storage, files, blacklist, verify_push=False):
+def _archive_files_to_storage_internal(storage,
+                                       files,
+                                       denylist,
+                                       verify_push=False):
   """Stores every entry into remote storage and returns stats.
 
   Arguments:
@@ -1517,7 +1529,7 @@ def archive_files_to_storage(storage, files, blacklist, verify_push=False):
     files: iterable of files to upload. If a directory is specified (with a
           trailing slash), a .isolated file is created and its hash is returned.
           Duplicates are skipped.
-    blacklist: function that returns True if a file should be omitted.
+    denylist: function that returns True if a file should be omitted.
     verify_push: verify files are uploaded correctly by fetching from server.
 
   Returns:
@@ -1559,8 +1571,8 @@ def archive_files_to_storage(storage, files, blacklist, verify_push=False):
         if fs.isdir(filepath):
           # Uploading a whole directory.
           item = None
-          for item in _enqueue_dir(
-              filepath, blacklist, hash_algo, hash_algo_name):
+          for item in _enqueue_dir(filepath, denylist, hash_algo,
+                                   hash_algo_name):
             channel.send_result(item)
             items_found.append(item)
             # The very last item will be the .isolated file.
@@ -1585,8 +1597,22 @@ def archive_files_to_storage(storage, files, blacklist, verify_push=False):
     channel.send_done()
   t.join()
   exc_channel.send_done()
-  for _ in exc_channel:
-    pass
+
+  try:
+    for _ in exc_channel:
+      pass
+  except Exception:
+    # log items when failed to upload files.
+    for item in items_found:
+      if isinstance(item, FileItem):
+        logging.error('FileItem path: %s, digest:%s, re-calculated digest:%s',
+                      item.path, item.digest,
+                      isolated_format.hash_file(item.path, item.algo))
+        continue
+
+      logging.error('Item digest:%s', item.digest)
+
+    raise
 
   cold = []
   hot = []
@@ -1597,6 +1623,43 @@ def archive_files_to_storage(storage, files, blacklist, verify_push=False):
     else:
       hot.append(i)
   return results, cold, hot
+
+
+# TODO(crbug.com/1073832):
+# remove this if process leak in coverage build was fixed.
+def archive_files_to_storage(storage, files, denylist, verify_push=False):
+  """Calls _archive_files_to_storage_internal with retry.
+
+  Arguments:
+    See Arguments section in _archive_files_to_storage_internal
+
+  Returns:
+    See Returns section in _archive_files_to_storage_internal
+
+  Raises:
+    Re-raises the exception in _archive_files_to_storage_internal if all retry
+    failed.
+  """
+
+  # Will do exponential backoff.
+  # e.g. 10, 20, 40, 80
+  backoff = 10
+
+  while True:
+    try:
+      return _archive_files_to_storage_internal(storage, files, denylist,
+                                                verify_push)
+    except Exception:
+      if backoff > 100:
+        raise
+
+      on_error.report('error before %d second backoff' % backoff)
+
+      logging.exception(
+          'failed to run _archive_files_to_storage_internal,'
+          ' will retry after %d seconds', backoff)
+      time.sleep(backoff)
+      backoff *= 2
 
 
 @subcommand.usage('<file1..fileN> or - to read from stdin')
@@ -1614,18 +1677,18 @@ def CMDarchive(parser, args):
   add_isolate_server_options(parser)
   add_archive_options(parser)
   options, files = parser.parse_args(args)
-  process_isolate_server_options(parser, options, True, True)
+  process_isolate_server_options(parser, options, True)
   server_ref = isolate_storage.ServerRef(
       options.isolate_server, options.namespace)
   if files == ['-']:
     files = (l.rstrip('\n\r') for l in sys.stdin)
   if not files:
     parser.error('Nothing to upload')
-  files = (f.decode('utf-8') for f in files)
-  blacklist = tools.gen_blacklist(options.blacklist)
+  files = (six.ensure_text(f) for f in files)
+  denylist = tools.gen_denylist(options.blacklist)
   try:
     with get_storage(server_ref) as storage:
-      results, _cold, _hot = archive_files_to_storage(storage, files, blacklist)
+      results, _cold, _hot = archive_files_to_storage(storage, files, denylist)
   except (Error, local_caching.NoMoreSpace) as e:
     parser.error(e.args[0])
   print('\n'.join('%s %s' % (h, f) for f, h in results.items()))
@@ -1644,13 +1707,22 @@ def CMDdownload(parser, args):
       help='hash of an isolated file, .isolated file content is discarded, use '
            '--file if you need it')
   parser.add_option(
-      '-f', '--file', metavar='HASH DEST', default=[], action='append', nargs=2,
+      '-f',
+      '--file',
+      metavar='HASH DEST',
+      default=[],
+      action='append',
+      nargs=2,
       help='hash and destination of a file, can be used multiple times')
   parser.add_option(
-      '-t', '--target', metavar='DIR', default='download',
+      '-t',
+      '--target',
+      metavar='DIR',
+      default='download',
       help='destination directory')
   parser.add_option(
-      '--use-symlinks', action='store_true',
+      '--use-symlinks',
+      action='store_true',
       help='Use symlinks instead of hardlinks')
   add_cache_options(parser)
   options, args = parser.parse_args(args)
@@ -1659,7 +1731,7 @@ def CMDdownload(parser, args):
   if not file_path.enable_symlink():
     logging.warning('Symlink support is not enabled')
 
-  process_isolate_server_options(parser, options, True, True)
+  process_isolate_server_options(parser, options, True)
   if bool(options.isolated) == bool(options.file):
     parser.error('Use one of --isolated or --file, and only one.')
   if not options.cache and options.use_symlinks:
@@ -1685,12 +1757,10 @@ def CMDdownload(parser, args):
         dest = six.text_type(dest)
         pending[digest] = dest
         storage.async_fetch(
-            channel,
-            threading_utils.PRIORITY_MED,
-            digest,
+            channel, threading_utils.PRIORITY_MED, digest,
             local_caching.UNKNOWN_FILE_SIZE,
-            functools.partial(
-                local_caching.file_write, os.path.join(options.target, dest)))
+            functools.partial(local_caching.file_write,
+                              os.path.join(options.target, dest)))
       while pending:
         fetched = channel.next()
         dest = pending.pop(fetched)
@@ -1717,9 +1787,10 @@ def CMDdownload(parser, args):
 def add_archive_options(parser):
   parser.add_option(
       '--blacklist',
-      action='append', default=list(DEFAULT_BLACKLIST),
-      help='List of regexp to use as blacklist filter when uploading '
-           'directories')
+      action='append',
+      default=list(DEFAULT_DENYLIST),
+      help='List of regexp to use as denylist filter when uploading '
+      'directories')
 
 
 def add_isolate_server_options(parser):
@@ -1731,14 +1802,12 @@ def add_isolate_server_options(parser):
            'variable ISOLATE_SERVER if set. No need to specify https://, this '
            'is assumed.')
   parser.add_option(
-      '--grpc-proxy', help='gRPC proxy by which to communicate to Isolate')
-  parser.add_option(
-      '--namespace', default='default-gzip',
+      '--namespace',
+      default='default-gzip',
       help='The namespace to use on the Isolate Server, default: %default')
 
 
-def process_isolate_server_options(
-    parser, options, set_exception_handler, required):
+def process_isolate_server_options(parser, options, required):
   """Processes the --isolate-server option.
 
   Returns the identity as determined by the server.
@@ -1748,15 +1817,11 @@ def process_isolate_server_options(
       parser.error('--isolate-server is required.')
     return
 
-  if options.grpc_proxy:
-    isolate_storage.set_grpc_proxy(options.grpc_proxy)
-  else:
-    try:
-      options.isolate_server = net.fix_url(options.isolate_server)
-    except ValueError as e:
-      parser.error('--isolate-server %s' % e)
-  if set_exception_handler:
-    on_error.report_on_exception_exit(options.isolate_server)
+  try:
+    options.isolate_server = net.fix_url(options.isolate_server)
+  except ValueError as e:
+    parser.error('--isolate-server %s' % e)
+
   try:
     return auth.ensure_logged_in(options.isolate_server)
   except ValueError as e:
@@ -1765,7 +1830,7 @@ def process_isolate_server_options(
 
 
 def add_cache_options(parser):
-  cache_group = optparse.OptionGroup(parser, 'Cache management')
+  cache_group = optparse.OptionGroup(parser, 'Isolated cache management')
   cache_group.add_option(
       '--cache', metavar='DIR', default='cache',
       help='Directory to keep a local cache of the files. Accelerates download '
@@ -1789,7 +1854,7 @@ def add_cache_options(parser):
       metavar='NNN',
       default=100000,
       help='Trim if more than this number of items are in the cache '
-           'default=%default')
+      'default=%default')
   parser.add_option_group(cache_group)
 
 
@@ -1800,7 +1865,7 @@ def process_cache_options(options, trim, **kwargs):
         options.min_free_space,
         options.max_items,
         # 3 weeks.
-        max_age_secs=21*24*60*60)
+        max_age_secs=21 * 24 * 60 * 60)
 
     # |options.cache| path may not exist until DiskContentAddressedCache()
     # instance is created.
@@ -1810,6 +1875,7 @@ def process_cache_options(options, trim, **kwargs):
 
 
 class OptionParserIsolateServer(logging_utils.OptionParserWithLogging):
+
   def __init__(self, **kwargs):
     logging_utils.OptionParserWithLogging.__init__(
         self,

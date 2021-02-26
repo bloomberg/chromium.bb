@@ -20,6 +20,7 @@ import {
   LogEntriesKey,
   LogExistsKey
 } from '../common/logs';
+import {slowlyCountRows} from '../common/query_iterator';
 import {fromNs, TimeSpan, toNsCeil, toNsFloor} from '../common/time';
 
 import {Controller} from './controller';
@@ -73,7 +74,7 @@ async function updateLogEntries(
         order by ts
         limit ${pagination.start}, ${pagination.count}`);
 
-  if (!rowsResult.numRecords) {
+  if (!slowlyCountRows(rowsResult)) {
     return {
       offset: pagination.start,
       timestamps: [],
@@ -83,8 +84,8 @@ async function updateLogEntries(
     };
   }
 
-  const timestamps = rowsResult.columns[0].longValues! as number[];
-  const priorities = rowsResult.columns[1].longValues! as number[];
+  const timestamps = rowsResult.columns[0].longValues!;
+  const priorities = rowsResult.columns[1].longValues!;
   const tags = rowsResult.columns[2].stringValues!;
   const messages = rowsResult.columns[3].stringValues!;
 

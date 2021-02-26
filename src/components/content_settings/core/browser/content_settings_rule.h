@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
-#include "components/content_settings/core/browser/content_settings_constraints.h"
+#include "components/content_settings/core/common/content_settings_constraints.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 
 namespace content_settings {
@@ -44,6 +44,16 @@ class RuleIterator {
   virtual ~RuleIterator();
   virtual bool HasNext() const = 0;
   virtual Rule Next() = 0;
+};
+
+class EmptyRuleIterator : public RuleIterator {
+ public:
+  ~EmptyRuleIterator() override;
+
+ protected:
+  // RuleIterator:
+  bool HasNext() const override;
+  Rule Next() override;
 };
 
 class ConcatenationIterator : public RuleIterator {

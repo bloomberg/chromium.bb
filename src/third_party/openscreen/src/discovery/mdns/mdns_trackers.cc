@@ -6,6 +6,7 @@
 
 #include <array>
 #include <limits>
+#include <utility>
 
 #include "discovery/common/config.h"
 #include "discovery/mdns/mdns_random.h"
@@ -38,7 +39,7 @@ constexpr std::chrono::minutes kMaximumQueryInterval{60};
 
 // A goodbye record is a record with TTL of 0.
 bool IsGoodbyeRecord(const MdnsRecord& record) {
-  return record.ttl() == std::chrono::seconds{0};
+  return record.ttl() == std::chrono::seconds(0);
 }
 
 bool IsNegativeResponseForType(const MdnsRecord& record, DnsType dns_type) {
@@ -284,7 +285,7 @@ Clock::time_point MdnsRecordTracker::GetNextSendTime() {
   }
 
   const Clock::duration delay =
-      std::chrono::duration_cast<Clock::duration>(record_.ttl() * ttl_fraction);
+      Clock::to_duration(record_.ttl() * ttl_fraction);
   return start_time_ + delay;
 }
 
@@ -394,8 +395,9 @@ bool MdnsQuestionTracker::SendQuery() const {
     } else if (message.questions().empty() && message.answers().empty()) {
       // This case should never happen, because it means a record is too large
       // to fit into its own message.
-      OSP_LOG << "Encountered unreasonably large message in cache. Skipping "
-              << "known answer in suppressions...";
+      OSP_LOG_INFO
+          << "Encountered unreasonably large message in cache. Skipping "
+          << "known answer in suppressions...";
       it++;
     } else {
       message.set_truncated();

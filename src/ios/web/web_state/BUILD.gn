@@ -99,7 +99,6 @@ source_set("context_menu") {
     "//components/url_formatter",
     "//ios/web/common",
     "//ios/web/public",
-    "//ui/gfx",
   ]
 
   sources = [
@@ -122,6 +121,7 @@ source_set("user_interaction") {
 
   deps = [
     "//base",
+    "//ios/third_party/webkit",
     "//url",
   ]
 

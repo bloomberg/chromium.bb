@@ -43,6 +43,9 @@ class StubLayerTreeHostClient : public LayerTreeHostClient {
   void WillCommit() override {}
   void DidCommit(base::TimeTicks) override {}
   void DidCommitAndDrawFrame() override {}
+  void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) override {}
   void DidReceiveCompositorFrameAck() override {}
   void DidCompletePageScaleAnimation() override {}
   void DidPresentCompositorFrame(

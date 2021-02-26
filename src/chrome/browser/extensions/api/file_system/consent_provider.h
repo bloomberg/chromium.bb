@@ -29,7 +29,7 @@ class ScopedSkipRequestFileSystemDialog;
 namespace file_system_api {
 
 // Requests consent for the chrome.fileSystem.requestFileSystem() method.
-// Interaction with UI and environmental checks (kiosk mode, whitelist) are
+// Interaction with UI and environmental checks (kiosk mode, allowlist) are
 // provided by a delegate: ConsentProviderDelegate. For testing, it is
 // TestingConsentProviderDelegate.
 // This class may post callbacks given to it, but does not asynchronously call
@@ -39,8 +39,8 @@ namespace file_system_api {
 class ConsentProvider {
  public:
   enum Consent { CONSENT_GRANTED, CONSENT_REJECTED, CONSENT_IMPOSSIBLE };
-  typedef base::Callback<void(Consent)> ConsentCallback;
-  typedef base::Callback<void(ui::DialogButton)> ShowDialogCallback;
+  using ConsentCallback = base::OnceCallback<void(Consent)>;
+  using ShowDialogCallback = base::OnceCallback<void(ui::DialogButton)>;
 
   // Interface for delegating user interaction for granting permissions.
   class DelegateInterface {
@@ -50,7 +50,7 @@ class ConsentProvider {
                             content::RenderFrameHost* host,
                             const base::WeakPtr<file_manager::Volume>& volume,
                             bool writable,
-                            const ShowDialogCallback& callback) = 0;
+                            ShowDialogCallback callback) = 0;
 
     // Shows a notification about permissions automatically granted access.
     virtual void ShowNotification(
@@ -61,8 +61,8 @@ class ConsentProvider {
     // Checks if the extension was launched in auto-launch kiosk mode.
     virtual bool IsAutoLaunched(const Extension& extension) = 0;
 
-    // Checks if the extension is a whitelisted component extension or app.
-    virtual bool IsWhitelistedComponent(const Extension& extension) = 0;
+    // Checks if the extension is a allowlisted component extension or app.
+    virtual bool IsAllowlistedComponent(const Extension& extension) = 0;
 
     // Checks if the extension has the permission to access Downloads.
     virtual bool HasRequestDownloadsPermission(const Extension& extension) = 0;
@@ -79,7 +79,7 @@ class ConsentProvider {
                       content::RenderFrameHost* host,
                       const base::WeakPtr<file_manager::Volume>& volume,
                       bool writable,
-                      const ConsentCallback& callback);
+                      ConsentCallback callback);
 
   // Returns granted access mode for the |extension|.
   FileSystemDelegate::GrantVolumesMode GetGrantVolumesMode(
@@ -95,7 +95,7 @@ class ConsentProvider {
   DISALLOW_COPY_AND_ASSIGN(ConsentProvider);
 };
 
-// Handles interaction with user as well as environment checks (whitelists,
+// Handles interaction with user as well as environment checks (allowlists,
 // context of running extensions) for ConsentProvider.
 class ConsentProviderDelegate : public ConsentProvider::DelegateInterface {
  public:
@@ -110,17 +110,17 @@ class ConsentProviderDelegate : public ConsentProvider::DelegateInterface {
   static void SetAutoDialogButtonForTest(ui::DialogButton button);
 
   // ConsentProvider::DelegateInterface overrides:
-  void ShowDialog(const Extension& extension,
-                  content::RenderFrameHost* host,
-                  const base::WeakPtr<file_manager::Volume>& volume,
-                  bool writable,
-                  const file_system_api::ConsentProvider::ShowDialogCallback&
-                      callback) override;
+  void ShowDialog(
+      const Extension& extension,
+      content::RenderFrameHost* host,
+      const base::WeakPtr<file_manager::Volume>& volume,
+      bool writable,
+      file_system_api::ConsentProvider::ShowDialogCallback callback) override;
   void ShowNotification(const Extension& extension,
                         const base::WeakPtr<file_manager::Volume>& volume,
                         bool writable) override;
   bool IsAutoLaunched(const Extension& extension) override;
-  bool IsWhitelistedComponent(const Extension& extension) override;
+  bool IsAllowlistedComponent(const Extension& extension) override;
   bool HasRequestDownloadsPermission(const Extension& extension) override;
 
   Profile* const profile_;

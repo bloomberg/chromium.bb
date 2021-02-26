@@ -16,10 +16,23 @@
 #include "tools/Resources.h"
 
 static sk_sp<SkTypeface> make_tf() {
-    SkCustomTypefaceBuilder builder(128);
+    SkCustomTypefaceBuilder builder;
     SkFont font;
-    font.setSize(1.0f);
+    const float upem = font.getTypefaceOrDefault()->getUnitsPerEm();
+
+    // request a big size, to improve precision at the fontscaler level
+    font.setSize(upem);
     font.setHinting(SkFontHinting::kNone);
+
+    // so we can scale our paths back down to 1-point
+    const SkMatrix scale = SkMatrix::Scale(1.0f/upem, 1.0f/upem);
+
+    {
+        SkFontMetrics metrics;
+        font.getMetrics(&metrics);
+        builder.setMetrics(metrics, 1.0f/upem);
+    }
+    builder.setFontStyle(font.getTypefaceOrDefault()->fontStyle());
 
     // Steal the first 128 chars from the default font
     for (SkGlyphID index = 0; index <= 127; ++index) {
@@ -31,7 +44,7 @@ static sk_sp<SkTypeface> make_tf() {
         font.getPath(glyph, &path);
 
         // we use the charcode to be our glyph index, since we have no cmap table
-        builder.setGlyph(index, width, path);
+        builder.setGlyph(index, width/upem, path.makeTransform(scale));
     }
 
     return builder.detach();
@@ -39,51 +52,70 @@ static sk_sp<SkTypeface> make_tf() {
 
 #include "include/core/SkTextBlob.h"
 
+static sk_sp<SkTypeface> round_trip(sk_sp<SkTypeface> tf) {
+    auto data = tf->serialize();
+    SkMemoryStream stream(data->data(), data->size());
+    return SkTypeface::MakeDeserialize(&stream);
+}
+
 class UserFontGM : public skiagm::GM {
     sk_sp<SkTypeface> fTF;
-    sk_sp<SkTextBlob> fBlob;
 
-    SkPath fPath;
 public:
     UserFontGM() {}
 
     void onOnceBeforeDraw() override {
         fTF = make_tf();
+        // test serialization
+        fTF = round_trip(fTF);
+    }
 
-        SkFont font(fTF);
-        font.setSize(100);
+    static sk_sp<SkTextBlob> make_blob(sk_sp<SkTypeface> tf, float size, float* spacing) {
+        SkFont font(tf);
+        font.setSize(size);
         font.setEdging(SkFont::Edging::kAntiAlias);
-
-        std::vector<SkGlyphID> array;
-        auto expand8to16 = [&](const char str[]) {
-            for (int i = 0; str[i]; ++i) {
-                array.push_back(str[i]);
-            }
-        };
-
-        expand8to16("User Typeface");
-        fBlob = SkTextBlob::MakeFromText(array.data(), array.size() * sizeof(SkGlyphID),
-                                         font, SkTextEncoding::kGlyphID);
-
+        *spacing = font.getMetrics(nullptr);
+        return SkTextBlob::MakeFromString("Typeface", font);
     }
 
     bool runAsBench() const override { return true; }
 
     SkString onShortName() override { return SkString("user_typeface"); }
 
-    SkISize onISize() override { return {512, 512}; }
+    SkISize onISize() override { return {810, 452}; }
 
     void onDraw(SkCanvas* canvas) override {
-        SkScalar x = 20,
-                 y = 250;
+        auto waterfall = [&](sk_sp<SkTypeface> tf) {
+            SkPaint paint;
+            paint.setAntiAlias(true);
 
-        SkPaint paint;
-        paint.setStyle(SkPaint::kStroke_Style);
-        canvas->drawRect(fBlob->bounds().makeOffset(x, y), paint);
+            float spacing;
+            float x = 20,
+                  y = 16;
+            for (float size = 9; size <= 100; size *= 1.25f) {
+                auto blob = make_blob(tf, size, &spacing);
 
-        paint.setStyle(SkPaint::kFill_Style);
-        paint.setColor(SK_ColorRED);
-        canvas->drawTextBlob(fBlob, x, y, paint);
+                // shared baseline
+                if (tf == nullptr) {
+                    paint.setColor(0xFFDDDDDD);
+                    canvas->drawRect({0, y, 810, y+1}, paint);
+                }
+
+                paint.setColor(0xFFCCCCCC);
+                paint.setStyle(SkPaint::kStroke_Style);
+                canvas->drawRect(blob->bounds().makeOffset(x, y), paint);
+
+                paint.setStyle(SkPaint::kFill_Style);
+                paint.setColor(SK_ColorBLACK);
+                canvas->drawTextBlob(blob, x, y, paint);
+
+                y += SkScalarRoundToInt(spacing * 1.25f + 2);
+            }
+        };
+
+        waterfall(nullptr);
+        canvas->translate(400, 0);
+        waterfall(fTF);
     }
 };
 DEF_GM(return new UserFontGM;)

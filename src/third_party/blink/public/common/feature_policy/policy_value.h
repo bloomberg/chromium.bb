@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-forward.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-shared.h"
 
 namespace blink {
 
@@ -16,16 +16,15 @@ namespace blink {
 // PolicyValue is a union of types (int / double / set<int> / bool ) that can be
 // used to specify the parameter of a policy.
 
-// TODO(loonybear): Add the following types: enum, inc/dec int, inc double, set.
+// TODO(crbug.com/1119481): Add the following types: enum, inc/dec int, inc
+// double, set.
 class BLINK_COMMON_EXPORT PolicyValue {
  public:
   PolicyValue();
 
-  explicit PolicyValue(mojom::PolicyValueType);
-
-  explicit PolicyValue(bool bool_value);
-  explicit PolicyValue(double double_value);
-  PolicyValue(double double_value, mojom::PolicyValueType type);
+  static PolicyValue CreateBool(bool);
+  static PolicyValue CreateDecDouble(double);
+  static PolicyValue CreateEnum(int32_t);
 
   // A 'max' PolicyValue is the most permissive value for the policy.
   static PolicyValue CreateMaxPolicyValue(mojom::PolicyValueType type);
@@ -39,40 +38,40 @@ class BLINK_COMMON_EXPORT PolicyValue {
   // Note the getters also DCHECKs that the type is correct.
   bool BoolValue() const;
   double DoubleValue() const;
+  int32_t IntValue() const;
 
   // PolicyValue setters.
   // Note the getters also DCHECKs that the type is correct.
   void SetBoolValue(bool bool_value);
   void SetDoubleValue(double double_value);
-  void SetDoubleValue(double double_value, mojom::PolicyValueType type);
+  void SetIntValue(int32_t int_value);
 
   // Operater overrides
   PolicyValue& operator=(const PolicyValue& rhs);
-  // Combine a new PolicyValue to self, by taking the stricter value of the two.
-  void Combine(const PolicyValue& value);
-  // Combine two PolicyValue_s together by taking the stricter value of the two.
-  static PolicyValue Combine(const PolicyValue& lhs, const PolicyValue& rhs);
 
   void SetToMax();
   void SetToMin();
 
+  // Test whether this policy value is compatible with required policy value.
+  // Note: a.IsCompatibleWith(b) == true does not necessary indicate
+  // b.IsCompatibleWith(a) == false, because not all policy value types support
+  // strictness comparison, e.g. enum.
+  bool IsCompatibleWith(const PolicyValue& required) const;
+
  private:
+  explicit PolicyValue(bool bool_value);
+  PolicyValue(int32_t int_value, mojom::PolicyValueType type);
+  PolicyValue(double double_value, mojom::PolicyValueType type);
+
   mojom::PolicyValueType type_;
   bool bool_value_ = false;
   double double_value_ = 0.0;
+  int32_t int_value_ = -1;
 };
 
 bool BLINK_COMMON_EXPORT operator==(const PolicyValue& lhs,
                                     const PolicyValue& rhs);
 bool BLINK_COMMON_EXPORT operator!=(const PolicyValue& lhs,
-                                    const PolicyValue& rhs);
-bool BLINK_COMMON_EXPORT operator>(const PolicyValue& lhs,
-                                   const PolicyValue& rhs);
-bool BLINK_COMMON_EXPORT operator>=(const PolicyValue& lhs,
-                                    const PolicyValue& rhs);
-bool BLINK_COMMON_EXPORT operator<(const PolicyValue& lhs,
-                                   const PolicyValue& rhs);
-bool BLINK_COMMON_EXPORT operator<=(const PolicyValue& lhs,
                                     const PolicyValue& rhs);
 }  // namespace blink
 

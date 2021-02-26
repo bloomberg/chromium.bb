@@ -11,6 +11,7 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/flags/CachedFieldTrialParameter.java",
     "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java",
     "android/java/src/org/chromium/chrome/browser/flags/DoubleCachedFieldTrialParameter.java",
+    "android/java/src/org/chromium/chrome/browser/flags/FeatureParamUtils.java",
     "android/java/src/org/chromium/chrome/browser/flags/IntCachedFieldTrialParameter.java",
     "android/java/src/org/chromium/chrome/browser/flags/StringCachedFieldTrialParameter.java",
   ]
@@ -18,6 +19,7 @@ android_library("java") {
     "//base:base_java",
     "//base:jni_java",
     "//chrome/browser/preferences:java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
   srcjar_deps = [ ":chrome_android_java_switches_srcjar" ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -56,6 +58,7 @@ java_library("flags_junit_tests") {
     "android/java/src/org/chromium/chrome/browser/flags/CachedFeatureFlagsUnitTest.java",
     "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureListWithProcessorUnitTest.java",
     "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureListWithoutProcessorUnitTest.java",
+    "android/java/src/org/chromium/chrome/browser/flags/FeatureParamUtilsUnitTest.java",
   ]
   deps = [
     ":java",
@@ -64,6 +67,8 @@ java_library("flags_junit_tests") {
     "//base:base_junit_test_support",
     "//base/test:test_support_java",
     "//chrome/test/android:chrome_java_test_support",
+    "//third_party/android_deps:robolectric_all_java",
+    "//third_party/junit",
   ]
 }
 
@@ -80,6 +85,7 @@ android_library("javatests") {
     "//base/test:test_support_java",
     "//chrome/android:chrome_java",
     "//chrome/test/android:chrome_java_test_support",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_sdk:android_test_mock_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",

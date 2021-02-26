@@ -52,7 +52,6 @@ class FileWriter final : public EventTargetWithInlineData,
                          public ActiveScriptWrappable<FileWriter>,
                          public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
   USING_PRE_FINALIZER(FileWriter, Dispose);
 
  public:
@@ -97,7 +96,7 @@ class FileWriter final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(writeend, kWriteend)
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   enum Operation {

@@ -206,11 +206,6 @@ void MediaControlInputElement::UpdateShownState() {
       parent->SetInlineStyleProperty(CSSPropertyID::kDisplay,
                                      CSSValueID::kNone);
     }
-
-    // Don't update the shown state of the element if we want to hide
-    // icons on the overflow menu.
-    if (!RuntimeEnabledFeatures::OverflowIconsForMediaControlsEnabled())
-      return;
   }
 
   MediaControlElementBase::UpdateShownState();
@@ -295,7 +290,7 @@ bool MediaControlInputElement::IsDisabled() const {
   return FastHasAttribute(html_names::kDisabledAttr);
 }
 
-void MediaControlInputElement::Trace(Visitor* visitor) {
+void MediaControlInputElement::Trace(Visitor* visitor) const {
   HTMLInputElement::Trace(visitor);
   MediaControlElementBase::Trace(visitor);
   visitor->Trace(overflow_element_);

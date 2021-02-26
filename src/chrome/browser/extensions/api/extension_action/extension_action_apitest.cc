@@ -14,15 +14,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/extension_action/test_extension_action_api_observer.h"
 #include "chrome/browser/extensions/api/extension_action/test_icon_image_observer.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/content/session_tab_helper.h"
-#include "components/version_info/channel.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -30,11 +27,12 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_action.h"
+#include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/state_store.h"
+#include "extensions/common/api/extension_action/action_info_test_util.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
@@ -184,6 +182,14 @@ class ActionTestHelper {
   DISALLOW_COPY_AND_ASSIGN(ActionTestHelper);
 };
 
+// Forces a flush of the StateStore, where action state is persisted.
+void FlushStateStore(Profile* profile) {
+  base::RunLoop run_loop;
+  ExtensionSystem::Get(profile)->state_store()->FlushForTesting(
+      run_loop.QuitWhenIdleClosure());
+  run_loop.Run();
+}
+
 }  // namespace
 
 using ExtensionActionAPITest = ExtensionApiTest;
@@ -197,8 +203,7 @@ class MultiActionAPITest
     : public ExtensionActionAPITest,
       public testing::WithParamInterface<ActionInfo::Type> {
  public:
-  MultiActionAPITest()
-      : current_channel_(GetOverrideChannelForActionType(GetParam())) {}
+  MultiActionAPITest() = default;
 
   // Returns true if the |action| has whatever state its default is on the
   // tab with the given |tab_id|.
@@ -241,11 +246,6 @@ class MultiActionAPITest
     auto* action_manager = ExtensionActionManager::Get(profile());
     return action_manager->GetExtensionAction(extension);
   }
-
- private:
-  std::unique_ptr<ScopedCurrentChannel> current_channel_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultiActionAPITest);
 };
 
 // Canvas tests rely on the harness producing pixel output in order to read back
@@ -254,7 +254,7 @@ class MultiActionAPICanvasTest : public MultiActionAPITest {
  public:
   void SetUp() override {
     EnablePixelOutput();
-    ExtensionActionAPITest::SetUp();
+    MultiActionAPITest::SetUp();
   }
 };
 
@@ -536,6 +536,180 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, PopupCreation) {
   EXPECT_EQ(0u, frames.size());
 }
 
+// Tests that sessionStorage does not persist between closing and opening of a
+// popup.
+IN_PROC_BROWSER_TEST_P(MultiActionAPITest,
+                       SessionStorageDoesNotPersistBetweenOpenings) {
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Test sessionStorage",
+           "manifest_version": 2,
+           "version": "0.1",
+           "%s": {
+             "default_popup": "popup.html"
+           }
+         })";
+
+  constexpr char kPopupHtml[] =
+      R"(<!doctype html>
+         <html>
+           <script src="popup.js"></script>
+         </html>)";
+
+  constexpr char kPopupJs[] =
+      R"(window.onload = function() {
+           if (!sessionStorage.foo) {
+             sessionStorage.foo = 1;
+           } else {
+             sessionStorage.foo = parseInt(sessionStorage.foo) + 1;
+           }
+           chrome.test.notifyPass();};
+        )";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestKeyForActionType(GetParam())));
+  test_dir.WriteFile(FILE_PATH_LITERAL("popup.html"), kPopupHtml);
+  test_dir.WriteFile(FILE_PATH_LITERAL("popup.js"), kPopupJs);
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  std::unique_ptr<ExtensionActionTestHelper> toolbar_helper =
+      ExtensionActionTestHelper::Create(browser());
+
+  ExtensionAction* action = GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+
+  int tab_id = GetActiveTabId();
+  EnsureActionIsEnabledOnActiveTab(action);
+  EXPECT_TRUE(action->HasPopup(tab_id));
+
+  ResultCatcher result_catcher;
+  toolbar_helper->Press(0);
+  EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
+
+  ProcessManager* process_manager = ProcessManager::Get(profile());
+  ProcessManager::FrameSet frames =
+      process_manager->GetRenderFrameHostsForExtension(extension->id());
+  ASSERT_EQ(1u, frames.size());
+  content::RenderFrameHost* render_frame_host = *frames.begin();
+
+  content::WebContents* popup_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  ASSERT_TRUE(popup_contents);
+
+  std::string foo;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      popup_contents, "domAutomationController.send(sessionStorage.foo)",
+      &foo));
+  EXPECT_EQ("1", foo);
+
+  const std::string session_storage_id1 =
+      popup_contents->GetController().GetDefaultSessionStorageNamespace()->id();
+
+  // Close the popup.
+  content::WebContentsDestroyedWatcher contents_destroyed(popup_contents);
+  EXPECT_TRUE(content::ExecuteScript(popup_contents, "window.close()"));
+  contents_destroyed.Wait();
+
+  frames = process_manager->GetRenderFrameHostsForExtension(extension->id());
+  EXPECT_EQ(0u, frames.size());
+
+  // Open the popup again.
+  toolbar_helper->Press(0);
+  EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
+
+  frames = process_manager->GetRenderFrameHostsForExtension(extension->id());
+  ASSERT_EQ(1u, frames.size());
+  render_frame_host = *frames.begin();
+
+  popup_contents = content::WebContents::FromRenderFrameHost(render_frame_host);
+  const std::string session_storage_id2 =
+      popup_contents->GetController().GetDefaultSessionStorageNamespace()->id();
+
+  // Verify that sessionStorage did not persist. The reason is that closing the
+  // popup ends the session and clears objects in sessionStorage.
+  EXPECT_NE(session_storage_id1, session_storage_id2);
+  foo = "";
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      popup_contents, "domAutomationController.send(sessionStorage.foo)",
+      &foo));
+  EXPECT_EQ("1", foo);
+}
+
+using ActionAndBrowserActionAPITest = MultiActionAPITest;
+
+// Tests whether action values persist across sessions.
+// Note: Since pageActions are only applicable on a specific tab, this test
+// doesn't apply to them.
+IN_PROC_BROWSER_TEST_P(ActionAndBrowserActionAPITest, PRE_ValuesArePersisted) {
+  const char* dir_name = nullptr;
+  switch (GetParam()) {
+    case ActionInfo::TYPE_ACTION:
+      dir_name = "extension_action/action_persistence";
+      break;
+    case ActionInfo::TYPE_BROWSER:
+      dir_name = "extension_action/browser_action_persistence";
+      break;
+    case ActionInfo::TYPE_PAGE:
+      NOTREACHED();
+      break;
+  }
+  // Load up an extension, which then modifies the popup, title, and badge text
+  // of the action. We need to use a "real" extension on disk here (rather than
+  // a TestExtensionDir owned by the test fixture), because it needs to persist
+  // to the next test.
+  ResultCatcher catcher;
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII(dir_name));
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  // Verify the values were modified.
+  auto* action_manager = ExtensionActionManager::Get(profile());
+  ExtensionAction* action = action_manager->GetExtensionAction(*extension);
+  EXPECT_EQ(extension->GetResourceURL("modified_popup.html"),
+            action->GetPopupUrl(ExtensionAction::kDefaultTabId));
+  EXPECT_EQ("modified title", action->GetTitle(ExtensionAction::kDefaultTabId));
+  EXPECT_EQ("custom badge text",
+            action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
+
+  // We flush the state store to ensure the modified state is correctly stored
+  // on-disk (which could otherwise be potentially racy).
+  FlushStateStore(profile());
+}
+
+IN_PROC_BROWSER_TEST_P(ActionAndBrowserActionAPITest, ValuesArePersisted) {
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension);
+  EXPECT_EQ("Action persistence check", extension->name());
+
+  // The previous action states are read from the state store on start-up.
+  // Flushing it ensures that any pending tasks have run, and the action
+  // should be up-to-date.
+  FlushStateStore(profile());
+
+  auto* action_manager = ExtensionActionManager::Get(profile());
+  ExtensionAction* action = action_manager->GetExtensionAction(*extension);
+
+  // Only browser actions - not generic actions - persist values.
+  bool expect_persisted_values = GetParam() == ActionInfo::TYPE_BROWSER;
+
+  std::string expected_badge_text =
+      expect_persisted_values ? "custom badge text" : "";
+
+  EXPECT_EQ(expected_badge_text,
+            action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
+
+  // Due to https://crbug.com/1110156, action values with defaults specified in
+  // the manifest - like popup and title - aren't persisted, even for browser
+  // actions.
+  EXPECT_EQ(extension->GetResourceURL("default_popup.html"),
+            action->GetPopupUrl(ExtensionAction::kDefaultTabId));
+  EXPECT_EQ("default title", action->GetTitle(ExtensionAction::kDefaultTabId));
+}
+
 // Tests setting the icon dynamically from the background page.
 IN_PROC_BROWSER_TEST_P(MultiActionAPICanvasTest, DynamicSetIcon) {
   constexpr char kManifestTemplate[] =
@@ -549,24 +723,16 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPICanvasTest, DynamicSetIcon) {
            "background": { "scripts": ["background.js"] }
          })";
 
-  std::string blue_icon;
-  std::string red_icon;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(base::ReadFileToString(
-        test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"), &blue_icon));
-    ASSERT_TRUE(base::ReadFileToString(
-        test_data_dir_.AppendASCII("icon_rgb_255_0_0.png"), &red_icon));
-  }
-
   TestExtensionDir test_dir;
   test_dir.WriteManifest(base::StringPrintf(
       kManifestTemplate, GetManifestKeyForActionType(GetParam())));
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
                      base::StringPrintf(kSetIconBackgroundJsTemplate,
                                         GetAPINameForActionType(GetParam())));
-  test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
-  test_dir.WriteFile(FILE_PATH_LITERAL("red_icon.png"), red_icon);
+  test_dir.CopyFileTo(test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"),
+                      FILE_PATH_LITERAL("blue_icon.png"));
+  test_dir.CopyFileTo(test_data_dir_.AppendASCII("icon_rgb_255_0_0.png"),
+                      FILE_PATH_LITERAL("red_icon.png"));
 
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
@@ -672,20 +838,14 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconWithJavascriptHooks) {
            "background": { "scripts": ["background.js"] }
          })";
 
-  std::string blue_icon;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(base::ReadFileToString(
-        test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"), &blue_icon));
-  }
-
   TestExtensionDir test_dir;
   test_dir.WriteManifest(base::StringPrintf(
       kManifestTemplate, GetManifestKeyForActionType(GetParam())));
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
                      base::StringPrintf(kSetIconBackgroundJsTemplate,
                                         GetAPINameForActionType(GetParam())));
-  test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
+  test_dir.CopyFileTo(test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"),
+                      FILE_PATH_LITERAL("blue_icon.png"));
 
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
@@ -738,13 +898,6 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconWithSelfDefined) {
            "background": { "scripts": ["background.js"] }
          })";
 
-  std::string blue_icon;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(base::ReadFileToString(
-        test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"), &blue_icon));
-  }
-
   TestExtensionDir test_dir;
   test_dir.WriteManifest(base::StringPrintf(
       kManifestTemplate, GetManifestKeyForActionType(GetParam())));
@@ -752,7 +905,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconWithSelfDefined) {
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
                      base::StringPrintf(kSetIconBackgroundJsTemplate,
                                         GetAPINameForActionType(GetParam())));
-  test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
+  test_dir.CopyFileTo(test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"),
+                      FILE_PATH_LITERAL("blue_icon.png"));
 
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
@@ -1093,6 +1247,11 @@ INSTANTIATE_TEST_SUITE_P(All,
                          MultiActionAPITest,
                          testing::Values(ActionInfo::TYPE_ACTION,
                                          ActionInfo::TYPE_PAGE,
+                                         ActionInfo::TYPE_BROWSER));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ActionAndBrowserActionAPITest,
+                         testing::Values(ActionInfo::TYPE_ACTION,
                                          ActionInfo::TYPE_BROWSER));
 
 INSTANTIATE_TEST_SUITE_P(All,

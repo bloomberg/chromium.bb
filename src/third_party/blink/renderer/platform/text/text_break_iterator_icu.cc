@@ -30,6 +30,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/text/icu_error.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator_internal_icu.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -311,13 +312,13 @@ static inline bool TextInChunkOrOutOfRange(UText* text,
       text->chunkOffset = offset <= std::numeric_limits<int32_t>::max()
                               ? static_cast<int32_t>(offset)
                               : 0;
-      is_accessible = TRUE;
+      is_accessible = true;
       return true;
     }
     if (native_index >= native_length &&
         text->chunkNativeLimit == native_length) {
       text->chunkOffset = text->chunkLength;
-      is_accessible = FALSE;
+      is_accessible = false;
       return true;
     }
   } else {
@@ -330,12 +331,12 @@ static inline bool TextInChunkOrOutOfRange(UText* text,
       text->chunkOffset = offset <= std::numeric_limits<int32_t>::max()
                               ? static_cast<int32_t>(offset)
                               : 0;
-      is_accessible = TRUE;
+      is_accessible = true;
       return true;
     }
     if (native_index <= 0 && !text->chunkNativeStart) {
       text->chunkOffset = 0;
-      is_accessible = FALSE;
+      is_accessible = false;
       return true;
     }
   }
@@ -346,7 +347,7 @@ static UBool TextLatin1Access(UText* text,
                               int64_t native_index,
                               UBool forward) {
   if (!text->context)
-    return FALSE;
+    return false;
   int64_t native_length = TextNativeLength(text);
   UBool is_accessible;
   if (TextInChunkOrOutOfRange(text, native_index, native_length, forward,
@@ -370,7 +371,7 @@ static UBool TextLatin1Access(UText* text,
     DCHECK_EQ(new_context, kPriorContext);
     TextLatin1SwitchToPriorContext(text, native_index, native_length, forward);
   }
-  return TRUE;
+  return true;
 }
 
 static const struct UTextFuncs kTextLatin1Funcs = {
@@ -510,7 +511,7 @@ static void TextUTF16SwitchToPriorContext(UText* text,
 
 static UBool TextUTF16Access(UText* text, int64_t native_index, UBool forward) {
   if (!text->context)
-    return FALSE;
+    return false;
   int64_t native_length = TextNativeLength(text);
   UBool is_accessible;
   if (TextInChunkOrOutOfRange(text, native_index, native_length, forward,
@@ -532,7 +533,7 @@ static UBool TextUTF16Access(UText* text, int64_t native_index, UBool forward) {
     DCHECK_EQ(new_context, kPriorContext);
     TextUTF16SwitchToPriorContext(text, native_index, native_length, forward);
   }
-  return TRUE;
+  return true;
 }
 
 static const struct UTextFuncs kTextUTF16Funcs = {

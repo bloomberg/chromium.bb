@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -9,14 +11,15 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
-#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/fake_browser_dm_token_storage.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
+#include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
+#include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
+#include "components/enterprise/browser/enterprise_switches.h"
+#include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 
@@ -47,13 +50,12 @@ class ReportSchedulerTest
   ~ReportSchedulerTest() override = default;
 
   void SetUpOnMainThread() override {
-    g_browser_process->local_state()->SetBoolean(prefs::kCloudReportingEnabled,
-                                                 true);
+    g_browser_process->local_state()->SetBoolean(kCloudReportingEnabled, true);
   }
 
   void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
     static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
-        new ChromeBrowserExtraSetUp(this));
+        std::make_unique<ChromeBrowserExtraSetUp>(this));
   }
 
   void TearDownOnMainThread() override {

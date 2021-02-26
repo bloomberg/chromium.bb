@@ -42,7 +42,6 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/common/features.h"
 #import "ios/web/public/download/download_task.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher_response_writer.h"
@@ -282,7 +281,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
         }
       }));
 
-  web::WebState* webState = self.downloadTask->GetWebState();
+  web::WebState* webState = download->GetWebState();
   OverlayRequestQueue::FromWebState(webState, OverlayModality::kWebContentArea)
       ->AddRequest(std::move(request));
 }
@@ -375,13 +374,12 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   NSArray* customActions = @[ URL ];
   NSArray* activities = nil;
 
-  if (base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads)) {
-    OpenDownloadsFolderActivity* customActivity =
-        [[OpenDownloadsFolderActivity alloc] init];
-    customActivity.browserHandler = HandlerForProtocol(
-        self.browser->GetCommandDispatcher(), BrowserCoordinatorCommands);
-    activities = @[ customActivity ];
-  }
+  OpenDownloadsFolderActivity* customActivity =
+      [[OpenDownloadsFolderActivity alloc] init];
+  customActivity.browserHandler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), BrowserCoordinatorCommands);
+  activities = @[ customActivity ];
+
   _openInController =
       [[UIActivityViewController alloc] initWithActivityItems:customActions
                                         applicationActivities:activities];

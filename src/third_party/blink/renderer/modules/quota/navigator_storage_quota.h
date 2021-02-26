@@ -44,8 +44,6 @@ class StorageManager;
 class NavigatorStorageQuota final
     : public GarbageCollected<NavigatorStorageQuota>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorStorageQuota);
-
  public:
   static const char kSupplementName[];
 
@@ -60,7 +58,7 @@ class NavigatorStorageQuota final
 
   explicit NavigatorStorageQuota(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   mutable Member<DeprecatedStorageQuota> temporary_storage_;

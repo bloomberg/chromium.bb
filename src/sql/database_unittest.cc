@@ -14,12 +14,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "sql/database.h"
 #include "sql/database_memory_dump_provider.h"
 #include "sql/meta_table.h"
+#include "sql/sql_features.h"
 #include "sql/statement.h"
 #include "sql/test/database_test_peer.h"
 #include "sql/test/error_callback_support.h"
@@ -114,9 +114,31 @@ class ScopedUmaskSetter {
 
 }  // namespace
 
-using SQLDatabaseTest = sql::SQLTestBase;
+// We use the parameter to run all tests with WAL mode on and off.
+class SQLDatabaseTest : public SQLTestBase,
+                        public testing::WithParamInterface<bool> {
+ public:
+  SQLDatabaseTest() : SQLTestBase(GetDBOptions()) {}
+  explicit SQLDatabaseTest(DatabaseOptions options) : SQLTestBase(options) {}
 
-TEST_F(SQLDatabaseTest, Execute) {
+  sql::DatabaseOptions GetDBOptions() {
+    sql::DatabaseOptions options;
+    options.wal_mode = IsWALEnabled();
+    // TODO(crbug.com/1120969): Remove after switching to exclusive mode on by
+    // default.
+    options.exclusive_locking = false;
+#if defined(OS_FUCHSIA)  // Exclusive mode needs to be enabled to enter WAL mode
+                         // on Fuchsia
+    if (IsWALEnabled()) {
+      options.exclusive_locking = true;
+    }
+#endif  // defined(OS_FUCHSIA)
+    return options;
+  }
+  bool IsWALEnabled() { return GetParam(); }
+};
+
+TEST_P(SQLDatabaseTest, Execute) {
   // Valid statement should return true.
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   EXPECT_EQ(SQLITE_OK, db().GetErrorCode());
@@ -127,7 +149,7 @@ TEST_F(SQLDatabaseTest, Execute) {
   EXPECT_EQ(SQLITE_ERROR, db().GetErrorCode());
 }
 
-TEST_F(SQLDatabaseTest, ExecuteWithErrorCode) {
+TEST_P(SQLDatabaseTest, ExecuteWithErrorCode) {
   ASSERT_EQ(SQLITE_OK,
             db().ExecuteAndReturnErrorCode("CREATE TABLE foo (a, b)"));
   ASSERT_EQ(SQLITE_ERROR, db().ExecuteAndReturnErrorCode("CREATE TABLE TABLE"));
@@ -135,13 +157,7 @@ TEST_F(SQLDatabaseTest, ExecuteWithErrorCode) {
                               "INSERT INTO foo(a, b) VALUES (1, 2, 3, 4)"));
 }
 
-// Flaky on Windows ASAN. https://crbug.com/1027481
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_CachedStatement DISABLED_CachedStatement
-#else
-#define MAYBE_CachedStatement CachedStatement
-#endif
-TEST_F(SQLDatabaseTest, MAYBE_CachedStatement) {
+TEST_P(SQLDatabaseTest, CachedStatement) {
   sql::StatementID id1 = SQL_FROM_HERE;
   sql::StatementID id2 = SQL_FROM_HERE;
   static const char kId1Sql[] = "SELECT a FROM foo";
@@ -201,13 +217,13 @@ TEST_F(SQLDatabaseTest, MAYBE_CachedStatement) {
       << "Using a different SQL with the same statement ID should DCHECK";
 }
 
-TEST_F(SQLDatabaseTest, IsSQLValidTest) {
+TEST_P(SQLDatabaseTest, IsSQLValidTest) {
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   ASSERT_TRUE(db().IsSQLValid("SELECT a FROM foo"));
   ASSERT_FALSE(db().IsSQLValid("SELECT no_exist FROM foo"));
 }
 
-TEST_F(SQLDatabaseTest, DoesTableExist) {
+TEST_P(SQLDatabaseTest, DoesTableExist) {
   EXPECT_FALSE(db().DoesTableExist("foo"));
   EXPECT_FALSE(db().DoesTableExist("foo_index"));
 
@@ -221,7 +237,7 @@ TEST_F(SQLDatabaseTest, DoesTableExist) {
   EXPECT_FALSE(db().DoesTableExist("FOO"));
 }
 
-TEST_F(SQLDatabaseTest, DoesIndexExist) {
+TEST_P(SQLDatabaseTest, DoesIndexExist) {
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   EXPECT_FALSE(db().DoesIndexExist("foo"));
   EXPECT_FALSE(db().DoesIndexExist("foo_ubdex"));
@@ -236,7 +252,7 @@ TEST_F(SQLDatabaseTest, DoesIndexExist) {
   EXPECT_FALSE(db().DoesIndexExist("FOO_INDEX"));
 }
 
-TEST_F(SQLDatabaseTest, DoesViewExist) {
+TEST_P(SQLDatabaseTest, DoesViewExist) {
   EXPECT_FALSE(db().DoesViewExist("voo"));
   ASSERT_TRUE(db().Execute("CREATE VIEW voo (a) AS SELECT 1"));
   EXPECT_FALSE(db().DoesIndexExist("voo"));
@@ -248,7 +264,7 @@ TEST_F(SQLDatabaseTest, DoesViewExist) {
   EXPECT_FALSE(db().DoesViewExist("VOO"));
 }
 
-TEST_F(SQLDatabaseTest, DoesColumnExist) {
+TEST_P(SQLDatabaseTest, DoesColumnExist) {
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
 
   EXPECT_FALSE(db().DoesColumnExist("foo", "bar"));
@@ -263,7 +279,7 @@ TEST_F(SQLDatabaseTest, DoesColumnExist) {
   EXPECT_TRUE(db().DoesColumnExist("foo", "A"));
 }
 
-TEST_F(SQLDatabaseTest, GetLastInsertRowId) {
+TEST_P(SQLDatabaseTest, GetLastInsertRowId) {
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (id INTEGER PRIMARY KEY, value)"));
 
   ASSERT_TRUE(db().Execute("INSERT INTO foo (value) VALUES (12)"));
@@ -279,7 +295,7 @@ TEST_F(SQLDatabaseTest, GetLastInsertRowId) {
   EXPECT_EQ(12, s.ColumnInt(0));
 }
 
-TEST_F(SQLDatabaseTest, Rollback) {
+TEST_P(SQLDatabaseTest, Rollback) {
   ASSERT_TRUE(db().BeginTransaction());
   ASSERT_TRUE(db().BeginTransaction());
   EXPECT_EQ(2, db().transaction_nesting());
@@ -290,7 +306,7 @@ TEST_F(SQLDatabaseTest, Rollback) {
 
 // Test the scoped error expecter by attempting to insert a duplicate
 // value into an index.
-TEST_F(SQLDatabaseTest, ScopedErrorExpecter) {
+TEST_P(SQLDatabaseTest, ScopedErrorExpecter) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER UNIQUE)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
@@ -305,7 +321,7 @@ TEST_F(SQLDatabaseTest, ScopedErrorExpecter) {
 
 // Test that clients of GetUntrackedStatement() can test corruption-handling
 // with ScopedErrorExpecter.
-TEST_F(SQLDatabaseTest, ScopedIgnoreUntracked) {
+TEST_P(SQLDatabaseTest, ScopedIgnoreUntracked) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER UNIQUE)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_FALSE(db().DoesTableExist("bar"));
@@ -327,7 +343,7 @@ TEST_F(SQLDatabaseTest, ScopedIgnoreUntracked) {
   }
 }
 
-TEST_F(SQLDatabaseTest, ErrorCallback) {
+TEST_P(SQLDatabaseTest, ErrorCallback) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER UNIQUE)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
@@ -384,7 +400,7 @@ TEST_F(SQLDatabaseTest, ErrorCallback) {
 
 // Test that sql::Database::Raze() results in a database without the
 // tables from the original database.
-TEST_F(SQLDatabaseTest, Raze) {
+TEST_P(SQLDatabaseTest, Raze) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute("INSERT INTO foo (value) VALUES (12)"));
@@ -451,35 +467,38 @@ void TestPageSize(const base::FilePath& db_prefix,
   const base::FilePath db_path = db_prefix.InsertBeforeExtensionASCII(
       base::NumberToString(initial_page_size));
   sql::Database::Delete(db_path);
-  sql::Database db;
-  db.set_page_size(initial_page_size);
+  sql::Database db({.page_size = initial_page_size});
   ASSERT_TRUE(db.Open(db_path));
   ASSERT_TRUE(db.Execute(kCreateSql));
   ASSERT_TRUE(db.Execute(kInsertSql1));
   ASSERT_TRUE(db.Execute(kInsertSql2));
   ASSERT_EQ(expected_initial_page_size,
             ExecuteWithResult(&db, "PRAGMA page_size"));
+  db.Close();
 
+  // Re-open the database while setting a new |options.page_size| in the object.
+  sql::Database razed_db({.page_size = final_page_size});
+  ASSERT_TRUE(razed_db.Open(db_path));
   // Raze will use the page size set in the connection object, which may not
   // match the file's page size.
-  db.set_page_size(final_page_size);
-  ASSERT_TRUE(db.Raze());
+  ASSERT_TRUE(razed_db.Raze());
 
   // SQLite 3.10.2 (at least) has a quirk with the sqlite3_backup() API (used by
   // Raze()) which causes the destination database to remember the previous
   // page_size, even if the overwriting database changed the page_size.  Access
   // the actual database to cause the cached value to be updated.
-  EXPECT_EQ("0", ExecuteWithResult(&db, "SELECT COUNT(*) FROM sqlite_master"));
+  EXPECT_EQ("0",
+            ExecuteWithResult(&razed_db, "SELECT COUNT(*) FROM sqlite_master"));
 
   EXPECT_EQ(expected_final_page_size,
-            ExecuteWithResult(&db, "PRAGMA page_size"));
-  EXPECT_EQ("1", ExecuteWithResult(&db, "PRAGMA page_count"));
+            ExecuteWithResult(&razed_db, "PRAGMA page_size"));
+  EXPECT_EQ("1", ExecuteWithResult(&razed_db, "PRAGMA page_count"));
 }
 
 // Verify that sql::Recovery maintains the page size, and the virtual table
 // works with page sizes other than SQLite's default.  Also verify the case
 // where the default page size has changed.
-TEST_F(SQLDatabaseTest, RazePageSize) {
+TEST_P(SQLDatabaseTest, RazePageSize) {
   const std::string default_page_size =
       ExecuteWithResult(&db(), "PRAGMA page_size");
 
@@ -498,16 +517,17 @@ TEST_F(SQLDatabaseTest, RazePageSize) {
   // Databases with no page size specified should result in the default
   // page size.  2k has never been the default page size.
   ASSERT_NE("2048", default_page_size);
-  EXPECT_NO_FATAL_FAILURE(TestPageSize(
-      db_path(), 2048, "2048", Database::kDefaultPageSize, default_page_size));
+  EXPECT_NO_FATAL_FAILURE(TestPageSize(db_path(), 2048, "2048",
+                                       DatabaseOptions::kDefaultPageSize,
+                                       default_page_size));
 }
 
 // Test that Raze() results are seen in other connections.
-TEST_F(SQLDatabaseTest, RazeMultiple) {
+TEST_P(SQLDatabaseTest, RazeMultiple) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
 
-  sql::Database other_db;
+  sql::Database other_db(GetDBOptions());
   ASSERT_TRUE(other_db.Open(db_path()));
 
   // Check that the second connection sees the table.
@@ -519,14 +539,14 @@ TEST_F(SQLDatabaseTest, RazeMultiple) {
   ASSERT_EQ(0, SqliteMasterCount(&other_db));
 }
 
-TEST_F(SQLDatabaseTest, RazeLocked) {
+TEST_P(SQLDatabaseTest, RazeLocked) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
 
   // Open a transaction and write some data in a second connection.
   // This will acquire a PENDING or EXCLUSIVE transaction, which will
   // cause the raze to fail.
-  sql::Database other_db;
+  sql::Database other_db(GetDBOptions());
   ASSERT_TRUE(other_db.Open(db_path()));
   ASSERT_TRUE(other_db.BeginTransaction());
   const char* kInsertSql = "INSERT INTO foo VALUES (1, 'data')";
@@ -544,19 +564,23 @@ TEST_F(SQLDatabaseTest, RazeLocked) {
 
   // An unfinished read transaction in the other connection also
   // blocks raze.
-  const char* kQuery = "SELECT COUNT(*) FROM foo";
-  sql::Statement s(other_db.GetUniqueStatement(kQuery));
-  ASSERT_TRUE(s.Step());
-  ASSERT_FALSE(db().Raze());
+  // This doesn't happen in WAL mode because reads are no longer blocked by
+  // write operations when using a WAL.
+  if (!IsWALEnabled()) {
+    const char* kQuery = "SELECT COUNT(*) FROM foo";
+    sql::Statement s(other_db.GetUniqueStatement(kQuery));
+    ASSERT_TRUE(s.Step());
+    ASSERT_FALSE(db().Raze());
 
-  // Complete the statement unlocks the database.
-  ASSERT_FALSE(s.Step());
-  ASSERT_TRUE(db().Raze());
+    // Completing the statement unlocks the database.
+    ASSERT_FALSE(s.Step());
+    ASSERT_TRUE(db().Raze());
+  }
 }
 
 // Verify that Raze() can handle an empty file.  SQLite should treat
 // this as an empty database.
-TEST_F(SQLDatabaseTest, RazeEmptyDB) {
+TEST_P(SQLDatabaseTest, RazeEmptyDB) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   db().Close();
@@ -569,7 +593,9 @@ TEST_F(SQLDatabaseTest, RazeEmptyDB) {
 }
 
 // Verify that Raze() can handle a file of junk.
-TEST_F(SQLDatabaseTest, RazeNOTADB) {
+// Need exclusive mode off here as there are some subtleties (by design) around
+// how the cache is used with it on which causes the test to fail.
+TEST_P(SQLDatabaseTest, RazeNOTADB) {
   db().Close();
   sql::Database::Delete(db_path());
   ASSERT_FALSE(GetPathExists(db_path()));
@@ -595,7 +621,7 @@ TEST_F(SQLDatabaseTest, RazeNOTADB) {
 }
 
 // Verify that Raze() can handle a database overwritten with garbage.
-TEST_F(SQLDatabaseTest, RazeNOTADB2) {
+TEST_P(SQLDatabaseTest, RazeNOTADB2) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_EQ(1, SqliteMasterCount(&db()));
@@ -624,7 +650,7 @@ TEST_F(SQLDatabaseTest, RazeNOTADB2) {
 // essential for cases where the Open() can fail entirely, so the
 // Raze() cannot happen later.  Additionally test that when the
 // callback does this during Open(), the open is retried and succeeds.
-TEST_F(SQLDatabaseTest, RazeCallbackReopen) {
+TEST_P(SQLDatabaseTest, RazeCallbackReopen) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_EQ(1, SqliteMasterCount(&db()));
@@ -657,7 +683,7 @@ TEST_F(SQLDatabaseTest, RazeCallbackReopen) {
 }
 
 // Basic test of RazeAndClose() operation.
-TEST_F(SQLDatabaseTest, RazeAndClose) {
+TEST_P(SQLDatabaseTest, RazeAndClose) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   const char* kPopulateSql = "INSERT INTO foo (value) VALUES (12)";
 
@@ -685,13 +711,7 @@ TEST_F(SQLDatabaseTest, RazeAndClose) {
 
 // Test that various operations fail without crashing after
 // RazeAndClose().
-// Flaky on Windows ASAN. https://crbug.com/1027481
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_RazeAndCloseDiagnostics DISABLED_RazeAndCloseDiagnostics
-#else
-#define MAYBE_RazeAndCloseDiagnostics RazeAndCloseDiagnostics
-#endif
-TEST_F(SQLDatabaseTest, MAYBE_RazeAndCloseDiagnostics) {
+TEST_P(SQLDatabaseTest, RazeAndCloseDiagnostics) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   const char* kPopulateSql = "INSERT INTO foo (value) VALUES (12)";
   const char* kSimpleSql = "SELECT 1";
@@ -765,7 +785,7 @@ TEST_F(SQLDatabaseTest, MAYBE_RazeAndCloseDiagnostics) {
 // Test that Raze() turns off memory mapping so that the file is truncated.
 // [This would not cover the case of multiple connections where one of the other
 // connections is memory-mapped.  That is infrequent in Chromium.]
-TEST_F(SQLDatabaseTest, RazeTruncate) {
+TEST_P(SQLDatabaseTest, RazeTruncate) {
   // The empty database has 0 or 1 pages.  Raze() should leave it with exactly 1
   // page.  Not checking directly because auto_vacuum on Android adds a freelist
   // page.
@@ -781,6 +801,11 @@ TEST_F(SQLDatabaseTest, RazeTruncate) {
     ASSERT_TRUE(
         db().Execute("INSERT INTO foo (value) VALUES (randomblob(1024))"));
   }
+
+  // In WAL mode, writes don't reach the database file until a checkpoint
+  // happens.
+  ASSERT_TRUE(db().CheckpointDatabase());
+
   int64_t db_size;
   ASSERT_TRUE(base::GetFileSize(db_path(), &db_size));
   ASSERT_GT(db_size, expected_size);
@@ -797,7 +822,7 @@ TEST_F(SQLDatabaseTest, RazeTruncate) {
 }
 
 #if defined(OS_ANDROID)
-TEST_F(SQLDatabaseTest, SetTempDirForSQL) {
+TEST_P(SQLDatabaseTest, SetTempDirForSQL) {
   sql::MetaTable meta_table;
   // Below call needs a temporary directory in sqlite3
   // On Android, it can pass only when the temporary directory is set.
@@ -808,23 +833,35 @@ TEST_F(SQLDatabaseTest, SetTempDirForSQL) {
 }
 #endif  // defined(OS_ANDROID)
 
-TEST_F(SQLDatabaseTest, DeleteNonWal) {
+TEST_P(SQLDatabaseTest, Delete) {
   EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
   db().Close();
 
-  // Should have both a main database file and a journal file because
-  // of journal_mode TRUNCATE.
   base::FilePath journal_path = sql::Database::JournalPath(db_path());
+  base::FilePath wal_path = sql::Database::WriteAheadLogPath(db_path());
+
+  // Should have both a main database file and a journal file if
+  // journal_mode is TRUNCATE. There is no WAL file as it is deleted on Close.
   ASSERT_TRUE(GetPathExists(db_path()));
-  ASSERT_TRUE(GetPathExists(journal_path));
+  if (!IsWALEnabled()) {  // TRUNCATE mode
+    ASSERT_TRUE(GetPathExists(journal_path));
+  }
 
   sql::Database::Delete(db_path());
   EXPECT_FALSE(GetPathExists(db_path()));
   EXPECT_FALSE(GetPathExists(journal_path));
+  EXPECT_FALSE(GetPathExists(wal_path));
 }
 
+// WAL mode is currently not supported on Fuchsia
+#if !defined(OS_FUCHSIA)
+INSTANTIATE_TEST_SUITE_P(JournalMode, SQLDatabaseTest, testing::Bool());
+#else
+INSTANTIATE_TEST_SUITE_P(JournalMode, SQLDatabaseTest, testing::Values(false));
+#endif
+
 #if defined(OS_POSIX)  // This test operates on POSIX file permissions.
-TEST_F(SQLDatabaseTest, PosixFilePermissions) {
+TEST_P(SQLDatabaseTest, PosixFilePermissions) {
   db().Close();
   sql::Database::Delete(db_path());
   ASSERT_FALSE(GetPathExists(db_path()));
@@ -846,41 +883,34 @@ TEST_F(SQLDatabaseTest, PosixFilePermissions) {
   EXPECT_TRUE(base::GetPosixFilePermissions(db_path(), &mode));
   ASSERT_EQ(mode, 0600);
 
-  {
+  if (IsWALEnabled()) {  // WAL mode
+    // The WAL file is created lazily on first change.
+    ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
+
+    base::FilePath wal_path = sql::Database::WriteAheadLogPath(db_path());
+    ASSERT_TRUE(GetPathExists(wal_path));
+    EXPECT_TRUE(base::GetPosixFilePermissions(wal_path, &mode));
+    ASSERT_EQ(mode, 0600);
+
+    // The shm file doesn't exist in exclusive locking mode.
+    if (ExecuteWithResult(&db(), "PRAGMA locking_mode") == "normal") {
+      base::FilePath shm_path = sql::Database::SharedMemoryFilePath(db_path());
+      ASSERT_TRUE(GetPathExists(shm_path));
+      EXPECT_TRUE(base::GetPosixFilePermissions(shm_path, &mode));
+      ASSERT_EQ(mode, 0600);
+    }
+  } else {  // Truncate mode
     base::FilePath journal_path = sql::Database::JournalPath(db_path());
     DLOG(ERROR) << "journal_path: " << journal_path;
     ASSERT_TRUE(GetPathExists(journal_path));
     EXPECT_TRUE(base::GetPosixFilePermissions(journal_path, &mode));
     ASSERT_EQ(mode, 0600);
   }
-
-  // Reopen the database and turn on WAL mode.
-  db().Close();
-  sql::Database::Delete(db_path());
-  ASSERT_FALSE(GetPathExists(db_path()));
-  ASSERT_TRUE(db().Open(db_path()));
-  ASSERT_TRUE(db().Execute("PRAGMA journal_mode = WAL"));
-  ASSERT_EQ("wal", ExecuteWithResult(&db(), "PRAGMA journal_mode"));
-
-  // The WAL file is created lazily on first change.
-  ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
-
-  {
-    base::FilePath wal_path = sql::Database::WriteAheadLogPath(db_path());
-    ASSERT_TRUE(GetPathExists(wal_path));
-    EXPECT_TRUE(base::GetPosixFilePermissions(wal_path, &mode));
-    ASSERT_EQ(mode, 0600);
-
-    base::FilePath shm_path = sql::Database::SharedMemoryFilePath(db_path());
-    ASSERT_TRUE(GetPathExists(shm_path));
-    EXPECT_TRUE(base::GetPosixFilePermissions(shm_path, &mode));
-    ASSERT_EQ(mode, 0600);
-  }
 }
 #endif  // defined(OS_POSIX)
 
 // Test that errors start happening once Poison() is called.
-TEST_F(SQLDatabaseTest, Poison) {
+TEST_P(SQLDatabaseTest, Poison) {
   EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
 
   // Before the Poison() call, things generally work.
@@ -927,7 +957,7 @@ TEST_F(SQLDatabaseTest, Poison) {
   EXPECT_FALSE(db().CommitTransaction());
 }
 
-TEST_F(SQLDatabaseTest, AttachDatabase) {
+TEST_P(SQLDatabaseTest, AttachDatabase) {
   EXPECT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
 
   // Create a database to attach to.
@@ -960,7 +990,7 @@ TEST_F(SQLDatabaseTest, AttachDatabase) {
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
 }
 
-TEST_F(SQLDatabaseTest, AttachDatabaseWithOpenTransaction) {
+TEST_P(SQLDatabaseTest, AttachDatabaseWithOpenTransaction) {
   EXPECT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
 
   // Create a database to attach to.
@@ -1006,7 +1036,7 @@ TEST_F(SQLDatabaseTest, AttachDatabaseWithOpenTransaction) {
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
 }
 
-TEST_F(SQLDatabaseTest, Basic_QuickIntegrityCheck) {
+TEST_P(SQLDatabaseTest, Basic_QuickIntegrityCheck) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   EXPECT_TRUE(db().QuickIntegrityCheck());
@@ -1023,7 +1053,7 @@ TEST_F(SQLDatabaseTest, Basic_QuickIntegrityCheck) {
   }
 }
 
-TEST_F(SQLDatabaseTest, Basic_FullIntegrityCheck) {
+TEST_P(SQLDatabaseTest, Basic_FullIntegrityCheck) {
   const std::string kOk("ok");
   std::vector<std::string> messages;
 
@@ -1050,7 +1080,7 @@ TEST_F(SQLDatabaseTest, Basic_FullIntegrityCheck) {
   // file that would pass the quick check and fail the full check.
 }
 
-TEST_F(SQLDatabaseTest, OnMemoryDump) {
+TEST_P(SQLDatabaseTest, OnMemoryDump) {
   base::trace_event::MemoryDumpArgs args = {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
   base::trace_event::ProcessMemoryDump pmd(args);
@@ -1060,7 +1090,7 @@ TEST_F(SQLDatabaseTest, OnMemoryDump) {
 
 // Test that the functions to collect diagnostic data run to completion, without
 // worrying too much about what they generate (since that will change).
-TEST_F(SQLDatabaseTest, CollectDiagnosticInfo) {
+TEST_P(SQLDatabaseTest, CollectDiagnosticInfo) {
   const std::string corruption_info = db().CollectCorruptionInfo();
   EXPECT_NE(std::string::npos, corruption_info.find("SQLITE_CORRUPT"));
   EXPECT_NE(std::string::npos, corruption_info.find("integrity_check"));
@@ -1093,7 +1123,7 @@ TEST_F(SQLDatabaseTest, CollectDiagnosticInfo) {
 
 // Test that a fresh database has mmap enabled by default, if mmap'ed I/O is
 // enabled by SQLite.
-TEST_F(SQLDatabaseTest, MmapInitiallyEnabled) {
+TEST_P(SQLDatabaseTest, MmapInitiallyEnabled) {
   {
     sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
     ASSERT_TRUE(s.Step())
@@ -1121,7 +1151,7 @@ TEST_F(SQLDatabaseTest, MmapInitiallyEnabled) {
 
 // Test whether a fresh database gets mmap enabled when using alternate status
 // storage.
-TEST_F(SQLDatabaseTest, MmapInitiallyEnabledAltStatus) {
+TEST_P(SQLDatabaseTest, MmapInitiallyEnabledAltStatus) {
   // Re-open fresh database with alt-status flag set.
   db().Close();
   sql::Database::Delete(db_path());
@@ -1153,7 +1183,7 @@ TEST_F(SQLDatabaseTest, MmapInitiallyEnabledAltStatus) {
   EXPECT_EQ("0", ExecuteWithResult(&db(), "PRAGMA mmap_size"));
 }
 
-TEST_F(SQLDatabaseTest, GetAppropriateMmapSize) {
+TEST_P(SQLDatabaseTest, GetAppropriateMmapSize) {
   const size_t kMmapAlot = 25 * 1024 * 1024;
   int64_t mmap_status = MetaTable::kMmapFailure;
 
@@ -1196,7 +1226,7 @@ TEST_F(SQLDatabaseTest, GetAppropriateMmapSize) {
   ASSERT_EQ(MetaTable::kMmapSuccess, mmap_status);
 }
 
-TEST_F(SQLDatabaseTest, GetAppropriateMmapSizeAltStatus) {
+TEST_P(SQLDatabaseTest, GetAppropriateMmapSizeAltStatus) {
   const size_t kMmapAlot = 25 * 1024 * 1024;
 
   // At this point, Database still expects a future [meta] table.
@@ -1232,16 +1262,109 @@ TEST_F(SQLDatabaseTest, GetAppropriateMmapSizeAltStatus) {
             ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
 }
 
+TEST_P(SQLDatabaseTest, GetMemoryUsage) {
+  // Databases with mmap enabled may not follow the assumptions below.
+  db().Close();
+  db().set_mmap_disabled();
+  ASSERT_TRUE(db().Open(db_path()));
+
+  int initial_memory = db().GetMemoryUsage();
+  EXPECT_GT(initial_memory, 0)
+      << "SQLite should always use some memory for a database";
+
+  ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
+  ASSERT_TRUE(db().Execute("INSERT INTO foo(a, b) VALUES (12, 13)"));
+
+  int post_query_memory = db().GetMemoryUsage();
+  EXPECT_GT(post_query_memory, initial_memory)
+      << "Page cache usage should go up after executing queries";
+
+  db().TrimMemory();
+  int post_trim_memory = db().GetMemoryUsage();
+  EXPECT_GT(post_query_memory, post_trim_memory)
+      << "Page cache usage should go down after calling TrimMemory()";
+}
+
+class SQLDatabaseTestExclusiveMode : public SQLDatabaseTest {
+ public:
+  SQLDatabaseTestExclusiveMode() : SQLDatabaseTest(GetDBOptions()) {}
+
+  DatabaseOptions GetDBOptions() {
+    DatabaseOptions options = SQLDatabaseTest::GetDBOptions();
+    options.exclusive_locking = true;
+    return options;
+  }
+};
+
+TEST_P(SQLDatabaseTestExclusiveMode, LockingModeExclusive) {
+  EXPECT_EQ(ExecuteWithResult(&db(), "PRAGMA locking_mode"), "exclusive");
+}
+
+TEST_P(SQLDatabaseTest, LockingModeNormal) {
+  EXPECT_EQ(ExecuteWithResult(&db(), "PRAGMA locking_mode"), "normal");
+}
+
+TEST_P(SQLDatabaseTest, OpenedInCorrectMode) {
+  std::string expected_mode = IsWALEnabled() ? "wal" : "truncate";
+  EXPECT_EQ(ExecuteWithResult(&db(), "PRAGMA journal_mode"), expected_mode);
+}
+
+TEST_P(SQLDatabaseTest, CheckpointDatabase) {
+  if (!IsWALEnabled())
+    return;
+
+  base::FilePath wal_path = sql::Database::WriteAheadLogPath(db_path());
+
+  int64_t wal_size = 0;
+  // WAL file initially empty.
+  EXPECT_TRUE(GetPathExists(wal_path));
+  base::GetFileSize(wal_path, &wal_size);
+  EXPECT_EQ(wal_size, 0);
+
+  ASSERT_TRUE(
+      db().Execute("CREATE TABLE foo (id INTEGER UNIQUE, value INTEGER)"));
+  ASSERT_TRUE(db().Execute("INSERT INTO foo VALUES (1, 1)"));
+  ASSERT_TRUE(db().Execute("INSERT INTO foo VALUES (2, 2)"));
+
+  // Writes reach WAL file but not db file.
+  base::GetFileSize(wal_path, &wal_size);
+  EXPECT_GT(wal_size, 0);
+
+  int64_t db_size = 0;
+  base::GetFileSize(db_path(), &db_size);
+  EXPECT_EQ(db_size, db().page_size());
+
+  // Checkpoint database to immediately propagate writes to DB file.
+  EXPECT_TRUE(db().CheckpointDatabase());
+
+  base::GetFileSize(db_path(), &db_size);
+  EXPECT_GT(db_size, db().page_size());
+  EXPECT_EQ(ExecuteWithResult(&db(), "SELECT value FROM foo where id=1"), "1");
+  EXPECT_EQ(ExecuteWithResult(&db(), "SELECT value FROM foo where id=2"), "2");
+}
+
+TEST_P(SQLDatabaseTest, CorruptSizeInHeaderTest) {
+  ASSERT_TRUE(db().Execute("CREATE TABLE foo (x)"));
+  ASSERT_TRUE(db().Execute("CREATE TABLE bar (x)"));
+  db().Close();
+
+  ASSERT_TRUE(CorruptSizeInHeaderOfDB());
+  {
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
+    ASSERT_TRUE(db().Open(db_path()));
+    EXPECT_FALSE(db().Execute("INSERT INTO foo values (1)"));
+    EXPECT_FALSE(db().DoesTableExist("foo"));
+    EXPECT_FALSE(db().DoesTableExist("bar"));
+    EXPECT_FALSE(db().Execute("SELECT * FROM foo"));
+    EXPECT_TRUE(expecter.SawExpectedErrors());
+  }
+}
+
 // To prevent invalid SQL from accidentally shipping to production, prepared
 // statements which fail to compile with SQLITE_ERROR call DLOG(DCHECK).  This
 // case cannot be suppressed with an error callback.
-// Flaky on Windows ASAN. https://crbug.com/1027481
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_CompileError DISABLED_CompileError
-#else
-#define MAYBE_CompileError CompileError
-#endif
-TEST_F(SQLDatabaseTest, MAYBE_CompileError) {
+TEST_P(SQLDatabaseTest, CompileError) {
 // DEATH tests not supported on Android, iOS, or Fuchsia.
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
   if (DLOG_IS_ON(FATAL)) {

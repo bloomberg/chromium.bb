@@ -88,8 +88,8 @@ class BasicCodeModules : public CodeModules {
 
  private:
   // Disallow copy constructor and assignment operator.
-  BasicCodeModules(const BasicCodeModules &that);
-  void operator=(const BasicCodeModules &that);
+  BasicCodeModules(const BasicCodeModules& that);
+  void operator=(const BasicCodeModules& that);
 };
 
 }  // namespace google_breakpad

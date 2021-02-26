@@ -13,15 +13,22 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_seekablemultistream.h"
+#include "core/fxcrt/autonuller.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
+#include "core/fxcrt/xml/cfx_xmldocument.h"
+#include "core/fxcrt/xml/cfx_xmlparser.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
+#include "fpdfsdk/fpdfxfa/cpdfxfa_docenvironment.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_page.h"
+#include "fxbarcode/BC_Library.h"
 #include "fxjs/cjs_runtime.h"
 #include "fxjs/ijs_runtime.h"
 #include "public/fpdf_formfill.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/notreached.h"
 #include "third_party/base/stl_util.h"
+#include "v8/include/cppgc/allocation.h"
+#include "xfa/fgas/font/cfgas_gemodule.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
 #include "xfa/fxfa/cxfa_ffapp.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
@@ -80,36 +87,33 @@ RetainPtr<CPDF_SeekableMultiStream> CreateXFAMultiStream(
 
 }  // namespace
 
+void CPDFXFA_ModuleInit() {
+  CFGAS_GEModule::Create();
+  BC_Library_Init();
+}
+
+void CPDFXFA_ModuleDestroy() {
+  BC_Library_Destroy();
+  CFGAS_GEModule::Destroy();
+}
+
 CPDFXFA_Context::CPDFXFA_Context(CPDF_Document* pPDFDoc)
     : m_pPDFDoc(pPDFDoc),
-      m_pXFAApp(pdfium::MakeUnique<CXFA_FFApp>(this)),
-      m_DocEnv(this) {
+      m_pDocEnv(std::make_unique<CPDFXFA_DocEnvironment>(this)),
+      m_pGCHeap(FXGC_CreateHeap()) {
   ASSERT(m_pPDFDoc);
+
+  // There might not be a heap when JS not initialized.
+  if (m_pGCHeap) {
+    m_pXFAApp = cppgc::MakeGarbageCollected<CXFA_FFApp>(
+        m_pGCHeap->GetAllocationHandle(), this);
+  }
 }
 
 CPDFXFA_Context::~CPDFXFA_Context() {
   m_nLoadStatus = FXFA_LOADSTATUS_CLOSING;
-
-  // Must happen before we remove the form fill environment.
-  CloseXFADoc();
-
-  if (m_pFormFillEnv) {
+  if (m_pFormFillEnv)
     m_pFormFillEnv->ClearAllFocusedAnnots();
-    // Once we're deleted the FormFillEnvironment will point at a bad underlying
-    // doc so we need to reset it ...
-    m_pFormFillEnv->GetPDFDocument()->SetExtension(nullptr);
-    m_pFormFillEnv.Reset();
-  }
-
-  m_nLoadStatus = FXFA_LOADSTATUS_CLOSED;
-}
-
-void CPDFXFA_Context::CloseXFADoc() {
-  if (!m_pXFADoc)
-    return;
-
-  m_pXFADocView = nullptr;
-  m_pXFADoc.reset();
 }
 
 void CPDFXFA_Context::SetFormFillEnv(
@@ -118,16 +122,12 @@ void CPDFXFA_Context::SetFormFillEnv(
   // context will be different if the form fill environment closes, so, force
   // the layout data to clear.
   if (m_pXFADoc && m_pXFADoc->GetXFADoc()) {
-    // The CPDF_XFADocView has a pointer to the CXFA_LayoutProcessor which is
-    // owned by the CXFA_Document. The Layout Processor will be freed with the
-    // ClearLayoutData() call. Make sure the doc view has already released the
-    // pointer.
-    if (m_pXFADocView)
-      m_pXFADocView->ResetLayoutProcessor();
-
     m_pXFADoc->GetXFADoc()->ClearLayoutData();
+    m_pXFADocView.Clear();
+    m_pXFADoc.Clear();
+    m_pXFAApp.Clear();
+    FXGC_ForceGarbageCollection(m_pGCHeap.get());
   }
-
   m_pFormFillEnv.Reset(pFormFillEnv);
 }
 
@@ -135,22 +135,37 @@ bool CPDFXFA_Context::LoadXFADoc() {
   m_nLoadStatus = FXFA_LOADSTATUS_LOADING;
   m_XFAPageList.clear();
 
+  CJS_Runtime* actual_runtime = GetCJSRuntime();  // Null if a stub.
+  if (!actual_runtime) {
+    FXSYS_SetLastError(FPDF_ERR_XFALOAD);
+    return false;
+  }
+
   auto stream = CreateXFAMultiStream(m_pPDFDoc.Get());
   if (!stream) {
     FXSYS_SetLastError(FPDF_ERR_XFALOAD);
     return false;
   }
 
-  m_pXFADoc = CXFA_FFDoc::CreateAndOpen(m_pXFAApp.get(), &m_DocEnv,
-                                        m_pPDFDoc.Get(), stream);
-  if (!m_pXFADoc) {
+  CFX_XMLParser parser(stream);
+  m_pXML = parser.Parse();
+  if (!m_pXML) {
     FXSYS_SetLastError(FPDF_ERR_XFALOAD);
     return false;
   }
 
-  CJS_Runtime* actual_runtime = GetCJSRuntime();  // Null if a stub.
-  if (!actual_runtime) {
+  AutoNuller<cppgc::Persistent<CXFA_FFDoc>> doc_nuller(&m_pXFADoc);
+  m_pXFADoc = cppgc::MakeGarbageCollected<CXFA_FFDoc>(
+      m_pGCHeap->GetAllocationHandle(), m_pXFAApp, m_pDocEnv.get(),
+      m_pPDFDoc.Get(), m_pGCHeap.get());
+
+  if (!m_pXFADoc->OpenDoc(m_pXML.get())) {
     FXSYS_SetLastError(FPDF_ERR_XFALOAD);
+    return false;
+  }
+
+  if (!m_pXFAApp->LoadFWLTheme(m_pXFADoc)) {
+    FXSYS_SetLastError(FPDF_ERR_XFALAYOUT);
     return false;
   }
 
@@ -160,15 +175,21 @@ bool CPDFXFA_Context::LoadXFADoc() {
   else
     m_FormType = FormType::kXFAForeground;
 
+  AutoNuller<cppgc::Persistent<CXFA_FFDocView>> view_nuller(&m_pXFADocView);
   m_pXFADocView = m_pXFADoc->CreateDocView();
+
   if (m_pXFADocView->StartLayout() < 0) {
-    CloseXFADoc();
+    m_pXFADoc->GetXFADoc()->ClearLayoutData();
+    FXGC_ForceGarbageCollection(m_pGCHeap.get());
     FXSYS_SetLastError(FPDF_ERR_XFALAYOUT);
     return false;
   }
 
   m_pXFADocView->DoLayout();
   m_pXFADocView->StopLayout();
+
+  view_nuller.AbandonNullification();
+  doc_nuller.AbandonNullification();
   m_nLoadStatus = FXFA_LOADSTATUS_LOADED;
   return true;
 }
@@ -354,8 +375,12 @@ bool CPDFXFA_Context::PutRequestURL(const WideString& wsURL,
          m_pFormFillEnv->PutRequestURL(wsURL, wsData, wsEncode);
 }
 
-TimerHandlerIface* CPDFXFA_Context::GetTimerHandler() const {
+CFX_Timer::HandlerIface* CPDFXFA_Context::GetTimerHandler() const {
   return m_pFormFillEnv ? m_pFormFillEnv->GetTimerHandler() : nullptr;
+}
+
+cppgc::Heap* CPDFXFA_Context::GetGCHeap() const {
+  return m_pGCHeap.get();
 }
 
 bool CPDFXFA_Context::SaveDatasetsPackage(
@@ -388,8 +413,8 @@ void CPDFXFA_Context::SendPostSaveToXFADoc() {
     return;
 
   CXFA_FFWidgetHandler* pWidgetHandler = pXFADocView->GetWidgetHandler();
-  auto it = pXFADocView->CreateReadyNodeIterator();
-  while (CXFA_Node* pNode = it->MoveToNext()) {
+  CXFA_ReadyNodeIterator it(pXFADocView->GetRootSubform());
+  while (CXFA_Node* pNode = it.MoveToNext()) {
     CXFA_EventParam preParam;
     preParam.m_eType = XFA_EVENT_PostSave;
     pWidgetHandler->ProcessEvent(pNode, &preParam);
@@ -408,8 +433,8 @@ void CPDFXFA_Context::SendPreSaveToXFADoc(
     return;
 
   CXFA_FFWidgetHandler* pWidgetHandler = pXFADocView->GetWidgetHandler();
-  auto it = pXFADocView->CreateReadyNodeIterator();
-  while (CXFA_Node* pNode = it->MoveToNext()) {
+  CXFA_ReadyNodeIterator it(pXFADocView->GetRootSubform());
+  while (CXFA_Node* pNode = it.MoveToNext()) {
     CXFA_EventParam preParam;
     preParam.m_eType = XFA_EVENT_PreSave;
     pWidgetHandler->ProcessEvent(pNode, &preParam);

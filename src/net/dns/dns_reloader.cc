@@ -4,16 +4,16 @@
 
 #include "net/dns/dns_reloader.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD) && \
+#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_OPENBSD) && \
     !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 #include <resolv.h>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/notreached.h"
 #include "base/synchronization/lock.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_local.h"
 #include "net/base/network_change_notifier.h"
 
@@ -111,5 +111,5 @@ void DnsReloaderMaybeReload() {
 
 }  // namespace net
 
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD) &&
+#endif  // defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_OPENBSD) &&
         // !defined(OS_ANDROID)

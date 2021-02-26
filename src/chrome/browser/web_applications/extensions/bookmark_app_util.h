@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "extensions/common/constants.h"
 
 namespace content {
@@ -50,6 +50,9 @@ int CountUserInstalledBookmarkApps(content::BrowserContext* browser_context);
 
 std::vector<SquareSizePx> GetBookmarkAppDownloadedIconSizes(
     const Extension* extension);
+
+std::vector<std::vector<SquareSizePx>>
+GetBookmarkAppDownloadedShortcutsMenuIconsSizes(const Extension* extension);
 
 struct LaunchContainerAndType {
   extensions::LaunchContainer launch_container;

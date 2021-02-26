@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "Value.hpp"
-#include "Type.hpp"
 #include "Variable.hpp"
 
 namespace vk {
@@ -27,53 +26,9 @@ const FormatFlags FormatFlags::Default = {
 	&FormatFlags::Default,  // subListFmt
 };
 
-std::string Value::string(const FormatFlags &fmt /* = FormatFlags::Default */) const
+std::string Struct::get(const FormatFlags &fmt /* = FormatFlags::Default */)
 {
-	switch(type()->kind)
-	{
-		case Kind::Bool:
-			return *reinterpret_cast<const bool *>(get()) ? "true" : "false";
-		case Kind::U8:
-			return std::to_string(*reinterpret_cast<const uint8_t *>(get()));
-		case Kind::S8:
-			return std::to_string(*reinterpret_cast<const int8_t *>(get()));
-		case Kind::U16:
-			return std::to_string(*reinterpret_cast<const uint16_t *>(get()));
-		case Kind::S16:
-			return std::to_string(*reinterpret_cast<const int16_t *>(get()));
-		case Kind::F32:
-			return std::to_string(*reinterpret_cast<const float *>(get()));
-		case Kind::U32:
-			return std::to_string(*reinterpret_cast<const uint32_t *>(get()));
-		case Kind::S32:
-			return std::to_string(*reinterpret_cast<const int32_t *>(get()));
-		case Kind::F64:
-			return std::to_string(*reinterpret_cast<const double *>(get()));
-		case Kind::U64:
-			return std::to_string(*reinterpret_cast<const uint64_t *>(get()));
-		case Kind::S64:
-			return std::to_string(*reinterpret_cast<const int64_t *>(get()));
-		case Kind::Ptr:
-			return std::to_string(reinterpret_cast<uintptr_t>(get()));
-		case Kind::VariableContainer:
-		{
-			auto const *vc = static_cast<const VariableContainer *>(this);
-			std::string out = "";
-			auto subfmt = *fmt.subListFmt;
-			subfmt.listIndent = fmt.listIndent + fmt.subListFmt->listIndent;
-			bool first = true;
-			vc->foreach(0, ~0, [&](const Variable &var) {
-				if(!first) { out += fmt.listDelimiter; }
-				first = false;
-				out += fmt.listIndent;
-				out += var.name;
-				out += ": ";
-				out += var.value->string(subfmt);
-			});
-			return fmt.listPrefix + out + fmt.listSuffix;
-		}
-	}
-	return "";
+	return members->string(fmt);
 }
 
 }  // namespace dbg

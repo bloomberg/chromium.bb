@@ -4,7 +4,7 @@
 
 package org.chromium.content.browser;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,7 +12,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.params.BaseJUnit4RunnerDelegate;
+import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
+import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameterBefore;
+import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
+import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.JavaBridgeActivityTestRule.Controller;
 
@@ -27,11 +32,12 @@ import org.chromium.content.browser.JavaBridgeActivityTestRule.Controller;
  * FIXME: Consider making our implementation more compliant, if it will not
  * break backwards-compatibility. See b/4408210.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@UseRunnerDelegate(BaseJUnit4RunnerDelegate.class)
+@Batch(JavaBridgeActivityTestRule.BATCH)
 public class JavaBridgeReturnValuesTest {
     @Rule
-    public JavaBridgeActivityTestRule mActivityTestRule =
-            new JavaBridgeActivityTestRule().shouldSetUp(true);
+    public JavaBridgeActivityTestRule mActivityTestRule = new JavaBridgeActivityTestRule();
 
     // An instance of this class is injected into the page to test returning
     // Java values to JavaScript.
@@ -113,6 +119,11 @@ public class JavaBridgeReturnValuesTest {
     private static class CustomType {
     }
 
+    @UseMethodParameterBefore(JavaBridgeActivityTestRule.MojoTestParams.class)
+    public void setupMojoTest(boolean useMojo) {
+        mActivityTestRule.setupMojoTest(useMojo);
+    }
+
     TestObject mTestObject;
 
     @Before
@@ -136,7 +147,8 @@ public class JavaBridgeReturnValuesTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
-    public void testMethodReturnTypes() throws Throwable {
+    @UseMethodParameter(JavaBridgeActivityTestRule.MojoTestParams.class)
+    public void testMethodReturnTypes(boolean useMojo) throws Throwable {
         Assert.assertEquals("boolean",
                 executeJavaScriptAndGetStringResult("typeof testObject.getBooleanValue()"));
         Assert.assertEquals(
@@ -178,7 +190,8 @@ public class JavaBridgeReturnValuesTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
-    public void testMethodReturnValues() throws Throwable {
+    @UseMethodParameter(JavaBridgeActivityTestRule.MojoTestParams.class)
+    public void testMethodReturnValues(boolean useMojo) throws Throwable {
         // We do the string comparison in JavaScript, to avoid relying on the
         // coercion algorithm from JavaScript to Java.
         Assert.assertTrue(executeJavaScriptAndGetBooleanResult("testObject.getBooleanValue()"));

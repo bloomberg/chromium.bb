@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -243,6 +242,26 @@ void CoreTabHelper::NavigationEntriesDeleted() {
       browser->command_controller()->TabStateChanged();
   }
 #endif
+}
+
+// Notify browser commands that depend on whether focus is in the
+// web contents or not.
+void CoreTabHelper::OnWebContentsFocused(
+    content::RenderWidgetHost* render_widget_host) {
+#if !defined(OS_ANDROID)
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (browser)
+    browser->command_controller()->WebContentsFocusChanged();
+#endif  // defined(OS_ANDROID)
+}
+
+void CoreTabHelper::OnWebContentsLostFocus(
+    content::RenderWidgetHost* render_widget_host) {
+#if !defined(OS_ANDROID)
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (browser)
+    browser->command_controller()->WebContentsFocusChanged();
+#endif  // defined(OS_ANDROID)
 }
 
 // Handles the image thumbnail for the context node, composes a image search

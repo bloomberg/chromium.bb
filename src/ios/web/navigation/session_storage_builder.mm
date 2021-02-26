@@ -8,9 +8,11 @@
 
 #include "base/check_op.h"
 #include "base/mac/foundation_util.h"
+#include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_builder.h"
 #include "ios/web/navigation/navigation_manager_impl.h"
+#import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
 #import "ios/web/public/web_client.h"
@@ -48,7 +50,8 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
        ++index) {
     web::NavigationItemImpl* item =
         navigation_manager->GetNavigationItemImplAtIndex(index);
-    if (item->ShouldSkipSerialization()) {
+    if (item->ShouldSkipSerialization() ||
+        item->GetURL().spec().size() > url::kMaxURLChars) {
       if (index <= originalIndex) {
         session_storage.lastCommittedItemIndex--;
       }
@@ -56,9 +59,16 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
     }
     [item_storages addObject:item_storage_builder.BuildStorage(item)];
   }
+
+  int loc = 0;
+  int len = 0;
+  session_storage.lastCommittedItemIndex = wk_navigation_util::GetSafeItemRange(
+      session_storage.lastCommittedItemIndex, item_storages.count, &loc, &len);
+
   DCHECK_LT(session_storage.lastCommittedItemIndex,
-            static_cast<NSInteger>(item_storages.count));
-  session_storage.itemStorages = item_storages;
+            static_cast<NSInteger>(len));
+  session_storage.itemStorages =
+      [item_storages subarrayWithRange:NSMakeRange(loc, len)];
   SessionCertificatePolicyCacheStorageBuilder cert_builder;
   session_storage.certPolicyCacheStorage = cert_builder.BuildStorage(
       &web_state->GetSessionCertificatePolicyCacheImpl());
@@ -67,6 +77,8 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
   web::GetWebClient()->AddSerializableData(user_data_manager, web_state);
   [session_storage
       setSerializableUserData:user_data_manager->CreateSerializableUserData()];
+  session_storage.userAgentType =
+      web_state->GetUserAgentForSessionRestoration();
 
   return session_storage;
 }
@@ -102,6 +114,12 @@ void SessionStorageBuilder::ExtractSessionState(
   web_state->certificate_policy_cache_ = std::move(cert_policy_cache);
   web::SerializableUserDataManager::FromWebState(web_state)
       ->AddSerializableUserData(storage.userData);
+  UserAgentType user_agent_type = storage.userAgentType;
+  if (user_agent_type == UserAgentType::AUTOMATIC &&
+      !features::UseWebClientDefaultUserAgent()) {
+    user_agent_type = UserAgentType::MOBILE;
+  }
+  web_state->SetUserAgent(user_agent_type);
 }
 
 }  // namespace web

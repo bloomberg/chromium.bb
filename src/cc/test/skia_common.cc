@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <string>
+#include <utility>
 
 #include "base/containers/span.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,7 +18,7 @@
 #include "cc/test/fake_paint_image_generator.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkPixmap.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 
@@ -58,7 +59,7 @@ void DrawDisplayList(unsigned char* buffer,
       SkImageInfo::MakeN32Premul(layer_rect.width(), layer_rect.height());
   SkBitmap bitmap;
   bitmap.installPixels(info, buffer, info.minRowBytes());
-  SkCanvas canvas(bitmap);
+  SkCanvas canvas(bitmap, SkSurfaceProps{});
   canvas.clipRect(gfx::RectToSkRect(layer_rect));
   list->Raster(&canvas);
 }
@@ -99,37 +100,43 @@ PaintImage CreatePaintWorkletPaintImage(
   return paint_image;
 }
 
-SkYUVASizeInfo GetYUV420SizeInfo(const gfx::Size& image_size, bool has_alpha) {
-  const SkISize uv_size = SkISize::Make((image_size.width() + 1) / 2,
-                                        (image_size.height() + 1) / 2);
-  const size_t uv_width = base::checked_cast<size_t>(uv_size.width());
-  SkYUVASizeInfo yuva_size_info;
-  yuva_size_info.fSizes[SkYUVAIndex::kY_Index].set(image_size.width(),
-                                                   image_size.height());
-  yuva_size_info.fWidthBytes[SkYUVAIndex::kY_Index] =
-      base::checked_cast<size_t>(image_size.width());
-  yuva_size_info.fSizes[SkYUVAIndex::kU_Index] = uv_size;
-  yuva_size_info.fWidthBytes[SkYUVAIndex::kU_Index] = uv_width;
-  yuva_size_info.fSizes[SkYUVAIndex::kV_Index] = uv_size;
-  yuva_size_info.fWidthBytes[SkYUVAIndex::kV_Index] = uv_width;
+SkYUVAPixmapInfo GetYUVAPixmapInfo(const gfx::Size& image_size,
+                                   YUVSubsampling format,
+                                   SkYUVAPixmapInfo::DataType yuv_data_type,
+                                   bool has_alpha) {
+  // TODO(skbug.com/10632): Update this when we have planar configs with alpha.
   if (has_alpha) {
-    yuva_size_info.fSizes[SkYUVAIndex::kA_Index].set(image_size.width(),
-                                                     image_size.height());
-    yuva_size_info.fWidthBytes[SkYUVAIndex::kA_Index] =
-        base::checked_cast<size_t>(image_size.width());
-  } else {
-    yuva_size_info.fSizes[SkYUVAIndex::kA_Index] = SkISize::MakeEmpty();
-    yuva_size_info.fWidthBytes[SkYUVAIndex::kA_Index] = 0u;
+    NOTREACHED();
+    return SkYUVAPixmapInfo();
   }
-  return yuva_size_info;
+  SkYUVAInfo::PlanarConfig planar_config;
+  switch (format) {
+    case YUVSubsampling::k420:
+      planar_config = SkYUVAInfo::PlanarConfig::kY_U_V_420;
+      break;
+    case YUVSubsampling::k422:
+      planar_config = SkYUVAInfo::PlanarConfig::kY_U_V_422;
+      break;
+    case YUVSubsampling::k444:
+      planar_config = SkYUVAInfo::PlanarConfig::kY_U_V_444;
+      break;
+    default:
+      NOTREACHED();
+      return SkYUVAPixmapInfo();
+  }
+  SkYUVAInfo yuva_info({image_size.width(), image_size.height()}, planar_config,
+                       kJPEG_Full_SkYUVColorSpace);
+  return SkYUVAPixmapInfo(yuva_info, yuv_data_type, /*row bytes*/ nullptr);
 }
 
-PaintImage CreateDiscardablePaintImage(const gfx::Size& size,
-                                       sk_sp<SkColorSpace> color_space,
-                                       bool allocate_encoded_data,
-                                       PaintImage::Id id,
-                                       SkColorType color_type,
-                                       bool is_yuv) {
+PaintImage CreateDiscardablePaintImage(
+    const gfx::Size& size,
+    sk_sp<SkColorSpace> color_space,
+    bool allocate_encoded_data,
+    PaintImage::Id id,
+    SkColorType color_type,
+    base::Optional<YUVSubsampling> yuv_format,
+    SkYUVAPixmapInfo::DataType yuv_data_type) {
   if (!color_space)
     color_space = SkColorSpace::MakeSRGB();
   if (id == PaintImage::kInvalidId)
@@ -138,12 +145,12 @@ PaintImage CreateDiscardablePaintImage(const gfx::Size& size,
   SkImageInfo info = SkImageInfo::Make(size.width(), size.height(), color_type,
                                        kPremul_SkAlphaType, color_space);
   sk_sp<FakePaintImageGenerator> generator;
-  if (is_yuv) {
-    // TODO(crbug.com/915972): Remove assumption of YUV420 in tests once we
-    // support other subsamplings.
+  if (yuv_format) {
+    SkYUVAPixmapInfo yuva_pixmap_info =
+        GetYUVAPixmapInfo(size, *yuv_format, yuv_data_type);
     generator = sk_make_sp<FakePaintImageGenerator>(
-        info, GetYUV420SizeInfo(size),
-        std::vector<FrameMetadata>{FrameMetadata()}, allocate_encoded_data);
+        info, yuva_pixmap_info, std::vector<FrameMetadata>{FrameMetadata()},
+        allocate_encoded_data);
   } else {
     generator = sk_make_sp<FakePaintImageGenerator>(
         info, std::vector<FrameMetadata>{FrameMetadata()},
@@ -169,7 +176,7 @@ DrawImage CreateDiscardableDrawImage(const gfx::Size& size,
   SkIRect irect;
   rect.roundOut(&irect);
 
-  return DrawImage(CreateDiscardablePaintImage(size, color_space), irect,
+  return DrawImage(CreateDiscardablePaintImage(size, color_space), false, irect,
                    filter_quality, matrix);
 }
 
@@ -227,7 +234,7 @@ scoped_refptr<SkottieWrapper> CreateSkottie(const gfx::Size& size,
 }
 
 PaintImage CreateNonDiscardablePaintImage(const gfx::Size& size) {
-  auto context = GrContext::MakeMock(nullptr);
+  auto context = GrDirectContext::MakeMock(nullptr);
   SkBitmap bitmap;
   auto info = SkImageInfo::Make(size.width(), size.height(), kN32_SkColorType,
                                 kPremul_SkAlphaType, nullptr /* color_space */);
@@ -235,7 +242,7 @@ PaintImage CreateNonDiscardablePaintImage(const gfx::Size& size) {
   bitmap.eraseColor(SK_AlphaTRANSPARENT);
   return PaintImageBuilder::WithDefault()
       .set_id(PaintImage::GetNextId())
-      .set_image(
+      .set_texture_image(
           SkImage::MakeFromBitmap(bitmap)->makeTextureImage(context.get()),
           PaintImage::GetNextContentId())
       .TakePaintImage();

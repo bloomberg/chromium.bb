@@ -14,24 +14,15 @@
 
 namespace blink {
 
-class ComputedStyle;
-class LayoutObject;
+class NGBlockNode;
 class NGConstraintSpace;
 struct NGLogicalStaticPosition;
 
 struct CORE_EXPORT NGLogicalOutOfFlowDimensions {
   NGBoxStrut inset;
-  LogicalSize size;
+  LogicalSize size = {kIndefiniteSize, kIndefiniteSize};
   NGBoxStrut margins;
 };
-
-// Implements <dialog> static positioning.
-//
-// Returns new dialog top position if layout_dialog requires <dialog>
-// OOF-positioned centering.
-CORE_EXPORT base::Optional<LayoutUnit> ComputeAbsoluteDialogYPosition(
-    const LayoutObject& layout_dialog,
-    LayoutUnit height);
 
 // The following routines implement the absolute size resolution algorithm.
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-width
@@ -49,38 +40,43 @@ CORE_EXPORT base::Optional<LayoutUnit> ComputeAbsoluteDialogYPosition(
 
 // Returns true if |ComputeOutOfFlowInlineDimensions| will need an estimated
 // inline-size.
-CORE_EXPORT bool AbsoluteNeedsChildInlineSize(const ComputedStyle&);
+CORE_EXPORT bool AbsoluteNeedsChildInlineSize(const NGBlockNode&);
 
 // Returns true if |ComputeOutOfFlowBlockDimensions| will need an estimated
 // block-size.
-CORE_EXPORT bool AbsoluteNeedsChildBlockSize(const ComputedStyle&);
+CORE_EXPORT bool AbsoluteNeedsChildBlockSize(const NGBlockNode&);
+
+// Returns true if the inline size can be computed from an aspect ratio and
+// the block size.
+bool IsInlineSizeComputableFromBlockSize(const NGBlockNode&);
 
 // Computes part of the absolute position which depends on the child's
 // inline-size.
+// |minmax_intrinsic_size_for_ar| is only used for min-inline-size: auto in
+// combination with aspect-ratio.
 // |replaced_size| should be set if and only if element is replaced element.
 // Returns the partially filled position.
 CORE_EXPORT void ComputeOutOfFlowInlineDimensions(
+    const NGBlockNode&,
     const NGConstraintSpace&,
-    const ComputedStyle&,
     const NGBoxStrut& border_padding,
     const NGLogicalStaticPosition&,
-    const base::Optional<MinMaxSizes>& child_minmax,
+    const base::Optional<MinMaxSizes>& minmax_content_sizes,
+    const base::Optional<MinMaxSizes>& minmax_intrinsic_sizes_for_ar,
     const base::Optional<LogicalSize>& replaced_size,
-    const WritingMode container_writing_mode,
-    const TextDirection container_direction,
+    const WritingDirectionMode container_writing_direction,
     NGLogicalOutOfFlowDimensions* dimensions);
 
 // Computes the rest of the absolute position which depends on child's
 // block-size.
 CORE_EXPORT void ComputeOutOfFlowBlockDimensions(
+    const NGBlockNode&,
     const NGConstraintSpace&,
-    const ComputedStyle&,
     const NGBoxStrut& border_padding,
     const NGLogicalStaticPosition&,
     const base::Optional<LayoutUnit>& child_block_size,
     const base::Optional<LogicalSize>& replaced_size,
-    const WritingMode container_writing_mode,
-    const TextDirection container_direction,
+    const WritingDirectionMode container_writing_direction,
     NGLogicalOutOfFlowDimensions* dimensions);
 
 }  // namespace blink

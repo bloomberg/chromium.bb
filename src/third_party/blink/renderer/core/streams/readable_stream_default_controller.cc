@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
 #include "third_party/blink/renderer/core/streams/queue_with_sizes.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_reader.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_default_reader.h"
 #include "third_party/blink/renderer/core/streams/stream_algorithms.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -256,7 +256,7 @@ const char* ReadableStreamDefaultController::EnqueueExceptionMessage(
   return "Cannot enqueue a chunk into a closed readable stream";
 }
 
-void ReadableStreamDefaultController::Trace(Visitor* visitor) {
+void ReadableStreamDefaultController::Trace(Visitor* visitor) const {
   visitor->Trace(cancel_algorithm_);
   visitor->Trace(controlled_readable_stream_);
   visitor->Trace(pull_algorithm_);
@@ -314,10 +314,12 @@ StreamPromiseResolver* ReadableStreamDefaultController::PullSteps(
     // d. Return a promise resolved with !
     //    ReadableStreamCreateReadResult(chunk, false,
     //    stream.[[reader]].[[forAuthorCode]]).
+    ReadableStreamGenericReader* reader = stream->reader_;
     return StreamPromiseResolver::CreateResolved(
-        script_state,
-        ReadableStream::CreateReadResult(script_state, chunk, false,
-                                         stream->reader_->for_author_code_));
+        script_state, ReadableStream::CreateReadResult(
+                          script_state, chunk, false,
+                          static_cast<ReadableStreamDefaultReader*>(reader)
+                              ->for_author_code_));
   }
 
   // 3. Let pendingPromise be ! ReadableStreamAddReadRequest(stream).
@@ -390,7 +392,7 @@ void ReadableStreamDefaultController::CallPullIfNeeded(
       }
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(controller_);
       PromiseHandler::Trace(visitor);
     }
@@ -411,7 +413,7 @@ void ReadableStreamDefaultController::CallPullIfNeeded(
       Error(GetScriptState(), controller_, e);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(controller_);
       PromiseHandler::Trace(visitor);
     }
@@ -553,7 +555,7 @@ void ReadableStreamDefaultController::SetUp(
       CallPullIfNeeded(GetScriptState(), controller_);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(controller_);
       PromiseHandler::Trace(visitor);
     }
@@ -574,7 +576,7 @@ void ReadableStreamDefaultController::SetUp(
       Error(GetScriptState(), controller_, r);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(controller_);
       PromiseHandler::Trace(visitor);
     }

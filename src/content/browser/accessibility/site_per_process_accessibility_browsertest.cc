@@ -9,9 +9,9 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
-#include "content/browser/frame_host/cross_process_frame_connector.h"
-#include "content/browser/frame_host/frame_tree.h"
-#include "content/browser/frame_host/render_frame_proxy_host.h"
+#include "content/browser/renderer_host/cross_process_frame_connector.h"
+#include "content/browser/renderer_host/frame_tree.h"
+#include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/site_per_process_browsertest.h"
@@ -29,6 +29,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/render_document_feature.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -41,6 +42,13 @@
 #else
 #define MAYBE_SitePerProcessAccessibilityBrowserTest \
   SitePerProcessAccessibilityBrowserTest
+#endif
+// "All/DISABLED_SitePerProcessAccessibilityBrowserTest" does not work. We need
+// "DISABLED_All/...". TODO(https://crbug.com/1096416) delete when fixed.
+#if defined(OS_ANDROID)
+#define MAYBE_All DISABLED_All
+#else
+#define MAYBE_All All
 #endif
 
 namespace content {
@@ -58,7 +66,7 @@ class MAYBE_SitePerProcessAccessibilityBrowserTest
         frame_tree_node->render_manager()->current_frame_host();
     RenderFrameDeletedObserver deleted_observer(child_rfh);
     GURL cross_site_url(embedded_test_server()->GetURL(host, relative_url));
-    NavigateFrameToURL(frame_tree_node, cross_site_url);
+    EXPECT_TRUE(NavigateToURLFromRenderer(frame_tree_node, cross_site_url));
 
     // Ensure that we have created a new process for the subframe.
     SiteInstance* site_instance =
@@ -70,7 +78,7 @@ class MAYBE_SitePerProcessAccessibilityBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
+IN_PROC_BROWSER_TEST_P(MAYBE_SitePerProcessAccessibilityBrowserTest,
                        CrossSiteIframeAccessibility) {
   // Enable full accessibility for all current and future WebContents.
   BrowserAccessibilityState::GetInstance()->EnableAccessibility();
@@ -86,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
   // Load same-site page into iframe.
   FrameTreeNode* child = root->child_at(0);
   GURL http_url(embedded_test_server()->GetURL("/title1.html"));
-  NavigateFrameToURL(child, http_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(child, http_url));
 
   // Load cross-site page into iframe and wait for text from that
   // page to appear in the accessibility tree.
@@ -138,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
 }
 
 // TODO(aboxhall): Flaky test, discuss with dmazzoni
-IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
+IN_PROC_BROWSER_TEST_P(MAYBE_SitePerProcessAccessibilityBrowserTest,
                        DISABLED_TwoCrossSiteNavigations) {
   // Enable full accessibility for all current and future WebContents.
   BrowserAccessibilityState::GetInstance()->EnableAccessibility();
@@ -168,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
 
 // Ensure that enabling accessibility and doing a remote-to-local main frame
 // navigation doesn't crash.  See https://crbug.com/762824.
-IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
+IN_PROC_BROWSER_TEST_P(MAYBE_SitePerProcessAccessibilityBrowserTest,
                        RemoteToLocalMainFrameNavigation) {
   // Enable full accessibility for all current and future WebContents.
   BrowserAccessibilityState::GetInstance()->EnableAccessibility();
@@ -192,4 +200,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
                                                 "Title Of Awesomeness");
 }
 
+INSTANTIATE_TEST_SUITE_P(MAYBE_All,
+                         MAYBE_SitePerProcessAccessibilityBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 }  // namespace content

@@ -3,11 +3,16 @@ import("../../../../third_party/typescript/typescript.gni")
 ts_library("sdk") {
   testonly = true
   sources = [
+    "CSSPropertyParser_test.ts",
+    "CookieModel_test.ts",
     "CookieParser_test.ts",
     "Cookie_test.ts",
+    "DebuggerModel_test.ts",
+    "FrameManager_test.ts",
     "Issue_test.ts",
     "MockIssuesModel.ts",
     "NetworkManager_test.ts",
+    "PageResourceLoader_test.ts",
     "ServerTiming_test.ts",
     "SourceMap_test.ts",
     "StubIssue.ts",
@@ -15,7 +20,8 @@ ts_library("sdk") {
   ]
 
   deps = [
-    "../../../../front_end/protocol_client",
-    "../../../../front_end/sdk",
+    "../../../../front_end/protocol_client:bundle",
+    "../../../../front_end/sdk:bundle",
+    "../helpers",
   ]
 }

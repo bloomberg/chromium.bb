@@ -109,6 +109,21 @@ the received message may be truncated causing decoding errors.
 The timeout in seconds during the initial connection to the broker. The
 default value is rw_timeout, or 5 seconds if rw_timeout is not set.
 
+@item delivery_mode @var{mode}
+Sets the delivery mode of each message sent to broker.
+The following values are accepted:
+@table @samp
+@item persistent
+Delivery mode set to "persistent" (2). This is the default value.
+Messages may be written to the broker's disk depending on its setup.
+
+@item non-persistent
+Delivery mode set to "non-persistent" (1).
+Messages will stay in broker's memory unless the broker is under memory
+pressure.
+
+@end table
+
 @end table
 
 @section async
@@ -377,11 +392,6 @@ string describing the libavformat build. ("Lavf/<version>")
 @item user-agent
 This is a deprecated option, you can use user_agent instead it.
 
-@item timeout
-Set timeout in microseconds of socket I/O operations used by the underlying low level
-operation. By default it is set to -1, which means that the timeout is
-not specified.
-
 @item reconnect_at_eof
 If set then eof is treated like an error and causes reconnection, this is useful
 for live / endless streams.
@@ -466,6 +476,28 @@ Send an Expect: 100-continue header for POST. If set to 1 it will send, if set
 to 0 it won't, if set to -1 it will try to send if it is applicable. Default
 value is -1.
 
+@item auth_type
+
+Set HTTP authentication type. No option for Digest, since this method requires
+getting nonce parameters from the server first and can't be used straight away like
+Basic.
+
+@table @option
+@item none
+Choose the HTTP authentication type automatically. This is the default.
+@item basic
+
+Choose the HTTP basic authentication.
+
+Basic authentication sends a Base64-encoded string that contains a user name and password
+for the client. Base64 is not a form of encryption and should be considered the same as
+sending the user name and password in clear text (Base64 is a reversible encoding).
+If a resource needs to be protected, strongly consider using an authentication scheme
+other than basic authentication. HTTPS/TLS should be used with basic authentication.
+Without these additional security enhancements, basic authentication should not be used
+to protect sensitive or valuable information.
+@end table
+
 @end table
 
 @subsection HTTP Cookies
@@ -519,6 +551,9 @@ audio/mpeg.
 @item legacy_icecast
 This enables support for Icecast versions < 2.4.0, that do not support the
 HTTP PUT method but the SOURCE method.
+
+@item tls
+Establish a TLS (HTTPS) connection to Icecast.
 
 @end table
 
@@ -1255,7 +1290,7 @@ options.
 This protocol accepts the following options.
 
 @table @option
-@item connect_timeout
+@item connect_timeout=@var{milliseconds}
 Connection timeout; SRT cannot connect for RTT > 1500 msec
 (2 handshake exchanges) with the default connect timeout of
 3 seconds. This option applies to the caller and rendezvous
@@ -1286,7 +1321,7 @@ IP Type of Service. Applies to sender only. Default value is 0xB8.
 @item ipttl=@var{ttl}
 IP Time To Live. Applies to sender only. Default value is 64.
 
-@item latency
+@item latency=@var{microseconds}
 Timestamp-based Packet Delivery Delay.
 Used to absorb bursts of missed packet retransmissions.
 This flag sets both @option{rcvlatency} and @option{peerlatency}
@@ -1297,7 +1332,7 @@ when side is sender and @option{rcvlatency}
 when side is receiver, and the bidirectional stream
 sending is not supported.
 
-@item listen_timeout
+@item listen_timeout=@var{microseconds}
 Set socket listen timeout.
 
 @item maxbw=@var{bytes/seconds}
@@ -1377,7 +1412,7 @@ use a bigger maximum frame size, though not greater than
 @item pkt_size=@var{bytes}
 Alias for @samp{payload_size}.
 
-@item peerlatency
+@item peerlatency=@var{microseconds}
 The latency value (as described in @option{rcvlatency}) that is
 set by the sender side as a minimum value for the receiver.
 
@@ -1389,7 +1424,7 @@ Not required on receiver (set to 0),
 key size obtained from sender in HaiCrypt handshake.
 Default value is 0.
 
-@item rcvlatency
+@item rcvlatency=@var{microseconds}
 The time that should elapse since the moment when the
 packet was sent and the moment when it's delivered to
 the receiver application in the receiving function.
@@ -1407,7 +1442,7 @@ Set UDP receive buffer size, expressed in bytes.
 @item send_buffer_size=@var{bytes}
 Set UDP send buffer size, expressed in bytes.
 
-@item timeout
+@item timeout=@var{microseconds}
 Set raise error timeouts for read, write and connect operations. Note that the
 SRT library has internal timeouts which can be controlled separately, the
 value set here is only a cap on those.

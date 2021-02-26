@@ -31,6 +31,7 @@ class TestExporter(object):
         self.gerrit = None
         self.dry_run = False
         self.local_wpt = None
+        self.surface_failures_to_gerrit = False
 
     def main(self, argv=None):
         """Creates PRs for in-flight CLs and merges changes that land on master.
@@ -41,11 +42,13 @@ class TestExporter(object):
         options = self.parse_args(argv)
 
         self.dry_run = options.dry_run
+        self.surface_failures_to_gerrit = options.surface_failures_to_gerrit
         log_level = logging.DEBUG if options.verbose else logging.INFO
         configure_logging(logging_level=log_level, include_time=True)
-        if options.verbose:
-            # Print out the full output when executive.run_command fails.
-            self.host.executive.error_output_limit = None
+
+        # Having the full output when executive.run_command fails is useful when
+        # investigating a failed export, as all we have are logs.
+        self.host.executive.error_output_limit = None
 
         credentials = read_credentials(self.host, options.credentials_json)
         if not (credentials.get('GH_USER') and credentials.get('GH_TOKEN')):
@@ -96,7 +99,7 @@ class TestExporter(object):
         _log.info('Automatic export process has finished successfully.')
 
         export_notifier_failure = False
-        if options.surface_failures_to_gerrit:
+        if self.surface_failures_to_gerrit:
             _log.info('Starting surfacing cross-browser failures to Gerrit.')
             export_notifier_failure = ExportNotifier(
                 self.host, self.wpt_github, self.gerrit, self.dry_run).main()
@@ -299,6 +302,12 @@ class TestExporter(object):
                 provisional=True,
                 pr_number=pull_request.number,
                 pr_footer=footer)
+
+            # When surface_failures_to_gerrit is enabled, the pull request update comment below
+            # is ignored.
+            if self.surface_failures_to_gerrit:
+                return
+
             if pr_number is None:
                 return
 

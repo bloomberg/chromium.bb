@@ -14,9 +14,11 @@
 #include "base/stl_util.h"
 #include "cc/layers/layer.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/android/event_forwarder.h"
 #include "ui/android/ui_android_jni_headers/ViewAndroidDelegate_jni.h"
 #include "ui/android/window_android.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/layout.h"
 #include "ui/events/android/drag_event_android.h"
@@ -25,6 +27,7 @@
 #include "ui/events/android/key_event_android.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/geometry/point.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -111,6 +114,32 @@ float ViewAndroid::GetDipScale() {
   return ui::GetScaleFactorForNativeView(this);
 }
 
+base::Optional<gfx::Rect> ViewAndroid::GetDisplayFeature() {
+  ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
+  if (delegate.is_null())
+    return base::nullopt;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jintArray> jni_display_feature =
+      Java_ViewAndroidDelegate_getDisplayFeature(env, delegate);
+  std::vector<int> display_feature_values;
+  if (jni_display_feature.obj()) {
+    // In order to reduce jni overhead, the DisplayFeature is returned in
+    // an integer array. This array must have 4 items in it (or the return
+    // value should be null).
+    base::android::JavaIntArrayToIntVector(env, jni_display_feature,
+                                           &display_feature_values);
+    CHECK(display_feature_values.size() == 4);
+    gfx::Rect display_feature;
+    display_feature.SetByBounds(
+        display_feature_values[0], display_feature_values[1],
+        display_feature_values[2], display_feature_values[3]);
+    return display_feature;
+  }
+
+  return base::nullopt;
+}
+
 ScopedJavaLocalRef<jobject> ViewAndroid::GetEventForwarder() {
   if (!event_forwarder_) {
     DCHECK(!RootPathHasEventForwarder(parent_))
@@ -139,6 +168,8 @@ void ViewAndroid::AddChild(ViewAndroid* child) {
   // accidentally overwrite the valid ones in the children.
   if (!physical_size_.IsEmpty())
     child->OnPhysicalBackingSizeChanged(physical_size_);
+
+  child->OnControlsResizeViewChanged(controls_resize_view_);
 
   // Empty view size also need not propagating down in order to prevent
   // spurious events with empty size from being sent down.
@@ -389,25 +420,25 @@ bool ViewAndroid::StartDragAndDrop(const JavaRef<jstring>& jtext,
                                                    jimage);
 }
 
-void ViewAndroid::OnCursorChanged(int type,
-                                  const SkBitmap& custom_image,
-                                  const gfx::Point& hotspot) {
+void ViewAndroid::OnCursorChanged(const Cursor& cursor) {
   ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (type == static_cast<int>(ui::mojom::CursorType::kCustom)) {
-    if (custom_image.drawsNothing()) {
+  if (cursor.type() == mojom::CursorType::kCustom) {
+    const SkBitmap& bitmap = cursor.custom_bitmap();
+    const gfx::Point& hotspot = cursor.custom_hotspot();
+    if (bitmap.drawsNothing()) {
       Java_ViewAndroidDelegate_onCursorChanged(
-          env, delegate, static_cast<int>(ui::mojom::CursorType::kPointer));
+          env, delegate, static_cast<int>(mojom::CursorType::kPointer));
       return;
     }
-    ScopedJavaLocalRef<jobject> java_bitmap =
-        gfx::ConvertToJavaBitmap(&custom_image);
+    ScopedJavaLocalRef<jobject> java_bitmap = gfx::ConvertToJavaBitmap(bitmap);
     Java_ViewAndroidDelegate_onCursorChangedToCustom(env, delegate, java_bitmap,
                                                      hotspot.x(), hotspot.y());
   } else {
-    Java_ViewAndroidDelegate_onCursorChanged(env, delegate, type);
+    Java_ViewAndroidDelegate_onCursorChanged(env, delegate,
+                                             static_cast<int>(cursor.type()));
   }
 }
 
@@ -461,6 +492,16 @@ void ViewAndroid::OnBrowserControlsHeightChanged() {
   }
 }
 
+void ViewAndroid::OnVerticalScrollDirectionChanged(bool direction_up,
+                                                   float current_scroll_ratio) {
+  ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
+  if (delegate.is_null())
+    return;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ViewAndroidDelegate_onVerticalScrollDirectionChanged(
+      env, delegate, direction_up, current_scroll_ratio);
+}
+
 void ViewAndroid::OnSizeChanged(int width, int height) {
   // Match-parent view must not receive size events.
   DCHECK(!match_parent());
@@ -496,15 +537,32 @@ void ViewAndroid::DispatchOnSizeChanged() {
   }
 }
 
-void ViewAndroid::OnPhysicalBackingSizeChanged(const gfx::Size& size) {
+void ViewAndroid::OnPhysicalBackingSizeChanged(
+    const gfx::Size& size,
+    base::Optional<base::TimeDelta> deadline_override) {
   if (physical_size_ == size)
     return;
   physical_size_ = size;
   if (event_handler_)
-    event_handler_->OnPhysicalBackingSizeChanged();
+    event_handler_->OnPhysicalBackingSizeChanged(deadline_override);
 
   for (auto* child : children_)
-    child->OnPhysicalBackingSizeChanged(size);
+    child->OnPhysicalBackingSizeChanged(size, deadline_override);
+}
+
+void ViewAndroid::OnControlsResizeViewChanged(bool controls_resize_view) {
+  if (controls_resize_view == controls_resize_view_)
+    return;
+  controls_resize_view_ = controls_resize_view;
+  if (event_handler_)
+    event_handler_->OnControlsResizeViewChanged();
+
+  for (auto* child : children_)
+    child->OnControlsResizeViewChanged(controls_resize_view);
+}
+
+bool ViewAndroid::ControlsResizeView() {
+  return controls_resize_view_;
 }
 
 gfx::Size ViewAndroid::GetPhysicalBackingSize() const {
@@ -625,6 +683,16 @@ bool ViewAndroid::ScrollTo(float x, float y) {
       return true;
   }
   return false;
+}
+
+void ViewAndroid::NotifyVirtualKeyboardOverlayRect(
+    const gfx::Rect& keyboard_rect) {
+  if (event_handler_)
+    event_handler_->NotifyVirtualKeyboardOverlayRect(keyboard_rect);
+
+  for (auto* child : children_) {
+    child->NotifyVirtualKeyboardOverlayRect(keyboard_rect);
+  }
 }
 
 template <typename E>

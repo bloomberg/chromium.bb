@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -23,6 +23,7 @@ class DoubleSequenceOrGPUColorDict;
 class GPUColorDict;
 class GPUProgrammableStageDescriptor;
 class GPUTextureCopyView;
+class GPUTextureDataLayout;
 class UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict;
 class UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict;
 
@@ -46,7 +47,10 @@ WGPUExtent3D AsDawnType(
     const UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict*);
 WGPUOrigin3D AsDawnType(
     const UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict*);
-WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view);
+WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view,
+                               GPUDevice* device);
+const char* ValidateTextureDataLayout(const GPUTextureDataLayout* webgpu_layout,
+                                      WGPUTextureDataLayout* layout);
 using OwnedProgrammableStageDescriptor =
     std::tuple<WGPUProgrammableStageDescriptor, std::unique_ptr<char[]>>;
 OwnedProgrammableStageDescriptor AsDawnType(

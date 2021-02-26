@@ -42,7 +42,7 @@ class LuaGenerator : public BaseGenerator {
   LuaGenerator(const Parser &parser, const std::string &path,
                const std::string &file_name)
       : BaseGenerator(parser, path, file_name, "" /* not used */,
-                      "" /* not used */) {
+                      "" /* not used */, "lua") {
     static const char *const keywords[] = {
       "and",      "break",  "do",   "else", "elseif", "end",  "false", "for",
       "function", "goto",   "if",   "in",   "local",  "nil",  "not",   "or",
@@ -595,15 +595,15 @@ class LuaGenerator : public BaseGenerator {
   }
 
   std::string GenTypeBasic(const Type &type) {
-    static const char *ctypename[] = {
     // clang-format off
-          #define FLATBUFFERS_TD(ENUM, IDLTYPE, \
-            CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE, KTYPE) \
-            #PTYPE,
-            FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
-          #undef FLATBUFFERS_TD
-      // clang-format on
+    static const char *ctypename[] = {
+      #define FLATBUFFERS_TD(ENUM, IDLTYPE, \
+              CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, ...) \
+        #PTYPE,
+        FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
+      #undef FLATBUFFERS_TD
     };
+    // clang-format on
     return ctypename[type.base_type];
   }
 

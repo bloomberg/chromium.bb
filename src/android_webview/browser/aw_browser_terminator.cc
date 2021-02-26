@@ -7,14 +7,13 @@
 #include <unistd.h>
 #include <memory>
 
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_render_process_gone_delegate.h"
-#include "android_webview/browser_jni_headers/AwBrowserProcess_jni.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "components/crash/content/browser/crash_metrics_reporter_android.h"
 #include "components/crash/core/app/crashpad.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -73,7 +72,7 @@ void OnRenderProcessGone(
     switch (delegate->OnRenderProcessGone(child_process_pid, crashed)) {
       case AwRenderProcessGoneDelegate::RenderProcessGoneResult::kException:
         // Let the exception propagate back to the message loop.
-        base::MessageLoopCurrentForUI::Get()->Abort();
+        base::CurrentUIThread::Get()->Abort();
         return;
       case AwRenderProcessGoneDelegate::RenderProcessGoneResult::kUnhandled:
         if (crashed) {
@@ -101,8 +100,7 @@ void OnRenderProcessGone(
 
   // By this point we have moved the minidump to the crash directory, so it can
   // now be copied and uploaded.
-  Java_AwBrowserProcess_triggerMinidumpUploading(
-      base::android::AttachCurrentThread());
+  AwBrowserProcess::TriggerMinidumpUploading();
 }
 
 }  // namespace
@@ -128,8 +126,8 @@ void AwBrowserTerminator::OnChildExit(
   std::vector<ScopedJavaGlobalRef<jobject>> java_web_contents;
   GetJavaWebContentsForRenderProcess(rph, &java_web_contents);
 
-  base::PostTask(FROM_HERE,
-                 {content::BrowserThread::UI, base::TaskPriority::HIGHEST},
+  content::GetUIThreadTaskRunner({base::TaskPriority::HIGHEST})
+      ->PostTask(FROM_HERE,
                  base::BindOnce(OnRenderProcessGone, java_web_contents,
                                 info.pid, info.is_crashed()));
 }

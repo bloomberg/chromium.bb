@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/strings/string_split.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -222,6 +222,36 @@ TEST(CookieUtilTest, TestRequestCookieParsing) {
     SCOPED_TRACE(testing::Message() << "Test " << i);
     CheckParse(tests[i].str, tests[i].parsed);
     CheckSerialize(tests[i].parsed, tests[i].str);
+  }
+}
+
+TEST(CookieUtilTest, CookieDomainAndPathToURL) {
+  struct {
+    std::string domain;
+    std::string path;
+    bool is_https;
+    std::string expected_url;
+  } kTests[]{
+      {"a.com", "/", true, "https://a.com/"},
+      {"a.com", "/", false, "http://a.com/"},
+      {".a.com", "/", true, "https://a.com/"},
+      {".a.com", "/", false, "http://a.com/"},
+      {"b.a.com", "/", true, "https://b.a.com/"},
+      {"b.a.com", "/", false, "http://b.a.com/"},
+      {"a.com", "/example/path", true, "https://a.com/example/path"},
+      {".a.com", "/example/path", false, "http://a.com/example/path"},
+      {"b.a.com", "/example/path", true, "https://b.a.com/example/path"},
+      {".b.a.com", "/example/path", false, "http://b.a.com/example/path"},
+  };
+
+  for (auto& test : kTests) {
+    GURL url1 = cookie_util::CookieDomainAndPathToURL(test.domain, test.path,
+                                                      test.is_https);
+    GURL url2 = cookie_util::CookieDomainAndPathToURL(
+        test.domain, test.path, std::string(test.is_https ? "https" : "http"));
+    // Test both overloads for equality.
+    EXPECT_EQ(url1, url2);
+    EXPECT_EQ(url1, GURL(test.expected_url));
   }
 }
 
@@ -1211,18 +1241,17 @@ TEST(CookieUtilTest, TestComputeSameSiteContextForSubresource) {
                 false /* force_ignore_site_for_cookies */));
 }
 
-TEST(CookieUtilTest, AdaptCookieInclusionStatusToBool) {
+TEST(CookieUtilTest, AdaptCookieAccessResultToBool) {
   bool result_out = true;
   base::OnceCallback<void(bool)> callback = base::BindLambdaForTesting(
       [&result_out](bool result) { result_out = result; });
 
-  base::OnceCallback<void(CanonicalCookie::CookieInclusionStatus)>
-      adapted_callback =
-          cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
+  base::OnceCallback<void(CookieAccessResult)> adapted_callback =
+      cookie_util::AdaptCookieAccessResultToBool(std::move(callback));
 
   std::move(adapted_callback)
-      .Run(CanonicalCookie::CookieInclusionStatus(
-          CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR));
+      .Run(CookieAccessResult(
+          CookieInclusionStatus(CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR)));
 
   EXPECT_FALSE(result_out);
 
@@ -1231,11 +1260,144 @@ TEST(CookieUtilTest, AdaptCookieInclusionStatusToBool) {
       [&result_out](bool result) { result_out = result; });
 
   adapted_callback =
-      cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
+      cookie_util::AdaptCookieAccessResultToBool(std::move(callback));
 
-  std::move(adapted_callback).Run(CanonicalCookie::CookieInclusionStatus());
+  std::move(adapted_callback).Run(CookieAccessResult());
 
   EXPECT_TRUE(result_out);
+}
+
+TEST(CookieUtilTest, IsSameSiteCompatPair) {
+  ASSERT_EQ(3, cookie_util::kMinCompatPairNameLength)
+      << "This test assumes that SameSite compatibility pairs have cookie name "
+         "length at least 3.";
+  GURL url("https://www.site.example/path");
+
+  struct {
+    const char* cookie_line_1;
+    const char* cookie_line_2;
+    bool expected_is_same_site_compat_pair;
+  } kTestCases[] = {
+      // Matching cases
+      {"name=value; SameSite=None; Secure", "name_legacy=value", true},
+      {"uid=value; SameSite=None; Secure", "uid_old=value", true},
+      {"name=value; SameSite=None; Secure", "name2=value; Secure", true},
+      {"name_samesite=value; SameSite=None; Secure", "name=value", true},
+      {"__Secure-name=value; SameSite=None; Secure", "name=value", true},
+      {"__Secure-3Pname=value; SameSite=None; Secure", "name=value", true},
+      {"name=value; SameSite=None; Secure; HttpOnly", "name_legacy=value",
+       true},
+      {"name=value; SameSite=None; Secure; Domain=site.example",
+       "name_legacy=value; Secure; Domain=site.example", true},
+      // Fails because cookies are equivalent
+      {"name=value; SameSite=None; Secure", "name=value", false},
+      // Fails SameSite criterion
+      {"name=value", "name_legacy=value", false},
+      {"name=value; SameSite=None", "name_legacy=value", false},
+      {"name=value; SameSite=None; Secure", "name_legacy=value; SameSite=None",
+       false},
+      {"name=value; SameSite=None; Secure",
+       "name_legacy=value; SameSite=None; Secure", false},
+      // Fails Domain criterion
+      {"name=value; SameSite=None; Secure; Domain=site.example",
+       "name_legacy=value", false},
+      {"name=value; SameSite=None; Secure; Domain=www.site.example",
+       "name_legacy=value", false},
+      {"name=value; SameSite=None; Secure",
+       "name_legacy=value; Domain=site.example", false},
+      {"name=value; SameSite=None; Secure",
+       "name_legacy=value; Domain=www.site.example", false},
+      // Fails Path criterion
+      {"name=value; SameSite=None; Secure; Path=/path", "name_legacy=value",
+       false},
+      {"name=value; SameSite=None; Secure; Path=/path",
+       "name_legacy=value; Path=/", false},
+      {"name=value; SameSite=None; Secure; Path=/",
+       "name_legacy=value; Path=/path", false},
+      {"name=value; SameSite=None; Secure", "name_legacy=value; Path=/path",
+       false},
+      // Fails value criterion
+      {"name=value; SameSite=None; Secure", "name_legacy=foobar", false},
+      {"name=value; SameSite=None; Secure", "name_legacy=value2", false},
+      // Fails name length criterion
+      {"id=value; SameSite=None; Secure", "id_legacy=value", false},
+      {"id_samesite=value; SameSite=None; Secure", "id=value", false},
+      {"value; SameSite=None; Secure", "legacy=value", false},
+      // Fails suffix/prefix criterion
+      {"name_samesite=value; SameSite=None; Secure", "name_legacy=value",
+       false},
+      {"name1=value; SameSite=None; Secure", "name2=value", false},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    auto cookie1 = CanonicalCookie::Create(url, test_case.cookie_line_1,
+                                           base::Time::Now(), base::nullopt);
+    auto cookie2 = CanonicalCookie::Create(url, test_case.cookie_line_2,
+                                           base::Time::Now(), base::nullopt);
+
+    ASSERT_TRUE(cookie1);
+    ASSERT_TRUE(cookie2);
+    EXPECT_EQ(test_case.expected_is_same_site_compat_pair,
+              cookie_util::IsSameSiteCompatPair(
+                  *cookie1, *cookie2, CookieOptions::MakeAllInclusive()));
+    EXPECT_EQ(test_case.expected_is_same_site_compat_pair,
+              cookie_util::IsSameSiteCompatPair(
+                  *cookie2, *cookie1, CookieOptions::MakeAllInclusive()));
+  }
+}
+
+TEST(CookieUtilTest, IsSameSiteCompatPair_HttpOnly) {
+  GURL url("https://www.site.example/path");
+  auto new_cookie =
+      CanonicalCookie::Create(url, "name=value; SameSite=None; Secure",
+                              base::Time::Now(), base::nullopt);
+  auto legacy_cookie = CanonicalCookie::Create(
+      url, "name_legacy=value", base::Time::Now(), base::nullopt);
+  auto http_only_new_cookie = CanonicalCookie::Create(
+      url, "name=value; SameSite=None; Secure; HttpOnly", base::Time::Now(),
+      base::nullopt);
+  auto http_only_legacy_cookie = CanonicalCookie::Create(
+      url, "name_legacy=value; HttpOnly", base::Time::Now(), base::nullopt);
+  ASSERT_TRUE(new_cookie);
+  ASSERT_TRUE(legacy_cookie);
+  ASSERT_TRUE(http_only_new_cookie);
+  ASSERT_TRUE(http_only_legacy_cookie);
+
+  // Allows HttpOnly access.
+  CookieOptions inclusive_options = CookieOptions::MakeAllInclusive();
+  // Disallows HttpOnly access.
+  CookieOptions restrictive_options;
+  // Allows SameSite but not HttpOnly access. (SameSite shouldn't matter.)
+  CookieOptions same_site_options;
+  same_site_options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::MakeInclusive());
+
+  EXPECT_TRUE(cookie_util::IsSameSiteCompatPair(*new_cookie, *legacy_cookie,
+                                                inclusive_options));
+  EXPECT_TRUE(cookie_util::IsSameSiteCompatPair(
+      *http_only_new_cookie, *legacy_cookie, inclusive_options));
+  EXPECT_TRUE(cookie_util::IsSameSiteCompatPair(
+      *new_cookie, *http_only_legacy_cookie, inclusive_options));
+  EXPECT_TRUE(cookie_util::IsSameSiteCompatPair(
+      *http_only_new_cookie, *http_only_legacy_cookie, inclusive_options));
+
+  EXPECT_TRUE(cookie_util::IsSameSiteCompatPair(*new_cookie, *legacy_cookie,
+                                                restrictive_options));
+  EXPECT_FALSE(cookie_util::IsSameSiteCompatPair(
+      *http_only_new_cookie, *legacy_cookie, restrictive_options));
+  EXPECT_FALSE(cookie_util::IsSameSiteCompatPair(
+      *new_cookie, *http_only_legacy_cookie, restrictive_options));
+  EXPECT_FALSE(cookie_util::IsSameSiteCompatPair(
+      *http_only_new_cookie, *http_only_legacy_cookie, restrictive_options));
+
+  EXPECT_TRUE(cookie_util::IsSameSiteCompatPair(*new_cookie, *legacy_cookie,
+                                                same_site_options));
+  EXPECT_FALSE(cookie_util::IsSameSiteCompatPair(
+      *http_only_new_cookie, *legacy_cookie, same_site_options));
+  EXPECT_FALSE(cookie_util::IsSameSiteCompatPair(
+      *new_cookie, *http_only_legacy_cookie, same_site_options));
+  EXPECT_FALSE(cookie_util::IsSameSiteCompatPair(
+      *http_only_new_cookie, *http_only_legacy_cookie, same_site_options));
 }
 
 }  // namespace

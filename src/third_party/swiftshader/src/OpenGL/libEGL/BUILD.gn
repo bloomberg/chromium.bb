@@ -39,8 +39,10 @@ config("swiftshader_libEGL_private_config") {
     if (is_mac) {
       cflags += [ "-fvisibility=protected" ]
       defines += [ "EGLAPI=__attribute__((no_sanitize(\"function\")))" ]
-    } else {
+    } else if (is_clang) {
       defines += [ "EGLAPI=__attribute__((visibility(\"protected\"))) __attribute__((no_sanitize(\"function\")))" ]
+    } else {
+      defines += [ "EGLAPI= " ]
     }
   }
 }
@@ -59,11 +61,16 @@ swiftshader_shared_library("swiftshader_libEGL") {
     "Display.cpp",
     "Surface.cpp",
     "libEGL.cpp",
-    "libEGL.def",
-    "libEGL.rc",
     "main.cpp",
     "resource.h",
   ]
+
+  if (is_win) {
+    sources += [
+      "libEGL.def",
+      "libEGL.rc",
+    ]
+  }
 
   if (is_mac) {
     sources += [ "OSXUtils.mm" ]
@@ -78,13 +85,11 @@ swiftshader_shared_library("swiftshader_libEGL") {
       "-Wl,-exported_symbols_list," +
           rebase_path("libEGL.exports", root_build_dir),
     ]
-  } else if (is_linux) {
+  } else if (is_linux || is_chromeos) {
     if (use_x11) {
       sources += [ "../../Main/libX11.cpp" ]
     }
-    inputs = [
-      "libEGL.lds",
-    ]
+    inputs = [ "libEGL.lds" ]
     ldflags =
         [ "-Wl,--version-script=" + rebase_path("libEGL.lds", root_build_dir) ]
   }

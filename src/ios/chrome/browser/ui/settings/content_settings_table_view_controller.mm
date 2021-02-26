@@ -6,6 +6,8 @@
 
 #include "base/check_op.h"
 #include "base/feature_list.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -17,7 +19,9 @@
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_multi_detail_text_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
@@ -29,6 +33,12 @@
 #endif
 
 namespace {
+
+// Is YES when one window has mailTo controller opened.
+BOOL openedMailTo = NO;
+
+// Notification name of changes to openedMailTo state.
+NSString* kMailToInstanceChanged = @"MailToInstanceChanged";
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSettings = kSectionIdentifierEnumZero,
@@ -48,10 +58,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Updatable Items
   TableViewDetailIconItem* _blockPopupsDetailItem;
   TableViewDetailIconItem* _composeEmailDetailItem;
+  TableViewMultiDetailTextItem* _openedInAnotherWindowItem;
 }
-
-// Returns the value for the default setting with ID |settingID|.
-- (ContentSetting)getContentSetting:(ContentSettingsType)settingID;
 
 // Helpers to create collection view items.
 - (id)blockPopupsItem;
@@ -89,8 +97,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.tableView.rowHeight = UITableViewAutomaticDimension;
-
   [self loadModel];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(mailToControllerChanged)
+             name:kMailToInstanceChanged
+           object:nil];
+  [self checkMailToOwnership];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+  [self checkMailToOwnership];
+  [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                  name:kMailToInstanceChanged
+                                                object:nil];
 }
 
 #pragma mark - ChromeTableViewController
@@ -105,10 +130,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
   MailtoHandlerProvider* provider =
       ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
   NSString* settingsTitle = provider->MailtoHandlerSettingsTitle();
+  // Display email settings only on one window at a time, by checking
+  // if this is the current owner.
+  _openedInAnotherWindowItem = nil;
+  _composeEmailDetailItem = nil;
   if (settingsTitle) {
-    [model addItem:[self composeEmailItem]
-        toSectionWithIdentifier:SectionIdentifierSettings];
+    if (!openedMailTo) {
+      [model addItem:[self composeEmailItem]
+          toSectionWithIdentifier:SectionIdentifierSettings];
+    } else {
+      [model addItem:[self openedInAnotherWindowItem]
+          toSectionWithIdentifier:SectionIdentifierSettings];
+    }
   }
+}
+
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileContentSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileContentSettingsBack"));
 }
 
 #pragma mark - ContentSettingsTableViewController
@@ -146,9 +190,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return _composeEmailDetailItem;
 }
 
-- (ContentSetting)getContentSetting:(ContentSettingsType)settingID {
-  return ios::HostContentSettingsMapFactory::GetForBrowserState(_browserState)
-      ->GetDefaultContentSetting(settingID, NULL);
+- (TableViewItem*)openedInAnotherWindowItem {
+  _openedInAnotherWindowItem = [[TableViewMultiDetailTextItem alloc]
+      initWithType:ItemTypeSettingsComposeEmail];
+  // Use the handler's preferred title string for the compose email item.
+  MailtoHandlerProvider* provider =
+      ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
+  NSString* settingsTitle = provider->MailtoHandlerSettingsTitle();
+  DCHECK([settingsTitle length]);
+  // .detailText can display the selected mailto handling app, but the current
+  // MailtoHandlerProvider does not expose this through its API.
+  _openedInAnotherWindowItem.text = settingsTitle;
+
+  _openedInAnotherWindowItem.trailingDetailText =
+      l10n_util::GetNSString(IDS_IOS_SETTING_OPENED_IN_ANOTHER_WINDOW);
+  _openedInAnotherWindowItem.accessibilityTraits |=
+      UIAccessibilityTraitButton | UIAccessibilityTraitNotEnabled;
+  _openedInAnotherWindowItem.accessibilityIdentifier =
+      kSettingsDefaultAppsCellId;
+  return _openedInAnotherWindowItem;
 }
 
 #pragma mark - UITableViewDelegate
@@ -160,18 +220,28 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
     case ItemTypeSettingsBlockPopups: {
-      UIViewController* controller = [[BlockPopupsTableViewController alloc]
-          initWithBrowserState:_browserState];
+      BlockPopupsTableViewController* controller =
+          [[BlockPopupsTableViewController alloc]
+              initWithBrowserState:_browserState];
+      controller.dispatcher = self.dispatcher;
       [self.navigationController pushViewController:controller animated:YES];
       break;
     }
     case ItemTypeSettingsComposeEmail: {
+      if (openedMailTo)
+        break;
+
       MailtoHandlerProvider* provider =
           ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
       UIViewController* controller =
           provider->MailtoHandlerSettingsController();
-      if (controller)
+      if (controller) {
         [self.navigationController pushViewController:controller animated:YES];
+        openedMailTo = YES;
+        [[NSNotificationCenter defaultCenter]
+            postNotificationName:kMailToInstanceChanged
+                          object:nil];
+      }
       break;
     }
   }
@@ -191,6 +261,31 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Update the cell.
   [self reconfigureCellsForItems:@[ _blockPopupsDetailItem ]];
+}
+
+#pragma mark Private
+
+// Called to reload data when another window has mailTo settings opened.
+- (void)mailToControllerChanged {
+  [self reloadData];
+}
+
+// Verifies using the navigation stack if this is a return from mailTo settings
+// and this instance should reset |openedMailTo|.
+- (void)checkMailToOwnership {
+  // Since this doesn't know or have access to the mailTo controller code,
+  // it detects if the flow is coming back from it, based on the navigation
+  // bar stack items.
+  NSString* top = self.navigationController.navigationBar.topItem.title;
+  MailtoHandlerProvider* provider =
+      ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
+  NSString* mailToTitle = provider->MailtoHandlerSettingsTitle();
+  if ([top isEqualToString:mailToTitle]) {
+    openedMailTo = NO;
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:kMailToInstanceChanged
+                      object:nil];
+  }
 }
 
 @end

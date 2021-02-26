@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_with_script_scope.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_reader.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_generic_reader.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
@@ -57,7 +57,7 @@ class IncomingStream::UnderlyingSource final : public UnderlyingSourceBase {
     return ScriptPromise::CastUndefined(script_state);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(incoming_stream_);
     UnderlyingSourceBase::Trace(visitor);
   }
@@ -105,6 +105,9 @@ void IncomingStream::OnIncomingStreamClosed(bool fin_received) {
   DVLOG(1) << "IncomingStream::OnIncomingStreamClosed(" << fin_received
            << ") this=" << this;
 
+  DCHECK_NE(state_, State::kClosed);
+  state_ = State::kClosed;
+
   DCHECK(!fin_received_.has_value());
 
   fin_received_ = fin_received;
@@ -140,7 +143,7 @@ void IncomingStream::ContextDestroyed() {
   ResetPipe();
 }
 
-void IncomingStream::Trace(Visitor* visitor) {
+void IncomingStream::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(readable_);
   visitor->Trace(controller_);
@@ -313,6 +316,8 @@ void IncomingStream::AbortAndReset() {
     reading_aborted_resolver_->Resolve(StreamAbortInfo::Create());
     reading_aborted_resolver_ = nullptr;
   }
+
+  state_ = State::kAborted;
 
   if (on_abort_) {
     // Cause QuicTransport to drop its reference to us.

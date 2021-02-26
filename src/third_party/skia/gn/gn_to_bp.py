@@ -169,7 +169,7 @@ cc_defaults {
 cc_defaults {
     name: "skia_deps",
     shared_libs: [
-        "libandroidicu",
+        "libcutils",
         "libdng_sdk",
         "libexpat",
         "libft2",
@@ -189,7 +189,6 @@ cc_defaults {
     target: {
       android: {
         shared_libs: [
-            "libcutils",
             "libEGL",
             "libGLESv2",
             "libheif",
@@ -198,11 +197,6 @@ cc_defaults {
         ],
         export_shared_lib_headers: [
             "libvulkan",
-        ],
-      },
-      host: {
-        static_libs: [
-          "libcutils",
         ],
       },
       darwin: {
@@ -230,10 +224,16 @@ cc_defaults {
         "skia_deps",
         "skia_pgo_no_profile_use"
     ],
+    shared_libs: [
+        "libandroidicu",
+        "libharfbuzz_ng",
+    ],
     static_libs: [
         "libskia",
     ],
     cflags: [
+        "-DSK_SHAPER_HARFBUZZ_AVAILABLE",
+        "-DSK_UNICODE_AVAILABLE",
         "-Wno-implicit-fallthrough",
         "-Wno-unused-parameter",
         "-Wno-unused-variable",
@@ -284,30 +284,31 @@ cc_test {
 # We'll run GN to get the main source lists and include directories for Skia.
 def generate_args(target_os, enable_gpu):
   d = {
-    'is_official_build':                  'true',
+    'is_official_build':                    'true',
 
     # gn_to_bp_utils' GetArchSources will take care of architecture-specific
     # files.
-    'target_cpu':                         '"none"',
+    'target_cpu':                           '"none"',
 
-    'skia_enable_android_utils':          'true',
+    'skia_enable_android_utils':            'true',
     # Use the custom FontMgr, as the framework will handle fonts.
-    'skia_enable_fontmgr_custom':         'false',
-    'skia_enable_fontmgr_custom_empty':   'true',
-    'skia_enable_fontmgr_android':        'false',
-    'skia_enable_fontmgr_win':            'false',
-    'skia_enable_fontmgr_win_gdi':        'false',
-    'skia_use_fonthost_mac':              'false',
+    'skia_enable_fontmgr_custom_directory': 'false',
+    'skia_enable_fontmgr_custom_embedded':  'false',
+    'skia_enable_fontmgr_custom_empty':     'true',
+    'skia_enable_fontmgr_android':          'false',
+    'skia_enable_fontmgr_win':              'false',
+    'skia_enable_fontmgr_win_gdi':          'false',
+    'skia_use_fonthost_mac':                'false',
 
     # enable features used in skia_nanobench
-    'skia_enable_sksl_interpreter':       'true',
-    'skia_tools_require_resources':       'true',
+    'skia_enable_sksl_interpreter':         'true',
+    'skia_tools_require_resources':         'true',
 
-    'skia_use_freetype':                  'true',
-    'skia_use_fontconfig':                'false',
-    'skia_use_fixed_gamma_text':          'true',
-    'skia_include_multiframe_procs':      'false',
-    'skia_libgifcodec_path':              '"third_party/libgifcodec"',
+    'skia_use_freetype':                    'true',
+    'skia_use_fontconfig':                  'false',
+    'skia_use_fixed_gamma_text':            'true',
+    'skia_include_multiframe_procs':        'false',
+    'skia_libgifcodec_path':                '"third_party/libgifcodec"',
   }
   d['target_os'] = target_os
   if target_os == '"android"':
@@ -490,7 +491,8 @@ with open('Android.bp', 'w') as Android_bp:
                                              defs['sse41'] +
                                              defs['sse42'] +
                                              defs['avx'  ] +
-                                             defs['hsw'  ])),
+                                             defs['hsw'  ] +
+                                             defs['skx'  ])),
 
     'dm_includes'       : bpfmt(8, dm_includes),
     'dm_srcs'           : bpfmt(8, dm_srcs),

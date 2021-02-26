@@ -48,7 +48,9 @@ struct ResourceRequest;
 
 namespace blink {
 
+class ResourceLoadInfoNotifierWrapper;
 class WebData;
+class WebURLRequestExtraData;
 class WebURLLoaderClient;
 class WebURLResponse;
 struct WebURLError;
@@ -66,9 +68,8 @@ class WebURLLoader {
   // |downloaded_blob|.
   virtual void LoadSynchronously(
       std::unique_ptr<network::ResourceRequest> request,
-      scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+      scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
       int requestor_id,
-      bool download_to_network_cache_only,
       bool pass_response_pipe_to_client,
       bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
@@ -78,21 +79,34 @@ class WebURLLoader {
       WebData&,
       int64_t& encoded_data_length,
       int64_t& encoded_body_length,
-      WebBlobInfo& downloaded_blob) = 0;
+      WebBlobInfo& downloaded_blob,
+      std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
+          resource_load_info_notifier_wrapper) = 0;
 
   // Load the request asynchronously, sending notifications to the given
   // client.  The client will receive no further notifications if the
   // loader is disposed before it completes its work.
   virtual void LoadAsynchronously(
       std::unique_ptr<network::ResourceRequest> request,
-      scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+      scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
       int requestor_id,
-      bool download_to_network_cache_only,
       bool no_mime_sniffing,
+      std::unique_ptr<ResourceLoadInfoNotifierWrapper>,
       WebURLLoaderClient*) = 0;
 
+  // |kDeferred| is when an asynchronous load is suspended.
+  // |kDeferredWithBackForwardCache| is when an asynchronous load is suspended
+  // with BackForwardCache, and BackForwardCache entry can be evicted when
+  // redirects etc. happen.
+  // |kNotDeferred| is when an asynchronous load is resumed.
+  // SetDefersLoading can be called with any value at any point.
+  enum class DeferType {
+    kDeferred,
+    kDeferredWithBackForwardCache,
+    kNotDeferred
+  };
   // Suspends/resumes an asynchronous load.
-  virtual void SetDefersLoading(bool) = 0;
+  virtual void SetDefersLoading(DeferType) = 0;
 
   // Notifies the loader that the priority of a WebURLRequest has changed from
   // its previous value. For example, a preload request starts with low
@@ -101,7 +115,8 @@ class WebURLLoader {
                                  int intra_priority_value) = 0;
 
   // Returns the task runner for this request.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  GetTaskRunnerForBodyLoader() = 0;
 };
 
 }  // namespace blink

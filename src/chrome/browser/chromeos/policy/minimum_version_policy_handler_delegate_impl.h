@@ -18,13 +18,13 @@ class MinimumVersionPolicyHandlerDelegateImpl
   bool IsKioskMode() const override;
   bool IsEnterpriseManaged() const override;
   bool IsUserLoggedIn() const override;
-  bool IsUserManaged() const override;
+  bool IsUserEnterpriseManaged() const override;
   bool IsLoginSessionState() const override;
   bool IsLoginInProgress() const override;
   void ShowUpdateRequiredScreen() override;
   void RestartToLoginScreen() override;
   void HideUpdateRequiredScreenIfShown() override;
-  const base::Version& GetCurrentVersion() const override;
+  base::Version GetCurrentVersion() const override;
 };
 
 }  // namespace policy

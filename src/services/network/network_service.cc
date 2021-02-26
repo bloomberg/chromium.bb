@@ -24,20 +24,23 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/chromecast_buildflags.h"
+#include "build/chromeos_buildflags.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/scoped_message_error_crash_key.h"
+#include "mojo/public/cpp/system/functions.h"
+#include "net/base/features.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_posix.h"
 #include "net/base/port_util.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/ct_log_response_parser.h"
+#include "net/cert/internal/system_trust_store.h"
 #include "net/cert/signed_tree_head.h"
-#include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
+#include "net/dns/public/dns_config_overrides.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
@@ -48,14 +51,17 @@
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/crl_set_distributor.h"
-#include "services/network/cross_origin_read_blocking.h"
+#include "services/network/cross_origin_read_blocking_exception_for_plugin.h"
 #include "services/network/dns_config_change_manager.h"
+#include "services/network/first_party_sets/preloaded_first_party_sets.h"
 #include "services/network/http_auth_cache_copier.h"
 #include "services/network/legacy_tls_config_distributor.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/net_log_proxy_sink.h"
 #include "services/network/network_context.h"
 #include "services/network/network_usage_accumulator.h"
+#include "services/network/public/cpp/crash_keys.h"
+#include "services/network/public/cpp/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/cpp/load_info_util.h"
@@ -67,13 +73,17 @@
 #include "third_party/boringssl/src/include/openssl/cpu.h"
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_CHROMECAST)
+#if (defined(OS_LINUX) || BUILDFLAG(IS_LACROS)) && !BUILDFLAG(IS_CHROMECAST)
 #include "components/os_crypt/key_storage_config_linux.h"
 #endif
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
 #include "net/android/http_auth_negotiate_android.h"
+#endif
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+#include "services/network/sct_auditing_cache.h"
 #endif
 
 namespace network {
@@ -184,9 +194,37 @@ void HandleBadMessage(const std::string& error) {
   LOG(WARNING) << "Mojo error in NetworkService:" << error;
   mojo::debug::ScopedMessageErrorCrashKey crash_key_value(error);
   base::debug::DumpWithoutCrashing();
+  network::debug::ClearDeserializationCrashKeyString();
 }
 
 }  // namespace
+
+DataPipeUseTracker::DataPipeUseTracker(NetworkService* network_service,
+                                       DataPipeUser user)
+    : network_service_(network_service), user_(user) {}
+
+DataPipeUseTracker::DataPipeUseTracker(DataPipeUseTracker&& that)
+    : DataPipeUseTracker(that.network_service_, that.user_) {
+  this->state_ = that.state_;
+  that.state_ = State::kReset;
+}
+
+DataPipeUseTracker::~DataPipeUseTracker() {
+  Reset();
+}
+
+void DataPipeUseTracker::Activate() {
+  DCHECK_EQ(state_, State::kInit);
+  network_service_->OnDataPipeCreated(user_);
+  state_ = State::kActivated;
+}
+
+void DataPipeUseTracker::Reset() {
+  if (state_ == State::kActivated) {
+    network_service_->OnDataPipeDropped(user_);
+  }
+  state_ = State::kReset;
+}
 
 // static
 const base::TimeDelta NetworkService::kInitialDohProbeTimeout =
@@ -249,16 +287,17 @@ NetworkService::NetworkService(
 
   // |registry_| is nullptr when an in-process NetworkService is
   // created directly, like in most unit tests.
-  if (registry_) {
-    mojo::core::SetDefaultProcessErrorCallback(
-        base::BindRepeating(&HandleBadMessage));
-  }
+  if (registry_)
+    mojo::SetDefaultProcessErrorHandler(base::BindRepeating(&HandleBadMessage));
 
   if (receiver.is_valid())
     Bind(std::move(receiver));
 
   if (!delay_initialization_until_set_client)
     Initialize(mojom::NetworkServiceParams::New());
+
+  metrics_trigger_timer_.Start(FROM_HERE, base::TimeDelta::FromMinutes(20),
+                               this, &NetworkService::ReportMetrics);
 }
 
 void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
@@ -284,6 +323,14 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
     SetEnvironment(std::move(params->environment));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+#if defined(OS_MAC)
+  if (!base::FeatureList::IsEnabled(network::features::kCertVerifierService) &&
+      base::FeatureList::IsEnabled(
+          net::features::kCertVerifierBuiltinFeature)) {
+    net::InitializeTrustStoreMacCache();
+  }
+#endif
 
   // Set-up the global port overrides.
   if (command_line->HasSwitch(switches::kExplicitlyAllowedPorts)) {
@@ -336,6 +383,18 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
   doh_probe_activator_ = std::make_unique<DelayedDohProbeActivator>(this);
 
   trust_token_key_commitments_ = std::make_unique<TrustTokenKeyCommitments>();
+
+  preloaded_first_party_sets_ = std::make_unique<PreloadedFirstPartySets>();
+  if (command_line->HasSwitch(switches::kUseFirstPartySet)) {
+    preloaded_first_party_sets_->SetManuallySpecifiedSet(
+        command_line->GetSwitchValueASCII(switches::kUseFirstPartySet));
+  }
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+  constexpr size_t kMaxSCTAuditingCacheEntries = 1024;
+  sct_auditing_cache_ =
+      std::make_unique<SCTAuditingCache>(kMaxSCTAuditingCacheEntries);
+#endif
 }
 
 NetworkService::~NetworkService() {
@@ -375,11 +434,6 @@ std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
 }
 
 void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
-  // If IsPrimaryNetworkContext() is true, there must be no other
-  // NetworkContexts created yet.
-  DCHECK(!network_context->IsPrimaryNetworkContext() ||
-         network_contexts_.empty());
-
   DCHECK_EQ(0u, network_contexts_.count(network_context));
   network_contexts_.insert(network_context);
   if (quic_disabled_)
@@ -399,16 +453,11 @@ void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
 }
 
 void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
-  // If the NetworkContext is the primary network context, all other
-  // NetworkContexts must already have been destroyed.
-  DCHECK(!network_context->IsPrimaryNetworkContext() ||
-         network_contexts_.size() == 1);
-
   DCHECK_EQ(1u, network_contexts_.count(network_context));
   network_contexts_.erase(network_context);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 void NetworkService::ReinitializeLogging(mojom::LoggingSettingsPtr settings) {
   logging::LoggingSettings logging_settings;
   logging_settings.logging_dest = settings->logging_dest;
@@ -442,12 +491,14 @@ void NetworkService::StartNetLog(base::File file,
                                  net::NetLogCaptureMode capture_mode,
                                  base::Value client_constants) {
   DCHECK(client_constants.is_dict());
-  std::unique_ptr<base::DictionaryValue> constants = net::GetNetConstants();
+  std::unique_ptr<base::DictionaryValue> constants =
+      base::DictionaryValue::From(
+          base::Value::ToUniquePtrValue(net::GetNetConstants()));
   constants->MergeDictionary(&client_constants);
 
   file_net_log_observer_ = net::FileNetLogObserver::CreateUnboundedPreExisting(
-      std::move(file), std::move(constants));
-  file_net_log_observer_->StartObserving(net_log_, capture_mode);
+      std::move(file), capture_mode, std::move(constants));
+  file_net_log_observer_->StartObserving(net_log_);
 }
 
 void NetworkService::AttachNetLogProxy(
@@ -467,10 +518,6 @@ void NetworkService::SetSSLKeyLogFile(base::File file) {
 void NetworkService::CreateNetworkContext(
     mojo::PendingReceiver<mojom::NetworkContext> receiver,
     mojom::NetworkContextParamsPtr params) {
-  // Only the first created NetworkContext can have |primary_next_context| set
-  // to true.
-  DCHECK(!params->primary_network_context || network_contexts_.empty());
-
   owned_network_contexts_.emplace(std::make_unique<NetworkContext>(
       this, std::move(receiver), std::move(params),
       base::BindOnce(&NetworkService::OnNetworkContextConnectionClosed,
@@ -479,7 +526,7 @@ void NetworkService::CreateNetworkContext(
 
 void NetworkService::ConfigureStubHostResolver(
     bool insecure_dns_client_enabled,
-    net::DnsConfig::SecureDnsMode secure_dns_mode,
+    net::SecureDnsMode secure_dns_mode,
     base::Optional<std::vector<mojom::DnsOverHttpsServerPtr>>
         dns_over_https_servers) {
   DCHECK(!dns_over_https_servers || !dns_over_https_servers->empty());
@@ -504,6 +551,7 @@ void NetworkService::ConfigureStubHostResolver(
   overrides.disabled_upgrade_providers =
       SplitString(features::kDnsOverHttpsUpgradeDisabledProvidersParam.Get(),
                   ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
   host_resolver_manager_->SetDnsConfigOverrides(overrides);
 }
 
@@ -630,7 +678,7 @@ void NetworkService::OnCertDBChanged() {
   net::CertDatabase::GetInstance()->NotifyObserversCertDBChanged();
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) || BUILDFLAG(IS_LACROS)
 void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
 #if !BUILDFLAG(IS_CHROMECAST)
   DCHECK(!os_crypt_config_set_);
@@ -646,7 +694,7 @@ void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
 }
 #endif
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_MAC)
 void NetworkService::SetEncryptionKey(const std::string& encryption_key) {
   OSCrypt::SetRawEncryptionKey(encryption_key);
 }
@@ -654,7 +702,7 @@ void NetworkService::SetEncryptionKey(const std::string& encryption_key) {
 
 void NetworkService::AddCorbExceptionForPlugin(int32_t process_id) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
-  CrossOriginReadBlocking::AddExceptionForPlugin(process_id);
+  CrossOriginReadBlockingExceptionForPlugin::AddExceptionForPlugin(process_id);
 }
 
 void NetworkService::AddAllowedRequestInitiatorForPlugin(
@@ -668,7 +716,8 @@ void NetworkService::AddAllowedRequestInitiatorForPlugin(
 void NetworkService::RemoveSecurityExceptionsForPlugin(int32_t process_id) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
 
-  CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
+  CrossOriginReadBlockingExceptionForPlugin::RemoveExceptionForPlugin(
+      process_id);
 
   std::map<int, std::set<url::Origin>>& map = plugin_origins_;
   map.erase(process_id);
@@ -718,6 +767,25 @@ void NetworkService::SetTrustTokenKeyCommitments(
   std::move(done).Run();
 }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
+void NetworkService::ClearSCTAuditingCache() {
+  sct_auditing_cache_->ClearCache();
+}
+
+void NetworkService::ConfigureSCTAuditing(
+    bool enabled,
+    double sampling_rate,
+    const GURL& reporting_uri,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    mojo::PendingRemote<mojom::URLLoaderFactory> factory) {
+  sct_auditing_cache_->set_enabled(enabled);
+  sct_auditing_cache_->set_sampling_rate(sampling_rate);
+  sct_auditing_cache_->set_report_uri(reporting_uri);
+  sct_auditing_cache_->set_traffic_annotation(traffic_annotation);
+  sct_auditing_cache_->set_url_loader_factory(std::move(factory));
+}
+#endif
+
 #if defined(OS_ANDROID)
 void NetworkService::DumpWithoutCrashing(base::Time dump_request_time) {
   static base::debug::CrashKeyString* time_key =
@@ -736,6 +804,10 @@ void NetworkService::BindTestInterface(
     auto pipe = receiver.PassPipe();
     registry_->TryBindInterface(mojom::NetworkServiceTest::Name_, &pipe);
   }
+}
+
+void NetworkService::SetPreloadedFirstPartySets(const std::string& raw_sets) {
+  preloaded_first_party_sets_->ParseAndSet(raw_sets);
 }
 
 std::unique_ptr<net::HttpAuthHandlerFactory>
@@ -768,28 +840,29 @@ void NetworkService::OnBeforeURLRequest() {
   MaybeStartUpdateLoadInfoTimer();
 }
 
-void NetworkService::DestroyNetworkContexts() {
-  // Delete NetworkContexts. If there's a primary NetworkContext, it must be
-  // deleted after all other NetworkContexts, to avoid use-after-frees.
-  for (auto it = owned_network_contexts_.begin();
-       it != owned_network_contexts_.end();) {
-    const auto last = it;
-    ++it;
-    if (!(*last)->IsPrimaryNetworkContext())
-      owned_network_contexts_.erase(last);
-  }
+void NetworkService::OnDataPipeCreated(DataPipeUser user) {
+  auto& entry = data_pipe_use_[user];
+  ++entry.current;
+  entry.max = std::max(entry.max, entry.current);
+}
 
-  DCHECK_LE(owned_network_contexts_.size(), 1u);
+void NetworkService::OnDataPipeDropped(DataPipeUser user) {
+  auto& entry = data_pipe_use_[user];
+  DCHECK_GT(entry.current, 0);
+  --entry.current;
+  entry.min = std::min(entry.min, entry.current);
+}
+
+void NetworkService::StopMetricsTimerForTesting() {
+  metrics_trigger_timer_.Stop();
+}
+
+void NetworkService::DestroyNetworkContexts() {
   owned_network_contexts_.clear();
 }
 
 void NetworkService::OnNetworkContextConnectionClosed(
     NetworkContext* network_context) {
-  if (network_context->IsPrimaryNetworkContext()) {
-    DestroyNetworkContexts();
-    return;
-  }
-
   auto it = owned_network_contexts_.find(network_context);
   DCHECK(it != owned_network_contexts_.end());
   owned_network_contexts_.erase(it);
@@ -879,6 +952,23 @@ void NetworkService::AckUpdateLoadInfo() {
   DCHECK(waiting_on_load_state_ack_);
   waiting_on_load_state_ack_ = false;
   MaybeStartUpdateLoadInfoTimer();
+}
+
+void NetworkService::ReportMetrics() {
+  UMA_HISTOGRAM_COUNTS_10000("Net.DataPipeUseForUrlLoader.Min",
+                             data_pipe_use_[DataPipeUser::kUrlLoader].min);
+  UMA_HISTOGRAM_COUNTS_10000("Net.DataPipeUseForUrlLoader.Max",
+                             data_pipe_use_[DataPipeUser::kUrlLoader].max);
+  UMA_HISTOGRAM_COUNTS_10000("Net.DataPipeUseForWebSocket.Min",
+                             data_pipe_use_[DataPipeUser::kWebSocket].min);
+  UMA_HISTOGRAM_COUNTS_10000("Net.DataPipeUseForWebSocket.Max",
+                             data_pipe_use_[DataPipeUser::kWebSocket].max);
+
+  for (auto& pair : data_pipe_use_) {
+    DataPipeUsage& entry = pair.second;
+    entry.max = entry.current;
+    entry.min = entry.current;
+  }
 }
 
 void NetworkService::Bind(

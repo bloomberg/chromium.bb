@@ -31,7 +31,7 @@ class FilePathWatcherFSEvents : public FilePathWatcher::PlatformDelegate {
 
   // FilePathWatcher::PlatformDelegate overrides.
   bool Watch(const FilePath& path,
-             bool recursive,
+             Type type,
              const FilePathWatcher::Callback& callback) override;
   void Cancel() override;
 
@@ -74,7 +74,7 @@ class FilePathWatcherFSEvents : public FilePathWatcher::PlatformDelegate {
   // (Only accessed from the task_runner() thread.)
   FilePathWatcher::Callback callback_;
 
-  // The dispatch queue on which the the event stream is scheduled.
+  // The dispatch queue on which the event stream is scheduled.
   ScopedDispatchObject<dispatch_queue_t> queue_;
 
   // Target path to watch (passed to callback).

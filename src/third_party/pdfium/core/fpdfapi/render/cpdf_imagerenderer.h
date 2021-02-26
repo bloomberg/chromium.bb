@@ -13,7 +13,7 @@
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/dib/cfx_imagerenderer.h"
-#include "core/fxge/fx_dib.h"
+#include "core/fxge/dib/fx_dib.h"
 #include "third_party/base/optional.h"
 
 class CFX_DIBitmap;
@@ -40,11 +40,9 @@ class CPDF_ImageRenderer {
   bool Start(CPDF_RenderStatus* pStatus,
              const RetainPtr<CFX_DIBBase>& pDIBBase,
              FX_ARGB bitmap_argb,
-             int bitmap_alpha,
              const CFX_Matrix& mtImage2Device,
              const FXDIB_ResampleOptions& options,
-             bool bStdCS,
-             BlendMode blendType);
+             bool bStdCS);
 
   bool Continue(PauseIndicatorIface* pPause);
   bool GetResult() const { return m_Result; }

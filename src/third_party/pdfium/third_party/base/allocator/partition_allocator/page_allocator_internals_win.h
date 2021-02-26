@@ -7,6 +7,8 @@
 
 #include "third_party/base/allocator/partition_allocator/oom.h"
 #include "third_party/base/allocator/partition_allocator/page_allocator_internal.h"
+#include "third_party/base/check_op.h"
+#include "third_party/base/notreached.h"
 
 namespace pdfium {
 namespace base {
@@ -91,7 +93,7 @@ void SetSystemPagesAccessInternal(
                       GetAccessFlags(accessibility))) {
       int32_t error = GetLastError();
       if (error == ERROR_COMMITMENT_LIMIT)
-        OOM_CRASH();
+        OOM_CRASH(length);
       // We check `GetLastError` for `ERROR_SUCCESS` here so that in a crash
       // report we get the error number.
       CHECK_EQ(ERROR_SUCCESS, error);

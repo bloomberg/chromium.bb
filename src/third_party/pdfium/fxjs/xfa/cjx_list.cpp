@@ -26,7 +26,7 @@ CJX_List::CJX_List(CXFA_List* list) : CJX_Object(list) {
   DefineMethods(MethodSpecs);
 }
 
-CJX_List::~CJX_List() {}
+CJX_List::~CJX_List() = default;
 
 bool CJX_List::DynamicTypeIs(TypeTag eType) const {
   return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
@@ -92,12 +92,13 @@ CJS_Result CJX_List::item(CFX_V8* runtime,
   if (index < 0 || cast_index >= GetXFAList()->GetLength())
     return CJS_Result::Failure(JSMessage::kInvalidInputError);
 
-  return CJS_Result::Success(static_cast<CFXJSE_Engine*>(runtime)->NewXFAObject(
-      GetXFAList()->Item(cast_index),
-      GetDocument()->GetScriptContext()->GetJseNormalClass()->GetTemplate()));
+  auto* pEngine = static_cast<CFXJSE_Engine*>(runtime);
+  return CJS_Result::Success(
+      pEngine->NewNormalXFAObject(GetXFAList()->Item(cast_index)));
 }
 
-void CJX_List::length(CFXJSE_Value* pValue,
+void CJX_List::length(v8::Isolate* pIsolate,
+                      CFXJSE_Value* pValue,
                       bool bSetting,
                       XFA_Attribute eAttribute) {
   if (bSetting) {
@@ -105,5 +106,5 @@ void CJX_List::length(CFXJSE_Value* pValue,
     return;
   }
   pValue->SetInteger(
-      pdfium::base::checked_cast<int32_t>(GetXFAList()->GetLength()));
+      pIsolate, pdfium::base::checked_cast<int32_t>(GetXFAList()->GetLength()));
 }

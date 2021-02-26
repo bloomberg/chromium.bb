@@ -58,36 +58,43 @@ typedef struct ADPCMEncodeContext {
 
 #define FREEZE_INTERVAL 128
 
-static av_cold int adpcm_encode_close(AVCodecContext *avctx);
-
 static av_cold int adpcm_encode_init(AVCodecContext *avctx)
 {
     ADPCMEncodeContext *s = avctx->priv_data;
     uint8_t *extradata;
     int i;
-    int ret = AVERROR(ENOMEM);
 
     if (avctx->channels > 2) {
         av_log(avctx, AV_LOG_ERROR, "only stereo or mono is supported\n");
         return AVERROR(EINVAL);
     }
 
-    if (avctx->trellis && (unsigned)avctx->trellis > 16U) {
-        av_log(avctx, AV_LOG_ERROR, "invalid trellis size\n");
-        return AVERROR(EINVAL);
-    }
-
     if (avctx->trellis) {
-        int frontier  = 1 << avctx->trellis;
-        int max_paths =  frontier * FREEZE_INTERVAL;
-        FF_ALLOC_OR_GOTO(avctx, s->paths,
-                         max_paths * sizeof(*s->paths), error);
-        FF_ALLOC_OR_GOTO(avctx, s->node_buf,
-                         2 * frontier * sizeof(*s->node_buf),  error);
-        FF_ALLOC_OR_GOTO(avctx, s->nodep_buf,
-                         2 * frontier * sizeof(*s->nodep_buf), error);
-        FF_ALLOC_OR_GOTO(avctx, s->trellis_hash,
-                         65536 * sizeof(*s->trellis_hash), error);
+        int frontier, max_paths;
+
+        if ((unsigned)avctx->trellis > 16U) {
+            av_log(avctx, AV_LOG_ERROR, "invalid trellis size\n");
+            return AVERROR(EINVAL);
+        }
+
+        if (avctx->codec->id == AV_CODEC_ID_ADPCM_IMA_SSI ||
+            avctx->codec->id == AV_CODEC_ID_ADPCM_IMA_APM ||
+            avctx->codec->id == AV_CODEC_ID_ADPCM_ARGO) {
+            /*
+             * The current trellis implementation doesn't work for extended
+             * runs of samples without periodic resets. Disallow it.
+             */
+            av_log(avctx, AV_LOG_ERROR, "trellis not supported\n");
+            return AVERROR_PATCHWELCOME;
+        }
+
+        frontier  = 1 << avctx->trellis;
+        max_paths =  frontier * FREEZE_INTERVAL;
+        if (!FF_ALLOC_TYPED_ARRAY(s->paths,        max_paths)    ||
+            !FF_ALLOC_TYPED_ARRAY(s->node_buf,     2 * frontier) ||
+            !FF_ALLOC_TYPED_ARRAY(s->nodep_buf,    2 * frontier) ||
+            !FF_ALLOC_TYPED_ARRAY(s->trellis_hash, 65536))
+            return AVERROR(ENOMEM);
     }
 
     avctx->bits_per_coded_sample = av_get_bits_per_sample(avctx->codec->id);
@@ -114,7 +121,7 @@ static av_cold int adpcm_encode_init(AVCodecContext *avctx)
         avctx->bits_per_coded_sample = 4;
         avctx->block_align    = BLKSIZE;
         if (!(avctx->extradata = av_malloc(32 + AV_INPUT_BUFFER_PADDING_SIZE)))
-            goto error;
+            return AVERROR(ENOMEM);
         avctx->extradata_size = 32;
         extradata = avctx->extradata;
         bytestream_put_le16(&extradata, avctx->frame_size);
@@ -134,20 +141,31 @@ static av_cold int adpcm_encode_init(AVCodecContext *avctx)
             avctx->sample_rate != 44100) {
             av_log(avctx, AV_LOG_ERROR, "Sample rate must be 11025, "
                    "22050 or 44100\n");
-            ret = AVERROR(EINVAL);
-            goto error;
+            return AVERROR(EINVAL);
         }
         avctx->frame_size = 512 * (avctx->sample_rate / 11025);
         break;
+    case AV_CODEC_ID_ADPCM_IMA_SSI:
+        avctx->frame_size = BLKSIZE * 2 / avctx->channels;
+        avctx->block_align = BLKSIZE;
+        break;
+    case AV_CODEC_ID_ADPCM_IMA_APM:
+        avctx->frame_size = BLKSIZE * 2 / avctx->channels;
+        avctx->block_align = BLKSIZE;
+
+        if (!(avctx->extradata = av_mallocz(28 + AV_INPUT_BUFFER_PADDING_SIZE)))
+            return AVERROR(ENOMEM);
+        avctx->extradata_size = 28;
+        break;
+    case AV_CODEC_ID_ADPCM_ARGO:
+        avctx->frame_size = 32;
+        avctx->block_align = 17 * avctx->channels;
+        break;
     default:
-        ret = AVERROR(EINVAL);
-        goto error;
+        return AVERROR(EINVAL);
     }
 
     return 0;
-error:
-    adpcm_encode_close(avctx);
-    return ret;
 }
 
 static av_cold int adpcm_encode_close(AVCodecContext *avctx)
@@ -468,6 +486,46 @@ static void adpcm_compress_trellis(AVCodecContext *avctx,
     c->idelta     = nodes[0]->step;
 }
 
+static inline int adpcm_argo_compress_nibble(const ADPCMChannelStatus *cs, int16_t s,
+                                             int shift, int flag)
+{
+    int nibble;
+
+    if (flag)
+        nibble = 4 * s - 8 * cs->sample1 + 4 * cs->sample2;
+    else
+        nibble = 4 * s - 4 * cs->sample1;
+
+    return (nibble >> shift) & 0x0F;
+}
+
+static int64_t adpcm_argo_compress_block(ADPCMChannelStatus *cs, PutBitContext *pb,
+                                         const int16_t *samples, int nsamples,
+                                         int shift, int flag)
+{
+    int64_t error = 0;
+
+    if (pb) {
+        put_bits(pb, 4, shift - 2);
+        put_bits(pb, 1, 0);
+        put_bits(pb, 1, !!flag);
+        put_bits(pb, 2, 0);
+    }
+
+    for (int n = 0; n < nsamples; n++) {
+        /* Compress the nibble, then expand it to see how much precision we've lost. */
+        int nibble = adpcm_argo_compress_nibble(cs, samples[n], shift, flag);
+        int16_t sample = ff_adpcm_argo_expand_nibble(cs, nibble, shift, flag);
+
+        error += abs(samples[n] - sample);
+
+        if (pb)
+            put_bits(pb, 4, nibble);
+    }
+
+    return error;
+}
+
 static int adpcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
                               const AVFrame *frame, int *got_packet_ptr)
 {
@@ -484,6 +542,9 @@ static int adpcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
 
     if (avctx->codec_id == AV_CODEC_ID_ADPCM_SWF)
         pkt_size = (2 + avctx->channels * (22 + 4 * (frame->nb_samples - 1)) + 7) / 8;
+    else if (avctx->codec_id == AV_CODEC_ID_ADPCM_IMA_SSI ||
+             avctx->codec_id == AV_CODEC_ID_ADPCM_IMA_APM)
+        pkt_size = (frame->nb_samples * avctx->channels) / 2;
     else
         pkt_size = avctx->block_align;
     if ((ret = ff_alloc_packet2(avctx, avpkt, pkt_size, 0)) < 0)
@@ -509,7 +570,8 @@ static int adpcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
 
         /* stereo: 4 bytes (8 samples) for left, 4 bytes for right */
         if (avctx->trellis > 0) {
-            FF_ALLOC_ARRAY_OR_GOTO(avctx, buf, avctx->channels, blocks * 8, error);
+            if (!FF_ALLOC_TYPED_ARRAY(buf, avctx->channels * blocks * 8))
+                return AVERROR(ENOMEM);
             for (ch = 0; ch < avctx->channels; ch++) {
                 adpcm_compress_trellis(avctx, &samples_p[ch][1],
                                        buf + ch * blocks * 8, &c->status[ch],
@@ -568,6 +630,22 @@ static int adpcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         flush_put_bits(&pb);
         break;
     }
+    case AV_CODEC_ID_ADPCM_IMA_SSI:
+    {
+        PutBitContext pb;
+        init_put_bits(&pb, dst, pkt_size);
+
+        av_assert0(avctx->trellis == 0);
+
+        for (i = 0; i < frame->nb_samples; i++) {
+            for (ch = 0; ch < avctx->channels; ch++) {
+                put_bits(&pb, 4, adpcm_ima_qt_compress_sample(c->status + ch, *samples++));
+            }
+        }
+
+        flush_put_bits(&pb);
+        break;
+    }
     case AV_CODEC_ID_ADPCM_SWF:
     {
         PutBitContext pb;
@@ -588,7 +666,8 @@ static int adpcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         }
 
         if (avctx->trellis > 0) {
-            FF_ALLOC_OR_GOTO(avctx, buf, 2 * n, error);
+            if (!(buf = av_malloc(2 * n)))
+                return AVERROR(ENOMEM);
             adpcm_compress_trellis(avctx, samples + avctx->channels, buf,
                                    &c->status[0], n, avctx->channels);
             if (avctx->channels == 2)
@@ -636,7 +715,8 @@ static int adpcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
 
         if (avctx->trellis > 0) {
             n = avctx->block_align - 7 * avctx->channels;
-            FF_ALLOC_OR_GOTO(avctx, buf, 2 * n, error);
+            if (!(buf = av_malloc(2 * n)))
+                return AVERROR(ENOMEM);
             if (avctx->channels == 1) {
                 adpcm_compress_trellis(avctx, samples, buf, &c->status[0], n,
                                        avctx->channels);
@@ -663,7 +743,8 @@ static int adpcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     case AV_CODEC_ID_ADPCM_YAMAHA:
         n = frame->nb_samples / 2;
         if (avctx->trellis > 0) {
-            FF_ALLOC_OR_GOTO(avctx, buf, 2 * n * 2, error);
+            if (!(buf = av_malloc(2 * n * 2)))
+                return AVERROR(ENOMEM);
             n *= 2;
             if (avctx->channels == 1) {
                 adpcm_compress_trellis(avctx, samples, buf, &c->status[0], n,
@@ -687,6 +768,62 @@ static int adpcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
                 *dst++  = nibble;
             }
         break;
+    case AV_CODEC_ID_ADPCM_IMA_APM:
+    {
+        PutBitContext pb;
+        init_put_bits(&pb, dst, pkt_size);
+
+        av_assert0(avctx->trellis == 0);
+
+        for (n = frame->nb_samples / 2; n > 0; n--) {
+            for (ch = 0; ch < avctx->channels; ch++) {
+                put_bits(&pb, 4, adpcm_ima_qt_compress_sample(c->status + ch, *samples++));
+                put_bits(&pb, 4, adpcm_ima_qt_compress_sample(c->status + ch, samples[st]));
+            }
+            samples += avctx->channels;
+        }
+
+        flush_put_bits(&pb);
+        break;
+    }
+    case AV_CODEC_ID_ADPCM_ARGO:
+    {
+        PutBitContext pb;
+        init_put_bits(&pb, dst, pkt_size);
+
+        av_assert0(frame->nb_samples == 32);
+
+        for (ch = 0; ch < avctx->channels; ch++) {
+            int64_t error  = INT64_MAX, tmperr = INT64_MAX;
+            int     shift  = 2, flag = 0;
+            int     saved1 = c->status[ch].sample1;
+            int     saved2 = c->status[ch].sample2;
+
+            /* Find the optimal coefficients, bail early if we find a perfect result. */
+            for (int s = 2; s < 18 && tmperr != 0; s++) {
+                for (int f = 0; f < 2 && tmperr != 0; f++) {
+                    c->status[ch].sample1 = saved1;
+                    c->status[ch].sample2 = saved2;
+                    tmperr = adpcm_argo_compress_block(c->status + ch, NULL, samples_p[ch],
+                                                       frame->nb_samples, s, f);
+                    if (tmperr < error) {
+                        shift = s;
+                        flag  = f;
+                        error = tmperr;
+                    }
+                }
+            }
+
+            /* Now actually do the encode. */
+            c->status[ch].sample1 = saved1;
+            c->status[ch].sample2 = saved2;
+            adpcm_argo_compress_block(c->status + ch, &pb, samples_p[ch],
+                                      frame->nb_samples, shift, flag);
+        }
+
+        flush_put_bits(&pb);
+        break;
+    }
     default:
         return AVERROR(EINVAL);
     }
@@ -694,8 +831,6 @@ static int adpcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     avpkt->size = pkt_size;
     *got_packet_ptr = 1;
     return 0;
-error:
-    return AVERROR(ENOMEM);
 }
 
 static const enum AVSampleFormat sample_fmts[] = {
@@ -706,21 +841,26 @@ static const enum AVSampleFormat sample_fmts_p[] = {
     AV_SAMPLE_FMT_S16P, AV_SAMPLE_FMT_NONE
 };
 
-#define ADPCM_ENCODER(id_, name_, sample_fmts_, long_name_) \
-AVCodec ff_ ## name_ ## _encoder = {                        \
-    .name           = #name_,                               \
-    .long_name      = NULL_IF_CONFIG_SMALL(long_name_),     \
-    .type           = AVMEDIA_TYPE_AUDIO,                   \
-    .id             = id_,                                  \
-    .priv_data_size = sizeof(ADPCMEncodeContext),           \
-    .init           = adpcm_encode_init,                    \
-    .encode2        = adpcm_encode_frame,                   \
-    .close          = adpcm_encode_close,                   \
-    .sample_fmts    = sample_fmts_,                         \
+#define ADPCM_ENCODER(id_, name_, sample_fmts_, capabilities_, long_name_) \
+AVCodec ff_ ## name_ ## _encoder = {                                       \
+    .name           = #name_,                                              \
+    .long_name      = NULL_IF_CONFIG_SMALL(long_name_),                    \
+    .type           = AVMEDIA_TYPE_AUDIO,                                  \
+    .id             = id_,                                                 \
+    .priv_data_size = sizeof(ADPCMEncodeContext),                          \
+    .init           = adpcm_encode_init,                                   \
+    .encode2        = adpcm_encode_frame,                                  \
+    .close          = adpcm_encode_close,                                  \
+    .sample_fmts    = sample_fmts_,                                        \
+    .capabilities   = capabilities_,                                       \
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,                           \
 }
 
-ADPCM_ENCODER(AV_CODEC_ID_ADPCM_IMA_QT,  adpcm_ima_qt,  sample_fmts_p, "ADPCM IMA QuickTime");
-ADPCM_ENCODER(AV_CODEC_ID_ADPCM_IMA_WAV, adpcm_ima_wav, sample_fmts_p, "ADPCM IMA WAV");
-ADPCM_ENCODER(AV_CODEC_ID_ADPCM_MS,      adpcm_ms,      sample_fmts,   "ADPCM Microsoft");
-ADPCM_ENCODER(AV_CODEC_ID_ADPCM_SWF,     adpcm_swf,     sample_fmts,   "ADPCM Shockwave Flash");
-ADPCM_ENCODER(AV_CODEC_ID_ADPCM_YAMAHA,  adpcm_yamaha,  sample_fmts,   "ADPCM Yamaha");
+ADPCM_ENCODER(AV_CODEC_ID_ADPCM_ARGO,    adpcm_argo,    sample_fmts_p, 0,                             "ADPCM Argonaut Games");
+ADPCM_ENCODER(AV_CODEC_ID_ADPCM_IMA_APM, adpcm_ima_apm, sample_fmts,   AV_CODEC_CAP_SMALL_LAST_FRAME, "ADPCM IMA Ubisoft APM");
+ADPCM_ENCODER(AV_CODEC_ID_ADPCM_IMA_QT,  adpcm_ima_qt,  sample_fmts_p, 0,                             "ADPCM IMA QuickTime");
+ADPCM_ENCODER(AV_CODEC_ID_ADPCM_IMA_SSI, adpcm_ima_ssi, sample_fmts,   AV_CODEC_CAP_SMALL_LAST_FRAME, "ADPCM IMA Simon & Schuster Interactive");
+ADPCM_ENCODER(AV_CODEC_ID_ADPCM_IMA_WAV, adpcm_ima_wav, sample_fmts_p, 0,                             "ADPCM IMA WAV");
+ADPCM_ENCODER(AV_CODEC_ID_ADPCM_MS,      adpcm_ms,      sample_fmts,   0,                             "ADPCM Microsoft");
+ADPCM_ENCODER(AV_CODEC_ID_ADPCM_SWF,     adpcm_swf,     sample_fmts,   0,                             "ADPCM Shockwave Flash");
+ADPCM_ENCODER(AV_CODEC_ID_ADPCM_YAMAHA,  adpcm_yamaha,  sample_fmts,   0,                             "ADPCM Yamaha");

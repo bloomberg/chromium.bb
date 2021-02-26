@@ -31,11 +31,13 @@ NavigationPresence GetNavigationPresence(
     case UserEventSpecifics::kGaiaPasswordReuseEvent:
       return kMustHave;
     case UserEventSpecifics::kGaiaPasswordCapturedEvent:
+    case UserEventSpecifics::kFlocIdComputedEvent:
       return kCannotHave;
+    // The event types below are not recorded anymore, so are not handled here
+    // (will fall through to the NOTREACHED() below).
     case UserEventSpecifics::kLanguageDetectionEvent:
     case UserEventSpecifics::kTranslationEvent:
     case UserEventSpecifics::kUserConsent:
-    case UserEventSpecifics::kFlocIdComputedEvent:
     case UserEventSpecifics::EVENT_NOT_SET:
       break;
   }
@@ -77,8 +79,9 @@ void UserEventServiceImpl::RecordUserEvent(
   RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics));
 }
 
-ModelTypeSyncBridge* UserEventServiceImpl::GetSyncBridge() {
-  return bridge_.get();
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+UserEventServiceImpl::GetControllerDelegate() {
+  return bridge_->change_processor()->GetControllerDelegate();
 }
 
 bool UserEventServiceImpl::ShouldRecordEvent(

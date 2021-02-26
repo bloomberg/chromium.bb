@@ -191,6 +191,13 @@ wl_proxy_get_version(struct wl_proxy *proxy);
 uint32_t
 wl_proxy_get_id(struct wl_proxy *proxy);
 
+void
+wl_proxy_set_tag(struct wl_proxy *proxy,
+		 const char * const *tag);
+
+const char * const *
+wl_proxy_get_tag(struct wl_proxy *proxy);
+
 const char *
 wl_proxy_get_class(struct wl_proxy *proxy);
 

@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -158,8 +159,7 @@ gfx::Rect LinkHighlightImpl::LinkHighlightFragment::PaintableRegion() {
 }
 
 scoped_refptr<cc::DisplayItemList>
-LinkHighlightImpl::LinkHighlightFragment::PaintContentsToDisplayList(
-    PaintingControlSetting painting_control) {
+LinkHighlightImpl::LinkHighlightFragment::PaintContentsToDisplayList() {
   auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
 
   PaintRecorder recorder;
@@ -270,7 +270,8 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
   DCHECK(!object->GetFrameView()->ShouldThrottleRendering());
 
   static const FloatSize rect_rounding_radii(3, 3);
-  auto color = object->StyleRef().TapHighlightColor();
+  auto color = object->StyleRef().VisitedDependentColor(
+      GetCSSPropertyWebkitTapHighlightColor());
 
   // For now, we'll only use rounded rects if we have a single rect because
   // otherwise we may sometimes get a chain of adjacent boxes (e.g. for text
@@ -281,9 +282,10 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
                                 ->GetMockGestureTapHighlightsEnabled() &&
                            !object->FirstFragment().NextFragment();
 
-  size_t index = 0;
+  wtf_size_t index = 0;
   for (const auto* fragment = &object->FirstFragment(); fragment;
        fragment = fragment->NextFragment(), ++index) {
+    ScopedDisplayItemFragment scoped_fragment(context, index);
     auto rects = object->OutlineRects(
         fragment->PaintOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
     if (rects.size() > 1)
@@ -294,7 +296,8 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     // <a>ABC<b>DEF</b>GHI</a>.
     // See gesture-tapHighlight-simple-nested.html
     if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled() &&
-        use_rounded_rects && object->IsLayoutInline()) {
+        use_rounded_rects && object->IsLayoutInline() &&
+        object->IsInLayoutNGInlineFormattingContext()) {
       NGInlineCursor cursor;
       cursor.MoveTo(*object);
       // When |LayoutInline| has more than one children, we render square
@@ -316,21 +319,21 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     auto& link_highlight_fragment = fragments_[index];
     link_highlight_fragment.SetColor(color);
 
-    auto bounding_rect = new_path.BoundingRect();
-    new_path.Translate(-ToFloatSize(bounding_rect.Location()));
+    auto bounding_rect = EnclosingIntRect(new_path.BoundingRect());
+    new_path.Translate(-FloatSize(ToIntSize(bounding_rect.Location())));
 
-    auto* layer = link_highlight_fragment.Layer();
+    cc::Layer* layer = link_highlight_fragment.Layer();
     DCHECK(layer);
     if (link_highlight_fragment.GetPath() != new_path) {
       link_highlight_fragment.SetPath(new_path);
-      layer->SetBounds(gfx::Size(EnclosingIntRect(bounding_rect).Size()));
+      layer->SetBounds(gfx::Size(bounding_rect.Size()));
       layer->SetNeedsDisplay();
     }
 
     DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
                         ("LinkHighlight"));
 
-    auto property_tree_state = fragment->LocalBorderBoxProperties();
+    auto property_tree_state = fragment->LocalBorderBoxProperties().Unalias();
     property_tree_state.SetEffect(Effect());
     RecordForeignLayer(context, debug_name_client,
                        DisplayItem::kForeignLayerLinkHighlight, layer,
@@ -342,11 +345,8 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
 
 void LinkHighlightImpl::SetPaintArtifactCompositorNeedsUpdate() {
   DCHECK(node_);
-  if (auto* frame_view = node_->GetDocument().View()) {
+  if (auto* frame_view = node_->GetDocument().View())
     frame_view->SetPaintArtifactCompositorNeedsUpdate();
-    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-      frame_view->SetForeignLayerListNeedsUpdate();
-  }
 }
 
 void LinkHighlightImpl::UpdateOpacity(float opacity) {

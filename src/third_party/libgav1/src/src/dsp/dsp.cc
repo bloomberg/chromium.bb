@@ -94,6 +94,8 @@ void DspInit() {
       LoopFilterInit_SSE4_1();
       LoopRestorationInit_SSE4_1();
       MaskBlendInit_SSE4_1();
+      MotionFieldProjectionInit_SSE4_1();
+      MotionVectorSearchInit_SSE4_1();
       ObmcInit_SSE4_1();
       SuperResInit_SSE4_1();
       WarpInit_SSE4_1();

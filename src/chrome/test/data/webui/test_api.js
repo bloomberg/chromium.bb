@@ -67,7 +67,7 @@ function Test() {}
  * will break. animationend events should still work.
  */
 Test.disableAnimationsAndTransitions = function() {
-  let all = document.body.querySelectorAll('*, * /deep/ *');
+  let all = document.body.querySelectorAll('*');
   const ZERO_MS_IMPORTANT = '0ms !important';
   for (let i = 0, l = all.length; i < l; ++i) {
     let style = all[i].style;
@@ -594,7 +594,17 @@ function testDone(result) {
       result = testResult();
     }
 
-    if (hasWindow && window.webUiTest) {
+    const [success, errorMessage] = /** @type {!Array} */ (result);
+    if (hasWindow && window.reportMojoWebUITestResult) {
+      // For "mojo_webui" test types, reportMojoWebUITestResult should already
+      // be defined globally, because such tests must manually import the
+      // mojo_webui_test_support.js module which defines it.
+      if (success) {
+        window.reportMojoWebUITestResult();
+      } else {
+        window.reportMojoWebUITestResult(errorMessage);
+      }
+    } else if (hasWindow && window.webUiTest) {
       let testRunner;
       if (webUiTest.mojom.TestRunnerPtr) {
         // For mojo WebUI tests.
@@ -615,17 +625,17 @@ function testDone(result) {
         assertNotReached(
             'Mojo bindings found, but no valid test interface loaded');
       }
-      if (result[0]) {
+      if (success) {
         testRunner.testComplete();
       } else {
-        testRunner.testComplete(result[1]);
+        testRunner.testComplete(errorMessage);
       }
     } else if (chrome.send) {
       // For WebUI and v8 unit tests.
       chrome.send('testResult', result);
     } else if (window.domAutomationController.send) {
       // For extension tests.
-      const valueResult = {'result': result[0], message: result[1]};
+      const valueResult = {'result': success, message: errorMessage};
       window.domAutomationController.send(JSON.stringify(valueResult));
     } else {
       assertNotReached('No test framework available');
@@ -1375,46 +1385,6 @@ function runAllActionsAsync(whenTestDone, var_args) {
 }
 
 /**
- * Mock4JS matcher object that matches the actual argument and the expected
- * value iff their JSON representations are same.
- * @param {Object} expectedValue
- * @constructor
- */
-function MatchJSON(expectedValue) {
-  this.expectedValue_ = expectedValue;
-}
-
-MatchJSON.prototype = {
-  /**
-   * Checks that JSON representation of the actual and expected arguments are
-   * same.
-   * @param {Object} actualArgument The argument to match.
-   * @return {boolean} Result of the comparison.
-   */
-  argumentMatches: function(actualArgument) {
-    return JSON.stringify(this.expectedValue_) ===
-        JSON.stringify(actualArgument);
-  },
-
-  /**
-   * Describes the matcher.
-   * @return {string} Description of this Mock4JS matcher.
-   */
-  describe: function() {
-    return 'eqJSON(' + JSON.stringify(this.expectedValue_) + ')';
-  },
-};
-
-/**
- * Builds a MatchJSON argument matcher for a given expected value.
- * @param {Object} expectedValue
- * @return {MatchJSON} Resulting Mock4JS matcher.
- */
-function eqJSON(expectedValue) {
-  return new MatchJSON(expectedValue);
-}
-
-/**
  * Exports assertion methods. All assertion methods delegate to the chai.js
  * assertion library.
  */
@@ -1456,7 +1426,6 @@ function exportExpects() {
 function exportMock4JsHelpers() {
   exports.callFunction = callFunction;
   exports.callFunctionWithSavedArgs = callFunctionWithSavedArgs;
-  exports.eqJSON = eqJSON;
   exports.SaveMockArguments = SaveMockArguments;
 
   // Import the Mock4JS helpers.

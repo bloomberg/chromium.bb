@@ -23,14 +23,12 @@ class ConsoleMessageStorage;
 class CORE_EXPORT InspectorLogAgent
     : public InspectorBaseAgent<protocol::Log::Metainfo>,
       public PerformanceMonitor::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(InspectorLogAgent);
-
  public:
   InspectorLogAgent(ConsoleMessageStorage*,
                     PerformanceMonitor*,
                     v8_inspector::V8InspectorSession*);
   ~InspectorLogAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void Restore() override;
 

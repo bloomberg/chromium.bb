@@ -91,7 +91,7 @@ target_os = ['fuchsia']
 You will then need to run:
 
 ```shell
-$ gclient runhooks
+$ gclient sync
 ```
 
 This makes sure the Fuchsia SDK is available in third\_party and keeps it up to
@@ -159,6 +159,9 @@ You can also build for Debug, with `is_debug=true`, but since we don't currently
 have any Debug build-bots, it may be more broken than Release.
 
 `use_goma=true` is fine to use also if you're a Googler.
+
+Architecture options are x64 (default) and arm64. This can be set with
+`target_cpu=\"arm64\"`.
 
 ## Build
 

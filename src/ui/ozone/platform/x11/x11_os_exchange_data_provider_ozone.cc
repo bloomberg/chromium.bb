@@ -6,13 +6,15 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "ui/base/x/selection_utils.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
 X11OSExchangeDataProviderOzone::X11OSExchangeDataProviderOzone(
-    XID x_window,
+    x11::Window x_window,
     const SelectionFormatMap& selection)
     : XOSExchangeDataProvider(x_window, selection) {}
 
@@ -34,16 +36,11 @@ std::unique_ptr<OSExchangeDataProvider> X11OSExchangeDataProviderOzone::Clone()
   return std::move(ret);
 }
 
-bool X11OSExchangeDataProviderOzone::DispatchXEvent(XEvent* xev) {
-  if (xev->xany.window != x_window())
-    return false;
-
-  switch (xev->type) {
-    case SelectionRequest:
-      selection_owner().OnSelectionRequest(*xev);
-      return true;
-    default:
-      NOTIMPLEMENTED();
+bool X11OSExchangeDataProviderOzone::DispatchXEvent(x11::Event* xev) {
+  auto* selection_request = xev->As<x11::SelectionRequestEvent>();
+  if (selection_request && selection_request->owner == x_window()) {
+    selection_owner().OnSelectionRequest(*xev);
+    return true;
   }
   return false;
 }

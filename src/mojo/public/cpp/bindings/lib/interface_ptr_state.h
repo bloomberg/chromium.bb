@@ -14,9 +14,9 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/check_op.h"
 #include "base/component_export.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -260,7 +260,6 @@ class InterfacePtrState : public InterfacePtrStateBase {
             Interface::PassesAssociatedKinds_, Interface::HasSyncMethods_,
             std::make_unique<typename Interface::ResponseValidator_>(),
             Interface::Name_)) {
-      router()->SetMasterInterfaceName(Interface::Name_);
       proxy_ = std::make_unique<Proxy>(endpoint_client());
     }
   }

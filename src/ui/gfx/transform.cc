@@ -12,7 +12,6 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/rrect_f.h"
 #include "ui/gfx/skia_util.h"
@@ -245,19 +244,28 @@ bool Transform::IsApproximatelyIdentityOrTranslation(SkScalar tolerance) const {
       matrix_.get(3, 3) == 1;
 }
 
+bool Transform::IsApproximatelyIdentityOrIntegerTranslation(
+    SkScalar tolerance) const {
+  if (!IsApproximatelyIdentityOrTranslation(tolerance))
+    return false;
+
+  for (float t : {matrix_.get(0, 3), matrix_.get(1, 3), matrix_.get(2, 3)}) {
+    if (!base::IsValueInRangeForNumericType<int>(t) ||
+        std::abs(std::round(t) - t) > tolerance)
+      return false;
+  }
+  return true;
+}
+
 bool Transform::IsIdentityOrIntegerTranslation() const {
   if (!IsIdentityOrTranslation())
     return false;
 
-  float t[] = {matrix_.get(0, 3), matrix_.get(1, 3), matrix_.get(2, 3)};
-  bool no_fractional_translation =
-      base::IsValueInRangeForNumericType<int>(t[0]) &&
-      base::IsValueInRangeForNumericType<int>(t[1]) &&
-      base::IsValueInRangeForNumericType<int>(t[2]) &&
-      static_cast<int>(t[0]) == t[0] && static_cast<int>(t[1]) == t[1] &&
-      static_cast<int>(t[2]) == t[2];
-
-  return no_fractional_translation;
+  for (float t : {matrix_.get(0, 3), matrix_.get(1, 3), matrix_.get(2, 3)}) {
+    if (!base::IsValueInRangeForNumericType<int>(t) || static_cast<int>(t) != t)
+      return false;
+  }
+  return true;
 }
 
 bool Transform::IsBackFaceVisible() const {
@@ -530,8 +538,6 @@ bool Transform::Blend(const Transform& from, double progress) {
 }
 
 void Transform::RoundTranslationComponents() {
-  // TODO(pkasting): Use SkScalarRound() when
-  // https://bugs.chromium.org/p/skia/issues/detail?id=6852 is fixed.
   matrix_.set(0, 3, std::round(matrix_.get(0, 3)));
   matrix_.set(1, 3, std::round(matrix_.get(1, 3)));
 }

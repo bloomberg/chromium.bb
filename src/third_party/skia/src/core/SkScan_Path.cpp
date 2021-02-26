@@ -210,12 +210,12 @@ static bool update_edge(SkEdge* edge, int last_y) {
 }
 
 // Unexpected conditions for which we need to return
-#define ASSERT_RETURN(cond)     \
-    do {                        \
-        if (!(cond)) {          \
-            SkASSERT(false);    \
-            return;             \
-        }                       \
+#define ASSERT_RETURN(cond)                    \
+    do {                                       \
+        if (!(cond)) {                         \
+            SkDEBUGFAILF("assert(%s)", #cond); \
+            return;                            \
+        }                                      \
     } while (0)
 
 // Needs Y to only change once (looser than convex in X)
@@ -301,7 +301,7 @@ static void walk_simple_edges(SkEdge* prevHead, SkBlitter* blitter, int start_y,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// this guy overrides blitH, and will call its proxy blitter with the inverse
+// this overrides blitH, and will call its proxy blitter with the inverse
 // of the spans it is given (clipped to the left/right of the cliprect)
 //
 // used to implement inverse filltypes on paths
@@ -379,7 +379,7 @@ static bool operator<(const SkEdge& a, const SkEdge& b) {
 }
 
 static SkEdge* sort_edges(SkEdge* list[], int count, SkEdge** last) {
-    SkTQSort(list, list + count - 1);
+    SkTQSort(list, list + count);
 
     // now make the edges linked in sorted order
     for (int i = 1; i < count; i++) {

@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_manifest.h"
 
 #include "fxjs/xfa/cjx_manifest.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -34,6 +34,8 @@ CXFA_Manifest::CXFA_Manifest(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Manifest,
                 kManifestPropertyData,
                 kManifestAttributeData,
-                pdfium::MakeUnique<CJX_Manifest>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Manifest>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Manifest::~CXFA_Manifest() = default;

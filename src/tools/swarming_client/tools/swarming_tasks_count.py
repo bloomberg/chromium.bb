@@ -18,8 +18,9 @@ import os
 import subprocess
 import sys
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
+CLIENT_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, CLIENT_DIR)
 
 from utils import tools
@@ -71,8 +72,13 @@ def _run_json(key, process, cmd):
 def _get_cmd(swarming, endpoint, start, end, state, tags):
   """Returns the command line to query this endpoint."""
   cmd = [
-    sys.executable, os.path.join(CLIENT_DIR, 'swarming.py'),
-    'query', '-S', swarming, '--limit', '0',
+      sys.executable,
+      os.path.join(CLIENT_DIR, 'swarming.py'),
+      'query',
+      '-S',
+      swarming,
+      '--limit',
+      '0',
   ]
   data = [('start', start), ('end', end), ('state', state)]
   data.extend(('tags', tag) for tag in tags)
@@ -94,6 +100,7 @@ def fetch_tasks(swarming, start, end, state, tags, parallel):
     items = data.get('items', [])
     logging.info('- processing %d items', len(items))
     return [_flatten_dimensions(t['properties']['dimensions']) for t in items]
+
   delta = datetime.timedelta(hours=1)
   return _fetch_daily_internal(
       delta, swarming, process, 'tasks/requests', start, end, state, tags,
@@ -102,23 +109,22 @@ def fetch_tasks(swarming, start, end, state, tags, parallel):
 
 def fetch_counts(swarming, start, end, state, tags, parallel):
   """Fetches counts from swarming and returns it."""
+
   def process(data):
     return int(data['count'])
   delta = datetime.timedelta(days=1)
-  return _fetch_daily_internal(
-      delta, swarming, process, 'tasks/count', start, end, state, tags,
-      parallel)
+  return _fetch_daily_internal(delta, swarming, process, 'tasks/count', start,
+                               end, state, tags, parallel)
 
 
-def _fetch_daily_internal(
-    delta, swarming, process, endpoint, start, end, state, tags, parallel):
+def _fetch_daily_internal(delta, swarming, process, endpoint, start, end, state,
+                          tags, parallel):
   """Executes 'process' by parallelizing it once per day."""
   out = {}
   with threading_utils.ThreadPool(1, parallel, 0) as pool:
     while start < end:
-      cmd = _get_cmd(
-          swarming, endpoint, _get_epoch(start), _get_epoch(start + delta),
-          state, tags)
+      cmd = _get_cmd(swarming, endpoint, _get_epoch(start),
+                     _get_epoch(start + delta), state, tags)
       pool.add_task(0, _run_json, start.strftime('%Y-%m-%d'), process, cmd)
       start += delta
     for k, v in pool.iter_results():
@@ -176,19 +182,9 @@ def present_counts(items, daily_count):
     graph.print_histogram(items)
 
 
-STATES = (
-    'PENDING',
-    'RUNNING',
-    'PENDING_RUNNING',
-    'COMPLETED',
-    'COMPLETED_SUCCESS',
-    'COMPLETED_FAILURE',
-    'EXPIRED',
-    'TIMED_OUT',
-    'BOT_DIED',
-    'CANCELED',
-    'ALL',
-    'DEDUPED')
+STATES = ('PENDING', 'RUNNING', 'PENDING_RUNNING', 'COMPLETED',
+          'COMPLETED_SUCCESS', 'COMPLETED_FAILURE', 'EXPIRED', 'TIMED_OUT',
+          'BOT_DIED', 'CANCELED', 'ALL', 'DEDUPED')
 
 
 def main():
@@ -197,31 +193,42 @@ def main():
   tomorrow = datetime.datetime.utcnow().date() + datetime.timedelta(days=1)
   year = datetime.datetime(tomorrow.year, 1, 1)
   parser.add_option(
-      '-S', '--swarming',
-      metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
+      '-S',
+      '--swarming',
+      metavar='URL',
+      default=os.environ.get('SWARMING_SERVER', ''),
       help='Swarming server to use')
 
   group = optparse.OptionGroup(parser, 'Filtering')
   group.add_option(
-      '--start', default=year.strftime('%Y-%m-%d'),
+      '--start',
+      default=year.strftime('%Y-%m-%d'),
       help='Starting date in UTC; defaults to start of year: %default')
   group.add_option(
-      '--end', default=tomorrow.strftime('%Y-%m-%d'),
+      '--end',
+      default=tomorrow.strftime('%Y-%m-%d'),
       help='End date in UTC (excluded); defaults to tomorrow: %default')
   group.add_option(
-      '--state', default='ALL', type='choice', choices=STATES,
+      '--state',
+      default='ALL',
+      type='choice',
+      choices=STATES,
       help='State to filter on. Values are: %s' % ', '.join(STATES))
   group.add_option(
-      '--tags', action='append', default=[],
+      '--tags',
+      action='append',
+      default=[],
       help='Tags to filter on; use this to filter on dimensions')
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, 'Presentation')
   group.add_option(
-      '--show-dimensions', action='store_true',
+      '--show-dimensions',
+      action='store_true',
       help='Show the dimensions; slower')
   group.add_option(
-      '--daily-count', action='store_true',
+      '--daily-count',
+      action='store_true',
       help='Show the daily count in raw number instead of histogram')
   parser.add_option_group(group)
 
@@ -229,7 +236,9 @@ def main():
       '--json', default='counts.json',
       help='File containing raw data; default: %default')
   parser.add_option(
-      '--parallel', default=100, type='int',
+      '--parallel',
+      default=100,
+      type='int',
       help='Concurrent queries; default: %default')
   parser.add_option(
       '-v', '--verbose', action='count', default=0, help='Log')
@@ -245,13 +254,11 @@ def main():
       end, int((end - _EPOCH).total_seconds())))
   if options.swarming:
     if options.show_dimensions:
-      data = fetch_tasks(
-          options.swarming, start, end, options.state, options.tags,
-          options.parallel)
+      data = fetch_tasks(options.swarming, start, end, options.state,
+                         options.tags, options.parallel)
     else:
-      data = fetch_counts(
-          options.swarming, start, end, options.state, options.tags,
-          options.parallel)
+      data = fetch_counts(options.swarming, start, end, options.state,
+                          options.tags, options.parallel)
     with open(options.json, 'wb') as f:
       json.dump(data, f)
   elif not os.path.isfile(options.json):

@@ -29,25 +29,22 @@ namespace profiling {
 
 bool operator==(const AllocMetadata& one, const AllocMetadata& other);
 bool operator==(const AllocMetadata& one, const AllocMetadata& other) {
-  return std::tie(one.sequence_number, one.alloc_size, one.alloc_address,
-                  one.stack_pointer, one.stack_pointer_offset, one.arch) ==
-             std::tie(other.sequence_number, other.alloc_size,
-                      other.alloc_address, other.stack_pointer,
-                      other.stack_pointer_offset, other.arch) &&
+  return std::tie(one.sequence_number, one.alloc_size, one.sample_size,
+                  one.alloc_address, one.stack_pointer,
+                  one.clock_monotonic_coarse_timestamp, one.heap_id,
+                  one.arch) == std::tie(other.sequence_number, other.alloc_size,
+                                        other.sample_size, other.alloc_address,
+                                        other.stack_pointer,
+                                        other.clock_monotonic_coarse_timestamp,
+                                        other.heap_id, other.arch) &&
          memcmp(one.register_data, other.register_data, kMaxRegisterDataSize) ==
              0;
 }
 
-bool operator==(const FreeBatch& one, const FreeBatch& other);
-bool operator==(const FreeBatch& one, const FreeBatch& other) {
-  if (one.num_entries != other.num_entries)
-    return false;
-  for (size_t i = 0; i < one.num_entries; ++i) {
-    if (std::tie(one.entries[i].sequence_number, one.entries[i].addr) !=
-        std::tie(other.entries[i].sequence_number, other.entries[i].addr))
-      return false;
-  }
-  return true;
+bool operator==(const FreeEntry& one, const FreeEntry& other);
+bool operator==(const FreeEntry& one, const FreeEntry& other) {
+  return (std::tie(one.sequence_number, one.addr, one.heap_id) ==
+          std::tie(other.sequence_number, other.addr, other.heap_id));
 }
 
 namespace {
@@ -79,7 +76,6 @@ TEST(WireProtocolTest, AllocMessage) {
   metadata.alloc_size = 0xB1B2B3B4B5B6B7B8;
   metadata.alloc_address = 0xC1C2C3C4C5C6C7C8;
   metadata.stack_pointer = 0xD1D2D3D4D5D6D7D8;
-  metadata.stack_pointer_offset = 0xE1E2E3E4E5E6E7E8;
   metadata.arch = unwindstack::ARCH_X86;
   for (size_t i = 0; i < kMaxRegisterDataSize; ++i)
     metadata.register_data[i] = 0x66;
@@ -92,7 +88,7 @@ TEST(WireProtocolTest, AllocMessage) {
   ASSERT_TRUE(shmem_client->is_valid());
   auto shmem_server = SharedRingBuffer::Attach(CopyFD(shmem_client->fd()));
 
-  ASSERT_TRUE(SendWireMessage(&shmem_client.value(), msg));
+  ASSERT_GE(SendWireMessage(&shmem_client.value(), msg), 0);
 
   auto buf = shmem_server->BeginRead();
   ASSERT_TRUE(buf);
@@ -110,20 +106,17 @@ TEST(WireProtocolTest, AllocMessage) {
 TEST(WireProtocolTest, FreeMessage) {
   WireMessage msg = {};
   msg.record_type = RecordType::Free;
-  FreeBatch batch = {};
-  batch.num_entries = kFreeBatchSize;
-  for (size_t i = 0; i < kFreeBatchSize; ++i) {
-    batch.entries[i].sequence_number = 0x111111111111111;
-    batch.entries[i].addr = 0x222222222222222;
-  }
-  msg.free_header = &batch;
+  FreeEntry entry = {};
+  entry.sequence_number = 0x111111111111111;
+  entry.addr = 0x222222222222222;
+  msg.free_header = &entry;
 
   auto shmem_client = SharedRingBuffer::Create(kShmemSize);
   ASSERT_TRUE(shmem_client);
   ASSERT_TRUE(shmem_client->is_valid());
   auto shmem_server = SharedRingBuffer::Attach(CopyFD(shmem_client->fd()));
 
-  ASSERT_TRUE(SendWireMessage(&shmem_client.value(), msg));
+  ASSERT_GE(SendWireMessage(&shmem_client.value(), msg), 0);
 
   auto buf = shmem_server->BeginRead();
   ASSERT_TRUE(buf);
@@ -135,6 +128,36 @@ TEST(WireProtocolTest, FreeMessage) {
   ASSERT_EQ(recv_msg.record_type, msg.record_type);
   ASSERT_EQ(*recv_msg.free_header, *msg.free_header);
   ASSERT_EQ(recv_msg.payload_size, msg.payload_size);
+}
+
+TEST(GetHeapSamplingInterval, Default) {
+  ClientConfiguration cli_config{};
+  cli_config.all_heaps = true;
+  cli_config.num_heaps = 0;
+  cli_config.default_interval = 4096u;
+  EXPECT_EQ(GetHeapSamplingInterval(cli_config, "something"), 4096u);
+}
+
+TEST(GetHeapSamplingInterval, Selected) {
+  ClientConfiguration cli_config{};
+  cli_config.all_heaps = false;
+  cli_config.num_heaps = 1;
+  cli_config.default_interval = 1;
+  memcpy(cli_config.heaps[0].name, "something", sizeof("something"));
+  cli_config.heaps[0].interval = 4096u;
+  EXPECT_EQ(GetHeapSamplingInterval(cli_config, "something"), 4096u);
+  EXPECT_EQ(GetHeapSamplingInterval(cli_config, "else"), 0u);
+}
+
+TEST(GetHeapSamplingInterval, SelectedAndDefault) {
+  ClientConfiguration cli_config{};
+  cli_config.all_heaps = true;
+  cli_config.num_heaps = 1;
+  cli_config.default_interval = 1;
+  memcpy(cli_config.heaps[0].name, "something", sizeof("something"));
+  cli_config.heaps[0].interval = 4096u;
+  EXPECT_EQ(GetHeapSamplingInterval(cli_config, "something"), 4096u);
+  EXPECT_EQ(GetHeapSamplingInterval(cli_config, "else"), 1u);
 }
 
 }  // namespace

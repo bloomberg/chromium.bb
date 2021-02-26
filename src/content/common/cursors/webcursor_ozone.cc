@@ -6,23 +6,26 @@
 
 #include <algorithm>
 
+#include "base/check_op.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/cursor/cursor_lookup.h"
-#include "ui/base/cursor/cursor_util.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
+#include "ui/base/cursor/cursor_factory.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 
 namespace content {
 
 ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
+  // The other cursor types are set in CursorLoaderOzone
+  DCHECK_EQ(cursor.type(), ui::mojom::CursorType::kCustom);
+
   if (!platform_cursor_) {
-    platform_cursor_ = ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(
-        GetCursorBitmap(cursor), GetCursorHotspot(cursor),
-        cursor.image_scale_factor());
+    platform_cursor_ = ui::CursorFactory::GetInstance()->CreateImageCursor(
+        cursor.type(), cursor.custom_bitmap(), cursor.custom_hotspot());
   }
 
   return platform_cursor_;
 }
 
+#if defined(USE_OZONE)
 void WebCursor::SetDisplayInfo(const display::Display& display) {
   if (rotation_ == display.panel_rotation() &&
       device_scale_factor_ == display.device_scale_factor() &&
@@ -51,14 +54,11 @@ float WebCursor::GetCursorScaleFactor(SkBitmap* bitmap) {
        static_cast<float>(maximum_cursor_size_.width()) / bitmap->width(),
        static_cast<float>(maximum_cursor_size_.height()) / bitmap->height()});
 }
-
-bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
-  return true;
-}
+#endif
 
 void WebCursor::CleanupPlatformData() {
   if (platform_cursor_) {
-    ui::CursorFactoryOzone::GetInstance()->UnrefImageCursor(platform_cursor_);
+    ui::CursorFactory::GetInstance()->UnrefImageCursor(platform_cursor_);
     platform_cursor_ = NULL;
   }
   custom_cursor_.reset();
@@ -66,13 +66,15 @@ void WebCursor::CleanupPlatformData() {
 
 void WebCursor::CopyPlatformData(const WebCursor& other) {
   if (platform_cursor_)
-    ui::CursorFactoryOzone::GetInstance()->UnrefImageCursor(platform_cursor_);
+    ui::CursorFactory::GetInstance()->UnrefImageCursor(platform_cursor_);
   platform_cursor_ = other.platform_cursor_;
   if (platform_cursor_)
-    ui::CursorFactoryOzone::GetInstance()->RefImageCursor(platform_cursor_);
+    ui::CursorFactory::GetInstance()->RefImageCursor(platform_cursor_);
 
   device_scale_factor_ = other.device_scale_factor_;
+#if defined(USE_OZONE)
   maximum_cursor_size_ = other.maximum_cursor_size_;
+#endif
 }
 
 }  // namespace content

@@ -11,16 +11,25 @@
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/export_template.h"
-#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 
-#define QUIC_FLAG(type, flag, value) QUIC_EXPORT_PRIVATE extern type flag;
-#include "net/quic/quic_flags_list.h"
+#define QUIC_FLAG(flag, value) QUIC_EXPORT_PRIVATE extern bool flag;
+#include "net/third_party/quiche/src/quic/core/quic_flags_list.h"
 #undef QUIC_FLAG
+
+#define QUIC_PROTOCOL_FLAG(type, flag, ...) \
+  QUIC_EXPORT_PRIVATE extern type FLAGS_##flag;
+#include "net/third_party/quiche/src/quic/core/quic_protocol_flags_list.h"
+#undef QUIC_PROTOCOL_FLAG
+
+namespace base {
+class CommandLine;
+template <typename T>
+class NoDestructor;
+}  // namespace base
 
 // API compatibility with new-style flags.
 
@@ -28,9 +37,6 @@ inline bool GetQuicFlagImpl(bool flag) {
   return flag;
 }
 inline int32_t GetQuicFlagImpl(int32_t flag) {
-  return flag;
-}
-inline uint32_t GetQuicFlagImpl(uint32_t flag) {
   return flag;
 }
 inline int64_t GetQuicFlagImpl(int64_t flag) {

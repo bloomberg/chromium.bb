@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
@@ -40,6 +39,8 @@ class WebAppDatabase {
 
   WebAppDatabase(AbstractWebAppDatabaseFactory* database_factory,
                  ReportErrorCallback error_callback);
+  WebAppDatabase(const WebAppDatabase&) = delete;
+  WebAppDatabase& operator=(const WebAppDatabase&) = delete;
   ~WebAppDatabase();
 
   using RegistryOpenedCallback = base::OnceCallback<void(
@@ -58,6 +59,8 @@ class WebAppDatabase {
   // Exposed for testing.
   static std::unique_ptr<WebApp> ParseWebApp(const AppId& app_id,
                                              const std::string& value);
+
+  bool is_opened() const { return opened_; }
 
  private:
   static std::unique_ptr<WebApp> CreateWebApp(const WebAppProto& local_data);
@@ -90,7 +93,6 @@ class WebAppDatabase {
 
   base::WeakPtrFactory<WebAppDatabase> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(WebAppDatabase);
 };
 
 DisplayMode ToMojomDisplayMode(WebAppProto::DisplayMode display_mode);
@@ -99,9 +101,6 @@ DisplayMode ToMojomDisplayMode(
     ::sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode);
 
 WebAppProto::DisplayMode ToWebAppProtoDisplayMode(DisplayMode display_mode);
-
-::sync_pb::WebAppSpecifics::UserDisplayMode ToWebAppSpecificsUserDisplayMode(
-    DisplayMode user_display_mode);
 
 }  // namespace web_app
 

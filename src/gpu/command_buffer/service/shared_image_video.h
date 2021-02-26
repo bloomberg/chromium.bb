@@ -10,7 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_backing_android.h"
 #include "gpu/command_buffer/service/stream_texture_shared_image_interface.h"
 #include "gpu/gpu_gles2_export.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
@@ -27,13 +27,15 @@ class AbstractTexture;
 // Implementation of SharedImageBacking that renders MediaCodec buffers to a
 // TextureOwner or overlay as needed in order to draw them.
 class GPU_GLES2_EXPORT SharedImageVideo
-    : public SharedImageBacking,
+    : public SharedImageBackingAndroid,
       public SharedContextState::ContextLostObserver {
  public:
   SharedImageVideo(
       const Mailbox& mailbox,
       const gfx::Size& size,
       const gfx::ColorSpace color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       scoped_refptr<StreamTextureSharedImageInterface> stream_texture_sii,
       std::unique_ptr<gles2::AbstractTexture> abstract_texture,
       scoped_refptr<SharedContextState> shared_context_state,
@@ -47,6 +49,8 @@ class GPU_GLES2_EXPORT SharedImageVideo
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
   size_t EstimatedSizeForMemTracking() const override;
+  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBuffer() override;
 
   // SharedContextState::ContextLostObserver implementation.
   void OnContextLost() override;

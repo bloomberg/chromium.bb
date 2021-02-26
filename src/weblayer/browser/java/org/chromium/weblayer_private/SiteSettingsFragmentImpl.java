@@ -7,20 +7,28 @@ package org.chromium.weblayer_private;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
+import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.view.Window;
 
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentController;
 import androidx.fragment.app.FragmentHostCallback;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.browser_ui.site_settings.AllSiteSettings;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettings;
@@ -34,6 +42,8 @@ import org.chromium.weblayer_private.interfaces.ISiteSettingsFragment;
 import org.chromium.weblayer_private.interfaces.SiteSettingsFragmentArgs;
 import org.chromium.weblayer_private.interfaces.SiteSettingsIntentHelper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
+
+import java.lang.reflect.Constructor;
 
 /**
  * WebLayer's implementation of the client library's SiteSettingsFragment.
@@ -59,6 +69,7 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
     // resource IDs.
     private Context mContext;
 
+    private boolean mStarted;
     private FragmentController mFragmentController;
 
     /**
@@ -73,11 +84,25 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
      */
     private static class PassthroughFragmentActivity extends FragmentActivity
             implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
+        private static final Class<?>[] VIEW_CONSTRUCTOR_ARGS =
+                new Class[] {Context.class, AttributeSet.class};
+
         private final SiteSettingsFragmentImpl mFragmentImpl;
 
         private PassthroughFragmentActivity(SiteSettingsFragmentImpl fragmentImpl) {
             mFragmentImpl = fragmentImpl;
             attachBaseContext(mFragmentImpl.getWebLayerContext());
+            // Register ourselves as a the LayoutInflater factory so we can handle loading Views.
+            // See onCreateView for information about why this is needed.
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+                getLayoutInflater().setFactory2(this);
+            }
+            // This class doesn't extend AppCompatActivity, so some appcompat functionality doesn't
+            // get initialized, which leads to some appcompat widgets (like switches) rendering
+            // incorrectly. There are some resource issues with having this class extend
+            // AppCompatActivity, but until we sort those out, creating an AppCompatDelegate will
+            // perform the necessary initialization.
+            AppCompatDelegate.create(this, null);
         }
 
         @Override
@@ -92,6 +117,54 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
         public LayoutInflater getLayoutInflater() {
             return (LayoutInflater) getBaseContext().getSystemService(
                     Context.LAYOUT_INFLATER_SERVICE);
+        }
+
+        // This method is needed to work around a LayoutInflater bug in Android <N.  Before
+        // LayoutInflater creates an instance of a View, it needs to look up the class by name to
+        // get a reference to its Constructor. As an optimization, it caches this name to
+        // Constructor mapping. This cache causes issues if a class gets loaded multiple times with
+        // different ClassLoaders. In Site Settings, some AndroidX Views get loaded early on with
+        // the embedding app's ClassLoader, so the Constructor from that ClassLoader's version of
+        // the class gets cached. When the WebLayer implementation later tries to inflate the same
+        // class, it instantiates a version from the wrong ClassLoader, which leads to a
+        // ClassCastException when casting that View to its original class. This was fixed in
+        // Android N, but to work around it on L & M, we inflate the Views manually here, which
+        // bypasses LayoutInflater's cache.
+        @Override
+        public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
+            // If the class doesn't have a '.' in its name, it's probably a built-in Android View,
+            // which are often referenced by just their class names with no package prefix. For
+            // these classes we can return null to fall back to LayoutInflater's default behavior.
+            if (name.indexOf('.') == -1) {
+                return null;
+            }
+
+            Class<? extends View> clazz = null;
+            try {
+                clazz = context.getClassLoader().loadClass(name).asSubclass(View.class);
+                LayoutInflater inflater = getLayoutInflater();
+                if (inflater.getFilter() != null && !inflater.getFilter().onLoadClass(clazz)) {
+                    throw new InflateException(attrs.getPositionDescription()
+                            + ": Class not allowed to be inflated " + name);
+                }
+
+                Constructor<? extends View> constructor =
+                        clazz.getConstructor(VIEW_CONSTRUCTOR_ARGS);
+                constructor.setAccessible(true);
+                View view = constructor.newInstance(new Object[] {context, attrs});
+                if (view instanceof ViewStub) {
+                    // Use the same Context when inflating ViewStub later.
+                    ViewStub viewStub = (ViewStub) view;
+                    viewStub.setLayoutInflater(inflater.cloneInContext(context));
+                }
+                return view;
+            } catch (Exception e) {
+                InflateException ie = new InflateException(attrs.getPositionDescription()
+                        + ": Error inflating class "
+                        + (clazz == null ? "<unknown>" : clazz.getName()));
+                ie.initCause(e);
+                throw ie;
+            }
         }
 
         @Override
@@ -132,14 +205,23 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
             Intent intent;
             String newFragmentClassName = preference.getFragment();
             Bundle newFragmentArgs = preference.getExtras();
+            ProfileImpl profile = mFragmentImpl.getProfile();
             if (newFragmentClassName.equals(SiteSettings.class.getName())) {
                 intent = SiteSettingsIntentHelper.createIntentForCategoryList(
-                        mFragmentImpl.getEmbedderContext(), mFragmentImpl.getProfile().getName());
+                        mFragmentImpl.getEmbedderContext(), profile.getName(),
+                        profile.isIncognito());
             } else if (newFragmentClassName.equals(SingleCategorySettings.class.getName())) {
                 intent = SiteSettingsIntentHelper.createIntentForSingleCategory(
-                        mFragmentImpl.getEmbedderContext(), mFragmentImpl.getProfile().getName(),
+                        mFragmentImpl.getEmbedderContext(), profile.getName(),
+                        profile.isIncognito(),
                         newFragmentArgs.getString(SingleCategorySettings.EXTRA_CATEGORY),
                         newFragmentArgs.getString(SingleCategorySettings.EXTRA_TITLE));
+            } else if (newFragmentClassName.equals(AllSiteSettings.class.getName())) {
+                intent = SiteSettingsIntentHelper.createIntentForAllSites(
+                        mFragmentImpl.getEmbedderContext(), profile.getName(),
+                        profile.isIncognito(),
+                        newFragmentArgs.getString(AllSiteSettings.EXTRA_CATEGORY),
+                        newFragmentArgs.getString(AllSiteSettings.EXTRA_TITLE));
             } else if (newFragmentClassName.equals(SingleWebsiteSettings.class.getName())) {
                 WebsiteAddress address;
                 if (newFragmentArgs.containsKey(SingleWebsiteSettings.EXTRA_SITE)) {
@@ -153,8 +235,8 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
                     throw new IllegalArgumentException("No website provided");
                 }
                 intent = SiteSettingsIntentHelper.createIntentForSingleWebsite(
-                        mFragmentImpl.getEmbedderContext(), mFragmentImpl.getProfile().getName(),
-                        address.getOrigin());
+                        mFragmentImpl.getEmbedderContext(), profile.getName(),
+                        profile.isIncognito(), address.getOrigin());
             } else {
                 throw new IllegalArgumentException("Unsupported Fragment: " + newFragmentClassName);
             }
@@ -182,8 +264,9 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
 
         @Override
         public LayoutInflater onGetLayoutInflater() {
-            return (LayoutInflater) mFragmentImpl.getWebLayerContext().getSystemService(
-                    Context.LAYOUT_INFLATER_SERVICE);
+            Context context = mFragmentImpl.getWebLayerContext();
+            return ((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+                    .cloneInContext(context);
         }
 
         @Override
@@ -200,12 +283,27 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
     public SiteSettingsFragmentImpl(ProfileManager profileManager,
             IRemoteFragmentClient remoteFragmentClient, Bundle intentExtras) {
         super(remoteFragmentClient);
-        mProfile = profileManager.getProfile(
-                intentExtras.getString(SiteSettingsFragmentArgs.PROFILE_NAME));
+        String profileName = intentExtras.getString(SiteSettingsFragmentArgs.PROFILE_NAME);
+        boolean isIncognito;
+        if (intentExtras.containsKey(SiteSettingsFragmentArgs.IS_INCOGNITO_PROFILE)) {
+            isIncognito =
+                    intentExtras.getBoolean(SiteSettingsFragmentArgs.IS_INCOGNITO_PROFILE, false);
+        } else {
+            isIncognito = "".equals(profileName);
+        }
+        mProfile = profileManager.getProfile(profileName, isIncognito);
         // Convert the WebLayer ABI's Site Settings arguments into the format the Site Settings
         // implementation fragments expect.
         Bundle fragmentArgs = intentExtras.getBundle(SiteSettingsFragmentArgs.FRAGMENT_ARGUMENTS);
         switch (intentExtras.getString(SiteSettingsFragmentArgs.FRAGMENT_NAME)) {
+            case SiteSettingsFragmentArgs.ALL_SITES:
+                mFragmentClass = AllSiteSettings.class;
+                mFragmentArguments = new Bundle();
+                mFragmentArguments.putString(AllSiteSettings.EXTRA_TITLE,
+                        fragmentArgs.getString(SiteSettingsFragmentArgs.ALL_SITES_TITLE));
+                mFragmentArguments.putString(AllSiteSettings.EXTRA_CATEGORY,
+                        fragmentArgs.getString(SiteSettingsFragmentArgs.ALL_SITES_TYPE));
+                break;
             case SiteSettingsFragmentArgs.CATEGORY_LIST:
                 mFragmentClass = SiteSettings.class;
                 mFragmentArguments = null;
@@ -271,6 +369,24 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
                 throw new RuntimeException("Failed to create Site Settings Fragment", e);
             }
         }
+
+        root.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View view) {
+                // Add the shadow scroll listener here once the View is attached to the Window.
+                SiteSettingsPreferenceFragment preferenceFragment =
+                        (SiteSettingsPreferenceFragment) mFragmentController
+                                .getSupportFragmentManager()
+                                .findFragmentByTag(FRAGMENT_TAG);
+                ViewGroup listView = preferenceFragment.getListView();
+                listView.getViewTreeObserver().addOnScrollChangedListener(
+                        SettingsUtils.getShowShadowOnScrollListener(
+                                listView, view.findViewById(R.id.shadow)));
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {}
+        });
         return root;
     }
 
@@ -298,7 +414,11 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
     @Override
     public void onStart() {
         super.onStart();
-        mFragmentController.dispatchActivityCreated();
+
+        if (!mStarted) {
+            mStarted = true;
+            mFragmentController.dispatchActivityCreated();
+        }
         mFragmentController.noteStateNotSaved();
         mFragmentController.execPendingActions();
         mFragmentController.dispatchStart();

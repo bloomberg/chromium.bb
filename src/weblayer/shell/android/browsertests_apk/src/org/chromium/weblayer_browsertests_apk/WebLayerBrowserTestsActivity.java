@@ -14,14 +14,18 @@ import android.widget.RelativeLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.native_test.NativeBrowserTest;
 import org.chromium.native_test.NativeBrowserTestActivity;
 import org.chromium.weblayer.Browser;
+import org.chromium.weblayer.NewTabCallback;
+import org.chromium.weblayer.NewTabType;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
+import org.chromium.weblayer.TestWebLayer;
 import org.chromium.weblayer.WebLayer;
 
 import java.io.File;
@@ -47,15 +51,19 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
         });
 
         try {
+            // Browser tests cannot be run in WebView compatibility mode since the class loader
+            // WebLayer uses needs to match the class loader used for setup.
+            TestWebLayer.disableWebViewCompatibilityMode();
             WebLayer.loadAsync(getApplication(), webLayer -> {
                 mWebLayer = webLayer;
                 createShell();
+
+                NativeBrowserTest.javaStartupTasksComplete();
             });
         } catch (Exception e) {
             throw new RuntimeException("failed loading WebLayer", e);
         }
 
-        NativeBrowserTest.javaStartupTasksComplete();
     }
 
     protected void createShell() {
@@ -76,7 +84,10 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
                 new RelativeLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        Fragment fragment = WebLayer.createBrowserFragment("BrowserTestProfile");
+        CommandLine commandLine = CommandLine.getInstance();
+        String path = (commandLine.hasSwitch("start-in-incognito")) ? null : "BrowserTestProfile";
+
+        Fragment fragment = WebLayer.createBrowserFragment(path);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(viewId, fragment);
@@ -93,11 +104,30 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
                 mUrlView.setText(uri.toString());
             }
         });
+        // Set a new tab callback to make sure popups are added.
+        mTab.setNewTabCallback(new NewTabCallback() {
+            @Override
+            public void onNewTab(Tab tab, @NewTabType int type) {}
+
+            @Override
+            public void onCloseTab() {}
+        });
     }
 
     @Override
     protected File getPrivateDataDirectory() {
         return new File(UrlUtils.getIsolatedTestRoot(),
                 WebLayerBrowserTestsApplication.PRIVATE_DATA_DIRECTORY_SUFFIX);
+    }
+
+    @Override
+    /**
+     * Ensure that the user data directory gets overridden to getPrivateDataDirectory() (which is
+     * cleared at the start of every run); the directory that ANDROID_APP_DATA_DIR is set to in the
+     * context of Java browsertests is not cleared as it also holds persistent state, which
+     * causes test failures due to state bleedthrough. See crbug.com/617734 for details.
+     */
+    protected String getUserDataDirectoryCommandLineSwitch() {
+        return "weblayer-user-data-dir";
     }
 }

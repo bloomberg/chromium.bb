@@ -62,6 +62,7 @@ class Clock;
 
 namespace blink {
 
+class BlobDataHandle;
 class CachedMetadataHandler;
 class CachedMetadataSender;
 class FetchParameters;
@@ -98,8 +99,6 @@ enum class ResourceType : uint8_t {
 // with the loader to obtain the resource from the network.
 class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
                                  public MemoryPressureListener {
-  USING_GARBAGE_COLLECTED_MIXIN(Resource);
-
  public:
   // An enum representing whether a resource match with another resource.
   // There are three kinds of status.
@@ -147,7 +146,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
 
   ~Resource() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   virtual WTF::TextEncoding Encoding() const { return WTF::TextEncoding(); }
   virtual void AppendData(const char*, size_t);
@@ -170,7 +169,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
     return resource_request_;
   }
   const ResourceRequestHead& LastResourceRequest() const;
-  const ResourceResponse* LastResourceResponse() const;
+  const ResourceResponse& LastResourceResponse() const;
+  // Returns zero if there are no redirects.
+  size_t RedirectChainSize() const;
 
   virtual void SetRevalidatingRequest(const ResourceRequestHead&);
 
@@ -411,18 +412,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
            ResourceType,
            const ResourceLoaderOptions&);
 
-  // Returns true if the resource has finished any processing it wanted to do
-  // after loading. Should only be used to decide whether to call
-  // NotifyFinished.
-  //
-  // By default this is the same as being loaded (i.e. no processing), but it is
-  // used by ScriptResource to signal that streaming JavaScript compilation
-  // completed. Note that classes overloading this method should also overload
-  // NotifyFinished to not call Resource::NotifyFinished until this value
-  // becomes true.
-  // TODO(hiroshige): Remove this when ScriptResourceContent is introduced.
-  virtual bool IsFinishedInternal() const { return IsLoaded(); }
-
   virtual void NotifyDataReceived(const char* data, size_t size);
   virtual void NotifyFinished();
 
@@ -474,7 +463,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
   }
 
   void SetCachePolicyBypassingCache();
-  void SetPreviewsState(WebURLRequest::PreviewsState);
+  void SetPreviewsState(PreviewsState);
   void ClearRangeRequestHeader();
 
   SharedBuffer* Data() const { return data_.get(); }

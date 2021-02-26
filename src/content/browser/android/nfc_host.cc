@@ -44,18 +44,20 @@ void NFCHost::GetNFC(RenderFrameHost* render_frame_host,
   }
 
   GURL origin_url = render_frame_host->GetLastCommittedOrigin().GetURL();
-  if (permission_controller_->GetPermissionStatus(PermissionType::NFC,
-                                                  origin_url, origin_url) !=
+  if (permission_controller_->GetPermissionStatusForFrame(
+          PermissionType::NFC, render_frame_host, origin_url) !=
       blink::mojom::PermissionStatus::GRANTED) {
     return;
   }
 
-  // base::Unretained() is safe here because the subscription is canceled when
-  // this object is destroyed.
-  subscription_id_ = permission_controller_->SubscribePermissionStatusChange(
-      PermissionType::NFC, render_frame_host, origin_url,
-      base::BindRepeating(&NFCHost::OnPermissionStatusChange,
-                          base::Unretained(this)));
+  if (subscription_id_ == PermissionController::kNoPendingOperation) {
+    // base::Unretained() is safe here because the subscription is canceled when
+    // this object is destroyed.
+    subscription_id_ = permission_controller_->SubscribePermissionStatusChange(
+        PermissionType::NFC, render_frame_host, origin_url,
+        base::BindRepeating(&NFCHost::OnPermissionStatusChange,
+                            base::Unretained(this)));
+  }
 
   if (!nfc_provider_) {
     content::GetDeviceService().BindNFCProvider(
@@ -99,8 +101,10 @@ void NFCHost::OnPermissionStatusChange(blink::mojom::PermissionStatus status) {
 
 void NFCHost::Close() {
   nfc_provider_.reset();
-  if (subscription_id_ != 0)
+  if (subscription_id_ != PermissionController::kNoPendingOperation) {
     permission_controller_->UnsubscribePermissionStatusChange(subscription_id_);
+    subscription_id_ = PermissionController::kNoPendingOperation;
+  }
 }
 
 }  // namespace content

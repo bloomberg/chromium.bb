@@ -22,13 +22,15 @@
 #include "rtc_base/location.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/time_utils.h"
+#include "rtc_base/trace_event.h"
 #include "system_wrappers/include/clock.h"
 
 namespace webrtc {
 const int64_t PacedSender::kMaxQueueLengthMs = 2000;
 const float PacedSender::kDefaultPaceMultiplier = 2.5f;
 
-PacedSender::PacedSender(Clock* clock, PacketRouter* packet_router,
+PacedSender::PacedSender(Clock* clock,
+                         PacketRouter* packet_router,
                          RtcEventLog* event_log,
                          const WebRtcKeyValueConfig* field_trials,
                          ProcessThread* process_thread)
@@ -39,10 +41,11 @@ PacedSender::PacedSender(Clock* clock, PacketRouter* packet_router,
               ? PacingController::ProcessMode::kDynamic
               : PacingController::ProcessMode::kPeriodic),
       pacing_controller_(clock,
-                         static_cast<PacingController::PacketSender*>(this),
-                         event_log, field_trials, process_mode_),
+                         packet_router,
+                         event_log,
+                         field_trials,
+                         process_mode_),
       clock_(clock),
-      packet_router_(packet_router),
       process_thread_(process_thread) {
   if (process_thread_)
     process_thread_->RegisterModule(&module_proxy_, RTC_FROM_HERE);
@@ -112,8 +115,15 @@ void PacedSender::SetPacingRates(DataRate pacing_rate, DataRate padding_rate) {
 void PacedSender::EnqueuePackets(
     std::vector<std::unique_ptr<RtpPacketToSend>> packets) {
   {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("webrtc"),
+                 "PacedSender::EnqueuePackets");
     rtc::CritScope cs(&critsect_);
     for (auto& packet : packets) {
+      TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("webrtc"),
+                   "PacedSender::EnqueuePackets::Loop", "sequence_number",
+                   packet->SequenceNumber(), "rtp_timestamp",
+                   packet->Timestamp());
+
       pacing_controller_.EnqueuePacket(std::move(packet));
     }
   }
@@ -194,19 +204,4 @@ void PacedSender::SetQueueTimeLimit(TimeDelta limit) {
   MaybeWakupProcessThread();
 }
 
-void PacedSender::SendRtpPacket(std::unique_ptr<RtpPacketToSend> packet,
-                                const PacedPacketInfo& cluster_info) {
-  critsect_.Leave();
-  packet_router_->SendPacket(std::move(packet), cluster_info);
-  critsect_.Enter();
-}
-
-std::vector<std::unique_ptr<RtpPacketToSend>> PacedSender::GeneratePadding(
-    DataSize size) {
-  std::vector<std::unique_ptr<RtpPacketToSend>> padding_packets;
-  critsect_.Leave();
-  padding_packets = packet_router_->GeneratePadding(size.bytes());
-  critsect_.Enter();
-  return padding_packets;
-}
 }  // namespace webrtc

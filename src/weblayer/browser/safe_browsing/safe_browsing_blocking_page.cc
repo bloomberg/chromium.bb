@@ -4,9 +4,13 @@
 
 #include "weblayer/browser/safe_browsing/safe_browsing_blocking_page.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/content/settings_page_helper.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
+#include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "content/public/browser/navigation_entry.h"
+#include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_ui_manager.h"
 
 namespace weblayer {
@@ -32,22 +36,41 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
                        std::move(controller_client),
                        display_options) {}
 
+// static
 SafeBrowsingBlockingPage* SafeBrowsingBlockingPage::CreateBlockingPage(
     SafeBrowsingUIManager* ui_manager,
     content::WebContents* web_contents,
     const GURL& main_frame_url,
     const UnsafeResource& unsafe_resource) {
+  // Log the resource type that triggers the safe browsing blocking page.
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.BlockingPage.ResourceType",
+                            unsafe_resource.resource_type);
   const UnsafeResourceList unsafe_resources{unsafe_resource};
   content::NavigationEntry* entry =
       security_interstitials::GetNavigationEntryForResource(unsafe_resource);
   GURL url =
       (main_frame_url.is_empty() && entry) ? entry->GetURL() : main_frame_url;
 
+  BrowserContextImpl* browser_context =
+      static_cast<BrowserContextImpl*>(web_contents->GetBrowserContext());
+  security_interstitials::BaseSafeBrowsingErrorUI::SBErrorDisplayOptions
+      display_options =
+          BaseBlockingPage::CreateDefaultDisplayOptions(unsafe_resources);
+  display_options.is_extended_reporting_opt_in_allowed =
+      safe_browsing::IsExtendedReportingOptInAllowed(
+          *(browser_context->pref_service()));
+  display_options.is_extended_reporting_enabled =
+      safe_browsing::IsExtendedReportingEnabled(
+          *(browser_context->pref_service()));
+
+  // TODO(crbug.com/1080748): Set settings_page_helper once enhanced protection
+  // is supported on weblayer.
   return new SafeBrowsingBlockingPage(
       ui_manager, web_contents, url, unsafe_resources,
       CreateControllerClient(web_contents, unsafe_resources, ui_manager,
-                             nullptr /*pref_service*/),
-      BaseBlockingPage::CreateDefaultDisplayOptions(unsafe_resources));
+                             browser_context->pref_service(),
+                             /*settings_page_helper*/ nullptr),
+      display_options);
 }
 
 security_interstitials::SecurityInterstitialPage::TypeID

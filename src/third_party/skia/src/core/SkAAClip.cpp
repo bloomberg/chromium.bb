@@ -679,9 +679,7 @@ bool SkAAClip::setRect(const SkRect& r, bool doAA) {
 
     // TODO: special case this
 
-    SkPath path;
-    path.addRect(r);
-    return this->setPath(path, nullptr, doAA);
+    return this->setPath(SkPath::Rect(r), nullptr, doAA);
 }
 
 static void append_run(SkTDArray<uint8_t>& array, uint8_t value, int count) {
@@ -1217,8 +1215,8 @@ public:
         fLastY = y + height - 1;
     }
 
-    virtual void blitAntiRect(int x, int y, int width, int height,
-                     SkAlpha leftAlpha, SkAlpha rightAlpha) override {
+    void blitAntiRect(int x, int y, int width, int height,
+                      SkAlpha leftAlpha, SkAlpha rightAlpha) override {
         this->recordMinY(y);
         this->checkForYGap(y);
         fBuilder->addAntiRectRun(x, y, width, height, leftAlpha, rightAlpha);
@@ -1238,8 +1236,8 @@ public:
         fBuilder->addRun(x, y, 0xFF, width);
     }
 
-    virtual void blitAntiH(int x, int y, const SkAlpha alpha[],
-                           const int16_t runs[]) override {
+    void blitAntiH(int x, int y, const SkAlpha alpha[],
+                   const int16_t runs[]) override {
         this->recordMinY(y);
         this->checkForYGap(y);
         for (;;) {
@@ -1546,6 +1544,12 @@ static void operateY(SkAAClip::Builder& builder, const SkAAClip& A,
     SkASSERT(!iterB.done());
     int topB = iterB.top();
     int botB = iterB.bottom();
+
+#if defined(SK_BUILD_FOR_FUZZER)
+    if ((botA - topA) > 100000 || (botB - topB) > 100000) {
+        return;
+    }
+#endif
 
     do {
         const uint8_t* rowA = nullptr;

@@ -20,8 +20,9 @@ import random
 import sys
 import time
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
+CLIENT_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, CLIENT_DIR)
 
 from utils import tools
@@ -40,6 +41,7 @@ from utils import threading_utils
 
 
 class Randomness(object):
+
   def __init__(self, random_pool_size=1024):
     """Creates 1mb of random data in a pool in 1kb chunks."""
     self.pool = [
@@ -91,8 +93,8 @@ def print_results(results, columns, buckets):
   if failures:
     print('')
     print('%sFAILURES%s:' % (colorama.Fore.RED, colorama.Fore.RESET))
-    print(
-        '\n'.join('  %s (%s)' % (i[0], graph.to_units(i[1])) for i in failures))
+    print('\n'.join(
+        '  %s (%s)' % (i[0], graph.to_units(i[1])) for i in failures))
 
 
 def gen_size(mid_size):
@@ -154,21 +156,30 @@ def main():
 
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
-      '-I', '--isolate-server',
-      metavar='URL', default='',
+      '-I',
+      '--isolate-server',
+      metavar='URL',
+      default='',
       help='Isolate server to use')
   parser.add_option(
-      '--namespace', default='temporary%d-gzip' % time.time(), metavar='XX',
+      '--namespace',
+      default='temporary%d-gzip' % time.time(),
+      metavar='XX',
       help='Namespace to use on the server, default: %default')
   parser.add_option(
-      '--threads', type='int', default=16, metavar='N',
+      '--threads',
+      type='int',
+      default=16,
+      metavar='N',
       help='Parallel worker threads to use, default:%default')
 
   data_group = optparse.OptionGroup(parser, 'Amount of data')
   graph.unit_option(
       data_group, '--items', default=0, help='Number of items to upload')
   graph.unit_option(
-      data_group, '--max-size', default=0,
+      data_group,
+      '--max-size',
+      default=0,
       help='Loop until this amount of data was transferred')
   graph.unit_option(
       data_group, '--mid-size', default=100*1024,
@@ -177,10 +188,16 @@ def main():
 
   ui_group = optparse.OptionGroup(parser, 'Result histogram')
   ui_group.add_option(
-      '--columns', type='int', default=graph.get_console_width(), metavar='N',
+      '--columns',
+      type='int',
+      default=graph.get_console_width(),
+      metavar='N',
       help='Width of histogram, default:%default')
   ui_group.add_option(
-      '--buckets', type='int', default=20, metavar='N',
+      '--buckets',
+      type='int',
+      default=20,
+      metavar='N',
       help='Number of histogram\'s buckets, default:%default')
   parser.add_option_group(ui_group)
 
@@ -197,11 +214,10 @@ def main():
   if args:
     parser.error('Unsupported args: %s' % args)
   if bool(options.max_size) == bool(options.items):
-    parser.error(
-        'Use one of --max-size or --items.\n'
-        '  Use --max-size if you want to run it until NN bytes where '
-        'transfered.\n'
-        '  Otherwise use --items to run it for NN items.')
+    parser.error('Use one of --max-size or --items.\n'
+                 '  Use --max-size if you want to run it until NN bytes where '
+                 'transfered.\n'
+                 '  Otherwise use --items to run it for NN items.')
   options.isolate_server = options.isolate_server.rstrip('/')
   if not options.isolate_server:
     parser.error('--isolate-server is required.')
@@ -217,22 +233,18 @@ def main():
 
   columns = [('index', 0), ('data', 0), ('size', options.items)]
   progress = Progress(columns)
-  server_ref = isolate_storage.ServerRef(
-      options.isolate_server, options.namespace)
+  server_ref = isolate_storage.ServerRef(options.isolate_server,
+                                         options.namespace)
   storage = isolateserver.get_storage(server_ref)
-  do_item = functools.partial(
-      send_and_receive,
-      random_pool,
-      storage,
-      progress)
+  do_item = functools.partial(send_and_receive, random_pool, storage, progress)
 
   # TODO(maruel): Handle Ctrl-C should:
   # - Stop adding tasks.
   # - Stop scheduling tasks in ThreadPool.
   # - Wait for the remaining ungoing tasks to complete.
   # - Still print details and write the json file.
-  with threading_utils.ThreadPoolWithProgress(
-      progress, options.threads, options.threads, 0) as pool:
+  with threading_utils.ThreadPoolWithProgress(progress, options.threads,
+                                              options.threads, 0) as pool:
     if options.items:
       for _ in range(options.items):
         pool.add_task(0, do_item, gen_size(options.mid_size))

@@ -4,6 +4,8 @@
 
 // This features file defines switches used to control Extension behaviour,
 // typically whitelist configuration.
+// Note, the features defined here are generally ignored for the purposes of
+// extension documentation.
 // See chrome/common/extensions/api/_features.md to understand this file, as
 // well as feature.h, simple_feature.h, and feature_provider.h.
 
@@ -11,14 +13,14 @@
   "do_not_sync": {
     "channel": "stable",
     "component_extensions_auto_granted": false,
-    "extension_types": "all",
+    "extension_types": ["extension"],
     "whitelist": [
       "226CF815E39A363090A1E547D53063472B8279FA"   // Media Router Stable
     ]
   },
   "zoom_without_bubble": {
     "channel": "stable",
-    "extension_types": "all",
+    "extension_types": ["extension"],
     "whitelist": [
       "CBCC42ABED43A4B58FE3810E62AFFA010EB0349F"   // https://crbug.com/538252
     ]
@@ -29,17 +31,15 @@
     "session_types": ["kiosk"]
   },
   "signin_screen": [ {
-    "blacklist": [
-      // https://crbug.com/626342
-      "9E527CDA9D7C50844E8A5DB964A54A640AE48F98"   // Chrome remote desktop
-    ],
-    // Allow developers to test new features.
-    "channel": "dev",
+    "channel": "canary",
     "component_extensions_auto_granted": false,
-    "extension_types": ["platform_app"],
-    "location": "policy",
-    "platforms": ["chromeos"]
-  }, {
+    "platforms": ["chromeos"],
+    "location": "unpacked",
+    "whitelist": [
+      "05D1DBD6E8B9C4690FFA7D50E6F60C5290DC662A"   // crbug.com/941107
+    ]
+  },
+  {
     // Strict restrictions for stable channel.
     // For now only whitelisted apps.
     "channel": "stable",
@@ -76,11 +76,11 @@
       "2FCBCE08B34CCA1728A85F1EFBD9A34DD2558B2E",  // ChromeVox
       "7910EAFDAF64B947E1CB31B333A9BD14CA556B6C"   // Feedback extension
     ]
-  }, {
-    // Extensions that are force-installed on the login screen through policy
-    // will receive type "login_screen_extension" and have limited API
-    // capabilities. Nonetheless, we only allow specifically whitelisted
-    // extensions here.
+  },
+  // Extensions that are force-installed on the login screen through policy will
+  // receive type "login_screen_extension" and have limited API capabilities.
+  // Nonetheless, we only allow specifically allowlisted extensions here.
+  {
     "channel": "stable",
     "component_extensions_auto_granted": false,
     "extension_types": ["login_screen_extension"],
@@ -88,20 +88,15 @@
     "platforms": ["chromeos"],
     "whitelist": [
       "FA84F98B32AFC3013F5711F8711F8F38DB210AB7", // Sign-in Screen Test Extension
-      "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519", // Login screen APIs test extension
-      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE", // Imprivata (login screen) crbug.com/1065112
-      "4DBFC1C52D6660DD90791976DF7FEF7B3D360509", // Imprivata (login screen) crbug.com/1065112
-      "CDA6A10BE50CE65C59B766D0CE6A27E8E0A1533F", // Imprivata (login screen) crbug.com/1065112
-      "D85454743B32D9F5ABF3E5F18DF78809F3A0ABD4", // Imprivata (login screen) crbug.com/1065112
-      "04569B963251EB28C0906099668D98EE65ECA2D8", // Imprivata (login screen) crbug.com/1065112
-      "7BF5B69C3ACA9E6ACA5C480661B8073EB9FA32A9", // Imprivata (login screen) crbug.com/1065112
-      "5F2EF8E9F7E975090278D6A0AD039860430C5684", // Imprivata (login screen) crbug.com/1065112
-      "97A4DC8AFC1FCF665C71B624A55675C297AB256C", // Imprivata (login screen) crbug.com/1065112
-      "A00EB72B456C374F1EA86C09833C7DBB6CD95CAE", // Imprivata (login screen) crbug.com/1065112
-      "51DDBADA37EF4D25AD03CB1BB6451799456FE183", // Imprivata (login screen) crbug.com/1065112
-      "DD97CAE4D8658003658140109BC119188A19A5B8", // Imprivata (login screen) crbug.com/1065112
-      "320857126E2180A5751AA384B7B7332A4964BD8C"  // Imprivata (login screen) crbug.com/1065112
+      "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519"  // Login screen APIs test extension
     ]
+  }, {
+    "channel": "stable",
+    "component_extensions_auto_granted": false,
+    "dependencies": ["behavior:imprivata_login_screen_extension"],
+    "extension_types": ["login_screen_extension"],
+    "location": "policy",
+    "platforms": ["chromeos"]
   }],
   "allow_deprecated_audio_api": {
     "channel": "stable",
@@ -121,5 +116,68 @@
   "allow_secondary_kiosk_app_enabled_on_launch": {
     "channel": "dev",
     "extension_types": ["platform_app"]
+  },
+  // Allowlist KeyPermissions for login screen extensions that cannot set the
+  // user policy (they don't have a user yet).
+  "key_permissions_in_login_screen": {
+    "channel": "stable",
+    "dependencies": ["behavior:imprivata_login_screen_extension"],
+    "extension_types": ["login_screen_extension"],
+    "location": "policy",
+    "platforms": ["chromeos"]
+  },
+  // Imprivata extensions (login screen and in-session) use multiple different
+  // extension IDs for their individual channels (stable + beta) and as version
+  // pinning workaround (see crbug.com/1065112). To avoid having to repeat these
+  // long allowlists all over the place, we will use these three behavior
+  // features to depend upon instead (see crbug.com/1100979).
+  "imprivata_extension": [{
+    "channel": "stable",
+    "dependencies": ["behavior:imprivata_login_screen_extension"],
+    "extension_types": ["login_screen_extension"]
+  }, {
+    "channel": "stable",
+    "dependencies": ["behavior:imprivata_in_session_extension"],
+    "extension_types": ["extension"]
+  }],
+  "imprivata_login_screen_extension": {
+    "channel": "stable",
+    "extension_types": ["login_screen_extension"],
+    "location": "policy",
+    "platforms": ["chromeos"],
+    "whitelist": [
+      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE",
+      "4DBFC1C52D6660DD90791976DF7FEF7B3D360509",
+      "CDA6A10BE50CE65C59B766D0CE6A27E8E0A1533F",
+      "D85454743B32D9F5ABF3E5F18DF78809F3A0ABD4",
+      "04569B963251EB28C0906099668D98EE65ECA2D8",
+      "7BF5B69C3ACA9E6ACA5C480661B8073EB9FA32A9",
+      "5F2EF8E9F7E975090278D6A0AD039860430C5684",
+      "97A4DC8AFC1FCF665C71B624A55675C297AB256C",
+      "A00EB72B456C374F1EA86C09833C7DBB6CD95CAE",
+      "51DDBADA37EF4D25AD03CB1BB6451799456FE183",
+      "DD97CAE4D8658003658140109BC119188A19A5B8",
+      "320857126E2180A5751AA384B7B7332A4964BD8C"
+    ]
+  },
+  "imprivata_in_session_extension": {
+    "channel": "stable",
+    "extension_types": ["extension"],
+    "location": "policy",
+    "platforms": ["chromeos"],
+    "whitelist": [
+      "A24DE1B21A67E25FB62AC8491642038FE25DA75B",
+      "6B25164FFE2BADB5F1DBBD301CC022170267022D",
+      "4D15F9AFCF54E56F0A6E06D22DD15F133DCF0882",
+      "171F86E3D91235E5FC745282834BB3DA164F14B3",
+      "F7BDB4C21BFF955F851C6CF65167373BDEED6218",
+      "220ABCF657446B2CBEBDE2DDA09B6FC415E87FB7",
+      "B0092A67BFB22960DE49B11E9CA56035BD40BCFA",
+      "3899082721C4996840EA4DD3A7B604914FB915CF",
+      "0D0EF5C81661E90BAFD606EADD68D8BB5EDC7E9A",
+      "D53DFC9E0D738159557959ABCA61BDDC97470C87",
+      "579D5666AB7B27A2E9EA0B13FB7F70CA7D864F72",
+      "FC3BBFAD9D7E711BBBD8235E7640348A9B98EB5F"
+    ]
   }
 }

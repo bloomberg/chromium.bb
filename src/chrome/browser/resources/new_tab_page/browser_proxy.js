@@ -7,10 +7,10 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js'
 import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
+import 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
 
 import './omnibox.mojom-lite.js';
-import './skcolor.mojom-lite.js';
 import './new_tab_page.mojom-lite.js';
 
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
@@ -59,11 +59,11 @@ export class BrowserProxy {
   }
 
   /**
-   * @param {string} path
+   * @param {string} src
    * @return {string}
    */
-  createUntrustedIframeSrc(path) {
-    return `chrome-untrusted://new-tab-page/${path}`;
+  createIframeSrc(src) {
+    return src;
   }
 
   /**
@@ -85,7 +85,7 @@ export class BrowserProxy {
    */
   waitForLazyRender() {
     return new Promise((resolve, reject) => {
-      setTimeout(resolve, 50);
+      requestIdleCallback(resolve);
     });
   }
 

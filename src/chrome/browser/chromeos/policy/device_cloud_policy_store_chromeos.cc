@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
@@ -66,6 +67,7 @@ DeviceCloudPolicyStoreChromeOS::~DeviceCloudPolicyStoreChromeOS() {
 
 void DeviceCloudPolicyStoreChromeOS::Store(
     const em::PolicyFetchResponse& policy) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The policy and the public key must have already been loaded by the device
   // settings service.
   DCHECK(is_initialized());
@@ -106,6 +108,8 @@ void DeviceCloudPolicyStoreChromeOS::Store(
 }
 
 void DeviceCloudPolicyStoreChromeOS::Load() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
 
@@ -114,6 +118,8 @@ void DeviceCloudPolicyStoreChromeOS::Load() {
 
 void DeviceCloudPolicyStoreChromeOS::InstallInitialPolicy(
     const em::PolicyFetchResponse& policy) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
 
@@ -134,11 +140,15 @@ void DeviceCloudPolicyStoreChromeOS::InstallInitialPolicy(
 }
 
 void DeviceCloudPolicyStoreChromeOS::DeviceSettingsUpdated() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!weak_factory_.HasWeakPtrs())
     UpdateFromService();
 }
 
 void DeviceCloudPolicyStoreChromeOS::OnDeviceSettingsServiceShutdown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   device_settings_service_->RemoveObserver(this);
   device_settings_service_ = nullptr;
 }
@@ -196,8 +206,13 @@ void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
   if (service_status == chromeos::DeviceSettingsService::STORE_SUCCESS) {
     policy_ = std::make_unique<em::PolicyData>();
     const em::PolicyData* policy_data = device_settings_service_->policy_data();
-    if (policy_data)
+    if (policy_data) {
       policy_->MergeFrom(*policy_data);
+
+      RecordDeviceIdValidityMetric(
+          "Enterprise.CachedDevicePolicyDeviceIdValidity", *policy_data,
+          *install_attributes_);
+    }
 
     PolicyMap new_policy_map;
     if (is_managed()) {

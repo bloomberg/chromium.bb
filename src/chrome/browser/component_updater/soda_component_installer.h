@@ -15,12 +15,11 @@ namespace component_updater {
 
 // Success callback to be run after the component is downloaded.
 using OnSODAComponentReadyCallback =
-    base::Callback<void(const base::FilePath&)>;
+    base::RepeatingCallback<void(const base::FilePath&)>;
 
 class SODAComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  explicit SODAComponentInstallerPolicy(
-      const OnSODAComponentReadyCallback& callback);
+  explicit SODAComponentInstallerPolicy(OnSODAComponentReadyCallback callback);
   ~SODAComponentInstallerPolicy() override;
 
   SODAComponentInstallerPolicy(const SODAComponentInstallerPolicy&) = delete;
@@ -29,6 +28,9 @@ class SODAComponentInstallerPolicy : public ComponentInstallerPolicy {
 
   static const std::string GetExtensionId();
   static void UpdateSODAComponentOnDemand();
+
+  static update_client::CrxInstaller::Result SetComponentDirectoryPermission(
+      const base::FilePath& install_dir);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SODAComponentInstallerTest,
@@ -55,11 +57,20 @@ class SODAComponentInstallerPolicy : public ComponentInstallerPolicy {
   OnSODAComponentReadyCallback on_component_ready_callback_;
 };
 
+// Registers user preferences related to the Speech On-Device API (SODA)
+// component.
+void RegisterPrefsForSodaComponent(PrefRegistrySimple* registry);
+
 // Call once during startup to make the component update service aware of
 // the File Type Policies component.
-void RegisterSODAComponent(ComponentUpdateService* cus,
-                           PrefService* prefs,
+void RegisterSodaComponent(ComponentUpdateService* cus,
+                           PrefService* profile_prefs,
+                           PrefService* global_prefs,
                            base::OnceClosure callback);
+
+void RegisterSodaLanguageComponent(ComponentUpdateService* cus,
+                                   PrefService* profile_prefs,
+                                   PrefService* global_prefs);
 
 }  // namespace component_updater
 

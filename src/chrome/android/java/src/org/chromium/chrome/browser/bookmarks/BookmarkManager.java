@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
@@ -24,16 +25,15 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
-import org.chromium.chrome.browser.vr.VrModeProviderImpl;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.browser_ui.widget.dragreorder.DragStateDelegate;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar.SearchDelegate;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
+import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.url.GURL;
 
 import java.util.Stack;
@@ -50,7 +50,8 @@ public class BookmarkManager
 
     private static boolean sPreventLoadingForTesting;
 
-    private Activity mActivity;
+    private Context mContext;
+    private ComponentName mOpenBookmarkComponentName;
     private ViewGroup mMainView;
     private BookmarkModel mBookmarkModel;
     private BookmarkUndoController mUndoController;
@@ -159,12 +160,15 @@ public class BookmarkManager
     /**
      * Creates an instance of {@link BookmarkManager}. It also initializes resources,
      * bookmark models and jni bridges.
-     * @param activity The activity context to use.
+     * @param context The current {@link Context} used to obtain resources or inflate views.
+     * @param openBookmarkComponentName The component to use when opening a bookmark.
      * @param isDialogUi Whether the main bookmarks UI will be shown in a dialog, not a NativePage.
      * @param snackbarManager The {@link SnackbarManager} used to display snackbars.
      */
-    public BookmarkManager(Activity activity, boolean isDialogUi, SnackbarManager snackbarManager) {
-        mActivity = activity;
+    public BookmarkManager(Context context, ComponentName openBookmarkComponentName,
+            boolean isDialogUi, SnackbarManager snackbarManager) {
+        mContext = context;
+        mOpenBookmarkComponentName = openBookmarkComponentName;
         mIsDialogUi = isDialogUi;
 
         mSelectionDelegate = new SelectionDelegate<BookmarkId>() {
@@ -181,7 +185,7 @@ public class BookmarkManager
         mDragStateDelegate = new BookmarkDragStateDelegate();
 
         mBookmarkModel = new BookmarkModel();
-        mMainView = (ViewGroup) mActivity.getLayoutInflater().inflate(R.layout.bookmark_main, null);
+        mMainView = (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.bookmark_main, null);
 
         @SuppressWarnings("unchecked")
         SelectableListLayout<BookmarkId> selectableList =
@@ -190,7 +194,7 @@ public class BookmarkManager
         mSelectableListLayout.initializeEmptyView(
                 R.string.bookmarks_folder_empty, R.string.bookmark_no_result);
 
-        mAdapter = new BookmarkItemsAdapter(activity);
+        mAdapter = new BookmarkItemsAdapter(mContext);
 
         mAdapterDataObserver = new AdapterDataObserver() {
             @Override
@@ -209,13 +213,13 @@ public class BookmarkManager
 
         mToolbar = (BookmarkActionBar) mSelectableListLayout.initializeToolbar(
                 R.layout.bookmark_action_bar, mSelectionDelegate, 0, R.id.normal_menu_group,
-                R.id.selection_mode_menu_group, null, true, isDialogUi, new VrModeProviderImpl());
+                R.id.selection_mode_menu_group, null, true, isDialogUi);
         mToolbar.initializeSearchView(
                 this, R.string.bookmark_action_bar_search, R.id.search_menu_id);
 
         mSelectableListLayout.configureWideDisplayStyle();
 
-        mUndoController = new BookmarkUndoController(activity, mBookmarkModel, snackbarManager);
+        mUndoController = new BookmarkUndoController(mContext, mBookmarkModel, snackbarManager);
         mBookmarkModel.addObserver(mBookmarkModelObserver);
         initializeToLoadingState();
         if (!sPreventLoadingForTesting) {
@@ -401,7 +405,7 @@ public class BookmarkManager
         if (state.mState == BookmarkUIState.STATE_FOLDER) {
             // Loading and searching states may be pushed to the stack but should never be stored in
             // preferences.
-            BookmarkUtils.setLastUsedUrl(mActivity, state.mUrl);
+            BookmarkUtils.setLastUsedUrl(mContext, state.mUrl);
             // If a loading state is replaced by another loading state, do not notify this change.
             if (mNativePage != null) {
                 mNativePage.onStateChange(state.mUrl, false);
@@ -490,8 +494,9 @@ public class BookmarkManager
 
     @Override
     public void openBookmark(BookmarkId bookmark) {
-        if (BookmarkUtils.openBookmark(mBookmarkModel, mActivity, bookmark)) {
-            BookmarkUtils.finishActivityOnPhone(mActivity);
+        if (BookmarkUtils.openBookmark(
+                    mContext, mOpenBookmarkComponentName, mBookmarkModel, bookmark)) {
+            BookmarkUtils.finishActivityOnPhone(mContext);
         }
     }
 

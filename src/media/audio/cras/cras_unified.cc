@@ -9,13 +9,13 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "media/audio/cras/audio_manager_cras.h"
+#include "media/audio/cras/audio_manager_cras_base.h"
 
 namespace media {
 
 namespace {
 
-int GetDevicePin(AudioManagerCras* manager, const std::string& device_id) {
+int GetDevicePin(AudioManagerCrasBase* manager, const std::string& device_id) {
   if (!manager->IsDefault(device_id, false)) {
     uint64_t cras_node_id;
     base::StringToUint64(device_id, &cras_node_id);
@@ -66,7 +66,7 @@ int GetDevicePin(AudioManagerCras* manager, const std::string& device_id) {
 // of audio.
 
 CrasUnifiedStream::CrasUnifiedStream(const AudioParameters& params,
-                                     AudioManagerCras* manager,
+                                     AudioManagerCrasBase* manager,
                                      const std::string& device_id)
     : client_(NULL),
       stream_id_(0),
@@ -203,7 +203,7 @@ void CrasUnifiedStream::Start(AudioSourceCallback* callback) {
   }
 
   cras_client_stream_params_set_client_type(stream_params,
-                                            CRAS_CLIENT_TYPE_CHROME);
+                                            manager_->GetClientType());
 
   // Before starting the stream, save the number of bytes in a frame for use in
   // the callback.

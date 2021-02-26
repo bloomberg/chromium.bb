@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as UI from '../ui/ui.js';  // eslint-disable-line no-unused-vars
 
 import {Events, LighthouseController, Presets, RuntimeSettings} from './LighthouseController.js';  // eslint-disable-line no-unused-vars
@@ -16,7 +17,7 @@ export class StartView extends UI.Widget.Widget {
    */
   constructor(controller) {
     super();
-    this.registerRequiredCSS('lighthouse/lighthouseStartView.css');
+    this.registerRequiredCSS('lighthouse/lighthouseStartView.css', {enableLegacyPatching: true});
     this._controller = controller;
     this._settingsToolbar = new UI.Toolbar.Toolbar('');
     this._render();
@@ -59,7 +60,8 @@ export class StartView extends UI.Widget.Widget {
     const control = new UI.Toolbar.ToolbarSettingCheckbox(runtimeSetting.setting, runtimeSetting.description);
     toolbar.appendToolbarItem(control);
     if (runtimeSetting.learnMore) {
-      const link = UI.XLink.XLink.create(runtimeSetting.learnMore, ls`Learn more`, 'lighthouse-learn-more');
+      const link = /** @type {!HTMLElement} */ (
+          UI.XLink.XLink.create(runtimeSetting.learnMore, ls`Learn more`, 'lighthouse-learn-more'));
       link.style.padding = '5px';
       control.element.appendChild(link);
     }
@@ -79,9 +81,8 @@ export class StartView extends UI.Widget.Widget {
     for (const preset of Presets) {
       const formElements = preset.plugin ? pluginFormElements : categoryFormElements;
       preset.setting.setTitle(preset.title);
-      const checkbox = new UI.Toolbar.ToolbarSettingCheckbox(preset.setting);
+      const checkbox = new UI.Toolbar.ToolbarSettingCheckbox(preset.setting, preset.description);
       const row = formElements.createChild('div', 'vbox lighthouse-launcher-row');
-      row.title = preset.description;
       row.appendChild(checkbox.element);
     }
     UI.ARIAUtils.markAsGroup(categoryFormElements);
@@ -98,7 +99,7 @@ export class StartView extends UI.Widget.Widget {
         ls`Generate report`,
         () => this._controller.dispatchEventToListeners(
             Events.RequestLighthouseStart,
-            /* keyboardInitiated */ UI.UIUtils.elementIsFocusedByKeyboard(this._startButton)),
+            /* keyboardInitiated */ this._startButton.matches(':focus-visible')),
         /* className */ '', /* primary */ true);
     this.setDefaultFocusedElement(this._startButton);
 
@@ -117,6 +118,7 @@ export class StartView extends UI.Widget.Widget {
             <span>${auditsDescription}</span>
             ${UI.XLink.XLink.create('https://developers.google.com/web/tools/lighthouse/', ls`Learn more`)}
           </div>
+          <div $="warning-text" class="lighthouse-warning-text hidden"></div>
         </header>
         <form>
           <div class="lighthouse-form-categories">
@@ -144,6 +146,7 @@ export class StartView extends UI.Widget.Widget {
     `;
 
     this._helpText = fragment.$('help-text');
+    this._warningText = fragment.$('warning-text');
     this._populateFormControls(fragment);
     this.contentElement.appendChild(fragment.element());
     this.contentElement.style.overflow = 'auto';
@@ -155,6 +158,9 @@ export class StartView extends UI.Widget.Widget {
   onResize() {
     const useNarrowLayout = this.contentElement.offsetWidth < 560;
     const startViewEl = this.contentElement.querySelector('.lighthouse-start-view');
+    if (!startViewEl) {
+      return;
+    }
     startViewEl.classList.toggle('hbox', !useNarrowLayout);
     startViewEl.classList.toggle('vbox', useNarrowLayout);
   }
@@ -182,6 +188,17 @@ export class StartView extends UI.Widget.Widget {
   setUnauditableExplanation(text) {
     if (this._helpText) {
       this._helpText.textContent = text;
+    }
+  }
+
+  /**
+   * @param {?string} text
+   */
+  setWarningText(text) {
+    if (this._warningText) {
+      this._warningText.textContent = text;
+      this._warningText.classList.toggle('hidden', !text);
+      this._shouldConfirm = !!text;
     }
   }
 }

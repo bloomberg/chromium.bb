@@ -7,16 +7,16 @@ package org.chromium.ui.base;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.base.test.util.Batch;
+import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
@@ -24,14 +24,12 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
  * Clipboard tests for Android platform that depend on access to the ClipboardManager.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@Batch(Batch.UNIT_TESTS)
 public class ClipboardAndroidTest extends DummyUiActivityTestCase {
-    @Rule
-    public NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
-
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
-        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
     }
 
     @Override
@@ -47,8 +45,6 @@ public class ClipboardAndroidTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     public void internalClipboardInvalidation() {
-        CriteriaHelper.pollUiThread(() -> getActivity().hasWindowFocus());
-
         // Write to the clipboard in native and ensure that is propagated to the platform clipboard.
         final String originalText = "foo";
         TestThreadUtils.runOnUiThreadBlocking(() -> {

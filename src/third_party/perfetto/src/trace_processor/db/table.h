@@ -150,16 +150,32 @@ class Table {
   //  * |left|'s values must exist in |right|
   Table LookupJoin(JoinKey left, const Table& other, JoinKey right);
 
+  // Extends the table with a new column called |name| with data |sv|.
   template <typename T>
   Table ExtendWithColumn(const char* name,
-                         std::unique_ptr<SparseVector<T>> sv,
+                         std::unique_ptr<NullableVector<T>> sv,
                          uint32_t flags) const {
-    PERFETTO_DCHECK(sv->size() == row_count_);
+    PERFETTO_CHECK(sv->size() == row_count_);
     uint32_t size = sv->size();
     uint32_t row_map_count = static_cast<uint32_t>(row_maps_.size());
     Table ret = Copy();
     ret.columns_.push_back(Column::WithOwnedStorage(
         name, std::move(sv), flags, &ret, GetColumnCount(), row_map_count));
+    ret.row_maps_.emplace_back(RowMap(0, size));
+    return ret;
+  }
+
+  // Extends the table with a new column called |name| with data |sv|.
+  template <typename T>
+  Table ExtendWithColumn(const char* name,
+                         NullableVector<T>* sv,
+                         uint32_t flags) const {
+    PERFETTO_CHECK(sv->size() == row_count_);
+    uint32_t size = sv->size();
+    uint32_t row_map_count = static_cast<uint32_t>(row_maps_.size());
+    Table ret = Copy();
+    ret.columns_.push_back(
+        Column(name, sv, flags, &ret, GetColumnCount(), row_map_count));
     ret.row_maps_.emplace_back(RowMap(0, size));
     return ret;
   }
@@ -178,8 +194,13 @@ class Table {
   }
 
   template <typename T>
-  const TypedColumn<T>* GetTypedColumnByName(const char* name) const {
-    return TypedColumn<T>::FromColumn(GetColumnByName(name));
+  const TypedColumn<T>& GetTypedColumnByName(const char* name) const {
+    return *TypedColumn<T>::FromColumn(GetColumnByName(name));
+  }
+
+  template <typename T>
+  const IdColumn<T>& GetIdColumnByName(const char* name) const {
+    return *IdColumn<T>::FromColumn(GetColumnByName(name));
   }
 
   // Returns the number of columns in the Table.
@@ -189,6 +210,9 @@ class Table {
 
   // Returns an iterator into the Table.
   Iterator IterateRows() const { return Iterator(this); }
+
+  // Creates a copy of this table.
+  Table Copy() const;
 
   uint32_t row_count() const { return row_count_; }
   const std::vector<RowMap>& row_maps() const { return row_maps_; }
@@ -205,7 +229,6 @@ class Table {
  private:
   friend class Column;
 
-  Table Copy() const;
   Table CopyExceptRowMaps() const;
 };
 

@@ -127,6 +127,8 @@ BufferBinding FromGLenum<BufferBinding>(GLenum from)
             return BufferBinding::PixelUnpack;
         case GL_SHADER_STORAGE_BUFFER:
             return BufferBinding::ShaderStorage;
+        case GL_TEXTURE_BUFFER:
+            return BufferBinding::Texture;
         case GL_TRANSFORM_FEEDBACK_BUFFER:
             return BufferBinding::TransformFeedback;
         case GL_UNIFORM_BUFFER:
@@ -160,6 +162,8 @@ GLenum ToGLenum(BufferBinding from)
             return GL_PIXEL_UNPACK_BUFFER;
         case BufferBinding::ShaderStorage:
             return GL_SHADER_STORAGE_BUFFER;
+        case BufferBinding::Texture:
+            return GL_TEXTURE_BUFFER;
         case BufferBinding::TransformFeedback:
             return GL_TRANSFORM_FEEDBACK_BUFFER;
         case BufferBinding::Uniform:
@@ -203,6 +207,9 @@ std::ostream &operator<<(std::ostream &os, BufferBinding value)
             break;
         case BufferBinding::ShaderStorage:
             os << "GL_SHADER_STORAGE_BUFFER";
+            break;
+        case BufferBinding::Texture:
+            os << "GL_TEXTURE_BUFFER";
             break;
         case BufferBinding::TransformFeedback:
             os << "GL_TRANSFORM_FEEDBACK_BUFFER";
@@ -560,6 +567,8 @@ GraphicsResetStatus FromGLenum<GraphicsResetStatus>(GLenum from)
             return GraphicsResetStatus::InnocentContextReset;
         case GL_UNKNOWN_CONTEXT_RESET:
             return GraphicsResetStatus::UnknownContextReset;
+        case GL_PURGED_CONTEXT_RESET_NV:
+            return GraphicsResetStatus::PurgedContextResetNV;
         default:
             return GraphicsResetStatus::InvalidEnum;
     }
@@ -577,6 +586,8 @@ GLenum ToGLenum(GraphicsResetStatus from)
             return GL_INNOCENT_CONTEXT_RESET;
         case GraphicsResetStatus::UnknownContextReset:
             return GL_UNKNOWN_CONTEXT_RESET;
+        case GraphicsResetStatus::PurgedContextResetNV:
+            return GL_PURGED_CONTEXT_RESET_NV;
         default:
             UNREACHABLE();
             return 0;
@@ -598,6 +609,9 @@ std::ostream &operator<<(std::ostream &os, GraphicsResetStatus value)
             break;
         case GraphicsResetStatus::UnknownContextReset:
             os << "GL_UNKNOWN_CONTEXT_RESET";
+            break;
+        case GraphicsResetStatus::PurgedContextResetNV:
+            os << "GL_PURGED_CONTEXT_RESET_NV";
             break;
         default:
             os << "GL_INVALID_ENUM";
@@ -1993,8 +2007,12 @@ TextureTarget FromGLenum<TextureTarget>(GLenum from)
             return TextureTarget::CubeMapPositiveZ;
         case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
             return TextureTarget::CubeMapNegativeZ;
+        case GL_TEXTURE_CUBE_MAP_ARRAY:
+            return TextureTarget::CubeMapArray;
         case GL_TEXTURE_VIDEO_IMAGE_WEBGL:
             return TextureTarget::VideoImage;
+        case GL_TEXTURE_BUFFER:
+            return TextureTarget::Buffer;
         default:
             return TextureTarget::InvalidEnum;
     }
@@ -2030,8 +2048,12 @@ GLenum ToGLenum(TextureTarget from)
             return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
         case TextureTarget::CubeMapNegativeZ:
             return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+        case TextureTarget::CubeMapArray:
+            return GL_TEXTURE_CUBE_MAP_ARRAY;
         case TextureTarget::VideoImage:
             return GL_TEXTURE_VIDEO_IMAGE_WEBGL;
+        case TextureTarget::Buffer:
+            return GL_TEXTURE_BUFFER;
         default:
             UNREACHABLE();
             return 0;
@@ -2081,8 +2103,14 @@ std::ostream &operator<<(std::ostream &os, TextureTarget value)
         case TextureTarget::CubeMapNegativeZ:
             os << "GL_TEXTURE_CUBE_MAP_NEGATIVE_Z";
             break;
+        case TextureTarget::CubeMapArray:
+            os << "GL_TEXTURE_CUBE_MAP_ARRAY";
+            break;
         case TextureTarget::VideoImage:
             os << "GL_TEXTURE_VIDEO_IMAGE_WEBGL";
+            break;
+        case TextureTarget::Buffer:
+            os << "GL_TEXTURE_BUFFER";
             break;
         default:
             os << "GL_INVALID_ENUM";
@@ -2112,8 +2140,12 @@ TextureType FromGLenum<TextureType>(GLenum from)
             return TextureType::Rectangle;
         case GL_TEXTURE_CUBE_MAP:
             return TextureType::CubeMap;
+        case GL_TEXTURE_CUBE_MAP_ARRAY:
+            return TextureType::CubeMapArray;
         case GL_TEXTURE_VIDEO_IMAGE_WEBGL:
             return TextureType::VideoImage;
+        case GL_TEXTURE_BUFFER:
+            return TextureType::Buffer;
         default:
             return TextureType::InvalidEnum;
     }
@@ -2139,8 +2171,12 @@ GLenum ToGLenum(TextureType from)
             return GL_TEXTURE_RECTANGLE_ANGLE;
         case TextureType::CubeMap:
             return GL_TEXTURE_CUBE_MAP;
+        case TextureType::CubeMapArray:
+            return GL_TEXTURE_CUBE_MAP_ARRAY;
         case TextureType::VideoImage:
             return GL_TEXTURE_VIDEO_IMAGE_WEBGL;
+        case TextureType::Buffer:
+            return GL_TEXTURE_BUFFER;
         default:
             UNREACHABLE();
             return 0;
@@ -2175,8 +2211,14 @@ std::ostream &operator<<(std::ostream &os, TextureType value)
         case TextureType::CubeMap:
             os << "GL_TEXTURE_CUBE_MAP";
             break;
+        case TextureType::CubeMapArray:
+            os << "GL_TEXTURE_CUBE_MAP_ARRAY";
+            break;
         case TextureType::VideoImage:
             os << "GL_TEXTURE_VIDEO_IMAGE_WEBGL";
+            break;
+        case TextureType::Buffer:
+            os << "GL_TEXTURE_BUFFER";
             break;
         default:
             os << "GL_INVALID_ENUM";

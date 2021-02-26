@@ -15,16 +15,18 @@
     background-color: var(--highlight-color);
   }
 
-  :host([is-selected-item_]) cr-icon-button {
-    --cr-icon-button-fill-color-focus: var(--highlight-color);
-  }
-
   @media (prefers-color-scheme: dark) {
     :host([is-selected-item_]),
     :host([is-selected-item_]) .folder-icon {
       color: var(--google-grey-refresh-700);
     }
   }
+
+<if expr="is_macosx">
+  .folder-icon {
+    margin: 2px;
+  }
+</if>
 
   #website-title {
     color: var(--cr-primary-text-color);

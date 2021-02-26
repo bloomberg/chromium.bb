@@ -65,12 +65,14 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   bool GpuRemoveGraphicsDevice(const base::FilePath& path) override;
 
   // Services needed by DrmDisplayHost
-  bool GpuConfigureNativeDisplay(int64_t display_id,
-                                 const display::DisplayMode& pmode,
-                                 const gfx::Point& point) override;
-  bool GpuDisableNativeDisplay(int64_t display_id) override;
+  void GpuConfigureNativeDisplays(
+      const std::vector<display::DisplayConfigurationParams>& config_requests,
+      display::ConfigureCallback callback) override;
   bool GpuGetHDCPState(int64_t display_id) override;
-  bool GpuSetHDCPState(int64_t display_id, display::HDCPState state) override;
+  bool GpuSetHDCPState(
+      int64_t display_id,
+      display::HDCPState state,
+      display::ContentProtectionMethod protection_method) override;
   bool GpuSetColorMatrix(int64_t display_id,
                          const std::vector<float>& color_matrix) override;
   bool GpuSetGammaCorrection(
@@ -94,16 +96,14 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
 
   void OnDrmServiceStarted();
 
-  void GpuConfigureNativeDisplayCallback(int64_t display_id,
-                                         bool success) const;
-
   void GpuRefreshNativeDisplaysCallback(MovableDisplaySnapshots displays) const;
-  void GpuDisableNativeDisplayCallback(int64_t display_id, bool success) const;
   void GpuTakeDisplayControlCallback(bool success) const;
   void GpuRelinquishDisplayControlCallback(bool success) const;
-  void GpuGetHDCPStateCallback(int64_t display_id,
-                               bool success,
-                               display::HDCPState state) const;
+  void GpuGetHDCPStateCallback(
+      int64_t display_id,
+      bool success,
+      display::HDCPState state,
+      display::ContentProtectionMethod protection_method) const;
   void GpuSetHDCPStateCallback(int64_t display_id, bool success) const;
 
   void OnGpuServiceLaunchedOnUIThread(

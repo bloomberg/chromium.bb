@@ -15,8 +15,6 @@ class Serial;
 
 class NavigatorSerial final : public GarbageCollected<NavigatorSerial>,
                               public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorSerial);
-
  public:
   static const char kSupplementName[];
 
@@ -27,7 +25,7 @@ class NavigatorSerial final : public GarbageCollected<NavigatorSerial>,
 
   explicit NavigatorSerial(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<Serial> serial_;

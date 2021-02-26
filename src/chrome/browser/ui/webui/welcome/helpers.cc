@@ -23,7 +23,6 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -31,6 +30,7 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/search/ntp_features.h"
 
 namespace welcome {
 
@@ -46,7 +46,7 @@ const base::Feature kForceEnabled = {"NuxOnboardingForceEnabled",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The value of these FeatureParam values should be a comma-delimited list
-// of element names whitelisted in the MODULES_WHITELIST list, defined in
+// of element names allowlisted in the MODULES_WHITELIST list, defined in
 // chrome/browser/resources/welcome/welcome_app.js
 const base::FeatureParam<std::string> kNewUserModules{
     &kFeature, "new-user-modules", kDefaultNewUserModules};

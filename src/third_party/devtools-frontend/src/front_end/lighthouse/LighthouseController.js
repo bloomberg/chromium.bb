@@ -5,11 +5,16 @@
 import * as Common from '../common/common.js';
 import * as SDK from '../sdk/sdk.js';
 
+import {ProtocolService} from './LighthouseProtocolService.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @implements {SDK.SDKModel.SDKModelObserver<!SDK.ServiceWorkerManager.ServiceWorkerManager>}
  * @unrestricted
  */
 export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
+  /**
+   * @param {!ProtocolService} protocolService
+   */
   constructor(protocolService) {
     super();
 
@@ -18,6 +23,10 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
 
     for (const preset of Presets) {
       preset.setting.addChangeListener(this.recomputePageAuditability.bind(this));
+    }
+
+    for (const runtimeSetting of RuntimeSettings) {
+      runtimeSetting.setting.addChangeListener(this.recomputePageAuditability.bind(this));
     }
 
     SDK.SDKModel.TargetManager.instance().observeModels(SDK.ServiceWorkerManager.ServiceWorkerManager, this);
@@ -53,8 +62,9 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
     if (this._manager !== serviceWorkerManager) {
       return;
     }
-
-    Common.EventTarget.EventTarget.removeEventListeners(this._serviceWorkerListeners);
+    if (this._serviceWorkerListeners) {
+      Common.EventTarget.EventTarget.removeEventListeners(this._serviceWorkerListeners);
+    }
     this._manager = null;
     this.recomputePageAuditability();
   }
@@ -117,7 +127,40 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @return {!Promise<string>}
    */
+  async _hasImportantResourcesNotCleared() {
+    const clearStorageSetting =
+        RuntimeSettings.find(runtimeSetting => runtimeSetting.setting.name === 'lighthouse.clear_storage');
+    if (clearStorageSetting && !clearStorageSetting.setting.get()) {
+      return '';
+    }
+    if (!this._manager) {
+      return '';
+    }
+    const mainTarget = this._manager.target();
+    const usageData = await mainTarget.storageAgent().invoke_getUsageAndQuota({origin: mainTarget.inspectedURL()});
+    const locations = usageData.usageBreakdown.filter(usage => usage.usage)
+                          .map(usage => STORAGE_TYPE_NAMES.get(usage.storageType))
+                          .filter(Boolean);
+    if (locations.length === 1) {
+      return Common.UIString.UIString(
+          'There may be stored data affecting loading performance in this location: %s. Audit this page in an incognito window to prevent those resources from affecting your scores.',
+          locations.join(', '));
+    }
+    if (locations.length > 1) {
+      return Common.UIString.UIString(
+          'There may be stored data affecting loading performance in these locations: %s. Audit this page in an incognito window to prevent those resources from affecting your scores.',
+          locations.join(', '));
+    }
+    return '';
+  }
+
+  /**
+   * @return {!Promise<string>}
+   */
   async _evaluateInspectedURL() {
+    if (!this._manager) {
+      return '';
+    }
     const mainTarget = this._manager.target();
     const runtimeModel = mainTarget.model(SDK.RuntimeModel.RuntimeModel);
     const executionContext = runtimeModel && runtimeModel.defaultExecutionContext();
@@ -136,10 +179,15 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
             includeCommandLineAPI: false,
             silent: false,
             returnByValue: true,
-            generatePreview: false
+            generatePreview: false,
+            allowUnsafeEvalBlockedByCSP: undefined,
+            disableBreaks: undefined,
+            replMode: undefined,
+            throwOnSideEffect: undefined,
+            timeout: undefined,
           },
           /* userGesture */ false, /* awaitPromise */ false);
-      if (!result.exceptionDetails && result.object) {
+      if ((!('exceptionDetails' in result) || !result.exceptionDetails) && 'object' in result && result.object) {
         inspectedURL = result.object.value;
         result.object.release();
       }
@@ -151,7 +199,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @return {!Object}
+   * @return {{internalDisableDeviceScreenEmulation: boolean, emulatedFormFactor: (string|undefined)}}
    */
   getFlags() {
     const flags = {
@@ -161,7 +209,8 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
     for (const runtimeSetting of RuntimeSettings) {
       runtimeSetting.setFlags(flags, runtimeSetting.setting.get());
     }
-    return flags;
+    return /** @type {{internalDisableDeviceScreenEmulation: boolean, emulatedFormFactor: (string|undefined)}} */ (
+        flags);
   }
 
   /**
@@ -204,8 +253,18 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
     }
 
     this.dispatchEventToListeners(Events.PageAuditabilityChanged, {helpText});
+
+    this._hasImportantResourcesNotCleared().then(warning => {
+      this.dispatchEventToListeners(Events.PageWarningsChanged, {warning});
+    });
   }
 }
+
+const STORAGE_TYPE_NAMES = new Map([
+  [Protocol.Storage.StorageType.Local_storage, Common.UIString.UIString('Local Storage')],
+  [Protocol.Storage.StorageType.Indexeddb, Common.UIString.UIString('IndexedDB')],
+  [Protocol.Storage.StorageType.Websql, Common.UIString.UIString('Web SQL')],
+]);
 
 /** @type {!Array.<!Preset>} */
 export const Presets = [
@@ -214,31 +273,36 @@ export const Presets = [
     setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_perf', true),
     configID: 'performance',
     title: ls`Performance`,
-    description: ls`How long does this app take to show content and become usable`
+    description: ls`How long does this app take to show content and become usable`,
+    plugin: false,
   },
   {
     setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_pwa', true),
     configID: 'pwa',
     title: ls`Progressive Web App`,
-    description: ls`Does this page meet the standard of a Progressive Web App`
+    description: ls`Does this page meet the standard of a Progressive Web App`,
+    plugin: false,
   },
   {
     setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_best_practices', true),
     configID: 'best-practices',
     title: ls`Best practices`,
-    description: ls`Does this page follow best practices for modern web development`
+    description: ls`Does this page follow best practices for modern web development`,
+    plugin: false,
   },
   {
     setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_a11y', true),
     configID: 'accessibility',
     title: ls`Accessibility`,
-    description: ls`Is this page usable by people with disabilities or impairments`
+    description: ls`Is this page usable by people with disabilities or impairments`,
+    plugin: false,
   },
   {
     setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_seo', true),
     configID: 'seo',
     title: ls`SEO`,
-    description: ls`Is this page optimized for search engine results ranking`
+    description: ls`Is this page optimized for search engine results ranking`,
+    plugin: false,
   },
   {
     setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_pubads', false),
@@ -253,6 +317,7 @@ export const Presets = [
 export const RuntimeSettings = [
   {
     setting: Common.Settings.Settings.instance().createSetting('lighthouse.device_type', 'mobile'),
+    title: ls`Apply mobile emulation`,
     description: ls`Apply mobile emulation during auditing`,
     setFlags: (flags, value) => {
       // See Audits.AuditsPanel._setupEmulationAndProtocolConnection()
@@ -262,6 +327,7 @@ export const RuntimeSettings = [
       {label: ls`Mobile`, value: 'mobile'},
       {label: ls`Desktop`, value: 'desktop'},
     ],
+    learnMore: undefined,
   },
   {
     // This setting is disabled, but we keep it around to show in the UI.
@@ -275,6 +341,7 @@ export const RuntimeSettings = [
     setFlags: (flags, value) => {
       flags.throttlingMethod = value ? 'simulate' : 'devtools';
     },
+    options: undefined,
   },
   {
     setting: Common.Settings.Settings.instance().createSetting('lighthouse.clear_storage', true),
@@ -283,18 +350,23 @@ export const RuntimeSettings = [
     setFlags: (flags, value) => {
       flags.disableStorageReset = !value;
     },
+    options: undefined,
+    learnMore: undefined,
   },
 ];
 
-export const Events = {
-  PageAuditabilityChanged: Symbol('PageAuditabilityChanged'),
-  AuditProgressChanged: Symbol('AuditProgressChanged'),
-  RequestLighthouseStart: Symbol('RequestLighthouseStart'),
-  RequestLighthouseCancel: Symbol('RequestLighthouseCancel'),
-};
+    export const Events = {
+      PageAuditabilityChanged: Symbol('PageAuditabilityChanged'),
+      PageWarningsChanged: Symbol('PageWarningsChanged'),
+      AuditProgressChanged: Symbol('AuditProgressChanged'),
+      RequestLighthouseStart: Symbol('RequestLighthouseStart'),
+      RequestLighthouseCancel: Symbol('RequestLighthouseCancel'),
+    };
 
-/** @typedef {{setting: !Common.Settings.Setting, configID: string, title: string, description: string}} */
-export let Preset;
+    /** @typedef {{setting: !Common.Settings.Setting<?>, configID: string, title: string, description: string, plugin: boolean}} */
+    // @ts-ignore typedef
+    export let Preset;
 
-/** @typedef {{setting: !Common.Settings.Setting, description: string, setFlags: function(!Object, string), options: (!Array|undefined), title: (string|undefined)}} */
-export let RuntimeSetting;
+    /** @typedef {{setting: !Common.Settings.Setting<?>, description: string, setFlags: function(!Object<string, *>, string):void, options: (!Array<?>|undefined), title: (string|undefined), learnMore: (string|undefined)}} */
+    // @ts-ignore typedef
+    export let RuntimeSetting;

@@ -78,13 +78,9 @@ gfx::ImageSkia RelaunchRequiredDialogView::GetWindowIcon() {
                            gfx::kChromeIconGrey));
 }
 
-bool RelaunchRequiredDialogView::ShouldShowWindowIcon() const {
-  return true;
-}
-
 gfx::Size RelaunchRequiredDialogView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
+                        views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
 }
@@ -104,6 +100,7 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
   SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_RELAUNCH_REQUIRED_CANCEL_BUTTON));
+  SetShowIcon(true);
   SetAcceptCallback(base::BindOnce(
       [](base::RepeatingClosure callback) {
         base::RecordAction(base::UserMetricsAction("RelaunchRequired_Accept"));
@@ -121,7 +118,7 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
   auto label = std::make_unique<views::Label>(
       l10n_util::GetPluralStringFUTF16(IDS_RELAUNCH_REQUIRED_BODY,
                                        BrowserList::GetIncognitoBrowserCount()),
-      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
+      views::style::CONTEXT_DIALOG_BODY_TEXT);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 

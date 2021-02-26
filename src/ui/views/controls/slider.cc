@@ -5,17 +5,20 @@
 #include "ui/views/controls/slider.h"
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
+#include <utility>
 
 #include "base/check_op.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -24,6 +27,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -45,15 +49,32 @@ constexpr float kThumbRadius = 4.f;
 constexpr float kThumbWidth = 2 * kThumbRadius;
 constexpr float kThumbHighlightRadius = 12.f;
 
+float GetNearestAllowedValue(const base::flat_set<float>& allowed_values,
+                             float suggested_value) {
+  if (allowed_values.empty())
+    return suggested_value;
+
+  const base::flat_set<float>::const_iterator greater =
+      allowed_values.upper_bound(suggested_value);
+  if (greater == allowed_values.end())
+    return *allowed_values.rbegin();
+
+  if (greater == allowed_values.begin())
+    return *allowed_values.cbegin();
+
+  // Select a value nearest to the |suggested_value|.
+  if ((*greater - suggested_value) > (suggested_value - *std::prev(greater)))
+    return *std::prev(greater);
+
+  return *greater;
+}
+
 }  // namespace
 
-Slider::Slider(SliderListener* listener)
-    : listener_(listener),
-      highlight_animation_(this),
-      pending_accessibility_value_change_(false) {
+Slider::Slider(SliderListener* listener) : listener_(listener) {
   highlight_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
-  EnableCanvasFlippingForRTLUI(true);
-#if defined(OS_MACOSX)
+  SetFlipCanvasOnPaintForRTLUI(true);
+#if defined(OS_APPLE)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -86,6 +107,30 @@ void Slider::SetEnableAccessibilityEvents(bool enabled) {
 void Slider::SetRenderingStyle(RenderingStyle style) {
   style_ = style;
   SchedulePaint();
+}
+
+void Slider::SetAllowedValues(const base::flat_set<float>* allowed_values) {
+  if (!allowed_values) {
+    allowed_values_.clear();
+    return;
+  }
+#if DCHECK_IS_ON()
+  // Disallow empty sliders.
+  DCHECK(allowed_values->size());
+  for (const float v : *allowed_values) {
+    // sanity check.
+    DCHECK_GE(v, 0.0f);
+    DCHECK_LE(v, 1.0f);
+  }
+#endif
+  allowed_values_ = *allowed_values;
+
+  const auto position = allowed_values_.lower_bound(value_);
+  const float new_value = (position == allowed_values_.end())
+                              ? *allowed_values_.cbegin()
+                              : *position;
+  if (new_value != value_)
+    SetValue(new_value);
 }
 
 float Slider::GetAnimatingValue() const {
@@ -127,6 +172,7 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
     value = 0.0;
   else if (value > 1.0)
     value = 1.0;
+  value = GetNearestAllowedValue(allowed_values_, value);
   if (value_ == value)
     return;
   float old_value = value_;
@@ -134,7 +180,7 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
   if (listener_)
     listener_->SliderValueChanged(this, value_, old_value, reason);
 
-  if (old_value_valid && base::MessageLoopCurrent::Get()) {
+  if (old_value_valid && base::CurrentThread::Get()) {
     // Do not animate when setting the value of the slider for the first time.
     // There is no message-loop when running tests. So we cannot animate then.
     if (!move_animation_) {
@@ -239,8 +285,29 @@ bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
     default:
       return false;
   }
-  SetValueInternal(value_ + direction * keyboard_increment_,
-                   SliderChangeReason::kByUser);
+  if (allowed_values_.empty()) {
+    SetValueInternal(value_ + direction * keyboard_increment_,
+                     SliderChangeReason::kByUser);
+  } else {
+    // discrete slider.
+    if (direction > 0) {
+      const base::flat_set<float>::const_iterator greater =
+          allowed_values_.upper_bound(value_);
+      SetValueInternal(greater == allowed_values_.cend()
+                           ? *allowed_values_.crend()
+                           : *greater,
+                       SliderChangeReason::kByUser);
+    } else {
+      const base::flat_set<float>::const_iterator lesser =
+          allowed_values_.lower_bound(value_);
+      // Current value must be in the list of allowed values.
+      DCHECK(lesser != allowed_values_.cend());
+      SetValueInternal(lesser == allowed_values_.cbegin()
+                           ? *allowed_values_.cbegin()
+                           : *std::prev(lesser),
+                       SliderChangeReason::kByUser);
+    }
+  }
   return true;
 }
 
@@ -248,6 +315,20 @@ void Slider::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kSlider;
   node_data->SetValue(base::UTF8ToUTF16(
       base::StringPrintf("%d%%", static_cast<int>(value_ * 100 + 0.5))));
+  node_data->AddAction(ax::mojom::Action::kIncrement);
+  node_data->AddAction(ax::mojom::Action::kDecrement);
+}
+
+bool Slider::HandleAccessibleAction(const ui::AXActionData& action_data) {
+  if (action_data.action == ax::mojom::Action::kIncrement) {
+    SetValueInternal(value_ + keyboard_increment_, SliderChangeReason::kByUser);
+    return true;
+  } else if (action_data.action == ax::mojom::Action::kDecrement) {
+    SetValueInternal(value_ - keyboard_increment_, SliderChangeReason::kByUser);
+    return true;
+  } else {
+    return views::View::HandleAccessibleAction(action_data);
+  }
 }
 
 void Slider::OnPaint(gfx::Canvas* canvas) {
@@ -376,10 +457,9 @@ int Slider::GetSliderExtraPadding() const {
   }
 }
 
-BEGIN_METADATA(Slider)
-METADATA_PARENT_CLASS(View)
-ADD_PROPERTY_METADATA(Slider, float, Value)
-ADD_PROPERTY_METADATA(Slider, bool, EnableAccessibilityEvents)
-END_METADATA()
+BEGIN_METADATA(Slider, View)
+ADD_PROPERTY_METADATA(float, Value)
+ADD_PROPERTY_METADATA(bool, EnableAccessibilityEvents)
+END_METADATA
 
 }  // namespace views

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/sync/glue/extensions_activity_monitor.h"
 #include "components/browser_sync/browser_sync_client.h"
@@ -19,16 +20,17 @@ class Profile;
 
 namespace autofill {
 class AutofillWebDataService;
-}
+}  // namespace autofill
 
 namespace password_manager {
 class PasswordStore;
-}
+}  // namespace password_manager
 
 namespace syncer {
 class ModelTypeController;
 class SyncService;
-}
+class SyncableService;
+}  // namespace syncer
 
 namespace browser_sync {
 
@@ -51,23 +53,26 @@ class ChromeSyncClient : public browser_sync::BrowserSyncClient {
   send_tab_to_self::SendTabToSelfSyncService* GetSendTabToSelfSyncService()
       override;
   sync_sessions::SessionSyncService* GetSessionSyncService() override;
-  base::Closure GetPasswordStateChangedCallback() override;
+  sync_preferences::PrefServiceSyncable* GetPrefServiceSyncable() override;
+  base::RepeatingClosure GetPasswordStateChangedCallback() override;
   syncer::DataTypeController::TypeVector CreateDataTypeControllers(
       syncer::SyncService* sync_service) override;
   syncer::TrustedVaultClient* GetTrustedVaultClient() override;
   invalidation::InvalidationService* GetInvalidationService() override;
+  syncer::SyncInvalidationsService* GetSyncInvalidationsService() override;
   BookmarkUndoService* GetBookmarkUndoService() override;
   scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;
-  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) override;
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
   GetControllerDelegateForModelType(syncer::ModelType type) override;
-  scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
-      syncer::ModelSafeGroup group) override;
   syncer::SyncApiComponentFactory* GetSyncApiComponentFactory() override;
   syncer::SyncTypePreferenceProvider* GetPreferenceProvider() override;
+  void OnLocalSyncTransportDataCleared() override;
 
  private:
+  // Convenience function used during controller creation.
+  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+      syncer::ModelType type);
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Creates the ModelTypeController for syncer::APPS.
   std::unique_ptr<syncer::ModelTypeController> CreateAppsModelTypeController(
@@ -85,8 +90,6 @@ class ChromeSyncClient : public browser_sync::BrowserSyncClient {
   Profile* const profile_;
 
   // The sync api component factory in use by this client.
-  // TODO(crbug.com/915154): Revert to SyncApiComponentFactory once common
-  // controller creation is moved elsewhere.
   std::unique_ptr<browser_sync::ProfileSyncComponentsFactoryImpl>
       component_factory_;
 

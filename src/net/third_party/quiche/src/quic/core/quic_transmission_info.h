@@ -26,16 +26,16 @@ struct QUIC_EXPORT_PRIVATE QuicTransmissionInfo {
                        QuicTime sent_time,
                        QuicPacketLength bytes_sent,
                        bool has_crypto_handshake,
-                       int num_padding_bytes);
+                       bool has_ack_frequency);
 
   QuicTransmissionInfo(const QuicTransmissionInfo& other);
 
   ~QuicTransmissionInfo();
 
   QuicFrames retransmittable_frames;
-  EncryptionLevel encryption_level;
-  QuicPacketLength bytes_sent;
   QuicTime sent_time;
+  QuicPacketLength bytes_sent;
+  EncryptionLevel encryption_level;
   // Reason why this packet was transmitted.
   TransmissionType transmission_type;
   // In flight packets have not been abandoned or lost.
@@ -44,13 +44,12 @@ struct QUIC_EXPORT_PRIVATE QuicTransmissionInfo {
   SentPacketState state;
   // True if the packet contains stream data from the crypto stream.
   bool has_crypto_handshake;
-  // Non-zero if the packet needs padding if it's retransmitted.
-  int16_t num_padding_bytes;
-  // Stores the packet number of the next retransmission of this packet.
-  // Zero if the packet has not been retransmitted.
-  // TODO(fayang): rename this to first_sent_after_loss_ when deprecating
-  // QUIC_VERSION_41.
-  QuicPacketNumber retransmission;
+  // True if the packet contains ack frequency frame.
+  bool has_ack_frequency;
+  // Records the first sent packet after this packet was detected lost. Zero if
+  // this packet has not been detected lost. This is used to keep lost packet
+  // for another RTT (for potential spurious loss detection)
+  QuicPacketNumber first_sent_after_loss;
   // The largest_acked in the ack frame, if the packet contains an ack.
   QuicPacketNumber largest_acked;
 };

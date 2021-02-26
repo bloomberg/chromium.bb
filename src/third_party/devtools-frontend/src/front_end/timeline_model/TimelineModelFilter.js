@@ -35,6 +35,7 @@ export class TimelineVisibleEventsFilter extends TimelineModelFilter {
   }
 
   /**
+   * @param {!SDK.TracingModel.Event} event
    * @return {!RecordType}
    */
   static _eventType(event) {
@@ -47,7 +48,7 @@ export class TimelineVisibleEventsFilter extends TimelineModelFilter {
     if (event.hasCategory(TimelineModelImpl.Category.LatencyInfo)) {
       return RecordType.LatencyInfo;
     }
-    return /** @type !RecordType */ (event.name);
+    return /** @type {!RecordType} */ (event.name);
   }
 }
 

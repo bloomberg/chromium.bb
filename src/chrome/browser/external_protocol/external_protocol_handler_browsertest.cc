@@ -52,8 +52,14 @@ class TabAddedRemovedObserver : public TabStripModelObserver {
   base::RunLoop loop_;
 };
 
+// Flaky on Mac: https://crbug.com/1143762:
+#if defined(OS_MAC)
+#define MAYBE_AutoCloseTabOnNonWebProtocolNavigation DISABLED_AutoCloseTabOnNonWebProtocolNavigation
+#else
+#define MAYBE_AutoCloseTabOnNonWebProtocolNavigation AutoCloseTabOnNonWebProtocolNavigation
+#endif
 IN_PROC_BROWSER_TEST_F(ExternalProtocolHandlerBrowserTest,
-                       AutoCloseTabOnNonWebProtocolNavigation) {
+                       MAYBE_AutoCloseTabOnNonWebProtocolNavigation) {
 #if defined(OS_WIN)
   // On Win 7 the protocol is registered to be handled by Chrome and thus never
   // reaches the ExternalProtocolHandler so we skip the test. For
@@ -70,4 +76,49 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolHandlerBrowserTest,
       ExecJs(web_contents, "window.open('mailto:test@site.test', '_blank');"));
   observer.Wait();
   EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
+}
+
+// Flaky on Mac: https://crbug.com/1143762:
+#if defined(OS_MAC)
+#define MAYBE_ProtocolLaunchEmitsConsoleLog \
+  DISABLED_ProtocolLaunchEmitsConsoleLog
+#else
+#define MAYBE_ProtocolLaunchEmitsConsoleLog ProtocolLaunchEmitsConsoleLog
+#endif
+IN_PROC_BROWSER_TEST_F(ExternalProtocolHandlerBrowserTest,
+                       MAYBE_ProtocolLaunchEmitsConsoleLog) {
+#if defined(OS_WIN)
+  // On Win 7 the protocol is registered to be handled by Chrome and thus never
+  // reaches the ExternalProtocolHandler so we skip the test. For
+  // more info see installer/util/shell_util.cc:GetShellIntegrationEntries
+  if (base::win::GetVersion() < base::win::Version::WIN8)
+    return;
+#endif
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::WebContentsConsoleObserver observer(web_contents);
+  observer.SetPattern("Launched external handler for 'mailto:test@site.test'.");
+  ASSERT_TRUE(
+      ExecJs(web_contents, "window.open('mailto:test@site.test', '_self');"));
+  observer.Wait();
+  ASSERT_EQ(1u, observer.messages().size());
+}
+
+IN_PROC_BROWSER_TEST_F(ExternalProtocolHandlerBrowserTest,
+                       ProtocolFailureEmitsConsoleLog) {
+// Only on Mac and Windows is there a way for Chromium to know whether a
+// protocol handler is registered ahead of time.
+#if defined(OS_MAC) || defined(OS_WIN)
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::WebContentsConsoleObserver observer(web_contents);
+  observer.SetPattern("Failed to launch 'does.not.exist:failure'*");
+  ASSERT_TRUE(
+      ExecJs(web_contents, "window.open('does.not.exist:failure', '_self');"));
+  observer.Wait();
+  ASSERT_EQ(1u, observer.messages().size());
+#endif
 }

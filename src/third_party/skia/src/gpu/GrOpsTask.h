@@ -12,7 +12,7 @@
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkStrokeRec.h"
 #include "include/core/SkTypes.h"
-#include "include/private/GrRecordingContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "include/private/SkColorData.h"
 #include "include/private/SkTArray.h"
 #include "include/private/SkTDArray.h"
@@ -33,17 +33,6 @@ class GrClearOp;
 class GrGpuBuffer;
 class GrRenderTargetProxy;
 
-/** Observer is notified when a GrOpsTask is closed. */
-class GrOpsTaskClosedObserver {
-public:
-    virtual ~GrOpsTaskClosedObserver() = 0;
-    /**
-     * Called when the GrOpsTask is closed. Must not add/remove observers to 'task'.
-     * The GrOpsTask will remove all its observers after it finishes calling wasClosed().
-     */
-    virtual void wasClosed(const GrOpsTask& task) = 0;
-};
-
 class GrOpsTask : public GrRenderTask {
 private:
     using DstProxyView = GrXferProcessor::DstProxyView;
@@ -51,24 +40,17 @@ private:
 public:
     // The Arenas must outlive the GrOpsTask, either by preserving the context that owns
     // the pool, or by moving the pool to the DDL that takes over the GrOpsTask.
-    GrOpsTask(GrRecordingContext::Arenas, GrSurfaceProxyView, GrAuditTrail*);
+    GrOpsTask(GrDrawingManager*, GrRecordingContext::Arenas, GrSurfaceProxyView, GrAuditTrail*);
     ~GrOpsTask() override;
 
     GrOpsTask* asOpsTask() override { return this; }
-
-    void addClosedObserver(GrOpsTaskClosedObserver* observer) {
-        SkASSERT(observer);
-        fClosedObservers.push_back(observer);
-    }
-
-    void removeClosedObserver(GrOpsTaskClosedObserver* observer);
 
     bool isEmpty() const { return fOpChains.empty(); }
 
     /**
      * Empties the draw buffer of any queued up draws.
      */
-    void endFlush() override;
+    void endFlush(GrDrawingManager*) override;
 
     void onPrePrepare(GrRecordingContext*) override;
     /**
@@ -88,11 +70,11 @@ public:
         fSampledProxies.push_back(proxy);
     }
 
-    void addOp(std::unique_ptr<GrOp> op, GrTextureResolveManager textureResolveManager,
-               const GrCaps& caps) {
-        auto addDependency = [ textureResolveManager, &caps, this ] (
-                GrSurfaceProxy* p, GrMipMapped mipmapped) {
-            this->addDependency(p, mipmapped, textureResolveManager, caps);
+    void addOp(GrDrawingManager* drawingMgr, GrOp::Owner op,
+               GrTextureResolveManager textureResolveManager, const GrCaps& caps) {
+        auto addDependency = [ drawingMgr, textureResolveManager, &caps, this ] (
+                GrSurfaceProxy* p, GrMipmapped mipmapped) {
+            this->addDependency(drawingMgr, p, mipmapped, textureResolveManager, caps);
         };
 
         op->visitProxies(addDependency);
@@ -100,26 +82,35 @@ public:
         this->recordOp(std::move(op), GrProcessorSet::EmptySetAnalysis(), nullptr, nullptr, caps);
     }
 
-    void addWaitOp(std::unique_ptr<GrOp> op, GrTextureResolveManager textureResolveManager,
-                   const GrCaps& caps) {
-        fHasWaitOp = true;
-        this->addOp(std::move(op), textureResolveManager, caps);
-    }
-
-    void addDrawOp(std::unique_ptr<GrDrawOp> op, const GrProcessorSet::Analysis& processorAnalysis,
+    void addDrawOp(GrDrawingManager* drawingMgr, GrOp::Owner op,
+                   const GrProcessorSet::Analysis& processorAnalysis,
                    GrAppliedClip&& clip, const DstProxyView& dstProxyView,
                    GrTextureResolveManager textureResolveManager, const GrCaps& caps) {
-        auto addDependency = [ textureResolveManager, &caps, this ] (
-                GrSurfaceProxy* p, GrMipMapped mipmapped) {
+        auto addDependency = [ drawingMgr, textureResolveManager, &caps, this ] (
+                GrSurfaceProxy* p, GrMipmapped mipmapped) {
             this->addSampledTexture(p);
-            this->addDependency(p, mipmapped, textureResolveManager, caps);
+            this->addDependency(drawingMgr, p, mipmapped, textureResolveManager, caps);
         };
 
         op->visitProxies(addDependency);
         clip.visitProxies(addDependency);
         if (dstProxyView.proxy()) {
-            this->addSampledTexture(dstProxyView.proxy());
-            addDependency(dstProxyView.proxy(), GrMipMapped::kNo);
+            if (GrDstSampleTypeUsesTexture(dstProxyView.dstSampleType())) {
+                this->addSampledTexture(dstProxyView.proxy());
+            }
+            addDependency(dstProxyView.proxy(), GrMipmapped::kNo);
+            if (this->target(0).proxy() == dstProxyView.proxy()) {
+                // Since we are sampling and drawing to the same surface we will need to use
+                // texture barriers.
+                SkASSERT(GrDstSampleTypeDirectlySamplesDst(dstProxyView.dstSampleType()));
+                fRenderPassXferBarriers |= GrXferBarrierFlags::kTexture;
+            }
+            SkASSERT(dstProxyView.dstSampleType() != GrDstSampleType::kAsInputAttachment ||
+                     dstProxyView.offset().isZero());
+        }
+
+        if (processorAnalysis.usesNonCoherentHWBlending()) {
+            fRenderPassXferBarriers |= GrXferBarrierFlags::kBlend;
         }
 
         this->recordOp(std::move(op), processorAnalysis, clip.doesClip() ? &clip : nullptr,
@@ -129,13 +120,13 @@ public:
     void discard();
 
 #ifdef SK_DEBUG
-    void dump(bool printDependencies) const override;
-    const char* name() const final { return "Ops"; }
     int numClips() const override { return fNumClips; }
     void visitProxies_debugOnly(const GrOp::VisitProxyFunc&) const override;
 #endif
 
 #if GR_TEST_UTILS
+    void dump(bool printDependencies) const override;
+    const char* name() const final { return "Ops"; }
     int numOpChains() const { return fOpChains.count(); }
     const GrOp* getChain(int index) const { return fOpChains[index].head(); }
 #endif
@@ -196,15 +187,16 @@ private:
 
     class OpChain {
     public:
-        OpChain(const OpChain&) = delete;
-        OpChain& operator=(const OpChain&) = delete;
-        OpChain(std::unique_ptr<GrOp>, GrProcessorSet::Analysis, GrAppliedClip*,
-                const DstProxyView*);
-
+        OpChain(GrOp::Owner, GrProcessorSet::Analysis, GrAppliedClip*, const DstProxyView*);
         ~OpChain() {
             // The ops are stored in a GrMemoryPool and must be explicitly deleted via the pool.
             SkASSERT(fList.empty());
         }
+
+        OpChain(const OpChain&) = delete;
+        OpChain& operator=(const OpChain&) = delete;
+        OpChain(OpChain&&) = default;
+        OpChain& operator=(OpChain&&) = default;
 
         void visitProxies(const GrOp::VisitProxyFunc&) const;
 
@@ -214,8 +206,8 @@ private:
         const DstProxyView& dstProxyView() const { return fDstProxyView; }
         const SkRect& bounds() const { return fBounds; }
 
-        // Deletes all the ops in the chain via the pool.
-        void deleteOps(GrOpMemoryPool* pool);
+        // Deletes all the ops in the chain.
+        void deleteOps();
 
         // Attempts to move the ops from the passed chain to this chain at the head. Also attempts
         // to merge ops between the chains. Upon success the passed chain is empty.
@@ -225,9 +217,9 @@ private:
         // Attempts to add 'op' to this chain either by merging or adding to the tail. Returns
         // 'op' to the caller upon failure, otherwise null. Fails when the op and chain aren't of
         // the same op type, have different clips or dst proxies.
-        std::unique_ptr<GrOp> appendOp(std::unique_ptr<GrOp> op, GrProcessorSet::Analysis,
-                                       const DstProxyView*, const GrAppliedClip*, const GrCaps&,
-                                       GrRecordingContext::Arenas*, GrAuditTrail*);
+        GrOp::Owner appendOp(GrOp::Owner op, GrProcessorSet::Analysis,
+                             const DstProxyView*, const GrAppliedClip*, const GrCaps&,
+                             GrRecordingContext::Arenas*, GrAuditTrail*);
 
         void setSkipExecuteFlag() { fSkipExecute = true; }
         bool shouldExecute() const {
@@ -238,7 +230,7 @@ private:
         class List {
         public:
             List() = default;
-            List(std::unique_ptr<GrOp>);
+            List(GrOp::Owner);
             List(List&&);
             List& operator=(List&& that);
 
@@ -246,16 +238,16 @@ private:
             GrOp* head() const { return fHead.get(); }
             GrOp* tail() const { return fTail; }
 
-            std::unique_ptr<GrOp> popHead();
-            std::unique_ptr<GrOp> removeOp(GrOp* op);
-            void pushHead(std::unique_ptr<GrOp> op);
-            void pushTail(std::unique_ptr<GrOp>);
+            GrOp::Owner popHead();
+            GrOp::Owner removeOp(GrOp* op);
+            void pushHead(GrOp::Owner op);
+            void pushTail(GrOp::Owner);
 
             void validate() const;
 
         private:
-            std::unique_ptr<GrOp> fHead;
-            GrOp* fTail = nullptr;
+            GrOp::Owner fHead{nullptr};
+            GrOp* fTail{nullptr};
         };
 
         void validate() const;
@@ -283,13 +275,14 @@ private:
 
     void gatherProxyIntervals(GrResourceAllocator*) const override;
 
-    void recordOp(std::unique_ptr<GrOp>, GrProcessorSet::Analysis, GrAppliedClip*,
+    void recordOp(GrOp::Owner, GrProcessorSet::Analysis, GrAppliedClip*,
                   const DstProxyView*, const GrCaps& caps);
 
     void forwardCombine(const GrCaps&);
 
     ExpectedOutcome onMakeClosed(const GrCaps& caps, SkIRect* targetUpdateBounds) override;
 
+    friend class OpsTaskTestingAccess;
     friend class GrRenderTargetContextPriv; // for stencil clip state. TODO: this is invasive
 
     // The RTC and OpsTask have to work together to handle buffer clears. In most cases, buffer
@@ -304,8 +297,6 @@ private:
     GrRecordingContext::Arenas fArenas;
     GrAuditTrail*              fAuditTrail;
 
-    SkSTArray<2, GrOpsTaskClosedObserver*, true> fClosedObservers;
-
     GrLoadOp fColorLoadOp = GrLoadOp::kLoad;
     SkPMColor4f fLoadClearColor = SK_PMColor4fTRANSPARENT;
     StencilContent fInitialStencilContent = StencilContent::kDontCare;
@@ -313,17 +304,16 @@ private:
 
     uint32_t fLastClipStackGenID = SK_InvalidUniqueID;
     SkIRect fLastDevClipBounds;
-    int fLastClipNumAnalyticFPs;
+    int fLastClipNumAnalyticElements;
 
-    // We must track if we have a wait op so that we don't delete the op when we have a full clear.
-    bool fHasWaitOp = false;
+    GrXferBarrierFlags fRenderPassXferBarriers = GrXferBarrierFlags::kNone;
 
     // For ops/opsTask we have mean: 5 stdDev: 28
-    SkSTArray<25, OpChain, true> fOpChains;
+    SkSTArray<25, OpChain> fOpChains;
 
     // MDB TODO: 4096 for the first allocation of the clip space will be huge overkill.
     // Gather statistics to determine the correct size.
-    SkArenaAlloc fClipAllocator{4096};
+    SkArenaAllocWithReset fClipAllocator{4096};
     SkDEBUGCODE(int fNumClips;)
 
     // TODO: We could look into this being a set if we find we're adding a lot of duplicates that is

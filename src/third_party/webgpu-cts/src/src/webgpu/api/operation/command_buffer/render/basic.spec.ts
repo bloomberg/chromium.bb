@@ -2,12 +2,12 @@ export const description = `
 Basic command buffer rendering tests.
 `;
 
-import { TestGroup } from '../../../../../common/framework/test_group.js';
+import { makeTestGroup } from '../../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../../gpu_test.js';
 
-export const g = new TestGroup(GPUTest);
+export const g = makeTestGroup(GPUTest);
 
-g.test('clear', async t => {
+g.test('clear').fn(async t => {
   const dst = t.device.createBuffer({
     size: 4,
     usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,

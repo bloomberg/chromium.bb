@@ -5,11 +5,12 @@
 #include "chrome/browser/sync/test/integration/cookie_helper.h"
 
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -26,9 +27,12 @@ const char kSigninCookieName[] = "SAPISID";
 void AddSigninCookie(Profile* profile) {
   DCHECK(profile);
   net::CanonicalCookie cookie(
-      kSigninCookieName, std::string(), ".google.com", "/", base::Time(),
-      base::Time(), base::Time(), /*secure=*/true, false,
-      net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT);
+      kSigninCookieName, std::string(), ".google.com", "/",
+      /*creation=*/base::Time(),
+      /*expires=*/base::Time(), /*last_access=*/base::Time(), /*secure=*/true,
+      /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
+      net::COOKIE_PRIORITY_DEFAULT,
+      /*same_party=*/false);
 
   network::mojom::CookieManager* cookie_manager =
       content::BrowserContext::GetDefaultStoragePartition(profile)
@@ -40,9 +44,7 @@ void AddSigninCookie(Profile* profile) {
       cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
       net::CookieOptions(),
       base::BindLambdaForTesting(
-          [&run_loop](net::CanonicalCookie::CookieInclusionStatus) {
-            run_loop.Quit();
-          }));
+          [&run_loop](net::CookieAccessResult) { run_loop.Quit(); }));
   run_loop.Run();
 }
 

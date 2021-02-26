@@ -62,6 +62,10 @@ class COMPONENT_EXPORT(EVDEV) InputDeviceFactoryEvdev {
   // LED state.
   void SetCapsLockLed(bool enabled);
 
+  // Handle gamepad force feedback effects.
+  void PlayVibrationEffect(int id, uint8_t amplitude, uint16_t duration_millis);
+  void StopVibration(int id);
+
   // Bits from InputController that have to be answered on IO.
   void UpdateInputDeviceSettings(const InputDeviceSettingsEvdev& settings);
   void GetTouchDeviceStatus(InputController::GetTouchDeviceStatusReply reply);
@@ -82,6 +86,7 @@ class COMPONENT_EXPORT(EVDEV) InputDeviceFactoryEvdev {
 
   // Sync input_device_settings_ to attached devices.
   void ApplyInputDeviceSettings();
+  void ApplyRelativePointingDeviceSettings(EventDeviceType type);
   void ApplyCapsLockLed();
 
   // Policy for device enablement.

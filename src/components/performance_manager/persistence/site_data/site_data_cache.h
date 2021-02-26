@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/performance_manager/persistence/site_data/site_data_reader.h"
 #include "components/performance_manager/persistence/site_data/site_data_writer.h"
 #include "components/performance_manager/persistence/site_data/tab_visibility.h"
+#include "components/performance_manager/public/persistence/site_data/site_data_reader.h"
 #include "url/origin.h"
 
 namespace performance_manager {
@@ -26,17 +26,15 @@ class SiteDataCache {
       const url::Origin& origin) = 0;
 
   // Returns a SiteDataWriter for the given origin.
-  //
-  // |tab_visibility| indicates the current visibility of the tab. The writer
-  // starts in an unloaded state, NotifyTabLoaded() must be called explicitly
-  // afterwards if the site is loaded.
   virtual std::unique_ptr<SiteDataWriter> GetWriterForOrigin(
-      const url::Origin& origin,
-      performance_manager::TabVisibility tab_visibility) = 0;
+      const url::Origin& origin) = 0;
 
-  // Indicate if the SiteDataWriter served by this data cache
-  // actually persist information.
-  virtual bool IsRecordingForTesting() = 0;
+  // Indicate if the SiteDataWriter served by this data cache actually persists
+  // information.
+  virtual bool IsRecording() const = 0;
+
+  // Returns the number of element in the cache.
+  virtual int Size() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SiteDataCache);

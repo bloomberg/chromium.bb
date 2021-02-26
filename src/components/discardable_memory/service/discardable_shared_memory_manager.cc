@@ -15,13 +15,13 @@
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/shared_memory_tracker.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -33,7 +33,7 @@
 #include "components/discardable_memory/common/discardable_shared_memory_heap.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -176,7 +176,7 @@ int64_t GetDefaultMemoryLimit() {
     max_default_memory_limit /= 8;
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   base::FilePath shmem_dir;
   if (base::GetShmemTempDir(false, &shmem_dir)) {
     int64_t shmem_dir_amount_of_free_space =
@@ -228,12 +228,13 @@ DiscardableSharedMemoryManager::DiscardableSharedMemoryManager()
       memory_limit_(default_memory_limit_),
       bytes_allocated_(0),
       memory_pressure_listener_(new base::MemoryPressureListener(
+          FROM_HERE,
           base::BindRepeating(&DiscardableSharedMemoryManager::OnMemoryPressure,
                               base::Unretained(this)))),
       // Current thread might not have a task runner in tests.
       enforce_memory_policy_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       enforce_memory_policy_pending_(false),
-      mojo_thread_message_loop_(base::MessageLoopCurrent::GetNull()) {
+      mojo_thread_message_loop_(base::CurrentThread::GetNull()) {
   DCHECK(!g_instance)
       << "A DiscardableSharedMemoryManager already exists in this process.";
   g_instance = this;
@@ -253,9 +254,9 @@ DiscardableSharedMemoryManager::~DiscardableSharedMemoryManager() {
   if (mojo_thread_message_loop_) {
     // TODO(etiennep): Get rid of mojo_thread_message_loop_ entirely.
     DCHECK(mojo_thread_task_runner_);
-    if (mojo_thread_message_loop_ == base::MessageLoopCurrent::Get()) {
+    if (mojo_thread_message_loop_ == base::CurrentThread::Get()) {
       mojo_thread_message_loop_->RemoveDestructionObserver(this);
-      mojo_thread_message_loop_ = base::MessageLoopCurrent::GetNull();
+      mojo_thread_message_loop_ = base::CurrentThread::GetNull();
       mojo_thread_task_runner_ = nullptr;
     } else {
       // If mojom::DiscardableSharedMemoryManager implementation is running in
@@ -287,10 +288,10 @@ DiscardableSharedMemoryManager* DiscardableSharedMemoryManager::Get() {
 void DiscardableSharedMemoryManager::Bind(
     mojo::PendingReceiver<mojom::DiscardableSharedMemoryManager> receiver) {
   DCHECK(!mojo_thread_message_loop_ ||
-         mojo_thread_message_loop_ == base::MessageLoopCurrent::Get());
+         mojo_thread_message_loop_ == base::CurrentThread::Get());
   if (!mojo_thread_task_runner_) {
     DCHECK(!mojo_thread_message_loop_);
-    mojo_thread_message_loop_ = base::MessageLoopCurrent::Get();
+    mojo_thread_message_loop_ = base::CurrentThread::Get();
     mojo_thread_message_loop_->AddDestructionObserver(this);
     mojo_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
@@ -640,7 +641,7 @@ void DiscardableSharedMemoryManager::InvalidateMojoThreadWeakPtrs(
   DCHECK(mojo_thread_task_runner_->RunsTasksInCurrentSequence());
   mojo_thread_weak_ptr_factory_.InvalidateWeakPtrs();
   mojo_thread_message_loop_->RemoveDestructionObserver(this);
-  mojo_thread_message_loop_ = base::MessageLoopCurrent::GetNull();
+  mojo_thread_message_loop_ = base::CurrentThread::GetNull();
   if (event)
     event->Signal();
 }

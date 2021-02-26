@@ -17,8 +17,6 @@ class WorkerNavigator;
 
 class WorkerNavigatorUSB final : public GarbageCollected<WorkerNavigatorUSB>,
                                  public Supplement<WorkerNavigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorUSB);
-
  public:
   static const char kSupplementName[];
 
@@ -31,7 +29,7 @@ class WorkerNavigatorUSB final : public GarbageCollected<WorkerNavigatorUSB>,
 
   explicit WorkerNavigatorUSB(WorkerNavigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<USB> usb_;

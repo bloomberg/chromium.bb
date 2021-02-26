@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/apple/tweak_info_plist.gni")
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/ios/rules.gni")
 import("//build/config/locales.gni")
@@ -24,7 +25,7 @@ group("all_tests") {
 
 config("config") {
   defines = [ "CWV_IMPLEMENTATION" ]
-  libs = [
+  frameworks = [
     "CoreGraphics.framework",
     "Foundation.framework",
     "MobileCoreServices.framework",
@@ -160,8 +161,6 @@ source_set("web_view_sources") {
     "internal/metrics/cwv_metrics_provider.mm",
     "internal/metrics/cwv_metrics_provider_internal.h",
     "internal/passwords/cwv_password.mm",
-    "internal/passwords/cwv_password_controller.h",
-    "internal/passwords/cwv_password_controller.mm",
     "internal/passwords/cwv_password_internal.h",
     "internal/passwords/web_view_account_password_store_factory.h",
     "internal/passwords/web_view_account_password_store_factory.mm",
@@ -173,6 +172,8 @@ source_set("web_view_sources") {
     "internal/passwords/web_view_password_manager_driver.mm",
     "internal/passwords/web_view_password_manager_log_router_factory.h",
     "internal/passwords/web_view_password_manager_log_router_factory.mm",
+    "internal/passwords/web_view_password_requirements_service_factory.h",
+    "internal/passwords/web_view_password_requirements_service_factory.mm",
     "internal/passwords/web_view_password_store_factory.h",
     "internal/passwords/web_view_password_store_factory.mm",
     "internal/pref_names.h",
@@ -204,6 +205,8 @@ source_set("web_view_sources") {
     "internal/sync/web_view_profile_sync_service_factory.mm",
     "internal/sync/web_view_sync_client.h",
     "internal/sync/web_view_sync_client.mm",
+    "internal/sync/web_view_sync_invalidations_service_factory.h",
+    "internal/sync/web_view_sync_invalidations_service_factory.mm",
     "internal/translate/cwv_translation_controller.mm",
     "internal/translate/cwv_translation_controller_internal.h",
     "internal/translate/cwv_translation_language.mm",
@@ -271,6 +274,7 @@ source_set("web_view_sources") {
     "//components/language/ios/browser",
     "//components/leveldb_proto",
     "//components/metrics:library_support",
+    "//components/metrics/demographics",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:affiliation",
     "//components/password_manager/core/common",
@@ -278,6 +282,7 @@ source_set("web_view_sources") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/proxy_config",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/security_state/ios",
     "//components/signin/core/browser",
     "//components/signin/ios/browser",
@@ -303,6 +308,7 @@ source_set("web_view_sources") {
     "//ios/components/webui:url_constants",
     "//ios/components/webui/sync_internals",
     "//ios/net",
+    "//ios/third_party/webkit",
     "//ios/web",
     "//ios/web/common",
     "//ios/web/common:user_agent",
@@ -327,8 +333,32 @@ source_set("web_view_sources") {
   ]
 }
 
-# Generate the umbrella header.
-action("web_view_umbrella_header") {
+# Two umbrella headers may be generated:
+# - One that matches ios_web_view_output_name, e.g. CronetChromeWebView.h
+# - Another that is hardcoded as ChromeWebView.h
+#
+# This is needed to fix the issue where the generated .modulemap points to a
+# non-existent umbrella header.
+#
+# TODO(crbug.com/1084855): Remove :web_view_umbrella_header_old after all
+# clients migrate off of it.
+if (ios_web_view_generate_extra_umbrella_header) {
+  action("web_view_umbrella_header") {
+    script = "//build/config/ios/generate_umbrella_header.py"
+
+    full_header_path = target_gen_dir + "/" + ios_web_view_output_name + ".h"
+    outputs = [ full_header_path ]
+
+    args = [
+      "--output-path",
+      rebase_path(full_header_path, root_build_dir),
+    ]
+
+    args += rebase_path(ios_web_view_public_headers, root_build_dir)
+  }
+}
+
+action("web_view_umbrella_header_old") {
   script = "//build/config/ios/generate_umbrella_header.py"
 
   full_header_path = target_gen_dir + "/ChromeWebView.h"
@@ -342,12 +372,19 @@ action("web_view_umbrella_header") {
   args += rebase_path(ios_web_view_public_headers, root_build_dir)
 }
 
+tweak_info_plist("info_plist") {
+  info_plists = [ "Info.plist" ]
+}
+
 ios_framework_bundle("web_view") {
   output_name = ios_web_view_output_name
-  info_plist = "Info.plist"
+  info_plist_target = ":info_plist"
 
-  public_headers = ios_web_view_public_headers
-  public_headers += get_target_outputs(":web_view_umbrella_header")
+  public_headers = get_target_outputs(":web_view_umbrella_header_old")
+  if (ios_web_view_generate_extra_umbrella_header) {
+    public_headers += get_target_outputs(":web_view_umbrella_header")
+  }
+  public_headers += ios_web_view_public_headers
   if (ios_web_view_include_cronet) {
     public_headers += [ "//components/cronet/ios/Cronet.h" ]
     public_headers += grpc_public_headers
@@ -362,10 +399,14 @@ ios_framework_bundle("web_view") {
 
   deps = [
     ":web_view_sources",
-    ":web_view_umbrella_header",
+    "//ios/third_party/webkit",
     "//ios/web/public/init",
     "//testing/gtest:ios_coverage_utils",
   ]
+  deps += [ ":web_view_umbrella_header_old" ]
+  if (ios_web_view_generate_extra_umbrella_header) {
+    deps += [ ":web_view_umbrella_header" ]
+  }
   if (ios_web_view_include_cronet) {
     deps += [ "//components/cronet/ios:cronet_sources" ]
   }
@@ -413,8 +454,6 @@ test("ios_web_view_unittests") {
     "internal/cwv_ssl_status_unittest.mm",
     "internal/cwv_web_view_configuration_unittest.mm",
     "internal/metrics/cwv_metrics_provider_unittest.mm",
-    "internal/passwords/cwv_password_controller_fake.h",
-    "internal/passwords/cwv_password_controller_fake.mm",
     "internal/passwords/cwv_password_unittest.mm",
     "internal/passwords/web_view_password_manager_client_unittest.mm",
     "internal/signin/cwv_identity_unittest.mm",
@@ -437,7 +476,6 @@ test("ios_web_view_unittests") {
     "//components/autofill/core/browser:test_support",
     "//components/autofill/ios/browser:test_support",
     "//components/autofill/ios/form_util:test_support",
-    "//components/browser_sync:test_support",
     "//components/invalidation/impl:test_support",
     "//components/password_manager/core/browser:test_support",
     "//components/prefs:test_support",
@@ -524,6 +562,7 @@ repack("repack_resources") {
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/sync_driver_resources.pak",
     "$root_gen_dir/ios/web/ios_web_resources.pak",
+    "$root_gen_dir/ui/resources/webui_generated_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
   ]
   output = "$target_gen_dir/web_view_resources.pak"
@@ -596,8 +635,8 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
 
       outputs = [ _output ]
 
-      args = [ rebase_path(_output, root_out_dir) ] +
-             rebase_path(_dsyms, root_out_dir)
+      args = [ rebase_path(_output, root_build_dir) ] +
+             rebase_path(_dsyms, root_build_dir)
 
       deps = [ ":web_view" ]
     }

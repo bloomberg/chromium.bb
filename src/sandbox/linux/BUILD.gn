@@ -12,12 +12,12 @@ if (is_android) {
 }
 
 declare_args() {
-  compile_suid_client = is_linux
+  compile_suid_client = is_linux || is_chromeos
 
-  compile_credentials = is_linux
+  compile_credentials = is_linux || is_chromeos
 
   # On Android, use plain GTest.
-  use_base_test_suite = is_linux
+  use_base_test_suite = is_linux || is_chromeos
 }
 
 if (is_nacl_nonsfi) {
@@ -96,6 +96,7 @@ source_set("sandbox_linux_unittests_sources") {
     "syscall_broker/broker_file_permission_unittest.cc",
     "syscall_broker/broker_process_unittest.cc",
     "syscall_broker/broker_simple_message_unittest.cc",
+    "syscall_broker/remote_syscall_arg_handler_unittest.cc",
     "tests/main.cc",
     "tests/scoped_temporary_file.cc",
     "tests/scoped_temporary_file.h",
@@ -109,6 +110,7 @@ source_set("sandbox_linux_unittests_sources") {
     ":sandbox_linux_test_utils",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//build:chromeos_buildflags",
     "//testing/gtest",
   ]
 
@@ -193,7 +195,10 @@ action("bpf_dsl_golden") {
 }
 
 test("sandbox_linux_unittests") {
-  deps = [ ":sandbox_linux_unittests_sources" ]
+  deps = [
+    ":sandbox_linux_unittests_sources",
+    "//sandbox/policy:tests",
+  ]
   data_deps = [ "//testing/buildbot/filters:sandbox_linux_unittests_filters" ]
   if (is_android) {
     use_raw_android_executable = true
@@ -221,8 +226,6 @@ component("seccomp_bpf") {
     "bpf_dsl/trap_registry.h",
     "seccomp-bpf-helpers/baseline_policy.cc",
     "seccomp-bpf-helpers/baseline_policy.h",
-    "seccomp-bpf-helpers/baseline_policy_android.cc",
-    "seccomp-bpf-helpers/baseline_policy_android.h",
     "seccomp-bpf-helpers/sigsys_handlers.cc",
     "seccomp-bpf-helpers/sigsys_handlers.h",
     "seccomp-bpf-helpers/syscall_parameters_restrictions.cc",
@@ -248,7 +251,16 @@ component("seccomp_bpf") {
     ":sandbox_services",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//build:chromeos_buildflags",
+    "//sandbox:sandbox_buildflags",
   ]
+
+  if (is_android) {
+    sources += [
+      "seccomp-bpf-helpers/baseline_policy_android.cc",
+      "seccomp-bpf-helpers/baseline_policy_android.h",
+    ]
+  }
 
   if (is_nacl_nonsfi) {
     cflags = [ "-fgnu-inline-asm" ]
@@ -293,7 +305,7 @@ if (is_android) {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   # The setuid sandbox for Linux.
   executable("chrome_sandbox") {
     sources = [
@@ -347,6 +359,10 @@ component("sandbox_services") {
     "syscall_broker/broker_process.h",
     "syscall_broker/broker_simple_message.cc",
     "syscall_broker/broker_simple_message.h",
+    "syscall_broker/remote_syscall_arg_handler.cc",
+    "syscall_broker/remote_syscall_arg_handler.h",
+    "syscall_broker/syscall_dispatcher.cc",
+    "syscall_broker/syscall_dispatcher.h",
   ]
 
   defines = [ "SANDBOX_IMPLEMENTATION" ]
@@ -396,6 +412,10 @@ component("sandbox_services") {
       "syscall_broker/broker_process.h",
       "syscall_broker/broker_simple_message.cc",
       "syscall_broker/broker_simple_message.h",
+      "syscall_broker/remote_syscall_arg_handler.cc",
+      "syscall_broker/remote_syscall_arg_handler.h",
+      "syscall_broker/syscall_dispatcher.cc",
+      "syscall_broker/syscall_dispatcher.h",
     ]
   } else if (!is_android) {
     sources += [
@@ -413,6 +433,8 @@ source_set("sandbox_services_headers") {
     "system_headers/i386_linux_ucontext.h",
     "system_headers/linux_filter.h",
     "system_headers/linux_futex.h",
+    "system_headers/linux_prctl.h",
+    "system_headers/linux_ptrace.h",
     "system_headers/linux_seccomp.h",
     "system_headers/linux_signal.h",
     "system_headers/linux_syscalls.h",

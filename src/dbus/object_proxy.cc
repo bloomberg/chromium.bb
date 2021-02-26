@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -561,7 +561,6 @@ DBusHandlerResult ObjectProxy::HandleMessage(DBusConnection* connection,
         FROM_HERE, base::BindOnce(&ObjectProxy::RunMethod, this, start_time,
                                   iter->second, released_signal));
   } else {
-    const base::TimeTicks start_time = base::TimeTicks::Now();
     // If the D-Bus thread is not used, just call the callback on the
     // current thread. Transfer the ownership of |signal| to RunMethod().
     Signal* released_signal = signal.release();

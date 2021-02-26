@@ -11,7 +11,6 @@
 
 namespace views {
 
-class ButtonListener;
 class MenuButtonController;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,10 +24,9 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
  public:
   METADATA_HEADER(MenuButton);
 
-  // Create a Button.
-  MenuButton(const base::string16& text,
-             ButtonListener* button_listener,
-             int button_context = style::CONTEXT_BUTTON);
+  explicit MenuButton(PressedCallback callback = PressedCallback(),
+                      const base::string16& text = base::string16(),
+                      int button_context = style::CONTEXT_BUTTON);
   ~MenuButton() override;
 
   MenuButtonController* button_controller() const {

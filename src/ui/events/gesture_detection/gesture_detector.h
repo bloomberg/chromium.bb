@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/velocity_tracker_state.h"
@@ -81,6 +80,10 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
     // is pressed, given that the longpress timeout is still active.
     bool stylus_button_accelerated_longpress_enabled;
 
+    // Whether a longpress should be generated immediately when a pointer is
+    // deep-pressing, given that the longpress timeout is still active.
+    bool deep_press_accelerated_longpress_enabled;
+
     VelocityTracker::Strategy velocity_tracker_strategy;
   };
 
@@ -96,7 +99,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   // Note: The listener must never be changed while |is_double_tapping| is true.
   void SetDoubleTapListener(DoubleTapListener* double_tap_listener);
 
-  bool has_doubletap_listener() const { return double_tap_listener_ != NULL; }
+  bool has_doubletap_listener() const { return !!double_tap_listener_; }
 
   bool is_double_tapping() const { return is_double_tapping_; }
 
@@ -116,7 +119,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   void OnShowPressTimeout();
   void OnLongPressTimeout();
   void OnTapTimeout();
-  void OnStylusButtonPress(const MotionEvent& ev);
+  void ActivateLongPressGesture(const MotionEvent& ev);
   void Cancel();
   void CancelTaps();
   bool IsRepeatedTap(const MotionEvent& first_down,
@@ -178,6 +181,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   float down_focus_y_;
 
   bool stylus_button_accelerated_longpress_enabled_;
+  bool deep_press_accelerated_longpress_enabled_;
   bool longpress_enabled_;
   bool showpress_enabled_;
   bool swipe_enabled_;

@@ -17,8 +17,8 @@
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service.h"
 #include "chrome/browser/media/router/discovery/dial/dial_registry.h"
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
-#include "chrome/common/media_router/discovery/media_sink_service_base.h"
-#include "chrome/common/media_router/discovery/media_sink_service_util.h"
+#include "components/media_router/common/discovery/media_sink_service_base.h"
+#include "components/media_router/common/discovery/media_sink_service_util.h"
 
 namespace media_router {
 
@@ -37,9 +37,9 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // |app_name|: app name, e.g. YouTube.
   // TODO(imcheng): Move sink query logic into DialAppDiscoveryService and
   // have it use MediaSinkServiceBase::Observer to observe sinks.
-  using SinkQueryByAppFunc = void(const std::string& app_name);
-  using SinkQueryByAppCallback = base::RepeatingCallback<SinkQueryByAppFunc>;
-  using SinkQueryByAppCallbackList = base::CallbackList<SinkQueryByAppFunc>;
+  using SinkQueryByAppCallbackList =
+      base::RepeatingCallbackList<void(const std::string&)>;
+  using SinkQueryByAppCallback = SinkQueryByAppCallbackList::CallbackType;
   using SinkQueryByAppSubscription =
       std::unique_ptr<SinkQueryByAppCallbackList::Subscription>;
 
@@ -83,6 +83,8 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // Marked virtual for tests.
   virtual std::vector<MediaSinkInternal> GetAvailableSinks(
       const std::string& app_name) const;
+
+  void BindLogger(mojo::PendingRemote<mojom::Logger> pending_remote);
 
  protected:
   // Does not take ownership of |dial_registry|.
@@ -190,6 +192,11 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // Set of sink queries keyed by app name.
   base::flat_map<std::string, std::unique_ptr<SinkQueryByAppCallbackList>>
       sink_queries_;
+
+  // Mojo Remote to the logger owned by the Media Router. The Remote is not
+  // bound until |BindLogger()| is called. Always check if |logger_.is_bound()|
+  // is true before using.
+  mojo::Remote<mojom::Logger> logger_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

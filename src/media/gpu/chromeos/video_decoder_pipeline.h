@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
@@ -24,13 +23,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace gpu {
-class GpuMemoryBufferFactory;
-}  // namespace gpu
-
 namespace media {
 
 class DmabufVideoFramePool;
+class MediaLog;
 
 // An interface that defines methods to operate on video decoder components
 // inside the VideoDecoderPipeline. The interface is similar to
@@ -42,11 +38,11 @@ class DmabufVideoFramePool;
 // Note: All methods and callbacks should be called on the same sequence.
 class MEDIA_GPU_EXPORT DecoderInterface {
  public:
-  using InitCB = base::OnceCallback<void(::media::Status status)>;
+  using InitCB = base::OnceCallback<void(Status status)>;
   // TODO(crbug.com/998413): Replace VideoFrame to GpuMemoryBuffer-based
   // instance.
   using OutputCB = base::RepeatingCallback<void(scoped_refptr<VideoFrame>)>;
-  using DecodeCB = base::OnceCallback<void(DecodeStatus)>;
+  using DecodeCB = VideoDecoder::DecodeCB;
 
   // Client interface of DecoderInterface.
   class MEDIA_GPU_EXPORT Client {
@@ -63,10 +59,12 @@ class MEDIA_GPU_EXPORT DecoderInterface {
     // flushed.
     virtual void PrepareChangeResolution() = 0;
 
-    // Return a valid format for |decoder_| output from given |candidates| and
-    // the visible rect.
+    // Return a valid format and size for |decoder_| output from given
+    // |candidates| and the visible rect. The size might be modified from the
+    // ones provided originally to accommodate the needs of the pipeline.
     // Return base::nullopt if no valid format is found.
-    virtual base::Optional<Fourcc> PickDecoderOutputFormat(
+    virtual base::Optional<std::pair<Fourcc, gfx::Size>>
+    PickDecoderOutputFormat(
         const std::vector<std::pair<Fourcc, gfx::Size>>& candidates,
         const gfx::Rect& visible_rect) = 0;
   };
@@ -87,6 +85,7 @@ class MEDIA_GPU_EXPORT DecoderInterface {
   // TODO(akahuang): Add an error notification method to handle misused case.
   // 4) |init_cb| may be called before this returns.
   virtual void Initialize(const VideoDecoderConfig& config,
+                          CdmContext* cdm_context,
                           InitCB init_cb,
                           const OutputCB& output_cb) = 0;
 
@@ -130,21 +129,22 @@ class MEDIA_GPU_EXPORT DecoderInterface {
 class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
                                               public DecoderInterface::Client {
  public:
-  // Function signature for creating VideoDecoder.
-  using CreateVDFunc = std::unique_ptr<DecoderInterface> (*)(
+  using CreateDecoderFunction = std::unique_ptr<DecoderInterface> (*)(
       scoped_refptr<base::SequencedTaskRunner>,
       base::WeakPtr<DecoderInterface::Client>);
-  using GetCreateVDFunctionsCB =
-      base::RepeatingCallback<base::queue<CreateVDFunc>(CreateVDFunc)>;
+  using CreateDecoderFunctions = std::list<CreateDecoderFunction>;
+  using GetCreateDecoderFunctionsCB =
+      base::RepeatingCallback<CreateDecoderFunctions()>;
 
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
       std::unique_ptr<VideoFrameConverter> frame_converter,
-      gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
-      GetCreateVDFunctionsCB get_create_vd_functions_cb);
+      std::unique_ptr<MediaLog> media_log,
+      GetCreateDecoderFunctionsCB get_create_decoder_functions_cb);
 
   ~VideoDecoderPipeline() override;
+  static void DestroyAsync(std::unique_ptr<VideoDecoderPipeline>);
 
   // VideoDecoder implementation
   std::string GetDisplayName() const override;
@@ -152,7 +152,6 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   int GetMaxDecodeRequests() const override;
   bool NeedsBitstreamConversion() const override;
   bool CanReadWithoutStalling() const override;
-
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
@@ -168,40 +167,35 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   // After picking a format, it instantiates an |image_processor_| if none of
   // format in |candidates| is renderable and an ImageProcessor can convert a
   // candidate to renderable format.
-  base::Optional<Fourcc> PickDecoderOutputFormat(
+  base::Optional<std::pair<Fourcc, gfx::Size>> PickDecoderOutputFormat(
       const std::vector<std::pair<Fourcc, gfx::Size>>& candidates,
       const gfx::Rect& visible_rect) override;
 
  private:
-  // Get a list of the available functions for creating VideoDeocoder except
-  // |current_func| one.
-  static base::queue<CreateVDFunc> GetCreateVDFunctions(
-      CreateVDFunc current_func);
+  friend class VideoDecoderPipelineTest;
 
   VideoDecoderPipeline(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
       std::unique_ptr<VideoFrameConverter> frame_converter,
-      gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
-      GetCreateVDFunctionsCB get_create_vd_functions_cb);
-  void Destroy() override;
-  void DestroyTask();
+      GetCreateDecoderFunctionsCB get_create_decoder_functions_cb);
 
   void InitializeTask(const VideoDecoderConfig& config,
+                      CdmContext* cdm_context,
                       InitCB init_cb,
                       const OutputCB& output_cb);
   void ResetTask(base::OnceClosure closure);
   void DecodeTask(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb);
 
-  void CreateAndInitializeVD(base::queue<CreateVDFunc> create_vd_funcs,
-                             VideoDecoderConfig config,
-                             ::media::Status parent_error);
-  void OnInitializeDone(base::queue<CreateVDFunc> create_vd_funcs,
-                        VideoDecoderConfig config,
-                        ::media::Status parent_error,
-                        ::media::Status success);
+  void CreateAndInitializeVD(VideoDecoderConfig config,
+                             CdmContext* cdm_context,
+                             Status parent_error);
+  void OnInitializeDone(VideoDecoderConfig config,
+                        CdmContext* cdm_context,
+                        Status parent_error,
+                        Status status);
 
-  void OnDecodeDone(bool eos_buffer, DecodeCB decode_cb, DecodeStatus status);
+  void OnDecodeDone(bool eos_buffer, DecodeCB decode_cb, Status status);
   void OnResetDone();
   void OnError(const std::string& msg);
 
@@ -241,10 +235,6 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   // the client should be created using this pool.
   // Used on |decoder_task_runner_|.
   std::unique_ptr<DmabufVideoFramePool> main_frame_pool_;
-  // Used to generate additional frame pools for intermediate results if
-  // required. The instance is indirectly owned by GpuChildThread, therefore
-  // alive as long as the GPU process is.
-  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
 
   // The image processor is only created when the decoder cannot output frames
   // with renderable format.
@@ -254,14 +244,14 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   // |client_task_runner_|.
   std::unique_ptr<VideoFrameConverter> frame_converter_;
 
-  // The callback to get a list of function for creating DecoderInterface.
-  GetCreateVDFunctionsCB get_create_vd_functions_cb_;
-
   // The current video decoder implementation. Valid after initialization is
   // successfully done.
   std::unique_ptr<DecoderInterface> decoder_;
-  // The create function of |decoder_|. nullptr iff |decoder_| is nullptr.
-  CreateVDFunc used_create_vd_func_ = nullptr;
+
+  // |remaining_create_decoder_functions_| holds all the potential video decoder
+  // creation functions. We try them all in the given order until one succeeds.
+  // Only used after initialization on |decoder_sequence_checker_|.
+  CreateDecoderFunctions remaining_create_decoder_functions_;
 
   // Callback from the client. These callback are called on
   // |client_task_runner_|.

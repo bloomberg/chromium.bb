@@ -20,6 +20,11 @@
 #include "ui/display/display.h"
 #include "ui/gfx/animation/tween.h"
 
+namespace chromeos {
+enum class WindowPinType;
+enum class WindowStateType;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -28,11 +33,9 @@ namespace ash {
 class ClientControlledState;
 class LockWindowState;
 class TabletModeWindowState;
-enum class WindowPinType;
 class WindowState;
 class WindowStateDelegate;
 class WindowStateObserver;
-enum class WindowStateType;
 class WMEvent;
 
 // WindowState manages and defines ash specific window state and
@@ -53,7 +56,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
       base::TimeDelta::FromMilliseconds(120);
 
   // A subclass of State class represents one of the window's states
-  // that corresponds to WindowStateType in Ash environment, e.g.
+  // that corresponds to chromeos::WindowStateType in Ash environment, e.g.
   // maximized, minimized or side snapped, as subclass.
   // Each subclass defines its own behavior and transition for each WMEvent.
   class State {
@@ -64,7 +67,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     // Update WindowState based on |event|.
     virtual void OnWMEvent(WindowState* window_state, const WMEvent* event) = 0;
 
-    virtual WindowStateType GetType() const = 0;
+    virtual chromeos::WindowStateType GetType() const = 0;
 
     // Gets called when the state object became active and the managed window
     // needs to be adjusted to the State's requirement.
@@ -105,9 +108,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void SetDelegate(std::unique_ptr<WindowStateDelegate> delegate);
 
   // Returns the window's current ash state type.
-  // Refer to WindowStateType definition in wm_types.h as for why Ash
+  // Refer to chromeos::WindowStateType definition in wm_types.h as for why Ash
   // has its own state type.
-  WindowStateType GetStateType() const;
+  chromeos::WindowStateType GetStateType() const;
 
   // Predicates to check window state.
   bool IsMinimized() const;
@@ -118,12 +121,13 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool IsTrustedPinned() const;
   bool IsPip() const;
 
-  // True if the window's state type is WindowStateType::kMaximized,
-  // WindowStateType::kFullscreen or WindowStateType::kPinned.
+  // True if the window's state type is chromeos::WindowStateType::kMaximized,
+  // chromeos::WindowStateType::kFullscreen or
+  // chromeos::WindowStateType::kPinned.
   bool IsMaximizedOrFullscreenOrPinned() const;
 
-  // True if the window's state type is WindowStateType::kNormal or
-  // WindowStateType::kDefault.
+  // True if the window's state type is chromeos::WindowStateType::kNormal or
+  // chromeos::WindowStateType::kDefault.
   bool IsNormalStateType() const;
 
   bool IsNormalOrSnapped() const;
@@ -329,11 +333,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   const DragDetails* drag_details() const { return drag_details_.get(); }
   DragDetails* drag_details() { return drag_details_.get(); }
 
-  void set_animation_smoothness_histogram_name(
-      base::Optional<std::string> val) {
-    animation_smoothness_histogram_name_ = val;
-  }
-
   // Returns the Display that this WindowState is on.
   display::Display GetDisplay();
 
@@ -352,6 +351,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   friend class TabletModeWindowState;
   friend class ScopedBoundsChangeAnimation;
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
+  FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeHistograms);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest,
                            CrossFadeToBoundsFromTransform);
   FRIEND_TEST_ALL_PREFIXES(WindowStateTest, PipWindowMaskRecreated);
@@ -395,7 +395,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   ui::WindowShowState GetShowState() const;
 
   // Return the window's current pin type.
-  WindowPinType GetPinType() const;
+  chromeos::WindowPinType GetPinType() const;
 
   // Sets the window's bounds in screen coordinates.
   void SetBoundsInScreen(const gfx::Rect& bounds_in_screen);
@@ -410,8 +410,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Note that this does not update the window bounds.
   void UpdateWindowPropertiesFromStateType();
 
-  void NotifyPreStateTypeChange(WindowStateType old_window_state_type);
-  void NotifyPostStateTypeChange(WindowStateType old_window_state_type);
+  void NotifyPreStateTypeChange(
+      chromeos::WindowStateType old_window_state_type);
+  void NotifyPostStateTypeChange(
+      chromeos::WindowStateType old_window_state_type);
 
   // Sets |bounds| as is and ensure the layer is aligned with pixel boundary.
   void SetBoundsDirect(const gfx::Rect& bounds);
@@ -433,11 +435,11 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Called before the state change and update PIP related state, such as next
   // window animation type, upon state change.
-  void OnPrePipStateChange(WindowStateType old_window_state_type);
+  void OnPrePipStateChange(chromeos::WindowStateType old_window_state_type);
 
   // Called after the state change and update PIP related state, such as next
   // window animation type, upon state change.
-  void OnPostPipStateChange(WindowStateType old_window_state_type);
+  void OnPostPipStateChange(chromeos::WindowStateType old_window_state_type);
 
   // Update the PIP bounds if necessary. This may need to happen when the
   // display work area changes, or if system ui regions like the virtual
@@ -465,10 +467,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool bounds_changed_by_user_;
   bool can_consume_system_keys_;
   std::unique_ptr<DragDetails> drag_details_;
-
-  // If this has a value when an animation starts, animation smoothness metrics
-  // with this name will be logged for the animation.
-  base::Optional<std::string> animation_smoothness_histogram_name_;
 
   bool unminimize_to_restore_bounds_;
   bool ignore_keyboard_bounds_change_ = false;

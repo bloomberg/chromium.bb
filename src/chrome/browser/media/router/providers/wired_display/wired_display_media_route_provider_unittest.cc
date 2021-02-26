@@ -10,7 +10,6 @@
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver_factory.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -348,7 +347,7 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
   EXPECT_CALL(router_,
               OnPresentationConnectionStateChanged(
                   presentation_id,
-                  mojom::MediaRouter::PresentationConnectionState::TERMINATED));
+                  blink::mojom::PresentationConnectionState::TERMINATED));
   provider_remote_->TerminateRoute(presentation_id,
                                    base::BindOnce(&MockCallback::TerminateRoute,
                                                   base::Unretained(&callback)));

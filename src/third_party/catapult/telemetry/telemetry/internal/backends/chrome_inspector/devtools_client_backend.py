@@ -226,6 +226,13 @@ class _DevToolsClientBackend(object):
       self._forwarder.Close()
       self._forwarder = None
 
+  def CloseBrowser(self):
+    """Close the browser instance."""
+    request = {
+        'method': 'Browser.close',
+    }
+    self._browser_websocket.SyncRequest(request, timeout=60)
+
   def IsAlive(self):
     """Whether the DevTools server is available and connectable."""
     if self._devtools_http is None:
@@ -359,14 +366,17 @@ class _DevToolsClientBackend(object):
       self._system_info_backend = system_info_backend.SystemInfoBackend(
           self.browser_target_url)
 
-  def StartChromeTracing(self, trace_config, timeout=20):
+  def StartChromeTracing(self, trace_config, transfer_mode=None, timeout=20):
     """
     Args:
         trace_config: An tracing_config.TracingConfig instance.
+        transfer_mode: Defaults to using 'ReturnAsStream' transfer mode
+          for Chrome tracing. Can be set to 'ReportEvents'.
+        timeout: Time waited for websocket to receive a response.
     """
     assert trace_config and trace_config.enable_chrome_trace
     return self._tracing_backend.StartTracing(
-        trace_config.chrome_trace_config, timeout)
+        trace_config.chrome_trace_config, transfer_mode, timeout)
 
   def RecordChromeClockSyncMarker(self, sync_id):
     assert self.is_tracing_running, 'Tracing must be running to clock sync.'
@@ -414,8 +424,13 @@ class _DevToolsClientBackend(object):
     self._CreateSystemInfoBackendIfNeeded()
     return self._system_info_backend.GetSystemInfo(timeout)
 
-  def DumpMemory(self, timeout=None):
+  def DumpMemory(self, timeout=None, detail_level=None):
     """Dumps memory.
+
+    Args:
+      timeout: seconds to wait between websocket responses.
+      detail_level: Level of detail in memory dump. One of ['detailed',
+      'light', 'background']. Defaults to 'detailed'.
 
     Returns:
       GUID of the generated dump if successful, None otherwise.
@@ -427,7 +442,9 @@ class _DevToolsClientBackend(object):
       TracingUnexpectedResponseException: If the response contains an error
       or does not contain the expected result.
     """
-    return self._tracing_backend.DumpMemory(timeout=timeout)
+    return self._tracing_backend.DumpMemory(
+        timeout=timeout,
+        detail_level=detail_level)
 
   def SetMemoryPressureNotificationsSuppressed(self, suppressed, timeout=30):
     """Enable/disable suppressing memory pressure notifications.
@@ -474,6 +491,15 @@ class _DevToolsClientBackend(object):
     """
     self._CreateWindowManagerBackendIfNeeded()
     return self._wm_backend
+
+  def ExecuteBrowserCommand(self, command_id, timeout):
+    request = {
+        'method': 'Browser.executeBrowserCommand',
+        'params': {
+            'commandId': command_id,
+        }
+    }
+    self._browser_websocket.SyncRequest(request, timeout)
 
 
 class _DevToolsContextMapBackend(object):

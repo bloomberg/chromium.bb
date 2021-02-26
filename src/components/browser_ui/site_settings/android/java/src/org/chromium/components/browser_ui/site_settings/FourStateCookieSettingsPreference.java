@@ -39,15 +39,13 @@ public class FourStateCookieSettingsPreference
     public static class Params {
         // Whether the cookies content setting is enabled.
         public boolean allowCookies;
-        //  Whether third-party blocking is enabled.
-        public boolean blockThirdPartyCookies;
         // An enum indicating when to block third-party cookies.
         public @CookieControlsMode int cookieControlsMode;
 
         // Whether the cookies content setting is enforced.
         public boolean cookiesContentSettingEnforced;
         //  Whether third-party blocking is enforced.
-        public boolean thirdPartyBlockingEnforced;
+        public boolean cookieControlsModeEnforced;
     }
 
     // Keeps the params that are applied to the UI if the params are set before the UI is ready.
@@ -146,8 +144,7 @@ public class FourStateCookieSettingsPreference
         // combination of multiple signals.
         if (!params.allowCookies) {
             return CookieSettingsState.BLOCK;
-        } else if (params.blockThirdPartyCookies
-                || params.cookieControlsMode == CookieControlsMode.BLOCK_THIRD_PARTY) {
+        } else if (params.cookieControlsMode == CookieControlsMode.BLOCK_THIRD_PARTY) {
             return CookieSettingsState.BLOCK_THIRD_PARTY;
         } else if (params.cookieControlsMode == CookieControlsMode.INCOGNITO_ONLY) {
             return CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO;
@@ -166,7 +163,7 @@ public class FourStateCookieSettingsPreference
             button.setEnabled(false);
         }
         mManagedView.setVisibility(
-                (params.cookiesContentSettingEnforced || params.thirdPartyBlockingEnforced)
+                (params.cookiesContentSettingEnforced || params.cookieControlsModeEnforced)
                         ? View.VISIBLE
                         : View.GONE);
 
@@ -208,10 +205,11 @@ public class FourStateCookieSettingsPreference
      *         policy restrictions.
      */
     private RadioButtonWithDescription[] getEnforcedButtons(Params params) {
-        if (!params.cookiesContentSettingEnforced && !params.thirdPartyBlockingEnforced) {
+        if (!params.cookiesContentSettingEnforced && !params.cookieControlsModeEnforced) {
+            // Nothing is enforced.
             return buttons();
         }
-        if (params.cookiesContentSettingEnforced && params.thirdPartyBlockingEnforced) {
+        if (params.cookiesContentSettingEnforced && params.cookieControlsModeEnforced) {
             return buttons(mAllowButton, mBlockThirdPartyIncognitoButton, mBlockThirdPartyButton,
                     mBlockButton);
         }
@@ -223,7 +221,8 @@ public class FourStateCookieSettingsPreference
                         mBlockThirdPartyButton, mBlockButton);
             }
         }
-        if (params.blockThirdPartyCookies) {
+        // cookieControlsModeEnforced must be true.
+        if (params.cookieControlsMode == CookieControlsMode.BLOCK_THIRD_PARTY) {
             return buttons(mAllowButton, mBlockThirdPartyIncognitoButton);
         } else {
             return buttons(mBlockThirdPartyIncognitoButton, mBlockThirdPartyButton);

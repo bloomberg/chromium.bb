@@ -27,7 +27,7 @@ def DoPresubmit(argv,
 
   Args:
     argv: command line arguments
-    original_filename: The filename to read from.
+    original_filename: The path to the file to read from.
     backup_filename: When pretty printing, move the old file contents here.
     prettyFn: A function which takes the original xml content and produces
         pretty printed xml.
@@ -78,8 +78,9 @@ def DoPresubmit(argv,
     return 0
 
   if presubmit:
-    logging.error('%s is not formatted correctly; run %s to fix.',
-                  original_filename, script_name)
+    if interactive:
+      logging.error('%s is not formatted correctly; run %s to fix.',
+                    original_filename, script_name)
     return 1
 
   # Prompt user to consent on the change.

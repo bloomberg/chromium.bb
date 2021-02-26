@@ -17,7 +17,7 @@ const EnableKioskMode = {
 };
 
 Polymer({
-  is: 'kiosk-enable',
+  is: 'kiosk-enable-element',
 
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
@@ -52,10 +52,6 @@ Polymer({
   /** Called when dialog is shown */
   onBeforeShow() {
     this.state_ = EnableKioskMode.CONFIRM;
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
   },
 
   /**

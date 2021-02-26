@@ -16,11 +16,12 @@
 #define DAWNNATIVE_COMMANDBUFFERSTATETRACKER_H
 
 #include "common/Constants.h"
+#include "common/ityp_array.h"
+#include "common/ityp_bitset.h"
+#include "dawn_native/BindingInfo.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
 
-#include <array>
-#include <bitset>
 #include <map>
 #include <set>
 
@@ -36,9 +37,9 @@ namespace dawn_native {
         // State-modifying methods
         void SetComputePipeline(ComputePipelineBase* pipeline);
         void SetRenderPipeline(RenderPipelineBase* pipeline);
-        void SetBindGroup(uint32_t index, BindGroupBase* bindgroup);
-        void SetIndexBuffer();
-        void SetVertexBuffer(uint32_t slot);
+        void SetBindGroup(BindGroupIndex index, BindGroupBase* bindgroup);
+        void SetIndexBuffer(wgpu::IndexFormat format);
+        void SetVertexBuffer(VertexBufferSlot slot);
 
         static constexpr size_t kNumAspects = 4;
         using ValidationAspects = std::bitset<kNumAspects>;
@@ -52,11 +53,15 @@ namespace dawn_native {
 
         ValidationAspects mAspects;
 
-        std::array<BindGroupBase*, kMaxBindGroups> mBindgroups = {};
-        std::bitset<kMaxVertexBuffers> mVertexBufferSlotsUsed;
+        ityp::array<BindGroupIndex, BindGroupBase*, kMaxBindGroups> mBindgroups = {};
+        ityp::bitset<VertexBufferSlot, kMaxVertexBuffers> mVertexBufferSlotsUsed;
+        bool mIndexBufferSet = false;
+        wgpu::IndexFormat mIndexFormat;
 
         PipelineLayoutBase* mLastPipelineLayout = nullptr;
         RenderPipelineBase* mLastRenderPipeline = nullptr;
+
+        const RequiredBufferSizes* mMinBufferSizes = nullptr;
     };
 
 }  // namespace dawn_native

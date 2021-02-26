@@ -60,8 +60,8 @@ class FenceTests : public DawnTest {
     FenceTests() : mCallIndex(0) {
     }
 
-    void TestSetUp() override {
-        DawnTest::TestSetUp();
+    void SetUp() override {
+        DawnTest::SetUp();
         mockFenceOnCompletionCallback = std::make_unique<MockFenceOnCompletionCallback>();
         mockPopErrorScopeCallback = std::make_unique<MockPopErrorScopeCallback>();
     }
@@ -139,6 +139,43 @@ TEST_P(FenceTests, MultipleSignalOnCompletion) {
     EXPECT_CALL(*mockFenceOnCompletionCallback, Call(WGPUFenceCompletionStatus_Success, nullptr))
         .Times(1);
     fence.OnCompletion(3u, ToMockFenceOnCompletionCallback, nullptr);
+
+    WaitForCompletedValue(fence, 4);
+}
+
+// Test callbacks still occur if Queue::Signal and fence::OnCompletion happens multiple times
+TEST_P(FenceTests, SignalOnCompletionWait) {
+    wgpu::Fence fence = queue.CreateFence();
+
+    queue.Signal(fence, 2);
+    queue.Signal(fence, 6);
+
+    EXPECT_CALL(*mockFenceOnCompletionCallback, Call(WGPUFenceCompletionStatus_Success, this + 2))
+        .Times(1);
+    EXPECT_CALL(*mockFenceOnCompletionCallback, Call(WGPUFenceCompletionStatus_Success, this + 6))
+        .Times(1);
+
+    fence.OnCompletion(1u, ToMockFenceOnCompletionCallback, this + 2);
+    fence.OnCompletion(5u, ToMockFenceOnCompletionCallback, this + 6);
+
+    WaitForCompletedValue(fence, 6);
+}
+
+// Test callbacks still occur if Queue::Signal and fence::OnCompletion happens multiple times
+TEST_P(FenceTests, SignalOnCompletionWaitStaggered) {
+    wgpu::Fence fence = queue.CreateFence();
+
+    queue.Signal(fence, 2);
+
+    EXPECT_CALL(*mockFenceOnCompletionCallback, Call(WGPUFenceCompletionStatus_Success, this + 2))
+        .Times(1);
+    fence.OnCompletion(1u, ToMockFenceOnCompletionCallback, this + 2);
+
+    queue.Signal(fence, 4);
+
+    EXPECT_CALL(*mockFenceOnCompletionCallback, Call(WGPUFenceCompletionStatus_Success, this + 4))
+        .Times(1);
+    fence.OnCompletion(3u, ToMockFenceOnCompletionCallback, this + 4);
 
     WaitForCompletedValue(fence, 4);
 }

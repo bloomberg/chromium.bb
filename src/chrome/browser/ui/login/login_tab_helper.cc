@@ -5,9 +5,7 @@
 #include "chrome/browser/ui/login/login_tab_helper.h"
 
 #include "base/feature_list.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/ui/login/login_handler.h"
-#include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -164,6 +162,21 @@ LoginTabHelper::WillProcessMainFrameUnauthorizedResponse(
     // because the navigation entry ID will change once the refresh finishes.
     navigation_handle_id_with_cancelled_prompt_ =
         navigation_handle->GetNavigationId();
+
+    int response_code =
+        navigation_handle->GetResponseHeaders()->response_code();
+    // For HTTPS navigations with 407 responses, we want to show an empty
+    // page. We need to cancel the navigation and commit an empty error
+    // page directly here, because otherwise the HttpErrorNavigationThrottle
+    // will see that the response body is empty (because the network stack
+    // refuses to read the response body) and will try to commit a generic
+    // non-empty error page instead.
+    if (navigation_handle->GetURL().SchemeIs(url::kHttpsScheme) &&
+        response_code ==
+            net::HttpStatusCode::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
+      return {content::NavigationThrottle::CANCEL,
+              net::ERR_INVALID_AUTH_CREDENTIALS, "<html></html>"};
+    }
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -239,8 +252,8 @@ void LoginTabHelper::HandleCredentials(
     // the case when the prompt has been cancelled due to the tab
     // closing. Reloading synchronously while a tab is closing causes a DCHECK
     // failure.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&LoginTabHelper::Reload,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&LoginTabHelper::Reload,
                                   weak_ptr_factory_.GetWeakPtr()));
   }
 }

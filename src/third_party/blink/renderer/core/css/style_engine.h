@@ -34,7 +34,7 @@
 #include <utility>
 #include "base/auto_reset.h"
 #include "third_party/blink/public/common/css/forced_colors.h"
-#include "third_party/blink/public/common/css/preferred_color_scheme.h"
+#include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-shared.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/active_style_sheets.h"
@@ -86,19 +86,35 @@ using StyleSheetKey = AtomicString;
 class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                       public FontSelectorClient,
                                       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(StyleEngine);
-
  public:
 
   class DOMRemovalScope {
     STACK_ALLOCATED();
 
    public:
-    DOMRemovalScope(StyleEngine& engine)
+    explicit DOMRemovalScope(StyleEngine& engine)
         : in_removal_(&engine.in_dom_removal_, true) {}
 
    private:
     base::AutoReset<bool> in_removal_;
+  };
+
+  // There are a few instances where we are marking nodes style dirty from
+  // within style recalc. That is generally not allowed, and if allowed we must
+  // make sure we mark inside the subtree we are currently traversing, be sure
+  // we will traverse the marked node as part of the current traversal. The
+  // current instances of this situation is marked with this scope object to
+  // skip DCHECKs. Do not introduce new functionality that requires introducing
+  // more such scopes.
+  class AllowMarkStyleDirtyFromRecalcScope {
+    STACK_ALLOCATED();
+
+   public:
+    explicit AllowMarkStyleDirtyFromRecalcScope(StyleEngine& engine)
+        : allow_marking_(&engine.allow_mark_style_dirty_from_recalc_, true) {}
+
+   private:
+    base::AutoReset<bool> allow_marking_;
   };
 
   explicit StyleEngine(Document&);
@@ -117,6 +133,14 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void AddTextTrack(TextTrack*);
   void RemoveTextTrack(TextTrack*);
 
+  // An Element with no tag name, IDs, classes (etc), as described by the
+  // WebVTT spec:
+  // https://w3c.github.io/webvtt/#obtaining-css-boxes
+  //
+  // TODO(https://github.com/w3c/webvtt/issues/477): Make originating element
+  // actually featureless.
+  Element* EnsureVTTOriginatingElement();
+
   const ActiveStyleSheetVector ActiveStyleSheetsForInspector();
 
   bool NeedsActiveStyleUpdate() const;
@@ -134,6 +158,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void WatchedSelectorsChanged();
   void InitialStyleChanged();
   void ColorSchemeChanged();
+  void SetOwnerColorScheme(mojom::blink::ColorScheme);
+  mojom::blink::ColorScheme GetOwnerColorScheme() const {
+    return owner_color_scheme_;
+  }
   void InitialViewportChanged();
   void ViewportRulesChanged();
   void HtmlImportAddedOrRemoved();
@@ -147,21 +175,17 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                WebDocument::kAuthorOrigin);
   CSSStyleSheet& EnsureInspectorStyleSheet();
   RuleSet* WatchedSelectorsRuleSet() {
-    DCHECK(IsMaster());
+    DCHECK(!IsHTMLImport());
     DCHECK(global_rule_set_);
     return global_rule_set_->WatchedSelectorsRuleSet();
-  }
-  bool HasStyleSheets() const {
-    return GetDocumentStyleSheetCollection().HasStyleSheets();
   }
 
   RuleSet* RuleSetForSheet(CSSStyleSheet&);
   void MediaQueryAffectingValueChanged(MediaValueChange change);
   void UpdateActiveStyleSheetsInImport(
-      StyleEngine& master_engine,
+      StyleEngine& root_engine,
       DocumentStyleSheetCollector& parent_collector);
   void UpdateActiveStyle();
-  void MarkAllTreeScopesDirty() { all_tree_scopes_dirty_ = true; }
 
   String PreferredStylesheetSetName() const {
     return preferred_stylesheet_set_name_;
@@ -211,18 +235,19 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   }
   void ResetAuthorStyle(TreeScope&);
 
-  StyleResolver* Resolver() const { return resolver_; }
-
-  void SetRuleUsageTracker(StyleRuleUsageTracker*);
-
-  StyleResolver& EnsureResolver() {
-    UpdateActiveStyle();
-    if (!resolver_)
-      CreateResolver();
+  StyleResolver& GetStyleResolver() const {
+    DCHECK(resolver_);
     return *resolver_;
   }
 
-  bool HasResolver() const { return resolver_; }
+  void SetRuleUsageTracker(StyleRuleUsageTracker*);
+
+  void ComputeFont(Element& element,
+                   ComputedStyle* font_style,
+                   const CSSPropertyValueSet& font_properties) {
+    UpdateActiveStyle();
+    GetStyleResolver().ComputeFont(element, font_style, font_properties);
+  }
 
   PendingInvalidations& GetPendingNodeInvalidations() {
     return pending_invalidations_;
@@ -232,7 +257,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool MediaQueryAffectedByViewportChange();
   bool MediaQueryAffectedByDeviceChange();
   bool HasViewportDependentMediaQueries() {
-    DCHECK(IsMaster());
+    DCHECK(!IsHTMLImport());
     DCHECK(global_rule_set_);
     UpdateActiveStyle();
     return !global_rule_set_->GetRuleFeatureSet()
@@ -271,6 +296,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void EnsureUAStyleForFullscreen();
   void EnsureUAStyleForXrOverlay();
   void EnsureUAStyleForElement(const Element&);
+  void EnsureUAStyleForPseudoElement(PseudoId);
 
   void PlatformColorsChanged();
 
@@ -355,6 +381,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   StyleRuleKeyframes* KeyframeStylesForAnimation(
       const AtomicString& animation_name);
+  StyleRuleScrollTimeline* FindScrollTimelineRule(const AtomicString& name);
 
   DocumentStyleEnvironmentVariables& EnsureEnvironmentVariables();
 
@@ -369,6 +396,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   }
   bool NeedsFullStyleUpdate() const;
 
+  void UpdateViewport();
   void UpdateViewportStyle();
   void UpdateStyleAndLayoutTree();
   void RecalcStyle();
@@ -378,13 +406,17 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void SetColorSchemeFromMeta(const CSSValue* color_scheme);
   const CSSValue* GetMetaColorSchemeValue() const { return meta_color_scheme_; }
-  PreferredColorScheme GetPreferredColorScheme() const {
+  mojom::PreferredColorScheme GetPreferredColorScheme() const {
     return preferred_color_scheme_;
   }
   ForcedColors GetForcedColors() const { return forced_colors_; }
-  void UpdateColorSchemeBackground();
+  void UpdateColorSchemeBackground(bool color_scheme_changed = false);
+  Color ForcedBackgroundColor() const { return forced_background_color_; }
+  Color ColorAdjustBackgroundColor() const;
 
-  void Trace(Visitor*) override;
+  TreeScopeStyleSheetCollection* StyleSheetCollectionFor(TreeScope&);
+
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
 
  private:
@@ -395,13 +427,11 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
  private:
   bool NeedsActiveStyleSheetUpdate() const {
-    return all_tree_scopes_dirty_ || tree_scopes_removed_ ||
-           document_scope_dirty_ || dirty_tree_scopes_.size() ||
-           user_style_dirty_;
+    return tree_scopes_removed_ || document_scope_dirty_ ||
+           dirty_tree_scopes_.size() || user_style_dirty_;
   }
 
   TreeScopeStyleSheetCollection& EnsureStyleSheetCollectionFor(TreeScope&);
-  TreeScopeStyleSheetCollection* StyleSheetCollectionFor(TreeScope&);
   bool ShouldUpdateDocumentStyleSheetCollection() const;
   bool ShouldUpdateShadowTreeStyleSheetCollection() const;
 
@@ -409,8 +439,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void MarkTreeScopeDirty(TreeScope&);
   void MarkUserStyleDirty();
 
-  bool IsMaster() const { return is_master_; }
-  Document* Master();
+  bool IsHTMLImport() const { return is_html_import_; }
+  Document* HTMLImportRootDocument();
   Document& GetDocument() const { return *document_; }
 
   typedef HeapHashSet<Member<TreeScope>> UnorderedTreeScopeSet;
@@ -424,12 +454,11 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                        MediaValueChange);
 
   const RuleFeatureSet& GetRuleFeatureSet() const {
-    DCHECK(IsMaster());
+    DCHECK(!IsHTMLImport());
     DCHECK(global_rule_set_);
     return global_rule_set_->GetRuleFeatureSet();
   }
 
-  void CreateResolver();
   void ClearResolvers();
 
   void CollectUserStyleFeaturesTo(RuleFeatureSet&) const;
@@ -467,7 +496,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       InvalidationScope invalidation_scope);
   void InvalidateInitialData();
 
-  void UpdateViewport();
   void UpdateActiveUserStyleSheets();
   void UpdateActiveStyleSheets();
   void UpdateGlobalRuleSet() {
@@ -483,21 +511,31 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void ClearKeyframeRules() { keyframes_rule_map_.clear(); }
   void ClearPropertyRules();
+  void ClearScrollTimelineRules();
+
+  void AddPropertyRulesFromSheets(const ActiveStyleSheetVector&);
+  void AddScrollTimelineRulesFromSheets(const ActiveStyleSheetVector&);
 
   // Returns true if any @font-face rules are added.
   bool AddUserFontFaceRules(const RuleSet&);
   void AddUserKeyframeRules(const RuleSet&);
   void AddUserKeyframeStyle(StyleRuleKeyframes*);
   void AddPropertyRules(const RuleSet&);
+  void AddScrollTimelineRules(const RuleSet&);
 
   void UpdateColorScheme();
   bool SupportsDarkColorScheme();
+  void UpdateForcedBackgroundColor();
+
+  void UpdateColorSchemeMetrics();
 
   void ViewportDefiningElementDidChange();
   void PropagateWritingModeAndDirectionToHTMLRoot();
 
   Member<Document> document_;
-  bool is_master_;
+
+  // True if this StyleEngine is for an HTML Import document.
+  bool is_html_import_{false};
 
   // Tracks the number of currently loading top-level stylesheets. Sheets loaded
   // using the @import directive are not included in this count. We use this
@@ -507,7 +545,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // https://html.spec.whatwg.org/multipage/semantics.html#interactions-of-styling-and-scripting
   // Once the BlockHTMLParserOnStyleSheets flag has shipped, this is the same
   // as pending_parser_blocking_stylesheets_.
-  int pending_script_blocking_stylesheets_ = 0;
+  int pending_script_blocking_stylesheets_{0};
 
   // Tracks the number of currently loading top-level stylesheets which block
   // rendering (the "Update the rendering" step of the event loop processing
@@ -515,13 +553,13 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // included in this count. See:
   // https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model
   // Once all of these sheets have loaded, rendering begins.
-  int pending_render_blocking_stylesheets_ = 0;
+  int pending_render_blocking_stylesheets_{0};
 
   // Tracks the number of currently loading top-level stylesheets which block
   // the HTML parser. Sheets loaded using the @import directive are not included
   // in this count. Once all of these sheets have loaded, the parser may
   // continue.
-  int pending_parser_blocking_stylesheets_ = 0;
+  int pending_parser_blocking_stylesheets_{0};
 
   Member<CSSStyleSheet> inspector_style_sheet_;
 
@@ -534,23 +572,27 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                   Member<ShadowTreeStyleSheetCollection>>;
   StyleSheetCollectionMap style_sheet_collection_map_;
 
-  bool document_scope_dirty_ = true;
-  bool all_tree_scopes_dirty_ = false;
-  bool tree_scopes_removed_ = false;
-  bool user_style_dirty_ = false;
+  bool document_scope_dirty_{true};
+  bool tree_scopes_removed_{false};
+  bool user_style_dirty_{false};
   UnorderedTreeScopeSet dirty_tree_scopes_;
   UnorderedTreeScopeSet active_tree_scopes_;
   TreeOrderedList tree_boundary_crossing_scopes_;
 
   String preferred_stylesheet_set_name_;
 
-  bool uses_rem_units_ = false;
-  bool in_layout_tree_rebuild_ = false;
-  bool in_dom_removal_ = false;
-  bool viewport_style_dirty_ = false;
-  bool fonts_need_update_ = false;
+  bool uses_rem_units_{false};
+  bool in_layout_tree_rebuild_{false};
+  bool in_dom_removal_{false};
+  bool viewport_style_dirty_{false};
+  bool fonts_need_update_{false};
 
-  VisionDeficiency vision_deficiency_ = VisionDeficiency::kNoVisionDeficiency;
+  // Set to true if we allow marking style dirty from style recalc. Ideally, we
+  // should get rid of this, but we keep track of where we allow it with
+  // AllowMarkStyleDirtyFromRecalcScope.
+  bool allow_mark_style_dirty_from_recalc_{false};
+
+  VisionDeficiency vision_deficiency_{VisionDeficiency::kNoVisionDeficiency};
   Member<ReferenceFilterOperation> vision_deficiency_filter_;
 
   Member<StyleResolver> resolver_;
@@ -578,7 +620,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       sheet_to_text_cache_;
 
   std::unique_ptr<StyleResolverStats> style_resolver_stats_;
-  unsigned style_for_element_count_ = 0;
+  unsigned style_for_element_count_{0};
 
   HeapVector<std::pair<StyleSheetKey, Member<CSSStyleSheet>>>
       injected_user_style_sheets_;
@@ -592,6 +634,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       HeapHashMap<AtomicString, Member<StyleRuleKeyframes>>;
   KeyframesRuleMap keyframes_rule_map_;
 
+  HeapHashMap<AtomicString, Member<StyleRuleScrollTimeline>>
+      scroll_timeline_map_;
+
   scoped_refptr<DocumentStyleEnvironmentVariables> environment_variables_;
 
   scoped_refptr<StyleInitialData> initial_data_;
@@ -603,18 +648,31 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   // The preferred color scheme is set in settings, but may be overridden by the
   // ForceDarkMode setting where the preferred_color_scheme_ will be set to
-  // kNoPreference to avoid dark styling to be applied before auto darkening.
-  PreferredColorScheme preferred_color_scheme_ =
-      PreferredColorScheme::kNoPreference;
+  // kLight to avoid dark styling to be applied before auto darkening.
+  mojom::PreferredColorScheme preferred_color_scheme_{
+      mojom::PreferredColorScheme::kLight};
+
+  // We pass the used value of color-scheme from the iframe element in the
+  // embedding document. If the color-scheme of the owner element and the root
+  // element in the embedded document differ, use a solid backdrop color instead
+  // of the default transparency of an iframe.
+  mojom::blink::ColorScheme owner_color_scheme_;
+
+  // The color of the canvas backdrop for the used color-scheme.
+  Color color_scheme_background_;
 
   // Forced colors is set in WebThemeEngine.
-  ForcedColors forced_colors_ = ForcedColors::kNone;
+  ForcedColors forced_colors_{ForcedColors::kNone};
+
+  Color forced_background_color_;
 
   friend class NodeTest;
   friend class StyleEngineTest;
   friend class WhitespaceAttacherTest;
+  friend class StyleCascadeTest;
 
   HeapHashSet<Member<TextTrack>> text_tracks_;
+  Member<Element> vtt_originating_element_;
 };
 
 }  // namespace blink

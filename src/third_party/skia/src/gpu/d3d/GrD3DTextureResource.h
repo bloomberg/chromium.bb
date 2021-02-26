@@ -22,12 +22,10 @@ private:
     class Resource;
 
 public:
-    static const unsigned int kDefaultQualityLevel = 0;
-
     GrD3DTextureResource(const GrD3DTextureResourceInfo& info, sk_sp<GrD3DResourceState> state)
             : fInfo(info)
             , fState(std::move(state))
-            , fResource(new Resource(fInfo.fResource)) {
+            , fResource(new Resource(fInfo.fResource, info.fAlloc)) {
         // gr_cp will implicitly ref the ID3D12Resource for us, so we don't need to worry about
         // whether it's borrowed or not
     }
@@ -55,7 +53,10 @@ public:
 
     void setResourceState(const GrD3DGpu* gpu, D3D12_RESOURCE_STATES newResourceState);
 
-    unsigned int sampleQualityLevel() const { return fInfo.fSampleQualityLevel; }
+    // Changes the layout to present
+    void prepareForPresent(GrD3DGpu* gpu);
+
+    unsigned int sampleQualityPattern() const { return fInfo.fSampleQualityPattern; }
 
     // This simply updates our tracking of the resourceState and does not actually do any gpu work.
     // Externally, primarily used for implicit changes in resourceState due to certain GPU commands.
@@ -67,6 +68,9 @@ public:
     static bool InitTextureResourceInfo(GrD3DGpu* gpu, const D3D12_RESOURCE_DESC& desc,
                                         D3D12_RESOURCE_STATES initialState, GrProtected,
                                         D3D12_CLEAR_VALUE*, GrD3DTextureResourceInfo*);
+    static std::pair<GrD3DTextureResourceInfo, sk_sp<GrD3DResourceState>> CreateMSAA(
+            GrD3DGpu* gpu, SkISize dimensions, int sampleCnt, const GrD3DTextureResourceInfo& info,
+            SkColor4f clearColor);
 
     void setResourceRelease(sk_sp<GrRefCntedCallback> releaseHelper);
 
@@ -102,11 +106,14 @@ private:
     class Resource : public GrTextureResource {
     public:
         explicit Resource()
-            : fResource(nullptr) {
+            : fResource(nullptr)
+            , fAlloc(nullptr) {
         }
 
-        Resource(const gr_cp<ID3D12Resource>& textureResource)
-            : fResource(textureResource) {
+        Resource(const gr_cp<ID3D12Resource>& textureResource,
+                 const sk_sp<GrD3DAlloc>& alloc)
+            : fResource(textureResource)
+            , fAlloc(alloc) {
         }
 
         ~Resource() override {}
@@ -121,8 +128,9 @@ private:
         void freeGPUData() const override;
 
         mutable gr_cp<ID3D12Resource> fResource;
+        mutable sk_sp<GrD3DAlloc> fAlloc;
 
-        typedef GrTextureResource INHERITED;
+        using INHERITED = GrTextureResource;
     };
 
     sk_sp<Resource> fResource;

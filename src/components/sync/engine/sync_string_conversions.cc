@@ -4,6 +4,8 @@
 
 #include "components/sync/engine/sync_string_conversions.h"
 
+#include "base/notreached.h"
+
 #define ENUM_CASE(x) \
   case x:            \
     return #x
@@ -20,17 +22,6 @@ const char* ConnectionStatusToString(ConnectionStatus status) {
 
   NOTREACHED();
   return "INVALID_CONNECTION_STATUS";
-}
-
-// Helper function that converts a PassphraseRequiredReason value to a string.
-const char* PassphraseRequiredReasonToString(PassphraseRequiredReason reason) {
-  switch (reason) {
-    ENUM_CASE(REASON_ENCRYPTION);
-    ENUM_CASE(REASON_DECRYPTION);
-  }
-
-  NOTREACHED();
-  return "INVALID_REASON";
 }
 
 const char* PassphraseTypeToString(PassphraseType type) {

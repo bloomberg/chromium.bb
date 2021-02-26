@@ -15,10 +15,6 @@
 
 class SkSurfaceProps;
 
-namespace cc {
-class PaintCanvas;
-}
-
 namespace gfx {
 class ColorSpace;
 }
@@ -27,7 +23,6 @@ namespace blink {
 
 enum class CanvasColorSpace {
   kSRGB,
-  kLinearRGB,
   kRec2020,
   kP3,
 };
@@ -37,6 +32,9 @@ enum class CanvasPixelFormat {
   kBGRA8,
   kF16,
 };
+
+sk_sp<SkColorSpace> PLATFORM_EXPORT
+CanvasColorSpaceToSkColorSpace(CanvasColorSpace color_space);
 
 class PLATFORM_EXPORT CanvasColorParams {
   DISALLOW_NEW();
@@ -61,16 +59,6 @@ class PLATFORM_EXPORT CanvasColorParams {
   void SetCanvasColorSpace(CanvasColorSpace c) { color_space_ = c; }
   void SetCanvasPixelFormat(CanvasPixelFormat f) { pixel_format_ = f; }
   void SetOpacityMode(OpacityMode m) { opacity_mode_ = m; }
-
-  // Indicates if pixels in this canvas color settings require any color
-  // conversion to be used in the passed canvas color settings.
-  bool NeedsColorConversion(const CanvasColorParams&) const;
-
-  // The SkColorSpace to use in the SkImageInfo for allocated SkSurfaces. This
-  // is nullptr in legacy rendering mode and when the surface is supposed to be
-  // in sRGB (for which we wrap the canvas into a PaintCanvas along with an
-  // SkColorSpaceXformCanvas).
-  sk_sp<SkColorSpace> GetSkColorSpaceForSkSurfaces() const;
 
   // The pixel format to use for allocating SkSurfaces.
   SkColorType GetSkColorType() const;

@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "media/cdm/default_cdm_factory.h"
 #include "media/media_buildflags.h"
@@ -17,7 +18,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace media {
 
@@ -33,7 +33,6 @@ MATCHER_P(MatchesResult, success, "") {
 
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kInvalidKeySystem[] = "invalid.key.system";
-const char kSecurityOrigin[] = "https://foo.com";
 
 class MockCdmServiceClient : public media::CdmService::Client {
  public:
@@ -86,24 +85,12 @@ class CdmServiceTest : public testing::Test {
         &CdmServiceTest::CdmFactoryConnectionClosed, base::Unretained(this)));
   }
 
-  MOCK_METHOD3(OnCdmInitialized,
-               void(mojom::CdmPromiseResultPtr result,
-                    int cdm_id,
-                    mojo::PendingRemote<mojom::Decryptor> decryptor));
-
   void InitializeCdm(const std::string& key_system, bool expected_result) {
-    base::RunLoop run_loop;
-    cdm_factory_remote_->CreateCdm(key_system,
-                                   cdm_remote_.BindNewPipeAndPassReceiver());
-    cdm_remote_.set_disconnect_handler(base::BindOnce(
-        &CdmServiceTest::CdmConnectionClosed, base::Unretained(this)));
-    EXPECT_CALL(*this, OnCdmInitialized(MatchesResult(expected_result), _, _))
-        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-    cdm_remote_->Initialize(
-        key_system, url::Origin::Create(GURL(kSecurityOrigin)), CdmConfig(),
-        base::BindOnce(&CdmServiceTest::OnCdmInitialized,
-                       base::Unretained(this)));
-    run_loop.Run();
+    cdm_factory_remote_->CreateCdm(
+        key_system, CdmConfig(),
+        base::BindOnce(&CdmServiceTest::OnCdmCreated, base::Unretained(this),
+                       expected_result));
+    cdm_factory_remote_.FlushForTesting();
   }
 
   void DestroyService() { service_.reset(); }
@@ -120,6 +107,24 @@ class CdmServiceTest : public testing::Test {
   mojo::Remote<mojom::ContentDecryptionModule> cdm_remote_;
 
  private:
+  void OnCdmCreated(bool expected_result,
+                    mojo::PendingRemote<mojom::ContentDecryptionModule> remote,
+                    const base::Optional<base::UnguessableToken>& cdm_id,
+                    mojo::PendingRemote<mojom::Decryptor> decryptor,
+                    const std::string& error_message) {
+    if (!expected_result) {
+      EXPECT_FALSE(remote);
+      EXPECT_FALSE(decryptor);
+      EXPECT_TRUE(!error_message.empty());
+      EXPECT_FALSE(cdm_id);
+      return;
+    }
+    EXPECT_TRUE(remote);
+    EXPECT_TRUE(error_message.empty());
+    cdm_remote_.Bind(std::move(remote));
+    cdm_remote_.set_disconnect_handler(base::BindOnce(
+        &CdmServiceTest::CdmConnectionClosed, base::Unretained(this)));
+  }
   std::unique_ptr<CdmService> service_;
   MockCdmServiceClient* mock_cdm_service_client_ = nullptr;
 
@@ -136,7 +141,7 @@ TEST_F(CdmServiceTest, LoadCdm) {
   EXPECT_CALL(*mock_cdm_service_client(), EnsureSandboxed());
 
   base::FilePath cdm_path(FILE_PATH_LITERAL("dummy path"));
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Token provider will not be used since the path is a dummy path.
   cdm_service_remote_->LoadCdm(cdm_path, mojo::NullRemote());
 #else
@@ -163,8 +168,7 @@ TEST_F(CdmServiceTest, DestroyAndRecreateCdm) {
   InitializeCdm(kClearKeyKeySystem, true);
 }
 
-// CdmFactory disconnection will cause the service to idle when no other
-// interfaces are connected.
+// CdmFactory disconnection will cause the service to idle.
 TEST_F(CdmServiceTest, DestroyCdmFactory) {
   Initialize();
   auto* service = cdm_service();
@@ -173,16 +177,11 @@ TEST_F(CdmServiceTest, DestroyCdmFactory) {
   EXPECT_EQ(service->BoundCdmFactorySizeForTesting(), 1u);
   EXPECT_EQ(service->UnboundCdmFactorySizeForTesting(), 0u);
 
-  // Will not idle yet, because |cdm_remote_| is still connected.
   cdm_factory_remote_.reset();
+  EXPECT_CALL(*this, CdmServiceIdle());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(service->BoundCdmFactorySizeForTesting(), 0u);
   EXPECT_EQ(service->UnboundCdmFactorySizeForTesting(), 1u);
-
-  // Now it should idle.
-  cdm_remote_.reset();
-  EXPECT_CALL(*this, CdmServiceIdle());
-  base::RunLoop().RunUntilIdle();
 }
 
 // Destroy service will destroy the CdmFactory and all CDMs.

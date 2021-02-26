@@ -10,10 +10,11 @@
 #include "include/core/SkShader.h"
 #include "include/private/SkColorData.h"
 #include "include/private/SkMacros.h"
+#include "include/private/SkTPin.h"
 #include "src/core/SkBitmapCache.h"
 #include "src/core/SkBitmapController.h"
 #include "src/core/SkBitmapProcState.h"
-#include "src/core/SkMipMap.h"
+#include "src/core/SkMipmap.h"
 #include "src/core/SkOpts.h"
 #include "src/core/SkResourceCache.h"
 #include "src/core/SkUtils.h"
@@ -138,14 +139,12 @@ static void S32_alpha_D32_nofilter_DXDY(const SkBitmapProcState& s,
     }
 }
 
-SkBitmapProcInfo::SkBitmapProcInfo(const SkImage_Base* image, SkTileMode tmx, SkTileMode tmy)
+SkBitmapProcState::SkBitmapProcState(const SkImage_Base* image, SkTileMode tmx, SkTileMode tmy)
     : fImage(image)
     , fTileModeX(tmx)
     , fTileModeY(tmy)
     , fBMState(nullptr)
 {}
-
-SkBitmapProcInfo::~SkBitmapProcInfo() {}
 
 
 // true iff the matrix has a scale and no more than an optional translate.
@@ -184,7 +183,7 @@ static bool valid_for_filtering(unsigned dimension) {
     return (dimension & ~0x3FFF) == 0;
 }
 
-bool SkBitmapProcInfo::init(const SkMatrix& inv, const SkPaint& paint) {
+bool SkBitmapProcState::init(const SkMatrix& inv, const SkPaint& paint) {
     SkASSERT(!inv.hasPerspective());
     SkASSERT(SkOpts::S32_alpha_D32_filter_DXDY || inv.isScaleTranslate());
 

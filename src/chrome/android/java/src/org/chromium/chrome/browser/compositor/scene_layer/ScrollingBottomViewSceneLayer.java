@@ -9,10 +9,11 @@ import android.view.View;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.compositor.LayerTitleCache;
-import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
-import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
+import org.chromium.chrome.browser.layouts.EventFilter;
+import org.chromium.chrome.browser.layouts.SceneOverlay;
+import org.chromium.chrome.browser.layouts.components.VirtualView;
+import org.chromium.chrome.browser.layouts.scene_layer.SceneLayer;
+import org.chromium.chrome.browser.layouts.scene_layer.SceneOverlayLayer;
 import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -107,8 +108,8 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
     }
 
     @Override
-    public SceneOverlayLayer getUpdatedSceneOverlayTree(RectF viewport, RectF visibleViewport,
-            LayerTitleCache layerTitleCache, ResourceManager resourceManager, float yOffset) {
+    public SceneOverlayLayer getUpdatedSceneOverlayTree(
+            RectF viewport, RectF visibleViewport, ResourceManager resourceManager, float yOffset) {
         // The composited shadow should be visible if the Android toolbar's isn't.
         boolean isShadowVisible = mBottomView.getVisibility() != View.VISIBLE;
 
@@ -156,22 +157,7 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
             float width, float height, float visibleViewportOffsetY, int orientation) {}
 
     @Override
-    public void onHideLayout() {}
-
-    @Override
     public void getVirtualViews(List<VirtualView> views) {}
-
-    @Override
-    public void tabTitleChanged(int tabId, String title) {}
-
-    @Override
-    public void tabStateInitialized() {}
-
-    @Override
-    public void tabModelSwitched(boolean incognito) {}
-
-    @Override
-    public void tabCreated(long time, boolean incognito, int id, int prevId, boolean selected) {}
 
     @NativeMethods
     interface Natives {

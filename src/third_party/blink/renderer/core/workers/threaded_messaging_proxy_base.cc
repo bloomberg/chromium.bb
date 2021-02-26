@@ -53,13 +53,14 @@ int ThreadedMessagingProxyBase::ProxyCount() {
   return g_live_messaging_proxy_count;
 }
 
-void ThreadedMessagingProxyBase::Trace(Visitor* visitor) {
+void ThreadedMessagingProxyBase::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
 }
 
 void ThreadedMessagingProxyBase::InitializeWorkerThread(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
-    const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data) {
+    const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
+    const base::Optional<const blink::DedicatedWorkerToken>& token) {
   DCHECK(IsParentContextThread());
 
   KURL script_url = global_scope_creation_params->script_url.Copy();
@@ -73,7 +74,7 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
 
   auto devtools_params = DevToolsAgent::WorkerThreadCreated(
       execution_context_.Get(), worker_thread_.get(), script_url,
-      global_scope_creation_params->global_scope_name.IsolatedCopy());
+      global_scope_creation_params->global_scope_name.IsolatedCopy(), token);
 
   worker_thread_->Start(std::move(global_scope_creation_params),
                         thread_startup_data, std::move(devtools_params));
@@ -86,11 +87,6 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
 void ThreadedMessagingProxyBase::CountFeature(WebFeature feature) {
   DCHECK(IsParentContextThread());
   UseCounter::Count(execution_context_, feature);
-}
-
-void ThreadedMessagingProxyBase::CountDeprecation(WebFeature feature) {
-  DCHECK(IsParentContextThread());
-  Deprecation::CountDeprecation(execution_context_, feature);
 }
 
 void ThreadedMessagingProxyBase::ReportConsoleMessage(

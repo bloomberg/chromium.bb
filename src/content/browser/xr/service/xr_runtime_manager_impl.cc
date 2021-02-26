@@ -3,27 +3,32 @@
 // found in the LICENSE file.
 
 #include "content/browser/xr/service/xr_runtime_manager_impl.h"
-#include "content/public/browser/xr_runtime_manager.h"
 
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/common/trace_event_common.h"
-#include "build/build_config.h"
 #include "content/browser/xr/xr_utils.h"
 #include "content/public/browser/device_service.h"
+#include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/gpu_utils.h"
+#include "content/public/browser/xr_runtime_manager.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "device/base/features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/orientation/orientation_device_provider.h"
 #include "device/vr/public/cpp/vr_device_provider.h"
+#include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
+#include "ui/gl/gl_switches.h"
 
 #if !defined(OS_ANDROID)
 #include "content/browser/xr/service/isolated_device_provider.h"
@@ -122,6 +127,19 @@ XRRuntimeManagerImpl::GetOrCreateInstance() {
   return CreateInstance(std::move(providers));
 }
 
+// static
+content::WebContents* XRRuntimeManagerImpl::GetImmersiveSessionWebContents() {
+  if (!g_xr_runtime_manager)
+    return nullptr;
+  BrowserXRRuntimeImpl* browser_xr_runtime =
+      g_xr_runtime_manager->GetCurrentlyPresentingImmersiveRuntime();
+  if (!browser_xr_runtime)
+    return nullptr;
+  VRServiceImpl* vr_service =
+      browser_xr_runtime->GetServiceWithActiveImmersiveSession();
+  return vr_service ? vr_service->GetWebContents() : nullptr;
+}
+
 void XRRuntimeManagerImpl::AddService(VRServiceImpl* service) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(2) << __func__;
@@ -161,7 +179,7 @@ BrowserXRRuntimeImpl* XRRuntimeManagerImpl::GetRuntimeForOptions(
   BrowserXRRuntimeImpl* runtime = nullptr;
   switch (options->mode) {
     case device::mojom::XRSessionMode::kImmersiveAr:
-      runtime = GetRuntime(device::mojom::XRDeviceId::ARCORE_DEVICE_ID);
+      runtime = GetImmersiveArRuntime();
       break;
     case device::mojom::XRSessionMode::kImmersiveVr:
       runtime = GetImmersiveVrRuntime();
@@ -193,18 +211,6 @@ BrowserXRRuntimeImpl* XRRuntimeManagerImpl::GetImmersiveVrRuntime() {
     return openxr;
 #endif
 
-#if BUILDFLAG(ENABLE_OPENVR)
-  auto* openvr = GetRuntime(device::mojom::XRDeviceId::OPENVR_DEVICE_ID);
-  if (openvr)
-    return openvr;
-#endif
-
-#if BUILDFLAG(ENABLE_OCULUS_VR)
-  auto* oculus = GetRuntime(device::mojom::XRDeviceId::OCULUS_DEVICE_ID);
-  if (oculus)
-    return oculus;
-#endif
-
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
   auto* wmr = GetRuntime(device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID);
   if (wmr)
@@ -215,9 +221,20 @@ BrowserXRRuntimeImpl* XRRuntimeManagerImpl::GetImmersiveVrRuntime() {
 }
 
 BrowserXRRuntimeImpl* XRRuntimeManagerImpl::GetImmersiveArRuntime() {
-  device::mojom::XRSessionOptions options = {};
-  options.mode = device::mojom::XRSessionMode::kImmersiveAr;
-  return GetRuntimeForOptions(&options);
+#if defined(OS_ANDROID)
+  auto* arcore_runtime =
+      GetRuntime(device::mojom::XRDeviceId::ARCORE_DEVICE_ID);
+  if (arcore_runtime && arcore_runtime->SupportsArBlendMode())
+    return arcore_runtime;
+#endif
+
+#if BUILDFLAG(ENABLE_OPENXR)
+  auto* openxr = GetRuntime(device::mojom::XRDeviceId::OPENXR_DEVICE_ID);
+  if (openxr && openxr->SupportsArBlendMode())
+    return openxr;
+#endif
+
+  return nullptr;
 }
 
 device::mojom::VRDisplayInfoPtr XRRuntimeManagerImpl::GetCurrentVRDisplayInfo(
@@ -310,6 +327,101 @@ void XRRuntimeManagerImpl::SupportsSession(
   std::move(callback).Run(true);
 }
 
+void XRRuntimeManagerImpl::MakeXrCompatible() {
+  auto* runtime = GetImmersiveVrRuntime();
+  if (!runtime)
+    runtime = GetImmersiveArRuntime();
+
+  if (!runtime) {
+    for (VRServiceImpl* service : services_)
+      service->OnMakeXrCompatibleComplete(
+          device::mojom::XrCompatibleResult::kNoDeviceAvailable);
+    return;
+  }
+
+  if (!IsInitializedOnCompatibleAdapter(runtime)) {
+#if defined(OS_WIN)
+    base::Optional<LUID> luid = runtime->GetLuid();
+    // IsInitializedOnCompatibleAdapter should have returned true if the
+    // runtime doesn't specify a LUID.
+    DCHECK(luid && (luid->HighPart != 0 || luid->LowPart != 0));
+
+    // Add the XR compatible adapter LUID to the browser command line.
+    // GpuProcessHost::LaunchGpuProcess passes this to the GPU process.
+    std::string luid_string = base::NumberToString(luid->HighPart) + "," +
+                              base::NumberToString(luid->LowPart);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kUseAdapterLuid, luid_string);
+
+    // Store the current GPU so we can revert back once XR is no longer needed.
+    // If default_gpu_ is nonzero, we have already previously stored the
+    // default GPU and should not overwrite it.
+    if (default_gpu_.LowPart == 0 && default_gpu_.HighPart == 0) {
+      default_gpu_ = content::GpuDataManager::GetInstance()
+                         ->GetGPUInfo()
+                         .active_gpu()
+                         .luid;
+    }
+    xr_compatible_restarted_gpu_ = true;
+
+    // Get notified when the new GPU process sends back its GPUInfo. This
+    // indicates that the GPU process has finished initializing and the GPUInfo
+    // contains the LUID of the active adapter.
+    content::GpuDataManager::GetInstance()->AddObserver(this);
+
+    content::KillGpuProcess();
+
+    return;
+#else
+    // MakeXrCompatible is not yet supported on other platforms so
+    // IsInitializedOnCompatibleAdapter should have returned true.
+    NOTREACHED();
+#endif
+  }
+
+  for (VRServiceImpl* service : services_)
+    service->OnMakeXrCompatibleComplete(
+        device::mojom::XrCompatibleResult::kAlreadyCompatible);
+}
+
+bool XRRuntimeManagerImpl::IsInitializedOnCompatibleAdapter(
+    BrowserXRRuntimeImpl* runtime) {
+#if defined(OS_WIN)
+  base::Optional<LUID> luid = runtime->GetLuid();
+  if (luid && (luid->HighPart != 0 || luid->LowPart != 0)) {
+    LUID active_luid =
+        content::GpuDataManager::GetInstance()->GetGPUInfo().active_gpu().luid;
+    return active_luid.HighPart == luid->HighPart &&
+           active_luid.LowPart == luid->LowPart;
+  }
+#endif
+
+  return true;
+}
+
+void XRRuntimeManagerImpl::OnGpuInfoUpdate() {
+  content::GpuDataManager::GetInstance()->RemoveObserver(this);
+
+  device::mojom::XrCompatibleResult xr_compatible_result;
+  auto* runtime = GetImmersiveVrRuntime();
+
+  if (runtime && IsInitializedOnCompatibleAdapter(runtime)) {
+    xr_compatible_result =
+        device::mojom::XrCompatibleResult::kCompatibleAfterRestart;
+  } else {
+    // We can still be incompatible after restarting if either:
+    //  1. The runtime has been removed (usually means the VR headset was
+    //     unplugged) since the GPU process restart was triggered. Per the WebXR
+    //     spec, if there is no device, xr compatible is false.
+    //  2. The GPU process is still not using the correct GPU after restarting.
+    xr_compatible_result =
+        device::mojom::XrCompatibleResult::kNotCompatibleAfterRestart;
+  }
+
+  for (VRServiceImpl* service : services_)
+    service->OnMakeXrCompatibleComplete(xr_compatible_result);
+}
+
 XRRuntimeManagerImpl::XRRuntimeManagerImpl(XRProviderList providers)
     : providers_(std::move(providers)) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -321,6 +433,27 @@ XRRuntimeManagerImpl::~XRRuntimeManagerImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   CHECK_EQ(g_xr_runtime_manager, this);
   g_xr_runtime_manager = nullptr;
+
+  // If a GPU adapter LUID was added to the command line to pass to the GPU
+  // process, remove the switch so subsequent GPU processes initialize on the
+  // default GPU.
+  if (xr_compatible_restarted_gpu_) {
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        switches::kUseAdapterLuid);
+
+#if defined(OS_WIN)
+    // If we changed the GPU, revert it back to the default GPU. This is
+    // separate from xr_compatible_restarted_gpu_ because the GPU process may
+    // not have been successfully initialized using the specified GPU and is
+    // still on the default adapter.
+    LUID active_gpu =
+        content::GpuDataManager::GetInstance()->GetGPUInfo().active_gpu().luid;
+    if (active_gpu.LowPart != default_gpu_.LowPart ||
+        active_gpu.HighPart != default_gpu_.HighPart) {
+      content::KillGpuProcess();
+    }
+#endif
+  }
 }
 
 scoped_refptr<XRRuntimeManagerImpl> XRRuntimeManagerImpl::CreateInstance(
@@ -385,14 +518,15 @@ bool XRRuntimeManagerImpl::AreAllProvidersInitialized() {
 void XRRuntimeManagerImpl::AddRuntime(
     device::mojom::XRDeviceId id,
     device::mojom::VRDisplayInfoPtr info,
+    device::mojom::XRDeviceDataPtr device_data,
     mojo::PendingRemote<device::mojom::XRRuntime> runtime) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(runtimes_.find(id) == runtimes_.end());
 
   TRACE_EVENT_INSTANT1("xr", "AddRuntime", TRACE_EVENT_SCOPE_THREAD, "id", id);
 
-  runtimes_[id] = std::make_unique<BrowserXRRuntimeImpl>(id, std::move(runtime),
-                                                         std::move(info));
+  runtimes_[id] = std::make_unique<BrowserXRRuntimeImpl>(
+      id, std::move(device_data), std::move(runtime), std::move(info));
 
   for (Observer& obs : g_xr_runtime_manager_observers.Get())
     obs.OnRuntimeAdded(runtimes_[id].get());

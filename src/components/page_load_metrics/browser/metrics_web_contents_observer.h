@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
@@ -25,6 +26,10 @@
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
+
+namespace blink {
+struct MobileFriendliness;
+}  // namespace blink
 
 namespace content {
 class NavigationHandle;
@@ -65,6 +70,8 @@ class MetricsWebContentsObserver
     // fine.
     virtual void OnCommit(PageLoadTracker* tracker) {}
 
+    virtual void OnRestoredFromBackForwardCache(PageLoadTracker* tracker) {}
+
     // Returns the observer delegate for the committed load associated with
     // the MetricsWebContentsObserver.
     const PageLoadMetricsObserverDelegate& GetDelegateForCommittedLoad();
@@ -83,9 +90,6 @@ class MetricsWebContentsObserver
 
   // Note that the returned metrics is owned by the web contents.
   static MetricsWebContentsObserver* CreateForWebContents(
-      content::WebContents* web_contents,
-      std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
-  MetricsWebContentsObserver(
       content::WebContents* web_contents,
       std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
   ~MetricsWebContentsObserver() override;
@@ -131,6 +135,8 @@ class MetricsWebContentsObserver
                          const GURL& first_party_url,
                          bool blocked_by_policy,
                          StorageType storage_type);
+  void DidActivatePortal(content::WebContents* predecessor_web_contents,
+                         base::TimeTicks activation_time) override;
 
   // These methods are forwarded from the MetricsNavigationThrottle.
   void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);
@@ -160,7 +166,8 @@ class MetricsWebContentsObserver
       mojom::FrameRenderDataUpdatePtr render_data,
       mojom::CpuTimingPtr cpu_timing,
       mojom::DeferredResourceCountsPtr new_deferred_resource_data,
-      mojom::InputTimingPtr input_timing_delta);
+      mojom::InputTimingPtr input_timing_delta,
+      const blink::MobileFriendliness& mobile_friendliness);
 
   // Informs the observers of the currently committed load that the event
   // corresponding to |event_key| has occurred. This should not be called within
@@ -171,18 +178,30 @@ class MetricsWebContentsObserver
  private:
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
 
+  MetricsWebContentsObserver(
+      content::WebContents* web_contents,
+      std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
+
   void WillStartNavigationRequestImpl(
       content::NavigationHandle* navigation_handle);
 
   // page_load_metrics::mojom::PageLoadMetrics implementation.
-  void UpdateTiming(mojom::PageLoadTimingPtr timing,
-                    mojom::FrameMetadataPtr metadata,
-                    mojom::PageLoadFeaturesPtr new_features,
-                    std::vector<mojom::ResourceDataUpdatePtr> resources,
-                    mojom::FrameRenderDataUpdatePtr render_data,
-                    mojom::CpuTimingPtr cpu_timing,
-                    mojom::DeferredResourceCountsPtr new_deferred_resource_data,
-                    mojom::InputTimingPtr input_timing) override;
+  void UpdateTiming(
+      mojom::PageLoadTimingPtr timing,
+      mojom::FrameMetadataPtr metadata,
+      mojom::PageLoadFeaturesPtr new_features,
+      std::vector<mojom::ResourceDataUpdatePtr> resources,
+      mojom::FrameRenderDataUpdatePtr render_data,
+      mojom::CpuTimingPtr cpu_timing,
+      mojom::DeferredResourceCountsPtr new_deferred_resource_data,
+      mojom::InputTimingPtr input_timing,
+      const blink::MobileFriendliness& mobile_friendliness) override;
+
+  void SetUpSharedMemoryForSmoothness(
+      base::ReadOnlySharedMemoryRegion shared_memory) override;
+
+  // Common part for UpdateThroughput and OnTimingUpdated.
+  bool DoesTimingUpdateHaveError();
 
   void HandleFailedNavigationForTrackedLoad(
       content::NavigationHandle* navigation_handle,
@@ -273,6 +292,9 @@ class MetricsWebContentsObserver
   std::vector<std::unique_ptr<PageLoadTracker>> aborted_provisional_loads_;
 
   std::unique_ptr<PageLoadTracker> committed_load_;
+
+  // This is currently set only for the main frame.
+  base::ReadOnlySharedMemoryRegion ukm_smoothness_data_;
 
   // A page can be stored in back-forward cache - in this case its
   // PageLoadTracker should be preserved as well. Here we store PageLoadTracker

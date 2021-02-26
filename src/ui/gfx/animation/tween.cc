@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 #if defined(OS_WIN)
 #include <float.h>
@@ -42,6 +41,9 @@ double Tween::CalculateValue(Tween::Type type, double state) {
 
     case EASE_IN_OUT_2:
       return gfx::CubicBezier(0.33, 0, 0.67, 1).Solve(state);
+
+    case EASE_OUT_3:
+      return gfx::CubicBezier(0.6, 0, 0, 1).Solve(state);
 
     case LINEAR:
       return state;
@@ -81,7 +83,7 @@ double Tween::CalculateValue(Tween::Type type, double state) {
 namespace {
 
 uint8_t FloatToColorByte(float f) {
-  return base::saturated_cast<uint8_t>(ToRoundedInt(f * 255.f));
+  return base::ClampRound<uint8_t>(f * 255.0f);
 }
 
 uint8_t BlendColorComponents(uint8_t start,
@@ -95,11 +97,6 @@ uint8_t BlendColorComponents(uint8_t start,
   float blended_premultiplied = Tween::FloatValueBetween(
       progress, start / 255.f * start_alpha, target / 255.f * target_alpha);
   return FloatToColorByte(blended_premultiplied / blended_alpha);
-}
-
-double TimeDeltaDivide(base::TimeDelta dividend, base::TimeDelta divisor) {
-  return static_cast<double>(dividend.InMicroseconds()) /
-         static_cast<double>(divisor.InMicroseconds());
 }
 
 }  // namespace
@@ -148,8 +145,7 @@ float Tween::ClampedFloatValueBetween(const base::TimeTicks& time,
   if (time >= target_time)
     return target;
 
-  double progress =
-      TimeDeltaDivide(time - start_time, target_time - start_time);
+  const double progress = (time - start_time) / (target_time - start_time);
   return FloatValueBetween(progress, start, target);
 }
 
@@ -171,8 +167,8 @@ int Tween::IntValueBetween(double value, int start, int target) {
 
 // static
 int Tween::LinearIntValueBetween(double value, int start, int target) {
-  // NOTE: Do not use ToRoundedInt()!  See comments on function declaration.
-  return ToFlooredInt(0.5 + DoubleValueBetween(value, start, target));
+  // NOTE: Do not use base::ClampRound()!  See comments on function declaration.
+  return base::ClampFloor(0.5 + DoubleValueBetween(value, start, target));
 }
 
 // static

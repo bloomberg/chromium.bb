@@ -8,20 +8,17 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://oobe/custom_elements.html">
 
-<dom-module id="encryption-migration">
+<link rel="import" href="/components/oobe_i18n_behavior.html">
+<link rel="import" href="/components/throbber_notice.html">
+
+<dom-module id="encryption-migration-element">
   <template>
     <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="encryption_migration.css">
-    <oobe-dialog tabindex="0" has-buttons hidden="[[!isInitial_(uiState)]]">
-    </oobe-dialog>
-    <oobe-dialog id="minimal-migration-dialog" tabindex="0" has-buttons
-        hidden="[[!isMigratingMinimal_(uiState)]]">
-      <div slot="footer" class="layout vertical">
-        <throbber-notice text-key="gaiaLoading"></throbber-notice>
-      </div>
+    <oobe-dialog tabindex="0" has-buttons for-step="initial">
     </oobe-dialog>
     <oobe-dialog tabindex="0" id="ready-dialog" has-buttons
-        title-key="migrationReadyTitle" hidden="[[!isReady_(uiState)]]"
+        title-key="migrationReadyTitle" for-step="ready"
         subtitle-key="migrationReadyDescription">
       <iron-icon slot="oobe-icon" class="warning-icon"></iron-icon>
       <div slot="footer" class="layout vertical center center-justified"
@@ -49,16 +46,15 @@
       <div slot="bottom-buttons" class="flex layout horizontal"
           hidden="[[isResuming]]">
         <div class="flex"></div>
-        <oobe-text-button border id="skip-button" on-tap="onSkip_"
+        <oobe-text-button border id="skip-button" on-click="onSkip_"
             hidden="[[isSkipHidden_()]]" text-key="migrationButtonSkip">
         </oobe-text-button>
-        <oobe-text-button inverse id="upgrade-button" on-tap="onUpgrade_"
+        <oobe-text-button inverse id="upgrade-button" on-click="onUpgrade_"
             disabled="[[isUpdateDisabled_(isEnoughBattery, isSkipped)]]"
             text-key="migrationButtonUpdate"></oobe-text-button>
       </div>
     </oobe-dialog>
-    <oobe-dialog id="migrating-dialog" tabindex="0"
-        hidden="[[!isMigrating_(uiState)]]"
+    <oobe-dialog id="migrating-dialog" tabindex="0" for-step="migrating"
         title-key="migrationMigratingTitle"
         subtitle-key="migrationMigratingDescription">
       <iron-icon slot="oobe-icon" class="chrome-logo"></iron-icon>
@@ -75,8 +71,7 @@
       </div>
     </oobe-dialog>
     <oobe-dialog id="error-dialog" tabindex="0" has-buttons
-        hidden="[[!isMigrationFailed_(uiState)]]"
-        title-key="migrationFailedTitle"
+        title-key="migrationFailedTitle" for-step="migration-failed"
         subtitle-key="migrationFailedSubtitle">
       <iron-icon icon="cr:warning" slot="oobe-icon" class="warning">
       </iron-icon>
@@ -86,17 +81,16 @@
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
 <if expr="_google_chrome">
-        <oobe-text-button border on-tap="onReportAnIssue_"
+        <oobe-text-button border on-click="onReportAnIssue_"
             text-key="migrationButtonReportAnIssue"></oobe-text-button>
 </if>
         <oobe-text-button inverse id="restart-button"
-            on-tap="onRestartOnFailure_" text-key="migrationButtonRestart">
+            on-click="onRestartOnFailure_" text-key="migrationButtonRestart">
         </oobe-text-button>
       </div>
     </oobe-dialog>
     <oobe-dialog id="insufficient-space-dialog" tabindex="0" has-buttons
-        hidden="[[!isNotEnoughSpace_(uiState)]]"
-        title-key="migrationReadyTitle"
+        title-key="migrationReadyTitle" for-step="not-enough-space"
         subtitle-key="migrationReadyDescription">
       <iron-icon slot="oobe-icon" class="chrome-logo"></iron-icon>
       <div slot="footer" class="layout vertical" aria-live="polite">
@@ -115,11 +109,11 @@
         <div class="flex"></div>
         <oobe-text-button inverse id="insufficient-space-skip-button"
             hidden="[[isResuming]]"
-            on-tap="onSkip_" text-key="migrationButtonContinue">
+            on-click="onSkip_" text-key="migrationButtonContinue">
         </oobe-text-button>
         <oobe-text-button inverse id="insufficient-space-restart-button"
             hidden="[[!isResuming]]"
-            on-tap="onRestartOnLowStorage_"
+            on-click="onRestartOnLowStorage_"
             text-key="migrationButtonRestart">
         </oobe-text-button>
       </div>

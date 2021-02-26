@@ -12,6 +12,8 @@
 
 #include <vector>
 
+struct SkV2;
+
 namespace skjson {
 
 class ObjectValue;
@@ -26,8 +28,6 @@ class KeyframeAnimatorBuilder;
 
 class Animator : public SkRefCnt {
 public:
-    virtual ~Animator() = default;
-
     using StateChanged = bool;
     StateChanged seek(float t) { return this->onSeek(t); }
 
@@ -54,6 +54,12 @@ public:
         return this->bind<T>(abuilder, jobject, &v);
     }
 
+    // A flavor of bind<Vec2Value> which drives an additional/optional orientation target
+    // (rotation in degrees), when bound to a motion path property.
+    bool bindAutoOrientable(const AnimationBuilder& abuilder,
+                            const skjson::ObjectValue* jobject,
+                            SkV2* v, float* orientation);
+
     bool isStatic() const { return fAnimators.empty(); }
 
 protected:
@@ -66,10 +72,7 @@ protected:
 private:
     StateChanged onSeek(float) final;
 
-    bool bindImpl(const AnimationBuilder&,
-                  const skjson::ObjectValue*,
-                  KeyframeAnimatorBuilder&,
-                  void*);
+    bool bindImpl(const AnimationBuilder&, const skjson::ObjectValue*, KeyframeAnimatorBuilder&);
 
     std::vector<sk_sp<Animator>> fAnimators;
     bool                         fHasSynced = false;

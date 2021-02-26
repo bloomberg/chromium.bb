@@ -12,6 +12,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace views {
 
@@ -99,10 +100,19 @@ void ImageView::SetAccessibleName(const base::string16& accessible_name) {
 
   accessible_name_ = accessible_name;
   OnPropertyChanged(&accessible_name_, kPropertyEffectsNone);
+  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 const base::string16& ImageView::GetAccessibleName() const {
   return accessible_name_.empty() ? tooltip_text_ : accessible_name_;
+}
+
+void ImageView::SetTooltipText(const base::string16& tooltip) {
+  tooltip_text_ = tooltip;
+}
+
+const base::string16& ImageView::GetTooltipText() const {
+  return tooltip_text_;
 }
 
 bool ImageView::IsImageEqual(const gfx::ImageSkia& img) const {
@@ -266,11 +276,11 @@ DEFINE_ENUM_CONVERTERS(
     {ImageView::Alignment::kCenter, base::ASCIIToUTF16("kCenter")},
     {ImageView::Alignment::kTrailing, base::ASCIIToUTF16("kTrailing")})
 
-BEGIN_METADATA(ImageView)
-METADATA_PARENT_CLASS(View)
-ADD_PROPERTY_METADATA(ImageView, Alignment, HorizontalAlignment)
-ADD_PROPERTY_METADATA(ImageView, Alignment, VerticalAlignment)
-ADD_PROPERTY_METADATA(ImageView, base::string16, AccessibleName)
-END_METADATA()
+BEGIN_METADATA(ImageView, View)
+ADD_PROPERTY_METADATA(Alignment, HorizontalAlignment)
+ADD_PROPERTY_METADATA(Alignment, VerticalAlignment)
+ADD_PROPERTY_METADATA(base::string16, AccessibleName)
+ADD_PROPERTY_METADATA(base::string16, TooltipText)
+END_METADATA
 
 }  // namespace views

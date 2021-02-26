@@ -235,6 +235,10 @@ bool Event::IsBeforeTextInsertedEvent() const {
   return false;
 }
 
+bool Event::IsBeforeCreatePolicyEvent() const {
+  return false;
+}
+
 bool Event::IsBeforeUnloadEvent() const {
   return false;
 }
@@ -385,7 +389,7 @@ DispatchEventResult Event::DispatchEvent(EventDispatcher& dispatcher) {
   return dispatcher.Dispatch();
 }
 
-void Event::Trace(Visitor* visitor) {
+void Event::Trace(Visitor* visitor) const {
   visitor->Trace(current_target_);
   visitor->Trace(target_);
   visitor->Trace(underlying_event_);

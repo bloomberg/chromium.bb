@@ -6,6 +6,8 @@ module blink.mojom;
 
 import "url/mojom/url.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
+import "services/network/public/mojom/blocked_by_response_reason.mojom";
+import "services/network/public/mojom/source_location.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 
 // A code that uniquely identifies an issue. This type should be descriptive
@@ -13,6 +15,8 @@ import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 enum InspectorIssueCode {
   kSameSiteCookieIssue,
   kMixedContentIssue,
+  kBlockedByResponseIssue,
+  kContentSecurityPolicyIssue,
 };
 
 // Information about a cookie that is affected by an issue.
@@ -31,10 +35,28 @@ struct AffectedFrame {
   string frame_id;
 };
 
+struct BlockedByResponseIssueDetails {
+  AffectedRequest request;
+  AffectedFrame? parentFrame;
+  AffectedFrame? blockedFrame;
+  network.mojom.BlockedByResponseReason reason;
+};
+
+enum HeavyAdResolutionStatus {
+  kHeavyAdBlocked,
+  kHeavyAdWarning,
+};
+
+enum HeavyAdReason {
+  kNetworkTotalLimit,
+  kCpuTotalLimit,
+  kCpuPeakLimit,
+};
+
 enum MixedContentResolutionStatus {
-  MixedContentBlocked,
-  MixedContentAutomaticallyUpgraded,
-  MixedContentWarning,
+  kMixedContentBlocked,
+  kMixedContentAutomaticallyUpgraded,
+  kMixedContentWarning,
 };
 
 struct MixedContentIssueDetails {
@@ -46,31 +68,52 @@ struct MixedContentIssueDetails {
   AffectedFrame? frame;
 };
 
+enum ContentSecurityPolicyViolationType {
+    kInlineViolation,
+    kEvalViolation,
+    kURLViolation,
+    kTrustedTypesSinkViolation,
+    kTrustedTypesPolicyViolation,
+};
+
+struct ContentSecurityPolicyIssueDetails {
+  url.mojom.Url? blocked_url;
+  string violated_directive;
+  bool is_report_only;
+  ContentSecurityPolicyViolationType content_security_policy_violation_type;
+  AffectedFrame? frame_ancestor;
+  network.mojom.SourceLocation? source_location;
+  // 0 is not a valid node id and is used to indicate absence.
+  int32 violating_node_id = 0;
+};
+
 enum SameSiteCookieOperation {
-  SetCookie, ReadCookie
+  kSetCookie, kReadCookie
 };
 
 enum SameSiteCookieExclusionReason {
-  ExcludeSameSiteUnspecifiedTreatedAsLax,
-  ExcludeSameSiteNoneInsecure,
+  kExcludeSameSiteUnspecifiedTreatedAsLax,
+  kExcludeSameSiteNoneInsecure,
+  kExcludeSameSiteLax,
+  kExcludeSameSiteStrict,
 };
 
 enum SameSiteCookieWarningReason {
-  WarnSameSiteUnspecifiedCrossSiteContext,
-  WarnSameSiteNoneInsecure,
-  WarnSameSiteUnspecifiedLaxAllowUnsafe,
-  WarnSameSiteStrictLaxDowngradeStrict,
-  WarnSameSiteStrictCrossDowngradeStrict,
-  WarnSameSiteStrictCrossDowngradeLax,
-  WarnSameSiteLaxCrossDowngradeStrict,
-  WarnSameSiteLaxCrossDowngradeLax,
+  kWarnSameSiteUnspecifiedCrossSiteContext,
+  kWarnSameSiteNoneInsecure,
+  kWarnSameSiteUnspecifiedLaxAllowUnsafe,
+  kWarnSameSiteStrictLaxDowngradeStrict,
+  kWarnSameSiteStrictCrossDowngradeStrict,
+  kWarnSameSiteStrictCrossDowngradeLax,
+  kWarnSameSiteLaxCrossDowngradeStrict,
+  kWarnSameSiteLaxCrossDowngradeLax,
 };
 
 // Specific information about |kSameSiteCookieIssue| type issues.
 struct SameSiteCookieIssueDetails {
   AffectedCookie cookie;
-  array<SameSiteCookieExclusionReason> exclusionReason;
-  array<SameSiteCookieWarningReason> warningReason;
+  array<SameSiteCookieExclusionReason> exclusion_reason;
+  array<SameSiteCookieWarningReason> warning_reason;
   SameSiteCookieOperation operation;
   url.mojom.Url? site_for_cookies;
   url.mojom.Url? cookie_url;
@@ -80,8 +123,10 @@ struct SameSiteCookieIssueDetails {
 // A collection of optional fields that may store additional data depending
 // on the issue code.
 struct InspectorIssueDetails {
-  SameSiteCookieIssueDetails? sameSiteCookieIssueDetails;
+  SameSiteCookieIssueDetails? samesite_cookie_issue_details;
   MixedContentIssueDetails? mixed_content_issue_details;
+  BlockedByResponseIssueDetails? blocked_by_response_issue_details;
+  ContentSecurityPolicyIssueDetails? csp_issue_details;
 };
 
 struct InspectorIssueInfo {

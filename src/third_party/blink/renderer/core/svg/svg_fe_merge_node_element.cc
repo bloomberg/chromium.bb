@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_fe_merge_node_element.h"
 
+#include "third_party/blink/renderer/core/svg/svg_animated_string.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_primitive_standard_attributes.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -31,7 +32,7 @@ SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
   AddToPropertyMap(in1_);
 }
 
-void SVGFEMergeNodeElement::Trace(Visitor* visitor) {
+void SVGFEMergeNodeElement::Trace(Visitor* visitor) const {
   visitor->Trace(in1_);
   SVGElement::Trace(visitor);
 }

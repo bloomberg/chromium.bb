@@ -17,7 +17,8 @@ class CompositionBuilder;
 
 class LayerBuilder final {
 public:
-    explicit LayerBuilder(const skjson::ObjectValue& jlayer);
+    LayerBuilder(const skjson::ObjectValue& jlayer, const SkSize& comp_size);
+    LayerBuilder(const LayerBuilder&) = default;
     ~LayerBuilder();
 
     int index() const { return fIndex; }
@@ -30,6 +31,10 @@ public:
     // Attaches the actual layer content and finalizes its render tree.  Called once per layer.
     sk_sp<sksg::RenderNode> buildRenderTree(const AnimationBuilder&, CompositionBuilder*,
                                             const LayerBuilder* prev_layer);
+
+    const sk_sp<sksg::RenderNode>& contentTree() const { return fContentTree; }
+
+    const SkSize& size() const { return fInfo.fSize; }
 
 private:
     enum TransformType : uint8_t {
@@ -63,7 +68,9 @@ private:
     const int                  fIndex;
     const int                  fParentIndex;
     const int                  fType;
+    const bool                 fAutoOrient;
 
+    AnimationBuilder::LayerInfo fInfo;
     sk_sp<sksg::Transform>     fLayerTransform;             // this layer's transform node.
     sk_sp<sksg::Transform>     fTransformCache[2];          // cached 2D/3D chain for the local node
     sk_sp<sksg::RenderNode>    fContentTree;                // render tree for layer content,

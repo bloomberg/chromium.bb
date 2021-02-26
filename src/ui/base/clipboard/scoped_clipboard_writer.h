@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 
 namespace base {
 class Pickle;
@@ -30,8 +31,12 @@ namespace ui {
 class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ScopedClipboardWriter {
  public:
   // Create an instance that is a simple wrapper around the clipboard of the
-  // given buffer.
-  explicit ScopedClipboardWriter(ClipboardBuffer buffer);
+  // given buffer with an optional parameter indicating the source of the data.
+  // TODO(crbug.com/1103193): change its references to use
+  // DataTransferEndpoint, if possible.
+  explicit ScopedClipboardWriter(
+      ClipboardBuffer buffer,
+      std::unique_ptr<DataTransferEndpoint> src = nullptr);
 
   ~ScopedClipboardWriter();
 
@@ -41,6 +46,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ScopedClipboardWriter {
   // Adds HTML to the clipboard.  The url parameter is optional, but especially
   // useful if the HTML fragment contains relative links.
   void WriteHTML(const base::string16& markup, const std::string& source_url);
+
+  // Adds SVG to the clipboard.
+  void WriteSvg(const base::string16& text);
 
   // Adds RTF to the clipboard.
   void WriteRTF(const std::string& rtf_data);
@@ -67,6 +75,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ScopedClipboardWriter {
 
   void WriteImage(const SkBitmap& bitmap);
 
+  // Mark the data to be written as confidential.
+  void MarkAsConfidential();
+
   // Removes all objects that would be written to the clipboard.
   void Reset();
 
@@ -82,6 +93,13 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ScopedClipboardWriter {
   const ClipboardBuffer buffer_;
 
   SkBitmap bitmap_;
+
+  bool confidential_ = false;
+
+  // The source of the data written in ScopedClipboardWriter, nullptr means it's
+  // not set, or the source of the data can't be represented by
+  // DataTransferEndpoint.
+  std::unique_ptr<DataTransferEndpoint> data_src_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedClipboardWriter);
 };

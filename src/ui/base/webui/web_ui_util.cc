@@ -21,12 +21,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/resources/grit/webui_resources.h"
+#include "ui/resources/grit/webui_generated_resources.h"
 #include "ui/strings/grit/app_locale_settings.h"
 #include "url/gurl.h"
 
@@ -183,13 +182,8 @@ void ParsePathAndScale(const GURL& url,
   ParsePathAndImageSpec(url, path, scale_factor, nullptr);
 }
 
-void ParsePathAndFrame(const GURL& url, std::string* path, int* frame_index) {
-  ParsePathAndImageSpec(url, path, nullptr, frame_index);
-}
-
 void SetLoadTimeDataDefaults(const std::string& app_locale,
                              base::DictionaryValue* localized_strings) {
-  localized_strings->SetString("a11yenhanced", GetA11yEnhanced());
   localized_strings->SetString("fontfamily", GetFontFamily());
   localized_strings->SetString("fontsize", GetFontSize());
   localized_strings->SetString("language", l10n_util::GetLanguage(app_locale));
@@ -198,7 +192,6 @@ void SetLoadTimeDataDefaults(const std::string& app_locale,
 
 void SetLoadTimeDataDefaults(const std::string& app_locale,
                              ui::TemplateReplacements* replacements) {
-  (*replacements)["a11yenhanced"] = GetA11yEnhanced();
   (*replacements)["fontfamily"] = GetFontFamily();
   (*replacements)["fontsize"] = GetFontSize();
   (*replacements)["language"] = l10n_util::GetLanguage(app_locale);
@@ -209,14 +202,14 @@ std::string GetWebUiCssTextDefaults() {
   const ui::ResourceBundle& resource_bundle =
       ui::ResourceBundle::GetSharedInstance();
   return GetWebUiCssTextDefaults(
-      resource_bundle.LoadDataResourceString(IDR_WEBUI_CSS_TEXT_DEFAULTS));
+      resource_bundle.LoadDataResourceString(IDR_WEBUI_CSS_TEXT_DEFAULTS_CSS));
 }
 
 std::string GetWebUiCssTextDefaultsMd() {
   const ui::ResourceBundle& resource_bundle =
       ui::ResourceBundle::GetSharedInstance();
-  return GetWebUiCssTextDefaults(
-      resource_bundle.LoadDataResourceString(IDR_WEBUI_CSS_TEXT_DEFAULTS_MD));
+  return GetWebUiCssTextDefaults(resource_bundle.LoadDataResourceString(
+      IDR_WEBUI_CSS_TEXT_DEFAULTS_MD_CSS));
 }
 
 void AppendWebUiCssTextDefaults(std::string* html) {
@@ -225,20 +218,16 @@ void AppendWebUiCssTextDefaults(std::string* html) {
   html->append("</style>");
 }
 
-std::string GetA11yEnhanced() {
-  return base::FeatureList::IsEnabled(features::kWebUIA11yEnhancements)
-             ? "a11y-enhanced"
-             : "";
-}
-
 std::string GetFontFamily() {
   std::string font_family = l10n_util::GetStringUTF8(IDS_WEB_FONT_FAMILY);
 
-// TODO(dnicoara) Remove Ozone check when PlatformFont support is introduced
-// into Ozone: crbug.com/320050
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(USE_OZONE)
-  font_family = ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont).GetFontName() + ", " + font_family;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  std::string font_name = ui::ResourceBundle::GetSharedInstance()
+                              .GetFont(ui::ResourceBundle::BaseFont)
+                              .GetFontName();
+  // Wrap |font_name| with quotes to ensure it will always be parsed correctly
+  // in CSS.
+  font_family = "\"" + font_name + "\", " + font_family;
 #endif
 
   return font_family;

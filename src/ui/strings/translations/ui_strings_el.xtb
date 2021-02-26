@@ -23,6 +23,7 @@
 <translation id="1450753235335490080">Δεν είναι δυνατή η κοινοποίηση <ph name="CONTENT_TYPE" /></translation>
 <translation id="1487931858675166540">Γίνεται ανταλλαγή του στοιχείου <ph name="FIRST_ITEM_TITLE" /> με το στοιχείο <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Αναζητήσατε αυτόν τον όρο στο παρελθόν. Η διαγραφή του όρου "<ph name="QUERY" />" από το ιστορικό σας θα τον καταργήσει οριστικά από τον λογαριασμό σας σε όλες τις συσκευές σας.</translation>
+<translation id="1510238584712386396">Λειτουργία εκκίνησης</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 λεπτό και }other{# λεπτά και }}</translation>
 <translation id="1643823602425662293">Ειδοποίηση</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -37,12 +38,13 @@
 <translation id="1842960171412779397">επιλογή</translation>
 <translation id="1859234291848436338">Κατεύθυνση γραφής</translation>
 <translation id="1860796786778352021">Κλείσιμο ειδοποίησης</translation>
+<translation id="186476001994626254">Περιεχόμενο έξυπνης επικόλλησης ιστού</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Επιλογή όλ&amp;ων</translation>
+<translation id="19085484004813472">Αυτή είναι μια νέα λειτουργία</translation>
 <translation id="2006524834898217237">Βεβαιωθείτε ότι αυτή η συσκευή είναι συνδεδεμένη στο διαδίκτυο.</translation>
 <translation id="208586643495776849">Προσπαθήστε ξανά</translation>
-<translation id="2090963878406559571">Για να στείλετε έναν αριθμό από <ph name="ORIGIN" /> σε τηλέφωνο Android, <ph name="TROUBLESHOOT_LINK" /> και για τις δύο συσκευές στις ρυθμίσεις.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1ημ.}other{#ημ.}}</translation>
 <translation id="2148716181193084225">Σήμερα</translation>
 <translation id="2161656808144014275">Κείμενο</translation>
@@ -64,14 +66,18 @@
 <translation id="2522350507219695259">Η βαθμονόμηση ολοκληρώθηκε</translation>
 <translation id="252373100621549798">Άγνωστη οθόνη</translation>
 <translation id="2545651323591713692">Αναβολή</translation>
+<translation id="2570734079541893434">Διαχείριση ρυθμίσεων</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{σε 1 ω.}other{σε # ω.}}</translation>
 <translation id="2583543531130364912">Βαθμονόμηση οθόνης αφής</translation>
+<translation id="2586657967955657006">Πρόχειρο</translation>
 <translation id="2666092431469916601">Κορυφή</translation>
 <translation id="2701330563083355633">Κοινοποιήθηκε από <ph name="DEVICE_NAME" /></translation>
+<translation id="271033894570825754">Νέο</translation>
 <translation id="2743387203779672305">Αντιγραφή στο πρόχειρο</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Άνοιγμα φακέλου</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Πριν από 1 χρόνο}other{Πριν από # χρόνια}}</translation>
+<translation id="2878511608894704031">Διαγραφή όλων</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{σε 1 η.}other{σε # η.}}</translation>
 <translation id="2931838996092594335">κάνω κλικ</translation>
 <translation id="2981684127883932071">Προβολή προτάσεων</translation>
@@ -94,6 +100,7 @@
 <translation id="3600969208114796418">Αρχείο <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Αναζήτηση "<ph name="LOOKUP_STRING" />"</translation>
+<translation id="3622035490309591977">Ιστορικό προχείρου</translation>
 <translation id="364720409959344976">Επιλέξτε φάκελο για μεταφόρτωση</translation>
 <translation id="3660179305079774227">Πάνω βέλος</translation>
 <translation id="3670030362669914947">Αριθμός</translation>
@@ -112,6 +119,7 @@
 <translation id="4289300219472526559">Έναρξη ομιλίας</translation>
 <translation id="430191667033048642">Η εφαρμογή <ph name="MOVED_APP_NAME" /> μεταφέρθηκε στον φάκελο <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">ΟΛΕΣ ΟΙ ΕΦΑΡΜΟΓΕΣ</translation>
+<translation id="4491109536499578614">Εικόνα</translation>
 <translation id="4588090240171750605">Κύλιση δεξιά</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Αξιολόγηση με αστέρι <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Πρόταση εφαρμογής</translation>
@@ -128,22 +136,26 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Τρίγωνο αποκάλυψης</translation>
 <translation id="5278860589123563674">Αποτυχία αποστολής</translation>
+<translation id="5283099933536931082">Η εφαρμογή <ph name="APP_ITEM_TITLE" /> χρειάζεται την προσοχή σας.</translation>
 <translation id="528468243742722775">Τέλος</translation>
-<translation id="5327567770033251652">ενεργοποίηση συγχρονισμού</translation>
 <translation id="5329858601952122676">&amp;Διαγραφή</translation>
 <translation id="5395308026110844773">Η εφαρμογή <ph name="DRAGGED_APP_NAME" /> πάνω από την εφαρμογή <ph name="IN_PLACE_APP" />, αφήστε για να δημιουργήσετε φάκελο.</translation>
 <translation id="5463830097259460683">Emoji και σύμβολα</translation>
 <translation id="5476505524087279545">απενεργοποίηση</translation>
 <translation id="547979256943495781">Ράφι στα δεξιά</translation>
+<translation id="5528053674512161860">Η φόρτωση σελίδας απέτυχε επειδή δεν είναι εγκατεστημένη η λειτουργική μονάδα διεπαφής χρήστη προγραμματιστή (dev_ui)</translation>
 <translation id="5574202486608032840">Σύστημα <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Πλήκτρο Backspace</translation>
 <translation id="5613020302032141669">Αριστερό βέλος</translation>
+<translation id="5652575806481723716">Η εφαρμογή <ph name="FOCUSED_APP_NAME" /> χρειάζεται την προσοχή σας.</translation>
 <translation id="5675363643668471212">Στοιχείο ραφιού</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 λεπτό}other{# λεπτά}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Ενεργή σήμερα}=1{Ενεργή 1 ημέρα πριν}other{Ενεργή # ημέρες πριν}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ημέρα και }other{# ημέρες και }}</translation>
 <translation id="5789643057113097023">.</translation>
+<translation id="5843690142429128814">Εικόνα.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{σε 1 ε.}other{σε # ε.}}</translation>
+<translation id="588258955323874662">Πλήρης οθόνη</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Απομένει 1 δευτερόλεπτο}other{Απομένουν # δευτερόλεπτα}}</translation>
 <translation id="5941711191222866238">Ελαχιστοποίηση</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ώρα}other{# ώρες}}</translation>
@@ -152,10 +164,12 @@
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6119846243427417423">ενεργοποίηση</translation>
 <translation id="6129953537138746214">Κενό</translation>
+<translation id="6134259848159370930">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές, στις ρυθμίσεις και στον ιστό.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Επέκταση σε όλες τις εφαρμογές</translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
+<translation id="6166852626429024716">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές, στις ρυθμίσεις και στον ιστό…</translation>
 <translation id="6264365405983206840">Επιλογή Όλ&amp;ων</translation>
 <translation id="6351032674660237738">ΠΡΟΤΑΣΕΙΣ ΕΦΑΡΜΟΓΩΝ</translation>
 <translation id="6364916375976753737">Κύλιση αριστερά</translation>
@@ -165,22 +179,22 @@
 <translation id="6417265370957905582">Βοηθός Google</translation>
 <translation id="6430678249303439055">Αποκλεισμός όλων των ειδοποιήσεων από αυτή την εφαρμογή</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Πριν από 1 δευτερόλεπτο}other{Πριν από # δευτερόλεπτα}}</translation>
+<translation id="6503257047630241175">Περιεχόμενο RTF</translation>
 <translation id="6539092367496845964">Παρουσιάστηκε κάποιο πρόβλημα. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="654149438358937226">Αποκλεισμός όλων των ειδοποιήσεων</translation>
 <translation id="6567071839949112727">γονικό κλικ</translation>
 <translation id="6578407462441924264">Χωρίς όνομα</translation>
 <translation id="6612467943526193239">Για να εξέλθετε από τη βαθμονόμηση, πατήστε Esc.</translation>
 <translation id="6620110761915583480">Αποθήκευση Αρχείου</translation>
-<translation id="6656912866303152668">Βεβαιωθείτε ότι ο συγχρονισμός στο Chrome έχει ενεργοποιηθεί για τη συσκευή <ph name="TARGET_DEVICE_NAME" /> και έπειτα δοκιμάστε ξανά την αποστολή.</translation>
 <translation id="6699343763173986273">Επόμενο κομμάτι πολυμέσων</translation>
 <translation id="6710213216561001401">Προηγούμενο</translation>
-<translation id="6779314412797872738">Για να στείλετε έναν αριθμό από εδώ στο τηλέφωνό σας, <ph name="TROUBLESHOOT_LINK" /> και για τις δύο συσκευές στις ρυθμίσεις.</translation>
 <translation id="6786750046913594791">Κλείσιμο φακέλου</translation>
 <translation id="6808150112686056157">Διακοπή πολυμέσων</translation>
 <translation id="6845383723252244143">Επιλογή Φακέλου</translation>
 <translation id="6845533974506654842">πατήστε</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Απομένει 1 ώρα}other{Απομένουν # ώρες}}</translation>
 <translation id="688711909580084195">Ιστοσελίδα χωρίς τίτλο</translation>
+<translation id="6902419395050653510">Περιεχόμενο HTML.</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{Απομένει 1 χρόνος}other{Απομένουν # χρόνια}}</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
@@ -192,7 +206,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Απομένει 1 λεπτό}other{Απομένουν # λεπτά}}</translation>
 <translation id="7319740667687257810">Εφαρμογή εκκίνησης, μερική προβολή</translation>
-<translation id="7352651011704765696">Παρουσιάστηκε κάποιο πρόβλημα</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Πριν από 1 λεπτό}other{Πριν από # λεπτά}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Απομένει 1 λεπτό}other{Απομένουν # λεπτά}}</translation>
@@ -205,6 +218,7 @@
 <translation id="7848989271541991537">Μετάβαση στη σελίδα <ph name="PAGE_NUMBER" />, σειρά <ph name="ROW_NUMBER" />, στήλη <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Να μην γίνει αποκλεισμός</translation>
 <translation id="7907591526440419938">Άνοιγμα αρχείου</translation>
+<translation id="7952747673138230804">Το Chrome OS εμφανίζει προτάσεις για νέο περιεχόμενο για εξερεύνηση. Στέλνει στατιστικά στοιχεία για τη βελτίωση της ποιότητας, μόνο σε περίπτωση που έχετε επιλέξει να κοινοποιείτε δεδομένα χρήσης. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Πλήκτρο Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Περισσότερες από 1 μη αναγνωσμένες ειδοποιήσεις}other{Περισσότερες από # μη αναγνωσμένες ειδοποιήσεις}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{σε 1 λ.}other{σε # λ.}}</translation>
@@ -231,6 +245,7 @@
 <translation id="8602707065186045623">Αρχείο <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Το ράφι είναι πάντα ορατό</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές, στις ρυθμίσεις και στον ιστό. Χρησιμοποιήστε τα πλήκτρα βέλους για πλοήγηση στις εφαρμογές σας.</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> ακόμη</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1ώρ.}other{#ώρ.}}</translation>

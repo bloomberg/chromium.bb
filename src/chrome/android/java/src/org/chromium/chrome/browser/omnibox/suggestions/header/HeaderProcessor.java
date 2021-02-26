@@ -6,11 +6,12 @@ package org.chromium.chrome.browser.omnibox.suggestions.header;
 
 import android.content.Context;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.DropdownItemProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.UrlBarDelegate;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** A class that handles model and view creation for the suggestion headers. */
@@ -41,21 +42,9 @@ public class HeaderProcessor implements DropdownItemProcessor {
     }
 
     @Override
-    public void onUrlFocusChange(boolean hasFocus) {}
-
-    @Override
-    public void onNativeInitialized() {}
-
-    @Override
     public PropertyModel createModel() {
         return new PropertyModel(HeaderViewProperties.ALL_KEYS);
     }
-
-    @Override
-    public void recordItemPresented(PropertyModel model) {}
-
-    @Override
-    public void onSuggestionsReceived() {}
 
     /**
      * Populate a model for the group header.
@@ -65,7 +54,7 @@ public class HeaderProcessor implements DropdownItemProcessor {
     public void populateModel(
             final PropertyModel model, final int groupId, final String headerText) {
         model.set(HeaderViewProperties.TITLE, headerText);
-        model.set(HeaderViewProperties.IS_EXPANDED, true);
+        model.set(HeaderViewProperties.IS_COLLAPSED, false);
         model.set(HeaderViewProperties.DELEGATE, new HeaderViewProperties.Delegate() {
             @Override
             public void onHeaderSelected() {
@@ -74,9 +63,14 @@ public class HeaderProcessor implements DropdownItemProcessor {
 
             @Override
             public void onHeaderClicked() {
-                boolean newState = !model.get(HeaderViewProperties.IS_EXPANDED);
-                model.set(HeaderViewProperties.IS_EXPANDED, newState);
-                mSuggestionHost.setGroupVisibility(groupId, newState);
+                final boolean newState = !model.get(HeaderViewProperties.IS_COLLAPSED);
+                RecordHistogram.recordSparseHistogram(newState
+                                ? "Omnibox.ToggleSuggestionGroupId.Off"
+                                : "Omnibox.ToggleSuggestionGroupId.On",
+                        groupId);
+
+                model.set(HeaderViewProperties.IS_COLLAPSED, newState);
+                mSuggestionHost.setGroupCollapsedState(groupId, newState);
             }
         });
     }

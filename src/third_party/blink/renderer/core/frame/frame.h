@@ -29,25 +29,34 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_
 
+#include "base/i18n/rtl.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "third_party/blink/public/common/feature_policy/document_policy.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy_features.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
-#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/input/scroll_direction.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/navigation_rate_limiter.h"
+#include "third_party/blink/renderer/core/frame/opened_frame_tracker.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
-#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+
+namespace ui {
+enum class ScrollGranularity : uint8_t;
+}  // namespace ui
 
 namespace blink {
 
@@ -69,17 +78,28 @@ class WindowProxy;
 class WindowProxyManager;
 struct FrameLoadRequest;
 class WindowAgentFactory;
+class WebFrame;
 
 enum class FrameDetachType { kRemove, kSwap };
+
+// kInsertLater will create a provisional frame, i.e. it will have a parent
+// frame but not be inserted into the frame tree.
+enum class FrameInsertType { kInsertInConstructor, kInsertLater };
 
 // Frame is the base class of LocalFrame and RemoteFrame and should only contain
 // functionality shared between both. In particular, any method related to
 // input, layout, or painting probably belongs on LocalFrame.
 class CORE_EXPORT Frame : public GarbageCollected<Frame> {
  public:
+  // Returns the Frame instance for the given |frame_token|.
+  // Note that this Frame can be either a LocalFrame or Remote instance.
+  // TODO(crbug.com/1096617): Remove the UnguessableToken version of this.
+  static Frame* ResolveFrame(const base::UnguessableToken& frame_token);
+  static Frame* ResolveFrame(const FrameToken& frame_token);
+
   virtual ~Frame();
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
   virtual bool IsLocalFrame() const = 0;
   virtual bool IsRemoteFrame() const = 0;
@@ -165,15 +185,6 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
 
   virtual void DidChangeVisibilityState();
 
-  // This should never be called from outside Frame or WebFrame.
-  void NotifyUserActivationInLocalTree();
-
-  // This should never be called from outside Frame or WebFrame.
-  bool ConsumeTransientUserActivationInLocalTree();
-
-  // This should never be called from outside Frame or WebFrame.
-  void ClearUserActivationInLocalTree();
-
   // Returns the transient user activation state of this frame.
   bool HasTransientUserActivation() const {
     return user_activation_state_.IsActive();
@@ -186,9 +197,6 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
 
   // Resets the user activation state of this frame.
   void ClearUserActivation() { user_activation_state_.Clear(); }
-
-  // Transfers user activation state from |other| frame into |this|.
-  void TransferUserActivationFrom(Frame* other);
 
   void SetHadStickyUserActivationBeforeNavigation(bool value) {
     had_sticky_user_activation_before_nav_ = value;
@@ -203,19 +211,17 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   }
 
   // Ad Tagging
-  bool IsAdSubframe() const {
-    return ad_frame_type_ != mojom::blink::AdFrameType::kNonAd;
-  }
-
-  bool IsAdRoot() const {
-    return ad_frame_type_ == mojom::blink::AdFrameType::kRootAd;
-  }
+  bool IsAdSubframe() const;
+  bool IsAdRoot() const;
 
   // Called to make a frame inert or non-inert. A frame is inert when there
   // is a modal dialog displayed within an ancestor frame, and this frame
   // itself is not within the dialog.
   virtual void SetIsInert(bool) = 0;
   void UpdateInertIfPossible();
+
+  // Changes the text direction of the selected input node.
+  virtual void SetTextDirection(base::i18n::TextDirection) = 0;
 
   virtual void SetInheritedEffectiveTouchAction(TouchAction) = 0;
   void UpdateInheritedEffectiveTouchActionIfPossible();
@@ -227,13 +233,18 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // Returns true if the scroll was consumed locally.
   virtual bool BubbleLogicalScrollFromChildFrame(
       mojom::blink::ScrollDirection direction,
-      ScrollGranularity granularity,
+      ui::ScrollGranularity granularity,
       Frame* child) = 0;
 
   const base::UnguessableToken& GetDevToolsFrameToken() const {
     return devtools_frame_token_;
   }
   const std::string& ToTraceValue();
+
+  void SetEmbeddingToken(const base::UnguessableToken& embedding_token);
+  const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const {
+    return embedding_token_;
+  }
 
   NavigationRateLimiter& navigation_rate_limiter() {
     return navigation_rate_limiter_;
@@ -244,7 +255,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // non-empty feature state which is taken from the the original opener of the
   // frame. This is similar to how sandbox flags are propagated to the opened
   // new browsing contexts.
-  const FeaturePolicy::FeatureState& OpenerFeatureState() const {
+  const FeaturePolicyFeatureState& OpenerFeatureState() const {
     return opener_feature_state_;
   }
 
@@ -252,18 +263,18 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // |opener_feature_state| is set, it can no longer be modified (due to the
   // fact that the original opener which passed down the FeatureState cannot be
   // modified either).
-  void SetOpenerFeatureState(const FeaturePolicy::FeatureState& state) {
+  void SetOpenerFeatureState(const FeaturePolicyFeatureState& state) {
     DCHECK(state.empty() || IsMainFrame());
     DCHECK(opener_feature_state_.empty());
     opener_feature_state_ = state;
   }
 
-  const DocumentPolicy::FeatureState& GetRequiredDocumentPolicy() const {
+  const DocumentPolicyFeatureState& GetRequiredDocumentPolicy() const {
     return required_document_policy_;
   }
 
   void SetRequiredDocumentPolicy(
-      const DocumentPolicy::FeatureState& required_document_policy) {
+      const DocumentPolicyFeatureState& required_document_policy) {
     required_document_policy_ = required_document_policy;
   }
 
@@ -274,6 +285,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // This identifier represents the stable identifier between a
   // LocalFrame  <--> RenderFrameHostImpl or a
   // RemoteFrame <--> RenderFrameProxyHost in the browser process.
+  // TODO(crbug.com/1096617): Make this return a FrameToken instead.
   const base::UnguessableToken& GetFrameToken() const { return frame_token_; }
 
   bool GetVisibleToHitTesting() const { return visible_to_hit_testing_; }
@@ -282,12 +294,53 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   void ScheduleFormSubmission(FrameScheduler* scheduler,
                               FormSubmission* form_submission);
   void CancelFormSubmission();
+  bool IsFormSubmissionPending();
+
+  // Asks the browser process to activate the page associated to the current
+  // Frame, reporting |originating_frame| as the local frame originating this
+  // request.
+  void FocusPage(LocalFrame* originating_frame);
 
   // Called when the focus controller changes the focus to this frame.
   virtual void DidFocus() = 0;
 
   virtual IntSize GetMainFrameViewportSize() const = 0;
   virtual IntPoint GetMainFrameScrollOffset() const = 0;
+
+  // Sets this frame's opener to another frame, or disowned the opener
+  // if opener is null. See http://html.spec.whatwg.org/#dom-opener.
+  virtual void SetOpener(Frame* opener) = 0;
+
+  void SetOpenerDoNotNotify(Frame* opener);
+
+  // Returns the frame that opened this frame or null if there is none.
+  Frame* Opener() const { return opener_; }
+
+  // Returns the parent frame or null if this is the top-most frame.
+  Frame* Parent() const { return parent_; }
+
+  // Returns the top-most frame in the hierarchy containing this frame.
+  Frame* Top();
+
+  // Returns the first child frame.
+  Frame* FirstChild() const { return first_child_; }
+
+  // Returns the previous sibling frame.
+  Frame* PreviousSibling() const { return previous_sibling_; }
+
+  // Returns the next sibling frame.
+  Frame* NextSibling() const { return next_sibling_; }
+
+  // Returns the last child frame.
+  Frame* LastChild() const { return last_child_; }
+
+  // Detaches a frame from its parent frame if it has one.
+  void DetachFromParent();
+
+  bool Swap(WebFrame*);
+
+  // Removes the given child from this frame.
+  void RemoveChild(Frame* child);
 
  protected:
   // |inheriting_agent_factory| should basically be set to the parent frame or
@@ -298,6 +351,9 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   Frame(FrameClient*,
         Page&,
         FrameOwner*,
+        Frame* parent,
+        Frame* previous_sibling,
+        FrameInsertType insert_type,
         const base::UnguessableToken& frame_token,
         WindowProxyManager*,
         WindowAgentFactory* inheriting_agent_factory);
@@ -322,6 +378,11 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
 
   void ApplyFrameOwnerProperties(
       mojom::blink::FrameOwnerPropertiesPtr properties);
+
+  void NotifyUserActivationInFrameTree(
+      mojom::blink::UserActivationNotificationType notification_type);
+  bool ConsumeTransientUserActivationInFrameTree();
+  void ClearUserActivationInFrameTree();
 
   mutable FrameTree tree_node_;
 
@@ -351,22 +412,34 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   mojom::blink::AdFrameType ad_frame_type_;
 
  private:
+  // Inserts the given frame as a child of this frame, so that it is the next
+  // child after |previous_sibling|, or first child if |previous_sibling| is
+  // null. The child frame's parent must be set in the constructor.
+  void InsertAfter(Frame* new_child, Frame* previous_sibling);
+
   Member<FrameClient> client_;
   const Member<WindowProxyManager> window_proxy_manager_;
   FrameLifecycle lifecycle_;
+
+  Member<Frame> opener_;
+  Member<Frame> parent_;
+  Member<Frame> previous_sibling_;
+  Member<Frame> next_sibling_;
+  Member<Frame> first_child_;
+  Member<Frame> last_child_;
 
   NavigationRateLimiter navigation_rate_limiter_;
 
   // Feature policy state inherited from an opener. It is always empty for child
   // frames.
-  FeaturePolicy::FeatureState opener_feature_state_;
+  FeaturePolicyFeatureState opener_feature_state_;
 
   // The required document policy for any subframes of this frame.
   // Note: current frame's document policy might not conform to
   // |required_document_policy_| here, as the Require-Document-Policy HTTP
   // header can specify required document policy which only takes effect for
   // subtree frames.
-  DocumentPolicy::FeatureState required_document_policy_;
+  DocumentPolicyFeatureState required_document_policy_;
 
   Member<WindowAgentFactory> window_agent_factory_;
 
@@ -374,6 +447,12 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   bool is_loading_;
   base::UnguessableToken devtools_frame_token_;
   base::Optional<std::string> trace_value_;
+
+  // Embedding token, if existing, associated to this frame. For local frames
+  // this will only be valid if the frame has committed a navigation and will
+  // change when a new document is committed. For remote frames this will only
+  // be valid when owned by an HTMLFrameOwnerElement.
+  base::Optional<base::UnguessableToken> embedding_token_;
 
   // The user activation state of the current frame.  See |UserActivationState|
   // for details on how this state is maintained.
@@ -401,6 +480,8 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // The reason it is stored here is so that it can handle both LocalFrames and
   // RemoteFrames, and so it can be canceled by FrameLoader.
   TaskHandle form_submit_navigation_task_;
+
+  OpenedFrameTracker opened_frame_tracker_;
 };
 
 inline FrameClient* Frame::Client() const {

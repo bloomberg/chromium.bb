@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/pepper/pepper_network_proxy_host.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_proxy_lookup_helper.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
@@ -46,9 +45,9 @@ bool LookUpProxyForURLCallback(
   StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
       site_instance->GetBrowserContext(), site_instance);
 
-  // TODO(https://crbug.com/1021661): Pass in a non-empty NetworkIsolationKey.
   storage_partition->GetNetworkContext()->LookUpProxyForURL(
-      url, net::NetworkIsolationKey::Todo(), std::move(proxy_lookup_client));
+      url, render_frame_host->GetNetworkIsolationKey(),
+      std::move(proxy_lookup_client));
   return true;
 }
 
@@ -64,8 +63,8 @@ PepperNetworkProxyHost::PepperNetworkProxyHost(BrowserPpapiHostImpl* host,
       waiting_for_ui_thread_data_(true) {
   host->GetRenderFrameIDsForInstance(instance, &render_process_id_,
                                      &render_frame_id_);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&GetUIThreadDataOnUIThread, render_process_id_,
                      render_frame_id_, host->external_plugin()),
       base::BindOnce(&PepperNetworkProxyHost::DidGetUIThreadData,

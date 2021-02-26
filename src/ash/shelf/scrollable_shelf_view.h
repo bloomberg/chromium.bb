@@ -9,6 +9,7 @@
 
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/ash_export.h"
+#include "ash/drag_drop/drag_image_view.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/scroll_arrow_view.h"
@@ -22,6 +23,8 @@
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/widget/unique_widget_ptr.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 class FocusSearch;
@@ -29,7 +32,6 @@ class FocusSearch;
 
 namespace ash {
 class PresentationTimeRecorder;
-class ScrollableShelfAnimationMetricsReporter;
 
 class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                                        public ShellObserver,
@@ -101,10 +103,23 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   bool RequiresScrollingForItemSize(const gfx::Size& target_size,
                                     int button_size) const;
 
+  // Sets padding insets.
+  void SetEdgePaddingInsets(const gfx::Insets& padding_insets);
+
+  // Returns the edge padding insets based on the scrollable shelf view's
+  // target bounds or the current bounds, indicated by |use_target_bounds|.
+  gfx::Insets CalculateEdgePadding(bool use_target_bounds) const;
+
   views::View* GetShelfContainerViewForTest();
   bool ShouldAdjustForTest() const;
 
   void SetTestObserver(TestObserver* test_observer);
+
+  // Returns true if any shelf corner button has ripple ring activated.
+  bool IsAnyCornerButtonInkDropActivatedForTest() const;
+
+  // Returns the maximum scroll distance for the current layout.
+  float GetScrollUpperBoundForTest() const;
 
   ShelfView* shelf_view() { return shelf_view_; }
   ShelfContainerView* shelf_container_view() { return shelf_container_view_; }
@@ -119,7 +134,11 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   LayoutStrategy layout_strategy_for_test() const { return layout_strategy_; }
   gfx::Vector2dF scroll_offset_for_test() const { return scroll_offset_; }
 
-  const DragImageView* drag_icon_for_test() const { return drag_icon_.get(); }
+  const DragImageView* drag_icon_for_test() const {
+    return drag_icon_widget_ ? static_cast<DragImageView*>(
+                                   drag_icon_widget_->GetContentsView())
+                             : nullptr;
+  }
 
   int first_tappable_app_index() { return first_tappable_app_index_; }
   int last_tappable_app_index() { return last_tappable_app_index_; }
@@ -133,6 +152,15 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   }
 
   const gfx::Rect& visible_space() const { return visible_space_; }
+
+  const gfx::Insets& edge_padding_insets() const {
+    return edge_padding_insets_;
+  }
+
+  void set_is_padding_configured_externally(
+      bool is_padding_configured_externally) {
+    is_padding_configured_externally_ = is_padding_configured_externally;
+  }
 
   // Size of the arrow button.
   static int GetArrowButtonSize();
@@ -150,6 +178,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   class GradientLayerDelegate;
   class ScrollableShelfArrowView;
   class DragIconDropAnimationDelegate;
+  class ScopedActiveInkDropCountImpl;
 
   struct FadeZone {
     // Bounds of the fade in/out zone.
@@ -194,13 +223,11 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Creates the animation for scrolling shelf by |scroll_distance|.
   void StartShelfScrollAnimation(float scroll_distance);
 
-  // Calculates the layout strategy based on the three factors:
-  // (1) scroll offset on the main axis; (2) available space for shelf icons;
-  // (3) Bounds of the scrollable shelf view: actual view bounds or target
-  // bounds.
+  // Calculates the layout strategy based on:
+  // (1) scroll offset on the main axis.
+  // (2) length of the available space to accommodate shelf icons.
   LayoutStrategy CalculateLayoutStrategy(float scroll_distance_on_main_axis,
-                                         int space_for_icons,
-                                         bool use_target_bounds) const;
+                                         int available_length) const;
 
   Shelf* GetShelf();
   const Shelf* GetShelf() const;
@@ -227,7 +254,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                      const ui::Event& event,
                      views::InkDrop* ink_drop) override;
   void HandleAccessibleActionScrollToMakeVisible(ShelfButton* button) override;
-  void NotifyInkDropActivity(bool activated, views::Button* sender) override;
+  std::unique_ptr<ScopedActiveInkDropCount> CreateScopedActiveInkDropCount(
+      const ShelfButton* sender) override;
 
   // ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,
@@ -250,6 +278,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   views::View* GetViewForEvent(const ui::Event& event) override;
 
   // ApplicationDragAndDropHost:
+  bool ShouldStartDrag(
+      const std::string& app_id,
+      const gfx::Point& location_in_screen_coordinates) const override;
   void CreateDragIconProxyByLocationWithNoAnimation(
       const gfx::Point& origin_in_screen_coordinates,
       const gfx::ImageSkia& icon,
@@ -272,20 +303,6 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // arrow buttons' visibility directly.
   bool ShouldShowLeftArrow() const;
   bool ShouldShowRightArrow() const;
-
-  // Returns the padding insets which guarantee the minimum gap between
-  // scrollable shelf and other components (like status area widget).
-  gfx::Insets CalculateBaseEdgePadding() const;
-
-  // Returns the extra padding inset which is influenced by the padding
-  // strategy. There are three strategies: (1) display centering alignment (2)
-  // scrollable shelf centering alignment (3) overflow mode
-  // |use_target_bounds| indicates which view bounds are used for calculation:
-  // actual view bounds or target view bounds.
-  gfx::Insets CalculateExtraEdgePadding(bool use_target_bounds) const;
-
-  // Returns the sum of the base padding and the extra padding.
-  gfx::Insets GetTotalEdgePadding() const;
 
   int GetStatusWidgetSizeOnPrimaryAxis(bool use_target_bounds) const;
 
@@ -450,11 +467,26 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   int CalculateScrollOffsetForTargetAvailableSpace(
       const gfx::Rect& target_space) const;
 
-  // Returns whether the ink drop for the |sender| needs to be clipped.
-  bool InkDropNeedsClipping(views::Button* sender) const;
+  // Returns whether |sender|'s activated ink drop should be counted.
+  bool ShouldCountActivatedInkDrop(const views::View* sender) const;
 
   // Enable/disable the rounded corners of the shelf container.
   void EnableShelfRoundedCorners(bool enable);
+
+  // Update the number of corner buttons with ripple ring activated. |increase|
+  // indicates whether the number increases or decreases.
+  void OnActiveInkDropChange(bool increase);
+
+  // Returns whether layer clip should be enabled.
+  bool ShouldEnableLayerClip() const;
+
+  // Enable/disable the layer clip on |shelf_container_view_|.
+  void EnableLayerClipOnShelfContainerView(bool enable);
+
+  // Calculates the length of space required by shelf icons to show without
+  // scroll. Note that the return value includes the padding space between the
+  // app icon and the end of scrollable shelf.
+  int CalculateShelfIconsPreferredLength() const;
 
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 
@@ -468,15 +500,15 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   ShelfView* shelf_view_ = nullptr;
 
-  // Padding insets based on |base_padding_| and shelf alignment.
-  gfx::Insets base_padding_insets_;
+  // Defines the padding space inside the scrollable shelf. It is decided by the
+  // current padding strategy.
+  gfx::Insets edge_padding_insets_;
 
-  // Extra insets decided by the current padding strategy.
-  gfx::Insets extra_padding_insets_;
-
-  // Minimum gap between scrollable shelf and other components (like status area
-  // widget) in DIPs.
-  const int base_padding_;
+  // Indicates whether |edge_padding_insets_| is configured externally.
+  // Usually |edge_padding_insets_| is calculated by ScrollableShelfView's
+  // member function. However, in some animations, |edge_padding_insets_|
+  // is set by animation progress to ensure the smooth bounds transition.
+  bool is_padding_configured_externally_ = false;
 
   // Visible space of |shelf_container_view| in ScrollableShelfView's local
   // coordinates. Different from |available_space_|, |visible_space_| only
@@ -503,6 +535,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   int first_tappable_app_index_ = -1;
   int last_tappable_app_index_ = -1;
 
+  // The number of corner buttons whose ink drop is activated.
+  int activated_corner_buttons_ = 0;
+
   // Whether this view should focus its last focusable child (instead of its
   // first) when focused.
   bool default_last_focusable_child_ = false;
@@ -526,7 +561,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   // Replaces the dragged app icon during drag procedure. It ensures that the
   // app icon can be dragged out of the shelf view.
-  std::unique_ptr<DragImageView> drag_icon_;
+  views::UniqueWidgetPtr drag_icon_widget_;
 
   // The delegate to create the animation of moving the dropped icon to the
   // ideal place after drag release.
@@ -535,9 +570,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   base::OneShotTimer page_flip_timer_;
 
-  // Metric reporter for scrolling animations.
-  const std::unique_ptr<ScrollableShelfAnimationMetricsReporter>
-      animation_metrics_reporter_;
+  // Indicates whether the layer clip should be applied to
+  // |shelf_container_view_| in non-overflow mode.
+  bool layer_clip_in_non_overflow_ = false;
 
   // Records the presentation time for the scrollable shelf dragging.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;

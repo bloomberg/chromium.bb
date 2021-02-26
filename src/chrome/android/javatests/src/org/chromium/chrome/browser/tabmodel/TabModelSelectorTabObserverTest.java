@@ -4,13 +4,11 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.support.test.filters.SmallTest;
-import android.support.test.rule.UiThreadTestRule;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ObserverList.RewindableIterator;
@@ -33,12 +31,9 @@ import java.util.concurrent.ExecutionException;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class TabModelSelectorTabObserverTest {
-    // Do not add @Rule to this, it's already added to RuleChain
-    private final TabModelSelectorObserverTestRule mTestRule =
-            new TabModelSelectorObserverTestRule();
-
     @Rule
-    public final RuleChain mChain = RuleChain.outerRule(mTestRule).around(new UiThreadTestRule());
+    public final TabModelSelectorObserverTestRule mTestRule =
+            new TabModelSelectorObserverTestRule();
 
     @Test
     @SmallTest
@@ -104,7 +99,7 @@ public class TabModelSelectorTabObserverTest {
         assertTabHasObserver(normalTab1, observer);
         assertTabHasObserver(incognitoTab1, observer);
 
-        observer.destroy();
+        ThreadUtils.runOnUiThreadBlocking(() -> observer.destroy());
         assertTabDoesNotHaveObserver(normalTab1, observer, true);
         assertTabDoesNotHaveObserver(incognitoTab1, observer, true);
     }
@@ -112,7 +107,8 @@ public class TabModelSelectorTabObserverTest {
     @Test
     @SmallTest
     public void testObserverAddedBeforeInitialize() {
-        TabModelSelectorBase selector = new TabModelSelectorBase(null, false) {
+        TabModelSelectorBase selector = new TabModelSelectorBase(
+                null, EmptyTabModelFilter::new, false) {
             @Override
             public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
                     boolean incognito) {

@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 
@@ -18,11 +19,16 @@ namespace extensions {
 
 // static
 Feature::Platform Feature::GetCurrentPlatform() {
-#if defined(OS_CHROMEOS)
+// TODO(https://crbug.com/1052397): For readability, this should become
+// defined(OS_CHROMEOS) && BUILDFLAG(IS_CHROMEOS_LACROS). The second conditional
+// should be defined(OS_CHROMEOS) && BUILDFLAG(IS_CHROMEOS_ASH).
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return LACROS_PLATFORM;
+#elif BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   return CHROMEOS_PLATFORM;
 #elif defined(OS_LINUX)
   return LINUX_PLATFORM;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return MACOSX_PLATFORM;
 #elif defined(OS_WIN)
   return WIN_PLATFORM;

@@ -29,6 +29,7 @@
 #include "vkPlatform.hpp"
 #include "vkMemUtil.hpp"
 #include "vkApiVersion.hpp"
+#include "vkImageUtil.hpp"
 
 #include "tcuTestLog.hpp"
 #include "tcuCommandLine.hpp"
@@ -1162,6 +1163,31 @@ tcu::TestStatus testSemaphoreSignalWaitImport (Context&						context,
 	}
 }
 
+tcu::TestStatus testSemaphoreImportSyncFdSignaled (Context&						context,
+												   const SemaphoreTestConfig	config)
+{
+	const vk::PlatformInterface&		vkp					(context.getPlatformInterface());
+	const CustomInstance				instance			(createTestInstance(context, 0u, 0u, config.externalType));
+	const vk::InstanceDriver&			vki					(instance.getDriver());
+	const vk::VkPhysicalDevice			physicalDevice		(vk::chooseDevice(vki, instance, context.getTestContext().getCommandLine()));
+	const deUint32						queueFamilyIndex	(chooseQueueFamilyIndex(vki, physicalDevice, 0u));
+	const vk::VkSemaphoreImportFlags	flags				= config.permanence == PERMANENCE_TEMPORARY ? vk::VK_SEMAPHORE_IMPORT_TEMPORARY_BIT : (vk::VkSemaphoreImportFlagBits)0u;
+
+	checkSemaphoreSupport(vki, physicalDevice, config.externalType);
+
+	{
+		const vk::Unique<vk::VkDevice>		device		(createTestDevice(context, vkp, instance, vki, physicalDevice, config.externalType, 0u, 0u, queueFamilyIndex));
+		const vk::DeviceDriver				vkd			(vkp, instance, *device);
+		const vk::VkQueue					queue		(getQueue(vkd, *device, queueFamilyIndex));
+		NativeHandle						handle		= -1;
+		const vk::Unique<vk::VkSemaphore>	semaphore	(createAndImportSemaphore(vkd, *device, config.externalType, handle, flags));
+
+		submitDummyWait(vkd, queue, *semaphore);
+
+		return tcu::TestStatus::pass("Pass");
+	}
+}
+
 tcu::TestStatus testSemaphoreMultipleExports (Context&					context,
 											  const SemaphoreTestConfig	config)
 {
@@ -1928,6 +1954,31 @@ tcu::TestStatus testFenceSignalExportImportWait (Context&				context,
 				VK_CHECK(vkd.queueWaitIdle(queue));
 			}
 		}
+
+		return tcu::TestStatus::pass("Pass");
+	}
+}
+
+tcu::TestStatus testFenceImportSyncFdSignaled (Context&					context,
+											   const FenceTestConfig	config)
+{
+	const vk::PlatformInterface&		vkp					(context.getPlatformInterface());
+	const CustomInstance				instance			(createTestInstance(context, 0u, 0u, config.externalType));
+	const vk::InstanceDriver&			vki					(instance.getDriver());
+	const vk::VkPhysicalDevice			physicalDevice		(vk::chooseDevice(vki, instance, context.getTestContext().getCommandLine()));
+	const deUint32						queueFamilyIndex	(chooseQueueFamilyIndex(vki, physicalDevice, 0u));
+	const vk::VkFenceImportFlags		flags				= config.permanence == PERMANENCE_TEMPORARY ? vk::VK_FENCE_IMPORT_TEMPORARY_BIT : (vk::VkFenceImportFlagBits)0u;
+
+	checkFenceSupport(vki, physicalDevice, config.externalType);
+
+	{
+		const vk::Unique<vk::VkDevice>	device	(createTestDevice(context, vkp, instance, vki, physicalDevice, 0u, 0u, config.externalType, queueFamilyIndex));
+		const vk::DeviceDriver			vkd		(vkp, instance, *device);
+		NativeHandle					handle	= -1;
+		const vk::Unique<vk::VkFence>	fence	(createAndImportFence(vkd, *device, config.externalType, handle, flags));
+
+		if (vkd.waitForFences(*device, 1u, &*fence, VK_TRUE, 0) != vk::VK_SUCCESS)
+			return tcu::TestStatus::pass("Imported -1 sync fd isn't signaled");
 
 		return tcu::TestStatus::pass("Pass");
 	}
@@ -3699,6 +3750,10 @@ tcu::TestStatus testImageQueries (Context& context, vk::VkExternalMemoryHandleTy
 
 			if (deviceHasDedicated)
 			{
+				// Memory requirements cannot be queried without binding the image.
+				if (externalType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID)
+					continue;
+
 				const vk::Unique<vk::VkImage>				image						(createExternalImage(*vkd, *device, queueFamilyIndex, externalType, format, 16u, 16u, tiling, createFlag, usageFlag));
 				const vk::VkMemoryDedicatedRequirements		reqs						(getMemoryDedicatedRequirements(*vkd, *device, *image));
 				const bool									propertiesRequiresDedicated	= (externalProperties.externalMemoryProperties.externalMemoryFeatures & vk::VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT) != 0;
@@ -3744,7 +3799,7 @@ tcu::TestStatus testImageBindExportImportBind (Context&					context,
 	const deUint32							queueFamilyIndex	(chooseQueueFamilyIndex(vki, physicalDevice, 0u));
 	const vk::Unique<vk::VkDevice>			device				(createTestDevice(context, vkp, instance, vki, physicalDevice, 0u, config.externalType, 0u, queueFamilyIndex, config.dedicated));
 	const vk::DeviceDriver					vkd					(vkp, instance, *device);
-	const vk::VkImageUsageFlags				usage				= vk::VK_BUFFER_USAGE_TRANSFER_SRC_BIT|vk::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	const vk::VkImageUsageFlags				usage				= vk::VK_IMAGE_USAGE_TRANSFER_SRC_BIT | vk::VK_IMAGE_USAGE_TRANSFER_DST_BIT | (config.externalType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID ? vk::VK_IMAGE_USAGE_SAMPLED_BIT : 0);
 	const vk::VkFormat						format				= vk::VK_FORMAT_R8G8B8A8_UNORM;
 	const deUint32							width				= 64u;
 	const deUint32							height				= 64u;
@@ -3753,7 +3808,7 @@ tcu::TestStatus testImageBindExportImportBind (Context&					context,
 	checkImageSupport(vki, physicalDevice, config.externalType, 0u, usage, format, tiling, config.dedicated);
 
 	const vk::Unique<vk::VkImage>			imageA					(createExternalImage(vkd, *device, queueFamilyIndex, config.externalType, format, width, height, tiling, 0u, usage));
-	const vk::VkMemoryRequirements			requirements			(getImageMemoryRequirements(vkd, *device, *imageA));
+	const vk::VkMemoryRequirements			requirements			(getImageMemoryRequirements(vkd, *device, *imageA, config.externalType));
 	const deUint32							exportedMemoryTypeIndex	(chooseMemoryType(requirements.memoryTypeBits));
 	const vk::Unique<vk::VkDeviceMemory>	memoryA					(allocateExportableMemory(vkd, *device, requirements.size, exportedMemoryTypeIndex, config.externalType, config.dedicated ? *imageA : (vk::VkImage)0));
 	NativeHandle							handle;
@@ -3764,9 +3819,10 @@ tcu::TestStatus testImageBindExportImportBind (Context&					context,
 
 	{
 		const vk::Unique<vk::VkImage>			imageB	(createExternalImage(vkd, *device, queueFamilyIndex, config.externalType, format, width, height, tiling, 0u, usage));
+		const deUint32							idx		= config.externalType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID ? ~0u : exportedMemoryTypeIndex;
 		const vk::Unique<vk::VkDeviceMemory>	memoryB	(config.dedicated
-														 ? importDedicatedMemory(vkd, *device, *imageB, requirements, config.externalType, exportedMemoryTypeIndex, handle)
-														 : importMemory(vkd, *device, requirements, config.externalType, exportedMemoryTypeIndex, handle));
+														 ? importDedicatedMemory(vkd, *device, *imageB, requirements, config.externalType, idx, handle)
+														 : importMemory(vkd, *device, requirements, config.externalType, idx, handle));
 
 		VK_CHECK(vkd.bindImageMemory(*device, *imageB, *memoryB, 0u));
 	}
@@ -3784,7 +3840,7 @@ tcu::TestStatus testImageExportBindImportBind (Context&					context,
 	const deUint32							queueFamilyIndex	(chooseQueueFamilyIndex(vki, physicalDevice, 0u));
 	const vk::Unique<vk::VkDevice>			device				(createTestDevice(context, vkp, instance, vki, physicalDevice, 0u, config.externalType, 0u, queueFamilyIndex, config.dedicated));
 	const vk::DeviceDriver					vkd					(vkp, instance, *device);
-	const vk::VkImageUsageFlags				usage				= vk::VK_BUFFER_USAGE_TRANSFER_SRC_BIT|vk::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	const vk::VkImageUsageFlags				usage				= vk::VK_IMAGE_USAGE_TRANSFER_SRC_BIT | vk::VK_IMAGE_USAGE_TRANSFER_DST_BIT | (config.externalType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID ? vk::VK_IMAGE_USAGE_SAMPLED_BIT : 0);
 	const vk::VkFormat						format				= vk::VK_FORMAT_R8G8B8A8_UNORM;
 	const deUint32							width				= 64u;
 	const deUint32							height				= 64u;
@@ -3793,19 +3849,29 @@ tcu::TestStatus testImageExportBindImportBind (Context&					context,
 	checkImageSupport(vki, physicalDevice, config.externalType, 0u, usage, format, tiling, config.dedicated);
 
 	const vk::Unique<vk::VkImage>			imageA					(createExternalImage(vkd, *device, queueFamilyIndex, config.externalType, format, width, height, tiling, 0u, usage));
-	const vk::VkMemoryRequirements			requirements			(getImageMemoryRequirements(vkd, *device, *imageA));
+	const vk::VkMemoryRequirements			requirements			(getImageMemoryRequirements(vkd, *device, *imageA, config.externalType));
 	const deUint32							exportedMemoryTypeIndex	(chooseMemoryType(requirements.memoryTypeBits));
 	const vk::Unique<vk::VkDeviceMemory>	memoryA					(allocateExportableMemory(vkd, *device, requirements.size, exportedMemoryTypeIndex, config.externalType, config.dedicated ? *imageA : (vk::VkImage)0));
 	NativeHandle							handle;
 
-	getMemoryNative(vkd, *device, *memoryA, config.externalType, handle);
-	VK_CHECK(vkd.bindImageMemory(*device, *imageA, *memoryA, 0u));
+	if (config.externalType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID && config.dedicated)
+	{
+		// AHB required the image memory to be bound first.
+		VK_CHECK(vkd.bindImageMemory(*device, *imageA, *memoryA, 0u));
+		getMemoryNative(vkd, *device, *memoryA, config.externalType, handle);
+	}
+	else
+	{
+		getMemoryNative(vkd, *device, *memoryA, config.externalType, handle);
+		VK_CHECK(vkd.bindImageMemory(*device, *imageA, *memoryA, 0u));
+	}
 
 	{
 		const vk::Unique<vk::VkImage>			imageB	(createExternalImage(vkd, *device, queueFamilyIndex, config.externalType, format, width, height, tiling, 0u, usage));
+		const deUint32							idx		= config.externalType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID ? ~0u : exportedMemoryTypeIndex;
 		const vk::Unique<vk::VkDeviceMemory>	memoryB	(config.dedicated
-														 ? importDedicatedMemory(vkd, *device, *imageB, requirements, config.externalType, exportedMemoryTypeIndex, handle)
-														 : importMemory(vkd, *device, requirements, config.externalType, exportedMemoryTypeIndex, handle));
+														 ? importDedicatedMemory(vkd, *device, *imageB, requirements, config.externalType, idx, handle)
+														 : importMemory(vkd, *device, requirements, config.externalType, idx, handle));
 
 		VK_CHECK(vkd.bindImageMemory(*device, *imageB, *memoryB, 0u));
 	}
@@ -3823,7 +3889,7 @@ tcu::TestStatus testImageExportImportBindBind (Context&					context,
 	const deUint32							queueFamilyIndex	(chooseQueueFamilyIndex(vki, physicalDevice, 0u));
 	const vk::Unique<vk::VkDevice>			device				(createTestDevice(context, vkp, instance, vki, physicalDevice, 0u, config.externalType, 0u, queueFamilyIndex, config.dedicated));
 	const vk::DeviceDriver					vkd					(vkp, instance, *device);
-	const vk::VkImageUsageFlags				usage				= vk::VK_BUFFER_USAGE_TRANSFER_SRC_BIT|vk::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	const vk::VkImageUsageFlags				usage				= vk::VK_IMAGE_USAGE_TRANSFER_SRC_BIT | vk::VK_IMAGE_USAGE_TRANSFER_DST_BIT | (config.externalType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID ? vk::VK_IMAGE_USAGE_SAMPLED_BIT : 0);
 	const vk::VkFormat						format				= vk::VK_FORMAT_R8G8B8A8_UNORM;
 	const deUint32							width				= 64u;
 	const deUint32							height				= 64u;
@@ -3831,9 +3897,15 @@ tcu::TestStatus testImageExportImportBindBind (Context&					context,
 
 	checkImageSupport(vki, physicalDevice, config.externalType, 0u, usage, format, tiling, config.dedicated);
 
+	if (config.externalType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID && config.dedicated)
+	{
+		// AHB required the image memory to be bound first, which is not possible in this test.
+		TCU_THROW(NotSupportedError, "Unsupported for Android Hardware Buffer");
+	}
+
 	// \note Image is only allocated to get memory requirements
 	const vk::Unique<vk::VkImage>			imageA					(createExternalImage(vkd, *device, queueFamilyIndex, config.externalType, format, width, height, tiling, 0u, usage));
-	const vk::VkMemoryRequirements			requirements			(getImageMemoryRequirements(vkd, *device, *imageA));
+	const vk::VkMemoryRequirements			requirements			(getImageMemoryRequirements(vkd, *device, *imageA, config.externalType));
 	const deUint32							exportedMemoryTypeIndex	(chooseMemoryType(requirements.memoryTypeBits));
 	const vk::Unique<vk::VkDeviceMemory>	memoryA					(allocateExportableMemory(vkd, *device, requirements.size, exportedMemoryTypeIndex, config.externalType, config.dedicated ? *imageA : (vk::VkImage)0));
 	NativeHandle							handle;
@@ -3842,9 +3914,10 @@ tcu::TestStatus testImageExportImportBindBind (Context&					context,
 
 	{
 		const vk::Unique<vk::VkImage>			imageB	(createExternalImage(vkd, *device, queueFamilyIndex, config.externalType, format, width, height, tiling, 0u, usage));
+		const deUint32							idx		= config.externalType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID ? ~0u : exportedMemoryTypeIndex;
 		const vk::Unique<vk::VkDeviceMemory>	memoryB	(config.dedicated
-														 ? importDedicatedMemory(vkd, *device, *imageB, requirements, config.externalType, exportedMemoryTypeIndex, handle)
-														 : importMemory(vkd, *device, requirements, config.externalType, exportedMemoryTypeIndex, handle));
+														 ? importDedicatedMemory(vkd, *device, *imageB, requirements, config.externalType, idx, handle)
+														 : importMemory(vkd, *device, requirements, config.externalType, idx, handle));
 
 		VK_CHECK(vkd.bindImageMemory(*device, *imageA, *memoryA, 0u));
 		VK_CHECK(vkd.bindImageMemory(*device, *imageB, *memoryB, 0u));
@@ -3890,6 +3963,11 @@ de::MovePtr<tcu::TestCaseGroup> createFenceTests (tcu::TestContext& testCtx, vk:
 		addFunctionCase(fenceGroup.get(), std::string("signal_import_") + permanenceName,				"Test signaling and importing the fence.",								testFenceSignalImport,				config);
 		addFunctionCase(fenceGroup.get(), std::string("reset_") + permanenceName,						"Test resetting the fence.",											testFenceReset,						config);
 		addFunctionCase(fenceGroup.get(), std::string("transference_") + permanenceName,				"Test fences transference.",											testFenceTransference,				config);
+
+		if (externalType == vk::VK_EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT)
+		{
+			addFunctionCase(fenceGroup.get(), std::string("import_signaled_") + permanenceName,			"Test import signaled fence fd.",										testFenceImportSyncFdSignaled,		config);
+		}
 
 		if (externalType == vk::VK_EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT
 			|| externalType == vk::VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT)
@@ -3942,33 +4020,45 @@ bool ValidateAHardwareBuffer(vk::VkFormat format, deUint64 requiredAhbUsage, con
 		}
 	}
 	NativeHandle nativeHandle(ahb);
-	vk::VkAndroidHardwareBufferFormatPropertiesANDROID formatProperties =
-	{
-		vk::VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID,
-		DE_NULL,
-		vk::VK_FORMAT_UNDEFINED,
-		0u,
-		0u,
-		{ vk::VK_COMPONENT_SWIZZLE_IDENTITY, vk::VK_COMPONENT_SWIZZLE_IDENTITY, vk::VK_COMPONENT_SWIZZLE_IDENTITY, vk::VK_COMPONENT_SWIZZLE_IDENTITY },
-		vk::VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY,
-		vk::VK_SAMPLER_YCBCR_RANGE_ITU_FULL,
-		vk::VK_CHROMA_LOCATION_COSITED_EVEN,
-		vk::VK_CHROMA_LOCATION_COSITED_EVEN
-	};
-	vk::VkAndroidHardwareBufferPropertiesANDROID bufferProperties =
-	{
-		vk::VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID,
-		&formatProperties,
-		0u,
-		0u
-	};
 
-	VK_CHECK(vkd.getAndroidHardwareBufferPropertiesANDROID(device, ahb, &bufferProperties));
-	TCU_CHECK(formatProperties.format != vk::VK_FORMAT_UNDEFINED);
-	TCU_CHECK(formatProperties.format == format);
-	TCU_CHECK(formatProperties.externalFormat != 0u);
-	TCU_CHECK((formatProperties.formatFeatures & vk::VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0u);
-	TCU_CHECK((formatProperties.formatFeatures & (vk::VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT | vk::VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT)) != 0u);
+	const vk::VkComponentMapping mappingA = { vk::VK_COMPONENT_SWIZZLE_IDENTITY, vk::VK_COMPONENT_SWIZZLE_IDENTITY, vk::VK_COMPONENT_SWIZZLE_IDENTITY, vk::VK_COMPONENT_SWIZZLE_IDENTITY };
+	const vk::VkComponentMapping mappingB = { vk::VK_COMPONENT_SWIZZLE_R, vk::VK_COMPONENT_SWIZZLE_G, vk::VK_COMPONENT_SWIZZLE_B, vk::VK_COMPONENT_SWIZZLE_A };
+
+	for (int variantIdx = 0; variantIdx < 2; ++variantIdx)
+	{
+		// Both mappings should be equivalent and work.
+		const vk::VkComponentMapping& mapping = ((variantIdx == 0) ? mappingA : mappingB);
+
+		vk::VkAndroidHardwareBufferFormatPropertiesANDROID formatProperties =
+		{
+			vk::VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID,
+			DE_NULL,
+			vk::VK_FORMAT_UNDEFINED,
+			0u,
+			0u,
+			mapping,
+			vk::VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY,
+			vk::VK_SAMPLER_YCBCR_RANGE_ITU_FULL,
+			vk::VK_CHROMA_LOCATION_COSITED_EVEN,
+			vk::VK_CHROMA_LOCATION_COSITED_EVEN
+		};
+
+		vk::VkAndroidHardwareBufferPropertiesANDROID bufferProperties =
+		{
+			vk::VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID,
+			&formatProperties,
+			0u,
+			0u
+		};
+
+		VK_CHECK(vkd.getAndroidHardwareBufferPropertiesANDROID(device, ahb, &bufferProperties));
+		TCU_CHECK(formatProperties.format != vk::VK_FORMAT_UNDEFINED);
+		TCU_CHECK(formatProperties.format == format);
+		TCU_CHECK(formatProperties.externalFormat != 0u);
+		TCU_CHECK((formatProperties.formatFeatures & vk::VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0u);
+		TCU_CHECK((formatProperties.formatFeatures & (vk::VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT | vk::VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT)) != 0u);
+	}
+
 	return true;
 }
 
@@ -3991,16 +4081,8 @@ tcu::TestStatus testAndroidHardwareBufferImageFormat  (Context& context, vk::VkF
 	TestLog&									  log				  = context.getTestContext().getLog();
 	const vk::VkPhysicalDeviceLimits			  limits			  = getPhysicalDeviceProperties(vki, physicalDevice).limits;
 
-	vk::VkPhysicalDeviceProtectedMemoryFeatures		protectedFeatures;
-	protectedFeatures.sType				= vk::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES;
-	protectedFeatures.pNext				= DE_NULL;
-	protectedFeatures.protectedMemory	= VK_FALSE;
-
-	vk::VkPhysicalDeviceFeatures2					deviceFeatures;
-	deviceFeatures.sType		= vk::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-	deviceFeatures.pNext		= &protectedFeatures;
-
-	vki.getPhysicalDeviceFeatures2(physicalDevice, &deviceFeatures);
+	const vk::VkImageUsageFlagBits framebufferUsageFlag = vk::isDepthStencilFormat(format) ? vk::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+																						   : vk::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	const vk::VkImageUsageFlagBits				  usageFlags[]		  =
 	{
@@ -4008,13 +4090,12 @@ tcu::TestStatus testAndroidHardwareBufferImageFormat  (Context& context, vk::VkF
 		vk::VK_IMAGE_USAGE_TRANSFER_DST_BIT,
 		vk::VK_IMAGE_USAGE_SAMPLED_BIT,
 		vk::VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
-		vk::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		framebufferUsageFlag,
 	};
 	const vk::VkImageCreateFlagBits				  createFlags[]		  =
 	{
 		vk::VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT,
 		vk::VK_IMAGE_CREATE_EXTENDED_USAGE_BIT,
-		vk::VK_IMAGE_CREATE_PROTECTED_BIT,
 		vk::VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
 	};
 	const vk::VkImageTiling						  tilings[]			  =
@@ -4023,9 +4104,10 @@ tcu::TestStatus testAndroidHardwareBufferImageFormat  (Context& context, vk::VkF
 		vk::VK_IMAGE_TILING_LINEAR,
 	};
 	deUint64 mustSupportAhbUsageFlags = ahbApi->mustSupportAhbUsageFlags();
+	const size_t	one							= 1u;
 	const size_t	numOfUsageFlags				= DE_LENGTH_OF_ARRAY(usageFlags);
 	const size_t	numOfCreateFlags			= DE_LENGTH_OF_ARRAY(createFlags);
-	const size_t	numOfFlagCombos				= 1u << (numOfUsageFlags + numOfCreateFlags);
+	const size_t	numOfFlagCombos				= one << (numOfUsageFlags + numOfCreateFlags);
 	const size_t	numOfTilings				= DE_LENGTH_OF_ARRAY(tilings);
 
 	for (size_t combo = 0; combo < numOfFlagCombos; combo++)
@@ -4036,7 +4118,7 @@ tcu::TestStatus testAndroidHardwareBufferImageFormat  (Context& context, vk::VkF
 		bool					enableMaxLayerTest	= true;
 		for (size_t usageNdx = 0; usageNdx < numOfUsageFlags; usageNdx++)
 		{
-			if ((combo & (1u << usageNdx)) == 0)
+			if ((combo & (one << usageNdx)) == 0)
 				continue;
 			usage |= usageFlags[usageNdx];
 			requiredAhbUsage |= ahbApi->vkUsageToAhbUsage(usageFlags[usageNdx]);
@@ -4044,10 +4126,7 @@ tcu::TestStatus testAndroidHardwareBufferImageFormat  (Context& context, vk::VkF
 		for (size_t createFlagNdx = 0; createFlagNdx < numOfCreateFlags; createFlagNdx++)
 		{
 			const size_t	bit	= numOfUsageFlags + createFlagNdx;
-			if ((combo & (1u << bit)) == 0)
-				continue;
-			if (((createFlags[createFlagNdx] & vk::VK_IMAGE_CREATE_PROTECTED_BIT) == vk::VK_IMAGE_CREATE_PROTECTED_BIT ) &&
-				(protectedFeatures.protectedMemory == VK_FALSE))
+			if ((combo & (one << bit)) == 0)
 				continue;
 			createFlag |= createFlags[createFlagNdx];
 			requiredAhbUsage |= ahbApi->vkCreateToAhbUsage(createFlags[createFlagNdx]);
@@ -4144,7 +4223,7 @@ tcu::TestStatus testAndroidHardwareBufferImageFormat  (Context& context, vk::VkF
 			for (size_t i = 0; i < DE_LENGTH_OF_ARRAY(sizes); i++)
 			{
 				const vk::Unique<vk::VkImage>			image					(createExternalImage(vkd, *device, queueFamilyIndex, externalMemoryType, format, sizes[i].width, sizes[i].height, tiling, createFlag, usage));
-				const vk::VkMemoryRequirements			requirements			(getImageMemoryRequirements(vkd, *device, *image));
+				const vk::VkMemoryRequirements			requirements			(getImageMemoryRequirements(vkd, *device, *image, externalMemoryType));
 				const deUint32							exportedMemoryTypeIndex	(chooseMemoryType(requirements.memoryTypeBits));
 				const vk::Unique<vk::VkDeviceMemory>	memory					(allocateExportableMemory(vkd, *device, requirements.size, exportedMemoryTypeIndex, externalMemoryType, *image));
 				NativeHandle							handle;
@@ -4165,7 +4244,7 @@ tcu::TestStatus testAndroidHardwareBufferImageFormat  (Context& context, vk::VkF
 			if (properties.imageFormatProperties.maxMipLevels > 1u)
 			{
 				const vk::Unique<vk::VkImage>			image					(createExternalImage(vkd, *device, queueFamilyIndex, externalMemoryType, format, 64u, 64u, tiling, createFlag, usage, properties.imageFormatProperties.maxMipLevels));
-				const vk::VkMemoryRequirements			requirements			(getImageMemoryRequirements(vkd, *device, *image));
+				const vk::VkMemoryRequirements			requirements			(getImageMemoryRequirements(vkd, *device, *image, externalMemoryType));
 				const deUint32							exportedMemoryTypeIndex	(chooseMemoryType(requirements.memoryTypeBits));
 				const vk::Unique<vk::VkDeviceMemory>	memory					(allocateExportableMemory(vkd, *device, requirements.size, exportedMemoryTypeIndex, externalMemoryType, *image));
 				NativeHandle							handle;
@@ -4183,7 +4262,7 @@ tcu::TestStatus testAndroidHardwareBufferImageFormat  (Context& context, vk::VkF
 			if ((properties.imageFormatProperties.maxArrayLayers > 1u) && enableMaxLayerTest)
 			{
 				const vk::Unique<vk::VkImage>			image					(createExternalImage(vkd, *device, queueFamilyIndex, externalMemoryType, format, 64u, 64u, tiling, createFlag, usage, 1u, properties.imageFormatProperties.maxArrayLayers));
-				const vk::VkMemoryRequirements			requirements			(getImageMemoryRequirements(vkd, *device, *image));
+				const vk::VkMemoryRequirements			requirements			(getImageMemoryRequirements(vkd, *device, *image, externalMemoryType));
 				const deUint32							exportedMemoryTypeIndex	(chooseMemoryType(requirements.memoryTypeBits));
 				const vk::Unique<vk::VkDeviceMemory>	memory					(allocateExportableMemory(vkd, *device, requirements.size, exportedMemoryTypeIndex, externalMemoryType, *image));
 				NativeHandle							handle;
@@ -4253,6 +4332,12 @@ de::MovePtr<tcu::TestCaseGroup> createSemaphoreTests (tcu::TestContext& testCtx,
 		addFunctionCase(semaphoreGroup.get(), std::string("signal_export_import_wait_") + permanenceName,	"Test signaling, exporting, importing and waiting for the sempahore.",	testSemaphoreSignalExportImportWait,	config);
 		addFunctionCase(semaphoreGroup.get(), std::string("signal_import_") + permanenceName,				"Test signaling and importing the semaphore.",							testSemaphoreSignalImport,				config);
 		addFunctionCase(semaphoreGroup.get(), std::string("transference_") + permanenceName,				"Test semaphores transference.",										testSemaphoreTransference,				config);
+
+		if (externalType == vk::VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT)
+		{
+			addFunctionCase(semaphoreGroup.get(), std::string("import_signaled_") + permanenceName,			"Test import signaled semaphore fd.",										testSemaphoreImportSyncFdSignaled,	config);
+		}
+
 
 		if (externalType == vk::VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT
 			|| externalType == vk::VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT)
@@ -4370,6 +4455,12 @@ de::MovePtr<tcu::TestCaseGroup> createMemoryTests (tcu::TestContext& testCtx, vk
 			vk::VK_FORMAT_R5G6B5_UNORM_PACK16,
 			vk::VK_FORMAT_R16G16B16A16_SFLOAT,
 			vk::VK_FORMAT_A2B10G10R10_UNORM_PACK32,
+			vk::VK_FORMAT_D16_UNORM,
+			vk::VK_FORMAT_X8_D24_UNORM_PACK32,
+			vk::VK_FORMAT_D24_UNORM_S8_UINT,
+			vk::VK_FORMAT_D32_SFLOAT,
+			vk::VK_FORMAT_D32_SFLOAT_S8_UINT,
+			vk::VK_FORMAT_S8_UINT,
 		};
 		const size_t		numOfAhbFormats	= DE_LENGTH_OF_ARRAY(ahbFormats);
 

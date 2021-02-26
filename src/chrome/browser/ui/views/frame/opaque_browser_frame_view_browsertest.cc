@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -13,8 +12,7 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
 #include "ui/gfx/color_utils.h"
@@ -34,7 +32,7 @@ class WebAppOpaqueBrowserFrameViewTest : public InProcessBrowserTest {
   bool InstallAndLaunchWebApp(
       base::Optional<SkColor> theme_color = base::nullopt) {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
-    web_app_info->app_url = GetAppURL();
+    web_app_info->start_url = GetAppURL();
     web_app_info->scope = GetAppURL().GetWithoutFilename();
     web_app_info->theme_color = theme_color;
 

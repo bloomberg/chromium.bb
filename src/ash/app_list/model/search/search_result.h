@@ -33,6 +33,7 @@ class APP_LIST_MODEL_EXPORT SearchResult {
  public:
   using ResultType = ash::AppListSearchResultType;
   using DisplayType = ash::SearchResultDisplayType;
+  using MetricsType = ash::SearchResultType;
   using Tag = ash::SearchResultTag;
   using Tags = ash::SearchResultTags;
   using Action = ash::SearchResultAction;
@@ -107,6 +108,11 @@ class APP_LIST_MODEL_EXPORT SearchResult {
     metadata_->result_type = result_type;
   }
 
+  MetricsType metrics_type() const { return metadata_->metrics_type; }
+  void set_metrics_type(MetricsType metrics_type) {
+    metadata_->metrics_type = metrics_type;
+  }
+
   DisplayIndex display_index() const { return metadata_->display_index; }
   void set_display_index(DisplayIndex display_index) {
     metadata_->display_index = display_index;
@@ -120,11 +126,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   int result_subtype() const { return metadata_->result_subtype; }
   void set_result_subtype(int result_subtype) {
     metadata_->result_subtype = result_subtype;
-  }
-
-  int distance_from_origin() { return distance_from_origin_; }
-  void set_distance_from_origin(int distance) {
-    distance_from_origin_ = distance;
   }
 
   const Actions& actions() const { return metadata_->actions; }
@@ -173,10 +174,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
 
   // Opens the result. Clients should use AppListViewDelegate::OpenSearchResult.
   virtual void Open(int event_flags);
-
-  // The Manhattan distance from the origin of all search results to this
-  // result. This is logged for UMA.
-  int distance_from_origin_ = -1;
 
   bool is_visible_ = true;
 

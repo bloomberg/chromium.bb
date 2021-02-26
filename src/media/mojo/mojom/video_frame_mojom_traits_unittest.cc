@@ -4,7 +4,7 @@
 
 #include "media/mojo/mojom/video_frame_mojom_traits.h"
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/task_environment.h"
@@ -24,7 +24,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <fcntl.h>
 #include <sys/stat.h>
 #endif
@@ -77,7 +77,7 @@ TEST_F(VideoFrameStructTraitsTest, EOS) {
 
   ASSERT_TRUE(RoundTrip(&frame));
   ASSERT_TRUE(frame);
-  EXPECT_TRUE(frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
+  EXPECT_TRUE(frame->metadata()->end_of_stream);
 }
 
 TEST_F(VideoFrameStructTraitsTest, MojoSharedBufferVideoFrame) {
@@ -86,15 +86,12 @@ TEST_F(VideoFrameStructTraitsTest, MojoSharedBufferVideoFrame) {
     scoped_refptr<VideoFrame> frame =
         MojoSharedBufferVideoFrame::CreateDefaultForTesting(
             format, gfx::Size(100, 100), base::TimeDelta::FromSeconds(100));
-    frame->metadata()->SetDouble(VideoFrameMetadata::FRAME_RATE, 42.0);
+    frame->metadata()->frame_rate = 42.0;
 
     ASSERT_TRUE(RoundTrip(&frame));
     ASSERT_TRUE(frame);
-    EXPECT_FALSE(frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
-    double frame_rate = 0.0;
-    EXPECT_TRUE(frame->metadata()->GetDouble(VideoFrameMetadata::FRAME_RATE,
-                                             &frame_rate));
-    EXPECT_EQ(frame_rate, 42.0);
+    EXPECT_FALSE(frame->metadata()->end_of_stream);
+    EXPECT_EQ(*frame->metadata()->frame_rate, 42.0);
     EXPECT_EQ(frame->coded_size(), gfx::Size(100, 100));
     EXPECT_EQ(frame->timestamp(), base::TimeDelta::FromSeconds(100));
 
@@ -105,7 +102,7 @@ TEST_F(VideoFrameStructTraitsTest, MojoSharedBufferVideoFrame) {
   }
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 TEST_F(VideoFrameStructTraitsTest, DmabufVideoFrame) {
   const size_t num_planes = media::VideoFrame::NumPlanes(PIXEL_FORMAT_NV12);
   std::vector<int> strides = {1280, 1280};
@@ -129,7 +126,7 @@ TEST_F(VideoFrameStructTraitsTest, DmabufVideoFrame) {
 
   ASSERT_TRUE(RoundTrip(&frame));
   ASSERT_TRUE(frame);
-  EXPECT_FALSE(frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
+  EXPECT_FALSE(frame->metadata()->end_of_stream);
   EXPECT_EQ(frame->format(), PIXEL_FORMAT_NV12);
   EXPECT_EQ(frame->coded_size(), gfx::Size(1280, 720));
   EXPECT_EQ(frame->visible_rect(), gfx::Rect(0, 0, 1280, 720));
@@ -151,7 +148,7 @@ TEST_F(VideoFrameStructTraitsTest, MailboxVideoFrame) {
 
   ASSERT_TRUE(RoundTrip(&frame));
   ASSERT_TRUE(frame);
-  EXPECT_FALSE(frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
+  EXPECT_FALSE(frame->metadata()->end_of_stream);
   EXPECT_EQ(frame->format(), PIXEL_FORMAT_ARGB);
   EXPECT_EQ(frame->coded_size(), gfx::Size(100, 100));
   EXPECT_EQ(frame->visible_rect(), gfx::Rect(10, 10, 80, 80));
@@ -161,11 +158,11 @@ TEST_F(VideoFrameStructTraitsTest, MailboxVideoFrame) {
   ASSERT_EQ(frame->mailbox_holder(0).mailbox, mailbox);
 }
 
-// defined(OS_LINUX) because media::FakeGpuMemoryBuffer supports
-// NativePixmapHandle backed GpuMemoryBufferHandle only.
+// defined(OS_LINUX) || defined(OS_CHROMEOS) because media::FakeGpuMemoryBuffer
+// supports NativePixmapHandle backed GpuMemoryBufferHandle only.
 // !defined(USE_OZONE) so as to force GpuMemoryBufferSupport to select
 // gfx::ClientNativePixmapFactoryDmabuf for gfx::ClientNativePixmapFactory.
-#if defined(OS_LINUX) && !defined(USE_OZONE)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(USE_OZONE)
 TEST_F(VideoFrameStructTraitsTest, GpuMemoryBufferVideoFrame) {
   gfx::Size coded_size = gfx::Size(256, 256);
   gfx::Rect visible_rect(coded_size);
@@ -185,7 +182,7 @@ TEST_F(VideoFrameStructTraitsTest, GpuMemoryBufferVideoFrame) {
   ASSERT_TRUE(frame);
   ASSERT_EQ(frame->storage_type(), VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
   EXPECT_TRUE(frame->HasGpuMemoryBuffer());
-  EXPECT_FALSE(frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
+  EXPECT_FALSE(frame->metadata()->end_of_stream);
   EXPECT_EQ(frame->format(), PIXEL_FORMAT_NV12);
   EXPECT_EQ(frame->coded_size(), coded_size);
   EXPECT_EQ(frame->visible_rect(), visible_rect);
@@ -197,5 +194,5 @@ TEST_F(VideoFrameStructTraitsTest, GpuMemoryBufferVideoFrame) {
   EXPECT_EQ(frame->GetGpuMemoryBuffer()->GetFormat(), expected_gmb_format);
   EXPECT_EQ(frame->GetGpuMemoryBuffer()->GetSize(), expected_gmb_size);
 }
-#endif  // defined(OS_LINUX) && !defined(USE_OZONE)
+#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(USE_OZONE)
 }  // namespace media

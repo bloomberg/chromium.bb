@@ -9,6 +9,8 @@
 
 #include <map>
 
+enum class ApplicationModeForTabOpening { NORMAL, INCOGNITO, CURRENT };
+
 enum NTPTabOpeningPostOpeningAction {
   // No action should be done
   NO_ACTION = 0,
@@ -34,6 +36,10 @@ class GURL;
 // |externalURL|.
 @property(nonatomic, readonly, assign) const GURL& completeURL;
 
+// The list of URLs to open. First URL in the vector is the same
+// as |externalURL|.
+@property(nonatomic, readonly, assign) const std::vector<GURL>& URLs;
+
 // The URL query string parameters in the case that the app was launched as a
 // result of Universal Link navigation. The map associates query string
 // parameters with their corresponding value.
@@ -42,6 +48,8 @@ class GURL;
 
 // Boolean to track if the app should launch in incognito mode.
 @property(nonatomic, readwrite, assign) BOOL launchInIncognito;
+// The mode in which the tab must be opened.
+@property(nonatomic, readonly) ApplicationModeForTabOpening applicationMode;
 // Action to be taken after opening the initial NTP.
 @property(nonatomic, readwrite, assign)
     NTPTabOpeningPostOpeningAction postOpeningAction;
@@ -58,7 +66,7 @@ class GURL;
                         completeURL:(const GURL&)completeURL
     NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithUniversalLink:(const GURL&)universalLink;
+- (instancetype)initWithURLs:(const std::vector<GURL>&)URLs;
 
 @end
 

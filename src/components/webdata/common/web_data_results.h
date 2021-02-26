@@ -40,11 +40,15 @@ typedef enum {
                                  //     std::unique_ptr<CreditCard>>>
   AUTOFILL_CUSTOMERDATA_RESULT,  // WDResult<std::unique_ptr<
                                  //     PaymentsCustomerData>>
+  AUTOFILL_OFFER_DATA,           // WDResult<std::vector<std::unique_ptr<
+                                 //     AutofillOfferData>>>
   AUTOFILL_UPI_RESULT,           // WDResult<std::string>
 #if !defined(OS_IOS)             //
   PAYMENT_WEB_APP_MANIFEST,      // WDResult<std::vector<
                                  //     mojom::WebAppManifestSectionPtr>>
   PAYMENT_METHOD_MANIFEST,       // WDResult<std::vector<std::string>>
+  SECURE_PAYMENT_CONFIRMATION,   // WDResult<std::vector<std::unique_ptr<
+                                 //     SecurePaymentConfirmationInstrument>>>
 #endif
 } WDResultType;
 

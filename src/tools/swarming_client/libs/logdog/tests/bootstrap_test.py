@@ -69,16 +69,6 @@ class BootstrapTestCase(unittest.TestCase):
     self.assertRaises(bootstrap.NotBootstrappedError,
         bootstrap.ButlerBootstrap.probe, env=self.env)
 
-  def testProbeMissingProjectRaisesError(self):
-    self.env.pop(bootstrap.ButlerBootstrap._ENV_PROJECT)
-    self.assertRaises(bootstrap.NotBootstrappedError,
-        bootstrap.ButlerBootstrap.probe, env=self.env)
-
-  def testProbeMissingPrefixRaisesError(self):
-    self.env.pop(bootstrap.ButlerBootstrap._ENV_PREFIX)
-    self.assertRaises(bootstrap.NotBootstrappedError,
-        bootstrap.ButlerBootstrap.probe, env=self.env)
-
   def testProbeInvalidPrefixRaisesError(self):
     self.env[bootstrap.ButlerBootstrap._ENV_PREFIX] = '!!! not valid !!!'
     self.assertRaises(bootstrap.NotBootstrappedError,

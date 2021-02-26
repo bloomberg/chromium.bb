@@ -283,13 +283,13 @@ let id = (() => {  // identity exported function
     print("Verifying bounds for size = " + size);
     assertEquals(size, table.length);
     for (let i = 0; i < 5; i++) {
-      // Sanity check for indirect call
+      // Validity check for indirect call
       assertEquals(10, instances[i].exports.main(0));
       // Bounds check at different out of bounds indices
       assertInvalidFunction = function(s) {
         assertThrows(
             () => instances[i].exports.main(s), WebAssembly.RuntimeError,
-            kTrapMsgs[kTrapFuncInvalid]);
+            kTrapMsgs[kTrapTableOutOfBounds]);
       }
       assertInvalidFunction(size);
       assertInvalidFunction(size + 1);

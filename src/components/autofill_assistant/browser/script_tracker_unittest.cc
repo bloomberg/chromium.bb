@@ -9,18 +9,18 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
-#include "components/autofill_assistant/browser/mock_service.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
-#include "components/autofill_assistant/browser/service.h"
+#include "components/autofill_assistant/browser/service/mock_service.h"
+#include "components/autofill_assistant/browser/service/service.h"
 #include "components/autofill_assistant/browser/web/mock_web_controller.h"
+#include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
 using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::ElementsAre;
-using ::testing::Eq;
 using ::testing::Field;
 using ::testing::IsEmpty;
 using ::testing::NiceMock;
@@ -29,21 +29,26 @@ using ::testing::SizeIs;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 using ::testing::UnorderedElementsAre;
+using ::testing::WithArgs;
 
 class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
  public:
   void SetUp() override {
     delegate_.SetCurrentURL(GURL("http://www.example.com/"));
 
-    ON_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"exists"})), _))
-        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
+    ON_CALL(mock_web_controller_, OnFindElement(Selector({"exists"}), _))
+        .WillByDefault(WithArgs<1>([](auto&& callback) {
+          std::move(callback).Run(OkClientStatus(),
+                                  std::make_unique<ElementFinder::Result>());
+        }));
     ON_CALL(mock_web_controller_,
-            OnElementCheck(Eq(Selector({"does_not_exist"})), _))
-        .WillByDefault(RunOnceCallback<1>(ClientStatus()));
+            OnFindElement(Selector({"does_not_exist"}), _))
+        .WillByDefault(RunOnceCallback<1>(
+            ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
 
     // Scripts run, but have no actions.
     ON_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-        .WillByDefault(RunOnceCallback<5>(true, ""));
+        .WillByDefault(RunOnceCallback<5>(net::HTTP_OK, ""));
   }
 
  protected:
@@ -89,11 +94,10 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
     script->set_path(path);
     script->mutable_presentation()->mutable_chip()->set_text(name);
     if (!selector.empty()) {
-      script->mutable_presentation()
-          ->mutable_precondition()
-          ->mutable_element_condition()
-          ->mutable_match()
-          ->add_selectors(selector);
+      *script->mutable_presentation()
+           ->mutable_precondition()
+           ->mutable_element_condition()
+           ->mutable_match() = ToSelectorProto(selector);
     }
     ScriptStatusMatchProto dont_run_twice_precondition;
     dont_run_twice_precondition.set_script(path);
@@ -264,8 +268,9 @@ TEST_F(ScriptTrackerTest, CheckScriptsAgainAfterScriptEnd) {
 
 TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
   EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(Eq(Selector({"maybe_exists"})), _))
-      .WillOnce(RunOnceCallback<1>(ClientStatus()));
+              OnFindElement(Selector({"maybe_exists"}), _))
+      .WillOnce(
+          RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
 
   InitScriptProto(AddScript(), "script name", "script path", "maybe_exists");
   SetAndCheckScripts();
@@ -275,8 +280,11 @@ TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
 
   // DOM has changed; OnElementExists now returns truthy.
   EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(Eq(Selector({"maybe_exists"})), _))
-      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
+              OnFindElement(Selector({"maybe_exists"}), _))
+      .WillOnce(WithArgs<1>([](auto&& callback) {
+        std::move(callback).Run(OkClientStatus(),
+                                std::make_unique<ElementFinder::Result>());
+      }));
   tracker_.CheckScripts();
 
   // The script can now run
@@ -304,9 +312,9 @@ TEST_F(ScriptTrackerTest, UpdateScriptList) {
 
   EXPECT_CALL(mock_service_,
               OnGetActions(StrEq("runnable name"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
-      .WillOnce(RunOnceCallback<4>(true, ""));
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
 
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,
@@ -346,9 +354,9 @@ TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
 
   EXPECT_CALL(mock_service_,
               OnGetActions(StrEq("runnable name"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
-      .WillOnce(RunOnceCallback<4>(true, ""));
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
 
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,
@@ -375,8 +383,8 @@ TEST_F(ScriptTrackerTest, UpdateInterruptList) {
 
   ActionsResponseProto actions_response;
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
-  wait_for_dom->mutable_wait_condition()->mutable_match()->add_selectors(
-      "exists");
+  *wait_for_dom->mutable_wait_condition()->mutable_match() =
+      ToSelectorProto("exists");
   wait_for_dom->set_allow_interrupt(true);
 
   SupportedScriptProto* interrupt_proto =
@@ -385,16 +393,16 @@ TEST_F(ScriptTrackerTest, UpdateInterruptList) {
   interrupt_proto->mutable_presentation()->set_interrupt(true);
 
   EXPECT_CALL(mock_service_, OnGetActions("main", _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
-      .WillRepeatedly(RunOnceCallback<4>(true, ""));
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, ""));
 
   ActionsResponseProto actions_interrupt;
   actions_response.set_script_payload("from interrupt");
   actions_response.add_actions()->mutable_tell()->set_message("interrupt");
 
   EXPECT_CALL(mock_service_, OnGetActions("interrupt", _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_interrupt)));
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_interrupt)));
 
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,

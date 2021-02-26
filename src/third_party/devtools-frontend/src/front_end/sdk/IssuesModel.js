@@ -2,75 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
-import {CrossOriginEmbedderPolicyIssue} from './CrossOriginEmbedderPolicyIssue.js';
+import {ContentSecurityPolicyIssue} from './ContentSecurityPolicyIssue.js';
+import {CrossOriginEmbedderPolicyIssue, isCrossOriginEmbedderPolicyIssue} from './CrossOriginEmbedderPolicyIssue.js';
+import {HeavyAdIssue} from './HeavyAdIssue.js';
 import {Issue} from './Issue.js';  // eslint-disable-line no-unused-vars
 import {MixedContentIssue} from './MixedContentIssue.js';
-import {Events as NetworkManagerEvents, NetworkManager} from './NetworkManager.js';
-import {NetworkRequest} from './NetworkRequest.js';  // eslint-disable-line no-unused-vars
 import {SameSiteCookieIssue} from './SameSiteCookieIssue.js';
 import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
-
-
-/**
- * This class generates issues in the front-end based on information provided by the network panel. In the long
- * term, we might move this reporting to the back-end, but the current COVID-19 policy requires us to tone down
- * back-end changes until we are back at normal release cycle.
- */
-export class NetworkIssueDetector {
-  /**
-   * @param {!Target} target
-   * @param {!IssuesModel} issuesModel
-   */
-  constructor(target, issuesModel) {
-    this._issuesModel = issuesModel;
-    this._networkManager = target.model(NetworkManager);
-    if (this._networkManager) {
-      this._networkManager.addEventListener(NetworkManagerEvents.RequestFinished, this._handleRequestFinished, this);
-    }
-    for (const request of self.SDK.networkLog.requests()) {
-      this._handleRequestFinished({data: request});
-    }
-  }
-
-  /**
-   * @param {!{data:*}} event
-   */
-  _handleRequestFinished(event) {
-    const request = /** @type {!NetworkRequest} */ (event.data);
-    const blockedReason = getCoepBlockedReason(request);
-    if (blockedReason) {
-      this._issuesModel.addIssue(new CrossOriginEmbedderPolicyIssue(blockedReason, request.requestId()));
-    }
-
-    /**
-     * @param {!NetworkRequest} request
-     * @return {?string}
-     */
-    function getCoepBlockedReason(request) {
-      if (!request.wasBlocked()) {
-        return null;
-      }
-      const blockedReason = request.blockedReason() || null;
-      if (blockedReason === Protocol.Network.BlockedReason.CoepFrameResourceNeedsCoepHeader ||
-          blockedReason === Protocol.Network.BlockedReason.CorpNotSameOriginAfterDefaultedToSameOriginByCoep ||
-          blockedReason === Protocol.Network.BlockedReason.CoopSandboxedIframeCannotNavigateToCoopPage ||
-          blockedReason === Protocol.Network.BlockedReason.CorpNotSameSite ||
-          blockedReason === Protocol.Network.BlockedReason.CorpNotSameOrigin) {
-        return blockedReason;
-      }
-      return null;
-    }
-  }
-
-  detach() {
-    if (this._networkManager) {
-      this._networkManager.removeEventListener(NetworkManagerEvents.RequestFinished, this._handleRequestFinished, this);
-    }
-  }
-}
 
 
 /**
@@ -78,7 +16,7 @@ export class NetworkIssueDetector {
  * class (usually derived from `Issue`) and passes the instances on via a dispatched event.
  * We chose this approach here because the lifetime of the Model is tied to the target, but DevTools
  * wants to preserve issues for targets (e.g. iframes) that are already gone as well.
- * @implements {Protocol.AuditsDispatcher}
+ * @implements {ProtocolProxyApi.AuditsDispatcher}
  */
 export class IssuesModel extends SDKModel {
   /**
@@ -89,8 +27,8 @@ export class IssuesModel extends SDKModel {
     this._enabled = false;
     /** @type {*} */
     this._auditsAgent = null;
-    this._networkIssueDetector = null;
     this.ensureEnabled();
+    this._disposed = false;
   }
 
   ensureEnabled() {
@@ -101,16 +39,15 @@ export class IssuesModel extends SDKModel {
     this._enabled = true;
     this.target().registerAuditsDispatcher(this);
     this._auditsAgent = this.target().auditsAgent();
-    this._auditsAgent.enable();
-    this._networkIssueDetector = new NetworkIssueDetector(this.target(), this);
+    this._auditsAgent.invoke_enable();
   }
 
   /**
    * @override
-   * @param {!Protocol.Audits.InspectorIssue} inspectorIssue
+   * @param {!Protocol.Audits.IssueAddedEvent} issueAddedEvent
    */
-  issueAdded(inspectorIssue) {
-    const issues = this._createIssuesFromProtocolIssue(inspectorIssue);
+  issueAdded(issueAddedEvent) {
+    const issues = this._createIssuesFromProtocolIssue(issueAddedEvent.issue);
     for (const issue of issues) {
       this.addIssue(issue);
     }
@@ -138,6 +75,24 @@ export class IssuesModel extends SDKModel {
     console.warn(`No handler registered for issue code ${inspectorIssue.code}`);
     return [];
   }
+
+  /**
+   * @override
+   */
+  dispose() {
+    super.dispose();
+    this._disposed = true;
+  }
+
+  /**
+   * @returns {?Target}
+   */
+  getTargetIfNotDisposed() {
+    if (!this._disposed) {
+      return this.target();
+    }
+    return null;
+  }
 }
 
 /**
@@ -152,28 +107,7 @@ function createIssuesForSameSiteCookieIssue(issuesModel, inspectorDetails) {
     return [];
   }
 
-  /** @type {!Array<!Issue>} */
-  const issues = [];
-
-  // Exclusion reasons have priority. It means a cookie was blocked. Create an issue
-  // for every exclusion reason but ignore warning reasons if the cookie was blocked.
-  if (sameSiteDetails.cookieExclusionReasons && sameSiteDetails.cookieExclusionReasons.length > 0) {
-    for (const exclusionReason of sameSiteDetails.cookieExclusionReasons) {
-      const code = SameSiteCookieIssue.codeForSameSiteDetails(
-          exclusionReason, sameSiteDetails.operation, sameSiteDetails.cookieUrl);
-      issues.push(new SameSiteCookieIssue(code, sameSiteDetails));
-    }
-    return issues;
-  }
-
-  if (sameSiteDetails.cookieWarningReasons) {
-    for (const warningReason of sameSiteDetails.cookieWarningReasons) {
-      const code = SameSiteCookieIssue.codeForSameSiteDetails(
-          warningReason, sameSiteDetails.operation, sameSiteDetails.cookieUrl);
-      issues.push(new SameSiteCookieIssue(code, sameSiteDetails));
-    }
-  }
-  return issues;
+  return SameSiteCookieIssue.createIssuesFromSameSiteDetails(sameSiteDetails);
 }
 
 /**
@@ -190,12 +124,62 @@ function createIssuesForMixedContentIssue(issuesModel, inspectorDetails) {
   return [new MixedContentIssue(mixedContentDetails)];
 }
 
+
+/**
+ * @param {!IssuesModel} issuesModel
+ * @param {!Protocol.Audits.InspectorIssueDetails} inspectorDetails
+ * @return {!Array<!Issue>}
+ */
+function createIssuesForContentSecurityPolicyIssue(issuesModel, inspectorDetails) {
+  const cspDetails = inspectorDetails.contentSecurityPolicyIssueDetails;
+  if (!cspDetails) {
+    console.warn('Content security policy issue without details received.');
+    return [];
+  }
+  return [new ContentSecurityPolicyIssue(cspDetails, issuesModel)];
+}
+
+
+/**
+ * @param {!IssuesModel} issuesModel
+ * @param {!Protocol.Audits.InspectorIssueDetails} inspectorDetails
+ * @return {!Array<!Issue>}
+ */
+function createIssuesForHeavyAdIssue(issuesModel, inspectorDetails) {
+  const heavyAdIssueDetails = inspectorDetails.heavyAdIssueDetails;
+  if (!heavyAdIssueDetails) {
+    console.warn('Heavy Ad issue without details received.');
+    return [];
+  }
+  return [new HeavyAdIssue(heavyAdIssueDetails)];
+}
+
+/**
+ * @param {!IssuesModel} issuesModel
+ * @param {!Protocol.Audits.InspectorIssueDetails} inspectorDetails
+ * @return {!Array<!Issue>}
+ */
+function createIssuesForBlockedByResponseIssue(issuesModel, inspectorDetails) {
+  const blockedByResponseIssueDetails = inspectorDetails.blockedByResponseIssueDetails;
+  if (!blockedByResponseIssueDetails) {
+    console.warn('BlockedByResponse issue without details received.');
+    return [];
+  }
+  if (isCrossOriginEmbedderPolicyIssue(blockedByResponseIssueDetails.reason)) {
+    return [new CrossOriginEmbedderPolicyIssue(blockedByResponseIssueDetails)];
+  }
+  return [];
+}
+
 /**
  * @type {!Map<!Protocol.Audits.InspectorIssueCode, function(!IssuesModel, !Protocol.Audits.InspectorIssueDetails):!Array<!Issue>>}
  */
 const issueCodeHandlers = new Map([
   [Protocol.Audits.InspectorIssueCode.SameSiteCookieIssue, createIssuesForSameSiteCookieIssue],
   [Protocol.Audits.InspectorIssueCode.MixedContentIssue, createIssuesForMixedContentIssue],
+  [Protocol.Audits.InspectorIssueCode.HeavyAdIssue, createIssuesForHeavyAdIssue],
+  [Protocol.Audits.InspectorIssueCode.ContentSecurityPolicyIssue, createIssuesForContentSecurityPolicyIssue],
+  [Protocol.Audits.InspectorIssueCode.BlockedByResponseIssue, createIssuesForBlockedByResponseIssue],
 ]);
 
 /** @enum {symbol} */

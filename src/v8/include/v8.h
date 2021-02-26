@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -45,6 +46,7 @@ class BigInt;
 class BigIntObject;
 class Boolean;
 class BooleanObject;
+class CFunction;
 class Context;
 class Data;
 class Date;
@@ -81,6 +83,7 @@ class String;
 class StringObject;
 class Symbol;
 class SymbolObject;
+class TracedReferenceBase;
 class PrimitiveArray;
 class Private;
 class Uint32;
@@ -102,7 +105,7 @@ class TracedGlobal;
 template <class T>
 class TracedReference;
 template <class T>
-class TracedReferenceBase;
+class BasicTracedReference;
 template<class K, class V, class T> class PersistentValueMap;
 template <class K, class V, class T>
 class PersistentValueMapBase;
@@ -125,9 +128,9 @@ namespace internal {
 enum class ArgumentsType;
 template <ArgumentsType>
 class Arguments;
+class BasicTracedReferenceExtractor;
 template <typename T>
 class CustomArguments;
-class DeferredHandles;
 class FunctionCallbackArguments;
 class GlobalHandles;
 class Heap;
@@ -148,6 +151,10 @@ class StreamingDecoder;
 }  // namespace wasm
 
 }  // namespace internal
+
+namespace metrics {
+class Recorder;
+}  // namespace metrics
 
 namespace debug {
 class ConsoleCallArguments;
@@ -296,9 +303,10 @@ class Local {
   V8_INLINE static Local<T> New(Isolate* isolate,
                                 const PersistentBase<T>& that);
   V8_INLINE static Local<T> New(Isolate* isolate,
-                                const TracedReferenceBase<T>& that);
+                                const BasicTracedReference<T>& that);
 
  private:
+  friend class TracedReferenceBase;
   friend class Utils;
   template<class F> friend class Eternal;
   template<class F> friend class PersistentBase;
@@ -330,7 +338,7 @@ class Local {
   template <class F>
   friend class TracedGlobal;
   template <class F>
-  friend class TracedReferenceBase;
+  friend class BasicTracedReference;
   template <class F>
   friend class TracedReference;
 
@@ -820,27 +828,11 @@ using UniquePersistent = Global<T>;
 template <typename T>
 struct TracedGlobalTrait {};
 
-/**
- * A traced handle with copy and move semantics. The handle is to be used
- * together with |v8::EmbedderHeapTracer| and specifies edges from the embedder
- * into V8's heap.
- *
- * The exact semantics are:
- * - Tracing garbage collections use |v8::EmbedderHeapTracer|.
- * - Non-tracing garbage collections refer to
- *   |v8::EmbedderHeapTracer::IsRootForNonTracingGC()| whether the handle should
- *   be treated as root or not.
- *
- * Note that the base class cannot be instantiated itself. Choose from
- * - TracedGlobal
- * - TracedReference
- */
-template <typename T>
 class TracedReferenceBase {
  public:
   /**
-   * Returns true if this TracedReferenceBase is empty, i.e., has not been
-   * assigned an object.
+   * Returns true if the reference is empty, i.e., has not been assigned
+   * object.
    */
   bool IsEmpty() const { return val_ == nullptr; }
 
@@ -851,36 +843,16 @@ class TracedReferenceBase {
   V8_INLINE void Reset();
 
   /**
-   * Construct a Local<T> from this handle.
+   * Construct a Local<Value> from this handle.
    */
-  Local<T> Get(Isolate* isolate) const { return Local<T>::New(isolate, *this); }
+  V8_INLINE v8::Local<v8::Value> Get(v8::Isolate* isolate) const;
 
-  template <class S>
-  V8_INLINE bool operator==(const TracedReferenceBase<S>& that) const {
-    internal::Address* a = reinterpret_cast<internal::Address*>(val_);
-    internal::Address* b = reinterpret_cast<internal::Address*>(that.val_);
-    if (a == nullptr) return b == nullptr;
-    if (b == nullptr) return false;
-    return *a == *b;
-  }
-
-  template <class S>
-  V8_INLINE bool operator==(const Local<S>& that) const {
-    internal::Address* a = reinterpret_cast<internal::Address*>(val_);
-    internal::Address* b = reinterpret_cast<internal::Address*>(that.val_);
-    if (a == nullptr) return b == nullptr;
-    if (b == nullptr) return false;
-    return *a == *b;
-  }
-
-  template <class S>
-  V8_INLINE bool operator!=(const TracedReferenceBase<S>& that) const {
-    return !operator==(that);
-  }
-
-  template <class S>
-  V8_INLINE bool operator!=(const Local<S>& that) const {
-    return !operator==(that);
+  /**
+   * Returns true if this TracedReference is empty, i.e., has not been
+   * assigned an object. This version of IsEmpty is thread-safe.
+   */
+  bool IsEmptyThreadSafe() const {
+    return this->GetSlotThreadSafe() == nullptr;
   }
 
   /**
@@ -894,24 +866,77 @@ class TracedReferenceBase {
    */
   V8_INLINE uint16_t WrapperClassId() const;
 
-  template <class S>
-  V8_INLINE TracedReferenceBase<S>& As() const {
-    return reinterpret_cast<TracedReferenceBase<S>&>(
-        const_cast<TracedReferenceBase<T>&>(*this));
+ protected:
+  /**
+   * Update this reference in a thread-safe way.
+   */
+  void SetSlotThreadSafe(void* new_val) {
+    reinterpret_cast<std::atomic<void*>*>(&val_)->store(
+        new_val, std::memory_order_relaxed);
   }
+
+  /**
+   * Get this reference in a thread-safe way
+   */
+  const void* GetSlotThreadSafe() const {
+    return reinterpret_cast<std::atomic<const void*> const*>(&val_)->load(
+        std::memory_order_relaxed);
+  }
+
+  // val_ points to a GlobalHandles node.
+  internal::Address* val_ = nullptr;
+
+  friend class internal::BasicTracedReferenceExtractor;
+  template <typename F>
+  friend class Local;
+  template <typename U>
+  friend bool operator==(const TracedReferenceBase&, const Local<U>&);
+  friend bool operator==(const TracedReferenceBase&,
+                         const TracedReferenceBase&);
+};
+
+/**
+ * A traced handle with copy and move semantics. The handle is to be used
+ * together with |v8::EmbedderHeapTracer| or as part of GarbageCollected objects
+ * (see v8-cppgc.h) and specifies edges from C++ objects to JavaScript.
+ *
+ * The exact semantics are:
+ * - Tracing garbage collections use |v8::EmbedderHeapTracer| or cppgc.
+ * - Non-tracing garbage collections refer to
+ *   |v8::EmbedderHeapTracer::IsRootForNonTracingGC()| whether the handle should
+ *   be treated as root or not.
+ *
+ * Note that the base class cannot be instantiated itself. Choose from
+ * - TracedGlobal
+ * - TracedReference
+ */
+template <typename T>
+class BasicTracedReference : public TracedReferenceBase {
+ public:
+  /**
+   * Construct a Local<T> from this handle.
+   */
+  Local<T> Get(Isolate* isolate) const { return Local<T>::New(isolate, *this); }
+
+  template <class S>
+  V8_INLINE BasicTracedReference<S>& As() const {
+    return reinterpret_cast<BasicTracedReference<S>&>(
+        const_cast<BasicTracedReference<T>&>(*this));
+  }
+
+  T* operator->() const { return reinterpret_cast<T*>(val_); }
+  T* operator*() const { return reinterpret_cast<T*>(val_); }
 
  private:
   enum DestructionMode { kWithDestructor, kWithoutDestructor };
 
   /**
-   * An empty TracedReferenceBase without storage cell.
+   * An empty BasicTracedReference without storage cell.
    */
-  TracedReferenceBase() = default;
+  BasicTracedReference() = default;
 
-  V8_INLINE static T* New(Isolate* isolate, T* that, void* slot,
-                          DestructionMode destruction_mode);
-
-  T* val_ = nullptr;
+  V8_INLINE static internal::Address* New(Isolate* isolate, T* that, void* slot,
+                                          DestructionMode destruction_mode);
 
   friend class EmbedderHeapTracer;
   template <typename F>
@@ -922,27 +947,29 @@ class TracedReferenceBase {
   template <typename F>
   friend class TracedReference;
   template <typename F>
+  friend class BasicTracedReference;
+  template <typename F>
   friend class ReturnValue;
 };
 
 /**
  * A traced handle with destructor that clears the handle. For more details see
- * TracedReferenceBase.
+ * BasicTracedReference.
  */
 template <typename T>
-class TracedGlobal : public TracedReferenceBase<T> {
+class TracedGlobal : public BasicTracedReference<T> {
  public:
-  using TracedReferenceBase<T>::Reset;
+  using BasicTracedReference<T>::Reset;
 
   /**
-   * Destructor resetting the handle.
+   * Destructor resetting the handle.Is
    */
   ~TracedGlobal() { this->Reset(); }
 
   /**
    * An empty TracedGlobal without storage cell.
    */
-  TracedGlobal() : TracedReferenceBase<T>() {}
+  TracedGlobal() : BasicTracedReference<T>() {}
 
   /**
    * Construct a TracedGlobal from a Local.
@@ -951,9 +978,9 @@ class TracedGlobal : public TracedReferenceBase<T> {
    * pointing to the same object.
    */
   template <class S>
-  TracedGlobal(Isolate* isolate, Local<S> that) : TracedReferenceBase<T>() {
+  TracedGlobal(Isolate* isolate, Local<S> that) : BasicTracedReference<T>() {
     this->val_ = this->New(isolate, that.val_, &this->val_,
-                           TracedReferenceBase<T>::kWithDestructor);
+                           BasicTracedReference<T>::kWithDestructor);
     static_assert(std::is_base_of<T, S>::value, "type check");
   }
 
@@ -1050,7 +1077,7 @@ class TracedGlobal : public TracedReferenceBase<T> {
  * A traced handle without destructor that clears the handle. The embedder needs
  * to ensure that the handle is not accessed once the V8 object has been
  * reclaimed. This can happen when the handle is not passed through the
- * EmbedderHeapTracer. For more details see TracedReferenceBase.
+ * EmbedderHeapTracer. For more details see BasicTracedReference.
  *
  * The reference assumes the embedder has precise knowledge about references at
  * all times. In case V8 needs to separately handle on-stack references, the
@@ -1058,14 +1085,14 @@ class TracedGlobal : public TracedReferenceBase<T> {
  * |EmbedderHeapTracer::SetStackStart|.
  */
 template <typename T>
-class TracedReference : public TracedReferenceBase<T> {
+class TracedReference : public BasicTracedReference<T> {
  public:
-  using TracedReferenceBase<T>::Reset;
+  using BasicTracedReference<T>::Reset;
 
   /**
    * An empty TracedReference without storage cell.
    */
-  TracedReference() : TracedReferenceBase<T>() {}
+  TracedReference() : BasicTracedReference<T>() {}
 
   /**
    * Construct a TracedReference from a Local.
@@ -1074,9 +1101,9 @@ class TracedReference : public TracedReferenceBase<T> {
    * pointing to the same object.
    */
   template <class S>
-  TracedReference(Isolate* isolate, Local<S> that) : TracedReferenceBase<T>() {
+  TracedReference(Isolate* isolate, Local<S> that) : BasicTracedReference<T>() {
     this->val_ = this->New(isolate, that.val_, &this->val_,
-                           TracedReferenceBase<T>::kWithoutDestructor);
+                           BasicTracedReference<T>::kWithoutDestructor);
     static_assert(std::is_base_of<T, S>::value, "type check");
   }
 
@@ -1289,6 +1316,32 @@ class V8_EXPORT SealHandleScope {
  * The superclass of objects that can reside on V8's heap.
  */
 class V8_EXPORT Data {
+ public:
+  /**
+   * Returns true if this data is a |v8::Value|.
+   */
+  bool IsValue() const;
+
+  /**
+   * Returns true if this data is a |v8::Module|.
+   */
+  bool IsModule() const;
+
+  /**
+   * Returns true if this data is a |v8::Private|.
+   */
+  bool IsPrivate() const;
+
+  /**
+   * Returns true if this data is a |v8::ObjectTemplate|.
+   */
+  bool IsObjectTemplate() const;
+
+  /**
+   * Returns true if this data is a |v8::FunctionTemplate|.
+   */
+  bool IsFunctionTemplate() const;
+
  private:
   Data();
 };
@@ -1545,6 +1598,31 @@ class V8_EXPORT Module : public Data {
    */
   Local<UnboundModuleScript> GetUnboundModuleScript();
 
+  /**
+   * Returns the underlying script's id.
+   *
+   * The module must be a SourceTextModule and must not have a kErrored status.
+   */
+  int ScriptId();
+
+  /**
+   * Returns whether this module or any of its requested modules is async,
+   * i.e. contains top-level await.
+   *
+   * The module's status must be at least kInstantiated.
+   */
+  bool IsGraphAsync() const;
+
+  /**
+   * Returns whether the module is a SourceTextModule.
+   */
+  bool IsSourceTextModule() const;
+
+  /**
+   * Returns whether the module is a SyntheticModule.
+   */
+  bool IsSyntheticModule() const;
+
   /*
    * Callback defined in the embedder.  This is responsible for setting
    * the module's exported values with calls to SetSyntheticModuleExport().
@@ -1583,6 +1661,11 @@ class V8_EXPORT Module : public Data {
       "the latter will crash with a failed CHECK().")
   void SetSyntheticModuleExport(Local<String> export_name,
                                 Local<Value> export_value);
+
+  V8_INLINE static Module* Cast(Data* data);
+
+ private:
+  static void CheckCast(Data* obj);
 };
 
 /**
@@ -1776,7 +1859,7 @@ class V8_EXPORT ScriptCompiler {
 
   /**
    * A streaming task which the embedder must run on a background thread to
-   * stream scripts into V8. Returned by ScriptCompiler::StartStreamingScript.
+   * stream scripts into V8. Returned by ScriptCompiler::StartStreaming.
    */
   class V8_EXPORT ScriptStreamingTask final {
    public:
@@ -1863,9 +1946,12 @@ class V8_EXPORT ScriptCompiler {
    * This API allows to start the streaming with as little data as possible, and
    * the remaining data (for example, the ScriptOrigin) is passed to Compile.
    */
+  V8_DEPRECATE_SOON("Use ScriptCompiler::StartStreamingScript instead.")
   static ScriptStreamingTask* StartStreamingScript(
       Isolate* isolate, StreamedSource* source,
       CompileOptions options = kNoCompileOptions);
+  static ScriptStreamingTask* StartStreaming(Isolate* isolate,
+                                             StreamedSource* source);
 
   /**
    * Compiles a streamed script (bound to current context).
@@ -2186,14 +2272,25 @@ enum StateTag {
   IDLE
 };
 
+// Holds the callee saved registers needed for the stack unwinder. It is the
+// empty struct if no registers are required. Implemented in
+// include/v8-unwinder-state.h.
+struct CalleeSavedRegisters;
+
 // A RegisterState represents the current state of registers used
 // by the sampling profiler API.
-struct RegisterState {
-  RegisterState() : pc(nullptr), sp(nullptr), fp(nullptr), lr(nullptr) {}
+struct V8_EXPORT RegisterState {
+  RegisterState();
+  ~RegisterState();
+  RegisterState(const RegisterState& other);
+  RegisterState& operator=(const RegisterState& other);
+
   void* pc;  // Instruction pointer.
   void* sp;  // Stack pointer.
   void* fp;  // Frame pointer.
   void* lr;  // Link register (or nullptr on platforms without a link register).
+  // Callee saved registers (or null if no callee saved registers were stored)
+  std::unique_ptr<CalleeSavedRegisters> callee_saved;
 };
 
 // The output structure filled up by GetStackSample API function.
@@ -2212,14 +2309,6 @@ struct MemoryRange {
 
 struct JSEntryStub {
   MemoryRange code;
-};
-
-struct UnwindState {
-  MemoryRange code_range;
-  MemoryRange embedded_code_range;
-  JSEntryStub js_entry_stub;
-  JSEntryStub js_construct_entry_stub;
-  JSEntryStub js_run_microtasks_entry_stub;
 };
 
 struct JSEntryStubs {
@@ -2886,6 +2975,8 @@ class V8_EXPORT Value : public Data {
   bool FullIsUndefined() const;
   bool FullIsNull() const;
   bool FullIsString() const;
+
+  static void CheckCast(Data* that);
 };
 
 
@@ -3041,9 +3132,17 @@ class V8_EXPORT String : public Name {
   V8_INLINE static Local<String> Empty(Isolate* isolate);
 
   /**
-   * Returns true if the string is external
+   * Returns true if the string is external two-byte.
+   *
    */
+  V8_DEPRECATED(
+      "Use String::IsExternalTwoByte() or String::IsExternalOneByte()")
   bool IsExternal() const;
+
+  /**
+   * Returns true if the string is both external and two-byte.
+   */
+  bool IsExternalTwoByte() const;
 
   /**
    * Returns true if the string is both external and one-byte.
@@ -3616,11 +3715,11 @@ enum PropertyFilter {
 
 /**
  * Options for marking whether callbacks may trigger JS-observable side effects.
- * Side-effect-free callbacks are whitelisted during debug evaluation with
+ * Side-effect-free callbacks are allowlisted during debug evaluation with
  * throwOnSideEffect. It applies when calling a Function, FunctionTemplate,
  * or an Accessor callback. For Interceptors, please see
  * PropertyHandlerFlags's kHasNoSideEffect.
- * Callbacks that only cause side effects to the receiver are whitelisted if
+ * Callbacks that only cause side effects to the receiver are allowlisted if
  * invoked on receiver objects that are created within the same debug-evaluate
  * call, as these objects are temporary and the side effect does not escape.
  */
@@ -3893,10 +3992,10 @@ class V8_EXPORT Object : public Value {
     return object.val_->InternalFieldCount();
   }
 
-  /** Same as above, but works for TracedReferenceBase. */
+  /** Same as above, but works for BasicTracedReference. */
   V8_INLINE static int InternalFieldCount(
-      const TracedReferenceBase<Object>& object) {
-    return object.val_->InternalFieldCount();
+      const BasicTracedReference<Object>& object) {
+    return object->InternalFieldCount();
   }
 
   /** Gets the value from an internal field. */
@@ -3920,8 +4019,8 @@ class V8_EXPORT Object : public Value {
 
   /** Same as above, but works for TracedGlobal. */
   V8_INLINE static void* GetAlignedPointerFromInternalField(
-      const TracedReferenceBase<Object>& object, int index) {
-    return object.val_->GetAlignedPointerFromInternalField(index);
+      const BasicTracedReference<Object>& object, int index) {
+    return object->GetAlignedPointerFromInternalField(index);
   }
 
   /**
@@ -4104,6 +4203,16 @@ class V8_EXPORT Object : public Value {
 
   V8_INLINE static Object* Cast(Value* obj);
 
+  /**
+   * Support for TC39 "dynamic code brand checks" proposal.
+   *
+   * This API allows to query whether an object was constructed from a
+   * "code like" ObjectTemplate.
+   *
+   * See also: v8::ObjectTemplate::SetCodeLike
+   */
+  bool IsCodeLike(Isolate* isolate);
+
  private:
   Object();
   static void CheckCast(Value* obj);
@@ -4217,7 +4326,7 @@ class ReturnValue {
   template <typename S>
   V8_INLINE void Set(const Global<S>& handle);
   template <typename S>
-  V8_INLINE void Set(const TracedReferenceBase<S>& handle);
+  V8_INLINE void Set(const BasicTracedReference<S>& handle);
   template <typename S>
   V8_INLINE void Set(const Local<S> handle);
   // Fast primitive setters
@@ -4511,6 +4620,15 @@ class V8_EXPORT Function : public Object {
    * v8::Undefined.
    */
   Local<Value> GetBoundFunction() const;
+
+  /**
+   * Calls builtin Function.prototype.toString on this function.
+   * This is different from Value::ToString() that may call a user-defined
+   * toString() function, and different than Object::ObjectProtoToString() which
+   * always serializes "[object Function]".
+   */
+  V8_WARN_UNUSED_RESULT MaybeLocal<String> FunctionProtoToString(
+      Local<Context> context);
 
   ScriptOrigin GetScriptOrigin() const;
   V8_INLINE static Function* Cast(Value* obj);
@@ -4973,6 +5091,13 @@ class V8_EXPORT BackingStore : public v8::internal::BackingStoreBase {
   bool IsShared() const;
 
   /**
+   * Prevent implicit instantiation of operator delete with size_t argument.
+   * The size_t argument would be incorrect because ptr points to the
+   * internal BackingStore object.
+   */
+  void operator delete(void* ptr) { ::operator delete(ptr); }
+
+  /**
    * Wrapper around ArrayBuffer::Allocator::Reallocate that preserves IsShared.
    * Assumes that the backing_store was allocated by the ArrayBuffer allocator
    * of the given isolate.
@@ -5348,9 +5473,10 @@ class V8_EXPORT TypedArray : public ArrayBufferView {
   /*
    * The largest typed array size that can be constructed using New.
    */
-  static constexpr size_t kMaxLength = internal::kApiSystemPointerSize == 4
-                                           ? internal::kSmiMaxValue
-                                           : 0xFFFFFFFF;
+  static constexpr size_t kMaxLength =
+      internal::kApiSystemPointerSize == 4
+          ? internal::kSmiMaxValue
+          : static_cast<size_t>(uint64_t{1} << 32);
 
   /**
    * Number of elements in this typed array
@@ -5876,6 +6002,10 @@ class V8_EXPORT RegExp : public Object {
   /**
    * Regular expression flag bits. They can be or'ed to enable a set
    * of flags.
+   * The kLinear value ('l') is experimental and can only be used with
+   * --enable-experimental-regexp-engine.  RegExps with kLinear flag are
+   *  guaranteed to be executed in asymptotic linear time wrt. the length of
+   *  the subject string.
    */
   enum Flags {
     kNone = 0,
@@ -5885,9 +6015,10 @@ class V8_EXPORT RegExp : public Object {
     kSticky = 1 << 3,
     kUnicode = 1 << 4,
     kDotAll = 1 << 5,
+    kLinear = 1 << 6,
   };
 
-  static constexpr int kFlagCount = 6;
+  static constexpr int kFlagCount = 7;
 
   /**
    * Creates a regular expression from the given pattern string and
@@ -5956,13 +6087,14 @@ class V8_EXPORT External : public Value {
   static void CheckCast(v8::Value* obj);
 };
 
-#define V8_INTRINSICS_LIST(F)                      \
-  F(ArrayProto_entries, array_entries_iterator)    \
-  F(ArrayProto_forEach, array_for_each_iterator)   \
-  F(ArrayProto_keys, array_keys_iterator)          \
-  F(ArrayProto_values, array_values_iterator)      \
-  F(ErrorPrototype, initial_error_prototype)       \
-  F(IteratorPrototype, initial_iterator_prototype) \
+#define V8_INTRINSICS_LIST(F)                                 \
+  F(ArrayProto_entries, array_entries_iterator)               \
+  F(ArrayProto_forEach, array_for_each_iterator)              \
+  F(ArrayProto_keys, array_keys_iterator)                     \
+  F(ArrayProto_values, array_values_iterator)                 \
+  F(AsyncIteratorPrototype, initial_async_iterator_prototype) \
+  F(ErrorPrototype, initial_error_prototype)                  \
+  F(IteratorPrototype, initial_iterator_prototype)            \
   F(ObjProto_valueOf, object_value_of_function)
 
 enum Intrinsic {
@@ -6028,7 +6160,6 @@ class V8_EXPORT Template : public Data {
   void SetNativeDataProperty(
       Local<String> name, AccessorGetterCallback getter,
       AccessorSetterCallback setter = nullptr,
-      // TODO(dcarney): gcc can't handle Local below
       Local<Value> data = Local<Value>(), PropertyAttribute attribute = None,
       Local<AccessorSignature> signature = Local<AccessorSignature>(),
       AccessControl settings = DEFAULT,
@@ -6037,7 +6168,6 @@ class V8_EXPORT Template : public Data {
   void SetNativeDataProperty(
       Local<Name> name, AccessorNameGetterCallback getter,
       AccessorNameSetterCallback setter = nullptr,
-      // TODO(dcarney): gcc can't handle Local below
       Local<Value> data = Local<Value>(), PropertyAttribute attribute = None,
       Local<AccessorSignature> signature = Local<AccessorSignature>(),
       AccessControl settings = DEFAULT,
@@ -6309,7 +6439,6 @@ typedef bool (*AccessCheckCallback)(Local<Context> accessing_context,
                                     Local<Object> accessed_object,
                                     Local<Value> data);
 
-class CFunction;
 /**
  * A FunctionTemplate is used to create functions at runtime. There
  * can only be one function created from a FunctionTemplate in a
@@ -6884,6 +7013,18 @@ class V8_EXPORT ObjectTemplate : public Template {
    */
   void SetImmutableProto();
 
+  /**
+   * Support for TC39 "dynamic code brand checks" proposal.
+   *
+   * This API allows to mark (& query) objects as "code like", which causes
+   * them to be treated like Strings in the context of eval and function
+   * constructor.
+   *
+   * Reference: https://github.com/tc39/proposal-dynamic-code-brand-checks
+   */
+  void SetCodeLike();
+  bool IsCodeLike();
+
   V8_INLINE static ObjectTemplate* Cast(Data* data);
 
  private:
@@ -7090,25 +7231,25 @@ class V8_EXPORT ResourceConstraints {
   /**
    * Deprecated functions. Do not use in new code.
    */
-  V8_DEPRECATE_SOON("Use code_range_size_in_bytes.")
+  V8_DEPRECATED("Use code_range_size_in_bytes.")
   size_t code_range_size() const { return code_range_size_ / kMB; }
-  V8_DEPRECATE_SOON("Use set_code_range_size_in_bytes.")
+  V8_DEPRECATED("Use set_code_range_size_in_bytes.")
   void set_code_range_size(size_t limit_in_mb) {
     code_range_size_ = limit_in_mb * kMB;
   }
-  V8_DEPRECATE_SOON("Use max_young_generation_size_in_bytes.")
+  V8_DEPRECATED("Use max_young_generation_size_in_bytes.")
   size_t max_semi_space_size_in_kb() const;
-  V8_DEPRECATE_SOON("Use set_max_young_generation_size_in_bytes.")
+  V8_DEPRECATED("Use set_max_young_generation_size_in_bytes.")
   void set_max_semi_space_size_in_kb(size_t limit_in_kb);
-  V8_DEPRECATE_SOON("Use max_old_generation_size_in_bytes.")
+  V8_DEPRECATED("Use max_old_generation_size_in_bytes.")
   size_t max_old_space_size() const { return max_old_generation_size_ / kMB; }
-  V8_DEPRECATE_SOON("Use set_max_old_generation_size_in_bytes.")
+  V8_DEPRECATED("Use set_max_old_generation_size_in_bytes.")
   void set_max_old_space_size(size_t limit_in_mb) {
     max_old_generation_size_ = limit_in_mb * kMB;
   }
-  V8_DEPRECATE_SOON("Zone does not pool memory any more.")
+  V8_DEPRECATED("Zone does not pool memory any more.")
   size_t max_zone_pool_size() const { return max_zone_pool_size_; }
-  V8_DEPRECATE_SOON("Zone does not pool memory any more.")
+  V8_DEPRECATED("Zone does not pool memory any more.")
   void set_max_zone_pool_size(size_t bytes) { max_zone_pool_size_ = bytes; }
 
  private:
@@ -7221,8 +7362,7 @@ typedef MaybeLocal<Promise> (*HostImportModuleDynamicallyCallback)(
 
 /**
  * HostInitializeImportMetaObjectCallback is called the first time import.meta
- * is accessed for a module. Subsequent access will reuse the same value. The
- * callback must not throw.
+ * is accessed for a module. Subsequent access will reuse the same value.
  *
  * The method combines two implementation-defined abstract operations into one:
  * HostGetImportMetaProperties and HostFinalizeImportMeta.
@@ -7293,7 +7433,7 @@ class PromiseRejectMessage {
 typedef void (*PromiseRejectCallback)(PromiseRejectMessage message);
 
 // --- Microtasks Callbacks ---
-V8_DEPRECATE_SOON("Use *WithData version.")
+V8_DEPRECATED("Use *WithData version.")
 typedef void (*MicrotasksCompletedCallback)(Isolate*);
 typedef void (*MicrotasksCompletedCallbackWithData)(Isolate*, void*);
 typedef void (*MicrotaskCallback)(void* data);
@@ -7459,11 +7599,15 @@ struct ModifyCodeGenerationFromStringsResult {
 
 /**
  * Callback to check if codegen is allowed from a source object, and convert
- * the source to string if necessary.See  ModifyCodeGenerationFromStrings.
+ * the source to string if necessary. See: ModifyCodeGenerationFromStrings.
  */
 typedef ModifyCodeGenerationFromStringsResult (
     *ModifyCodeGenerationFromStringsCallback)(Local<Context> context,
                                               Local<Value> source);
+typedef ModifyCodeGenerationFromStringsResult (
+    *ModifyCodeGenerationFromStringsCallback2)(Local<Context> context,
+                                               Local<Value> source,
+                                               bool is_code_like);
 
 // --- WebAssembly compilation callbacks ---
 typedef bool (*ExtensionCallback)(const FunctionCallbackInfo<Value>&);
@@ -7909,7 +8053,7 @@ class V8_EXPORT EmbedderHeapTracer {
   virtual void RegisterV8References(
       const std::vector<std::pair<void*, void*> >& embedder_fields) = 0;
 
-  void RegisterEmbedderReference(const TracedReferenceBase<v8::Data>& ref);
+  void RegisterEmbedderReference(const BasicTracedReference<v8::Data>& ref);
 
   /**
    * Called at the beginning of a GC cycle.
@@ -8068,10 +8212,11 @@ enum class MeasureMemoryMode { kSummary, kDetailed };
 /**
  * Controls how promptly a memory measurement request is executed.
  * By default the measurement is folded with the next scheduled GC which may
- * happen after a while. The kEager starts increment GC right away and
- * is useful for testing.
+ * happen after a while and is forced after some timeout.
+ * The kEager mode starts incremental GC right away and is useful for testing.
+ * The kLazy mode does not force GC.
  */
-enum class MeasureMemoryExecution { kDefault, kEager };
+enum class MeasureMemoryExecution { kDefault, kEager, kLazy };
 
 /**
  * The delegate is used in Isolate::MeasureMemory API.
@@ -8308,7 +8453,7 @@ class V8_EXPORT Isolate {
 
   /**
    * This scope allows terminations inside direct V8 API calls and forbid them
-   * inside any recursice API calls without explicit SafeForTerminationScope.
+   * inside any recursive API calls without explicit SafeForTerminationScope.
    */
   class V8_EXPORT SafeForTerminationScope {
    public:
@@ -8391,8 +8536,8 @@ class V8_EXPORT Isolate {
     kFunctionTokenOffsetTooLongForToString = 49,
     kWasmSharedMemory = 50,
     kWasmThreadOpcodes = 51,
-    kAtomicsNotify = 52,
-    kAtomicsWake = 53,
+    kAtomicsNotify = 52,  // Unused.
+    kAtomicsWake = 53,    // Unused.
     kCollator = 54,
     kNumberFormat = 55,
     kDateTimeFormat = 56,
@@ -8447,6 +8592,9 @@ class V8_EXPORT Isolate {
     kInvalidatedTypedArraySpeciesLookupChainProtector = 105,
     kWasmSimdOpcodes = 106,
     kVarRedeclaredCatchBinding = 107,
+    kWasmRefTypes = 108,
+    kWasmBulkMemory = 109,
+    kWasmMultiValue = 110,
 
     // If you add new values here, you'll also need to update Chromium's:
     // web_feature.mojom, use_counter_callback.cc, and enums.xml. V8 changes to
@@ -8543,7 +8691,7 @@ class V8_EXPORT Isolate {
       HostImportModuleDynamicallyCallback callback);
 
   /**
-   * This specifies the callback called by the upcoming importa.meta
+   * This specifies the callback called by the upcoming import.meta
    * language feature to retrieve host-defined meta data for a module.
    */
   void SetHostInitializeImportMetaObjectCallback(
@@ -8727,8 +8875,7 @@ class V8_EXPORT Isolate {
    *   kept alive by JavaScript objects.
    * \returns the adjusted value.
    */
-  V8_INLINE int64_t
-      AdjustAmountOfExternalAllocatedMemory(int64_t change_in_bytes);
+  int64_t AdjustAmountOfExternalAllocatedMemory(int64_t change_in_bytes);
 
   /**
    * Returns the number of phantom handles without callbacks that were reset
@@ -8979,6 +9126,13 @@ class V8_EXPORT Isolate {
   void RequestInterrupt(InterruptCallback callback, void* data);
 
   /**
+   * Returns true if there is ongoing background work within V8 that will
+   * eventually post a foreground task, like asynchronous WebAssembly
+   * compilation.
+   */
+  bool HasPendingBackgroundTasks();
+
+  /**
    * Request garbage collection in this Isolate. It is only valid to call this
    * function if --expose_gc was specified.
    *
@@ -9037,7 +9191,7 @@ class V8_EXPORT Isolate {
   /**
    * An alias for PerformMicrotaskCheckpoint.
    */
-  V8_DEPRECATE_SOON("Use PerformMicrotaskCheckpoint.")
+  V8_DEPRECATED("Use PerformMicrotaskCheckpoint.")
   void RunMicrotasks() { PerformMicrotaskCheckpoint(); }
 
   /**
@@ -9081,7 +9235,7 @@ class V8_EXPORT Isolate {
    * Executing scripts inside the callback will not re-trigger microtasks and
    * the callback.
    */
-  V8_DEPRECATE_SOON("Use *WithData version.")
+  V8_DEPRECATED("Use *WithData version.")
   void AddMicrotasksCompletedCallback(MicrotasksCompletedCallback callback);
   void AddMicrotasksCompletedCallback(
       MicrotasksCompletedCallbackWithData callback, void* data = nullptr);
@@ -9089,7 +9243,7 @@ class V8_EXPORT Isolate {
   /**
    * Removes callback that was installed by AddMicrotasksCompletedCallback.
    */
-  V8_DEPRECATE_SOON("Use *WithData version.")
+  V8_DEPRECATED("Use *WithData version.")
   void RemoveMicrotasksCompletedCallback(MicrotasksCompletedCallback callback);
   void RemoveMicrotasksCompletedCallback(
       MicrotasksCompletedCallbackWithData callback, void* data = nullptr);
@@ -9113,6 +9267,18 @@ class V8_EXPORT Isolate {
    */
   void SetCreateHistogramFunction(CreateHistogramCallback);
   void SetAddHistogramSampleFunction(AddHistogramSampleCallback);
+
+  /**
+   * Enables the host application to provide a mechanism for recording
+   * event based metrics. In order to use this interface
+   *   include/v8-metrics.h
+   * needs to be included and the recorder needs to be derived from the
+   * Recorder base class defined there.
+   * This method can only be called once per isolate and must happen during
+   * isolate initialization before background threads are spawned.
+   */
+  void SetMetricsRecorder(
+      const std::shared_ptr<metrics::Recorder>& metrics_recorder);
 
   /**
    * Enables the host application to provide a mechanism for recording a
@@ -9258,11 +9424,10 @@ class V8_EXPORT Isolate {
   void GetCodeRange(void** start, size_t* length_in_bytes);
 
   /**
-   * Returns the UnwindState necessary for use with the Unwinder API.
+   * As GetCodeRange, but for embedded builtins (these live in a distinct
+   * memory region from other V8 Code objects).
    */
-  // TODO(petermarshall): Remove this API.
-  V8_DEPRECATED("Use entry_stubs + code_pages version.")
-  UnwindState GetUnwindState();
+  void GetEmbeddedCodeRange(const void** start, size_t* length_in_bytes);
 
   /**
    * Returns the JSEntryStubs necessary for use with the Unwinder API.
@@ -9326,8 +9491,15 @@ class V8_EXPORT Isolate {
       "See http://crbug.com/v8/10096.")
   void SetAllowCodeGenerationFromStringsCallback(
       AllowCodeGenerationFromStringsCallback callback);
+  V8_DEPRECATE_SOON(
+      "Use Isolate::SetModifyCodeGenerationFromStringsCallback with "
+      "ModifyCodeGenerationFromStringsCallback2 instead. See "
+      "http://crbug.com/1096017 and TC39 Dynamic Code Brand Checks proposal "
+      "at https://github.com/tc39/proposal-dynamic-code-brand-checks.")
   void SetModifyCodeGenerationFromStringsCallback(
       ModifyCodeGenerationFromStringsCallback callback);
+  void SetModifyCodeGenerationFromStringsCallback(
+      ModifyCodeGenerationFromStringsCallback2 callback);
 
   /**
    * Set the callback to invoke to check if wasm code generation should
@@ -9499,11 +9671,15 @@ class V8_EXPORT StartupData {
    * Only valid for StartupData returned by SnapshotCreator::CreateBlob().
    */
   bool CanBeRehashed() const;
+  /**
+   * Allows embedders to verify whether the data is valid for the current
+   * V8 instance.
+   */
+  bool IsValid() const;
 
   const char* data;
   int raw_size;
 };
-
 
 /**
  * EntropySource is used as a callback function when v8 needs a source
@@ -9711,6 +9887,12 @@ class V8_EXPORT V8 {
    */
   static void GetSharedMemoryStatistics(SharedMemoryStatistics* statistics);
 
+  /**
+   * Notifies V8 that the process is cross-origin-isolated, which enables
+   * defining the SharedArrayBuffer function on the global object of Contexts.
+   */
+  static void SetIsCrossOriginIsolated();
+
  private:
   V8();
 
@@ -9760,6 +9942,8 @@ class V8_EXPORT V8 {
   static void ToLocalEmpty();
   static void InternalFieldOutOfBounds(int index);
   template <class T>
+  friend class BasicTracedReference;
+  template <class T>
   friend class Global;
   template <class T> friend class Local;
   template <class T>
@@ -9767,9 +9951,8 @@ class V8_EXPORT V8 {
   template <class T>
   friend class Maybe;
   template <class T>
-  friend class TracedReferenceBase;
-  template <class T>
   friend class TracedGlobal;
+  friend class TracedReferenceBase;
   template <class T>
   friend class TracedReference;
   template <class T>
@@ -10063,8 +10246,6 @@ class V8_EXPORT TryCatch {
   /**
    * Returns the exception caught by this try/catch block.  If no exception has
    * been caught an empty handle is returned.
-   *
-   * The returned handle is valid until this TryCatch block has been destroyed.
    */
   Local<Value> Exception() const;
 
@@ -10086,9 +10267,6 @@ class V8_EXPORT TryCatch {
   /**
    * Returns the message associated with this exception.  If there is
    * no message associated an empty handle is returned.
-   *
-   * The returned handle is valid until this TryCatch block has been
-   * destroyed.
    */
   Local<v8::Message> Message() const;
 
@@ -10622,12 +10800,14 @@ class V8_EXPORT Unwinder {
    *
    * The unwinder also needs the virtual memory range of all possible V8 code
    * objects. There are two ranges required - the heap code range and the range
-   * for code embedded in the binary. The V8 API provides all required inputs
-   * via an UnwindState object through the Isolate::GetUnwindState() API. These
-   * values will not change after Isolate initialization, so the same
-   * |unwind_state| can be used for multiple calls.
+   * for code embedded in the binary.
    *
-   * \param unwind_state Input state for the Isolate that the stack comes from.
+   * Available on x64, ARM64 and ARM32.
+   *
+   * \param code_pages A list of all of the ranges in which V8 has allocated
+   * executable code. The caller should obtain this list by calling
+   * Isolate::CopyCodePages() during the same interrupt/thread suspension that
+   * captures the stack.
    * \param register_state The current registers. This is an in-out param that
    * will be overwritten with the register values after unwinding, on success.
    * \param stack_base The resulting stack pointer and frame pointer values are
@@ -10638,20 +10818,6 @@ class V8_EXPORT Unwinder {
    *
    * \return True on success.
    */
-  // TODO(petermarshall): Remove this API
-  V8_DEPRECATED("Use entry_stubs + code_pages version.")
-  static bool TryUnwindV8Frames(const UnwindState& unwind_state,
-                                RegisterState* register_state,
-                                const void* stack_base);
-
-  /**
-   * The same as above, but is available on x64, ARM64 and ARM32.
-   *
-   * \param code_pages A list of all of the ranges in which V8 has allocated
-   * executable code. The caller should obtain this list by calling
-   * Isolate::CopyCodePages() during the same interrupt/thread suspension that
-   * captures the stack.
-   */
   static bool TryUnwindV8Frames(const JSEntryStubs& entry_stubs,
                                 size_t code_pages_length,
                                 const MemoryRange* code_pages,
@@ -10659,20 +10825,13 @@ class V8_EXPORT Unwinder {
                                 const void* stack_base);
 
   /**
-   * Whether the PC is within the V8 code range represented by code_range or
-   * embedded_code_range in |unwind_state|.
+   * Whether the PC is within the V8 code range represented by code_pages.
    *
    * If this returns false, then calling UnwindV8Frames() with the same PC
    * and unwind_state will always fail. If it returns true, then unwinding may
    * (but not necessarily) be successful.
-   */
-  // TODO(petermarshall): Remove this API
-  V8_DEPRECATED("Use code_pages version.")
-  static bool PCIsInV8(const UnwindState& unwind_state, void* pc);
-
-  /**
-   * The same as above, but is available on x64, ARM64 and ARM32. See the
-   * comment on TryUnwindV8Frames.
+   *
+   * Available on x64, ARM64 and ARM32
    */
   static bool PCIsInV8(size_t code_pages_length, const MemoryRange* code_pages,
                        void* pc);
@@ -10691,8 +10850,8 @@ Local<T> Local<T>::New(Isolate* isolate, const PersistentBase<T>& that) {
 }
 
 template <class T>
-Local<T> Local<T>::New(Isolate* isolate, const TracedReferenceBase<T>& that) {
-  return New(isolate, that.val_);
+Local<T> Local<T>::New(Isolate* isolate, const BasicTracedReference<T>& that) {
+  return New(isolate, *that);
 }
 
 template <class T>
@@ -10804,8 +10963,15 @@ V8_INLINE void PersistentBase<T>::SetWeak(
     P* parameter, typename WeakCallbackInfo<P>::Callback callback,
     WeakCallbackType type) {
   typedef typename WeakCallbackInfo<void>::Callback Callback;
+#if (__GNUC__ >= 8) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
   V8::MakeWeak(reinterpret_cast<internal::Address*>(this->val_), parameter,
                reinterpret_cast<Callback>(callback), type);
+#if (__GNUC__ >= 8) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 }
 
 template <class T>
@@ -10872,21 +11038,67 @@ Global<T>& Global<T>::operator=(Global<S>&& rhs) {
 }
 
 template <class T>
-T* TracedReferenceBase<T>::New(Isolate* isolate, T* that, void* slot,
-                               DestructionMode destruction_mode) {
+internal::Address* BasicTracedReference<T>::New(
+    Isolate* isolate, T* that, void* slot, DestructionMode destruction_mode) {
   if (that == nullptr) return nullptr;
   internal::Address* p = reinterpret_cast<internal::Address*>(that);
-  return reinterpret_cast<T*>(V8::GlobalizeTracedReference(
+  return V8::GlobalizeTracedReference(
       reinterpret_cast<internal::Isolate*>(isolate), p,
       reinterpret_cast<internal::Address*>(slot),
-      destruction_mode == kWithDestructor));
+      destruction_mode == kWithDestructor);
 }
 
-template <class T>
-void TracedReferenceBase<T>::Reset() {
+void TracedReferenceBase::Reset() {
   if (IsEmpty()) return;
   V8::DisposeTracedGlobal(reinterpret_cast<internal::Address*>(val_));
-  val_ = nullptr;
+  SetSlotThreadSafe(nullptr);
+}
+
+v8::Local<v8::Value> TracedReferenceBase::Get(v8::Isolate* isolate) const {
+  if (IsEmpty()) return Local<Value>();
+  return Local<Value>::New(isolate, reinterpret_cast<Value*>(val_));
+}
+
+V8_INLINE bool operator==(const TracedReferenceBase& lhs,
+                          const TracedReferenceBase& rhs) {
+  v8::internal::Address* a = reinterpret_cast<v8::internal::Address*>(lhs.val_);
+  v8::internal::Address* b = reinterpret_cast<v8::internal::Address*>(rhs.val_);
+  if (a == nullptr) return b == nullptr;
+  if (b == nullptr) return false;
+  return *a == *b;
+}
+
+template <typename U>
+V8_INLINE bool operator==(const TracedReferenceBase& lhs,
+                          const v8::Local<U>& rhs) {
+  v8::internal::Address* a = reinterpret_cast<v8::internal::Address*>(lhs.val_);
+  v8::internal::Address* b = reinterpret_cast<v8::internal::Address*>(*rhs);
+  if (a == nullptr) return b == nullptr;
+  if (b == nullptr) return false;
+  return *a == *b;
+}
+
+template <typename U>
+V8_INLINE bool operator==(const v8::Local<U>& lhs,
+                          const TracedReferenceBase& rhs) {
+  return rhs == lhs;
+}
+
+V8_INLINE bool operator!=(const TracedReferenceBase& lhs,
+                          const TracedReferenceBase& rhs) {
+  return !(lhs == rhs);
+}
+
+template <typename U>
+V8_INLINE bool operator!=(const TracedReferenceBase& lhs,
+                          const v8::Local<U>& rhs) {
+  return !(lhs == rhs);
+}
+
+template <typename U>
+V8_INLINE bool operator!=(const v8::Local<U>& lhs,
+                          const TracedReferenceBase& rhs) {
+  return !(rhs == lhs);
 }
 
 template <class T>
@@ -10896,7 +11108,7 @@ void TracedGlobal<T>::Reset(Isolate* isolate, const Local<S>& other) {
   Reset();
   if (other.IsEmpty()) return;
   this->val_ = this->New(isolate, other.val_, &this->val_,
-                         TracedReferenceBase<T>::kWithDestructor);
+                         BasicTracedReference<T>::kWithDestructor);
 }
 
 template <class T>
@@ -10942,10 +11154,11 @@ template <class T>
 template <class S>
 void TracedReference<T>::Reset(Isolate* isolate, const Local<S>& other) {
   static_assert(std::is_base_of<T, S>::value, "type check");
-  Reset();
+  this->Reset();
   if (other.IsEmpty()) return;
-  this->val_ = this->New(isolate, other.val_, &this->val_,
-                         TracedReferenceBase<T>::kWithoutDestructor);
+  this->SetSlotThreadSafe(
+      this->New(isolate, other.val_, &this->val_,
+                BasicTracedReference<T>::kWithoutDestructor));
 }
 
 template <class T>
@@ -10988,8 +11201,7 @@ TracedReference<T>& TracedReference<T>::operator=(const TracedReference& rhs) {
   return *this;
 }
 
-template <class T>
-void TracedReferenceBase<T>::SetWrapperClassId(uint16_t class_id) {
+void TracedReferenceBase::SetWrapperClassId(uint16_t class_id) {
   typedef internal::Internals I;
   if (IsEmpty()) return;
   internal::Address* obj = reinterpret_cast<internal::Address*>(val_);
@@ -10997,8 +11209,7 @@ void TracedReferenceBase<T>::SetWrapperClassId(uint16_t class_id) {
   *reinterpret_cast<uint16_t*>(addr) = class_id;
 }
 
-template <class T>
-uint16_t TracedReferenceBase<T>::WrapperClassId() const {
+uint16_t TracedReferenceBase::WrapperClassId() const {
   typedef internal::Internals I;
   if (IsEmpty()) return 0;
   internal::Address* obj = reinterpret_cast<internal::Address*>(val_);
@@ -11029,7 +11240,7 @@ void ReturnValue<T>::Set(const Global<S>& handle) {
 
 template <typename T>
 template <typename S>
-void ReturnValue<T>::Set(const TracedReferenceBase<S>& handle) {
+void ReturnValue<T>::Set(const BasicTracedReference<S>& handle) {
   static_assert(std::is_base_of<T, S>::value, "type check");
   if (V8_UNLIKELY(handle.IsEmpty())) {
     *value_ = GetDefaultValue();
@@ -11149,22 +11360,14 @@ template<typename T>
 Local<Value> FunctionCallbackInfo<T>::operator[](int i) const {
   // values_ points to the first argument (not the receiver).
   if (i < 0 || length_ <= i) return Local<Value>(*Undefined(GetIsolate()));
-#ifdef V8_REVERSE_JSARGS
   return Local<Value>(reinterpret_cast<Value*>(values_ + i));
-#else
-  return Local<Value>(reinterpret_cast<Value*>(values_ - i));
-#endif
 }
 
 
 template<typename T>
 Local<Object> FunctionCallbackInfo<T>::This() const {
   // values_ points to the first argument (not the receiver).
-#ifdef V8_REVERSE_JSARGS
   return Local<Object>(reinterpret_cast<Object*>(values_ - 1));
-#else
-  return Local<Object>(reinterpret_cast<Object*>(values_ + 1));
-#endif
 }
 
 
@@ -11359,8 +11562,12 @@ void* Object::GetAlignedPointerFromInternalField(int index) {
                 instance_type == I::kJSApiObjectType ||
                 instance_type == I::kJSSpecialApiObjectType)) {
     int offset = I::kJSObjectHeaderSize + (I::kEmbedderDataSlotSize * index);
+#ifdef V8_HEAP_SANDBOX
+    offset += I::kEmbedderDataSlotRawPayloadOffset;
+#endif
     internal::Isolate* isolate = I::GetIsolateForHeapSandbox(obj);
-    A value = I::ReadExternalPointerField(isolate, obj, offset);
+    A value = I::ReadExternalPointerField(
+        isolate, obj, offset, internal::kEmbedderDataSlotPayloadTag);
     return reinterpret_cast<void*>(value);
   }
 #endif
@@ -11393,7 +11600,8 @@ String::ExternalStringResource* String::GetExternalStringResource() const {
   if (I::IsExternalTwoByteString(I::GetInstanceType(obj))) {
     internal::Isolate* isolate = I::GetIsolateForHeapSandbox(obj);
     A value =
-        I::ReadExternalPointerField(isolate, obj, I::kStringResourceOffset);
+        I::ReadExternalPointerField(isolate, obj, I::kStringResourceOffset,
+                                    internal::kExternalStringResourceTag);
     result = reinterpret_cast<String::ExternalStringResource*>(value);
   } else {
     result = GetExternalStringResourceSlow();
@@ -11417,7 +11625,8 @@ String::ExternalStringResourceBase* String::GetExternalStringResourceBase(
       type == I::kExternalTwoByteRepresentationTag) {
     internal::Isolate* isolate = I::GetIsolateForHeapSandbox(obj);
     A value =
-        I::ReadExternalPointerField(isolate, obj, I::kStringResourceOffset);
+        I::ReadExternalPointerField(isolate, obj, I::kStringResourceOffset,
+                                    internal::kExternalStringResourceTag);
     resource = reinterpret_cast<ExternalStringResourceBase*>(value);
   } else {
     resource = GetExternalStringResourceBaseSlow(encoding_out);
@@ -11503,6 +11712,13 @@ template <class T> Value* Value::Cast(T* value) {
   return static_cast<Value*>(value);
 }
 
+template <>
+V8_INLINE Value* Value::Cast(Data* value) {
+#ifdef V8_ENABLE_CHECKS
+  CheckCast(value);
+#endif
+  return static_cast<Value*>(value);
+}
 
 Boolean* Boolean::Cast(v8::Value* value) {
 #ifdef V8_ENABLE_CHECKS
@@ -11535,6 +11751,12 @@ Private* Private::Cast(Data* data) {
   return reinterpret_cast<Private*>(data);
 }
 
+Module* Module::Cast(Data* data) {
+#ifdef V8_ENABLE_CHECKS
+  CheckCast(data);
+#endif
+  return reinterpret_cast<Module*>(data);
+}
 
 Number* Number::Cast(v8::Value* value) {
 #ifdef V8_ENABLE_CHECKS
@@ -11931,37 +12153,6 @@ MaybeLocal<T> Isolate::GetDataFromSnapshotOnce(size_t index) {
   return Local<T>(data);
 }
 
-int64_t Isolate::AdjustAmountOfExternalAllocatedMemory(
-    int64_t change_in_bytes) {
-  typedef internal::Internals I;
-  int64_t* external_memory = reinterpret_cast<int64_t*>(
-      reinterpret_cast<uint8_t*>(this) + I::kExternalMemoryOffset);
-  int64_t* external_memory_limit = reinterpret_cast<int64_t*>(
-      reinterpret_cast<uint8_t*>(this) + I::kExternalMemoryLimitOffset);
-  int64_t* external_memory_low_since_mc =
-      reinterpret_cast<int64_t*>(reinterpret_cast<uint8_t*>(this) +
-                                 I::kExternalMemoryLowSinceMarkCompactOffset);
-
-  // Embedders are weird: we see both over- and underflows here. Perform the
-  // addition with unsigned types to avoid undefined behavior.
-  const int64_t amount =
-      static_cast<int64_t>(static_cast<uint64_t>(change_in_bytes) +
-                           static_cast<uint64_t>(*external_memory));
-  *external_memory = amount;
-
-  if (amount < *external_memory_low_since_mc) {
-    *external_memory_low_since_mc = amount;
-    *external_memory_limit = amount + I::kExternalAllocationSoftLimit;
-  }
-
-  if (change_in_bytes <= 0) return *external_memory;
-
-  if (amount > *external_memory_limit) {
-    ReportExternalAllocationLimitReached();
-  }
-  return *external_memory;
-}
-
 Local<Value> Context::GetEmbedderData(int index) {
 #ifndef V8_ENABLE_CHECKS
   typedef internal::Address A;
@@ -11997,9 +12188,13 @@ void* Context::GetAlignedPointerFromEmbedderData(int index) {
       I::ReadTaggedPointerField(ctx, I::kNativeContextEmbedderDataOffset);
   int value_offset =
       I::kEmbedderDataArrayHeaderSize + (I::kEmbedderDataSlotSize * index);
+#ifdef V8_HEAP_SANDBOX
+  value_offset += I::kEmbedderDataSlotRawPayloadOffset;
+#endif
   internal::Isolate* isolate = I::GetIsolateForHeapSandbox(ctx);
   return reinterpret_cast<void*>(
-      I::ReadExternalPointerField(isolate, embedder_data, value_offset));
+      I::ReadExternalPointerField(isolate, embedder_data, value_offset,
+                                  internal::kEmbedderDataSlotPayloadTag));
 #else
   return SlowGetAlignedPointerFromEmbedderData(index);
 #endif

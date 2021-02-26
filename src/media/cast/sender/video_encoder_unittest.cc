@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -27,7 +28,7 @@
 #include "media/cast/test/utility/video_utility.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "media/cast/sender/h264_vt_encoder.h"
 #endif
 
@@ -71,8 +72,8 @@ class VideoEncoderTest
     video_config_.video_codec_params.max_number_of_video_buffers_used = 1;
     video_encoder_ = VideoEncoder::Create(
         cast_environment_, video_config_,
-        base::Bind(&VideoEncoderTest::OnOperationalStatusChange,
-                   base::Unretained(this)),
+        base::BindRepeating(&VideoEncoderTest::OnOperationalStatusChange,
+                            base::Unretained(this)),
         base::Bind(
             &FakeVideoEncodeAcceleratorFactory::CreateVideoEncodeAccelerator,
             base::Unretained(vea_factory_.get())),
@@ -94,7 +95,7 @@ class VideoEncoderTest
 
   bool is_testing_video_toolbox_encoder() const {
     return
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
         (!video_config_.use_external_encoder &&
          H264VideoToolboxEncoder::IsSupported(video_config_)) ||
 #endif
@@ -124,7 +125,7 @@ class VideoEncoderTest
     DCHECK_GT(video_config_.max_frame_rate, 0);
     const base::TimeDelta frame_duration = base::TimeDelta::FromMicroseconds(
         1000000.0 / video_config_.max_frame_rate);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     if (is_testing_video_toolbox_encoder()) {
       // The H264VideoToolboxEncoder (on MAC_OSX and IOS) is not a faked
       // implementation in these tests, and performs its encoding asynchronously
@@ -366,7 +367,7 @@ std::vector<std::pair<Codec, bool>> DetermineEncodersToTest() {
   values.push_back(std::make_pair(CODEC_VIDEO_VP8, false));
   // Hardware-accelerated encoder (faked).
   values.push_back(std::make_pair(CODEC_VIDEO_VP8, true));
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // VideoToolbox encoder (when VideoToolbox is present).
   FrameSenderConfig video_config = GetDefaultVideoSenderConfig();
   video_config.use_external_encoder = false;

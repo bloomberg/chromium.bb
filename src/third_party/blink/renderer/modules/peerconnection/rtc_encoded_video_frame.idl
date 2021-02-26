@@ -5,7 +5,7 @@
 // https://github.com/alvestrand/webrtc-media-streams/blob/master/explainer.md#api
 // TODO(crbug.com/1052765): Add link to standard when available.
 
-enum RTCCodedVideoFrameType {
+enum RTCEncodedVideoFrameType {
     "empty",
     "key",
     "delta",
@@ -13,16 +13,15 @@ enum RTCCodedVideoFrameType {
 
 // TODO(crbug.com/1052765): Align with WebCodecs definition once it is stable.
 [
-    Exposed=Window,
-    RuntimeEnabled=RTCInsertableStreams
+    Exposed=Window
 ] interface RTCEncodedVideoFrame {
-    readonly attribute RTCCodedVideoFrameType type;
+    readonly attribute RTCEncodedVideoFrameType type;
     readonly attribute unsigned long long timestamp;  // microseconds
     attribute ArrayBuffer data;
     RTCEncodedVideoFrameMetadata getMetadata();
     // TODO(crbug.com/1052765): Remove the following fields before enabling
     // by default.
-    readonly attribute ArrayBuffer additionalData;
-    readonly attribute unsigned long synchronizationSource;
+    [RuntimeEnabled=RTCInsertableStreams] readonly attribute ArrayBuffer additionalData;
+    [RuntimeEnabled=RTCInsertableStreams] readonly attribute unsigned long synchronizationSource;
     stringifier;
 };

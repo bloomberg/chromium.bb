@@ -13,7 +13,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
@@ -79,7 +78,8 @@ class OverflowGradientBackground : public views::Background {
 StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
     : shelf_(shelf), focus_cycler_for_testing_(nullptr) {
   DCHECK(shelf_);
-  set_owned_by_client();  // Deleted by DeleteDelegate().
+  set_owned_by_client();
+  SetOwnedByWidget(true);
 
   // Allow the launcher to surrender the focus to another window upon
   // navigation completion by the user.
@@ -156,10 +156,6 @@ bool StatusAreaWidgetDelegate::CanActivate() const {
                                         ? focus_cycler_for_testing_
                                         : Shell::Get()->focus_cycler();
   return focus_cycler->widget_activating() == GetWidget();
-}
-
-void StatusAreaWidgetDelegate::DeleteDelegate() {
-  delete this;
 }
 
 void StatusAreaWidgetDelegate::CalculateTargetBounds() {
@@ -248,9 +244,10 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
   // is enabled).
   int right_edge = kPaddingBetweenItems;
 
-  if (is_child_on_edge && chromeos::switches::ShouldShowShelfHotseat())
+  if (is_child_on_edge) {
     right_edge = ShelfConfig::Get()->control_button_edge_spacing(
         true /* is_primary_axis_edge */);
+  }
 
   // Swap edges if alignment is not horizontal (bottom-to-top).
   if (!shelf_->IsHorizontalAlignment()) {

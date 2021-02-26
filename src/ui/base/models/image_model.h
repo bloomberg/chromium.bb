@@ -6,9 +6,10 @@
 #define UI_BASE_MODELS_IMAGE_MODEL_H_
 
 #include "base/callback.h"
-#include "base/optional.h"
+#include "base/component_export.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -28,7 +29,7 @@ namespace ui {
 // is only used internal to ImageModel and should never be instantiated except
 // by ImageModel.
 
-class UI_BASE_EXPORT VectorIconModel {
+class COMPONENT_EXPORT(UI_BASE) VectorIconModel {
  public:
   VectorIconModel();
   VectorIconModel(const VectorIconModel&);
@@ -38,6 +39,9 @@ class UI_BASE_EXPORT VectorIconModel {
   ~VectorIconModel();
 
   bool is_empty() const { return !vector_icon_; }
+
+  bool operator==(const VectorIconModel& other) const;
+  bool operator!=(const VectorIconModel& other) const;
 
  private:
   friend class ThemedVectorIcon;
@@ -54,24 +58,20 @@ class UI_BASE_EXPORT VectorIconModel {
 
   const gfx::VectorIcon* vector_icon() const { return vector_icon_; }
   int icon_size() const { return icon_size_; }
-  int color_id() const { return color_id_.value(); }
-  SkColor color() const { return color_.value(); }
-  bool has_color() const { return color_.has_value(); }
+  int color_id() const { return absl::get<int>(color_); }
+  SkColor color() const { return absl::get<SkColor>(color_); }
+  bool has_color() const { return absl::holds_alternative<SkColor>(color_); }
 
   const gfx::VectorIcon* vector_icon_ = nullptr;
   int icon_size_ = 0;
-  // Only one of the following will ever be assigned.
-  // TODO: Update to use std::variant or base:Variant once one of them is
-  // available to use.
-  base::Optional<int> color_id_;
-  base::Optional<SkColor> color_;
+  absl::variant<int, SkColor> color_ = gfx::kPlaceholderColor;
 };
 
 // ImageModel encapsulates either a gfx::Image or a VectorIconModel. Only one
 // of the two may be specified at a given time. This class is instantiated via
 // the FromXXXX static factory functions.
 
-class UI_BASE_EXPORT ImageModel {
+class COMPONENT_EXPORT(UI_BASE) ImageModel {
  public:
   ImageModel();
   ImageModel(const ImageModel&);
@@ -88,24 +88,26 @@ class UI_BASE_EXPORT ImageModel {
                                    int icon_size = 0);
   static ImageModel FromImage(const gfx::Image& image);
   static ImageModel FromImageSkia(const gfx::ImageSkia& image_skia);
+  static ImageModel FromResourceId(int resource_id);
 
   bool IsEmpty() const;
   bool IsVectorIcon() const;
   bool IsImage() const;
+  gfx::Size Size() const;
   // Only valid if IsVectorIcon() or IsImage() return true, respectively.
-  const VectorIconModel GetVectorIcon() const;
-  const gfx::Image GetImage() const;
+  VectorIconModel GetVectorIcon() const;
+  gfx::Image GetImage() const;
+
+  // Checks if both model yield equal images.
+  bool operator==(const ImageModel& other) const;
+  bool operator!=(const ImageModel& other) const;
 
  private:
   ImageModel(const gfx::Image& image);
   ImageModel(const gfx::ImageSkia& image_skia);
   ImageModel(const VectorIconModel& vector_icon_model);
 
-  // Only one of the following will ever be assigned.
-  // TODO: Update to use std::variant or base:Variant once one of them is
-  // available to use.
-  base::Optional<VectorIconModel> vector_icon_model_;
-  base::Optional<gfx::Image> image_;
+  absl::variant<VectorIconModel, gfx::Image> icon_;
 };
 
 }  // namespace ui

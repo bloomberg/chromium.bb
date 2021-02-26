@@ -107,6 +107,10 @@ class QUIC_EXPORT_PRIVATE Bbr2Sender final : public SendAlgorithmInterface {
   // Returns the min of BDP and congestion window.
   QuicByteCount GetTargetBytesInflight() const;
 
+  bool IsBandwidthOverestimateAvoidanceEnabled() const {
+    return model_.IsBandwidthOverestimateAvoidanceEnabled();
+  }
+
   struct QUIC_EXPORT_PRIVATE DebugState {
     Bbr2Mode mode;
 
@@ -156,10 +160,6 @@ class QUIC_EXPORT_PRIVATE Bbr2Sender final : public SendAlgorithmInterface {
     return random_->RandUint64() % max;
   }
 
-  // Returns true if there are enough bytes in flight to ensure more bandwidth
-  // will be observed if present.
-  bool IsPipeSufficientlyFull() const;
-
   // Cwnd limits imposed by the current Bbr2 mode.
   Limits<QuicByteCount> GetCwndLimitsByMode() const;
 
@@ -178,6 +178,10 @@ class QUIC_EXPORT_PRIVATE Bbr2Sender final : public SendAlgorithmInterface {
   // Don't use it directly outside of SetFromConfig and ApplyConnectionOptions.
   // Instead, use params() to get read-only access.
   Bbr2Params params_;
+
+  // Max congestion window when adjusting network parameters.
+  QuicByteCount max_cwnd_when_network_parameters_adjusted_ =
+      kMaxInitialCongestionWindow * kDefaultTCPMSS;
 
   Bbr2NetworkModel model_;
 

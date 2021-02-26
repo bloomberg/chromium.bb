@@ -15,12 +15,12 @@
 #include "components/offline_pages/core/offline_page_item.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/previews_state.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
-#include "net/url_request/url_request.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace offline_pages {
@@ -41,7 +41,7 @@ net::RedirectInfo CreateRedirectInfo(const GURL& redirected_url,
                                      int response_code) {
   net::RedirectInfo redirect_info;
   redirect_info.new_url = redirected_url;
-  redirect_info.new_referrer_policy = net::URLRequest::NO_REFERRER;
+  redirect_info.new_referrer_policy = net::ReferrerPolicy::NO_REFERRER;
   redirect_info.new_method = "GET";
   redirect_info.status_code = response_code;
   redirect_info.new_site_for_cookies =
@@ -94,7 +94,7 @@ OfflinePageURLLoader::OfflinePageURLLoader(
       transition_type_(tentative_resource_request.transition_type),
       loader_callback_(std::move(callback)),
       is_offline_preview_allowed_(tentative_resource_request.previews_state &
-                                  content::OFFLINE_PAGE_ON) {
+                                  blink::PreviewsTypes::OFFLINE_PAGE_ON) {
   // TODO(crbug.com/876527): Figure out how offline page interception should
   // interact with URLLoaderThrottles. It might be incorrect to use
   // |tentative_resource_request.headers| here, since throttles can rewrite
@@ -217,14 +217,14 @@ int OfflinePageURLLoader::GetPageTransition() const {
 
 OfflinePageRequestHandler::Delegate::WebContentsGetter
 OfflinePageURLLoader::GetWebContentsGetter() const {
-  return base::Bind(&GetWebContents, frame_tree_node_id_);
+  return base::BindRepeating(&GetWebContents, frame_tree_node_id_);
 }
 
 OfflinePageRequestHandler::Delegate::TabIdGetter
 OfflinePageURLLoader::GetTabIdGetter() const {
   if (!tab_id_getter_.is_null())
     return tab_id_getter_;
-  return base::Bind(&GetTabId);
+  return base::BindRepeating(&GetTabId);
 }
 
 void OfflinePageURLLoader::ReadRawData() {

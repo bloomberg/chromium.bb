@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
@@ -41,7 +42,6 @@ source_set("audio") {
   visibility = [
     ":wav_audio_handler_fuzzer",
     "//media",
-
     "//media/renderers",
 
     # TODO(dalecurtis): CoreAudioUtil::IsCoreAudioSupported() should probably
@@ -85,6 +85,8 @@ source_set("audio") {
     "audio_manager.h",
     "audio_manager_base.cc",
     "audio_manager_base.h",
+    "audio_opus_encoder.cc",
+    "audio_opus_encoder.h",
     "audio_output_delegate.cc",
     "audio_output_delegate.h",
     "audio_output_device.cc",
@@ -103,6 +105,8 @@ source_set("audio") {
     "audio_output_resampler.h",
     "audio_output_stream_sink.cc",
     "audio_output_stream_sink.h",
+    "audio_pcm_encoder.cc",
+    "audio_pcm_encoder.h",
     "audio_sink_parameters.cc",
     "audio_sink_parameters.h",
     "audio_source_diverter.h",
@@ -143,7 +147,9 @@ source_set("audio") {
   deps = [
     "//base",
     "//build:chromecast_buildflags",
+    "//build:chromeos_buildflags",
     "//media/base",
+    "//third_party/opus:opus",
     "//url",
   ]
   libs = []
@@ -171,7 +177,7 @@ source_set("audio") {
       "mac/scoped_audio_unit.cc",
       "mac/scoped_audio_unit.h",
     ]
-    libs += [
+    frameworks = [
       "AudioToolbox.framework",
       "AudioUnit.framework",
       "CoreAudio.framework",
@@ -232,7 +238,7 @@ source_set("audio") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "linux/audio_manager_linux.cc" ]
   }
 
@@ -254,15 +260,28 @@ source_set("audio") {
 
   if (use_cras) {
     sources += [
-      "cras/audio_manager_cras.cc",
-      "cras/audio_manager_cras.h",
+      "cras/audio_manager_cras_base.cc",
+      "cras/audio_manager_cras_base.h",
       "cras/cras_input.cc",
       "cras/cras_input.h",
       "cras/cras_unified.cc",
       "cras/cras_unified.h",
     ]
     configs += [ ":libcras" ]
-    deps += [ "//chromeos/audio" ]
+    if (is_ash) {
+      sources += [
+        "cras/audio_manager_chromeos.cc",
+        "cras/audio_manager_chromeos.h",
+      ]
+      deps += [ "//chromeos/audio" ]
+    } else if (is_linux) {
+      sources += [
+        "cras/audio_manager_cras.cc",
+        "cras/audio_manager_cras.h",
+        "cras/cras_util.cc",
+        "cras/cras_util.h",
+      ]
+    }
   }
 
   if (use_pulseaudio) {
@@ -344,6 +363,7 @@ static_library("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
 
     # Do not add any other //media deps except this; it will automatically pull
     # a dep on //media which is required to ensure test_support targets all use
@@ -368,6 +388,7 @@ source_set("unit_tests") {
     "audio_debug_recording_helper_unittest.cc",
     "audio_debug_recording_manager_unittest.cc",
     "audio_debug_recording_session_impl_unittest.cc",
+    "audio_encoders_unittest.cc",
     "audio_input_device_unittest.cc",
     "audio_input_stream_data_interceptor_unittest.cc",
     "audio_input_unittest.cc",
@@ -384,9 +405,11 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//media:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/opus:opus",
     "//url",
   ]
 
@@ -409,7 +432,7 @@ source_set("unit_tests") {
     ]
   }
 
-  if (is_chromeos || is_chromecast) {
+  if (is_ash || is_chromecast) {
     sources += [
       "test_data.h",
       "wav_audio_handler_unittest.cc",

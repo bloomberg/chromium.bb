@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "api/task_queue/task_queue_factory.h"
-#include "api/transport/media/media_transport_interface.h"
 #include "api/units/timestamp.h"
 #include "api/video/recordable_encoded_frame.h"
 #include "call/rtp_packet_sink_interface.h"
@@ -27,17 +26,17 @@
 #include "modules/video_coding/video_receiver2.h"
 #include "rtc_base/synchronization/sequence_checker.h"
 #include "rtc_base/task_queue.h"
+#include "rtc_base/task_utils/pending_task_safety_flag.h"
 #include "system_wrappers/include/clock.h"
 #include "video/receive_statistics_proxy2.h"
 #include "video/rtp_streams_synchronizer2.h"
-#include "video/rtp_video_stream_receiver.h"
+#include "video/rtp_video_stream_receiver2.h"
 #include "video/transport_adapter.h"
 #include "video/video_stream_decoder2.h"
 
 namespace webrtc {
 
 class ProcessThread;
-class RTPFragmentationHeader;
 class RtpStreamReceiverInterface;
 class RtpStreamReceiverControllerInterface;
 class RtxReceiveStream;
@@ -149,7 +148,7 @@ class VideoReceiveStream2 : public webrtc::VideoReceiveStream,
                                          int64_t time_ms) override;
 
   // SetMinimumPlayoutDelay is only called by A/V sync.
-  void SetMinimumPlayoutDelay(int delay_ms) override;
+  bool SetMinimumPlayoutDelay(int delay_ms) override;
 
   std::vector<webrtc::RtpSource> GetSources() const override;
 
@@ -158,24 +157,28 @@ class VideoReceiveStream2 : public webrtc::VideoReceiveStream,
   void GenerateKeyFrame() override;
 
  private:
-  int64_t GetWaitMs() const;
+  int64_t GetMaxWaitMs() const RTC_RUN_ON(decode_queue_);
   void StartNextDecode() RTC_RUN_ON(decode_queue_);
   void HandleEncodedFrame(std::unique_ptr<video_coding::EncodedFrame> frame)
       RTC_RUN_ON(decode_queue_);
-  void HandleFrameBufferTimeout() RTC_RUN_ON(decode_queue_);
+  void HandleFrameBufferTimeout(int64_t now_ms, int64_t wait_ms)
+      RTC_RUN_ON(worker_sequence_checker_);
   void UpdatePlayoutDelays() const
-      RTC_EXCLUSIVE_LOCKS_REQUIRED(playout_delay_lock_);
-  void RequestKeyFrame(int64_t timestamp_ms) RTC_RUN_ON(decode_queue_);
-  void HandleKeyFrameGeneration(bool received_frame_is_keyframe, int64_t now_ms)
-      RTC_RUN_ON(decode_queue_);
+      RTC_EXCLUSIVE_LOCKS_REQUIRED(worker_sequence_checker_);
+  void RequestKeyFrame(int64_t timestamp_ms)
+      RTC_RUN_ON(worker_sequence_checker_);
+  void HandleKeyFrameGeneration(bool received_frame_is_keyframe,
+                                int64_t now_ms,
+                                bool always_request_key_frame,
+                                bool keyframe_request_is_due)
+      RTC_RUN_ON(worker_sequence_checker_);
   bool IsReceivingKeyFrame(int64_t timestamp_ms) const
-      RTC_RUN_ON(decode_queue_);
+      RTC_RUN_ON(worker_sequence_checker_);
 
   void UpdateHistograms();
 
   SequenceChecker worker_sequence_checker_;
   SequenceChecker module_process_sequence_checker_;
-  SequenceChecker network_sequence_checker_;
 
   TaskQueueFactory* const task_queue_factory_;
 
@@ -199,7 +202,7 @@ class VideoReceiveStream2 : public webrtc::VideoReceiveStream,
   std::unique_ptr<VCMTiming> timing_;  // Jitter buffer experiment.
   VideoReceiver2 video_receiver_;
   std::unique_ptr<rtc::VideoSinkInterface<VideoFrame>> incoming_video_stream_;
-  RtpVideoStreamReceiver rtp_video_stream_receiver_;
+  RtpVideoStreamReceiver2 rtp_video_stream_receiver_;
   std::unique_ptr<VideoStreamDecoder> video_stream_decoder_;
   RtpStreamsSynchronizer rtp_stream_sync_;
 
@@ -216,40 +219,53 @@ class VideoReceiveStream2 : public webrtc::VideoReceiveStream,
 
   // Whenever we are in an undecodable state (stream has just started or due to
   // a decoding error) we require a keyframe to restart the stream.
-  bool keyframe_required_ = true;
+  bool keyframe_required_ RTC_GUARDED_BY(decode_queue_) = true;
 
   // If we have successfully decoded any frame.
-  bool frame_decoded_ = false;
+  bool frame_decoded_ RTC_GUARDED_BY(decode_queue_) = false;
 
-  int64_t last_keyframe_request_ms_ = 0;
-  int64_t last_complete_frame_time_ms_ = 0;
+  int64_t last_keyframe_request_ms_ RTC_GUARDED_BY(decode_queue_) = 0;
+  int64_t last_complete_frame_time_ms_
+      RTC_GUARDED_BY(worker_sequence_checker_) = 0;
 
   // Keyframe request intervals are configurable through field trials.
   const int max_wait_for_keyframe_ms_;
   const int max_wait_for_frame_ms_;
-
-  rtc::CriticalSection playout_delay_lock_;
 
   // All of them tries to change current min_playout_delay on |timing_| but
   // source of the change request is different in each case. Among them the
   // biggest delay is used. -1 means use default value from the |timing_|.
   //
   // Minimum delay as decided by the RTP playout delay extension.
-  int frame_minimum_playout_delay_ms_ RTC_GUARDED_BY(playout_delay_lock_) = -1;
-  // Minimum delay as decided by the setLatency function in "webrtc/api".
-  int base_minimum_playout_delay_ms_ RTC_GUARDED_BY(playout_delay_lock_) = -1;
-  // Minimum delay as decided by the A/V synchronization feature.
-  int syncable_minimum_playout_delay_ms_ RTC_GUARDED_BY(playout_delay_lock_) =
+  int frame_minimum_playout_delay_ms_ RTC_GUARDED_BY(worker_sequence_checker_) =
       -1;
+  // Minimum delay as decided by the setLatency function in "webrtc/api".
+  int base_minimum_playout_delay_ms_ RTC_GUARDED_BY(worker_sequence_checker_) =
+      -1;
+  // Minimum delay as decided by the A/V synchronization feature.
+  int syncable_minimum_playout_delay_ms_
+      RTC_GUARDED_BY(worker_sequence_checker_) = -1;
 
   // Maximum delay as decided by the RTP playout delay extension.
-  int frame_maximum_playout_delay_ms_ RTC_GUARDED_BY(playout_delay_lock_) = -1;
+  int frame_maximum_playout_delay_ms_ RTC_GUARDED_BY(worker_sequence_checker_) =
+      -1;
 
   // Function that is triggered with encoded frames, if not empty.
   std::function<void(const RecordableEncodedFrame&)>
       encoded_frame_buffer_function_ RTC_GUARDED_BY(decode_queue_);
   // Set to true while we're requesting keyframes but not yet received one.
-  bool keyframe_generation_requested_ RTC_GUARDED_BY(decode_queue_) = false;
+  bool keyframe_generation_requested_ RTC_GUARDED_BY(worker_sequence_checker_) =
+      false;
+
+  // Set by the field trial WebRTC-LowLatencyRenderer. The parameter |enabled|
+  // determines if the low-latency renderer algorithm should be used for the
+  // case min playout delay=0 and max playout delay>0.
+  FieldTrialParameter<bool> low_latency_renderer_enabled_;
+  // Set by the field trial WebRTC-LowLatencyRenderer. The parameter
+  // |include_predecode_buffer| determines if the predecode buffer should be
+  // taken into account when calculating maximum number of frames in composition
+  // queue.
+  FieldTrialParameter<bool> low_latency_renderer_include_predecode_buffer_;
 
   // Defined last so they are destroyed before all other members.
   rtc::TaskQueue decode_queue_;

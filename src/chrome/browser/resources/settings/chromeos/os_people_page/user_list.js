@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview
- * 'settings-user-list' shows a list of users whitelisted on this Chrome OS
+ * 'settings-user-list' shows a list of users allowed on this Chrome OS
  * device.
  *
  * Example:
@@ -23,7 +23,7 @@ Polymer({
 
   properties: {
     /**
-     * Current list of whitelisted users.
+     * Current list of allowed users.
      * @private {!Array<!chrome.usersPrivate.User>}
      */
     users_: {
@@ -46,14 +46,18 @@ Polymer({
     }
   },
 
+  /** chrome.usersPrivate */
+  usersPrivate_: chrome.usersPrivate,
+
   /** @override */
   ready() {
     chrome.settingsPrivate.onPrefsChanged.addListener(prefs => {
       prefs.forEach(function(pref) {
-        if (pref.key == 'cros.accounts.users') {
-          chrome.usersPrivate.getWhitelistedUsers(users => {
-            this.setUsers_(users);
-          });
+        if (pref.key === 'cros.accounts.users') {
+          this.usersPrivate_.getUsers(
+              (/** !Array<!chrome.usersPrivate.User> */ users) => {
+                this.setUsers_(users);
+              });
         }
       }, this);
     });
@@ -61,11 +65,12 @@ Polymer({
 
   /** @protected */
   currentRouteChanged() {
-    if (settings.Router.getInstance().getCurrentRoute() ==
+    if (settings.Router.getInstance().getCurrentRoute() ===
         settings.routes.ACCOUNTS) {
-      chrome.usersPrivate.getWhitelistedUsers(users => {
-        this.setUsers_(users);
-      });
+      this.usersPrivate_.getUsers(
+          (/** !Array<!chrome.usersPrivate.User> */ users) => {
+            this.setUsers_(users);
+          });
     }
   },
 
@@ -79,13 +84,13 @@ Polymer({
   },
 
   /**
-   * Helper function that sorts and sets the given list of whitelisted users.
-   * @param {!Array<!chrome.usersPrivate.User>} users List of whitelisted users.
+   * Helper function that sorts and sets the given list of allowed users.
+   * @param {!Array<!chrome.usersPrivate.User>} users List of allowed users.
    */
   setUsers_(users) {
     this.users_ = users;
     this.users_.sort(function(a, b) {
-      if (a.isOwner != b.isOwner) {
+      if (a.isOwner !== b.isOwner) {
         return b.isOwner ? 1 : -1;
       } else {
         return -1;
@@ -99,7 +104,13 @@ Polymer({
    * @param {!{model: !{item: !chrome.usersPrivate.User}}} e
    */
   removeUser_(e) {
-    chrome.usersPrivate.removeWhitelistedUser(
+    // Focus the add user button since, after this removal, the only user left
+    // will be the account owner.
+    if (this.users_.length === 2) {
+      this.fire('all-managed-users-removed');
+    }
+
+    this.usersPrivate_.removeUser(
         e.model.item.email, /* callback */ function() {});
   },
 
@@ -122,7 +133,7 @@ Polymer({
    * @private
    */
   shouldShowEmail_(user) {
-    return !user.isSupervised && user.name != user.displayEmail;
+    return !user.isSupervised && user.name !== user.displayEmail;
   },
 
   /**

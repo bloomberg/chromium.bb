@@ -26,10 +26,13 @@ namespace base {
 class DictionaryValue;
 }  // namespace base
 
+namespace content {
+class WebUIDataSource;
+}
+
 namespace chromeos {
 
 class ErrorScreen;
-class NativeWindowDelegate;
 class NetworkStateInformer;
 class OobeDisplayChooser;
 class SigninScreenHandler;
@@ -44,7 +47,6 @@ class OobeUI : public ui::MojoWebUIController {
   // List of known types of OobeUI. Type added as path in chrome://oobe url, for
   // example chrome://oobe/user-adding.
   static const char kAppLaunchSplashDisplay[];
-  static const char kDiscoverDisplay[];
   static const char kGaiaSigninDisplay[];
   static const char kLockDisplay[];
   static const char kLoginDisplay[];
@@ -87,14 +89,19 @@ class OobeUI : public ui::MojoWebUIController {
   void ShowOobeUI(bool show);
 
   // Shows the signin screen.
-  void ShowSigninScreen(SigninScreenHandlerDelegate* delegate,
-                        NativeWindowDelegate* native_window_delegate);
+  void ShowSigninScreen(SigninScreenHandlerDelegate* delegate);
 
   // Forwards an accelerator to the webui to be handled.
   void ForwardAccelerator(std::string accelerator_name);
 
   // Resets the delegate set in ShowSigninScreen.
   void ResetSigninScreenHandlerDelegate();
+
+  gfx::NativeView GetNativeView();
+
+  gfx::NativeWindow GetTopLevelNativeWindow();
+
+  gfx::Size GetViewSize();
 
   // Add and remove observers for screen change events.
   void AddObserver(Observer* observer);
@@ -157,6 +164,9 @@ class OobeUI : public ui::MojoWebUIController {
   void BindInterface(
       mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
           receiver);
+
+  static void AddOobeComponents(content::WebUIDataSource* source,
+                                const base::DictionaryValue& localized_strings);
 
  private:
   void AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler);

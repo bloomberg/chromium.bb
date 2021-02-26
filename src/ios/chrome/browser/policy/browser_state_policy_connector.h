@@ -18,6 +18,10 @@ class SchemaRegistry;
 
 // BrowserStatePolicyConnector creates and manages the per-BrowserState policy
 // components and their integration with PrefService.
+// BrowserStatePolicyConnector isn't a keyed service because the pref service,
+// which isn't a keyed service, has a hard dependency on the policy
+// infrastructure. In order to outlive the pref service, the policy connector
+// must live outside the keyed services.
 class BrowserStatePolicyConnector {
  public:
   BrowserStatePolicyConnector();
@@ -43,6 +47,8 @@ class BrowserStatePolicyConnector {
   policy::SchemaRegistry* GetSchemaRegistry() const { return schema_registry_; }
 
  private:
+  friend class BrowserStatePolicyConnectorMock;
+
   // |policy_providers_| contains a list of the policy providers available for
   // the PolicyService of this connector, in decreasing order of priority.
   //

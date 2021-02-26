@@ -7,6 +7,7 @@ const BROWSER_SETTINGS_PATH = '../';
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
+GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
 // Only run in release builds because we frequently see test timeouts in debug.
@@ -45,14 +46,11 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
     let ui;
     let userActionRecorder;
 
-    suiteSetup(() => {
-      testing.Test.disableAnimationsAndTransitions();
-      ui = assert(document.querySelector('os-settings-ui'));
-      Polymer.dom.flush();
-      ui.$$('#drawerTemplate').restamp = true;
-    });
-
-    setup(() => {
+    setup(async () => {
+      PolymerTest.clearBody();
+      ui = document.createElement('os-settings-ui');
+      document.body.appendChild(ui);
+      await CrSettingsPrefs.initialized;
       userActionRecorder = new settings.FakeUserActionRecorder();
       settings.setUserActionRecorderForTesting(userActionRecorder);
       ui.$$('#drawerTemplate').if = false;
@@ -60,7 +58,9 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
     });
 
     teardown(() => {
+      ui.remove();
       settings.setUserActionRecorderForTesting(null);
+      settings.Router.getInstance().resetRouteForTesting();
     });
 
     test('top container shadow always shows for sub-pages', () => {
@@ -101,7 +101,6 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       assertTrue(!!ui.$$('cr-drawer os-settings-menu'));
 
       drawer.cancel();
-      await test_util.eventToPromise('close', drawer);
       // Drawer is closed, but menu is still stamped so its contents remain
       // visible as the drawer slides out.
       assertTrue(!!ui.$$('cr-drawer os-settings-menu'));
@@ -177,65 +176,6 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       assertTrue(ui.advancedOpenedInMenu_);
     });
 
-    test('URL initiated search propagates to search box', () => {
-      toolbar = /** @type {!OsToolbarElement} */ (ui.$$('os-toolbar'));
-      const searchField =
-          /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
-      assertEquals('', searchField.getSearchInput().value);
-
-      const query = 'foo';
-      settings.Router.getInstance().navigateTo(
-          settings.routes.BASIC, new URLSearchParams(`search=${query}`));
-      assertEquals(query, searchField.getSearchInput().value);
-    });
-
-    test('search box initiated search propagates to URL', () => {
-      toolbar = /** @type {!OsToolbarElement} */ (ui.$$('os-toolbar'));
-      const searchField =
-          /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
-
-      settings.Router.getInstance().navigateTo(
-          settings.routes.BASIC, /* dynamicParams */ null,
-          /* removeSearch */ true);
-      assertEquals('', searchField.getSearchInput().value);
-      assertFalse(
-          settings.Router.getInstance().getQueryParameters().has('search'));
-
-      let value = 'GOOG';
-      searchField.setValue(value);
-      assertEquals(
-          value,
-          settings.Router.getInstance().getQueryParameters().get('search'));
-
-      // Test that search queries are properly URL encoded.
-      value = '+++';
-      searchField.setValue(value);
-      assertEquals(
-          value,
-          settings.Router.getInstance().getQueryParameters().get('search'));
-    });
-
-    test('whitespace only search query is ignored', () => {
-      toolbar = /** @type {!OsToolbarElement} */ (ui.$$('os-toolbar'));
-      const searchField =
-          /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
-      searchField.setValue('    ');
-      let urlParams = settings.Router.getInstance().getQueryParameters();
-      assertFalse(urlParams.has('search'));
-
-      searchField.setValue('   foo');
-      urlParams = settings.Router.getInstance().getQueryParameters();
-      assertEquals('foo', urlParams.get('search'));
-
-      searchField.setValue('   foo ');
-      urlParams = settings.Router.getInstance().getQueryParameters();
-      assertEquals('foo ', urlParams.get('search'));
-
-      searchField.setValue('   ');
-      urlParams = settings.Router.getInstance().getQueryParameters();
-      assertFalse(urlParams.has('search'));
-    });
-
     // Test that navigating via the paper menu always clears the current
     // search URL parameter.
     test('clearsUrlSearchParam', function() {
@@ -259,9 +199,11 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
 
     test('userActionRouteChange', function() {
       assertEquals(userActionRecorder.navigationCount, 0);
-      settings.Router.getInstance().navigateTo(settings.routes.POWER);
+      settings.Router.getInstance().navigateTo(settings.routes.BASIC);
+      Polymer.dom.flush();
       assertEquals(userActionRecorder.navigationCount, 1);
-      settings.Router.getInstance().navigateTo(settings.routes.POWER);
+      settings.Router.getInstance().navigateTo(settings.routes.BASIC);
+      Polymer.dom.flush();
       assertEquals(userActionRecorder.navigationCount, 1);
     });
 
@@ -269,6 +211,12 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       assertEquals(userActionRecorder.pageBlurCount, 0);
       ui.fire('blur');
       assertEquals(userActionRecorder.pageBlurCount, 1);
+    });
+
+    test('userActionClickEvent', () => {
+      assertEquals(userActionRecorder.clickCount, 0);
+      ui.fire('click');
+      assertEquals(userActionRecorder.clickCount, 1);
     });
 
     test('userActionFocusEvent', function() {
@@ -281,16 +229,6 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       assertEquals(userActionRecorder.settingChangeCount, 0);
       ui.$$('#prefs').fire('user-action-setting-change');
       assertEquals(userActionRecorder.settingChangeCount, 1);
-    });
-
-    test('userActionSearchEvent', function() {
-      const searchField =
-          /** @type {CrToolbarSearchFieldElement} */ (
-              ui.$$('os-toolbar').getSearchField());
-
-      assertEquals(userActionRecorder.searchCount, 0);
-      searchField.setValue('GOOGLE');
-      assertEquals(userActionRecorder.searchCount, 1);
     });
 
     test('toolbar and nav menu are hidden in kiosk mode', function() {

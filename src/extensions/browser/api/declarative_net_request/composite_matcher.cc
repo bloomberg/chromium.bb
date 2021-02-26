@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <set>
 #include <utility>
@@ -73,29 +74,32 @@ CompositeMatcher::CompositeMatcher(MatcherList matchers)
 
 CompositeMatcher::~CompositeMatcher() = default;
 
-CompositeMatcher::MatcherList CompositeMatcher::GetAndResetMatchers() {
-  MatcherList result;
-  std::swap(result, matchers_);
-  OnMatchersModified();
-  return result;
-}
-
-void CompositeMatcher::SetMatchers(MatcherList matchers) {
-  matchers_ = std::move(matchers);
-  OnMatchersModified();
-}
-
 void CompositeMatcher::AddOrUpdateRuleset(
-    std::unique_ptr<RulesetMatcher> new_matcher) {
-  // A linear search is ok since the number of rulesets per extension is
-  // expected to be quite small.
-  base::EraseIf(matchers_,
-                [&new_matcher](const std::unique_ptr<RulesetMatcher>& matcher) {
-                  return matcher->id() == new_matcher->id();
-                });
-  matchers_.push_back(std::move(new_matcher));
+    std::unique_ptr<RulesetMatcher> matcher) {
+  MatcherList matchers;
+  matchers.push_back(std::move(matcher));
+  AddOrUpdateRulesets(std::move(matchers));
+}
 
+void CompositeMatcher::AddOrUpdateRulesets(MatcherList matchers) {
+  std::set<RulesetID> ids_to_remove;
+  for (const auto& matcher : matchers)
+    ids_to_remove.insert(matcher->id());
+
+  RemoveRulesetsWithIDs(ids_to_remove);
+  matchers_.insert(matchers_.end(), std::make_move_iterator(matchers.begin()),
+                   std::make_move_iterator(matchers.end()));
   OnMatchersModified();
+}
+
+void CompositeMatcher::RemoveRulesetsWithIDs(const std::set<RulesetID>& ids) {
+  size_t erased_count = base::EraseIf(
+      matchers_, [&ids](const std::unique_ptr<RulesetMatcher>& matcher) {
+        return base::Contains(ids, matcher->id());
+      });
+
+  if (erased_count > 0)
+    OnMatchersModified();
 }
 
 std::set<RulesetID> CompositeMatcher::ComputeStaticRulesetIDs() const {
@@ -117,11 +121,21 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
 
   bool notify_request_withheld = false;
   base::Optional<RequestAction> final_action;
+
+  // The priority of the highest priority matching allow or allowAllRequests
+  // rule within this matcher, or base::nullopt otherwise.
+  base::Optional<uint64_t> max_allow_rule_priority;
+
   for (const auto& matcher : matchers_) {
     base::Optional<RequestAction> action =
         matcher->GetBeforeRequestAction(params);
-    params.allow_rule_cache[matcher.get()] =
-        action && action->IsAllowOrAllowAllRequests();
+
+    if (action && action->IsAllowOrAllowAllRequests()) {
+      max_allow_rule_priority =
+          max_allow_rule_priority
+              ? std::max(*max_allow_rule_priority, action->index_priority)
+              : action->index_priority;
+    }
 
     if (action && action->type == RequestAction::Type::REDIRECT) {
       // Redirecting requires host permissions.
@@ -139,6 +153,8 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
         GetMaxPriorityAction(std::move(final_action), std::move(action));
   }
 
+  params.allow_rule_max_priority[this] = max_allow_rule_priority;
+
   if (final_action)
     return ActionInfo(std::move(final_action), false);
   return ActionInfo(base::nullopt, notify_request_withheld);
@@ -147,16 +163,19 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
 std::vector<RequestAction> CompositeMatcher::GetModifyHeadersActions(
     const RequestParams& params) const {
   std::vector<RequestAction> modify_headers_actions;
+  DCHECK(params.allow_rule_max_priority.contains(this));
+
+  // The priority of the highest priority matching allow or allowAllRequests
+  // rule within this matcher, or base::nullopt if no such rule exists.
+  base::Optional<uint64_t> max_allow_rule_priority =
+      params.allow_rule_max_priority[this];
 
   for (const auto& matcher : matchers_) {
-    // TODO(crbug.com/947591): An allow or allowAllRequests rule should override
-    // all equal or lower priority modifyHeaders rules specified by |matcher|.
-    DCHECK(params.allow_rule_cache.contains(matcher.get()));
-    if (params.allow_rule_cache[matcher.get()])
-      return std::vector<RequestAction>();
-
+    // Plumb |max_allow_rule_priority| into GetModifyHeadersActions so that
+    // modifyHeaders rules with priorities less than or equal to the highest
+    // priority matching allow/allowAllRequests rule are ignored.
     std::vector<RequestAction> actions_for_matcher =
-        matcher->GetModifyHeadersActions(params);
+        matcher->GetModifyHeadersActions(params, max_allow_rule_priority);
 
     modify_headers_actions.insert(
         modify_headers_actions.end(),
@@ -166,9 +185,7 @@ std::vector<RequestAction> CompositeMatcher::GetModifyHeadersActions(
 
   // Sort |modify_headers_actions| in descending order of priority.
   std::sort(modify_headers_actions.begin(), modify_headers_actions.end(),
-            [](const RequestAction& lhs, const RequestAction& rhs) {
-              return lhs.index_priority > rhs.index_priority;
-            });
+            std::greater<>());
   return modify_headers_actions;
 }
 

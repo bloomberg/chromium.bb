@@ -37,9 +37,9 @@ namespace base {
 //
 // Example:
 //
-//   base::FileEnumerator enum(my_dir, false, base::FileEnumerator::FILES,
-//                             FILE_PATH_LITERAL("*.txt"));
-//   for (base::FilePath name = enum.Next(); !name.empty(); name = enum.Next())
+//   base::FileEnumerator e(my_dir, false, base::FileEnumerator::FILES,
+//                          FILE_PATH_LITERAL("*.txt"));
+//   for (base::FilePath name = e.Next(); !name.empty(); name = e.Next())
 //     ...
 class BASE_EXPORT FileEnumerator {
  public:
@@ -57,6 +57,8 @@ class BASE_EXPORT FileEnumerator {
     FilePath GetName() const;
 
     int64_t GetSize() const;
+
+    // On POSIX systems, this is rounded down to the second.
     Time GetLastModifiedTime() const;
 
 #if defined(OS_WIN)
@@ -155,7 +157,11 @@ class BASE_EXPORT FileEnumerator {
   // then so will be the result of Next().
   FilePath Next();
 
-  // Write the file info into |info|.
+  // Returns info about the file last returned by Next(). Note that on Windows
+  // and Fuchsia, GetInfo() does not play well with INCLUDE_DOT_DOT. In
+  // particular, the GetLastModifiedTime() for the .. directory is 1601-01-01
+  // on Fuchsia (https://crbug.com/1106172) and is equal to the last modified
+  // time of the current directory on Windows (https://crbug.com/1119546).
   FileInfo GetInfo() const;
 
   // Once |Next()| returns an empty path, enumeration has been terminated. If

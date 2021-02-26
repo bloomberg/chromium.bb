@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_signatureproperties.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -27,6 +27,8 @@ CXFA_SignatureProperties::CXFA_SignatureProperties(CXFA_Document* doc,
                 XFA_Element::SignatureProperties,
                 {},
                 kSignaturePropertiesAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_SignatureProperties::~CXFA_SignatureProperties() = default;

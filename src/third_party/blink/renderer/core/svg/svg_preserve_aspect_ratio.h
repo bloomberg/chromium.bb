@@ -28,6 +28,7 @@ namespace blink {
 
 class AffineTransform;
 class FloatRect;
+class FloatSize;
 class SVGPreserveAspectRatioTearOff;
 
 class SVGPreserveAspectRatio final
@@ -74,28 +75,25 @@ class SVGPreserveAspectRatio final
 
   void TransformRect(FloatRect& dest_rect, FloatRect& src_rect) const;
 
-  AffineTransform ComputeTransform(float logical_x,
-                                   float logical_y,
-                                   float logical_width,
-                                   float logical_height,
-                                   float physical_width,
-                                   float physical_height) const;
+  AffineTransform ComputeTransform(const FloatRect& view_box,
+                                   const FloatSize& viewport_size) const;
 
   String ValueAsString() const override;
   SVGParsingError SetValueAsString(const String&);
   bool Parse(const UChar*& ptr, const UChar* end, bool validate);
   bool Parse(const LChar*& ptr, const LChar* end, bool validate);
 
-  void Add(SVGPropertyBase*, SVGElement*) override;
-  void CalculateAnimatedValue(const SVGAnimateElement&,
-                              float percentage,
-                              unsigned repeat_count,
-                              SVGPropertyBase* from,
-                              SVGPropertyBase* to,
-                              SVGPropertyBase* to_at_end_of_duration_value,
-                              SVGElement* context_element) override;
-  float CalculateDistance(SVGPropertyBase* to,
-                          SVGElement* context_element) override;
+  void Add(const SVGPropertyBase*, const SVGElement*) override;
+  void CalculateAnimatedValue(
+      const SMILAnimationEffectParameters&,
+      float percentage,
+      unsigned repeat_count,
+      const SVGPropertyBase* from,
+      const SVGPropertyBase* to,
+      const SVGPropertyBase* to_at_end_of_duration_value,
+      const SVGElement* context_element) override;
+  float CalculateDistance(const SVGPropertyBase* to,
+                          const SVGElement* context_element) const override;
 
   static AnimatedPropertyType ClassType() {
     return kAnimatedPreserveAspectRatio;

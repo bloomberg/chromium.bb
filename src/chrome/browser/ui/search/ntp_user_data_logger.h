@@ -53,6 +53,16 @@ class NTPUserDataLogger
   // all others require Google as the default search provider.
   void LogEvent(NTPLoggingEventType event, base::TimeDelta time);
 
+  // Logs a module impression. Called when a module is loaded and can be seen by
+  // the user (scrolled into view).
+  void LogModuleImpression(const std::string& id, base::TimeDelta time);
+
+  // Logs a module is loaded on the NTP.
+  void LogModuleLoaded(const std::string& id, base::TimeDelta time);
+
+  // Logs when a user interacts with a module which will result in a navigation.
+  void LogModuleUsage(const std::string& id);
+
   // Called when a search suggestion event occurs on the NTP that has an integer
   // value associated with it; N suggestions were shown on this NTP load, the
   // Nth suggestion was clicked, etc. |time| is the delta time from navigation
@@ -67,6 +77,9 @@ class NTPUserDataLogger
 
   // Logs a navigation on one of the NTP tiles by a given impression.
   void LogMostVisitedNavigation(const ntp_tiles::NTPTileImpression& impression);
+
+  // Sets visibility of modules to be later logged.
+  void SetModulesVisible(bool visible);
 
  protected:
   explicit NTPUserDataLogger(content::WebContents* contents);
@@ -134,6 +147,8 @@ class NTPUserDataLogger
   bool has_emitted_;
 
   bool should_record_doodle_load_time_;
+
+  bool modules_visible_;
 
   // Are stats being logged during Chrome startup?
   bool during_startup_;

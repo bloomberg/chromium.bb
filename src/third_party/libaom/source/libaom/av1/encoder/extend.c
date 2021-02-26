@@ -122,12 +122,10 @@ void av1_copy_and_extend_frame(const YV12_BUFFER_CONFIG *src,
     highbd_copy_and_extend_plane(src->y_buffer, src->y_stride, dst->y_buffer,
                                  dst->y_stride, src->y_crop_width,
                                  src->y_crop_height, et_y, el_y, eb_y, er_y);
-    if (src->u_buffer) {
+    if (!src->monochrome) {
       highbd_copy_and_extend_plane(
           src->u_buffer, src->uv_stride, dst->u_buffer, dst->uv_stride,
           src->uv_crop_width, src->uv_crop_height, et_uv, el_uv, eb_uv, er_uv);
-    }
-    if (src->v_buffer) {
       highbd_copy_and_extend_plane(
           src->v_buffer, src->uv_stride, dst->v_buffer, dst->uv_stride,
           src->uv_crop_width, src->uv_crop_height, et_uv, el_uv, eb_uv, er_uv);
@@ -138,12 +136,10 @@ void av1_copy_and_extend_frame(const YV12_BUFFER_CONFIG *src,
   copy_and_extend_plane(src->y_buffer, src->y_stride, dst->y_buffer,
                         dst->y_stride, src->y_crop_width, src->y_crop_height,
                         et_y, el_y, eb_y, er_y);
-  if (src->u_buffer) {
+  if (!src->monochrome) {
     copy_and_extend_plane(src->u_buffer, src->uv_stride, dst->u_buffer,
                           dst->uv_stride, src->uv_crop_width,
                           src->uv_crop_height, et_uv, el_uv, eb_uv, er_uv);
-  }
-  if (src->v_buffer) {
     copy_and_extend_plane(src->v_buffer, src->uv_stride, dst->v_buffer,
                           dst->uv_stride, src->uv_crop_width,
                           src->uv_crop_height, et_uv, el_uv, eb_uv, er_uv);

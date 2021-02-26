@@ -6,10 +6,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
 #include "chrome/browser/ui/views/native_widget_factory.h"
@@ -23,7 +21,6 @@ class ExtensionsMenuItemViewTest : public BrowserWithTestWindowTest {
       : initial_extension_name_(base::ASCIIToUTF16("Initial Extension Name")),
         initial_tooltip_(base::ASCIIToUTF16("Initial tooltip")) {}
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);
     BrowserWithTestWindowTest::SetUp();
 
     widget_ = std::make_unique<views::Widget>();
@@ -31,7 +28,7 @@ class ExtensionsMenuItemViewTest : public BrowserWithTestWindowTest {
         views::Widget::InitParams::TYPE_POPUP);
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS) && !defined(OS_MAC)
     // This was copied from BookmarkBarViewTest:
     // On Chrome OS, this always creates a NativeWidgetAura, but it should
     // create a DesktopNativeWidgetAura for Mash. We can get by without manually
@@ -49,10 +46,10 @@ class ExtensionsMenuItemViewTest : public BrowserWithTestWindowTest {
     controller_->SetActionName(initial_extension_name_);
     controller_->SetTooltip(initial_tooltip_);
     auto menu_item = std::make_unique<ExtensionsMenuItemView>(
-        browser(), std::move(controller));
+        browser(), std::move(controller), true);
     primary_button_on_menu_ = menu_item->primary_action_button_for_testing();
 
-    widget_->SetContentsView(menu_item.release());
+    widget_->SetContentsView(std::move(menu_item));
   }
 
   void TearDown() override {
@@ -64,7 +61,6 @@ class ExtensionsMenuItemViewTest : public BrowserWithTestWindowTest {
 
   ExtensionsMenuButton* primary_button() { return primary_button_on_menu_; }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   const base::string16 initial_extension_name_;
   const base::string16 initial_tooltip_;
   std::unique_ptr<views::Widget> widget_;

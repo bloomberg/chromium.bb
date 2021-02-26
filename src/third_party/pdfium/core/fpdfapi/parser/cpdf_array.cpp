@@ -16,8 +16,7 @@
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fxcrt/fx_stream.h"
-#include "third_party/base/logging.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/notreached.h"
 #include "third_party/base/stl_util.h"
 
 CPDF_Array::CPDF_Array() = default;
@@ -59,7 +58,7 @@ RetainPtr<CPDF_Object> CPDF_Array::CloneNonCyclic(
   pVisited->insert(this);
   auto pCopy = pdfium::MakeRetain<CPDF_Array>();
   for (const auto& pValue : m_Objects) {
-    if (!pdfium::ContainsKey(*pVisited, pValue.Get())) {
+    if (!pdfium::Contains(*pVisited, pValue.Get())) {
       std::set<const CPDF_Object*> visited(*pVisited);
       if (auto obj = pValue->CloneNonCyclic(bDirect, &visited))
         pCopy->m_Objects.push_back(std::move(obj));

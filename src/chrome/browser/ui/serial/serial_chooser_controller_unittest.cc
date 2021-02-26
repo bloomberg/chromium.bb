@@ -8,11 +8,14 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "build/build_config.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller_view.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
+#include "chrome/browser/serial/serial_chooser_histograms.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -34,6 +37,28 @@ class SerialChooserControllerTest : public ChromeRenderViewHostTestHarness {
     port_manager_.AddReceiver(port_manager.InitWithNewPipeAndPassReceiver());
     SerialChooserContextFactory::GetForProfile(profile())
         ->SetPortManagerForTesting(std::move(port_manager));
+  }
+
+  base::UnguessableToken AddPort(
+      const std::string& display_name,
+      const base::FilePath& path,
+      base::Optional<uint16_t> vendor_id = base::nullopt,
+      base::Optional<uint16_t> product_id = base::nullopt) {
+    auto port = device::mojom::SerialPortInfo::New();
+    port->token = base::UnguessableToken::Create();
+    port->display_name = display_name;
+    port->path = path;
+    if (vendor_id) {
+      port->has_vendor_id = true;
+      port->vendor_id = *vendor_id;
+    }
+    if (product_id) {
+      port->has_product_id = true;
+      port->product_id = *product_id;
+    }
+    base::UnguessableToken port_token = port->token;
+    port_manager().AddPort(std::move(port));
+    return port_token;
   }
 
   device::FakeSerialPortManager& port_manager() { return port_manager_; }
@@ -67,6 +92,8 @@ TEST_F(SerialChooserControllerTest, GetPortsLateResponse) {
 }
 
 TEST_F(SerialChooserControllerTest, PortsAddedAndRemoved) {
+  base::HistogramTester histogram_tester;
+
   std::vector<blink::mojom::SerialPortFilterPtr> filters;
   auto controller = std::make_unique<SerialChooserController>(
       main_rfh(), std::move(filters), base::DoNothing());
@@ -87,6 +114,11 @@ TEST_F(SerialChooserControllerTest, PortsAddedAndRemoved) {
   port->token = base::UnguessableToken::Create();
   port->display_name = "Test Port 1";
   port->path = base::FilePath(FILE_PATH_LITERAL("/dev/ttyS0"));
+#if defined(OS_MAC)
+  // This path will be ignored and not generate additional chooser entries or
+  // be displayed in the device name.
+  port->alternate_path = base::FilePath(FILE_PATH_LITERAL("/dev/alternateS0"));
+#endif
   base::UnguessableToken port1_token = port->token;
   port_manager().AddPort(std::move(port));
   {
@@ -101,11 +133,7 @@ TEST_F(SerialChooserControllerTest, PortsAddedAndRemoved) {
   EXPECT_EQ(base::ASCIIToUTF16("Test Port 1 (ttyS0)"),
             controller->GetOption(0));
 
-  port = device::mojom::SerialPortInfo::New();
-  port->token = base::UnguessableToken::Create();
-  port->display_name = "Test Port 2";
-  port->path = base::FilePath(FILE_PATH_LITERAL("/dev/ttyS1"));
-  port_manager().AddPort(std::move(port));
+  AddPort("Test Port 2", base::FilePath(FILE_PATH_LITERAL("/dev/ttyS1")));
   {
     base::RunLoop run_loop;
     EXPECT_CALL(view, OnOptionAdded(_)).WillOnce(Invoke([&](size_t index) {
@@ -132,15 +160,17 @@ TEST_F(SerialChooserControllerTest, PortsAddedAndRemoved) {
   EXPECT_EQ(1u, controller->NumOptions());
   EXPECT_EQ(base::ASCIIToUTF16("Test Port 2 (ttyS1)"),
             controller->GetOption(0));
+
+  controller.reset();
+  histogram_tester.ExpectUniqueSample("Permissions.Serial.ChooserClosed",
+                                      SerialChooserOutcome::kCancelled, 1);
 }
 
 TEST_F(SerialChooserControllerTest, PortSelected) {
-  auto port = device::mojom::SerialPortInfo::New();
-  port->token = base::UnguessableToken::Create();
-  port->display_name = "Test Port";
-  port->path = base::FilePath(FILE_PATH_LITERAL("/dev/ttyS0"));
-  base::UnguessableToken port_token = port->token;
-  port_manager().AddPort(std::move(port));
+  base::HistogramTester histogram_tester;
+
+  base::UnguessableToken port_token =
+      AddPort("Test Port", base::FilePath(FILE_PATH_LITERAL("/dev/ttyS0")));
 
   base::MockCallback<content::SerialChooser::Callback> callback;
   std::vector<blink::mojom::SerialPortFilterPtr> filters;
@@ -172,4 +202,69 @@ TEST_F(SerialChooserControllerTest, PortSelected) {
                   controller->GetOption(0));
       }));
   controller->Select({0});
+  histogram_tester.ExpectUniqueSample(
+      "Permissions.Serial.ChooserClosed",
+      SerialChooserOutcome::kEphemeralPermissionGranted, 1);
+}
+
+TEST_F(SerialChooserControllerTest, PortFiltered) {
+  base::HistogramTester histogram_tester;
+
+  // Create two ports from the same vendor with different product IDs.
+  base::UnguessableToken port_1 =
+      AddPort("Test Port 1", base::FilePath(FILE_PATH_LITERAL("/dev/ttyS0")),
+              0x1234, 0x0001);
+  base::UnguessableToken port_2 =
+      AddPort("Test Port 2", base::FilePath(FILE_PATH_LITERAL("/dev/ttyS1")),
+              0x1234, 0x0002);
+
+  // Create a filter which will select only the first port.
+  std::vector<blink::mojom::SerialPortFilterPtr> filters;
+  auto filter = blink::mojom::SerialPortFilter::New();
+  filter->has_vendor_id = true;
+  filter->vendor_id = 0x1234;
+  filter->has_product_id = true;
+  filter->product_id = 0x0001;
+  filters.push_back(std::move(filter));
+
+  auto controller = std::make_unique<SerialChooserController>(
+      main_rfh(), std::move(filters), base::DoNothing());
+
+  MockChooserControllerView view;
+  controller->set_view(&view);
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(view, OnOptionsInitialized).WillOnce(Invoke([&] {
+      // Expect that only the first port is shown thanks to the filter.
+      EXPECT_EQ(1u, controller->NumOptions());
+      EXPECT_EQ(base::ASCIIToUTF16("Test Port 1 (ttyS0)"),
+                controller->GetOption(0));
+      run_loop.Quit();
+    }));
+    run_loop.Run();
+  }
+
+  // Removing the second port should be a no-op since it is filtered out.
+  EXPECT_CALL(view, OnOptionRemoved).Times(0);
+  port_manager().RemovePort(port_2);
+  base::RunLoop().RunUntilIdle();
+
+  // Adding it back should be a no-op as well.
+  EXPECT_CALL(view, OnOptionAdded).Times(0);
+  AddPort("Test Port 2", base::FilePath(FILE_PATH_LITERAL("/dev/ttyS1")),
+          0x1234, 0x0002);
+  base::RunLoop().RunUntilIdle();
+
+  // Removing the first port should trigger a change in the UI. This also acts
+  // as a synchronization point to make sure that the changes above were
+  // processed.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(view, OnOptionRemoved(0)).WillOnce(Invoke([&]() {
+      run_loop.Quit();
+    }));
+    port_manager().RemovePort(port_1);
+    run_loop.Run();
+  }
 }

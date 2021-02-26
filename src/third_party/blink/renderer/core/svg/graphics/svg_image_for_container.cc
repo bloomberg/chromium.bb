@@ -70,9 +70,9 @@ bool SVGImageForContainer::ApplyShader(cc::PaintFlags& flags,
 }
 
 PaintImage SVGImageForContainer::PaintImageForCurrentFrame() {
-  auto builder = CreatePaintImageBuilder().set_completion_state(
-      image_->completion_state());
-  image_->PopulatePaintRecordForCurrentFrameForContainer(builder, url_, Size());
+  auto builder = CreatePaintImageBuilder();
+  image_->PopulatePaintRecordForCurrentFrameForContainer(builder, Size(), zoom_,
+                                                         url_);
   return builder.TakePaintImage();
 }
 

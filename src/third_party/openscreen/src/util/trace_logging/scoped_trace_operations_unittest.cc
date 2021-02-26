@@ -12,8 +12,6 @@
 
 #if defined(ENABLE_TRACE_LOGGING)
 
-// TODO(crbug.com/openscreen/52): Remove duplicate code from trace
-// logging+internal unit tests
 namespace openscreen {
 namespace internal {
 

@@ -55,7 +55,8 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
                    bool pinned,
                    bool shared,
                    const mojom::Capabilities& capabilities,
-                   const mojom::FolderFeature& folder_feature);
+                   const mojom::FolderFeature& folder_feature,
+                   const std::string& doc_id);
 
   const base::FilePath& mount_path() { return mount_path_; }
 
@@ -101,6 +102,30 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   void SendNativeMessageRequest(
       const std::string& request,
       SendNativeMessageRequestCallback callback) override;
+
+  void SetStartupArguments(const std::string& arguments,
+                           SetStartupArgumentsCallback callback) override;
+
+  void GetStartupArguments(GetStartupArgumentsCallback callback) override;
+
+  void SetTracingEnabled(bool enabled) override;
+
+  void SetNetworkingEnabled(bool enabled) override;
+
+  void ForcePauseSyncing(bool enable) override;
+
+  void DumpAccountSettings() override;
+
+  void LoadAccountSettings() override;
+
+  void CreateNativeHostSession(
+      drivefs::mojom::ExtensionConnectionParamsPtr params,
+      mojo::PendingReceiver<drivefs::mojom::NativeMessagingHost> session,
+      mojo::PendingRemote<drivefs::mojom::NativeMessagingPort> port) override;
+
+  void LocateFilesByItemIds(
+      const std::vector<std::string>& item_ids,
+      drivefs::mojom::DriveFs::LocateFilesByItemIdsCallback callback) override;
 
   const base::FilePath mount_path_;
 

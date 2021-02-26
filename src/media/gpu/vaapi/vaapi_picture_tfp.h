@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace gl {
@@ -38,18 +39,18 @@ class VaapiTFPPicture : public VaapiPicture {
   ~VaapiTFPPicture() override;
 
   // VaapiPicture implementation.
-  bool Allocate(gfx::BufferFormat format) override;
+  Status Allocate(gfx::BufferFormat format) override;
   bool ImportGpuMemoryBufferHandle(
       gfx::BufferFormat format,
       gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) override;
   bool DownloadFromSurface(scoped_refptr<VASurface> va_surface) override;
 
  private:
-  bool Initialize();
+  Status Initialize();
 
-  Display* x_display_;
+  x11::Connection* const connection_;
 
-  Pixmap x_pixmap_;
+  x11::Pixmap x_pixmap_;
   scoped_refptr<gl::GLImageGLX> glx_image_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiTFPPicture);

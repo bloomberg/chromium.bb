@@ -5,6 +5,7 @@
 #ifndef QUICHE_QUIC_CORE_UBER_RECEIVED_PACKET_MANAGER_H_
 #define QUICHE_QUIC_CORE_UBER_RECEIVED_PACKET_MANAGER_H_
 
+#include "net/third_party/quiche/src/quic/core/frames/quic_ack_frequency_frame.h"
 #include "net/third_party/quiche/src/quic/core/quic_received_packet_manager.h"
 
 namespace quic {
@@ -46,7 +47,6 @@ class QUIC_EXPORT_PRIVATE UberReceivedPacketManager {
   void MaybeUpdateAckTimeout(bool should_last_packet_instigate_acks,
                              EncryptionLevel decrypted_packet_level,
                              QuicPacketNumber last_received_packet_number,
-                             QuicTime time_of_last_received_packet,
                              QuicTime now,
                              const RttStats* rtt_stats);
 
@@ -54,7 +54,7 @@ class QUIC_EXPORT_PRIVATE UberReceivedPacketManager {
   void ResetAckStates(EncryptionLevel encryption_level);
 
   // Called to enable multiple packet number support.
-  void EnableMultiplePacketNumberSpacesSupport();
+  void EnableMultiplePacketNumberSpacesSupport(Perspective perspective);
 
   // Returns true if ACK frame has been updated since GetUpdatedAckFrame was
   // last called.
@@ -78,8 +78,7 @@ class QUIC_EXPORT_PRIVATE UberReceivedPacketManager {
   size_t min_received_before_ack_decimation() const;
   void set_min_received_before_ack_decimation(size_t new_value);
 
-  size_t ack_frequency_before_ack_decimation() const;
-  void set_ack_frequency_before_ack_decimation(size_t new_value);
+  void set_ack_frequency(size_t new_value);
 
   bool supports_multiple_packet_number_spaces() const {
     return supports_multiple_packet_number_spaces_;
@@ -91,9 +90,7 @@ class QUIC_EXPORT_PRIVATE UberReceivedPacketManager {
 
   void set_max_ack_ranges(size_t max_ack_ranges);
 
-  // Get and set the max ack delay to use for application data.
-  QuicTime::Delta max_ack_delay();
-  void set_max_ack_delay(QuicTime::Delta max_ack_delay);
+  void OnAckFrequencyFrame(const QuicAckFrequencyFrame& frame);
 
   void set_save_timestamps(bool save_timestamps);
 

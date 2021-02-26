@@ -31,7 +31,7 @@ ChromeVoxPrefs = class {
     let loadExistingSettings = true;
     // TODO(dtseng): Logic below needs clarification. Perhaps needs a
     // 'lastIncompatibleVersion' member.
-    if (lastRunVersion == '1.16.0') {
+    if (lastRunVersion === '1.16.0') {
       loadExistingSettings = false;
     }
     localStorage['lastRunVersion'] = chrome.runtime.getManifest().version;
@@ -70,15 +70,6 @@ ChromeVoxPrefs = class {
         localStorage[pref] = ChromeVoxPrefs.DEFAULT_PREFS[pref];
       }
     }
-    // Since language switching is currently an experimental feature, ensure
-    // that it is off if the feature flag is absent.
-    chrome.commandLinePrivate.hasSwitch(
-        'disable-experimental-accessibility-chromevox-language-switching',
-        (enabled) => {
-          if (enabled) {
-            localStorage['languageSwitching'] = false;
-          }
-        });
   }
 
   /**
@@ -152,7 +143,7 @@ ChromeVoxPrefs = class {
    * @param {Object|string|boolean} value The new value of the pref.
    */
   setPref(key, value) {
-    if (localStorage[key] != value) {
+    if (localStorage[key] !== value) {
       localStorage[key] = value;
     }
   }
@@ -164,9 +155,9 @@ ChromeVoxPrefs = class {
    */
   setLoggingPrefs(key, value) {
     localStorage[key] = value;
-    if (key == 'enableSpeechLogging') {
+    if (key === 'enableSpeechLogging') {
       ConsoleTts.getInstance().setEnabled(value);
-    } else if (key == 'enableEventStreamLogging') {
+    } else if (key === 'enableEventStreamLogging') {
       EventStreamLogger.instance.notifyEventStreamFilterChangedAll(value);
     }
   }
@@ -222,6 +213,7 @@ ChromeVoxPrefs.DEFAULT_PREFS = {
   'typingEcho': 0,
   'useIBeamCursor': false,
   'useClassic': false,
+  'usePitchChanges': true,
   'useVerboseMode': true,
 
   // eventStreamFilters
@@ -275,7 +267,7 @@ ChromeVoxPrefs.DEFAULT_PREFS = {
   'textChanged': true,
   'textSelectionChanged': true,
   'treeChanged': true,
-  'valueChanged': true
+  'valueInTextFieldChanged': true
 };
 
 

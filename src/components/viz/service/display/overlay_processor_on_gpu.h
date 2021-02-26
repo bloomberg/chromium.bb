@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_ON_GPU_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_ON_GPU_H_
 
+#include <memory>
+
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "components/viz/service/display/overlay_candidate.h"
@@ -14,13 +16,12 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "components/viz/service/display/ca_layer_overlay.h"
 #endif
 
 namespace gpu {
-class MemoryTracker;
-class SharedImageManager;
+class DisplayCompositorMemoryAndTaskControllerOnGpu;
 class SharedImageRepresentationFactory;
 }  // namespace gpu
 
@@ -31,7 +32,7 @@ namespace viz {
 // destroyed on the gpu thread.
 class VIZ_SERVICE_EXPORT OverlayProcessorOnGpu {
  public:
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   using CandidateList = CALayerOverlayList;
 #elif defined(OS_WIN)
   using CandidateList = DCLayerOverlayList;
@@ -40,8 +41,9 @@ class VIZ_SERVICE_EXPORT OverlayProcessorOnGpu {
   using CandidateList = OverlayCandidateList;
 #endif
 
-  OverlayProcessorOnGpu(gpu::SharedImageManager* shared_image_manager,
-                        gpu::MemoryTracker* memory_tracker);
+  explicit OverlayProcessorOnGpu(
+      gpu::DisplayCompositorMemoryAndTaskControllerOnGpu*
+          display_controller_on_gpu);
   ~OverlayProcessorOnGpu();
 
   // This function takes the overlay candidates, and schedule them for

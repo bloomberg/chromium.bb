@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/platform/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/heap_observer_list.h"
+#include "third_party/blink/renderer/platform/heap_observer_set.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
@@ -19,8 +19,6 @@ namespace {
 
 class MockContext final : public GarbageCollected<MockContext>,
                           public ContextLifecycleNotifier {
-  USING_GARBAGE_COLLECTED_MIXIN(MockContext);
-
  public:
   void AddContextLifecycleObserver(
       ContextLifecycleObserver* observer) override {
@@ -37,13 +35,13 @@ class MockContext final : public GarbageCollected<MockContext>,
     });
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(observers_);
     ContextLifecycleNotifier::Trace(visitor);
   }
 
  private:
-  HeapObserverList<ContextLifecycleObserver> observers_;
+  HeapObserverSet<ContextLifecycleObserver> observers_;
 };
 
 template <HeapMojoWrapperMode Mode>
@@ -76,7 +74,7 @@ class AssociatedReceiverOwner
     return associated_receiver_;
   }
 
-  void Trace(Visitor* visitor) { visitor->Trace(associated_receiver_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(associated_receiver_); }
 
  private:
   // sample::blink::Service implementation
@@ -159,13 +157,13 @@ class HeapMojoAssociatedReceiverGCWithContextObserverTest
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoAssociatedReceiverGCWithoutContextObserverTest
     : public HeapMojoAssociatedReceiverGCBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver> {};
+          HeapMojoWrapperMode::kForceWithoutContextObserver> {};
 class HeapMojoAssociatedReceiverDestroyContextWithContextObserverTest
     : public HeapMojoAssociatedReceiverDestroyContextBaseTest<
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoAssociatedReceiverDestroyContextWithoutContextObserverTest
     : public HeapMojoAssociatedReceiverDestroyContextBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver> {};
+          HeapMojoWrapperMode::kForceWithoutContextObserver> {};
 
 // Make HeapMojoAssociatedReceiver with context observer garbage collected and
 // check that the connection is disconnected right after the marking phase.

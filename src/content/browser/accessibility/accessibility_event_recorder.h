@@ -10,14 +10,18 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "content/common/content_export.h"
+#include "ui/accessibility/platform/inspect/inspect.h"
 
 namespace content {
 
 using AccessibilityEventCallback =
     base::RepeatingCallback<void(const std::string&)>;
+
+using ui::AXTreeSelector;
 
 class BrowserAccessibilityManager;
 
@@ -42,15 +46,14 @@ class CONTENT_EXPORT AccessibilityEventRecorder {
   static std::unique_ptr<AccessibilityEventRecorder> Create(
       BrowserAccessibilityManager* manager = nullptr,
       base::ProcessId pid = 0,
-      const base::StringPiece& application_name_match_pattern =
-          base::StringPiece());
+      const AXTreeSelector& selector = {});
 
   // Get a set of factory methods to create event-recorders, one for each test
   // pass; see |DumpAccessibilityTestBase|.
   using EventRecorderFactory = std::unique_ptr<AccessibilityEventRecorder> (*)(
       BrowserAccessibilityManager* manager,
       base::ProcessId pid,
-      const base::StringPiece& application_name_match_pattern);
+      const AXTreeSelector& selector);
   struct TestPass {
     const char* name;
     EventRecorderFactory create_recorder;
@@ -67,6 +70,8 @@ class CONTENT_EXPORT AccessibilityEventRecorder {
   void ListenToEvents(AccessibilityEventCallback callback) {
     callback_ = std::move(callback);
   }
+
+  void StopListeningToEvents() { callback_ = base::NullCallback(); }
 
   // Called to ensure the event recorder has finished recording async events.
   virtual void FlushAsyncEvents() {}

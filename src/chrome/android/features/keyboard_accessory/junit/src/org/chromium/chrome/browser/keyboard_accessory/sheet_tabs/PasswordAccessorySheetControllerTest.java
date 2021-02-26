@@ -10,12 +10,16 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingMetricsRecorder.UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION;
+import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingMetricsRecorder.UMA_KEYBOARD_ACCESSORY_TOGGLE_CLICKED;
+import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingMetricsRecorder.UMA_KEYBOARD_ACCESSORY_TOGGLE_IMPRESSION;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingMetricsRecorder.getHistogramForType;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabMetricsRecorder.UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type.FOOTER_COMMAND;
@@ -46,12 +50,14 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
+import org.chromium.chrome.browser.keyboard_accessory.AccessoryToggleType;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.OptionToggle;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
+import org.chromium.chrome.browser.keyboard_accessory.data.Provider;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.ListObservable;
@@ -199,14 +205,14 @@ public class PasswordAccessorySheetControllerTest {
         final AccessorySheetData testData =
                 new AccessorySheetData(AccessoryTabType.PASSWORDS, "Passwords", "");
         AtomicReference<Boolean> toggleEnabled = new AtomicReference<>();
-        testData.setOptionToggle(
-                new OptionToggle("Save passwords for this site", false, toggleEnabled::set));
+        testData.setOptionToggle(new OptionToggle("Save passwords for this site", false,
+                AccessoryAction.TOGGLE_SAVE_PASSWORDS, toggleEnabled::set));
         mCoordinator.registerDataProvider(testProvider);
 
         testProvider.notifyObservers(testData);
 
-        // Invoke callback on the option toggle that was stored in the model. This is not the same
-        // as the OptionToggle passed above, because the mediator repackages it to include an
+        // Invoke the callback on the option toggle that was stored in the model. This is not the
+        // same as the OptionToggle passed above, because the mediator repackages it to include an
         // additional method call in the callback.
         OptionToggle repackagedToggle = (OptionToggle) mSheetDataPieces.get(0).getDataPiece();
 
@@ -214,9 +220,38 @@ public class PasswordAccessorySheetControllerTest {
         repackagedToggle.getCallback().onResult(true);
 
         // Check that the original callback was called and that the model was updated with an
-        // enabled toggle
+        // enabled toggle.
         assertTrue(toggleEnabled.get());
         assertTrue(((OptionToggle) mSheetDataPieces.get(0).getDataPiece()).isEnabled());
+    }
+
+    @Test
+    public void testToggleChangeDelegateIsCalledWhenToggleIsAdded() {
+        Provider.Observer<Drawable> mMockObserver = mock(Provider.Observer.class);
+        mCoordinator.getTab().addIconObserver(mMockObserver);
+
+        addToggleToSheet(false);
+        verify(mMockObserver).onItemAvailable(eq(Provider.Observer.DEFAULT_TYPE), any());
+    }
+
+    @Test
+    public void testToggleChangeDelegateIsCalledWhenToggleIsChanged() {
+        Provider.Observer<Drawable> mMockIconObserver = mock(Provider.Observer.class);
+        mCoordinator.getTab().addIconObserver(mMockIconObserver);
+
+        addToggleToSheet(false);
+
+        // Invoke the callback on the option toggle that was stored in the model. This is not the
+        // same as the OptionToggle passed above, because the mediator repackages it to include an
+        // additional method call in the callback.
+        OptionToggle repackagedToggle = (OptionToggle) mSheetDataPieces.get(0).getDataPiece();
+
+        // Pretend to enable the toggle like a click would do.
+        repackagedToggle.getCallback().onResult(true);
+
+        // Note that the icon observer is called once for initialization and once for the change.
+        verify(mMockIconObserver, times(2))
+                .onItemAvailable(eq(Provider.Observer.DEFAULT_TYPE), any());
     }
 
     @Test
@@ -270,6 +305,74 @@ public class PasswordAccessorySheetControllerTest {
         assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 3), is(1));
     }
 
+    @Test
+    public void testRecordsToggleOnImpressionsWhenShown() {
+        assertThat(getToggleImpressions(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_ON), is(0));
+        assertThat(getToggleImpressions(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_OFF), is(0));
+
+        addToggleToSheet(true);
+        mCoordinator.onTabShown();
+
+        assertThat(getToggleImpressions(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_ON), is(1));
+        assertThat(getToggleImpressions(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_OFF), is(0));
+    }
+
+    @Test
+    public void testRecordsToggleOffImpressionsWhenShown() {
+        assertThat(getToggleImpressions(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_ON), is(0));
+        assertThat(getToggleImpressions(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_OFF), is(0));
+
+        addToggleToSheet(false);
+        mCoordinator.onTabShown();
+
+        assertThat(getToggleImpressions(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_ON), is(0));
+        assertThat(getToggleImpressions(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_OFF), is(1));
+    }
+
+    @Test
+    public void testRecordsToggleOnClicked() {
+        assertThat(getToggleClicks(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_ON), is(0));
+        assertThat(getToggleClicks(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_OFF), is(0));
+
+        addToggleToSheet(true);
+
+        // Invoke the callback on the option toggle that was stored in the model. This is not the
+        // same as the OptionToggle passed above, because the mediator repackages it to include an
+        // additional method call in the callback.
+        OptionToggle repackagedToggle = (OptionToggle) mSheetDataPieces.get(0).getDataPiece();
+        repackagedToggle.getCallback().onResult(false);
+
+        assertThat(getToggleClicks(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_ON), is(1));
+        assertThat(getToggleClicks(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_OFF), is(0));
+    }
+
+    @Test
+    public void testRecordsToggleOffClicked() {
+        assertThat(getToggleClicks(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_ON), is(0));
+        assertThat(getToggleClicks(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_OFF), is(0));
+
+        addToggleToSheet(false);
+
+        // Invoke the callback on the option toggle that was stored in the model. This is not the
+        // same as the OptionToggle passed above, because the mediator repackages it to include an
+        // additional method call in the callback.
+        OptionToggle repackagedToggle = (OptionToggle) mSheetDataPieces.get(0).getDataPiece();
+        repackagedToggle.getCallback().onResult(true);
+
+        assertThat(getToggleClicks(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_ON), is(0));
+        assertThat(getToggleClicks(AccessoryToggleType.SAVE_PASSWORDS_TOGGLE_OFF), is(1));
+    }
+
+    private void addToggleToSheet(boolean toggleEnabled) {
+        final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
+        final AccessorySheetData testData =
+                new AccessorySheetData(AccessoryTabType.PASSWORDS, "Passwords", "");
+        testData.setOptionToggle(new OptionToggle("Save passwords for this site", toggleEnabled,
+                AccessoryAction.TOGGLE_SAVE_PASSWORDS, (Boolean enabled) -> {}));
+        mCoordinator.registerDataProvider(testProvider);
+        testProvider.notifyObservers(testData);
+    }
+
     private int getActionImpressions(@AccessoryAction int bucket) {
         return RecordHistogram.getHistogramValueCountForTesting(
                 UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION, bucket);
@@ -278,5 +381,15 @@ public class PasswordAccessorySheetControllerTest {
     private int getSuggestionsImpressions(@AccessoryTabType int type, int sample) {
         return RecordHistogram.getHistogramValueCountForTesting(
                 getHistogramForType(UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS, type), sample);
+    }
+
+    private int getToggleImpressions(@AccessoryToggleType int bucket) {
+        return RecordHistogram.getHistogramValueCountForTesting(
+                UMA_KEYBOARD_ACCESSORY_TOGGLE_IMPRESSION, bucket);
+    }
+
+    private int getToggleClicks(@AccessoryToggleType int bucket) {
+        return RecordHistogram.getHistogramValueCountForTesting(
+                UMA_KEYBOARD_ACCESSORY_TOGGLE_CLICKED, bucket);
     }
 }

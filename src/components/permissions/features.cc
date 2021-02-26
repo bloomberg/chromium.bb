@@ -24,10 +24,31 @@ const base::Feature kBlockRepeatedNotificationPermissionPrompts{
     "BlockRepeatedNotificationPermissionPrompts",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Delegate permissions to cross-origin iframes when the feature has been
-// allowed by feature policy.
-const base::Feature kPermissionDelegation{"PermissionDelegation",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kOneTimeGeolocationPermission{
+    "OneTimeGeolocationPermission", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables an experimental permission prompt that uses a chip in the location
+// bar.
+const base::Feature kPermissionChip{"PermissionChip",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, use the value of the `service_url` FeatureParam as the url
+// for the Web Permission Predictions Service.
+const base::Feature kPermissionPredictionServiceUseUrlOverride{
+    "kPermissionPredictionServiceUseUrlOverride",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
+namespace feature_params {
+
+const base::FeatureParam<bool> kOkButtonBehavesAsAllowAlways(
+    &permissions::features::kOneTimeGeolocationPermission,
+    "OkButtonBehavesAsAllowAlways",
+    true);
+
+const base::FeatureParam<std::string> kPermissionPredictionServiceUrlOverride{
+    &permissions::features::kPermissionPredictionServiceUseUrlOverride,
+    "service_url", ""};
+
+}  // namespace feature_params
 }  // namespace permissions

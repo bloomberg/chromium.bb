@@ -31,7 +31,9 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/mediastream/webaudio_destination_consumer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -69,9 +71,8 @@ const char* ReadyStateToString(MediaStreamSource::ReadyState state) {
 }
 
 void GetSourceSettings(const blink::WebMediaStreamSource& web_source,
-                       blink::WebMediaStreamTrack::Settings& settings) {
-  blink::MediaStreamAudioSource* const source =
-      blink::MediaStreamAudioSource::From(web_source);
+                       MediaStreamTrackPlatform::Settings& settings) {
+  auto* const source = blink::MediaStreamAudioSource::From(web_source);
   if (!source)
     return;
 
@@ -84,6 +85,56 @@ void GetSourceSettings(const blink::WebMediaStreamSource& web_source,
   // kSampleFormatS16 is the format used for all audio input streams.
   settings.sample_size =
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16);
+}
+
+class ConsumerWrapper final : public AudioDestinationConsumer {
+  USING_FAST_MALLOC(ConsumerWrapper);
+
+ public:
+  static ConsumerWrapper* Create(WebAudioDestinationConsumer* consumer) {
+    return new ConsumerWrapper(consumer);
+  }
+
+  void SetFormat(size_t number_of_channels, float sample_rate) override;
+  void ConsumeAudio(AudioBus*, size_t number_of_frames) override;
+
+  WebAudioDestinationConsumer* Consumer() { return consumer_; }
+
+ private:
+  explicit ConsumerWrapper(WebAudioDestinationConsumer* consumer)
+      : consumer_(consumer) {
+    // To avoid reallocation in ConsumeAudio, reserve initial capacity for most
+    // common known layouts.
+    bus_vector_.ReserveInitialCapacity(8);
+  }
+
+  // m_consumer is not owned by this class.
+  WebAudioDestinationConsumer* consumer_;
+  // bus_vector_ must only be used in ConsumeAudio. The only reason it's a
+  // member variable is to not have to reallocate it for each call.
+  Vector<const float*> bus_vector_;
+};
+
+void ConsumerWrapper::SetFormat(size_t number_of_channels, float sample_rate) {
+  consumer_->SetFormat(number_of_channels, sample_rate);
+}
+
+void ConsumerWrapper::ConsumeAudio(AudioBus* bus, size_t number_of_frames) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
+               "ConsumerWrapper::ConsumeAudio");
+
+  if (!bus)
+    return;
+
+  // Wrap AudioBus.
+  size_t number_of_channels = bus->NumberOfChannels();
+  if (bus_vector_.size() != number_of_channels) {
+    bus_vector_.resize(number_of_channels);
+  }
+  for (size_t i = 0; i < number_of_channels; ++i)
+    bus_vector_[i] = bus->Channel(i)->Data();
+
+  consumer_->ConsumeAudio(bus_vector_, number_of_frames);
 }
 
 }  // namespace
@@ -154,6 +205,14 @@ void MediaStreamSource::AddObserver(MediaStreamSource::Observer* observer) {
   observers_.insert(observer);
 }
 
+void MediaStreamSource::SetPlatformSource(
+    std::unique_ptr<WebPlatformMediaStreamSource> platform_source) {
+  if (platform_source)
+    platform_source->SetOwner(this);
+
+  platform_source_ = std::move(platform_source);
+}
+
 void MediaStreamSource::SetAudioProcessingProperties(
     EchoCancellationMode echo_cancellation_mode,
     bool auto_gain_control,
@@ -163,24 +222,30 @@ void MediaStreamSource::SetAudioProcessingProperties(
   noise_supression_ = noise_supression;
 }
 
-void MediaStreamSource::AddAudioConsumer(AudioDestinationConsumer* consumer) {
+void MediaStreamSource::AddAudioConsumer(
+    WebAudioDestinationConsumer* consumer) {
   DCHECK(requires_consumer_);
+  auto* consumer_wrapper = ConsumerWrapper::Create(consumer);
+
   MutexLocker locker(audio_consumers_lock_);
-  audio_consumers_.insert(consumer);
+  audio_consumers_.insert(consumer_wrapper);
 }
 
 bool MediaStreamSource::RemoveAudioConsumer(
-    AudioDestinationConsumer* consumer) {
+    WebAudioDestinationConsumer* consumer) {
   DCHECK(requires_consumer_);
+  auto* consumer_wrapper = ConsumerWrapper::Create(consumer);
+
   MutexLocker locker(audio_consumers_lock_);
-  auto it = audio_consumers_.find(consumer);
+  auto it = audio_consumers_.find(consumer_wrapper);
   if (it == audio_consumers_.end())
     return false;
   audio_consumers_.erase(it);
   return true;
 }
 
-void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
+void MediaStreamSource::GetSettings(
+    MediaStreamTrackPlatform::Settings& settings) {
   settings.device_id = Id();
   settings.group_id = GroupId();
 
@@ -188,22 +253,22 @@ void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
     switch (*echo_cancellation_mode_) {
       case EchoCancellationMode::kDisabled:
         settings.echo_cancellation = false;
-        settings.echo_cancellation_type.Reset();
+        settings.echo_cancellation_type = String();
         break;
       case EchoCancellationMode::kBrowser:
         settings.echo_cancellation = true;
         settings.echo_cancellation_type =
-            WebString::FromASCII(blink::kEchoCancellationTypeBrowser);
+            String::FromUTF8(blink::kEchoCancellationTypeBrowser);
         break;
       case EchoCancellationMode::kAec3:
         settings.echo_cancellation = true;
         settings.echo_cancellation_type =
-            WebString::FromASCII(blink::kEchoCancellationTypeAec3);
+            String::FromUTF8(blink::kEchoCancellationTypeAec3);
         break;
       case EchoCancellationMode::kSystem:
         settings.echo_cancellation = true;
         settings.echo_cancellation_type =
-            WebString::FromASCII(blink::kEchoCancellationTypeSystem);
+            String::FromUTF8(blink::kEchoCancellationTypeSystem);
         break;
     }
   }
@@ -212,7 +277,7 @@ void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
   if (noise_supression_)
     settings.noise_supression = *noise_supression_;
 
-  GetSourceSettings(this, settings);
+  GetSourceSettings(WebMediaStreamSource(this), settings);
 }
 
 void MediaStreamSource::SetAudioFormat(size_t number_of_channels,
@@ -242,7 +307,7 @@ void MediaStreamSource::ConsumeAudio(AudioBus* bus, size_t number_of_frames) {
     consumer->ConsumeAudio(bus, number_of_frames);
 }
 
-void MediaStreamSource::Trace(Visitor* visitor) {
+void MediaStreamSource::Trace(Visitor* visitor) const {
   visitor->Trace(observers_);
 }
 
@@ -254,24 +319,5 @@ void MediaStreamSource::Dispose() {
   platform_source_.reset();
   constraints_.Reset();
 }
-
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kTypeAudio,
-                   MediaStreamSource::kTypeAudio);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kTypeVideo,
-                   MediaStreamSource::kTypeVideo);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateLive,
-                   MediaStreamSource::kReadyStateLive);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateMuted,
-                   MediaStreamSource::kReadyStateMuted);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateEnded,
-                   MediaStreamSource::kReadyStateEnded);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kDisabled,
-                   MediaStreamSource::EchoCancellationMode::kDisabled);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kBrowser,
-                   MediaStreamSource::EchoCancellationMode::kBrowser);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kAec3,
-                   MediaStreamSource::EchoCancellationMode::kAec3);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kSystem,
-                   MediaStreamSource::EchoCancellationMode::kSystem);
 
 }  // namespace blink

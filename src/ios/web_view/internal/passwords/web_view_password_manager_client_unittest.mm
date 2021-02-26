@@ -9,8 +9,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/logging/stub_log_manager.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
@@ -46,7 +46,7 @@ class WebViewPasswordManagerClientTest : public PlatformTest {
             base::MakeRefCounted<password_manager::TestPasswordStore>()),
         account_store_(
             base::MakeRefCounted<password_manager::TestPasswordStore>(
-                /*is_account_store=*/true)) {
+                password_manager::IsAccountStore(true))) {
     scoped_feature.InitAndEnableFeature(
         password_manager::features::kEnablePasswordsAccountStorage);
 
@@ -59,7 +59,7 @@ class WebViewPasswordManagerClientTest : public PlatformTest {
         &web_state_, &sync_service_, &pref_service_,
         /*identity_manager=*/nullptr,
         std::make_unique<autofill::StubLogManager>(), profile_store_.get(),
-        account_store_.get());
+        account_store_.get(), /*requirements_service=*/nullptr);
   }
 
   ~WebViewPasswordManagerClientTest() override {

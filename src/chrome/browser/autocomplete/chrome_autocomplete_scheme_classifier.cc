@@ -9,6 +9,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/android/chrome_jni_headers/ChromeAutocompleteSchemeClassifier_jni.h"
 #endif
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #if defined(OS_ANDROID)
@@ -86,7 +87,7 @@ ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(
       return metrics::OmniboxInputType::QUERY;
 
     case ExternalProtocolHandler::UNKNOWN: {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
       // Linux impl of GetApplicationNameForProtocol doesn't distinguish
       // between URL schemes with handers and those without. This will
       // make the default behaviour be search on Linux.
@@ -99,7 +100,7 @@ ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(
           shell_integration::GetApplicationNameForProtocol(url);
       return application_name.empty() ? metrics::OmniboxInputType::EMPTY
                                       : metrics::OmniboxInputType::URL;
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
     }
   }
   NOTREACHED();

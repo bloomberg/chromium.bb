@@ -9,17 +9,16 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -81,7 +80,6 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/browser_window.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #endif
@@ -109,6 +107,8 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
 class AppModalDialogWaiter : public javascript_dialogs::AppModalDialogObserver {
  public:
   AppModalDialogWaiter() = default;
+  AppModalDialogWaiter(const AppModalDialogWaiter&) = delete;
+  AppModalDialogWaiter& operator=(const AppModalDialogWaiter&) = delete;
   ~AppModalDialogWaiter() override = default;
 
   javascript_dialogs::AppModalDialogController* Wait() {
@@ -156,8 +156,6 @@ class AppModalDialogWaiter : public javascript_dialogs::AppModalDialogObserver {
  private:
   javascript_dialogs::AppModalDialogController* dialog_ = nullptr;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppModalDialogWaiter);
 };
 
 
@@ -168,6 +166,9 @@ class AutocompleteChangeObserver : public AutocompleteController::Observer {
         OmniboxControllerEmitter::GetForBrowserContext(profile));
   }
 
+  AutocompleteChangeObserver(const AutocompleteChangeObserver&) = delete;
+  AutocompleteChangeObserver& operator=(const AutocompleteChangeObserver&) =
+      delete;
   ~AutocompleteChangeObserver() override = default;
 
   void Wait() { run_loop_.Run(); }
@@ -183,8 +184,6 @@ class AutocompleteChangeObserver : public AutocompleteController::Observer {
   base::RunLoop run_loop_;
   ScopedObserver<OmniboxControllerEmitter, AutocompleteController::Observer>
       scoped_observer_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteChangeObserver);
 };
 
 }  // namespace
@@ -253,12 +252,12 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     // Some other flag caused the wait prior to this.
     return nullptr;
   }
-  WebContents* web_contents = NULL;
+  WebContents* web_contents = nullptr;
   if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
     // We've opened up a new tab, but not selected it.
     TabStripModel* tab_strip = browser->tab_strip_model();
     web_contents = tab_strip->GetWebContentsAt(tab_strip->active_index() + 1);
-    EXPECT_TRUE(web_contents != NULL)
+    EXPECT_TRUE(web_contents)
         << " Unable to wait for navigation to \"" << url.spec()
         << "\" because the new tab is not available yet";
     if (!web_contents)
@@ -279,9 +278,9 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     observer.Wait();
     return web_contents->GetMainFrame()->GetProcess();
   }
-  EXPECT_TRUE(NULL != web_contents) << " Unable to wait for navigation to \""
-                                    << url.spec() << "\""
-                                    << " because we can't get the tab contents";
+  EXPECT_TRUE(web_contents)
+      << " Unable to wait for navigation to \"" << url.spec() << "\""
+      << " because we can't get the tab contents";
   return nullptr;
 }
 
@@ -396,6 +395,7 @@ int FindInPage(WebContents* tab,
   find_in_page::FindTabHelper* find_tab_helper =
       find_in_page::FindTabHelper::FromWebContents(tab);
   find_tab_helper->StartFinding(search_string, forward, match_case,
+                                true, /* find_match */
                                 true /* run_synchronously_for_testing */);
   FindResultWaiter observer(tab);
   observer.Wait();
@@ -452,9 +452,9 @@ namespace {
 
 void GetCookieCallback(base::RepeatingClosure callback,
                        net::CookieList* cookies,
-                       const net::CookieStatusList& cookie_list,
-                       const net::CookieStatusList& excluded_cookies) {
-  *cookies = net::cookie_util::StripStatuses(cookie_list);
+                       const net::CookieAccessResultList& cookie_list,
+                       const net::CookieAccessResultList& excluded_cookies) {
+  *cookies = net::cookie_util::StripAccessResults(cookie_list);
   callback.Run();
 }
 

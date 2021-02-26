@@ -11,18 +11,25 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -38,6 +45,46 @@
 #include "net/dns/mock_host_resolver.h"
 
 namespace chromeos {
+
+namespace {
+
+class GaiaPageEventWaiter : public test::TestConditionWaiter {
+ public:
+  GaiaPageEventWaiter(const std::string& authenticator_id,
+                      const std::string& event) {
+    std::string js =
+        R"((function() {
+              var authenticator = $AuthenticatorId;
+              var f = function() {
+                authenticator.removeEventListener('$Event', f);
+                window.domAutomationController.send('Done');
+              };
+              authenticator.addEventListener('$Event', f);
+            })();)";
+    base::ReplaceSubstringsAfterOffset(&js, 0, "$AuthenticatorId",
+                                       authenticator_id);
+    base::ReplaceSubstringsAfterOffset(&js, 0, "$Event", event);
+    test::OobeJS().Evaluate(js);
+  }
+
+  ~GaiaPageEventWaiter() override { EXPECT_TRUE(wait_called_); }
+
+  // test::TestConditionWaiter:
+  void Wait() override {
+    ASSERT_FALSE(wait_called_) << "Wait should be called once";
+    wait_called_ = true;
+    std::string message;
+    do {
+      ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    } while (message != "\"Done\"");
+  }
+
+ private:
+  content::DOMMessageQueue message_queue;
+  bool wait_called_ = false;
+};
+
+}  // namespace
 
 OobeBaseTest::OobeBaseTest() {
   set_exit_when_last_browser_closes(false);
@@ -113,15 +160,16 @@ content::WebUI* OobeBaseTest::GetLoginUI() {
 }
 
 void OobeBaseTest::WaitForOobeUI() {
-  // TODO(crbug.com/1082670): Remove excessive logging after investigation.
-  LOG(ERROR) << "Start waiting for OOBE UI.";
+  // Wait for notification first. Otherwise LoginDisplayHost might not be
+  // created yet.
+  MaybeWaitForLoginScreenLoad();
+
   // Wait for OobeUI to finish loading.
   base::RunLoop run_loop;
   if (!LoginDisplayHost::default_host()->GetOobeUI()->IsJSReady(
           run_loop.QuitClosure())) {
     run_loop.Run();
   }
-  MaybeWaitForLoginScreenLoad();
 }
 
 void OobeBaseTest::WaitForGaiaPageLoad() {
@@ -140,40 +188,21 @@ void OobeBaseTest::WaitForGaiaPageLoadAndPropertyUpdate() {
 }
 
 void OobeBaseTest::WaitForGaiaPageReload() {
-  WaitForGaiaPageEvent("ready");
+  CreateGaiaPageEventWaiter("ready")->Wait();
 }
 
 void OobeBaseTest::WaitForGaiaPageBackButtonUpdate() {
-  WaitForGaiaPageEvent("backButton");
+  CreateGaiaPageEventWaiter("backButton")->Wait();
 }
 
-void OobeBaseTest::WaitForGaiaPageEvent(const std::string& event) {
-  // Starts listening to message before executing the JS code that generates
-  // the message below.
-  content::DOMMessageQueue message_queue;
-  std::string js =
-      R"((function() {
-            var authenticator = $AuthenticatorId;
-            var f = function() {
-              authenticator.removeEventListener('$Event', f);
-              window.domAutomationController.send('Done');
-            };
-            authenticator.addEventListener('$Event', f);
-          })();)";
-  base::ReplaceSubstringsAfterOffset(&js, 0, "$AuthenticatorId",
-                                     authenticator_id_);
-  base::ReplaceSubstringsAfterOffset(&js, 0, "$Event", event);
-  test::OobeJS().Evaluate(js);
-
-  std::string message;
-  do {
-    ASSERT_TRUE(message_queue.WaitForMessage(&message));
-  } while (message != "\"Done\"");
+std::unique_ptr<test::TestConditionWaiter>
+OobeBaseTest::CreateGaiaPageEventWaiter(const std::string& event) {
+  return std::make_unique<GaiaPageEventWaiter>(authenticator_id_, event);
 }
 
 void OobeBaseTest::WaitForSigninScreen() {
   WizardController* wizard_controller = WizardController::default_controller();
-  if (wizard_controller)
+  if (wizard_controller && wizard_controller->is_initialized())
     wizard_controller->SkipToLoginForTesting();
 
   WizardController::SkipPostLoginScreensForTesting();
@@ -189,9 +218,17 @@ test::JSChecker OobeBaseTest::SigninFrameJS() {
       LoginDisplayHost::default_host()->GetOobeWebContents(),
       gaia_frame_parent_);
   test::JSChecker result = test::JSChecker(frame);
-  // Fake GAIA / fake SAML pages do not use polymer-based UI.
-  result.set_polymer_ui(false);
   return result;
+}
+
+// static
+OobeScreenId OobeBaseTest::GetFirstSigninScreen() {
+  bool childSpecificSigninEnabled = features::IsChildSpecificSigninEnabled() &&
+                                    !g_browser_process->platform_part()
+                                         ->browser_policy_connector_chromeos()
+                                         ->IsEnterpriseManaged();
+  return childSpecificSigninEnabled ? UserCreationView::kScreenId
+                                    : GaiaView::kScreenId;
 }
 
 void OobeBaseTest::MaybeWaitForLoginScreenLoad() {

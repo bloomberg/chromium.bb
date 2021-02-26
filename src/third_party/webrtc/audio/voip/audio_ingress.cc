@@ -17,7 +17,6 @@
 #include "api/audio_codecs/audio_format.h"
 #include "audio/utility/audio_frame_operations.h"
 #include "modules/audio_coding/include/audio_coding_module.h"
-#include "rtc_base/critical_section.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_minmax.h"
 
@@ -36,7 +35,7 @@ AudioCodingModule::Config CreateAcmConfig(
 }  // namespace
 
 AudioIngress::AudioIngress(
-    RtpRtcp* rtp_rtcp,
+    RtpRtcpInterface* rtp_rtcp,
     Clock* clock,
     ReceiveStatistics* receive_statistics,
     rtc::scoped_refptr<AudioDecoderFactory> decoder_factory)
@@ -74,6 +73,12 @@ AudioMixer::Source::AudioFrameInfo AudioIngress::GetAudioFrameWithInfo(
   constexpr double kAudioSampleDurationSeconds = 0.01;
   output_audio_level_.ComputeLevel(*audio_frame, kAudioSampleDurationSeconds);
 
+  // If caller invoked StopPlay(), then mute the frame.
+  if (!playing_) {
+    AudioFrameOperations::Mute(audio_frame);
+    muted = true;
+  }
+
   // Set first rtp timestamp with first audio frame with valid timestamp.
   if (first_rtp_timestamp_ < 0 && audio_frame->timestamp_ != 0) {
     first_rtp_timestamp_ = audio_frame->timestamp_;
@@ -83,7 +88,7 @@ AudioMixer::Source::AudioFrameInfo AudioIngress::GetAudioFrameWithInfo(
     // Compute elapsed and NTP times.
     int64_t unwrap_timestamp;
     {
-      rtc::CritScope lock(&lock_);
+      MutexLock lock(&lock_);
       unwrap_timestamp =
           timestamp_wrap_handler_.Unwrap(audio_frame->timestamp_);
       audio_frame->ntp_time_ms_ =
@@ -104,10 +109,22 @@ AudioMixer::Source::AudioFrameInfo AudioIngress::GetAudioFrameWithInfo(
                : AudioMixer::Source::AudioFrameInfo::kNormal;
 }
 
+bool AudioIngress::StartPlay() {
+  {
+    MutexLock lock(&lock_);
+    if (receive_codec_info_.empty()) {
+      RTC_DLOG(LS_WARNING) << "Receive codecs have not been set yet";
+      return false;
+    }
+  }
+  playing_ = true;
+  return true;
+}
+
 void AudioIngress::SetReceiveCodecs(
     const std::map<int, SdpAudioFormat>& codecs) {
   {
-    rtc::CritScope lock(&lock_);
+    MutexLock lock(&lock_);
     for (const auto& kv : codecs) {
       receive_codec_info_[kv.first] = kv.second.clockrate_hz;
     }
@@ -116,16 +133,12 @@ void AudioIngress::SetReceiveCodecs(
 }
 
 void AudioIngress::ReceivedRTPPacket(rtc::ArrayView<const uint8_t> rtp_packet) {
-  if (!IsPlaying()) {
-    return;
-  }
-
   RtpPacketReceived rtp_packet_received;
   rtp_packet_received.Parse(rtp_packet.data(), rtp_packet.size());
 
   // Set payload type's sampling rate before we feed it into ReceiveStatistics.
   {
-    rtc::CritScope lock(&lock_);
+    MutexLock lock(&lock_);
     const auto& it =
         receive_codec_info_.find(rtp_packet_received.PayloadType());
     // If sampling rate info is not available in our received codec set, it
@@ -185,7 +198,7 @@ void AudioIngress::ReceivedRTCPPacket(
   }
 
   {
-    rtc::CritScope lock(&lock_);
+    MutexLock lock(&lock_);
     ntp_estimator_.UpdateRtcpTimestamp(rtt, ntp_secs, ntp_frac, rtp_timestamp);
   }
 }

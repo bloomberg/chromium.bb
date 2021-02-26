@@ -11,10 +11,10 @@
 #import "base/mac/scoped_objc_class_swizzler.h"
 #import "base/mac/scoped_sending_event.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #import "base/message_loop/message_pump_mac.h"
 #include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/current_thread.h"
 #import "chrome/browser/mac/nsprocessinfo_additions.h"
 #import "ui/base/cocoa/menu_controller.h"
 
@@ -192,10 +192,14 @@ RenderViewContextMenuMacCocoa::RenderViewContextMenuMacCocoa(
   set_toolkit_delegate(std::move(delegate));
 }
 
-RenderViewContextMenuMacCocoa::~RenderViewContextMenuMacCocoa() {}
+RenderViewContextMenuMacCocoa::~RenderViewContextMenuMacCocoa() {
+  if (menu_controller_)
+    [menu_controller_ cancel];
+}
 
 void RenderViewContextMenuMacCocoa::Show() {
   menu_controller_.reset([[MenuControllerCocoa alloc] initWithModel:&menu_model_
+                                                           delegate:nil
                                              useWithPopUpButtonCell:NO]);
 
   gfx::Point params_position(params_.x, params_.y);
@@ -221,7 +225,7 @@ void RenderViewContextMenuMacCocoa::Show() {
 
   {
     // Make sure events can be pumped while the menu is up.
-    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+    base::CurrentThread::ScopedNestableTaskAllower allow;
 
     // Ensure the UI can update while the menu is fading out.
     base::ScopedPumpMessagesInPrivateModes pump_private;

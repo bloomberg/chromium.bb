@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/flags_ui/feature_entry.h"
+#include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -46,6 +47,7 @@ const char kFlags8[] = "flag8";
 const char kFlags9[] = "flag9";
 const char kFlags10[] = "flag10";
 const char kFlags11[] = "flag11";
+const char kFlags12[] = "flag12";
 
 const char kSwitch1[] = "switch";
 const char kSwitch2[] = "switch2";
@@ -72,25 +74,39 @@ const char kDummySentinelEndSwitch[] = "dummy-end";
 const char kTestTrial[] = "TestTrial";
 const char kTestParam1[] = "param1";
 const char kTestParam2[] = "param2";
+const char kTestParam3[] = "param:/3";
 const char kTestParamValue[] = "value";
 
 const base::Feature kTestFeature1{"FeatureName1",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kTestFeature2{"FeatureName2",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kTestFeature3{"FeatureName3",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 const FeatureEntry::FeatureParam kTestVariationOther1[] = {
     {kTestParam1, kTestParamValue}};
 const FeatureEntry::FeatureParam kTestVariationOther2[] = {
     {kTestParam2, kTestParamValue}};
+const FeatureEntry::FeatureParam kTestVariationOther3[] = {
+    {kTestParam1, kTestParamValue},
+    {kTestParam3, kTestParamValue},
+};
 
 const FeatureEntry::FeatureVariation kTestVariations1[] = {
     {"dummy description 1", kTestVariationOther1, 1, nullptr}};
 const FeatureEntry::FeatureVariation kTestVariations2[] = {
     {"dummy description 2", kTestVariationOther2, 1, nullptr}};
+const FeatureEntry::FeatureVariation kTestVariations3[] = {
+    {"dummy description 1", kTestVariationOther1, 1, nullptr},
+    {"dummy description 2", kTestVariationOther2, 1, nullptr},
+    {"dummy description 3", kTestVariationOther3, 2, nullptr}};
 
-const char* kDummyName = nullptr;
-const char* kDummyDescription = nullptr;
+const char kTestVariation3Cmdline[] =
+    "FeatureName3:param1/value/param%3A%2F3/value";
+
+const char kDummyName[] = "";
+const char kDummyDescription[] = "";
 
 bool SkipFeatureEntry(const FeatureEntry& feature_entry) {
   return false;
@@ -109,47 +125,50 @@ const FeatureEntry::Choice kMultiChoices[] = {
 static FeatureEntry kEntries[] = {
     {kFlags1, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::SINGLE_VALUE, kSwitch1, "", nullptr, nullptr, nullptr, 0,
-     nullptr, nullptr, nullptr},
+     SINGLE_VALUE_TYPE(kSwitch1)},
     {kFlags2, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::SINGLE_VALUE, kSwitch2, kValueForSwitch2, nullptr, nullptr,
-     nullptr, 0, nullptr, nullptr, nullptr},
+     SINGLE_VALUE_TYPE_AND_VALUE(kSwitch2, kValueForSwitch2)},
     {kFlags3, kDummyName, kDummyDescription,
      0,  // This ends up enabling for an OS other than the current.
-     FeatureEntry::SINGLE_VALUE, kSwitch3, "", nullptr, nullptr, nullptr, 0,
-     nullptr, nullptr, nullptr},
+     SINGLE_VALUE_TYPE(kSwitch3)},
     {kFlags4, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::MULTI_VALUE, "", "", "", "", nullptr,
-     base::size(kMultiChoices), kMultiChoices, nullptr, nullptr},
+     MULTI_VALUE_TYPE(kMultiChoices)},
     {kFlags5, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::ENABLE_DISABLE_VALUE, kSwitch1, kEnableDisableValue1,
-     kSwitch2, kEnableDisableValue2, nullptr, 3, nullptr, nullptr, nullptr},
+     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(kSwitch1,
+                                         kEnableDisableValue1,
+                                         kSwitch2,
+                                         kEnableDisableValue2)},
     {kFlags6, kDummyName, kDummyDescription, 0,
-     FeatureEntry::SINGLE_DISABLE_VALUE, kSwitch6, "", nullptr, nullptr,
-     nullptr, 0, nullptr, nullptr, nullptr},
+     SINGLE_DISABLE_VALUE_TYPE(kSwitch6)},
     {kFlags7, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::FEATURE_VALUE, nullptr, nullptr, nullptr, nullptr,
-     &kTestFeature1, 3, nullptr, nullptr, nullptr},
+     FEATURE_VALUE_TYPE(kTestFeature1)},
     {kFlags8, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
-     nullptr, &kTestFeature1, 4, nullptr, kTestVariations1, kTestTrial},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kTestFeature1,
+                                    kTestVariations1,
+                                    kTestTrial)},
     {kFlags9, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
-     nullptr, &kTestFeature1, 4, nullptr, kTestVariations1, kTestTrial},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kTestFeature1,
+                                    kTestVariations1,
+                                    kTestTrial)},
     {kFlags10, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
-     nullptr, &kTestFeature2, 4, nullptr, kTestVariations2, kTestTrial},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kTestFeature2,
+                                    kTestVariations2,
+                                    kTestTrial)},
     {kFlags11, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::ORIGIN_LIST_VALUE, kStringSwitch, kValueForStringSwitch,
-     nullptr, nullptr, nullptr /* feature */, 0, nullptr, nullptr, nullptr}};
+     ORIGIN_LIST_VALUE_TYPE(kStringSwitch, kValueForStringSwitch)},
+    {kFlags12, kDummyName, kDummyDescription,
+     0,  // Ends up being mapped to the current platform.
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kTestFeature3,
+                                    kTestVariations3,
+                                    kTestTrial)}};
 
 class FlagsStateTest : public ::testing::Test,
                        public flags_ui::FlagsState::Delegate {
@@ -173,7 +192,8 @@ class FlagsStateTest : public ::testing::Test,
   }
 
   // FlagsState::Delegate:
-  bool ShouldExcludeFlag(const FeatureEntry& entry) override {
+  bool ShouldExcludeFlag(const FlagsStorage* storage,
+                         const FeatureEntry& entry) override {
     return exclude_flags_.count(entry.internal_name) != 0;
   }
 
@@ -293,6 +313,19 @@ TEST_F(FlagsStateTest, ConvertFlagsToSwitches) {
   EXPECT_TRUE(command_line2.HasSwitch(kSwitch1));
   EXPECT_FALSE(command_line2.HasSwitch(switches::kFlagSwitchesBegin));
   EXPECT_FALSE(command_line2.HasSwitch(switches::kFlagSwitchesEnd));
+
+  base::CommandLine command_line3(base::CommandLine::NO_PROGRAM);
+  // Enable 3rd variation (@4 since 0 is enable).
+  flags_state_->SetFeatureEntryEnabled(
+      &flags_storage_, std::string(kFlags12).append("@4"), true);
+
+  flags_state_->ConvertFlagsToSwitches(&flags_storage_, &command_line3,
+                                       kNoSentinels, kEnableFeatures,
+                                       kDisableFeatures);
+
+  EXPECT_TRUE(command_line3.HasSwitch(kEnableFeatures));
+  EXPECT_EQ(command_line3.GetSwitchValueASCII(kEnableFeatures),
+            kTestVariation3Cmdline);
 }
 
 TEST_F(FlagsStateTest, RegisterAllFeatureVariationParameters) {
@@ -913,7 +946,7 @@ TEST_F(FlagsStateTest, GetFlagFeatureEntries) {
                                       &supported_entries, &unsupported_entries,
                                       base::BindRepeating(&SkipFeatureEntry));
   // All |kEntries| except for |kFlags3| should be supported.
-  EXPECT_EQ(10u, supported_entries.GetSize());
+  EXPECT_EQ(11u, supported_entries.GetSize());
   EXPECT_EQ(1u, unsupported_entries.GetSize());
   EXPECT_EQ(base::size(kEntries),
             supported_entries.GetSize() + unsupported_entries.GetSize());

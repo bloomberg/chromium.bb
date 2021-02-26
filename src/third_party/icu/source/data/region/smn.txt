@@ -1,5 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+// License & terms of use: http://www.unicode.org/copyright.html
+// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
 smn{
     Countries{
         AC{"Ascension-suálui"}
@@ -261,5 +262,4 @@ smn{
         CD{"Kongo demokraattisâš täsiväldi"}
         CG{"Kongo täsiväldi"}
     }
-    Version{"37"}
 }

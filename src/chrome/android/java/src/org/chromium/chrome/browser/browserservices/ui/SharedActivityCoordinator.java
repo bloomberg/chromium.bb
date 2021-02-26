@@ -11,12 +11,12 @@ import androidx.browser.trusted.TrustedWebActivityDisplayMode;
 import androidx.browser.trusted.TrustedWebActivityDisplayMode.ImmersiveMode;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
+import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVerifier;
+import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVerifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
+import org.chromium.chrome.browser.customtabs.CustomTabOrientationController;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
-import org.chromium.chrome.browser.customtabs.ExternalIntentsPolicyProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
@@ -41,6 +41,7 @@ public class SharedActivityCoordinator implements InflationObserver {
     private final CustomTabToolbarColorController mToolbarColorController;
     private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
     private final Lazy<ImmersiveModeController> mImmersiveModeController;
+    private final CustomTabOrientationController mCustomTabOrientationController;
 
     @Nullable
     private final ImmersiveMode mImmersiveDisplayMode;
@@ -50,13 +51,13 @@ public class SharedActivityCoordinator implements InflationObserver {
     @Inject
     public SharedActivityCoordinator(CurrentPageVerifier currentPageVerifier, Verifier verifier,
             CustomTabActivityNavigationController navigationController,
-            ExternalIntentsPolicyProvider externalIntentsPolicyProvider,
             BrowserServicesIntentDataProvider intentDataProvider,
             CustomTabToolbarColorController toolbarColorController,
             CustomTabStatusBarColorProvider statusBarColorProvider,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             TrustedWebActivityBrowserControlsVisibilityManager browserControlsVisibilityManager,
-            Lazy<ImmersiveModeController> immersiveModeController) {
+            Lazy<ImmersiveModeController> immersiveModeController,
+            CustomTabOrientationController customTabOrientationController) {
         mCurrentPageVerifier = currentPageVerifier;
         mIntentDataProvider = intentDataProvider;
         mBrowserControlsVisibilityManager = browserControlsVisibilityManager;
@@ -64,10 +65,9 @@ public class SharedActivityCoordinator implements InflationObserver {
         mStatusBarColorProvider = statusBarColorProvider;
         mImmersiveModeController = immersiveModeController;
         mImmersiveDisplayMode = computeImmersiveMode(intentDataProvider);
+        mCustomTabOrientationController = customTabOrientationController;
 
         navigationController.setLandingPageOnCloseCriterion(verifier::wasPreviouslyVerified);
-        externalIntentsPolicyProvider.setPolicyCriteria(
-                verifier::shouldIgnoreExternalIntentHandlers);
 
         currentPageVerifier.addVerificationObserver(this::onVerificationUpdate);
         lifecycleDispatcher.register(this);
@@ -109,6 +109,7 @@ public class SharedActivityCoordinator implements InflationObserver {
         mBrowserControlsVisibilityManager.updateIsInAppMode(useAppModeUi);
         mToolbarColorController.setUseTabThemeColor(useAppModeUi);
         mStatusBarColorProvider.setUseTabThemeColor(useAppModeUi);
+        mCustomTabOrientationController.setCanControlOrientation(useAppModeUi);
     }
 
     private void updateImmersiveMode(boolean inAppMode) {

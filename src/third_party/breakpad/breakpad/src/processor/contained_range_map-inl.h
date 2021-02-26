@@ -55,7 +55,7 @@ ContainedRangeMap<AddressType, EntryType>::~ContainedRangeMap() {
 
 template<typename AddressType, typename EntryType>
 bool ContainedRangeMap<AddressType, EntryType>::StoreRange(
-    const AddressType &base, const AddressType &size, const EntryType &entry) {
+    const AddressType& base, const AddressType& size, const EntryType& entry) {
   AddressType high = base + size - 1;
 
   // Check for undersize or overflow.
@@ -125,7 +125,7 @@ bool ContainedRangeMap<AddressType, EntryType>::StoreRange(
   // Optimization: if the iterators are equal, no child ranges would be
   // moved.  Create the new child range with a NULL map to conserve space
   // in leaf nodes, of which there will be many.
-  AddressToRangeMap *child_map = NULL;
+  AddressToRangeMap* child_map = NULL;
 
   if (iterator_base != iterator_high) {
     // The children of this range that are contained by the new range must
@@ -149,7 +149,7 @@ bool ContainedRangeMap<AddressType, EntryType>::StoreRange(
 
 template<typename AddressType, typename EntryType>
 bool ContainedRangeMap<AddressType, EntryType>::RetrieveRange(
-    const AddressType &address, EntryType *entry) const {
+    const AddressType& address, EntryType* entry) const {
   BPLOG_IF(ERROR, !entry) << "ContainedRangeMap::RetrieveRange requires "
                              "|entry|";
   assert(entry);

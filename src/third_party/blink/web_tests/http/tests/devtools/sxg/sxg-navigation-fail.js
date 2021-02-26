@@ -6,9 +6,9 @@
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('network');
-  SDK.networkLog.reset();
+  SDK.NetworkLog.instance().reset();
   await TestRunner.addIframe('/loading/sxg/resources/sxg-invalid-validity-url.sxg');
   await ConsoleTestRunner.dumpConsoleMessages();
-  NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo();
+  NetowrkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo();
   TestRunner.completeTest();
 })();

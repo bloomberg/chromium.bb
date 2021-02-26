@@ -27,12 +27,12 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/array_buffer_or_array_buffer_view_or_string.h",
   "$bindings_modules_v8_output_dir/array_buffer_or_array_buffer_view_or_usv_string.cc",
   "$bindings_modules_v8_output_dir/array_buffer_or_array_buffer_view_or_usv_string.h",
-  "$bindings_modules_v8_output_dir/array_buffer_view_or_blob_or_string_or_form_data_or_readable_stream.cc",
-  "$bindings_modules_v8_output_dir/array_buffer_view_or_blob_or_string_or_form_data_or_readable_stream.h",
   "$bindings_modules_v8_output_dir/audio_context_latency_category_or_double.cc",
   "$bindings_modules_v8_output_dir/audio_context_latency_category_or_double.h",
   "$bindings_modules_v8_output_dir/boolean_or_constrain_boolean_parameters.cc",
   "$bindings_modules_v8_output_dir/boolean_or_constrain_boolean_parameters.h",
+  "$bindings_modules_v8_output_dir/boolean_or_double_or_constrain_double_range.cc",
+  "$bindings_modules_v8_output_dir/boolean_or_double_or_constrain_double_range.h",
   "$bindings_modules_v8_output_dir/boolean_or_media_track_constraints.cc",
   "$bindings_modules_v8_output_dir/boolean_or_media_track_constraints.h",
   "$bindings_modules_v8_output_dir/canvas_image_source.cc",
@@ -45,6 +45,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/dom_exception_or_overconstrained_error.h",
   "$bindings_modules_v8_output_dir/double_or_constrain_double_range.cc",
   "$bindings_modules_v8_output_dir/double_or_constrain_double_range.h",
+  "$bindings_modules_v8_output_dir/double_or_dom_point.h",
+  "$bindings_modules_v8_output_dir/double_or_dom_point.cc",
   "$bindings_modules_v8_output_dir/double_sequence_or_gpu_color_dict.cc",
   "$bindings_modules_v8_output_dir/double_sequence_or_gpu_color_dict.h",
   "$bindings_modules_v8_output_dir/float32_array_or_float64_array_or_dom_matrix.cc",
@@ -83,6 +85,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/path_2d_or_string.h",
   "$bindings_modules_v8_output_dir/point_2d_sequence_or_constrain_point_2d_parameters.cc",
   "$bindings_modules_v8_output_dir/point_2d_sequence_or_constrain_point_2d_parameters.h",
+  "$bindings_modules_v8_output_dir/readable_stream_or_xml_http_request_body_init.cc",
+  "$bindings_modules_v8_output_dir/readable_stream_or_xml_http_request_body_init.h",
   "$bindings_modules_v8_output_dir/rendering_context.cc",
   "$bindings_modules_v8_output_dir/rendering_context.h",
   "$bindings_modules_v8_output_dir/request_or_usv_string_or_request_or_usv_string_sequence.cc",
@@ -93,12 +97,16 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/string_or_array_buffer_or_array_buffer_view_or_ndef_message_init.h",
   "$bindings_modules_v8_output_dir/string_or_canvas_gradient_or_canvas_pattern.cc",
   "$bindings_modules_v8_output_dir/string_or_canvas_gradient_or_canvas_pattern.h",
+  "$bindings_modules_v8_output_dir/string_or_document_fragment_or_document.cc",
+  "$bindings_modules_v8_output_dir/string_or_document_fragment_or_document.h",
   "$bindings_modules_v8_output_dir/string_or_string_sequence_or_constrain_dom_string_parameters.cc",
   "$bindings_modules_v8_output_dir/string_or_string_sequence_or_constrain_dom_string_parameters.h",
+  "$bindings_modules_v8_output_dir/string_or_trusted_html_or_document_fragment_or_document.cc",
+  "$bindings_modules_v8_output_dir/string_or_trusted_html_or_document_fragment_or_document.h",
   "$bindings_modules_v8_output_dir/string_or_unsigned_long.cc",
   "$bindings_modules_v8_output_dir/string_or_unsigned_long.h",
-  "$bindings_modules_v8_output_dir/string_or_uint32_array.cc",
-  "$bindings_modules_v8_output_dir/string_or_uint32_array.h",
+  "$bindings_modules_v8_output_dir/uint32_array_or_unsigned_long_sequence.cc",
+  "$bindings_modules_v8_output_dir/uint32_array_or_unsigned_long_sequence.h",
   "$bindings_modules_v8_output_dir/unsigned_long_or_unsigned_long_sequence.cc",
   "$bindings_modules_v8_output_dir/unsigned_long_or_unsigned_long_sequence.h",
   "$bindings_modules_v8_output_dir/unsigned_long_enforce_range_sequence_or_gpu_extent_3d_dict.cc",
@@ -107,6 +115,10 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/unsigned_long_enforce_range_sequence_or_gpu_origin_2d_dict.h",
   "$bindings_modules_v8_output_dir/unsigned_long_enforce_range_sequence_or_gpu_origin_3d_dict.cc",
   "$bindings_modules_v8_output_dir/unsigned_long_enforce_range_sequence_or_gpu_origin_3d_dict.h",
+  "$bindings_modules_v8_output_dir/usv_string_or_uint32_array.cc",
+  "$bindings_modules_v8_output_dir/usv_string_or_uint32_array.h",
+  "$bindings_modules_v8_output_dir/usv_string_or_usv_string_sequence.cc",
+  "$bindings_modules_v8_output_dir/usv_string_or_usv_string_sequence.h",
   "$bindings_modules_v8_output_dir/webgl_rendering_context_or_webgl2_rendering_context.cc",
   "$bindings_modules_v8_output_dir/webgl_rendering_context_or_webgl2_rendering_context.h",
   "$bindings_modules_v8_output_dir/worklet_animation_effect_or_worklet_group_effect.cc",
@@ -118,6 +130,8 @@ generated_modules_callback_function_files = [
   "$bindings_modules_v8_output_dir/v8_animate_callback.h",
   "$bindings_modules_v8_output_dir/v8_animator_constructor.cc",
   "$bindings_modules_v8_output_dir/v8_animator_constructor.h",
+  "$bindings_modules_v8_output_dir/v8_audio_frame_output_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_audio_frame_output_callback.h",
   "$bindings_modules_v8_output_dir/v8_blink_audio_worklet_process_callback.cc",
   "$bindings_modules_v8_output_dir/v8_blink_audio_worklet_process_callback.h",
   "$bindings_modules_v8_output_dir/v8_blink_audio_worklet_processor_constructor.cc",
@@ -164,10 +178,10 @@ generated_modules_callback_function_files = [
   "$bindings_modules_v8_output_dir/v8_storage_quota_callback.h",
   "$bindings_modules_v8_output_dir/v8_storage_usage_callback.cc",
   "$bindings_modules_v8_output_dir/v8_storage_usage_callback.h",
-  "$bindings_modules_v8_output_dir/v8_video_decoder_output_callback.cc",
-  "$bindings_modules_v8_output_dir/v8_video_decoder_output_callback.h",
   "$bindings_modules_v8_output_dir/v8_video_encoder_output_callback.cc",
   "$bindings_modules_v8_output_dir/v8_video_encoder_output_callback.h",
+  "$bindings_modules_v8_output_dir/v8_video_frame_output_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_video_frame_output_callback.h",
   "$bindings_modules_v8_output_dir/v8_video_frame_request_callback.cc",
   "$bindings_modules_v8_output_dir/v8_video_frame_request_callback.h",
   "$bindings_modules_v8_output_dir/v8_web_codecs_error_callback.cc",
@@ -178,15 +192,3 @@ generated_modules_callback_function_files = [
 
 bindings_generated_v8_context_snapshot_external_references_file =
     "$bindings_modules_v8_output_dir/v8_context_snapshot_external_references.cc"
-
-generated_modules_dictionary_files = []
-
-if (use_v8_bind_gen_for_dictionary) {
-  generated_modules_dictionary_files +=
-      process_file_template(
-          modules_dictionary_idl_files,
-          [
-            "$bindings_modules_v8_output_dir/v8_{{source_name_part}}.cc",
-            "$bindings_modules_v8_output_dir/v8_{{source_name_part}}.h",
-          ])
-}

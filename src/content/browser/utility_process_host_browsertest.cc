@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/utility_process_host.h"
 #include "content/public/browser/browser_child_process_observer.h"
@@ -19,7 +18,7 @@
 #include "content/public/test/test_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <sys/wait.h>
 #endif
 
@@ -46,8 +45,8 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     done_closure_ =
         base::BindOnce(&UtilityProcessHostBrowserTest::DoneRunning,
                        base::Unretained(this), run_loop.QuitClosure(), crash);
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &UtilityProcessHostBrowserTest::RunUtilityProcessOnIOThread,
             base::Unretained(this), elevated, crash));
@@ -70,7 +69,7 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
 #if defined(OS_WIN)
     if (elevated)
       host->SetSandboxType(
-          service_manager::SandboxType::kNoSandboxAndElevatedPrivileges);
+          sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges);
 #endif
     EXPECT_TRUE(host->Start());
 
@@ -97,7 +96,7 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     // If service crashes then this never gets called.
     ASSERT_EQ(false, expect_crash);
     ResetServiceOnIOThread();
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(done_closure_));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(done_closure_));
   }
 
   mojo::Remote<mojom::TestService> service_;
@@ -127,15 +126,15 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_WIN)
     EXPECT_EQ(EXCEPTION_BREAKPOINT, DWORD{info.exit_code});
-#elif defined(OS_MACOSX) || defined(OS_LINUX)
+#elif defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
     EXPECT_TRUE(WIFSIGNALED(info.exit_code));
     EXPECT_EQ(SIGTRAP, WTERMSIG(info.exit_code));
 #endif
     EXPECT_EQ(kTestProcessName, data.metrics_name);
     EXPECT_EQ(false, has_crashed);
     has_crashed = true;
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&UtilityProcessHostBrowserTest::ResetServiceOnIOThread,
                        base::Unretained(this)));
     std::move(done_closure_).Run();

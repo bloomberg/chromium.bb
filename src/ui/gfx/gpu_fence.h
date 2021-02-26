@@ -12,6 +12,10 @@
 
 extern "C" typedef struct _ClientGpuFence* ClientGpuFence;
 
+namespace base {
+class TimeTicks;
+}  // namespace base
+
 namespace gfx {
 
 // GpuFence objects own a GpuFenceHandle and release the resources in it when
@@ -19,14 +23,16 @@ namespace gfx {
 class GFX_EXPORT GpuFence {
  public:
   // Constructor takes ownership of the source handle's resources.
-  explicit GpuFence(const GpuFenceHandle& handle);
+  explicit GpuFence(GpuFenceHandle handle);
   GpuFence() = delete;
+  GpuFence(GpuFence&& other);
+  GpuFence& operator=(GpuFence&& other);
   ~GpuFence();
 
-  // This handle is an unowned view of the resources owned by this class for
-  // use with CloneHandleForIPC. Don't pass this to a consuming method such as
-  // GpuFence(handle) or to IPC, that would cause duplicate resource release.
-  GpuFenceHandle GetGpuFenceHandle() const;
+  // Returns a const reference to the underlying GpuFenceHandle
+  // owned by GpuFence. If you'd like a duplicated handle for use
+  // with IPC, call the Clone method on the returned handle.
+  const GpuFenceHandle& GetGpuFenceHandle() const;
 
   // Casts for use with the GLES interface.
   ClientGpuFence AsClientGpuFence();
@@ -35,11 +41,13 @@ class GFX_EXPORT GpuFence {
   // Wait for the GpuFence to become ready.
   void Wait();
 
+  enum FenceStatus { kSignaled, kNotSignaled, kInvalid };
+  static FenceStatus GetStatusChangeTime(int fd, base::TimeTicks* time);
+
+  base::TimeTicks GetMaxTimestamp() const;
+
  private:
-  gfx::GpuFenceHandleType type_;
-#if defined(OS_POSIX)
-  base::ScopedFD owned_fd_;
-#endif
+  gfx::GpuFenceHandle fence_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuFence);
 };

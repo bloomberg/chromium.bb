@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -29,7 +28,6 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/page_info/page_info.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/strings/grit/components_strings.h"
@@ -130,11 +128,7 @@ const GURL OpenSiteSettingsForUrl(Browser* browser, const GURL& url) {
 
 class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
  public:
-  PageInfoBubbleViewBrowserTest() {
-    feature_list_.InitAndEnableFeature(
-        password_manager::features::kPasswordCheck);
-  }
-
+  PageInfoBubbleViewBrowserTest() = default;
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     // Bubble dialogs' bounds may exceed the display's work area.
@@ -184,8 +178,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     } else if (name == kInternalViewSource) {
       constexpr char kTestHtml[] = "/viewsource/test.html";
       ASSERT_TRUE(embedded_test_server()->Start());
-      url = GURL(content::kViewSourceScheme +
-                 std::string(url::kStandardSchemeSeparator) +
+      url = GURL(content::kViewSourceScheme + std::string(":") +
                  embedded_test_server()->GetURL(kTestHtml).spec());
     } else if (name == kFile) {
       url = file_url;
@@ -257,7 +250,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
       PermissionInfoList permissions_list;
       for (ContentSettingsType content_type :
            PageInfo::GetAllPermissionsForTesting()) {
-        PageInfoUI::PermissionInfo info;
+        PageInfo::PermissionInfo info;
         info.type = content_type;
         info.setting = (name == kAllowAllPermissions) ? CONTENT_SETTING_ALLOW
                                                       : CONTENT_SETTING_BLOCK;
@@ -345,7 +338,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
 
     // Set some dummy non-default permissions. This will trigger a reload prompt
     // when the bubble is closed.
-    PageInfoUI::PermissionInfo permission;
+    PageInfo::PermissionInfo permission;
     permission.type = ContentSettingsType::NOTIFICATIONS;
     permission.setting = ContentSetting::CONTENT_SETTING_BLOCK;
     permission.default_setting = ContentSetting::CONTENT_SETTING_ASK;
@@ -386,7 +379,6 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
 
  private:
   std::vector<PageInfoBubbleView::PageInfoBubbleViewID> expected_identifiers_;
-  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewBrowserTest);
 };
@@ -498,9 +490,9 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(
       browser(), PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
-  views::View* whitelist_password_reuse_button = GetView(
+  views::View* allowlist_password_reuse_button = GetView(
       browser(),
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
+      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE);
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
@@ -514,7 +506,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
 
   // Verify these two buttons are showing.
   EXPECT_TRUE(change_password_button->GetVisible());
-  EXPECT_TRUE(whitelist_password_reuse_button->GetVisible());
+  EXPECT_TRUE(allowlist_password_reuse_button->GetVisible());
 
   // Verify clicking on button will increment corresponding bucket of
   // PasswordProtection.PageInfoAction.NonGaiaEnterprisePasswordEntry histogram.
@@ -529,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
               static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
               1)));
 
-  PerformMouseClickOnView(whitelist_password_reuse_button);
+  PerformMouseClickOnView(allowlist_password_reuse_button);
   EXPECT_THAT(
       histograms.GetAllSamples(
           safe_browsing::kEnterprisePasswordPageInfoHistogram),
@@ -542,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
           base::Bucket(static_cast<int>(
                            safe_browsing::WarningAction::MARK_AS_LEGITIMATE),
                        1)));
-  // Security state will change after whitelisting.
+  // Security state will change after allowlisting.
   visible_security_state = helper->GetVisibleSecurityState();
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             visible_security_state->malicious_content_status);
@@ -577,9 +569,9 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(
       browser(), PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
-  views::View* whitelist_password_reuse_button = GetView(
+  views::View* allowlist_password_reuse_button = GetView(
       browser(),
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
+      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE);
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
@@ -590,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
 
   // Verify these two buttons are showing.
   EXPECT_TRUE(change_password_button->GetVisible());
-  EXPECT_TRUE(whitelist_password_reuse_button->GetVisible());
+  EXPECT_TRUE(allowlist_password_reuse_button->GetVisible());
 
   // Verify clicking on button will increment corresponding bucket of
   // PasswordProtection.PageInfoAction.NonGaiaEnterprisePasswordEntry histogram.
@@ -604,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
               static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
               1)));
 
-  PerformMouseClickOnView(whitelist_password_reuse_button);
+  PerformMouseClickOnView(allowlist_password_reuse_button);
   EXPECT_THAT(
       histograms.GetAllSamples(safe_browsing::kSavedPasswordPageInfoHistogram),
       testing::ElementsAre(
@@ -616,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
           base::Bucket(static_cast<int>(
                            safe_browsing::WarningAction::MARK_AS_LEGITIMATE),
                        1)));
-  // Security state will change after whitelisting.
+  // Security state will change after allowlisting.
   visible_security_state = helper->GetVisibleSecurityState();
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             visible_security_state->malicious_content_status);
@@ -966,7 +958,7 @@ class ViewFocusTracker : public FocusTracker, public views::ViewObserver {
 
 }  // namespace
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // https://crbug.com/1029882
 #define MAYBE_FocusReturnsToContentOnClose DISABLED_FocusReturnsToContentOnClose
 #else
@@ -994,7 +986,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   EXPECT_TRUE(web_contents_focus_tracker.focused());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // https://crbug.com/1029882
 #define MAYBE_FocusDoesNotReturnToContentsOnReloadPrompt \
   DISABLED_FocusDoesNotReturnToContentsOnReloadPrompt

@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "build/chromeos_buildflags.h"
 #include "storage/browser/file_system/file_system_url.h"
 
 namespace storage {
@@ -195,8 +196,8 @@ FileSystemURL ExternalMountPoints::CrackURL(const GURL& url) const {
 FileSystemURL ExternalMountPoints::CreateCrackedFileSystemURL(
     const url::Origin& origin,
     FileSystemType type,
-    const base::FilePath& path) const {
-  return CrackFileSystemURL(FileSystemURL(origin, type, path));
+    const base::FilePath& virtual_path) const {
+  return CrackFileSystemURL(FileSystemURL(origin, type, virtual_path));
 }
 
 void ExternalMountPoints::AddMountPointInfosTo(
@@ -264,7 +265,7 @@ FileSystemURL ExternalMountPoints::CrackFileSystemURL(
 
   base::FilePath virtual_path = url.path();
   if (url.type() == kFileSystemTypeNativeForPlatformApp) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // On Chrome OS, find a mount point and virtual path for the external fs.
     if (!GetVirtualPath(url.path(), &virtual_path))
       return FileSystemURL();

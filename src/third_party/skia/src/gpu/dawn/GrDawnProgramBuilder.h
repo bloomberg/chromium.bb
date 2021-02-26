@@ -56,8 +56,7 @@ struct GrDawnProgram : public SkRefCnt {
     std::unique_ptr<GrGLSLPrimitiveProcessor> fGeometryProcessor;
     std::unique_ptr<GrGLSLXferProcessor> fXferProcessor;
     std::unique_ptr<std::unique_ptr<GrGLSLFragmentProcessor>[]> fFragmentProcessors;
-    int fFragmentProcessorCnt;
-    wgpu::BindGroupLayout fBindGroupLayouts[2];
+    std::vector<wgpu::BindGroupLayout> fBindGroupLayouts;
     wgpu::RenderPipeline fRenderPipeline;
     GrDawnProgramDataManager fDataManager;
     RenderTargetState fRenderTargetState;
@@ -98,6 +97,6 @@ private:
     GrSPIRVVaryingHandler   fVaryingHandler;
     GrSPIRVUniformHandler   fUniformHandler;
 
-    typedef GrGLSLProgramBuilder INHERITED;
+    using INHERITED = GrGLSLProgramBuilder;
 };
 #endif

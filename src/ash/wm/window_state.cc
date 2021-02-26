@@ -12,9 +12,7 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
-#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/cpp/window_state_type.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
@@ -31,11 +29,13 @@
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/ui/base/window_pin_type.h"
+#include "chromeos/ui/base/window_properties.h"
+#include "chromeos/ui/base/window_state_type.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -50,6 +50,13 @@
 
 namespace ash {
 namespace {
+
+using ::chromeos::kHideShelfWhenFullscreenKey;
+using ::chromeos::kImmersiveIsActive;
+using ::chromeos::kWindowManagerManagesOpacityKey;
+using ::chromeos::kWindowPinTypeKey;
+using ::chromeos::WindowPinType;
+using ::chromeos::WindowStateType;
 
 bool IsTabletModeEnabled() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
@@ -90,25 +97,6 @@ class BoundsSetter : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(BoundsSetter);
 };
 
-// Animation metrics reporter which reports animation smoothness percentages for
-// the given histogram name, and then self destructs.
-class WindowAnimationMetricsReporter : public ui::AnimationMetricsReporter {
- public:
-  explicit WindowAnimationMetricsReporter(const std::string& histogram_name)
-      : histogram_name_(histogram_name) {}
-  ~WindowAnimationMetricsReporter() override = default;
-
-  // ui::AnimationMetricsReporter:
-  void Report(int value) override {
-    base::UmaHistogramPercentage(histogram_name_, value);
-    delete this;
-  }
-
- private:
-  const std::string histogram_name_;
-  DISALLOW_COPY_AND_ASSIGN(WindowAnimationMetricsReporter);
-};
-
 WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
   switch (requested_show_state) {
     case ui::SHOW_STATE_DEFAULT:
@@ -130,13 +118,13 @@ WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
   return WM_EVENT_NORMAL;
 }
 
-WMEventType WMEventTypeFromWindowPinType(ash::WindowPinType type) {
+WMEventType WMEventTypeFromWindowPinType(chromeos::WindowPinType type) {
   switch (type) {
-    case ash::WindowPinType::kNone:
+    case chromeos::WindowPinType::kNone:
       return WM_EVENT_NORMAL;
-    case ash::WindowPinType::kPinned:
+    case chromeos::WindowPinType::kPinned:
       return WM_EVENT_PIN;
-    case ash::WindowPinType::kTrustedPinned:
+    case chromeos::WindowPinType::kTrustedPinned:
       return WM_EVENT_TRUSTED_PIN;
   }
   NOTREACHED() << "No WMEvent defined for the window pin type:" << type;
@@ -582,7 +570,8 @@ WindowState::WindowState(aura::Window* window)
       autohide_shelf_when_maximized_or_fullscreen_(false),
       cached_z_order_(ui::ZOrderLevel::kNormal),
       ignore_property_change_(false),
-      current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
+      current_state_(
+          new DefaultState(chromeos::ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
   UpdateWindowPropertiesFromStateType();
   OnPrePipStateChange(WindowStateType::kDefault);
@@ -637,9 +626,9 @@ void WindowState::UpdateWindowPropertiesFromStateType() {
     window_->SetProperty(aura::client::kShowStateKey, new_window_state);
   }
 
-  if (GetStateType() != window_->GetProperty(kWindowStateTypeKey)) {
+  if (GetStateType() != window_->GetProperty(chromeos::kWindowStateTypeKey)) {
     base::AutoReset<bool> resetter(&ignore_property_change_, true);
-    window_->SetProperty(kWindowStateTypeKey, GetStateType());
+    window_->SetProperty(chromeos::kWindowStateTypeKey, GetStateType());
   }
 
   // sync up current window show state with PinType property.
@@ -743,11 +732,6 @@ void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds,
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   slide_settings.SetTweenType(tween_type);
   slide_settings.SetTransitionDuration(duration);
-  if (animation_smoothness_histogram_name_) {
-    slide_settings.SetAnimationMetricsReporter(
-        new WindowAnimationMetricsReporter(
-            *animation_smoothness_histogram_name_));
-  }
   SetBoundsDirect(bounds);
 }
 
@@ -919,10 +903,10 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     }
     return;
   }
-  if (key == kWindowStateTypeKey) {
+  if (key == chromeos::kWindowStateTypeKey) {
     if (!ignore_property_change_) {
       // This change came from somewhere else. Revert it.
-      window->SetProperty(kWindowStateTypeKey, GetStateType());
+      window->SetProperty(chromeos::kWindowStateTypeKey, GetStateType());
     }
     return;
   }

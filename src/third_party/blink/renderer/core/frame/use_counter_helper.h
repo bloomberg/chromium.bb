@@ -28,7 +28,7 @@
 
 #include <bitset>
 #include "base/macros.h"
-#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
@@ -100,7 +100,7 @@ class CORE_EXPORT UseCounterHelper final {
     // remove a reference to the observer and stop notifications.
     virtual bool OnCountFeature(WebFeature) = 0;
 
-    virtual void Trace(Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) const {}
   };
 
   // Repeated calls are ignored.
@@ -133,7 +133,7 @@ class CORE_EXPORT UseCounterHelper final {
 
   void ClearMeasurementForTesting(WebFeature);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class UseCounterHelperTest;

@@ -25,8 +25,14 @@ namespace bindings {
 // depending on the return value type.
 
 struct V8ReturnValue {
+  STATIC_ONLY(V8ReturnValue);
+
   // Support compile-time overload resolution by making each value have its own
   // type.
+
+  // Applies strict typing to IDL primitive types.
+  template <typename T>
+  struct PrimitiveType {};
 
   // Nullable or not
   enum NonNullable { kNonNullable };
@@ -38,8 +44,19 @@ struct V8ReturnValue {
   // Main world or not
   enum MainWorld { kMainWorld };
 
-  // Returns the interface object of the given type.
+  // Returns the exposed object of the given type.
   enum InterfaceObject { kInterfaceObject };
+  enum NamespaceObject { kNamespaceObject };
+
+  // Selects the appropriate creation context.
+  static v8::Local<v8::Object> CreationContext(
+      const v8::FunctionCallbackInfo<v8::Value>& info) {
+    return info.This();
+  }
+  static v8::Local<v8::Object> CreationContext(
+      const v8::PropertyCallbackInfo<v8::Value>& info) {
+    return info.Holder();
+  }
 };
 
 // V8 handle types
@@ -68,9 +85,9 @@ PLATFORM_EXPORT v8::Local<v8::Object> CreatePropertyDescriptorObject(
     v8::Isolate* isolate,
     const v8::PropertyDescriptor& desc);
 
-template <typename CallbackInfo>
-void V8SetReturnValue(const CallbackInfo& info,
-                      const v8::PropertyDescriptor& value) {
+PLATFORM_EXPORT inline void V8SetReturnValue(
+    const v8::PropertyCallbackInfo<v8::Value>& info,
+    const v8::PropertyDescriptor& value) {
   info.GetReturnValue().Set(
       CreatePropertyDescriptorObject(info.GetIsolate(), value));
 }
@@ -116,9 +133,9 @@ PLATFORM_EXPORT inline void V8SetReturnValue(
   info.GetReturnValue().SetNull();
 }
 
-template <typename CallbackInfo>
-void V8SetReturnValue(const CallbackInfo& info,
-                      NamedPropertyDeleterResult value) {
+PLATFORM_EXPORT inline void V8SetReturnValue(
+    const v8::PropertyCallbackInfo<v8::Boolean>& info,
+    NamedPropertyDeleterResult value) {
   if (value == NamedPropertyDeleterResult::kDidNotIntercept) {
     // Do not set the return value to indicate that the request was not
     // intercepted.
@@ -164,6 +181,28 @@ void V8SetReturnValue(const CallbackInfo& info, uint64_t value) {
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info, double value) {
   info.GetReturnValue().Set(value);
+}
+
+// Primitive types with IDL type
+//
+// |IdlType| represents a C++ type corresponding to an IDL type, and |value| is
+// passed from Blink implementation and its type occasionally does not match
+// the IDL type because Blink is not always respectful to IDL types.  These
+// functions fix such a type mismatch.
+template <typename CallbackInfo, typename BlinkType, typename IdlType>
+inline typename std::enable_if_t<std::is_arithmetic<BlinkType>::value ||
+                                 std::is_enum<BlinkType>::value>
+V8SetReturnValue(const CallbackInfo& info,
+                 BlinkType value,
+                 V8ReturnValue::PrimitiveType<IdlType>) {
+  V8SetReturnValue(info, IdlType(value));
+}
+
+template <typename CallbackInfo, typename BlinkType>
+inline void V8SetReturnValue(const CallbackInfo& info,
+                             BlinkType* value,
+                             V8ReturnValue::PrimitiveType<bool>) {
+  V8SetReturnValue(info, bool(value));
 }
 
 // String types
@@ -247,7 +286,8 @@ void V8SetReturnValue(const CallbackInfo& info,
                                                wrappable))
     return;
 
-  info.GetReturnValue().Set(wrappable->Wrap(info.GetIsolate(), info.This()));
+  info.GetReturnValue().Set(
+      wrappable->Wrap(info.GetIsolate(), V8ReturnValue::CreationContext(info)));
 }
 
 template <typename CallbackInfo>
@@ -260,7 +300,8 @@ void V8SetReturnValue(const CallbackInfo& info,
                                                wrappable))
     return;
 
-  info.GetReturnValue().Set(wrappable->Wrap(info.GetIsolate(), info.This()));
+  info.GetReturnValue().Set(
+      wrappable->Wrap(info.GetIsolate(), V8ReturnValue::CreationContext(info)));
 }
 
 template <typename CallbackInfo>
@@ -272,11 +313,13 @@ void V8SetReturnValue(const CallbackInfo& info,
 
   ScriptWrappable* wrappable = const_cast<ScriptWrappable*>(value);
   if (DOMDataStore::SetReturnValueFast(info.GetReturnValue(), wrappable,
-                                       info.This(), receiver)) {
+                                       V8ReturnValue::CreationContext(info),
+                                       receiver)) {
     return;
   }
 
-  info.GetReturnValue().Set(wrappable->Wrap(info.GetIsolate(), info.This()));
+  info.GetReturnValue().Set(
+      wrappable->Wrap(info.GetIsolate(), V8ReturnValue::CreationContext(info)));
 }
 
 template <typename CallbackInfo>
@@ -285,11 +328,13 @@ void V8SetReturnValue(const CallbackInfo& info,
                       const ScriptWrappable* receiver) {
   ScriptWrappable* wrappable = const_cast<ScriptWrappable*>(&value);
   if (DOMDataStore::SetReturnValueFast(info.GetReturnValue(), wrappable,
-                                       info.This(), receiver)) {
+                                       V8ReturnValue::CreationContext(info),
+                                       receiver)) {
     return;
   }
 
-  info.GetReturnValue().Set(wrappable->Wrap(info.GetIsolate(), info.This()));
+  info.GetReturnValue().Set(
+      wrappable->Wrap(info.GetIsolate(), V8ReturnValue::CreationContext(info)));
 }
 
 template <typename CallbackInfo>
@@ -319,27 +364,42 @@ void V8SetReturnValue(const CallbackInfo& info,
       wrappable->Wrap(info.GetIsolate(), creation_context->Global()));
 }
 
-// Interface object
-PLATFORM_EXPORT v8::Local<v8::Value> GetInterfaceObjectExposedOnGlobal(
+// Exposed objects
+PLATFORM_EXPORT v8::Local<v8::Value> GetExposedInterfaceObject(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context,
     const WrapperTypeInfo* wrapper_type_info);
 
-template <typename CallbackInfo>
-void V8SetReturnValue(const CallbackInfo& info,
-                      const WrapperTypeInfo* wrapper_type_info,
-                      V8ReturnValue::InterfaceObject) {
-  info.GetReturnValue().Set(GetInterfaceObjectExposedOnGlobal(
-      info.GetIsolate(), info.This(), wrapper_type_info));
+PLATFORM_EXPORT v8::Local<v8::Value> GetExposedNamespaceObject(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> creation_context,
+    const WrapperTypeInfo* wrapper_type_info);
+
+inline void V8SetReturnValue(const v8::PropertyCallbackInfo<v8::Value>& info,
+                             const WrapperTypeInfo* wrapper_type_info,
+                             V8ReturnValue::InterfaceObject) {
+  info.GetReturnValue().Set(GetExposedInterfaceObject(
+      info.GetIsolate(), info.Holder(), wrapper_type_info));
+}
+
+inline void V8SetReturnValue(const v8::PropertyCallbackInfo<v8::Value>& info,
+                             const WrapperTypeInfo* wrapper_type_info,
+                             V8ReturnValue::NamespaceObject) {
+  info.GetReturnValue().Set(GetExposedNamespaceObject(
+      info.GetIsolate(), info.Holder(), wrapper_type_info));
 }
 
 // Nullable types
-template <typename CallbackInfo, typename T>
-void V8SetReturnValue(const CallbackInfo& info, base::Optional<T> value) {
-  if (value.has_value())
-    V8SetReturnValue(info, value.value());
-  else
+template <typename CallbackInfo, typename T, typename... ExtraArgs>
+void V8SetReturnValue(const CallbackInfo& info,
+                      base::Optional<T> value,
+                      ExtraArgs... extra_args) {
+  if (value.has_value()) {
+    V8SetReturnValue(info, value.value(),
+                     std::forward<ExtraArgs>(extra_args)...);
+  } else {
     info.GetReturnValue().SetNull();
+  }
 }
 
 }  // namespace bindings

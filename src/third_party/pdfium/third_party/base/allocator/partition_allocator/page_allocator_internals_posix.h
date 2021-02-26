@@ -10,19 +10,21 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <mach/mach.h>
 #endif
 #if defined(OS_ANDROID)
 #include <sys/prctl.h>
 #endif
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <sys/resource.h>
 
 #include <algorithm>
 #endif
 
 #include "third_party/base/allocator/partition_allocator/page_allocator.h"
+#include "third_party/base/check.h"
+#include "third_party/base/notreached.h"
 
 #ifndef MAP_ANONYMOUS
 #define MAP_ANONYMOUS MAP_ANON
@@ -84,7 +86,7 @@ void* SystemAllocPagesInternal(void* hint,
                                PageAccessibilityConfiguration accessibility,
                                PageTag page_tag,
                                bool commit) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Use a custom tag to make it easier to distinguish Partition Alloc regions
   // in vmmap(1). Tags between 240-255 are supported.
   DCHECK(PageTag::kFirst <= page_tag);
@@ -179,7 +181,7 @@ void DecommitSystemPagesInternal(void* address, size_t length) {
 bool RecommitSystemPagesInternal(void* address,
                                  size_t length,
                                  PageAccessibilityConfiguration accessibility) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On macOS, to update accounting, we need to make another syscall. For more
   // details, see https://crbug.com/823915.
   madvise(address, length, MADV_FREE_REUSE);
@@ -192,7 +194,7 @@ bool RecommitSystemPagesInternal(void* address,
 }
 
 void DiscardSystemPagesInternal(void* address, size_t length) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   int ret = madvise(address, length, MADV_FREE_REUSABLE);
   if (ret) {
     // MADV_FREE_REUSABLE sometimes fails, so fall back to MADV_DONTNEED.

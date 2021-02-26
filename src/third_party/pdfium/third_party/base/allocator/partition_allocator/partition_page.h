@@ -19,6 +19,20 @@ namespace internal {
 
 struct PartitionRootBase;
 
+// PartitionPage::Free() defers unmapping a large page until the lock is
+// released. Callers of PartitionPage::Free() must invoke Run().
+// TODO(1061437): Reconsider once the new locking mechanism is implemented.
+struct DeferredUnmap {
+  void* ptr = nullptr;
+  size_t size = 0;
+  // In most cases there is no page to unmap and ptr == nullptr. This function
+  // is inlined to avoid the overhead of a function call in the common case.
+  ALWAYS_INLINE void Run();
+
+ private:
+  BASE_EXPORT NOINLINE void Unmap();
+};
+
 // Some notes on page states. A page can be in one of four major states:
 // 1) Active.
 // 2) Full.
@@ -62,8 +76,9 @@ struct PartitionPage {
   // Public API
 
   // Note the matching Alloc() functions are in PartitionPage.
-  BASE_EXPORT NOINLINE void FreeSlowPath();
-  ALWAYS_INLINE void Free(void* ptr);
+  // Callers must invoke DeferredUnmap::Run() after releasing the lock.
+  BASE_EXPORT NOINLINE DeferredUnmap FreeSlowPath() WARN_UNUSED_RESULT;
+  ALWAYS_INLINE DeferredUnmap Free(void* ptr) WARN_UNUSED_RESULT;
 
   void Decommit(PartitionRootBase* root);
   void DecommitIfPossible(PartitionRootBase* root);
@@ -121,7 +136,7 @@ ALWAYS_INLINE char* PartitionSuperPageToMetadataArea(char* ptr) {
   DCHECK(!(pointer_as_uint & kSuperPageOffsetMask));
   // The metadata area is exactly one system page (the guard page) into the
   // super page.
-  return reinterpret_cast<char*>(pointer_as_uint + kSystemPageSize);
+  return reinterpret_cast<char*>(pointer_as_uint + SystemPageSize());
 }
 
 ALWAYS_INLINE PartitionPage* PartitionPage::FromPointerNoAlignmentCheck(
@@ -130,11 +145,11 @@ ALWAYS_INLINE PartitionPage* PartitionPage::FromPointerNoAlignmentCheck(
   char* super_page_ptr =
       reinterpret_cast<char*>(pointer_as_uint & kSuperPageBaseMask);
   uintptr_t partition_page_index =
-      (pointer_as_uint & kSuperPageOffsetMask) >> kPartitionPageShift;
+      (pointer_as_uint & kSuperPageOffsetMask) >> PartitionPageShift();
   // Index 0 is invalid because it is the metadata and guard area and
   // the last index is invalid because it is a guard page.
   DCHECK(partition_page_index);
-  DCHECK(partition_page_index < kNumPartitionPagesPerSuperPage - 1);
+  DCHECK(partition_page_index < NumPartitionPagesPerSuperPage() - 1);
   PartitionPage* page = reinterpret_cast<PartitionPage*>(
       PartitionSuperPageToMetadataArea(super_page_ptr) +
       (partition_page_index << kPageMetadataShift));
@@ -154,20 +169,21 @@ ALWAYS_INLINE void* PartitionPage::ToPointer(const PartitionPage* page) {
 
   // A valid |page| must be past the first guard System page and within
   // the following metadata region.
-  DCHECK(super_page_offset > kSystemPageSize);
+  DCHECK(super_page_offset > SystemPageSize());
   // Must be less than total metadata region.
-  DCHECK(super_page_offset < kSystemPageSize + (kNumPartitionPagesPerSuperPage *
-                                                kPageMetadataSize));
+  DCHECK(super_page_offset <
+         SystemPageSize() +
+             (NumPartitionPagesPerSuperPage() * kPageMetadataSize));
   uintptr_t partition_page_index =
-      (super_page_offset - kSystemPageSize) >> kPageMetadataShift;
+      (super_page_offset - SystemPageSize()) >> kPageMetadataShift;
   // Index 0 is invalid because it is the superpage extent metadata and the
   // last index is invalid because the whole PartitionPage is set as guard
   // pages for the metadata region.
   DCHECK(partition_page_index);
-  DCHECK(partition_page_index < kNumPartitionPagesPerSuperPage - 1);
+  DCHECK(partition_page_index < NumPartitionPagesPerSuperPage() - 1);
   uintptr_t super_page_base = (pointer_as_uint & kSuperPageBaseMask);
   void* ret = reinterpret_cast<void*>(
-      super_page_base + (partition_page_index << kPartitionPageShift));
+      super_page_base + (partition_page_index << PartitionPageShift()));
   return ret;
 }
 
@@ -184,10 +200,10 @@ ALWAYS_INLINE const size_t* PartitionPage::get_raw_size_ptr() const {
   // For single-slot buckets which span more than one partition page, we
   // have some spare metadata space to store the raw allocation size. We
   // can use this to report better statistics.
-  if (bucket->slot_size <= kMaxSystemPagesPerSlotSpan * kSystemPageSize)
+  if (bucket->slot_size <= MaxSystemPagesPerSlotSpan() * SystemPageSize())
     return nullptr;
 
-  DCHECK((bucket->slot_size % kSystemPageSize) == 0);
+  DCHECK((bucket->slot_size % SystemPageSize()) == 0);
   DCHECK(bucket->is_direct_mapped() || bucket->get_slots_per_span() == 1);
 
   const PartitionPage* the_next_page = this + 1;
@@ -201,7 +217,7 @@ ALWAYS_INLINE size_t PartitionPage::get_raw_size() const {
   return 0;
 }
 
-ALWAYS_INLINE void PartitionPage::Free(void* ptr) {
+ALWAYS_INLINE DeferredUnmap PartitionPage::Free(void* ptr) {
 #if DCHECK_IS_ON()
   size_t slot_size = bucket->slot_size;
   const size_t raw_size = get_raw_size();
@@ -229,12 +245,13 @@ ALWAYS_INLINE void PartitionPage::Free(void* ptr) {
   freelist_head = entry;
   --num_allocated_slots;
   if (UNLIKELY(num_allocated_slots <= 0)) {
-    FreeSlowPath();
+    return FreeSlowPath();
   } else {
     // All single-slot allocations must go through the slow path to
     // correctly update the size metadata.
     DCHECK(get_raw_size() == 0);
   }
+  return {};
 }
 
 ALWAYS_INLINE bool PartitionPage::is_active() const {
@@ -285,6 +302,12 @@ ALWAYS_INLINE void PartitionPage::Reset() {
   DCHECK(num_unprovisioned_slots);
 
   next_page = nullptr;
+}
+
+ALWAYS_INLINE void DeferredUnmap::Run() {
+  if (UNLIKELY(ptr)) {
+    Unmap();
+  }
 }
 
 }  // namespace internal

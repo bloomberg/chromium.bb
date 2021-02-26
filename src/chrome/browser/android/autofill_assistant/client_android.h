@@ -12,12 +12,13 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/android/autofill_assistant/trigger_script_bridge_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android.h"
-#include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/device_context.h"
-#include "components/autofill_assistant/browser/service.h"
+#include "components/autofill_assistant/browser/service/access_token_fetcher.h"
+#include "components/autofill_assistant/browser/service/service.h"
 #include "components/autofill_assistant/browser/website_login_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -39,6 +40,8 @@ class ClientAndroid : public Client,
  public:
   ~ClientAndroid() override;
 
+  base::WeakPtr<ClientAndroid> GetWeakPtr();
+
   // Returns the corresponding Java AutofillAssistantClient.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
@@ -54,12 +57,22 @@ class ClientAndroid : public Client,
       const base::android::JavaParamRef<jobject>& jonboarding_coordinator,
       jboolean jonboarding_shown,
       jlong jservice);
-  void DestroyUI(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& jcaller);
+  void OnJavaDestroyUI(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& jcaller);
   void TransferUITo(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jobject>& jother_web_contents);
+
+  void StartTriggerScript(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jobject>& jdelegate,
+      const base::android::JavaParamRef<jstring>& jinitial_url,
+      const base::android::JavaParamRef<jstring>& jexperiment_ids,
+      const base::android::JavaParamRef<jobjectArray>& jparameter_names,
+      const base::android::JavaParamRef<jobjectArray>& jparameter_values,
+      jlong jservice_request_sender);
 
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
       JNIEnv* env,
@@ -102,14 +115,15 @@ class ClientAndroid : public Client,
   std::string GetChromeSignedInEmailAddress() const override;
   AccessTokenFetcher* GetAccessTokenFetcher() override;
   autofill::PersonalDataManager* GetPersonalDataManager() const override;
-  password_manager::PasswordManagerClient* GetPasswordManagerClient()
-      const override;
   WebsiteLoginManager* GetWebsiteLoginManager() const override;
   std::string GetLocale() const override;
   std::string GetCountryCode() const override;
   DeviceContext GetDeviceContext() const override;
+  bool IsAccessibilityEnabled() const override;
   content::WebContents* GetWebContents() const override;
   void Shutdown(Metrics::DropOutReason reason) override;
+  void RecordDropOut(Metrics::DropOutReason reason) override;
+  bool HasHadUI() const override;
 
   // Overrides AccessTokenFetcher
   void FetchAccessToken(
@@ -120,12 +134,14 @@ class ClientAndroid : public Client,
   friend class content::WebContentsUserData<ClientAndroid>;
 
   explicit ClientAndroid(content::WebContents* web_contents);
+
   void CreateController(std::unique_ptr<Service> service);
   void DestroyController();
   void AttachUI(
       const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
   bool NeedsUI();
   void OnFetchWebsiteActions(const base::android::JavaRef<jobject>& jcallback);
+  void SafeDestroyControllerAndUI(Metrics::DropOutReason reason);
 
   base::android::ScopedJavaLocalRef<jobjectArray>
   GetDirectActionsAsJavaArrayOfStrings(JNIEnv* env) const;
@@ -141,10 +157,6 @@ class ClientAndroid : public Client,
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   content::WebContents* web_contents_;
-  // Once initialized, the |password_manager_client_| is available while
-  // |web_contents_| is available.
-  mutable password_manager::PasswordManagerClient* password_manager_client_ =
-      nullptr;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   std::unique_ptr<Controller> controller_;
@@ -153,7 +165,13 @@ class ClientAndroid : public Client,
   // True if Start() was called. This turns on the tracking of dropouts.
   bool started_ = false;
 
+  // True if the UI was ever attached.
+  bool has_had_ui_ = false;
+
   std::unique_ptr<UiControllerAndroid> ui_controller_android_;
+
+  // Bridge that allows Java to start trigger scripts.
+  TriggerScriptBridgeAndroid trigger_script_bridge_;
 
   base::OnceCallback<void(bool, const std::string&)>
       fetch_access_token_callback_;

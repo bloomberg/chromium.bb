@@ -7,23 +7,27 @@
 #ifndef XFA_FXFA_PARSER_CXFA_NODEOWNER_H_
 #define XFA_FXFA_PARSER_CXFA_NODEOWNER_H_
 
-#include <memory>
 #include <vector>
 
-class CXFA_Node;
+#include "fxjs/gc/heap.h"
+#include "v8/include/cppgc/garbage-collected.h"
+#include "v8/include/cppgc/member.h"
+#include "v8/include/cppgc/visitor.h"
 
-class CXFA_NodeOwner {
+class CXFA_List;
+
+class CXFA_NodeOwner : public cppgc::GarbageCollected<CXFA_NodeOwner> {
  public:
-  virtual ~CXFA_NodeOwner();
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
+  ~CXFA_NodeOwner();
 
-  CXFA_Node* AddOwnedNode(std::unique_ptr<CXFA_Node> node);
-  bool IsBeingDestroyed() const { return is_being_destroyed_; }
+  void Trace(cppgc::Visitor* visitor) const;
+  void PersistList(CXFA_List* list);
 
- protected:
+ private:
   CXFA_NodeOwner();
 
-  bool is_being_destroyed_ = false;
-  std::vector<std::unique_ptr<CXFA_Node>> nodes_;
+  std::vector<cppgc::Member<CXFA_List>> lists_;
 };
 
 #endif  // XFA_FXFA_PARSER_CXFA_NODEOWNER_H_

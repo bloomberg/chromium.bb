@@ -16,14 +16,20 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "url/gurl.h"
 
@@ -46,11 +52,12 @@ base::Optional<std::string> ChromeHelpAppUIDelegate::OpenFeedbackDialog() {
 
 void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
     content::WebUIDataSource* source) {
-  source->AddLocalizedString("getHelpName", IDS_GENIUS_APP_NAME);
   source->AddString("appLocale", g_browser_process->GetApplicationLocale());
   // Add strings that can be pulled in.
   source->AddString("boardName", base::SysInfo::GetLsbReleaseBoard());
   source->AddString("chromeOSVersion", base::SysInfo::OperatingSystemVersion());
+  source->AddString("chromeVersion", chrome::kChromeVersion);
+  source->AddInteger("channel", static_cast<int>(chrome::GetChannel()));
   std::string customization_id;
   std::string hwid;
   chromeos::system::StatisticsProvider* provider =
@@ -61,7 +68,14 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
                                 &customization_id);
   provider->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid);
   source->AddString("customizationId", customization_id);
+  source->AddString("deviceName", ui::GetChromeOSDeviceName());
   source->AddString("hwid", hwid);
+
+  // Add any features that have been enabled.
+  source->AddBoolean("HelpAppReleaseNotes", true);
+  source->AddBoolean("HelpAppSearchServiceIntegration",
+                     base::FeatureList::IsEnabled(
+                         chromeos::features::kHelpAppSearchServiceIntegration));
 
   Profile* profile = Profile::FromWebUI(web_ui_);
   PrefService* pref_service = profile->GetPrefs();
@@ -70,6 +84,9 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
   source->AddBoolean(
       "shouldShowGetStarted",
       pref_service->GetBoolean(prefs::kHelpAppShouldShowGetStarted));
+  source->AddBoolean(
+      "shouldShowParentalControl",
+      pref_service->GetBoolean(prefs::kHelpAppShouldShowParentalControl));
   source->AddBoolean(
       "tabletModeDuringOOBE",
       pref_service->GetBoolean(prefs::kHelpAppTabletModeDuringOobe));
@@ -106,9 +123,15 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
   source->AddInteger("userType", user_manager->GetActiveUser()->GetType());
   source->AddBoolean("isEphemeralUser",
                      user_manager->IsCurrentUserNonCryptohomeDataEphemeral());
+}
 
-  // Hardcoding the version number of first 84 dev.
-  bool is_new_in_84 = profile->WasCreatedByVersionOrLater("84.0.4129.0");
-  // Show a notice that the app has changed to users that are not new.
-  source->AddBoolean("shouldShowMigrationNotice", !is_new_in_84);
+void ChromeHelpAppUIDelegate::ShowParentalControls() {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  // The "People" section of OS Settings contains parental controls.
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      profile, chromeos::settings::mojom::kPeopleSectionPath);
+}
+
+PrefService* ChromeHelpAppUIDelegate::GetLocalState() {
+  return g_browser_process->local_state();
 }

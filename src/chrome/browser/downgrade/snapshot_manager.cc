@@ -128,8 +128,7 @@ void MoveFolderForLaterDeletion(const base::FilePath& source,
     return;
   auto failure_count =
       MoveContents(source, base::GetUniquePath(target), ExclusionPredicate());
-  if (failure_count.has_value() &&
-      !base::DeleteFile(source, /*recursive=*/false)) {
+  if (failure_count.has_value() && !base::DeleteFile(source)) {
     failure_count = failure_count.value() + 1;
     // Report precise values rather than an exponentially bucketed
     // histogram. Bucket 0 means that the target directory could not be
@@ -167,14 +166,17 @@ void SnapshotManager::TakeSnapshot(const base::Version& version) {
 
   size_t success_count = 0;
   size_t error_count = 0;
-  auto record_success_error = [&success_count,
-                               &error_count](base::Optional<bool> success) {
+  auto record_success_error = [&success_count, &error_count](
+                                  base::Optional<bool> success,
+                                  SnapshotItemId id) {
     if (!success.has_value())
       return;
-    if (success.value())
+    if (success.value()) {
       ++success_count;
-    else
+    } else {
       ++error_count;
+      base::UmaHistogramEnumeration("Downgrade.TakeSnapshot.ItemFailure", id);
+    }
   };
 
   // Abort the snapshot if the snapshot directory could not be created.
@@ -189,7 +191,8 @@ void SnapshotManager::TakeSnapshot(const base::Version& version) {
   for (const auto& file : GetUserSnapshotItemDetails()) {
     record_success_error(
         CopyItemToSnapshotDirectory(base::FilePath(file.path), user_data_dir_,
-                                    snapshot_dir, file.is_directory));
+                                    snapshot_dir, file.is_directory),
+        file.id);
   }
 
   const auto profile_snapshot_item_details = GetProfileSnapshotItemDetails();
@@ -209,17 +212,20 @@ void SnapshotManager::TakeSnapshot(const base::Version& version) {
     }
     for (const auto& file : profile_snapshot_item_details) {
       record_success_error(CopyItemToSnapshotDirectory(
-          profile_dir.Append(file.path), user_data_dir_, snapshot_dir,
-          file.is_directory));
+                               profile_dir.Append(file.path), user_data_dir_,
+                               snapshot_dir, file.is_directory),
+                           file.id);
     }
   }
 
   // Copy the "Last Version" file to the snapshot directory last since it is the
   // file that determines, by its presence in the snapshot directory, if the
   // snapshot is complete.
-  record_success_error(CopyItemToSnapshotDirectory(
-      base::FilePath(kDowngradeLastVersionFile), user_data_dir_, snapshot_dir,
-      /*is_directory=*/false));
+  record_success_error(
+      CopyItemToSnapshotDirectory(base::FilePath(kDowngradeLastVersionFile),
+                                  user_data_dir_, snapshot_dir,
+                                  /*is_directory=*/false),
+      SnapshotItemId::kLastVersion);
 
   auto snapshot_result = SnapshotOperationResult::kFailure;
   if (error_count == 0)
@@ -307,7 +313,7 @@ void SnapshotManager::RestoreSnapshot(const base::Version& version) {
 
     auto last_version_file_path =
         snapshot_dir.Append(kDowngradeLastVersionFile);
-    base::DeleteFile(last_version_file_path, /*recursive=*/false);
+    base::DeleteFile(last_version_file_path);
 
     base::UmaHistogramBoolean(
         "Downgrade.RestoreSnapshot.CleanupAfterFailure.Result",
@@ -368,7 +374,7 @@ void SnapshotManager::PurgeInvalidAndOldSnapshots(
 void SnapshotManager::DeleteSnapshotDataForProfile(
     base::Time delete_begin,
     const base::FilePath& profile_base_name,
-    int remove_mask) {
+    uint64_t remove_mask) {
   using DataType = ChromeBrowsingDataRemoverDelegate;
 
   bool delete_all =
@@ -401,16 +407,15 @@ void SnapshotManager::DeleteSnapshotDataForProfile(
     // regardless of |delete_begin|, otherwise deletes the required files from
     // the snapshot if it was created after |delete_begin|.
     if (delete_all) {
-      base::DeleteFile(profile_absolute_path, /*recursive=*/true);
+      base::DeletePathRecursively(profile_absolute_path);
     } else if (delete_begin <= file_info.creation_time &&
                base::PathExists(profile_absolute_path)) {
       for (const auto& filename : files_to_delete) {
-        base::DeleteFile(profile_absolute_path.Append(filename),
-                         /*recursive=*/true);
+        base::DeletePathRecursively(profile_absolute_path.Append(filename));
       }
       // Non recursive deletion will fail if the directory is not empty. In this
       // case we only want to delete the directory if it is empty.
-      base::DeleteFile(profile_absolute_path, /*recursive=*/false);
+      base::DeleteFile(profile_absolute_path);
     }
   }
 }

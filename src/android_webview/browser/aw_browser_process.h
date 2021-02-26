@@ -9,9 +9,11 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
+#include "android_webview/browser/lifecycle/aw_contents_lifecycle_notifier.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_allowlist_manager.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
-#include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "base/feature_list.h"
+#include "components/power_metrics/android_battery_metrics.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/android/remote_database_manager.h"
@@ -26,10 +28,11 @@ namespace prefs {
 
 // Used for Kerberos authentication.
 extern const char kAuthAndroidNegotiateAccountType[];
-extern const char kAuthServerWhitelist[];
+extern const char kAuthServerAllowlist[];
 
 }  // namespace prefs
 
+class AwContentsLifecycleNotifier;
 class VisibilityMetricsLogger;
 
 class AwBrowserProcess {
@@ -56,7 +59,7 @@ class AwBrowserProcess {
 
   // InitSafeBrowsing must be called first.
   // Called on UI and IO threads.
-  AwSafeBrowsingWhitelistManager* GetSafeBrowsingWhitelistManager() const;
+  AwSafeBrowsingAllowlistManager* GetSafeBrowsingAllowlistManager() const;
 
   // InitSafeBrowsing must be called first.
   // Called on UI and IO threads.
@@ -69,11 +72,18 @@ class AwBrowserProcess {
 
   void PreMainMessageLoopRun();
 
+  static void TriggerMinidumpUploading();
+
  private:
   void CreateSafeBrowsingUIManager();
-  void CreateSafeBrowsingWhitelistManager();
+  void CreateSafeBrowsingAllowlistManager();
 
   void OnAuthPrefsChanged();
+
+  void OnLoseForeground();
+
+  // Must be destroyed after |local_state_|.
+  std::unique_ptr<AwBrowserPolicyConnector> browser_policy_connector_;
 
   // If non-null, this object holds a pref store that will be taken by
   // AwBrowserProcess to create the |local_state_|.
@@ -81,8 +91,6 @@ class AwBrowserProcess {
   AwFeatureListCreator* aw_feature_list_creator_;
 
   std::unique_ptr<PrefService> local_state_;
-
-  std::unique_ptr<AwBrowserPolicyConnector> browser_policy_connector_;
 
   // Accessed on both UI and IO threads.
   scoped_refptr<AwSafeBrowsingUIManager> safe_browsing_ui_manager_;
@@ -97,12 +105,14 @@ class AwBrowserProcess {
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  // TODO(amalova): Consider to make WhitelistManager per-profile.
+  // TODO(amalova): Consider to make AllowlistManager per-profile.
   // Accessed on UI and IO threads.
-  std::unique_ptr<AwSafeBrowsingWhitelistManager>
-      safe_browsing_whitelist_manager_;
+  std::unique_ptr<AwSafeBrowsingAllowlistManager>
+      safe_browsing_allowlist_manager_;
 
   std::unique_ptr<VisibilityMetricsLogger> visibility_metrics_logger_;
+  std::unique_ptr<power_metrics::AndroidBatteryMetrics> battery_metrics_;
+  std::unique_ptr<AwContentsLifecycleNotifier> aw_contents_lifecycle_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserProcess);
 };

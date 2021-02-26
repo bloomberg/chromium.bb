@@ -187,6 +187,27 @@ const char* QuicErrorCodeToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_QPACK_DECOMPRESSION_FAILED);
     RETURN_STRING_LITERAL(QUIC_QPACK_ENCODER_STREAM_ERROR);
     RETURN_STRING_LITERAL(QUIC_QPACK_DECODER_STREAM_ERROR);
+    RETURN_STRING_LITERAL(QUIC_QPACK_ENCODER_STREAM_INTEGER_TOO_LARGE);
+    RETURN_STRING_LITERAL(QUIC_QPACK_ENCODER_STREAM_STRING_LITERAL_TOO_LONG);
+    RETURN_STRING_LITERAL(QUIC_QPACK_ENCODER_STREAM_HUFFMAN_ENCODING_ERROR);
+    RETURN_STRING_LITERAL(QUIC_QPACK_ENCODER_STREAM_INVALID_STATIC_ENTRY);
+    RETURN_STRING_LITERAL(QUIC_QPACK_ENCODER_STREAM_ERROR_INSERTING_STATIC);
+    RETURN_STRING_LITERAL(
+        QUIC_QPACK_ENCODER_STREAM_INSERTION_INVALID_RELATIVE_INDEX);
+    RETURN_STRING_LITERAL(
+        QUIC_QPACK_ENCODER_STREAM_INSERTION_DYNAMIC_ENTRY_NOT_FOUND);
+    RETURN_STRING_LITERAL(QUIC_QPACK_ENCODER_STREAM_ERROR_INSERTING_DYNAMIC);
+    RETURN_STRING_LITERAL(QUIC_QPACK_ENCODER_STREAM_ERROR_INSERTING_LITERAL);
+    RETURN_STRING_LITERAL(
+        QUIC_QPACK_ENCODER_STREAM_DUPLICATE_INVALID_RELATIVE_INDEX);
+    RETURN_STRING_LITERAL(
+        QUIC_QPACK_ENCODER_STREAM_DUPLICATE_DYNAMIC_ENTRY_NOT_FOUND);
+    RETURN_STRING_LITERAL(QUIC_QPACK_ENCODER_STREAM_SET_DYNAMIC_TABLE_CAPACITY);
+    RETURN_STRING_LITERAL(QUIC_QPACK_DECODER_STREAM_INTEGER_TOO_LARGE);
+    RETURN_STRING_LITERAL(QUIC_QPACK_DECODER_STREAM_INVALID_ZERO_INCREMENT);
+    RETURN_STRING_LITERAL(QUIC_QPACK_DECODER_STREAM_INCREMENT_OVERFLOW);
+    RETURN_STRING_LITERAL(QUIC_QPACK_DECODER_STREAM_IMPOSSIBLE_INSERT_COUNT);
+    RETURN_STRING_LITERAL(QUIC_QPACK_DECODER_STREAM_INCORRECT_ACKNOWLEDGEMENT);
     RETURN_STRING_LITERAL(QUIC_STREAM_DATA_BEYOND_CLOSE_OFFSET);
     RETURN_STRING_LITERAL(QUIC_STREAM_MULTIPLE_OFFSET);
     RETURN_STRING_LITERAL(QUIC_HTTP_FRAME_TOO_LARGE);
@@ -203,6 +224,12 @@ const char* QuicErrorCodeToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_HTTP_DUPLICATE_SETTING_IDENTIFIER);
     RETURN_STRING_LITERAL(QUIC_HTTP_INVALID_MAX_PUSH_ID);
     RETURN_STRING_LITERAL(QUIC_HTTP_STREAM_LIMIT_TOO_LOW);
+    RETURN_STRING_LITERAL(QUIC_HTTP_ZERO_RTT_RESUMPTION_SETTINGS_MISMATCH);
+    RETURN_STRING_LITERAL(QUIC_HTTP_ZERO_RTT_REJECTION_SETTINGS_MISMATCH);
+    RETURN_STRING_LITERAL(QUIC_HTTP_GOAWAY_INVALID_STREAM_ID);
+    RETURN_STRING_LITERAL(QUIC_HTTP_GOAWAY_ID_LARGER_THAN_PREVIOUS);
+    RETURN_STRING_LITERAL(QUIC_HTTP_RECEIVE_SPDY_SETTING);
+    RETURN_STRING_LITERAL(QUIC_HTTP_RECEIVE_SPDY_FRAME);
     RETURN_STRING_LITERAL(QUIC_HPACK_INDEX_VARINT_ERROR);
     RETURN_STRING_LITERAL(QUIC_HPACK_NAME_LENGTH_VARINT_ERROR);
     RETURN_STRING_LITERAL(QUIC_HPACK_VALUE_LENGTH_VARINT_ERROR);
@@ -221,6 +248,14 @@ const char* QuicErrorCodeToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_HPACK_TRUNCATED_BLOCK);
     RETURN_STRING_LITERAL(QUIC_HPACK_FRAGMENT_TOO_LONG);
     RETURN_STRING_LITERAL(QUIC_HPACK_COMPRESSED_HEADER_SIZE_EXCEEDS_LIMIT);
+    RETURN_STRING_LITERAL(QUIC_ZERO_RTT_UNRETRANSMITTABLE);
+    RETURN_STRING_LITERAL(QUIC_ZERO_RTT_REJECTION_LIMIT_REDUCED);
+    RETURN_STRING_LITERAL(QUIC_ZERO_RTT_RESUMPTION_LIMIT_REDUCED);
+    RETURN_STRING_LITERAL(QUIC_SILENT_IDLE_TIMEOUT);
+    RETURN_STRING_LITERAL(QUIC_MISSING_WRITE_KEYS);
+    RETURN_STRING_LITERAL(QUIC_KEY_UPDATE_ERROR);
+    RETURN_STRING_LITERAL(QUIC_AEAD_LIMIT_REACHED);
+    RETURN_STRING_LITERAL(QUIC_MAX_AGE_TIMEOUT);
 
     RETURN_STRING_LITERAL(QUIC_LAST_ERROR);
     // Intentionally have no default case, so we'll break the build
@@ -259,6 +294,8 @@ std::string QuicIetfTransportErrorCodeString(QuicIetfTransportErrorCodes c) {
     RETURN_STRING_LITERAL(PROTOCOL_VIOLATION);
     RETURN_STRING_LITERAL(INVALID_TOKEN);
     RETURN_STRING_LITERAL(CRYPTO_BUFFER_EXCEEDED);
+    RETURN_STRING_LITERAL(KEY_UPDATE_ERROR);
+    RETURN_STRING_LITERAL(AEAD_LIMIT_REACHED);
     // CRYPTO_ERROR is handled in the if before this switch, these cases do not
     // change behavior and are only here to make the compiler happy.
     case CRYPTO_ERROR_FIRST:
@@ -354,6 +391,8 @@ QuicErrorCodeToIetfMapping QuicErrorCodeToTransportErrorCode(
     case QUIC_DECOMPRESSION_FAILURE:
       return {true, static_cast<uint64_t>(PROTOCOL_VIOLATION)};
     case QUIC_NETWORK_IDLE_TIMEOUT:
+      return {true, static_cast<uint64_t>(NO_IETF_QUIC_ERROR)};
+    case QUIC_SILENT_IDLE_TIMEOUT:
       return {true, static_cast<uint64_t>(NO_IETF_QUIC_ERROR)};
     case QUIC_HANDSHAKE_TIMEOUT:
       return {true, static_cast<uint64_t>(NO_IETF_QUIC_ERROR)};
@@ -526,6 +565,57 @@ QuicErrorCodeToIetfMapping QuicErrorCodeToTransportErrorCode(
     case QUIC_QPACK_DECODER_STREAM_ERROR:
       return {false, static_cast<uint64_t>(
                          QuicHttpQpackErrorCode::DECODER_STREAM_ERROR)};
+    case QUIC_QPACK_ENCODER_STREAM_INTEGER_TOO_LARGE:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::ENCODER_STREAM_ERROR)};
+    case QUIC_QPACK_ENCODER_STREAM_STRING_LITERAL_TOO_LONG:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::ENCODER_STREAM_ERROR)};
+    case QUIC_QPACK_ENCODER_STREAM_HUFFMAN_ENCODING_ERROR:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::ENCODER_STREAM_ERROR)};
+    case QUIC_QPACK_ENCODER_STREAM_INVALID_STATIC_ENTRY:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::ENCODER_STREAM_ERROR)};
+    case QUIC_QPACK_ENCODER_STREAM_ERROR_INSERTING_STATIC:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::ENCODER_STREAM_ERROR)};
+    case QUIC_QPACK_ENCODER_STREAM_INSERTION_INVALID_RELATIVE_INDEX:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::ENCODER_STREAM_ERROR)};
+    case QUIC_QPACK_ENCODER_STREAM_INSERTION_DYNAMIC_ENTRY_NOT_FOUND:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::ENCODER_STREAM_ERROR)};
+    case QUIC_QPACK_ENCODER_STREAM_ERROR_INSERTING_DYNAMIC:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::ENCODER_STREAM_ERROR)};
+    case QUIC_QPACK_ENCODER_STREAM_ERROR_INSERTING_LITERAL:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::ENCODER_STREAM_ERROR)};
+    case QUIC_QPACK_ENCODER_STREAM_DUPLICATE_INVALID_RELATIVE_INDEX:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::ENCODER_STREAM_ERROR)};
+    case QUIC_QPACK_ENCODER_STREAM_DUPLICATE_DYNAMIC_ENTRY_NOT_FOUND:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::ENCODER_STREAM_ERROR)};
+    case QUIC_QPACK_ENCODER_STREAM_SET_DYNAMIC_TABLE_CAPACITY:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::ENCODER_STREAM_ERROR)};
+    case QUIC_QPACK_DECODER_STREAM_INTEGER_TOO_LARGE:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::DECODER_STREAM_ERROR)};
+    case QUIC_QPACK_DECODER_STREAM_INVALID_ZERO_INCREMENT:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::DECODER_STREAM_ERROR)};
+    case QUIC_QPACK_DECODER_STREAM_INCREMENT_OVERFLOW:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::DECODER_STREAM_ERROR)};
+    case QUIC_QPACK_DECODER_STREAM_IMPOSSIBLE_INSERT_COUNT:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::DECODER_STREAM_ERROR)};
+    case QUIC_QPACK_DECODER_STREAM_INCORRECT_ACKNOWLEDGEMENT:
+      return {false, static_cast<uint64_t>(
+                         QuicHttpQpackErrorCode::DECODER_STREAM_ERROR)};
     case QUIC_STREAM_DATA_BEYOND_CLOSE_OFFSET:
       return {true, static_cast<uint64_t>(PROTOCOL_VIOLATION)};
     case QUIC_STREAM_MULTIPLE_OFFSET:
@@ -567,6 +657,19 @@ QuicErrorCodeToIetfMapping QuicErrorCodeToTransportErrorCode(
     case QUIC_HTTP_STREAM_LIMIT_TOO_LOW:
       return {false, static_cast<uint64_t>(
                          QuicHttp3ErrorCode::GENERAL_PROTOCOL_ERROR)};
+    case QUIC_HTTP_ZERO_RTT_RESUMPTION_SETTINGS_MISMATCH:
+      return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::SETTINGS_ERROR)};
+    case QUIC_HTTP_ZERO_RTT_REJECTION_SETTINGS_MISMATCH:
+      return {true, static_cast<uint64_t>(INTERNAL_ERROR)};
+    case QUIC_HTTP_GOAWAY_INVALID_STREAM_ID:
+      return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::ID_ERROR)};
+    case QUIC_HTTP_GOAWAY_ID_LARGER_THAN_PREVIOUS:
+      return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::ID_ERROR)};
+    case QUIC_HTTP_RECEIVE_SPDY_SETTING:
+      return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::SETTINGS_ERROR)};
+    case QUIC_HTTP_RECEIVE_SPDY_FRAME:
+      return {false,
+              static_cast<uint64_t>(QuicHttp3ErrorCode::FRAME_UNEXPECTED)};
     case QUIC_HPACK_INDEX_VARINT_ERROR:
       return {true, static_cast<uint64_t>(INTERNAL_ERROR)};
     case QUIC_HPACK_NAME_LENGTH_VARINT_ERROR:
@@ -599,6 +702,20 @@ QuicErrorCodeToIetfMapping QuicErrorCodeToTransportErrorCode(
       return {true, static_cast<uint64_t>(INTERNAL_ERROR)};
     case QUIC_HPACK_COMPRESSED_HEADER_SIZE_EXCEEDS_LIMIT:
       return {true, static_cast<uint64_t>(INTERNAL_ERROR)};
+    case QUIC_ZERO_RTT_UNRETRANSMITTABLE:
+      return {true, static_cast<uint64_t>(INTERNAL_ERROR)};
+    case QUIC_ZERO_RTT_REJECTION_LIMIT_REDUCED:
+      return {true, static_cast<uint64_t>(INTERNAL_ERROR)};
+    case QUIC_ZERO_RTT_RESUMPTION_LIMIT_REDUCED:
+      return {true, static_cast<uint64_t>(PROTOCOL_VIOLATION)};
+    case QUIC_MISSING_WRITE_KEYS:
+      return {true, static_cast<uint64_t>(INTERNAL_ERROR)};
+    case QUIC_KEY_UPDATE_ERROR:
+      return {true, static_cast<uint64_t>(KEY_UPDATE_ERROR)};
+    case QUIC_AEAD_LIMIT_REACHED:
+      return {true, static_cast<uint64_t>(AEAD_LIMIT_REACHED)};
+    case QUIC_MAX_AGE_TIMEOUT:
+      return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::INTERNAL_ERROR)};
     case QUIC_LAST_ERROR:
       return {false, static_cast<uint64_t>(QUIC_LAST_ERROR)};
   }

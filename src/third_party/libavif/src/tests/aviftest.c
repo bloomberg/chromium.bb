@@ -11,6 +11,7 @@
 
 #include "testcase.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -94,9 +95,9 @@ static const char * nextFilename(const char * parentDir, const char * extension,
 }
 #endif
 
-static int generateTests(const char * dataDir)
+static int generateEncodeDecodeTests(const char * dataDir)
 {
-    printf("AVIF Test Suite: Generating Tests...\n");
+    printf("AVIF Test Suite: Generating Encode/Decode Tests...\n");
 
     int retCode = 0;
     cJSON * tests = cJSON_CreateArray();
@@ -171,10 +172,9 @@ cleanup:
     return retCode;
 }
 
-static int runTests(const char * dataDir, const char * testFilter)
+static int runEncodeDecodeTests(const char * dataDir, const char * testFilter)
 {
-    (void)testFilter;
-    printf("AVIF Test Suite: Running Tests...\n");
+    printf("AVIF Test Suite: Running Encode/Decode Tests...\n");
 
     char testJSONFilename[2048];
     snprintf(testJSONFilename, sizeof(testJSONFilename), "%s/tests.json", dataDir);
@@ -254,12 +254,186 @@ static int runTests(const char * dataDir, const char * testFilter)
     return (failedCount == 0) ? 0 : 1;
 }
 
+typedef struct avifIOTestReader
+{
+    avifIO io;
+    avifROData rodata;
+    size_t availableBytes;
+} avifIOTestReader;
+
+static avifResult avifIOTestReaderRead(struct avifIO * io, uint32_t readFlags, uint64_t offset, size_t size, avifROData * out)
+{
+    // printf("avifIOTestReaderRead offset %" PRIu64 " size %zu\n", offset, size);
+
+    if (readFlags != 0) {
+        // Unsupported readFlags
+        return AVIF_RESULT_IO_ERROR;
+    }
+
+    avifIOTestReader * reader = (avifIOTestReader *)io;
+
+    // Sanitize/clamp incoming request
+    if (offset > reader->rodata.size) {
+        // The offset is past the end of the buffer.
+        return AVIF_RESULT_IO_ERROR;
+    }
+    if (offset == reader->rodata.size) {
+        // The parser is *exactly* at EOF: return a 0-size pointer to any valid buffer
+        offset = 0;
+        size = 0;
+    }
+    uint64_t availableSize = reader->rodata.size - offset;
+    if (size > availableSize) {
+        size = (size_t)availableSize;
+    }
+
+    if (offset > reader->availableBytes) {
+        return AVIF_RESULT_WAITING_ON_IO;
+    }
+    if (size > (reader->availableBytes - offset)) {
+        return AVIF_RESULT_WAITING_ON_IO;
+    }
+
+    out->data = reader->rodata.data + offset;
+    out->size = size;
+    return AVIF_RESULT_OK;
+}
+
+static void avifIOTestReaderDestroy(struct avifIO * io)
+{
+    avifFree(io);
+}
+
+static avifIOTestReader * avifIOCreateTestReader(const uint8_t * data, size_t size)
+{
+    avifIOTestReader * reader = avifAlloc(sizeof(avifIOTestReader));
+    memset(reader, 0, sizeof(avifIOTestReader));
+    reader->io.destroy = avifIOTestReaderDestroy;
+    reader->io.read = avifIOTestReaderRead;
+    reader->io.sizeHint = size;
+    reader->io.persistent = AVIF_TRUE;
+    reader->rodata.data = data;
+    reader->rodata.size = size;
+    return reader;
+}
+
+#define FILENAME_MAX_LENGTH 2047
+
+static int runIOTests(const char * dataDir)
+{
+    printf("AVIF Test Suite: Running IO Tests...\n");
+
+    static const char * ioSuffix = "/io/";
+
+    char ioDir[FILENAME_MAX_LENGTH + 1];
+    size_t dataDirLen = strlen(dataDir);
+    size_t ioSuffixLen = strlen(ioSuffix);
+
+    if ((dataDirLen + ioSuffixLen) > FILENAME_MAX_LENGTH) {
+        printf("Path too long: %s\n", dataDir);
+        return 1;
+    }
+    strcpy(ioDir, dataDir);
+    strcat(ioDir, ioSuffix);
+    size_t ioDirLen = strlen(ioDir);
+
+    int retCode = 0;
+
+    NextFilenameData nfd;
+    memset(&nfd, 0, sizeof(nfd));
+    avifRWData fileBuffer = AVIF_DATA_EMPTY;
+    const char * filename = nextFilename(ioDir, "avif", &nfd);
+    for (; filename != NULL; filename = nextFilename(ioDir, "avif", &nfd)) {
+        char fullFilename[FILENAME_MAX_LENGTH + 1];
+        size_t filenameLen = strlen(filename);
+        if ((ioDirLen + filenameLen) > FILENAME_MAX_LENGTH) {
+            printf("Path too long: %s\n", filename);
+            return 1;
+        }
+        strcpy(fullFilename, ioDir);
+        strcat(fullFilename, filename);
+
+        FILE * f = fopen(fullFilename, "rb");
+        if (!f) {
+            printf("Can't open for read: %s\n", filename);
+            return 1;
+        }
+        fseek(f, 0, SEEK_END);
+        size_t fileSize = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        avifRWDataRealloc(&fileBuffer, fileSize);
+        if (fread(fileBuffer.data, 1, fileSize, f) != fileSize) {
+            printf("Can't read entire file: %s\n", filename);
+            fclose(f);
+            return 1;
+        }
+        fclose(f);
+
+        avifDecoder * decoder = avifDecoderCreate();
+        avifIOTestReader * io = avifIOCreateTestReader(fileBuffer.data, fileBuffer.size);
+        avifDecoderSetIO(decoder, (avifIO *)io);
+
+        for (int pass = 0; pass < 4; ++pass) {
+            io->io.persistent = ((pass % 2) == 0);
+            decoder->ignoreExif = decoder->ignoreXMP = (pass < 2);
+
+            // Slowly pretend to have streamed-in / downloaded more and more bytes
+            avifResult parseResult = AVIF_RESULT_UNKNOWN_ERROR;
+            for (io->availableBytes = 0; io->availableBytes <= io->io.sizeHint; ++io->availableBytes) {
+                parseResult = avifDecoderParse(decoder);
+                if (parseResult == AVIF_RESULT_WAITING_ON_IO) {
+                    continue;
+                }
+                if (parseResult != AVIF_RESULT_OK) {
+                    retCode = 1;
+                }
+
+                printf("File: [%s @ %zu / %" PRIu64 " bytes, %s, %s] parse returned: %s\n",
+                       filename,
+                       io->availableBytes,
+                       io->io.sizeHint,
+                       io->io.persistent ? "Persistent" : "NonPersistent",
+                       decoder->ignoreExif ? "IgnoreMetadata" : "Metadata",
+                       avifResultToString(parseResult));
+                break;
+            }
+
+            if (parseResult == AVIF_RESULT_OK) {
+                for (; io->availableBytes <= io->io.sizeHint; ++io->availableBytes) {
+                    avifResult nextImageResult = avifDecoderNextImage(decoder);
+                    if (nextImageResult == AVIF_RESULT_WAITING_ON_IO) {
+                        continue;
+                    }
+                    if (nextImageResult != AVIF_RESULT_OK) {
+                        retCode = 1;
+                    }
+
+                    printf("File: [%s @ %zu / %" PRIu64 " bytes, %s, %s] nextImage returned: %s\n",
+                           filename,
+                           io->availableBytes,
+                           io->io.sizeHint,
+                           io->io.persistent ? "Persistent" : "NonPersistent",
+                           decoder->ignoreExif ? "IgnoreMetadata" : "Metadata",
+                           avifResultToString(nextImageResult));
+                    break;
+                }
+            }
+        }
+
+        avifDecoderDestroy(decoder);
+    }
+
+    avifRWDataFree(&fileBuffer);
+    return retCode;
+}
+
 static void syntax(void)
 {
     fprintf(stderr,
             "Syntax: aviftest [options] dataDir [testFilter]\n"
             "Options:\n"
-            "    -g : Generate tests\n");
+            "    -g : Generate Encode/Decode tests\n"
+            "    --io-only : Run IO tests only\n");
 }
 
 int main(int argc, char * argv[])
@@ -267,6 +441,7 @@ int main(int argc, char * argv[])
     const char * dataDir = NULL;
     const char * testFilter = NULL;
     avifBool generate = AVIF_FALSE;
+    avifBool ioOnly = AVIF_FALSE;
 
 #ifdef WIN32_MEMORY_LEAK_DETECTION
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -278,6 +453,8 @@ int main(int argc, char * argv[])
         char * arg = argv[i];
         if (!strcmp(arg, "-g")) {
             generate = AVIF_TRUE;
+        } else if (!strcmp(arg, "--io-only")) {
+            ioOnly = AVIF_TRUE;
         } else if (dataDir == NULL) {
             dataDir = arg;
         } else if (testFilter == NULL) {
@@ -305,9 +482,12 @@ int main(int argc, char * argv[])
 
     int retCode = 1;
     if (generate) {
-        retCode = generateTests(dataDir);
+        retCode = generateEncodeDecodeTests(dataDir);
     } else {
-        retCode = runTests(dataDir, testFilter);
+        retCode = runIOTests(dataDir);
+        if ((retCode == 0) && !ioOnly) {
+            retCode = runEncodeDecodeTests(dataDir, testFilter);
+        }
     }
 
     if (retCode == 0) {

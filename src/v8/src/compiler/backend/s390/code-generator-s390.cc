@@ -643,184 +643,184 @@ static inline int AssembleUnaryOp(Instruction* instr, _R _r, _M _m, _I _i) {
     __ MovFromFloatResult(i.OutputDoubleRegister());                           \
   } while (0)
 
-#define ASSEMBLE_DOUBLE_MAX()                                          \
-  do {                                                                 \
-    DoubleRegister left_reg = i.InputDoubleRegister(0);                \
-    DoubleRegister right_reg = i.InputDoubleRegister(1);               \
-    DoubleRegister result_reg = i.OutputDoubleRegister();              \
-    Label check_nan_left, check_zero, return_left, return_right, done; \
-    __ cdbr(left_reg, right_reg);                                      \
-    __ bunordered(&check_nan_left, Label::kNear);                      \
-    __ beq(&check_zero);                                               \
-    __ bge(&return_left, Label::kNear);                                \
-    __ b(&return_right, Label::kNear);                                 \
-                                                                       \
-    __ bind(&check_zero);                                              \
-    __ lzdr(kDoubleRegZero);                                           \
-    __ cdbr(left_reg, kDoubleRegZero);                                 \
-    /* left == right != 0. */                                          \
-    __ bne(&return_left, Label::kNear);                                \
-    /* At this point, both left and right are either 0 or -0. */       \
-    /* N.B. The following works because +0 + -0 == +0 */               \
-    /* For max we want logical-and of sign bit: (L + R) */             \
-    __ ldr(result_reg, left_reg);                                      \
-    __ adbr(result_reg, right_reg);                                    \
-    __ b(&done, Label::kNear);                                         \
-                                                                       \
-    __ bind(&check_nan_left);                                          \
-    __ cdbr(left_reg, left_reg);                                       \
-    /* left == NaN. */                                                 \
-    __ bunordered(&return_left, Label::kNear);                         \
-                                                                       \
-    __ bind(&return_right);                                            \
-    if (right_reg != result_reg) {                                     \
-      __ ldr(result_reg, right_reg);                                   \
-    }                                                                  \
-    __ b(&done, Label::kNear);                                         \
-                                                                       \
-    __ bind(&return_left);                                             \
-    if (left_reg != result_reg) {                                      \
-      __ ldr(result_reg, left_reg);                                    \
-    }                                                                  \
-    __ bind(&done);                                                    \
+#define ASSEMBLE_DOUBLE_MAX()                                           \
+  do {                                                                  \
+    DoubleRegister left_reg = i.InputDoubleRegister(0);                 \
+    DoubleRegister right_reg = i.InputDoubleRegister(1);                \
+    DoubleRegister result_reg = i.OutputDoubleRegister();               \
+    Label check_zero, return_left, return_right, return_nan, done;      \
+    __ cdbr(left_reg, right_reg);                                       \
+    __ bunordered(&return_nan, Label::kNear);                           \
+    __ beq(&check_zero);                                                \
+    __ bge(&return_left, Label::kNear);                                 \
+    __ b(&return_right, Label::kNear);                                  \
+                                                                        \
+    __ bind(&check_zero);                                               \
+    __ lzdr(kDoubleRegZero);                                            \
+    __ cdbr(left_reg, kDoubleRegZero);                                  \
+    /* left == right != 0. */                                           \
+    __ bne(&return_left, Label::kNear);                                 \
+    /* At this point, both left and right are either 0 or -0. */        \
+    /* N.B. The following works because +0 + -0 == +0 */                \
+    /* For max we want logical-and of sign bit: (L + R) */              \
+    __ ldr(result_reg, left_reg);                                       \
+    __ adbr(result_reg, right_reg);                                     \
+    __ b(&done, Label::kNear);                                          \
+                                                                        \
+    __ bind(&return_nan);                                               \
+    /* If left or right are NaN, adbr propagates the appropriate one.*/ \
+    __ adbr(left_reg, right_reg);                                       \
+    __ b(&return_left, Label::kNear);                                   \
+                                                                        \
+    __ bind(&return_right);                                             \
+    if (right_reg != result_reg) {                                      \
+      __ ldr(result_reg, right_reg);                                    \
+    }                                                                   \
+    __ b(&done, Label::kNear);                                          \
+                                                                        \
+    __ bind(&return_left);                                              \
+    if (left_reg != result_reg) {                                       \
+      __ ldr(result_reg, left_reg);                                     \
+    }                                                                   \
+    __ bind(&done);                                                     \
   } while (0)
 
-#define ASSEMBLE_DOUBLE_MIN()                                          \
-  do {                                                                 \
-    DoubleRegister left_reg = i.InputDoubleRegister(0);                \
-    DoubleRegister right_reg = i.InputDoubleRegister(1);               \
-    DoubleRegister result_reg = i.OutputDoubleRegister();              \
-    Label check_nan_left, check_zero, return_left, return_right, done; \
-    __ cdbr(left_reg, right_reg);                                      \
-    __ bunordered(&check_nan_left, Label::kNear);                      \
-    __ beq(&check_zero);                                               \
-    __ ble(&return_left, Label::kNear);                                \
-    __ b(&return_right, Label::kNear);                                 \
-                                                                       \
-    __ bind(&check_zero);                                              \
-    __ lzdr(kDoubleRegZero);                                           \
-    __ cdbr(left_reg, kDoubleRegZero);                                 \
-    /* left == right != 0. */                                          \
-    __ bne(&return_left, Label::kNear);                                \
-    /* At this point, both left and right are either 0 or -0. */       \
-    /* N.B. The following works because +0 + -0 == +0 */               \
-    /* For min we want logical-or of sign bit: -(-L + -R) */           \
-    __ lcdbr(left_reg, left_reg);                                      \
-    __ ldr(result_reg, left_reg);                                      \
-    if (left_reg == right_reg) {                                       \
-      __ adbr(result_reg, right_reg);                                  \
-    } else {                                                           \
-      __ sdbr(result_reg, right_reg);                                  \
-    }                                                                  \
-    __ lcdbr(result_reg, result_reg);                                  \
-    __ b(&done, Label::kNear);                                         \
-                                                                       \
-    __ bind(&check_nan_left);                                          \
-    __ cdbr(left_reg, left_reg);                                       \
-    /* left == NaN. */                                                 \
-    __ bunordered(&return_left, Label::kNear);                         \
-                                                                       \
-    __ bind(&return_right);                                            \
-    if (right_reg != result_reg) {                                     \
-      __ ldr(result_reg, right_reg);                                   \
-    }                                                                  \
-    __ b(&done, Label::kNear);                                         \
-                                                                       \
-    __ bind(&return_left);                                             \
-    if (left_reg != result_reg) {                                      \
-      __ ldr(result_reg, left_reg);                                    \
-    }                                                                  \
-    __ bind(&done);                                                    \
+#define ASSEMBLE_DOUBLE_MIN()                                           \
+  do {                                                                  \
+    DoubleRegister left_reg = i.InputDoubleRegister(0);                 \
+    DoubleRegister right_reg = i.InputDoubleRegister(1);                \
+    DoubleRegister result_reg = i.OutputDoubleRegister();               \
+    Label check_zero, return_left, return_right, return_nan, done;      \
+    __ cdbr(left_reg, right_reg);                                       \
+    __ bunordered(&return_nan, Label::kNear);                           \
+    __ beq(&check_zero);                                                \
+    __ ble(&return_left, Label::kNear);                                 \
+    __ b(&return_right, Label::kNear);                                  \
+                                                                        \
+    __ bind(&check_zero);                                               \
+    __ lzdr(kDoubleRegZero);                                            \
+    __ cdbr(left_reg, kDoubleRegZero);                                  \
+    /* left == right != 0. */                                           \
+    __ bne(&return_left, Label::kNear);                                 \
+    /* At this point, both left and right are either 0 or -0. */        \
+    /* N.B. The following works because +0 + -0 == +0 */                \
+    /* For min we want logical-or of sign bit: -(-L + -R) */            \
+    __ lcdbr(left_reg, left_reg);                                       \
+    __ ldr(result_reg, left_reg);                                       \
+    if (left_reg == right_reg) {                                        \
+      __ adbr(result_reg, right_reg);                                   \
+    } else {                                                            \
+      __ sdbr(result_reg, right_reg);                                   \
+    }                                                                   \
+    __ lcdbr(result_reg, result_reg);                                   \
+    __ b(&done, Label::kNear);                                          \
+                                                                        \
+    __ bind(&return_nan);                                               \
+    /* If left or right are NaN, adbr propagates the appropriate one.*/ \
+    __ adbr(left_reg, right_reg);                                       \
+    __ b(&return_left, Label::kNear);                                   \
+                                                                        \
+    __ bind(&return_right);                                             \
+    if (right_reg != result_reg) {                                      \
+      __ ldr(result_reg, right_reg);                                    \
+    }                                                                   \
+    __ b(&done, Label::kNear);                                          \
+                                                                        \
+    __ bind(&return_left);                                              \
+    if (left_reg != result_reg) {                                       \
+      __ ldr(result_reg, left_reg);                                     \
+    }                                                                   \
+    __ bind(&done);                                                     \
   } while (0)
 
-#define ASSEMBLE_FLOAT_MAX()                                           \
-  do {                                                                 \
-    DoubleRegister left_reg = i.InputDoubleRegister(0);                \
-    DoubleRegister right_reg = i.InputDoubleRegister(1);               \
-    DoubleRegister result_reg = i.OutputDoubleRegister();              \
-    Label check_nan_left, check_zero, return_left, return_right, done; \
-    __ cebr(left_reg, right_reg);                                      \
-    __ bunordered(&check_nan_left, Label::kNear);                      \
-    __ beq(&check_zero);                                               \
-    __ bge(&return_left, Label::kNear);                                \
-    __ b(&return_right, Label::kNear);                                 \
-                                                                       \
-    __ bind(&check_zero);                                              \
-    __ lzdr(kDoubleRegZero);                                           \
-    __ cebr(left_reg, kDoubleRegZero);                                 \
-    /* left == right != 0. */                                          \
-    __ bne(&return_left, Label::kNear);                                \
-    /* At this point, both left and right are either 0 or -0. */       \
-    /* N.B. The following works because +0 + -0 == +0 */               \
-    /* For max we want logical-and of sign bit: (L + R) */             \
-    __ ldr(result_reg, left_reg);                                      \
-    __ aebr(result_reg, right_reg);                                    \
-    __ b(&done, Label::kNear);                                         \
-                                                                       \
-    __ bind(&check_nan_left);                                          \
-    __ cebr(left_reg, left_reg);                                       \
-    /* left == NaN. */                                                 \
-    __ bunordered(&return_left, Label::kNear);                         \
-                                                                       \
-    __ bind(&return_right);                                            \
-    if (right_reg != result_reg) {                                     \
-      __ ldr(result_reg, right_reg);                                   \
-    }                                                                  \
-    __ b(&done, Label::kNear);                                         \
-                                                                       \
-    __ bind(&return_left);                                             \
-    if (left_reg != result_reg) {                                      \
-      __ ldr(result_reg, left_reg);                                    \
-    }                                                                  \
-    __ bind(&done);                                                    \
+#define ASSEMBLE_FLOAT_MAX()                                            \
+  do {                                                                  \
+    DoubleRegister left_reg = i.InputDoubleRegister(0);                 \
+    DoubleRegister right_reg = i.InputDoubleRegister(1);                \
+    DoubleRegister result_reg = i.OutputDoubleRegister();               \
+    Label check_zero, return_left, return_right, return_nan, done;      \
+    __ cebr(left_reg, right_reg);                                       \
+    __ bunordered(&return_nan, Label::kNear);                           \
+    __ beq(&check_zero);                                                \
+    __ bge(&return_left, Label::kNear);                                 \
+    __ b(&return_right, Label::kNear);                                  \
+                                                                        \
+    __ bind(&check_zero);                                               \
+    __ lzdr(kDoubleRegZero);                                            \
+    __ cebr(left_reg, kDoubleRegZero);                                  \
+    /* left == right != 0. */                                           \
+    __ bne(&return_left, Label::kNear);                                 \
+    /* At this point, both left and right are either 0 or -0. */        \
+    /* N.B. The following works because +0 + -0 == +0 */                \
+    /* For max we want logical-and of sign bit: (L + R) */              \
+    __ ldr(result_reg, left_reg);                                       \
+    __ aebr(result_reg, right_reg);                                     \
+    __ b(&done, Label::kNear);                                          \
+                                                                        \
+    __ bind(&return_nan);                                               \
+    /* If left or right are NaN, aebr propagates the appropriate one.*/ \
+    __ aebr(left_reg, right_reg);                                       \
+    __ b(&return_left, Label::kNear);                                   \
+                                                                        \
+    __ bind(&return_right);                                             \
+    if (right_reg != result_reg) {                                      \
+      __ ldr(result_reg, right_reg);                                    \
+    }                                                                   \
+    __ b(&done, Label::kNear);                                          \
+                                                                        \
+    __ bind(&return_left);                                              \
+    if (left_reg != result_reg) {                                       \
+      __ ldr(result_reg, left_reg);                                     \
+    }                                                                   \
+    __ bind(&done);                                                     \
   } while (0)
 
-#define ASSEMBLE_FLOAT_MIN()                                           \
-  do {                                                                 \
-    DoubleRegister left_reg = i.InputDoubleRegister(0);                \
-    DoubleRegister right_reg = i.InputDoubleRegister(1);               \
-    DoubleRegister result_reg = i.OutputDoubleRegister();              \
-    Label check_nan_left, check_zero, return_left, return_right, done; \
-    __ cebr(left_reg, right_reg);                                      \
-    __ bunordered(&check_nan_left, Label::kNear);                      \
-    __ beq(&check_zero);                                               \
-    __ ble(&return_left, Label::kNear);                                \
-    __ b(&return_right, Label::kNear);                                 \
-                                                                       \
-    __ bind(&check_zero);                                              \
-    __ lzdr(kDoubleRegZero);                                           \
-    __ cebr(left_reg, kDoubleRegZero);                                 \
-    /* left == right != 0. */                                          \
-    __ bne(&return_left, Label::kNear);                                \
-    /* At this point, both left and right are either 0 or -0. */       \
-    /* N.B. The following works because +0 + -0 == +0 */               \
-    /* For min we want logical-or of sign bit: -(-L + -R) */           \
-    __ lcebr(left_reg, left_reg);                                      \
-    __ ldr(result_reg, left_reg);                                      \
-    if (left_reg == right_reg) {                                       \
-      __ aebr(result_reg, right_reg);                                  \
-    } else {                                                           \
-      __ sebr(result_reg, right_reg);                                  \
-    }                                                                  \
-    __ lcebr(result_reg, result_reg);                                  \
-    __ b(&done, Label::kNear);                                         \
-                                                                       \
-    __ bind(&check_nan_left);                                          \
-    __ cebr(left_reg, left_reg);                                       \
-    /* left == NaN. */                                                 \
-    __ bunordered(&return_left, Label::kNear);                         \
-                                                                       \
-    __ bind(&return_right);                                            \
-    if (right_reg != result_reg) {                                     \
-      __ ldr(result_reg, right_reg);                                   \
-    }                                                                  \
-    __ b(&done, Label::kNear);                                         \
-                                                                       \
-    __ bind(&return_left);                                             \
-    if (left_reg != result_reg) {                                      \
-      __ ldr(result_reg, left_reg);                                    \
-    }                                                                  \
-    __ bind(&done);                                                    \
+#define ASSEMBLE_FLOAT_MIN()                                            \
+  do {                                                                  \
+    DoubleRegister left_reg = i.InputDoubleRegister(0);                 \
+    DoubleRegister right_reg = i.InputDoubleRegister(1);                \
+    DoubleRegister result_reg = i.OutputDoubleRegister();               \
+    Label check_zero, return_left, return_right, return_nan, done;      \
+    __ cebr(left_reg, right_reg);                                       \
+    __ bunordered(&return_nan, Label::kNear);                           \
+    __ beq(&check_zero);                                                \
+    __ ble(&return_left, Label::kNear);                                 \
+    __ b(&return_right, Label::kNear);                                  \
+                                                                        \
+    __ bind(&check_zero);                                               \
+    __ lzdr(kDoubleRegZero);                                            \
+    __ cebr(left_reg, kDoubleRegZero);                                  \
+    /* left == right != 0. */                                           \
+    __ bne(&return_left, Label::kNear);                                 \
+    /* At this point, both left and right are either 0 or -0. */        \
+    /* N.B. The following works because +0 + -0 == +0 */                \
+    /* For min we want logical-or of sign bit: -(-L + -R) */            \
+    __ lcebr(left_reg, left_reg);                                       \
+    __ ldr(result_reg, left_reg);                                       \
+    if (left_reg == right_reg) {                                        \
+      __ aebr(result_reg, right_reg);                                   \
+    } else {                                                            \
+      __ sebr(result_reg, right_reg);                                   \
+    }                                                                   \
+    __ lcebr(result_reg, result_reg);                                   \
+    __ b(&done, Label::kNear);                                          \
+                                                                        \
+    __ bind(&return_nan);                                               \
+    /* If left or right are NaN, aebr propagates the appropriate one.*/ \
+    __ aebr(left_reg, right_reg);                                       \
+    __ b(&return_left, Label::kNear);                                   \
+                                                                        \
+    __ bind(&return_right);                                             \
+    if (right_reg != result_reg) {                                      \
+      __ ldr(result_reg, right_reg);                                    \
+    }                                                                   \
+    __ b(&done, Label::kNear);                                          \
+                                                                        \
+    __ bind(&return_left);                                              \
+    if (left_reg != result_reg) {                                       \
+      __ ldr(result_reg, left_reg);                                     \
+    }                                                                   \
+    __ bind(&done);                                                     \
   } while (0)
 //
 // Only MRI mode for these instructions available
@@ -1378,7 +1378,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       if (HasRegisterInput(instr, 0)) {
         Register reg = i.InputRegister(0);
         DCHECK_IMPLIES(
-            HasCallDescriptorFlag(instr, CallDescriptor::kFixedTargetRegister),
+            instr->HasCallDescriptorFlag(CallDescriptor::kFixedTargetRegister),
             reg == kJavaScriptCallCodeStartRegister);
         __ CallCodeObject(reg);
       } else {
@@ -1424,7 +1424,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       if (HasRegisterInput(instr, 0)) {
         Register reg = i.InputRegister(0);
         DCHECK_IMPLIES(
-            HasCallDescriptorFlag(instr, CallDescriptor::kFixedTargetRegister),
+            instr->HasCallDescriptorFlag(CallDescriptor::kFixedTargetRegister),
             reg == kJavaScriptCallCodeStartRegister);
         __ JumpCodeObject(reg);
       } else {
@@ -1459,7 +1459,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       CHECK(!instr->InputAt(0)->IsImmediate());
       Register reg = i.InputRegister(0);
       DCHECK_IMPLIES(
-          HasCallDescriptorFlag(instr, CallDescriptor::kFixedTargetRegister),
+          instr->HasCallDescriptorFlag(CallDescriptor::kFixedTargetRegister),
           reg == kJavaScriptCallCodeStartRegister);
       __ Jump(reg);
       frame_access_state()->ClearSPDelta();
@@ -1588,8 +1588,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     case kArchDeoptimize: {
       DeoptimizationExit* exit =
           BuildTranslation(instr, -1, 0, OutputFrameStateCombine::Ignore());
-      CodeGenResult result = AssembleDeoptimizerCall(exit);
-      if (result != kSuccess) return result;
+      __ b(exit->label());
       break;
     }
     case kArchRet:
@@ -1644,14 +1643,14 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
           AddressingModeField::decode(instr->opcode());
       if (addressing_mode == kMode_MRI) {
         int32_t offset = i.InputInt32(1);
-        ool = new (zone()) OutOfLineRecordWrite(
+        ool = zone()->New<OutOfLineRecordWrite>(
             this, object, offset, value, scratch0, scratch1, mode,
             DetermineStubCallMode(), &unwinding_info_writer_);
         __ StoreTaggedField(value, MemOperand(object, offset), r0);
       } else {
         DCHECK_EQ(kMode_MRR, addressing_mode);
         Register offset(i.InputRegister(1));
-        ool = new (zone()) OutOfLineRecordWrite(
+        ool = zone()->New<OutOfLineRecordWrite>(
             this, object, offset, value, scratch0, scratch1, mode,
             DetermineStubCallMode(), &unwinding_info_writer_);
         __ StoreTaggedField(value, MemOperand(object, offset));
@@ -1674,17 +1673,19 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       __ AndP(i.InputRegister(0), kSpeculationPoisonRegister);
       break;
     case kS390_Peek: {
-      // The incoming value is 0-based, but we need a 1-based value.
-      int reverse_slot = i.InputInt32(0) + 1;
+      int reverse_slot = i.InputInt32(0);
       int offset =
           FrameSlotToFPOffset(frame()->GetTotalFrameSlotCount() - reverse_slot);
       if (instr->OutputAt(0)->IsFPRegister()) {
         LocationOperand* op = LocationOperand::cast(instr->OutputAt(0));
         if (op->representation() == MachineRepresentation::kFloat64) {
           __ LoadDouble(i.OutputDoubleRegister(), MemOperand(fp, offset));
-        } else {
-          DCHECK_EQ(MachineRepresentation::kFloat32, op->representation());
+        } else if (op->representation() == MachineRepresentation::kFloat32) {
           __ LoadFloat32(i.OutputFloatRegister(), MemOperand(fp, offset));
+        } else {
+          DCHECK_EQ(MachineRepresentation::kSimd128, op->representation());
+          __ LoadSimd128(i.OutputSimd128Register(), MemOperand(fp, offset),
+                         kScratchReg);
         }
       } else {
         __ LoadP(i.OutputRegister(), MemOperand(fp, offset));
@@ -2420,8 +2421,13 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       Label done;
       __ ConvertFloat32ToInt32(i.OutputRegister(0), i.InputDoubleRegister(0),
                                kRoundToZero);
-      __ b(Condition(0xE), &done, Label::kNear);  // normal case
-      __ lghi(i.OutputRegister(0), Operand::Zero());
+      bool set_overflow_to_min_i32 = MiscField::decode(instr->opcode());
+      if (set_overflow_to_min_i32) {
+        // Avoid INT32_MAX as an overflow indicator and use INT32_MIN instead,
+        // because INT32_MIN allows easier out-of-bounds detection.
+        __ b(Condition(0xE), &done, Label::kNear);  // normal case
+        __ llilh(i.OutputRegister(0), Operand(0x8000));
+      }
       __ bind(&done);
       break;
     }
@@ -2429,8 +2435,13 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       Label done;
       __ ConvertFloat32ToUnsignedInt32(i.OutputRegister(0),
                                        i.InputDoubleRegister(0));
-      __ b(Condition(0xE), &done, Label::kNear);  // normal case
-      __ lghi(i.OutputRegister(0), Operand::Zero());
+      bool set_overflow_to_min_u32 = MiscField::decode(instr->opcode());
+      if (set_overflow_to_min_u32) {
+        // Avoid UINT32_MAX as an overflow indicator and use 0 instead,
+        // because 0 allows easier out-of-bounds detection.
+        __ b(Condition(0xE), &done, Label::kNear);  // normal case
+        __ lghi(i.OutputRegister(0), Operand::Zero());
+      }
       __ bind(&done);
       break;
     }
@@ -2569,7 +2580,8 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     case kS390_LoadReverseSimd128: {
       AddressingMode mode = kMode_None;
       MemOperand operand = i.MemoryOperand(&mode);
-      if (CpuFeatures::IsSupported(VECTOR_ENHANCE_FACILITY_2)) {
+      if (CpuFeatures::IsSupported(VECTOR_ENHANCE_FACILITY_2) &&
+          is_uint12(operand.offset())) {
         __ vlbr(i.OutputSimd128Register(), operand, Condition(4));
       } else {
         __ lrvg(r0, operand);
@@ -2631,7 +2643,8 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       size_t index = 0;
       AddressingMode mode = kMode_None;
       MemOperand operand = i.MemoryOperand(&mode, &index);
-      if (CpuFeatures::IsSupported(VECTOR_ENHANCE_FACILITY_2)) {
+      if (CpuFeatures::IsSupported(VECTOR_ENHANCE_FACILITY_2) &&
+          is_uint12(operand.offset())) {
         __ vstbr(i.InputSimd128Register(index), operand, Condition(4));
       } else {
         __ vlgv(r0, i.InputSimd128Register(index), MemOperand(r0, 1),
@@ -3268,8 +3281,8 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       Register scratch_0 = r0;
       Register scratch_1 = r1;
       for (int i = 0; i < 2; i++) {
-        __ vlgv(scratch_0, src0, MemOperand(r0, 0), Condition(3));
-        __ vlgv(scratch_1, src1, MemOperand(r0, 0), Condition(3));
+        __ vlgv(scratch_0, src0, MemOperand(r0, i), Condition(3));
+        __ vlgv(scratch_1, src1, MemOperand(r0, i), Condition(3));
         __ Mul64(scratch_0, scratch_1);
         scratch_0 = r1;
         scratch_1 = ip;
@@ -3408,22 +3421,10 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
               Condition(3));
       break;
     }
-    case kS390_I64x2MinS: {
-      __ vmn(i.OutputSimd128Register(), i.InputSimd128Register(0),
-             i.InputSimd128Register(1), Condition(0), Condition(0),
-             Condition(3));
-      break;
-    }
     case kS390_I32x4MinS: {
       __ vmn(i.OutputSimd128Register(), i.InputSimd128Register(0),
              i.InputSimd128Register(1), Condition(0), Condition(0),
              Condition(2));
-      break;
-    }
-    case kS390_I64x2MinU: {
-      __ vmnl(i.OutputSimd128Register(), i.InputSimd128Register(0),
-              i.InputSimd128Register(1), Condition(0), Condition(0),
-              Condition(3));
       break;
     }
     case kS390_I32x4MinU: {
@@ -3456,22 +3457,10 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
               Condition(0));
       break;
     }
-    case kS390_I64x2MaxS: {
-      __ vmx(i.OutputSimd128Register(), i.InputSimd128Register(0),
-             i.InputSimd128Register(1), Condition(0), Condition(0),
-             Condition(3));
-      break;
-    }
     case kS390_I32x4MaxS: {
       __ vmx(i.OutputSimd128Register(), i.InputSimd128Register(0),
              i.InputSimd128Register(1), Condition(0), Condition(0),
              Condition(2));
-      break;
-    }
-    case kS390_I64x2MaxU: {
-      __ vmxl(i.OutputSimd128Register(), i.InputSimd128Register(0),
-              i.InputSimd128Register(1), Condition(0), Condition(0),
-              Condition(3));
       break;
     }
     case kS390_I32x4MaxU: {
@@ -3538,14 +3527,6 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
              Condition(0), Condition(0), Condition(2));
       break;
     }
-    case kS390_I64x2Ne: {
-      __ vceq(i.OutputSimd128Register(), i.InputSimd128Register(0),
-              i.InputSimd128Register(1), Condition(0), Condition(3));
-      __ vno(i.OutputSimd128Register(), i.OutputSimd128Register(),
-             i.OutputSimd128Register(), Condition(0), Condition(0),
-             Condition(3));
-      break;
-    }
     case kS390_I32x4Ne: {
       __ vceq(i.OutputSimd128Register(), i.InputSimd128Register(0),
               i.InputSimd128Register(1), Condition(0), Condition(2));
@@ -3582,23 +3563,9 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
                Condition(2));
       break;
     }
-    case kS390_I64x2GtS: {
-      __ vch(i.OutputSimd128Register(), i.InputSimd128Register(0),
-             i.InputSimd128Register(1), Condition(0), Condition(3));
-      break;
-    }
     case kS390_I32x4GtS: {
       __ vch(i.OutputSimd128Register(), i.InputSimd128Register(0),
              i.InputSimd128Register(1), Condition(0), Condition(2));
-      break;
-    }
-    case kS390_I64x2GeS: {
-      __ vceq(kScratchDoubleReg, i.InputSimd128Register(0),
-              i.InputSimd128Register(1), Condition(0), Condition(3));
-      __ vch(i.OutputSimd128Register(), i.InputSimd128Register(0),
-             i.InputSimd128Register(1), Condition(0), Condition(3));
-      __ vo(i.OutputSimd128Register(), i.OutputSimd128Register(),
-            kScratchDoubleReg, Condition(0), Condition(0), Condition(3));
       break;
     }
     case kS390_I32x4GeS: {
@@ -3610,23 +3577,9 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
             kScratchDoubleReg, Condition(0), Condition(0), Condition(2));
       break;
     }
-    case kS390_I64x2GtU: {
-      __ vchl(i.OutputSimd128Register(), i.InputSimd128Register(0),
-              i.InputSimd128Register(1), Condition(0), Condition(3));
-      break;
-    }
     case kS390_I32x4GtU: {
       __ vchl(i.OutputSimd128Register(), i.InputSimd128Register(0),
               i.InputSimd128Register(1), Condition(0), Condition(2));
-      break;
-    }
-    case kS390_I64x2GeU: {
-      __ vceq(kScratchDoubleReg, i.InputSimd128Register(0),
-              i.InputSimd128Register(1), Condition(0), Condition(3));
-      __ vchl(i.OutputSimd128Register(), i.InputSimd128Register(0),
-              i.InputSimd128Register(1), Condition(0), Condition(3));
-      __ vo(i.OutputSimd128Register(), i.OutputSimd128Register(),
-            kScratchDoubleReg, Condition(0), Condition(0), Condition(3));
       break;
     }
     case kS390_I32x4GeU: {
@@ -3853,10 +3806,9 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       break;
     }
     // vector boolean unops
-    case kS390_S1x2AnyTrue:
-    case kS390_S1x4AnyTrue:
-    case kS390_S1x8AnyTrue:
-    case kS390_S1x16AnyTrue: {
+    case kS390_V32x4AnyTrue:
+    case kS390_V16x8AnyTrue:
+    case kS390_V8x16AnyTrue: {
       Simd128Register src = i.InputSimd128Register(0);
       Register dst = i.OutputRegister();
       Register temp = i.TempRegister(0);
@@ -3879,19 +3831,15 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
   __ vtm(kScratchDoubleReg, kScratchDoubleReg, Condition(0), Condition(0),     \
          Condition(0));                                                        \
   __ locgr(Condition(8), dst, temp);
-    case kS390_S1x2AllTrue: {
-      SIMD_ALL_TRUE(3)
-      break;
-    }
-    case kS390_S1x4AllTrue: {
+    case kS390_V32x4AllTrue: {
       SIMD_ALL_TRUE(2)
       break;
     }
-    case kS390_S1x8AllTrue: {
+    case kS390_V16x8AllTrue: {
       SIMD_ALL_TRUE(1)
       break;
     }
-    case kS390_S1x16AllTrue: {
+    case kS390_V8x16AllTrue: {
       SIMD_ALL_TRUE(0)
       break;
     }
@@ -3918,9 +3866,29 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
             Condition(0));
       break;
     }
+    case kS390_S128Const: {
+#ifdef V8_TARGET_BIG_ENDIAN
+      for (int index = 0, j = 0; index < 2; index++, j = +2) {
+        __ lgfi(index < 1 ? ip : r0, Operand(i.InputInt32(j)));
+        __ iihf(index < 1 ? ip : r0, Operand(i.InputInt32(j + 1)));
+      }
+#else
+      for (int index = 0, j = 0; index < 2; index++, j = +2) {
+        __ lgfi(index < 1 ? r0 : ip, Operand(i.InputInt32(j)));
+        __ iihf(index < 1 ? r0 : ip, Operand(i.InputInt32(j + 1)));
+      }
+#endif
+      __ vlvgp(i.OutputSimd128Register(), r0, ip);
+      break;
+    }
     case kS390_S128Zero: {
       Simd128Register dst = i.OutputSimd128Register();
       __ vx(dst, dst, dst, Condition(0), Condition(0), Condition(0));
+      break;
+    }
+    case kS390_S128AllOnes: {
+      Simd128Register dst = i.OutputSimd128Register();
+      __ vceq(dst, dst, dst, Condition(0), Condition(3));
       break;
     }
     case kS390_S128Select: {
@@ -4036,12 +4004,22 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     }
 #undef VECTOR_UNPACK
     case kS390_I16x8SConvertI32x4:
+#ifdef V8_TARGET_BIG_ENDIAN
+      __ vpks(i.OutputSimd128Register(), i.InputSimd128Register(1),
+              i.InputSimd128Register(0), Condition(0), Condition(2));
+#else
       __ vpks(i.OutputSimd128Register(), i.InputSimd128Register(0),
               i.InputSimd128Register(1), Condition(0), Condition(2));
+#endif
       break;
     case kS390_I8x16SConvertI16x8:
+#ifdef V8_TARGET_BIG_ENDIAN
+      __ vpks(i.OutputSimd128Register(), i.InputSimd128Register(1),
+              i.InputSimd128Register(0), Condition(0), Condition(1));
+#else
       __ vpks(i.OutputSimd128Register(), i.InputSimd128Register(0),
               i.InputSimd128Register(1), Condition(0), Condition(1));
+#endif
       break;
 #define VECTOR_PACK_UNSIGNED(mode)                                             \
   Simd128Register tempFPReg = i.ToSimd128Register(instr->TempAt(0));           \
@@ -4050,17 +4028,29 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
   __ vmx(tempFPReg, i.InputSimd128Register(0), kScratchDoubleReg,              \
          Condition(0), Condition(0), Condition(mode));                         \
   __ vmx(kScratchDoubleReg, i.InputSimd128Register(1), kScratchDoubleReg,      \
-         Condition(0), Condition(0), Condition(mode));                         \
-  __ vpkls(i.OutputSimd128Register(), tempFPReg, kScratchDoubleReg,            \
-           Condition(0), Condition(mode));
+         Condition(0), Condition(0), Condition(mode));
     case kS390_I16x8UConvertI32x4: {
       // treat inputs as signed, and saturate to unsigned (negative to 0)
       VECTOR_PACK_UNSIGNED(2)
+#ifdef V8_TARGET_BIG_ENDIAN
+      __ vpkls(i.OutputSimd128Register(), kScratchDoubleReg, tempFPReg,
+               Condition(0), Condition(2));
+#else
+      __ vpkls(i.OutputSimd128Register(), tempFPReg, kScratchDoubleReg,
+               Condition(0), Condition(2));
+#endif
       break;
     }
     case kS390_I8x16UConvertI16x8: {
       // treat inputs as signed, and saturate to unsigned (negative to 0)
       VECTOR_PACK_UNSIGNED(1)
+#ifdef V8_TARGET_BIG_ENDIAN
+      __ vpkls(i.OutputSimd128Register(), kScratchDoubleReg, tempFPReg,
+               Condition(0), Condition(1));
+#else
+      __ vpkls(i.OutputSimd128Register(), tempFPReg, kScratchDoubleReg,
+               Condition(0), Condition(1));
+#endif
       break;
     }
 #undef VECTOR_PACK_UNSIGNED
@@ -4081,25 +4071,40 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
                  Condition(mode));                                      \
   __ op(tempFPReg1, tempFPReg1, tempFPReg2, Condition(0), Condition(0), \
         Condition(mode + 1));
-    case kS390_I16x8AddSaturateS: {
+    case kS390_I16x8AddSatS: {
       BINOP_EXTRACT(va, vuph, vupl, 1)
+#ifdef V8_TARGET_BIG_ENDIAN
       __ vpks(i.OutputSimd128Register(), kScratchDoubleReg, tempFPReg1,
               Condition(0), Condition(2));
+#else
+      __ vpks(i.OutputSimd128Register(), tempFPReg1, kScratchDoubleReg,
+              Condition(0), Condition(2));
+#endif
       break;
     }
-    case kS390_I16x8SubSaturateS: {
+    case kS390_I16x8SubSatS: {
       BINOP_EXTRACT(vs, vuph, vupl, 1)
+#ifdef V8_TARGET_BIG_ENDIAN
       __ vpks(i.OutputSimd128Register(), kScratchDoubleReg, tempFPReg1,
               Condition(0), Condition(2));
+#else
+      __ vpks(i.OutputSimd128Register(), tempFPReg1, kScratchDoubleReg,
+              Condition(0), Condition(2));
+#endif
       break;
     }
-    case kS390_I16x8AddSaturateU: {
+    case kS390_I16x8AddSatU: {
       BINOP_EXTRACT(va, vuplh, vupll, 1)
+#ifdef V8_TARGET_BIG_ENDIAN
       __ vpkls(i.OutputSimd128Register(), kScratchDoubleReg, tempFPReg1,
                Condition(0), Condition(2));
+#else
+      __ vpkls(i.OutputSimd128Register(), tempFPReg1, kScratchDoubleReg,
+               Condition(0), Condition(2));
+#endif
       break;
     }
-    case kS390_I16x8SubSaturateU: {
+    case kS390_I16x8SubSatU: {
       BINOP_EXTRACT(vs, vuplh, vupll, 1)
       // negative to 0
       __ vx(tempFPReg2, tempFPReg2, tempFPReg2, Condition(0), Condition(0),
@@ -4108,29 +4113,49 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
              Condition(0), Condition(2));
       __ vmx(tempFPReg1, tempFPReg2, tempFPReg1, Condition(0), Condition(0),
              Condition(2));
+#ifdef V8_TARGET_BIG_ENDIAN
       __ vpkls(i.OutputSimd128Register(), kScratchDoubleReg, tempFPReg1,
                Condition(0), Condition(2));
+#else
+      __ vpkls(i.OutputSimd128Register(), tempFPReg1, kScratchDoubleReg,
+               Condition(0), Condition(2));
+#endif
       break;
     }
-    case kS390_I8x16AddSaturateS: {
+    case kS390_I8x16AddSatS: {
       BINOP_EXTRACT(va, vuph, vupl, 0)
+#ifdef V8_TARGET_BIG_ENDIAN
       __ vpks(i.OutputSimd128Register(), kScratchDoubleReg, tempFPReg1,
               Condition(0), Condition(1));
+#else
+      __ vpks(i.OutputSimd128Register(), tempFPReg1, kScratchDoubleReg,
+              Condition(0), Condition(1));
+#endif
       break;
     }
-    case kS390_I8x16SubSaturateS: {
+    case kS390_I8x16SubSatS: {
       BINOP_EXTRACT(vs, vuph, vupl, 0)
+#ifdef V8_TARGET_BIG_ENDIAN
       __ vpks(i.OutputSimd128Register(), kScratchDoubleReg, tempFPReg1,
               Condition(0), Condition(1));
+#else
+      __ vpks(i.OutputSimd128Register(), tempFPReg1, kScratchDoubleReg,
+              Condition(0), Condition(1));
+#endif
       break;
     }
-    case kS390_I8x16AddSaturateU: {
+    case kS390_I8x16AddSatU: {
       BINOP_EXTRACT(va, vuplh, vupll, 0)
+#ifdef V8_TARGET_BIG_ENDIAN
       __ vpkls(i.OutputSimd128Register(), kScratchDoubleReg, tempFPReg1,
                Condition(0), Condition(1));
+#else
+      __ vpkls(i.OutputSimd128Register(), tempFPReg1, kScratchDoubleReg,
+               Condition(0), Condition(1));
+#endif
       break;
     }
-    case kS390_I8x16SubSaturateU: {
+    case kS390_I8x16SubSatU: {
       BINOP_EXTRACT(vs, vuplh, vupll, 0)
       // negative to 0
       __ vx(tempFPReg2, tempFPReg2, tempFPReg2, Condition(0), Condition(0),
@@ -4139,12 +4164,18 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
              Condition(0), Condition(1));
       __ vmx(tempFPReg1, tempFPReg2, tempFPReg1, Condition(0), Condition(0),
              Condition(1));
+#ifdef V8_TARGET_BIG_ENDIAN
       __ vpkls(i.OutputSimd128Register(), kScratchDoubleReg, tempFPReg1,
                Condition(0), Condition(1));
+#else
+      __ vpkls(i.OutputSimd128Register(), tempFPReg1, kScratchDoubleReg,
+               Condition(0), Condition(1));
+
+#endif
       break;
     }
 #undef BINOP_EXTRACT
-    case kS390_S8x16Shuffle: {
+    case kS390_I8x16Shuffle: {
       Simd128Register dst = i.OutputSimd128Register(),
                       src0 = i.InputSimd128Register(0),
                       src1 = i.InputSimd128Register(1);
@@ -4153,36 +4184,169 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       // create 2 * 8 byte inputs indicating new indices
       for (int i = 0, j = 0; i < 2; i++, j = +2) {
 #ifdef V8_TARGET_BIG_ENDIAN
-        __ lgfi(i < 1 ? ip : r0, Operand(k8x16_indices[j + 1]));
-        __ aih(i < 1 ? ip : r0, Operand(k8x16_indices[j]));
-#else
         __ lgfi(i < 1 ? ip : r0, Operand(k8x16_indices[j]));
-        __ aih(i < 1 ? ip : r0, Operand(k8x16_indices[j + 1]));
+        __ iihf(i < 1 ? ip : r0, Operand(k8x16_indices[j + 1]));
+#else
+        __ lgfi(i < 1 ? r0 : ip, Operand(k8x16_indices[j]));
+        __ iihf(i < 1 ? r0 : ip, Operand(k8x16_indices[j + 1]));
 #endif
       }
-      __ vlvgp(kScratchDoubleReg, ip, r0);
+      __ vlvgp(kScratchDoubleReg, r0, ip);
       __ vperm(dst, src0, src1, kScratchDoubleReg, Condition(0), Condition(0));
       break;
     }
-    case kS390_S8x16Swizzle: {
+    case kS390_I8x16Swizzle: {
       Simd128Register dst = i.OutputSimd128Register(),
                       src0 = i.InputSimd128Register(0),
                       src1 = i.InputSimd128Register(1);
+      Simd128Register tempFPReg1 = i.ToSimd128Register(instr->TempAt(0));
+      // Saturate the indices to 5 bits. Input indices more than 31 should
+      // return 0.
+      __ vrepi(kScratchDoubleReg, Operand(31), Condition(0));
+      __ vmnl(tempFPReg1, src1, kScratchDoubleReg, Condition(0), Condition(0),
+              Condition(0));
 #ifdef V8_TARGET_BIG_ENDIAN
       //  input needs to be reversed
       __ vlgv(r0, src0, MemOperand(r0, 0), Condition(3));
       __ vlgv(r1, src0, MemOperand(r0, 1), Condition(3));
       __ lrvgr(r0, r0);
       __ lrvgr(r1, r1);
-      __ vlvgp(kScratchDoubleReg, r1, r0);
-      // clear scr0
-      __ vx(src0, src0, src0, Condition(0), Condition(0), Condition(0));
-      __ vperm(dst, kScratchDoubleReg, src0, src1, Condition(0), Condition(0));
+      __ vlvgp(dst, r1, r0);
+      // clear scratch
+      __ vx(kScratchDoubleReg, kScratchDoubleReg, kScratchDoubleReg,
+            Condition(0), Condition(0), Condition(0));
+      __ vperm(dst, dst, kScratchDoubleReg, tempFPReg1, Condition(0),
+               Condition(0));
 #else
       __ vx(kScratchDoubleReg, kScratchDoubleReg, kScratchDoubleReg,
             Condition(0), Condition(0), Condition(0));
-      __ vperm(dst, src0, kScratchDoubleReg, src1, Condition(0), Condition(0));
+      __ vperm(dst, src0, kScratchDoubleReg, tempFPReg1, Condition(0),
+               Condition(0));
 #endif
+      break;
+    }
+    case kS390_I32x4BitMask: {
+#ifdef V8_TARGET_BIG_ENDIAN
+      __ lgfi(kScratchReg, Operand(0x204060));
+      __ iihf(kScratchReg, Operand(0x80808080));  // Zeroing the high bits.
+#else
+      __ lgfi(kScratchReg, Operand(0x80808080));
+      __ iihf(kScratchReg, Operand(0x60402000));
+#endif
+      __ vlvg(kScratchDoubleReg, kScratchReg, MemOperand(r0, 1), Condition(3));
+      __ vbperm(kScratchDoubleReg, i.InputSimd128Register(0), kScratchDoubleReg,
+                Condition(0), Condition(0), Condition(0));
+      __ vlgv(i.OutputRegister(), kScratchDoubleReg, MemOperand(r0, 7),
+              Condition(0));
+      break;
+    }
+    case kS390_I16x8BitMask: {
+#ifdef V8_TARGET_BIG_ENDIAN
+      __ lgfi(kScratchReg, Operand(0x40506070));
+      __ iihf(kScratchReg, Operand(0x102030));
+#else
+      __ lgfi(kScratchReg, Operand(0x30201000));
+      __ iihf(kScratchReg, Operand(0x70605040));
+#endif
+      __ vlvg(kScratchDoubleReg, kScratchReg, MemOperand(r0, 1), Condition(3));
+      __ vbperm(kScratchDoubleReg, i.InputSimd128Register(0), kScratchDoubleReg,
+                Condition(0), Condition(0), Condition(0));
+      __ vlgv(i.OutputRegister(), kScratchDoubleReg, MemOperand(r0, 7),
+              Condition(0));
+      break;
+    }
+    case kS390_I8x16BitMask: {
+#ifdef V8_TARGET_BIG_ENDIAN
+      __ lgfi(r0, Operand(0x60687078));
+      __ iihf(r0, Operand(0x40485058));
+      __ lgfi(ip, Operand(0x20283038));
+      __ iihf(ip, Operand(0x81018));
+#else
+      __ lgfi(ip, Operand(0x58504840));
+      __ iihf(ip, Operand(0x78706860));
+      __ lgfi(r0, Operand(0x18100800));
+      __ iihf(r0, Operand(0x38302820));
+#endif
+      __ vlvgp(kScratchDoubleReg, ip, r0);
+      __ vbperm(kScratchDoubleReg, i.InputSimd128Register(0), kScratchDoubleReg,
+                Condition(0), Condition(0), Condition(0));
+      __ vlgv(i.OutputRegister(), kScratchDoubleReg, MemOperand(r0, 3),
+              Condition(1));
+      break;
+    }
+    case kS390_F32x4Pmin: {
+      __ vfmin(i.OutputSimd128Register(), i.InputSimd128Register(0),
+               i.InputSimd128Register(1), Condition(3), Condition(0),
+               Condition(2));
+      break;
+    }
+    case kS390_F32x4Pmax: {
+      __ vfmax(i.OutputSimd128Register(), i.InputSimd128Register(0),
+               i.InputSimd128Register(1), Condition(3), Condition(0),
+               Condition(2));
+      break;
+    }
+    case kS390_F64x2Pmin: {
+      __ vfmin(i.OutputSimd128Register(), i.InputSimd128Register(0),
+               i.InputSimd128Register(1), Condition(3), Condition(0),
+               Condition(3));
+      break;
+    }
+    case kS390_F64x2Pmax: {
+      __ vfmax(i.OutputSimd128Register(), i.InputSimd128Register(0),
+               i.InputSimd128Register(1), Condition(3), Condition(0),
+               Condition(3));
+      break;
+    }
+    case kS390_F64x2Ceil: {
+      __ vfi(i.OutputSimd128Register(), i.InputSimd128Register(0), Condition(6),
+             Condition(0), Condition(3));
+      break;
+    }
+    case kS390_F64x2Floor: {
+      __ vfi(i.OutputSimd128Register(), i.InputSimd128Register(0), Condition(7),
+             Condition(0), Condition(3));
+      break;
+    }
+    case kS390_F64x2Trunc: {
+      __ vfi(i.OutputSimd128Register(), i.InputSimd128Register(0), Condition(5),
+             Condition(0), Condition(3));
+      break;
+    }
+    case kS390_F64x2NearestInt: {
+      __ vfi(i.OutputSimd128Register(), i.InputSimd128Register(0), Condition(4),
+             Condition(0), Condition(3));
+      break;
+    }
+    case kS390_F32x4Ceil: {
+      __ vfi(i.OutputSimd128Register(), i.InputSimd128Register(0), Condition(6),
+             Condition(0), Condition(2));
+      break;
+    }
+    case kS390_F32x4Floor: {
+      __ vfi(i.OutputSimd128Register(), i.InputSimd128Register(0), Condition(7),
+             Condition(0), Condition(2));
+      break;
+    }
+    case kS390_F32x4Trunc: {
+      __ vfi(i.OutputSimd128Register(), i.InputSimd128Register(0), Condition(5),
+             Condition(0), Condition(2));
+      break;
+    }
+    case kS390_F32x4NearestInt: {
+      __ vfi(i.OutputSimd128Register(), i.InputSimd128Register(0), Condition(4),
+             Condition(0), Condition(2));
+      break;
+    }
+    case kS390_I32x4DotI16x8S: {
+      Simd128Register tempFPReg1 = i.ToSimd128Register(instr->TempAt(0));
+      __ vme(kScratchDoubleReg, i.InputSimd128Register(0),
+             i.InputSimd128Register(1), Condition(0), Condition(0),
+             Condition(1));
+      __ vmo(tempFPReg1, i.InputSimd128Register(0), i.InputSimd128Register(1),
+             Condition(0), Condition(0), Condition(1));
+      __ va(i.OutputSimd128Register(), kScratchDoubleReg, tempFPReg1,
+            Condition(0), Condition(0), Condition(2));
       break;
     }
     case kS390_StoreCompressTagged: {
@@ -4297,7 +4461,7 @@ void CodeGenerator::AssembleArchTrap(Instruction* instr,
         // is added to the native module and copied into wasm code space.
         __ Call(static_cast<Address>(trap_id), RelocInfo::WASM_STUB_CALL);
         ReferenceMap* reference_map =
-            new (gen_->zone()) ReferenceMap(gen_->zone());
+            gen_->zone()->New<ReferenceMap>(gen_->zone());
         gen_->RecordSafepoint(reference_map, Safepoint::kNoLazyDeopt);
         if (FLAG_debug_code) {
           __ stop();
@@ -4308,7 +4472,7 @@ void CodeGenerator::AssembleArchTrap(Instruction* instr,
     Instruction* instr_;
     CodeGenerator* gen_;
   };
-  auto ool = new (zone()) OutOfLineTrap(this, instr);
+  auto ool = zone()->New<OutOfLineTrap>(this, instr);
   Label* tlabel = ool->entry();
   Label end;
 
@@ -4423,9 +4587,6 @@ void CodeGenerator::AssembleConstructFrame() {
       }
     } else if (call_descriptor->IsJSFunctionCall()) {
       __ Prologue(ip);
-      if (call_descriptor->PushArgumentCount()) {
-        __ Push(kJavaScriptCallArgCountRegister);
-      }
     } else {
       StackFrame::Type type = info()->GetOutputStackFrameType();
       // TODO(mbrandy): Detect cases where ip is the entrypoint (for
@@ -4499,7 +4660,7 @@ void CodeGenerator::AssembleConstructFrame() {
 
       __ Call(wasm::WasmCode::kWasmStackOverflow, RelocInfo::WASM_STUB_CALL);
       // We come from WebAssembly, there are no references for the GC.
-      ReferenceMap* reference_map = new (zone()) ReferenceMap(zone());
+      ReferenceMap* reference_map = zone()->New<ReferenceMap>(zone());
       RecordSafepoint(reference_map, Safepoint::kNoLazyDeopt);
       if (FLAG_debug_code) {
         __ stop();
@@ -4588,7 +4749,8 @@ void CodeGenerator::AssembleReturn(InstructionOperand* pop) {
 
 void CodeGenerator::FinishCode() {}
 
-void CodeGenerator::PrepareForDeoptimizationExits(int deopt_count) {}
+void CodeGenerator::PrepareForDeoptimizationExits(
+    ZoneDeque<DeoptimizationExit*>* exits) {}
 
 void CodeGenerator::AssembleMove(InstructionOperand* source,
                                  InstructionOperand* destination) {

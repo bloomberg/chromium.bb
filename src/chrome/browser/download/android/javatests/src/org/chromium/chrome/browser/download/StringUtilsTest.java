@@ -6,13 +6,12 @@ package org.chromium.chrome.browser.download;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.text.format.DateUtils;
 
+import androidx.test.filters.SmallTest;
+
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
@@ -29,9 +28,6 @@ import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Features.DisableFeatures(ChromeFeatureList.DOWNLOAD_FILE_PROVIDER)
 public class StringUtilsTest {
-    @Rule
-    public TestRule mFeaturesProcessorRule = new Features.InstrumentationProcessor();
-
     @Test
     @SmallTest
     @Feature({"Download"})

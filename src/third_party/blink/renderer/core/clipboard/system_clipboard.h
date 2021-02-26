@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
-#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -22,7 +21,7 @@ class KURL;
 class LocalFrame;
 
 // SystemClipboard:
-// - is a singleton.
+// - is a LocalFrame bounded object.
 // - provides sanitized, platform-neutral read/write access to the clipboard.
 // - mediates between core classes and mojom::ClipboardHost.
 //
@@ -33,6 +32,9 @@ class CORE_EXPORT SystemClipboard final
   enum SmartReplaceOption { kCanSmartReplace, kCannotSmartReplace };
 
   explicit SystemClipboard(LocalFrame* frame);
+  SystemClipboard(const SystemClipboard&) = delete;
+  SystemClipboard& operator=(const SystemClipboard&) = delete;
+
   uint64_t SequenceNumber();
   bool IsSelectionMode() const;
   void SetSelectionMode(bool);
@@ -53,8 +55,10 @@ class CORE_EXPORT SystemClipboard final
   String ReadHTML(KURL&, unsigned& fragment_start, unsigned& fragment_end);
   void WriteHTML(const String& markup,
                  const KURL& document_url,
-                 const String& plain_text,
                  SmartReplaceOption = kCannotSmartReplace);
+
+  void ReadSvg(mojom::blink::ClipboardHost::ReadSvgCallback callback);
+  void WriteSvg(const String& markup);
 
   String ReadRTF();
 
@@ -73,19 +77,22 @@ class CORE_EXPORT SystemClipboard final
   // the OS clipboard.
   void CommitWrite();
 
-  void Trace(Visitor*);
+  void CopyToFindPboard(const String& text);
+
+  void Trace(Visitor*) const;
 
  private:
   bool IsValidBufferType(mojom::ClipboardBuffer);
 
-  HeapMojoRemote<mojom::blink::ClipboardHost,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      clipboard_;
-  // In X11, |buffer_| may equal ClipboardBuffer::kStandard or kSelection.
-  // Outside X11, |buffer_| always equals ClipboardBuffer::kStandard.
+  HeapMojoRemote<mojom::blink::ClipboardHost> clipboard_;
+  // In some Linux environments, |buffer_| may equal ClipboardBuffer::kStandard
+  // or kSelection.  In other platforms |buffer_| always equals
+  // ClipboardBuffer::kStandard.
   mojom::ClipboardBuffer buffer_ = mojom::ClipboardBuffer::kStandard;
 
-  DISALLOW_COPY_AND_ASSIGN(SystemClipboard);
+  // Whether the selection buffer is available on the underlying platform.
+  bool is_selection_buffer_available_ = false;
+
 };
 
 }  // namespace blink

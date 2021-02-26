@@ -76,9 +76,6 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [NewObject] NodeIterator createNodeIterator(Node root, optional unsigned long whatToShow = 0xFFFFFFFF, optional NodeFilter? filter = null);
     [NewObject] TreeWalker createTreeWalker(Node root, optional unsigned long whatToShow = 0xFFFFFFFF, optional NodeFilter? filter = null);
 
-    // NonDocumentRootScroller (https://github.com/bokand/NonDocumentRootScroller)
-    [RaisesException=Setter, RuntimeEnabled=SetRootScroller, Measure] attribute Element? rootScroller;
-
     // FIXME: xmlEncoding/xmlVersion/xmlStandalone have been removed from the spec.
     [MeasureAs=DocumentXMLEncoding] readonly attribute DOMString? xmlEncoding;
     [RaisesException=Setter, MeasureAs=DocumentXMLVersion] attribute DOMString? xmlVersion;
@@ -89,7 +86,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
     // resource metadata management
 
-    [Affects=Nothing, PutForwards=href, Unforgeable] readonly attribute Location? location;
+    [Affects=Nothing, PutForwards=href, LegacyUnforgeable] readonly attribute Location? location;
     [Affects=Nothing, RaisesException=Setter] attribute USVString domain;
     [Affects=Nothing] readonly attribute USVString referrer;
     [Affects=Nothing, RaisesException, RuntimeCallStatsCounter=DocumentCookie] attribute DOMString cookie;
@@ -138,7 +135,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [RaisesException] boolean queryCommandSupported(DOMString commandId);
     [RaisesException] DOMString queryCommandValue(DOMString commandId);
 
-    [LenientThis] attribute EventHandler onreadystatechange;
+    [LegacyLenientThis] attribute EventHandler onreadystatechange;
 
     // HTML obsolete features
     // https://html.spec.whatwg.org/C/#Document-partial
@@ -168,8 +165,6 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
     // Custom Elements
     // https://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-register
-    // FIXME: The registerElement return type should be Function.
-    [RuntimeEnabled=CustomElementsV0, CallWith=ScriptState, CustomElementCallbacks, RaisesException, DeprecateAs=DocumentRegisterElement] any registerElement(DOMString type, optional ElementRegistrationOptions options = {});
     // https://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-instantiate
     [CustomElementCallbacks, PerWorldBindings, RaisesException, ImplementedAs=CreateElementForBinding] Element createElement(DOMString localName, (DOMString or ElementCreationOptions) options);
     [CustomElementCallbacks, RaisesException] Element createElementNS(DOMString? namespaceURI, DOMString qualifiedName, (DOMString or ElementCreationOptions) options);
@@ -182,17 +177,25 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
     // CORS and RFC1918
     // https://wicg.github.io/cors-rfc1918/#feature-detect
-    [RuntimeEnabled=AddressSpace, ImplementedAs=addressSpaceForBindings] readonly attribute AddressSpace addressSpace;
+    [CallWith=ScriptState, RuntimeEnabled=AddressSpace, ImplementedAs=addressSpaceForBindings] readonly attribute AddressSpace addressSpace;
 
     // Non-standard APIs
     [MeasureAs=DocumentCaretRangeFromPoint] Range caretRangeFromPoint(optional long x = 0, optional long y = 0);
 
     // Storage Access API
-    [CallWith=ScriptState, NewObject, RuntimeEnabled=StorageAccessAPI] Promise<boolean> hasStorageAccess();
-    [CallWith=ScriptState, NewObject, RuntimeEnabled=StorageAccessAPI] Promise<void> requestStorageAccess();
+    [CallWith=ScriptState, NewObject, RuntimeEnabled=StorageAccessAPI, MeasureAs=StorageAccessAPI_HasStorageAccess_Method] Promise<boolean> hasStorageAccess();
+    [CallWith=ScriptState, NewObject, RuntimeEnabled=StorageAccessAPI, MeasureAs=StorageAccessAPI_requestStorageAccess_Method] Promise<void> requestStorageAccess();
+
+    // Interest Cohort API
+    // TODO(yaoxia): Add web tests. http://crbug/1130074.
+    [CallWith=ScriptState, NewObject, RuntimeEnabled=InterestCohortAPI, MeasureAs=InterestCohortAPI_interestCohort_Method] Promise<DOMString> interestCohort();
+
+    // Text fragment directive API
+    // https://wicg.github.io/scroll-to-text-fragment/#feature-detectability
+    [SameObject, Measure, RuntimeEnabled=TextFragmentIdentifiers] readonly attribute FragmentDirective fragmentDirective;
 
     // https://w3c.github.io/webappsec-feature-policy/#the-policy-object
-    [RuntimeEnabled=FeaturePolicyJavaScriptInterface] readonly attribute FeaturePolicy featurePolicy;
+    readonly attribute FeaturePolicy featurePolicy;
 
     // Deprecated prefixed page visibility API.
     // TODO(davidben): This is a property so attaching a deprecation warning results in false positives when outputting

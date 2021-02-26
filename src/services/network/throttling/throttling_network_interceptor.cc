@@ -18,16 +18,11 @@ namespace network {
 
 namespace {
 
-int64_t kPacketSize = 1500;
+constexpr int64_t kPacketSize = 1500;
 
 base::TimeDelta CalculateTickLength(double throughput) {
-  if (!throughput)
-    return base::TimeDelta::FromMicroseconds(1);
-  int64_t us_tick_length = (1000000L * kPacketSize) / throughput;
-  DCHECK(us_tick_length != 0);
-  if (us_tick_length == 0)
-    us_tick_length = 1;
-  return base::TimeDelta::FromMicroseconds(us_tick_length);
+  return throughput ? base::TimeDelta::FromSecondsD(kPacketSize / throughput)
+                    : base::TimeDelta::FromMicroseconds(1);
 }
 
 }  // namespace
@@ -109,7 +104,7 @@ uint64_t ThrottlingNetworkInterceptor::UpdateThrottledRecords(
     return last_tick;
   }
 
-  int64_t new_tick = (now - offset_) / tick_length;
+  int64_t new_tick = (now - offset_).IntDiv(tick_length);
   int64_t ticks = new_tick - last_tick;
 
   int64_t length = records->size();

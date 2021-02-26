@@ -20,6 +20,15 @@ struct MyStruct {
 
   // No rewrite expected.
   int int_field;
+
+  // "*" next to the field name.  This is non-standard formatting, so
+  // "clang-format off" is used to make sure |git cl format| won't change this
+  // testcase.
+  //
+  // Expected rewrite: CheckedPtr<SomeClass> raw_ptr_field;
+  // clang-format off
+  CheckedPtr<SomeClass> raw_ptr_field2;
+  // clang-format on
 };
 
 template <typename T>

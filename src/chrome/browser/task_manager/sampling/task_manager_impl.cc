@@ -22,10 +22,10 @@
 #include "chrome/browser/task_manager/providers/child_process_task_provider.h"
 #include "chrome/browser/task_manager/providers/fallback_task_provider.h"
 #include "chrome/browser/task_manager/providers/render_process_host_task_provider.h"
+#include "chrome/browser/task_manager/providers/spare_render_process_host_task_provider.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_task_provider.h"
 #include "chrome/browser/task_manager/providers/worker_task_provider.h"
 #include "chrome/browser/task_manager/sampling/shared_sampler.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -74,9 +74,9 @@ bool BytesTransferredKey::operator==(const BytesTransferredKey& other) const {
 }
 
 TaskManagerImpl::TaskManagerImpl()
-    : on_background_data_ready_callback_(
-          base::Bind(&TaskManagerImpl::OnTaskGroupBackgroundCalculationsDone,
-                     base::Unretained(this))),
+    : on_background_data_ready_callback_(base::BindRepeating(
+          &TaskManagerImpl::OnTaskGroupBackgroundCalculationsDone,
+          base::Unretained(this))),
       blocking_pool_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
@@ -85,25 +85,26 @@ TaskManagerImpl::TaskManagerImpl()
       waiting_for_memory_dump_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  task_providers_.emplace_back(new BrowserProcessTaskProvider());
-  task_providers_.emplace_back(new ChildProcessTaskProvider());
-  task_providers_.emplace_back(new WorkerTaskProvider());
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTaskManagerShowExtraRenderers)) {
-    task_providers_.emplace_back(new WebContentsTaskProvider());
-  } else {
-    std::unique_ptr<TaskProvider> primary_subprovider(
-        new WebContentsTaskProvider());
-    std::unique_ptr<TaskProvider> secondary_subprovider(
-        new RenderProcessHostTaskProvider());
-    task_providers_.emplace_back(new FallbackTaskProvider(
-        std::move(primary_subprovider), std::move(secondary_subprovider)));
-  }
+  task_providers_.push_back(std::make_unique<BrowserProcessTaskProvider>());
+  task_providers_.push_back(std::make_unique<ChildProcessTaskProvider>());
+
+  // Put all task providers for various types of RenderProcessHosts in this
+  // section. All of them should be added as primary subproviders for the
+  // FallbackTaskProvider, so that a fallback task can be shown for a renderer
+  // process if no other provider is shown for it.
+  std::vector<std::unique_ptr<TaskProvider>> primary_subproviders;
+  primary_subproviders.push_back(
+      std::make_unique<SpareRenderProcessHostTaskProvider>());
+  primary_subproviders.push_back(std::make_unique<WorkerTaskProvider>());
+  primary_subproviders.push_back(std::make_unique<WebContentsTaskProvider>());
+  task_providers_.push_back(std::make_unique<FallbackTaskProvider>(
+      std::move(primary_subproviders),
+      std::make_unique<RenderProcessHostTaskProvider>()));
 
 #if defined(OS_CHROMEOS)
   if (arc::IsArcAvailable())
-    task_providers_.emplace_back(new ArcProcessTaskProvider());
-  task_providers_.emplace_back(new VmProcessTaskProvider());
+    task_providers_.push_back(std::make_unique<ArcProcessTaskProvider>());
+  task_providers_.push_back(std::make_unique<VmProcessTaskProvider>());
   arc_shared_sampler_ = std::make_unique<ArcSharedSampler>();
 #endif  // defined(OS_CHROMEOS)
 }
@@ -219,11 +220,11 @@ void TaskManagerImpl::GetUSERHandles(TaskId task_id,
 }
 
 int TaskManagerImpl::GetOpenFdCount(TaskId task_id) const {
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
   return GetTaskGroupByTaskId(task_id)->open_fd_count();
 #else
   return -1;
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
 }
 
 bool TaskManagerImpl::IsTaskOnBackgroundedProcess(TaskId task_id) const {
@@ -601,8 +602,8 @@ void TaskManagerImpl::Refresh() {
       !waiting_for_memory_dump_) {
     // The callback keeps this object alive until the callback is invoked.
     waiting_for_memory_dump_ = true;
-    auto callback = base::Bind(&TaskManagerImpl::OnReceivedMemoryDump,
-                               weak_ptr_factory_.GetWeakPtr());
+    auto callback = base::BindOnce(&TaskManagerImpl::OnReceivedMemoryDump,
+                                   weak_ptr_factory_.GetWeakPtr());
     memory_instrumentation::MemoryInstrumentation::GetInstance()
         ->RequestPrivateMemoryFootprint(base::kNullProcessId,
                                         std::move(callback));

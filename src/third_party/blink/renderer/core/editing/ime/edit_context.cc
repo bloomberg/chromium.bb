@@ -6,7 +6,6 @@
 
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_edit_context_init.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
@@ -21,6 +20,7 @@
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/wtf/decimal.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/base/ime/ime_text_span.h"
 
 namespace blink {
 
@@ -67,14 +67,25 @@ bool EditContext::HasPendingActivity() const {
 }
 
 InputMethodController& EditContext::GetInputMethodController() const {
-  return ExecutionContextClient::GetFrame()->GetInputMethodController();
+  return DomWindow()->GetFrame()->GetInputMethodController();
 }
 
 bool EditContext::IsEditContextActive() const {
   return true;
 }
 
-bool EditContext::IsInputPanelPolicyManual() const {
+ui::mojom::VirtualKeyboardVisibilityRequest
+EditContext::GetLastVirtualKeyboardVisibilityRequest() const {
+  return GetInputMethodController().GetLastVirtualKeyboardVisibilityRequest();
+}
+
+void EditContext::SetVirtualKeyboardVisibilityRequest(
+    ui::mojom::VirtualKeyboardVisibilityRequest vk_visibility_request) {
+  GetInputMethodController().SetVirtualKeyboardVisibilityRequest(
+      vk_visibility_request);
+}
+
+bool EditContext::IsVirtualKeyboardPolicyManual() const {
   return GetInputMethodController()
              .GetActiveEditContext()
              ->inputPanelPolicy() == "manual";
@@ -82,19 +93,15 @@ bool EditContext::IsInputPanelPolicyManual() const {
 
 void EditContext::DispatchCompositionEndEvent(const String& text) {
   auto* event = MakeGarbageCollected<CompositionEvent>(
-      event_type_names::kCompositionend,
-      ExecutionContextClient::GetFrame()->DomWindow(), text);
+      event_type_names::kCompositionend, DomWindow(), text);
   DispatchEvent(*event);
 }
 
 bool EditContext::DispatchCompositionStartEvent(const String& text) {
   auto* event = MakeGarbageCollected<CompositionEvent>(
-      event_type_names::kCompositionstart,
-      ExecutionContextClient::GetFrame()->DomWindow(), text);
+      event_type_names::kCompositionstart, DomWindow(), text);
   DispatchEvent(*event);
-  if (!ExecutionContextClient::GetFrame())
-    return false;
-  return true;
+  return DomWindow();
 }
 
 void EditContext::DispatchTextUpdateEvent(const String& text,
@@ -109,12 +116,13 @@ void EditContext::DispatchTextUpdateEvent(const String& text,
 }
 
 void EditContext::DispatchTextFormatEvent(
-    const WebVector<WebImeTextSpan>& ime_text_spans) {
+    const WebVector<ui::ImeTextSpan>& ime_text_spans) {
   // Loop through the vector and fire textformatupdate event for individual text
   // spans as there could be multiple formats in the spans.
   // TODO(snianu): Try to accumulate the ranges with similar formats and fire
   // one event.
   DCHECK(has_composition_);
+  String underline_thickness;
   String underline_style;
   for (const auto& ime_text_span : ime_text_spans) {
     const int format_range_start =
@@ -123,17 +131,31 @@ void EditContext::DispatchTextFormatEvent(
         ime_text_span.end_offset + composition_range_start_;
 
     switch (ime_text_span.thickness) {
-      case ui::mojom::ImeTextSpanThickness::kNone:
+      case ui::ImeTextSpan::Thickness::kNone:
+        underline_thickness = "None";
+        break;
+      case ui::ImeTextSpan::Thickness::kThin:
+        underline_thickness = "Thin";
+        break;
+      case ui::ImeTextSpan::Thickness::kThick:
+        underline_thickness = "Thick";
+        break;
+    }
+    switch (ime_text_span.underline_style) {
+      case ui::ImeTextSpan::UnderlineStyle::kNone:
         underline_style = "None";
         break;
-      case ui::mojom::ImeTextSpanThickness::kThin:
-        underline_style = "Thin";
+      case ui::ImeTextSpan::UnderlineStyle::kSolid:
+        underline_style = "Solid";
         break;
-      case ui::mojom::ImeTextSpanThickness::kThick:
-        underline_style = "Thick";
+      case ui::ImeTextSpan::UnderlineStyle::kDot:
+        underline_style = "Dotted";
         break;
-      default:
-        underline_style = "None";
+      case ui::ImeTextSpan::UnderlineStyle::kDash:
+        underline_style = "Dashed";
+        break;
+      case ui::ImeTextSpan::UnderlineStyle::kSquiggle:
+        underline_style = "Squiggle";
         break;
     }
     TextFormatUpdateEvent* event = MakeGarbageCollected<TextFormatUpdateEvent>(
@@ -144,7 +166,9 @@ void EditContext::DispatchTextFormatEvent(
             ime_text_span.background_color),
         cssvalue::CSSColorValue::SerializeAsCSSComponentValue(
             ime_text_span.suggestion_highlight_color),
-        underline_style);
+        cssvalue::CSSColorValue::SerializeAsCSSComponentValue(
+            ime_text_span.text_color),
+        underline_thickness, underline_style);
     DispatchEvent(*event);
   }
 }
@@ -364,7 +388,7 @@ void EditContext::GetLayoutBounds(WebRect* web_control_bounds,
 
 bool EditContext::SetComposition(
     const WebString& text,
-    const WebVector<WebImeTextSpan>& ime_text_spans,
+    const WebVector<ui::ImeTextSpan>& ime_text_spans,
     const WebRange& replacement_range,
     int selection_start,
     int selection_end) {
@@ -401,7 +425,7 @@ bool EditContext::SetComposition(
 bool EditContext::SetCompositionFromExistingText(
     int composition_start,
     int composition_end,
-    const WebVector<WebImeTextSpan>& ime_text_spans) {
+    const WebVector<ui::ImeTextSpan>& ime_text_spans) {
   if (composition_start < 0 || composition_end < 0)
     return false;
 
@@ -434,7 +458,7 @@ bool EditContext::SetCompositionFromExistingText(
 }
 
 bool EditContext::CommitText(const WebString& text,
-                             const WebVector<WebImeTextSpan>& ime_text_spans,
+                             const WebVector<ui::ImeTextSpan>& ime_text_spans,
                              const WebRange& replacement_range,
                              int relative_caret_position) {
   // Fire textupdate and textformatupdate events to JS.
@@ -545,6 +569,9 @@ WebTextInputInfo EditContext::TextInputInfo() {
   info.action = GetEditContextEnterKeyHint();
   info.input_mode = GetInputModeOfEditContext();
   info.type = TextInputType();
+  info.virtual_keyboard_policy = IsVirtualKeyboardPolicyManual()
+                                     ? ui::mojom::VirtualKeyboardPolicy::MANUAL
+                                     : ui::mojom::VirtualKeyboardPolicy::AUTO;
   info.value = text();
   info.flags = TextInputFlags();
   info.selection_start = selection_start_;
@@ -581,7 +608,7 @@ WebRange EditContext::GetSelectionOffsets() const {
   return WebRange(selection_start_, selection_end_);
 }
 
-void EditContext::Trace(Visitor* visitor) {
+void EditContext::Trace(Visitor* visitor) const {
   ActiveScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);

@@ -56,7 +56,7 @@ bool MdnsReader::Read(TxtRecordRdata::Entry* out) {
 }
 
 // RFC 1035: https://www.ietf.org/rfc/rfc1035.txt
-// See section 4.1.4. Message compression
+// See section 4.1.4. Message compression.
 bool MdnsReader::Read(DomainName* out) {
   OSP_DCHECK(out);
   const uint8_t* position = current();
@@ -322,8 +322,8 @@ bool MdnsReader::Read(MdnsQuestion* out) {
   return false;
 }
 
-bool MdnsReader::Read(MdnsMessage* out) {
-  OSP_DCHECK(out);
+ErrorOr<MdnsMessage> MdnsReader::Read() {
+  MdnsMessage out;
   Cursor cursor(this);
   Header header;
   std::vector<MdnsQuestion> questions;
@@ -334,26 +334,26 @@ bool MdnsReader::Read(MdnsMessage* out) {
       Read(header.answer_count, &answers) &&
       Read(header.authority_record_count, &authority_records) &&
       Read(header.additional_record_count, &additional_records)) {
-    // TODO(yakimakha): Skip messages with non-zero opcode and rcode.
-    // One way to do this is to change the method signature to return
-    // ErrorOr<MdnsMessage> and return different error codes for failure to read
-    // and for messages that were read successfully but are non-conforming.
+    if (!IsValidFlagsSection(header.flags)) {
+      return Error::Code::kMdnsNonConformingFailure;
+    }
+
     ErrorOr<MdnsMessage> message = MdnsMessage::TryCreate(
         header.id, GetMessageType(header.flags), questions, answers,
         authority_records, additional_records);
     if (message.is_error()) {
-      return false;
+      return std::move(message.error());
     }
-    *out = std::move(message.value());
+    out = std::move(message.value());
 
     if (IsMessageTruncated(header.flags)) {
-      out->set_truncated();
+      out.set_truncated();
     }
 
     cursor.Commit();
-    return true;
+    return out;
   }
-  return false;
+  return Error::Code::kMdnsReadFailure;
 }
 
 bool MdnsReader::Read(IPAddress::Version version, IPAddress* out) {

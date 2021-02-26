@@ -59,6 +59,7 @@ class SliderThumbElement final : public HTMLDivElement {
   HTMLInputElement* HostInput() const;
   void SetPositionFromPoint(const LayoutPoint&);
   void StopDragging();
+  bool IsSliderThumbElement() const override { return true; }
 
  private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
@@ -67,7 +68,6 @@ class SliderThumbElement final : public HTMLDivElement {
   bool IsDisabledFormControl() const override;
   bool MatchesReadOnlyPseudoClass() const override;
   bool MatchesReadWritePseudoClass() const override;
-  const Node* FocusDelegate() const override;
   void StartDragging();
 
   bool

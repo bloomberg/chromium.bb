@@ -18,6 +18,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/mouse_watcher.h"
 
 namespace views {
@@ -35,6 +37,8 @@ namespace ash {
 class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
                                   public views::MouseWatcherListener {
  public:
+  METADATA_HEADER(TrayBubbleView);
+
   class ASH_EXPORT Delegate {
    public:
     Delegate() {}
@@ -101,6 +105,8 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   };
 
   explicit TrayBubbleView(const InitParams& init_params);
+  TrayBubbleView(const TrayBubbleView&) = delete;
+  TrayBubbleView& operator=(const TrayBubbleView&) = delete;
   ~TrayBubbleView() override;
 
   // Sets up animations, and show the bubble. Must occur after CreateBubble()
@@ -152,36 +158,36 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   void set_gesture_dragging(bool dragging) { is_gesture_dragging_ = dragging; }
   bool is_gesture_dragging() const { return is_gesture_dragging_; }
 
-  // Overridden from views::WidgetDelegate.
-  views::NonClientFrameView* CreateNonClientFrameView(
+  // views::WidgetDelegate:
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
   bool WidgetHasHitTestMask() const override;
   void GetWidgetHitTestMask(SkPath* mask) const override;
   base::string16 GetAccessibleWindowTitle() const override;
 
-  // Overridden from views::BubbleDialogDelegateView.
+  // views::BubbleDialogDelegateView:
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* bubble_widget) const override;
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
   ui::LayerType GetLayerType() const override;
 
-  // Overridden from views::View.
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  const char* GetClassName() const override;
+  void OnThemeChanged() override;
 
-  // Overridden from MouseWatcherListener
+  // views::MouseWatcherListener:
   void MouseMovedOutOfHost() override;
 
  protected:
-  // Overridden from views::BubbleDialogDelegateView.
+  // views::BubbleDialogDelegateView:
   ax::mojom::Role GetAccessibleWindowRole() override;
 
-  // Overridden from views::View.
+  // views::View:
   void ChildPreferredSizeChanged(View* child) override;
 
   // Changes the insets from the bubble border. These were initially set using
@@ -235,10 +241,13 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
 
   base::Optional<StatusAreaWidget::ScopedTrayBubbleCounter>
       tray_bubble_counter_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrayBubbleView);
 };
 
+BEGIN_VIEW_BUILDER(ASH_EXPORT, TrayBubbleView, views::BubbleDialogDelegateView)
+END_VIEW_BUILDER
+
 }  // namespace ash
+
+DEFINE_VIEW_BUILDER(ASH_EXPORT, ash::TrayBubbleView)
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_

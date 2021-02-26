@@ -6,31 +6,37 @@
 
 #include <unordered_map>
 
+#include "src/base/optional.h"
 #include "src/base/utils/random-number-generator.h"
 #include "src/codegen/compilation-cache.h"
 #include "src/deoptimizer/deoptimizer.h"
 #include "src/execution/execution.h"
 #include "src/execution/frames-inl.h"
+#include "src/execution/isolate-utils-inl.h"
+#include "src/execution/isolate-utils.h"
 #include "src/execution/vm-state-inl.h"
 #include "src/handles/global-handles.h"
-#include "src/heap/array-buffer-collector.h"
 #include "src/heap/array-buffer-sweeper.h"
-#include "src/heap/array-buffer-tracker-inl.h"
+#include "src/heap/code-object-registry.h"
 #include "src/heap/gc-tracer.h"
 #include "src/heap/incremental-marking-inl.h"
+#include "src/heap/index-generator.h"
 #include "src/heap/invalidated-slots-inl.h"
 #include "src/heap/item-parallel-job.h"
 #include "src/heap/large-spaces.h"
 #include "src/heap/local-allocator-inl.h"
 #include "src/heap/mark-compact-inl.h"
+#include "src/heap/marking-barrier.h"
 #include "src/heap/marking-visitor-inl.h"
 #include "src/heap/marking-visitor.h"
 #include "src/heap/memory-measurement-inl.h"
 #include "src/heap/memory-measurement.h"
 #include "src/heap/object-stats.h"
 #include "src/heap/objects-visiting-inl.h"
+#include "src/heap/parallel-work-item.h"
 #include "src/heap/read-only-heap.h"
 #include "src/heap/read-only-spaces.h"
+#include "src/heap/safepoint.h"
 #include "src/heap/spaces-inl.h"
 #include "src/heap/sweeper.h"
 #include "src/heap/worklist.h"
@@ -113,30 +119,28 @@ void MarkingVerifier::VerifyRoots() {
 
 void MarkingVerifier::VerifyMarkingOnPage(const Page* page, Address start,
                                           Address end) {
-  HeapObject object;
   Address next_object_must_be_here_or_later = start;
-  for (Address current = start; current < end;) {
-    object = HeapObject::FromAddress(current);
-    // One word fillers at the end of a black area can be grey.
-    if (IsBlackOrGrey(object) &&
-        object.map() != ReadOnlyRoots(heap_).one_pointer_filler_map()) {
-      CHECK(IsMarked(object));
-      CHECK(current >= next_object_must_be_here_or_later);
-      object.Iterate(this);
-      next_object_must_be_here_or_later = current + object.Size();
-      // The object is either part of a black area of black allocation or a
-      // regular black object
-      CHECK(
-          bitmap(page)->AllBitsSetInRange(
+
+  for (auto object_and_size :
+       LiveObjectRange<kAllLiveObjects>(page, bitmap(page))) {
+    HeapObject object = object_and_size.first;
+    size_t size = object_and_size.second;
+    Address current = object.address();
+    if (current < start) continue;
+    if (current >= end) break;
+    CHECK(IsMarked(object));
+    CHECK(current >= next_object_must_be_here_or_later);
+    object.Iterate(this);
+    next_object_must_be_here_or_later = current + size;
+    // The object is either part of a black area of black allocation or a
+    // regular black object
+    CHECK(bitmap(page)->AllBitsSetInRange(
               page->AddressToMarkbitIndex(current),
               page->AddressToMarkbitIndex(next_object_must_be_here_or_later)) ||
           bitmap(page)->AllBitsClearInRange(
               page->AddressToMarkbitIndex(current + kTaggedSize * 2),
               page->AddressToMarkbitIndex(next_object_must_be_here_or_later)));
-      current = next_object_must_be_here_or_later;
-    } else {
-      current += kTaggedSize;
-    }
+    current = next_object_must_be_here_or_later;
   }
 }
 
@@ -387,41 +391,14 @@ int NumberOfAvailableCores() {
 
 }  // namespace
 
-int MarkCompactCollectorBase::NumberOfParallelCompactionTasks(int pages) {
-  DCHECK_GT(pages, 0);
-  int tasks = FLAG_parallel_compaction ? Min(NumberOfAvailableCores(),
-                                             pages / (MB / Page::kPageSize) + 1)
-                                       : 1;
-  if (!heap_->CanExpandOldGeneration(
+int MarkCompactCollectorBase::NumberOfParallelCompactionTasks() {
+  int tasks = FLAG_parallel_compaction ? NumberOfAvailableCores() : 1;
+  if (!heap_->CanPromoteYoungAndExpandOldGeneration(
           static_cast<size_t>(tasks * Page::kPageSize))) {
     // Optimize for memory usage near the heap limit.
     tasks = 1;
   }
   return tasks;
-}
-
-int MarkCompactCollectorBase::NumberOfParallelPointerUpdateTasks(int pages,
-                                                                 int slots) {
-  DCHECK_GT(pages, 0);
-  // Limit the number of update tasks as task creation often dominates the
-  // actual work that is being done.
-  const int kMaxPointerUpdateTasks = 8;
-  const int kSlotsPerTask = 600;
-  const int wanted_tasks =
-      (slots >= 0) ? Max(1, Min(pages, slots / kSlotsPerTask)) : pages;
-  return FLAG_parallel_pointer_update
-             ? Min(kMaxPointerUpdateTasks,
-                   Min(NumberOfAvailableCores(), wanted_tasks))
-             : 1;
-}
-
-int MarkCompactCollectorBase::NumberOfParallelToSpacePointerUpdateTasks(
-    int pages) {
-  DCHECK_GT(pages, 0);
-  // No cap needed because all pages we need to process are fully filled with
-  // interesting objects.
-  return FLAG_parallel_pointer_update ? Min(NumberOfAvailableCores(), pages)
-                                      : 1;
 }
 
 MarkCompactCollector::MarkCompactCollector(Heap* heap)
@@ -452,7 +429,10 @@ void MarkCompactCollector::TearDown() {
   AbortCompaction();
   AbortWeakObjects();
   if (heap()->incremental_marking()->IsMarking()) {
-    marking_worklists_holder()->Clear();
+    local_marking_worklists()->Publish();
+    heap()->marking_barrier()->Publish();
+    // Marking barriers of LocalHeaps will be published in their destructors.
+    marking_worklists()->Clear();
   }
 }
 
@@ -504,10 +484,6 @@ bool MarkCompactCollector::StartCompaction() {
 }
 
 void MarkCompactCollector::StartMarking() {
-  if (FLAG_concurrent_marking || FLAG_parallel_marking) {
-    heap_->new_space()->ResetOriginalTop();
-    heap_->new_lo_space()->ResetPendingObject();
-  }
   std::vector<Address> contexts =
       heap()->memory_measurement()->StartProcessing();
   if (FLAG_stress_per_context_marking_worklist) {
@@ -517,12 +493,12 @@ void MarkCompactCollector::StartMarking() {
       contexts.push_back(context->ptr());
     }
   }
-  marking_worklists_holder()->CreateContextWorklists(contexts);
-  marking_worklists_ = std::make_unique<MarkingWorklists>(
-      kMainThreadTask, marking_worklists_holder());
+  marking_worklists()->CreateContextWorklists(contexts);
+  local_marking_worklists_ =
+      std::make_unique<MarkingWorklists::Local>(marking_worklists());
   marking_visitor_ = std::make_unique<MarkingVisitor>(
-      marking_state(), marking_worklists(), weak_objects(), heap_, epoch(),
-      Heap::GetBytecodeFlushMode(),
+      marking_state(), local_marking_worklists(), weak_objects(), heap_,
+      epoch(), Heap::GetBytecodeFlushMode(),
       heap_->local_embedder_heap_tracer()->InUse(),
       heap_->is_current_gc_forced());
 // Marking bits are cleared by the sweeper.
@@ -619,6 +595,17 @@ void MarkCompactCollector::EnsureSweepingCompleted() {
 #endif
 }
 
+void MarkCompactCollector::DrainSweepingWorklists() {
+  if (!sweeper()->sweeping_in_progress()) return;
+  sweeper()->DrainSweepingWorklists();
+}
+
+void MarkCompactCollector::DrainSweepingWorklistForSpace(
+    AllocationSpace space) {
+  if (!sweeper()->sweeping_in_progress()) return;
+  sweeper()->DrainSweepingWorklistForSpace(space);
+}
+
 void MarkCompactCollector::ComputeEvacuationHeuristics(
     size_t area_size, int* target_fragmentation_percent,
     size_t* max_evacuated_bytes) {
@@ -708,6 +695,13 @@ void MarkCompactCollector::CollectEvacuationCandidates(PagedSpace* space) {
     if (p->NeverEvacuate() || (p == owner_of_linear_allocation_area) ||
         !p->CanAllocate())
       continue;
+
+    if (p->IsPinned()) {
+      DCHECK(
+          !p->IsFlagSet(MemoryChunk::FORCE_EVACUATION_CANDIDATE_FOR_TESTING));
+      continue;
+    }
+
     // Invariant: Evacuation candidates are just created when marking is
     // started. This means that sweeping has finished. Furthermore, at the end
     // of a GC all evacuation candidates are cleared and their slot buffers are
@@ -725,6 +719,11 @@ void MarkCompactCollector::CollectEvacuationCandidates(PagedSpace* space) {
       }
     } else {
       pages.push_back(std::make_pair(p->allocated_bytes(), p));
+    }
+
+    // Unpin pages for the next GC
+    if (p->IsFlagSet(MemoryChunk::PINNED)) {
+      p->ClearFlag(MemoryChunk::PINNED);
     }
   }
 
@@ -868,15 +867,24 @@ void MarkCompactCollector::Prepare() {
        space = spaces.Next()) {
     space->PrepareForMarkCompact();
   }
-  heap()->account_external_memory_concurrently_freed();
+
+  if (FLAG_local_heaps) {
+    // Fill and reset all background thread LABs
+    heap_->safepoint()->IterateLocalHeaps(
+        [](LocalHeap* local_heap) { local_heap->FreeLinearAllocationArea(); });
+  }
+
+  // All objects are guaranteed to be initialized in atomic pause
+  heap()->new_lo_space()->ResetPendingObject();
+  DCHECK_EQ(heap()->new_space()->top(),
+            heap()->new_space()->original_top_acquire());
 }
 
-void MarkCompactCollector::FinishConcurrentMarking(
-    ConcurrentMarking::StopRequest stop_request) {
+void MarkCompactCollector::FinishConcurrentMarking() {
   // FinishConcurrentMarking is called for both, concurrent and parallel,
   // marking. It is safe to call this function when tasks are already finished.
   if (FLAG_parallel_marking || FLAG_concurrent_marking) {
-    heap()->concurrent_marking()->Stop(stop_request);
+    heap()->concurrent_marking()->Join();
     heap()->concurrent_marking()->FlushMemoryChunkData(
         non_atomic_marking_state());
     heap()->concurrent_marking()->FlushNativeContexts(&native_context_stats_);
@@ -884,7 +892,7 @@ void MarkCompactCollector::FinishConcurrentMarking(
 }
 
 void MarkCompactCollector::VerifyMarking() {
-  CHECK(marking_worklists()->IsEmpty());
+  CHECK(local_marking_worklists()->IsEmpty());
   DCHECK(heap_->incremental_marking()->IsStopped());
 #ifdef VERIFY_HEAP
   if (FLAG_verify_heap) {
@@ -911,8 +919,8 @@ void MarkCompactCollector::Finish() {
 #endif
 
   marking_visitor_.reset();
-  marking_worklists_.reset();
-  marking_worklists_holder_.ReleaseContextWorklists();
+  local_marking_worklists_.reset();
+  marking_worklists_.ReleaseContextWorklists();
   native_context_stats_.Clear();
 
   CHECK(weak_objects_.current_ephemerons.IsEmpty());
@@ -1026,43 +1034,36 @@ class MarkCompactCollector::CustomRootBodyMarkingVisitor final
   MarkCompactCollector* const collector_;
 };
 
-class InternalizedStringTableCleaner : public ObjectVisitor {
+class InternalizedStringTableCleaner : public RootVisitor {
  public:
-  InternalizedStringTableCleaner(Heap* heap, HeapObject table)
-      : heap_(heap), pointers_removed_(0), table_(table) {}
+  explicit InternalizedStringTableCleaner(Heap* heap)
+      : heap_(heap), pointers_removed_(0) {}
 
-  void VisitPointers(HeapObject host, ObjectSlot start,
-                     ObjectSlot end) override {
+  void VisitRootPointers(Root root, const char* description,
+                         FullObjectSlot start, FullObjectSlot end) override {
+    UNREACHABLE();
+  }
+
+  void VisitRootPointers(Root root, const char* description,
+                         OffHeapObjectSlot start,
+                         OffHeapObjectSlot end) override {
+    DCHECK_EQ(root, Root::kStringTable);
     // Visit all HeapObject pointers in [start, end).
-    Object the_hole = ReadOnlyRoots(heap_).the_hole_value();
     MarkCompactCollector::NonAtomicMarkingState* marking_state =
         heap_->mark_compact_collector()->non_atomic_marking_state();
-    for (ObjectSlot p = start; p < end; ++p) {
-      Object o = *p;
+    Isolate* isolate = heap_->isolate();
+    for (OffHeapObjectSlot p = start; p < end; ++p) {
+      Object o = p.load(isolate);
       if (o.IsHeapObject()) {
         HeapObject heap_object = HeapObject::cast(o);
+        DCHECK(!Heap::InYoungGeneration(heap_object));
         if (marking_state->IsWhite(heap_object)) {
           pointers_removed_++;
           // Set the entry to the_hole_value (as deleted).
-          p.store(the_hole);
-        } else {
-          // StringTable contains only old space strings.
-          DCHECK(!Heap::InYoungGeneration(o));
-          MarkCompactCollector::RecordSlot(table_, p, heap_object);
+          p.store(StringTable::deleted_element());
         }
       }
     }
-  }
-
-  void VisitPointers(HeapObject host, MaybeObjectSlot start,
-                     MaybeObjectSlot end) final {
-    UNREACHABLE();
-  }
-
-  void VisitCodeTarget(Code host, RelocInfo* rinfo) final { UNREACHABLE(); }
-
-  void VisitEmbeddedPointer(Code host, RelocInfo* rinfo) final {
-    UNREACHABLE();
   }
 
   int PointersRemoved() { return pointers_removed_; }
@@ -1070,7 +1071,6 @@ class InternalizedStringTableCleaner : public ObjectVisitor {
  private:
   Heap* heap_;
   int pointers_removed_;
-  HeapObject table_;
 };
 
 class ExternalStringTableCleaner : public RootVisitor {
@@ -1223,7 +1223,7 @@ class RecordMigratedSlotVisitor : public ObjectVisitor {
   inline virtual void RecordMigratedSlot(HeapObject host, MaybeObject value,
                                          Address slot) {
     if (value->IsStrongOrWeak()) {
-      MemoryChunk* p = MemoryChunk::FromAddress(value.ptr());
+      BasicMemoryChunk* p = BasicMemoryChunk::FromAddress(value.ptr());
       if (p->InYoungGeneration()) {
         DCHECK_IMPLIES(
             p->IsToPage(),
@@ -1336,7 +1336,7 @@ class EvacuateVisitorBase : public HeapObjectVisitor {
   inline bool TryEvacuateObject(AllocationSpace target_space, HeapObject object,
                                 int size, HeapObject* target_object) {
 #ifdef VERIFY_HEAP
-    if (AbortCompactionForTesting(object)) return false;
+    if (FLAG_verify_heap && AbortCompactionForTesting(object)) return false;
 #endif  // VERIFY_HEAP
     AllocationAlignment alignment = HeapObject::RequiredAlignment(object.map());
     AllocationResult allocation = local_allocator_->Allocate(
@@ -1585,29 +1585,13 @@ bool MarkCompactCollector::IsUnmarkedHeapObject(Heap* heap, FullObjectSlot p) {
       heap_object);
 }
 
-void MarkCompactCollector::MarkStringTable(
-    ObjectVisitor* custom_root_body_visitor) {
-  StringTable string_table = heap()->string_table();
-  // Mark the string table itself.
-  if (marking_state()->WhiteToBlack(string_table)) {
-    // Explicitly mark the prefix.
-    string_table.IteratePrefix(custom_root_body_visitor);
-    if (marking_worklists()->IsPerContextMode()) {
-      native_context_stats_.IncrementSize(MarkingWorklists::kSharedContext,
-                                          string_table.map(), string_table,
-                                          string_table.Size());
-    }
-  }
-}
-
 void MarkCompactCollector::MarkRoots(RootVisitor* root_visitor,
                                      ObjectVisitor* custom_root_body_visitor) {
   // Mark the heap roots including global variables, stack variables,
   // etc., and all objects reachable from them.
   heap()->IterateRoots(root_visitor, base::EnumSet<SkipRoot>{SkipRoot::kWeak});
 
-  // Custom marking for string table and top optimized frame.
-  MarkStringTable(custom_root_body_visitor);
+  // Custom marking for top optimized frame.
   ProcessTopOptimizedFrame(custom_root_body_visitor);
 }
 
@@ -1625,10 +1609,9 @@ void MarkCompactCollector::RevisitObject(HeapObject obj) {
 }
 
 void MarkCompactCollector::MarkDescriptorArrayFromWriteBarrier(
-    HeapObject host, DescriptorArray descriptors,
-    int number_of_own_descriptors) {
+    DescriptorArray descriptors, int number_of_own_descriptors) {
   marking_visitor_->MarkDescriptorArrayFromWriteBarrier(
-      host, descriptors, number_of_own_descriptors);
+      descriptors, number_of_own_descriptors);
 }
 
 void MarkCompactCollector::ProcessEphemeronsUntilFixpoint() {
@@ -1655,25 +1638,25 @@ void MarkCompactCollector::ProcessEphemeronsUntilFixpoint() {
                GCTracer::Scope::MC_MARK_WEAK_CLOSURE_EPHEMERON_MARKING);
 
       if (FLAG_parallel_marking) {
-        heap_->concurrent_marking()->RescheduleTasksIfNeeded();
+        heap_->concurrent_marking()->RescheduleJobIfNeeded(
+            TaskPriority::kUserBlocking);
       }
 
       work_to_do = ProcessEphemerons();
-      FinishConcurrentMarking(
-          ConcurrentMarking::StopRequest::COMPLETE_ONGOING_TASKS);
+      FinishConcurrentMarking();
     }
 
     CHECK(weak_objects_.current_ephemerons.IsEmpty());
     CHECK(weak_objects_.discovered_ephemerons.IsEmpty());
 
-    work_to_do = work_to_do || !marking_worklists()->IsEmpty() ||
+    work_to_do = work_to_do || !local_marking_worklists()->IsEmpty() ||
                  heap()->concurrent_marking()->ephemeron_marked() ||
-                 !marking_worklists()->IsEmbedderEmpty() ||
+                 !local_marking_worklists()->IsEmbedderEmpty() ||
                  !heap()->local_embedder_heap_tracer()->IsRemoteTracingDone();
     ++iterations;
   }
 
-  CHECK(marking_worklists()->IsEmpty());
+  CHECK(local_marking_worklists()->IsEmpty());
   CHECK(weak_objects_.current_ephemerons.IsEmpty());
   CHECK(weak_objects_.discovered_ephemerons.IsEmpty());
 }
@@ -1762,7 +1745,7 @@ void MarkCompactCollector::ProcessEphemeronsLinear() {
       weak_objects_.next_ephemerons.Iterate([&](Ephemeron ephemeron) {
         if (non_atomic_marking_state()->IsBlackOrGrey(ephemeron.key) &&
             non_atomic_marking_state()->WhiteToGrey(ephemeron.value)) {
-          marking_worklists()->Push(ephemeron.value);
+          local_marking_worklists()->Push(ephemeron.value);
         }
       });
 
@@ -1783,8 +1766,8 @@ void MarkCompactCollector::ProcessEphemeronsLinear() {
     // for work_to_do are not sufficient for determining if another iteration
     // is necessary.
 
-    work_to_do = !marking_worklists()->IsEmpty() ||
-                 !marking_worklists()->IsEmbedderEmpty() ||
+    work_to_do = !local_marking_worklists()->IsEmpty() ||
+                 !local_marking_worklists()->IsEmbedderEmpty() ||
                  !heap()->local_embedder_heap_tracer()->IsRemoteTracingDone();
     CHECK(weak_objects_.discovered_ephemerons.IsEmpty());
   }
@@ -1792,7 +1775,7 @@ void MarkCompactCollector::ProcessEphemeronsLinear() {
   ResetNewlyDiscovered();
   ephemeron_marking_.newly_discovered.shrink_to_fit();
 
-  CHECK(marking_worklists()->IsEmpty());
+  CHECK(local_marking_worklists()->IsEmpty());
 }
 
 void MarkCompactCollector::PerformWrapperTracing() {
@@ -1802,7 +1785,7 @@ void MarkCompactCollector::PerformWrapperTracing() {
       LocalEmbedderHeapTracer::ProcessingScope scope(
           heap_->local_embedder_heap_tracer());
       HeapObject object;
-      while (marking_worklists()->PopEmbedder(&object)) {
+      while (local_marking_worklists()->PopEmbedder(&object)) {
         scope.TracePossibleWrapper(JSObject::cast(object));
       }
     }
@@ -1817,10 +1800,10 @@ template <MarkCompactCollector::MarkingWorklistProcessingMode mode>
 size_t MarkCompactCollector::ProcessMarkingWorklist(size_t bytes_to_process) {
   HeapObject object;
   size_t bytes_processed = 0;
-  bool is_per_context_mode = marking_worklists()->IsPerContextMode();
+  bool is_per_context_mode = local_marking_worklists()->IsPerContextMode();
   Isolate* isolate = heap()->isolate();
-  while (marking_worklists()->Pop(&object) ||
-         marking_worklists()->PopOnHold(&object)) {
+  while (local_marking_worklists()->Pop(&object) ||
+         local_marking_worklists()->PopOnHold(&object)) {
     // Left trimming may result in grey or black filler objects on the marking
     // worklist. Ignore these objects.
     if (object.IsFreeSpaceOrFiller()) {
@@ -1847,13 +1830,13 @@ size_t MarkCompactCollector::ProcessMarkingWorklist(size_t bytes_to_process) {
     if (is_per_context_mode) {
       Address context;
       if (native_context_inferrer_.Infer(isolate, map, object, &context)) {
-        marking_worklists()->SwitchToContext(context);
+        local_marking_worklists()->SwitchToContext(context);
       }
     }
     size_t visited_size = marking_visitor_->Visit(map, object);
     if (is_per_context_mode) {
-      native_context_stats_.IncrementSize(marking_worklists()->Context(), map,
-                                          object, visited_size);
+      native_context_stats_.IncrementSize(local_marking_worklists()->Context(),
+                                          map, object, visited_size);
     }
     bytes_processed += visited_size;
     if (bytes_to_process && bytes_processed >= bytes_to_process) {
@@ -1874,7 +1857,7 @@ template size_t MarkCompactCollector::ProcessMarkingWorklist<
 bool MarkCompactCollector::ProcessEphemeron(HeapObject key, HeapObject value) {
   if (marking_state()->IsBlackOrGrey(key)) {
     if (marking_state()->WhiteToGrey(value)) {
-      marking_worklists()->Push(value);
+      local_marking_worklists()->Push(value);
       return true;
     }
 
@@ -1886,7 +1869,7 @@ bool MarkCompactCollector::ProcessEphemeron(HeapObject key, HeapObject value) {
 }
 
 void MarkCompactCollector::ProcessEphemeronMarking() {
-  DCHECK(marking_worklists()->IsEmpty());
+  DCHECK(local_marking_worklists()->IsEmpty());
 
   // Incremental marking might leave ephemerons in main task's local
   // buffer, flush it into global pool.
@@ -1894,7 +1877,7 @@ void MarkCompactCollector::ProcessEphemeronMarking() {
 
   ProcessEphemeronsUntilFixpoint();
 
-  CHECK(marking_worklists()->IsEmpty());
+  CHECK(local_marking_worklists()->IsEmpty());
   CHECK(heap()->local_embedder_heap_tracer()->IsRemoteTracingDone());
 }
 
@@ -1951,6 +1934,7 @@ void MarkCompactCollector::MarkLiveObjects() {
     IncrementalMarking* incremental_marking = heap_->incremental_marking();
     if (was_marked_incrementally_) {
       incremental_marking->Finalize();
+      MarkingBarrier::PublishAll(heap());
     } else {
       CHECK(incremental_marking->IsStopped());
     }
@@ -1974,19 +1958,19 @@ void MarkCompactCollector::MarkLiveObjects() {
   {
     TRACE_GC(heap()->tracer(), GCTracer::Scope::MC_MARK_MAIN);
     if (FLAG_parallel_marking) {
-      heap_->concurrent_marking()->RescheduleTasksIfNeeded();
+      heap_->concurrent_marking()->RescheduleJobIfNeeded(
+          TaskPriority::kUserBlocking);
     }
     DrainMarkingWorklist();
 
-    FinishConcurrentMarking(
-        ConcurrentMarking::StopRequest::COMPLETE_ONGOING_TASKS);
+    FinishConcurrentMarking();
     DrainMarkingWorklist();
   }
 
   {
     TRACE_GC(heap()->tracer(), GCTracer::Scope::MC_MARK_WEAK_CLOSURE);
 
-    DCHECK(marking_worklists()->IsEmpty());
+    DCHECK(local_marking_worklists()->IsEmpty());
 
     // Mark objects reachable through the embedder heap. This phase is
     // opportunistic as it may not discover graphs that are only reachable
@@ -2001,9 +1985,9 @@ void MarkCompactCollector::MarkLiveObjects() {
         PerformWrapperTracing();
         DrainMarkingWorklist();
       } while (!heap_->local_embedder_heap_tracer()->IsRemoteTracingDone() ||
-               !marking_worklists()->IsEmbedderEmpty());
-      DCHECK(marking_worklists()->IsEmbedderEmpty());
-      DCHECK(marking_worklists()->IsEmpty());
+               !local_marking_worklists()->IsEmbedderEmpty());
+      DCHECK(local_marking_worklists()->IsEmbedderEmpty());
+      DCHECK(local_marking_worklists()->IsEmpty());
     }
 
     // The objects reachable from the roots are marked, yet unreachable objects
@@ -2013,7 +1997,7 @@ void MarkCompactCollector::MarkLiveObjects() {
       TRACE_GC(heap()->tracer(),
                GCTracer::Scope::MC_MARK_WEAK_CLOSURE_EPHEMERON);
       ProcessEphemeronMarking();
-      DCHECK(marking_worklists()->IsEmpty());
+      DCHECK(local_marking_worklists()->IsEmpty());
     }
 
     // The objects reachable from the roots, weak maps, and embedder heap
@@ -2045,8 +2029,8 @@ void MarkCompactCollector::MarkLiveObjects() {
     {
       TRACE_GC(heap()->tracer(), GCTracer::Scope::MC_MARK_WEAK_CLOSURE_HARMONY);
       ProcessEphemeronMarking();
-      DCHECK(marking_worklists()->IsEmbedderEmpty());
-      DCHECK(marking_worklists()->IsEmpty());
+      DCHECK(local_marking_worklists()->IsEmbedderEmpty());
+      DCHECK(local_marking_worklists()->IsEmpty());
     }
 
     {
@@ -2054,9 +2038,8 @@ void MarkCompactCollector::MarkLiveObjects() {
           &IsUnmarkedHeapObject);
     }
   }
-
   if (was_marked_incrementally_) {
-    heap()->incremental_marking()->Deactivate();
+    MarkingBarrier::DeactivateAll(heap());
   }
 
   epoch_++;
@@ -2071,10 +2054,11 @@ void MarkCompactCollector::ClearNonLiveReferences() {
     // Prune the string table removing all strings only pointed to by the
     // string table.  Cannot use string_table() here because the string
     // table is marked.
-    StringTable string_table = heap()->string_table();
-    InternalizedStringTableCleaner internalized_visitor(heap(), string_table);
-    string_table.IterateElements(&internalized_visitor);
-    string_table.ElementsRemoved(internalized_visitor.PointersRemoved());
+    StringTable* string_table = isolate()->string_table();
+    InternalizedStringTableCleaner internalized_visitor(heap());
+    string_table->DropOldData();
+    string_table->IterateElements(&internalized_visitor);
+    string_table->NotifyElementsRemoved(internalized_visitor.PointersRemoved());
 
     ExternalStringTableCleaner external_visitor(heap());
     heap()->external_string_table_.IterateAll(&external_visitor);
@@ -2162,8 +2146,8 @@ void MarkCompactCollector::ClearPotentialSimpleMapTransition(Map map,
   DCHECK_EQ(map.raw_transitions(), HeapObjectReference::Weak(dead_target));
   // Take ownership of the descriptor array.
   int number_of_own_descriptors = map.NumberOfOwnDescriptors();
-  DescriptorArray descriptors = map.instance_descriptors();
-  if (descriptors == dead_target.instance_descriptors() &&
+  DescriptorArray descriptors = map.instance_descriptors(kRelaxedLoad);
+  if (descriptors == dead_target.instance_descriptors(kRelaxedLoad) &&
       number_of_own_descriptors > 0) {
     TrimDescriptorArray(map, descriptors);
     DCHECK(descriptors.number_of_descriptors() == number_of_own_descriptors);
@@ -2233,7 +2217,7 @@ void MarkCompactCollector::FlushBytecodeFromSFI(
 
   // Use the raw function data setter to avoid validity checks, since we're
   // performing the unusual task of decompiling.
-  shared_info.set_function_data(uncompiled_data);
+  shared_info.set_function_data(uncompiled_data, kReleaseStore);
   DCHECK(!shared_info.is_compiled());
 }
 
@@ -2281,11 +2265,19 @@ void MarkCompactCollector::ClearFullMapTransitions() {
       // filled. Allow it.
       if (array.GetTargetIfExists(0, isolate(), &map)) {
         DCHECK(!map.is_null());  // Weak pointers aren't cleared yet.
+        Object constructor_or_backpointer = map.constructor_or_backpointer();
+        if (constructor_or_backpointer.IsSmi()) {
+          DCHECK(isolate()->has_active_deserializer());
+          DCHECK_EQ(constructor_or_backpointer,
+                    Deserializer::uninitialized_field_value());
+          continue;
+        }
         Map parent = Map::cast(map.constructor_or_backpointer());
         bool parent_is_alive =
             non_atomic_marking_state()->IsBlackOrGrey(parent);
         DescriptorArray descriptors =
-            parent_is_alive ? parent.instance_descriptors() : DescriptorArray();
+            parent_is_alive ? parent.instance_descriptors(kRelaxedLoad)
+                            : DescriptorArray();
         bool descriptors_owner_died =
             CompactTransitionArray(parent, array, descriptors);
         if (descriptors_owner_died) {
@@ -2309,7 +2301,7 @@ bool MarkCompactCollector::CompactTransitionArray(Map map,
     DCHECK_EQ(target.constructor_or_backpointer(), map);
     if (non_atomic_marking_state()->IsWhite(target)) {
       if (!descriptors.is_null() &&
-          target.instance_descriptors() == descriptors) {
+          target.instance_descriptors(kRelaxedLoad) == descriptors) {
         DCHECK(!target.is_prototype_map());
         descriptors_owner_died = true;
       }
@@ -2383,7 +2375,7 @@ void MarkCompactCollector::TrimDescriptorArray(Map map,
     descriptors.Sort();
 
     if (FLAG_unbox_double_fields) {
-      LayoutDescriptor layout_descriptor = map.layout_descriptor();
+      LayoutDescriptor layout_descriptor = map.layout_descriptor(kAcquireLoad);
       layout_descriptor = layout_descriptor.Trim(heap_, map, descriptors,
                                                  number_of_own_descriptors);
       SLOW_DCHECK(layout_descriptor.IsConsistentWithMap(map, true));
@@ -2420,12 +2412,13 @@ void MarkCompactCollector::ClearWeakCollections() {
     for (InternalIndex i : table.IterateEntries()) {
       HeapObject key = HeapObject::cast(table.KeyAt(i));
 #ifdef VERIFY_HEAP
-      Object value = table.ValueAt(i);
-
-      if (value.IsHeapObject()) {
-        CHECK_IMPLIES(
-            non_atomic_marking_state()->IsBlackOrGrey(key),
-            non_atomic_marking_state()->IsBlackOrGrey(HeapObject::cast(value)));
+      if (FLAG_verify_heap) {
+        Object value = table.ValueAt(i);
+        if (value.IsHeapObject()) {
+          CHECK_IMPLIES(non_atomic_marking_state()->IsBlackOrGrey(key),
+                        non_atomic_marking_state()->IsBlackOrGrey(
+                            HeapObject::cast(value)));
+        }
       }
 #endif
       if (!non_atomic_marking_state()->IsBlackOrGrey(key)) {
@@ -2631,6 +2624,12 @@ MaybeObject MakeSlotValue<MaybeObjectSlot, HeapObjectReferenceType::WEAK>(
   return HeapObjectReference::Weak(heap_object);
 }
 
+template <>
+Object MakeSlotValue<OffHeapObjectSlot, HeapObjectReferenceType::STRONG>(
+    HeapObject heap_object) {
+  return heap_object;
+}
+
 #ifdef V8_COMPRESS_POINTERS
 template <>
 Object MakeSlotValue<FullObjectSlot, HeapObjectReferenceType::STRONG>(
@@ -2654,12 +2653,13 @@ template <AccessMode access_mode, HeapObjectReferenceType reference_type,
 static inline SlotCallbackResult UpdateSlot(TSlot slot,
                                             typename TSlot::TObject old,
                                             HeapObject heap_obj) {
-  static_assert(
-      std::is_same<TSlot, FullObjectSlot>::value ||
-          std::is_same<TSlot, ObjectSlot>::value ||
-          std::is_same<TSlot, FullMaybeObjectSlot>::value ||
-          std::is_same<TSlot, MaybeObjectSlot>::value,
-      "Only [Full]ObjectSlot and [Full]MaybeObjectSlot are expected here");
+  static_assert(std::is_same<TSlot, FullObjectSlot>::value ||
+                    std::is_same<TSlot, ObjectSlot>::value ||
+                    std::is_same<TSlot, FullMaybeObjectSlot>::value ||
+                    std::is_same<TSlot, MaybeObjectSlot>::value ||
+                    std::is_same<TSlot, OffHeapObjectSlot>::value,
+                "Only [Full|OffHeap]ObjectSlot and [Full]MaybeObjectSlot are "
+                "expected here");
   MapWord map_word = heap_obj.map_word();
   if (map_word.IsForwardingAddress()) {
     DCHECK_IMPLIES(!Heap::InFromPage(heap_obj),
@@ -2683,8 +2683,8 @@ static inline SlotCallbackResult UpdateSlot(TSlot slot,
 }
 
 template <AccessMode access_mode, typename TSlot>
-static inline SlotCallbackResult UpdateSlot(TSlot slot) {
-  typename TSlot::TObject obj = slot.Relaxed_Load();
+static inline SlotCallbackResult UpdateSlot(IsolateRoot isolate, TSlot slot) {
+  typename TSlot::TObject obj = slot.Relaxed_Load(isolate);
   HeapObject heap_obj;
   if (TSlot::kCanBeWeak && obj->GetHeapObjectIfWeak(&heap_obj)) {
     UpdateSlot<access_mode, HeapObjectReferenceType::WEAK>(slot, obj, heap_obj);
@@ -2696,8 +2696,9 @@ static inline SlotCallbackResult UpdateSlot(TSlot slot) {
 }
 
 template <AccessMode access_mode, typename TSlot>
-static inline SlotCallbackResult UpdateStrongSlot(TSlot slot) {
-  typename TSlot::TObject obj = slot.Relaxed_Load();
+static inline SlotCallbackResult UpdateStrongSlot(IsolateRoot isolate,
+                                                  TSlot slot) {
+  typename TSlot::TObject obj = slot.Relaxed_Load(isolate);
   DCHECK(!HAS_WEAK_HEAP_OBJECT_TAG(obj.ptr()));
   HeapObject heap_obj;
   if (obj.GetHeapObject(&heap_obj)) {
@@ -2713,39 +2714,47 @@ static inline SlotCallbackResult UpdateStrongSlot(TSlot slot) {
 // It does not expect to encounter pointers to dead objects.
 class PointersUpdatingVisitor : public ObjectVisitor, public RootVisitor {
  public:
-  PointersUpdatingVisitor() {}
+  explicit PointersUpdatingVisitor(IsolateRoot isolate) : isolate_(isolate) {}
 
   void VisitPointer(HeapObject host, ObjectSlot p) override {
-    UpdateStrongSlotInternal(p);
+    UpdateStrongSlotInternal(isolate_, p);
   }
 
   void VisitPointer(HeapObject host, MaybeObjectSlot p) override {
-    UpdateSlotInternal(p);
+    UpdateSlotInternal(isolate_, p);
   }
 
   void VisitPointers(HeapObject host, ObjectSlot start,
                      ObjectSlot end) override {
     for (ObjectSlot p = start; p < end; ++p) {
-      UpdateStrongSlotInternal(p);
+      UpdateStrongSlotInternal(isolate_, p);
     }
   }
 
   void VisitPointers(HeapObject host, MaybeObjectSlot start,
                      MaybeObjectSlot end) final {
     for (MaybeObjectSlot p = start; p < end; ++p) {
-      UpdateSlotInternal(p);
+      UpdateSlotInternal(isolate_, p);
     }
   }
 
   void VisitRootPointer(Root root, const char* description,
                         FullObjectSlot p) override {
-    UpdateRootSlotInternal(p);
+    UpdateRootSlotInternal(isolate_, p);
   }
 
   void VisitRootPointers(Root root, const char* description,
                          FullObjectSlot start, FullObjectSlot end) override {
     for (FullObjectSlot p = start; p < end; ++p) {
-      UpdateRootSlotInternal(p);
+      UpdateRootSlotInternal(isolate_, p);
+    }
+  }
+
+  void VisitRootPointers(Root root, const char* description,
+                         OffHeapObjectSlot start,
+                         OffHeapObjectSlot end) override {
+    for (OffHeapObjectSlot p = start; p < end; ++p) {
+      UpdateRootSlotInternal(isolate_, p);
     }
   }
 
@@ -2760,22 +2769,32 @@ class PointersUpdatingVisitor : public ObjectVisitor, public RootVisitor {
   }
 
  private:
-  static inline SlotCallbackResult UpdateRootSlotInternal(FullObjectSlot slot) {
-    return UpdateStrongSlot<AccessMode::NON_ATOMIC>(slot);
+  static inline SlotCallbackResult UpdateRootSlotInternal(IsolateRoot isolate,
+                                                          FullObjectSlot slot) {
+    return UpdateStrongSlot<AccessMode::NON_ATOMIC>(isolate, slot);
+  }
+
+  static inline SlotCallbackResult UpdateRootSlotInternal(
+      IsolateRoot isolate, OffHeapObjectSlot slot) {
+    return UpdateStrongSlot<AccessMode::NON_ATOMIC>(isolate, slot);
   }
 
   static inline SlotCallbackResult UpdateStrongMaybeObjectSlotInternal(
-      MaybeObjectSlot slot) {
-    return UpdateStrongSlot<AccessMode::NON_ATOMIC>(slot);
+      IsolateRoot isolate, MaybeObjectSlot slot) {
+    return UpdateStrongSlot<AccessMode::NON_ATOMIC>(isolate, slot);
   }
 
-  static inline SlotCallbackResult UpdateStrongSlotInternal(ObjectSlot slot) {
-    return UpdateStrongSlot<AccessMode::NON_ATOMIC>(slot);
+  static inline SlotCallbackResult UpdateStrongSlotInternal(IsolateRoot isolate,
+                                                            ObjectSlot slot) {
+    return UpdateStrongSlot<AccessMode::NON_ATOMIC>(isolate, slot);
   }
 
-  static inline SlotCallbackResult UpdateSlotInternal(MaybeObjectSlot slot) {
-    return UpdateSlot<AccessMode::NON_ATOMIC>(slot);
+  static inline SlotCallbackResult UpdateSlotInternal(IsolateRoot isolate,
+                                                      MaybeObjectSlot slot) {
+    return UpdateSlot<AccessMode::NON_ATOMIC>(isolate, slot);
   }
+
+  IsolateRoot isolate_;
 };
 
 static String UpdateReferenceInExternalStringTableEntry(Heap* heap,
@@ -2854,6 +2873,19 @@ class Evacuator : public Malloced {
     kPageNewToNew,
   };
 
+  static const char* EvacuationModeName(EvacuationMode mode) {
+    switch (mode) {
+      case kObjectsNewToOld:
+        return "objects-new-to-old";
+      case kPageNewToOld:
+        return "page-new-to-old";
+      case kObjectsOldToOld:
+        return "objects-old-to-old";
+      case kPageNewToNew:
+        return "page-new-to-new";
+    }
+  }
+
   static inline EvacuationMode ComputeEvacuationMode(MemoryChunk* chunk) {
     // Note: The order of checks is important in this function.
     if (chunk->IsFlagSet(MemoryChunk::PAGE_NEW_OLD_PROMOTION))
@@ -2900,7 +2932,7 @@ class Evacuator : public Malloced {
 
   // Merge back locally cached info sequentially. Note that this method needs
   // to be called from the main thread.
-  inline void Finalize();
+  virtual void Finalize();
 
   virtual GCTracer::BackgroundScope::ScopeId GetBackgroundTracingScope() = 0;
   virtual GCTracer::Scope::ScopeId GetTracingScope() = 0;
@@ -2999,7 +3031,7 @@ class FullEvacuator : public Evacuator {
     return GCTracer::Scope::MC_EVACUATE_COPY_PARALLEL;
   }
 
-  inline void Finalize() {
+  void Finalize() override {
     Evacuator::Finalize();
 
     for (auto it = ephemeron_remembered_set_.begin();
@@ -3027,19 +3059,18 @@ class FullEvacuator : public Evacuator {
 
 void FullEvacuator::RawEvacuatePage(MemoryChunk* chunk, intptr_t* live_bytes) {
   const EvacuationMode evacuation_mode = ComputeEvacuationMode(chunk);
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("v8.gc"),
-               "FullEvacuator::RawEvacuatePage", "evacuation_mode",
-               evacuation_mode);
   MarkCompactCollector::NonAtomicMarkingState* marking_state =
       collector_->non_atomic_marking_state();
   *live_bytes = marking_state->live_bytes(chunk);
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("v8.gc"),
+               "FullEvacuator::RawEvacuatePage", "evacuation_mode",
+               EvacuationModeName(evacuation_mode), "live_bytes", *live_bytes);
   HeapObject failed_object;
   switch (evacuation_mode) {
     case kObjectsNewToOld:
       LiveObjectVisitor::VisitBlackObjectsNoFail(
           chunk, marking_state, &new_space_visitor_,
           LiveObjectVisitor::kClearMarkbits);
-      // ArrayBufferTracker will be updated during pointers updating.
       break;
     case kPageNewToOld:
       LiveObjectVisitor::VisitBlackObjectsNoFail(
@@ -3047,7 +3078,6 @@ void FullEvacuator::RawEvacuatePage(MemoryChunk* chunk, intptr_t* live_bytes) {
           LiveObjectVisitor::kKeepMarking);
       new_to_old_page_visitor_.account_moved_bytes(
           marking_state->live_bytes(chunk));
-      // ArrayBufferTracker will be updated during sweeping.
       break;
     case kPageNewToNew:
       LiveObjectVisitor::VisitBlackObjectsNoFail(
@@ -3055,7 +3085,6 @@ void FullEvacuator::RawEvacuatePage(MemoryChunk* chunk, intptr_t* live_bytes) {
           LiveObjectVisitor::kKeepMarking);
       new_to_new_page_visitor_.account_moved_bytes(
           marking_state->live_bytes(chunk));
-      // ArrayBufferTracker will be updated during sweeping.
       break;
     case kObjectsOldToOld: {
       const bool success = LiveObjectVisitor::VisitBlackObjects(
@@ -3065,56 +3094,74 @@ void FullEvacuator::RawEvacuatePage(MemoryChunk* chunk, intptr_t* live_bytes) {
         // Aborted compaction page. Actual processing happens on the main
         // thread for simplicity reasons.
         collector_->ReportAbortedEvacuationCandidate(failed_object, chunk);
-      } else {
-        // ArrayBufferTracker will be updated during pointers updating.
       }
       break;
     }
   }
 }
 
-class EvacuationItem : public ItemParallelJob::Item {
+class PageEvacuationJob : public v8::JobTask {
  public:
-  explicit EvacuationItem(MemoryChunk* chunk) : chunk_(chunk) {}
-  ~EvacuationItem() override = default;
-  MemoryChunk* chunk() const { return chunk_; }
-
- private:
-  MemoryChunk* chunk_;
-};
-
-class PageEvacuationTask : public ItemParallelJob::Task {
- public:
-  PageEvacuationTask(Isolate* isolate, Evacuator* evacuator)
-      : ItemParallelJob::Task(isolate),
-        evacuator_(evacuator),
+  PageEvacuationJob(
+      Isolate* isolate, std::vector<std::unique_ptr<Evacuator>>* evacuators,
+      std::vector<std::pair<ParallelWorkItem, MemoryChunk*>> evacuation_items)
+      : evacuators_(evacuators),
+        evacuation_items_(std::move(evacuation_items)),
+        remaining_evacuation_items_(evacuation_items_.size()),
+        generator_(evacuation_items_.size()),
         tracer_(isolate->heap()->tracer()) {}
 
-  void RunInParallel(Runner runner) override {
-    if (runner == Runner::kForeground) {
-      TRACE_GC(tracer_, evacuator_->GetTracingScope());
-      ProcessItems();
+  void Run(JobDelegate* delegate) override {
+    Evacuator* evacuator = (*evacuators_)[delegate->GetTaskId()].get();
+    if (delegate->IsJoiningThread()) {
+      TRACE_GC(tracer_, evacuator->GetTracingScope());
+      ProcessItems(delegate, evacuator);
     } else {
-      TRACE_BACKGROUND_GC(tracer_, evacuator_->GetBackgroundTracingScope());
-      ProcessItems();
+      TRACE_BACKGROUND_GC(tracer_, evacuator->GetBackgroundTracingScope());
+      ProcessItems(delegate, evacuator);
     }
   }
 
- private:
-  void ProcessItems() {
-    EvacuationItem* item = nullptr;
-    while ((item = GetItem<EvacuationItem>()) != nullptr) {
-      evacuator_->EvacuatePage(item->chunk());
-      item->MarkFinished();
+  void ProcessItems(JobDelegate* delegate, Evacuator* evacuator) {
+    while (remaining_evacuation_items_.load(std::memory_order_relaxed) > 0) {
+      base::Optional<size_t> index = generator_.GetNext();
+      if (!index) return;
+      for (size_t i = *index; i < evacuation_items_.size(); ++i) {
+        auto& work_item = evacuation_items_[i];
+        if (!work_item.first.TryAcquire()) break;
+        evacuator->EvacuatePage(work_item.second);
+        if (remaining_evacuation_items_.fetch_sub(
+                1, std::memory_order_relaxed) <= 1) {
+          return;
+        }
+      }
     }
   }
-  Evacuator* evacuator_;
+
+  size_t GetMaxConcurrency(size_t worker_count) const override {
+    const size_t kItemsPerWorker = MB / Page::kPageSize;
+    // Ceiling division to ensure enough workers for all
+    // |remaining_evacuation_items_|
+    const size_t wanted_num_workers =
+        (remaining_evacuation_items_.load(std::memory_order_relaxed) +
+         kItemsPerWorker - 1) /
+        kItemsPerWorker;
+    return std::min<size_t>(wanted_num_workers, evacuators_->size());
+  }
+
+ private:
+  std::vector<std::unique_ptr<Evacuator>>* evacuators_;
+  std::vector<std::pair<ParallelWorkItem, MemoryChunk*>> evacuation_items_;
+  std::atomic<size_t> remaining_evacuation_items_{0};
+  IndexGenerator generator_;
+
   GCTracer* tracer_;
 };
 
 template <class Evacuator, class Collector>
 void MarkCompactCollectorBase::CreateAndExecuteEvacuationTasks(
-    Collector* collector, ItemParallelJob* job,
+    Collector* collector,
+    std::vector<std::pair<ParallelWorkItem, MemoryChunk*>> evacuation_items,
     MigrationObserver* migration_observer, const intptr_t live_bytes) {
   // Used for trace summary.
   double compaction_speed = 0;
@@ -3125,31 +3172,33 @@ void MarkCompactCollectorBase::CreateAndExecuteEvacuationTasks(
   const bool profiling = isolate()->LogObjectRelocation();
   ProfilingMigrationObserver profiling_observer(heap());
 
-  const int wanted_num_tasks =
-      NumberOfParallelCompactionTasks(job->NumberOfItems());
-  Evacuator** evacuators = new Evacuator*[wanted_num_tasks];
+  const size_t pages_count = evacuation_items.size();
+  std::vector<std::unique_ptr<v8::internal::Evacuator>> evacuators;
+  const int wanted_num_tasks = NumberOfParallelCompactionTasks();
   for (int i = 0; i < wanted_num_tasks; i++) {
-    evacuators[i] = new Evacuator(collector);
-    if (profiling) evacuators[i]->AddObserver(&profiling_observer);
+    auto evacuator = std::make_unique<Evacuator>(collector);
+    if (profiling) evacuator->AddObserver(&profiling_observer);
     if (migration_observer != nullptr)
-      evacuators[i]->AddObserver(migration_observer);
-    job->AddTask(new PageEvacuationTask(heap()->isolate(), evacuators[i]));
+      evacuator->AddObserver(migration_observer);
+    evacuators.push_back(std::move(evacuator));
   }
-  job->Run();
-  for (int i = 0; i < wanted_num_tasks; i++) {
-    evacuators[i]->Finalize();
-    delete evacuators[i];
-  }
-  delete[] evacuators;
+  V8::GetCurrentPlatform()
+      ->PostJob(v8::TaskPriority::kUserBlocking,
+                std::make_unique<PageEvacuationJob>(
+                    isolate(), &evacuators, std::move(evacuation_items)))
+      ->Join();
+
+  for (auto& evacuator : evacuators) evacuator->Finalize();
+  evacuators.clear();
 
   if (FLAG_trace_evacuation) {
     PrintIsolate(isolate(),
-                 "%8.0f ms: evacuation-summary: parallel=%s pages=%d "
-                 "wanted_tasks=%d tasks=%d cores=%d live_bytes=%" V8PRIdPTR
+                 "%8.0f ms: evacuation-summary: parallel=%s pages=%zu "
+                 "wanted_tasks=%d cores=%d live_bytes=%" V8PRIdPTR
                  " compaction_speed=%.f\n",
                  isolate()->time_millis_since_init(),
-                 FLAG_parallel_compaction ? "yes" : "no", job->NumberOfItems(),
-                 wanted_num_tasks, job->NumberOfTasks(),
+                 FLAG_parallel_compaction ? "yes" : "no", pages_count,
+                 wanted_num_tasks,
                  V8::GetCurrentPlatform()->NumberOfWorkerThreads() + 1,
                  live_bytes, compaction_speed);
   }
@@ -3166,18 +3215,14 @@ bool MarkCompactCollectorBase::ShouldMovePage(Page* p, intptr_t live_bytes,
 }
 
 void MarkCompactCollector::EvacuatePagesInParallel() {
-  ItemParallelJob evacuation_job(isolate()->cancelable_task_manager(),
-                                 &page_parallel_job_semaphore_);
+  std::vector<std::pair<ParallelWorkItem, MemoryChunk*>> evacuation_items;
   intptr_t live_bytes = 0;
 
-  for (Page* page : old_space_evacuation_pages_) {
-    live_bytes += non_atomic_marking_state()->live_bytes(page);
-    evacuation_job.AddItem(new EvacuationItem(page));
-  }
-
+  // Evacuation of new space pages cannot be aborted, so it needs to run
+  // before old space evacuation.
   for (Page* page : new_space_evacuation_pages_) {
     intptr_t live_bytes_on_page = non_atomic_marking_state()->live_bytes(page);
-    if (live_bytes_on_page == 0 && !page->contains_array_buffers()) continue;
+    if (live_bytes_on_page == 0) continue;
     live_bytes += live_bytes_on_page;
     if (ShouldMovePage(page, live_bytes_on_page,
                        FLAG_always_promote_young_mc)) {
@@ -3193,7 +3238,12 @@ void MarkCompactCollector::EvacuatePagesInParallel() {
         EvacuateNewSpacePageVisitor<NEW_TO_NEW>::Move(page);
       }
     }
-    evacuation_job.AddItem(new EvacuationItem(page));
+    evacuation_items.emplace_back(ParallelWorkItem{}, page);
+  }
+
+  for (Page* page : old_space_evacuation_pages_) {
+    live_bytes += non_atomic_marking_state()->live_bytes(page);
+    evacuation_items.emplace_back(ParallelWorkItem{}, page);
   }
 
   // Promote young generation large objects.
@@ -3209,14 +3259,18 @@ void MarkCompactCollector::EvacuatePagesInParallel() {
     if (marking_state->IsBlack(object)) {
       heap_->lo_space()->PromoteNewLargeObject(current);
       current->SetFlag(Page::PAGE_NEW_OLD_PROMOTION);
-      evacuation_job.AddItem(new EvacuationItem(current));
+      evacuation_items.emplace_back(ParallelWorkItem{}, current);
     }
   }
 
-  if (evacuation_job.NumberOfItems() == 0) return;
+  if (evacuation_items.empty()) return;
 
-  CreateAndExecuteEvacuationTasks<FullEvacuator>(this, &evacuation_job, nullptr,
-                                                 live_bytes);
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("v8.gc"),
+               "MarkCompactCollector::EvacuatePagesInParallel", "pages",
+               evacuation_items.size());
+
+  CreateAndExecuteEvacuationTasks<FullEvacuator>(
+      this, std::move(evacuation_items), nullptr, live_bytes);
 
   // After evacuation there might still be swept pages that weren't
   // added to one of the compaction space but still reside in the
@@ -3411,40 +3465,75 @@ void MarkCompactCollector::Evacuate() {
 #endif
 }
 
-class UpdatingItem : public ItemParallelJob::Item {
+class UpdatingItem : public ParallelWorkItem {
  public:
-  ~UpdatingItem() override = default;
+  virtual ~UpdatingItem() = default;
   virtual void Process() = 0;
 };
 
-class PointersUpdatingTask : public ItemParallelJob::Task {
+class PointersUpdatingJob : public v8::JobTask {
  public:
-  explicit PointersUpdatingTask(
-      Isolate* isolate, GCTracer::Scope::ScopeId scope,
+  explicit PointersUpdatingJob(
+      Isolate* isolate,
+      std::vector<std::unique_ptr<UpdatingItem>> updating_items, int slots,
+      GCTracer::Scope::ScopeId scope,
       GCTracer::BackgroundScope::ScopeId background_scope)
-      : ItemParallelJob::Task(isolate),
+      : updating_items_(std::move(updating_items)),
+        remaining_updating_items_(updating_items_.size()),
+        generator_(updating_items_.size()),
+        slots_(slots),
         tracer_(isolate->heap()->tracer()),
         scope_(scope),
         background_scope_(background_scope) {}
 
-  void RunInParallel(Runner runner) override {
-    if (runner == Runner::kForeground) {
+  void Run(JobDelegate* delegate) override {
+    if (delegate->IsJoiningThread()) {
       TRACE_GC(tracer_, scope_);
-      UpdatePointers();
+      UpdatePointers(delegate);
     } else {
       TRACE_BACKGROUND_GC(tracer_, background_scope_);
-      UpdatePointers();
+      UpdatePointers(delegate);
     }
   }
 
- private:
-  void UpdatePointers() {
-    UpdatingItem* item = nullptr;
-    while ((item = GetItem<UpdatingItem>()) != nullptr) {
-      item->Process();
-      item->MarkFinished();
+  void UpdatePointers(JobDelegate* delegate) {
+    while (remaining_updating_items_.load(std::memory_order_relaxed) > 0) {
+      base::Optional<size_t> index = generator_.GetNext();
+      if (!index) return;
+      for (size_t i = *index; i < updating_items_.size(); ++i) {
+        auto& work_item = updating_items_[i];
+        if (!work_item->TryAcquire()) break;
+        work_item->Process();
+        if (remaining_updating_items_.fetch_sub(1, std::memory_order_relaxed) <=
+            1) {
+          return;
+        }
+      }
     }
   }
+
+  size_t GetMaxConcurrency(size_t worker_count) const override {
+    size_t items = remaining_updating_items_.load(std::memory_order_relaxed);
+    if (!FLAG_parallel_pointer_update) return items > 0;
+    const size_t kMaxPointerUpdateTasks = 8;
+    const size_t kSlotsPerTask = 600;
+    size_t wanted_tasks = items;
+    // Limit the number of update tasks as task creation often dominates the
+    // actual work that is being done.
+    if (slots_ >= 0) {
+      // Round up to ensure enough workers for all items.
+      wanted_tasks =
+          std::min<size_t>(items, (slots_ + kSlotsPerTask - 1) / kSlotsPerTask);
+    }
+    return std::min<size_t>(kMaxPointerUpdateTasks, wanted_tasks);
+  }
+
+ private:
+  std::vector<std::unique_ptr<UpdatingItem>> updating_items_;
+  std::atomic<size_t> remaining_updating_items_{0};
+  IndexGenerator generator_;
+  const int slots_;
+
   GCTracer* tracer_;
   GCTracer::Scope::ScopeId scope_;
   GCTracer::BackgroundScope::ScopeId background_scope_;
@@ -3475,7 +3564,8 @@ class ToSpaceUpdatingItem : public UpdatingItem {
   void ProcessVisitAll() {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("v8.gc"),
                  "ToSpaceUpdatingItem::ProcessVisitAll");
-    PointersUpdatingVisitor visitor;
+    PointersUpdatingVisitor visitor(
+        GetIsolateForPtrComprFromOnHeapAddress(start_));
     for (Address cur = start_; cur < end_;) {
       HeapObject object = HeapObject::FromAddress(cur);
       Map map = object.map();
@@ -3490,7 +3580,8 @@ class ToSpaceUpdatingItem : public UpdatingItem {
                  "ToSpaceUpdatingItem::ProcessVisitLive");
     // For young generation evacuations we want to visit grey objects, for
     // full MC, we need to visit black objects.
-    PointersUpdatingVisitor visitor;
+    PointersUpdatingVisitor visitor(
+        GetIsolateForPtrComprFromOnHeapAddress(start_));
     for (auto object_and_size : LiveObjectRange<kAllLiveObjects>(
              chunk_, marking_state_->bitmap(chunk_))) {
       object_and_size.first.IterateBodyFast(&visitor);
@@ -3636,11 +3727,12 @@ class RememberedSetUpdatingItem : public UpdatingItem {
     if ((updating_mode_ == RememberedSetUpdatingMode::ALL) &&
         (chunk_->slot_set<OLD_TO_OLD, AccessMode::NON_ATOMIC>() != nullptr)) {
       InvalidatedSlotsFilter filter = InvalidatedSlotsFilter::OldToOld(chunk_);
+      IsolateRoot isolate = heap_->isolate();
       RememberedSet<OLD_TO_OLD>::Iterate(
           chunk_,
-          [&filter](MaybeObjectSlot slot) {
+          [&filter, isolate](MaybeObjectSlot slot) {
             if (!filter.IsValid(slot.address())) return REMOVE_SLOT;
-            return UpdateSlot<AccessMode::NON_ATOMIC>(slot);
+            return UpdateSlot<AccessMode::NON_ATOMIC>(isolate, slot);
           },
           SlotSet::FREE_EMPTY_BUCKETS);
       chunk_->ReleaseSlotSet<OLD_TO_OLD>();
@@ -3671,14 +3763,16 @@ class RememberedSetUpdatingItem : public UpdatingItem {
         (chunk_->typed_slot_set<OLD_TO_OLD, AccessMode::NON_ATOMIC>() !=
          nullptr)) {
       CHECK_NE(chunk_->owner(), heap_->map_space());
-      RememberedSet<OLD_TO_OLD>::IterateTyped(
-          chunk_, [=](SlotType slot_type, Address slot) {
-            // Using UpdateStrongSlot is OK here, because there are no weak
-            // typed slots.
-            return UpdateTypedSlotHelper::UpdateTypedSlot(
-                heap_, slot_type, slot,
-                UpdateStrongSlot<AccessMode::NON_ATOMIC, FullMaybeObjectSlot>);
-          });
+      RememberedSet<OLD_TO_OLD>::IterateTyped(chunk_, [=](SlotType slot_type,
+                                                          Address slot) {
+        // Using UpdateStrongSlot is OK here, because there are no weak
+        // typed slots.
+        IsolateRoot isolate = heap_->isolate();
+        return UpdateTypedSlotHelper::UpdateTypedSlot(
+            heap_, slot_type, slot, [isolate](FullMaybeObjectSlot slot) {
+              return UpdateStrongSlot<AccessMode::NON_ATOMIC>(isolate, slot);
+            });
+      });
     }
   }
 
@@ -3688,54 +3782,22 @@ class RememberedSetUpdatingItem : public UpdatingItem {
   RememberedSetUpdatingMode updating_mode_;
 };
 
-UpdatingItem* MarkCompactCollector::CreateToSpaceUpdatingItem(
+std::unique_ptr<UpdatingItem> MarkCompactCollector::CreateToSpaceUpdatingItem(
     MemoryChunk* chunk, Address start, Address end) {
-  return new ToSpaceUpdatingItem<NonAtomicMarkingState>(
+  return std::make_unique<ToSpaceUpdatingItem<NonAtomicMarkingState>>(
       chunk, start, end, non_atomic_marking_state());
 }
 
-UpdatingItem* MarkCompactCollector::CreateRememberedSetUpdatingItem(
+std::unique_ptr<UpdatingItem>
+MarkCompactCollector::CreateRememberedSetUpdatingItem(
     MemoryChunk* chunk, RememberedSetUpdatingMode updating_mode) {
-  return new RememberedSetUpdatingItem<NonAtomicMarkingState, MARK_COMPACTOR>(
+  return std::make_unique<
+      RememberedSetUpdatingItem<NonAtomicMarkingState, MARK_COMPACTOR>>(
       heap(), non_atomic_marking_state(), chunk, updating_mode);
 }
 
-// Update array buffers on a page that has been evacuated by copying objects.
-// Target page exclusivity in old space is guaranteed by the fact that
-// evacuation tasks either (a) retrieved a fresh page, or (b) retrieved all
-// free list items of a given page. For new space the tracker will update
-// using a lock.
-class ArrayBufferTrackerUpdatingItem : public UpdatingItem {
- public:
-  enum EvacuationState { kRegular, kAborted };
-
-  explicit ArrayBufferTrackerUpdatingItem(Page* page, EvacuationState state)
-      : page_(page), state_(state) {}
-  ~ArrayBufferTrackerUpdatingItem() override = default;
-
-  void Process() override {
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("v8.gc"),
-                 "ArrayBufferTrackerUpdatingItem::Process", "EvacuationState",
-                 state_);
-    switch (state_) {
-      case EvacuationState::kRegular:
-        ArrayBufferTracker::ProcessBuffers(
-            page_, ArrayBufferTracker::kUpdateForwardedRemoveOthers);
-        break;
-      case EvacuationState::kAborted:
-        ArrayBufferTracker::ProcessBuffers(
-            page_, ArrayBufferTracker::kUpdateForwardedKeepOthers);
-        break;
-    }
-  }
-
- private:
-  Page* const page_;
-  const EvacuationState state_;
-};
-
 int MarkCompactCollectorBase::CollectToSpaceUpdatingItems(
-    ItemParallelJob* job) {
+    std::vector<std::unique_ptr<UpdatingItem>>* items) {
   // Seed to space pages.
   const Address space_start = heap()->new_space()->first_allocatable_address();
   const Address space_end = heap()->new_space()->top();
@@ -3744,16 +3806,15 @@ int MarkCompactCollectorBase::CollectToSpaceUpdatingItems(
     Address start =
         page->Contains(space_start) ? space_start : page->area_start();
     Address end = page->Contains(space_end) ? space_end : page->area_end();
-    job->AddItem(CreateToSpaceUpdatingItem(page, start, end));
+    items->emplace_back(CreateToSpaceUpdatingItem(page, start, end));
     pages++;
   }
-  if (pages == 0) return 0;
-  return NumberOfParallelToSpacePointerUpdateTasks(pages);
+  return pages;
 }
 
 template <typename IterateableSpace>
 int MarkCompactCollectorBase::CollectRememberedSetUpdatingItems(
-    ItemParallelJob* job, IterateableSpace* space,
+    std::vector<std::unique_ptr<UpdatingItem>>* items, IterateableSpace* space,
     RememberedSetUpdatingMode mode) {
   int pages = 0;
   for (MemoryChunk* chunk : *space) {
@@ -3777,48 +3838,9 @@ int MarkCompactCollectorBase::CollectRememberedSetUpdatingItems(
         contains_old_to_new_sweeping_slots ||
         contains_old_to_old_invalidated_slots ||
         contains_old_to_new_invalidated_slots) {
-      job->AddItem(CreateRememberedSetUpdatingItem(chunk, mode));
+      items->emplace_back(CreateRememberedSetUpdatingItem(chunk, mode));
       pages++;
     }
-  }
-  return pages;
-}
-
-int MarkCompactCollector::CollectNewSpaceArrayBufferTrackerItems(
-    ItemParallelJob* job) {
-  int pages = 0;
-  for (Page* p : new_space_evacuation_pages_) {
-    if (Evacuator::ComputeEvacuationMode(p) == Evacuator::kObjectsNewToOld) {
-      if (p->local_tracker() == nullptr) continue;
-
-      pages++;
-      job->AddItem(new ArrayBufferTrackerUpdatingItem(
-          p, ArrayBufferTrackerUpdatingItem::kRegular));
-    }
-  }
-  return pages;
-}
-
-int MarkCompactCollector::CollectOldSpaceArrayBufferTrackerItems(
-    ItemParallelJob* job) {
-  int pages = 0;
-  for (Page* p : old_space_evacuation_pages_) {
-    if (Evacuator::ComputeEvacuationMode(p) == Evacuator::kObjectsOldToOld &&
-        p->IsEvacuationCandidate()) {
-      if (p->local_tracker() == nullptr) continue;
-
-      pages++;
-      job->AddItem(new ArrayBufferTrackerUpdatingItem(
-          p, ArrayBufferTrackerUpdatingItem::kRegular));
-    }
-  }
-  for (auto object_and_page : aborted_evacuation_candidates_) {
-    Page* p = object_and_page.second;
-    if (p->local_tracker() == nullptr) continue;
-
-    pages++;
-    job->AddItem(new ArrayBufferTrackerUpdatingItem(
-        p, ArrayBufferTrackerUpdatingItem::kAborted));
   }
   return pages;
 }
@@ -3877,7 +3899,7 @@ class EphemeronTableUpdatingItem : public UpdatingItem {
 void MarkCompactCollector::UpdatePointersAfterEvacuation() {
   TRACE_GC(heap()->tracer(), GCTracer::Scope::MC_EVACUATE_UPDATE_POINTERS);
 
-  PointersUpdatingVisitor updating_visitor;
+  PointersUpdatingVisitor updating_visitor(isolate());
 
   {
     TRACE_GC(heap()->tracer(),
@@ -3890,35 +3912,29 @@ void MarkCompactCollector::UpdatePointersAfterEvacuation() {
   {
     TRACE_GC(heap()->tracer(),
              GCTracer::Scope::MC_EVACUATE_UPDATE_POINTERS_SLOTS_MAIN);
-    ItemParallelJob updating_job(isolate()->cancelable_task_manager(),
-                                 &page_parallel_job_semaphore_);
+    std::vector<std::unique_ptr<UpdatingItem>> updating_items;
 
-    int remembered_set_pages = 0;
-    remembered_set_pages += CollectRememberedSetUpdatingItems(
-        &updating_job, heap()->old_space(), RememberedSetUpdatingMode::ALL);
-    remembered_set_pages += CollectRememberedSetUpdatingItems(
-        &updating_job, heap()->code_space(), RememberedSetUpdatingMode::ALL);
-    remembered_set_pages += CollectRememberedSetUpdatingItems(
-        &updating_job, heap()->lo_space(), RememberedSetUpdatingMode::ALL);
-    remembered_set_pages += CollectRememberedSetUpdatingItems(
-        &updating_job, heap()->code_lo_space(), RememberedSetUpdatingMode::ALL);
-    const int remembered_set_tasks =
-        remembered_set_pages == 0
-            ? 0
-            : NumberOfParallelPointerUpdateTasks(remembered_set_pages,
-                                                 old_to_new_slots_);
-    const int to_space_tasks = CollectToSpaceUpdatingItems(&updating_job);
-    const int num_ephemeron_table_updating_tasks = 1;
-    const int num_tasks =
-        Max(to_space_tasks,
-            remembered_set_tasks + num_ephemeron_table_updating_tasks);
-    for (int i = 0; i < num_tasks; i++) {
-      updating_job.AddTask(new PointersUpdatingTask(
-          isolate(), GCTracer::Scope::MC_EVACUATE_UPDATE_POINTERS_PARALLEL,
-          GCTracer::BackgroundScope::MC_BACKGROUND_EVACUATE_UPDATE_POINTERS));
-    }
-    updating_job.AddItem(new EphemeronTableUpdatingItem(heap()));
-    updating_job.Run();
+    CollectRememberedSetUpdatingItems(&updating_items, heap()->old_space(),
+                                      RememberedSetUpdatingMode::ALL);
+    CollectRememberedSetUpdatingItems(&updating_items, heap()->code_space(),
+                                      RememberedSetUpdatingMode::ALL);
+    CollectRememberedSetUpdatingItems(&updating_items, heap()->lo_space(),
+                                      RememberedSetUpdatingMode::ALL);
+    CollectRememberedSetUpdatingItems(&updating_items, heap()->code_lo_space(),
+                                      RememberedSetUpdatingMode::ALL);
+
+    CollectToSpaceUpdatingItems(&updating_items);
+    updating_items.push_back(
+        std::make_unique<EphemeronTableUpdatingItem>(heap()));
+
+    V8::GetCurrentPlatform()
+        ->PostJob(v8::TaskPriority::kUserBlocking,
+                  std::make_unique<PointersUpdatingJob>(
+                      isolate(), std::move(updating_items), old_to_new_slots_,
+                      GCTracer::Scope::MC_EVACUATE_UPDATE_POINTERS_PARALLEL,
+                      GCTracer::BackgroundScope::
+                          MC_BACKGROUND_EVACUATE_UPDATE_POINTERS))
+        ->Join();
   }
 
   {
@@ -3928,30 +3944,19 @@ void MarkCompactCollector::UpdatePointersAfterEvacuation() {
     //   byte length which is potentially a HeapNumber.
     TRACE_GC(heap()->tracer(),
              GCTracer::Scope::MC_EVACUATE_UPDATE_POINTERS_SLOTS_MAP_SPACE);
-    ItemParallelJob updating_job(isolate()->cancelable_task_manager(),
-                                 &page_parallel_job_semaphore_);
+    std::vector<std::unique_ptr<UpdatingItem>> updating_items;
 
-    int array_buffer_pages = 0;
-    array_buffer_pages += CollectNewSpaceArrayBufferTrackerItems(&updating_job);
-    array_buffer_pages += CollectOldSpaceArrayBufferTrackerItems(&updating_job);
-
-    int remembered_set_pages = 0;
-    remembered_set_pages += CollectRememberedSetUpdatingItems(
-        &updating_job, heap()->map_space(), RememberedSetUpdatingMode::ALL);
-    const int remembered_set_tasks =
-        remembered_set_pages == 0
-            ? 0
-            : NumberOfParallelPointerUpdateTasks(remembered_set_pages,
-                                                 old_to_new_slots_);
-    const int num_tasks = Max(array_buffer_pages, remembered_set_tasks);
-    if (num_tasks > 0) {
-      for (int i = 0; i < num_tasks; i++) {
-        updating_job.AddTask(new PointersUpdatingTask(
-            isolate(), GCTracer::Scope::MC_EVACUATE_UPDATE_POINTERS_PARALLEL,
-            GCTracer::BackgroundScope::MC_BACKGROUND_EVACUATE_UPDATE_POINTERS));
-      }
-      updating_job.Run();
-      heap()->array_buffer_collector()->FreeAllocations();
+    CollectRememberedSetUpdatingItems(&updating_items, heap()->map_space(),
+                                      RememberedSetUpdatingMode::ALL);
+    if (!updating_items.empty()) {
+      V8::GetCurrentPlatform()
+          ->PostJob(v8::TaskPriority::kUserBlocking,
+                    std::make_unique<PointersUpdatingJob>(
+                        isolate(), std::move(updating_items), old_to_new_slots_,
+                        GCTracer::Scope::MC_EVACUATE_UPDATE_POINTERS_PARALLEL,
+                        GCTracer::BackgroundScope::
+                            MC_BACKGROUND_EVACUATE_UPDATE_POINTERS))
+          ->Join();
     }
   }
 
@@ -4067,7 +4072,6 @@ void MarkCompactCollector::StartSweepSpace(PagedSpace* space) {
           PrintIsolate(isolate(), "sweeping: released page: %p",
                        static_cast<void*>(p));
         }
-        ArrayBufferTracker::FreeAll(p);
         space->memory_chunk_list().Remove(p);
         space->ReleasePage(p);
         continue;
@@ -4334,18 +4338,6 @@ MinorMarkCompactCollector::~MinorMarkCompactCollector() {
   delete main_marking_visitor_;
 }
 
-int MinorMarkCompactCollector::NumberOfParallelMarkingTasks(int pages) {
-  DCHECK_GT(pages, 0);
-  if (!FLAG_minor_mc_parallel_marking) return 1;
-  // Pages are not private to markers but we can still use them to estimate the
-  // amount of marking that is required.
-  const int kPagesPerTask = 2;
-  const int wanted_tasks = Max(1, pages / kPagesPerTask);
-  return Min(NumberOfAvailableCores(),
-             Min(wanted_tasks,
-                 MinorMarkCompactCollector::MarkingWorklist::kMaxNumTasks));
-}
-
 void MinorMarkCompactCollector::CleanupSweepToIteratePages() {
   for (Page* p : sweep_to_iterate_pages_) {
     if (p->IsFlagSet(Page::SWEEP_TO_ITERATE)) {
@@ -4410,7 +4402,7 @@ class YoungGenerationRecordMigratedSlotVisitor final
   inline void RecordMigratedSlot(HeapObject host, MaybeObject value,
                                  Address slot) final {
     if (value->IsStrongOrWeak()) {
-      MemoryChunk* p = MemoryChunk::FromAddress(value.ptr());
+      BasicMemoryChunk* p = BasicMemoryChunk::FromAddress(value.ptr());
       if (p->InYoungGeneration()) {
         DCHECK_IMPLIES(
             p->IsToPage(),
@@ -4430,40 +4422,21 @@ void MinorMarkCompactCollector::UpdatePointersAfterEvacuation() {
   TRACE_GC(heap()->tracer(),
            GCTracer::Scope::MINOR_MC_EVACUATE_UPDATE_POINTERS);
 
-  PointersUpdatingVisitor updating_visitor;
-  ItemParallelJob updating_job(isolate()->cancelable_task_manager(),
-                               &page_parallel_job_semaphore_);
+  PointersUpdatingVisitor updating_visitor(isolate());
+  std::vector<std::unique_ptr<UpdatingItem>> updating_items;
 
-  CollectNewSpaceArrayBufferTrackerItems(&updating_job);
   // Create batches of global handles.
-  const int to_space_tasks = CollectToSpaceUpdatingItems(&updating_job);
-  int remembered_set_pages = 0;
-  remembered_set_pages += CollectRememberedSetUpdatingItems(
-      &updating_job, heap()->old_space(),
-      RememberedSetUpdatingMode::OLD_TO_NEW_ONLY);
-  remembered_set_pages += CollectRememberedSetUpdatingItems(
-      &updating_job, heap()->code_space(),
-      RememberedSetUpdatingMode::OLD_TO_NEW_ONLY);
-  remembered_set_pages += CollectRememberedSetUpdatingItems(
-      &updating_job, heap()->map_space(),
-      RememberedSetUpdatingMode::OLD_TO_NEW_ONLY);
-  remembered_set_pages += CollectRememberedSetUpdatingItems(
-      &updating_job, heap()->lo_space(),
-      RememberedSetUpdatingMode::OLD_TO_NEW_ONLY);
-  remembered_set_pages += CollectRememberedSetUpdatingItems(
-      &updating_job, heap()->code_lo_space(),
-      RememberedSetUpdatingMode::OLD_TO_NEW_ONLY);
-  const int remembered_set_tasks =
-      remembered_set_pages == 0 ? 0
-                                : NumberOfParallelPointerUpdateTasks(
-                                      remembered_set_pages, old_to_new_slots_);
-  const int num_tasks = Max(to_space_tasks, remembered_set_tasks);
-  for (int i = 0; i < num_tasks; i++) {
-    updating_job.AddTask(new PointersUpdatingTask(
-        isolate(), GCTracer::Scope::MINOR_MC_EVACUATE_UPDATE_POINTERS_PARALLEL,
-        GCTracer::BackgroundScope::
-            MINOR_MC_BACKGROUND_EVACUATE_UPDATE_POINTERS));
-  }
+  CollectToSpaceUpdatingItems(&updating_items);
+  CollectRememberedSetUpdatingItems(&updating_items, heap()->old_space(),
+                                    RememberedSetUpdatingMode::OLD_TO_NEW_ONLY);
+  CollectRememberedSetUpdatingItems(&updating_items, heap()->code_space(),
+                                    RememberedSetUpdatingMode::OLD_TO_NEW_ONLY);
+  CollectRememberedSetUpdatingItems(&updating_items, heap()->map_space(),
+                                    RememberedSetUpdatingMode::OLD_TO_NEW_ONLY);
+  CollectRememberedSetUpdatingItems(&updating_items, heap()->lo_space(),
+                                    RememberedSetUpdatingMode::OLD_TO_NEW_ONLY);
+  CollectRememberedSetUpdatingItems(&updating_items, heap()->code_lo_space(),
+                                    RememberedSetUpdatingMode::OLD_TO_NEW_ONLY);
 
   {
     TRACE_GC(heap()->tracer(),
@@ -4475,8 +4448,15 @@ void MinorMarkCompactCollector::UpdatePointersAfterEvacuation() {
   {
     TRACE_GC(heap()->tracer(),
              GCTracer::Scope::MINOR_MC_EVACUATE_UPDATE_POINTERS_SLOTS);
-    updating_job.Run();
-    heap()->array_buffer_collector()->FreeAllocations();
+    V8::GetCurrentPlatform()
+        ->PostJob(
+            v8::TaskPriority::kUserBlocking,
+            std::make_unique<PointersUpdatingJob>(
+                isolate(), std::move(updating_items), old_to_new_slots_,
+                GCTracer::Scope::MINOR_MC_EVACUATE_UPDATE_POINTERS_PARALLEL,
+                GCTracer::BackgroundScope::
+                    MINOR_MC_BACKGROUND_EVACUATE_UPDATE_POINTERS))
+        ->Join();
   }
 
   {
@@ -4565,8 +4545,6 @@ void MinorMarkCompactCollector::CollectGarbage() {
     // TODO(ulan): Don't free all as soon as we have an intermediate generation.
     heap()->new_lo_space()->FreeDeadObjects([](HeapObject) { return true; });
   }
-
-  heap()->account_external_memory_concurrently_freed();
 
   SweepArrayBufferExtensions();
 }
@@ -4712,6 +4690,7 @@ void MinorMarkCompactCollector::EvacuatePrologue() {
        PageRange(new_space->first_allocatable_address(), new_space->top())) {
     new_space_evacuation_pages_.push_back(p);
   }
+
   new_space->Flip();
   new_space->ResetLinearAllocationArea();
 
@@ -4725,56 +4704,41 @@ void MinorMarkCompactCollector::EvacuateEpilogue() {
   heap()->memory_allocator()->unmapper()->FreeQueuedChunks();
 }
 
-UpdatingItem* MinorMarkCompactCollector::CreateToSpaceUpdatingItem(
-    MemoryChunk* chunk, Address start, Address end) {
-  return new ToSpaceUpdatingItem<NonAtomicMarkingState>(
+std::unique_ptr<UpdatingItem>
+MinorMarkCompactCollector::CreateToSpaceUpdatingItem(MemoryChunk* chunk,
+                                                     Address start,
+                                                     Address end) {
+  return std::make_unique<ToSpaceUpdatingItem<NonAtomicMarkingState>>(
       chunk, start, end, non_atomic_marking_state());
 }
 
-UpdatingItem* MinorMarkCompactCollector::CreateRememberedSetUpdatingItem(
+std::unique_ptr<UpdatingItem>
+MinorMarkCompactCollector::CreateRememberedSetUpdatingItem(
     MemoryChunk* chunk, RememberedSetUpdatingMode updating_mode) {
-  return new RememberedSetUpdatingItem<NonAtomicMarkingState,
-                                       MINOR_MARK_COMPACTOR>(
+  return std::make_unique<
+      RememberedSetUpdatingItem<NonAtomicMarkingState, MINOR_MARK_COMPACTOR>>(
       heap(), non_atomic_marking_state(), chunk, updating_mode);
 }
 
-class MarkingItem;
 class PageMarkingItem;
 class RootMarkingItem;
 class YoungGenerationMarkingTask;
 
-class MarkingItem : public ItemParallelJob::Item {
- public:
-  ~MarkingItem() override = default;
-  virtual void Process(YoungGenerationMarkingTask* task) = 0;
-};
-
-class YoungGenerationMarkingTask : public ItemParallelJob::Task {
+class YoungGenerationMarkingTask {
  public:
   YoungGenerationMarkingTask(
       Isolate* isolate, MinorMarkCompactCollector* collector,
       MinorMarkCompactCollector::MarkingWorklist* global_worklist, int task_id)
-      : ItemParallelJob::Task(isolate),
-        collector_(collector),
-        marking_worklist_(global_worklist, task_id),
+      : marking_worklist_(global_worklist, task_id),
         marking_state_(collector->marking_state()),
         visitor_(marking_state_, global_worklist, task_id) {
     local_live_bytes_.reserve(isolate->heap()->new_space()->Capacity() /
                               Page::kPageSize);
   }
 
-  void RunInParallel(Runner runner) override {
-    if (runner == Runner::kForeground) {
-      TRACE_GC(collector_->heap()->tracer(),
-               GCTracer::Scope::MINOR_MC_MARK_PARALLEL);
-      ProcessItems();
-    } else {
-      TRACE_BACKGROUND_GC(
-          collector_->heap()->tracer(),
-          GCTracer::BackgroundScope::MINOR_MC_BACKGROUND_MARKING);
-      ProcessItems();
-    }
-  }
+  int slots() const { return slots_; }
+
+  void IncrementSlots() { ++slots_; }
 
   void MarkObject(Object object) {
     if (!Heap::InYoungGeneration(object)) return;
@@ -4782,34 +4746,6 @@ class YoungGenerationMarkingTask : public ItemParallelJob::Task {
     if (marking_state_->WhiteToGrey(heap_object)) {
       const int size = visitor_.Visit(heap_object);
       IncrementLiveBytes(heap_object, size);
-    }
-  }
-
- private:
-  void ProcessItems() {
-    double marking_time = 0.0;
-    {
-      TimedScope scope(&marking_time);
-      MarkingItem* item = nullptr;
-      while ((item = GetItem<MarkingItem>()) != nullptr) {
-        item->Process(this);
-        item->MarkFinished();
-        EmptyLocalMarkingWorklist();
-      }
-      EmptyMarkingWorklist();
-      DCHECK(marking_worklist_.IsLocalEmpty());
-      FlushLiveBytes();
-    }
-    if (FLAG_trace_minor_mc_parallel_marking) {
-      PrintIsolate(collector_->isolate(), "marking[%p]: time=%f\n",
-                   static_cast<void*>(this), marking_time);
-    }
-  }
-  void EmptyLocalMarkingWorklist() {
-    HeapObject object;
-    while (marking_worklist_.Pop(&object)) {
-      const int size = visitor_.Visit(object);
-      IncrementLiveBytes(object, size);
     }
   }
 
@@ -4831,20 +4767,20 @@ class YoungGenerationMarkingTask : public ItemParallelJob::Task {
     }
   }
 
-  MinorMarkCompactCollector* collector_;
+ private:
   MinorMarkCompactCollector::MarkingWorklist::View marking_worklist_;
   MinorMarkCompactCollector::MarkingState* marking_state_;
   YoungGenerationMarkingVisitor visitor_;
   std::unordered_map<Page*, intptr_t, Page::Hasher> local_live_bytes_;
+  int slots_ = 0;
 };
 
-class PageMarkingItem : public MarkingItem {
+class PageMarkingItem : public ParallelWorkItem {
  public:
-  explicit PageMarkingItem(MemoryChunk* chunk, std::atomic<int>* global_slots)
-      : chunk_(chunk), global_slots_(global_slots), slots_(0) {}
-  ~PageMarkingItem() override { *global_slots_ = *global_slots_ + slots_; }
+  explicit PageMarkingItem(MemoryChunk* chunk) : chunk_(chunk) {}
+  ~PageMarkingItem() = default;
 
-  void Process(YoungGenerationMarkingTask* task) override {
+  void Process(YoungGenerationMarkingTask* task) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("v8.gc"),
                  "PageMarkingItem::Process");
     base::MutexGuard guard(chunk_->mutex());
@@ -4901,23 +4837,102 @@ class PageMarkingItem : public MarkingItem {
       USE(success);
       DCHECK(success);
       task->MarkObject(heap_object);
-      slots_++;
+      task->IncrementSlots();
       return KEEP_SLOT;
     }
     return REMOVE_SLOT;
   }
 
   MemoryChunk* chunk_;
-  std::atomic<int>* global_slots_;
-  int slots_;
+};
+
+class YoungGenerationMarkingJob : public v8::JobTask {
+ public:
+  YoungGenerationMarkingJob(
+      Isolate* isolate, MinorMarkCompactCollector* collector,
+      MinorMarkCompactCollector::MarkingWorklist* global_worklist,
+      std::vector<PageMarkingItem> marking_items, std::atomic<int>* slots)
+      : isolate_(isolate),
+        collector_(collector),
+        global_worklist_(global_worklist),
+        marking_items_(std::move(marking_items)),
+        remaining_marking_items_(marking_items_.size()),
+        generator_(marking_items_.size()),
+        slots_(slots) {}
+
+  void Run(JobDelegate* delegate) override {
+    if (delegate->IsJoiningThread()) {
+      TRACE_GC(collector_->heap()->tracer(),
+               GCTracer::Scope::MINOR_MC_MARK_PARALLEL);
+      ProcessItems(delegate);
+    } else {
+      TRACE_BACKGROUND_GC(
+          collector_->heap()->tracer(),
+          GCTracer::BackgroundScope::MINOR_MC_BACKGROUND_MARKING);
+      ProcessItems(delegate);
+    }
+  }
+
+  size_t GetMaxConcurrency(size_t worker_count) const override {
+    // Pages are not private to markers but we can still use them to estimate
+    // the amount of marking that is required.
+    const int kPagesPerTask = 2;
+    size_t items = remaining_marking_items_.load(std::memory_order_relaxed);
+    size_t num_tasks = std::max((items + 1) / kPagesPerTask,
+                                global_worklist_->GlobalPoolSize());
+    return std::min<size_t>(
+        num_tasks, MinorMarkCompactCollector::MarkingWorklist::kMaxNumTasks);
+  }
+
+ private:
+  void ProcessItems(JobDelegate* delegate) {
+    double marking_time = 0.0;
+    {
+      TimedScope scope(&marking_time);
+      YoungGenerationMarkingTask task(isolate_, collector_, global_worklist_,
+                                      delegate->GetTaskId());
+      ProcessMarkingItems(&task);
+      task.EmptyMarkingWorklist();
+      task.FlushLiveBytes();
+      *slots_ += task.slots();
+    }
+    if (FLAG_trace_minor_mc_parallel_marking) {
+      PrintIsolate(collector_->isolate(), "marking[%p]: time=%f\n",
+                   static_cast<void*>(this), marking_time);
+    }
+  }
+
+  void ProcessMarkingItems(YoungGenerationMarkingTask* task) {
+    while (remaining_marking_items_.load(std::memory_order_relaxed) > 0) {
+      base::Optional<size_t> index = generator_.GetNext();
+      if (!index) return;
+      for (size_t i = *index; i < marking_items_.size(); ++i) {
+        auto& work_item = marking_items_[i];
+        if (!work_item.TryAcquire()) break;
+        work_item.Process(task);
+        task->EmptyMarkingWorklist();
+        if (remaining_marking_items_.fetch_sub(1, std::memory_order_relaxed) <=
+            1) {
+          return;
+        }
+      }
+    }
+  }
+
+  Isolate* isolate_;
+  MinorMarkCompactCollector* collector_;
+  MinorMarkCompactCollector::MarkingWorklist* global_worklist_;
+  std::vector<PageMarkingItem> marking_items_;
+  std::atomic_size_t remaining_marking_items_{0};
+  IndexGenerator generator_;
+  std::atomic<int>* slots_;
 };
 
 void MinorMarkCompactCollector::MarkRootSetInParallel(
     RootMarkingVisitor* root_visitor) {
   std::atomic<int> slots;
   {
-    ItemParallelJob job(isolate()->cancelable_task_manager(),
-                        &page_parallel_job_semaphore_);
+    std::vector<PageMarkingItem> marking_items;
 
     // Seed the root set (roots + old->new set).
     {
@@ -4935,22 +4950,25 @@ void MinorMarkCompactCollector::MarkRootSetInParallel(
           root_visitor);
       // Create items for each page.
       RememberedSet<OLD_TO_NEW>::IterateMemoryChunks(
-          heap(), [&job, &slots](MemoryChunk* chunk) {
-            job.AddItem(new PageMarkingItem(chunk, &slots));
+          heap(), [&marking_items](MemoryChunk* chunk) {
+            marking_items.emplace_back(chunk);
           });
     }
 
     // Add tasks and run in parallel.
     {
+      // The main thread might hold local items, while GlobalPoolSize() == 0.
+      // Flush to ensure these items are visible globally and picked up by the
+      // job.
+      worklist()->FlushToGlobal(kMainThreadTask);
       TRACE_GC(heap()->tracer(), GCTracer::Scope::MINOR_MC_MARK_ROOTS);
-      const int new_space_pages =
-          static_cast<int>(heap()->new_space()->Capacity()) / Page::kPageSize;
-      const int num_tasks = NumberOfParallelMarkingTasks(new_space_pages);
-      for (int i = 0; i < num_tasks; i++) {
-        job.AddTask(
-            new YoungGenerationMarkingTask(isolate(), this, worklist(), i));
-      }
-      job.Run();
+      V8::GetCurrentPlatform()
+          ->PostJob(v8::TaskPriority::kUserBlocking,
+                    std::make_unique<YoungGenerationMarkingJob>(
+                        isolate(), this, worklist(), std::move(marking_items),
+                        &slots))
+          ->Join();
+
       DCHECK(worklist()->IsEmpty());
     }
   }
@@ -4974,15 +4992,17 @@ void MinorMarkCompactCollector::MarkLiveObjects() {
 
   {
     TRACE_GC(heap()->tracer(), GCTracer::Scope::MINOR_MC_MARK_GLOBAL_HANDLES);
-    isolate()->global_handles()->MarkYoungWeakUnmodifiedObjectsPending(
+    isolate()->global_handles()->MarkYoungWeakDeadObjectsPending(
         &IsUnmarkedObjectForYoungGeneration);
-    isolate()->global_handles()->IterateYoungWeakUnmodifiedRootsForFinalizers(
+    isolate()->global_handles()->IterateYoungWeakDeadObjectsForFinalizers(
         &root_visitor);
-    isolate()
-        ->global_handles()
-        ->IterateYoungWeakUnmodifiedRootsForPhantomHandles(
-            &root_visitor, &IsUnmarkedObjectForYoungGeneration);
+    isolate()->global_handles()->IterateYoungWeakObjectsForPhantomHandles(
+        &root_visitor, &IsUnmarkedObjectForYoungGeneration);
     DrainMarkingWorklist();
+  }
+
+  if (FLAG_minor_mc_trace_fragmentation) {
+    TraceFragmentation();
   }
 }
 
@@ -4997,6 +5017,57 @@ void MinorMarkCompactCollector::DrainMarkingWorklist() {
     main_marking_visitor()->Visit(object);
   }
   DCHECK(marking_worklist.IsLocalEmpty());
+}
+
+void MinorMarkCompactCollector::TraceFragmentation() {
+  NewSpace* new_space = heap()->new_space();
+  const std::array<size_t, 4> free_size_class_limits = {0, 1024, 2048, 4096};
+  size_t free_bytes_of_class[free_size_class_limits.size()] = {0};
+  size_t live_bytes = 0;
+  size_t allocatable_bytes = 0;
+  for (Page* p :
+       PageRange(new_space->first_allocatable_address(), new_space->top())) {
+    Address free_start = p->area_start();
+    for (auto object_and_size : LiveObjectRange<kGreyObjects>(
+             p, non_atomic_marking_state()->bitmap(p))) {
+      HeapObject const object = object_and_size.first;
+      Address free_end = object.address();
+      if (free_end != free_start) {
+        size_t free_bytes = free_end - free_start;
+        int free_bytes_index = 0;
+        for (auto free_size_class_limit : free_size_class_limits) {
+          if (free_bytes >= free_size_class_limit) {
+            free_bytes_of_class[free_bytes_index] += free_bytes;
+          }
+          free_bytes_index++;
+        }
+      }
+      Map map = object.synchronized_map();
+      int size = object.SizeFromMap(map);
+      live_bytes += size;
+      free_start = free_end + size;
+    }
+    size_t area_end =
+        p->Contains(new_space->top()) ? new_space->top() : p->area_end();
+    if (free_start != area_end) {
+      size_t free_bytes = area_end - free_start;
+      int free_bytes_index = 0;
+      for (auto free_size_class_limit : free_size_class_limits) {
+        if (free_bytes >= free_size_class_limit) {
+          free_bytes_of_class[free_bytes_index] += free_bytes;
+        }
+        free_bytes_index++;
+      }
+    }
+    allocatable_bytes += area_end - p->area_start();
+    CHECK_EQ(allocatable_bytes, live_bytes + free_bytes_of_class[0]);
+  }
+  PrintIsolate(
+      isolate(),
+      "Minor Mark-Compact Fragmentation: allocatable_bytes=%zu live_bytes=%zu "
+      "free_bytes=%zu free_bytes_1K=%zu free_bytes_2K=%zu free_bytes_4K=%zu\n",
+      allocatable_bytes, live_bytes, free_bytes_of_class[0],
+      free_bytes_of_class[1], free_bytes_of_class[2], free_bytes_of_class[3]);
 }
 
 void MinorMarkCompactCollector::Evacuate() {
@@ -5082,7 +5153,6 @@ void YoungGenerationEvacuator::RawEvacuatePage(MemoryChunk* chunk,
       LiveObjectVisitor::VisitGreyObjectsNoFail(
           chunk, marking_state, &new_space_visitor_,
           LiveObjectVisitor::kClearMarkbits);
-      // ArrayBufferTracker will be updated during pointers updating.
       break;
     case kPageNewToOld:
       LiveObjectVisitor::VisitGreyObjectsNoFail(
@@ -5091,9 +5161,6 @@ void YoungGenerationEvacuator::RawEvacuatePage(MemoryChunk* chunk,
       new_to_old_page_visitor_.account_moved_bytes(
           marking_state->live_bytes(chunk));
       if (!chunk->IsLargePage()) {
-        // TODO(mlippautz): If cleaning array buffers is too slow here we can
-        // delay it until the next GC.
-        ArrayBufferTracker::FreeDead(static_cast<Page*>(chunk), marking_state);
         if (heap()->ShouldZapGarbage()) {
           collector_->MakeIterable(static_cast<Page*>(chunk),
                                    MarkingTreatmentMode::KEEP, ZAP_FREE_SPACE);
@@ -5114,9 +5181,6 @@ void YoungGenerationEvacuator::RawEvacuatePage(MemoryChunk* chunk,
       new_to_new_page_visitor_.account_moved_bytes(
           marking_state->live_bytes(chunk));
       DCHECK(!chunk->IsLargePage());
-      // TODO(mlippautz): If cleaning array buffers is too slow here we can
-      // delay it until the next GC.
-      ArrayBufferTracker::FreeDead(static_cast<Page*>(chunk), marking_state);
       if (heap()->ShouldZapGarbage()) {
         collector_->MakeIterable(static_cast<Page*>(chunk),
                                  MarkingTreatmentMode::KEEP, ZAP_FREE_SPACE);
@@ -5136,13 +5200,12 @@ void YoungGenerationEvacuator::RawEvacuatePage(MemoryChunk* chunk,
 }  // namespace
 
 void MinorMarkCompactCollector::EvacuatePagesInParallel() {
-  ItemParallelJob evacuation_job(isolate()->cancelable_task_manager(),
-                                 &page_parallel_job_semaphore_);
+  std::vector<std::pair<ParallelWorkItem, MemoryChunk*>> evacuation_items;
   intptr_t live_bytes = 0;
 
   for (Page* page : new_space_evacuation_pages_) {
     intptr_t live_bytes_on_page = non_atomic_marking_state()->live_bytes(page);
-    if (live_bytes_on_page == 0 && !page->contains_array_buffers()) continue;
+    if (live_bytes_on_page == 0) continue;
     live_bytes += live_bytes_on_page;
     if (ShouldMovePage(page, live_bytes_on_page, false)) {
       if (page->IsFlagSet(MemoryChunk::NEW_SPACE_BELOW_AGE_MARK)) {
@@ -5151,7 +5214,7 @@ void MinorMarkCompactCollector::EvacuatePagesInParallel() {
         EvacuateNewSpacePageVisitor<NEW_TO_NEW>::Move(page);
       }
     }
-    evacuation_job.AddItem(new EvacuationItem(page));
+    evacuation_items.emplace_back(ParallelWorkItem{}, page);
   }
 
   // Promote young generation large objects.
@@ -5164,30 +5227,15 @@ void MinorMarkCompactCollector::EvacuatePagesInParallel() {
     if (non_atomic_marking_state_.IsGrey(object)) {
       heap_->lo_space()->PromoteNewLargeObject(current);
       current->SetFlag(Page::PAGE_NEW_OLD_PROMOTION);
-      evacuation_job.AddItem(new EvacuationItem(current));
+      evacuation_items.emplace_back(ParallelWorkItem{}, current);
     }
   }
-  if (evacuation_job.NumberOfItems() == 0) return;
+  if (evacuation_items.empty()) return;
 
   YoungGenerationMigrationObserver observer(heap(),
                                             heap()->mark_compact_collector());
   CreateAndExecuteEvacuationTasks<YoungGenerationEvacuator>(
-      this, &evacuation_job, &observer, live_bytes);
-}
-
-int MinorMarkCompactCollector::CollectNewSpaceArrayBufferTrackerItems(
-    ItemParallelJob* job) {
-  int pages = 0;
-  for (Page* p : new_space_evacuation_pages_) {
-    if (Evacuator::ComputeEvacuationMode(p) == Evacuator::kObjectsNewToOld) {
-      if (p->local_tracker() == nullptr) continue;
-
-      pages++;
-      job->AddItem(new ArrayBufferTrackerUpdatingItem(
-          p, ArrayBufferTrackerUpdatingItem::kRegular));
-    }
-  }
-  return pages;
+      this, std::move(evacuation_items), &observer, live_bytes);
 }
 
 #endif  // ENABLE_MINOR_MC

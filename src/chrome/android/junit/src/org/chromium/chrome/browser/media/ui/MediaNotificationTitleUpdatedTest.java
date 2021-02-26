@@ -22,7 +22,8 @@ import org.robolectric.shadows.ShadowNotification;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
+import org.chromium.components.browser_ui.media.MediaNotificationController;
+import org.chromium.components.browser_ui.media.MediaSessionHelper;
 import org.chromium.services.media_session.MediaMetadata;
 
 /**
@@ -33,14 +34,14 @@ import org.chromium.services.media_session.MediaMetadata;
 @Config(manifest = Config.NONE,
         // Remove this after updating to a version of Robolectric that supports
         // notification channel creation. crbug.com/774315
-        sdk = Build.VERSION_CODES.N_MR1,
-        shadows = {MediaNotificationTestShadowResources.class})
-public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerTestBase {
+        sdk = Build.VERSION_CODES.N_MR1, shadows = {MediaNotificationTestShadowResources.class})
+public class MediaNotificationTitleUpdatedTest extends MediaNotificationTestBase {
     private static final int TAB_ID_1 = 1;
     private static final int TAB_ID_2 = 2;
-    private static final int THROTTLE_MILLIS = MediaNotificationManager.Throttler.THROTTLE_MILLIS;
+    private static final int THROTTLE_MILLIS =
+            MediaNotificationController.Throttler.THROTTLE_MILLIS;
     private static final int HIDE_NOTIFICATION_DELAY_MILLIS =
-            MediaSessionTabHelper.HIDE_NOTIFICATION_DELAY_MILLIS;
+            MediaSessionHelper.HIDE_NOTIFICATION_DELAY_MILLIS;
 
     private MediaNotificationTestTabHolder mTabHolder;
 
@@ -49,8 +50,8 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
     public void setUp() {
         super.setUp();
 
-        getManager().mThrottler.mManager = getManager();
-        doCallRealMethod().when(getManager()).onServiceStarted(any(ListenerService.class));
+        getController().mThrottler.mController = getController();
+        doCallRealMethod().when(getController()).onServiceStarted(any(MockListenerService.class));
         doCallRealMethod()
                 .when(mMockForegroundServiceUtils)
                 .startForegroundService(any(Intent.class));
@@ -82,11 +83,11 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
     @Test
     public void testSessionStateNewlyPaused() {
         mTabHolder.simulateMediaSessionStateChanged(true, true);
-        assertNull(getManager().mNotificationBuilder);
+        assertNull(getController().mNotificationBuilder);
 
         mTabHolder.simulateTitleUpdated("title2");
         advanceTimeByMillis(THROTTLE_MILLIS);
-        assertNull(getManager().mNotificationBuilder);
+        assertNull(getController().mNotificationBuilder);
     }
 
     @Test
@@ -97,7 +98,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         mTabHolder.simulateMediaSessionStateChanged(false, false);
         mTabHolder.simulateTitleUpdated("title2");
         advanceTimeByMillis(HIDE_NOTIFICATION_DELAY_MILLIS);
-        assertNull(getManager().mMediaNotificationInfo);
+        assertNull(getController().mMediaNotificationInfo);
     }
 
     @Test
@@ -218,7 +219,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
     }
 
     private CharSequence getDisplayedTitle() {
-        Notification notification = getManager().mNotificationBuilder.build();
+        Notification notification = getController().mNotificationBuilder.build();
         ShadowNotification shadowNotification = Shadows.shadowOf(notification);
 
         return shadowNotification.getContentTitle();

@@ -12,12 +12,13 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 
@@ -40,6 +41,8 @@ class ProfileAttributesStorage
   using Observer = ProfileInfoCacheObserver;
 
   explicit ProfileAttributesStorage(PrefService* prefs);
+  ProfileAttributesStorage(const ProfileAttributesStorage&) = delete;
+  ProfileAttributesStorage& operator=(const ProfileAttributesStorage&) = delete;
   virtual ~ProfileAttributesStorage();
 
   // If the |supervised_user_id| is non-empty, the profile will be marked to be
@@ -93,6 +96,13 @@ class ProfileAttributesStorage
   // is not used.
   bool IsDefaultProfileName(const base::string16& name,
                             bool include_check_for_legacy_profile_name) const;
+
+#if !defined(OS_ANDROID)
+  // Records statistics about a profile `entry` that is being deleted. If the
+  // profile has opened browser window(s) in the moment of deletion, this
+  // function must be called before these windows get closed.
+  void RecordDeletedProfileState(ProfileAttributesEntry* entry);
+#endif
 
   // Records statistics about profiles as would be visible in the profile picker
   // (if we would display it in this moment).
@@ -209,8 +219,6 @@ class ProfileAttributesStorage
   // Notifies observers.
   void NotifyOnProfileHighResAvatarLoaded(
       const base::FilePath& profile_path) const;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileAttributesStorage);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_ATTRIBUTES_STORAGE_H_

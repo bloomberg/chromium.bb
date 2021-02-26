@@ -3,6 +3,7 @@
 
 #include "avif/internal.h"
 
+#include <stdint.h>
 #include <string.h>
 
 // ---------------------------------------------------------------------------
@@ -19,17 +20,17 @@ void avifROStreamStart(avifROStream * stream, avifROData * raw)
     stream->offset = 0;
 }
 
-avifBool avifROStreamHasBytesLeft(avifROStream * stream, size_t byteCount)
+avifBool avifROStreamHasBytesLeft(const avifROStream * stream, size_t byteCount)
 {
-    return (stream->offset + byteCount) <= stream->raw->size;
+    return byteCount <= (stream->raw->size - stream->offset);
 }
 
-size_t avifROStreamRemainingBytes(avifROStream * stream)
+size_t avifROStreamRemainingBytes(const avifROStream * stream)
 {
     return stream->raw->size - stream->offset;
 }
 
-size_t avifROStreamOffset(avifROStream * stream)
+size_t avifROStreamOffset(const avifROStream * stream)
 {
     return stream->offset;
 }
@@ -142,7 +143,7 @@ avifBool avifROStreamReadString(avifROStream * stream, char * output, size_t out
     return AVIF_TRUE;
 }
 
-avifBool avifROStreamReadBoxHeader(avifROStream * stream, avifBoxHeader * header)
+avifBool avifROStreamReadBoxHeaderPartial(avifROStream * stream, avifBoxHeader * header)
 {
     size_t startOffset = stream->offset;
 
@@ -159,16 +160,23 @@ avifBool avifROStreamReadBoxHeader(avifROStream * stream, avifBoxHeader * header
         CHECK(avifROStreamSkip(stream, 16));
     }
 
-    header->size = (size_t)(size - (stream->offset - startOffset));
-
-    // Make the assumption here that this box's contents must fit in the remaining portion of the parent stream
-    if (header->size > avifROStreamRemainingBytes(stream)) {
+    size_t bytesRead = stream->offset - startOffset;
+    if ((size < bytesRead) || ((size - bytesRead) > SIZE_MAX)) {
         return AVIF_FALSE;
     }
+    header->size = (size_t)(size - bytesRead);
     return AVIF_TRUE;
 }
 
-avifBool avifROStreamReadVersionAndFlags(avifROStream * stream, uint8_t * version, uint8_t * flags)
+avifBool avifROStreamReadBoxHeader(avifROStream * stream, avifBoxHeader * header)
+{
+    if (!avifROStreamReadBoxHeaderPartial(stream, header)) {
+        return AVIF_FALSE;
+    }
+    return (header->size <= avifROStreamRemainingBytes(stream));
+}
+
+avifBool avifROStreamReadVersionAndFlags(avifROStream * stream, uint8_t * version, uint32_t * flags)
 {
     uint8_t versionAndFlags[4];
     CHECK(avifROStreamRead(stream, versionAndFlags, 4));
@@ -176,7 +184,7 @@ avifBool avifROStreamReadVersionAndFlags(avifROStream * stream, uint8_t * versio
         *version = versionAndFlags[0];
     }
     if (flags) {
-        memcpy(flags, &versionAndFlags[1], 3);
+        *flags = (versionAndFlags[1] << 16) + (versionAndFlags[2] << 8) + (versionAndFlags[3] << 0);
     }
     return AVIF_TRUE;
 }
@@ -210,7 +218,7 @@ void avifRWStreamStart(avifRWStream * stream, avifRWData * raw)
     stream->offset = 0;
 }
 
-size_t avifRWStreamOffset(avifRWStream * stream)
+size_t avifRWStreamOffset(const avifRWStream * stream)
 {
     return stream->offset;
 }
@@ -234,7 +242,7 @@ void avifRWStreamFinishWrite(avifRWStream * stream)
     }
 }
 
-void avifRWStreamWrite(avifRWStream * stream, const uint8_t * data, size_t size)
+void avifRWStreamWrite(avifRWStream * stream, const void * data, size_t size)
 {
     if (!size) {
         return;
@@ -247,10 +255,10 @@ void avifRWStreamWrite(avifRWStream * stream, const uint8_t * data, size_t size)
 
 void avifRWStreamWriteChars(avifRWStream * stream, const char * chars, size_t size)
 {
-    avifRWStreamWrite(stream, (const uint8_t *)chars, size);
+    avifRWStreamWrite(stream, chars, size);
 }
 
-avifBoxMarker avifRWStreamWriteBox(avifRWStream * stream, const char * type, int version, size_t contentSize)
+avifBoxMarker avifRWStreamWriteFullBox(avifRWStream * stream, const char * type, size_t contentSize, int version, uint32_t flags)
 {
     avifBoxMarker marker = stream->offset;
     size_t headerSize = sizeof(uint32_t) + 4 /* size of type */;
@@ -260,20 +268,28 @@ avifBoxMarker avifRWStreamWriteBox(avifRWStream * stream, const char * type, int
 
     makeRoom(stream, headerSize);
     memset(stream->raw->data + stream->offset, 0, headerSize);
-    if (version != -1) {
-        stream->raw->data[stream->offset + 8] = (uint8_t)version;
-    }
-    uint32_t noSize = avifNTOHL((uint32_t)(headerSize + contentSize));
+    uint32_t noSize = avifHTONL((uint32_t)(headerSize + contentSize));
     memcpy(stream->raw->data + stream->offset, &noSize, sizeof(uint32_t));
     memcpy(stream->raw->data + stream->offset + 4, type, 4);
+    if (version != -1) {
+        stream->raw->data[stream->offset + 8] = (uint8_t)version;
+        stream->raw->data[stream->offset + 9] = (uint8_t)((flags >> 16) & 0xff);
+        stream->raw->data[stream->offset + 10] = (uint8_t)((flags >> 8) & 0xff);
+        stream->raw->data[stream->offset + 11] = (uint8_t)((flags >> 0) & 0xff);
+    }
     stream->offset += headerSize;
 
     return marker;
 }
 
+avifBoxMarker avifRWStreamWriteBox(avifRWStream * stream, const char * type, size_t contentSize)
+{
+    return avifRWStreamWriteFullBox(stream, type, contentSize, -1, 0);
+}
+
 void avifRWStreamFinishBox(avifRWStream * stream, avifBoxMarker marker)
 {
-    uint32_t noSize = avifNTOHL((uint32_t)(stream->offset - marker));
+    uint32_t noSize = avifHTONL((uint32_t)(stream->offset - marker));
     memcpy(stream->raw->data + marker, &noSize, sizeof(uint32_t));
 }
 
@@ -298,6 +314,15 @@ void avifRWStreamWriteU32(avifRWStream * stream, uint32_t v)
 {
     size_t size = sizeof(uint32_t);
     v = avifHTONL(v);
+    makeRoom(stream, size);
+    memcpy(stream->raw->data + stream->offset, &v, size);
+    stream->offset += size;
+}
+
+void avifRWStreamWriteU64(avifRWStream * stream, uint64_t v)
+{
+    size_t size = sizeof(uint64_t);
+    v = avifHTON64(v);
     makeRoom(stream, size);
     memcpy(stream->raw->data + stream->offset, &v, size);
     stream->offset += size;

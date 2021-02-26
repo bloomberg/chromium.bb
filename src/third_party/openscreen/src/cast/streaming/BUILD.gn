@@ -3,10 +3,21 @@
 # found in the LICENSE file.
 
 import("//build_overrides/build.gni")
+import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
+import("//third_party/protobuf/proto_library.gni")
 import("../../testing/libfuzzer/fuzzer_test.gni")
+
+fuzzable_proto_library("remoting_proto") {
+  sources = [ "remoting.proto" ]
+}
 
 source_set("common") {
   sources = [
+    "answer_messages.cc",
+    "answer_messages.h",
+    "capture_configs.h",
+    "capture_recommendations.cc",
+    "capture_recommendations.h",
     "clock_drift_smoother.cc",
     "clock_drift_smoother.h",
     "constants.h",
@@ -19,8 +30,12 @@ source_set("common") {
     "frame_crypto.h",
     "frame_id.cc",
     "frame_id.h",
+    "message_fields.cc",
+    "message_fields.h",
     "ntp_time.cc",
     "ntp_time.h",
+    "offer_messages.cc",
+    "offer_messages.h",
     "packet_util.cc",
     "packet_util.h",
     "rtcp_common.cc",
@@ -33,6 +48,8 @@ source_set("common") {
     "rtp_time.h",
     "session_config.cc",
     "session_config.h",
+    "session_messager.cc",
+    "session_messager.h",
     "ssrc.cc",
     "ssrc.h",
   ]
@@ -40,8 +57,11 @@ source_set("common") {
   public_configs = [ "../../build:openscreen_include_dirs" ]
 
   public_deps = [
+    ":remoting_proto",
     "../../third_party/abseil",
     "../../third_party/boringssl",
+    "../common:channel",
+    "../common/certificate/proto:certificate_proto",
   ]
 
   deps = [
@@ -52,14 +72,10 @@ source_set("common") {
 
 source_set("receiver") {
   sources = [
-    "answer_messages.cc",
-    "answer_messages.h",
     "compound_rtcp_builder.cc",
     "compound_rtcp_builder.h",
     "frame_collector.cc",
     "frame_collector.h",
-    "offer_messages.cc",
-    "offer_messages.h",
     "packet_receive_stats_tracker.cc",
     "packet_receive_stats_tracker.h",
     "receiver.cc",
@@ -74,13 +90,9 @@ source_set("receiver") {
     "sender_report_parser.h",
   ]
 
-  public_deps = [
-    ":common",
-  ]
+  public_deps = [ ":common" ]
 
-  deps = [
-    "../../util",
-  ]
+  deps = [ "../../util" ]
 }
 
 source_set("sender") {
@@ -97,11 +109,13 @@ source_set("sender") {
     "sender_packet_router.h",
     "sender_report_builder.cc",
     "sender_report_builder.h",
+    "sender_session.cc",
+    "sender_session.h",
   ]
 
-  public_deps = [
-    ":common",
-  ]
+  public_deps = [ ":common" ]
+
+  deps = [ "../../util" ]
 }
 
 source_set("unittests") {
@@ -110,11 +124,13 @@ source_set("unittests") {
   sources = [
     "answer_messages_unittest.cc",
     "bandwidth_estimator_unittest.cc",
+    "capture_recommendations_unittest.cc",
     "compound_rtcp_builder_unittest.cc",
     "compound_rtcp_parser_unittest.cc",
     "expanded_value_base_unittest.cc",
     "frame_collector_unittest.cc",
     "frame_crypto_unittest.cc",
+    "message_fields_unittest.cc",
     "mock_compound_rtcp_parser_client.h",
     "mock_environment.cc",
     "mock_environment.h",
@@ -130,8 +146,10 @@ source_set("unittests") {
     "rtp_time_unittest.cc",
     "sender_packet_router_unittest.cc",
     "sender_report_unittest.cc",
+    "sender_session_unittest.cc",
     "sender_unittest.cc",
     "ssrc_unittest.cc",
+    "testing/simple_message_port.h",
   ]
 
   deps = [
@@ -144,9 +162,7 @@ source_set("unittests") {
 }
 
 openscreen_fuzzer_test("compound_rtcp_parser_fuzzer") {
-  sources = [
-    "compound_rtcp_parser_fuzzer.cc",
-  ]
+  sources = [ "compound_rtcp_parser_fuzzer.cc" ]
 
   deps = [
     ":sender",
@@ -160,9 +176,7 @@ openscreen_fuzzer_test("compound_rtcp_parser_fuzzer") {
 }
 
 openscreen_fuzzer_test("rtp_packet_parser_fuzzer") {
-  sources = [
-    "rtp_packet_parser_fuzzer.cc",
-  ]
+  sources = [ "rtp_packet_parser_fuzzer.cc" ]
 
   deps = [
     ":receiver",
@@ -176,9 +190,7 @@ openscreen_fuzzer_test("rtp_packet_parser_fuzzer") {
 }
 
 openscreen_fuzzer_test("sender_report_parser_fuzzer") {
-  sources = [
-    "sender_report_parser_fuzzer.cc",
-  ]
+  sources = [ "sender_report_parser_fuzzer.cc" ]
 
   deps = [
     ":receiver",

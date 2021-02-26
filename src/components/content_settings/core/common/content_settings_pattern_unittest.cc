@@ -88,6 +88,15 @@ TEST(ContentSettingsPatternTest, FromURL) {
   pattern = ContentSettingsPattern::FromURL(GURL("file:///foo/bar.html"));
   EXPECT_TRUE(pattern.IsValid());
   EXPECT_EQ("file:///foo/bar.html", pattern.ToString());
+
+  // WebUI schemes can't be created by FromURL, because they have no port and
+  // can't have domain wildcard.
+  pattern = ContentSettingsPattern::FromURL(GURL("chrome://test"));
+  EXPECT_FALSE(pattern.IsValid());
+  pattern = ContentSettingsPattern::FromURL(GURL("chrome-untrusted://test"));
+  EXPECT_FALSE(pattern.IsValid());
+  pattern = ContentSettingsPattern::FromURL(GURL("devtools://devtools"));
+  EXPECT_FALSE(pattern.IsValid());
 }
 
 TEST(ContentSettingsPatternTest, FilesystemUrls) {
@@ -179,6 +188,20 @@ TEST(ContentSettingsPatternTest, FromURLNoWildcard) {
       GURL("filesystem:https://www.google.com:81/temporary/")));
   EXPECT_FALSE(pattern.Matches(
       GURL("filesystem:https://foo.www.google.com/temporary/")));
+
+  pattern = ContentSettingsPattern::FromURLNoWildcard(GURL("chrome://test"));
+  EXPECT_TRUE(pattern.IsValid());
+  EXPECT_TRUE(pattern.Matches(GURL("chrome://test")));
+
+  pattern = ContentSettingsPattern::FromURLNoWildcard(
+      GURL("chrome-untrusted://test"));
+  EXPECT_TRUE(pattern.IsValid());
+  EXPECT_TRUE(pattern.Matches(GURL("chrome-untrusted://test")));
+
+  pattern =
+      ContentSettingsPattern::FromURLNoWildcard(GURL("devtools://devtools"));
+  EXPECT_TRUE(pattern.IsValid());
+  EXPECT_TRUE(pattern.Matches(GURL("devtools://devtools")));
 }
 
 // The static Wildcard() method goes through a fast path and avoids the Builder
@@ -478,6 +501,18 @@ TEST(ContentSettingsPatternTest, FromString_Canonicalized) {
   EXPECT_TRUE(Pattern("file:///tmp/bar/../test.html").IsValid());
   EXPECT_STREQ("file:///tmp/test.html",
                Pattern("file:///tmp/bar/../test.html").ToString().c_str());
+}
+
+TEST(ContentSettingsPatternTest, FromString_WebUISchemes) {
+  const char* patterns[] = {"chrome://test/", "chrome-untrusted://test/",
+                            "devtools://devtools/"};
+
+  for (const char* pattern_str : patterns) {
+    ContentSettingsPattern pattern = Pattern(pattern_str);
+    EXPECT_TRUE(pattern.IsValid());
+    EXPECT_EQ(pattern_str, pattern.ToString());
+    EXPECT_TRUE(pattern.Matches(GURL(pattern_str)));
+  }
 }
 
 TEST(ContentSettingsPatternTest, InvalidPatterns) {
@@ -800,6 +835,8 @@ TEST(ContentSettingsPatternTest, Schemes) {
             Pattern("chrome://sample/").GetScheme());
   EXPECT_EQ(ContentSettingsPattern::SCHEME_CHROMEUNTRUSTED,
             Pattern("chrome-untrusted://sample/").GetScheme());
+  EXPECT_EQ(ContentSettingsPattern::SCHEME_DEVTOOLS,
+            Pattern("devtools://devtools/").GetScheme());
 }
 
 TEST(ContentSettingsPatternTest, FileSchemeHasPath) {
@@ -807,4 +844,23 @@ TEST(ContentSettingsPatternTest, FileSchemeHasPath) {
   EXPECT_TRUE(Pattern("file:///foo").HasPath());
   EXPECT_TRUE(Pattern("file:///foo/bar/").HasPath());
   EXPECT_TRUE(Pattern("file:///foo/bar/test.html").HasPath());
+}
+
+TEST(ContentSettingsPatternTest, PatternHasWildcards) {
+  // scheme wildcard are allowed
+  EXPECT_FALSE(Pattern("mail.google.com:443/home").HasHostWildcards());
+  EXPECT_FALSE(Pattern("*://mail.google.com:443/home").HasHostWildcards());
+  // domain wildcard
+  EXPECT_TRUE(Pattern("https://[*.]google.com:443/home").HasHostWildcards());
+  // path wildcard are allowed
+  EXPECT_FALSE(Pattern("https://mail.google.com:443/*").HasHostWildcards());
+  // port wildcards are allowed
+  EXPECT_FALSE(Pattern("https://mail.google.com/home").HasHostWildcards());
+  EXPECT_FALSE(Pattern("https://mail.google.com:*/home").HasHostWildcards());
+  // full wildcard pattern
+  EXPECT_TRUE(Pattern("*").HasHostWildcards());
+  // full wildcard pattern
+  EXPECT_TRUE(ContentSettingsPattern::Wildcard().HasHostWildcards());
+  // no wildcards
+  EXPECT_FALSE(Pattern("https://mail.google.com:443/home").HasHostWildcards());
 }

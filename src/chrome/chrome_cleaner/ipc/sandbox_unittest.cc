@@ -10,9 +10,10 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
@@ -92,7 +93,7 @@ class SandboxTest : public base::MultiProcessTest {
     // exist.
     sandbox_process_log_file_path_ =
         ScopedLogging::GetLogFilePath(kSandboxLogFileSuffix);
-    EXPECT_TRUE(base::DeleteFile(sandbox_process_log_file_path_, false));
+    EXPECT_TRUE(base::DeleteFile(sandbox_process_log_file_path_));
   }
 
   void TearDown() override {
@@ -147,7 +148,7 @@ MULTIPROCESS_TEST_MAIN(MockSandboxProcessMain) {
   base::FilePath temp_file;
   if (base::CreateTemporaryFileInDir(product_path, &temp_file)) {
     have_write_access = true;
-    base::DeleteFile(temp_file, /*recursive=*/false);
+    base::DeleteFile(temp_file);
   }
 
 #if BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)

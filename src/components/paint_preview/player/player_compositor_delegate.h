@@ -5,17 +5,25 @@
 #ifndef COMPONENTS_PAINT_PREVIEW_PLAYER_PLAYER_COMPOSITOR_DELEGATE_H_
 #define COMPONENTS_PAINT_PREVIEW_PLAYER_PLAYER_COMPOSITOR_DELEGATE_H_
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "components/paint_preview/browser/hit_tester.h"
 #include "components/paint_preview/browser/paint_preview_base_service.h"
+#include "components/paint_preview/player/bitmap_request.h"
+#include "components/paint_preview/player/compositor_status.h"
 #include "components/paint_preview/public/paint_preview_compositor_client.h"
 #include "components/paint_preview/public/paint_preview_compositor_service.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
+
+namespace base {
+class MemoryPressureMonitor;
+}  // namespace base
 
 namespace gfx {
 class Rect;
@@ -27,53 +35,146 @@ namespace paint_preview {
 
 class DirectoryKey;
 
+// Class to facilitate a player creating and communicating with an instance of
+// PaintPreviewCompositor.
 class PlayerCompositorDelegate {
  public:
-  PlayerCompositorDelegate(PaintPreviewBaseService* paint_preview_service,
-                           const GURL& url,
-                           const DirectoryKey& key,
-                           bool skip_service_launch = false);
+  PlayerCompositorDelegate();
   virtual ~PlayerCompositorDelegate();
 
   PlayerCompositorDelegate(const PlayerCompositorDelegate&) = delete;
   PlayerCompositorDelegate& operator=(const PlayerCompositorDelegate&) = delete;
 
+  // Initializes the compositor.
+  void Initialize(PaintPreviewBaseService* paint_preview_service,
+                  const GURL& url,
+                  const DirectoryKey& key,
+                  base::OnceCallback<void(int)> compositor_error,
+                  base::TimeDelta timeout_duration,
+                  size_t max_requests);
+
+  // Returns whether initialization has happened.
+  bool IsInitialized() const { return paint_preview_service_; }
+
+  // Overrides whether to compress the directory when the player is closed. By
+  // default compression will happen.
+  void SetCompressOnClose(bool compress) { compress_on_close_ = compress; }
+
+  // Implementations should override this to handle alternative compositor ready
+  // situations.
   virtual void OnCompositorReady(
-      mojom::PaintPreviewCompositor::Status status,
+      CompositorStatus compositor_status,
       mojom::PaintPreviewBeginCompositeResponsePtr composite_response) {}
 
   // Called when there is a request for a new bitmap. When the bitmap
-  // is ready, it will be passed to callback.
-  void RequestBitmap(
+  // is ready, it will be passed to callback. Returns an ID for the request.
+  // Pass this ID to `CancelBitmapRequest(int32_t)` to cancel the request if it
+  // hasn't already been sent.
+  int32_t RequestBitmap(
       const base::UnguessableToken& frame_guid,
       const gfx::Rect& clip_rect,
       float scale_factor,
-      base::OnceCallback<void(mojom::PaintPreviewCompositor::Status,
+      base::OnceCallback<void(mojom::PaintPreviewCompositor::BitmapStatus,
                               const SkBitmap&)> callback);
+
+  // Cancels the bitmap request associated with `request_id` if possible.
+  // Returns true on success.
+  bool CancelBitmapRequest(int32_t request_id);
+
+  // Cancels all pending bitmap requests.
+  void CancelAllBitmapRequests();
 
   // Called on touch event on a frame.
   std::vector<const GURL*> OnClick(const base::UnguessableToken& frame_guid,
                                    const gfx::Rect& rect);
 
+  // Called when under memory pressure. The default implementation kills the
+  // compositor service and client under critical pressure.
+  virtual void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
+  // Test methods:
+
+  // Initializes the compositor without a real service for testing purposes.
+  void InitializeWithFakeServiceForTest(
+      PaintPreviewBaseService* paint_preview_service,
+      const GURL& expected_url,
+      const DirectoryKey& key,
+      base::OnceCallback<void(int)> compositor_error,
+      base::TimeDelta timeout_duration,
+      size_t max_requests,
+      std::unique_ptr<PaintPreviewCompositorService, base::OnTaskRunnerDeleter>
+          fake_compositor_service);
+
+  PaintPreviewCompositorService* GetCompositorServiceForTest() {
+    return paint_preview_compositor_service_.get();
+  }
+
+  PaintPreviewCompositorClient* GetClientForTest() {
+    return paint_preview_compositor_client_.get();
+  }
+
+ protected:
+  base::OnceCallback<void(int)> compositor_error_;
+
+  virtual base::MemoryPressureMonitor* memory_pressure_monitor();
+
  private:
+  void InitializeInternal(PaintPreviewBaseService* paint_preview_service,
+                          const GURL& expected_url,
+                          const DirectoryKey& key,
+                          base::OnceCallback<void(int)> compositor_error,
+                          base::TimeDelta timeout_duration,
+                          size_t max_requests);
+
+  void OnCompositorReadyStatusAdapter(
+      mojom::PaintPreviewCompositor::BeginCompositeStatus status,
+      mojom::PaintPreviewBeginCompositeResponsePtr composite_response);
+
   void OnCompositorServiceDisconnected();
 
   void OnCompositorClientCreated(const GURL& expected_url,
                                  const DirectoryKey& key);
+
   void OnCompositorClientDisconnected();
 
+  void OnCompositorTimeout();
+
   void OnProtoAvailable(const GURL& expected_url,
+                        PaintPreviewBaseService::ProtoReadStatus proto_status,
                         std::unique_ptr<PaintPreviewProto> proto);
+
   void SendCompositeRequest(
       mojom::PaintPreviewBeginCompositeRequestPtr begin_composite_request);
 
-  PaintPreviewBaseService* paint_preview_service_;
-  std::unique_ptr<PaintPreviewCompositorService>
+  void ProcessBitmapRequestsFromQueue();
+  void BitmapRequestCallbackAdapter(
+      base::OnceCallback<void(mojom::PaintPreviewCompositor::BitmapStatus,
+                              const SkBitmap&)> callback,
+      mojom::PaintPreviewCompositor::BitmapStatus status,
+      const SkBitmap& bitmap);
+
+  PaintPreviewBaseService* paint_preview_service_{nullptr};
+  DirectoryKey key_;
+  bool compress_on_close_{true};
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_;
+
+  std::unique_ptr<PaintPreviewCompositorService, base::OnTaskRunnerDeleter>
       paint_preview_compositor_service_;
-  std::unique_ptr<PaintPreviewCompositorClient>
+  std::unique_ptr<PaintPreviewCompositorClient, base::OnTaskRunnerDeleter>
       paint_preview_compositor_client_;
+
+  base::CancelableOnceClosure timeout_;
+  int max_requests_{1};
+
   base::flat_map<base::UnguessableToken, std::unique_ptr<HitTester>>
       hit_testers_;
+  std::unique_ptr<PaintPreviewProto> proto_;
+
+  int active_requests_{0};
+  int32_t next_request_id_{0};
+  base::queue<int32_t> bitmap_request_queue_;
+  std::map<int32_t, BitmapRequest> pending_bitmap_requests_;
 
   base::WeakPtrFactory<PlayerCompositorDelegate> weak_factory_{this};
 };

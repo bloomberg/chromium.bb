@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/clipboard/data_object_item.h"
 
 #include "base/time/time.h"
+#include "third_party/blink/public/mojom/file_system_access/native_file_system_drag_drop_token.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
@@ -61,11 +62,13 @@ DataObjectItem* DataObjectItem::CreateFromFile(File* file) {
 // static
 DataObjectItem* DataObjectItem::CreateFromFileWithFileSystemId(
     File* file,
-    const String& file_system_id) {
+    const String& file_system_id,
+    scoped_refptr<NativeFileSystemDropData> native_file_entry) {
   DataObjectItem* item =
       MakeGarbageCollected<DataObjectItem>(kFileKind, file->type());
   item->file_ = file;
   item->file_system_id_ = file_system_id;
+  item->native_file_system_entry_ = native_file_entry;
   return item;
 }
 
@@ -120,7 +123,7 @@ DataObjectItem* DataObjectItem::CreateFromClipboard(
 }
 
 DataObjectItem::DataObjectItem(ItemKind kind, const String& type)
-    : source_(kInternalSource),
+    : source_(DataSource::kInternalSource),
       kind_(kind),
       type_(type),
       sequence_number_(0),
@@ -130,7 +133,7 @@ DataObjectItem::DataObjectItem(ItemKind kind,
                                const String& type,
                                uint64_t sequence_number,
                                SystemClipboard* system_clipboard)
-    : source_(kClipboardSource),
+    : source_(DataSource::kClipboardSource),
       kind_(kind),
       type_(type),
       sequence_number_(sequence_number),
@@ -142,7 +145,7 @@ File* DataObjectItem::GetAsFile() const {
   if (Kind() != kFileKind)
     return nullptr;
 
-  if (source_ == kInternalSource) {
+  if (source_ == DataSource::kInternalSource) {
     if (file_)
       return file_.Get();
     DCHECK(shared_buffer_);
@@ -152,7 +155,7 @@ File* DataObjectItem::GetAsFile() const {
     return nullptr;
   }
 
-  DCHECK_EQ(source_, kClipboardSource);
+  DCHECK_EQ(source_, DataSource::kClipboardSource);
   if (GetType() == kMimeTypeImagePng) {
     SkBitmap bitmap =
         system_clipboard_->ReadImage(mojom::ClipboardBuffer::kStandard);
@@ -184,10 +187,10 @@ File* DataObjectItem::GetAsFile() const {
 String DataObjectItem::GetAsString() const {
   DCHECK_EQ(kind_, kStringKind);
 
-  if (source_ == kInternalSource)
+  if (source_ == DataSource::kInternalSource)
     return data_;
 
-  DCHECK_EQ(source_, kClipboardSource);
+  DCHECK_EQ(source_, DataSource::kClipboardSource);
 
   String data;
   // This is ugly but there's no real alternative.
@@ -222,7 +225,22 @@ String DataObjectItem::FileSystemId() const {
   return file_system_id_;
 }
 
-void DataObjectItem::Trace(Visitor* visitor) {
+bool DataObjectItem::HasNativeFileSystemEntry() const {
+  return static_cast<bool>(native_file_system_entry_);
+}
+
+mojo::PendingRemote<mojom::blink::NativeFileSystemDragDropToken>
+DataObjectItem::CloneNativeFileSystemEntryToken() const {
+  DCHECK(HasNativeFileSystemEntry());
+  mojo::Remote<mojom::blink::NativeFileSystemDragDropToken> token_cloner(
+      std::move(native_file_system_entry_->data));
+  mojo::PendingRemote<mojom::blink::NativeFileSystemDragDropToken> token_clone;
+  token_cloner->Clone(token_clone.InitWithNewPipeAndPassReceiver());
+  native_file_system_entry_->data = token_cloner.Unbind();
+  return token_clone;
+}
+
+void DataObjectItem::Trace(Visitor* visitor) const {
   visitor->Trace(file_);
   visitor->Trace(system_clipboard_);
 }

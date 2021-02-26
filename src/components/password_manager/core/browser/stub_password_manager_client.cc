@@ -15,7 +15,7 @@ namespace password_manager {
 StubPasswordManagerClient::StubPasswordManagerClient()
     : ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()) {}
 
-StubPasswordManagerClient::~StubPasswordManagerClient() {}
+StubPasswordManagerClient::~StubPasswordManagerClient() = default;
 
 bool StubPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     std::unique_ptr<PasswordFormManagerForUI> form_to_save,
@@ -25,11 +25,6 @@ bool StubPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
 
 void StubPasswordManagerClient::PromptUserToMovePasswordToAccount(
     std::unique_ptr<PasswordFormManagerForUI> form_to_move) {}
-
-bool StubPasswordManagerClient::ShowOnboarding(
-    std::unique_ptr<PasswordFormManagerForUI> form_to_save) {
-  return false;
-}
 
 void StubPasswordManagerClient::ShowManualFallbackForSaving(
     std::unique_ptr<PasswordFormManagerForUI> form_to_save,
@@ -43,18 +38,18 @@ void StubPasswordManagerClient::FocusedInputChanged(
     autofill::mojom::FocusedFieldType focused_field_type) {}
 
 bool StubPasswordManagerClient::PromptUserToChooseCredentials(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-    const GURL& origin,
-    const CredentialsCallback& callback) {
+    std::vector<std::unique_ptr<PasswordForm>> local_forms,
+    const url::Origin& origin,
+    CredentialsCallback callback) {
   return false;
 }
 
 void StubPasswordManagerClient::NotifyUserAutoSignin(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-    const GURL& origin) {}
+    std::vector<std::unique_ptr<PasswordForm>> local_forms,
+    const url::Origin& origin) {}
 
 void StubPasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
-    std::unique_ptr<autofill::PasswordForm> form) {}
+    std::unique_ptr<PasswordForm> form) {}
 
 void StubPasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
     std::unique_ptr<PasswordFormManagerForUI> submitted_manager) {}
@@ -76,8 +71,12 @@ PasswordStore* StubPasswordManagerClient::GetAccountPasswordStore() const {
   return nullptr;
 }
 
-const GURL& StubPasswordManagerClient::GetLastCommittedEntryURL() const {
+const GURL& StubPasswordManagerClient::GetLastCommittedURL() const {
   return GURL::EmptyGURL();
+}
+
+url::Origin StubPasswordManagerClient::GetLastCommittedOrigin() const {
+  return url::Origin();
 }
 
 const CredentialsFilter* StubPasswordManagerClient::GetStoreResultFilter()
@@ -99,13 +98,10 @@ StubPasswordManagerClient::GetPasswordFeatureManager() {
   return &password_feature_manager_;
 }
 
-#if defined(ON_FOCUS_PING_ENABLED) || \
-    defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 safe_browsing::PasswordProtectionService*
 StubPasswordManagerClient::GetPasswordProtectionService() const {
   return nullptr;
 }
-#endif
 
 #if defined(ON_FOCUS_PING_ENABLED)
 void StubPasswordManagerClient::CheckSafeBrowsingReputation(
@@ -113,15 +109,13 @@ void StubPasswordManagerClient::CheckSafeBrowsingReputation(
     const GURL& frame_url) {}
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void StubPasswordManagerClient::CheckProtectedPasswordEntry(
     metrics_util::PasswordType reused_password_type,
     const std::string& username,
     const std::vector<MatchingReusedCredential>& matching_reused_credentials,
     bool password_field_exists) {}
-#endif
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+#if defined(PASSWORD_REUSE_WARNING_ENABLED)
 void StubPasswordManagerClient::LogPasswordReuseDetectedEvent() {}
 #endif
 
@@ -132,7 +126,7 @@ ukm::SourceId StubPasswordManagerClient::GetUkmSourceId() {
 PasswordManagerMetricsRecorder*
 StubPasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
-    metrics_recorder_.emplace(GetUkmSourceId(), GetMainFrameURL(), nullptr);
+    metrics_recorder_.emplace(GetUkmSourceId(), nullptr);
   }
   return base::OptionalOrNullptr(metrics_recorder_);
 }
@@ -146,6 +140,11 @@ StubPasswordManagerClient::GetURLLoaderFactory() {
   return nullptr;
 }
 
+network::mojom::NetworkContext* StubPasswordManagerClient::GetNetworkContext()
+    const {
+  return nullptr;
+}
+
 bool StubPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
   return false;
 }
@@ -156,6 +155,10 @@ bool StubPasswordManagerClient::IsNewTabPage() const {
 
 FieldInfoManager* StubPasswordManagerClient::GetFieldInfoManager() const {
   return nullptr;
+}
+
+bool StubPasswordManagerClient::IsAutofillAssistantUIVisible() const {
+  return false;
 }
 
 }  // namespace password_manager

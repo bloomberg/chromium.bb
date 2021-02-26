@@ -137,10 +137,18 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) FactoryBase {
 
   // Allocates a FeedbackMedata object and zeroes the data section.
   Handle<FeedbackMetadata> NewFeedbackMetadata(
-      int slot_count, int feedback_cell_count,
+      int slot_count, int create_closure_slot_count,
       AllocationType allocation = AllocationType::kOld);
 
   Handle<CoverageInfo> NewCoverageInfo(const ZoneVector<SourceRange>& slots);
+
+  Handle<String> InternalizeString(const Vector<const uint8_t>& string,
+                                   bool convert_encoding = false);
+  Handle<String> InternalizeString(const Vector<const uint16_t>& string,
+                                   bool convert_encoding = false);
+
+  template <class StringTableKey>
+  Handle<String> InternalizeStringWithKey(StringTableKey* key);
 
   Handle<SeqOneByteString> NewOneByteInternalizedString(
       const Vector<const uint8_t>& str, uint32_t hash_field);
@@ -205,6 +213,8 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) FactoryBase {
       MaybeHandle<String> maybe_name,
       MaybeHandle<HeapObject> maybe_function_data, int maybe_builtin_index,
       FunctionKind kind = kNormalFunction);
+
+  Handle<String> MakeOrFindTwoCharacterString(uint16_t c1, uint16_t c2);
 
  private:
   Impl* impl() { return static_cast<Impl*>(this); }

@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define CACHED_BITSTREAM_READER !ARCH_X86_32
+
 #include "libavutil/intreadwrite.h"
 #include "avcodec.h"
 #include "get_bits.h"
@@ -1795,7 +1797,7 @@ static int build_vlc(VLC *vlc, const uint8_t *len, int count)
     }
 
     ff_free_vlc(vlc);
-    return ff_init_vlc_sparse(vlc, 16, count,
+    return ff_init_vlc_sparse(vlc, 12, count,
                               bits,  sizeof(*bits),  sizeof(*bits),
                               codes, sizeof(*codes), sizeof(*codes),
                               syms,  sizeof(*syms),  sizeof(*syms), 0);

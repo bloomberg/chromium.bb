@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -31,7 +31,6 @@ class WebAppConfirmationView : public views::DialogDelegateView,
   // Overridden from views::WidgetDelegate:
   views::View* GetInitiallyFocusedView() override;
   ui::ModalType GetModalType() const override;
-  base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
 

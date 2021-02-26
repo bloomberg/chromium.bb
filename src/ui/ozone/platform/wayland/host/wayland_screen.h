@@ -10,9 +10,17 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "ui/display/display_list.h"
+#include "ui/display/display_observer.h"
+#include "ui/display/tablet_state.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/ozone/public/platform_screen.h"
+
+namespace gfx {
+class Rect;
+}
 
 namespace ui {
 
@@ -26,11 +34,12 @@ class WaylandScreen : public PlatformScreen {
   WaylandScreen& operator=(const WaylandScreen&) = delete;
   ~WaylandScreen() override;
 
-  void OnOutputAdded(uint32_t output_id);
-  void OnOutputRemoved(uint32_t output_id);
-  void OnOutputMetricsChanged(uint32_t output_id,
+  void OnOutputAddedOrUpdated(uint32_t output_id,
                               const gfx::Rect& bounds,
                               int32_t output_scale);
+  void OnOutputRemoved(uint32_t output_id);
+
+  void OnTabletStateChanged(display::TabletState tablet_state);
 
   base::WeakPtr<WaylandScreen> GetWeakPtr();
 
@@ -53,11 +62,18 @@ class WaylandScreen : public PlatformScreen {
   void RemoveObserver(display::DisplayObserver* observer) override;
 
  private:
+  void AddOrUpdateDisplay(uint32_t output_id,
+                          const gfx::Rect& bounds,
+                          int32_t scale);
+
   WaylandConnection* connection_ = nullptr;
 
   display::DisplayList display_list_;
 
   base::ObserverList<display::DisplayObserver> observers_;
+
+  base::Optional<gfx::BufferFormat> image_format_alpha_;
+  base::Optional<gfx::BufferFormat> image_format_no_alpha_;
 
   base::WeakPtrFactory<WaylandScreen> weak_factory_;
 };

@@ -17,6 +17,7 @@
 #include "marl/scheduler.h"
 
 #include "marl/debug.h"
+#include "marl/sanitizers.h"
 #include "marl/thread.h"
 #include "marl/trace.h"
 
@@ -67,6 +68,16 @@ inline void nop() {
 #endif
 }
 
+inline marl::Scheduler::Config setConfigDefaults(
+    const marl::Scheduler::Config& cfgIn) {
+  marl::Scheduler::Config cfg{cfgIn};
+  if (cfg.workerThread.count > 0 && !cfg.workerThread.affinityPolicy) {
+    cfg.workerThread.affinityPolicy = marl::Thread::Affinity::Policy::anyOf(
+        marl::Thread::Affinity::all(cfg.allocator), cfg.allocator);
+  }
+  return cfg;
+}
+
 }  // anonymous namespace
 
 namespace marl {
@@ -81,7 +92,13 @@ Scheduler* Scheduler::get() {
 }
 
 void Scheduler::bind() {
+#if !MEMORY_SANITIZER_ENABLED
+  // thread_local variables in shared libraries are initialized at load-time,
+  // but this is not observed by MemorySanitizer if the loader itself was not
+  // instrumented, leading to false-positive unitialized variable errors.
+  // See https://github.com/google/marl/issues/184
   MARL_ASSERT(bound == nullptr, "Scheduler already bound");
+#endif
   bound = this;
   {
     marl::lock lock(singleThreadedWorkers.mutex);
@@ -113,11 +130,9 @@ void Scheduler::unbind() {
 }
 
 Scheduler::Scheduler(const Config& config)
-    : cfg(config), workerThreads{}, singleThreadedWorkers(config.allocator) {
-  if (cfg.workerThread.count > 0 && !cfg.workerThread.affinityPolicy) {
-    cfg.workerThread.affinityPolicy = Thread::Affinity::Policy::anyOf(
-        Thread::Affinity::all(cfg.allocator), cfg.allocator);
-  }
+    : cfg(setConfigDefaults(config)),
+      workerThreads{},
+      singleThreadedWorkers(config.allocator) {
   for (size_t i = 0; i < spinningWorkers.size(); i++) {
     spinningWorkers[i] = -1;
   }
@@ -149,61 +164,6 @@ Scheduler::~Scheduler() {
     cfg.allocator->destroy(workerThreads[i]);
   }
 }
-
-#if MARL_ENABLE_DEPRECATED_SCHEDULER_GETTERS_SETTERS
-Scheduler::Scheduler(Allocator* allocator /* = Allocator::Default */)
-    : workerThreads{}, singleThreadedWorkers(allocator) {
-  cfg.allocator = allocator;
-  for (size_t i = 0; i < spinningWorkers.size(); i++) {
-    spinningWorkers[i] = -1;
-  }
-}
-
-void Scheduler::setThreadInitializer(const std::function<void()>& init) {
-  marl::lock lock(threadInitFuncMutex);
-  cfg.workerThread.initializer = [=](int) { init(); };
-}
-
-std::function<void()> Scheduler::getThreadInitializer() {
-  marl::lock lock(threadInitFuncMutex);
-  if (!cfg.workerThread.initializer) {
-    return {};
-  }
-  auto init = cfg.workerThread.initializer;
-  return [=]() { init(0); };
-}
-
-void Scheduler::setWorkerThreadCount(int newCount) {
-  MARL_ASSERT(newCount >= 0, "count must be positive");
-  if (newCount > int(MaxWorkerThreads)) {
-    MARL_WARN(
-        "marl::Scheduler::setWorkerThreadCount() called with a count of %d, "
-        "which exceeds the maximum of %d. Limiting the number of threads to "
-        "%d.",
-        newCount, int(MaxWorkerThreads), int(MaxWorkerThreads));
-    newCount = MaxWorkerThreads;
-  }
-  auto oldCount = cfg.workerThread.count;
-  for (int idx = oldCount - 1; idx >= newCount; idx--) {
-    workerThreads[idx]->stop();
-  }
-  for (int idx = oldCount - 1; idx >= newCount; idx--) {
-    cfg.allocator->destroy(workerThreads[idx]);
-  }
-  for (int idx = oldCount; idx < newCount; idx++) {
-    workerThreads[idx] =
-        cfg.allocator->create<Worker>(this, Worker::Mode::MultiThreaded, idx);
-  }
-  cfg.workerThread.count = newCount;
-  for (int idx = oldCount; idx < newCount; idx++) {
-    workerThreads[idx]->start();
-  }
-}
-
-int Scheduler::getWorkerThreadCount() {
-  return cfg.workerThread.count;
-}
-#endif  // MARL_ENABLE_DEPRECATED_SCHEDULER_GETTERS_SETTERS
 
 void Scheduler::enqueue(Task&& task) {
   if (task.is(Task::Flags::SameThread)) {
@@ -284,10 +244,16 @@ void Scheduler::Fiber::notify() {
 }
 
 void Scheduler::Fiber::wait(marl::lock& lock, const Predicate& pred) {
+  MARL_ASSERT(worker == Worker::getCurrent(),
+              "Scheduler::Fiber::wait() must only be called on the currently "
+              "executing fiber");
   worker->wait(lock, nullptr, pred);
 }
 
 void Scheduler::Fiber::switchTo(Fiber* to) {
+  MARL_ASSERT(worker == Worker::getCurrent(),
+              "Scheduler::Fiber::switchTo() must only be called on the "
+              "currently executing fiber");
   if (to != this) {
     impl->switchTo(to->impl.get());
   }
@@ -749,7 +715,8 @@ void Scheduler::Worker::runUntilIdle() {
 Scheduler::Fiber* Scheduler::Worker::createWorkerFiber() {
   auto fiberId = static_cast<uint32_t>(workerFibers.size() + 1);
   DBG_LOG("%d: CREATE(%d)", (int)id, (int)fiberId);
-  auto fiber = Fiber::create(scheduler->cfg.allocator, fiberId, FiberStackSize,
+  auto fiber = Fiber::create(scheduler->cfg.allocator, fiberId,
+                             scheduler->cfg.fiberStackSize,
                              [&]() REQUIRES(work.mutex) { run(); });
   auto ptr = fiber.get();
   workerFibers.emplace_back(std::move(fiber));

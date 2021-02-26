@@ -8,74 +8,208 @@
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using ::testing::UnorderedElementsAre;
+
 namespace autofill_assistant {
 namespace {
 
-TEST(SelectorTest, FromProto) {
-  ElementReferenceProto proto;
-  proto.add_selectors("a");
-  proto.add_selectors("b");
-  proto.set_inner_text_pattern("c");
-  proto.set_value_pattern("d");
-  proto.set_visibility_requirement(MUST_BE_VISIBLE);
-  proto.set_pseudo_type(PseudoType::BEFORE);
-
-  Selector selector(proto);
-  EXPECT_THAT(selector.selectors, testing::ElementsAre("a", "b"));
-  EXPECT_TRUE(selector.must_be_visible);
-  EXPECT_EQ("c", selector.inner_text_pattern);
-  EXPECT_EQ("d", selector.value_pattern);
-  EXPECT_EQ(PseudoType::BEFORE, selector.pseudo_type);
+TEST(SelectorTest, Constructor_Simple) {
+  Selector selector({"#test"});
+  ASSERT_EQ(1, selector.proto.filters().size());
+  EXPECT_EQ("#test", selector.proto.filters(0).css_selector());
 }
 
-TEST(SelectorTest, ToProto) {
-  Selector selector;
-  selector.selectors.emplace_back("a");
-  selector.selectors.emplace_back("b");
-  selector.inner_text_pattern = "c";
-  selector.value_pattern = "d";
-  selector.must_be_visible = true;
-  selector.pseudo_type = PseudoType::BEFORE;
+TEST(SelectorTest, Constructor_WithIframe) {
+  Selector selector({"#frame", "#test"});
+  ASSERT_EQ(4, selector.proto.filters().size());
+  EXPECT_EQ("#frame", selector.proto.filters(0).css_selector());
+  EXPECT_EQ(SelectorProto::Filter::kNthMatch,
+            selector.proto.filters(1).filter_case());
+  EXPECT_EQ(0, selector.proto.filters(1).nth_match().index());
+  EXPECT_EQ(SelectorProto::Filter::kEnterFrame,
+            selector.proto.filters(2).filter_case());
+  EXPECT_EQ("#test", selector.proto.filters(3).css_selector());
+}
 
-  ElementReferenceProto proto = selector.ToElementReferenceProto();
-  EXPECT_THAT(proto.selectors(), testing::ElementsAre("a", "b"));
-  EXPECT_EQ("c", proto.inner_text_pattern());
-  EXPECT_EQ("d", proto.value_pattern());
-  EXPECT_EQ(MUST_BE_VISIBLE, proto.visibility_requirement());
-  EXPECT_EQ(PseudoType::BEFORE, proto.pseudo_type());
+TEST(SelectorTest, FromProto) {
+  SelectorProto proto;
+  proto.add_filters()->set_css_selector("#test");
+
+  EXPECT_EQ(Selector({"#test"}), Selector(proto));
 }
 
 TEST(SelectorTest, Comparison) {
+  // Note that comparison tests cover < indirectly through ==, since a == b is
+  // defined as !(a < b) && !(b < a). This makes sense, as what matters is that
+  // there is an order but what the order is doesn't matter.
+
   EXPECT_FALSE(Selector({"a"}) == Selector({"b"}));
-  EXPECT_LT(Selector({"a"}), Selector({"b"}));
   EXPECT_TRUE(Selector({"a"}) == Selector({"a"}));
+}
 
-  EXPECT_FALSE(Selector({"a"}, PseudoType::BEFORE) ==
-               Selector({"a"}, PseudoType::AFTER));
-  EXPECT_LT(Selector({"a"}, PseudoType::BEFORE),
-            Selector({"a"}, PseudoType::AFTER));
-  EXPECT_LT(Selector({"a"}, PseudoType::BEFORE), Selector({"b"}));
-  EXPECT_TRUE(Selector({"a"}, PseudoType::BEFORE) ==
-              Selector({"a"}, PseudoType::BEFORE));
+TEST(SelectorTest, SelectorInSet) {
+  std::set<Selector> selectors;
+  selectors.insert(Selector({"a"}));
+  selectors.insert(Selector({"a"}));
+  selectors.insert(Selector({"b"}));
+  selectors.insert(Selector({"c"}));
+  EXPECT_THAT(selectors, UnorderedElementsAre(Selector({"a"}), Selector({"b"}),
+                                              Selector({"c"})));
+}
 
+TEST(SelectorTest, Comparison_PseudoType) {
+  EXPECT_FALSE(Selector({"a"}).SetPseudoType(PseudoType::BEFORE) ==
+               Selector({"a"}).SetPseudoType(PseudoType::AFTER));
+  EXPECT_FALSE(Selector({"a"}).SetPseudoType(PseudoType::BEFORE) ==
+               Selector({"a"}).SetPseudoType(PseudoType::AFTER));
+  EXPECT_FALSE(Selector({"b"}) ==
+               Selector({"a"}).SetPseudoType(PseudoType::BEFORE));
+  EXPECT_FALSE(Selector({"b"}) ==
+               Selector({"a"}).SetPseudoType(PseudoType::BEFORE));
+  EXPECT_TRUE(Selector({"a"}).SetPseudoType(PseudoType::BEFORE) ==
+              Selector({"a"}).SetPseudoType(PseudoType::BEFORE));
+}
+
+TEST(SelectorTest, Comparison_Visibility) {
   EXPECT_FALSE(Selector({"a"}) == Selector({"a"}).MustBeVisible());
-  EXPECT_LT(Selector({"a"}), Selector({"a"}).MustBeVisible());
   EXPECT_TRUE(Selector({"a"}).MustBeVisible() ==
               Selector({"a"}).MustBeVisible());
+}
 
+TEST(SelectorTest, Comparison_NonEmptyBoundingBox) {
+  Selector has_bounding_box_default = Selector({"a"});
+  has_bounding_box_default.proto.add_filters()->mutable_bounding_box();
+
+  Selector has_bounding_box_explicit = Selector({"a"});
+  has_bounding_box_explicit.proto.add_filters()
+      ->mutable_bounding_box()
+      ->set_require_nonempty(false);
+
+  Selector has_nonempty_bounding_box = Selector({"a"});
+  has_nonempty_bounding_box.proto.add_filters()
+      ->mutable_bounding_box()
+      ->set_require_nonempty(true);
+
+  EXPECT_FALSE(has_bounding_box_default == has_nonempty_bounding_box);
+  EXPECT_FALSE(has_bounding_box_explicit == has_nonempty_bounding_box);
+  EXPECT_TRUE(has_bounding_box_default == has_bounding_box_explicit);
+}
+
+TEST(SelectorTest, Comparison_InnerText) {
   EXPECT_FALSE(Selector({"a"}).MatchingInnerText("a") ==
                Selector({"a"}).MatchingInnerText("b"));
-  EXPECT_LT(Selector({"a"}).MatchingInnerText("a"),
-            Selector({"a"}).MatchingInnerText("b"));
   EXPECT_TRUE(Selector({"a"}).MatchingInnerText("a") ==
               Selector({"a"}).MatchingInnerText("a"));
 
+  EXPECT_FALSE(Selector({"a"}).MatchingInnerText("a", false) ==
+               Selector({"a"}).MatchingInnerText("a", true));
+  EXPECT_TRUE(Selector({"a"}).MatchingInnerText("a", true) ==
+              Selector({"a"}).MatchingInnerText("a", true));
+}
+
+TEST(SelectorTest, Comparison_Value) {
   EXPECT_FALSE(Selector({"a"}).MatchingValue("a") ==
                Selector({"a"}).MatchingValue("b"));
-  EXPECT_LT(Selector({"a"}).MatchingValue("a"),
-            Selector({"a"}).MatchingValue("b"));
   EXPECT_TRUE(Selector({"a"}).MatchingValue("a") ==
               Selector({"a"}).MatchingValue("a"));
+
+  EXPECT_FALSE(Selector({"a"}).MatchingValue("a", false) ==
+               Selector({"a"}).MatchingValue("a", true));
+  EXPECT_TRUE(Selector({"a"}).MatchingValue("a", true) ==
+              Selector({"a"}).MatchingValue("a", true));
+}
+
+TEST(SelectorTest, Comparison_Proximity) {
+  SelectorProto selector;
+  selector.add_filters()->set_css_selector("button");
+  auto* closest_to_button = selector.add_filters()->mutable_closest();
+  closest_to_button->mutable_target()->Add()->set_css_selector("#label1");
+
+  EXPECT_TRUE(Selector(selector) == Selector(selector));
+
+  // Different relative positions
+  SelectorProto left = selector;
+  left.mutable_filters(0)->mutable_closest()->set_relative_position(
+      SelectorProto::ProximityFilter::LEFT);
+
+  SelectorProto right = selector;
+  right.mutable_filters(0)->mutable_closest()->set_relative_position(
+      SelectorProto::ProximityFilter::RIGHT);
+
+  EXPECT_TRUE(Selector(right) == Selector(right));
+  EXPECT_TRUE(Selector(left) == Selector(left));
+  EXPECT_FALSE(Selector(left) == Selector(right));
+
+  // Different alignment
+  SelectorProto aligned = selector;
+  selector.mutable_filters(0)->mutable_closest()->set_in_alignment(true);
+  EXPECT_TRUE(Selector(aligned) == Selector(aligned));
+  EXPECT_FALSE(Selector(selector) == Selector(aligned));
+
+  // Different targets
+  SelectorProto label2 = selector;
+  label2.mutable_filters(0)
+      ->mutable_closest()
+      ->mutable_target()
+      ->Add()
+      ->set_css_selector("#label2");
+
+  EXPECT_TRUE(Selector(label2) == Selector(label2));
+  EXPECT_FALSE(Selector(selector) == Selector(label2));
+}
+
+TEST(SelectorTest, Comparison_MatchCssSelector) {
+  Selector a = Selector({"button"});
+  a.proto.add_filters()->set_match_css_selector(".class1");
+  Selector b = Selector({"button"});
+  b.proto.add_filters()->set_match_css_selector(".class2");
+
+  EXPECT_FALSE(a == b);
+  EXPECT_TRUE(a == a);
+}
+
+TEST(SelectorTest, Comparison_OnTop) {
+  Selector a = Selector({"button"});
+  a.proto.add_filters()->mutable_on_top();
+  Selector b = Selector({"button"});
+
+  EXPECT_FALSE(a == b);
+  EXPECT_TRUE(a == a);
+}
+
+TEST(SelectorTest, Comparison_Frames) {
+  Selector ab({"a", "b"});
+  EXPECT_EQ(ab, ab);
+
+  Selector cb({"c", "b"});
+  EXPECT_TRUE(cb == cb);
+  EXPECT_FALSE(ab == cb);
+
+  Selector b({"b"});
+  EXPECT_TRUE(b == b);
+  EXPECT_FALSE(ab == b);
+}
+
+TEST(SelectorTest, Comparison_MultipleFilters) {
+  Selector abcdef;
+  abcdef.proto.add_filters()->set_css_selector("abc");
+  abcdef.proto.add_filters()->set_css_selector("def");
+
+  Selector abcdef2;
+  abcdef2.proto.add_filters()->set_css_selector("abc");
+  abcdef2.proto.add_filters()->set_css_selector("def");
+  EXPECT_EQ(abcdef, abcdef2);
+
+  Selector defabc;
+  defabc.proto.add_filters()->set_css_selector("def");
+  defabc.proto.add_filters()->set_css_selector("abc");
+  EXPECT_TRUE(defabc == defabc);
+  EXPECT_FALSE(abcdef == defabc);
+
+  Selector abc;
+  abc.proto.add_filters()->set_css_selector("abc");
+  EXPECT_TRUE(abc == abc);
+  EXPECT_FALSE(abcdef == abc);
 }
 
 }  // namespace

@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_permission_context.h"
 #include "chrome/browser/background_fetch/background_fetch_permission_context.h"
-#include "chrome/browser/background_sync/background_sync_permission_context.h"
 #include "chrome/browser/background_sync/periodic_background_sync_permission_context.h"
 #include "chrome/browser/clipboard/clipboard_read_write_permission_context.h"
 #include "chrome/browser/clipboard/clipboard_sanitized_write_permission_context.h"
@@ -26,13 +25,15 @@
 #include "chrome/browser/storage/durable_storage_permission_context.h"
 #include "chrome/browser/storage_access_api/storage_access_grant_permission_context.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/vr/webxr_permission_context.h"
 #include "chrome/browser/wake_lock/wake_lock_permission_context.h"
+#include "chrome/browser/window_placement/window_placement_permission_context.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/background_sync/background_sync_permission_context.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/permissions/contexts/window_placement_permission_context.h"
+#include "components/permissions/contexts/font_access_permission_context.h"
+#include "components/permissions/contexts/webxr_permission_context.h"
 #include "components/permissions/permission_manager.h"
 #include "ppapi/buildflags/buildflags.h"
 
@@ -124,17 +125,19 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
       std::make_unique<NfcPermissionContextAndroid>(profile);
 #endif
   permission_contexts[ContentSettingsType::VR] =
-      std::make_unique<WebXrPermissionContext>(profile,
-                                               ContentSettingsType::VR);
+      std::make_unique<permissions::WebXrPermissionContext>(
+          profile, ContentSettingsType::VR);
   permission_contexts[ContentSettingsType::AR] =
-      std::make_unique<WebXrPermissionContext>(profile,
-                                               ContentSettingsType::AR);
+      std::make_unique<permissions::WebXrPermissionContext>(
+          profile, ContentSettingsType::AR);
   permission_contexts[ContentSettingsType::STORAGE_ACCESS] =
       std::make_unique<StorageAccessGrantPermissionContext>(profile);
   permission_contexts[ContentSettingsType::CAMERA_PAN_TILT_ZOOM] =
       std::make_unique<CameraPanTiltZoomPermissionContext>(profile);
   permission_contexts[ContentSettingsType::WINDOW_PLACEMENT] =
       std::make_unique<WindowPlacementPermissionContext>(profile);
+  permission_contexts[ContentSettingsType::FONT_ACCESS] =
+      std::make_unique<FontAccessPermissionContext>(profile);
   return permission_contexts;
 }
 }  // namespace

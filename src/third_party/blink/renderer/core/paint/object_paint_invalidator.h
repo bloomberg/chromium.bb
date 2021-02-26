@@ -36,9 +36,6 @@ class CORE_EXPORT ObjectPaintInvalidator {
     InvalidateDisplayItemClient(client, reason);
   }
 
-  void InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-      PaintInvalidationReason);
-
   // The caller should ensure the painting layer has been SetNeedsRepaint
   // before calling this function.
   void InvalidateDisplayItemClient(const DisplayItemClient& client,
@@ -59,7 +56,6 @@ class CORE_EXPORT ObjectPaintInvalidator {
   }
 
   void InvalidatePaintIncludingNonCompositingDescendants();
-  void InvalidatePaintIncludingNonSelfPaintingLayerDescendants();
 
  protected:
 #if DCHECK_IS_ON()
@@ -83,9 +79,6 @@ class ObjectPaintInvalidatorWithContext : public ObjectPaintInvalidator {
   void InvalidatePaintWithComputedReason(PaintInvalidationReason);
 
  private:
-  PaintInvalidationReason InvalidateSelection(PaintInvalidationReason);
-  PaintInvalidationReason InvalidatePartialRect(PaintInvalidationReason);
-
   const PaintInvalidatorContext& context_;
 };
 

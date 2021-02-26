@@ -44,8 +44,12 @@ class WebGPUCommandSerializer final : public dawn_wire::CommandSerializer {
       const WGPUDeviceProperties& requested_device_properties);
 
   // dawn_wire::CommandSerializer implementation
+  size_t GetMaximumAllocationSize() const final;
   void* GetCmdSpace(size_t size) final;
   bool Flush() final;
+
+  void SetClientAwaitingFlush(bool awaiting_flush);
+  bool ClientAwaitingFlush() const { return client_awaiting_flush_; }
 
   // Called upon context lost.
   void HandleGpuControlLostContext();
@@ -66,6 +70,8 @@ class WebGPUCommandSerializer final : public dawn_wire::CommandSerializer {
   uint32_t c2s_put_offset_ = 0;
   std::unique_ptr<TransferBuffer> c2s_transfer_buffer_;
   ScopedTransferBufferPtr c2s_buffer_;
+
+  bool client_awaiting_flush_ = false;
 };
 #endif
 
@@ -153,12 +159,17 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
   // WebGPUInterface implementation
   const DawnProcTable& GetProcs() const override;
   void FlushCommands() override;
+  void FlushCommands(DawnDeviceClientID device_client_id) override;
+  void EnsureAwaitingFlush(DawnDeviceClientID device_client_id,
+                           bool* needs_flush) override;
+  void FlushAwaitingCommands(DawnDeviceClientID device_client_id) override;
   WGPUDevice GetDevice(DawnDeviceClientID device_client_id) override;
   ReservedTexture ReserveTexture(DawnDeviceClientID device_client_id) override;
   bool RequestAdapterAsync(
       PowerPreference power_preference,
-      base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
-          request_adapter_callback) override;
+      base::OnceCallback<void(int32_t,
+                              const WGPUDeviceProperties&,
+                              const char*)> request_adapter_callback) override;
   bool RequestDeviceAsync(
       uint32_t requested_adapter_id,
       const WGPUDeviceProperties& requested_device_properties,
@@ -188,9 +199,9 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
 
   LogSettings log_settings_;
 
-  base::flat_map<
-      DawnRequestAdapterSerial,
-      base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>>
+  base::flat_map<DawnRequestAdapterSerial,
+                 base::OnceCallback<
+                     void(int32_t, const WGPUDeviceProperties&, const char*)>>
       request_adapter_callback_map_;
   DawnRequestAdapterSerial request_adapter_serial_ = 0;
 

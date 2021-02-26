@@ -15,6 +15,7 @@
 #include "base/check_op.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -33,6 +34,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
@@ -121,20 +123,10 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
   TRACE_EVENT0("omnibox", "ShortcutsProvider::Start");
   matches_.clear();
 
-  if (input.from_omnibox_focus() ||
-      (input.type() == metrics::OmniboxInputType::EMPTY) ||
-      input.text().empty() || !initialized_)
-    return;
-
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  GetMatches(input);
-  if (input.text().length() < 6) {
-    base::TimeTicks end_time = base::TimeTicks::Now();
-    std::string name = "ShortcutsProvider.QueryIndexTime." +
-                       base::NumberToString(input.text().size());
-    base::HistogramBase* counter = base::Histogram::FactoryGet(
-        name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
-    counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
+  if (input.focus_type() == OmniboxFocusType::DEFAULT &&
+      input.type() != metrics::OmniboxInputType::EMPTY &&
+      !input.text().empty() && initialized_) {
+    GetMatches(input);
   }
 }
 
@@ -274,8 +266,7 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
   match.keyword = shortcut.match_core.keyword;
   match.RecordAdditionalInfo("number of hits", shortcut.number_of_hits);
   match.RecordAdditionalInfo("last access time", shortcut.last_access_time);
-  match.RecordAdditionalInfo("original input text",
-                             base::UTF16ToUTF8(shortcut.text));
+  match.RecordAdditionalInfo("original input text", shortcut.text);
 
   // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
   // If the input is in keyword mode, navigation matches cannot be the default
@@ -327,7 +318,8 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
             !input.prevent_inline_autocomplete() ||
             match.inline_autocompletion.empty();
       }
-    } else {
+    } else if (!match.TryRichAutocompletion(match.contents, match.description,
+                                            input, true)) {
       const size_t inline_autocomplete_offset =
           URLPrefix::GetInlineAutocompleteOffset(
               input.text(), fixed_up_input_text, true, match.fill_into_edit);
@@ -385,8 +377,7 @@ int ShortcutsProvider::CalculateScore(
   base::TimeDelta time_passed = base::Time::Now() - shortcut.last_access_time;
   // Clamp to 0 in case time jumps backwards (e.g. due to DST).
   double decay_exponent =
-      std::max(0.0, kLn2 * static_cast<double>(time_passed.InMicroseconds()) /
-                        base::Time::kMicrosecondsPerWeek);
+      std::max(0.0, kLn2 * time_passed / base::TimeDelta::FromDays(7));
 
   // We modulate the decay factor based on how many times the shortcut has been
   // used. Newly created shortcuts decay at full speed; otherwise, decaying by
@@ -394,11 +385,10 @@ int ShortcutsProvider::CalculateScore(
   // (1.0 / each 5 additional hits), up to a maximum of 5x as long.
   const double kMaxDecaySpeedDivisor = 5.0;
   const double kNumUsesPerDecaySpeedDivisorIncrement = 5.0;
-  double decay_divisor = std::min(
+  const double decay_divisor = std::min(
       kMaxDecaySpeedDivisor,
       (shortcut.number_of_hits + kNumUsesPerDecaySpeedDivisorIncrement - 1) /
           kNumUsesPerDecaySpeedDivisorIncrement);
 
-  return static_cast<int>((base_score / exp(decay_exponent / decay_divisor)) +
-                          0.5);
+  return base::ClampRound(base_score / exp(decay_exponent / decay_divisor));
 }

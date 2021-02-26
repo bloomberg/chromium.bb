@@ -6,8 +6,10 @@ import("//build/buildflag_header.gni")
 import("//build/config/chrome_build.gni")
 
 declare_args() {
-  # Normally, only official Chrome Android builds will use a Google-internal
-  # list of isolated origins defined below.
+  # Normally, only Google Chrome Android and Fuchsia WebEngine builds will use
+  # a Google-internal list of isolated origins defined below.
+  # If other Fuchsia embedders are added, the associated logic may need to be
+  # updated. See crbug.com/1179087.
   #
   # You can set the variable 'use_internal_isolated_origins' to true to use this
   # Google-internal list of isolated origins even in a developer build.  Setting
@@ -15,7 +17,7 @@ declare_args() {
   # internal file is missing.
   use_internal_isolated_origins = false
 
-  if (is_chrome_branded && is_android) {
+  if (is_chrome_branded && (is_android || is_fuchsia)) {
     use_internal_isolated_origins = true
   }
 }
@@ -27,8 +29,14 @@ buildflag_header("buildflags") {
 
 source_set("site_isolation") {
   sources = [
+    "features.cc",
+    "features.h",
+    "pref_names.cc",
+    "pref_names.h",
     "preloaded_isolated_origins.cc",
     "preloaded_isolated_origins.h",
+    "site_isolation_policy.cc",
+    "site_isolation_policy.h",
   ]
 
   if (use_internal_isolated_origins) {
@@ -41,7 +49,27 @@ source_set("site_isolation") {
   deps = [
     ":buildflags",
     "//base",
+    "//components/prefs",
+    "//components/user_prefs",
     "//content/public/browser",
     "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "site_isolation_policy_unittest.cc" ]
+  deps = [
+    ":site_isolation",
+    "//base",
+    "//base/test:test_support",
+    "//build:branding_buildflags",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//components/user_prefs",
+    "//components/variations",
+    "//content/public/browser",
+    "//content/test:test_support",
+    "//testing/gtest",
   ]
 }

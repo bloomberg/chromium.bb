@@ -16,16 +16,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.IntentUtils;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.signin.SigninActivity.AccessPoint;
+import org.chromium.chrome.browser.sync.AndroidSyncSettings;
+import org.chromium.chrome.browser.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
-import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * A View that shows the user the next step they must complete to start syncing their data (eg.
@@ -95,7 +93,7 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
 
     private void update() {
         ViewState viewState;
-        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
+        if (!AndroidSyncSettings.get().doesMasterSyncSettingAllowChromeSync()) {
             viewState = getStateForEnableAndroidSync();
         } else if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
             viewState = getStateForEnableChromeSync();
@@ -211,7 +209,6 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
     // AndroidSyncStateObserver
     @Override
     public void androidSyncSettingsChanged() {
-        // AndroidSyncSettings calls this method from non-UI threads.
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, this::update);
+        update();
     }
 }

@@ -95,7 +95,7 @@ class PostfixEvaluator {
   // (^) will not be supported.  |dictionary| may be NULL, but evaluation
   // will fail in that case unless set_dictionary is used before calling
   // Evaluate.
-  PostfixEvaluator(DictionaryType *dictionary, const MemoryRegion *memory)
+  PostfixEvaluator(DictionaryType* dictionary, const MemoryRegion* memory)
       : dictionary_(dictionary), memory_(memory), stack_() {}
 
   // Evaluate the expression, starting with an empty stack. The results of
@@ -105,18 +105,18 @@ class PostfixEvaluator {
   // non-NULL, any keys set in the dictionary as a result of evaluation
   // will also be set to true in assigned, providing a way to determine if
   // an expression modifies any of its input variables.
-  bool Evaluate(const string &expression, DictionaryValidityType *assigned);
+  bool Evaluate(const string& expression, DictionaryValidityType* assigned);
 
   // Like Evaluate, but provides the value left on the stack to the
   // caller. If evaluation succeeds and leaves exactly one value on
   // the stack, pop that value, store it in *result, and return true.
   // Otherwise, return false.
-  bool EvaluateForValue(const string &expression, ValueType *result);
+  bool EvaluateForValue(const string& expression, ValueType* result);
 
   DictionaryType* dictionary() const { return dictionary_; }
 
   // Reset the dictionary.  PostfixEvaluator does not take ownership.
-  void set_dictionary(DictionaryType *dictionary) {dictionary_ = dictionary; }
+  void set_dictionary(DictionaryType* dictionary) {dictionary_ = dictionary; }
 
  private:
   // Return values for PopValueOrIdentifier
@@ -132,40 +132,40 @@ class PostfixEvaluator {
   // if the topmost entry is a constant or variable identifier, and sets
   // |identifier| accordingly.  Returns POP_RESULT_FAIL on failure, such
   // as when the stack is empty.
-  PopResult PopValueOrIdentifier(ValueType *value, string *identifier);
+  PopResult PopValueOrIdentifier(ValueType* value, string* identifier);
 
   // Retrieves the topmost value on the stack.  If the topmost entry is
   // an identifier, the dictionary is queried for the identifier's value.
   // Returns false on failure, such as when the stack is empty or when
   // a nonexistent identifier is named.
-  bool PopValue(ValueType *value);
+  bool PopValue(ValueType* value);
 
   // Retrieves the top two values on the stack, in the style of PopValue.
   // value2 is popped before value1, so that value1 corresponds to the
   // entry that was pushed prior to value2.  Returns false on failure.
-  bool PopValues(ValueType *value1, ValueType *value2);
+  bool PopValues(ValueType* value1, ValueType* value2);
 
   // Pushes a new value onto the stack.
-  void PushValue(const ValueType &value);
+  void PushValue(const ValueType& value);
 
   // Evaluate expression, updating *assigned if it is non-zero. Return
   // true if evaluation completes successfully. Do not clear the stack
   // upon successful evaluation.
-  bool EvaluateInternal(const string &expression,
-                        DictionaryValidityType *assigned);
+  bool EvaluateInternal(const string& expression,
+                        DictionaryValidityType* assigned);
 
-  bool EvaluateToken(const string &token,
-                     const string &expression,
-                     DictionaryValidityType *assigned);
+  bool EvaluateToken(const string& token,
+                     const string& expression,
+                     DictionaryValidityType* assigned);
 
   // The dictionary mapping constant and variable identifiers (strings) to
   // values.  Keys beginning with '$' are treated as variable names, and
   // PostfixEvaluator is free to create and modify these keys.  Weak pointer.
-  DictionaryType *dictionary_;
+  DictionaryType* dictionary_;
 
   // If non-NULL, the MemoryRegion used for dereference (^) operations.
   // If NULL, dereferencing is unsupported and will fail.  Weak pointer.
-  const MemoryRegion *memory_;
+  const MemoryRegion* memory_;
 
   // The stack contains state information as execution progresses.  Values
   // are pushed on to it as the expression string is read and as operations

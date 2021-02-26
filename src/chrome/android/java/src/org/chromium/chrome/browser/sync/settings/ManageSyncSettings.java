@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.sync.settings;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -30,6 +32,7 @@ import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
@@ -37,22 +40,30 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.SignOutDialogFragment;
+import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninUtils;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
+import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.GAIAServiceType;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -69,9 +80,13 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         implements PassphraseDialogFragment.Listener, PassphraseCreationDialogFragment.Listener,
                    PassphraseTypeDialogFragment.Listener, Preference.OnPreferenceChangeListener,
                    ProfileSyncService.SyncStateChangedListener,
-                   SettingsActivity.OnBackPressedListener {
+                   SettingsActivity.OnBackPressedListener,
+                   SignOutDialogFragment.SignOutDialogListener,
+                   SyncErrorCardPreference.SyncErrorCardPreferenceListener {
     private static final String IS_FROM_SIGNIN_SCREEN = "ManageSyncSettings.isFromSigninScreen";
     private static final String FRAGMENT_CANCEL_SYNC = "cancel_sync_dialog";
+    private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
+    private static final String SIGN_OUT_DIALOG_TAG = "sign_out_dialog_tag";
 
     @VisibleForTesting
     public static final String FRAGMENT_ENTER_PASSPHRASE = "enter_password";
@@ -80,6 +95,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     @VisibleForTesting
     public static final String FRAGMENT_PASSPHRASE_TYPE = "password_type";
 
+    @VisibleForTesting
+    public static final String PREF_SYNC_ERROR_CARD_PREFERENCE = "sync_error_card";
     @VisibleForTesting
     public static final String PREF_SYNCING_CATEGORY = "syncing_category";
     @VisibleForTesting
@@ -99,6 +116,9 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     @VisibleForTesting
     public static final String PREF_SYNC_SETTINGS = "sync_settings";
     @VisibleForTesting
+    public static final String PREF_TURN_OFF_SYNC = "turn_off_sync";
+    private static final String PREF_ADVANCED_CATEGORY = "advanced_category";
+    @VisibleForTesting
     public static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
     @VisibleForTesting
     public static final String PREF_ENCRYPTION = "encryption";
@@ -115,6 +135,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
 
     private boolean mIsFromSigninScreen;
 
+    private SyncErrorCardPreference mSyncErrorCardPreference;
     private PreferenceCategory mSyncingCategory;
 
     private ChromeSwitchPreference mSyncEverything;
@@ -128,6 +149,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     // Contains preferences for all sync data types.
     private CheckBoxPreference[] mSyncTypePreferences;
 
+    private Preference mTurnOffSync;
     private Preference mGoogleActivityControls;
     private Preference mSyncEncryption;
     private Preference mManageSyncData;
@@ -152,11 +174,18 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         mIsFromSigninScreen =
                 IntentUtils.safeGetBoolean(getArguments(), IS_FROM_SIGNIN_SCREEN, false);
 
-        getActivity().setTitle(R.string.manage_sync_title);
+        getActivity().setTitle(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+                        ? R.string.sync_category_title
+                        : R.string.manage_sync_title);
         setHasOptionsMenu(true);
         // TODO(https://crbug.com/1063982): Change accessibility text for Advanced Sync Flow.
 
         SettingsUtils.addPreferencesFromResource(this, R.xml.manage_sync_preferences);
+
+        mSyncErrorCardPreference =
+                (SyncErrorCardPreference) findPreference(PREF_SYNC_ERROR_CARD_PREFERENCE);
+        mSyncErrorCardPreference.setSyncErrorCardPreferenceListener(this);
 
         mSyncingCategory = (PreferenceCategory) findPreference(PREF_SYNCING_CATEGORY);
 
@@ -171,6 +200,31 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         mSyncPasswords = (CheckBoxPreference) findPreference(PREF_SYNC_PASSWORDS);
         mSyncRecentTabs = (CheckBoxPreference) findPreference(PREF_SYNC_RECENT_TABS);
         mSyncSettings = (CheckBoxPreference) findPreference(PREF_SYNC_SETTINGS);
+
+        mTurnOffSync = findPreference(PREF_TURN_OFF_SYNC);
+        mTurnOffSync.setOnPreferenceClickListener(
+                SyncSettingsUtils.toOnClickListener(this, this::onTurnOffSyncClicked));
+
+        Profile profile = Profile.getLastUsedRegularProfile();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+                && !mIsFromSigninScreen) {
+            // Child profiles should not be able to sign out.
+            mTurnOffSync.setVisible(!profile.isChild());
+            findPreference(PREF_ADVANCED_CATEGORY).setVisible(true);
+
+            /**
+             * If MOBILE_IDENTITY_CONSISTENCY is disabled, sync data type states are retained even
+             * if the user toggles 'Sync your Chrome data' off in {@link SyncAndServicesSettings}
+             * page. This leads to an UI error that shows that all data types are enabled to sync
+             * even though sync is shown as turned off in {@link ManageSyncSettings} page.
+             * This state is impossible to reach if MOBILE_IDENTITY_CONSISTENCY is enabled.
+             * TODO(https://crbug.com/1065029): This code will be removed after
+             * MOBILE_IDENTITY_CONSISTENCY has been rolled out and existing users have been migrated
+             */
+            if (!ProfileSyncService.get().isSyncRequested()) {
+                ProfileSyncService.get().setChosenDataTypes(false, new HashSet<>());
+            }
+        }
 
         mGoogleActivityControls = findPreference(PREF_GOOGLE_ACTIVITY_CONTROLS);
         mSyncEncryption = findPreference(PREF_ENCRYPTION);
@@ -187,7 +241,6 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
             type.setOnPreferenceChangeListener(this);
         }
 
-        Profile profile = Profile.getLastUsedRegularProfile();
         if (profile.isChild()) {
             mGoogleActivityControls.setSummary(
                     R.string.sign_in_google_activity_controls_summary_child_account);
@@ -235,7 +288,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
             showCancelSyncDialog();
             return true;
         } else if (item.getItemId() == R.id.menu_id_targeted_help) {
-            HelpAndFeedback.getInstance().show(getActivity(),
+            HelpAndFeedbackLauncherImpl.getInstance().show(getActivity(),
                     getString(R.string.help_context_sync_and_services),
                     Profile.getLastUsedRegularProfile(), null);
             return true;
@@ -311,8 +364,9 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
      */
     private void updateSyncPreferences() {
         String signedInAccountName = CoreAccountInfo.getEmailFrom(
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
-                        ConsentLevel.SYNC));
+                IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .getPrimaryAccountInfo(ConsentLevel.SYNC));
         if (signedInAccountName == null) {
             // May happen if account is removed from the device while this screen is shown.
             getActivity().finish();
@@ -331,13 +385,26 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
      * and {@link PersonalDataManager}.
      */
     private void updateSyncStateFromSelectedModelTypes() {
-        mProfileSyncService.setChosenDataTypes(
-                mSyncEverything.isChecked(), getSelectedModelTypes());
+        Set<Integer> selectedModelTypes = getSelectedModelTypes();
+        mProfileSyncService.setChosenDataTypes(mSyncEverything.isChecked(), selectedModelTypes);
         // Note: mSyncPaymentsIntegration should be checked if mSyncEverything is checked, but if
         // mSyncEverything was just enabled, then that state may not have propagated to
         // mSyncPaymentsIntegration yet. See crbug.com/972863.
         PersonalDataManager.setPaymentsIntegrationEnabled(mSyncEverything.isChecked()
                 || (mSyncPaymentsIntegration.isChecked() && mSyncAutofill.isChecked()));
+
+        // For child profiles sync should always be on.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+                && !Profile.getLastUsedRegularProfile().isChild()) {
+            boolean atLeastOneDataTypeEnabled =
+                    mSyncEverything.isChecked() || selectedModelTypes.size() > 0;
+            if (mProfileSyncService.isSyncRequested() && !atLeastOneDataTypeEnabled) {
+                mProfileSyncService.requestStop();
+            } else if (!mProfileSyncService.isSyncRequested() && atLeastOneDataTypeEnabled) {
+                mProfileSyncService.requestStart();
+            }
+        }
+
         // Some calls to setChosenDataTypes don't trigger syncStateChanged, so schedule update here.
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updateSyncPreferences);
     }
@@ -474,7 +541,6 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
             // If the engine was shut down since the dialog was opened, do nothing.
             return;
         }
-        mProfileSyncService.enableEncryptEverything();
         mProfileSyncService.setEncryptionPassphrase(passphrase);
         // Save the current state of data types - this tells the sync engine to
         // apply our encryption configuration changes.
@@ -505,6 +571,21 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         RecordUserAction.record("Signin_AccountSettings_GoogleActivityControlsClicked");
     }
 
+    private void onTurnOffSyncClicked() {
+        if (!IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .hasPrimaryAccount()) {
+            return;
+        }
+        SigninUtils.logEvent(ProfileAccountManagementMetrics.TOGGLE_SIGNOUT,
+                GAIAServiceType.GAIA_SERVICE_TYPE_NONE);
+
+        SignOutDialogFragment signOutFragment =
+                SignOutDialogFragment.create(GAIAServiceType.GAIA_SERVICE_TYPE_NONE);
+        signOutFragment.setTargetFragment(this, 0);
+        signOutFragment.show(getParentFragmentManager(), SIGN_OUT_DIALOG_TAG);
+    }
+
     private void onSyncEncryptionClicked() {
         if (!mProfileSyncService.isEngineInitialized()) return;
 
@@ -512,8 +593,9 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
             displayPassphraseDialog();
         } else if (mProfileSyncService.isTrustedVaultKeyRequired()) {
             CoreAccountInfo primaryAccountInfo =
-                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
-                            ConsentLevel.SYNC);
+                    IdentityServicesProvider.get()
+                            .getIdentityManager(Profile.getLastUsedRegularProfile())
+                            .getPrimaryAccountInfo(ConsentLevel.SYNC);
             if (primaryAccountInfo != null) {
                 SyncSettingsUtils.openTrustedVaultKeyRetrievalDialog(
                         this, primaryAccountInfo, REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL);
@@ -585,6 +667,73 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         return true;
     }
 
+    // SyncErrorCardPreferenceListener implementation:
+    @Override
+    public boolean shouldSuppressSyncSetupIncomplete() {
+        return mIsFromSigninScreen;
+    }
+
+    @Override
+    public void onSyncErrorCardPrimaryButtonClicked() {
+        @SyncError
+        int syncError = mSyncErrorCardPreference.getSyncError();
+        Profile profile = Profile.getLastUsedRegularProfile();
+        final CoreAccountInfo primaryAccountInfo =
+                IdentityServicesProvider.get().getIdentityManager(profile).getPrimaryAccountInfo(
+                        ConsentLevel.SYNC);
+        assert primaryAccountInfo != null;
+
+        switch (syncError) {
+            case SyncError.ANDROID_SYNC_DISABLED:
+                IntentUtils.safeStartActivity(
+                        getActivity(), new Intent(Settings.ACTION_SYNC_SETTINGS));
+                return;
+            case SyncError.AUTH_ERROR:
+                AccountManagerFacadeProvider.getInstance().updateCredentials(
+                        CoreAccountInfo.getAndroidAccountFrom(primaryAccountInfo), getActivity(),
+                        null);
+                return;
+            case SyncError.CLIENT_OUT_OF_DATE:
+                // Opens the client in play store for update.
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("market://details?id="
+                        + ContextUtils.getApplicationContext().getPackageName()));
+                startActivity(intent);
+                return;
+            case SyncError.OTHER_ERRORS:
+                SignOutDialogFragment signOutFragment =
+                        SignOutDialogFragment.create(GAIAServiceType.GAIA_SERVICE_TYPE_NONE);
+                signOutFragment.setTargetFragment(this, 0);
+                signOutFragment.show(getParentFragmentManager(), SIGN_OUT_DIALOG_TAG);
+                return;
+            case SyncError.PASSPHRASE_REQUIRED:
+                displayPassphraseDialog();
+                return;
+            case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING:
+            case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS:
+                SyncSettingsUtils.openTrustedVaultKeyRetrievalDialog(
+                        this, primaryAccountInfo, REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL);
+                return;
+            case SyncError.SYNC_SETUP_INCOMPLETE:
+                mProfileSyncService.requestStart();
+                mProfileSyncService.setFirstSetupComplete(
+                        SyncFirstSetupCompleteSource.ADVANCED_FLOW_INTERRUPTED_TURN_SYNC_ON);
+                return;
+            case SyncError.NO_ERROR:
+            default:
+                return;
+        }
+    }
+
+    @Override
+    public void onSyncErrorCardSecondaryButtonClicked() {
+        assert mSyncErrorCardPreference.getSyncError() == SyncError.SYNC_SETUP_INCOMPLETE;
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS);
+        getActivity().finish();
+    }
+
     private void showCancelSyncDialog() {
         RecordUserAction.record("Signin_Signin_BackOnAdvancedSyncSettings");
         CancelSyncDialog dialog = new CancelSyncDialog();
@@ -604,8 +753,10 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
 
     private void cancelSync() {
         RecordUserAction.record("Signin_Signin_CancelAdvancedSyncSettings");
-        IdentityServicesProvider.get().getSigninManager().signOut(
-                org.chromium.components.signin.metrics.SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS);
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .signOut(org.chromium.components.signin.metrics.SignoutReason
+                                 .USER_CLICKED_SIGNOUT_SETTINGS);
         getActivity().finish();
     }
 
@@ -640,5 +791,30 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
             ManageSyncSettings fragment = (ManageSyncSettings) getTargetFragment();
             fragment.cancelSync();
         }
+    }
+
+    // SignOutDialogListener implementation:
+    @Override
+    public void onSignOutClicked(boolean forceWipeUserData) {
+        // In case sign-out happened while the dialog was displayed, we guard the sign out so
+        // we do not hit a native crash.
+        if (!IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) return;
+
+        final DialogFragment clearDataProgressDialog = new ClearDataProgressDialog();
+        IdentityServicesProvider.get().getSigninManager().signOut(
+                SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, new SigninManager.SignOutCallback() {
+                    @Override
+                    public void preWipeData() {
+                        clearDataProgressDialog.show(
+                                getChildFragmentManager(), CLEAR_DATA_PROGRESS_DIALOG_TAG);
+                    }
+
+                    @Override
+                    public void signOutComplete() {
+                        if (clearDataProgressDialog.isAdded()) {
+                            clearDataProgressDialog.dismissAllowingStateLoss();
+                        }
+                    }
+                }, forceWipeUserData);
     }
 }

@@ -9,6 +9,7 @@
 #define GLTestContext_DEFINED
 
 #include "include/gpu/gl/GrGLInterface.h"
+#include "src/gpu/gl/GrGLUtil.h"
 #include "tools/gpu/TestContext.h"
 
 namespace sk_gpu_test {
@@ -21,21 +22,17 @@ class GLTestContext : public TestContext {
 public:
     ~GLTestContext() override;
 
-    virtual GrBackendApi backend() override { return GrBackendApi::kOpenGL; }
+    GrBackendApi backend() override { return GrBackendApi::kOpenGL; }
 
     /** Does this represent a successfully created GL context? */
     bool isValid() const;
 
-    const GrGLInterface* gl() const { return fGL.get(); }
+    const GrGLInterface* gl() const { return fGLInterface.get(); }
 
     /** Used for testing EGLImage integration. Take a GL_TEXTURE_2D and wraps it in an EGL Image */
     virtual GrEGLImage texture2DToEGLImage(GrGLuint /*texID*/) const { return nullptr; }
 
     virtual void destroyEGLImage(GrEGLImage) const { }
-
-    /** Used for testing GL_TEXTURE_RECTANGLE integration. */
-    GrGLuint createTextureRectangle(int width, int height, GrGLenum internalFormat,
-                                    GrGLenum externalFormat, GrGLenum externalType, GrGLvoid* data);
 
     /**
      * Used for testing EGLImage integration. Takes a EGLImage and wraps it in a
@@ -47,6 +44,8 @@ public:
 
     /** Wait until all GPU work is finished. */
     void finish() override;
+
+    void overrideVersion(const char* version, const char* shadingLanguageVersion);
 
     /**
      * Creates a new GL context of the same type and makes the returned context current
@@ -70,7 +69,7 @@ public:
         }
     }
 
-    sk_sp<GrContext> makeGrContext(const GrContextOptions& options) override;
+    sk_sp<GrDirectContext> makeContext(const GrContextOptions& options) override;
 
 protected:
     GLTestContext();
@@ -85,14 +84,17 @@ protected:
     virtual GrGLFuncPtr onPlatformGetProcAddress(const char *) const = 0;
 
 private:
-    /** Subclass provides the gl interface object if construction was
-     *  successful. */
-    sk_sp<const GrGLInterface> fGL;
+    /** Subclass provides the gl interface object if construction was successful. */
+    sk_sp<const GrGLInterface> fOriginalGLInterface;
+
+    /** The same as fOriginalGLInterface unless the version has been overridden. */
+    sk_sp<const GrGLInterface> fGLInterface;
+
 #ifndef SK_GL
     bool fWasInitialized = false;
 #endif
 
-    typedef TestContext INHERITED;
+    using INHERITED = TestContext;
 };
 
 /**

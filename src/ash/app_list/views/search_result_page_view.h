@@ -6,6 +6,7 @@
 #define ASH_APP_LIST_VIEWS_SEARCH_RESULT_PAGE_VIEW_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
@@ -25,7 +26,6 @@ class DialogDelegateView;
 
 namespace ash {
 
-class AppListViewDelegate;
 class SearchResultBaseView;
 class ViewShadow;
 class SearchResultPageAnchoredDialog;
@@ -36,12 +36,15 @@ class APP_LIST_EXPORT SearchResultPageView
       public SearchResultContainerView::Delegate,
       public SearchBoxModelObserver {
  public:
-  SearchResultPageView(AppListViewDelegate* view_delegate,
-                       SearchModel* search_model);
+  explicit SearchResultPageView(SearchModel* search_model);
   ~SearchResultPageView() override;
 
-  void AddSearchResultContainerView(
-      SearchResultContainerView* result_container);
+  template <typename T>
+  T* AddSearchResultContainerView(std::unique_ptr<T> result_container) {
+    auto* result = result_container.get();
+    AddSearchResultContainerViewInternal(std::move(result_container));
+    return result;
+  }
 
   const std::vector<SearchResultContainerView*>& result_container_views() {
     return result_container_views_;
@@ -89,12 +92,9 @@ class APP_LIST_EXPORT SearchResultPageView
   void OnSearchResultContainerResultsChanged() override;
 
   // Overridden from SearchBoxModelObserver:
-  void HintTextChanged() override;
   void Update() override;
   void SearchEngineChanged() override;
   void ShowAssistantChanged() override;
-
-  void OnAssistantPrivacyInfoViewCloseButtonPressed();
 
   // Shows a dialog widget, and anchors it within the search results page. The
   // dialog will be positioned relative to the search box bounds, and will be
@@ -156,7 +156,8 @@ class APP_LIST_EXPORT SearchResultPageView
   // Called when the widget anchored in the search results page gets closed.
   void OnAnchoredDialogClosed();
 
-  AppListViewDelegate* view_delegate_;
+  void AddSearchResultContainerViewInternal(
+      std::unique_ptr<SearchResultContainerView> result_container);
 
   // The search model for which the results are displayed.
   SearchModel* const search_model_;
@@ -187,8 +188,6 @@ class APP_LIST_EXPORT SearchResultPageView
   // The last reported number of search results shown within search result
   // containers.
   int last_search_result_count_ = 0;
-
-  views::View* assistant_privacy_info_view_ = nullptr;
 
   std::unique_ptr<ViewShadow> view_shadow_;
 

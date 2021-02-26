@@ -10,8 +10,8 @@
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/docked_magnifier_controller.h"
-#include "ash/session/session_observer.h"
-#include "ui/base/ime/ime_bridge_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
+#include "ui/base/ime/chromeos/ime_bridge_observer.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/widget/widget_observer.h"
@@ -78,6 +78,7 @@ class ASH_EXPORT DockedMagnifierControllerImpl
 
   // DockedMagnifierController:
   void CenterOnPoint(const gfx::Point& point_in_screen) override;
+  void MoveMagnifierToRect(const gfx::Rect& rect_in_screen) override;
   int GetMagnifierHeightForTesting() const override;
 
   // ash::SessionObserver:
@@ -130,6 +131,8 @@ class ASH_EXPORT DockedMagnifierControllerImpl
 
   float GetMinimumPointOfInterestHeightForTesting() const;
 
+  gfx::Point GetLastCaretScreenPointForTesting() const;
+
  private:
   // Switches the current source root window to |new_root_window| if it's
   // different than |current_source_root_window_|, destroys (if any) old
@@ -165,6 +168,10 @@ class ASH_EXPORT DockedMagnifierControllerImpl
   // Prevents the mouse cursor from being able to enter inside the magnifier
   // viewport.
   void ConfineMouseCursorOutsideViewport();
+
+  // Invoked when |move_magnifier_timer_| fires to move the magnifier window to
+  // follow the caret.
+  void OnMoveMagnifierTimer();
 
   // The current root window of the source display from which we are reflecting
   // and magnifying into the viewport. It is set to |nullptr| when the magnifier
@@ -203,6 +210,16 @@ class ASH_EXPORT DockedMagnifierControllerImpl
   ui::InputMethod* input_method_ = nullptr;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  // Most recent caret position.
+  gfx::Point last_caret_screen_point_;
+
+  // Timer for moving magnifier window when it fires.
+  base::OneShotTimer move_magnifier_timer_;
+
+  // Last move magnifier to rect time - used for ignoring caret updates for a
+  // few milliseconds after the last move magnifier to rect call.
+  base::TimeTicks last_move_magnifier_to_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(DockedMagnifierControllerImpl);
 };

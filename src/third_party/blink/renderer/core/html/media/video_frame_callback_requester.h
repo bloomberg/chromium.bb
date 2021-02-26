@@ -18,8 +18,6 @@ class HTMLVideoElement;
 class CORE_EXPORT VideoFrameCallbackRequester
     : public GarbageCollected<VideoFrameCallbackRequester>,
       public Supplement<HTMLVideoElement> {
-  USING_GARBAGE_COLLECTED_MIXIN(VideoFrameCallbackRequester);
-
  public:
   static const char kSupplementName[];
 
@@ -27,7 +25,7 @@ class CORE_EXPORT VideoFrameCallbackRequester
 
   virtual ~VideoFrameCallbackRequester() = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   virtual void OnWebMediaPlayerCreated() = 0;
   virtual void OnRequestVideoFrameCallback() = 0;

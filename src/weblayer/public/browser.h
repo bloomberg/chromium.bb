@@ -14,6 +14,7 @@
 namespace weblayer {
 
 class BrowserObserver;
+class BrowserRestoreObserver;
 class Profile;
 class Tab;
 
@@ -46,11 +47,15 @@ class Browser {
 
   virtual ~Browser() {}
 
-  virtual Tab* AddTab(std::unique_ptr<Tab> tab) = 0;
-  virtual std::unique_ptr<Tab> RemoveTab(Tab* tab) = 0;
+  virtual void AddTab(Tab* tab) = 0;
+  virtual void DestroyTab(Tab* tab) = 0;
   virtual void SetActiveTab(Tab* tab) = 0;
   virtual Tab* GetActiveTab() = 0;
   virtual std::vector<Tab*> GetTabs() = 0;
+
+  // Creates a tab attached to this browser. The returned tab is owned by the
+  // browser.
+  virtual Tab* CreateTab() = 0;
 
   // Called early on in shutdown, before any tabs have been removed.
   virtual void PrepareForShutdown() = 0;
@@ -64,8 +69,17 @@ class Browser {
   // lightweight restore when full persistence is not desirable.
   virtual std::vector<uint8_t> GetMinimalPersistenceState() = 0;
 
+  // Returns true if this Browser is in the process of restoring the previous
+  // state. That is, PersistenceInfo was supplied to the constructor and
+  // the state is asynchronously being loaded.
+  virtual bool IsRestoringPreviousState() = 0;
+
   virtual void AddObserver(BrowserObserver* observer) = 0;
   virtual void RemoveObserver(BrowserObserver* observer) = 0;
+
+  virtual void AddBrowserRestoreObserver(BrowserRestoreObserver* observer) = 0;
+  virtual void RemoveBrowserRestoreObserver(
+      BrowserRestoreObserver* observer) = 0;
 
   virtual void VisibleSecurityStateOfActiveTabChanged() = 0;
 };

@@ -21,13 +21,13 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 #if BUILDFLAG(ENABLE_RLZ)
 #include "rlz/lib/machine_id.h"
 #else
 #error "RLZ must be enabled on Windows/Mac"
 #endif  // BUILDFLAG(ENABLE_RLZ)
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_MAC)
 
 namespace {
 
@@ -96,7 +96,7 @@ void ComputeAndReturnStorageId(const std::vector<uint8_t>& profile_salt,
 void ComputeStorageId(const std::vector<uint8_t>& profile_salt,
                       const url::Origin& origin,
                       CdmStorageIdCallback callback) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   std::string machine_id;
   std::string storage_id_key = GetCdmStorageIdKey();
   rlz_lib::GetMachineId(&machine_id);
@@ -108,8 +108,8 @@ void ComputeStorageId(const std::vector<uint8_t>& profile_salt,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
                                                   std::vector<uint8_t>());
   chromeos::SystemSaltGetter::Get()->GetSystemSalt(
-      base::Bind(&ComputeAndReturnStorageId, profile_salt, origin,
-                 base::Passed(&scoped_callback)));
+      base::BindOnce(&ComputeAndReturnStorageId, profile_salt, origin,
+                     std::move(scoped_callback)));
 
 #else
 #error Storage ID enabled but not implemented for this platform.

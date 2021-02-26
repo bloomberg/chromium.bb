@@ -18,20 +18,27 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 extern const base::Feature kBiometricTouchToFill;
-extern const base::Feature kEditPasswordsInDesktopSettings;
-extern const base::Feature kDeleteCorruptedPasswords;
+extern const base::Feature kChangePasswordAffiliationInfo;
+extern const base::Feature kEditPasswordsInSettings;
+extern const base::Feature kDetectFormSubmissionOnFormClear;
 extern const base::Feature kEnableOverwritingPlaceholderUsernames;
 extern const base::Feature kEnablePasswordsAccountStorage;
 extern const base::Feature KEnablePasswordGenerationForClearTextFields;
+extern const base::Feature kFillingPasswordsFromAnyOrigin;
 extern const base::Feature kFillOnAccountSelect;
-extern const base::Feature kGooglePasswordManager;
 extern const base::Feature kPasswordChange;
+extern const base::Feature kPasswordChangeInSettings;
 extern const base::Feature kPasswordCheck;
-extern const base::Feature kPasswordEditingAndroid;
 extern const base::Feature kPasswordImport;
-extern const base::Feature kPasswordManagerOnboardingAndroid;
+extern const base::Feature kPasswordScriptsFetching;
+extern const base::Feature kPasswordsWeaknessCheck;
 extern const base::Feature kRecoverFromNeverSaveAndroid;
+extern const base::Feature kReparseServerPredictionsFollowingFormChange;
+extern const base::Feature kSecondaryServerFieldPredictions;
+extern const base::Feature kTreatNewPasswordHeuristicsAsReliable;
+extern const base::Feature kUseOfHashAffiliationFetcher;
 extern const base::Feature kUsernameFirstFlow;
+extern const base::Feature kWellKnownChangePassword;
 
 // Field trial and corresponding parameters.
 // To manually override this, start Chrome with the following parameters:
@@ -44,6 +51,15 @@ extern const char kGenerationRequirementsFieldTrial[];
 extern const char kGenerationRequirementsVersion[];
 extern const char kGenerationRequirementsPrefixLength[];
 extern const char kGenerationRequirementsTimeout[];
+
+// Password change feature variations.
+extern const char
+    kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission[];
+extern const char kPasswordChangeInSettingsWithForcedWarningForEverySite[];
+
+// |kEnablePasswordAccountStorage| variations.
+extern const char kMaxMoveToAccountOffersForNonOptedInUser[];
+extern const int kMaxMoveToAccountOffersForNonOptedInUserDefaultValue;
 
 }  // namespace features
 

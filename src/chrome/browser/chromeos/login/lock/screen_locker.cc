@@ -16,14 +16,13 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -41,10 +40,8 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -79,13 +76,11 @@
 #include "url/gurl.h"
 
 using base::UserMetricsAction;
-using content::BrowserThread;
-
 namespace chromeos {
 
 namespace {
 
-// Returns true if fingerprint authentication is available for |user|.
+// Returns true if fingerprint authentication is available for `user`.
 bool IsFingerprintAvailableForUser(const user_manager::User* user) {
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForUser(user);
@@ -202,6 +197,11 @@ void ScreenLocker::Init() {
       input_method::InputMethodManager::Get();
   saved_ime_state_ = imm->GetActiveIMEState();
   imm->SetState(saved_ime_state_->Clone());
+  input_method::InputMethodManager::Get()->GetActiveIMEState()->SetUIStyle(
+      input_method::InputMethodManager::UIStyle::kLock);
+  input_method::InputMethodManager::Get()
+      ->GetActiveIMEState()
+      ->EnableLockScreenLayouts();
 
   authenticator_ = UserSessionManager::GetInstance()->CreateAuthenticator(this);
   extended_authenticator_ = ExtendedAuthenticator::Create(this);
@@ -470,25 +470,6 @@ void ScreenLocker::OnPinAttemptDone(const UserContext& user_context,
 
 void ScreenLocker::ContinueAuthenticate(
     const chromeos::UserContext& user_context) {
-  const user_manager::User* user = FindUnlockUser(user_context.GetAccountId());
-  if (user) {
-    // Special case: supervised users. Use special authenticator.
-    if (user->GetType() == user_manager::USER_TYPE_SUPERVISED) {
-      UserContext updated_context = ChromeUserManager::Get()
-                                        ->GetSupervisedUserManager()
-                                        ->GetAuthentication()
-                                        ->TransformKey(user_context);
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(
-              &ExtendedAuthenticator::AuthenticateToCheck,
-              extended_authenticator_.get(), updated_context,
-              base::Bind(&ScreenLocker::OnPasswordAuthSuccess,
-                         weak_factory_.GetWeakPtr(), updated_context)));
-      return;
-    }
-  }
-
   if (user_context.GetAccountId().GetAccountType() ==
           AccountType::ACTIVE_DIRECTORY &&
       user_context.GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
@@ -502,8 +483,8 @@ void ScreenLocker::ContinueAuthenticate(
         user_context.GetKey()->GetSecret());
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ExtendedAuthenticator::AuthenticateToCheck,
                      extended_authenticator_.get(), user_context,
                      base::Bind(&ScreenLocker::OnPasswordAuthSuccess,
@@ -585,7 +566,7 @@ void ScreenLocker::ShutDownClass() {
   delete g_screen_lock_observer;
   g_screen_lock_observer = nullptr;
 
-  // Delete |screen_locker_| if it is being shown.
+  // Delete `screen_locker_` if it is being shown.
   ScheduleDeletion();
 }
 
@@ -617,7 +598,7 @@ void ScreenLocker::HandleShowLockScreenRequest() {
 // static
 void ScreenLocker::Show() {
   base::RecordAction(UserMetricsAction("ScreenLocker_Show"));
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
 
   // Check whether the currently logged in user is a guest account and if so,
   // refuse to lock the screen (crosbug.com/23764).
@@ -642,7 +623,7 @@ void ScreenLocker::Show() {
 
 // static
 void ScreenLocker::Hide() {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   // For a guest user, screen_locker_ would have never been initialized.
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
     VLOG(1) << "Refusing to hide lock screen for guest account";
@@ -712,7 +693,7 @@ ScreenLocker::AuthState::~AuthState() = default;
 
 ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Destroying ScreenLocker " << this;
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 
   GetLoginScreenCertProviderService()
@@ -758,10 +739,6 @@ void ScreenLocker::ScreenLockReady() {
 
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::LOCKED);
-
-  input_method::InputMethodManager::Get()
-      ->GetActiveIMEState()
-      ->EnableLockScreenLayouts();
 
   // Start a fingerprint authentication session if fingerprint is available for
   // the primary user. Only the primary user can use fingerprint.

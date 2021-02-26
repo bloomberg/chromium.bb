@@ -614,7 +614,9 @@ template <typename TraitsType> void TargetX86Base<TraitsType>::translateOm1() {
   genTargetHelperCalls();
 
   // Do not merge Alloca instructions, and lay out the stack.
-  static constexpr bool SortAndCombineAllocas = false;
+  // static constexpr bool SortAndCombineAllocas = false;
+  static constexpr bool SortAndCombineAllocas =
+      true; // TODO(b/171222930): Fix Win32 bug when this is false
   Func->processAllocas(SortAndCombineAllocas);
   Func->dump("After Alloca processing");
 
@@ -1133,8 +1135,9 @@ void TargetX86Base<TraitsType>::addProlog(CfgNode *Node) {
 
   // Generate "push frameptr; mov frameptr, stackptr"
   if (IsEbpBasedFrame) {
-    assert((RegsUsed & getRegisterSet(RegSet_FramePointer, RegSet_None))
-               .count() == 0);
+    assert(
+        (RegsUsed & getRegisterSet(RegSet_FramePointer, RegSet_None)).count() ==
+        0);
     PreservedRegsSizeBytes += typeWidthInBytes(Traits::WordType);
     _link_bp();
   }
@@ -1286,6 +1289,11 @@ void TargetX86Base<TraitsType>::addProlog(CfgNode *Node) {
     const Variable *Root = Var->getLinkedToStackRoot();
     assert(Root != nullptr);
     Var->setStackOffset(Root->getStackOffset());
+
+    // If the stack root variable is an arg, make this variable an arg too so
+    // that stackVarToAsmOperand uses the correct base pointer (e.g. ebp on
+    // x86).
+    Var->setIsArg(Root->getIsArg());
   }
   this->HasComputedFrame = true;
 
@@ -2098,6 +2106,7 @@ void TargetX86Base<TraitsType>::lowerArithmetic(const InstArithmetic *Instr) {
       _mov(DestLo, T_4Lo);
       _add(T_4Hi, T_1);
       _mov(T_2, Src1Hi);
+      Src0Lo = legalize(Src0Lo, Legal_Reg | Legal_Mem);
       _imul(T_2, Src0Lo);
       _add(T_4Hi, T_2);
       _mov(DestHi, T_4Hi);
@@ -2332,10 +2341,13 @@ void TargetX86Base<TraitsType>::lowerArithmetic(const InstArithmetic *Instr) {
       _mov(Dest, T);
     } else if (auto *ImmConst = llvm::dyn_cast<ConstantInteger32>(Src1)) {
       T = makeReg(Ty);
+      Src0 = legalize(Src0, Legal_Reg | Legal_Mem);
       _imul_imm(T, Src0, ImmConst);
       _mov(Dest, T);
     } else {
       _mov(T, Src0);
+      // No need to legalize Src1 to Reg | Mem because the Imm case is handled
+      // already by the ConstantInteger32 case above.
       _imul(T, Src0 == Src1 ? T : Src1);
       _mov(Dest, T);
     }
@@ -5871,7 +5883,7 @@ TargetX86Base<TypeTraits>::computeAddressOpt(const Inst *Instr, Type MemType,
       AddressWasOptimized = true;
       Reason = nullptr;
       SkipLastFolding = nullptr;
-      memset(reinterpret_cast<void*>(&Skip), 0, sizeof(Skip));
+      memset(reinterpret_cast<void *>(&Skip), 0, sizeof(Skip));
     }
 
     NewAddrCheckpoint = NewAddr;
@@ -7713,7 +7725,8 @@ uint32_t TargetX86Base<TraitsType>::getCallStackArgumentsSizeBytes(
   Variable *Dest = Instr->getDest();
   if (Dest != nullptr)
     ReturnType = Dest->getType();
-  return getShadowStoreSize<Traits>() + getCallStackArgumentsSizeBytes(ArgTypes, ReturnType);
+  return getShadowStoreSize<Traits>() +
+         getCallStackArgumentsSizeBytes(ArgTypes, ReturnType);
 }
 
 template <typename TraitsType>
@@ -8485,7 +8498,8 @@ void TargetX86Base<TraitsType>::emitJumpTable(
   const char *Prefix = UseNonsfi ? ".data.rel.ro." : ".rodata.";
   Str << "\t.section\t" << Prefix << JumpTable->getSectionName()
       << ",\"a\",@progbits\n"
-         "\t.align\t" << typeWidthInBytes(getPointerType()) << "\n"
+         "\t.align\t"
+      << typeWidthInBytes(getPointerType()) << "\n"
       << JumpTable->getName() << ":";
 
   // On X86 ILP32 pointers are 32-bit hence the use of .long
@@ -8593,7 +8607,8 @@ void TargetDataX86<TraitsType>::lowerJumpTables() {
     for (const JumpTableData &JT : Ctx->getJumpTables()) {
       Str << "\t.section\t" << Prefix << JT.getSectionName()
           << ",\"a\",@progbits\n"
-             "\t.align\t" << typeWidthInBytes(getPointerType()) << "\n"
+             "\t.align\t"
+          << typeWidthInBytes(getPointerType()) << "\n"
           << JT.getName().toString() << ":";
 
       // On X8664 ILP32 pointers are 32-bit hence the use of .long

@@ -68,6 +68,10 @@ void FakeOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
   last_set_draw_rectangle_ = rect;
 }
 
+void FakeOutputSurface::SetEnableDCLayers(bool enabled) {
+  context_provider_->ContextGL()->SetEnableDCLayersCHROMIUM(enabled);
+}
+
 uint32_t FakeOutputSurface::GetFramebufferCopyTextureFormat() {
   if (framebuffer_)
     return framebuffer_format_;
@@ -116,12 +120,4 @@ void FakeOutputSurface::SetNeedsSwapSizeNotifications(
     bool needs_swap_size_notifications) {}
 #endif
 
-scoped_refptr<gpu::GpuTaskSchedulerHelper>
-FakeOutputSurface::GetGpuTaskSchedulerHelper() {
-  return nullptr;
-}
-
-gpu::MemoryTracker* FakeOutputSurface::GetMemoryTracker() {
-  return nullptr;
-}
 }  // namespace viz

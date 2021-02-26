@@ -19,8 +19,9 @@ import string
 import sys
 import time
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
+CLIENT_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, CLIENT_DIR)
 
 from utils import tools
@@ -63,9 +64,8 @@ def print_results(results, columns, buckets):
     print('\n'.join('  %s' % i for i in failures))
 
 
-def trigger_task(
-    swarming_url, dimensions, sleep_time, output_size, progress,
-    unique, timeout, index):
+def trigger_task(swarming_url, dimensions, sleep_time, output_size, progress,
+                 unique, timeout, index):
   """Triggers a Swarming job and collects results.
 
   Returns the total amount of time to run a task remotely, including all the
@@ -77,22 +77,21 @@ def trigger_task(
   logging.info('trigger')
   # TODO(maruel): Broken.
   manifest = swarming.Manifest(
-    isolate_server='http://localhost:1',
-    namespace='dummy-isolate',
-    isolated_hash=1,
-    task_name=name,
-    extra_args=[],
-    env={},
-    dimensions=dimensions,
-    deadline=int(timeout-TIMEOUT_OVERHEAD),
-    verbose=False,
-    profile=False,
-    priority=100)
+      isolate_server='http://localhost:1',
+      namespace='dummy-isolate',
+      isolated_hash=1,
+      task_name=name,
+      extra_args=[],
+      env={},
+      dimensions=dimensions,
+      deadline=int(timeout - TIMEOUT_OVERHEAD),
+      verbose=False,
+      profile=False,
+      priority=100)
   cmd = [
-    'python',
-    '-c',
-    'import time; print(\'1\'*%s); time.sleep(%d); print(\'Back\')' %
-    (output_size, sleep_time)
+      'python', '-c',
+      'import time; print(\'1\'*%s); time.sleep(%d); print(\'Back\')' %
+      (output_size, sleep_time)
   ]
   manifest.add_task('echo stuff', cmd)
   data = {'request': manifest.to_json()}
@@ -165,40 +164,68 @@ def main():
 
   group = optparse.OptionGroup(parser, 'Load generated')
   group.add_option(
-      '-s', '--send-rate', type='float', default=16., metavar='RATE',
+      '-s',
+      '--send-rate',
+      type='float',
+      default=16.,
+      metavar='RATE',
       help='Rate (item/s) of sending requests as a float, default: %default')
   group.add_option(
-      '-D', '--duration', type='float', default=60., metavar='N',
+      '-D',
+      '--duration',
+      type='float',
+      default=60.,
+      metavar='N',
       help='Duration (s) of the sending phase of the load test, '
-           'default: %default')
+      'default: %default')
   group.add_option(
-      '-m', '--concurrent', type='int', default=200, metavar='N',
+      '-m',
+      '--concurrent',
+      type='int',
+      default=200,
+      metavar='N',
       help='Maximum concurrent on-going requests, default: %default')
   group.add_option(
-      '-t', '--timeout', type='float', default=15*60., metavar='N',
+      '-t',
+      '--timeout',
+      type='float',
+      default=15 * 60.,
+      metavar='N',
       help='Task expiration and timeout to get results, the task itself will '
-           'have %ds less than the value provided. Default: %%default' %
-               TIMEOUT_OVERHEAD)
+      'have %ds less than the value provided. Default: %%default' %
+      TIMEOUT_OVERHEAD)
   group.add_option(
-      '-o', '--output-size', type='int', default=100, metavar='N',
+      '-o',
+      '--output-size',
+      type='int',
+      default=100,
+      metavar='N',
       help='Bytes sent to stdout, default: %default')
   group.add_option(
-      '--sleep', type='int', default=60, metavar='N',
+      '--sleep',
+      type='int',
+      default=60,
+      metavar='N',
       help='Amount of time the bot should sleep, e.g. faking work, '
-           'default: %default')
+      'default: %default')
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, 'Display options')
   group.add_option(
-      '--columns', type='int', default=graph.get_console_width(), metavar='N',
+      '--columns',
+      type='int',
+      default=graph.get_console_width(),
+      metavar='N',
       help='For histogram display, default:%default')
   group.add_option(
-      '--buckets', type='int', default=20, metavar='N',
+      '--buckets',
+      type='int',
+      default=20,
+      metavar='N',
       help='Number of buckets for histogram display, default:%default')
   parser.add_option_group(group)
 
-  parser.add_option(
-      '--dump', metavar='FOO.JSON', help='Dumps to json file')
+  parser.add_option('--dump', metavar='FOO.JSON', help='Dumps to json file')
   parser.add_option(
       '-v', '--verbose', action='store_true', help='Enables logging')
 
@@ -216,9 +243,8 @@ def main():
   total = int(round(options.send_rate * options.duration))
   print(
       'Sending %.1f i/s for %ds with max %d parallel requests; timeout %.1fs; '
-      'total %d' %
-        (options.send_rate, options.duration, options.concurrent,
-        options.timeout, total))
+      'total %d' % (options.send_rate, options.duration, options.concurrent,
+                    options.timeout, total))
   print('[processing/processed/todo]')
 
   # This is used so there's no clash between runs and actual real usage.
@@ -237,17 +263,9 @@ def main():
           break
         should_have_triggered_so_far = int(round(duration * options.send_rate))
         while index < should_have_triggered_so_far:
-          pool.add_task(
-              0,
-              trigger_task,
-              options.swarming,
-              options.dimensions,
-              options.sleep,
-              options.output_size,
-              progress,
-              unique,
-              options.timeout,
-              index)
+          pool.add_task(0, trigger_task, options.swarming, options.dimensions,
+                        options.sleep, options.output_size, progress, unique,
+                        options.timeout, index)
           progress.update_item('', todo=1)
           index += 1
           progress.print_update()

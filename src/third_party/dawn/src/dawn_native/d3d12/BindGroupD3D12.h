@@ -16,7 +16,6 @@
 #define DAWNNATIVE_D3D12_BINDGROUPD3D12_H_
 
 #include "common/PlacementAllocated.h"
-#include "common/Serial.h"
 #include "dawn_native/BindGroup.h"
 #include "dawn_native/d3d12/CPUDescriptorHeapAllocationD3D12.h"
 #include "dawn_native/d3d12/GPUDescriptorHeapAllocationD3D12.h"
@@ -24,7 +23,9 @@
 namespace dawn_native { namespace d3d12 {
 
     class Device;
+    class SamplerHeapCacheEntry;
     class ShaderVisibleDescriptorAllocator;
+    class StagingDescriptorAllocator;
 
     class BindGroup final : public BindGroupBase, public PlacementAllocated {
       public:
@@ -34,30 +35,23 @@ namespace dawn_native { namespace d3d12 {
         BindGroup(Device* device,
                   const BindGroupDescriptor* descriptor,
                   uint32_t viewSizeIncrement,
-                  const CPUDescriptorHeapAllocation& viewAllocation,
-                  uint32_t samplerSizeIncrement,
-                  const CPUDescriptorHeapAllocation& samplerAllocation);
+                  const CPUDescriptorHeapAllocation& viewAllocation);
 
         // Returns true if the BindGroup was successfully populated.
         bool PopulateViews(ShaderVisibleDescriptorAllocator* viewAllocator);
-        bool PopulateSamplers(ShaderVisibleDescriptorAllocator* samplerAllocator);
+        bool PopulateSamplers(Device* device, ShaderVisibleDescriptorAllocator* samplerAllocator);
 
         D3D12_GPU_DESCRIPTOR_HANDLE GetBaseViewDescriptor() const;
         D3D12_GPU_DESCRIPTOR_HANDLE GetBaseSamplerDescriptor() const;
 
-      private:
-        bool Populate(ShaderVisibleDescriptorAllocator* allocator,
-                      uint32_t descriptorCount,
-                      D3D12_DESCRIPTOR_HEAP_TYPE heapType,
-                      const CPUDescriptorHeapAllocation& stagingAllocation,
-                      GPUDescriptorHeapAllocation* allocation);
+        void SetSamplerAllocationEntry(Ref<SamplerHeapCacheEntry> entry);
 
+      private:
         ~BindGroup() override;
 
-        GPUDescriptorHeapAllocation mGPUSamplerAllocation;
-        GPUDescriptorHeapAllocation mGPUViewAllocation;
+        Ref<SamplerHeapCacheEntry> mSamplerAllocationEntry;
 
-        CPUDescriptorHeapAllocation mCPUSamplerAllocation;
+        GPUDescriptorHeapAllocation mGPUViewAllocation;
         CPUDescriptorHeapAllocation mCPUViewAllocation;
     };
 }}  // namespace dawn_native::d3d12

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+
 import * as NetworkModule from './network.js';
 
 self.Network = self.Network || {};
@@ -50,7 +52,7 @@ Network.NetworkItemView = NetworkModule.NetworkItemView.NetworkItemView;
  */
 Network.NetworkLogView = NetworkModule.NetworkLogView.NetworkLogView;
 
-Network.NetworkLogView._isFilteredOutSymbol = NetworkModule.NetworkLogView.isFilteredOutSymbol;
+Network.NetworkLogView.isRequestFilteredOut = NetworkModule.NetworkLogView.isRequestFilteredOut;
 
 /** @enum {string} */
 Network.NetworkLogView.FilterType = NetworkModule.NetworkLogView.FilterType;

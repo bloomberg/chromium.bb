@@ -15,6 +15,7 @@
 #include "components/exo/display.h"
 #include "components/exo/input_method_surface.h"
 #include "components/exo/surface.h"
+#include "components/exo/toast_surface.h"
 #include "components/exo/wm_helper.h"
 #include "components/exo/xdg_shell_surface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -31,20 +32,20 @@ namespace test {
 namespace {
 
 void HandleWindowStateRequest(ClientControlledShellSurface* shell_surface,
-                              ash::WindowStateType old_state,
-                              ash::WindowStateType new_state) {
+                              chromeos::WindowStateType old_state,
+                              chromeos::WindowStateType new_state) {
   switch (new_state) {
-    case ash::WindowStateType::kNormal:
-    case ash::WindowStateType::kDefault:
+    case chromeos::WindowStateType::kNormal:
+    case chromeos::WindowStateType::kDefault:
       shell_surface->SetRestored();
       break;
-    case ash::WindowStateType::kMinimized:
+    case chromeos::WindowStateType::kMinimized:
       shell_surface->SetMinimized();
       break;
-    case ash::WindowStateType::kMaximized:
+    case chromeos::WindowStateType::kMaximized:
       shell_surface->SetMaximized();
       break;
-    case ash::WindowStateType::kFullscreen:
+    case chromeos::WindowStateType::kFullscreen:
       shell_surface->SetFullscreen(true);
       break;
     default:
@@ -55,8 +56,8 @@ void HandleWindowStateRequest(ClientControlledShellSurface* shell_surface,
 }
 
 void HandleBoundsChangedRequest(ClientControlledShellSurface* shell_surface,
-                                ash::WindowStateType current_state,
-                                ash::WindowStateType requested_state,
+                                chromeos::WindowStateType current_state,
+                                chromeos::WindowStateType requested_state,
                                 int64_t display_id,
                                 const gfx::Rect& bounds_in_screen,
                                 bool is_resize,
@@ -87,10 +88,10 @@ void HandleBoundsChangedRequest(ClientControlledShellSurface* shell_surface,
   shell_surface->SetBounds(display_id, bounds_in_display);
 
   if (requested_state != window_state->GetStateType()) {
-    DCHECK(requested_state == ash::WindowStateType::kLeftSnapped ||
-           requested_state == ash::WindowStateType::kRightSnapped);
+    DCHECK(requested_state == chromeos::WindowStateType::kLeftSnapped ||
+           requested_state == chromeos::WindowStateType::kRightSnapped);
 
-    if (requested_state == ash::WindowStateType::kLeftSnapped)
+    if (requested_state == chromeos::WindowStateType::kLeftSnapped)
       shell_surface->SetSnappedToLeft();
     else
       shell_surface->SetSnappedToRight();
@@ -158,13 +159,16 @@ ExoTestWindow ExoTestHelper::CreateWindow(int width,
 }
 
 std::unique_ptr<ClientControlledShellSurface>
-ExoTestHelper::CreateClientControlledShellSurface(Surface* surface,
-                                                  bool is_modal) {
+ExoTestHelper::CreateClientControlledShellSurface(
+    Surface* surface,
+    bool is_modal,
+    bool default_scale_cancellation) {
   int container = is_modal ? ash::kShellWindowId_SystemModalContainer
                            : ash::desks_util::GetActiveDeskContainerId();
   auto shell_surface = Display().CreateClientControlledShellSurface(
       surface, container,
-      WMHelper::GetInstance()->GetDefaultDeviceScaleFactor());
+      WMHelper::GetInstance()->GetDefaultDeviceScaleFactor(),
+      default_scale_cancellation);
 
   shell_surface->set_state_changed_callback(base::BindRepeating(
       &HandleWindowStateRequest, base::Unretained(shell_surface.get())));
@@ -177,10 +181,26 @@ ExoTestHelper::CreateClientControlledShellSurface(Surface* surface,
 
 std::unique_ptr<InputMethodSurface> ExoTestHelper::CreateInputMethodSurface(
     Surface* surface,
-    InputMethodSurfaceManager* surface_manager) {
+    InputMethodSurfaceManager* surface_manager,
+    bool default_scale_cancellation) {
   auto shell_surface = std::make_unique<InputMethodSurface>(
-      surface_manager, surface,
-      WMHelper::GetInstance()->GetDefaultDeviceScaleFactor());
+      surface_manager, surface, default_scale_cancellation);
+
+  shell_surface->set_state_changed_callback(base::BindRepeating(
+      &HandleWindowStateRequest, base::Unretained(shell_surface.get())));
+
+  shell_surface->set_bounds_changed_callback(
+      base::BindRepeating(&HandleBoundsChangedRequest, shell_surface.get()));
+
+  return shell_surface;
+}
+
+std::unique_ptr<ToastSurface> ExoTestHelper::CreateToastSurface(
+    Surface* surface,
+    ToastSurfaceManager* surface_manager,
+    bool default_scale_cancellation) {
+  auto shell_surface = std::make_unique<ToastSurface>(
+      surface_manager, surface, default_scale_cancellation);
 
   shell_surface->set_state_changed_callback(base::BindRepeating(
       &HandleWindowStateRequest, base::Unretained(shell_surface.get())));

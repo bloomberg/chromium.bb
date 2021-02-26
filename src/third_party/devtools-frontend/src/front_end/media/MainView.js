@@ -61,19 +61,168 @@ export class TriggerDispatcher {
 }
 
 /**
- * @implements {SDK.SDKModel.SDKModelObserver<!Media.MediaModel>}
+ * @implements TriggerHandler
+ */
+class PlayerDataCollection {
+  constructor() {
+    /** @type {!Map<string, string>} */
+    this._properties = new Map();
+
+    /** @type {!Array<!Protocol.Media.PlayerMessage>} */
+    this._messages = [];
+
+    /** @type {!Array<!PlayerEvent>} */
+    this._events = [];
+
+    /** @type {!Array<!Protocol.Media.PlayerError>} */
+    this._errors = [];
+  }
+
+  /**
+   * @override
+   * @param {!Protocol.Media.PlayerProperty} property
+   */
+  onProperty(property) {
+    this._properties.set(property.name, property.value);
+  }
+
+  /**
+   * @override
+   * @param {!Protocol.Media.PlayerError} error */
+  onError(error) {
+    this._errors.push(error);
+  }
+
+  /**
+   * @override
+   * @param {!Protocol.Media.PlayerMessage} message
+   */
+  onMessage(message) {
+    this._messages.push(message);
+  }
+
+  /**
+   * @override
+   * @param {!PlayerEvent} event
+   */
+  onEvent(event) {
+    this._events.push(event);
+  }
+
+  export() {
+    return {'properties': this._properties, 'messages': this._messages, 'events': this._events, 'errors': this._errors};
+  }
+}
+
+/**
  * @implements TriggerDispatcher
+ */
+class PlayerDataDownloadManager {
+  constructor() {
+    /**
+     * @type {!Map<string, !PlayerDataCollection>}
+     */
+    this._playerDataCollection = new Map();
+  }
+
+  /**
+   * @param {string} playerID
+   */
+  addPlayer(playerID) {
+    this._playerDataCollection.set(playerID, new PlayerDataCollection());
+  }
+
+  /**
+   * @override
+   * @param {string} playerID
+   * @param {!Protocol.Media.PlayerProperty} property
+   */
+  onProperty(playerID, property) {
+    const playerProperty = this._playerDataCollection.get(playerID);
+    if (!playerProperty) {
+      return;
+    }
+
+    playerProperty.onProperty(property);
+  }
+
+  /**
+   * @override
+   * @param {string} playerID
+   * @param {!Protocol.Media.PlayerError} error
+   */
+  onError(playerID, error) {
+    const playerProperty = this._playerDataCollection.get(playerID);
+    if (!playerProperty) {
+      return;
+    }
+
+    playerProperty.onError(error);
+  }
+
+  /**
+   * @override
+   * @param {string} playerID
+   * @param {!Protocol.Media.PlayerMessage} message
+   */
+  onMessage(playerID, message) {
+    const playerProperty = this._playerDataCollection.get(playerID);
+    if (!playerProperty) {
+      return;
+    }
+
+    playerProperty.onMessage(message);
+  }
+
+  /**
+   * @override
+   * @param {string} playerID
+   * @param {!PlayerEvent} event
+   */
+  onEvent(playerID, event) {
+    const playerProperty = this._playerDataCollection.get(playerID);
+    if (!playerProperty) {
+      return;
+    }
+
+    playerProperty.onEvent(event);
+  }
+
+  /**
+   * @param {string} playerID
+   */
+  exportPlayerData(playerID) {
+    const playerProperty = this._playerDataCollection.get(playerID);
+    if (!playerProperty) {
+      throw new Error('Unable to find player');
+    }
+
+    return playerProperty.export();
+  }
+
+  /**
+   * @param {string} playerID
+   */
+  deletePlayer(playerID) {
+    this._playerDataCollection.delete(playerID);
+  }
+}
+
+/**
+ * @implements {SDK.SDKModel.SDKModelObserver<!MediaModel>}
  */
 export class MainView extends UI.Panel.PanelWithSidebar {
   constructor() {
     super('Media');
-    this.registerRequiredCSS('media/mediaView.css');
+    this.registerRequiredCSS('media/mediaView.css', {enableLegacyPatching: true});
 
     // Map<PlayerDetailView>
     this._detailPanels = new Map();
 
     // Map<string>
     this._deletedPlayers = new Set();
+
+    this._downloadStore = new PlayerDataDownloadManager();
 
     this._sidebar = new PlayerListView(this);
     this._sidebar.show(this.panelSidebarElement());
@@ -88,7 +237,10 @@ export class MainView extends UI.Panel.PanelWithSidebar {
     if (!this._detailPanels.has(playerID)) {
       return;
     }
-    this.splitWidget().mainWidget().detachChildWidgets();
+    const mainWidget = this.splitWidget().mainWidget();
+    if (mainWidget) {
+      mainWidget.detachChildWidgets();
+    }
     this._detailPanels.get(playerID).show(this.mainElement());
   }
 
@@ -113,24 +265,24 @@ export class MainView extends UI.Panel.PanelWithSidebar {
 
   /**
    * @override
-   * @param {!Media.MediaModel} mediaModel
+   * @param {!MediaModel} model
    */
-  modelAdded(mediaModel) {
+  modelAdded(model) {
     if (this.isShowing()) {
-      this._addEventListeners(mediaModel);
+      this._addEventListeners(model);
     }
   }
 
   /**
    * @override
-   * @param {!Media.MediaModel} mediaModel
+   * @param {!MediaModel} model
    */
-  modelRemoved(mediaModel) {
-    this._removeEventListeners(mediaModel);
+  modelRemoved(model) {
+    this._removeEventListeners(model);
   }
 
   /**
-   * @param {!Media.MediaModel} mediaModel
+   * @param {!MediaModel} mediaModel
    */
   _addEventListeners(mediaModel) {
     mediaModel.ensureEnabled();
@@ -142,7 +294,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
   }
 
   /**
-   * @param {!Media.MediaModel} mediaModel
+   * @param {!MediaModel} mediaModel
    */
   _removeEventListeners(mediaModel) {
     mediaModel.removeEventListener(ProtocolTriggers.PlayerPropertiesChanged, this._propertiesChanged, this);
@@ -158,6 +310,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
   _onPlayerCreated(playerID) {
     this._sidebar.addMediaElementItem(playerID);
     this._detailPanels.set(playerID, new PlayerDetailView());
+    this._downloadStore.addPlayer(playerID);
   }
 
   /**
@@ -205,7 +358,6 @@ export class MainView extends UI.Panel.PanelWithSidebar {
   }
 
   /**
-   * @override
    * @param {string} playerID
    * @param {!Protocol.Media.PlayerProperty} property
    */
@@ -214,11 +366,11 @@ export class MainView extends UI.Panel.PanelWithSidebar {
       return;
     }
     this._sidebar.onProperty(playerID, property);
+    this._downloadStore.onProperty(playerID, property);
     this._detailPanels.get(playerID).onProperty(property);
   }
 
   /**
-   * @override
    * @param {string} playerID
    * @param {!Protocol.Media.PlayerError} error
    */
@@ -227,11 +379,11 @@ export class MainView extends UI.Panel.PanelWithSidebar {
       return;
     }
     this._sidebar.onError(playerID, error);
+    this._downloadStore.onError(playerID, error);
     this._detailPanels.get(playerID).onError(error);
   }
 
   /**
-   * @override
    * @param {string} playerID
    * @param {!Protocol.Media.PlayerMessage} message
    */
@@ -240,11 +392,11 @@ export class MainView extends UI.Panel.PanelWithSidebar {
       return;
     }
     this._sidebar.onMessage(playerID, message);
+    this._downloadStore.onMessage(playerID, message);
     this._detailPanels.get(playerID).onMessage(message);
   }
 
   /**
-   * @override
    * @param {string} playerID
    * @param {!PlayerEvent} event
    */
@@ -253,6 +405,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
       return;
     }
     this._sidebar.onEvent(playerID, event);
+    this._downloadStore.onEvent(playerID, event);
     this._detailPanels.get(playerID).onEvent(event);
   }
 
@@ -264,5 +417,39 @@ export class MainView extends UI.Panel.PanelWithSidebar {
     for (const playerID of playerlist) {
       this._onPlayerCreated(playerID);
     }
+  }
+
+  /**
+   * @param {string} playerID
+   */
+  markPlayerForDeletion(playerID) {
+    // TODO(tmathmeyer): send this to chromium to save the storage space there too.
+    this._deletedPlayers.add(playerID);
+    this._detailPanels.delete(playerID);
+    this._sidebar.deletePlayer(playerID);
+    this._downloadStore.deletePlayer(playerID);
+  }
+
+  /**
+   * @param {string} playerID
+   */
+  markOtherPlayersForDeletion(playerID) {
+    for (const keyID of this._detailPanels.keys()) {
+      if (keyID !== playerID) {
+        this.markPlayerForDeletion(keyID);
+      }
+    }
+  }
+
+  /**
+   * @param {string} playerID
+   */
+  exportPlayerData(playerID) {
+    const dump = this._downloadStore.exportPlayerData(playerID);
+    const uriContent = 'data:application/octet-stream,' + encodeURIComponent(JSON.stringify(dump, null, 2));
+    const anchor = document.createElement('a');
+    anchor.href = uriContent;
+    anchor.download = playerID + '.json';
+    anchor.click();
   }
 }

@@ -3,21 +3,21 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<FrameLayout
+<org.chromium.chrome.browser.tasks.tab_management.TabGridDialogView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/dialog_parent_view">
+    android:id="@+id/dialog_parent_view"
+    android:visibility="gone">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/dialog_container_view"
-        android:background="@drawable/tab_grid_dialog_background">
-        <!-- Ignore useless parents here for two reasons:
-        1. Content recyclerView and toolbar view will be added programmatically later.
-        2. We need to keep the LinearLayout so that we can animate the ungroup textView and shadow
-        imageView together. -->
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:background="@drawable/tab_grid_dialog_background"
+        android:contentDescription="@string/accessibility_tab_grid_dialog">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -25,8 +25,7 @@
             android:orientation="vertical"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:visibility="invisible"
-            tools:ignore="UselessParent">
+            android:visibility="invisible">
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/toolbar_shadow_height"
@@ -43,6 +42,13 @@
                 android:background="@drawable/ungroup_bar_background"
                 android:gravity="center" />
         </LinearLayout>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/dialog_snack_bar_container_view"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true">
+        </FrameLayout>
     </RelativeLayout>
     <View
         android:layout_width="match_parent"
@@ -58,4 +64,4 @@
         android:alpha="0.0">
         <include layout="@layout/tab_grid_card_item"/>
     </FrameLayout>
-</FrameLayout>
+</org.chromium.chrome.browser.tasks.tab_management.TabGridDialogView>

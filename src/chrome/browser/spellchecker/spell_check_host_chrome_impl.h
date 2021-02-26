@@ -79,11 +79,13 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
                         int route_id,
                         RequestTextCheckCallback callback) override;
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN)
   void GetPerLanguageSuggestions(
       const base::string16& word,
       GetPerLanguageSuggestionsCallback callback) override;
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
+  void InitializeDictionaries(InitializeDictionariesCallback callback) override;
+#endif  // defined(OS_WIN)
 
   // Clears a finished request from |requests_|. Exposed to SpellingRequest.
   void OnRequestFinished(SpellingRequest* request);
@@ -93,17 +95,25 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
       std::vector<SpellCheckResult>* remote_results,
       const std::vector<SpellCheckResult>& local_results);
 
+#if defined(OS_WIN)
+  void OnDictionariesInitialized();
+
+  // Callback passed as argument to InitializeDictionaries, and invoked when
+  // the dictionaries are loaded for the first time.
+  InitializeDictionariesCallback dictionaries_loaded_callback_;
+#endif  // defined(OS_WIN)
+
   // All pending requests.
   std::set<std::unique_ptr<SpellingRequest>, base::UniquePtrComparator>
       requests_;
 #endif  //  BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
         //  BUILDFLAG(ENABLE_SPELLING_SERVICE)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   int ToDocumentTag(int route_id);
   void RetireDocumentTag(int route_id);
   std::map<int, int> tag_map_;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // Returns the SpellcheckService of our |render_process_id_|. The return
   // is null if the render process is being shut down.

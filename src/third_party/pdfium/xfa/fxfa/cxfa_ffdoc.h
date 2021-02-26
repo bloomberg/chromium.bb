@@ -12,6 +12,11 @@
 
 #include "core/fxcrt/fx_stream.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "fxjs/gc/heap.h"
+#include "v8/include/cppgc/garbage-collected.h"
+#include "v8/include/cppgc/member.h"
+#include "v8/include/cppgc/prefinalizer.h"
+#include "v8/include/cppgc/visitor.h"
 #include "xfa/fxfa/fxfa.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 
@@ -26,6 +31,10 @@ class CXFA_FFNotify;
 class CXFA_FFDocView;
 class CXFA_LayoutProcessor;
 
+namespace cppgc {
+class Heap;
+}  // namespace cppgc
+
 struct FX_IMAGEDIB_AND_DPI {
   FX_IMAGEDIB_AND_DPI();
   FX_IMAGEDIB_AND_DPI(const FX_IMAGEDIB_AND_DPI& that);
@@ -39,33 +48,62 @@ struct FX_IMAGEDIB_AND_DPI {
   int32_t iImageYDpi;
 };
 
-class CXFA_FFDoc {
- public:
-  static std::unique_ptr<CXFA_FFDoc> CreateAndOpen(
-      CXFA_FFApp* pApp,
-      IXFA_DocEnvironment* pDocEnvironment,
-      CPDF_Document* pPDFDoc,
-      const RetainPtr<IFX_SeekableStream>& stream);
+class CXFA_FFDoc : public cppgc::GarbageCollected<CXFA_FFDoc> {
+  CPPGC_USING_PRE_FINALIZER(CXFA_FFDoc, PreFinalize);
 
+ public:
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_FFDoc();
 
-  IXFA_DocEnvironment* GetDocEnvironment() const {
-    return m_pDocEnvironment.Get();
-  }
-  FormType GetFormType() const { return m_FormType; }
-  CFX_XMLDocument* GetXMLDocument() const { return m_pXMLDoc.get(); }
+  void PreFinalize();
+  void Trace(cppgc::Visitor* visitor) const;
+
+  bool OpenDoc(CFX_XMLDocument* pXML);
+
+  void SetChangeMark();
+  void InvalidateRect(CXFA_FFPageView* pPageView, const CFX_RectF& rt);
+  void DisplayCaret(CXFA_FFWidget* hWidget,
+                    bool bVisible,
+                    const CFX_RectF* pRtAnchor);
+  bool GetPopupPos(CXFA_FFWidget* hWidget,
+                   float fMinPopup,
+                   float fMaxPopup,
+                   const CFX_RectF& rtAnchor,
+                   CFX_RectF* pPopupRect) const;
+  bool PopupMenu(CXFA_FFWidget* hWidget, const CFX_PointF& ptPopup);
+  void PageViewEvent(CXFA_FFPageView* pPageView, uint32_t dwFlags);
+  void WidgetPostAdd(CXFA_FFWidget* hWidget);
+  void WidgetPreRemove(CXFA_FFWidget* hWidget);
+  int32_t CountPages() const;
+  int32_t GetCurrentPage() const;
+  void SetCurrentPage(int32_t iCurPage);
+  bool IsCalculationsEnabled() const;
+  void SetCalculationsEnabled(bool bEnabled);
+  WideString GetTitle() const;
+  void SetTitle(const WideString& wsTitle);
+  void ExportData(const WideString& wsFilePath, bool bXDP);
+  void GotoURL(const WideString& bsURL);
+  bool IsValidationsEnabled() const;
+  void SetValidationsEnabled(bool bEnabled);
+  void SetFocusWidget(CXFA_FFWidget* hWidget);
+  void Print(int32_t nStartPage, int32_t nEndPage, uint32_t dwOptions);
+  FX_ARGB GetHighlightColor() const;
+  IJS_Runtime* GetIJSRuntime() const;
+  CFX_XMLDocument* GetXMLDocument() const;
+  RetainPtr<IFX_SeekableReadStream> OpenLinkedFile(const WideString& wsLink);
 
   CXFA_FFDocView* CreateDocView();
-
-  CXFA_Document* GetXFADoc() const { return m_pDocument.get(); }
+  FormType GetFormType() const { return m_FormType; }
+  cppgc::Heap* GetHeap() const { return m_pHeap.Get(); }
+  CXFA_Document* GetXFADoc() const { return m_pDocument; }
   CXFA_FFApp* GetApp() const { return m_pApp.Get(); }
   CPDF_Document* GetPDFDoc() const { return m_pPDFDoc.Get(); }
+  CFGAS_PDFFontMgr* GetPDFFontMgr() const { return m_pPDFFontMgr.get(); }
   CXFA_FFDocView* GetDocView(CXFA_LayoutProcessor* pLayout);
   CXFA_FFDocView* GetDocView();
   RetainPtr<CFX_DIBitmap> GetPDFNamedImage(WideStringView wsName,
                                            int32_t& iImageXDpi,
                                            int32_t& iImageYDpi);
-  CFGAS_PDFFontMgr* GetPDFFontMgr() const { return m_pPDFFontMgr.get(); }
 
   bool SavePackage(CXFA_Node* pNode,
                    const RetainPtr<IFX_SeekableStream>& pFile);
@@ -73,17 +111,18 @@ class CXFA_FFDoc {
  private:
   CXFA_FFDoc(CXFA_FFApp* pApp,
              IXFA_DocEnvironment* pDocEnvironment,
-             CPDF_Document* pPDFDoc);
-  bool OpenDoc(const RetainPtr<IFX_SeekableStream>& stream);
-  bool ParseDoc(const RetainPtr<IFX_SeekableStream>& stream);
+             CPDF_Document* pPDFDoc,
+             cppgc::Heap* pHeap);
+  bool BuildDoc(CFX_XMLDocument* pXML);
 
   UnownedPtr<IXFA_DocEnvironment> const m_pDocEnvironment;
-  UnownedPtr<CXFA_FFApp> const m_pApp;
   UnownedPtr<CPDF_Document> const m_pPDFDoc;
-  std::unique_ptr<CFX_XMLDocument> m_pXMLDoc;
-  std::unique_ptr<CXFA_FFNotify> m_pNotify;
-  std::unique_ptr<CXFA_Document> m_pDocument;
-  std::unique_ptr<CXFA_FFDocView> m_DocView;
+  UnownedPtr<cppgc::Heap> const m_pHeap;
+  UnownedPtr<CFX_XMLDocument> m_pXMLDoc;
+  cppgc::Member<CXFA_FFApp> const m_pApp;
+  cppgc::Member<CXFA_FFNotify> m_pNotify;
+  cppgc::Member<CXFA_Document> m_pDocument;
+  cppgc::Member<CXFA_FFDocView> m_DocView;
   std::unique_ptr<CFGAS_PDFFontMgr> m_pPDFFontMgr;
   std::map<uint32_t, FX_IMAGEDIB_AND_DPI> m_HashToDibDpiMap;
   FormType m_FormType = FormType::kXFAForeground;

@@ -257,8 +257,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Empty password";
     case SavePasswordProgressLogger::STRING_MATCHING_NOT_COMPLETE:
       return "No form manager has completed matching";
-    case SavePasswordProgressLogger::STRING_FORM_BLACKLISTED:
-      return "Form blacklisted";
     case SavePasswordProgressLogger::STRING_INVALID_FORM:
       return "Invalid form";
     case SavePasswordProgressLogger::STRING_SYNC_CREDENTIAL:
@@ -355,8 +353,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Generation disabled: no sync";
     case STRING_GENERATION_RENDERER_AUTOMATIC_GENERATION_AVAILABLE:
       return "Generation: automatic generation is available";
-    case STRING_GENERATION_RENDERER_SHOW_MANUAL_GENERATION_POPUP:
-      return "Show generation popup triggered manually";
+    case STRING_GENERATION_RENDERER_SHOW_GENERATION_POPUP:
+      return "Show generation popup triggered";
     case STRING_GENERATION_RENDERER_GENERATED_PASSWORD_ACCEPTED:
       return "Generated password accepted";
     case STRING_SUCCESSFUL_SUBMISSION_INDICATOR_EVENT:
@@ -388,8 +386,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "HttpAuthManager::SetObserver";
     case SavePasswordProgressLogger::STRING_HTTPAUTH_ON_DETACH_OBSERVER:
       return "HttpAuthManager::DetachObserver";
-    case SavePasswordProgressLogger::STRING_SHOW_ONBOARDING:
-      return "Show onboarding experience and offer to save password";
     case STRING_LEAK_DETECTION_DISABLED_FEATURE:
       return "Leak detection disabled in settings";
     case STRING_LEAK_DETECTION_DISABLED_SAFE_BROWSING:

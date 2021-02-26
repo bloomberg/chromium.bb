@@ -10,7 +10,11 @@
 Polymer({
   is: 'os-settings-a11y-page',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [
+    DeepLinkingBehavior,
+    settings.RouteObserverBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /**
@@ -51,18 +55,6 @@ Polymer({
     },
 
     /**
-     * Whether to show Switch Access.
-     * @private {boolean}
-     */
-    showExperimentalSwitchAccess_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean(
-            'showExperimentalAccessibilitySwitchAccess');
-      },
-    },
-
-    /**
      * Whether the user is in kiosk mode.
      * @private
      */
@@ -73,6 +65,25 @@ Polymer({
       }
     },
 
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kA11yQuickSettings,
+        chromeos.settings.mojom.Setting.kGetImageDescriptionsFromGoogle,
+      ]),
+    },
+  },
+
+  /** @private {?OsA11yPageBrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
+  created() {
+    this.browserProxy_ = OsA11yPageBrowserProxyImpl.getInstance();
   },
 
   /** @override */
@@ -80,7 +91,22 @@ Polymer({
     this.addWebUIListener(
         'screen-reader-state-changed',
         this.onScreenReaderStateChanged_.bind(this));
-    chrome.send('getScreenReaderState');
+
+    // Enables javascript and gets the screen reader state.
+    this.browserProxy_.a11yPageReady();
+  },
+
+  /**
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.OS_ACCESSIBILITY) {
+      return;
+    }
+
+    this.attemptDeepLink();
   },
 
   /**
@@ -97,11 +123,8 @@ Polymer({
   onToggleAccessibilityImageLabels_() {
     const a11yImageLabelsOn = this.$.a11yImageLabels.checked;
     if (a11yImageLabelsOn) {
-      chrome.send('confirmA11yImageLabels');
+      this.browserProxy_.confirmA11yImageLabels();
     }
-    chrome.metricsPrivate.recordBoolean(
-        'Accessibility.ImageLabels.FromSettings.ToggleSetting',
-        a11yImageLabelsOn);
   },
 
   /** @private */

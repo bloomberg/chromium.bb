@@ -31,7 +31,6 @@ class USB final : public EventTargetWithInlineData,
                   public ExecutionContextLifecycleObserver,
                   public device::mojom::blink::UsbDeviceManagerClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(USB);
 
  public:
   explicit USB(ExecutionContext&);
@@ -69,7 +68,7 @@ class USB final : public EventTargetWithInlineData,
 
   void OnServiceConnectionError();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   // EventTarget protected overrides.

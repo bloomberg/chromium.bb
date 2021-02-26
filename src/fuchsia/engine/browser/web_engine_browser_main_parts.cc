@@ -7,22 +7,29 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/files/important_file_writer_cleaner.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/intl_profile_watcher.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/main_function_params.h"
 #include "fuchsia/base/legacymetrics_client.h"
 #include "fuchsia/engine/browser/context_impl.h"
+#include "fuchsia/engine/browser/media_resource_provider_service.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "ui/aura/screen_ozone.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/switches.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -59,8 +66,17 @@ WebEngineBrowserMainParts::~WebEngineBrowserMainParts() {
   display::Screen::SetScreenInstance(nullptr);
 }
 
+void WebEngineBrowserMainParts::PostEarlyInitialization() {
+  base::ImportantFileWriterCleaner::GetInstance().Initialize();
+}
+
 void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   DCHECK(!screen_);
+
+  // Watch for changes to the user's locale setting.
+  intl_profile_watcher_ = std::make_unique<base::FuchsiaIntlProfileWatcher>(
+      base::BindRepeating(&WebEngineBrowserMainParts::OnIntlProfileChanged,
+                          base::Unretained(this)));
 
   screen_ = std::make_unique<aura::ScreenOzone>();
   display::Screen::SetScreenInstance(screen_.get());
@@ -100,6 +116,12 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
     legacy_metrics_client_->Start(kMetricsReportingInterval);
   }
 
+  // Create the MediaResourceProviderService at startup rather than on-demand,
+  // to allow it to perform potentially expensive startup work in the
+  // background.
+  media_resource_provider_service_ =
+      std::make_unique<MediaResourceProviderService>();
+
   // Quit the browser main loop when the Context connection is dropped.
   context_binding_->set_error_handler([this](zx_status_t status) {
     ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
@@ -122,6 +144,9 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
     delete parameters_.ui_task;
     run_message_loop_ = false;
   }
+
+  // Make sure temporary files associated with this process are cleaned up.
+  base::ImportantFileWriterCleaner::GetInstance().Start();
 }
 
 void WebEngineBrowserMainParts::PreDefaultMainMessageLoopRun(
@@ -146,4 +171,27 @@ void WebEngineBrowserMainParts::PostMainMessageLoopRun() {
   context_binding_.reset();
   browser_context_.reset();
   screen_.reset();
+  intl_profile_watcher_.reset();
+
+  base::ImportantFileWriterCleaner::GetInstance().Stop();
+}
+
+void WebEngineBrowserMainParts::OnIntlProfileChanged(
+    const fuchsia::intl::Profile& profile) {
+  // Configure the ICU library in this process with the new primary locale.
+  std::string primary_locale =
+      base::FuchsiaIntlProfileWatcher::GetPrimaryLocaleIdFromProfile(profile);
+  base::i18n::SetICUDefaultLocale(primary_locale);
+
+  // Reload locale-specific resources.
+  std::string loaded_locale =
+      ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources(
+          base::i18n::GetConfiguredLocale());
+  VLOG(1) << "Reloaded locale resources: " << loaded_locale;
+
+  // Reconfigure the network process.
+  content::BrowserContext::GetDefaultStoragePartition(browser_context_.get())
+      ->GetNetworkContext()
+      ->SetAcceptLanguage(net::HttpUtil::GenerateAcceptLanguageHeader(
+          browser_context_->GetPreferredLanguages()));
 }

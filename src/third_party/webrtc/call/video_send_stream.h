@@ -18,10 +18,12 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "api/adaptation/resource.h"
 #include "api/call/transport.h"
 #include "api/crypto/crypto_options.h"
 #include "api/frame_transformer_interface.h"
 #include "api/rtp_parameters.h"
+#include "api/scoped_refptr.h"
 #include "api/video/video_content_type.h"
 #include "api/video/video_frame.h"
 #include "api/video/video_sink_interface.h"
@@ -29,6 +31,7 @@
 #include "api/video/video_stream_encoder_settings.h"
 #include "api/video_codecs/video_encoder_config.h"
 #include "call/rtp_config.h"
+#include "common_video/frame_counts.h"
 #include "common_video/include/quality_limitation_reason.h"
 #include "modules/rtp_rtcp/include/report_block_data.h"
 #include "modules/rtp_rtcp/include/rtcp_statistics.h"
@@ -214,6 +217,15 @@ class VideoSendStream {
   // Stops stream activity.
   // When a stream is stopped, it can't receive, process or deliver packets.
   virtual void Stop() = 0;
+
+  // If the resource is overusing, the VideoSendStream will try to reduce
+  // resolution or frame rate until no resource is overusing.
+  // TODO(https://crbug.com/webrtc/11565): When the ResourceAdaptationProcessor
+  // is moved to Call this method could be deleted altogether in favor of
+  // Call-level APIs only.
+  virtual void AddAdaptationResource(rtc::scoped_refptr<Resource> resource) = 0;
+  virtual std::vector<rtc::scoped_refptr<Resource>>
+  GetAdaptationResources() = 0;
 
   virtual void SetSource(
       rtc::VideoSourceInterface<webrtc::VideoFrame>* source,

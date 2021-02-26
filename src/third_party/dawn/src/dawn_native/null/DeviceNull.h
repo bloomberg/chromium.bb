@@ -24,6 +24,7 @@
 #include "dawn_native/ComputePipeline.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/PipelineLayout.h"
+#include "dawn_native/QuerySet.h"
 #include "dawn_native/Queue.h"
 #include "dawn_native/RenderPipeline.h"
 #include "dawn_native/RingBufferAllocator.h"
@@ -45,10 +46,11 @@ namespace dawn_native { namespace null {
     using ComputePipeline = ComputePipelineBase;
     class Device;
     using PipelineLayout = PipelineLayoutBase;
+    class QuerySet;
     class Queue;
     using RenderPipeline = RenderPipelineBase;
     using Sampler = SamplerBase;
-    using ShaderModule = ShaderModuleBase;
+    class ShaderModule;
     class SwapChain;
     using Texture = TextureBase;
     using TextureView = TextureViewBase;
@@ -62,6 +64,7 @@ namespace dawn_native { namespace null {
         using ComputePipelineType = ComputePipeline;
         using DeviceType = Device;
         using PipelineLayoutType = PipelineLayout;
+        using QuerySetType = QuerySet;
         using QueueType = Queue;
         using RenderPipelineType = RenderPipeline;
         using SamplerType = Sampler;
@@ -102,9 +105,16 @@ namespace dawn_native { namespace null {
                                            BufferBase* destination,
                                            uint64_t destinationOffset,
                                            uint64_t size) override;
+        MaybeError CopyFromStagingToTexture(const StagingBufferBase* source,
+                                            const TextureDataLayout& src,
+                                            TextureCopy* dst,
+                                            const Extent3D& copySizePixels) override;
 
-        MaybeError IncrementMemoryUsage(size_t bytes);
-        void DecrementMemoryUsage(size_t bytes);
+        MaybeError IncrementMemoryUsage(uint64_t bytes);
+        void DecrementMemoryUsage(uint64_t bytes);
+
+        uint32_t GetOptimalBytesPerRowAlignment() const override;
+        uint64_t GetOptimalBufferToTextureCopyOffsetAlignment() const override;
 
       private:
         using DeviceBase::DeviceBase;
@@ -113,11 +123,14 @@ namespace dawn_native { namespace null {
             const BindGroupDescriptor* descriptor) override;
         ResultOrError<BindGroupLayoutBase*> CreateBindGroupLayoutImpl(
             const BindGroupLayoutDescriptor* descriptor) override;
-        ResultOrError<BufferBase*> CreateBufferImpl(const BufferDescriptor* descriptor) override;
+        ResultOrError<Ref<BufferBase>> CreateBufferImpl(
+            const BufferDescriptor* descriptor) override;
         ResultOrError<ComputePipelineBase*> CreateComputePipelineImpl(
             const ComputePipelineDescriptor* descriptor) override;
         ResultOrError<PipelineLayoutBase*> CreatePipelineLayoutImpl(
             const PipelineLayoutDescriptor* descriptor) override;
+        ResultOrError<QuerySetBase*> CreateQuerySetImpl(
+            const QuerySetDescriptor* descriptor) override;
         ResultOrError<RenderPipelineBase*> CreateRenderPipelineImpl(
             const RenderPipelineDescriptor* descriptor) override;
         ResultOrError<SamplerBase*> CreateSamplerImpl(const SamplerDescriptor* descriptor) override;
@@ -135,14 +148,14 @@ namespace dawn_native { namespace null {
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
 
-        Serial CheckAndUpdateCompletedSerials() override;
+        ExecutionSerial CheckAndUpdateCompletedSerials() override;
 
         void ShutDownImpl() override;
         MaybeError WaitForIdleForDestruction() override;
 
         std::vector<std::unique_ptr<PendingOperation>> mPendingOperations;
 
-        static constexpr size_t kMaxMemoryUsage = 256 * 1024 * 1024;
+        static constexpr uint64_t kMaxMemoryUsage = 256 * 1024 * 1024;
         size_t mMemoryUsage = 0;
     };
 
@@ -182,25 +195,21 @@ namespace dawn_native { namespace null {
       public:
         Buffer(Device* device, const BufferDescriptor* descriptor);
 
-        void MapOperationCompleted(uint32_t serial, void* ptr, bool isWrite);
         void CopyFromStaging(StagingBufferBase* staging,
                              uint64_t sourceOffset,
                              uint64_t destinationOffset,
                              uint64_t size);
 
+        void DoWriteBuffer(uint64_t bufferOffset, const void* data, size_t size);
+
       private:
         ~Buffer() override;
-
-        // Dawn API
-        MaybeError SetSubDataImpl(uint32_t start, uint32_t count, const void* data) override;
-        MaybeError MapReadAsyncImpl(uint32_t serial) override;
-        MaybeError MapWriteAsyncImpl(uint32_t serial) override;
+        MaybeError MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) override;
         void UnmapImpl() override;
         void DestroyImpl() override;
-
-        bool IsMapWritable() const override;
-        MaybeError MapAtCreationImpl(uint8_t** mappedPointer) override;
-        void MapAsyncImplCommon(uint32_t serial, bool isWrite);
+        bool IsCPUWritableAtCreation() const override;
+        MaybeError MapAtCreationImpl() override;
+        void* GetMappedPointerImpl() override;
 
         std::unique_ptr<uint8_t[]> mBackingData;
     };
@@ -208,11 +217,16 @@ namespace dawn_native { namespace null {
     class CommandBuffer final : public CommandBufferBase {
       public:
         CommandBuffer(CommandEncoder* encoder, const CommandBufferDescriptor* descriptor);
+    };
+
+    class QuerySet final : public QuerySetBase {
+      public:
+        QuerySet(Device* device, const QuerySetDescriptor* descriptor);
 
       private:
-        ~CommandBuffer() override;
+        ~QuerySet() override;
 
-        CommandIterator mCommands;
+        void DestroyImpl() override;
     };
 
     class Queue final : public QueueBase {
@@ -222,17 +236,30 @@ namespace dawn_native { namespace null {
       private:
         ~Queue() override;
         MaybeError SubmitImpl(uint32_t commandCount, CommandBufferBase* const* commands) override;
+        MaybeError WriteBufferImpl(BufferBase* buffer,
+                                   uint64_t bufferOffset,
+                                   const void* data,
+                                   size_t size) override;
+    };
+
+    class ShaderModule final : public ShaderModuleBase {
+      public:
+        using ShaderModuleBase::ShaderModuleBase;
+
+        MaybeError Initialize();
     };
 
     class SwapChain final : public NewSwapChainBase {
       public:
-        SwapChain(Device* device,
-                  Surface* surface,
-                  NewSwapChainBase* previousSwapChain,
-                  const SwapChainDescriptor* descriptor);
+        static ResultOrError<SwapChain*> Create(Device* device,
+                                                Surface* surface,
+                                                NewSwapChainBase* previousSwapChain,
+                                                const SwapChainDescriptor* descriptor);
+        ~SwapChain() override;
 
       private:
-        ~SwapChain() override;
+        using NewSwapChainBase::NewSwapChainBase;
+        MaybeError Initialize(NewSwapChainBase* previousSwapChain);
 
         Ref<Texture> mTexture;
 
@@ -248,7 +275,7 @@ namespace dawn_native { namespace null {
       protected:
         ~OldSwapChain() override;
         TextureBase* GetNextTextureImpl(const TextureDescriptor* descriptor) override;
-        MaybeError OnBeforePresent(TextureBase*) override;
+        MaybeError OnBeforePresent(TextureViewBase*) override;
     };
 
     class NativeSwapChainImpl {

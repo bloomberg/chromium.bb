@@ -23,7 +23,7 @@
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/test_blacklist.h"
+#include "chrome/browser/extensions/test_blocklist.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -36,11 +36,11 @@
 #include "components/crx_file/id_util.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/sync/model/fake_sync_change_processor.h"
-#include "components/sync/model/sync_change_processor_wrapper_for_test.h"
 #include "components/sync/model/sync_data.h"
-#include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync/test/model/fake_sync_change_processor.h"
+#include "components/sync/test/model/sync_change_processor_wrapper_for_test.h"
+#include "components/sync/test/model/sync_error_factory_mock.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -230,6 +230,10 @@ class ExtensionServiceSyncTest
   ExtensionSyncService* extension_sync_service() {
     return ExtensionSyncService::Get(profile());
   }
+
+  ExtensionSystem* extension_system() {
+    return ExtensionSystem::Get(profile());
+  }
 };
 
 TEST_F(ExtensionServiceSyncTest, DeferredSyncStartupPreInstalledComponent) {
@@ -238,20 +242,19 @@ TEST_F(ExtensionServiceSyncTest, DeferredSyncStartupPreInstalledComponent) {
   bool flare_was_called = false;
   syncer::ModelType triggered_type(syncer::UNSPECIFIED);
   base::WeakPtrFactory<ExtensionServiceSyncTest> factory(this);
-  extension_sync_service()->SetSyncStartFlareForTesting(
-      base::Bind(&ExtensionServiceSyncTest::MockSyncStartFlare,
-                 factory.GetWeakPtr(),
-                 &flare_was_called,  // Safe due to WeakPtrFactory scope.
-                 &triggered_type));  // Safe due to WeakPtrFactory scope.
+  extension_sync_service()->SetSyncStartFlareForTesting(base::BindRepeating(
+      &ExtensionServiceSyncTest::MockSyncStartFlare, factory.GetWeakPtr(),
+      &flare_was_called,  // Safe due to WeakPtrFactory scope.
+      &triggered_type));  // Safe due to WeakPtrFactory scope.
 
   // Install a component extension.
   std::string manifest;
   ASSERT_TRUE(base::ReadFileToString(
       good0_path().Append(extensions::kManifestFilename), &manifest));
   service()->component_loader()->Add(manifest, good0_path());
-  ASSERT_FALSE(service()->is_ready());
+  ASSERT_FALSE(extension_system()->is_ready());
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
 
   // Extensions added before service is_ready() don't trigger sync startup.
   EXPECT_FALSE(flare_was_called);
@@ -264,16 +267,15 @@ TEST_F(ExtensionServiceSyncTest, DeferredSyncStartupPreInstalledNormal) {
   bool flare_was_called = false;
   syncer::ModelType triggered_type(syncer::UNSPECIFIED);
   base::WeakPtrFactory<ExtensionServiceSyncTest> factory(this);
-  extension_sync_service()->SetSyncStartFlareForTesting(
-      base::Bind(&ExtensionServiceSyncTest::MockSyncStartFlare,
-                 factory.GetWeakPtr(),
-                 &flare_was_called,  // Safe due to WeakPtrFactory scope.
-                 &triggered_type));  // Safe due to WeakPtrFactory scope.
+  extension_sync_service()->SetSyncStartFlareForTesting(base::BindRepeating(
+      &ExtensionServiceSyncTest::MockSyncStartFlare, factory.GetWeakPtr(),
+      &flare_was_called,  // Safe due to WeakPtrFactory scope.
+      &triggered_type));  // Safe due to WeakPtrFactory scope.
 
-  ASSERT_FALSE(service()->is_ready());
+  ASSERT_FALSE(extension_system()->is_ready());
   service()->Init();
   ASSERT_EQ(3u, loaded_.size());
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
 
   // Extensions added before service is_ready() don't trigger sync startup.
   EXPECT_FALSE(flare_was_called);
@@ -283,16 +285,15 @@ TEST_F(ExtensionServiceSyncTest, DeferredSyncStartupPreInstalledNormal) {
 TEST_F(ExtensionServiceSyncTest, DeferredSyncStartupOnInstall) {
   InitializeEmptyExtensionService();
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
 
   bool flare_was_called = false;
   syncer::ModelType triggered_type(syncer::UNSPECIFIED);
   base::WeakPtrFactory<ExtensionServiceSyncTest> factory(this);
-  extension_sync_service()->SetSyncStartFlareForTesting(
-      base::Bind(&ExtensionServiceSyncTest::MockSyncStartFlare,
-                 factory.GetWeakPtr(),
-                 &flare_was_called,  // Safe due to WeakPtrFactory scope.
-                 &triggered_type));  // Safe due to WeakPtrFactory scope.
+  extension_sync_service()->SetSyncStartFlareForTesting(base::BindRepeating(
+      &ExtensionServiceSyncTest::MockSyncStartFlare, factory.GetWeakPtr(),
+      &flare_was_called,  // Safe due to WeakPtrFactory scope.
+      &triggered_type));  // Safe due to WeakPtrFactory scope.
 
   base::FilePath path = data_dir().AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
@@ -330,7 +331,7 @@ TEST_F(ExtensionServiceSyncTest, DisableExtensionFromSync) {
   sync_service->GetUserSettings()->SetFirstSetupComplete(kSetSourceFromTest);
 
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
 
   ASSERT_EQ(3u, loaded_.size());
 
@@ -516,7 +517,7 @@ TEST_F(ExtensionServiceSyncTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
   extension_sync_service();
 
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
   ASSERT_EQ(3u, loaded_.size());
 
   ASSERT_TRUE(service()->IsExtensionEnabled(good0));
@@ -578,7 +579,7 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
   extension_sync_service();
 
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
   ASSERT_EQ(3u, loaded_.size());
   ASSERT_TRUE(service()->IsExtensionEnabled(good0));
 
@@ -1707,7 +1708,7 @@ TEST_F(ExtensionServiceSyncTest, DontSyncThemes) {
   extension_sync_service();
 
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
 
   syncer::FakeSyncChangeProcessor* processor =
       new syncer::FakeSyncChangeProcessor;
@@ -1739,7 +1740,7 @@ TEST_F(ExtensionServiceSyncTest, DontSyncThemes) {
 TEST_F(ExtensionServiceSyncTest, AppToExtension) {
   InitializeEmptyExtensionService();
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
 
   // Install v1, which is an app.
   const Extension* v1 =
@@ -1827,9 +1828,9 @@ TEST_F(ExtensionServiceSyncTest, AppToExtension) {
   EXPECT_TRUE(apps_processor.data().empty());
 }
 
-class BlacklistedExtensionSyncServiceTest : public ExtensionServiceSyncTest {
+class BlocklistedExtensionSyncServiceTest : public ExtensionServiceSyncTest {
  public:
-  BlacklistedExtensionSyncServiceTest() {}
+  BlocklistedExtensionSyncServiceTest() {}
 
   void SetUp() override {
     ExtensionServiceSyncTest::SetUp();
@@ -1841,7 +1842,7 @@ class BlacklistedExtensionSyncServiceTest : public ExtensionServiceSyncTest {
         ProfileSyncServiceFactory::GetForProfile(profile());
     sync_service->GetUserSettings()->SetFirstSetupComplete(kSetSourceFromTest);
 
-    test_blacklist_.Attach(service()->blacklist_);
+    test_blocklist_.Attach(service()->blocklist_);
     service()->Init();
 
     // Load up a simple extension.
@@ -1863,8 +1864,8 @@ class BlacklistedExtensionSyncServiceTest : public ExtensionServiceSyncTest {
     processor_raw_->changes().clear();
   }
 
-  void ForceBlacklistUpdate() {
-    service()->OnBlacklistUpdated();
+  void ForceBlocklistUpdate() {
+    service()->OnBlocklistUpdated();
     content::RunAllTasksUntilIdle();
   }
 
@@ -1874,25 +1875,25 @@ class BlacklistedExtensionSyncServiceTest : public ExtensionServiceSyncTest {
 
   std::string& extension_id() { return extension_id_; }
 
-  extensions::TestBlacklist& test_blacklist() { return test_blacklist_; }
+  extensions::TestBlocklist& test_blocklist() { return test_blocklist_; }
 
  private:
   syncer::FakeSyncChangeProcessor* processor_raw_;
   scoped_refptr<const Extension> extension_;
   std::string extension_id_;
-  extensions::TestBlacklist test_blacklist_;
+  extensions::TestBlocklist test_blocklist_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlacklistedExtensionSyncServiceTest);
+  DISALLOW_COPY_AND_ASSIGN(BlocklistedExtensionSyncServiceTest);
 };
 
-// Test that sync cannot enable blacklisted extensions.
-TEST_F(BlacklistedExtensionSyncServiceTest, SyncBlacklistedExtension) {
+// Test that sync cannot enable blocklisted extensions.
+TEST_F(BlocklistedExtensionSyncServiceTest, SyncBlocklistedExtension) {
   std::string& extension_id = this->extension_id();
 
-  // Blacklist the extension.
-  test_blacklist().SetBlacklistState(extension_id,
-                                     extensions::BLACKLISTED_MALWARE, true);
-  ForceBlacklistUpdate();
+  // Blocklist the extension.
+  test_blocklist().SetBlocklistState(extension_id,
+                                     extensions::BLOCKLISTED_MALWARE, true);
+  ForceBlocklistUpdate();
 
   // Try enabling the extension via sync.
   EnableExtensionFromSync(*extension());
@@ -1903,13 +1904,13 @@ TEST_F(BlacklistedExtensionSyncServiceTest, SyncBlacklistedExtension) {
 }
 
 // Test that some greylisted extensions can be enabled through sync.
-TEST_F(BlacklistedExtensionSyncServiceTest, SyncAllowedGreylistedExtension) {
+TEST_F(BlocklistedExtensionSyncServiceTest, SyncAllowedGreylistedExtension) {
   std::string& extension_id = this->extension_id();
 
   // Greylist the extension.
-  test_blacklist().SetBlacklistState(
-      extension_id, extensions::BLACKLISTED_POTENTIALLY_UNWANTED, true);
-  ForceBlacklistUpdate();
+  test_blocklist().SetBlocklistState(
+      extension_id, extensions::BLOCKLISTED_POTENTIALLY_UNWANTED, true);
+  ForceBlocklistUpdate();
 
   EXPECT_FALSE(registry()->enabled_extensions().GetByID(extension_id));
   {

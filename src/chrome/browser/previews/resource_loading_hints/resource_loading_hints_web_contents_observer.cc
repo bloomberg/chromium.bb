@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/previews/previews_content_util.h"
 #include "chrome/browser/previews/previews_service.h"
@@ -52,7 +52,7 @@ void ResourceLoadingHintsWebContentsObserver::ReadyToCommitNavigation(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage()) {
+      navigation_handle->IsSameDocument()) {
     return;
   }
 
@@ -105,8 +105,6 @@ void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
       GetResourceLoadingHintsResourcePatternsToBlock(
           navigation_handle->GetURL());
 
-  UMA_HISTOGRAM_BOOLEAN(
-      "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", !hints.empty());
   if (is_redirect) {
     UMA_HISTOGRAM_BOOLEAN(
         "ResourceLoadingHints.ResourcePatternsAvailableAtCommitForRedirect",

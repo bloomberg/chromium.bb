@@ -40,50 +40,54 @@ class AppCacheQuotaClient : public storage::QuotaClient {
   explicit AppCacheQuotaClient(base::WeakPtr<AppCacheServiceImpl> service);
 
   // QuotaClient method overrides
-  storage::QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
-                      GetUsageCallback callback) override;
+                      GetOriginUsageCallback callback) override;
   void GetOriginsForType(blink::mojom::StorageType type,
-                         GetOriginsCallback callback) override;
+                         GetOriginsForTypeCallback callback) override;
   void GetOriginsForHost(blink::mojom::StorageType type,
                          const std::string& host,
-                         GetOriginsCallback callback) override;
+                         GetOriginsForHostCallback callback) override;
   void DeleteOriginData(const url::Origin& origin,
                         blink::mojom::StorageType type,
-                        DeletionCallback callback) override;
+                        DeleteOriginDataCallback callback) override;
   void PerformStorageCleanup(blink::mojom::StorageType type,
-                             base::OnceClosure callback) override;
-  bool DoesSupport(blink::mojom::StorageType type) const override;
+                             PerformStorageCleanupCallback callback) override;
 
  private:
   friend class content::AppCacheQuotaClientTest;
-  friend class AppCacheServiceImpl;  // for NotifyAppCacheIsDestroyed
-  friend class AppCacheStorageImpl;  // for NotifyAppCacheIsReady
+  friend class AppCacheServiceImpl;  // for NotifyServiceDestroyed
+  friend class AppCacheStorageImpl;  // for NotifyStorageReady
 
   ~AppCacheQuotaClient() override;
 
   void DidDeleteAppCachesForOrigin(int rv);
-  void GetOriginsHelper(blink::mojom::StorageType type,
-                        const std::string& opt_host,
-                        GetOriginsCallback callback);
+  void GetOriginsHelper(const std::string& opt_host,
+                        GetOriginsForTypeCallback callback);
   void ProcessPendingRequests();
   void DeletePendingRequests();
   net::CancelableCompletionRepeatingCallback* GetServiceDeleteCallback();
 
   // For use by appcache internals during initialization and shutdown.
-  CONTENT_EXPORT void NotifyAppCacheReady();
-  CONTENT_EXPORT void NotifyAppCacheDestroyed();
+
+  // Called when the AppCacheStorageImpl's storage is fully initialized.
+  //
+  // After this point, calling AppCacheServiceImpl::storage() is guaranteed to
+  // return a non-null value.
+  CONTENT_EXPORT void NotifyStorageReady();
+
+  // Called when the AppCacheServiceImpl passed to the constructor is destroyed.
+  CONTENT_EXPORT void NotifyServiceDestroyed();
 
   // Prior to appcache service being ready, we have to queue
-  // up reqeusts and defer acting on them until we're ready.
+  // up requests and defer acting on them until we're ready.
   RequestQueue pending_batch_requests_;
   RequestQueue pending_serial_requests_;
 
   // And once it's ready, we can only handle one delete request at a time,
   // so we queue up additional requests while one is in already in progress.
-  DeletionCallback current_delete_request_callback_;
+  DeleteOriginDataCallback current_delete_request_callback_;
   std::unique_ptr<net::CancelableCompletionRepeatingCallback>
       service_delete_callback_;
 

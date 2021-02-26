@@ -1105,8 +1105,22 @@ you started on.</p></div>
 <td class="icon">
 <div class="title">Note</div>
 </td>
-<td class="content">Running <code>git rebase-update</code> will update all your branches, but it will not
-automatically run <code>gclient sync</code> to update your dependencies.</td>
+<td class="content">
+<div class="ulist"><ul>
+<li>
+<p>
+Running <code>git rebase-update</code> will update all your branches, but it will not
+automatically run <code>gclient sync</code> to update your dependencies.
+</p>
+</li>
+<li>
+<p>
+Use caution when running <code>git reset</code> on branches managed by <code>depot_tools</code>.
+These tools track the set of "commits contained in the branch" from a branch&#8217;s "merge point"
+to the current branch value. See <code>git help mark-merge-base</code> for more discussion of the merge base.
+</p>
+</li>
+</ul></div>
 </tr></table>
 </div>
 </div>
@@ -1579,14 +1593,14 @@ LKGR
 <div class="sectionbody">
 <div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(7)</a> suite. These tools are meant to
 assist with the development of chromium and related projects. Download the tools
-from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">here</a>.</p></div>
+by checking out the <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">git repository</a>.</p></div>
 </div>
 </div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-05-03 10:40:16 EDT
+Last updated 2020-08-10 17:51:13 CEST
 </div>
 </div>
 </body>

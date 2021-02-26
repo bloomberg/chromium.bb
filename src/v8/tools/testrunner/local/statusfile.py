@@ -27,12 +27,13 @@
 
 # for py2/py3 compatibility
 from __future__ import print_function
+from __future__ import absolute_import
 
 import os
 import re
 
-from variants import ALL_VARIANTS
-from utils import Freeze
+from .variants import ALL_VARIANTS
+from .utils import Freeze
 
 # Possible outcomes
 FAIL = "FAIL"
@@ -75,6 +76,7 @@ class StatusFile(object):
     _rules:        {variant: {test name: [rule]}}
     _prefix_rules: {variant: {test name prefix: [rule]}}
     """
+    self.variables = variables
     with open(path) as f:
       self._rules, self._prefix_rules = ReadStatusFile(f.read(), variables)
 

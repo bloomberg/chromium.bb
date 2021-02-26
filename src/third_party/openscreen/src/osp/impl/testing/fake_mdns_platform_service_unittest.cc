@@ -74,7 +74,7 @@ TEST_F(FakeMdnsPlatformServiceTest, SimpleRegistration) {
   platform_service.DeregisterInterfaces(registered_interfaces);
 }
 
-TEST_F(FakeMdnsPlatformServiceTest, ObeyIndexWhitelist) {
+TEST_F(FakeMdnsPlatformServiceTest, ObeyIndexAllowlist) {
   FakeMdnsPlatformService platform_service;
   platform_service.set_interfaces(bound_interfaces_);
 

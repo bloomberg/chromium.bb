@@ -34,6 +34,8 @@ class TestSystemHealthBenchmarks(unittest.TestCase):
 
   def testSystemHealthStorySetIsUsed(self):
     for b in _GetAllSystemHealthBenchmarks():
+      if b is system_health_benchmark.WebLayerStartupSystemHealthBenchmark:
+        continue
       if b is system_health_benchmark.WebviewStartupSystemHealthBenchmark:
         continue
       self.assertIsInstance(

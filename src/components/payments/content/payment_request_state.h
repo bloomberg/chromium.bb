@@ -21,6 +21,7 @@
 #include "components/payments/content/service_worker_payment_app_factory.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payments_profile_comparator.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
@@ -91,69 +92,49 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
     virtual ~Delegate() {}
   };
 
-  // Shows the status of the selected section. For example if the user changes
-  // the shipping address section from A to B then the SectionSelectionStatus
-  // will be kSelected. If the user edits an item like B from the shipping
-  // address section before selecting it, then the SectionSelectionStatus will
-  // be kEditedSelected. Finally if the user decides to add a new item like C to
-  // the shipping address section, then the SectionSelectionStatus will be
-  // kAddedSelected. IncrementSelectionStatus uses SectionSelectionStatus to log
-  // the number of times that the user has decided to change, edit, or add the
-  // selected item in any of the sections during payment process.
-  enum class SectionSelectionStatus {
-    // The newly selected section is neither edited nor added.
-    kSelected = 1,
-    // The newly selected section is edited before selection.
-    kEditedSelected = 2,
-    // The newly selected section is added before selection.
-    kAddedSelected = 3,
-  };
-
   using StatusCallback = base::OnceCallback<void(bool)>;
   using MethodsSupportedCallback =
       base::OnceCallback<void(bool methods_supported,
                               const std::string& error_message)>;
 
-  PaymentRequestState(
-      content::WebContents* web_contents,
-      content::RenderFrameHost* initiator_render_frame_host,
-      const GURL& top_level_origin,
-      const GURL& frame_origin,
-      const url::Origin& frame_security_origin,
-      PaymentRequestSpec* spec,
-      Delegate* delegate,
-      const std::string& app_locale,
-      autofill::PersonalDataManager* personal_data_manager,
-      ContentPaymentRequestDelegate* payment_request_delegate,
-      const ServiceWorkerPaymentApp::IdentityCallback& sw_identity_callback,
-      JourneyLogger* journey_logger);
+  // The `spec` parameter should not be null.
+  PaymentRequestState(content::RenderFrameHost* initiator_render_frame_host,
+                      const GURL& top_level_origin,
+                      const GURL& frame_origin,
+                      const url::Origin& frame_security_origin,
+                      base::WeakPtr<PaymentRequestSpec> spec,
+                      base::WeakPtr<Delegate> delegate,
+                      const std::string& app_locale,
+                      autofill::PersonalDataManager* personal_data_manager,
+                      ContentPaymentRequestDelegate* payment_request_delegate,
+                      JourneyLogger* journey_logger);
   ~PaymentRequestState() override;
 
   // PaymentAppFactory::Delegate
   content::WebContents* GetWebContents() override;
   ContentPaymentRequestDelegate* GetPaymentRequestDelegate() const override;
-  PaymentRequestSpec* GetSpec() const override;
+  void ShowProcessingSpinner() override;
+  base::WeakPtr<PaymentRequestSpec> GetSpec() const override;
+  std::string GetTwaPackageName() const override;
   const GURL& GetTopOrigin() override;
   const GURL& GetFrameOrigin() override;
   const url::Origin& GetFrameSecurityOrigin() override;
   content::RenderFrameHost* GetInitiatorRenderFrameHost() const override;
   const std::vector<mojom::PaymentMethodDataPtr>& GetMethodData()
       const override;
+  std::unique_ptr<autofill::InternalAuthenticator> CreateInternalAuthenticator()
+      const override;
   scoped_refptr<PaymentManifestWebDataService>
   GetPaymentManifestWebDataService() const override;
   const std::vector<autofill::AutofillProfile*>& GetBillingProfiles() override;
   bool IsRequestedAutofillDataAvailable() override;
   bool MayCrawlForInstallablePaymentApps() override;
-  void OnPaymentAppInstalled(const url::Origin& origin,
-                             int64_t registration_id) override;
+  bool IsOffTheRecord() const override;
   void OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) override;
   void OnPaymentAppCreationError(const std::string& error_message) override;
   bool SkipCreatingNativePaymentApps() const override;
-  void OnCreatingNativePaymentAppsSkipped(
-      content::PaymentAppProvider::PaymentApps apps,
-      ServiceWorkerPaymentAppFinder::InstallablePaymentApps installable_apps)
-      override;
   void OnDoneCreatingPaymentApps() override;
+  void SetCanMakePaymentEvenWithoutApps() override;
 
   // PaymentResponseHelper::Delegate
   void OnPaymentResponseReady(
@@ -222,7 +203,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   }
   // Returns the currently selected app for this PaymentRequest flow. It's not
   // guaranteed to be complete. Returns nullptr if there is no selected app.
-  PaymentApp* selected_app() const { return selected_app_; }
+  PaymentApp* selected_app() const { return selected_app_.get(); }
 
   // Returns the appropriate Autofill Profiles for this user. The profiles
   // returned are owned by the PaymentRequestState.
@@ -256,11 +237,9 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   // Setters to change the selected information. Will have the side effect of
   // recomputing "is ready to pay" and notify observers.
   void SetSelectedShippingOption(const std::string& shipping_option_id);
-  void SetSelectedShippingProfile(autofill::AutofillProfile* profile,
-                                  SectionSelectionStatus selection_status);
-  void SetSelectedContactProfile(autofill::AutofillProfile* profile,
-                                 SectionSelectionStatus selection_status);
-  void SetSelectedApp(PaymentApp* app, SectionSelectionStatus selection_status);
+  void SetSelectedShippingProfile(autofill::AutofillProfile* profile);
+  void SetSelectedContactProfile(autofill::AutofillProfile* profile);
+  void SetSelectedApp(base::WeakPtr<PaymentApp> app);
 
   bool is_ready_to_pay() { return is_ready_to_pay_; }
 
@@ -280,7 +259,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   autofill::PersonalDataManager* GetPersonalDataManager();
   autofill::RegionDataLoader* GetRegionDataLoader();
 
-  Delegate* delegate() { return delegate_; }
+  base::WeakPtr<Delegate> delegate() { return delegate_; }
 
   PaymentsProfileComparator* profile_comparator() {
     return &profile_comparator_;
@@ -347,11 +326,13 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   void OnAddressNormalized(bool success,
                            const autofill::AutofillProfile& normalized_profile);
 
-  void IncrementSelectionStatus(JourneyLogger::Section section,
-                                SectionSelectionStatus selection_status);
+  // Returns whether the browser is currently in a TWA.
+  bool IsInTwa() const;
 
-  content::WebContents* web_contents_;
-  content::RenderFrameHost* initiator_render_frame_host_;
+  bool GetCanMakePaymentValue() const;
+  bool GetHasEnrolledInstrumentValue() const;
+
+  content::GlobalFrameRoutingId frame_routing_id_;
   const GURL top_origin_;
   const GURL frame_origin_;
   const url::Origin frame_security_origin_;
@@ -386,9 +367,10 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
 
   const std::string app_locale_;
 
+  base::WeakPtr<PaymentRequestSpec> spec_;
+  base::WeakPtr<Delegate> delegate_;
+
   // Not owned. Never null. Will outlive this object.
-  PaymentRequestSpec* spec_;
-  Delegate* delegate_;
   autofill::PersonalDataManager* personal_data_manager_;
   JourneyLogger* journey_logger_;
 
@@ -403,7 +385,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   autofill::AutofillProfile* selected_contact_profile_ = nullptr;
   autofill::AutofillProfile* invalid_shipping_profile_ = nullptr;
   autofill::AutofillProfile* invalid_contact_profile_ = nullptr;
-  PaymentApp* selected_app_ = nullptr;
+  base::WeakPtr<PaymentApp> selected_app_;
 
   // Profiles may change due to (e.g.) sync events, so profiles are cached after
   // loading and owned here. They are populated once only, and ordered by
@@ -416,7 +398,6 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   std::vector<std::unique_ptr<PaymentApp>> available_apps_;
 
   ContentPaymentRequestDelegate* payment_request_delegate_;
-  ServiceWorkerPaymentApp::IdentityCallback sw_identity_callback_;
 
   std::unique_ptr<PaymentResponseHelper> response_helper_;
 
@@ -426,6 +407,15 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
 
   // Whether PaymentRequest.show() was invoked with a user gesture.
   bool is_show_user_gesture_ = false;
+
+  // If set to true, then both GetCanMakePaymentValue() and
+  // GetHasEnrolledInstrumentValue() will return true, regardless of presence of
+  // payment apps. This is used by secure payment confirmation, where
+  // PaymentRequest.canMakePayment() and PaymentRequesthasEnrolledInstrument()
+  // calls in JavaScript both return true without querying the SQLite database
+  // for instrument information and without querying the authenticator for
+  // credentials.
+  bool can_make_payment_even_without_apps_ = false;
 
   base::WeakPtrFactory<PaymentRequestState> weak_ptr_factory_{this};
 

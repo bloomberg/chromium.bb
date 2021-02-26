@@ -31,7 +31,6 @@ class MODULES_EXPORT PresentationAvailability final
       public ExecutionContextLifecycleStateObserver,
       public PageVisibilityObserver,
       public PresentationAvailabilityObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -64,7 +63,7 @@ class MODULES_EXPORT PresentationAvailability final
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   // EventTarget implementation.

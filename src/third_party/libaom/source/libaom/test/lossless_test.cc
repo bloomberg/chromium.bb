@@ -24,18 +24,20 @@ namespace {
 const int kMaxPsnr = 100;
 
 class LosslessTestLarge
-    : public ::libaom_test::CodecTestWithParam<libaom_test::TestMode>,
+    : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode,
+                                                 aom_rc_mode>,
       public ::libaom_test::EncoderTest {
  protected:
   LosslessTestLarge()
       : EncoderTest(GET_PARAM(0)), psnr_(kMaxPsnr), nframes_(0),
-        encoding_mode_(GET_PARAM(1)) {}
+        encoding_mode_(GET_PARAM(1)), rc_end_usage_(GET_PARAM(2)) {}
 
   virtual ~LosslessTestLarge() {}
 
   virtual void SetUp() {
     InitializeConfig();
     SetMode(encoding_mode_);
+    cfg_.rc_end_usage = rc_end_usage_;
   }
 
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
@@ -60,10 +62,25 @@ class LosslessTestLarge
 
   double GetMinPsnr() const { return psnr_; }
 
+  virtual bool HandleDecodeResult(const aom_codec_err_t res_dec,
+                                  libaom_test::Decoder *decoder) {
+    EXPECT_EQ(AOM_CODEC_OK, res_dec) << decoder->DecodeError();
+    if (AOM_CODEC_OK == res_dec) {
+      aom_codec_ctx_t *ctx_dec = decoder->GetDecoder();
+      AOM_CODEC_CONTROL_TYPECHECKED(ctx_dec, AOMD_GET_LAST_QUANTIZER,
+                                    &base_qindex_);
+      EXPECT_EQ(base_qindex_, 0)
+          << "Error: Base_qindex is non zero for lossless coding";
+    }
+    return AOM_CODEC_OK == res_dec;
+  }
+
  private:
   double psnr_;
   unsigned int nframes_;
   libaom_test::TestMode encoding_mode_;
+  aom_rc_mode rc_end_usage_;
+  int base_qindex_;
 };
 
 TEST_P(LosslessTestLarge, TestLossLessEncoding) {
@@ -120,7 +137,8 @@ TEST_P(LosslessTestLarge, TestLossLessEncodingCtrl) {
   EXPECT_GE(psnr_lossless, kMaxPsnr);
 }
 
-AV1_INSTANTIATE_TEST_CASE(LosslessTestLarge,
-                          ::testing::Values(::libaom_test::kOnePassGood,
-                                            ::libaom_test::kTwoPassGood));
+AV1_INSTANTIATE_TEST_SUITE(LosslessTestLarge,
+                           ::testing::Values(::libaom_test::kOnePassGood,
+                                             ::libaom_test::kTwoPassGood),
+                           ::testing::Values(AOM_Q, AOM_VBR, AOM_CBR, AOM_CQ));
 }  // namespace

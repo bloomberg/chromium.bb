@@ -36,11 +36,13 @@ export const PortTypes = {
 /**
  * @typedef {{width: number, height: number}}
  */
+// @ts-ignore Typedef
 export let Size;
 
 /**
  * @typedef {{x: number, y: number}}
  */
+// @ts-ignore Typedef
 export let Point;
 
 /**
@@ -51,6 +53,7 @@ export let Point;
  *   totalHeight: number
  * }}
  */
+// @ts-ignore Typedef
 export let NodeLayout;
 
 /**
@@ -64,6 +67,7 @@ export let NodeLayout;
  *   y: number,
  * }}
  */
+// @ts-ignore Typedef
 export let Port;
 
 /**
@@ -74,6 +78,7 @@ export let Port;
  *   numberOfOutputs: number,
  * }}
  */
+// @ts-ignore Typedef
 export let NodeCreationData;
 
 /**
@@ -83,6 +88,7 @@ export let NodeCreationData;
  *   nodeId: string,
  * }}
  */
+// @ts-ignore Typedef
 export let ParamCreationData;
 
 /**
@@ -93,6 +99,7 @@ export let ParamCreationData;
  *   destinationInputIndex: (number|undefined),
  * }}
  */
+// @ts-ignore Typedef
 export let NodesConnectionData;
 
 /**
@@ -103,6 +110,7 @@ export let NodesConnectionData;
  *   destinationInputIndex: (number|undefined),
  * }}
  */
+// @ts-ignore Typedef
 export let NodesDisconnectionData;
 
 /**
@@ -113,6 +121,7 @@ export let NodesDisconnectionData;
  *   destinationInputIndex: (number|undefined),
  * }}
  */
+// @ts-ignore Typedef
 export let NodesDisconnectionDataWithDestination;
 
 /**
@@ -123,6 +132,7 @@ export let NodesDisconnectionDataWithDestination;
  *   destinationParamId: string,
  * }}
  */
+// @ts-ignore Typedef
 export let NodeParamConnectionData;
 
 /**
@@ -133,4 +143,5 @@ export let NodeParamConnectionData;
  *   destinationParamId: string,
  * }}
  */
+// @ts-ignore Typedef
 export let NodeParamDisconnectionData;

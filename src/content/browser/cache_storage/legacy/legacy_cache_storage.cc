@@ -14,7 +14,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/guid.h"
@@ -81,14 +81,14 @@ struct LegacyCacheStorage::CacheMatchResponse {
 
   CacheStorageError error;
   blink::mojom::FetchAPIResponsePtr response;
-  std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 };
 
 // Handles the loading and clean up of CacheStorageCache objects.
 class LegacyCacheStorage::CacheLoader {
  public:
-  using CacheCallback =
-      base::OnceCallback<void(std::unique_ptr<LegacyCacheStorageCache>)>;
+  using CacheAndErrorCallback =
+      base::OnceCallback<void(std::unique_ptr<LegacyCacheStorageCache>,
+                              CacheStorageError status)>;
   using BoolCallback = base::OnceCallback<void(bool)>;
   using CacheStorageIndexLoadCallback =
       base::OnceCallback<void(std::unique_ptr<CacheStorageIndex>)>;
@@ -122,7 +122,7 @@ class LegacyCacheStorage::CacheLoader {
 
   // Deletes any pre-existing cache of the same name and then loads it.
   virtual void PrepareNewCacheDestination(const std::string& cache_name,
-                                          CacheCallback callback) = 0;
+                                          CacheAndErrorCallback callback) = 0;
 
   // After the backend has been deleted, do any extra house keeping such as
   // removing the cache's directory.
@@ -195,11 +195,11 @@ class LegacyCacheStorage::MemoryLoader
   }
 
   void PrepareNewCacheDestination(const std::string& cache_name,
-                                  CacheCallback callback) override {
+                                  CacheAndErrorCallback callback) override {
     std::unique_ptr<LegacyCacheStorageCache> cache =
         CreateCache(cache_name, 0 /*cache_size*/, 0 /* cache_padding */,
                     storage::CopyDefaultPaddingKey());
-    std::move(callback).Run(std::move(cache));
+    std::move(callback).Run(std::move(cache), CacheStorageError::kSuccess);
   }
 
   void CleanUpDeletedCache(CacheStorageCache* cache) override {}
@@ -273,7 +273,7 @@ class LegacyCacheStorage::SimpleCacheLoader
   }
 
   void PrepareNewCacheDestination(const std::string& cache_name,
-                                  CacheCallback callback) override {
+                                  CacheAndErrorCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     PostTaskAndReplyWithResult(
@@ -286,8 +286,8 @@ class LegacyCacheStorage::SimpleCacheLoader
   }
 
   // Runs on the cache_task_runner_.
-  static std::string PrepareNewCacheDirectoryInPool(
-      const base::FilePath& origin_path) {
+  static std::tuple<CacheStorageError, std::string>
+  PrepareNewCacheDirectoryInPool(const base::FilePath& origin_path) {
     std::string cache_dir;
     base::FilePath cache_path;
     do {
@@ -295,21 +295,38 @@ class LegacyCacheStorage::SimpleCacheLoader
       cache_path = origin_path.AppendASCII(cache_dir);
     } while (base::PathExists(cache_path));
 
-    return base::CreateDirectory(cache_path) ? cache_dir : "";
+    base::File::Error error = base::File::FILE_OK;
+    if (base::CreateDirectoryAndGetError(cache_path, &error)) {
+      return std::make_tuple(CacheStorageError::kSuccess, cache_dir);
+    } else {
+      CacheStorageError status =
+          error == base::File::FILE_ERROR_NO_SPACE
+              ? CacheStorageError::kErrorQuotaExceeded
+              : MakeErrorStorage(ErrorStorageType::kDidCreateNullCache);
+      return std::make_tuple(status, cache_dir);
+    }
   }
 
-  void PrepareNewCacheCreateCache(const std::string& cache_name,
-                                  CacheCallback callback,
-                                  const std::string& cache_dir) {
-    if (cache_dir.empty()) {
-      std::move(callback).Run(nullptr);
+  void PrepareNewCacheCreateCache(
+      const std::string& cache_name,
+      CacheAndErrorCallback callback,
+      const std::tuple<CacheStorageError, std::string>& result) {
+    CacheStorageError status;
+    std::string cache_dir;
+    std::tie(status, cache_dir) = result;
+
+    if (status != CacheStorageError::kSuccess) {
+      std::move(callback).Run(nullptr, status);
       return;
     }
+    DCHECK(!cache_dir.empty());
 
     cache_name_to_cache_dir_[cache_name] = cache_dir;
-    std::move(callback).Run(CreateCache(
-        cache_name, LegacyCacheStorage::kSizeUnknown,
-        LegacyCacheStorage::kSizeUnknown, storage::CopyDefaultPaddingKey()));
+    std::move(callback).Run(
+        CreateCache(cache_name, LegacyCacheStorage::kSizeUnknown,
+                    LegacyCacheStorage::kSizeUnknown,
+                    storage::CopyDefaultPaddingKey()),
+        CacheStorageError::kSuccess);
   }
 
   void CleanUpDeletedCache(CacheStorageCache* cache) override {
@@ -327,7 +344,7 @@ class LegacyCacheStorage::SimpleCacheLoader
   }
 
   static void CleanUpDeleteCacheDirInPool(const base::FilePath& cache_path) {
-    base::DeleteFileRecursively(cache_path);
+    base::DeletePathRecursively(cache_path);
   }
 
   void WriteIndex(const CacheStorageIndex& index,
@@ -384,7 +401,7 @@ class LegacyCacheStorage::SimpleCacheLoader
       const url::Origin& origin) {
     int bytes_written = base::WriteFile(tmp_path, data.c_str(), data.size());
     if (bytes_written != base::checked_cast<int>(data.size())) {
-      base::DeleteFile(tmp_path, /* recursive */ false);
+      base::DeleteFile(tmp_path);
       quota_manager_proxy->NotifyWriteFailed(origin);
       return false;
     }
@@ -478,7 +495,7 @@ class LegacyCacheStorage::SimpleCacheLoader
     }
 
     for (const base::FilePath& cache_path : dirs_to_delete)
-      base::DeleteFileRecursively(cache_path);
+      base::DeletePathRecursively(cache_path);
   }
 
   // Runs on cache_task_runner_
@@ -1020,7 +1037,8 @@ void LegacyCacheStorage::CreateCacheDidCreateCache(
     const std::string& cache_name,
     int64_t trace_id,
     CacheAndErrorCallback callback,
-    std::unique_ptr<LegacyCacheStorageCache> cache) {
+    std::unique_ptr<LegacyCacheStorageCache> cache,
+    CacheStorageError status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   TRACE_EVENT_WITH_FLOW0("CacheStorage",
@@ -1031,10 +1049,8 @@ void LegacyCacheStorage::CreateCacheDidCreateCache(
   UMA_HISTOGRAM_BOOLEAN("ServiceWorkerCache.CreateCacheStorageResult",
                         static_cast<bool>(cache));
 
-  if (!cache) {
-    std::move(callback).Run(
-        CacheStorageCacheHandle(),
-        MakeErrorStorage(ErrorStorageType::kDidCreateNullCache));
+  if (status != CacheStorageError::kSuccess) {
+    std::move(callback).Run(CacheStorageCacheHandle(), status);
     return;
   }
 
@@ -1384,11 +1400,11 @@ void LegacyCacheStorage::GetSizeThenCloseAllCachesImpl(SizeCallback callback) {
 
   for (const auto& cache_metadata : cache_index_->ordered_cache_metadata()) {
     auto cache_handle = GetLoadedCache(cache_metadata.name);
-    LegacyCacheStorageCache::From(cache_handle)
-        ->GetSizeThenClose(
-            base::BindOnce(&LegacyCacheStorage::SizeRetrievedFromCache,
-                           weak_factory_.GetWeakPtr(), std::move(cache_handle),
-                           barrier_closure, accumulator_ptr));
+    LegacyCacheStorageCache* cache =
+        LegacyCacheStorageCache::From(cache_handle);
+    cache->GetSizeThenClose(base::BindOnce(
+        &LegacyCacheStorage::SizeRetrievedFromCache, weak_factory_.GetWeakPtr(),
+        std::move(cache_handle), barrier_closure, accumulator_ptr));
   }
 
   for (const auto& cache_it : doomed_caches_) {
@@ -1425,11 +1441,11 @@ void LegacyCacheStorage::SizeImpl(SizeCallback callback) {
       continue;
     }
     CacheStorageCacheHandle cache_handle = GetLoadedCache(cache_metadata.name);
-    LegacyCacheStorageCache::From(cache_handle)
-        ->Size(base::BindOnce(&LegacyCacheStorage::SizeRetrievedFromCache,
-                              weak_factory_.GetWeakPtr(),
-                              std::move(cache_handle), barrier_closure,
-                              accumulator_ptr));
+    LegacyCacheStorageCache* cache =
+        LegacyCacheStorageCache::From(cache_handle);
+    cache->Size(base::BindOnce(
+        &LegacyCacheStorage::SizeRetrievedFromCache, weak_factory_.GetWeakPtr(),
+        std::move(cache_handle), barrier_closure, accumulator_ptr));
   }
 }
 

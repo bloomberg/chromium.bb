@@ -89,14 +89,13 @@ TEST_F(IOSChromeMetricsServiceClientTest, FilterFiles) {
 // This is not in anonymous namespace so this test can be a friend class of
 // MetricsService for accessing protected ivars.
 TEST_F(IOSChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
-  // This is the metrics provider added in MetricsService constructor.
-  // StabilityMetricsProvider, FieldTrialsProvider and
-  // MetricsStateMetricsProvider.
-  size_t expected_providers = 3;
+  // This is for the two metrics providers added in the MetricsService
+  // constructor: StabilityMetricsProvider and MetricsStateMetricsProvider.
+  size_t expected_providers = 2;
 
   // This is the number of metrics providers that are registered inside
   // IOSChromeMetricsServiceClient::Initialize().
-  expected_providers += 12;
+  expected_providers += 14;
 
   std::unique_ptr<IOSChromeMetricsServiceClient> chrome_metrics_service_client =
       IOSChromeMetricsServiceClient::Create(metrics_state_manager_.get());

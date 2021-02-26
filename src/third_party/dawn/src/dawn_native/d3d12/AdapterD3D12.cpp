@@ -15,11 +15,14 @@
 #include "dawn_native/d3d12/AdapterD3D12.h"
 
 #include "common/Constants.h"
+#include "dawn_native/Instance.h"
 #include "dawn_native/d3d12/BackendD3D12.h"
+#include "dawn_native/d3d12/D3D12Error.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
 #include "dawn_native/d3d12/PlatformFunctions.h"
 
 #include <locale>
+#include <sstream>
 
 namespace dawn_native { namespace d3d12 {
 
@@ -38,6 +41,10 @@ namespace dawn_native { namespace d3d12 {
         : AdapterBase(backend->GetInstance(), wgpu::BackendType::D3D12),
           mHardwareAdapter(hardwareAdapter),
           mBackend(backend) {
+    }
+
+    Adapter::~Adapter() {
+        CleanUpDebugLayerFilters();
     }
 
     const D3D12DeviceInfo& Adapter::GetDeviceInfo() const {
@@ -66,6 +73,8 @@ namespace dawn_native { namespace d3d12 {
             return DAWN_INTERNAL_ERROR("D3D12CreateDevice failed");
         }
 
+        DAWN_TRY(InitializeDebugLayerFilters());
+
         DXGI_ADAPTER_DESC1 adapterDesc;
         mHardwareAdapter->GetDesc1(&adapterDesc);
 
@@ -81,9 +90,25 @@ namespace dawn_native { namespace d3d12 {
                                                : wgpu::AdapterType::DiscreteGPU;
         }
 
+        // Get the adapter's name as a UTF8 string.
         std::wstring_convert<DeletableFacet<std::codecvt<wchar_t, char, std::mbstate_t>>> converter(
             "Error converting");
         mPCIInfo.name = converter.to_bytes(adapterDesc.Description);
+
+        // Convert the adapter's D3D12 driver version to a readable string like "24.21.13.9793".
+        LARGE_INTEGER umdVersion;
+        if (mHardwareAdapter->CheckInterfaceSupport(__uuidof(IDXGIDevice), &umdVersion) !=
+            DXGI_ERROR_UNSUPPORTED) {
+            uint64_t encodedVersion = umdVersion.QuadPart;
+
+            std::ostringstream o;
+            o << "D3D12 driver version ";
+            o << ((encodedVersion >> 48) & 0xFFFF) << ".";
+            o << ((encodedVersion >> 32) & 0xFFFF) << ".";
+            o << ((encodedVersion >> 16) & 0xFFFF) << ".";
+            o << (encodedVersion & 0xFFFF);
+            mDriverDescription = o.str();
+        }
 
         InitializeSupportedExtensions();
 
@@ -92,6 +117,97 @@ namespace dawn_native { namespace d3d12 {
 
     void Adapter::InitializeSupportedExtensions() {
         mSupportedExtensions.EnableExtension(Extension::TextureCompressionBC);
+        mSupportedExtensions.EnableExtension(Extension::PipelineStatisticsQuery);
+        mSupportedExtensions.EnableExtension(Extension::TimestampQuery);
+        if (mDeviceInfo.supportsShaderFloat16 && GetBackend()->GetFunctions()->IsDXCAvailable()) {
+            mSupportedExtensions.EnableExtension(Extension::ShaderFloat16);
+        }
+    }
+
+    MaybeError Adapter::InitializeDebugLayerFilters() {
+        if (!GetInstance()->IsBackendValidationEnabled()) {
+            return {};
+        }
+
+        D3D12_MESSAGE_ID denyIds[] = {
+
+            //
+            // Permanent IDs: list of warnings that are not applicable
+            //
+
+            // Resource sub-allocation partially maps pre-allocated heaps. This means the
+            // entire physical addresses space may have no resources or have many resources
+            // assigned the same heap.
+            D3D12_MESSAGE_ID_HEAP_ADDRESS_RANGE_HAS_NO_RESOURCE,
+            D3D12_MESSAGE_ID_HEAP_ADDRESS_RANGE_INTERSECTS_MULTIPLE_BUFFERS,
+
+            // The debug layer validates pipeline objects when they are created. Dawn validates
+            // them when them when they are set. Therefore, since the issue is caught at a later
+            // time, we can silence this warnings.
+            D3D12_MESSAGE_ID_CREATEGRAPHICSPIPELINESTATE_RENDERTARGETVIEW_NOT_SET,
+
+            // Adding a clear color during resource creation would require heuristics or delayed
+            // creation.
+            // https://crbug.com/dawn/418
+            D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
+            D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,
+
+            // Dawn enforces proper Unmaps at a later time.
+            // https://crbug.com/dawn/422
+            D3D12_MESSAGE_ID_EXECUTECOMMANDLISTS_GPU_WRITTEN_READBACK_RESOURCE_MAPPED,
+
+            // WebGPU allows empty scissors without empty viewports.
+            D3D12_MESSAGE_ID_DRAW_EMPTY_SCISSOR_RECTANGLE,
+
+            //
+            // Temporary IDs: list of warnings that should be fixed or promoted
+            //
+
+            // Remove after warning have been addressed
+            // https://crbug.com/dawn/421
+            D3D12_MESSAGE_ID_GPU_BASED_VALIDATION_INCOMPATIBLE_RESOURCE_STATE,
+
+            // For small placed resource alignment, we first request the small alignment, which may
+            // get rejected and generate a debug error. Then, we request 0 to get the allowed
+            // allowed alignment.
+            D3D12_MESSAGE_ID_CREATERESOURCE_INVALIDALIGNMENT,
+        };
+
+        // Create a retrieval filter with a deny list to suppress messages.
+        // Any messages remaining will be converted to Dawn errors.
+        D3D12_INFO_QUEUE_FILTER filter{};
+        // Filter out info/message and only create errors from warnings or worse.
+        D3D12_MESSAGE_SEVERITY severities[] = {
+            D3D12_MESSAGE_SEVERITY_INFO,
+            D3D12_MESSAGE_SEVERITY_MESSAGE,
+        };
+        filter.DenyList.NumSeverities = ARRAYSIZE(severities);
+        filter.DenyList.pSeverityList = severities;
+        filter.DenyList.NumIDs = ARRAYSIZE(denyIds);
+        filter.DenyList.pIDList = denyIds;
+
+        ComPtr<ID3D12InfoQueue> infoQueue;
+        ASSERT_SUCCESS(mD3d12Device.As(&infoQueue));
+
+        // To avoid flooding the console, a storage-filter is also used to
+        // prevent messages from getting logged.
+        DAWN_TRY(CheckHRESULT(infoQueue->PushStorageFilter(&filter),
+                              "ID3D12InfoQueue::PushStorageFilter"));
+
+        DAWN_TRY(CheckHRESULT(infoQueue->PushRetrievalFilter(&filter),
+                              "ID3D12InfoQueue::PushRetrievalFilter"));
+
+        return {};
+    }
+
+    void Adapter::CleanUpDebugLayerFilters() {
+        if (!GetInstance()->IsBackendValidationEnabled()) {
+            return;
+        }
+        ComPtr<ID3D12InfoQueue> infoQueue;
+        ASSERT_SUCCESS(mD3d12Device.As(&infoQueue));
+        infoQueue->PopRetrievalFilter();
+        infoQueue->PopStorageFilter();
     }
 
     ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DeviceDescriptor* descriptor) {

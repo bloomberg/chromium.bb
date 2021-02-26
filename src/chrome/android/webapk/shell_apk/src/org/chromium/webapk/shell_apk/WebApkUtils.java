@@ -32,7 +32,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
+import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -162,7 +162,7 @@ public class WebApkUtils {
     public static void applyAlertDialogContentStyle(
             Context context, View contentView, TextView titleView) {
         Resources res = context.getResources();
-        titleView.setTextColor(getColor(res, R.color.black_alpha_87));
+        titleView.setTextColor(getColor(res, R.color.webapk_black_alpha_87));
         titleView.setTextSize(
                 TypedValue.COMPLEX_UNIT_PX, res.getDimension(R.dimen.headline_size_medium));
         int dialogContentPadding = res.getDimensionPixelSize(R.dimen.dialog_content_padding);
@@ -274,43 +274,27 @@ public class WebApkUtils {
     }
 
     /** Computes the screen lock orientation from the passed-in metadata and the display size.  */
-    public static int computeScreenLockOrientationFromMetaData(Context context, Bundle metadata) {
+    public static int computeNaturalScreenLockOrientationFromMetaData(
+            Context context, Bundle metadata) {
         String orientation = metadata.getString(WebApkMetaDataKeys.ORIENTATION);
-        if (orientation == null) {
-            return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-        } else if (orientation.equals("portrait-primary")) {
-            return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        } else if (orientation.equals("portrait-secondary")) {
-            return ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
-        } else if (orientation.equals("landscape-primary")) {
-            return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-        } else if (orientation.equals("landscape-secondary")) {
-            return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-        } else if (orientation.equals("portrait")) {
-            return ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
-        } else if (orientation.equals("landscape")) {
-            return ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
-        } else if (orientation.equals("any")) {
-            return ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
-        } else if (orientation.equals("natural")) {
-            WindowManager windowManager =
-                    (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-            Display display = windowManager.getDefaultDisplay();
-            int rotation = display.getRotation();
-            if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
-                if (display.getHeight() >= display.getWidth()) {
-                    return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                }
-                return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-            } else {
-                if (display.getHeight() < display.getWidth()) {
-                    return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                }
-                return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-            }
-        } else {
+        if (orientation == null || !orientation.equals("natural")) {
             return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         }
+
+        WindowManager windowManager =
+                (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = windowManager.getDefaultDisplay();
+        int rotation = display.getRotation();
+        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
+            if (display.getHeight() >= display.getWidth()) {
+                return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+            }
+            return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+        }
+        if (display.getHeight() < display.getWidth()) {
+            return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        }
+        return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
     }
 
     /** Grants the host browser permission to the shared files if any. */

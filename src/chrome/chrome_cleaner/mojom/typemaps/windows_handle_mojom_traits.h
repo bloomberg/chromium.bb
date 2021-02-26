@@ -5,7 +5,8 @@
 #ifndef CHROME_CHROME_CLEANER_MOJOM_TYPEMAPS_WINDOWS_HANDLE_MOJOM_TRAITS_H_
 #define CHROME_CHROME_CLEANER_MOJOM_TYPEMAPS_WINDOWS_HANDLE_MOJOM_TRAITS_H_
 
-#include "chrome/chrome_cleaner/mojom/windows_handle.mojom.h"
+#include "base/win/windows_types.h"
+#include "chrome/chrome_cleaner/mojom/windows_handle.mojom-shared.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
 
 namespace mojo {

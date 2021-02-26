@@ -4,12 +4,12 @@
 
 #include "build/build_config.h"
 #include "cc/layers/content_layer_client.h"
-#include "cc/layers/picture_image_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/layer_tree_pixel_test.h"
 #include "cc/test/pixel_comparator.h"
+#include "components/viz/test/test_types.h"
 
 #if !defined(OS_ANDROID)
 
@@ -18,17 +18,16 @@ namespace {
 
 class LayerTreeHostSynchronousPixelTest
     : public LayerTreePixelTest,
-      public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
+      public ::testing::WithParamInterface<viz::RendererType> {
  protected:
   LayerTreeHostSynchronousPixelTest() : LayerTreePixelTest(renderer_type()) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreePixelTest::InitializeSettings(settings);
     settings->single_thread_proxy_scheduler = false;
-    settings->use_zero_copy = use_zero_copy_;
   }
 
-  RendererType renderer_type() const { return GetParam(); }
+  viz::RendererType renderer_type() const { return GetParam(); }
 
   void BeginTest() override {
     LayerTreePixelTest::BeginTest();
@@ -50,29 +49,20 @@ class LayerTreeHostSynchronousPixelTest
     RunSingleThreadedPixelTest(root,
                                base::FilePath(FILE_PATH_LITERAL("green.png")));
   }
-
-  bool use_zero_copy_ = false;
-};
-
-LayerTreeTest::RendererType const kRendererTypesGpu[] = {
-    LayerTreeTest::RENDERER_GL,
-    LayerTreeTest::RENDERER_SKIA_GL,
-#if defined(ENABLE_CC_VULKAN_TESTS)
-    LayerTreeTest::RENDERER_SKIA_VK,
-#endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostSynchronousPixelTest,
-                         ::testing::ValuesIn(kRendererTypesGpu));
+                         ::testing::ValuesIn(viz::GetGpuRendererTypes()),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(LayerTreeHostSynchronousPixelTest, OneContentLayerZeroCopy) {
-  use_zero_copy_ = true;
+  set_raster_type(TestRasterType::kZeroCopy);
   DoContentLayerTest();
 }
 
 TEST_P(LayerTreeHostSynchronousPixelTest, OneContentLayerGpuRasterization) {
-  set_gpu_rasterization();
+  set_raster_type(TestRasterType::kGpu);
   DoContentLayerTest();
 }
 

@@ -19,6 +19,7 @@ namespace device_sync {
 
 const char kGroupPublicKey[] = "group_key";
 const int64_t kGroupPublicKeyHash = 0xf3666041a2db06e4;
+const char kDefaultLocalDeviceBluetoothAddress[] = "01:23:45:67:89:AB";
 
 const CryptAuthDevice& GetLocalDeviceForTest() {
   static const base::NoDestructor<CryptAuthDevice> device([] {
@@ -34,6 +35,8 @@ const CryptAuthDevice& GetLocalDeviceForTest() {
     bt_metadata.set_public_key(kLocalDeviceUserPublicKey);
     bt_metadata.set_no_pii_device_name(
         cryptauthv2::GetClientAppMetadataForTest().device_model());
+    bt_metadata.set_bluetooth_public_address(
+        kDefaultLocalDeviceBluetoothAddress);
 
     return CryptAuthDevice(
         cryptauthv2::GetClientAppMetadataForTest().instance_id(),
@@ -56,6 +59,14 @@ const CryptAuthDevice& GetLocalDeviceForTest() {
              multidevice::SoftwareFeatureState::kNotSupported},
             {multidevice::SoftwareFeature::kMessagesForWebClient,
              multidevice::SoftwareFeatureState::kSupported},
+            {multidevice::SoftwareFeature::kPhoneHubHost,
+             multidevice::SoftwareFeatureState::kNotSupported},
+            {multidevice::SoftwareFeature::kPhoneHubClient,
+             multidevice::SoftwareFeatureState::kNotSupported},
+            {multidevice::SoftwareFeature::kWifiSyncHost,
+             multidevice::SoftwareFeatureState::kNotSupported},
+            {multidevice::SoftwareFeature::kWifiSyncClient,
+             multidevice::SoftwareFeatureState::kNotSupported},
         });
   }());
   return *device;
@@ -102,6 +113,14 @@ const CryptAuthDevice& GetRemoteDeviceNeedsGroupPrivateKeyForTest() {
              multidevice::SoftwareFeatureState::kNotSupported},
             {multidevice::SoftwareFeature::kMessagesForWebClient,
              multidevice::SoftwareFeatureState::kNotSupported},
+            {multidevice::SoftwareFeature::kPhoneHubHost,
+             multidevice::SoftwareFeatureState::kNotSupported},
+            {multidevice::SoftwareFeature::kPhoneHubClient,
+             multidevice::SoftwareFeatureState::kNotSupported},
+            {multidevice::SoftwareFeature::kWifiSyncHost,
+             multidevice::SoftwareFeatureState::kNotSupported},
+            {multidevice::SoftwareFeature::kWifiSyncClient,
+             multidevice::SoftwareFeatureState::kNotSupported},
         });
   }());
   return *device;
@@ -147,6 +166,14 @@ const CryptAuthDevice& GetRemoteDeviceHasGroupPrivateKeyForTest() {
             {multidevice::SoftwareFeature::kMessagesForWebHost,
              multidevice::SoftwareFeatureState::kEnabled},
             {multidevice::SoftwareFeature::kMessagesForWebClient,
+             multidevice::SoftwareFeatureState::kNotSupported},
+            {multidevice::SoftwareFeature::kPhoneHubHost,
+             multidevice::SoftwareFeatureState::kNotSupported},
+            {multidevice::SoftwareFeature::kPhoneHubClient,
+             multidevice::SoftwareFeatureState::kNotSupported},
+            {multidevice::SoftwareFeature::kWifiSyncHost,
+             multidevice::SoftwareFeatureState::kNotSupported},
+            {multidevice::SoftwareFeature::kWifiSyncClient,
              multidevice::SoftwareFeatureState::kNotSupported},
         });
   }());

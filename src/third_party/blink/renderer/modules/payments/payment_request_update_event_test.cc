@@ -23,8 +23,6 @@ namespace {
 
 class MockPaymentRequest : public GarbageCollected<MockPaymentRequest>,
                            public PaymentRequestDelegate {
-  USING_GARBAGE_COLLECTED_MIXIN(MockPaymentRequest);
-
  public:
   MockPaymentRequest() = default;
   ~MockPaymentRequest() override = default;
@@ -34,7 +32,7 @@ class MockPaymentRequest : public GarbageCollected<MockPaymentRequest>,
   MOCK_METHOD1(OnUpdatePaymentDetailsFailure, void(const String& error));
   bool IsInteractive() const override { return true; }
 
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPaymentRequest);

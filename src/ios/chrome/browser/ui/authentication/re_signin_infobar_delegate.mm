@@ -19,8 +19,8 @@
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/signin/signin_presenter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -72,6 +72,7 @@ ReSignInInfoBarDelegate::CreateInfoBarDelegate(
   if (!authService->ShouldPromptForSignIn())
     return nullptr;
   // Returns null if user has already signed in via some other path.
+  authService->WaitUntilCacheIsPopulated();
   if (authService->IsAuthenticated()) {
     authService->ResetPromptForSignIn();
     return nullptr;

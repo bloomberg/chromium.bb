@@ -15,6 +15,7 @@
 #import "ios/web/navigation/crw_web_view_navigation_observer_delegate.h"
 #import "ios/web/navigation/crw_wk_navigation_handler.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
+#import "ios/web/navigation/error_page_helper.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/web_client.h"
@@ -244,14 +245,11 @@ using web::wk_navigation_util::IsPlaceholderUrl;
   //    be reported.
   // 3) When a navigation error occurs after provisional navigation starts,
   //    the URL reverts to the previous URL without triggering a new navigation.
-  // 4) When a SafeBrowsing warning is displayed after
-  //    decidePolicyForNavigationAction but before a provisional navigation
-  //    starts, and the user clicks the "Go Back" link on the warning page.
+  // 4) When the user is reloading an error page.
   //
   // If |isLoading| is NO, then it must be case 2, 3, or 4. If the last
   // committed URL (_documentURL) matches the current URL, assume that it is
-  // case 4 if a SafeBrowsing warning is currently displayed and case 3
-  // otherwise. If the URL does not match, assume it is a non-document-changing
+  // case 3. If the URL does not match, assume it is a non-document-changing
   // URL change, and handle accordingly.
   //
   // If |isLoading| is YES, then it could either be case 1, or it could be case
@@ -266,21 +264,13 @@ using web::wk_navigation_util::IsPlaceholderUrl;
   // window.location.href will match the previous URL at this stage, not the web
   // view's current URL.
   if (!self.webView.loading) {
+    if ([ErrorPageHelper isErrorPageFileURL:URL] &&
+        self.documentURL ==
+            [ErrorPageHelper failedNavigationURLFromErrorPageFileURL:URL]) {
+      // Case 4: reloading an error page.
+      return;
+    }
     if (self.documentURL == URL) {
-      if (!web::IsSafeBrowsingWarningDisplayedInWebView(self.webView))
-        return;
-
-      self.navigationManagerImpl->DiscardNonCommittedItems();
-      self.navigationHandler.pendingNavigationInfo = nil;
-        // Right after a history navigation that gets cancelled by a tap on
-        // "Go Back", WKWebView's current back/forward list item will still be
-        // for the unsafe page; updating this is the responsibility of the
-        // WebProcess, so only happens after an IPC round-trip to and from the
-        // WebProcess with no notification to the embedder. This means that
-        // WKBasedNavigationManagerImpl::WKWebViewCache::GetCurrentItemIndex()
-        // will be the index of the unsafe page's item. To get back into a
-        // consistent state, force a reload.
-        [self.webView reload];
       return;
     }
 
@@ -313,17 +303,22 @@ using web::wk_navigation_util::IsPlaceholderUrl;
       DCHECK(!self.navigationManagerImpl->GetPendingItem());
       currentItem = self.navigationManagerImpl->GetLastCommittedItem();
     }
-    if (currentItem && webViewURL != currentItem->GetURL())
-      currentItem->SetURL(webViewURL);
+
+    if (currentItem && webViewURL != currentItem->GetURL()) {
+      BOOL isRestoredURL = NO;
+      if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+          web::wk_navigation_util::IsRestoreSessionUrl(webViewURL)) {
+        GURL restoredURL;
+        web::wk_navigation_util::ExtractTargetURL(webViewURL, &restoredURL);
+        isRestoredURL = restoredURL == currentItem->GetURL();
+      }
+      if (!isRestoredURL)
+        currentItem->SetURL(webViewURL);
+    }
 
     [self.delegate navigationObserver:self
         URLDidChangeWithoutDocumentChange:URL];
   } else if ([self isKVOChangePotentialSameDocumentNavigationToURL:URL]) {
-    if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
-      // TODO(crbug.com/991608): When the error page is presented for the first
-      // time, it is performing a same document navigation. This method should
-      // probably return here to avoid performing the following checks.
-    }
     WKNavigation* navigation =
         [self.navigationHandler.navigationStates lastAddedNavigation];
     [self.webView

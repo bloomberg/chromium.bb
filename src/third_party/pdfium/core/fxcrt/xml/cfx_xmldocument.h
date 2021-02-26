@@ -10,9 +10,8 @@
 #include <vector>
 
 #include "core/fxcrt/unowned_ptr.h"
-#include "core/fxcrt/xml/cfx_xmlelement.h"
-#include "third_party/base/ptr_util.h"
 
+class CFX_XMLElement;
 class CFX_XMLNode;
 
 class CFX_XMLDocument {
@@ -24,7 +23,7 @@ class CFX_XMLDocument {
 
   template <typename T, typename... Args>
   T* CreateNode(Args&&... args) {
-    nodes_.push_back(pdfium::MakeUnique<T>(std::forward<Args>(args)...));
+    nodes_.push_back(std::make_unique<T>(std::forward<Args>(args)...));
     return static_cast<T*>(nodes_.back().get());
   }
 

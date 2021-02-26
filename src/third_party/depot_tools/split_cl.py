@@ -126,7 +126,9 @@ def UploadCl(refactor_branch, refactor_branch_upstream, directory, files,
     git.run('commit', '-F', tmp_file)
 
   # Upload a CL.
-  upload_args = ['-f', '-r', ','.join(reviewers)]
+  upload_args = ['-f']
+  if reviewers:
+    upload_args.extend(['-r', ','.join(reviewers)])
   if cq_dry_run:
     upload_args.append('--cq-dry-run')
   if not comment:
@@ -245,7 +247,7 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
       directory = directory.replace(os.path.sep, '/')
       file_paths = [f for _, f in files]
       reviewers = owners_database.reviewers_for(file_paths, author)
-
+      reviewers.discard(owners.ANYONE)
       if dry_run:
         PrintClInfo(cl_index, num_cls, directory, file_paths, description,
                     reviewers)

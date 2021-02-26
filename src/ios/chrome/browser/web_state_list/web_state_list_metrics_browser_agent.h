@@ -10,17 +10,22 @@
 #import "ios/chrome/browser/main/browser_user_data.h"
 #include "ios/chrome/browser/sessions/session_restoration_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
+#import "ios/web/public/web_state_observer.h"
+
+class SessionMetrics;
 
 class WebStateListMetricsBrowserAgent
     : BrowserObserver,
       public WebStateListObserver,
       public SessionRestorationObserver,
+      public web::WebStateObserver,
       public BrowserUserData<WebStateListMetricsBrowserAgent> {
  public:
-  WebStateListMetricsBrowserAgent();
   ~WebStateListMetricsBrowserAgent() override;
 
-  void RecordSessionMetrics();
+  // Creates the WebStateListMetricsBrowserAgent associating it with |browser|.
+  static void CreateForBrowser(Browser* browser,
+                               SessionMetrics* session_metrics);
 
   // WebStateListObserver implementation.
   void WebStateInsertedAt(WebStateList* web_state_list,
@@ -35,31 +40,42 @@ class WebStateListMetricsBrowserAgent
                            web::WebState* new_web_state,
                            int active_index,
                            ActiveWebStateChangeReason reason) override;
+  void WebStateReplacedAt(WebStateList* web_state_list,
+                          web::WebState* old_web_state,
+                          web::WebState* new_web_state,
+                          int index) override;
 
  private:
-  explicit WebStateListMetricsBrowserAgent(Browser* browser);
+  WebStateListMetricsBrowserAgent(Browser* browser,
+                                  SessionMetrics* session_metrics);
   friend class BrowserUserData<WebStateListMetricsBrowserAgent>;
   BROWSER_USER_DATA_KEY_DECL();
 
   // BrowserObserver methods
   void BrowserDestroyed(Browser* browser) override;
 
-  // Reset metrics counters.
-  void ResetSessionMetrics();
-
   // SessionRestorationObserver implementation.
   void WillStartSessionRestoration() override;
   void SessionRestorationFinished(
       const std::vector<web::WebState*>& restored_web_states) override;
 
-  // The WebStateList containing all the monitored tabs.
-  WebStateList* web_state_list_;  // weak
+  // web::WebStateObserver
+  void DidStartNavigation(web::WebState* web_state,
+                          web::NavigationContext* navigation_context) override;
+  void DidFinishNavigation(web::WebState* web_state,
+                           web::NavigationContext* navigation_context) override;
+  void PageLoaded(
+      web::WebState* web_state,
+      web::PageLoadCompletionStatus load_completion_status) override;
 
-  // Counters for metrics.
-  int inserted_web_state_counter_;
-  int detached_web_state_counter_;
-  int activated_web_state_counter_;
-  bool metric_collection_paused_;
+  // The WebStateList containing all the monitored tabs.
+  WebStateList* web_state_list_ = nullptr;
+
+  // The object storing the metrics.
+  SessionMetrics* session_metrics_ = nullptr;
+
+  // Whether metric recording is paused (for session restoration).
+  bool metric_collection_paused_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateListMetricsBrowserAgent);
 };

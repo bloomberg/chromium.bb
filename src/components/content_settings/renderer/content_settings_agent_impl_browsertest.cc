@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -27,7 +27,7 @@
 namespace content_settings {
 namespace {
 
-constexpr char kWhitelistScheme[] = "foo";
+constexpr char kAllowlistScheme[] = "foo";
 constexpr char kEndUrl[] = ":something";
 
 constexpr char kScriptHtml[] = R"HTML(
@@ -86,8 +86,8 @@ class MockContentSettingsManagerImpl : public mojom::ContentSettingsManager {
 class MockContentSettingsAgentDelegate
     : public ContentSettingsAgentImpl::Delegate {
  public:
-  bool IsSchemeWhitelisted(const std::string& scheme) override {
-    return scheme == kWhitelistScheme;
+  bool IsSchemeAllowlisted(const std::string& scheme) override {
+    return scheme == kAllowlistScheme;
   }
 };
 
@@ -152,8 +152,7 @@ class CommitTimeConditionChecker : public content::RenderFrameObserver {
  protected:
   // RenderFrameObserver:
   void OnDestruct() override {}
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override {
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override {
     EXPECT_EQ(expectation_, predicate_.Run());
   }
 
@@ -183,32 +182,32 @@ class ContentSettingsAgentImplBrowserTest : public content::RenderViewTest {
   }
 };
 
-TEST_F(ContentSettingsAgentImplBrowserTest, WhitelistedSchemes) {
+TEST_F(ContentSettingsAgentImplBrowserTest, AllowlistedSchemes) {
   url::ScopedSchemeRegistryForTests scoped_registry;
-  url::AddStandardScheme(kWhitelistScheme, url::SCHEME_WITH_HOST);
+  url::AddStandardScheme(kAllowlistScheme, url::SCHEME_WITH_HOST);
 
   MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame());
   GURL chrome_ui_url =
       GURL(std::string(content::kChromeUIScheme).append(kEndUrl));
   LoadHTMLWithUrlOverride("<html></html>", chrome_ui_url.spec().c_str());
-  EXPECT_TRUE(mock_agent.IsWhitelistedForContentSettings());
+  EXPECT_TRUE(mock_agent.IsAllowlistedForContentSettings());
 
   GURL chrome_dev_tools_url =
       GURL(std::string(content::kChromeDevToolsScheme).append(kEndUrl));
   LoadHTMLWithUrlOverride("<html></html>", chrome_dev_tools_url.spec().c_str());
-  EXPECT_TRUE(mock_agent.IsWhitelistedForContentSettings());
+  EXPECT_TRUE(mock_agent.IsAllowlistedForContentSettings());
 
-  GURL whitelist_url = GURL(std::string(kWhitelistScheme).append(kEndUrl));
-  LoadHTMLWithUrlOverride("<html></html>", whitelist_url.spec().c_str());
-  EXPECT_TRUE(mock_agent.IsWhitelistedForContentSettings());
+  GURL allowlist_url = GURL(std::string(kAllowlistScheme).append(kEndUrl));
+  LoadHTMLWithUrlOverride("<html></html>", allowlist_url.spec().c_str());
+  EXPECT_TRUE(mock_agent.IsAllowlistedForContentSettings());
 
   LoadHTMLWithUrlOverride("<html></html>", "file:///dir/");
-  EXPECT_TRUE(mock_agent.IsWhitelistedForContentSettings());
+  EXPECT_TRUE(mock_agent.IsAllowlistedForContentSettings());
   LoadHTMLWithUrlOverride("<html></html>", "file:///dir/file");
-  EXPECT_FALSE(mock_agent.IsWhitelistedForContentSettings());
+  EXPECT_FALSE(mock_agent.IsAllowlistedForContentSettings());
 
   LoadHTMLWithUrlOverride("<html></html>", "http://server.com/path");
-  EXPECT_FALSE(mock_agent.IsWhitelistedForContentSettings());
+  EXPECT_FALSE(mock_agent.IsAllowlistedForContentSettings());
 }
 
 TEST_F(ContentSettingsAgentImplBrowserTest, DidBlockContentType) {
@@ -224,18 +223,41 @@ TEST_F(ContentSettingsAgentImplBrowserTest, DidBlockContentType) {
   EXPECT_EQ(1, mock_agent.on_content_blocked_count());
 }
 
-// Tests that multiple invokations of AllowDOMStorage result in a single IPC.
-TEST_F(ContentSettingsAgentImplBrowserTest, AllowDOMStorage) {
+// Tests that multiple invocations of AllowStorageAccessSync result in a single
+// IPC.
+TEST_F(ContentSettingsAgentImplBrowserTest, AllowStorageAccessSync) {
   // Load some HTML, so we have a valid security origin.
   LoadHTMLWithUrlOverride("<html></html>", "https://example.com/");
   MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame());
-  mock_agent.AllowStorage(true);
+  mock_agent.AllowStorageAccessSync(
+      blink::WebContentSettingsClient::StorageType::kLocalStorage);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_agent.allow_storage_access_count());
 
   // Accessing localStorage from the same origin again shouldn't result in a
   // new IPC.
-  mock_agent.AllowStorage(true);
+  mock_agent.AllowStorageAccessSync(
+      blink::WebContentSettingsClient::StorageType::kLocalStorage);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, mock_agent.allow_storage_access_count());
+}
+
+// Tests that multiple invocations of AllowStorageAccess result in a single IPC.
+TEST_F(ContentSettingsAgentImplBrowserTest, AllowStorageAccess) {
+  // Load some HTML, so we have a valid security origin.
+  LoadHTMLWithUrlOverride("<html></html>", "https://example.com/");
+  MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame());
+  mock_agent.AllowStorageAccess(
+      blink::WebContentSettingsClient::StorageType::kLocalStorage,
+      base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, mock_agent.allow_storage_access_count());
+
+  // Accessing localStorage from the same origin again shouldn't result in a
+  // new IPC.
+  mock_agent.AllowStorageAccess(
+      blink::WebContentSettingsClient::StorageType::kLocalStorage,
+      base::DoNothing());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_agent.allow_storage_access_count());
 }
@@ -282,7 +304,8 @@ TEST_F(ContentSettingsAgentImplBrowserTest, JSBlockSentAfterPageLoad) {
   // has not yet been sent at the time when the navigation commits.
   CommitTimeConditionChecker checker(
       view_->GetMainRenderFrame(),
-      base::Bind(HasSentOnContentBlocked, base::Unretained(&mock_agent)),
+      base::BindRepeating(HasSentOnContentBlocked,
+                          base::Unretained(&mock_agent)),
       false);
 
   std::string url_str = "data:text/html;charset=utf-8,";
@@ -539,43 +562,6 @@ TEST_F(ContentSettingsAgentImplBrowserTest,
   // same document navigation.
   OnSameDocumentNavigation(GetMainFrame(), true);
   EXPECT_TRUE(agent->AllowScript(true));
-}
-
-TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsInterstitialPages) {
-  MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame());
-  // Block scripts.
-  RendererContentSettingRules content_setting_rules;
-  ContentSettingsForOneType& script_setting_rules =
-      content_setting_rules.script_rules;
-  script_setting_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
-      std::string(), false));
-  // Block images.
-  ContentSettingsForOneType& image_setting_rules =
-      content_setting_rules.image_rules;
-  image_setting_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
-      std::string(), false));
-
-  ContentSettingsAgentImpl* agent =
-      ContentSettingsAgentImpl::Get(view_->GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
-  agent->SetAsInterstitial();
-
-  // Load a page which contains a script.
-  LoadHTML(kScriptHtml);
-
-  // Verify that the script was allowed.
-  EXPECT_EQ(0, mock_agent.on_content_blocked_count());
-
-  // Verify that images are allowed.
-  EXPECT_TRUE(agent->AllowImage(true, mock_agent.image_url()));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, mock_agent.on_content_blocked_count());
 }
 
 TEST_F(ContentSettingsAgentImplBrowserTest, MixedAutoupgradesDisabledByRules) {

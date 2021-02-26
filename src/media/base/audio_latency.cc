@@ -11,13 +11,14 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "media/base/limits.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "media/base/mac/audio_latency_mac.h"
 #endif
 
@@ -42,7 +43,7 @@ uint32_t RoundUpToPowerOfTwo(uint32_t v) {
 
 // static
 bool AudioLatency::IsResamplingPassthroughSupported(LatencyType type) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   return true;
 #elif defined(OS_ANDROID)
   // Only N MR1+ has support for OpenSLES performance modes which allow for
@@ -113,7 +114,8 @@ int AudioLatency::GetRtcBufferSize(int sample_rate, int hardware_buffer_size) {
     return frames_per_buffer;
   }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
+    defined(OS_FUCHSIA)
   // On Linux, MacOS and Fuchsia, the low level IO implementations on the
   // browser side supports all buffer size the clients want. We use the native
   // peer connection buffer size (10ms) to achieve best possible performance.

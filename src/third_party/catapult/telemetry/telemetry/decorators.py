@@ -173,7 +173,7 @@ def Enabled(*args):
   return _Enabled
 
 
-def Info(emails=None, component=None, documentation_url=None):
+def Info(emails=None, component=None, documentation_url=None, info_blurb=None):
   """Decorator for specifying the benchmark_info of a benchmark."""
 
   def _Info(func):
@@ -192,6 +192,10 @@ def Info(emails=None, component=None, documentation_url=None):
       assert 'documentation_url' not in info_dict, (
           'document link can only be set once')
       info_dict['documentation_url'] = documentation_url
+    if info_blurb:
+      assert 'info_blurb' not in info_dict, (
+          'info_blurb can only be set once')
+      info_dict['info_blurb'] = info_blurb
 
     setattr(func, info_attr_name, info_dict)
     return func
@@ -208,6 +212,8 @@ def Info(emails=None, component=None, documentation_url=None):
     assert (documentation_url.startswith('http://') or
             documentation_url.startswith('https://')), (
                 'Documentation url is malformed')
+  if info_blurb:
+    assert isinstance(info_blurb, str), ('info_blurb must be a str')
   return _Info
 
 
@@ -240,7 +246,8 @@ def Isolated(*args):
   return _Isolated
 
 
-# TODO(nednguyen): Remove this and have call site just use ShouldSkip directly.
+# TODO(crbug.com/1111556): Remove this and have call site just use ShouldSkip
+# directly.
 def IsEnabled(test, possible_browser):
   """Returns True iff |test| is enabled given the |possible_browser|.
 
@@ -317,6 +324,13 @@ def GetDocumentationLink(test):
   benchmark_info = getattr(test, info_attr_name, {})
   if 'documentation_url' in benchmark_info:
     return benchmark_info['documentation_url']
+  return None
+
+def GetInfoBlurb(test):
+  info_attr_name = InfoAttributeName(test)
+  benchmark_info = getattr(test, info_attr_name, {})
+  if 'info_blurb' in benchmark_info:
+    return benchmark_info['info_blurb']
   return None
 
 

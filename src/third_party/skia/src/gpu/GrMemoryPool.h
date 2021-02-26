@@ -25,11 +25,9 @@
 class GrMemoryPool {
 public:
 #ifdef SK_FORCE_8_BYTE_ALIGNMENT
-    // This is an issue for WASM builds using emscripten, which had
-    // std::max_align_t = 16, but was returning pointers only aligned to 8
-    // bytes. https://github.com/emscripten-core/emscripten/issues/10072
-    // Since Skia does not use "long double" (16 bytes), we should be ok to
-    // force it back to 8 bytes until emscripten is fixed.
+    // https://github.com/emscripten-core/emscripten/issues/10072
+    // Since Skia does not use "long double" (16 bytes), we should be ok to force it back to 8 bytes
+    // until emscripten is fixed.
     static constexpr size_t kAlignment = 8;
 #else
     // Guaranteed alignment of pointer returned by allocate().
@@ -69,8 +67,16 @@ public:
     bool isEmpty() const {
         // If size is the same as preallocSize, there aren't any heap blocks, so currentBlock()
         // is the inline head block.
-        return 0 == this->size() && 0 == fAllocator.currentBlock()->metadata();
+        return fAllocator.currentBlock() == fAllocator.headBlock() &&
+               fAllocator.currentBlock()->metadata() == 0;
     }
+
+    /**
+     * In debug mode, this reports the IDs of unfreed nodes via `SkDebugf`. This reporting is also
+     * performed automatically whenever a GrMemoryPool is destroyed.
+     * In release mode, this method is a no-op.
+     */
+    void reportLeaks() const;
 
     /**
      * Returns the total allocated size of the GrMemoryPool minus any preallocated amount
@@ -85,6 +91,13 @@ public:
         return offsetof(GrMemoryPool, fAllocator) + fAllocator.preallocSize();
     }
 
+    /**
+     * Frees any scratch blocks that are no longer being used.
+     */
+    void resetScratchSpace() {
+        fAllocator.resetScratchSpace();
+    }
+
 #ifdef SK_DEBUG
     void validate() const;
 #endif
@@ -93,12 +106,14 @@ private:
     // Per-allocation overhead so that GrMemoryPool can always identify the block owning each and
     // release all occupied bytes, including any resulting from alignment padding.
     struct Header {
-#ifdef SK_DEBUG
-        int fSentinel; // known value to check for memory stomping (e.g., (CD)*)
-        int fID;       // ID that can be used to track down leaks by clients.
-#endif
         int fStart;
         int fEnd;
+#if defined(SK_DEBUG)
+        int fID;       // ID that can be used to track down leaks by clients.
+#endif
+#if defined(SK_DEBUG) || defined(SK_SANITIZE_ADDRESS)
+        int fSentinel; // set to a known value to check for memory stomping; poisoned in ASAN mode
+#endif
     };
 
     GrMemoryPool(size_t preallocSize, size_t minAllocSize);
@@ -109,34 +124,5 @@ private:
 #endif
 
     GrBlockAllocator fAllocator; // Must be the last field, in order to use extra allocated space
-
-    friend class GrOpMemoryPool;
 };
-
-class GrOp;
-
-class GrOpMemoryPool {
-public:
-    static std::unique_ptr<GrOpMemoryPool> Make(size_t preallocSize, size_t minAllocSize);
-    void operator delete(void* p) { ::operator delete(p); }
-
-    template <typename Op, typename... OpArgs>
-    std::unique_ptr<Op> allocate(OpArgs&&... opArgs) {
-        auto mem = this->allocate(sizeof(Op));
-        return std::unique_ptr<Op>(new (mem) Op(std::forward<OpArgs>(opArgs)...));
-    }
-
-    void* allocate(size_t size) { return fPool.allocate(size); }
-
-    void release(std::unique_ptr<GrOp> op);
-
-    bool isEmpty() const { return fPool.isEmpty(); }
-
-private:
-    GrOpMemoryPool(size_t preallocSize, size_t minAllocSize)
-            : fPool(preallocSize - offsetof(GrOpMemoryPool, fPool), minAllocSize) {}
-
-    GrMemoryPool fPool; // Must be the last field
-};
-
 #endif

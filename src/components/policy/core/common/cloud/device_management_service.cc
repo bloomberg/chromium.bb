@@ -103,7 +103,7 @@ bool FailedWithProxy(const std::string& mime_type,
 
 // While these are declared as constexpr in the header file, they also need to
 // be defined here so that references can be retrieved when needed.  For
-// example, setting one of these constants as an argument to base::Bind()
+// example, setting one of these constants as an argument to base::BindOnce()
 // requires such a reference.
 const int DeviceManagementService::kSuccess;
 const int DeviceManagementService::kInvalidArgument;
@@ -118,12 +118,15 @@ const int DeviceManagementService::kDeviceNotFound;
 const int DeviceManagementService::kPendingApproval;
 const int DeviceManagementService::kRequestTooLarge;
 const int DeviceManagementService::kConsumerAccountWithPackagedLicense;
+const int DeviceManagementService::kTooManyRequests;
 const int DeviceManagementService::kInternalServerError;
 const int DeviceManagementService::kServiceUnavailable;
 const int DeviceManagementService::kPolicyNotFound;
 const int DeviceManagementService::kDeprovisioned;
 const int DeviceManagementService::kArcDisabled;
+const int DeviceManagementService::kInvalidDomainlessCustomer;
 const int DeviceManagementService::kTosHasNotBeenAccepted;
+const int DeviceManagementService::kIllegalAccountForPackagedEDULicense;
 
 // static
 std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
@@ -188,6 +191,12 @@ std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
     case DeviceManagementService::JobConfiguration::
         TYPE_CERT_PROVISIONING_REQUEST:
       return "CertProvisioningRequest";
+    case DeviceManagementService::JobConfiguration::
+        TYPE_PSM_HAS_DEVICE_STATE_REQUEST:
+      return "PSMDeviceStateRequest";
+    case DeviceManagementService::JobConfiguration::
+        TYPE_UPLOAD_ENCRYPTED_REPORT:
+      return "UploadEncryptedReport";
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";

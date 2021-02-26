@@ -9,18 +9,7 @@
     {
       "name": "LayoutBlockFlow DIV id='scroller'",
       "bounds": [200, 200],
-      "backgroundColor": "#D3D3D3",
       "transform": 1
-    },
-    {
-      "name": "Scrolling Contents Layer",
-      "bounds": [200, 1620],
-      "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3",
-      "invalidations": [
-        [0, 610, 21, 19]
-      ],
-      "transform": 2
     },
     {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",
@@ -39,6 +28,16 @@
       "position": [185, 185],
       "bounds": [15, 15],
       "transform": 1
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [200, 1620],
+      "contentsOpaque": true,
+      "backgroundColor": "#ADD8E6",
+      "invalidations": [
+        [0, 610, 22, 19]
+      ],
+      "transform": 2
     }
   ],
   "transforms": [

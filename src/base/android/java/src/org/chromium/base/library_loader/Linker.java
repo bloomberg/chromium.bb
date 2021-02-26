@@ -251,14 +251,14 @@ public abstract class Linker {
 
     /**
      * Call this method before loading any libraries to indicate that this
-     * process shall neither create or reuse shared RELRO sections.
+     * process shall neither create nor reuse shared RELRO sections.
      */
     public final void disableSharedRelros() {
         if (DEBUG) Log.i(TAG, "disableSharedRelros() called");
         synchronized (sLock) {
+            mInBrowserProcess = false;
             ensureInitializedLocked();
             assert mState == State.INITIALIZED; // Not after the library has been loaded.
-            mInBrowserProcess = false;
             mWaitForSharedRelros = false;
         }
     }
@@ -358,10 +358,11 @@ public abstract class Linker {
     public final void initServiceProcess(long baseLoadAddress) {
         if (DEBUG) Log.i(TAG, "initServiceProcess(0x%x) called", baseLoadAddress);
         synchronized (sLock) {
+            mInBrowserProcess = false;
+
             ensureInitializedLocked();
             assert mState == State.INITIALIZED;
 
-            mInBrowserProcess = false;
             mWaitForSharedRelros = true;
             mBaseLoadAddress = baseLoadAddress;
         }
@@ -427,13 +428,13 @@ public abstract class Linker {
         mState = State.INITIALIZED;
     }
 
-    // Used internally to wait for shared RELROs. Returns once useSharedRelros() has been
+    // Used internally to wait for shared RELROs. Returns once provideSharedRelros() has been
     // called to supply a valid shared RELROs bundle.
     @GuardedBy("sLock")
     protected final void waitForSharedRelrosLocked() {
         if (DEBUG) Log.i(TAG, "waitForSharedRelros() called");
 
-        // Wait until notified by useSharedRelros() that shared RELROs have arrived.
+        // Wait until notified by provideSharedRelros() that shared RELROs have arrived.
         //
         // Note that the relocations may already have been provided by the time we arrive here, so
         // this may return immediately.

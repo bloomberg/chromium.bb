@@ -31,6 +31,7 @@ WebUI resources in `components/` will be added in your specific project folder. 
  <link rel="stylesheet" href="hello_world.css">
  <script src="chrome://resources/js/cr.js"></script>
  <script src="chrome://resources/js/load_time_data.js"></script>
+ <script src="chrome://resources/js/assert.js"></script>
  <script src="chrome://resources/js/util.js"></script>
  <script src="strings.js"></script>
  <script src="hello_world.js"></script>
@@ -142,9 +143,10 @@ Next we need a class to handle requests to this new resource URL. Typically this
 class HelloWorldUI : public content::WebUIController {
  public:
   explicit HelloWorldUI(content::WebUI* web_ui);
+  HelloWorldUI(const HelloWorldUI&) = delete;
+  HelloWorldUI& operator=(const HelloWorldUI&) = delete;
   ~HelloWorldUI() override;
  private:
-  DISALLOW_COPY_AND_ASSIGN(HelloWorldUI);
 };
 
 #endif  // COMPONENTS_HELLO_WORLD_HELLO_WORLD_UI_H_
@@ -257,8 +259,6 @@ You probably want your new WebUI page to be able to do something or get informat
 +  private:
 +   // Add two numbers together using integer arithmetic.
 +   void AddNumbers(const base::ListValue* args);
-
-    DISALLOW_COPY_AND_ASSIGN(HelloWorldUI);
   };
 ```
 

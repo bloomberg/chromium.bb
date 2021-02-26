@@ -4,10 +4,9 @@
 
 #include "chrome/browser/chromeos/printing/usb_printer_notification_controller.h"
 
-#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/browser/profiles/profile.h"
 
 namespace chromeos {
 
@@ -46,10 +45,6 @@ class UsbPrinterNotificationControllerImpl
  private:
   void ShowNotification(const Printer& printer,
                         UsbPrinterNotification::Type type) {
-    if (!base::FeatureList::IsEnabled(features::kStreamlinedUsbPrinterSetup)) {
-      return;
-    }
-
     if (base::Contains(notifications_, printer.id())) {
       return;
     }
@@ -70,6 +65,11 @@ class UsbPrinterNotificationControllerImpl
 
 std::unique_ptr<UsbPrinterNotificationController>
 UsbPrinterNotificationController::Create(Profile* profile) {
+  // If we are in guest mode, the new profile should be an OffTheRecord profile.
+  // Otherwise, this may later hit a check (same condition as this one) in
+  // Browser::Browser when opening attempting to open the Printer Settings page.
+  DCHECK(!profile->IsGuestSession() || profile->IsOffTheRecord())
+      << "Guest mode must use OffTheRecord profile";
   return std::make_unique<UsbPrinterNotificationControllerImpl>(profile);
 }
 

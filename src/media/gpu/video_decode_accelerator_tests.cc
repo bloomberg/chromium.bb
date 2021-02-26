@@ -47,11 +47,10 @@ constexpr const char* help_msg =
     "                       e.g. --vmodule=*media/gpu*=2.\n\n"
     "  --disable_validator  disable frame validation.\n"
     "  --use_vd             use the new VD-based video decoders, instead of\n"
-    "                       the default VDA-based video decoders.\n\n"
-    "  --use_vd_vda         use the new VD-based video decoders with a wrapper"
-    "                       that translates to the VDA interface, used to test"
-    "                       interaction with older components expecting the VDA"
-    "                       interface.\n"
+    "                       the default VDA-based video decoders.\n"
+    "  --use_vd_vda         use the new VD-based video decoders with a\n"
+    "                       wrapper that translates to the VDA interface,\n"
+    "                       used to test interaction with older components\n"
     "  --output_frames      write the selected video frames to disk, possible\n"
     "                       values are \"all|corrupt\".\n"
     "  --output_format      set the format of frames saved to disk, supported\n"
@@ -105,8 +104,15 @@ class VideoDecoderTest : public ::testing::Test {
             g_env->GetFrameOutputLimit());
       }
 
+      // VP9 profile 2 supports 10 and 12 bit color depths, but we currently
+      // assume a profile 2 stream contains 10 bit color depth only.
+      // TODO(hiroh): Add bit depth info to Video class and follow it here.
+      const VideoPixelFormat validation_format =
+          g_env->Video()->Profile() == VP9PROFILE_PROFILE2
+              ? PIXEL_FORMAT_YUV420P10
+              : PIXEL_FORMAT_I420;
       frame_processors.push_back(media::test::MD5VideoFrameValidator::Create(
-          video->FrameChecksums(), PIXEL_FORMAT_I420, std::move(frame_writer)));
+          video->FrameChecksums(), validation_format, std::move(frame_writer)));
     }
 
     config.implementation = g_env->GetDecoderImplementation();

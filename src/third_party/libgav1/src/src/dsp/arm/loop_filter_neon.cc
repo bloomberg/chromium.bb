@@ -282,39 +282,35 @@ inline void Filter6Masks(const uint8x8_t p2q2, const uint8x8_t p1q1,
                                      inner_thresh, outer_thresh);
 }
 
-inline void Filter6(const uint8x8_t p2q2_u8, const uint8x8_t p1q1_u8,
-                    const uint8x8_t p0q0_u8, uint8x8_t* const p1q1_output,
+inline void Filter6(const uint8x8_t p2q2, const uint8x8_t p1q1,
+                    const uint8x8_t p0q0, uint8x8_t* const p1q1_output,
                     uint8x8_t* const p0q0_output) {
-  const uint16x8_t p2q2 = vmovl_u8(p2q2_u8);
-  const uint16x8_t p1q1 = vmovl_u8(p1q1_u8);
-  const uint16x8_t p0q0 = vmovl_u8(p0q0_u8);
-
   // Sum p1 and q1 output from opposite directions
   // p1 = (3 * p2) + (2 * p1) + (2 * p0) + q0
   //      ^^^^^^^^
   // q1 = p0 + (2 * q0) + (2 * q1) + (3 * q3)
   //                                 ^^^^^^^^
-  const uint16x8_t p2q2_double = vaddq_u16(p2q2, p2q2);
-  uint16x8_t sum = vaddq_u16(p2q2_double, p2q2);
+  const uint16x8_t p2q2_double = vaddl_u8(p2q2, p2q2);
+  uint16x8_t sum = vaddw_u8(p2q2_double, p2q2);
 
   // p1 = (3 * p2) + (2 * p1) + (2 * p0) + q0
   //                 ^^^^^^^^
   // q1 = p0 + (2 * q0) + (2 * q1) + (3 * q3)
   //                      ^^^^^^^^
-  sum = vaddq_u16(vaddq_u16(p1q1, p1q1), sum);
+  sum = vaddq_u16(vaddl_u8(p1q1, p1q1), sum);
 
   // p1 = (3 * p2) + (2 * p1) + (2 * p0) + q0
   //                            ^^^^^^^^
   // q1 = p0 + (2 * q0) + (2 * q1) + (3 * q3)
   //           ^^^^^^^^
-  sum = vaddq_u16(vaddq_u16(p0q0, p0q0), sum);
+  sum = vaddq_u16(vaddl_u8(p0q0, p0q0), sum);
 
   // p1 = (3 * p2) + (2 * p1) + (2 * p0) + q0
   //                                       ^^
   // q1 = p0 + (2 * q0) + (2 * q1) + (3 * q3)
   //      ^^
-  const uint16x8_t q0p0 = vcombine_u16(vget_high_u16(p0q0), vget_low_u16(p0q0));
-  sum = vaddq_u16(sum, q0p0);
+  const uint8x8_t q0p0 = Transpose32(p0q0);
+  sum = vaddw_u8(sum, q0p0);
 
   *p1q1_output = vrshrn_n_u16(sum, 3);
 
@@ -322,8 +318,8 @@ inline void Filter6(const uint8x8_t p2q2_u8, const uint8x8_t p1q1_u8,
   // p0 = p1 - (2 * p2) + q0 + q1
   // q0 = q1 - (2 * q2) + p0 + p1
   sum = vsubq_u16(sum, p2q2_double);
-  const uint16x8_t q1p1 = vcombine_u16(vget_high_u16(p1q1), vget_low_u16(p1q1));
-  sum = vaddq_u16(vaddq_u16(q0p0, q1p1), sum);
+  const uint8x8_t q1p1 = Transpose32(p1q1);
+  sum = vaddq_u16(vaddl_u8(q0p0, q1p1), sum);
 
   *p0q0_output = vrshrn_n_u16(sum, 3);
 }
@@ -522,58 +518,53 @@ inline void Filter8Masks(const uint8x8_t p3q3, const uint8x8_t p2q2,
                    p1q1, inner_thresh, outer_thresh);
 }
 
-inline void Filter8(const uint8x8_t p3q3_u8, const uint8x8_t p2q2_u8,
-                    const uint8x8_t p1q1_u8, const uint8x8_t p0q0_u8,
+inline void Filter8(const uint8x8_t p3q3, const uint8x8_t p2q2,
+                    const uint8x8_t p1q1, const uint8x8_t p0q0,
                     uint8x8_t* const p2q2_output, uint8x8_t* const p1q1_output,
                     uint8x8_t* const p0q0_output) {
-  const uint16x8_t p3q3 = vmovl_u8(p3q3_u8);
-  const uint16x8_t p2q2 = vmovl_u8(p2q2_u8);
-  const uint16x8_t p1q1 = vmovl_u8(p1q1_u8);
-  const uint16x8_t p0q0 = vmovl_u8(p0q0_u8);
-
   // Sum p2 and q2 output from opposite directions
   // p2 = (3 * p3) + (2 * p2) + p1 + p0 + q0
   //      ^^^^^^^^
   // q2 = p0 + q0 + q1 + (2 * q2) + (3 * q3)
   //                                ^^^^^^^^
-  uint16x8_t sum = vaddq_u16(vaddq_u16(p3q3, p3q3), p3q3);
+  uint16x8_t sum = vaddw_u8(vaddl_u8(p3q3, p3q3), p3q3);
 
   // p2 = (3 * p3) + (2 * p2) + p1 + p0 + q0
   //                 ^^^^^^^^
   // q2 = p0 + q0 + q1 + (2 * q2) + (3 * q3)
   //                     ^^^^^^^^
-  sum = vaddq_u16(vaddq_u16(p2q2, p2q2), sum);
+  sum = vaddq_u16(vaddl_u8(p2q2, p2q2), sum);
 
   // p2 = (3 * p3) + (2 * p2) + p1 + p0 + q0
   //                            ^^^^^^^
   // q2 = p0 + q0 + q1 + (2 * q2) + (3 * q3)
   //           ^^^^^^^
-  sum = vaddq_u16(vaddq_u16(p1q1, p0q0), sum);
+  sum = vaddq_u16(vaddl_u8(p1q1, p0q0), sum);
 
   // p2 = (3 * p3) + (2 * p2) + p1 + p0 + q0
   //                                      ^^
   // q2 = p0 + q0 + q1 + (2 * q2) + (3 * q3)
   //      ^^
-  const uint16x8_t q0p0 = vcombine_u16(vget_high_u16(p0q0), vget_low_u16(p0q0));
-  sum = vaddq_u16(q0p0, sum);
+  const uint8x8_t q0p0 = Transpose32(p0q0);
+  sum = vaddw_u8(sum, q0p0);
 
   *p2q2_output = vrshrn_n_u16(sum, 3);
 
   // Convert to p1 and q1 output:
   // p1 = p2 - p3 - p2 + p1 + q1
   // q1 = q2 - q3 - q2 + q0 + p1
-  sum = vsubq_u16(sum, vaddq_u16(p3q3, p2q2));
-  const uint16x8_t q1p1 = vcombine_u16(vget_high_u16(p1q1), vget_low_u16(p1q1));
-  sum = vaddq_u16(vaddq_u16(p1q1, q1p1), sum);
+  sum = vsubq_u16(sum, vaddl_u8(p3q3, p2q2));
+  const uint8x8_t q1p1 = Transpose32(p1q1);
+  sum = vaddq_u16(vaddl_u8(p1q1, q1p1), sum);
 
   *p1q1_output = vrshrn_n_u16(sum, 3);
 
   // Convert to p0 and q0 output:
   // p0 = p1 - p3 - p1 + p0 + q2
   // q0 = q1 - q3 - q1 + q0 + p2
-  sum = vsubq_u16(sum, vaddq_u16(p3q3, p1q1));
-  const uint16x8_t q2p2 = vcombine_u16(vget_high_u16(p2q2), vget_low_u16(p2q2));
-  sum = vaddq_u16(vaddq_u16(p0q0, q2p2), sum);
+  sum = vsubq_u16(sum, vaddl_u8(p3q3, p1q1));
+  const uint8x8_t q2p2 = Transpose32(p2q2);
+  sum = vaddq_u16(vaddl_u8(p0q0, q2p2), sum);
 
   *p0q0_output = vrshrn_n_u16(sum, 3);
 }
@@ -742,103 +733,95 @@ void Vertical8_NEON(void* const dest, const ptrdiff_t stride,
   vst1_u8(dst + 3 * stride, p0q3_output);
 }
 
-inline void Filter14(const uint8x8_t p6q6_u8, const uint8x8_t p5q5_u8,
-                     const uint8x8_t p4q4_u8, const uint8x8_t p3q3_u8,
-                     const uint8x8_t p2q2_u8, const uint8x8_t p1q1_u8,
-                     const uint8x8_t p0q0_u8, uint8x8_t* const p5q5_output,
+inline void Filter14(const uint8x8_t p6q6, const uint8x8_t p5q5,
+                     const uint8x8_t p4q4, const uint8x8_t p3q3,
+                     const uint8x8_t p2q2, const uint8x8_t p1q1,
+                     const uint8x8_t p0q0, uint8x8_t* const p5q5_output,
                      uint8x8_t* const p4q4_output, uint8x8_t* const p3q3_output,
                      uint8x8_t* const p2q2_output, uint8x8_t* const p1q1_output,
                      uint8x8_t* const p0q0_output) {
-  const uint16x8_t p6q6 = vmovl_u8(p6q6_u8);
-  const uint16x8_t p5q5 = vmovl_u8(p5q5_u8);
-  const uint16x8_t p4q4 = vmovl_u8(p4q4_u8);
-  const uint16x8_t p3q3 = vmovl_u8(p3q3_u8);
-  const uint16x8_t p2q2 = vmovl_u8(p2q2_u8);
-  const uint16x8_t p1q1 = vmovl_u8(p1q1_u8);
-  const uint16x8_t p0q0 = vmovl_u8(p0q0_u8);
-
   // Sum p5 and q5 output from opposite directions
   // p5 = (7 * p6) + (2 * p5) + (2 * p4) + p3 + p2 + p1 + p0 + q0
   //      ^^^^^^^^
   // q5 = p0 + q0 + q1 + q2 + q3 + (2 * q4) + (2 * q5) + (7 * q6)
   //                                                     ^^^^^^^^
-  uint16x8_t sum = vsubq_u16(vshlq_n_u16(p6q6, 3), p6q6);
+  uint16x8_t sum = vsubw_u8(vshll_n_u8(p6q6, 3), p6q6);
 
   // p5 = (7 * p6) + (2 * p5) + (2 * p4) + p3 + p2 + p1 + p0 + q0
   //                 ^^^^^^^^
   // q5 = p0 + q0 + q1 + q2 + q3 + (2 * q4) + (2 * q5) + (7 * q6)
   //                                          ^^^^^^^^
-  sum = vaddq_u16(vaddq_u16(p5q5, p5q5), sum);
+  sum = vaddq_u16(vaddl_u8(p5q5, p5q5), sum);
 
   // p5 = (7 * p6) + (2 * p5) + (2 * p4) + p3 + p2 + p1 + p0 + q0
   //                            ^^^^^^^^
   // q5 = p0 + q0 + q1 + q2 + q3 + (2 * q4) + (2 * q5) + (7 * q6)
   //                               ^^^^^^^^
-  sum = vaddq_u16(vaddq_u16(p4q4, p4q4), sum);
+  sum = vaddq_u16(vaddl_u8(p4q4, p4q4), sum);
 
   // p5 = (7 * p6) + (2 * p5) + (2 * p4) + p3 + p2 + p1 + p0 + q0
   //                                       ^^^^^^^
   // q5 = p0 + q0 + q1 + q2 + q3 + (2 * q4) + (2 * q5) + (7 * q6)
   //                     ^^^^^^^
-  sum = vaddq_u16(vaddq_u16(p3q3, p2q2), sum);
+  sum = vaddq_u16(vaddl_u8(p3q3, p2q2), sum);
 
   // p5 = (7 * p6) + (2 * p5) + (2 * p4) + p3 + p2 + p1 + p0 + q0
   //                                                 ^^^^^^^
   // q5 = p0 + q0 + q1 + q2 + q3 + (2 * q4) + (2 * q5) + (7 * q6)
   //           ^^^^^^^
-  sum = vaddq_u16(vaddq_u16(p1q1, p0q0), sum);
+  sum = vaddq_u16(vaddl_u8(p1q1, p0q0), sum);
 
   // p5 = (7 * p6) + (2 * p5) + (2 * p4) + p3 + p2 + p1 + p0 + q0
   //                                                           ^^
   // q5 = p0 + q0 + q1 + q2 + q3 + (2 * q4) + (2 * q5) + (7 * q6)
   //      ^^
-  const uint16x8_t q0p0 = vcombine_u16(vget_high_u16(p0q0), vget_low_u16(p0q0));
-  sum = vaddq_u16(q0p0, sum);
+  const uint8x8_t q0p0 = Transpose32(p0q0);
+  sum = vaddw_u8(sum, q0p0);
 
   *p5q5_output = vrshrn_n_u16(sum, 4);
 
   // Convert to p4 and q4 output:
   // p4 = p5 - (2 * p6) + p3 + q1
   // q4 = q5 - (2 * q6) + q3 + p1
-  sum = vsubq_u16(sum, vaddq_u16(p6q6, p6q6));
-  const uint16x8_t q1p1 = vcombine_u16(vget_high_u16(p1q1), vget_low_u16(p1q1));
-  sum = vaddq_u16(vaddq_u16(p3q3, q1p1), sum);
+  sum = vsubq_u16(sum, vaddl_u8(p6q6, p6q6));
+  const uint8x8_t q1p1 = Transpose32(p1q1);
+  sum = vaddq_u16(vaddl_u8(p3q3, q1p1), sum);
 
   *p4q4_output = vrshrn_n_u16(sum, 4);
 
   // Convert to p3 and q3 output:
   // p3 = p4 - p6 - p5 + p2 + q2
   // q3 = q4 - q6 - q5 + q2 + p2
-  sum = vsubq_u16(sum, vaddq_u16(p6q6, p5q5));
-  const uint16x8_t q2p2 = vcombine_u16(vget_high_u16(p2q2), vget_low_u16(p2q2));
-  sum = vaddq_u16(vaddq_u16(p2q2, q2p2), sum);
+  sum = vsubq_u16(sum, vaddl_u8(p6q6, p5q5));
+  const uint8x8_t q2p2 = Transpose32(p2q2);
+  sum = vaddq_u16(vaddl_u8(p2q2, q2p2), sum);
 
   *p3q3_output = vrshrn_n_u16(sum, 4);
 
   // Convert to p2 and q2 output:
   // p2 = p3 - p6 - p4 + p1 + q3
   // q2 = q3 - q6 - q4 + q1 + p3
-  sum = vsubq_u16(sum, vaddq_u16(p6q6, p4q4));
-  const uint16x8_t q3p3 = vcombine_u16(vget_high_u16(p3q3), vget_low_u16(p3q3));
-  sum = vaddq_u16(vaddq_u16(p1q1, q3p3), sum);
+  sum = vsubq_u16(sum, vaddl_u8(p6q6, p4q4));
+  const uint8x8_t q3p3 = Transpose32(p3q3);
+  sum = vaddq_u16(vaddl_u8(p1q1, q3p3), sum);
 
   *p2q2_output = vrshrn_n_u16(sum, 4);
 
   // Convert to p1 and q1 output:
   // p1 = p2 - p6 - p3 + p0 + q4
   // q1 = q2 - q6 - q3 + q0 + p4
-  sum = vsubq_u16(sum, vaddq_u16(p6q6, p3q3));
-  const uint16x8_t q4p4 = vcombine_u16(vget_high_u16(p4q4), vget_low_u16(p4q4));
-  sum = vaddq_u16(vaddq_u16(p0q0, q4p4), sum);
+  sum = vsubq_u16(sum, vaddl_u8(p6q6, p3q3));
+  const uint8x8_t q4p4 = Transpose32(p4q4);
+  sum = vaddq_u16(vaddl_u8(p0q0, q4p4), sum);
 
   *p1q1_output = vrshrn_n_u16(sum, 4);
 
   // Convert to p0 and q0 output:
   // p0 = p1 - p6 - p2 + q0 + q5
   // q0 = q1 - q6 - q2 + p0 + p5
-  sum = vsubq_u16(sum, vaddq_u16(p6q6, p2q2));
-  const uint16x8_t q5p5 = vcombine_u16(vget_high_u16(p5q5), vget_low_u16(p5q5));
-  sum = vaddq_u16(vaddq_u16(q0p0, q5p5), sum);
+  sum = vsubq_u16(sum, vaddl_u8(p6q6, p2q2));
+  const uint8x8_t q5p5 = Transpose32(p5q5);
+  sum = vaddq_u16(vaddl_u8(q0p0, q5p5), sum);
 
   *p0q0_output = vrshrn_n_u16(sum, 4);
 }
@@ -1196,7 +1179,7 @@ void LoopFilterInit_NEON() { low_bitdepth::Init8bpp(); }
 }  // namespace dsp
 }  // namespace libgav1
 
-#else   // !LIBGAV1_ENABLE_NEON
+#else  // !LIBGAV1_ENABLE_NEON
 namespace libgav1 {
 namespace dsp {
 

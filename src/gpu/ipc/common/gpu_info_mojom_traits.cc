@@ -28,6 +28,9 @@ bool StructTraits<gpu::mojom::GpuDeviceDataView, gpu::GPUInfo::GPUDevice>::Read(
   out->cuda_compute_capability_major = data.cuda_compute_capability_major();
   return data.ReadVendorString(&out->vendor_string) &&
          data.ReadDeviceString(&out->device_string) &&
+#if defined(OS_WIN)
+         data.ReadLuid(&out->luid) &&
+#endif  // OS_WIN
          data.ReadDriverVendor(&out->driver_vendor) &&
          data.ReadDriverVersion(&out->driver_version);
 }
@@ -355,25 +358,15 @@ bool EnumTraits<gpu::mojom::OverlaySupport, gpu::OverlaySupport>::FromMojom(
   return true;
 }
 
-// static
-bool StructTraits<gpu::mojom::Dx12VulkanVersionInfoDataView,
-                  gpu::Dx12VulkanVersionInfo>::
-    Read(gpu::mojom::Dx12VulkanVersionInfoDataView data,
-         gpu::Dx12VulkanVersionInfo* out) {
-  out->supports_dx12 = data.supports_dx12();
-  out->supports_vulkan = data.supports_vulkan();
-  out->d3d12_feature_level = data.d3d12_feature_level();
-  out->vulkan_version = data.vulkan_version();
-  return true;
-}
-
 bool StructTraits<gpu::mojom::OverlayInfoDataView, gpu::OverlayInfo>::Read(
     gpu::mojom::OverlayInfoDataView data,
     gpu::OverlayInfo* out) {
   out->direct_composition = data.direct_composition();
   out->supports_overlays = data.supports_overlays();
   return data.ReadYuy2OverlaySupport(&out->yuy2_overlay_support) &&
-         data.ReadNv12OverlaySupport(&out->nv12_overlay_support);
+         data.ReadNv12OverlaySupport(&out->nv12_overlay_support) &&
+         data.ReadBgra8OverlaySupport(&out->bgra8_overlay_support) &&
+         data.ReadRgb10a2OverlaySupport(&out->rgb10a2_overlay_support);
 }
 #endif
 
@@ -389,18 +382,23 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->passthrough_cmd_decoder = data.passthrough_cmd_decoder();
   out->can_support_threaded_texture_mailbox =
       data.can_support_threaded_texture_mailbox();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!gpu::ValidateMacOSSpecificTextureTarget(
           data.macos_specific_texture_target())) {
     return false;
   }
   out->macos_specific_texture_target = data.macos_specific_texture_target();
-#endif  // OS_MACOSX
+#endif  // OS_MAC
   out->jpeg_decode_accelerator_supported =
       data.jpeg_decode_accelerator_supported();
 
   out->oop_rasterization_supported = data.oop_rasterization_supported();
   out->subpixel_font_rendering = data.subpixel_font_rendering();
+
+#if defined(OS_WIN)
+  out->d3d12_feature_level = data.d3d12_feature_level();
+  out->vulkan_version = data.vulkan_version();
+#endif
 
   return data.ReadInitializationTime(&out->initialization_time) &&
          data.ReadGpu(&out->gpu) &&
@@ -421,7 +419,6 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
 #if defined(OS_WIN)
          data.ReadOverlayInfo(&out->overlay_info) &&
          data.ReadDxDiagnostics(&out->dx_diagnostics) &&
-         data.ReadDx12VulkanVersionInfo(&out->dx12_vulkan_version_info) &&
 #endif
          data.ReadVideoDecodeAcceleratorCapabilities(
              &out->video_decode_accelerator_capabilities) &&

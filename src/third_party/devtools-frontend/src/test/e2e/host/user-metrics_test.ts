@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {describe, it} from 'mocha';
 import * as puppeteer from 'puppeteer';
 
-import {click, getBrowserAndPages, platform, reloadDevTools, waitFor} from '../../shared/helper.js';
-import {openPanelViaMoreTools} from '../helpers/settings-helpers.js';
+import {$, click, enableExperiment, getBrowserAndPages, goToResource, platform, reloadDevTools, scrollElementIntoView, waitFor} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
+import {navigateToCssOverviewTab} from '../helpers/css-overview-helpers.js';
+import {editCSSProperty, expandSelectedNodeRecursively, focusElementsTree, INACTIVE_GRID_ADORNER_SELECTOR, navigateToSidePane, openLayoutPane, toggleElementCheckboxInLayoutPane, waitForContentOfSelectedElementsNode, waitForElementsStyleSection} from '../helpers/elements-helpers.js';
+import {clickToggleButton, selectDualScreen, startEmulationWithDualScreenFlag} from '../helpers/emulation-helpers.js';
+import {closeSecurityTab, navigateToSecurityTab} from '../helpers/security-helpers.js';
+import {openPanelViaMoreTools, openSettingsTab} from '../helpers/settings-helpers.js';
 
 interface UserMetric {
   name: string;
@@ -30,11 +34,22 @@ declare global {
     __endCatchEvents: () => void;
     __panelLoaded: (evt: Event) => void;
     __panelShown: (evt: Event) => void;
+    __panelClosed: (evt: Event) => void;
+    __sidebarPaneShown: (evt: Event) => void;
     __actionTaken: (evt: Event) => void;
     __keyboardShortcutFired: (evt: Event) => void;
     __issuesPanelOpenedFrom: (evt: Event) => void;
-    Host: {UserMetrics: UserMetrics; userMetrics: {actionTaken(name: number): void;}};
-    UI: {inspectorView: {_showDrawer(show: boolean): void; showView(name: string): void;}};
+    __keybindSetSettingChanged: (evt: Event) => void;
+    __dualScreenDeviceEmulated: (evt: Event) => void;
+    __experimentDisabled: (evt: Event) => void;
+    __experimentEnabled: (evt: Event) => void;
+    __colorFixed: (evt: Event) => void;
+    __issuesPanelIssueExpanded: (evt: Event) => void;
+    __issuesPanelResourceOpened: (evt: Event) => void;
+    __gridOverlayOpenedFrom: (evt: Event) => void;
+    Host: {
+      UserMetrics: UserMetrics; userMetrics: {actionTaken(name: number): void; colorFixed(threshold: string): void;}
+    };
   }
 }
 
@@ -45,9 +60,19 @@ async function beginCatchEvents(frontend: puppeteer.Page) {
       window.__caughtEvents.push({name: 'DevTools.PanelShown', value: customEvt.detail.value});
     };
 
+    window.__panelClosed = (evt: Event) => {
+      const customEvt = evt as CustomEvent;
+      window.__caughtEvents.push({name: 'DevTools.PanelClosed', value: customEvt.detail.value});
+    };
+
     window.__panelLoaded = (evt: Event) => {
       const customEvt = evt as CustomEvent;
       window.__caughtEvents.push({name: 'DevTools.PanelLoaded', value: customEvt.detail.value});
+    };
+
+    window.__sidebarPaneShown = (evt: Event) => {
+      const customEvt = evt as CustomEvent;
+      window.__caughtEvents.push({name: 'DevTools.SidebarPaneShown', value: customEvt.detail.value});
     };
 
     window.__actionTaken = (evt: Event) => {
@@ -65,21 +90,81 @@ async function beginCatchEvents(frontend: puppeteer.Page) {
       window.__caughtEvents.push({name: 'DevTools.IssuesPanelOpenedFrom', value: customEvt.detail.value});
     };
 
+    window.__keybindSetSettingChanged = (evt: Event) => {
+      const customEvt = evt as CustomEvent;
+      window.__caughtEvents.push({name: 'DevTools.KeybindSetSettingChanged', value: customEvt.detail.value});
+    };
+
+    window.__dualScreenDeviceEmulated = (evt: Event) => {
+      const customEvt = evt as CustomEvent;
+      window.__caughtEvents.push({name: 'DevTools.DualScreenDeviceEmulated', value: customEvt.detail.value});
+    };
+
+    window.__experimentDisabled = (evt: Event) => {
+      const customEvt = evt as CustomEvent;
+      window.__caughtEvents.push({name: 'DevTools.ExperimentDisabled', value: customEvt.detail.value});
+    };
+
+    window.__experimentEnabled = (evt: Event) => {
+      const customEvt = evt as CustomEvent;
+      window.__caughtEvents.push({name: 'DevTools.ExperimentEnabled', value: customEvt.detail.value});
+    };
+
+    window.__colorFixed = (evt: Event) => {
+      const customEvt = evt as CustomEvent;
+      window.__caughtEvents.push({name: 'DevTools.ColorPicker.FixedColor', value: customEvt.detail.value});
+    };
+
+    window.__issuesPanelIssueExpanded = (evt: Event) => {
+      const customEvt = evt as CustomEvent;
+      window.__caughtEvents.push({name: 'DevTools.IssuesPanelIssueExpanded', value: customEvt.detail.value});
+    };
+
+    window.__issuesPanelResourceOpened = (evt: Event) => {
+      const customEvt = evt as CustomEvent;
+      window.__caughtEvents.push({name: 'DevTools.IssuesPanelResourceOpened', value: customEvt.detail.value});
+    };
+
+    window.__gridOverlayOpenedFrom = (evt: Event) => {
+      const customEvt = evt as CustomEvent;
+      window.__caughtEvents.push({name: 'DevTools.GridOverlayOpenedFrom', value: customEvt.detail.value});
+    };
+
     window.__caughtEvents = [];
     window.__beginCatchEvents = () => {
       window.addEventListener('DevTools.PanelShown', window.__panelShown);
+      window.addEventListener('DevTools.PanelClosed', window.__panelClosed);
       window.addEventListener('DevTools.PanelLoaded', window.__panelLoaded);
+      window.addEventListener('DevTools.SidebarPaneShown', window.__sidebarPaneShown);
       window.addEventListener('DevTools.ActionTaken', window.__actionTaken);
       window.addEventListener('DevTools.KeyboardShortcutFired', window.__keyboardShortcutFired);
       window.addEventListener('DevTools.IssuesPanelOpenedFrom', window.__issuesPanelOpenedFrom);
+      window.addEventListener('DevTools.KeybindSetSettingChanged', window.__keybindSetSettingChanged);
+      window.addEventListener('DevTools.DualScreenDeviceEmulated', window.__dualScreenDeviceEmulated);
+      window.addEventListener('DevTools.ExperimentDisabled', window.__experimentDisabled);
+      window.addEventListener('DevTools.ExperimentEnabled', window.__experimentEnabled);
+      window.addEventListener('DevTools.ColorPicker.FixedColor', window.__colorFixed);
+      window.addEventListener('DevTools.IssuesPanelIssueExpanded', window.__issuesPanelIssueExpanded);
+      window.addEventListener('DevTools.IssuesPanelResourceOpened', window.__issuesPanelResourceOpened);
+      window.addEventListener('DevTools.GridOverlayOpenedFrom', window.__gridOverlayOpenedFrom);
     };
 
     window.__endCatchEvents = () => {
       window.removeEventListener('DevTools.PanelShown', window.__panelShown);
+      window.removeEventListener('DevTools.PanelClosed', window.__panelClosed);
       window.removeEventListener('DevTools.PanelLoaded', window.__panelLoaded);
+      window.removeEventListener('DevTools.SidebarPaneShown', window.__sidebarPaneShown);
       window.removeEventListener('DevTools.ActionTaken', window.__actionTaken);
       window.removeEventListener('DevTools.KeyboardShortcutFired', window.__keyboardShortcutFired);
       window.removeEventListener('DevTools.IssuesPanelOpenedFrom', window.__issuesPanelOpenedFrom);
+      window.removeEventListener('DevTools.KeybindSetSettingChanged', window.__keybindSetSettingChanged);
+      window.removeEventListener('DevTools.DualScreenDeviceEmulated', window.__dualScreenDeviceEmulated);
+      window.removeEventListener('DevTools.ExperimentDisabled', window.__experimentDisabled);
+      window.removeEventListener('DevTools.ExperimentEnabled', window.__experimentEnabled);
+      window.removeEventListener('DevTools.ColorPicker.FixedColor', window.__colorFixed);
+      window.removeEventListener('DevTools.IssuesPanelIssueExpanded', window.__issuesPanelIssueExpanded);
+      window.removeEventListener('DevTools.IssuesPanelResourceOpened', window.__issuesPanelResourceOpened);
+      window.removeEventListener('DevTools.GridOverlayOpenedFrom', window.__gridOverlayOpenedFrom);
     };
 
     window.__beginCatchEvents();
@@ -101,6 +186,17 @@ async function assertCapturedEvents(expected: UserMetric[]) {
   const events = await retrieveCapturedEvents(frontend);
 
   assert.deepEqual(events, expected);
+}
+
+// Check if the given expected UserMetric events have been fired,
+// but do not care if they are the entirety of the events fired,
+// i.e. expected ∈ events, not necessarily expected === events.
+// The purpose of this helper is to ignore unrelated collateral events.
+async function assertEventsHaveBeenFired(events: UserMetric[]) {
+  const {frontend} = getBrowserAndPages();
+  const allEvents = await retrieveCapturedEvents(frontend);
+
+  assert.includeDeepMembers(allEvents, events);
 }
 
 describe('User Metrics', () => {
@@ -169,11 +265,11 @@ describe('User Metrics', () => {
     await assertCapturedEvents([
       {
         name: 'DevTools.PanelShown',
-        value: 10,  // 'drawer-console-view'.
+        value: 10,  // 'console-view'.
       },
       {
         name: 'DevTools.PanelShown',
-        value: 11,  // 'drawer-animations'.
+        value: 11,  // 'animations'.
       },
     ]);
   });
@@ -188,11 +284,11 @@ describe('User Metrics', () => {
       },
       {
         name: 'DevTools.PanelShown',
-        value: 10,  // 'drawer-console-view'.
+        value: 10,  // 'console-view'.
       },
       {
         name: 'DevTools.PanelShown',
-        value: 37,  // 'drawer-issues-pane'.
+        value: 37,  // 'issues-pane'.
       },
     ]);
   });
@@ -254,7 +350,87 @@ describe('User Metrics', () => {
       },
       {
         name: 'DevTools.KeyboardShortcutFired',
-        value: 0,  // OtherShortcut
+        value: 35,  // debugger.toggle-breakpoints-active
+      },
+    ]);
+  });
+
+  it('dispatches an event when the keybindSet setting is changed', async () => {
+    const {frontend} = getBrowserAndPages();
+
+    await frontend.keyboard.press('F1');
+    await waitFor('.settings-window-main');
+    await click('[aria-label="Shortcuts"]');
+    await waitFor('.keybinds-set-select');
+
+    const keybindSetSelect = await $('.keybinds-set-select select') as puppeteer.ElementHandle<HTMLSelectElement>;
+    keybindSetSelect.select('vsCode');
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.PanelShown',
+        value: 29,  // settings-preferences
+      },
+      {
+        name: 'DevTools.KeyboardShortcutFired',
+        value: 22,  // settings.show
+      },
+      {
+        name: 'DevTools.PanelShown',
+        value: 38,  // settings-keybinds
+      },
+      {
+        name: 'DevTools.KeybindSetSettingChanged',
+        value: 1,  // vsCode
+      },
+    ]);
+  });
+
+  it('dispatches closed panel events for views', async () => {
+    // Focus and close a tab
+    await navigateToSecurityTab();
+    await closeSecurityTab();
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.PanelShown',
+        value: 16,  // Security
+      },
+      {
+        name: 'DevTools.PanelShown',
+        value: 1,
+      },
+      {
+        name: 'DevTools.PanelClosed',
+        value: 16,  // Security
+      },
+    ]);
+  });
+
+  it('dispatches an event when experiments are enabled and disabled', async () => {
+    await openSettingsTab('Experiments');
+    const customThemeCheckbox = await waitFor('[aria-label="Allow custom UI themes"]');
+    // Enable the experiment
+    await customThemeCheckbox.click();
+    // Disable the experiment
+    await customThemeCheckbox.click();
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.PanelShown',
+        value: 29,  // settings-preferences
+      },
+      {
+        name: 'DevTools.PanelShown',
+        value: 31,  // Experiments
+      },
+      {
+        name: 'DevTools.ExperimentEnabled',
+        value: 0,  // Allow Custom UI Themes
+      },
+      {
+        name: 'DevTools.ExperimentDisabled',
+        value: 0,  // Allow Custom UI Themes
       },
     ]);
   });
@@ -282,5 +458,292 @@ describe('User Metrics', () => {
         },
       },
     ]);
+  });
+});
+
+describe('User Metrics for dual screen emulation', () => {
+  beforeEach(async () => {
+    await startEmulationWithDualScreenFlag();
+    const {frontend} = getBrowserAndPages();
+    await beginCatchEvents(frontend);
+  });
+
+  it('dispatch events when dual screen emulation started and span button hit', async () => {
+    await selectDualScreen();
+    await clickToggleButton();
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.DualScreenDeviceEmulated',
+        value: 0,  // Dual screen/fold device selected
+      },
+      {
+        name: 'DevTools.ActionTaken',
+        value: 10,  // Device mode enabled
+      },
+      {
+        name: 'DevTools.DualScreenDeviceEmulated',
+        value: 1,  // Toggle single/dual screen mode (span button)
+      },
+      {
+        name: 'DevTools.ActionTaken',
+        value: 10,  // Device mode enabled.
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    const {frontend} = getBrowserAndPages();
+    await endCatchEvents(frontend);
+  });
+});
+
+describe('User Metrics for CSS Overview', () => {
+  beforeEach(async () => {
+    await enableExperiment('cssOverview');
+    // enableExperiment reloads the DevTools and removes our listeners
+    const {frontend} = getBrowserAndPages();
+    await beginCatchEvents(frontend);
+  });
+
+  it('dispatch events when capture overview button hit', async () => {
+    await navigateToCssOverviewTab('default');
+
+    await click('.primary-button');  // Capture overview
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.PanelShown',
+        value: 39,  // cssoverview
+      },
+      {
+        name: 'DevTools.ActionTaken',
+        value: 41,  // CaptureCssOverviewClicked
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    const {frontend} = getBrowserAndPages();
+    await endCatchEvents(frontend);
+  });
+});
+
+describe('User Metrics for Color Picker', () => {
+  beforeEach(async () => {
+    const {frontend} = getBrowserAndPages();
+    await beginCatchEvents(frontend);
+  });
+
+  it('dispatch ColorPickerFixedColor events', async () => {
+    const {frontend} = getBrowserAndPages();
+
+    await frontend.evaluate(() => {
+      self.Host.userMetrics.colorFixed('aa');
+      self.Host.userMetrics.colorFixed('aaa');
+      self.Host.userMetrics.colorFixed('wrong');
+    });
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.ColorPicker.FixedColor',
+        value: 0,  // AA
+      },
+      {
+        name: 'DevTools.ColorPicker.FixedColor',
+        value: 1,  // AAA
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    const {frontend} = getBrowserAndPages();
+    await endCatchEvents(frontend);
+  });
+});
+
+describe('User Metrics for sidebar panes', () => {
+  beforeEach(async () => {
+    const {frontend} = getBrowserAndPages();
+    await beginCatchEvents(frontend);
+  });
+
+  afterEach(async () => {
+    const {frontend} = getBrowserAndPages();
+    await endCatchEvents(frontend);
+  });
+
+  it('dispatches sidebar panes events for navigating Elements Panel sidebar panes', async () => {
+    await navigateToSidePane('Computed');
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.SidebarPaneShown',
+        value: 2,  // Computed
+      },
+    ]);
+  });
+
+  it('should not dispatch sidebar panes events for navigating to the same pane', async () => {
+    await navigateToSidePane('Styles');
+    await assertCapturedEvents([]);
+  });
+});
+
+describe('User Metrics for Issue Panel', () => {
+  beforeEach(async () => {
+    await openPanelViaMoreTools('Issues');
+    const {frontend} = getBrowserAndPages();
+    await beginCatchEvents(frontend);
+  });
+
+  it('dispatch events when expand an issue', async () => {
+    await goToResource('host/cookie-issue.html');
+    await waitFor('.issue');
+
+    await click('.issue');
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.IssuesPanelIssueExpanded',
+        value: 2,  // SameSiteCookie
+      },
+    ]);
+  });
+
+  it('dispatch events when a link to an element is clicked', async () => {
+    await goToResource('elements/element-reveal-inline-issue.html');
+    await waitFor('.issue');
+    await click('.issue');
+
+    await waitFor('.element-reveal-icon');
+    await scrollElementIntoView('.element-reveal-icon');
+    await click('.element-reveal-icon');
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.IssuesPanelIssueExpanded',
+        value: 4,  // ContentSecurityPolicy
+      },
+      {
+        name: 'DevTools.IssuesPanelResourceOpened',
+        value: 7,  // ContentSecurityPolicyElement
+      },
+    ]);
+  });
+
+  it('dispatch events when a "Learn More" link is clicked', async () => {
+    await goToResource('elements/element-reveal-inline-issue.html');
+    await waitFor('.issue');
+    await click('.issue');
+
+    await waitFor('.link-list a');
+    await scrollElementIntoView('.link-list a');
+    await click('.link-list a');
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.IssuesPanelIssueExpanded',
+        value: 4,  // ContentSecurityPolicy
+      },
+      {
+        name: 'DevTools.IssuesPanelResourceOpened',
+        value: 12,  // ContentSecurityPolicyLearnMore
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    const {frontend} = getBrowserAndPages();
+    await endCatchEvents(frontend);
+  });
+});
+
+describe('User Metrics for Grid Overlay', () => {
+  beforeEach(async () => {
+    await goToResource('elements/adornment.html');
+    await enableExperiment('cssGridFeatures');
+
+    const {frontend} = getBrowserAndPages();
+    await beginCatchEvents(frontend);
+
+    await waitForElementsStyleSection();
+    await waitForContentOfSelectedElementsNode('<body>\u200B');
+    await expandSelectedNodeRecursively();
+  });
+
+  // Flaky test
+  it.skip('[crbug.com/1134593] dispatch events when opening Grid overlay from adorner', async () => {
+    await click(INACTIVE_GRID_ADORNER_SELECTOR);
+
+    await assertEventsHaveBeenFired([
+      {
+        name: 'DevTools.GridOverlayOpenedFrom',
+        value: 0,  // adorner
+      },
+    ]);
+  });
+
+  it('dispatch events when opening Grid overlay from Layout pane', async () => {
+    await openLayoutPane();
+    await toggleElementCheckboxInLayoutPane();
+
+    await assertEventsHaveBeenFired([
+      {
+        name: 'DevTools.GridOverlayOpenedFrom',
+        value: 1,  // layout pane
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    const {frontend} = getBrowserAndPages();
+    await endCatchEvents(frontend);
+  });
+});
+
+describe('User Metrics for CSS custom properties in the Styles pane', () => {
+  beforeEach(async () => {
+    await goToResource('elements/css-variables.html');
+    await navigateToSidePane('Styles');
+    await waitForElementsStyleSection();
+    await waitForContentOfSelectedElementsNode('<body>\u200B');
+    await focusElementsTree();
+  });
+
+  it('dispatch events when capture overview button hit', async () => {
+    const {frontend} = getBrowserAndPages();
+    await frontend.keyboard.press('ArrowRight');
+    await waitForContentOfSelectedElementsNode('<div id=\u200B"properties-to-inspect">\u200B</div>\u200B');
+
+    await beginCatchEvents(frontend);
+
+    await click('.css-var-link');
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.ActionTaken',
+        value: 47,  // CustomPropertyLinkClicked
+      },
+    ]);
+
+    await endCatchEvents(frontend);
+  });
+
+  it('dispatch events when a custom property value is edited', async () => {
+    const {frontend} = getBrowserAndPages();
+    await beginCatchEvents(frontend);
+
+    await editCSSProperty('body, body', '--color', '#f06');
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.ActionTaken',
+        value: 14,  // StyleRuleEdited
+      },
+      {
+        name: 'DevTools.ActionTaken',
+        value: 48,  // CustomPropertyEdited
+      },
+    ]);
+
+    await endCatchEvents(frontend);
   });
 });

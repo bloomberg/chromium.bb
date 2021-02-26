@@ -35,22 +35,24 @@
 
 namespace blink {
 
-UserTiming::UserTiming(Performance& performance) : performance_(&performance) {}
+namespace {
 
-static void InsertPerformanceEntry(PerformanceEntryMap& performance_entry_map,
-                                   PerformanceEntry& entry) {
+void InsertPerformanceEntry(PerformanceEntryMap& performance_entry_map,
+                            PerformanceEntry& entry) {
   PerformanceEntryMap::iterator it = performance_entry_map.find(entry.name());
   if (it != performance_entry_map.end()) {
-    it->value.push_back(&entry);
+    DCHECK(it->value);
+    it->value->push_back(entry);
   } else {
-    PerformanceEntryVector vector(1);
-    vector[0] = Member<PerformanceEntry>(entry);
+    PerformanceEntryVector* vector =
+        MakeGarbageCollected<PerformanceEntryVector>();
+    vector->push_back(entry);
     performance_entry_map.Set(entry.name(), vector);
   }
 }
 
-static void ClearPeformanceEntries(PerformanceEntryMap& performance_entry_map,
-                                   const AtomicString& name) {
+void ClearPeformanceEntries(PerformanceEntryMap& performance_entry_map,
+                            const AtomicString& name) {
   if (name.IsNull()) {
     performance_entry_map.clear();
     return;
@@ -59,6 +61,10 @@ static void ClearPeformanceEntries(PerformanceEntryMap& performance_entry_map,
   if (performance_entry_map.Contains(name))
     performance_entry_map.erase(name);
 }
+
+}  // namespace
+
+UserTiming::UserTiming(Performance& performance) : performance_(&performance) {}
 
 void UserTiming::AddMarkToPerformanceTimeline(PerformanceMark& mark) {
   if (performance_->timing()) {
@@ -80,7 +86,7 @@ double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
   PerformanceEntryMap::const_iterator existing_marks =
       marks_map_.find(mark_name);
   if (existing_marks != marks_map_.end()) {
-    return existing_marks->value.back()->startTime();
+    return existing_marks->value->back()->startTime();
   }
 
   PerformanceTiming::PerformanceTimingGetter timing_function =
@@ -133,23 +139,25 @@ double UserTiming::GetTimeOrFindMarkTime(const AtomicString& measure_name,
   return time;
 }
 
-PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
-                                        const AtomicString& measure_name,
-                                        const StringOrDouble& start,
-                                        base::Optional<double> duration,
-                                        const StringOrDouble& end,
-                                        const ScriptValue& detail,
-                                        ExceptionState& exception_state) {
+PerformanceMeasure* UserTiming::Measure(
+    ScriptState* script_state,
+    const AtomicString& measure_name,
+    const base::Optional<StringOrDouble>& start,
+    const base::Optional<double>& duration,
+    const base::Optional<StringOrDouble>& end,
+    const ScriptValue& detail,
+    ExceptionState& exception_state) {
   double start_time =
-      start.IsNull()
-          ? 0.0
-          : GetTimeOrFindMarkTime(measure_name, start, exception_state);
+      start.has_value()
+          ? GetTimeOrFindMarkTime(measure_name, start.value(), exception_state)
+          : 0;
   if (exception_state.HadException())
     return nullptr;
 
   double end_time =
-      end.IsNull() ? performance_->now()
-                   : GetTimeOrFindMarkTime(measure_name, end, exception_state);
+      end.has_value()
+          ? GetTimeOrFindMarkTime(measure_name, end.value(), exception_state)
+          : performance_->now();
   if (exception_state.HadException())
     return nullptr;
 
@@ -157,11 +165,11 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
     // When |duration| is specified, we require that exactly one of |start| and
     // |end| were specified. Then, since |start| + |duration| = |end|, we'll
     // compute the missing boundary.
-    if (start.IsNull()) {
+    if (!start) {
       start_time = end_time - duration.value();
     } else {
-      DCHECK(end.IsNull()) << "When duration is specified, one of 'start' or "
-                              "'end' must be unspecified";
+      DCHECK(!end) << "When duration is specified, one of 'start' or "
+                      "'end' must be unspecified";
       end_time = start_time + duration.value();
     }
   }
@@ -201,7 +209,7 @@ static PerformanceEntryVector ConvertToEntrySequence(
   PerformanceEntryVector entries;
 
   for (const auto& entry : performance_entry_map)
-    entries.AppendVector(entry.value);
+    entries.AppendVector(*entry.value);
 
   return entries;
 }
@@ -213,7 +221,7 @@ static PerformanceEntryVector GetEntrySequenceByName(
 
   PerformanceEntryMap::const_iterator it = performance_entry_map.find(name);
   if (it != performance_entry_map.end())
-    entries.AppendVector(it->value);
+    entries.AppendVector(*it->value);
 
   return entries;
 }
@@ -234,7 +242,7 @@ PerformanceEntryVector UserTiming::GetMeasures(const AtomicString& name) const {
   return GetEntrySequenceByName(measures_map_, name);
 }
 
-void UserTiming::Trace(Visitor* visitor) {
+void UserTiming::Trace(Visitor* visitor) const {
   visitor->Trace(performance_);
   visitor->Trace(marks_map_);
   visitor->Trace(measures_map_);

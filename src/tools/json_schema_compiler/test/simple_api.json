@@ -4,6 +4,11 @@
     "description": "This is a simple API.",
     "types": [
       {
+        "id": "TestEnum",
+        "type": "string",
+        "enum": ["one", "two", "three"]
+      },
+      {
         "id": "TestType",
         "type": "object",
         "properties": {
@@ -22,15 +27,55 @@
           "integer": {
             "type": "integer",
             "description": "Some integer."
+          },
+          "object": {
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "foo": {
+                "type": "integer"
+              }
+            }
+          },
+          "array": {
+            "type": "array",
+            "optional": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "opt_external_enum": {
+            "optional": true,
+            "$ref": "enums.Enumeration"
+          }
+        }
+      }
+    ],
+    "manifest_keys": {
+      "key_string": {
+        "type": "string",
+        "description": "String key."
+      },
+      "key_ref": {
+        "$ref": "TestType",
+        "description": "Reference key"
+      },
+      "key_obj": {
+        "type": "object",
+        "optional": true,
+        "properties": {
+          "obj_string": {
+            "type": "string"
+          },
+          "obj_bool": {
+            "type": "boolean"
           }
         }
       },
-      {
-        "id": "TestEnum",
-        "type": "string",
-        "enum": ["one", "two", "three"]
+      "key_enum": {
+        "$ref": "TestEnum"
       }
-    ],
+    },
     "functions": [
       {
         "name": "incrementInteger",

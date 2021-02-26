@@ -24,8 +24,10 @@ const char kSharedProtoDatabaseDirectory[] = "shared_proto_db";
 
 }  // namespace
 
-ProtoDatabaseProvider::ProtoDatabaseProvider(const base::FilePath& profile_dir)
+ProtoDatabaseProvider::ProtoDatabaseProvider(const base::FilePath& profile_dir,
+                                             bool is_in_memory)
     : profile_dir_(profile_dir),
+      is_in_memory_(is_in_memory),
       client_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
 ProtoDatabaseProvider::~ProtoDatabaseProvider() {
@@ -48,6 +50,12 @@ void ProtoDatabaseProvider::GetSharedDBInstance(
 
   callback_task_runner->PostTask(FROM_HERE,
                                  base::BindOnce(std::move(callback), db_));
+}
+
+void ProtoDatabaseProvider::SetSharedDBDeleteObsoleteDelayForTesting(
+    base::TimeDelta delay) {
+  if (db_)
+    db_->set_delete_obsolete_delay_for_testing(delay);  // IN-TEST
 }
 
 }  // namespace leveldb_proto

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "v8/include/v8.h"
@@ -98,6 +99,24 @@ void V8SetReflectedNullableDOMStringAttribute(
 
 namespace bindings {
 
+CORE_EXPORT void SetupIDLInterfaceTemplate(
+    v8::Isolate* isolate,
+    const WrapperTypeInfo* wrapper_type_info,
+    v8::Local<v8::ObjectTemplate> instance_template,
+    v8::Local<v8::ObjectTemplate> prototype_template,
+    v8::Local<v8::FunctionTemplate> interface_template,
+    v8::Local<v8::FunctionTemplate> parent_interface_template);
+
+CORE_EXPORT void SetupIDLNamespaceTemplate(
+    v8::Isolate* isolate,
+    const WrapperTypeInfo* wrapper_type_info,
+    v8::Local<v8::ObjectTemplate> interface_template);
+
+CORE_EXPORT void SetupIDLCallbackInterfaceTemplate(
+    v8::Isolate* isolate,
+    const WrapperTypeInfo* wrapper_type_info,
+    v8::Local<v8::FunctionTemplate> interface_template);
+
 // Returns the length of arguments ignoring the undefined values at the end.
 inline int NonUndefinedArgumentLength(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -143,6 +162,12 @@ CORE_EXPORT base::Optional<size_t> FindIndexInEnumStringTable(
     const String& str_value,
     base::span<const char* const> enum_value_table);
 
+CORE_EXPORT void ReportInvalidEnumSetToAttribute(
+    v8::Isolate* isolate,
+    const String& value,
+    const String& enum_type_name,
+    ExceptionState& exception_state);
+
 CORE_EXPORT bool IsEsIterableObject(v8::Isolate* isolate,
                                     v8::Local<v8::Value> value,
                                     ExceptionState& exception_state);
@@ -161,7 +186,7 @@ CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
 CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
     const DOMParser* parser);
 
-CORE_EXPORT v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(
+CORE_EXPORT v8::MaybeLocal<v8::Value> CreateNamedConstructorFunction(
     ScriptState* script_state,
     v8::FunctionCallback callback,
     const char* func_name,
@@ -177,6 +202,86 @@ CORE_EXPORT void InstallUnscopablePropertyNames(
 CORE_EXPORT v8::Local<v8::Array> EnumerateIndexedProperties(
     v8::Isolate* isolate,
     uint32_t length);
+
+// Performs the ES value to IDL value conversion of IDL dictionary member.
+// Sets a dictionary member |value| and |presence| to the resulting values.
+// Returns true on success, otherwise returns false and throws an exception.
+//
+// |try_block| must be the innermost v8::TryCatch and it's used to internally
+// capture an exception, which is rethrown in |exception_state|.
+template <typename NVTTag, bool is_required, typename T>
+bool ConvertDictionaryMember(v8::Isolate* isolate,
+                             v8::Local<v8::Context> current_context,
+                             v8::Local<v8::Object> v8_dictionary,
+                             v8::Local<v8::Name> v8_member_name,
+                             const char* dictionary_name,
+                             const char* member_name,
+                             T& value,
+                             bool& presence,
+                             v8::TryCatch& try_block,
+                             ExceptionState& exception_state) {
+  v8::Local<v8::Value> v8_value;
+  if (!v8_dictionary->Get(current_context, v8_member_name).ToLocal(&v8_value)) {
+    exception_state.RethrowV8Exception(try_block.Exception());
+    try_block.Reset();
+    return false;
+  }
+
+  if (v8_value->IsUndefined()) {
+    if (is_required) {
+      exception_state.ThrowTypeError(ExceptionMessages::FailedToGet(
+          member_name, dictionary_name, "Required member is undefined."));
+      return false;
+    }
+    presence = false;
+    return true;
+  }
+
+  value = NativeValueTraits<NVTTag>::NativeValue(isolate, v8_value,
+                                                 exception_state);
+  if (exception_state.HadException()) {
+    return false;
+  }
+  presence = true;
+  return true;
+}
+
+// [CSSProperty]
+CORE_EXPORT void InstallCSSPropertyAttributes(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Template> instance_template,
+    v8::Local<v8::Template> prototype_template,
+    v8::Local<v8::Template> interface_template,
+    v8::Local<v8::Signature> signature,
+    base::span<const char* const> css_property_names);
+CORE_EXPORT void CSSPropertyAttributeGet(
+    const v8::FunctionCallbackInfo<v8::Value>& info);
+CORE_EXPORT void CSSPropertyAttributeSet(
+    const v8::FunctionCallbackInfo<v8::Value>& info);
+
+// Common implementation to reduce the binary size of attribute set callbacks.
+CORE_EXPORT void PerformAttributeSetCEReactionsReflectTypeBoolean(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name);
+CORE_EXPORT void PerformAttributeSetCEReactionsReflectTypeString(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name);
+CORE_EXPORT void
+PerformAttributeSetCEReactionsReflectTypeStringLegacyNullToEmptyString(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name);
+CORE_EXPORT void PerformAttributeSetCEReactionsReflectTypeStringOrNull(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name);
 
 }  // namespace bindings
 

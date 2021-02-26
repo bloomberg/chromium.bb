@@ -10,9 +10,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -206,8 +207,8 @@ class SourceBufferStreamTest : public testing::Test {
     std::stringstream ss;
     ss << "{ ";
     for (size_t i = 0; i < r.size(); ++i) {
-      int64_t start = (r.start(i) / frame_duration_);
-      int64_t end = (r.end(i) / frame_duration_) - 1;
+      int64_t start = r.start(i).IntDiv(frame_duration_);
+      int64_t end = r.end(i).IntDiv(frame_duration_) - 1;
       ss << "[" << start << "," << end << ") ";
     }
     ss << "}";
@@ -222,12 +223,11 @@ class SourceBufferStreamTest : public testing::Test {
     std::stringstream ss;
     ss << "{ ";
     for (size_t i = 0; i < r.size(); ++i) {
-      int64_t start = r.start(i).InMicroseconds();
-      int64_t end = r.end(i).InMicroseconds();
-      if (granularity == TimeGranularity::kMillisecond) {
-        start /= base::Time::kMicrosecondsPerMillisecond;
-        end /= base::Time::kMicrosecondsPerMillisecond;
-      }
+      auto conversion = (granularity == TimeGranularity::kMillisecond)
+                            ? &base::TimeDelta::InMilliseconds
+                            : &base::TimeDelta::InMicroseconds;
+      int64_t start = (r.start(i).*conversion)();
+      int64_t end = (r.end(i).*conversion)();
       ss << "[" << start << "," << end << ") ";
     }
     ss << "}";
@@ -306,8 +306,9 @@ class SourceBufferStreamTest : public testing::Test {
         }
       }
 
-      EXPECT_EQ(buffer->GetDecodeTimestamp() / frame_duration_,
-                current_position);
+      EXPECT_EQ(
+          base::ClampFloor(buffer->GetDecodeTimestamp() / frame_duration_),
+          current_position);
     }
 
     EXPECT_EQ(ending_position + 1, current_position);
@@ -449,8 +450,7 @@ class SourceBufferStreamTest : public testing::Test {
   }
 
   base::TimeDelta ConvertToFrameDuration(int frames_per_second) {
-    return base::TimeDelta::FromMicroseconds(
-        base::Time::kMicrosecondsPerSecond / frames_per_second);
+    return base::TimeDelta::FromSeconds(1) / frames_per_second;
   }
 
   void AppendBuffers(int starting_position,

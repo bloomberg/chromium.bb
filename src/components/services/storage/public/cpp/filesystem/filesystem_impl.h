@@ -50,23 +50,38 @@ class COMPONENT_EXPORT(STORAGE_SERVICE_FILESYSTEM_SUPPORT) FilesystemImpl
                 mojom::FileReadAccess read_access,
                 mojom::FileWriteAccess write_access,
                 OpenFileCallback callback) override;
-  void RemoveFile(const base::FilePath& path,
-                  RemoveFileCallback callback) override;
+  void WriteFileAtomically(const base::FilePath& path,
+                           const std::string& contents,
+                           WriteFileAtomicallyCallback callback) override;
   void CreateDirectory(const base::FilePath& path,
                        CreateDirectoryCallback callback) override;
-  void RemoveDirectory(const base::FilePath& path,
-                       RemoveDirectoryCallback callback) override;
+  void DeleteFile(const base::FilePath& path,
+                  DeleteFileCallback callback) override;
+  void DeletePathRecursively(const base::FilePath& path,
+                             DeletePathRecursivelyCallback callback) override;
   void GetFileInfo(const base::FilePath& path,
                    GetFileInfoCallback callback) override;
+  void GetPathAccess(const base::FilePath& path,
+                     GetPathAccessCallback callback) override;
+  void GetMaximumPathComponentLength(
+      const base::FilePath& path,
+      GetMaximumPathComponentLengthCallback callback) override;
   void RenameFile(const base::FilePath& old_path,
                   const base::FilePath& new_path,
                   RenameFileCallback callback) override;
   void LockFile(const base::FilePath& path, LockFileCallback callback) override;
+  void SetOpenedFileLength(base::File file,
+                           uint64_t length,
+                           SetOpenedFileLengthCallback callback) override;
 
   // Helper used by LockFile() and FilesystemProxy::LockFile() for in
   // unrestricted mode.
   static FileErrorOr<base::File> LockFileLocal(const base::FilePath& path);
   static void UnlockFileLocal(const base::FilePath& path);
+
+  // Helper used by GetPathAccess() and FilesystemProxy::GetPathAccess.
+  static mojom::PathAccessInfoPtr GetPathAccessLocal(
+      const base::FilePath& path);
 
   // Helper used by GetEntries() and FilesystemProxy::GetDirectoryEntries.
   static FileErrorOr<std::vector<base::FilePath>> GetDirectoryEntries(

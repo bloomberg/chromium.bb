@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -49,11 +50,11 @@ constexpr char kAppIdSeparator = '/';
 // (see chrome/browser/chromeos/file_manager/file_tasks.h).
 std::string ArcActionToFileTaskActionId(const std::string& action) {
   if (action == arc::kIntentActionView)
-    return "view";
+    return kActionIdView;
   else if (action == arc::kIntentActionSend)
-    return "send";
+    return kActionIdSend;
   else if (action == arc::kIntentActionSendMultiple)
-    return "send_multiple";
+    return kActionIdSendMultiple;
   NOTREACHED() << "Unhandled ARC action \"" << action << "\"";
   return "";
 }
@@ -62,11 +63,11 @@ std::string ArcActionToFileTaskActionId(const std::string& action) {
 // HandleUrlList has been updated to take a string action rather than an
 // ArcActionType.
 arc::mojom::ActionType FileTaskActionIdToArcActionType(const std::string& id) {
-  if (id == "view")
+  if (id == kActionIdView)
     return arc::mojom::ActionType::VIEW;
-  if (id == "send")
+  if (id == kActionIdSend)
     return arc::mojom::ActionType::SEND;
-  if (id == "send_multiple")
+  if (id == kActionIdSendMultiple)
     return arc::mojom::ActionType::SEND_MULTIPLE;
   NOTREACHED() << "Unhandled file task action ID \"" << id << "\"";
   return arc::mojom::ActionType::VIEW;
@@ -89,22 +90,6 @@ arc::mojom::ActivityNamePtr AppIdToActivityName(const std::string& id) {
     name->activity_name = id.substr(separator + 1);
   }
   return name;
-}
-
-// Constructs a vector of UrlWithMimeType to be passed to
-// IntentHelperInstance.HandleUrlListDeprecated.
-std::vector<arc::mojom::UrlWithMimeTypePtr> ConstructUrlWithMimeTypeList(
-    const std::vector<GURL>& content_urls,
-    const std::vector<std::string>& mime_types) {
-  std::vector<arc::mojom::UrlWithMimeTypePtr> urls;
-  for (size_t i = 0; i < content_urls.size(); ++i) {
-    arc::mojom::UrlWithMimeTypePtr url_with_type =
-        arc::mojom::UrlWithMimeType::New();
-    url_with_type->url = content_urls[i].spec();
-    url_with_type->mime_type = mime_types[i];
-    urls.push_back(std::move(url_with_type));
-  }
-  return urls;
 }
 
 // Constructs an OpenUrlsRequest to be passed to
@@ -150,6 +135,7 @@ void OnArcHandlerList(
   auto* intent_helper_bridge =
       arc::ArcIntentHelperBridge::GetForBrowserContext(profile);
   if (!intent_helper_bridge) {
+    LOG(ERROR) << "Failed to get ArcIntentHelperBridge";
     std::move(callback).Run(std::move(result_list));
     return;
   }
@@ -183,6 +169,10 @@ void OnArcIconLoaded(
     Verb handler_verb = Verb::VERB_NONE;
     if (action == arc::kIntentActionSend ||
         action == arc::kIntentActionSendMultiple) {
+      // Use app service to get send tasks when the flag is on, so skip
+      // the send tasks here.
+      if (base::FeatureList::IsEnabled(features::kIntentHandlingSharing))
+        continue;
       handler_verb = Verb::VERB_SHARE_WITH;
     }
     auto it = icons->find(arc::ArcIntentHelperBridge::ActivityName(
@@ -218,9 +208,12 @@ void FindArcTasksAfterContentUrlsResolved(
       arc_intent_helper = ARC_GET_INSTANCE_FOR_METHOD(
           arc_service_manager->arc_bridge_service()->intent_helper(),
           RequestUrlListHandlerList);
+    } else {
+      LOG(ERROR) << "Failed to get ArcServiceManager";
     }
   }
   if (!arc_intent_helper) {
+    LOG(ERROR) << "Failed to get arc_intent_helper";
     std::move(callback).Run(std::move(result_list));
     return;
   }
@@ -281,57 +274,35 @@ void ExecuteArcTaskAfterContentUrlsResolved(
 
   auto* arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager) {
+    LOG(ERROR) << "Failed to get ArcServiceManager";
     std::move(done).Run(
         extensions::api::file_manager_private::TASK_RESULT_FAILED,
         "No ArcServiceManager");
     return;
   }
 
-  // Try FileSystemInstance.OpenUrlsWithPermission first.
   arc::mojom::FileSystemInstance* arc_file_system = ARC_GET_INSTANCE_FOR_METHOD(
       arc_service_manager->arc_bridge_service()->file_system(),
       OpenUrlsWithPermission);
-  if (arc_file_system) {
-    arc::mojom::OpenUrlsRequestPtr request =
-        ConstructOpenUrlsRequest(task, content_urls, mime_types);
-    arc_file_system->OpenUrlsWithPermission(std::move(request),
-                                            base::DoNothing());
+  if (!arc_file_system) {
     std::move(done).Run(
-        extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
-
-    UMA_HISTOGRAM_ENUMERATION(
-        "Arc.UserInteraction",
-        arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER);
-
+        extensions::api::file_manager_private::TASK_RESULT_FAILED,
+        "OpenUrlsWithPermission is not supported");
     return;
   }
 
-  // Use IntentHelperInstance.HandleUrlListDeprecated as a fallback if
-  // OpenUrlsWithPermission is not supported yet.
-  // TODO(niwa): Remove this once we complete migration.
-  arc::mojom::IntentHelperInstance* arc_intent_helper =
-      ARC_GET_INSTANCE_FOR_METHOD(
-          arc_service_manager->arc_bridge_service()->intent_helper(),
-          HandleUrlListDeprecated);
-  if (arc_intent_helper) {
-    LOG(WARNING) << "Using HandleUrlListDeprecated because "
-                 << "OpenUrlsWithPermission is not supported yet.";
-    arc_intent_helper->HandleUrlListDeprecated(
-        ConstructUrlWithMimeTypeList(content_urls, mime_types),
-        AppIdToActivityName(task.app_id),
-        FileTaskActionIdToArcActionType(task.action_id));
-    std::move(done).Run(
-        extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
+  arc::mojom::OpenUrlsRequestPtr request =
+      ConstructOpenUrlsRequest(task, content_urls, mime_types);
+  arc_file_system->OpenUrlsWithPermission(std::move(request),
+                                          base::DoNothing());
+  // TODO(benwells): return the correct code here, depending on how the app
+  // will be opened in multiprofile.
+  std::move(done).Run(
+      extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
 
-    UMA_HISTOGRAM_ENUMERATION(
-        "Arc.UserInteraction",
-        arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER);
-
-    return;
-  }
-
-  std::move(done).Run(extensions::api::file_manager_private::TASK_RESULT_FAILED,
-                      "No android app to run task");
+  UMA_HISTOGRAM_ENUMERATION(
+      "Arc.UserInteraction",
+      arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER);
 }
 
 }  // namespace

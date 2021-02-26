@@ -40,7 +40,7 @@
 #include "headless/lib/browser/protocol/headless_handler.h"
 #include "headless/public/internal/headless_devtools_client_impl.h"
 #include "printing/buildflags/buildflags.h"
-#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/switches.h"
@@ -89,8 +89,14 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
         *visible_security_state.get(), security_style_explanations);
   }
 
+  void BeforeUnloadFired(content::WebContents* web_contents,
+                         bool proceed,
+                         bool* proceed_to_fire_unload) override {
+    *proceed_to_fire_unload = proceed;
+  }
+
   void ActivateContents(content::WebContents* contents) override {
-    contents->GetRenderViewHost()->GetWidget()->Focus();
+    contents->GetMainFrame()->GetRenderViewHost()->GetWidget()->Focus();
   }
 
   void CloseContents(content::WebContents* source) override {

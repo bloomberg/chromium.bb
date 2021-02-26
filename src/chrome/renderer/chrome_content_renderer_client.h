@@ -55,6 +55,7 @@ class ThreadProfiler;
 
 namespace blink {
 class WebServiceWorkerContextProxy;
+enum class ProtocolHandlerSecurityLevel;
 }
 
 namespace chrome {
@@ -62,7 +63,6 @@ class WebRtcLoggingAgentImpl;
 }  // namespace chrome
 
 namespace content {
-class BrowserPluginDelegate;
 struct WebPluginInfo;
 }  // namespace content
 
@@ -104,17 +104,12 @@ class ChromeContentRendererClient
   blink::WebPlugin* CreatePluginReplacement(
       content::RenderFrame* render_frame,
       const base::FilePath& plugin_path) override;
-  bool HasErrorPage(int http_status_code) override;
-  bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
-                               const GURL& url,
-                               int error_code) override;
-  bool ShouldTrackUseCounter(const GURL& url) override;
   void PrepareErrorPage(content::RenderFrame* render_frame,
                         const blink::WebURLError& error,
                         const std::string& http_method,
                         std::string* error_html) override;
   void PrepareErrorPageForHttpStatusError(content::RenderFrame* render_frame,
-                                          const GURL& unreachable_url,
+                                          const blink::WebURLError& error,
                                           const std::string& http_method,
                                           int http_status,
                                           std::string* error_html) override;
@@ -127,6 +122,8 @@ class ChromeContentRendererClient
       base::SingleThreadTaskRunner* compositor_thread_task_runner) override;
   bool RunIdleHandlerWhenWidgetsHidden() override;
   bool AllowPopup() override;
+  blink::ProtocolHandlerSecurityLevel GetProtocolHandlerSecurityLevel()
+      override;
   void WillSendRequest(blink::WebLocalFrame* frame,
                        ui::PageTransition transition_type,
                        const blink::WebURL& url,
@@ -151,23 +148,20 @@ class ChromeContentRendererClient
       content::RenderFrame* render_frame) override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<media::SpeechRecognitionClient> CreateSpeechRecognitionClient(
-      content::RenderFrame* render_frame) override;
+      content::RenderFrame* render_frame,
+      media::SpeechRecognitionClient::OnReadyCallback callback) override;
 #endif
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)
       override;
   bool IsKeySystemsUpdateNeeded() override;
-  bool IsPluginAllowedToUseDevChannelAPIs() override;
   bool IsPluginAllowedToUseCameraDeviceAPI(const GURL& url) override;
-  content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
-      content::RenderFrame* render_frame,
-      const content::WebPluginInfo& info,
-      const std::string& mime_type,
-      const GURL& original_url) override;
   void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
   void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
   void RunScriptsAtDocumentIdle(content::RenderFrame* render_frame) override;
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
+  bool AllowScriptExtensionForServiceWorker(
+      const url::Origin& script_origin) override;
   void WillInitializeServiceWorkerContextOnWorkerThread() override;
   void DidInitializeServiceWorkerContextOnWorkerThread(
       blink::WebServiceWorkerContextProxy* context_proxy,
@@ -199,7 +193,13 @@ class ChromeContentRendererClient
                              const std::string& name) override;
   bool IsSafeRedirectTarget(const GURL& url) override;
   void DidSetUserAgent(const std::string& user_agent) override;
-  bool RequiresWebComponentsV0(const GURL& url) override;
+  bool RequiresHtmlImports(const GURL& url) override;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  void MaybeProxyURLLoaderFactory(
+      content::RenderFrame* render_frame,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver)
+      override;
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   static mojo::AssociatedRemote<chrome::mojom::PluginInfoHost>&

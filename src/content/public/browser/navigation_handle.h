@@ -9,19 +9,22 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/browser/navigation_handle_timing.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/common/impression.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/transferrable_url_loader.mojom.h"
 #include "net/base/auth.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/isolation_info.h"
 #include "net/base/net_errors.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/http/http_response_info.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "third_party/blink/public/mojom/loader/referrer.mojom.h"
+#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -35,6 +38,7 @@ class ProxyServer;
 namespace content {
 struct GlobalFrameRoutingId;
 struct GlobalRequestID;
+class NavigationEntry;
 class NavigationThrottle;
 class NavigationUIData;
 class RenderFrameHost;
@@ -58,6 +62,10 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Get a unique ID for this navigation.
   virtual int64_t GetNavigationId() = 0;
+
+  // Get the page UKM ID that will be in use once this navigation fully commits
+  // (the eventual value of GetRenderFrameHost()->GetPageUkmSourceId()).
+  virtual ukm::SourceId GetNextPageUkmSourceId() = 0;
 
   // The URL the frame is navigating to. This may change during the navigation
   // when encountering a server redirect.
@@ -124,13 +132,8 @@ class CONTENT_EXPORT NavigationHandle {
   // set if unknown.
   virtual base::TimeTicks NavigationInputStart() = 0;
 
-  // The time the first HTTP request is sent.
-  // See comments on |NavigationRequest::first_request_start_| for details.
-  virtual base::TimeTicks FirstRequestStart() = 0;
-
-  // The time the headers of the first HTTP response is received.
-  // See comments on |NavigationRequest::first_response_start_| for details.
-  virtual base::TimeTicks FirstResponseStart() = 0;
+  // The timing information of loading for the navigation.
+  virtual const NavigationHandleTiming& GetNavigationHandleTiming() = 0;
 
   // Whether or not the navigation was started within a context menu.
   virtual bool WasStartedFromContextMenu() = 0;
@@ -140,9 +143,7 @@ class CONTENT_EXPORT NavigationHandle {
   virtual const GURL& GetSearchableFormURL() = 0;
   virtual const std::string& GetSearchableFormEncoding() = 0;
 
-  // Returns the reload type for this navigation. Note that renderer-initiated
-  // reloads (via location.reload()) won't count as a reload and do return
-  // ReloadType::NONE.
+  // Returns the reload type for this navigation.
   virtual ReloadType GetReloadType() = 0;
 
   // Returns the restore type for this navigation. RestoreType::NONE is returned
@@ -163,6 +164,12 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Returns a sanitized version of the referrer for this request.
   virtual const blink::mojom::Referrer& GetReferrer() = 0;
+
+  // Sets the referrer. The referrer may only be set during start and redirect
+  // phases. If the referer is set in navigation start, it is reset during the
+  // redirect. In other words, if you need to set a referer that applies to
+  // redirects, then this must be called during DidRedirectNavigation().
+  virtual void SetReferrer(blink::mojom::ReferrerPtr referrer) = 0;
 
   // Whether the navigation was initiated by a user gesture. Note that this
   // will return false for browser-initiated navigations.
@@ -227,7 +234,11 @@ class CONTENT_EXPORT NavigationHandle {
   // errors that leave the user on the previous page.
   virtual bool HasCommitted() = 0;
 
-  // Whether the navigation resulted in an error page.
+  // Whether the navigation committed an error page.
+  //
+  // DO NOT use this before the navigation commit. It would always return false.
+  // You can use it from WebContentsObserver::DidFinishNavigation().
+  //
   // Note that if an error page reloads, this will return true even though
   // GetNetErrorCode will be net::OK.
   virtual bool IsErrorPage() = 0;
@@ -248,7 +259,9 @@ class CONTENT_EXPORT NavigationHandle {
   virtual bool DidReplaceEntry() = 0;
 
   // Returns true if the browser history should be updated. Otherwise only
-  // the session history will be updated. E.g., on unreachable urls.
+  // the session history will be updated. E.g., on unreachable urls or other
+  // navigations that the users may not think of as navigations (such as
+  // happens with 'history.replaceState()').
   virtual bool ShouldUpdateHistory() = 0;
 
   // The previous main frame URL that the user was on. This may be empty if
@@ -369,6 +382,9 @@ class CONTENT_EXPORT NavigationHandle {
   // document or not. Set only when the navigation commits.
   virtual bool IsSameProcess() = 0;
 
+  // Returns the NavigationEntry associated with this, which may be null.
+  virtual NavigationEntry* GetNavigationEntry() = 0;
+
   // Returns the offset between the indices of the previous last committed and
   // the newly committed navigation entries.
   // (e.g. -1 for back navigations, 0 for reloads, 1 for forward navigations).
@@ -384,7 +400,7 @@ class CONTENT_EXPORT NavigationHandle {
   virtual int GetNavigationEntryOffset() = 0;
 
   virtual void RegisterSubresourceOverride(
-      mojom::TransferrableURLLoaderPtr transferrable_loader) = 0;
+      blink::mojom::TransferrableURLLoaderPtr transferrable_loader) = 0;
 
   // Force enables the given origin trials for this navigation. This needs to
   // be called from WebContents::ReadyToCommitNavigation or earlier to have an
@@ -396,6 +412,19 @@ class CONTENT_EXPORT NavigationHandle {
   // called from DidStartNavigation().
   virtual void SetIsOverridingUserAgent(bool override_ua) = 0;
   virtual bool GetIsOverridingUserAgent() = 0;
+
+  // Suppress any errors during a navigation and behave as if the user cancelled
+  // the navigation: no error page will commit.
+  virtual void SetSilentlyIgnoreErrors() = 0;
+
+  // The sandbox flags of the new document created by this navigation. This
+  // function can only be called for cross-document navigations after receiving
+  // the final response.
+  // See also: content/browser/renderer_host/sandbox_flags.md
+  //
+  // TODO(arthursonzogni): After RenderDocument, this can be computed and stored
+  // directly into the RenderDocumentHost.
+  virtual network::mojom::WebSandboxFlags SandboxFlagsToCommit() = 0;
 
   // Testing methods ----------------------------------------------------------
   //

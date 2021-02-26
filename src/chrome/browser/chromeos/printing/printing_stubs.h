@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chromeos/printing/ppd_provider.h"
@@ -31,6 +32,10 @@ class StubCupsPrintersManager : public CupsPrintersManager {
   void RecordSetupAbandoned(const Printer& printer) override {}
   void FetchPrinterStatus(const std::string& printer_id,
                           PrinterStatusCallback cb) override {}
+  void RecordNearbyNetworkPrinterCounts() const override {}
+  bool ChoosePrintServer(
+      const base::Optional<std::string>& selected_print_server_id) override;
+  ServerPrintersFetchingMode GetServerPrintersFetchingMode() const override;
 };
 
 class StubPrinterConfigurer : public PrinterConfigurer {

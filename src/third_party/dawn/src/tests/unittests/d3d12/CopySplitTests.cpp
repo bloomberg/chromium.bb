@@ -44,7 +44,7 @@ namespace {
     };
 
     // Check that each copy region fits inside the buffer footprint
-    void ValidateFootprints(const TextureCopySplit& copySplit) {
+    void ValidateFootprints(const Texture2DCopySplit& copySplit) {
         for (uint32_t i = 0; i < copySplit.count; ++i) {
             const auto& copy = copySplit.copies[i];
             ASSERT_LE(copy.bufferOffset.x + copy.copySize.width, copy.bufferSize.width);
@@ -54,8 +54,9 @@ namespace {
     }
 
     // Check that the offset is aligned
-    void ValidateOffset(const TextureCopySplit& copySplit) {
-        ASSERT_TRUE(Align(copySplit.offset, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT) == copySplit.offset);
+    void ValidateOffset(const Texture2DCopySplit& copySplit) {
+        ASSERT_TRUE(Align(copySplit.offset, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT) ==
+                    copySplit.offset);
     }
 
     bool RangesOverlap(uint32_t minA, uint32_t maxA, uint32_t minB, uint32_t maxB) {
@@ -63,21 +64,28 @@ namespace {
     }
 
     // Check that no pair of copy regions intersect each other
-    void ValidateDisjoint(const TextureCopySplit& copySplit) {
+    void ValidateDisjoint(const Texture2DCopySplit& copySplit) {
         for (uint32_t i = 0; i < copySplit.count; ++i) {
             const auto& a = copySplit.copies[i];
             for (uint32_t j = i + 1; j < copySplit.count; ++j) {
                 const auto& b = copySplit.copies[j];
-                bool overlapX = RangesOverlap(a.textureOffset.x, a.textureOffset.x + a.copySize.width, b.textureOffset.x, b.textureOffset.x + b.copySize.width);
-                bool overlapY = RangesOverlap(a.textureOffset.y, a.textureOffset.y + a.copySize.height, b.textureOffset.y, b.textureOffset.y + b.copySize.height);
-                bool overlapZ = RangesOverlap(a.textureOffset.z, a.textureOffset.z + a.copySize.depth, b.textureOffset.z, b.textureOffset.z + b.copySize.depth);
+                bool overlapX =
+                    RangesOverlap(a.textureOffset.x, a.textureOffset.x + a.copySize.width,
+                                  b.textureOffset.x, b.textureOffset.x + b.copySize.width);
+                bool overlapY =
+                    RangesOverlap(a.textureOffset.y, a.textureOffset.y + a.copySize.height,
+                                  b.textureOffset.y, b.textureOffset.y + b.copySize.height);
+                bool overlapZ =
+                    RangesOverlap(a.textureOffset.z, a.textureOffset.z + a.copySize.depth,
+                                  b.textureOffset.z, b.textureOffset.z + b.copySize.depth);
                 ASSERT_TRUE(!overlapX || !overlapY || !overlapZ);
             }
         }
     }
 
     // Check that the union of the copy regions exactly covers the texture region
-    void ValidateTextureBounds(const TextureSpec& textureSpec, const TextureCopySplit& copySplit) {
+    void ValidateTextureBounds(const TextureSpec& textureSpec,
+                               const Texture2DCopySplit& copySplit) {
         ASSERT_TRUE(copySplit.count > 0);
 
         uint32_t minX = copySplit.copies[0].textureOffset.x;
@@ -105,8 +113,9 @@ namespace {
         ASSERT_EQ(maxZ, textureSpec.z + textureSpec.depth);
     }
 
-    // Validate that the number of pixels copied is exactly equal to the number of pixels in the texture region
-    void ValidatePixelCount(const TextureSpec& textureSpec, const TextureCopySplit& copySplit) {
+    // Validate that the number of pixels copied is exactly equal to the number of pixels in the
+    // texture region
+    void ValidatePixelCount(const TextureSpec& textureSpec, const Texture2DCopySplit& copySplit) {
         uint32_t count = 0;
         for (uint32_t i = 0; i < copySplit.count; ++i) {
             const auto& copy = copySplit.copies[i];
@@ -116,7 +125,9 @@ namespace {
     }
 
     // Check that every buffer offset is at the correct pixel location
-    void ValidateBufferOffset(const TextureSpec& textureSpec, const BufferSpec& bufferSpec, const TextureCopySplit& copySplit) {
+    void ValidateBufferOffset(const TextureSpec& textureSpec,
+                              const BufferSpec& bufferSpec,
+                              const Texture2DCopySplit& copySplit) {
         ASSERT_TRUE(copySplit.count > 0);
 
         uint32_t texelsPerBlock = textureSpec.blockWidth * textureSpec.blockHeight;
@@ -149,7 +160,9 @@ namespace {
         }
     }
 
-    void ValidateCopySplit(const TextureSpec& textureSpec, const BufferSpec& bufferSpec, const TextureCopySplit& copySplit) {
+    void ValidateCopySplit(const TextureSpec& textureSpec,
+                           const BufferSpec& bufferSpec,
+                           const Texture2DCopySplit& copySplit) {
         ValidateFootprints(copySplit);
         ValidateOffset(copySplit);
         ValidateDisjoint(copySplit);
@@ -172,12 +185,17 @@ namespace {
         return os;
     }
 
-    std::ostream& operator<<(std::ostream& os, const TextureCopySplit& copySplit) {
+    std::ostream& operator<<(std::ostream& os, const Texture2DCopySplit& copySplit) {
         os << "CopySplit" << std::endl;
         for (uint32_t i = 0; i < copySplit.count; ++i) {
             const auto& copy = copySplit.copies[i];
-            os << "  " << i << ": Texture at (" << copy.textureOffset.x << ", " << copy.textureOffset.y << ", " << copy.textureOffset.z << "), size (" << copy.copySize.width << ", " << copy.copySize.height << ", " << copy.copySize.depth << ")" << std::endl;
-            os << "  " << i << ": Buffer at (" << copy.bufferOffset.x << ", " << copy.bufferOffset.y << ", " << copy.bufferOffset.z << "), footprint (" << copy.bufferSize.width << ", " << copy.bufferSize.height << ", " << copy.bufferSize.depth << ")" << std::endl;
+            os << "  " << i << ": Texture at (" << copy.textureOffset.x << ", "
+               << copy.textureOffset.y << ", " << copy.textureOffset.z << "), size ("
+               << copy.copySize.width << ", " << copy.copySize.height << ", " << copy.copySize.depth
+               << ")" << std::endl;
+            os << "  " << i << ": Buffer at (" << copy.bufferOffset.x << ", " << copy.bufferOffset.y
+               << ", " << copy.bufferOffset.z << "), footprint (" << copy.bufferSize.width << ", "
+               << copy.bufferSize.height << ", " << copy.bufferSize.depth << ")" << std::endl;
         }
         return os;
     }
@@ -260,42 +278,40 @@ namespace {
     }
 
     // Define a list of values to set properties in the spec structs
-    constexpr uint32_t kCheckValues[] = {
-        1, 2, 3, 4, 5, 6, 7, 8,                // small values
-        16, 32, 64, 128, 256, 512, 1024, 2048, // powers of 2
-        15, 31, 63, 127, 257, 511, 1023, 2047, // misalignments
-        17, 33, 65, 129, 257, 513, 1025, 2049
-    };
+    constexpr uint32_t kCheckValues[] = {1,  2,  3,  4,   5,   6,   7,    8,     // small values
+                                         16, 32, 64, 128, 256, 512, 1024, 2048,  // powers of 2
+                                         15, 31, 63, 127, 257, 511, 1023, 2047,  // misalignments
+                                         17, 33, 65, 129, 257, 513, 1025, 2049};
 
-}
+}  // namespace
 
 class CopySplitTest : public testing::Test {
-    protected:
-        TextureCopySplit DoTest(const TextureSpec& textureSpec, const BufferSpec& bufferSpec) {
-            ASSERT(textureSpec.width % textureSpec.blockWidth == 0 &&
-                   textureSpec.height % textureSpec.blockHeight == 0);
-            dawn_native::Format fakeFormat = {};
-            fakeFormat.blockWidth = textureSpec.blockWidth;
-            fakeFormat.blockHeight = textureSpec.blockHeight;
-            fakeFormat.blockByteSize = textureSpec.texelBlockSizeInBytes;
-            TextureCopySplit copySplit = ComputeTextureCopySplit(
-                {textureSpec.x, textureSpec.y, textureSpec.z},
-                {textureSpec.width, textureSpec.height, textureSpec.depth}, fakeFormat,
-                bufferSpec.offset, bufferSpec.bytesPerRow, bufferSpec.rowsPerImage);
-            ValidateCopySplit(textureSpec, bufferSpec, copySplit);
-            return copySplit;
-        }
+  protected:
+    Texture2DCopySplit DoTest(const TextureSpec& textureSpec, const BufferSpec& bufferSpec) {
+        ASSERT(textureSpec.width % textureSpec.blockWidth == 0 &&
+               textureSpec.height % textureSpec.blockHeight == 0);
+        dawn_native::TexelBlockInfo blockInfo = {};
+        blockInfo.width = textureSpec.blockWidth;
+        blockInfo.height = textureSpec.blockHeight;
+        blockInfo.byteSize = textureSpec.texelBlockSizeInBytes;
+        Texture2DCopySplit copySplit = ComputeTextureCopySplit(
+            {textureSpec.x, textureSpec.y, textureSpec.z},
+            {textureSpec.width, textureSpec.height, textureSpec.depth}, blockInfo,
+            bufferSpec.offset, bufferSpec.bytesPerRow, bufferSpec.rowsPerImage);
+        ValidateCopySplit(textureSpec, bufferSpec, copySplit);
+        return copySplit;
+    }
 };
 
 TEST_F(CopySplitTest, General) {
     for (TextureSpec textureSpec : kBaseTextureSpecs) {
         for (BufferSpec bufferSpec : BaseBufferSpecs(textureSpec)) {
-
-            TextureCopySplit copySplit = DoTest(textureSpec, bufferSpec);
+            Texture2DCopySplit copySplit = DoTest(textureSpec, bufferSpec);
             if (HasFatalFailure()) {
                 std::ostringstream message;
-                message << "Failed generating splits: " << textureSpec << ", " << bufferSpec << std::endl
-                    << copySplit << std::endl;
+                message << "Failed generating splits: " << textureSpec << ", " << bufferSpec
+                        << std::endl
+                        << copySplit << std::endl;
                 FAIL() << message.str();
             }
         }
@@ -310,12 +326,12 @@ TEST_F(CopySplitTest, TextureWidth) {
             }
             textureSpec.width = val;
             for (BufferSpec bufferSpec : BaseBufferSpecs(textureSpec)) {
-
-                TextureCopySplit copySplit = DoTest(textureSpec, bufferSpec);
+                Texture2DCopySplit copySplit = DoTest(textureSpec, bufferSpec);
                 if (HasFatalFailure()) {
                     std::ostringstream message;
-                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec << std::endl
-                        << copySplit << std::endl;
+                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec
+                            << std::endl
+                            << copySplit << std::endl;
                     FAIL() << message.str();
                 }
             }
@@ -331,12 +347,12 @@ TEST_F(CopySplitTest, TextureHeight) {
             }
             textureSpec.height = val;
             for (BufferSpec bufferSpec : BaseBufferSpecs(textureSpec)) {
-
-                TextureCopySplit copySplit = DoTest(textureSpec, bufferSpec);
+                Texture2DCopySplit copySplit = DoTest(textureSpec, bufferSpec);
                 if (HasFatalFailure()) {
                     std::ostringstream message;
-                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec << std::endl
-                        << copySplit << std::endl;
+                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec
+                            << std::endl
+                            << copySplit << std::endl;
                     FAIL() << message.str();
                 }
             }
@@ -349,12 +365,12 @@ TEST_F(CopySplitTest, TextureX) {
         for (uint32_t val : kCheckValues) {
             textureSpec.x = val;
             for (BufferSpec bufferSpec : BaseBufferSpecs(textureSpec)) {
-
-                TextureCopySplit copySplit = DoTest(textureSpec, bufferSpec);
+                Texture2DCopySplit copySplit = DoTest(textureSpec, bufferSpec);
                 if (HasFatalFailure()) {
                     std::ostringstream message;
-                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec << std::endl
-                        << copySplit << std::endl;
+                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec
+                            << std::endl
+                            << copySplit << std::endl;
                     FAIL() << message.str();
                 }
             }
@@ -367,12 +383,12 @@ TEST_F(CopySplitTest, TextureY) {
         for (uint32_t val : kCheckValues) {
             textureSpec.y = val;
             for (BufferSpec bufferSpec : BaseBufferSpecs(textureSpec)) {
-
-                TextureCopySplit copySplit = DoTest(textureSpec, bufferSpec);
+                Texture2DCopySplit copySplit = DoTest(textureSpec, bufferSpec);
                 if (HasFatalFailure()) {
                     std::ostringstream message;
-                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec << std::endl
-                        << copySplit << std::endl;
+                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec
+                            << std::endl
+                            << copySplit << std::endl;
                     FAIL() << message.str();
                 }
             }
@@ -385,12 +401,12 @@ TEST_F(CopySplitTest, TexelSize) {
         for (uint32_t texelSize : {4, 8, 16, 32, 64}) {
             textureSpec.texelBlockSizeInBytes = texelSize;
             for (BufferSpec bufferSpec : BaseBufferSpecs(textureSpec)) {
-
-                TextureCopySplit copySplit = DoTest(textureSpec, bufferSpec);
+                Texture2DCopySplit copySplit = DoTest(textureSpec, bufferSpec);
                 if (HasFatalFailure()) {
                     std::ostringstream message;
-                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec << std::endl
-                        << copySplit << std::endl;
+                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec
+                            << std::endl
+                            << copySplit << std::endl;
                     FAIL() << message.str();
                 }
             }
@@ -404,11 +420,12 @@ TEST_F(CopySplitTest, BufferOffset) {
             for (uint32_t val : kCheckValues) {
                 bufferSpec.offset = textureSpec.texelBlockSizeInBytes * val;
 
-                TextureCopySplit copySplit = DoTest(textureSpec, bufferSpec);
+                Texture2DCopySplit copySplit = DoTest(textureSpec, bufferSpec);
                 if (HasFatalFailure()) {
                     std::ostringstream message;
-                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec << std::endl
-                        << copySplit << std::endl;
+                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec
+                            << std::endl
+                            << copySplit << std::endl;
                     FAIL() << message.str();
                 }
             }
@@ -423,11 +440,12 @@ TEST_F(CopySplitTest, RowPitch) {
             for (uint32_t i = 0; i < 5; ++i) {
                 bufferSpec.bytesPerRow = baseRowPitch + i * 256;
 
-                TextureCopySplit copySplit = DoTest(textureSpec, bufferSpec);
+                Texture2DCopySplit copySplit = DoTest(textureSpec, bufferSpec);
                 if (HasFatalFailure()) {
                     std::ostringstream message;
-                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec << std::endl
-                        << copySplit << std::endl;
+                    message << "Failed generating splits: " << textureSpec << ", " << bufferSpec
+                            << std::endl
+                            << copySplit << std::endl;
                     FAIL() << message.str();
                 }
             }
@@ -442,7 +460,7 @@ TEST_F(CopySplitTest, ImageHeight) {
             for (uint32_t i = 0; i < 5; ++i) {
                 bufferSpec.rowsPerImage = baseImageHeight + i * 256;
 
-                TextureCopySplit copySplit = DoTest(textureSpec, bufferSpec);
+                Texture2DCopySplit copySplit = DoTest(textureSpec, bufferSpec);
                 if (HasFatalFailure()) {
                     std::ostringstream message;
                     message << "Failed generating splits: " << textureSpec << ", " << bufferSpec

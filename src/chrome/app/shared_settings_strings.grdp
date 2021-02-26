@@ -1,18 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Settings-specific strings shared by Browser and Chrome OS settings -->
 <grit-part>
+  <!-- All subpages -->
+  <message name="IDS_SETTINGS_SUBPAGE_BACK_BUTTON_ARIA_LABEL" desc="Text read by screen readers when focusing on the back button. If the back button is activated, it will navigate to the previous page. This text will only be announced by ChromeVox and will not be visible in the UI.">
+    <ph name="SUBPAGE_TITLE">$1<ex>Bluetooth</ex></ph> subpage back button
+  </message>
+  <message name="IDS_SETTINGS_SUBPAGE_BACK_BUTTON_ARIA_ROLE_DESCRIPTION" desc="Description read by screen readers when focusing on the back button. Indicates to the user that activating the back button will cause the settings page to navigate away from the currently displaying subpage to the previous visited page. This text will only be announced by ChromeVox and will not be visible in the UI.">
+    Click to navigate away from <ph name="SUBPAGE_TITLE">$1<ex>Bluetooth</ex> subpage</ph>.
+  </message>
+
   <!-- Caption Subpage (strings used by the <settings-captions> element) -->
-  <message name="IDS_SETTINGS_CAPTIONS" desc="Name of the settings page which displays caption preferences.">
+  <message name="IDS_SETTINGS_CAPTIONS" desc="Title of the subpage for settings related to captions">
     Captions
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_SETTINGS" desc="Name of settings section of the caption settings page.">
-    Settings
+  <message name="IDS_SETTINGS_CAPTIONS_PREFERENCES_TITLE" desc="Section title for caption style setting that is supported by some apps and sites">
+    Caption preferences
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_PREVIEW" desc="Name of preview section of the caption settings page.">
-    Preview
+  <message name="IDS_SETTINGS_CAPTIONS_PREFERENCES_SUBTITLE" desc="Section subtitle for Caption preferences. Disclaimer that not all apps and sites support the system caption style. Some apps and sites don't use the web captioning standard and have their own captioning platform.">
+    Customize caption size and style for apps and sites that support this setting
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SIZE" desc="Name of the caption text size preference.">
-    Text size
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SIZE" desc="Name of the caption text size preference. Text size will apply to captions and alo Live Caption when it's enabled.">
+    Text size (Also applies to Live Caption)
   </message>
   <message name="IDS_SETTINGS_CAPTIONS_TEXT_FONT" desc="Name of the caption text font preference.">
     Text font
@@ -82,6 +90,68 @@
   </message>
   <message name="IDS_SETTINGS_CAPTIONS_DEFAULT_SETTING" desc="Name of the default setting for the caption text.">
     Default
+  </message>
+
+  <!-- Nearby Share -->
+  <message name="IDS_SETTINGS_NEARBY_SHARE_TITLE" desc="Name of the settings page for the Nearby Share feature">
+    Nearby Share
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ROW_TITLE" desc="Text for the row in settings which allows a user to set the name of their device which is shown to other devices for the Nearby Share feature.">
+    Device name
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_DIALOG_TITLE" desc="Title for the dialog which allows a user to set the name of their device which is shown to other devices for the Nearby Share feature.">
+    Device Name
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_EDIT_DEVICE_NAME" desc="Label for the button that opens the dialog which allows a user to set the name of their device which is shown to other devices for the Nearby Share feature.">
+    Change device name
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ARIA_DESCRIPTION" desc="Description for screen readers, not displayed in UI, specifying the current device name which is shown to other devices for the Nearby Share feature." is_accessibility_with_no_ui="true">
+    Current device name is <ph name="DEVICE_NAME">$1<ex>Michael's Chromebook</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_EDIT_DATA_USAGE" desc="Label for the button that brings up a dialog to allow a user to edit the data usage setting for the Nearby Share feature.">
+    Edit
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_UPDATE_DATA_USAGE" desc="Label for the button that allows a user to confirm their choice of data usage setting for the Nearby Share feature.">
+    Update
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DIALOG_TITLE" desc="Title for the dialog where a user can select the data usage setting for the Nearby Share feature.">
+    Data usage
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_WIFI_ONLY_LABEL" desc="Label for the data usage setting where only Wi-Fi is to be used for transfers for the Nearby Share feature.">
+    Wi-Fi only
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_WIFI_ONLY_DESCRIPTION" desc="Description of the data usage setting where only Wi-Fi is to be used for transfers for the Nearby Share feature.">
+    Never use data to transfer
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DATA_LABEL" desc="Label for the data usage setting where Wi-Fi or cell data may be used for transfers for the Nearby Share feature.">
+    Data
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DATA_DESCRIPTION" desc="Description of the data usage setting where Wi-Fi or cell data may be used for transfers for the Nearby Share feature.">
+    May incur data charges
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_OFFLINE_LABEL" desc="Label for the data usage setting where transfers will only take place offline for the Nearby Share feature.">
+    Without internet
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_OFFLINE_DESCRIPTION" desc="Description of the data usage setting where transfers will only take place offline for the Nearby Share feature.">
+    Files will always be shared offline
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_EDIT_BUTTON_DATA_DESCRIPTION" desc="Description for scren readers, not displayed in UI, specifying the current data usage setting where Wi-Fi or cell data may be used for transfers for the Nearby Share feature." is_accessibility_with_no_ui="true">
+    Current data usage setting is Data
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_EDIT_BUTTON_WIFI_ONLY_DESCRIPTION" desc="Description for screen readers, not displayed in UI, specifying the current data usage setting where only Wi-Fi is to be used for transfers for the Nearby Share feature." is_accessibility_with_no_ui="true">
+    Current data usage setting is Wi-Fi only
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_EDIT_BUTTON_OFFLINE_DESCRIPTION" desc="Description for scren readers, not displayed in UI, specifying the current data usage setting where transfers will only take place offline for the Nearby Share feature." is_accessibility_with_no_ui="true">
+    Current data usage setting is Without internet
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_CONTACT_VISIBILITY_ROW_TITLE" desc="Text for the row in settings which allows a user to set their preference for the visibility of their device with their contacts for the Nearby Share feature.">
+    Device visibility
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_EDIT_VISIBILITY" desc="Label for the button that opens the dialog which allows a user to set their preference for the visibility of their device with their contacts for the Nearby Share feature.">
+    View device visibility
+  </message>
+  <message name="IDS_SETTINGS_NEARBY_SHARE_VISIBILITY_DIALOG_TITLE" desc="Title for the dialog which allows a user to set their preference for the visibility of their device with their contacts for the Nearby Share feature.">
+    Device visibility
   </message>
 
  <!-- Personalization Options SubPage (strings used by the <settings-personalization-options> element) -->
@@ -206,6 +276,9 @@
   <message name="IDS_SETTINGS_BOOKMARKS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing bookmarks between multiple browser instances.">
     Bookmarks
   </message>
+  <message name="IDS_SETTINGS_READING_LIST_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing reading list between multiple browser instances.">
+    Reading List
+  </message>
   <message name="IDS_SETTINGS_ENCRYPTION_OPTIONS" desc="Title for the section which includes options for encrypting sync settings.">
     Encryption options
   </message>
@@ -256,12 +329,12 @@
 
   <if expr="chromeos">
     <message name="IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing themes and wallpapers between multiple browser instances.">
-        Themes &amp; Wallpapers
+        Theme &amp; Wallpaper
       </message>
     </if>
   <if expr="not chromeos">
       <message name="IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing themes and wallpapers between multiple browser instances.">
-        Themes
+        Theme
     </message>
   </if>
 </grit-part>

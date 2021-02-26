@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "android_webview/browser/gfx/aw_render_thread_context_provider.h"
-#include "android_webview/browser/gfx/aw_vulkan_context_provider.h"
 #include "android_webview/browser/gfx/deferred_gpu_command_service.h"
 #include "android_webview/browser/gfx/gpu_service_web_view.h"
 #include "android_webview/browser/gfx/output_surface_provider_webview.h"
@@ -23,7 +22,7 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -61,7 +60,8 @@ scoped_refptr<SurfacesInstance> SurfacesInstance::GetOrCreateInstance() {
 
 SurfacesInstance::SurfacesInstance()
     : frame_sink_id_allocator_(kDefaultClientId),
-      frame_sink_id_(AllocateFrameSinkId()) {
+      frame_sink_id_(AllocateFrameSinkId()),
+      output_surface_provider_(nullptr) {
   // The SharedBitmapManager is null as we do not support or use software
   // compositing on Android.
   frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>(
@@ -73,19 +73,27 @@ SurfacesInstance::SurfacesInstance()
   support_ = std::make_unique<viz::CompositorFrameSinkSupport>(
       this, frame_sink_manager_.get(), frame_sink_id_, is_root);
 
+  std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
+      display_controller = output_surface_provider_.CreateDisplayController();
   std::unique_ptr<viz::OutputSurface> output_surface =
-      output_surface_provider_.CreateOutputSurface();
+      output_surface_provider_.CreateOutputSurface(display_controller.get());
 
   begin_frame_source_ = std::make_unique<viz::StubBeginFrameSource>();
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
       begin_frame_source_.get(), nullptr /* current_task_runner */,
       output_surface->capabilities().max_frames_pending);
   auto overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
+  // Android WebView has no overlay processor, and does not need to share
+  // gpu_task_scheduler, so it is passed in as nullptr.
+  // TODO(weiliangc): Android WebView should support overlays. Change
+  // initialize order to make this happen.
   display_ = std::make_unique<viz::Display>(
       nullptr /* shared_bitmap_manager */,
-      output_surface_provider_.renderer_settings(), frame_sink_id_,
-      std::move(output_surface), std::move(overlay_processor),
-      std::move(scheduler), nullptr /* current_task_runner */);
+      output_surface_provider_.renderer_settings(),
+      output_surface_provider_.debug_settings(), frame_sink_id_,
+      std::move(display_controller), std::move(output_surface),
+      std::move(overlay_processor), std::move(scheduler),
+      nullptr /* current_task_runner */);
   display_->Initialize(this, frame_sink_manager_->surface_manager(),
                        output_surface_provider_.enable_shared_image());
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
@@ -141,8 +149,9 @@ void SurfacesInstance::DrawAndSwap(gfx::Size viewport,
 
   // Create a frame with a single SurfaceDrawQuad referencing the child
   // Surface and transformed using the given transform.
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
-  render_pass->SetNew(1, gfx::Rect(viewport), clip, gfx::Transform());
+  auto render_pass = viz::CompositorRenderPass::Create();
+  render_pass->SetNew(viz::CompositorRenderPassId{1}, gfx::Rect(viewport), clip,
+                      gfx::Transform());
   render_pass->has_transparent_background = false;
 
   viz::SharedQuadState* quad_state =
@@ -171,18 +180,16 @@ void SurfacesInstance::DrawAndSwap(gfx::Size viewport,
   frame.metadata.referenced_surfaces = GetChildIdsRanges();
   frame.metadata.frame_token = ++next_frame_token_;
 
-  if (!root_id_allocation_.IsValid() || viewport != surface_size_ ||
+  if (!root_local_surface_id_.is_valid() || viewport != surface_size_ ||
       device_scale_factor != device_scale_factor_) {
     parent_local_surface_id_allocator_->GenerateId();
-    root_id_allocation_ = parent_local_surface_id_allocator_
-                              ->GetCurrentLocalSurfaceIdAllocation();
+    root_local_surface_id_ =
+        parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
     surface_size_ = viewport;
     device_scale_factor_ = device_scale_factor;
-    display_->SetLocalSurfaceId(root_id_allocation_.local_surface_id(),
-                                device_scale_factor);
+    display_->SetLocalSurfaceId(root_local_surface_id_, device_scale_factor);
   }
-  support_->SubmitCompositorFrame(root_id_allocation_.local_surface_id(),
-                                  std::move(frame));
+  support_->SubmitCompositorFrame(root_local_surface_id_, std::move(frame));
 
   if (output_surface_provider_.shared_context_state()) {
     // GL state could be changed across frames, so we need reset GrContext.
@@ -208,7 +215,7 @@ void SurfacesInstance::DrawAndSwap(gfx::Size viewport,
 void SurfacesInstance::AddChildId(const viz::SurfaceId& child_id) {
   DCHECK(!base::Contains(child_ids_, child_id));
   child_ids_.push_back(child_id);
-  if (root_id_allocation_.IsValid())
+  if (root_local_surface_id_.is_valid())
     SetSolidColorRootFrame();
 }
 
@@ -216,7 +223,7 @@ void SurfacesInstance::RemoveChildId(const viz::SurfaceId& child_id) {
   auto itr = std::find(child_ids_.begin(), child_ids_.end(), child_id);
   DCHECK(itr != child_ids_.end());
   child_ids_.erase(itr);
-  if (root_id_allocation_.IsValid())
+  if (root_local_surface_id_.is_valid())
     SetSolidColorRootFrame();
 }
 
@@ -225,11 +232,12 @@ void SurfacesInstance::SetSolidColorRootFrame() {
   gfx::Rect rect(surface_size_);
   bool is_clipped = false;
   bool are_contents_opaque = true;
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
-  render_pass->SetNew(1, rect, rect, gfx::Transform());
+  auto render_pass = viz::CompositorRenderPass::Create();
+  render_pass->SetNew(viz::CompositorRenderPassId{1}, rect, rect,
+                      gfx::Transform());
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->SetAll(gfx::Transform(), rect, rect, gfx::RRectF(), rect,
+  quad_state->SetAll(gfx::Transform(), rect, rect, gfx::MaskFilterInfo(), rect,
                      is_clipped, are_contents_opaque, 1.f,
                      SkBlendMode::kSrcOver, 0);
   viz::SolidColorDrawQuad* solid_quad =
@@ -243,8 +251,7 @@ void SurfacesInstance::SetSolidColorRootFrame() {
   frame.metadata.referenced_surfaces = GetChildIdsRanges();
   frame.metadata.device_scale_factor = device_scale_factor_;
   frame.metadata.frame_token = ++next_frame_token_;
-  support_->SubmitCompositorFrame(root_id_allocation_.local_surface_id(),
-                                  std::move(frame));
+  support_->SubmitCompositorFrame(root_local_surface_id_, std::move(frame));
 }
 
 void SurfacesInstance::DidReceiveCompositorFrameAck(
@@ -289,8 +296,12 @@ bool SurfacesInstance::BackdropFiltersPreventMerge(
   //  in the cases listed above. crbug.com/996434
   const viz::Surface* surface =
       frame_sink_manager_->surface_manager()->GetSurfaceForId(surface_id);
+
+  if (!surface || !surface->HasActiveFrame())
+    return false;
+
   const auto& frame = surface->GetActiveFrame();
-  base::flat_set<viz::RenderPassId> backdrop_filter_passes;
+  base::flat_set<viz::CompositorRenderPassId> backdrop_filter_passes;
   for (const auto& render_pass : frame.render_pass_list) {
     if (!render_pass->backdrop_filters.IsEmpty())
       backdrop_filter_passes.insert(render_pass->id);
@@ -301,9 +312,10 @@ bool SurfacesInstance::BackdropFiltersPreventMerge(
 
   const auto* root_pass = frame.render_pass_list.back().get();
   for (const auto* quad : root_pass->quad_list) {
-    if (quad->material != viz::DrawQuad::Material::kRenderPass)
+    if (quad->material != viz::DrawQuad::Material::kCompositorRenderPass)
       continue;
-    const auto* pass_quad = viz::RenderPassDrawQuad::MaterialCast(quad);
+    const auto* pass_quad =
+        viz::CompositorRenderPassDrawQuad::MaterialCast(quad);
     if (backdrop_filter_passes.find(pass_quad->render_pass_id) !=
         backdrop_filter_passes.end()) {
       return true;

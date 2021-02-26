@@ -5,16 +5,16 @@
 package org.chromium.chrome.browser.browserservices.ui.trustedwebactivity;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.QualityEnforcer;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.DisclosureUiPicker;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.ClientPackageNameProvider;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityDisclosureController;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityOpenTimeRecorder;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaRegistrar;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
 import org.chromium.chrome.browser.browserservices.ui.SharedActivityCoordinator;
+import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVerifier;
+import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVerifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.ui.controller.trustedwebactivity.ClientPackageNameProvider;
+import org.chromium.chrome.browser.browserservices.ui.controller.trustedwebactivity.TrustedWebActivityDisclosureController;
+import org.chromium.chrome.browser.browserservices.ui.controller.trustedwebactivity.TrustedWebActivityOpenTimeRecorder;
+import org.chromium.chrome.browser.browserservices.ui.controller.trustedwebactivity.TwaRegistrar;
+import org.chromium.chrome.browser.browserservices.ui.splashscreen.trustedwebactivity.TwaSplashController;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -47,7 +47,7 @@ public class TrustedWebActivityCoordinator {
             TrustedWebActivityUmaRecorder umaRecorder,
             ActivityLifecycleDispatcher lifecycleDispatcher, TwaRegistrar twaRegistrar,
             ClientPackageNameProvider clientPackageNameProvider,
-            CustomTabsConnection customTabsConnection) {
+            CustomTabsConnection customTabsConnection, QualityEnforcer enforcer) {
         // We don't need to do anything with most of the classes above, we just need to resolve them
         // so they start working.
         mSharedActivityCoordinator = sharedActivityCoordinator;

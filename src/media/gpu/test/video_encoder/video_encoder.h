@@ -18,6 +18,10 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 
+namespace gpu {
+class GpuMemoryBufferFactory;
+}  // namespace gpu
+
 namespace media {
 namespace test {
 
@@ -25,6 +29,7 @@ class BitstreamProcessor;
 class Video;
 class VideoEncoderClient;
 struct VideoEncoderClientConfig;
+struct VideoEncoderStats;
 
 // This class provides a framework to build video encode accelerator tests upon.
 // It provides methods to control video encoding, and wait for specific events
@@ -47,8 +52,11 @@ class VideoEncoder {
   using EventCallback = base::RepeatingCallback<bool(EncoderEvent)>;
 
   // Create an instance of the video encoder.
+  // TODO(hiroh): Take raw pointers of bitstream_processors so that they are
+  // destroyed on the same sequence where they are created.
   static std::unique_ptr<VideoEncoder> Create(
       const VideoEncoderClientConfig& config,
+      gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
       std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors =
           {});
 
@@ -61,6 +69,10 @@ class VideoEncoder {
   // Wait until all processors have finished processing the currently queued
   // list of bitstream buffers. Returns whether processing was successful.
   bool WaitForBitstreamProcessors();
+
+  // Get/Reset video encode statistics.
+  VideoEncoderStats GetStats() const;
+  void ResetStats();
 
   // Set the maximum time we will wait for an event to finish.
   void SetEventWaitTimeout(base::TimeDelta timeout);
@@ -76,6 +88,8 @@ class VideoEncoder {
   void EncodeUntil(EncoderEvent event, size_t event_count = 1);
   // Flush the encoder.
   void Flush();
+  // Updates bitrate based on the specified |bitrate| and |framerate|.
+  void UpdateBitrate(uint32_t bitrate, uint32_t framerate);
 
   // Get the current state of the video encoder.
   EncoderState GetState() const;
@@ -102,6 +116,7 @@ class VideoEncoder {
 
   bool CreateEncoderClient(
       const VideoEncoderClientConfig& config,
+      gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
       std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors);
 
   // Notify the video encoder an event has occurred (e.g. bitstream ready).

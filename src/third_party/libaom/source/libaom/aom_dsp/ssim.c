@@ -77,7 +77,7 @@ static const int64_t cc2_12 = 61817334;  // (64^2*(.03*4095)^2
 static double similarity(uint32_t sum_s, uint32_t sum_r, uint32_t sum_sq_s,
                          uint32_t sum_sq_r, uint32_t sum_sxr, int count,
                          uint32_t bd) {
-  int64_t ssim_n, ssim_d;
+  double ssim_n, ssim_d;
   int64_t c1, c2;
   if (bd == 8) {
     // scale the constants by number of pixels
@@ -94,14 +94,14 @@ static double similarity(uint32_t sum_s, uint32_t sum_r, uint32_t sum_sq_s,
     assert(0);
   }
 
-  ssim_n = (2 * sum_s * sum_r + c1) *
-           ((int64_t)2 * count * sum_sxr - (int64_t)2 * sum_s * sum_r + c2);
+  ssim_n = (2.0 * sum_s * sum_r + c1) *
+           (2.0 * count * sum_sxr - 2.0 * sum_s * sum_r + c2);
 
-  ssim_d = (sum_s * sum_s + sum_r * sum_r + c1) *
-           ((int64_t)count * sum_sq_s - (int64_t)sum_s * sum_s +
-            (int64_t)count * sum_sq_r - (int64_t)sum_r * sum_r + c2);
+  ssim_d = ((double)sum_s * sum_s + (double)sum_r * sum_r + c1) *
+           ((double)count * sum_sq_s - (double)sum_s * sum_s +
+            (double)count * sum_sq_r - (double)sum_r * sum_r + c2);
 
-  return ssim_n * 1.0 / ssim_d;
+  return ssim_n / ssim_d;
 }
 
 static double ssim_8x8(const uint8_t *s, int sp, const uint8_t *r, int rp) {
@@ -165,8 +165,9 @@ static double aom_highbd_ssim2(const uint8_t *img1, const uint8_t *img2,
   return ssim_total;
 }
 
-double aom_calc_ssim(const YV12_BUFFER_CONFIG *source,
-                     const YV12_BUFFER_CONFIG *dest, double *weight) {
+void aom_calc_ssim(const YV12_BUFFER_CONFIG *source,
+                   const YV12_BUFFER_CONFIG *dest, double *weight,
+                   double *fast_ssim) {
   double abc[3];
   for (int i = 0; i < 3; ++i) {
     const int is_uv = i > 0;
@@ -176,7 +177,7 @@ double aom_calc_ssim(const YV12_BUFFER_CONFIG *source,
   }
 
   *weight = 1;
-  return abc[0] * .8 + .1 * (abc[1] + abc[2]);
+  *fast_ssim = abc[0] * .8 + .1 * (abc[1] + abc[2]);
 }
 
 // traditional ssim as per: http://en.wikipedia.org/wiki/Structural_similarity
@@ -421,11 +422,11 @@ double aom_get_ssim_metrics(uint8_t *img1, int img1_pitch, uint8_t *img2,
   return inconsistency_total;
 }
 
-double aom_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
-                            const YV12_BUFFER_CONFIG *dest, double *weight,
-                            uint32_t bd, uint32_t in_bd) {
+void aom_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
+                          const YV12_BUFFER_CONFIG *dest, double *weight,
+                          uint32_t bd, uint32_t in_bd, double *fast_ssim) {
   assert(bd >= in_bd);
-  const uint32_t shift = bd - in_bd;
+  uint32_t shift = bd - in_bd;
 
   double abc[3];
   for (int i = 0; i < 3; ++i) {
@@ -436,6 +437,21 @@ double aom_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
                               source->crop_heights[is_uv], in_bd, shift);
   }
 
-  *weight = 1;
-  return abc[0] * .8 + .1 * (abc[1] + abc[2]);
+  weight[0] = 1;
+  fast_ssim[0] = abc[0] * .8 + .1 * (abc[1] + abc[2]);
+
+  if (bd > in_bd) {
+    // Compute SSIM based on stream bit depth
+    shift = 0;
+    for (int i = 0; i < 3; ++i) {
+      const int is_uv = i > 0;
+      abc[i] = aom_highbd_ssim2(source->buffers[i], dest->buffers[i],
+                                source->strides[is_uv], dest->strides[is_uv],
+                                source->crop_widths[is_uv],
+                                source->crop_heights[is_uv], bd, shift);
+    }
+
+    weight[1] = 1;
+    fast_ssim[1] = abc[0] * .8 + .1 * (abc[1] + abc[2]);
+  }
 }

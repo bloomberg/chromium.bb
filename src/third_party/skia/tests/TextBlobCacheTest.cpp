@@ -17,7 +17,9 @@
 #include "include/core/SkSurface.h"
 #include "include/core/SkTextBlob.h"
 #include "include/core/SkTypeface.h"
+#include "include/gpu/GrDirectContext.h"
 #include "src/core/SkGlyphRun.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "tools/fonts/RandomScalerContext.h"
 
 #ifdef SK_BUILD_FOR_WIN
@@ -26,9 +28,9 @@
 
 #include "tests/Test.h"
 
-#include "include/gpu/GrContext.h"
-#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/text/GrAtlasManager.h"
+#include "src/gpu/text/GrTextBlobCache.h"
 
 static void draw(SkCanvas* canvas, int redraw, const SkTArray<sk_sp<SkTextBlob>>& blobs) {
     int yOffset = 0;
@@ -46,27 +48,36 @@ static void draw(SkCanvas* canvas, int redraw, const SkTArray<sk_sp<SkTextBlob>>
 static const int kWidth = 1024;
 static const int kHeight = 768;
 
-static void setup_always_evict_atlas(GrContext* context) {
-    context->priv().getAtlasManager()->setAtlasDimensionsToMinimum_ForTesting();
+static void setup_always_evict_atlas(GrDirectContext* dContext) {
+    dContext->priv().getAtlasManager()->setAtlasDimensionsToMinimum_ForTesting();
 }
 
+class GrTextBlobTestingPeer {
+public:
+    static void SetBudget(GrTextBlobCache* cache, size_t budget) {
+        SkAutoSpinlock lock{cache->fSpinLock};
+        cache->fSizeBudget = budget;
+        cache->internalCheckPurge();
+    }
+};
+
 // This test hammers the GPU textblobcache and font atlas
-static void text_blob_cache_inner(skiatest::Reporter* reporter, GrContext* context,
+static void text_blob_cache_inner(skiatest::Reporter* reporter, GrDirectContext* dContext,
                                   int maxTotalText, int maxGlyphID, int maxFamilies, bool normal,
                                   bool stressTest) {
     // setup surface
     uint32_t flags = 0;
-    SkSurfaceProps props(flags, SkSurfaceProps::kLegacyFontHost_InitType);
+    SkSurfaceProps props(flags, kRGB_H_SkPixelGeometry);
 
     // configure our context for maximum stressing of cache and atlas
     if (stressTest) {
-        setup_always_evict_atlas(context);
-        context->priv().testingOnly_setTextBlobCacheLimit(0);
+        setup_always_evict_atlas(dContext);
+        GrTextBlobTestingPeer::SetBudget(dContext->priv().getTextBlobCache(), 0);
     }
 
     SkImageInfo info = SkImageInfo::Make(kWidth, kHeight, kRGBA_8888_SkColorType,
                                          kPremul_SkAlphaType);
-    auto surface(SkSurface::MakeRenderTarget(context, SkBudgeted::kNo, info, 0, &props));
+    auto surface(SkSurface::MakeRenderTarget(dContext, SkBudgeted::kNo, info, 0, &props));
     REPORTER_ASSERT(reporter, surface);
     if (!surface) {
         return;
@@ -148,31 +159,31 @@ static void text_blob_cache_inner(skiatest::Reporter* reporter, GrContext* conte
     draw(canvasNoLCD, 2, blobs);
 
     // test draw after free
-    context->freeGpuResources();
+    dContext->freeGpuResources();
     draw(canvas, 1, blobs);
 
-    context->freeGpuResources();
+    dContext->freeGpuResources();
     draw(canvasNoLCD, 1, blobs);
 
     // test draw after abandon
-    context->abandonContext();
+    dContext->abandonContext();
     draw(canvas, 1, blobs);
 }
 
 DEF_GPUTEST_FOR_MOCK_CONTEXT(TextBlobCache, reporter, ctxInfo) {
-    text_blob_cache_inner(reporter, ctxInfo.grContext(), 1024, 256, 30, true, false);
+    text_blob_cache_inner(reporter, ctxInfo.directContext(), 1024, 256, 30, true, false);
 }
 
 DEF_GPUTEST_FOR_MOCK_CONTEXT(TextBlobStressCache, reporter, ctxInfo) {
-    text_blob_cache_inner(reporter, ctxInfo.grContext(), 256, 256, 10, true, true);
+    text_blob_cache_inner(reporter, ctxInfo.directContext(), 256, 256, 10, true, true);
 }
 
 DEF_GPUTEST_FOR_MOCK_CONTEXT(TextBlobAbnormal, reporter, ctxInfo) {
-    text_blob_cache_inner(reporter, ctxInfo.grContext(), 256, 256, 10, false, false);
+    text_blob_cache_inner(reporter, ctxInfo.directContext(), 256, 256, 10, false, false);
 }
 
 DEF_GPUTEST_FOR_MOCK_CONTEXT(TextBlobStressAbnormal, reporter, ctxInfo) {
-    text_blob_cache_inner(reporter, ctxInfo.grContext(), 256, 256, 10, false, true);
+    text_blob_cache_inner(reporter, ctxInfo.directContext(), 256, 256, 10, false, true);
 }
 
 static const int kScreenDim = 160;
@@ -264,10 +275,10 @@ static sk_sp<SkTextBlob> make_large_blob() {
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(TextBlobIntegerOverflowTest, reporter, ctxInfo) {
-    auto grContext = ctxInfo.grContext();
+    auto dContext = ctxInfo.directContext();
     const SkImageInfo info =
             SkImageInfo::Make(kScreenDim, kScreenDim, kN32_SkColorType, kPremul_SkAlphaType);
-    auto surface = SkSurface::MakeRenderTarget(grContext, SkBudgeted::kNo, info);
+    auto surface = SkSurface::MakeRenderTarget(dContext, SkBudgeted::kNo, info);
 
     auto blob = make_large_blob();
     int y = 40;
@@ -287,10 +298,10 @@ void write_png(const std::string& filename, const SkBitmap& bitmap) {
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(TextBlobJaggedGlyph, reporter, ctxInfo) {
-    auto grContext = ctxInfo.grContext();
+    auto direct = ctxInfo.directContext();
     const SkImageInfo info =
             SkImageInfo::Make(kScreenDim, kScreenDim, kN32_SkColorType, kPremul_SkAlphaType);
-    auto surface = SkSurface::MakeRenderTarget(grContext, SkBudgeted::kNo, info);
+    auto surface = SkSurface::MakeRenderTarget(direct, SkBudgeted::kNo, info);
 
     auto blob = make_blob();
 
@@ -343,10 +354,10 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(TextBlobJaggedGlyph, reporter, ctxInfo) {
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(TextBlobSmoothScroll, reporter, ctxInfo) {
-    auto grContext = ctxInfo.grContext();
+    auto direct = ctxInfo.directContext();
     const SkImageInfo info =
             SkImageInfo::Make(kScreenDim, kScreenDim, kN32_SkColorType, kPremul_SkAlphaType);
-    auto surface = SkSurface::MakeRenderTarget(grContext, SkBudgeted::kNo, info);
+    auto surface = SkSurface::MakeRenderTarget(direct, SkBudgeted::kNo, info);
 
     auto movingBlob = make_blob();
 

@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.night_mode;
 import androidx.annotation.NonNull;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -32,11 +32,14 @@ public class NightModeReparentingController implements NightModeStateProvider.Ob
         boolean isNTPUrl(String url);
     }
 
-    private Delegate mDelegate;
+    private final Delegate mDelegate;
+    private final AsyncTabParamsManager mAsyncTabParamsManager;
 
     /** Constructs a {@link NightModeReparentingController} with the given delegate. */
-    public NightModeReparentingController(@NonNull Delegate delegate) {
+    public NightModeReparentingController(
+            @NonNull Delegate delegate, AsyncTabParamsManager asyncTabParamsManager) {
         mDelegate = delegate;
+        mAsyncTabParamsManager = asyncTabParamsManager;
     }
 
     @Override
@@ -60,13 +63,13 @@ public class NightModeReparentingController implements NightModeStateProvider.Ob
 
             // The current tab has already been detached/stored and is waiting for andorid to
             // recreate the activity.
-            if (AsyncTabParamsManager.hasParamsForTabId(tab.getId())) continue;
+            if (mAsyncTabParamsManager.hasParamsForTabId(tab.getId())) continue;
             // Intentionally skip new tab pages and allow them to reload and restore scroll
             // state themselves.
             if (mDelegate.isNTPUrl(tab.getUrlString())) continue;
 
-            TabReparentingParams params = new TabReparentingParams(tab, null, null);
-            AsyncTabParamsManager.add(tab.getId(), params);
+            TabReparentingParams params = new TabReparentingParams(tab, null);
+            mAsyncTabParamsManager.add(tab.getId(), params);
             ReparentingTask.from(tab).detach();
         }
     }

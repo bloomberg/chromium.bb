@@ -39,8 +39,10 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
         return Color.WHITE;
     }
 
-    WebappIntentDataProvider(int toolbarColor, boolean hasCustomToolbarColor, ShareData shareData,
+    WebappIntentDataProvider(@NonNull Intent intent, int toolbarColor,
+            boolean hasCustomToolbarColor, @Nullable ShareData shareData,
             @NonNull WebappExtras webappExtras, @Nullable WebApkExtras webApkExtras) {
+        mIntent = intent;
         mToolbarColor = toolbarColor;
         mHasCustomToolbarColor = hasCustomToolbarColor;
         mCloseButtonIcon = TintedDrawable.constructTintedDrawable(
@@ -49,7 +51,6 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
         mWebappExtras = webappExtras;
         mWebApkExtras = webApkExtras;
         mActivityType = (webApkExtras != null) ? ActivityType.WEB_APK : ActivityType.WEBAPP;
-        mIntent = new Intent();
     }
 
     @Override
@@ -61,6 +62,15 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     @Nullable
     public Intent getIntent() {
         return mIntent;
+    }
+
+    @Override
+    @Nullable
+    public String getClientPackageName() {
+        if (mWebApkExtras != null) {
+            return mWebApkExtras.webApkPackageName;
+        }
+        return null;
     }
 
     @Override
@@ -90,6 +100,27 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     }
 
     @Override
+    public boolean shouldShowShareMenuItem() {
+        return true;
+    }
+
+    @Override
+    @CustomTabsUiType
+    public int getUiType() {
+        return CustomTabsUiType.MINIMAL_UI_WEBAPP;
+    }
+
+    @Override
+    public boolean shouldShowStarButton() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldShowDownloadButton() {
+        return false;
+    }
+
+    @Override
     @Nullable
     public ShareData getShareData() {
         return mShareData;
@@ -105,5 +136,10 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     @Nullable
     public WebApkExtras getWebApkExtras() {
         return mWebApkExtras;
+    }
+
+    @Override
+    public int getDefaultOrientation() {
+        return mWebappExtras.orientation;
     }
 }

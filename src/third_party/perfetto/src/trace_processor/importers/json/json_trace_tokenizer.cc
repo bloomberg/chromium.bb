@@ -17,6 +17,8 @@
 
 #include "src/trace_processor/importers/json/json_trace_tokenizer.h"
 
+#include <memory>
+
 #include "perfetto/base/build_config.h"
 #include "perfetto/ext/base/string_utils.h"
 
@@ -379,6 +381,16 @@ util::Status JsonTraceTokenizer::ParseInternal(const char* start,
       } else if (key == "metadata") {
         position_ = TracePosition::kWaitingForMetadataDictionary;
         return ParseInternal(next + 1, end, out);
+      } else if (key == "displayTimeUnit") {
+        std::string time_unit;
+        auto string_res = ReadOneJsonString(next + 1, end, &time_unit, &next);
+        if (string_res == ReadStringRes::kFatalError)
+          return util::ErrStatus("Could not parse displayTimeUnit");
+        if (string_res == ReadStringRes::kNeedsMoreData)
+          return util::ErrStatus("displayTimeUnit too large");
+        if (time_unit != "ms" && time_unit != "ns")
+          return util::ErrStatus("displayTimeUnit unknown");
+        return ParseInternal(next, end, out);
       } else {
         // If we don't recognize the key, just ignore the rest of the trace and
         // go to EOF.
@@ -425,7 +437,7 @@ util::Status JsonTraceTokenizer::ParseInternal(const char* start,
             "Failed to parse: illegal JSON format when parsing metadata");
       }
 
-      std::unique_ptr<Json::Value> value(new Json::Value());
+      auto value = std::unique_ptr<Json::Value>(new Json::Value());
       const auto res = ReadOneJsonDict(next, end, value.get(), &next);
       if (res == ReadDictRes::kFatalError || res == ReadDictRes::kEndOfArray)
         return util::ErrStatus("Encountered fatal error while parsing JSON");
@@ -440,7 +452,7 @@ util::Status JsonTraceTokenizer::ParseInternal(const char* start,
     }
     case TracePosition::kTraceEventsArray: {
       while (next < end) {
-        std::unique_ptr<Json::Value> value(new Json::Value());
+        auto value = std::unique_ptr<Json::Value>(new Json::Value());
         const auto res = ReadOneJsonDict(next, end, value.get(), &next);
         if (res == ReadDictRes::kFatalError)
           return util::ErrStatus("Encountered fatal error while parsing JSON");

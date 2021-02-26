@@ -16,6 +16,7 @@ export class LiveHeapProfile {
   constructor() {
     this._running = false;
     this._sessionId = 0;
+    /** @type {function(?Function=):void} */
     this._loadEventCallback = () => {};
     this._setting = Common.Settings.Settings.instance().moduleSetting('memoryLiveHeapProfile');
     this._setting.addChangeListener(event => event.data ? this._startProfiling() : this._stopProfiling());
@@ -28,6 +29,7 @@ export class LiveHeapProfile {
    * @override
    */
   run() {
+    return Promise.resolve();
   }
 
   /**
@@ -62,16 +64,19 @@ export class LiveHeapProfile {
       if (sessionId !== this._sessionId) {
         break;
       }
-      const lineLevelProfile = self.runtime.sharedInstance(Memory);
-      lineLevelProfile.reset();
+      Memory.instance().reset();
       for (let i = 0; i < profiles.length; ++i) {
-        if (profiles[i]) {
-          lineLevelProfile.appendHeapProfile(profiles[i], models[i].target());
+        const profile = profiles[i];
+        if (!profile) {
+          continue;
         }
+
+        Memory.instance().appendHeapProfile(profile, models[i].target());
       }
       await Promise.race([
-        new Promise(r => setTimeout(r, Host.InspectorFrontendHost.isUnderTest() ? 10 : 5000)),
-        new Promise(r => this._loadEventCallback = r)
+        new Promise(r => setTimeout(r, Host.InspectorFrontendHost.isUnderTest() ? 10 : 5000)), new Promise(r => {
+          this._loadEventCallback = r;
+        })
       ]);
     } while (sessionId === this._sessionId);
 
@@ -81,14 +86,14 @@ export class LiveHeapProfile {
     for (const model of SDK.SDKModel.TargetManager.instance().models(SDK.HeapProfilerModel.HeapProfilerModel)) {
       model.stopSampling();
     }
-    self.runtime.sharedInstance(Memory).reset();
+    Memory.instance().reset();
   }
 
   _stopProfiling() {
     if (!this._running) {
       return;
     }
-    this._running = 0;
+    this._running = false;
     this._sessionId++;
   }
 

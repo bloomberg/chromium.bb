@@ -41,7 +41,7 @@ String AbstractPropertySetCSSStyleDeclaration::item(unsigned i) const {
   CSSPropertyValueSet::PropertyReference property = PropertySet().PropertyAt(i);
   if (property.Id() == CSSPropertyID::kVariable)
     return To<CSSCustomPropertyDeclaration>(property.Value()).GetName();
-  return property.Property().GetPropertyName();
+  return property.Name().ToAtomicString();
 }
 
 String AbstractPropertySetCSSStyleDeclaration::cssText() const {
@@ -55,12 +55,9 @@ void AbstractPropertySetCSSStyleDeclaration::setCSSText(
   StyleAttributeMutationScope mutation_scope(this);
   WillMutate();
 
-  // A null execution_context may be passed in by the inspector, this shouldn't
-  // occur normally.
   const SecureContextMode mode = execution_context
                                      ? execution_context->GetSecureContextMode()
                                      : SecureContextMode::kInsecureContext;
-
   PropertySet().ParseDeclarationList(text, mode, ContextStyleSheet());
 
   DidMutate(kPropertyChanged);
@@ -135,8 +132,10 @@ void AbstractPropertySetCSSStyleDeclaration::setProperty(
   if (!important && !priority.IsEmpty())
     return;
 
-  SetPropertyInternal(property_id, property_name, value, important,
-                      execution_context->GetSecureContextMode(),
+  const SecureContextMode mode = execution_context
+                                     ? execution_context->GetSecureContextMode()
+                                     : SecureContextMode::kInsecureContext;
+  SetPropertyInternal(property_id, property_name, value, important, mode,
                       exception_state);
 }
 
@@ -235,7 +234,7 @@ bool AbstractPropertySetCSSStyleDeclaration::CssPropertyMatches(
   return PropertySet().PropertyMatches(property_id, property_value);
 }
 
-void AbstractPropertySetCSSStyleDeclaration::Trace(Visitor* visitor) {
+void AbstractPropertySetCSSStyleDeclaration::Trace(Visitor* visitor) const {
   CSSStyleDeclaration::Trace(visitor);
 }
 

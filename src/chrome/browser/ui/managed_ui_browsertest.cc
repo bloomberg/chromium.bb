@@ -8,13 +8,16 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
+#endif
 
 class ManagedUiTest : public InProcessBrowserTest {
  public:
@@ -43,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(ManagedUiTest, ShouldDisplayManagedUiOnDesktop) {
   policy::PolicyMap policy_map;
   policy_map.Set("test-policy", policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
-                 std::make_unique<base::Value>("hello world"), nullptr);
+                 base::Value("hello world"), nullptr);
   provider()->UpdateChromePolicy(policy_map);
 
 #if defined(OS_CHROMEOS)
@@ -87,14 +90,14 @@ IN_PROC_BROWSER_TEST_F(ManagedUiTest, GetManagedUiWebUILabel) {
           "Your <a href=\"chrome://management\">browser is managed</a> by "
           "example.com"),
       chrome::GetManagedUiWebUILabel(profile_with_domain.get()));
+}
+
 #if defined(OS_CHROMEOS)
-  EXPECT_EQ(base::ASCIIToUTF16("Your <a target=\"_blank\" "
-                               "href=\"chrome://management\">Chrome device is "
-                               "managed</a> by your organization"),
-            chrome::GetDeviceManagedUiWebUILabel(profile.get()));
+using ManagedUiTestCros = policy::DevicePolicyCrosBrowserTest;
+IN_PROC_BROWSER_TEST_F(ManagedUiTestCros, GetManagedUiWebUILabel) {
   EXPECT_EQ(base::ASCIIToUTF16("Your <a target=\"_blank\" "
                                "href=\"chrome://management\">Chrome device is "
                                "managed</a> by example.com"),
-            chrome::GetDeviceManagedUiWebUILabel(profile_with_domain.get()));
-#endif
+            chrome::GetDeviceManagedUiWebUILabel());
 }
+#endif

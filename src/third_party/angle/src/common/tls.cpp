@@ -34,6 +34,8 @@ static vector<DWORD> freeTlsIndices;
 
 #endif
 
+bool gUseAndroidOpenGLTlsSlot = false;
+
 TLSIndex CreateTLSIndex()
 {
     TLSIndex index;

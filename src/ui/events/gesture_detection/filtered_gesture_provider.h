@@ -18,7 +18,7 @@ namespace ui {
 
 // Provides filtered gesture detection and dispatch given a sequence of touch
 // events and touch event acks.
-class GESTURE_DETECTION_EXPORT FilteredGestureProvider
+class GESTURE_DETECTION_EXPORT FilteredGestureProvider final
     : public ui::TouchDispositionGestureFilterClient,
       public ui::GestureProviderClient {
  public:
@@ -47,7 +47,7 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider
   // forwarded after a successful call to |OnTouchEvent()|.
   void OnTouchEventAck(uint32_t unique_event_id,
                        bool event_consumed,
-                       bool is_source_touch_event_set_non_blocking);
+                       bool is_source_touch_event_set_blocking);
 
   void ResetGestureHandlingState();
 

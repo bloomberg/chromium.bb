@@ -18,11 +18,13 @@
 #include "base/bind.h"
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/files/scoped_file.h"
+#include "base/logging.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -99,7 +101,7 @@ bool UserfaultFD::UnregisterRange(uintptr_t range_start, uint64_t len) {
   range.start = range_start;
   range.len = len;
 
-  if (HANDLE_EINTR(ioctl(fd_.get(), UFFDIO_UNREGISTER, &range)) == -1) {
+  if (HANDLE_EINTR(ioctl(fd_.get(), UFFDIO_UNREGISTER, &range)) < 0) {
     return false;
   }
 
@@ -112,11 +114,13 @@ bool UserfaultFD::UnregisterRange(uintptr_t range_start, uint64_t len) {
 
 bool UserfaultFD::CopyToRange(uintptr_t dest_range_start,
                               uint64_t len,
-                              uintptr_t src_range_start) {
+                              uintptr_t src_range_start,
+                              int64_t* copied) {
 #if defined(HAS_USERFAULTFD)
   // NOTE: The source doesn't need to be page aligned.
   CHECK(base::IsPageAligned(dest_range_start));
   CHECK(base::IsPageAligned(len));
+  CHECK(copied);
 
   uffdio_copy fault_copy = {};
   fault_copy.dst = dest_range_start;
@@ -124,83 +128,37 @@ bool UserfaultFD::CopyToRange(uintptr_t dest_range_start,
   fault_copy.mode = 0;  // WAKE
   fault_copy.src = src_range_start;
   fault_copy.copy = 0;
+  *copied = 0;
 
-  int res = 0;
-  do {
-    res = HANDLE_EINTR(ioctl(fd_.get(), UFFDIO_COPY, &fault_copy));
+  int res = HANDLE_EINTR(ioctl(fd_.get(), UFFDIO_COPY, &fault_copy));
+  *copied = fault_copy.copy;
 
-    // UFFDIO_COPY may only copy a portion of the range and will return
-    // -EAGAIN in that situation. If that happens we need to adjust our fault
-    // copy request and try again.
-    if (res < 0 && errno == EAGAIN) {
-      // There are two reasons we can get EAGAIN, the first is mappings are
-      // changing and in that case nothing will have been written. The second is
-      // that we could only copy a portion of the range. In the first case we do
-      // nothing but try again and we can detect that because fault_copy.copy
-      // will be zero. But in that second case we need to adjust our
-      // fault_copy parameters.
-      if (fault_copy.copy > 0) {
-        // We did a partial write, fault_copy.copy will now contain the number
-        // of bytes written.
-        fault_copy.src += fault_copy.copy;
-        fault_copy.dst += fault_copy.copy;
-        fault_copy.len = len - (fault_copy.dst - dest_range_start);
-        fault_copy.copy = 0;
-
-        // Dest and length need to be page aligned, not source.
-        CHECK(base::IsPageAligned(fault_copy.dst));
-        CHECK(base::IsPageAligned(fault_copy.len));
-      }
-    }
-  } while (res < 0 && errno == EAGAIN);
-
-  return res == 0;
+  return res >= 0;
 #else  // defined(HAS_USERFAULTFD)
   errno = ENOSYS;
   return false;
 #endif
 }
 
-bool UserfaultFD::ZeroRange(uintptr_t range_start, uint64_t len) {
+bool UserfaultFD::ZeroRange(uintptr_t range_start,
+                            uint64_t len,
+                            int64_t* zeroed) {
 #if defined(HAS_USERFAULTFD)
   CHECK(base::IsPageAligned(range_start));
   CHECK(base::IsPageAligned(len));
+  CHECK(zeroed);
 
   uffdio_zeropage zp = {};
   zp.range.start = range_start;
   zp.range.len = len;
-  zp.mode = 0;
+  zp.mode = 0;  // WAKE
   zp.zeropage = 0;
+  *zeroed = 0;
 
-  int res = 0;
-  do {
-    res = HANDLE_EINTR(ioctl(fd_.get(), UFFDIO_ZEROPAGE, &zp));
+  int res = HANDLE_EINTR(ioctl(fd_.get(), UFFDIO_ZEROPAGE, &zp));
+  *zeroed = zp.zeropage;
 
-    // UFFDIO_ZEROPAGE may only zero a portion of the range and will return
-    // -EAGAIN in that situation. If that happens we need to adjust our zero
-    // page request and try again.
-    if (res < 0 && errno == EAGAIN) {
-      // There are two reasons we can get EAGAIN, the first is mappings are
-      // changing and in that case nothing will have been written. The second is
-      // that we could only zero a portion of the range. In the first case we do
-      // nothing but try again and we can detect that because zp.zeropage will
-      // be 0. But in that second case we need to adjust our zeropage
-      // parameters.
-      if (zp.zeropage > 0) {
-        // We did a partial write, zp.zeropage will now contain the number of
-        // bytes written.
-        zp.range.start += zp.zeropage;
-        zp.range.len = len - (zp.range.start - range_start);
-        zp.zeropage = 0;
-
-        // It should ALWAYS be page aligned.
-        CHECK(base::IsPageAligned(zp.range.start));
-        CHECK(base::IsPageAligned(zp.range.len));
-      }
-    }
-  } while (res < 0 && errno == EAGAIN);
-
-  return res == 0;
+  return res >= 0;
 #else  // defined(HAS_USERFAULTFD)
   errno = ENOSYS;
   return false;
@@ -216,7 +174,7 @@ bool UserfaultFD::WakeRange(uintptr_t range_start, uint64_t len) {
   range.start = range_start;
   range.len = len;
 
-  if (HANDLE_EINTR(ioctl(fd_.get(), UFFDIO_WAKE, &range)) == -1) {
+  if (HANDLE_EINTR(ioctl(fd_.get(), UFFDIO_WAKE, &range)) < 0) {
     return false;
   }
 
@@ -278,46 +236,88 @@ std::unique_ptr<UserfaultFD> UserfaultFD::Create(Features features) {
 #endif
 }
 
-void UserfaultFD::UserfaultFDReadable() {
+bool UserfaultFD::DispatchMessage(const uffd_msg& msg) {
 #if defined(HAS_USERFAULTFD)
-  uffd_msg msg = {};
-  int bytes_read = HANDLE_EINTR(read(fd_.get(), &msg, sizeof(msg)));
-  if (bytes_read <= 0) {
-    if (errno == EAGAIN) {
-      // No problems here, go back to sleep.
-      return;
-    }
-
-    // We either got an EOF or an EBADF to indicate that we're done.
-    if (errno == EBADF || bytes_read == 0) {
-      handler_->Closed(0);  // EBADF will indicate closed at this point.
-    } else {
-      PLOG(ERROR) << "Userfaultfd encountered an expected error";
-      handler_->Closed(errno);
-    }
-
-    CloseAndStopWaitingForEvents();
-    return;
-  }
-
-  // Partial reads CANNOT happen.
-  CHECK(bytes_read == sizeof(msg));
-
-  if (msg.event == UFFD_EVENT_PAGEFAULT) {
-    handler_->Pagefault(msg.arg.pagefault.address,
-                        msg.arg.pagefault.flags & UFFD_PAGEFAULT_FLAG_WRITE
-                            ? UserfaultFDHandler::PagefaultFlags::kWriteFault
-                            : UserfaultFDHandler::PagefaultFlags::kReadFault,
-                        msg.arg.pagefault.feat.ptid);
-  } else if (msg.event == UFFD_EVENT_UNMAP) {
+  if (msg.event == UFFD_EVENT_UNMAP) {
     handler_->Unmapped(msg.arg.remove.start, msg.arg.remove.end);
   } else if (msg.event == UFFD_EVENT_REMOVE) {
     handler_->Removed(msg.arg.remove.start, msg.arg.remove.end);
   } else if (msg.event == UFFD_EVENT_REMAP) {
     handler_->Remapped(msg.arg.remap.from, msg.arg.remap.to, msg.arg.remap.len);
+  } else if (msg.event == UFFD_EVENT_PAGEFAULT) {
+    pending_faults_.push_back(msg);
   } else {
-    LOG(FATAL) << "Unknown event received from userfaultfd";
+    DLOG(ERROR) << "Unknown userfaultfd event: " << msg.event;
   }
+
+  return DrainPendingFaults();
+#endif
+  return true;
+}
+
+bool UserfaultFD::DrainPendingFaults() {
+  while (!pending_faults_.empty()) {
+    const uffd_msg& pending_fault = pending_faults_.front();
+    CHECK(pending_fault.event == UFFD_EVENT_PAGEFAULT);
+    if (!handler_->Pagefault(
+            pending_fault.arg.pagefault.address,
+            pending_fault.arg.pagefault.flags & UFFD_PAGEFAULT_FLAG_WRITE
+                ? UserfaultFDHandler::PagefaultFlags::kWriteFault
+                : UserfaultFDHandler::PagefaultFlags::kReadFault,
+            pending_fault.arg.pagefault.feat.ptid)) {
+      // It'll get retried later (it wasn't popped).
+      return false;
+    }
+
+    // And we successfully handled it, let's remove it and move along.
+    pending_faults_.pop_front();
+  }
+  return true;
+}
+
+void UserfaultFD::UserfaultFDReadable() {
+#if defined(HAS_USERFAULTFD)
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
+  uffd_msg msg;
+
+  // It's very important that messages are posted in the order they were read
+  // otherwise, if another thread also attempted to handle the
+  // UserfaultFDReadable event we could post the messages out of order which may
+  // result in ambiguity. We protect the read and the posts by a mutex.
+  base::ReleasableAutoLock read_locker(&read_lock_);
+
+  do {
+    memset(&msg, 0, sizeof(msg));
+
+    // We start by draining all messages and then we process them in order.
+    int bytes_read = HANDLE_EINTR(read(fd_.get(), &msg, sizeof(msg)));
+
+    if (bytes_read <= 0) {
+      // We either got an EOF or an EBADF to indicate that we're done.
+      if (bytes_read == 0 || errno == EBADF) {
+        handler_->Closed(0);  // EBADF will indicate closed at this point.
+      } else if (errno == EWOULDBLOCK) {
+        // No problems here.
+
+        // But make sure before we exit this loop that if there are still queued
+        // messages that we attempt to drain them.
+        DrainPendingFaults();
+
+        return;
+      } else {
+        PLOG(ERROR) << "Userfaultfd encountered an expected error";
+        handler_->Closed(errno);
+      }
+
+      CloseAndStopWaitingForEvents();
+      return;
+    }
+
+    // Partial reads CANNOT happen.
+    CHECK_EQ(bytes_read, static_cast<int>(sizeof(msg)));
+    DispatchMessage(msg);
+  } while (true);
 #endif
 }
 

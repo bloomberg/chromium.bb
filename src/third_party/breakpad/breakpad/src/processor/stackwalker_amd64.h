@@ -75,7 +75,7 @@ class StackwalkerAMD64 : public Stackwalker {
   // Use cfi_frame_info (derived from STACK CFI records) to construct
   // the frame that called frames.back(). The caller takes ownership
   // of the returned frame. Return NULL on failure.
-  StackFrameAMD64* GetCallerByCFIFrameInfo(const vector<StackFrame*> &frames,
+  StackFrameAMD64* GetCallerByCFIFrameInfo(const vector<StackFrame*>& frames,
                                            CFIFrameInfo* cfi_frame_info);
 
   // Assumes a traditional frame layout where the frame pointer has not been
@@ -88,7 +88,7 @@ class StackwalkerAMD64 : public Stackwalker {
 
   // Scan the stack for plausible return addresses. The caller takes ownership
   // of the returned frame. Return NULL on failure.
-  StackFrameAMD64* GetCallerByStackScan(const vector<StackFrame*> &frames);
+  StackFrameAMD64* GetCallerByStackScan(const vector<StackFrame*>& frames);
 
   // Stores the CPU context corresponding to the innermost stack frame to
   // be returned by GetContextFrame.

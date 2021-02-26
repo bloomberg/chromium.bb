@@ -9,8 +9,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/optional.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 
@@ -29,7 +31,7 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformClipboard {
 
   // DataMap is a map from "mime type" to associated data, whereas
   // the data can be organized differently for each mime type.
-  using Data = std::vector<uint8_t>;
+  using Data = scoped_refptr<base::RefCountedBytes>;
   using DataMap = std::unordered_map<std::string, Data>;
 
   // SequenceNumberUpdateCb is a repeating callback, which can be used to tell
@@ -62,7 +64,7 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformClipboard {
   // RequestDataClosure is invoked to acknowledge that the requested clipboard
   // data has been read and stored into 'data_map'.
   using RequestDataClosure =
-      base::OnceCallback<void(const base::Optional<std::vector<uint8_t>>&)>;
+      base::OnceCallback<void(const base::Optional<Data>&)>;
   virtual void RequestClipboardData(ClipboardBuffer buffer,
                                     const std::string& mime_type,
                                     DataMap* data_map,
@@ -88,6 +90,9 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformClipboard {
 
   // See comment above SequenceNumberUpdateCb. Can be called once.
   virtual void SetSequenceNumberUpdateCb(SequenceNumberUpdateCb cb) = 0;
+
+  // Returns whether the kSelection buffer is available.
+  virtual bool IsSelectionBufferAvailable() const = 0;
 };
 
 }  // namespace ui

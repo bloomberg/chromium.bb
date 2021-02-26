@@ -39,9 +39,9 @@ class ManifestWebAppBrowserController : public web_app::AppBrowserController {
   bool ShouldShowCustomTabBar() const override;
   gfx::ImageSkia GetWindowAppIcon() const override;
   gfx::ImageSkia GetWindowIcon() const override;
-  std::string GetAppShortName() const override;
+  base::string16 GetAppShortName() const override;
   base::string16 GetFormattedUrlOrigin() const override;
-  GURL GetAppLaunchURL() const override;
+  GURL GetAppStartUrl() const override;
   bool IsUrlInAppScope(const GURL& url) const override;
 
  protected:
@@ -55,7 +55,7 @@ class ManifestWebAppBrowserController : public web_app::AppBrowserController {
 
   static bool IsInScope(const GURL& url, const GURL& scope);
 
-  GURL app_launch_url_;
+  GURL app_start_url_;
   GURL manifest_scope_;
   base::WeakPtrFactory<ManifestWebAppBrowserController> weak_factory_{this};
 };

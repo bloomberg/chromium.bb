@@ -89,7 +89,7 @@ void Window::onPaint() {
     this->visitLayers([](Layer* layer) { layer->onPrePaint(); });
     this->visitLayers([=](Layer* layer) { layer->onPaint(backbuffer.get()); });
 
-    backbuffer->flush();
+    backbuffer->flushAndSubmit();
 
     fWindowContext->swapBuffers();
 }
@@ -137,11 +137,11 @@ int Window::stencilBits() const {
     return fWindowContext->stencilBits();
 }
 
-GrContext* Window::getGrContext() const {
+GrDirectContext* Window::directContext() const {
     if (!fWindowContext) {
         return nullptr;
     }
-    return fWindowContext->getGrContext();
+    return fWindowContext->directContext();
 }
 
 void Window::inval() {

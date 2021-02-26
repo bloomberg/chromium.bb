@@ -30,6 +30,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_session.h"
 #include "components/crx_file/id_util.h"
@@ -214,8 +215,11 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
   ~LockScreenProfileCreatorImplTest() override {}
 
   void SetUp() override {
+    // Need to initialize DBusThreadManager before ArcSessionManager's
+    // constructor calls DBusThreadManager::Get().
+    chromeos::DBusThreadManager::Initialize();
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
+        extensions::switches::kAllowlistedExtensionID,
         crx_file::id_util::GenerateId("test_app"));
     ASSERT_TRUE(user_data_dir_.CreateUniqueTempDir());
 
@@ -239,8 +243,11 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
   }
 
   void TearDown() override {
+    lock_screen_profile_creator_.reset();
+    arc_session_manager_.reset();
     chromeos::NoteTakingHelper::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetProfileManager(nullptr);
+    chromeos::DBusThreadManager::Shutdown();
   }
 
   UnittestProfileManager* profile_manager() { return profile_manager_; }
@@ -339,9 +346,8 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
     std::unique_ptr<TestingProfile> primary_profile =
         std::make_unique<TestingProfile>(user_profile_path);
     primary_profile_ = primary_profile.get();
-    profile_manager_->RegisterTestingProfile(
-        std::move(primary_profile), false /*add_to_storage*/,
-        false /*start_deferred_task_runner*/);
+    profile_manager_->RegisterTestingProfile(std::move(primary_profile),
+                                             false /*add_to_storage*/);
     InitExtensionSystem(primary_profile_);
 
     chromeos::NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(

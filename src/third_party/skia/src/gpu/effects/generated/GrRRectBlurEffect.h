@@ -10,99 +10,20 @@
  **************************************************************************************************/
 #ifndef GrRRectBlurEffect_DEFINED
 #define GrRRectBlurEffect_DEFINED
-#include "include/core/SkTypes.h"
+
 #include "include/core/SkM44.h"
+#include "include/core/SkTypes.h"
 
-#include "include/gpu/GrContext.h"
-#include "include/private/GrRecordingContext.h"
-#include "src/core/SkBlurPriv.h"
-#include "src/core/SkGpuBlurUtils.h"
-#include "src/core/SkRRectPriv.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrClip.h"
-#include "src/gpu/GrPaint.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrStyle.h"
+#include "include/core/SkRect.h"
+class GrRecordingContext;
+class SkRRect;
 
-#include "src/gpu/GrCoordTransform.h"
 #include "src/gpu/GrFragmentProcessor.h"
+
 class GrRRectBlurEffect : public GrFragmentProcessor {
 public:
-    static GrSurfaceProxyView find_or_create_rrect_blur_mask(GrRecordingContext* context,
-                                                             const SkRRect& rrectToDraw,
-                                                             const SkISize& dimensions,
-                                                             float xformedSigma) {
-        static const GrUniqueKey::Domain kDomain = GrUniqueKey::GenerateDomain();
-        GrUniqueKey key;
-        GrUniqueKey::Builder builder(&key, kDomain, 9, "RoundRect Blur Mask");
-        builder[0] = SkScalarCeilToInt(xformedSigma - 1 / 6.0f);
-
-        int index = 1;
-        for (auto c : {SkRRect::kUpperLeft_Corner, SkRRect::kUpperRight_Corner,
-                       SkRRect::kLowerRight_Corner, SkRRect::kLowerLeft_Corner}) {
-            SkASSERT(SkScalarIsInt(rrectToDraw.radii(c).fX) &&
-                     SkScalarIsInt(rrectToDraw.radii(c).fY));
-            builder[index++] = SkScalarCeilToInt(rrectToDraw.radii(c).fX);
-            builder[index++] = SkScalarCeilToInt(rrectToDraw.radii(c).fY);
-        }
-        builder.finish();
-
-        static constexpr auto kMaskOrigin = kBottomLeft_GrSurfaceOrigin;
-        GrProxyProvider* proxyProvider = context->priv().proxyProvider();
-
-        if (auto view = proxyProvider->findCachedProxyWithColorTypeFallback(
-                    key, kMaskOrigin, GrColorType::kAlpha_8, 1)) {
-            return view;
-        }
-
-        auto rtc = GrRenderTargetContext::MakeWithFallback(
-                context, GrColorType::kAlpha_8, nullptr, SkBackingFit::kExact, dimensions, 1,
-                GrMipMapped::kNo, GrProtected::kNo, kMaskOrigin);
-        if (!rtc) {
-            return {};
-        }
-
-        GrPaint paint;
-
-        rtc->clear(nullptr, SK_PMColor4fTRANSPARENT,
-                   GrRenderTargetContext::CanClearFullscreen::kYes);
-        rtc->drawRRect(GrNoClip(), std::move(paint), GrAA::kYes, SkMatrix::I(), rrectToDraw,
-                       GrStyle::SimpleFill());
-
-        GrSurfaceProxyView srcView = rtc->readSurfaceView();
-        if (!srcView) {
-            return {};
-        }
-        SkASSERT(srcView.asTextureProxy());
-        auto rtc2 = SkGpuBlurUtils::GaussianBlur(context,
-                                                 std::move(srcView),
-                                                 rtc->colorInfo().colorType(),
-                                                 rtc->colorInfo().alphaType(),
-                                                 nullptr,
-                                                 SkIRect::MakeSize(dimensions),
-                                                 SkIRect::MakeSize(dimensions),
-                                                 xformedSigma,
-                                                 xformedSigma,
-                                                 SkTileMode::kClamp,
-                                                 SkBackingFit::kExact);
-        if (!rtc2) {
-            return {};
-        }
-
-        GrSurfaceProxyView mask = rtc2->readSurfaceView();
-        if (!mask) {
-            return {};
-        }
-        SkASSERT(mask.asTextureProxy());
-        SkASSERT(mask.origin() == kBottomLeft_GrSurfaceOrigin);
-        proxyProvider->assignUniqueKeyToProxy(key, mask.asTextureProxy());
-
-        return mask;
-    }
-
-    static std::unique_ptr<GrFragmentProcessor> Make(GrRecordingContext* context,
+    static std::unique_ptr<GrFragmentProcessor> Make(std::unique_ptr<GrFragmentProcessor> inputFP,
+                                                     GrRecordingContext* context,
                                                      float sigma,
                                                      float xformedSigma,
                                                      const SkRRect& srcRRect,
@@ -110,29 +31,35 @@ public:
     GrRRectBlurEffect(const GrRRectBlurEffect& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "RRectBlurEffect"; }
+    bool usesExplicitReturn() const override;
     float sigma;
     SkRect rect;
     float cornerRadius;
-    TextureSampler ninePatchSampler;
 
 private:
-    GrRRectBlurEffect(float sigma,
+    GrRRectBlurEffect(std::unique_ptr<GrFragmentProcessor> inputFP,
+                      float sigma,
                       SkRect rect,
                       float cornerRadius,
-                      GrSurfaceProxyView ninePatchSampler)
+                      std::unique_ptr<GrFragmentProcessor> ninePatchFP)
             : INHERITED(kGrRRectBlurEffect_ClassID,
-                        (OptimizationFlags)kCompatibleWithCoverageAsAlpha_OptimizationFlag)
+                        (OptimizationFlags)(inputFP ? ProcessorOptimizationFlags(inputFP.get())
+                                                    : kAll_OptimizationFlags) &
+                                kCompatibleWithCoverageAsAlpha_OptimizationFlag)
             , sigma(sigma)
             , rect(rect)
-            , cornerRadius(cornerRadius)
-            , ninePatchSampler(std::move(ninePatchSampler)) {
-        this->setTextureSamplerCnt(1);
+            , cornerRadius(cornerRadius) {
+        this->registerChild(std::move(inputFP), SkSL::SampleUsage::PassThrough());
+        SkASSERT(ninePatchFP);
+        this->registerChild(std::move(ninePatchFP), SkSL::SampleUsage::Explicit());
     }
     GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
-    const TextureSampler& onTextureSampler(int) const override;
+#if GR_TEST_UTILS
+    SkString onDumpInfo() const override;
+#endif
     GR_DECLARE_FRAGMENT_PROCESSOR_TEST
-    typedef GrFragmentProcessor INHERITED;
+    using INHERITED = GrFragmentProcessor;
 };
 #endif

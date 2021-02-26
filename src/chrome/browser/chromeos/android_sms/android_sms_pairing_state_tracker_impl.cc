@@ -55,11 +55,11 @@ void AndroidSmsPairingStateTrackerImpl::AttemptFetchMessagesPairingState() {
 }
 
 void AndroidSmsPairingStateTrackerImpl::OnCookiesRetrieved(
-    const net::CookieStatusList& cookies,
-    const net::CookieStatusList& excluded_cookies) {
+    const net::CookieAccessResultList& cookies,
+    const net::CookieAccessResultList& excluded_cookies) {
   bool was_previously_paired = was_paired_on_last_update_;
-  for (const auto& cookie_with_status : cookies) {
-    const net::CanonicalCookie& cookie = cookie_with_status.cookie;
+  for (const auto& cookie_with_access_result : cookies) {
+    const net::CanonicalCookie& cookie = cookie_with_access_result.cookie;
     if (cookie.Name() == kMessagesPairStateCookieName) {
       PA_LOG(VERBOSE) << "Cookie says Messages paired: " << cookie.Value();
       was_paired_on_last_update_ = cookie.Value() == kPairedCookieValue;
@@ -96,11 +96,17 @@ void AndroidSmsPairingStateTrackerImpl::OnInstalledAppUrlChanged() {
 }
 
 GURL AndroidSmsPairingStateTrackerImpl::GetPairingUrl() {
-  base::Optional<GURL> app_url = android_sms_app_manager_->GetCurrentAppUrl();
-  if (app_url)
-    return *app_url;
+  // If the app registry is not ready, we can't see check what is currently
+  // installed.
+  if (android_sms_app_manager_->IsAppRegistryReady()) {
+    base::Optional<GURL> app_url = android_sms_app_manager_->GetCurrentAppUrl();
+    if (app_url)
+      return *app_url;
+  }
 
-  // If no app is installed, default to the normal messages URL.
+  // If no app is installed or the app registry is not ready, default to the
+  // expected messages URL.  This will only be incorrect if a migration must
+  // happen.
   return GetAndroidMessagesURL();
 }
 

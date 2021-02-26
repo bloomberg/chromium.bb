@@ -1,3 +1,17 @@
+// Copyright 2020 The Abseil Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 //
 // POSIX spec:
 //   http://pubs.opengroup.org/onlinepubs/009695399/functions/fprintf.html
@@ -267,38 +281,42 @@ bool ConvertIntArg(T v, const FormatConversionSpecImpl conv,
   using U = typename MakeUnsigned<T>::type;
   IntDigits as_digits;
 
-  switch (conv.conversion_char()) {
-    case FormatConversionCharInternal::c:
+  // This odd casting is due to a bug in -Wswitch behavior in gcc49 which causes
+  // it to complain about a switch/case type mismatch, even though both are
+  // FormatConverionChar.  Likely this is because at this point
+  // FormatConversionChar is declared, but not defined.
+  switch (static_cast<uint8_t>(conv.conversion_char())) {
+    case static_cast<uint8_t>(FormatConversionCharInternal::c):
       return ConvertCharImpl(static_cast<unsigned char>(v), conv, sink);
 
-    case FormatConversionCharInternal::o:
+    case static_cast<uint8_t>(FormatConversionCharInternal::o):
       as_digits.PrintAsOct(static_cast<U>(v));
       break;
 
-    case FormatConversionCharInternal::x:
+    case static_cast<uint8_t>(FormatConversionCharInternal::x):
       as_digits.PrintAsHexLower(static_cast<U>(v));
       break;
-    case FormatConversionCharInternal::X:
+    case static_cast<uint8_t>(FormatConversionCharInternal::X):
       as_digits.PrintAsHexUpper(static_cast<U>(v));
       break;
 
-    case FormatConversionCharInternal::u:
+    case static_cast<uint8_t>(FormatConversionCharInternal::u):
       as_digits.PrintAsDec(static_cast<U>(v));
       break;
 
-    case FormatConversionCharInternal::d:
-    case FormatConversionCharInternal::i:
+    case static_cast<uint8_t>(FormatConversionCharInternal::d):
+    case static_cast<uint8_t>(FormatConversionCharInternal::i):
       as_digits.PrintAsDec(v);
       break;
 
-    case FormatConversionCharInternal::a:
-    case FormatConversionCharInternal::e:
-    case FormatConversionCharInternal::f:
-    case FormatConversionCharInternal::g:
-    case FormatConversionCharInternal::A:
-    case FormatConversionCharInternal::E:
-    case FormatConversionCharInternal::F:
-    case FormatConversionCharInternal::G:
+    case static_cast<uint8_t>(FormatConversionCharInternal::a):
+    case static_cast<uint8_t>(FormatConversionCharInternal::e):
+    case static_cast<uint8_t>(FormatConversionCharInternal::f):
+    case static_cast<uint8_t>(FormatConversionCharInternal::g):
+    case static_cast<uint8_t>(FormatConversionCharInternal::A):
+    case static_cast<uint8_t>(FormatConversionCharInternal::E):
+    case static_cast<uint8_t>(FormatConversionCharInternal::F):
+    case static_cast<uint8_t>(FormatConversionCharInternal::G):
       return ConvertFloatImpl(static_cast<double>(v), conv, sink);
 
     default:

@@ -5,6 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
+#include <vector>
+
 namespace my_namespace {
 
 class SomeClass {
@@ -13,16 +16,12 @@ class SomeClass {
   int data_member;
 };
 
-// The class below deletes the |operator new| - this simulate's Blink's
-// STACK_ALLOCATED macro and/or OilPan / GarbageCollected<T> classes.
-class NoNewOperator {
-  void* operator new(size_t) = delete;
+template <typename T>
+struct SomeTemplate {
+  T t;
 };
 
 struct MyStruct {
-  // No rewrite expected for classes with no |operator new|.
-  NoNewOperator* no_new_ptr;
-
   // Expected rewrite: CheckedPtr<CheckedPtr<SomeClass>> double_ptr;
   // TODO(lukasza): Handle recursion/nesting.
   SomeClass** double_ptr;
@@ -37,6 +36,14 @@ struct MyStruct {
   bool* bool_ptr;
   // Expected rewrite: CheckedPtr<const bool> bool_ptr;
   const bool* const_bool_ptr;
+
+  // Pointers to templates.
+  // Expected rewrite: CheckedPtr<std::string> string_ptr;
+  std::string* string_ptr;
+  // Expected rewrite: CheckedPtr<std::vector<char>> vector_ptr;
+  std::vector<char>* vector_ptr;
+  // Expected rewrite: CheckedPtr<SomeTemplate<char>> template_ptr;
+  SomeTemplate<char>* template_ptr;
 
   // Some types may be spelled in various, alternative ways.  If possible, the
   // rewriter should preserve the original spelling.
@@ -99,16 +106,11 @@ struct MyStruct {
   // No rewrite expected (for now - in V1 we only rewrite field decls).
   using SomeClassPtrAlias = SomeClass*;
 
-  // Chromium is built with a warning/error that there are no user-defined
-  // constructors invoked when initializing global-scoped values.
-  // CheckedPtr<char> conversion might trigger a global constructor for string
-  // literals:
-  //     struct MyStruct {
-  //       int foo;
-  //       CheckedPtr<const char> bar;
-  //     }
-  //     MyStruct g_foo = {123, "string literal" /* global constr! */};
-  // Because of the above, no rewrite is expected below.
+  // Char pointer fields should be rewritten, unless they are on the
+  // --field-filter-file blocklist.  See also gen-char-test.cc for tests
+  // covering generating the blocklist.
+  //
+  // Expected rewrite: CheckedPtr<char>, etc.
   char* char_ptr;
   const char* const_char_ptr;
   wchar_t* wide_char_ptr;
@@ -128,5 +130,13 @@ struct MyStruct {
   // "[123]" that comes *after* the field name).
   const SomeClass (*ptr_to_array)[123];
 };
+
+extern "C" {
+struct OtherForeignStruct;
+struct ForeignStruct {
+  // We should not rewrite foreign, extern "C" structs.
+  OtherForeignStruct* ptr;
+};
+}
 
 }  // namespace my_namespace

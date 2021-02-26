@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/auth.h"
+#include "net/base/features.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_states.h"
@@ -78,15 +79,13 @@ class URLRequestJob::URLRequestJobSourceStream : public SourceStream {
   DISALLOW_COPY_AND_ASSIGN(URLRequestJobSourceStream);
 };
 
-URLRequestJob::URLRequestJob(URLRequest* request,
-                             NetworkDelegate* network_delegate)
+URLRequestJob::URLRequestJob(URLRequest* request)
     : request_(request),
       done_(false),
       prefilter_bytes_read_(0),
       postfilter_bytes_read_(0),
       has_handled_response_(false),
-      expected_content_size_(-1),
-      network_delegate_(network_delegate) {}
+      expected_content_size_(-1) {}
 
 URLRequestJob::~URLRequestJob() {
 }
@@ -271,55 +270,121 @@ void URLRequestJob::GetConnectionAttempts(ConnectionAttempts* out) const {
   out->clear();
 }
 
+namespace {
+
+// Assuming |url| has already been stripped for use as a referrer, if
+// |should_strip_to_origin| is true, this method returns the output of the
+// "Strip `url` for use as a referrer" algorithm from the Referrer Policy spec
+// with its "origin-only" flag set to true:
+// https://w3c.github.io/webappsec-referrer-policy/#strip-url
+GURL MaybeStripToOrigin(GURL url, bool should_strip_to_origin) {
+  if (!should_strip_to_origin)
+    return url;
+
+  return url.GetOrigin();
+}
+
+}  // namespace
+
 // static
 GURL URLRequestJob::ComputeReferrerForPolicy(
-    URLRequest::ReferrerPolicy policy,
+    ReferrerPolicy policy,
     const GURL& original_referrer,
     const GURL& destination,
     bool* same_origin_out_for_metrics) {
+  // Here and below, numbered lines are from the Referrer Policy spec's
+  // "Determine request's referrer" algorithm:
+  // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
+  //
+  // 4. Let referrerURL be the result of stripping referrerSource for use as a
+  // referrer.
+  GURL stripped_referrer = original_referrer.GetAsReferrer();
+
+  // 5. Let referrerOrigin be the result of stripping referrerSource for use as
+  // a referrer, with the origin-only flag set to true.
+  //
+  // (We use a boolean instead of computing the URL right away in order to avoid
+  // constructing a new GURL when it's not necessary.)
+  bool should_strip_to_origin = false;
+
+  // 6. If the result of serializing referrerURL is a string whose length is
+  // greater than 4096, set referrerURL to referrerOrigin.
+  if (stripped_referrer.spec().size() > 4096)
+    should_strip_to_origin = true;
+
+  bool same_origin = url::Origin::Create(original_referrer)
+                         .IsSameOriginWith(url::Origin::Create(destination));
+
+  if (same_origin_out_for_metrics)
+    *same_origin_out_for_metrics = same_origin;
+
+  // 7. The user agent MAY alter referrerURL or referrerOrigin at this point to
+  // enforce arbitrary policy considerations in the interests of minimizing data
+  // leakage. For example, the user agent could strip the URL down to an origin,
+  // modify its host, replace it with an empty string, etc.
+  if (base::FeatureList::IsEnabled(
+          features::kCapReferrerToOriginOnCrossOrigin) &&
+      !same_origin) {
+    should_strip_to_origin = true;
+  }
+
   bool secure_referrer_but_insecure_destination =
       original_referrer.SchemeIsCryptographic() &&
       !destination.SchemeIsCryptographic();
-  url::Origin referrer_origin = url::Origin::Create(original_referrer);
-  bool same_origin =
-      referrer_origin.IsSameOriginWith(url::Origin::Create(destination));
-  if (same_origin_out_for_metrics)
-    *same_origin_out_for_metrics = same_origin;
+
   switch (policy) {
-    case URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
-      return secure_referrer_but_insecure_destination ? GURL()
-                                                      : original_referrer;
-
-    case URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
-      if (same_origin) {
-        return original_referrer;
-      } else if (secure_referrer_but_insecure_destination) {
-        return GURL();
-      } else {
-        return referrer_origin.GetURL();
-      }
-
-    case URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
-      return same_origin ? original_referrer : referrer_origin.GetURL();
-
-    case URLRequest::NEVER_CLEAR_REFERRER:
-      return original_referrer;
-    case URLRequest::ORIGIN:
-      return referrer_origin.GetURL();
-    case URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN:
-      if (same_origin)
-        return original_referrer;
-      return GURL();
-    case URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
+    case ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
       if (secure_referrer_but_insecure_destination)
         return GURL();
-      return referrer_origin.GetURL();
-    case URLRequest::NO_REFERRER:
+      return MaybeStripToOrigin(std::move(stripped_referrer),
+                                should_strip_to_origin);
+
+    case ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
+      if (secure_referrer_but_insecure_destination)
+        return GURL();
+      if (!same_origin)
+        should_strip_to_origin = true;
+      return MaybeStripToOrigin(std::move(stripped_referrer),
+                                should_strip_to_origin);
+
+    case ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
+      if (!same_origin)
+        should_strip_to_origin = true;
+      return MaybeStripToOrigin(std::move(stripped_referrer),
+                                should_strip_to_origin);
+
+    case ReferrerPolicy::NEVER_CLEAR:
+      return MaybeStripToOrigin(std::move(stripped_referrer),
+                                should_strip_to_origin);
+
+    case ReferrerPolicy::ORIGIN:
+      should_strip_to_origin = true;
+      return MaybeStripToOrigin(std::move(stripped_referrer),
+                                should_strip_to_origin);
+
+    case ReferrerPolicy::CLEAR_ON_TRANSITION_CROSS_ORIGIN:
+      if (!same_origin)
+        return GURL();
+      return MaybeStripToOrigin(std::move(stripped_referrer),
+                                should_strip_to_origin);
+
+    case ReferrerPolicy::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
+      if (secure_referrer_but_insecure_destination)
+        return GURL();
+      should_strip_to_origin = true;
+      return MaybeStripToOrigin(std::move(stripped_referrer),
+                                should_strip_to_origin);
+
+    case ReferrerPolicy::NO_REFERRER:
       return GURL();
   }
 
   NOTREACHED();
   return GURL();
+}
+
+int URLRequestJob::NotifyConnected(const TransportInfo& info) {
+  return request_->NotifyConnected(info);
 }
 
 void URLRequestJob::NotifyCertificateRequested(
@@ -333,8 +398,8 @@ void URLRequestJob::NotifySSLCertificateError(int net_error,
   request_->NotifySSLCertificateError(net_error, ssl_info, fatal);
 }
 
-bool URLRequestJob::CanGetCookies(const CookieList& cookie_list) const {
-  return request_->CanGetCookies(cookie_list);
+bool URLRequestJob::CanGetCookies() const {
+  return request_->CanGetCookies();
 }
 
 bool URLRequestJob::CanSetCookie(const net::CanonicalCookie& cookie,

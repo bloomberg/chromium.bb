@@ -8,11 +8,11 @@
 #include <memory>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/logging.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
 
@@ -59,10 +59,14 @@ class ServiceWorkerContextAdapter
       int64_t service_worker_version_id,
       const std::string& request_uuid) override;
   void CountExternalRequestsForTest(
-      const GURL& origin,
+      const url::Origin& origin,
       CountExternalRequestsCallback callback) override;
+  bool MaybeHasRegistrationForOrigin(const url::Origin& origin) override;
+  void GetInstalledRegistrationOrigins(
+      base::Optional<std::string> host_filter,
+      GetInstalledRegistrationOriginsCallback callback) override;
   void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
-  void DeleteForOrigin(const GURL& origin_url,
+  void DeleteForOrigin(const url::Origin& origin_url,
                        ResultCallback callback) override;
   void PerformStorageCleanup(base::OnceClosure callback) override;
   void CheckHasServiceWorker(const GURL& url,
@@ -80,7 +84,7 @@ class ServiceWorkerContextAdapter
   void StartServiceWorkerForNavigationHint(
       const GURL& document_url,
       StartServiceWorkerForNavigationHintCallback callback) override;
-  void StopAllServiceWorkersForOrigin(const GURL& origin) override;
+  void StopAllServiceWorkersForOrigin(const url::Origin& origin) override;
   void StopAllServiceWorkers(base::OnceClosure callback) override;
   const base::flat_map<int64_t /* version_id */,
                        content::ServiceWorkerRunningInfo>&
@@ -96,8 +100,19 @@ class ServiceWorkerContextAdapter
       int64_t version_id,
       const content::ServiceWorkerRunningInfo& running_info) override;
   void OnVersionStoppedRunning(int64_t version_id) override;
+  void OnControlleeAdded(
+      int64_t version_id,
+      const std::string& client_uuid,
+      const content::ServiceWorkerClientInfo& client_info) override;
+  void OnControlleeRemoved(int64_t version_id,
+                           const std::string& client_uuid) override;
   void OnNoControllees(int64_t version_id, const GURL& scope) override;
+  void OnControlleeNavigationCommitted(
+      int64_t version_id,
+      const std::string& uuid,
+      content::GlobalFrameRoutingId render_frame_host_id) override;
   void OnReportConsoleMessage(int64_t version_id,
+                              const GURL& scope,
                               const content::ConsoleMessage& message) override;
   void OnDestruct(ServiceWorkerContext* context) override;
 
@@ -108,9 +123,18 @@ class ServiceWorkerContextAdapter
   // has exited.
   void OnRenderProcessExited(int64_t version_id);
 
-  ScopedObserver<content::ServiceWorkerContext,
-                 content::ServiceWorkerContextObserver>
-      scoped_underlying_context_observer_{this};
+  // Adds a registration to |worker_process_host| that will result in
+  // |OnRenderProcessExited| with |version_id| when it exits.
+  void AddRunningServiceWorker(int64_t version_id,
+                               content::RenderProcessHost* worker_process_host);
+
+  // Removes a registration made by |AddRunningServiceWorker| if one exists,
+  // returns true if a registration existed, false otherwise.
+  bool MaybeRemoveRunningServiceWorker(int64_t version_id);
+
+  base::ScopedObservation<content::ServiceWorkerContext,
+                          content::ServiceWorkerContextObserver>
+      scoped_underlying_context_observation_{this};
 
   base::ObserverList<content::ServiceWorkerContextObserver, true, false>::
       Unchecked observer_list_;
@@ -118,6 +142,15 @@ class ServiceWorkerContextAdapter
   // For each running service worker, tracks when their render process exits.
   base::flat_map<int64_t /*version_id*/, std::unique_ptr<RunningServiceWorker>>
       running_service_workers_;
+
+  // Tracks the OnControlleeAdded and OnControlleeRemoved notification for each
+  // service worker, with the goal of cleaning up duplicate notifications for
+  // observers of this class.
+  // TODO(1015692): Fix the underlying code in content/browser/service_worker so
+  //                that duplicate notifications are no longer sent.
+  base::flat_map<int64_t /*version_id*/,
+                 base::flat_set<std::string /*client_uuid*/>>
+      service_worker_clients_;
 
 #if DCHECK_IS_ON()
   // Keeps track of service worker whose render process exited early.

@@ -229,6 +229,8 @@ typedef struct OptionsContext {
     int        nb_time_bases;
     SpecifierOpt *enc_time_bases;
     int        nb_enc_time_bases;
+    SpecifierOpt *autoscale;
+    int        nb_autoscale;
 } OptionsContext;
 
 typedef struct InputFilter {
@@ -430,7 +432,8 @@ enum forced_keyframes_const {
     FKF_NB
 };
 
-#define ABORT_ON_FLAG_EMPTY_OUTPUT (1 <<  0)
+#define ABORT_ON_FLAG_EMPTY_OUTPUT        (1 <<  0)
+#define ABORT_ON_FLAG_EMPTY_OUTPUT_STREAM (1 <<  1)
 
 extern const char *const forced_keyframes_const_names[];
 
@@ -459,8 +462,7 @@ typedef struct OutputStream {
     AVRational mux_timebase;
     AVRational enc_timebase;
 
-    int                    nb_bitstream_filters;
-    AVBSFContext            **bsf_ctx;
+    AVBSFContext            *bsf_ctx;
 
     AVCodecContext *enc_ctx;
     AVCodecParameters *ref_par; /* associated input codec parameters with encoders options applied */
@@ -479,6 +481,7 @@ typedef struct OutputStream {
     int force_fps;
     int top_field_first;
     int rotate_overridden;
+    int autoscale;
     double rotate_override_value;
 
     AVRational frame_aspect_ratio;
@@ -610,6 +613,7 @@ extern char *videotoolbox_pixfmt;
 extern int filter_nbthreads;
 extern int filter_complex_nbthreads;
 extern int vstats_version;
+extern int auto_conversion_filters;
 
 extern const AVIOInterruptCB int_cb;
 
@@ -634,8 +638,9 @@ void assert_avoptions(AVDictionary *m);
 
 int guess_input_channel_layout(InputStream *ist);
 
-enum AVPixelFormat choose_pixel_fmt(AVStream *st, AVCodecContext *avctx, AVCodec *codec, enum AVPixelFormat target);
-void choose_sample_fmt(AVStream *st, AVCodec *codec);
+enum AVPixelFormat choose_pixel_fmt(AVStream *st, AVCodecContext *avctx,
+                                    const AVCodec *codec, enum AVPixelFormat target);
+void choose_sample_fmt(AVStream *st, const AVCodec *codec);
 
 int configure_filtergraph(FilterGraph *fg);
 int configure_output_filter(FilterGraph *fg, OutputFilter *ofilter, AVFilterInOut *out);

@@ -4,13 +4,6 @@
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV class='fixedpos'",
-      "position": [0, 50],
-      "bounds": [800, 550],
-      "contentsOpaque": true,
       "backgroundColor": "#ADD8E6"
     },
     {

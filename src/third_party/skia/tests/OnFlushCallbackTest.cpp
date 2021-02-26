@@ -9,10 +9,10 @@
 
 #include "include/core/SkBitmap.h"
 #include "include/gpu/GrBackendSemaphore.h"
+#include "include/gpu/GrDirectContext.h"
 #include "src/core/SkPointPriv.h"
-#include "src/gpu/GrClip.h"
-#include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrDefaultGeoProcFactory.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrOnFlushResourceProvider.h"
 #include "src/gpu/GrProgramInfo.h"
@@ -36,29 +36,29 @@ public:
     DEFINE_OP_CLASS_ID
 
     // This creates an instance of a simple non-AA solid color rect-drawing Op
-    static std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
-                                          GrPaint&& paint,
-                                          const SkRect& r) {
+    static GrOp::Owner Make(GrRecordingContext* context,
+                            GrPaint&& paint,
+                            const SkRect& r) {
         return Helper::FactoryHelper<NonAARectOp>(context, std::move(paint), r, nullptr, ClassID());
     }
 
     // This creates an instance of a simple non-AA textured rect-drawing Op
-    static std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
-                                          GrPaint&& paint,
-                                          const SkRect& r,
-                                          const SkRect& local) {
+    static GrOp::Owner Make(GrRecordingContext* context,
+                            GrPaint&& paint,
+                            const SkRect& r,
+                            const SkRect& local) {
         return Helper::FactoryHelper<NonAARectOp>(context, std::move(paint), r, &local, ClassID());
     }
 
     const SkPMColor4f& color() const { return fColor; }
 
-    NonAARectOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color, const SkRect& r,
+    NonAARectOp(GrProcessorSet* processorSet, const SkPMColor4f& color, const SkRect& r,
                 const SkRect* localRect, int32_t classID)
             : INHERITED(classID)
             , fColor(color)
             , fHasLocalRect(SkToBool(localRect))
             , fRect(r)
-            , fHelper(helperArgs, GrAAType::kNone) {
+            , fHelper(processorSet, GrAAType::kNone) {
         if (fHasLocalRect) {
             fLocalQuad = GrQuad(*localRect);
         }
@@ -85,7 +85,7 @@ public:
         GrProcessorAnalysisColor gpColor;
         gpColor.setToUnknown();
         // We ignore the clip so pass this rather than the GrAppliedClip param.
-        static GrAppliedClip kNoClip;
+        static GrAppliedClip kNoClip = GrAppliedClip::Disabled();
         return fHelper.finalizeProcessors(caps, &kNoClip, hasMixedSampledCoverage, clampType,
                                           GrProcessorAnalysisCoverage::kNone, &gpColor);
     }
@@ -103,7 +103,8 @@ private:
                              SkArenaAlloc* arena,
                              const GrSurfaceProxyView* writeView,
                              GrAppliedClip&& appliedClip,
-                             const GrXferProcessor::DstProxyView& dstProxyView) override {
+                             const GrXferProcessor::DstProxyView& dstProxyView,
+                             GrXferBarrierFlags renderPassXferBarriers) override {
         using namespace GrDefaultGeoProcFactory;
 
         GrGeometryProcessor* gp = GrDefaultGeoProcFactory::Make(
@@ -119,7 +120,8 @@ private:
         }
 
         fProgramInfo = fHelper.createProgramInfo(caps, arena, writeView, std::move(appliedClip),
-                                                 dstProxyView, gp, GrPrimitiveType::kTriangles);
+                                                 dstProxyView, gp, GrPrimitiveType::kTriangles,
+                                                 renderPassXferBarriers);
     }
 
     void onPrepareDraws(Target* target) override {
@@ -200,7 +202,7 @@ private:
     GrSimpleMesh*  fMesh = nullptr;
     GrProgramInfo* fProgramInfo = nullptr;
 
-    typedef GrMeshDrawOp INHERITED;
+    using INHERITED = GrMeshDrawOp;
 };
 
 }  // anonymous namespace
@@ -225,21 +227,19 @@ public:
 
     int id() const { return fID; }
 
-    static std::unique_ptr<AtlasedRectOp> Make(GrContext* context,
-                                               GrPaint&& paint,
-                                               const SkRect& r,
-                                               int id) {
-        GrDrawOp* op = Helper::FactoryHelper<AtlasedRectOp>(context, std::move(paint),
-                                                            r, id).release();
-        return std::unique_ptr<AtlasedRectOp>(static_cast<AtlasedRectOp*>(op));
+    static GrOp::Owner Make(GrRecordingContext* rContext,
+                            GrPaint&& paint,
+                            const SkRect& r,
+                            int id) {
+        return Helper::FactoryHelper<AtlasedRectOp>(rContext, std::move(paint), r, id);
     }
 
     // We set the initial color of the NonAARectOp based on the ID.
     // Note that we force creation of a NonAARectOp that has local coords in anticipation of
     // pulling from the atlas.
-    AtlasedRectOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color, const SkRect& r,
+    AtlasedRectOp(GrProcessorSet* processorSet, const SkPMColor4f& color, const SkRect& r,
                   int id)
-            : INHERITED(helperArgs, SkPMColor4f::FromBytes_RGBA(kColors[id]), r, &kEmptyRect,
+            : INHERITED(processorSet, SkPMColor4f::FromBytes_RGBA(kColors[id]), r, &kEmptyRect,
                         ClassID())
             , fID(id)
             , fNext(nullptr) {
@@ -266,7 +266,7 @@ private:
     // The Atlased ops have an internal singly-linked list of ops that land in the same opsTask
     AtlasedRectOp* fNext;
 
-    typedef NonAARectOp INHERITED;
+    using INHERITED = NonAARectOp;
 };
 
 }  // anonymous namespace
@@ -347,7 +347,7 @@ public:
                     dims.fHeight = kAtlasTileSize;
 
                     return resourceProvider->createTexture(dims, desc.fFormat, desc.fRenderable,
-                                                           desc.fSampleCnt, desc.fMipMapped,
+                                                           desc.fSampleCnt, desc.fMipmapped,
                                                            desc.fBudgeted, desc.fProtected);
                 },
                 format,
@@ -366,12 +366,11 @@ public:
      * This callback creates the atlas and updates the AtlasedRectOps to read from it
      */
     void preFlush(GrOnFlushResourceProvider* resourceProvider,
-                  const uint32_t* opsTaskIDs,
-                  int numOpsTaskIDs) override {
+                  SkSpan<const uint32_t> renderTaskIDs) override {
         // Until MDB is landed we will most-likely only have one opsTask.
         SkTDArray<LinkedListHeader*> lists;
-        for (int i = 0; i < numOpsTaskIDs; ++i) {
-            if (LinkedListHeader* list = this->getList(opsTaskIDs[i])) {
+        for (uint32_t taskID : renderTaskIDs) {
+            if (LinkedListHeader* list = this->getList(taskID)) {
                 lists.push_back(list);
             }
         }
@@ -394,8 +393,7 @@ public:
                 nullptr);
 
         // clear the atlas
-        rtc->clear(nullptr, SK_PMColor4fTRANSPARENT,
-                   GrRenderTargetContext::CanClearFullscreen::kYes);
+        rtc->clear(SK_PMColor4fTRANSPARENT);
 
         int blocksInAtlas = 0;
         for (int i = 0; i < lists.count(); ++i) {
@@ -405,7 +403,7 @@ public:
 
                 // For now, we avoid the resource buffer issues and just use clears
 #if 1
-                rtc->clear(&r, op->color(), GrRenderTargetContext::CanClearFullscreen::kNo);
+                rtc->clear(r, op->color());
 #else
                 GrPaint paint;
                 paint.setColor4f(op->color());
@@ -463,29 +461,29 @@ private:
 };
 
 // This creates an off-screen rendertarget whose ops which eventually pull from the atlas.
-static GrSurfaceProxyView make_upstream_image(GrContext* context, AtlasObject* object, int start,
+static GrSurfaceProxyView make_upstream_image(GrRecordingContext* rContext,
+                                              AtlasObject* object,
+                                              int start,
                                               GrSurfaceProxyView atlasView,
                                               SkAlphaType atlasAlphaType) {
     auto rtc = GrRenderTargetContext::Make(
-            context, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kApprox,
+            rContext, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kApprox,
             {3 * kDrawnTileSize, kDrawnTileSize});
 
-    rtc->clear(nullptr, { 1, 0, 0, 1 }, GrRenderTargetContext::CanClearFullscreen::kYes);
+    rtc->clear({ 1, 0, 0, 1 });
 
     for (int i = 0; i < 3; ++i) {
         SkRect r = SkRect::MakeXYWH(i*kDrawnTileSize, 0, kDrawnTileSize, kDrawnTileSize);
 
         auto fp = GrTextureEffect::Make(atlasView, atlasAlphaType);
         GrPaint paint;
-        paint.addColorFragmentProcessor(std::move(fp));
+        paint.setColorFragmentProcessor(std::move(fp));
         paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
-        std::unique_ptr<AtlasedRectOp> op(AtlasedRectOp::Make(context,
-                                                              std::move(paint), r, start + i));
-
-        AtlasedRectOp* sparePtr = op.get();
+        GrOp::Owner op = AtlasedRectOp::Make(rContext, std::move(paint), r, start + i);
+        AtlasedRectOp* sparePtr = (AtlasedRectOp*)op.get();
 
         uint32_t opsTaskID;
-        rtc->priv().testingOnly_addDrawOp(GrNoClip(), std::move(op),
+        rtc->priv().testingOnly_addDrawOp(nullptr, std::move(op),
                                           [&opsTaskID](GrOp* op, uint32_t id) { opsTaskID = id; });
         SkASSERT(SK_InvalidUniqueID != opsTaskID);
 
@@ -507,7 +505,7 @@ static void save_bm(const SkBitmap& bm, const char name[]) {
     SkASSERT(result);
 }
 
-sk_sp<GrTextureProxy> pre_create_atlas(GrContext* context) {
+sk_sp<GrTextureProxy> pre_create_atlas(GrRecordingContext* rContext) {
     SkBitmap bm;
     bm.allocN32Pixels(18, 2, true);
     bm.erase(SK_ColorRED,     SkIRect::MakeXYWH(0, 0, 2, 2));
@@ -526,8 +524,8 @@ sk_sp<GrTextureProxy> pre_create_atlas(GrContext* context) {
 
     desc.fFlags |= kRenderTarget_GrSurfaceFlag;
 
-    sk_sp<GrSurfaceProxy> tmp = GrSurfaceProxy::MakeDeferred(*context->caps(),
-                                                             context->textureProvider(),
+    sk_sp<GrSurfaceProxy> tmp = GrSurfaceProxy::MakeDeferred(*rContext->caps(),
+                                                             rContext->textureProvider(),
                                                              dm.dimensions(), SkBudgeted::kYes,
                                                              bm.getPixels(), bm.rowBytes());
 
@@ -563,17 +561,17 @@ static void test_color(skiatest::Reporter* reporter, const SkBitmap& bm, int x, 
 DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(OnFlushCallbackTest, reporter, ctxInfo) {
     static const int kNumViews = 3;
 
-    GrContext* context = ctxInfo.grContext();
-    auto proxyProvider = context->priv().proxyProvider();
+    auto dContext = ctxInfo.directContext();
+    auto proxyProvider = dContext->priv().proxyProvider();
 
     AtlasObject object(reporter);
 
-    context->priv().addOnFlushCallbackObject(&object);
+    dContext->priv().addOnFlushCallbackObject(&object);
 
     GrSurfaceProxyView views[kNumViews];
     for (int i = 0; i < kNumViews; ++i) {
-        views[i] = make_upstream_image(context, &object, i * 3,
-                                       object.getAtlasView(proxyProvider, context->priv().caps()),
+        views[i] = make_upstream_image(dContext, &object, i * 3,
+                                       object.getAtlasView(proxyProvider, dContext->priv().caps()),
                                        kPremul_SkAlphaType);
     }
 
@@ -581,35 +579,34 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(OnFlushCallbackTest, reporter, ctxInfo) {
     static const int kFinalHeight = kDrawnTileSize;
 
     auto rtc = GrRenderTargetContext::Make(
-            context, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kApprox,
+            dContext, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kApprox,
             {kFinalWidth, kFinalHeight});
 
-    rtc->clear(nullptr, SK_PMColor4fWHITE, GrRenderTargetContext::CanClearFullscreen::kYes);
+    rtc->clear(SK_PMColor4fWHITE);
 
     // Note that this doesn't include the third texture proxy
     for (int i = 0; i < kNumViews - 1; ++i) {
         SkRect r = SkRect::MakeXYWH(i*3*kDrawnTileSize, 0, 3*kDrawnTileSize, kDrawnTileSize);
 
-        SkMatrix t = SkMatrix::MakeTrans(-i*3*kDrawnTileSize, 0);
+        SkMatrix t = SkMatrix::Translate(-i*3*kDrawnTileSize, 0);
 
         GrPaint paint;
         auto fp = GrTextureEffect::Make(std::move(views[i]), kPremul_SkAlphaType, t);
         paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
-        paint.addColorFragmentProcessor(std::move(fp));
+        paint.setColorFragmentProcessor(std::move(fp));
 
-        rtc->drawRect(GrNoClip(), std::move(paint), GrAA::kNo, SkMatrix::I(), r);
+        rtc->drawRect(nullptr, std::move(paint), GrAA::kNo, SkMatrix::I(), r);
     }
 
-    rtc->flush(SkSurface::BackendSurfaceAccess::kNoAccess, GrFlushInfo());
+    rtc->flush(SkSurface::BackendSurfaceAccess::kNoAccess, GrFlushInfo(), nullptr);
 
     SkBitmap readBack;
     readBack.allocN32Pixels(kFinalWidth, kFinalHeight);
 
-    SkDEBUGCODE(bool result =) rtc->readPixels(readBack.info(), readBack.getPixels(),
-                                               readBack.rowBytes(), {0, 0});
-    SkASSERT(result);
+    SkAssertResult(rtc->readPixels(dContext, readBack.info(), readBack.getPixels(),
+                                   readBack.rowBytes(), {0, 0}));
 
-    context->priv().testingOnly_flushAndRemoveOnFlushCallbackObject(&object);
+    dContext->priv().testingOnly_flushAndRemoveOnFlushCallbackObject(&object);
 
     object.markAsDone();
 

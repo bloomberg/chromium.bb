@@ -14,26 +14,18 @@
 #include "media/base/decryptor.h"
 #include "media/fuchsia/cdm/fuchsia_stream_decryptor.h"
 
-namespace fuchsia {
-namespace media {
-namespace drm {
-class ContentDecryptionModule;
-}  // namespace drm
-}  // namespace media
-}  // namespace fuchsia
-
 namespace media {
 
+class FuchsiaCdmContext;
 class FuchsiaClearStreamDecryptor;
 
 class FuchsiaDecryptor : public Decryptor {
  public:
   // Caller should make sure |cdm| lives longer than this class.
-  explicit FuchsiaDecryptor(fuchsia::media::drm::ContentDecryptionModule* cdm);
+  explicit FuchsiaDecryptor(FuchsiaCdmContext* cdm_context);
   ~FuchsiaDecryptor() override;
 
   // media::Decryptor implementation:
-  void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) override;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
                DecryptCB decrypt_cb) override;
@@ -50,14 +42,8 @@ class FuchsiaDecryptor : public Decryptor {
   void DeinitializeDecoder(StreamType stream_type) override;
   bool CanAlwaysDecrypt() override;
 
-  // Called by FuchsiaCdm to notify about the new key.
-  void OnNewKey();
-
  private:
-  fuchsia::media::drm::ContentDecryptionModule* const cdm_;
-
-  base::Lock new_key_cb_lock_;
-  NewKeyCB new_key_cb_ GUARDED_BY(new_key_cb_lock_);
+  FuchsiaCdmContext* const cdm_context_;
 
   std::unique_ptr<FuchsiaClearStreamDecryptor> audio_decryptor_;
 

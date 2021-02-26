@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer_private.interfaces;
 
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.INavigateParams;
 import org.chromium.weblayer_private.interfaces.NavigateParams;
 
 interface INavigationController {
@@ -33,4 +35,19 @@ interface INavigationController {
 
   // Added in 82, removed in 83.
   // void replace(in String uri) = 12;
+
+  // Added in 85.
+  boolean isNavigationEntrySkippable(int index) = 13;
+
+  // Added in 86.
+  void navigate2(in String uri,
+                 in boolean shouldReplaceEntry,
+                 in boolean disableIntentProcessing,
+                 in boolean disableNetworkErrorAutoReload,
+                 in boolean enableAutoPlay) = 14;
+
+  // Added in 87
+  INavigateParams createNavigateParams() = 15;
+  void navigate3(in String uri,
+                 in INavigateParams params) = 16;
 }

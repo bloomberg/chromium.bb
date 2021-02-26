@@ -10,16 +10,17 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/gmock_move_support.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/render_frame_host_delegate.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/test/test_render_frame_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -37,6 +38,9 @@ class MockRenderFrameHostDelegate : public RenderFrameHostDelegate {
                                     MediaResponseCallback callback) {
     return RequestMediaAccessPermission(request, &callback);
   }
+  const blink::web_pref::WebPreferences& GetOrCreateWebPreferences() override {
+    return mock_web_preferences_;
+  }
   MOCK_METHOD2(RequestMediaAccessPermission,
                void(const MediaStreamRequest& request,
                     MediaResponseCallback* callback));
@@ -44,6 +48,9 @@ class MockRenderFrameHostDelegate : public RenderFrameHostDelegate {
                bool(RenderFrameHost* render_frame_host,
                     const url::Origin& security_origin,
                     blink::mojom::MediaStreamType type));
+
+ private:
+  blink::web_pref::WebPreferences mock_web_preferences_;
 };
 
 class MockResponseCallback {
@@ -57,15 +64,22 @@ class MockResponseCallback {
 class MockMediaStreamUI : public MediaStreamUI {
  public:
   gfx::NativeViewId OnStarted(base::OnceClosure stop,
-                              MediaStreamUI::SourceCallback source) override {
+                              MediaStreamUI::SourceCallback source,
+                              const std::string& label,
+                              std::vector<DesktopMediaID> screen_capture_ids,
+                              StateChangeCallback state_change) override {
     // gmock cannot handle move-only types:
     return MockOnStarted(base::AdaptCallbackForRepeating(std::move(stop)),
                          source);
   }
 
+  void OnDeviceStopped(const std::string& label,
+                       const DesktopMediaID& media_id) override {}
+
   MOCK_METHOD2(MockOnStarted,
                gfx::NativeViewId(base::RepeatingClosure stop,
                                  MediaStreamUI::SourceCallback source));
+  MOCK_METHOD1(SetStopCallback, void(base::OnceClosure));
 };
 
 class MockStopStreamHandler {
@@ -182,7 +196,9 @@ TEST_F(MediaStreamUIProxyTest, AcceptAndStart) {
   EXPECT_FALSE(response.empty());
 
   proxy_->OnStarted(base::OnceClosure(), MediaStreamUI::SourceCallback(),
-                    MediaStreamUIProxy::WindowIdCallback());
+                    MediaStreamUIProxy::WindowIdCallback(),
+                    /*label=*/std::string(), /*screen_capture_ids=*/{},
+                    MediaStreamUI::StateChangeCallback());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -259,7 +275,9 @@ TEST_F(MediaStreamUIProxyTest, StopFromUI) {
   proxy_->OnStarted(base::BindOnce(&MockStopStreamHandler::OnStop,
                                    base::Unretained(&stop_handler)),
                     MediaStreamUI::SourceCallback(),
-                    MediaStreamUIProxy::WindowIdCallback());
+                    MediaStreamUIProxy::WindowIdCallback(),
+                    /*label=*/std::string(), /*screen_capture_ids=*/{},
+                    MediaStreamUI::StateChangeCallback());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(stop_callback);
@@ -304,7 +322,9 @@ TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
                                    base::Unretained(&handler)),
                     MediaStreamUI::SourceCallback(),
                     base::BindOnce(&MockStopStreamHandler::OnWindowId,
-                                   base::Unretained(&handler)));
+                                   base::Unretained(&handler)),
+                    /*label=*/std::string(), /*screen_capture_ids=*/{},
+                    MediaStreamUI::StateChangeCallback());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -355,7 +375,8 @@ TEST_F(MediaStreamUIProxyTest, ChangeSourceFromUI) {
                      base::Unretained(&stop_handler)),
       base::BindRepeating(&MockChangeSourceStreamHandler::OnChangeSource,
                           base::Unretained(&source_handler)),
-      MediaStreamUIProxy::WindowIdCallback());
+      MediaStreamUIProxy::WindowIdCallback(), /*label=*/std::string(),
+      /*screen_capture_ids=*/{}, MediaStreamUI::StateChangeCallback());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(source_callback.is_null());
@@ -393,8 +414,8 @@ class MediaStreamUIProxyFeaturePolicyTest
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &MediaStreamUIProxyFeaturePolicyTest::GetResultForRequestOnIOThread,
             base::Unretained(this), std::move(request)));
@@ -417,6 +438,7 @@ class MediaStreamUIProxyFeaturePolicyTest
 
  private:
   class TestRFHDelegate : public RenderFrameHostDelegate {
+   public:
     void RequestMediaAccessPermission(const MediaStreamRequest& request,
                                       MediaResponseCallback callback) override {
       blink::MediaStreamDevices devices;
@@ -435,6 +457,14 @@ class MediaStreamUIProxyFeaturePolicyTest
       std::move(callback).Run(
           devices, blink::mojom::MediaStreamRequestResult::OK, std::move(ui));
     }
+
+    const blink::web_pref::WebPreferences& GetOrCreateWebPreferences()
+        override {
+      return mock_web_preferences_;
+    }
+
+   private:
+    blink::web_pref::WebPreferences mock_web_preferences_;
   };
 
   void GetResultForRequestOnIOThread(
@@ -453,8 +483,8 @@ class MediaStreamUIProxyFeaturePolicyTest
       blink::mojom::MediaStreamRequestResult result) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     proxy_.reset();
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&MediaStreamUIProxyFeaturePolicyTest::FinishedGetResult,
                        base::Unretained(this), devices, result));
   }

@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -332,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
 
   Profile* parent_profile = browser()->profile();
   Profile* child_profile =
-      static_cast<ProfileImpl*>(parent_profile)->GetOffTheRecordProfile();
+      static_cast<ProfileImpl*>(parent_profile)->GetPrimaryOTRProfile();
   HostZoomMap* parent_zoom_map =
       HostZoomMap::GetDefaultForBrowserContext(parent_profile);
   ASSERT_TRUE(parent_zoom_map);
@@ -377,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
                        ParentDefaultZoomPropagatesToIncognitoChild) {
   Profile* parent_profile = browser()->profile();
   Profile* child_profile =
-      static_cast<ProfileImpl*>(parent_profile)->GetOffTheRecordProfile();
+      static_cast<ProfileImpl*>(parent_profile)->GetPrimaryOTRProfile();
 
   double new_default_zoom_level =
       parent_profile->GetZoomLevelPrefs()->GetDefaultZoomLevelPref() + 1.f;
@@ -395,7 +396,13 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
   EXPECT_EQ(new_default_zoom_level, child_host_zoom_map->GetDefaultZoomLevel());
 }
 
-IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest, PageScaleIsOneChanged) {
+// TODO(1115597): Flaky on linux and cros.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_PageScaleIsOneChanged DISABLED_PageScaleIsOneChanged
+#else
+#define MAYBE_PageScaleIsOneChanged PageScaleIsOneChanged
+#endif
+IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest, MAYBE_PageScaleIsOneChanged) {
   GURL test_url(url::kAboutBlankURL);
   std::string test_host(test_url.host());
 

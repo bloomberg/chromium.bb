@@ -15,10 +15,12 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/port_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/test_root_certs.h"
@@ -197,8 +199,6 @@ std::string BaseTestServer::GetScheme() const {
       return "ws";
     case TYPE_WSS:
       return "wss";
-    case TYPE_TCP_ECHO:
-    case TYPE_UDP_ECHO:
     default:
       NOTREACHED();
   }
@@ -221,7 +221,8 @@ bool BaseTestServer::GetAddressList(AddressList* address_list) const {
   parameters.dns_query_type = DnsQueryType::A;
 
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
-      resolver->CreateRequest(host_port_pair_, NetLogWithSource(), parameters);
+      resolver->CreateRequest(host_port_pair_, NetworkIsolationKey(),
+                              NetLogWithSource(), parameters);
 
   TestCompletionCallback callback;
   int rv = request->Start(callback.callback());
@@ -361,15 +362,14 @@ void BaseTestServer::SetResourcePath(const base::FilePath& document_root,
 bool BaseTestServer::SetAndParseServerData(const std::string& server_data,
                                            int* port) {
   VLOG(1) << "Server data: " << server_data;
-  base::JSONReader json_reader;
-  base::Optional<base::Value> value(json_reader.ReadToValue(server_data));
-  if (!value || !value->is_dict()) {
-    LOG(ERROR) << "Could not parse server data: "
-               << json_reader.GetErrorMessage();
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(server_data);
+  if (!parsed_json.value || !parsed_json.value->is_dict()) {
+    LOG(ERROR) << "Could not parse server data: " << parsed_json.error_message;
     return false;
   }
 
-  server_data_ = std::move(value);
+  server_data_ = std::move(parsed_json.value);
 
   base::Optional<int> port_value = server_data_->FindIntKey("port");
   if (!port_value) {
@@ -418,7 +418,8 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
 
   arguments->SetString("host", host_port_pair_.host());
   arguments->SetInteger("port", host_port_pair_.port());
-  arguments->SetString("data-dir", document_root_.value());
+  arguments->SetStringKey("data-dir",
+                          base::AsCrossPlatformPiece(document_root_.value()));
 
   if (VLOG_IS_ON(1) || log_to_console_)
     arguments->Set("log-to-console", std::make_unique<base::Value>());
@@ -451,7 +452,9 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
                    << " doesn't exist. Can't launch https server.";
         return false;
       }
-      arguments->SetString("cert-and-key-file", certificate_path.value());
+      arguments->SetStringKey(
+          "cert-and-key-file",
+          base::AsCrossPlatformPiece(certificate_path.value()));
     }
 
     // Check the client certificate related arguments.
@@ -467,7 +470,7 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
                    << " doesn't exist. Can't launch https server.";
         return false;
       }
-      ssl_client_certs->AppendString(it->value());
+      ssl_client_certs->Append(base::AsCrossPlatformPiece(it->value()));
     }
 
     if (ssl_client_certs->GetSize())

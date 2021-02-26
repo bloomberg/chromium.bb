@@ -173,7 +173,7 @@ Resource::~Resource() {
   InstanceCounters::DecrementCounter(InstanceCounters::kResourceCounter);
 }
 
-void Resource::Trace(Visitor* visitor) {
+void Resource::Trace(Visitor* visitor) const {
   visitor->Trace(loader_);
   visitor->Trace(cache_handler_);
   visitor->Trace(clients_);
@@ -233,7 +233,7 @@ void Resource::CheckResourceIntegrity() {
 }
 
 void Resource::NotifyFinished() {
-  CHECK(IsFinishedInternal());
+  CHECK(IsLoaded());
 
   ResourceClientWalker<ResourceClient> w(clients_);
   while (ResourceClient* c = w.Next()) {
@@ -477,10 +477,14 @@ const ResourceRequestHead& Resource::LastResourceRequest() const {
   return redirect_chain_.back().request_;
 }
 
-const ResourceResponse* Resource::LastResourceResponse() const {
+const ResourceResponse& Resource::LastResourceResponse() const {
   if (!redirect_chain_.size())
-    return nullptr;
-  return &redirect_chain_.back().redirect_response_;
+    return GetResponse();
+  return redirect_chain_.back().redirect_response_;
+}
+
+size_t Resource::RedirectChainSize() const {
+  return redirect_chain_.size();
 }
 
 void Resource::SetRevalidatingRequest(const ResourceRequestHead& request) {
@@ -577,7 +581,7 @@ void Resource::DidAddClient(ResourceClient* client) {
   }
   if (!HasClient(client))
     return;
-  if (IsFinishedInternal()) {
+  if (IsLoaded()) {
     client->SetHasFinishedFromMemoryCache();
     client->NotifyFinished(this);
     if (clients_.Contains(client)) {
@@ -650,12 +654,6 @@ void Resource::AddFinishObserver(ResourceFinishObserver* client,
 
   WillAddClientOrObserver();
   finish_observers_.insert(client);
-  // Despite these being "Finish" observers, what they actually care about is
-  // whether the resource is "Loaded", not "Finished" (e.g. link onload). Hence
-  // we check IsLoaded directly here, rather than IsFinishedInternal.
-  //
-  // TODO(leszeks): Either rename FinishObservers to LoadedObservers, or the
-  // NotifyFinished method of ResourceClient to NotifyProcessed (or similar).
   if (IsLoaded())
     TriggerNotificationForFinishObservers(task_runner);
 }
@@ -849,32 +847,6 @@ Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
   if (new_mode != existing_mode)
     return MatchStatus::kRequestModeDoesNotMatch;
 
-  switch (new_mode) {
-    case network::mojom::RequestMode::kNoCors:
-    case network::mojom::RequestMode::kNavigate:
-      break;
-
-    case network::mojom::RequestMode::kCors:
-    case network::mojom::RequestMode::kSameOrigin:
-    case network::mojom::RequestMode::kCorsWithForcedPreflight:
-      // We have two separate CORS handling logics in ThreadableLoader
-      // and ResourceLoader and sharing resources is difficult when they are
-      // handled differently.
-      if (options_.cors_handling_by_resource_fetcher !=
-          new_options.cors_handling_by_resource_fetcher) {
-        // If the existing one is handled in ThreadableLoader and the
-        // new one is handled in ResourceLoader, reusing the existing one will
-        // lead to CORS violations.
-        if (!options_.cors_handling_by_resource_fetcher)
-          return MatchStatus::kUnknownFailure;
-
-        // Otherwise (i.e., if the existing one is handled in ResourceLoader
-        // and the new one is handled in ThreadableLoader), reusing
-        // the existing one will lead to double check which is harmless.
-      }
-      break;
-  }
-
   return MatchStatus::kOk;
 }
 
@@ -969,7 +941,7 @@ void Resource::SetCachePolicyBypassingCache() {
   resource_request_.SetCacheMode(mojom::FetchCacheMode::kBypassCache);
 }
 
-void Resource::SetPreviewsState(WebURLRequest::PreviewsState previews_state) {
+void Resource::SetPreviewsState(PreviewsState previews_state) {
   resource_request_.SetPreviewsState(previews_state);
 }
 

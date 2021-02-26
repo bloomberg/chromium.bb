@@ -9,9 +9,11 @@
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_fffield.h"
 
-CXFA_FWLAdapterWidgetMgr::CXFA_FWLAdapterWidgetMgr() {}
+CXFA_FWLAdapterWidgetMgr::CXFA_FWLAdapterWidgetMgr() = default;
 
-CXFA_FWLAdapterWidgetMgr::~CXFA_FWLAdapterWidgetMgr() {}
+CXFA_FWLAdapterWidgetMgr::~CXFA_FWLAdapterWidgetMgr() = default;
+
+void CXFA_FWLAdapterWidgetMgr::Trace(cppgc::Visitor* visitor) const {}
 
 void CXFA_FWLAdapterWidgetMgr::RepaintWidget(CFWL_Widget* pWidget) {
   if (!pWidget)
@@ -32,7 +34,7 @@ bool CXFA_FWLAdapterWidgetMgr::GetPopupPos(CFWL_Widget* pWidget,
   auto* pFFWidget = static_cast<CXFA_FFWidget*>(pWidget->GetAdapterIface());
   CFX_RectF rtRotateAnchor =
       pFFWidget->GetRotateMatrix().TransformRect(rtAnchor);
-  pFFWidget->GetDoc()->GetDocEnvironment()->GetPopupPos(
-      pFFWidget, fMinHeight, fMaxHeight, rtRotateAnchor, pPopupRect);
+  pFFWidget->GetDoc()->GetPopupPos(pFFWidget, fMinHeight, fMaxHeight,
+                                   rtRotateAnchor, pPopupRect);
   return true;
 }

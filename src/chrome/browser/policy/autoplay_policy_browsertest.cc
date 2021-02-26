@@ -87,12 +87,11 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayAllowedByPolicy) {
 
   // Update policy to allow autoplay.
   PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayAllowed,
-            std::make_unique<base::Value>(true));
+  SetPolicy(&policies, key::kAutoplayAllowed, base::Value(true));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
   EXPECT_TRUE(TryAutoplay(GetMainFrame()));
   EXPECT_TRUE(TryAutoplay(GetChildFrame()));
 }
@@ -110,12 +109,11 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_Allowed) {
 
   // Update policy to allow autoplay for our test origin.
   PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayWhitelist,
-            std::make_unique<base::ListValue>(whitelist));
+  SetPolicy(&policies, key::kAutoplayAllowlist, base::Value(whitelist));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
   EXPECT_TRUE(TryAutoplay(GetMainFrame()));
   EXPECT_TRUE(TryAutoplay(GetChildFrame()));
 }
@@ -133,12 +131,11 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_PatternAllowed) {
 
   // Update policy to allow autoplay for our test origin.
   PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayWhitelist,
-            std::make_unique<base::ListValue>(whitelist));
+  SetPolicy(&policies, key::kAutoplayAllowlist, base::Value(whitelist));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
   EXPECT_TRUE(TryAutoplay(GetMainFrame()));
   EXPECT_TRUE(TryAutoplay(GetChildFrame()));
 }
@@ -156,12 +153,11 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_Missing) {
 
   // Update policy to allow autoplay for a random origin.
   PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayWhitelist,
-            std::make_unique<base::ListValue>(whitelist));
+  SetPolicy(&policies, key::kAutoplayAllowlist, base::Value(whitelist));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was not allowed.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
   EXPECT_FALSE(TryAutoplay(GetMainFrame()));
   EXPECT_FALSE(TryAutoplay(GetChildFrame()));
 }
@@ -175,12 +171,11 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayDeniedByPolicy) {
 
   // Update policy to forbid autoplay.
   PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayAllowed,
-            std::make_unique<base::Value>(false));
+  SetPolicy(&policies, key::kAutoplayAllowed, base::Value(false));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was not allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
   EXPECT_FALSE(TryAutoplay(GetMainFrame()));
   EXPECT_FALSE(TryAutoplay(GetChildFrame()));
 
@@ -189,12 +184,11 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayDeniedByPolicy) {
   whitelist.push_back(base::Value("https://www.example.com"));
 
   // Update policy to allow autoplay for a random origin.
-  SetPolicy(&policies, key::kAutoplayWhitelist,
-            std::make_unique<base::ListValue>(whitelist));
+  SetPolicy(&policies, key::kAutoplayAllowlist, base::Value(whitelist));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was not allowed.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
   EXPECT_FALSE(TryAutoplay(GetMainFrame()));
   EXPECT_FALSE(TryAutoplay(GetChildFrame()));
 }
@@ -208,12 +202,11 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayDeniedAllowedWithURL) {
 
   // Update policy to forbid autoplay.
   PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayAllowed,
-            std::make_unique<base::Value>(false));
+  SetPolicy(&policies, key::kAutoplayAllowed, base::Value(false));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was not allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
   EXPECT_FALSE(TryAutoplay(GetMainFrame()));
   EXPECT_FALSE(TryAutoplay(GetChildFrame()));
 
@@ -222,12 +215,11 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayDeniedAllowedWithURL) {
   whitelist.push_back(base::Value(embedded_test_server()->GetURL("/").spec()));
 
   // Update policy to allow autoplay for our test origin.
-  SetPolicy(&policies, key::kAutoplayWhitelist,
-            std::make_unique<base::ListValue>(whitelist));
+  SetPolicy(&policies, key::kAutoplayAllowlist, base::Value(whitelist));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
   EXPECT_TRUE(TryAutoplay(GetMainFrame()));
   EXPECT_TRUE(TryAutoplay(GetChildFrame()));
 }
@@ -241,12 +233,11 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayAllowedGlobalAndURL) {
 
   // Update policy to forbid autoplay.
   PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayAllowed,
-            std::make_unique<base::Value>(false));
+  SetPolicy(&policies, key::kAutoplayAllowed, base::Value(false));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was not allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
   EXPECT_FALSE(TryAutoplay(GetMainFrame()));
   EXPECT_FALSE(TryAutoplay(GetChildFrame()));
 
@@ -255,12 +246,11 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayAllowedGlobalAndURL) {
   whitelist.push_back(base::Value(embedded_test_server()->GetURL("/").spec()));
 
   // Update policy to allow autoplay for our test origin.
-  SetPolicy(&policies, key::kAutoplayWhitelist,
-            std::make_unique<base::ListValue>(whitelist));
+  SetPolicy(&policies, key::kAutoplayAllowlist, base::Value(whitelist));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
   EXPECT_TRUE(TryAutoplay(GetMainFrame()));
   EXPECT_TRUE(TryAutoplay(GetChildFrame()));
 }

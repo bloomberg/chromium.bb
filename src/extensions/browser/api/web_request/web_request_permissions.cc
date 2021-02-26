@@ -4,11 +4,13 @@
 
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 
+#include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -19,17 +21,19 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/login/login_state/login_state.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using extensions::PermissionsData;
 
@@ -66,6 +70,12 @@ PermissionsData::PageAccess GetHostAccessForURL(
                                                      nullptr /*error*/);
 }
 
+bool IsWebRequestResourceTypeFrame(
+    extensions::WebRequestResourceType web_request_type) {
+  return web_request_type == extensions::WebRequestResourceType::MAIN_FRAME ||
+         web_request_type == extensions::WebRequestResourceType::SUB_FRAME;
+}
+
 PermissionsData::PageAccess CanExtensionAccessURLInternal(
     extensions::PermissionHelper* permission_helper,
     const std::string& extension_id,
@@ -74,7 +84,8 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
     bool crosses_incognito,
     WebRequestPermissions::HostPermissionsCheck host_permissions_check,
     const base::Optional<url::Origin>& initiator,
-    const base::Optional<blink::mojom::ResourceType>& resource_type) {
+    const base::Optional<extensions::WebRequestResourceType>&
+        web_request_type) {
   const extensions::Extension* extension =
       permission_helper->extension_registry()->enabled_extensions().GetByID(
           extension_id);
@@ -90,7 +101,7 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
 // When restrictions are enabled in Public Session, allow all URLs for
 // webRequests initiated by a regular extension (but don't allow chrome://
 // URLs).
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (chromeos::LoginState::IsInitialized() &&
       chromeos::LoginState::Get()->ArePublicSessionRestrictionsEnabled() &&
       extension->is_extension() && !url.SchemeIs("chrome")) {
@@ -114,7 +125,7 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
           GetHostAccessForURL(*extension, url, tab_id);
 
       bool is_navigation_request =
-          resource_type && blink::IsResourceTypeFrame(*resource_type);
+          web_request_type && IsWebRequestResourceTypeFrame(*web_request_type);
 
       // For sub-resource (non-navigation) requests, if access to the host was
       // withheld, check if the extension has access to the initiator. If it
@@ -136,7 +147,7 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
           GetHostAccessForURL(*extension, url, tab_id);
 
       bool is_navigation_request =
-          resource_type && blink::IsResourceTypeFrame(*resource_type);
+          web_request_type && IsWebRequestResourceTypeFrame(*web_request_type);
 
       // Only require access to the initiator for sub-resource (non-navigation)
       // requests. See crbug.com/918137.
@@ -199,7 +210,7 @@ bool IsSensitiveGoogleClientUrl(const extensions::WebRequestInfo& request) {
 
   base::StringPiece host = url.host_piece();
 
-  while (host.ends_with("."))
+  while (base::EndsWith(host, "."))
     host.remove_suffix(1u);
 
   // Check for "clients[0-9]*.google.com" hosts.
@@ -247,8 +258,8 @@ bool WebRequestPermissions::HideRequest(
     // Browser initiated service worker script requests (e.g., for update check)
     // are not hidden.
     if (request.is_service_worker_script) {
-      DCHECK(request.type == blink::mojom::ResourceType::kServiceWorker ||
-             request.type == blink::mojom::ResourceType::kScript);
+      DCHECK(request.web_request_type ==
+             extensions::WebRequestResourceType::SCRIPT);
       return false;
     }
 
@@ -256,18 +267,35 @@ bool WebRequestPermissions::HideRequest(
     if (!request.is_navigation_request)
       return true;
 
-    DCHECK(request.type == blink::mojom::ResourceType::kMainFrame ||
-           request.type == blink::mojom::ResourceType::kSubFrame ||
-           request.type ==
-               blink::mojom::ResourceType::kNavigationPreloadMainFrame ||
-           request.type ==
-               blink::mojom::ResourceType::kNavigationPreloadSubFrame);
+    if (request.web_request_type !=
+            extensions::WebRequestResourceType::MAIN_FRAME &&
+        request.web_request_type !=
+            extensions::WebRequestResourceType::SUB_FRAME) {
+      // TODO(crbug.com/1145496): Remove crash key logging once the DCHECK
+      // failure below is fixed.
+      static auto* web_request_type_key = base::debug::AllocateCrashKeyString(
+          "web_request_type", base::debug::CrashKeySize::Size32);
+      static auto* url_key = base::debug::AllocateCrashKeyString(
+          "web_request_url", base::debug::CrashKeySize::Size256);
+
+      base::debug::ScopedCrashKeyString scoped_web_request_type(
+          web_request_type_key,
+          WebRequestResourceTypeToString(request.web_request_type));
+      base::debug::ScopedCrashKeyString scoped_url(
+          url_key, request.url.possibly_invalid_spec());
+
+      DCHECK(request.web_request_type ==
+                 extensions::WebRequestResourceType::MAIN_FRAME ||
+             request.web_request_type ==
+                 extensions::WebRequestResourceType::SUB_FRAME);
+    }
 
     // Hide sub-frame requests to clientsX.google.com.
     // TODO(crbug.com/890006): Determine if the code here can be cleaned up
     // since browser initiated non-navigation requests are now hidden from
     // extensions.
-    if (request.type != blink::mojom::ResourceType::kMainFrame &&
+    if (request.web_request_type !=
+            extensions::WebRequestResourceType::MAIN_FRAME &&
         IsSensitiveGoogleClientUrl(request)) {
       return true;
     }
@@ -353,10 +381,10 @@ PermissionsData::PageAccess WebRequestPermissions::CanExtensionAccessURL(
     bool crosses_incognito,
     HostPermissionsCheck host_permissions_check,
     const base::Optional<url::Origin>& initiator,
-    blink::mojom::ResourceType resource_type) {
+    extensions::WebRequestResourceType web_request_type) {
   return CanExtensionAccessURLInternal(
       permission_helper, extension_id, url, tab_id, crosses_incognito,
-      host_permissions_check, initiator, resource_type);
+      host_permissions_check, initiator, web_request_type);
 }
 
 // static

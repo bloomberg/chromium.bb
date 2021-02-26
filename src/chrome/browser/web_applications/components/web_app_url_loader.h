@@ -27,22 +27,45 @@ class WebAppUrlLoader {
     kSameOrigin,
   };
 
+  // Result enum values are persisted to logs. Entries should not be renumbered
+  // and numeric values should never be reused. Update corresponding enums.xml
+  // entry when making changes here.
   enum class Result {
     // The provided URL (matched using |UrlComparison|) was loaded.
-    kUrlLoaded,
+    kUrlLoaded = 0,
     // The provided URL redirected to another URL (that did not match using
     // |UrlComparison|) and the final URL was loaded.
-    kRedirectedUrlLoaded,
-    kFailedUnknownReason,
-    kFailedPageTookTooLong,
-    kFailedWebContentsDestroyed,
-    kFailedErrorPageLoaded,
+    kRedirectedUrlLoaded = 1,
+    kFailedUnknownReason = 2,
+    kFailedPageTookTooLong = 3,
+    kFailedWebContentsDestroyed = 4,
+    kFailedErrorPageLoaded = 5,
+
+    kMaxValue = kFailedErrorPageLoaded,
   };
 
   using ResultCallback = base::OnceCallback<void(Result)>;
 
   WebAppUrlLoader();
   virtual ~WebAppUrlLoader();
+
+  // Navigates |web_contents| to about:blank to prepare for the next LoadUrl()
+  // call.
+  //
+  // We've observed some races when using LoadUrl() on previously navigated
+  // WebContents. Sometimes events from the last navigation are triggered after
+  // we start the new navigation, causing us to incorrectly run the callback
+  // with a redirect error.
+  //
+  // Clients of LoadUrl() should always call PrepareForLoad() before calling
+  // LoadUrl(). PrepareForLoad() will start a new navigation to about:blank and
+  // ignore all navigation events until we've successfully navigated to
+  // about:blank or timed out.
+  //
+  // Clients should check |callback| result and handle failure scenarios
+  // appropriately.
+  virtual void PrepareForLoad(content::WebContents* web_contents,
+                              ResultCallback callback);
 
   // Navigates |web_contents| to |url|, compares the resolved URL with
   // |url_comparison|, and runs callback with the result code.

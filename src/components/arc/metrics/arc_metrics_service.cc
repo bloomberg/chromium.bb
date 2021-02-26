@@ -36,6 +36,7 @@ constexpr char kUmaPrefix[] = "Arc";
 constexpr base::TimeDelta kUmaMinTime = base::TimeDelta::FromMilliseconds(1);
 constexpr base::TimeDelta kUmaMaxTime = base::TimeDelta::FromSeconds(60);
 constexpr int kUmaNumBuckets = 50;
+constexpr int kUmaPriAbiMigMaxFailedAttempts = 10;
 
 constexpr base::TimeDelta kRequestProcessListPeriod =
     base::TimeDelta::FromMinutes(5);
@@ -134,6 +135,12 @@ ArcMetricsService::~ArcMetricsService() {
       &intent_helper_observer_);
   arc_bridge_service_->app()->RemoveObserver(&app_launcher_observer_);
   arc_bridge_service_->RemoveObserver(&arc_bridge_service_observer_);
+}
+
+void ArcMetricsService::Shutdown() {
+  for (auto& obs : app_kill_observers_)
+    obs.OnArcMetricsServiceDestroyed();
+  app_kill_observers_.Clear();
 }
 
 void ArcMetricsService::SetHistogramNamer(HistogramNamer histogram_namer) {
@@ -273,6 +280,84 @@ void ArcMetricsService::ReportCompanionLibApiUsage(
   UMA_HISTOGRAM_ENUMERATION("Arc.CompanionLibraryApisCounter", api_id);
 }
 
+void ArcMetricsService::ReportAppKill(mojom::AppKillPtr app_kill) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  switch (app_kill->type) {
+    case mojom::AppKillType::LMKD_KILL:
+      NotifyLowMemoryKill();
+      break;
+    case mojom::AppKillType::OOM_KILL:
+      NotifyOOMKillCount(app_kill->count);
+      break;
+  }
+}
+
+void ArcMetricsService::NotifyLowMemoryKill() {
+  for (auto& obs : app_kill_observers_)
+    obs.OnArcLowMemoryKill();
+}
+
+void ArcMetricsService::NotifyOOMKillCount(unsigned long count) {
+  for (auto& obs : app_kill_observers_)
+    obs.OnArcOOMKillCount(count);
+}
+
+void ArcMetricsService::ReportArcCorePriAbiMigEvent(
+    mojom::ArcCorePriAbiMigEvent event_type) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  UMA_HISTOGRAM_ENUMERATION("Arc.AbiMigration.Event", event_type);
+}
+
+void ArcMetricsService::ReportArcCorePriAbiMigFailedTries(
+    uint32_t failed_attempts) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  UMA_HISTOGRAM_EXACT_LINEAR("Arc.AbiMigration.FailedAttempts", failed_attempts,
+                             kUmaPriAbiMigMaxFailedAttempts);
+}
+
+void ArcMetricsService::ReportArcCorePriAbiMigDowngradeDelay(
+    base::TimeDelta delay) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::UmaHistogramCustomTimes("Arc.AbiMigration.DowngradeDelay", delay,
+                                kUmaMinTime, kUmaMaxTime, kUmaNumBuckets);
+}
+
+void ArcMetricsService::OnArcStartTimeForPriAbiMigration(
+    base::TimeTicks durationTicks,
+    base::Optional<base::TimeTicks> arc_start_time) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!arc_start_time.has_value()) {
+    LOG(ERROR) << "Failed to retrieve ARC start timeticks.";
+    return;
+  }
+  VLOG(2) << "ARC start for Primary Abi Migration @" << arc_start_time.value();
+
+  const base::TimeDelta elapsed_time = durationTicks - arc_start_time.value();
+  base::UmaHistogramCustomTimes("Arc.AbiMigration.BootTime", elapsed_time,
+                                kUmaMinTime, kUmaMaxTime, kUmaNumBuckets);
+}
+
+void ArcMetricsService::ReportArcCorePriAbiMigBootTime(
+    base::TimeDelta duration) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  const base::TimeTicks durationTicks = duration + base::TimeTicks();
+
+  // For VM builds, do not call into session_manager since we don't use it
+  // for the builds. Using base::TimeTicks() is fine for now because 1) the
+  // clocks in host and guest are not synchronized, and 2) the guest does not
+  // support mini container.
+  // TODO(b/172266394): Guest should itself report the timing of the upgrade.
+  if(IsArcVmEnabled()) {
+      OnArcStartTimeForPriAbiMigration(std::move(durationTicks), base::TimeTicks());
+      return;
+  }
+
+  // Retrieve ARC full container's start time from session manager.
+  chromeos::SessionManagerClient::Get()->GetArcStartTime(
+      base::BindOnce(&ArcMetricsService::OnArcStartTimeForPriAbiMigration,
+                     weak_ptr_factory_.GetWeakPtr(), durationTicks));
+}
+
 void ArcMetricsService::OnWindowActivated(
     wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
@@ -315,6 +400,15 @@ void ArcMetricsService::OnTaskDestroyed(int32_t task_id) {
   guest_os_engagement_metrics_.SetBackgroundActive(!task_ids_.empty());
 }
 
+void ArcMetricsService::AddAppKillObserver(AppKillObserver* obs) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  app_kill_observers_.AddObserver(obs);
+}
+
+void ArcMetricsService::RemoveAppKillObserver(AppKillObserver* obs) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  app_kill_observers_.RemoveObserver(obs);
+}
 ArcMetricsService::ProcessObserver::ProcessObserver(
     ArcMetricsService* arc_metrics_service)
     : arc_metrics_service_(arc_metrics_service) {}

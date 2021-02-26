@@ -54,6 +54,10 @@ void CompositorAnimation::AttachElement(const CompositorElementId& id) {
   animation_->AttachElement(id);
 }
 
+void CompositorAnimation::AttachNoElement() {
+  animation_->AttachNoElement();
+}
+
 void CompositorAnimation::DetachElement() {
   animation_->DetachElement();
 }
@@ -78,14 +82,6 @@ void CompositorAnimation::PauseKeyframeModel(int keyframe_model_id,
 
 void CompositorAnimation::AbortKeyframeModel(int keyframe_model_id) {
   animation_->AbortKeyframeModel(keyframe_model_id);
-}
-
-void CompositorAnimation::UpdateScrollTimeline(
-    base::Optional<cc::ElementId> element_id,
-    base::Optional<double> start_scroll_offset,
-    base::Optional<double> end_scroll_offset) {
-  animation_->UpdateScrollTimeline(element_id, start_scroll_offset,
-                                   end_scroll_offset);
 }
 
 void CompositorAnimation::UpdatePlaybackRate(double playback_rate) {

@@ -31,7 +31,7 @@ class AuthenticatorQRSheetView : public AuthenticatorRequestSheetView {
   void Update();
 
   AuthenticatorQRViewCentered* qr_view_ = nullptr;
-  base::span<const uint8_t, 32> qr_generator_key_;
+  const std::string qr_string_;
   base::RepeatingTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorQRSheetView);

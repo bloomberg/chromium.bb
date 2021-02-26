@@ -36,7 +36,8 @@ class StreamingPlaybackController final : public ReceiverSession::Client {
   void OnNegotiated(const ReceiverSession* session,
                     ReceiverSession::ConfiguredReceivers receivers) override;
 
-  void OnConfiguredReceiversDestroyed(const ReceiverSession* session) override;
+  void OnReceiversDestroying(const ReceiverSession* session,
+                             ReceiversDestroyingReason reason) override;
 
   void OnError(const ReceiverSession* session, Error error) override;
 

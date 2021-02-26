@@ -118,7 +118,8 @@ void CredentialManagementHandler::OnHavePIN(std::string pin) {
 
   state_ = State::kGettingPINToken;
   authenticator_->GetPINToken(
-      std::move(pin),
+      std::move(pin), {pin::Permissions::kCredentialManagement},
+      /*rp_id=*/base::nullopt,
       base::BindOnce(&CredentialManagementHandler::OnHavePINToken,
                      weak_factory_.GetWeakPtr()));
 }
@@ -156,7 +157,7 @@ void CredentialManagementHandler::OnHavePINToken(
   }
 
   state_ = State::kReady;
-  pin_token_ = response->token();
+  pin_token_ = response;
   std::move(ready_callback_).Run();
 }
 

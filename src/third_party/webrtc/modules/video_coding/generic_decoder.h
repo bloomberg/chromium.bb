@@ -19,8 +19,8 @@
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "modules/video_coding/timestamp_map.h"
 #include "modules/video_coding/timing.h"
-#include "rtc_base/critical_section.h"
 #include "rtc_base/experiments/field_trial_parser.h"
+#include "rtc_base/synchronization/mutex.h"
 #include "rtc_base/thread_checker.h"
 
 namespace webrtc {
@@ -35,6 +35,7 @@ struct VCMFrameInformation {
   void* userData;
   VideoRotation rotation;
   VideoContentType content_type;
+  PlayoutDelay playout_delay;
   EncodedImage::Timing timing;
   int64_t ntp_time_ms;
   RtpPacketInfos packet_infos;
@@ -70,11 +71,21 @@ class VCMDecodedFrameCallback : public DecodedImageCallback {
   // from the same thread, and therfore a lock is not required to access it.
   VCMReceiveCallback* _receiveCallback = nullptr;
   VCMTiming* _timing;
-  rtc::CriticalSection lock_;
+  Mutex lock_;
   VCMTimestampMap _timestampMap RTC_GUARDED_BY(lock_);
   int64_t ntp_offset_;
   // Set by the field trial WebRTC-SlowDownDecoder to simulate a slow decoder.
   FieldTrialOptional<TimeDelta> _extra_decode_time;
+
+  // Set by the field trial WebRTC-LowLatencyRenderer. The parameter |enabled|
+  // determines if the low-latency renderer algorithm should be used for the
+  // case min playout delay=0 and max playout delay>0.
+  FieldTrialParameter<bool> low_latency_renderer_enabled_;
+  // Set by the field trial WebRTC-LowLatencyRenderer. The parameter
+  // |include_predecode_buffer| determines if the predecode buffer should be
+  // taken into account when calculating maximum number of frames in composition
+  // queue.
+  FieldTrialParameter<bool> low_latency_renderer_include_predecode_buffer_;
 };
 
 class VCMGenericDecoder {

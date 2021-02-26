@@ -382,20 +382,44 @@ class ProgressCenterPanel {
   }
 
   /**
+   * Test if we have an empty or all whitespace string.
+   * @param {string} candidate String we're checking.
+   * @return {boolean} true if there's content in the candidate.
+   */
+  isNonEmptyString_(candidate) {
+    if (!candidate || candidate.trim().length === 0) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Generate destination string for display on the feedback panel.
    * @param {!ProgressCenterItem} item Item we're generating a message for.
    * @param {Object} info Cached information to use for formatting.
    * @return {string} String formatted based on the item state.
    */
   generateDestinationString_(item, info) {
+    const hasDestination = this.isNonEmptyString_(info['destination']);
     switch (item.state) {
       case 'progressing':
-        return strf('TO_FOLDER_NAME', info['destination']);
+        if (hasDestination) {
+          return strf('TO_FOLDER_NAME', info['destination']);
+        }
+        break;
       case 'completed':
         if (item.type === ProgressItemType.COPY) {
-          return strf('COPIED_TO', info['destination']);
+          if (hasDestination) {
+            return strf('COPIED_TO', info['destination']);
+          } else {
+            return str('COPIED');
+          }
         } else if (item.type === ProgressItemType.MOVE) {
-          return strf('MOVED_TO', info['destination']);
+          if (hasDestination) {
+            return strf('MOVED_TO', info['destination']);
+          } else {
+            return str('MOVED');
+          }
         }
         break;
       case 'error':
@@ -406,6 +430,122 @@ class ProgressCenterPanel {
         break;
     }
     return '';
+  }
+
+
+  /**
+   * Generate primary text string for display on the feedback panel.
+   * It is used for TransferDetails mode.
+   * @param {!ProgressCenterItem} item Item we're generating a message for.
+   * @param {Object} info Cached information to use for formatting.
+   * @return {string} String formatted based on the item state.
+   */
+  generatePrimaryString_(item, info) {
+    const hasDestination = this.isNonEmptyString_(info['destination']);
+    switch (item.state) {
+      case 'progressing':
+        // Source and primary string are the same for missing destination.
+        if (!hasDestination) {
+          return this.generateSourceString_(item, info);
+        }
+        // fall through
+      case 'completed':
+        if (item.itemCount === 1) {
+          if (item.type === ProgressItemType.COPY) {
+            if (hasDestination) {
+              return strf(
+                  'COPY_FILE_NAME_LONG', info['source'], info['destination']);
+            } else {
+              return strf('FILE_COPIED', info['source']);
+            }
+          } else if (item.type === ProgressItemType.MOVE) {
+            if (hasDestination) {
+              return strf(
+                  'MOVE_FILE_NAME_LONG', info['source'], info['destination']);
+            } else {
+              return strf('FILE_MOVED', info['source']);
+            }
+          } else {
+            return item.message;
+          }
+        } else {
+          if (item.type === ProgressItemType.COPY) {
+            if (hasDestination) {
+              return strf(
+                  'COPY_ITEMS_REMAINING_LONG', info['source'],
+                  info['destination']);
+            } else {
+              return strf('FILE_ITEMS_COPIED', info['source']);
+            }
+          } else if (item.type === ProgressItemType.MOVE) {
+            if (hasDestination) {
+              return strf(
+                  'MOVE_ITEMS_REMAINING_LONG', info['source'],
+                  info['destination']);
+            } else {
+              return strf('FILE_ITEMS_MOVED', info['source']);
+            }
+          } else {
+            return item.message;
+          }
+        }
+        break;
+      case 'error':
+        return item.message;
+      case 'canceled':
+        return '';
+      default:
+        assertNotReached();
+        break;
+    }
+    return '';
+  }
+
+  /**
+   * Generates remaining time message with formatted time.
+   *
+   * The time format in hour and minute and the durations more
+   * than 24 hours also formatted in hour.
+   *
+   * As ICU syntax is not implemented in web ui yet (crbug/481718), the i18n
+   * of time part is handled using Intl methods.
+   *
+   * @param {!ProgressCenterItem} item Item we're generating a message for.
+   * @return {!string} Remaining time message.
+   */
+  generateRemainingTimeMessage(item) {
+    const seconds = item.remainingTime;
+    if (seconds == 0 && item.state == 'progressing') {
+      return str('PENDING_LABEL');
+    }
+
+    // Return empty string for not supported operation (didn't set
+    // remainingTime) or 0 sec remainingTime in non progressing state.
+    if (!seconds) {
+      return '';
+    }
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    const hourFormatter = new Intl.NumberFormat(
+        navigator.language, {style: 'unit', unit: 'hour', unitDisplay: 'long'});
+    const minuteFormatter = new Intl.NumberFormat(
+        navigator.language,
+        {style: 'unit', unit: 'minute', unitDisplay: 'short'});
+
+    if (hours > 0 && minutes > 0) {
+      return strf(
+          'TIME_REMAINING_ESTIMATE_2', hourFormatter.format(hours),
+          minuteFormatter.format(minutes));
+    } else if (hours > 0) {
+      return strf('TIME_REMAINING_ESTIMATE', hourFormatter.format(hours));
+    } else if (minutes > 0) {
+      return strf('TIME_REMAINING_ESTIMATE', minuteFormatter.format(minutes));
+    } else {
+      // Round up to 1 min for short period of remaining time.
+      return strf('TIME_REMAINING_ESTIMATE', minuteFormatter.format(1));
+    }
   }
 
   /**
@@ -437,14 +577,22 @@ class ProgressCenterPanel {
           'count': item.itemCount,
         };
       }
-      const primaryText = this.generateSourceString_(item, panelItem.userData);
+
+      let primaryText, secondaryText;
+      if (util.isTransferDetailsEnabled()) {
+        primaryText = this.generatePrimaryString_(item, panelItem.userData);
+        panelItem.secondaryText = this.generateRemainingTimeMessage(item);
+      } else {
+        primaryText = this.generateSourceString_(item, panelItem.userData);
+        if (item.destinationMessage) {
+          panelItem.secondaryText =
+              strf('TO_FOLDER_NAME', item.destinationMessage);
+        }
+      }
       panelItem.primaryText = primaryText;
       panelItem.setAttribute('data-progress-id', item.id);
-      if (item.destinationMessage) {
-        panelItem.secondaryText =
-            strf('TO_FOLDER_NAME', item.destinationMessage);
-      }
-      // On progress panels, make the cancel button aria-lable more useful.
+
+      // On progress panels, make the cancel button aria-label more useful.
       const cancelLabel = strf('CANCEL_ACTIVITY_LABEL', primaryText);
       panelItem.closeButtonAriaLabel = cancelLabel;
       panelItem.signalCallback = (signal) => {
@@ -465,10 +613,13 @@ class ProgressCenterPanel {
               item.type === 'format') {
             const donePanelItem = this.feedbackHost_.addPanelItem(item.id);
             donePanelItem.panelType = donePanelItem.panelTypeDone;
-            donePanelItem.primaryText =
-                this.generateSourceString_(item, panelItem.userData);
-            donePanelItem.secondaryText =
-                this.generateDestinationString_(item, panelItem.userData);
+            donePanelItem.primaryText = primaryText;
+            if (util.isTransferDetailsEnabled()) {
+              donePanelItem.secondaryText = str('COMPLETE_LABEL');
+            } else {
+              donePanelItem.secondaryText =
+                  this.generateDestinationString_(item, panelItem.userData);
+            }
             donePanelItem.signalCallback = (signal) => {
               if (signal === 'dismiss') {
                 this.feedbackHost_.removePanelItem(donePanelItem);
@@ -488,6 +639,7 @@ class ProgressCenterPanel {
         case 'error':
           panelItem.panelType = panelItem.panelTypeError;
           panelItem.primaryText = item.message;
+          panelItem.secondaryText = '';
           // Make sure the panel is attached so it shows immediately.
           this.feedbackHost_.attachPanelItem(panelItem);
           break;

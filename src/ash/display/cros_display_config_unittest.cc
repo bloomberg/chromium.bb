@@ -4,6 +4,7 @@
 
 #include "ash/display/cros_display_config.h"
 
+#include "ash/display/display_alignment_controller.h"
 #include "ash/display/display_highlight_controller.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/touch_calibrator_controller.h"
@@ -81,7 +82,8 @@ class CrosDisplayConfigTest : public AshTestBase {
   ~CrosDisplayConfigTest() override {}
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kDisplayIdentification);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kDisplayIdentification, features::kDisplayAlignAssist}, {});
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFirstDisplayAsInternal);
@@ -203,6 +205,17 @@ class CrosDisplayConfigTest : public AshTestBase {
     cros_display_config_->HighlightDisplay(id);
   }
 
+  void DragDisplayDelta(int64_t id, int32_t delta_x, int32_t delta_y) {
+    cros_display_config_->DragDisplayDelta(id, delta_x, delta_y);
+  }
+
+  bool PreviewIndicatorsExist() {
+    return !Shell::Get()
+                ->display_alignment_controller()
+                ->GetActiveIndicatorsForTesting()
+                .empty();
+  }
+
   CrosDisplayConfig* cros_display_config() { return cros_display_config_; }
 
  private:
@@ -217,8 +230,7 @@ TEST_F(CrosDisplayConfigTest, OnDisplayConfigChanged) {
   TestObserver observer;
   mojo::AssociatedRemote<mojom::CrosDisplayConfigObserver> observer_remote;
   mojo::AssociatedReceiver<mojom::CrosDisplayConfigObserver> receiver(
-      &observer,
-      observer_remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
+      &observer, observer_remote.BindNewEndpointAndPassDedicatedReceiver());
   cros_display_config()->AddObserver(observer_remote.Unbind());
   base::RunLoop().RunUntilIdle();
 
@@ -738,8 +750,7 @@ TEST_F(CrosDisplayConfigTest, TabletModeAutoRotation) {
   TestObserver observer;
   mojo::AssociatedRemote<mojom::CrosDisplayConfigObserver> observer_remote;
   mojo::AssociatedReceiver<mojom::CrosDisplayConfigObserver> receiver(
-      &observer,
-      observer_remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
+      &observer, observer_remote.BindNewEndpointAndPassDedicatedReceiver());
   cros_display_config()->AddObserver(observer_remote.Unbind());
   base::RunLoop().RunUntilIdle();
 
@@ -840,6 +851,18 @@ TEST_F(CrosDisplayConfigTest, HighlightDisplayInvalid) {
 
   EXPECT_EQ(Shell::Get()->display_highlight_controller()->GetWidgetForTesting(),
             nullptr);
+}
+
+TEST_F(CrosDisplayConfigTest, DragDisplayDelta) {
+  UpdateDisplay("500x400,500x400");
+
+  const auto& display = display_manager()->GetDisplayAt(0);
+
+  EXPECT_FALSE(PreviewIndicatorsExist());
+
+  DragDisplayDelta(display.id(), 0, 16);
+
+  EXPECT_TRUE(PreviewIndicatorsExist());
 }
 
 }  // namespace ash

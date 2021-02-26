@@ -45,8 +45,9 @@ class UrlIndex : public HistoryBookmarkModel {
            size_t index,
            std::unique_ptr<BookmarkNode> node);
 
-  // Removes |node| and all its descendants from the map, returns the set of
-  // urls that are no longer contained in the index.
+  // Removes |node| and all its descendants from the map, adds urls that are no
+  // longer contained in the index to the |removed_urls| set if provided
+  // (doesn't clean up existing items in the set).
   std::unique_ptr<BookmarkNode> Remove(BookmarkNode* node,
                                        std::set<GURL>* removed_urls);
 
@@ -64,8 +65,24 @@ class UrlIndex : public HistoryBookmarkModel {
   // Returns true if there is at least one bookmark.
   bool HasBookmarks() const;
 
-  // Returns the number of URL bookmarks stored.
-  size_t UrlCount() const;
+  // Returns some stats about number of URL bookmarks stored, for UMA purposes.
+  struct Stats {
+    // Number of bookmark in the index excluding folders.
+    size_t total_url_bookmark_count = 0;
+    // Number of bookmarks (excluding folders) with a URL that is used by at
+    // least one other bookmark, excluding one bookmark per unique URL (i.e. all
+    // except one are considered duplicates).
+    size_t duplicate_url_bookmark_count = 0;
+    // Number of bookmarks (excluding folders) with the pair <URL, title> that
+    // is used by at least one other bookmark, excluding one bookmark per unique
+    // URL (i.e. all except one are considered duplicates).
+    size_t duplicate_url_and_title_bookmark_count = 0;
+    // Number of bookmarks (excluding folders) with the triple <URL, title,
+    // parent> that is used by at least one other bookmark, excluding one
+    // bookmark per unique URL (i.e. all except one are considered duplicates).
+    size_t duplicate_url_and_title_and_parent_bookmark_count = 0;
+  };
+  Stats ComputeStats() const;
 
   // HistoryBookmarkModel:
   bool IsBookmarked(const GURL& url) override;

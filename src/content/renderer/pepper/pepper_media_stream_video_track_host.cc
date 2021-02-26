@@ -23,10 +23,11 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
-#include "ui/gfx/gpu_memory_buffer.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_utils.h"
 #include "third_party/libyuv/include/libyuv.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 using media::VideoFrame;
 using ppapi::host::HostMessageContext;
@@ -354,7 +355,7 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
   scoped_refptr<media::VideoFrame> frame = video_frame;
   // Drop alpha channel since we do not support it yet.
   if (frame->format() == media::PIXEL_FORMAT_I420A)
-    frame = media::WrapAsI420VideoFrame(std::move(video_frame));
+    frame = media::WrapAsI420VideoFrame(video_frame);
   PP_VideoFrame_Format ppformat = ToPpapiFormat(frame->format());
   if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     // NV12 is the only supported GMB pixel format at the moment, and there is
@@ -535,7 +536,7 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
       base::WrapUnique(source));  // Takes ownership of |source|.
 
   const bool enabled = true;
-  track_ = blink::MediaStreamVideoTrack::CreateVideoTrack(
+  track_ = blink::CreateWebMediaStreamVideoTrack(
       source,
       base::BindOnce(&PepperMediaStreamVideoTrackHost::OnTrackStarted,
                      base::Unretained(this)),

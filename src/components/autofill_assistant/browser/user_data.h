@@ -108,7 +108,6 @@ class UserData {
     AVAILABLE_PAYMENT_INSTRUMENTS,
   };
 
-  bool succeed_ = false;
   std::unique_ptr<autofill::CreditCard> selected_card_;
   std::string login_choice_identifier_;
   TermsAndConditionsState terms_and_conditions_ = NOT_SELECTED;
@@ -145,6 +144,12 @@ class UserData {
 
   // The additional value for |key|, or nullptr if it does not exist.
   const ValueProto* additional_value(const std::string& key) const;
+
+  // The form data of the password change form. This is stored at the time of
+  // password generation (GeneratePasswordForFormFieldProto) to allow a
+  // subsequent PresaveGeneratedPasswordProto to presave the password prior to
+  // submission.
+  base::Optional<autofill::FormData> password_form_data_;
 
   std::string GetAllAddressKeyNames() const;
 };

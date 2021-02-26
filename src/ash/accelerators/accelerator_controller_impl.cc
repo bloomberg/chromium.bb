@@ -16,6 +16,9 @@
 #include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/capture_mode/capture_mode_metrics.h"
+#include "ash/clipboard/clipboard_history_controller_impl.h"
 #include "ash/debug.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_move_window_util.h"
@@ -78,7 +81,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -93,6 +96,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/user_manager/user_type.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
@@ -236,7 +240,6 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
                                  kNotifierAccelerator),
       message_center::RichNotificationData(), std::move(delegate),
       kNotificationKeyboardIcon, SystemNotificationWarningLevel::NORMAL);
-  notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }
@@ -744,20 +747,57 @@ void HandleShowKeyboardShortcutViewer() {
   NewWindowDelegate::GetInstance()->ShowKeyboardShortcutViewer();
 }
 
+bool CanHandleScreenshot() {
+  // The old screenshot code will handle the different sessions in its own code.
+  if (!features::IsCaptureModeEnabled())
+    return true;
+
+  return !Shell::Get()->session_controller()->IsUserSessionBlocked();
+}
+
+// Tries to enter capture mode image type with |source|. Returns false if
+// unsuccessful (capture mode disabled).
+bool MaybeEnterImageCaptureMode(CaptureModeSource source,
+                                CaptureModeEntryType entry_type) {
+  if (!features::IsCaptureModeEnabled())
+    return false;
+
+  auto* capture_mode_controller = CaptureModeController::Get();
+  capture_mode_controller->SetSource(source);
+  capture_mode_controller->SetType(CaptureModeType::kImage);
+  capture_mode_controller->Start(entry_type);
+  return true;
+}
+
 void HandleTakeWindowScreenshot() {
   base::RecordAction(UserMetricsAction("Accel_Take_Window_Screenshot"));
+  if (MaybeEnterImageCaptureMode(
+          CaptureModeSource::kWindow,
+          CaptureModeEntryType::kAccelTakeWindowScreenshot)) {
+    return;
+  }
+
   Shell::Get()->screenshot_controller()->StartWindowScreenshotSession();
 }
 
 void HandleTakePartialScreenshot() {
   base::RecordAction(UserMetricsAction("Accel_Take_Partial_Screenshot"));
+  if (MaybeEnterImageCaptureMode(
+          CaptureModeSource::kRegion,
+          CaptureModeEntryType::kAccelTakePartialScreenshot)) {
+    return;
+  }
+
   Shell::Get()->screenshot_controller()->StartPartialScreenshotSession(
-      true /* draw_overlay_immediately */);
+      /*draw_overlay_immediately=*/true);
 }
 
 void HandleTakeScreenshot() {
   base::RecordAction(UserMetricsAction("Accel_Take_Screenshot"));
-  Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
+  if (!features::IsCaptureModeEnabled())
+    Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
+  else
+    CaptureModeController::Get()->CaptureScreenshotsOfAllDisplays();
 }
 
 void HandleToggleSystemTrayBubbleInternal(bool focus_message_center) {
@@ -823,7 +863,7 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
     // When spoken feedback is enabled, we should neither toggle the list nor
     // consume the key since Search+Shift is one of the shortcuts the a11y
     // feature uses. crbug.com/132296
-    if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
+    if (Shell::Get()->accessibility_controller()->spoken_feedback().enabled())
       return false;
   }
   return true;
@@ -843,7 +883,11 @@ void HandleToggleAppList(const ui::Accelerator& accelerator,
 void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_MEDIA_LAUNCH_APP2)
     base::RecordAction(UserMetricsAction("Accel_Fullscreen_F4"));
-  accelerators::ToggleFullscreen();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  // Disable fullscreen while overview animation is running due to
+  // http://crbug.com/1094739
+  if (!overview_controller->IsInStartAnimation())
+    accelerators::ToggleFullscreen();
 }
 
 void HandleToggleOverview() {
@@ -997,7 +1041,7 @@ bool CanHandleStartAmbientMode() {
 }
 
 void HandleToggleAmbientMode(const ui::Accelerator& accelerator) {
-  Shell::Get()->ambient_controller()->Toggle();
+  Shell::Get()->ambient_controller()->ToggleInSessionUi();
 }
 
 void HandleToggleAssistant(const ui::Accelerator& accelerator) {
@@ -1075,8 +1119,8 @@ void HandleToggleAssistant(const ui::Accelerator& accelerator) {
   }
 
   AssistantUiController::Get()->ToggleUi(
-      /*entry_point=*/chromeos::assistant::mojom::AssistantEntryPoint::kHotkey,
-      /*exit_point=*/chromeos::assistant::mojom::AssistantExitPoint::kHotkey);
+      /*entry_point=*/chromeos::assistant::AssistantEntryPoint::kHotkey,
+      /*exit_point=*/chromeos::assistant::AssistantExitPoint::kHotkey);
 }
 
 void HandleSuspend() {
@@ -1153,7 +1197,7 @@ void HandleToggleCapsLock() {
 }
 
 bool CanHandleToggleDictation() {
-  return Shell::Get()->accessibility_controller()->dictation_enabled();
+  return Shell::Get()->accessibility_controller()->dictation().enabled();
 }
 
 void HandleToggleDictation() {
@@ -1203,22 +1247,22 @@ void NotifyAccessibilityFeatureDisabledByAdmin(
     int feature_name_id,
     bool feature_state,
     const std::string& notification_id) {
-  const base::string16 organization_name =
+  const base::string16 organization_manager =
       base::UTF8ToUTF16(Shell::Get()
                             ->system_tray_model()
                             ->enterprise_domain()
-                            ->enterprise_display_domain());
+                            ->enterprise_domain_manager());
   CreateAndShowStickyNotification(
       l10n_util::GetStringUTF16(
           IDS_ASH_ACCESSIBILITY_FEATURE_SHORTCUT_DISABLED_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_ASH_ACCESSIBILITY_FEATURE_SHORTCUT_DISABLED_MSG,
-          organization_name,
+          organization_manager,
           l10n_util::GetStringUTF16(
               feature_state ? IDS_ASH_ACCESSIBILITY_FEATURE_ACTIVATED
                             : IDS_ASH_ACCESSIBILITY_FEATURE_DEACTIVATED),
           l10n_util::GetStringUTF16(feature_name_id)),
-      notification_id, kLoginScreenEnterpriseIcon);
+      notification_id, chromeos::kEnterpriseIcon);
 }
 
 void RemoveStickyNotitification(const std::string& notification_id) {
@@ -1282,8 +1326,7 @@ void HandleToggleDockedMagnifier() {
 
   const bool current_enabled = docked_magnifier_controller->GetEnabled();
   const bool dialog_ever_accepted =
-      accessibility_controller
-          ->HasDockedMagnifierAcceleratorDialogBeenAccepted();
+      accessibility_controller->docked_magnifier().WasDialogAccepted();
 
   if (!current_enabled && !dialog_ever_accepted) {
     shell->accelerator_controller()->MaybeShowConfirmationDialog(
@@ -1291,7 +1334,8 @@ void HandleToggleDockedMagnifier() {
         base::BindOnce([]() {
           Shell::Get()
               ->accessibility_controller()
-              ->SetDockedMagnifierAcceleratorDialogAccepted();
+              ->docked_magnifier()
+              .SetDialogAccepted();
           SetDockedMagnifierEnabled(true);
         }),
         base::DoNothing());
@@ -1311,7 +1355,7 @@ void SetFullscreenMagnifierEnabled(bool enabled) {
   DCHECK(IsAccessibilityShortcutEnabled(
       prefs::kAccessibilityScreenMagnifierEnabled));
 
-  shell->accessibility_controller()->SetFullscreenMagnifierEnabled(enabled);
+  shell->accessibility_controller()->fullscreen_magnifier().SetEnabled(enabled);
 
   RemoveStickyNotitification(kFullscreenMagnifierToggleAccelNotificationId);
   if (shell->magnification_controller()->IsEnabled()) {
@@ -1330,10 +1374,10 @@ void SetHighContrastEnabled(bool enabled) {
   DCHECK(
       IsAccessibilityShortcutEnabled(prefs::kAccessibilityHighContrastEnabled));
 
-  shell->accessibility_controller()->SetHighContrastEnabled(enabled);
+  shell->accessibility_controller()->high_contrast().SetEnabled(enabled);
 
   RemoveStickyNotitification(kHighContrastToggleAccelNotificationId);
-  if (shell->accessibility_controller()->high_contrast_enabled()) {
+  if (shell->accessibility_controller()->high_contrast().enabled()) {
     CreateAndShowStickyNotification(IDS_HIGH_CONTRAST_ACCEL_TITLE,
                                     IDS_HIGH_CONTRAST_ACCEL_MSG,
                                     kHighContrastToggleAccelNotificationId);
@@ -1355,15 +1399,15 @@ void HandleToggleHighContrast() {
   if (!is_shortcut_enabled) {
     NotifyAccessibilityFeatureDisabledByAdmin(
         IDS_ASH_HIGH_CONTRAST_SHORTCUT_DISABLED,
-        shell->accessibility_controller()->high_contrast_enabled(),
+        shell->accessibility_controller()->high_contrast().enabled(),
         kHighContrastToggleAccelNotificationId);
     return;
   }
 
   AccessibilityControllerImpl* controller = shell->accessibility_controller();
-  const bool current_enabled = controller->high_contrast_enabled();
+  const bool current_enabled = controller->high_contrast().enabled();
   const bool dialog_ever_accepted =
-      controller->HasHighContrastAcceleratorDialogBeenAccepted();
+      controller->high_contrast().WasDialogAccepted();
 
   if (!current_enabled && !dialog_ever_accepted) {
     shell->accelerator_controller()->MaybeShowConfirmationDialog(
@@ -1371,7 +1415,8 @@ void HandleToggleHighContrast() {
         base::BindOnce([]() {
           Shell::Get()
               ->accessibility_controller()
-              ->SetHighContrastAcceleratorDialogAccepted();
+              ->high_contrast()
+              .SetDialogAccepted();
           SetHighContrastEnabled(true);
         }),
         base::DoNothing());
@@ -1407,8 +1452,7 @@ void HandleToggleFullscreenMagnifier() {
 
   const bool current_enabled = magnification_controller->IsEnabled();
   const bool dialog_ever_accepted =
-      accessibility_controller
-          ->HasScreenMagnifierAcceleratorDialogBeenAccepted();
+      accessibility_controller->fullscreen_magnifier().WasDialogAccepted();
 
   if (!current_enabled && !dialog_ever_accepted) {
     shell->accelerator_controller()->MaybeShowConfirmationDialog(
@@ -1416,7 +1460,8 @@ void HandleToggleFullscreenMagnifier() {
         base::BindOnce([]() {
           Shell::Get()
               ->accessibility_controller()
-              ->SetScreenMagnifierAcceleratorDialogAccepted();
+              ->fullscreen_magnifier()
+              .SetDialogAccepted();
           SetFullscreenMagnifierEnabled(true);
         }),
         base::DoNothing());
@@ -1436,7 +1481,7 @@ void HandleToggleSpokenFeedback() {
 
   Shell* shell = Shell::Get();
   const bool old_value =
-      shell->accessibility_controller()->spoken_feedback_enabled();
+      shell->accessibility_controller()->spoken_feedback().enabled();
 
   RemoveStickyNotitification(kSpokenFeedbackToggleAccelNotificationId);
   if (!is_shortcut_enabled) {
@@ -1459,7 +1504,9 @@ void HandleTogglePrivacyScreen() {
 
   PrivacyScreenController* controller =
       Shell::Get()->privacy_screen_controller();
-  controller->SetEnabled(!controller->GetEnabled());
+  controller->SetEnabled(
+      !controller->GetEnabled(),
+      PrivacyScreenController::kToggleUISurfaceKeyboardShortcut);
 }
 
 // Percent by which the volume should be changed when a volume key is pressed.
@@ -1765,8 +1812,11 @@ void AcceleratorControllerImpl::Init() {
   RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
 
   if (::features::IsNewShortcutMappingEnabled()) {
-    RegisterAccelerators(kNewAdditionalAcceleratorData,
-                         kNewAdditionalAcceleratorDataLength);
+    RegisterAccelerators(kEnableWithNewMappingAcceleratorData,
+                         kEnableWithNewMappingAcceleratorDataLength);
+  } else {
+    RegisterAccelerators(kDisableWithNewMappingAcceleratorData,
+                         kDisableWithNewMappingAcceleratorDataLength);
   }
 
   RegisterDeprecatedAccelerators();
@@ -1933,6 +1983,10 @@ bool AcceleratorControllerImpl::CanPerformAction(
       return !!FindPipWidget();
     case MINIMIZE_TOP_WINDOW_ON_BACK:
       return window_util::ShouldMinimizeTopWindowOnBack();
+    case TAKE_PARTIAL_SCREENSHOT:
+    case TAKE_SCREENSHOT:
+    case TAKE_WINDOW_SCREENSHOT:
+      return CanHandleScreenshot();
 
     // The following are always enabled.
     case BRIGHTNESS_DOWN:
@@ -1977,9 +2031,6 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case SHOW_SHORTCUT_VIEWER:
     case SHOW_TASK_MANAGER:
     case SUSPEND:
-    case TAKE_PARTIAL_SCREENSHOT:
-    case TAKE_SCREENSHOT:
-    case TAKE_WINDOW_SCREENSHOT:
     case TOGGLE_FULLSCREEN:
     case TOGGLE_HIGH_CONTRAST:
     case TOGGLE_MAXIMIZED:

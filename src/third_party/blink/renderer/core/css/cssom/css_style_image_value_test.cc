@@ -25,7 +25,6 @@ class FakeCSSStyleImageValue : public CSSStyleImageValue {
 
   // CanvasImageSource
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               AccelerationHint,
                                                const FloatSize&) final {
     return nullptr;
   }

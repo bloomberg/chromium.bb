@@ -33,8 +33,8 @@ void TestAutofillProvider::OnSelectControlDidChange(
     const FormFieldData& field,
     const gfx::RectF& bounding_box) {}
 
-void TestAutofillProvider::OnFocusNoLongerOnForm(
-    AutofillHandlerProxy* handler) {}
+void TestAutofillProvider::OnFocusNoLongerOnForm(AutofillHandlerProxy* handler,
+                                                 bool had_interacted_form) {}
 
 void TestAutofillProvider::OnFocusOnFormField(AutofillHandlerProxy* handler,
                                               const FormData& form,
@@ -49,6 +49,8 @@ void TestAutofillProvider::OnDidFillAutofillFormData(
 void TestAutofillProvider::OnFormsSeen(AutofillHandlerProxy* handler,
                                        const std::vector<FormData>& forms,
                                        const base::TimeTicks timestamp) {}
+
+void TestAutofillProvider::OnHidePopup(AutofillHandlerProxy* handler) {}
 
 void TestAutofillProvider::Reset(AutofillHandlerProxy* handler) {}
 

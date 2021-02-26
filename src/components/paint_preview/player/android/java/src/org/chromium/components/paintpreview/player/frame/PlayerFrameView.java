@@ -5,14 +5,16 @@
 package org.chromium.components.paintpreview.player.frame;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.util.Size;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.List;
 
@@ -28,6 +30,7 @@ class PlayerFrameView extends FrameLayout {
     private PlayerFrameViewDelegate mDelegate;
     private List<View> mSubFrameViews;
     private List<Rect> mSubFrameRects;
+    private Matrix mScaleMatrix;
 
     /**
      * @param context Used for initialization.
@@ -35,13 +38,15 @@ class PlayerFrameView extends FrameLayout {
      * @param playerFrameViewDelegate The interface used for forwarding events.
      */
     PlayerFrameView(@NonNull Context context, boolean canDetectZoom,
-            PlayerFrameViewDelegate playerFrameViewDelegate) {
+            PlayerFrameViewDelegate playerFrameViewDelegate,
+            PlayerFrameGestureDetectorDelegate gestureDetectorDelegate,
+            @Nullable Runnable firstPaintListener) {
         super(context);
         setWillNotDraw(false);
         mDelegate = playerFrameViewDelegate;
-        mBitmapPainter = new PlayerFrameBitmapPainter(this::invalidate);
+        mBitmapPainter = new PlayerFrameBitmapPainter(this::postInvalidate, firstPaintListener);
         mGestureDetector =
-                new PlayerFrameGestureDetector(context, canDetectZoom, playerFrameViewDelegate);
+                new PlayerFrameGestureDetector(context, canDetectZoom, gestureDetectorDelegate);
     }
 
     PlayerFrameGestureDetector getGestureDetector() {
@@ -71,7 +76,39 @@ class PlayerFrameView extends FrameLayout {
 
     void updateViewPort(int left, int top, int right, int bottom) {
         mBitmapPainter.updateViewPort(left, top, right, bottom);
+        layoutSubFrames();
+    }
 
+    void updateBitmapMatrix(CompressibleBitmap[][] bitmapMatrix) {
+        mBitmapPainter.updateBitmapMatrix(bitmapMatrix);
+    }
+
+    void updateTileDimensions(Size tileDimensions) {
+        mBitmapPainter.updateTileDimensions(tileDimensions);
+    }
+
+    void updateScaleMatrix(Matrix matrix) {
+        mScaleMatrix = matrix;
+        if (mScaleMatrix.isIdentity()) return;
+
+        postInvalidate();
+        layoutSubFrames();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        canvas.save();
+        canvas.concat(mScaleMatrix);
+        mBitmapPainter.onDraw(canvas);
+        canvas.restore();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return mGestureDetector.onTouchEvent(event) || super.onTouchEvent(event);
+    }
+
+    private void layoutSubFrames() {
         // Remove all views if there are no sub-frames.
         if (mSubFrameViews == null || mSubFrameRects == null) {
             removeAllViews();
@@ -80,39 +117,20 @@ class PlayerFrameView extends FrameLayout {
 
         // Layout the sub-frames.
         for (int i = 0; i < mSubFrameViews.size(); i++) {
-            if (mSubFrameViews.get(i).getParent() == null) {
+            View subFrameView = mSubFrameViews.get(i);
+            if (subFrameView.getVisibility() != View.VISIBLE) {
+                removeView(subFrameView);
+                continue;
+            }
+
+            if (subFrameView.getParent() == null) {
                 addView(mSubFrameViews.get(i));
-            } else if (mSubFrameViews.get(i).getParent() != this) {
+            } else if (subFrameView.getParent() != this) {
                 throw new IllegalStateException("Sub-frame view already has a parent.");
             }
             Rect layoutRect = mSubFrameRects.get(i);
-            mSubFrameViews.get(i).layout(
+            subFrameView.layout(
                     layoutRect.left, layoutRect.top, layoutRect.right, layoutRect.bottom);
         }
-
-        for (int i = 0; i < getChildCount(); i++) {
-            if (!mSubFrameViews.contains(getChildAt(i))) {
-                removeViewAt(i);
-                --i;
-            }
-        }
-    }
-
-    void updateBitmapMatrix(Bitmap[][] bitmapMatrix) {
-        mBitmapPainter.updateBitmapMatrix(bitmapMatrix);
-    }
-
-    void updateTileDimensions(int[] tileDimensions) {
-        mBitmapPainter.updateTileDimensions(tileDimensions);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        mBitmapPainter.onDraw(canvas);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return mGestureDetector.onTouchEvent(event) || super.onTouchEvent(event);
     }
 }

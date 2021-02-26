@@ -31,7 +31,6 @@
 #include "fxbarcode/BC_Writer.h"
 #include "fxbarcode/oned/BC_OneDimWriter.h"
 #include "fxbarcode/oned/BC_OnedEAN13Writer.h"
-#include "third_party/base/ptr_util.h"
 
 CBC_OnedUPCAWriter::CBC_OnedUPCAWriter() {
   m_bLeftPadding = true;
@@ -63,7 +62,7 @@ WideString CBC_OnedUPCAWriter::FilterContents(WideStringView contents) {
 }
 
 void CBC_OnedUPCAWriter::InitEANWriter() {
-  m_subWriter = pdfium::MakeUnique<CBC_OnedEAN13Writer>();
+  m_subWriter = std::make_unique<CBC_OnedEAN13Writer>();
 }
 
 int32_t CBC_OnedUPCAWriter::CalcChecksum(const ByteString& contents) {
@@ -163,7 +162,7 @@ bool CBC_OnedUPCAWriter::ShowChars(WideStringView contents,
       affine_matrix1.Concat(*matrix);
     device->DrawNormalText(length, &charpos[1], m_pFont.Get(),
                            static_cast<float>(iFontSize), affine_matrix1,
-                           m_fontColor, FXTEXT_CLEARTYPE);
+                           m_fontColor, GetTextRenderOptions());
   }
   tempStr = str.Substr(6, 5);
   length = tempStr.GetLength();
@@ -177,7 +176,7 @@ bool CBC_OnedUPCAWriter::ShowChars(WideStringView contents,
       affine_matrix1.Concat(*matrix);
     device->DrawNormalText(length, &charpos[6], m_pFont.Get(),
                            static_cast<float>(iFontSize), affine_matrix1,
-                           m_fontColor, FXTEXT_CLEARTYPE);
+                           m_fontColor, GetTextRenderOptions());
   }
   tempStr = str.First(1);
   length = tempStr.GetLength();
@@ -193,7 +192,7 @@ bool CBC_OnedUPCAWriter::ShowChars(WideStringView contents,
       affine_matrix1.Concat(*matrix);
     device->DrawNormalText(length, charpos.data(), m_pFont.Get(),
                            static_cast<float>(iFontSize), affine_matrix1,
-                           m_fontColor, FXTEXT_CLEARTYPE);
+                           m_fontColor, GetTextRenderOptions());
   }
   tempStr = str.Substr(11, 1);
   length = tempStr.GetLength();
@@ -208,7 +207,7 @@ bool CBC_OnedUPCAWriter::ShowChars(WideStringView contents,
       affine_matrix1.Concat(*matrix);
     device->DrawNormalText(length, &charpos[11], m_pFont.Get(),
                            static_cast<float>(iFontSize), affine_matrix1,
-                           m_fontColor, FXTEXT_CLEARTYPE);
+                           m_fontColor, GetTextRenderOptions());
   }
   return true;
 }

@@ -32,7 +32,6 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
-  void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
@@ -53,9 +52,6 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
 #endif
-  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
-      override;
-  gpu::MemoryTracker* GetMemoryTracker() override;
 
  private:
   void SwapBuffersCallback(base::TimeTicks swap_time,

@@ -10,6 +10,7 @@ import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -20,23 +21,25 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.CallbackController;
 import org.chromium.base.MathUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.app.video_tutorials.NewTabPageVideoIPHManager;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
-import org.chromium.chrome.browser.download.DownloadOpenSource;
-import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.cryptids.ProbabilisticCryptidRenderer;
 import org.chromium.chrome.browser.explore_sites.ExperimentalExploreSitesSection;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
+import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
-import org.chromium.chrome.browser.ntp.cards.ExploreOfflineCard;
 import org.chromium.chrome.browser.ntp.search.SearchBoxCoordinator;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
@@ -52,8 +55,14 @@ import org.chromium.chrome.browser.suggestions.tile.TileGridLayout;
 import org.chromium.chrome.browser.suggestions.tile.TileGroup;
 import org.chromium.chrome.browser.suggestions.tile.TileRenderer;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
+import org.chromium.chrome.browser.user_education.UserEducationHelper;
+import org.chromium.chrome.browser.video_tutorials.FeatureType;
+import org.chromium.chrome.browser.video_tutorials.VideoTutorialServiceFactory;
+import org.chromium.chrome.browser.video_tutorials.iph.VideoTutorialTryNowTracker;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
+import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.vr.VrModeObserver;
 
@@ -75,10 +84,11 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private SearchBoxCoordinator mSearchBoxCoordinator;
     private ViewGroup mSiteSectionView;
     private SiteSectionViewHolder mSiteSectionViewHolder;
-    private ImageView mVoiceSearchButton;
     private View mTileGridPlaceholder;
     private View mNoSearchLogoSpacer;
     private QueryTileSection mQueryTileSection;
+    private NewTabPageVideoIPHManager mVideoIPHManager;
+    private ImageView mCryptidHolder;
 
     @Nullable
     private View mExploreSectionView; // View is null if explore flag is disabled.
@@ -92,7 +102,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private LogoDelegateImpl mLogoDelegate;
     private TileGroup mTileGroup;
     private UiConfig mUiConfig;
-    private Supplier<Tab> mTabProvider;
+    private CallbackController mCallbackController = new CallbackController();
 
     /**
      * Whether the tiles shown in the layout have finished loading.
@@ -106,12 +116,9 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      */
     private boolean mHasShownView;
 
-    /** Observer for overview mode. */
-    private EmptyOverviewModeObserver mOverviewObserver;
-    private OverviewModeBehavior mOverviewModeBehavior;
-
     private boolean mSearchProviderHasLogo = true;
     private boolean mSearchProviderIsGoogle;
+    private boolean mShowingNonStandardLogo;
 
     private boolean mInitialized;
 
@@ -130,7 +137,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private int mSearchBoxBoundsVerticalInset;
 
     private ScrollDelegate mScrollDelegate;
-    private ExploreOfflineCard mExploreOfflineCard;
 
     private NewTabPageUma mNewTabPageUma;
 
@@ -179,7 +185,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         super.onFinishInflate();
         mMiddleSpacer = findViewById(R.id.ntp_middle_spacer);
         mSearchProviderLogoView = findViewById(R.id.search_provider_logo);
-        mExploreOfflineCard = new ExploreOfflineCard(this, openDownloadHomeCallback());
+        mVideoIPHManager = new NewTabPageVideoIPHManager(
+                findViewById(R.id.video_iph_stub), Profile.getLastUsedRegularProfile());
         insertSiteSectionView();
 
         int variation = ExploreSitesBridge.getVariation();
@@ -202,7 +209,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     /**
      * Initializes the NewTabPageLayout. This must be called immediately after inflation, before
      * this object is used in any other way.
-     *
      * @param manager NewTabPageManager used to perform various actions when the user interacts
      *                with the page.
      * @param activity The activity that currently owns the new tab page
@@ -214,21 +220,18 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * @param uiConfig UiConfig that provides display information about this view.
      * @param tabProvider Provides the current active tab.
      * @param lifecycleDispatcher Activity lifecycle dispatcher.
-     * @param overviewModeBehavior Overview mode to observe for mode changes.
      * @param uma {@link NewTabPageUma} object recording user metrics.
      */
     public void initialize(NewTabPageManager manager, Activity activity,
             TileGroup.Delegate tileGroupDelegate, boolean searchProviderHasLogo,
             boolean searchProviderIsGoogle, ScrollDelegate scrollDelegate,
             ContextMenuManager contextMenuManager, UiConfig uiConfig, Supplier<Tab> tabProvider,
-            ActivityLifecycleDispatcher lifecycleDispatcher,
-            @Nullable OverviewModeBehavior overviewModeBehavior, NewTabPageUma uma) {
+            ActivityLifecycleDispatcher lifecycleDispatcher, NewTabPageUma uma) {
         TraceEvent.begin(TAG + ".initialize()");
         mScrollDelegate = scrollDelegate;
         mManager = manager;
         mActivity = activity;
         mUiConfig = uiConfig;
-        mTabProvider = tabProvider;
         mNewTabPageUma = uma;
 
         Profile profile = Profile.getLastUsedRegularProfile();
@@ -267,7 +270,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         setSearchProviderInfo(searchProviderHasLogo, searchProviderIsGoogle);
         mSearchProviderLogoView.showSearchProviderInitialView();
 
-        if (searchProviderIsGoogle && QueryTileUtils.isFeatureEnabled()) {
+        if (searchProviderIsGoogle && QueryTileUtils.isQueryTilesEnabledOnNTP()) {
             mQueryTileSection = new QueryTileSection(findViewById(R.id.query_tiles),
                     mSearchBoxCoordinator, profile, mManager::performSearchQuery);
         }
@@ -278,20 +281,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         VrModuleProvider.registerVrModeObserver(this);
         if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
 
-        mOverviewModeBehavior = overviewModeBehavior;
-        if (overviewModeBehavior != null && overviewModeBehavior.overviewVisible()) {
-            mOverviewObserver = new EmptyOverviewModeObserver() {
-                @Override
-                public void onOverviewModeFinishedHiding() {
-                    overviewModeBehavior.removeOverviewModeObserver(mOverviewObserver);
-                    mOverviewObserver = null;
-                }
-            };
-            overviewModeBehavior.addOverviewModeObserver(mOverviewObserver);
-        }
-
         manager.addDestructionObserver(NewTabPageLayout.this::onDestroy);
-
         mInitialized = true;
 
         TraceEvent.end(TAG + ".initialize()");
@@ -310,7 +300,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private void initializeSearchBoxTextView() {
         TraceEvent.begin(TAG + ".initializeSearchBoxTextView()");
 
-        mSearchBoxCoordinator.setSearchBoxClickListener(v -> mManager.focusSearchBox(false, null));
+        mSearchBoxCoordinator.setSearchBoxClickListener(
+                v -> mManager.focusSearchBox(false, null, false));
         mSearchBoxCoordinator.setSearchBoxTextWatcher(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -321,8 +312,9 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             @Override
             public void afterTextChanged(Editable s) {
                 if (s.length() == 0) return;
-                mManager.focusSearchBox(false, s.toString());
-                mSearchBoxCoordinator.setSearchText("");
+                mManager.focusSearchBox(
+                        false, s.toString(), mSearchBoxCoordinator.isTextChangeFromTiles());
+                mSearchBoxCoordinator.setSearchText("", false);
             }
         });
         TraceEvent.end(TAG + ".initializeSearchBoxTextView()");
@@ -331,7 +323,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private void initializeVoiceSearchButton() {
         TraceEvent.begin(TAG + ".initializeVoiceSearchButton()");
         mSearchBoxCoordinator.addVoiceSearchButtonClickListener(
-                v -> mManager.focusSearchBox(true, null));
+                v -> mManager.focusSearchBox(true, null, false));
         if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
             // View is 48dp, image is 24dp. Increasing the padding from 4dp -> 8dp will split the
             // remaining 16dp evenly between start/end resulting in a paddingEnd of 8dp.
@@ -506,12 +498,27 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
         mSearchProviderLogoView.showSearchProviderInitialView();
 
-        mLogoDelegate.getSearchProviderLogo((logo, fromCache) -> {
-            if (logo == null && fromCache) return;
+        mLogoDelegate.getSearchProviderLogo(new LogoObserver() {
+            @Override
+            public void onLogoAvailable(Logo logo, boolean fromCache) {
+                if (logo == null && fromCache) {
+                    // There is no cached logo. Wait until we know whether there's a fresh
+                    // one before making any further decisions.
+                    return;
+                }
 
-            mSearchProviderLogoView.setDelegate(mLogoDelegate);
-            mSearchProviderLogoView.updateLogo(logo);
-            mSnapshotTileGridChanged = true;
+                mSearchProviderLogoView.setDelegate(mLogoDelegate);
+                mSearchProviderLogoView.updateLogo(logo);
+                mSnapshotTileGridChanged = true;
+
+                mShowingNonStandardLogo = logo != null;
+                maybeKickOffCryptidRendering();
+            }
+
+            @Override
+            public void onCachedLogoRevalidated() {
+                maybeKickOffCryptidRendering();
+            }
         });
     }
 
@@ -750,6 +757,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
         if (visibility == VISIBLE) {
             updateVoiceSearchButtonVisibility();
+            maybeShowVideoTutorialTryNowIPH();
         }
     }
 
@@ -820,6 +828,27 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         return mHasShownView && mTilesLoaded;
     }
 
+    private void maybeKickOffCryptidRendering() {
+        if (!mSearchProviderIsGoogle || mShowingNonStandardLogo) {
+            // Cryptid rendering is disabled when the logo is not the standard Google logo.
+            return;
+        }
+
+        ProbabilisticCryptidRenderer renderer = ProbabilisticCryptidRenderer.getInstance();
+        renderer.getCryptidForLogo(Profile.getLastUsedRegularProfile(),
+                mCallbackController.makeCancelable((drawable) -> {
+                    if (drawable == null || mCryptidHolder != null) {
+                        return;
+                    }
+                    ViewStub stub =
+                            findViewById(R.id.logo_holder).findViewById(R.id.cryptid_holder);
+                    ImageView view = (ImageView) stub.inflate();
+                    view.setImageDrawable(drawable);
+                    mCryptidHolder = view;
+                    renderer.recordRenderEvent();
+                }));
+    }
+
     // TileGroup.Observer interface.
 
     @Override
@@ -864,14 +893,12 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     }
 
     private void onDestroy() {
-        if (mExploreOfflineCard != null) mExploreOfflineCard.destroy();
-        VrModuleProvider.unregisterVrModeObserver(this);
-        // Need to null-check compositor view holder and layout manager since they might've
-        // been cleared by now.
-        if (mOverviewObserver != null) {
-            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewObserver);
-            mOverviewObserver = null;
+        if (mCallbackController != null) {
+            mCallbackController.destroy();
+            mCallbackController = null;
         }
+
+        VrModuleProvider.unregisterVrModeObserver(this);
 
         if (mSearchProviderLogoView != null) {
             mSearchProviderLogoView.destroy();
@@ -882,6 +909,49 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         }
 
         mSearchBoxCoordinator.destroy();
+    }
+
+    private void maybeShowVideoTutorialTryNowIPH() {
+        VideoTutorialTryNowTracker tryNowTracker = VideoTutorialServiceFactory.getTryNowTracker();
+        UserEducationHelper userEducationHelper = new UserEducationHelper(
+                mActivity, new Handler(), TrackerFactory::getTrackerForProfile);
+        // TODO(shaktisahu): Pass correct y-inset.
+        // TODO(shaktisahu): Determine if there is conflict with another IPH.
+        if (tryNowTracker.didClickTryNowButton(FeatureType.SEARCH)) {
+            IPHCommandBuilder iphCommandBuilder = createIPHCommandBuilder(mActivity.getResources(),
+                    R.string.video_tutorials_iph_tap_here_to_start,
+                    R.string.video_tutorials_iph_tap_here_to_start, mSearchBoxCoordinator.getView(),
+                    false);
+            userEducationHelper.requestShowIPH(iphCommandBuilder.build());
+            tryNowTracker.tryNowUIShown(FeatureType.SEARCH);
+        }
+
+        if (tryNowTracker.didClickTryNowButton(FeatureType.VOICE_SEARCH)) {
+            // TODO(shaktisahu): Pass voice search button.
+            IPHCommandBuilder iphCommandBuilder = createIPHCommandBuilder(mActivity.getResources(),
+                    R.string.video_tutorials_iph_tap_voice_icon_to_start,
+                    R.string.video_tutorials_iph_tap_voice_icon_to_start,
+                    mSearchBoxCoordinator.getVoiceSearchButton(), true);
+            userEducationHelper.requestShowIPH(iphCommandBuilder.build());
+            tryNowTracker.tryNowUIShown(FeatureType.VOICE_SEARCH);
+        }
+    }
+
+    private static IPHCommandBuilder createIPHCommandBuilder(Resources resources,
+            @StringRes int stringId, @StringRes int accessibilityStringId, View anchorView,
+            boolean showHighlight) {
+        IPHCommandBuilder iphCommandBuilder =
+                new IPHCommandBuilder(resources, null, stringId, accessibilityStringId);
+        iphCommandBuilder.setAnchorView(anchorView).setCircleHighlight(showHighlight);
+        if (showHighlight) {
+            iphCommandBuilder.setOnShowCallback(
+                    () -> ViewHighlighter.turnOnCircularHighlight(anchorView));
+            iphCommandBuilder.setOnDismissCallback(() -> new Handler().postDelayed(() -> {
+                ViewHighlighter.turnOffHighlight(anchorView);
+            }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS));
+        }
+
+        return iphCommandBuilder;
     }
 
     /**
@@ -905,13 +975,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             measureExactly(mSearchProviderLogoView, exploreWidth,
                     mSearchProviderLogoView.getMeasuredHeight());
         }
-    }
-
-    private Runnable openDownloadHomeCallback() {
-        return () -> {
-            DownloadUtils.showDownloadManager(mActivity, mTabProvider.get(),
-                    DownloadOpenSource.NEW_TAB_PAGE, true /*showPrefetchedContent*/);
-        };
     }
 
     /**

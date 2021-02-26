@@ -40,7 +40,10 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
   static views::BubbleDialogDelegateView* GetHatsBubble();
 
   // Shows the bubble when the survey content identified by |site_id| is ready.
-  static void ShowOnContentReady(Browser* browser, const std::string& site_id);
+  static void ShowOnContentReady(Browser* browser,
+                                 const std::string& site_id,
+                                 base::OnceClosure success_callback,
+                                 base::OnceClosure failure_callback);
 
   // Shows the bubble now with supplied callback |consent_callback|.
   static void Show(Browser* browser, HatsConsentCallback consent_callback);
@@ -50,7 +53,6 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   gfx::ImageSkia GetWindowIcon() override;
-  bool ShouldShowWindowIcon() const override;
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;

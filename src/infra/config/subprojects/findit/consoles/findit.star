@@ -1,8 +1,12 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 luci.list_view(
-    name = 'findit',
+    name = "findit",
     entries = [
-        'findit/findit-rerun',
-        'findit/findit_variable',
-        'findit/linux_chromium_bot_db_exporter',
+        "findit/findit-rerun",
+        "findit/findit_variable",
+        "findit/linux_chromium_bot_db_exporter",
     ],
 )

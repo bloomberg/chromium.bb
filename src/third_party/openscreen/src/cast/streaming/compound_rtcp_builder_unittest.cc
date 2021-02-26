@@ -14,6 +14,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/time.h"
+#include "util/chrono_helpers.h"
 
 using testing::_;
 using testing::Invoke;
@@ -57,7 +58,7 @@ class CompoundRtcpBuilderTest : public testing::Test {
 TEST_F(CompoundRtcpBuilderTest, TheBasics) {
   const FrameId checkpoint = FrameId::first() + 42;
   builder()->SetCheckpointFrame(checkpoint);
-  const std::chrono::milliseconds playout_delay{321};
+  const milliseconds playout_delay{321};
   builder()->SetPlayoutDelay(playout_delay);
 
   const auto send_time = Clock::now();
@@ -115,7 +116,7 @@ TEST_F(CompoundRtcpBuilderTest, WithReceiverReportBlock) {
 
   // Build again, but this time the builder should not include the receiver
   // report block.
-  const auto second_send_time = send_time + std::chrono::milliseconds(500);
+  const auto second_send_time = send_time + milliseconds(500);
   const auto second_packet = builder()->BuildPacket(second_send_time, buffer);
   ASSERT_TRUE(second_packet.data());
   EXPECT_CALL(*(client()), OnReceiverReferenceTimeAdvanced(
@@ -160,7 +161,7 @@ TEST_F(CompoundRtcpBuilderTest, WithPictureLossIndicator) {
       Mock::VerifyAndClearExpectations(client());
 
       ++checkpoint;
-      send_time += std::chrono::milliseconds(500);
+      send_time += milliseconds(500);
     }
   }
 }
@@ -200,7 +201,7 @@ TEST_F(CompoundRtcpBuilderTest, WithNacks) {
   Mock::VerifyAndClearExpectations(client());
 
   // Build again, but this time the builder should not include the feedback.
-  const auto second_send_time = send_time + std::chrono::milliseconds(500);
+  const auto second_send_time = send_time + milliseconds(500);
   const auto second_packet = builder()->BuildPacket(second_send_time, buffer);
   ASSERT_TRUE(second_packet.data());
   EXPECT_CALL(*(client()), OnReceiverReferenceTimeAdvanced(
@@ -248,7 +249,7 @@ TEST_F(CompoundRtcpBuilderTest, WithAcks) {
 
     // Build again, but this time the builder should not include the feedback
     // because it was already provided in the prior packet.
-    send_time += std::chrono::milliseconds(500);
+    send_time += milliseconds(500);
     const auto second_packet = builder()->BuildPacket(send_time, buffer);
     ASSERT_TRUE(second_packet.data());
     EXPECT_CALL(*(client()), OnReceiverReferenceTimeAdvanced(
@@ -258,7 +259,7 @@ TEST_F(CompoundRtcpBuilderTest, WithAcks) {
     ASSERT_TRUE(parser()->Parse(second_packet, kMaxFeedbackFrameId));
     Mock::VerifyAndClearExpectations(client());
 
-    send_time += std::chrono::milliseconds(500);
+    send_time += milliseconds(500);
   }
 }
 

@@ -11,15 +11,17 @@
 
 class CXFA_FFLine final : public CXFA_FFWidget {
  public:
-  explicit CXFA_FFLine(CXFA_Node* pNode);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_FFLine() override;
 
   // CXFA_FFWidget
-  void RenderWidget(CXFA_Graphics* pGS,
+  void RenderWidget(CFGAS_GEGraphics* pGS,
                     const CFX_Matrix& matrix,
                     HighlightOption highlight) override;
 
  private:
+  explicit CXFA_FFLine(CXFA_Node* pNode);
+
   void GetRectFromHand(CFX_RectF& rect,
                        XFA_AttributeValue iHand,
                        float fLineWidth);

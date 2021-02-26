@@ -15,8 +15,8 @@
 #include "base/bits.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -24,6 +24,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_metrics.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -51,30 +52,49 @@ namespace media {
 
 namespace {
 
-// Maximum number of frames we expect to keep while playing video. Higher values
-// require more memory for output buffers. Lower values make it more likely that
-// renderer will stall because decoded frames are not available on time.
-const uint32_t kMaxUsedOutputFrames = 6;
+// Number of output buffers allocated "for camping". This value is passed to
+// sysmem to ensure that we get one output buffer for the frame currently
+// displayed on the screen.
+const uint32_t kOutputBuffersForCamping = 1;
+
+// Maximum number of frames we expect to have queued up while playing video.
+// Higher values require more memory for output buffers. Lower values make it
+// more likely that renderer will stall because decoded frames are not available
+// on time.
+const uint32_t kMaxUsedOutputBuffers = 5;
+
+// Use 2 buffers for decoder input. Limiting total number of buffers to 2 allows
+// to minimize required memory without significant effect on performance.
+const size_t kNumInputBuffers = 2;
+
+// Some codecs do not support splitting video frames across multiple input
+// buffers, so the buffers need to be large enough to fit all video frames. The
+// buffer size is calculated to fit 1080p frame with MinCR=2 (per H264 spec),
+// plus 128KiB for SEI/SPS/PPS. (note that the same size is used for all codecs,
+// not just H264).
+const size_t kInputBufferSize = 1920 * 1080 * 3 / 2 / 2 + 128 * 1024;
 
 // Helper used to hold mailboxes for the output textures. OutputMailbox may
 // outlive FuchsiaVideoDecoder if is referenced by a VideoFrame.
 class OutputMailbox {
  public:
-  OutputMailbox(gpu::SharedImageInterface* shared_image_interface,
-                gpu::ContextSupport* gpu_context_support,
-                std::unique_ptr<gfx::GpuMemoryBuffer> gmb)
-      : shared_image_interface_(shared_image_interface),
-        gpu_context_support_(gpu_context_support),
-        weak_factory_(this) {
+  OutputMailbox(
+      scoped_refptr<viz::RasterContextProvider> raster_context_provider,
+      std::unique_ptr<gfx::GpuMemoryBuffer> gmb)
+      : raster_context_provider_(raster_context_provider), weak_factory_(this) {
     uint32_t usage = gpu::SHARED_IMAGE_USAGE_RASTER |
                      gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
                      gpu::SHARED_IMAGE_USAGE_DISPLAY |
                      gpu::SHARED_IMAGE_USAGE_SCANOUT;
-    mailbox_ = shared_image_interface_->CreateSharedImage(
-        gmb.get(), nullptr, gfx::ColorSpace(), usage);
+    mailbox_ =
+        raster_context_provider_->SharedImageInterface()->CreateSharedImage(
+            gmb.get(), nullptr, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
+            kPremul_SkAlphaType, usage);
   }
+
   ~OutputMailbox() {
-    shared_image_interface_->DestroySharedImage(sync_token_, mailbox_);
+    raster_context_provider_->SharedImageInterface()->DestroySharedImage(
+        sync_token_, mailbox_);
   }
 
   const gpu::Mailbox& mailbox() { return mailbox_; }
@@ -93,7 +113,8 @@ class OutputMailbox {
 
     gpu::MailboxHolder mailboxes[VideoFrame::kMaxPlanes];
     mailboxes[0].mailbox = mailbox_;
-    mailboxes[0].sync_token = shared_image_interface_->GenUnverifiedSyncToken();
+    mailboxes[0].sync_token = raster_context_provider_->SharedImageInterface()
+                                  ->GenUnverifiedSyncToken();
 
     auto frame = VideoFrame::WrapNativeTextures(
         pixel_format, mailboxes,
@@ -102,8 +123,8 @@ class OutputMailbox {
         coded_size, visible_rect, natural_size, timestamp);
 
     // Request a fence we'll wait on before reusing the buffer.
-    frame->metadata()->SetBoolean(VideoFrameMetadata::READ_LOCK_FENCES_ENABLED,
-                                  true);
+    frame->metadata()->read_lock_fences_enabled = true;
+
     return frame;
   }
 
@@ -131,7 +152,7 @@ class OutputMailbox {
       return;
     }
 
-    gpu_context_support_->SignalSyncToken(
+    raster_context_provider_->ContextSupport()->SignalSyncToken(
         sync_token_,
         BindToCurrentLoop(base::BindOnce(&OutputMailbox::OnSyncTokenSignaled,
                                          weak_factory_.GetWeakPtr())));
@@ -142,8 +163,7 @@ class OutputMailbox {
     std::move(reuse_callback_).Run();
   }
 
-  gpu::SharedImageInterface* const shared_image_interface_;
-  gpu::ContextSupport* const gpu_context_support_;
+  const scoped_refptr<viz::RasterContextProvider> raster_context_provider_;
 
   gpu::Mailbox mailbox_;
   gpu::SyncToken sync_token_;
@@ -168,14 +188,17 @@ struct InputDecoderPacket {
 class FuchsiaVideoDecoder : public VideoDecoder,
                             public FuchsiaSecureStreamDecryptor::Client {
  public:
-  FuchsiaVideoDecoder(gpu::SharedImageInterface* shared_image_interface,
-                      gpu::ContextSupport* gpu_context_support,
-                      bool enable_sw_decoding);
+  FuchsiaVideoDecoder(
+      scoped_refptr<viz::RasterContextProvider> raster_context_provider,
+      bool enable_sw_decoding);
   ~FuchsiaVideoDecoder() override;
 
-  // VideoDecoder implementation.
-  std::string GetDisplayName() const override;
+  // Decoder implementation.
   bool IsPlatformDecoder() const override;
+  bool SupportsDecryption() const override;
+  std::string GetDisplayName() const override;
+
+  // VideoDecoder implementation.
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
@@ -192,6 +215,7 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   bool InitializeDecryptor(CdmContext* cdm_context);
 
   // FuchsiaSecureStreamDecryptor::Client implementation.
+  size_t GetInputBufferSize() override;
   void OnDecryptorOutputPacket(StreamProcessorHelper::IoPacket packet) override;
   void OnDecryptorEndOfStreamPacket() override;
   void OnDecryptorError() override;
@@ -244,9 +268,9 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   void ReleaseInputBuffers();
   void ReleaseOutputBuffers();
 
-  gpu::SharedImageInterface* const shared_image_interface_;
-  gpu::ContextSupport* const gpu_context_support_;
+  const scoped_refptr<viz::RasterContextProvider> raster_context_provider_;
   const bool enable_sw_decoding_;
+  const bool use_overlays_for_video_;
 
   OutputCB output_cb_;
   WaitingCB waiting_cb_;
@@ -260,7 +284,7 @@ class FuchsiaVideoDecoder : public VideoDecoder,
 
   VideoCodec current_codec_ = kUnknownVideoCodec;
 
-  // TODO(sergeyu): Use StreamProcessorHelper.
+  // TODO(crbug.com/1131175): Use StreamProcessorHelper.
   fuchsia::media::StreamProcessorPtr decoder_;
 
   base::Optional<fuchsia::media::StreamBufferConstraints>
@@ -286,7 +310,6 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   uint64_t input_buffer_lifetime_ordinal_ = 1;
   std::unique_ptr<SysmemBufferPool::Creator> input_buffer_collection_creator_;
   std::unique_ptr<SysmemBufferPool> input_buffer_collection_;
-  size_t num_input_buffers_ = 0;
   base::flat_map<size_t, InputDecoderPacket> in_flight_input_packets_;
 
   // Output buffers for |decoder_|.
@@ -296,8 +319,7 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   gfx::SysmemBufferCollectionId output_buffer_collection_id_;
   std::vector<OutputMailbox*> output_mailboxes_;
 
-  int num_used_output_buffers_ = 0;
-  int max_used_output_buffers_ = 0;
+  size_t num_used_output_buffers_ = 0;
 
   base::WeakPtr<FuchsiaVideoDecoder> weak_this_;
   base::WeakPtrFactory<FuchsiaVideoDecoder> weak_factory_;
@@ -306,15 +328,15 @@ class FuchsiaVideoDecoder : public VideoDecoder,
 };
 
 FuchsiaVideoDecoder::FuchsiaVideoDecoder(
-    gpu::SharedImageInterface* shared_image_interface,
-    gpu::ContextSupport* gpu_context_support,
+    scoped_refptr<viz::RasterContextProvider> raster_context_provider,
     bool enable_sw_decoding)
-    : shared_image_interface_(shared_image_interface),
-      gpu_context_support_(gpu_context_support),
+    : raster_context_provider_(raster_context_provider),
       enable_sw_decoding_(enable_sw_decoding),
+      use_overlays_for_video_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseOverlaysForVideo)),
       client_native_pixmap_factory_(ui::CreateClientNativePixmapFactoryOzone()),
       weak_factory_(this) {
-  DCHECK(shared_image_interface_);
+  DCHECK(raster_context_provider_);
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
@@ -327,12 +349,16 @@ FuchsiaVideoDecoder::~FuchsiaVideoDecoder() {
   ReleaseOutputBuffers();
 }
 
-std::string FuchsiaVideoDecoder::GetDisplayName() const {
-  return "FuchsiaVideoDecoder";
-}
-
 bool FuchsiaVideoDecoder::IsPlatformDecoder() const {
   return true;
+}
+
+bool FuchsiaVideoDecoder::SupportsDecryption() const {
+  return true;
+}
+
+std::string FuchsiaVideoDecoder::GetDisplayName() const {
+  return "FuchsiaVideoDecoder";
 }
 
 void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
@@ -420,14 +446,14 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   decoder_params.set_promise_separate_access_units_on_input(true);
   decoder_params.set_require_hw(!enable_sw_decoding_);
 
-  auto decoder_factory = base::fuchsia::ComponentContextForCurrentProcess()
+  auto decoder_factory = base::ComponentContextForProcess()
                              ->svc()
                              ->Connect<fuchsia::mediacodec::CodecFactory>();
   decoder_factory->CreateDecoder(std::move(decoder_params),
                                  decoder_.NewRequest());
 
   decoder_.set_error_handler([this](zx_status_t status) {
-    ZX_LOG(ERROR, status) << "fuchsia.mediacodec.Codec disconnected.";
+    ZX_LOG(ERROR, status) << "fuchsia.media.StreamProcessor disconnected.";
     OnError();
   });
 
@@ -484,13 +510,19 @@ bool FuchsiaVideoDecoder::NeedsBitstreamConversion() const {
 }
 
 bool FuchsiaVideoDecoder::CanReadWithoutStalling() const {
-  return num_used_output_buffers_ < max_used_output_buffers_;
+  return num_used_output_buffers_ < kMaxUsedOutputBuffers;
 }
 
 int FuchsiaVideoDecoder::GetMaxDecodeRequests() const {
-  // Add one extra request to be able to send new InputBuffer immediately after
-  // OnFreeInputPacket().
-  return num_input_buffers_ + 1;
+  if (!decryptor_) {
+    // Add one extra request to be able to send a new InputBuffer immediately
+    // after OnFreeInputPacket().
+    return input_writer_queue_.num_buffers() + 1;
+  }
+
+  // For encrypted streams we need enough decode requests to fill the
+  // decryptor's queue and all decoder buffers. Add one extra same as above.
+  return decryptor_->GetMaxDecryptRequests() + kNumInputBuffers + 1;
 }
 
 bool FuchsiaVideoDecoder::InitializeDecryptor(CdmContext* cdm_context) {
@@ -514,6 +546,10 @@ bool FuchsiaVideoDecoder::InitializeDecryptor(CdmContext* cdm_context) {
   decryptor_ = fuchsia_cdm->CreateVideoDecryptor(this);
 
   return true;
+}
+
+size_t FuchsiaVideoDecoder::GetInputBufferSize() {
+  return kInputBufferSize;
 }
 
 void FuchsiaVideoDecoder::OnDecryptorOutputPacket(
@@ -560,10 +596,18 @@ void FuchsiaVideoDecoder::OnInputConstraints(
     // output and decoder input. It is not used directly.
     num_tokens = 2;
     buffer_constraints.usage.none = fuchsia::sysmem::noneUsage;
+    buffer_constraints.min_buffer_count = kNumInputBuffers;
+    buffer_constraints.has_buffer_memory_constraints = true;
+    buffer_constraints.buffer_memory_constraints.min_size_bytes =
+        kInputBufferSize;
+    buffer_constraints.buffer_memory_constraints.ram_domain_supported = true;
+    buffer_constraints.buffer_memory_constraints.cpu_domain_supported = true;
+    buffer_constraints.buffer_memory_constraints.inaccessible_domain_supported =
+        true;
   } else {
     num_tokens = 1;
     auto writer_constraints = SysmemBufferWriter::GetRecommendedConstraints(
-        decoder_input_constraints_.value());
+        kNumInputBuffers, kInputBufferSize);
     if (!writer_constraints.has_value()) {
       OnError();
       return;
@@ -588,29 +632,18 @@ void FuchsiaVideoDecoder::OnInputBufferPoolCreated(
   }
 
   input_buffer_collection_ = std::move(pool);
-  num_input_buffers_ =
-      decoder_input_constraints_->default_settings().packet_count_for_server() +
-      decoder_input_constraints_->default_settings().packet_count_for_client();
 
   fuchsia::media::StreamBufferPartialSettings settings;
   settings.set_buffer_lifetime_ordinal(input_buffer_lifetime_ordinal_);
   settings.set_buffer_constraints_version_ordinal(
       decoder_input_constraints_->buffer_constraints_version_ordinal());
   settings.set_single_buffer_mode(false);
-  settings.set_packet_count_for_server(
-      decoder_input_constraints_->default_settings().packet_count_for_server());
-  settings.set_packet_count_for_client(
-      decoder_input_constraints_->default_settings().packet_count_for_client());
   settings.set_sysmem_token(input_buffer_collection_->TakeToken());
   decoder_->SetInputBufferPartialSettings(std::move(settings));
 
   if (decryptor_) {
     decryptor_->SetOutputBufferCollectionToken(
-        input_buffer_collection_->TakeToken(),
-        decoder_input_constraints_->default_settings()
-            .packet_count_for_client(),
-        decoder_input_constraints_->default_settings()
-            .packet_count_for_server());
+        input_buffer_collection_->TakeToken());
   } else {
     input_buffer_collection_->CreateWriter(base::BindOnce(
         &FuchsiaVideoDecoder::OnWriterCreated, base::Unretained(this)));
@@ -638,8 +671,8 @@ void FuchsiaVideoDecoder::SendInputPacket(
   fuchsia::media::Packet media_packet;
   media_packet.mutable_header()->set_buffer_lifetime_ordinal(
       input_buffer_lifetime_ordinal_);
-  media_packet.mutable_header()->set_packet_index(packet.index());
-  media_packet.set_buffer_index(packet.index());
+  media_packet.mutable_header()->set_packet_index(packet.buffer_index());
+  media_packet.set_buffer_index(packet.buffer_index());
   media_packet.set_timestamp_ish(packet.timestamp().InNanoseconds());
   media_packet.set_stream_lifetime_ordinal(stream_lifetime_ordinal_);
   media_packet.set_start_offset(packet.offset());
@@ -649,10 +682,10 @@ void FuchsiaVideoDecoder::SendInputPacket(
 
   active_stream_ = true;
 
-  DCHECK(in_flight_input_packets_.find(packet.index()) ==
+  DCHECK(in_flight_input_packets_.find(packet.buffer_index()) ==
          in_flight_input_packets_.end());
   in_flight_input_packets_.insert_or_assign(
-      packet.index(), InputDecoderPacket{std::move(packet)});
+      packet.buffer_index(), InputDecoderPacket{std::move(packet)});
 }
 
 void FuchsiaVideoDecoder::ProcessEndOfStream() {
@@ -722,34 +755,11 @@ void FuchsiaVideoDecoder::OnOutputConstraints(
     return;
   }
 
-  if (!output_constraints.has_buffer_constraints()) {
-    DLOG(ERROR) << "Received OnOutputConstraints() which requires buffer "
-                   "constraints action, but without buffer constraints.";
-    OnError();
-    return;
-  }
-
-  const fuchsia::media::StreamBufferConstraints& buffer_constraints =
-      output_constraints.buffer_constraints();
-
-  if (!buffer_constraints.has_default_settings() ||
-      !buffer_constraints.has_packet_count_for_client_max() ||
-      !buffer_constraints.default_settings().has_packet_count_for_server() ||
-      !buffer_constraints.default_settings().has_packet_count_for_client()) {
-    DLOG(ERROR)
-        << "Received OnOutputConstraints() with missing required fields.";
-    OnError();
-    return;
-  }
-
   ReleaseOutputBuffers();
 
   // mediacodec API expects odd buffer lifetime ordinal, which is incremented by
   // 2 for each buffer generation.
   output_buffer_lifetime_ordinal_ += 2;
-
-  max_used_output_buffers_ = std::min(
-      kMaxUsedOutputFrames, buffer_constraints.packet_count_for_client_max());
 
   // Create a new sysmem buffer collection token for the output buffers.
   fuchsia::sysmem::BufferCollectionTokenPtr collection_token;
@@ -878,10 +888,10 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
         buffer_format, gfx::BufferUsage::GPU_READ,
         gpu::GpuMemoryBufferImpl::DestructionCallback());
 
-    output_mailboxes_[buffer_index] = new OutputMailbox(
-        shared_image_interface_, gpu_context_support_, std::move(gmb));
+    output_mailboxes_[buffer_index] =
+        new OutputMailbox(raster_context_provider_, std::move(gmb));
   } else {
-    shared_image_interface_->UpdateSharedImage(
+    raster_context_provider_->SharedImageInterface()->UpdateSharedImage(
         gpu::SyncToken(), output_mailboxes_[buffer_index]->mailbox());
   }
 
@@ -932,10 +942,13 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
 
   // Mark the frame as power-efficient when software decoders are disabled. The
   // codec may still decode on hardware even when |enable_sw_decoding_| is set
-  // (i.e. POWER_EFFICIENT flag would not be set correctly in that case). It
+  // (i.e. power_efficient flag would not be set correctly in that case). It
   // doesn't matter because software decoders can be enabled only for tests.
-  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT,
-                                !enable_sw_decoding_);
+  frame->metadata()->power_efficient = !enable_sw_decoding_;
+
+  // Allow this video frame to be promoted as an overlay, because it was
+  // registered with an ImagePipe.
+  frame->metadata()->allow_overlay = use_overlays_for_video_;
 
   output_cb_.Run(std::move(frame));
 }
@@ -1007,25 +1020,27 @@ void FuchsiaVideoDecoder::InitializeOutputBufferCollection(
     fuchsia::sysmem::BufferCollectionTokenPtr collection_token_for_gpu) {
   fuchsia::sysmem::BufferCollectionConstraints buffer_constraints;
   buffer_constraints.usage.none = fuchsia::sysmem::noneUsage;
-  buffer_constraints.min_buffer_count_for_camping = max_used_output_buffers_;
+  buffer_constraints.min_buffer_count_for_camping = kOutputBuffersForCamping;
+  buffer_constraints.min_buffer_count_for_shared_slack =
+      kMaxUsedOutputBuffers - kOutputBuffersForCamping;
   output_buffer_collection_->SetConstraints(
       /*has_constraints=*/true, std::move(buffer_constraints));
 
   // Register the new collection with the GPU process.
   DCHECK(!output_buffer_collection_id_);
   output_buffer_collection_id_ = gfx::SysmemBufferCollectionId::Create();
-  shared_image_interface_->RegisterSysmemBufferCollection(
-      output_buffer_collection_id_,
-      collection_token_for_gpu.Unbind().TakeChannel());
+  raster_context_provider_->SharedImageInterface()
+      ->RegisterSysmemBufferCollection(
+          output_buffer_collection_id_,
+          collection_token_for_gpu.Unbind().TakeChannel(),
+          gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::GPU_READ,
+          use_overlays_for_video_ /*register_with_image_pipe*/);
 
   // Pass new output buffer settings to the codec.
   fuchsia::media::StreamBufferPartialSettings settings;
   settings.set_buffer_lifetime_ordinal(output_buffer_lifetime_ordinal_);
   settings.set_buffer_constraints_version_ordinal(
       constraints.buffer_constraints_version_ordinal());
-  settings.set_packet_count_for_client(max_used_output_buffers_);
-  settings.set_packet_count_for_server(
-      constraints.packet_count_for_server_recommended());
   settings.set_sysmem_token(std::move(collection_token_for_codec));
   decoder_->SetOutputBufferPartialSettings(std::move(settings));
   decoder_->CompleteOutputBufferPartialSettings(
@@ -1040,7 +1055,6 @@ void FuchsiaVideoDecoder::ReleaseInputBuffers() {
   input_writer_queue_.ResetBuffers();
   input_buffer_collection_creator_.reset();
   input_buffer_collection_.reset();
-  num_input_buffers_ = 0;
 
   // |in_flight_input_packets_| must be destroyed after
   // |input_writer_queue_.ResetBuffers()|. Otherwise |input_writer_queue_| may
@@ -1065,8 +1079,8 @@ void FuchsiaVideoDecoder::ReleaseOutputBuffers() {
 
   // Tell the GPU process to drop the buffer collection.
   if (output_buffer_collection_id_) {
-    shared_image_interface_->ReleaseSysmemBufferCollection(
-        output_buffer_collection_id_);
+    raster_context_provider_->SharedImageInterface()
+        ->ReleaseSysmemBufferCollection(output_buffer_collection_id_);
     output_buffer_collection_id_ = {};
   }
 }
@@ -1075,7 +1089,7 @@ void FuchsiaVideoDecoder::OnReuseMailbox(uint32_t buffer_index,
                                          uint32_t packet_index) {
   DCHECK(decoder_);
 
-  DCHECK_GT(num_used_output_buffers_, 0);
+  DCHECK_GT(num_used_output_buffers_, 0U);
   num_used_output_buffers_--;
 
   fuchsia::media::PacketHeader header;
@@ -1085,19 +1099,17 @@ void FuchsiaVideoDecoder::OnReuseMailbox(uint32_t buffer_index,
 }
 
 std::unique_ptr<VideoDecoder> CreateFuchsiaVideoDecoder(
-    gpu::SharedImageInterface* shared_image_interface,
-    gpu::ContextSupport* gpu_context_support) {
-  return std::make_unique<FuchsiaVideoDecoder>(shared_image_interface,
-                                               gpu_context_support,
-                                               /*enable_sw_decoding=*/false);
+    scoped_refptr<viz::RasterContextProvider> raster_context_provider) {
+  return std::make_unique<FuchsiaVideoDecoder>(
+      std::move(raster_context_provider),
+      /*enable_sw_decoding=*/false);
 }
 
 std::unique_ptr<VideoDecoder> CreateFuchsiaVideoDecoderForTests(
-    gpu::SharedImageInterface* shared_image_interface,
-    gpu::ContextSupport* gpu_context_support,
+    scoped_refptr<viz::RasterContextProvider> raster_context_provider,
     bool enable_sw_decoding) {
   return std::make_unique<FuchsiaVideoDecoder>(
-      shared_image_interface, gpu_context_support, enable_sw_decoding);
+      std::move(raster_context_provider), enable_sw_decoding);
 }
 
 }  // namespace media

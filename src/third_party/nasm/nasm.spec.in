@@ -11,9 +11,11 @@ BuildRoot: /tmp/rpm-build-nasm
 Prefix: %{_prefix}
 @@PERLBUILDREQS@@
 BuildRequires: autoconf
+BuildRequires: automake
 BuildRequires: asciidoc
 BuildRequires: xmlto
 BuildRequires: xz
+BuildRequires: perl
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %package doc
@@ -45,10 +47,9 @@ include linker, library manager, loader, and information dump.
 %setup -q -n nasm-%{nasm_version}
 
 %build
-autoreconf
-%configure --disable-pdf-compression --enable-sections
+sh autogen.sh
+%configure --enable-sections
 make %{?_smp_mflags} everything
-xz -9ef doc/nasmdoc.pdf
 
 %install
 rm -rf "%{buildroot}"
@@ -57,7 +58,7 @@ mkdir -p "%{buildroot}"/%{_mandir}/man1
 make DESTDIR="%{buildroot}" install install_rdf
 
 %files
-%doc AUTHORS CHANGES README TODO
+%doc AUTHORS
 %{_bindir}/nasm
 %{_bindir}/ndisasm
 %{_mandir}/man1/nasm.1*

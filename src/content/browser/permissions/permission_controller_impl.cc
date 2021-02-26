@@ -7,7 +7,7 @@
 
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "base/bind.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_controller_delegate.h"
@@ -66,6 +66,7 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::VR:
     case PermissionType::CAMERA_PAN_TILT_ZOOM:
     case PermissionType::WINDOW_PLACEMENT:
+    case PermissionType::FONT_ACCESS:
       return base::nullopt;
   }
 }

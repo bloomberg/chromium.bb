@@ -25,7 +25,6 @@ class QuicTransport;
 class MODULES_EXPORT ReceiveStream final : public ScriptWrappable,
                                            public WebTransportStream {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ReceiveStream);
 
  public:
   // ReceiveStream doesn't have a JavaScript constructor. It is only
@@ -54,7 +53,7 @@ class MODULES_EXPORT ReceiveStream final : public ScriptWrappable,
   void Reset() override;
   void ContextDestroyed() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void OnAbort();

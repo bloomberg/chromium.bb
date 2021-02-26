@@ -31,7 +31,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "base/test/test_shared_memory_util.h"
@@ -49,11 +49,11 @@
 #include "ipc/ipc_test.mojom.h"
 #include "ipc/ipc_test_base.h"
 #include "ipc/ipc_test_channel_listener.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -348,7 +348,7 @@ TEST_F(IPCChannelMojoTest, NoImplicitChannelClosure) {
   // before Init() launches a child process. Hence the base::Optional here.
   base::Optional<base::RunLoop> wait_for_error_loop;
   bool process_error_received = false;
-  mojo::core::SetDefaultProcessErrorCallback(
+  mojo::SetDefaultProcessErrorHandler(
       base::BindLambdaForTesting([&](const std::string&) {
         process_error_received = true;
         wait_for_error_loop->Quit();
@@ -363,6 +363,7 @@ TEST_F(IPCChannelMojoTest, NoImplicitChannelClosure) {
 
   wait_for_error_loop->Run();
   EXPECT_TRUE(process_error_received);
+  mojo::SetDefaultProcessErrorHandler(base::NullCallback());
 
   // Tell the child it can quit and wait for it to shut down.
   ListenerThatExpectsOK::SendOK(channel());
@@ -1472,7 +1473,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(DropAssociatedRequest,
   DestroyProxy();
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // TODO(wez): On Mac we need to set up a MachPortBroker before we can transfer
 // Mach ports (which underpin Sharedmemory on Mac) across IPC.
 
@@ -1596,7 +1597,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
 
   Close();
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 
@@ -1699,7 +1700,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
 
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 const base::ProcessId kMagicChildId = 54321;
 
@@ -1746,6 +1747,6 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestVerifyGlobalPidClient) {
   Close();
 }
 
-#endif  // OS_LINUX
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 }  // namespace

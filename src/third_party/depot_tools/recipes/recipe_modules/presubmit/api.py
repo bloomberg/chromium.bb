@@ -26,7 +26,7 @@ class PresubmitApi(recipe_api.RecipeApi):
     return self.repo_resource('presubmit_support.py')
 
   def __call__(self, *args, **kwargs):
-    """Return a presubmit step."""
+    """Returns a presubmit step."""
 
     kwargs['venv'] = True
     name = kwargs.pop('name', 'presubmit')
@@ -34,15 +34,16 @@ class PresubmitApi(recipe_api.RecipeApi):
       presubmit_args = list(args) + [
           '--json_output', self.m.json.output(),
       ]
+      if self.m.resultdb.enabled:
+        kwargs['wrapper'] = ('rdb', 'stream', '--')
       step_data = self.m.python(
           name, self.presubmit_support_path, presubmit_args, **kwargs)
       return step_data.json.output
 
   def prepare(self):
-    """Set up a presubmit run.
+    """Sets up a presubmit run.
 
     This includes:
-
       - setting up the checkout w/ bot_update
       - locally committing the applied patch
       - running hooks, if requested
@@ -78,8 +79,9 @@ class PresubmitApi(recipe_api.RecipeApi):
     """Runs presubmit and sets summary markdown if applicable.
 
     Args:
-      bot_update_step: the StepResult from a previously executed bot_update step.
-      skip_owners: a boolean indicating whether Owners checks should be skipped.
+      * bot_update_step: the StepResult from a previously executed bot_update step.
+      * skip_owners: a boolean indicating whether Owners checks should be skipped.
+
     Returns:
       a RawResult object, suitable for being returned from RunSteps.
     """

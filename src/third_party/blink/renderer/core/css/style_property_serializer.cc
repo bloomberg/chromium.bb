@@ -26,6 +26,7 @@
 #include <bitset>
 
 #include "base/stl_util.h"
+#include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
@@ -54,7 +55,7 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::
   for (unsigned i = 0; i < property_set_->PropertyCount(); ++i) {
     CSSPropertyValueSet::PropertyReference property =
         property_set_->PropertyAt(i);
-    if (property.Property().IsAffectedByAll()) {
+    if (property.IsAffectedByAll()) {
       if (all_property.IsImportant() && !property.IsImportant())
         continue;
       if (static_cast<unsigned>(all_index_) >= i)
@@ -71,7 +72,7 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::
 }
 
 void StylePropertySerializer::CSSPropertyValueSetForSerializer::Trace(
-    blink::Visitor* visitor) {
+    blink::Visitor* visitor) const {
   visitor->Trace(property_set_);
 }
 
@@ -117,8 +118,7 @@ bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
   if (!need_to_expand_all_) {
     CSSPropertyValueSet::PropertyReference property =
         property_set_->PropertyAt(index);
-    if (property.Property().IDEquals(CSSPropertyID::kAll) ||
-        !property.Property().IsAffectedByAll())
+    if (property.Id() == CSSPropertyID::kAll || !property.IsAffectedByAll())
       return true;
     if (!isCSSPropertyIDWithName(property.Id()))
       return false;
@@ -533,7 +533,7 @@ String StylePropertySerializer::SerializeShorthand(
     case CSSPropertyID::kPaddingInline:
       return Get2Values(paddingInlineShorthand());
     case CSSPropertyID::kTextDecoration:
-      return GetShorthandValue(textDecorationShorthand());
+      return TextDecorationValue();
     case CSSPropertyID::kTransition:
       return GetLayeredShorthandValue(transitionShorthand());
     case CSSPropertyID::kListStyle:
@@ -819,6 +819,37 @@ String StylePropertySerializer::OffsetValue() const {
   return result.ToString();
 }
 
+String StylePropertySerializer::TextDecorationValue() const {
+  StringBuilder result;
+  const auto& shorthand = shorthandForProperty(CSSPropertyID::kTextDecoration);
+  for (unsigned i = 0; i < shorthand.length(); ++i) {
+    const CSSValue* value =
+        property_set_.GetPropertyCSSValue(*shorthand.properties()[i]);
+    String value_text = value->CssText();
+    if (value->IsInitialValue())
+      continue;
+    if (shorthand.properties()[i]->PropertyID() ==
+        CSSPropertyID::kTextDecorationThickness) {
+      if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+        // Do not include initial value 'auto' for thickness.
+        // TODO(https://crbug.com/1093826): general shorthand serialization
+        // issues remain, in particular for text-decoration.
+        CSSValueID value_id = identifier_value->GetValueID();
+        if (value_id == CSSValueID::kAuto)
+          continue;
+      }
+    }
+    if (!result.IsEmpty())
+      result.Append(" ");
+    result.Append(value_text);
+  }
+
+  if (result.IsEmpty()) {
+    return "none";
+  }
+  return result.ToString();
+}
+
 String StylePropertySerializer::Get2Values(
     const StylePropertyShorthand& shorthand) const {
   // Assume the properties are in the usual order start, end.
@@ -979,7 +1010,22 @@ String StylePropertySerializer::GetLayeredShorthandValue(
         }
       }
 
-      if (!value->IsInitialValue()) {
+      bool is_initial_value = value->IsInitialValue();
+
+      // When serializing shorthands, a component value must be omitted
+      // if doesn't change the meaning of the overall value.
+      // https://drafts.csswg.org/cssom/#serializing-css-values
+      if (property->IDEquals(CSSPropertyID::kAnimationTimeline)) {
+        if (auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
+          if (ident->GetValueID() ==
+              CSSAnimationData::InitialTimeline().GetKeyword()) {
+            DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+            is_initial_value = true;
+          }
+        }
+      }
+
+      if (!is_initial_value) {
         if (property->IDEquals(CSSPropertyID::kBackgroundSize) ||
             property->IDEquals(CSSPropertyID::kWebkitMaskSize)) {
           if (found_position_ycss_property || found_position_xcss_property)

@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/login/saml/password_expiry_notification.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_handler.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/urgent_password_expiry_notification_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -89,6 +89,8 @@ PasswordChangeUI::PasswordChangeUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(
       std::make_unique<PasswordChangeHandler>(password_change_url));
 
+  source->DisableTrustedTypesCSP();
+
   source->AddString("hostedHeader", GetHostedHeaderText(password_change_url));
   source->UseStringsJs();
 
@@ -111,6 +113,8 @@ ConfirmPasswordChangeUI::ConfirmPasswordChangeUI(content::WebUI* web_ui)
       prefs::kSamlInSessionPasswordChangeEnabled));
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIConfirmPasswordChangeHost);
+
+  source->DisableTrustedTypesCSP();
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"title", IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_TITLE},
@@ -156,6 +160,8 @@ UrgentPasswordExpiryNotificationUI::UrgentPasswordExpiryNotificationUI(
 
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIUrgentPasswordExpiryNotificationHost);
+
+  source->DisableTrustedTypesCSP();
 
   SamlPasswordAttributes attrs = SamlPasswordAttributes::LoadFromPrefs(prefs);
   if (attrs.has_expiration_time()) {

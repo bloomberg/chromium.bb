@@ -16,6 +16,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/page_info/page_info_ui.h"
 
+class PermissionIcon;
 class Profile;
 
 namespace internal {
@@ -28,7 +29,6 @@ class PageInfoBubbleViewTestApi;
 
 namespace views {
 class GridLayout;
-class ImageView;
 class Label;
 class View;
 class Combobox;
@@ -44,7 +44,7 @@ class PermissionSelectorRow {
   // The |PermissionSelectorRow|'s constituent views are added to |layout|.
   PermissionSelectorRow(Profile* profile,
                         const GURL& url,
-                        const PageInfoUI::PermissionInfo& permission,
+                        const PageInfo::PermissionInfo& permission,
                         views::GridLayout* layout);
   virtual ~PermissionSelectorRow();
 
@@ -57,7 +57,7 @@ class PermissionSelectorRow {
 
   void AddObserver(PermissionSelectorRowObserver* observer);
 
-  void PermissionChanged(const PageInfoUI::PermissionInfo& permission);
+  void PermissionChanged(const PageInfo::PermissionInfo& permission);
 
   // Returns the preferred width for the currently selected combobox option
   // (unchanged by any minimum width set using SetMinComboboxWidth()).
@@ -70,7 +70,7 @@ class PermissionSelectorRow {
   friend class test::PageInfoBubbleViewTestApi;
 
   void InitializeComboboxView(views::GridLayout* layout,
-                              const PageInfoUI::PermissionInfo& permission);
+                              const PageInfo::PermissionInfo& permission);
 
   Profile* profile_;
 
@@ -79,9 +79,9 @@ class PermissionSelectorRow {
   std::unique_ptr<internal::ComboboxModelAdapter> combobox_model_adapter_;
 
   // These are all owned by the views hierarchy:
-  views::ImageView* icon_;
-  views::Label* label_;
-  views::Combobox* combobox_;
+  PermissionIcon* icon_ = nullptr;
+  views::Label* label_ = nullptr;
+  views::Combobox* combobox_ = nullptr;
 
   base::ObserverList<PermissionSelectorRowObserver, false>::Unchecked
       observer_list_;

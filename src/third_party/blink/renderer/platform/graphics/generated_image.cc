@@ -50,7 +50,7 @@ void GeneratedImage::DrawPattern(
   FloatRect tile_rect = src_rect;
   tile_rect.Expand(repeat_spacing);
 
-  SkMatrix pattern_matrix = SkMatrix::MakeTrans(phase.X(), phase.Y());
+  SkMatrix pattern_matrix = SkMatrix::Translate(phase.X(), phase.Y());
   pattern_matrix.preScale(scale.Width(), scale.Height());
   pattern_matrix.preTranslate(tile_rect.X(), tile_rect.Y());
 
@@ -70,7 +70,8 @@ sk_sp<PaintShader> GeneratedImage::CreateShader(
     const SkMatrix* pattern_matrix,
     const FloatRect& src_rect,
     RespectImageOrientationEnum respect_orientation) {
-  auto paint_controller = std::make_unique<PaintController>();
+  auto paint_controller =
+      std::make_unique<PaintController>(PaintController::kTransient);
   GraphicsContext context(*paint_controller);
   context.BeginRecording(tile_rect);
   DrawTile(context, src_rect, respect_orientation);

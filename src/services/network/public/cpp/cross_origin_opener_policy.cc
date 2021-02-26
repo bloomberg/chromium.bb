@@ -25,4 +25,34 @@ bool CrossOriginOpenerPolicy::operator==(
          report_only_reporting_endpoint == other.report_only_reporting_endpoint;
 }
 
+bool IsAccessFromCoopPage(mojom::CoopAccessReportType type) {
+  switch (type) {
+    case mojom::CoopAccessReportType::kAccessFromCoopPageToOpener:
+    case mojom::CoopAccessReportType::kAccessFromCoopPageToOpenee:
+    case mojom::CoopAccessReportType::kAccessFromCoopPageToOther:
+      return true;
+    case mojom::CoopAccessReportType::kAccessToCoopPageFromOpener:
+    case mojom::CoopAccessReportType::kAccessToCoopPageFromOpenee:
+    case mojom::CoopAccessReportType::kAccessToCoopPageFromOther:
+      return false;
+  }
+}
+
+const char* CoopAccessReportTypeToString(mojom::CoopAccessReportType type) {
+  switch (type) {
+    case network::mojom::CoopAccessReportType::kAccessFromCoopPageToOpener:
+      return "access-from-coop-page-to-opener";
+    case network::mojom::CoopAccessReportType::kAccessFromCoopPageToOpenee:
+      return "access-from-coop-page-to-openee";
+    case network::mojom::CoopAccessReportType::kAccessFromCoopPageToOther:
+      return "access-from-coop-page-to-other";
+    case network::mojom::CoopAccessReportType::kAccessToCoopPageFromOpener:
+      return "access-to-coop-page-from-opener";
+    case network::mojom::CoopAccessReportType::kAccessToCoopPageFromOpenee:
+      return "access-to-coop-page-from-openee";
+    case network::mojom::CoopAccessReportType::kAccessToCoopPageFromOther:
+      return "access-to-coop-page-from-other";
+  }
+}
+
 }  // namespace network

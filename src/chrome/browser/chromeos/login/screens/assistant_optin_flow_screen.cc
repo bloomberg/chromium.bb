@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
-#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -38,13 +37,6 @@ std::string AssistantOptInFlowScreen::GetResultString(Result result) {
   }
 }
 
-// static
-AssistantOptInFlowScreen* AssistantOptInFlowScreen::Get(
-    ScreenManager* manager) {
-  return static_cast<AssistantOptInFlowScreen*>(
-      manager->GetScreen(AssistantOptInFlowScreenView::kScreenId));
-}
-
 AssistantOptInFlowScreen::AssistantOptInFlowScreen(
     AssistantOptInFlowScreenView* view,
     const ScreenExitCallback& exit_callback)
@@ -62,7 +54,7 @@ AssistantOptInFlowScreen::~AssistantOptInFlowScreen() {
     view_->Unbind();
 }
 
-bool AssistantOptInFlowScreen::MaybeSkip() {
+bool AssistantOptInFlowScreen::MaybeSkip(WizardContext* context) {
   if (!g_libassistant_enabled ||
       chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
     exit_callback_.Run(Result::NOT_APPLICABLE);

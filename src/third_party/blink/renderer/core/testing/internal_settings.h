@@ -28,11 +28,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNAL_SETTINGS_H_
 
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
-#include "third_party/blink/renderer/core/editing/editing_behavior_types.h"
+#include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/internal_settings_generated.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
-#include "third_party/blink/renderer/platform/graphics/image_animation_policy.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -45,7 +44,6 @@ class Settings;
 
 class InternalSettings final : public InternalSettingsGenerated,
                                public InternalSettingsPageSupplementBase {
-  USING_GARBAGE_COLLECTED_MIXIN(InternalSettings);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -58,7 +56,7 @@ class InternalSettings final : public InternalSettingsGenerated,
 
     bool original_csp_;
     bool original_overlay_scrollbars_enabled_;
-    EditingBehaviorType original_editing_behavior_;
+    mojom::EditingBehavior original_editing_behavior_;
     bool original_text_autosizing_enabled_;
     IntSize original_text_autosizing_window_size_override_;
     float original_accessibility_font_scale_factor_;
@@ -68,7 +66,7 @@ class InternalSettings final : public InternalSettingsGenerated,
     bool lang_attribute_aware_form_control_ui_enabled_;
     bool images_enabled_;
     String default_video_poster_url_;
-    ImageAnimationPolicy original_image_animation_policy_;
+    mojom::blink::ImageAnimationPolicy original_image_animation_policy_;
     bool original_scroll_top_left_interop_enabled_;
   };
 
@@ -131,7 +129,7 @@ class InternalSettings final : public InternalSettingsGenerated,
   void setImageAnimationPolicy(const String&, ExceptionState&);
   void setScrollTopLeftInteropEnabled(bool);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void setAvailablePointerTypes(const String&, ExceptionState&);
   void setPrimaryPointerType(const String&, ExceptionState&);

@@ -122,8 +122,38 @@ fuzzer_test("libpng_progressive_read_fuzzer") {
 fuzzer_test("v8_script_parser_fuzzer") {
   sources = []
   deps = [ "//v8:parser_fuzzer" ]
+  asan_options = [
+    "allow_user_segv_handler=1",
+    "handle_sigtrap=1",
+  ]
+  msan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [
+    "handle_sigtrap=1",
+    "handle_segv=1",
+  ]
   dict = "dicts/generated/javascript.dict"
   seed_corpus = "//v8/test/mjsunit/regress/"
+  libfuzzer_options = [ "only_ascii=1" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
+}
+
+fuzzer_test("v8_inspector_fuzzer") {
+  sources = []
+  deps = [ "//v8:inspector_fuzzer" ]
+  asan_options = [
+    "allow_user_segv_handler=1",
+    "handle_sigtrap=1",
+  ]
+  msan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [
+    "handle_sigtrap=1",
+    "handle_segv=1",
+  ]
+  dict = "dicts/generated/javascript.dict"
+  seed_corpus = "//v8/test/inspector/"
+
+  # The fuzzer is able to handle any input, but since the input is interpreted
+  # as JS code, restricting to ascii only will increase fuzzing efficiency.
   libfuzzer_options = [ "only_ascii=1" ]
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
@@ -131,6 +161,15 @@ fuzzer_test("v8_script_parser_fuzzer") {
 fuzzer_test("v8_json_parser_fuzzer") {
   sources = []
   deps = [ "//v8:json_fuzzer" ]
+  asan_options = [
+    "allow_user_segv_handler=1",
+    "handle_sigtrap=1",
+  ]
+  msan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [
+    "handle_sigtrap=1",
+    "handle_segv=1",
+  ]
   dict = "dicts/json.dict"
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
@@ -138,6 +177,15 @@ fuzzer_test("v8_json_parser_fuzzer") {
 fuzzer_test("v8_regexp_parser_fuzzer") {
   sources = []
   deps = [ "//v8:regexp_fuzzer" ]
+  asan_options = [
+    "allow_user_segv_handler=1",
+    "handle_sigtrap=1",
+  ]
+  msan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [
+    "handle_sigtrap=1",
+    "handle_segv=1",
+  ]
   dict = "dicts/regexp.dict"
   seed_corpus = "//v8/test/fuzzer/regexp/"
   libfuzzer_options = [ "max_len=64" ]
@@ -147,6 +195,15 @@ fuzzer_test("v8_regexp_parser_fuzzer") {
 fuzzer_test("v8_regexp_builtins_fuzzer") {
   sources = []
   deps = [ "//v8:regexp_builtins_fuzzer" ]
+  asan_options = [
+    "allow_user_segv_handler=1",
+    "handle_sigtrap=1",
+  ]
+  msan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [
+    "handle_sigtrap=1",
+    "handle_segv=1",
+  ]
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
@@ -158,7 +215,10 @@ fuzzer_test("v8_multi_return_fuzzer") {
     "handle_sigtrap=1",
   ]
   msan_options = [ "handle_sigtrap=1" ]
-  ubsan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [
+    "handle_sigtrap=1",
+    "handle_segv=1",
+  ]
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
@@ -171,7 +231,10 @@ fuzzer_test("v8_wasm_code_fuzzer") {
     "handle_sigtrap=1",
   ]
   msan_options = [ "handle_sigtrap=1" ]
-  ubsan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [
+    "handle_sigtrap=1",
+    "handle_segv=1",
+  ]
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
@@ -184,7 +247,10 @@ fuzzer_test("v8_wasm_compile_fuzzer") {
     "handle_sigtrap=1",
   ]
   msan_options = [ "handle_sigtrap=1" ]
-  ubsan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [
+    "handle_sigtrap=1",
+    "handle_segv=1",
+  ]
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
@@ -199,7 +265,10 @@ fuzzer_test("v8_wasm_fuzzer") {
     "handle_sigtrap=1",
   ]
   msan_options = [ "handle_sigtrap=1" ]
-  ubsan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [
+    "handle_sigtrap=1",
+    "handle_segv=1",
+  ]
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
@@ -214,7 +283,10 @@ fuzzer_test("v8_wasm_async_fuzzer") {
     "handle_sigtrap=1",
   ]
   msan_options = [ "handle_sigtrap=1" ]
-  ubsan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [
+    "handle_sigtrap=1",
+    "handle_segv=1",
+  ]
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
@@ -352,7 +424,10 @@ fuzzer_test("v8_fully_instrumented_fuzzer") {
     "handle_sigtrap=1",
   ]
   msan_options = [ "handle_sigtrap=1" ]
-  ubsan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [
+    "handle_sigtrap=1",
+    "handle_segv=1",
+  ]
   libfuzzer_options = [ "only_ascii=1" ]
 }
 

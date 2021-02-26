@@ -29,8 +29,8 @@ class FrameCrypto;
 struct EncryptedFrame : public EncodedFrame {
   EncryptedFrame();
   ~EncryptedFrame();
-  EncryptedFrame(EncryptedFrame&&) MAYBE_NOEXCEPT;
-  EncryptedFrame& operator=(EncryptedFrame&&) MAYBE_NOEXCEPT;
+  EncryptedFrame(EncryptedFrame&&) noexcept;
+  EncryptedFrame& operator=(EncryptedFrame&&);
 
  protected:
   // Since only FrameCrypto and FrameCollector are trusted to generate the
@@ -71,9 +71,6 @@ class FrameCrypto {
   static int GetPlaintextSize(const EncryptedFrame& encrypted_frame) {
     return encrypted_frame.data.size();
   }
-
-  // Returns random bytes from a cryptographically-secure RNG source.
-  static std::array<uint8_t, 16> GenerateRandomBytes();
 
  private:
   // The 244-byte AES_KEY struct, derived from the |aes_key| passed to the ctor,

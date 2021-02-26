@@ -180,7 +180,7 @@ class AndroidVideoDecoder implements VideoDecoder, VideoSink {
 
     try {
       codec = mediaCodecWrapperFactory.createByCodecName(codecName);
-    } catch (IOException | IllegalArgumentException e) {
+    } catch (IOException | IllegalArgumentException | IllegalStateException e) {
       Logging.e(TAG, "Cannot create media decoder " + codecName);
       return VideoCodecStatus.FALLBACK_SOFTWARE;
     }
@@ -191,7 +191,7 @@ class AndroidVideoDecoder implements VideoDecoder, VideoSink {
       }
       codec.configure(format, surface, null, 0);
       codec.start();
-    } catch (IllegalStateException e) {
+    } catch (IllegalStateException | IllegalArgumentException e) {
       Logging.e(TAG, "initDecode failed", e);
       release();
       return VideoCodecStatus.FALLBACK_SOFTWARE;
@@ -244,10 +244,6 @@ class AndroidVideoDecoder implements VideoDecoder, VideoSink {
       // Need to process a key frame first.
       if (frame.frameType != EncodedImage.FrameType.VideoFrameKey) {
         Logging.e(TAG, "decode() - key frame required first");
-        return VideoCodecStatus.NO_OUTPUT;
-      }
-      if (!frame.completeFrame) {
-        Logging.e(TAG, "decode() - complete frame required first");
         return VideoCodecStatus.NO_OUTPUT;
       }
     }

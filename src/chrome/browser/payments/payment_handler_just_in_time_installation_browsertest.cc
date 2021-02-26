@@ -4,9 +4,11 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/journey_logger.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,14 +33,14 @@ class PaymentHandlerJustInTimeInstallationTest
         "components/test/data/payments/henrypay.com");
     ASSERT_TRUE(henrypay_server_.Start());
 
+    NavigateTo("/payment_request_bobpay_and_cards_test.html");
+
     // Set up test manifest downloader that knows how to fake origin.
     const std::string kyle_method_name = "kylepay.com";
     const std::string henry_method_name = "henrypay.com";
     SetDownloaderAndIgnorePortInOriginComparisonForTesting(
         {{kyle_method_name, &kylepay_server_},
          {henry_method_name, &henrypay_server_}});
-
-    NavigateTo("/payment_request_bobpay_and_cards_test.html");
   }
 
  private:
@@ -89,6 +91,88 @@ IN_PROC_BROWSER_TEST_F(PaymentHandlerJustInTimeInstallationTest,
       "\"https://henrypay.com/webpay\" is not supported.\n\n\n\n\n");
 }
 
+using PaymentHandlerSkipSheetTest = PaymentHandlerJustInTimeInstallationTest;
+
+IN_PROC_BROWSER_TEST_F(PaymentHandlerSkipSheetTest, SkipWithUserGesture) {
+  base::HistogramTester histogram_tester;
+  ResetEventWaiterForSingleEvent(TestEvent::kPaymentCompleted);
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(),
+                      "testPaymentMethods([ "
+                      " {supportedMethods: 'https://kylepay.com/webpay'}])"));
+  WaitForObservedEvent();
+  ExpectBodyContains("kylepay.com/webpay");
+
+  std::vector<base::Bucket> buckets =
+      histogram_tester.GetAllSamples("PaymentRequest.Events");
+  ASSERT_EQ(1U, buckets.size());
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_SKIPPED_SHOW);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SHOWN);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_AVAILABLE_METHOD_OTHER);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER);
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentHandlerSkipSheetTest, NoSkipWithoutUserGesture) {
+  // When shipping is not requested, kylepay.com cannot leverage skip-the-sheet
+  // for being the only payment app that can fulfill all delegation requests. So
+  // if there is no user gesture, the request should stop at the payment sheet
+  // waiting for user action.
+  base::HistogramTester histogram_tester;
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(),
+                      "testPaymentMethods([ "
+                      " {supportedMethods: 'https://kylepay.com/webpay'}])",
+                      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  WaitForObservedEvent();
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), "abort()"));
+
+  std::vector<base::Bucket> buckets =
+      histogram_tester.GetAllSamples("PaymentRequest.Events");
+  ASSERT_EQ(1U, buckets.size());
+
+  // TODO(crbug.com/1122198): EVENT_SHOWN is not always logged on Android.
+#if !defined(OS_ANDROID)
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_SHOWN);
+#endif
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SKIPPED_SHOW);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_AVAILABLE_METHOD_OTHER);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER);
+}
+
+class SecurePaymentConfirmationSkipSheetTest
+    : public PaymentHandlerJustInTimeInstallationTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PaymentHandlerJustInTimeInstallationTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+};
+
+// TODO(crbug.com/825270): Remove this special case user gesture exception is
+// removed.
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationSkipSheetTest,
+                       SkipWithoutUserGesture) {
+  base::HistogramTester histogram_tester;
+  ResetEventWaiterForSingleEvent(TestEvent::kPaymentCompleted);
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(),
+                      "testPaymentMethods([ "
+                      " {supportedMethods: 'https://kylepay.com/webpay'}])",
+                      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  WaitForObservedEvent();
+  ExpectBodyContains("kylepay.com/webpay");
+
+  std::vector<base::Bucket> buckets =
+      histogram_tester.GetAllSamples("PaymentRequest.Events");
+  ASSERT_EQ(1U, buckets.size());
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_SKIPPED_SHOW);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SHOWN);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_AVAILABLE_METHOD_OTHER);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER);
+}
+
 class AlwaysAllowJustInTimePaymentAppTest
     : public PaymentHandlerJustInTimeInstallationTest,
       public testing::WithParamInterface<bool> {
@@ -106,7 +190,7 @@ IN_PROC_BROWSER_TEST_P(AlwaysAllowJustInTimePaymentAppTest,
                        HybridRequest_NoCreditCard) {
   base::HistogramTester histogram_tester;
   ResetEventWaiterForSingleEvent(GetParam() ? TestEvent::kPaymentCompleted
-                                            : TestEvent::kShowAppsReady);
+                                            : TestEvent::kAppListReady);
   EXPECT_TRUE(
       content::ExecJs(GetActiveWebContents(),
                       "testPaymentMethods([ "
@@ -139,7 +223,7 @@ IN_PROC_BROWSER_TEST_P(AlwaysAllowJustInTimePaymentAppTest,
   CreateAndAddCreditCardForProfile(CreateAndAddAutofillProfile());
 
   base::HistogramTester histogram_tester;
-  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
 
   EXPECT_TRUE(
       content::ExecJs(GetActiveWebContents(),

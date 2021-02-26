@@ -54,6 +54,7 @@ cc_library(
         "ascii.h",
         "charconv.h",
         "escaping.h",
+        "internal/string_constant.h",
         "match.h",
         "numbers.h",
         "str_cat.h",
@@ -223,6 +224,19 @@ cc_test(
 )
 
 cc_test(
+    name = "string_constant_test",
+    size = "small",
+    srcs = ["internal/string_constant_test.cc"],
+    copts = ABSL_TEST_COPTS,
+    visibility = ["//visibility:private"],
+    deps = [
+        ":strings",
+        "//absl/meta:type_traits",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "string_view_benchmark",
     srcs = ["string_view_benchmark.cc"],
     copts = ABSL_TEST_COPTS,
@@ -258,6 +272,8 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         ":strings",
+        "//absl/base:base_internal",
+        "//absl/container:compressed_tuple",
         "//absl/meta:type_traits",
     ],
 )
@@ -277,7 +293,6 @@ cc_library(
         ":str_format",
         ":strings",
         "//absl/base",
-        "//absl/base:base_internal",
         "//absl/base:core_headers",
         "//absl/base:endian",
         "//absl/base:raw_logging_internal",
@@ -720,6 +735,7 @@ cc_test(
     visibility = ["//visibility:private"],
     deps = [
         ":str_format_internal",
+        ":strings",
         "//absl/base:raw_logging_internal",
         "//absl/types:optional",
         "@com_google_googletest//:gtest_main",

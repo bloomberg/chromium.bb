@@ -93,16 +93,26 @@ void HttpRefreshScheduler::Schedule(
 }
 
 void HttpRefreshScheduler::NavigateTask() {
+  TRACE_EVENT2("navigation", "HttpRefreshScheduler::NavigateTask",
+               "document_url", document_->Url().GetString().Utf8(),
+               "refresh_url", refresh_->url.GetString().Utf8());
+
   DCHECK(document_->GetFrame());
   std::unique_ptr<ScheduledHttpRefresh> refresh(refresh_.release());
 
-  FrameLoadRequest request(document_, ResourceRequest(refresh->url));
+  FrameLoadRequest request(document_->domWindow(),
+                           ResourceRequest(refresh->url));
   request.SetInputStartTime(refresh->input_timestamp);
   request.SetClientRedirectReason(refresh->reason);
 
-  // We want a new back/forward list item if the refresh timeout is > 1 second.
   WebFrameLoadType load_type = WebFrameLoadType::kStandard;
-  if (EqualIgnoringFragmentIdentifier(document_->Url(), refresh->url)) {
+  // If the urls match, process the refresh as a reload. However, if an initial
+  // empty document has its url modified via document.open() and the refresh is
+  // to that url, it will confuse the browser process to report it as a reload
+  // in a frame where there hasn't actually been a navigation yet. Therefore,
+  // don't treat as a reload if all this frame has ever seen is empty documents.
+  if (EqualIgnoringFragmentIdentifier(document_->Url(), refresh->url) &&
+      document_->GetFrame()->Loader().HasLoadedNonEmptyDocument()) {
     request.GetResourceRequest().SetCacheMode(
         mojom::FetchCacheMode::kValidateCache);
     load_type = WebFrameLoadType::kReload;
@@ -141,7 +151,7 @@ void HttpRefreshScheduler::Cancel() {
   refresh_.reset();
 }
 
-void HttpRefreshScheduler::Trace(Visitor* visitor) {
+void HttpRefreshScheduler::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
 }
 

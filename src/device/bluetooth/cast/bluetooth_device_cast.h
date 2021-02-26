@@ -40,6 +40,7 @@ class BluetoothDeviceCast : public BluetoothDevice {
   uint32_t GetBluetoothClass() const override;
   BluetoothTransport GetType() const override;
   std::string GetAddress() const override;
+  AddressType GetAddressType() const override;
   VendorIDSource GetVendorIDSource() const override;
   uint16_t GetVendorID() const override;
   uint16_t GetProductID() const override;
@@ -56,10 +57,10 @@ class BluetoothDeviceCast : public BluetoothDevice {
   bool ExpectingPinCode() const override;
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;
-  void GetConnectionInfo(const ConnectionInfoCallback& callback) override;
+  void GetConnectionInfo(ConnectionInfoCallback callback) override;
   void SetConnectionLatency(ConnectionLatency connection_latency,
-                            const base::Closure& callback,
-                            const ErrorCallback& error_callback) override;
+                            base::OnceClosure callback,
+                            ErrorCallback error_callback) override;
   void Connect(PairingDelegate* pairing_delegate,
                base::OnceClosure callback,
                ConnectErrorCallback error_callback) override;
@@ -71,18 +72,17 @@ class BluetoothDeviceCast : public BluetoothDevice {
   void ConfirmPairing() override;
   void RejectPairing() override;
   void CancelPairing() override;
-  void Disconnect(const base::Closure& callback,
-                  const ErrorCallback& error_callback) override;
-  void Forget(const base::Closure& callback,
-              const ErrorCallback& error_callback) override;
-  void ConnectToService(
-      const BluetoothUUID& uuid,
-      const ConnectToServiceCallback& callback,
-      const ConnectToServiceErrorCallback& error_callback) override;
+  void Disconnect(base::OnceClosure callback,
+                  ErrorCallback error_callback) override;
+  void Forget(base::OnceClosure callback,
+              ErrorCallback error_callback) override;
+  void ConnectToService(const BluetoothUUID& uuid,
+                        ConnectToServiceCallback callback,
+                        ConnectToServiceErrorCallback error_callback) override;
   void ConnectToServiceInsecurely(
       const device::BluetoothUUID& uuid,
-      const ConnectToServiceCallback& callback,
-      const ConnectToServiceErrorCallback& error_callback) override;
+      ConnectToServiceCallback callback,
+      ConnectToServiceErrorCallback error_callback) override;
 
   // Called by BluetoothAdapterCast to update the device to reflect the
   // information obtained from a scan. Returns true if the device changed as a
@@ -121,7 +121,7 @@ class BluetoothDeviceCast : public BluetoothDevice {
   void DisconnectGatt() override;
 
   // Called back from connect requests generated from CreateGattConnectionImpl.
-  void OnConnect(bool success);
+  void OnConnect(chromecast::bluetooth::RemoteDevice::ConnectStatus status);
 
   // Called in response to GetServices
   void OnGetServices(

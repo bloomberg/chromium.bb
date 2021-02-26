@@ -20,6 +20,7 @@
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -260,57 +261,6 @@ TEST_F(KeywordProviderTest, Edit) {
        1,
        {{ASCIIToUTF16("nonsub"), true}, kEmptyMatch, kEmptyMatch}},
   };
-
-  SetUpClientAndKeywordProvider();
-  RunTest<base::string16>(edit_cases, base::size(edit_cases),
-                          &AutocompleteMatch::fill_into_edit);
-}
-
-TEST_F(KeywordProviderTest, DomainMatches) {
-  const MatchType<base::string16> kEmptyMatch = { base::string16(), false };
-  TestData<base::string16> edit_cases[] = {
-    // Searching for a nonexistent prefix should give nothing.
-    { ASCIIToUTF16("Not Found"), 0,
-      { kEmptyMatch, kEmptyMatch, kEmptyMatch } },
-    { ASCIIToUTF16("aaaaaNot Found"), 0,
-      { kEmptyMatch, kEmptyMatch, kEmptyMatch } },
-
-    // Matches should be limited to three and sorted in quality order.
-    // This order depends on whether we're using the pre-domain-name text
-    // for matching--when matching the domain, we sort by the length of the
-    // domain, not the length of the whole keyword.
-    { ASCIIToUTF16("ignore foo"), 2,
-      { { ASCIIToUTF16("ignoreme.domain2.com foo"), false },
-        { ASCIIToUTF16("ignoremelong.domain.com foo"), false },
-        kEmptyMatch } },
-    { ASCIIToUTF16("dom foo"), 2,
-      { { ASCIIToUTF16("ignoremelong.domain.com foo"), false },
-        { ASCIIToUTF16("ignoreme.domain2.com foo"), false },
-        kEmptyMatch } },
-
-    // Matches should be retrieved by typing the domain name, not only
-    // a prefix to the keyword.
-    { ASCIIToUTF16("host foo"), 1,
-      { { ASCIIToUTF16("host.site.com foo"), false },
-        kEmptyMatch, kEmptyMatch } },
-    { ASCIIToUTF16("host.site foo"), 1,
-      { { ASCIIToUTF16("host.site.com foo"), false },
-        kEmptyMatch, kEmptyMatch } },
-    { ASCIIToUTF16("site foo"), 1,
-      { { ASCIIToUTF16("host.site.com foo"), false },
-        kEmptyMatch, kEmptyMatch } },
-  };
-
-  // Add a rule enabling matching in the domain name of keywords (i.e.,
-  // non-prefix matching).
-  {
-    std::map<std::string, std::string> params;
-    params[OmniboxFieldTrial::kKeywordRequiresPrefixMatchRule] = "false";
-    ASSERT_TRUE(variations::AssociateVariationParams(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
-  }
-  base::FieldTrialList::CreateFieldTrial(
-      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
   SetUpClientAndKeywordProvider();
   RunTest<base::string16>(edit_cases, base::size(edit_cases),
@@ -612,7 +562,7 @@ TEST_F(KeywordProviderTest, DoesNotProvideMatchesOnFocus) {
   AutocompleteInput input(ASCIIToUTF16("aaa"),
                           metrics::OmniboxEventProto::OTHER,
                           TestingSchemeClassifier());
-  input.set_from_omnibox_focus(true);
+  input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   kw_provider_->Start(input, false);
   ASSERT_TRUE(kw_provider_->matches().empty());
 }

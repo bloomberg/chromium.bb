@@ -5,7 +5,6 @@
 #ifndef BASE_CALLBACK_LIST_H_
 #define BASE_CALLBACK_LIST_H_
 
-#include <algorithm>
 #include <list>
 #include <memory>
 #include <utility>
@@ -14,9 +13,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 
 // OVERVIEW:
@@ -55,18 +55,19 @@
 //   }
 //
 //   // Automatically deregisters the callback when deleted (e.g. in
-//   // ~MyWidgetListener()).
+//   // ~MyWidgetListener()).  Unretained(this) is safe here since the
+//   // Subscription does not outlive |this|.
 //   std::unique_ptr<MyWidget::CallbackList::Subscription> foo_subscription_ =
 //       MyWidget::Get()->RegisterCallback(
-//           base::BindRepeating(&MyWidgetListener::OnFoo, this));
+//           base::BindRepeating(&MyWidgetListener::OnFoo,
+//                               base::Unretained(this)));
 // };
 //
 // UNSUPPORTED:
 //
-// * Calling Notify() reentrantly during callback notification.
 // * Destroying the CallbackList during callback notification.
 //
-// Both of these are possible to support, but not currently necessary.
+// This is possible to support, but not currently necessary.
 
 namespace base {
 
@@ -83,12 +84,13 @@ namespace internal {
 template <typename CallbackList>
 struct CallbackListTraits;
 
+// NOTE: It's important that Callbacks provide iterator stability when items are
+// added to the end, so e.g. a std::vector<> is not suitable here.
 template <typename Signature>
 struct CallbackListTraits<OnceCallbackList<Signature>> {
   using CallbackType = OnceCallback<Signature>;
   using Callbacks = std::list<CallbackType>;
 };
-
 template <typename Signature>
 struct CallbackListTraits<RepeatingCallbackList<Signature>> {
   using CallbackType = RepeatingCallback<Signature>;
@@ -110,8 +112,8 @@ class CallbackListBase {
     explicit Subscription(base::OnceClosure destruction_closure)
         : destruction_closure_(std::move(destruction_closure)) {}
 
-    Subscription(const Subscription&) = delete;
-    Subscription& operator=(const Subscription&) = delete;
+    Subscription(Subscription&&) = default;
+    Subscription& operator=(Subscription&&) = default;
 
     ~Subscription() { std::move(destruction_closure_).Run(); }
 
@@ -141,43 +143,75 @@ class CallbackListBase {
         callbacks_.insert(callbacks_.end(), std::move(cb))));
   }
 
+  // Registers |cb| for future notifications. Provides no way for the caller to
+  // cancel, so this is only safe for cases where the callback is guaranteed to
+  // live at least as long as this list (e.g. if it's bound on the same object
+  // that owns the list).
+  // TODO(pkasting): Attempt to use Add() instead and see if callers can relax
+  // other lifetime/ordering mechanisms as a result.
+  void AddUnsafe(CallbackType cb) {
+    DCHECK(!cb.is_null());
+    callbacks_.push_back(std::move(cb));
+  }
+
   // Registers |removal_callback| to be run after elements are removed from the
   // list of registered callbacks.
   void set_removal_callback(const RepeatingClosure& removal_callback) {
     removal_callback_ = removal_callback;
   }
 
-  // Returns whether the list of registered callbacks is empty. This may not be
-  // called while Notify() is traversing the list (since the results could be
-  // inaccurate).
+  // Returns whether the list of registered callbacks is empty (from an external
+  // perspective -- meaning no remaining callbacks are live).
   bool empty() const {
-    DCHECK(!iterating_);
-    return callbacks_.empty();
+    return ranges::all_of(
+        callbacks_, [](const auto& callback) { return callback.is_null(); });
   }
 
   // Calls all registered callbacks that are not canceled beforehand. If any
   // callbacks are unregistered, notifies any registered removal callback at the
   // end.
+  //
+  // Arguments must be copyable, since they must be supplied to all callbacks.
+  // Move-only types would be destructively modified by passing them to the
+  // first callback and not reach subsequent callbacks as intended.
+  //
+  // Notify() may be called re-entrantly, in which case the nested call
+  // completes before the outer one continues. Callbacks are only ever added at
+  // the end and canceled callbacks are not pruned from the list until the
+  // outermost iteration completes, so existing iterators should never be
+  // invalidated. However, this does mean that a callback added during a nested
+  // call can be notified by outer calls -- meaning it will be notified about
+  // things that happened before it was added -- if its subscription outlives
+  // the reentrant Notify() call.
   template <typename... RunArgs>
   void Notify(RunArgs&&... args) {
-    // Calling Notify() reentrantly is currently unsupported.
-    DCHECK(!iterating_);
-
     if (empty())
       return;  // Nothing to do.
 
-    // Canceled callbacks should be removed from the list whenever notification
-    // isn't in progress, so right now all callbacks should be valid.
-    const auto callback_valid = [](const auto& cb) { return !cb.is_null(); };
-    DCHECK(std::all_of(callbacks_.cbegin(), callbacks_.cend(), callback_valid));
-
     {
       AutoReset<bool> iterating(&iterating_, true);
+
       // Skip any callbacks that are canceled during iteration.
-      for (auto it = callbacks_.begin(); it != callbacks_.end();
-           it = std::find_if(it, callbacks_.end(), callback_valid))
+      // NOTE: Since RunCallback() may call Add(), it's not safe to cache the
+      // value of callbacks_.end() across loop iterations.
+      const auto next_valid = [this](const auto it) {
+        return std::find_if_not(it, callbacks_.end(), [](const auto& callback) {
+          return callback.is_null();
+        });
+      };
+      for (auto it = next_valid(callbacks_.begin()); it != callbacks_.end();
+           it = next_valid(it))
+        // NOTE: Intentionally does not call std::forward<RunArgs>(args)...,
+        // since that would allow move-only arguments.
         static_cast<CallbackListImpl*>(this)->RunCallback(it++, args...);
     }
+
+    // Re-entrant invocations shouldn't prune anything from the list. This can
+    // invalidate iterators from underneath higher call frames. It's safe to
+    // simply do nothing, since the outermost frame will continue through here
+    // and prune all null callbacks below.
+    if (iterating_)
+      return;
 
     // Any null callbacks remaining in the list were canceled due to
     // Subscription destruction during iteration, and can safely be erased now.
@@ -246,6 +280,8 @@ class OnceCallbackList
     // splice() removes them from |callbacks_| without invalidating those.
     null_callbacks_.splice(null_callbacks_.end(), this->callbacks_, it);
 
+    // NOTE: Intentionally does not call std::forward<RunArgs>(args)...; see
+    // comments in Notify().
     std::move(*it).Run(args...);
   }
 
@@ -275,6 +311,8 @@ class RepeatingCallbackList
   // Runs the current callback, which may cancel it or any other callbacks.
   template <typename... RunArgs>
   void RunCallback(typename Traits::Callbacks::iterator it, RunArgs&&... args) {
+    // NOTE: Intentionally does not call std::forward<RunArgs>(args)...; see
+    // comments in Notify().
     it->Run(args...);
   }
 

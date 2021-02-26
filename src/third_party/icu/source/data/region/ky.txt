@@ -1,5 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+// License & terms of use: http://www.unicode.org/copyright.html
+// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
 ky{
     Countries{
         001{"Дүйнө"}
@@ -187,7 +188,7 @@ ky{
         ML{"Мали"}
         MM{"Мьянма (Бирма)"}
         MN{"Монголия"}
-        MO{"Макау"}
+        MO{"Макао"}
         MP{"Түндүк Мариана аралдары"}
         MQ{"Мартиника"}
         MR{"Мавритания"}
@@ -308,5 +309,4 @@ ky{
         CZ{"Чех Республикасы"}
         TL{"Чыгыш Тимор"}
     }
-    Version{"37"}
 }

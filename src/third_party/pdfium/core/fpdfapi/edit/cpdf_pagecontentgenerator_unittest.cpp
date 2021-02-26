@@ -15,6 +15,7 @@
 #include "core/fpdfapi/page/cpdf_pagemodule.h"
 #include "core/fpdfapi/page/cpdf_pathobject.h"
 #include "core/fpdfapi/page/cpdf_textobject.h"
+#include "core/fpdfapi/page/cpdf_textstate.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
@@ -23,9 +24,9 @@
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/render/cpdf_docrenderdata.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
-#include "core/fxge/render_defines.h"
+#include "core/fxge/cfx_fillrenderoptions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/stl_util.h"
 
 class CPDF_PageContentGeneratorTest : public testing::Test {
  protected:
@@ -52,9 +53,9 @@ class CPDF_PageContentGeneratorTest : public testing::Test {
 };
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessRect) {
-  auto pPathObj = pdfium::MakeUnique<CPDF_PathObject>();
+  auto pPathObj = std::make_unique<CPDF_PathObject>();
   pPathObj->set_stroke(true);
-  pPathObj->set_filltype(FXFILL_ALTERNATE);
+  pPathObj->set_filltype(CFX_FillRenderOptions::FillType::kEvenOdd);
   pPathObj->path().AppendRect(10, 5, 13, 30);
 
   auto dummy_page_dict = pdfium::MakeRetain<CPDF_Dictionary>();
@@ -65,7 +66,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessRect) {
   TestProcessPath(&generator, &buf, pPathObj.get());
   EXPECT_EQ("q 1 0 0 1 0 0 cm 10 5 3 25 re B* Q\n", ByteString(buf));
 
-  pPathObj = pdfium::MakeUnique<CPDF_PathObject>();
+  pPathObj = std::make_unique<CPDF_PathObject>();
   pPathObj->path().AppendPoint(CFX_PointF(0, 0), FXPT_TYPE::MoveTo);
   pPathObj->path().AppendPoint(CFX_PointF(5.2f, 0), FXPT_TYPE::LineTo);
   pPathObj->path().AppendPoint(CFX_PointF(5.2f, 3.78f), FXPT_TYPE::LineTo);
@@ -79,8 +80,8 @@ TEST_F(CPDF_PageContentGeneratorTest, BUG_937) {
   static const std::vector<float> rgb = {0.000000000000000000001f, 0.7f, 0.35f};
   RetainPtr<CPDF_ColorSpace> pCS = CPDF_ColorSpace::GetStockCS(PDFCS_DEVICERGB);
   {
-    auto pPathObj = pdfium::MakeUnique<CPDF_PathObject>();
-    pPathObj->set_filltype(FXFILL_WINDING);
+    auto pPathObj = std::make_unique<CPDF_PathObject>();
+    pPathObj->set_filltype(CFX_FillRenderOptions::FillType::kWinding);
 
     // Test code in ProcessPath that generates re operator
     pPathObj->path().AppendRect(0.000000000000000000001,
@@ -107,13 +108,13 @@ TEST_F(CPDF_PageContentGeneratorTest, BUG_937) {
 
   {
     // Test code in ProcessPath that handles bezier operator
-    auto pPathObj = pdfium::MakeUnique<CPDF_PathObject>();
+    auto pPathObj = std::make_unique<CPDF_PathObject>();
     pPathObj->m_ColorState.SetFillColor(pCS, rgb);
     pPathObj->m_ColorState.SetStrokeColor(pCS, rgb);
     pPathObj->m_GraphState.SetLineWidth(2.000000000000000000001);
     pPathObj->Transform(CFX_Matrix(1, 0, 0, 1, 432, 500000000000000.000002));
 
-    pPathObj->set_filltype(FXFILL_WINDING);
+    pPathObj->set_filltype(CFX_FillRenderOptions::FillType::kWinding);
     pPathObj->path().AppendPoint(CFX_PointF(0.000000000000000000001f, 4.67f),
                                  FXPT_TYPE::MoveTo);
     pPathObj->path().AppendPoint(
@@ -142,8 +143,8 @@ TEST_F(CPDF_PageContentGeneratorTest, BUG_937) {
 }
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessPath) {
-  auto pPathObj = pdfium::MakeUnique<CPDF_PathObject>();
-  pPathObj->set_filltype(FXFILL_WINDING);
+  auto pPathObj = std::make_unique<CPDF_PathObject>();
+  pPathObj->set_filltype(CFX_FillRenderOptions::FillType::kWinding);
   pPathObj->path().AppendPoint(CFX_PointF(3.102f, 4.67f), FXPT_TYPE::MoveTo);
   pPathObj->path().AppendPoint(CFX_PointF(5.45f, 0.29f), FXPT_TYPE::LineTo);
   pPathObj->path().AppendPoint(CFX_PointF(4.24f, 3.15f), FXPT_TYPE::BezierTo);
@@ -171,9 +172,9 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessPath) {
 }
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessGraphics) {
-  auto pPathObj = pdfium::MakeUnique<CPDF_PathObject>();
+  auto pPathObj = std::make_unique<CPDF_PathObject>();
   pPathObj->set_stroke(true);
-  pPathObj->set_filltype(FXFILL_WINDING);
+  pPathObj->set_filltype(CFX_FillRenderOptions::FillType::kWinding);
   pPathObj->path().AppendPoint(CFX_PointF(1, 2), FXPT_TYPE::MoveTo);
   pPathObj->path().AppendPoint(CFX_PointF(3, 4), FXPT_TYPE::LineTo);
   pPathObj->path().AppendPointAndClose(CFX_PointF(5, 6), FXPT_TYPE::LineTo);
@@ -187,9 +188,9 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessGraphics) {
   pPathObj->m_GeneralState.SetFillAlpha(0.5f);
   pPathObj->m_GeneralState.SetStrokeAlpha(0.8f);
 
-  auto pDoc = pdfium::MakeUnique<CPDF_Document>(
-      pdfium::MakeUnique<CPDF_DocRenderData>(),
-      pdfium::MakeUnique<CPDF_DocPageData>());
+  auto pDoc =
+      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
+                                      std::make_unique<CPDF_DocPageData>());
 
   pDoc->CreateNewDoc();
   CPDF_Dictionary* pPageDict = pDoc->CreateNewPage(0);
@@ -230,15 +231,15 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessGraphics) {
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessStandardText) {
   // Checking font whose font dictionary is not yet indirect object.
-  auto pDoc = pdfium::MakeUnique<CPDF_Document>(
-      pdfium::MakeUnique<CPDF_DocRenderData>(),
-      pdfium::MakeUnique<CPDF_DocPageData>());
+  auto pDoc =
+      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
+                                      std::make_unique<CPDF_DocPageData>());
 
   pDoc->CreateNewDoc();
   CPDF_Dictionary* pPageDict = pDoc->CreateNewPage(0);
   auto pTestPage = pdfium::MakeRetain<CPDF_Page>(pDoc.get(), pPageDict);
   CPDF_PageContentGenerator generator(pTestPage.Get());
-  auto pTextObj = pdfium::MakeUnique<CPDF_TextObject>();
+  auto pTextObj = std::make_unique<CPDF_TextObject>();
   RetainPtr<CPDF_Font> pFont =
       CPDF_Font::GetStockFont(pDoc.get(), "Times-Roman");
   pTextObj->m_TextState.SetFont(pFont);
@@ -274,7 +275,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessStandardText) {
       "q 0.501961 0.701961 0.34902 rg 1 0.901961 0 RG /";
   // Color RGB values used are integers divided by 255.
   ByteString compareString2 = " gs BT 1 0 0 1 100 100 Tm /";
-  ByteString compareString3 = " 10 Tf <48656C6C6F20576F726C64> Tj ET Q\n";
+  ByteString compareString3 = " 10 Tf 0 Tr <48656C6C6F20576F726C64> Tj ET Q\n";
   EXPECT_LT(compareString1.GetLength() + compareString2.GetLength() +
                 compareString3.GetLength(),
             textString.GetLength());
@@ -291,16 +292,16 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessStandardText) {
       &generator, "Font",
       lastString.First(lastString.GetLength() - compareString3.GetLength()));
   ASSERT_TRUE(fontDict);
-  EXPECT_EQ("Font", fontDict->GetStringFor("Type"));
-  EXPECT_EQ("Type1", fontDict->GetStringFor("Subtype"));
-  EXPECT_EQ("Times-Roman", fontDict->GetStringFor("BaseFont"));
+  EXPECT_EQ("Font", fontDict->GetNameFor("Type"));
+  EXPECT_EQ("Type1", fontDict->GetNameFor("Subtype"));
+  EXPECT_EQ("Times-Roman", fontDict->GetNameFor("BaseFont"));
 }
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessText) {
   // Checking font whose font dictionary is already an indirect object.
-  auto pDoc = pdfium::MakeUnique<CPDF_Document>(
-      pdfium::MakeUnique<CPDF_DocRenderData>(),
-      pdfium::MakeUnique<CPDF_DocPageData>());
+  auto pDoc =
+      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
+                                      std::make_unique<CPDF_DocPageData>());
   pDoc->CreateNewDoc();
 
   CPDF_Dictionary* pPageDict = pDoc->CreateNewPage(0);
@@ -310,7 +311,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessText) {
   std::ostringstream buf;
   {
     // Set the text object font and text
-    auto pTextObj = pdfium::MakeUnique<CPDF_TextObject>();
+    auto pTextObj = std::make_unique<CPDF_TextObject>();
     CPDF_Dictionary* pDict = pDoc->NewIndirect<CPDF_Dictionary>();
     pDict->SetNewFor<CPDF_Name>("Type", "Font");
     pDict->SetNewFor<CPDF_Name>("Subtype", "TrueType");
@@ -329,6 +330,19 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessText) {
     pTextObj->m_TextState.SetFont(pLoadedFont);
     pTextObj->m_TextState.SetFontSize(15.5f);
     pTextObj->SetText("I am indirect");
+    pTextObj->SetTextRenderMode(TextRenderingMode::MODE_FILL_CLIP);
+
+    // Add a clipping path.
+    auto pPath = std::make_unique<CPDF_Path>();
+    pPath->AppendPoint(CFX_PointF(0, 0), FXPT_TYPE::MoveTo);
+    pPath->AppendPoint(CFX_PointF(5, 0), FXPT_TYPE::LineTo);
+    pPath->AppendPoint(CFX_PointF(5, 4), FXPT_TYPE::LineTo);
+    pPath->AppendPointAndClose(CFX_PointF(0, 4), FXPT_TYPE::LineTo);
+    pTextObj->m_ClipPath.Emplace();
+    pTextObj->m_ClipPath.AppendPath(*pPath,
+                                    CFX_FillRenderOptions::FillType::kEvenOdd,
+                                    /*bAutoMerge=*/false);
+
     TestProcessText(&generator, &buf, pTextObj.get());
   }
 
@@ -340,8 +354,9 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessText) {
   ByteString lastString =
       textString.Last(textString.GetLength() - firstResourceAt.value());
   // q and Q must be outside the BT .. ET operations
-  ByteString compareString1 = "q BT 1 0 0 1 0 0 Tm /";
-  ByteString compareString2 = " 15.5 Tf <4920616D20696E646972656374> Tj ET Q\n";
+  ByteString compareString1 = "q 0 0 5 4 re W* n 0 g BT 1 0 0 1 0 0 Tm /";
+  ByteString compareString2 =
+      " 15.5 Tf 4 Tr <4920616D20696E646972656374> Tj ET Q\n";
   EXPECT_LT(compareString1.GetLength() + compareString2.GetLength(),
             textString.GetLength());
   EXPECT_EQ(compareString1, textString.First(compareString1.GetLength()));
@@ -353,27 +368,27 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessText) {
                             compareString2.GetLength()));
   ASSERT_TRUE(fontDict);
   EXPECT_TRUE(fontDict->GetObjNum());
-  EXPECT_EQ("Font", fontDict->GetStringFor("Type"));
-  EXPECT_EQ("TrueType", fontDict->GetStringFor("Subtype"));
-  EXPECT_EQ("Helvetica", fontDict->GetStringFor("BaseFont"));
+  EXPECT_EQ("Font", fontDict->GetNameFor("Type"));
+  EXPECT_EQ("TrueType", fontDict->GetNameFor("Subtype"));
+  EXPECT_EQ("Helvetica", fontDict->GetNameFor("BaseFont"));
   CPDF_Dictionary* fontDesc = fontDict->GetDictFor("FontDescriptor");
   ASSERT_TRUE(fontDesc);
   EXPECT_TRUE(fontDesc->GetObjNum());
-  EXPECT_EQ("FontDescriptor", fontDesc->GetStringFor("Type"));
-  EXPECT_EQ("Helvetica", fontDesc->GetStringFor("FontName"));
+  EXPECT_EQ("FontDescriptor", fontDesc->GetNameFor("Type"));
+  EXPECT_EQ("Helvetica", fontDesc->GetNameFor("FontName"));
 }
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessEmptyForm) {
-  auto pDoc = pdfium::MakeUnique<CPDF_Document>(
-      pdfium::MakeUnique<CPDF_DocRenderData>(),
-      pdfium::MakeUnique<CPDF_DocPageData>());
+  auto pDoc =
+      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
+                                      std::make_unique<CPDF_DocPageData>());
   pDoc->CreateNewDoc();
   auto pDict = pdfium::MakeRetain<CPDF_Dictionary>();
   auto pStream = pdfium::MakeRetain<CPDF_Stream>(nullptr, 0, std::move(pDict));
 
   // Create an empty form.
   auto pTestForm =
-      pdfium::MakeUnique<CPDF_Form>(pDoc.get(), nullptr, pStream.Get());
+      std::make_unique<CPDF_Form>(pDoc.get(), nullptr, pStream.Get());
   pTestForm->ParseContent();
   ASSERT_EQ(CPDF_PageObjectHolder::ParseState::kParsed,
             pTestForm->GetParseState());
@@ -386,15 +401,15 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessEmptyForm) {
 }
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessFormWithPath) {
-  auto pDoc = pdfium::MakeUnique<CPDF_Document>(
-      pdfium::MakeUnique<CPDF_DocRenderData>(),
-      pdfium::MakeUnique<CPDF_DocPageData>());
+  auto pDoc =
+      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
+                                      std::make_unique<CPDF_DocPageData>());
   pDoc->CreateNewDoc();
   auto pDict = pdfium::MakeRetain<CPDF_Dictionary>();
   const char content[] =
       "q 1 0 0 1 0 0 cm 3.102 4.6700001 m 5.4500012 .28999999 "
       "l 4.2399998 3.1499999 4.65 2.98 3.456 0.24 c 3.102 4.6700001 l h f Q\n";
-  size_t buf_len = FX_ArraySize(content);
+  size_t buf_len = pdfium::size(content);
   std::unique_ptr<uint8_t, FxFreeDeleter> buf(FX_AllocUninit(uint8_t, buf_len));
   memcpy(buf.get(), content, buf_len);
   auto pStream = pdfium::MakeRetain<CPDF_Stream>(std::move(buf), buf_len,
@@ -402,7 +417,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessFormWithPath) {
 
   // Create a form with a non-empty stream.
   auto pTestForm =
-      pdfium::MakeUnique<CPDF_Form>(pDoc.get(), nullptr, pStream.Get());
+      std::make_unique<CPDF_Form>(pDoc.get(), nullptr, pStream.Get());
   pTestForm->ParseContent();
   ASSERT_EQ(CPDF_PageObjectHolder::ParseState::kParsed,
             pTestForm->GetParseState());

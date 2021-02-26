@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import android.support.test.filters.SmallTest;
+import android.util.Pair;
 
 import androidx.browser.customtabs.CustomTabsService;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,20 +19,22 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.mock.MockWebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -42,8 +45,7 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class OriginVerifierTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private static final long TIMEOUT_MS = 1000;
     private static final byte[] BYTE_ARRAY = new byte[] {(byte) 0xaa, (byte) 0xbb, (byte) 0xcc,
@@ -61,6 +63,20 @@ public class OriginVerifierTest {
 
     private Origin mHttpsOrigin;
     private Origin mHttpOrigin;
+    private TestExternalAuthUtils mExternalAuthUtils;
+
+    private class TestExternalAuthUtils extends ExternalAuthUtils {
+        private List<Pair<String, Origin>> mAllowlist = new ArrayList<>();
+
+        public void addToAllowlist(String packageName, Origin origin) {
+            mAllowlist.add(Pair.create(packageName, origin));
+        }
+
+        @Override
+        public boolean isAllowlistedForTwaVerification(String packageName, Origin origin) {
+            return mAllowlist.contains(Pair.create(packageName, origin));
+        }
+    }
 
     private class TestOriginVerificationListener implements OriginVerificationListener {
         @Override
@@ -87,11 +103,13 @@ public class OriginVerifierTest {
         mHttpsOrigin = Origin.create("https://www.example.com");
         mHttpOrigin = Origin.create("http://www.android.com");
 
-        mHandleAllUrlsVerifier = new OriginVerifier(
-                PACKAGE_NAME, CustomTabsService.RELATION_HANDLE_ALL_URLS, new MockWebContents());
-        mUseAsOriginVerifier = new OriginVerifier(
-                PACKAGE_NAME, CustomTabsService.RELATION_USE_AS_ORIGIN, /* webContents= */ null);
+        mHandleAllUrlsVerifier = new OriginVerifier(PACKAGE_NAME,
+                CustomTabsService.RELATION_HANDLE_ALL_URLS, new MockWebContents(), null);
+        mUseAsOriginVerifier = new OriginVerifier(PACKAGE_NAME,
+                CustomTabsService.RELATION_USE_AS_ORIGIN, /* webContents= */ null, null);
         mVerificationResultSemaphore = new Semaphore(0);
+
+        mExternalAuthUtils = new TestExternalAuthUtils();
     }
 
     @Test
@@ -163,5 +181,26 @@ public class OriginVerifierTest {
 
         callbackHelper.waitForCallback(0);
         Assert.assertTrue(VerificationResultStore.getRelationships().isEmpty());
+    }
+
+    @Test
+    @SmallTest
+    public void testVerificationBypass() throws InterruptedException {
+        OriginVerifier verifier = new OriginVerifier(
+                PACKAGE_NAME, CustomTabsService.RELATION_HANDLE_ALL_URLS, null, mExternalAuthUtils);
+
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+                () -> verifier.start(new TestOriginVerificationListener(), mHttpsOrigin));
+        Assert.assertTrue(
+                mVerificationResultSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertFalse(mLastVerified);
+
+        // Try again, but this time allowlist the package/origin.
+        mExternalAuthUtils.addToAllowlist(PACKAGE_NAME, mHttpsOrigin);
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+                () -> verifier.start(new TestOriginVerificationListener(), mHttpsOrigin));
+        Assert.assertTrue(
+                mVerificationResultSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mLastVerified);
     }
 }

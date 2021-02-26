@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+// #import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+
 /**
  * @fileoverview
  * Contains utilities that help identify the current way that the lock screen
@@ -9,7 +12,7 @@
  */
 
 /** @enum {string} */
-const LockScreenUnlockType = {
+/* #export */ const LockScreenUnlockType = {
   VALUE_PENDING: 'value_pending',
   PASSWORD: 'password',
   PIN_PASSWORD: 'pin+password'
@@ -29,7 +32,7 @@ const LockScreenUnlockType = {
 let cachedHasPinLogin = undefined;
 
 /** @polymerBehavior */
-const LockStateBehaviorImpl = {
+/* #export */ const LockStateBehaviorImpl = {
   properties: {
     /**
      * The currently selected unlock type.
@@ -114,7 +117,7 @@ const LockStateBehaviorImpl = {
         // user wishes to set a pin, they will have to click the set pin button.
         // See https://crbug.com/1054327 for details.
         if (activeModesChanged && !this.hasPin &&
-            this.selectedUnlockType == LockScreenUnlockType.PIN_PASSWORD) {
+            this.selectedUnlockType === LockScreenUnlockType.PIN_PASSWORD) {
           return;
         }
         this.hasPin = false;
@@ -145,5 +148,5 @@ const LockStateBehaviorImpl = {
 };
 
 /** @polymerBehavior */
-const LockStateBehavior =
+/* #export */ const LockStateBehavior =
     [I18nBehavior, WebUIListenerBehavior, LockStateBehaviorImpl];

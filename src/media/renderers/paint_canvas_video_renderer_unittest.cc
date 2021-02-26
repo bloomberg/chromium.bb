@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/sys_byteorder.h"
@@ -31,7 +32,7 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -156,9 +157,10 @@ static scoped_refptr<VideoFrame> CreateSharedImageRGBAFrame(
   DCHECK_EQ(i, pixels_size);
 
   auto* sii = context_provider->SharedImageInterface();
-  gpu::Mailbox mailbox =
-      sii->CreateSharedImage(viz::ResourceFormat::RGBA_8888, coded_size,
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+  gpu::Mailbox mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::RGBA_8888, coded_size, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
   auto* gl = context_provider->ContextGL();
   gl->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
   UploadPixels(gl, mailbox, coded_size, GL_RGBA, GL_UNSIGNED_BYTE,
@@ -221,15 +223,18 @@ static scoped_refptr<VideoFrame> CreateSharedImageI420Frame(
   DCHECK_EQ(uv_i, uv_pixels_size);
 
   auto* sii = context_provider->SharedImageInterface();
-  gpu::Mailbox y_mailbox =
-      sii->CreateSharedImage(viz::ResourceFormat::LUMINANCE_8, coded_size,
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
-  gpu::Mailbox u_mailbox =
-      sii->CreateSharedImage(viz::ResourceFormat::LUMINANCE_8, uv_size,
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
-  gpu::Mailbox v_mailbox =
-      sii->CreateSharedImage(viz::ResourceFormat::LUMINANCE_8, uv_size,
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+  gpu::Mailbox y_mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::LUMINANCE_8, coded_size, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
+  gpu::Mailbox u_mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::LUMINANCE_8, uv_size, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
+  gpu::Mailbox v_mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::LUMINANCE_8, uv_size, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
   auto* gl = context_provider->ContextGL();
   gl->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
   UploadPixels(gl, y_mailbox, coded_size, GL_LUMINANCE, GL_UNSIGNED_BYTE,
@@ -287,12 +292,14 @@ static scoped_refptr<VideoFrame> CreateSharedImageNV12Frame(
   DCHECK_EQ(uv_i, uv_pixels_size);
 
   auto* sii = context_provider->SharedImageInterface();
-  gpu::Mailbox y_mailbox =
-      sii->CreateSharedImage(viz::ResourceFormat::LUMINANCE_8, coded_size,
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
-  gpu::Mailbox uv_mailbox =
-      sii->CreateSharedImage(viz::ResourceFormat::RG_88, uv_size,
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+  gpu::Mailbox y_mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::LUMINANCE_8, coded_size, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
+  gpu::Mailbox uv_mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::RG_88, uv_size, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
   auto* gl = context_provider->ContextGL();
   gl->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
   UploadPixels(gl, y_mailbox, coded_size, GL_LUMINANCE, GL_UNSIGNED_BYTE,
@@ -1389,8 +1396,7 @@ TEST_F(PaintCanvasVideoRendererWithGLTest,
        CopyVideoFrameTexturesToGLTextureRGBA_ReadLockFence) {
   base::RunLoop run_loop;
   scoped_refptr<VideoFrame> frame = CreateTestRGBAFrame(run_loop.QuitClosure());
-  frame->metadata()->SetBoolean(VideoFrameMetadata::READ_LOCK_FENCES_ENABLED,
-                                true);
+  frame->metadata()->read_lock_fences_enabled = true;
 
   CopyVideoFrameTexturesAndCheckPixels(frame, &CheckRGBAFramePixels);
 

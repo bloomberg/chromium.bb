@@ -34,6 +34,9 @@ public:
     UniformInfo& uniform(int idx) override {
         return fUniforms.item(idx);
     }
+    const UniformInfo& uniform(int idx) const override {
+        return fUniforms.item(idx);
+    }
 
 private:
     explicit GrGLUniformHandler(GrGLSLProgramBuilder* program)
@@ -79,7 +82,7 @@ private:
 
     friend class GrGLProgramBuilder;
 
-    typedef GrGLSLUniformHandler INHERITED;
+    using INHERITED = GrGLSLUniformHandler;
 };
 
 #endif

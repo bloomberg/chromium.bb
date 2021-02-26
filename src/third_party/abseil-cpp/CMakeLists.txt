@@ -22,13 +22,24 @@
 cmake_minimum_required(VERSION 3.5)
 
 # Compiler id for Apple Clang is now AppleClang.
-cmake_policy(SET CMP0025 NEW)
+if (POLICY CMP0025)
+  cmake_policy(SET CMP0025 NEW)
+endif (POLICY CMP0025)
 
 # if command can use IN_LIST
-cmake_policy(SET CMP0057 NEW)
+if (POLICY CMP0057)
+  cmake_policy(SET CMP0057 NEW)
+endif (POLICY CMP0057)
 
 # Project version variables are the empty string if version is unspecified
-cmake_policy(SET CMP0048 NEW)
+if (POLICY CMP0048)
+  cmake_policy(SET CMP0048 NEW)
+endif (POLICY CMP0048)
+
+# option() honor variables
+if (POLICY CMP0077)
+  cmake_policy(SET CMP0077 NEW)
+endif (POLICY CMP0077)
 
 project(absl CXX)
 
@@ -41,9 +52,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # when absl is included as subproject (i.e. using add_subdirectory(abseil-cpp))
 # in the source tree of a project that uses it, install rules are disabled.
 if(NOT "^${CMAKE_SOURCE_DIR}$" STREQUAL "^${PROJECT_SOURCE_DIR}$")
-  set(ABSL_ENABLE_INSTALL FALSE)
+  option(ABSL_ENABLE_INSTALL "Enable install rule" OFF)
 else()
-  set(ABSL_ENABLE_INSTALL TRUE)
+  option(ABSL_ENABLE_INSTALL "Enable install rule" ON)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH
@@ -84,12 +95,13 @@ find_package(Threads REQUIRED)
 option(ABSL_USE_EXTERNAL_GOOGLETEST
   "If ON, Abseil will assume that the targets for GoogleTest are already provided by the including project. This makes sense when Abseil is used with add_subproject." OFF)
 
-
 option(ABSL_USE_GOOGLETEST_HEAD
-  "If ON, abseil will download HEAD from googletest at config time." OFF)
+  "If ON, abseil will download HEAD from GoogleTest at config time." OFF)
+
+set(ABSL_GOOGLETEST_DOWNLOAD_URL "" CACHE STRING "If set, download GoogleTest from this URL")
 
 set(ABSL_LOCAL_GOOGLETEST_DIR "/usr/src/googletest" CACHE PATH
-  "If ABSL_USE_GOOGLETEST_HEAD is OFF, specifies the directory of a local googletest checkout."
+  "If ABSL_USE_GOOGLETEST_HEAD is OFF and ABSL_GOOGLETEST_URL is not set, specifies the directory of a local GoogleTest checkout."
   )
 
 option(ABSL_RUN_TESTS "If ON, Abseil tests will be run." OFF)
@@ -98,14 +110,19 @@ if(${ABSL_RUN_TESTS})
   # enable CTest.  This will set BUILD_TESTING to ON unless otherwise specified
   # on the command line
   include(CTest)
-  enable_testing()
-endif()
 
-## check targets
-if(BUILD_TESTING)
+  ## check targets
   if (NOT ABSL_USE_EXTERNAL_GOOGLETEST)
     set(absl_gtest_build_dir ${CMAKE_BINARY_DIR}/googletest-build)
-    if(${ABSL_USE_GOOGLETEST_HEAD})
+    if(ABSL_USE_GOOGLETEST_HEAD AND ABSL_GOOGLETEST_DOWNLOAD_URL)
+      message(FATAL_ERROR "Do not set both ABSL_USE_GOOGLETEST_HEAD and ABSL_GOOGLETEST_DOWNLOAD_URL")
+    endif()
+    if(ABSL_USE_GOOGLETEST_HEAD)
+      set(absl_gtest_download_url "https://github.com/google/googletest/archive/master.zip")
+    elseif(ABSL_GOOGLETEST_DOWNLOAD_URL)
+      set(absl_gtest_download_url ${ABSL_GOOGLETEST_DOWNLOAD_URL})
+    endif()
+    if(absl_gtest_download_url)
       set(absl_gtest_src_dir ${CMAKE_BINARY_DIR}/googletest-src)
     else()
       set(absl_gtest_src_dir ${ABSL_LOCAL_GOOGLETEST_DIR})
@@ -174,5 +191,7 @@ if(ABSL_ENABLE_INSTALL)
     FILES_MATCHING
       PATTERN "*.inc"
       PATTERN "*.h"
-  )
+      PATTERN "copts" EXCLUDE
+      PATTERN "testdata" EXCLUDE
+    )
 endif()  # ABSL_ENABLE_INSTALL

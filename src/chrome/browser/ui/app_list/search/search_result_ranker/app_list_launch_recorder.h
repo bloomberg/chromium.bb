@@ -13,11 +13,10 @@
 #include "base/bind.h"
 #include "base/callback_list.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
 
@@ -53,6 +52,9 @@ class AppListLaunchRecorder {
 
   static AppListLaunchRecorder* GetInstance();
 
+  AppListLaunchRecorder(const AppListLaunchRecorder&) = delete;
+  AppListLaunchRecorder& operator=(const AppListLaunchRecorder&) = delete;
+
  private:
   friend class base::NoDestructor<AppListLaunchRecorder>;
   friend class app_list::AppListLaunchMetricsProvider;
@@ -74,8 +76,8 @@ class AppListLaunchRecorder {
                   "Non enum passed to AppListLaunchRecorder::Log");
 
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&AppListLaunchRecorder::Log<T>, base::Unretained(this),
                          client, hashed, unhashed));
       return;
@@ -98,8 +100,6 @@ class AppListLaunchRecorder {
   LaunchEventCallbackList callback_list_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(AppListLaunchRecorder);
 };
 
 }  // namespace app_list

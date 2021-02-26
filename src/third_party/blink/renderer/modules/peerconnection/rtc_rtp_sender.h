@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_encoding_parameters.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_send_parameters.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -36,6 +37,7 @@ class RTCRtpTransceiver;
 class RTCInsertableStreams;
 
 webrtc::RtpEncodingParameters ToRtpEncodingParameters(
+    ExecutionContext* context,
     const RTCRtpEncodingParameters*);
 RTCRtpHeaderExtensionParameters* ToRtpHeaderExtensionParameters(
     const webrtc::RtpExtension& headers);
@@ -62,7 +64,8 @@ class RTCRtpSender final : public ScriptWrappable {
   RTCDtlsTransport* rtcpTransport();
   ScriptPromise replaceTrack(ScriptState*, MediaStreamTrack*);
   RTCDTMFSender* dtmf();
-  static RTCRtpCapabilities* getCapabilities(const String& kind);
+  static RTCRtpCapabilities* getCapabilities(ScriptState* state,
+                                             const String& kind);
   RTCRtpSendParameters* getParameters();
   ScriptPromise setParameters(ScriptState*, const RTCRtpSendParameters*);
   ScriptPromise getStats(ScriptState*);
@@ -85,7 +88,7 @@ class RTCRtpSender final : public ScriptWrappable {
   void set_transceiver(RTCRtpTransceiver*);
   void set_transport(RTCDtlsTransport*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void RegisterEncodedAudioStreamCallback();

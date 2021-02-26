@@ -4,11 +4,12 @@
 
 library chromium.cast;
 
+using fuchsia.diagnostics;
 using fuchsia.ui.gfx;
 using fuchsia.web;
 
 /// Describes the configuration under which a Cast application should run.
-table ApplicationConfig {
+resource table ApplicationConfig {
   /// Cast application Id.
   1: string id;
 
@@ -38,6 +39,12 @@ table ApplicationConfig {
 
   /// List of the web permissions that should be granted to the application.
   9: vector<fuchsia.web.PermissionDescriptor> permissions;
+
+  /// The initial minimum severity of `console` logs that will be logged to the
+  /// [`fuchsia.logger/LogSink`] configured for this application. If not set, no
+  /// messages will be logged.
+  // TODO(crbug.com/1088094): Deprecate once there is another mechanism.
+  10: fuchsia.diagnostics.Severity initial_min_console_log_severity;
 };
 
 /// Service interface for working with application configurations.

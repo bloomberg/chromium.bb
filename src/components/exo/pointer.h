@@ -38,6 +38,7 @@ namespace exo {
 class PointerConstraintDelegate;
 class PointerDelegate;
 class PointerGesturePinchDelegate;
+class PointerStylusDelegate;
 class RelativePointerDelegate;
 class Seat;
 class Surface;
@@ -106,6 +107,10 @@ class Pointer : public SurfaceTreeHost,
   // delegate.
   void UnconstrainPointer();
 
+  // Set the stylus delegate for handling stylus events.
+  void SetStylusDelegate(PointerStylusDelegate* delegate);
+  bool HasStylusDelegate() const;
+
  private:
   // Capture the pointer for the given surface. Returns true iff the capture
   // succeeded.
@@ -115,7 +120,7 @@ class Pointer : public SurfaceTreeHost,
   void DisablePointerCapture();
 
   // Returns the effective target for |event|.
-  Surface* GetEffectiveTargetForEvent(ui::LocatedEvent* event) const;
+  Surface* GetEffectiveTargetForEvent(const ui::LocatedEvent* event) const;
 
   // Change pointer focus to |surface|.
   void SetFocus(Surface* surface,
@@ -149,9 +154,13 @@ class Pointer : public SurfaceTreeHost,
   void MoveCursorToCenterOfActiveDisplay();
 
   // Process the delta for relative pointer motion. Returns true if relative
-  // motion was sent to the delegate, false otherwise.
-  bool HandleRelativePointerMotion(base::TimeTicks time_stamp,
-                                   gfx::PointF location_in_target);
+  // motion was sent to the delegate, false otherwise. If |ordinal_motion| is
+  // supplied, it will be used for determining physical motion, otherwise
+  // physical motion will be the relative delta.
+  bool HandleRelativePointerMotion(
+      base::TimeTicks time_stamp,
+      gfx::PointF location_in_target,
+      const base::Optional<gfx::Vector2dF>& ordinal_motion);
 
   // The delegate instance that all events are dispatched to.
   PointerDelegate* const delegate_;
@@ -166,6 +175,9 @@ class Pointer : public SurfaceTreeHost,
 
   // The delegate instance that controls when to lock/unlock this pointer.
   PointerConstraintDelegate* pointer_constraint_delegate_ = nullptr;
+
+  // The delegate instance that stylus/pen events are dispatched to.
+  PointerStylusDelegate* stylus_delegate_ = nullptr;
 
   // The current focus surface for the pointer.
   Surface* focus_surface_ = nullptr;
@@ -199,15 +211,16 @@ class Pointer : public SurfaceTreeHost,
   // Scale at which cursor snapshot is captured.
   float capture_scale_;
 
-  // Density ratio of the cursor snapshot. The bitmap is scaled on displays with
-  // a different ratio.
-  float capture_ratio_;
-
   // Source used for cursor capture copy output requests.
   const base::UnguessableToken cursor_capture_source_id_;
 
   // Last received event type.
   ui::EventType last_event_type_ = ui::ET_UNKNOWN;
+
+  // Last reported stylus values.
+  ui::EventPointerType last_pointer_type_ = ui::EventPointerType::kUnknown;
+  float last_force_ = std::numeric_limits<float>::quiet_NaN();
+  gfx::Vector2dF last_tilt_;
 
   // Weak pointer factory used for cursor capture callbacks.
   base::WeakPtrFactory<Pointer> cursor_capture_weak_ptr_factory_{this};

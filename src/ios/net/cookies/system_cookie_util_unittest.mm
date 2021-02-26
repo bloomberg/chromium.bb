@@ -43,7 +43,8 @@ void CheckSystemCookie(const base::Time& expires, bool secure, bool httponly) {
       base::Time(),  // creation
       expires,
       base::Time(),  // last_access
-      secure, httponly, same_site, net::COOKIE_PRIORITY_DEFAULT);
+      secure, httponly, same_site, net::COOKIE_PRIORITY_DEFAULT,
+      false /* same_party */);
   // Convert it to system cookie.
   NSHTTPCookie* system_cookie =
       SystemCookieFromCanonicalCookie(canonical_cookie);
@@ -105,25 +106,25 @@ TEST_F(CookieUtil, CanonicalCookieFromSystemCookie) {
       [[NSHTTPCookie alloc] initWithProperties:properties];
 
   ASSERT_TRUE(system_cookie);
-  net::CanonicalCookie chrome_cookie =
+  std::unique_ptr<net::CanonicalCookie> chrome_cookie =
       CanonicalCookieFromSystemCookie(system_cookie, creation_time);
-  EXPECT_EQ("a", chrome_cookie.Name());
-  EXPECT_EQ("b", chrome_cookie.Value());
-  EXPECT_EQ("foo", chrome_cookie.Domain());
-  EXPECT_EQ("/", chrome_cookie.Path());
-  EXPECT_EQ(creation_time, chrome_cookie.CreationDate());
-  EXPECT_TRUE(chrome_cookie.LastAccessDate().is_null());
-  EXPECT_TRUE(chrome_cookie.IsPersistent());
+  EXPECT_EQ("a", chrome_cookie->Name());
+  EXPECT_EQ("b", chrome_cookie->Value());
+  EXPECT_EQ("foo", chrome_cookie->Domain());
+  EXPECT_EQ("/", chrome_cookie->Path());
+  EXPECT_EQ(creation_time, chrome_cookie->CreationDate());
+  EXPECT_TRUE(chrome_cookie->LastAccessDate().is_null());
+  EXPECT_TRUE(chrome_cookie->IsPersistent());
   // Allow 1 second difference as iOS rounds expiry time to the nearest second.
   EXPECT_LE(expire_date - base::TimeDelta::FromSeconds(1),
-            chrome_cookie.ExpiryDate());
+            chrome_cookie->ExpiryDate());
   EXPECT_GE(expire_date + base::TimeDelta::FromSeconds(1),
-            chrome_cookie.ExpiryDate());
-  EXPECT_FALSE(chrome_cookie.IsSecure());
-  EXPECT_TRUE(chrome_cookie.IsHttpOnly());
-  EXPECT_EQ(net::COOKIE_PRIORITY_DEFAULT, chrome_cookie.Priority());
+            chrome_cookie->ExpiryDate());
+  EXPECT_FALSE(chrome_cookie->IsSecure());
+  EXPECT_TRUE(chrome_cookie->IsHttpOnly());
+  EXPECT_EQ(net::COOKIE_PRIORITY_DEFAULT, chrome_cookie->Priority());
   if (@available(iOS 13, *)) {
-    EXPECT_EQ(net::CookieSameSite::STRICT_MODE, chrome_cookie.SameSite());
+    EXPECT_EQ(net::CookieSameSite::STRICT_MODE, chrome_cookie->SameSite());
   }
 
   // Test session and secure cookie.
@@ -136,8 +137,8 @@ TEST_F(CookieUtil, CanonicalCookieFromSystemCookie) {
   }];
   ASSERT_TRUE(system_cookie);
   chrome_cookie = CanonicalCookieFromSystemCookie(system_cookie, creation_time);
-  EXPECT_FALSE(chrome_cookie.IsPersistent());
-  EXPECT_TRUE(chrome_cookie.IsSecure());
+  EXPECT_FALSE(chrome_cookie->IsPersistent());
+  EXPECT_TRUE(chrome_cookie->IsSecure());
 }
 
 // Tests that histogram is reported correctly based on the input.
@@ -191,7 +192,8 @@ TEST_F(CookieUtil, SystemCookieFromBadCanonicalCookie) {
       base::Time(),  // last_access
       false,         // secure
       false,         // httponly
-      net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT);
+      net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
+      false /* same_party */);
   // Convert it to system cookie.
   NSHTTPCookie* system_cookie =
       SystemCookieFromCanonicalCookie(bad_canonical_cookie);
@@ -208,7 +210,8 @@ TEST_F(CookieUtil, SystemCookiesFromCanonicalCookieList) {
                            false,         // secure
                            false,         // httponly
                            net::CookieSameSite::UNSPECIFIED,
-                           net::COOKIE_PRIORITY_DEFAULT),
+                           net::COOKIE_PRIORITY_DEFAULT,
+                           false /* same_party */),
       net::CanonicalCookie("name2", "value2", "domain2", "path2/",
                            base::Time(),  // creation
                            expire_date,
@@ -216,7 +219,8 @@ TEST_F(CookieUtil, SystemCookiesFromCanonicalCookieList) {
                            false,         // secure
                            false,         // httponly
                            net::CookieSameSite::UNSPECIFIED,
-                           net::COOKIE_PRIORITY_DEFAULT),
+                           net::COOKIE_PRIORITY_DEFAULT,
+                           false /* same_party */),
   };
 
   NSArray<NSHTTPCookie*>* system_cookies =

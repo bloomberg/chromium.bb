@@ -13,13 +13,10 @@
 // limitations under the License.
 
 import * as m from 'mithril';
-import {Row} from 'src/common/protos';
 
 import {Actions} from '../common/actions';
-import {QueryResponse} from '../common/queries';
-import {fromNs, TimeSpan} from '../common/time';
+import {TimeSpan} from '../common/time';
 
-import {copyToClipboard} from './clipboard';
 import {TRACK_SHELL_WIDTH} from './css_constants';
 import {DetailsPanel} from './details_panel';
 import {globals} from './globals';
@@ -27,12 +24,7 @@ import {NotesPanel} from './notes_panel';
 import {OverviewTimelinePanel} from './overview_timeline_panel';
 import {createPage} from './pages';
 import {PanAndZoomHandler} from './pan_and_zoom_handler';
-import {Panel} from './panel';
 import {AnyAttrsVnode, PanelContainer} from './panel_container';
-import {
-  horizontalScrollAndZoomToRange,
-  verticalScrollToTrack
-} from './scroll_helper';
 import {TickmarkPanel} from './tickmark_panel';
 import {TimeAxisPanel} from './time_axis_panel';
 import {computeZoom} from './time_scale';
@@ -44,142 +36,16 @@ import {VideoPanel} from './video_panel';
 
 const SIDEBAR_WIDTH = 256;
 
-interface QueryTableRowAttrs {
-  row: Row;
-  columns: string[];
-}
-
-class QueryTableRow implements m.ClassComponent<QueryTableRowAttrs> {
-  static columnsContainsSliceLocation(columns: string[]) {
-    const requiredColumns = ['ts', 'dur', 'track_id'];
-    for (const col of requiredColumns) {
-      if (!columns.includes(col)) return false;
-    }
-    return true;
-  }
-
-  static findUiTrackId(traceTrackId: number) {
-    for (const [uiTrackId, trackState] of Object.entries(
-             globals.state.tracks)) {
-      const config = trackState.config as {trackId: number};
-      if (config.trackId === traceTrackId) return uiTrackId;
-    }
-    return null;
-  }
-
-  static rowOnClickHandler(event: Event, row: Row) {
-    // If the click bubbles up to the pan and zoom handler that will deselect
-    // the slice.
-    event.stopPropagation();
-
-    const sliceStart = fromNs(row.ts as number);
-    // row.dur can be negative. Clamp to 1ns.
-    const sliceDur = fromNs(Math.max(row.dur as number, 1));
-    const sliceEnd = sliceStart + sliceDur;
-    const trackId = row.track_id as number;
-    const uiTrackId = this.findUiTrackId(trackId);
-    if (uiTrackId === null) return;
-    verticalScrollToTrack(uiTrackId, true);
-    horizontalScrollAndZoomToRange(sliceStart, sliceEnd);
-    const sliceId = row.slice_id as number | undefined;
-    if (sliceId !== undefined) {
-      globals.makeSelection(Actions.selectChromeSlice(
-          {id: sliceId, trackId: uiTrackId, table: 'slice'}));
-    }
-  }
-
-  view(vnode: m.Vnode<QueryTableRowAttrs>) {
-    const cells = [];
-    const {row, columns} = vnode.attrs;
-    for (const col of columns) {
-      cells.push(m('td', row[col]));
-    }
-    const containsSliceLocation =
-        QueryTableRow.columnsContainsSliceLocation(columns);
-    const maybeOnClick = containsSliceLocation ?
-        (e: Event) => QueryTableRow.rowOnClickHandler(e, row) :
-        null;
-    return m(
-        'tr',
-        {onclick: maybeOnClick, 'clickable': containsSliceLocation},
-        cells);
-  }
-}
-
-class QueryTable extends Panel {
-  private previousResponse?: QueryResponse;
-
-  onbeforeupdate() {
-    const resp = globals.queryResults.get('command') as QueryResponse;
-    const res = resp !== this.previousResponse;
-    return res;
-  }
-
-  view() {
-    const resp = globals.queryResults.get('command') as QueryResponse;
-    if (resp === undefined) {
-      return m('');
-    }
-    this.previousResponse = resp;
-    const cols = [];
-    for (const col of resp.columns) {
-      cols.push(m('td', col));
-    }
-    const header = m('tr', cols);
-
-    const rows = [];
-    for (let i = 0; i < resp.rows.length; i++) {
-      rows.push(m(QueryTableRow, {row: resp.rows[i], columns: resp.columns}));
-    }
-
-    return m(
-        'div',
-        m(
-            'header.overview',
-            `Query result - ${Math.round(resp.durationMs)} ms`,
-            m('span.code', resp.query),
-            resp.error ?
-                null :
-                m('button.query-ctrl',
-                  {
-                    onclick: () => {
-                      const lines: string[][] = [];
-                      lines.push(resp.columns);
-                      for (const row of resp.rows) {
-                        const line = [];
-                        for (const col of resp.columns) {
-                          line.push(row[col].toString());
-                        }
-                        lines.push(line);
-                      }
-                      copyToClipboard(
-                          lines.map(line => line.join('\t')).join('\n'));
-                    },
-                  },
-                  'Copy as .tsv'),
-            m('button.query-ctrl',
-              {
-                onclick: () => {
-                  globals.queryResults.delete('command');
-                  globals.rafScheduler.scheduleFullRedraw();
-                }
-              },
-              'Close'),
-            ),
-        resp.error ?
-            m('.query-error', `SQL error: ${resp.error}`) :
-            m('table.query-table', m('thead', header), m('tbody', rows)));
-  }
-
-  renderCanvas() {}
-}
-
-
 // Checks if the mousePos is within 3px of the start or end of the
 // current selected time range.
 function onTimeRangeBoundary(mousePos: number): 'START'|'END'|null {
-  const area = globals.frontendLocalState.selectedArea.area;
-  if (area !== undefined) {
+  const selection = globals.state.currentSelection;
+  if (selection !== null && selection.kind === 'AREA') {
+    // If frontend selectedArea exists then we are in the process of editing the
+    // time range and need to use that value instead.
+    const area = globals.frontendLocalState.selectedArea ?
+        globals.frontendLocalState.selectedArea :
+        globals.state.areas[selection.areaId];
     const start = globals.frontendLocalState.timeScale.timeToPx(area.startSec);
     const end = globals.frontendLocalState.timeScale.timeToPx(area.endSec);
     const startDrag = mousePos - TRACK_SHELL_WIDTH;
@@ -208,7 +74,7 @@ class TraceViewer implements m.ClassComponent {
     const frontendLocalState = globals.frontendLocalState;
     const updateDimensions = () => {
       const rect = vnode.dom.getBoundingClientRect();
-      frontendLocalState.updateResolution(
+      frontendLocalState.updateLocalLimits(
           0,
           rect.width - TRACK_SHELL_WIDTH -
               frontendLocalState.getScrollbarWidth());
@@ -275,31 +141,36 @@ class TraceViewer implements m.ClassComponent {
         const scale = frontendLocalState.timeScale;
         this.keepCurrentSelection = true;
         if (editing) {
-          const selectedArea = frontendLocalState.selectedArea.area;
-          if (selectedArea !== undefined) {
+          const selection = globals.state.currentSelection;
+          if (selection !== null && selection.kind === 'AREA') {
+            const area = globals.frontendLocalState.selectedArea ?
+                globals.frontendLocalState.selectedArea :
+                globals.state.areas[selection.areaId];
             let newTime = scale.pxToTime(currentX - TRACK_SHELL_WIDTH);
             // Have to check again for when one boundary crosses over the other.
             const curBoundary = onTimeRangeBoundary(prevX);
             if (curBoundary == null) return;
-            const keepTime = curBoundary === 'START' ? selectedArea.endSec :
-                                                       selectedArea.startSec;
+            const keepTime =
+                curBoundary === 'START' ? area.endSec : area.startSec;
             // Don't drag selection outside of current screen.
             if (newTime < keepTime) {
               newTime = Math.max(newTime, scale.pxToTime(scale.startPx));
             } else {
               newTime = Math.min(newTime, scale.pxToTime(scale.endPx));
             }
+            // When editing the time range we always use the saved tracks,
+            // since these will not change.
             frontendLocalState.selectArea(
                 Math.max(Math.min(keepTime, newTime), traceTime.startSec),
                 Math.min(Math.max(keepTime, newTime), traceTime.endSec),
-            );
+                globals.state.areas[selection.areaId].tracks);
           }
         } else {
-          const startPx = Math.max(
-              Math.min(dragStartX, currentX) - TRACK_SHELL_WIDTH,
-              scale.startPx);
-          const endPx = Math.min(
-              Math.max(dragStartX, currentX) - TRACK_SHELL_WIDTH, scale.endPx);
+          let startPx = Math.min(dragStartX, currentX) - TRACK_SHELL_WIDTH;
+          let endPx = Math.max(dragStartX, currentX) - TRACK_SHELL_WIDTH;
+          if (startPx < 0 && endPx < 0) return;
+          startPx = Math.max(startPx, scale.startPx);
+          endPx = Math.min(endPx, scale.endPx);
           frontendLocalState.selectArea(
               scale.pxToTime(startPx), scale.pxToTime(endPx));
           frontendLocalState.areaY.start = dragStartY;
@@ -307,13 +178,25 @@ class TraceViewer implements m.ClassComponent {
         }
         globals.rafScheduler.scheduleRedraw();
       },
-      selectingStarted: () => {
-        globals.frontendLocalState.selectingArea = true;
-      },
-      selectingEnded: () => {
-        globals.frontendLocalState.selectingArea = false;
+      endSelection: (edit: boolean) => {
         globals.frontendLocalState.areaY.start = undefined;
         globals.frontendLocalState.areaY.end = undefined;
+        const area = globals.frontendLocalState.selectedArea;
+        // If we are editing we need to pass the current id through to ensure
+        // the marked area with that id is also updated.
+        if (edit) {
+          const selection = globals.state.currentSelection;
+          if (selection !== null && selection.kind === 'AREA' && area) {
+            globals.dispatch(
+                Actions.editArea({area, areaId: selection.areaId}));
+          }
+        } else if (area) {
+          globals.makeSelection(Actions.selectArea({area}));
+        }
+        // Now the selection has ended we stored the final selected area in the
+        // global state and can remove the in progress selection from the
+        // frontendLocalState.
+        globals.frontendLocalState.deselectArea();
         // Full redraw to color track shell.
         globals.rafScheduler.scheduleFullRedraw();
       }
@@ -336,15 +219,17 @@ class TraceViewer implements m.ClassComponent {
         selectable: true,
       }));
       if (group.collapsed) continue;
-      for (const trackId of group.tracks) {
+      // The first track is the summary track, and is displayed as part of the
+      // group panel, we don't want to display it twice so we start from 1.
+      for (let i = 1; i < group.tracks.length; ++i) {
+        const id = group.tracks[i];
         scrollingPanels.push(m(TrackPanel, {
-          key: `track-${group.id}-${trackId}`,
-          id: trackId,
+          key: `track-${group.id}-${id}`,
+          id,
           selectable: true,
         }));
       }
     }
-    scrollingPanels.unshift(m(QueryTable, {key: 'query'}));
 
     return m(
         '.page',

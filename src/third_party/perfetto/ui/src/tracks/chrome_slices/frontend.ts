@@ -14,11 +14,11 @@
 
 import {Actions} from '../../common/actions';
 import {cropText, drawIncompleteSlice} from '../../common/canvas_utils';
+import {hueForSlice} from '../../common/colorizer';
 import {TrackState} from '../../common/state';
-import {toNs} from '../../common/time';
 import {checkerboardExcept} from '../../frontend/checkerboard';
 import {globals} from '../../frontend/globals';
-import {Track} from '../../frontend/track';
+import {SliceRect, Track} from '../../frontend/track';
 import {trackRegistry} from '../../frontend/track_registry';
 
 import {Config, Data, SLICE_TRACK_KIND} from './common';
@@ -26,15 +26,11 @@ import {Config, Data, SLICE_TRACK_KIND} from './common';
 const SLICE_HEIGHT = 18;
 const TRACK_PADDING = 4;
 const INCOMPLETE_SLICE_TIME_S = 0.00003;
-
-function hash(s: string): number {
-  let hash = 0x811c9dc5 & 0xfffffff;
-  for (let i = 0; i < s.length; i++) {
-    hash ^= s.charCodeAt(i);
-    hash = (hash * 16777619) & 0xffffffff;
-  }
-  return hash & 0xff;
-}
+const CHEVRON_WIDTH_PX = 10;
+const HALF_CHEVRON_WIDTH_PX = CHEVRON_WIDTH_PX / 2;
+const INNER_CHEVRON_OFFSET = -3;
+const INNER_CHEVRON_SCALE =
+    (SLICE_HEIGHT - 2 * INNER_CHEVRON_OFFSET) / SLICE_HEIGHT;
 
 export class ChromeSliceTrack extends Track<Config, Data> {
   static readonly kind: string = SLICE_TRACK_KIND;
@@ -72,7 +68,6 @@ export class ChromeSliceTrack extends Track<Config, Data> {
 
     // measuretext is expensive so we only use it once.
     const charWidth = ctx.measureText('ACBDLqsdfg').width / 10;
-    const pxEnd = timeScale.timeToPx(visibleWindowTime.end);
 
     // The draw of the rect on the selected slice must happen after the other
     // drawings, otherwise it would result under another rect.
@@ -84,127 +79,149 @@ export class ChromeSliceTrack extends Track<Config, Data> {
       const depth = data.depths[i];
       const titleId = data.titles[i];
       const sliceId = data.sliceIds[i];
+      const isInstant = data.isInstant[i];
+      const isIncomplete = data.isIncomplete[i];
       const title = data.strings[titleId];
-      const summarizedOffset =
-          data.summarizedOffset ? data.summarizedOffset[i] : -1;
-      let incompleteSlice = false;
-
-      if (toNs(tEnd) - toNs(tStart) === -1) {  // incomplete slice
-        incompleteSlice = true;
+      if (isIncomplete) {  // incomplete slice
         tEnd = tStart + INCOMPLETE_SLICE_TIME_S;
       }
 
-      if (tEnd <= visibleWindowTime.start || tStart >= visibleWindowTime.end) {
+      const rect = this.getSliceRect(tStart, tEnd, depth);
+      if (!rect || !rect.visible) {
         continue;
       }
 
-      const rectXStart = Math.max(timeScale.timeToPx(tStart), 0);
-      let rectXEnd = Math.min(timeScale.timeToPx(tEnd), pxEnd);
-      let rectWidth = rectXEnd - rectXStart;
-      // All slices should be at least 1px.
-      if (rectWidth < 1) {
-        rectWidth = 1;
-        rectXEnd = rectXStart + 1;
-      }
-      const rectYStart = TRACK_PADDING + depth * SLICE_HEIGHT;
-      const name = title.replace(/( )?\d+/g, '');
-      const hue = hash(name);
-      const saturation = 50;
-      const hovered = titleId === this.hoveredTitleId;
-      const color = `hsl(${hue}, ${saturation}%, ${hovered ? 30 : 65}%)`;
-      if (summarizedOffset !== -1) {
-        const summarizedSize = data.summarizedSize[i];
-        const nameHues =
-            (data.summaryNameId.slice(
-                 summarizedOffset, summarizedOffset + summarizedSize))
-                .map(id => hash(data.strings[id]));
-        const percents = data.summaryPercent.slice(
-            summarizedOffset, summarizedOffset + summarizedSize);
-        colorSummarizedSlice(nameHues, percents, rectXStart, rectXEnd, hovered);
-      } else {
-        ctx.fillStyle = color;
-      }
-      if (incompleteSlice && rectWidth > SLICE_HEIGHT / 4) {
-        drawIncompleteSlice(
-            ctx, rectXStart, rectYStart, rectWidth, SLICE_HEIGHT, color);
-      } else {
-        ctx.fillRect(rectXStart, rectYStart, rectWidth, SLICE_HEIGHT);
-      }
-
-      // Selected case
       const currentSelection = globals.state.currentSelection;
-      if (currentSelection && currentSelection.kind === 'CHROME_SLICE' &&
-          currentSelection.id !== undefined &&
-          currentSelection.id === sliceId) {
+      const isSelected = currentSelection &&
+          currentSelection.kind === 'CHROME_SLICE' &&
+          currentSelection.id !== undefined && currentSelection.id === sliceId;
+
+      const name = title.replace(/( )?\d+/g, '');
+      const hue = hueForSlice(name);
+      const saturation = isSelected ? 80 : 50;
+      const highlighted = titleId === this.hoveredTitleId ||
+          globals.frontendLocalState.highlightedSliceId === sliceId;
+      const color = `hsl(${hue}, ${saturation}%, ${highlighted ? 30 : 65}%)`;
+
+      ctx.fillStyle = color;
+
+      // We draw instant events as upward facing chevrons starting at A:
+      //     A
+      //    ###
+      //   ##C##
+      //  ##   ##
+      // D       B
+      // Then B, C, D and back to A:
+      if (isInstant) {
+        if (isSelected) {
+          drawRectOnSelected = () => {
+            ctx.save();
+            ctx.translate(rect.left, rect.top);
+
+            // Draw outer chevron as dark border
+            ctx.save();
+            ctx.translate(0, INNER_CHEVRON_OFFSET);
+            ctx.scale(INNER_CHEVRON_SCALE, INNER_CHEVRON_SCALE);
+            ctx.fillStyle = `hsl(${hue}, ${saturation}%, 30%)`;
+            this.drawChevron(ctx);
+            ctx.restore();
+
+            // Draw inner chevron as interior
+            ctx.fillStyle = color;
+            this.drawChevron(ctx);
+
+            ctx.restore();
+          };
+        } else {
+          ctx.save();
+          ctx.translate(rect.left, rect.top);
+          this.drawChevron(ctx);
+          ctx.restore();
+        }
+        continue;
+      }
+      if (isIncomplete && rect.width > SLICE_HEIGHT / 4) {
+        drawIncompleteSlice(
+            ctx, rect.left, rect.top, rect.width, SLICE_HEIGHT, color);
+      } else {
+        ctx.fillRect(rect.left, rect.top, rect.width, SLICE_HEIGHT);
+      }
+      // Selected case
+      if (isSelected) {
         drawRectOnSelected = () => {
           ctx.strokeStyle = `hsl(${hue}, ${saturation}%, 30%)`;
           ctx.beginPath();
           ctx.lineWidth = 3;
           ctx.strokeRect(
-              rectXStart, rectYStart - 1.5, rectWidth, SLICE_HEIGHT + 3);
+              rect.left, rect.top - 1.5, rect.width, SLICE_HEIGHT + 3);
           ctx.closePath();
         };
       }
 
       ctx.fillStyle = 'white';
-      const displayText = cropText(title, charWidth, rectWidth);
-      const rectXCenter = rectXStart + rectWidth / 2;
+      const displayText = cropText(title, charWidth, rect.width);
+      const rectXCenter = rect.left + rect.width / 2;
       ctx.textBaseline = "middle";
-      ctx.fillText(displayText, rectXCenter, rectYStart + SLICE_HEIGHT / 2);
+      ctx.fillText(displayText, rectXCenter, rect.top + SLICE_HEIGHT / 2);
     }
     drawRectOnSelected();
+  }
 
-    // Make a gradient ordered most common to least common slices within the
-    // summarized slice.
-    function colorSummarizedSlice(
-        nameHues: Uint16Array,
-        percents: Float64Array,
-        rectStart: number,
-        rectEnd: number,
-        hovered: boolean) {
-      const gradient = ctx.createLinearGradient(
-          rectStart, SLICE_HEIGHT, rectEnd, SLICE_HEIGHT);
-      let colorStop = 0;
-      for (let i = 0; i < nameHues.length; i++) {
-        const colorString = `hsl(${nameHues[i]}, 50%, ${hovered ? 30 : 65}%)`;
-        colorStop = Math.max(0, Math.min(1, colorStop + percents[i]));
-        gradient.addColorStop(colorStop, colorString);
-      }
-      ctx.fillStyle = gradient;
-    }
+  drawChevron(ctx: CanvasRenderingContext2D) {
+    // Draw a chevron at a fixed location and size. Should be used with
+    // ctx.translate and ctx.scale to alter location and size.
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(HALF_CHEVRON_WIDTH_PX, SLICE_HEIGHT);
+    ctx.lineTo(0, SLICE_HEIGHT - HALF_CHEVRON_WIDTH_PX);
+    ctx.lineTo(-HALF_CHEVRON_WIDTH_PX, SLICE_HEIGHT);
+    ctx.lineTo(0, 0);
+    ctx.fill();
   }
 
   getSliceIndex({x, y}: {x: number, y: number}): number|void {
     const data = this.data();
-    this.hoveredTitleId = -1;
     if (data === undefined) return;
     const {timeScale} = globals.frontendLocalState;
     if (y < TRACK_PADDING) return;
+    const instantWidthTime = timeScale.deltaPxToDuration(HALF_CHEVRON_WIDTH_PX);
     const t = timeScale.pxToTime(x);
-    const depth = Math.floor(y / SLICE_HEIGHT);
+    const depth = Math.floor((y - TRACK_PADDING) / SLICE_HEIGHT);
     for (let i = 0; i < data.starts.length; i++) {
-      const tStart = data.starts[i];
-      let tEnd = data.ends[i];
-      if (toNs(tEnd) - toNs(tStart) === -1) {
-        tEnd = tStart + INCOMPLETE_SLICE_TIME_S;
+      if (depth !== data.depths[i]) {
+        continue;
       }
-      if (tStart <= t && t <= tEnd && depth === data.depths[i]) {
-        return i;
+      const tStart = data.starts[i];
+      if (data.isInstant[i]) {
+        if (Math.abs(tStart - t) < instantWidthTime) {
+          return i;
+        }
+      } else {
+        let tEnd = data.ends[i];
+        if (data.isIncomplete[i]) {
+          tEnd = tStart + INCOMPLETE_SLICE_TIME_S;
+        }
+        if (tStart <= t && t <= tEnd) {
+          return i;
+        }
       }
     }
   }
 
   onMouseMove({x, y}: {x: number, y: number}) {
+    this.hoveredTitleId = -1;
+    globals.frontendLocalState.setHighlightedSliceId(-1);
     const sliceIndex = this.getSliceIndex({x, y});
     if (sliceIndex === undefined) return;
     const data = this.data();
     if (data === undefined) return;
-    const titleId = data.titles[sliceIndex];
-    this.hoveredTitleId = titleId;
+    this.hoveredTitleId = data.titles[sliceIndex];
+    globals.frontendLocalState.setHighlightedSliceId(data.sliceIds[sliceIndex]);
   }
 
   onMouseOut() {
     this.hoveredTitleId = -1;
+    globals.frontendLocalState.setHighlightedSliceId(-1);
   }
 
   onMouseClick({x, y}: {x: number, y: number}): boolean {
@@ -226,6 +243,22 @@ export class ChromeSliceTrack extends Track<Config, Data> {
 
   getHeight() {
     return SLICE_HEIGHT * (this.config.maxDepth + 1) + 2 * TRACK_PADDING;
+  }
+
+  getSliceRect(tStart: number, tEnd: number, depth: number): SliceRect
+      |undefined {
+    const {timeScale, visibleWindowTime} = globals.frontendLocalState;
+    const pxEnd = timeScale.timeToPx(visibleWindowTime.end);
+    const left = Math.max(timeScale.timeToPx(tStart), 0);
+    const right = Math.min(timeScale.timeToPx(tEnd), pxEnd);
+    return {
+      left,
+      width: Math.max(right - left, 1),
+      top: TRACK_PADDING + depth * SLICE_HEIGHT,
+      height: SLICE_HEIGHT,
+      visible:
+          !(tEnd <= visibleWindowTime.start || tStart >= visibleWindowTime.end)
+    };
   }
 }
 

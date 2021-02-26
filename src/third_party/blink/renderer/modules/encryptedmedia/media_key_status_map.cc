@@ -45,18 +45,18 @@ class MediaKeyStatusMap::MapEntry final
       return b->KeyId();
 
     // Compare the bytes.
-    int result = memcmp(a->KeyId()->Data(), b->KeyId()->Data(),
-                        std::min(a->KeyId()->ByteLengthAsSizeT(),
-                                 b->KeyId()->ByteLengthAsSizeT()));
+    int result =
+        memcmp(a->KeyId()->Data(), b->KeyId()->Data(),
+               std::min(a->KeyId()->ByteLength(), b->KeyId()->ByteLength()));
     if (result != 0)
       return result < 0;
 
     // KeyIds are equal to the shared length, so the shorter string is <.
-    DCHECK_NE(a->KeyId()->ByteLengthAsSizeT(), b->KeyId()->ByteLengthAsSizeT());
-    return a->KeyId()->ByteLengthAsSizeT() < b->KeyId()->ByteLengthAsSizeT();
+    DCHECK_NE(a->KeyId()->ByteLength(), b->KeyId()->ByteLength());
+    return a->KeyId()->ByteLength() < b->KeyId()->ByteLength();
   }
 
-  virtual void Trace(Visitor* visitor) { visitor->Trace(key_id_); }
+  virtual void Trace(Visitor* visitor) const { visitor->Trace(key_id_); }
 
  private:
   const Member<DOMArrayBuffer> key_id_;
@@ -85,7 +85,7 @@ class MapIterationSource final
     return true;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(map_);
     PairIterable<ArrayBufferOrArrayBufferView, String>::IterationSource::Trace(
         visitor);
@@ -149,7 +149,7 @@ MediaKeyStatusMap::StartIteration(ScriptState*, ExceptionState&) {
   return MakeGarbageCollected<MapIterationSource>(this);
 }
 
-void MediaKeyStatusMap::Trace(Visitor* visitor) {
+void MediaKeyStatusMap::Trace(Visitor* visitor) const {
   visitor->Trace(entries_);
   ScriptWrappable::Trace(visitor);
 }

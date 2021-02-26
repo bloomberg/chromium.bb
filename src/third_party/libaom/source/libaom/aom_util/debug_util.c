@@ -10,6 +10,7 @@
  */
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include "aom_util/debug_util.h"
@@ -22,7 +23,7 @@ void aom_bitstream_queue_set_frame_write(int frame_idx) {
   frame_idx_w = frame_idx;
 }
 
-int aom_bitstream_queue_get_frame_writee(void) { return frame_idx_w; }
+int aom_bitstream_queue_get_frame_write(void) { return frame_idx_w; }
 
 void aom_bitstream_queue_set_frame_read(int frame_idx) {
   frame_idx_r = frame_idx;
@@ -68,6 +69,19 @@ void bitstream_queue_pop(int *result, aom_cdf_prob *cdf, int *nsymbs) {
 }
 
 void bitstream_queue_push(int result, const aom_cdf_prob *cdf, int nsymbs) {
+  // If you observe a CDF error:
+  // - Set 'debug_cdf_mismatch' to true
+  // - Set target_frame_idx_r and target_queue_r to where CDF error was reported
+  // - Set a breakpoint in debugger at the 'fprintf' below.
+  const bool debug_cdf_mismatch = false;
+  if (debug_cdf_mismatch) {
+    int target_frame_idx_r = 1;
+    int target_queue_r = 18005;
+    if (frame_idx_w == target_frame_idx_r && queue_w == target_queue_r) {
+      fprintf(stderr, "\n *** bitstream queue at frame_idx_w %d queue_w %d\n",
+              frame_idx_w, queue_w);
+    }
+  }
   if (!skip_w) {
     result_queue[queue_w] = result;
     nsymbs_queue[queue_w] = nsymbs;

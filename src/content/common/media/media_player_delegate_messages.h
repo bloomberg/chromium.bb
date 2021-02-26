@@ -74,6 +74,10 @@ IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_EnterPictureInPicture,
 IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_ExitPictureInPicture,
                     int /* delegate_id, distinguishes instances */)
 
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_SetAudioSinkId,
+                    int /* delegate_id, distinguishes instances */,
+                    std::string /* sink_id */)
+
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_NotifyPowerExperimentState,
                     int /* delegate_id, distinguishes instances */,
                     bool /* is experiment starting (true) or stopping? */)
@@ -89,12 +93,14 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaPaused,
                     int /* delegate_id, distinguishes instances */,
                     bool /* reached end of stream */)
 
-IPC_MESSAGE_ROUTED5(MediaPlayerDelegateHostMsg_OnMediaPlaying,
+IPC_MESSAGE_ROUTED4(MediaPlayerDelegateHostMsg_OnMediaMetadataChanged,
                     int /* delegate_id, distinguishes instances */,
-                    bool /* has_video */,
                     bool /* has_audio */,
-                    bool /* is_remote */,
+                    bool /* has_video */,
                     media::MediaContentType /* media_content_type */)
+
+IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnMediaPlaying,
+                    int /* delegate_id, distinguishes instances */)
 
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMutedStatusChanged,
                     int /* delegate_id, distinguishes instances */,
@@ -117,5 +123,19 @@ IPC_MESSAGE_ROUTED2(
     MediaPlayerDelegateHostMsg_OnPictureInPictureAvailabilityChanged,
     int /* delegate_id, distinguishes instances */,
     bool /* picture-in-picture availability */)
+
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnAudioOutputSinkChanged,
+                    int /* delegate_id, distinguishes instances */,
+                    std::string /* hashed_device_id */)
+
+IPC_MESSAGE_ROUTED1(
+    MediaPlayerDelegateHostMsg_OnAudioOutputSinkChangingDisabled,
+    int /* delegate_id, distinguishes instances */)
+
+IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnBufferUnderflow,
+                    int /* delegate_id, distinguishes instances */)
+
+IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnSeek,
+                    int /* delegate_id, distinguishes instances */)
 
 #endif  // CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_

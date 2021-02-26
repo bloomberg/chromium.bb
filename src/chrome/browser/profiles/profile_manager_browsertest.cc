@@ -5,15 +5,16 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/platform_apps/shortcut_manager.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -26,9 +27,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/prefs/pref_service.h"
@@ -180,7 +181,8 @@ class PasswordStoreConsumerVerifier
     : public password_manager::PasswordStoreConsumer {
  public:
   void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override {
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> results)
+      override {
     password_entries_.swap(results);
     run_loop_.Quit();
   }
@@ -189,14 +191,15 @@ class PasswordStoreConsumerVerifier
     run_loop_.Run();
   }
 
-  const std::vector<std::unique_ptr<autofill::PasswordForm>>& GetPasswords()
-      const {
+  const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
+  GetPasswords() const {
     return password_entries_;
   }
 
  private:
   base::RunLoop run_loop_;
-  std::vector<std::unique_ptr<autofill::PasswordForm>> password_entries_;
+  std::vector<std::unique_ptr<password_manager::PasswordForm>>
+      password_entries_;
 };
 
 base::FilePath GetFirstNonSigninNonLockScreenAppProfile(
@@ -225,11 +228,16 @@ base::FilePath GetFirstNonSigninNonLockScreenAppProfile(
 
 // This file contains tests for the ProfileManager that require a heavyweight
 // InProcessBrowserTest.  These include tests involving profile deletion.
-
-// TODO(jeremy): crbug.com/103355 - These tests should be enabled on all
-// platforms.
 class ProfileManagerBrowserTest : public InProcessBrowserTest {
  protected:
+  void SetUp() override {
+    // Shortcut deletion delays tests shutdown on Win-7 and results in time out.
+    // See crbug.com/1073451.
+#if defined(OS_WIN)
+    AppShortcutManager::SuppressShortcutsForTesting();
+#endif
+    InProcessBrowserTest::SetUp();
+  }
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if defined(OS_CHROMEOS)
     command_line->AppendSwitch(
@@ -241,15 +249,7 @@ class ProfileManagerBrowserTest : public InProcessBrowserTest {
 // CrOS multi-profiles implementation is too different for these tests.
 #if !defined(OS_CHROMEOS)
 
-// Delete single profile and make sure a new one is created.
-// TODO(https://crbug.com/1073451) flaky on windows bots
-#if defined(OS_WIN)
-#define MAYBE_DeleteSingletonProfile DISABLED_DeleteSingletonProfile
-#else
-#define MAYBE_DeleteSingletonProfile DeleteSingletonProfile
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
-                       MAYBE_DeleteSingletonProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
@@ -299,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteInactiveProfile) {
   base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
-      new_path, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
+      new_path, base::BindRepeating(&OnUnblockOnProfileCreation, &run_loop),
       base::string16(), std::string());
   run_loop.Run();
 
@@ -320,15 +320,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteInactiveProfile) {
   EXPECT_EQ(current_profile_path, last_used->GetPath());
 }
 
-// Delete current profile in a multi profile setup and make sure an existing one
-// is loaded.
-// TODO(https://crbug.com/1073451) flaky on windows.
-#if defined(OS_WIN)
-#define MAYBE_DeleteCurrentProfile DISABLED_DeleteCurrentProfile
-#else
-#define MAYBE_DeleteCurrentProfile DeleteCurrentProfile
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteCurrentProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteCurrentProfile) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
@@ -337,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteCurrentProfile) {
   base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
-      new_path, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
+      new_path, base::BindRepeating(&OnUnblockOnProfileCreation, &run_loop),
       base::string16(), std::string());
   run_loop.Run();
 
@@ -358,15 +350,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteCurrentProfile) {
   EXPECT_EQ(new_path, last_used->GetPath());
 }
 
-// Delete all profiles in a multi profile setup and make sure a new one is
-// created.
-// TODO(https://crbug.com/1073451) flaky on windows bots
-#if defined(OS_WIN)
-#define MAYBE_DeleteAllProfiles DISABLED_DeleteAllProfiles
-#else
-#define MAYBE_DeleteAllProfiles DeleteAllProfiles
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteAllProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
@@ -375,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
   base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
-      new_path, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
+      new_path, base::BindRepeating(&OnUnblockOnProfileCreation, &run_loop),
       base::string16(), std::string());
 
   // Run the message loop to allow profile creation to take place; the loop is
@@ -410,6 +394,52 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
   EXPECT_EQ(new_profile_path, last_used->GetPath());
 }
 #endif  // !defined(OS_CHROMEOS)
+
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, ProfileFromProfileKey) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile1 = browser()->profile();
+
+  // Create an additional profile.
+  base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
+  base::RunLoop run_loop;
+  profile_manager->CreateProfileAsync(
+      new_path, base::BindRepeating(&OnUnblockOnProfileCreation, &run_loop),
+      base::string16(), std::string());
+
+  // Run the message loop to allow profile creation to take place; the loop is
+  // terminated by OnUnblockOnProfileCreation when the profile is created.
+  run_loop.Run();
+
+  Profile* profile2 = profile_manager->GetProfile(new_path);
+
+  EXPECT_NE(profile1, profile2);
+  EXPECT_NE(profile1->GetProfileKey(), profile2->GetProfileKey());
+  EXPECT_EQ(profile1, profile_manager->GetProfileFromProfileKey(
+                          profile1->GetProfileKey()));
+  EXPECT_EQ(profile2, profile_manager->GetProfileFromProfileKey(
+                          profile2->GetProfileKey()));
+
+  // Create off-the-record profiles.
+  Profile* otr_1a = profile1->GetPrimaryOTRProfile();
+  Profile* otr_1b =
+      profile1->GetOffTheRecordProfile(Profile::OTRProfileID("profile::otr1"));
+  Profile* otr_1c =
+      profile1->GetOffTheRecordProfile(Profile::OTRProfileID("profile::otr2"));
+  Profile* otr_2a = profile2->GetPrimaryOTRProfile();
+  Profile* otr_2b =
+      profile2->GetOffTheRecordProfile(Profile::OTRProfileID("profile::otr1"));
+
+  EXPECT_EQ(otr_1a,
+            profile_manager->GetProfileFromProfileKey(otr_1a->GetProfileKey()));
+  EXPECT_EQ(otr_1b,
+            profile_manager->GetProfileFromProfileKey(otr_1b->GetProfileKey()));
+  EXPECT_EQ(otr_1c,
+            profile_manager->GetProfileFromProfileKey(otr_1c->GetProfileKey()));
+  EXPECT_EQ(otr_2a,
+            profile_manager->GetProfileFromProfileKey(otr_2a->GetProfileKey()));
+  EXPECT_EQ(otr_2b,
+            profile_manager->GetProfileFromProfileKey(otr_2b->GetProfileKey()));
+}
 
 #if defined(OS_CHROMEOS)
 
@@ -448,9 +478,10 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
 
   // Create a profile, make sure callback is invoked before any callbacks are
   // invoked (so they can do things like sign in the profile, etc).
-  ProfileManager::CreateMultiProfileAsync(base::string16(),  // name
-                                          std::string(),     // icon url
-                                          base::Bind(ProfileCreationComplete));
+  ProfileManager::CreateMultiProfileAsync(
+      base::string16(),  // name
+      std::string(),     // icon url
+      base::BindRepeating(ProfileCreationComplete));
   // Wait for profile to finish loading.
   content::RunMessageLoop();
   EXPECT_EQ(profile_manager->GetNumberOfProfiles(), 2U);
@@ -484,7 +515,8 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, SwitchToProfile) {
       profile_manager->GenerateNextProfileDirectoryPath();
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
-      path_profile2, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
+      path_profile2,
+      base::BindRepeating(&OnUnblockOnProfileCreation, &run_loop),
       base::string16(), std::string());
 
   // Run the message loop to allow profile creation to take place; the loop is
@@ -541,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
   base::FilePath path_profile2 =
       profile_manager->GenerateNextProfileDirectoryPath();
   profile_manager->CreateProfileAsync(
-      path_profile2, base::Bind(&EphemeralProfileCreationComplete),
+      path_profile2, base::BindRepeating(&EphemeralProfileCreationComplete),
       base::string16(), std::string());
 
   // Spin to allow profile creation to take place.
@@ -591,13 +623,13 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeletePasswords) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_TRUE(profile);
 
-  autofill::PasswordForm form;
-  form.scheme = autofill::PasswordForm::Scheme::kHtml;
-  form.origin = GURL("http://accounts.google.com/LoginAuth");
+  password_manager::PasswordForm form;
+  form.scheme = password_manager::PasswordForm::Scheme::kHtml;
+  form.url = GURL("http://accounts.google.com/LoginAuth");
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = base::ASCIIToUTF16("my_username");
   form.password_value = base::ASCIIToUTF16("my_password");
-  form.blacklisted_by_user = false;
+  form.blocked_by_user = false;
 
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(

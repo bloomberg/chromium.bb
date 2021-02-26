@@ -64,8 +64,8 @@ class ElementData : public GarbageCollected<ElementData> {
   const AtomicString& IdForStyleResolution() const {
     return id_for_style_resolution_;
   }
-  void SetIdForStyleResolution(const AtomicString& new_id) const {
-    id_for_style_resolution_ = new_id;
+  AtomicString SetIdForStyleResolution(AtomicString new_id) const {
+    return std::exchange(id_for_style_resolution_, std::move(new_id));
   }
 
   const CSSPropertyValueSet* InlineStyle() const { return inline_style_.Get(); }
@@ -82,7 +82,7 @@ class ElementData : public GarbageCollected<ElementData> {
   bool IsUnique() const { return bit_field_.get<IsUniqueFlag>(); }
 
   void TraceAfterDispatch(blink::Visitor*) const;
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  protected:
   using BitField = WTF::ConcurrentlyReadBitField<uint32_t>;

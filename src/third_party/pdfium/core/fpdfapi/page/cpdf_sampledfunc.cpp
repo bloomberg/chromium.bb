@@ -38,7 +38,7 @@ bool IsValidBitsPerSample(uint32_t x) {
 
 CPDF_SampledFunc::CPDF_SampledFunc() : CPDF_Function(Type::kType0Sampled) {}
 
-CPDF_SampledFunc::~CPDF_SampledFunc() {}
+CPDF_SampledFunc::~CPDF_SampledFunc() = default;
 
 bool CPDF_SampledFunc::v_Init(const CPDF_Object* pObj,
                               std::set<const CPDF_Object*>* pVisited) {
@@ -174,7 +174,7 @@ bool CPDF_SampledFunc::v_Call(const float* inputs, float* results) const {
   return true;
 }
 
-#if defined _SKIA_SUPPORT_ || defined _SKIA_SUPPORT_PATHS_
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
 RetainPtr<CPDF_StreamAcc> CPDF_SampledFunc::GetSampleStream() const {
   return m_pSampleStream;
 }

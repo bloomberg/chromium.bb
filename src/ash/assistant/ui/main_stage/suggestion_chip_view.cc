@@ -10,6 +10,7 @@
 
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/util/resource_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -19,10 +20,13 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
 namespace {
+
+using assistant::util::ResourceLinkType;
 
 // Appearance.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
@@ -39,21 +43,13 @@ constexpr int kPreferredHeightDip = 32;
 
 // SuggestionChipView ----------------------------------------------------------
 
-// static
-constexpr char SuggestionChipView::kClassName[];
-
 SuggestionChipView::SuggestionChipView(AssistantViewDelegate* delegate,
-                                       const AssistantSuggestion* suggestion,
-                                       views::ButtonListener* listener)
-    : Button(listener), delegate_(delegate), suggestion_(suggestion) {
-  InitLayout();
+                                       const AssistantSuggestion& suggestion)
+    : delegate_(delegate), suggestion_id_(suggestion.id) {
+  InitLayout(suggestion);
 }
 
 SuggestionChipView::~SuggestionChipView() = default;
-
-const char* SuggestionChipView::GetClassName() const {
-  return kClassName;
-}
 
 gfx::Size SuggestionChipView::CalculatePreferredSize() const {
   const int preferred_width = views::View::CalculatePreferredSize().width();
@@ -75,8 +71,8 @@ void SuggestionChipView::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void SuggestionChipView::InitLayout() {
-  const base::string16 text = base::UTF8ToUTF16(suggestion_->text);
+void SuggestionChipView::InitLayout(const AssistantSuggestion& suggestion) {
+  const base::string16 text = base::UTF8ToUTF16(suggestion.text);
 
   // Accessibility.
   SetAccessibleName(text);
@@ -90,7 +86,7 @@ void SuggestionChipView::InitLayout() {
   // Layout.
   // Note that padding differs depending on icon visibility.
   const int padding_left_dip =
-      suggestion_->icon_url.is_empty() ? kChipPaddingDip : kIconMarginDip;
+      suggestion.icon_url.is_empty() ? kChipPaddingDip : kIconMarginDip;
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
@@ -104,15 +100,19 @@ void SuggestionChipView::InitLayout() {
   icon_view_->SetImageSize(gfx::Size(kIconSizeDip, kIconSizeDip));
   icon_view_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
 
-  // Download our icon if necessary. Note that we *don't* hide the associated
-  // view while an image is being downloaded. This prevents layout jank that
-  // would otherwise occur when the image is finally rendered.
-  if (suggestion_->icon_url.is_empty()) {
-    icon_view_->SetVisible(false);
+  const GURL& url = suggestion.icon_url;
+  if (assistant::util::IsResourceLinkType(url, ResourceLinkType::kIcon)) {
+    // Handle local images.
+    icon_view_->SetImage(assistant::util::CreateVectorIcon(url, kIconSizeDip));
+  } else if (!suggestion.icon_url.is_empty()) {
+    // Handle remote images.
+    delegate_->DownloadImage(url, base::BindOnce(&SuggestionChipView::SetIcon,
+                                                 weak_factory_.GetWeakPtr()));
   } else {
-    delegate_->DownloadImage(suggestion_->icon_url,
-                             base::BindOnce(&SuggestionChipView::SetIcon,
-                                            weak_factory_.GetWeakPtr()));
+    // Only hide the view if we have neither a local or a remote image. In the
+    // case of a remote image, this prevents layout jank that would otherwise
+    // occur if we updated the view visibility only after the image downloaded.
+    icon_view_->SetVisible(false);
   }
 
   // Text.
@@ -170,6 +170,10 @@ void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {
   icon_view_->SetVisible(!icon.isNull());
 }
 
+const gfx::ImageSkia& SuggestionChipView::GetIcon() const {
+  return icon_view_->GetImage();
+}
+
 void SuggestionChipView::SetText(const base::string16& text) {
   text_view_->SetText(text);
 }
@@ -177,5 +181,8 @@ void SuggestionChipView::SetText(const base::string16& text) {
 const base::string16& SuggestionChipView::GetText() const {
   return text_view_->GetText();
 }
+
+BEGIN_METADATA(SuggestionChipView, views::Button)
+END_METADATA
 
 }  // namespace ash

@@ -5,16 +5,17 @@
 #ifndef QUICHE_QUIC_CORE_TLS_HANDSHAKER_H_
 #define QUICHE_QUIC_CORE_TLS_HANDSHAKER_H_
 
+#include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_message_parser.h"
+#include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/tls_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -36,28 +37,73 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public TlsConnection::Delegate,
   ~TlsHandshaker() override;
 
   // From CryptoMessageParser
-  bool ProcessInput(quiche::QuicheStringPiece input,
-                    EncryptionLevel level) override;
+  bool ProcessInput(absl::string_view input, EncryptionLevel level) override;
   size_t InputBytesRemaining() const override { return 0; }
   QuicErrorCode error() const override { return parser_error_; }
   const std::string& error_detail() const override {
     return parser_error_detail_;
   }
 
-  // From QuicCryptoStream
-  virtual bool encryption_established() const = 0;
-  virtual bool one_rtt_keys_available() const = 0;
-  virtual const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
-      const = 0;
-  virtual CryptoMessageParser* crypto_message_parser() { return this; }
-  virtual HandshakeState GetHandshakeState() const = 0;
+  // The following methods provide implementations to subclasses of
+  // TlsHandshaker which use them to implement methods of QuicCryptoStream.
+  CryptoMessageParser* crypto_message_parser() { return this; }
   size_t BufferSizeLimitForLevel(EncryptionLevel level) const;
+  ssl_early_data_reason_t EarlyDataReason() const;
+  std::unique_ptr<QuicDecrypter> AdvanceKeysAndCreateCurrentOneRttDecrypter();
+  std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter();
+  virtual HandshakeState GetHandshakeState() const = 0;
 
  protected:
-  virtual void AdvanceHandshake() = 0;
+  // Called when a new message is received on the crypto stream and is available
+  // for the TLS stack to read.
+  void AdvanceHandshake();
 
-  virtual void CloseConnection(QuicErrorCode error,
-                               const std::string& reason_phrase) = 0;
+  void CloseConnection(QuicErrorCode error, const std::string& reason_phrase);
+
+  void OnConnectionClosed(QuicErrorCode error, ConnectionCloseSource source);
+
+  bool is_connection_closed() const { return is_connection_closed_; }
+
+  // Called when |SSL_do_handshake| returns 1, indicating that the handshake has
+  // finished. Note that due to 0-RTT, the handshake may "finish" twice;
+  // |SSL_in_early_data| can be used to determine whether the handshake is truly
+  // done.
+  virtual void FinishHandshake() = 0;
+
+  // Called when a handshake message is received after the handshake is
+  // complete.
+  virtual void ProcessPostHandshakeMessage() = 0;
+
+  // Called when an unexpected error code is received from |SSL_get_error|. If a
+  // subclass can expect more than just a single error (as provided by
+  // |set_expected_ssl_error|), it can override this method to handle that case.
+  virtual bool ShouldCloseConnectionOnUnexpectedError(int ssl_error);
+
+  void set_expected_ssl_error(int ssl_error) {
+    expected_ssl_error_ = ssl_error;
+  }
+  int expected_ssl_error() const { return expected_ssl_error_; }
+
+  // Called to verify a cert chain. This is a simple wrapper around
+  // ProofVerifier or ServerProofVerifier, which optionally gathers additional
+  // arguments to pass into their VerifyCertChain method. This class retains a
+  // non-owning pointer to |callback|; the callback must live until this
+  // function returns QUIC_SUCCESS or QUIC_FAILURE, or until the callback is
+  // run.
+  //
+  // If certificate verification fails, |*out_alert| may be set to a TLS alert
+  // that will be sent when closing the connection; it defaults to
+  // certificate_unknown. Implementations of VerifyCertChain may retain the
+  // |out_alert| pointer while performing an async operation.
+  virtual QuicAsyncStatus VerifyCertChain(
+      const std::vector<std::string>& certs,
+      std::string* error_details,
+      std::unique_ptr<ProofVerifyDetails>* details,
+      uint8_t* out_alert,
+      std::unique_ptr<ProofVerifierCallback> callback) = 0;
+  // Called when certificate verification is completed.
+  virtual void OnProofVerifyDetailsAvailable(
+      const ProofVerifyDetails& verify_details) = 0;
 
   // Returns the PRF used by the cipher suite negotiated in the TLS handshake.
   const EVP_MD* Prf(const SSL_CIPHER* cipher);
@@ -70,6 +116,8 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public TlsConnection::Delegate,
   HandshakerDelegateInterface* handshaker_delegate() {
     return handshaker_delegate_;
   }
+
+  enum ssl_verify_result_t VerifyCert(uint8_t* out_alert) override;
 
   // SetWriteSecret provides the encryption secret used to encrypt messages at
   // encryption level |level|. The secret provided here is the one from the TLS
@@ -91,8 +139,7 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public TlsConnection::Delegate,
   // WriteMessage is called when there is |data| from the TLS stack ready for
   // the QUIC stack to write in a crypto frame. The data must be transmitted at
   // encryption level |level|.
-  void WriteMessage(EncryptionLevel level,
-                    quiche::QuicheStringPiece data) override;
+  void WriteMessage(EncryptionLevel level, absl::string_view data) override;
 
   // FlushFlight is called to signal that the current flight of
   // messages have all been written (via calls to WriteMessage) and can be
@@ -104,11 +151,53 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public TlsConnection::Delegate,
   void SendAlert(EncryptionLevel level, uint8_t desc) override;
 
  private:
+  // ProofVerifierCallbackImpl handles the result of an asynchronous certificate
+  // verification operation.
+  class QUIC_EXPORT_PRIVATE ProofVerifierCallbackImpl
+      : public ProofVerifierCallback {
+   public:
+    explicit ProofVerifierCallbackImpl(TlsHandshaker* parent);
+    ~ProofVerifierCallbackImpl() override;
+
+    // ProofVerifierCallback interface.
+    void Run(bool ok,
+             const std::string& error_details,
+             std::unique_ptr<ProofVerifyDetails>* details) override;
+
+    // If called, Cancel causes the pending callback to be a no-op.
+    void Cancel();
+
+   private:
+    // Non-owning pointer to the TlsHandshaker responsible for this callback.
+    // |parent_| must be valid for the life of this callback or until |Cancel|
+    // is called.
+    TlsHandshaker* parent_;
+  };
+
+  // ProofVerifierCallback used for async certificate verification. Ownership of
+  // this object is transferred to |VerifyCertChain|;
+  ProofVerifierCallbackImpl* proof_verify_callback_ = nullptr;
+  std::unique_ptr<ProofVerifyDetails> verify_details_;
+  enum ssl_verify_result_t verify_result_ = ssl_verify_retry;
+  uint8_t cert_verify_tls_alert_ = SSL_AD_CERTIFICATE_UNKNOWN;
+  std::string cert_verify_error_details_;
+
+  int expected_ssl_error_ = SSL_ERROR_WANT_READ;
+  bool is_connection_closed_ = false;
+
   QuicCryptoStream* stream_;
   HandshakerDelegateInterface* handshaker_delegate_;
 
   QuicErrorCode parser_error_ = QUIC_NO_ERROR;
   std::string parser_error_detail_;
+
+  // The most recently derived 1-RTT read and write secrets, which are updated
+  // on each key update.
+  std::vector<uint8_t> latest_read_secret_;
+  std::vector<uint8_t> latest_write_secret_;
+  // 1-RTT header protection keys, which are not changed during key update.
+  std::vector<uint8_t> one_rtt_read_header_protection_key_;
+  std::vector<uint8_t> one_rtt_write_header_protection_key_;
 };
 
 }  // namespace quic

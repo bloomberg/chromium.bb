@@ -18,6 +18,7 @@
 
 namespace gfx {
 class Point;
+class Rect;
 }
 
 namespace content {
@@ -41,7 +42,9 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
                               const std::string& message) override;
   void SetFrameOwnerProperties(
       blink::mojom::FrameOwnerPropertiesPtr properties) override;
-  void NotifyUserActivation() override;
+  void NotifyUserActivation(
+      blink::mojom::UserActivationNotificationType notification_type) override;
+  void NotifyVirtualKeyboardOverlayRect(const gfx::Rect&) override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message,
                            bool discard_duplicates) override;
@@ -76,13 +79,26 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
       const base::string16& source_origin,
       const base::string16& target_origin,
       blink::TransferableMessage message) override;
-
-#if defined(OS_MACOSX)
+  void GetSavableResourceLinks(
+      GetSavableResourceLinksCallback callback) override;
+#if defined(OS_MAC)
   void GetCharacterIndexAtPoint(const gfx::Point& point) override;
   void GetFirstRectForRange(const gfx::Range& range) override;
+  void GetStringForRange(const gfx::Range& range,
+                         GetStringForRangeCallback callback) override;
 #endif
   void BindReportingObserver(
       mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver) override;
+  void UpdateOpener(const base::Optional<base::UnguessableToken>&
+                        opener_frame_token) override;
+  void MixedContentFound(
+      const GURL& main_resource_url,
+      const GURL& mixed_content_url,
+      blink::mojom::RequestContextType request_context,
+      bool was_allowed,
+      const GURL& url_before_redirects,
+      bool had_redirect,
+      network::mojom::SourceLocationPtr source_location) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

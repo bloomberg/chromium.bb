@@ -8,6 +8,7 @@
 
 #include "core/fxcrt/css/cfx_cssstringvalue.h"
 #include "core/fxcrt/css/cfx_cssvaluelist.h"
+#include "third_party/base/containers/adapters.h"
 
 CFX_CSSComputedStyle::CFX_CSSComputedStyle() = default;
 
@@ -15,24 +16,23 @@ CFX_CSSComputedStyle::~CFX_CSSComputedStyle() = default;
 
 bool CFX_CSSComputedStyle::GetCustomStyle(const WideString& wsName,
                                           WideString* pValue) const {
-  for (auto iter = m_CustomProperties.rbegin();
-       iter != m_CustomProperties.rend(); ++iter) {
-    if (wsName == iter->name()) {
-      *pValue = iter->value();
+  for (const auto& prop : pdfium::base::Reversed(m_CustomProperties)) {
+    if (wsName == prop.name()) {
+      *pValue = prop.value();
       return true;
     }
   }
   return false;
 }
 
-int32_t CFX_CSSComputedStyle::CountFontFamilies() const {
-  return m_InheritedData.m_pFontFamily
-             ? m_InheritedData.m_pFontFamily->CountValues()
-             : 0;
-}
+Optional<WideString> CFX_CSSComputedStyle::GetLastFontFamily() const {
+  if (!m_InheritedData.m_pFontFamily ||
+      m_InheritedData.m_pFontFamily->values().empty()) {
+    return pdfium::nullopt;
+  }
 
-const WideString CFX_CSSComputedStyle::GetFontFamily(int32_t index) const {
-  return m_InheritedData.m_pFontFamily->GetValue(index)
+  return m_InheritedData.m_pFontFamily->values()
+      .back()
       .As<CFX_CSSStringValue>()
       ->Value();
 }
@@ -166,29 +166,8 @@ void CFX_CSSComputedStyle::AddCustomStyle(const CFX_CSSCustomProperty& prop) {
   m_CustomProperties.push_back(prop);
 }
 
-CFX_CSSComputedStyle::InheritedData::InheritedData()
-    : m_LetterSpacing(CFX_CSSLengthUnit::Normal, 0),
-      m_WordSpacing(CFX_CSSLengthUnit::Normal, 0),
-      m_TextIndent(CFX_CSSLengthUnit::Point, 0),
-      m_pFontFamily(nullptr),
-      m_fFontSize(12.0f),
-      m_fLineHeight(14.0f),
-      m_dwFontColor(0xFF000000),
-      m_wFontWeight(400),
-      m_eFontVariant(CFX_CSSFontVariant::Normal),
-      m_eFontStyle(CFX_CSSFontStyle::Normal),
-      m_eTextAlign(CFX_CSSTextAlign::Left) {}
+CFX_CSSComputedStyle::InheritedData::InheritedData() = default;
 
-CFX_CSSComputedStyle::InheritedData::~InheritedData() {}
+CFX_CSSComputedStyle::InheritedData::~InheritedData() = default;
 
-CFX_CSSComputedStyle::NonInheritedData::NonInheritedData()
-    : m_MarginWidth(CFX_CSSLengthUnit::Point, 0),
-      m_BorderWidth(CFX_CSSLengthUnit::Point, 0),
-      m_PaddingWidth(CFX_CSSLengthUnit::Point, 0),
-      m_fVerticalAlign(0.0f),
-      m_eDisplay(CFX_CSSDisplay::Inline),
-      m_eVerticalAlignType(CFX_CSSVerticalAlign::Baseline),
-      m_dwTextDecoration(0),
-      m_bHasMargin(false),
-      m_bHasBorder(false),
-      m_bHasPadding(false) {}
+CFX_CSSComputedStyle::NonInheritedData::NonInheritedData() = default;

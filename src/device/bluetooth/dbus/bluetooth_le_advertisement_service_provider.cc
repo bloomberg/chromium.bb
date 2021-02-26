@@ -37,7 +37,8 @@ class BluetoothAdvertisementServiceProviderImpl
       std::unique_ptr<UUIDList> service_uuids,
       std::unique_ptr<ManufacturerData> manufacturer_data,
       std::unique_ptr<UUIDList> solicit_uuids,
-      std::unique_ptr<ServiceData> service_data)
+      std::unique_ptr<ServiceData> service_data,
+      std::unique_ptr<ScanResponseData> scan_response_data)
       : origin_thread_id_(base::PlatformThread::CurrentId()),
         bus_(bus),
         delegate_(delegate),
@@ -45,7 +46,8 @@ class BluetoothAdvertisementServiceProviderImpl
         service_uuids_(std::move(service_uuids)),
         manufacturer_data_(std::move(manufacturer_data)),
         solicit_uuids_(std::move(solicit_uuids)),
-        service_data_(std::move(service_data)) {
+        service_data_(std::move(service_data)),
+        scan_response_data_(std::move(scan_response_data)) {
     DCHECK(bus);
     DCHECK(delegate);
 
@@ -58,23 +60,23 @@ class BluetoothAdvertisementServiceProviderImpl
     exported_object_->ExportMethod(
         bluetooth_advertisement::kBluetoothAdvertisementInterface,
         bluetooth_advertisement::kRelease,
-        base::Bind(&BluetoothAdvertisementServiceProviderImpl::Release,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BluetoothAdvertisementServiceProviderImpl::Release,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAdvertisementServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
 
     // Export dbus property methods.
     exported_object_->ExportMethod(
         dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesGet,
-        base::Bind(&BluetoothAdvertisementServiceProviderImpl::Get,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BluetoothAdvertisementServiceProviderImpl::Get,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAdvertisementServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesGetAll,
-        base::Bind(&BluetoothAdvertisementServiceProviderImpl::GetAll,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BluetoothAdvertisementServiceProviderImpl::GetAll,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAdvertisementServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -166,12 +168,18 @@ class BluetoothAdvertisementServiceProviderImpl
                service_data_) {
       writer.OpenVariant("o", &variant_writer);
       AppendServiceDataVariant(&variant_writer);
+    } else if ((property_name ==
+                bluetooth_advertisement::kScanResponseDataProperty) &&
+               scan_response_data_) {
+      writer.OpenVariant("o", &variant_writer);
+      AppendScanResponseDataVariant(&variant_writer);
     } else {
       std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such property: '" + property_name + "'.");
       std::move(response_sender).Run(std::move(error_response));
+      return;
     }
 
     writer.CloseContainer(&variant_writer);
@@ -238,6 +246,7 @@ class BluetoothAdvertisementServiceProviderImpl
     AppendManufacturerData(&array_writer);
     AppendSolicitUUIDs(&array_writer);
     AppendServiceData(&array_writer);
+    AppendScanResponseData(&array_writer);
 
     writer.CloseContainer(&array_writer);
     return response;
@@ -331,6 +340,20 @@ class BluetoothAdvertisementServiceProviderImpl
     array_writer->CloseContainer(&dict_entry_writer);
   }
 
+  void AppendScanResponseData(dbus::MessageWriter* array_writer) {
+    if (!scan_response_data_)
+      return;
+    dbus::MessageWriter dict_entry_writer(nullptr);
+    array_writer->OpenDictEntry(&dict_entry_writer);
+    dict_entry_writer.AppendString(
+        bluetooth_advertisement::kScanResponseDataProperty);
+    dbus::MessageWriter variant_writer(nullptr);
+    dict_entry_writer.OpenVariant("a{yv}", &variant_writer);
+    AppendScanResponseDataVariant(&variant_writer);
+    dict_entry_writer.CloseContainer(&variant_writer);
+    array_writer->CloseContainer(&dict_entry_writer);
+  }
+
   void AppendManufacturerDataVariant(dbus::MessageWriter* writer) {
     DCHECK(manufacturer_data_);
     dbus::MessageWriter array_writer(NULL);
@@ -371,6 +394,26 @@ class BluetoothAdvertisementServiceProviderImpl
     writer->CloseContainer(&array_writer);
   }
 
+  void AppendScanResponseDataVariant(dbus::MessageWriter* writer) {
+    DCHECK(scan_response_data_);
+    dbus::MessageWriter array_writer(nullptr);
+    writer->OpenArray("{yv}", &array_writer);
+    for (const auto& m : *scan_response_data_) {
+      dbus::MessageWriter entry_writer(nullptr);
+
+      array_writer.OpenDictEntry(&entry_writer);
+
+      entry_writer.AppendByte(m.first);
+      dbus::MessageWriter variant_writer(nullptr);
+      entry_writer.OpenVariant("ay", &variant_writer);
+      variant_writer.AppendArrayOfBytes(m.second.data(), m.second.size());
+      entry_writer.CloseContainer(&variant_writer);
+
+      array_writer.CloseContainer(&entry_writer);
+    }
+    writer->CloseContainer(&array_writer);
+  }
+
   // Origin thread (i.e. the UI thread in production).
   base::PlatformThreadId origin_thread_id_;
 
@@ -389,6 +432,7 @@ class BluetoothAdvertisementServiceProviderImpl
   std::unique_ptr<ManufacturerData> manufacturer_data_;
   std::unique_ptr<UUIDList> solicit_uuids_;
   std::unique_ptr<ServiceData> service_data_;
+  std::unique_ptr<ScanResponseData> scan_response_data_;
 
   // D-Bus object we are exporting, owned by this object.
   scoped_refptr<dbus::ExportedObject> exported_object_;
@@ -419,15 +463,21 @@ BluetoothLEAdvertisementServiceProvider::Create(
     std::unique_ptr<UUIDList> service_uuids,
     std::unique_ptr<ManufacturerData> manufacturer_data,
     std::unique_ptr<UUIDList> solicit_uuids,
-    std::unique_ptr<ServiceData> service_data) {
+    std::unique_ptr<ServiceData> service_data,
+    std::unique_ptr<ScanResponseData> scan_response_data) {
   if (!bluez::BluezDBusManager::Get()->IsUsingFakes()) {
     return std::make_unique<BluetoothAdvertisementServiceProviderImpl>(
         bus, object_path, delegate, type, std::move(service_uuids),
         std::move(manufacturer_data), std::move(solicit_uuids),
-        std::move(service_data));
+        std::move(service_data), std::move(scan_response_data));
   }
+#if defined(USE_REAL_DBUS_CLIENTS)
+  LOG(FATAL) << "Fake is unavailable if USE_REAL_DBUS_CLIENTS is defined.";
+  return nullptr;
+#else
   return std::make_unique<FakeBluetoothLEAdvertisementServiceProvider>(
       object_path, delegate);
+#endif  // defined(USE_REAL_DBUS_CLIENTS)
 }
 
 }  // namespace bluez

@@ -4,12 +4,17 @@
 
 #include "chrome/browser/ui/passwords/bubble_controllers/move_to_account_store_bubble_controller.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/password_manager/core/browser/mock_password_feature_manager.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
@@ -25,9 +30,22 @@ namespace {
 
 using testing::Return;
 
+static std::unique_ptr<KeyedService> BuildTestSyncService(
+    content::BrowserContext* context) {
+  return std::make_unique<syncer::TestSyncService>();
+}
+
 class MoveToAccountStoreBubbleControllerTest : public ::testing::Test {
  public:
   MoveToAccountStoreBubbleControllerTest() {
+    feature_list_.InitAndEnableFeature(
+        password_manager::features::kEnablePasswordsAccountStorage);
+
+    // Make sure no real SyncService gets created (it's not needed for these
+    // tests, and it'd require more setup).
+    ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
+        &profile_, base::BindRepeating(&BuildTestSyncService));
+
     web_contents_ =
         content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
     mock_delegate_ =
@@ -36,6 +54,8 @@ class MoveToAccountStoreBubbleControllerTest : public ::testing::Test {
     EXPECT_CALL(*delegate(), OnBubbleShown());
     ON_CALL(*delegate(), GetWebContents())
         .WillByDefault(Return(web_contents_.get()));
+    ON_CALL(*delegate(), GetPasswordFeatureManager())
+        .WillByDefault(Return(&password_feature_manager_));
     controller_ = std::make_unique<MoveToAccountStoreBubbleController>(
         mock_delegate_->AsWeakPtr());
     EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(delegate()));
@@ -45,11 +65,17 @@ class MoveToAccountStoreBubbleControllerTest : public ::testing::Test {
   PasswordsModelDelegateMock* delegate() { return mock_delegate_.get(); }
   TestingProfile* profile() { return &profile_; }
   MoveToAccountStoreBubbleController* controller() { return controller_.get(); }
+  password_manager::MockPasswordFeatureManager* password_feature_manager() {
+    return &password_feature_manager_;
+  }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   content::RenderViewHostTestEnabler test_render_host_factories_;
   TestingProfile profile_;
+  testing::NiceMock<password_manager::MockPasswordFeatureManager>
+      password_feature_manager_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<PasswordsModelDelegateMock> mock_delegate_;
   std::unique_ptr<MoveToAccountStoreBubbleController> controller_;
@@ -60,9 +86,23 @@ TEST_F(MoveToAccountStoreBubbleControllerTest, CloseExplicitly) {
   controller()->OnBubbleClosing();
 }
 
-TEST_F(MoveToAccountStoreBubbleControllerTest, AcceptMove) {
+TEST_F(MoveToAccountStoreBubbleControllerTest, AcceptMoveIfOptedIn) {
+  ON_CALL(*password_feature_manager(), IsOptedInForAccountStorage)
+      .WillByDefault(Return(true));
   EXPECT_CALL(*delegate(), MovePasswordToAccountStore);
   controller()->AcceptMove();
+}
+
+TEST_F(MoveToAccountStoreBubbleControllerTest, AuthenticateMoveIfOptedOut) {
+  ON_CALL(*password_feature_manager(), IsOptedInForAccountStorage)
+      .WillByDefault(Return(false));
+  EXPECT_CALL(*delegate(), AuthenticateUserForAccountStoreOptInAndMovePassword);
+  controller()->AcceptMove();
+}
+
+TEST_F(MoveToAccountStoreBubbleControllerTest, RejectMove) {
+  EXPECT_CALL(*delegate(), BlockMovingPasswordToAccountStore);
+  controller()->RejectMove();
 }
 
 TEST_F(MoveToAccountStoreBubbleControllerTest, ProvidesTitle) {
@@ -79,7 +119,7 @@ TEST_F(MoveToAccountStoreBubbleControllerTest, ProvidesProfileIcon) {
   signin::SimulateAccountImageFetch(
       identity_manager, info.account_id, "https://todd.tester.com/avatar.png",
       gfx::Image(gfx::test::CreateImageSkia(96, 96)));
-  EXPECT_FALSE(controller()->GetProfileIcon().IsEmpty());
+  EXPECT_FALSE(controller()->GetProfileIcon(/*size=*/48).IsEmpty());
 }
 
 }  // namespace

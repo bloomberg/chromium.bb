@@ -36,13 +36,13 @@
 
 using namespace google_breakpad;
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc != 2) {
     fprintf(stderr, "Usage: %s <binary-with-stab-symbol>\n", argv[0]);
     return 1;
   }
 
-  const char *binary = argv[1];
+  const char* binary = argv[1];
 
   DumpSymbols dumper;
   if (!dumper.WriteSymbolFile(binary, fileno(stdout))) {

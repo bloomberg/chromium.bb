@@ -5,10 +5,10 @@
   "collationUCAData": "implicithan",
   "usePoolBundle": false,
   "localeFilter": {
+// We cannot include root here so we cannot use filterType language
+    "filterType": "regex",
     "whitelist": [
-      "bn", "et", "gu", "kn", "ml", "mr", "ms", "ta", "te", "af",
-      "az", "eu", "gl", "hy", "is", "ka", "kk", "km", "ky", "lo",
-      "mk", "mn", "my", "ne", "pa", "si", "sq", "ur", "uz", "zu"
+      "^(af|az|bn|et|eu|gl|gu|hy|is|ka|kk|km|kn|ky|lo|mk|ml|mn|mr|ms|my|ne|pa|si|sq|ta|te|ur|uz|zu)(_.*)?$"
     ]
   },
   "featureFilters": {
@@ -26,20 +26,10 @@
     "normalization": { "filterType": "exclude" },
     "rbnf_tree": { "filterType": "exclude" },
     "rbnf_index": { "filterType": "exclude" },
-    "region_tree": {
-      "whitelist": [
-        "en"
-      ]
-    },
     "region_index": { "filterType": "exclude" },
     "misc": { "filterType": "exclude" },
     "stringprep": { "filterType": "exclude" },
-    "translit": {
-      "whitelist": [
-// Need to explicitly add "root"
-	"root"
-      ]
-    },
+    "translit": { "filterType": "exclude" },
     "ulayout": { "filterType": "exclude" },
     "unames": { "filterType": "exclude" },
     "zone_index": { "filterType": "exclude" }
@@ -189,25 +179,6 @@
         "-/Currencies%variant"
       ]
     },
-// Based on
-// https://cs.chromium.org/chromium/src/third_party/icu/android/patch_locale.sh?rcl=797b7c
-    {
-      "categories": [
-        "region_tree"
-      ],
-      "whitelist": [
-// Need to explicitly add "root"
-//	"root",
-// # Excludes region data. On Android Java API is used to get the data.
-// # Due to a bug in ICU, an empty region list always uses 70kB pool.res bundle.
-// # As a work around, include the minimal version of en.txt
-        "en"
-      ],
-      "rules": [
-        "-/*",
-        "+/Countries/US"
-      ]
-    },
 // Based on https://cs.chromium.org/chromium/src/third_party/icu/patches/data.build.patch?rcl=797b7c
 // +# Chromium : To save space, use '-R' option (exclude collation rules. just
 // +# include the compiled binary data.)
@@ -280,19 +251,6 @@
         "+/*/*/liter-per-kilometer",
         "+/*/*/mile-per-gallon",
         "+/*/compound"
-      ]
-    },
-// Based on
-// https://cs.chromium.org/chromium/src/third_party/icu/source/data/translit/root_subset.txt?rcl=797b7c
-    {
-      "categories": [
-        "translit"
-      ],
-      "rules": [
-        "-/*",
-// Need to leave an empty RuleBasedTransliteratorIDs
-	"+/RuleBasedTransliteratorIDs",
-        "-/RuleBasedTransliteratorIDs/*"
       ]
     },
 // # Remove exemplar cities in timezone data.

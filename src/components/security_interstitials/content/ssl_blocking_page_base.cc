@@ -36,7 +36,6 @@ SSLBlockingPageBase::SSLBlockingPageBase(
 SSLBlockingPageBase::~SSLBlockingPageBase() = default;
 
 void SSLBlockingPageBase::OnInterstitialClosing() {
-  UpdateMetricsAfterSecurityInterstitial();
   cert_report_helper_->FinishCertCollection();
 }
 

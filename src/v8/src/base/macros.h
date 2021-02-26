@@ -109,11 +109,15 @@ V8_INLINE Dest bit_cast(Source const& source) {
 }
 
 // Explicitly declare the assignment operator as deleted.
+// Note: This macro is deprecated and will be removed soon. Please explicitly
+// delete the assignment operator instead.
 #define DISALLOW_ASSIGN(TypeName) TypeName& operator=(const TypeName&) = delete
 
 // Explicitly declare the copy constructor and assignment operator as deleted.
 // This also deletes the implicit move constructor and implicit move assignment
 // operator, but still allows to manually define them.
+// Note: This macro is deprecated and will be removed soon. Please explicitly
+// delete the copy constructor and assignment operator instead.
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&) = delete;      \
   DISALLOW_ASSIGN(TypeName)
@@ -171,22 +175,19 @@ V8_INLINE Dest bit_cast(Source const& source) {
 #endif
 #endif
 
-// Helper macro to define no_sanitize attributes only with clang.
-#if defined(__clang__) && defined(__has_attribute)
-#if __has_attribute(no_sanitize)
-#define CLANG_NO_SANITIZE(what) __attribute__((no_sanitize(what)))
-#endif
-#endif
-#if !defined(CLANG_NO_SANITIZE)
-#define CLANG_NO_SANITIZE(what)
-#endif
-
 // DISABLE_CFI_PERF -- Disable Control Flow Integrity checks for Perf reasons.
-#define DISABLE_CFI_PERF CLANG_NO_SANITIZE("cfi")
+#define DISABLE_CFI_PERF V8_CLANG_NO_SANITIZE("cfi")
 
 // DISABLE_CFI_ICALL -- Disable Control Flow Integrity indirect call checks,
 // useful because calls into JITed code can not be CFI verified.
-#define DISABLE_CFI_ICALL CLANG_NO_SANITIZE("cfi-icall")
+#ifdef V8_OS_WIN
+// On Windows, also needs __declspec(guard(nocf)) for CFG.
+#define DISABLE_CFI_ICALL           \
+  V8_CLANG_NO_SANITIZE("cfi-icall") \
+  __declspec(guard(nocf))
+#else
+#define DISABLE_CFI_ICALL V8_CLANG_NO_SANITIZE("cfi-icall")
+#endif
 
 #if V8_CC_GNU
 #define V8_IMMEDIATE_CRASH() __builtin_trap()
@@ -328,10 +329,10 @@ V8_INLINE A implicit_cast(A x) {
 #define V8PRIuPTR "lxu"
 #endif
 
-// The following macro works on both 32 and 64-bit platforms.
-// Usage: instead of writing 0x1234567890123456
-//      write V8_2PART_UINT64_C(0x12345678,90123456);
-#define V8_2PART_UINT64_C(a, b) (((static_cast<uint64_t>(a) << 32) + 0x##b##u))
+// Make a uint64 from two uint32_t halves.
+inline uint64_t make_uint64(uint32_t high, uint32_t low) {
+  return (uint64_t{high} << 32) + low;
+}
 
 // Return the largest multiple of m which is <= x.
 template <typename T>
@@ -339,14 +340,14 @@ inline T RoundDown(T x, intptr_t m) {
   STATIC_ASSERT(std::is_integral<T>::value);
   // m must be a power of two.
   DCHECK(m != 0 && ((m & (m - 1)) == 0));
-  return x & -m;
+  return x & static_cast<T>(-m);
 }
 template <intptr_t m, typename T>
 constexpr inline T RoundDown(T x) {
   STATIC_ASSERT(std::is_integral<T>::value);
   // m must be a power of two.
   STATIC_ASSERT(m != 0 && ((m & (m - 1)) == 0));
-  return x & -m;
+  return x & static_cast<T>(-m);
 }
 
 // Return the smallest multiple of m which is >= x.

@@ -25,11 +25,11 @@
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/policy/core/common/preferences_mock_mac.h"
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -149,9 +149,9 @@ void EnsureMediaDirectoriesExists::Init() {
 
   ASSERT_TRUE(fake_dir_.CreateUniqueTempDir());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   mac_preferences_.reset(new MockPreferences);
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
   ChangeMediaPathOverrides();
 #endif  // OS_CHROMEOS || OS_ANDROID

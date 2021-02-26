@@ -21,7 +21,6 @@
 #include "chrome/renderer/extensions/extension_process_policy.h"
 #include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 #include "chrome/renderer/extensions/resource_request_policy.h"
-#include "chrome/renderer/media/cast_ipc_dispatcher.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
@@ -47,6 +46,7 @@
 #include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -166,7 +166,6 @@ void ChromeExtensionsRendererClient::RenderThreadStarted() {
 
   thread->AddObserver(extension_dispatcher_.get());
   thread->AddObserver(guest_view_container_dispatcher_.get());
-  thread->AddFilter(new CastIPCDispatcher(thread->GetIOTaskRunner()));
 }
 
 void ChromeExtensionsRendererClient::RenderFrameCreated(
@@ -186,8 +185,8 @@ bool ChromeExtensionsRendererClient::OverrideCreatePlugin(
 
   bool guest_view_api_available = false;
   extension_dispatcher_->script_context_set_iterator()->ForEach(
-      render_frame, base::Bind(&IsGuestViewApiAvailableToScriptContext,
-                               &guest_view_api_available));
+      render_frame, base::BindRepeating(&IsGuestViewApiAvailableToScriptContext,
+                                        &guest_view_api_available));
   return !guest_view_api_available;
 }
 
@@ -212,9 +211,30 @@ bool ChromeExtensionsRendererClient::AllowPopup() {
       return true;
     case extensions::Feature::BLESSED_WEB_PAGE_CONTEXT:
       return !current_context->web_frame()->Parent();
-    default:
-      NOTREACHED();
-      return false;
+  }
+}
+
+blink::ProtocolHandlerSecurityLevel
+ChromeExtensionsRendererClient::GetProtocolHandlerSecurityLevel() {
+  // WARNING: This must match the logic of
+  // Browser::GetProtocolHandlerSecurityLevel().
+  extensions::ScriptContext* current_context =
+      extension_dispatcher_->script_context_set().GetCurrent();
+  if (!current_context || !current_context->extension())
+    return blink::ProtocolHandlerSecurityLevel::kStrict;
+
+  switch (current_context->context_type()) {
+    case extensions::Feature::BLESSED_WEB_PAGE_CONTEXT:
+    case extensions::Feature::CONTENT_SCRIPT_CONTEXT:
+    case extensions::Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
+    case extensions::Feature::UNBLESSED_EXTENSION_CONTEXT:
+    case extensions::Feature::UNSPECIFIED_CONTEXT:
+    case extensions::Feature::WEBUI_CONTEXT:
+    case extensions::Feature::WEBUI_UNTRUSTED_CONTEXT:
+    case extensions::Feature::WEB_PAGE_CONTEXT:
+      return blink::ProtocolHandlerSecurityLevel::kStrict;
+    case extensions::Feature::BLESSED_EXTENSION_CONTEXT:
+      return blink::ProtocolHandlerSecurityLevel::kUntrustedOrigins;
   }
 }
 
@@ -337,7 +357,7 @@ ChromeExtensionsRendererClient::GetExtensionDispatcherForTest() {
 }
 
 // static
-content::BrowserPluginDelegate*
+guest_view::GuestViewContainer*
 ChromeExtensionsRendererClient::CreateBrowserPluginDelegate(
     content::RenderFrame* render_frame,
     const content::WebPluginInfo& info,

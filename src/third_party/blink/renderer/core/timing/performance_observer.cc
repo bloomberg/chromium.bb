@@ -57,7 +57,7 @@ Vector<AtomicString> PerformanceObserver::supportedEntryTypes(
   // The list of supported types, in alphabetical order.
   Vector<AtomicString> supportedEntryTypes;
   auto* execution_context = ExecutionContext::From(script_state);
-  if (execution_context->IsDocument()) {
+  if (execution_context->IsWindow()) {
     supportedEntryTypes.push_back(performance_entry_names::kElement);
     if (RuntimeEnabledFeatures::EventTimingEnabled(execution_context))
       supportedEntryTypes.push_back(performance_entry_names::kEvent);
@@ -69,11 +69,15 @@ Vector<AtomicString> PerformanceObserver::supportedEntryTypes(
   }
   supportedEntryTypes.push_back(performance_entry_names::kMark);
   supportedEntryTypes.push_back(performance_entry_names::kMeasure);
-  if (execution_context->IsDocument()) {
+  if (execution_context->IsWindow()) {
     supportedEntryTypes.push_back(performance_entry_names::kNavigation);
     supportedEntryTypes.push_back(performance_entry_names::kPaint);
   }
   supportedEntryTypes.push_back(performance_entry_names::kResource);
+  if (RuntimeEnabledFeatures::VisibilityStateEntryEnabled() &&
+      execution_context->IsWindow()) {
+    supportedEntryTypes.push_back(performance_entry_names::kVisibilityState);
+  }
   return supportedEntryTypes;
 }
 
@@ -204,6 +208,12 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kLargestContentfulPaintExplicitlyRequested);
   }
+  if (filter_options_ & PerformanceEntry::kResource) {
+    UseCounter::Count(GetExecutionContext(), WebFeature::kResourceTiming);
+  }
+  if (filter_options_ & PerformanceEntry::kLongTask) {
+    UseCounter::Count(GetExecutionContext(), WebFeature::kLongTaskObserver);
+  }
   if (is_registered_)
     performance_->UpdatePerformanceObserverFilterOptions();
   else
@@ -269,7 +279,7 @@ void PerformanceObserver::ContextLifecycleStateChanged(
     performance_->SuspendObserver(*this);
 }
 
-void PerformanceObserver::Trace(Visitor* visitor) {
+void PerformanceObserver::Trace(Visitor* visitor) const {
   visitor->Trace(callback_);
   visitor->Trace(performance_);
   visitor->Trace(performance_entries_);

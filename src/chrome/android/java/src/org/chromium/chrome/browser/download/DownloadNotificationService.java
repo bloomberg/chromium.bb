@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.download;
 
-import static org.chromium.chrome.browser.download.DownloadBroadcastManager.getServiceDelegate;
+import static org.chromium.chrome.browser.download.DownloadBroadcastManagerImpl.getServiceDelegate;
 import static org.chromium.chrome.browser.download.DownloadSnackbarController.INVALID_NOTIFICATION_ID;
 
 import android.app.Notification;
@@ -286,9 +286,9 @@ public class DownloadNotificationService {
                 mDownloadSharedPreferenceHelper.getDownloadSharedPreferenceEntry(id);
         if (entry == null) return;
 
-        cancelNotification(entry.notificationId, id);
         mDownloadForegroundServiceManager.updateDownloadStatus(ContextUtils.getApplicationContext(),
                 DownloadStatus.CANCELLED, entry.notificationId, null);
+        cancelNotification(entry.notificationId, id);
     }
 
     /**
@@ -560,7 +560,7 @@ public class DownloadNotificationService {
 
     @VisibleForTesting
     void resumeDownload(Intent intent) {
-        DownloadBroadcastManager.startDownloadBroadcastManager(
+        DownloadBroadcastManagerImpl.startDownloadBroadcastManager(
                 ContextUtils.getApplicationContext(), intent);
     }
 
@@ -705,7 +705,7 @@ public class DownloadNotificationService {
 
     private void cancelOffTheRecordDownloads() {
         boolean cancelActualDownload = BrowserStartupController.getInstance().isFullBrowserStarted()
-                && Profile.getLastUsedRegularProfile().hasOffTheRecordProfile();
+                && Profile.getLastUsedRegularProfile().hasPrimaryOTRProfile();
 
         List<DownloadSharedPreferenceEntry> entries = mDownloadSharedPreferenceHelper.getEntries();
         List<DownloadSharedPreferenceEntry> copies =

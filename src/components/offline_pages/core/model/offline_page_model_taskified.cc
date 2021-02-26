@@ -7,9 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
@@ -230,10 +231,6 @@ void OfflinePageModelTaskified::SavePage(
   create_archive_params.use_page_problem_detectors =
       save_page_params.use_page_problem_detectors;
 
-  // Set on-the-fly hashing if enabled.
-  create_archive_params.use_on_the_fly_hash_computation =
-      IsOnTheFlyMhtmlHashComputationEnabled();
-
   // Save directly to public location if on-the-fly enabled.
   //
   // TODO(crbug.com/999247): We would like to skip renaming the file if
@@ -364,8 +361,6 @@ const base::FilePath& OfflinePageModelTaskified::GetArchiveDirectory(
     const std::string& name_space) const {
   if (GetPolicy(name_space).lifetime_type == LifetimeType::TEMPORARY)
     return archive_manager_->GetTemporaryArchivesDir();
-  if (IsOnTheFlyMhtmlHashComputationEnabled())
-    return archive_manager_->GetPublicArchivesDir();
   return archive_manager_->GetPrivateArchivesDir();
 }
 

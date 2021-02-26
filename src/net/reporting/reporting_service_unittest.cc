@@ -9,8 +9,10 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/base/network_isolation_key.h"
 #include "net/reporting/mock_persistent_reporting_store.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
@@ -43,14 +45,21 @@ class ReportingServiceTest : public ::testing::TestWithParam<bool>,
   const std::string kUserAgent_ = "Mozilla/1.0";
   const std::string kGroup_ = "group";
   const std::string kType_ = "type";
+  const NetworkIsolationKey kNik_ = NetworkIsolationKey(kOrigin_, kOrigin_);
+  const NetworkIsolationKey kNik2_ = NetworkIsolationKey(kOrigin2_, kOrigin2_);
   const ReportingEndpointGroupKey kGroupKey_ =
-      ReportingEndpointGroupKey(NetworkIsolationKey::Todo(), kOrigin_, kGroup_);
+      ReportingEndpointGroupKey(kNik_, kOrigin_, kGroup_);
   const ReportingEndpointGroupKey kGroupKey2_ =
-      ReportingEndpointGroupKey(NetworkIsolationKey::Todo(),
-                                kOrigin2_,
-                                kGroup_);
+      ReportingEndpointGroupKey(kNik2_, kOrigin2_, kGroup_);
 
   ReportingServiceTest() {
+    feature_list_.InitAndEnableFeature(
+        features::kPartitionNelAndReportingByNetworkIsolationKey);
+    Init();
+  }
+
+  // Initializes, or re-initializes, |service_| and its dependencies.
+  void Init() {
     if (GetParam())
       store_ = std::make_unique<MockPersistentReportingStore>();
     else
@@ -75,6 +84,8 @@ class ReportingServiceTest : public ::testing::TestWithParam<bool>,
   ReportingService* service() { return service_.get(); }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
+
   base::SimpleTestClock clock_;
   base::SimpleTestTickClock tick_clock_;
 
@@ -84,7 +95,7 @@ class ReportingServiceTest : public ::testing::TestWithParam<bool>,
 };
 
 TEST_P(ReportingServiceTest, QueueReport) {
-  service()->QueueReport(kUrl_, kUserAgent_, kGroup_, kType_,
+  service()->QueueReport(kUrl_, kNik_, kUserAgent_, kGroup_, kType_,
                          std::make_unique<base::DictionaryValue>(), 0);
   FinishLoading(true /* load_success */);
 
@@ -92,6 +103,7 @@ TEST_P(ReportingServiceTest, QueueReport) {
   context()->cache()->GetReports(&reports);
   ASSERT_EQ(1u, reports.size());
   EXPECT_EQ(kUrl_, reports[0]->url);
+  EXPECT_EQ(kNik_, reports[0]->network_isolation_key);
   EXPECT_EQ(kUserAgent_, reports[0]->user_agent);
   EXPECT_EQ(kGroup_, reports[0]->group);
   EXPECT_EQ(kType_, reports[0]->type);
@@ -100,7 +112,7 @@ TEST_P(ReportingServiceTest, QueueReport) {
 TEST_P(ReportingServiceTest, QueueReportSanitizeUrl) {
   // Same as kUrl_ but with username, password, and fragment.
   GURL url = GURL("https://username:password@origin/path#fragment");
-  service()->QueueReport(url, kUserAgent_, kGroup_, kType_,
+  service()->QueueReport(url, kNik_, kUserAgent_, kGroup_, kType_,
                          std::make_unique<base::DictionaryValue>(), 0);
   FinishLoading(true /* load_success */);
 
@@ -108,6 +120,7 @@ TEST_P(ReportingServiceTest, QueueReportSanitizeUrl) {
   context()->cache()->GetReports(&reports);
   ASSERT_EQ(1u, reports.size());
   EXPECT_EQ(kUrl_, reports[0]->url);
+  EXPECT_EQ(kNik_, reports[0]->network_isolation_key);
   EXPECT_EQ(kUserAgent_, reports[0]->user_agent);
   EXPECT_EQ(kGroup_, reports[0]->group);
   EXPECT_EQ(kType_, reports[0]->type);
@@ -117,7 +130,7 @@ TEST_P(ReportingServiceTest, DontQueueReportInvalidUrl) {
   GURL url = GURL("https://");
   // This does not trigger an attempt to load from the store because the url
   // is immediately rejected as invalid.
-  service()->QueueReport(url, kUserAgent_, kGroup_, kType_,
+  service()->QueueReport(url, kNik_, kUserAgent_, kGroup_, kType_,
                          std::make_unique<base::DictionaryValue>(), 0);
 
   std::vector<const ReportingReport*> reports;
@@ -125,21 +138,49 @@ TEST_P(ReportingServiceTest, DontQueueReportInvalidUrl) {
   ASSERT_EQ(0u, reports.size());
 }
 
+TEST_P(ReportingServiceTest, QueueReportNetworkIsolationKeyDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kPartitionNelAndReportingByNetworkIsolationKey);
+
+  // Re-create the store, so it reads the new feature value.
+  Init();
+
+  service()->QueueReport(kUrl_, kNik_, kUserAgent_, kGroup_, kType_,
+                         std::make_unique<base::DictionaryValue>(), 0);
+  FinishLoading(true /* load_success */);
+
+  std::vector<const ReportingReport*> reports;
+  context()->cache()->GetReports(&reports);
+  ASSERT_EQ(1u, reports.size());
+
+  // NetworkIsolationKey should be empty, instead of kNik_;
+  EXPECT_EQ(NetworkIsolationKey(), reports[0]->network_isolation_key);
+  EXPECT_NE(kNik_, reports[0]->network_isolation_key);
+
+  EXPECT_EQ(kUrl_, reports[0]->url);
+  EXPECT_EQ(kUserAgent_, reports[0]->user_agent);
+  EXPECT_EQ(kGroup_, reports[0]->group);
+  EXPECT_EQ(kType_, reports[0]->type);
+}
+
 TEST_P(ReportingServiceTest, ProcessHeader) {
-  service()->ProcessHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" +
-                                      kEndpoint_.spec() +
-                                      "\"}],"
-                                      "\"group\":\"" +
-                                      kGroup_ +
-                                      "\","
-                                      "\"max_age\":86400}");
+  service()->ProcessHeader(kUrl_, kNik_,
+                           "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                               "\"}],"
+                               "\"group\":\"" +
+                               kGroup_ +
+                               "\","
+                               "\"max_age\":86400}");
   FinishLoading(true /* load_success */);
 
   EXPECT_EQ(1u, context()->cache()->GetEndpointCount());
+  EXPECT_TRUE(context()->cache()->GetEndpointForTesting(
+      ReportingEndpointGroupKey(kNik_, kOrigin_, kGroup_), kEndpoint_));
 }
 
 TEST_P(ReportingServiceTest, ProcessHeaderPathAbsolute) {
-  service()->ProcessHeader(kUrl_,
+  service()->ProcessHeader(kUrl_, kNik_,
                            "{\"endpoints\":[{\"url\":\"/path-absolute\"}],"
                            "\"group\":\"" +
                                kGroup_ +
@@ -161,7 +202,7 @@ TEST_P(ReportingServiceTest, ProcessHeader_TooLong) {
       "\"junk\":\"" + std::string(32 * 1024, 'a') + "\"}";
   // This does not trigger an attempt to load from the store because the header
   // is immediately rejected as invalid.
-  service()->ProcessHeader(kUrl_, header_too_long);
+  service()->ProcessHeader(kUrl_, kNik_, header_too_long);
 
   EXPECT_EQ(0u, context()->cache()->GetEndpointCount());
 }
@@ -177,9 +218,34 @@ TEST_P(ReportingServiceTest, ProcessHeader_TooDeep) {
                                       "\"junk\":[[[[[[[[[[]]]]]]]]]]}";
   // This does not trigger an attempt to load from the store because the header
   // is immediately rejected as invalid.
-  service()->ProcessHeader(kUrl_, header_too_deep);
+  service()->ProcessHeader(kUrl_, kNik_, header_too_deep);
 
   EXPECT_EQ(0u, context()->cache()->GetEndpointCount());
+}
+
+TEST_P(ReportingServiceTest, ProcessHeaderNetworkIsolationKeyDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kPartitionNelAndReportingByNetworkIsolationKey);
+
+  // Re-create the store, so it reads the new feature value.
+  Init();
+
+  service()->ProcessHeader(kUrl_, kNik_,
+                           "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                               "\"}],"
+                               "\"group\":\"" +
+                               kGroup_ +
+                               "\","
+                               "\"max_age\":86400}");
+  FinishLoading(true /* load_success */);
+
+  EXPECT_EQ(1u, context()->cache()->GetEndpointCount());
+  EXPECT_FALSE(context()->cache()->GetEndpointForTesting(
+      ReportingEndpointGroupKey(kNik_, kOrigin_, kGroup_), kEndpoint_));
+  EXPECT_TRUE(context()->cache()->GetEndpointForTesting(
+      ReportingEndpointGroupKey(NetworkIsolationKey(), kOrigin_, kGroup_),
+      kEndpoint_));
 }
 
 TEST_P(ReportingServiceTest, WriteToStore) {
@@ -190,13 +256,13 @@ TEST_P(ReportingServiceTest, WriteToStore) {
 
   // This first call to any public method triggers a load. The load will block
   // until we call FinishLoading.
-  service()->ProcessHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" +
-                                      kEndpoint_.spec() +
-                                      "\"}],"
-                                      "\"group\":\"" +
-                                      kGroup_ +
-                                      "\","
-                                      "\"max_age\":86400}");
+  service()->ProcessHeader(kUrl_, kNik_,
+                           "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                               "\"}],"
+                               "\"group\":\"" +
+                               kGroup_ +
+                               "\","
+                               "\"max_age\":86400}");
   expected_commands.emplace_back(CommandType::LOAD_REPORTING_CLIENTS);
   EXPECT_THAT(store()->GetAllCommands(),
               testing::UnorderedElementsAreArray(expected_commands));
@@ -211,13 +277,13 @@ TEST_P(ReportingServiceTest, WriteToStore) {
   EXPECT_THAT(store()->GetAllCommands(),
               testing::UnorderedElementsAreArray(expected_commands));
 
-  service()->ProcessHeader(kUrl2_, "{\"endpoints\":[{\"url\":\"" +
-                                       kEndpoint_.spec() +
-                                       "\"}],"
-                                       "\"group\":\"" +
-                                       kGroup_ +
-                                       "\","
-                                       "\"max_age\":86400}");
+  service()->ProcessHeader(kUrl2_, kNik2_,
+                           "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                               "\"}],"
+                               "\"group\":\"" +
+                               kGroup_ +
+                               "\","
+                               "\"max_age\":86400}");
   expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
                                  kGroupKey2_, kEndpoint_);
   expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
@@ -225,7 +291,7 @@ TEST_P(ReportingServiceTest, WriteToStore) {
   EXPECT_THAT(store()->GetAllCommands(),
               testing::UnorderedElementsAreArray(expected_commands));
 
-  service()->QueueReport(kUrl_, kUserAgent_, kGroup_, kType_,
+  service()->QueueReport(kUrl_, kNik_, kUserAgent_, kGroup_, kType_,
                          std::make_unique<base::DictionaryValue>(), 0);
   expected_commands.emplace_back(
       CommandType::UPDATE_REPORTING_ENDPOINT_GROUP_ACCESS_TIME, kGroupKey_);
@@ -263,28 +329,28 @@ TEST_P(ReportingServiceTest, WaitUntilLoadFinishesBeforeWritingToStore) {
 
   // This first call to any public method triggers a load. The load will block
   // until we call FinishLoading.
-  service()->ProcessHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" +
-                                      kEndpoint_.spec() +
-                                      "\"}],"
-                                      "\"group\":\"" +
-                                      kGroup_ +
-                                      "\","
-                                      "\"max_age\":86400}");
+  service()->ProcessHeader(kUrl_, kNik_,
+                           "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                               "\"}],"
+                               "\"group\":\"" +
+                               kGroup_ +
+                               "\","
+                               "\"max_age\":86400}");
   expected_commands.emplace_back(CommandType::LOAD_REPORTING_CLIENTS);
   EXPECT_THAT(store()->GetAllCommands(),
               testing::UnorderedElementsAreArray(expected_commands));
 
-  service()->ProcessHeader(kUrl2_, "{\"endpoints\":[{\"url\":\"" +
-                                       kEndpoint_.spec() +
-                                       "\"}],"
-                                       "\"group\":\"" +
-                                       kGroup_ +
-                                       "\","
-                                       "\"max_age\":86400}");
+  service()->ProcessHeader(kUrl2_, kNik2_,
+                           "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                               "\"}],"
+                               "\"group\":\"" +
+                               kGroup_ +
+                               "\","
+                               "\"max_age\":86400}");
   EXPECT_THAT(store()->GetAllCommands(),
               testing::UnorderedElementsAreArray(expected_commands));
 
-  service()->QueueReport(kUrl_, kUserAgent_, kGroup_, kType_,
+  service()->QueueReport(kUrl_, kNik_, kUserAgent_, kGroup_, kType_,
                          std::make_unique<base::DictionaryValue>(), 0);
   EXPECT_THAT(store()->GetAllCommands(),
               testing::UnorderedElementsAreArray(expected_commands));

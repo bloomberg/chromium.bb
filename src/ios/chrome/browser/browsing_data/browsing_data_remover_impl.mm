@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
@@ -52,6 +51,7 @@
 #include "ios/chrome/browser/language/url_language_histogram_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_remover_helper.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
@@ -278,10 +278,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     if (session_service_) {
       NSString* state_path = base::SysUTF8ToNSString(
           browser_state_->GetStatePath().AsUTF8Unsafe());
-      [session_service_
-          deleteLastSessionFileInDirectory:state_path
-                                completion:
-                                    CreatePendingTaskCompletionClosure()];
+      [session_service_ deleteAllSessionFilesInBrowserStateDirectory:state_path
+          completion:CreatePendingTaskCompletionClosure()];
     }
 
     // Remove the screenshots taken by the system when backgrounding the
@@ -293,15 +291,27 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
       web::WebThread::IO, base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
-    base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cookies"));
+    if (!browser_state_->IsOffTheRecord()) {
+      // ClearBrowsingData_Cookies should not be reported when cookies are
+      // cleared as part of an incognito browser shutdown.
+      base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cookies"));
+    }
+    net::CookieDeletionInfo::TimeRange deletion_time_range =
+        net::CookieDeletionInfo::TimeRange(delete_begin, delete_end);
     base::PostTask(
         FROM_HERE, task_traits,
         base::BindOnce(
-            &ClearCookies, context_getter_,
-            net::CookieDeletionInfo::TimeRange(delete_begin, delete_end),
+            &ClearCookies, context_getter_, deletion_time_range,
             base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
                            current_task_runner, FROM_HERE,
                            CreatePendingTaskCompletionClosure())));
+    if (!browser_state_->IsOffTheRecord()) {
+      GetApplicationContext()->GetSafeBrowsingService()->ClearCookies(
+          deletion_time_range,
+          base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
+                         current_task_runner, FROM_HERE,
+                         CreatePendingTaskCompletionClosure()));
+    }
   }
 
   // There is no need to clean the remaining types of data for off-the-record
@@ -543,6 +553,16 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
   UMA_HISTOGRAM_ENUMERATION(
       "History.ClearBrowsingData.UserDeletedCookieOrCache", choice,
       MAX_CHOICE_VALUE);
+}
+
+// Removes directories for sessions with |SessionIDs|
+void BrowsingDataRemoverImpl::RemoveSessionsData(
+    NSArray<NSString*>* session_ids) {
+  [[SessionServiceIOS sharedService]
+                 deleteSessions:session_ids
+      fromBrowserStateDirectory:base::SysUTF8ToNSString(
+                                    browser_state_->GetStatePath()
+                                        .AsUTF8Unsafe())];
 }
 
 // TODO(crbug.com/619783): removing data from WkWebsiteDataStore should be

@@ -42,8 +42,6 @@ namespace blink {
 class MockAnimationEffectOwner
     : public GarbageCollected<MockAnimationEffectOwner>,
       public AnimationEffectOwner {
-  USING_GARBAGE_COLLECTED_MIXIN(MockAnimationEffectOwner);
-
  public:
   MOCK_CONST_METHOD0(SequenceNumber, unsigned());
   MOCK_CONST_METHOD0(Playing, bool());
@@ -86,7 +84,8 @@ class TestAnimationEffect : public AnimationEffect {
 
   void UpdateInheritedTime(double time, TimingUpdateReason reason) {
     event_delegate_->Reset();
-    AnimationEffect::UpdateInheritedTime(time, reason);
+    AnimationEffect::UpdateInheritedTime(
+        time, /*inherited_phase*/ base::nullopt, reason);
   }
 
   void UpdateChildrenAndEffects() const override {}
@@ -98,7 +97,7 @@ class TestAnimationEffect : public AnimationEffect {
       bool forwards,
       base::Optional<double> local_time,
       AnimationTimeDelta time_to_next_iteration) const override {
-    DCHECK(!local_time || !Timing::IsNull(local_time.value()));
+    DCHECK(!local_time || std::isfinite(local_time.value()));
     local_time_ = local_time;
     time_to_next_iteration_ = time_to_next_iteration;
     return AnimationTimeDelta::FromSecondsD(
@@ -117,7 +116,7 @@ class TestAnimationEffect : public AnimationEffect {
     return result;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(event_delegate_);
     AnimationEffect::Trace(visitor);
   }

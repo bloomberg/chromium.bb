@@ -15,15 +15,17 @@
 
 #include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
-#include "core/fxcrt/fx_memory.h"
 #include "fxjs/cjs_event_context.h"
 #include "fxjs/cjs_eventrecorder.h"
 #include "fxjs/cjs_object.h"
 #include "fxjs/cjs_publicmethods.h"
 #include "fxjs/cjs_runtime.h"
 #include "fxjs/fx_date_helpers.h"
+#include "fxjs/fxv8.h"
 #include "fxjs/js_define.h"
 #include "fxjs/js_resources.h"
+#include "third_party/base/check_op.h"
+#include "third_party/base/stl_util.h"
 
 #if defined(OS_ANDROID)
 #include <ctype.h>
@@ -41,8 +43,8 @@ struct TbConvert {
 // Map PDF-style directives lacking direct wcsftime directives to
 // the value with which they will be replaced.
 struct TbConvertAdditional {
-  const wchar_t* lpszJSMark;
-  int iValue;
+  wchar_t js_mark;
+  int value;
 };
 
 const TbConvert TbConvertTable[] = {
@@ -76,11 +78,11 @@ const JSMethodSpec CJS_Util::MethodSpecs[] = {
     {"scand", scand_static},
     {"byteToChar", byteToChar_static}};
 
-int CJS_Util::ObjDefnID = -1;
+uint32_t CJS_Util::ObjDefnID = 0;
 const char CJS_Util::kName[] = "util";
 
 // static
-int CJS_Util::GetObjDefnID() {
+uint32_t CJS_Util::GetObjDefnID() {
   return ObjDefnID;
 }
 
@@ -164,7 +166,7 @@ CJS_Result CJS_Util::printd(CJS_Runtime* pRuntime,
   if (iSize < 2)
     return CJS_Result::Failure(JSMessage::kParamError);
 
-  if (params[1].IsEmpty() || !params[1]->IsDate())
+  if (!fxv8::IsDate(params[1]))
     return CJS_Result::Failure(JSMessage::kSecondParamNotDateError);
 
   v8::Local<v8::Date> v8_date = params[1].As<v8::Date>();
@@ -215,7 +217,7 @@ CJS_Result CJS_Util::printd(CJS_Runtime* pRuntime,
   cFormat.erase(std::remove(cFormat.begin(), cFormat.end(), '%'),
                 cFormat.end());
 
-  for (size_t i = 0; i < FX_ArraySize(TbConvertTable); ++i) {
+  for (size_t i = 0; i < pdfium::size(TbConvertTable); ++i) {
     int iStart = 0;
     int iEnd;
     while ((iEnd = cFormat.find(TbConvertTable[i].lpszJSMark, iStart)) != -1) {
@@ -229,23 +231,23 @@ CJS_Result CJS_Util::printd(CJS_Runtime* pRuntime,
     return CJS_Result::Failure(JSMessage::kValueError);
 
   const TbConvertAdditional cTableAd[] = {
-      {L"m", month}, {L"d", day},
-      {L"H", hour},  {L"h", hour > 12 ? hour - 12 : hour},
-      {L"M", min},   {L"s", sec},
+      {L'm', month}, {L'd', day},
+      {L'H', hour},  {L'h', hour > 12 ? hour - 12 : hour},
+      {L'M', min},   {L's', sec},
   };
 
-  for (size_t i = 0; i < FX_ArraySize(cTableAd); ++i) {
+  for (size_t i = 0; i < pdfium::size(cTableAd); ++i) {
     int iStart = 0;
     int iEnd;
-    while ((iEnd = cFormat.find(cTableAd[i].lpszJSMark, iStart)) != -1) {
+    while ((iEnd = cFormat.find(cTableAd[i].js_mark, iStart)) != -1) {
       if (iEnd > 0) {
         if (cFormat[iEnd - 1] == L'%') {
           iStart = iEnd + 1;
           continue;
         }
       }
-      cFormat.replace(iEnd, wcslen(cTableAd[i].lpszJSMark),
-                      WideString::Format(L"%d", cTableAd[i].iValue).c_str());
+      cFormat.replace(iEnd, 1,
+                      WideString::Format(L"%d", cTableAd[i].value).c_str());
       iStart = iEnd;
     }
   }

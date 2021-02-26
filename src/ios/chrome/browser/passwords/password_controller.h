@@ -1,15 +1,18 @@
 // Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef IOS_CHROME_BROWSER_PASSWORDS_PASSWORD_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_PASSWORDS_PASSWORD_CONTROLLER_H_
 
-#import <Foundation/NSObject.h>
+#import <UIKit/UIKit.h>
 
 #include <memory>
 
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "components/password_manager/ios/password_form_helper.h"
+#import "components/password_manager/ios/password_manager_client_bridge.h"
+#import "components/password_manager/ios/password_manager_driver_bridge.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_client.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_driver.h"
 #import "ios/web/public/web_state_observer_bridge.h"
@@ -18,9 +21,8 @@
 class Browser;
 @class NotifyUserAutoSigninViewController;
 @protocol PasswordBreachCommands;
-@protocol PasswordFormFiller;
 @protocol PasswordsUiDelegate;
-@class UIViewController;
+@class SharedPasswordController;
 
 namespace password_manager {
 class PasswordManagerClient;
@@ -41,10 +43,8 @@ class PasswordManagerClient;
 @end
 
 // Per-tab password controller. Handles password autofill and saving.
-@interface PasswordController : NSObject<CRWWebStateObserver,
-                                         PasswordManagerClientDelegate,
-                                         PasswordManagerDriverDelegate,
-                                         PasswordFormHelperDelegate>
+@interface PasswordController
+    : NSObject <CRWWebStateObserver, IOSChromePasswordManagerClientBridge>
 
 // An object that can provide suggestions from this PasswordController.
 @property(nonatomic, readonly) id<FormSuggestionProvider> suggestionProvider;
@@ -57,9 +57,6 @@ class PasswordManagerClient;
 @property(nonatomic, readonly)
     password_manager::PasswordManagerDriver* passwordManagerDriver;
 
-// The PasswordFormFiller owned by this PasswordController.
-@property(nonatomic, readonly) id<PasswordFormFiller> passwordFormFiller;
-
 // The base view controller from which to present UI.
 @property(nonatomic, readwrite, weak) UIViewController* baseViewController;
 
@@ -68,6 +65,11 @@ class PasswordManagerClient;
 
 // The browser.
 @property(nonatomic, assign) Browser* browser;
+
+// The shared password controller that handles all non //ios/chrome specific
+// business logic.
+@property(nonatomic, readonly)
+    SharedPasswordController* sharedPasswordController;
 
 // |webState| should not be nil.
 - (instancetype)initWithWebState:(web::WebState*)webState;

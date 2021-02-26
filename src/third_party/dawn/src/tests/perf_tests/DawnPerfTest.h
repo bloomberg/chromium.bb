@@ -108,7 +108,7 @@ class DawnPerfTestBase {
     std::unique_ptr<utils::Timer> mTimer;
 };
 
-template <typename Params = DawnTestParam>
+template <typename Params = AdapterTestParam>
 class DawnPerfTestWithParams : public DawnTestWithParams<Params>, public DawnPerfTestBase {
   protected:
     DawnPerfTestWithParams(unsigned int iterationsPerStep, unsigned int maxStepsInFlight)
@@ -123,6 +123,7 @@ using DawnPerfTest = DawnPerfTestWithParams<>;
 #define DAWN_INSTANTIATE_PERF_TEST_SUITE_P(testName, ...)                                      \
     INSTANTIATE_TEST_SUITE_P(                                                                  \
         , testName, ::testing::ValuesIn(MakeParamGenerator<testName::ParamType>(__VA_ARGS__)), \
-        testing::PrintToStringParamName())
+        testing::PrintToStringParamName());                                                    \
+    GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(testName)
 
 #endif  // TESTS_PERFTESTS_DAWNPERFTEST_H_

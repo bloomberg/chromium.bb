@@ -15,7 +15,7 @@
 #include "services/tracing/public/cpp/perfetto/system_producer.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
-#include "services/tracing/public/cpp/trace_event_args_whitelist.h"
+#include "services/tracing/public/cpp/trace_event_args_allowlist.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/perfetto/include/perfetto/tracing/track.h"
 
@@ -38,8 +38,11 @@ void EnableStartupTracingIfNeeded() {
       *base::CommandLine::ForCurrentProcess();
 
   TraceEventDataSource::GetInstance()->RegisterStartupHooks();
-  // TODO(eseckler): Initialize the entire perfetto client library instead.
-  perfetto::internal::TrackRegistry::InitializeInstance();
+
+  // Initialize the Perfetto client library now that we're past the zygote's
+  // fork point. This is important to ensure Perfetto's track registry gets a
+  // unique uuid for generating track ids.
+  PerfettoTracedProcess::Get()->SetupClientLibrary();
 
   // TODO(oysteine): Support startup tracing to a perfetto protobuf trace. This
   // should also enable TraceLog and call SetupStartupTracing().
@@ -61,6 +64,7 @@ void EnableStartupTracingIfNeeded() {
         PerfettoTracedProcess::Get()->producer_client();
     if (startup_config->GetSessionOwner() ==
         TraceStartupConfig::SessionOwner::kSystemTracing) {
+      PerfettoTracedProcess::Get()->SetupSystemTracing();
       producer = PerfettoTracedProcess::Get()->system_producer();
     }
 
@@ -102,6 +106,8 @@ void InitTracingPostThreadPoolStartAndFeatureList() {
     // Connect to system service if available (currently a no-op except on
     // Posix). Has to happen on the producer's sequence, as all communication
     // with the system Perfetto service should occur on a single sequence.
+    if (!PerfettoTracedProcess::Get()->system_producer())
+      PerfettoTracedProcess::Get()->SetupSystemTracing();
     PerfettoTracedProcess::Get()
         ->GetTaskRunner()
         ->GetOrCreateTaskRunner()
@@ -130,8 +136,10 @@ void PropagateTracingFlagsToChildProcessCmdLine(base::CommandLine* cmd_line) {
   // (Posix)SystemProducer doesn't currently support startup tracing, so don't
   // attempt to enable startup tracing in child processes if system tracing is
   // active.
-  if (PerfettoTracedProcess::Get()->system_producer()->IsTracingActive())
+  if (PerfettoTracedProcess::Get()->system_producer() &&
+      PerfettoTracedProcess::Get()->system_producer()->IsTracingActive()) {
     return;
+  }
 
   // The child process startup may race with a concurrent disabling of the
   // tracing session by the tracing service. To avoid being stuck in startup
@@ -145,20 +153,22 @@ void PropagateTracingFlagsToChildProcessCmdLine(base::CommandLine* cmd_line) {
 
   const auto trace_config = trace_log->GetCurrentTraceConfig();
 
-  // We can't currently propagate event filter options, memory dump configs, or
-  // trace buffer sizes via command line flags (they only support categories,
-  // trace options, record mode). If event filters are set, we bail out here to
-  // avoid recording events that we shouldn't in the child process. Even if
-  // memory dump config is set, it's OK to propagate the remaining config,
-  // because the child won't record events it shouldn't without it and will
-  // adopt the memory dump config once it connects to the tracing service.
-  // Buffer sizes configure the tracing service's central buffer, so also don't
-  // affect local tracing.
+  // We can't currently propagate event filter options, histogram names, memory
+  // dump configs, or trace buffer sizes via command line flags (they only
+  // support categories, trace options, record mode). If event filters or
+  // histogram names are set, we bail out here to avoid recording events that we
+  // shouldn't in the child process. Even if memory dump config is set, it's OK
+  // to propagate the remaining config, because the child won't record events it
+  // shouldn't without it and will adopt the memory dump config once it connects
+  // to the tracing service. Buffer sizes configure the tracing service's
+  // central buffer, so also don't affect local tracing.
   //
   // TODO(eseckler): Support propagating the full config via command line flags
   // somehow (--trace-config?). This will also need some rethinking to support
   // multiple concurrent tracing sessions in the future.
   if (!trace_config.event_filters().empty())
+    return;
+  if (!trace_config.histogram_names().empty())
     return;
 
   // Make sure that the startup session uses privacy filtering mode if it's

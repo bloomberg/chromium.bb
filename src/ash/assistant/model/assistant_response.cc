@@ -4,15 +4,17 @@
 
 #include "ash/assistant/model/assistant_response.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "ash/assistant/model/assistant_response_observer.h"
+#include "ash/assistant/model/ui/assistant_error_element.h"
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 
 namespace ash {
 
@@ -112,12 +114,12 @@ AssistantResponse::~AssistantResponse() {
 }
 
 void AssistantResponse::AddObserver(AssistantResponseObserver* observer) const {
-  const_cast<AssistantResponse*>(this)->observers_.AddObserver(observer);
+  observers_.AddObserver(observer);
 }
 
 void AssistantResponse::RemoveObserver(
     AssistantResponseObserver* observer) const {
-  const_cast<AssistantResponse*>(this)->observers_.RemoveObserver(observer);
+  observers_.RemoveObserver(observer);
 }
 
 void AssistantResponse::AddUiElement(
@@ -168,34 +170,24 @@ AssistantResponse::GetUiElements() const {
 }
 
 void AssistantResponse::AddSuggestions(
-    std::vector<AssistantSuggestionPtr> suggestions) {
-  std::vector<const AssistantSuggestion*> ptrs;
-
-  for (AssistantSuggestionPtr& suggestion : suggestions) {
-    suggestions_.push_back(std::move(suggestion));
-    ptrs.push_back(suggestions_.back().get());
-  }
-
-  NotifySuggestionsAdded(ptrs);
+    const std::vector<AssistantSuggestion>& suggestions) {
+  for (const auto& suggestion : suggestions)
+    suggestions_.push_back(suggestion);
+  NotifySuggestionsAdded(suggestions);
 }
 
-const chromeos::assistant::mojom::AssistantSuggestion*
+const chromeos::assistant::AssistantSuggestion*
 AssistantResponse::GetSuggestionById(const base::UnguessableToken& id) const {
   for (auto& suggestion : suggestions_) {
-    if (suggestion->id == id)
-      return suggestion.get();
+    if (suggestion.id == id)
+      return &suggestion;
   }
   return nullptr;
 }
 
-std::vector<const chromeos::assistant::mojom::AssistantSuggestion*>
+const std::vector<chromeos::assistant::AssistantSuggestion>&
 AssistantResponse::GetSuggestions() const {
-  std::vector<const AssistantSuggestion*> suggestions;
-
-  for (auto& suggestion : suggestions_)
-    suggestions.push_back(suggestion.get());
-
-  return suggestions;
+  return suggestions_;
 }
 
 void AssistantResponse::Process(ProcessingCallback callback) {
@@ -210,9 +202,31 @@ void AssistantResponse::NotifyUiElementAdded(
 }
 
 void AssistantResponse::NotifySuggestionsAdded(
-    const std::vector<const AssistantSuggestion*>& suggestions) {
+    const std::vector<AssistantSuggestion>& suggestions) {
   for (auto& observer : observers_)
     observer.OnSuggestionsAdded(suggestions);
 }
 
+bool AssistantResponse::ContainsUiElement(
+    const AssistantUiElement* element) const {
+  DCHECK(element);
+
+  bool contains_element =
+      std::any_of(ui_elements_.cbegin(), ui_elements_.cend(),
+                  [element](const std::unique_ptr<AssistantUiElement>& other) {
+                    return *other == *element;
+                  });
+
+  return contains_element || ContainsPendingUiElement(element);
+}
+
+bool AssistantResponse::ContainsPendingUiElement(
+    const AssistantUiElement* element) const {
+  DCHECK(element);
+
+  return std::any_of(pending_ui_elements_.cbegin(), pending_ui_elements_.cend(),
+                     [element](const std::unique_ptr<PendingUiElement>& other) {
+                       return *other->ui_element == *element;
+                     });
+}
 }  // namespace ash

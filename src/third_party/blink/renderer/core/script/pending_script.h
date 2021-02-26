@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_PENDING_SCRIPT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_PENDING_SCRIPT_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -53,7 +52,7 @@ class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
   // streaming finishes.
   virtual void PendingScriptFinished(PendingScript*) = 0;
 
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 };
 
 // A container for an script after "prepare a script" until it is executed.
@@ -65,6 +64,8 @@ class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
 class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
                                   public NameClient {
  public:
+  PendingScript(const PendingScript&) = delete;
+  PendingScript& operator=(const PendingScript&) = delete;
   virtual ~PendingScript();
 
   TextPosition StartingPosition() const { return starting_position_; }
@@ -82,9 +83,9 @@ class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
 
   ScriptElementBase* GetElement() const;
 
-  virtual mojom::ScriptType GetScriptType() const = 0;
+  virtual mojom::blink::ScriptType GetScriptType() const = 0;
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override { return "PendingScript"; }
 
   // Returns nullptr when "script's script is null", i.e. an error occurred.
@@ -95,9 +96,6 @@ class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
   virtual bool IsExternal() const = 0;
   virtual bool WasCanceled() const = 0;
 
-  // Support for script streaming.
-  virtual void StartStreamingIfPossible() = 0;
-
   // Used only for tracing, and can return a null URL.
   // TODO(hiroshige): It's preferable to return the base URL consistently
   // https://html.spec.whatwg.org/C/#concept-script-base-url
@@ -106,7 +104,7 @@ class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
 
   // Used for DCHECK()s.
   bool IsExternalOrModule() const {
-    return IsExternal() || GetScriptType() == mojom::ScriptType::kModule;
+    return IsExternal() || GetScriptType() == mojom::blink::ScriptType::kModule;
   }
 
   void Dispose();
@@ -132,6 +130,8 @@ class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
   // This is virtual only for testing.
   virtual void ExecuteScriptBlock(const KURL&);
 
+  virtual bool IsEligibleForDelay() const { return false; }
+
  protected:
   PendingScript(ScriptElementBase*, const TextPosition& starting_position);
 
@@ -151,6 +151,8 @@ class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
       bool created_during_document_write,
       base::TimeTicks parser_blocking_load_start_time,
       bool is_controlled_by_script_runner);
+
+  void RecordThirdPartyRequestWithCookieIfNeeded();
 
   // |m_element| must points to the corresponding ScriptLoader's
   // ScriptElementBase and thus must be non-null before dispose() is called
@@ -172,8 +174,6 @@ class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
   WeakMember<ExecutionContext> original_execution_context_;
 
   const bool created_during_document_write_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingScript);
 };
 
 }  // namespace blink

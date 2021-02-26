@@ -5,10 +5,11 @@
 #include "cc/tiles/software_image_decode_cache_utils.h"
 
 #include <algorithm>
+#include <sstream>
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/hash/hash.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/metrics/histogram_macros.h"
@@ -168,7 +169,7 @@ SoftwareImageDecodeCacheUtils::GenerateCacheEntryFromCandidate(
 SoftwareImageDecodeCacheUtils::CacheKey
 SoftwareImageDecodeCacheUtils::CacheKey::FromDrawImage(const DrawImage& image,
                                                        SkColorType color_type) {
-  DCHECK(!image.paint_image().GetSkImage()->isTextureBacked());
+  DCHECK(!image.paint_image().IsTextureBacked());
 
   const PaintImage::FrameKey frame_key = image.frame_key();
   const PaintImage::Id stable_id = image.paint_image().stable_id();

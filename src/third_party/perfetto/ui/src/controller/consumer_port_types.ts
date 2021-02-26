@@ -24,15 +24,15 @@ export interface EnableTracingResponse extends
     Typed, perfetto.protos.IEnableTracingResponse {}
 export interface GetTraceStatsResponse extends
     Typed, perfetto.protos.IGetTraceStatsResponse {}
+export interface FreeBuffersResponse extends
+    Typed, perfetto.protos.IFreeBuffersResponse {}
+export interface GetCategoriesResponse extends Typed {}
+export interface DisableTracingResponse extends
+    Typed, perfetto.protos.IDisableTracingResponse {}
 
 export type ConsumerPortResponse =
-    EnableTracingResponse|ReadBuffersResponse|GetTraceStatsResponse;
-
-export function isConsumerPortResponse(obj: Typed):
-    obj is ConsumerPortResponse {
-  return isReadBuffersResponse(obj) || isEnableTracingResponse(obj) ||
-      isGetTraceStatsResponse(obj);
-}
+    EnableTracingResponse|ReadBuffersResponse|GetTraceStatsResponse|
+    GetCategoriesResponse|FreeBuffersResponse|DisableTracingResponse;
 
 export function isReadBuffersResponse(obj: Typed): obj is ReadBuffersResponse {
   return obj.type === 'ReadBuffersResponse';
@@ -46,4 +46,18 @@ export function isEnableTracingResponse(obj: Typed):
 export function isGetTraceStatsResponse(obj: Typed):
     obj is GetTraceStatsResponse {
   return obj.type === 'GetTraceStatsResponse';
+}
+
+export function isGetCategoriesResponse(obj: Typed):
+    obj is GetCategoriesResponse {
+  return obj.type === 'GetCategoriesResponse';
+}
+
+export function isFreeBuffersResponse(obj: Typed): obj is FreeBuffersResponse {
+  return obj.type === 'FreeBuffersResponse';
+}
+
+export function isDisableTracingResponse(obj: Typed):
+    obj is DisableTracingResponse {
+  return obj.type === 'DisableTracingResponse';
 }

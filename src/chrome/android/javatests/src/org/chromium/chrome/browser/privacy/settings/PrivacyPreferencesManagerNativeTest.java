@@ -7,22 +7,20 @@ package org.chromium.chrome.browser.privacy.settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.SmallTest;
-import android.support.test.rule.UiThreadTestRule;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -32,8 +30,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class PrivacyPreferencesManagerNativeTest {
     @Rule
-    public final RuleChain mChain =
-            RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
+    public final ChromeBrowserTestRule mChromeBrowserTestRule = new ChromeBrowserTestRule();
 
     @Test
     @SmallTest
@@ -42,7 +39,6 @@ public class PrivacyPreferencesManagerNativeTest {
     public void testSyncUsageAndCrashReporting() {
         PermissionContext context =
                 new PermissionContext(InstrumentationRegistry.getTargetContext());
-        PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
         SharedPreferences pref = ContextUtils.getAppSharedPreferences();
         PrivacyPreferencesManager preferenceManager = new PrivacyPreferencesManager(context);
 
@@ -63,7 +59,6 @@ public class PrivacyPreferencesManagerNativeTest {
     public void testSetUsageAndCrashReporting() {
         PermissionContext context =
                 new PermissionContext(InstrumentationRegistry.getTargetContext());
-        PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
         SharedPreferences pref = ContextUtils.getAppSharedPreferences();
         PrivacyPreferencesManager preferenceManager = new PrivacyPreferencesManager(context);
 

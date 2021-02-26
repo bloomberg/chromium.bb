@@ -45,9 +45,9 @@ const size_t kInvalidCountryIndex = static_cast<size_t>(-1);
 }  // namespace
 
 ShippingAddressEditorViewController::ShippingAddressEditorViewController(
-    PaymentRequestSpec* spec,
-    PaymentRequestState* state,
-    PaymentRequestDialogView* dialog,
+    base::WeakPtr<PaymentRequestSpec> spec,
+    base::WeakPtr<PaymentRequestState> state,
+    base::WeakPtr<PaymentRequestDialogView> dialog,
     BackNavigationType back_navigation_type,
     base::OnceClosure on_edited,
     base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
@@ -151,8 +151,7 @@ ShippingAddressEditorViewController::GetComboboxModelForType(
       region_model_ = model.get();
       if (chosen_country_index_ < countries_.size()) {
         model->LoadRegionData(countries_[chosen_country_index_].first,
-                              state()->GetRegionDataLoader(),
-                              /*timeout_ms=*/5000);
+                              state()->GetRegionDataLoader());
         if (!model->IsPendingRegionDataLoad()) {
           // If the data was already pre-loaded, the observer won't get notified
           // so we have to check for failure here.
@@ -175,7 +174,7 @@ ShippingAddressEditorViewController::GetComboboxModelForType(
 }
 
 void ShippingAddressEditorViewController::OnPerformAction(
-    views::Combobox* sender) {
+    ValidatingCombobox* sender) {
   EditorViewController::OnPerformAction(sender);
   if (sender->GetID() != GetInputFieldViewId(autofill::ADDRESS_HOME_COUNTRY))
     return;
@@ -216,12 +215,8 @@ base::string16 ShippingAddressEditorViewController::GetSheetTitle() {
                           : l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_ADDRESS);
 }
 
-std::unique_ptr<views::Button>
-ShippingAddressEditorViewController::CreatePrimaryButton() {
-  std::unique_ptr<views::Button> button(
-      EditorViewController::CreatePrimaryButton());
-  button->SetID(static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
-  return button;
+int ShippingAddressEditorViewController::GetPrimaryButtonId() {
+  return static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON);
 }
 
 ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
@@ -257,7 +252,8 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
-    IsValidCombobox(views::Combobox* combobox, base::string16* error_message) {
+    IsValidCombobox(ValidatingCombobox* combobox,
+                    base::string16* error_message) {
   return ValidateValue(combobox->GetTextForRow(combobox->GetSelectedIndex()),
                        error_message);
 }
@@ -274,7 +270,7 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
-    ComboboxValueChanged(views::Combobox* combobox) {
+    ComboboxValueChanged(ValidatingCombobox* combobox) {
   base::string16 error_message;
   bool is_valid = ValidateValue(
       combobox->GetTextForRow(combobox->GetSelectedIndex()), &error_message);
@@ -283,12 +279,15 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
 }
 
 void ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
-    ComboboxModelChanged(views::Combobox* combobox) {
+    ComboboxModelChanged(ValidatingCombobox* combobox) {
   controller_->OnComboboxModelChanged(combobox);
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ValidateValue(const base::string16& value, base::string16* error_message) {
+  if (!controller_->spec())
+    return false;
+
   // Show errors from merchant's retry() call. Note that changing the selected
   // shipping address will clear the validation errors from retry().
   autofill::AutofillProfile* invalid_shipping_profile =
@@ -583,11 +582,11 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
 }
 
 void ShippingAddressEditorViewController::OnComboboxModelChanged(
-    views::Combobox* combobox) {
+    ValidatingCombobox* combobox) {
   if (combobox->GetID() != GetInputFieldViewId(autofill::ADDRESS_HOME_STATE))
     return;
   autofill::RegionComboboxModel* model =
-      static_cast<autofill::RegionComboboxModel*>(combobox->model());
+      static_cast<autofill::RegionComboboxModel*>(combobox->GetModel());
   if (model->IsPendingRegionDataLoad())
     return;
   if (model->failed_to_load_data()) {

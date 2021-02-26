@@ -54,7 +54,7 @@ class CORE_EXPORT ScriptFunction : public CustomWrappableAdapter {
  public:
   ~ScriptFunction() override = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   const char* NameInHeapSnapshot() const override { return "ScriptFunction"; }
 
@@ -64,7 +64,9 @@ class CORE_EXPORT ScriptFunction : public CustomWrappableAdapter {
 
   ScriptState* GetScriptState() const { return script_state_; }
 
-  v8::Local<v8::Function> BindToV8Function();
+  // It is not usually necessary to set |length| unless the function is exposed
+  // to JavaScript.
+  v8::Local<v8::Function> BindToV8Function(int length = 0);
 
  private:
   // Subclasses should implement one of Call() or CallRaw(). Most will implement

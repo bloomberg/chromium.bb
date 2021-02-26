@@ -23,12 +23,14 @@
 ExtensionsToolbarButton::ExtensionsToolbarButton(
     Browser* browser,
     ExtensionsToolbarContainer* extensions_container)
-    : ToolbarButton(this),
+    : ToolbarButton(PressedCallback()),
       browser_(browser),
       extensions_container_(extensions_container) {
   std::unique_ptr<views::MenuButtonController> menu_button_controller =
       std::make_unique<views::MenuButtonController>(
-          this, this,
+          this,
+          base::BindRepeating(&ExtensionsToolbarButton::ButtonPressed,
+                              base::Unretained(this)),
           std::make_unique<views::Button::DefaultButtonControllerDelegate>(
               this));
   menu_button_controller_ = menu_button_controller.get();
@@ -39,12 +41,8 @@ ExtensionsToolbarButton::ExtensionsToolbarButton(
   GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
 }
 
-ExtensionsToolbarButton::~ExtensionsToolbarButton() = default;
-
-void ExtensionsToolbarButton::UpdateIcon() {
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(vector_icons::kExtensionIcon, GetIconSize(),
-                                 extensions_container_->GetIconColor()));
+ExtensionsToolbarButton::~ExtensionsToolbarButton() {
+  CHECK(!IsInObserverList());
 }
 
 gfx::Size ExtensionsToolbarButton::CalculatePreferredSize() const {
@@ -87,16 +85,11 @@ const char* ExtensionsToolbarButton::GetClassName() const {
   return "ExtensionsToolbarButton";
 }
 
-void ExtensionsToolbarButton::ButtonPressed(views::Button* sender,
-                                            const ui::Event& event) {
-  if (ExtensionsMenuView::IsShowing()) {
-    ExtensionsMenuView::Hide();
-    return;
-  }
-  pressed_lock_ = menu_button_controller_->TakeLock();
-  base::RecordAction(base::UserMetricsAction("Extensions.Toolbar.MenuOpened"));
-  ExtensionsMenuView::ShowBubble(this, browser_, extensions_container_)
-      ->AddObserver(this);
+void ExtensionsToolbarButton::UpdateIcon() {
+  SetImageModel(views::Button::STATE_NORMAL,
+                ui::ImageModel::FromVectorIcon(
+                    vector_icons::kExtensionIcon,
+                    extensions_container_->GetIconColor(), GetIconSize()));
 }
 
 void ExtensionsToolbarButton::OnWidgetDestroying(views::Widget* widget) {
@@ -108,4 +101,16 @@ int ExtensionsToolbarButton::GetIconSize() const {
   const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   return (touch_ui && !browser_->app_controller()) ? kDefaultTouchableIconSize
                                                    : kDefaultIconSize;
+}
+
+void ExtensionsToolbarButton::ButtonPressed() {
+  if (ExtensionsMenuView::IsShowing()) {
+    ExtensionsMenuView::Hide();
+    return;
+  }
+  pressed_lock_ = menu_button_controller_->TakeLock();
+  base::RecordAction(base::UserMetricsAction("Extensions.Toolbar.MenuOpened"));
+  ExtensionsMenuView::ShowBubble(this, browser_, extensions_container_,
+                                 extensions_container_->CanShowIconInToolbar())
+      ->AddObserver(this);
 }

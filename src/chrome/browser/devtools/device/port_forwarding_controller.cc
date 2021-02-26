@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
@@ -236,8 +235,8 @@ class SocketTunnel {
         adb_thread_runner_(base::ThreadTaskRunnerHandle::Get()) {
     ResolveHostCallback resolve_host_callback = base::BindOnce(
         &SocketTunnel::OnResolveHostComplete, base::Unretained(this));
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&ResolveHost, profile, host, port,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ResolveHost, profile, host, port,
                                   std::move(resolve_host_callback)));
   }
 
@@ -257,8 +256,8 @@ class SocketTunnel {
   void OnResolved(net::AddressList resolved_addresses) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-    host_socket_.reset(new net::TCPClientSocket(resolved_addresses, nullptr,
-                                                nullptr, net::NetLogSource()));
+    host_socket_.reset(new net::TCPClientSocket(
+        resolved_addresses, nullptr, nullptr, nullptr, net::NetLogSource()));
     int result = host_socket_->Connect(
         base::BindOnce(&SocketTunnel::OnConnected, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
@@ -495,9 +494,6 @@ void PortForwardingController::Connection::SendCommand(
     pending_responses_[id] =
         base::Bind(&Connection::ProcessBindResponse,
                    base::Unretained(this), port);
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-    port_status_[port] = kStatusConnecting;
-#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
   } else {
     auto it = port_status_.find(port);
     if (it != port_status_.end() && it->second == kStatusError) {
@@ -509,9 +505,6 @@ void PortForwardingController::Connection::SendCommand(
     pending_responses_[id] =
         base::Bind(&Connection::ProcessUnbindResponse,
                    base::Unretained(this), port);
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-    port_status_[port] = kStatusDisconnecting;
-#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
   }
 
   web_socket_->SendFrame(SerializeCommand(id, method, std::move(params)));

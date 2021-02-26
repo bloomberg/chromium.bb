@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_FRAME_RATE_DECIDER_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_FRAME_RATE_DECIDER_H_
 
+#include <vector>
+
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
@@ -70,6 +72,10 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   void set_min_num_of_frames_to_toggle_interval_for_testing(size_t num) {
     min_num_of_frames_to_toggle_interval_ = num;
   }
+  void set_frame_interval_for_sinks_with_no_preference_for_testing(
+      base::TimeDelta interval) {
+    frame_interval_for_sinks_with_no_preference_ = interval;
+  }
 
   // SurfaceObserver implementation.
   void OnSurfaceWillBeDrawn(Surface* surface) override;
@@ -79,9 +85,11 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   void EndAggregation();
   void UpdatePreferredFrameIntervalIfNeeded();
   void SetPreferredInterval(base::TimeDelta new_preferred_interval);
-  bool multiple_refresh_rates_supported() const {
-    return supported_intervals_.size() > 1u;
-  }
+  bool ShouldToggleFrameInterval(
+      int num_of_frame_sinks_with_fixed_interval,
+      int num_of_frame_sinks_with_no_preference) const;
+
+  bool multiple_refresh_rates_supported() const;
 
   bool inside_surface_aggregation_ = false;
   base::flat_map<SurfaceId, uint64_t> current_surface_id_to_active_index_;
@@ -97,6 +105,8 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   base::TimeDelta current_preferred_frame_interval_;
 
   size_t min_num_of_frames_to_toggle_interval_;
+  base::TimeDelta frame_interval_for_sinks_with_no_preference_;
+
   SurfaceManager* const surface_manager_;
   Client* const client_;
   const bool hw_support_for_multiple_refresh_rates_;

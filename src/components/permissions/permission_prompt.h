@@ -10,12 +10,15 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
+#include "url/gurl.h"
 
 namespace content {
 class WebContents;
 }
 
 namespace permissions {
+enum class PermissionPromptDisposition;
+
 class PermissionRequest;
 
 // This class is the platform-independent interface through which the permission
@@ -48,9 +51,20 @@ class PermissionPrompt {
     // deleted upon navigation and so on.
     virtual const std::vector<PermissionRequest*>& Requests() = 0;
 
+    // Get the single origin for the current set of requests.
+    virtual GURL GetRequestingOrigin() const = 0;
+
+    // Get the top-level origin currently displayed in the address bar
+    // associated with the requests.
+    virtual GURL GetEmbeddingOrigin() const = 0;
+
     virtual void Accept() = 0;
+    virtual void AcceptThisTime() = 0;
     virtual void Deny() = 0;
     virtual void Closing() = 0;
+
+    // Whether the current request has been shown to the user at least once.
+    virtual bool WasCurrentRequestAlreadyDisplayed() = 0;
   };
 
   typedef base::Callback<
@@ -69,6 +83,9 @@ class PermissionPrompt {
   // Get the behavior of this prompt when the user switches away from the
   // associated tab.
   virtual TabSwitchingBehavior GetTabSwitchingBehavior() = 0;
+
+  // Get the type of prompt UI shown for metrics.
+  virtual PermissionPromptDisposition GetPromptDisposition() const = 0;
 };
 
 }  // namespace permissions

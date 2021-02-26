@@ -26,7 +26,7 @@ BrowserWindowHistogramHelper::BrowserWindowHistogramHelper(
     ui::Compositor* compositor) {
   startup_metric_utils::RecordBrowserWindowFirstPaint(base::TimeTicks::Now());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!compositor) {
     // In Cocoa version of Chromium, UI is rendered inside the main process
     // using CoreAnimation compositor, and at this point everything is already
@@ -35,7 +35,7 @@ BrowserWindowHistogramHelper::BrowserWindowHistogramHelper(
         base::TimeTicks::Now());
     return;
   }
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
   scoped_observer_.Add(compositor);
 }

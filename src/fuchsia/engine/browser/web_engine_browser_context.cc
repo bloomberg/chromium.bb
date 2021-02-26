@@ -11,27 +11,51 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
+#include "base/system/sys_info.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/simple_key_map.h"
+#include "components/site_isolation/site_isolation_policy.h"
+#include "components/strings/grit/components_locale_settings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "fuchsia/engine/browser/web_engine_net_log_observer.h"
 #include "fuchsia/engine/browser/web_engine_permission_delegate.h"
+#include "fuchsia/engine/switches.h"
 #include "media/capabilities/in_memory_video_decode_stats_db_impl.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "ui/base/l10n/l10n_util.h"
 
-class WebEngineBrowserContext::ResourceContext
-    : public content::ResourceContext {
- public:
-  ResourceContext() = default;
-  ~ResourceContext() override = default;
+namespace {
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ResourceContext);
-};
+// Determines whether a data directory is configured, and returns its path.
+// Passes the quota, if specified, for SysInfo to report as total disk space.
+base::FilePath InitializeDataDirectoryAndQuotaFromCommandLine() {
+  base::FilePath data_directory_path;
+
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (!base::PathService::Get(base::DIR_APP_DATA, &data_directory_path) ||
+      !base::PathExists(data_directory_path)) {
+    // Run in incognito mode if /data doesn't exist.
+    return base::FilePath();
+  }
+
+  if (command_line->HasSwitch(switches::kDataQuotaBytes)) {
+    // Configure SysInfo to use the specified quota as the total-disk-space
+    // for the |data_dir_path_|.
+    uint64_t quota_bytes = 0;
+    CHECK(base::StringToUint64(
+        command_line->GetSwitchValueASCII(switches::kDataQuotaBytes),
+        &quota_bytes));
+    base::SysInfo::SetAmountOfTotalDiskSpace(data_directory_path, quota_bytes);
+  }
+
+  return data_directory_path;
+}
 
 std::unique_ptr<WebEngineNetLogObserver> CreateNetLogObserver() {
   std::unique_ptr<WebEngineNetLogObserver> result;
@@ -47,19 +71,32 @@ std::unique_ptr<WebEngineNetLogObserver> CreateNetLogObserver() {
   return result;
 }
 
+}  // namespace
+
+class WebEngineBrowserContext::ResourceContext
+    : public content::ResourceContext {
+ public:
+  ResourceContext() = default;
+  ~ResourceContext() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ResourceContext);
+};
+
 WebEngineBrowserContext::WebEngineBrowserContext(bool force_incognito)
     : net_log_observer_(CreateNetLogObserver()),
       resource_context_(new ResourceContext()) {
   if (!force_incognito) {
-    base::PathService::Get(base::DIR_APP_DATA, &data_dir_path_);
-    if (!base::PathExists(data_dir_path_)) {
-      // Run in incognito mode if /data doesn't exist.
-      data_dir_path_.clear();
-    }
+    data_dir_path_ = InitializeDataDirectoryAndQuotaFromCommandLine();
   }
+
   simple_factory_key_ =
       std::make_unique<SimpleFactoryKey>(GetPath(), IsOffTheRecord());
   SimpleKeyMap::GetInstance()->Associate(this, simple_factory_key_.get());
+
+  // TODO(crbug.com/1181156): Should apply any persisted isolated origins here.
+  // However, since WebEngine does not persist any, that would currently be a
+  // no-op.
 }
 
 WebEngineBrowserContext::~WebEngineBrowserContext() {
@@ -67,9 +104,12 @@ WebEngineBrowserContext::~WebEngineBrowserContext() {
   NotifyWillBeDestroyed(this);
 
   if (resource_context_) {
-    base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
-                     std::move(resource_context_));
+    content::GetIOThreadTaskRunner({})->DeleteSoon(
+        FROM_HERE, std::move(resource_context_));
   }
+
+  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
+      this);
 
   ShutdownStoragePartitions();
 }
@@ -157,6 +197,10 @@ WebEngineBrowserContext::GetVideoDecodePerfHistory() {
   // Delegate to the base class for stateful VideoDecodePerfHistory DB
   // creation.
   return BrowserContext::GetVideoDecodePerfHistory();
+}
+
+std::string WebEngineBrowserContext::GetPreferredLanguages() const {
+  return l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES);
 }
 
 media::VideoDecodePerfHistory*

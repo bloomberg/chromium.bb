@@ -27,6 +27,7 @@ source_set("fxge") {
     "cfx_drawutils.h",
     "cfx_face.cpp",
     "cfx_face.h",
+    "cfx_fillrenderoptions.h",
     "cfx_folderfontinfo.cpp",
     "cfx_folderfontinfo.h",
     "cfx_font.cpp",
@@ -53,6 +54,7 @@ source_set("fxge") {
     "cfx_renderdevice.h",
     "cfx_substfont.cpp",
     "cfx_substfont.h",
+    "cfx_textrenderoptions.h",
     "cfx_unicodeencoding.cpp",
     "cfx_unicodeencoding.h",
     "dib/cfx_bitmapcomposer.cpp",
@@ -75,7 +77,8 @@ source_set("fxge") {
     "dib/cfx_scanlinecompositor.h",
     "dib/cstretchengine.cpp",
     "dib/cstretchengine.h",
-    "dib/fx_dib_main.cpp",
+    "dib/fx_dib.cpp",
+    "dib/fx_dib.h",
     "dib/scanlinecomposer_iface.h",
     "fontdata/chromefontdata/FoxitDingbats.cpp",
     "fontdata/chromefontdata/FoxitFixed.cpp",
@@ -95,11 +98,9 @@ source_set("fxge") {
     "fontdata/chromefontdata/FoxitSymbol.cpp",
     "fontdata/chromefontdata/chromefontdata.h",
     "freetype/fx_freetype.cpp",
-    "fx_dib.h",
     "fx_font.cpp",
     "fx_font.h",
     "fx_freetype.h",
-    "fx_ge_fontmap.cpp",
     "render_defines.h",
     "renderdevicedriver_iface.cpp",
     "renderdevicedriver_iface.h",
@@ -159,7 +160,7 @@ source_set("fxge") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "fx_ge_linux.cpp" ]
   }
 
@@ -171,24 +172,33 @@ source_set("fxge") {
       "apple/fx_quartz_device.cpp",
       "apple/fx_quartz_device.h",
     ]
-    libs = [ "CoreGraphics.framework" ]
+    frameworks = [ "CoreGraphics.framework" ]
   }
 
   if (is_win) {
     sources += [
+      "cfx_windowsrenderdevice.cpp",
       "cfx_windowsrenderdevice.h",
       "dib/cfx_dibextractor.cpp",
       "dib/cfx_dibextractor.h",
       "win32/cfx_psrenderer.cpp",
       "win32/cfx_psrenderer.h",
-      "win32/cfx_windowsdib.h",
+      "win32/cgdi_device_driver.cpp",
+      "win32/cgdi_device_driver.h",
+      "win32/cgdi_display_driver.cpp",
+      "win32/cgdi_display_driver.h",
+      "win32/cgdi_plus_ext.cpp",
+      "win32/cgdi_plus_ext.h",
+      "win32/cgdi_printer_driver.cpp",
+      "win32/cgdi_printer_driver.h",
+      "win32/cps_printer_driver.cpp",
+      "win32/cps_printer_driver.h",
       "win32/cpsoutput.cpp",
       "win32/cpsoutput.h",
-      "win32/fx_win32_device.cpp",
-      "win32/fx_win32_dib.cpp",
-      "win32/fx_win32_gdipext.cpp",
-      "win32/fx_win32_print.cpp",
-      "win32/win32_int.h",
+      "win32/ctext_only_printer_driver.cpp",
+      "win32/ctext_only_printer_driver.h",
+      "win32/cwin32_platform.cpp",
+      "win32/cwin32_platform.h",
     ]
     configs -= [ "//build/config/win:lean_and_mean" ]
   }
@@ -201,6 +211,7 @@ pdfium_unittest_source_set("unittests") {
     "cfx_folderfontinfo_unittest.cpp",
     "cfx_fontmapper_unittest.cpp",
     "dib/cfx_cmyk_to_srgb_unittest.cpp",
+    "dib/cfx_dibbase_unittest.cpp",
     "dib/cfx_dibitmap_unittest.cpp",
     "dib/cstretchengine_unittest.cpp",
     "fx_font_unittest.cpp",
@@ -228,7 +239,7 @@ pdfium_embeddertest_source_set("embeddertests") {
   }
 
   if (is_win) {
-    sources += [ "win32/fx_win32_device_embeddertest.cpp" ]
+    sources += [ "cfx_windowsrenderdevice_embeddertest.cpp" ]
     deps += [
       ":fxge",
       "../fxcodec",

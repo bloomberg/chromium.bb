@@ -62,7 +62,7 @@ int OnMoreData(base::TimeDelta delay,
   return kDefaultAudioParams.frames_per_buffer();
 }
 
-std::string DummyGetSessionId(std::string /* audio_group_id */) {
+std::string DummyGetSessionId(const std::string& /* audio_group_id */) {
   return "";
 }
 
@@ -155,7 +155,7 @@ class CastAudioManagerTest : public testing::Test,
           return std::move(mock_cma_backend_);
         }));
     EXPECT_EQ(mock_backend_factory_.get(),
-              audio_manager_->cma_backend_factory());
+              audio_manager_->helper_.GetCmaBackendFactory());
   }
 
   void RunThreadsUntilIdle() {
@@ -194,6 +194,7 @@ TEST_F(CastAudioManagerTest, CanMakeStream) {
       kDefaultAudioParams, "", ::media::AudioManager::LogCallback());
   EXPECT_TRUE(stream->Open());
 
+  EXPECT_CALL(*mock_cma_backend_, Start(_)).WillOnce(Return(true));
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);
@@ -218,6 +219,7 @@ TEST_F(CastAudioManagerTest, CanMakeAC3Stream) {
   EXPECT_TRUE(stream);
   // Only run the rest of the test if the device supports AC3.
   if (stream->Open()) {
+    EXPECT_CALL(*mock_cma_backend_, Start(_)).WillOnce(Return(true));
     EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
         .WillRepeatedly(Invoke(OnMoreData));
     EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);
@@ -237,6 +239,7 @@ TEST_F(CastAudioManagerTest, DISABLED_CanMakeStreamProxy) {
       audio_manager_->MakeAudioOutputStreamProxy(kDefaultAudioParams, "");
   EXPECT_TRUE(stream->Open());
   RunThreadsUntilIdle();
+  EXPECT_CALL(*mock_cma_backend_, Start(_)).WillOnce(Return(true));
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);
@@ -258,6 +261,7 @@ TEST_F(CastAudioManagerTest, CanMakeMixerStream) {
       kDefaultAudioParams, "", ::media::AudioManager::LogCallback());
   EXPECT_TRUE(stream->Open());
 
+  EXPECT_CALL(*mock_cma_backend_, Start(_)).WillOnce(Return(true));
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);

@@ -23,8 +23,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/html/canvas/image_element_base.h"
-#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
-#include "third_party/blink/renderer/core/svg/svg_animated_preserve_aspect_ratio.h"
 #include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
 #include "third_party/blink/renderer/core/svg/svg_image_loader.h"
 #include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
@@ -32,18 +30,20 @@
 
 namespace blink {
 
+class SVGAnimatedLength;
+class SVGAnimatedPreserveAspectRatio;
+
 class CORE_EXPORT SVGImageElement final
     : public SVGGraphicsElement,
       public ImageElementBase,
       public SVGURIReference,
       public ActiveScriptWrappable<SVGImageElement> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGImageElement);
 
  public:
   explicit SVGImageElement(Document&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool CurrentFrameHasSingleSecurityOrigin() const;
 

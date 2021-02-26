@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "media/base/cdm_config.h"
 #include "media/base/key_system_names.h"
 #include "media/base/key_systems.h"
@@ -174,10 +175,7 @@ struct KeySystemConfigSelector::SelectionRequest {
   std::string key_system;
   blink::WebVector<blink::WebMediaKeySystemConfiguration>
       candidate_configurations;
-  base::OnceCallback<void(const blink::WebMediaKeySystemConfiguration&,
-                          const CdmConfig&)>
-      succeeded_cb;
-  base::OnceClosure not_supported_cb;
+  SelectConfigCB cb;
   bool was_permission_requested = false;
   bool is_permission_granted = false;
 };
@@ -896,9 +894,7 @@ void KeySystemConfigSelector::SelectConfig(
     const blink::WebString& key_system,
     const blink::WebVector<blink::WebMediaKeySystemConfiguration>&
         candidate_configurations,
-    base::OnceCallback<void(const blink::WebMediaKeySystemConfiguration&,
-                            const CdmConfig&)> succeeded_cb,
-    base::OnceClosure not_supported_cb) {
+    SelectConfigCB cb) {
   // Continued from requestMediaKeySystemAccess(), step 6, from
   // https://w3c.github.io/encrypted-media/#requestmediakeysystemaccess
   //
@@ -906,7 +902,7 @@ void KeySystemConfigSelector::SelectConfig(
   //     agent, reject promise with a NotSupportedError. String comparison
   //     is case-sensitive.
   if (!key_system.ContainsOnlyASCII()) {
-    std::move(not_supported_cb).Run();
+    std::move(cb).Run(Status::kUnsupportedKeySystem, nullptr, nullptr);
     return;
   }
 
@@ -914,7 +910,17 @@ void KeySystemConfigSelector::SelectConfig(
 
   std::string key_system_ascii = key_system.Ascii();
   if (!key_systems_->IsSupportedKeySystem(key_system_ascii)) {
-    std::move(not_supported_cb).Run();
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM_FAMILY)
+    // CDM support on Mac ARM is known not ready yet, so Chrome uses an
+    // architecture translation of the CDM on that platform. If the CDM isn't a
+    // supported key system, then it might be due to the fact the translation
+    // system isn't yet installed. Notify the browser process so that it can
+    // offer installation of the translation system to the user.
+    media_permission_->NotifyUnsupportedPlatform();
+    std::move(cb).Run(Status::kUnsupportedPlatform, nullptr, nullptr);
+#else
+    std::move(cb).Run(Status::kUnsupportedKeySystem, nullptr, nullptr);
+#endif
     return;
   }
 
@@ -936,17 +942,16 @@ void KeySystemConfigSelector::SelectConfig(
   // Therefore, always support Clear Key key system and only check settings for
   // other key systems.
   if (!is_encrypted_media_enabled && !IsClearKey(key_system_ascii)) {
-    std::move(not_supported_cb).Run();
+    std::move(cb).Run(Status::kUnsupportedKeySystem, nullptr, nullptr);
     return;
   }
 
   // 6.2-6.4. Implemented by OnSelectConfig().
   // TODO(sandersd): This should be async, ideally not on the main thread.
-  std::unique_ptr<SelectionRequest> request(new SelectionRequest());
+  auto request = std::make_unique<SelectionRequest>();
   request->key_system = key_system_ascii;
   request->candidate_configurations = candidate_configurations;
-  request->succeeded_cb = std::move(succeeded_cb);
-  request->not_supported_cb = std::move(not_supported_cb);
+  request->cb = std::move(cb);
   SelectConfigInternal(std::move(request));
 }
 
@@ -998,14 +1003,14 @@ void KeySystemConfigSelector::SelectConfigInternal(
              EmeFeatureRequirement::kRequired);
         cdm_config.use_hw_secure_codecs =
             config_state.AreHwSecureCodecsRequired();
-        std::move(request->succeeded_cb)
-            .Run(accumulated_configuration, cdm_config);
+        std::move(request->cb)
+            .Run(Status::kSupported, &accumulated_configuration, &cdm_config);
         return;
     }
   }
 
   // 6.4. Reject promise with a NotSupportedError.
-  std::move(request->not_supported_cb).Run();
+  std::move(request->cb).Run(Status::kUnsupportedConfigs, nullptr, nullptr);
 }
 
 void KeySystemConfigSelector::OnPermissionResult(

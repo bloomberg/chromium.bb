@@ -1,0 +1,32 @@
+{
+{%if key is defined %}
+  "key": "{{key}}",
+{% endif %}
+  "manifest_version": 2,
+  "name": "Accessibility Common",
+  "version": "{{set_version}}",
+  "description": "Accessibility Common extension to communicate with the Automation API",
+{% if is_guest_manifest == '1' %}
+  "incognito": "split",
+{% endif %}
+  "background": {
+    "scripts": [
+      "common/closure_shim.js",
+      "common/instance_checker.js",
+      "accessibility_common/autoclick/autoclick.js",
+      "accessibility_common/magnifier/magnifier.js",
+      "accessibility_common/accessibility_common_loader.js",
+      "common/event_handler.js"
+    ]
+  },
+  "permissions": [
+    "accessibilityPrivate",
+    "accessibilityFeatures.read",
+    "accessibilityFeatures.modify",
+    "settingsPrivate"
+  ],
+  "automation": {
+    "desktop": true
+  },
+  "default_locale": "en"
+}

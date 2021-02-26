@@ -39,7 +39,6 @@
 namespace blink {
 
 class CaretDisplayItemClient;
-class DisplayItemClient;
 class FrameCaret;
 class GraphicsContext;
 class LayoutBlock;
@@ -48,14 +47,11 @@ class SelectionEditor;
 struct PaintInvalidatorContext;
 struct PhysicalOffset;
 
-enum class CaretVisibility { kVisible, kHidden };
-
 class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
  public:
   FrameCaret(LocalFrame&, const SelectionEditor&);
   ~FrameCaret();
 
-  const DisplayItemClient& GetDisplayItemClient() const;
   bool IsActive() const;
 
   void ScheduleVisualUpdateForPaintInvalidationIfNeeded();
@@ -67,14 +63,13 @@ class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
   bool IsCaretBlinkingSuspended() const { return is_caret_blinking_suspended_; }
   void StopCaretBlinkTimer();
   void StartBlinkCaret();
-  void SetCaretVisibility(CaretVisibility);
+  void SetCaretEnabled(bool);
   IntRect AbsoluteCaretBounds() const;
 
   bool ShouldShowBlockCursor() const { return should_show_block_cursor_; }
   void SetShouldShowBlockCursor(bool);
 
   // Paint invalidation methods delegating to DisplayItemClient.
-  void ClearPreviousVisualRect(const LayoutBlock&);
   void LayoutBlockWillBeDestroyed(const LayoutBlock&);
   void UpdateStyleAndLayoutIfNeeded();
   void InvalidatePaint(const LayoutBlock&, const PaintInvalidatorContext&);
@@ -83,13 +78,14 @@ class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
   void PaintCaret(GraphicsContext&, const PhysicalOffset&) const;
 
   // For unit tests.
-  const DisplayItemClient& CaretDisplayItemClientForTesting() const;
-  const LayoutBlock* CaretLayoutBlockForTesting() const;
-  bool ShouldPaintCaretForTesting() const { return should_paint_caret_; }
+  const CaretDisplayItemClient& CaretDisplayItemClientForTesting() const {
+    return *display_item_client_;
+  }
+  bool IsVisibleIfActiveForTesting() const;
   void RecreateCaretBlinkTimerForTesting(
       scoped_refptr<base::SingleThreadTaskRunner>);
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   friend class FrameCaretTest;
@@ -97,19 +93,19 @@ class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
 
   const PositionWithAffinity CaretPosition() const;
 
-  bool ShouldBlinkCaret() const;
+  bool ShouldShowCaret() const;
   void CaretBlinkTimerFired(TimerBase*);
   void UpdateAppearance();
 
   const Member<const SelectionEditor> selection_editor_;
   const Member<LocalFrame> frame_;
   const std::unique_ptr<CaretDisplayItemClient> display_item_client_;
-  CaretVisibility caret_visibility_;
   // TODO(https://crbug.com/668758): Consider using BeginFrame update for this.
   std::unique_ptr<TaskRunnerTimer<FrameCaret>> caret_blink_timer_;
-  bool should_paint_caret_ : 1;
-  bool is_caret_blinking_suspended_ : 1;
-  bool should_show_block_cursor_ : 1;
+  bool is_caret_enabled_ = false;
+  bool should_show_caret_ = false;
+  bool is_caret_blinking_suspended_ = false;
+  bool should_show_block_cursor_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FrameCaret);
 };

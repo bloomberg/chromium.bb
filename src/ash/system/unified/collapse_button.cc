@@ -14,10 +14,8 @@
 
 namespace ash {
 
-CollapseButton::CollapseButton(views::ButtonListener* listener)
-    : CustomShapeButton(listener) {
-  OnEnabledChanged();
-}
+CollapseButton::CollapseButton(PressedCallback callback)
+    : CustomShapeButton(std::move(callback)) {}
 
 CollapseButton::~CollapseButton() = default;
 
@@ -58,15 +56,10 @@ const char* CollapseButton::GetClassName() const {
   return "CollapseButton";
 }
 
-void CollapseButton::OnEnabledChanged() {
-  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconPrimary,
-      AshColorProvider::AshColorMode::kDark);
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(
-               kUnifiedMenuExpandIcon,
-               GetEnabled() ? icon_color
-                            : AshColorProvider::GetDisabledColor(icon_color)));
+void CollapseButton::OnThemeChanged() {
+  CustomShapeButton::OnThemeChanged();
+  AshColorProvider::Get()->DecorateFloatingIconButton(this,
+                                                      kUnifiedMenuExpandIcon);
 }
 
 }  // namespace ash

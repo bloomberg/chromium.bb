@@ -6,6 +6,7 @@ import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
 import("//chrome/common/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
+import("//tools/grit/grit_rule.gni")
 
 assert(enable_vr)
 
@@ -28,8 +29,6 @@ android_resources("java_resources") {
   ]
 
   deps = [ ":java_strings_grd" ]
-
-  custom_package = "org.chromium.chrome.vr"
 }
 
 android_library("java") {
@@ -42,7 +41,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/vr/VrAlertDialog.java",
     "java/src/org/chromium/chrome/browser/vr/VrCancelAnimationActivity.java",
     "java/src/org/chromium/chrome/browser/vr/VrCompositorSurfaceManager.java",
-    "java/src/org/chromium/chrome/browser/vr/VrCoreInfo.java",
+    "java/src/org/chromium/chrome/browser/vr/VrCoreInstallUtils.java",
     "java/src/org/chromium/chrome/browser/vr/VrCoreVersionChecker.java",
     "java/src/org/chromium/chrome/browser/vr/VrDaydreamApi.java",
     "java/src/org/chromium/chrome/browser/vr/VrDelegateImpl.java",
@@ -73,10 +72,13 @@ android_library("java") {
     "//base:base_java",
     "//base:jni_java",
     "//chrome/android:chrome_java",
+    "//chrome/browser/feedback/android:java",
     "//chrome/browser/flags:java",
+    "//chrome/browser/fullscreen/android:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/tab:java",
+    "//chrome/browser/tabmodel:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
     "//components/browser_ui/modaldialog/android:java",
@@ -100,15 +102,14 @@ android_library("java") {
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  resources_package = "org.chromium.chrome.vr"
 }
 
 generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/browser/vr/AndroidUiGestureTarget.java",
     "java/src/org/chromium/chrome/browser/vr/AndroidVSyncHelper.java",
-    "java/src/org/chromium/chrome/browser/vr/ConsentFlowMetrics.java",
-    "java/src/org/chromium/chrome/browser/vr/VrConsentDialog.java",
-    "java/src/org/chromium/chrome/browser/vr/VrCoreInfo.java",
+    "java/src/org/chromium/chrome/browser/vr/VrCoreInstallUtils.java",
     "java/src/org/chromium/chrome/browser/vr/VrInputConnection.java",
     "java/src/org/chromium/chrome/browser/vr/VrModuleProvider.java",
     "java/src/org/chromium/chrome/browser/vr/VrShell.java",
@@ -116,9 +117,4 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/vr/keyboard/GvrKeyboardLoaderClient.java",
     "java/src/org/chromium/chrome/browser/vr/keyboard/TextEditAction.java",
   ]
-
-  if (enable_arcore) {
-    sources +=
-        [ "java/src/org/chromium/chrome/browser/vr/ArConsentDialog.java" ]
-  }
 }

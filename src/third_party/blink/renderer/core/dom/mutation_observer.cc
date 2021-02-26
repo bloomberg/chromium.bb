@@ -51,8 +51,6 @@ namespace blink {
 class MutationObserver::V8DelegateImpl final
     : public MutationObserver::Delegate,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(V8DelegateImpl);
-
  public:
   static V8DelegateImpl* Create(V8MutationCallback* callback,
                                 ExecutionContext* execution_context) {
@@ -74,7 +72,7 @@ class MutationObserver::V8DelegateImpl final
     callback_->InvokeAndReportException(&observer, records, &observer);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(callback_);
     MutationObserver::Delegate::Trace(visitor);
     ExecutionContextClient::Trace(visitor);
@@ -342,7 +340,7 @@ void MutationObserver::DeliverMutations() {
     slot->DispatchSlotChangeEvent();
 }
 
-void MutationObserver::Trace(Visitor* visitor) {
+void MutationObserver::Trace(Visitor* visitor) const {
   visitor->Trace(delegate_);
   visitor->Trace(records_);
   visitor->Trace(registrations_);

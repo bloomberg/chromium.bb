@@ -12,6 +12,7 @@
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace device {
 
@@ -40,6 +41,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) Noise {
   std::vector<uint8_t> EncryptAndHash(base::span<const uint8_t> plaintext);
   base::Optional<std::vector<uint8_t>> DecryptAndHash(
       base::span<const uint8_t> ciphertext);
+  std::array<uint8_t, 32> handshake_hash() const;
+
+  // MaxHashPoint calls |MixHash| with the uncompressed, X9.62 serialization of
+  // |point|.
+  void MixHashPoint(const EC_POINT* point);
 
   // traffic_keys() calls Split from the protocol spec but, rather than
   // returning CipherState objects, returns the raw keys.

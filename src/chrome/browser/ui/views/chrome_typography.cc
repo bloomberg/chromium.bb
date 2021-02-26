@@ -9,6 +9,7 @@
 #include "ui/base/default_style.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/platform_font.h"
 
 int GetFontSizeDeltaBoundedByAvailableHeight(int available_height,
@@ -65,7 +66,7 @@ void ApplyCommonFontStyles(int context,
       *size_delta = GetFontSizeDeltaBoundedByAvailableHeight(height, height);
       break;
     }
-    case CONTEXT_WEB_UI_TAB_COUNTER: {
+    case CONTEXT_TAB_COUNTER: {
       *size_delta = GetFontSizeDeltaIgnoringUserOrLocaleSettings(14);
       *weight = gfx::Font::Weight::BOLD;
       break;
@@ -77,9 +78,8 @@ void ApplyCommonFontStyles(int context,
               LocationBarView::GetAvailableTextHeight(),
               ui::TouchUiController::Get()->touch_ui() ? 15 : 14);
       *size_delta = omnibox_primary_delta;
-      if (context == CONTEXT_OMNIBOX_DEEMPHASIZED) {
-        (*size_delta)--;
-      }
+      if (context == CONTEXT_OMNIBOX_DEEMPHASIZED)
+        --*size_delta;
       break;
     }
     case CONTEXT_OMNIBOX_DECORATION: {
@@ -100,5 +100,21 @@ void ApplyCommonFontStyles(int context,
       *size_delta = 15 - gfx::PlatformFont::kDefaultBaseFontSize;
       break;
 #endif
+    case CONTEXT_IPH_BUBBLE_TITLE: {
+      *size_delta = GetFontSizeDeltaIgnoringUserOrLocaleSettings(18);
+      break;
+    }
+    case CONTEXT_IPH_BUBBLE_BODY_WITH_TITLE: {
+      *size_delta = GetFontSizeDeltaIgnoringUserOrLocaleSettings(13);
+      break;
+    }
+    case CONTEXT_IPH_BUBBLE_BODY_WITHOUT_TITLE: {
+      *size_delta = GetFontSizeDeltaIgnoringUserOrLocaleSettings(14);
+      break;
+    }
+    case CONTEXT_IPH_BUBBLE_BUTTON: {
+      *size_delta = GetFontSizeDeltaIgnoringUserOrLocaleSettings(13);
+      break;
+    }
   }
 }

@@ -155,6 +155,6 @@ TEST_P(AVxEncoderParmsGetToDecoder, BitstreamParms) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
 }
 
-AV1_INSTANTIATE_TEST_CASE(AVxEncoderParmsGetToDecoder,
-                          ::testing::ValuesIn(kAV1EncodeParameterSet));
+AV1_INSTANTIATE_TEST_SUITE(AVxEncoderParmsGetToDecoder,
+                           ::testing::ValuesIn(kAV1EncodeParameterSet));
 }  // namespace

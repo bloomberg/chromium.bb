@@ -8,11 +8,12 @@ import static org.junit.Assert.assertEquals;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.graphics.Color;
+import android.content.res.Resources;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.view.Window;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,9 +47,11 @@ public class TabbedNavigationBarColorControllerTest {
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         mWindow = mActivityTestRule.getActivity().getWindow();
-        mLightNavigationColor = ApiCompatibilityUtils.getColor(
-                mActivityTestRule.getActivity().getResources(), R.color.bottom_system_nav_color);
-        mDarkNavigationColor = Color.BLACK;
+        final Resources resources = mActivityTestRule.getActivity().getResources();
+        mLightNavigationColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.default_bg_color_light);
+        mDarkNavigationColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.default_bg_color_dark_elev_3);
     }
 
     @Test
@@ -79,8 +82,8 @@ public class TabbedNavigationBarColorControllerTest {
         ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), true, true);
 
-        assertEquals("Navigation bar should be black on incognito tabs.", mDarkNavigationColor,
-                mWindow.getNavigationBarColor());
+        assertEquals("Navigation bar should be dark_elev_3 on incognito tabs.",
+                mDarkNavigationColor, mWindow.getNavigationBarColor());
 
         ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), false, true);

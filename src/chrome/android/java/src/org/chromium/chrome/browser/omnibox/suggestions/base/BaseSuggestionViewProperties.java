@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
+import android.content.Context;
+
 import androidx.annotation.IntDef;
+import androidx.annotation.StringRes;
 
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
@@ -15,6 +17,7 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 /** The base set of properties for most omnibox suggestions. */
 public class BaseSuggestionViewProperties {
@@ -27,27 +30,66 @@ public class BaseSuggestionViewProperties {
         int COMPACT = 2;
     }
 
+    /**
+     * Describes the content and behavior of the interactive Action Icon.
+     */
+    public static final class Action {
+        public final SuggestionDrawableState icon;
+        public final Runnable callback;
+        public final String accessibilityDescription;
+
+        /**
+         * Create a new action for suggestion.
+         *
+         * @param icon SuggestionDrawableState describing the icon to show.
+         * @param description Content description for the action view.
+         * @param callback Callback to invoke when user interacts with the icon.
+         */
+        public Action(SuggestionDrawableState icon, String description, Runnable callback) {
+            this.icon = icon;
+            this.accessibilityDescription = description;
+            this.callback = callback;
+        }
+
+        /**
+         * Create a new action for suggestion, using Accessibility description from a resource.
+         *
+         * @param context Current context
+         * @param icon SuggestionDrawableState describing the icon to show.
+         * @param descriptionRes Resource to use as a content description for the action view.
+         * @param callback Callback to invoke when user interacts with the icon.
+         */
+        public Action(Context context, SuggestionDrawableState icon, @StringRes int descriptionRes,
+                Runnable callback) {
+            this(icon, context.getResources().getString(descriptionRes), callback);
+        }
+    }
+
     /** SuggestionDrawableState to show as a suggestion icon. */
     public static final WritableObjectPropertyKey<SuggestionDrawableState> ICON =
             new WritableObjectPropertyKey<>();
 
-    /** SuggestionDrawableState to show as an action icon. */
-    public static final WritableObjectPropertyKey<SuggestionDrawableState> ACTION_ICON =
-            new WritableObjectPropertyKey<>();
+    /** Action Icons description. */
+    public static final WritableObjectPropertyKey<List<Action>> ACTIONS =
+            new WritableObjectPropertyKey();
 
-    /** ActionCallback to invoke when user presses the ActionIcon. */
-    public static final WritableObjectPropertyKey<Runnable> ACTION_CALLBACK =
-            new WritableObjectPropertyKey<>();
-
-    /** Delegate receiving user events. */
-    public static final WritableObjectPropertyKey<SuggestionViewDelegate> SUGGESTION_DELEGATE =
+    /** Callback invoked when the Suggestion view is highlighted. */
+    public static final WritableObjectPropertyKey<Runnable> ON_FOCUS_VIA_SELECTION =
             new WritableObjectPropertyKey<>();
 
     /** Specifies how densely suggestions should be packed. */
     public static final WritableIntPropertyKey DENSITY = new WritableIntPropertyKey();
 
-    public static final PropertyKey[] ALL_UNIQUE_KEYS =
-            new PropertyKey[] {ICON, DENSITY, ACTION_ICON, ACTION_CALLBACK, SUGGESTION_DELEGATE};
+    /** Callback invoked when user clicks the suggestion. */
+    public static final WritableObjectPropertyKey<Runnable> ON_CLICK =
+            new WritableObjectPropertyKey<>();
+
+    /** Callback invoked when user long-clicks the suggestion. */
+    public static final WritableObjectPropertyKey<Runnable> ON_LONG_CLICK =
+            new WritableObjectPropertyKey<>();
+
+    public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {
+            ACTIONS, ICON, DENSITY, ON_CLICK, ON_LONG_CLICK, ON_FOCUS_VIA_SELECTION};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/notreached.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "net/http/http_response_headers.h"
 
@@ -197,6 +198,11 @@ FakeDownloadItem::GetDownloadCreationType() const {
   return download::DownloadItem::DownloadCreationType::TYPE_ACTIVE_DOWNLOAD;
 }
 
+const base::Optional<download::DownloadSchedule>&
+FakeDownloadItem::GetDownloadSchedule() const {
+  return download_schedule_;
+}
+
 void FakeDownloadItem::SetIsDone(bool is_done) {
   is_done_ = is_done;
 }
@@ -272,6 +278,11 @@ void FakeDownloadItem::Rename(const base::FilePath& name,
 
 void FakeDownloadItem::OnAsyncScanningCompleted(
     download::DownloadDangerType danger_type) {
+  NOTREACHED();
+}
+
+void FakeDownloadItem::OnDownloadScheduleChanged(
+    base::Optional<download::DownloadSchedule> schedule) {
   NOTREACHED();
 }
 

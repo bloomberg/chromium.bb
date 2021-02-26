@@ -14,6 +14,10 @@
 
 #include "src/libfuzzer/libfuzzer_macro.h"
 
+#include <algorithm>
+#include <memory>
+#include <vector>
+
 #include "src/binary_format.h"
 #include "src/libfuzzer/libfuzzer_mutator.h"
 #include "src/text_format.h"
@@ -89,16 +93,56 @@ class BinaryOutputWriter : public OutputWriter {
   }
 };
 
+class LastMutationCache {
+ public:
+  void Store(const uint8_t* data, size_t size, protobuf::Message* message) {
+    if (!message_) message_.reset(message->New());
+    message->GetReflection()->Swap(message, message_.get());
+    data_.assign(data, data + size);
+  }
+
+  bool LoadIfSame(const uint8_t* data, size_t size,
+                  protobuf::Message* message) {
+    if (!message_ || size != data_.size() ||
+        !std::equal(data_.begin(), data_.end(), data))
+      return false;
+
+    message->GetReflection()->Swap(message, message_.get());
+    message_.reset();
+    return true;
+  }
+
+ private:
+  std::vector<uint8_t> data_;
+  std::unique_ptr<protobuf::Message> message_;
+};
+
+LastMutationCache* GetCache() {
+  static LastMutationCache cache;
+  return &cache;
+}
+
+Mutator* GetMutator() {
+  static Mutator mutator;
+  return &mutator;
+}
+
+size_t GetMaxSize(const InputReader& input, const OutputWriter& output,
+                  const protobuf::Message& message) {
+  size_t max_size = message.ByteSizeLong() + output.size();
+  max_size -= std::min(max_size, input.size());
+  return max_size;
+}
+
 size_t MutateMessage(unsigned int seed, const InputReader& input,
                      OutputWriter* output, protobuf::Message* message) {
-  RandomEngine random(seed);
-  Mutator mutator(&random);
+  GetMutator()->Seed(seed);
   input.Read(message);
-  mutator.Mutate(message, output->size() > input.size()
-                              ? (output->size() - input.size())
-                              : 0);
+  size_t max_size = GetMaxSize(input, *output, *message);
+  GetMutator()->Mutate(message, max_size);
   if (size_t new_size = output->Write(*message)) {
     assert(new_size <= output->size());
+    GetCache()->Store(output->data(), new_size, message);
     return new_size;
   }
   return 0;
@@ -108,13 +152,14 @@ size_t CrossOverMessages(unsigned int seed, const InputReader& input1,
                          const InputReader& input2, OutputWriter* output,
                          protobuf::Message* message1,
                          protobuf::Message* message2) {
-  RandomEngine random(seed);
-  Mutator mutator(&random);
+  GetMutator()->Seed(seed);
   input1.Read(message1);
   input2.Read(message2);
-  mutator.CrossOver(*message2, message1);
+  size_t max_size = GetMaxSize(input1, *output, *message1);
+  GetMutator()->CrossOver(*message2, message1, max_size);
   if (size_t new_size = output->Write(*message1)) {
     assert(new_size <= output->size());
+    GetCache()->Store(output->data(), new_size, message1);
     return new_size;
   }
   return 0;
@@ -177,14 +222,20 @@ size_t CustomProtoCrossOver(bool binary, const uint8_t* data1, size_t size1,
 
 bool LoadProtoInput(bool binary, const uint8_t* data, size_t size,
                     protobuf::Message* input) {
-  return binary ? ParseBinaryMessage(data, size, input)
-                : ParseTextMessage(data, size, input);
+  if (GetCache()->LoadIfSame(data, size, input)) return true;
+  auto result = binary ? ParseBinaryMessage(data, size, input)
+                       : ParseTextMessage(data, size, input);
+  if (!result) return false;
+  GetMutator()->Seed(size);
+  GetMutator()->Fix(input);
+  return true;
 }
 
-void RegisterProtoFieldMutator(
-    const protobuf::FieldDescriptor* field,
-    std::function<void(protobuf::Message*)> callback) {
-  protobuf_mutator::Mutator::RegisterCustomMutation(field, callback);
+void RegisterPostProcessor(
+    const protobuf::Descriptor* desc,
+    std::function<void(protobuf::Message* message, unsigned int seed)>
+        callback) {
+  GetMutator()->RegisterPostProcessor(desc, callback);
 }
 
 }  // namespace libfuzzer

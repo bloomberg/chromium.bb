@@ -16,7 +16,7 @@
 @synthesize appLaunchTime = _appLaunchTime;
 @synthesize isPresentingFirstRunUI = _isPresentingFirstRunUI;
 @synthesize isColdStart = _isColdStart;
-@synthesize startupParameters = _startupParameters;
+@synthesize restoreHelper = _restoreHelper;
 
 - (FirstUserActionRecorder*)firstUserActionRecorder {
   // Stub.
@@ -50,6 +50,11 @@
 
 - (void)startChromeMain {
   // Stub.
+}
+
+- (NSDictionary*)launchOptions {
+  // Stub.
+  return @{};
 }
 
 @end

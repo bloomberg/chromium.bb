@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -44,8 +45,6 @@ class SpeechGrammarList;
 class SpeechRecognitionController final
     : public GarbageCollected<SpeechRecognitionController>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
-
  public:
   static const char kSupplementName[];
 
@@ -64,7 +63,7 @@ class SpeechRecognitionController final
 
   static SpeechRecognitionController* From(LocalDOMWindow&);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   mojom::blink::SpeechRecognizer* GetSpeechRecognizer();

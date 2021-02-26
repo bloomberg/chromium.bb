@@ -7,15 +7,17 @@
 #ifndef XFA_FXFA_PARSER_CXFA_NODE_H_
 #define XFA_FXFA_PARSER_CXFA_NODE_H_
 
-#include <memory>
 #include <utility>
 #include <vector>
 
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/tree_node.h"
-#include "core/fxge/fx_dib.h"
+#include "core/fxcrt/unowned_ptr.h"
+#include "core/fxge/dib/fx_dib.h"
+#include "fxjs/gc/gced_tree_node_mixin.h"
 #include "third_party/base/optional.h"
 #include "third_party/base/span.h"
+#include "v8/include/cppgc/member.h"
+#include "v8/include/cppgc/visitor.h"
 #include "xfa/fxfa/cxfa_ffwidget_type.h"
 #include "xfa/fxfa/fxfa.h"
 #include "xfa/fxfa/parser/cxfa_object.h"
@@ -43,7 +45,7 @@ class CXFA_Ui;
 class CXFA_Validate;
 class CXFA_Value;
 class CXFA_WidgetLayoutData;
-class LocaleIface;
+class GCedLocaleIface;
 
 #define XFA_NODEFILTER_Children 0x01
 #define XFA_NODEFILTER_Properties 0x02
@@ -73,7 +75,7 @@ enum XFA_NodeFlag {
   XFA_NodeFlag_LayoutGeneratedNode = 1 << 6
 };
 
-class CXFA_Node : public CXFA_Object, public TreeNode<CXFA_Node> {
+class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
  public:
   struct PropertyData {
     XFA_Element property;
@@ -87,11 +89,15 @@ class CXFA_Node : public CXFA_Object, public TreeNode<CXFA_Node> {
     void* default_value;
   };
 
-  static std::unique_ptr<CXFA_Node> Create(CXFA_Document* doc,
-                                           XFA_Element element,
-                                           XFA_PacketType packet);
+  // Node is created from cppgc heap.
+  static CXFA_Node* Create(CXFA_Document* doc,
+                           XFA_Element element,
+                           XFA_PacketType packet);
 
   ~CXFA_Node() override;
+
+  // CXFA_Object:
+  void Trace(cppgc::Visitor* visitor) const override;
 
   bool HasProperty(XFA_Element property) const;
   bool HasPropertyFlags(XFA_Element property, uint8_t flags) const;
@@ -186,12 +192,13 @@ class CXFA_Node : public CXFA_Object, public TreeNode<CXFA_Node> {
   void SetDataDescriptionNode(CXFA_Node* pDataDescriptionNode);
   CXFA_Node* GetBindData();
   bool HasBindItems() const { return !binding_nodes_.empty(); }
-  std::vector<CXFA_Node*> GetBindItemsCopy() { return binding_nodes_; }
-  int32_t AddBindItem(CXFA_Node* pFormNode);
-  int32_t RemoveBindItem(CXFA_Node* pFormNode);
+  std::vector<CXFA_Node*> GetBindItemsCopy() const;
+  void AddBindItem(CXFA_Node* pFormNode);
+  // Returns true if there are still more items.
+  bool RemoveBindItem(CXFA_Node* pFormNode);
   bool HasBindItem() const;
   CXFA_Node* GetContainerNode();
-  LocaleIface* GetLocale();
+  GCedLocaleIface* GetLocale();
   Optional<WideString> GetLocaleName();
   XFA_AttributeValue GetIntact();
   WideString GetNameExpression();
@@ -308,7 +315,7 @@ class CXFA_Node : public CXFA_Object, public TreeNode<CXFA_Node> {
   void SetImageImage(const RetainPtr<CFX_DIBitmap>& newImage);
   void SetImageEditImage(const RetainPtr<CFX_DIBitmap>& newImage);
 
-  RetainPtr<CFGAS_GEFont> GetFDEFont(CXFA_FFDoc* doc);
+  RetainPtr<CFGAS_GEFont> GetFGASFont(CXFA_FFDoc* doc);
 
   bool IsListBox();
   bool IsRadioButton();
@@ -391,7 +398,7 @@ class CXFA_Node : public CXFA_Object, public TreeNode<CXFA_Node> {
             XFA_Element eType,
             pdfium::span<const PropertyData> properties,
             pdfium::span<const AttributeData> attributes,
-            std::unique_ptr<CJX_Object> js_object);
+            CJX_Object* js_object);
 
   virtual XFA_Element GetValueNodeType() const;
   virtual XFA_FFWidgetType GetDefaultFFWidgetType() const;
@@ -442,7 +449,7 @@ class CXFA_Node : public CXFA_Object, public TreeNode<CXFA_Node> {
   float GetHeightWithoutMargin(float fHeightCalc) const;
   void CalculateTextContentSize(CXFA_FFDoc* doc, CFX_SizeF* pSize);
   CFX_SizeF CalculateAccWidthAndHeight(CXFA_FFDoc* doc, float fWidth);
-  void InitLayoutData();
+  void InitLayoutData(CXFA_FFDoc* doc);
   void StartTextLayout(CXFA_FFDoc* doc, float* pCalcWidth, float* pCalcHeight);
 
   void InsertListTextItem(CXFA_Node* pItems,
@@ -484,6 +491,10 @@ class CXFA_Node : public CXFA_Object, public TreeNode<CXFA_Node> {
 
   CFX_XMLDocument* GetXMLDocument() const;
 
+  XFA_FFWidgetType ff_widget_type_ = XFA_FFWidgetType::kNone;
+  bool m_bIsNull = true;
+  bool m_bPreNull = true;
+  bool is_widget_ready_ = false;
   const pdfium::span<const PropertyData> m_Properties;
   const pdfium::span<const AttributeData> m_Attributes;
   const uint32_t m_ValidPackets;
@@ -492,14 +503,10 @@ class CXFA_Node : public CXFA_Object, public TreeNode<CXFA_Node> {
   uint8_t m_ExecuteRecursionDepth = 0;
   uint16_t m_uNodeFlags = XFA_NodeFlag_None;
   uint32_t m_dwNameHash = 0;
-  CXFA_Node* m_pAuxNode = nullptr;         // Raw, node tree cleanup order.
-  std::vector<CXFA_Node*> binding_nodes_;  // Raw, node tree cleanup order.
-  bool m_bIsNull = true;
-  bool m_bPreNull = true;
-  bool is_widget_ready_ = false;
-  std::unique_ptr<CXFA_WidgetLayoutData> m_pLayoutData;
-  CXFA_Ui* ui_ = nullptr;
-  XFA_FFWidgetType ff_widget_type_ = XFA_FFWidgetType::kNone;
+  cppgc::Member<CXFA_Node> m_pAuxNode;
+  std::vector<cppgc::Member<CXFA_Node>> binding_nodes_;
+  cppgc::Member<CXFA_WidgetLayoutData> m_pLayoutData;
+  cppgc::Member<CXFA_Ui> ui_;
 };
 
 #endif  // XFA_FXFA_PARSER_CXFA_NODE_H_

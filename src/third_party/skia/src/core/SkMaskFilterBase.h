@@ -116,7 +116,7 @@ public:
     virtual bool directFilterMaskGPU(GrRecordingContext*,
                                      GrRenderTargetContext*,
                                      GrPaint&& paint,
-                                     const GrClip&,
+                                     const GrClip*,
                                      const SkMatrix& viewMatrix,
                                      const GrStyledShape& shape) const;
 
@@ -228,7 +228,7 @@ private:
     bool filterRRect(const SkRRect& devRRect, const SkMatrix& ctm, const SkRasterClip&,
                      SkBlitter*) const;
 
-    typedef SkFlattenable INHERITED;
+    using INHERITED = SkFlattenable;
 };
 
 inline SkMaskFilterBase* as_MFB(SkMaskFilter* mf) {
@@ -242,5 +242,8 @@ inline const SkMaskFilterBase* as_MFB(const SkMaskFilter* mf) {
 inline const SkMaskFilterBase* as_MFB(const sk_sp<SkMaskFilter>& mf) {
     return static_cast<SkMaskFilterBase*>(mf.get());
 }
+
+// For RegisterFlattenables access to the blur mask filter implementation
+extern void sk_register_blur_maskfilter_createproc();
 
 #endif

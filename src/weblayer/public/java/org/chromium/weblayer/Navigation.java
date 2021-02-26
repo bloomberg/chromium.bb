@@ -137,9 +137,6 @@ public class Navigation extends IClientNavigation.Stub {
      */
     public boolean isDownload() {
         ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 84) {
-            throw new UnsupportedOperationException();
-        }
         try {
             return mNavigationImpl.isDownload();
         } catch (RemoteException e) {
@@ -155,9 +152,6 @@ public class Navigation extends IClientNavigation.Stub {
      */
     public boolean wasStopCalled() {
         ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 84) {
-            throw new UnsupportedOperationException();
-        }
         try {
             return mNavigationImpl.wasStopCalled();
         } catch (RemoteException e) {
@@ -169,8 +163,16 @@ public class Navigation extends IClientNavigation.Stub {
      * Sets a header for a network request. If a header with the specified name exists it is
      * overwritten. This method can only be called at two times, from
      * {@link NavigationCallback.onNavigationStarted} and {@link
-     * NavigationCallback.onNavigationStarted}. When called during start, the header applies to both
-     * the initial network request as well as redirects.
+     * NavigationCallback.onNavigationRedirected}. When called during start, the header applies to
+     * both the initial network request as well as redirects.
+     *
+     * This method may be used to set the referer. If the referer is set in navigation start, it is
+     * reset during the redirect. In other words, if you need to set a referer that applies to
+     * redirects, then this must be called from {@link onNavigationRedirected}.
+     *
+     * Note that any headers that are set here won't be sent again if the frame html is fetched
+     * again due to a user reloading the page, navigating back and forth etc... when this fetch
+     * couldn't be cached (either in the disk cache or in the back-forward cache).
      *
      * @param name The name of the header. The name must be rfc 2616 compliant.
      * @param value The value of the header. The value must not contain '\0', '\n' or '\r'.
@@ -182,11 +184,30 @@ public class Navigation extends IClientNavigation.Stub {
      */
     public void setRequestHeader(@NonNull String name, @NonNull String value) {
         ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 83) {
+        try {
+            mNavigationImpl.setRequestHeader(name, value);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Disables auto-reload for this navigation if the network is down and comes back later.
+     * Auto-reload is enabled by default. This method may only be called from
+     * {@link NavigationCallback.onNavigationStarted}.
+     *
+     * @throws IllegalStateException If not called during start.
+     *
+     * @since 88
+     */
+    public void disableNetworkErrorAutoReload() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.shouldPerformVersionChecks()
+                && WebLayer.getSupportedMajorVersionInternal() < 88) {
             throw new UnsupportedOperationException();
         }
         try {
-            mNavigationImpl.setRequestHeader(name, value);
+            mNavigationImpl.disableNetworkErrorAutoReload();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -197,21 +218,70 @@ public class Navigation extends IClientNavigation.Stub {
      * sticky, it applies to this navigation only (and any redirects or resources that are loaded).
      * This method may only be called from {@link NavigationCallback.onNavigationStarted}.
      *
+     * Note that this user agent won't be sent again if the frame html is fetched again due to a
+     * user reloading the page, navigating back and forth etc... when this fetch couldn't be cached
+     * (either in the disk cache or in the back-forward cache).
+     *
      * @param value The user-agent string. The value must not contain '\0', '\n' or '\r'. An empty
      * string results in the default user-agent string.
      *
      * @throws IllegalArgumentException If supplied an invalid value.
-     * @throws IllegalStateException If not called during start.
+     * @throws IllegalStateException If not called during start or if {@link
+     *         Tab.setDesktopUserAgent} was called with a value of true.
      *
      * @since 84
      */
     public void setUserAgentString(@NonNull String value) {
         ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 84) {
+        try {
+            mNavigationImpl.setUserAgentString(value);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Returns whether the navigation was initiated by the page. Examples of page-initiated
+     * navigations:
+     * * Clicking <a> links.
+     * * changing window.location.href
+     * * redirect via the <meta http-equiv="refresh"> tag
+     * * using window.history.pushState
+     *
+     * This method returns false for navigations initiated by the WebLayer API, including using
+     *  window.history.forward() or window.history.back().
+     *
+     * @return Whether the navigation was initiated by the page.
+     *
+     * @since 86
+     */
+    public boolean isPageInitiated() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 86) {
             throw new UnsupportedOperationException();
         }
         try {
-            mNavigationImpl.setUserAgentString(value);
+            return mNavigationImpl.isPageInitiated();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Whether the navigation is a reload. Examples of reloads include:
+     * * embedder-specified through NavigationController::Reload
+     * * page-initiated reloads, e.g. location.reload()
+     * * reloads when the network interface is reconnected
+     *
+     * @since 86
+     */
+    public boolean isReload() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 86) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return mNavigationImpl.isReload();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.notifications;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -17,7 +16,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.Button;
@@ -25,21 +23,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.test.filters.SmallTest;
+
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,12 +50,9 @@ public class CustomNotificationBuilderTest {
     private static final String NOTIFICATION_TAG = "TestNotificationTag";
     private static final int NOTIFICATION_ID = 99;
 
-    @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
-
     @Before
     public void setUp() {
-        mActivityTestRule.loadNativeLibraryNoBrowserProcess();
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
     }
 
     @Test
@@ -111,24 +106,19 @@ public class CustomNotificationBuilderTest {
         Assert.assertEquals("title", NotificationTestUtil.getExtraTitle(notification));
         Assert.assertEquals("body", NotificationTestUtil.getExtraText(notification));
         Assert.assertEquals("origin", NotificationTestUtil.getExtraSubText(notification));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            Assert.assertEquals(
-                    NotificationConstants.GROUP_WEB_PREFIX + "origin", notification.getGroup());
-        }
+        Assert.assertEquals(
+                NotificationConstants.GROUP_WEB_PREFIX + "origin", notification.getGroup());
 
         Assert.assertEquals("ticker", notification.tickerText.toString());
         Assert.assertEquals(Notification.DEFAULT_ALL, notification.defaults);
         Assert.assertEquals(1, notification.vibrate.length);
         Assert.assertEquals(100L, notification.vibrate[0]);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Notification.publicVersion was added in Android L.
-            Assert.assertNotNull(notification.publicVersion);
-            Assert.assertEquals("origin",
-                    Build.VERSION.SDK_INT <= Build.VERSION_CODES.M
-                            ? NotificationTestUtil.getExtraTitle(notification.publicVersion)
-                            : NotificationTestUtil.getExtraSubText(notification.publicVersion));
-        }
+        Assert.assertNotNull(notification.publicVersion);
+        Assert.assertEquals("origin",
+                Build.VERSION.SDK_INT <= Build.VERSION_CODES.M
+                        ? NotificationTestUtil.getExtraTitle(notification.publicVersion)
+                        : NotificationTestUtil.getExtraSubText(notification.publicVersion));
 
         // The regular actions and the settings action are added together in the notification
         // actions array, so they can be exposed on e.g. Wear and custom lockscreens.
@@ -374,8 +364,6 @@ public class CustomNotificationBuilderTest {
      * still check the notification's action properties since these are used on Android Wear.
      */
     @Test
-    @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
-    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs were only added in KITKAT_WATCH.
     @SmallTest
     @Feature({"Browser", "Notifications"})
     @DisableIf.Build(sdk_is_greater_than = 23, message = "crbug.com/779228")
@@ -420,6 +408,7 @@ public class CustomNotificationBuilderTest {
         }
     }
 
+    @SuppressWarnings("WrongViewCast") // False positive.
     private static void assertSmallNotificationIconAsExpected(
             Context context, Notification notification, Bitmap expectedIcon) {
         // 1. Check small icon property on the notification, for M+.
@@ -431,17 +420,15 @@ public class CustomNotificationBuilderTest {
         }
 
         // 2. Check the small icon in the custom layouts.
-
-        int smallIconId = CustomNotificationBuilder.useMaterial() ? R.id.small_icon_overlay
-                                                                  : R.id.small_icon_footer;
         View compactView = notification.contentView.apply(context, new LinearLayout(context));
         Drawable compactViewIcon =
-                ((ImageView) compactView.findViewById(smallIconId)).getDrawable();
+                ((ImageView) compactView.findViewById(R.id.small_icon_overlay)).getDrawable();
         Assert.assertNotNull(compactViewIcon);
         Assert.assertTrue(expectedIcon.sameAs(((BitmapDrawable) compactViewIcon).getBitmap()));
 
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
-        Drawable bigViewIcon = ((ImageView) bigView.findViewById(smallIconId)).getDrawable();
+        Drawable bigViewIcon =
+                ((ImageView) bigView.findViewById(R.id.small_icon_overlay)).getDrawable();
         Assert.assertNotNull(bigViewIcon);
         Assert.assertTrue(expectedIcon.sameAs(((BitmapDrawable) bigViewIcon).getBitmap()));
     }

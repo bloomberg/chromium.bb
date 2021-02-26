@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/hash/hash.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -85,6 +85,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
 
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   DCHECK(manager);
+  memory_tracker_ = CreateMemoryTracker();
 
   if (share_command_buffer_stub) {
     context_group_ =
@@ -107,7 +108,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
         manager->gpu_memory_buffer_factory();
     context_group_ = new gles2::ContextGroup(
         manager->gpu_preferences(), gles2::PassthroughCommandDecoderSupported(),
-        manager->mailbox_manager(), CreateMemoryTracker(init_params),
+        manager->mailbox_manager(), CreateMemoryTracker(),
         manager->shader_translator_cache(),
         manager->framebuffer_completeness_cache(), feature_info,
         init_params.attribs.bind_generates_resource, channel_->image_manager(),
@@ -118,7 +119,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
         manager->shared_image_manager());
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Virtualize GpuPreference::kLowPower contexts by default on OS X to prevent
   // performance regressions when enabling FCM.
   // http://crbug.com/180463
@@ -432,7 +433,7 @@ base::TimeDelta GLES2CommandBufferStub::GetGpuBlockedTimeSinceLastSwap() {
   return channel_->scheduler()->TakeTotalBlockingTime();
 }
 
-MemoryTracker* GLES2CommandBufferStub::GetMemoryTracker() const {
+MemoryTracker* GLES2CommandBufferStub::GetContextGroupMemoryTracker() const {
   return context_group_->memory_tracker();
 }
 
@@ -473,7 +474,7 @@ void GLES2CommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
 
 void GLES2CommandBufferStub::OnCreateGpuFenceFromHandle(
     uint32_t gpu_fence_id,
-    const gfx::GpuFenceHandle& handle) {
+    gfx::GpuFenceHandle handle) {
   if (!context_group_->feature_info()->feature_flags().chromium_gpu_fence) {
     DLOG(ERROR) << "CHROMIUM_gpu_fence unavailable";
     command_buffer_->SetParseError(error::kLostContext);
@@ -481,7 +482,7 @@ void GLES2CommandBufferStub::OnCreateGpuFenceFromHandle(
   }
 
   if (gles2_decoder_->GetGpuFenceManager()->CreateGpuFenceFromHandle(
-          gpu_fence_id, handle))
+          gpu_fence_id, std::move(handle)))
     return;
 
   // The insertion failed. This shouldn't happen, force context loss to avoid
@@ -502,7 +503,7 @@ void GLES2CommandBufferStub::OnGetGpuFenceHandle(uint32_t gpu_fence_id) {
   if (manager->IsValidGpuFence(gpu_fence_id)) {
     std::unique_ptr<gfx::GpuFence> gpu_fence =
         manager->GetGpuFence(gpu_fence_id);
-    handle = gfx::CloneHandleForIPC(gpu_fence->GetGpuFenceHandle());
+    handle = gpu_fence->GetGpuFenceHandle().Clone();
   } else {
     // Retrieval failed. This shouldn't happen, force context loss to avoid
     // inconsistent state.
@@ -510,6 +511,10 @@ void GLES2CommandBufferStub::OnGetGpuFenceHandle(uint32_t gpu_fence_id) {
     command_buffer_->SetParseError(error::kLostContext);
     CheckContextLost();
   }
+
+  // IPC accepts handles by const reference. However, on platforms where the
+  // handle is backed by base::ScopedFD, const is casted away and the handle is
+  // forcibly taken from you.
   Send(new GpuCommandBufferMsg_GetGpuFenceHandleComplete(route_id_,
                                                          gpu_fence_id, handle));
 }

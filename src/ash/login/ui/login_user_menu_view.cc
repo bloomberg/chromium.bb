@@ -37,20 +37,52 @@ constexpr int kVerticalPaddingLoginUserMenuViewDp = 8;
 
 constexpr int kUserMenuRemoveUserButtonIdForTest = 1;
 
-// Font size delta from normal for the username headline.
-constexpr int kUserMenuFontSizeDeltaUsername = 2;
+// Font name of the username headline.
+constexpr char kUserMenuFontNameUsername[] = "Google Sans";
+
+// Font size of the username headline.
+constexpr int kUserMenuFontSizeUsername = 15;
+
+// Line height of the username headline.
+constexpr int kUserMenuLineHeightUsername = 22;
+
+// Traps the focus so it does not move from the |trapped_focus| view.
+class TrappedFocusSearch : public views::FocusSearch {
+ public:
+  explicit TrappedFocusSearch(views::View* trapped_focus)
+      : FocusSearch(trapped_focus->parent(), true, true),
+        trapped_focus_(trapped_focus) {}
+  TrappedFocusSearch(const TrappedFocusSearch&) = delete;
+  TrappedFocusSearch& operator=(const TrappedFocusSearch&) = delete;
+  ~TrappedFocusSearch() override = default;
+
+  // views::FocusSearch:
+  views::View* FindNextFocusableView(
+      views::View* starting_view,
+      views::FocusSearch::SearchDirection search_direction,
+      views::FocusSearch::TraversalDirection traversal_direction,
+      views::FocusSearch::StartingViewPolicy check_starting_view,
+      views::FocusSearch::AnchoredDialogPolicy can_go_into_anchored_dialog,
+      views::FocusTraversable** focus_traversable,
+      views::View** focus_traversable_view) override {
+    return trapped_focus_;
+  }
+
+ private:
+  views::View* const trapped_focus_;
+};
 
 }  // namespace
 
 // A button that holds a child view.
 class RemoveUserButton : public SystemLabelButton {
  public:
-  RemoveUserButton(views::ButtonListener* listener, LoginUserMenuView* bubble)
-      : SystemLabelButton(
-            listener,
-            l10n_util::GetStringUTF16(
-                IDS_ASH_LOGIN_POD_MENU_REMOVE_ITEM_ACCESSIBLE_NAME),
-            SystemLabelButton::DisplayType::DEFAULT),
+  RemoveUserButton(PressedCallback callback, LoginUserMenuView* bubble)
+      : SystemLabelButton(std::move(callback),
+                          l10n_util::GetStringUTF16(
+                              IDS_ASH_LOGIN_POD_REMOVE_ACCOUNT_ACCESSIBLE_NAME),
+                          SystemLabelButton::DisplayType::DEFAULT,
+                          /*multiline*/ true),
         bubble_(bubble) {}
 
   ~RemoveUserButton() override = default;
@@ -62,16 +94,15 @@ class RemoveUserButton : public SystemLabelButton {
       return;
     }
 
-    if (event->key_code() != ui::VKEY_RETURN) {
-      // The remove-user button should handle bubble dismissal and stop
-      // propagation, otherwise the event will propagate to the bubble widget,
-      // which will close itself and invalidate the bubble pointer in
-      // LoginUserMenuView.
-      event->StopPropagation();
+    if (event->key_code() == ui::VKEY_ESCAPE) {
       bubble_->Hide();
-    } else {
-      views::Button::OnKeyEvent(event);
+      // We explicitly move focus back to the dropdown button so the Tab
+      // traversal works correctly.
+      bubble_->GetBubbleOpener()->RequestFocus();
     }
+
+    if (event->key_code() == ui::VKEY_RETURN)
+      views::Button::OnKeyEvent(event);
   }
 
   LoginUserMenuView* bubble_;
@@ -98,6 +129,10 @@ views::Label* LoginUserMenuView::TestApi::username_label() {
   return bubble_->username_label_;
 }
 
+views::Label* LoginUserMenuView::TestApi::management_disclosure_label() {
+  return bubble_->management_disclosure_label_;
+}
+
 LoginUserMenuView::LoginUserMenuView(
     const LoginUserInfo& user,
     views::View* anchor_view,
@@ -108,6 +143,8 @@ LoginUserMenuView::LoginUserMenuView(
       bubble_opener_(bubble_opener),
       on_remove_user_warning_shown_(on_remove_user_warning_shown),
       on_remove_user_requested_(on_remove_user_requested) {
+  set_notify_alert_on_show(false);
+
   const base::string16& email =
       base::UTF8ToUTF16(user.basic_user_info.display_email);
   bool is_owner = user.is_device_owner;
@@ -128,25 +165,31 @@ LoginUserMenuView::LoginUserMenuView(
         kUserMenuVerticalMarginUsernameMailDp));
     AddChildView(container);
     username_label_ = login_views_utils::CreateBubbleLabel(
-        display_username, gfx::kGoogleGrey200, nullptr,
-        kUserMenuFontSizeDeltaUsername, gfx::Font::Weight::BOLD);
+        display_username, nullptr,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kTextColorPrimary),
+        gfx::FontList({kUserMenuFontNameUsername}, gfx::Font::FontStyle::NORMAL,
+                      kUserMenuFontSizeUsername, gfx::Font::Weight::MEDIUM),
+        kUserMenuLineHeightUsername);
     container->AddChildView(username_label_);
-    views::Label* email_label =
-        login_views_utils::CreateBubbleLabel(email, gfx::kGoogleGrey500);
+    views::Label* email_label = login_views_utils::CreateBubbleLabel(
+        email, nullptr,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kTextColorSecondary));
     container->AddChildView(email_label);
   }
 
   // User is managed.
-  if (user.user_enterprise_domain) {
+  if (user.user_account_manager) {
     managed_user_data_ = new views::View();
     managed_user_data_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical));
     base::string16 managed_text = l10n_util::GetStringFUTF16(
         IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_USER_WARNING,
-        base::UTF8ToUTF16(user.user_enterprise_domain.value()));
-    views::Label* managed_label = login_views_utils::CreateBubbleLabel(
-        managed_text, gfx::kGoogleGrey200, this);
-    managed_user_data_->AddChildView(managed_label);
+        base::UTF8ToUTF16(user.user_account_manager.value()));
+    management_disclosure_label_ =
+        login_views_utils::CreateBubbleLabel(managed_text, this);
+    managed_user_data_->AddChildView(management_disclosure_label_);
     AddChildView(managed_user_data_);
   }
 
@@ -177,15 +220,25 @@ LoginUserMenuView::LoginUserMenuView(
     remove_user_confirm_data_->SetVisible(false);
 
     remove_user_confirm_data_->AddChildView(
-        login_views_utils::CreateBubbleLabel(part1, gfx::kGoogleGrey200, this));
+        login_views_utils::CreateBubbleLabel(part1, this));
 
     remove_user_confirm_data_->AddChildView(
-        login_views_utils::CreateBubbleLabel(part2, gfx::kGoogleGrey200, this));
+        login_views_utils::CreateBubbleLabel(part2, this));
 
-    remove_user_button_ = new RemoveUserButton(this, this);
+    remove_user_button_ = new RemoveUserButton(
+        base::BindRepeating(&LoginUserMenuView::RemoveUserButtonPressed,
+                            base::Unretained(this)),
+        this);
     remove_user_button_->SetID(kUserMenuRemoveUserButtonIdForTest);
     AddChildView(remove_user_button_);
+
+    // Traps the focus on the remove user button.
+    focus_search_ = std::make_unique<TrappedFocusSearch>(remove_user_button_);
   }
+
+  set_positioning_strategy(PositioningStrategy::kTryAfterThenBefore);
+  SetPadding(kHorizontalPaddingLoginUserMenuViewDp,
+             kVerticalPaddingLoginUserMenuViewDp);
 }
 
 LoginUserMenuView::~LoginUserMenuView() = default;
@@ -207,8 +260,47 @@ LoginButton* LoginUserMenuView::GetBubbleOpener() const {
   return bubble_opener_;
 }
 
-void LoginUserMenuView::ButtonPressed(views::Button* sender,
-                                      const ui::Event& event) {
+void LoginUserMenuView::RequestFocus() {
+  // This view has no actual interesting contents to focus, so immediately
+  // forward to the button.
+  if (remove_user_button_)
+    remove_user_button_->RequestFocus();
+}
+
+bool LoginUserMenuView::HasFocus() const {
+  return remove_user_button_ && remove_user_button_->HasFocus();
+}
+
+const char* LoginUserMenuView::GetClassName() const {
+  return "LoginUserMenuView";
+}
+
+void LoginUserMenuView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(l10n_util::GetStringUTF16(
+      IDS_ASH_LOGIN_POD_REMOVE_ACCOUNT_ACCESSIBLE_NAME));
+  node_data->SetDescription(l10n_util::GetStringUTF16(
+      IDS_ASH_LOGIN_POD_REMOVE_ACCOUNT_DIALOG_ACCESSIBLE_DESCRIPTION));
+  node_data->role = ax::mojom::Role::kDialog;
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
+}
+
+views::FocusTraversable* LoginUserMenuView::GetPaneFocusTraversable() {
+  return this;
+}
+
+views::FocusSearch* LoginUserMenuView::GetFocusSearch() {
+  return focus_search_.get();
+}
+
+views::FocusTraversable* LoginUserMenuView::GetFocusTraversableParent() {
+  return nullptr;
+}
+
+views::View* LoginUserMenuView::GetFocusTraversableParentView() {
+  return nullptr;
+}
+
+void LoginUserMenuView::RemoveUserButtonPressed() {
   // Show confirmation warning. The user has to click the button again before
   // we actually allow the exit.
   if (!remove_user_confirm_data_->GetVisible()) {
@@ -238,25 +330,4 @@ void LoginUserMenuView::ButtonPressed(views::Button* sender,
     std::move(on_remove_user_requested_).Run();
 }
 
-gfx::Point LoginUserMenuView::CalculatePosition() {
-  return CalculatePositionUsingDefaultStrategy(
-      PositioningStrategy::kShowOnRightSideOrLeftSide,
-      kHorizontalPaddingLoginUserMenuViewDp,
-      kVerticalPaddingLoginUserMenuViewDp);
-}
-
-void LoginUserMenuView::RequestFocus() {
-  // This view has no actual interesting contents to focus, so immediately
-  // forward to the button.
-  if (remove_user_button_)
-    remove_user_button_->RequestFocus();
-}
-
-bool LoginUserMenuView::HasFocus() const {
-  return remove_user_button_ && remove_user_button_->HasFocus();
-}
-
-const char* LoginUserMenuView::GetClassName() const {
-  return "LoginUserMenuView";
-}
 }  // namespace ash

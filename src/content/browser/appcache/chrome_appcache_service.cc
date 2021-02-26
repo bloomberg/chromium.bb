@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_storage_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -22,9 +21,10 @@
 namespace content {
 
 ChromeAppCacheService::ChromeAppCacheService(
-    storage::QuotaManagerProxy* quota_manager_proxy,
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<StoragePartitionImpl> partition)
-    : AppCacheServiceImpl(quota_manager_proxy, std::move(partition)) {}
+    : AppCacheServiceImpl(std::move(quota_manager_proxy),
+                          std::move(partition)) {}
 
 void ChromeAppCacheService::Initialize(
     const base::FilePath& cache_path,
@@ -88,7 +88,7 @@ void ChromeAppCacheService::DeleteOnCorrectThread() const {
     return;
   }
   if (BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
-    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
+    GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, this);
     return;
   }
   // Better to leak than crash on shutdown.

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
@@ -20,7 +19,9 @@
 #include "components/sync/model/model_type_sync_bridge.h"
 
 class Profile;
-
+namespace base {
+class Time;
+}
 namespace syncer {
 class MetadataBatch;
 class MetadataChangeList;
@@ -56,6 +57,8 @@ class WebAppSyncBridge : public AppRegistryController,
       WebAppRegistrarMutable* registrar,
       SyncInstallDelegate* install_delegate,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
+  WebAppSyncBridge(const WebAppSyncBridge&) = delete;
+  WebAppSyncBridge& operator=(const WebAppSyncBridge&) = delete;
   ~WebAppSyncBridge() override;
 
   using CommitCallback = base::OnceCallback<void(bool success)>;
@@ -68,11 +71,24 @@ class WebAppSyncBridge : public AppRegistryController,
   // AppRegistryController:
   void Init(base::OnceClosure callback) override;
   void SetAppUserDisplayMode(const AppId& app_id,
-                             DisplayMode user_display_mode) override;
+                             DisplayMode user_display_mode,
+                             bool is_user_action) override;
   void SetAppIsDisabled(const AppId& app_id, bool is_disabled) override;
   void SetAppIsLocallyInstalled(const AppId& app_id,
                                 bool is_locally_installed) override;
+  void SetAppLastLaunchTime(const AppId& app_id,
+                            const base::Time& time) override;
+  void SetAppInstallTime(const AppId& app_id, const base::Time& time) override;
+  void SetAppRunOnOsLoginMode(const AppId& app_id,
+                              RunOnOsLoginMode mode) override;
   WebAppSyncBridge* AsWebAppSyncBridge() override;
+
+  // These methods are used by extensions::AppSorting, which manages the sorting
+  // of web apps on chrome://apps.
+  void SetUserPageOrdinal(const AppId& app_id,
+                          syncer::StringOrdinal user_page_ordinal);
+  void SetUserLaunchOrdinal(const AppId& app_id,
+                            syncer::StringOrdinal user_launch_ordinal);
 
   // An access to read-only registry. Does an upcast to read-only type.
   const WebAppRegistrar& registrar() const { return *registrar_; }
@@ -131,7 +147,6 @@ class WebAppSyncBridge : public AppRegistryController,
 
   base::WeakPtrFactory<WebAppSyncBridge> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(WebAppSyncBridge);
 };
 
 bool AreAppsLocallyInstalledByDefault();

@@ -88,6 +88,12 @@ struct CONTENT_EXPORT NavigationDownloadPolicy {
   bool blocking_downloads_in_sandbox_enabled = false;
 };
 
+// If this is false we continue the old behaviour of doing an early call to
+// RenderFrameHostManager::CommitPending when we are replacing a crashed
+// frame.
+// TODO(https://crbug.com/1072817): Stop allowing this.
+CONTENT_EXPORT bool ShouldSkipEarlyCommitPendingForCrashedFrame();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_NAVIGATION_POLICY_H_

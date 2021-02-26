@@ -6,7 +6,7 @@
 #define CAST_STREAMING_ANSWER_MESSAGES_H_
 
 #include <array>
-#include <chrono>  // NOLINT
+#include <chrono>
 #include <cstdint>
 #include <initializer_list>
 #include <memory>
@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-#include "cast/streaming/offer_messages.h"
+#include "absl/types/optional.h"
 #include "cast/streaming/ssrc.h"
 #include "json/value.h"
 #include "platform/base/error.h"
@@ -23,42 +23,61 @@
 namespace openscreen {
 namespace cast {
 
+// For each of the below classes, though a number of methods are shared, the use
+// of a shared base class has intentionally been avoided. This is to improve
+// readability of the structs provided in this file by cutting down on the
+// amount of obscuring boilerplate code. For each of the following struct
+// definitions, the following method definitions are shared:
+// (1) ParseAndValidate. Shall return a boolean indicating whether the out
+//     parameter is in a valid state after checking bounds and restrictions.
+// (2) ToJson. Should return a proper JSON object. Assumes that IsValid()
+//     has been called already, OSP_DCHECKs if not IsValid().
+// (3) IsValid. Used by both ParseAndValidate and ToJson to ensure that the
+//     object is in a good state.
 struct AudioConstraints {
+  static bool ParseAndValidate(const Json::Value& value, AudioConstraints* out);
+  Json::Value ToJson() const;
+  bool IsValid() const;
+
   int max_sample_rate = 0;
   int max_channels = 0;
   // Technically optional, sender will assume 32kbps if omitted.
   int min_bit_rate = 0;
   int max_bit_rate = 0;
   std::chrono::milliseconds max_delay = {};
-
-  ErrorOr<Json::Value> ToJson() const;
 };
 
 struct Dimensions {
+  static bool ParseAndValidate(const Json::Value& value, Dimensions* out);
+  Json::Value ToJson() const;
+  bool IsValid() const;
+
   int width = 0;
   int height = 0;
   SimpleFraction frame_rate;
-
-  ErrorOr<Json::Value> ToJson() const;
 };
 
 struct VideoConstraints {
+  static bool ParseAndValidate(const Json::Value& value, VideoConstraints* out);
+  Json::Value ToJson() const;
+  bool IsValid() const;
+
   double max_pixels_per_second = {};
-  Dimensions min_dimensions = {};
+  absl::optional<Dimensions> min_dimensions = {};
   Dimensions max_dimensions = {};
   // Technically optional, sender will assume 300kbps if omitted.
   int min_bit_rate = 0;
   int max_bit_rate = 0;
   std::chrono::milliseconds max_delay = {};
-
-  ErrorOr<Json::Value> ToJson() const;
 };
 
 struct Constraints {
+  static bool ParseAndValidate(const Json::Value& value, Constraints* out);
+  Json::Value ToJson() const;
+  bool IsValid() const;
+
   AudioConstraints audio;
   VideoConstraints video;
-
-  ErrorOr<Json::Value> ToJson() const;
 };
 
 // Decides whether the Sender scales and letterboxes content to 16:9, or if
@@ -67,22 +86,35 @@ struct Constraints {
 enum class AspectRatioConstraint : uint8_t { kVariable = 0, kFixed };
 
 struct AspectRatio {
+  static bool ParseAndValidate(const Json::Value& value, AspectRatio* out);
+  bool IsValid() const;
+
+  bool operator==(const AspectRatio& other) const {
+    return width == other.width && height == other.height;
+  }
+
   int width = 0;
   int height = 0;
 };
 
 struct DisplayDescription {
+  static bool ParseAndValidate(const Json::Value& value,
+                               DisplayDescription* out);
+  Json::Value ToJson() const;
+  bool IsValid() const;
+
   // May exceed, be the same, or less than those mentioned in the
   // video constraints.
-  Dimensions dimensions;
-  AspectRatio aspect_ratio = {};
-  AspectRatioConstraint aspect_ratio_constraint = {};
-
-  ErrorOr<Json::Value> ToJson() const;
+  absl::optional<Dimensions> dimensions;
+  absl::optional<AspectRatio> aspect_ratio = {};
+  absl::optional<AspectRatioConstraint> aspect_ratio_constraint = {};
 };
 
 struct Answer {
-  CastMode cast_mode = {};
+  static bool ParseAndValidate(const Json::Value& value, Answer* out);
+  Json::Value ToJson() const;
+  bool IsValid() const;
+
   int udp_port = 0;
   std::vector<int> send_indexes;
   std::vector<Ssrc> ssrcs;
@@ -97,21 +129,7 @@ struct Answer {
 
   // RTP extensions should be empty, but not null.
   std::vector<std::string> rtp_extensions = {};
-
-  // ToJson performs a standard serialization, returning an error if this
-  // instance failed to serialize properly.
-  ErrorOr<Json::Value> ToJson() const;
-
-  // In constrast to ToJson, ToAnswerMessage performs a successful serialization
-  // even if the answer object is malformed, by complying to the spec's
-  // error answer message format in this case.
-  Json::Value ToAnswerMessage() const;
 };
-
-// Helper method that creates an invalid Answer response. Exposed publicly
-// here as it is called in ToAnswerMessage(), but can also be called by
-// the receiver session.
-Json::Value CreateInvalidAnswer(Error error);
 
 }  // namespace cast
 }  // namespace openscreen

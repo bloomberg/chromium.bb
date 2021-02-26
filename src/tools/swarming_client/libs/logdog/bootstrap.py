@@ -46,32 +46,25 @@ class ButlerBootstrap(_ButlerBootstrapBase):
     if env is None:
       env = os.environ
 
-    project = env.get(cls._ENV_PROJECT)
-    if not project:
-      raise NotBootstrappedError('Missing project [%s]' % (cls._ENV_PROJECT,))
-
-    prefix = env.get(cls._ENV_PREFIX)
-    if not prefix:
-      raise NotBootstrappedError('Missing prefix [%s]' % (cls._ENV_PREFIX,))
-    try:
-      streamname.validate_stream_name(prefix)
-    except ValueError as exp:
-      raise NotBootstrappedError('Prefix (%s) is invalid: %s' % (prefix, exp))
-
-    namespace = env.get(cls._ENV_NAMESPACE, '')
-    if namespace:
+    def _check(kind, val):
+      if not val:
+        return val
       try:
-        streamname.validate_stream_name(namespace)
+        streamname.validate_stream_name(val)
+        return val
       except ValueError as exp:
-        raise NotBootstrappedError(
-            'Namespace (%s) is invalid: %s' % (prefix, exp))
+        raise NotBootstrappedError('%s (%s) is invalid: %s' % (kind, val, exp))
+
+    streamserver_uri = env.get(cls._ENV_STREAM_SERVER_PATH)
+    if not streamserver_uri:
+      raise NotBootstrappedError('No streamserver in bootstrap environment.')
 
     return cls(
-        project=project,
-        prefix=prefix,
-        streamserver_uri=env.get(cls._ENV_STREAM_SERVER_PATH),
-        coordinator_host=env.get(cls._ENV_COORDINATOR_HOST),
-        namespace=namespace)
+        project=env.get(cls._ENV_PROJECT, ''),
+        prefix=_check("Prefix", env.get(cls._ENV_PREFIX, '')),
+        streamserver_uri=streamserver_uri,
+        coordinator_host=env.get(cls._ENV_COORDINATOR_HOST, ''),
+        namespace=_check("Namespace", env.get(cls._ENV_NAMESPACE, '')))
 
   def stream_client(self, reg=None):
     """Returns: (StreamClient) stream client for the bootstrap streamserver URI.
@@ -88,8 +81,6 @@ class ButlerBootstrap(_ButlerBootstrapBase):
     Raises:
       ValueError: If no streamserver URI is present in the environment.
     """
-    if not self.streamserver_uri:
-      raise ValueError('No streamserver in bootstrap environment.')
     reg = reg or stream._default_registry
     return reg.create(
         self.streamserver_uri,

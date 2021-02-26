@@ -5,7 +5,6 @@
 /** @fileoverview Suite of tests for the Settings advanced page. */
 
 // clang-format off
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CrSettingsPrefs} from 'chrome://settings/settings.js';
 
@@ -81,10 +80,7 @@ suite('AdvancedPage', function() {
   });
 
   test('advanced pages', function() {
-    const sections = ['a11y', 'languages', 'downloads', 'printing', 'reset'];
-    if (!loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-      sections.push('privacy');
-    }
+    const sections = ['a11y', 'languages', 'downloads', 'reset'];
     for (let i = 0; i < sections.length; i++) {
       const section = getSection(
           /** @type {!SettingsBasicPageElement} */ (basicPage), sections[i]);

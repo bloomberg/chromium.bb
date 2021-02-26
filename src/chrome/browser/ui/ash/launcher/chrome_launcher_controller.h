@@ -18,8 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/discover_window_observer.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 #include "components/account_id/account_id.h"
@@ -32,7 +30,6 @@ class AppWindowLauncherController;
 class BrowserShortcutLauncherItemController;
 class BrowserStatusMonitor;
 class ChromeLauncherControllerUserSwitchObserver;
-class CrostiniAppWindowShelfController;
 class GURL;
 class Profile;
 class LauncherControllerHelper;
@@ -83,11 +80,6 @@ class ChromeLauncherController
 
   AppServiceAppWindowLauncherController* app_service_app_window_controller() {
     return app_service_app_window_controller_;
-  }
-
-  CrostiniAppWindowShelfController* crostini_app_window_shelf_controller()
-      const {
-    return crostini_app_window_shelf_controller_;
   }
 
   // Initializes this ChromeLauncherController.
@@ -414,10 +406,6 @@ class ChromeLauncherController
   AppServiceAppWindowLauncherController* app_service_app_window_controller_ =
       nullptr;
 
-  // The shelf controller for Crostini apps.
-  CrostiniAppWindowShelfController* crostini_app_window_shelf_controller_ =
-      nullptr;
-
   // When true, changes to pinned shelf items should update the sync model.
   bool should_sync_pin_changes_ = true;
 
@@ -428,12 +416,6 @@ class ChromeLauncherController
   // default.
   // An observer that manages the shelf title and icon for settings windows.
   std::unique_ptr<SettingsWindowObserver> settings_window_observer_;
-
-  // TODO(crbug.com/836128): Remove this once SystemWebApps are enabled by
-  // default.
-  // An observer that manages the shelf title and icon for Chrome OS Discover
-  // windows.
-  std::unique_ptr<DiscoverWindowObserver> discover_window_observer_;
 
   // Used to load the images for app items.
   std::map<Profile*, std::vector<std::unique_ptr<AppIconLoader>>>
@@ -446,9 +428,6 @@ class ChromeLauncherController
   // Used to track app windows.
   std::vector<std::unique_ptr<AppWindowLauncherController>>
       app_window_controllers_;
-
-  // Pointer to the ARC app window controller owned by app_window_controllers_.
-  ArcAppWindowLauncherController* arc_app_window_controller_ = nullptr;
 
   // Used to handle app load/unload events.
   std::map<Profile*, std::vector<std::unique_ptr<LauncherAppUpdater>>>

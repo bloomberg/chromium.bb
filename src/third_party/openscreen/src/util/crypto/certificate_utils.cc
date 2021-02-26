@@ -63,11 +63,19 @@ bssl::UniquePtr<X509> CreateCertificateInternal(
     issuer_key = &key_pair;
   }
 
+  // Certificate versions are zero indexed, so V1 = 0.
+  const int kCertificateVersion3 = 2;
+  if (X509_set_version(certificate.get(), kCertificateVersion3) != 1) {
+    OSP_DVLOG << "Failed to set certificate version";
+    return nullptr;
+  }
+
   // Serial numbers must be unique for this session. As a pretend CA, we should
   // not issue certificates with the same serial number in the same session.
   static int serial_number(1);
   if (ASN1_INTEGER_set(X509_get_serialNumber(certificate.get()),
                        serial_number++) != 1) {
+    OSP_DVLOG << "Failed to set serial number.";
     return nullptr;
   }
 
@@ -77,11 +85,13 @@ bssl::UniquePtr<X509> CreateCertificateInternal(
 
   if ((X509_set_notBefore(certificate.get(), now.get()) != 1) ||
       (X509_set_notAfter(certificate.get(), expiration_time.get()) != 1)) {
+    OSP_DVLOG << "Failed to set before and after ranges.";
     return nullptr;
   }
 
   X509_NAME* certificate_name = X509_get_subject_name(certificate.get());
   if (!AddCertificateField(certificate_name, "CN", name)) {
+    OSP_DVLOG << "Failed to set subject name";
     return nullptr;
   }
 
@@ -91,6 +101,7 @@ bssl::UniquePtr<X509> CreateCertificateInternal(
     ASN1_BIT_STRING_set_bit(x.get(), KeyUsageBits::kKeyCertSign, 1);
   }
   if (X509_add1_ext_i2d(certificate.get(), NID_key_usage, x.get(), 0, 0) != 1) {
+    OSP_DVLOG << "Failed to set key usage extension";
     return nullptr;
   }
   if (make_ca) {
@@ -101,6 +112,7 @@ bssl::UniquePtr<X509> CreateCertificateInternal(
         X509V3_EXT_nconf_nid(nullptr, &ctx, NID_basic_constraints,
                              const_cast<char*>("critical,CA:TRUE")));
     if (!ex) {
+      OSP_DVLOG << "Failed to set constraints extension";
       return nullptr;
     }
     void* thing = X509V3_EXT_d2i(ex.get());
@@ -115,6 +127,7 @@ bssl::UniquePtr<X509> CreateCertificateInternal(
       // the size of the signature in bytes.
       (X509_sign(certificate.get(), issuer_key, EVP_sha256()) <= 0) ||
       (X509_verify(certificate.get(), issuer_key) != 1)) {
+    OSP_DVLOG << "Failed to set pubkey, set issuer, sign, or verify";
     return nullptr;
   }
 
@@ -143,19 +156,6 @@ bssl::UniquePtr<EVP_PKEY> GenerateRsaKeyPair(int key_bits) {
 }
 
 ErrorOr<bssl::UniquePtr<X509>> CreateSelfSignedX509Certificate(
-    absl::string_view name,
-    std::chrono::seconds duration,
-    const EVP_PKEY& key_pair,
-    std::chrono::seconds time_since_unix_epoch) {
-  bssl::UniquePtr<X509> certificate = CreateCertificateInternal(
-      name, duration, key_pair, time_since_unix_epoch, false, nullptr, nullptr);
-  if (!certificate) {
-    return Error::Code::kCertificateCreationError;
-  }
-  return certificate;
-}
-
-ErrorOr<bssl::UniquePtr<X509>> CreateSelfSignedX509CertificateForTest(
     absl::string_view name,
     std::chrono::seconds duration,
     const EVP_PKEY& key_pair,

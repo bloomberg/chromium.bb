@@ -15,6 +15,8 @@
 #include "dawn_native/metal/BufferMTL.h"
 
 #include "common/Math.h"
+#include "dawn_native/CommandBuffer.h"
+#include "dawn_native/metal/CommandRecordingContext.h"
 #include "dawn_native/metal/DeviceMTL.h"
 
 #include <limits>
@@ -24,14 +26,18 @@ namespace dawn_native { namespace metal {
     // largest alignment of supported data types
     static constexpr uint32_t kMinUniformOrStorageBufferAlignment = 16u;
 
+    // The maximum buffer size if querying the maximum buffer size or recommended working set size
+    // is not available. This is a somewhat arbitrary limit of 1 GiB.
+    static constexpr uint32_t kMaxBufferSizeFallback = 1024u * 1024u * 1024u;
+
     // static
-    ResultOrError<Buffer*> Buffer::Create(Device* device, const BufferDescriptor* descriptor) {
+    ResultOrError<Ref<Buffer>> Buffer::Create(Device* device, const BufferDescriptor* descriptor) {
         Ref<Buffer> buffer = AcquireRef(new Buffer(device, descriptor));
-        DAWN_TRY(buffer->Initialize());
-        return buffer.Detach();
+        DAWN_TRY(buffer->Initialize(descriptor->mappedAtCreation));
+        return std::move(buffer);
     }
 
-    MaybeError Buffer::Initialize() {
+    MaybeError Buffer::Initialize(bool mappedAtCreation) {
         MTLResourceOptions storageMode;
         if (GetUsage() & (wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite)) {
             storageMode = MTLResourceStorageModeShared;
@@ -39,23 +45,60 @@ namespace dawn_native { namespace metal {
             storageMode = MTLResourceStorageModePrivate;
         }
 
-        if (GetSize() >
-            std::numeric_limits<uint64_t>::max() - kMinUniformOrStorageBufferAlignment) {
-            return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
-        }
-
         // TODO(cwallez@chromium.org): Have a global "zero" buffer that can do everything instead
         // of creating a new 4-byte buffer?
-        uint32_t currentSize = std::max(GetSize(), uint64_t(4u));
+        if (GetSize() > std::numeric_limits<NSUInteger>::max()) {
+            return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
+        }
+        NSUInteger currentSize = static_cast<NSUInteger>(std::max(GetSize(), uint64_t(4u)));
+
         // Metal validation layer requires the size of uniform buffer and storage buffer to be no
         // less than the size of the buffer block defined in shader, and the overall size of the
         // buffer must be aligned to the largest alignment of its members.
         if (GetUsage() & (wgpu::BufferUsage::Uniform | wgpu::BufferUsage::Storage)) {
+            if (currentSize >
+                std::numeric_limits<NSUInteger>::max() - kMinUniformOrStorageBufferAlignment) {
+                // Alignment would overlow.
+                return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
+            }
             currentSize = Align(currentSize, kMinUniformOrStorageBufferAlignment);
+        }
+
+        if (@available(iOS 12, macOS 10.14, *)) {
+            NSUInteger maxBufferSize = [ToBackend(GetDevice())->GetMTLDevice() maxBufferLength];
+            if (currentSize > maxBufferSize) {
+                return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
+            }
+#if defined(DAWN_PLATFORM_MACOS)
+        } else if (@available(macOS 10.12, *)) {
+            // |maxBufferLength| isn't always available on older systems. If available, use
+            // |recommendedMaxWorkingSetSize| instead. We can probably allocate more than this,
+            // but don't have a way to discover a better limit. MoltenVK also uses this heuristic.
+            uint64_t maxWorkingSetSize =
+                [ToBackend(GetDevice())->GetMTLDevice() recommendedMaxWorkingSetSize];
+            if (currentSize > maxWorkingSetSize) {
+                return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
+            }
+#endif
+        } else if (currentSize > kMaxBufferSizeFallback) {
+            return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
         }
 
         mMtlBuffer = [ToBackend(GetDevice())->GetMTLDevice() newBufferWithLength:currentSize
                                                                          options:storageMode];
+        if (mMtlBuffer == nil) {
+            return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation failed");
+        }
+
+        // The buffers with mappedAtCreation == true will be initialized in
+        // BufferBase::MapAtCreation().
+        if (GetDevice()->IsToggleEnabled(Toggle::NonzeroClearResourcesOnCreationForTesting) &&
+            !mappedAtCreation) {
+            CommandRecordingContext* commandContext =
+                ToBackend(GetDevice())->GetPendingCommandContext();
+            ClearBuffer(commandContext, uint8_t(1u));
+        }
+
         return {};
     }
 
@@ -67,35 +110,25 @@ namespace dawn_native { namespace metal {
         return mMtlBuffer;
     }
 
-    void Buffer::OnMapCommandSerialFinished(uint32_t mapSerial, bool isWrite) {
-        char* data = reinterpret_cast<char*>([mMtlBuffer contents]);
-        if (isWrite) {
-            CallMapWriteCallback(mapSerial, WGPUBufferMapAsyncStatus_Success, data, GetSize());
-        } else {
-            CallMapReadCallback(mapSerial, WGPUBufferMapAsyncStatus_Success, data, GetSize());
-        }
-    }
-
-    bool Buffer::IsMapWritable() const {
+    bool Buffer::IsCPUWritableAtCreation() const {
         // TODO(enga): Handle CPU-visible memory on UMA
         return (GetUsage() & (wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite)) != 0;
     }
 
-    MaybeError Buffer::MapAtCreationImpl(uint8_t** mappedPointer) {
-        *mappedPointer = reinterpret_cast<uint8_t*>([mMtlBuffer contents]);
+    MaybeError Buffer::MapAtCreationImpl() {
         return {};
     }
 
-    MaybeError Buffer::MapReadAsyncImpl(uint32_t serial) {
-        MapRequestTracker* tracker = ToBackend(GetDevice())->GetMapTracker();
-        tracker->Track(this, serial, false);
+    MaybeError Buffer::MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) {
+        CommandRecordingContext* commandContext =
+            ToBackend(GetDevice())->GetPendingCommandContext();
+        EnsureDataInitialized(commandContext);
+
         return {};
     }
 
-    MaybeError Buffer::MapWriteAsyncImpl(uint32_t serial) {
-        MapRequestTracker* tracker = ToBackend(GetDevice())->GetMapTracker();
-        tracker->Track(this, serial, true);
-        return {};
+    void* Buffer::GetMappedPointerImpl() {
+        return [mMtlBuffer contents];
     }
 
     void Buffer::UnmapImpl() {
@@ -107,29 +140,65 @@ namespace dawn_native { namespace metal {
         mMtlBuffer = nil;
     }
 
-    MapRequestTracker::MapRequestTracker(Device* device) : mDevice(device) {
-    }
-
-    MapRequestTracker::~MapRequestTracker() {
-        ASSERT(mInflightRequests.Empty());
-    }
-
-    void MapRequestTracker::Track(Buffer* buffer,
-                                  uint32_t mapSerial,
-                                  bool isWrite) {
-        Request request;
-        request.buffer = buffer;
-        request.mapSerial = mapSerial;
-        request.isWrite = isWrite;
-
-        mInflightRequests.Enqueue(std::move(request), mDevice->GetPendingCommandSerial());
-    }
-
-    void MapRequestTracker::Tick(Serial finishedSerial) {
-        for (auto& request : mInflightRequests.IterateUpTo(finishedSerial)) {
-            request.buffer->OnMapCommandSerialFinished(request.mapSerial, request.isWrite);
+    void Buffer::EnsureDataInitialized(CommandRecordingContext* commandContext) {
+        if (IsDataInitialized() ||
+            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
+            return;
         }
-        mInflightRequests.ClearUpTo(finishedSerial);
+
+        InitializeToZero(commandContext);
+    }
+
+    void Buffer::EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
+                                                    uint64_t offset,
+                                                    uint64_t size) {
+        if (IsDataInitialized() ||
+            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
+            return;
+        }
+
+        if (IsFullBufferRange(offset, size)) {
+            SetIsDataInitialized();
+        } else {
+            InitializeToZero(commandContext);
+        }
+    }
+
+    void Buffer::EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
+                                                    const CopyTextureToBufferCmd* copy) {
+        if (IsDataInitialized() ||
+            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
+            return;
+        }
+
+        if (IsFullBufferOverwrittenInTextureToBufferCopy(copy)) {
+            SetIsDataInitialized();
+        } else {
+            InitializeToZero(commandContext);
+        }
+    }
+
+    void Buffer::InitializeToZero(CommandRecordingContext* commandContext) {
+        ASSERT(GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse));
+        ASSERT(!IsDataInitialized());
+
+        ClearBuffer(commandContext, uint8_t(0u));
+
+        SetIsDataInitialized();
+        GetDevice()->IncrementLazyClearCountForTesting();
+    }
+
+    void Buffer::ClearBuffer(CommandRecordingContext* commandContext, uint8_t clearValue) {
+        ASSERT(commandContext != nullptr);
+
+        // Metal validation layer doesn't allow the length of the range in fillBuffer() to be 0.
+        if (GetSize() == 0u) {
+            return;
+        }
+
+        [commandContext->EnsureBlit() fillBuffer:mMtlBuffer
+                                           range:NSMakeRange(0, GetSize())
+                                           value:clearValue];
     }
 
 }}  // namespace dawn_native::metal

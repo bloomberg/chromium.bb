@@ -14,6 +14,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/scroll_view.h"
 
 namespace views {
 namespace metadata {
@@ -83,6 +84,13 @@ base::string16 TypeConverter<gfx::Range>::ToString(
     const gfx::Range& source_value) {
   return base::ASCIIToUTF16(base::StringPrintf(
       "{%i, %i}", source_value.GetMin(), source_value.GetMax()));
+}
+
+base::string16 TypeConverter<gfx::Insets>::ToString(
+    const gfx::Insets& source_value) {
+  return base::ASCIIToUTF16(base::StringPrintf(
+      "{%d, %d, %d, %d}", source_value.top(), source_value.left(),
+      source_value.bottom(), source_value.right()));
 }
 
 base::Optional<int8_t> TypeConverter<int8_t>::FromString(
@@ -203,8 +211,7 @@ base::Optional<gfx::ShadowValues> TypeConverter<gfx::ShadowValues>::FromString(
 
   for (auto v : shadow_value_strings) {
     base::string16 member_string;
-    base::RemoveChars(v.as_string(), base::ASCIIToUTF16("()rgba"),
-                      &member_string);
+    base::RemoveChars(v, base::ASCIIToUTF16("()rgba"), &member_string);
     const auto members = base::SplitStringPiece(
         member_string, base::ASCIIToUTF16(","), base::TRIM_WHITESPACE,
         base::SPLIT_WANT_NONEMPTY);
@@ -244,6 +251,21 @@ base::Optional<gfx::Range> TypeConverter<gfx::Range>::FromString(
   if ((values.size() == 2) && base::StringToInt(values[0], &min) &&
       base::StringToInt(values[1], &max)) {
     return gfx::Range(min, max);
+  }
+  return base::nullopt;
+}
+
+base::Optional<gfx::Insets> TypeConverter<gfx::Insets>::FromString(
+    const base::string16& source_value) {
+  const auto values =
+      base::SplitStringPiece(source_value, base::ASCIIToUTF16("{,,,}"),
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  int top, left, bottom, right;
+  if ((values.size() == 4) && base::StringToInt(values[0], &top) &&
+      base::StringToInt(values[1], &left) &&
+      base::StringToInt(values[2], &bottom) &&
+      base::StringToInt(values[3], &right)) {
+    return gfx::Insets(top, left, bottom, right);
   }
   return base::nullopt;
 }
@@ -316,6 +338,30 @@ DEFINE_ENUM_CONVERTERS(ui::TextInputType,
                         base::ASCIIToUTF16("TEXT_INPUT_TYPE_NULL")},
                        {ui::TextInputType::TEXT_INPUT_TYPE_MAX,
                         base::ASCIIToUTF16("TEXT_INPUT_TYPE_MAX")})
+
+DEFINE_ENUM_CONVERTERS(ui::MenuSeparatorType,
+                       {ui::MenuSeparatorType::NORMAL_SEPARATOR,
+                        base::ASCIIToUTF16("NORMAL_SEPARATOR")},
+                       {ui::MenuSeparatorType::DOUBLE_SEPARATOR,
+                        base::ASCIIToUTF16("DOUBLE_SEPARATOR")},
+                       {ui::MenuSeparatorType::UPPER_SEPARATOR,
+                        base::ASCIIToUTF16("UPPER_SEPARATOR")},
+                       {ui::MenuSeparatorType::LOWER_SEPARATOR,
+                        base::ASCIIToUTF16("LOWER_SEPARATOR")},
+                       {ui::MenuSeparatorType::SPACING_SEPARATOR,
+                        base::ASCIIToUTF16("SPACING_SEPARATOR")},
+                       {ui::MenuSeparatorType::VERTICAL_SEPARATOR,
+                        base::ASCIIToUTF16("VERTICAL_SEPARATOR")},
+                       {ui::MenuSeparatorType::PADDED_SEPARATOR,
+                        base::ASCIIToUTF16("PADDED_SEPARATOR")})
+
+DEFINE_ENUM_CONVERTERS(views::ScrollView::ScrollBarMode,
+                       {views::ScrollView::ScrollBarMode::kDisabled,
+                        base::ASCIIToUTF16("kDisabled")},
+                       {views::ScrollView::ScrollBarMode::kHiddenButEnabled,
+                        base::ASCIIToUTF16("kHiddenButEnabled")},
+                       {views::ScrollView::ScrollBarMode::kEnabled,
+                        base::ASCIIToUTF16("kEnabled")})
 
 #define OP(enum_name) \
   { ui::NativeTheme::enum_name, base::ASCIIToUTF16(#enum_name) }

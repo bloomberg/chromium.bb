@@ -84,8 +84,8 @@ void jsimd_idct_ifast_neon(void *dct_table,
   bitmap = vorrq_s16(bitmap, row6);
   bitmap = vorrq_s16(bitmap, row7);
 
-  int64_t left_ac_bitmap = vreinterpret_s64_s16(vget_low_s16(bitmap));
-  int64_t right_ac_bitmap = vreinterpret_s64_s16(vget_high_s16(bitmap));
+  int64_t left_ac_bitmap = vgetq_lane_s64(vreinterpretq_s64_s16(bitmap), 0);
+  int64_t right_ac_bitmap = vgetq_lane_s64(vreinterpretq_s64_s16(bitmap), 1);
 
   if (left_ac_bitmap == 0 && right_ac_bitmap == 0) {
     /* All AC coefficients are zero. */
@@ -405,13 +405,13 @@ void jsimd_idct_ifast_neon(void *dct_table,
                                      vqshrn_n_s16(col7, PASS1_BITS + 3));
   /* Clamp to range [0-255]. */
   uint8x16_t cols_01 = vreinterpretq_u8_s8(
-                            vaddq_s8(cols_01_s8, vdupq_n_u8(CENTERJSAMPLE)));
+      vaddq_s8(cols_01_s8, vreinterpretq_s8_u8(vdupq_n_u8(CENTERJSAMPLE))));
   uint8x16_t cols_45 = vreinterpretq_u8_s8(
-                            vaddq_s8(cols_45_s8, vdupq_n_u8(CENTERJSAMPLE)));
+      vaddq_s8(cols_45_s8, vreinterpretq_s8_u8(vdupq_n_u8(CENTERJSAMPLE))));
   uint8x16_t cols_23 = vreinterpretq_u8_s8(
-                            vaddq_s8(cols_23_s8, vdupq_n_u8(CENTERJSAMPLE)));
+      vaddq_s8(cols_23_s8, vreinterpretq_s8_u8(vdupq_n_u8(CENTERJSAMPLE))));
   uint8x16_t cols_67 = vreinterpretq_u8_s8(
-                            vaddq_s8(cols_67_s8, vdupq_n_u8(CENTERJSAMPLE)));
+      vaddq_s8(cols_67_s8, vreinterpretq_s8_u8(vdupq_n_u8(CENTERJSAMPLE))));
 
   /* Transpose block ready for store. */
   uint32x4x2_t cols_0415 = vzipq_u32(vreinterpretq_u32_u8(cols_01),

@@ -44,6 +44,7 @@ list(APPEND libgav1_utils_sources
             "${libgav1_source}/utils/queue.h"
             "${libgav1_source}/utils/raw_bit_reader.cc"
             "${libgav1_source}/utils/raw_bit_reader.h"
+            "${libgav1_source}/utils/reference_info.h"
             "${libgav1_source}/utils/segmentation.cc"
             "${libgav1_source}/utils/segmentation.h"
             "${libgav1_source}/utils/segmentation_map.cc"

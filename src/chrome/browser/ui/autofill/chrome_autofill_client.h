@@ -14,6 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_gstatic_reader.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +22,7 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -32,10 +34,6 @@
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller.h"
 #include "components/zoom/zoom_observer.h"
 #endif
-
-namespace content {
-class WebContents;
-}
 
 namespace autofill {
 
@@ -67,8 +65,10 @@ class ChromeAutofillClient
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
+  AutofillOfferManager* GetAutofillOfferManager() override;
+  const GURL& GetLastCommittedURL() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
-  std::string GetPageLanguage() const override;
+  const translate::LanguageState* GetLanguageState() override;
   std::string GetVariationConfigCountryCode() const override;
   std::unique_ptr<InternalAuthenticator> CreateCreditCardInternalAuthenticator(
       content::RenderFrameHost* rfh) override;
@@ -79,8 +79,8 @@ class ChromeAutofillClient
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
 #if !defined(OS_ANDROID)
-  std::vector<std::string> GetMerchantWhitelistForVirtualCards() override;
-  std::vector<std::string> GetBinRangeWhitelistForVirtualCards() override;
+  std::vector<std::string> GetAllowedMerchantsForVirtualCards() override;
+  std::vector<std::string> GetAllowedBinRangesForVirtualCards() override;
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override;
   void ConfirmMigrateLocalCardToCloud(
@@ -128,17 +128,14 @@ class ChromeAutofillClient
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
   void ShowAutofillPopup(
-      const gfx::RectF& element_bounds,
-      base::i18n::TextDirection text_direction,
-      const std::vector<Suggestion>& suggestions,
-      bool autoselect_first_suggestion,
-      PopupType popup_type,
+      const PopupOpenArgs& open_args,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
   void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels) override;
   base::span<const Suggestion> GetPopupSuggestions() const override;
   void PinPopupView() override;
+  PopupOpenArgs GetReopenPopupArgs() const override;
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
                    PopupType popup_type) override;
   void HideAutofillPopup(PopupHidingReason reason) override;
@@ -161,12 +158,11 @@ class ChromeAutofillClient
   // content::WebContentsObserver implementation.
   void MainFrameWasResized(bool width_changed) override;
   void WebContentsDestroyed() override;
-  // Hide autofill popup if an interstitial is shown.
-  void DidAttachInterstitialPage() override;
 
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_for_testing() {
     return popup_controller_;
   }
+  void KeepPopupOpenForTesting() { keep_popup_open_for_testing_ = true; }
 
 #if !defined(OS_ANDROID)
   // ZoomObserver implementation.
@@ -180,6 +176,8 @@ class ChromeAutofillClient
   explicit ChromeAutofillClient(content::WebContents* web_contents);
 
   Profile* GetProfile() const;
+  base::Optional<AccountInfo> GetAccountInfo();
+  bool IsMultipleAccountUser();
   base::string16 GetAccountHolderName();
 
   std::unique_ptr<payments::PaymentsClient> payments_client_;
@@ -187,6 +185,9 @@ class ChromeAutofillClient
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   CardUnmaskPromptControllerImpl unmask_controller_;
   std::unique_ptr<LogManager> log_manager_;
+  // If set to true, the popup will stay open regardless of external changes on
+  // the test machine, that may normally cause the popup to be hidden
+  bool keep_popup_open_for_testing_ = false;
 #if defined(OS_ANDROID)
   CardExpirationDateFixFlowControllerImpl
       card_expiration_date_fix_flow_controller_;

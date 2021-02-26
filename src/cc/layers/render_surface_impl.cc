@@ -21,10 +21,10 @@
 #include "cc/trees/occlusion.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/display/de_jelly.h"
+#include "components/viz/common/quads/compositor_render_pass.h"
+#include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
 #include "components/viz/common/quads/content_draw_quad_base.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
-#include "components/viz/common/quads/render_pass.h"
-#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
@@ -132,10 +132,6 @@ bool RenderSurfaceImpl::HasMaskingContributingSurface() const {
 
 const FilterOperations& RenderSurfaceImpl::Filters() const {
   return OwningEffectNode()->filters;
-}
-
-gfx::PointF RenderSurfaceImpl::FiltersOrigin() const {
-  return OwningEffectNode()->filters_origin;
 }
 
 gfx::Transform RenderSurfaceImpl::SurfaceScale() const {
@@ -303,7 +299,7 @@ void RenderSurfaceImpl::AccumulateContentRectFromContributingLayer(
   if (render_target() == this)
     return;
 
-  accumulated_content_rect_.Union(layer->drawable_content_rect());
+  accumulated_content_rect_.Union(layer->visible_drawable_content_rect());
 }
 
 void RenderSurfaceImpl::AccumulateContentRectFromContributingRenderSurface(
@@ -369,12 +365,13 @@ void RenderSurfaceImpl::ResetPropertyChangedFlags() {
   ancestor_property_changed_ = false;
 }
 
-std::unique_ptr<viz::RenderPass> RenderSurfaceImpl::CreateRenderPass() {
-  std::unique_ptr<viz::RenderPass> pass =
-      viz::RenderPass::Create(num_contributors_);
+std::unique_ptr<viz::CompositorRenderPass>
+RenderSurfaceImpl::CreateRenderPass() {
+  std::unique_ptr<viz::CompositorRenderPass> pass =
+      viz::CompositorRenderPass::Create(num_contributors_);
   gfx::Rect damage_rect = GetDamageRect();
   damage_rect.Intersect(content_rect());
-  pass->SetNew(id(), content_rect(), damage_rect,
+  pass->SetNew(render_pass_id(), content_rect(), damage_rect,
                draw_properties_.screen_space_transform);
   pass->filters = Filters();
   pass->backdrop_filters = BackdropFilters();
@@ -387,7 +384,7 @@ std::unique_ptr<viz::RenderPass> RenderSurfaceImpl::CreateRenderPass() {
 }
 
 void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
-                                    viz::RenderPass* render_pass,
+                                    viz::CompositorRenderPass* render_pass,
                                     AppendQuadsData* append_quads_data) {
   gfx::Rect unoccluded_content_rect =
       occlusion_in_content_space().GetUnoccludedContentRect(content_rect());
@@ -402,7 +399,7 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(
-      draw_transform(), content_rect(), content_rect(), rounded_corner_bounds(),
+      draw_transform(), content_rect(), content_rect(), mask_filter_info(),
       draw_properties_.clip_rect, draw_properties_.is_clipped, contents_opaque,
       draw_properties_.draw_opacity, BlendMode(), sorting_context_id);
 
@@ -453,11 +450,12 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   }
 
   gfx::RectF tex_coord_rect(gfx::Rect(content_rect().size()));
-  auto* quad = render_pass->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
+  auto* quad =
+      render_pass->CreateAndAppendDrawQuad<viz::CompositorRenderPassDrawQuad>();
   quad->SetAll(shared_quad_state, content_rect(), unoccluded_content_rect,
-               /*needs_blending=*/true, id(), mask_resource_id, mask_uv_rect,
-               mask_texture_size, surface_contents_scale, FiltersOrigin(),
-               tex_coord_rect,
+               /*needs_blending=*/true, render_pass_id(), mask_resource_id,
+               mask_uv_rect, mask_texture_size, surface_contents_scale,
+               gfx::PointF(), tex_coord_rect,
                !layer_tree_impl_->settings().enable_edge_anti_aliasing,
                OwningEffectNode()->backdrop_filter_quality,
                can_use_cached_backdrop_filtered_result_);

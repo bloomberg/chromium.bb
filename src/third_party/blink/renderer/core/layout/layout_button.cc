@@ -31,6 +31,7 @@ LayoutButton::~LayoutButton() = default;
 
 void LayoutButton::AddChild(LayoutObject* new_child,
                             LayoutObject* before_child) {
+  NOT_DESTROYED();
   if (!inner_) {
     // Create an anonymous block.
     DCHECK(!FirstChild());
@@ -42,6 +43,7 @@ void LayoutButton::AddChild(LayoutObject* new_child,
 }
 
 void LayoutButton::RemoveChild(LayoutObject* old_child) {
+  NOT_DESTROYED();
   if (old_child == inner_ || !inner_) {
     LayoutFlexibleBox::RemoveChild(old_child);
     inner_ = nullptr;
@@ -59,6 +61,12 @@ void LayoutButton::RemoveChild(LayoutObject* old_child) {
 void LayoutButton::UpdateAnonymousChildStyle(const LayoutObject* child,
                                              ComputedStyle& child_style) const {
   DCHECK_EQ(inner_, child);
+  UpdateAnonymousChildStyle(StyleRef(), child_style);
+}
+
+// This function is shared with LayoutNGButton.
+void LayoutButton::UpdateAnonymousChildStyle(const ComputedStyle& parent_style,
+                                             ComputedStyle& child_style) {
   child_style.SetFlexGrow(1.0f);
   // min-width: 0; is needed for correct shrinking.
   child_style.SetMinWidth(Length::Fixed(0));
@@ -66,13 +74,13 @@ void LayoutButton::UpdateAnonymousChildStyle(const LayoutObject* child,
   // when the content overflows, treat it the same as align-items: flex-start.
   child_style.SetMarginTop(Length());
   child_style.SetMarginBottom(Length());
-  child_style.SetFlexDirection(StyleRef().FlexDirection());
-  child_style.SetJustifyContent(StyleRef().JustifyContent());
-  child_style.SetFlexWrap(StyleRef().FlexWrap());
+  child_style.SetFlexDirection(parent_style.FlexDirection());
+  child_style.SetJustifyContent(parent_style.JustifyContent());
+  child_style.SetFlexWrap(parent_style.FlexWrap());
   // TODO (lajava): An anonymous box must not be used to resolve children's auto
   // values.
-  child_style.SetAlignItems(StyleRef().AlignItems());
-  child_style.SetAlignContent(StyleRef().AlignContent());
+  child_style.SetAlignItems(parent_style.AlignItems());
+  child_style.SetAlignContent(parent_style.AlignContent());
 }
 
 LayoutUnit LayoutButton::BaselinePosition(
@@ -80,28 +88,62 @@ LayoutUnit LayoutButton::BaselinePosition(
     bool first_line,
     LineDirectionMode direction,
     LinePositionMode line_position_mode) const {
+  NOT_DESTROYED();
   DCHECK_EQ(line_position_mode, kPositionOnContainingLine);
   // We want to call the LayoutBlock version of firstLineBoxBaseline to
   // avoid LayoutFlexibleBox synthesizing a baseline that we don't want.
   // We use this check as a proxy for "are there any line boxes in this button"
   if (!HasLineIfEmpty() && !ShouldApplyLayoutContainment() &&
       LayoutBlock::FirstLineBoxBaseline() == -1) {
+    NOT_DESTROYED();
     // To ensure that we have a consistent baseline when we have no children,
     // even when we have the anonymous LayoutBlock child, we calculate the
     // baseline for the empty case manually here.
     if (direction == kHorizontalLine) {
       return MarginTop() + Size().Height() - BorderBottom() - PaddingBottom() -
-             HorizontalScrollbarHeight();
+             ComputeScrollbars().bottom;
     }
     return MarginRight() + Size().Width() - BorderLeft() - PaddingLeft() -
-           VerticalScrollbarWidth();
+           ComputeScrollbars().left;
   }
   LayoutUnit result_baseline = LayoutFlexibleBox::BaselinePosition(
       baseline, first_line, direction, line_position_mode);
+  // See crbug.com/690036 and crbug.com/304848.
   LayoutUnit correct_baseline = LayoutBlock::InlineBlockBaseline(direction);
-  if (correct_baseline != result_baseline)
-    UseCounter::Count(GetDocument(), WebFeature::kWrongBaselineOfButtonElement);
+  if (correct_baseline != result_baseline &&
+      ShouldCountWrongBaseline(StyleRef(),
+                               Parent() ? Parent()->Style() : nullptr)) {
+    for (LayoutBox* child = FirstChildBox(); child;
+         child = child->NextSiblingBox()) {
+      if (!child->IsFloatingOrOutOfFlowPositioned()) {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kWrongBaselineOfMultiLineButton);
+        return result_baseline;
+      }
+    }
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kWrongBaselineOfEmptyLineButton);
+  }
   return result_baseline;
+}
+
+bool LayoutButton::ShouldCountWrongBaseline(const ComputedStyle& style,
+                                            const ComputedStyle* parent_style) {
+  if (parent_style) {
+    EDisplay display = parent_style->Display();
+    if (display == EDisplay::kFlex || display == EDisplay::kInlineFlex ||
+        display == EDisplay::kGrid || display == EDisplay::kInlineGrid) {
+      StyleSelfAlignmentData alignment =
+          style.ResolvedAlignSelf(ItemPosition::kAuto, parent_style);
+      return alignment.GetPosition() == ItemPosition::kBaseline ||
+             alignment.GetPosition() == ItemPosition::kLastBaseline;
+    }
+  }
+  EVerticalAlign align = style.VerticalAlign();
+  return align == EVerticalAlign::kBaseline ||
+         align == EVerticalAlign::kBaselineMiddle ||
+         align == EVerticalAlign::kSub || align == EVerticalAlign::kSuper ||
+         align == EVerticalAlign::kLength;
 }
 
 }  // namespace blink

@@ -6,7 +6,10 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_lottie/cr_lottie.html">
 
-<dom-module id="gesture-navigation">
+<link rel="import" href="/components/common_styles.html">
+<link rel="import" href="/components/oobe_i18n_behavior.html">
+
+<dom-module id="gesture-navigation-element">
   <template>
     <style include="oobe-common"></style>
     <link rel="stylesheet" href="gesture_navigation.css">
@@ -37,7 +40,7 @@
         </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
-        <oobe-text-button inverse on-tap="onNext_"
+        <oobe-text-button inverse on-click="onNext_"
             id="gesture-intro-next-button" class="focus-on-show"
             text-key="gestureNavigationIntroNextButton">
         </oobe-text-button>
@@ -57,10 +60,12 @@
           </cr-lottie>
         </div>
       </div>
-      <div slot="bottom-buttons" class="flex layout horizontal justified">
-        <oobe-back-button on-tap="onBack_"
+      <div slot="back-navigation">
+        <oobe-back-button on-click="onBack_"
             id="gesture-home-back-button"></oobe-back-button>
-        <oobe-next-button on-tap="onNext_" class="focus-on-show"
+      </div>
+      <div slot="bottom-buttons">
+        <oobe-next-button on-click="onNext_" class="focus-on-show"
             id="gesture-home-next-button"></oobe-next-button>
       </div>
     </oobe-dialog>
@@ -78,10 +83,12 @@
           </cr-lottie>
         </div>
       </div>
-      <div slot="bottom-buttons" class="flex layout horizontal justified">
-        <oobe-back-button on-tap="onBack_"
+      <div slot="back-navigation">
+        <oobe-back-button on-click="onBack_"
             id="gesture-overview-back-button"></oobe-back-button>
-        <oobe-next-button on-tap="onNext_" class="focus-on-show"
+      </div>
+      <div slot="bottom-buttons">
+        <oobe-next-button on-click="onNext_" class="focus-on-show"
             id="gesture-overview-next-button"></oobe-next-button>
       </div>
     </oobe-dialog>
@@ -99,10 +106,12 @@
           </cr-lottie>
         </div>
       </div>
-      <div slot="bottom-buttons" class="flex layout horizontal justified">
-        <oobe-back-button on-tap="onBack_"
+      <div slot="back-navigation">
+        <oobe-back-button on-click="onBack_"
             id="gesture-back-back-button"></oobe-back-button>
-        <oobe-next-button on-tap="onNext_" class="focus-on-show"
+      </div>
+      <div slot="bottom-buttons">
+        <oobe-next-button on-click="onNext_" class="focus-on-show"
             id="gesture-back-next-button"></oobe-next-button>
       </div>
     </oobe-dialog>

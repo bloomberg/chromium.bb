@@ -4,19 +4,22 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 
+#include <array>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
-#include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
-#include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_handler.h"
+#include "components/media_router/browser/logger_impl.h"
+#include "components/media_router/common/media_source.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
+#include "components/media_router/common/providers/cast/cast_media_source.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "url/origin.h"
 
@@ -24,19 +27,30 @@ namespace media_router {
 
 namespace {
 
+constexpr char kLoggerComponent[] = "CastMediaRouteProvider";
+
+// List of origins allowed to use a PresentationRequest to initiate mirroring.
+constexpr std::array<base::StringPiece, 2> kPresentationApiAllowlist = {
+    "https://docs.google.com",
+    "https://meet.google.com",
+};
+
 // Returns a list of origins that are valid for |source_id|. An empty list
 // means all origins are valid.
+// TODO(takumif): Consider returning a nullopt instead of an empty vector to
+// indicate all origins.
 std::vector<url::Origin> GetOrigins(const MediaSource::Id& source_id) {
-  // Use of the mirroring app as a Cast URL is permitted for Slides as a
-  // temporary workaround only. The eventual goal is to support their usecase
-  // using generic Presentation API.
-  // See also cast_media_source.cc.
-  static const char kMirroringAppPrefix[] = "cast:0F5096E8";
-  return base::StartsWith(source_id, kMirroringAppPrefix,
-                          base::CompareCase::SENSITIVE)
-             ? std::vector<url::Origin>(
-                   {url::Origin::Create(GURL("https://docs.google.com"))})
-             : std::vector<url::Origin>();
+  // Use of the mirroring app as a Cast URL is permitted for certain origins as
+  // a temporary workaround only. The eventual goal is to support their usecase
+  // using generic Presentation API.  See also cast_media_source.cc.
+  std::vector<url::Origin> allowed_origins;
+  if (IsSiteInitiatedMirroringSource(source_id) &&
+      !base::FeatureList::IsEnabled(kAllowAllSitesToInitiateMirroring)) {
+    allowed_origins.reserve(kPresentationApiAllowlist.size());
+    for (const auto& origin : kPresentationApiAllowlist)
+      allowed_origins.push_back(url::Origin::Create(GURL(origin)));
+  }
+  return allowed_origins;
 }
 
 }  // namespace
@@ -73,10 +87,11 @@ void CastMediaRouteProvider::Init(
 
   receiver_.Bind(std::move(receiver));
   media_router_.Bind(std::move(media_router));
+  media_router_->GetLogger(logger_.BindNewPipeAndPassReceiver());
 
   activity_manager_ = std::make_unique<CastActivityManager>(
       media_sink_service_, session_tracker, message_handler_,
-      media_router_.get(), hash_token);
+      media_router_.get(), logger_.get(), hash_token);
 
   // TODO(crbug.com/816702): This needs to be set properly according to sinks
   // discovered.
@@ -87,7 +102,10 @@ void CastMediaRouteProvider::Init(
 
 CastMediaRouteProvider::~CastMediaRouteProvider() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(sink_queries_.empty());
+  if (!sink_queries_.empty()) {
+    DCHECK_EQ(sink_queries_.size(), 1u);
+    DCHECK_EQ(sink_queries_.begin()->first, MediaSource::ForAnyTab().id());
+  }
 }
 
 void CastMediaRouteProvider::CreateRoute(const std::string& source_id,
@@ -98,14 +116,15 @@ void CastMediaRouteProvider::CreateRoute(const std::string& source_id,
                                          base::TimeDelta timeout,
                                          bool incognito,
                                          CreateRouteCallback callback) {
-  DVLOG(2) << "CreateRoute with origin: " << origin << " and tab ID " << tab_id;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(https://crbug.com/809249): Handle mirroring routes, including
   // mirror-to-Cast transitions.
   const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
   if (!sink) {
-    DVLOG(2) << "CreateRoute: sink not found";
+    logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
+                      "Attempted to create a route with an invalid sink ID",
+                      sink_id, source_id, presentation_id);
     std::move(callback).Run(base::nullopt, nullptr,
                             std::string("Sink not found"),
                             RouteRequestResult::ResultCode::SINK_NOT_FOUND);
@@ -115,7 +134,9 @@ void CastMediaRouteProvider::CreateRoute(const std::string& source_id,
   std::unique_ptr<CastMediaSource> cast_source =
       CastMediaSource::FromMediaSourceId(source_id);
   if (!cast_source) {
-    DVLOG(2) << "CreateRoute: invalid source";
+    logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
+                      "Attempted to create a route with an invalid source",
+                      sink_id, source_id, presentation_id);
     std::move(callback).Run(
         base::nullopt, nullptr, std::string("Invalid source"),
         RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
@@ -139,6 +160,25 @@ void CastMediaRouteProvider::JoinRoute(const std::string& media_source,
     std::move(callback).Run(
         base::nullopt, nullptr, std::string("Invalid source"),
         RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
+    logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
+                      "Attempted to join a route with an invalid source", "",
+                      media_source, presentation_id);
+    return;
+  }
+
+  if (!activity_manager_) {
+    // This should never happen, but it looks like maybe it does.  See
+    // crbug.com/1114067.
+    NOTREACHED();
+    // This message will probably go unnoticed, but it's here to give some
+    // indication of what went wrong, since NOTREACHED() is compiled out of
+    // release builds.  It would be nice if we could log a message to |logger_|,
+    // but it's initialized in the same place as |activity_manager_|, so it's
+    // almost certainly not available here.
+    LOG(ERROR) << "missing activity manager";
+    std::move(callback).Run(base::nullopt, nullptr,
+                            "Internal error: missing activity manager",
+                            RouteRequestResult::ResultCode::UNKNOWN_ERROR);
     return;
   }
 
@@ -182,7 +222,6 @@ void CastMediaRouteProvider::SendRouteBinaryMessage(
 
 void CastMediaRouteProvider::StartObservingMediaSinks(
     const std::string& media_source) {
-  DVLOG(1) << __func__ << ", media_source: " << media_source;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (base::Contains(sink_queries_, media_source))
     return;
@@ -268,6 +307,7 @@ void CastMediaRouteProvider::CreateMediaRouteController(
 void CastMediaRouteProvider::GetState(GetStateCallback callback) {
   if (!activity_manager_) {
     std::move(callback).Run(mojom::ProviderState::New());
+    return;
   }
   const CastSessionTracker::SessionMap& sessions =
       activity_manager_->GetCastSessionTracker()->GetSessions();
@@ -289,8 +329,6 @@ void CastMediaRouteProvider::GetState(GetStateCallback callback) {
 void CastMediaRouteProvider::OnSinkQueryUpdated(
     const MediaSource::Id& source_id,
     const std::vector<MediaSinkInternal>& sinks) {
-  DVLOG(1) << __func__ << ", source_id: " << source_id
-           << ", #sinks: " << sinks.size();
   media_router_->OnSinksReceived(MediaRouteProviderId::CAST, source_id, sinks,
                                  GetOrigins(source_id));
 }

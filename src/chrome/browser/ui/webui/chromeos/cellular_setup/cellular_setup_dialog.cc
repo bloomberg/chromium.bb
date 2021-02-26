@@ -32,37 +32,6 @@ constexpr int kDialogWidthPx = 650;
 
 CellularSetupDialog* dialog_instance = nullptr;
 
-// Used to attach an instance of the CellularSetup service to a BrowserContext.
-class CellularSetupServiceHolder : public base::SupportsUserData::Data {
- public:
-  CellularSetupServiceHolder() = default;
-  ~CellularSetupServiceHolder() override = default;
-
-  void BindReceiver(mojo::PendingReceiver<mojom::CellularSetup> receiver) {
-    service_.BindReceiver(std::move(receiver));
-  }
-
- private:
-  CellularSetupImpl service_;
-
-  DISALLOW_COPY_AND_ASSIGN(CellularSetupServiceHolder);
-};
-
-const char kCellularSetupServiceHolderKey[] = "cellular_setup_service_holder";
-
-CellularSetupServiceHolder* GetOrCreateServiceHolder(
-    content::BrowserContext* browser_context) {
-  auto* holder = static_cast<CellularSetupServiceHolder*>(
-      browser_context->GetUserData(kCellularSetupServiceHolderKey));
-  if (!holder) {
-    auto new_holder = std::make_unique<CellularSetupServiceHolder>();
-    holder = new_holder.get();
-    browser_context->SetUserData(kCellularSetupServiceHolderKey,
-                                 std::move(new_holder));
-  }
-  return holder;
-}
-
 }  // namespace
 
 // static
@@ -84,16 +53,14 @@ void CellularSetupDialog::ShowDialog(const std::string& cellular_network_guid) {
 
 CellularSetupDialog::CellularSetupDialog()
     : SystemWebDialogDelegate(GURL(chrome::kChromeUICellularSetupUrl),
-                              base::string16()) {}
+                              base::string16()) {
+  set_can_resize(false);
+}
 
 CellularSetupDialog::~CellularSetupDialog() = default;
 
 void CellularSetupDialog::GetDialogSize(gfx::Size* size) const {
   size->SetSize(kDialogWidthPx, kDialogHeightPx);
-}
-
-bool CellularSetupDialog::CanResizeDialog() const {
-  return false;
 }
 
 void CellularSetupDialog::OnDialogClosed(const std::string& json_retval) {
@@ -109,6 +76,8 @@ CellularSetupDialogUI::CellularSetupDialogUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI(web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUICellularSetupHost);
+
+  source->DisableTrustedTypesCSP();
 
   chromeos::cellular_setup::AddLocalizedStrings(source);
   source->UseStringsJs();
@@ -129,8 +98,7 @@ CellularSetupDialogUI::~CellularSetupDialogUI() = default;
 
 void CellularSetupDialogUI::BindInterface(
     mojo::PendingReceiver<mojom::CellularSetup> receiver) {
-  GetOrCreateServiceHolder(web_ui()->GetWebContents()->GetBrowserContext())
-      ->BindReceiver(std::move(receiver));
+  CellularSetupImpl::CreateAndBindToReciever(std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(CellularSetupDialogUI)

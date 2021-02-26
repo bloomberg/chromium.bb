@@ -64,7 +64,7 @@ ScriptedAnimationController::ScriptedAnimationController(LocalDOMWindow* window)
   UpdateStateIfNeeded();
 }
 
-void ScriptedAnimationController::Trace(Visitor* visitor) {
+void ScriptedAnimationController::Trace(Visitor* visitor) const {
   ExecutionContextLifecycleStateObserver::Trace(visitor);
   visitor->Trace(callback_collection_);
   visitor->Trace(event_queue_);
@@ -91,8 +91,7 @@ void ScriptedAnimationController::ScheduleVideoFrameCallbacksExecution(
 }
 
 ScriptedAnimationController::CallbackId
-ScriptedAnimationController::RegisterFrameCallback(
-    FrameRequestCallbackCollection::FrameCallback* callback) {
+ScriptedAnimationController::RegisterFrameCallback(FrameCallback* callback) {
   CallbackId id = callback_collection_.RegisterFrameCallback(callback);
   ScheduleAnimationIfNeeded();
   return id;
@@ -105,18 +104,6 @@ void ScriptedAnimationController::CancelFrameCallback(CallbackId id) {
 bool ScriptedAnimationController::HasFrameCallback() const {
   return callback_collection_.HasFrameCallback() ||
          !vfc_execution_queue_.IsEmpty();
-}
-
-ScriptedAnimationController::CallbackId
-ScriptedAnimationController::RegisterPostFrameCallback(
-    FrameRequestCallbackCollection::FrameCallback* callback) {
-  CallbackId id = callback_collection_.RegisterPostFrameCallback(callback);
-  ScheduleAnimationIfNeeded();
-  return id;
-}
-
-void ScriptedAnimationController::CancelPostFrameCallback(CallbackId id) {
-  callback_collection_.CancelPostFrameCallback(id);
 }
 
 void ScriptedAnimationController::RunTasks() {
@@ -245,7 +232,7 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
 
   if (RuntimeEnabledFeatures::RequestVideoFrameCallbackEnabled()) {
     // Run the fulfilled HTMLVideoELement.requestVideoFrameCallback() callbacks.
-    // See https://wicg.github.io/video-raf/.
+    // See https://wicg.github.io/video-rvfc/.
     ExecuteVideoFrameCallbacks();
   }
 
@@ -257,15 +244,6 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
   // See LocalFrameView::RunPostLifecycleSteps() for 10.12.
 
   ScheduleAnimationIfNeeded();
-}
-
-void ScriptedAnimationController::RunPostFrameCallbacks() {
-  if (!callback_collection_.HasPostFrameCallback())
-    return;
-  DCHECK(current_frame_time_ms_ > 0.);
-  DCHECK(current_frame_legacy_time_ms_ > 0.);
-  callback_collection_.ExecutePostFrameCallbacks(current_frame_time_ms_,
-                                                 current_frame_legacy_time_ms_);
 }
 
 void ScriptedAnimationController::EnqueueTask(base::OnceClosure task) {
@@ -302,20 +280,9 @@ void ScriptedAnimationController::ScheduleAnimationIfNeeded() {
   if (!frame)
     return;
 
-  // If there is any pre-frame work to do, schedule an animation
-  // unconditionally.
   if (HasScheduledFrameTasks()) {
     frame->View()->ScheduleAnimation();
     return;
-  }
-
-  // If there is post-frame work to do, only schedule an animation if we're not
-  // currently running one -- if we're currently running an animation, then any
-  // scheduled post-frame tasks will get run at the end of the current frame, so
-  // no need to schedule another one.
-  if (callback_collection_.HasPostFrameCallback() &&
-      !frame->GetPage()->Animator().IsServicingAnimations()) {
-    frame->View()->ScheduleAnimation();
   }
 }
 

@@ -19,8 +19,6 @@
 #include "System/Debug.hpp"
 #include "Vulkan/VkSampler.hpp"
 
-#include <limits>
-
 namespace sw {
 
 SamplerCore::SamplerCore(Pointer<Byte> &constants, const Sampler &state)
@@ -1339,7 +1337,7 @@ Int4 SamplerCore::cubeFace(Float4 &U, Float4 &V, Float4 &x, Float4 &y, Float4 &z
 	face.z = (faces >> 8) & 0x7;
 	face.w = (faces >> 12) & 0x7;
 
-	M = Max(Max(absX, absY), Max(absZ, Float4(std::numeric_limits<float>::min())));
+	M = Max(Max(absX, absY), absZ);
 
 	// U = xMajor ? (neg ^ -z) : ((zMajor & neg) ^ x)
 	U = As<Float4>((xMajor & (n ^ As<Int4>(-z))) | (~xMajor & ((zMajor & n) ^ As<Int4>(x))));
@@ -2293,10 +2291,6 @@ void SamplerCore::address(const Float4 &uvw, Int4 &xyz0, Int4 &xyz1, Float4 &f, 
 		const int oneBits = 0x3F7FFFFF;   // Value just under 1.0f
 		const int twoBits = 0x3FFFFFFF;   // Value just under 2.0f
 
-		bool pointFilter = state.textureFilter == FILTER_POINT ||
-		                   state.textureFilter == FILTER_MIN_POINT_MAG_LINEAR ||
-		                   state.textureFilter == FILTER_MIN_LINEAR_MAG_POINT;
-
 		Float4 coord = uvw;
 
 		if(state.unnormalizedCoordinates)
@@ -2348,9 +2342,10 @@ void SamplerCore::address(const Float4 &uvw, Int4 &xyz0, Int4 &xyz1, Float4 &f, 
 				{
 					case ADDRESSING_CLAMP:
 					case ADDRESSING_SEAMLESS:
-						// Linear filtering of cube doesn't require clamping because the coordinates
-						// are already in [0, 1] range and numerical imprecision is tolerated.
-						if(addressingMode != ADDRESSING_SEAMLESS || pointFilter)
+						// While cube face coordinates are nominally already in the [0.0, 1.0] range
+						// due to the projection, and numerical imprecision is tolerated due to the
+						// border of pixels for seamless filtering, the projection doesn't cause
+						// range normalization for Inf and NaN values. So we always clamp.
 						{
 							Float4 one = As<Float4>(Int4(oneBits));
 							coord = Min(Max(coord, Float4(0.0f)), one);

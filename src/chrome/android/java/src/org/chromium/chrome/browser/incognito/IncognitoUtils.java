@@ -8,19 +8,28 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
-import android.os.Build;
+import android.content.Intent;
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
+import org.chromium.chrome.browser.tabmodel.IncognitoTabHost;
+import org.chromium.chrome.browser.tabmodel.IncognitoTabHostRegistry;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.io.File;
 import java.util.HashSet;
@@ -43,8 +52,17 @@ public class IncognitoUtils {
     @SuppressLint("NewApi")
     public static boolean shouldDestroyIncognitoProfileOnStartup(
             boolean selectedTabModelIsIncognito) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
-                || !Profile.getLastUsedRegularProfile().hasOffTheRecordProfile()) {
+        boolean result =
+                shouldDestroyIncognitoProfileOnStartupInternal(selectedTabModelIsIncognito);
+        RecordHistogram.recordBooleanHistogram(
+                "Android.ShouldDestroyIncognitoProfileOnStartup", result);
+        return result;
+    }
+
+    @SuppressLint("NewApi")
+    public static boolean shouldDestroyIncognitoProfileOnStartupInternal(
+            boolean selectedTabModelIsIncognito) {
+        if (!Profile.getLastUsedRegularProfile().hasPrimaryOTRProfile()) {
             return false;
         }
 
@@ -111,13 +129,14 @@ public class IncognitoUtils {
      * @return whether successful.
      */
     public static boolean deleteIncognitoStateFiles() {
-        File directory = TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory();
+        File directory = TabStateDirectory.getOrCreateTabbedModeStateDirectory();
         File[] tabStateFiles = directory.listFiles();
         if (tabStateFiles == null) return true;
 
         boolean deletionSuccessful = true;
         for (File file : tabStateFiles) {
-            Pair<Integer, Boolean> tabInfo = TabState.parseInfoFromFilename(file.getName());
+            Pair<Integer, Boolean> tabInfo =
+                    TabStateFileManager.parseInfoFromFilename(file.getName());
             boolean isIncognito = tabInfo != null && tabInfo.second;
             if (isIncognito) {
                 deletionSuccessful &= file.delete();
@@ -141,6 +160,39 @@ public class IncognitoUtils {
      */
     public static boolean isIncognitoModeManaged() {
         return IncognitoUtilsJni.get().getIncognitoModeManaged();
+    }
+
+    /**
+     * Whether intent has any extra that indicates an incognito tab will be launched.
+     * @param intent A non-null intent
+     * @return True if there is any incognito related extra, otherwise return false.
+     */
+    public static boolean hasAnyIncognitoExtra(@NonNull Intent intent) {
+        return IntentUtils.safeGetBooleanExtra(intent, IntentHandler.EXTRA_INCOGNITO_MODE, false)
+                || IntentUtils.safeGetBooleanExtra(
+                        intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false)
+                || IntentUtils.safeGetBooleanExtra(
+                        intent, IntentHandler.EXTRA_INVOKED_FROM_LAUNCH_NEW_INCOGNITO_TAB, false);
+    }
+
+    /**
+     * Returns the non primary OTR profile if any that is associated with a |windowAndroid|
+     * instance, otherwise null.
+     * <p>
+     * A non primary OTR profile is associated only for the case of incognito CustomTabActivity.
+     * <p>
+     * @param windowAndroid The {@link WindowAndroid} instance for which the non primary OTR
+     *         profile is queried.
+     */
+    public static @Nullable Profile getNonPrimaryOTRProfileFromWindowAndroid(
+            @Nullable WindowAndroid windowAndroid) {
+        if (windowAndroid == null) return null;
+
+        CustomTabIncognitoManager customTabIncognitoManager =
+                CustomTabIncognitoManager.from(windowAndroid);
+
+        if (customTabIncognitoManager == null) return null;
+        return customTabIncognitoManager.getProfile();
     }
 
     @VisibleForTesting

@@ -13,7 +13,6 @@
 #include <limits.h>
 #include <math.h>
 
-#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -29,6 +28,7 @@
 #include "base/metrics/sample_vector.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -454,13 +454,10 @@ bool Histogram::InspectConstructionArguments(StringPiece name,
     UmaHistogramSparse("Histogram.TooManyBuckets.1000",
                        static_cast<Sample>(HashMetricName(name)));
 
-    // TODO(bcwhite): Clean these up as bugs get fixed. Also look at injecting
-    // whitelist (using hashes) from a higher layer rather than hardcoding
-    // them here.
+    // TODO(bcwhite): Look at injecting allowlist (using hashes) from a higher
+    // layer rather than hardcoding them here.
     // Blink.UseCounter legitimately has more than 1000 entries in its enum.
-    // Arc.OOMKills: https://crbug.com/916757
-    if (!name.starts_with("Blink.UseCounter") &&
-        !name.starts_with("Arc.OOMKills.")) {
+    if (!StartsWith(name, "Blink.UseCounter")) {
       DVLOG(1) << "Histogram: " << name
                << " has bad bucket_count: " << *bucket_count << " (limit "
                << kBucketCount_MAX << ")";
@@ -821,27 +818,6 @@ void Histogram::GetParameters(DictionaryValue* params) const {
   params->SetIntKey("bucket_count", static_cast<int>(bucket_count()));
 }
 
-void Histogram::GetCountAndBucketData(Count* count,
-                                      int64_t* sum,
-                                      ListValue* buckets) const {
-  std::unique_ptr<SampleVector> snapshot = SnapshotAllSamples();
-  *count = snapshot->TotalCount();
-  *sum = snapshot->sum();
-  uint32_t index = 0;
-  for (uint32_t i = 0; i < bucket_count(); ++i) {
-    Sample count_at_index = snapshot->GetCountAtIndex(i);
-    if (count_at_index > 0) {
-      std::unique_ptr<DictionaryValue> bucket_value(new DictionaryValue());
-      bucket_value->SetIntKey("low", ranges(i));
-      if (i != bucket_count() - 1)
-        bucket_value->SetIntKey("high", ranges(i + 1));
-      bucket_value->SetIntKey("count", count_at_index);
-      buckets->Set(index, std::move(bucket_value));
-      ++index;
-    }
-  }
-}
-
 //------------------------------------------------------------------------------
 // LinearHistogram: This histogram uses a traditional set of evenly spaced
 // buckets.
@@ -1079,12 +1055,24 @@ ScaledLinearHistogram::ScaledLinearHistogram(const char* name,
                                              uint32_t bucket_count,
                                              int32_t scale,
                                              int32_t flags)
-    : histogram_(static_cast<LinearHistogram*>(
-          LinearHistogram::FactoryGet(name,
-                                      minimum,
-                                      maximum,
-                                      bucket_count,
-                                      flags))),
+    : ScaledLinearHistogram(std::string(name),
+                            minimum,
+                            maximum,
+                            bucket_count,
+                            scale,
+                            flags) {}
+
+ScaledLinearHistogram::ScaledLinearHistogram(const std::string& name,
+                                             Sample minimum,
+                                             Sample maximum,
+                                             uint32_t bucket_count,
+                                             int32_t scale,
+                                             int32_t flags)
+    : histogram_(LinearHistogram::FactoryGet(name,
+                                             minimum,
+                                             maximum,
+                                             bucket_count,
+                                             flags)),
       scale_(scale) {
   DCHECK(histogram_);
   DCHECK_LT(1, scale);
@@ -1092,20 +1080,31 @@ ScaledLinearHistogram::ScaledLinearHistogram(const char* name,
   CHECK_EQ(static_cast<Sample>(bucket_count), maximum - minimum + 2)
       << " ScaledLinearHistogram requires buckets of size 1";
 
-  remainders_.resize(histogram_->bucket_count(), 0);
+  // Normally, |histogram_| should have type LINEAR_HISTOGRAM or be
+  // inherited from it. However, if it's expired, it will be DUMMY_HISTOGRAM.
+  if (histogram_->GetHistogramType() == DUMMY_HISTOGRAM)
+    return;
+
+  DCHECK_EQ(histogram_->GetHistogramType(), LINEAR_HISTOGRAM);
+  LinearHistogram* histogram = static_cast<LinearHistogram*>(histogram_);
+  remainders_.resize(histogram->bucket_count(), 0);
 }
 
 ScaledLinearHistogram::~ScaledLinearHistogram() = default;
 
 void ScaledLinearHistogram::AddScaledCount(Sample value, int count) {
+  if (histogram_->GetHistogramType() == DUMMY_HISTOGRAM)
+    return;
   if (count == 0)
     return;
   if (count < 0) {
     NOTREACHED();
     return;
   }
-  const int32_t max_value =
-      static_cast<int32_t>(histogram_->bucket_count() - 1);
+
+  DCHECK_EQ(histogram_->GetHistogramType(), LINEAR_HISTOGRAM);
+  LinearHistogram* histogram = static_cast<LinearHistogram*>(histogram_);
+  const int32_t max_value = static_cast<int32_t>(histogram->bucket_count() - 1);
   if (value > max_value)
     value = max_value;
   if (value < 0)
@@ -1131,7 +1130,7 @@ void ScaledLinearHistogram::AddScaledCount(Sample value, int count) {
   }
 
   if (scaled_count > 0)
-    histogram_->AddCount(value, scaled_count);
+    histogram->AddCount(value, scaled_count);
 }
 
 //------------------------------------------------------------------------------
@@ -1246,8 +1245,8 @@ class CustomHistogram::Factory : public Histogram::Factory {
     std::vector<int> ranges = *custom_ranges_;
     ranges.push_back(0);  // Ensure we have a zero value.
     ranges.push_back(HistogramBase::kSampleType_MAX);
-    std::sort(ranges.begin(), ranges.end());
-    ranges.erase(std::unique(ranges.begin(), ranges.end()), ranges.end());
+    ranges::sort(ranges);
+    ranges.erase(ranges::unique(ranges), ranges.end());
 
     BucketRanges* bucket_ranges = new BucketRanges(ranges.size());
     for (uint32_t i = 0; i < ranges.size(); i++) {

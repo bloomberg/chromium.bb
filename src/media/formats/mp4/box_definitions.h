@@ -227,6 +227,7 @@ struct MEDIA_EXPORT AVCDecoderConfigurationRecord : Box {
   //       in |data|.
   // Returns true if |data| was successfully parsed.
   bool Parse(const uint8_t* data, int data_size);
+  bool Serialize(std::vector<uint8_t>& output) const;
 
   uint8_t version;
   uint8_t profile_indication;
@@ -249,6 +250,8 @@ struct MEDIA_EXPORT VPCodecConfigurationRecord : Box {
   DECLARE_BOX_METHODS(VPCodecConfigurationRecord);
 
   VideoCodecProfile profile;
+  VideoColorSpace color_space;
+  uint8_t level;
 };
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
@@ -286,8 +289,16 @@ struct MEDIA_EXPORT MasteringDisplayColorVolume : Box {
   float display_primaries_ry;
   float white_point_x;
   float white_point_y;
-  uint32_t max_display_mastering_luminance;
-  uint32_t min_display_mastering_luminance;
+  float max_display_mastering_luminance;
+  float min_display_mastering_luminance;
+};
+
+// Mostly the same as MasteringDisplayColorVolume, but with a different fourcc
+// and slightly different layout and format of encoded values.
+struct MEDIA_EXPORT SMPTE2086MasteringDisplayMetadataBox
+    : MasteringDisplayColorVolume {
+  bool Parse(BoxReader* reader) override;
+  FourCC BoxType() const override;
 };
 
 struct MEDIA_EXPORT ContentLightLevelInformation : Box {
@@ -295,6 +306,12 @@ struct MEDIA_EXPORT ContentLightLevelInformation : Box {
 
   uint16_t max_content_light_level;
   uint16_t max_pic_average_light_level;
+};
+
+// Same as ContentLightLevelInformation, but with a different fourcc.
+struct MEDIA_EXPORT ContentLightLevel : ContentLightLevelInformation {
+  bool Parse(BoxReader* reader) override;
+  FourCC BoxType() const override;
 };
 
 struct MEDIA_EXPORT VideoSampleEntry : Box {
@@ -311,8 +328,8 @@ struct MEDIA_EXPORT VideoSampleEntry : Box {
   VideoCodec video_codec;
   VideoCodecProfile video_codec_profile;
   VideoCodecLevel video_codec_level;
+  VideoColorSpace video_color_space;
 
-  base::Optional<ColorParameterInformation> color_parameter_information;
   base::Optional<MasteringDisplayColorVolume> mastering_display_color_volume;
   base::Optional<ContentLightLevelInformation> content_light_level_information;
 

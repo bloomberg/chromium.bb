@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -58,10 +58,9 @@ class FakeDesktopSession : public DesktopSession {
 
 class MockDaemonProcess : public DaemonProcess {
  public:
-  MockDaemonProcess(
-      scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-      const base::Closure& stopped_callback);
+  MockDaemonProcess(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+                    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+                    base::OnceClosure stopped_callback);
   ~MockDaemonProcess() override;
 
   std::unique_ptr<DesktopSession> DoCreateDesktopSession(
@@ -95,9 +94,10 @@ FakeDesktopSession::~FakeDesktopSession() = default;
 MockDaemonProcess::MockDaemonProcess(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-    const base::Closure& stopped_callback)
-    : DaemonProcess(caller_task_runner, io_task_runner, stopped_callback) {
-}
+    base::OnceClosure stopped_callback)
+    : DaemonProcess(caller_task_runner,
+                    io_task_runner,
+                    std::move(stopped_callback)) {}
 
 MockDaemonProcess::~MockDaemonProcess() = default;
 
@@ -167,10 +167,10 @@ void DaemonProcessTest::SetUp() {
       task_environment_.GetMainThreadTaskRunner(),
       base::BindOnce(&DaemonProcessTest::QuitMessageLoop,
                      base::Unretained(this)));
-  daemon_process_.reset(
-      new MockDaemonProcess(task_runner, task_runner,
-                            base::Bind(&DaemonProcessTest::DeleteDaemonProcess,
-                                       base::Unretained(this))));
+  daemon_process_.reset(new MockDaemonProcess(
+      task_runner, task_runner,
+      base::BindOnce(&DaemonProcessTest::DeleteDaemonProcess,
+                     base::Unretained(this))));
 
   // Set up daemon process mocks.
   EXPECT_CALL(*daemon_process_, DoCreateDesktopSessionPtr(_))

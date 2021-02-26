@@ -10,7 +10,7 @@
 
 #include "include/private/GrTypesPriv.h"
 #include "include/private/SkNx.h"
-#include "src/gpu/GrTAllocator.h"
+#include "src/gpu/GrTBlockList.h"
 #include "src/gpu/ccpr/GrCCStrokeGeometry.h"
 
 class GrGpuBuffer;
@@ -63,7 +63,7 @@ private:
     static constexpr BatchID kEmptyBatchID = -1;
     using Verb = GrCCStrokeGeometry::Verb;
     using InstanceTallies = GrCCStrokeGeometry::InstanceTallies;
-    using InstanceTalliesAllocator = GrTAllocator<InstanceTallies, 128>;
+    using InstanceTalliesAllocator = GrTBlockList<InstanceTallies, 128>;
 
     // Every kBeginPath verb has a corresponding PathInfo entry.
     struct PathInfo {
@@ -117,7 +117,7 @@ private:
     InstanceTalliesAllocator fTalliesAllocator;
     const InstanceTallies* fInstanceCounts[kNumScissorModes] = {&fZeroTallies, &fZeroTallies};
 
-    sk_sp<GrGpuBuffer> fInstanceBuffer;
+    sk_sp<const GrGpuBuffer> fInstanceBuffer;
     // The indices stored in batches are relative to these base instances.
     InstanceTallies fBaseInstances[kNumScissorModes];
 };

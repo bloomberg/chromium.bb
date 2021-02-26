@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/extensions/api/autofill_private.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -18,8 +18,10 @@ namespace {
 
 class AutofillPrivateApiTest : public ExtensionApiTest {
  public:
-  AutofillPrivateApiTest() {}
-  ~AutofillPrivateApiTest() override {}
+  AutofillPrivateApiTest() = default;
+  AutofillPrivateApiTest(const AutofillPrivateApiTest&) = delete;
+  AutofillPrivateApiTest& operator=(const AutofillPrivateApiTest&) = delete;
+  ~AutofillPrivateApiTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -35,17 +37,13 @@ class AutofillPrivateApiTest : public ExtensionApiTest {
     return RunExtensionSubtest("autofill_private", "main.html?" + subtest,
                                kFlagNone, kFlagLoadAsComponent);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillPrivateApiTest);
 };
 
 }  // namespace
 
 // TODO(hcarmona): Investigate converting these tests to unittests.
 
-// TODO(crbug.com/643097) Disabled for flakiness.
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, DISABLED_GetCountryList) {
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, GetCountryList) {
   EXPECT_TRUE(RunAutofillSubtest("getCountryList")) << message_;
 }
 
@@ -62,11 +60,23 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, ValidatePhoneNumbers) {
   EXPECT_TRUE(RunAutofillSubtest("ValidatePhoneNumbers")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, AddAndUpdateAddress) {
+// TODO(crbug.com/1143312): Disabled on Mac for flakiness.
+#if defined(OS_MAC)
+#define MAYBE_AddAndUpdateAddress DISABLED_AddAndUpdateAddress
+#else
+#define MAYBE_AddAndUpdateAddress AddAndUpdateAddress
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, MAYBE_AddAndUpdateAddress) {
   EXPECT_TRUE(RunAutofillSubtest("addAndUpdateAddress")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, AddAndUpdateCreditCard) {
+// TODO(crbug.com/1154856): Disabled on Mac for flakiness.
+#if defined(OS_MAC)
+#define MAYBE_AddAndUpdateCreditCard DISABLED_AddAndUpdateCreditCard
+#else
+#define MAYBE_AddAndUpdateCreditCard AddAndUpdateCreditCard
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, MAYBE_AddAndUpdateCreditCard) {
   EXPECT_TRUE(RunAutofillSubtest("addAndUpdateCreditCard")) << message_;
 }
 

@@ -66,6 +66,11 @@ void VideoDecodeAccelerator::Client::ProvidePictureBuffersWithVisibleRect(
   }
 }
 
+gpu::SharedImageStub* VideoDecodeAccelerator::Client::GetSharedImageStub()
+    const {
+  return nullptr;
+}
+
 VideoDecodeAccelerator::~VideoDecodeAccelerator() = default;
 
 void VideoDecodeAccelerator::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -94,6 +99,10 @@ void VideoDecodeAccelerator::SetOverlayInfo(const OverlayInfo& overlay_info) {
 
 GLenum VideoDecodeAccelerator::GetSurfaceInternalFormat() const {
   return GL_RGBA;
+}
+
+bool VideoDecodeAccelerator::SupportsSharedImagePictureBuffers() const {
+  return false;
 }
 
 VideoDecodeAccelerator::SupportedProfile::SupportedProfile()

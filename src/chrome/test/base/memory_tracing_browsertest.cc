@@ -33,21 +33,22 @@ using base::trace_event::MemoryDumpType;
 using tracing::BeginTracingWithTraceConfig;
 using tracing::EndTracing;
 
-void RequestGlobalDumpCallback(base::Closure quit_closure,
+void RequestGlobalDumpCallback(base::OnceClosure quit_closure,
                                bool success,
                                uint64_t) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                std::move(quit_closure));
   // TODO(ssid): Check for dump success once crbug.com/709524 is fixed.
 }
 
 void OnStartTracingDoneCallback(
     base::trace_event::MemoryDumpLevelOfDetail explicit_dump_type,
-    base::Closure quit_closure) {
+    base::OnceClosure quit_closure) {
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestGlobalDumpAndAppendToTrace(
           MemoryDumpType::EXPLICITLY_TRIGGERED, explicit_dump_type,
           MemoryDumpDeterminism::NONE,
-          BindOnce(&RequestGlobalDumpCallback, quit_closure));
+          BindOnce(&RequestGlobalDumpCallback, std::move(quit_closure)));
 }
 
 class MemoryTracingBrowserTest : public InProcessBrowserTest {
@@ -81,8 +82,8 @@ class MemoryTracingBrowserTest : public InProcessBrowserTest {
     // processes.
     base::RunLoop run_loop;
     ASSERT_TRUE(BeginTracingWithTraceConfig(
-        trace_config, Bind(&OnStartTracingDoneCallback, explicit_dump_type,
-                           run_loop.QuitClosure())));
+        trace_config, BindOnce(&OnStartTracingDoneCallback, explicit_dump_type,
+                               run_loop.QuitClosure())));
 
     // Create and destroy renderers while tracing is enabled.
     GURL url2("chrome://credits");
@@ -114,8 +115,9 @@ class MemoryTracingBrowserTest : public InProcessBrowserTest {
   bool should_test_memory_dump_success_;
 };
 
-// TODO(crbug.com/806988): Disabled due to excessive output on lsan bots.
-#if defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/806988): Disabled due to excessive output on lsan bots and
+// timeouts on Mac Test debug bots.
+#if defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || defined(OS_MAC)
 #define MAYBE_TestMemoryInfra DISABLED_TestMemoryInfra
 #else
 #define MAYBE_TestMemoryInfra TestMemoryInfra

@@ -37,28 +37,27 @@
 namespace blink {
 
 class ExceptionState;
-class LocalFrame;
+class LocalDOMWindow;
 
 class StorageArea final : public ScriptWrappable,
                           public ExecutionContextClient,
                           public CachedStorageArea::Source {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(StorageArea);
 
  public:
   enum class StorageType { kLocalStorage, kSessionStorage };
 
-  static StorageArea* Create(LocalFrame*,
+  static StorageArea* Create(LocalDOMWindow*,
                              scoped_refptr<CachedStorageArea>,
                              StorageType);
 
   // This storage area doesn't enqueue any events. This avoids duplicate event
   // dispatch when an inspector agent is present.
-  static StorageArea* CreateForInspectorAgent(LocalFrame*,
+  static StorageArea* CreateForInspectorAgent(LocalDOMWindow*,
                                               scoped_refptr<CachedStorageArea>,
                                               StorageType);
 
-  StorageArea(LocalFrame*,
+  StorageArea(LocalDOMWindow*,
               scoped_refptr<CachedStorageArea>,
               StorageType,
               bool should_enqueue_events);
@@ -78,7 +77,7 @@ class StorageArea final : public ScriptWrappable,
 
   bool CanAccessStorage() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // CachedStorageArea::Source:
   KURL GetPageUrl() const override;
@@ -92,6 +91,7 @@ class StorageArea final : public ScriptWrappable,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
 
  private:
+  void RecordModificationInMetrics();
   const scoped_refptr<CachedStorageArea> cached_area_;
   StorageType storage_type_;
   const bool should_enqueue_events_;

@@ -5,10 +5,16 @@
 #include "ash/ambient/model/ambient_backend_model.h"
 
 #include <memory>
+#include <string>
 
-#include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/model/ambient_backend_model_observer.h"
+#include "ash/public/cpp/ambient/ambient_prefs.h"
+#include "ash/public/cpp/ambient/ambient_ui_model.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/scoped_observer.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/views/controls/image_view.h"
@@ -16,10 +22,13 @@
 namespace ash {
 
 namespace {
+class MockAmbientBackendModelObserver : public AmbientBackendModelObserver {
+ public:
+  MockAmbientBackendModelObserver() = default;
+  ~MockAmbientBackendModelObserver() override = default;
 
-// This class has a local in memory cache of downloaded photos. This is the max
-// number of photos before and after currently shown image.
-constexpr int kTestImageBufferLength = 3;
+  MOCK_METHOD(void, OnImagesFailed, (), (override));
+};
 
 }  // namespace
 
@@ -32,10 +41,7 @@ class AmbientBackendModelTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-
     ambient_backend_model_ = std::make_unique<AmbientBackendModel>();
-    ambient_backend_model_->set_buffer_length_for_testing(
-        kTestImageBufferLength);
   }
 
   void TearDown() override {
@@ -43,46 +49,52 @@ class AmbientBackendModelTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
-  void ShowNextImage() { ambient_backend_model_->ShowNextImage(); }
-
   // Adds n test images to the model.
   void AddNTestImages(int n) {
     while (n > 0) {
-      gfx::ImageSkia test_image =
+      PhotoWithDetails test_detailed_image;
+      test_detailed_image.photo =
           gfx::test::CreateImageSkia(/*width=*/10, /*height=*/10);
-      ambient_backend_model()->AddNextImage(test_image);
+      test_detailed_image.details = std::string("fake-photo-attribution");
+      ambient_backend_model()->AddNextImage(std::move(test_detailed_image));
       n--;
     }
   }
 
-  // Returns whether the image is equivalent to the test image.
-  bool EqualsToTestImage(const gfx::ImageSkia& image) {
+  // Returns whether the image and its details are equivalent to the test
+  // detailed image.
+  bool EqualsToTestImage(const PhotoWithDetails& detailed_image) {
     gfx::ImageSkia test_image =
         gfx::test::CreateImageSkia(/*width=*/10, /*height=*/10);
-    return !image.isNull() &&
-           gfx::test::AreBitmapsEqual(*image.bitmap(), *test_image.bitmap());
+    return !detailed_image.IsNull() &&
+           gfx::test::AreBitmapsEqual(*(detailed_image.photo).bitmap(),
+                                      *test_image.bitmap()) &&
+           (detailed_image.details == std::string("fake-photo-attribution"));
   }
 
   // Returns whether the image is null.
   bool IsNullImage(const gfx::ImageSkia& image) { return image.isNull(); }
 
-  base::TimeDelta GetPhotoRefreshInterval() {
+  base::TimeDelta GetPhotoRefreshInterval() const {
     return ambient_backend_model()->GetPhotoRefreshInterval();
   }
 
   void SetPhotoRefreshInterval(const base::TimeDelta& interval) {
-    ambient_backend_model()->SetPhotoRefreshInterval(interval);
+    PrefService* prefs =
+        Shell::Get()->session_controller()->GetPrimaryUserPrefService();
+    prefs->SetInteger(ambient::prefs::kAmbientModePhotoRefreshIntervalSeconds,
+                      interval.InSeconds());
   }
 
-  AmbientBackendModel* ambient_backend_model() {
+  AmbientBackendModel* ambient_backend_model() const {
     return ambient_backend_model_.get();
   }
 
-  gfx::ImageSkia prev_image() { return ambient_backend_model_->GetPrevImage(); }
+  PhotoWithDetails GetNextImage() {
+    return ambient_backend_model_->GetNextImage();
+  }
 
-  gfx::ImageSkia curr_image() { return ambient_backend_model_->GetCurrImage(); }
-
-  gfx::ImageSkia next_image() { return ambient_backend_model_->GetNextImage(); }
+  int failure_count() { return ambient_backend_model_->failures_; }
 
  private:
   std::unique_ptr<AmbientBackendModel> ambient_backend_model_;
@@ -92,53 +104,16 @@ class AmbientBackendModelTest : public AshTestBase {
 TEST_F(AmbientBackendModelTest, AddFirstImage) {
   AddNTestImages(1);
 
-  EXPECT_TRUE(IsNullImage(prev_image()));
-  EXPECT_TRUE(EqualsToTestImage(curr_image()));
-  EXPECT_TRUE(IsNullImage(next_image()));
+  EXPECT_TRUE(EqualsToTestImage(GetNextImage()));
 }
 
 // Test adding the second image.
 TEST_F(AmbientBackendModelTest, AddSecondImage) {
-  AddNTestImages(2);
+  AddNTestImages(1);
+  EXPECT_TRUE(EqualsToTestImage(GetNextImage()));
 
-  // The default |current_image_index_| is 0.
-  EXPECT_TRUE(IsNullImage(prev_image()));
-  EXPECT_TRUE(EqualsToTestImage(curr_image()));
-  EXPECT_TRUE(EqualsToTestImage(next_image()));
-
-  // Increment the |current_image_index_| to 1.
-  ShowNextImage();
-  EXPECT_TRUE(EqualsToTestImage(prev_image()));
-  EXPECT_TRUE(EqualsToTestImage(curr_image()));
-  EXPECT_TRUE(IsNullImage(next_image()));
-}
-
-// Test adding the third image.
-TEST_F(AmbientBackendModelTest, AddThirdImage) {
-  AddNTestImages(3);
-
-  // The default |current_image_index_| is 0.
-  EXPECT_TRUE(IsNullImage(prev_image()));
-  EXPECT_TRUE(EqualsToTestImage(curr_image()));
-  EXPECT_TRUE(EqualsToTestImage(next_image()));
-
-  // Increment the |current_image_index_| to 1.
-  ShowNextImage();
-  EXPECT_TRUE(EqualsToTestImage(prev_image()));
-  EXPECT_TRUE(EqualsToTestImage(curr_image()));
-  EXPECT_TRUE(EqualsToTestImage(next_image()));
-
-  // Pop the |images_| front and keep the |current_image_index_| to 1.
-  ShowNextImage();
-  EXPECT_TRUE(EqualsToTestImage(prev_image()));
-  EXPECT_TRUE(EqualsToTestImage(curr_image()));
-  EXPECT_TRUE(IsNullImage(next_image()));
-
-  // ShowNextImage() will early return.
-  ShowNextImage();
-  EXPECT_TRUE(EqualsToTestImage(prev_image()));
-  EXPECT_TRUE(EqualsToTestImage(curr_image()));
-  EXPECT_TRUE(IsNullImage(next_image()));
+  AddNTestImages(1);
+  EXPECT_TRUE(EqualsToTestImage(GetNextImage()));
 }
 
 // Test the photo refresh interval is expected.
@@ -160,6 +135,41 @@ TEST_F(AmbientBackendModelTest, ShouldReturnExpectedPhotoRefreshInterval) {
   SetPhotoRefreshInterval(interval);
   // The refresh interval will be the set value.
   EXPECT_EQ(GetPhotoRefreshInterval(), interval);
+}
+
+TEST_F(AmbientBackendModelTest, ShouldNotifyObserversIfImagesFailed) {
+  ambient_backend_model()->Clear();
+  testing::NiceMock<MockAmbientBackendModelObserver> observer;
+  ScopedObserver<AmbientBackendModel, AmbientBackendModelObserver> scoped_obs{
+      &observer};
+
+  scoped_obs.Add(ambient_backend_model());
+
+  EXPECT_CALL(observer, OnImagesFailed).Times(1);
+
+  for (int i = 0; i < kMaxConsecutiveReadPhotoFailures; i++) {
+    ambient_backend_model()->AddImageFailure();
+  }
+}
+
+TEST_F(AmbientBackendModelTest, ShouldResetFailuresOnAddImage) {
+  testing::NiceMock<MockAmbientBackendModelObserver> observer;
+  ScopedObserver<AmbientBackendModel, AmbientBackendModelObserver> scoped_obs{
+      &observer};
+
+  scoped_obs.Add(ambient_backend_model());
+
+  EXPECT_CALL(observer, OnImagesFailed).Times(0);
+
+  for (int i = 0; i < kMaxConsecutiveReadPhotoFailures - 1; i++) {
+    ambient_backend_model()->AddImageFailure();
+  }
+
+  EXPECT_EQ(failure_count(), kMaxConsecutiveReadPhotoFailures - 1);
+
+  AddNTestImages(1);
+
+  EXPECT_EQ(failure_count(), 0);
 }
 
 }  // namespace ash

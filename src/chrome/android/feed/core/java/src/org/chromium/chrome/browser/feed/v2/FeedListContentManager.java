@@ -4,13 +4,21 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
+import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
+
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
 import org.chromium.chrome.browser.xsurface.ListContentManager;
 import org.chromium.chrome.browser.xsurface.ListContentManagerObserver;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
+import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,17 +84,67 @@ public class FeedListContentManager implements ListContentManager {
      * For the content that is supported by the native view.
      */
     public static class NativeViewContent extends FeedContent {
-        private final View mNativeView;
+        private View mNativeView;
+        private int mResId;
+        // An unique ID for this NativeViewContent. This is initially 0, and assigned by
+        // FeedListContentManager when needed.
+        private int mViewType;
 
+        /** Holds an inflated native view. */
         public NativeViewContent(String key, View nativeView) {
             super(key);
+            assert nativeView != null;
             mNativeView = nativeView;
+        }
+
+        /** Holds a resource ID used to inflate a native view. */
+        public NativeViewContent(String key, int resId) {
+            super(key);
+            mResId = resId;
         }
 
         /**
          * Returns the native view if the content is supported by it. Null otherwise.
          */
-        public View getNativeView() {
+        public View getNativeView(ViewGroup parent) {
+            Context context = parent.getContext();
+            if (mNativeView == null) {
+                mNativeView = LayoutInflater.from(context).inflate(mResId, parent, false);
+            }
+
+            // If there's already a parent, we have already enclosed this view previously.
+            // This can happen if a native view is added, removed, and added again.
+            // In this case, it is important to make a new view because the RecyclerView
+            // may still have a reference to the old one. See crbug.com/1131975.
+            UiUtils.removeViewFromParent(mNativeView);
+
+            FrameLayout enclosingLayout = new FrameLayout(parent.getContext());
+            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                    new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            enclosingLayout.setLayoutParams(layoutParams);
+
+            // Set the left and right paddings.
+            int horizontalPadding = context.getResources().getDimensionPixelSize(
+                    R.dimen.ntp_header_lateral_margins_v2);
+            enclosingLayout.setPadding(/* left */ horizontalPadding, /* top */ 0,
+                    /* right */ horizontalPadding, /* bottom */ 0);
+            // Do not clip children. This ensures that the negative margin use in the feed header
+            // does not subsequently cause the IPH bubble to be clipped.
+            enclosingLayout.setClipToPadding(false);
+            enclosingLayout.setClipChildren(false);
+            enclosingLayout.addView(mNativeView);
+            return enclosingLayout;
+        }
+
+        int getViewType() {
+            return mViewType;
+        }
+
+        void setViewType(int viewType) {
+            mViewType = viewType;
+        }
+
+        public View getNestedView() {
             return mNativeView;
         }
 
@@ -99,6 +157,7 @@ public class FeedListContentManager implements ListContentManager {
     private ArrayList<FeedContent> mFeedContentList;
     private ArrayList<ListContentManagerObserver> mObservers;
     private final Map<String, Object> mHandlers;
+    private int mPreviousViewType;
 
     FeedListContentManager(
             SurfaceActionsHandler surfaceActionsHandler, FeedActionsHandler feedActionsHandler) {
@@ -228,15 +287,23 @@ public class FeedListContentManager implements ListContentManager {
     }
 
     @Override
-    public View getNativeView(int index, ViewGroup parent) {
-        assert mFeedContentList.get(index).isNativeView();
-        NativeViewContent nativeViewContent = (NativeViewContent) mFeedContentList.get(index);
-        return nativeViewContent.getNativeView();
+    public int getViewType(int position) {
+        assert mFeedContentList.get(position).isNativeView();
+        NativeViewContent content = (NativeViewContent) mFeedContentList.get(position);
+        if (content.getViewType() == 0) content.setViewType(++mPreviousViewType);
+        return content.getViewType();
+    }
+
+    @Override
+    public View getNativeView(int viewType, ViewGroup parent) {
+        NativeViewContent viewContent = findNativeViewByType(viewType);
+        assert viewContent != null;
+        return viewContent.getNativeView(parent);
     }
 
     @Override
     public void bindNativeView(int index, View v) {
-        // TODO(jianli): to be implemented.
+        // Nothing to do.
     }
 
     @Override
@@ -252,5 +319,18 @@ public class FeedListContentManager implements ListContentManager {
     @Override
     public void removeObserver(ListContentManagerObserver observer) {
         mObservers.remove(observer);
+    }
+
+    @Nullable
+    private NativeViewContent findNativeViewByType(int viewType) {
+        // Note: since there's relatively few native views, they're mostly at the front, a linear
+        // search isn't terrible. This function is also called infrequently.
+        for (int i = 0; i < mFeedContentList.size(); i++) {
+            FeedContent item = mFeedContentList.get(i);
+            if (!item.isNativeView()) continue;
+            NativeViewContent nativeContent = (NativeViewContent) item;
+            if (nativeContent.getViewType() == viewType) return nativeContent;
+        }
+        return null;
     }
 }

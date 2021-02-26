@@ -10,8 +10,8 @@
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/services/app_service/public/cpp/app_update.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "extensions/common/constants.h"
 
 #if defined(OS_CHROMEOS)
@@ -53,10 +53,14 @@ enum class DefaultAppName {
   kSlides = 35,
   kWebStore = 36,
   kYouTube = 37,
+  kYouTubeMusic = 38,
+  // This is our test SWA. It's only installed in tests.
+  kMockSystemApp = 39,
+  kStadia = 40,
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kYouTube,
+  kMaxValue = kStadia,
 };
 
 void RecordDefaultAppLaunch(DefaultAppName default_app_name,
@@ -127,6 +131,15 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
       base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromArc",
                                     default_app_name);
       break;
+    case apps::mojom::LaunchSource::kFromSharesheet:
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromSharesheet",
+                                    default_app_name);
+      break;
+    case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
+      base::UmaHistogramEnumeration(
+          "Apps.DefaultAppLaunch.FromReleaseNotesNotification",
+          default_app_name);
+      break;
   }
 }
 
@@ -158,6 +171,8 @@ void RecordBuiltInAppLaunch(apps::BuiltInAppName built_in_app_name,
     case apps::mojom::LaunchSource::kFromInstalledNotification:
     case apps::mojom::LaunchSource::kFromTest:
     case apps::mojom::LaunchSource::kFromArc:
+    case apps::mojom::LaunchSource::kFromSharesheet:
+    case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
       break;
   }
 }
@@ -172,8 +187,6 @@ void RecordAppLaunch(const std::string& app_id,
     RecordDefaultAppLaunch(DefaultAppName::kCalculator, launch_source);
   else if (app_id == extension_misc::kTextEditorAppId)
     RecordDefaultAppLaunch(DefaultAppName::kText, launch_source);
-  else if (app_id == extension_misc::kGeniusAppId)
-    RecordDefaultAppLaunch(DefaultAppName::kGetHelp, launch_source);
   else if (app_id == file_manager::kGalleryAppId)
     RecordDefaultAppLaunch(DefaultAppName::kGallery, launch_source);
   else if (app_id == file_manager::kVideoPlayerAppId)
@@ -183,6 +196,8 @@ void RecordAppLaunch(const std::string& app_id,
   else if (app_id == chromeos::default_web_apps::kCanvasAppId)
     RecordDefaultAppLaunch(DefaultAppName::kChromeCanvas, launch_source);
   else if (app_id == extension_misc::kCameraAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kCamera, launch_source);
+  else if (app_id == chromeos::default_web_apps::kCameraAppId)
     RecordDefaultAppLaunch(DefaultAppName::kCamera, launch_source);
   else if (app_id == chromeos::default_web_apps::kHelpAppId)
     RecordDefaultAppLaunch(DefaultAppName::kHelpApp, launch_source);
@@ -207,6 +222,8 @@ void RecordAppLaunch(const std::string& app_id,
   else if (app_id == extension_misc::kGoogleKeepAppId)
     RecordDefaultAppLaunch(DefaultAppName::kKeep, launch_source);
 #if defined(OS_CHROMEOS)
+  else if (app_id == extension_misc::kGooglePhotosAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kPhotos, launch_source);
   else if (app_id == arc::kPlayBooksAppId)
     RecordDefaultAppLaunch(DefaultAppName::kPlayBooks, launch_source);
   else if (app_id == arc::kPlayGamesAppId)
@@ -233,6 +250,10 @@ void RecordAppLaunch(const std::string& app_id,
            app_id == arc::kYoutubeAppId)
     RecordDefaultAppLaunch(DefaultAppName::kYouTube, launch_source);
 #endif  // OS_CHROMEOS
+  else if (app_id == chromeos::default_web_apps::kYoutubeMusicAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kYouTubeMusic, launch_source);
+  else if (app_id == chromeos::default_web_apps::kStadiaAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kStadia, launch_source);
 
   // Above are default apps; below are built-in apps.
 
@@ -243,14 +264,14 @@ void RecordAppLaunch(const std::string& app_id,
     RecordBuiltInAppLaunch(BuiltInAppName::kSettings, launch_source);
   } else if (app_id == ash::kInternalAppIdContinueReading) {
     RecordBuiltInAppLaunch(BuiltInAppName::kContinueReading, launch_source);
-  } else if (app_id == ash::kInternalAppIdDiscover) {
-    RecordBuiltInAppLaunch(BuiltInAppName::kDiscover, launch_source);
 #if defined(OS_CHROMEOS)
-  } else if (app_id == plugin_vm::kPluginVmAppId) {
+  } else if (app_id == plugin_vm::kPluginVmShelfAppId) {
     RecordBuiltInAppLaunch(BuiltInAppName::kPluginVm, launch_source);
 #endif  // OS_CHROMEOS
   } else if (app_id == ash::kReleaseNotesAppId) {
     RecordBuiltInAppLaunch(BuiltInAppName::kReleaseNotes, launch_source);
+  } else if (app_id == chromeos::default_web_apps::kMockSystemAppId) {
+    RecordDefaultAppLaunch(DefaultAppName::kMockSystemApp, launch_source);
   }
 }
 
@@ -264,11 +285,8 @@ void RecordBuiltInAppSearchResult(const std::string& app_id) {
   } else if (app_id == ash::kInternalAppIdContinueReading) {
     base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Show",
                                   BuiltInAppName::kContinueReading);
-  } else if (app_id == ash::kInternalAppIdDiscover) {
-    base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Show",
-                                  BuiltInAppName::kDiscover);
 #if defined(OS_CHROMEOS)
-  } else if (app_id == plugin_vm::kPluginVmAppId) {
+  } else if (app_id == plugin_vm::kPluginVmShelfAppId) {
     base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Show",
                                   BuiltInAppName::kPluginVm);
 #endif  // OS_CHROMEOS
@@ -293,6 +311,14 @@ void RecordAppBounce(const apps::AppUpdate& app) {
   } else {
     base::UmaHistogramBoolean("Apps.Bounced", false);
   }
+}
+
+void RecordAppsPerNotification(int count) {
+  if (count <= 0) {
+    return;
+  }
+  base::UmaHistogramBoolean("ChromeOS.Apps.NumberOfAppsForNotification",
+                            (count > 1));
 }
 
 }  // namespace apps

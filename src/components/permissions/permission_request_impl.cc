@@ -23,14 +23,12 @@
 namespace permissions {
 
 PermissionRequestImpl::PermissionRequestImpl(
-    const GURL& embedding_origin,
     const GURL& request_origin,
     ContentSettingsType content_settings_type,
     bool has_gesture,
     PermissionDecidedCallback permission_decided_callback,
     base::OnceClosure delete_callback)
-    : embedding_origin_(embedding_origin),
-      request_origin_(request_origin),
+    : request_origin_(request_origin),
       content_settings_type_(content_settings_type),
       has_gesture_(has_gesture),
       permission_decided_callback_(std::move(permission_decided_callback)),
@@ -70,6 +68,8 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return IDR_ANDROID_INFOBAR_VR_HEADSET;
     case ContentSettingsType::STORAGE_ACCESS:
       return IDR_ANDROID_INFOBAR_PERMISSION_COOKIE;
+    case ContentSettingsType::IDLE_DETECTION:
+      return IDR_ANDROID_INFOBAR_IDLE_DETECTION;
     default:
       NOTREACHED();
       return IDR_ANDROID_INFOBAR_WARNING;
@@ -89,6 +89,7 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
     case ContentSettingsType::MEDIASTREAM_MIC:
       return vector_icons::kMicIcon;
     case ContentSettingsType::MEDIASTREAM_CAMERA:
+    case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
       return vector_icons::kVideocamIcon;
     case ContentSettingsType::ACCESSIBILITY_EVENTS:
       return vector_icons::kAccessibilityIcon;
@@ -99,10 +100,12 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return vector_icons::kVrHeadsetIcon;
     case ContentSettingsType::STORAGE_ACCESS:
       return vector_icons::kCookieIcon;
-    case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
-      return vector_icons::kCameraPanTiltZoomIcon;
     case ContentSettingsType::WINDOW_PLACEMENT:
       return vector_icons::kWindowPlacementIcon;
+    case ContentSettingsType::FONT_ACCESS:
+      return vector_icons::kFontDownloadIcon;
+    case ContentSettingsType::IDLE_DETECTION:
+      return vector_icons::kPersonIcon;
     default:
       NOTREACHED();
       return vector_icons::kExtensionIcon;
@@ -150,14 +153,9 @@ base::string16 PermissionRequestImpl::GetMessageText() const {
     case ContentSettingsType::AR:
       message_id = IDS_AR_INFOBAR_TEXT;
       break;
-    case ContentSettingsType::STORAGE_ACCESS:
-      return l10n_util::GetStringFUTF16(
-          IDS_STORAGE_ACCESS_INFOBAR_TEXT,
-          url_formatter::FormatUrlForSecurityDisplay(
-              GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
-          url_formatter::FormatUrlForSecurityDisplay(
-              GetEmbeddingOrigin(),
-              url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+    case ContentSettingsType::IDLE_DETECTION:
+      message_id = IDS_IDLE_DETECTION_INFOBAR_TEXT;
+      break;
     default:
       NOTREACHED();
       return base::string16();
@@ -218,8 +216,7 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
       message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_FRAGMENT;
       break;
     case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
-      message_id =
-          IDS_MEDIA_CAPTURE_CAMERA_PAN_TILT_ZOOM_ONLY_PERMISSION_FRAGMENT;
+      message_id = IDS_MEDIA_CAPTURE_CAMERA_PAN_TILT_ZOOM_PERMISSION_FRAGMENT;
       break;
     case ContentSettingsType::ACCESSIBILITY_EVENTS:
       message_id = IDS_ACCESSIBILITY_EVENTS_PERMISSION_FRAGMENT;
@@ -237,15 +234,16 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
       message_id = IDS_AR_PERMISSION_FRAGMENT;
       break;
     case ContentSettingsType::STORAGE_ACCESS:
-      return l10n_util::GetStringFUTF16(
-          IDS_STORAGE_ACCESS_PERMISSION_FRAGMENT,
-          url_formatter::FormatUrlForSecurityDisplay(
-              GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
-          url_formatter::FormatUrlForSecurityDisplay(
-              GetEmbeddingOrigin(),
-              url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+      message_id = IDS_STORAGE_ACCESS_PERMISSION_FRAGMENT;
+      break;
     case ContentSettingsType::WINDOW_PLACEMENT:
       message_id = IDS_WINDOW_PLACEMENT_PERMISSION_FRAGMENT;
+      break;
+    case ContentSettingsType::FONT_ACCESS:
+      message_id = IDS_FONT_ACCESS_PERMISSION_FRAGMENT;
+      break;
+    case ContentSettingsType::IDLE_DETECTION:
+      message_id = IDS_IDLE_DETECTION_PERMISSION_FRAGMENT;
       break;
     default:
       NOTREACHED();
@@ -254,30 +252,64 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
   return l10n_util::GetStringUTF16(message_id);
 }
 
-base::string16 PermissionRequestImpl::GetMessageTextWarningFragment() const {
-  if (content_settings_type_ == ContentSettingsType::PLUGINS)
-    return l10n_util::GetStringUTF16(IDS_FLASH_PERMISSION_WARNING_FRAGMENT);
-  return base::string16();
+#if !defined(OS_ANDROID)
+base::Optional<base::string16> PermissionRequestImpl::GetChipText() const {
+  int message_id;
+  switch (content_settings_type_) {
+    case ContentSettingsType::GEOLOCATION:
+      message_id = IDS_GEOLOCATION_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::NOTIFICATIONS:
+      message_id = IDS_NOTIFICATION_PERMISSIONS_CHIP;
+      break;
+    case ContentSettingsType::MIDI_SYSEX:
+      message_id = IDS_MIDI_SYSEX_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::MEDIASTREAM_MIC:
+      message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::MEDIASTREAM_CAMERA:
+      message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::CLIPBOARD_READ_WRITE:
+      message_id = IDS_CLIPBOARD_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::VR:
+      message_id = IDS_VR_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::AR:
+      message_id = IDS_AR_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::IDLE_DETECTION:
+      message_id = IDS_IDLE_DETECTION_PERMISSION_CHIP;
+      break;
+    default:
+      // TODO(bsep): We don't actually want to support having no string in the
+      // long term, but writing them takes time. In the meantime, we fall back
+      // to the existing UI when the string is missing.
+      return base::nullopt;
+  }
+  return l10n_util::GetStringUTF16(message_id);
 }
-
-GURL PermissionRequestImpl::GetEmbeddingOrigin() const {
-  return embedding_origin_;
-}
+#endif
 
 GURL PermissionRequestImpl::GetOrigin() const {
   return request_origin_;
 }
 
-void PermissionRequestImpl::PermissionGranted() {
-  std::move(permission_decided_callback_).Run(CONTENT_SETTING_ALLOW);
+void PermissionRequestImpl::PermissionGranted(bool is_one_time) {
+  std::move(permission_decided_callback_)
+      .Run(CONTENT_SETTING_ALLOW, is_one_time);
 }
 
 void PermissionRequestImpl::PermissionDenied() {
-  std::move(permission_decided_callback_).Run(CONTENT_SETTING_BLOCK);
+  std::move(permission_decided_callback_)
+      .Run(CONTENT_SETTING_BLOCK, /*is_one_time=*/false);
 }
 
 void PermissionRequestImpl::Cancelled() {
-  std::move(permission_decided_callback_).Run(CONTENT_SETTING_DEFAULT);
+  std::move(permission_decided_callback_)
+      .Run(CONTENT_SETTING_DEFAULT, /*is_one_time=*/false);
 }
 
 void PermissionRequestImpl::RequestFinished() {

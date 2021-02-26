@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "third_party/blink/renderer/platform/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mojo/features.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
@@ -35,7 +36,6 @@ class HeapMojoAssociatedReceiverSet {
                   "Owner should implement Interface");
     static_assert(IsGarbageCollectedType<Owner>::value,
                   "Owner needs to be a garbage collected object");
-    DCHECK(context);
   }
   HeapMojoAssociatedReceiverSet(const HeapMojoAssociatedReceiverSet&) = delete;
   HeapMojoAssociatedReceiverSet& operator=(
@@ -62,7 +62,7 @@ class HeapMojoAssociatedReceiverSet {
 
   bool empty() const { return wrapper_->associated_receiver_set().empty(); }
 
-  void Trace(Visitor* visitor) { visitor->Trace(wrapper_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(wrapper_); }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(
@@ -73,7 +73,6 @@ class HeapMojoAssociatedReceiverSet {
   class Wrapper final : public GarbageCollected<Wrapper>,
                         public ContextLifecycleObserver {
     USING_PRE_FINALIZER(Wrapper, Dispose);
-    USING_GARBAGE_COLLECTED_MIXIN(Wrapper);
 
    public:
     explicit Wrapper(Owner* owner, ContextLifecycleNotifier* notifier)
@@ -81,7 +80,7 @@ class HeapMojoAssociatedReceiverSet {
       SetContextLifecycleNotifier(notifier);
     }
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(owner_);
       ContextLifecycleObserver::Trace(visitor);
     }
@@ -95,7 +94,9 @@ class HeapMojoAssociatedReceiverSet {
 
     // ContextLifecycleObserver methods
     void ContextDestroyed() override {
-      if (Mode == HeapMojoWrapperMode::kWithContextObserver)
+      if (Mode == HeapMojoWrapperMode::kWithContextObserver ||
+          (Mode == HeapMojoWrapperMode::kWithoutContextObserver &&
+           base::FeatureList::IsEnabled(kHeapMojoUseContextObserver)))
         associated_receiver_set_.Clear();
     }
 

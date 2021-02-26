@@ -30,6 +30,11 @@ class CORE_EXPORT MathMLElement : public Element {
     return HasLocalName(name.LocalName());
   }
 
+  bool IsMathMLElement() const =
+      delete;  // This will catch anyone doing an unnecessary check.
+
+  bool IsTokenElement() const;
+
  protected:
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(
@@ -37,16 +42,16 @@ class CORE_EXPORT MathMLElement : public Element {
       const AtomicString&,
       MutableCSSPropertyValueSet*) override;
 
+  enum class AllowPercentages { kYes, kNo };
   base::Optional<Length> AddMathLengthToComputedStyle(
-      ComputedStyle&,
       const CSSToLengthConversionData&,
-      const QualifiedName&);
+      const QualifiedName&,
+      AllowPercentages allow_percentages = AllowPercentages::kYes);
 
- private:
-  void ParseAttribute(const AttributeModificationParams&) final;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  bool IsMathMLElement() const =
-      delete;  // This will catch anyone doing an unnecessary check.
+  // https://mathml-refresh.github.io/mathml-core/#dfn-boolean
+  base::Optional<bool> BooleanAttribute(const QualifiedName& name) const;
 };
 
 template <typename T>

@@ -15,6 +15,8 @@
 # Gold for the link, so use_gold=true is a false statement and might
 # cause other problems.
 
+import("//build/config/python.gni")
+
 here = get_label_info(".", "dir")
 bootstrap_toolchain = here + "/toolchain:nacl_bootstrap_" + target_cpu
 compiler = "g++"
@@ -143,7 +145,8 @@ if (current_toolchain == bootstrap_toolchain) {
     ]
   }
 
-  action("munge_nacl_helper_bootstrap") {
+  # TODO(crbug.com/1112471): Get this to work cleanly under Python3.
+  python2_action("munge_nacl_helper_bootstrap") {
     deps = [
       ":nacl_bootstrap_raw",
     ]
@@ -157,7 +160,7 @@ if (current_toolchain == bootstrap_toolchain) {
     ]
     args = rebase_path(inputs + outputs, root_build_dir)
   }
-} else if (is_linux) {
+} else if (is_linux || is_chromeos) {
   copy("bootstrap") {
     bootstrap = ":munge_nacl_helper_bootstrap($bootstrap_toolchain)"
 

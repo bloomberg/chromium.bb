@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -149,6 +150,9 @@ enum class AppListSearchResultType {
   kDriveQuickAccessChip,   // Drive file results in suggestion chips.
   kAssistantChip,          // Assistant results in suggestion chips.
   kOsSettings,             // OS settings results.
+  kInternalPrivacyInfo,    // Result used internally by privacy notices.
+  kAssistantText,          // Assistant text results.
+  kHelpApp,                // Help App (aka Explore) results.
   // Add new values here.
 };
 
@@ -157,10 +161,10 @@ enum class AppListSearchResultType {
 enum SearchResultDisplayType {
   kNone = 0,
   kList = 1,  // Displays in search list
-  kTile = 2,  // Displays in search tiles and suggestion chips
+  kTile = 2,  // Displays in search tiles
   // kRecommendation = 3  // No longer used, split between kTile and kChip
   kCard = 4,  // Displays in answer cards
-  kChip = 5,  // Displays in suggestion chips only
+  kChip = 5,  // Displays in suggestion chips
   // Add new values here
   kLast,  // Don't use over IPC
 };
@@ -271,9 +275,13 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // The subtype of this result. Derived search result classes can use this to
   // represent their own subtypes. Currently, OmniboxResult sets this to
-  // indicate this is a history result, previous query, etc. A value of -1
+  // indicate this is a history result, previous query, etc. If a result is an
+  // Answer, OmniboxResult will set this to be the answer type. A value of -1
   // indicates no subtype has been set.
   int result_subtype = -1;
+
+  // A search result type used for metrics.
+  ash::SearchResultType metrics_type = ash::SEARCH_RESULT_TYPE_BOUNDARY;
 
   // Which UI container(s) the result should be displayed in.
   SearchResultDisplayType display_type = SearchResultDisplayType::kList;
@@ -296,6 +304,10 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // Whether this result is a recommendation.
   bool is_recommendation = false;
+
+  // Whether this result is an answer. Answer results should originate from
+  // base::SuggestionAnswer.
+  bool is_answer = false;
 
   // A query URL associated with this result. The meaning and treatment of the
   // URL (e.g. displaying inline web contents) is dependent on the result type.

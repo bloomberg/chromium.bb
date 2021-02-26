@@ -65,8 +65,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBrowserTest, PermissionStatus) {
   auto* content_settings_map = page_info_delegate->GetContentSettings();
   ASSERT_TRUE(content_settings_map);
   content_settings_map->SetContentSettingDefaultScope(
-      url, url, ContentSettingsType::BACKGROUND_SYNC, std::string(),
-      CONTENT_SETTING_BLOCK);
+      url, url, ContentSettingsType::BACKGROUND_SYNC, CONTENT_SETTING_BLOCK);
 
   // Check that |page_info_delegate| returns expected ContentSettingsType.
   EXPECT_EQ(page_info_delegate
@@ -76,11 +75,11 @@ IN_PROC_BROWSER_TEST_F(PageInfoBrowserTest, PermissionStatus) {
 }
 
 IN_PROC_BROWSER_TEST_F(PageInfoBrowserTest,
-                       TabSpecificContentSettingsDelegate) {
+                       PageSpecificContentSettingsDelegate) {
   std::unique_ptr<PageInfoDelegate> page_info_delegate =
       page_info::GetPageInfoClient()->CreatePageInfoDelegate(GetWebContents());
   ASSERT_TRUE(page_info_delegate);
-  EXPECT_TRUE(page_info_delegate->GetTabSpecificContentSettingsDelegate());
+  EXPECT_TRUE(page_info_delegate->GetPageSpecificContentSettingsDelegate());
 }
 
 IN_PROC_BROWSER_TEST_F(PageInfoBrowserTest, EmbedderNameSet) {

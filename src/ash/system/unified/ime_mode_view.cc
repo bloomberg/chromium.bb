@@ -14,6 +14,7 @@
 #include "ash/system/tray/tray_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 
 namespace ash {
@@ -23,6 +24,8 @@ ImeModeView::ImeModeView(Shelf* shelf) : TrayItemView(shelf) {
   CreateLabel();
   SetupLabelForTray(label());
   Update();
+  SetBorder(views::CreateEmptyBorder(kUnifiedTrayTextTopPadding, 0, 0,
+                                     kUnifiedTrayTextRightPadding));
 
   Shell::Get()->system_tray_notifier()->AddIMEObserver(this);
   Shell::Get()->system_tray_model()->locale()->AddObserver(this);
@@ -63,6 +66,10 @@ void ImeModeView::OnSessionStateChanged(session_manager::SessionState state) {
 
 const char* ImeModeView::GetClassName() const {
   return "ImeModeView";
+}
+
+void ImeModeView::HandleLocaleChange() {
+  Update();
 }
 
 void ImeModeView::Update() {

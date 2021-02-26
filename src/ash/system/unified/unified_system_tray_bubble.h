@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -82,12 +83,6 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Update bubble bounds and focus if necessary.
   void UpdateBubble();
 
-  // Update layer transform during expand / collapse animation. During
-  // animation, the height of the view changes, but resizing of the bubble is
-  // performance bottleneck. This method makes use of layer transform to avoid
-  // resizing of the bubble during animation.
-  void UpdateTransform();
-
   // Return the maximum height available for both the system tray and
   // the message center.
   int CalculateMaxHeight() const;
@@ -105,12 +100,15 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Called when the message center widget is activated.
   void OnMessageCenterActivated();
 
+  // Fire a notification that an accessibility event has occured on this object.
+  void NotifyAccessibilityEvent(ax::mojom::Event event, bool send_native_event);
+
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
   TrayBubbleView* GetBubbleView() const override;
   views::Widget* GetBubbleWidget() const override;
 
-  // ash::ScreenLayoutObserver:
+  // ScreenLayoutObserver:
   void OnDisplayConfigurationChanged() override;
 
   // views::WidgetObserver:

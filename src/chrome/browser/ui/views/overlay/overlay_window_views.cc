@@ -13,6 +13,9 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/overlay/back_to_tab_image_button.h"
 #include "chrome/browser/ui/views/overlay/close_image_button.h"
 #include "chrome/browser/ui/views/overlay/playback_image_button.h"
@@ -42,6 +45,13 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"  // nogncheck
 #include "ui/aura/window.h"
+#endif
+
+#if defined(OS_WIN)
+#include "chrome/browser/shell_integration_win.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/base/win/shell.h"
 #endif
 
 namespace {
@@ -80,7 +90,7 @@ OverlayWindowViews::WindowQuadrant GetCurrentWindowQuadrant(
   const gfx::Rect work_area =
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(
-              controller->GetInitiatorWebContents()->GetTopLevelNativeWindow())
+              controller->GetWebContents()->GetTopLevelNativeWindow())
           .work_area();
   const gfx::Point window_center = window_bounds.CenterPoint();
 
@@ -164,33 +174,24 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
 // OverlayWindow implementation of WidgetDelegate.
 class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
  public:
-  explicit OverlayWindowWidgetDelegate(views::Widget* widget)
-      : widget_(widget) {
-    DCHECK(widget_);
+  OverlayWindowWidgetDelegate() {
+    SetCanResize(true);
+    SetModalType(ui::MODAL_TYPE_NONE);
+    // While not shown, the title is still used to identify the window in the
+    // window switcher.
+    SetShowTitle(false);
+    SetTitle(IDS_PICTURE_IN_PICTURE_TITLE_TEXT);
+    SetOwnedByWidget(true);
   }
   ~OverlayWindowWidgetDelegate() override = default;
 
   // views::WidgetDelegate:
-  bool CanResize() const override { return true; }
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_NONE; }
-  base::string16 GetWindowTitle() const override {
-    // While the window title is not shown on the window itself, it is used to
-    // identify the window on the system tray.
-    return l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_TITLE_TEXT);
-  }
-  bool ShouldShowWindowTitle() const override { return false; }
-  void DeleteDelegate() override { delete this; }
-  views::Widget* GetWidget() override { return widget_; }
-  const views::Widget* GetWidget() const override { return widget_; }
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new OverlayWindowFrameView(widget);
+    return std::make_unique<OverlayWindowFrameView>(widget);
   }
 
  private:
-  // Owns OverlayWindowWidgetDelegate.
-  views::Widget* widget_;
-
   DISALLOW_COPY_AND_ASSIGN(OverlayWindowWidgetDelegate);
 };
 
@@ -212,11 +213,31 @@ std::unique_ptr<content::OverlayWindow> OverlayWindowViews::Create(
   params.remove_standard_frame = true;
   params.name = "PictureInPictureWindow";
   params.layer_type = ui::LAYER_NOT_DRAWN;
-  // Set WidgetDelegate for more control over |widget_|.
-  params.delegate = new OverlayWindowWidgetDelegate(overlay_window.get());
+  params.delegate = new OverlayWindowWidgetDelegate();
 
   overlay_window->Init(std::move(params));
   overlay_window->OnRootViewReady();
+
+#if defined(OS_WIN)
+  base::string16 app_user_model_id;
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(controller->GetWebContents());
+  if (browser) {
+    const base::FilePath& profile_path = browser->profile()->GetPath();
+    // Set the window app id to GetAppUserModelIdForApp if the original window
+    // is an app window, GetAppUserModelIdForBrowser if it's a browser window.
+    app_user_model_id =
+        browser->is_type_app()
+            ? shell_integration::win::GetAppUserModelIdForApp(
+                  base::UTF8ToWide(browser->app_name()), profile_path)
+            : shell_integration::win::GetAppUserModelIdForBrowser(profile_path);
+    if (!app_user_model_id.empty()) {
+      ui::win::SetAppIdForWindow(
+          app_user_model_id,
+          overlay_window->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+    }
+  }
+#endif  // defined(OS_WIN)
 
   return overlay_window;
 }
@@ -328,22 +349,57 @@ void OverlayWindowViews::SetUpViews() {
   auto window_background_view = std::make_unique<views::View>();
   auto video_view = std::make_unique<views::View>();
   auto controls_scrim_view = std::make_unique<views::View>();
-  auto close_controls_view = std::make_unique<views::CloseImageButton>(this);
+  auto close_controls_view =
+      std::make_unique<views::CloseImageButton>(base::BindRepeating(
+          [](OverlayWindowViews* overlay) {
+            overlay->controller_->Close(/*should_pause_video=*/true);
+            overlay->RecordButtonPressed(OverlayWindowControl::kClose);
+          },
+          base::Unretained(this)));
   auto back_to_tab_controls_view =
-      std::make_unique<views::BackToTabImageButton>(this);
+      std::make_unique<views::BackToTabImageButton>(base::BindRepeating(
+          [](OverlayWindowViews* overlay) {
+            overlay->controller_->CloseAndFocusInitiator();
+            overlay->RecordButtonPressed(OverlayWindowControl::kBackToTab);
+          },
+          base::Unretained(this)));
   auto previous_track_controls_view = std::make_unique<views::TrackImageButton>(
-      this, vector_icons::kMediaPreviousTrackIcon,
+      base::BindRepeating(
+          [](OverlayWindowViews* overlay) {
+            overlay->controller_->PreviousTrack();
+            overlay->RecordButtonPressed(OverlayWindowControl::kPreviousTrack);
+          },
+          base::Unretained(this)),
+      vector_icons::kMediaPreviousTrackIcon,
       l10n_util::GetStringUTF16(
           IDS_PICTURE_IN_PICTURE_PREVIOUS_TRACK_CONTROL_ACCESSIBLE_TEXT));
   auto play_pause_controls_view =
-      std::make_unique<views::PlaybackImageButton>(this);
+      std::make_unique<views::PlaybackImageButton>(base::BindRepeating(
+          [](OverlayWindowViews* overlay) {
+            overlay->TogglePlayPause();
+            overlay->RecordButtonPressed(OverlayWindowControl::kPlayPause);
+          },
+          base::Unretained(this)));
   auto next_track_controls_view = std::make_unique<views::TrackImageButton>(
-      this, vector_icons::kMediaNextTrackIcon,
+      base::BindRepeating(
+          [](OverlayWindowViews* overlay) {
+            overlay->controller_->NextTrack();
+            overlay->RecordButtonPressed(OverlayWindowControl::kNextTrack);
+          },
+          base::Unretained(this)),
+      vector_icons::kMediaNextTrackIcon,
       l10n_util::GetStringUTF16(
           IDS_PICTURE_IN_PICTURE_NEXT_TRACK_CONTROL_ACCESSIBLE_TEXT));
-  auto skip_ad_controls_view = std::make_unique<views::SkipAdLabelButton>(this);
+  auto skip_ad_controls_view =
+      std::make_unique<views::SkipAdLabelButton>(base::BindRepeating(
+          [](OverlayWindowViews* overlay) {
+            overlay->controller_->SkipAd();
+            overlay->RecordButtonPressed(OverlayWindowControl::kSkipAd);
+          },
+          base::Unretained(this)));
 #if defined(OS_CHROMEOS)
-  auto resize_handle_view = std::make_unique<views::ResizeHandleButton>(this);
+  auto resize_handle_view = std::make_unique<views::ResizeHandleButton>(
+      views::Button::PressedCallback());
 #endif
 
   window_background_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
@@ -490,8 +546,7 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
   GetBackToTabControlsLayer()->SetVisible(is_visible);
   previous_track_controls_view_->ToggleVisibility(is_visible &&
                                                   show_previous_track_button_);
-  play_pause_controls_view_->SetVisible(is_visible &&
-                                        !always_hide_play_pause_button_);
+  play_pause_controls_view_->SetVisible(is_visible && show_play_pause_button_);
   next_track_controls_view_->ToggleVisibility(is_visible &&
                                               show_next_track_button_);
 
@@ -545,7 +600,7 @@ void OverlayWindowViews::OnUpdateControlsBounds() {
   visible_controls_views.push_back(back_to_tab_controls_view_);
   if (show_previous_track_button_)
     visible_controls_views.push_back(previous_track_controls_view_);
-  if (!always_hide_play_pause_button_)
+  if (show_play_pause_button_)
     visible_controls_views.push_back(play_pause_controls_view_);
   if (show_next_track_button_)
     visible_controls_views.push_back(next_track_controls_view_);
@@ -709,11 +764,11 @@ void OverlayWindowViews::SetPlaybackState(PlaybackState playback_state) {
   play_pause_controls_view_->SetPlaybackState(playback_state);
 }
 
-void OverlayWindowViews::SetAlwaysHidePlayPauseButton(bool is_visible) {
-  if (always_hide_play_pause_button_ == !is_visible)
+void OverlayWindowViews::SetPlayPauseButtonVisibility(bool is_visible) {
+  if (show_play_pause_button_ == is_visible)
     return;
 
-  always_hide_play_pause_button_ = !is_visible;
+  show_play_pause_button_ = is_visible;
   UpdateControlsBounds();
 }
 
@@ -920,39 +975,6 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void OverlayWindowViews::ButtonPressed(views::Button* sender,
-                                       const ui::Event& event) {
-  if (sender == back_to_tab_controls_view_) {
-    controller_->CloseAndFocusInitiator();
-    RecordButtonPressed(OverlayWindowControl::kBackToTab);
-  }
-
-  if (sender == skip_ad_controls_view_) {
-    controller_->SkipAd();
-    RecordButtonPressed(OverlayWindowControl::kSkipAd);
-  }
-
-  if (sender == close_controls_view_) {
-    controller_->Close(true /* should_pause_video */);
-    RecordButtonPressed(OverlayWindowControl::kClose);
-  }
-
-  if (sender == play_pause_controls_view_) {
-    TogglePlayPause();
-    RecordButtonPressed(OverlayWindowControl::kPlayPause);
-  }
-
-  if (sender == next_track_controls_view_) {
-    controller_->NextTrack();
-    RecordButtonPressed(OverlayWindowControl::kNextTrack);
-  }
-
-  if (sender == previous_track_controls_view_) {
-    controller_->PreviousTrack();
-    RecordButtonPressed(OverlayWindowControl::kPreviousTrack);
-  }
-}
-
 void OverlayWindowViews::RecordTapGesture(OverlayWindowControl window_control) {
   UMA_HISTOGRAM_ENUMERATION("PictureInPictureWindow.TapGesture",
                             window_control);
@@ -1023,10 +1045,10 @@ ui::Layer* OverlayWindowViews::GetResizeHandleLayer() {
 
 gfx::Rect OverlayWindowViews::GetWorkAreaForWindow() const {
   return display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(native_widget()
-                                    ? GetNativeWindow()
-                                    : controller_->GetInitiatorWebContents()
-                                          ->GetTopLevelNativeWindow())
+      ->GetDisplayNearestWindow(
+          native_widget() && IsVisible()
+              ? GetNativeWindow()
+              : controller_->GetWebContents()->GetTopLevelNativeWindow())
       .work_area();
 }
 
@@ -1036,6 +1058,9 @@ gfx::Size OverlayWindowViews::UpdateMaxSize(const gfx::Rect& work_area,
 
   if (!native_widget())
     return window_size;
+
+  // native_widget() is required for OnSizeConstraintsChanged.
+  OnSizeConstraintsChanged();
 
   if (window_size.width() <= max_size_.width() &&
       window_size.height() <= max_size_.height()) {

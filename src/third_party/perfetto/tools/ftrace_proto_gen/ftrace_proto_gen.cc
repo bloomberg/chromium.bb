@@ -59,8 +59,10 @@ using base::StartsWith;
 std::string EventNameToProtoFieldName(const std::string& group,
                                       const std::string& name) {
   std::string event_name = (name == "0") ? "zero" : name;
-  if (group == "sde") {
-    event_name = "sde_" + event_name;
+  // These groups have events where the name alone conflicts with an existing
+  // proto:
+  if (group == "sde" || group == "g2d" || group == "dpu") {
+    event_name = group + "_" + event_name;
   }
   return event_name;
 }
@@ -70,12 +72,12 @@ std::string EventNameToProtoName(const std::string& group,
   return ToCamelCase(EventNameToProtoFieldName(group, name)) + "FtraceEvent";
 }
 
-std::vector<FtraceEventName> ReadWhitelist(const std::string& filename) {
+std::vector<FtraceEventName> ReadAllowList(const std::string& filename) {
   std::string line;
   std::vector<FtraceEventName> lines;
   std::ifstream fin(filename, std::ios::in);
   if (!fin) {
-    fprintf(stderr, "failed to open whitelist %s\n", filename.c_str());
+    fprintf(stderr, "failed to open event list %s\n", filename.c_str());
     return lines;
   }
   while (std::getline(fin, line)) {
@@ -116,7 +118,7 @@ bool GenerateProto(const std::string& group,
   return true;
 }
 
-void GenerateFtraceEventProto(const std::vector<FtraceEventName>& raw_whitelist,
+void GenerateFtraceEventProto(const std::vector<FtraceEventName>& raw_eventlist,
                               const std::set<std::string>& groups,
                               std::ostream* fout) {
   *fout << kCopyrightHeader;
@@ -148,7 +150,7 @@ void GenerateFtraceEventProto(const std::vector<FtraceEventName>& raw_whitelist,
 )";
 
   int i = 3;
-  for (const FtraceEventName& event : raw_whitelist) {
+  for (const FtraceEventName& event : raw_eventlist) {
     if (!event.valid()) {
       *fout << "    // removed field with id " << i << ";\n";
       ++i;
@@ -221,7 +223,7 @@ std::string SingleEventInfo(perfetto::Proto proto,
   return s;
 }
 
-// This will generate the event_info.cc file for the whitelisted protos.
+// This will generate the event_info.cc file for the listed protos.
 void GenerateEventInfo(const std::vector<std::string>& events_info,
                        std::ostream* fout) {
   std::string s = kCopyrightHeader;

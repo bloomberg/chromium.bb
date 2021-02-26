@@ -67,7 +67,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
       return keyframes_;
     }
 
-    void Trace(Visitor* visitor) { visitor->Trace(keyframes_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(keyframes_); }
 
    private:
     void RemoveRedundantKeyframes();
@@ -157,11 +157,18 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
     return has_revert_;
   }
 
+  bool HasNonVariableProperty() const;
+
   bool IsTransformRelatedEffect() const override;
+
+  // Update properties used in resolving logical properties. Returns true if
+  // one or more keyframes changed as a result of the update.
+  bool SetLogicalPropertyResolutionContext(TextDirection text_direction,
+                                           WritingMode writing_mode);
 
   virtual KeyframeEffectModelBase* Clone() = 0;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   KeyframeEffectModelBase(CompositeOperation composite,

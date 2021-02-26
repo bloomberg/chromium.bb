@@ -9,15 +9,18 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
+#include "base/util/type_safety/pass_key.h"
 #include "components/performance_manager/graph/node_attached_data.h"
 #include "components/performance_manager/graph/node_base.h"
 #include "components/performance_manager/graph/properties.h"
 #include "components/performance_manager/public/graph/process_node.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
+#include "components/performance_manager/public/mojom/v8_contexts.mojom.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -43,6 +46,8 @@ class ProcessNodeImpl
       public TypedNodeBase<ProcessNodeImpl, ProcessNode, ProcessNodeObserver>,
       public mojom::ProcessCoordinationUnit {
  public:
+  using PassKey = util::PassKey<ProcessNodeImpl>;
+
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kProcess; }
 
   ProcessNodeImpl(content::ProcessType process_type,
@@ -53,8 +58,14 @@ class ProcessNodeImpl
   void Bind(mojo::PendingReceiver<mojom::ProcessCoordinationUnit> receiver);
 
   // mojom::ProcessCoordinationUnit implementation:
-  void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
   void SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low) override;
+  void OnV8ContextCreated(
+      mojom::V8ContextDescriptionPtr description,
+      mojom::IframeAttributionDataPtr iframe_attribution_data) override;
+  void OnV8ContextDetached(
+      const blink::V8ContextToken& v8_context_token) override;
+  void OnV8ContextDestroyed(
+      const blink::V8ContextToken& v8_context_token) override;
 
   void SetProcessExitStatus(int32_t exit_status);
   void SetProcess(base::Process process, base::Time launch_time);
@@ -73,7 +84,7 @@ class ProcessNodeImpl
 
   // Returns the render process id (equivalent to RenderProcessHost::GetID()),
   // or ChildProcessHost::kInvalidUniqueID if this is not a renderer.
-  int GetRenderProcessId() const;
+  RenderProcessHostId GetRenderProcessId() const;
 
   // If this process is associated with only one page, returns that page.
   // Otherwise, returns nullptr.
@@ -87,10 +98,6 @@ class ProcessNodeImpl
   const base::Process& process() const { return process_.value(); }
   base::Time launch_time() const { return launch_time_; }
   base::Optional<int32_t> exit_status() const { return exit_status_; }
-
-  base::TimeDelta expected_task_queueing_duration() const {
-    return expected_task_queueing_duration_.value();
-  }
 
   bool main_thread_task_load_is_low() const {
     return main_thread_task_load_is_low_.value();
@@ -118,6 +125,12 @@ class ProcessNodeImpl
 
   void OnAllFramesInProcessFrozenForTesting() { OnAllFramesInProcessFrozen(); }
 
+  base::WeakPtr<ProcessNodeImpl> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+  static PassKey CreatePassKeyForTesting() { return PassKey(); }
+
  protected:
   void SetProcessImpl(base::Process process,
                       base::ProcessId process_id,
@@ -137,10 +150,10 @@ class ProcessNodeImpl
   base::Optional<int32_t> GetExitStatus() const override;
   bool VisitFrameNodes(const FrameNodeVisitor& visitor) const override;
   base::flat_set<const FrameNode*> GetFrameNodes() const override;
-  base::TimeDelta GetExpectedTaskQueueingDuration() const override;
   bool GetMainThreadTaskLoadIsLow() const override;
   uint64_t GetPrivateFootprintKb() const override;
   uint64_t GetResidentSetKb() const override;
+  RenderProcessHostId GetRenderProcessHostId() const override;
   const RenderProcessHostProxy& GetRenderProcessHostProxy() const override;
   base::TaskPriority GetPriority() const override;
 
@@ -166,10 +179,6 @@ class ProcessNodeImpl
   const content::ProcessType process_type_;
   const RenderProcessHostProxy render_process_host_proxy_;
 
-  ObservedProperty::NotifiesAlways<
-      base::TimeDelta,
-      &ProcessNodeObserver::OnExpectedTaskQueueingDurationSample>
-      expected_task_queueing_duration_;
   ObservedProperty::NotifiesOnlyOnChanges<
       bool,
       &ProcessNodeObserver::OnMainThreadTaskLoadIsLow>
@@ -192,6 +201,8 @@ class ProcessNodeImpl
 
   // Inline storage for ProcessPriorityAggregator user data.
   std::unique_ptr<NodeAttachedData> process_priority_data_;
+
+  base::WeakPtrFactory<ProcessNodeImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProcessNodeImpl);
 };

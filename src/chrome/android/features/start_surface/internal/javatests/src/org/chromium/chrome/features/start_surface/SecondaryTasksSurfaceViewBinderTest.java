@@ -12,18 +12,18 @@ import static org.junit.Assert.assertNull;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SECONDARY_SURFACE_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_STACK_TAB_SWITCHER;
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_MARGIN;
 
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -34,7 +34,8 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class SecondaryTasksSurfaceViewBinderTest extends DummyUiActivityTestCase {
     private ViewGroup mParentView;
-    private View mTasksSurfaceView;
+    private ViewGroup mTasksSurfaceView;
+    private View mTopToolbarPlaceholderView;
     private PropertyModel mPropertyModel;
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private PropertyModelChangeProcessor mPropertyModelChangeProcessor;
@@ -47,13 +48,16 @@ public class SecondaryTasksSurfaceViewBinderTest extends DummyUiActivityTestCase
             // Note that the specific type of the parent view and tasks surface view do not matter
             // for the SecondaryTasksSurfaceViewBinderTest.
             mParentView = new FrameLayout(getActivity());
-            mTasksSurfaceView = new View(getActivity());
+            mTasksSurfaceView = new FrameLayout(getActivity());
+            mTopToolbarPlaceholderView = new View(getActivity());
+            mTasksSurfaceView.addView(mTopToolbarPlaceholderView);
             getActivity().setContentView(mParentView);
         });
 
         mPropertyModel = new PropertyModel(StartSurfaceProperties.ALL_KEYS);
         mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(mPropertyModel,
-                new TasksSurfaceViewBinder.ViewHolder(mParentView, mTasksSurfaceView),
+                new TasksSurfaceViewBinder.ViewHolder(
+                        mParentView, mTasksSurfaceView, mTopToolbarPlaceholderView),
                 SecondaryTasksSurfaceViewBinder::bind);
     }
 
@@ -144,12 +148,12 @@ public class SecondaryTasksSurfaceViewBinderTest extends DummyUiActivityTestCase
     @Test
     @UiThreadTest
     @SmallTest
-    public void testSetVisibilityWithTopBar() {
+    public void testSetVisibilityWithTopMargin() {
         assertFalse(mPropertyModel.get(IS_SHOWING_OVERVIEW));
         assertFalse(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE));
         assertFalse(mPropertyModel.get(IS_SHOWING_STACK_TAB_SWITCHER));
         assertNull(mTasksSurfaceView.getParent());
-        mPropertyModel.set(TOP_BAR_HEIGHT, 20);
+        mPropertyModel.set(TOP_MARGIN, 20);
 
         mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
         assertNull(mTasksSurfaceView.getParent());
@@ -158,8 +162,8 @@ public class SecondaryTasksSurfaceViewBinderTest extends DummyUiActivityTestCase
         mPropertyModel.set(IS_SECONDARY_SURFACE_VISIBLE, true);
         assertNotNull(mTasksSurfaceView.getParent());
         assertEquals(mTasksSurfaceView.getVisibility(), View.VISIBLE);
-        MarginLayoutParams layoutParams = (MarginLayoutParams) mTasksSurfaceView.getLayoutParams();
-        assertEquals(20, layoutParams.topMargin);
+        ViewGroup.LayoutParams layoutParams = mTopToolbarPlaceholderView.getLayoutParams();
+        assertEquals(20, layoutParams.height);
 
         mPropertyModel.set(IS_SECONDARY_SURFACE_VISIBLE, false);
         assertNotNull(mTasksSurfaceView.getParent());
@@ -173,23 +177,22 @@ public class SecondaryTasksSurfaceViewBinderTest extends DummyUiActivityTestCase
     @Test
     @UiThreadTest
     @SmallTest
-    public void testSetTopBarHeight() {
+    public void testSetTopMargin() {
         assertFalse(mPropertyModel.get(IS_SHOWING_OVERVIEW));
         assertFalse(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE));
         assertFalse(mPropertyModel.get(IS_SHOWING_STACK_TAB_SWITCHER));
-        assertNull(mTasksSurfaceView.getParent());
 
-        // Setting the top bar height shouldn't cause a NullPointerException when the layout params
-        // are null, since this should be handled in the *ViewBinder.
-        mPropertyModel.set(TOP_BAR_HEIGHT, 20);
+        // Setting the top margin shouldn't cause a NullPointerException when the layout params are
+        // null, since this should be handled in the *ViewBinder.
+        mPropertyModel.set(TOP_MARGIN, 20);
         mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
         mPropertyModel.set(IS_SECONDARY_SURFACE_VISIBLE, true);
 
-        MarginLayoutParams layoutParams = (MarginLayoutParams) mTasksSurfaceView.getLayoutParams();
-        assertEquals("Top bar height isn't initialized correctly.", 20, layoutParams.topMargin);
+        ViewGroup.LayoutParams layoutParams = mTopToolbarPlaceholderView.getLayoutParams();
+        assertEquals("Top margin isn't initialized correctly.", 20, layoutParams.height);
 
-        layoutParams = (MarginLayoutParams) mTasksSurfaceView.getLayoutParams();
-        mPropertyModel.set(TOP_BAR_HEIGHT, 40);
-        assertEquals("Wrong top bar height.", 40, layoutParams.topMargin);
+        layoutParams = mTopToolbarPlaceholderView.getLayoutParams();
+        mPropertyModel.set(TOP_MARGIN, 40);
+        assertEquals("Wrong top margin.", 40, layoutParams.height);
     }
 }

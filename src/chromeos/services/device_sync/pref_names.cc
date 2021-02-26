@@ -68,6 +68,11 @@ const char kCryptAuthDeviceRegistry[] = "cryptauth.device_registry";
 // populate and persist the CryptAuthKeyRegistry.
 const char kCryptAuthKeyRegistry[] = "cryptauth.key_registry";
 
+// (CryptAuth v2) The hash of the last enrolled ClientAppMetadata. If this hash
+// changes, a re-enrollment should occur.
+const char kCryptAuthLastEnrolledClientAppMetadataHash[] =
+    "cryptauth.enrollment.last_enrolled_client_app_metadata_hash";
+
 // (CryptAuth v2) The encrypted and unencrypted local device
 // CryptAuthBetterTogetherMetadata, along with the encrypting group public key,
 // sent during the most recent successful SyncMetadata call. We don't want to
@@ -80,6 +85,11 @@ const char kCryptAuthLastSyncedGroupPublicKey[] =
     "cryptauth.device_sync.last_synced_group_public_key";
 const char kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata[] =
     "cryptauth.device_sync.last_synced_unencrypted_local_device_metadata";
+
+// (CryptAuth v2) The Bluetooth address provided during the most recent
+// DeviceSync attempt.
+const char kCryptAuthBluetoothAddressProvidedDuringLastSync[] =
+    "cryptauth.device_sync.last_bluetooth_address";
 
 // (CryptAuth v2) The most recent ClientDirective sent to the
 // CryptAuthScheduler.

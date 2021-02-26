@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/crostini/crostini_ansible_software_config_view.h"
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -57,7 +57,7 @@ class CrostiniAnsibleSoftwareConfigViewBrowserTest
   }
 
   // A new Widget was created in ShowUi() or since the last VerifyUi().
-  bool HasView() { return VerifyUi() && ActiveView() != nullptr; }
+  bool HasView() { return VerifyUi() && ActiveView(); }
 
   // No new Widget was created in ShowUi() or since last VerifyUi().
   bool HasNoView() {

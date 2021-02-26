@@ -47,7 +47,7 @@ FrameResourceFetcherProperties::FrameResourceFetcherProperties(
               *document.domWindow())),
       web_bundle_physical_url_(document_loader.WebBundlePhysicalUrl()) {}
 
-void FrameResourceFetcherProperties::Trace(Visitor* visitor) {
+void FrameResourceFetcherProperties::Trace(Visitor* visitor) const {
   visitor->Trace(document_loader_);
   visitor->Trace(document_);
   visitor->Trace(fetch_client_settings_object_);
@@ -82,6 +82,18 @@ bool FrameResourceFetcherProperties::IsPaused() const {
   LocalFrame* frame = document_->GetFrame();
   DCHECK(frame);
   return frame->GetPage()->Paused();
+}
+
+WebURLLoader::DeferType FrameResourceFetcherProperties::DeferType() const {
+  LocalFrame* frame = document_->GetFrame();
+  DCHECK(frame);
+  return frame->GetLoadDeferType();
+}
+
+bool FrameResourceFetcherProperties::IsLoadDeferred() const {
+  LocalFrame* frame = document_->GetFrame();
+  DCHECK(frame);
+  return frame->IsLoadDeferred();
 }
 
 bool FrameResourceFetcherProperties::IsLoadComplete() const {

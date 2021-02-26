@@ -8,13 +8,15 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/i18n/message_formatter.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/no_destructor.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
@@ -28,9 +30,9 @@
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using device::HidDeviceFilter;
 using device::mojom::UsbDeviceFilterPtr;
@@ -119,7 +121,7 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
       return;
 
     auto device_info = std::make_unique<UsbDeviceInfo>(device.Clone());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     auto* device_manager = UsbDeviceManager::Get(browser_context());
     DCHECK(device_manager);
     device_manager->CheckAccess(
@@ -128,7 +130,7 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
                        std::move(device_info)));
 #else
     AddCheckedDevice(std::move(device_info), true);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
   // extensions::UsbDeviceManager::Observer implementation
@@ -256,14 +258,14 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     if (HasUnprotectedCollections(*device) &&
         (filters_.empty() || HidDeviceFilter::MatchesAny(*device, filters_))) {
       auto device_info = std::make_unique<HidDeviceInfo>(std::move(device));
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       chromeos::PermissionBrokerClient::Get()->CheckPathAccess(
           device_info.get()->device()->device_node,
           base::BindOnce(&HidDevicePermissionsPrompt::AddCheckedDevice, this,
                          std::move(device_info)));
 #else
       AddCheckedDevice(std::move(device_info), true);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     }
   }
 

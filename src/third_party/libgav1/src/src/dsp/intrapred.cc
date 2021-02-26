@@ -757,7 +757,7 @@ using Defs8bpp = IntraPredBppDefs<8, uint8_t>;
   dsp->cfl_subsamplers[kTransformSize##W##x##H][kSubsamplingType422] = \
       CflSubsampler_C<W, H, BITDEPTH, PIXEL, 1, 0>;                    \
   dsp->cfl_subsamplers[kTransformSize##W##x##H][kSubsamplingType420] = \
-      CflSubsampler_C<W, H, BITDEPTH, PIXEL, 1, 1>;
+      CflSubsampler_C<W, H, BITDEPTH, PIXEL, 1, 1>
 
 #define INIT_CFL_INTRAPREDICTORS(BITDEPTH, PIXEL)       \
   INIT_CFL_INTRAPREDICTOR_WxH(4, 4, BITDEPTH, PIXEL);   \

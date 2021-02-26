@@ -20,6 +20,7 @@ from telemetry.internal.browser import browser
 from telemetry.internal.browser import possible_browser
 from telemetry.internal.platform import desktop_device
 from telemetry.internal.util import binary_manager
+from telemetry.internal.util import local_first_binary_manager
 # This is a workaround for https://goo.gl/1tGNgd
 from telemetry.internal.util import path as path_module
 
@@ -31,6 +32,23 @@ class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
 
   def __init__(self, browser_type, finder_options, executable, flash_path,
                is_content_shell, browser_directory, is_local_build=False):
+    """
+    Args:
+      browser_type: A string representing what type of browser this is, e.g.
+          'stable' or 'debug'.
+      finder_options: A browser_options.BrowserFinderOptions instance containing
+          parsed arguments.
+      executable: A string containing a path to the browser executable to use.
+      flash_path: A string containing a path to the version of Flash to use. Can
+          be None if Flash is not going to be used.
+      is_content_shell: A boolean denoting if this browser is a content shell
+          instead of a full browser.
+      browser_directory: A string containing a path to the directory where
+          the browser is installed. This is typically the directory containing
+          |executable|, but not guaranteed.
+      is_local_build: Whether the browser was built locally (as opposed to
+          being downloaded).
+    """
     del finder_options
     target_os = sys.platform.lower()
     super(PossibleDesktopBrowser, self).__init__(
@@ -45,6 +63,12 @@ class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
     self._profile_directory = None
     self._extra_browser_args = set()
     self.is_local_build = is_local_build
+    # If the browser was locally built, then the chosen browser directory
+    # should be the same as the build directory. If the browser wasn't
+    # locally built, then passing in a non-None build directory is fine
+    # since a build directory without any useful debug artifacts is
+    # equivalent to no build directory at all.
+    self._build_dir = self._browser_directory
 
   def __repr__(self):
     return 'PossibleDesktopBrowser(type=%s, executable=%s, flash=%s)' % (
@@ -123,6 +147,13 @@ class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
       self._profile_directory = None
 
   def Create(self):
+    # Init the LocalFirstBinaryManager if this is the first time we're creating
+    # a browser.
+    if local_first_binary_manager.LocalFirstBinaryManager.NeedsInit():
+      local_first_binary_manager.LocalFirstBinaryManager.Init(
+          self._build_dir, self._local_executable,
+          self.platform.GetOSName(), self.platform.GetArchName())
+
     if self._flash_path and not os.path.exists(self._flash_path):
       logging.warning(
           'Could not find Flash at %s. Continuing without Flash.\n'
@@ -142,7 +173,8 @@ class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
         browser_backend = desktop_browser_backend.DesktopBrowserBackend(
             self._platform_backend, self._browser_options,
             self._browser_directory, self._profile_directory,
-            self._local_executable, self._flash_path, self._is_content_shell)
+            self._local_executable, self._flash_path, self._is_content_shell,
+            build_dir=self._build_dir)
         return browser.Browser(
             browser_backend, self._platform_backend, startup_args)
       except Exception: # pylint: disable=broad-except

@@ -65,6 +65,18 @@ class PLATFORM_EXPORT FetchClientSettingsObject
   // https://html.spec.whatwg.org/C/#concept-settings-object-referrer-policy
   virtual network::mojom::ReferrerPolicy GetReferrerPolicy() const = 0;
 
+  // |GetReferrerPolicyDisregardingMetaTagsContainingLists|
+  // returns the policy that would have been set had we been ignoring all <meta
+  // name=referrer> tags with values comma-separated lists of policies. This
+  // allows histogramming the proportion of requests that would end up with
+  // different referrers were these tags ignored, helping interpret the impact
+  // of removing support for them (which is inconsistent with the spec and other
+  // engines).
+  virtual base::Optional<network::mojom::ReferrerPolicy>
+  GetReferrerPolicyDisregardingMetaTagsContainingLists() const {
+    return base::nullopt;
+  }
+
   // "referrerURL" used in the "Determine request's Referrer" algorithm:
   // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
   virtual const String GetOutgoingReferrer() const = 0;
@@ -89,7 +101,7 @@ class PLATFORM_EXPORT FetchClientSettingsObject
   virtual const InsecureNavigationsSet& GetUpgradeInsecureNavigationsSet()
       const = 0;
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 };
 
 }  // namespace blink

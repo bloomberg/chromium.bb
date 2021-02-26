@@ -14,14 +14,13 @@ namespace mojom {
 class InterfaceFactory;
 }
 
-class MojoCdmFactory : public CdmFactory {
+class MojoCdmFactory final : public CdmFactory {
  public:
   explicit MojoCdmFactory(media::mojom::InterfaceFactory* interface_factory);
   ~MojoCdmFactory() final;
 
   // CdmFactory implementation.
   void Create(const std::string& key_system,
-              const url::Origin& security_origin,
               const CdmConfig& cdm_config,
               const SessionMessageCB& session_message_cb,
               const SessionClosedCB& session_closed_cb,

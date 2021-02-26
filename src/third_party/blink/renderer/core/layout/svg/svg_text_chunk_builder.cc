@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/layout/api/line_layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/line/svg_inline_text_box.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 
@@ -176,8 +177,7 @@ void SVGTextChunkBuilder::HandleTextChunk(BoxListConstIterator box_start,
   if (SVGTextContentElement* text_content_element =
           SVGTextContentElement::ElementFromLineLayoutItem(
               text_line_layout.Parent())) {
-    length_adjust =
-        text_content_element->lengthAdjust()->CurrentValue()->EnumValue();
+    length_adjust = text_content_element->lengthAdjust()->CurrentEnumValue();
 
     SVGLengthContext length_context(text_content_element);
     if (text_content_element->TextLengthIsSpecifiedByUser())

@@ -11,6 +11,7 @@
 
 #include "ash/login/ui/hover_notifier.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/button.h"
@@ -31,11 +32,14 @@ namespace {
 
 constexpr SkColor kMenuBackgroundColor = SkColorSetRGB(0x3C, 0x40, 0x43);
 
-class MenuItemView : public views::Button, public views::ButtonListener {
+class MenuItemView : public views::Button {
  public:
   MenuItemView(const LoginMenuView::Item& item,
                const LoginMenuView::OnHighlight& on_highlight)
-      : views::Button(this), item_(item), on_highlight_(on_highlight) {
+      : views::Button(base::BindRepeating(&MenuItemView::ButtonPressed,
+                                          base::Unretained(this))),
+        item_(item),
+        on_highlight_(on_highlight) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal));
@@ -49,7 +53,8 @@ class MenuItemView : public views::Button, public views::ButtonListener {
     AddChildView(std::move(spacing));
 
     auto label = std::make_unique<views::Label>(base::UTF8ToUTF16(item.title));
-    label->SetEnabledColor(SK_ColorWHITE);
+    label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextColorPrimary));
     label->SetSubpixelRenderingEnabled(false);
     label->SetAutoColorReadabilityEnabled(false);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -71,15 +76,6 @@ class MenuItemView : public views::Button, public views::ButtonListener {
     return GetPreferredSize().height();
   }
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    DCHECK(sender == this);
-    if (item_.is_group)
-      return;
-
-    on_highlight_.Run(true /*by_selection*/);
-  }
-
   void OnHover(bool has_hover) {
     if (has_hover && !item_.is_group)
       RequestFocus();
@@ -93,6 +89,11 @@ class MenuItemView : public views::Button, public views::ButtonListener {
   const LoginMenuView::Item& item() const { return item_; }
 
  private:
+  void ButtonPressed() {
+    if (!item_.is_group)
+      on_highlight_.Run(true /*by_selection*/);
+  }
+
   const LoginMenuView::Item item_;
   const LoginMenuView::OnHighlight on_highlight_;
   std::unique_ptr<HoverNotifier> hover_notifier_;

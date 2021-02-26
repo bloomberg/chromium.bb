@@ -5,12 +5,12 @@
 #include "ash/system/tray/tray_utils.h"
 
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/controls/label.h"
 
@@ -20,16 +20,16 @@ void SetupLabelForTray(views::Label* label) {
   // The text is drawn on an transparent bg, so we must disable subpixel
   // rendering.
   label->SetSubpixelRenderingEnabled(false);
+  label->SetAutoColorReadabilityEnabled(false);
   label->SetFontList(gfx::FontList().Derive(
       kTrayTextFontSizeIncrease, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
 }
 
 SkColor TrayIconColor(session_manager::SessionState session_state) {
-  const bool light_icon = session_state == session_manager::SessionState::OOBE;
+  if (session_state == session_manager::SessionState::OOBE)
+    return kIconColorInOobe;
   return AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconPrimary,
-      light_icon ? AshColorProvider::AshColorMode::kLight
-                 : AshColorProvider::AshColorMode::kDark);
+      AshColorProvider::ContentLayerType::kIconColorPrimary);
 }
 
 gfx::Insets GetTrayBubbleInsets() {
@@ -55,9 +55,6 @@ gfx::Insets GetTrayBubbleInsets() {
   if (!is_bottom_alignment)
     return insets;
 
-  if (!chromeos::switches::ShouldShowShelfHotseat())
-    return insets;
-
   int height_compensation = kTrayBubbleInsetHotseatCompensation;
   switch (shelf->GetBackgroundType()) {
     case ShelfBackgroundType::kInApp:
@@ -75,6 +72,25 @@ gfx::Insets GetTrayBubbleInsets() {
   }
 
   insets.set_bottom(insets.bottom() + height_compensation);
+  return insets;
+}
+
+gfx::Insets GetSecondaryBubbleInsets() {
+  Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
+  gfx::Insets insets;
+
+  switch (shelf->alignment()) {
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
+      insets.set_bottom(kUnifiedMenuPadding);
+      break;
+    case ShelfAlignment::kLeft:
+      insets.set_left(kUnifiedMenuPadding);
+      break;
+    case ShelfAlignment::kRight:
+      insets.set_right(kUnifiedMenuPadding);
+      break;
+  }
   return insets;
 }
 

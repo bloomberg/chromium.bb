@@ -61,11 +61,20 @@ struct ApplyViewportChangesArgs {
 
 using ManipulationInfo = uint32_t;
 constexpr ManipulationInfo kManipulationInfoNone = 0;
-constexpr ManipulationInfo kManipulationInfoHasScrolledByWheel = 1 << 0;
-constexpr ManipulationInfo kManipulationInfoHasScrolledByTouch = 1 << 1;
-constexpr ManipulationInfo kManipulationInfoHasScrolledByPrecisionTouchPad =
-    1 << 2;
-constexpr ManipulationInfo kManipulationInfoHasPinchZoomed = 1 << 3;
+constexpr ManipulationInfo kManipulationInfoWheel = 1 << 0;
+constexpr ManipulationInfo kManipulationInfoTouch = 1 << 1;
+constexpr ManipulationInfo kManipulationInfoPrecisionTouchPad = 1 << 2;
+constexpr ManipulationInfo kManipulationInfoPinchZoom = 1 << 3;
+
+struct PaintBenchmarkResult {
+  double record_time_ms = 0;
+  double record_time_caching_disabled_ms = 0;
+  double record_time_subsequence_caching_disabled_ms = 0;
+  double record_time_partial_invalidation_ms = 0;
+  double raster_invalidation_and_convert_time_ms = 0;
+  double paint_artifact_compositor_update_time_ms = 0;
+  size_t painter_memory_usage = 0;
+};
 
 // A LayerTreeHost is bound to a LayerTreeHostClient. The main rendering
 // loop (in ProxyMain or SingleThreadProxy) calls methods on the
@@ -101,6 +110,9 @@ class LayerTreeHostClient {
   virtual void WillUpdateLayers() = 0;
   virtual void DidUpdateLayers() = 0;
 
+  virtual void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) = 0;
   // Notification that the proxy started or stopped deferring main frame updates
   virtual void OnDeferMainFrameUpdatesChanged(bool) = 0;
 
@@ -169,6 +181,9 @@ class LayerTreeHostClient {
   // RecordEndOfFrameMetrics.
   virtual std::unique_ptr<BeginMainFrameMetrics> GetBeginMainFrameMetrics() = 0;
   virtual void NotifyThroughputTrackerResults(CustomTrackerResults results) = 0;
+
+  virtual void RunPaintBenchmark(int repeat_count,
+                                 PaintBenchmarkResult& result) {}
 
  protected:
   virtual ~LayerTreeHostClient() = default;

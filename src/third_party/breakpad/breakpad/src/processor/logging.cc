@@ -47,8 +47,8 @@
 
 namespace google_breakpad {
 
-LogStream::LogStream(std::ostream &stream, Severity severity,
-                     const char *file, int line)
+LogStream::LogStream(std::ostream& stream, Severity severity,
+                     const char* file, int line)
     : stream_(stream) {
   time_t clock;
   time(&clock);
@@ -61,7 +61,7 @@ LogStream::LogStream(std::ostream &stream, Severity severity,
   char time_string[20];
   strftime(time_string, sizeof(time_string), "%Y-%m-%d %H:%M:%S", &tm_struct);
 
-  const char *severity_string = "UNKNOWN_SEVERITY";
+  const char* severity_string = "UNKNOWN_SEVERITY";
   switch (severity) {
     case SEVERITY_INFO:
       severity_string = "INFO";
@@ -100,7 +100,7 @@ string HexString(int number) {
   return string(buffer);
 }
 
-int ErrnoString(string *error_string) {
+int ErrnoString(string* error_string) {
   assert(error_string);
 
   // strerror isn't necessarily thread-safe.  strerror_r would be preferrable,

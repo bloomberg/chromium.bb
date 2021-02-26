@@ -10,7 +10,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
@@ -531,9 +531,6 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
 
   service_->UpdatePrefetchProxyHosts(
       GetPrefetchProxyHosts(config.prefetch_proxy_config()));
-
-  service_->SetIgnoreLongTermBlackListRules(
-      config.ignore_long_term_black_list_rules());
 
   request_options_->SetSecureSession(config.session_key());
   remote_config_applied_ = true;

@@ -21,7 +21,6 @@ class MojoWatcher final : public ScriptWrappable,
                           public ActiveScriptWrappable<MojoWatcher>,
                           public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MojoWatcher);
 
  public:
   static MojoWatcher* Create(mojo::Handle,
@@ -34,7 +33,7 @@ class MojoWatcher final : public ScriptWrappable,
 
   MojoResult cancel();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // ActiveScriptWrappable
   bool HasPendingActivity() const final;

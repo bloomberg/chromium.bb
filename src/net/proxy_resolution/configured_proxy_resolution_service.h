@@ -171,8 +171,7 @@ class NET_EXPORT ConfiguredProxyResolutionService
   void ForceReloadProxyConfig();
 
   // ProxyResolutionService
-  std::unique_ptr<base::DictionaryValue> GetProxyNetLogValues(
-      int info_sources) override;
+  base::Value GetProxyNetLogValues() override;
 
   // ProxyResolutionService
   bool CastToConfiguredProxyResolutionService(
@@ -362,9 +361,6 @@ class NET_EXPORT ConfiguredProxyResolutionService
   // These are "optional" as their value remains unset while being calculated.
   base::Optional<ProxyConfigWithAnnotation> fetched_config_;
   base::Optional<ProxyConfigWithAnnotation> config_;
-
-  // The time when the proxy configuration was last read from the system.
-  base::TimeTicks config_last_update_time_;
 
   // Map of the known bad proxies and the information about the retry time.
   ProxyRetryInfoMap proxy_retry_info_;

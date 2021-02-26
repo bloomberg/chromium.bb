@@ -16,9 +16,12 @@
 #import "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
+#import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
+#import "ios/chrome/browser/tabs/closing_web_state_observer_browser_agent.h"
 #include "ios/chrome/browser/tabs/synced_window_delegate_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
+#include "ios/chrome/browser/web_state_list/session_metrics.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_metrics_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
@@ -41,6 +44,9 @@ void AttachBrowserAgents(Browser* browser) {
   UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser);
   AppLauncherBrowserAgent::CreateForBrowser(browser);
 
+  ClosingWebStateObserverBrowserAgent::CreateForBrowser(browser);
+  SnapshotBrowserAgent::CreateForBrowser(browser);
+
   // Send Tab To Self is non-OTR only.
   if (!browser->GetBrowserState()->IsOffTheRecord())
     SendTabToSelfBrowserAgent::CreateForBrowser(browser);
@@ -55,7 +61,9 @@ void AttachBrowserAgents(Browser* browser) {
   // TabUsageRecorderBrowserAgent and WebStateListMetricsBrowserAgent observe
   // the SessionRestorationBrowserAgent, so they should be created after the the
   // SessionRestorationBrowserAgent is created.
-  WebStateListMetricsBrowserAgent::CreateForBrowser(browser);
+  WebStateListMetricsBrowserAgent::CreateForBrowser(
+      browser, SessionMetrics::FromBrowserState(browser->GetBrowserState()));
+
   // Normal browser states are the only ones to get tab usage recorder.
   if (!browser->GetBrowserState()->IsOffTheRecord())
     TabUsageRecorderBrowserAgent::CreateForBrowser(browser);

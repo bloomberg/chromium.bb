@@ -4,7 +4,7 @@
 
 #include "chrome/browser/web_applications/pending_app_registration_task.h"
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
@@ -12,23 +12,24 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "url/url_constants.h"
 
 namespace web_app {
 
 PendingAppRegistrationTaskBase::PendingAppRegistrationTaskBase(
-    const GURL& launch_url)
-    : launch_url_(launch_url) {}
+    const GURL& install_url)
+    : install_url_(install_url) {}
 
 PendingAppRegistrationTaskBase::~PendingAppRegistrationTaskBase() = default;
 
 int PendingAppRegistrationTask::registration_timeout_in_seconds_ = 40;
 
 PendingAppRegistrationTask::PendingAppRegistrationTask(
-    const GURL& launch_url,
+    const GURL& install_url,
     WebAppUrlLoader* url_loader,
     content::WebContents* web_contents,
     RegistrationCallback callback)
-    : PendingAppRegistrationTaskBase(launch_url),
+    : PendingAppRegistrationTaskBase(install_url),
       url_loader_(url_loader),
       web_contents_(web_contents),
       callback_(std::move(callback)) {
@@ -46,9 +47,9 @@ PendingAppRegistrationTask::PendingAppRegistrationTask(
       base::BindOnce(&PendingAppRegistrationTask::OnRegistrationTimeout,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  // Check to see if there is already a service worker for the launch url.
+  // Check to see if there is already a service worker for the install url.
   service_worker_context_->CheckHasServiceWorker(
-      launch_url,
+      install_url,
       base::BindOnce(&PendingAppRegistrationTask::OnDidCheckHasServiceWorker,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -59,7 +60,7 @@ PendingAppRegistrationTask::~PendingAppRegistrationTask() {
 }
 
 void PendingAppRegistrationTask::OnRegistrationCompleted(const GURL& scope) {
-  if (!content::ServiceWorkerContext::ScopeMatches(scope, launch_url()))
+  if (!content::ServiceWorkerContext::ScopeMatches(scope, install_url()))
     return;
 
   registration_timer_.Stop();
@@ -85,9 +86,20 @@ void PendingAppRegistrationTask::OnDidCheckHasServiceWorker(
     return;
   }
 
+  url_loader_->PrepareForLoad(
+      web_contents_,
+      base::BindOnce(&PendingAppRegistrationTask::OnWebContentsReady,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PendingAppRegistrationTask::OnWebContentsReady(
+    WebAppUrlLoader::Result result) {
+  // TODO(crbug.com/1098139): Handle the scenario where WebAppUrlLoader fails to
+  // load about:blank and flush WebContents states.
+
   // No action is needed when the URL loads.
   // We wait for OnRegistrationCompleted (or registration timeout).
-  url_loader_->LoadUrl(launch_url(), web_contents_,
+  url_loader_->LoadUrl(install_url(), web_contents_,
                        WebAppUrlLoader::UrlComparison::kExact,
                        base::DoNothing());
 }

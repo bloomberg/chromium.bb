@@ -26,7 +26,38 @@ class IssueTrackerServiceTest(testing_common.TestCase):
     self.assertTrue(service.AddBugComment(12345, 'The comment'))
     self.assertEqual(1, service._MakeCommentRequest.call_count)
     service._MakeCommentRequest.assert_called_with(
-        12345, {'updates': {}, 'content': 'The comment'}, send_email=True)
+        12345, {
+            'updates': {},
+            'content': 'The comment'
+        },
+        project='chromium',
+        send_email=True)
+
+  def testAddBugComment_Basic_EmptyProject(self):
+    service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
+    service._MakeCommentRequest = mock.Mock()
+    self.assertTrue(service.AddBugComment(12345, 'The comment', project=''))
+    self.assertEqual(1, service._MakeCommentRequest.call_count)
+    service._MakeCommentRequest.assert_called_with(
+        12345, {
+            'updates': {},
+            'content': 'The comment'
+        },
+        project='chromium',
+        send_email=True)
+
+  def testAddBugComment_Basic_ProjectIsNone(self):
+    service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
+    service._MakeCommentRequest = mock.Mock()
+    self.assertTrue(service.AddBugComment(12345, 'The comment', project=None))
+    self.assertEqual(1, service._MakeCommentRequest.call_count)
+    service._MakeCommentRequest.assert_called_with(
+        12345, {
+            'updates': {},
+            'content': 'The comment'
+        },
+        project='chromium',
+        send_email=True)
 
   def testAddBugComment_WithNoBug_ReturnsFalse(self):
     service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
@@ -37,13 +68,16 @@ class IssueTrackerServiceTest(testing_common.TestCase):
   def testAddBugComment_WithOptionalParameters(self):
     service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
     service._MakeCommentRequest = mock.Mock()
-    self.assertTrue(service.AddBugComment(
-        12345, 'Some other comment', status='Fixed',
-        labels=['Foo'], cc_list=['someone@chromium.org']))
+    self.assertTrue(
+        service.AddBugComment(
+            12345,
+            'Some other comment',
+            status='Fixed',
+            labels=['Foo'],
+            cc_list=['someone@chromium.org']))
     self.assertEqual(1, service._MakeCommentRequest.call_count)
     service._MakeCommentRequest.assert_called_with(
-        12345,
-        {
+        12345, {
             'updates': {
                 'status': 'Fixed',
                 'cc': ['someone@chromium.org'],
@@ -51,6 +85,7 @@ class IssueTrackerServiceTest(testing_common.TestCase):
             },
             'content': 'Some other comment'
         },
+        project='chromium',
         send_email=True)
 
   def testAddBugComment_MergeBug(self):
@@ -59,14 +94,14 @@ class IssueTrackerServiceTest(testing_common.TestCase):
     self.assertTrue(service.AddBugComment(12345, 'Dupe', merge_issue=54321))
     self.assertEqual(1, service._MakeCommentRequest.call_count)
     service._MakeCommentRequest.assert_called_with(
-        12345,
-        {
+        12345, {
             'updates': {
                 'status': 'Duplicate',
-                'mergedInto': 54321,
+                'mergedInto': 'chromium:54321',
             },
             'content': 'Dupe'
         },
+        project='chromium',
         send_email=True)
 
   @mock.patch('logging.error')
@@ -84,6 +119,51 @@ class IssueTrackerServiceTest(testing_common.TestCase):
     bug_id = response['bug_id']
     self.assertEqual(1, service._ExecuteRequest.call_count)
     self.assertEqual(333, bug_id)
+
+  def testNewBug_Success_SupportNonChromium(self):
+    service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
+    service._ExecuteRequest = mock.Mock(return_value={
+        'id': 333,
+        'projectId': 'non-chromium'
+    })
+    response = service.NewBug(
+        'Bug title',
+        'body',
+        owner='someone@example.com',
+        project='non-chromium')
+    bug_id = response['bug_id']
+    project_id = response['project_id']
+    self.assertEqual(1, service._ExecuteRequest.call_count)
+    self.assertEqual(333, bug_id)
+    self.assertEqual('non-chromium', project_id)
+
+  def testNewBug_Success_ProjectIsEmpty(self):
+    service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
+    service._ExecuteRequest = mock.Mock(return_value={
+        'id': 333,
+        'projectId': 'chromium'
+    })
+    response = service.NewBug(
+        'Bug title', 'body', owner='someone@example.com', project='')
+    bug_id = response['bug_id']
+    project_id = response['project_id']
+    self.assertEqual(1, service._ExecuteRequest.call_count)
+    self.assertEqual(333, bug_id)
+    self.assertEqual('chromium', project_id)
+
+  def testNewBug_Success_ProjectIsNone(self):
+    service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
+    service._ExecuteRequest = mock.Mock(return_value={
+        'id': 333,
+        'projectId': 'chromium'
+    })
+    response = service.NewBug(
+        'Bug title', 'body', owner='someone@example.com', project=None)
+    bug_id = response['bug_id']
+    project_id = response['project_id']
+    self.assertEqual(1, service._ExecuteRequest.call_count)
+    self.assertEqual(333, bug_id)
+    self.assertEqual('chromium', project_id)
 
   def testNewBug_Failure_HTTPException(self):
     service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
@@ -103,11 +183,14 @@ class IssueTrackerServiceTest(testing_common.TestCase):
   def testNewBug_HttpError_NewBugReturnsError(self):
     service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
     error_content = {
-        'error': {'message': 'The user does not exist: test@chromium.org',
-                  'code': 404}
+        'error': {
+            'message': 'The user does not exist: test@chromium.org',
+            'code': 404
+        }
     }
-    service._ExecuteRequest = mock.Mock(side_effect=errors.HttpError(
-        mock.Mock(return_value={'status': 404}), json.dumps(error_content)))
+    service._ExecuteRequest = mock.Mock(
+        side_effect=errors.HttpError(
+            mock.Mock(return_value={'status': 404}), json.dumps(error_content)))
     response = service.NewBug('Bug title', 'body', owner='someone@chromium.org')
     self.assertEqual(1, service._ExecuteRequest.call_count)
     self.assertTrue('error' in response)
@@ -115,8 +198,11 @@ class IssueTrackerServiceTest(testing_common.TestCase):
   def testNewBug_UsesExpectedParams(self):
     service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
     service._MakeCreateRequest = mock.Mock()
-    service.NewBug('Bug title', 'body', owner='someone@chromium.org',
-                   cc='somebody@chromium.org, nobody@chromium.org')
+    service.NewBug(
+        'Bug title',
+        'body',
+        owner='someone@chromium.org',
+        cc=['somebody@chromium.org', 'nobody@chromium.org'])
     service._MakeCreateRequest.assert_called_with(
         {
             'title': 'Bug title',
@@ -125,17 +211,28 @@ class IssueTrackerServiceTest(testing_common.TestCase):
             'labels': [],
             'components': [],
             'status': 'Assigned',
+            'owner': {
+                'name': 'someone@chromium.org'
+            },
+            'cc': mock.ANY,
             'projectId': 'chromium',
-            'owner': {'name': 'someone@chromium.org'},
-            'cc': [{'name': 'somebody@chromium.org'},
-                   {'name': 'nobody@chromium.org'}],
-        })
+        }, 'chromium')
+    self.assertItemsEqual([
+        {
+            'name': 'somebody@chromium.org'
+        },
+        {
+            'name': 'nobody@chromium.org'
+        },
+    ], service._MakeCreateRequest.call_args[0][0].get('cc'))
 
   def testNewBug_UsesExpectedParamsSansOwner(self):
     service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
     service._MakeCreateRequest = mock.Mock()
-    service.NewBug('Bug title', 'body',
-                   cc='somebody@chromium.org,nobody@chromium.org')
+    service.NewBug(
+        'Bug title',
+        'body',
+        cc=['somebody@chromium.org', 'nobody@chromium.org'])
     service._MakeCreateRequest.assert_called_with(
         {
             'title': 'Bug title',
@@ -144,45 +241,63 @@ class IssueTrackerServiceTest(testing_common.TestCase):
             'labels': [],
             'components': [],
             'status': 'Unconfirmed',
+            'cc': mock.ANY,
             'projectId': 'chromium',
-            'cc': [{'name': 'somebody@chromium.org'},
-                   {'name': 'nobody@chromium.org'}],
-        })
+        }, 'chromium')
+    self.assertItemsEqual([
+        {
+            'name': 'somebody@chromium.org'
+        },
+        {
+            'name': 'nobody@chromium.org'
+        },
+    ], service._MakeCreateRequest.call_args[0][0].get('cc'))
 
   def testMakeCommentRequest_UserCantOwn_RetryMakeCommentRequest(self):
     service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
     error_content = {
-
-        'error': {'message': 'Issue owner must be a project member',
-                  'code': 400}
+        'error': {
+            'message': 'Issue owner must be a project member',
+            'code': 400
+        }
     }
-    service._ExecuteRequest = mock.Mock(side_effect=errors.HttpError(
-        mock.Mock(return_value={'status': 404}), json.dumps(error_content)))
+    service._ExecuteRequest = mock.Mock(
+        side_effect=errors.HttpError(
+            mock.Mock(return_value={'status': 404}), json.dumps(error_content)))
     service.AddBugComment(12345, 'The comment', owner=['test@chromium.org'])
     self.assertEqual(2, service._ExecuteRequest.call_count)
 
   def testMakeCommentRequest_UserDoesNotExist_RetryMakeCommentRequest(self):
     service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
     error_content = {
-        'error': {'message': 'The user does not exist: test@chromium.org',
-                  'code': 404}
+        'error': {
+            'message': 'The user does not exist: test@chromium.org',
+            'code': 404
+        }
     }
-    service._ExecuteRequest = mock.Mock(side_effect=errors.HttpError(
-        mock.Mock(return_value={'status': 404}), json.dumps(error_content)))
-    service.AddBugComment(12345, 'The comment', cc_list=['test@chromium.org'],
-                          owner=['test@chromium.org'])
+    service._ExecuteRequest = mock.Mock(
+        side_effect=errors.HttpError(
+            mock.Mock(return_value={'status': 404}), json.dumps(error_content)))
+    service.AddBugComment(
+        12345,
+        'The comment',
+        cc_list=['test@chromium.org'],
+        owner=['test@chromium.org'])
     self.assertEqual(2, service._ExecuteRequest.call_count)
 
   def testMakeCommentRequest_IssueDeleted_ReturnsTrue(self):
     service = issue_tracker_service.IssueTrackerService(mock.MagicMock())
     error_content = {
-        'error': {'message': 'User is not allowed to view this issue 12345',
-                  'code': 403}
+        'error': {
+            'message': 'User is not allowed to view this issue 12345',
+            'code': 403
+        }
     }
-    service._ExecuteRequest = mock.Mock(side_effect=errors.HttpError(
-        mock.Mock(return_value={'status': 403}), json.dumps(error_content)))
-    comment_posted = service.AddBugComment(12345, 'The comment',
-                                           owner='test@chromium.org')
+    service._ExecuteRequest = mock.Mock(
+        side_effect=errors.HttpError(
+            mock.Mock(return_value={'status': 403}), json.dumps(error_content)))
+    comment_posted = service.AddBugComment(
+        12345, 'The comment', owner='test@chromium.org')
     self.assertEqual(1, service._ExecuteRequest.call_count)
     self.assertEqual(True, comment_posted)
 

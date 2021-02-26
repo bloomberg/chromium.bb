@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -79,15 +79,13 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
                 blink::mojom::ReferrerPtr referrer,
                 NavigateCallback callback) override;
   void Activate(blink::TransferableMessage data,
+                base::TimeTicks activation_time,
+                uint64_t trace_id,
                 ActivateCallback callback) override;
-  void PostMessageToGuest(
-      const blink::TransferableMessage message,
-      const base::Optional<url::Origin>& target_origin) override;
+  void PostMessageToGuest(const blink::TransferableMessage message) override;
 
   // blink::mojom::PortalHost implementation
-  void PostMessageToHost(
-      blink::TransferableMessage message,
-      const base::Optional<url::Origin>& target_origin) override;
+  void PostMessageToHost(blink::TransferableMessage message) override;
 
   // FrameTreeNode::Observer overrides.
   void OnFrameTreeNodeDestroyed(FrameTreeNode* node) override;
@@ -102,15 +100,23 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   void PortalWebContentsCreated(WebContents* portal_web_contents) override;
   void CloseContents(WebContents*) override;
   WebContents* GetResponsibleWebContents(WebContents* web_contents) override;
+  void NavigationStateChanged(WebContents* source,
+                              InvalidateTypes changed_flags) override;
+  bool ShouldFocusPageAfterCrash() override;
+  void CanDownload(const GURL& url,
+                   const std::string& request_method,
+                   base::OnceCallback<void(bool)> callback) override;
 
   // Returns the token which uniquely identifies this Portal.
-  const base::UnguessableToken& portal_token() const { return portal_token_; }
+  const blink::PortalToken& portal_token() const { return portal_token_; }
 
   // Returns the devtools frame token for the portal's main frame.
   base::UnguessableToken GetDevToolsFrameToken() const;
 
   // Returns the Portal's WebContents.
   WebContentsImpl* GetPortalContents();
+  // Returns the WebContents that hosts this portal.
+  WebContentsImpl* GetPortalHostContents();
 
   RenderFrameHostImpl* owner_render_frame_host() {
     return owner_render_frame_host_;
@@ -127,6 +133,9 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   }
 
   blink::mojom::PortalClient& client() { return *(client_.get()); }
+
+  // Returns true if the portal is same-origin with its host.
+  bool IsSameOrigin() const;
 
  private:
   // Manages the relationship between the Portal and its guest WebContents.
@@ -182,11 +191,17 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
 
   void SetPortalContents(std::unique_ptr<WebContents> web_contents);
 
+  std::pair<bool, blink::mojom::PortalActivateResult> CanActivate();
+  void ActivateImpl(blink::TransferableMessage data,
+                    base::TimeTicks activation_time,
+                    uint64_t trace_id,
+                    ActivateCallback callback);
+
   RenderFrameHostImpl* owner_render_frame_host_;
 
   // Uniquely identifies the portal, this token is used by the browser process
   // to reference this portal when communicating with the renderer.
-  const base::UnguessableToken portal_token_;
+  const blink::PortalToken portal_token_;
 
   // Receives messages from the outer (host) frame.
   mojo::AssociatedReceiver<blink::mojom::Portal> receiver_{this};
@@ -205,9 +220,14 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   // Set when |Close| is called. Destruction will occur shortly thereafter.
   bool is_closing_ = false;
 
+  // Set when portal is activating.
+  bool is_activating_ = false;
+
   // Another implementation of blink::mojom::Portal to bind instead.
   // For use in testing only.
   std::unique_ptr<blink::mojom::Portal> interceptor_;
+
+  base::WeakPtrFactory<Portal> weak_factory_{this};
 };
 
 }  // namespace content

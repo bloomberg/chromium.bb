@@ -116,7 +116,8 @@ bool FindBarHost::MaybeForwardKeyEventToWebpage(
   // input. Otherwise Up and Down arrow key strokes get eaten. "Nom Nom Nom".
   contents->ClearFocusedElement();
   NativeWebKeyboardEvent event(key_event);
-  contents->GetRenderViewHost()
+  contents->GetMainFrame()
+      ->GetRenderViewHost()
       ->GetWidget()
       ->ForwardKeyboardEventWithLatencyInfo(event, *key_event.latency());
   return true;
@@ -207,7 +208,7 @@ void FindBarHost::RestoreSavedFocus() {
 }
 
 bool FindBarHost::HasGlobalFindPasteboard() const {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return true;
 #else
   return false;

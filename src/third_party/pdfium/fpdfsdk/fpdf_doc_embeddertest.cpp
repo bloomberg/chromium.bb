@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <set>
-#include <string>
 #include <vector>
 
 #include "core/fpdfapi/parser/cpdf_document.h"
@@ -21,7 +20,7 @@
 class FPDFDocEmbedderTest : public EmbedderTest {};
 
 TEST_F(FPDFDocEmbedderTest, MultipleSamePage) {
-  EXPECT_TRUE(OpenDocument("hello_world.pdf"));
+  ASSERT_TRUE(OpenDocument("hello_world.pdf"));
   CPDF_Document* pDoc = CPDFDocumentFromFPDFDocument(document());
 
   std::set<FPDF_PAGE> unique_pages;
@@ -40,7 +39,7 @@ TEST_F(FPDFDocEmbedderTest, MultipleSamePage) {
 }
 
 TEST_F(FPDFDocEmbedderTest, DestGetPageIndex) {
-  EXPECT_TRUE(OpenDocument("named_dests.pdf"));
+  ASSERT_TRUE(OpenDocument("named_dests.pdf"));
 
   // NULL argument cases.
   EXPECT_EQ(-1, FPDFDest_GetDestPageIndex(nullptr, nullptr));
@@ -68,7 +67,7 @@ TEST_F(FPDFDocEmbedderTest, DestGetPageIndex) {
 }
 
 TEST_F(FPDFDocEmbedderTest, DestGetView) {
-  EXPECT_TRUE(OpenDocument("named_dests.pdf"));
+  ASSERT_TRUE(OpenDocument("named_dests.pdf"));
 
   unsigned long numParams;
   FS_FLOAT params[4];
@@ -127,7 +126,7 @@ TEST_F(FPDFDocEmbedderTest, DestGetView) {
 }
 
 TEST_F(FPDFDocEmbedderTest, DestGetLocationInPage) {
-  EXPECT_TRUE(OpenDocument("named_dests.pdf"));
+  ASSERT_TRUE(OpenDocument("named_dests.pdf"));
 
   FPDF_DEST dest = FPDF_GetNamedDestByName(document(), "First");
   EXPECT_TRUE(dest);
@@ -193,7 +192,7 @@ TEST_F(FPDFDocEmbedderTest, BUG_1506_3) {
 }
 
 TEST_F(FPDFDocEmbedderTest, BUG_680376) {
-  EXPECT_TRUE(OpenDocument("bug_680376.pdf"));
+  ASSERT_TRUE(OpenDocument("bug_680376.pdf"));
 
   // Page number directly in item from Dests NameTree.
   FPDF_DEST dest = FPDF_GetNamedDestByName(document(), "First");
@@ -202,12 +201,12 @@ TEST_F(FPDFDocEmbedderTest, BUG_680376) {
 }
 
 TEST_F(FPDFDocEmbedderTest, BUG_821454) {
-  EXPECT_TRUE(OpenDocument("bug_821454.pdf"));
+  ASSERT_TRUE(OpenDocument("bug_821454.pdf"));
 
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
 
-  // Cover some NULL arg cases while we're at it.
+  // Cover some invalid argument cases while we're at it.
   EXPECT_FALSE(FPDFLink_GetLinkAtPoint(nullptr, 150, 360));
   EXPECT_EQ(-1, FPDFLink_GetLinkZOrderAtPoint(nullptr, 150, 360));
 
@@ -223,6 +222,11 @@ TEST_F(FPDFDocEmbedderTest, BUG_821454) {
   ASSERT_TRUE(dest1);
   FPDF_DEST dest2 = FPDFLink_GetDest(document(), link2);
   ASSERT_TRUE(dest2);
+
+  // Cover more invalid argument cases while we're at it.
+  EXPECT_FALSE(FPDFLink_GetDest(nullptr, nullptr));
+  EXPECT_FALSE(FPDFLink_GetDest(nullptr, link1));
+  EXPECT_FALSE(FPDFLink_GetDest(document(), nullptr));
 
   EXPECT_EQ(0, FPDFDest_GetDestPageIndex(document(), dest1));
   EXPECT_EQ(0, FPDFDest_GetDestPageIndex(document(), dest2));
@@ -264,7 +268,7 @@ TEST_F(FPDFDocEmbedderTest, BUG_821454) {
 }
 
 TEST_F(FPDFDocEmbedderTest, ActionBadArguments) {
-  EXPECT_TRUE(OpenDocument("launch_action.pdf"));
+  ASSERT_TRUE(OpenDocument("launch_action.pdf"));
   EXPECT_EQ(static_cast<unsigned long>(PDFACTION_UNSUPPORTED),
             FPDFAction_GetType(nullptr));
 
@@ -276,7 +280,7 @@ TEST_F(FPDFDocEmbedderTest, ActionBadArguments) {
 }
 
 TEST_F(FPDFDocEmbedderTest, ActionLaunch) {
-  EXPECT_TRUE(OpenDocument("launch_action.pdf"));
+  ASSERT_TRUE(OpenDocument("launch_action.pdf"));
 
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
@@ -307,7 +311,7 @@ TEST_F(FPDFDocEmbedderTest, ActionLaunch) {
 }
 
 TEST_F(FPDFDocEmbedderTest, ActionURI) {
-  EXPECT_TRUE(OpenDocument("uri_action.pdf"));
+  ASSERT_TRUE(OpenDocument("uri_action.pdf"));
 
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
@@ -337,8 +341,30 @@ TEST_F(FPDFDocEmbedderTest, ActionURI) {
   UnloadPage(page);
 }
 
+TEST_F(FPDFDocEmbedderTest, LinkToAnnotConversion) {
+  ASSERT_TRUE(OpenDocument("annots.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+  {
+    FPDF_LINK first_link = FPDFLink_GetLinkAtPoint(page, 69.00, 653.00);
+    ScopedFPDFAnnotation first_annot(FPDFLink_GetAnnot(page, first_link));
+    EXPECT_EQ(0, FPDFPage_GetAnnotIndex(page, first_annot.get()));
+
+    FPDF_LINK second_link = FPDFLink_GetLinkAtPoint(page, 80.00, 633.00);
+    ScopedFPDFAnnotation second_annot(FPDFLink_GetAnnot(page, second_link));
+    EXPECT_EQ(1, FPDFPage_GetAnnotIndex(page, second_annot.get()));
+
+    // Also test invalid arguments.
+    EXPECT_FALSE(FPDFLink_GetAnnot(nullptr, nullptr));
+    EXPECT_FALSE(FPDFLink_GetAnnot(page, nullptr));
+    EXPECT_FALSE(FPDFLink_GetAnnot(nullptr, second_link));
+  }
+
+  UnloadPage(page);
+}
+
 TEST_F(FPDFDocEmbedderTest, ActionGoto) {
-  EXPECT_TRUE(OpenDocument("goto_action.pdf"));
+  ASSERT_TRUE(OpenDocument("goto_action.pdf"));
 
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
@@ -362,8 +388,45 @@ TEST_F(FPDFDocEmbedderTest, ActionGoto) {
   UnloadPage(page);
 }
 
+TEST_F(FPDFDocEmbedderTest, ActionEmbeddedGoto) {
+  ASSERT_TRUE(OpenDocument("gotoe_action.pdf"));
+
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  // The target action is nearly the size of the whole page.
+  FPDF_LINK link = FPDFLink_GetLinkAtPoint(page, 100, 100);
+  ASSERT_TRUE(link);
+
+  FPDF_ACTION action = FPDFLink_GetAction(link);
+  ASSERT_TRUE(action);
+  EXPECT_EQ(static_cast<unsigned long>(PDFACTION_EMBEDDEDGOTO),
+            FPDFAction_GetType(action));
+
+  FPDF_DEST dest = FPDFAction_GetDest(document(), action);
+  EXPECT_TRUE(dest);
+
+  unsigned long num_params = 42;
+  FS_FLOAT params[4];
+  std::fill_n(params, 4, 42.4242f);
+  EXPECT_EQ(static_cast<unsigned long>(PDFDEST_VIEW_FIT),
+            FPDFDest_GetView(dest, &num_params, params));
+  EXPECT_EQ(0u, num_params);
+  EXPECT_FLOAT_EQ(42.4242f, params[0]);
+
+  const char kExpectedResult[] = "ExampleFile.pdf";
+  const unsigned long kExpectedLength = sizeof(kExpectedResult);
+  char buf[1024];
+  unsigned long bufsize = FPDFAction_GetFilePath(action, nullptr, 0);
+  EXPECT_EQ(kExpectedLength, bufsize);
+  EXPECT_EQ(kExpectedLength, FPDFAction_GetFilePath(action, buf, bufsize));
+  EXPECT_STREQ(kExpectedResult, buf);
+
+  UnloadPage(page);
+}
+
 TEST_F(FPDFDocEmbedderTest, ActionNonesuch) {
-  EXPECT_TRUE(OpenDocument("nonesuch_action.pdf"));
+  ASSERT_TRUE(OpenDocument("nonesuch_action.pdf"));
 
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
@@ -390,7 +453,7 @@ TEST_F(FPDFDocEmbedderTest, NoBookmarks) {
   unsigned short buf[128];
 
   // Open a file with no bookmarks.
-  EXPECT_TRUE(OpenDocument("named_dests.pdf"));
+  ASSERT_TRUE(OpenDocument("named_dests.pdf"));
 
   // NULL argument cases.
   EXPECT_EQ(0u, FPDFBookmark_GetTitle(nullptr, buf, sizeof(buf)));
@@ -409,7 +472,7 @@ TEST_F(FPDFDocEmbedderTest, Bookmarks) {
   unsigned short buf[128];
 
   // Open a file with two bookmarks.
-  EXPECT_TRUE(OpenDocument("bookmarks.pdf"));
+  ASSERT_TRUE(OpenDocument("bookmarks.pdf"));
 
   FPDF_BOOKMARK child = FPDFBookmark_GetFirstChild(document(), nullptr);
   EXPECT_TRUE(child);
@@ -437,7 +500,7 @@ TEST_F(FPDFDocEmbedderTest, FindBookmarks) {
   unsigned short buf[128];
 
   // Open a file with two bookmarks.
-  EXPECT_TRUE(OpenDocument("bookmarks.pdf"));
+  ASSERT_TRUE(OpenDocument("bookmarks.pdf"));
 
   // Find the first one, based on its known title.
   ScopedFPDFWideString title = GetFPDFWideString(L"A Good Beginning");
@@ -459,7 +522,7 @@ TEST_F(FPDFDocEmbedderTest, FindBookmarks) {
 // Check circular bookmarks will not cause infinite loop.
 TEST_F(FPDFDocEmbedderTest, FindBookmarks_bug420) {
   // Open a file with circular bookmarks.
-  EXPECT_TRUE(OpenDocument("bookmarks_circular.pdf"));
+  ASSERT_TRUE(OpenDocument("bookmarks_circular.pdf"));
 
   // Try to find a title.
   ScopedFPDFWideString title = GetFPDFWideString(L"anything");
@@ -467,7 +530,7 @@ TEST_F(FPDFDocEmbedderTest, FindBookmarks_bug420) {
 }
 
 TEST_F(FPDFDocEmbedderTest, DeletePage) {
-  EXPECT_TRUE(OpenDocument("hello_world.pdf"));
+  ASSERT_TRUE(OpenDocument("hello_world.pdf"));
   EXPECT_EQ(1, FPDF_GetPageCount(document()));
 
   FPDFPage_Delete(nullptr, 0);
@@ -609,15 +672,47 @@ TEST_F(FPDFDocEmbedderTest, GetMetaTextFromNewDocument) {
   FPDF_CloseDocument(empty_doc);
 }
 
+TEST_F(FPDFDocEmbedderTest, GetPageAAction) {
+  ASSERT_TRUE(OpenDocument("get_page_aaction.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  EXPECT_TRUE(page);
+
+  EXPECT_EQ(nullptr, FPDF_GetPageAAction(nullptr, FPDFPAGE_AACTION_OPEN));
+  EXPECT_EQ(nullptr, FPDF_GetPageAAction(page, FPDFPAGE_AACTION_CLOSE));
+  EXPECT_EQ(nullptr, FPDF_GetPageAAction(page, -1));
+  EXPECT_EQ(nullptr, FPDF_GetPageAAction(page, 999));
+
+  FPDF_ACTION action = FPDF_GetPageAAction(page, FPDFPAGE_AACTION_OPEN);
+  EXPECT_EQ(static_cast<unsigned long>(PDFACTION_EMBEDDEDGOTO),
+            FPDFAction_GetType(action));
+
+  const char kExpectedResult[] = "\\\\127.0.0.1\\c$\\Program Files\\test.exe";
+  const unsigned long kExpectedLength = sizeof(kExpectedResult);
+  char buf[1024];
+
+  unsigned long bufsize = FPDFAction_GetFilePath(action, nullptr, 0);
+  EXPECT_EQ(kExpectedLength, bufsize);
+  EXPECT_EQ(kExpectedLength, FPDFAction_GetFilePath(action, buf, bufsize));
+  EXPECT_STREQ(kExpectedResult, buf);
+
+  UnloadPage(page);
+
+  page = LoadPage(1);
+  EXPECT_TRUE(page);
+  EXPECT_EQ(nullptr, FPDF_GetPageAAction(page, -1));
+
+  UnloadPage(page);
+}
+
 TEST_F(FPDFDocEmbedderTest, NoPageLabels) {
-  EXPECT_TRUE(OpenDocument("about_blank.pdf"));
+  ASSERT_TRUE(OpenDocument("about_blank.pdf"));
   EXPECT_EQ(1, FPDF_GetPageCount(document()));
 
   ASSERT_EQ(0u, FPDF_GetPageLabel(document(), 0, nullptr, 0));
 }
 
 TEST_F(FPDFDocEmbedderTest, GetPageLabels) {
-  EXPECT_TRUE(OpenDocument("page_labels.pdf"));
+  ASSERT_TRUE(OpenDocument("page_labels.pdf"));
   EXPECT_EQ(7, FPDF_GetPageCount(document()));
 
   // We do not request labels, when use FPDFAvail_IsXXXAvail.
@@ -669,7 +764,7 @@ TEST_F(FPDFDocEmbedderTest, GetPageLabels) {
 
 #ifdef PDF_ENABLE_XFA
 TEST_F(FPDFDocEmbedderTest, GetXFALinks) {
-  EXPECT_TRUE(OpenDocument("simple_xfa.pdf"));
+  ASSERT_TRUE(OpenDocument("simple_xfa.pdf"));
 
   ScopedFPDFPage page(FPDF_LoadPage(document(), 0));
   ASSERT_TRUE(page);

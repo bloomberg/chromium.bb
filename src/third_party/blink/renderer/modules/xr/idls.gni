@@ -2,12 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/blink/renderer/config.gni")
+
 modules_idl_files = [
   "xr_anchor.idl",
   "xr_anchor_set.idl",
   "xr_bounded_reference_space.idl",
+  "xr_depth_information.idl",
   "xr_dom_overlay_state.idl",
   "xr_frame.idl",
+  "xr_image_tracking_result.idl",
   "xr_input_source.idl",
   "xr_input_source_array.idl",
   "xr_input_source_event.idl",
@@ -48,16 +52,18 @@ modules_dictionary_idl_files = [
   "xr_hit_test_options_init.idl",
   "xr_input_source_event_init.idl",
   "xr_input_sources_change_event_init.idl",
-  "xr_plane_detection_state_init.idl",
+  "xr_light_probe_init.idl",
   "xr_ray_direction_init.idl",
   "xr_reference_space_event_init.idl",
   "xr_render_state_init.idl",
   "xr_session_event_init.idl",
   "xr_session_init.idl",
+  "xr_tracked_image_init.idl",
   "xr_transient_input_hit_test_options_init.idl",
   "xr_webgl_layer_init.idl",
-  "xr_world_tracking_state_init.idl",
 ]
+
+modules_typedefs_enums_only_idl_files = [ "xr_webgl_context.idl" ]
 
 modules_dependency_idl_files = [
   "element_xr.idl",

@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 
+#include "cast/common/certificate/cast_trust_store.h"
 #include "cast/common/certificate/testing/test_helpers.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "cast/common/channel/testing/fake_cast_socket.h"
@@ -12,6 +13,7 @@
 #include "cast/common/channel/virtual_connection_router.h"
 #include "cast/common/public/cast_socket.h"
 #include "cast/receiver/channel/device_auth_namespace_handler.h"
+#include "cast/receiver/channel/static_credentials.h"
 #include "cast/receiver/channel/testing/device_auth_test_helpers.h"
 #include "cast/sender/channel/cast_auth_util.h"
 #include "cast/sender/channel/message_util.h"
@@ -142,61 +144,61 @@ TEST_F(DeviceAuthTest, AuthIntegration) {
 }
 
 TEST_F(DeviceAuthTest, GoodCrl) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(data_path_ + "crl_root.pem");
+  auto fake_crl_trust_store =
+      TrustStore::CreateInstanceFromPemFile(data_path_ + "crl_root.pem");
   RunAuthTest(ReadEntireFileToString(data_path_ + "good_crl.pb"),
-              fake_crl_trust_store.get());
+              &fake_crl_trust_store);
 }
 
 TEST_F(DeviceAuthTest, InvalidCrlTime) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(data_path_ + "crl_root.pem");
+  auto fake_crl_trust_store =
+      TrustStore::CreateInstanceFromPemFile(data_path_ + "crl_root.pem");
   RunAuthTest(ReadEntireFileToString(data_path_ + "invalid_time_crl.pb"),
-              fake_crl_trust_store.get(), false);
+              &fake_crl_trust_store, false);
 }
 
 TEST_F(DeviceAuthTest, IssuerRevoked) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(data_path_ + "crl_root.pem");
+  auto fake_crl_trust_store =
+      TrustStore::CreateInstanceFromPemFile(data_path_ + "crl_root.pem");
   RunAuthTest(ReadEntireFileToString(data_path_ + "issuer_revoked_crl.pb"),
-              fake_crl_trust_store.get(), false);
+              &fake_crl_trust_store, false);
 }
 
 TEST_F(DeviceAuthTest, DeviceRevoked) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(data_path_ + "crl_root.pem");
+  auto fake_crl_trust_store =
+      TrustStore::CreateInstanceFromPemFile(data_path_ + "crl_root.pem");
   RunAuthTest(ReadEntireFileToString(data_path_ + "device_revoked_crl.pb"),
-              fake_crl_trust_store.get(), false);
+              &fake_crl_trust_store, false);
 }
 
 TEST_F(DeviceAuthTest, IssuerSerialRevoked) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(data_path_ + "crl_root.pem");
+  auto fake_crl_trust_store =
+      TrustStore::CreateInstanceFromPemFile(data_path_ + "crl_root.pem");
   RunAuthTest(
       ReadEntireFileToString(data_path_ + "issuer_serial_revoked_crl.pb"),
-      fake_crl_trust_store.get(), false);
+      &fake_crl_trust_store, false);
 }
 
 TEST_F(DeviceAuthTest, DeviceSerialRevoked) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(data_path_ + "crl_root.pem");
+  auto fake_crl_trust_store =
+      TrustStore::CreateInstanceFromPemFile(data_path_ + "crl_root.pem");
   RunAuthTest(
       ReadEntireFileToString(data_path_ + "device_serial_revoked_crl.pb"),
-      fake_crl_trust_store.get(), false);
+      &fake_crl_trust_store, false);
 }
 
 TEST_F(DeviceAuthTest, BadCrlSignerCert) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(data_path_ + "crl_root.pem");
+  auto fake_crl_trust_store =
+      TrustStore::CreateInstanceFromPemFile(data_path_ + "crl_root.pem");
   RunAuthTest(ReadEntireFileToString(data_path_ + "bad_signer_cert_crl.pb"),
-              fake_crl_trust_store.get(), false);
+              &fake_crl_trust_store, false);
 }
 
 TEST_F(DeviceAuthTest, BadCrlSignature) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(data_path_ + "crl_root.pem");
+  auto fake_crl_trust_store =
+      TrustStore::CreateInstanceFromPemFile(data_path_ + "crl_root.pem");
   RunAuthTest(ReadEntireFileToString(data_path_ + "bad_signature_crl.pb"),
-              fake_crl_trust_store.get(), false);
+              &fake_crl_trust_store, false);
 }
 
 }  // namespace

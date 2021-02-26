@@ -11,21 +11,100 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/public/browser/accessibility_tree_formatter.h"
+#include "build/build_config.h"
 #include "content/public/common/content_switches.h"
+#include "ui/accessibility/platform/inspect/tree_formatter.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace content {
+
+using base::FilePath;
+using ui::AXNodeFilter;
+using ui::AXPropertyFilter;
 
 namespace {
 const char kCommentToken = '#';
 const char kMarkSkipFile[] = "#<skip";
 const char kSignalDiff[] = "*";
 const char kMarkEndOfFile[] = "<-- End-of-file -->";
+
+struct TypeInfo {
+  std::string type;
+  struct Mapping {
+    std::string directive_prefix;
+    base::FilePath::StringType expectations_file_postfix;
+  } mapping;
+};
+
+const TypeInfo kTypeInfos[] = {{
+                                   "android",
+                                   {
+                                       "@ANDROID",
+                                       FILE_PATH_LITERAL("-android"),
+                                   },
+                               },
+                               {
+                                   "blink",
+                                   {
+                                       "@BLINK",
+                                       FILE_PATH_LITERAL("-blink"),
+                                   },
+                               },
+                               {
+                                   "linux",
+                                   {
+                                       "@AURALINUX",
+                                       FILE_PATH_LITERAL("-auralinux"),
+                                   },
+                               },
+                               {
+                                   "mac",
+                                   {
+                                       "@MAC",
+                                       FILE_PATH_LITERAL("-mac"),
+                                   },
+                               },
+                               {
+                                   "content",
+                                   {
+                                       "@",
+                                       FILE_PATH_LITERAL(""),
+                                   },
+                               },
+                               {
+                                   "uia",
+                                   {
+                                       "@UIA-WIN",
+                                       FILE_PATH_LITERAL("-uia-win"),
+                                   },
+                               },
+                               {
+                                   "win",
+                                   {
+                                       "@WIN",
+                                       FILE_PATH_LITERAL("-win"),
+                                   },
+                               }};
+
+const TypeInfo::Mapping* TypeMapping(const std::string& type) {
+  const TypeInfo::Mapping* mapping = nullptr;
+  for (const auto& info : kTypeInfos) {
+    if (info.type == type) {
+      mapping = &info.mapping;
+    }
+  }
+  CHECK(mapping) << "Unknown dump accessibility type " << type;
+  return mapping;
+}
+
 }  // namespace
 
 DumpAccessibilityTestHelper::DumpAccessibilityTestHelper(
-    AccessibilityTestExpectationsLocator* test_locator)
-    : test_locator_(test_locator) {}
+    const char* expectation_type)
+    : expectation_type_(expectation_type) {}
 
 base::FilePath DumpAccessibilityTestHelper::GetExpectationFilePath(
     const base::FilePath& test_file_path) {
@@ -34,7 +113,7 @@ base::FilePath DumpAccessibilityTestHelper::GetExpectationFilePath(
 
   // Try to get version specific expected file.
   base::FilePath::StringType expected_file_suffix =
-      test_locator_->GetVersionSpecificExpectedFileSuffix();
+      GetVersionSpecificExpectedFileSuffix();
   if (expected_file_suffix != FILE_PATH_LITERAL("")) {
     expected_file_path = base::FilePath(
         test_file_path.RemoveExtension().value() + expected_file_suffix);
@@ -43,7 +122,7 @@ base::FilePath DumpAccessibilityTestHelper::GetExpectationFilePath(
   }
 
   // If a version specific file does not exist, get the generic one.
-  expected_file_suffix = test_locator_->GetExpectedFileSuffix();
+  expected_file_suffix = GetExpectedFileSuffix();
   expected_file_path = base::FilePath(test_file_path.RemoveExtension().value() +
                                       expected_file_suffix);
   if (base::PathExists(expected_file_path))
@@ -57,6 +136,98 @@ base::FilePath DumpAccessibilityTestHelper::GetExpectationFilePath(
             << "with the switch: --"
             << switches::kGenerateAccessibilityTestExpectations;
   return base::FilePath();
+}
+
+bool DumpAccessibilityTestHelper::ParsePropertyFilter(
+    const std::string& line,
+    std::vector<AXPropertyFilter>* filters) const {
+  const TypeInfo::Mapping* mapping = TypeMapping(expectation_type_);
+  if (!mapping) {
+    return false;
+  }
+
+  std::string directive = mapping->directive_prefix + "-ALLOW-EMPTY:";
+  if (base::StartsWith(line, directive, base::CompareCase::SENSITIVE)) {
+    filters->emplace_back(line.substr(directive.size()),
+                          AXPropertyFilter::ALLOW_EMPTY);
+    return true;
+  }
+
+  directive = mapping->directive_prefix + "-ALLOW:";
+  if (base::StartsWith(line, directive, base::CompareCase::SENSITIVE)) {
+    filters->emplace_back(line.substr(directive.size()),
+                          AXPropertyFilter::ALLOW);
+    return true;
+  }
+
+  directive = mapping->directive_prefix + "-DENY:";
+  if (base::StartsWith(line, directive, base::CompareCase::SENSITIVE)) {
+    filters->emplace_back(line.substr(directive.size()),
+                          AXPropertyFilter::DENY);
+    return true;
+  }
+
+  return false;
+}
+
+bool DumpAccessibilityTestHelper::ParseNodeFilter(
+    const std::string& line,
+    std::vector<AXNodeFilter>* filters) const {
+  const TypeInfo::Mapping* mapping = TypeMapping(expectation_type_);
+  if (!mapping) {
+    return false;
+  }
+
+  std::string directive = mapping->directive_prefix + "-DENY-NODE:";
+  if (base::StartsWith(line, directive, base::CompareCase::SENSITIVE)) {
+    const auto& node_filter = line.substr(directive.size());
+    const auto& parts = base::SplitString(
+        node_filter, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    // Silently skip over parsing errors like the rest of the enclosing code.
+    if (parts.size() == 2) {
+      filters->emplace_back(parts[0], parts[1]);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+DumpAccessibilityTestHelper::Directive
+DumpAccessibilityTestHelper::ParseDirective(const std::string& line) const {
+  // Directives have format of @directive:value.
+  if (!base::StartsWith(line, "@")) {
+    return {};
+  }
+
+  auto directive_end_pos = line.find_first_of(':');
+  if (directive_end_pos == std::string::npos) {
+    return {};
+  }
+
+  const TypeInfo::Mapping* mapping = TypeMapping(expectation_type_);
+  if (!mapping) {
+    return {};
+  }
+
+  std::string directive = line.substr(0, directive_end_pos);
+  std::string value = line.substr(directive_end_pos + 1);
+  if (directive == "@NO-LOAD-EXPECTED") {
+    return {Directive::kNoLoadExpected, value};
+  }
+  if (directive == "@WAIT-FOR") {
+    return {Directive::kWaitFor, value};
+  }
+  if (directive == "@EXECUTE-AND-WAIT-FOR") {
+    return {Directive::kExecuteAndWaitFor, value};
+  }
+  if (directive == mapping->directive_prefix + "-RUN-UNTIL-EVENT") {
+    return {Directive::kRunUntil, value};
+  }
+  if (directive == "@DEFAULT-ACTION-ON") {
+    return {Directive::kDefaultActionOn, value};
+  }
+  return {};
 }
 
 base::Optional<std::vector<std::string>>
@@ -136,9 +307,34 @@ bool DumpAccessibilityTestHelper::ValidateAgainstExpectation(
         base::JoinString(actual_lines, "\n") + "\n";
     CHECK(base::WriteFile(expected_file, actual_contents_for_output));
     LOG(INFO) << "Wrote expectations to: " << expected_file.LossyDisplayName();
+#if defined(OS_ANDROID)
+    LOG(INFO) << "Generated expectations written to file on test device.";
+    LOG(INFO) << "To fetch, run: adb pull " << expected_file.LossyDisplayName();
+#endif
   }
 
   return !is_different;
+}
+
+FilePath::StringType DumpAccessibilityTestHelper::GetExpectedFileSuffix()
+    const {
+  const TypeInfo::Mapping* mapping = TypeMapping(expectation_type_);
+  if (!mapping) {
+    return FILE_PATH_LITERAL("");
+  }
+  return FILE_PATH_LITERAL("-expected") + mapping->expectations_file_postfix +
+         FILE_PATH_LITERAL(".txt");
+}
+
+FilePath::StringType
+DumpAccessibilityTestHelper::GetVersionSpecificExpectedFileSuffix() const {
+#if defined(OS_WIN)
+  if (expectation_type_ == "uia" &&
+      base::win::GetVersion() == base::win::Version::WIN7) {
+    return FILE_PATH_LITERAL("-expected-uia-win7.txt");
+  }
+#endif
+  return FILE_PATH_LITERAL("");
 }
 
 std::vector<int> DumpAccessibilityTestHelper::DiffLines(

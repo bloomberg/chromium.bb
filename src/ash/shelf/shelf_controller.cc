@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_controller.h"
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/message_center/arc_notification_constants.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/root_window_controller.h"
@@ -13,7 +14,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/message_center/arc/arc_notification_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -21,10 +21,12 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/message_center/message_center.h"
 
 namespace ash {
 
@@ -106,9 +108,8 @@ ShelfController::ShelfController()
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
-
-  if (is_notification_indicator_enabled_)
-    message_center_observer_.Add(message_center::MessageCenter::Get());
+  model_.AddObserver(this);
+  message_center::MessageCenter::Get()->AddObserver(this);
 }
 
 ShelfController::~ShelfController() {
@@ -116,6 +117,8 @@ ShelfController::~ShelfController() {
 }
 
 void ShelfController::Shutdown() {
+  message_center::MessageCenter::Get()->RemoveObserver(this);
+  model_.RemoveObserver(this);
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
@@ -149,6 +152,30 @@ void ShelfController::OnActiveUserPrefServiceChanged(
                               base::BindRepeating(&SetShelfAutoHideFromPrefs));
   pref_change_registrar_->Add(prefs::kShelfPreferences,
                               base::BindRepeating(&SetShelfBehaviorsFromPrefs));
+
+  if (is_notification_indicator_enabled_) {
+    pref_change_registrar_->Add(
+        prefs::kAppNotificationBadgingEnabled,
+        base::BindRepeating(&ShelfController::UpdateAppBadging,
+                            base::Unretained(this)));
+
+    // Observe AppRegistryCache for the current active account to get
+    // notification updates.
+    AccountId account_id =
+        Shell::Get()->session_controller()->GetActiveAccountId();
+    cache_ =
+        apps::AppRegistryCacheWrapper::Get().GetAppRegistryCache(account_id);
+    Observe(cache_);
+
+    // Resetting the recorded pref forces the next call to UpdateAppBadging()
+    // to update notification badging for every app item.
+    notification_badging_pref_enabled_.reset();
+
+    // Update the notification badge indicator for all apps. This will also
+    // ensure that apps have the correct notification badge value for the
+    // multiprofile case when switching between users.
+    UpdateAppBadging();
+  }
 }
 
 void ShelfController::OnTabletModeStarted() {
@@ -196,38 +223,67 @@ void ShelfController::OnDisplayConfigurationChanged() {
   UpdateShelfVisibility();
 }
 
-void ShelfController::OnNotificationAdded(const std::string& notification_id) {
-  if (!is_notification_indicator_enabled_)
-    return;
-
-  message_center::Notification* notification =
-      message_center::MessageCenter::Get()->FindVisibleNotificationById(
-          notification_id);
-
-  if (!notification)
-    return;
-
-  // Skip this if the notification shouldn't badge an app.
-  if (notification->notifier_id().type !=
-          message_center::NotifierType::APPLICATION &&
-      notification->notifier_id().type !=
-          message_center::NotifierType::ARC_APPLICATION) {
-    return;
+void ShelfController::OnAppUpdate(const apps::AppUpdate& update) {
+  if (update.HasBadgeChanged() &&
+      notification_badging_pref_enabled_.value_or(false) &&
+      !quiet_mode_enabled_.value_or(false)) {
+    bool has_badge = update.HasBadge() == apps::mojom::OptionalBool::kTrue;
+    model_.UpdateItemNotification(update.AppId(), has_badge);
   }
-
-  // Skip this if the notification doesn't have a valid app id.
-  if (notification->notifier_id().id == kDefaultArcNotifierId)
-    return;
-
-  model_.AddNotificationRecord(notification->notifier_id().id, notification_id);
 }
 
-void ShelfController::OnNotificationRemoved(const std::string& notification_id,
-                                            bool by_user) {
-  if (!is_notification_indicator_enabled_)
+void ShelfController::OnAppRegistryCacheWillBeDestroyed(
+    apps::AppRegistryCache* cache) {
+  Observe(nullptr);
+}
+
+void ShelfController::ShelfItemAdded(int index) {
+  if (!cache_ || !is_notification_indicator_enabled_ ||
+      !notification_badging_pref_enabled_.value_or(false))
     return;
 
-  model_.RemoveNotificationRecord(notification_id);
+  auto app_id = model_.items()[index].id.app_id;
+
+  // Update the notification badge indicator for the newly added shelf item.
+  cache_->ForOneApp(app_id, [this](const apps::AppUpdate& update) {
+    bool has_badge = update.HasBadge() == apps::mojom::OptionalBool::kTrue;
+    model_.UpdateItemNotification(update.AppId(), has_badge);
+  });
+}
+
+void ShelfController::OnQuietModeChanged(bool in_quiet_mode) {
+  UpdateAppBadging();
+}
+
+void ShelfController::UpdateAppBadging() {
+  bool new_badging_enabled = pref_change_registrar_
+                                 ? pref_change_registrar_->prefs()->GetBoolean(
+                                       prefs::kAppNotificationBadgingEnabled)
+                                 : false;
+  bool new_quiet_mode_enabled =
+      message_center::MessageCenter::Get()->IsQuietMode();
+
+  if (notification_badging_pref_enabled_.has_value() &&
+      notification_badging_pref_enabled_.value() == new_badging_enabled &&
+      quiet_mode_enabled_.has_value() &&
+      quiet_mode_enabled_.value() == new_quiet_mode_enabled) {
+    return;
+  }
+  notification_badging_pref_enabled_ = new_badging_enabled;
+  quiet_mode_enabled_ = new_quiet_mode_enabled;
+
+  if (cache_) {
+    cache_->ForEachApp([this](const apps::AppUpdate& update) {
+      // Set the app notification badge hidden when the pref is disabled.
+      bool has_badge =
+          notification_badging_pref_enabled_.value() &&
+                  !quiet_mode_enabled_.value()
+              ? (update.HasBadge() == apps::mojom::OptionalBool::kTrue)
+              : false;
+
+      model_.UpdateItemNotification(update.AppId(), has_badge);
+    });
+  }
 }
 
 }  // namespace ash

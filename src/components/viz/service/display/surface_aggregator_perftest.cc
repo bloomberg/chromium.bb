@@ -8,6 +8,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/service/display/aggregated_frame.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -66,7 +67,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     for (int i = 0; i < num_surfaces; i++) {
       LocalSurfaceId local_surface_id(i + 1, child_tokens[i]);
 
-      auto pass = RenderPass::Create();
+      auto pass = CompositorRenderPass::Create();
       pass->output_rect = gfx::Rect(0, 0, 1, 2);
 
       CompositorFrameBuilder frame_builder;
@@ -122,7 +123,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
         base::TimeTicks() + base::TimeDelta::FromSeconds(1);
     timer_.Reset();
     do {
-      auto pass = RenderPass::Create();
+      auto pass = CompositorRenderPass::Create();
 
       auto* sqs = pass->CreateAndAppendSharedQuadState();
       auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
@@ -149,7 +150,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       root_support->SubmitCompositorFrame(
           LocalSurfaceId(num_surfaces + 1, root_token), std::move(frame));
 
-      CompositorFrame aggregated = aggregator_->Aggregate(
+      auto aggregated = aggregator_->Aggregate(
           SurfaceId(FrameSinkId(1, num_surfaces + 1),
                     LocalSurfaceId(num_surfaces + 1, root_token)),
           next_fake_display_time, gfx::OVERLAY_TRANSFORM_NONE);

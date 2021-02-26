@@ -23,7 +23,6 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/sequence_id.h"
-#include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -41,6 +40,7 @@
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
 #include "skia/buildflags.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/gpu_extra_info.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_CHROMEOS)
@@ -95,7 +95,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
       const base::Optional<gpu::GpuFeatureInfo>&
           gpu_feature_info_for_hardware_gpu,
-      const gpu::GpuExtraInfo& gpu_extra_info,
+      const gfx::GpuExtraInfo& gpu_extra_info,
       gpu::VulkanImplementation* vulkan_implementation,
       base::OnceCallback<void(base::Optional<ExitCode>)> exit_callback);
 
@@ -175,6 +175,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void GpuSwitched(gl::GpuPreference active_gpu_heuristic) override;
   void DisplayAdded() override;
   void DisplayRemoved() override;
+  void DisplayMetricsChanged() override;
   void DestroyAllChannels() override;
   void OnBackgroundCleanup() override;
   void OnBackgrounded() override;
@@ -183,7 +184,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level) override;
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void BeginCATransaction() override;
   void CommitCATransaction(CommitCATransactionCallback callback) override;
 #endif
@@ -210,6 +211,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                       const GURL& active_url) override;
 #if defined(OS_WIN)
   void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override;
+  void DidUpdateHDRStatus(bool hdr_enabled) override;
 #endif
   void StoreShaderToDisk(int client_id,
                          const std::string& key,
@@ -342,10 +344,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // process. If |for_context_loss| is true an error message will be logged.
   void MaybeExit(bool for_context_loss);
 
-  // Update overlay info on the GPU process and send the updated info back
-  // to the browser process if there is a change.
+  // Update overlay info and HDR status on the GPU process and send the updated
+  // info back to the browser process if there is a change.
 #if defined(OS_WIN)
-  void UpdateOverlayInfo();
+  void UpdateOverlayAndHDRInfo();
 #endif
 
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
@@ -363,13 +365,15 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // Information about general chrome feature support for the GPU.
   gpu::GpuFeatureInfo gpu_feature_info_;
 
+  bool hdr_enabled_ = false;
+
   // What we would have gotten if we haven't fallen back to SwiftShader or
   // pure software (in the viz case).
   base::Optional<gpu::GPUInfo> gpu_info_for_hardware_gpu_;
   base::Optional<gpu::GpuFeatureInfo> gpu_feature_info_for_hardware_gpu_;
 
   // Information about the GPU process populated on creation.
-  gpu::GpuExtraInfo gpu_extra_info_;
+  gfx::GpuExtraInfo gpu_extra_info_;
 
   mojo::SharedRemote<mojom::GpuHost> gpu_host_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;

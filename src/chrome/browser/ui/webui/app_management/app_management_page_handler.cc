@@ -15,8 +15,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
-#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -45,7 +45,6 @@ constexpr int kMinAndroidFrameworkVersion = 28;  // Android P
 constexpr char const* kAppIdsWithHiddenMoreSettings[] = {
     extensions::kWebStoreAppId,
     extension_misc::kFilesManagerAppId,
-    extension_misc::kGeniusAppId,
 };
 
 constexpr char const* kAppIdsWithHiddenPinToShelf[] = {
@@ -97,11 +96,6 @@ AppManagementPageHandler::AppManagementPageHandler(
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
 
-  // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
-  // incognito
-  if (!proxy)
-    return;
-
   Observe(&proxy->AppRegistryCache());
 
 #if defined(OS_CHROMEOS)
@@ -117,11 +111,6 @@ void AppManagementPageHandler::OnPinnedChanged(const std::string& app_id,
                                                bool pinned) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
-
-  // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
-  // incognito
-  if (!proxy)
-    return;
 
   app_management::mojom::AppPtr app;
 
@@ -144,11 +133,6 @@ void AppManagementPageHandler::GetApps(GetAppsCallback callback) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
 
-  // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
-  // incognito
-  if (!proxy)
-    return;
-
   std::vector<app_management::mojom::AppPtr> apps;
   proxy->AppRegistryCache().ForEachApp(
       [this, &apps](const apps::AppUpdate& update) {
@@ -169,7 +153,7 @@ void AppManagementPageHandler::GetExtensionAppPermissionMessages(
   const extensions::Extension* extension = registry->GetExtensionById(
       app_id, extensions::ExtensionRegistry::ENABLED |
                   extensions::ExtensionRegistry::DISABLED |
-                  extensions::ExtensionRegistry::BLACKLISTED);
+                  extensions::ExtensionRegistry::BLOCKLISTED);
   std::vector<app_management::mojom::ExtensionAppPermissionMessagePtr> messages;
   if (extension) {
     for (const auto& message :
@@ -195,11 +179,6 @@ void AppManagementPageHandler::SetPermission(
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
 
-  // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
-  // incognito
-  if (!proxy)
-    return;
-
   proxy->SetPermission(app_id, std::move(permission));
 }
 
@@ -207,22 +186,12 @@ void AppManagementPageHandler::Uninstall(const std::string& app_id) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
 
-  // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
-  // incognito
-  if (!proxy)
-    return;
-
   proxy->Uninstall(app_id, nullptr /* parent_window */);
 }
 
 void AppManagementPageHandler::OpenNativeSettings(const std::string& app_id) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
-
-  // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
-  // incognito
-  if (!proxy)
-    return;
 
   proxy->OpenNativeSettings(app_id);
 }
@@ -261,7 +230,9 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
 #endif
 
   app->hide_more_settings = ShouldHideMoreSettings(app->id);
-  app->hide_pin_to_shelf = ShouldHidePinToShelf(app->id);
+  app->hide_pin_to_shelf =
+      update.ShowInShelf() == apps::mojom::OptionalBool::kFalse ||
+      ShouldHidePinToShelf(app->id);
 
   return app;
 }

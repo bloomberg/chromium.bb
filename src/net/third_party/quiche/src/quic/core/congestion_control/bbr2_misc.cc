@@ -110,7 +110,7 @@ void Bbr2NetworkModel::OnCongestionEventStart(
   // b) all packets in |acked_packets| did not generate valid samples. (e.g. ack
   // of ack-only packets). In both cases, total_bytes_acked() will not change.
   if (prior_bytes_acked != total_bytes_acked()) {
-    QUIC_BUG_IF(sample.sample_max_bandwidth.IsZero())
+    QUIC_LOG_IF(WARNING, sample.sample_max_bandwidth.IsZero())
         << total_bytes_acked() - prior_bytes_acked << " bytes from "
         << acked_packets.size()
         << " packets have been acked, but sample_max_bandwidth is zero.";
@@ -146,6 +146,18 @@ void Bbr2NetworkModel::OnCongestionEventStart(
   if (congestion_event->bytes_lost > 0) {
     bytes_lost_in_round_ += congestion_event->bytes_lost;
     loss_events_in_round_++;
+  }
+
+  if (GetQuicReloadableFlag(quic_bbr2_startup_loss_exit_use_max_delivered) &&
+      congestion_event->bytes_acked > 0 &&
+      congestion_event->last_packet_send_state.is_valid &&
+      total_bytes_acked() >
+          congestion_event->last_packet_send_state.total_bytes_acked) {
+    QuicByteCount bytes_delivered =
+        total_bytes_acked() -
+        congestion_event->last_packet_send_state.total_bytes_acked;
+    max_bytes_delivered_in_round_ =
+        std::max(max_bytes_delivered_in_round_, bytes_delivered);
   }
 
   // |bandwidth_latest_| and |inflight_latest_| only increased within a round.
@@ -211,12 +223,7 @@ void Bbr2NetworkModel::OnCongestionEventFinish(
   bandwidth_sampler_.RemoveObsoletePackets(least_unacked_packet);
 }
 
-void Bbr2NetworkModel::UpdateNetworkParameters(QuicBandwidth bandwidth,
-                                               QuicTime::Delta rtt) {
-  if (!bandwidth.IsInfinite() && bandwidth > MaxBandwidth()) {
-    max_bandwidth_filter_.Update(bandwidth);
-  }
-
+void Bbr2NetworkModel::UpdateNetworkParameters(QuicTime::Delta rtt) {
   if (!rtt.IsZero()) {
     min_rtt_filter_.Update(rtt, MinRttTimestamp());
   }
@@ -248,10 +255,15 @@ bool Bbr2NetworkModel::IsCongestionWindowLimited(
 }
 
 bool Bbr2NetworkModel::IsInflightTooHigh(
-    const Bbr2CongestionEvent& congestion_event) const {
+    const Bbr2CongestionEvent& congestion_event,
+    int64_t max_loss_events) const {
   const SendTimeState& send_state = congestion_event.last_packet_send_state;
   if (!send_state.is_valid) {
     // Not enough information.
+    return false;
+  }
+
+  if (loss_events_in_round() < max_loss_events) {
     return false;
   }
 
@@ -261,8 +273,11 @@ bool Bbr2NetworkModel::IsInflightTooHigh(
   // bytes_lost_in_round_, OTOH, is the total bytes lost in the "current" round.
   const QuicByteCount bytes_lost_in_round = bytes_lost_in_round_;
 
-  QUIC_DVLOG(3) << "IsInflightTooHigh: bytes_lost_in_round:"
-                << bytes_lost_in_round << ", lost_in_round_threshold:"
+  QUIC_DVLOG(3) << "IsInflightTooHigh: loss_events_in_round:"
+                << loss_events_in_round()
+
+                << " bytes_lost_in_round:" << bytes_lost_in_round
+                << ", lost_in_round_threshold:"
                 << inflight_at_send * Params().loss_threshold;
 
   if (inflight_at_send > 0 && bytes_lost_in_round > 0) {
@@ -279,6 +294,9 @@ bool Bbr2NetworkModel::IsInflightTooHigh(
 void Bbr2NetworkModel::RestartRound() {
   bytes_lost_in_round_ = 0;
   loss_events_in_round_ = 0;
+  if (GetQuicReloadableFlag(quic_bbr2_startup_loss_exit_use_max_delivered)) {
+    max_bytes_delivered_in_round_ = 0;
+  }
   round_trip_counter_.RestartRound();
 }
 

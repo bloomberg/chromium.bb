@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.query_tiles;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withParent;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withParent;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.not;
 
@@ -19,10 +19,11 @@ import static org.chromium.chrome.browser.query_tiles.ListMatchers.matchList;
 import static org.chromium.chrome.browser.query_tiles.ViewActions.scrollTo;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.assertion.ViewAssertions;
-import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 import android.view.View;
+
+import androidx.test.espresso.assertion.ViewAssertions;
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matcher;
 import org.junit.Assert;
@@ -31,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -53,8 +55,8 @@ import org.chromium.components.query_tiles.TestTileProvider;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.
-EnableFeatures({ChromeFeatureList.QUERY_TILES, ChromeFeatureList.QUERY_TILES_ENABLE_QUERY_EDITING})
+@Features.EnableFeatures({ChromeFeatureList.QUERY_TILES, ChromeFeatureList.QUERY_TILES_IN_NTP,
+        ChromeFeatureList.QUERY_TILES_ENABLE_QUERY_EDITING})
 public class QueryTileSectionToOmniboxTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -130,6 +132,7 @@ public class QueryTileSectionToOmniboxTest {
     /** Test that clicking on a tile to open the omnibox and pressing back shows the right tiles. */
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1091225")
     public void testBackOutOfOmniboxRestoresTilePosition() throws Exception {
         setUp(1 /* levels */);
         Matcher<View> recyclerViewMatcher = withParent(withId(R.id.query_tiles));

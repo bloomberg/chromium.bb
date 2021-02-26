@@ -58,7 +58,7 @@ class BASE_EXPORT MessagePumpForUI : public MessagePump {
 
  protected:
   void SetDelegate(Delegate* delegate) { delegate_ = delegate; }
-  virtual bool IsTestImplementation() const;
+  void ResetShouldQuit() { quit_ = false; }
 
  private:
   void DoIdleWork();

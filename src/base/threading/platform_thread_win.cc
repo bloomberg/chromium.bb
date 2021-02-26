@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/threading/scoped_thread_priority.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time_override.h"
@@ -115,6 +116,13 @@ DWORD __stdcall ThreadFunc(void* params) {
         PlatformThread::CurrentId());
   }
 
+  // Ensure thread priority is at least NORMAL before initiating thread
+  // destruction. Thread destruction on Windows holds the LdrLock while
+  // performing TLS destruction which causes hangs if performed at background
+  // priority (priority inversion) (see: http://crbug.com/1096203).
+  if (PlatformThread::GetCurrentThreadPriority() < ThreadPriority::NORMAL)
+    PlatformThread::SetCurrentThreadPriority(ThreadPriority::NORMAL);
+
   return 0;
 }
 
@@ -134,7 +142,18 @@ bool CreateThreadInternal(size_t stack_size,
     // |chrome/BUILD.gn|, but keep the default stack size of other threads to
     // 1MB for the address space pressure.
     flags = STACK_SIZE_PARAM_IS_A_RESERVATION;
-    stack_size = 1024 * 1024;
+    static BOOL is_wow64 = -1;
+    if (is_wow64 == -1 && !IsWow64Process(GetCurrentProcess(), &is_wow64))
+      is_wow64 = FALSE;
+    // When is_wow64 is set that means we are running on 64-bit Windows and we
+    // get 4 GiB of address space. In that situation we can afford to use 1 MiB
+    // of address space for stacks. When running on 32-bit Windows we only get
+    // 2 GiB of address space so we need to conserve. Typically stack usage on
+    // these threads is only about 100 KiB.
+    if (is_wow64)
+      stack_size = 1024 * 1024;
+    else
+      stack_size = 512 * 1024;
 #endif
   }
 

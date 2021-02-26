@@ -14,7 +14,9 @@ Polymer({
   is: 'settings-kerberos-accounts',
 
   behaviors: [
+    DeepLinkingBehavior,
     I18nBehavior,
+    settings.RouteObserverBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -52,6 +54,19 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kAddKerberosTicket,
+        chromeos.settings.mojom.Setting.kRemoveKerberosTicket,
+        chromeos.settings.mojom.Setting.kSetActiveKerberosTicket,
+      ]),
+    },
   },
 
   /** @private {?settings.KerberosAccountsBrowserProxy} */
@@ -74,13 +89,28 @@ Polymer({
       const queryParams = settings.Router.getInstance().getQueryParameters();
       const reauthPrincipal = queryParams.get('kerberos_reauth');
       const reauthAccount = this.accounts_.find(account => {
-        return account.principalName == reauthPrincipal;
+        return account.principalName === reauthPrincipal;
       });
       if (reauthAccount) {
         this.selectedAccount_ = reauthAccount;
         this.showAddAccountDialog_ = true;
       }
     });
+  },
+
+  /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   * @protected
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.KERBEROS_ACCOUNTS) {
+      return;
+    }
+
+    this.attemptDeepLink();
   },
 
   /**
@@ -162,7 +192,7 @@ Polymer({
         .removeAccount(
             /** @type {!settings.KerberosAccount} */ (this.selectedAccount_))
         .then(error => {
-          if (error == settings.KerberosErrorType.kNone) {
+          if (error === settings.KerberosErrorType.kNone) {
             this.showToast_('kerberosAccountsAccountRemovedTip');
           } else {
             console.error('Unexpected error removing account: ' + error);

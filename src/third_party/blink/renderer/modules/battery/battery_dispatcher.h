@@ -18,8 +18,6 @@ namespace blink {
 class MODULES_EXPORT BatteryDispatcher final
     : public GarbageCollected<BatteryDispatcher>,
       public PlatformEventDispatcher {
-  USING_GARBAGE_COLLECTED_MIXIN(BatteryDispatcher);
-
  public:
   static BatteryDispatcher& Instance();
 
@@ -29,7 +27,7 @@ class MODULES_EXPORT BatteryDispatcher final
     return has_latest_data_ ? &battery_status_ : nullptr;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void QueryNextStatus();
@@ -37,7 +35,7 @@ class MODULES_EXPORT BatteryDispatcher final
   void UpdateBatteryStatus(const BatteryStatus&);
 
   // Inherited from PlatformEventDispatcher.
-  void StartListening(LocalFrame* frame) override;
+  void StartListening(LocalDOMWindow*) override;
   void StopListening() override;
 
   HeapMojoRemote<device::mojom::blink::BatteryMonitor> monitor_;

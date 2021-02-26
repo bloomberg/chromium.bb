@@ -8,7 +8,7 @@
 #include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -16,15 +16,18 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/permissions/chooser_context_base.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
+#include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
+#include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 
@@ -33,6 +36,8 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/hid/hid_chooser_context.h"
+#include "chrome/browser/hid/hid_chooser_context_factory.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -65,6 +70,13 @@ permissions::ChooserContextBase* ChromePageInfoDelegate::GetChooserContext(
     case ContentSettingsType::SERIAL_CHOOSER_DATA:
 #if !defined(OS_ANDROID)
       return SerialChooserContextFactory::GetForProfile(GetProfile());
+#else
+      NOTREACHED();
+      return nullptr;
+#endif
+    case ContentSettingsType::HID_CHOOSER_DATA:
+#if !defined(OS_ANDROID)
+      return HidChooserContextFactory::GetForProfile(GetProfile());
 #else
       NOTREACHED();
       return nullptr;
@@ -158,6 +170,16 @@ HostContentSettingsMap* ChromePageInfoDelegate::GetContentSettings() {
   return HostContentSettingsMapFactory::GetForProfile(GetProfile());
 }
 
+bool ChromePageInfoDelegate::IsSubresourceFilterActivated(
+    const GURL& site_url) {
+  subresource_filter::SubresourceFilterContentSettingsManager*
+      settings_manager =
+          SubresourceFilterProfileContextFactory::GetForProfile(GetProfile())
+              ->settings_manager();
+
+  return settings_manager->GetSiteActivationFromMetadata(site_url);
+}
+
 bool ChromePageInfoDelegate::IsContentDisplayedInVrHeadset() {
   return vr::VrTabHelper::IsContentDisplayedInHeadset(web_contents_);
 }
@@ -189,16 +211,16 @@ ChromePageInfoDelegate::GetVisibleSecurityState() {
   return *helper->GetVisibleSecurityState();
 }
 
-std::unique_ptr<content_settings::TabSpecificContentSettings::Delegate>
-ChromePageInfoDelegate::GetTabSpecificContentSettingsDelegate() {
-  auto delegate = std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+std::unique_ptr<content_settings::PageSpecificContentSettings::Delegate>
+ChromePageInfoDelegate::GetPageSpecificContentSettingsDelegate() {
+  auto delegate = std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
       web_contents_);
   return std::move(delegate);
 }
 
 #if defined(OS_ANDROID)
 const base::string16 ChromePageInfoDelegate::GetClientApplicationName() {
-  return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
 }
 #endif
 

@@ -4,7 +4,12 @@
 
 #include "cast/receiver/channel/testing/device_auth_test_helpers.h"
 
+#include <string>
+#include <utility>
+
+#include "cast/common/certificate/testing/test_helpers.h"
 #include "gtest/gtest.h"
+#include "util/crypto/pem_helpers.h"
 
 namespace openscreen {
 namespace cast {
@@ -15,10 +20,9 @@ void InitStaticCredentialsFromFiles(StaticCredentialsProvider* creds,
                                     absl::string_view privkey_filename,
                                     absl::string_view chain_filename,
                                     absl::string_view tls_filename) {
-  auto private_key = testing::ReadKeyFromPemFile(privkey_filename);
+  auto private_key = ReadKeyFromPemFile(privkey_filename);
   ASSERT_TRUE(private_key);
-  std::vector<std::string> certs =
-      testing::ReadCertificatesFromPemFile(chain_filename);
+  std::vector<std::string> certs = ReadCertificatesFromPemFile(chain_filename);
   ASSERT_GT(certs.size(), 1u);
 
   // Use the root of the chain as the trust store for the test.
@@ -35,7 +39,7 @@ void InitStaticCredentialsFromFiles(StaticCredentialsProvider* creds,
       std::move(certs), std::move(private_key), std::string()};
 
   const std::vector<std::string> tls_cert =
-      testing::ReadCertificatesFromPemFile(tls_filename);
+      ReadCertificatesFromPemFile(tls_filename);
   ASSERT_EQ(tls_cert.size(), 1u);
   data = reinterpret_cast<const uint8_t*>(tls_cert[0].data());
   if (parsed_cert) {

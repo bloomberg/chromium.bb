@@ -19,10 +19,15 @@ namespace ash {
 // paint nothing.
 class WmHighlightItemBorder : public views::Border {
  public:
-  explicit WmHighlightItemBorder(int corner_radius);
+
+  explicit WmHighlightItemBorder(
+      int corner_radius,
+      gfx::Insets padding = gfx::Insets(0));
   ~WmHighlightItemBorder() override = default;
 
-  void set_extra_margin(int extra_margin) { extra_margin_ = extra_margin; }
+  // This highlight meant to indicate focus. No border will be painted if
+  // |focused| is false.
+  void SetFocused(bool focused);
 
   // views::Border:
   void Paint(const views::View& view, gfx::Canvas* canvas) override;
@@ -32,13 +37,7 @@ class WmHighlightItemBorder : public views::Border {
  private:
   const int corner_radius_;
 
-  // Some views which use this border have padding for other UI purposes (ie.
-  // they paint their contents insetted from |View::GetLocalBounds()|. Such
-  // views are responsible for letting this class know how much padding is used
-  // so adjustments can be made accordingly.
-  // TODO(sammiequon): Change OverviewItemView to not have its own margin, then
-  // this won't be needed.
-  int extra_margin_ = 0;
+  gfx::Insets border_insets_;
 
   DISALLOW_COPY_AND_ASSIGN(WmHighlightItemBorder);
 };

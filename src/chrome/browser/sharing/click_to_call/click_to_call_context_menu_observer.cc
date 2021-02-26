@@ -15,8 +15,8 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sync_device_info/device_info.h"
-#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -66,7 +66,7 @@ void ClickToCallContextMenuObserver::BuildMenu(
     return;
 
   if (devices_.size() == 1) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     proxy_->AddMenuItem(
         IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
@@ -78,11 +78,13 @@ void ClickToCallContextMenuObserver::BuildMenu(
         l10n_util::GetStringFUTF16(
             IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
             base::UTF8ToUTF16(devices_[0]->client_name())),
-        vector_icons::kCallIcon);
+        ui::ImageModel::FromVectorIcon(controller_->GetVectorIcon(),
+                                       /*color_id=*/-1,
+                                       ui::SimpleMenuModel::kDefaultIconSize));
 #endif
   } else {
     BuildSubMenu();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     proxy_->AddSubMenu(
         IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES,
         l10n_util::GetStringUTF16(
@@ -92,7 +94,10 @@ void ClickToCallContextMenuObserver::BuildMenu(
     proxy_->AddSubMenuWithStringIdAndIcon(
         IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES,
         IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES,
-        sub_menu_model_.get(), vector_icons::kCallIcon);
+        sub_menu_model_.get(),
+        ui::ImageModel::FromVectorIcon(controller_->GetVectorIcon(),
+                                       /*color_id=*/-1,
+                                       ui::SimpleMenuModel::kDefaultIconSize));
 #endif
   }
 }
@@ -141,8 +146,8 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
   if (size_t{chosen_device_index} >= devices_.size())
     return;
 
-  LogSharingSelectedDeviceIndex(controller_->GetFeatureMetricsPrefix(),
-                                kSharingUiContextMenu, chosen_device_index);
+  LogSharingSelectedIndex(controller_->GetFeatureMetricsPrefix(),
+                          kSharingUiContextMenu, chosen_device_index);
 
   controller_->OnDeviceSelected(phone_number_, *devices_[chosen_device_index],
                                 *entry_point_);

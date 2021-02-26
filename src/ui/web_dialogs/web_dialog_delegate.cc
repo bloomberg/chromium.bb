@@ -20,15 +20,15 @@ void WebDialogDelegate::GetMinimumDialogSize(gfx::Size* size) const {
   GetDialogSize(size);
 }
 
-bool WebDialogDelegate::CanCloseDialog() const {
-  return true;
-}
-
-bool WebDialogDelegate::CanResizeDialog() const {
-  return true;
+bool WebDialogDelegate::CanMaximizeDialog() const {
+  return false;
 }
 
 bool WebDialogDelegate::OnDialogCloseRequested() {
+  return true;
+}
+
+bool WebDialogDelegate::DeprecatedOnDialogCloseRequested() {
   return true;
 }
 
@@ -72,6 +72,17 @@ std::vector<Accelerator> WebDialogDelegate::GetAccelerators() {
 
 bool WebDialogDelegate::AcceleratorPressed(const Accelerator& accelerator) {
   return false;
+}
+
+bool WebDialogDelegate::CheckMediaAccessPermission(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& security_origin,
+    blink::mojom::MediaStreamType type) {
+  return false;
+}
+
+WebDialogDelegate::FrameKind WebDialogDelegate::GetWebDialogFrameKind() const {
+  return WebDialogDelegate::FrameKind::kNonClient;
 }
 
 }  // namespace ui

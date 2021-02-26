@@ -10,6 +10,15 @@
   SecureContext
 ] interface NativeIOFileSync {
   void close();
+
+  [
+    RaisesException
+  ] unsigned long long getLength();
+
+  [
+    RaisesException
+  ] void setLength(unsigned long long length);
+
   [
     RaisesException
   ] unsigned long long read([AllowShared] ArrayBufferView buffer,
@@ -18,4 +27,7 @@
     RaisesException
   ] unsigned long long write([AllowShared] ArrayBufferView buffer,
                              unsigned long long file_offset);
+  [
+    RaisesException
+  ] void flush();
 };

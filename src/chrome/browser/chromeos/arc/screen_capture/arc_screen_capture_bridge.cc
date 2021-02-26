@@ -18,7 +18,6 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace {
 constexpr char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
@@ -181,7 +180,7 @@ void ArcScreenCaptureBridge::TestModeAcceptPermission(
 }
 
 void ArcScreenCaptureBridge::OpenSession(
-    mojom::ScreenCaptureSessionNotifierPtr notifier,
+    mojo::PendingRemote<mojom::ScreenCaptureSessionNotifier> notifier,
     const std::string& package_name,
     const gfx::Size& size,
     OpenSessionCallback callback) {
@@ -191,18 +190,18 @@ void ArcScreenCaptureBridge::OpenSession(
     LOG(ERROR) << "Attempt to open screen capture session without granted "
                   "permissions for package "
                << package_name;
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojo::NullRemote());
     return;
   }
 
   // TODO(crbug.com/955171): Remove this temporary conversion to InterfacePtr
   // once OpenSession callback from //components/arc/mojom/screen_capture.mojom
   // could take pending_remote directly. Refer to crrev.com/c/1868870.
-  mojo::InterfacePtr<mojom::ScreenCaptureSession> screen_capture_session_ptr(
-      ArcScreenCaptureSession::Create(
+  mojo::PendingRemote<mojom::ScreenCaptureSession>
+      screen_capture_session_remote(ArcScreenCaptureSession::Create(
           std::move(notifier), found->second.display_name,
           found->second.desktop_id, size, found->second.enable_notification));
-  std::move(callback).Run(std::move(screen_capture_session_ptr));
+  std::move(callback).Run(std::move(screen_capture_session_remote));
 }
 
 }  // namespace arc

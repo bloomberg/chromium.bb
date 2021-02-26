@@ -7,12 +7,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -91,8 +92,8 @@ ApkWebAppService::ApkWebAppService(Profile* profile) : profile_(profile) {
 
 ApkWebAppService::~ApkWebAppService() = default;
 
-bool ApkWebAppService::IsWebOnlyTwa(const web_app::AppId& web_app_id) {
-  if (!IsWebAppInstalledFromArc(web_app_id))
+bool ApkWebAppService::IsWebOnlyTwa(const web_app::AppId& app_id) {
+  if (!IsWebAppInstalledFromArc(app_id))
     return false;
 
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
@@ -100,13 +101,45 @@ bool ApkWebAppService::IsWebOnlyTwa(const web_app::AppId& web_app_id) {
 
   // Find the entry associated with the provided web app id.
   const base::Value* v = web_apps_to_apks->FindPathOfType(
-      {web_app_id, kIsWebOnlyTwaKey}, base::Value::Type::BOOLEAN);
+      {app_id, kIsWebOnlyTwaKey}, base::Value::Type::BOOLEAN);
   return v && v->GetBool();
 }
 
-base::Optional<std::string> ApkWebAppService::GetCertificateSha256Fingerprint(
+bool ApkWebAppService::IsWebAppInstalledFromArc(
     const web_app::AppId& web_app_id) {
-  if (!IsWebAppInstalledFromArc(web_app_id))
+  return web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
+      profile_->GetPrefs(), web_app_id, web_app::ExternalInstallSource::kArc);
+}
+
+base::Optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
+    const web_app::AppId& app_id) {
+  DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
+                                        kWebAppToApkDictPref);
+
+  // Find the entry associated with the provided web app id.
+  const base::Value* v = web_apps_to_apks->FindPathOfType(
+      {app_id, kPackageNameKey}, base::Value::Type::STRING);
+
+  if (!v)
+    return base::nullopt;
+
+  return base::Optional<std::string>(v->GetString());
+}
+
+base::Optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
+    const GURL& url) {
+  web_app::AppRegistrar& registrar =
+      web_app::WebAppProvider::Get(profile_)->registrar();
+  base::Optional<web_app::AppId> app_id = registrar.FindAppWithUrlInScope(url);
+  if (!app_id)
+    return base::nullopt;
+
+  return GetPackageNameForWebApp(app_id.value());
+}
+
+base::Optional<std::string> ApkWebAppService::GetCertificateSha256Fingerprint(
+    const web_app::AppId& app_id) {
+  if (!IsWebAppInstalledFromArc(app_id))
     return base::nullopt;
 
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
@@ -114,11 +147,10 @@ base::Optional<std::string> ApkWebAppService::GetCertificateSha256Fingerprint(
 
   // Find the entry associated with the provided web app id.
   const base::Value* v = web_apps_to_apks->FindPathOfType(
-      {web_app_id, kSha256FingerprintKey}, base::Value::Type::STRING);
+      {app_id, kSha256FingerprintKey}, base::Value::Type::STRING);
 
-  if (!v) {
+  if (!v)
     return base::nullopt;
-  }
 
   return base::Optional<std::string>(v->GetString());
 }
@@ -241,13 +273,18 @@ void ApkWebAppService::OnPackageInstalled(
     }
   }
 
-  // TODO(crbug.com/1082547): check if fingerprint or is_twa has chagned.
   bool was_previously_web_app = !web_app_id.empty();
   bool is_now_web_app = !package_info.web_app_info.is_null();
 
-  // The previous and current states match. Nothing to do.
-  if (is_now_web_app == was_previously_web_app)
+  // The previous and current states match.
+  if (is_now_web_app == was_previously_web_app) {
+    if (is_now_web_app && package_info.web_app_info->is_web_only_twa !=
+                              IsWebOnlyTwa(web_app_id)) {
+      UpdatePackageInfo(web_app_id, package_info.web_app_info);
+    }
+
     return;
+  }
 
   // Only call this function if there has been a state change from web app to
   // Android app or vice-versa.
@@ -262,11 +299,11 @@ void ApkWebAppService::OnPackageInstalled(
   // The package is a web app but we don't have a corresponding browser-side
   // artifact. Install it.
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_app_list_prefs_->app_connection_holder(), RequestPackageIcon);
+      arc_app_list_prefs_->app_connection_holder(), GetPackageIcon);
   if (!instance)
     return;
 
-  instance->RequestPackageIcon(
+  instance->GetPackageIcon(
       package_info.package_name, kDefaultIconSize, /*normalize=*/false,
       base::BindOnce(&ApkWebAppService::OnDidGetWebAppIcon,
                      weak_ptr_factory_.GetWeakPtr(), package_info.package_name,
@@ -405,9 +442,9 @@ void ApkWebAppService::OnWebAppUninstalled(const web_app::AppId& web_app_id) {
 void ApkWebAppService::OnDidGetWebAppIcon(
     const std::string& package_name,
     arc::mojom::WebAppInfoPtr web_app_info,
-    const std::vector<uint8_t>& icon_png_data) {
+    arc::mojom::RawIconPngDataPtr icon) {
   ApkWebAppInstaller::Install(
-      profile_, std::move(web_app_info), icon_png_data,
+      profile_, std::move(web_app_info), std::move(icon),
       base::BindOnce(&ApkWebAppService::OnDidFinishInstall,
                      weak_ptr_factory_.GetWeakPtr(), package_name),
       weak_ptr_factory_.GetWeakPtr());
@@ -450,10 +487,15 @@ void ApkWebAppService::OnDidFinishInstall(
     std::move(web_app_installed_callback_).Run(package_name, web_app_id);
 }
 
-bool ApkWebAppService::IsWebAppInstalledFromArc(
-    const web_app::AppId& web_app_id) {
-  return web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
-      profile_->GetPrefs(), web_app_id, web_app::ExternalInstallSource::kArc);
+void ApkWebAppService::UpdatePackageInfo(
+    const std::string& app_id,
+    const arc::mojom::WebAppInfoPtr& web_app_info) {
+  DictionaryPrefUpdate dict_update(profile_->GetPrefs(), kWebAppToApkDictPref);
+  dict_update->SetPath({app_id, kIsWebOnlyTwaKey},
+                       base::Value(web_app_info->is_web_only_twa));
+  dict_update->SetPath(
+      {app_id, kSha256FingerprintKey},
+      base::Value(web_app_info->certificate_sha256_fingerprint.value()));
 }
 
 }  // namespace chromeos

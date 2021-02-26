@@ -9,17 +9,6 @@
     {
       "name": "LayoutBlockFlow DIV id='scroller'",
       "bounds": [200, 200],
-      "backgroundColor": "#008000",
-      "transform": 1
-    },
-    {
-      "name": "Scrolling Contents Layer",
-      "bounds": [185, 300],
-      "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "invalidations": [
-        [0, 0, 185, 300]
-      ],
       "transform": 1
     },
     {
@@ -38,6 +27,16 @@
       "name": "Scroll Corner Layer",
       "position": [185, 185],
       "bounds": [15, 15],
+      "transform": 1
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [185, 300],
+      "contentsOpaque": true,
+      "backgroundColor": "#008000",
+      "invalidations": [
+        [0, 0, 185, 300]
+      ],
       "transform": 1
     }
   ],

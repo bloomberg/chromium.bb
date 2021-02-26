@@ -16,35 +16,15 @@
 
 syntax = "proto2";
 
+// TODO(fmayer): Remove this import once clients are migrated to the new
+// location.
+import public "protos/perfetto/trace/profiling/deobfuscation.proto";
 import "protos/perfetto/trace/profiling/profile_common.proto";
 
 // These messages encode a graph of objects that retain one another. Currently
 // this is used for Android Runtime (i.e. Java and Kotlin) heap graphs.
 
 package perfetto.protos;
-
-message ObfuscatedMember {
-  // This is the obfuscated field name relative to the class containing the
-  // ObfuscatedMember.
-  optional string obfuscated_name = 1;
-  // If this is fully qualified (i.e. contains a '.') this is the deobfuscated
-  // field name including its class. Otherwise, this is this the unqualified
-  // deobfuscated field name relative to the class containing this
-  // ObfuscatedMember.
-  optional string deobfuscated_name = 2;
-}
-
-message ObfuscatedClass {
-  optional string obfuscated_name = 1;
-  optional string deobfuscated_name = 2;
-  repeated ObfuscatedMember obfuscated_members = 3;
-}
-
-message DeobfuscationMapping {
-  optional string package_name = 1;
-  optional int64 version_code = 2;
-  repeated ObfuscatedClass obfuscated_classes = 3;
-}
 
 message HeapGraphRoot {
   enum Type {
@@ -71,24 +51,55 @@ message HeapGraphRoot {
 }
 
 message HeapGraphType {
+  enum Kind {
+    KIND_UNKNOWN = 0;
+    KIND_NORMAL = 1;
+    KIND_NOREFERENCES = 2;
+    KIND_STRING = 3;
+    KIND_ARRAY = 4;
+    KIND_CLASS = 5;
+    KIND_CLASSLOADER = 6;
+    KIND_DEXCACHE = 7;
+    KIND_SOFT_REFERENCE = 8;
+    KIND_WEAK_REFERENCE = 9;
+    KIND_FINALIZER_REFERENCE = 10;
+    KIND_PHANTOM_REFERENCE = 11;
+  };
   // TODO(fmayer): Consider removing this and using the index in the repeaed
   // field to save space.
   optional uint64 id = 1;
   optional uint64 location_id = 2;
   optional string class_name = 3;
+  // Size of objects of this type.
+  optional uint64 object_size = 4;
+  optional uint64 superclass_id = 5;
+  // Indices for InternedData.field_names for the names of the fields of
+  // instances of this class. This does NOT include the fields from
+  // superclasses. The consumer of this data needs to walk all super
+  // classes to get a full lists of fields. Objects always write the
+  // fields in order of most specific class to the furthest up superclass.
+  repeated uint64 reference_field_id = 6 [packed = true];
+  optional Kind kind = 7;
+  optional uint64 classloader_id = 8;
 }
 
 message HeapGraphObject {
   optional uint64 id = 1;
 
-  // Index for InternedData.type_names for the name of the type of this object.
+  // Index for InternedData.types for the name of the type of this object.
   optional uint64 type_id = 2;
 
   // Bytes occupied by this objects.
   optional uint64 self_size = 3;
 
+  // Add this to all non-zero values in reference_field_id. This is used to
+  // get more compact varint encoding.
+  optional uint64 reference_field_id_base = 6;
+
   // Indices for InternedData.field_names for the name of the field referring
-  // to the object.
+  // to the object. For Android S+ and for instances of normal classes (e.g.
+  // not instances of java.lang.Class or arrays), this is instead set in the
+  // corresponding HeapGraphType, and this is left empty.
   repeated uint64 reference_field_id = 4 [packed = true];
 
   // Ids of the Object that is referred to.
@@ -114,12 +125,7 @@ message HeapGraph {
   // Types used in HeapGraphObjects.
   repeated HeapGraphType types = 9;
 
-  // Legacy way to encode types. Names here are emitted by old perfetto_hprof,
-  // which do not include the class_name. Handle like a HeapGraphType with
-  // no location_id.
-  // TODO(b/153552977): Remove this. This was was not used in any publicly
-  // available release.
-  repeated InternedString type_names = 3;
+  reserved 3;
 
   // Field names for references in managed heap graph.
   repeated InternedString field_names = 4;

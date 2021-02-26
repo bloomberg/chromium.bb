@@ -12,7 +12,12 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A {@link ProgressBar} that understands the hiding/showing policy defined in Material Design.
@@ -21,7 +26,27 @@ public class LoadingView extends ProgressBar {
     private static final int LOADING_ANIMATION_DELAY_MS = 500;
     private static final int MINIMUM_ANIMATION_SHOW_TIME_MS = 500;
 
+    /**
+     * A observer interface that will be notified when the progress bar is hidden.
+     */
+    public interface Observer {
+        /**
+         * Notify the listener a call to {@link #showLoadingUI()} is complete and loading view
+         * is VISIBLE.
+         */
+        void onShowLoadingUIComplete();
+
+        /**
+         * Notify the listener a call to {@link #hideLoadingUI()} is complete and loading view is
+         * GONE.
+         */
+        void onHideLoadingUIComplete();
+    }
+
     private long mStartTime = -1;
+    private boolean mDisableAnimationForTest;
+
+    private final List<Observer> mObservers = new ArrayList<>();
 
     private final Runnable mDelayedShow = new Runnable() {
         @Override
@@ -30,6 +55,10 @@ public class LoadingView extends ProgressBar {
             mStartTime = SystemClock.elapsedRealtime();
             setVisibility(View.VISIBLE);
             setAlpha(1.0f);
+
+            for (Observer observer : mObservers) {
+                observer.onShowLoadingUIComplete();
+            }
         }
     };
 
@@ -45,13 +74,18 @@ public class LoadingView extends ProgressBar {
     private final Runnable mDelayedHide = new Runnable() {
         @Override
         public void run() {
+            if (mDisableAnimationForTest) {
+                onHideLoadingFinished();
+                return;
+            }
+
             animate()
                     .alpha(0.0f)
                     .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
                     .setListener(new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
-                            setVisibility(GONE);
+                            onHideLoadingFinished();
                         }
                     });
         }
@@ -97,6 +131,8 @@ public class LoadingView extends ProgressBar {
                     Math.max(0,
                             mStartTime + MINIMUM_ANIMATION_SHOW_TIME_MS
                                     - SystemClock.elapsedRealtime()));
+        } else {
+            onHideLoadingFinished();
         }
     }
 
@@ -106,5 +142,34 @@ public class LoadingView extends ProgressBar {
     public void destroy() {
         removeCallbacks(mDelayedShow);
         removeCallbacks(mDelayedHide);
+        mObservers.clear();
+    }
+
+    /**
+     * Add the listener that will be notified when the spinner is completely hidden with {@link
+     * #hideLoadingUI()}.
+     * @param listener {@link Observer} that will be notified when the spinner is
+     *         completely hidden with {@link #hideLoadingUI()}.
+     */
+    public void addObserver(Observer listener) {
+        mObservers.add(listener);
+    }
+
+    private void onHideLoadingFinished() {
+        setVisibility(GONE);
+        for (Observer observer : mObservers) {
+            observer.onHideLoadingUIComplete();
+        }
+    }
+
+    /**
+     * Set disable the fading animation during {@link #hideLoadingUI()}.
+     * This function is added as a work around for disable animation during unit tests.
+     * @param disableAnimation Whether the fading animation should be disabled during {@link
+     *         #hideLoadingUI()}.
+     */
+    @VisibleForTesting
+    public void setDisableAnimationForTest(boolean disableAnimation) {
+        mDisableAnimationForTest = disableAnimation;
     }
 }

@@ -23,13 +23,13 @@ class CORE_EXPORT TextPainter : public TextPainterBase {
   TextPainter(GraphicsContext& context,
               const Font& font,
               const TextRun& run,
-              const LayoutPoint& text_origin,
-              const LayoutRect& text_bounds,
+              const PhysicalOffset& text_origin,
+              const PhysicalRect& text_frame_rect,
               bool horizontal)
       : TextPainterBase(context,
                         font,
-                        PhysicalOffset(text_origin),
-                        PhysicalRect(text_bounds),
+                        text_origin,
+                        text_frame_rect,
                         horizontal),
         run_(run),
         combined_text_(nullptr) {}

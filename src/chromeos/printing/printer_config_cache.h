@@ -13,20 +13,13 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/containers/queue.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
-#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
 namespace chromeos {
@@ -39,14 +32,18 @@ namespace chromeos {
 //
 // This class must always be constructed on, used on, and destroyed from
 // a sequenced context.
-//
-// TODO(crbug.com/888189): remove CHROMEOS_EXPORT and refactor all this
-// into a dedicated gn component.
 class CHROMEOS_EXPORT PrinterConfigCache {
  public:
+  // |loader_factory_dispenser| is a functor that can create fresh
+  // URLLoaderFactory instances. We use this indirection to avoid
+  // caching raw pointers to URLLoaderFactory instances, which are
+  // invalidated by network service restarts.
+  //
+  // Caller must guarantee that |loader_factory_dispenser| is always
+  // safe to Run() for the lifetime of |this|.
   static std::unique_ptr<PrinterConfigCache> Create(
       const base::Clock* clock,
-      network::mojom::URLLoaderFactory* loader_factory);
+      base::RepeatingCallback<network::mojom::URLLoaderFactory*()>);
   virtual ~PrinterConfigCache() = default;
 
   // Result of calling Fetch(). The |key| identifies how Fetch() was

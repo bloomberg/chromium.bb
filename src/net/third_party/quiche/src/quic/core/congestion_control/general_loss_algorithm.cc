@@ -12,15 +12,25 @@
 
 namespace quic {
 
-GeneralLossAlgorithm::GeneralLossAlgorithm()
-    : loss_detection_timeout_(QuicTime::Zero()),
-      reordering_shift_(kDefaultLossDelayShift),
-      reordering_threshold_(kDefaultPacketReorderingThreshold),
-      use_adaptive_reordering_threshold_(true),
-      use_adaptive_time_threshold_(false),
-      use_packet_threshold_for_runt_packets_(true),
-      least_in_flight_(1),
-      packet_number_space_(NUM_PACKET_NUMBER_SPACES) {}
+namespace {
+float DetectionResponseTime(QuicTime::Delta rtt,
+                            QuicTime send_time,
+                            QuicTime detection_time) {
+  if (detection_time <= send_time || rtt.IsZero()) {
+    // Time skewed, assume a very fast detection where |detection_time| is
+    // |send_time| + |rtt|.
+    return 1.0;
+  }
+  float send_to_detection_us = (detection_time - send_time).ToMicroseconds();
+  return send_to_detection_us / rtt.ToMicroseconds();
+}
+
+QuicTime::Delta GetMaxRtt(const RttStats& rtt_stats) {
+  return std::max(kAlarmGranularity,
+                  std::max(rtt_stats.previous_srtt(), rtt_stats.latest_rtt()));
+}
+
+}  // namespace
 
 // Uses nack counts to decide when packets are lost.
 LossDetectionInterface::DetectionStats GeneralLossAlgorithm::DetectLosses(
@@ -53,10 +63,8 @@ LossDetectionInterface::DetectionStats GeneralLossAlgorithm::DetectLosses(
     }
   }
 
-  QuicTime::Delta max_rtt =
-      std::max(rtt_stats.previous_srtt(), rtt_stats.latest_rtt());
-  max_rtt = std::max(kAlarmGranularity, max_rtt);
-  QuicTime::Delta loss_delay = max_rtt + (max_rtt >> reordering_shift_);
+  const QuicTime::Delta max_rtt = GetMaxRtt(rtt_stats);
+
   QuicPacketNumber packet_number = unacked_packets.GetLeastUnacked();
   auto it = unacked_packets.begin();
   if (least_in_flight_.IsInitialized() && least_in_flight_ >= packet_number) {
@@ -85,6 +93,10 @@ LossDetectionInterface::DetectionStats GeneralLossAlgorithm::DetectLosses(
       continue;
     }
 
+    if (parent_ != nullptr && largest_newly_acked != packet_number) {
+      parent_->OnReorderingDetected();
+    }
+
     if (largest_newly_acked - packet_number >
         detection_stats.sent_packets_max_sequence_reordering) {
       detection_stats.sent_packets_max_sequence_reordering =
@@ -100,12 +112,19 @@ LossDetectionInterface::DetectionStats GeneralLossAlgorithm::DetectLosses(
     if (!skip_packet_threshold_detection &&
         largest_newly_acked - packet_number >= reordering_threshold_) {
       packets_lost->push_back(LostPacket(packet_number, it->bytes_sent));
+      detection_stats.total_loss_detection_response_time +=
+          DetectionResponseTime(max_rtt, it->sent_time, time);
       continue;
     }
 
     // Time threshold loss detection.
+    const QuicTime::Delta loss_delay = max_rtt + (max_rtt >> reordering_shift_);
     QuicTime when_lost = it->sent_time + loss_delay;
     if (time < when_lost) {
+      if (time >=
+          it->sent_time + max_rtt + (max_rtt >> (reordering_shift_ + 1))) {
+        ++detection_stats.sent_packets_num_borderline_time_reorderings;
+      }
       loss_detection_timeout_ = when_lost;
       if (!least_in_flight_.IsInitialized()) {
         // At this point, packet_number is in flight and not detected as lost.
@@ -114,6 +133,8 @@ LossDetectionInterface::DetectionStats GeneralLossAlgorithm::DetectLosses(
       break;
     }
     packets_lost->push_back(LostPacket(packet_number, it->bytes_sent));
+    detection_stats.total_loss_detection_response_time +=
+        DetectionResponseTime(max_rtt, it->sent_time, time);
   }
   if (!least_in_flight_.IsInitialized()) {
     // There is no in flight packet.
@@ -156,8 +177,9 @@ void GeneralLossAlgorithm::SpuriousLossDetected(
   }
 }
 
-void GeneralLossAlgorithm::SetPacketNumberSpace(
-    PacketNumberSpace packet_number_space) {
+void GeneralLossAlgorithm::Initialize(PacketNumberSpace packet_number_space,
+                                      LossDetectionInterface* parent) {
+  parent_ = parent;
   if (packet_number_space_ < NUM_PACKET_NUMBER_SPACES) {
     QUIC_BUG << "Cannot switch packet_number_space";
     return;

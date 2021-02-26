@@ -22,12 +22,9 @@
 
 #include "fxbarcode/common/BC_CommonBitMatrix.h"
 
-#include <algorithm>
-#include <iterator>
-
 #include "third_party/base/stl_util.h"
 
-CBC_CommonBitMatrix::CBC_CommonBitMatrix() {}
+CBC_CommonBitMatrix::CBC_CommonBitMatrix() = default;
 
 void CBC_CommonBitMatrix::Init(int32_t width, int32_t height) {
   m_width = width;

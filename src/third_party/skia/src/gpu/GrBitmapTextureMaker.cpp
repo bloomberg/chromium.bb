@@ -9,7 +9,7 @@
 
 #include "include/core/SkBitmap.h"
 #include "include/core/SkPixelRef.h"
-#include "include/private/GrRecordingContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "include/private/SkIDChangeListener.h"
 #include "src/gpu/GrGpuResourcePriv.h"
 #include "src/gpu/GrProxyProvider.h"
@@ -46,7 +46,7 @@ GrBitmapTextureMaker::GrBitmapTextureMaker(GrRecordingContext* context,
         , fBudgeted(cachePolicy == GrImageTexGenPolicy::kNew_Uncached_Unbudgeted
                             ? SkBudgeted::kNo
                             : SkBudgeted::kYes) {
-    if (!bitmap.isVolatile() && cachePolicy == GrImageTexGenPolicy::kDraw) {
+    if (cachePolicy == GrImageTexGenPolicy::kDraw) {
         SkIPoint origin = bitmap.pixelRefOrigin();
         SkIRect subset = SkIRect::MakeXYWH(origin.fX, origin.fY, bitmap.width(),
                                            bitmap.height());
@@ -54,7 +54,7 @@ GrBitmapTextureMaker::GrBitmapTextureMaker(GrRecordingContext* context,
     }
 }
 
-GrSurfaceProxyView GrBitmapTextureMaker::refOriginalTextureProxyView(GrMipMapped mipMapped) {
+GrSurfaceProxyView GrBitmapTextureMaker::refOriginalTextureProxyView(GrMipmapped mipMapped) {
     GrProxyProvider* proxyProvider = this->context()->priv().proxyProvider();
     sk_sp<GrTextureProxy> proxy;
     GrSwizzle swizzle;
@@ -70,7 +70,7 @@ GrSurfaceProxyView GrBitmapTextureMaker::refOriginalTextureProxyView(GrMipMapped
         if (proxy) {
             swizzle = this->context()->priv().caps()->getReadSwizzle(proxy->backendFormat(),
                                                                      this->colorType());
-            if (mipMapped == GrMipMapped::kNo || proxy->mipMapped() == GrMipMapped::kYes) {
+            if (mipMapped == GrMipmapped::kNo || proxy->mipmapped() == GrMipmapped::kYes) {
                 return {std::move(proxy), kTopLeft_GrSurfaceOrigin, swizzle};
             }
         }
@@ -92,7 +92,7 @@ GrSurfaceProxyView GrBitmapTextureMaker::refOriginalTextureProxyView(GrMipMapped
         if (proxy) {
             swizzle = this->context()->priv().caps()->getReadSwizzle(proxy->backendFormat(),
                                                                      this->colorType());
-            SkASSERT(mipMapped == GrMipMapped::kNo || proxy->mipMapped() == GrMipMapped::kYes);
+            SkASSERT(mipMapped == GrMipmapped::kNo || proxy->mipmapped() == GrMipmapped::kYes);
             if (fKey.isValid()) {
                 installKey(proxy.get());
             }
@@ -101,8 +101,8 @@ GrSurfaceProxyView GrBitmapTextureMaker::refOriginalTextureProxyView(GrMipMapped
     }
 
     if (proxy) {
-        SkASSERT(mipMapped == GrMipMapped::kYes);
-        SkASSERT(proxy->mipMapped() == GrMipMapped::kNo);
+        SkASSERT(mipMapped == GrMipmapped::kYes);
+        SkASSERT(proxy->mipmapped() == GrMipmapped::kNo);
         SkASSERT(fKey.isValid());
         // We need a mipped proxy, but we found a proxy earlier that wasn't mipped. Thus we generate
         // a new mipped surface and copy the original proxy into the base layer. We will then let

@@ -4,7 +4,9 @@
 
 #include "cast/sender/cast_platform_client.h"
 
+#include <memory>
 #include <random>
+#include <utility>
 
 #include "absl/strings/str_cat.h"
 #include "cast/common/channel/virtual_connection_manager.h"
@@ -20,22 +22,11 @@ namespace cast {
 
 static constexpr std::chrono::seconds kRequestTimeout = std::chrono::seconds(5);
 
-namespace {
-
-std::string MakeRandomSenderId() {
-  static auto& rd = *new std::random_device();
-  static auto& gen = *new std::mt19937(rd());
-  static auto& dist = *new std::uniform_int_distribution<>(1, 1000000);
-  return absl::StrCat("sender-", dist(gen));
-}
-
-}  // namespace
-
 CastPlatformClient::CastPlatformClient(VirtualConnectionRouter* router,
                                        VirtualConnectionManager* manager,
                                        ClockNowFunctionPtr clock,
                                        TaskRunner* task_runner)
-    : sender_id_(MakeRandomSenderId()),
+    : sender_id_(MakeUniqueSessionId("sender")),
       virtual_conn_router_(router),
       virtual_conn_manager_(manager),
       clock_(clock),
@@ -149,8 +140,9 @@ void CastPlatformClient::OnMessage(VirtualConnectionRouter* router,
   if (request_id) {
     auto entry = std::find_if(
         socket_id_by_device_id_.begin(), socket_id_by_device_id_.end(),
-        [socket](const std::pair<std::string, int>& entry) {
-          return entry.second == socket->socket_id();
+        [socket_id =
+             ToCastSocketId(socket)](const std::pair<std::string, int>& entry) {
+          return entry.second == socket_id;
         });
     if (entry != socket_id_by_device_id_.end()) {
       HandleResponse(entry->first, request_id.value(), dict);

@@ -69,27 +69,13 @@ bool RefCountedBuffer::SetFrameDimensions(const ObuFrameHeader& frame_header) {
   render_height_ = frame_header.render_height;
   rows4x4_ = frame_header.rows4x4;
   columns4x4_ = frame_header.columns4x4;
-  const int rows4x4_half = DivideBy2(rows4x4_);
-  const int columns4x4_half = DivideBy2(columns4x4_);
-  if (!motion_field_reference_frame_.Reset(rows4x4_half, columns4x4_half,
-                                           /*zero_initialize=*/false) ||
-      !motion_field_mv_.Reset(rows4x4_half, columns4x4_half,
-                              /*zero_initialize=*/false)) {
-    return false;
-  }
-  if (frame_header.refresh_frame_flags != 0) {
-    // Initialize so that Tile::StoreMotionFieldMvsIntoCurrentFrame() can skip
-    // some updates when the updates are the same as the initialized value.
-    // Set to kReferenceFrameIntra instead of kReferenceFrameNone to simplify
-    // branch conditions in motion field projection.
-    // The following memory initialization of contiguous memory is very fast. It
-    // is not recommended to make the initialization multi-threaded, unless the
-    // memory which needs to be initialized in each thread is still contiguous.
-    static_assert(sizeof(motion_field_reference_frame_[0][0]) == sizeof(int8_t),
-                  "");
-    memset(motion_field_reference_frame_.data(), kReferenceFrameIntra,
-           sizeof(motion_field_reference_frame_[0][0]) *
-               motion_field_reference_frame_.size());
+  if (frame_header.refresh_frame_flags != 0 &&
+      !IsIntraFrame(frame_header.frame_type)) {
+    const int rows4x4_half = DivideBy2(rows4x4_);
+    const int columns4x4_half = DivideBy2(columns4x4_);
+    if (!reference_info_.Reset(rows4x4_half, columns4x4_half)) {
+      return false;
+    }
   }
   return segmentation_map_.Allocate(rows4x4_, columns4x4_);
 }

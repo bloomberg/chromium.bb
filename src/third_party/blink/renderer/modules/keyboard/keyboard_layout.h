@@ -21,15 +21,13 @@ class ScriptPromiseResolver;
 
 class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
                              public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(KeyboardLayout);
-
  public:
   explicit KeyboardLayout(ExecutionContext*);
   virtual ~KeyboardLayout() = default;
 
   ScriptPromise GetKeyboardLayoutMap(ScriptState*, ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Returns true if the local frame is attached to the renderer.

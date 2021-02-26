@@ -3,9 +3,6 @@
 // found in the LICENSE file.
 
 GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/assert_additions.js'
-]);
-GEN_INCLUDE([
   '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js'
 ]);
 
@@ -116,7 +113,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'Links', function() {
     const o = new Output().withSpeechAndBraille(range, null, 'navigate');
     assertEqualsJSON(
         {
-          string_: 'Click here|Link|Press Search+Space to activate',
+          string_: 'Click here|Internal link|Press Search+Space to activate',
           'spans_': [
             // Attributes.
             {value: 'name', start: 0, end: 10},
@@ -124,14 +121,13 @@ TEST_F('ChromeVoxOutputE2ETest', 'Links', function() {
             // Link earcon (based on the name).
             {value: {earconId: 'LINK'}, start: 0, end: 10},
 
-            {value: 'role', start: 11, end: 15},
-            {value: {'delay': true}, start: 16, end: 46}
+            {value: {'delay': true}, start: 25, end: 55}
           ]
         },
         o.speechOutputForTest);
     checkBrailleOutput(
-        'Click here lnk', [{value: new Output.NodeSpan(el), start: 0, end: 14}],
-        o);
+        'Click here intlnk',
+        [{value: new Output.NodeSpan(el), start: 0, end: 17}], o);
   });
 });
 
@@ -330,12 +326,11 @@ TEST_F('ChromeVoxOutputE2ETest', 'Input', function() {
           ['Time control', [{value: 'role', start: 0, end: 12}]],
           ['Date control', [{value: 'role', start: 0, end: 12}]],
           [
-            'Choose File|No file chosen|Button',
+            'No file chosen, Choose File|Button',
             [
-              {value: 'name', start: 0, end: 11},
-              {value: new Output.EarconAction('BUTTON'), start: 0, end: 11},
-              {value: 'value', start: 12, end: 26},
-              {value: 'role', start: 27, end: 33}
+              {value: 'name', start: 0, end: 27},
+              {value: new Output.EarconAction('BUTTON'), start: 0, end: 27},
+              {value: 'role', start: 28, end: 34}
             ]
           ],
           '||Search', '||Edit text'
@@ -345,7 +340,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'Input', function() {
         const expectedBrailleValues = [
           ' ed', ' @ed 8dot', ' pwded', ' #ed', {string_: 'spnbtn', spans_: []},
           {string_: 'time'}, {string_: 'date'},
-          {string_: 'Choose File No file chosen btn'}, ' search', ' ed'
+          {string_: 'No file chosen, Choose File btn'}, ' search', ' ed'
         ];
         assertEquals(expectedSpeechValues.length, expectedBrailleValues.length);
 
@@ -355,7 +350,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'Input', function() {
           const o = new Output().withoutHints().withSpeechAndBraille(
               range, null, 'navigate');
           let expectedSpansForValue = null;
-          if (typeof expectedValue == 'object') {
+          if (typeof expectedValue === 'object') {
             checkSpeechOutput(expectedValue[0], expectedValue[1], o);
           } else {
             expectedSpansForValue = expectedValue === '||Search' ?
@@ -593,6 +588,8 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
     'docNoteRef',
     'docNotice',
     'docPageBreak',
+    'docPageFooter',
+    'docPageHeader',
     'docPageList',
     'docPart',
     'docPreface',
@@ -624,7 +621,7 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
     const value = Output.STATE_INFO_[key];
     for (innerKey in value) {
       const innerValue = value[innerKey];
-      if (typeof (innerValue) == 'boolean') {
+      if (typeof (innerValue) === 'boolean') {
         assertEquals('isRoleSpecific', innerKey);
         continue;
       }
@@ -968,13 +965,13 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'ValidateCommonProperties', function() {
       continue;
     }
 
-    if (speak.indexOf(stateStr) == -1) {
+    if (speak.indexOf(stateStr) === -1) {
       missingState.push(key);
     }
-    if (speak.indexOf(restrictionStr) == -1) {
+    if (speak.indexOf(restrictionStr) === -1) {
       missingRestriction.push(key);
     }
-    if (speak.indexOf(descStr) == -1) {
+    if (speak.indexOf(descStr) === -1) {
       missingDescription.push(key);
     }
   }
@@ -1016,13 +1013,13 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'ValidateCommonProperties', function() {
     RoleType.STATIC_TEXT, RoleType.WINDOW
   ];
   missingState = missingState.filter(function(state) {
-    return notStated.indexOf(state) == -1;
+    return notStated.indexOf(state) === -1;
   });
   missingRestriction = missingRestriction.filter(function(restriction) {
-    return notRestricted.indexOf(restriction) == -1;
+    return notRestricted.indexOf(restriction) === -1;
   });
   missingDescription = missingDescription.filter(function(desc) {
-    return notDescribed.indexOf(desc) == -1;
+    return notDescribed.indexOf(desc) === -1;
   });
 
   assertEquals(
@@ -1093,29 +1090,6 @@ TEST_F('ChromeVoxOutputE2ETest', 'TextFieldObeysRoleDescription', function() {
             cursors.Range.fromNode(region));
         assertEquals('circle', o.speechOutputForTest.string_);
         assertEquals('circle', o.brailleOutputForTest.string_);
-      });
-});
-
-TEST_F('ChromeVoxOutputE2ETest', 'ARCListItem', function() {
-  this.runWithLoadedTree(
-      `
-    <div role="listitem">
-      <p>storage</p>
-      <p>128 GB</p>
-    </div>
-  `,
-      function(root) {
-        const listitem = root.find({role: RoleType.LIST_ITEM});
-        Object.defineProperty(listitem, 'clickable', {get: () => true});
-        assertTrue(AutomationPredicate.leaf(listitem));
-        assertFalse(AutomationPredicate.container(listitem));
-
-        const o = new Output().withRichSpeechAndBraille(
-            cursors.Range.fromNode(listitem));
-        assertEquals(
-            'storage 128 GB|List item|Press Search+Space to activate',
-            o.speechOutputForTest.string_);
-        assertEquals('storage 128 GB lstitm', o.brailleOutputForTest.string_);
       });
 });
 
@@ -1362,4 +1336,48 @@ TEST_F('ChromeVoxOutputE2ETest', 'DelayHintVariants', function() {
             },
             o.speechOutputForTest);
       });
+});
+
+TEST_F('ChromeVoxOutputE2ETest', 'WithoutFocusRing', function() {
+  const site = `<button></button>`;
+  this.runWithLoadedTree(site, function(root) {
+    let called = false;
+    ChromeVoxState.instance.setFocusBounds = this.newCallback(() => {
+      called = true;
+    });
+
+    const button = root.find({role: RoleType.BUTTON});
+
+    // Triggers drawing of the focus ring.
+    new Output().withSpeech(cursors.Range.fromNode(button)).go();
+    assertTrue(called);
+    called = false;
+
+    // Does not trigger drawing of the focus ring.
+    new Output()
+        .withSpeech(cursors.Range.fromNode(button))
+        .withoutFocusRing()
+        .go();
+    assertFalse(called);
+  });
+});
+
+TEST_F('ChromeVoxOutputE2ETest', 'ARCCheckbox', function() {
+  this.runWithLoadedTree('<input type="checkbox">', function(root) {
+    const checkbox = root.firstChild.firstChild;
+    Object.defineProperty(checkbox, 'checkedStateDescription', {
+      value: 'checked state description',
+    });
+    const range = cursors.Range.fromNode(checkbox);
+    const o = new Output().withoutHints().withSpeechAndBraille(
+        range, null, 'navigate');
+    checkSpeechOutput(
+        '|Check box|checked state description',
+        [
+          {value: new Output.EarconAction('CHECK_OFF'), start: 0, end: 0},
+          {value: 'role', start: 1, end: 10},
+          {value: 'checkedStateDescription', start: 11, end: 36}
+        ],
+        o);
+  });
 });

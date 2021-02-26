@@ -15,18 +15,10 @@
 #include <string>
 #include <vector>
 
-// Win8 SDK compatibility, see http://goo.gl/fufvl for more information.
-// "Note: This interface has been renamed IDataObjectAsyncCapability."
-// If we're building on pre-8 we define it to its old name. It's documented as
-// being binary compatible.
-#ifndef __IDataObjectAsyncCapability_FWD_DEFINED__
-#define IDataObjectAsyncCapability IAsyncOperation
-#endif
-
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -95,13 +87,26 @@ class DataObjectImpl : public DownloadFileObserver,
 
   // Our internal representation of stored data & type info.
   struct StoredDataInfo {
+   public:
     FORMATETC format_etc;
-    STGMEDIUM* medium;
-    bool owns_medium;
+    STGMEDIUM medium;
     std::unique_ptr<DownloadFileProvider> downloader;
 
-    StoredDataInfo(const FORMATETC& format_etc, STGMEDIUM* medium);
     ~StoredDataInfo();
+    StoredDataInfo(const StoredDataInfo&) = delete;
+    StoredDataInfo& operator=(const StoredDataInfo&) = delete;
+
+    // Takes ownership of and nullifies `medium` to approximate moving from
+    // STGMEDIUM.
+    static std::unique_ptr<StoredDataInfo> TakeStorageMedium(
+        const FORMATETC& format_etc,
+        STGMEDIUM& medium);
+
+   private:
+    // STGMEDIUM is just a POD, it does not guarantee `medium` is no longer be
+    // used after calling this constructor while the ownership of `medium` is
+    // passed.
+    StoredDataInfo(const FORMATETC& format_etc, const STGMEDIUM& medium);
   };
 
   typedef std::vector<std::unique_ptr<StoredDataInfo>> StoredData;
@@ -115,7 +120,8 @@ class DataObjectImpl : public DownloadFileObserver,
   bool async_operation_started_;
 };
 
-class UI_BASE_EXPORT OSExchangeDataProviderWin : public OSExchangeDataProvider {
+class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderWin
+    : public OSExchangeDataProvider {
  public:
   // Returns true if source has plain text that is a valid url.
   static bool HasPlainTextURL(IDataObject* source);
@@ -126,8 +132,6 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin : public OSExchangeDataProvider {
 
   static DataObjectImpl* GetDataObjectImpl(const OSExchangeData& data);
   static IDataObject* GetIDataObject(const OSExchangeData& data);
-  static IDataObjectAsyncCapability* GetIAsyncOperation(
-      const OSExchangeData& data);
 
   explicit OSExchangeDataProviderWin(IDataObject* source);
   OSExchangeDataProviderWin();
@@ -186,6 +190,9 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin : public OSExchangeDataProvider {
                     const gfx::Vector2d& cursor_offset) override;
   gfx::ImageSkia GetDragImage() const override;
   gfx::Vector2d GetDragImageOffset() const override;
+
+  void SetSource(std::unique_ptr<DataTransferEndpoint> data_source) override;
+  DataTransferEndpoint* GetSource() const override;
 
  private:
   void SetVirtualFileContentAtIndexForTesting(base::span<const uint8_t> data,

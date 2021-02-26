@@ -254,7 +254,7 @@ static inline bool CanHaveWhitespaceChildren(
   const LayoutObject& parent = *context.parent;
   // <button> and <fieldset> should allow whitespace even though
   // LayoutFlexibleBox doesn't.
-  if (parent.IsLayoutButton() || parent.IsFieldset())
+  if (parent.IsButtonIncludingNG() || parent.IsFieldset())
     return true;
 
   if (parent.IsTable() || parent.IsTableRow() || parent.IsTableSection() ||
@@ -268,7 +268,7 @@ static inline bool CanHaveWhitespaceChildren(
 
     return style.PreserveNewline() ||
            !EndsWithWhitespace(
-               ToLayoutText(context.previous_in_flow)->GetText());
+               To<LayoutText>(context.previous_in_flow)->GetText());
   }
   return true;
 }
@@ -312,7 +312,7 @@ bool Text::TextLayoutObjectIsNeeded(const AttachContext& context,
 
   if (context.previous_in_flow->IsText()) {
     return !EndsWithWhitespace(
-        ToLayoutText(context.previous_in_flow)->GetText());
+        To<LayoutText>(context.previous_in_flow)->GetText());
   }
 
   return context.previous_in_flow->IsInline() &&
@@ -387,7 +387,7 @@ bool NeedsWhitespaceLayoutObject(const ComputedStyle& style) {
 
 void Text::RecalcTextStyle(const StyleRecalcChange change) {
   scoped_refptr<const ComputedStyle> new_style =
-      GetDocument().EnsureStyleResolver().StyleForText(this);
+      GetDocument().GetStyleResolver().StyleForText(this);
   if (LayoutText* layout_text = GetLayoutObject()) {
     const ComputedStyle* layout_parent_style =
         GetLayoutObject()->Parent()->Style();
@@ -445,7 +445,7 @@ static bool ShouldUpdateLayoutByReattaching(const Text& text_node,
     // |text_fragment_layout_object| represents first-letter part but it isn't
     // inside first-letter-pseudo element. See http://crbug.com/978947
     const auto& text_fragment_layout_object =
-        *ToLayoutTextFragment(text_layout_object);
+        *To<LayoutTextFragment>(text_layout_object);
     return text_fragment_layout_object.GetFirstLetterPseudoElement() ||
            !text_fragment_layout_object.IsRemainingTextLayoutObject();
   }
@@ -470,7 +470,7 @@ Text* Text::CloneWithData(Document& factory, const String& data) const {
   return Create(factory, data);
 }
 
-void Text::Trace(Visitor* visitor) {
+void Text::Trace(Visitor* visitor) const {
   CharacterData::Trace(visitor);
 }
 

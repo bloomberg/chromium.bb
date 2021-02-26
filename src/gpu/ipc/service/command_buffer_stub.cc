@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/hash/hash.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -649,15 +649,14 @@ void CommandBufferStub::RemoveDestructionObserver(
   destruction_observers_.RemoveObserver(observer);
 }
 
-std::unique_ptr<MemoryTracker> CommandBufferStub::CreateMemoryTracker(
-    const GPUCreateCommandBufferConfig& init_params) const {
+std::unique_ptr<MemoryTracker> CommandBufferStub::CreateMemoryTracker() const {
   MemoryTrackerFactory current_factory = GetMemoryTrackerFactory();
   if (current_factory)
-    return current_factory.Run(init_params);
+    return current_factory.Run();
 
   return std::make_unique<GpuCommandBufferMemoryTracker>(
       command_buffer_id_, channel_->client_tracing_id(),
-      init_params.attribs.context_type, channel_->task_runner(),
+      channel_->task_runner(),
       channel_->gpu_channel_manager()->peak_memory_monitor());
 }
 
@@ -665,6 +664,10 @@ std::unique_ptr<MemoryTracker> CommandBufferStub::CreateMemoryTracker(
 void CommandBufferStub::SetMemoryTrackerFactoryForTesting(
     MemoryTrackerFactory factory) {
   SetOrGetMemoryTrackerFactory(factory);
+}
+
+MemoryTracker* CommandBufferStub::GetMemoryTracker() const {
+  return memory_tracker_.get();
 }
 
 scoped_refptr<Buffer> CommandBufferStub::GetTransferBuffer(int32_t id) {

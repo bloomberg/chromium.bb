@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
@@ -30,11 +30,9 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/crostini/crostini_app_icon.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_crostini_tracker.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -48,6 +46,29 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
+
+namespace crostini {
+
+// We use an arbitrary well-formed extension id for the Terminal app, this
+// is equal to GenerateId("Terminal").
+const char kCrostiniDeletedTerminalId[] = "oajcgpnkmhaalajejhlfpacbiokdnnfe";
+// web_app::GenerateAppIdFromURL(
+//     GURL("chrome-untrusted://terminal/html/terminal.html"))
+const char kCrostiniTerminalSystemAppId[] = "fhicihalidkgcimdmhpohldehjmcabcf";
+
+const char kCrostiniDefaultVmName[] = "termina";
+const char kCrostiniDefaultContainerName[] = "penguin";
+const char kCrostiniDefaultUsername[] = "emperor";
+// In order to be compatible with sync folder id must match standard.
+// Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
+const char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
+const char kCrostiniDefaultImageServerUrl[] =
+    "https://storage.googleapis.com/cros-containers/%d";
+const char kCrostiniStretchImageAlias[] = "debian/stretch";
+const char kCrostiniBusterImageAlias[] = "debian/buster";
+const char kCrostiniDlcName[] = "termina-dlc";
+
+const base::FilePath::CharType kHomeDirectory[] = FILE_PATH_LITERAL("/home");
 
 namespace {
 
@@ -80,81 +101,60 @@ void RecordAppLaunchResultHistogram(crostini::CrostiniResult reason) {
   base::UmaHistogramEnumeration(kCrostiniAppLaunchResultHistogram, reason);
 }
 
-void OnLaunchFailed(const std::string& app_id,
-                    crostini::CrostiniResult reason) {
-  // Remove the spinner so it doesn't stay around forever.
-  // TODO(timloh): Consider also displaying a notification of some sort.
-  ChromeLauncherController* chrome_controller =
-      ChromeLauncherController::instance();
-  DCHECK(chrome_controller);
-  chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
-  RecordAppLaunchResultHistogram(reason);
+void OnApplicationLaunched(const std::string& app_id,
+                           crostini::CrostiniSuccessCallback callback,
+                           const crostini::CrostiniResult failure_result,
+                           bool success,
+                           const std::string& failure_reason) {
+  // Remove the spinner. Controller doesn't exist in tests.
+  // TODO(timloh): Consider also displaying a notification for failure.
+  if (auto* chrome_controller = ChromeLauncherController::instance()) {
+    chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
+  }
+  RecordAppLaunchResultHistogram(success ? crostini::CrostiniResult::SUCCESS
+                                         : failure_result);
+  std::move(callback).Run(success, failure_reason);
 }
 
-void OnCrostiniRestarted(Profile* profile,
-                         crostini::ContainerId container_id,
-                         const std::string& app_id,
-                         Browser* browser,
-                         base::OnceClosure callback,
-                         crostini::CrostiniResult result) {
-  if (crostini::MaybeShowCrostiniDialogBeforeLaunch(profile, result)) {
-    VLOG(1) << "Crostini restart blocked by dialog";
-    return;
-  }
-
-  if (result != crostini::CrostiniResult::SUCCESS) {
-    OnLaunchFailed(app_id, result);
-    if (browser && browser->window())
-      browser->window()->Close();
-    return;
-  }
-  std::move(callback).Run();
-}
-
-void OnApplicationLaunched(crostini::LaunchCrostiniAppCallback callback,
-                           const std::string& app_id,
-                           bool success) {
-  if (!success) {
-    OnLaunchFailed(app_id, crostini::CrostiniResult::UNKNOWN_ERROR);
-  } else {
-    RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
-  }
-  std::move(callback).Run(success, success ? "" : "Failed to launch " + app_id);
+void OnLaunchFailed(
+    const std::string& app_id,
+    crostini::CrostiniSuccessCallback callback,
+    const std::string& failure_reason,
+    crostini::CrostiniResult result = crostini::CrostiniResult::UNKNOWN_ERROR) {
+  OnApplicationLaunched(app_id, std::move(callback), result, false,
+                        failure_reason);
 }
 
 void OnSharePathForLaunchApplication(
     Profile* profile,
     const std::string& app_id,
     guest_os::GuestOsRegistryService::Registration registration,
-    const std::vector<std::string>& files,
-    bool display_scaled,
-    crostini::LaunchCrostiniAppCallback callback,
+    int64_t display_id,
+    const std::vector<std::string>& args,
+    crostini::CrostiniSuccessCallback callback,
     bool success,
     const std::string& failure_reason) {
   if (!success) {
-    OnLaunchFailed(app_id, crostini::CrostiniResult::UNKNOWN_ERROR);
-    return std::move(callback).Run(
-        success, success ? ""
-                         : "Failed to share paths to launch " + app_id + ":" +
-                               failure_reason);
+    return OnLaunchFailed(
+        app_id, std::move(callback),
+        "failed to share paths to launch " + app_id + ":" + failure_reason);
+  }
+  const crostini::ContainerId container_id(registration.VmName(),
+                                           registration.ContainerName());
+  if (app_id == kCrostiniTerminalSystemAppId) {
+    // Use first file as 'cwd'.
+    std::string cwd = !args.empty() ? args[0] : "";
+    if (!LaunchTerminal(profile, display_id, container_id, cwd)) {
+      return OnLaunchFailed(app_id, std::move(callback),
+                            "failed to launch terminal");
+    }
+    return OnApplicationLaunched(app_id, std::move(callback),
+                                 crostini::CrostiniResult::SUCCESS, true, "");
   }
   crostini::CrostiniManager::GetForProfile(profile)->LaunchContainerApplication(
-      registration.VmName(), registration.ContainerName(),
-      registration.DesktopFileId(), files, display_scaled,
-      base::BindOnce(OnApplicationLaunched, std::move(callback), app_id));
-}
-
-void LaunchTerminalApp(Profile* profile,
-                       apps::AppLaunchParams launch_params,
-                       GURL vsh_in_crosh_url,
-                       Browser* browser,
-                       crostini::LaunchCrostiniAppCallback callback) {
-  crostini::ShowContainerTerminal(profile, launch_params, vsh_in_crosh_url,
-                                  browser);
-  RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
-  if (callback) {
-    std::move(callback).Run(true, "");
-  }
+      container_id, registration.DesktopFileId(), args, registration.IsScaled(),
+      base::BindOnce(OnApplicationLaunched, app_id, std::move(callback),
+                     crostini::CrostiniResult::UNKNOWN_ERROR));
 }
 
 void LaunchApplication(
@@ -162,143 +162,57 @@ void LaunchApplication(
     const std::string& app_id,
     guest_os::GuestOsRegistryService::Registration registration,
     int64_t display_id,
-    const std::vector<storage::FileSystemURL>& files,
-    bool display_scaled,
-    crostini::LaunchCrostiniAppCallback callback) {
+    const std::vector<LaunchArg>& args,
+    crostini::CrostiniSuccessCallback callback) {
   ChromeLauncherController* chrome_launcher_controller =
       ChromeLauncherController::instance();
   DCHECK(chrome_launcher_controller);
 
-  if (base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
-    AppServiceAppWindowLauncherController* app_service_controller =
-        chrome_launcher_controller->app_service_app_window_controller();
-    DCHECK(app_service_controller);
-    app_service_controller->app_service_crostini_tracker()
-        ->OnAppLaunchRequested(app_id, display_id);
-  } else {
-    CrostiniAppWindowShelfController* shelf_controller =
-        chrome_launcher_controller->crostini_app_window_shelf_controller();
-    DCHECK(shelf_controller);
-    shelf_controller->OnAppLaunchRequested(app_id, display_id);
-  }
+  AppServiceAppWindowLauncherController* app_service_controller =
+      chrome_launcher_controller->app_service_app_window_controller();
+  DCHECK(app_service_controller);
+  app_service_controller->app_service_crostini_tracker()->OnAppLaunchRequested(
+      app_id, display_id);
 
   // Share any paths not in crostini.  The user will see the spinner while this
   // is happening.
   std::vector<base::FilePath> paths_to_share;
-  std::vector<std::string> files_to_launch;
-  for (const storage::FileSystemURL& url : files) {
+  std::vector<std::string> launch_args;
+  launch_args.reserve(args.size());
+  for (const auto& arg : args) {
+    if (absl::holds_alternative<std::string>(arg)) {
+      launch_args.push_back(absl::get<std::string>(arg));
+      continue;
+    }
+    const storage::FileSystemURL& url = absl::get<storage::FileSystemURL>(arg);
     base::FilePath path;
     if (!file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
             profile, url, &path)) {
-      return std::move(callback).Run(false,
-                                     "Invalid file: " + url.DebugString());
+      return OnLaunchFailed(
+          app_id, std::move(callback),
+          "Cannot share file with crostini: " + url.DebugString());
     }
     if (url.mount_filesystem_id() !=
         file_manager::util::GetCrostiniMountPointName(profile)) {
       paths_to_share.push_back(url.path());
     }
-    files_to_launch.push_back(path.value());
+    launch_args.push_back(path.value());
   }
 
   if (paths_to_share.empty()) {
     OnSharePathForLaunchApplication(profile, app_id, std::move(registration),
-                                    std::move(files_to_launch), display_scaled,
+                                    display_id, std::move(launch_args),
                                     std::move(callback), true, "");
   } else {
     guest_os::GuestOsSharePath::GetForProfile(profile)->SharePaths(
         registration.VmName(), std::move(paths_to_share), /*persist=*/false,
         base::BindOnce(OnSharePathForLaunchApplication, profile, app_id,
-                       std::move(registration), std::move(files_to_launch),
-                       display_scaled, std::move(callback)));
+                       std::move(registration), display_id,
+                       std::move(launch_args), std::move(callback)));
   }
 }
 
-// Helper class for loading icons. The callback is called when all icons have
-// been loaded, or after a provided timeout, after which the object deletes
-// itself.
-// TODO(timloh): We should consider having a service, so multiple requests for
-// the same icon won't load the same image multiple times and only the first
-// request would incur the loading delay.
-class IconLoadWaiter : public CrostiniAppIcon::Observer {
- public:
-  static void LoadIcons(
-      Profile* profile,
-      const std::vector<std::string>& app_ids,
-      int resource_size_in_dip,
-      ui::ScaleFactor scale_factor,
-      base::TimeDelta timeout,
-      base::OnceCallback<void(const std::vector<gfx::ImageSkia>&)> callback) {
-    new IconLoadWaiter(profile, app_ids, resource_size_in_dip, scale_factor,
-                       timeout, std::move(callback));
-  }
-
- private:
-  IconLoadWaiter(
-      Profile* profile,
-      const std::vector<std::string>& app_ids,
-      int resource_size_in_dip,
-      ui::ScaleFactor scale_factor,
-      base::TimeDelta timeout,
-      base::OnceCallback<void(const std::vector<gfx::ImageSkia>&)> callback)
-      : callback_(std::move(callback)) {
-    for (const std::string& app_id : app_ids) {
-      icons_.push_back(std::make_unique<CrostiniAppIcon>(
-          profile, app_id, resource_size_in_dip, this));
-      icons_.back()->LoadForScaleFactor(scale_factor);
-    }
-
-    timeout_timer_.Start(FROM_HERE, timeout, this,
-                         &IconLoadWaiter::RunCallback);
-  }
-
-  // TODO(timloh): This is only called when an icon is found, so if any of the
-  // requested apps are missing an icon, we'll have to wait for the timeout. We
-  // should add an interface so we can avoid this.
-  void OnIconUpdated(CrostiniAppIcon* icon) override {
-    loaded_icons_++;
-    if (loaded_icons_ != icons_.size())
-      return;
-
-    RunCallback();
-  }
-
-  void Delete() {
-    DCHECK(!timeout_timer_.IsRunning());
-    delete this;
-  }
-
-  void RunCallback() {
-    DCHECK(callback_);
-    std::vector<gfx::ImageSkia> result;
-    for (const auto& icon : icons_)
-      result.emplace_back(icon->image_skia());
-    std::move(callback_).Run(result);
-
-    // If we're running the callback as loading has finished, we can't delete
-    // ourselves yet as it would destroy the CrostiniAppIcon which is calling
-    // into us right now. If we hit the timeout, we delete immediately to avoid
-    // any race with more icons finishing loading.
-    if (timeout_timer_.IsRunning()) {
-      timeout_timer_.AbandonAndStop();
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&IconLoadWaiter::Delete, base::Unretained(this)));
-    } else {
-      Delete();
-    }
-  }
-
-  std::vector<std::unique_ptr<CrostiniAppIcon>> icons_;
-  size_t loaded_icons_ = 0;
-
-  base::OneShotTimer timeout_timer_;
-
-  base::OnceCallback<void(const std::vector<gfx::ImageSkia>&)> callback_;
-};
-
 }  // namespace
-
-namespace crostini {
 
 ContainerId::ContainerId(std::string vm_name,
                          std::string container_name) noexcept
@@ -319,9 +233,13 @@ std::ostream& operator<<(std::ostream& ostream,
                  << container_id.container_name << "\")";
 }
 
+ContainerId ContainerId::GetDefault() {
+  return ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
+}
+
 bool IsUninstallable(Profile* profile, const std::string& app_id) {
   if (!CrostiniFeatures::Get()->IsEnabled(profile) ||
-      app_id == GetTerminalId()) {
+      app_id == kCrostiniTerminalSystemAppId) {
     return false;
   }
   auto* registry_service =
@@ -355,17 +273,9 @@ bool ShouldAllowContainerUpgrade(Profile* profile) {
                  kCrostiniDefaultVmName, kCrostiniDefaultContainerName));
 }
 
-void LaunchCrostiniApp(Profile* profile,
-                       const std::string& app_id,
-                       int64_t display_id) {
-  LaunchCrostiniApp(profile, app_id, display_id, {}, base::DoNothing());
-}
-
 void AddSpinner(crostini::CrostiniManager::RestartId restart_id,
                 const std::string& app_id,
-                Profile* profile,
-                std::string vm_name,
-                std::string container_name) {
+                Profile* profile) {
   ChromeLauncherController* chrome_controller =
       ChromeLauncherController::instance();
   if (chrome_controller &&
@@ -390,74 +300,89 @@ bool MaybeShowCrostiniDialogBeforeLaunch(Profile* profile,
 void LaunchCrostiniAppImpl(
     Profile* profile,
     const std::string& app_id,
+    guest_os::GuestOsRegistryService::Registration registration,
     int64_t display_id,
-    const std::vector<storage::FileSystemURL>& files,
-    base::Optional<guest_os::GuestOsRegistryService::Registration> registration,
-    LaunchCrostiniAppCallback callback) {
+    const std::vector<LaunchArg>& args,
+    CrostiniSuccessCallback callback) {
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
   auto* registry_service =
       guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
   // Store these as we move |registration| into LaunchContainerApplication().
-  const std::string vm_name = registration->VmName();
-  const std::string container_name = registration->ContainerName();
+  const ContainerId container_id(registration.VmName(),
+                                 registration.ContainerName());
 
-  base::OnceClosure launch_closure;
-  Browser* browser = nullptr;
-  if (app_id == GetTerminalId()) {
-    DCHECK(files.empty());
-    RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
-
-    if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
-      auto* browser = LaunchTerminal(profile, vm_name, container_name);
-      if (browser == nullptr) {
-        RecordAppLaunchResultHistogram(crostini::CrostiniResult::UNKNOWN_ERROR);
+  if (app_id == kCrostiniTerminalSystemAppId) {
+    // If terminal is launched with a 'cwd' file, we may need to launch the VM
+    // and share the path before launching terminal.
+    bool requires_share = false;
+    base::FilePath cwd;
+    if (!args.empty() &&
+        absl::holds_alternative<storage::FileSystemURL>(args[0])) {
+      const storage::FileSystemURL& url =
+          absl::get<storage::FileSystemURL>(args[0]);
+      if (url.mount_filesystem_id() !=
+          file_manager::util::GetCrostiniMountPointName(profile)) {
+        requires_share = true;
       } else {
-        RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
+        file_manager::util::ConvertFileSystemURLToPathInsideCrostini(profile,
+                                                                     url, &cwd);
       }
-      return;
     }
 
-    GURL vsh_in_crosh_url = GenerateVshInCroshUrl(
-        profile, vm_name, container_name, std::vector<std::string>());
-    apps::AppLaunchParams launch_params = GenerateTerminalAppLaunchParams();
-    // Create the terminal here so it's created in the right display. If the
-    // browser creation is delayed into the callback the root window for new
-    // windows setting can be changed due to the launcher or shelf dismissal.
-    Browser* browser =
-        CreateContainerTerminal(profile, launch_params, vsh_in_crosh_url);
-    launch_closure =
-        base::BindOnce(&LaunchTerminalApp, profile, launch_params,
-                       vsh_in_crosh_url, browser, std::move(callback));
-  } else {
-    RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
-    launch_closure =
-        base::BindOnce(&LaunchApplication, profile, app_id,
-                       std::move(*registration), display_id, std::move(files),
-                       registration->IsScaled(), std::move(callback));
+    if (!requires_share) {
+      RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
+      if (!LaunchTerminal(profile, display_id, container_id, cwd.value())) {
+        RecordAppLaunchResultHistogram(crostini::CrostiniResult::UNKNOWN_ERROR);
+        return std::move(callback).Run(false, "failed to launch terminal");
+      }
+      RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
+      return std::move(callback).Run(true, "");
+    }
   }
+
+  RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
 
   // Update the last launched time and Termina version.
   registry_service->AppLaunched(app_id);
   crostini_manager->UpdateLaunchMetricsForEnterpriseReporting();
 
   auto restart_id = crostini_manager->RestartCrostini(
-      vm_name, container_name,
-      base::BindOnce(OnCrostiniRestarted, profile,
-                     crostini::ContainerId(vm_name, container_name), app_id,
-                     browser, std::move(launch_closure)));
+      container_id,
+      base::BindOnce(
+          [](Profile* profile, const std::string& app_id,
+             guest_os::GuestOsRegistryService::Registration registration,
+             int64_t display_id, const std::vector<LaunchArg> args,
+             crostini::CrostiniSuccessCallback callback,
+             crostini::CrostiniResult result) {
+            if (result != crostini::CrostiniResult::SUCCESS) {
+              OnLaunchFailed(app_id, std::move(callback),
+                             base::StringPrintf(
+                                 "crostini restart to launch app %s failed: %d",
+                                 app_id.c_str(), result),
+                             result);
+              if (crostini::MaybeShowCrostiniDialogBeforeLaunch(profile,
+                                                                result)) {
+                VLOG(1) << "Crostini restart blocked by dialog";
+              }
+              return;
+            }
+
+            LaunchApplication(profile, app_id, std::move(registration),
+                              display_id, args, std::move(callback));
+          },
+          profile, app_id, std::move(registration), display_id, args,
+          std::move(callback)));
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&AddSpinner, restart_id, app_id, profile, vm_name,
-                     container_name),
+      FROM_HERE, base::BindOnce(&AddSpinner, restart_id, app_id, profile),
       base::TimeDelta::FromMilliseconds(kDelayBeforeSpinnerMs));
 }
 
 void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id,
-                       const std::vector<storage::FileSystemURL>& files,
-                       LaunchCrostiniAppCallback callback) {
+                       const std::vector<LaunchArg>& args,
+                       CrostiniSuccessCallback callback) {
   // Policies can change under us, and crostini may now be forbidden.
   if (!CrostiniFeatures::Get()->IsUIAllowed(profile)) {
     return std::move(callback).Run(false, "Crostini UI not allowed");
@@ -465,9 +390,8 @@ void LaunchCrostiniApp(Profile* profile,
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
 
   // At this point, we know that Crostini UI is allowed.
-  if (app_id == GetTerminalId() &&
-      (!crostini_manager->IsCrosTerminaInstalled() ||
-       !CrostiniFeatures::Get()->IsEnabled(profile))) {
+  if (app_id == kCrostiniTerminalSystemAppId &&
+      !CrostiniFeatures::Get()->IsEnabled(profile)) {
     crostini::CrostiniInstaller::GetForProfile(profile)->ShowDialog(
         CrostiniUISurface::kAppList);
     return std::move(callback).Run(false, "Crostini not installed");
@@ -485,36 +409,21 @@ void LaunchCrostiniApp(Profile* profile,
 
   if (crostini_manager->IsUncleanStartup()) {
     // Prompt for user-restart.
-    if (!ShowCrostiniRecoveryView(profile,
-                                  crostini::CrostiniUISurface::kAppList, app_id,
-                                  display_id, std::move(callback))) {
-      return;
-    }
+    return ShowCrostiniRecoveryView(
+        profile, crostini::CrostiniUISurface::kAppList, app_id, display_id,
+        args, std::move(callback));
   }
 
-  if (crostini_manager->ShouldPromptContainerUpgrade(
-          ContainerId(registration->VmName(), registration->ContainerName())) ||
-      crostini_manager->GetCrostiniDialogStatus(DialogType::UPGRADER)) {
-    chromeos::CrostiniUpgraderDialog::Show(
-        base::BindOnce(&LaunchCrostiniAppImpl, profile, app_id, display_id,
-                       files, std::move(registration), std::move(callback)));
-    VLOG(1) << "Upgrade dialog";
+  if (crostini_manager->GetCrostiniDialogStatus(DialogType::UPGRADER)) {
+    // Reshow the existing dialog.
+    chromeos::CrostiniUpgraderDialog::Reshow();
+    VLOG(1) << "Reshowing upgrade dialog";
+    std::move(callback).Run(
+        false, "LaunchCrostiniApp called while upgrade dialog showing");
     return;
   }
-  LaunchCrostiniAppImpl(profile, app_id, display_id, files,
-                        std::move(registration), std::move(callback));
-}
-
-void LoadIcons(Profile* profile,
-               const std::vector<std::string>& app_ids,
-               int resource_size_in_dip,
-               ui::ScaleFactor scale_factor,
-               base::TimeDelta timeout,
-               base::OnceCallback<void(const std::vector<gfx::ImageSkia>&)>
-                   icons_loaded_callback) {
-  IconLoadWaiter::LoadIcons(profile, app_ids, resource_size_in_dip,
-                            scale_factor, timeout,
-                            std::move(icons_loaded_callback));
+  LaunchCrostiniAppImpl(profile, app_id, std::move(*registration), display_id,
+                        args, std::move(callback));
 }
 
 std::string CryptohomeIdForProfile(Profile* profile) {
@@ -560,13 +469,13 @@ base::Optional<std::string> CrostiniAppIdFromAppName(
 }
 
 void AddNewLxdContainerToPrefs(Profile* profile,
-                               std::string vm_name,
-                               std::string container_name) {
+                               const ContainerId& container_id) {
   auto* pref_service = profile->GetPrefs();
 
   base::Value new_container(base::Value::Type::DICTIONARY);
-  new_container.SetKey(prefs::kVmKey, base::Value(vm_name));
-  new_container.SetKey(prefs::kContainerKey, base::Value(container_name));
+  new_container.SetKey(prefs::kVmKey, base::Value(container_id.vm_name));
+  new_container.SetKey(prefs::kContainerKey,
+                       base::Value(container_id.container_name));
   new_container.SetIntKey(prefs::kContainerOsVersionKey,
                           static_cast<int>(ContainerOsVersion::kUnknown));
 
@@ -587,11 +496,9 @@ bool MatchContainerDict(const base::Value& dict,
 }  // namespace
 
 void RemoveLxdContainerFromPrefs(Profile* profile,
-                                 std::string vm_name,
-                                 std::string container_name) {
+                                 const ContainerId& container_id) {
   auto* pref_service = profile->GetPrefs();
   ListPrefUpdate updater(pref_service, crostini::prefs::kCrostiniContainers);
-  ContainerId container_id(vm_name, container_name);
   updater->EraseListIter(
       std::find_if(updater->GetList().begin(), updater->GetList().end(),
                    [&](const auto& dict) {
@@ -599,9 +506,11 @@ void RemoveLxdContainerFromPrefs(Profile* profile,
                    }));
 
   guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile)
-      ->ClearApplicationList(vm_name, container_name);
+      ->ClearApplicationList(guest_os::GuestOsRegistryService::VmType::
+                                 ApplicationList_VmType_TERMINA,
+                             container_id.vm_name, container_id.container_name);
   CrostiniMimeTypesServiceFactory::GetForProfile(profile)->ClearMimeTypes(
-      vm_name, container_name);
+      container_id.vm_name, container_id.container_name);
 }
 
 const base::Value* GetContainerPrefValue(Profile* profile,
@@ -655,38 +564,6 @@ base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent) {
   }
 }
 
-const std::string& GetTerminalId() {
-  static const base::NoDestructor<std::string> app_id([] {
-    return base::FeatureList::IsEnabled(features::kTerminalSystemApp)
-               ? kCrostiniTerminalSystemAppId
-               : kCrostiniTerminalId;
-  }());
-  return *app_id;
-}
-
-const std::string& GetDeletedTerminalId() {
-  static const base::NoDestructor<std::string> app_id([] {
-    return base::FeatureList::IsEnabled(features::kTerminalSystemApp)
-               ? kCrostiniTerminalId
-               : kCrostiniTerminalSystemAppId;
-  }());
-  return *app_id;
-}
-
-std::vector<int64_t> GetTicksForDiskSize(int64_t min_size,
-                                         int64_t available_space) {
-  if (min_size < 0 || available_space < 0 || min_size > available_space) {
-    return {};
-  }
-  std::vector<int64_t> ticks;
-  int64_t range = available_space - min_size;
-  for (int n = 0; n <= 100; n++) {
-    // These are disk sizes so we're not worried about overflow, 2^60 == 1024
-    // PiB.
-    ticks.emplace_back(min_size + n * range / 100);
-  }
-  return ticks;
-}
 
 const ContainerId& DefaultContainerId() {
   static const base::NoDestructor<ContainerId> container_id(

@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "osp/impl/quic/quic_connection_factory.h"
 #include "platform/api/udp_socket.h"
@@ -22,7 +23,7 @@ class QuicTaskRunner;
 
 class QuicConnectionFactoryImpl final : public QuicConnectionFactory {
  public:
-  QuicConnectionFactoryImpl(TaskRunner* task_runner);
+  explicit QuicConnectionFactoryImpl(TaskRunner* task_runner);
   ~QuicConnectionFactoryImpl() override;
 
   // UdpSocket::Client overrides.

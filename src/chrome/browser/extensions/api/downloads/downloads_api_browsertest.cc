@@ -9,7 +9,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -18,8 +18,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -54,10 +53,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/slow_download_http_response.h"
 #include "content/public/test/test_download_http_response.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -68,15 +67,10 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/url_request/url_request_slow_download_job.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_job_factory.h"
-#include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
 
@@ -114,8 +108,8 @@ void OnOpenPromptCreated(download::DownloadItem* item,
                          DownloadOpenPrompt* prompt) {
   EXPECT_FALSE(item->GetOpened());
   // Posts a task to accept the DownloadOpenPrompt.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DownloadOpenPrompt::AcceptConfirmationDialogForTesting,
                      base::Unretained(prompt)));
 }
@@ -321,10 +315,9 @@ class DownloadOpenObserver : public download::DownloadItem::Observer {
 class DownloadExtensionTest : public ExtensionApiTest {
  public:
   DownloadExtensionTest()
-    : extension_(NULL),
-      incognito_browser_(NULL),
-      current_browser_(NULL) {
-  }
+      : extension_(nullptr),
+        incognito_browser_(nullptr),
+        current_browser_(nullptr) {}
 
  protected:
   // Used with CreateHistoryDownloads
@@ -469,7 +462,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   }
   DownloadManager* GetOffRecordManager() {
     return BrowserContext::GetDownloadManager(
-        browser()->profile()->GetOffTheRecordProfile());
+        browser()->profile()->GetPrimaryOTRProfile());
   }
   DownloadManager* GetCurrentManager() {
     return (current_browser_ == incognito_browser_) ?
@@ -708,9 +701,9 @@ class MockIconExtractorImpl : public DownloadFileIconExtractor {
     EXPECT_EQ(expected_icon_size_, icon_size);
     if (expected_path_ == path &&
         expected_icon_size_ == icon_size) {
-      callback_ = callback;
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(&MockIconExtractorImpl::RunCallback,
+      callback_ = std::move(callback);
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&MockIconExtractorImpl::RunCallback,
                                     base::Unretained(this)));
       return true;
     } else {
@@ -720,7 +713,8 @@ class MockIconExtractorImpl : public DownloadFileIconExtractor {
 
  private:
   void RunCallback() {
-    callback_.Run(response_);
+    DCHECK(callback_);
+    std::move(callback_).Run(response_);
     // Drop the reference on extension function to avoid memory leaks.
     callback_ = IconURLCallback();
   }
@@ -793,14 +787,14 @@ class HTML5FileWriter {
     // Invoke the fileapi to copy it into the sandboxed filesystem.
     bool result = false;
     base::RunLoop run_loop;
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&CreateFileForTestingOnIOThread,
                        base::Unretained(context), path, temp_file,
                        base::Unretained(&result), run_loop.QuitClosure()));
     // Wait for that to finish.
     run_loop.Run();
-    base::DeleteFile(temp_file, false);
+    base::DeleteFile(temp_file);
     return result;
   }
 
@@ -810,7 +804,7 @@ class HTML5FileWriter {
                                base::File::Error error) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     *result = error == base::File::FILE_OK;
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, quit_closure);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, quit_closure);
   }
 
   static void CreateFileForTestingOnIOThread(
@@ -882,14 +876,9 @@ downloads::InterruptReason InterruptReasonContentToExtension(
 
 }  // namespace
 
-#if defined(OS_CHROMEOS)
-// http://crbug.com/396510
-#define MAYBE_DownloadExtensionTest_Open DISABLED_DownloadExtensionTest_Open
-#else
-#define MAYBE_DownloadExtensionTest_Open DownloadExtensionTest_Open
-#endif
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       MAYBE_DownloadExtensionTest_Open) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_Open) {
+  platform_util::internal::DisableShellOperationsForTesting();
+
   LoadExtension("downloads_split");
   DownloadsOpenFunction* open_function = new DownloadsOpenFunction();
   open_function->set_user_gesture(true);
@@ -1056,16 +1045,10 @@ scoped_refptr<ExtensionFunction> MockedGetFileIconFunction(
   return function;
 }
 
-// https://crbug.com/678967
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_DownloadExtensionTest_FileIcon_Active DISABLED_DownloadExtensionTest_FileIcon_Active
-#else
-#define MAYBE_DownloadExtensionTest_FileIcon_Active DownloadExtensionTest_FileIcon_Active
-#endif
 // Test downloads.getFileIcon() on in-progress, finished, cancelled and deleted
 // download items.
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    MAYBE_DownloadExtensionTest_FileIcon_Active) {
+                       DownloadExtensionTest_FileIcon_Active) {
   DownloadItem* download_item = CreateFirstSlowTestDownload();
   ASSERT_TRUE(download_item);
   ASSERT_FALSE(download_item->GetTargetFilePath().empty());
@@ -1202,7 +1185,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, FileExistenceCheckAfterSearch) {
 
   // Finish the download and try again.
   FinishFirstSlowDownloads();
-  base::DeleteFile(download_item->GetTargetFilePath(), false);
+  base::DeleteFile(download_item->GetTargetFilePath());
 
   ASSERT_FALSE(download_item->GetFileExternallyRemoved());
   std::unique_ptr<base::Value> result(
@@ -1221,6 +1204,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, FileExistenceCheckAfterSearch) {
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadsShowFunction) {
+  platform_util::internal::DisableShellOperationsForTesting();
   ScopedCancellingItem item(CreateFirstSlowTestDownload());
   ASSERT_TRUE(item.get());
 
@@ -1266,14 +1250,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
 // Test the |id| parameter for search().
 //
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_DownloadExtensionTest_SearchId DISABLED_DownloadExtensionTest_SearchId
-#else
-#define MAYBE_DownloadExtensionTest_SearchId DownloadExtensionTest_SearchId
-#endif
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       MAYBE_DownloadExtensionTest_SearchId) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_SearchId) {
   DownloadManager::DownloadVector items;
   CreateTwoDownloads(&items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -1294,14 +1271,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
 // Test specifying both the |id| and |filename| parameters for search().
 //
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_DownloadExtensionTest_SearchIdAndFilename DISABLED_DownloadExtensionTest_SearchIdAndFilename
-#else
-#define MAYBE_DownloadExtensionTest_SearchIdAndFilename DownloadExtensionTest_SearchIdAndFilename
-#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       MAYBE_DownloadExtensionTest_SearchIdAndFilename) {
+                       DownloadExtensionTest_SearchIdAndFilename) {
   DownloadManager::DownloadVector items;
   CreateTwoDownloads(&items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -1400,15 +1371,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Test the |state| option for search().
-//
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_DownloadExtensionTest_SearchState DISABLED_DownloadExtensionTest_SearchState
-#else
-#define MAYBE_DownloadExtensionTest_SearchState DownloadExtensionTest_SearchState
-#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       MAYBE_DownloadExtensionTest_SearchState) {
+                       DownloadExtensionTest_SearchState) {
   DownloadManager::DownloadVector items;
   CreateTwoDownloads(&items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -1424,15 +1388,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Test the |limit| option for search().
-//
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_DownloadExtensionTest_SearchLimit DISABLED_DownloadExtensionTest_SearchLimit
-#else
-#define MAYBE_DownloadExtensionTest_SearchLimit DownloadExtensionTest_SearchLimit
-#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       MAYBE_DownloadExtensionTest_SearchLimit) {
+                       DownloadExtensionTest_SearchLimit) {
   DownloadManager::DownloadVector items;
   CreateTwoDownloads(&items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -1495,21 +1452,13 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(items[2]->GetTargetFilePath().value(), item_name);
 }
 
-// https://crbug.com/874946, flaky on Win.
-#if defined(OS_WIN)
-#define MAYBE_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito \
-  DISABLED_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito
-#else
-#define MAYBE_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito \
-  DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito
-#endif
 // Test that incognito downloads are only visible in incognito contexts, and
 // test that on-record downloads are visible in both incognito and on-record
 // contexts, for DownloadsSearchFunction, DownloadsPauseFunction,
 // DownloadsResumeFunction, and DownloadsCancelFunction.
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
-    MAYBE_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito) {
+    DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito) {
   std::unique_ptr<base::Value> result_value;
   base::ListValue* result_list = NULL;
   base::DictionaryValue* result_dict = NULL;
@@ -1887,18 +1836,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                                          result_id)));
 }
 
-#if defined(OS_WIN)
-// This test is very flaky on Win. http://crbug.com/248438
-#define MAYBE_DownloadExtensionTest_Download_UnsafeHeaders \
-    DISABLED_DownloadExtensionTest_Download_UnsafeHeaders
-#else
-#define MAYBE_DownloadExtensionTest_Download_UnsafeHeaders \
-    DownloadExtensionTest_Download_UnsafeHeaders
-#endif
-
 // Test that we disallow certain headers case-insensitively.
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       MAYBE_DownloadExtensionTest_Download_UnsafeHeaders) {
+                       DownloadExtensionTest_Download_UnsafeHeaders) {
   LoadExtension("downloads_split");
   ASSERT_TRUE(StartEmbeddedTestServer());
   GoOnTheRecord();
@@ -1975,6 +1915,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       download_url.c_str())).c_str());
 }
 
+// This test is very flaky on Win. http://crbug.com/248438
 #if defined(OS_WIN)
 #define MAYBE_DownloadExtensionTest_Download_Subdirectory\
         DISABLED_DownloadExtensionTest_Download_Subdirectory
@@ -2043,21 +1984,12 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       download_url.c_str())).c_str());
 }
 
-// flaky on mac: crbug.com/392288
-#if defined(OS_MACOSX)
-#define MAYBE_DownloadExtensionTest_Download_InvalidURLs \
-        DISABLED_DownloadExtensionTest_Download_InvalidURLs
-#else
-#define MAYBE_DownloadExtensionTest_Download_InvalidURLs \
-        DownloadExtensionTest_Download_InvalidURLs
-#endif
-
 class DownloadExtensionTestWithFtp : public DownloadExtensionTest {
  public:
   DownloadExtensionTestWithFtp() {
-    // DownloadExtensionTest_Download_InvalidURLs requires FTP support.
+    // DownloadExtensionTest_Download_InvalidURLs2 requires FTP support.
     // TODO(https://crbug.com/333943): Remove FTP tests and FTP feature flags.
-    scoped_feature_list_.InitAndEnableFeature(features::kFtpProtocol);
+    scoped_feature_list_.InitAndEnableFeature(blink::features::kFtpProtocol);
   }
 
  private:
@@ -2066,27 +1998,27 @@ class DownloadExtensionTestWithFtp : public DownloadExtensionTest {
 
 // Test that downloading invalid URLs immediately returns kInvalidURLError.
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTestWithFtp,
-                       MAYBE_DownloadExtensionTest_Download_InvalidURLs) {
-  LoadExtension("downloads_split");
-  GoOnTheRecord();
-
-  static const char* const kInvalidURLs[] = {
-    "foo bar",
-    "../hello",
-    "/hello",
-    "http://",
-    "#frag",
-    "foo/bar.html#frag",
-    "google.com/",
+                       DownloadExtensionTest_Download_InvalidURLs1) {
+  static constexpr const char* kInvalidURLs[] = {
+      "foo bar", "../hello",          "/hello",      "http://",
+      "#frag",   "foo/bar.html#frag", "google.com/",
   };
 
-  for (size_t index = 0; index < base::size(kInvalidURLs); ++index) {
+  for (const char* url : kInvalidURLs) {
     EXPECT_STREQ(errors::kInvalidURL,
-                  RunFunctionAndReturnError(new DownloadsDownloadFunction(),
-                                            base::StringPrintf(
-        "[{\"url\": \"%s\"}]", kInvalidURLs[index])).c_str())
-      << kInvalidURLs[index];
+                 RunFunctionAndReturnError(
+                     new DownloadsDownloadFunction(),
+                     base::StringPrintf("[{\"url\": \"%s\"}]", url))
+                     .c_str())
+        << url;
   }
+}
+
+// Test various failure modes for downloading invalid URLs.
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTestWithFtp,
+                       DownloadExtensionTest_Download_InvalidURLs2) {
+  LoadExtension("downloads_split");
+  GoOnTheRecord();
 
   int result_id = -1;
   std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
@@ -2671,10 +2603,11 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_Cancel) {
   LoadExtension("downloads_split");
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &content::SlowDownloadHttpResponse::HandleSlowDownloadRequest));
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(spawned_test_server()->Start());
   std::string download_url =
-      spawned_test_server()->GetURL("download-known-size").spec();
+      embedded_test_server()->GetURL("/download-known-size").spec();
   GoOnTheRecord();
 
   std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
@@ -2710,7 +2643,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // flaky on mac: crbug.com/392288
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_DownloadExtensionTest_Download_FileSystemURL \
         DISABLED_DownloadExtensionTest_Download_FileSystemURL
 #else
@@ -3591,9 +3524,10 @@ IN_PROC_BROWSER_TEST_F(
                           result_id)));
 }
 
+// Flaky. crbug.com/1147804
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
-    DownloadExtensionTest_OnDeterminingFilename_EmptyBasenameInvalid) {
+    DISABLED_DownloadExtensionTest_OnDeterminingFilename_EmptyBasenameInvalid) {
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
@@ -3891,7 +3825,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // TODO test precedence rules: install_time
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_DownloadExtensionTest_OnDeterminingFilename_RemoveFilenameDeterminer \
   DISABLED_DownloadExtensionTest_OnDeterminingFilename_RemoveFilenameDeterminer
 #else
@@ -3949,9 +3883,17 @@ IN_PROC_BROWSER_TEST_F(
                           result_id)));
 }
 
+// This test is flaky on Linux ASan LSan Tests bot. https://crbug.com/1114226
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(ADDRESS_SANITIZER)
+#define MAYBE_DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit \
+  DISABLED_DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit
+#else
+#define MAYBE_DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit \
+  DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit
+#endif
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
-    DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit) {
+    MAYBE_DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit) {
   LoadExtension("downloads_split");
   ASSERT_TRUE(StartEmbeddedTestServer());
   std::string download_url = embedded_test_server()->GetURL("/slow?0").spec();
@@ -4255,8 +4197,11 @@ IN_PROC_BROWSER_TEST_F(
     // resumed. http://crbug.com/225901
     ui_test_utils::NavigateToURLWithDisposition(
         current_browser(),
-        GURL(net::URLRequestSlowDownloadJob::kUnknownSizeUrl),
-        WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+        // This code used to use a mock class that no longer works, due to the
+        // NetworkService shipping.
+        // TODO(https://crbug.com/700382): Fix or delete this test.
+        GURL(), WindowOpenDisposition::CURRENT_TAB,
+        ui_test_utils::BROWSER_TEST_NONE);
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
     DownloadManager::DownloadVector items;
@@ -4293,8 +4238,10 @@ IN_PROC_BROWSER_TEST_F(
   ClearEvents();
   ui_test_utils::NavigateToURLWithDisposition(
       current_browser(),
-      GURL(net::URLRequestSlowDownloadJob::kErrorDownloadUrl),
-      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      // This code used to use a mock class that no longer works, due to the
+      // NetworkService shipping.
+      // TODO(https://crbug.com/700382): Fix or delete this test.
+      GURL(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Errors caught before filename determination are delayed until after
@@ -4393,12 +4340,14 @@ void OnDangerPromptCreated(DownloadDangerPrompt* prompt) {
   prompt->InvokeActionForTesting(DownloadDangerPrompt::ACCEPT);
 }
 
-#if defined(OS_MACOSX)
-// Flakily triggers and assert on Mac.
+#if defined(OS_MAC) && !defined(NDEBUG)
+// Flaky on Mac debug, failing with a timeout.
 // http://crbug.com/180759
-#define MAYBE_DownloadExtensionTest_AcceptDanger DISABLED_DownloadExtensionTest_AcceptDanger
+#define MAYBE_DownloadExtensionTest_AcceptDanger \
+  DISABLED_DownloadExtensionTest_AcceptDanger
 #else
-#define MAYBE_DownloadExtensionTest_AcceptDanger DownloadExtensionTest_AcceptDanger
+#define MAYBE_DownloadExtensionTest_AcceptDanger \
+  DownloadExtensionTest_AcceptDanger
 #endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        MAYBE_DownloadExtensionTest_AcceptDanger) {

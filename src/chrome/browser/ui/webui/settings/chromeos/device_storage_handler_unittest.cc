@@ -23,6 +23,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -58,6 +59,9 @@ class StorageHandlerTest : public testing::Test {
   ~StorageHandlerTest() override = default;
 
   void SetUp() override {
+    // Need to initialize DBusThreadManager before ArcSessionManager's
+    // constructor calls DBusThreadManager::Get().
+    chromeos::DBusThreadManager::Initialize();
     // The storage handler requires an instance of DiskMountManager,
     // ArcServiceManager and ArcSessionManager.
     chromeos::disks::DiskMountManager::InitializeForTesting(
@@ -119,8 +123,11 @@ class StorageHandlerTest : public testing::Test {
     apps_size_test_api_.reset();
     crostini_size_test_api_.reset();
     other_users_size_test_api_.reset();
+    arc_session_manager_.reset();
+    arc_service_manager_.reset();
     chromeos::disks::DiskMountManager::Shutdown();
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -449,10 +456,10 @@ TEST_F(StorageHandlerTest, SystemSize) {
   ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
 
   // Simulate crostini size callback.
-  crostini_size_test_api_->SimulateOnGetCrostiniSize(70 * GB);
+  crostini_size_test_api_->SimulateOnGetCrostiniSize(50 * GB);
   callback = GetWebUICallbackMessage("storage-crostini-size-changed");
   ASSERT_TRUE(callback) << "No 'storage-crostini-size-changed' callback";
-  EXPECT_EQ("70.0 GB", callback->GetString());
+  EXPECT_EQ("50.0 GB", callback->GetString());
   ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
 
   // Simulate other users size callback. No callback message until the sizes of
@@ -481,7 +488,7 @@ TEST_F(StorageHandlerTest, SystemSize) {
       // updated.
       callback = GetWebUICallbackMessage("storage-system-size-changed");
       ASSERT_TRUE(callback) << "No 'storage-system-size-changed' callback";
-      EXPECT_EQ("100 GB", callback->GetString());
+      EXPECT_EQ("120 GB", callback->GetString());
     }
   }
 
@@ -496,7 +503,7 @@ TEST_F(StorageHandlerTest, SystemSize) {
   // section instead. We expect the displayed size to be 100 + 24 GB.
   callback = GetWebUICallbackMessage("storage-system-size-changed");
   ASSERT_TRUE(callback) << "No 'storage-system-size-changed' callback";
-  EXPECT_EQ("124 GB", callback->GetString());
+  EXPECT_EQ("144 GB", callback->GetString());
 
   // No error while recalculating browsing data size, the UI should be updated
   // with the right sizes.
@@ -507,7 +514,7 @@ TEST_F(StorageHandlerTest, SystemSize) {
   EXPECT_EQ("24.0 GB", callback->GetString());
   callback = GetWebUICallbackMessage("storage-system-size-changed");
   ASSERT_TRUE(callback) << "No 'storage-system-size-changed' callback";
-  EXPECT_EQ("100 GB", callback->GetString());
+  EXPECT_EQ("120 GB", callback->GetString());
 }
 
 }  // namespace

@@ -12,7 +12,7 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -116,7 +116,7 @@ ui::NativeTheme::ColorId GetColorId(int context, int style) {
     return ui::NativeTheme::kColorId_ButtonEnabledColor;
   if (context == style::CONTEXT_LABEL && style == style::STYLE_SECONDARY)
     return ui::NativeTheme::kColorId_LabelSecondaryColor;
-  if (context == style::CONTEXT_MESSAGE_BOX_BODY_TEXT &&
+  if (context == style::CONTEXT_DIALOG_BODY_TEXT &&
       (style == style::STYLE_PRIMARY || style == style::STYLE_SECONDARY))
     return ui::NativeTheme::kColorId_DialogForeground;
   if (context == style::CONTEXT_TEXTFIELD)
@@ -143,12 +143,12 @@ SkColor TypographyProvider::GetColor(const View& view,
 }
 
 int TypographyProvider::GetLineHeight(int context, int style) const {
-  return 0;
+  return GetFont(context, style).GetHeight();
 }
 
 // static
 gfx::Font::Weight TypographyProvider::MediumWeightForUI() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // System fonts are not user-configurable on Mac, so there's a simpler check.
   // However, 10.11 do not ship with a MEDIUM weight system font. In that
   // case, trying to use MEDIUM there will give a bold font, which will look

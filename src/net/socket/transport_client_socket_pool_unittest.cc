@@ -7,13 +7,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -29,6 +29,7 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/secure_dns_mode.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_connect_job.h"
 #include "net/http/transport_security_state.h"
@@ -275,7 +276,7 @@ TEST_F(TransportClientSocketPoolTest, SetDisableSecureDns) {
                   .has_value());
     if (disable_secure_dns) {
       EXPECT_EQ(
-          net::DnsConfig::SecureDnsMode::OFF,
+          net::SecureDnsMode::kOff,
           session_deps_.host_resolver->last_secure_dns_mode_override().value());
     }
   }

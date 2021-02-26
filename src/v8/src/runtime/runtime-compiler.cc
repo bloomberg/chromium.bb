@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "src/asmjs/asm-js.h"
+#include "src/codegen/compilation-cache.h"
 #include "src/codegen/compiler.h"
+#include "src/common/assert-scope.h"
 #include "src/common/message-template.h"
 #include "src/compiler-dispatcher/optimizing-compile-dispatcher.h"
 #include "src/deoptimizer/deoptimizer.h"
@@ -24,8 +26,10 @@ RUNTIME_FUNCTION(Runtime_CompileLazy) {
   DCHECK_EQ(1, args.length());
   CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
 
+  Handle<SharedFunctionInfo> sfi(function->shared(), isolate);
+
 #ifdef DEBUG
-  if (FLAG_trace_lazy && !function->shared().is_compiled()) {
+  if (FLAG_trace_lazy && !sfi->is_compiled()) {
     PrintF("[unoptimized: ");
     function->PrintName();
     PrintF("]\n");
@@ -41,23 +45,81 @@ RUNTIME_FUNCTION(Runtime_CompileLazy) {
                          &is_compiled_scope)) {
     return ReadOnlyRoots(isolate).exception();
   }
+  if (sfi->may_have_cached_code()) {
+    Handle<Code> code;
+    if (sfi->TryGetCachedCode(isolate).ToHandle(&code)) {
+      function->set_code(*code);
+      JSFunction::EnsureFeedbackVector(function, &is_compiled_scope);
+      if (FLAG_trace_turbo_nci) CompilationCacheCode::TraceHit(sfi, code);
+      return *code;
+    }
+  }
   DCHECK(function->is_compiled());
   return function->code();
 }
+
+namespace {
+
+// Returns false iff an exception was thrown.
+bool MaybeSpawnNativeContextIndependentCompilationJob(
+    Handle<JSFunction> function, ConcurrencyMode mode) {
+  if (!FLAG_turbo_nci || FLAG_turbo_nci_as_midtier) {
+    return true;  // Nothing to do.
+  }
+
+  // If delayed codegen is enabled, the first optimization request does not
+  // trigger NCI compilation, since we try to avoid compiling Code that
+  // remains unused in the future.  Repeated optimization (possibly in
+  // different native contexts) is taken as a signal that this SFI will
+  // continue to be used in the future, thus we trigger NCI compilation.
+  if (!FLAG_turbo_nci_delayed_codegen ||
+      function->shared().has_optimized_at_least_once()) {
+    if (!Compiler::CompileOptimized(function, mode,
+                                    CodeKind::NATIVE_CONTEXT_INDEPENDENT)) {
+      return false;
+    }
+  } else {
+    function->shared().set_has_optimized_at_least_once(true);
+  }
+
+  return true;
+}
+
+Object CompileOptimized(Isolate* isolate, Handle<JSFunction> function,
+                        ConcurrencyMode mode) {
+  StackLimitCheck check(isolate);
+  if (check.JsHasOverflowed(kStackSpaceRequiredForCompilation * KB)) {
+    return isolate->StackOverflow();
+  }
+
+  // Compile for the next tier.
+  if (!Compiler::CompileOptimized(function, mode, function->NextTier())) {
+    return ReadOnlyRoots(isolate).exception();
+  }
+
+  // Possibly compile for NCI caching.
+  if (!MaybeSpawnNativeContextIndependentCompilationJob(function, mode)) {
+    return ReadOnlyRoots(isolate).exception();
+  }
+
+  DCHECK(function->is_compiled());
+  return function->code();
+}
+
+}  // namespace
 
 RUNTIME_FUNCTION(Runtime_CompileOptimized_Concurrent) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
   CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
-  StackLimitCheck check(isolate);
-  if (check.JsHasOverflowed(kStackSpaceRequiredForCompilation * KB)) {
-    return isolate->StackOverflow();
-  }
-  if (!Compiler::CompileOptimized(function, ConcurrencyMode::kConcurrent)) {
-    return ReadOnlyRoots(isolate).exception();
-  }
-  DCHECK(function->is_compiled());
-  return function->code();
+  return CompileOptimized(isolate, function, ConcurrencyMode::kConcurrent);
+}
+
+RUNTIME_FUNCTION(Runtime_CompileOptimized_NotConcurrent) {
+  HandleScope scope(isolate);
+  DCHECK_EQ(1, args.length());
+  CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
+  return CompileOptimized(isolate, function, ConcurrencyMode::kNotConcurrent);
 }
 
 RUNTIME_FUNCTION(Runtime_FunctionFirstExecution) {
@@ -79,22 +141,7 @@ RUNTIME_FUNCTION(Runtime_FunctionFirstExecution) {
   return function->code();
 }
 
-RUNTIME_FUNCTION(Runtime_CompileOptimized_NotConcurrent) {
-  HandleScope scope(isolate);
-  DCHECK_EQ(1, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
-  StackLimitCheck check(isolate);
-  if (check.JsHasOverflowed(kStackSpaceRequiredForCompilation * KB)) {
-    return isolate->StackOverflow();
-  }
-  if (!Compiler::CompileOptimized(function, ConcurrencyMode::kNotConcurrent)) {
-    return ReadOnlyRoots(isolate).exception();
-  }
-  DCHECK(function->is_compiled());
-  return function->code();
-}
-
-RUNTIME_FUNCTION(Runtime_EvictOptimizedCodeSlot) {
+RUNTIME_FUNCTION(Runtime_HealOptimizedCodeSlot) {
   SealHandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
   CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
@@ -102,7 +149,7 @@ RUNTIME_FUNCTION(Runtime_EvictOptimizedCodeSlot) {
   DCHECK(function->shared().is_compiled());
 
   function->feedback_vector().EvictOptimizedCodeMarkedForDeoptimization(
-      function->shared(), "Runtime_EvictOptimizedCodeSlot");
+      function->shared(), "Runtime_HealOptimizedCodeSlot");
   return function->code();
 }
 
@@ -145,9 +192,10 @@ RUNTIME_FUNCTION(Runtime_NotifyDeoptimized) {
   HandleScope scope(isolate);
   DCHECK_EQ(0, args.length());
   Deoptimizer* deoptimizer = Deoptimizer::Grab(isolate);
-  DCHECK(deoptimizer->compiled_code()->kind() == Code::OPTIMIZED_FUNCTION);
+  DCHECK(CodeKindCanDeoptimize(deoptimizer->compiled_code()->kind()));
   DCHECK(deoptimizer->compiled_code()->is_turbofanned());
   DCHECK(AllowHeapAllocation::IsAllowed());
+  DCHECK(AllowGarbageCollection::IsAllowed());
   DCHECK(isolate->context().is_null());
 
   TimerEventScope<TimerEventDeoptimizeCode> timer(isolate);
@@ -157,6 +205,7 @@ RUNTIME_FUNCTION(Runtime_NotifyDeoptimized) {
   // code object from deoptimizer.
   Handle<Code> optimized_code = deoptimizer->compiled_code();
   DeoptimizeKind type = deoptimizer->deopt_kind();
+  bool should_reuse_code = deoptimizer->should_reuse_code();
 
   // TODO(turbofan): We currently need the native context to materialize
   // the arguments object, but only to get to its map.
@@ -171,14 +220,13 @@ RUNTIME_FUNCTION(Runtime_NotifyDeoptimized) {
   JavaScriptFrame* top_frame = top_it.frame();
   isolate->set_context(Context::cast(top_frame->context()));
 
-  int count = optimized_code->deoptimization_count();
-  if (type == DeoptimizeKind::kSoft && count < FLAG_reuse_opt_code_count) {
+  if (should_reuse_code) {
     optimized_code->increment_deoptimization_count();
     return ReadOnlyRoots(isolate).undefined_value();
   }
 
-  // Invalidate the underlying optimized code on non-lazy deopts.
-  if (type != DeoptimizeKind::kLazy) {
+  // Invalidate the underlying optimized code on eager and soft deopts.
+  if (type == DeoptimizeKind::kEager || type == DeoptimizeKind::kSoft) {
     Deoptimizer::DeoptimizeFunction(*function, *optimized_code);
   }
 
@@ -260,12 +308,20 @@ RUNTIME_FUNCTION(Runtime_CompileForOnStackReplacement) {
       PrintF(scope.file(), " at AST id %d]\n", ast_id.ToInt());
     }
     maybe_result = Compiler::GetOptimizedCodeForOSR(function, ast_id, frame);
+
+    // Possibly compile for NCI caching.
+    if (!MaybeSpawnNativeContextIndependentCompilationJob(
+            function, FLAG_concurrent_recompilation
+                          ? ConcurrencyMode::kConcurrent
+                          : ConcurrencyMode::kNotConcurrent)) {
+      return Object();
+    }
   }
 
   // Check whether we ended up with usable optimized code.
   Handle<Code> result;
   if (maybe_result.ToHandle(&result) &&
-      result->kind() == Code::OPTIMIZED_FUNCTION) {
+      CodeKindIsOptimizedJSFunction(result->kind())) {
     DeoptimizationData data =
         DeoptimizationData::cast(result->deoptimization_data());
 
@@ -297,7 +353,7 @@ RUNTIME_FUNCTION(Runtime_CompileForOnStackReplacement) {
       // the function for non-concurrent compilation. We could arm the loops
       // early so the second execution uses the already compiled OSR code and
       // the optimization occurs concurrently off main thread.
-      if (!function->HasOptimizedCode() &&
+      if (!function->HasAvailableOptimizedCode() &&
           function->feedback_vector().invocation_count() > 1) {
         // If we're not already optimized, set to optimize non-concurrently on
         // the next call, otherwise we'd run unoptimized once more and
@@ -322,7 +378,7 @@ RUNTIME_FUNCTION(Runtime_CompileForOnStackReplacement) {
     PrintF(scope.file(), " at AST id %d]\n", ast_id.ToInt());
   }
 
-  if (!function->IsOptimized()) {
+  if (!function->HasAttachedOptimizedCode()) {
     function->set_code(function->shared().GetCode());
   }
   return Object();
@@ -390,5 +446,6 @@ RUNTIME_FUNCTION(Runtime_ResolvePossiblyDirectEval) {
   return CompileGlobalEval(isolate, args.at<Object>(1), outer_info,
                            language_mode, args.smi_at(4), args.smi_at(5));
 }
+
 }  // namespace internal
 }  // namespace v8

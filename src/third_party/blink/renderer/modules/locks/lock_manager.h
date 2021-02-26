@@ -27,7 +27,6 @@ class V8LockGrantedCallback;
 class LockManager final : public ScriptWrappable,
                           public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(LockManager);
 
  public:
   explicit LockManager(ExecutionContext*);
@@ -44,7 +43,7 @@ class LockManager final : public ScriptWrappable,
 
   ScriptPromise query(ScriptState*, ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Terminate all outstanding requests when the context is destroyed, since
   // this can unblock requests by other contexts.

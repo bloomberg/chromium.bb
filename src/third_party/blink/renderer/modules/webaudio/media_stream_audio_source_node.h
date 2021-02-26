@@ -49,65 +49,60 @@ class MediaStreamAudioSourceHandler final : public AudioHandler {
   // AudioHandler
   void Process(uint32_t frames_to_process) override;
 
-  // AudioNode
-  double TailTime() const override { return 0; }
-  double LatencyTime() const override { return 0; }
-
-  // A helper for AudioSourceProviderClient implementation of
-  // MediaStreamAudioSourceNode.
   void SetFormat(uint32_t number_of_channels, float sample_rate);
 
+  double TailTime() const override { return 0; }
+  double LatencyTime() const override { return 0; }
   bool RequiresTailProcessing() const final { return false; }
 
  private:
   MediaStreamAudioSourceHandler(AudioNode&,
                                 std::unique_ptr<AudioSourceProvider>);
 
-  // As an audio source, we will never propagate silence.
+  // AudioHandler: MediaStreamAudioSourceNode never propagates silence.
   bool PropagatesSilence() const override { return false; }
-
-  AudioSourceProvider* GetAudioSourceProvider() const {
-    return audio_source_provider_.get();
-  }
 
   std::unique_ptr<AudioSourceProvider> audio_source_provider_;
 
+  // Protects |source_number_of_channels_|.
   Mutex process_lock_;
 
-  unsigned source_number_of_channels_;
+  unsigned source_number_of_channels_ = 0;
 };
+
+// -----------------------------------------------------------------------------
 
 class MediaStreamAudioSourceNode final
     : public AudioNode,
       public AudioSourceProviderClient,
       public ActiveScriptWrappable<MediaStreamAudioSourceNode> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
 
  public:
   static MediaStreamAudioSourceNode* Create(AudioContext&,
                                             MediaStream&,
                                             ExceptionState&);
-  static MediaStreamAudioSourceNode*
-  Create(AudioContext*, const MediaStreamAudioSourceOptions*, ExceptionState&);
+  static MediaStreamAudioSourceNode* Create(
+      AudioContext*, const MediaStreamAudioSourceOptions*, ExceptionState&);
 
   MediaStreamAudioSourceNode(AudioContext&,
                              MediaStream&,
                              MediaStreamTrack*,
                              std::unique_ptr<AudioSourceProvider>);
 
-  void Trace(Visitor*) override;
+  // V8 binding
+  MediaStream* getMediaStream() const { return media_stream_; }
 
-  MediaStream* getMediaStream() const;
-
-  // AudioSourceProviderClient functions:
+  // AudioSourceProviderClient
   void SetFormat(uint32_t number_of_channels, float sample_rate) override;
-
-  bool HasPendingActivity() const final;
 
   // InspectorHelperMixin
   void ReportDidCreate() final;
   void ReportWillBeDestroyed() final;
+
+  // GC
+  bool HasPendingActivity() const final;
+  void Trace(Visitor*) const override;
 
  private:
   MediaStreamAudioSourceHandler& GetMediaStreamAudioSourceHandler() const;

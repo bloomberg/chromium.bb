@@ -63,12 +63,16 @@ WindowController::~WindowController() {
 }
 
 Browser* WindowController::GetBrowser() const {
-  return NULL;
+  return nullptr;
 }
 
 bool WindowController::MatchesFilter(TypeFilter filter) const {
   TypeFilter type = 1 << api::windows::ParseWindowType(GetWindowTypeText());
   return (type & filter) != 0;
+}
+
+void WindowController::NotifyWindowBoundsChanged() {
+  WindowControllerList::GetInstance()->NotifyWindowBoundsChanged(this);
 }
 
 }  // namespace extensions

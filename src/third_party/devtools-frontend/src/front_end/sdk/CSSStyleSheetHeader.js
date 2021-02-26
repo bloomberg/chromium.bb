@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 
 import {CSSModel} from './CSSModel.js';  // eslint-disable-line no-unused-vars
 import {DeferredDOMNode} from './DOMModel.js';
+import {FrameAssociated} from './FrameAssociated.js';  // eslint-disable-line no-unused-vars
+import {PageResourceLoadInitiator} from './PageResourceLoader.js';  // eslint-disable-line no-unused-vars
 import {ResourceTreeModel} from './ResourceTreeModel.js';
 
 /**
  * @implements {TextUtils.ContentProvider.ContentProvider}
- * @unrestricted
+ * TODO(chromium:1011811): make `implements {FrameAssociated}` annotation work here.
  */
 export class CSSStyleSheetHeader {
   /**
@@ -31,6 +30,9 @@ export class CSSStyleSheetHeader {
     this.title = payload.title;
     this.disabled = payload.disabled;
     this.isInline = payload.isInline;
+    this.isMutable = payload.isMutable;
+    // TODO(alexrudenko): Needs a roll of the browser_protocol.pdl.
+    this.isConstructed = /** @type {*} */ (payload).isConstructed;
     this.startLine = payload.startLine;
     this.startColumn = payload.startColumn;
     this.endLine = payload.endLine;
@@ -39,7 +41,8 @@ export class CSSStyleSheetHeader {
     if (payload.ownerNode) {
       this.ownerNode = new DeferredDOMNode(cssModel.target(), payload.ownerNode);
     }
-    this.setSourceMapURL(payload.sourceMapURL);
+    this.sourceMapURL = payload.sourceMapURL;
+    this._originalContentProvider = null;
   }
 
   /**
@@ -51,7 +54,7 @@ export class CSSStyleSheetHeader {
         const originalText = await this._cssModel.originalStyleSheetText(this);
         // originalText might be an empty string which should not trigger the error
         if (originalText === null) {
-          return {error: ls`Could not find the original style sheet.`, isEncoded: false};
+          return {content: null, error: ls`Could not find the original style sheet.`, isEncoded: false};
         }
         return {content: originalText, isEncoded: false};
       });
@@ -93,8 +96,16 @@ export class CSSStyleSheetHeader {
    * @return {string}
    */
   _viaInspectorResourceURL() {
-    const frame = this._cssModel.target().model(ResourceTreeModel).frameForId(this.frameId);
-    console.assert(frame);
+    const model = this._cssModel.target().model(ResourceTreeModel);
+    console.assert(!!model);
+    if (!model) {
+      return '';
+    }
+    const frame = model.frameForId(this.frameId);
+    if (!frame) {
+      return '';
+    }
+    console.assert(!!frame);
     const parsedURL = new Common.ParsedURL.ParsedURL(frame.url);
     let fakeURL = 'inspector://' + parsedURL.host + parsedURL.folderPathComponents;
     if (!fakeURL.endsWith('/')) {
@@ -169,6 +180,7 @@ export class CSSStyleSheetHeader {
       return {content: /** @type{string} */ (cssText), isEncoded: false};
     } catch (err) {
       return {
+        content: null,
         error: ls`There was an error retrieving the source styles.`,
         isEncoded: false,
       };
@@ -183,8 +195,11 @@ export class CSSStyleSheetHeader {
    * @return {!Promise<!Array<!TextUtils.ContentProvider.SearchMatch>>}
    */
   async searchInContent(query, caseSensitive, isRegex) {
-    const {content} = await this.requestContent();
-    return TextUtils.TextUtils.performSearchInContent(content || '', query, caseSensitive, isRegex);
+    const requestedContent = await this.requestContent();
+    if (requestedContent.content === null) {
+      return [];
+    }
+    return TextUtils.TextUtils.performSearchInContent(requestedContent.content, query, caseSensitive, isRegex);
   }
 
   /**
@@ -192,5 +207,12 @@ export class CSSStyleSheetHeader {
    */
   isViaInspector() {
     return this.origin === 'inspector';
+  }
+
+  /**
+   * @returns {!PageResourceLoadInitiator}
+   */
+  createPageResourceLoadInitiator() {
+    return {target: null, frameId: this.frameId, initiatorUrl: this.hasSourceURL ? '' : this.sourceURL};
   }
 }

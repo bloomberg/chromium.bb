@@ -81,6 +81,9 @@ CreateSetTabUserAgentOverrideCommand(
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowAppNameCommand(
     const SessionID& window_id,
     const std::string& app_name);
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowUserTitleCommand(
+    const SessionID& window_id,
+    const std::string& user_title);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateLastActiveTimeCommand(
     const SessionID& tab_id,
     base::TimeTicks last_active_time);
@@ -92,6 +95,10 @@ SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowWorkspaceCommand(
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetTabGuidCommand(
     const SessionID& tab_id,
     const std::string& guid);
+
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetTabDataCommand(
+    const SessionID& tab_id,
+    const std::map<std::string, std::string>& data);
 
 // Searches for a pending command using |command_storage_manager| that can be
 // replaced with |command|. If one is found, pending command is removed, the

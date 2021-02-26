@@ -6,29 +6,39 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
-<dom-module id="recommend-apps">
+<link rel="import" href="/components/oobe_i18n_behavior.html">
+<link rel="import" href="/components/throbber_notice.html">
+
+<dom-module id="recommend-apps-element">
   <template>
     <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="recommend_apps.css">
-    <oobe-dialog id="recommend-apps-dialog" role="dialog" has-buttons
+    <oobe-dialog id="loadingDialog" role="dialog" no-header for-step="loading"
+        no-footer-padding>
+      <div slot="footer" class="flex layout vertical center center-justified">
+        <throbber-notice text-key="recommendAppsLoading">
+        </throbber-notice>
+      </div>
+    </oobe-dialog>
+    <oobe-dialog id="appsDialog" role="dialog" has-buttons
         title-key="recommendAppsScreenTitle"
         aria-label$="[[i18nDynamic(locale, 'recommendAppsScreenTitle')]]"
-        no-footer-padding footer-shrinkable class="recommend-apps-loading">
+        no-footer-padding footer-shrinkable for-step="list">
       <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
       </iron-icon>
-      <div id="subtitle" slot="subtitle"></div>
-      <div id="app-list-view-container" slot="footer">
-        <webview id="app-list-view"></webview>
+      <div id="subtitle" slot="subtitle">
+        [[i18nDynamic(locale, 'recommendAppsScreenDescription', appCount_)]]
       </div>
-      <div class="app-list-loading" slot="footer">
-        <p>[[i18nDynamic(locale, 'recommendAppsLoading')]]</p>
+      <div id="app-list-view-container" slot="footer">
+        <webview id="appView" on-message="onMessage_"></webview>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button id="recommend-apps-skip-button"
-            text-key="recommendAppsSkip" on-tap="onSkip_" border>
+        <oobe-text-button id="skipButton"
+            text-key="recommendAppsSkip" on-click="onSkip_" border>
         </oobe-text-button>
-        <oobe-next-button id="recommend-apps-install-button"
-            text-key="recommendAppsInstall" on-tap="onInstall_" inverse>
+        <oobe-next-button id="installButton" on-click="onInstall_" inverse
+            text-key="recommendAppsInstall"
+            disabled="[[!canProceed_(appsSelected_)]]">
         </oobe-next-button>
       </div>
     </oobe-dialog>

@@ -42,13 +42,26 @@ It should print "PASS", amongst other information, and exit(0).
 // compiling it.
 #define WUFFS_IMPLEMENTATION
 
+// Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
+// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
+// the entire Wuffs standard library, implementing a variety of codecs and file
+// formats. Without this macro definition, an optimizing compiler or linker may
+// very well discard Wuffs code for unused codecs, but listing the Wuffs
+// modules we use makes that process explicit. Preprocessing means that such
+// code simply isn't compiled.
+#define WUFFS_CONFIG__MODULES
+#define WUFFS_CONFIG__MODULE__BASE
+#define WUFFS_CONFIG__MODULE__GIF
+#define WUFFS_CONFIG__MODULE__LZW
+
 // If building this program in an environment that doesn't easily accommodate
 // relative includes, you can use the script/inline-c-relative-includes.go
 // program to generate a stand-alone C file.
 #include "../../../release/c/wuffs-unsupported-snapshot.c"
 #include "../fuzzlib/fuzzlib.c"
 
-const char* fuzz(wuffs_base__io_buffer* src, uint32_t hash) {
+const char*  //
+fuzz(wuffs_base__io_buffer* src, uint64_t hash) {
   const char* ret = NULL;
   wuffs_base__slice_u8 pixbuf = ((wuffs_base__slice_u8){});
   wuffs_base__slice_u8 workbuf = ((wuffs_base__slice_u8){});
@@ -57,19 +70,19 @@ const char* fuzz(wuffs_base__io_buffer* src, uint32_t hash) {
   // variable initialization" warnings.
   {
     wuffs_gif__decoder dec;
-    const char* status = wuffs_gif__decoder__initialize(
+    wuffs_base__status status = wuffs_gif__decoder__initialize(
         &dec, sizeof dec, WUFFS_VERSION,
         (hash & 1) ? WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED
                    : 0);
-    if (status) {
-      ret = status;
+    if (!wuffs_base__status__is_ok(&status)) {
+      ret = wuffs_base__status__message(&status);
       goto exit;
     }
 
     wuffs_base__image_config ic = ((wuffs_base__image_config){});
     status = wuffs_gif__decoder__decode_image_config(&dec, &ic, src);
-    if (status) {
-      ret = status;
+    if (!wuffs_base__status__is_ok(&status)) {
+      ret = wuffs_base__status__message(&status);
       goto exit;
     }
     if (!wuffs_base__image_config__is_valid(&ic)) {
@@ -107,8 +120,8 @@ const char* fuzz(wuffs_base__io_buffer* src, uint32_t hash) {
 
     wuffs_base__pixel_buffer pb = ((wuffs_base__pixel_buffer){});
     status = wuffs_base__pixel_buffer__set_from_slice(&pb, &ic.pixcfg, pixbuf);
-    if (status) {
-      ret = status;
+    if (!wuffs_base__status__is_ok(&status)) {
+      ret = wuffs_base__status__message(&status);
       goto exit;
     }
 
@@ -116,14 +129,15 @@ const char* fuzz(wuffs_base__io_buffer* src, uint32_t hash) {
     while (true) {
       wuffs_base__frame_config fc = ((wuffs_base__frame_config){});
       status = wuffs_gif__decoder__decode_frame_config(&dec, &fc, src);
-      if (status) {
-        if ((status != wuffs_base__warning__end_of_data) || !seen_ok) {
-          ret = status;
+      if (!wuffs_base__status__is_ok(&status)) {
+        if ((status.repr != wuffs_base__note__end_of_data) || !seen_ok) {
+          ret = wuffs_base__status__message(&status);
         }
         goto exit;
       }
 
-      status = wuffs_gif__decoder__decode_frame(&dec, &pb, src, workbuf, NULL);
+      status = wuffs_gif__decoder__decode_frame(
+          &dec, &pb, src, WUFFS_BASE__PIXEL_BLEND__SRC, workbuf, NULL);
 
       wuffs_base__rect_ie_u32 frame_rect =
           wuffs_base__frame_config__bounds(&fc);
@@ -134,9 +148,9 @@ const char* fuzz(wuffs_base__io_buffer* src, uint32_t hash) {
         goto exit;
       }
 
-      if (status) {
-        if ((status != wuffs_base__warning__end_of_data) || !seen_ok) {
-          ret = status;
+      if (!wuffs_base__status__is_ok(&status)) {
+        if ((status.repr != wuffs_base__note__end_of_data) || !seen_ok) {
+          ret = wuffs_base__status__message(&status);
         }
         goto exit;
       }

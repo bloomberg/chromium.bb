@@ -24,9 +24,6 @@ class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
                                   public Supplement<LocalFrame>,
                                   public ExecutionContextLifecycleObserver,
                                   public mojom::blink::ImageDownloader {
-  USING_PRE_FINALIZER(ImageDownloaderImpl, Dispose);
-  USING_GARBAGE_COLLECTED_MIXIN(ImageDownloaderImpl);
-
  public:
   static const char kSupplementName[];
 
@@ -40,7 +37,7 @@ class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
 
   static void ProvideTo(LocalFrame&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // OverExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
@@ -68,8 +65,6 @@ class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
   void CreateMojoService(
       mojo::PendingReceiver<mojom::blink::ImageDownloader> receiver);
 
-  // USING_PRE_FINALIZER interface.
-  // Called before the object gets garbage collected.
   void Dispose();
 
   // Requests to fetch an image. When done, the image downloader is notified by
@@ -99,7 +94,7 @@ class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
 
   HeapMojoReceiver<mojom::blink::ImageDownloader,
                    ImageDownloaderImpl,
-                   HeapMojoWrapperMode::kWithoutContextObserver>
+                   HeapMojoWrapperMode::kForceWithoutContextObserver>
       receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDownloaderImpl);

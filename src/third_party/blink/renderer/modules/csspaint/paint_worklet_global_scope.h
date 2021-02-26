@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_GLOBAL_SCOPE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_GLOBAL_SCOPE_H_
 
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
@@ -22,7 +23,6 @@ class WorkerReportingProxy;
 
 class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScope);
 
  public:
   // Creates a main-thread bound PaintWorkletGlobalScope.
@@ -53,7 +53,14 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
   CSSPaintDefinition* FindDefinition(const String& name);
   double devicePixelRatio() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
+
+  // Returns the token that uniquely identifies this worklet.
+  const PaintWorkletToken& GetPaintWorkletToken() const { return token_; }
+  WorkletToken GetWorkletToken() const final { return token_; }
+  ExecutionContextToken GetExecutionContextToken() const final {
+    return token_;
+  }
 
  private:
   // Registers the global scope with a proxy client, if not already done. Only
@@ -69,6 +76,9 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
   // PaintWorkletProxyClient. Only used in worklet-thread bound
   // PaintWorkletGlobalScopes.
   bool registered_ = false;
+
+  // Default initialized to generate a distinct token for this worklet.
+  const PaintWorkletToken token_;
 };
 
 template <>

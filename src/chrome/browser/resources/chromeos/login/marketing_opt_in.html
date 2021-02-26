@@ -6,6 +6,10 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lottie/cr_lottie.html">
 
+<link rel="import" href="/components/common_styles.html">
+<link rel="import" href="/components/hd_iron_icon.html">
+<link rel="import" href="/components/oobe_i18n_behavior.html">
+
 <iron-iconset-svg name="marketing-opt-in-32" size="32">
     <svg>
         <defs>
@@ -26,24 +30,25 @@
       </svg>
 </iron-iconset-svg>
 
-<dom-module id="marketing-opt-in">
+<dom-module id="marketing-opt-in-element">
   <template>
     <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="marketing_opt_in.css">
     <oobe-dialog id="marketingOptInOverviewDialog" role="dialog" has-buttons
         hidden="[[isAccessibilitySettingsShown_]]"
         title-key="marketingOptInScreenTitle"
-        aria-label$="[[i18nDynamic(locale, 'marketingOptInScreenTitle')]]">
+        aria-label$="[[i18nDynamic(locale, 'marketingOptInScreenTitle')]]"
+        aria-describedby="marketing-opt-in-subtitle">
       <hd-iron-icon slot="oobe-icon" icon1x="oobe-32:checkmark"
           icon2x="oobe-32:checkmark">
       </hd-iron-icon>
-      <div slot="subtitle" id="marketing-opt-in-subtitle"
-          hidden="[[!marketingOptInVisible_]]">
-        [[i18nDynamic(locale, 'marketingOptInScreenSubtitle')]]
-      </div>
-      <div slot="subtitle" id="marketing-opt-in-subtitle"
-          hidden="[[marketingOptInVisible_]]">
-        [[i18nDynamic(locale, 'marketingOptInScreenSubtitleWithDeviceName')]]
+      <div slot="subtitle" id="marketing-opt-in-subtitle">
+        <div hidden="[[!marketingOptInVisible_]]">
+          [[i18nDynamic(locale, 'marketingOptInScreenSubtitle')]]
+        </div>
+        <div hidden="[[marketingOptInVisible_]]">
+          [[i18nDynamic(locale, 'marketingOptInScreenSubtitleWithDeviceName')]]
+        </div>
       </div>
       <div slot="footer" class="layout vertical flex">
         <div class="marketing-option layout horizontal center"
@@ -51,11 +56,11 @@
             id="marketing-opt-in-toggle">
           <hd-iron-icon icon1x="oobe-32:chromebook" icon2x="oobe-64:chromebook">
           </hd-iron-icon>
-          <div id="chromebookUpdatesOptionLabel" class="flex">
+          <div id="chromebookUpdatesOptionLabel" class="flex" aria-hidden="true">
             [[i18nDynamic(locale, 'marketingOptInGetChromebookUpdates')]]
           </div>
           <cr-toggle id="chromebookUpdatesOption" checked
-              aria-labelledby="chromebookUpdatesOption">
+              aria-labelledby="chromebookUpdatesOptionLabel">
           </cr-toggle>
         </div>
         <div class="marketing-animation-container">
@@ -68,13 +73,13 @@
           <oobe-welcome-secondary-button
               hidden="[[!isA11ySettingsButtonVisible_]]"
               id="marketing-opt-in-accessibility-button"
-              on-tap="onToggleAccessibilityPage_"
+              on-click="onToggleAccessibilityPage_"
               icon1x="marketing-opt-in-32:accessibility"
               icon2x="marketing-opt-in-64:accessibility"
               text-key="marketingOptInA11yButtonLabel">
           </oobe-welcome-secondary-button>
         </div>
-        <oobe-text-button on-tap="onGetStarted_" class="focus-on-show"
+        <oobe-text-button on-click="onGetStarted_" class="focus-on-show"
             inverse text-key="marketingOptInScreenAllSet"
             id="marketing-opt-in-next-button">
         </oobe-text-button>
@@ -103,10 +108,12 @@
           </span>
         </oobe-a11y-option>
       </div>
-      <div slot="bottom-buttons" class="layout horizontal justified">
-        <oobe-back-button on-tap="onToggleAccessibilityPage_"
+      <div slot="back-navigation">
+        <oobe-back-button on-click="onToggleAccessibilityPage_"
             id="final-accessibility-back-button"></oobe-back-button>
-        <oobe-text-button on-tap="onGetStarted_" class="focus-on-show"
+      </div>
+      <div slot="bottom-buttons">
+        <oobe-text-button on-click="onGetStarted_" class="focus-on-show"
             id="final-accessibility-next-button" inverse
             text-key="finalA11yPageDoneButtonTitle">
         </oobe-text-button>

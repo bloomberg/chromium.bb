@@ -11,9 +11,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "content/common/associated_interfaces.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/render_message_filter.mojom.h"
-#include "content/common/view_messages.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -43,15 +43,24 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
 
   // mojom::RenderMessageFilter:
   void GenerateRoutingID(GenerateRoutingIDCallback callback) override {
-    NOTREACHED();
-    std::move(callback).Run(MSG_ROUTING_NONE);
+    std::move(callback).Run(RenderThread::Get()->GenerateRoutingID());
+  }
+
+  void GenerateFrameRoutingID(
+      GenerateFrameRoutingIDCallback callback) override {
+    int routing_id;
+    base::UnguessableToken frame_token;
+    base::UnguessableToken devtools_frame_token;
+    RenderThread::Get()->GenerateFrameRoutingID(routing_id, frame_token,
+                                                devtools_frame_token);
+    std::move(callback).Run(routing_id, frame_token, devtools_frame_token);
   }
 
   void HasGpuProcess(HasGpuProcessCallback callback) override {
     std::move(callback).Run(false);
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   void SetThreadPriority(int32_t platform_thread_id,
                          base::ThreadPriority thread_priority) override {}
 #endif
@@ -127,8 +136,17 @@ void MockRenderThread::AddRoute(int32_t routing_id, IPC::Listener* listener) {}
 void MockRenderThread::RemoveRoute(int32_t routing_id) {}
 
 int MockRenderThread::GenerateRoutingID() {
-  NOTREACHED();
-  return MSG_ROUTING_NONE;
+  return GetNextRoutingID();
+}
+
+bool MockRenderThread::GenerateFrameRoutingID(
+    int32_t& routing_id,
+    base::UnguessableToken& frame_token,
+    base::UnguessableToken& devtools_frame_token) {
+  routing_id = GetNextRoutingID();
+  frame_token = base::UnguessableToken::Create();
+  devtools_frame_token = base::UnguessableToken::Create();
+  return true;
 }
 
 void MockRenderThread::AddFilter(IPC::MessageFilter* filter) {
@@ -175,10 +193,6 @@ void MockRenderThread::RegisterExtension(
 
 int MockRenderThread::PostTaskToAllWebWorkers(base::RepeatingClosure closure) {
   return 0;
-}
-
-bool MockRenderThread::ResolveProxy(const GURL& url, std::string* proxy_list) {
-  return false;
 }
 
 base::WaitableEvent* MockRenderThread::GetShutdownEvent() {
@@ -262,29 +276,16 @@ void MockRenderThread::PassInitialInterfaceProviderReceiverForFrame(
   DCHECK(did_insertion);
 }
 
-// The Frame expects to be returned a valid route_id different from its own.
 void MockRenderThread::OnCreateChildFrame(
-    const FrameHostMsg_CreateChildFrame_Params& params,
-    FrameHostMsg_CreateChildFrame_Params_Reply* params_reply) {
-  params_reply->child_routing_id = GetNextRoutingID();
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-      interface_provider;
+    int32_t child_routing_id,
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+        interface_provider,
+    mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker) {
   frame_routing_id_to_initial_interface_provider_receivers_.emplace(
-      params_reply->child_routing_id,
-      interface_provider.InitWithNewPipeAndPassReceiver());
-  params_reply->new_interface_provider =
-      interface_provider.PassPipe().release();
-
-  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
-      browser_interface_broker;
+      child_routing_id, std::move(interface_provider));
   frame_routing_id_to_initial_browser_broker_receivers_.emplace(
-      params_reply->child_routing_id,
-      browser_interface_broker.InitWithNewPipeAndPassReceiver());
-  params_reply->browser_interface_broker_handle =
-      browser_interface_broker.PassPipe().release();
-
-  params_reply->frame_token = base::UnguessableToken::Create();
-  params_reply->devtools_frame_token = base::UnguessableToken::Create();
+      child_routing_id, std::move(browser_interface_broker));
 }
 
 bool MockRenderThread::OnControlMessageReceived(const IPC::Message& msg) {
@@ -298,13 +299,7 @@ bool MockRenderThread::OnControlMessageReceived(const IPC::Message& msg) {
 bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   // Save the message in the sink.
   sink_.OnMessageReceived(msg);
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MockRenderThread, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_CreateChildFrame, OnCreateChildFrame)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+  return false;
 }
 
 // The View expects to be returned a valid route_id different from its own.
@@ -335,17 +330,23 @@ void MockRenderThread::OnCreateWindow(
   mojo::AssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget;
   mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>
       blink_frame_widget_receiver =
-          blink_frame_widget
-              .BindNewEndpointAndPassDedicatedReceiverForTesting();
+          blink_frame_widget.BindNewEndpointAndPassDedicatedReceiver();
 
   mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> blink_frame_widget_host;
-  mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetHost>
-      blink_frame_widget_host_receiver =
-          blink_frame_widget_host
-              .BindNewEndpointAndPassDedicatedReceiverForTesting();
+  ignore_result(
+      blink_frame_widget_host.BindNewEndpointAndPassDedicatedReceiver());
+
+  mojo::AssociatedRemote<blink::mojom::Widget> blink_widget;
+  mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget_receiver =
+      blink_widget.BindNewEndpointAndPassDedicatedReceiver();
+
+  mojo::AssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
+  ignore_result(blink_widget_host.BindNewEndpointAndPassDedicatedReceiver());
 
   reply->frame_widget = std::move(blink_frame_widget_receiver);
   reply->frame_widget_host = blink_frame_widget_host.Unbind();
+  reply->widget = std::move(blink_widget_receiver);
+  reply->widget_host = blink_widget_host.Unbind();
 }
 
 }  // namespace content

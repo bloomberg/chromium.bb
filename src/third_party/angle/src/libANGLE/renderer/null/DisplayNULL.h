@@ -14,6 +14,8 @@
 
 namespace rx
 {
+class ShareGroupNULL : public ShareGroupImpl
+{};
 
 class AllocationTrackerNULL;
 
@@ -26,7 +28,8 @@ class DisplayNULL : public DisplayImpl
     egl::Error initialize(egl::Display *display) override;
     void terminate() override;
 
-    egl::Error makeCurrent(egl::Surface *drawSurface,
+    egl::Error makeCurrent(egl::Display *display,
+                           egl::Surface *drawSurface,
                            egl::Surface *readSurface,
                            gl::Context *context) override;
 
@@ -72,6 +75,8 @@ class DisplayNULL : public DisplayImpl
 
     StreamProducerImpl *createStreamProducerD3DTexture(egl::Stream::ConsumerType consumerType,
                                                        const egl::AttributeMap &attribs) override;
+
+    ShareGroupImpl *createShareGroup() override;
 
     void populateFeatureList(angle::FeatureList *features) override {}
 

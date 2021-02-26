@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
@@ -31,6 +32,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -79,22 +81,12 @@ OverviewEnterExitType MaybeOverrideEnterExitTypeForHomeScreen(
     }
   }
 
-  // If kDragFromShelfToHomeOrOverview is enabled, overview is expected to fade
-  // in or out to home screen (when all windows are minimized).
-  if (ash::features::IsDragFromShelfToHomeOrOverviewEnabled()) {
-    return enter ? OverviewEnterExitType::kFadeInEnter
-                 : OverviewEnterExitType::kFadeOutExit;
-  }
-
-  // When kDragFromShelfToHomeOrOverview is enabled, the original type is
-  // overridden even if the list of windows is empty so home screen knows to
-  // animate in during overview exit animation (home screen controller uses
-  // different show/hide animations depending on the overview exit/enter types).
-  if (windows.empty())
-    return original_type;
-
-  return enter ? OverviewEnterExitType::kSlideInEnter
-               : OverviewEnterExitType::kSlideOutExit;
+  // The original type is overridden even if the list of windows is empty so
+  // home screen knows to animate in during overview exit animation (home screen
+  // controller uses different show/hide animations depending on the overview
+  // exit/enter types).
+  return enter ? OverviewEnterExitType::kFadeInEnter
+               : OverviewEnterExitType::kFadeOutExit;
 }
 
 }  // namespace
@@ -279,18 +271,36 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
   auto windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
 
-  // Hidden windows will be removed by window_util::ShouldExcludeForOverview so
-  // we must copy them out first.
+  // Hidden windows are a subset of the window excluded from overview in
+  // window_util::ShouldExcludeForOverview. Excluded window won't be on the grid
+  // but their visibility will remain untouched. Hidden windows will be also
+  // excluded and their visibility will be set to false for the duration of
+  // overview mode.
+  auto should_hide_for_overview = [](aura::Window* w) -> bool {
+    // Explicity hidden windows always get hidden.
+    if (w->GetProperty(kHideInOverviewKey))
+      return true;
+    // Since overview allows moving windows, don't show window that can't be
+    // moved. If they are a transient ancestor of a postionable window then they
+    // can be shown and moved with their transient root.
+    return w == wm::GetTransientRoot(w) &&
+           !WindowState::Get(w)->IsUserPositionable();
+  };
   std::vector<aura::Window*> hide_windows(windows.size());
-  auto end = std::copy_if(
-      windows.begin(), windows.end(), hide_windows.begin(),
-      [](aura::Window* w) { return w->GetProperty(kHideInOverviewKey); });
+  auto end = std::copy_if(windows.begin(), windows.end(), hide_windows.begin(),
+                          should_hide_for_overview);
   hide_windows.resize(end - hide_windows.begin());
   base::EraseIf(windows, window_util::ShouldExcludeForOverview);
   // Overview windows will handle showing their transient related windows, so if
   // a window in |windows| has a transient root also in |windows|, we can remove
   // it as the transient root will handle showing the window.
-  window_util::RemoveTransientDescendants(&windows);
+  // Additionally, |windows| may contain transient children and not their
+  // transient root. This can lead to situations where the transient child is
+  // destroyed causing its respective overview item to be destroyed, leaving its
+  // transient root with no overview item. Creating the overview item with the
+  // transient root instead of the transient child fixes this. See
+  // crbug.com/972015.
+  window_util::EnsureTransientRoots(&windows);
 
   if (InOverviewSession()) {
     DCHECK(CanEndOverview(type));
@@ -312,14 +322,11 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
       OnStartingAnimationComplete(/*canceled=*/true);
     start_animations_.clear();
 
-    if (type == OverviewEnterExitType::kSlideOutExit ||
-        type == OverviewEnterExitType::kFadeOutExit ||
-        type == OverviewEnterExitType::kSwipeFromShelf) {
-      // Minimize the windows without animations. When the home launcher button
-      // is pressed, minimized widgets will get created in their place, and
-      // those widgets will be slid out of overview. Otherwise,
-      // HomeLauncherGestureHandler will handle sliding the windows out and when
-      // this function is called, we do not need to create minimized widgets.
+    if (type == OverviewEnterExitType::kFadeOutExit) {
+      // FadeOutExit is used for transition to the home launcher. Minimize the
+      // windows without animations to prevent them from getting maximized
+      // during overview exit. Minimized widgets will get created in their
+      // place, and those widgets will fade out of overview.
       std::vector<aura::Window*> windows_to_minimize(windows.size());
       auto it =
           std::copy_if(windows.begin(), windows.end(),
@@ -356,10 +363,20 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
       observer.OnOverviewModeEnded();
     if (!should_end_immediately && delayed_animations_.empty())
       OnEndingAnimationComplete(/*canceled=*/false);
+    Shell::Get()->frame_throttling_controller()->EndThrottling();
   } else {
     DCHECK(CanEnterOverview());
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "OverviewController::EnterOverview",
                                       this);
+    auto* active_window = window_util::GetActiveWindow();
+    if (active_window) {
+      auto* active_widget =
+          views::Widget::GetWidgetForNativeView(active_window);
+      if (active_widget)
+        paint_as_active_lock_ = active_widget->LockPaintAsActive();
+    }
+
+    Shell::Get()->frame_throttling_controller()->StartThrottling(windows);
 
     // Clear any animations that may be running from last overview end.
     for (const auto& animation : delayed_animations_)
@@ -424,7 +441,7 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
     // the overview immediately, so delaying blur start until start animations
     // finish looks janky.
     overview_wallpaper_controller_->Blur(
-        /*animate_only=*/new_type == OverviewEnterExitType::kFadeInEnter);
+        /*animate=*/new_type == OverviewEnterExitType::kFadeInEnter);
 
     // For app dragging, there are no start animations so add a delay to delay
     // animations observing when the start animation ends, such as the shelf,
@@ -477,7 +494,6 @@ bool OverviewController::CanEndOverview(OverviewEnterExitType type) {
       split_view_controller->state() !=
           SplitViewController::State::kBothSnapped &&
       InOverviewSession() && overview_session_->IsEmpty() &&
-      type != OverviewEnterExitType::kSwipeFromShelf &&
       type != OverviewEnterExitType::kImmediateExit) {
     return false;
   }
@@ -492,7 +508,7 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
   // so it doesn't have to be requested again on starting animation end.
   if (!canceled && overview_session_->enter_exit_overview_type() !=
                        OverviewEnterExitType::kFadeInEnter) {
-    overview_wallpaper_controller_->Blur(/*animate_only=*/true);
+    overview_wallpaper_controller_->Blur(/*animate=*/true);
   }
 
   for (auto& observer : observers_)
@@ -509,15 +525,18 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
 }
 
 void OverviewController::OnEndingAnimationComplete(bool canceled) {
-  // Unblur when animation is completed (or right away if there was no
-  // delayed animation) unless it's canceled, in which case, we should keep
-  // the blur.
-  if (!canceled)
-    overview_wallpaper_controller_->Unblur();
-
   for (auto& observer : observers_)
     observer.OnOverviewModeEndingAnimationComplete(canceled);
   UnpauseOcclusionTracker(occlusion_pause_duration_for_end_);
+
+  // Unblur when animation is completed (or right away if there was no
+  // delayed animation) unless it's canceled, in which case, we should keep
+  // the blur. Also resume the activation frame state.
+  if (!canceled) {
+    overview_wallpaper_controller_->Unblur();
+    paint_as_active_lock_.reset();
+  }
+
   TRACE_EVENT_NESTABLE_ASYNC_END1("ui", "OverviewController::ExitOverview",
                                   this, "canceled", canceled);
 }

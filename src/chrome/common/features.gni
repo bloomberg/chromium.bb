@@ -7,6 +7,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/features.gni")
+import("//components/feed/features.gni")
 import("//components/safe_browsing/buildflags.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -38,21 +39,18 @@ declare_args() {
   enable_basic_print_dialog = enable_basic_printing && !is_chromeos
 
   # Enables the Click to Call feature on desktop platforms.
-  enable_click_to_call = is_mac || is_win || is_desktop_linux || is_chromeos
+  enable_click_to_call = is_mac || is_win || is_linux || is_chromeos
 
   # Hangout services is an extension that adds extra features to Hangouts.
   # It is enableable separately to facilitate testing.
   enable_hangout_services_extension = is_chrome_branded
 
   # Enables usage of the system-provided notification center.
-  enable_native_notifications = is_android || is_mac || is_win ||
-                                (is_desktop_linux && use_dbus) || is_chromeos
+  enable_native_notifications =
+      is_android || is_mac || is_win || (is_linux && use_dbus) || is_chromeos
 
   enable_one_click_signin =
       is_win || is_mac || (is_linux && !is_chromeos && !is_chromecast)
-
-  # Enables password change in leaked password dialog, disabled by default.
-  enable_password_change_in_leaked_dialog = false
 
   enable_service_discovery = (enable_mdns && !is_android) || is_mac
 
@@ -64,9 +62,6 @@ declare_args() {
 
   # Indicates if Wayland display server support is enabled.
   enable_wayland_server = is_chromeos
-
-  # Indicates if the build is using PGO.
-  pgo_build = chrome_pgo_phase > 0
 
   # optimize_webui was moved to ui/base/ui_features.gni
 }
@@ -91,4 +86,6 @@ chrome_grit_defines = [
   "enable_webui_tab_strip=$enable_webui_tab_strip",
   "safe_browsing_mode=$safe_browsing_mode",
   "optimize_webui=$optimize_webui",
+  "enable_feed_v1=$enable_feed_v1",
+  "enable_feed_v2=$enable_feed_v2",
 ]

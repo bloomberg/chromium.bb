@@ -15,7 +15,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -40,7 +39,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -51,6 +49,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -398,15 +397,9 @@ class OfflinePageRequestHandlerTest : public testing::Test {
 
   bool is_connected_with_good_network() {
     return network_change_notifier_->online() &&
-           // Exclude prohibitively slow network.
-           !allow_preview() &&
            // Exclude flaky network.
            offline_page_header_.reason != OfflinePageHeader::Reason::NET_ERROR;
   }
-
-  void set_allow_preview(bool allow_preview) { allow_preview_ = allow_preview; }
-
-  bool allow_preview() const { return allow_preview_; }
 
  private:
   static std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
@@ -426,7 +419,7 @@ class OfflinePageRequestHandlerTest : public testing::Test {
 
   // Runs on IO thread.
   void CreateFileWithContentOnIO(const std::string& content,
-                                 const base::Closure& callback);
+                                 base::OnceClosure callback);
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
@@ -452,7 +445,6 @@ class OfflinePageRequestHandlerTest : public testing::Test {
   // setting the state is done first from one thread and reading this state
   // can be from any other thread later.
   std::unique_ptr<TestNetworkChangeNotifier> network_change_notifier_;
-  bool allow_preview_ = false;
 
   // These should only be accessed purely from IO thread.
   base::ScopedTempDir private_archives_temp_base_dir_;
@@ -462,7 +454,7 @@ class OfflinePageRequestHandlerTest : public testing::Test {
   int file_name_sequence_num_ = 0;
 
   bool async_operation_completed_ = false;
-  base::Closure async_operation_completed_callback_;
+  base::OnceClosure async_operation_completed_callback_;
 
   OfflinePageURLLoaderBuilder interceptor_factory_;
 
@@ -580,7 +572,7 @@ void OfflinePageRequestHandlerTest::WaitForAsyncOperation() {
 
 void OfflinePageRequestHandlerTest::CreateFileWithContentOnIO(
     const std::string& content,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (!temp_dir_.IsValid()) {
@@ -592,7 +584,7 @@ void OfflinePageRequestHandlerTest::CreateFileWithContentOnIO(
   temp_file_path_ = temp_dir_.GetPath().AppendASCII(file_name);
   ASSERT_NE(base::WriteFile(temp_file_path_, content.c_str(), content.length()),
             -1);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 base::FilePath OfflinePageRequestHandlerTest::CreateFileWithContent(
@@ -600,8 +592,8 @@ base::FilePath OfflinePageRequestHandlerTest::CreateFileWithContent(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::RunLoop run_loop;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&OfflinePageRequestHandlerTest::CreateFileWithContentOnIO,
                      base::Unretained(this), content, run_loop.QuitClosure()));
   run_loop.Run();
@@ -851,8 +843,8 @@ int64_t OfflinePageRequestHandlerTest::SavePage(const GURL& url,
   save_page_params.original_url = original_url;
   OfflinePageModelFactory::GetForBrowserContext(profile())->SavePage(
       save_page_params, std::move(archiver), nullptr,
-      base::Bind(&OfflinePageRequestHandlerTest::OnSavePageDone,
-                 base::Unretained(this)));
+      base::BindOnce(&OfflinePageRequestHandlerTest::OnSavePageDone,
+                     base::Unretained(this)));
   WaitForAsyncOperation();
   return last_offline_id_;
 }
@@ -896,14 +888,14 @@ void OfflinePageRequestHandlerTest::OnSavePageDone(SavePageResult result,
 
   async_operation_completed_ = true;
   if (!async_operation_completed_callback_.is_null())
-    async_operation_completed_callback_.Run();
+    std::move(async_operation_completed_callback_).Run();
 }
 
 OfflinePageItem OfflinePageRequestHandlerTest::GetPage(int64_t offline_id) {
   OfflinePageModelFactory::GetForBrowserContext(profile())->GetPageByOfflineId(
       offline_id,
-      base::Bind(&OfflinePageRequestHandlerTest::OnGetPageByOfflineIdDone,
-                 base::Unretained(this)));
+      base::BindOnce(&OfflinePageRequestHandlerTest::OnGetPageByOfflineIdDone,
+                     base::Unretained(this)));
   RunUntilIdle();
   return page_;
 }
@@ -981,9 +973,6 @@ void OfflinePageURLLoaderBuilder::InterceptRequestInternal(
 
   network::ResourceRequest request =
       CreateResourceRequest(url, method, extra_headers, is_main_frame);
-
-  request.previews_state =
-      test_->allow_preview() ? content::OFFLINE_PAGE_ON : content::PREVIEWS_OFF;
 
   url_loader_ = OfflinePageURLLoader::Create(
       navigation_ui_data_.get(),
@@ -1168,60 +1157,6 @@ TEST_F(OfflinePageRequestHandlerTest,
       offline_id, kFileSize1,
       OfflinePageRequestHandler::AggregatedRequestResult::
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
-}
-
-TEST_F(OfflinePageRequestHandlerTest,
-       LoadOfflinePageOnProhibitivelySlowNetwork) {
-  this->SimulateHasNetworkConnectivity(true);
-  this->set_allow_preview(true);
-
-  int64_t offline_id = this->SaveInternalPage(Url(), GURL(), kFilename1,
-                                              kFileSize1, std::string());
-
-  this->LoadPage(Url());
-
-  this->ExpectOfflinePageServed(
-      offline_id, kFileSize1,
-      OfflinePageRequestHandler::AggregatedRequestResult::
-          SHOW_OFFLINE_ON_PROHIBITIVELY_SLOW_NETWORK);
-}
-
-TEST_F(OfflinePageRequestHandlerTest,
-       DontLoadReloadOfflinePageOnProhibitivelySlowNetwork) {
-  this->SimulateHasNetworkConnectivity(true);
-  this->set_allow_preview(true);
-
-  int64_t offline_id = this->SaveInternalPage(Url(), GURL(), kFilename1,
-                                              kFileSize1, std::string());
-
-  // Treat this as a reloaded page.
-  net::HttpRequestHeaders extra_headers;
-  extra_headers.AddHeaderFromString(
-      this->UseOfflinePageHeader(OfflinePageHeader::Reason::RELOAD, 0));
-  this->LoadPageWithHeaders(Url(), extra_headers);
-
-  // The existentce of RELOAD header will force to treat the network as
-  // connected regardless current network condition. So we will fall back to
-  // the default handling immediately and no request result should be reported.
-  // Passing AGGREGATED_REQUEST_RESULT_MAX to skip checking request result in
-  // the helper function.
-  this->ExpectNoOfflinePageServed(
-      offline_id, OfflinePageRequestHandler::AggregatedRequestResult::
-                      AGGREGATED_REQUEST_RESULT_MAX);
-}
-
-TEST_F(OfflinePageRequestHandlerTest, PageNotFoundOnProhibitivelySlowNetwork) {
-  this->SimulateHasNetworkConnectivity(true);
-  this->set_allow_preview(true);
-
-  int64_t offline_id = this->SaveInternalPage(Url(), GURL(), kFilename1,
-                                              kFileSize1, std::string());
-
-  this->LoadPage(Url2());
-
-  this->ExpectNoOfflinePageServed(
-      offline_id, OfflinePageRequestHandler::AggregatedRequestResult::
-                      PAGE_NOT_FOUND_ON_PROHIBITIVELY_SLOW_NETWORK);
 }
 
 TEST_F(OfflinePageRequestHandlerTest, LoadOfflinePageOnFlakyNetwork) {
@@ -1541,22 +1476,6 @@ TEST_F(OfflinePageRequestHandlerTest, FileSizeMismatchOnDisconnectedNetwork) {
                       DIGEST_MISMATCH_ON_DISCONNECTED_NETWORK);
 }
 
-TEST_F(OfflinePageRequestHandlerTest,
-       FileSizeMismatchOnProhibitivelySlowNetwork) {
-  this->SimulateHasNetworkConnectivity(true);
-  this->set_allow_preview(true);
-
-  // Save an offline page in public location with mismatched file size.
-  int64_t offline_id = this->SavePublicPage(Url(), GURL(), kFilename1,
-                                            kMismatchedFileSize, kDigest1);
-
-  this->LoadPage(Url());
-
-  this->ExpectNoOfflinePageServed(
-      offline_id, OfflinePageRequestHandler::AggregatedRequestResult::
-                      DIGEST_MISMATCH_ON_PROHIBITIVELY_SLOW_NETWORK);
-}
-
 TEST_F(OfflinePageRequestHandlerTest, FileSizeMismatchOnConnectedNetwork) {
   this->SimulateHasNetworkConnectivity(true);
 
@@ -1607,22 +1526,6 @@ TEST_F(OfflinePageRequestHandlerTest, DigestMismatchOnDisconnectedNetwork) {
   this->ExpectNoOfflinePageServed(
       offline_id, OfflinePageRequestHandler::AggregatedRequestResult::
                       DIGEST_MISMATCH_ON_DISCONNECTED_NETWORK);
-}
-
-TEST_F(OfflinePageRequestHandlerTest,
-       DigestMismatchOnProhibitivelySlowNetwork) {
-  this->SimulateHasNetworkConnectivity(true);
-  this->set_allow_preview(true);
-
-  // Save an offline page in public location with mismatched digest.
-  int64_t offline_id = this->SavePublicPage(Url(), GURL(), kFilename1,
-                                            kFileSize1, kMismatchedDigest);
-
-  this->LoadPage(Url());
-
-  this->ExpectNoOfflinePageServed(
-      offline_id, OfflinePageRequestHandler::AggregatedRequestResult::
-                      DIGEST_MISMATCH_ON_PROHIBITIVELY_SLOW_NETWORK);
 }
 
 TEST_F(OfflinePageRequestHandlerTest, DigestMismatchOnConnectedNetwork) {

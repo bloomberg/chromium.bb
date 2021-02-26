@@ -14,6 +14,7 @@
 #include "include/core/SkPaint.h"
 #include "include/effects/SkDashPathEffect.h"
 #include "include/pathops/SkPathOps.h"
+#include "include/private/SkTPin.h"
 
 // Draw a line through the two points, outset by a fixed length in screen space
 static void draw_extended_line(SkCanvas* canvas, const SkPaint paint,
@@ -448,7 +449,7 @@ private:
         *domain = {vertices[52], vertices[53], vertices[54], vertices[55]};
     }
 
-    typedef Sample INHERITED;
+    using INHERITED = Sample;
 };
 
 class DegenerateQuadSample::Click : public Sample::Click {

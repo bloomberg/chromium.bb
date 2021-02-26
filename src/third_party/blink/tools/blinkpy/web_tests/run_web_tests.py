@@ -142,17 +142,16 @@ def parse_args(args):
             action='store_true',
             default=True,
             help=('Log Zircon debug messages (enabled by default).')),
-        optparse.make_option(
-            '--no-zircon-logging',
-            dest='zircon_logging',
-            action='store_false',
-            default=True,
-            help=('Do not log Zircon debug messages.')),
-        optparse.make_option(
-            '--device',
-            choices=['aemu', 'qemu'],
-            default='qemu',
-            help=('Choose device to launch Fuchsia with.')),
+        optparse.make_option('--no-zircon-logging',
+                             dest='zircon_logging',
+                             action='store_false',
+                             default=True,
+                             help=('Do not log Zircon debug messages.')),
+        optparse.make_option('--device',
+                             choices=['aemu', 'qemu'],
+                             default='aemu',
+                             help=('Choose device to launch Fuchsia with. '
+                                   'Defaults to AEMU.')),
     ]))
 
     option_group_definitions.append((
@@ -295,11 +294,10 @@ def parse_args(args):
                 dest='build',
                 action='store_false',
                 help="Don't check to see if the build is up to date."),
-            optparse.make_option(
-                '--child-processes',
-                '--jobs',
-                '-j',
-                help='Number of drivers to run in parallel.'),
+            optparse.make_option('--child-processes',
+                                 '--jobs',
+                                 '-j',
+                                 help='Number of drivers to run in parallel.'),
             optparse.make_option(
                 '--disable-breakpad',
                 action='store_true',
@@ -316,6 +314,12 @@ def parse_args(args):
                 '--enable-sanitizer',
                 action='store_true',
                 help='Only alert on sanitizer-related errors and crashes'),
+            optparse.make_option(
+                '--enable-tracing',
+                type='string',
+                help='Capture and write a trace file with the specied '
+                'categories for each test. Passes appropriate --trace-startup '
+                'flags to the driver.'),
             optparse.make_option(
                 '--exit-after-n-crashes-or-timeouts',
                 type='int',
@@ -386,10 +390,9 @@ def parse_args(args):
                  "'random' == pseudo-random order (default). Seed can be specified "
                  'via --seed, otherwise it will default to the current unix timestamp. '
                  "'natural' == use the natural order")),
-            optparse.make_option(
-                '--profile',
-                action='store_true',
-                help='Output per-test profile information.'),
+            optparse.make_option('--profile',
+                                 action='store_true',
+                                 help='Output per-test profile information.'),
             optparse.make_option(
                 '--profiler',
                 action='store',
@@ -515,8 +518,8 @@ def parse_args(args):
                 help='A colon-separated list of tests to run. Wildcards are '
                 'NOT supported. It is the same as listing the tests as '
                 'positional arguments.'),
-            optparse.make_option(
-                '--time-out-ms', help='Set the timeout for each test'),
+            optparse.make_option('--time-out-ms',
+                                 help='Set the timeout for each test'),
             optparse.make_option(
                 '--wrapper',
                 help=
@@ -524,11 +527,10 @@ def parse_args(args):
                  'is split on whitespace before running. (Example: --wrapper="valgrind '
                  '--smc-check=all")')),
             # FIXME: Display the default number of child processes that will run.
-            optparse.make_option(
-                '-f',
-                '--fully-parallel',
-                action='store_true',
-                help='run all tests in parallel'),
+            optparse.make_option('-f',
+                                 '--fully-parallel',
+                                 action='store_true',
+                                 help='run all tests in parallel'),
             optparse.make_option(
                 '--virtual-parallel',
                 action='store_true',
@@ -652,7 +654,7 @@ def _set_up_derived_options(port, options, args):
         options.configuration = port.default_configuration()
 
     if not options.time_out_ms:
-        options.time_out_ms = str(port.default_timeout_ms())
+        options.time_out_ms = str(port.timeout_ms())
 
     options.slow_time_out_ms = str(5 * int(options.time_out_ms))
 

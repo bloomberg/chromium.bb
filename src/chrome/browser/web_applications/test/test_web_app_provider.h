@@ -8,8 +8,9 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/callback_list.h"
+#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 class Profile;
 
@@ -20,8 +21,7 @@ class BrowserContext;
 namespace web_app {
 
 class AppRegistrar;
-class AppShortcutManager;
-class FileHandlerManager;
+class OsIntegrationManager;
 class InstallFinalizer;
 class PendingAppManager;
 class SystemWebAppManager;
@@ -41,16 +41,21 @@ class TestWebAppProvider : public WebAppProvider {
   // using the subsystems.
   static TestWebAppProvider* Get(Profile* profile);
 
+  explicit TestWebAppProvider(Profile* profile);
+  ~TestWebAppProvider() override;
+
   // |run_subsystem_startup_tasks| is true by default as browser test clients
   // will generally want to construct their TestWebAppProvider to behave as it
   // would in a production browser.
-  explicit TestWebAppProvider(Profile* profile,
-                              bool run_subsystem_startup_tasks = true);
-  ~TestWebAppProvider() override;
+  //
+  // |run_subsystem_startup_tasks| is false by default for TestWebAppProvider
+  // if it's a part of TestingProfile (see BuildDefault() method above).
+  void SetRunSubsystemStartupTasks(bool run_subsystem_startup_tasks);
 
   void SetRegistrar(std::unique_ptr<AppRegistrar> registrar);
-  void SetFileHandlerManager(
-      std::unique_ptr<FileHandlerManager> file_handler_manager);
+  void SetRegistryController(std::unique_ptr<AppRegistryController> controller);
+  void SetOsIntegrationManager(
+      std::unique_ptr<OsIntegrationManager> os_integration_manager);
   void SetInstallManager(std::unique_ptr<WebAppInstallManager> install_manager);
   void SetInstallFinalizer(std::unique_ptr<InstallFinalizer> install_finalizer);
   void SetPendingAppManager(
@@ -60,7 +65,6 @@ class TestWebAppProvider : public WebAppProvider {
       std::unique_ptr<SystemWebAppManager> system_web_app_manager);
   void SetWebAppPolicyManager(
       std::unique_ptr<WebAppPolicyManager> web_app_policy_manager);
-  void SetShortcutManager(std::unique_ptr<AppShortcutManager> shortcut_manager);
 
  private:
   void CheckNotStarted() const;
@@ -71,7 +75,7 @@ class TestWebAppProvider : public WebAppProvider {
   // If true, when Start()ed the TestWebAppProvider will call
   // WebAppProvider::StartImpl() and fire startup tasks like a real
   // WebAppProvider.
-  const bool run_subsystem_startup_tasks_;
+  bool run_subsystem_startup_tasks_ = true;
 };
 
 // Used in BrowserTests to ensure that the WebAppProvider that is create on
@@ -79,9 +83,12 @@ class TestWebAppProvider : public WebAppProvider {
 // BrowserContextKeyedService initialization pipeline.
 class TestWebAppProviderCreator {
  public:
-  using CreateWebAppProviderCallback =
+  using OnceCreateWebAppProviderCallback =
       base::OnceCallback<std::unique_ptr<KeyedService>(Profile* profile)>;
+  using CreateWebAppProviderCallback =
+      base::RepeatingCallback<std::unique_ptr<KeyedService>(Profile* profile)>;
 
+  explicit TestWebAppProviderCreator(OnceCreateWebAppProviderCallback callback);
   explicit TestWebAppProviderCreator(CreateWebAppProviderCallback callback);
   ~TestWebAppProviderCreator();
 
@@ -93,8 +100,8 @@ class TestWebAppProviderCreator {
   CreateWebAppProviderCallback callback_;
 
   std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
+      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
+      create_services_subscription_;
 };
 
 }  // namespace web_app

@@ -65,7 +65,10 @@ class PLATFORM_EXPORT BudgetPool {
       base::TimeTicks now,
       base::TimeTicks desired_run_time) = 0;
 
-  // Notifies budget pool that wakeup has happened.
+  // Invoked as part of a global wake up if any of the task queues associated
+  // with the budget pool has reached its next allowed run time. The next
+  // allowed run time of a queue is the maximum value returned from
+  // GetNextAllowedRunTime() among all the budget pools it is part of.
   virtual void OnWakeUp(base::TimeTicks now) = 0;
 
   // Specify how this budget pool should block affected queues.
@@ -103,8 +106,10 @@ class PLATFORM_EXPORT BudgetPool {
   // All queues should be removed before calling Close().
   void Close();
 
-  // Block all associated queues and schedule them to run when appropriate.
-  void BlockThrottledQueues(base::TimeTicks now);
+  // Ensures that a pump is scheduled and that a fence is installed for all
+  // queues in this pool, based on state of those queues and latest values from
+  // CanRunTasksAt/GetTimeTasksCanRunUntil/GetNextAllowedRunTime.
+  void UpdateThrottlingStateForAllQueues(base::TimeTicks now);
 
  protected:
   BudgetPool(const char* name, BudgetPoolController* budget_pool_controller);

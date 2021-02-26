@@ -5,38 +5,27 @@
 #ifndef ASH_HUD_DISPLAY_HUD_DISPLAY_H_
 #define ASH_HUD_DISPLAY_HUD_DISPLAY_H_
 
-#include "ash/hud_display/data_source.h"
-#include "ash/hud_display/graph.h"
 #include "base/sequence_checker.h"
-#include "base/timer/timer.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/view.h"
 
 namespace ash {
 namespace hud_display {
 
-class DataSource;
+enum class DisplayMode;
+class GraphsContainerView;
+class HUDHeaderView;
+class HUDSettingsView;
 
 // HUDDisplayView class can be used to display a system monitoring overview.
-class HUDDisplayView : public views::WidgetDelegateView {
+class HUDDisplayView : public views::View {
  public:
-  // Default HUDDisplayView height.
-  static constexpr size_t kDefaultHUDHeight = 300;
-
-  // Border width inside the HUDDisplayView rectangle around contents.
-  static constexpr size_t kHUDInset = 5;
+  METADATA_HEADER(HUDDisplayView);
 
   HUDDisplayView();
-  ~HUDDisplayView() override;
-
   HUDDisplayView(const HUDDisplayView&) = delete;
   HUDDisplayView& operator=(const HUDDisplayView&) = delete;
 
-  // view::
-  void OnPaint(gfx::Canvas* canvas) override;
-
-  // WidgetDelegate:
-  views::ClientView* CreateClientView(views::Widget* widget) override;
-  void OnWidgetInitialized() override;
+  ~HUDDisplayView() override;
 
   // Destroys global instance.
   static void Destroy();
@@ -44,32 +33,20 @@ class HUDDisplayView : public views::WidgetDelegateView {
   // Creates/Destroys global singleton.
   static void Toggle();
 
+  // Called from ClientView. Responsible for moving widget when clicked outside
+  // of the children.
+  int NonClientHitTest(const gfx::Point& point);
+
+  // Changes UI display mode.
+  void SetDisplayMode(const DisplayMode display_mode);
+
+  // Callback from SettingsButton.
+  void OnSettingsToggle();
+
  private:
-  // HUD is updatd with new data every tick.
-  base::RepeatingTimer refresh_timer_;
-
-  // --- Stacked:
-  // Share of the total RAM occupied by Chrome browser private RSS.
-  Graph graph_chrome_rss_private_;
-  // Share of the total RAM reported as Free memory be kernel.
-  Graph graph_mem_free_;
-  // Total RAM - other graphs in this stack.
-  Graph graph_mem_used_unknown_;
-  // Share of the total RAM occupied by Chrome type=renderer processes private
-  // RSS.
-  Graph graph_renderers_rss_private_;
-  // Share of the total RAM occupied by ARC++ processes private RSS.
-  Graph graph_arc_rss_private_;
-  // Share of the total RAM occupied by Chrome type=gpu process private RSS.
-  Graph graph_gpu_rss_private_;
-  // Share of the total RAM used by kernel GPU driver.
-  Graph graph_gpu_kernel_;
-
-  // Not stacked:
-  // Share of the total RAM occupied by Chrome browser process shared RSS.
-  Graph graph_chrome_rss_shared_;
-
-  DataSource data_source_;
+  HUDHeaderView* header_view_ = nullptr;             // not owned
+  GraphsContainerView* graphs_container_ = nullptr;  // not owned
+  HUDSettingsView* settings_view_ = nullptr;         // not owned
 
   SEQUENCE_CHECKER(ui_sequence_checker_);
 };

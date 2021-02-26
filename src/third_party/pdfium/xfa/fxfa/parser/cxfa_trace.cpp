@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_trace.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -26,6 +26,8 @@ CXFA_Trace::CXFA_Trace(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Trace,
                 {},
                 kTraceAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Trace::~CXFA_Trace() = default;

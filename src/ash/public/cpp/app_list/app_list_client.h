@@ -17,7 +17,6 @@
 #include "base/strings/string16.h"
 #include "components/sync/model/string_ordinal.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace ash {
@@ -65,8 +64,7 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // |action_index| corresponds to the index of an action on the search result,
   // for example, installing. They are stored in SearchResult::actions_.
   virtual void InvokeSearchResultAction(const std::string& result_id,
-                                        int action_index,
-                                        int event_flags) = 0;
+                                        int action_index) = 0;
   // Returns the context menu model for the search result with |result_id|, or
   // an empty array if there is currently no menu for the result.
   using GetSearchResultContextMenuModelCallback =
@@ -101,19 +99,15 @@ class ASH_PUBLIC_EXPORT AppListClient {
   virtual void GetContextMenuModel(int profile_id,
                                    const std::string& id,
                                    GetContextMenuModelCallback callback) = 0;
-  // Invoked when a folder is created in Ash (e.g. merge items into a folder).
-  virtual void OnFolderCreated(int profile_id,
-                               std::unique_ptr<AppListItemMetadata> folder) = 0;
-  // Invoked when a folder has only one item left and so gets removed.
-  virtual void OnFolderDeleted(int profile_id,
-                               std::unique_ptr<AppListItemMetadata> folder) = 0;
+  // Invoked when an item is added in Ash.
+  virtual void OnItemAdded(int profile_id,
+                           std::unique_ptr<AppListItemMetadata> item) = 0;
   // Invoked when user changes a folder's name or an item's position.
   virtual void OnItemUpdated(int profile_id,
                              std::unique_ptr<AppListItemMetadata> folder) = 0;
-  // Invoked when a "page break" item is added with |id| and |position|.
-  virtual void OnPageBreakItemAdded(int profile_id,
-                                    const std::string& id,
-                                    const syncer::StringOrdinal& position) = 0;
+  // Invoked when a folder has only one item left and so gets removed.
+  virtual void OnFolderDeleted(int profile_id,
+                               std::unique_ptr<AppListItemMetadata> folder) = 0;
   // Invoked when a "page break" item with |id| is deleted.
   virtual void OnPageBreakItemDeleted(int profile_id,
                                       const std::string& id) = 0;
@@ -125,13 +119,6 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // |notify_visibility_change| was set on the SearchResultMetadata.
   virtual void OnSearchResultVisibilityChanged(const std::string& id,
                                                bool visibility) = 0;
-
-  // Acquires a NavigableContentsFactory (indirectly) from the Content Service
-  // to allow the app list to display embedded web contents. Currently used only
-  // for answer card search results.
-  virtual void GetNavigableContentsFactory(
-      mojo::PendingReceiver<content::mojom::NavigableContentsFactory>
-          receiver) = 0;
 
   // TODO(crbug.com/1076270): This method exists for chrome-side logging of UI
   // actions, and can be folded into the AppListNotifier once it is

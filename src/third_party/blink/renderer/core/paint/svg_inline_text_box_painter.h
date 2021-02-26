@@ -5,23 +5,23 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_INLINE_TEXT_BOX_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_INLINE_TEXT_BOX_PAINTER_H_
 
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
+#include "third_party/blink/renderer/core/paint/svg_object_painter.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
 class AffineTransform;
+class ComputedStyle;
 class DocumentMarker;
 class Font;
-struct PaintInfo;
-class LayoutPoint;
 class LayoutSVGInlineText;
-class ComputedStyle;
 class SVGInlineTextBox;
-struct SVGTextFragment;
 class TextMarkerBase;
 class TextRun;
+struct PaintInfo;
+struct PhysicalOffset;
+struct SVGTextFragment;
 
 struct SVGTextFragmentWithRange {
   SVGTextFragmentWithRange(const SVGTextFragment& fragment,
@@ -41,15 +41,15 @@ class SVGInlineTextBoxPainter {
  public:
   SVGInlineTextBoxPainter(const SVGInlineTextBox& svg_inline_text_box)
       : svg_inline_text_box_(svg_inline_text_box) {}
-  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
+  void Paint(const PaintInfo&, const PhysicalOffset& paint_offset);
   void PaintSelectionBackground(const PaintInfo&);
   void PaintTextMarkerForeground(const PaintInfo&,
-                                 const LayoutPoint&,
+                                 const PhysicalOffset&,
                                  const TextMarkerBase&,
                                  const ComputedStyle&,
                                  const Font&);
   void PaintTextMarkerBackground(const PaintInfo&,
-                                 const LayoutPoint&,
+                                 const PhysicalOffset&,
                                  const TextMarkerBase&,
                                  const ComputedStyle&,
                                  const Font&);

@@ -41,6 +41,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.gms.ChromiumPlayServicesAvailability;
 
 import java.io.IOException;
 
@@ -90,7 +91,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     protected void checkCanUseGooglePlayServices() throws AccountManagerDelegateException {
         Context context = ContextUtils.getApplicationContext();
         final int resultCode =
-                GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
+                ChromiumPlayServicesAvailability.getGooglePlayServicesConnectionResult(context);
         if (resultCode == ConnectionResult.SUCCESS) {
             return;
         }
@@ -134,12 +135,13 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public String getAuthToken(Account account, String authTokenScope) throws AuthException {
+    public AccessTokenData getAuthToken(Account account, String authTokenScope)
+            throws AuthException {
         assert !ThreadUtils.runningOnUiThread();
         assert AccountUtils.GOOGLE_ACCOUNT_TYPE.equals(account.type);
         try {
-            return GoogleAuthUtil.getTokenWithNotification(
-                    ContextUtils.getApplicationContext(), account, authTokenScope, null);
+            return new AccessTokenData(GoogleAuthUtil.getTokenWithNotification(
+                    ContextUtils.getApplicationContext(), account, authTokenScope, null));
         } catch (GoogleAuthException ex) {
             // This case includes a UserRecoverableNotifiedException, but most clients will have
             // their own retry mechanism anyway.
@@ -221,7 +223,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         ThreadUtils.assertOnUiThread();
         if (!hasManageAccountsPermission()) {
             if (callback != null) {
-                ThreadUtils.postOnUiThread(() -> callback.onResult(false));
+                ThreadUtils.postOnUiThread(callback.bind(false));
             }
             return;
         }
@@ -262,9 +264,8 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     public boolean isGooglePlayServicesAvailable() {
         // TODO(http://crbug.com/577190): Remove StrictMode override.
         try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
-            int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+            return ChromiumPlayServicesAvailability.isGooglePlayServicesAvailable(
                     ContextUtils.getApplicationContext());
-            return resultCode == ConnectionResult.SUCCESS;
         }
     }
 

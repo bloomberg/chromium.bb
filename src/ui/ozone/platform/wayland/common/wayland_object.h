@@ -5,13 +5,18 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_COMMON_WAYLAND_OBJECT_H_
 #define UI_OZONE_PLATFORM_WAYLAND_COMMON_WAYLAND_OBJECT_H_
 
-#include <wayland-client-core.h>
 #include <memory>
+
+#include "ui/ozone/platform/wayland/common/wayland.h"
 
 struct gtk_primary_selection_device;
 struct gtk_primary_selection_device_manager;
 struct gtk_primary_selection_offer;
 struct gtk_primary_selection_source;
+struct zwp_primary_selection_device_v1;
+struct zwp_primary_selection_device_manager_v1;
+struct zwp_primary_selection_offer_v1;
+struct zwp_primary_selection_source_v1;
 struct wl_buffer;
 struct wl_callback;
 struct wl_compositor;
@@ -34,12 +39,25 @@ struct wl_surface;
 struct wl_touch;
 struct wp_presentation;
 struct wp_presentation_feedback;
+struct wp_viewport;
+struct wp_viewporter;
 struct xdg_wm_base;
 struct xdg_surface;
 struct xdg_toplevel;
 struct xdg_popup;
 struct xdg_positioner;
+struct zaura_shell;
+struct zaura_surface;
+struct zcr_cursor_shapes_v1;
+struct zcr_keyboard_extension_v1;
+struct zcr_extended_keyboard_v1;
+struct zcr_extended_drag_v1;
+struct zcr_extended_drag_source_v1;
+struct zcr_extended_drag_offer_v1;
 struct zwp_linux_dmabuf_v1;
+struct zwp_linux_buffer_release_v1;
+struct zwp_linux_explicit_synchronization_v1;
+struct zwp_linux_surface_synchronization_v1;
 struct zxdg_shell_v6;
 struct zxdg_surface_v6;
 struct zxdg_toplevel_v6;
@@ -47,11 +65,27 @@ struct zxdg_popup_v6;
 struct zxdg_positioner_v6;
 struct zwp_text_input_manager_v1;
 struct zwp_text_input_v1;
+struct zxdg_exporter_v1;
+struct zxdg_exported_v1;
+struct zxdg_decoration_manager_v1;
+struct zxdg_toplevel_decoration_v1;
 
 namespace wl {
 
 template <typename T>
 struct ObjectTraits;
+
+template <>
+struct ObjectTraits<zxdg_decoration_manager_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zxdg_decoration_manager_v1*);
+};
+
+template <>
+struct ObjectTraits<zxdg_toplevel_decoration_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zxdg_toplevel_decoration_v1*);
+};
 
 template <>
 struct ObjectTraits<gtk_primary_selection_device_manager> {
@@ -75,6 +109,30 @@ template <>
 struct ObjectTraits<gtk_primary_selection_source> {
   static const wl_interface* interface;
   static void (*deleter)(gtk_primary_selection_source*);
+};
+
+template <>
+struct ObjectTraits<zwp_primary_selection_device_manager_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_primary_selection_device_manager_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_primary_selection_device_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_primary_selection_device_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_primary_selection_offer_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_primary_selection_offer_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_primary_selection_source_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_primary_selection_source_v1*);
 };
 
 template <>
@@ -216,6 +274,18 @@ struct ObjectTraits<wp_presentation_feedback> {
 };
 
 template <>
+struct ObjectTraits<wp_viewport> {
+  static const wl_interface* interface;
+  static void (*deleter)(wp_viewport*);
+};
+
+template <>
+struct ObjectTraits<wp_viewporter> {
+  static const wl_interface* interface;
+  static void (*deleter)(wp_viewporter*);
+};
+
+template <>
 struct ObjectTraits<xdg_wm_base> {
   static const wl_interface* interface;
   static void (*deleter)(xdg_wm_base*);
@@ -246,9 +316,75 @@ struct ObjectTraits<xdg_positioner> {
 };
 
 template <>
+struct ObjectTraits<zaura_shell> {
+  static const wl_interface* interface;
+  static void (*deleter)(zaura_shell*);
+};
+
+template <>
+struct ObjectTraits<zaura_surface> {
+  static const wl_interface* interface;
+  static void (*deleter)(zaura_surface*);
+};
+
+template <>
+struct ObjectTraits<zcr_cursor_shapes_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zcr_cursor_shapes_v1*);
+};
+
+template <>
+struct ObjectTraits<zcr_extended_drag_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zcr_extended_drag_v1*);
+};
+
+template <>
+struct ObjectTraits<zcr_extended_drag_source_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zcr_extended_drag_source_v1*);
+};
+
+template <>
+struct ObjectTraits<zcr_extended_drag_offer_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zcr_extended_drag_offer_v1*);
+};
+
+template <>
+struct ObjectTraits<zcr_keyboard_extension_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zcr_keyboard_extension_v1*);
+};
+
+template <>
+struct ObjectTraits<zcr_extended_keyboard_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zcr_extended_keyboard_v1*);
+};
+
+template <>
 struct ObjectTraits<zwp_linux_dmabuf_v1> {
   static const wl_interface* interface;
   static void (*deleter)(zwp_linux_dmabuf_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_linux_buffer_release_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_linux_buffer_release_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_linux_explicit_synchronization_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_linux_explicit_synchronization_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_linux_surface_synchronization_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_linux_surface_synchronization_v1*);
 };
 
 template <>
@@ -293,6 +429,18 @@ struct ObjectTraits<zwp_text_input_v1> {
   static void (*deleter)(zwp_text_input_v1*);
 };
 
+template <>
+struct ObjectTraits<zxdg_exporter_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zxdg_exporter_v1*);
+};
+
+template <>
+struct ObjectTraits<zxdg_exported_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zxdg_exported_v1*);
+};
+
 struct Deleter {
   template <typename T>
   void operator()(T* obj) {
@@ -315,7 +463,7 @@ class Object : public std::unique_ptr<T, Deleter> {
 template <typename T>
 wl::Object<T> Bind(wl_registry* registry, uint32_t name, uint32_t version) {
   return wl::Object<T>(static_cast<T*>(
-      wl_registry_bind(registry, name, ObjectTraits<T>::interface, version)));
+      wl::bind_registry(registry, name, ObjectTraits<T>::interface, version)));
 }
 
 }  // namespace wl

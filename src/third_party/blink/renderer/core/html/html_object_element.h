@@ -41,12 +41,11 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
                                             public ListedElement,
                                             public FormAssociated {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
 
  public:
   HTMLObjectElement(Document&, const CreateElementFlags);
   ~HTMLObjectElement() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Returns attributes that should be checked against Trusted Types
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;

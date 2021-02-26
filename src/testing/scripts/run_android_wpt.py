@@ -33,6 +33,7 @@ import shutil
 import sys
 
 import common
+import wpt_common
 
 logger = logging.getLogger(__name__)
 
@@ -40,11 +41,26 @@ SRC_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
 BUILD_ANDROID = os.path.join(SRC_DIR, 'build', 'android')
+BLINK_TOOLS_DIR = os.path.join(
+    SRC_DIR, 'third_party', 'blink', 'tools')
+CATAPULT_DIR = os.path.join(SRC_DIR, 'third_party', 'catapult')
+DEFAULT_WPT = os.path.join(wpt_common.WEB_TESTS_DIR, 'external', 'wpt', 'wpt')
+PYUTILS = os.path.join(CATAPULT_DIR, 'common', 'py_utils')
+
+if PYUTILS not in sys.path:
+  sys.path.append(PYUTILS)
+
+if BLINK_TOOLS_DIR not in sys.path:
+  sys.path.append(BLINK_TOOLS_DIR)
 
 if BUILD_ANDROID not in sys.path:
   sys.path.append(BUILD_ANDROID)
 
 import devil_chromium
+
+from blinkpy.web_tests.port.android import (
+    PRODUCTS, PRODUCTS_TO_EXPECTATION_FILE_PATHS, ANDROID_WEBLAYER,
+    ANDROID_WEBVIEW, CHROME_ANDROID, ANDROID_DISABLED_TESTS)
 
 from devil import devil_env
 from devil.android import apk_helper
@@ -52,24 +68,7 @@ from devil.android import device_utils
 from devil.android.tools import system_app
 from devil.android.tools import webview_app
 
-CATAPULT_DIR = os.path.join(SRC_DIR, 'third_party', 'catapult')
-PYUTILS = os.path.join(CATAPULT_DIR, 'common', 'py_utils')
-
-if PYUTILS not in sys.path:
-  sys.path.append(PYUTILS)
-
 from py_utils.tempfile_ext import NamedTemporaryDirectory
-
-BLINK_TOOLS_DIR = os.path.join(SRC_DIR, 'third_party', 'blink', 'tools')
-WEB_TESTS_DIR = os.path.join(BLINK_TOOLS_DIR, os.pardir, 'web_tests')
-DEFAULT_WPT = os.path.join(WEB_TESTS_DIR, 'external', 'wpt', 'wpt')
-
-ANDROID_WEBLAYER = 'android_weblayer'
-ANDROID_WEBVIEW = 'android_webview'
-CHROME_ANDROID = 'chrome_android'
-
-# List of supported products.
-PRODUCTS = [ANDROID_WEBLAYER, ANDROID_WEBVIEW, CHROME_ANDROID]
 
 
 class PassThroughArgs(argparse.Action):
@@ -107,27 +106,17 @@ def _get_adapter(device):
     return WPTClankAdapter(device)
 
 
-class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
+class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
 
   def __init__(self, device):
     self.pass_through_wpt_args = []
     self.pass_through_binary_args = []
     self._metadata_dir = None
-    self._test_apk = None
-    self._missing_test_apk_arg = None
     self._device = device
     super(WPTAndroidAdapter, self).__init__()
     # Arguments from add_extra_argumentsparse were added so
     # its safe to parse the arguments and set self._options
     self.parse_args()
-
-  def generate_test_output_args(self, output):
-    return ['--log-chromium', output]
-
-  def generate_sharding_args(self, total_shards, shard_index):
-    return ['--total-chunks=%d' % total_shards,
-        # shard_index is 0-based but WPT's this-chunk to be 1-based
-        '--this-chunk=%d' % (shard_index + 1)]
 
   @property
   def rest_args(self):
@@ -169,29 +158,25 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     raise NotImplementedError
 
   def _maybe_build_metadata(self):
-    if not self._test_apk:
-      assert self._missing_test_apk_arg, (
-          'self._missing_test_apk_arg was not set.')
-      logger.warning('%s was not set, skipping metadata generation.' %
-                     self._missing_test_apk_arg)
-      return
-
     metadata_builder_cmd = [
          sys.executable,
-         os.path.join(BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
-         '--android-apk',
-         self._test_apk,
+         os.path.join(wpt_common.BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
+         '--android-product',
+         self.options.product,
+         '--ignore-default-expectations',
          '--metadata-output-dir',
          self._metadata_dir,
          '--additional-expectations',
-         os.path.join(WEB_TESTS_DIR, 'android', 'AndroidWPTNeverFixTests')
+         ANDROID_DISABLED_TESTS,
     ]
     metadata_builder_cmd.extend(self._extra_metadata_builder_args())
-    common.run_command(metadata_builder_cmd)
+    return common.run_command(metadata_builder_cmd)
 
   def run_test(self):
     with NamedTemporaryDirectory() as self._metadata_dir, self._install_apks():
-      self._maybe_build_metadata()
+      metadata_command_ret = self._maybe_build_metadata()
+      if metadata_command_ret != 0:
+          return metadata_command_ret
       return super(WPTAndroidAdapter, self).run_test()
 
   def _install_apks(self):
@@ -201,24 +186,6 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     # Avoid having a dangling reference to the temp directory
     # which was deleted
     self._metadata_dir = None
-
-  def do_post_test_run_tasks(self):
-    # Move json results into layout-test-results directory
-    results_dir = os.path.dirname(self.options.isolated_script_test_output)
-    layout_test_results = os.path.join(results_dir, 'layout-test-results')
-    os.mkdir(layout_test_results)
-    shutil.copyfile(self.options.isolated_script_test_output,
-                    os.path.join(layout_test_results, 'full_results.json'))
-    # create full_results_jsonp.js file which is used to
-    # load results into the results viewer
-    with open(self.options.isolated_script_test_output, 'r') as full_results, \
-         open(os.path.join(
-             layout_test_results, 'full_results_jsonp.js'), 'w') as json_js:
-      json_js.write('ADD_FULL_RESULTS(%s);' % full_results.read())
-    # copy layout test results viewer to layout-test-results directory
-    shutil.copyfile(
-        os.path.join(WEB_TESTS_DIR, 'fast', 'harness', 'results.html'),
-        os.path.join(layout_test_results, 'results.html'))
 
   def add_extra_arguments(self, parser):
     # TODO: |pass_through_args| are broke and need to be supplied by way of
@@ -282,11 +249,6 @@ class WPTWeblayerAdapter(WPTAndroidAdapter):
   WEBLAYER_SHELL_PKG = 'org.chromium.weblayer.shell'
   WEBLAYER_SUPPORT_PKG = 'org.chromium.weblayer.support'
 
-  def __init__(self, device):
-    super(WPTWeblayerAdapter, self).__init__(device)
-    self._test_apk = self.options.weblayer_shell
-    self._missing_test_apk_arg = '--weblayer-shell'
-
   @contextlib.contextmanager
   def _install_apks(self):
     install_weblayer_shell_as_needed = maybe_install_user_apk(
@@ -304,8 +266,7 @@ class WPTWeblayerAdapter(WPTAndroidAdapter):
   def _extra_metadata_builder_args(self):
     return [
       '--additional-expectations',
-      os.path.join(WEB_TESTS_DIR,
-                   'android', 'WeblayerWPTOverrideExpectations')]
+      PRODUCTS_TO_EXPECTATION_FILE_PATHS[ANDROID_WEBLAYER]]
 
   def add_extra_arguments(self, parser):
     super(WPTWeblayerAdapter, self).add_extra_arguments(parser)
@@ -327,11 +288,6 @@ class WPTWebviewAdapter(WPTAndroidAdapter):
 
   SYSTEM_WEBVIEW_SHELL_PKG = 'org.chromium.webview_shell'
 
-  def __init__(self, device):
-    super(WPTWebviewAdapter, self).__init__(device)
-    self._test_apk = self.options.system_webview_shell
-    self._missing_test_apk_arg = '--system-webview-shell'
-
   @contextlib.contextmanager
   def _install_apks(self):
     install_shell_as_needed = maybe_install_user_apk(
@@ -346,8 +302,7 @@ class WPTWebviewAdapter(WPTAndroidAdapter):
   def _extra_metadata_builder_args(self):
     return [
       '--additional-expectations',
-      os.path.join(
-          WEB_TESTS_DIR, 'android', 'WebviewWPTOverrideExpectations')]
+      PRODUCTS_TO_EXPECTATION_FILE_PATHS[ANDROID_WEBVIEW]]
 
   def add_extra_arguments(self, parser):
     super(WPTWebviewAdapter, self).add_extra_arguments(parser)
@@ -366,11 +321,6 @@ class WPTWebviewAdapter(WPTAndroidAdapter):
 
 class WPTClankAdapter(WPTAndroidAdapter):
 
-  def __init__(self, device):
-    super(WPTClankAdapter, self).__init__(device)
-    self._test_apk = self.options.chrome_apk
-    self._missing_test_apk_arg = '--chrome-apk'
-
   @contextlib.contextmanager
   def _install_apks(self):
     install_clank_as_needed = maybe_install_user_apk(
@@ -381,7 +331,7 @@ class WPTClankAdapter(WPTAndroidAdapter):
   def _extra_metadata_builder_args(self):
     return [
       '--additional-expectations',
-      os.path.join(WEB_TESTS_DIR, 'android', 'ClankWPTOverrideExpectations')]
+      PRODUCTS_TO_EXPECTATION_FILE_PATHS[CHROME_ANDROID]]
 
   def add_extra_arguments(self, parser):
     super(WPTClankAdapter, self).add_extra_arguments(parser)

@@ -26,6 +26,7 @@
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/ping_manager.h"
 #include "components/update_client/protocol_parser.h"
+#include "components/update_client/task_send_registration_ping.h"
 #include "components/update_client/task_send_uninstall_ping.h"
 #include "components/update_client/task_update.h"
 #include "components/update_client/update_checker.h"
@@ -63,15 +64,12 @@ CrxComponent::~CrxComponent() = default;
 UpdateClientImpl::UpdateClientImpl(
     scoped_refptr<Configurator> config,
     scoped_refptr<PingManager> ping_manager,
-    UpdateChecker::Factory update_checker_factory,
-    CrxDownloader::Factory crx_downloader_factory)
-    : is_stopped_(false),
-      config_(config),
+    UpdateChecker::Factory update_checker_factory)
+    : config_(config),
       ping_manager_(ping_manager),
       update_engine_(base::MakeRefCounted<UpdateEngine>(
           config,
           update_checker_factory,
-          crx_downloader_factory,
           ping_manager_.get(),
           base::BindRepeating(&UpdateClientImpl::NotifyObservers,
                               base::Unretained(this)))) {}
@@ -238,15 +236,26 @@ void UpdateClientImpl::SendUninstallPing(const std::string& id,
 
   RunTask(base::MakeRefCounted<TaskSendUninstallPing>(
       update_engine_.get(), id, version, reason,
-      base::BindOnce(&UpdateClientImpl::OnTaskComplete, base::Unretained(this),
+      base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
+                     std::move(callback))));
+}
+
+void UpdateClientImpl::SendRegistrationPing(const std::string& id,
+                                            const base::Version& version,
+                                            Callback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  RunTask(base::MakeRefCounted<TaskSendRegistrationPing>(
+      update_engine_.get(), id, version,
+      base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback))));
 }
 
 scoped_refptr<UpdateClient> UpdateClientFactory(
     scoped_refptr<Configurator> config) {
   return base::MakeRefCounted<UpdateClientImpl>(
-      config, base::MakeRefCounted<PingManager>(config), &UpdateChecker::Create,
-      &CrxDownloader::Create);
+      config, base::MakeRefCounted<PingManager>(config),
+      &UpdateChecker::Create);
 }
 
 void RegisterPrefs(PrefRegistrySimple* registry) {

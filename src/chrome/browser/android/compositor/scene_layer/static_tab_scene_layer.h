@@ -13,7 +13,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
+#include "chrome/browser/ui/android/layouts/scene_layer.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -22,6 +22,7 @@
 namespace android {
 
 class ContentLayer;
+class TabContentManager;
 
 // A SceneLayer to render a static tab.
 class StaticTabSceneLayer : public SceneLayer {
@@ -36,7 +37,6 @@ class StaticTabSceneLayer : public SceneLayer {
   void UpdateTabLayer(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj,
-      const base::android::JavaParamRef<jobject>& jtab_content_manager,
       jint id,
       jboolean can_use_live_layer,
       jint default_background_color,
@@ -46,9 +46,15 @@ class StaticTabSceneLayer : public SceneLayer {
       jfloat saturation,
       jfloat brightness);
 
+  void SetTabContentManager(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      const base::android::JavaParamRef<jobject>& jtab_content_manager);
+
  private:
   scoped_refptr<android::ContentLayer> content_layer_;
 
+  TabContentManager* tab_content_manager_;
   int last_set_tab_id_;
   int background_color_;
   float brightness_;

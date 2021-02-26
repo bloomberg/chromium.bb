@@ -12,9 +12,15 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_geometry.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "ui/gfx/transform.h"
 
 namespace blink {
+
+FrameView::FrameView(const IntRect& frame_rect)
+    : EmbeddedContentView(frame_rect),
+      frame_visibility_(blink::mojom::FrameVisibility::kRenderedInViewport) {}
 
 Frame& FrameView::GetFrame() const {
   if (const LocalFrameView* lfv = DynamicTo<LocalFrameView>(this))
@@ -25,12 +31,13 @@ Frame& FrameView::GetFrame() const {
 bool FrameView::CanThrottleRenderingForPropagation() const {
   if (CanThrottleRendering())
     return true;
-  LocalFrame* parent_frame = DynamicTo<LocalFrame>(GetFrame().Tree().Parent());
-  if (!parent_frame)
-    return false;
   Frame& frame = GetFrame();
-  LayoutEmbeddedContent* owner = frame.OwnerLayoutObject();
-  return !owner && frame.IsCrossOriginToMainFrame();
+  if (!frame.IsCrossOriginToMainFrame())
+    return false;
+  if (frame.IsLocalFrame() && To<LocalFrame>(frame).IsHidden())
+    return true;
+  LocalFrame* parent_frame = DynamicTo<LocalFrame>(GetFrame().Tree().Parent());
+  return (parent_frame && !frame.OwnerLayoutObject());
 }
 
 bool FrameView::DisplayLockedInParentFrame() {
@@ -42,30 +49,29 @@ bool FrameView::DisplayLockedInParentFrame() {
   return owner && DisplayLockUtilities::NearestLockedInclusiveAncestor(*owner);
 }
 
-bool FrameView::UpdateViewportIntersection(unsigned flags,
+void FrameView::UpdateViewportIntersection(unsigned flags,
                                            bool needs_occlusion_tracking) {
-  bool can_skip_sticky_frame_tracking =
-      flags & IntersectionObservation::kCanSkipStickyFrameTracking;
-
   if (!(flags & IntersectionObservation::kImplicitRootObserversNeedUpdate))
-    return can_skip_sticky_frame_tracking;
+    return;
+
   // This should only run in child frames.
   Frame& frame = GetFrame();
   HTMLFrameOwnerElement* owner_element = frame.DeprecatedLocalOwner();
   if (!owner_element)
-    return can_skip_sticky_frame_tracking;
+    return;
+
   Document& owner_document = owner_element->GetDocument();
-  IntPoint viewport_offset;
-  IntRect viewport_intersection, mainframe_document_intersection;
+  IntRect viewport_intersection, mainframe_intersection;
+  TransformationMatrix main_frame_transform_matrix;
   DocumentLifecycle::LifecycleState parent_lifecycle_state =
       owner_document.Lifecycle().GetState();
-  FrameOcclusionState occlusion_state =
+  mojom::blink::FrameOcclusionState occlusion_state =
       owner_document.GetFrame()->GetOcclusionState();
   bool should_compute_occlusion =
       needs_occlusion_tracking &&
-      occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded &&
-      parent_lifecycle_state >= DocumentLifecycle::kPrePaintClean &&
-      RuntimeEnabledFeatures::IntersectionObserverV2Enabled();
+      occlusion_state ==
+          mojom::blink::FrameOcclusionState::kGuaranteedNotOccluded &&
+      parent_lifecycle_state >= DocumentLifecycle::kPrePaintClean;
 
   LayoutEmbeddedContent* owner_layout_object =
       owner_element->GetLayoutEmbeddedContent();
@@ -73,7 +79,7 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
     // The frame is detached from layout, not visible, or zero size; leave
     // viewport_intersection empty, and signal the frame as occluded if
     // necessary.
-    occlusion_state = FrameOcclusionState::kPossiblyOccluded;
+    occlusion_state = mojom::blink::FrameOcclusionState::kPossiblyOccluded;
   } else if (parent_lifecycle_state >= DocumentLifecycle::kLayoutClean &&
              !owner_document.View()->NeedsLayout()) {
     unsigned geometry_flags =
@@ -81,14 +87,14 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
     if (should_compute_occlusion)
       geometry_flags |= IntersectionGeometry::kShouldComputeVisibility;
 
-    IntersectionGeometry geometry(nullptr, *owner_element, {},
+    IntersectionGeometry geometry(nullptr, *owner_element, {} /* root_margin */,
                                   {IntersectionObserver::kMinimumThreshold},
-                                  geometry_flags);
+                                  {} /* target_margin */, geometry_flags);
     PhysicalRect new_rect_in_parent = geometry.IntersectionRect();
     if (new_rect_in_parent.size != rect_in_parent_.size ||
         ((new_rect_in_parent.X() - rect_in_parent_.X()).Abs() +
              (new_rect_in_parent.Y() - rect_in_parent_.Y()).Abs() >
-         LayoutUnit(kMaxChildFrameScreenRectMovement))) {
+         LayoutUnit(mojom::blink::kMaxChildFrameScreenRectMovement))) {
       rect_in_parent_ = new_rect_in_parent;
       if (Page* page = GetFrame().GetPage()) {
         rect_in_parent_stable_since_ = page->Animator().Clock().CurrentTime();
@@ -97,40 +103,7 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
       }
     }
     if (should_compute_occlusion && !geometry.IsVisible())
-      occlusion_state = FrameOcclusionState::kPossiblyOccluded;
-
-    // The coordinate system for the iframe's LayoutObject has its origin at the
-    // top/left of the border box rect. The coordinate system of the child frame
-    // is the same as the coordinate system of the iframe's content box rect.
-    // The iframe's PhysicalContentBoxOffset() can be used to move between them.
-    PhysicalOffset content_box_offset =
-        owner_layout_object->PhysicalContentBoxOffset();
-
-    if (NeedsViewportOffset() || !can_skip_sticky_frame_tracking) {
-      viewport_offset = -RoundedIntPoint(
-          owner_layout_object->AbsoluteToLocalPoint(
-              PhysicalOffset(),
-              kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset) -
-          content_box_offset);
-      if (!can_skip_sticky_frame_tracking) {
-        // If the frame is small, skip tracking this frame and its subframes.
-        if (frame.GetMainFrameViewportSize().IsEmpty() ||
-            !StickyFrameTracker::IsLarge(
-                frame.GetMainFrameViewportSize(),
-                new_rect_in_parent.PixelSnappedSize())) {
-          can_skip_sticky_frame_tracking = true;
-        }
-        // If the frame is a large sticky ad, record a use counter and skip
-        // tracking its subframes; otherwise continue tracking its subframes.
-        else if (frame.IsAdSubframe() &&
-                 GetStickyFrameTracker()->UpdateStickyStatus(
-                     frame.GetMainFrameScrollOffset(), viewport_offset)) {
-          UseCounter::Count(owner_element->GetDocument(),
-                            WebFeature::kLargeStickyAd);
-          can_skip_sticky_frame_tracking = true;
-        }
-      }
-    }
+      occlusion_state = mojom::blink::FrameOcclusionState::kPossiblyOccluded;
 
     // Generate matrix to transform from the space of the containing document
     // to the space of the iframe's contents.
@@ -158,6 +131,15 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
       } else {
         viewport_intersection = EnclosingIntRect(intersection_rect);
       }
+
+      // Because the geometry code uses enclosing rects, we may end up with an
+      // intersection rect that is bigger than the rect we started with. Clamp
+      // the size of the viewport intersection to the bounds of the iframe's
+      // content rect.
+      viewport_intersection.SetLocation(
+          viewport_intersection.Location().ExpandedTo(IntPoint()));
+      viewport_intersection.SetSize(viewport_intersection.Size().ShrunkTo(
+          RoundedIntSize(owner_layout_object->ContentSize())));
     }
 
     PhysicalRect mainframe_intersection_rect;
@@ -167,29 +149,57 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
               .BoundingBox());
 
       if (mainframe_intersection_rect.IsEmpty()) {
-        mainframe_document_intersection = IntRect(
+        mainframe_intersection = IntRect(
             FlooredIntPoint(mainframe_intersection_rect.offset), IntSize());
       } else {
-        mainframe_document_intersection =
-            EnclosingIntRect(mainframe_intersection_rect);
+        mainframe_intersection = EnclosingIntRect(mainframe_intersection_rect);
       }
+      mainframe_intersection.SetLocation(
+          mainframe_intersection.Location().ExpandedTo(IntPoint()));
+      mainframe_intersection.SetSize(mainframe_intersection.Size().ShrunkTo(
+          RoundedIntSize(owner_layout_object->ContentSize())));
     }
-  } else if (occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded) {
+
+    TransformState child_frame_to_root_frame(
+        TransformState::kUnapplyInverseTransformDirection);
+    if (owner_layout_object) {
+      owner_layout_object->MapAncestorToLocal(
+          nullptr, child_frame_to_root_frame,
+          kTraverseDocumentBoundaries | kApplyRemoteMainFrameTransform);
+      child_frame_to_root_frame.Move(
+          owner_layout_object->PhysicalContentBoxOffset());
+    }
+    main_frame_transform_matrix =
+        child_frame_to_root_frame.AccumulatedTransform();
+  } else if (occlusion_state ==
+             mojom::blink::FrameOcclusionState::kGuaranteedNotOccluded) {
     // If the parent LocalFrameView is throttled and out-of-date, then we can't
     // get any useful information.
-    occlusion_state = FrameOcclusionState::kUnknown;
+    occlusion_state = mojom::blink::FrameOcclusionState::kUnknown;
   }
 
-  SetViewportIntersection(
-      {viewport_offset, viewport_intersection, mainframe_document_intersection,
-       WebRect(), occlusion_state, frame.GetMainFrameViewportSize(),
-       frame.GetMainFrameScrollOffset(), can_skip_sticky_frame_tracking});
+  // An iframe's content is always pixel-snapped, even if the iframe element has
+  // non-pixel-aligned location.
+  gfx::Transform main_frame_gfx_transform =
+      TransformationMatrix::ToTransform(main_frame_transform_matrix);
+  main_frame_gfx_transform.RoundTranslationComponents();
+
+  SetViewportIntersection(mojom::blink::ViewportIntersectionState(
+      viewport_intersection, mainframe_intersection, gfx::Rect(),
+      occlusion_state, gfx::Size(frame.GetMainFrameViewportSize()),
+      gfx::Point(frame.GetMainFrameScrollOffset()), main_frame_gfx_transform));
 
   UpdateFrameVisibility(!viewport_intersection.IsEmpty());
 
   if (ShouldReportMainFrameIntersection()) {
-    GetFrame().Client()->OnMainFrameDocumentIntersectionChanged(
-        mainframe_document_intersection);
+    IntRect projected_rect = EnclosingIntRect(PhysicalRect::EnclosingRect(
+        main_frame_transform_matrix
+            .ProjectQuad(FloatRect(IntRect(mainframe_intersection)))
+            .BoundingBox()));
+    // Return <0, 0, 0, 0> if there is no area.
+    if (projected_rect.IsEmpty())
+      projected_rect.SetLocation(IntPoint(0, 0));
+    GetFrame().Client()->OnMainFrameIntersectionChanged(projected_rect);
   }
 
   // We don't throttle 0x0 or display:none iframes, because in practice they are
@@ -203,7 +213,6 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
         parent_frame->View()->CanThrottleRenderingForPropagation();
   }
   UpdateRenderThrottlingStatus(hidden_for_throttling, subtree_throttled);
-  return can_skip_sticky_frame_tracking;
 }
 
 void FrameView::UpdateFrameVisibility(bool intersects_viewport) {
@@ -250,19 +259,14 @@ void FrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
 bool FrameView::RectInParentIsStable(
     const base::TimeTicks& event_timestamp) const {
   if (event_timestamp - rect_in_parent_stable_since_ <
-      base::TimeDelta::FromMilliseconds(kMinScreenRectStableTimeMs)) {
+      base::TimeDelta::FromMilliseconds(
+          mojom::blink::kMinScreenRectStableTimeMs)) {
     return false;
   }
   LocalFrameView* parent = ParentFrameView();
   if (!parent)
     return true;
   return parent->RectInParentIsStable(event_timestamp);
-}
-
-StickyFrameTracker* FrameView::GetStickyFrameTracker() {
-  if (!sticky_frame_tracker_)
-    sticky_frame_tracker_ = std::make_unique<StickyFrameTracker>();
-  return sticky_frame_tracker_.get();
 }
 
 }  // namespace blink

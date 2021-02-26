@@ -98,6 +98,7 @@ PLATFORM_EXPORT bool IsPrivilegedNoCorsHeaderName(const String& name);
 PLATFORM_EXPORT bool IsNoCorsSafelistedHeaderName(const String& name);
 PLATFORM_EXPORT Vector<String> CorsUnsafeRequestHeaderNames(
     const HTTPHeaderMap& headers);
+PLATFORM_EXPORT Vector<String> PrivilegedNoCorsHeaderNames();
 PLATFORM_EXPORT bool IsForbiddenHeaderName(const String& name);
 PLATFORM_EXPORT bool ContainsOnlyCorsSafelistedHeaders(const HTTPHeaderMap&);
 PLATFORM_EXPORT bool ContainsOnlyCorsSafelistedOrForbiddenHeaders(
@@ -127,7 +128,7 @@ ExtractCorsExposedHeaderNamesList(network::mojom::CredentialsMode,
 PLATFORM_EXPORT bool IsCorsSafelistedResponseHeader(const String&);
 
 // Checks whether request mode 'no-cors' is allowed for a certain context.
-PLATFORM_EXPORT bool IsNoCorsAllowedContext(mojom::RequestContextType);
+PLATFORM_EXPORT bool IsNoCorsAllowedContext(mojom::blink::RequestContextType);
 
 }  // namespace cors
 

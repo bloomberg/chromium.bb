@@ -9,28 +9,12 @@
 (function() {
 'use strict';
 
-const BROWSER_BANNER_INTERACTION_METRIC_NAME =
-    'ChromeOS.Settings.BrowserBannerInteraction';
-
-/**
- * These values are persisted to logs and should not be renumbered or re-used.
- * See tools/metrics/histograms/enums.xml.
- * @enum {number}
- */
-const CrosSettingsBrowserBannerInteraction = {
-  NotShown: 0,
-  Shown: 1,
-  Clicked: 2,
-  Closed: 3,
-};
-
 Polymer({
   is: 'os-settings-page',
 
   behaviors: [
     settings.MainPageBehavior,
     settings.RouteObserverBehavior,
-    PrefsBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -103,10 +87,14 @@ Polymer({
       computed: 'computeShowSecondaryUserBanner_(hasExpandedSection_)',
     },
 
-    showBrowserSettingsBanner_: {
+    /**
+     * Whether to show banner indicating the user to return this device as an
+     * update is required as per policy but the device has reached end of life.
+     * @private
+     */
+    showUpdateRequiredEolBanner_: {
       type: Boolean,
-      computed: 'computeShowBrowserSettingsBanner_(' +
-          'prefs.settings.cros.show_browser_banner.value, currentRoute_)',
+      value: !!loadTimeData.getString('updateRequiredEolBannerText'),
     },
 
     /** @private {!settings.Route|undefined} */
@@ -126,9 +114,6 @@ Polymer({
    * @private {boolean}
    */
   advancedTogglingInProgress_: false,
-
-  /** @private {boolean} */
-  browserBannerShowMetricRecorded_: false,
 
   /** @override */
   attached: function() {
@@ -157,7 +142,7 @@ Polymer({
     if (oldRoute && oldRoute.isSubpage()) {
       // If the new route isn't the same expanded section, reset
       // hasExpandedSection_ for the next transition.
-      if (!newRoute.isSubpage() || newRoute.section != oldRoute.section) {
+      if (!newRoute.isSubpage() || newRoute.section !== oldRoute.section) {
         this.hasExpandedSection_ = false;
       }
     } else {
@@ -226,34 +211,11 @@ Polymer({
   },
 
   /**
-   * @return {boolean|undefined}
+   * @return {boolean}
    * @private
    */
-  computeShowBrowserSettingsBanner_() {
-    // this.prefs is implicitly used by this.getPref() below, but may not be
-    // initialized yet.
-    if (!this.prefs || !this.currentRoute_) {
-      return;
-    }
-    const showPref = /** @type {boolean} */ (
-        this.getPref('settings.cros.show_browser_banner').value);
-
-    // Banner only shows on the main page because direct navigations to a
-    // sub-page (e.g. to the bluetooth section from the system tray) are
-    // unlikely to be due to a user looking for a browser setting.
-    const show = showPref && !this.currentRoute_.isSubpage();
-
-    // Record the show metric once. We can't record the metric in attached()
-    // because prefs might not be ready yet.
-    if (!this.browserBannerShowMetricRecorded_) {
-      chrome.metricsPrivate.recordEnumerationValue(
-          BROWSER_BANNER_INTERACTION_METRIC_NAME,
-          show ? CrosSettingsBrowserBannerInteraction.Shown :
-                 CrosSettingsBrowserBannerInteraction.NotShown,
-          Object.keys(CrosSettingsBrowserBannerInteraction).length);
-      this.browserBannerShowMetricRecorded_ = true;
-    }
-    return show;
+  computeShowUpdateRequiredEolBanner_() {
+    return !this.hasExpandedSection_ && this.showUpdateRequiredEolBanner_;
   },
 
   /**
@@ -264,22 +226,13 @@ Polymer({
     this.androidAppsInfo = info;
   },
 
-  /** @private */
-  onBrowserSettingsClick_() {
-    // The label has a link that opens the page, so just record the metric.
-    chrome.metricsPrivate.recordEnumerationValue(
-        BROWSER_BANNER_INTERACTION_METRIC_NAME,
-        CrosSettingsBrowserBannerInteraction.Clicked,
-        Object.keys(CrosSettingsBrowserBannerInteraction).length);
-  },
-
-  /** @private */
-  onBrowserSettingsBannerClosed_() {
-    this.setPrefValue('settings.cros.show_browser_banner', false);
-    chrome.metricsPrivate.recordEnumerationValue(
-        BROWSER_BANNER_INTERACTION_METRIC_NAME,
-        CrosSettingsBrowserBannerInteraction.Closed,
-        Object.keys(CrosSettingsBrowserBannerInteraction).length);
+  /**
+   * Hides the update required EOL banner. It is shown again when Settings is
+   * re-opened.
+   * @private
+   */
+  onCloseEolBannerClicked_() {
+    this.showUpdateRequiredEolBanner_ = false;
   },
 
   /**

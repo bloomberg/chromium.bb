@@ -5,18 +5,24 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_FORWARD_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_FORWARD_H_
 
+#include "base/base_export.h"
+
 namespace base {
 namespace internal {
 
 template <bool thread_safe>
-struct PartitionPage;
+struct SlotSpanMetadata;
+
+BASE_EXPORT size_t PartitionAllocGetSlotOffset(void* ptr);
 
 constexpr bool ThreadSafe = true;
 constexpr bool NotThreadSafe = false;
-template <bool thread_safe>
-struct PartitionRootBase;
 
 }  // namespace internal
+
+template <bool thread_safe>
+struct PartitionRoot;
+
 }  // namespace base
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_FORWARD_H_

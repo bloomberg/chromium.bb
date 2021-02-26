@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/feed/core/v2/proto_util.h"
 #include "components/feed/core/v2/protocol_translator.h"
@@ -94,6 +95,17 @@ feedstore::Content MakeContent(int id_number) {
   feedstore::Content result;
   *result.mutable_content_id() = MakeContentContentId(id_number);
   result.set_frame("f:" + base::NumberToString(id_number));
+  feedwire::PrefetchMetadata& prefetch_metadata =
+      *result.add_prefetch_metadata();
+
+  std::string suffix = base::NumberToString(id_number);
+  prefetch_metadata.set_uri("http://content" + suffix);
+  prefetch_metadata.set_title("title" + suffix);
+  prefetch_metadata.set_publisher("publisher" + suffix);
+  prefetch_metadata.set_snippet("snippet" + suffix);
+  prefetch_metadata.set_image_url("http://image" + suffix);
+  prefetch_metadata.set_favicon_url("http://favicon" + suffix);
+  prefetch_metadata.set_badge_id("app/badge" + suffix);
   return result;
 }
 
@@ -146,9 +158,13 @@ std::vector<feedstore::DataOperation> MakeTypicalStreamOperations() {
   };
 }
 
-std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState(
-    int first_cluster_id,
-    base::Time last_added_time) {
+StreamModelUpdateRequestGenerator::StreamModelUpdateRequestGenerator() =
+    default;
+StreamModelUpdateRequestGenerator::~StreamModelUpdateRequestGenerator() =
+    default;
+
+std::unique_ptr<StreamModelUpdateRequest>
+StreamModelUpdateRequestGenerator::MakeFirstPage(int first_cluster_id) const {
   auto initial_update = std::make_unique<StreamModelUpdateRequest>();
   const int i = first_cluster_id;
   const int j = first_cluster_id + 1;
@@ -167,14 +183,17 @@ std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState(
   *initial_update->stream_data.mutable_content_id() = MakeRootId();
   *initial_update->stream_data.mutable_shared_state_id() = MakeSharedStateId(i);
   initial_update->stream_data.set_next_page_token("page-2");
-  SetLastAddedTime(last_added_time, &initial_update->stream_data);
+  initial_update->stream_data.set_signed_in(signed_in);
+  initial_update->stream_data.set_logging_enabled(logging_enabled);
+  initial_update->stream_data.set_privacy_notice_fulfilled(
+      privacy_notice_fulfilled);
+  SetLastAddedTime(last_added_time, initial_update->stream_data);
 
   return initial_update;
 }
 
-std::unique_ptr<StreamModelUpdateRequest> MakeTypicalNextPageState(
-    int page_number,
-    base::Time last_added_time) {
+std::unique_ptr<StreamModelUpdateRequest>
+StreamModelUpdateRequestGenerator::MakeNextPage(int page_number) const {
   auto initial_update = std::make_unique<StreamModelUpdateRequest>();
   initial_update->source =
       StreamModelUpdateRequest::Source::kInitialLoadFromStore;
@@ -193,9 +212,41 @@ std::unique_ptr<StreamModelUpdateRequest> MakeTypicalNextPageState(
   *initial_update->stream_data.mutable_shared_state_id() = MakeSharedStateId(0);
   initial_update->stream_data.set_next_page_token(
       "page-" + base::NumberToString(page_number + 1));
-  SetLastAddedTime(last_added_time, &initial_update->stream_data);
+  initial_update->stream_data.set_signed_in(signed_in);
+  initial_update->stream_data.set_logging_enabled(logging_enabled);
+  initial_update->stream_data.set_privacy_notice_fulfilled(
+      privacy_notice_fulfilled);
+  SetLastAddedTime(last_added_time, initial_update->stream_data);
 
   return initial_update;
+}
+
+std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState(
+    int first_cluster_id,
+    base::Time last_added_time,
+    bool signed_in,
+    bool logging_enabled,
+    bool privacy_notice_fulfilled) {
+  StreamModelUpdateRequestGenerator generator;
+  generator.last_added_time = last_added_time;
+  generator.signed_in = signed_in;
+  generator.logging_enabled = logging_enabled;
+  generator.privacy_notice_fulfilled = privacy_notice_fulfilled;
+  return generator.MakeFirstPage(first_cluster_id);
+}
+
+std::unique_ptr<StreamModelUpdateRequest> MakeTypicalNextPageState(
+    int page_number,
+    base::Time last_added_time,
+    bool signed_in,
+    bool logging_enabled,
+    bool privacy_notice_fulfilled) {
+  StreamModelUpdateRequestGenerator generator;
+  generator.last_added_time = last_added_time;
+  generator.signed_in = signed_in;
+  generator.logging_enabled = logging_enabled;
+  generator.privacy_notice_fulfilled = privacy_notice_fulfilled;
+  return generator.MakeNextPage(page_number);
 }
 
 }  // namespace feed

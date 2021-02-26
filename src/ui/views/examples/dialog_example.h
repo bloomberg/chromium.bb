@@ -7,8 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/base/models/simple_combobox_model.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/combobox/combobox_listener.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/examples/example_base.h"
 
@@ -26,9 +25,7 @@ namespace examples {
 
 // An example that exercises BubbleDialogDelegateView or DialogDelegateView.
 class VIEWS_EXAMPLES_EXPORT DialogExample : public ExampleBase,
-                                            public ButtonListener,
-                                            public TextfieldController,
-                                            public ComboboxListener {
+                                            public TextfieldController {
  public:
   DialogExample();
   ~DialogExample() override;
@@ -50,6 +47,9 @@ class VIEWS_EXAMPLES_EXPORT DialogExample : public ExampleBase,
                          const char* value);
   void AddCheckbox(GridLayout* layout, Checkbox** member);
 
+  // Checkbox callback
+  void OnPerformAction();
+
   // Interrogates the configuration Views for DialogDelegate.
   ui::ModalType GetModalType() const;
   int GetDialogButtons() const;
@@ -60,15 +60,13 @@ class VIEWS_EXAMPLES_EXPORT DialogExample : public ExampleBase,
   // Resize the dialog Widget to match the preferred size. Triggers Layout().
   void ResizeDialog();
 
-  // ButtonListener:
-  void ButtonPressed(Button* sender, const ui::Event& event) override;
+  void ShowButtonPressed();
+  void BubbleCheckboxPressed();
+  void OtherCheckboxPressed();
 
   // TextfieldController:
   void ContentsChanged(Textfield* sender,
                        const base::string16& new_contents) override;
-
-  // ComboboxListener:
-  void OnPerformAction(Combobox* combobox) override;
 
   DialogDelegate* last_dialog_ = nullptr;
   Label* last_body_label_ = nullptr;

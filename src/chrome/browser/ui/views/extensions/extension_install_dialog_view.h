@@ -53,14 +53,13 @@ class ExtensionInstallDialogView
   // Changes the widget size to accommodate the contents' preferred size.
   void ResizeWidget();
 
- private:
   // views::BubbleDialogDelegate:
   gfx::Size CalculatePreferredSize() const override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
   void AddedToWidget() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  bool ShouldShowCloseButton() const override;
 
+ private:
   void CloseDialog();
 
   // extensions::ExtensionRegistryObserver:
@@ -70,7 +69,6 @@ class ExtensionInstallDialogView
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   // views::WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() override;
   base::string16 GetAccessibleWindowTitle() const override;
   ui::ModalType GetModalType() const override;
 

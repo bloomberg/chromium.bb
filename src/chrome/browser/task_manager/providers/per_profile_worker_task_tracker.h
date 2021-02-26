@@ -10,12 +10,11 @@
 #include "base/containers/flat_map.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/task_manager/providers/task.h"
-#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/dedicated_worker_service.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
-#include "content/public/browser/shared_worker_id.h"
 #include "content/public/browser/shared_worker_service.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 class Profile;
 
@@ -42,30 +41,31 @@ class PerProfileWorkerTaskTracker
       delete;
 
   // content::DedicatedWorkerService::Observer:
-  void OnWorkerStarted(
-      content::DedicatedWorkerId dedicated_worker_id,
+  void OnWorkerCreated(
+      const blink::DedicatedWorkerToken& worker_token,
       int worker_process_id,
       content::GlobalFrameRoutingId ancestor_render_frame_host_id) override;
-  void OnBeforeWorkerTerminated(
-      content::DedicatedWorkerId dedicated_worker_id,
+  void OnBeforeWorkerDestroyed(
+      const blink::DedicatedWorkerToken& worker_token,
       content::GlobalFrameRoutingId ancestor_render_frame_host_id) override;
   void OnFinalResponseURLDetermined(
-      content::DedicatedWorkerId dedicated_worker_id,
+      const blink::DedicatedWorkerToken& worker_token,
       const GURL& url) override;
 
   // content::SharedWorkerService::Observer:
-  void OnWorkerStarted(content::SharedWorkerId shared_worker_id,
+  void OnWorkerCreated(const blink::SharedWorkerToken& shared_worker_token,
                        int worker_process_id,
                        const base::UnguessableToken& dev_tools_token) override;
-  void OnBeforeWorkerTerminated(
-      content::SharedWorkerId shared_worker_id) override;
-  void OnFinalResponseURLDetermined(content::SharedWorkerId shared_worker_id,
-                                    const GURL& url) override;
+  void OnBeforeWorkerDestroyed(
+      const blink::SharedWorkerToken& shared_worker_token) override;
+  void OnFinalResponseURLDetermined(
+      const blink::SharedWorkerToken& shared_worker_token,
+      const GURL& url) override;
   void OnClientAdded(
-      content::SharedWorkerId shared_worker_id,
+      const blink::SharedWorkerToken& shared_worker_token,
       content::GlobalFrameRoutingId render_frame_host_id) override {}
   void OnClientRemoved(
-      content::SharedWorkerId shared_worker_id,
+      const blink::SharedWorkerToken& shared_worker_token,
       content::GlobalFrameRoutingId render_frame_host_id) override {}
 
   // content::ServiceWorkerContextObserver:
@@ -115,7 +115,7 @@ class PerProfileWorkerTaskTracker
                  content::DedicatedWorkerService::Observer>
       scoped_dedicated_worker_service_observer_{this};
 
-  base::flat_map<content::DedicatedWorkerId, std::unique_ptr<WorkerTask>>
+  base::flat_map<blink::DedicatedWorkerToken, std::unique_ptr<WorkerTask>>
       dedicated_worker_tasks_;
 
   // For shared workers:
@@ -123,7 +123,7 @@ class PerProfileWorkerTaskTracker
                  content::SharedWorkerService::Observer>
       scoped_shared_worker_service_observer_{this};
 
-  base::flat_map<content::SharedWorkerId, std::unique_ptr<WorkerTask>>
+  base::flat_map<blink::SharedWorkerToken, std::unique_ptr<WorkerTask>>
       shared_worker_tasks_;
 
   // For service workers:

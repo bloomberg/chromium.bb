@@ -17,14 +17,16 @@ CastAppDiscoveryService::Subscription::Subscription(Subscription&& other)
   other.discovery_service_ = nullptr;
 }
 
-CastAppDiscoveryService::Subscription::~Subscription() {
-  Reset();
+CastAppDiscoveryService::Subscription&
+CastAppDiscoveryService::Subscription::operator=(Subscription&& other) {
+  id_ = other.id_;
+  discovery_service_ = other.discovery_service_;
+  other.discovery_service_ = nullptr;
+  return *this;
 }
 
-CastAppDiscoveryService::Subscription& CastAppDiscoveryService::Subscription::
-operator=(Subscription other) {
-  Swap(other);
-  return *this;
+CastAppDiscoveryService::Subscription::~Subscription() {
+  Reset();
 }
 
 void CastAppDiscoveryService::Subscription::Reset() {

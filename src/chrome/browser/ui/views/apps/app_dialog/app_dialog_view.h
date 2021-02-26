@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/label.h"
 
 namespace gfx {
 class ImageSkia;
@@ -16,25 +17,17 @@ class ImageSkia;
 // for app related dialog classes, e.g AppBlockDialogView, AppPauseDialogView.
 class AppDialogView : public views::BubbleDialogDelegateView {
  public:
-  explicit AppDialogView(const std::string& app_name,
-                         const gfx::ImageSkia& image);
+  explicit AppDialogView(const gfx::ImageSkia& image);
   ~AppDialogView() override;
-
-  // views::BubbleDialogDelegateView:
-  gfx::Size CalculatePreferredSize() const override;
-  ui::ModalType GetModalType() const override;
-  gfx::ImageSkia GetWindowIcon() override;
-  bool ShouldShowCloseButton() const override;
-  bool ShouldShowWindowIcon() const override;
-
-  std::string app_name() const { return app_name_; }
 
  protected:
   void InitializeView(const base::string16& heading_text);
 
+  // Can only be called after InitializeView().
+  void SetLabelText(const base::string16& text);
+
  private:
-  const std::string app_name_;
-  gfx::ImageSkia image_;
+  views::Label* label_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_APPS_APP_DIALOG_APP_DIALOG_VIEW_H_

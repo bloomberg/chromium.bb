@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -86,7 +87,8 @@ void OnFindURLMimeType(const GURL& url,
 bool GetURLForDrop(const ui::DropTargetEvent& event, GURL* url) {
   DCHECK(url);
   base::string16 title;
-  return event.data().GetURLAndTitle(ui::CONVERT_FILENAMES, url, &title) &&
+  return event.data().GetURLAndTitle(ui::FilenameToURLPolicy::CONVERT_FILENAMES,
+                                     url, &title) &&
          url->is_valid();
 }
 
@@ -147,7 +149,7 @@ bool BrowserRootView::CanDrop(const ui::OSExchangeData& data) {
     return false;
 
   // If there is a URL, we'll allow the drop.
-  if (data.HasURL(ui::CONVERT_FILENAMES))
+  if (data.HasURL(ui::FilenameToURLPolicy::CONVERT_FILENAMES))
     return true;
 
   // If there isn't a URL, see if we can 'paste and go'.
@@ -258,7 +260,13 @@ const char* BrowserRootView::GetClassName() const {
 }
 
 bool BrowserRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  if (browser_defaults::kScrollEventChangesTab) {
+  // TODO(dfried): See if it's possible to move this logic deeper into the view
+  // hierarchy - ideally to TabStripRegionView.
+
+  // Scroll-event-changes-tab is incompatible with scrolling tabstrip, so
+  // disable it if the latter feature is enabled.
+  if (browser_defaults::kScrollEventChangesTab &&
+      !base::FeatureList::IsEnabled(features::kScrollableTabStrip)) {
     // Switch to the left/right tab if the wheel-scroll happens over the
     // tabstrip, or the empty space beside the tabstrip.
     views::View* hit_view = GetEventHandlerForPoint(event.location());

@@ -8,6 +8,7 @@
 
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/app/chrome_overlay_window_testing.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -22,6 +23,11 @@ using MainApplicationDelegateTest = PlatformTest;
 // is called when the application is launched in background.
 // http://crbug.com/437307
 TEST_F(MainApplicationDelegateTest, CrashIfNotInitialized) {
+  // Skip for scene API for now.
+  // TODO(crbug.com/1093755) : Support this test in with the scene API.
+  if (IsSceneStartupSupported())
+    return;
+
   // Save both ChromeBrowserProvider as MainController register new instance.
   ios::ChromeBrowserProvider* stashed_chrome_browser_provider =
       ios::GetChromeBrowserProvider();
@@ -46,5 +52,27 @@ TEST_F(MainApplicationDelegateTest, CrashIfNotInitialized) {
   // instances created by MainController.
   DCHECK_NE(ios::GetChromeBrowserProvider(), stashed_chrome_browser_provider);
   delete ios::GetChromeBrowserProvider();
+  ios::SetChromeBrowserProvider(stashed_chrome_browser_provider);
+}
+
+// Tests that the application does not crash if |applicationWillTerminate:| is
+// called before a previous call to |application:didFinishLaunchingWithOptions:|
+// set up the ChromeBrowserProvider. This can happen if the app is force-quit
+// while the splash screen is still visible.
+TEST_F(MainApplicationDelegateTest, TerminateCalledWithNoBrowserProvider) {
+  id application = [OCMockObject niceMockForClass:[UIApplication class]];
+
+  // The test fixture automatically registers a ChromeBrowserProvider, but this
+  // test is trying to verify behavior in the case where
+  // ios::GetChromeBrowserProvider() return nullptr. Clear the previously-set
+  // provider before proceeding.
+  ios::ChromeBrowserProvider* stashed_chrome_browser_provider =
+      ios::GetChromeBrowserProvider();
+  ios::SetChromeBrowserProvider(nullptr);
+
+  MainApplicationDelegate* delegate = [[MainApplicationDelegate alloc] init];
+  [delegate applicationWillTerminate:application];
+
+  // Restore ChromeBrowserProvider to its original value.
   ios::SetChromeBrowserProvider(stashed_chrome_browser_provider);
 }

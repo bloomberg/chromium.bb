@@ -18,7 +18,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/paint_preview/browser/compositor_utils.h"
 #include "components/paint_preview/browser/paint_preview_client.h"
-#include "components/paint_preview/browser/paint_preview_compositor_service_impl.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -51,22 +50,63 @@ PaintPreviewBaseService::~PaintPreviewBaseService() = default;
 
 void PaintPreviewBaseService::GetCapturedPaintPreviewProto(
     const DirectoryKey& key,
+    base::Optional<base::TimeDelta> expiry_horizon,
     OnReadProtoCallback on_read_proto_callback) {
   task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(&FileManager::DeserializePaintPreviewProto, file_manager_,
-                     key),
-      std::move(on_read_proto_callback));
+      base::BindOnce(
+          [](scoped_refptr<FileManager> file_manager, const DirectoryKey& key,
+             base::Optional<base::TimeDelta> expiry_horizon)
+              -> std::pair<PaintPreviewBaseService::ProtoReadStatus,
+                           std::unique_ptr<PaintPreviewProto>> {
+            if (expiry_horizon.has_value()) {
+              auto file_info = file_manager->GetInfo(key);
+              if (!file_info.has_value())
+                return std::make_pair(ProtoReadStatus::kNoProto, nullptr);
+
+              if (file_info->last_modified + expiry_horizon.value() <
+                  base::Time::NowFromSystemTime()) {
+                return std::make_pair(ProtoReadStatus::kExpired, nullptr);
+              }
+            }
+            auto result = file_manager->DeserializePaintPreviewProto(key);
+            PaintPreviewBaseService::ProtoReadStatus status =
+                ProtoReadStatus::kNoProto;
+            switch (result.first) {
+              case FileManager::ProtoReadStatus::kOk:
+                status = ProtoReadStatus::kOk;
+                break;
+              case FileManager::ProtoReadStatus::kNoProto:
+                status = ProtoReadStatus::kNoProto;
+                break;
+              case FileManager::ProtoReadStatus::kDeserializationError:
+                status = ProtoReadStatus::kDeserializationError;
+                break;
+              default:
+                NOTREACHED();
+            }
+            return std::make_pair(status, std::move(result.second));
+          },
+          file_manager_, key, expiry_horizon),
+      base::BindOnce(
+          [](OnReadProtoCallback callback,
+             std::pair<PaintPreviewBaseService::ProtoReadStatus,
+                       std::unique_ptr<PaintPreviewProto>> result) {
+            std::move(callback).Run(result.first, std::move(result.second));
+          },
+          std::move(on_read_proto_callback)));
 }
 
 void PaintPreviewBaseService::CapturePaintPreview(
     content::WebContents* web_contents,
     const base::FilePath& root_dir,
     gfx::Rect clip_rect,
+    bool capture_links,
     size_t max_per_capture_size,
     OnCapturedCallback callback) {
   CapturePaintPreview(web_contents, web_contents->GetMainFrame(), root_dir,
-                      clip_rect, max_per_capture_size, std::move(callback));
+                      clip_rect, capture_links, max_per_capture_size,
+                      std::move(callback));
 }
 
 void PaintPreviewBaseService::CapturePaintPreview(
@@ -74,27 +114,30 @@ void PaintPreviewBaseService::CapturePaintPreview(
     content::RenderFrameHost* render_frame_host,
     const base::FilePath& root_dir,
     gfx::Rect clip_rect,
+    bool capture_links,
     size_t max_per_capture_size,
     OnCapturedCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (policy_ && !policy_->SupportedForContents(web_contents)) {
-    std::move(callback).Run(kContentUnsupported, nullptr);
+    std::move(callback).Run(CaptureStatus::kContentUnsupported, {});
     return;
   }
 
   PaintPreviewClient::CreateForWebContents(web_contents);  // Is a singleton.
   auto* client = PaintPreviewClient::FromWebContents(web_contents);
   if (!client) {
-    std::move(callback).Run(kClientCreationFailed, nullptr);
+    std::move(callback).Run(CaptureStatus::kClientCreationFailed, {});
     return;
   }
 
-  PaintPreviewClient::PaintPreviewParams params;
-  params.document_guid = base::UnguessableToken::Create();
-  params.clip_rect = clip_rect;
-  params.is_main_frame = (render_frame_host == web_contents->GetMainFrame());
+  PaintPreviewClient::PaintPreviewParams params(
+      RecordingPersistence::kFileSystem);
   params.root_dir = root_dir;
-  params.max_per_capture_size = max_per_capture_size;
+  params.inner.clip_rect = clip_rect;
+  params.inner.is_main_frame =
+      (render_frame_host == web_contents->GetMainFrame());
+  params.inner.capture_links = capture_links;
+  params.inner.max_capture_size = max_per_capture_size;
 
   // TODO(crbug/1064253): Consider moving to client so that this always happens.
   // Although, it is harder to get this right in the client due to its
@@ -110,53 +153,29 @@ void PaintPreviewBaseService::CapturePaintPreview(
                      start_time, std::move(callback)));
 }
 
-std::unique_ptr<PaintPreviewCompositorService>
-PaintPreviewBaseService::StartCompositorService(
-    base::OnceClosure disconnect_handler) {
-  // Create a dedicated sequence for communicating with the compositor. This
-  // sequence will handle message serialization/deserialization of bitmaps so it
-  // affects user visible elements. This is an implementation detail and the
-  // caller should continue to communicate with the compositor via the sequence
-  // that called this.
-  auto compositor_task_runner = base::ThreadPool::CreateSequencedTaskRunner(
-      {base::TaskPriority::USER_VISIBLE,
-       base::ThreadPolicy::MUST_USE_FOREGROUND});
-
-  // The discardable memory manager isn't initialized here. This is handled in
-  // the constructor of PaintPreviewCompositorServiceImpl once the pending
-  // remote becomes bound.
-  mojo::PendingRemote<mojom::PaintPreviewCompositorCollection> pending_remote;
-  compositor_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CreateCompositorCollectionPending,
-                     pending_remote.InitWithNewPipeAndPassReceiver()));
-
-  return std::make_unique<PaintPreviewCompositorServiceImpl>(
-      std::move(pending_remote), compositor_task_runner,
-      std::move(disconnect_handler));
-}
-
 void PaintPreviewBaseService::OnCaptured(
     int frame_tree_node_id,
     base::TimeTicks start_time,
     OnCapturedCallback callback,
     base::UnguessableToken guid,
     mojom::PaintPreviewStatus status,
-    std::unique_ptr<PaintPreviewProto> proto) {
+    std::unique_ptr<CaptureResult> result) {
   auto* web_contents =
       content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   if (web_contents)
     web_contents->DecrementCapturerCount(true);
 
-  if (status != mojom::PaintPreviewStatus::kOk || !proto) {
+  if (!(status == mojom::PaintPreviewStatus::kOk ||
+        status == mojom::PaintPreviewStatus::kPartialSuccess) ||
+      !result->capture_success) {
     DVLOG(1) << "ERROR: Paint Preview failed to capture for document "
              << guid.ToString() << " with error " << status;
-    std::move(callback).Run(kCaptureFailed, nullptr);
+    std::move(callback).Run(CaptureStatus::kCaptureFailed, {});
     return;
   }
   base::UmaHistogramTimes("Browser.PaintPreview.Capture.TotalCaptureDuration",
                           base::TimeTicks::Now() - start_time);
-  std::move(callback).Run(kOk, std::move(proto));
+  std::move(callback).Run(CaptureStatus::kOk, std::move(result));
 }
 
 }  // namespace paint_preview

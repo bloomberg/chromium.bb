@@ -8,7 +8,7 @@
 #define CORE_FXGE_CFX_DEFAULTRENDERDEVICE_H_
 
 #include "core/fxge/cfx_renderdevice.h"
-#include "core/fxge/fx_dib.h"
+#include "core/fxge/dib/fx_dib.h"
 
 class SkPictureRecorder;
 
@@ -26,7 +26,7 @@ class CFX_DefaultRenderDevice final : public CFX_RenderDevice {
               FXDIB_Format format,
               const RetainPtr<CFX_DIBitmap>& pBackdropBitmap);
 
-#ifdef _SKIA_SUPPORT_
+#if defined(_SKIA_SUPPORT_)
   bool AttachRecorder(SkPictureRecorder* recorder);
   void Clear(uint32_t color);
   SkPictureRecorder* CreateRecorder(int size_x, int size_y);

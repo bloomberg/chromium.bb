@@ -12,15 +12,12 @@
 #include "ash/public/cpp/image_downloader.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
 
-class AssistantAlarmTimerModel;
-class AssistantAlarmTimerModelObserver;
 class AssistantNotificationModel;
-class AssistantNotificationModelObserver;
 enum class AssistantButtonId;
 
 namespace assistant {
@@ -32,7 +29,7 @@ enum class DeepLinkType;
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
     : public base::CheckedObserver {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
 
   // Invoked when the dialog plate button identified by |id| is pressed.
   virtual void OnDialogPlateButtonPressed(AssistantButtonId id) {}
@@ -43,20 +40,15 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
   // Invoked when the host view's visibility changed.
   virtual void OnHostViewVisibilityChanged(bool visible) {}
 
+  // Invoked when Assistant onboarding is shown.
+  virtual void OnOnboardingShown() {}
+
   // Invoked when the opt in button is pressed.
   virtual void OnOptInButtonPressed() {}
 
-  // Invoked when the proactive suggestions close button is pressed.
-  virtual void OnProactiveSuggestionsCloseButtonPressed() {}
-
-  // Invoked when the hover state of the proactive suggestions view is changed.
-  virtual void OnProactiveSuggestionsViewHoverChanged(bool is_hovering) {}
-
-  // Invoked when the proactive suggestions view is pressed.
-  virtual void OnProactiveSuggestionsViewPressed() {}
-
-  // Invoked when a suggestion chip is pressed.
-  virtual void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) {}
+  // Invoked when a suggestion UI element is pressed.
+  virtual void OnSuggestionPressed(
+      const base::UnguessableToken& suggestion_id) {}
 };
 
 // A delegate of views in assistant/ui that handles views related actions e.g.
@@ -64,12 +56,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
 // etc.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
 
-  virtual ~AssistantViewDelegate() {}
-
-  // Gets the alarm/timer model.
-  virtual const AssistantAlarmTimerModel* GetAlarmTimerModel() const = 0;
+  virtual ~AssistantViewDelegate() = default;
 
   // Gets the notification model.
   virtual const AssistantNotificationModel* GetNotificationModel() const = 0;
@@ -77,18 +66,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Adds/removes the specified view delegate observer.
   virtual void AddObserver(AssistantViewDelegateObserver* observer) = 0;
   virtual void RemoveObserver(AssistantViewDelegateObserver* observer) = 0;
-
-  // Adds/removes the specified alarm/timer model observer.
-  virtual void AddAlarmTimerModelObserver(
-      AssistantAlarmTimerModelObserver* observer) = 0;
-  virtual void RemoveAlarmTimerModelObserver(
-      AssistantAlarmTimerModelObserver* observer) = 0;
-
-  // Adds/removes the notification model observer.
-  virtual void AddNotificationModelObserver(
-      AssistantNotificationModelObserver* observer) = 0;
-  virtual void RemoveNotificationModelObserver(
-      AssistantNotificationModelObserver* observer) = 0;
 
   // Downloads the image found at the specified |url|. On completion, the
   // supplied |callback| will be run with the downloaded image. If the download
@@ -98,6 +75,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
 
   // Returns the cursor_manager.
   virtual ::wm::CursorManager* GetCursorManager() = 0;
+
+  // Returns the given name of the primary user.
+  virtual std::string GetPrimaryUserGivenName() const = 0;
 
   // Returns the root window for the specified |display_id|.
   virtual aura::Window* GetRootWindowForDisplayId(int64_t display_id) = 0;
@@ -121,21 +101,18 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void OnNotificationButtonPressed(const std::string& notification_id,
                                            int notification_button_index) = 0;
 
+  // Invoked when Assistant onboarding is shown.
+  virtual void OnOnboardingShown() = 0;
+
   // Invoked when the opt in button is pressed.
-  virtual void OnOptInButtonPressed() {}
+  virtual void OnOptInButtonPressed() = 0;
 
-  // Invoked when the proactive suggestions close button is pressed.
-  virtual void OnProactiveSuggestionsCloseButtonPressed() {}
+  // Invoked when suggestion UI is pressed.
+  virtual void OnSuggestionPressed(
+      const base::UnguessableToken& suggestion_id) = 0;
 
-  // Invoked when the hover state of the proactive suggestions view is changed.
-  virtual void OnProactiveSuggestionsViewHoverChanged(bool is_hovering) {}
-
-  // Invoked when the proactive suggestions view is pressed.
-  virtual void OnProactiveSuggestionsViewPressed() {}
-
-  // Invoked when suggestion chip is pressed.
-  virtual void OnSuggestionChipPressed(
-      const AssistantSuggestion* suggestion) = 0;
+  // Returns true if Assistant onboarding should be shown.
+  virtual bool ShouldShowOnboarding() const = 0;
 };
 
 }  // namespace ash

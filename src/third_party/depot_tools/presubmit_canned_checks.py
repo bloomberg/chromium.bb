@@ -7,36 +7,42 @@
 from __future__ import print_function
 
 import os as _os
+from warnings import warn
 _HERE = _os.path.dirname(_os.path.abspath(__file__))
 
+# These filters will be disabled if callers do not explicitly supply a
+# (possibly-empty) list.  Ideally over time this list could be driven to zero.
+# TODO(pkasting): If some of these look like "should never enable", move them
+# to OFF_UNLESS_MANUALLY_ENABLED_LINT_FILTERS.
+#
 # Justifications for each filter:
 #
-# - build/include       : Too many; fix in the future.
-# - build/include_order : Not happening; #ifdefed includes.
-# - build/namespace     : I'm surprised by how often we violate this rule.
-# - readability/casting : Mistakes a whole bunch of function pointer.
+# - build/include       : Too many; fix in the future
+#                         TODO(pkasting): Try enabling subcategories
+# - build/include_order : Not happening; #ifdefed includes
+# - build/namespaces    : TODO(pkasting): Try re-enabling
+# - readability/casting : Mistakes a whole bunch of function pointers
 # - runtime/int         : Can be fixed long term; volume of errors too high
-# - runtime/virtual     : Broken now, but can be fixed in the future?
-# - whitespace/braces   : We have a lot of explicit scoping in chrome code.
-DEFAULT_LINT_FILTERS = [
+# - whitespace/braces   : We have a lot of explicit scoping in chrome code
+OFF_BY_DEFAULT_LINT_FILTERS = [
   '-build/include',
   '-build/include_order',
-  '-build/namespace',
+  '-build/namespaces',
   '-readability/casting',
   '-runtime/int',
-  '-runtime/virtual',
   '-whitespace/braces',
 ]
 
-# These filters will always be removed, even if the caller specifies a filter
-# set, as they are problematic or broken in some way.
+# These filters will be disabled unless callers explicitly enable them, because
+# they are undesirable in some way.
 #
 # Justifications for each filter:
-# - build/c++11         : Rvalue ref checks are unreliable (false positives),
-#                         include file and feature blacklists are
-#                         google3-specific.
-BLACKLIST_LINT_FILTERS = [
+# - build/c++11         : Include file and feature blocklists are
+#                         google3-specific
+# - runtime/references  : No longer banned by Google style guide
+OFF_UNLESS_MANUALLY_ENABLED_LINT_FILTERS = [
   '-build/c++11',
+  '-runtime/references',
 ]
 
 ### Description checks
@@ -98,10 +104,17 @@ def CheckChangeWasUploaded(input_api, output_api):
 
 ### Content checks
 
-def CheckAuthorizedAuthor(input_api, output_api, bot_whitelist=None):
+def CheckAuthorizedAuthor(input_api, output_api, bot_allowlist=None,
+                          bot_whitelist=None):
   """For non-googler/chromites committers, verify the author's email address is
   in AUTHORS.
   """
+  # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
+  if bot_whitelist is not None:
+    warn('Use bot_allowlist in CheckAuthorizedAuthor')
+  if bot_allowlist is None:
+    bot_allowlist = bot_whitelist
+
   if input_api.is_committing:
     error_type = output_api.PresubmitError
   else:
@@ -113,7 +126,7 @@ def CheckAuthorizedAuthor(input_api, output_api, bot_whitelist=None):
     return []
 
   # This is used for CLs created by trusted robot accounts.
-  if bot_whitelist and author in bot_whitelist:
+  if bot_allowlist and author in bot_allowlist:
     return []
 
   authors_path = input_api.os_path.join(
@@ -154,6 +167,14 @@ def CheckDoNotSubmitInFiles(input_api, output_api):
   return []
 
 
+def GetCppLintFilters(lint_filters=None):
+  filters = OFF_UNLESS_MANUALLY_ENABLED_LINT_FILTERS[:]
+  if lint_filters is None:
+    lint_filters = OFF_BY_DEFAULT_LINT_FILTERS
+  filters.extend(lint_filters)
+  return filters
+
+
 def CheckChangeLintsClean(input_api, output_api, source_file_filter=None,
                           lint_filters=None, verbose_level=None):
   """Checks that all '.cc' and '.h' files pass cpplint.py."""
@@ -165,9 +186,7 @@ def CheckChangeLintsClean(input_api, output_api, source_file_filter=None,
   # pylint: disable=protected-access
   cpplint._cpplint_state.ResetErrorCounts()
 
-  lint_filters = lint_filters or DEFAULT_LINT_FILTERS
-  lint_filters.extend(BLACKLIST_LINT_FILTERS)
-  cpplint._SetFilters(','.join(lint_filters))
+  cpplint._SetFilters(','.join(GetCppLintFilters(lint_filters)))
 
   # We currently are more strict with normal code than unit tests; 4 and 5 are
   # the verbosity level that would normally be passed to cpplint.py through
@@ -352,7 +371,7 @@ def CheckChangeHasNoTabs(input_api, output_api, source_file_filter=None):
   """Checks that there are no tab characters in any of the text files to be
   submitted.
   """
-  # In addition to the filter, make sure that makefiles are blacklisted.
+  # In addition to the filter, make sure that makefiles are skipped.
   if not source_file_filter:
     # It's the default filter.
     source_file_filter = input_api.FilterSourceFile
@@ -417,6 +436,8 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
   JAVA_EXCEPTIONS = ('import ', 'package ')
   JS_FILE_EXTS = ('js',)
   JS_EXCEPTIONS = ("GEN('#include", 'import ')
+  TS_FILE_EXTS = ('ts',)
+  TS_EXCEPTIONS = ('import ')
   OBJC_FILE_EXTS = ('h', 'm', 'mm')
   OBJC_EXCEPTIONS = ('#define', '#endif', '#if', '#import', '#include',
                      '#pragma')
@@ -428,6 +449,7 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
     (HTML_FILE_EXTS, HTML_EXCEPTIONS),
     (JAVA_FILE_EXTS, JAVA_EXCEPTIONS),
     (JS_FILE_EXTS, JS_EXCEPTIONS),
+    (TS_FILE_EXTS, TS_EXCEPTIONS),
     (OBJC_FILE_EXTS, OBJC_EXCEPTIONS),
     (PY_FILE_EXTS, PY_EXCEPTIONS),
   ]
@@ -598,13 +620,24 @@ def CheckTreeIsOpen(input_api, output_api,
   return []
 
 def GetUnitTestsInDirectory(
-    input_api, output_api, directory, whitelist=None, blacklist=None, env=None,
-    run_on_python2=True, run_on_python3=True):
+    input_api, output_api, directory, files_to_check=None, files_to_skip=None,
+    env=None, run_on_python2=True, run_on_python3=True, whitelist=None,
+    blacklist=None, allowlist=None, blocklist=None):
   """Lists all files in a directory and runs them. Doesn't recurse.
 
-  It's mainly a wrapper for RunUnitTests. Use whitelist and blacklist to filter
+  It's mainly a wrapper for RunUnitTests. Use allowlist and blocklist to filter
   tests accordingly.
   """
+  # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
+  if allowlist is not None or whitelist is not None:
+    warn('Use files_to_check in GetUnitTestsInDirectory')
+  if blocklist is not None or blacklist is not None:
+    warn('Use files_to_skip in GetUnitTestsInDirectory')
+  if files_to_check is None:
+    files_to_check = allowlist or whitelist
+  if files_to_skip is None:
+    files_to_skip = blocklist or blacklist
+
   unit_tests = []
   test_path = input_api.os_path.abspath(
       input_api.os_path.join(input_api.PresubmitLocalPath(), directory))
@@ -618,9 +651,9 @@ def GetUnitTestsInDirectory(
     fullpath = input_api.os_path.join(test_path, filename)
     if not input_api.os_path.isfile(fullpath):
       continue
-    if whitelist and not check(filename, whitelist):
+    if files_to_check and not check(filename, files_to_check):
       continue
-    if blacklist and check(filename, blacklist):
+    if files_to_skip and check(filename, files_to_skip):
       continue
     unit_tests.append(input_api.os_path.join(directory, filename))
     to_run += 1
@@ -629,8 +662,8 @@ def GetUnitTestsInDirectory(
   if not to_run:
     return [
         output_api.PresubmitPromptWarning(
-          'Out of %d files, found none that matched w=%r, b=%r in directory %s'
-          % (found, whitelist, blacklist, directory))
+          'Out of %d files, found none that matched c=%r, s=%r in directory %s'
+          % (found, files_to_check, files_to_skip, directory))
     ]
   return GetUnitTests(
       input_api, output_api, unit_tests, env, run_on_python2, run_on_python3)
@@ -688,16 +721,28 @@ def GetUnitTests(
 
 
 def GetUnitTestsRecursively(input_api, output_api, directory,
-                            whitelist, blacklist, run_on_python2=True,
-                            run_on_python3=True):
+                            files_to_check=None, files_to_skip=None,
+                            run_on_python2=True, run_on_python3=True,
+                            whitelist=None, blacklist=None, allowlist=None,
+                            blocklist=None):
   """Gets all files in the directory tree (git repo) that match the whitelist.
 
   Restricts itself to only find files within the Change's source repo, not
   dependencies.
   """
+  # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
+  if files_to_check is None:
+    warn('Use files_to_check in GetUnitTestsRecursively')
+    files_to_check = allowlist or whitelist
+  if files_to_skip is None:
+    warn('Use files_to_skip in GetUnitTestsRecursively')
+    files_to_skip = blocklist or blacklist
+  assert files_to_check is not None
+  assert files_to_skip is not None
+
   def check(filename):
-    return (any(input_api.re.match(f, filename) for f in whitelist) and
-            not any(input_api.re.match(f, filename) for f in blacklist))
+    return (any(input_api.re.match(f, filename) for f in files_to_check) and
+            not any(input_api.re.match(f, filename) for f in files_to_skip))
 
   tests = []
 
@@ -711,8 +756,8 @@ def GetUnitTestsRecursively(input_api, output_api, directory,
   if not to_run:
     return [
         output_api.PresubmitPromptWarning(
-          'Out of %d files, found none that matched w=%r, b=%r in directory %s'
-          % (found, whitelist, blacklist, directory))
+          'Out of %d files, found none that matched c=%r, s=%r in directory %s'
+          % (found, files_to_check, files_to_skip, directory))
     ]
 
   return GetUnitTests(input_api, output_api, tests,
@@ -796,7 +841,7 @@ def RunPythonUnitTests(input_api, *args, **kwargs):
       GetPythonUnitTests(input_api, *args, **kwargs), False)
 
 
-def _FetchAllFiles(input_api, white_list, black_list):
+def _FetchAllFiles(input_api, files_to_check, files_to_skip):
   """Hack to fetch all files."""
   # We cannot use AffectedFiles here because we want to test every python
   # file on each single python change. It's because a change in a python file
@@ -815,26 +860,37 @@ def _FetchAllFiles(input_api, white_list, black_list):
   path_len = len(input_api.PresubmitLocalPath())
   for dirpath, dirnames, filenames in input_api.os_walk(
       input_api.PresubmitLocalPath()):
-    # Passes dirnames in black list to speed up search.
+    # Passes dirnames in block list to speed up search.
     for item in dirnames[:]:
       filepath = input_api.os_path.join(dirpath, item)[path_len + 1:]
-      if Find(filepath, black_list):
+      if Find(filepath, files_to_skip):
         dirnames.remove(item)
     for item in filenames:
       filepath = input_api.os_path.join(dirpath, item)[path_len + 1:]
-      if Find(filepath, white_list) and not Find(filepath, black_list):
+      if Find(filepath, files_to_check) and not Find(filepath, files_to_skip):
         files.append(filepath)
   return files
 
 
-def GetPylint(input_api, output_api, white_list=None, black_list=None,
-              disabled_warnings=None, extra_paths_list=None, pylintrc=None):
+def GetPylint(input_api, output_api, files_to_check=None, files_to_skip=None,
+              disabled_warnings=None, extra_paths_list=None, pylintrc=None,
+              white_list=None, black_list=None, allow_list=None,
+              block_list=None):
   """Run pylint on python files.
 
-  The default white_list enforces looking only at *.py files.
+  The default files_to_check enforces looking only at *.py files.
   """
-  white_list = tuple(white_list or (r'.*\.py$',))
-  black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
+
+  # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
+  if allow_list or white_list:
+    warn('Use files_to_check in GetPylint')
+  if block_list or black_list:
+    warn('Use files_to_skip in GetPylint')
+
+  files_to_check = tuple(files_to_check or allow_list or white_list or
+                         (r'.*\.py$',))
+  files_to_skip = tuple(files_to_skip or block_list or black_list or
+                    input_api.DEFAULT_FILES_TO_SKIP)
   extra_paths_list = extra_paths_list or []
 
   if input_api.is_committing:
@@ -858,7 +914,7 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
         input_api.PresubmitLocalPath(), input_api.change.RepositoryRoot()), '')
     return input_api.re.escape(prefix) + regex
   src_filter = lambda x: input_api.FilterSourceFile(
-      x, map(rel_path, white_list), map(rel_path, black_list))
+      x, map(rel_path, files_to_check), map(rel_path, files_to_skip))
   if not input_api.AffectedSourceFiles(src_filter):
     input_api.logging.info('Skipping pylint: no matching changes.')
     return []
@@ -871,7 +927,7 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
   if disabled_warnings:
     extra_args.extend(['-d', ','.join(disabled_warnings)])
 
-  files = _FetchAllFiles(input_api, white_list, black_list)
+  files = _FetchAllFiles(input_api, files_to_check, files_to_skip)
   if not files:
     return []
   files.sort()
@@ -989,6 +1045,64 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
   return []
 
 
+def CheckDirMetadataFormat(input_api, output_api, dirmd_bin=None):
+  # TODO(crbug.com/1102997): Remove OWNERS once DIR_METADATA migration is
+  # complete.
+  file_filter = lambda f: (
+      input_api.basename(f.LocalPath()) in ('DIR_METADATA', 'OWNERS'))
+  affected_files = set([
+      f.AbsoluteLocalPath()
+      for f in input_api.change.AffectedFiles(
+          include_deletes=False, file_filter=file_filter)
+  ])
+  if not affected_files:
+    return []
+
+  name = 'Validate metadata in OWNERS and DIR_METADATA files'
+  kwargs = {}
+
+  if dirmd_bin is None:
+    dirmd_bin = 'dirmd.bat' if input_api.is_windows else 'dirmd'
+  cmd = [dirmd_bin, 'validate'] + sorted(affected_files)
+
+  return [input_api.Command(
+      name, cmd, kwargs, output_api.PresubmitError)]
+
+
+def CheckOwnersDirMetadataExclusive(input_api, output_api):
+  """Check that metadata in OWNERS files and DIR_METADATA files are mutually
+  exclusive.
+  """
+  _METADATA_LINE_RE = input_api.re.compile(
+      r'^#\s*(TEAM|COMPONENT|OS|WPT-NOTIFY)+\s*:\s*\S+$',
+      input_api.re.MULTILINE)
+  file_filter = (
+      lambda f: input_api.basename(f.LocalPath()) in ('OWNERS', 'DIR_METADATA'))
+  affected_dirs = set([
+      input_api.os_path.dirname(f.AbsoluteLocalPath())
+      for f in input_api.change.AffectedFiles(
+          include_deletes=False, file_filter=file_filter)
+  ])
+
+  errors = []
+  for path in affected_dirs:
+    owners_path = input_api.os_path.join(path, 'OWNERS')
+    dir_metadata_path = input_api.os_path.join(path, 'DIR_METADATA')
+    if (not input_api.os_path.isfile(dir_metadata_path)
+        or not input_api.os_path.isfile(owners_path)):
+      continue
+    if _METADATA_LINE_RE.search(input_api.ReadFile(owners_path)):
+      errors.append(owners_path)
+
+  if not errors:
+    return []
+
+  return [output_api.PresubmitError(
+      'The following OWNERS files should contain no metadata, as there is a '
+      'DIR_METADATA file present in the same directory:\n'
+      + '\n'.join(errors))]
+
+
 def CheckOwnersFormat(input_api, output_api):
   affected_files = set([
       f.LocalPath()
@@ -1008,6 +1122,18 @@ def CheckOwnersFormat(input_api, output_api):
 
 
 def CheckOwners(input_api, output_api, source_file_filter=None):
+  if input_api.change.issue:
+    # Skip OWNERS check when Bot-Commit label is approved. This label is
+    # intended for commits made by trusted bots that don't require review nor
+    # owners approval.
+    if input_api.gerrit.IsBotCommitApproved(input_api.change.issue):
+      return []
+    # Skip OWNERS check when Owners-Override label is approved. This is intended
+    # for global owners, trusted bots, and on-call sheriffs. Review is still
+    # required for these changes.
+    if input_api.gerrit.IsOwnersOverrideApproved(input_api.change.issue):
+      return []
+
   affected_files = set([f.LocalPath() for f in
       input_api.change.AffectedFiles(file_filter=source_file_filter)])
   owners_db = input_api.owners_db
@@ -1165,15 +1291,15 @@ def PanProjectChecks(input_api, output_api,
   }
 
   results = []
-  # This code loads the default black list (e.g. third_party, experimental, etc)
-  # and add our black list (breakpad, skia and v8 are still not following
+  # This code loads the default skip list (e.g. third_party, experimental, etc)
+  # and add our skip list (breakpad, skia and v8 are still not following
   # google style and are not really living this repository).
   # See presubmit_support.py InputApi.FilterSourceFile for the (simple) usage.
-  black_list = input_api.DEFAULT_BLACK_LIST + excluded_paths
-  white_list = input_api.DEFAULT_WHITE_LIST + text_files
-  sources = lambda x: input_api.FilterSourceFile(x, black_list=black_list)
+  files_to_skip = input_api.DEFAULT_FILES_TO_SKIP + excluded_paths
+  files_to_check = input_api.DEFAULT_FILES_TO_CHECK + text_files
+  sources = lambda x: input_api.FilterSourceFile(x, files_to_skip=files_to_skip)
   text_files = lambda x: input_api.FilterSourceFile(
-      x, black_list=black_list, white_list=white_list)
+      x, files_to_skip=files_to_skip, files_to_check=files_to_check)
 
   snapshot_memory = []
   def snapshot(msg):
@@ -1513,7 +1639,7 @@ def CheckChangedLUCIConfigs(input_api, output_api):
     req.add_header('Authorization', 'Bearer %s' % acc_tkn.token)
     if body is not None:
       req.add_header('Content-Type', 'application/json')
-      req.add_data(json.dumps(body))
+      req.data = json.dumps(body).encode('utf-8')
     return json.load(input_api.urllib_request.urlopen(req))
 
   try:
@@ -1612,7 +1738,6 @@ def CheckLucicfgGenOutput(input_api, output_api, entry_script):
         output_api.PresubmitError)
   ]
 
-# TODO(agable): Add this to PanProjectChecks.
 def CheckJsonParses(input_api, output_api):
   """Verifies that all JSON files at least parse as valid JSON."""
   import json

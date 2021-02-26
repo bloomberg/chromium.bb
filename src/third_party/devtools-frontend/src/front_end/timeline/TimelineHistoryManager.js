@@ -13,7 +13,9 @@ export class TimelineHistoryManager {
   constructor() {
     /** @type {!Array<!PerformanceModel>} */
     this._recordings = [];
-    this._action = /** @type {!UI.Action.Action} */ (self.UI.actionRegistry.action('timeline.show-history'));
+    /** @type {!UI.Action.Action} */
+    this._action =
+        /** @type {!UI.Action.Action} */ (UI.ActionRegistry.ActionRegistry.instance().action('timeline.show-history'));
     /** @type {!Map<string, number>} */
     this._nextNumberByDomain = new Map();
     this._button = new ToolbarButton(this._action);
@@ -57,7 +59,11 @@ export class TimelineHistoryManager {
      * @return {number}
      */
     function lastUsedTime(model) {
-      return TimelineHistoryManager._dataForModel(model).lastUsed;
+      const data = TimelineHistoryManager._dataForModel(model);
+      if (!data) {
+        throw new Error('Unable to find data for model');
+      }
+      return data.lastUsed;
     }
   }
 
@@ -131,7 +137,11 @@ export class TimelineHistoryManager {
    * @param {!PerformanceModel} model
    */
   _setCurrentModel(model) {
-    TimelineHistoryManager._dataForModel(model).lastUsed = Date.now();
+    const data = TimelineHistoryManager._dataForModel(model);
+    if (!data) {
+      throw new Error('Unable to find data for model');
+    }
+    data.lastUsed = Date.now();
     this._lastActiveModel = model;
     const modelTitle = this._title(model);
     const buttonTitle = this._action.title();
@@ -149,6 +159,9 @@ export class TimelineHistoryManager {
    */
   static _previewElement(performanceModel) {
     const data = TimelineHistoryManager._dataForModel(performanceModel);
+    if (!data) {
+      throw new Error('Unable to find data for model');
+    }
     const startedAt = performanceModel.recordStartTime();
     data.time.textContent =
         startedAt ? Common.UIString.UIString('(%s ago)', TimelineHistoryManager._coarseAge(startedAt)) : '';
@@ -177,7 +190,11 @@ export class TimelineHistoryManager {
    * @return {string}
    */
   _title(performanceModel) {
-    return TimelineHistoryManager._dataForModel(performanceModel).title;
+    const data = TimelineHistoryManager._dataForModel(performanceModel);
+    if (!data) {
+      throw new Error('Unable to find data for model');
+    }
+    return data.title;
   }
 
   /**
@@ -189,13 +206,13 @@ export class TimelineHistoryManager {
     const sequenceNumber = this._nextNumberByDomain.get(domain) || 1;
     const title = Common.UIString.UIString('%s #%d', domain, sequenceNumber);
     this._nextNumberByDomain.set(domain, sequenceNumber + 1);
-    const timeElement = createElement('span');
+    const timeElement = document.createElement('span');
 
     const preview = document.createElement('div');
     preview.classList.add('preview-item');
     preview.classList.add('vbox');
     const data = {preview: preview, title: title, time: timeElement, lastUsed: Date.now()};
-    performanceModel[previewDataSymbol] = data;
+    modelToPerformanceData.set(performanceModel, data);
 
     preview.appendChild(this._buildTextDetails(performanceModel, title, timeElement));
     const screenshotAndOverview = preview.createChild('div', 'hbox');
@@ -220,7 +237,7 @@ export class TimelineHistoryManager {
     const tracingModel = performanceModel.tracingModel();
     const duration = Number.millisToString(tracingModel.maximumRecordTime() - tracingModel.minimumRecordTime(), false);
     const timeContainer = container.createChild('span', 'time');
-    timeContainer.appendChild(createTextNode(duration));
+    timeContainer.appendChild(document.createTextNode(duration));
     timeContainer.appendChild(timeElement);
     return container;
   }
@@ -242,7 +259,7 @@ export class TimelineHistoryManager {
     }
     lastFrame.imageDataPromise()
         .then(data => UI.UIUtils.loadImageFromData(data))
-        .then(image => image && container.appendChild(image));
+        .then(image => image && container.appendChild(/** @type {!HTMLImageElement} */ (/** @type {*} */ (image))));
     return container;
   }
 
@@ -251,11 +268,11 @@ export class TimelineHistoryManager {
    * @return {!Element}
    */
   _buildOverview(performanceModel) {
-    const container = createElement('div');
+    const container = document.createElement('div');
 
     container.style.width = previewWidth + 'px';
     container.style.height = this._totalHeight + 'px';
-    const canvas = container.createChild('canvas');
+    const canvas = /** @type {!HTMLCanvasElement} */ (container.createChild('canvas'));
     canvas.width = window.devicePixelRatio * previewWidth;
     canvas.height = window.devicePixelRatio * this._totalHeight;
 
@@ -268,7 +285,9 @@ export class TimelineHistoryManager {
       timelineOverview.update();
       const sourceContext = timelineOverview.context();
       const imageData = sourceContext.getImageData(0, 0, sourceContext.canvas.width, sourceContext.canvas.height);
-      ctx.putImageData(imageData, 0, yOffset);
+      if (ctx) {
+        ctx.putImageData(imageData, 0, yOffset);
+      }
       yOffset += overview.height * window.devicePixelRatio;
     }
     return container;
@@ -279,13 +298,14 @@ export class TimelineHistoryManager {
    * @return {?PreviewData}
    */
   static _dataForModel(model) {
-    return model[previewDataSymbol] || null;
+    return modelToPerformanceData.get(model) || null;
   }
 }
 
 export const maxRecordings = 5;
 export const previewWidth = 450;
-export const previewDataSymbol = Symbol('previewData');
+/** @type {!WeakMap<!PerformanceModel, {preview: !Element, title: string, time: !Element, lastUsed: number}>} */
+const modelToPerformanceData = new WeakMap();
 
 /**
  * @implements {UI.ListControl.ListDelegate<!PerformanceModel>}
@@ -302,8 +322,9 @@ export class DropDown {
     this._glassPane.setAnchorBehavior(UI.GlassPane.AnchorBehavior.PreferBottom);
     this._glassPane.element.addEventListener('blur', () => this._close(null));
 
-    const shadowRoot =
-        UI.Utils.createShadowRootWithCoreStyles(this._glassPane.contentElement, 'timeline/timelineHistoryManager.css');
+    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
+        this._glassPane.contentElement,
+        {cssFile: 'timeline/timelineHistoryManager.css', enableLegacyPatching: true, delegatesFocus: undefined});
     const contentElement = shadowRoot.createChild('div', 'drop-down');
 
     const listModel = new UI.ListModel.ListModel();
@@ -318,15 +339,15 @@ export class DropDown {
     contentElement.addEventListener('click', this._onClick.bind(this), false);
 
     this._focusRestorer = new UI.UIUtils.ElementFocusRestorer(this._listControl.element);
-    /** @type {?function(?PerformanceModel)} */
+    /** @type {?function(?PerformanceModel):void} */
     this._selectionDone = null;
   }
 
   /**
    * @param {!Array<!PerformanceModel>} models
-   * @param {!Timeline.PerformanceModel} currentModel
+   * @param {!PerformanceModel} currentModel
    * @param {!Element} anchor
-   * @return {!Promise<?Timeline.PerformanceModel>}
+   * @return {!Promise<?PerformanceModel>}
    */
   static show(models, currentModel, anchor) {
     if (DropDown._instance) {
@@ -346,7 +367,7 @@ export class DropDown {
   /**
    * @param {!Element} anchor
    * @param {!PerformanceModel} currentModel
-   * @return {!Promise<?Timeline.PerformanceModel>}
+   * @return {!Promise<?PerformanceModel>}
    */
   _show(anchor, currentModel) {
     DropDown._instance = this;
@@ -355,14 +376,16 @@ export class DropDown {
     this._listControl.element.focus();
     this._listControl.selectItem(currentModel);
 
-    return new Promise(fulfill => this._selectionDone = fulfill);
+    return new Promise(fulfill => {
+      this._selectionDone = fulfill;
+    });
   }
 
   /**
    * @param {!Event} event
    */
   _onMouseMove(event) {
-    const node = event.target.enclosingNodeOrSelfWithClass('preview-item');
+    const node = /** @type {!HTMLElement} */ (event.target).enclosingNodeOrSelfWithClass('preview-item');
     const listItem = node && this._listControl.itemForNode(node);
     if (!listItem) {
       return;
@@ -374,7 +397,7 @@ export class DropDown {
    * @param {!Event} event
    */
   _onClick(event) {
-    if (!event.target.enclosingNodeOrSelfWithClass('preview-item')) {
+    if (!/** @type {!HTMLElement} */ (event.target).enclosingNodeOrSelfWithClass('preview-item')) {
       return;
     }
     this._close(this._listControl.selectedItem());
@@ -384,7 +407,7 @@ export class DropDown {
    * @param {!Event} event
    */
   _onKeyDown(event) {
-    switch (event.key) {
+    switch (/** @type {!KeyboardEvent} */ (event).key) {
       case 'Tab':
       case 'Escape':
         this._close(null);
@@ -402,7 +425,9 @@ export class DropDown {
    * @param {?PerformanceModel} model
    */
   _close(model) {
-    this._selectionDone(model);
+    if (this._selectionDone) {
+      this._selectionDone(model);
+    }
     this._focusRestorer.restore();
     this._glassPane.hide();
     DropDown._instance = null;
@@ -442,7 +467,7 @@ export class DropDown {
   /**
    * @override
    * @param {?PerformanceModel} from
-   * @param {?Timeline.PerformanceModel} to
+   * @param {?PerformanceModel} to
    * @param {?Element} fromElement
    * @param {?Element} toElement
    */
@@ -479,7 +504,7 @@ export class ToolbarButton extends UI.Toolbar.ToolbarItem {
     const element = document.createElement('button');
     element.classList.add('history-dropdown-button');
     super(element);
-    UI.Utils.appendStyle(this.element, 'timeline/historyToolbarButton.css');
+    UI.Utils.appendStyle(this.element, 'timeline/historyToolbarButton.css', {enableLegacyPatching: true});
     this._contentElement = this.element.createChild('span', 'content');
     const dropdownArrowIcon = UI.Icon.Icon.create('smallicon-triangle-down');
     this.element.appendChild(dropdownArrowIcon);
@@ -498,4 +523,5 @@ export class ToolbarButton extends UI.Toolbar.ToolbarItem {
 }
 
 /** @typedef {!{preview: !Element, time: !Element, lastUsed: number, title: string}} */
+// @ts-ignore typedef
 export let PreviewData;

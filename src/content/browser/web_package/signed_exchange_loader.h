@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "net/base/network_isolation_key.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -31,7 +32,6 @@ class URLLoaderThrottle;
 }  // namespace blink
 
 namespace net {
-struct SHA256HashValue;
 class SourceStream;
 }  // namespace net
 
@@ -42,6 +42,7 @@ class SourceStreamToDataPipe;
 
 namespace content {
 
+class PrefetchedSignedExchangeCacheEntry;
 class SignedExchangeDevToolsProxy;
 class SignedExchangeHandler;
 class SignedExchangeHandlerFactory;
@@ -75,9 +76,11 @@ class CONTENT_EXPORT SignedExchangeLoader final
       std::unique_ptr<SignedExchangeReporter> reporter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
+      const net::NetworkIsolationKey& network_isolation_key,
       int frame_tree_node_id,
       scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
-      const std::string& accept_langs);
+      const std::string& accept_langs,
+      bool keep_entry_for_prefetch_cache);
   ~SignedExchangeLoader() override;
 
 
@@ -117,15 +120,11 @@ class CONTENT_EXPORT SignedExchangeLoader final
     return inner_request_url_;
   }
 
-  // Returns the header integrity value of the loaded signed exchange if
-  // available. This is available after OnReceiveRedirect() of
-  // |forwarding_client| is called. Otherwise returns nullopt.
-  base::Optional<net::SHA256HashValue> ComputeHeaderIntegrity() const;
-
-  // Returns the signature expire time of the loaded signed exchange if
-  // available. This is available after OnReceiveRedirect() of
-  // |forwarding_client| is called. Otherwise returns a null Time.
-  base::Time GetSignatureExpireTime() const;
+  // Called to get the information about the loaded signed exchange. To call
+  // this method, |keep_entry_for_prefetch_cache| constructor argument must be
+  // set.
+  std::unique_ptr<PrefetchedSignedExchangeCacheEntry>
+  TakePrefetchedSignedExchangeCacheEntry();
 
   // Set nullptr to reset the mocking.
   static void SetSignedExchangeHandlerFactoryForTest(
@@ -178,6 +177,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
   std::unique_ptr<SignedExchangeReporter> reporter_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
+  const net::NetworkIsolationKey network_isolation_key_;
   const int frame_tree_node_id_;
   scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder_;
 
@@ -198,6 +198,10 @@ class CONTENT_EXPORT SignedExchangeLoader final
   // Set when |body_data_pipe_adapter_| finishes loading the decoded body.
   base::Optional<int> decoded_body_read_result_;
   const std::string accept_langs_;
+
+  // Keep the signed exchange info to be stored to
+  // PrefetchedSignedExchangeCache.
+  std::unique_ptr<PrefetchedSignedExchangeCacheEntry> cache_entry_;
 
   std::unique_ptr<SignedExchangeValidityPinger> validity_pinger_;
 

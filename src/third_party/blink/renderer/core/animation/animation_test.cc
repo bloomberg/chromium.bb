@@ -258,7 +258,7 @@ TEST_F(AnimationAnimationTestNoCompositing, InitialState) {
 
   StartTimeline();
   EXPECT_EQ("finished", animation->playState());
-  EXPECT_EQ(0, timeline->currentTime());
+  EXPECT_EQ(0, timeline->CurrentTimeMilliseconds());
   EXPECT_EQ(0, animation->currentTime());
   EXPECT_FALSE(animation->Paused());
   EXPECT_FALSE(animation->pending());
@@ -1419,8 +1419,8 @@ TEST_F(AnimationAnimationTestCompositing,
   )HTML");
 
   // Create ScrollTimeline
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller =
+      To<LayoutBoxModelObject>(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
                                    mojom::blink::ScrollType::kProgrammatic);
@@ -1462,6 +1462,8 @@ TEST_F(AnimationAnimationTestCompositing,
 
   model->SnapshotAllCompositorKeyframesIfNecessary(
       *element, *ComputedStyle::Create(), nullptr);
+
+  UpdateAllLifecyclePhasesForTest();
   scroll_animation->play();
   EXPECT_EQ(scroll_animation->CheckCanStartAnimationOnCompositor(nullptr),
             CompositorAnimations::kNoFailure);
@@ -1483,8 +1485,8 @@ TEST_F(AnimationAnimationTestCompositing,
   )HTML");
 
   // Create ScrollTimeline
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller =
+      To<LayoutBoxModelObject>(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->SetScrollOffset(ScrollOffset(0, 100),
                                    mojom::blink::ScrollType::kProgrammatic);
@@ -1528,6 +1530,8 @@ TEST_F(AnimationAnimationTestCompositing,
 
   model->SnapshotAllCompositorKeyframesIfNecessary(
       *element, *ComputedStyle::Create(), nullptr);
+
+  UpdateAllLifecyclePhasesForTest();
   const double TEST_START_TIME = 10;
   scroll_animation->setStartTime(TEST_START_TIME);
   scroll_animation->play();
@@ -1559,8 +1563,8 @@ TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
     </div>
   )HTML");
 
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  auto* scroller =
+      To<LayoutBoxModelObject>(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
                                    mojom::blink::ScrollType::kProgrammatic);
@@ -1596,6 +1600,90 @@ TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
                                    mojom::blink::ScrollType::kProgrammatic);
   SimulateFrameForScrollAnimations();
   EXPECT_EQ(40, scroll_animation->currentTime());
+}
+
+// Verifies that finished composited scroll-linked animations restart on
+// compositor upon reverse scrolling.
+TEST_F(AnimationAnimationTestCompositing,
+       FinishedScrollLinkedAnimationRestartsOnReverseScrolling) {
+  ResetWithCompositedAnimation();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { will-change: transform; overflow: scroll; width: 100px; height: 100px; }
+      #target { width: 100px; height: 200px; will-change: opacity;}
+      #spacer { width: 200px; height: 700px; }
+    </style>
+    <div id ='scroller'>
+      <div id ='target'></div>
+      <div id ='spacer'></div>
+    </div>
+  )HTML");
+
+  auto* scroller =
+      To<LayoutBoxModelObject>(GetLayoutObjectByElementId("scroller"));
+  ASSERT_TRUE(scroller->UsesCompositedScrolling());
+
+  // Create ScrollTimeline
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
+  DoubleOrScrollTimelineAutoKeyword time_range =
+      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  options->setTimeRange(time_range);
+  options->setScrollSource(GetElementById("scroller"));
+  ScrollTimeline* scroll_timeline =
+      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+
+  // Create KeyframeEffect
+  Timing timing;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+  Persistent<StringKeyframe> start_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
+  start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
+                                      SecureContextMode::kInsecureContext,
+                                      nullptr);
+  Persistent<StringKeyframe> end_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
+  end_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0.0",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
+
+  StringKeyframeVector keyframes;
+  keyframes.push_back(start_keyframe);
+  keyframes.push_back(end_keyframe);
+
+  Element* element = GetElementById("target");
+  auto* model = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
+
+  KeyframeEffect* keyframe_effect =
+      MakeGarbageCollected<KeyframeEffect>(element, model, timing);
+
+  // Create scroll-linked animation
+  NonThrowableExceptionState exception_state;
+  Animation* scroll_animation =
+      Animation::Create(keyframe_effect, scroll_timeline, exception_state);
+  model->SnapshotAllCompositorKeyframesIfNecessary(
+      *element, *ComputedStyle::Create(), nullptr);
+  UpdateAllLifecyclePhasesForTest();
+
+  scroll_animation->play();
+  EXPECT_EQ(scroll_animation->playState(), "running");
+  GetDocument().GetPendingAnimations().Update(nullptr, true);
+  EXPECT_TRUE(scroll_animation->HasActiveAnimationsOnCompositor());
+
+  // Advances the animation to "finished" state. The composited animation will
+  // be destroyed accordingly.
+  scroll_animation->setCurrentTime(50000);
+  EXPECT_EQ(scroll_animation->playState(), "finished");
+  scroll_animation->Update(kTimingUpdateForAnimationFrame);
+  GetDocument().GetPendingAnimations().Update(nullptr, true);
+  EXPECT_FALSE(scroll_animation->HasActiveAnimationsOnCompositor());
+
+  // Restarting the animation should create a new compositor animation.
+  scroll_animation->setCurrentTime(100);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(scroll_animation->playState(), "running");
+  scroll_animation->Update(kTimingUpdateForAnimationFrame);
+  GetDocument().GetPendingAnimations().Update(nullptr, true);
+  EXPECT_TRUE(scroll_animation->HasActiveAnimationsOnCompositor());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing,
@@ -1853,6 +1941,75 @@ TEST_F(AnimationPendingAnimationsTest,
   NotifyAnimationStarted(animC);
   EXPECT_FALSE(animC->pending());
   EXPECT_FALSE(animD->pending());
+}
+
+TEST_F(AnimationAnimationTestCompositing,
+       ScrollLinkedAnimationNotCompositedIfScrollSourceIsNotComposited) {
+  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: scroll; width: 100px; height: 100px; }
+      /* to prevent the mock overlay scrollbar from affecting compositing. */
+      #scroller::-webkit-scrollbar { display: none; }
+      #target { width: 100px; height: 200px; will-change: transform; }
+      #spacer { width: 200px; height: 2000px; }
+    </style>
+    <div id ='scroller'>
+      <div id ='target'></div>
+      <div id ='spacer'></div>
+    </div>
+  )HTML");
+
+  // Create ScrollTimeline
+  auto* scroller =
+      To<LayoutBoxModelObject>(GetLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  ASSERT_FALSE(scroller->UsesCompositedScrolling());
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
+  DoubleOrScrollTimelineAutoKeyword time_range =
+      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  options->setTimeRange(time_range);
+  options->setScrollSource(GetElementById("scroller"));
+  ScrollTimeline* scroll_timeline =
+      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+
+  // Create KeyframeEffect
+  Timing timing;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+
+  Persistent<StringKeyframe> start_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
+  start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
+                                      SecureContextMode::kInsecureContext,
+                                      nullptr);
+  Persistent<StringKeyframe> end_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
+  end_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0.0",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
+
+  StringKeyframeVector keyframes;
+  keyframes.push_back(start_keyframe);
+  keyframes.push_back(end_keyframe);
+
+  Element* element = GetElementById("target");
+  auto* model = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
+
+  // Create scroll-linked animation
+  NonThrowableExceptionState exception_state;
+  Animation* scroll_animation = Animation::Create(
+      MakeGarbageCollected<KeyframeEffect>(element, model, timing),
+      scroll_timeline, exception_state);
+
+  model->SnapshotAllCompositorKeyframesIfNecessary(
+      *element, *ComputedStyle::Create(), nullptr);
+
+  UpdateAllLifecyclePhasesForTest();
+  scroll_animation->play();
+  EXPECT_EQ(scroll_animation->CheckCanStartAnimationOnCompositor(nullptr),
+            CompositorAnimations::kTimelineSourceHasInvalidCompositingState);
 }
 
 }  // namespace blink

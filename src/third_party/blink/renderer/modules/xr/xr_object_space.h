@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_OBJECT_SPACE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_OBJECT_SPACE_H_
 
+#include "device/vr/public/mojom/vr_service.mojom-blink-forward.h"
+#include "third_party/blink/renderer/modules/xr/xr_native_origin_information.h"
 #include "third_party/blink/renderer/modules/xr/xr_space.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
@@ -31,11 +33,8 @@ class XRObjectSpace : public XRSpace {
     return object_->MojoFromObject();
   }
 
-  base::Optional<TransformationMatrix> NativeFromMojo() final {
-    return XRSpace::TryInvert(MojoFromNative());
-  }
-
-  base::Optional<XRNativeOriginInformation> NativeOrigin() const override {
+  base::Optional<device::mojom::blink::XRNativeOriginInformation> NativeOrigin()
+      const override {
     return XRNativeOriginInformation::Create(object_);
   }
 
@@ -45,7 +44,9 @@ class XRObjectSpace : public XRSpace {
     return true;
   }
 
-  void Trace(Visitor* visitor) override {
+  std::string ToString() const override { return "XRObjectSpace"; }
+
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(object_);
     XRSpace::Trace(visitor);
   }

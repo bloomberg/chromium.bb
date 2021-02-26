@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_traversal.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -31,6 +31,8 @@ CXFA_Traversal::CXFA_Traversal(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Traversal,
                 kTraversalPropertyData,
                 kTraversalAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Traversal::~CXFA_Traversal() = default;

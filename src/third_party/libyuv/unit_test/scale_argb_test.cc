@@ -305,8 +305,10 @@ TEST_SCALETO(ARGBScale, 1, 1)
 TEST_SCALETO(ARGBScale, 320, 240)
 TEST_SCALETO(ARGBScale, 569, 480)
 TEST_SCALETO(ARGBScale, 640, 360)
+#ifdef ENABLE_SLOW_TESTS
 TEST_SCALETO(ARGBScale, 1280, 720)
 TEST_SCALETO(ARGBScale, 1920, 1080)
+#endif  // ENABLE_SLOW_TESTS
 #undef TEST_SCALETO1
 #undef TEST_SCALETO
 
@@ -452,6 +454,81 @@ TEST_F(LibYUVScaleTest, YUVToRGBScaleDown) {
       benchmark_width_ * 3 / 2, benchmark_height_ * 3 / 2, benchmark_width_,
       benchmark_height_, libyuv::kFilterBilinear, benchmark_iterations_);
   EXPECT_LE(diff, 10);
+}
+
+TEST_F(LibYUVScaleTest, ARGBTest3x) {
+  const int kSrcStride = 48 * 4;
+  const int kDstStride = 16 * 4;
+  const int kSize = kSrcStride * 3;
+  align_buffer_page_end(orig_pixels, kSize);
+  for (int i = 0; i < 48 * 3; ++i) {
+    orig_pixels[i * 4 + 0] = i;
+    orig_pixels[i * 4 + 1] = 255 - i;
+    orig_pixels[i * 4 + 2] = i + 1;
+    orig_pixels[i * 4 + 3] = i + 10;
+  }
+  align_buffer_page_end(dest_pixels, kDstStride);
+
+  int iterations16 =
+      benchmark_width_ * benchmark_height_ / (16 * 1) * benchmark_iterations_;
+  for (int i = 0; i < iterations16; ++i) {
+    ARGBScale(orig_pixels, kSrcStride, 48, 3, dest_pixels, kDstStride, 16, 1,
+              kFilterBilinear);
+  }
+
+  EXPECT_EQ(49, dest_pixels[0]);
+  EXPECT_EQ(255 - 49, dest_pixels[1]);
+  EXPECT_EQ(50, dest_pixels[2]);
+  EXPECT_EQ(59, dest_pixels[3]);
+
+  ARGBScale(orig_pixels, kSrcStride, 48, 3, dest_pixels, kDstStride, 16, 1,
+            kFilterNone);
+
+  EXPECT_EQ(49, dest_pixels[0]);
+  EXPECT_EQ(255 - 49, dest_pixels[1]);
+  EXPECT_EQ(50, dest_pixels[2]);
+  EXPECT_EQ(59, dest_pixels[3]);
+
+  free_aligned_buffer_page_end(dest_pixels);
+  free_aligned_buffer_page_end(orig_pixels);
+}
+
+TEST_F(LibYUVScaleTest, ARGBTest4x) {
+  const int kSrcStride = 64 * 4;
+  const int kDstStride = 16 * 4;
+  const int kSize = kSrcStride * 4;
+  align_buffer_page_end(orig_pixels, kSize);
+  for (int i = 0; i < 64 * 4; ++i) {
+    orig_pixels[i * 4 + 0] = i;
+    orig_pixels[i * 4 + 1] = 255 - i;
+    orig_pixels[i * 4 + 2] = i + 1;
+    orig_pixels[i * 4 + 3] = i + 10;
+  }
+  align_buffer_page_end(dest_pixels, kDstStride);
+
+  int iterations16 =
+      benchmark_width_ * benchmark_height_ / (16 * 1) * benchmark_iterations_;
+  for (int i = 0; i < iterations16; ++i) {
+    ARGBScale(orig_pixels, kSrcStride, 64, 4, dest_pixels, kDstStride, 16, 1,
+              kFilterBilinear);
+  }
+
+  EXPECT_NEAR((65 + 66 + 129 + 130 + 2) / 4, dest_pixels[0], 4);
+  EXPECT_NEAR((255 - 65 + 255 - 66 + 255 - 129 + 255 - 130 + 2) / 4,
+              dest_pixels[1], 4);
+  EXPECT_NEAR((1 * 4 + 65 + 66 + 129 + 130 + 2) / 4, dest_pixels[2], 4);
+  EXPECT_NEAR((10 * 4 + 65 + 66 + 129 + 130 + 2) / 4, dest_pixels[3], 4);
+
+  ARGBScale(orig_pixels, kSrcStride, 64, 4, dest_pixels, kDstStride, 16, 1,
+            kFilterNone);
+
+  EXPECT_EQ(130, dest_pixels[0]);
+  EXPECT_EQ(255 - 130, dest_pixels[1]);
+  EXPECT_EQ(130 + 1, dest_pixels[2]);
+  EXPECT_EQ(130 + 10, dest_pixels[3]);
+
+  free_aligned_buffer_page_end(dest_pixels);
+  free_aligned_buffer_page_end(orig_pixels);
 }
 
 }  // namespace libyuv

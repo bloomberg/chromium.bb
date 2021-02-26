@@ -5,10 +5,12 @@
 #include "base/task/thread_pool/thread_group.h"
 
 #include <memory>
+#include <tuple>
+#include <utility>
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/task_traits.h"
@@ -20,7 +22,7 @@
 #include "base/task/thread_pool/test_utils.h"
 #include "base/task/thread_pool/thread_group_impl.h"
 #include "base/task_runner.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/test/test_waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -36,7 +38,7 @@
 #include "base/task/thread_pool/thread_group_native_win.h"
 #include "base/win/com_init_check_hook.h"
 #include "base/win/com_init_util.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "base/task/thread_pool/thread_group_native_mac.h"
 #endif
 
@@ -49,7 +51,7 @@ namespace {
 using ThreadGroupNativeType =
 #if defined(OS_WIN)
     ThreadGroupNativeWin;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
     ThreadGroupNativeMac;
 #endif
 #endif
@@ -80,6 +82,8 @@ class ThreadPostingTasks : public SimpleThread {
                      execution_mode,
                      mock_pooled_task_runner_delegate_),
                  execution_mode) {}
+  ThreadPostingTasks(const ThreadPostingTasks&) = delete;
+  ThreadPostingTasks& operator=(const ThreadPostingTasks&) = delete;
 
   const test::TestTaskFactory* factory() const { return &factory_; }
 
@@ -92,15 +96,15 @@ class ThreadPostingTasks : public SimpleThread {
   const scoped_refptr<TaskRunner> task_runner_;
   const PostNestedTask post_nested_task_;
   test::TestTaskFactory factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadPostingTasks);
 };
 
 class ThreadGroupTestBase : public testing::Test, public ThreadGroup::Delegate {
+ public:
+  ThreadGroupTestBase(const ThreadGroupTestBase&) = delete;
+  ThreadGroupTestBase& operator=(const ThreadGroupTestBase&) = delete;
+
  protected:
-  ThreadGroupTestBase()
-      : service_thread_("ThreadPoolServiceThread"),
-        tracked_ref_factory_(this) {}
+  ThreadGroupTestBase() = default;
 
   void SetUp() override {
     service_thread_.Start();
@@ -162,7 +166,7 @@ class ThreadGroupTestBase : public testing::Test, public ThreadGroup::Delegate {
 
   virtual test::PoolType GetPoolType() const = 0;
 
-  Thread service_thread_;
+  Thread service_thread_{"ThreadPoolServiceThread"};
   TaskTracker task_tracker_{"Test"};
   DelayedTaskManager delayed_task_manager_;
   test::MockPooledTaskRunnerDelegate mock_pooled_task_runner_delegate_ = {
@@ -176,20 +180,17 @@ class ThreadGroupTestBase : public testing::Test, public ThreadGroup::Delegate {
     return thread_group_.get();
   }
 
-  TrackedRefFactory<ThreadGroup::Delegate> tracked_ref_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadGroupTestBase);
+  TrackedRefFactory<ThreadGroup::Delegate> tracked_ref_factory_{this};
 };
 
 class ThreadGroupTest : public ThreadGroupTestBase,
                         public testing::WithParamInterface<test::PoolType> {
  public:
   ThreadGroupTest() = default;
+  ThreadGroupTest(const ThreadGroupTest&) = delete;
+  ThreadGroupTest& operator=(const ThreadGroupTest&) = delete;
 
   test::PoolType GetPoolType() const override { return GetParam(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadGroupTest);
 };
 
 // TODO(etiennep): Audit tests that don't need TaskSourceExecutionMode
@@ -200,6 +201,10 @@ class ThreadGroupTestAllExecutionModes
           std::tuple<test::PoolType, TaskSourceExecutionMode>> {
  public:
   ThreadGroupTestAllExecutionModes() = default;
+  ThreadGroupTestAllExecutionModes(const ThreadGroupTestAllExecutionModes&) =
+      delete;
+  ThreadGroupTestAllExecutionModes& operator=(
+      const ThreadGroupTestAllExecutionModes&) = delete;
 
   test::PoolType GetPoolType() const override {
     return std::get<0>(GetParam());
@@ -214,9 +219,6 @@ class ThreadGroupTestAllExecutionModes
     return test::CreatePooledTaskRunnerWithExecutionMode(
         execution_mode(), &mock_pooled_task_runner_delegate_, traits);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadGroupTestAllExecutionModes);
 };
 
 void ShouldNotRun() {
@@ -404,18 +406,24 @@ TEST_P(ThreadGroupTest, CanRunPolicyShouldYield) {
 
   task_tracker_.SetCanRunPolicy(CanRunPolicy::kNone);
   thread_group_->DidUpdateCanRunPolicy();
-  EXPECT_TRUE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
-  EXPECT_TRUE(thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+  EXPECT_TRUE(
+      thread_group_->ShouldYield({TaskPriority::BEST_EFFORT, TimeTicks()}));
+  EXPECT_TRUE(
+      thread_group_->ShouldYield({TaskPriority::USER_VISIBLE, TimeTicks()}));
 
   task_tracker_.SetCanRunPolicy(CanRunPolicy::kForegroundOnly);
   thread_group_->DidUpdateCanRunPolicy();
-  EXPECT_TRUE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
-  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+  EXPECT_TRUE(
+      thread_group_->ShouldYield({TaskPriority::BEST_EFFORT, TimeTicks()}));
+  EXPECT_FALSE(
+      thread_group_->ShouldYield({TaskPriority::USER_VISIBLE, TimeTicks()}));
 
   task_tracker_.SetCanRunPolicy(CanRunPolicy::kAll);
   thread_group_->DidUpdateCanRunPolicy();
-  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
-  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+  EXPECT_FALSE(
+      thread_group_->ShouldYield({TaskPriority::BEST_EFFORT, TimeTicks()}));
+  EXPECT_FALSE(
+      thread_group_->ShouldYield({TaskPriority::USER_VISIBLE, TimeTicks()}));
 }
 
 // Verify that the maximum number of BEST_EFFORT tasks that can run concurrently
@@ -565,14 +573,14 @@ TEST_P(ThreadGroupTest, ShouldYieldSingleTask) {
 
   test::CreatePooledTaskRunner({TaskPriority::USER_BLOCKING},
                                &mock_pooled_task_runner_delegate_)
-      ->PostTask(
-          FROM_HERE, BindLambdaForTesting([&]() {
-            EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
-            EXPECT_FALSE(
-                thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
-            EXPECT_FALSE(
-                thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
-          }));
+      ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                   EXPECT_FALSE(thread_group_->ShouldYield(
+                       {TaskPriority::BEST_EFFORT, TimeTicks::Now()}));
+                   EXPECT_FALSE(thread_group_->ShouldYield(
+                       {TaskPriority::USER_VISIBLE, TimeTicks::Now()}));
+                   EXPECT_FALSE(thread_group_->ShouldYield(
+                       {TaskPriority::USER_VISIBLE, TimeTicks::Now()}));
+                 }));
 
   task_tracker_.FlushForTesting();
 }
@@ -797,7 +805,7 @@ TEST_P(ThreadGroupTest, JoinJobTaskSource) {
   JobHandle job_handle = internal::JobTaskSource::CreateJobHandle(task_source);
   job_handle.Join();
   // All worker tasks should complete before Join() returns.
-  EXPECT_EQ(0U, job_task->GetMaxConcurrency());
+  EXPECT_EQ(0U, job_task->GetMaxConcurrency(0));
   thread_group_->JoinForTesting();
   EXPECT_EQ(1U, task_source->HasOneRef());
   // Prevent TearDown() from calling JoinForTesting() again.
@@ -814,7 +822,8 @@ TEST_P(ThreadGroupTest, JoinJobTaskSourceStaleConcurrency) {
   auto task_source = MakeRefCounted<JobTaskSource>(
       FROM_HERE, TaskTraits{},
       BindLambdaForTesting([&](JobDelegate*) { thread_running.Signal(); }),
-      BindLambdaForTesting([&]() -> size_t { return max_concurrency; }),
+      BindLambdaForTesting(
+          [&](size_t /*worker_count*/) -> size_t { return max_concurrency; }),
       &mock_pooled_task_runner_delegate_);
 
   mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
@@ -838,7 +847,7 @@ TEST_P(ThreadGroupTest, CancelJobTaskSourceWithStaleConcurrency) {
   auto task_source = MakeRefCounted<JobTaskSource>(
       FROM_HERE, TaskTraits{},
       BindLambdaForTesting([&](JobDelegate*) { thread_running.Signal(); }),
-      BindRepeating([]() -> size_t { return 1; }),
+      BindRepeating([](size_t /*worker_count*/) -> size_t { return 1; }),
       &mock_pooled_task_runner_delegate_);
 
   mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);

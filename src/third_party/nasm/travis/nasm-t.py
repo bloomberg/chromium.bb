@@ -62,7 +62,9 @@ def is_valid_desc(desc):
     if desc == None:
         return False
     if 'description' not in desc:
-        return false
+        return False
+    if desc['description'] == "":
+        return False
     return True
 
 #
@@ -156,6 +158,7 @@ def collect_test_desc_from_dir(basedir):
                 if desc == None:
                     continue
                 desc_array += desc
+        desc_array.sort(key=lambda x: x['_test-name'])
     return desc_array
 
 if args.cmd == 'list':
@@ -207,20 +210,17 @@ def show_std(stdname, data):
         print("\t%s" % i)
     print("\t---")
 
-def cmp_std(test, data_name, data, match):
-    match_data = read_stdfile(match)
-    if match_data == None:
-        return test_fail(test, "Can't read " + match)
-    if data != match_data:
-        print("\t--- %s" % (data_name))
-        for i in data.split("\n"):
+def cmp_std(from_name, from_data, match_name, match_data):
+    if from_data != match_data:
+        print("\t--- %s" % (from_name))
+        for i in from_data.split("\n"):
             print("\t%s" % i)
-        print("\t--- %s" % (match))
+        print("\t--- %s" % (match_name))
         for i in match_data.split("\n"):
             print("\t%s" % i)
 
-        diff = difflib.unified_diff(data.split("\n"), match_data.split("\n"),
-                                    fromfile = data_name, tofile = match)
+        diff = difflib.unified_diff(from_data.split("\n"), match_data.split("\n"),
+                                    fromfile = from_name, tofile = match_name)
         for i in diff:
             print("\t%s" % i.strip("\n"))
         print("\t---")
@@ -274,20 +274,35 @@ def exec_nasm(desc):
     print("\tProcessing %s" % (desc['_test-name']))
     opts = [args.nasm] + prepare_run_opts(desc)
 
+    nasm_env = os.environ.copy()
+    nasm_env['NASM_TEST_RUN'] = 'y'
+
+    desc_env = desc.get('environ')
+    if desc_env:
+        for i in desc_env:
+            v = i.split('=')
+            if len(v) == 2:
+                nasm_env[v[0]] = v[1]
+            else:
+                nasm_env[v[0]] = None
+
     print("\tExecuting %s" % (" ".join(opts)))
     pnasm = subprocess.Popen(opts,
                              stdout = subprocess.PIPE,
                              stderr = subprocess.PIPE,
-                             close_fds = True)
+                             close_fds = True,
+                             env = nasm_env)
     if pnasm == None:
         test_fail(desc['_test-name'], "Unable to execute test")
         return None
-    wait_rc = pnasm.wait();
 
-    stdout = pnasm.stdout.read().decode("utf-8").strip("\n")
-    stderr = pnasm.stderr.read().decode("utf-8").strip("\n")
+    stderr = pnasm.stderr.read(4194304).decode("utf-8").strip("\n")
+    stdout = pnasm.stdout.read(4194304).decode("utf-8").strip("\n")
+
     pnasm.stdout.close()
     pnasm.stderr.close()
+
+    wait_rc = pnasm.wait();
 
     if desc['_wait'] != wait_rc:
         if stdout != "":
@@ -319,14 +334,20 @@ def test_run(desc):
         elif 'stdout' in t:
             print("\tComparing stdout")
             match = desc['_base-dir'] + os.sep + t['stdout']
-            if cmp_std(desc['_test-name'], 'stdout', stdout, match) == False:
+            match_data = read_stdfile(match)
+            if match_data == None:
+                return test_fail(test, "Can't read " + match)
+            if cmp_std(match, match_data, 'stdout', stdout) == False:
                 return test_fail(desc['_test-name'], "Stdout mismatch")
             else:
                 stdout = ""
         elif 'stderr' in t:
             print("\tComparing stderr")
             match = desc['_base-dir'] + os.sep + t['stderr']
-            if cmp_std(desc['_test-name'], 'stderr', stderr, match) == False:
+            match_data = read_stdfile(match)
+            if match_data == None:
+                return test_fail(test, "Can't read " + match)
+            if cmp_std(match, match_data, 'stderr', stderr) == False:
                 return test_fail(desc['_test-name'], "Stderr mismatch")
             else:
                 stderr = ""
@@ -363,13 +384,13 @@ def test_update(desc):
             match = desc['_base-dir'] + os.sep + t['stdout']
             print("\tMoving %s to %s" % ('stdout', match))
             with open(match, "wb") as f:
-                f.write(stdout)
+                f.write(stdout.encode("utf-8"))
                 f.close()
         if 'stderr' in t:
             match = desc['_base-dir'] + os.sep + t['stderr']
             print("\tMoving %s to %s" % ('stderr', match))
             with open(match, "wb") as f:
-                f.write(stderr)
+                f.write(stderr.encode("utf-8"))
                 f.close()
 
     return test_updated(desc['_test-name'])

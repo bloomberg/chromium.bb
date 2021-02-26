@@ -33,8 +33,8 @@
 
 namespace blink {
 
-SVGPaint::SVGPaint() : type(SVG_PAINTTYPE_NONE) {}
-SVGPaint::SVGPaint(Color color) : color(color), type(SVG_PAINTTYPE_RGBCOLOR) {}
+SVGPaint::SVGPaint() = default;
+SVGPaint::SVGPaint(Color color) : color(color), type(SVG_PAINTTYPE_COLOR) {}
 SVGPaint::SVGPaint(const SVGPaint& paint) = default;
 
 SVGPaint::~SVGPaint() = default;
@@ -107,27 +107,20 @@ StyleMiscData::StyleMiscData()
     : baseline_shift_value(SVGComputedStyle::InitialBaselineShiftValue()),
       flood_color(SVGComputedStyle::InitialFloodColor()),
       lighting_color(SVGComputedStyle::InitialLightingColor()),
-      flood_opacity(SVGComputedStyle::InitialFloodOpacity()),
-      flood_color_is_current_color(false),
-      lighting_color_is_current_color(false) {}
+      flood_opacity(SVGComputedStyle::InitialFloodOpacity()) {}
 
 StyleMiscData::StyleMiscData(const StyleMiscData& other)
     : RefCounted<StyleMiscData>(),
       baseline_shift_value(other.baseline_shift_value),
       flood_color(other.flood_color),
       lighting_color(other.lighting_color),
-      flood_opacity(other.flood_opacity),
-      flood_color_is_current_color(other.flood_color_is_current_color),
-      lighting_color_is_current_color(other.lighting_color_is_current_color) {}
+      flood_opacity(other.flood_opacity) {}
 
 bool StyleMiscData::operator==(const StyleMiscData& other) const {
   return flood_color == other.flood_color &&
          lighting_color == other.lighting_color &&
          baseline_shift_value == other.baseline_shift_value &&
-         flood_opacity == other.flood_opacity &&
-         flood_color_is_current_color == other.flood_color_is_current_color &&
-         lighting_color_is_current_color ==
-             other.lighting_color_is_current_color;
+         flood_opacity == other.flood_opacity;
 }
 
 StyleResourceData::StyleResourceData()

@@ -46,7 +46,6 @@ class MODULES_EXPORT PaymentRequest final
       public ExecutionContextLifecycleObserver,
       public ActiveScriptWrappable<PaymentRequest> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PaymentRequest);
   // TODO(chikamune): remove this line after code freeze.
   USING_PRE_FINALIZER(PaymentRequest, ClearResolversAndCloseMojoConnection);
 
@@ -65,6 +64,8 @@ class MODULES_EXPORT PaymentRequest final
                  const HeapVector<Member<PaymentMethodData>>&,
                  const PaymentDetailsInit*,
                  const PaymentOptions*,
+                 mojo::PendingRemote<payments::mojom::blink::PaymentRequest>
+                     mock_payment_provider,
                  ExceptionState&);
   ~PaymentRequest() override;
 
@@ -106,7 +107,7 @@ class MODULES_EXPORT PaymentRequest final
   void OnUpdatePaymentDetailsFailure(const String& error) override;
   bool IsInteractive() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void OnCompleteTimeoutForTesting();
   void OnUpdatePaymentDetailsTimeoutForTesting();
@@ -167,18 +168,25 @@ class MODULES_EXPORT PaymentRequest final
   String shipping_option_;
   String shipping_type_;
   HashSet<String> method_names_;
-  Member<ScriptPromiseResolver> accept_resolver_;
+  Member<ScriptPromiseResolver>
+      accept_resolver_;  // the resolver for the show() promise.
   Member<ScriptPromiseResolver> complete_resolver_;
   Member<ScriptPromiseResolver> retry_resolver_;
   Member<ScriptPromiseResolver> abort_resolver_;
   Member<ScriptPromiseResolver> can_make_payment_resolver_;
   Member<ScriptPromiseResolver> has_enrolled_instrument_resolver_;
+
+  // When not null, reject show(), resolve canMakePayment() and
+  // hasEnrolledInstrument() with false.
+  String not_supported_for_invalid_origin_or_ssl_error_;
+
   HeapMojoRemote<payments::mojom::blink::PaymentRequest> payment_provider_;
   HeapMojoReceiver<payments::mojom::blink::PaymentRequestClient, PaymentRequest>
       client_receiver_;
   TaskRunnerTimer<PaymentRequest> complete_timer_;
   TaskRunnerTimer<PaymentRequest> update_payment_details_timer_;
   bool is_waiting_for_show_promise_to_resolve_;
+  bool ignore_total_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

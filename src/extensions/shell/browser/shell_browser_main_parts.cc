@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/prefs/pref_service.h"
@@ -48,7 +48,7 @@
 #include "ui/aura/env.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -57,16 +57,16 @@
 #include "extensions/shell/browser/shell_network_controller_chromeos.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "device/bluetooth/dbus/bluez_dbus_thread_manager.h"
 #endif
 
@@ -78,6 +78,7 @@
 #endif
 
 #if defined(USE_AURA) && defined(USE_X11)
+#include "ui/base/ui_base_features.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
 #endif
 
@@ -85,7 +86,6 @@ using base::CommandLine;
 using content::BrowserContext;
 
 #if BUILDFLAG(ENABLE_NACL)
-using content::BrowserThread;
 #endif
 
 namespace extensions {
@@ -114,12 +114,13 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
 #if defined(USE_AURA) && defined(USE_X11)
-  ui::TouchFactory::SetTouchDeviceListFromCommandLine();
+  if (!features::IsUsingOzonePlatform())
+    ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Perform initialization of D-Bus objects here rather than in the below
   // helper classes so those classes' tests can initialize stub versions of the
   // D-Bus objects.
@@ -146,7 +147,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
       switches::kAppShellAllowRoaming)) {
     network_controller_->SetCellularAllowRoaming(true);
   }
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // app_shell doesn't need GTK, so the fake input method context can work.
   // See crbug.com/381852 and revision fb69f142.
   // TODO(michaelpg): Verify this works for target environments.
@@ -159,7 +160,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 int ShellBrowserMainParts::PreEarlyInitialization() {
-  return service_manager::RESULT_CODE_NORMAL_EXIT;
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 int ShellBrowserMainParts::PreCreateThreads() {
@@ -196,7 +197,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   extensions_browser_client_->InitWithBrowserContext(browser_context_.get(),
                                                      user_pref_service_.get());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   mojo::PendingRemote<media_session::mojom::MediaControllerManager>
       media_controller_manager;
   content::GetMediaSessionService().BindMediaControllerManager(
@@ -235,9 +236,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       std::make_unique<ShellNaClBrowserDelegate>(browser_context_.get()));
   // Track the task so it can be canceled if app_shell shuts down very quickly,
   // such as in browser tests.
-  task_tracker_.PostTask(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(), FROM_HERE,
-      base::BindOnce(nacl::NaClProcessHost::EarlyStartup));
+  task_tracker_.PostTask(content::GetIOThreadTaskRunner({}).get(), FROM_HERE,
+                         base::BindOnce(nacl::NaClProcessHost::EarlyStartup));
 #endif
 
   content::ShellDevToolsManagerDelegate::StartHttpHandler(
@@ -261,7 +261,7 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
   if (!run_message_loop_)
     return true;
   desktop_controller_->Run();
-  *result_code = service_manager::RESULT_CODE_NORMAL_EXIT;
+  *result_code = content::RESULT_CODE_NORMAL_EXIT;
   return true;
 }
 
@@ -279,13 +279,13 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       browser_context_.get());
-  extension_system_ = NULL;
+  extension_system_ = nullptr;
 
   desktop_controller_.reset();
 
   storage_monitor::StorageMonitor::Destroy();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   audio_controller_.reset();
   chromeos::CrasAudioHandler::Shutdown();
 #endif
@@ -304,7 +304,7 @@ void ShellBrowserMainParts::PostDestroyThreads() {
   extensions_browser_client_.reset();
   ExtensionsBrowserClient::Set(nullptr);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   network_controller_.reset();
   chromeos::NetworkHandler::Shutdown();
   chromeos::disks::DiskMountManager::Shutdown();
@@ -313,7 +313,7 @@ void ShellBrowserMainParts::PostDestroyThreads() {
   chromeos::PowerManagerClient::Shutdown();
   chromeos::CrasAudioClient::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   bluez::BluezDBusThreadManager::Shutdown();

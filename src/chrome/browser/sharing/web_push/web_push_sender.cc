@@ -165,7 +165,8 @@ void WebPushSender::SendMessage(const std::string& fcm_token,
   std::unique_ptr<network::SimpleURLLoader> url_loader = BuildURLLoader(
       fcm_token, message.time_to_live, GetUrgencyHeader(message.urgency),
       *auth_header, message.payload);
-  url_loader->DownloadToString(
+  network::SimpleURLLoader* const url_loader_ptr = url_loader.get();
+  url_loader_ptr->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&WebPushSender::OnMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), std::move(url_loader),
@@ -222,8 +223,6 @@ void WebPushSender::OnMessageSent(
 
   if (!network::cors::IsOkStatus(response_code)) {
     DLOG(ERROR) << "HTTP Error: " << response_code;
-    if (response_code == net::HTTP_FORBIDDEN)
-      LogSendWebPushMessageForbiddenBody(response_body.get());
     InvokeWebPushCallback(std::move(callback),
                           SendWebPushMessageResult::kServerError);
     return;

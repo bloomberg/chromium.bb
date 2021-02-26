@@ -17,6 +17,7 @@
 #include "common/Log.h"
 #include "dawn_native/vulkan/AdapterVk.h"
 #include "dawn_native/vulkan/BackendVk.h"
+#include "dawn_native/vulkan/UtilsVulkan.h"
 #include "dawn_native/vulkan/VulkanError.h"
 
 #include <cstring>
@@ -26,10 +27,6 @@ namespace dawn_native { namespace vulkan {
     namespace {
         bool IsLayerName(const VkLayerProperties& layer, const char* name) {
             return strncmp(layer.layerName, name, VK_MAX_EXTENSION_NAME_SIZE) == 0;
-        }
-
-        bool IsExtensionName(const VkExtensionProperties& extension, const char* name) {
-            return strncmp(extension.extensionName, name, VK_MAX_EXTENSION_NAME_SIZE) == 0;
         }
 
         bool EnumerateInstanceExtensions(const char* layerName,
@@ -54,35 +51,30 @@ namespace dawn_native { namespace vulkan {
     const char kLayerNameRenderDocCapture[] = "VK_LAYER_RENDERDOC_Capture";
     const char kLayerNameFuchsiaImagePipeSwapchain[] = "VK_LAYER_FUCHSIA_imagepipe_swapchain";
 
-    const char kExtensionNameExtDebugMarker[] = "VK_EXT_debug_marker";
-    const char kExtensionNameExtDebugReport[] = "VK_EXT_debug_report";
-    const char kExtensionNameExtMetalSurface[] = "VK_EXT_metal_surface";
-    const char kExtensionNameKhrExternalMemory[] = "VK_KHR_external_memory";
-    const char kExtensionNameKhrExternalMemoryCapabilities[] =
-        "VK_KHR_external_memory_capabilities";
-    const char kExtensionNameKhrExternalMemoryFD[] = "VK_KHR_external_memory_fd";
-    const char kExtensionNameExtExternalMemoryDmaBuf[] = "VK_EXT_external_memory_dma_buf";
-    const char kExtensionNameExtImageDrmFormatModifier[] = "VK_EXT_image_drm_format_modifier";
-    const char kExtensionNameFuchsiaExternalMemory[] = "VK_FUCHSIA_external_memory";
-    const char kExtensionNameKhrExternalSemaphore[] = "VK_KHR_external_semaphore";
-    const char kExtensionNameKhrExternalSemaphoreCapabilities[] =
-        "VK_KHR_external_semaphore_capabilities";
-    const char kExtensionNameKhrExternalSemaphoreFD[] = "VK_KHR_external_semaphore_fd";
-    const char kExtensionNameFuchsiaExternalSemaphore[] = "VK_FUCHSIA_external_semaphore";
-    const char kExtensionNameKhrGetPhysicalDeviceProperties2[] =
-        "VK_KHR_get_physical_device_properties2";
-    const char kExtensionNameKhrSurface[] = "VK_KHR_surface";
-    const char kExtensionNameKhrSwapchain[] = "VK_KHR_swapchain";
-    const char kExtensionNameKhrWaylandSurface[] = "VK_KHR_wayland_surface";
-    const char kExtensionNameKhrWin32Surface[] = "VK_KHR_win32_surface";
-    const char kExtensionNameKhrXcbSurface[] = "VK_KHR_xcb_surface";
-    const char kExtensionNameKhrXlibSurface[] = "VK_KHR_xlib_surface";
-    const char kExtensionNameFuchsiaImagePipeSurface[] = "VK_FUCHSIA_imagepipe_surface";
-    const char kExtensionNameKhrMaintenance1[] = "VK_KHR_maintenance1";
+    bool VulkanGlobalKnobs::HasExt(InstanceExt ext) const {
+        return extensions.Has(ext);
+    }
+
+    bool VulkanDeviceKnobs::HasExt(DeviceExt ext) const {
+        return extensions.Has(ext);
+    }
 
     ResultOrError<VulkanGlobalInfo> GatherGlobalInfo(const Backend& backend) {
         VulkanGlobalInfo info = {};
         const VulkanFunctions& vkFunctions = backend.GetFunctions();
+
+        // Gather info on available API version
+        {
+            uint32_t supportedAPIVersion = VK_MAKE_VERSION(1, 0, 0);
+            if (vkFunctions.EnumerateInstanceVersion) {
+                vkFunctions.EnumerateInstanceVersion(&supportedAPIVersion);
+            }
+
+            // Use Vulkan 1.1 if it's available.
+            info.apiVersion = (supportedAPIVersion >= VK_MAKE_VERSION(1, 1, 0))
+                                  ? VK_MAKE_VERSION(1, 1, 0)
+                                  : VK_MAKE_VERSION(1, 0, 0);
+        }
 
         // Gather the info about the instance layers
         {
@@ -122,76 +114,40 @@ namespace dawn_native { namespace vulkan {
 
         // Gather the info about the instance extensions
         {
-            if (!EnumerateInstanceExtensions(nullptr, vkFunctions, &info.extensions)) {
+            std::unordered_map<std::string, InstanceExt> knownExts = CreateInstanceExtNameMap();
+
+            std::vector<VkExtensionProperties> extensionsProperties;
+            if (!EnumerateInstanceExtensions(nullptr, vkFunctions, &extensionsProperties)) {
                 return DAWN_INTERNAL_ERROR("vkEnumerateInstanceExtensionProperties");
             }
 
-            for (const auto& extension : info.extensions) {
-                if (IsExtensionName(extension, kExtensionNameExtDebugReport)) {
-                    info.debugReport = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameExtMetalSurface)) {
-                    info.metalSurface = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrExternalMemoryCapabilities)) {
-                    info.externalMemoryCapabilities = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrExternalSemaphoreCapabilities)) {
-                    info.externalSemaphoreCapabilities = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrGetPhysicalDeviceProperties2)) {
-                    info.getPhysicalDeviceProperties2 = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrSurface)) {
-                    info.surface = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrWaylandSurface)) {
-                    info.waylandSurface = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrWin32Surface)) {
-                    info.win32Surface = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrXcbSurface)) {
-                    info.xcbSurface = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrXlibSurface)) {
-                    info.xlibSurface = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameFuchsiaImagePipeSurface)) {
-                    info.fuchsiaImagePipeSurface = true;
+            for (const VkExtensionProperties& extension : extensionsProperties) {
+                auto it = knownExts.find(extension.extensionName);
+                if (it != knownExts.end()) {
+                    info.extensions.Set(it->second, true);
                 }
             }
-        }
 
-        // Specific handling for the Fuchsia swapchain surface creation extension
-        // which is normally part of the Fuchsia-specific swapchain layer.
-        if (info.fuchsiaImagePipeSwapchain && !info.fuchsiaImagePipeSurface) {
-            std::vector<VkExtensionProperties> layer_extensions;
-            if (!EnumerateInstanceExtensions(kLayerNameFuchsiaImagePipeSwapchain, vkFunctions,
-                                             &layer_extensions)) {
-                return DAWN_INTERNAL_ERROR("vkEnumerateInstanceExtensionProperties");
-            }
+            // Specific handling for the Fuchsia swapchain surface creation extension
+            // which is normally part of the Fuchsia-specific swapchain layer.
+            if (info.fuchsiaImagePipeSwapchain &&
+                !info.HasExt(InstanceExt::FuchsiaImagePipeSurface)) {
+                if (!EnumerateInstanceExtensions(kLayerNameFuchsiaImagePipeSwapchain, vkFunctions,
+                                                 &extensionsProperties)) {
+                    return DAWN_INTERNAL_ERROR("vkEnumerateInstanceExtensionProperties");
+                }
 
-            for (const auto& extension : layer_extensions) {
-                if (IsExtensionName(extension, kExtensionNameFuchsiaImagePipeSurface)) {
-                    info.fuchsiaImagePipeSurface = true;
-                    // For now, copy this to the global extension list.
-                    info.extensions.push_back(extension);
+                for (const VkExtensionProperties& extension : extensionsProperties) {
+                    auto it = knownExts.find(extension.extensionName);
+                    if (it != knownExts.end() &&
+                        it->second == InstanceExt::FuchsiaImagePipeSurface) {
+                        info.extensions.Set(InstanceExt::FuchsiaImagePipeSurface, true);
+                    }
                 }
             }
-        }
 
-        // Gather info on available API version
-        {
-            uint32_t supportedAPIVersion = VK_MAKE_VERSION(1, 0, 0);
-            if (vkFunctions.EnumerateInstanceVersion) {
-                vkFunctions.EnumerateInstanceVersion(&supportedAPIVersion);
-            }
-
-            // Use Vulkan 1.1 if it's available.
-            info.apiVersion = (supportedAPIVersion >= VK_MAKE_VERSION(1, 1, 0))
-                                  ? VK_MAKE_VERSION(1, 1, 0)
-                                  : VK_MAKE_VERSION(1, 0, 0);
+            MarkPromotedExtensions(&info.extensions, info.apiVersion);
+            info.extensions = EnsureDependencies(info.extensions);
         }
 
         // TODO(cwallez@chromium:org): Each layer can expose additional extensions, query them?
@@ -221,11 +177,11 @@ namespace dawn_native { namespace vulkan {
     ResultOrError<VulkanDeviceInfo> GatherDeviceInfo(const Adapter& adapter) {
         VulkanDeviceInfo info = {};
         VkPhysicalDevice physicalDevice = adapter.GetPhysicalDevice();
+        const VulkanGlobalInfo& globalInfo = adapter.GetBackend()->GetGlobalInfo();
         const VulkanFunctions& vkFunctions = adapter.GetBackend()->GetFunctions();
 
-        // Gather general info about the device
+        // Query the device properties first to get the ICD's `apiVersion`
         vkFunctions.GetPhysicalDeviceProperties(physicalDevice, &info.properties);
-        vkFunctions.GetPhysicalDeviceFeatures(physicalDevice, &info.features);
 
         // Gather info about device memory.
         {
@@ -272,51 +228,76 @@ namespace dawn_native { namespace vulkan {
                 return DAWN_INTERNAL_ERROR("vkEnumerateDeviceExtensionProperties");
             }
 
-            info.extensions.resize(count);
-            DAWN_TRY(CheckVkSuccess(vkFunctions.EnumerateDeviceExtensionProperties(
-                                        physicalDevice, nullptr, &count, info.extensions.data()),
-                                    "vkEnumerateDeviceExtensionProperties"));
+            std::vector<VkExtensionProperties> extensionsProperties;
+            extensionsProperties.resize(count);
+            DAWN_TRY(
+                CheckVkSuccess(vkFunctions.EnumerateDeviceExtensionProperties(
+                                   physicalDevice, nullptr, &count, extensionsProperties.data()),
+                               "vkEnumerateDeviceExtensionProperties"));
 
-            for (const auto& extension : info.extensions) {
-                if (IsExtensionName(extension, kExtensionNameExtDebugMarker)) {
-                    info.debugMarker = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrExternalMemory)) {
-                    info.externalMemory = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrExternalMemoryFD)) {
-                    info.externalMemoryFD = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameExtExternalMemoryDmaBuf)) {
-                    info.externalMemoryDmaBuf = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameExtImageDrmFormatModifier)) {
-                    info.imageDrmFormatModifier = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameFuchsiaExternalMemory)) {
-                    info.externalMemoryZirconHandle = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrExternalSemaphore)) {
-                    info.externalSemaphore = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrExternalSemaphoreFD)) {
-                    info.externalSemaphoreFD = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameFuchsiaExternalSemaphore)) {
-                    info.externalSemaphoreZirconHandle = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrSwapchain)) {
-                    info.swapchain = true;
-                }
-                if (IsExtensionName(extension, kExtensionNameKhrMaintenance1)) {
-                    info.maintenance1 = true;
+            std::unordered_map<std::string, DeviceExt> knownExts = CreateDeviceExtNameMap();
+
+            for (const VkExtensionProperties& extension : extensionsProperties) {
+                auto it = knownExts.find(extension.extensionName);
+                if (it != knownExts.end()) {
+                    info.extensions.Set(it->second, true);
                 }
             }
+
+            MarkPromotedExtensions(&info.extensions, info.properties.apiVersion);
+            info.extensions = EnsureDependencies(info.extensions, globalInfo.extensions,
+                                                 info.properties.apiVersion);
         }
 
-        // Mark the extensions promoted to Vulkan 1.1 as available.
-        if (info.properties.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
-            info.maintenance1 = true;
+        // Gather general and extension features and properties
+        //
+        // Use vkGetPhysicalDevice{Features,Properties}2 if required to gather information about
+        // the extensions. DeviceExt::GetPhysicalDeviceProperties2 is guaranteed to be available
+        // because these extensions (transitively) depend on it in `EnsureDependencies`
+        VkPhysicalDeviceFeatures2 features2 = {};
+        features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        PNextChainBuilder featuresChain(&features2);
+
+        VkPhysicalDeviceProperties2 properties2 = {};
+        properties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        PNextChainBuilder propertiesChain(&properties2);
+
+        if (info.extensions.Has(DeviceExt::ShaderFloat16Int8)) {
+            featuresChain.Add(&info.shaderFloat16Int8Features,
+                              VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR);
+        }
+
+        if (info.extensions.Has(DeviceExt::_16BitStorage)) {
+            featuresChain.Add(&info._16BitStorageFeatures,
+                              VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES);
+        }
+
+        if (info.extensions.Has(DeviceExt::SubgroupSizeControl)) {
+            featuresChain.Add(&info.subgroupSizeControlFeatures,
+                              VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES_EXT);
+            propertiesChain.Add(
+                &info.subgroupSizeControlProperties,
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES_EXT);
+        }
+
+        if (info.extensions.Has(DeviceExt::DriverProperties)) {
+            propertiesChain.Add(&info.driverProperties,
+                                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES);
+        }
+
+        // If we have DeviceExt::GetPhysicalDeviceProperties2, use features2 and properties2 so
+        // that features no covered by VkPhysicalDevice{Features,Properties} can be queried.
+        //
+        // Note that info.properties has already been filled at the start of this function to get
+        // `apiVersion`.
+        ASSERT(info.properties.apiVersion != 0);
+        if (info.extensions.Has(DeviceExt::GetPhysicalDeviceProperties2)) {
+            vkFunctions.GetPhysicalDeviceProperties2(physicalDevice, &properties2);
+            vkFunctions.GetPhysicalDeviceFeatures2(physicalDevice, &features2);
+            info.features = features2.features;
+        } else {
+            ASSERT(features2.pNext == nullptr && properties2.pNext == nullptr);
+            vkFunctions.GetPhysicalDeviceFeatures(physicalDevice, &info.features);
         }
 
         // TODO(cwallez@chromium.org): gather info about formats

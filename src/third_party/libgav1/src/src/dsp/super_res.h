@@ -38,7 +38,7 @@
 namespace libgav1 {
 namespace dsp {
 
-// Initializes Dsp::super_res_row. This function is not thread-safe.
+// Initializes Dsp::super_res. This function is not thread-safe.
 void SuperResInit_C();
 
 }  // namespace dsp

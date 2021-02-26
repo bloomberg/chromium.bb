@@ -26,8 +26,8 @@ class GURL;
 
 namespace content {
 class BrowserContext;
+class JavaScriptDialogManager;
 class ShellDevToolsFrontend;
-class ShellJavaScriptDialogManager;
 class SiteInstance;
 class WebContents;
 
@@ -72,13 +72,6 @@ class Shell : public WebContentsDelegate,
       const scoped_refptr<SiteInstance>& site_instance,
       const gfx::Size& initial_size);
 
-  static Shell* CreateNewWindowWithSessionStorageNamespace(
-      BrowserContext* browser_context,
-      const GURL& url,
-      const scoped_refptr<SiteInstance>& site_instance,
-      const gfx::Size& initial_size,
-      scoped_refptr<SessionStorageNamespace> session_storage_namespace);
-
   // Returns the Shell object corresponding to the given WebContents.
   static Shell* FromWebContents(WebContents* web_contents);
 
@@ -109,7 +102,7 @@ class Shell : public WebContentsDelegate,
   gfx::NativeWindow window();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Public to be called by an ObjC bridge object.
   void ActionPerformed(int control);
   void URLEntered(const std::string& url_string);
@@ -131,8 +124,7 @@ class Shell : public WebContentsDelegate,
   void SetOverlayMode(bool use_overlay_mode) override;
 #endif
   void EnterFullscreenModeForTab(
-      WebContents* web_contents,
-      const GURL& origin,
+      RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(const WebContents* web_contents) override;
@@ -147,13 +139,8 @@ class Shell : public WebContentsDelegate,
                               InvalidateTypes changed_flags) override;
   JavaScriptDialogManager* GetJavaScriptDialogManager(
       WebContents* source) override;
-  std::unique_ptr<BluetoothChooser> RunBluetoothChooser(
-      RenderFrameHost* frame,
-      const BluetoothChooser::EventHandler& event_handler) override;
-  std::unique_ptr<BluetoothScanningPrompt> ShowBluetoothScanningPrompt(
-      RenderFrameHost* frame,
-      const BluetoothScanningPrompt::EventHandler& event_handler) override;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
+  void DidNavigateMainFramePostCommit(WebContents* contents) override;
   bool HandleKeyboardEvent(WebContents* source,
                            const NativeWebKeyboardEvent& event) override;
 #endif
@@ -168,9 +155,14 @@ class Shell : public WebContentsDelegate,
       RenderWidgetHost* render_widget_host,
       base::RepeatingClosure hang_monitor_restarter) override;
   void ActivateContents(WebContents* contents) override;
+
   std::unique_ptr<content::WebContents> ActivatePortalWebContents(
       content::WebContents* predecessor_contents,
       std::unique_ptr<content::WebContents> portal_contents) override;
+  void UpdateInspectedWebContentsIfNecessary(
+      content::WebContents* old_contents,
+      content::WebContents* new_contents,
+      base::OnceCallback<void()> callback) override;
   bool ShouldAllowRunningInsecureContent(content::WebContents* web_contents,
                                          bool allowed_per_prefs,
                                          const url::Origin& origin,
@@ -180,16 +172,13 @@ class Shell : public WebContentsDelegate,
       const viz::SurfaceId&,
       const gfx::Size& natural_size) override;
   bool ShouldResumeRequestsForCreatedWindow() override;
+  void SetContentsBounds(WebContents* source, const gfx::Rect& bounds) override;
 
   static gfx::Size GetShellDefaultSize();
 
   void set_delay_popup_contents_delegate_for_testing(bool delay) {
     delay_popup_contents_delegate_for_testing_ = delay;
   }
-
-  // TODO(danakj): Move this to WebTestShellPlatformDelegate (a test-only
-  // subclass of ShellPlatformDelegate that does not exist yet).
-  bool headless() const { return headless_; }
 
  private:
   class DevToolsWebContentsObserver;
@@ -224,7 +213,7 @@ class Shell : public WebContentsDelegate,
 
   void OnDevToolsWebContentsDestroyed();
 
-  std::unique_ptr<ShellJavaScriptDialogManager> dialog_manager_;
+  std::unique_ptr<JavaScriptDialogManager> dialog_manager_;
 
   std::unique_ptr<WebContents> web_contents_;
 
@@ -235,7 +224,6 @@ class Shell : public WebContentsDelegate,
 
   gfx::Size content_size_;
 
-  bool headless_ = false;
   bool delay_popup_contents_delegate_for_testing_ = false;
 
   // A container of all the open windows. We use a vector so we can keep track

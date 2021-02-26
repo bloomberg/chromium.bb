@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -14,8 +14,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
@@ -29,15 +29,7 @@ std::string GeneratePartitionName() {
   return base::GenerateGUID();
 }
 
-// Creates the URL for a guest site. Assumes that the StoragePartition is not
-// persistent.
-GURL GetGuestSiteURL(const std::string& partition_domain,
-                     const std::string& partition_name) {
-  return extensions::WebViewGuest::GetSiteForGuestPartitionConfig(
-      partition_domain, partition_name, true /* in_memory */);
-}
-
-// Clears data from the passed storage partition. |partition_data_cleared|
+// Clears data from the passed storage partition. `partition_data_cleared`
 // will be called when all cached data has been cleared.
 void ClearStoragePartition(content::StoragePartition* storage_partition,
                            base::OnceClosure partition_data_cleared) {
@@ -51,8 +43,8 @@ network::mojom::NetworkContext* GetSystemNetworkContext() {
   return g_browser_process->system_network_context_manager()->GetContext();
 }
 
-// Copies the http auth cache proxy entries with key |cache_key| into
-// |signin_storage_partition|'s NetworkContext.
+// Copies the http auth cache proxy entries with key `cache_key` into
+// `signin_storage_partition`'s NetworkContext.
 void LoadHttpAuthCacheProxyEntries(
     content::StoragePartition* signin_storage_partition,
     base::OnceClosure completion_callback,
@@ -61,8 +53,8 @@ void LoadHttpAuthCacheProxyEntries(
       cache_key, std::move(completion_callback));
 }
 
-// Transfers http auth cache proxy entries from |main_network_context| into
-// |signin_storage_partition|'s NetworkContext.
+// Transfers http auth cache proxy entries from `main_network_context` into
+// `signin_storage_partition`'s NetworkContext.
 void TransferHttpAuthCacheProxyEntries(
     network::mojom::NetworkContext* main_network_context,
     content::StoragePartition* signin_storage_partition,
@@ -99,12 +91,11 @@ void SigninPartitionManager::StartSigninSession(
       embedder_web_contents->GetLastCommittedURL().host();
   current_storage_partition_name_ = GeneratePartitionName();
 
-  GURL guest_site = GetGuestSiteURL(storage_partition_domain_,
-                                    current_storage_partition_name_);
-
-  current_storage_partition_ =
-      content::BrowserContext::GetStoragePartitionForSite(browser_context_,
-                                                          guest_site, true);
+  auto storage_partition_config = content::StoragePartitionConfig::Create(
+      storage_partition_domain_, current_storage_partition_name_,
+      true /*in_memory */);
+  current_storage_partition_ = content::BrowserContext::GetStoragePartition(
+      browser_context_, storage_partition_config, true);
   if (on_create_new_storage_partition_) {
     on_create_new_storage_partition_.Run(current_storage_partition_);
   }

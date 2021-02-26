@@ -5,10 +5,14 @@
 #import "ios/chrome/browser/web/print_tab_helper.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "components/prefs/pref_service.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/web/web_state_printer.h"
+#import "ios/web/public/browser_state.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/web_state.h"
 
@@ -24,8 +28,8 @@ const char kPrintCommandPrefix[] = "print";
 PrintTabHelper::PrintTabHelper(web::WebState* web_state) {
   web_state->AddObserver(this);
   subscription_ = web_state->AddScriptCommandCallback(
-      base::Bind(&PrintTabHelper::OnPrintCommand, base::Unretained(this),
-                 base::Unretained(web_state)),
+      base::BindRepeating(&PrintTabHelper::OnPrintCommand,
+                          base::Unretained(this), base::Unretained(web_state)),
       kPrintCommandPrefix);
 }
 
@@ -52,6 +56,17 @@ void PrintTabHelper::OnPrintCommand(web::WebState* web_state,
   }
   DCHECK(web_state);
   DCHECK(printer_);
+
+  BOOL printingEnabled =
+      ChromeBrowserState::FromBrowserState(web_state->GetBrowserState())
+          ->GetPrefs()
+          ->GetBoolean(prefs::kPrintingEnabled);
+
+  if (!printingEnabled) {
+    // Ignore window.print() if the PrintingEnabled pref is set to NO.
+    return;
+  }
+
   [printer_ printWebState:web_state];
 }
 

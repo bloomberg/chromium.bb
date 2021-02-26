@@ -10,20 +10,20 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/waitable_event.h"
-#include "components/sync/base/cancelation_observer.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/passphrase_enums.h"
+#include "components/sync/engine/commit_and_get_updates_types.h"
 #include "components/sync/engine/commit_queue.h"
-#include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/engine_impl/cancelation_signal.h"
 #include "components/sync/engine_impl/commit_contributor.h"
-#include "components/sync/engine_impl/cycle/data_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/nudge_handler.h"
 #include "components/sync/engine_impl/update_handler.h"
 #include "components/sync/nigori/cryptographer.h"
@@ -35,15 +35,13 @@ namespace syncer {
 class CancelationSignal;
 class ModelTypeProcessor;
 
-// A smart cache for sync types that use message passing (rather than
-// transactions and the syncable::Directory) to communicate with the sync
-// thread.
+// A smart cache for sync types to communicate with the sync thread.
 //
-// When the non-blocking sync type wants to talk with the sync server, it will
+// When the sync data type wants to talk to the sync server, it will
 // send a message from its thread to this object on the sync thread. This
 // object ensures the appropriate sync server communication gets scheduled and
-// executed. The response, if any, will be returned to the non-blocking sync
-// type's thread eventually.
+// executed. The response, if any, will be returned to the data types's thread
+// eventually.
 //
 // This object also has a role to play in communications in the opposite
 // direction. Sometimes the sync thread will receive changes from the sync
@@ -69,7 +67,6 @@ class ModelTypeWorker : public UpdateHandler,
                   PassphraseType passphrase_type,
                   NudgeHandler* nudge_handler,
                   std::unique_ptr<ModelTypeProcessor> model_type_processor,
-                  DataTypeDebugInfoEmitter* debug_info_emitter,
                   CancelationSignal* cancelation_signal);
   ~ModelTypeWorker() override;
 
@@ -89,9 +86,8 @@ class ModelTypeWorker : public UpdateHandler,
 
   // UpdateHandler implementation.
   bool IsInitialSyncEnded() const override;
-  void GetDownloadProgress(
-      sync_pb::DataTypeProgressMarker* progress_marker) const override;
-  void GetDataTypeContext(sync_pb::DataTypeContext* context) const override;
+  const sync_pb::DataTypeProgressMarker& GetDownloadProgress() const override;
+  const sync_pb::DataTypeContext& GetDataTypeContext() const override;
   SyncerError ProcessGetUpdatesResponse(
       const sync_pb::DataTypeProgressMarker& progress_marker,
       const sync_pb::DataTypeContext& mutated_context,
@@ -107,25 +103,11 @@ class ModelTypeWorker : public UpdateHandler,
   std::unique_ptr<CommitContribution> GetContribution(
       size_t max_entries) override;
 
-  // Extended overload of ProcessGetUpdatesResponse() that allows specifying
-  // whether the updates are coming from the USS migrator, which influences how
-  // UMA metrics are logged.
-  SyncerError ProcessGetUpdatesResponse(
-      const sync_pb::DataTypeProgressMarker& progress_marker,
-      const sync_pb::DataTypeContext& mutated_context,
-      const SyncEntityList& applicable_updates,
-      bool from_uss_migrator,
-      StatusController* status);
-
   bool HasLocalChangesForTest() const;
 
   // An alternative way to drive sending data to the processor, that should be
   // called when a new encryption mechanism is ready.
   void EncryptionAcceptedMaybeApplyUpdates();
-
-  // If migration the directory encounters an error partway through, we need to
-  // clear the update data that has been added so far.
-  void AbortMigration();
 
   // Public for testing.
   // Returns true if this type should stop communicating because of outstanding
@@ -138,6 +120,12 @@ class ModelTypeWorker : public UpdateHandler,
   base::WeakPtr<ModelTypeWorker> AsWeakPtr();
 
  private:
+  struct UnknownEncryptionKeyInfo {
+    // Not increased if the cryptographer knows it's in a pending state
+    // (cf. Cryptographer::CanEncrypt()).
+    int gu_responses_while_should_have_been_known = 0;
+  };
+
   // Attempts to decrypt the given specifics and return them in the |out|
   // parameter. The cryptographer must know the decryption key, i.e.
   // cryptographer.CanDecrypt(specifics.encrypted()) must return true.
@@ -216,8 +204,11 @@ class ModelTypeWorker : public UpdateHandler,
   // response body.
   void OnFullCommitFailure(SyncCommitError commit_error);
 
+  // Removes |unknown_encryption_keys_| that no longer fit the definition of
+  // an unknown key, and returns their info.
+  std::vector<UnknownEncryptionKeyInfo> RemoveKeysNoLongerUnknown();
+
   ModelType type_;
-  DataTypeDebugInfoEmitter* debug_info_emitter_;
 
   // State that applies to the entire model type.
   sync_pb::ModelTypeState model_type_state_;
@@ -240,7 +231,15 @@ class ModelTypeWorker : public UpdateHandler,
   // A map of sync entities, keyed by server_id. Holds updates encrypted with
   // pending keys. Entries are stored in a map for de-duplication (applying only
   // the latest).
+  // TODO(crbug.com/1109221): Use a name mentioning "updates" and "server id".
   std::map<std::string, sync_pb::SyncEntity> entries_pending_decryption_;
+
+  // A key is unknown if it encrypts a subset of |entries_pending_decryption_|.
+  // It'll be added here when the worker receives the first update entity
+  // encrypted with it.
+  // TODO(crbug.com/1109221): Enlarge this concept to cover ignored keys.
+  std::map<std::string, UnknownEncryptionKeyInfo>
+      unknown_encryption_keys_by_name_;
 
   // Accumulates all the updates from a single GetUpdates cycle in memory so
   // they can all be sent to the processor at once.
@@ -271,31 +270,31 @@ class ModelTypeWorker : public UpdateHandler,
 //     base::MakeRefCounted<GetLocalChangesRequest>(cancelation_signal_);
 // model_type_processor_->GetLocalChanges(
 //     max_entries,
-//     base::Bind(&GetLocalChangesRequest::SetResponse, request));
-// request->WaitForResponse();
+//     base::BindOnce(&GetLocalChangesRequest::SetResponse, request));
+// request->WaitForResponseOrCancelation();
 // CommitRequestDataList response;
 // if (!request->WasCancelled())
 //   response = request->ExtractResponse();
 class GetLocalChangesRequest
     : public base::RefCountedThreadSafe<GetLocalChangesRequest>,
-      public CancelationObserver {
+      public CancelationSignal::Observer {
  public:
   explicit GetLocalChangesRequest(CancelationSignal* cancelation_signal);
 
-  // CancelationObserver implementation.
-  void OnSignalReceived() override;
+  // CancelationSignal::Observer implementation.
+  void OnCancelationSignalReceived() override;
 
   // Blocks current thread until either SetResponse is called or
   // cancelation_signal_ is signaled.
-  void WaitForResponse();
+  void WaitForResponseOrCancelation();
 
-  // SetResponse takes ownership of |local_changes| and unblocks WaitForResponse
-  // call. It is called by model type through callback passed to
-  // GetLocalChanges.
+  // SetResponse takes ownership of |local_changes| and unblocks
+  // WaitForResponseOrCancelation call. It is called by model type through
+  // callback passed to GetLocalChanges.
   void SetResponse(CommitRequestDataList&& local_changes);
 
-  // Checks if WaitForResponse was canceled through CancelationSignal. When
-  // returns true calling ExtractResponse is unsafe.
+  // Checks if WaitForResponseOrCancelation was canceled through
+  // CancelationSignal. When returns true calling ExtractResponse is unsafe.
   bool WasCancelled();
 
   // Returns response set by SetResponse().

@@ -16,8 +16,6 @@ class GPU;
 
 class NavigatorGPU final : public GarbageCollected<NavigatorGPU>,
                            public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorGPU);
-
  public:
   static const char kSupplementName[];
 
@@ -30,7 +28,7 @@ class NavigatorGPU final : public GarbageCollected<NavigatorGPU>,
 
   explicit NavigatorGPU(Navigator&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<GPU> gpu_;

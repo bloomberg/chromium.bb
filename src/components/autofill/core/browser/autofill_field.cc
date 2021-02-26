@@ -129,26 +129,41 @@ AutofillType AutofillField::ComputedType() const {
     // decision to prefer the heuristics in these cases, but it looks like
     // it might be better to fix this server-side.
     // See http://crbug.com/429236 for background.
-    bool believe_server;
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillPreferServerNamePredictions)) {
-      believe_server = true;
-    } else {
-      believe_server = !(server_type_ == NAME_FULL &&
-                         heuristic_type_ == CREDIT_CARD_NAME_FULL) &&
-                       !(server_type_ == CREDIT_CARD_NAME_FULL &&
-                         heuristic_type_ == NAME_FULL) &&
-                       !(server_type_ == NAME_FIRST &&
-                         heuristic_type_ == CREDIT_CARD_NAME_FIRST) &&
-                       !(server_type_ == NAME_LAST &&
-                         heuristic_type_ == CREDIT_CARD_NAME_LAST);
-    }
+    bool believe_server = !(server_type_ == NAME_FULL &&
+                            heuristic_type_ == CREDIT_CARD_NAME_FULL) &&
+                          !(server_type_ == CREDIT_CARD_NAME_FULL &&
+                            heuristic_type_ == NAME_FULL) &&
+                          !(server_type_ == NAME_FIRST &&
+                            heuristic_type_ == CREDIT_CARD_NAME_FIRST) &&
+                          !(server_type_ == NAME_LAST &&
+                            heuristic_type_ == CREDIT_CARD_NAME_LAST);
 
     // Either way, retain a preference for the the CVC heuristic over the
     // server's password predictions (http://crbug.com/469007)
     believe_server = believe_server &&
                      !(AutofillType(server_type_).group() == PASSWORD_FIELD &&
                        heuristic_type_ == CREDIT_CARD_VERIFICATION_CODE);
+
+    // For new name tokens the heuristic predictions get precedence over the
+    // server predictions.
+    // TODO(crbug.com/1098943): Remove feature check once launched.
+    believe_server =
+        believe_server &&
+        !(base::FeatureList::IsEnabled(
+              features::kAutofillEnableSupportForMoreStructureInNames) &&
+          (heuristic_type_ == NAME_LAST_SECOND ||
+           heuristic_type_ == NAME_LAST_FIRST));
+
+    // For new address tokens the heuristic predictions get precedence over the
+    // server predictions.
+    // TODO(crbug.com/1098943): Remove feature check once launched.
+    believe_server =
+        believe_server &&
+        !(base::FeatureList::IsEnabled(
+              features::kAutofillEnableSupportForMoreStructureInAddresses) &&
+          (heuristic_type_ == ADDRESS_HOME_STREET_NAME ||
+           heuristic_type_ == ADDRESS_HOME_HOUSE_NUMBER));
+
     if (believe_server)
       return AutofillType(server_type_);
   }

@@ -69,9 +69,9 @@ class SnapToLinesLayouter {
 };
 
 InlineFlowBox* SnapToLinesLayouter::FindFirstLineBox() const {
-  if (!cue_box_.FirstChild()->IsLayoutInline())
-    return nullptr;
-  return ToLayoutInline(cue_box_.FirstChild())->FirstLineBox();
+  if (auto* first_inline = DynamicTo<LayoutInline>(cue_box_.FirstChild()))
+    return first_inline->FirstLineBox();
+  return nullptr;
 }
 
 LayoutUnit SnapToLinesLayouter::ComputeInitialPositionAdjustment(
@@ -280,6 +280,7 @@ LayoutVTTCue::LayoutVTTCue(ContainerNode* node, float snap_to_lines_position)
     : LayoutBlockFlow(node), snap_to_lines_position_(snap_to_lines_position) {}
 
 void LayoutVTTCue::RepositionCueSnapToLinesNotSet() {
+  NOT_DESTROYED();
   // FIXME: Implement overlapping detection when snap-to-lines is not set.
   // http://wkb.ug/84296
 
@@ -324,6 +325,7 @@ void LayoutVTTCue::RepositionCueSnapToLinesNotSet() {
 }
 
 IntRect LayoutVTTCue::ComputeControlsRect() const {
+  NOT_DESTROYED();
   // Determine the area covered by the media controls, if any. For this, the
   // LayoutVTTCue will walk the tree up to the HTMLMediaElement, then ask for
   // the MediaControls.
@@ -348,17 +350,18 @@ IntRect LayoutVTTCue::ComputeControlsRect() const {
   }
 
   IntRect button_panel_box = BorderBoxRelativeToAncestor(
-      ToLayoutBox(*button_panel_layout_object),
-      ToLayoutBox(*controls->ContainerLayoutObject()));
+      To<LayoutBox>(*button_panel_layout_object),
+      To<LayoutBox>(*controls->ContainerLayoutObject()));
   IntRect timeline_box = BorderBoxRelativeToAncestor(
-      ToLayoutBox(*timeline_layout_object),
-      ToLayoutBox(*controls->ContainerLayoutObject()));
+      To<LayoutBox>(*timeline_layout_object),
+      To<LayoutBox>(*controls->ContainerLayoutObject()));
 
   button_panel_box.Unite(timeline_box);
   return button_panel_box;
 }
 
 void LayoutVTTCue::UpdateLayout() {
+  NOT_DESTROYED();
   LayoutBlockFlow::UpdateLayout();
 
   DCHECK(FirstChild());

@@ -18,19 +18,18 @@
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fxcrt/fx_stream.h"
 #include "third_party/base/numerics/safe_conversions.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
 
 bool IsMetaDataStreamDictionary(const CPDF_Dictionary* dict) {
-  return dict && dict->GetStringFor("Type") == "Metadata" &&
-         dict->GetStringFor("Subtype") == "XML";
+  return dict && dict->GetNameFor("Type") == "Metadata" &&
+         dict->GetNameFor("Subtype") == "XML";
 }
 
 }  // namespace
 
-CPDF_Stream::CPDF_Stream() {}
+CPDF_Stream::CPDF_Stream() = default;
 
 CPDF_Stream::CPDF_Stream(std::unique_ptr<uint8_t, FxFreeDeleter> pData,
                          uint32_t size,
@@ -100,7 +99,7 @@ RetainPtr<CPDF_Object> CPDF_Stream::CloneNonCyclic(
   uint32_t streamSize = pAcc->GetSize();
   const CPDF_Dictionary* pDict = GetDict();
   RetainPtr<CPDF_Dictionary> pNewDict;
-  if (pDict && !pdfium::ContainsKey(*pVisited, pDict)) {
+  if (pDict && !pdfium::Contains(*pVisited, pDict)) {
     pNewDict =
         ToDictionary(static_cast<const CPDF_Object*>(pDict)->CloneNonCyclic(
             bDirect, pVisited));

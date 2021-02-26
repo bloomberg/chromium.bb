@@ -5,9 +5,9 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -18,7 +18,6 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -27,7 +26,12 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/impression.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_prefs.h"
@@ -96,6 +100,26 @@ std::unique_ptr<TestRenderViewContextMenu> CreateContextMenu(
   menu->Init();
   return menu;
 }
+
+class TestNavigationDelegate : public content::WebContentsDelegate {
+ public:
+  TestNavigationDelegate() = default;
+  ~TestNavigationDelegate() override = default;
+
+  content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) override {
+    last_navigation_params_ = params;
+    return nullptr;
+  }
+
+  const base::Optional<content::OpenURLParams>& last_navigation_params() {
+    return last_navigation_params_;
+  }
+
+ private:
+  base::Optional<content::OpenURLParams> last_navigation_params_;
+};
 
 }  // namespace
 
@@ -516,6 +540,32 @@ TEST_F(RenderViewContextMenuPrefsTest, SaveMediaSuggestedFileName) {
   suggested_filename =
       content::WebContentsTester::For(web_contents())->GetSuggestedFileName();
   EXPECT_EQ(kTestSuggestedFileName, suggested_filename);
+}
+
+// Verify ContextMenu navigations properly set the initiator routing id for a
+// frame.
+TEST_F(RenderViewContextMenuPrefsTest, OpenLinkNavigationParamsSet) {
+  TestNavigationDelegate delegate;
+  web_contents()->SetDelegate(&delegate);
+  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+
+  content::ContextMenuParams params = CreateParams(MenuItem::LINK);
+  params.unfiltered_link_url = params.link_url;
+  params.link_url = params.link_url;
+  params.impression = content::Impression();
+  auto menu = std::make_unique<TestRenderViewContextMenu>(main_frame, params);
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
+  EXPECT_TRUE(delegate.last_navigation_params());
+
+  // Verify that the ContextMenu source frame is set as the navigation
+  // initiator.
+  auto main_frame_id = content::GlobalFrameRoutingId(
+      main_frame->GetProcess()->GetID(), main_frame->GetRoutingID());
+  EXPECT_EQ(main_frame_id,
+            delegate.last_navigation_params()->initiator_routing_id);
+
+  // Verify that the impression is attached to the navigation.
+  EXPECT_TRUE(delegate.last_navigation_params()->impression);
 }
 
 // Verify that "Show all passwords" is displayed on a password field.

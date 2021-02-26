@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_STATE_H_
 
 #include <ostream>
+#include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
 
@@ -86,7 +87,7 @@ enum class AutofillAssistantState {
   // In that scenario, the status message at the time of transition to STOPPED
   // is supposed to contain the final message.
   //
-  // Next states: TRACKING
+  // Next states: TRACKING, RUNNING
   STOPPED,
 
   // Autofill assistant is waiting for the user to browse the website until one

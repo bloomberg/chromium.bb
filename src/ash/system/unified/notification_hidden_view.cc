@@ -8,12 +8,11 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/default_color_constants.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/rounded_label_button.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/lock_screen/lock_screen_controller.h"
 #include "ui/message_center/message_center.h"
@@ -38,8 +37,7 @@ void ShowLockScreenNotificationSettings() {
 NotificationHiddenView::NotificationHiddenView() {
   auto* label = new views::Label;
   label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextPrimary,
-      AshColorProvider::AshColorMode::kDark));
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
   label->SetAutoColorReadabilityEnabled(false);
   label->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_UNIFIED));
@@ -50,9 +48,9 @@ NotificationHiddenView::NotificationHiddenView() {
   auto* container = new views::View;
   container->SetBackground(views::CreateBackgroundFromPainter(
       views::Painter::CreateSolidRoundRectPainter(
-          AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-              AshColorProvider::ControlsLayerType::kInactiveControlBackground,
-              kUnifiedMenuButtonColor),
+          AshColorProvider::Get()->GetControlsLayerColor(
+              AshColorProvider::ControlsLayerType::
+                  kControlBackgroundColorInactive),
           kUnifiedTrayCornerRadius)));
 
   auto* layout = container->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -65,7 +63,8 @@ NotificationHiddenView::NotificationHiddenView() {
   // prohibited by policy or flag.
   if (AshMessageCenterLockScreenController::IsAllowed()) {
     change_button_ = new RoundedLabelButton(
-        this,
+        base::BindRepeating(&NotificationHiddenView::ChangeButtonPressed,
+                            base::Unretained(this)),
         l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_CHANGE));
     change_button_->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_CHANGE_TOOLTIP));
@@ -79,8 +78,11 @@ NotificationHiddenView::NotificationHiddenView() {
   AddChildView(container);
 }
 
-void NotificationHiddenView::ButtonPressed(views::Button* sender,
-                                           const ui::Event& event) {
+const char* NotificationHiddenView::GetClassName() const {
+  return "NotificationHiddenView";
+}
+
+void NotificationHiddenView::ChangeButtonPressed() {
   // TODO(yoshiki): Refactor LockScreenController and remove the static cast.
   // TODO(yoshiki): Show the setting after unlocking.
   static_cast<message_center::MessageCenterImpl*>(
@@ -89,10 +91,6 @@ void NotificationHiddenView::ButtonPressed(views::Button* sender,
       ->DismissLockScreenThenExecute(
           base::BindOnce(&ShowLockScreenNotificationSettings),
           base::DoNothing(), IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_CHANGE_SETTING);
-}
-
-const char* NotificationHiddenView::GetClassName() const {
-  return "NotificationHiddenView";
 }
 
 }  // namespace ash

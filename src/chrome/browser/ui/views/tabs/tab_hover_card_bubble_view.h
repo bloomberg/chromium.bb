@@ -29,7 +29,8 @@ class Tab;
 class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
  public:
   explicit TabHoverCardBubbleView(Tab* tab);
-
+  TabHoverCardBubbleView(const TabHoverCardBubbleView&) = delete;
+  TabHoverCardBubbleView& operator=(const TabHoverCardBubbleView&) = delete;
   ~TabHoverCardBubbleView() override;
 
   // Updates card content and anchoring and shows the tab hover card.
@@ -93,8 +94,6 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
 
   void RecordTimeSinceLastSeenMetric(base::TimeDelta elapsed_time);
 
-  base::OneShotTimer delayed_show_timer_;
-
   // Fade animations interfere with browser tests so we disable them in tests.
   static bool disable_animations_for_testing_;
   std::unique_ptr<WidgetFadeAnimationDelegate> fade_animation_delegate_;
@@ -111,7 +110,6 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   // the mouse reenters within a given amount of time.
   base::TimeTicks last_mouse_exit_timestamp_;
 
-  views::Widget* widget_ = nullptr;
   views::Label* title_label_ = nullptr;
   FadeLabel* title_fade_label_ = nullptr;
   base::Optional<TabAlertState> alert_state_;
@@ -124,7 +122,9 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   size_t hover_cards_seen_count_ = 0;
   bool waiting_for_decompress_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleView);
+  const bool using_rounded_corners_;
+
+  base::OneShotTimer delayed_show_timer_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_HOVER_CARD_BUBBLE_VIEW_H_

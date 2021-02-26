@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/net/secure_dns_config.h"
+#include "chrome/browser/net/stub_resolver_config_reader.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -10,7 +13,8 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "net/dns/public/doh_provider_list.h"
+#include "net/dns/public/doh_provider_entry.h"
+#include "net/dns/public/secure_dns_mode.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -29,10 +33,9 @@ struct DohParameter {
 
 std::vector<DohParameter> GetDohServerTestCases() {
   std::vector<DohParameter> doh_test_cases;
-  const auto& doh_providers = net::GetDohProviderList();
-  for (const auto& doh_provider : doh_providers) {
-    doh_test_cases.emplace_back(doh_provider.provider,
-                                doh_provider.dns_over_https_template, true);
+  for (const auto* entry : net::DohProviderEntry::GetList()) {
+    doh_test_cases.emplace_back(entry->provider, entry->dns_over_https_template,
+                                true);
   }
   // Negative test-case
   doh_test_cases.emplace_back("NegativeTestExampleCom",
@@ -64,6 +67,13 @@ class DohBrowserTest : public InProcessBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_P(DohBrowserTest, MANUAL_ExternalDohServers) {
+  SecureDnsConfig secure_dns_config =
+      SystemNetworkContextManager::GetStubResolverConfigReader()
+          ->GetSecureDnsConfiguration(
+              false /* force_check_parental_controls_for_automatic_mode */);
+  // Ensure that DoH is enabled in secure mode
+  EXPECT_EQ(net::SecureDnsMode::kSecure, secure_dns_config.mode());
+
   content::TestNavigationObserver nav_observer(
       browser()->tab_strip_model()->GetActiveWebContents(), 1);
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), test_url_));

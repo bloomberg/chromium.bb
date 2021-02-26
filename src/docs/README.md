@@ -110,6 +110,7 @@ used when committed.
 *   [Code Reviews](code_reviews.md) - Code review requirements and guidelines
 *   [Respectful Code Reviews](cr_respect.md) - A guide for code reviewers
 *   [Respectful Changes](cl_respect.md) - A guide for code authors
+*   [Mandatory Code-Review Rollout](code_review_owners.md) - Upcoming policy changes related to code review and OWNERS
 *   [LUCI Migration FAQ](luci_migration_faq.md) - FAQ on Buildbot-to-LUCI
     builder migration for Chromium
 *   [Tour of Continuous Integration UI](tour_of_luci_ui.md) - A tour of our
@@ -153,9 +154,12 @@ used when committed.
     chrome:// URLs).
 *   [Watchlists](infra/watchlists.md) - Use watchlists to get notified of CLs
     you are interested in.
+*   [Shutdown](shutdown.md) - Explains the steps of Chrome shutdown, to make it
+    easier to determine where to add a new shutdown operation.
 
 ### Testing
 *   [Running and Debugging Web Tests](testing/web_tests.md)
+*   [On disabling tests](testing/disabling_tests.md)
 *   [Writing Web Tests](testing/writing_web_tests.md) - Web Tests using
     `content_shell`
 *   [Web Test Expectations and Baselines](testing/web_test_expectations.md) -
@@ -249,6 +253,11 @@ used when committed.
     on top of DirectX
 *   [Windows Split DLLs](windows_split_dll.md) - Splitting `chrome.dll` into
     multiple dlls to work around toolchain limitations on Windows.
+*   [Windows Native Window Occlusion Tracking](windows_native_window_occlusion_tracking.md)
+*   [Windows PWA Integration](windows_pwa_integration.md) - Integration with 
+    Progressive Web Apps on Windows
+*   [Windows Shortcut and Taskbar Handling](windows_shortcut_and_taskbar_handling.md)
+*   [Windows Virtual Desktop Integration](windows_virtual_desktop_handling.md)
 
 ### Misc Android-Specific Docs
 *   [Google Play Services in Chrome for Android](google_play_services.md)
@@ -345,6 +354,11 @@ used when committed.
 *   [Memory Benchmarks](memory-infra/memory_benchmarks.md)
 *   [Heap Profiling](memory-infra/heap_profiler.md)
 
+### Metrics
+*   [Histograms](/tools/metrics/histograms/README.md)
+*   [User Actions](/tools/metrics/actions/README.md)
+*   [Code review guidelines](/tools/metrics/histograms/review_guidelines.md)
+
 ### Misc
 *   [Useful URLs](useful_urls.md) - A collection of links to various tools and
     dashboards
@@ -382,10 +396,6 @@ used when committed.
 ### Speed
 *   [Chrome Speed](speed/README.md) - Documentation for performance measurements and regressions in Chrome.
 *   [Chrome Speed Metrics](speed_metrics/README.md) - Documentation about user experience metrics in the web and their JavaScript APIs.
-
-### WebXR
-*   [Running OpenVR Without Headset](xr/run_openvr_without_headset.md) -
-    Instructions for running OpenVR on Windows without a headset
 
 ### Probably Obsolete
 *   [TPM Quick Reference](tpm_quick_ref.md) - Trusted Platform Module notes.

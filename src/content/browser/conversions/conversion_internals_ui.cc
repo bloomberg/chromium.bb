@@ -5,7 +5,7 @@
 #include "content/browser/conversions/conversion_internals_ui.h"
 
 #include "content/browser/conversions/conversion_internals_handler_impl.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/grit/dev_ui_content_resources.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -13,6 +13,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace content {
 
@@ -31,6 +32,9 @@ ConversionInternalsUI::ConversionInternalsUI(WebUI* web_ui)
   source->AddResourcePath("conversion_internals.css",
                           IDR_CONVERSION_INTERNALS_CSS);
   source->SetDefaultResource(IDR_CONVERSION_INTERNALS_HTML);
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types cr-ui-tree-js-static;");
   WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(), source);
 }
 

@@ -6,7 +6,6 @@
 
 import {navigation, Page} from 'chrome://extensions/extensions.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {isChildVisible} from '../test_util.m.js';
@@ -88,6 +87,7 @@ extension_item_tests.TestNames = {
   EnableToggle: 'Enable toggle is disabled when necessary',
   RemoveButton: 'remove button hidden when necessary',
   HtmlInName: 'html in extension name',
+  RepairButton: 'Repair button visibility',
 };
 
 suite(extension_item_tests.suiteName, function() {
@@ -145,6 +145,12 @@ suite(extension_item_tests.suiteName, function() {
         flush();
         testVisible(item, '#dev-reload-button', false);
 
+        item.set('data.disableReasons.reloading', true);
+        flush();
+        testVisible(item, '#dev-reload-button', true);
+
+        item.set('data.disableReasons.reloading', false);
+        flush();
         item.set(
             'data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
         flush();
@@ -170,14 +176,14 @@ suite(extension_item_tests.suiteName, function() {
       currentPage = newPage;
     });
 
-    tap(item.$$('#detailsButton'));
+    item.$$('#detailsButton').click();
     expectDeepEquals(
         currentPage, {page: Page.DETAILS, extensionId: item.data.id});
 
     // Reset current page and test inspect-view navigation.
     navigation.navigateTo({page: Page.LIST});
     currentPage = null;
-    tap(item.$$('#inspect-views a[is="action-link"]:nth-of-type(2)'));
+    item.$$('#inspect-views a[is="action-link"]:nth-of-type(2)').click();
     expectDeepEquals(
         currentPage, {page: Page.DETAILS, extensionId: item.data.id});
 
@@ -232,7 +238,7 @@ suite(extension_item_tests.suiteName, function() {
           });
         };
 
-        tap(item.$$('#dev-reload-button'));
+        item.$$('#dev-reload-button').click();
         return proxyDelegate.whenCalled('reloadItem')
             .then(function(id) {
               expectEquals(item.data.id, id);
@@ -241,7 +247,7 @@ suite(extension_item_tests.suiteName, function() {
             .then(function() {
               proxyDelegate.resetResolver('reloadItem');
               proxyDelegate.setForceReloadItemError(true);
-              tap(item.$$('#dev-reload-button'));
+              item.$$('#dev-reload-button').click();
               return proxyDelegate.whenCalled('reloadItem');
             })
             .then(function(id) {
@@ -317,7 +323,7 @@ suite(extension_item_tests.suiteName, function() {
     expectEquals('extensions-icons:input', icon.icon);
 
     item.set('data.location', 'FROM_STORE');
-    item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
+    item.set('data.controlledInfo', {text: 'policy'});
     flush();
     expectTrue(isChildVisible(item, '#source-indicator'));
     expectEquals('extensions-icons:business', icon.icon);
@@ -375,7 +381,7 @@ suite(extension_item_tests.suiteName, function() {
 
   test(assert(extension_item_tests.TestNames.RemoveButton), function() {
     expectFalse(item.$['remove-button'].hidden);
-    item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
+    item.set('data.mustRemainInstalled', true);
     flush();
     expectTrue(item.$['remove-button'].hidden);
   });
@@ -388,5 +394,24 @@ suite(extension_item_tests.suiteName, function() {
     // "Related to $1" is IDS_MD_EXTENSIONS_EXTENSION_A11Y_ASSOCIATION.
     assertEquals(
         `Related to ${name}`, item.$.a11yAssociation.textContent.trim());
+  });
+
+  test(assert(extension_item_tests.TestNames.RepairButton), function() {
+    // For most extensions, the "repair" button should be displayed if the
+    // extension is detected as corrupted.
+    testVisible(item, '#repair-button', false);
+    item.set('data.disableReasons.corruptInstall', true);
+    flush();
+    testVisible(item, '#repair-button', true);
+    item.set('data.disableReasons.corruptInstall', false);
+    flush();
+    testVisible(item, '#repair-button', false);
+
+    // However, the user isn't allowed to initiate a repair for extensions they
+    // aren't allowed to modify, so the button shouldn't be visible.
+    item.set('data.userMayModify', false);
+    item.set('data.disableReasons.corruptInstall', true);
+    flush();
+    testVisible(item, '#repair-button', false);
   });
 });

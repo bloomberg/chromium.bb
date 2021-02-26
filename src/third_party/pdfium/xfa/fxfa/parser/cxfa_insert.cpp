@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_insert.h"
 
 #include "fxjs/xfa/cjx_textnode.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -28,6 +28,8 @@ CXFA_Insert::CXFA_Insert(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Insert,
                 {},
                 kInsertAttributeData,
-                pdfium::MakeUnique<CJX_TextNode>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_TextNode>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Insert::~CXFA_Insert() = default;

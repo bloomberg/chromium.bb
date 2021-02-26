@@ -31,14 +31,14 @@ Vector<uint8_t> BufferSourceToVector(
   if (application_server_key.IsArrayBuffer()) {
     input =
         static_cast<char*>(application_server_key.GetAsArrayBuffer()->Data());
-    length = application_server_key.GetAsArrayBuffer()->ByteLengthAsSizeT();
+    length = application_server_key.GetAsArrayBuffer()->ByteLength();
   } else if (application_server_key.IsArrayBufferView()) {
     input = static_cast<char*>(
         application_server_key.GetAsArrayBufferView().View()->buffer()->Data());
     length = application_server_key.GetAsArrayBufferView()
                  .View()
                  ->buffer()
-                 ->ByteLengthAsSizeT();
+                 ->ByteLength();
   } else if (application_server_key.IsString()) {
     if (!Base64UnpaddedURLDecode(application_server_key.GetAsString(),
                                  decoded_application_server_key)) {
@@ -103,7 +103,7 @@ PushSubscriptionOptions::PushSubscriptionOptions(
           application_server_key.data(),
           SafeCast<unsigned>(application_server_key.size()))) {}
 
-void PushSubscriptionOptions::Trace(Visitor* visitor) {
+void PushSubscriptionOptions::Trace(Visitor* visitor) const {
   visitor->Trace(application_server_key_);
   ScriptWrappable::Trace(visitor);
 }

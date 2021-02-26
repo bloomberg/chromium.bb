@@ -22,11 +22,11 @@
 #include "core/fxge/text_char_pos.h"
 #include "third_party/base/span.h"
 
-#ifndef _SKIA_SUPPORT_
+#if !defined(_SKIA_SUPPORT_)
 #include "core/fxge/agg/fx_agg_driver.h"
 #endif
 
-#ifndef _SKIA_SUPPORT_
+#if !defined(_SKIA_SUPPORT_)
 
 namespace {
 
@@ -85,6 +85,8 @@ bool CGDrawGlyphRun(CGContextRef pContext,
 
 }  // namespace
 
+namespace pdfium {
+
 void CFX_AggDeviceDriver::InitPlatform() {
   CQuartz2D& quartz2d =
       static_cast<CApplePlatform*>(CFX_GEModule::Get()->GetPlatform())
@@ -102,12 +104,14 @@ void CFX_AggDeviceDriver::DestroyPlatform() {
   }
 }
 
-bool CFX_AggDeviceDriver::DrawDeviceText(int nChars,
-                                         const TextCharPos* pCharPos,
-                                         CFX_Font* pFont,
-                                         const CFX_Matrix& mtObject2Device,
-                                         float font_size,
-                                         uint32_t argb) {
+bool CFX_AggDeviceDriver::DrawDeviceText(
+    int nChars,
+    const TextCharPos* pCharPos,
+    CFX_Font* pFont,
+    const CFX_Matrix& mtObject2Device,
+    float font_size,
+    uint32_t argb,
+    const CFX_TextRenderOptions& /*options*/) {
   if (!pFont)
     return false;
 
@@ -161,7 +165,9 @@ bool CFX_AggDeviceDriver::DrawDeviceText(int nChars,
   return ret;
 }
 
-#endif  // _SKIA_SUPPORT_
+}  // namespace pdfium
+
+#endif  // !defined(_SKIA_SUPPORT_)
 
 void CFX_GlyphCache::InitPlatform() {}
 
@@ -171,7 +177,7 @@ std::unique_ptr<CFX_GlyphBitmap> CFX_GlyphCache::RenderGlyph_Nativetext(
     const CFX_Font* pFont,
     uint32_t glyph_index,
     const CFX_Matrix& matrix,
-    uint32_t dest_width,
+    int dest_width,
     int anti_alias) {
   return nullptr;
 }

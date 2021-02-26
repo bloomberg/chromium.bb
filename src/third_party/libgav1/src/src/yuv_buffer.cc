@@ -51,11 +51,11 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
     return false;
   }
 
-  // Every row in the plane buffers needs to be 16-byte aligned. Since the
-  // strides are multiples of 16 bytes, it suffices to just make the plane
-  // buffers 16-byte aligned.
-  const int plane_align = 16;
-
+  // Every row in the plane buffers needs to be kFrameBufferRowAlignment-byte
+  // aligned. Since the strides are multiples of kFrameBufferRowAlignment bytes,
+  // it suffices to just make the plane buffers kFrameBufferRowAlignment-byte
+  // aligned.
+  const int plane_align = kFrameBufferRowAlignment;
   const int uv_width =
       is_monochrome ? 0 : SubsampledValue(width, subsampling_x);
   const int uv_height =
@@ -74,8 +74,8 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
     FrameBuffer frame_buffer;
     if (get_frame_buffer(callback_private_data, bitdepth, image_format, width,
                          height, left_border, right_border, top_border,
-                         bottom_border,
-                         /*stride_alignment=*/16, &frame_buffer) != kStatusOk) {
+                         bottom_border, kFrameBufferRowAlignment,
+                         &frame_buffer) != kStatusOk) {
       return false;
     }
 
@@ -98,23 +98,25 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
     assert(callback_private_data == nullptr);
     assert(buffer_private_data == nullptr);
 
-    // Calculate y_stride (in bytes). It is padded to a multiple of 16 bytes.
+    // Calculate y_stride (in bytes). It is padded to a multiple of
+    // kFrameBufferRowAlignment bytes.
     int y_stride = width + left_border + right_border;
 #if LIBGAV1_MAX_BITDEPTH >= 10
     if (bitdepth > 8) y_stride *= sizeof(uint16_t);
 #endif
-    y_stride = Align(y_stride, 16);
+    y_stride = Align(y_stride, kFrameBufferRowAlignment);
     // Size of the Y plane in bytes.
     const uint64_t y_plane_size = (height + top_border + bottom_border) *
                                       static_cast<uint64_t>(y_stride) +
                                   (plane_align - 1);
 
-    // Calculate uv_stride (in bytes). It is padded to a multiple of 16 bytes.
+    // Calculate uv_stride (in bytes). It is padded to a multiple of
+    // kFrameBufferRowAlignment bytes.
     int uv_stride = uv_width + uv_left_border + uv_right_border;
 #if LIBGAV1_MAX_BITDEPTH >= 10
     if (bitdepth > 8) uv_stride *= sizeof(uint16_t);
 #endif
-    uv_stride = Align(uv_stride, 16);
+    uv_stride = Align(uv_stride, kFrameBufferRowAlignment);
     // Size of the U or V plane in bytes.
     const uint64_t uv_plane_size =
         is_monochrome ? 0

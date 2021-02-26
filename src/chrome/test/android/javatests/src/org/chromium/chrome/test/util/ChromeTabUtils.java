@@ -17,8 +17,8 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -40,6 +40,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.url.GURL;
 
 import java.util.List;
 import java.util.Locale;
@@ -48,6 +49,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A utility class that contains methods generic to all Tabs tests.
@@ -118,8 +120,27 @@ public class ChromeTabUtils {
     }
 
     private static boolean loadComplete(Tab tab, String url) {
-        return !tab.isLoading() && (url == null || TextUtils.equals(tab.getUrlString(), url))
+        return !tab.isLoading()
+                && (url == null || TextUtils.equals(getUrlStringOnUiThread(tab), url))
                 && !tab.getWebContents().isLoadingToDifferentDocument();
+    }
+
+    public static String getTitleOnUiThread(Tab tab) {
+        AtomicReference<String> res = new AtomicReference<>();
+        TestThreadUtils.runOnUiThreadBlocking(() -> { res.set(tab.getTitle()); });
+        return res.get();
+    }
+
+    public static String getUrlStringOnUiThread(Tab tab) {
+        AtomicReference<String> res = new AtomicReference<>();
+        TestThreadUtils.runOnUiThreadBlocking(() -> { res.set(tab.getUrlString()); });
+        return res.get();
+    }
+
+    public static GURL getUrlOnUiThread(Tab tab) {
+        AtomicReference<GURL> res = new AtomicReference<>();
+        TestThreadUtils.runOnUiThreadBlocking(() -> { res.set(tab.getUrl()); });
+        return res.get();
     }
 
     /**

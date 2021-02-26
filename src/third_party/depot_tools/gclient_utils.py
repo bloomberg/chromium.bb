@@ -10,6 +10,7 @@ import codecs
 import collections
 import contextlib
 import datetime
+import errno
 import functools
 import io
 import logging
@@ -49,7 +50,7 @@ _WARNINGS = []
 # These repos are known to cause OOM errors on 32-bit platforms, due the the
 # very large objects they contain.  It is not safe to use threaded index-pack
 # when cloning/fetching them.
-THREADED_INDEX_PACK_BLACKLIST = [
+THREADED_INDEX_PACK_BLOCKLIST = [
   'https://chromium.googlesource.com/chromium/reference_builds/chrome_win.git'
 ]
 
@@ -425,7 +426,6 @@ class Annotated(Wrapper):
     # Continue lockless.
     obj[0] += out
     while True:
-      # TODO(agable): find both of these with a single pass.
       cr_loc = obj[0].find(b'\r')
       lf_loc = obj[0].find(b'\n')
       if cr_loc == lf_loc == -1:
@@ -586,9 +586,20 @@ def CheckCallAndFilter(args, print_stdout=False, filter_fn=None,
   sleep_interval = RETRY_INITIAL_SLEEP
   run_cwd = kwargs.get('cwd', os.getcwd())
   for attempt in range(RETRY_MAX + 1):
+    # If our stdout is a terminal, then pass in a psuedo-tty pipe to our
+    # subprocess when filtering its output. This makes the subproc believe
+    # it was launched from a terminal, which will preserve ANSI color codes.
+    os_type = GetMacWinAixOrLinux()
+    if sys.stdout.isatty() and os_type != 'win' and os_type != 'aix':
+      pipe_reader, pipe_writer = os.openpty()
+    else:
+      pipe_reader, pipe_writer = os.pipe()
+
     kid = subprocess2.Popen(
-        args, bufsize=0, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT,
+        args, bufsize=0, stdout=pipe_writer, stderr=subprocess2.STDOUT,
         **kwargs)
+    # Close the write end of the pipe once we hand it off to the child proc.
+    os.close(pipe_writer)
 
     GClientChildren.add(kid)
 
@@ -609,7 +620,14 @@ def CheckCallAndFilter(args, print_stdout=False, filter_fn=None,
     try:
       line_start = None
       while True:
-        in_byte = kid.stdout.read(1)
+        try:
+          in_byte = os.read(pipe_reader, 1)
+        except (IOError, OSError) as e:
+          if e.errno == errno.EIO:
+            # An errno.EIO means EOF?
+            in_byte = None
+          else:
+            raise e
         is_newline = in_byte in (b'\n', b'\r')
         if not in_byte:
           break
@@ -630,8 +648,8 @@ def CheckCallAndFilter(args, print_stdout=False, filter_fn=None,
       if line_start is not None:
         filter_line(command_output, line_start)
 
+      os.close(pipe_reader)
       rv = kid.wait()
-      kid.stdout.close()
 
       # Don't put this in a 'finally,' since the child may still run if we get
       # an exception.
@@ -720,7 +738,7 @@ def FindFileUpwards(filename, path=None):
     path = new_path
 
 
-def GetMacWinOrLinux():
+def GetMacWinAixOrLinux():
   """Returns 'mac', 'win', or 'linux', matching the current platform."""
   if sys.platform.startswith(('cygwin', 'win')):
     return 'win'
@@ -728,6 +746,8 @@ def GetMacWinOrLinux():
     return 'linux'
   elif sys.platform == 'darwin':
     return 'mac'
+  elif sys.platform.startswith('aix'):
+    return 'aix'
   raise Error('Unknown platform: ' + sys.platform)
 
 
@@ -1194,7 +1214,7 @@ def DefaultIndexPackConfig(url=''):
   performance."""
   cache_limit = DefaultDeltaBaseCacheLimit()
   result = ['-c', 'core.deltaBaseCacheLimit=%s' % cache_limit]
-  if url in THREADED_INDEX_PACK_BLACKLIST:
+  if url in THREADED_INDEX_PACK_BLOCKLIST:
     result.extend(['-c', 'pack.threads=1'])
   return result
 

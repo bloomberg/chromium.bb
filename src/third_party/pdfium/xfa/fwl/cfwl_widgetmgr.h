@@ -9,19 +9,24 @@
 
 #include <map>
 #include <memory>
-#include <vector>
 
 #include "core/fxcrt/fx_system.h"
-#include "xfa/fxgraphics/cxfa_graphics.h"
+#include "fxjs/gc/gced_tree_node.h"
+#include "fxjs/gc/heap.h"
+#include "v8/include/cppgc/garbage-collected.h"
+#include "v8/include/cppgc/member.h"
+#include "v8/include/cppgc/visitor.h"
+#include "xfa/fgas/graphics/cfgas_gegraphics.h"
 
+class CFGAS_GEGraphics;
+class CFWL_App;
 class CFWL_Message;
-class CXFA_Graphics;
-class CFX_Matrix;
 class CFWL_Widget;
+class CFX_Matrix;
 
-class CFWL_WidgetMgr {
+class CFWL_WidgetMgr final : public cppgc::GarbageCollected<CFWL_WidgetMgr> {
  public:
-  class AdapterIface {
+  class AdapterIface : public cppgc::GarbageCollectedMixin {
    public:
     virtual ~AdapterIface() {}
     virtual void RepaintWidget(CFWL_Widget* pWidget) = 0;
@@ -32,35 +37,29 @@ class CFWL_WidgetMgr {
                              CFX_RectF* pPopupRect) = 0;
   };
 
-  explicit CFWL_WidgetMgr(AdapterIface* pAdapterNative);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CFWL_WidgetMgr();
 
-  static CFWL_Widget* NextTab(CFWL_Widget* parent, CFWL_Widget* focus);
+  void Trace(cppgc::Visitor* visitor) const;
 
-  void OnProcessMessageToForm(std::unique_ptr<CFWL_Message> pMessage);
+  void OnProcessMessageToForm(CFWL_Message* pMessage);
   void OnDrawWidget(CFWL_Widget* pWidget,
-                    CXFA_Graphics* pGraphics,
+                    CFGAS_GEGraphics* pGraphics,
                     const CFX_Matrix& matrix);
 
   CFWL_Widget* GetParentWidget(const CFWL_Widget* pWidget) const;
-  CFWL_Widget* GetOwnerWidget(const CFWL_Widget* pWidget) const;
   CFWL_Widget* GetNextSiblingWidget(CFWL_Widget* pWidget) const;
   CFWL_Widget* GetFirstChildWidget(CFWL_Widget* pWidget) const;
-  CFWL_Widget* GetSystemFormWidget(CFWL_Widget* pWidget) const;
 
   void RepaintWidget(CFWL_Widget* pWidget, const CFX_RectF& pRect);
 
   void InsertWidget(CFWL_Widget* pParent, CFWL_Widget* pChild);
   void RemoveWidget(CFWL_Widget* pWidget);
-  void SetOwner(CFWL_Widget* pOwner, CFWL_Widget* pOwned);
-  void SetParent(CFWL_Widget* pParent, CFWL_Widget* pChild);
 
   CFWL_Widget* GetWidgetAtPoint(CFWL_Widget* pParent,
                                 const CFX_PointF& point) const;
 
   CFWL_Widget* GetDefaultButton(CFWL_Widget* pParent) const;
-  void AddRedrawCounts(CFWL_Widget* pWidget);
-
   void GetAdapterPopupPos(CFWL_Widget* pWidget,
                           float fMinHeight,
                           float fMaxHeight,
@@ -68,38 +67,37 @@ class CFWL_WidgetMgr {
                           CFX_RectF* pPopupRect) const;
 
  private:
-  class Item {
+  class Item final : public GCedTreeNode<Item> {
    public:
-    Item();
-    explicit Item(CFWL_Widget* widget);
-    ~Item();
+    CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
+    ~Item() final;
 
-    Item* pParent;
-    Item* pOwner;
-    Item* pChild;
-    Item* pPrevious;
-    Item* pNext;
-    CFWL_Widget* const pWidget;
-    std::unique_ptr<CXFA_Graphics> pOffscreen;
-    int32_t iRedrawCounter;
+    // GcedTreeNode:
+    void Trace(cppgc::Visitor* visitor) const override;
+
+    cppgc::Member<CFWL_Widget> const pWidget;
+
+   private:
+    explicit Item(CFWL_Widget* widget);
   };
 
-  CFWL_Widget* GetFirstSiblingWidget(CFWL_Widget* pWidget) const;
+  CFWL_WidgetMgr(AdapterIface* pAdapter, CFWL_App* pApp);
+
   CFWL_Widget* GetPriorSiblingWidget(CFWL_Widget* pWidget) const;
   CFWL_Widget* GetLastChildWidget(CFWL_Widget* pWidget) const;
+
+  Item* GetWidgetMgrRootItem() const;
   Item* GetWidgetMgrItem(const CFWL_Widget* pWidget) const;
+  Item* CreateWidgetMgrItem(CFWL_Widget* pWidget);
 
-  void AppendWidget(CFWL_Widget* pWidget);
-  void ResetRedrawCounts(CFWL_Widget* pWidget);
-  void DrawChild(CFWL_Widget* pParent,
-                 const CFX_RectF& rtClip,
-                 CXFA_Graphics* pGraphics,
-                 const CFX_Matrix* pMatrix);
+  void DrawChildren(CFWL_Widget* pParent,
+                    const CFX_RectF& rtClip,
+                    CFGAS_GEGraphics* pGraphics,
+                    const CFX_Matrix* pMatrix);
 
-  bool IsAbleNative(CFWL_Widget* pWidget) const;
-
-  std::map<const CFWL_Widget*, std::unique_ptr<Item>> m_mapWidgetItem;
-  UnownedPtr<AdapterIface> const m_pAdapter;
+  cppgc::Member<AdapterIface> const m_pAdapter;
+  cppgc::Member<CFWL_App> const m_pApp;
+  std::map<const CFWL_Widget*, cppgc::Member<Item>> m_mapWidgetItem;
 };
 
 #endif  // XFA_FWL_CFWL_WIDGETMGR_H_

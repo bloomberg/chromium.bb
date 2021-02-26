@@ -103,8 +103,8 @@ _BLACK_LIST_TEST_NAMES = [
     'memory.long_running_idle_gmail_background_tbmv2',
     'tab_switching.typical_25',
     'UNSCHEDULED_oortonline_tbmv2',
+    'UNSCHEDULED_tab_search',  # crbug.com/1146335
     'webrtc',  # crbug.com/932036
-    'speedometer2-future',  # Flaky on mac, crbug.com/1003776
     'v8.runtime_stats.top_25'  # Fails in Windows, crbug.com/1043048
 ]
 

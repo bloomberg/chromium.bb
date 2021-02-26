@@ -4,14 +4,13 @@
 
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 
+#include <string>
 #include <utility>
 
 #include "ash/public/cpp/default_scale_factor_retriever.h"
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
-#include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_service.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
@@ -42,6 +41,7 @@
 #include "chrome/browser/chromeos/arc/screen_capture/arc_screen_capture_bridge.h"
 #include "chrome/browser/chromeos/arc/session/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/sharesheet/arc_sharesheet_bridge.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_bridge.h"
 #include "chrome/browser/chromeos/arc/tts/arc_tts_service.h"
@@ -71,9 +71,12 @@
 #include "components/arc/midis/arc_midis_bridge.h"
 #include "components/arc/net/arc_net_host_impl.h"
 #include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
+#include "components/arc/pay/arc_digital_goods_bridge.h"
+#include "components/arc/pay/arc_payment_app_bridge.h"
 #include "components/arc/power/arc_power_bridge.h"
 #include "components/arc/property/arc_property_bridge.h"
 #include "components/arc/rotation_lock/arc_rotation_lock_bridge.h"
+#include "components/arc/sensor/arc_sensor_bridge.h"
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
@@ -87,12 +90,22 @@
 namespace arc {
 namespace {
 
-// The file that specifies if the environment is ARCVM or ARC. It contains 1 in
-// ARCVM and 0 in ARC.
-constexpr base::FilePath::CharType kIsArcVm[] = "/run/chrome/is_arcvm";
-
 // ChromeBrowserMainPartsChromeos owns.
 ArcServiceLauncher* g_arc_service_launcher = nullptr;
+
+std::unique_ptr<ArcSessionManager> CreateArcSessionManager(
+    ArcBridgeService* arc_bridge_service,
+    ash::DefaultScaleFactorRetriever* retriever,
+    version_info::Channel channel,
+    chromeos::SchedulerConfigurationManagerBase*
+        scheduler_configuration_manager) {
+  auto delegate = std::make_unique<AdbSideloadingAvailabilityDelegateImpl>();
+  auto runner = std::make_unique<ArcSessionRunner>(base::BindRepeating(
+      ArcSession::Create, arc_bridge_service, retriever, channel,
+      scheduler_configuration_manager, delegate.get()));
+  return std::make_unique<ArcSessionManager>(std::move(runner),
+                                             std::move(delegate));
+}
 
 }  // namespace
 
@@ -100,24 +113,14 @@ ArcServiceLauncher::ArcServiceLauncher(
     chromeos::SchedulerConfigurationManagerBase*
         scheduler_configuration_manager)
     : arc_service_manager_(std::make_unique<ArcServiceManager>()),
-      arc_session_manager_(std::make_unique<ArcSessionManager>(
-          std::make_unique<ArcSessionRunner>(
-              base::BindRepeating(ArcSession::Create,
-                                  arc_service_manager_->arc_bridge_service(),
+      arc_session_manager_(
+          CreateArcSessionManager(arc_service_manager_->arc_bridge_service(),
                                   &default_scale_factor_retriever_,
                                   chrome::GetChannel(),
-                                  scheduler_configuration_manager)))),
+                                  scheduler_configuration_manager)),
       scheduler_configuration_manager_(scheduler_configuration_manager) {
   DCHECK(g_arc_service_launcher == nullptr);
   g_arc_service_launcher = this;
-
-  // Write kIsArcVm file to be 1 or 0.
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce([](const base::FilePath& filename, const char* data,
-                        int size) { base::WriteFile(filename, data, size); },
-                     base::FilePath(kIsArcVm),
-                     arc::IsArcVmEnabled() ? "1" : "0", 1));
 }
 
 ArcServiceLauncher::~ArcServiceLauncher() {
@@ -134,7 +137,7 @@ void ArcServiceLauncher::Initialize(
     mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
         display_config) {
   default_scale_factor_retriever_.Start(std::move(display_config));
-  arc_session_manager_->ExpandPropertyFiles();
+  arc_session_manager_->ExpandPropertyFilesAndReadSalt();
 }
 
 void ArcServiceLauncher::MaybeSetProfile(Profile* profile) {
@@ -185,6 +188,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcCertStoreBridge::GetForBrowserContext(profile);
   ArcClipboardBridge::GetForBrowserContext(profile);
   ArcCrashCollectorBridge::GetForBrowserContext(profile);
+  ArcDigitalGoodsBridge::GetForBrowserContext(profile);
   ArcDiskQuotaBridge::GetForBrowserContext(profile);
   ArcEnterpriseReportingService::GetForBrowserContext(profile);
   ArcFileSystemBridge::GetForBrowserContext(profile);
@@ -207,6 +211,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcNetHostImpl::GetForBrowserContext(profile)->SetPrefService(
       profile->GetPrefs());
   ArcOemCryptoBridge::GetForBrowserContext(profile);
+  ArcPaymentAppBridge::GetForBrowserContext(profile);
   ArcPipBridge::GetForBrowserContext(profile);
   ArcPolicyBridge::GetForBrowserContext(profile);
   ArcPowerBridge::GetForBrowserContext(profile)->SetUserIdHash(
@@ -217,7 +222,9 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcProvisionNotificationService::GetForBrowserContext(profile);
   ArcRotationLockBridge::GetForBrowserContext(profile);
   ArcScreenCaptureBridge::GetForBrowserContext(profile);
+  ArcSensorBridge::GetForBrowserContext(profile);
   ArcSettingsService::GetForBrowserContext(profile);
+  ArcSharesheetBridge::GetForBrowserContext(profile);
   ArcSmartCardManagerBridge::GetForBrowserContext(profile);
   ArcTimerBridge::GetForBrowserContext(profile);
   ArcTracingBridge::GetForBrowserContext(profile);
@@ -261,11 +268,10 @@ void ArcServiceLauncher::ResetForTesting() {
   // No recreation of arc_service_manager. Pointers to its ArcBridgeService
   // may be referred from existing KeyedService, so destoying it would cause
   // unexpected behavior, specifically on test teardown.
-  arc_session_manager_ = std::make_unique<ArcSessionManager>(
-      std::make_unique<ArcSessionRunner>(base::BindRepeating(
-          ArcSession::Create, arc_service_manager_->arc_bridge_service(),
-          &default_scale_factor_retriever_, chrome::GetChannel(),
-          scheduler_configuration_manager_)));
+  arc_session_manager_ = CreateArcSessionManager(
+      arc_service_manager_->arc_bridge_service(),
+      &default_scale_factor_retriever_, chrome::GetChannel(),
+      scheduler_configuration_manager_);
 }
 
 }  // namespace arc

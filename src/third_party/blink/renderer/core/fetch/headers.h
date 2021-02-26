@@ -59,8 +59,11 @@ class CORE_EXPORT Headers final : public ScriptWrappable,
   void FillWith(const Headers*, ExceptionState&);
   void FillWith(const HeadersInit&, ExceptionState&);
 
+  // https://fetch.spec.whatwg.org/#concept-headers-remove-privileged-no-cors-request-headers
+  void RemovePrivilegedNoCorsRequestHeaders();
+
   FetchHeaderList* HeaderList() const { return header_list_; }
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // These methods should only be called when size() would return 0.

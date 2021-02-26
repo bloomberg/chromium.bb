@@ -6,9 +6,11 @@
 #define COMPONENTS_POLICY_CORE_BROWSER_CONFIGURATION_POLICY_HANDLER_LIST_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "components/policy/core/browser/policy_conversions_client.h"
 #include "components/policy/core/common/policy_details.h"
@@ -20,6 +22,7 @@ class PrefValueMap;
 namespace policy {
 
 class ConfigurationPolicyHandler;
+struct PolicyDetails;
 class PolicyErrorMap;
 struct PolicyHandlerParameters;
 class Schema;
@@ -34,7 +37,8 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
 
   explicit ConfigurationPolicyHandlerList(
       const PopulatePolicyHandlerParametersCallback& parameters_callback,
-      const GetChromePolicyDetailsCallback& details_callback);
+      const GetChromePolicyDetailsCallback& details_callback,
+      bool allow_future_policies);
   ~ConfigurationPolicyHandlerList();
 
   // Adds a policy handler to the list.
@@ -42,23 +46,41 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
 
   // Translates |policies| to their corresponding preferences in |prefs|. Any
   // errors found while processing the policies are stored in |errors|.
-  // All deprecated policies will be stored into |deprecated_policies|. |prefs|,
-  // |deprecated_policies| or |errors| can be nullptr, and won't be filled in
-  // that case.
+  // All deprecated policies will be stored into |deprecated_policies|.
+  // All non-applying unreleased policies will be stored into |future_policies|.
+  // |prefs|, |deprecated_policies|, |future_policies| or |errors| can be
+  // nullptr, and won't be filled in that case.
   void ApplyPolicySettings(const PolicyMap& policies,
                            PrefValueMap* prefs,
                            PolicyErrorMap* errors,
-                           DeprecatedPoliciesSet* deprecated_policies) const;
+                           PoliciesSet* deprecated_policies,
+                           PoliciesSet* future_policies) const;
 
   // Converts sensitive policy values to others more appropriate for displaying.
   void PrepareForDisplaying(PolicyMap* policies) const;
 
  private:
-  bool IsPlatformDevicePolicy(const PolicyMap::const_iterator iter) const;
+  // Returns true if the policy |iter| shouldn't be passed to the |handlers_|.
+  // On Stable and Beta channel, future policies that are not in the
+  // |enabled_future_policies| will be filtered out and put into the
+  // |future_policies|.
+  bool FilterOutUnsupportedPolicies(
+      const base::flat_set<std::string>& enabled_future_policies,
+      PoliciesSet* future_policies,
+      const PolicyMap::const_iterator iter) const;
+
+  bool IsPlatformDevicePolicy(const PolicyDetails& policy_details,
+                              const PolicyMap::const_iterator iter) const;
+  bool IsFuturePolicy(
+      const base::flat_set<std::string>& enabled_future_policies,
+      const PolicyDetails& policy_details,
+      const PolicyMap::const_iterator iter) const;
 
   std::vector<std::unique_ptr<ConfigurationPolicyHandler>> handlers_;
   const PopulatePolicyHandlerParametersCallback parameters_callback_;
   const GetChromePolicyDetailsCallback details_callback_;
+
+  bool allow_future_policies_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyHandlerList);
 };

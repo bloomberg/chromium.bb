@@ -10,11 +10,11 @@ import * as UI from '../ui/ui.js';
  */
 export class AddSourceMapURLDialog extends UI.Widget.HBox {
   /**
-   * @param {function(string)} callback
+   * @param {function(string):void} callback
    */
   constructor(callback) {
     super(/* isWebComponent */ true);
-    this.registerRequiredCSS('sources/dialog.css');
+    this.registerRequiredCSS('sources/dialog.css', {enableLegacyPatching: true});
     this.contentElement.createChild('label').textContent = Common.UIString.UIString('Source map URL: ');
 
     this._input = UI.UIUtils.createInput('add-source-map', 'text');
@@ -28,13 +28,7 @@ export class AddSourceMapURLDialog extends UI.Widget.HBox {
     this._dialog.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
     this._dialog.setDefaultFocusedElement(this._input);
 
-    /**
-     * @this {AddSourceMapURLDialog}
-     */
-    this._done = function(value) {
-      this._dialog.hide();
-      callback(value);
-    };
+    this._callback = callback;
   }
 
   /**
@@ -42,7 +36,19 @@ export class AddSourceMapURLDialog extends UI.Widget.HBox {
    */
   show() {
     super.show(this._dialog.contentElement);
+    // UI.Dialog extends GlassPane and overrides the `show` method with a wider
+    // accepted type. However, TypeScript uses the supertype declaration to
+    // determine the full type, which requires a `!Document`.
+    // @ts-ignore
     this._dialog.show();
+  }
+
+  /**
+   * @param {string} value
+   */
+  _done(value) {
+    this._dialog.hide();
+    this._callback(value);
   }
 
   _apply() {

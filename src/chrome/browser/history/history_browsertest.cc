@@ -11,10 +11,11 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -117,6 +118,12 @@ class HistoryBrowserTest : public InProcessBrowserTest {
     return query_url_result;
   }
 
+  void NavigateToUrlAsTypeLink(const GURL& url) {
+    NavigateParams params(browser(), url,
+                          ui::PageTransition::PAGE_TRANSITION_LINK);
+    ui_test_utils::NavigateToURL(&params);
+  }
+
  private:
   // Callback for HistoryService::QueryURL.
   void SaveResultAndQuit(bool* success_out,
@@ -203,6 +210,87 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryEnabledThenDisabled) {
     std::vector<GURL> urls(GetHistoryContents());
     ASSERT_EQ(1U, urls.size());
     EXPECT_EQ(GetTestUrl().spec(), urls[0].spec());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SetHideAllNavigations) {
+  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
+      browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS));
+  ExpectEmptyHistory();
+
+  HistoryTabHelper::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents())
+      ->set_hide_all_navigations(true);
+  NavigateToUrlAsTypeLink(GetTestUrl());
+  WaitForHistoryBackendToRun(GetProfile());
+
+  {
+    auto result = QueryURL(GetTestUrl());
+    ASSERT_TRUE(result.success);
+    EXPECT_TRUE(result.row.hidden());
+    EXPECT_EQ(0, result.row.typed_count());
+    EXPECT_EQ(1, result.row.visit_count());
+    ASSERT_EQ(1u, result.visits.size());
+    EXPECT_FALSE(result.visits[0].incremented_omnibox_typed_score);
+  }
+
+  GURL url2 = ui_test_utils::GetTestUrl(
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("simple.html")));
+  NavigateToUrlAsTypeLink(url2);
+  WaitForHistoryBackendToRun(GetProfile());
+
+  {
+    auto result = QueryURL(url2);
+    ASSERT_TRUE(result.success);
+    EXPECT_TRUE(result.row.hidden());
+    EXPECT_EQ(0, result.row.typed_count());
+    EXPECT_EQ(1, result.row.visit_count());
+    ASSERT_EQ(1u, result.visits.size());
+    EXPECT_FALSE(result.visits[0].incremented_omnibox_typed_score);
+  }
+
+  HistoryTabHelper::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents())
+      ->set_hide_all_navigations(false);
+  NavigateToUrlAsTypeLink(GetTestUrl());
+  WaitForHistoryBackendToRun(GetProfile());
+
+  {
+    auto result = QueryURL(GetTestUrl());
+    ASSERT_TRUE(result.success);
+    EXPECT_FALSE(result.row.hidden());
+    EXPECT_EQ(2, result.row.visit_count());
+    ASSERT_EQ(2u, result.visits.size());
+    EXPECT_FALSE(result.visits[0].incremented_omnibox_typed_score);
+    EXPECT_FALSE(result.visits[1].incremented_omnibox_typed_score);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest,
+                       SetHideAllNavigationsDoesntAddApi3ForTypedNavigation) {
+  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
+      browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS));
+  ExpectEmptyHistory();
+
+  HistoryTabHelper::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents())
+      ->set_hide_all_navigations(true);
+  // This navigates with a TYPED navigation.
+  ui_test_utils::NavigateToURL(browser(), GetTestUrl());
+  WaitForHistoryBackendToRun(GetProfile());
+
+  {
+    auto result = QueryURL(GetTestUrl());
+    ASSERT_TRUE(result.success);
+    EXPECT_FALSE(result.row.hidden());
+    EXPECT_EQ(1, result.row.typed_count());
+    EXPECT_EQ(1, result.row.visit_count());
+    ASSERT_EQ(1u, result.visits.size());
+    EXPECT_TRUE(result.visits[0].incremented_omnibox_typed_score);
+    // As the transition was TYPED, set_hide_all_navigations() was ignored and
+    // PAGE_TRANSITION_FROM_API_3 should not be added.
+    EXPECT_TRUE((ui::PageTransitionGetQualifier(result.visits[0].transition) &
+                 ui::PAGE_TRANSITION_FROM_API_3) == 0);
   }
 }
 
@@ -513,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, Subframe) {
   ui_test_utils::NavigateToURL(browser(), main_page);
   rfh_grabber.Wait();
   content::RenderFrameHost* frame = rfh_grabber.render_frame_host();
-  ASSERT_TRUE(!!frame);
+  ASSERT_TRUE(frame);
   ASSERT_TRUE(HistoryContainsURL(main_page));
   ASSERT_FALSE(HistoryContainsURL(initial_subframe));
 
@@ -524,6 +612,8 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, Subframe) {
   NavigateFrameToURL(frame, manual_subframe);
   ASSERT_TRUE(HistoryContainsURL(manual_subframe));
 
+  // After navigation, the current RenderFrameHost may change.
+  frame = rfh_grabber.render_frame_host();
   // Page-initiated location.replace subframe navigations should not show up in
   // history.
   std::string script = "location.replace('form.html')";
@@ -607,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, ReloadBringPageToTop) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   tab->GetController().Reload(content::ReloadType::NORMAL, false);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   urls = GetHistoryContents();
   ASSERT_EQ(2u, urls.size());
@@ -627,7 +717,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, BackForwardBringPageToTop) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   std::vector<GURL> urls(GetHistoryContents());
   ASSERT_EQ(2u, urls.size());
@@ -635,7 +725,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, BackForwardBringPageToTop) {
   ASSERT_EQ(url2, urls[1]);
 
   chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
   urls = GetHistoryContents();
   ASSERT_EQ(2u, urls.size());
   ASSERT_EQ(url2, urls[0]);
@@ -656,7 +746,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, PushStateSetsTitle) {
   // Do a pushState to create a new navigation entry and a new history entry.
   ASSERT_TRUE(content::ExecuteScript(web_contents,
                                      "history.pushState({},'','test.html')"));
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   // This should result in two history entries.
   std::vector<GURL> urls(GetHistoryContents());
@@ -711,7 +801,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, BeforeUnloadCommitDuringPending) {
   // After the pending navigation commits and the new title arrives, there
   // should be another row with the new URL and title.
   manager.WaitForNavigationFinished();
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   base::string16 title3 = web_contents->GetTitle();
   EXPECT_NE(title1, title3);
   {
@@ -784,4 +874,31 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, OneHistoryTabPerWindow) {
   content::WebContents* second_tab =
       browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_NE(history_url, second_tab->GetVisibleURL());
+}
+
+// Verifies history.replaceState() to the same url without a user gesture does
+// not log a visit.
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, ReplaceStateSamePageIsNotRecorded) {
+  // Use the default embedded_test_server() for this test because replaceState
+  // requires a real, non-file URL.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("foo.com", "/title3.html"));
+  NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
+  params.user_gesture = false;
+  ui_test_utils::NavigateToURL(&params);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Do a replaceState() to create a new navigation entry.
+  ASSERT_TRUE(content::ExecuteScript(web_contents,
+                                     "history.replaceState({foo: 'bar'},'')"));
+  content::WaitForLoadStop(web_contents);
+
+  // Because there was no user gesture and the url did not change, there should
+  // be a single url with a single visit.
+  std::vector<GURL> urls(GetHistoryContents());
+  ASSERT_EQ(1u, urls.size());
+  EXPECT_EQ(url, urls[0]);
+  history::QueryURLResult url_result = QueryURL(url);
+  EXPECT_EQ(1u, url_result.visits.size());
 }

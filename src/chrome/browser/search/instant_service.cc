@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/time/clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/ntp_icon_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -47,7 +47,10 @@
 #include "components/ntp_tiles/constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/search/ntp_features.h"
+#include "components/search/search_provider_observer.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -210,8 +213,9 @@ InstantService::InstantService(Profile* profile)
                               weak_ptr_factory_.GetWeakPtr()));
     }
 
-    // 9 tiles are required for the custom links feature in order to balance the
-    // Most Visited rows (this is due to an additional "Add" button).
+    // If custom links are enabled, an additional tile may be returned making up
+    // to ntp_tiles::kMaxNumCustomLinks custom links including the
+    // "Add shortcut" button.
     most_visited_sites_->SetMostVisitedURLsObserver(
         this, ntp_tiles::kMaxNumMostVisited);
     most_visited_sites_->EnableCustomLinks(IsCustomLinksEnabled());
@@ -285,19 +289,19 @@ void InstantService::OnNewTabPageOpened() {
 
 void InstantService::DeleteMostVisitedItem(const GURL& url) {
   if (most_visited_sites_) {
-    most_visited_sites_->AddOrRemoveBlacklistedUrl(url, true);
+    most_visited_sites_->AddOrRemoveBlockedUrl(url, true);
   }
 }
 
 void InstantService::UndoMostVisitedDeletion(const GURL& url) {
   if (most_visited_sites_) {
-    most_visited_sites_->AddOrRemoveBlacklistedUrl(url, false);
+    most_visited_sites_->AddOrRemoveBlockedUrl(url, false);
   }
 }
 
 void InstantService::UndoAllMostVisitedDeletions() {
   if (most_visited_sites_) {
-    most_visited_sites_->ClearBlacklistedUrls();
+    most_visited_sites_->ClearBlockedUrls();
   }
 }
 
@@ -413,15 +417,6 @@ void InstantService::UpdateBackgroundFromSync() {
 
 void InstantService::UpdateMostVisitedInfo() {
   NotifyAboutMostVisitedInfo();
-}
-
-void InstantService::SendNewTabPageURLToRenderer(
-    content::RenderProcessHost* rph) {
-  if (auto* channel = rph->GetChannel()) {
-    mojo::AssociatedRemote<search::mojom::SearchBouncer> client;
-    channel->GetRemoteAssociatedInterface(&client);
-    client->SetNewTabPageURL(search::GetNewTabPageURL(profile_));
-  }
 }
 
 void InstantService::ResetCustomBackgroundInfo() {
@@ -550,12 +545,6 @@ void InstantService::Observe(int type,
                              const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      content::RenderProcessHost* rph =
-          content::Source<content::RenderProcessHost>(source).ptr();
-      Profile* renderer_profile =
-          static_cast<Profile*>(rph->GetBrowserContext());
-      if (profile_ == renderer_profile)
-        SendNewTabPageURLToRenderer(rph);
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
@@ -962,7 +951,7 @@ void InstantService::RemoveLocalBackgroundImageCopy() {
       chrome::kChromeSearchLocalNtpBackgroundFilename);
   base::ThreadPool::PostTask(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-      base::BindOnce(IgnoreResult(&base::DeleteFile), path, false));
+      base::BindOnce(base::GetDeleteFileCallback(), path));
 }
 
 void InstantService::AddValidBackdropUrlForTesting(const GURL& url) const {

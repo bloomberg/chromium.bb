@@ -51,10 +51,6 @@ void FakeDemuxerStream::FakeRead(ReadCB read_cb) {
   std::move(read_cb).Run(kOk, buffer);
 }
 
-bool FakeDemuxerStream::IsReadPending() const {
-  return !pending_read_cb_.is_null();
-}
-
 AudioDecoderConfig FakeDemuxerStream::audio_decoder_config() {
   return audio_config_;
 }
@@ -101,13 +97,15 @@ void FakeDemuxerStream::CreateFakeFrame(size_t size,
 }
 
 FakeMediaResource::FakeMediaResource()
-    : demuxer_stream_(new FakeDemuxerStream(true)) {}
+    : audio_stream_(new FakeDemuxerStream(true)),
+      video_stream_(new FakeDemuxerStream(false)) {}
 
 FakeMediaResource::~FakeMediaResource() = default;
 
 std::vector<DemuxerStream*> FakeMediaResource::GetAllStreams() {
   std::vector<DemuxerStream*> streams;
-  streams.push_back(demuxer_stream_.get());
+  streams.push_back(audio_stream_.get());
+  streams.push_back(video_stream_.get());
   return streams;
 }
 

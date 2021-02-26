@@ -5,21 +5,19 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/common/view_messages.h"
-#include "content/common/widget_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -30,10 +28,12 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/mock_display_feature.h"
 #include "content/test/portal/portal_created_observer.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest, Screen) {
   // Load cross-site page into iframe.
   GURL cross_site_url(
       embedded_test_server()->GetURL("foo.com", "/title2.html"));
-  NavigateFrameToURL(root->child_at(0), cross_site_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), cross_site_url));
 
   int main_frame_screen_width =
       ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
@@ -160,48 +160,6 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest, Screen) {
   shell()->web_contents()->ForEachFrame(
       base::BindLambdaForTesting(check_screen_width));
 }
-
-class OutgoingVisualPropertiesIPCWatcher {
- public:
-  OutgoingVisualPropertiesIPCWatcher(
-      RenderProcessHostImpl* rph,
-      FrameTreeNode* root,
-      base::RepeatingCallback<void(const VisualProperties&)> callback)
-      : rph_(rph), root_(root), callback_(std::move(callback)) {
-    rph_->SetIpcSendWatcherForTesting(
-        base::BindRepeating(&OutgoingVisualPropertiesIPCWatcher::OnMessage,
-                            base::Unretained(this)));
-  }
-  ~OutgoingVisualPropertiesIPCWatcher() {
-    rph_->SetIpcSendWatcherForTesting(base::NullCallback());
-  }
-
- private:
-  bool IsMessageForFrameTreeWidget(int routing_id, FrameTreeNode* node) {
-    auto* render_widget_host =
-        node->current_frame_host()->GetRenderWidgetHost();
-    if (routing_id == render_widget_host->GetRoutingID())
-      return true;
-    for (size_t i = 0; i < node->child_count(); ++i) {
-      if (IsMessageForFrameTreeWidget(routing_id, node->child_at(i)))
-        return true;
-    }
-    return false;
-  }
-  void OnMessage(const IPC::Message& message) {
-    if (!IsMessageForFrameTreeWidget(message.routing_id(), root_))
-      return;
-    IPC_BEGIN_MESSAGE_MAP(OutgoingVisualPropertiesIPCWatcher, message)
-      IPC_MESSAGE_HANDLER(WidgetMsg_UpdateVisualProperties, ProcessMessage)
-    IPC_END_MESSAGE_MAP()
-  }
-
-  void ProcessMessage(const VisualProperties& props) { callback_.Run(props); }
-
-  RenderProcessHostImpl* const rph_;
-  FrameTreeNode* const root_;
-  base::RepeatingCallback<void(const VisualProperties&)> callback_;
-};
 
 // Auto-resize is only implemented for Ash and GuestViews. So we need to inject
 // an implementation that actually resizes the top level widget.
@@ -244,17 +202,16 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
 
   // Watch processes for a.com and c.com, as we will throw away b.com when we
   // navigate it below.
-  auto* root_rph = static_cast<RenderProcessHostImpl*>(
-      root->current_frame_host()->GetProcess());
-  auto* child_rph = static_cast<RenderProcessHostImpl*>(
-      root->child_at(1)->current_frame_host()->GetProcess());
-  ASSERT_NE(root_rph, child_rph);
+  auto* root_rwh = root->current_frame_host()->GetRenderWidgetHost();
+  auto* child_rwh =
+      root->child_at(1)->current_frame_host()->GetRenderWidgetHost();
+  ASSERT_NE(root_rwh->GetProcess(), child_rwh->GetProcess());
 
-  auto* nested_root_rph = static_cast<RenderProcessHostImpl*>(
-      nested_root->current_frame_host()->GetProcess());
-  auto* nested_child_rph = static_cast<RenderProcessHostImpl*>(
-      nested_root->child_at(1)->current_frame_host()->GetProcess());
-  ASSERT_NE(nested_root_rph, nested_child_rph);
+  auto* nested_root_rwh =
+      nested_root->current_frame_host()->GetRenderWidgetHost();
+  auto* nested_child_rwh =
+      nested_root->child_at(1)->current_frame_host()->GetRenderWidgetHost();
+  ASSERT_NE(nested_root_rwh->GetProcess(), nested_child_rwh->GetProcess());
 
   const gfx::Size initial_size = root_view->GetVisibleViewportSize();
   const gfx::Size nested_initial_size =
@@ -269,52 +226,36 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   // This property is not directly visible in the renderer, so we can only
   // check that the value is sent to the appropriate RenderWidget.
   {
-    base::RunLoop loop;
-
-    gfx::Size child_visible_viewport_size;
-    OutgoingVisualPropertiesIPCWatcher child_watcher(
-        child_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
-          child_visible_viewport_size = props.visible_viewport_size;
-
-          if (child_visible_viewport_size == initial_size)
-            loop.Quit();
-        }));
-
     GURL cross_site_url(
         embedded_test_server()->GetURL("c.com", "/title2.html"));
-    NavigateFrameToURL(root->child_at(0), cross_site_url);
+    EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), cross_site_url));
 
     // Wait to see the size sent to the child RenderWidget.
-    loop.Run();
-
-    // The child widget was also informed of the same size.
-    EXPECT_EQ(initial_size, child_visible_viewport_size);
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          child_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == initial_size)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
   // Same check as above but for a nested WebContents.
   {
-    base::RunLoop loop;
-
-    gfx::Size child_visible_viewport_size;
-    OutgoingVisualPropertiesIPCWatcher child_watcher(
-        nested_child_rph, nested_root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
-          child_visible_viewport_size = props.visible_viewport_size;
-
-          if (child_visible_viewport_size == nested_initial_size)
-            loop.Quit();
-        }));
-
     GURL cross_site_url(
         embedded_test_server()->GetURL("c.com", "/title2.html"));
-    NavigateFrameToURL(nested_root->child_at(0), cross_site_url);
+    EXPECT_TRUE(
+        NavigateToURLFromRenderer(nested_root->child_at(0), cross_site_url));
 
     // Wait to see the size sent to the child RenderWidget.
-    loop.Run();
-
-    // The child widget was also informed of the same size.
-    EXPECT_EQ(nested_initial_size, child_visible_viewport_size);
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          nested_child_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties &&
+          properties->visible_viewport_size == nested_initial_size)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
 // This part of the test does not work well on Android, for a few reasons:
@@ -330,36 +271,26 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   // Resize the top level widget to cause its |visible_viewport_size| to be
   // changed. The change should propagate down to the child RenderWidget.
   {
-    base::RunLoop loop;
-
     const gfx::Size resize_to(initial_size.width() - 10,
                               initial_size.height() - 10);
-
-    gfx::Size root_visible_viewport_size;
-    gfx::Size child_visible_viewport_size;
-    OutgoingVisualPropertiesIPCWatcher root_watcher(
-        root_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
-          root_visible_viewport_size = props.visible_viewport_size;
-        }));
-    OutgoingVisualPropertiesIPCWatcher child_watcher(
-        child_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
-          child_visible_viewport_size = props.visible_viewport_size;
-
-          if (child_visible_viewport_size == resize_to)
-            loop.Quit();
-        }));
 
     root_view->SetSize(resize_to);
 
     // Wait to see both RenderWidgets receive the message.
-    loop.Run();
-
-    // The top level widget was resized.
-    EXPECT_EQ(resize_to, root_visible_viewport_size);
-    // The child widget was also informed of the same size.
-    EXPECT_EQ(resize_to, child_visible_viewport_size);
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          root_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == resize_to)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          child_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == resize_to)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
   // Same check as above but resizing the nested WebContents' main frame
@@ -367,26 +298,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   // Resize the top level widget to cause its |visible_viewport_size| to be
   // changed. The change should propagate down to the child RenderWidget.
   {
-    base::RunLoop loop;
-
     const gfx::Size resize_to(nested_initial_size.width() - 10,
                               nested_initial_size.height() - 10);
-
-    gfx::Size root_visible_viewport_size;
-    gfx::Size child_visible_viewport_size;
-    OutgoingVisualPropertiesIPCWatcher root_watcher(
-        nested_root_rph, nested_root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
-          root_visible_viewport_size = props.visible_viewport_size;
-        }));
-    OutgoingVisualPropertiesIPCWatcher child_watcher(
-        nested_child_rph, nested_root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
-          child_visible_viewport_size = props.visible_viewport_size;
-
-          if (child_visible_viewport_size == resize_to)
-            loop.Quit();
-        }));
 
     EXPECT_TRUE(ExecJs(
         root->current_frame_host(),
@@ -395,12 +308,20 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
                   resize_to.width(), resize_to.height())));
 
     // Wait to see both RenderWidgets receive the message.
-    loop.Run();
-
-    // The top level widget was resized.
-    EXPECT_EQ(resize_to, root_visible_viewport_size);
-    // The child widget was also informed of the same size.
-    EXPECT_EQ(resize_to, child_visible_viewport_size);
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          nested_root_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == resize_to)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          nested_child_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == resize_to)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
   // Informs the top-level frame it can auto-resize. It will shrink down to its
@@ -415,25 +336,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   // This property is not directly visible in the renderer, so we can only
   // check that the value is sent to both RenderWidgets.
   {
-    base::RunLoop loop;
-
     const gfx::Size auto_resize_to(105, 100);
-
-    gfx::Size root_visible_viewport_size;
-    gfx::Size child_visible_viewport_size;
-    OutgoingVisualPropertiesIPCWatcher root_watcher(
-        root_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
-          root_visible_viewport_size = props.visible_viewport_size;
-        }));
-    OutgoingVisualPropertiesIPCWatcher child_watcher(
-        child_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
-          child_visible_viewport_size = props.visible_viewport_size;
-
-          if (child_visible_viewport_size == auto_resize_to)
-            loop.Quit();
-        }));
 
     // Replace the WebContentsDelegate so that we can use the auto-resize
     // changes to adjust the size of the top widget.
@@ -445,12 +348,20 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
 
     // Wait for the renderer side to resize itself and the RenderWidget
     // waterfall to pass the new |visible_viewport_size| down.
-    loop.Run();
-
-    // The top level widget was resized to match the auto-resized renderer.
-    EXPECT_EQ(auto_resize_to, root_visible_viewport_size);
-    // The child widget was also informed of the same size.
-    EXPECT_EQ(auto_resize_to, child_visible_viewport_size);
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          root_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == auto_resize_to)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          child_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == auto_resize_to)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
 
     shell()->web_contents()->SetDelegate(old_delegate);
   }
@@ -475,18 +386,19 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   // Load cross-site page into iframe.
   GURL cross_site_url(
       embedded_test_server()->GetURL("foo.com", "/title2.html"));
-  NavigateFrameToURL(root->child_at(0), cross_site_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), cross_site_url));
 
   auto* child_rwh_impl =
       root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
   // Hide the frame and make it visible again, to force it to record the
   // tab-switch time, which is generated from presentation-feedback.
   child_rwh_impl->WasHidden();
-  child_rwh_impl->WasShown(RecordContentToVisibleTimeRequest{
-      base::TimeTicks::Now(), /* destination_is_loaded */ true,
-      /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
+  child_rwh_impl->WasShown(blink::mojom::RecordContentToVisibleTimeRequest::New(
+      base::TimeTicks::Now(),
+      /* destination_is_loaded */ true,
+      /* show_reason_tab_switching */ true,
       /* show_reason_unoccluded */ false,
-      /* show_reason_bfcache_restore */ false});
+      /* show_reason_bfcache_restore */ false));
   // Force the child to submit a new frame.
   ASSERT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
                             "document.write('Force a new frame.');"));
@@ -519,7 +431,7 @@ class DisplayModeControllingWebContentsDelegate : public WebContentsDelegate {
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
                        VisualPropertiesPropagation_DisplayMode) {
   GURL main_url(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(a,b)"));
+      "a.com", "/cross_site_iframe_factory.html?a(b(a))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -531,14 +443,15 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
   RenderWidgetHostImpl* root_widget =
       root->current_frame_host()->GetRenderWidgetHost();
-  // In-process frame.
-  FrameTreeNode* ipchild = root->child_at(0);
-  RenderWidgetHostImpl* ipchild_widget =
-      ipchild->current_frame_host()->GetRenderWidgetHost();
   // Out-of-process frame.
-  FrameTreeNode* oopchild = root->child_at(1);
+  FrameTreeNode* oopchild = root->child_at(0);
   RenderWidgetHostImpl* oopchild_widget =
       oopchild->current_frame_host()->GetRenderWidgetHost();
+  // In-process frame.
+  FrameTreeNode* ipchild = oopchild->child_at(0);
+  RenderWidgetHostImpl* ipchild_widget =
+      ipchild->current_frame_host()->GetRenderWidgetHost();
+  EXPECT_NE(root_widget, ipchild_widget);
 
   // Check all frames for the initial value.
   EXPECT_EQ(
@@ -546,10 +459,10 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
       EvalJs(root, "window.matchMedia('(display-mode: browser)').matches"));
   EXPECT_EQ(
       true,
-      EvalJs(ipchild, "window.matchMedia('(display-mode: browser)').matches"));
+      EvalJs(oopchild, "window.matchMedia('(display-mode: browser)').matches"));
   EXPECT_EQ(
       true,
-      EvalJs(oopchild, "window.matchMedia('(display-mode: browser)').matches"));
+      EvalJs(ipchild, "window.matchMedia('(display-mode: browser)').matches"));
 
   // The display mode changes.
   display_mode_delegate.set_display_mode(
@@ -557,9 +470,11 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   // Each RenderWidgetHost would need to hear about that by having
   // SynchronizeVisualProperties() called. It's not clear what triggers that but
   // the place that changes the DisplayMode would be responsible.
-  root_widget->SynchronizeVisualProperties();
-  ipchild_widget->SynchronizeVisualProperties();
-  oopchild_widget->SynchronizeVisualProperties();
+  //
+  // We ignore the pending ack to ensure this IPC is sent immediately.
+  EXPECT_TRUE(root_widget->SynchronizeVisualPropertiesIgnoringPendingAck());
+  EXPECT_TRUE(oopchild_widget->SynchronizeVisualPropertiesIgnoringPendingAck());
+  EXPECT_TRUE(ipchild_widget->SynchronizeVisualPropertiesIgnoringPendingAck());
 
   // Check all frames for the changed value.
   EXPECT_EQ(
@@ -568,16 +483,16 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
           root, "", "window.matchMedia('(display-mode: standalone)').matches"));
   EXPECT_EQ(true,
             EvalJsAfterLifecycleUpdate(
-                ipchild, "",
+                oopchild, "",
                 "window.matchMedia('(display-mode: standalone)').matches"));
   EXPECT_EQ(true,
             EvalJsAfterLifecycleUpdate(
-                oopchild, "",
+                ipchild, "",
                 "window.matchMedia('(display-mode: standalone)').matches"));
 
   // Navigate a frame to b.com, which we already have a process for.
   GURL same_site_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
-  NavigateFrameToURL(root->child_at(0), same_site_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), same_site_url));
 
   // The navigated frame sees the correct (non-default) value.
   EXPECT_EQ(true,
@@ -586,12 +501,210 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
 
   // Navigate the frame to c.com, which we don't have a process for.
   GURL cross_site_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
-  NavigateFrameToURL(root->child_at(0), cross_site_url);
+  EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), cross_site_url));
 
   // The navigated frame sees the correct (non-default) value.
   EXPECT_EQ(true,
             EvalJs(root->child_at(0),
                    "window.matchMedia('(display-mode: standalone)').matches"));
+}
+
+// Validate that the root widget's window segments are correctly propagated
+// via the SynchronizeVisualProperties cascade.
+// Flaky on Mac, Linux and Android (http://crbug/1089994).
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_ANDROID)
+#define MAYBE_VisualPropertiesPropagation_RootWindowSegments \
+  DISABLED_VisualPropertiesPropagation_RootWindowSegments
+#else
+#define MAYBE_VisualPropertiesPropagation_RootWindowSegments \
+  VisualPropertiesPropagation_RootWindowSegments
+#endif
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
+                       MAYBE_VisualPropertiesPropagation_RootWindowSegments) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c),a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Main frame/root view.
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  RenderWidgetHostImpl* root_widget =
+      root->current_frame_host()->GetRenderWidgetHost();
+  RenderWidgetHostViewBase* root_view = root_widget->GetView();
+  // Out-of-process child frame.
+  FrameTreeNode* oopchild = root->child_at(0);
+  // Out-of-process descendant frame (child of the first oop-iframe).
+  FrameTreeNode* oopdescendant = oopchild->child_at(0);
+
+  const gfx::Size root_view_size = root_view->GetVisibleViewportSize();
+  const int kDisplayFeatureLength = 10;
+  DisplayFeature emulated_display_feature{
+      DisplayFeature::Orientation::kVertical,
+      /* offset */ root_view_size.width() / 2 - kDisplayFeatureLength / 2,
+      /* mask_length */ kDisplayFeatureLength};
+  std::vector<gfx::Rect> expected_segments;
+  expected_segments.emplace_back(0, 0, emulated_display_feature.offset,
+                                 root_view_size.height());
+  const int second_segment_offset =
+      emulated_display_feature.offset + emulated_display_feature.mask_length;
+  expected_segments.emplace_back(second_segment_offset, 0,
+                                 root_view_size.width() - second_segment_offset,
+                                 root_view_size.height());
+
+  base::Optional<blink::VisualProperties> properties =
+      oopchild->current_frame_host()
+          ->GetRenderWidgetHost()
+          ->GetLastVisualPropertiesSentToRendererForTesting();
+  EXPECT_TRUE(properties);
+  EXPECT_TRUE(properties->local_surface_id);
+  viz::LocalSurfaceId oopchild_initial_lsid =
+      properties->local_surface_id.value();
+
+  properties = oopdescendant->current_frame_host()
+                   ->GetRenderWidgetHost()
+                   ->GetLastVisualPropertiesSentToRendererForTesting();
+  EXPECT_TRUE(properties);
+  EXPECT_TRUE(properties->local_surface_id);
+  viz::LocalSurfaceId oopdescendant_initial_lsid =
+      properties->local_surface_id.value();
+
+  {
+    // Watch for visual properties changes, first to the child oop-iframe, then
+    // to the descendant (at which point we're done and can validate the
+    // values).
+
+    MockDisplayFeature mock_display_feature(root_view);
+    mock_display_feature.SetDisplayFeature(&emulated_display_feature);
+    root_widget->SynchronizeVisualProperties();
+
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          oopchild->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->local_surface_id &&
+          oopchild_initial_lsid < properties->local_surface_id) {
+        EXPECT_EQ(properties->root_widget_window_segments, expected_segments);
+        break;
+      }
+      base::RunLoop().RunUntilIdle();
+    }
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          oopdescendant->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->local_surface_id &&
+          oopdescendant_initial_lsid < properties->local_surface_id) {
+        EXPECT_EQ(properties->root_widget_window_segments, expected_segments);
+        break;
+      }
+      base::RunLoop().RunUntilIdle();
+    }
+  }
+
+  {
+    // Creating a new local frame root (navigating a.com to c.com) should also
+    // propagate the property to the new local frame root. Note that we're
+    // re-using the existing RenderProcessHost from c.com (aka
+    // |oopdescendant_rph|).
+    GURL new_frame_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
+    EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(1), new_frame_url));
+
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          oopdescendant->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetLastVisualPropertiesSentToRendererForTesting();
+      // This check is needed, since we'll get an IPC originating from
+      // RenderWidgetHostImpl immediately after the frame is added with the
+      // incorrect value (the segments are cascaded from the parent renderer
+      // when the frame is added in that process). So we need to wait for
+      // the outgoing VisualProperties triggered from the parent renderer
+      // and comes in via the CrossProcessFrameConnector, which can happen
+      // after NavigateToURLFromRenderer completes.
+      if (properties &&
+          properties->root_widget_window_segments == expected_segments)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
+                       SetTextDirection) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a,b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Main frame.
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  RenderWidgetHostImpl* root_widget =
+      root->current_frame_host()->GetRenderWidgetHost();
+  ASSERT_TRUE(
+      ExecuteScript(root->current_frame_host(),
+                    "var elem = document.createElement('input'); "
+                    "elem.id = 'mainframe_input_id';"
+                    "document.body.appendChild(elem);"
+                    "document.getElementById('mainframe_input_id').focus();"));
+  root_widget->UpdateTextDirection(base::i18n::RIGHT_TO_LEFT);
+  root_widget->NotifyTextDirection();
+  std::string mainframe_input_element_dir =
+      ExecuteScriptAndGetValue(
+          root->current_frame_host(),
+          "document.getElementById('mainframe_input_id').dir")
+          .GetString();
+  EXPECT_EQ(mainframe_input_element_dir, "rtl");
+
+  // In-process frame.
+  FrameTreeNode* ipchild = root->child_at(0);
+  RenderWidgetHostImpl* ipchild_widget =
+      ipchild->current_frame_host()->GetRenderWidgetHost();
+  ASSERT_TRUE(
+      ExecuteScript(ipchild->current_frame_host(),
+                    "var elem = document.createElement('input'); "
+                    "elem.id = 'ipchild_input_id';"
+                    "document.body.appendChild(elem);"
+                    "document.getElementById('ipchild_input_id').focus();"));
+  ipchild_widget->UpdateTextDirection(base::i18n::LEFT_TO_RIGHT);
+  ipchild_widget->NotifyTextDirection();
+  std::string ip_input_element_dir =
+      ExecuteScriptAndGetValue(
+          ipchild->current_frame_host(),
+          "document.getElementById('ipchild_input_id').dir")
+          .GetString();
+  EXPECT_EQ(ip_input_element_dir, "ltr");
+
+  // Out-of-process frame.
+  FrameTreeNode* oopchild = root->child_at(1);
+  RenderWidgetHostImpl* oopchild_widget =
+      oopchild->current_frame_host()->GetRenderWidgetHost();
+  ASSERT_TRUE(
+      ExecuteScript(oopchild->current_frame_host(),
+                    "var elem = document.createElement('input'); "
+                    "elem.id = 'oop_input_id';"
+                    "document.body.appendChild(elem);"
+                    "document.getElementById('oop_input_id').focus();"));
+  oopchild_widget->UpdateTextDirection(base::i18n::RIGHT_TO_LEFT);
+  oopchild_widget->NotifyTextDirection();
+  std::string oop_input_element_dir =
+      ExecuteScriptAndGetValue(oopchild->current_frame_host(),
+                               "document.getElementById('oop_input_id').dir")
+          .GetString();
+  EXPECT_EQ(oop_input_element_dir, "rtl");
+
+  // In case of UNKNOWN_DIRECTION, old value of direction is maintained.
+  oopchild_widget->UpdateTextDirection(base::i18n::UNKNOWN_DIRECTION);
+  oopchild_widget->NotifyTextDirection();
+  oop_input_element_dir =
+      ExecuteScriptAndGetValue(oopchild->current_frame_host(),
+                               "document.getElementById('oop_input_id').dir")
+          .GetString();
+  EXPECT_EQ(oop_input_element_dir, "rtl");
 }
 
 }  // namespace content

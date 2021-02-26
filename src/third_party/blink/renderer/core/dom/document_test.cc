@@ -56,9 +56,10 @@
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -66,14 +67,16 @@
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -107,13 +110,13 @@ void DocumentTest::SetHtmlInnerHTML(const char* html_content) {
   UpdateAllLifecyclePhasesForTest();
 }
 
+class DocumentSimTest : public SimTest {};
+
 namespace {
 
 class TestSynchronousMutationObserver
     : public GarbageCollected<TestSynchronousMutationObserver>,
       public SynchronousMutationObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(TestSynchronousMutationObserver);
-
  public:
   struct MergeTextNodesRecord : GarbageCollected<MergeTextNodesRecord> {
     Member<const Text> node_;
@@ -127,7 +130,7 @@ class TestSynchronousMutationObserver
           node_to_be_removed_(node_with_index.GetNode()),
           offset_(offset) {}
 
-    void Trace(Visitor* visitor) {
+    void Trace(Visitor* visitor) const {
       visitor->Trace(node_);
       visitor->Trace(node_to_be_removed_);
     }
@@ -149,10 +152,14 @@ class TestSynchronousMutationObserver
           old_length_(old_length),
           new_length_(new_length) {}
 
-    void Trace(Visitor* visitor) { visitor->Trace(node_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(node_); }
   };
 
   explicit TestSynchronousMutationObserver(Document&);
+  TestSynchronousMutationObserver(const TestSynchronousMutationObserver&) =
+      delete;
+  TestSynchronousMutationObserver& operator=(
+      const TestSynchronousMutationObserver&) = delete;
   virtual ~TestSynchronousMutationObserver() = default;
 
   int CountContextDestroyedCalled() const {
@@ -189,7 +196,7 @@ class TestSynchronousMutationObserver
     return updated_character_data_records_;
   }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Implement |SynchronousMutationObserver| member functions.
@@ -213,8 +220,6 @@ class TestSynchronousMutationObserver
   HeapVector<Member<Node>> removed_nodes_;
   HeapVector<Member<const Text>> split_text_nodes_;
   HeapVector<Member<UpdateCharacterDataRecord>> updated_character_data_records_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSynchronousMutationObserver);
 };
 
 TestSynchronousMutationObserver::TestSynchronousMutationObserver(
@@ -268,7 +273,7 @@ void TestSynchronousMutationObserver::NodeWillBeRemoved(Node& node) {
   removed_nodes_.push_back(&node);
 }
 
-void TestSynchronousMutationObserver::Trace(Visitor* visitor) {
+void TestSynchronousMutationObserver::Trace(Visitor* visitor) const {
   visitor->Trace(children_changed_nodes_);
   visitor->Trace(merge_text_nodes_records_);
   visitor->Trace(move_tree_to_new_document_nodes_);
@@ -282,8 +287,6 @@ void TestSynchronousMutationObserver::Trace(Visitor* visitor) {
 class MockDocumentValidationMessageClient
     : public GarbageCollected<MockDocumentValidationMessageClient>,
       public ValidationMessageClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockDocumentValidationMessageClient);
-
  public:
   MockDocumentValidationMessageClient() { Reset(); }
   void Reset() {
@@ -311,7 +314,7 @@ class MockDocumentValidationMessageClient
   void DidChangeFocusTo(const Element*) override {}
   void WillBeDestroyed() override {}
 
-  // virtual void Trace(Visitor* visitor) {
+  // virtual void Trace(Visitor* visitor) const {
   // ValidationMessageClient::trace(visitor); }
 };
 
@@ -507,77 +510,6 @@ TEST_F(DocumentTest, LinkManifest) {
   EXPECT_EQ(link, GetDocument().LinkManifest());
 }
 
-TEST_F(DocumentTest, referrerPolicyParsing) {
-  EXPECT_EQ(network::mojom::ReferrerPolicy::kDefault,
-            GetDocument().GetReferrerPolicy());
-
-  struct TestCase {
-    const char* policy;
-    network::mojom::ReferrerPolicy expected;
-    bool is_legacy;
-  } tests[] = {
-      {"", network::mojom::ReferrerPolicy::kDefault, false},
-      // Test that invalid policy values are ignored.
-      {"not-a-real-policy", network::mojom::ReferrerPolicy::kDefault, false},
-      {"not-a-real-policy,also-not-a-real-policy",
-       network::mojom::ReferrerPolicy::kDefault, false},
-      {"not-a-real-policy,unsafe-url", network::mojom::ReferrerPolicy::kAlways,
-       false},
-      {"unsafe-url,not-a-real-policy", network::mojom::ReferrerPolicy::kAlways,
-       false},
-      // Test parsing each of the policy values.
-      {"always", network::mojom::ReferrerPolicy::kAlways, true},
-      {"default", network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
-       true},
-      {"never", network::mojom::ReferrerPolicy::kNever, true},
-      {"no-referrer", network::mojom::ReferrerPolicy::kNever, false},
-      {"default", network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
-       true},
-      {"no-referrer-when-downgrade",
-       network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade, false},
-      {"origin", network::mojom::ReferrerPolicy::kOrigin, false},
-      {"origin-when-crossorigin",
-       network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, true},
-      {"origin-when-cross-origin",
-       network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, false},
-      {"same-origin", network::mojom::ReferrerPolicy::kSameOrigin, false},
-      {"strict-origin", network::mojom::ReferrerPolicy::kStrictOrigin, false},
-      {"strict-origin-when-cross-origin",
-       network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin, false},
-      {"unsafe-url", network::mojom::ReferrerPolicy::kAlways},
-  };
-
-  for (auto test : tests) {
-    GetDocument().SetReferrerPolicy(network::mojom::ReferrerPolicy::kDefault);
-    if (test.is_legacy) {
-      // Legacy keyword support must be explicitly enabled for the policy to
-      // parse successfully.
-      GetDocument().GetExecutionContext()->ParseAndSetReferrerPolicy(
-          test.policy);
-      EXPECT_EQ(network::mojom::ReferrerPolicy::kDefault,
-                GetDocument().GetReferrerPolicy());
-      GetDocument().GetExecutionContext()->ParseAndSetReferrerPolicy(
-          test.policy, true);
-    } else {
-      GetDocument().GetExecutionContext()->ParseAndSetReferrerPolicy(
-          test.policy);
-    }
-    EXPECT_EQ(test.expected, GetDocument().GetReferrerPolicy()) << test.policy;
-  }
-}
-
-TEST_F(DocumentTest, OutgoingReferrer) {
-  NavigateTo(KURL("https://www.example.com/hoge#fuga?piyo"));
-  EXPECT_EQ("https://www.example.com/hoge", GetDocument().OutgoingReferrer());
-}
-
-TEST_F(DocumentTest, OutgoingReferrerWithUniqueOrigin) {
-  NavigateTo(KURL("https://www.example.com/hoge#fuga?piyo"),
-             {{http_names::kContentSecurityPolicy, "sandbox allow-scripts"}});
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
-  EXPECT_EQ(String(), GetDocument().OutgoingReferrer());
-}
-
 TEST_F(DocumentTest, StyleVersion) {
   SetHtmlInnerHTML(R"HTML(
     <style>
@@ -605,40 +537,6 @@ TEST_F(DocumentTest, StyleVersion) {
   previous_style_version = GetDocument().StyleVersion();
   element->setAttribute(blink::html_names::kClassAttr, "a b");
   EXPECT_NE(previous_style_version, GetDocument().StyleVersion());
-}
-
-TEST_F(DocumentTest, EnforceSandboxFlags) {
-  NavigateTo(KURL("http://example.test/"), {{http_names::kContentSecurityPolicy,
-                                             "sandbox allow-same-origin"}});
-  EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsOpaque());
-  EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
-
-  NavigateTo(KURL("http://example.test/"),
-             {{http_names::kContentSecurityPolicy, "sandbox"}});
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
-  EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
-
-  // A unique origin does not bypass secure context checks unless it
-  // is also potentially trustworthy.
-  url::ScopedSchemeRegistryForTests scoped_registry;
-  url::AddStandardScheme("very-special-scheme", url::SCHEME_WITH_HOST);
-  SchemeRegistry::RegisterURLSchemeBypassingSecureContextCheck(
-      "very-special-scheme");
-  NavigateTo(KURL("very-special-scheme://example.test"),
-             {{http_names::kContentSecurityPolicy, "sandbox"}});
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
-  EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
-
-  SchemeRegistry::RegisterURLSchemeAsSecure("very-special-scheme");
-  NavigateTo(KURL("very-special-scheme://example.test"),
-             {{http_names::kContentSecurityPolicy, "sandbox"}});
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
-
-  NavigateTo(KURL("https://example.test"),
-             {{http_names::kContentSecurityPolicy, "sandbox"}});
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifier) {
@@ -723,7 +621,7 @@ TEST_F(DocumentTest, SynchronousMutationNotifierMoveTreeToNewDocument) {
   move_sample->appendChild(GetDocument().createTextNode("b456"));
   GetDocument().body()->AppendChild(move_sample);
 
-  Document& another_document = *MakeGarbageCollected<Document>();
+  Document& another_document = *Document::CreateForTest();
   another_document.AppendChild(move_sample);
 
   EXPECT_EQ(1u, observer.MoveTreeToNewDocumentNodes().size());
@@ -814,18 +712,6 @@ TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
   EXPECT_EQ(6u, observer.UpdatedCharacterDataRecords()[3]->offset_);
   EXPECT_EQ(4u, observer.UpdatedCharacterDataRecords()[3]->old_length_);
   EXPECT_EQ(3u, observer.UpdatedCharacterDataRecords()[3]->new_length_);
-}
-
-TEST_F(DocumentTest, AttachExecutionContext) {
-  EXPECT_TRUE(
-      GetDocument().GetAgent()->event_loop()->IsSchedulerAttachedForTest(
-          GetDocument().GetScheduler()));
-  Document* doc = GetDocument().implementation().createHTMLDocument("foo");
-  EXPECT_EQ(GetDocument().GetAgent(), doc->GetAgent());
-  GetDocument().Shutdown();
-  EXPECT_FALSE(doc->GetAgent()->event_loop()->IsSchedulerAttachedForTest(
-      doc->GetScheduler()));
-  doc->Shutdown();
 }
 
 // This tests that meta-theme-color can be found correctly
@@ -965,100 +851,6 @@ TEST_F(DocumentTest, ViewportPropagationNoRecalc) {
   EXPECT_EQ(1, new_element_count - old_element_count);
 }
 
-// Test fixture parameterized on whether the "IsolatedWorldCSP" feature is
-// enabled.
-class IsolatedWorldCSPTest : public DocumentTest,
-                             public testing::WithParamInterface<bool>,
-                             private ScopedIsolatedWorldCSPForTest {
- public:
-  IsolatedWorldCSPTest() : ScopedIsolatedWorldCSPForTest(GetParam()) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IsolatedWorldCSPTest);
-};
-
-// Tests ExecutionContext::GetContentSecurityPolicyForWorld().
-TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
-  using ::testing::ElementsAre;
-
-  // Set a CSP for the main world.
-  const char* kMainWorldCSP = "connect-src https://google.com;";
-  GetDocument().GetContentSecurityPolicy()->DidReceiveHeader(
-      kMainWorldCSP, ContentSecurityPolicyType::kEnforce,
-      ContentSecurityPolicySource::kHTTP);
-
-  LocalFrame* frame = GetDocument().GetFrame();
-  ScriptState* main_world_script_state = ToScriptStateForMainWorld(frame);
-  v8::Isolate* isolate = main_world_script_state->GetIsolate();
-
-  constexpr int kIsolatedWorldWithoutCSPId = 1;
-  scoped_refptr<DOMWrapperWorld> world_without_csp =
-      DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithoutCSPId);
-  ASSERT_TRUE(world_without_csp->IsIsolatedWorld());
-  ScriptState* isolated_world_without_csp_script_state =
-      ToScriptState(frame, *world_without_csp);
-
-  const char* kIsolatedWorldCSP = "script-src 'none';";
-  constexpr int kIsolatedWorldWithCSPId = 2;
-  scoped_refptr<DOMWrapperWorld> world_with_csp =
-      DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithCSPId);
-  ASSERT_TRUE(world_with_csp->IsIsolatedWorld());
-  ScriptState* isolated_world_with_csp_script_state =
-      ToScriptState(frame, *world_with_csp);
-  IsolatedWorldCSP::Get().SetContentSecurityPolicy(
-      kIsolatedWorldWithCSPId, kIsolatedWorldCSP,
-      SecurityOrigin::Create(KURL("chrome-extension://123")));
-
-  // Returns the csp headers being used for the current world.
-  auto get_csp_headers = [this]() {
-    return GetDocument().GetContentSecurityPolicyForWorld()->Headers();
-  };
-
-  {
-    SCOPED_TRACE("In main world.");
-    ScriptState::Scope scope(main_world_script_state);
-    EXPECT_THAT(get_csp_headers(),
-                ElementsAre(CSPHeaderAndType(
-                    {kMainWorldCSP, ContentSecurityPolicyType::kEnforce})));
-  }
-
-  {
-    SCOPED_TRACE("In isolated world without csp.");
-    ScriptState::Scope scope(isolated_world_without_csp_script_state);
-
-    // If we are in an isolated world with no CSP defined, we use the main world
-    // CSP.
-    EXPECT_THAT(get_csp_headers(),
-                ElementsAre(CSPHeaderAndType(
-                    {kMainWorldCSP, ContentSecurityPolicyType::kEnforce})));
-  }
-
-  {
-    bool is_isolated_world_csp_enabled = GetParam();
-    SCOPED_TRACE(base::StringPrintf(
-        "In isolated world with csp and 'IsolatedWorldCSP' %s",
-        is_isolated_world_csp_enabled ? "enabled" : "disabled"));
-    ScriptState::Scope scope(isolated_world_with_csp_script_state);
-
-    if (!is_isolated_world_csp_enabled) {
-      // With 'IsolatedWorldCSP' feature disabled, we should just bypass the
-      // main world CSP by using an empty CSP.
-      EXPECT_TRUE(get_csp_headers().IsEmpty());
-    } else {
-      // With 'IsolatedWorldCSP' feature enabled, we use the isolated world's
-      // CSP if it specified one.
-      EXPECT_THAT(
-          get_csp_headers(),
-          ElementsAre(CSPHeaderAndType(
-              {kIsolatedWorldCSP, ContentSecurityPolicyType::kEnforce})));
-    }
-  }
-}
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         IsolatedWorldCSPTest,
-                         testing::Values(true, false));
-
 TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
   NavigateTo(KURL("https://www.example.com/"),
              {{http_names::kContentSecurityPolicy, "sandbox"}});
@@ -1093,19 +885,19 @@ TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
     // Since the page is sandboxed, main world script execution shouldn't be
     // allowed.
     ScriptState::Scope scope(main_world_script_state);
-    EXPECT_FALSE(GetDocument().CanExecuteScripts(kAboutToExecuteScript));
+    EXPECT_FALSE(frame->DomWindow()->CanExecuteScripts(kAboutToExecuteScript));
   }
   {
     // Isolated worlds without a dedicated CSP should also not be allowed to
     // run scripts.
     ScriptState::Scope scope(isolated_world_without_csp_script_state);
-    EXPECT_FALSE(GetDocument().CanExecuteScripts(kAboutToExecuteScript));
+    EXPECT_FALSE(frame->DomWindow()->CanExecuteScripts(kAboutToExecuteScript));
   }
   {
     // An isolated world with a CSP should bypass the main world CSP, and be
     // able to run scripts.
     ScriptState::Scope scope(isolated_world_with_csp_script_state);
-    EXPECT_TRUE(GetDocument().CanExecuteScripts(kAboutToExecuteScript));
+    EXPECT_TRUE(frame->DomWindow()->CanExecuteScripts(kAboutToExecuteScript));
   }
 }
 
@@ -1168,7 +960,8 @@ TEST_F(DocumentTest, ElementFromPointWithPageZoom) {
 
 TEST_F(DocumentTest, PrefersColorSchemeChanged) {
   ColorSchemeHelper color_scheme_helper(GetDocument());
-  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kLight);
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kLight);
   UpdateAllLifecyclePhasesForTest();
 
   auto* list = GetDocument().GetMediaQueryMatcher().MatchMedia(
@@ -1178,7 +971,8 @@ TEST_F(DocumentTest, PrefersColorSchemeChanged) {
 
   EXPECT_FALSE(listener->IsNotified());
 
-  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kDark);
 
   UpdateAllLifecyclePhasesForTest();
   GetDocument().ServiceScriptedAnimations(base::TimeTicks());
@@ -1496,5 +1290,119 @@ INSTANTIATE_TEST_SUITE_P(
         ViewportTestCase("contain", mojom::ViewportFit::kContain),
         ViewportTestCase("cover", mojom::ViewportFit::kCover),
         ViewportTestCase("invalid", mojom::ViewportFit::kAuto)));
+
+class BatterySavingsChromeClient : public EmptyChromeClient {
+ public:
+  MOCK_METHOD2(BatterySavingsChanged,
+               void(LocalFrame&, WebBatterySavingsFlags));
+};
+
+class DocumentBatterySavingsTest : public PageTestBase,
+                                   private ScopedBatterySavingsMetaForTest {
+ protected:
+  DocumentBatterySavingsTest() : ScopedBatterySavingsMetaForTest(true) {}
+
+  void SetUp() override {
+    chrome_client_ = MakeGarbageCollected<BatterySavingsChromeClient>();
+    Page::PageClients page_clients;
+    FillWithEmptyClients(page_clients);
+    page_clients.chrome_client = chrome_client_;
+    SetupPageWithClients(&page_clients);
+  }
+
+  Persistent<BatterySavingsChromeClient> chrome_client_;
+};
+
+TEST_F(DocumentBatterySavingsTest, ChromeClientCalls) {
+  testing::InSequence s;
+  // The client is called twice, once for each meta element, but is called with
+  // the same parameter both times because the first meta in DOM order takes
+  // precedence.
+  EXPECT_CALL(*chrome_client_,
+              BatterySavingsChanged(testing::_, kAllowReducedFrameRate))
+      .Times(2);
+
+  EXPECT_FALSE(
+      GetDocument().Loader()->GetUseCounterHelper().HasRecordedMeasurement(
+          WebFeature::kBatterySavingsMeta));
+
+  SetHtmlInnerHTML(R"HTML(
+    <meta id="first" name="battery-savings" content="allow-reduced-framerate">
+    <meta id="second" name="battery-savings" content="allow-reduced-script-speed">
+  )HTML");
+
+  EXPECT_TRUE(
+      GetDocument().Loader()->GetUseCounterHelper().HasRecordedMeasurement(
+          WebFeature::kBatterySavingsMeta));
+
+  // Remove the first meta causing the second to apply.
+  EXPECT_CALL(*chrome_client_,
+              BatterySavingsChanged(testing::_, kAllowReducedScriptSpeed))
+      .Times(1);
+
+  GetDocument().getElementById("first")->remove();
+
+  // Change the content attribute to an unsupported value.
+  EXPECT_CALL(*chrome_client_, BatterySavingsChanged(testing::_, 0)).Times(1);
+
+  Element* second = GetDocument().getElementById("second");
+  second->setAttribute(html_names::kContentAttr, "allow-blah");
+
+  // Change the content attribute to both supported values.
+  EXPECT_CALL(*chrome_client_,
+              BatterySavingsChanged(testing::_, kAllowReducedFrameRate |
+                                                    kAllowReducedScriptSpeed))
+      .Times(1);
+
+  second->setAttribute(html_names::kContentAttr,
+                       "allow-reduced-framerate allow-reduced-script-speed");
+
+  // Change the meta name to "viewport".
+  EXPECT_CALL(*chrome_client_, BatterySavingsChanged(testing::_, 0)).Times(1);
+
+  second->setAttribute(html_names::kNameAttr, "viewport");
+}
+
+namespace {
+class MockReportingContext final : public ReportingContext {
+ public:
+  explicit MockReportingContext(ExecutionContext& ec) : ReportingContext(ec) {}
+
+  void QueueReport(Report* report, const Vector<String>& endpoint) override {
+    report_count++;
+  }
+
+  unsigned report_count = 0;
+};
+
+}  // namespace
+
+TEST_F(DocumentSimTest, DuplicatedDocumentPolicyViolationsAreIgnored) {
+  blink::ScopedDocumentPolicyForTest scoped_document_policy(true);
+  SimRequest::Params params;
+  params.response_http_headers = {
+      {"Document-Policy", "lossless-images-max-bpp=1.0"}};
+  SimRequest main_resource("https://example.com", "text/html", params);
+  LoadURL("https://example.com");
+  main_resource.Finish();
+
+  ExecutionContext* execution_context = GetDocument().GetExecutionContext();
+  MockReportingContext* mock_reporting_context =
+      MakeGarbageCollected<MockReportingContext>(*execution_context);
+  Supplement<ExecutionContext>::ProvideTo(*execution_context,
+                                          mock_reporting_context);
+
+  EXPECT_FALSE(execution_context->IsFeatureEnabled(
+      mojom::blink::DocumentPolicyFeature::kLosslessImagesMaxBpp,
+      PolicyValue::CreateDecDouble(1.1), ReportOptions::kReportOnFailure));
+
+  EXPECT_EQ(mock_reporting_context->report_count, 1u);
+
+  EXPECT_FALSE(execution_context->IsFeatureEnabled(
+      mojom::blink::DocumentPolicyFeature::kLosslessImagesMaxBpp,
+      PolicyValue::CreateDecDouble(1.1), ReportOptions::kReportOnFailure));
+
+  EXPECT_EQ(mock_reporting_context->report_count, 1u);
+}
 
 }  // namespace blink

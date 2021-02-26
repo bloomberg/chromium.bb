@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "components/sync/base/model_type.h"
@@ -19,6 +18,7 @@
 namespace syncer {
 class ModelTypeController;
 class ModelTypeControllerDelegate;
+class SyncInvalidationsService;
 class SyncService;
 }
 
@@ -56,6 +56,10 @@ class ProfileSyncComponentsFactoryImpl
       const scoped_refptr<password_manager::PasswordStore>&
           account_password_store,
       sync_bookmarks::BookmarkSyncService* bookmark_sync_service);
+  ProfileSyncComponentsFactoryImpl(const ProfileSyncComponentsFactoryImpl&) =
+      delete;
+  ProfileSyncComponentsFactoryImpl& operator=(
+      const ProfileSyncComponentsFactoryImpl&) = delete;
   ~ProfileSyncComponentsFactoryImpl() override;
 
   // Creates and returns enabled datatypes and their controllers.
@@ -77,7 +81,9 @@ class ProfileSyncComponentsFactoryImpl
   std::unique_ptr<syncer::SyncEngine> CreateSyncEngine(
       const std::string& name,
       invalidation::InvalidationService* invalidator,
+      syncer::SyncInvalidationsService* sync_invalidation_service,
       const base::WeakPtr<syncer::SyncPrefs>& sync_prefs) override;
+  void DeleteLegacyDirectoryFilesAndNigoriStorage() override;
 
  private:
   // Factory function for ModelTypeController instances for models living on
@@ -115,6 +121,8 @@ class ProfileSyncComponentsFactoryImpl
   const char* history_disabled_pref_;
   const scoped_refptr<base::SequencedTaskRunner> ui_thread_;
   const scoped_refptr<base::SequencedTaskRunner> db_thread_;
+  const scoped_refptr<base::SequencedTaskRunner>
+      engines_and_directory_deletion_thread_;
   const scoped_refptr<autofill::AutofillWebDataService>
       web_data_service_on_disk_;
   const scoped_refptr<autofill::AutofillWebDataService>
@@ -122,8 +130,6 @@ class ProfileSyncComponentsFactoryImpl
   const scoped_refptr<password_manager::PasswordStore> profile_password_store_;
   const scoped_refptr<password_manager::PasswordStore> account_password_store_;
   sync_bookmarks::BookmarkSyncService* const bookmark_sync_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileSyncComponentsFactoryImpl);
 };
 
 }  // namespace browser_sync

@@ -52,7 +52,8 @@ class AutofillProvider {
                                bool known_success,
                                mojom::SubmissionSource source) = 0;
 
-  virtual void OnFocusNoLongerOnForm(AutofillHandlerProxy* handler) = 0;
+  virtual void OnFocusNoLongerOnForm(AutofillHandlerProxy* handler,
+                                     bool had_interacted_form) = 0;
 
   virtual void OnFocusOnFormField(AutofillHandlerProxy* handler,
                                   const FormData& form,
@@ -67,11 +68,18 @@ class AutofillProvider {
                            const std::vector<FormData>& forms,
                            const base::TimeTicks timestamp) = 0;
 
+  virtual void OnHidePopup(AutofillHandlerProxy* handler) = 0;
+
   virtual void Reset(AutofillHandlerProxy* handler) = 0;
 
   void SendFormDataToRenderer(AutofillHandlerProxy* handler,
                               int requestId,
                               const FormData& formData);
+
+  // Notifies the renderer should accept the datalist suggestion given by
+  // |value| and fill the associated input field.
+  void RendererShouldAcceptDataListSuggestion(AutofillHandlerProxy* handler,
+                                              const base::string16& value);
 };
 
 }  // namespace autofill

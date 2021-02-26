@@ -180,6 +180,8 @@ class PingResponderImpl : example::mojom::PingResponder {
  public:
   explicit PingResponderImpl(mojo::PendingReceiver<example::mojom::PingResponder> receiver)
       : receiver_(this, std::move(receiver)) {}
+  PingResponderImpl(const PingResponderImpl&) = delete;
+  PingResponderImpl& operator=(const PingResponderImpl&) = delete;
 
   // example::mojom::PingResponder:
   void Ping(PingCallback callback) override {
@@ -189,8 +191,6 @@ class PingResponderImpl : example::mojom::PingResponder {
 
  private:
   mojo::Receiver<example::mojom::PingResponder> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(PingResponderImpl);
 };
 ```
 
@@ -303,6 +303,8 @@ class MathService : public mojom::MathService {
  public:
   explicit MathService(mojo::PendingReceiver<mojom::MathService> receiver);
   ~MathService() override;
+  MathService(const MathService&) = delete;
+  MathService& operator=(const MathService&) = delete;
 
  private:
   // mojom::MathService:
@@ -311,8 +313,6 @@ class MathService : public mojom::MathService {
               DivideCallback callback) override;
 
   mojo::Receiver<mojom::MathService> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(MathService);
 };
 
 }  // namespace math
@@ -344,8 +344,8 @@ void MathService::Divide(int32_t dividend,
 
 source_set("math") {
   sources = [
-    "math.cc",
-    "math.h",
+    "math_service.cc",
+    "math_service.h",
   ]
 
   deps = [
@@ -398,7 +398,6 @@ API:
 mojo::Remote<math::mojom::MathService> math_service =
     content::ServiceProcessHost::Launch<math::mojom::MathService>(
         content::ServiceProcessHost::LaunchOptions()
-            .WithSandboxType(content::SandboxType::kUtility)
             .WithDisplayName("Math!")
             .Pass());
 ```
@@ -422,6 +421,19 @@ NOTE: To ensure the execution of the response callback, the
 [this section](/mojo/public/cpp/bindings/README.md#A-Note-About-Endpoint-Lifetime-and-Callbacks)
 and [this note from an earlier section](#sending-a-message)).
 ***
+
+### Using a non-standard sandbox
+
+Ideally services will run inside the utility process sandbox, in which
+case there is nothing else to do. For services that need a custom
+sandbox, a new sandbox type must be defined in consultation with
+security-dev@chromium.org.  To launch with a custom sandbox a
+specialization of `GetServiceSandboxType()` must be supplied in an
+appropriate `service_sandbox_type.h` such as
+[`//chrome/browser/service_sandbox_type.h`](https://cs.chromium.org/chromium/src/chrome/browser/service_sandbox_type.h)
+or
+[`//content/browser/service_sandbox_type.h`](https://cs.chromium.org/chromium/src/content/browser/service_sandbox_type.h)
+and included where `ServiceProcessHost::Launch()` is called.
 
 ## Content-Layer Services Overview
 

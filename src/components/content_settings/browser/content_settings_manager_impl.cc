@@ -5,7 +5,7 @@
 #include "components/content_settings/browser/content_settings_manager_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
@@ -13,7 +13,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
-using content_settings::TabSpecificContentSettings;
+using content_settings::PageSpecificContentSettings;
 
 namespace content_settings {
 namespace {
@@ -46,17 +46,11 @@ void OnDomStorageAccessed(int process_id,
                           const GURL& top_origin_url,
                           bool local,
                           bool blocked_by_policy) {
-  content::RenderFrameHost* frame =
-      content::RenderFrameHost::FromID(process_id, frame_id);
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(frame);
-  if (!web_contents)
-    return;
-
-  TabSpecificContentSettings* tab_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (tab_settings)
-    tab_settings->OnDomStorageAccessed(origin_url, local, blocked_by_policy);
+  PageSpecificContentSettings* settings =
+      PageSpecificContentSettings::GetForFrame(
+          content::RenderFrameHost::FromID(process_id, frame_id));
+  if (settings)
+    settings->OnDomStorageAccessed(origin_url, local, blocked_by_policy);
 }
 
 }  // namespace
@@ -101,7 +95,7 @@ void ContentSettingsManagerImpl::AllowStorageAccess(
 
   switch (storage_type) {
     case StorageType::DATABASE:
-      TabSpecificContentSettings::WebDatabaseAccessed(
+      PageSpecificContentSettings::WebDatabaseAccessed(
           render_process_id_, render_frame_id, url, !allowed);
       break;
     case StorageType::LOCAL_STORAGE:
@@ -120,21 +114,21 @@ void ContentSettingsManagerImpl::AllowStorageAccess(
 
       break;
     case StorageType::FILE_SYSTEM:
-      TabSpecificContentSettings::FileSystemAccessed(
+      PageSpecificContentSettings::FileSystemAccessed(
           render_process_id_, render_frame_id, url, !allowed);
       OnStorageAccessed(render_process_id_, render_frame_id, url,
                         top_frame_origin.GetURL(), !allowed,
                         page_load_metrics::StorageType::kFileSystem);
       break;
     case StorageType::INDEXED_DB:
-      TabSpecificContentSettings::IndexedDBAccessed(
+      PageSpecificContentSettings::IndexedDBAccessed(
           render_process_id_, render_frame_id, url, !allowed);
       OnStorageAccessed(render_process_id_, render_frame_id, url,
                         top_frame_origin.GetURL(), !allowed,
                         page_load_metrics::StorageType::kIndexedDb);
       break;
     case StorageType::CACHE:
-      TabSpecificContentSettings::CacheStorageAccessed(
+      PageSpecificContentSettings::CacheStorageAccessed(
           render_process_id_, render_frame_id, url, !allowed);
       OnStorageAccessed(render_process_id_, render_frame_id, url,
                         top_frame_origin.GetURL(), !allowed,
@@ -150,17 +144,11 @@ void ContentSettingsManagerImpl::AllowStorageAccess(
 
 void ContentSettingsManagerImpl::OnContentBlocked(int32_t render_frame_id,
                                                   ContentSettingsType type) {
-  content::RenderFrameHost* frame =
-      content::RenderFrameHost::FromID(render_process_id_, render_frame_id);
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(frame);
-  if (!web_contents)
-    return;
-
-  TabSpecificContentSettings* tab_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (tab_settings)
-    tab_settings->OnContentBlocked(type);
+  PageSpecificContentSettings* settings =
+      PageSpecificContentSettings::GetForFrame(render_process_id_,
+                                               render_frame_id);
+  if (settings)
+    settings->OnContentBlocked(type);
 }
 
 ContentSettingsManagerImpl::ContentSettingsManagerImpl(

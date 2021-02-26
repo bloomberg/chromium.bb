@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -29,8 +30,7 @@ struct SameSizeAsNGConstraintSpace {
   unsigned bitfields[1];
 };
 
-static_assert(sizeof(NGConstraintSpace) == sizeof(SameSizeAsNGConstraintSpace),
-              "NGConstraintSpace should stay small.");
+ASSERT_SIZE(NGConstraintSpace, SameSizeAsNGConstraintSpace);
 
 }  // namespace
 
@@ -69,10 +69,10 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   }
 
   const ComputedStyle& style = block.StyleRef();
-  auto writing_mode = style.GetWritingMode();
+  const auto writing_mode = style.GetWritingMode();
   bool parallel_containing_block = IsParallelWritingMode(
       cb ? cb->StyleRef().GetWritingMode() : writing_mode, writing_mode);
-  NGConstraintSpaceBuilder builder(writing_mode, writing_mode,
+  NGConstraintSpaceBuilder builder(writing_mode, style.GetWritingDirection(),
                                    /* is_new_fc */ true,
                                    !parallel_containing_block);
 
@@ -92,11 +92,16 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     const ComputedStyle& cell_style = cell.ToLayoutObject()->StyleRef();
     const ComputedStyle& table_style =
         cell.TableInterface()->ToLayoutObject()->StyleRef();
-    builder.SetIsTableCell(true);
+    DCHECK(block.IsTableCellLegacy());
+    builder.SetIsTableCell(true, /* is_table_cell_legacy */ true);
     builder.SetIsRestrictedBlockSizeTableCell(
         !cell_style.LogicalHeight().IsAuto() ||
         !table_style.LogicalHeight().IsAuto());
     const LayoutBlock& cell_block = To<LayoutBlock>(*cell.ToLayoutObject());
+    if (RuntimeEnabledFeatures::TableCellNewPercentsEnabled() && fixed_block) {
+      fixed_block_is_definite = cell_block.HasDefiniteLogicalHeight() ||
+                                !table_style.LogicalHeight().IsAuto();
+    }
     builder.SetTableCellBorders(
         {cell_block.BorderStart(), cell_block.BorderEnd(),
          cell_block.BorderBefore(), cell_block.BorderAfter()});
@@ -106,6 +111,9 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     builder.SetHideTableCellIfEmpty(
         cell_style.EmptyCells() == EEmptyCells::kHide &&
         table_style.BorderCollapse() == EBorderCollapse::kSeparate);
+    builder.SetIsTableCellWithCollapsedBorders(
+        cell_block.Parent()->Parent()->Parent()->StyleRef().BorderCollapse() ==
+        EBorderCollapse::kCollapse);
   }
 
   if (block.IsAtomicInlineLevel() || block.IsFlexItem() || block.IsGridItem() ||
@@ -120,14 +128,13 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   builder.SetIsShrinkToFit(
       style.LogicalWidth().IsAuto() &&
       block.SizesLogicalWidthToFitContent(style.LogicalWidth()));
-  builder.SetTextDirection(style.Direction());
   return builder.ToConstraintSpace();
 }
 
 String NGConstraintSpace::ToString() const {
   return String::Format("Offset: %s,%s Size: %sx%s Clearance: %s",
-                        bfc_offset_.line_offset.ToString().Ascii().c_str(),
-                        bfc_offset_.block_offset.ToString().Ascii().c_str(),
+                        BfcOffset().line_offset.ToString().Ascii().c_str(),
+                        BfcOffset().block_offset.ToString().Ascii().c_str(),
                         AvailableSize().inline_size.ToString().Ascii().c_str(),
                         AvailableSize().block_size.ToString().Ascii().c_str(),
                         HasClearanceOffset()

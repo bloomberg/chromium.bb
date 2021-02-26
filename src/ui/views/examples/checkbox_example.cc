@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -22,12 +23,13 @@ CheckboxExample::~CheckboxExample() = default;
 
 void CheckboxExample::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());
-  button_ = container->AddChildView(
-      std::make_unique<Checkbox>(base::ASCIIToUTF16("Checkbox"), this));
-}
-
-void CheckboxExample::ButtonPressed(Button* sender, const ui::Event& event) {
-  PrintStatus("Pressed! count: %d", ++count_);
+  container->AddChildView(
+      views::Builder<Checkbox>()
+          .SetText(base::ASCIIToUTF16("Checkbox"))
+          .SetCallback(base::BindRepeating(
+              [](int* count) { PrintStatus("Pressed! count: %d", ++(*count)); },
+              &count_))
+          .Build());
 }
 
 }  // namespace examples

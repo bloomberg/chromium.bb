@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.offlinepages.prefetch;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.Uri;
-import android.support.test.filters.MediumTest;
 import android.util.Base64;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -20,15 +21,14 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.background_task_scheduler.ChromeNativeBackgroundTaskDelegate;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
-import org.chromium.chrome.browser.feed.TestNetworkClient;
+import org.chromium.chrome.browser.feed.v1.FeedProcessScopeFactory;
+import org.chromium.chrome.browser.feed.v1.TestNetworkClient;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -36,9 +36,10 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.browser.profiles.ProfileKey;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.ReducedModeNativeTestRule;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.components.download.NetworkStatusListenerAndroid;
@@ -48,7 +49,6 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_pages.core.prefetch.proto.StatusOuterClass;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
@@ -70,8 +70,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * are run both in full browser mode and in reduced mode.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Features.DisableFeatures({ChromeFeatureList.INTEREST_FEED_NOTICE_CARD_AUTO_DISMISS})
 public class PrefetchFeedFlowTest {
     private TestOfflinePageService mOPS = new TestOfflinePageService();
     private WebServer mServer;
@@ -115,8 +115,7 @@ public class PrefetchFeedFlowTest {
     private static final int THUMBNAIL_HEIGHT = 4;
 
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Rule
     public ReducedModeNativeTestRule mReducedModeNativeTestRule =
@@ -190,14 +189,18 @@ public class PrefetchFeedFlowTest {
     // Helper for checking isPrefetchingEnabledByServer().
     private boolean isEnabledByServer() {
         final AtomicBoolean isEnabled = new AtomicBoolean();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { isEnabled.set(PrefetchConfiguration.isPrefetchingEnabledByServer()); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            isEnabled.set(PrefetchConfiguration.isPrefetchingEnabledByServer(
+                    ProfileKey.getLastUsedRegularProfileKey()));
+        });
         return isEnabled.get();
     }
 
     private void waitForServerEnabledValue(boolean wanted) {
         CriteriaHelper.pollUiThread(() -> {
-            return PrefetchConfiguration.isPrefetchingEnabledByServer() == wanted;
+            return PrefetchConfiguration.isPrefetchingEnabledByServer(
+                           ProfileKey.getLastUsedRegularProfileKey())
+                    == wanted;
         }, "never got wanted value", 5000, 200);
     }
 
@@ -256,7 +259,6 @@ public class PrefetchFeedFlowTest {
                         }
                     });
             PrefetchTestBridge.enableLimitlessPrefetching(true);
-            PrefetchTestBridge.skipNTPSuggestionsAPIKeyCheck();
         });
 
         OfflineTestUtil.setPrefetchingEnabledByServer(true);

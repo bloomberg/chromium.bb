@@ -45,8 +45,6 @@ class SVGElement;
 // this is never animated.
 class SVGStaticStringList final : public GarbageCollected<SVGStaticStringList>,
                                   public SVGAnimatedPropertyBase {
-  USING_GARBAGE_COLLECTED_MIXIN(SVGStaticStringList);
-
  public:
   template <char list_delimiter>
   static SVGStaticStringList* Create(SVGElement* context_element,
@@ -73,7 +71,7 @@ class SVGStaticStringList final : public GarbageCollected<SVGStaticStringList>,
   SVGStringListBase* Value() { return value_.Get(); }
   SVGStringListTearOff* TearOff();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<SVGStringListBase> value_;

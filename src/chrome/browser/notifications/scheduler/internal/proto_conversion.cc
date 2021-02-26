@@ -57,6 +57,8 @@ proto::SchedulerClientType ToSchedulerClientType(SchedulerClientType type) {
       return proto::SchedulerClientType::CHROME_UPDATE;
     case SchedulerClientType::kPrefetch:
       return proto::SchedulerClientType::PREFETCH;
+    case SchedulerClientType::kReadingList:
+      return proto::SchedulerClientType::READING_LIST;
   }
   NOTREACHED();
 }
@@ -79,6 +81,8 @@ SchedulerClientType FromSchedulerClientType(
       return SchedulerClientType::kChromeUpdate;
     case proto::SchedulerClientType::PREFETCH:
       return SchedulerClientType::kPrefetch;
+    case proto::SchedulerClientType::READING_LIST:
+      return SchedulerClientType::kReadingList;
   }
   NOTREACHED();
 }
@@ -283,6 +287,11 @@ void ScheduleParamsToProto(ScheduleParams* params,
     proto->set_deliver_time_end(
         TimeToMilliseconds(params->deliver_time_end.value()));
   }
+
+  if (params->ignore_timeout_duration.has_value()) {
+    proto->set_ignore_timeout_duration(
+        TimeDeltaToMilliseconds(params->ignore_timeout_duration.value()));
+  }
 }
 
 // Converts ScheduleParams from proto buffer type.
@@ -304,6 +313,10 @@ void ScheduleParamsFromProto(proto::ScheduleParams* proto,
   }
   if (proto->has_deliver_time_end()) {
     params->deliver_time_end = MillisecondsToTime(proto->deliver_time_end());
+  }
+  if (proto->has_ignore_timeout_duration()) {
+    params->ignore_timeout_duration =
+        MillisecondsToTimeDelta(proto->ignore_timeout_duration());
   }
 }
 
@@ -343,6 +356,11 @@ void ClientStateToProto(ClientState* client_state,
       auto* data = impression_ptr->add_custom_data();
       data->set_key(pair.first);
       data->set_value(pair.second);
+    }
+
+    if (impression.ignore_timeout_duration.has_value()) {
+      impression_ptr->set_ignore_timeout_duration(
+          TimeDeltaToMilliseconds(impression.ignore_timeout_duration.value()));
     }
   }
 
@@ -385,6 +403,10 @@ void ClientStateFromProto(proto::ClientState* proto,
     impression.integrated = proto_impression.integrated();
     impression.guid = proto_impression.guid();
     impression.type = client_state->type;
+
+    if (proto_impression.has_ignore_timeout_duration())
+      impression.ignore_timeout_duration =
+          MillisecondsToTimeDelta(proto_impression.ignore_timeout_duration());
 
     for (int i = 0; i < proto_impression.impression_mapping_size(); ++i) {
       const auto& proto_impression_mapping =

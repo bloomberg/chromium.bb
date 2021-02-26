@@ -1,47 +1,37 @@
 /**
-* AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
-**/
+ * AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
+ **/ import { LogMessageWithStack } from '../../framework/logging/log_message.js';
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-import { LogMessageWithStack } from '../../framework/logger.js';
 export class TestWorker {
-  constructor() {
-    _defineProperty(this, "worker", void 0);
+  resolvers = new Map();
 
-    _defineProperty(this, "resolvers", new Map());
+  constructor(debug) {
+    this.debug = debug;
 
     const selfPath = import.meta.url;
     const selfPathDir = selfPath.substring(0, selfPath.lastIndexOf('/'));
     const workerPath = selfPathDir + '/test_worker-worker.js';
-    this.worker = new Worker(workerPath, {
-      type: 'module'
-    });
-
+    this.worker = new Worker(workerPath, { type: 'module' });
     this.worker.onmessage = ev => {
       const query = ev.data.query;
       const result = ev.data.result;
-
       if (result.logs) {
         for (const l of result.logs) {
           Object.setPrototypeOf(l, LogMessageWithStack.prototype);
         }
       }
+      this.resolvers.get(query)(result);
 
-      this.resolvers.get(query)(result); // TODO(kainino0x): update the Logger with this result (or don't have a logger and update the
+      // TODO(kainino0x): update the Logger with this result (or don't have a logger and update the
       // entire results JSON somehow at some point).
     };
   }
 
-  run(query, debug = false) {
-    this.worker.postMessage({
-      query,
-      debug
-    });
-    return new Promise(resolve => {
+  async run(rec, query) {
+    this.worker.postMessage({ query, debug: this.debug });
+    const workerResult = await new Promise(resolve => {
       this.resolvers.set(query, resolve);
     });
+    rec.injectResult(workerResult);
   }
-
 }
-//# sourceMappingURL=test_worker.js.map

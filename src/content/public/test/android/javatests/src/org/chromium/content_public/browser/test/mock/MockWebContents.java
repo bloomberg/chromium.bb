@@ -91,6 +91,11 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public RenderFrameHost getRenderFrameHostFromId(int renderProcessId, int renderFrameId) {
+        return null;
+    }
+
+    @Override
     @Nullable
     public RenderWidgetHostView getRenderWidgetHostView() {
         return null;
@@ -156,11 +161,6 @@ public class MockWebContents implements WebContents {
 
     @Override
     public void setAudioMuted(boolean mute) {}
-
-    @Override
-    public boolean isShowingInterstitialPage() {
-        return false;
-    }
 
     @Override
     public boolean focusLocationBarByDefault() {

@@ -7,6 +7,8 @@ package org.chromium.content.browser;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
@@ -21,6 +23,7 @@ import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.GestureStateListenerWithScroll;
 import org.chromium.content_public.browser.ViewEventSink.InternalAccessDelegate;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.GestureEventType;
@@ -96,12 +99,30 @@ public class GestureListenerManagerImpl
 
     @Override
     public void addListener(GestureStateListener listener) {
-        mListeners.addObserver(listener);
+        final boolean didAdd = mListeners.addObserver(listener);
+        if (mNativeGestureListenerManager != 0 && didAdd
+                && listener instanceof GestureStateListenerWithScroll) {
+            GestureListenerManagerImplJni.get().setHasListenersAttached(
+                    mNativeGestureListenerManager, true);
+        }
     }
 
     @Override
     public void removeListener(GestureStateListener listener) {
-        mListeners.removeObserver(listener);
+        final boolean didRemove = mListeners.removeObserver(listener);
+        if (mNativeGestureListenerManager != 0 && didRemove
+                && (listener instanceof GestureStateListenerWithScroll)
+                && !hasGestureStateListenerWithScroll()) {
+            GestureListenerManagerImplJni.get().setHasListenersAttached(
+                    mNativeGestureListenerManager, false);
+        }
+    }
+
+    private boolean hasGestureStateListenerWithScroll() {
+        for (GestureStateListener listener : mListeners) {
+            if (listener instanceof GestureStateListenerWithScroll) return true;
+        }
+        return false;
     }
 
     @Override
@@ -130,6 +151,11 @@ public class GestureListenerManagerImpl
         return mHasActiveFlingScroll;
     }
 
+    @VisibleForTesting
+    public boolean shouldReportAllRootScrolls() {
+        return hasGestureStateListenerWithScroll();
+    }
+
     // WindowEventObserver
 
     @Override
@@ -147,7 +173,11 @@ public class GestureListenerManagerImpl
      */
     public void updateOnScrollChanged(int offset, int extent) {
         for (mIterator.rewind(); mIterator.hasNext();) {
-            mIterator.next().onScrollOffsetOrExtentChanged(offset, extent);
+            GestureStateListener listener = mIterator.next();
+            if (listener instanceof GestureStateListenerWithScroll) {
+                ((GestureStateListenerWithScroll) listener)
+                        .onScrollOffsetOrExtentChanged(offset, extent);
+            }
         }
     }
 
@@ -304,21 +334,45 @@ public class GestureListenerManagerImpl
                 || scrollOffsetY != rc.getScrollY();
 
         if (scrollChanged) {
-            mScrollDelegate.onScrollChanged((int) rc.fromLocalCssToPix(scrollOffsetX),
-                    (int) rc.fromLocalCssToPix(scrollOffsetY), (int) rc.getScrollXPix(),
-                    (int) rc.getScrollYPix());
+            onRootScrollOffsetChangedImpl(pageScaleFactor, scrollOffsetX, scrollOffsetY);
         }
 
         // TODO(jinsukkim): Consider updating the info directly through RenderCoordinates.
-        rc.updateFrameInfo(scrollOffsetX, scrollOffsetY, contentWidth, contentHeight, viewportWidth,
-                viewportHeight, pageScaleFactor, minPageScaleFactor, maxPageScaleFactor,
-                topBarShownPix);
+        rc.updateFrameInfo(contentWidth, contentHeight, viewportWidth, viewportHeight,
+                minPageScaleFactor, maxPageScaleFactor, topBarShownPix);
 
-        if (scrollChanged || topBarChanged) {
+        if (!scrollChanged && topBarChanged) {
             updateOnScrollChanged(verticalScrollOffset(), verticalScrollExtent());
         }
         if (scaleLimitsChanged) updateOnScaleLimitsChanged(minPageScaleFactor, maxPageScaleFactor);
         TraceEvent.end("GestureListenerManagerImpl:updateScrollInfo");
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onRootScrollOffsetChanged(float scrollOffsetX, float scrollOffsetY) {
+        onRootScrollOffsetChangedImpl(mWebContents.getRenderCoordinates().getPageScaleFactor(),
+                scrollOffsetX, scrollOffsetY);
+    }
+
+    private void onRootScrollOffsetChangedImpl(
+            float pageScaleFactor, float scrollOffsetX, float scrollOffsetY) {
+        TraceEvent.begin("GestureListenerManagerImpl:onRootScrollOffsetChanged");
+
+        notifyDelegateOfScrollChange(scrollOffsetX, scrollOffsetY);
+
+        mWebContents.getRenderCoordinates().updateScrollInfo(
+                pageScaleFactor, scrollOffsetX, scrollOffsetY);
+
+        updateOnScrollChanged(verticalScrollOffset(), verticalScrollExtent());
+        TraceEvent.end("GestureListenerManagerImpl:onRootScrollOffsetChanged");
+    }
+
+    private void notifyDelegateOfScrollChange(float scrollOffsetX, float scrollOffsetY) {
+        RenderCoordinatesImpl rc = mWebContents.getRenderCoordinates();
+        mScrollDelegate.onScrollChanged((int) rc.fromLocalCssToPix(scrollOffsetX),
+                (int) rc.fromLocalCssToPix(scrollOffsetY), (int) rc.getScrollXPix(),
+                (int) rc.getScrollYPix());
     }
 
     @Override
@@ -379,5 +433,6 @@ public class GestureListenerManagerImpl
                 GestureListenerManagerImpl caller, boolean enabled);
         void setMultiTouchZoomSupportEnabled(long nativeGestureListenerManager,
                 GestureListenerManagerImpl caller, boolean enabled);
+        void setHasListenersAttached(long nativeGestureListenerManager, boolean hasListeners);
     }
 }

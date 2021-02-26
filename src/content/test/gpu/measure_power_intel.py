@@ -22,7 +22,7 @@ Sample runs:
 
 python measure_power_intel.py --browser=canary --duration=10 --delay=5
   --verbose --url="https://www.youtube.com/watch?v=0XdS37Re1XQ"
-  --extra-browser-args="--no-sandbox --disable-features=UseSurfaceLayerForVideo"
+  --extra-browser-args="--no-sandbox"
 
 It is recommended to test with optimized builds of Chromium e.g. these GN args:
 
@@ -52,6 +52,7 @@ import time
 
 try:
   from selenium import webdriver
+  from selenium.common import exceptions
 except ImportError as error:
   logging.error(
       "This script needs selenium and appropriate web drivers to be installed.")
@@ -169,7 +170,7 @@ def CreateWebDriver(browser, user_data_dir, url, fullscreen,
       actions.move_to_element(video_el)
       actions.double_click(video_el)
       actions.perform()
-    except:
+    except exceptions.InvalidSelectorException:
       logging.warning('Could not locate video element to make fullscreen')
   return driver
 
@@ -282,9 +283,9 @@ def main(argv):
       logging.error("Can't locate file at %s",
                     options.extra_browser_args_filename)
     else:
-      with open(options.extra_browser_args_filename, 'r') as file:
-        extra_browser_args.extend(file.read().split())
-        file.close()
+      with open(options.extra_browser_args_filename, 'r') as f:
+        extra_browser_args.extend(f.read().split())
+        f.close()
 
   for run in range(1, options.repeat + 1):
     logfile = ipg_utils.GenerateIPGLogFilename(log_prefix, options.logdir, run,

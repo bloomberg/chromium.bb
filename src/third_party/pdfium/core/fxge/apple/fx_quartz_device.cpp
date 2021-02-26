@@ -13,7 +13,7 @@
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/fx_freetype.h"
 
-#if !defined _SKIA_SUPPORT_ && !defined _SKIA_SUPPORT_PATHS_
+#if !defined(_SKIA_SUPPORT_) && !defined(_SKIA_SUPPORT_PATHS_)
 #include "core/fxge/agg/fx_agg_driver.h"
 #endif
 
@@ -26,10 +26,10 @@ void* CQuartz2D::CreateGraphics(const RetainPtr<CFX_DIBitmap>& pBitmap) {
     return nullptr;
   CGBitmapInfo bmpInfo = kCGBitmapByteOrder32Little;
   switch (pBitmap->GetFormat()) {
-    case FXDIB_Rgb32:
+    case FXDIB_Format::kRgb32:
       bmpInfo |= kCGImageAlphaNoneSkipFirst;
       break;
-    case FXDIB_Argb:
+    case FXDIB_Format::kArgb:
     default:
       return nullptr;
   }

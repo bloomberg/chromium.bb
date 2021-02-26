@@ -2,17 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import {DebuggerModel} from './DebuggerModel.js';            // eslint-disable-line no-unused-vars
 import {RemoteObject} from './RemoteObject.js';              // eslint-disable-line no-unused-vars
 import {RuntimeModel} from './RuntimeModel.js';              // eslint-disable-line no-unused-vars
 import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
+
 export class HeapProfilerModel extends SDKModel {
   /**
    * @param {!Target} target
@@ -41,125 +36,75 @@ export class HeapProfilerModel extends SDKModel {
     return this._runtimeModel;
   }
 
-  enable() {
+  async enable() {
     if (this._enabled) {
       return;
     }
 
     this._enabled = true;
-    this._heapProfilerAgent.enable();
+    await this._heapProfilerAgent.invoke_enable();
   }
 
   /**
    * @param {number=} samplingRateInBytes
+   * @returns {!Promise<boolean>}
    */
-  startSampling(samplingRateInBytes) {
+  async startSampling(samplingRateInBytes) {
     if (this._samplingProfilerDepth++) {
-      return;
+      return false;
     }
     const defaultSamplingIntervalInBytes = 16384;
-    this._heapProfilerAgent.startSampling(samplingRateInBytes || defaultSamplingIntervalInBytes);
+    const response = await this._heapProfilerAgent.invoke_startSampling(
+        {samplingInterval: samplingRateInBytes || defaultSamplingIntervalInBytes});
+    return !!response.getError();
   }
 
   /**
    * @return {!Promise<?Protocol.HeapProfiler.SamplingHeapProfile>}
    */
-  stopSampling() {
+  async stopSampling() {
     if (!this._samplingProfilerDepth) {
       throw new Error('Sampling profiler is not running.');
     }
     if (--this._samplingProfilerDepth) {
       return this.getSamplingProfile();
     }
-    return this._heapProfilerAgent.stopSampling();
+    const response = await this._heapProfilerAgent.invoke_stopSampling();
+    if (response.getError()) {
+      return null;
+    }
+    return response.profile;
   }
 
   /**
    * @return {!Promise<?Protocol.HeapProfiler.SamplingHeapProfile>}
    */
-  getSamplingProfile() {
-    return this._heapProfilerAgent.getSamplingProfile();
-  }
-
-  startNativeSampling() {
-    const defaultSamplingIntervalInBytes = 65536;
-    this._memoryAgent.startSampling(defaultSamplingIntervalInBytes);
-  }
-
-  /**
-   * @return {!Promise<!NativeHeapProfile>}
-   */
-  async stopNativeSampling() {
-    const rawProfile = /** @type {!Protocol.Memory.SamplingProfile} */ (await this._memoryAgent.getSamplingProfile());
-    this._memoryAgent.stopSampling();
-    return this._convertNativeProfile(rawProfile);
-  }
-
-  /**
-   * @return {!Promise<!NativeHeapProfile>}
-   */
-  async takeNativeSnapshot() {
-    const rawProfile =
-        /** @type {!Protocol.Memory.SamplingProfile} */ (await this._memoryAgent.getAllTimeSamplingProfile());
-    return this._convertNativeProfile(rawProfile);
-  }
-
-  /**
-   * @return {!Promise<!NativeHeapProfile>}
-   */
-  async takeNativeBrowserSnapshot() {
-    const rawProfile =
-        /** @type {!Protocol.Memory.SamplingProfile} */ (await this._memoryAgent.getBrowserSamplingProfile());
-    return this._convertNativeProfile(rawProfile);
-  }
-
-  /**
-   * @param {!Protocol.Memory.SamplingProfile} rawProfile
-   * @return {!NativeHeapProfile}
-   */
-  _convertNativeProfile(rawProfile) {
-    const head = /** @type {!Protocol.HeapProfiler.SamplingHeapProfileNode} */
-        ({children: new Map(), selfSize: 0, callFrame: {functionName: '(root)', url: ''}});
-    for (const sample of rawProfile.samples) {
-      const node = sample.stack.reverse().reduce((node, name) => {
-        let child = node.children.get(name);
-        if (child) {
-          return child;
-        }
-        const namespace = /^([^:]*)::/.exec(name);
-        child = {
-          children: new Map(),
-          callFrame: {functionName: name, url: namespace && namespace[1] || ''},
-          selfSize: 0
-        };
-        node.children.set(name, child);
-        return child;
-      }, head);
-      node.selfSize += sample.total;
+  async getSamplingProfile() {
+    const response = await this._heapProfilerAgent.invoke_getSamplingProfile();
+    if (response.getError()) {
+      return null;
     }
-
-    function convertChildren(node) {
-      node.children = Array.from(node.children.values());
-      node.children.forEach(convertChildren);
-    }
-    convertChildren(head);
-
-    return new NativeHeapProfile(head, rawProfile.modules);
+    return response.profile;
   }
 
   /**
-   * @return {!Promise<void>}
+   * @return {!Promise<boolean>}
    */
-  collectGarbage() {
-    return this._heapProfilerAgent.collectGarbage();
+  async collectGarbage() {
+    const response = await this._heapProfilerAgent.invoke_collectGarbage();
+    return !!response.getError();
   }
 
   /**
    * @param {string} objectId
    * @return {!Promise<?string>}
    */
-  snapshotObjectIdForObjectId(objectId) {
-    return this._heapProfilerAgent.getHeapObjectId(objectId);
+  async snapshotObjectIdForObjectId(objectId) {
+    const response = await this._heapProfilerAgent.invoke_getHeapObjectId({objectId});
+    if (response.getError()) {
+      return null;
+    }
+    return response.heapSnapshotObjectId;
   }
 
   /**
@@ -168,16 +113,21 @@ export class HeapProfilerModel extends SDKModel {
    * @return {!Promise<?RemoteObject>}
    */
   async objectForSnapshotObjectId(snapshotObjectId, objectGroupName) {
-    const result = await this._heapProfilerAgent.getObjectByHeapObjectId(snapshotObjectId, objectGroupName);
-    return result && result.type && this._runtimeModel.createRemoteObject(result) || null;
+    const result = await this._heapProfilerAgent.invoke_getObjectByHeapObjectId(
+        {objectId: snapshotObjectId, objectGroup: objectGroupName});
+    if (result.getError()) {
+      return null;
+    }
+    return this._runtimeModel.createRemoteObject(result.result);
   }
 
   /**
    * @param {string} snapshotObjectId
-   * @return {!Promise<void>}
+   * @return {!Promise<boolean>}
    */
-  addInspectedHeapObject(snapshotObjectId) {
-    return this._heapProfilerAgent.addInspectedHeapObject(snapshotObjectId);
+  async addInspectedHeapObject(snapshotObjectId) {
+    const response = await this._heapProfilerAgent.invoke_addInspectedHeapObject({heapObjectId: snapshotObjectId});
+    return !!response.getError();
   }
 
   /**
@@ -185,24 +135,27 @@ export class HeapProfilerModel extends SDKModel {
    * @param {boolean} treatGlobalObjectsAsRoots
    * @return {!Promise<void>}
    */
-  takeHeapSnapshot(reportProgress, treatGlobalObjectsAsRoots) {
-    return this._heapProfilerAgent.takeHeapSnapshot(reportProgress, treatGlobalObjectsAsRoots);
+  async takeHeapSnapshot(reportProgress, treatGlobalObjectsAsRoots) {
+    await this._heapProfilerAgent.invoke_takeHeapSnapshot({reportProgress, treatGlobalObjectsAsRoots});
   }
 
   /**
    * @param {boolean} recordAllocationStacks
-   * @return {!Promise<void>}
+   * @return {!Promise<boolean>}
    */
-  startTrackingHeapObjects(recordAllocationStacks) {
-    return this._heapProfilerAgent.startTrackingHeapObjects(recordAllocationStacks);
+  async startTrackingHeapObjects(recordAllocationStacks) {
+    const response =
+        await this._heapProfilerAgent.invoke_startTrackingHeapObjects({trackAllocations: recordAllocationStacks});
+    return !!response.getError();
   }
 
   /**
    * @param {boolean} reportProgress
-   * @return {!Promise<void>}
+   * @return {!Promise<boolean>}
    */
-  stopTrackingHeapObjects(reportProgress) {
-    return this._heapProfilerAgent.stopTrackingHeapObjects(reportProgress);
+  async stopTrackingHeapObjects(reportProgress) {
+    const response = await this._heapProfilerAgent.invoke_stopTrackingHeapObjects({reportProgress});
+    return !!response.getError();
   }
 
   /**
@@ -250,61 +203,58 @@ export const Events = {
   ResetProfiles: Symbol('ResetProfiles')
 };
 
-/**
- * @extends {Protocol.HeapProfiler.SamplingHeapProfile}
- */
-class NativeHeapProfile {
-  /**
-   * @param {!Protocol.HeapProfiler.SamplingHeapProfileNode} head
-   * @param {!Array<!Protocol.Memory.Module>} modules
-   */
-  constructor(head, modules) {
-    this.head = head;
-    this.modules = modules;
-  }
-}
+/** @typedef {!{functionName: string, url: string, scriptId: (Protocol.Runtime.ScriptId|undefined), lineNumber: (number|undefined), columnNumber: (number|undefined)}} */
+// @ts-ignore typedef
+export let NativeProfilerCallFrame;  // eslint-disable-line no-unused-vars
+
+/** @typedef {!{callFrame: !NativeProfilerCallFrame, selfSize: number, id: (number|undefined), children: Array<!CommonHeapProfileNode>}} */
+// @ts-ignore typedef
+export let CommonHeapProfileNode;  // eslint-disable-line no-unused-vars
+
+/** @typedef {!{head:!CommonHeapProfileNode, modules:!Array<!Protocol.Memory.Module>}} */
+// @ts-ignore typedef
+export let CommonHeapProfile;  // eslint-disable-line no-unused-vars
 
 /**
- * @extends {Protocol.HeapProfilerDispatcher}
- * @unrestricted
+ * @implements {ProtocolProxyApi.HeapProfilerDispatcher}
  */
 class HeapProfilerDispatcher {
+  /**
+   * @param {!HeapProfilerModel} model
+   */
   constructor(model) {
     this._heapProfilerModel = model;
   }
 
   /**
    * @override
-   * @param {!Array.<number>} samples
+   * @param {!Protocol.HeapProfiler.HeapStatsUpdateEvent} event
    */
-  heapStatsUpdate(samples) {
-    this._heapProfilerModel.heapStatsUpdate(samples);
+  heapStatsUpdate({statsUpdate}) {
+    this._heapProfilerModel.heapStatsUpdate(statsUpdate);
   }
 
   /**
    * @override
-   * @param {number} lastSeenObjectId
-   * @param {number} timestamp
+   * @param {!Protocol.HeapProfiler.LastSeenObjectIdEvent} event
    */
-  lastSeenObjectId(lastSeenObjectId, timestamp) {
+  lastSeenObjectId({lastSeenObjectId, timestamp}) {
     this._heapProfilerModel.lastSeenObjectId(lastSeenObjectId, timestamp);
   }
 
   /**
    * @override
-   * @param {string} chunk
+   * @param {!Protocol.HeapProfiler.AddHeapSnapshotChunkEvent} event
    */
-  addHeapSnapshotChunk(chunk) {
+  addHeapSnapshotChunk({chunk}) {
     this._heapProfilerModel.addHeapSnapshotChunk(chunk);
   }
 
   /**
    * @override
-   * @param {number} done
-   * @param {number} total
-   * @param {boolean=} finished
+   * @param {!Protocol.HeapProfiler.ReportHeapSnapshotProgressEvent} event
    */
-  reportHeapSnapshotProgress(done, total, finished) {
+  reportHeapSnapshotProgress({done, total, finished}) {
     this._heapProfilerModel.reportHeapSnapshotProgress(done, total, finished);
   }
 
@@ -315,5 +265,9 @@ class HeapProfilerDispatcher {
     this._heapProfilerModel.resetProfiles();
   }
 }
+
+/** @typedef {!{callFrame: !NativeProfilerCallFrame, selfSize: number, childMap: !Map<string, !NodeForConstruction>}} */
+// @ts-ignore typedef
+let NodeForConstruction;  // eslint-disable-line no-unused-vars
 
 SDKModel.register(HeapProfilerModel, Capability.JS, false);

@@ -7,8 +7,11 @@
 
 #include <memory>
 
+#include "cc/paint/paint_canvas.h"
 #include "cc/paint/record_paint_canvas.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -33,12 +36,17 @@ class PLATFORM_EXPORT MemoryManagedPaintCanvas final
                      const SkRect& src,
                      const SkRect& dst,
                      const cc::PaintFlags* flags,
-                     SrcRectConstraint constraint) override;
+                     SkCanvas::SrcRectConstraint constraint) override;
+
+  bool IsCachingImage(const cc::PaintImage::ContentId content_id) const;
 
  private:
   void UpdateMemoryUsage(const cc::PaintImage& image);
 
-  base::flat_set<int> cached_image_ids_;
+  HashSet<cc::PaintImage::ContentId,
+          DefaultHash<cc::PaintImage::ContentId>::Hash,
+          WTF::UnsignedWithZeroKeyHashTraits<cc::PaintImage::ContentId>>
+      cached_image_ids_;
   uint64_t total_stored_image_memory_ = 0;
 
   base::RepeatingClosure set_needs_flush_callback_;

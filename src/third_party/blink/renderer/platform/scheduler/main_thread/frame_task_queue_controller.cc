@@ -102,19 +102,6 @@ void FrameTaskQueueController::CreateTaskQueue(
           .SetFreezeWhenKeepActive(queue_traits.can_be_throttled)
           .SetFrameScheduler(frame_scheduler_impl_);
 
-  switch (queue_traits.prioritisation_type) {
-    case QueueTraits::PrioritisationType::kVeryHigh:
-      queue_creation_params = queue_creation_params.SetFixedPriority(
-        TaskQueue::QueuePriority::kVeryHighPriority);
-      break;
-    case QueueTraits::PrioritisationType::kBestEffort:
-      queue_creation_params = queue_creation_params.SetFixedPriority(
-        TaskQueue::QueuePriority::kBestEffortPriority);
-      break;
-    default:
-      break;
-  }
-
   scoped_refptr<MainThreadTaskQueue> task_queue =
       main_thread_scheduler_impl_->NewTaskQueue(queue_creation_params);
   TaskQueueCreated(task_queue);
@@ -126,7 +113,7 @@ void FrameTaskQueueController::TaskQueueCreated(
   DCHECK(task_queue);
 
   std::unique_ptr<QueueEnabledVoter> voter =
-      task_queue->CreateQueueEnabledVoter();
+      task_queue->GetTaskQueue()->CreateQueueEnabledVoter();
 
   delegate_->OnTaskQueueCreated(task_queue.get(), voter.get());
 
@@ -174,17 +161,19 @@ bool FrameTaskQueueController::RemoveResourceLoadingTaskQueue(
 
 void FrameTaskQueueController::AsValueInto(
     base::trace_event::TracedValue* state) const {
-  state->BeginArray("task_queues");
-  for (const auto& it : task_queues_) {
-    state->AppendString(PointerToString(it.value.get()));
+  {
+    auto array_scope = state->BeginArrayScoped("task_queues");
+    for (const auto& it : task_queues_) {
+      state->AppendString(PointerToString(it.value.get()));
+    }
   }
-  state->EndArray();
 
-  state->BeginArray("resource_loading_task_queues");
-  for (const auto& queue : resource_loading_task_queues_) {
-    state->AppendString(PointerToString(queue.get()));
+  {
+    auto array_scope = state->BeginArrayScoped("resource_loading_task_queues");
+    for (const auto& queue : resource_loading_task_queues_) {
+      state->AppendString(PointerToString(queue.get()));
+    }
   }
-  state->EndArray();
 }
 
 // static

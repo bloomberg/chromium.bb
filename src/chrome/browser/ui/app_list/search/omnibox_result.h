@@ -39,8 +39,7 @@ class OmniboxResult : public ChromeSearchResult {
 
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
-  void InvokeAction(int action_index, int event_flags) override;
-  ash::SearchResultType GetSearchResultType() const override;
+  void InvokeAction(int action_index) override;
 
   // Returns the URL that will be navigated to by this search result.
   GURL DestinationURL() const;
@@ -58,6 +57,12 @@ class OmniboxResult : public ChromeSearchResult {
   void SetZeroSuggestionActions();
 
   void RecordOmniboxResultHistogram();
+
+  ash::SearchResultType GetSearchResultType() const;
+
+  // Whether or not the result is an answer and rich entities are enabled.
+  // TODO(crbug/1130372): Remove this when rich entities are enabled by default.
+  bool ShouldDisplayAsAnswer();
 
   Profile* profile_;
   AppListControllerDelegate* list_controller_;

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tab;
 
 import android.os.Handler;
-import android.view.View;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
@@ -21,16 +20,16 @@ import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
-import org.chromium.chrome.browser.display_cutout.DisplayCutoutController;
-import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
+import org.chromium.chrome.browser.display_cutout.DisplayCutoutTabHelper;
+import org.chromium.chrome.browser.media.MediaCaptureNotificationServiceImpl;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
-import org.chromium.chrome.browser.policy.PolicyAuditorJni;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.net.NetError;
+import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -76,6 +75,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
     private final ObserverList<Callback<WebContents>> mInitObservers = new ObserverList<>();
     private final Handler mHandler = new Handler();
     private WebContentsObserver mObserver;
+    private GURL mLastUrl;
 
     public static TabWebContentsObserver from(Tab tab) {
         TabWebContentsObserver observer = get(tab);
@@ -291,12 +291,13 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 observers.next().onDidFinishNavigation(mTab, navigation);
             }
 
-            if (navigation.errorCode() != 0) {
+            if (navigation.errorCode() != NetError.OK) {
                 if (navigation.isInMainFrame()) mTab.didFailPageLoad(navigation.errorCode());
 
-                recordErrorInPolicyAuditor(
-                        navigation.getUrl(), navigation.errorDescription(), navigation.errorCode());
+                recordErrorInPolicyAuditor(navigation.getUrlString(), navigation.errorDescription(),
+                        navigation.errorCode());
             }
+            mLastUrl = navigation.getUrl();
 
             if (!navigation.hasCommitted()) return;
 
@@ -339,38 +340,6 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         }
 
         @Override
-        public void didAttachInterstitialPage() {
-            // TODO(huayinz): Observe #didAttachInterstitialPage and #didDetachInterstitialPage
-            // in InfoBarContainer.
-            InfoBarContainer.get(mTab).setVisibility(View.INVISIBLE);
-            mTab.showRenderedPage();
-
-            RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-            while (observers.hasNext()) {
-                observers.next().onDidAttachInterstitialPage(mTab);
-            }
-            mTab.notifyLoadProgress(mTab.getProgress());
-            PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
-            auditor.notifyCertificateFailure(
-                    PolicyAuditorJni.get().getCertificateFailure(mTab.getWebContents()),
-                    ContextUtils.getApplicationContext());
-        }
-
-        @Override
-        public void didDetachInterstitialPage() {
-            InfoBarContainer.get(mTab).setVisibility(View.VISIBLE);
-
-            RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-            while (observers.hasNext()) {
-                observers.next().onDidDetachInterstitialPage(mTab);
-            }
-            mTab.notifyLoadProgress(mTab.getProgress());
-            if (!mTab.maybeShowNativePage(mTab.getUrlString(), false)) {
-                mTab.showRenderedPage();
-            }
-        }
-
-        @Override
         public void navigationEntriesDeleted() {
             mTab.notifyNavigationEntriesDeleted();
         }
@@ -382,13 +351,13 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
         @Override
         public void viewportFitChanged(@WebContentsObserver.ViewportFitType int value) {
-            DisplayCutoutController.from(mTab).setViewportFit(value);
+            DisplayCutoutTabHelper.from(mTab).setViewportFit(value);
         }
 
         @Override
         public void destroy() {
-            MediaCaptureNotificationService.updateMediaNotificationForTab(
-                    ContextUtils.getApplicationContext(), mTab.getId(), null, mTab.getUrlString());
+            MediaCaptureNotificationServiceImpl.updateMediaNotificationForTab(
+                    ContextUtils.getApplicationContext(), mTab.getId(), null, mLastUrl);
             super.destroy();
         }
     }

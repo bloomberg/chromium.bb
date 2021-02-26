@@ -1,7 +1,6 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """URL endpoint for adding new histograms to the dashboard."""
 from __future__ import print_function
 from __future__ import division
@@ -18,7 +17,9 @@ import uuid
 import zlib
 
 from google.appengine.api import taskqueue
+from google.appengine.ext import ndb
 
+from dashboard import sheriff_config_client
 from dashboard.api import api_request_handler
 from dashboard.common import datastore_hooks
 from dashboard.common import histogram_helpers
@@ -27,36 +28,10 @@ from dashboard.common import timing
 from dashboard.common import utils
 from dashboard.models import graph_data
 from dashboard.models import histogram
+from dashboard.models import upload_completion_token
 from tracing.value import histogram_set
 from tracing.value.diagnostics import diagnostic
 from tracing.value.diagnostics import reserved_infos
-
-SUITE_LEVEL_SPARSE_DIAGNOSTIC_NAMES = set([
-    reserved_infos.ARCHITECTURES.name,
-    reserved_infos.BENCHMARKS.name,
-    reserved_infos.BENCHMARK_DESCRIPTIONS.name,
-    reserved_infos.BOTS.name,
-    reserved_infos.BUG_COMPONENTS.name,
-    reserved_infos.DOCUMENTATION_URLS.name,
-    reserved_infos.GPUS.name,
-    reserved_infos.MASTERS.name,
-    reserved_infos.MEMORY_AMOUNTS.name,
-    reserved_infos.OS_NAMES.name,
-    reserved_infos.OS_VERSIONS.name,
-    reserved_infos.OWNERS.name,
-    reserved_infos.PRODUCT_VERSIONS.name,
-])
-
-HISTOGRAM_LEVEL_SPARSE_DIAGNOSTIC_NAMES = set([
-    reserved_infos.DEVICE_IDS.name,
-    reserved_infos.STORIES.name,
-    reserved_infos.STORYSET_REPEATS.name,
-    reserved_infos.STORY_TAGS.name,
-])
-
-SPARSE_DIAGNOSTIC_NAMES = SUITE_LEVEL_SPARSE_DIAGNOSTIC_NAMES.union(
-    HISTOGRAM_LEVEL_SPARSE_DIAGNOSTIC_NAMES)
-
 
 TASK_QUEUE_NAME = 'histograms-queue'
 
@@ -96,7 +71,7 @@ class DecompressFileWrapper(object):
   def __enter__(self):
     return self
 
-  def read(self, size=None): # pylint: disable=invalid-name
+  def read(self, size=None):  # pylint: disable=invalid-name
     if size is None or size < 0:
       size = self.buffer_size
 
@@ -113,7 +88,7 @@ class DecompressFileWrapper(object):
     decompressed_data = self.decompressor.decompress(temporary_buffer, size)
     return decompressed_data
 
-  def close(self): # pylint: disable=invalid-name
+  def close(self):  # pylint: disable=invalid-name
     self.decompressor.flush()
 
   def __exit__(self, exception_type, exception_value, execution_traceback):
@@ -138,6 +113,7 @@ def _LoadHistogramList(input_file):
   """
   try:
     with timing.WallTimeLogger('json.load'):
+
       def NormalizeDecimals(obj):
         # Traverse every object in obj to turn Decimal objects into floats.
         if isinstance(obj, decimal.Decimal):
@@ -162,10 +138,17 @@ class AddHistogramsProcessHandler(request_handler.RequestHandler):
 
   def post(self):
     datastore_hooks.SetPrivilegedRequest()
+    token = None
 
     try:
       params = json.loads(self.request.body)
       gcs_file_path = params['gcs_file_path']
+
+      token_id = params.get('upload_completion_token')
+      if token_id is not None:
+        token = upload_completion_token.Token.get_by_id(token_id)
+        upload_completion_token.Token.UpdateObjectState(
+            token, upload_completion_token.State.PROCESSING)
 
       try:
         logging.debug('Loading %s', gcs_file_path)
@@ -176,13 +159,19 @@ class AddHistogramsProcessHandler(request_handler.RequestHandler):
 
         gcs_file.close()
 
-        ProcessHistogramSet(histogram_dicts)
+        ProcessHistogramSet(histogram_dicts, token)
       finally:
         cloudstorage.delete(gcs_file_path, retry_params=_RETRY_PARAMS)
 
-    except Exception as e: # pylint: disable=broad-except
+      upload_completion_token.Token.UpdateObjectState(
+          token, upload_completion_token.State.COMPLETED)
+
+    except Exception as e:  # pylint: disable=broad-except
       logging.error('Error processing histograms: %r', e.message)
       self.response.out.write(json.dumps({'error': e.message}))
+
+      upload_completion_token.Token.UpdateObjectState(
+          token, upload_completion_token.State.FAILED, e.message)
 
 
 class AddHistogramsHandler(api_request_handler.ApiRequestHandler):
@@ -190,15 +179,32 @@ class AddHistogramsHandler(api_request_handler.ApiRequestHandler):
   def _CheckUser(self):
     self._CheckIsInternalUser()
 
+  def _CreateUploadCompletionToken(self, temporary_staging_file_path=None):
+    token_info = {
+        'token': str(uuid.uuid4()),
+        'file': temporary_staging_file_path,
+    }
+    token = upload_completion_token.Token(
+        id=token_info['token'],
+        temporary_staging_file_path=temporary_staging_file_path,
+    )
+    token.put()
+    logging.info('Upload completion token created. Token id: %s',
+                 token_info['token'])
+    return token, token_info
+
   def Post(self):
     if utils.IsDevAppserver():
       # Don't require developers to zip the body.
       # In prod, the data will be written to cloud storage and processed on the
       # taskqueue, so the caller will not see any errors. In dev_appserver,
       # process the data immediately so the caller will see errors.
+      # Also always create upload completion token for such requests.
+      token, token_info = self._CreateUploadCompletionToken()
       ProcessHistogramSet(
-          _LoadHistogramList(StringIO.StringIO(self.request.body)))
-      return
+          _LoadHistogramList(StringIO.StringIO(self.request.body)), token)
+      token.UpdateState(upload_completion_token.State.COMPLETED)
+      return token_info
 
     with timing.WallTimeLogger('decompress'):
       try:
@@ -223,19 +229,27 @@ class AddHistogramsHandler(api_request_handler.ApiRequestHandler):
     params = {'gcs_file_path': '/add-histograms-cache/%s' % filename}
 
     gcs_file = cloudstorage.open(
-        params['gcs_file_path'], 'w',
+        params['gcs_file_path'],
+        'w',
         content_type='application/octet-stream',
         retry_params=_RETRY_PARAMS)
     gcs_file.write(data_str)
     gcs_file.close()
+
+    token_info = None
+    if utils.ShouldTurnOnUploadCompletionTokenExperiment():
+      _, token_info = self._CreateUploadCompletionToken(params['gcs_file_path'])
+      params['upload_completion_token'] = token_info['token']
 
     retry_options = taskqueue.TaskRetryOptions(
         task_retry_limit=_TASK_RETRY_LIMIT)
     queue = taskqueue.Queue('default')
     queue.add(
         taskqueue.Task(
-            url='/add_histograms/process', payload=json.dumps(params),
+            url='/add_histograms/process',
+            payload=json.dumps(params),
             retry_options=retry_options))
+    return token_info
 
 
 def _LogDebugInfo(histograms):
@@ -261,7 +275,7 @@ def _LogDebugInfo(histograms):
     logging.info('No BUILD_URLS in data.')
 
 
-def ProcessHistogramSet(histogram_dicts):
+def ProcessHistogramSet(histogram_dicts, completion_token=None):
   if not isinstance(histogram_dicts, list):
     raise api_request_handler.BadRequestError(
         'HistogramSet JSON must be a list of dicts')
@@ -290,15 +304,16 @@ def ProcessHistogramSet(histogram_dicts):
     _PurgeHistogramBinData(histograms)
 
   with timing.WallTimeLogger('_GetDiagnosticValue calls'):
-    master = _GetDiagnosticValue(
-        reserved_infos.MASTERS.name, histograms.GetFirstHistogram())
-    bot = _GetDiagnosticValue(
-        reserved_infos.BOTS.name, histograms.GetFirstHistogram())
-    benchmark = _GetDiagnosticValue(
-        reserved_infos.BENCHMARKS.name, histograms.GetFirstHistogram())
+    master = _GetDiagnosticValue(reserved_infos.MASTERS.name,
+                                 histograms.GetFirstHistogram())
+    bot = _GetDiagnosticValue(reserved_infos.BOTS.name,
+                              histograms.GetFirstHistogram())
+    benchmark = _GetDiagnosticValue(reserved_infos.BENCHMARKS.name,
+                                    histograms.GetFirstHistogram())
     benchmark_description = _GetDiagnosticValue(
         reserved_infos.BENCHMARK_DESCRIPTIONS.name,
-        histograms.GetFirstHistogram(), optional=True)
+        histograms.GetFirstHistogram(),
+        optional=True)
 
   with timing.WallTimeLogger('_ValidateMasterBotBenchmarkName'):
     _ValidateMasterBotBenchmarkName(master, bot, benchmark)
@@ -337,8 +352,8 @@ def ProcessHistogramSet(histogram_dicts):
   with timing.WallTimeLogger('DeduplicateAndPut'):
     new_guids_to_old_diagnostics = (
         histogram.SparseDiagnostic.FindOrInsertDiagnostics(
-            suite_level_sparse_diagnostic_entities, suite_key,
-            revision, last_added.revision).get_result())
+            suite_level_sparse_diagnostic_entities, suite_key, revision,
+            last_added.revision).get_result())
 
   with timing.WallTimeLogger('ReplaceSharedDiagnostic calls'):
     for new_guid, old_diagnostic in new_guids_to_old_diagnostics.items():
@@ -346,8 +361,8 @@ def ProcessHistogramSet(histogram_dicts):
           new_guid, diagnostic.Diagnostic.FromDict(old_diagnostic))
 
   with timing.WallTimeLogger('_CreateHistogramTasks'):
-    tasks = _CreateHistogramTasks(
-        suite_key.id(), histograms, revision, benchmark_description)
+    tasks = _CreateHistogramTasks(suite_key.id(), histograms, revision,
+                                  benchmark_description, completion_token)
 
   with timing.WallTimeLogger('_QueueHistogramTasks'):
     _QueueHistogramTasks(tasks)
@@ -371,14 +386,20 @@ def _QueueHistogramTasks(tasks):
 
 def _MakeTask(params):
   return taskqueue.Task(
-      url='/add_histograms_queue', payload=json.dumps(params),
+      url='/add_histograms_queue',
+      payload=json.dumps(params),
       _size_check=False)
 
 
-def _CreateHistogramTasks(
-    suite_path, histograms, revision, benchmark_description):
+def _CreateHistogramTasks(suite_path,
+                          histograms,
+                          revision,
+                          benchmark_description,
+                          completion_token=None):
   tasks = []
   duplicate_check = set()
+  measurement_add_futures = []
+  sheriff_client = sheriff_config_client.GetSheriffConfigClient()
 
   for hist in histograms:
     diagnostics = FindHistogramLevelSparseDiagnostics(hist)
@@ -395,15 +416,25 @@ def _CreateHistogramTasks(
 
     # We create one task per histogram, so that we can get as much time as we
     # need for processing each histogram per task.
-    task_dict = _MakeTaskDict(
-        hist, test_path, revision, benchmark_description, diagnostics)
+    task_dict = _MakeTaskDict(hist, test_path, revision, benchmark_description,
+                              diagnostics, completion_token)
     tasks.append(_MakeTask([task_dict]))
+
+    if completion_token is not None:
+      measurement_add_futures.append(
+          completion_token.AddMeasurement(
+              test_path, utils.IsMonitored(sheriff_client, test_path)))
+  ndb.Future.wait_all(measurement_add_futures)
 
   return tasks
 
 
-def _MakeTaskDict(
-    hist, test_path, revision, benchmark_description, diagnostics):
+def _MakeTaskDict(hist,
+                  test_path,
+                  revision,
+                  benchmark_description,
+                  diagnostics,
+                  completion_token=None):
   # TODO(simonhatch): "revision" is common to all tasks, as is the majority of
   # the test path
   params = {
@@ -425,31 +456,38 @@ def _MakeTaskDict(
   params['diagnostics'] = diagnostics
   params['data'] = hist.AsDict()
 
+  if completion_token is not None:
+    params['token'] = completion_token.key.id()
+
   return params
 
 
-def FindSuiteLevelSparseDiagnostics(
-    histograms, suite_key, revision, internal_only):
+def FindSuiteLevelSparseDiagnostics(histograms, suite_key, revision,
+                                    internal_only):
   diagnostics = {}
   for hist in histograms:
     for name, diag in hist.diagnostics.items():
-      if name in SUITE_LEVEL_SPARSE_DIAGNOSTIC_NAMES:
+      if name in histogram_helpers.SUITE_LEVEL_SPARSE_DIAGNOSTIC_NAMES:
         existing_entity = diagnostics.get(name)
         if existing_entity is None:
           diagnostics[name] = histogram.SparseDiagnostic(
-              id=diag.guid, data=diag.AsDict(), test=suite_key,
-              start_revision=revision, end_revision=sys.maxsize, name=name,
+              id=diag.guid,
+              data=diag.AsDict(),
+              test=suite_key,
+              start_revision=revision,
+              end_revision=sys.maxsize,
+              name=name,
               internal_only=internal_only)
         elif existing_entity.key.id() != diag.guid:
-          raise ValueError(
-              name + ' diagnostics must be the same for all histograms')
+          raise ValueError(name +
+                           ' diagnostics must be the same for all histograms')
   return list(diagnostics.values())
 
 
 def FindHistogramLevelSparseDiagnostics(hist):
   diagnostics = {}
   for name, diag in hist.diagnostics.items():
-    if name in HISTOGRAM_LEVEL_SPARSE_DIAGNOSTIC_NAMES:
+    if name in histogram_helpers.HISTOGRAM_LEVEL_SPARSE_DIAGNOSTIC_NAMES:
       diagnostics[name] = diag
   return diagnostics
 
@@ -459,13 +497,10 @@ def _GetDiagnosticValue(name, hist, optional=False):
     if name not in hist.diagnostics:
       return None
 
-  _CheckRequest(
-      name in hist.diagnostics,
-      'Histogram [%s] missing "%s" diagnostic' % (hist.name, name))
+  _CheckRequest(name in hist.diagnostics,
+                'Histogram [%s] missing "%s" diagnostic' % (hist.name, name))
   value = hist.diagnostics[name]
-  _CheckRequest(
-      len(value) == 1,
-      'Histograms must have exactly 1 "%s"' % name)
+  _CheckRequest(len(value) == 1, 'Histograms must have exactly 1 "%s"' % name)
   return value.GetOnlyElement()
 
 
@@ -473,24 +508,26 @@ def ComputeRevision(histograms):
   _CheckRequest(len(histograms) > 0, 'Must upload at least one histogram')
   rev = _GetDiagnosticValue(
       reserved_infos.POINT_ID.name,
-      histograms.GetFirstHistogram(), optional=True)
+      histograms.GetFirstHistogram(),
+      optional=True)
 
   if rev is None:
     rev = _GetDiagnosticValue(
         reserved_infos.CHROMIUM_COMMIT_POSITIONS.name,
-        histograms.GetFirstHistogram(), optional=True)
+        histograms.GetFirstHistogram(),
+        optional=True)
 
   if rev is None:
     revision_timestamps = histograms.GetFirstHistogram().diagnostics.get(
         reserved_infos.REVISION_TIMESTAMPS.name)
-    _CheckRequest(revision_timestamps is not None,
-                  'Must specify REVISION_TIMESTAMPS, CHROMIUM_COMMIT_POSITIONS,'
-                  ' or POINT_ID')
+    _CheckRequest(
+        revision_timestamps is not None,
+        'Must specify REVISION_TIMESTAMPS, CHROMIUM_COMMIT_POSITIONS,'
+        ' or POINT_ID')
     rev = revision_timestamps.max_timestamp
 
   if not isinstance(rev, int):
-    raise api_request_handler.BadRequestError(
-        'Point ID must be an integer.')
+    raise api_request_handler.BadRequestError('Point ID must be an integer.')
 
   return rev
 
@@ -500,7 +537,7 @@ def InlineDenseSharedDiagnostics(histograms):
   for hist in histograms:
     diagnostics = hist.diagnostics
     for name, diag in diagnostics.items():
-      if name not in SPARSE_DIAGNOSTIC_NAMES:
+      if name not in histogram_helpers.SPARSE_DIAGNOSTIC_NAMES:
         diag.Inline()
 
 

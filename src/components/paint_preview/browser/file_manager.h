@@ -16,6 +16,7 @@
 #include "url/gurl.h"
 
 namespace paint_preview {
+class PaintPreviewTabService;
 
 // FileManager manages paint preview files associated with a root directory.
 // Typically the root directory is <profile_dir>/paint_previews/<feature>.
@@ -23,6 +24,12 @@ namespace paint_preview {
 // This class is refcounted so scheduled tasks may continue during shutdown.
 class FileManager : public base::RefCountedThreadSafe<FileManager> {
  public:
+  enum class ProtoReadStatus : int {
+    kOk = 0,
+    kNoProto,
+    kDeserializationError,
+  };
+
   // Create a file manager for |root_directory|. Top level items in
   // |root_directoy| should be exclusively managed by this class. Items within
   // the subdirectories it creates can be freely modified. All methods will be
@@ -46,6 +53,9 @@ class FileManager : public base::RefCountedThreadSafe<FileManager> {
   // Get statistics about the time of creation and size of artifacts.
   size_t GetSizeOfArtifacts(const DirectoryKey& key) const;
   base::Optional<base::File::Info> GetInfo(const DirectoryKey& key) const;
+
+  // Returns the total disk usage of all paint previews.
+  size_t GetTotalDiskUsage() const;
 
   // Returns true if the directory for |key| exists.
   bool DirectoryExists(const DirectoryKey& key) const;
@@ -79,17 +89,27 @@ class FileManager : public base::RefCountedThreadSafe<FileManager> {
                                   const PaintPreviewProto& proto,
                                   bool compress) const;
 
-  // Deserializes PaintPreviewProto stored in |key|. Returns nullptr if not
-  // found or the proto cannot be parsed.
-  std::unique_ptr<PaintPreviewProto> DeserializePaintPreviewProto(
-      const DirectoryKey& key) const;
+  // Deserializes PaintPreviewProto stored in |key|. Returns a status and the
+  // proto. The proto will be nullptr if the ProtoReadStatus != kOk.
+  std::pair<ProtoReadStatus, std::unique_ptr<PaintPreviewProto>>
+  DeserializePaintPreviewProto(const DirectoryKey& key) const;
 
   // Lists the current set of in-use DirectoryKeys.
   base::flat_set<DirectoryKey> ListUsedKeys() const;
 
+  // Returns a list of the least recently modified artifact sets until which
+  // when deleted would result in a total capture size on disk that is less than
+  // |max_size|.
+  std::vector<DirectoryKey> GetOldestArtifactsForCleanup(
+      size_t max_size,
+      base::TimeDelta expiry_horizon);
+
  private:
   friend class base::RefCountedThreadSafe<FileManager>;
   ~FileManager();
+
+  friend class PaintPreviewTabService;
+  base::FilePath GetPath() const { return root_directory_; }
 
   enum StorageType {
     kNone = 0,

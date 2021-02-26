@@ -6,13 +6,13 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_ANDROID_AFFILIATION_MOCK_AFFILIATION_CONSUMER_H_
 
 #include "base/macros.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/android_affiliation/android_affiliation_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace password_manager {
 
-// A mock consumer of AffiliationService::GetAffiliationsAndBranding().
+// A mock consumer of AndroidAffiliationService::GetAffiliationsAndBranding().
 class MockAffiliationConsumer {
  public:
   MockAffiliationConsumer();
@@ -26,7 +26,7 @@ class MockAffiliationConsumer {
   // will indicate a failed lookup.
   void ExpectFailure();
 
-  AffiliationService::ResultCallback GetResultCallback();
+  AndroidAffiliationService::ResultCallback GetResultCallback();
 
  private:
   MOCK_METHOD2(OnResultCallback, void(const AffiliatedFacets&, bool));

@@ -7,20 +7,28 @@
 
 #include <memory>
 #include <ostream>
+#include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/arc/arc_app_id_provider_impl.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/chromeos/arc/session/adb_sideloading_availability_delegate_impl.h"
+#include "chrome/browser/chromeos/arc/session/arc_app_id_provider_impl.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
+#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "components/arc/mojom/auth.mojom.h"
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/session/arc_stop_reason.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 class ArcAppLauncher;
+class PrefService;
 class Profile;
 
 namespace arc {
@@ -37,11 +45,13 @@ class ArcTermsOfServiceNegotiator;
 class ArcUiAvailabilityReporter;
 
 enum class ProvisioningResult : int;
+enum class ArcStopReason;
 
 // This class is responsible for handing stages of ARC life-cycle.
 class ArcSessionManager : public ArcSessionRunner::Observer,
                           public ArcSupportHost::ErrorDelegate,
-                          public chromeos::SessionManagerClient::Observer {
+                          public chromeos::SessionManagerClient::Observer,
+                          public chromeos::ConciergeClient::VmObserver {
  public:
   // Represents each State of ARC session.
   // NOT_INITIALIZED: represents the state that the Profile is not yet ready
@@ -104,54 +114,12 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     STOPPING,
   };
 
-  // Observer for those services outside of ARC which want to know ARC events.
-  class Observer {
-   public:
-    // Called to notify that whether Google Play Store is enabled or not, which
-    // is represented by "arc.enabled" preference, is updated.
-    virtual void OnArcPlayStoreEnabledChanged(bool enabled) {}
+  using ExpansionResult = std::pair<std::string /* salt on disk */,
+                                    bool /* expansion successful */>;
 
-    // Called to notify that checking of Android management status started
-    // during the opt-in flow.
-    virtual void OnArcOptInManagementCheckStarted() {}
-
-    // Called to notify that ARC begins to start.
-    virtual void OnArcStarted() {}
-
-    // Called to notify that ARC has been successfully provisioned for the first
-    // time after OptIn.
-    virtual void OnArcInitialStart() {}
-
-    // Called when ARC session is stopped, and is not being restarted
-    // automatically.
-    virtual void OnArcSessionStopped(ArcStopReason stop_reason) {}
-
-    // Called when ARC session is stopped, but is being restarted automatically.
-    // This is called _after_ the container is actually created.
-    virtual void OnArcSessionRestarting() {}
-
-    // Called to notify that Android data has been removed. Used in
-    // browser_tests
-    virtual void OnArcDataRemoved() {}
-
-    // Called to notify that the error is requested by the session manager to be
-    // displayed in the support host. This is called even if Support UI is
-    // disabled. Note that this is not called in cases when the support app
-    // switches to an error page by itself.
-    virtual void OnArcErrorShowRequested(ArcSupportHost::Error error) {}
-
-    // Called with true when the /run/arc[vm]/host_generated/*.prop files are
-    // generated (and false when the attempt fails.) The function is called once
-    // per observer regardless of whether the attempt has already been made
-    // before the observer is added.
-    virtual void OnPropertyFilesExpanded(bool result) {}
-
-   protected:
-    virtual ~Observer() = default;
-  };
-
-  explicit ArcSessionManager(
-      std::unique_ptr<ArcSessionRunner> arc_session_runner);
+  ArcSessionManager(std::unique_ptr<ArcSessionRunner> arc_session_runner,
+                    std::unique_ptr<AdbSideloadingAvailabilityDelegateImpl>
+                        adb_sideloading_availability_delegate);
   ~ArcSessionManager() override;
 
   static ArcSessionManager* Get();
@@ -159,6 +127,15 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   static void SetUiEnabledForTesting(bool enabled);
   static void SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(bool enabled);
   static void EnableCheckAndroidManagementForTesting(bool enable);
+  static std::string GenerateFakeSerialNumberForTesting(
+      const std::string& chromeos_user,
+      const std::string& salt);
+  static std::string GetOrCreateSerialNumberForTesting(
+      PrefService* local_state,
+      const std::string& chromeos_user,
+      const std::string& arc_salt_on_disk);
+  static bool ReadSaltOnDiskForTesting(const base::FilePath& salt_path,
+                                       std::string* out_salt);
 
   // Returns true if ARC is allowed to run for the current session.
   // TODO(hidehiko): The name is very close to IsArcAllowedForProfile(), but
@@ -166,8 +143,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   bool IsAllowed() const;
 
   // Start expanding the property files. Note that these property files are
-  // needed to start the mini instance.
-  void ExpandPropertyFiles();
+  // needed to start the mini instance. This function also tries to read
+  // /var/lib/misc/arc_salt when ARCVM is enabled.
+  void ExpandPropertyFilesAndReadSalt();
 
   // Initializes ArcSessionManager. Before this runs, Profile must be set
   // via SetProfile().
@@ -184,8 +162,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   State state() const { return state_; }
 
   // Adds or removes observers.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(ArcSessionManagerObserver* observer);
+  void RemoveObserver(ArcSessionManagerObserver* observer);
 
   // Notifies observers that Google Play Store enabled preference is changed.
   // Note: ArcPlayStoreEnabledPreferenceHandler has the main responsibility to
@@ -234,7 +212,15 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // On provisioning completion (regardless of whether successfully done or
   // not), this is called with its status. On success, called with
   // ProvisioningResult::SUCCESS, otherwise |result| is the error reason.
-  void OnProvisioningFinished(ProvisioningResult result);
+  // |error| either contains the sign-in error that came from ARC or it may
+  // indicate that ARC stopped prematurely and provisioning could not finish
+  // successfully.
+  void OnProvisioningFinished(
+      ProvisioningResult result,
+      absl::variant<mojom::ArcSignInErrorPtr, ArcStopReason> error);
+
+  // A helper function that calls ArcSessionRunner's SetUserInfo.
+  void SetUserInfo();
 
   // Returns the time when the sign in process started, or a null time if
   // signing in didn't happen during this session.
@@ -270,7 +256,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   void SetArcSessionRunnerForTesting(
       std::unique_ptr<ArcSessionRunner> arc_session_runner);
   ArcSessionRunner* GetArcSessionRunnerForTesting();
-  void SetAttemptUserExitCallbackForTesting(const base::Closure& callback);
+  void SetAttemptUserExitCallbackForTesting(
+      const base::RepeatingClosure& callback);
 
   // Returns whether the Play Store app is requested to be launched by this
   // class. Should be used only for tests.
@@ -285,9 +272,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     OnTermsOfServiceNegotiated(accepted);
   }
 
-  // Invokes OnExpandPropertyFiles as if the expansion is done.
-  void OnExpandPropertyFilesForTesting(bool result) {
-    OnExpandPropertyFiles(result);
+  // Invokes OnExpandPropertyFilesAndReadSalt as if the expansion is done.
+  void OnExpandPropertyFilesAndReadSaltForTesting(bool result) {
+    OnExpandPropertyFilesAndReadSalt(ExpansionResult{{}, result});
   }
 
   void reset_property_files_expansion_result() {
@@ -303,6 +290,16 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
       const base::FilePath& property_files_dest_dir) {
     property_files_dest_dir_ = property_files_dest_dir;
   }
+
+  // chromeos::ConciergeClient::VmObserver overrides.
+  void OnVmStarted(
+      const vm_tools::concierge::VmStartedSignal& vm_signal) override;
+  void OnVmStopped(
+      const vm_tools::concierge::VmStoppedSignal& vm_signal) override;
+
+  // Getter for |vm_info_|.
+  // If ARCVM is not running, return base::nullopt.
+  const base::Optional<vm_tools::concierge::VmInfo>& GetVmInfo() const;
 
  private:
   // Reports statuses of OptIn flow to UMA.
@@ -382,15 +379,18 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Requests the support host (if it exists) to show the error, and notifies
   // the observers.
   void ShowArcSupportHostError(ArcSupportHost::Error error,
+                               int error_code,
                                bool should_show_send_feedback);
 
   // chromeos::SessionManagerClient::Observer:
   void EmitLoginPromptVisibleCalled() override;
 
-  // Called when ExpandPropertyFiles is done.
-  void OnExpandPropertyFiles(bool result);
+  // Called when ExpandPropertyFilesAndReadSalt is done.
+  void OnExpandPropertyFilesAndReadSalt(ExpansionResult result);
 
   std::unique_ptr<ArcSessionRunner> arc_session_runner_;
+  std::unique_ptr<AdbSideloadingAvailabilityDelegateImpl>
+      adb_sideloading_availability_delegate_;
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;
@@ -402,7 +402,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Internal state machine. See also State enum class.
   State state_ = State::NOT_INITIALIZED;
 
-  base::ObserverList<Observer>::Unchecked observer_list_;
+  base::ObserverList<ArcSessionManagerObserver>::Unchecked observer_list_;
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   bool reenable_arc_ = false;
   bool provisioning_reported_ = false;
@@ -425,13 +425,18 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   base::TimeTicks sign_in_start_time_;
   // The time when ARC was about to start.
   base::TimeTicks arc_start_time_;
-  base::Closure attempt_user_exit_callback_;
+  base::RepeatingClosure attempt_user_exit_callback_;
 
   ArcAppIdProviderImpl app_id_provider_;
+
+  // The content of /var/lib/misc/arc_salt. Empty if the file doesn't exist.
+  base::Optional<std::string> arc_salt_on_disk_;
 
   base::Optional<bool> property_files_expansion_result_;
   base::FilePath property_files_source_dir_;
   base::FilePath property_files_dest_dir_;
+
+  base::Optional<vm_tools::concierge::VmInfo> vm_info_;
 
   // Must be the last member.
   base::WeakPtrFactory<ArcSessionManager> weak_ptr_factory_{this};

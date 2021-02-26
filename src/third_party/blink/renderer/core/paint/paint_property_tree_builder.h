@@ -41,10 +41,36 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // When a layout object recur to its children, the main context is expected
     // to refer the object's border box, then the callee will derive its own
     // border box by translating the space with its own layout location.
-    const TransformPaintPropertyNode* transform = nullptr;
+    const TransformPaintPropertyNodeOrAlias* transform = nullptr;
     // Corresponds to FragmentData::PaintOffset, which does not include
     // fragmentation offsets. See FragmentContext for the fragmented version.
     PhysicalOffset paint_offset;
+
+    // "Additional offset to layout shift root" is the accumulation of paint
+    // offsets encoded in PaintOffsetTranslations between the local transform
+    // space and the layout shift root. The layout shift root is the nearest
+    // transform node (not including the transform nodes for the current object)
+    // that is one of:
+    //   * The transform property tree state of the containing LayoutView
+    //   * A transform that is not identity or 2d translation
+    //   * A scroll translation
+    //   * A replaced contents transform
+    //   * A transform isolation node
+    //   * A sticky translation
+    // The offset plus paint_offset is the offset for layout shift tracking.
+    // It doesn't include transforms because we need to ignore transform changes
+    // for layout shift tracking, see
+    //    https://github.com/WICG/layout-instability#transform-changes
+    // This field is the diff between the new and the old additional offsets to
+    // layout shift root.
+    PhysicalOffset additional_offset_to_layout_shift_root_delta;
+
+    // For paint invalidation optimization for subpixel movement under
+    // composited layer. It's reset to zero if subpixel can't be propagated
+    // thus the optimization is not applicable (e.g. when crossing a
+    // non-translation transform).
+    PhysicalOffset directly_composited_container_paint_offset_subpixel_delta;
+
     // The PaintLayer corresponding to the origin of |paint_offset|.
     const LayoutObject* paint_offset_root = nullptr;
     // Whether newly created children should flatten their inherited transform
@@ -52,6 +78,15 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // be updated whenever |transform| is; flattening only needs to happen
     // to immediate children.
     bool should_flatten_inherited_transform = false;
+
+    // True if any fixed-position children within this context are fixed to the
+    // root of the FrameView (and hence above its scroll).
+    bool fixed_position_children_fixed_to_root = false;
+
+    // True if the layout shift root (see
+    // additional_offset_to_layout_shift_root_delta for the definition) of this
+    // object has changed.
+    bool layout_shift_root_changed = false;
 
     // Rendering context for 3D sorting. See
     // TransformPaintPropertyNode::renderingContextId.
@@ -61,16 +96,12 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // node is independent from the transform and paint offset above. Also the
     // actual raster region may be affected by layerization and occlusion
     // tracking.
-    const ClipPaintPropertyNode* clip = nullptr;
+    const ClipPaintPropertyNodeOrAlias* clip = nullptr;
     // The scroll node contains information for scrolling such as the parent
     // scroll space, the extent that can be scrolled, etc. Because scroll nodes
     // reference a scroll offset transform, scroll nodes should be updated if
     // the transform tree changes.
     const ScrollPaintPropertyNode* scroll = nullptr;
-
-    // True if any fixed-position children within this context are fixed to the
-    // root of the FrameView (and hence above its scroll).
-    bool fixed_position_children_fixed_to_root = false;
   };
 
   ContainingBlockContext current;
@@ -95,7 +126,7 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // guaranteed that every DOM descendant is also a stacking context descendant.
   // Therefore, we don't need extra bookkeeping for effect nodes and can
   // generate the effect tree from a DOM-order traversal.
-  const EffectPaintPropertyNode* current_effect;
+  const EffectPaintPropertyNodeOrAlias* current_effect;
 
   // If the object is a flow thread, this records the clip rect for this
   // fragment.
@@ -110,8 +141,13 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // offset to paint at the desired place.
   PhysicalOffset repeating_paint_offset_adjustment;
 
-  FloatSize paint_offset_delta;
   PhysicalOffset old_paint_offset;
+
+  // An additional offset that applies to the current fragment, but is detected
+  // *before* the ContainingBlockContext is updated for it. Once the
+  // ContainingBlockContext is set, this value should be added to
+  // ContainingBlockContext::additional_offset_to_layout_shift_root_delta.
+  PhysicalOffset pending_additional_offset_to_layout_shift_root_delta;
 };
 
 struct PaintPropertyTreeBuilderContext {
@@ -130,7 +166,7 @@ struct PaintPropertyTreeBuilderContext {
 
 #if DCHECK_IS_ON()
   // When DCHECK_IS_ON() we create PaintPropertyTreeBuilderContext even if not
-  // needed. See FindPaintOffsetAndVisualRectNeedingUpdate.h.
+  // needed. See find_paint_offset_needing_update.h.
   bool is_actually_needed = true;
 #endif
 
@@ -178,6 +214,8 @@ struct PaintPropertyTreeBuilderContext {
   // Whether composited raster invalidation is supported for this object.
   // If not, subtree invalidations occur on every property tree change.
   unsigned supports_composited_raster_invalidation : 1;
+
+  unsigned is_affected_by_outer_viewport_bounds_delta : 1;
 
   // This is always recalculated in PaintPropertyTreeBuilder::UpdateForSelf()
   // which overrides the inherited value.
@@ -235,13 +273,15 @@ class PaintPropertyTreeBuilder {
   PaintPropertyChangeType UpdateForChildren();
 
  private:
-  ALWAYS_INLINE void InitFragmentPaintProperties(FragmentData&,
-                                                 bool needs_paint_properties);
+  ALWAYS_INLINE void InitFragmentPaintProperties(
+      FragmentData&,
+      bool needs_paint_properties,
+      PaintPropertyTreeBuilderFragmentContext&);
   ALWAYS_INLINE void InitFragmentPaintPropertiesForLegacy(
       FragmentData&,
       bool needs_paint_properties,
-      const PhysicalOffset& pagination_offset = PhysicalOffset(),
-      LayoutUnit logical_top_in_flow_thread = LayoutUnit());
+      const PhysicalOffset& pagination_offset,
+      PaintPropertyTreeBuilderFragmentContext&);
   ALWAYS_INLINE void InitFragmentPaintPropertiesForNG(
       bool needs_paint_properties);
   ALWAYS_INLINE void InitSingleFragmentFromParent(bool needs_paint_properties);
@@ -266,6 +306,7 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateRepeatingTableSectionPaintOffsetAdjustment();
   ALWAYS_INLINE void UpdateRepeatingTableHeaderPaintOffsetAdjustment();
   ALWAYS_INLINE void UpdateRepeatingTableFooterPaintOffsetAdjustment();
+  ALWAYS_INLINE bool IsAffectedByOuterViewportBoundsDelta() const;
 
   bool IsInNGFragmentTraversal() const { return pre_paint_info_; }
 

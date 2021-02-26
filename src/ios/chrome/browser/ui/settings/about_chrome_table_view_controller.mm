@@ -4,8 +4,12 @@
 
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #import "base/ios/block_types.h"
 #import "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,7 +27,6 @@
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -115,6 +118,16 @@ const CGFloat kDefaultHeight = 70;
   version.text = [self versionDescriptionString];
   version.accessibilityTraits = UIAccessibilityTraitButton;
   [model setFooter:version forSectionWithIdentifier:SectionIdentifierLinks];
+}
+
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileAboutSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileAboutSettingsBack"));
 }
 
 #pragma mark - UITableViewDelegate

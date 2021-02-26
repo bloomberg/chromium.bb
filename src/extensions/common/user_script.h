@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
 #include "extensions/common/host_id.h"
+#include "extensions/common/script_constants.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
@@ -52,6 +53,16 @@ class UserScript {
   // The last type of injected script; used for enum verification in IPC.
   // Update this if you add more injected script types!
   static const InjectionType INJECTION_TYPE_LAST = PROGRAMMATIC_SCRIPT;
+
+  // The type of the content being added or removed by the extension.
+  enum ActionType {
+    ADD_JAVASCRIPT,
+    ADD_CSS,
+    REMOVE_CSS,
+  };
+  // The last type of action taken; used for enum verification in IPC.
+  // Update this if you add more injected script types!
+  static const ActionType ACTION_TYPE_LAST = REMOVE_CSS;
 
   // Locations that user scripts can be run inside the document.
   // The three run locations must strictly follow each other in both load order
@@ -170,9 +181,14 @@ class UserScript {
   bool match_all_frames() const { return match_all_frames_; }
   void set_match_all_frames(bool val) { match_all_frames_ = val; }
 
-  // Whether to match about:blank and about:srcdoc.
-  bool match_about_blank() const { return match_about_blank_; }
-  void set_match_about_blank(bool val) { match_about_blank_ = val; }
+  // Whether to match the origin as a fallback if the URL cannot be used
+  // directly.
+  MatchOriginAsFallbackBehavior match_origin_as_fallback() const {
+    return match_origin_as_fallback_;
+  }
+  void set_match_origin_as_fallback(MatchOriginAsFallbackBehavior val) {
+    match_origin_as_fallback_ = val;
+  }
 
   // The globs, if any, that determine which pages this script runs against.
   // These are only used with "standalone" Greasemonkey-like user scripts.
@@ -231,9 +247,8 @@ class UserScript {
   bool MatchesURL(const GURL& url) const;
 
   // Returns true if the script should be applied to the given
-  // |effective_document_url| (calculated by the caller based on
-  // match_about_blank()| while also taking into account whether the document's
-  // frame |is_subframe| and what the |top_level_origin| is.
+  // |effective_document_url|. It is the caller's responsibility to calculate
+  // |effective_document_url| based on match_origin_as_fallback().
   bool MatchesDocument(const GURL& effective_document_url,
                        bool is_subframe) const;
 
@@ -271,7 +286,7 @@ class UserScript {
                        FileList* scripts);
 
   // The location to run the script inside the document.
-  RunLocation run_location_;
+  RunLocation run_location_ = DOCUMENT_IDLE;
 
   // The namespace of the script. This is used by Greasemonkey in the same way
   // as XML namespaces. Only used when parsing Greasemonkey-style scripts.
@@ -308,26 +323,28 @@ class UserScript {
   HostID host_id_;
 
   // The type of the consumer instance that the script will be injected.
-  ConsumerInstanceType consumer_instance_type_;
+  ConsumerInstanceType consumer_instance_type_ = TAB;
 
-  // The globally-unique id associated with this user script. Defaults to
-  // -1 for invalid.
-  int user_script_id_;
+  // The globally-unique id associated with this user script. -1 indicates
+  // "invalid".
+  int user_script_id_ = -1;
 
   // Whether we should try to emulate Greasemonkey's APIs when running this
   // script.
-  bool emulate_greasemonkey_;
+  bool emulate_greasemonkey_ = false;
 
   // Whether the user script should run in all frames, or only just the top one.
-  // Defaults to false.
-  bool match_all_frames_;
+  bool match_all_frames_ = false;
 
-  // Whether the user script should run in about:blank and about:srcdoc as well.
-  // Defaults to false.
-  bool match_about_blank_;
+  // Whether the user script should run in frames whose initiator / precursor
+  // origin matches a match pattern, if an appropriate URL cannot be found for
+  // the frame for matching purposes, such as in the case of about:, data:, and
+  // other schemes.
+  MatchOriginAsFallbackBehavior match_origin_as_fallback_ =
+      MatchOriginAsFallbackBehavior::kNever;
 
   // True if the script should be injected into an incognito tab.
-  bool incognito_enabled_;
+  bool incognito_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UserScript);
 };

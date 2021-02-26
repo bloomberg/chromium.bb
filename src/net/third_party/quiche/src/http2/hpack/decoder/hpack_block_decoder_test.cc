@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <string>
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_block_collector.h"
 #include "net/third_party/quiche/src/http2/hpack/http2_hpack_constants.h"
@@ -18,7 +18,7 @@
 #include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
 #include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
 #include "net/third_party/quiche/src/http2/tools/random_decoder_test.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 
 using ::testing::AssertionSuccess;
 
@@ -66,7 +66,7 @@ class HpackBlockDecoderTest : public RandomDecoderTest {
   }
 
   AssertionResult DecodeHpackExampleAndValidateSeveralWays(
-      quiche::QuicheStringPiece hpack_example,
+      absl::string_view hpack_example,
       Validator validator) {
     std::string input = HpackExampleToStringOrDie(hpack_example);
     DecodeBuffer db(input);

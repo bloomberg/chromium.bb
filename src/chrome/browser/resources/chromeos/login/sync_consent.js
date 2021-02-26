@@ -7,26 +7,81 @@
  * screen.
  */
 
-Polymer({
-  is: 'sync-consent',
+'use strict';
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+(function() {
+
+/**
+ * UI mode for the dialog.
+ * @enum {string}
+ */
+const UIState = {
+  NO_SPLIT: 'no-split',
+  SPLIT: 'split',
+  LOADING: 'loading',
+};
+
+Polymer({
+  is: 'sync-consent-element',
+
+  behaviors: [
+    OobeI18nBehavior,
+    OobeDialogHostBehavior,
+    LoginScreenBehavior,
+    MultiStepBehavior,
+  ],
 
   properties: {
     /**
      * Flag that determines whether current account type is supervised or not.
      */
-    isChildAccount_: { type: Boolean },
+    isChildAccount_: Boolean,
+
     /** @private */
     splitSettingsSyncEnabled_: {
       type: Boolean,
-      value: function () {
-        return loadTimeData.getBoolean('splitSettingsSyncEnabled');
-      },
-      readOnly: true,
+      value: false,
     },
 
+    /**
+     * The device type (e.g. "Chromebook" or "Chromebox").
+     * TODO(jamescook): Delete this after M85 once we're sure UX doesn't want
+     * the device type in the dialog.
+     * @private
+     */
+    deviceType_: String,
   },
+
+  EXTERNAL_API: ['setThrobberVisible'],
+
+  /** Initial UI State for screen */
+  getOobeUIInitialState() {
+    return OOBE_UI_STATE.ONBOARDING;
+  },
+
+  /**
+   * Event handler that is invoked just before the screen is shown.
+   * @param {Object} data Screen init payload.
+   */
+  onBeforeShow(data) {
+    this.setIsChildAccount(data['isChildAccount']);
+    this.setDeviceType(data['deviceType']);
+    this.splitSettingsSyncEnabled_ = data['splitSettingsSyncEnabled'];
+    this.setUIStep(this.defaultUIStep());
+  },
+
+  /**
+   * Event handler that is invoked just before the screen is hidden.
+   */
+  onBeforeHide() {
+    this.setThrobberVisible(false /*visible*/);
+  },
+
+  defaultUIStep() {
+    return this.getDefaultUIStep_();
+  },
+
+  UI_STEPS: UIState,
 
   /**
    * Set flag isChildAccount_ value.
@@ -36,67 +91,47 @@ Polymer({
     this.isChildAccount_ = is_child_account;
   },
 
+  /**
+   * @param deviceType {string} The device type (e.g. "Chromebook").
+   */
+  setDeviceType(deviceType) {
+    this.deviceType_ = deviceType;
+  },
+
   /** @override */
   ready() {
+    this.initializeLoginScreen('SyncConsentScreen', {
+      resetAllowed: true,
+    });
     this.updateLocalizedContent();
-  },
-
-  focus() {
-    let activeScreen = this.getActiveScreen_();
-    if (activeScreen)
-      activeScreen.focus();
-  },
-
-  /**
-   * Hides all screens to help switching from one screen to another.
-   * @private
-   */
-  hideAllScreens_() {
-    var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
-    for (let screen of screens)
-      screen.hidden = true;
-  },
-
-  /**
-   * Returns active screen or null if none.
-   * @private
-   */
-  getActiveScreen_() {
-    var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
-    for (let screen of screens) {
-      if (!screen.hidden)
-        return screen;
-    }
-    return null;
-  },
-
-  /**
-   * Shows given screen.
-   * @param id String Screen ID.
-   * @private
-   */
-  showScreen_(id) {
-    this.hideAllScreens_();
-
-    var screen = this.$[id];
-    assert(screen);
-    screen.hidden = false;
-    screen.show();
-    screen.focus();
   },
 
   /**
    * Reacts to changes in loadTimeData.
    */
   updateLocalizedContent() {
-    if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
-      // SplitSettingsSync version.
-      this.showScreen_('splitSettingsSyncConsentDialog');
-    } else {
-      // Regular version.
-      this.showScreen_('syncConsentOverviewDialog');
-    }
     this.i18nUpdateLocale();
+  },
+
+  /**
+   * This is called to show/hide the loading UI.
+   * @param {boolean} visible whether to show loading UI.
+   */
+  setThrobberVisible(visible) {
+    if (visible) {
+      this.setUIStep(UIState.LOADING);
+    } else {
+      this.setUIStep(this.getDefaultUIStep_());
+    }
+  },
+
+  /**
+   * Returns split settings sync version or regular version depending on if
+   * split settings sync is enabled.
+   * @private
+   */
+  getDefaultUIStep_() {
+    return this.splitSettingsSyncEnabled_ ? UIState.SPLIT : UIState.NO_SPLIT;
   },
 
   /**
@@ -105,7 +140,7 @@ Polymer({
    */
   onSettingsSaveAndContinue_(e) {
     assert(e.path);
-    assert(!loadTimeData.getBoolean('splitSettingsSyncEnabled'));
+    assert(!this.splitSettingsSyncEnabled_);
     if (this.$.reviewSettingsBox.checked) {
       chrome.send('login.SyncConsentScreen.continueAndReview', [
         this.getConsentDescription_(), this.getConsentConfirmation_(e.path)
@@ -118,18 +153,28 @@ Polymer({
   },
 
   /**
-   * Continue button handler for SplitSettingsSync.
+   * Accept button handler for SplitSettingsSync.
    * @param {!Event} event
    * @private
    */
-  onSettingsAcceptAndContinue_(event) {
-    assert(loadTimeData.getBoolean('splitSettingsSyncEnabled'));
+  onAcceptTap_(event) {
+    assert(this.splitSettingsSyncEnabled_);
     assert(event.path);
-    const enableOsSync = !!this.$.osSyncToggle.checked;
-    const enableBrowserSync = !!this.$.browserSyncToggle.checked;
     chrome.send('login.SyncConsentScreen.acceptAndContinue', [
-      this.getConsentDescription_(), this.getConsentConfirmation_(event.path),
-      enableOsSync, enableBrowserSync
+      this.getConsentDescription_(), this.getConsentConfirmation_(event.path)
+    ]);
+  },
+
+  /**
+   * Decline button handler for SplitSettingsSync.
+   * @param {!Event} event
+   * @private
+   */
+  onDeclineTap_(event) {
+    assert(this.splitSettingsSyncEnabled_);
+    assert(event.path);
+    chrome.send('login.SyncConsentScreen.declineAndContinue', [
+      this.getConsentDescription_(), this.getConsentConfirmation_(event.path)
     ]);
   },
 
@@ -173,3 +218,4 @@ Polymer({
     return consentDescription;
   },
 });
+})();

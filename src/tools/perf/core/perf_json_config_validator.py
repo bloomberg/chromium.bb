@@ -11,26 +11,22 @@ from core import bot_platforms
 
 _VALID_SWARMING_DIMENSIONS = {
     'gpu', 'device_ids', 'os', 'pool', 'perf_tests', 'perf_tests_with_args',
-    'device_os', 'device_type', 'device_os_flavor', 'id',
-    'synthetic_product_name'}
-# TODO(crbug.com/812428): Remove the template versions once the pools
-# get merged back in.
+    'cpu', 'device_os', 'device_type', 'device_os_flavor', 'id',
+    'synthetic_product_name'
+}
 _DEFAULT_VALID_PERF_POOLS = {
     'chrome.tests.perf',
     'chrome.tests.perf-webview',
     'chrome.tests.perf-weblayer',
     'chrome.tests.perf-fyi',
     'chrome.tests.perf-webview-fyi',
-    'chrome.tests.perf.template',
-    'chrome.tests.perf-webview.template',
-    'chrome.tests.perf-weblayer.template',
-    'chrome.tests.perf-fyi.template',
-    'chrome.tests.perf-webview-fyi.template',
 }
 _VALID_PERF_POOLS = {
-    'android-builder-perf': {'chrome.tests', 'chrome.tests.template'},
-    'android_arm64-builder-perf': {'chrome.tests', 'chrome.tests.template'},
-    'chromeos-kevin-perf-fyi': {'luci.chrome.cros-dut'},
+    'android-builder-perf': {'chrome.tests'},
+    'android_arm64-builder-perf': {'chrome.tests'},
+    'android-pixel4a_power-perf': {'chrome.tests.pinpoint'},
+    'chromeos-kevin-perf-fyi': {'chrome.tests'},
+    'chromeos-amd64-generic-lacros-builder-perf': {'chrome.tests'},
 }
 
 
@@ -104,11 +100,9 @@ def _ValidateBrowserType(builder_name, test_config):
           "%s must use 'android-webview' or 'android-webview-google' "
           "browser" % builder_name)
   elif 'Android' in builder_name or 'android' in builder_name:
-    android_browsers = (
-        'android-chromium',
-        'android-chrome',
-        'android-chrome-bundle',
-        'exact')
+    android_browsers = ('android-chromium', 'android-chrome',
+                        'android-chrome-bundle', 'android-chrome-64-bundle',
+                        'exact')
     if browser_options.browser not in android_browsers:
       raise ValueError( 'The browser type for %s must be one of %s' % (
           builder_name, ', '.join(android_browsers)))

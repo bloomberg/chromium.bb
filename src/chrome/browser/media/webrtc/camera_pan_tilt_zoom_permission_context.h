@@ -29,24 +29,33 @@ class CameraPanTiltZoomPermissionContext
 
  private:
   // PermissionContextBase
-#if defined(OS_ANDROID)
-  void DecidePermission(
+  void RequestPermission(
       content::WebContents* web_contents,
       const permissions::PermissionRequestID& id,
-      const GURL& requesting_origin,
-      const GURL& embedding_origin,
+      const GURL& requesting_frame_origin,
       bool user_gesture,
       permissions::BrowserPermissionCallback callback) override;
+#if defined(OS_ANDROID)
+  ContentSetting GetPermissionStatusInternal(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const override;
 #endif
   bool IsRestrictedToSecureOrigins() const override;
 
   // content_settings::Observer
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,
-                               ContentSettingsType content_type,
-                               const std::string& resource_identifier) override;
+                               ContentSettingsType content_type) override;
+
+  // Returns true if at least one video capture device has PTZ capabilities.
+  // Otherwise returns false.
+  bool HasAvailableCameraPtzDevices() const;
 
   HostContentSettingsMap* host_content_settings_map_;
+
+  bool updating_camera_ptz_permission_ = false;
+  bool updating_mediastream_camera_permission_ = false;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_CAMERA_PAN_TILT_ZOOM_PERMISSION_CONTEXT_H_

@@ -10,12 +10,14 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
+#include "base/strings/string_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -51,8 +53,8 @@ void EnsureDirExists(
     LOG(ERROR) << "Failed to create PluginVm shared dir " << dir.value() << ": "
                << base::File::ErrorToString(error);
   }
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DirExistsResult, dir, result, std::move(callback)));
 }
 
@@ -67,7 +69,7 @@ void FocusAllPluginVmWindows() {
   DCHECK(shelf_model);
   AppWindowLauncherItemController* launcher_item_controller =
       shelf_model->GetAppWindowLauncherItemController(
-          ash::ShelfID(kPluginVmAppId));
+          ash::ShelfID(kPluginVmShelfAppId));
   if (!launcher_item_controller) {
     return;
   }
@@ -79,11 +81,12 @@ void FocusAllPluginVmWindows() {
 // LaunchPluginVmApp will run before this and try to start Plugin VM.
 void LaunchPluginVmAppImpl(Profile* profile,
                            std::string app_id,
-                           const std::vector<storage::FileSystemURL>& files,
+                           std::vector<std::string> file_paths,
                            LaunchPluginVmAppCallback callback,
                            bool plugin_vm_is_running) {
   if (!plugin_vm_is_running) {
-    return std::move(callback).Run(false, "Plugin VM could not be started");
+    return std::move(callback).Run(LaunchPluginVmAppResult::FAILED,
+                                   "Plugin VM could not be started");
   }
 
   auto* registry_service =
@@ -91,20 +94,8 @@ void LaunchPluginVmAppImpl(Profile* profile,
   auto registration = registry_service->GetRegistration(app_id);
   if (!registration) {
     return std::move(callback).Run(
-        false, "LaunchPluginVmApp called with an unknown app_id: " + app_id);
-  }
-
-  std::vector<std::string> file_paths;
-  file_paths.reserve(files.size());
-  for (const auto& file : files) {
-    auto file_path =
-        ConvertFileSystemURLToPathInsidePluginVmSharedDir(profile, file);
-    if (!file_path) {
-      return std::move(callback).Run(
-          false, "Only files in the shared dir are supported. Got: " +
-                     file.DebugString());
-    }
-    file_paths.push_back(std::move(*file_path));
+        LaunchPluginVmAppResult::FAILED,
+        "LaunchPluginVmApp called with an unknown app_id: " + app_id);
   }
 
   vm_tools::cicerone::LaunchContainerApplicationRequest request;
@@ -131,19 +122,24 @@ void LaunchPluginVmAppImpl(Profile* profile,
                   LOG(ERROR) << "Failed to launch application. "
                              << (response ? response->failure_reason()
                                           : "Empty response.");
-                  std::move(callback).Run(/*success=*/false,
+                  std::move(callback).Run(LaunchPluginVmAppResult::FAILED,
                                           "Failed to launch " + app_id);
                   return;
                 }
 
                 FocusAllPluginVmWindows();
 
-                std::move(callback).Run(/*success=*/true, "");
+                std::move(callback).Run(LaunchPluginVmAppResult::SUCCESS, "");
               },
               std::move(app_id), std::move(callback)));
 }
 
 }  // namespace
+
+base::FilePath ChromeOSBaseDirectory() {
+  // Forward slashes are converted to backslash during path conversion.
+  return base::FilePath("//ChromeOS");
+}
 
 void EnsureDefaultSharedDirExists(
     Profile* profile,
@@ -154,53 +150,55 @@ void EnsureDefaultSharedDirExists(
                      std::move(callback)));
 }
 
-base::Optional<std::string> ConvertFileSystemURLToPathInsidePluginVmSharedDir(
-    Profile* profile,
-    const storage::FileSystemURL& file_system_url) {
-  auto path = file_system_url.path();
-  if (!GetDefaultSharedDir(profile).IsParent(path)) {
-    return base::nullopt;
-  }
-
-  using Components = std::vector<base::FilePath::StringType>;
-
-  Components components;
-  path.GetComponents(&components);
-
-  // TODO(juwa): reuse MyFiles constant from file_manager/path_util.cc.
-  Components::iterator vm_components_start =
-      std::find(components.begin(), components.end(), "MyFiles");
-
-  Components vm_components;
-  vm_components.reserve(3 +
-                        std::distance(vm_components_start, components.end()));
-  vm_components.emplace_back();
-  vm_components.emplace_back();
-  vm_components.emplace_back("ChromeOS");
-  std::copy(std::make_move_iterator(vm_components_start),
-            std::make_move_iterator(components.end()),
-            std::back_inserter(vm_components));
-  return base::JoinString(std::move(vm_components), "\\");
-}
-
 void LaunchPluginVmApp(Profile* profile,
                        std::string app_id,
-                       std::vector<storage::FileSystemURL> files,
+                       const std::vector<LaunchArg>& args,
                        LaunchPluginVmAppCallback callback) {
-  if (!plugin_vm::IsPluginVmEnabled(profile)) {
-    return std::move(callback).Run(false,
+  if (!plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile)) {
+    return std::move(callback).Run(LaunchPluginVmAppResult::FAILED,
                                    "Plugin VM is not enabled for this profile");
   }
 
   auto* manager = PluginVmManagerFactory::GetForProfile(profile);
 
   if (!manager) {
-    return std::move(callback).Run(false, "Could not get PluginVmManager");
+    return std::move(callback).Run(LaunchPluginVmAppResult::FAILED,
+                                   "Could not get PluginVmManager");
+  }
+  auto* share_path = guest_os::GuestOsSharePath::GetForProfile(profile);
+  base::FilePath vm_mount = ChromeOSBaseDirectory();
+
+  std::vector<std::string> launch_args;
+  launch_args.reserve(args.size());
+  for (const auto& arg : args) {
+    if (absl::holds_alternative<std::string>(arg)) {
+      launch_args.push_back(absl::get<std::string>(arg));
+      continue;
+    }
+    const storage::FileSystemURL& url = absl::get<storage::FileSystemURL>(arg);
+    base::FilePath file_path;
+    // Validate paths in MyFiles/PvmDefault, or are already shared, and convert.
+    bool shared = GetDefaultSharedDir(profile).IsParent(url.path()) ||
+                  share_path->IsPathShared(kPluginVmName, url.path());
+    if (!shared ||
+        !file_manager::util::ConvertFileSystemURLToPathInsideVM(
+            profile, url, vm_mount, /*map_crostini_home=*/false, &file_path)) {
+      return std::move(callback).Run(
+          file_manager::util::GetMyFilesFolderForProfile(profile).IsParent(
+              url.path())
+              ? LaunchPluginVmAppResult::FAILED_DIRECTORY_NOT_SHARED
+              : LaunchPluginVmAppResult::FAILED_FILE_ON_EXTERNAL_DRIVE,
+          "Only files in shared dirs are supported. Got: " + url.DebugString());
+    }
+    // Convert slashes: '/' => '\'.
+    std::string result;
+    base::ReplaceChars(file_path.value(), "/", "\\", &result);
+    launch_args.push_back(std::move(result));
   }
 
-  manager->LaunchPluginVm(base::BindOnce(&LaunchPluginVmAppImpl, profile,
-                                         std::move(app_id), std::move(files),
-                                         std::move(callback)));
+  manager->LaunchPluginVm(
+      base::BindOnce(&LaunchPluginVmAppImpl, profile, std::move(app_id),
+                     std::move(launch_args), std::move(callback)));
 }
 
 }  // namespace plugin_vm

@@ -30,7 +30,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_ORDERED_LIST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_ORDERED_LIST_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
 
@@ -43,6 +42,8 @@ class TreeOrderedList final {
 
  public:
   TreeOrderedList() = default;
+  TreeOrderedList(const TreeOrderedList&) = delete;
+  TreeOrderedList& operator=(const TreeOrderedList&) = delete;
 
   void Add(Node*);
   void Remove(const Node*);
@@ -63,11 +64,10 @@ class TreeOrderedList final {
   const_reverse_iterator rbegin() const { return nodes_.rbegin(); }
   const_reverse_iterator rend() const { return nodes_.rend(); }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   HeapListHashSet<Member<Node>, 32> nodes_;
-  DISALLOW_COPY_AND_ASSIGN(TreeOrderedList);
 };
 
 }  // namespace blink

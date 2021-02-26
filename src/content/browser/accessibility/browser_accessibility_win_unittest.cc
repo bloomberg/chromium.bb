@@ -4,6 +4,9 @@
 
 #include "content/browser/accessibility/browser_accessibility_win.h"
 
+#include <string>
+#include <vector>
+
 #include <objbase.h>
 #include <stdint.h>
 #include <wrl/client.h>
@@ -11,6 +14,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
@@ -21,10 +25,10 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/test_browser_accessibility_delegate.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
-#include "content/common/ax_content_node_data.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/base/win/atl_module.h"
 
@@ -129,18 +133,18 @@ TEST_F(BrowserAccessibilityWinTest, TestNoLeaks) {
   // BrowserAccessibilityManager.
   ui::AXNodeData button;
   button.id = 2;
-  button.SetName("Button");
   button.role = ax::mojom::Role::kButton;
+  button.SetName("Button");
 
   ui::AXNodeData checkbox;
   checkbox.id = 3;
-  checkbox.SetName("Checkbox");
   checkbox.role = ax::mojom::Role::kCheckBox;
+  checkbox.SetName("Checkbox");
 
   ui::AXNodeData root;
   root.id = 1;
-  root.SetName("Document");
   root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("Document");
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 
@@ -193,8 +197,8 @@ TEST_F(BrowserAccessibilityWinTest, TestChildrenChange) {
 
   ui::AXNodeData root;
   root.id = 1;
-  root.SetName("Document");
   root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("Document");
   root.child_ids.push_back(2);
 
   // Construct a BrowserAccessibilityManager with this
@@ -211,11 +215,11 @@ TEST_F(BrowserAccessibilityWinTest, TestChildrenChange) {
   Microsoft::WRL::ComPtr<IDispatch> text_dispatch;
   HRESULT hr = ToBrowserAccessibilityWin(manager->GetRoot())
                    ->GetCOM()
-                   ->get_accChild(one, text_dispatch.GetAddressOf());
+                   ->get_accChild(one, &text_dispatch);
   ASSERT_EQ(S_OK, hr);
 
   Microsoft::WRL::ComPtr<IAccessible> text_accessible;
-  hr = text_dispatch.CopyTo(text_accessible.GetAddressOf());
+  hr = text_dispatch.As(&text_accessible);
   ASSERT_EQ(S_OK, hr);
 
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -229,7 +233,7 @@ TEST_F(BrowserAccessibilityWinTest, TestChildrenChange) {
   text_accessible.Reset();
 
   // Notify the BrowserAccessibilityManager that the text child has changed.
-  AXContentNodeData text2;
+  ui::AXNodeData text2;
   text2.id = 2;
   text2.role = ax::mojom::Role::kStaticText;
   text2.SetName("new text");
@@ -242,10 +246,10 @@ TEST_F(BrowserAccessibilityWinTest, TestChildrenChange) {
   // as its value.
   hr = ToBrowserAccessibilityWin(manager->GetRoot())
            ->GetCOM()
-           ->get_accChild(one, text_dispatch.GetAddressOf());
+           ->get_accChild(one, &text_dispatch);
   ASSERT_EQ(S_OK, hr);
 
-  hr = text_dispatch.CopyTo(text_accessible.GetAddressOf());
+  hr = text_dispatch.As(&text_accessible);
   ASSERT_EQ(S_OK, hr);
 
   hr = text_accessible->get_accName(childid_self, name.Receive());
@@ -638,13 +642,11 @@ TEST_F(BrowserAccessibilityWinTest, TestSimpleHypertext) {
   EXPECT_EQ(0, hyperlink_count);
 
   Microsoft::WRL::ComPtr<IAccessibleHyperlink> hyperlink;
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(-1, &hyperlink));
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(0, &hyperlink));
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(text_name_len, &hyperlink));
   EXPECT_EQ(E_INVALIDARG,
-            root_obj->get_hyperlink(-1, hyperlink.GetAddressOf()));
-  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(0, hyperlink.GetAddressOf()));
-  EXPECT_EQ(E_INVALIDARG,
-            root_obj->get_hyperlink(text_name_len, hyperlink.GetAddressOf()));
-  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(text_name_len + 1,
-                                                  hyperlink.GetAddressOf()));
+            root_obj->get_hyperlink(text_name_len + 1, &hyperlink));
 
   LONG hyperlink_index;
   EXPECT_EQ(S_FALSE, root_obj->get_hyperlinkIndex(0, &hyperlink_index));
@@ -701,22 +703,28 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
   check_box.role = ax::mojom::Role::kCheckBox;
   check_box.SetCheckedState(ax::mojom::CheckedState::kTrue);
   check_box.SetName(base::UTF16ToUTF8(check_box_name));
+  // ARIA checkbox where the name is derived from its inner text.
+  check_box.SetNameFrom(ax::mojom::NameFrom::kContents);
   check_box.SetValue(base::UTF16ToUTF8(check_box_value));
 
   ui::AXNodeData button, button_text;
   button.id = 15;
   button_text.id = 17;
-  button_text.SetName(base::UTF16ToUTF8(button_text_name));
   button.role = ax::mojom::Role::kButton;
+  button.SetName(base::UTF16ToUTF8(button_text_name));
+  button.SetNameFrom(ax::mojom::NameFrom::kContents);
+  // A single text child with the same name should be hidden from accessibility
+  // to prevent double speaking.
   button_text.role = ax::mojom::Role::kStaticText;
+  button_text.SetName(base::UTF16ToUTF8(button_text_name));
   button.child_ids.push_back(button_text.id);
 
   ui::AXNodeData link, link_text;
   link.id = 16;
   link_text.id = 18;
-  link_text.SetName(base::UTF16ToUTF8(link_text_name));
   link.role = ax::mojom::Role::kLink;
   link_text.role = ax::mojom::Role::kStaticText;
+  link_text.SetName(base::UTF16ToUTF8(link_text_name));
   link.child_ids.push_back(link_text.id);
 
   ui::AXNodeData root;
@@ -753,14 +761,13 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
 
   Microsoft::WRL::ComPtr<IAccessibleHyperlink> hyperlink;
   Microsoft::WRL::ComPtr<IAccessibleText> hypertext;
-  EXPECT_EQ(E_INVALIDARG,
-            root_obj->get_hyperlink(-1, hyperlink.GetAddressOf()));
-  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(4, hyperlink.GetAddressOf()));
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(-1, &hyperlink));
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(4, &hyperlink));
 
   // Get the text of the combo box.
   // It should be its value.
-  EXPECT_EQ(S_OK, root_obj->get_hyperlink(0, hyperlink.GetAddressOf()));
-  EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.GetAddressOf()));
+  EXPECT_EQ(S_OK, root_obj->get_hyperlink(0, &hyperlink));
+  EXPECT_EQ(S_OK, hyperlink.As(&hypertext));
   EXPECT_EQ(S_OK,
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
   EXPECT_STREQ(combo_box_value.c_str(), text.Get());
@@ -770,8 +777,8 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
 
   // Get the text of the check box.
   // It should be its name.
-  EXPECT_EQ(S_OK, root_obj->get_hyperlink(1, hyperlink.GetAddressOf()));
-  EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.GetAddressOf()));
+  EXPECT_EQ(S_OK, root_obj->get_hyperlink(1, &hyperlink));
+  EXPECT_EQ(S_OK, hyperlink.As(&hypertext));
   EXPECT_EQ(S_OK,
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
   EXPECT_STREQ(check_box_name.c_str(), text.Get());
@@ -780,8 +787,8 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
   hypertext.Reset();
 
   // Get the text of the button.
-  EXPECT_EQ(S_OK, root_obj->get_hyperlink(2, hyperlink.GetAddressOf()));
-  EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.GetAddressOf()));
+  EXPECT_EQ(S_OK, root_obj->get_hyperlink(2, &hyperlink));
+  EXPECT_EQ(S_OK, hyperlink.As(&hypertext));
   EXPECT_EQ(S_OK,
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
   EXPECT_STREQ(button_text_name.c_str(), text.Get());
@@ -790,8 +797,8 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
   hypertext.Reset();
 
   // Get the text of the link.
-  EXPECT_EQ(S_OK, root_obj->get_hyperlink(3, hyperlink.GetAddressOf()));
-  EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.GetAddressOf()));
+  EXPECT_EQ(S_OK, root_obj->get_hyperlink(3, &hyperlink));
+  EXPECT_EQ(S_OK, hyperlink.As(&hypertext));
   EXPECT_EQ(S_OK, hypertext->get_text(0, 4, text.Receive()));
   EXPECT_STREQ(link_text_name.c_str(), text.Get());
   text.Reset();
@@ -1068,15 +1075,15 @@ TEST_F(BrowserAccessibilityWinTest, TestIA2Attributes) {
 
   ui::AXNodeData checkbox;
   checkbox.id = 3;
-  checkbox.SetName("Checkbox");
   checkbox.role = ax::mojom::Role::kCheckBox;
   checkbox.SetCheckedState(ax::mojom::CheckedState::kTrue);
+  checkbox.SetName("Checkbox");
 
   ui::AXNodeData root;
   root.id = 1;
-  root.SetName("Document");
   root.role = ax::mojom::Role::kRootWebArea;
   root.AddState(ax::mojom::State::kFocusable);
+  root.SetName("Document");
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 
@@ -1112,7 +1119,7 @@ TEST_F(BrowserAccessibilityWinTest, TestIA2Attributes) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_NE(nullptr, attributes.Get());
   attributes_str = std::wstring(attributes.Get(), attributes.Length());
-  EXPECT_EQ(L"checkable:true;", attributes_str);
+  EXPECT_EQ(L"checkable:true;explicit-name:true;", attributes_str);
 
   manager.reset();
 }
@@ -1126,10 +1133,10 @@ TEST_F(BrowserAccessibilityWinTest, TestValueAttributeInTextControls) {
   ui::AXNodeData combo_box, combo_box_text;
   combo_box.id = 2;
   combo_box_text.id = 3;
-  combo_box.SetName("Combo box:");
-  combo_box_text.SetName("Combo box text");
   combo_box.role = ax::mojom::Role::kTextFieldWithComboBox;
   combo_box_text.role = ax::mojom::Role::kStaticText;
+  combo_box.SetName("Combo box:");
+  combo_box_text.SetName("Combo box text");
   combo_box.AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
   combo_box.AddState(ax::mojom::State::kEditable);
   combo_box.AddState(ax::mojom::State::kRichlyEditable);
@@ -1142,12 +1149,12 @@ TEST_F(BrowserAccessibilityWinTest, TestValueAttributeInTextControls) {
   search_box.id = 4;
   search_box_text.id = 5;
   new_line.id = 6;
-  search_box.SetName("Search for:");
-  search_box_text.SetName("Search box text");
-  new_line.SetName("\n");
   search_box.role = ax::mojom::Role::kSearchBox;
   search_box_text.role = ax::mojom::Role::kStaticText;
   new_line.role = ax::mojom::Role::kLineBreak;
+  search_box.SetName("Search for:");
+  search_box_text.SetName("Search box text");
+  new_line.SetName("\n");
   search_box.AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
   search_box.AddState(ax::mojom::State::kEditable);
   search_box.AddState(ax::mojom::State::kRichlyEditable);
@@ -1170,18 +1177,18 @@ TEST_F(BrowserAccessibilityWinTest, TestValueAttributeInTextControls) {
   ui::AXNodeData link, link_text;
   link.id = 8;
   link_text.id = 9;
-  link_text.SetName("Link text");
   link.role = ax::mojom::Role::kLink;
   link_text.role = ax::mojom::Role::kStaticText;
+  link_text.SetName("Link text");
   link.child_ids.push_back(link_text.id);
 
   ui::AXNodeData slider, slider_text;
   slider.id = 10;
   slider_text.id = 11;
-  slider.AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, 5.0F);
-  slider_text.SetName("Slider text");
   slider.role = ax::mojom::Role::kSlider;
   slider_text.role = ax::mojom::Role::kStaticText;
+  slider.AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, 5.0F);
+  slider_text.SetName("Slider text");
   slider.child_ids.push_back(slider_text.id);
 
   root.child_ids.push_back(2);   // Combo box.
@@ -1376,12 +1383,10 @@ TEST_F(BrowserAccessibilityWinTest, TestWordBoundariesInTextControls) {
 
   Microsoft::WRL::ComPtr<IAccessibleText> textarea_object;
   EXPECT_HRESULT_SUCCEEDED(textarea_accessible->GetCOM()->QueryInterface(
-      IID_IAccessibleText,
-      reinterpret_cast<void**>(textarea_object.GetAddressOf())));
+      IID_PPV_ARGS(&textarea_object)));
   Microsoft::WRL::ComPtr<IAccessibleText> text_field_object;
   EXPECT_HRESULT_SUCCEEDED(text_field_accessible->GetCOM()->QueryInterface(
-      IID_IAccessibleText,
-      reinterpret_cast<void**>(text_field_object.GetAddressOf())));
+      IID_PPV_ARGS(&text_field_object)));
 
   LONG offset = 0;
   while (offset < static_cast<LONG>(text.length())) {
@@ -2227,11 +2232,11 @@ TEST_F(BrowserAccessibilityWinTest, TestIAccessibleHyperlink) {
   link.AddState(ax::mojom::State::kFocusable);
   link.AddState(ax::mojom::State::kLinked);
   link.SetName("here");
+  link.SetNameFrom(ax::mojom::NameFrom::kContents);
   link.AddStringAttribute(ax::mojom::StringAttribute::kUrl, "example.com");
 
-  root.child_ids.push_back(2);
-  div.child_ids.push_back(3);
-  div.child_ids.push_back(4);
+  root.child_ids.push_back(div.id);
+  div.child_ids = {text.id, link.id};
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
@@ -3037,26 +3042,26 @@ TEST_F(BrowserAccessibilityWinTest, UniqueIdWinInvalidAfterDeletingTree) {
   base::win::ScopedVariant old_root_variant(-root_unique_id);
   Microsoft::WRL::ComPtr<IDispatch> old_root_dispatch;
   HRESULT hr = ToBrowserAccessibilityWin(root)->GetCOM()->get_accChild(
-      old_root_variant, old_root_dispatch.GetAddressOf());
+      old_root_variant, &old_root_dispatch);
   EXPECT_EQ(E_INVALIDARG, hr);
 
   base::win::ScopedVariant old_child_variant(-child_unique_id);
   Microsoft::WRL::ComPtr<IDispatch> old_child_dispatch;
   hr = ToBrowserAccessibilityWin(root)->GetCOM()->get_accChild(
-      old_child_variant, old_child_dispatch.GetAddressOf());
+      old_child_variant, &old_child_dispatch);
   EXPECT_EQ(E_INVALIDARG, hr);
 
   // Trying to access the unique IDs of the new objects should succeed.
   base::win::ScopedVariant new_root_variant(-root_unique_id_2);
   Microsoft::WRL::ComPtr<IDispatch> new_root_dispatch;
   hr = ToBrowserAccessibilityWin(root)->GetCOM()->get_accChild(
-      new_root_variant, new_root_dispatch.GetAddressOf());
+      new_root_variant, &new_root_dispatch);
   EXPECT_EQ(S_OK, hr);
 
   base::win::ScopedVariant new_child_variant(-child_unique_id_2);
   Microsoft::WRL::ComPtr<IDispatch> new_child_dispatch;
   hr = ToBrowserAccessibilityWin(root)->GetCOM()->get_accChild(
-      new_child_variant, new_child_dispatch.GetAddressOf());
+      new_child_variant, &new_child_dispatch);
   EXPECT_EQ(S_OK, hr);
 }
 
@@ -3081,11 +3086,11 @@ TEST_F(BrowserAccessibilityWinTest, AccChildOnlyReturnsDescendants) {
   Microsoft::WRL::ComPtr<IDispatch> result;
   EXPECT_EQ(E_INVALIDARG,
             ToBrowserAccessibilityWin(child)->GetCOM()->get_accChild(
-                root_unique_id_variant, result.GetAddressOf()));
+                root_unique_id_variant, &result));
 
   base::win::ScopedVariant child_unique_id_variant(-GetUniqueId(child));
   EXPECT_EQ(S_OK, ToBrowserAccessibilityWin(root)->GetCOM()->get_accChild(
-                      child_unique_id_variant, result.GetAddressOf()));
+                      child_unique_id_variant, &result));
 }
 
 // TODO(crbug.com/929563): Disabled due to flakiness.
@@ -3136,7 +3141,7 @@ TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
   EXPECT_EQ(1, n_relations);
 
   EXPECT_HRESULT_SUCCEEDED(
-      ax_root->GetCOM()->get_relation(0, describedby_relation.GetAddressOf()));
+      ax_root->GetCOM()->get_relation(0, &describedby_relation));
   EXPECT_HRESULT_SUCCEEDED(
       describedby_relation->get_relationType(relation_type.Receive()));
   EXPECT_EQ(L"describedBy", base::string16(relation_type.Get()));
@@ -3145,17 +3150,15 @@ TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
   EXPECT_HRESULT_SUCCEEDED(describedby_relation->get_nTargets(&n_targets));
   EXPECT_EQ(2, n_targets);
 
-  EXPECT_HRESULT_SUCCEEDED(
-      describedby_relation->get_target(0, target.GetAddressOf()));
-  target.CopyTo(ax_target.GetAddressOf());
+  EXPECT_HRESULT_SUCCEEDED(describedby_relation->get_target(0, &target));
+  target.As(&ax_target);
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
   EXPECT_EQ(-GetUniqueId(ax_child1), unique_id);
   ax_target.Reset();
   target.Reset();
 
-  EXPECT_HRESULT_SUCCEEDED(
-      describedby_relation->get_target(1, target.GetAddressOf()));
-  target.CopyTo(ax_target.GetAddressOf());
+  EXPECT_HRESULT_SUCCEEDED(describedby_relation->get_target(1, &target));
+  target.As(&ax_target);
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
   EXPECT_EQ(-GetUniqueId(ax_child2), unique_id);
   ax_target.Reset();
@@ -3166,8 +3169,8 @@ TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
   EXPECT_HRESULT_SUCCEEDED(ax_child1->GetCOM()->get_nRelations(&n_relations));
   EXPECT_EQ(1, n_relations);
 
-  EXPECT_HRESULT_SUCCEEDED(ax_child1->GetCOM()->get_relation(
-      0, description_for_relation.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(
+      ax_child1->GetCOM()->get_relation(0, &description_for_relation));
   EXPECT_HRESULT_SUCCEEDED(
       description_for_relation->get_relationType(relation_type.Receive()));
   EXPECT_EQ(L"descriptionFor", base::string16(relation_type.Get()));
@@ -3176,9 +3179,8 @@ TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
   EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_nTargets(&n_targets));
   EXPECT_EQ(1, n_targets);
 
-  EXPECT_HRESULT_SUCCEEDED(
-      description_for_relation->get_target(0, target.GetAddressOf()));
-  target.CopyTo(ax_target.GetAddressOf());
+  EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_target(0, &target));
+  target.As(&ax_target);
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
   EXPECT_EQ(-GetUniqueId(ax_root), unique_id);
   ax_target.Reset();
@@ -3188,8 +3190,8 @@ TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
   EXPECT_HRESULT_SUCCEEDED(ax_child2->GetCOM()->get_nRelations(&n_relations));
   EXPECT_EQ(1, n_relations);
 
-  EXPECT_HRESULT_SUCCEEDED(ax_child2->GetCOM()->get_relation(
-      0, description_for_relation.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(
+      ax_child2->GetCOM()->get_relation(0, &description_for_relation));
   EXPECT_HRESULT_SUCCEEDED(
       description_for_relation->get_relationType(relation_type.Receive()));
   EXPECT_EQ(L"descriptionFor", base::string16(relation_type.Get()));
@@ -3198,9 +3200,8 @@ TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
   EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_nTargets(&n_targets));
   EXPECT_EQ(1, n_targets);
 
-  EXPECT_HRESULT_SUCCEEDED(
-      description_for_relation->get_target(0, target.GetAddressOf()));
-  target.CopyTo(ax_target.GetAddressOf());
+  EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_target(0, &target));
+  target.As(&ax_target);
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
   EXPECT_EQ(-GetUniqueId(ax_root), unique_id);
   ax_target.Reset();

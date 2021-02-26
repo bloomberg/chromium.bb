@@ -16,11 +16,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.provider.MediaStore;
-import android.support.test.filters.SmallTest;
 
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,9 +30,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.InMemorySharedPreferencesContext;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
@@ -320,9 +322,9 @@ public class InputTypesTest {
 
     private void waitForNumFiles(String id, int num) {
         CriteriaHelper.pollInstrumentationThread(() -> {
-            return num
-                    == mActivityTestRule.executeScriptAndExtractInt(
-                            "document.getElementById('" + id + "').files.length");
+            int actual = mActivityTestRule.executeScriptAndExtractInt(
+                    "document.getElementById('" + id + "').files.length");
+            Criteria.checkThat(actual, Matchers.is(num));
         });
     }
 

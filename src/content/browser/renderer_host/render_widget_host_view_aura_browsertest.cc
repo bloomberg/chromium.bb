@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -22,12 +23,15 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/common/shell_switches.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/events/event_utils.h"
 
 namespace content {
 namespace {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kMinimalPageDataURL[] =
     "data:text/html,<html><head></head><body>Hello, world</body></html>";
 
@@ -40,7 +44,7 @@ void GiveItSomeTime() {
       base::TimeDelta::FromMilliseconds(250));
   run_loop.Run();
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class FakeWebContentsDelegate : public WebContentsDelegate {
  public:
@@ -81,7 +85,7 @@ class RenderWidgetHostViewAuraBrowserTest : public ContentBrowserTest {
   }
 };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
                        StaleFrameContentOnEvictionNormal) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kMinimalPageDataURL)));
@@ -196,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
   EXPECT_FALSE(
       GetDelegatedFrameHost()->stale_content_layer_->has_external_content());
 }
-#endif  // #if defined(OS_CHROMEOS)
+#endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
 
 class RenderWidgetHostViewAuraDevtoolsBrowserTest
     : public content::DevToolsProtocolTest {
@@ -205,13 +209,13 @@ class RenderWidgetHostViewAuraDevtoolsBrowserTest
 
  protected:
   aura::Window* window() {
-    return reinterpret_cast<content::RenderWidgetHostViewAura*>(
+    return static_cast<content::RenderWidgetHostViewAura*>(
                shell()->web_contents()->GetRenderWidgetHostView())
         ->window();
   }
 
   bool HasChildPopup() const {
-    return reinterpret_cast<content::RenderWidgetHostViewAura*>(
+    return static_cast<content::RenderWidgetHostViewAura*>(
                shell()->web_contents()->GetRenderWidgetHostView())
         ->popup_child_host_view_;
   }
@@ -297,6 +301,70 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraDevtoolsBrowserTest,
   // Try to access the renderer process, it would have died if
   // crbug.com/1032984 wasn't fixed.
   ASSERT_TRUE(ExecuteScript(wc, "noop();"));
+}
+
+class RenderWidgetHostViewAuraActiveWidgetTest : public ContentBrowserTest {
+ public:
+  RenderWidgetHostViewAuraActiveWidgetTest() = default;
+  ~RenderWidgetHostViewAuraActiveWidgetTest() override = default;
+
+  // Helper function to check |isActivated| for a given frame.
+  bool FrameIsActivated(content::RenderFrameHost* rfh) {
+    bool active = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        rfh,
+        "window.domAutomationController.send(window.internals.isActivated())",
+        &active));
+    return active;
+  }
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kExposeInternalsForTesting);
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    // Add content/test/data for cross_site_iframe_factory.html
+    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraActiveWidgetTest);
+};
+
+// In this test, toggling the value of 'active' state changes the
+// active state of frame on the renderer side.
+// SimulateActiveStateForWidget toggles the 'active' state of widget
+// over IPC.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraActiveWidgetTest,
+                       FocusIsInactive) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  content::WebContents* web_contents = shell()->web_contents();
+
+  // The main_frame_a should have a focus to start with.
+  // On renderer side, blink::FocusController's both 'active' and
+  //'focus' states are set to true.
+  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  EXPECT_TRUE(FrameIsActivated(main_frame));
+
+  // After changing the 'active' state of main_frame to false
+  // blink::FocusController's 'active' set to false.
+  content::SimulateActiveStateForWidget(main_frame, false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(FrameIsActivated(main_frame));
+
+  // After changing the 'active' state of main_frame to true
+  // blink::FocusController's 'active' set to true.
+  content::SimulateActiveStateForWidget(main_frame, true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(FrameIsActivated(main_frame));
 }
 
 }  // namespace content

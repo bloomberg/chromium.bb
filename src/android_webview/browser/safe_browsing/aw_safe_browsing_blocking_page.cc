@@ -16,10 +16,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/threat_details.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/triggers/trigger_manager.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/content/settings_page_helper.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "components/security_interstitials/core/safe_browsing_quiet_error_ui.h"
@@ -91,10 +93,15 @@ AwSafeBrowsingBlockingPage* AwSafeBrowsingBlockingPage::CreateBlockingPage(
     const GURL& main_frame_url,
     const UnsafeResource& unsafe_resource,
     std::unique_ptr<AwWebResourceRequest> resource_request) {
+  // Log the resource type that triggers the safe browsing blocking page.
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.BlockingPage.ResourceType",
+                            unsafe_resource.resource_type);
   const UnsafeResourceList unsafe_resources{unsafe_resource};
   AwBrowserContext* browser_context =
       AwBrowserContext::FromWebContents(web_contents);
   PrefService* pref_service = browser_context->GetPrefService();
+  // TODO(crbug.com/1134678): Set is_enhanced_protection_message_enabled once
+  // enhanced protection is supported on aw.
   BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options =
       BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
           IsMainPageLoadBlocked(unsafe_resources),
@@ -104,8 +111,10 @@ AwSafeBrowsingBlockingPage* AwSafeBrowsingBlockingPage::CreateBlockingPage(
           safe_browsing::IsExtendedReportingPolicyManaged(*pref_service),
           safe_browsing::IsEnhancedProtectionEnabled(*pref_service),
           pref_service->GetBoolean(::prefs::kSafeBrowsingProceedAnywayDisabled),
-          false,                    // should_open_links_in_new_tab
-          false,                    // always_show_back_to_safety
+          false,  // should_open_links_in_new_tab
+          false,  // always_show_back_to_safety
+          false,  // is_enhanced_protection_message_enabled
+          safe_browsing::IsSafeBrowsingPolicyManaged(*pref_service),
           "cpn_safe_browsing_wv");  // help_center_article_link
 
   ErrorUiType errorType =
@@ -119,10 +128,12 @@ AwSafeBrowsingBlockingPage* AwSafeBrowsingBlockingPage::CreateBlockingPage(
   GURL url =
       (main_frame_url.is_empty() && entry) ? entry->GetURL() : main_frame_url;
 
+  // TODO(crbug.com/1134678): Set settings_page_helper once enhanced protection
+  // is supported on aw.
   return new AwSafeBrowsingBlockingPage(
       ui_manager, web_contents, url, unsafe_resources,
       CreateControllerClient(web_contents, unsafe_resources, ui_manager,
-                             pref_service),
+                             pref_service, /*settings_page_helper*/ nullptr),
       display_options, errorType, std::move(resource_request));
 }
 

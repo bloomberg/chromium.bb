@@ -7,27 +7,32 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider.SYNTHETIC_TRIAL_POSTFIX;
 
 import android.content.Context;
-import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.SysUtils;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.supplier.ObservableSupplier;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.base.supplier.OneshotSupplierImpl;
+import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceCoordinator;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestions;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsOrchestrator;
+import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceDelegate;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -36,13 +41,17 @@ import org.chromium.ui.modelutil.PropertyModel;
 @UsedByReflection("TabManagementModule")
 public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
-    public TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
-            @TabSwitcherType int tabSwitcherType, boolean hasMVTiles) {
-        return new TasksSurfaceCoordinator(activity, propertyModel, tabSwitcherType, hasMVTiles);
+    public TasksSurface createTasksSurface(ChromeActivity activity,
+            ScrimCoordinator scrimCoordinator, PropertyModel propertyModel,
+            @TabSwitcherType int tabSwitcherType, Supplier<Tab> parentTabSupplier,
+            boolean hasMVTiles, boolean hasTrendyTerms) {
+        return new TasksSurfaceCoordinator(activity, scrimCoordinator, propertyModel,
+                tabSwitcherType, parentTabSupplier, hasMVTiles, hasTrendyTerms);
     }
 
     @Override
-    public TabSwitcher createGridTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
+    public TabSwitcher createGridTabSwitcher(
+            ChromeActivity activity, ViewGroup containerView, ScrimCoordinator scrimCoordinator) {
         if (UmaSessionStats.isMetricsServiceAvailable()) {
             UmaSessionStats.registerSyntheticFieldTrial(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
@@ -51,9 +60,10 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
 
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
-                activity.getFullscreenManager(), activity,
+                activity.getBrowserControlsManager(), activity,
                 activity.getMenuOrKeyboardActionController(), containerView,
-                activity.getShareDelegateSupplier(),
+                activity.getShareDelegateSupplier(), activity.getMultiWindowModeStateDispatcher(),
+                scrimCoordinator,
                 TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()
                                 && SysUtils.isLowEndDevice()
                         ? TabListCoordinator.TabListMode.LIST
@@ -61,30 +71,39 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     }
 
     @Override
-    public TabSwitcher createCarouselTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
+    public TabSwitcher createCarouselTabSwitcher(
+            ChromeActivity activity, ViewGroup containerView, ScrimCoordinator scrimCoordinator) {
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
-                activity.getFullscreenManager(), activity,
+                activity.getBrowserControlsManager(), activity,
                 activity.getMenuOrKeyboardActionController(), containerView,
-                activity.getShareDelegateSupplier(), TabListCoordinator.TabListMode.CAROUSEL);
+                activity.getShareDelegateSupplier(), activity.getMultiWindowModeStateDispatcher(),
+                scrimCoordinator, TabListCoordinator.TabListMode.CAROUSEL);
     }
 
     @Override
-    public TabGroupUi createTabGroupUi(
-            ViewGroup parentView, ThemeColorProvider themeColorProvider) {
-        return new TabGroupUiCoordinator(parentView, themeColorProvider);
+    public TabGroupUi createTabGroupUi(ViewGroup parentView, ThemeColorProvider themeColorProvider,
+            ScrimCoordinator scrimCoordinator,
+            ObservableSupplier<Boolean> omniboxFocusStateSupplier) {
+        return new TabGroupUiCoordinator(
+                parentView, themeColorProvider, scrimCoordinator, omniboxFocusStateSupplier);
     }
 
     @Override
     public Layout createStartSurfaceLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, StartSurface startSurface) {
-        return StartSurfaceDelegate.createStartSurfaceLayout(
-                context, updateHost, renderHost, startSurface);
+            LayoutRenderHost renderHost, StartSurface startSurface,
+            ObservableSupplier<BrowserControlsStateProvider> browserControlsStateProviderSupplier) {
+        return StartSurfaceDelegate.createStartSurfaceLayout(context, updateHost, renderHost,
+                startSurface, browserControlsStateProviderSupplier);
     }
 
     @Override
-    public StartSurface createStartSurface(ChromeActivity activity) {
-        return StartSurfaceDelegate.createStartSurface(activity);
+    public StartSurface createStartSurface(ChromeActivity activity,
+            ScrimCoordinator scrimCoordinator, BottomSheetController sheetController,
+            OneshotSupplierImpl<StartSurface> startSurfaceOneshotSupplier,
+            Supplier<Tab> parentTabSupplier, boolean hadWarmStart) {
+        return StartSurfaceDelegate.createStartSurface(activity, scrimCoordinator, sheetController,
+                startSurfaceOneshotSupplier, parentTabSupplier, hadWarmStart);
     }
 
     @Override
@@ -96,11 +115,5 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     public TabSuggestions createTabSuggestions(ChromeActivity activity) {
         return new TabSuggestionsOrchestrator(
                 activity.getTabModelSelector(), activity.getLifecycleDispatcher());
-    }
-
-    @Override
-    public TabGroupPopupUi createTabGroupPopUi(
-            ThemeColorProvider themeColorProvider, ObservableSupplier<View> parentViewSupplier) {
-        return new TabGroupPopupUiCoordinator(themeColorProvider, parentViewSupplier);
     }
 }

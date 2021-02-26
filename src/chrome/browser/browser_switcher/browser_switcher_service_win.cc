@@ -13,6 +13,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -109,10 +110,6 @@ void SaveDataToFile(const std::string& data, base::FilePath path) {
 
   success = base::Move(tmp_path, path);
   UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MoveSuccess", success);
-}
-
-void RemoveFile(base::FilePath path) {
-  base::DeleteFile(path, false);
 }
 
 // URL to fetch the IEEM sitelist from. Only used for testing.
@@ -262,7 +259,7 @@ void BrowserSwitcherServiceWin::DeletePrefsFile() {
     return;
   path = path.AppendASCII("cache.dat");
   sequenced_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&RemoveFile, std::move(path)),
+      FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), std::move(path)),
       base::BindOnce(&BrowserSwitcherServiceWin::CacheFileUpdated,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -287,7 +284,7 @@ void BrowserSwitcherServiceWin::DeleteSitelistCacheFile() {
     return;
   path = path.AppendASCII("sitelistcache.dat");
   sequenced_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&RemoveFile, std::move(path)),
+      FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), std::move(path)),
       base::BindOnce(&BrowserSwitcherServiceWin::SitelistCacheFileUpdated,
                      weak_ptr_factory_.GetWeakPtr()));
 }

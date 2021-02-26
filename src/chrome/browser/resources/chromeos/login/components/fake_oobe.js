@@ -7,8 +7,6 @@
  * closure_compiler coverage.
  */
 
-/** @typedef {string} */
-var ACCELERATOR_ENABLE_DEBBUGING = '1';
 
 /** @typedef {string} */
 var ACCELERATOR_DEVICE_REQUISITION_REMORA = '2';
@@ -18,6 +16,10 @@ var ACCELERATOR_DEVICE_REQUISITION = '3';
 
 var cr;
 cr.ui = {};
+
+cr.ui.login = {};
+
+cr.ui.login.invokePolymerMethod = function(element, name, ...args) {};
 
 cr.define = function(name, constructor_function) {};
 
@@ -30,7 +32,6 @@ class Oobe {
 
   /**
    * @param {
-   *     ACCELERATOR_ENABLE_DEBBUGING |
    *     ACCELERATOR_DEVICE_REQUISITION_REMORA |
    *     ACCELERATOR_DEVICE_REQUISITION
    * } accelerator
@@ -42,6 +43,16 @@ class Oobe {
    * @param {DisplayManagerScreenAttributes} attributes
    */
   registerScreen(el, attributes) {}
+
+  /**
+   * @param {Object} params
+   */
+  showScreen(params) {}
+
+  /**
+   * @param {boolean} forceOnline
+   */
+  resetSigninUI(forceOnline) {}
 
   /**
    * @return {?OobeTypes.OobeConfiguration}

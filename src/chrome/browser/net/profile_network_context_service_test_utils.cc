@@ -4,7 +4,6 @@
 
 #include "chrome/browser/net/profile_network_context_service_test_utils.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -25,18 +23,6 @@ enum class AmbientAuthProfileBit {
   GUEST = 1 << 1,
 };
 
-bool AmbientAuthenticationTestHelper::IsIncognitoAllowedInFeature(
-    const AmbientAuthenticationFeatureState& feature_state) {
-  return static_cast<int>(feature_state) &
-         static_cast<int>(AmbientAuthProfileBit::INCOGNITO);
-}
-
-bool AmbientAuthenticationTestHelper::IsGuestAllowedInFeature(
-    const AmbientAuthenticationFeatureState& feature_state) {
-  return static_cast<int>(feature_state) &
-         static_cast<int>(AmbientAuthProfileBit::GUEST);
-}
-
 bool AmbientAuthenticationTestHelper::IsIncognitoAllowedInPolicy(
     int policy_value) {
   return policy_value & static_cast<int>(AmbientAuthProfileBit::INCOGNITO);
@@ -44,36 +30,6 @@ bool AmbientAuthenticationTestHelper::IsIncognitoAllowedInPolicy(
 
 bool AmbientAuthenticationTestHelper::IsGuestAllowedInPolicy(int policy_value) {
   return policy_value & static_cast<int>(AmbientAuthProfileBit::GUEST);
-}
-
-void AmbientAuthenticationTestHelper::CookTheFeatureList(
-    base::test::ScopedFeatureList& scoped_feature_list,
-    const AmbientAuthenticationFeatureState& feature_state) {
-  std::vector<base::Feature> enabled_feature_list;
-  std::vector<base::Feature> disabled_feature_list;
-
-  if (IsIncognitoAllowedInFeature(feature_state)) {
-    enabled_feature_list.push_back(
-        features::kEnableAmbientAuthenticationInIncognito);
-  } else {
-    disabled_feature_list.push_back(
-        features::kEnableAmbientAuthenticationInIncognito);
-  }
-
-  if (IsGuestAllowedInFeature(feature_state)) {
-    enabled_feature_list.push_back(
-        features::kEnableAmbientAuthenticationInGuestSession);
-  } else {
-    disabled_feature_list.push_back(
-        features::kEnableAmbientAuthenticationInGuestSession);
-  }
-  scoped_feature_list.InitWithFeatures(enabled_feature_list,
-                                       disabled_feature_list);
-}
-
-Profile* AmbientAuthenticationTestHelper::GetGuestProfile() {
-  Profile* guest_profile = OpenGuestBrowser()->profile();
-  return guest_profile;
 }
 
 bool AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
@@ -89,34 +45,4 @@ bool AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
   return network_context_params.http_auth_static_network_context_params
              ->allow_default_credentials ==
          net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS;
-}
-
-// OpenGuestBrowser method code borrowed from
-// chrome/browser/profiles/profile_window_browsertest.cc
-Browser* AmbientAuthenticationTestHelper::OpenGuestBrowser() {
-  size_t num_browsers = BrowserList::GetInstance()->size();
-
-  // Create a guest browser nicely. Using CreateProfile() and CreateBrowser()
-  // does incomplete initialization that would lead to
-  // SystemUrlRequestContextGetter being leaked.
-  profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
-  ui_test_utils::WaitForBrowserToOpen();
-
-  DCHECK_NE(static_cast<Profile*>(nullptr),
-            g_browser_process->profile_manager()->GetProfileByPath(
-                ProfileManager::GetGuestProfilePath()));
-  EXPECT_EQ(num_browsers + 1, BrowserList::GetInstance()->size());
-
-  Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(
-      ProfileManager::GetGuestProfilePath());
-  Browser* browser = chrome::FindAnyBrowser(guest, true);
-  EXPECT_TRUE(browser);
-
-  // When |browser| closes a BrowsingDataRemover will be created and executed.
-  // It needs a loaded TemplateUrlService or else it hangs on to a
-  // CallbackList::Subscription forever.
-  search_test_utils::WaitForTemplateURLServiceToLoad(
-      TemplateURLServiceFactory::GetForProfile(guest));
-
-  return browser;
 }

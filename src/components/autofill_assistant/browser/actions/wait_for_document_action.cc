@@ -6,6 +6,7 @@
 
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_status.h"
+#include "components/autofill_assistant/browser/web/element_finder.h"
 
 namespace autofill_assistant {
 
@@ -21,25 +22,50 @@ void WaitForDocumentAction::InternalProcessAction(
     ProcessActionCallback callback) {
   callback_ = std::move(callback);
 
-  Selector selector(proto_.wait_for_document().frame());
-  if (selector.empty()) {
+  Selector frame_selector(proto_.wait_for_document().frame());
+  if (frame_selector.empty()) {
     // No element to wait for.
-    OnShortWaitForElement(ClientStatus(ACTION_APPLIED));
+    WaitForReadyState();
     return;
   }
   delegate_->ShortWaitForElement(
-      selector, base::BindOnce(&WaitForDocumentAction::OnShortWaitForElement,
-                               weak_ptr_factory_.GetWeakPtr()));
+      frame_selector,
+      base::BindOnce(
+          &WaitForDocumentAction::OnWaitForElementTimed,
+          weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(&WaitForDocumentAction::OnShortWaitForElement,
+                         weak_ptr_factory_.GetWeakPtr(), frame_selector)));
 }
 
 void WaitForDocumentAction::OnShortWaitForElement(
+    const Selector& frame_selector,
     const ClientStatus& element_status) {
   if (!element_status.ok()) {
     SendResult(element_status, DOCUMENT_UNKNOWN_READY_STATE);
     return;
   }
+
+  delegate_->FindElement(frame_selector,
+                         base::BindOnce(&WaitForDocumentAction::OnFindElement,
+                                        weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WaitForDocumentAction::OnFindElement(
+    const ClientStatus& status,
+    std::unique_ptr<ElementFinder::Result> element) {
+  if (!status.ok()) {
+    SendResult(status, DOCUMENT_UNKNOWN_READY_STATE);
+    return;
+  }
+
+  optional_frame_element_ = std::move(element);
+  WaitForReadyState();
+}
+
+void WaitForDocumentAction::WaitForReadyState() {
   delegate_->GetDocumentReadyState(
-      Selector(proto_.wait_for_document().frame()),
+      optional_frame_element_ ? *optional_frame_element_
+                              : ElementFinder::Result(),
       base::BindOnce(&WaitForDocumentAction::OnGetStartState,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -66,38 +92,39 @@ void WaitForDocumentAction::OnGetStartState(const ClientStatus& status,
     return;
   }
 
-  timer_.Start(FROM_HERE, timeout,
-               base::BindOnce(&WaitForDocumentAction::OnTimeout,
-                              weak_ptr_factory_.GetWeakPtr()));
   delegate_->WaitForDocumentReadyState(
-      Selector(proto_.wait_for_document().frame()),
-      proto_.wait_for_document().min_ready_state(),
+      timeout, proto_.wait_for_document().min_ready_state(),
+      optional_frame_element_ ? *optional_frame_element_
+                              : ElementFinder::Result(),
       base::BindOnce(&WaitForDocumentAction::OnWaitForStartState,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WaitForDocumentAction::OnWaitForStartState(
     const ClientStatus& status,
-    DocumentReadyState current_state) {
+    DocumentReadyState current_state,
+    base::TimeDelta wait_time) {
+  action_stopwatch_.TransferToWaitTime(wait_time);
+
+  if (status.proto_status() == TIMED_OUT) {
+    delegate_->GetDocumentReadyState(
+        optional_frame_element_ ? *optional_frame_element_
+                                : ElementFinder::Result(),
+        base::BindOnce(&WaitForDocumentAction::OnTimeoutInState,
+                       weak_ptr_factory_.GetWeakPtr(), status));
+    return;
+  }
+
   SendResult(status, current_state);
 }
 
-void WaitForDocumentAction::OnTimeout() {
-  // We've already returned successfully.
-  if (!callback_)
-    return;
-
-  delegate_->GetDocumentReadyState(
-      Selector(proto_.wait_for_document().frame()),
-      base::BindOnce(&WaitForDocumentAction::OnTimeoutInState,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void WaitForDocumentAction::OnTimeoutInState(const ClientStatus& status,
-                                             DocumentReadyState end_state) {
+void WaitForDocumentAction::OnTimeoutInState(
+    const ClientStatus& original_status,
+    const ClientStatus& status,
+    DocumentReadyState end_state) {
   DVLOG_IF(1, !status.ok())
       << __func__ << ": cannot report end_state because of " << status;
-  SendResult(ClientStatus(TIMED_OUT), end_state);
+  SendResult(original_status, end_state);
 }
 
 void WaitForDocumentAction::SendResult(const ClientStatus& status,

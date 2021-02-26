@@ -184,9 +184,14 @@ def main():
     shutil.rmtree(LLVM_BOOTSTRAP_INSTALL_DIR, ignore_errors=True)
     shutil.rmtree(LLVM_BUILD_DIR, ignore_errors=True)
 
-    build_cmd = [sys.executable, os.path.join(THIS_DIR, 'build.py'),
-                 '--bootstrap', '--disable-asserts',
-                 '--run-tests', '--pgo']
+    build_cmd = [
+        sys.executable,
+        os.path.join(THIS_DIR, 'build.py'), '--bootstrap', '--disable-asserts',
+        '--run-tests', '--pgo'
+    ]
+    if sys.platform.startswith('linux'):
+      build_cmd.append('--thinlto')
+
     TeeCmd(build_cmd, log)
 
   stamp = open(STAMP_FILE).read().rstrip()
@@ -228,9 +233,10 @@ def main():
       'lib/clang/$V/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib',
       'lib/clang/$V/lib/darwin/libclang_rt.asan_osx_dynamic.dylib',
 
-      # OS X and iOS builtin libraries (iossim is lipo'd into ios) for the
-      # _IsOSVersionAtLeast runtime function.
+      # OS X and iOS builtin libraries for the _IsOSVersionAtLeast runtime
+      # function.
       'lib/clang/$V/lib/darwin/libclang_rt.ios.a',
+      'lib/clang/$V/lib/darwin/libclang_rt.iossim.a',
       'lib/clang/$V/lib/darwin/libclang_rt.osx.a',
 
       # Profile runtime (used by profiler and code coverage).

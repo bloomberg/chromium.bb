@@ -10,7 +10,6 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/script_executor.h"
 #include "extensions/common/api/extension_types.h"
-#include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/host_id.h"
 
 namespace extensions {
@@ -46,6 +45,7 @@ class ExecuteCodeFunction : public ExtensionFunction {
   // fatal (VALIDATION_FAILURE).
   virtual InitResult Init() = 0;
   virtual bool ShouldInsertCSS() const = 0;
+  virtual bool ShouldRemoveCSS() const = 0;
   virtual bool CanExecuteScriptOnPage(std::string* error) = 0;
   virtual ScriptExecutor* GetScriptExecutor(std::string* error) = 0;
   virtual bool IsWebView() const = 0;
@@ -70,6 +70,9 @@ class ExecuteCodeFunction : public ExtensionFunction {
   }
 
   // The injection details.
+  // Note that for tabs.removeCSS we still use |InjectDetails| rather than
+  // |DeleteInjectionDetails|, since the two types are compatible; the value
+  // of |run_at| defaults to |RUN_AT_NONE|.
   std::unique_ptr<api::extension_types::InjectDetails> details_;
   base::Optional<InitResult> init_result_;
   // Set iff |init_result_| == FAILURE, holds the error string.
@@ -80,36 +83,10 @@ class ExecuteCodeFunction : public ExtensionFunction {
                              const GURL& on_url,
                              const base::ListValue& result);
 
-  // Optionally localizes |data|.
-  // Localization depends on whether |might_require_localization| was specified.
-  // Only CSS file content needs to be localized.
-  void MaybeLocalizeInBackground(
-      const std::string& extension_id,
-      const base::FilePath& extension_path,
-      const std::string& extension_default_locale,
-      extension_l10n_util::GzippedMessagesPermission gzip_permission,
-      bool might_require_localization,
-      std::string* data);
-
-  // Optionally localizes |data|.
-  // Similar to MaybeLocalizeInBackground, but only applies to component
-  // extension resources.
-  std::unique_ptr<std::string> LocalizeComponentResourceInBackground(
-      std::unique_ptr<std::string> data,
-      const std::string& extension_id,
-      const base::FilePath& extension_path,
-      const std::string& extension_default_locale,
-      extension_l10n_util::GzippedMessagesPermission gzip_permission,
-      bool might_require_localization);
-
   // Run in UI thread.  Code string contains the code to be executed. Returns
   // true on success. If true is returned, this does an AddRef. Returns false on
   // failure and sets |error|.
   bool Execute(const std::string& code_string, std::string* error);
-
-  // Contains extension resource built from path of file which is
-  // specified in JSON arguments.
-  ExtensionResource resource_;
 
   // The URL of the file being injected into the page, in the
   // chrome-extension: scheme.

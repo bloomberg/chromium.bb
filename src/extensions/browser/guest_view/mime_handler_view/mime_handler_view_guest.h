@@ -11,10 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/guest_view/browser/guest_view.h"
-#include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/common/api/mime_handler.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 
 namespace content {
 class WebContents;
@@ -28,18 +28,17 @@ class MimeHandlerViewGuestDelegate;
 // resource stream.
 class StreamContainer {
  public:
-  StreamContainer(
-      int tab_id,
-      bool embedded,
-      const GURL& handler_url,
-      const std::string& extension_id,
-      content::mojom::TransferrableURLLoaderPtr transferrable_loader,
-      const GURL& original_url);
+  StreamContainer(int tab_id,
+                  bool embedded,
+                  const GURL& handler_url,
+                  const std::string& extension_id,
+                  blink::mojom::TransferrableURLLoaderPtr transferrable_loader,
+                  const GURL& original_url);
   ~StreamContainer();
 
   base::WeakPtr<StreamContainer> GetWeakPtr();
 
-  content::mojom::TransferrableURLLoaderPtr TakeTransferrableURLLoader();
+  blink::mojom::TransferrableURLLoaderPtr TakeTransferrableURLLoader();
 
   bool embedded() const { return embedded_; }
   int tab_id() const { return tab_id_; }
@@ -58,7 +57,7 @@ class StreamContainer {
   const int tab_id_;
   const GURL handler_url_;
   const std::string extension_id_;
-  content::mojom::TransferrableURLLoaderPtr transferrable_loader_;
+  blink::mojom::TransferrableURLLoaderPtr transferrable_loader_;
 
   std::string mime_type_;
   GURL original_url_;
@@ -78,12 +77,12 @@ class MimeHandlerViewGuest
 
   static const char Type[];
 
-  // BrowserPluginGuestDelegate overrides.
+  // GuestViewBase overrides.
   bool CanBeEmbeddedInsideCrossProcessFrames() override;
   content::RenderWidgetHost* GetOwnerRenderWidgetHost() override;
   content::SiteInstance* GetOwnerSiteInstance() override;
-  content::RenderFrameHost* GetEmbedderFrame() override;
 
+  content::RenderFrameHost* GetEmbedderFrame();
   void SetEmbedderFrame(int process_id, int routing_id);
 
   void SetBeforeUnloadController(
@@ -147,8 +146,7 @@ class MimeHandlerViewGuest
   bool SaveFrame(const GURL& url, const content::Referrer& referrer) final;
   void OnRenderFrameHostDeleted(int process_id, int routing_id) final;
   void EnterFullscreenModeForTab(
-      content::WebContents* web_contents,
-      const GURL& origin,
+      content::RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents*) override;
   bool IsFullscreenForTabOrPending(

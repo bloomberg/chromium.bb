@@ -1,0 +1,101 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/webui/nearby_share/shared_resources.h"
+
+#include <string>
+
+#include "base/containers/span.h"
+#include "base/logging.h"
+#include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/webui/web_ui_util.h"
+
+void RegisterNearbySharedStrings(content::WebUIDataSource* data_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"nearbyShareAccountRowLabel", IDS_NEARBY_ACCOUNT_ROW_LABEL},
+      {"nearbyShareActionsCancel", IDS_NEARBY_ACTIONS_CANCEL},
+      {"nearbyShareActionsConfirm", IDS_NEARBY_ACTIONS_CONFIRM},
+      {"nearbyShareActionsNext", IDS_NEARBY_ACTIONS_NEXT},
+      {"nearbyShareActionsReject", IDS_NEARBY_ACTIONS_REJECT},
+      {"nearbyShareConfirmationPageAddContactSubtitle",
+       IDS_NEARBY_CONFIRMATION_PAGE_ADD_CONTACT_SUBTITLE},
+      {"nearbyShareConfirmationPageAddContactTitle",
+       IDS_NEARBY_CONFIRMATION_PAGE_ADD_CONTACT_TITLE},
+      {"nearbyShareConfirmationPageTitle", IDS_NEARBY_CONFIRMATION_PAGE_TITLE},
+      {"nearbyShareContactVisibilityAll", IDS_NEARBY_VISIBLITY_ALL_CONTACTS},
+      {"nearbyShareContactVisibilityAllDescription",
+       IDS_NEARBY_VISIBLITY_ALL_CONTACTS_DESCRIPTION},
+      {"nearbyShareContactVisibilityDownloadFailed",
+       IDS_NEARBY_CONTACT_VISIBILITY_DOWNLOAD_FAILED},
+      {"nearbyShareContactVisibilityDownloading",
+       IDS_NEARBY_CONTACT_VISIBILITY_DOWNLOADING},
+      {"nearbyShareContactVisibilityNoContactsSubtitle",
+       IDS_NEARBY_CONTACT_VISIBILITY_NO_CONTACTS_SUBTITLE},
+      {"nearbyShareContactVisibilityNoContactsTitle",
+       IDS_NEARBY_CONTACT_VISIBILITY_NO_CONTACTS_TITLE},
+      {"nearbyShareContactVisibilityNone", IDS_NEARBY_VISIBLITY_HIDDEN},
+      {"nearbyShareContactVisibilityNoneDescription",
+       IDS_NEARBY_VISIBLITY_HIDDEN_DESCRIPTION},
+      {"nearbyShareContactVisibilityOthers",
+       IDS_NEARBY_CONTACT_VISIBILITY_OTHERS},
+      {"nearbyShareContactVisibilityOthersTitle",
+       IDS_NEARBY_CONTACT_VISIBILITY_OTHERS_TITLE},
+      {"nearbyShareContactVisibilityOwnAll",
+       IDS_NEARBY_CONTACT_VISIBILITY_OWN_ALL},
+      {"nearbyShareContactVisibilityOwnNone",
+       IDS_NEARBY_CONTACT_VISIBILITY_OWN_NONE},
+      {"nearbyShareContactVisibilityOwnSome",
+       IDS_NEARBY_CONTACT_VISIBILITY_OWN_SOME},
+      {"nearbyShareContactVisibilityOwnTitle",
+       IDS_NEARBY_CONTACT_VISIBILITY_OWN_TITLE},
+      {"nearbyShareContactVisibilitySome", IDS_NEARBY_VISIBLITY_SOME_CONTACTS},
+      {"nearbyShareContactVisibilitySomeDescription",
+       IDS_NEARBY_VISIBLITY_SOME_CONTACTS_DESCRIPTION},
+      {"nearbyShareContactVisibilityUnknown", IDS_NEARBY_VISIBLITY_UNKNOWN},
+      {"nearbyShareContactVisibilityUnknownDescription",
+       IDS_NEARBY_VISIBLITY_UNKNOWN_DESCRIPTION},
+      {"nearbyShareContactVisibilityZeroStateInfo",
+       IDS_NEARBY_CONTACT_VISIBILITY_ZERO_STATE_INFO},
+      {"nearbyShareContactVisibilityZeroStateText",
+       IDS_NEARBY_CONTACT_VISIBILITY_ZERO_STATE_TEXT},
+      {"nearbyShareDeviceNameEmptyError", IDS_NEARBY_DEVICE_NAME_EMPTY_ERROR},
+      {"nearbyShareDeviceNameTooLongError",
+       IDS_NEARBY_DEVICE_NAME_TOO_LONG_ERROR},
+      {"nearbyShareDeviceNameInvalidCharactersError",
+       IDS_NEARBY_DEVICE_NAME_INVALID_CHARACTERS_ERROR},
+      {"nearbyShareDiscoveryPageInfo", IDS_NEARBY_DISCOVERY_PAGE_INFO},
+      {"nearbyShareDiscoveryPagePlaceholder",
+       IDS_NEARBY_DISCOVERY_PAGE_PLACEHOLDER},
+      {"nearbyShareDiscoveryPageSubtitle", IDS_NEARBY_DISCOVERY_PAGE_SUBTITLE},
+      {"nearbyShareDiscoveryPageTitle", IDS_NEARBY_DISCOVERY_PAGE_TITLE},
+      {"nearbyShareErrorCantShare", IDS_NEARBY_ERROR_CANT_SHARE},
+      {"nearbyShareErrorNoResponse", IDS_NEARBY_ERROR_NO_RESPONSE},
+      {"nearbyShareErrorRejected", IDS_NEARBY_ERROR_REJECTED},
+      {"nearbyShareErrorSomethingWrong", IDS_NEARBY_ERROR_SOMETHING_WRONG},
+      {"nearbyShareErrorTimeOut", IDS_NEARBY_ERROR_TIME_OUT},
+      {"nearbyShareErrorUnsupportedFileType",
+       IDS_NEARBY_ERROR_UNSUPPORTED_FILE_TYPE},
+      {"nearbyShareFeatureName", IDS_NEARBY_SHARE_FEATURE_NAME},
+      {"nearbyShareOnboardingPageDeviceName",
+       IDS_NEARBY_ONBOARDING_PAGE_DEVICE_NAME},
+      {"nearbyShareOnboardingPageSubtitle",
+       IDS_NEARBY_ONBOARDING_PAGE_SUBTITLE},
+      {"nearbyShareOnboardingPageTitle", IDS_NEARBY_ONBOARDING_PAGE_TITLE},
+      {"nearbySharePreviewMultipleFileTitle",
+       IDS_NEARBY_PREVIEW_TITLE_MULTIPLE_FILE},
+      {"nearbyShareSecureConnectionId", IDS_NEARBY_SECURE_CONNECTION_ID},
+      {"nearbyShareVisibilityPageManageContacts",
+       IDS_NEARBY_VISIBILITY_PAGE_MANAGE_CONTACTS},
+      {"nearbyShareVisibilityPageSubtitle",
+       IDS_NEARBY_VISIBILITY_PAGE_SUBTITLE},
+      {"nearbyShareVisibilityPageTitle", IDS_NEARBY_VISIBILITY_PAGE_TITLE},
+      {"nearbyShareHighVisibilitySubTitle",
+       IDS_NEARBY_HIGH_VISIBILITY_SUB_TITLE},
+      {"nearbyShareHighVisibilityHelpText",
+       IDS_NEARBY_HIGH_VISIBILITY_HELP_TEXT},
+      {"nearbyShareReceiveConfirmPageTitle",
+       IDS_NEARBY_RECEIVE_CONFIRM_PAGE_TITLE}};
+  webui::AddLocalizedStringsBulk(data_source, kLocalizedStrings);
+}

@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
@@ -32,8 +32,9 @@ class NET_EXPORT RecordRdata {
  public:
   virtual ~RecordRdata() {}
 
-  // Return true if |data| represents RDATA in the wire format with a valid size
-  // for the give |type|.
+  // Return true if `data` represents RDATA in the wire format with a valid size
+  // for the give `type`. Always returns true for unrecognized `type`s as the
+  // size is never known to be invalid.
   static bool HasValidSize(const base::StringPiece& data, uint16_t type);
 
   virtual bool IsEqual(const RecordRdata* other) const = 0;
@@ -267,49 +268,6 @@ class NET_EXPORT_PRIVATE OptRecordRdata : public RecordRdata {
   std::vector<char> buf_;
 
   DISALLOW_COPY_AND_ASSIGN(OptRecordRdata);
-};
-
-// TLS 1.3 Encrypted Server Name Indication
-// record format (https://tools.ietf.org/id/draft-ietf-tls-esni-04.txt)
-// struct {
-//   ESNIKeys esni_keys;  // see spec
-//   Extension dns_extensions<0..2 ^ 16 - 1>;
-// } ESNIRecord;
-class NET_EXPORT EsniRecordRdata : public RecordRdata {
- public:
-  static constexpr uint16_t kType = dns_protocol::kExperimentalTypeEsniDraft4;
-  static constexpr uint16_t kAddressSetExtensionType = 0x1001u;
-
-  ~EsniRecordRdata() override;
-
-  // Parsing an ESNIRecord Rdata succeeds when all of the following hold:
-  // 1. The esni_keys field is well-formed.
-  // 2. The dns_extensions field is well-formed and, additionally, valid
-  // in the sense that its enum members have values allowed by the spec.
-  // 3. The Rdata field contains no data beyond the ESNIKeys and, optionally,
-  // one DNS extension of type address_set.
-  static std::unique_ptr<EsniRecordRdata> Create(base::StringPiece data,
-                                                 const DnsRecordParser& parser);
-
-  // Two EsniRecordRdatas compare equal if their ESNIKeys fields agree
-  // and their address sets contain the same addresses in the same order.
-  bool IsEqual(const RecordRdata* other) const override;
-  uint16_t Type() const override;
-
-  // Returns the ESNIKeys field of the record. This is an opaque bitstring
-  // passed to the SSL library.
-  base::StringPiece esni_keys() const { return esni_keys_; }
-
-  // Returns the IP addresses parsed from the address_set DNS extension, if any.
-  const std::vector<IPAddress>& addresses() const { return addresses_; }
-
- private:
-  EsniRecordRdata();
-
-  std::string esni_keys_;
-  std::vector<IPAddress> addresses_;
-
-  DISALLOW_COPY_AND_ASSIGN(EsniRecordRdata);
 };
 
 // This class parses and serializes the INTEGRITY DNS record.

@@ -5,13 +5,13 @@
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManagerImpl, PaymentsManagerImpl} from 'chrome://settings/lazy_load.js';
-import {CrSettingsPrefs, OpenWindowProxyImpl, PasswordManagerImpl, PluralStringProxyImpl, Router, routes} from 'chrome://settings/settings.js';
+import {CrSettingsPrefs, MultiStoreExceptionEntry, MultiStorePasswordUiEntry, OpenWindowProxyImpl, PasswordManagerImpl, Router, routes, SettingsPluralStringProxyImpl} from 'chrome://settings/settings.js';
 import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
 import {AutofillManagerExpectations, createAddressEntry, createCreditCardEntry, createExceptionEntry, createPasswordEntry, PaymentsManagerExpectations, TestAutofillManager, TestPaymentsManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {makeCompromisedCredential} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.js';
-import { PasswordManagerExpectations,TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
-import {TestPluralStringProxy} from 'chrome://test/settings/test_plural_string_proxy.js';
+import {PasswordManagerExpectations,TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
+import {TestPluralStringProxy} from 'chrome://test/test_plural_string_proxy.js';
 
 // clang-format on
 
@@ -67,6 +67,11 @@ suite('PasswordsAndForms', function() {
           type: chrome.settingsPrivate.PrefType.BOOLEAN,
           value: true,
         },
+        {
+          key: 'payments.can_make_payment_enabled',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: true,
+        }
       ]));
 
       CrSettingsPrefs.initialized.then(function() {
@@ -181,15 +186,17 @@ suite('PasswordsAndForms', function() {
     return createPrefs(true, true).then(function(prefs) {
       const element = createAutofillElement(prefs);
 
-      const list = [createPasswordEntry(), createPasswordEntry()];
+      const list = [
+        createPasswordEntry({url: 'one.com', username: 'user1', id: 0}),
+        createPasswordEntry({url: 'two.com', username: 'user1', id: 1})
+      ];
 
       passwordManager.lastCallback.addSavedPasswordListChangedListener(list);
       flush();
 
       assertDeepEquals(
-          list,
-          element.$$('#passwordSection')
-              .savedPasswords.map(entry => entry.entry));
+          list.map(entry => new MultiStorePasswordUiEntry(entry)),
+          element.$$('#passwordSection').savedPasswords);
 
       // The callback is coming from the manager, so the element shouldn't
       // have additional calls to the manager after the base expectations.
@@ -205,11 +212,16 @@ suite('PasswordsAndForms', function() {
     return createPrefs(true, true).then(function(prefs) {
       const element = createAutofillElement(prefs);
 
-      const list = [createExceptionEntry(), createExceptionEntry()];
+      const list = [
+        createExceptionEntry({url: 'one.com', id: 0}),
+        createExceptionEntry({url: 'two.com', id: 1})
+      ];
       passwordManager.lastCallback.addExceptionListChangedListener(list);
       flush();
 
-      assertEquals(list, element.$$('#passwordSection').passwordExceptions);
+      assertDeepEquals(
+          list.map(entry => new MultiStoreExceptionEntry(entry)),
+          element.$$('#passwordSection').passwordExceptions);
 
       // The callback is coming from the manager, so the element shouldn't
       // have additional calls to the manager after the base expectations.
@@ -286,15 +298,7 @@ suite('PasswordsUITest', function() {
   /** @type {OpenWindowProxy} */
   let openWindowProxy = null;
   let passwordManager;
-  let pluaralString;
-
-  suiteSetup(function() {
-    // Forces navigation to Google Password Manager to be off by default.
-    loadTimeData.overrideValues({
-      navigateToGooglePasswordManager: false,
-      enablePasswordCheck: true,
-    });
-  });
+  let pluralString;
 
   setup(function() {
     openWindowProxy = new TestOpenWindowProxy();
@@ -302,41 +306,14 @@ suite('PasswordsUITest', function() {
     // Override the PasswordManagerImpl for testing.
     passwordManager = new TestPasswordManagerProxy();
     PasswordManagerImpl.instance_ = passwordManager;
-    pluaralString = new TestPluralStringProxy();
-    PluralStringProxyImpl.instance_ = pluaralString;
+    pluralString = new TestPluralStringProxy();
+    SettingsPluralStringProxyImpl.instance_ = pluralString;
 
     autofillPage = createAutofillPageSection();
   });
 
   teardown(function() {
     autofillPage.remove();
-  });
-
-  test('Google Password Manager Off', function() {
-    assertTrue(!!autofillPage.$$('#passwordManagerButton'));
-    autofillPage.$$('#passwordManagerButton').click();
-    flush();
-
-    assertEquals(Router.getInstance().getCurrentRoute(), routes.PASSWORDS);
-  });
-
-  test('Google Password Manager On', function() {
-    // Hardcode this value so that the test is independent of the production
-    // implementation that might include additional query parameters.
-    const googlePasswordManagerUrl = 'https://passwords.google.com';
-
-    loadTimeData.overrideValues({
-      navigateToGooglePasswordManager: true,
-      googlePasswordManagerUrl: googlePasswordManagerUrl,
-    });
-
-    assertTrue(!!autofillPage.$$('#passwordManagerButton'));
-    autofillPage.$$('#passwordManagerButton').click();
-    flush();
-
-    return openWindowProxy.whenCalled('openURL').then(url => {
-      assertEquals(googlePasswordManagerUrl, url);
-    });
   });
 
   test('Compromised Credential', async function() {
@@ -354,7 +331,7 @@ suite('PasswordsUITest', function() {
     autofillPage = createAutofillPageSection();
 
     await passwordManager.whenCalled('getCompromisedCredentials');
-    await pluaralString.whenCalled('getPluralString');
+    await pluralString.whenCalled('getPluralString');
 
     // With compromised credentials sublabel should have text
     assertNotEquals(

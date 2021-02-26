@@ -1,5 +1,5 @@
 URL: https://github.com/google/googletest
-Version: 1.10.x
+Version: release-1.10.0-224-g23b2a3b1
 License: BSD
 License File: LICENSE
 
@@ -12,6 +12,14 @@ failures, various options for running the tests, and XML test report
 generation.
 
 Local Modifications:
-- Replace everything in:
-  third_party/googletest/src/googletest/src/
-  third_party/googletest/src/googletest/include/
+- Remove everything but:
+  googletest/
+   cmake
+   CMakeLists.txt
+   CONTRIBUTORS
+   include
+   LICENSE
+   README.md
+   src
+- Enable kErrorOnUninstantiatedParameterizedTest and
+  kErrorOnUninstantiatedTypeParameterizedTest in gtest.cc

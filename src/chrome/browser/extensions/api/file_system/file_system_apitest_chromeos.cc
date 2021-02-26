@@ -165,7 +165,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
     SetUpTestFileHierarchy();
 
     integration_service_ = new drive::DriveIntegrationService(
-        profile, nullptr, "", test_cache_root_.GetPath(),
+        profile, "", test_cache_root_.GetPath(),
         fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
     return integration_service_;
   }
@@ -212,7 +212,7 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID, kTestingExtensionId);
+        extensions::switches::kAllowlistedExtensionID, kTestingExtensionId);
   }
 
   // Sets up fake Drive service for tests (this has to be injected before the
@@ -312,7 +312,7 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
         profile, drivefs_root_.GetPath().Append("drive-user"));
 
     return new drive::DriveIntegrationService(
-        profile, nullptr, "", {},
+        profile, "", {},
         fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
   }
 
@@ -381,16 +381,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
       << message_;
 }
 
-#if defined(ADDRESS_SANITIZER)
-// Flaky when run under ASan: crbug.com/499233.
-#define MAYBE_FileSystemApiOpenDirectoryWithWriteTest \
-  DISABLED_FileSystemApiOpenDirectoryWithWriteTest
-#else
-#define MAYBE_FileSystemApiOpenDirectoryWithWriteTest \
-  FileSystemApiOpenDirectoryWithWriteTest
-#endif
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
-                       MAYBE_FileSystemApiOpenDirectoryWithWriteTest) {
+                       FileSystemApiOpenDirectoryWithWriteTest) {
   base::FilePath test_directory =
       GetDriveMountPoint().AppendASCII("root/subdir");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
@@ -502,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem, NotKioskSession) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
-                       WhitelistedComponent) {
+                       AllowlistedComponent) {
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_CANCEL);
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
       "api_test/file_system/request_file_system_whitelisted_component",
@@ -511,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
-                       NotWhitelistedComponent) {
+                       NotAllowlistedComponent) {
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_OK);
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
       "api_test/file_system/request_file_system_not_whitelisted_component",
@@ -547,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
-                       WhitelistedExtensionForDownloads) {
+                       AllowlistedExtensionForDownloads) {
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_CANCEL);
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
       "api_test/file_system/request_downloads_whitelisted_extension", kFlagNone,

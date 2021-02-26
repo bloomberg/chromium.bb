@@ -19,6 +19,7 @@
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "components/variations/client_filterable_state.h"
 #include "components/variations/field_trial_config/fieldtrial_testing_config.h"
 #include "components/variations/variations_seed_processor.h"
 #include "net/base/escape.h"
@@ -68,6 +69,15 @@ bool HasFormFactor(const FieldTrialTestingExperiment& experiment) {
       return true;
   }
   return experiment.form_factors_size == 0;
+}
+
+// Returns true if the experiment config has a missing |min_os_version| or
+// GetOSVersion() >= |min_os_version|.
+bool HasMinOSVersion(const FieldTrialTestingExperiment& experiment) {
+  if (!experiment.min_os_version)
+    return true;
+  return base::Version(experiment.min_os_version) <=
+         ClientFilterableState::GetOSVersion();
 }
 
 // Records the override ui string config. Mainly used for testing.
@@ -137,9 +147,8 @@ void ChooseExperiment(
   for (size_t i = 0; i < study.experiments_size; ++i) {
     const FieldTrialTestingExperiment* experiment = study.experiments + i;
     if (HasPlatform(*experiment, platform)) {
-      if (!chosen_experiment &&
-          !HasDeviceLevelMismatch(*experiment) &&
-          HasFormFactor(*experiment)) {
+      if (!chosen_experiment && !HasDeviceLevelMismatch(*experiment) &&
+          HasFormFactor(*experiment) && HasMinOSVersion(*experiment)) {
         chosen_experiment = experiment;
       }
 
@@ -158,19 +167,14 @@ void ChooseExperiment(
 
 }  // namespace
 
-std::string UnescapeValue(const std::string& value) {
-  return net::UnescapeURLComponent(
-      value, net::UnescapeRule::PATH_SEPARATORS |
-                 net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
-}
-
 std::string EscapeValue(const std::string& value) {
-  // This needs to be the inverse of UnescapeValue in the anonymous namespace
-  // above.
+  // This needs to be the inverse of UnescapeValue in
+  // base/metrics/field_trial_params.
   std::string net_escaped_str =
       net::EscapeQueryParamValue(value, true /* use_plus */);
 
-  // net doesn't escape '.' and '*' but UnescapeValue() covers those cases.
+  // net doesn't escape '.' and '*' but base::UnescapeValue() covers those
+  // cases.
   std::string escaped_str;
   escaped_str.reserve(net_escaped_str.length());
   for (const char ch : net_escaped_str) {
@@ -186,7 +190,7 @@ std::string EscapeValue(const std::string& value) {
 
 bool AssociateParamsFromString(const std::string& varations_string) {
   return base::AssociateFieldTrialParamsFromString(varations_string,
-                                                   &UnescapeValue);
+                                                   &base::UnescapeValue);
 }
 
 void AssociateParamsFromFieldTrialConfig(

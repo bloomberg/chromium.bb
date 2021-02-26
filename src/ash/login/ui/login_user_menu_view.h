@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "components/user_manager/user_type.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/focus/focus_search.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -19,7 +20,7 @@ struct LoginUserInfo;
 class RemoveUserButton;
 
 class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
-                                     public views::ButtonListener {
+                                     public views::FocusTraversable {
  public:
   class TestApi {
    public:
@@ -28,6 +29,7 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
     views::View* remove_user_confirm_data();
     views::View* managed_user_data();
     views::Label* username_label();
+    views::Label* management_disclosure_label();
 
    private:
     LoginUserMenuView* bubble_;
@@ -48,17 +50,22 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
 
   // LoginBaseBubbleView:
   LoginButton* GetBubbleOpener() const override;
-  gfx::Point CalculatePosition() override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View:
   void RequestFocus() override;
   bool HasFocus() const override;
   const char* GetClassName() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  views::FocusTraversable* GetPaneFocusTraversable() override;
+
+  // views::FocusTraversable:
+  views::FocusSearch* GetFocusSearch() override;
+  views::FocusTraversable* GetFocusTraversableParent() override;
+  views::View* GetFocusTraversableParentView() override;
 
  private:
+  void RemoveUserButtonPressed();
+
   LoginButton* bubble_opener_ = nullptr;
   base::RepeatingClosure on_remove_user_warning_shown_;
   base::RepeatingClosure on_remove_user_requested_;
@@ -66,8 +73,11 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
   views::View* remove_user_confirm_data_ = nullptr;
   RemoveUserButton* remove_user_button_ = nullptr;
   views::Label* username_label_ = nullptr;
+  views::Label* management_disclosure_label_ = nullptr;
 
   base::string16 warning_message_;
+
+  std::unique_ptr<views::FocusSearch> focus_search_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUserMenuView);
 };

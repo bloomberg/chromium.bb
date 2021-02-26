@@ -68,7 +68,7 @@ var (
 
 	maxIntBits = big.NewInt(t.MaxIntBits)
 
-	zeroExpr = a.NewExpr(0, 0, 0, t.ID0, nil, nil, nil, nil)
+	zeroExpr = a.NewExpr(0, 0, t.ID0, nil, nil, nil, nil)
 )
 
 func init() {
@@ -190,46 +190,48 @@ func invert(tm *t.Map, n *a.Expr) (*a.Expr, error) {
 	default:
 		op, lhs, rhs = t.IDXUnaryNot, nil, n
 	}
-	o := a.NewExpr(n.AsNode().AsRaw().Flags(), op, 0, 0, lhs.AsNode(), nil, rhs.AsNode(), args)
+	o := a.NewExpr(n.AsNode().AsRaw().Flags(), op, 0, lhs.AsNode(), nil, rhs.AsNode(), args)
 	o.SetMType(n.MType())
 	return o, nil
 }
 
 func (q *checker) bcheckBlock(block []*a.Node) error {
-	// TODO: after a "break loop", do we need to set placeholder MBounds so
-	// that everything (including unreachable code) is bounds checked?
-loop:
+	unreachable := false
 	for _, o := range block {
+		q.errFilename, q.errLine = o.AsRaw().FilenameLine()
+		if unreachable {
+			return fmt.Errorf("check: unreachable code")
+		}
 		if err := q.bcheckStatement(o); err != nil {
 			return err
 		}
+
 		switch o.Kind() {
+		default:
+			continue
 		case a.KJump:
-			break loop
+			// No-op.
 		case a.KRet:
-			if o.AsRet().Keyword() == t.IDReturn {
-				break loop
-			}
-			// o is a yield statement.
-			//
-			// Drop any facts involving args or this.
-			if err := q.facts.update(func(x *a.Expr) (*a.Expr, error) {
-				if x.Mentions(exprArgs) || x.Mentions(exprThis) {
-					return nil, nil
+			if o.AsRet().Keyword() == t.IDYield {
+				// Drop any facts involving args or this.
+				if err := q.facts.update(func(x *a.Expr) (*a.Expr, error) {
+					if x.Mentions(exprArgs) || x.Mentions(exprThis) {
+						return nil, nil
+					}
+					return x, nil
+				}); err != nil {
+					return err
 				}
-				return x, nil
-			}); err != nil {
-				return err
+				// TODO: drop any facts involving ptr-typed local variables?
+				continue
 			}
-			// TODO: drop any facts involving ptr-typed local variables?
 		}
+		unreachable = true
 	}
 	return nil
 }
 
 func (q *checker) bcheckStatement(n *a.Node) error {
-	q.errFilename, q.errLine = n.AsRaw().FilenameLine()
-
 	switch n.Kind() {
 	case a.KAssert:
 		if err := q.bcheckAssert(n.AsAssert()); err != nil {
@@ -315,7 +317,7 @@ func (q *checker) bcheckStatement(n *a.Node) error {
 		}
 
 		if lTyp.IsStatus() {
-			if v := n.Value(); v.Operator() == 0 {
+			if v := n.Value(); (v.Operator() == 0) || (v.Operator() == t.IDDot) {
 				if id := v.Ident(); (id != t.IDOk) && (q.hasIsErrorFact(id) || isErrorStatus(id, q.tm)) {
 					n.SetRetsError()
 				}
@@ -357,6 +359,10 @@ func (q *checker) hasIsErrorFact(id t.ID) bool {
 }
 
 func (q *checker) bcheckAssert(n *a.Assert) error {
+	if err := n.DropExprCachedMBounds(); err != nil {
+		return err
+	}
+
 	condition := n.Condition()
 	if _, err := q.bcheckExpr(condition, 0); err != nil {
 		return err
@@ -382,7 +388,7 @@ func (q *checker) bcheckAssert(n *a.Assert) error {
 		if reasonFunc := q.reasonMap[reasonID]; reasonFunc != nil {
 			err = reasonFunc(q, n)
 		} else {
-			err = fmt.Errorf("no such reason %s", reasonID.Str(q.tm))
+			err = fmt.Errorf("check: no such reason %s", reasonID.Str(q.tm))
 		}
 	} else if condition.Operator().IsBinaryOp() && condition.Operator() != t.IDAs {
 		err = q.proveBinaryOp(condition.Operator(),
@@ -451,14 +457,14 @@ func (q *checker) bcheckAssignment(lhs *a.Expr, op t.ID, rhs *a.Expr) error {
 			}
 			switch op {
 			case t.IDPlusEq, t.IDMinusEq:
-				oRHS := a.NewExpr(0, op.BinaryForm(), 0, 0, xRHS.AsNode(), nil, rhs.AsNode(), nil)
+				oRHS := a.NewExpr(0, op.BinaryForm(), 0, xRHS.AsNode(), nil, rhs.AsNode(), nil)
 				// TODO: call SetMBounds?
 				oRHS.SetMType(typeExprIdeal)
 				oRHS, err := simplify(q.tm, oRHS)
 				if err != nil {
 					return nil, err
 				}
-				o := a.NewExpr(0, xOp, 0, 0, xLHS.AsNode(), nil, oRHS.AsNode(), nil)
+				o := a.NewExpr(0, xOp, 0, xLHS.AsNode(), nil, oRHS.AsNode(), nil)
 				o.SetMBounds(bounds{zero, one})
 				o.SetMType(typeExprBool)
 				return o, nil
@@ -495,7 +501,7 @@ func (q *checker) bcheckAssignment(lhs *a.Expr, op t.ID, rhs *a.Expr) error {
 
 func (q *checker) bcheckAssignment1(lhs *a.Expr, lTyp *a.TypeExpr, op t.ID, rhs *a.Expr) (bounds, error) {
 	if lhs == nil && op != t.IDEq {
-		return bounds{}, fmt.Errorf("check: internal error: missing LHS for op key 0x%02X", op)
+		return bounds{}, fmt.Errorf("check: internal error: missing LHS for op key 0x%X", op)
 	}
 
 	lb, err := bounds{}, (error)(nil)
@@ -528,41 +534,6 @@ func (q *checker) bcheckAssignment1(lhs *a.Expr, lTyp *a.TypeExpr, op t.ID, rhs 
 	return rb, nil
 }
 
-// terminates returns whether a block of statements terminates. In other words,
-// whether the block is non-empty and its final statement is a "return",
-// "break", "continue" or an "if-else" chain where all branches terminate.
-//
-// TODO: strengthen this to include "while" statements? For inspiration, the Go
-// spec has https://golang.org/ref/spec#Terminating_statements
-func terminates(body []*a.Node) bool {
-	if len(body) > 0 {
-		n := body[len(body)-1]
-		switch n.Kind() {
-		case a.KIf:
-			n := n.AsIf()
-			for {
-				if !terminates(n.BodyIfTrue()) {
-					return false
-				}
-				bif := n.BodyIfFalse()
-				if len(bif) > 0 && !terminates(bif) {
-					return false
-				}
-				n = n.ElseIf()
-				if n == nil {
-					return len(bif) > 0
-				}
-			}
-		case a.KJump:
-			return true
-		case a.KRet:
-			return n.AsRet().Keyword() == t.IDReturn
-		}
-		return false
-	}
-	return false
-}
-
 func snapshot(facts []*a.Expr) []*a.Expr {
 	return append([]*a.Expr(nil), facts...)
 }
@@ -577,7 +548,7 @@ func (q *checker) unify(branches [][]*a.Expr) error {
 		return nil
 	}
 	if len(branches) > 10000 {
-		return fmt.Errorf("too many if-else branches")
+		return fmt.Errorf("check: too many if-else branches")
 	}
 
 	m := map[string]int{}
@@ -611,7 +582,7 @@ func (q *checker) bcheckIf(n *a.If) error {
 		if err := q.bcheckBlock(n.BodyIfTrue()); err != nil {
 			return err
 		}
-		if !terminates(n.BodyIfTrue()) {
+		if !a.Terminates(n.BodyIfTrue()) {
 			branches = append(branches, snapshot(q.facts))
 		}
 
@@ -628,7 +599,7 @@ func (q *checker) bcheckIf(n *a.If) error {
 			if err := q.bcheckBlock(bif); err != nil {
 				return err
 			}
-			if !terminates(bif) {
+			if !a.Terminates(bif) {
 				branches = append(branches, snapshot(q.facts))
 			}
 			break
@@ -713,7 +684,7 @@ func (q *checker) bcheckWhile(n *a.While) error {
 		}
 		// Check the pre and inv conditions on the implicit continue after the
 		// body.
-		if !terminates(n.Body()) {
+		if !a.Terminates(n.Body()) {
 			for _, o := range n.Asserts() {
 				if o.AsAssert().Keyword() == t.IDPost {
 					continue
@@ -741,7 +712,7 @@ func (q *checker) bcheckVar(n *a.Var) error {
 		return err
 	}
 
-	lhs := a.NewExpr(0, 0, 0, n.Name(), nil, nil, nil, nil)
+	lhs := a.NewExpr(0, 0, n.Name(), nil, nil, nil, nil)
 	lhs.SetMType(n.XType())
 	// "var x T" has an implicit "= 0".
 	//
@@ -760,7 +731,7 @@ func (q *checker) bcheckExpr(n *a.Expr, depth uint32) (bounds, error) {
 		return b, nil
 	}
 	if n.ConstValue() != nil {
-		return bcheckExprConstValue(n), nil
+		return bcheckExprConstValue(n)
 	}
 
 	nb, err := q.bcheckExpr1(n, depth)
@@ -785,20 +756,34 @@ func (q *checker) bcheckExpr(n *a.Expr, depth uint32) (bounds, error) {
 	return nb, nil
 }
 
-func bcheckExprConstValue(n *a.Expr) bounds {
+func bcheckExprConstValue(n *a.Expr) (bounds, error) {
 	if o := n.LHS(); o != nil {
-		bcheckExprConstValue(o.AsExpr())
+		if _, err := bcheckExprConstValue(o.AsExpr()); err != nil {
+			return bounds{}, err
+		}
 	}
 	if o := n.MHS(); o != nil {
-		bcheckExprConstValue(o.AsExpr())
+		if _, err := bcheckExprConstValue(o.AsExpr()); err != nil {
+			return bounds{}, err
+		}
 	}
 	if o := n.RHS(); o != nil && n.Operator() != t.IDXBinaryAs {
-		bcheckExprConstValue(o.AsExpr())
+		if _, err := bcheckExprConstValue(o.AsExpr()); err != nil {
+			return bounds{}, err
+		}
+	}
+	for _, o := range n.Args() {
+		if _, err := bcheckExprConstValue(o.AsExpr()); err != nil {
+			return bounds{}, err
+		}
 	}
 	cv := n.ConstValue()
+	if cv == nil {
+		return bounds{}, fmt.Errorf("check: constant expression has nil ConstValue")
+	}
 	b := bounds{cv, cv}
 	n.SetMBounds(b)
-	return b
+	return b, nil
 }
 
 func (q *checker) bcheckExpr1(n *a.Expr, depth uint32) (bounds, error) {
@@ -1037,36 +1022,51 @@ func (q *checker) bcheckExprCallSpecialCases(n *a.Expr, depth uint32) (bounds, e
 			}
 		}
 
-	} else if recvTyp.IsIOType() {
-		advance, update := (*big.Int)(nil), false
+	} else if recvTyp.IsIOTokenType() {
+		advance, advanceExpr, update := (*big.Int)(nil), (*a.Expr)(nil), false
 
 		if method == t.IDUndoByte {
 			if err := q.canUndoByte(recv); err != nil {
 				return bounds{}, err
 			}
 
-		} else if method == t.IDCopyNFromHistoryFast {
-			if err := q.canCopyNFromHistoryFast(recv, n.Args()); err != nil {
+		} else if method == t.IDLimitedCopyU32FromHistoryFast {
+			if err := q.canLimitedCopyU32FromHistoryFast(recv, n.Args()); err != nil {
 				return bounds{}, err
 			}
 
-		} else if method == t.IDSkipFast {
+		} else if method == t.IDSkipU32Fast {
 			args := n.Args()
 			if len(args) != 2 {
 				return bounds{}, fmt.Errorf("check: internal error: bad skip_fast arguments")
 			}
 			actual := args[0].AsArg().Value()
 			worstCase := args[1].AsArg().Value()
-			if err := q.proveBinaryOp(t.IDXBinaryLessEq, actual, worstCase); err == errFailed {
+			if actual.Eq(worstCase) {
+				// No-op. Proving "x <= x" is trivial.
+			} else if err := q.proveBinaryOp(t.IDXBinaryLessEq, actual, worstCase); err == errFailed {
 				return bounds{}, fmt.Errorf("check: could not prove skip_fast pre-condition: %s <= %s",
 					actual.Str(q.tm), worstCase.Str(q.tm))
 			} else if err != nil {
 				return bounds{}, err
 			}
-			advance, update = worstCase.ConstValue(), true
-			if advance == nil {
-				return bounds{}, fmt.Errorf("check: skip_fast worst_case is not a constant value")
+			if cv := worstCase.ConstValue(); cv != nil {
+				advance, update = cv, true
+			} else {
+				advanceExpr, update = actual, true
 			}
+
+		} else if method == t.IDPeekU64LEAt {
+			args := n.Args()
+			if len(args) != 1 {
+				return bounds{}, fmt.Errorf("check: internal error: bad peek_u64le_at arguments")
+			}
+			offset := args[0].AsArg().Value()
+			if offset.ConstValue() == nil {
+				return bounds{}, fmt.Errorf("check: peek_u64le_at offset is not a constant value")
+			}
+			advance, update = big.NewInt(8), false
+			advance.Add(advance, offset.ConstValue())
 
 		} else if method >= t.IDPeekU8 {
 			if m := method - t.IDPeekU8; m < t.ID(len(ioMethodAdvances)) {
@@ -1075,12 +1075,18 @@ func (q *checker) bcheckExprCallSpecialCases(n *a.Expr, depth uint32) (bounds, e
 			}
 		}
 
-		if advance != nil {
-			if ok, err := q.optimizeIOMethodAdvance(recv, advance, update); err != nil {
+		if (advance != nil) || (advanceExpr != nil) {
+			if ok, err := q.optimizeIOMethodAdvance(recv, advance, advanceExpr, update); err != nil {
 				return bounds{}, err
 			} else if !ok {
-				return bounds{}, fmt.Errorf("check: could not prove %s pre-condition: %s.available() >= %v",
-					method.Str(q.tm), recv.Str(q.tm), advance)
+				adv := ""
+				if advance != nil {
+					adv = advance.String()
+				} else {
+					adv = advanceExpr.Str(q.tm)
+				}
+				return bounds{}, fmt.Errorf("check: could not prove %s pre-condition: %s.length() >= %s",
+					method.Str(q.tm), recv.Str(q.tm), adv)
 			}
 			// TODO: drop other recv-related facts?
 		}
@@ -1112,11 +1118,11 @@ func (q *checker) canUndoByte(recv *a.Expr) error {
 	return fmt.Errorf("check: could not prove %s.can_undo_byte()", recv.Str(q.tm))
 }
 
-func (q *checker) canCopyNFromHistoryFast(recv *a.Expr, args []*a.Node) error {
+func (q *checker) canLimitedCopyU32FromHistoryFast(recv *a.Expr, args []*a.Node) error {
 	// As per cgen's io-private.h, there are three pre-conditions:
-	//  - n <= this.available()
+	//  - n <= this.length()
 	//  - distance > 0
-	//  - distance <= this.history_available()
+	//  - distance <= this.history_length()
 
 	if len(args) != 2 {
 		return fmt.Errorf("check: internal error: inconsistent copy_n_from_history_fast arguments")
@@ -1124,7 +1130,7 @@ func (q *checker) canCopyNFromHistoryFast(recv *a.Expr, args []*a.Node) error {
 	n := args[0].AsArg().Value()
 	distance := args[1].AsArg().Value()
 
-	// Check "n <= this.available()".
+	// Check "n <= this.length()".
 check0:
 	for {
 		for _, x := range q.facts {
@@ -1142,9 +1148,9 @@ check0:
 				continue
 			}
 
-			// Check that the RHS is "recv.available()".
+			// Check that the RHS is "recv.length()".
 			y, method, yArgs := splitReceiverMethodArgs(x.RHS().AsExpr())
-			if method != t.IDAvailable || len(yArgs) != 0 {
+			if method != t.IDLength || len(yArgs) != 0 {
 				continue
 			}
 			if !y.Eq(recv) {
@@ -1153,7 +1159,7 @@ check0:
 
 			break check0
 		}
-		return fmt.Errorf("check: could not prove n <= %s.available()", recv.Str(q.tm))
+		return fmt.Errorf("check: could not prove n <= %s.length()", recv.Str(q.tm))
 	}
 
 	// Check "distance > 0".
@@ -1174,7 +1180,7 @@ check1:
 		return fmt.Errorf("check: could not prove distance > 0")
 	}
 
-	// Check "distance <= this.history_available()".
+	// Check "distance <= this.history_length()".
 check2:
 	for {
 		for _, x := range q.facts {
@@ -1192,9 +1198,9 @@ check2:
 				continue
 			}
 
-			// Check that the RHS is "recv.history_available()".
+			// Check that the RHS is "recv.history_length()".
 			y, method, yArgs := splitReceiverMethodArgs(x.RHS().AsExpr())
-			if method != t.IDHistoryAvailable || len(yArgs) != 0 {
+			if method != t.IDHistoryLength || len(yArgs) != 0 {
 				continue
 			}
 			if !y.Eq(recv) {
@@ -1203,7 +1209,7 @@ check2:
 
 			break check2
 		}
-		return fmt.Errorf("check: could not prove distance <= %s.history_available()", recv.Str(q.tm))
+		return fmt.Errorf("check: could not prove distance <= %s.history_length()", recv.Str(q.tm))
 	}
 
 	return nil
@@ -1242,21 +1248,24 @@ var ioMethodAdvances = [...]struct {
 	t.IDPeekU64BE - t.IDPeekU8:      {eight, false},
 	t.IDPeekU64LE - t.IDPeekU8:      {eight, false},
 
-	t.IDWriteFastU8 - t.IDPeekU8:    {one, true},
-	t.IDWriteFastU16BE - t.IDPeekU8: {two, true},
-	t.IDWriteFastU16LE - t.IDPeekU8: {two, true},
-	t.IDWriteFastU24BE - t.IDPeekU8: {three, true},
-	t.IDWriteFastU24LE - t.IDPeekU8: {three, true},
-	t.IDWriteFastU32BE - t.IDPeekU8: {four, true},
-	t.IDWriteFastU32LE - t.IDPeekU8: {four, true},
-	t.IDWriteFastU40BE - t.IDPeekU8: {five, true},
-	t.IDWriteFastU40LE - t.IDPeekU8: {five, true},
-	t.IDWriteFastU48BE - t.IDPeekU8: {six, true},
-	t.IDWriteFastU48LE - t.IDPeekU8: {six, true},
-	t.IDWriteFastU56BE - t.IDPeekU8: {seven, true},
-	t.IDWriteFastU56LE - t.IDPeekU8: {seven, true},
-	t.IDWriteFastU64BE - t.IDPeekU8: {eight, true},
-	t.IDWriteFastU64LE - t.IDPeekU8: {eight, true},
+	t.IDWriteU8Fast - t.IDPeekU8:    {one, true},
+	t.IDWriteU16BEFast - t.IDPeekU8: {two, true},
+	t.IDWriteU16LEFast - t.IDPeekU8: {two, true},
+	t.IDWriteU24BEFast - t.IDPeekU8: {three, true},
+	t.IDWriteU24LEFast - t.IDPeekU8: {three, true},
+	t.IDWriteU32BEFast - t.IDPeekU8: {four, true},
+	t.IDWriteU32LEFast - t.IDPeekU8: {four, true},
+	t.IDWriteU40BEFast - t.IDPeekU8: {five, true},
+	t.IDWriteU40LEFast - t.IDPeekU8: {five, true},
+	t.IDWriteU48BEFast - t.IDPeekU8: {six, true},
+	t.IDWriteU48LEFast - t.IDPeekU8: {six, true},
+	t.IDWriteU56BEFast - t.IDPeekU8: {seven, true},
+	t.IDWriteU56LEFast - t.IDPeekU8: {seven, true},
+	t.IDWriteU64BEFast - t.IDPeekU8: {eight, true},
+	t.IDWriteU64LEFast - t.IDPeekU8: {eight, true},
+
+	t.IDWriteSimpleTokenFast - t.IDPeekU8:   {one, true},
+	t.IDWriteExtendedTokenFast - t.IDPeekU8: {one, true},
 }
 
 func makeConstValueExpr(tm *t.Map, cv *big.Int) (*a.Expr, error) {
@@ -1264,7 +1273,7 @@ func makeConstValueExpr(tm *t.Map, cv *big.Int) (*a.Expr, error) {
 	if err != nil {
 		return nil, err
 	}
-	o := a.NewExpr(0, 0, 0, id, nil, nil, nil, nil)
+	o := a.NewExpr(0, 0, id, nil, nil, nil, nil)
 	o.SetConstValue(cv)
 	o.SetMBounds(bounds{cv, cv})
 	o.SetMType(typeExprIdeal)
@@ -1273,10 +1282,10 @@ func makeConstValueExpr(tm *t.Map, cv *big.Int) (*a.Expr, error) {
 
 // makeSliceLength returns "x.length()".
 func makeSliceLength(slice *a.Expr) *a.Expr {
-	x := a.NewExpr(0, t.IDDot, 0, t.IDLength, slice.AsNode(), nil, nil, nil)
+	x := a.NewExpr(0, t.IDDot, t.IDLength, slice.AsNode(), nil, nil, nil)
 	x.SetMBounds(bounds{one, one})
 	x.SetMType(a.NewTypeExpr(t.IDFunc, 0, t.IDLength, slice.MType().AsNode(), nil, nil))
-	x = a.NewExpr(0, t.IDOpenParen, 0, 0, x.AsNode(), nil, nil, nil)
+	x = a.NewExpr(0, t.IDOpenParen, 0, x.AsNode(), nil, nil, nil)
 	// TODO: call SetMBounds?
 	x.SetMType(typeExprU64)
 	return x
@@ -1286,7 +1295,7 @@ func makeSliceLength(slice *a.Expr) *a.Expr {
 //
 // n must be the t.ID of a small power of 2.
 func makeSliceLengthEqEq(x t.ID, xTyp *a.TypeExpr, n t.ID) *a.Expr {
-	xExpr := a.NewExpr(0, 0, 0, x, nil, nil, nil, nil)
+	xExpr := a.NewExpr(0, 0, x, nil, nil, nil, nil)
 	xExpr.SetMType(xTyp)
 
 	lhs := makeSliceLength(xExpr)
@@ -1297,12 +1306,12 @@ func makeSliceLengthEqEq(x t.ID, xTyp *a.TypeExpr, n t.ID) *a.Expr {
 	}
 	cv := big.NewInt(int64(nValue))
 
-	rhs := a.NewExpr(0, 0, 0, n, nil, nil, nil, nil)
+	rhs := a.NewExpr(0, 0, n, nil, nil, nil, nil)
 	rhs.SetConstValue(cv)
 	rhs.SetMBounds(bounds{cv, cv})
 	rhs.SetMType(typeExprIdeal)
 
-	ret := a.NewExpr(0, t.IDXBinaryEqEq, 0, 0, lhs.AsNode(), nil, rhs.AsNode(), nil)
+	ret := a.NewExpr(0, t.IDXBinaryEqEq, 0, lhs.AsNode(), nil, rhs.AsNode(), nil)
 	ret.SetMBounds(bounds{zero, one})
 	ret.SetMType(typeExprBool)
 	return ret
@@ -1384,7 +1393,7 @@ func (q *checker) bcheckExprBinaryOp1(op t.ID, lhs *a.Expr, lb bounds, rhs *a.Ex
 			return bounds{}, fmt.Errorf("check: divide/modulus op argument %q is possibly non-positive", rhs.Str(q.tm))
 		}
 		if op == t.IDXBinarySlash {
-			nb, _ := lb.Quo(rb)
+			nb, _ := lb.TryQuo(rb)
 			return nb, nil
 		}
 		return bounds{
@@ -1413,14 +1422,14 @@ func (q *checker) bcheckExprBinaryOp1(op t.ID, lhs *a.Expr, lb bounds, rhs *a.Ex
 
 		switch op {
 		case t.IDXBinaryShiftL:
-			nb, _ := lb.Lsh(rb)
+			nb, _ := lb.TryLsh(rb)
 			return nb, nil
 		case t.IDXBinaryTildeModShiftL:
-			nb, _ := lb.Lsh(rb)
+			nb, _ := lb.TryLsh(rb)
 			nb[1] = min(nb[1], typeBounds[1])
 			return nb, nil
 		case t.IDXBinaryShiftR:
-			nb, _ := lb.Rsh(rb)
+			nb, _ := lb.TryRsh(rb)
 			return nb, nil
 		}
 
@@ -1435,11 +1444,9 @@ func (q *checker) bcheckExprBinaryOp1(op t.ID, lhs *a.Expr, lb bounds, rhs *a.Ex
 		}
 		switch op {
 		case t.IDXBinaryAmp:
-			nb, _ := lb.And(rb)
-			return nb, nil
+			return lb.And(rb), nil
 		case t.IDXBinaryPipe:
-			nb, _ := lb.Or(rb)
-			return nb, nil
+			return lb.Or(rb), nil
 		case t.IDXBinaryHat:
 			z := max(lb[1], rb[1])
 			// Return [0, z rounded up to the next power-of-2-minus-1]. This is
@@ -1450,7 +1457,7 @@ func (q *checker) bcheckExprBinaryOp1(op t.ID, lhs *a.Expr, lb bounds, rhs *a.Ex
 			}, nil
 		}
 
-	case t.IDXBinaryTildeModPlus, t.IDXBinaryTildeModMinus:
+	case t.IDXBinaryTildeModPlus, t.IDXBinaryTildeModMinus, t.IDXBinaryTildeModStar:
 		typ := lhs.MType()
 		if typ.IsIdeal() {
 			typ = rhs.MType()
@@ -1515,7 +1522,7 @@ func (q *checker) bcheckExprAssociativeOp(n *a.Expr, depth uint32) (bounds, erro
 			continue
 		}
 		lhs := a.NewExpr(n.AsNode().AsRaw().Flags(),
-			n.Operator(), 0, n.Ident(), n.LHS(), n.MHS(), n.RHS(), args[:i])
+			n.Operator(), n.Ident(), n.LHS(), n.MHS(), n.RHS(), args[:i])
 		lb, err = q.bcheckExprBinaryOp1(op, lhs, lb, o.AsExpr(), depth)
 		if err != nil {
 			return bounds{}, err

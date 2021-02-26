@@ -69,7 +69,7 @@ static const char kOutputSeparator = '|';
 // of registers is completely printed, regardless of the number of calls
 // to PrintRegister.
 static const int kMaxWidth = 80;  // optimize for an 80-column terminal
-static int PrintRegister(const char *name, uint32_t value, int start_col) {
+static int PrintRegister(const char* name, uint32_t value, int start_col) {
   char buffer[64];
   snprintf(buffer, sizeof(buffer), " %5s = 0x%08x", name, value);
 
@@ -83,7 +83,7 @@ static int PrintRegister(const char *name, uint32_t value, int start_col) {
 }
 
 // PrintRegister64 does the same thing, but for 64-bit registers.
-static int PrintRegister64(const char *name, uint64_t value, int start_col) {
+static int PrintRegister64(const char* name, uint64_t value, int start_col) {
   char buffer[64];
   snprintf(buffer, sizeof(buffer), " %5s = 0x%016" PRIx64 , name, value);
 
@@ -98,7 +98,7 @@ static int PrintRegister64(const char *name, uint64_t value, int start_col) {
 
 // StripSeparator takes a string |original| and returns a copy
 // of the string with all occurences of |kOutputSeparator| removed.
-static string StripSeparator(const string &original) {
+static string StripSeparator(const string& original) {
   string result = original;
   string::size_type position = 0;
   while ((position = result.find(kOutputSeparator, position)) != string::npos) {
@@ -112,20 +112,20 @@ static string StripSeparator(const string &original) {
 }
 
 // PrintStackContents prints the stack contents of the current frame to stdout.
-static void PrintStackContents(const string &indent,
-                               const StackFrame *frame,
-                               const StackFrame *prev_frame,
-                               const string &cpu,
-                               const MemoryRegion *memory,
+static void PrintStackContents(const string& indent,
+                               const StackFrame* frame,
+                               const StackFrame* prev_frame,
+                               const string& cpu,
+                               const MemoryRegion* memory,
                                const CodeModules* modules,
-                               SourceLineResolverInterface *resolver) {
+                               SourceLineResolverInterface* resolver) {
   // Find stack range.
   int word_length = 0;
   uint64_t stack_begin = 0, stack_end = 0;
   if (cpu == "x86") {
     word_length = 4;
-    const StackFrameX86 *frame_x86 = static_cast<const StackFrameX86*>(frame);
-    const StackFrameX86 *prev_frame_x86 =
+    const StackFrameX86* frame_x86 = static_cast<const StackFrameX86*>(frame);
+    const StackFrameX86* prev_frame_x86 =
         static_cast<const StackFrameX86*>(prev_frame);
     if ((frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_ESP) &&
         (prev_frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_ESP)) {
@@ -134,9 +134,9 @@ static void PrintStackContents(const string &indent,
     }
   } else if (cpu == "amd64") {
     word_length = 8;
-    const StackFrameAMD64 *frame_amd64 =
+    const StackFrameAMD64* frame_amd64 =
         static_cast<const StackFrameAMD64*>(frame);
-    const StackFrameAMD64 *prev_frame_amd64 =
+    const StackFrameAMD64* prev_frame_amd64 =
         static_cast<const StackFrameAMD64*>(prev_frame);
     if ((frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RSP) &&
         (prev_frame_amd64->context_validity &
@@ -146,8 +146,8 @@ static void PrintStackContents(const string &indent,
     }
   } else if (cpu == "arm") {
     word_length = 4;
-    const StackFrameARM *frame_arm = static_cast<const StackFrameARM*>(frame);
-    const StackFrameARM *prev_frame_arm =
+    const StackFrameARM* frame_arm = static_cast<const StackFrameARM*>(frame);
+    const StackFrameARM* prev_frame_arm =
         static_cast<const StackFrameARM*>(prev_frame);
     if ((frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_SP) &&
         (prev_frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_SP)) {
@@ -156,9 +156,9 @@ static void PrintStackContents(const string &indent,
     }
   } else if (cpu == "arm64") {
     word_length = 8;
-    const StackFrameARM64 *frame_arm64 =
+    const StackFrameARM64* frame_arm64 =
         static_cast<const StackFrameARM64*>(frame);
-    const StackFrameARM64 *prev_frame_arm64 =
+    const StackFrameARM64* prev_frame_arm64 =
         static_cast<const StackFrameARM64*>(prev_frame);
     if ((frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_SP) &&
         (prev_frame_arm64->context_validity &
@@ -249,8 +249,8 @@ static void PrintStackContents(const string &indent,
 //
 // If |cpu| is a recognized CPU name, relevant register state for each stack
 // frame printed is also output, if available.
-static void PrintStack(const CallStack *stack,
-                       const string &cpu,
+static void PrintStack(const CallStack* stack,
+                       const string& cpu,
                        bool output_stack_contents,
                        const MemoryRegion* memory,
                        const CodeModules* modules,
@@ -260,7 +260,7 @@ static void PrintStack(const CallStack *stack,
     printf(" <no frames>\n");
   }
   for (int frame_index = 0; frame_index < frame_count; ++frame_index) {
-    const StackFrame *frame = stack->frames()->at(frame_index);
+    const StackFrame* frame = stack->frames()->at(frame_index);
     printf("%2d  ", frame_index);
 
     uint64_t instruction_address = frame->ReturnAddress();
@@ -289,7 +289,7 @@ static void PrintStack(const CallStack *stack,
 
     int sequence = 0;
     if (cpu == "x86") {
-      const StackFrameX86 *frame_x86 =
+      const StackFrameX86* frame_x86 =
         reinterpret_cast<const StackFrameX86*>(frame);
 
       if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_EIP)
@@ -311,7 +311,7 @@ static void PrintStack(const CallStack *stack,
         sequence = PrintRegister("efl", frame_x86->context.eflags, sequence);
       }
     } else if (cpu == "ppc") {
-      const StackFramePPC *frame_ppc =
+      const StackFramePPC* frame_ppc =
         reinterpret_cast<const StackFramePPC*>(frame);
 
       if (frame_ppc->context_validity & StackFramePPC::CONTEXT_VALID_SRR0)
@@ -319,7 +319,7 @@ static void PrintStack(const CallStack *stack,
       if (frame_ppc->context_validity & StackFramePPC::CONTEXT_VALID_GPR1)
         sequence = PrintRegister("r1", frame_ppc->context.gpr[1], sequence);
     } else if (cpu == "amd64") {
-      const StackFrameAMD64 *frame_amd64 =
+      const StackFrameAMD64* frame_amd64 =
         reinterpret_cast<const StackFrameAMD64*>(frame);
 
       if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RAX)
@@ -357,7 +357,7 @@ static void PrintStack(const CallStack *stack,
       if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RIP)
         sequence = PrintRegister64("rip", frame_amd64->context.rip, sequence);
     } else if (cpu == "sparc") {
-      const StackFrameSPARC *frame_sparc =
+      const StackFrameSPARC* frame_sparc =
         reinterpret_cast<const StackFrameSPARC*>(frame);
 
       if (frame_sparc->context_validity & StackFrameSPARC::CONTEXT_VALID_SP)
@@ -367,7 +367,7 @@ static void PrintStack(const CallStack *stack,
       if (frame_sparc->context_validity & StackFrameSPARC::CONTEXT_VALID_PC)
         sequence = PrintRegister("pc", frame_sparc->context.pc, sequence);
     } else if (cpu == "arm") {
-      const StackFrameARM *frame_arm =
+      const StackFrameARM* frame_arm =
         reinterpret_cast<const StackFrameARM*>(frame);
 
       // Argument registers (caller-saves), which will likely only be valid
@@ -409,7 +409,7 @@ static void PrintStack(const CallStack *stack,
       if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_PC)
         sequence = PrintRegister("pc", frame_arm->context.iregs[15], sequence);
     } else if (cpu == "arm64") {
-      const StackFrameARM64 *frame_arm64 =
+      const StackFrameARM64* frame_arm64 =
         reinterpret_cast<const StackFrameARM64*>(frame);
 
       if (frame_arm64->context_validity & StackFrameARM64::CONTEXT_VALID_X0) {
@@ -621,10 +621,10 @@ static void PrintStack(const CallStack *stack,
 // Module, function, source file, and source line may all be empty
 // depending on availability.  The code offset follows the same rules as
 // PrintStack above.
-static void PrintStackMachineReadable(int thread_num, const CallStack *stack) {
+static void PrintStackMachineReadable(int thread_num, const CallStack* stack) {
   int frame_count = stack->frames()->size();
   for (int frame_index = 0; frame_index < frame_count; ++frame_index) {
-    const StackFrame *frame = stack->frames()->at(frame_index);
+    const StackFrame* frame = stack->frames()->at(frame_index);
     printf("%d%c%d%c", thread_num, kOutputSeparator, frame_index,
            kOutputSeparator);
 
@@ -676,8 +676,8 @@ static void PrintStackMachineReadable(int thread_num, const CallStack *stack) {
 // ContainsModule checks whether a given |module| is in the vector
 // |modules_without_symbols|.
 static bool ContainsModule(
-    const vector<const CodeModule*> *modules,
-    const CodeModule *module) {
+    const vector<const CodeModule*>* modules,
+    const CodeModule* module) {
   assert(modules);
   assert(module);
   vector<const CodeModule*>::const_iterator iter;
@@ -694,9 +694,9 @@ static bool ContainsModule(
 // |modules_without_symbols| should contain the list of modules that were
 // confirmed to be missing their symbols during the stack walk.
 static void PrintModule(
-    const CodeModule *module,
-    const vector<const CodeModule*> *modules_without_symbols,
-    const vector<const CodeModule*> *modules_with_corrupt_symbols,
+    const CodeModule* module,
+    const vector<const CodeModule*>* modules_without_symbols,
+    const vector<const CodeModule*>* modules_with_corrupt_symbols,
     uint64_t main_address) {
   string symbol_issues;
   if (ContainsModule(modules_without_symbols, module)) {
@@ -721,9 +721,9 @@ static void PrintModule(
 // |modules_without_symbols| should contain the list of modules that were
 // confirmed to be missing their symbols during the stack walk.
 static void PrintModules(
-    const CodeModules *modules,
-    const vector<const CodeModule*> *modules_without_symbols,
-    const vector<const CodeModule*> *modules_with_corrupt_symbols) {
+    const CodeModules* modules,
+    const vector<const CodeModule*>* modules_without_symbols,
+    const vector<const CodeModule*>* modules_with_corrupt_symbols) {
   if (!modules)
     return;
 
@@ -731,7 +731,7 @@ static void PrintModules(
   printf("Loaded modules:\n");
 
   uint64_t main_address = 0;
-  const CodeModule *main_module = modules->GetMainModule();
+  const CodeModule* main_module = modules->GetMainModule();
   if (main_module) {
     main_address = main_module->base_address();
   }
@@ -740,7 +740,7 @@ static void PrintModules(
   for (unsigned int module_sequence = 0;
        module_sequence < module_count;
        ++module_sequence) {
-    const CodeModule *module = modules->GetModuleAtSequence(module_sequence);
+    const CodeModule* module = modules->GetModuleAtSequence(module_sequence);
     PrintModule(module, modules_without_symbols, modules_with_corrupt_symbols,
                 main_address);
   }
@@ -751,12 +751,12 @@ static void PrintModules(
 // text format:
 // Module|{Module Filename}|{Version}|{Debug Filename}|{Debug Identifier}|
 // {Base Address}|{Max Address}|{Main}
-static void PrintModulesMachineReadable(const CodeModules *modules) {
+static void PrintModulesMachineReadable(const CodeModules* modules) {
   if (!modules)
     return;
 
   uint64_t main_address = 0;
-  const CodeModule *main_module = modules->GetMainModule();
+  const CodeModule* main_module = modules->GetMainModule();
   if (main_module) {
     main_address = main_module->base_address();
   }
@@ -765,7 +765,7 @@ static void PrintModulesMachineReadable(const CodeModules *modules) {
   for (unsigned int module_sequence = 0;
        module_sequence < module_count;
        ++module_sequence) {
-    const CodeModule *module = modules->GetModuleAtSequence(module_sequence);
+    const CodeModule* module = modules->GetModuleAtSequence(module_sequence);
     uint64_t base_address = module->base_address();
     printf("Module%c%s%c%s%c%s%c%s%c0x%08" PRIx64 "%c0x%08" PRIx64 "%c%d\n",
            kOutputSeparator,

@@ -7,13 +7,12 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
-#include "base/task/post_task.h"
 #include "base/test/gtest_util.h"
 #include "chrome/browser/task_manager/sampling/shared_sampler.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -58,8 +57,7 @@ class FakeTask : public Task {
 class TaskGroupTest : public testing::Test {
  public:
   TaskGroupTest()
-      : io_task_runner_(
-            base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})),
+      : io_task_runner_(content::GetIOThreadTaskRunner({})),
         run_loop_(std::make_unique<base::RunLoop>()) {}
 
  protected:
@@ -73,8 +71,8 @@ class TaskGroupTest : public testing::Test {
     task_group_ = std::make_unique<TaskGroup>(
         base::Process::Current().Handle(), base::Process::Current().Pid(),
         is_running_in_vm,
-        base::Bind(&TaskGroupTest::OnBackgroundCalculationsDone,
-                   base::Unretained(this)),
+        base::BindRepeating(&TaskGroupTest::OnBackgroundCalculationsDone,
+                            base::Unretained(this)),
         new SharedSampler(io_task_runner_), io_task_runner_);
     // Refresh() is only valid on non-empty TaskGroups, so add a fake Task.
     fake_task_ = std::make_unique<FakeTask>(base::Process::Current().Pid(),

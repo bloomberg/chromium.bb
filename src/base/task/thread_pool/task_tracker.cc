@@ -6,6 +6,7 @@
 
 #include <atomic>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -13,10 +14,12 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/sequence_token.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
 #include "base/task/task_executor.h"
@@ -25,7 +28,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 #include "base/values.h"
 #include "build/build_config.h"
 
@@ -50,6 +53,8 @@ class TaskTracingInfo : public trace_event::ConvertableToTraceFormat {
       : task_traits_(task_traits),
         execution_mode_(execution_mode),
         sequence_token_(sequence_token) {}
+  TaskTracingInfo(const TaskTracingInfo&) = delete;
+  TaskTracingInfo& operator=(const TaskTracingInfo&) = delete;
 
   // trace_event::ConvertableToTraceFormat implementation.
   void AppendAsTraceFormat(std::string* out) const override;
@@ -58,8 +63,6 @@ class TaskTracingInfo : public trace_event::ConvertableToTraceFormat {
   const TaskTraits task_traits_;
   const char* const execution_mode_;
   const SequenceToken sequence_token_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskTracingInfo);
 };
 
 void TaskTracingInfo::AppendAsTraceFormat(std::string* out) const {
@@ -98,27 +101,6 @@ HistogramBase* GetLatencyHistogram(StringPiece histogram_name,
       histogram, TimeDelta::FromMicroseconds(1),
       TimeDelta::FromMilliseconds(20), 50,
       HistogramBase::kUmaTargetedHistogramFlag);
-}
-
-// Constructs a histogram to track task count which is logging to
-// "ThreadPool.{histogram_name}.{histogram_label}.{task_type_suffix}".
-HistogramBase* GetCountHistogram(StringPiece histogram_name,
-                                 StringPiece histogram_label,
-                                 StringPiece task_type_suffix) {
-  DCHECK(!histogram_name.empty());
-  DCHECK(!task_type_suffix.empty());
-
-  if (histogram_label.empty())
-    return nullptr;
-
-  // Mimics the UMA_HISTOGRAM_CUSTOM_COUNTS macro.
-  const std::string histogram = JoinString(
-      {"ThreadPool", histogram_name, histogram_label, task_type_suffix}, ".");
-  // 500 was chosen as the maximum number of tasks run while queuing because
-  // values this high would likely indicate an error, beyond which knowing the
-  // actual number of tasks is not informative.
-  return Histogram::FactoryGet(histogram, 1, 500, 50,
-                               HistogramBase::kUmaTargetedHistogramFlag);
 }
 
 // Returns a histogram stored in an array indexed by task priority.
@@ -227,6 +209,8 @@ class EphemeralTaskExecutor : public TaskExecutor {
 class TaskTracker::State {
  public:
   State() = default;
+  State(const State&) = delete;
+  State& operator=(const State&) = delete;
 
   // Sets a flag indicating that shutdown has started. Returns true if there are
   // items blocking shutdown. Can only be called once.
@@ -303,8 +287,6 @@ class TaskTracker::State {
   // blocking task or the second thread will win and
   // IncrementNumItemsBlockingShutdown() will know that shutdown has started.
   subtle::Atomic32 bits_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(State);
 };
 
 // TODO(jessemckenna): Write a helper function to avoid code duplication below.
@@ -315,15 +297,6 @@ TaskTracker::TaskTracker(StringPiece histogram_label)
       can_run_policy_(CanRunPolicy::kAll),
       flush_cv_(flush_lock_.CreateConditionVariable()),
       shutdown_lock_(&flush_lock_),
-      task_latency_histograms_{GetLatencyHistogram("TaskLatencyMicroseconds",
-                                                   histogram_label,
-                                                   "BackgroundTaskPriority"),
-                               GetLatencyHistogram("TaskLatencyMicroseconds",
-                                                   histogram_label,
-                                                   "UserVisibleTaskPriority"),
-                               GetLatencyHistogram("TaskLatencyMicroseconds",
-                                                   histogram_label,
-                                                   "UserBlockingTaskPriority")},
       heartbeat_latency_histograms_{
           GetLatencyHistogram("HeartbeatLatencyMicroseconds",
                               histogram_label,
@@ -334,16 +307,6 @@ TaskTracker::TaskTracker(StringPiece histogram_label)
           GetLatencyHistogram("HeartbeatLatencyMicroseconds",
                               histogram_label,
                               "UserBlockingTaskPriority")},
-      num_tasks_run_while_queuing_histograms_{
-          GetCountHistogram("NumTasksRunWhileQueuing",
-                            histogram_label,
-                            "BackgroundTaskPriority"),
-          GetCountHistogram("NumTasksRunWhileQueuing",
-                            histogram_label,
-                            "UserVisibleTaskPriority"),
-          GetCountHistogram("NumTasksRunWhileQueuing",
-                            histogram_label,
-                            "UserBlockingTaskPriority")},
       tracked_ref_factory_(this) {}
 
 TaskTracker::~TaskTracker() = default;
@@ -376,7 +339,7 @@ void TaskTracker::StartShutdown() {
 void TaskTracker::CompleteShutdown() {
   // It is safe to access |shutdown_event_| without holding |lock_| because the
   // pointer never changes after being set by StartShutdown(), which must
-  // happen-before before this.
+  // happen-before this.
   DCHECK(TS_UNCHECKED_READ(shutdown_event_));
   {
     base::ScopedAllowBaseSyncPrimitives allow_wait;
@@ -520,44 +483,20 @@ bool TaskTracker::IsShutdownComplete() const {
   return shutdown_event_ && shutdown_event_->IsSignaled();
 }
 
-void TaskTracker::RecordLatencyHistogram(TaskPriority priority,
-                                         TimeTicks posted_time) const {
-  if (histogram_label_.empty())
-    return;
-
-  const TimeDelta task_latency = TimeTicks::Now() - posted_time;
-  GetHistogramForTaskPriority(priority, task_latency_histograms_)
-      ->AddTimeMicrosecondsGranularity(task_latency);
-}
-
-void TaskTracker::RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms(
-    TaskPriority priority,
-    TimeTicks posted_time,
-    int num_tasks_run_when_posted) const {
+void TaskTracker::RecordHeartbeatLatencyHistogram(TaskPriority priority,
+                                                  TimeTicks posted_time) const {
   if (histogram_label_.empty())
     return;
 
   const TimeDelta task_latency = TimeTicks::Now() - posted_time;
   GetHistogramForTaskPriority(priority, heartbeat_latency_histograms_)
       ->AddTimeMicrosecondsGranularity(task_latency);
-
-  GetHistogramForTaskPriority(priority, num_tasks_run_while_queuing_histograms_)
-      ->Add(GetNumTasksRun() - num_tasks_run_when_posted);
-}
-
-int TaskTracker::GetNumTasksRun() const {
-  return num_tasks_run_.load(std::memory_order_relaxed);
-}
-
-void TaskTracker::IncrementNumTasksRun() {
-  num_tasks_run_.fetch_add(1, std::memory_order_relaxed);
 }
 
 void TaskTracker::RunTask(Task task,
                           TaskSource* task_source,
                           const TaskTraits& traits) {
   DCHECK(task_source);
-  RecordLatencyHistogram(traits.priority(), task.queue_time);
 
   const auto environment = task_source->GetExecutionEnvironment();
 
@@ -707,7 +646,6 @@ bool TaskTracker::BeforeRunTask(TaskShutdownBehavior shutdown_behavior) {
 }
 
 void TaskTracker::AfterRunTask(TaskShutdownBehavior shutdown_behavior) {
-  IncrementNumTasksRun();
   if (shutdown_behavior == TaskShutdownBehavior::SKIP_ON_SHUTDOWN) {
     DecrementNumItemsBlockingShutdown();
   }

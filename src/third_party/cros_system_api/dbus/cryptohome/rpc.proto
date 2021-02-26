@@ -76,6 +76,7 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_FINGERPRINT_RETRY_REQUIRED = 43;
   // Fingerprint match failed and maximum retry count reached.
   CRYPTOHOME_ERROR_FINGERPRINT_DENIED = 44;
+  CRYPTOHOME_ERROR_VAULT_UNRECOVERABLE = 45;
 }
 
 message AccountIdentifier {
@@ -336,6 +337,8 @@ message GetTpmStatusReply {
   map<int32, bool> enrollment_preparations = 18;
   // Whether the device is locked to a single user mount.
   optional bool is_locked_to_single_user = 19;
+  // Whether the device has reset lock permissions.
+  optional bool has_reset_lock_permissions = 20;
 }
 
 message GetEndorsementInfoRequest {
@@ -548,4 +551,19 @@ message CheckHealthReply {
   }
   // Flag indicating powerwash request
   optional bool requires_powerwash = 1;
+}
+
+// Starts fingerprint auth session by calling Biometrics Daemon.
+message StartFingerprintAuthSessionRequest {}
+
+// Ends fingerprint auth session by calling Biometrics Daemon.
+message EndFingerprintAuthSessionRequest {}
+
+// Reads the WebAuthn secret if it's available.
+message GetWebAuthnSecretRequest {}
+
+message GetWebAuthnSecretReply {
+  extend BaseReply { optional GetWebAuthnSecretReply reply = 1016; }
+  // WebAuthn secret bytes
+  optional bytes webauthn_secret = 1;
 }

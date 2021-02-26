@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_logical_line_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
@@ -47,6 +47,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   void CreateLine(const NGLineLayoutOpportunity&,
                   NGLineInfo*,
+                  NGLogicalLineItems* line_box,
                   NGExclusionSpace*);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
@@ -62,8 +63,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                                   LayoutObject* floating_object,
                                   NGExclusionSpace*) const;
 
-  bool IsHorizontalWritingMode() const { return is_horizontal_writing_mode_; }
-
   void PrepareBoxStates(const NGLineInfo&, const NGInlineBreakToken*);
   void RebuildBoxStates(const NGLineInfo&,
                         const NGInlineBreakToken*,
@@ -74,50 +73,59 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   NGInlineBoxState* HandleOpenTag(const NGInlineItem&,
                                   const NGInlineItemResult&,
-                                  NGLineBoxFragmentBuilder::ChildList*,
+                                  NGLogicalLineItems*,
                                   NGInlineLayoutStateStack*) const;
   NGInlineBoxState* HandleCloseTag(const NGInlineItem&,
                                    const NGInlineItemResult&,
+                                   NGLogicalLineItems* line_box,
                                    NGInlineBoxState*);
 
-  void BidiReorder(TextDirection base_direction);
+  void BidiReorder(TextDirection base_direction, NGLogicalLineItems* line_box);
 
   void PlaceControlItem(const NGInlineItem&,
                         const NGLineInfo&,
                         NGInlineItemResult*,
+                        NGLogicalLineItems* line_box,
                         NGInlineBoxState*);
   void PlaceHyphen(const NGInlineItemResult&,
                    LayoutUnit hyphen_inline_size,
+                   NGLogicalLineItems* line_box,
                    NGInlineBoxState*);
   NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,
                                       const NGLineInfo&,
-                                      NGInlineItemResult*);
+                                      NGInlineItemResult*,
+                                      NGLogicalLineItems* line_box);
   void PlaceLayoutResult(NGInlineItemResult*,
+                         NGLogicalLineItems* line_box,
                          NGInlineBoxState*,
                          LayoutUnit inline_offset = LayoutUnit());
-  void PlaceOutOfFlowObjects(const NGLineInfo&, const NGLineHeightMetrics&);
+  void PlaceOutOfFlowObjects(const NGLineInfo&,
+                             const FontHeight&,
+                             NGLogicalLineItems* line_box);
   void PlaceFloatingObjects(const NGLineInfo&,
-                            const NGLineHeightMetrics&,
+                            const FontHeight&,
                             const NGLineLayoutOpportunity&,
+                            NGLogicalLineItems* line_box,
                             NGExclusionSpace*);
+  void PlaceRelativePositionedItems(NGLogicalLineItems* line_box);
   void PlaceListMarker(const NGInlineItem&,
                        NGInlineItemResult*,
                        const NGLineInfo&);
 
   LayoutUnit ApplyTextAlign(NGLineInfo*);
-  bool ApplyJustify(LayoutUnit space, NGLineInfo*);
+  base::Optional<LayoutUnit> ApplyJustify(LayoutUnit space, NGLineInfo*);
 
   LayoutUnit ComputeContentSize(const NGLineInfo&,
                                 const NGExclusionSpace&,
                                 LayoutUnit line_height);
 
-  NGLineBoxFragmentBuilder::ChildList line_box_;
   NGInlineLayoutStateStack* box_states_;
   NGInlineChildLayoutContext* context_;
 
   FontBaseline baseline_type_ = FontBaseline::kAlphabeticBaseline;
 
-  unsigned is_horizontal_writing_mode_ : 1;
+  // True if in quirks or limited-quirks mode, which require line-height quirks.
+  // https://quirks.spec.whatwg.org/#the-line-height-calculation-quirk
   unsigned quirks_mode_ : 1;
 
 #if DCHECK_IS_ON()

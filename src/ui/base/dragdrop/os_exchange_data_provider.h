@@ -24,17 +24,18 @@
 #include "ui/base/dragdrop/file_info/file_info.h"
 #include "url/gurl.h"
 
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_APPLE)
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
 #endif
 
 namespace ui {
 
+class DataTransferEndpoint;
+
 // Controls whether or not filenames should be converted to file: URLs when
 // getting a URL.
-// TODO(crbug.com/1070138): convert to enum class.
-enum FilenameToURLPolicy {
+enum class FilenameToURLPolicy {
   CONVERT_FILENAMES,
   DO_NOT_CONVERT_FILENAMES,
 };
@@ -72,7 +73,7 @@ class COMPONENT_EXPORT(UI_BASE_DATA_EXCHANGE) OSExchangeDataProvider {
   virtual bool HasFile() const = 0;
   virtual bool HasCustomFormat(const ClipboardFormatType& format) const = 0;
 
-#if defined(USE_X11) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
   virtual void SetFileContents(const base::FilePath& filename,
                                const std::string& file_contents) = 0;
 #endif
@@ -100,12 +101,16 @@ class COMPONENT_EXPORT(UI_BASE_DATA_EXCHANGE) OSExchangeDataProvider {
   virtual bool HasHtml() const = 0;
 #endif
 
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_APPLE)
   virtual void SetDragImage(const gfx::ImageSkia& image,
                             const gfx::Vector2d& cursor_offset) = 0;
   virtual gfx::ImageSkia GetDragImage() const = 0;
   virtual gfx::Vector2d GetDragImageOffset() const = 0;
 #endif
+
+  // These functions are only implemented on Chrome OS currently.
+  virtual void SetSource(std::unique_ptr<DataTransferEndpoint> data_source) = 0;
+  virtual DataTransferEndpoint* GetSource() const = 0;
 };
 
 }  // namespace ui

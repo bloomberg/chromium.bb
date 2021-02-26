@@ -33,6 +33,7 @@ namespace blink {
 LayoutFieldset::LayoutFieldset(Element* element) : LayoutBlockFlow(element) {}
 
 MinMaxSizes LayoutFieldset::PreferredLogicalWidths() const {
+  NOT_DESTROYED();
   MinMaxSizes sizes = LayoutBlockFlow::PreferredLogicalWidths();
   // Size-contained elements don't consider their contents for preferred sizing.
   if (ShouldApplySizeContainment())
@@ -59,6 +60,7 @@ MinMaxSizes LayoutFieldset::PreferredLogicalWidths() const {
 
 LayoutObject* LayoutFieldset::LayoutSpecialExcludedChild(bool relayout_children,
                                                          SubtreeLayoutScope&) {
+  NOT_DESTROYED();
   LayoutBox* legend = FindInFlowLegend();
   if (legend) {
     LayoutRect old_legend_frame_rect = legend->FrameRect();
@@ -158,28 +160,55 @@ LayoutBox* LayoutFieldset::FindInFlowLegend(const LayoutBlock& fieldset) {
   }
   for (LayoutObject* legend = parent->FirstChild(); legend;
        legend = legend->NextSibling()) {
-    if (legend->IsFloatingOrOutOfFlowPositioned())
-      continue;
-
-    if (legend->IsHTMLLegendElement())
-      return ToLayoutBox(legend);
+    if (legend->IsRenderedLegendCandidate())
+      return To<LayoutBox>(legend);
   }
   return nullptr;
+}
+
+LayoutBlock* LayoutFieldset::FindLegendContainingBlock(
+    const LayoutBox& legend,
+    AncestorSkipInfo* skip_info) {
+  DCHECK(legend.IsRenderedLegend());
+  LayoutObject* parent = legend.Parent();
+  if (!parent->IsAnonymous())
+    return To<LayoutBlock>(parent);
+
+  if (skip_info)
+    skip_info->Update(*parent);
+
+  // In LayoutNG all children of a fieldset are wrapped inside an anonymous
+  // block. This also includes the rendered legend, even if that one really
+  // belongs on the outside as a direct fieldset child. Skip the anonymous
+  // wrapper in such cases.
+  if (parent->IsLayoutFlowThread()) {
+    // If the fieldset also establishes a multicol container, we need to skip
+    // the flow thread as well.
+    parent = parent->Parent();
+    if (skip_info)
+      skip_info->Update(*parent);
+    DCHECK(parent->IsAnonymous());
+  }
+  DCHECK(parent->Parent()->IsLayoutNGFieldset());
+  return To<LayoutBlock>(parent->Parent());
 }
 
 void LayoutFieldset::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) const {
+  NOT_DESTROYED();
   FieldsetPainter(*this).PaintBoxDecorationBackground(paint_info, paint_offset);
 }
 
 void LayoutFieldset::PaintMask(const PaintInfo& paint_info,
                                const PhysicalOffset& paint_offset) const {
+  NOT_DESTROYED();
   FieldsetPainter(*this).PaintMask(paint_info, paint_offset);
 }
 
 bool LayoutFieldset::BackgroundIsKnownToBeOpaqueInRect(
     const PhysicalRect& local_rect) const {
+  NOT_DESTROYED();
   // If the field set has a legend, then it probably does not completely fill
   // its background.
   if (FindInFlowLegend())

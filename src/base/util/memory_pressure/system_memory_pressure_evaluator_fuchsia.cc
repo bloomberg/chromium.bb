@@ -6,8 +6,8 @@
 
 #include <lib/sys/cpp/component_context.h>
 
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/util/memory_pressure/memory_pressure_voter.h"
 
 namespace util {
@@ -34,13 +34,11 @@ SystemMemoryPressureEvaluatorFuchsia::SystemMemoryPressureEvaluatorFuchsia(
     std::unique_ptr<util::MemoryPressureVoter> voter)
     : util::SystemMemoryPressureEvaluator(std::move(voter)), binding_(this) {
   binding_.set_error_handler([](zx_status_t status) {
-    // TODO(https://crbug.com/1020698): Update fuchsia.web docs to make this a
-    // required service, and make this a FATAL log.
-    ZX_LOG(WARNING, status) << "fuchsia.memorypressure.Provider disconnected.";
+    ZX_LOG(FATAL, status) << "fuchsia.memorypressure.Provider disconnected";
   });
 
   DVLOG(1) << "Registering for memory pressure updates.";
-  auto provider = base::fuchsia::ComponentContextForCurrentProcess()
+  auto provider = base::ComponentContextForProcess()
                       ->svc()
                       ->Connect<fuchsia::memorypressure::Provider>();
   provider->RegisterWatcher(binding_.NewBinding());
@@ -67,10 +65,17 @@ void SystemMemoryPressureEvaluatorFuchsia::OnLevelChanged(
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
       // By convention no notifications are sent when returning to NONE level.
       SendCurrentVote(false);
+      send_current_vote_timer_.Stop();
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       SendCurrentVote(true);
+      // This will reset the timer if already running.
+      send_current_vote_timer_.Start(
+          FROM_HERE, base::MemoryPressureMonitor::kUMAMemoryPressureLevelPeriod,
+          base::BindRepeating(
+              &SystemMemoryPressureEvaluatorFuchsia::SendCurrentVote,
+              base::Unretained(this), true));
       break;
   }
 

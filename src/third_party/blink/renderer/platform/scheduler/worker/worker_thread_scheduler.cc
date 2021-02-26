@@ -150,12 +150,6 @@ WorkerThreadScheduler::CompositorTaskRunner() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-WorkerThreadScheduler::IPCTaskRunner() {
-  NOTREACHED() << "Not implemented";
-  return nullptr;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
 WorkerThreadScheduler::NonWakingTaskRunner() {
   NOTREACHED() << "Not implemented";
   return nullptr;
@@ -213,7 +207,7 @@ void WorkerThreadScheduler::OnTaskCompleted(
   PerformMicrotaskCheckpoint();
 
   task_timing->RecordTaskEnd(lazy_now);
-  worker_metrics_helper_.RecordTaskMetrics(task_queue, task, *task_timing);
+  worker_metrics_helper_.RecordTaskMetrics(task, *task_timing);
 
   if (task_queue_throttler_) {
     task_queue_throttler_->OnTaskRunTimeReported(

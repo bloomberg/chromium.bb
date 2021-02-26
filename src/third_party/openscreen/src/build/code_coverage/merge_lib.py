@@ -29,7 +29,7 @@ logging.basicConfig(
 def _call_profdata_tool(profile_input_file_paths,
                         profile_output_file_path,
                         profdata_tool_path,
-                        retries=3):
+                        sparse=True):
   """Calls the llvm-profdata tool.
 
   Args:
@@ -37,6 +37,8 @@ def _call_profdata_tool(profile_input_file_paths,
         are to be merged.
     profile_output_file_path: The path to the merged file to write.
     profdata_tool_path: The path to the llvm-profdata executable.
+    sparse (bool): flag to indicate whether to run llvm-profdata with --sparse.
+      Doc: https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-merge
 
   Returns:
     A list of paths to profiles that had to be excluded to get the merge to
@@ -45,12 +47,16 @@ def _call_profdata_tool(profile_input_file_paths,
   Raises:
     CalledProcessError: An error occurred merging profiles.
   """
+  logging.debug('Profile input paths: %r' % profile_input_file_paths)
+  logging.debug('Profile output path: %r' % profile_output_file_path)
   try:
     subprocess_cmd = [
         profdata_tool_path, 'merge', '-o', profile_output_file_path,
-        '-sparse=true'
     ]
+    if sparse:
+      subprocess_cmd += ['-sparse=true',]
     subprocess_cmd.extend(profile_input_file_paths)
+    logging.info('profdata command: %r', ' '.join(subprocess_cmd))
 
     # Redirecting stderr is required because when error happens, llvm-profdata
     # writes the error output to stderr and our error handling logic relies on
@@ -58,34 +64,6 @@ def _call_profdata_tool(profile_input_file_paths,
     output = subprocess.check_output(subprocess_cmd, stderr=subprocess.STDOUT)
     logging.info('Merge succeeded with output: %r', output)
   except subprocess.CalledProcessError as error:
-    if len(profile_input_file_paths) > 1 and retries >= 0:
-      logging.warning('Merge failed with error output: %r', error.output)
-
-      # The output of the llvm-profdata command will include the path of
-      # malformed files, such as
-      # `error: /.../default.profraw: Malformed instrumentation profile data`
-      invalid_profiles = [
-          f for f in profile_input_file_paths if f in error.output
-      ]
-
-      if not invalid_profiles:
-        logging.info(
-            'Merge failed, but wasn\'t able to figure out the culprit invalid '
-            'profiles from the output, so skip retry and bail out.')
-        raise error
-
-      valid_profiles = list(
-          set(profile_input_file_paths) - set(invalid_profiles))
-      if valid_profiles:
-        logging.warning(
-            'Following invalid profiles are removed as they were mentioned in '
-            'the merge error output: %r', invalid_profiles)
-        logging.info('Retry merging with the remaining profiles: %r',
-                     valid_profiles)
-        return invalid_profiles + _call_profdata_tool(
-            valid_profiles, profile_output_file_path, profdata_tool_path,
-            retries - 1)
-
     logging.error('Failed to merge profiles, return code (%d), output: %r' %
                   (error.returncode, error.output))
     raise error
@@ -108,7 +86,9 @@ def _get_profile_paths(input_dir,
   return paths
 
 
-def _validate_and_convert_profraws(profraw_files, profdata_tool_path):
+def _validate_and_convert_profraws(profraw_files,
+                                   profdata_tool_path,
+                                   sparse=True):
   """Validates and converts profraws to profdatas.
 
   For each given .profraw file in the input, this method first validates it by
@@ -121,6 +101,8 @@ def _validate_and_convert_profraws(profraw_files, profdata_tool_path):
   Args:
     profraw_files: A list of .profraw paths.
     profdata_tool_path: The path to the llvm-profdata executable.
+    sparse (bool): flag to indicate whether to run llvm-profdata with --sparse.
+      Doc: https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-merge
 
   Returns:
     A tulple:
@@ -144,7 +126,7 @@ def _validate_and_convert_profraws(profraw_files, profdata_tool_path):
     pool.apply_async(
         _validate_and_convert_profraw,
         (profraw_file, output_profdata_files, invalid_profraw_files,
-         counter_overflows, profdata_tool_path))
+         counter_overflows, profdata_tool_path, sparse))
 
   pool.close()
   pool.join()
@@ -159,15 +141,24 @@ def _validate_and_convert_profraws(profraw_files, profdata_tool_path):
 
 def _validate_and_convert_profraw(profraw_file, output_profdata_files,
                                   invalid_profraw_files, counter_overflows,
-                                  profdata_tool_path):
+                                  profdata_tool_path, sparse=True):
   output_profdata_file = profraw_file.replace('.profraw', '.profdata')
   subprocess_cmd = [
-      profdata_tool_path, 'merge', '-o', output_profdata_file, '-sparse=true',
-      profraw_file
+      profdata_tool_path,
+      'merge',
+      '-o',
+      output_profdata_file,
   ]
+  if sparse:
+    subprocess_cmd.append('--sparse')
+
+  subprocess_cmd.append(profraw_file)
+
   profile_valid = False
   counter_overflow = False
   validation_output = None
+
+  logging.info('profdata command: %r', ' '.join(subprocess_cmd))
 
   # 1. Determine if the profile is valid.
   try:
@@ -237,7 +228,9 @@ def merge_profiles(input_dir,
                    output_file,
                    input_extension,
                    profdata_tool_path,
-                   input_filename_pattern='.*'):
+                   input_filename_pattern='.*',
+                   sparse=True,
+                   skip_validation=False):
   """Merges the profiles produced by the shards using llvm-profdata.
 
   Args:
@@ -248,6 +241,11 @@ def merge_profiles(input_dir,
     profdata_tool_path: The path to the llvm-profdata executable.
     input_filename_pattern (str): The regex pattern of input filename. Should be
         a valid regex pattern if present.
+    sparse (bool): flag to indicate whether to run llvm-profdata with --sparse.
+      Doc: https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-merge
+    skip_validation (bool): flag to skip the _validate_and_convert_profraws
+        invocation. only applicable when input_extension is .profraw.
+
   Returns:
     The list of profiles that had to be excluded to get the merge to
     succeed and a list of profiles that had a counter overflow.
@@ -257,10 +255,16 @@ def merge_profiles(input_dir,
                                                 input_filename_pattern)
   invalid_profraw_files = []
   counter_overflows = []
-  if input_extension == '.profraw':
+
+  if skip_validation:
+    logging.warning('--skip-validation has been enabled. Skipping conversion '
+                    'to ensure that profiles are valid.')
+
+  if input_extension == '.profraw' and not skip_validation:
     profile_input_file_paths, invalid_profraw_files, counter_overflows = (
         _validate_and_convert_profraws(profile_input_file_paths,
-                                       profdata_tool_path))
+                                       profdata_tool_path,
+                                       sparse=sparse))
     logging.info('List of converted .profdata files: %r',
                  profile_input_file_paths)
     logging.info((
@@ -284,7 +288,8 @@ def merge_profiles(input_dir,
   invalid_profdata_files = _call_profdata_tool(
       profile_input_file_paths=profile_input_file_paths,
       profile_output_file_path=output_file,
-      profdata_tool_path=profdata_tool_path)
+      profdata_tool_path=profdata_tool_path,
+      sparse=sparse)
 
   # Remove inputs when merging profraws as they won't be needed and they can be
   # pretty large. If the inputs are profdata files, do not remove them as they
@@ -320,3 +325,4 @@ def get_shards_to_retry(bad_profiles):
     assert is_task_id(task_id)
     bad_shard_ids.add(task_id)
   return bad_shard_ids
+

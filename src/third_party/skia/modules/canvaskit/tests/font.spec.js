@@ -34,16 +34,16 @@ describe('Font Behavior', () => {
     });
 
     gm('text_shaping', (canvas) => {
-        const paint = new CanvasKit.SkPaint();
+        const paint = new CanvasKit.Paint();
 
         paint.setColor(CanvasKit.BLUE);
         paint.setStyle(CanvasKit.PaintStyle.Stroke);
 
-        const fontMgr = CanvasKit.SkFontMgr.RefDefault();
+        const fontMgr = CanvasKit.FontMgr.RefDefault();
         const notoSerif = fontMgr.MakeTypefaceFromData(notoSerifFontBuffer);
 
-        const textPaint = new CanvasKit.SkPaint();
-        const textFont = new CanvasKit.SkFont(notoSerif, 20);
+        const textPaint = new CanvasKit.Paint();
+        const textFont = new CanvasKit.Font(notoSerif, 20);
 
         canvas.drawRect(CanvasKit.LTRBRect(30, 30, 200, 200), paint);
         canvas.drawText('This text is not shaped, and overflows the boundary',
@@ -60,14 +60,14 @@ describe('Font Behavior', () => {
         canvas.drawText(shapedText, textBoxX, textBoxY, textPaint);
         const bounds = shapedText.getBounds();
 
-        bounds.fLeft += textBoxX;
-        bounds.fRight += textBoxX;
-        bounds.fTop += textBoxY;
-        bounds.fBottom += textBoxY
+        bounds[0] += textBoxX; // left
+        bounds[2] += textBoxX; // right
+        bounds[1] += textBoxY; // top
+        bounds[3] += textBoxY // bottom
 
         canvas.drawRect(bounds, paint);
         const SHAPE_TEST_TEXT = 'VAVAVAVAVAFIfi';
-        const textFont2 = new CanvasKit.SkFont(notoSerif, 60);
+        const textFont2 = new CanvasKit.Font(notoSerif, 60);
         const shapedText2 = new CanvasKit.ShapedText({
             font: textFont2,
             leftToRight: true,
@@ -91,24 +91,24 @@ describe('Font Behavior', () => {
     });
 
     gm('monospace_text_on_path', (canvas) => {
-        const paint = new CanvasKit.SkPaint();
+        const paint = new CanvasKit.Paint();
         paint.setAntiAlias(true);
         paint.setStyle(CanvasKit.PaintStyle.Stroke);
 
-        const font = new CanvasKit.SkFont(null, 24);
-        const fontPaint = new CanvasKit.SkPaint();
+        const font = new CanvasKit.Font(null, 24);
+        const fontPaint = new CanvasKit.Paint();
         fontPaint.setAntiAlias(true);
         fontPaint.setStyle(CanvasKit.PaintStyle.Fill);
 
 
-        const arc = new CanvasKit.SkPath();
-        arc.arcTo(CanvasKit.LTRBRect(20, 40, 280, 300), -160, 140, true);
+        const arc = new CanvasKit.Path();
+        arc.arcToOval(CanvasKit.LTRBRect(20, 40, 280, 300), -160, 140, true);
         arc.lineTo(210, 140);
-        arc.arcTo(CanvasKit.LTRBRect(20, 0, 280, 260), 160, -140, true);
+        arc.arcToOval(CanvasKit.LTRBRect(20, 0, 280, 260), 160, -140, true);
 
         // Only 1 dot should show up in the image, because we run out of path.
         const str = 'This téxt should follow the curve across contours...';
-        const textBlob = CanvasKit.SkTextBlob.MakeOnPath(str, arc, font);
+        const textBlob = CanvasKit.TextBlob.MakeOnPath(str, arc, font);
 
         canvas.drawPath(arc, paint);
         canvas.drawTextBlob(textBlob, 0, 0, fontPaint);
@@ -121,25 +121,25 @@ describe('Font Behavior', () => {
     });
 
     gm('serif_text_on_path', (canvas) => {
-        const fontMgr = CanvasKit.SkFontMgr.RefDefault();
+        const fontMgr = CanvasKit.FontMgr.RefDefault();
         const notoSerif = fontMgr.MakeTypefaceFromData(notoSerifFontBuffer);
 
-        const paint = new CanvasKit.SkPaint();
+        const paint = new CanvasKit.Paint();
         paint.setAntiAlias(true);
         paint.setStyle(CanvasKit.PaintStyle.Stroke);
 
-        const font = new CanvasKit.SkFont(notoSerif, 24);
-        const fontPaint = new CanvasKit.SkPaint();
+        const font = new CanvasKit.Font(notoSerif, 24);
+        const fontPaint = new CanvasKit.Paint();
         fontPaint.setAntiAlias(true);
         fontPaint.setStyle(CanvasKit.PaintStyle.Fill);
 
-        const arc = new CanvasKit.SkPath();
-        arc.arcTo(CanvasKit.LTRBRect(20, 40, 280, 300), -160, 140, true);
+        const arc = new CanvasKit.Path();
+        arc.arcToOval(CanvasKit.LTRBRect(20, 40, 280, 300), -160, 140, true);
         arc.lineTo(210, 140);
-        arc.arcTo(CanvasKit.LTRBRect(20, 0, 280, 260), 160, -140, true);
+        arc.arcToOval(CanvasKit.LTRBRect(20, 0, 280, 260), 160, -140, true);
 
         const str = 'This téxt should follow the curve across contours...';
-        const textBlob = CanvasKit.SkTextBlob.MakeOnPath(str, arc, font, 60.5);
+        const textBlob = CanvasKit.TextBlob.MakeOnPath(str, arc, font, 60.5);
 
         canvas.drawPath(arc, paint);
         canvas.drawTextBlob(textBlob, 0, 0, fontPaint);
@@ -155,20 +155,20 @@ describe('Font Behavior', () => {
 
     // https://bugs.chromium.org/p/skia/issues/detail?id=9314
     gm('nullterminators_skbug_9314', (canvas) => {
-        const fontMgr = CanvasKit.SkFontMgr.RefDefault();
+        const fontMgr = CanvasKit.FontMgr.RefDefault();
         const bungee = fontMgr.MakeTypefaceFromData(bungeeFontBuffer);
 
         // yellow, to make sure tofu is plainly visible
         canvas.clear(CanvasKit.Color(255, 255, 0, 1));
 
-        const font = new CanvasKit.SkFont(bungee, 24);
-        const fontPaint = new CanvasKit.SkPaint();
+        const font = new CanvasKit.Font(bungee, 24);
+        const fontPaint = new CanvasKit.Paint();
         fontPaint.setAntiAlias(true);
         fontPaint.setStyle(CanvasKit.PaintStyle.Fill);
 
 
         const str = 'This is téxt';
-        const textBlob = CanvasKit.SkTextBlob.MakeFromText(str + ' text blob', font);
+        const textBlob = CanvasKit.TextBlob.MakeFromText(str + ' text blob', font);
 
         canvas.drawTextBlob(textBlob, 10, 50, fontPaint);
 
@@ -183,9 +183,73 @@ describe('Font Behavior', () => {
         fontMgr.delete();
     });
 
+    gm('textblobs_with_glyphs', (canvas) => {
+        canvas.clear(CanvasKit.WHITE);
+        const fontMgr = CanvasKit.FontMgr.RefDefault();
+        const notoSerif = fontMgr.MakeTypefaceFromData(notoSerifFontBuffer);
+
+        const font = new CanvasKit.Font(notoSerif, 24);
+        const bluePaint = new CanvasKit.Paint();
+        bluePaint.setColor(CanvasKit.parseColorString('#04083f')); // arbitrary deep blue
+        bluePaint.setAntiAlias(true);
+        bluePaint.setStyle(CanvasKit.PaintStyle.Fill);
+
+        const redPaint = new CanvasKit.Paint();
+        redPaint.setColor(CanvasKit.parseColorString('#770b1e')); // arbitrary deep red
+
+        const ids = font.getGlyphIDs('AEGIS ægis');
+        expect(ids.length).toEqual(10); // one glyph id per glyph
+        expect(ids[0]).toEqual(36); // spot check this, should be consistent as long as the font is.
+
+        const bounds = font.getGlyphBounds(ids, bluePaint);
+        expect(bounds.length).toEqual(40); // 4 measurements per glyph
+        expect(bounds[0]).toEqual(0); // again, spot check the measurements for the first glyph.
+        expect(bounds[1]).toEqual(-17);
+        expect(bounds[2]).toEqual(17);
+        expect(bounds[3]).toEqual(0);
+
+        const widths = font.getGlyphWidths(ids, bluePaint);
+        expect(widths.length).toEqual(10); // 1 width per glyph
+        expect(widths[0]).toEqual(17);
+
+        const topBlob = CanvasKit.TextBlob.MakeFromGlyphs(ids, font);
+        canvas.drawTextBlob(topBlob, 5, 30, bluePaint);
+        canvas.drawTextBlob(topBlob, 5, 60, redPaint);
+        topBlob.delete();
+
+        const mIDs = CanvasKit.MallocGlyphIDs(ids.length);
+        const mArr = mIDs.toTypedArray();
+        mArr.set(ids);
+
+        const mXforms = CanvasKit.Malloc(Float32Array, ids.length * 4);
+        const mXformsArr = mXforms.toTypedArray();
+        // Draw each glyph rotated slightly and slightly lower than the glyph before it.
+        let currX = 0;
+        for (let i = 0; i < ids.length; i++) {
+            mXformsArr[i * 4] = Math.cos(-Math.PI / 16); // scos
+            mXformsArr[i * 4 + 1] = Math.sin(-Math.PI / 16); // ssin
+            mXformsArr[i * 4 + 2] = currX; // tx
+            mXformsArr[i * 4 + 3] = i*2; // ty
+            currX += widths[i];
+        }
+
+        const bottomBlob = CanvasKit.TextBlob.MakeFromRSXformGlyphs(mIDs, mXforms, font);
+        canvas.drawTextBlob(bottomBlob, 5, 110, bluePaint);
+        canvas.drawTextBlob(bottomBlob, 5, 140, redPaint);
+        bottomBlob.delete();
+
+        CanvasKit.Free(mIDs);
+        CanvasKit.Free(mXforms);
+        bluePaint.delete();
+        redPaint.delete();
+        notoSerif.delete();
+        font.delete();
+        fontMgr.delete();
+    });
+
     it('can make a font mgr with passed in fonts', () => {
-        // CanvasKit.SkFontMgr.FromData([bungeeFontBuffer, notoSerifFontBuffer]) also works
-        const fontMgr = CanvasKit.SkFontMgr.FromData(bungeeFontBuffer, notoSerifFontBuffer);
+        // CanvasKit.FontMgr.FromData([bungeeFontBuffer, notoSerifFontBuffer]) also works
+        const fontMgr = CanvasKit.FontMgr.FromData(bungeeFontBuffer, notoSerifFontBuffer);
         expect(fontMgr).toBeTruthy();
         expect(fontMgr.countFamilies()).toBe(2);
         // in debug mode, let's list them.
@@ -195,9 +259,22 @@ describe('Font Behavior', () => {
         fontMgr.delete();
     });
 
+    it('can make a font provider with passed in fonts and aliases', () => {
+        const fontProvider = CanvasKit.TypefaceFontProvider.Make();
+        fontProvider.registerFont(bungeeFontBuffer, "My Bungee Alias");
+        fontProvider.registerFont(notoSerifFontBuffer, "My Noto Serif Alias");
+        expect(fontProvider).toBeTruthy();
+        expect(fontProvider.countFamilies()).toBe(2);
+        // in debug mode, let's list them.
+        if (fontProvider.dumpFamilies) {
+            fontProvider.dumpFamilies();
+        }
+        fontProvider.delete();
+    });
+
     gm('various_font_formats', (canvas, fetchedByteBuffers) => {
-        const fontMgr = CanvasKit.SkFontMgr.RefDefault();
-        const fontPaint = new CanvasKit.SkPaint();
+        const fontMgr = CanvasKit.FontMgr.RefDefault();
+        const fontPaint = new CanvasKit.Paint();
         fontPaint.setAntiAlias(true);
         fontPaint.setStyle(CanvasKit.PaintStyle.Fill);
         const inputs = [{
@@ -209,18 +286,16 @@ describe('Font Behavior', () => {
             buffer: fetchedByteBuffers[0],
             y: 90,
         },{
-            // Not currently supported by Skia
             type: '.woff font',
             buffer: fetchedByteBuffers[1],
             y: 120,
         },{
-            // Not currently supported by Skia
             type: '.woff2 font',
             buffer: fetchedByteBuffers[2],
             y: 150,
         }];
 
-        const defaultFont = new CanvasKit.SkFont(null, 24);
+        const defaultFont = new CanvasKit.Font(null, 24);
         canvas.drawText(`The following should be ${inputs.length + 1} lines of text:`, 5, 30, fontPaint, defaultFont);
 
         for (const fontType of inputs) {
@@ -228,7 +303,7 @@ describe('Font Behavior', () => {
             expect(fontType.buffer).toBeTruthy(fontType.type + ' did not load');
 
             const typeface = fontMgr.MakeTypefaceFromData(fontType.buffer);
-            const font = new CanvasKit.SkFont(typeface, 24);
+            const font = new CanvasKit.Font(typeface, 24);
 
             if (font && typeface) {
                 canvas.drawText(fontType.type + ' loaded', 5, fontType.y, fontPaint, font);
@@ -258,7 +333,7 @@ describe('Font Behavior', () => {
     }, '/assets/Roboto-Regular.otf', '/assets/Roboto-Regular.woff', '/assets/Roboto-Regular.woff2', '/assets/test.ttc');
 
     it('can measure text very precisely with proper settings', () => {
-        const fontMgr = CanvasKit.SkFontMgr.RefDefault();
+        const fontMgr = CanvasKit.FontMgr.RefDefault();
         const typeface = fontMgr.MakeTypefaceFromData(notoSerifFontBuffer);
         const fontSizes = [257, 100, 11];
         // The point of these values is to let us know 1) we can measure to sub-pixel levels
@@ -268,7 +343,7 @@ describe('Font Behavior', () => {
         // unless we suspect a bug with the bindings.
         const expectedSizes = [1178.71143, 458.64258, 50.450683];
         for (const idx in fontSizes) {
-            const font = new CanvasKit.SkFont(typeface, fontSizes[idx]);
+            const font = new CanvasKit.Font(typeface, fontSizes[idx]);
             font.setHinting(CanvasKit.FontHinting.None);
             font.setLinearMetrics(true);
             font.setSubpixel(true);
@@ -286,18 +361,18 @@ describe('Font Behavior', () => {
         // Draw a small font scaled up to see the aliasing artifacts.
         canvas.scale(8, 8);
         canvas.clear(CanvasKit.WHITE);
-        const fontMgr = CanvasKit.SkFontMgr.RefDefault();
+        const fontMgr = CanvasKit.FontMgr.RefDefault();
         const notoSerif = fontMgr.MakeTypefaceFromData(notoSerifFontBuffer);
 
-        const textPaint = new CanvasKit.SkPaint();
-        const annotationFont = new CanvasKit.SkFont(notoSerif, 6);
+        const textPaint = new CanvasKit.Paint();
+        const annotationFont = new CanvasKit.Font(notoSerif, 6);
 
         canvas.drawText('Default', 5, 5, textPaint, annotationFont);
         canvas.drawText('Alias', 5, 25, textPaint, annotationFont);
         canvas.drawText('AntiAlias', 5, 45, textPaint, annotationFont);
         canvas.drawText('Subpixel', 5, 65, textPaint, annotationFont);
 
-        const testFont = new CanvasKit.SkFont(notoSerif, 20);
+        const testFont = new CanvasKit.Font(notoSerif, 20);
 
         canvas.drawText('SEA', 35, 15, textPaint, testFont);
         testFont.setEdging(CanvasKit.FontEdging.Alias);

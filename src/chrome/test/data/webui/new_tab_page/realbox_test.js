@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserProxy, decodeString16, mojoString16, NO_SUGGESTION_GROUP_ID} from 'chrome://new-tab-page/new_tab_page.js';
+import {BrowserProxy, decodeString16, mojoString16} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {assertStyle, createTestProxy, createTheme} from 'chrome://test/new_tab_page/test_support.js';
@@ -99,7 +99,7 @@ function createAutocompleteMatch() {
     isSearchType: false,
     swapContentsAndDescription: false,
     supportsDeletion: false,
-    suggestionGroupId: NO_SUGGESTION_GROUP_ID,
+    suggestionGroupId: -1,  // Indicates a missing suggestion group Id.
     contents: mojoString16(''),
     contentsClass: [{offset: 0, style: 0}],
     description: mojoString16(''),
@@ -182,7 +182,6 @@ suite('NewTabPageRealboxTest', () => {
     loadTimeData.overrideValues({
       realboxMatchOmniboxTheme: true,
       realboxSeparator: ' - ',
-      suggestionTransparencyEnabled: true,
     });
   });
 
@@ -2007,7 +2006,7 @@ suite('NewTabPageRealboxTest', () => {
 
     await testProxy.handler.whenCalled('toggleSuggestionGroupIdVisibility')
         .then((args) => {
-          assertEquals('100', args.suggestionGroupId);
+          assertEquals(100, args.suggestionGroupId);
         });
     assertEquals(
         1, testProxy.handler.getCallCount('toggleSuggestionGroupIdVisibility'));
@@ -2024,7 +2023,7 @@ suite('NewTabPageRealboxTest', () => {
 
     await testProxy.handler.whenCalled('toggleSuggestionGroupIdVisibility')
         .then((args) => {
-          assertEquals('100', args.suggestionGroupId);
+          assertEquals(100, args.suggestionGroupId);
         });
     assertEquals(
         1, testProxy.handler.getCallCount('toggleSuggestionGroupIdVisibility'));
@@ -2033,5 +2032,70 @@ suite('NewTabPageRealboxTest', () => {
     matchEls =
         realbox.$.matches.shadowRoot.querySelectorAll('ntp-realbox-match');
     assertEquals(1, matchEls.length);
+
+    testProxy.handler.reset();
+
+    // Show the second match by clicking the header.
+    headerEl.click();
+    await testProxy.handler.whenCalled('toggleSuggestionGroupIdVisibility')
+        .then((args) => {
+          assertEquals(100, args.suggestionGroupId);
+        });
+    assertEquals(
+        1, testProxy.handler.getCallCount('toggleSuggestionGroupIdVisibility'));
+    // Second match is visible again.
+    matchEls =
+        realbox.$.matches.shadowRoot.querySelectorAll('ntp-realbox-match');
+    assertEquals(2, matchEls.length);
   });
+
+  test(
+      'focusing suggestion group header resets selection and input text',
+      async () => {
+        realbox.$.input.value = '';
+        realbox.$.input.dispatchEvent(new MouseEvent('mousedown', {button: 0}));
+
+        const matches =
+            [createSearchMatch(), createUrlMatch({suggestionGroupId: 100})];
+        const suggestionGroupsMap = {
+          100: {header: mojoString16('Recommended for you'), hidden: false},
+        };
+        testProxy.callbackRouterRemote.autocompleteResultChanged({
+          input: mojoString16(realbox.$.input.value.trimLeft()),
+          matches,
+          suggestionGroupsMap,
+        });
+        await testProxy.callbackRouterRemote.$.flushForTesting();
+
+        assertTrue(areMatchesShowing());
+        const matchEls =
+            realbox.$.matches.shadowRoot.querySelectorAll('ntp-realbox-match');
+        assertEquals(2, matchEls.length);
+
+        // Select the first match.
+        matchEls[0].dispatchEvent(new Event('focusin', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,  // So it propagates across shadow DOM boundary.
+        }));
+
+        // First match is selected.
+        assertTrue(matchEls[0].classList.contains(CLASSES.SELECTED));
+        // Input is updated.
+        assertEquals('hello world', realbox.$.input.value);
+
+        // Focus the suggestion group header.
+        const headerEl =
+            realbox.$.matches.shadowRoot.querySelectorAll('.header')[0];
+        headerEl.dispatchEvent(new Event('focusin', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,  // So it propagates across shadow DOM boundary.
+        }));
+
+        // First match is no longer selected.
+        assertFalse(matchEls[0].classList.contains(CLASSES.SELECTED));
+        // Input is cleared.
+        assertEquals('', realbox.$.input.value);
+      });
 });

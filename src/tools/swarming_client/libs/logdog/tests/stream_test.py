@@ -31,31 +31,22 @@ class StreamParamsTestCase(unittest.TestCase):
         tags={
             'foo': 'bar',
             'baz': 'qux',
-        },
-        tee=stream.StreamParams.TEE_STDOUT,
-        binary_file_extension='ext')
+        })
 
   def testParamsToJson(self):
     self.assertEqual(self.params.to_json(),
-        ('{"binaryFileExtension": "ext", "contentType": "content-type", '
-         '"name": "name", "tags": {"baz": "qux", "foo": "bar"}, '
-         '"tee": "stdout", "type": "text"}'))
+                     ('{"contentType": "content-type", "name": "name", '
+                      '"tags": {"baz": "qux", "foo": "bar"}, "type": "text"}'))
 
   def testParamsToJsonWithEmpties(self):
     params = self.params._replace(
         content_type=None,
         tags=None,
-        tee=None,
-        binary_file_extension=None,
     )
     self.assertEqual(params.to_json(), '{"name": "name", "type": "text"}')
 
   def testParamsWithInvalidTypeRaisesValueError(self):
     params = self.params._replace(type=None)
-    self.assertRaises(ValueError, params.to_json)
-
-  def testParamsWithInvalidTeeTypeRaisesValueError(self):
-    params = self.params._replace(tee='somewhere')
     self.assertRaises(ValueError, params.to_json)
 
   def testParamsWithInvalidTagRaisesValueError(self):
@@ -155,7 +146,6 @@ class StreamClientTestCase(unittest.TestCase):
   def testTextStreamWithParams(self):
     client = self._registry.create('test:value')
     with client.text('mystream', content_type='foo/bar',
-                     tee=stream.StreamParams.TEE_STDOUT,
                      tags={'foo': 'bar', 'baz': 'qux'}) as fd:
       self.assertEqual(
           fd.params,
@@ -163,7 +153,6 @@ class StreamClientTestCase(unittest.TestCase):
               name='mystream',
               type=stream.StreamParams.TEXT,
               content_type='foo/bar',
-              tee=stream.StreamParams.TEE_STDOUT,
               tags={'foo': 'bar', 'baz': 'qux'}))
       fd.write('text!')
 
@@ -175,7 +164,6 @@ class StreamClientTestCase(unittest.TestCase):
         'name': 'mystream',
         'type': 'text',
         'contentType': 'foo/bar',
-         'tee': 'stdout',
          'tags': {'foo': 'bar', 'baz': 'qux'},
     })
     self.assertEqual(data, 'text!')

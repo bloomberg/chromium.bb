@@ -13,6 +13,8 @@
 #import "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/platform_test.h"
 
@@ -24,7 +26,8 @@ namespace {
 
 class BrowserViewWranglerTest : public PlatformTest {
  protected:
-  BrowserViewWranglerTest() {
+  BrowserViewWranglerTest()
+      : scene_state_([[SceneState alloc] initWithAppState:nil]) {
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(
         SendTabToSelfSyncServiceFactory::GetInstance(),
@@ -35,6 +38,7 @@ class BrowserViewWranglerTest : public PlatformTest {
 
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  SceneState* scene_state_;
 };
 
 TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
@@ -43,6 +47,7 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
   @autoreleasepool {
     BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
                initWithBrowserState:chrome_browser_state_.get()
+                         sceneState:scene_state_
          applicationCommandEndpoint:(id<ApplicationCommands>)nil
         browsingDataCommandEndpoint:nil];
     [wrangler createMainBrowser];
@@ -50,15 +55,25 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
     UIViewController* bvc = wrangler.mainInterface.viewController;
     EXPECT_NE(bvc, nil);
 
+    // Test that scene_state_ is associated with the browser.
+    SceneState* main_browser_scene_state =
+        SceneStateBrowserAgent::FromBrowser(wrangler.mainInterface.browser)
+            ->GetSceneState();
+    EXPECT_EQ(scene_state_, main_browser_scene_state);
+
     // Test that once created the BVC isn't re-created.
     EXPECT_EQ(bvc, wrangler.mainInterface.viewController);
 
     // Test that the OTR objects are (a) OTR and (b) not the same as the non-OTR
     // objects.
     EXPECT_NE(bvc, wrangler.incognitoInterface.viewController);
-    EXPECT_NE(wrangler.mainInterface.tabModel,
-              wrangler.incognitoInterface.tabModel);
     EXPECT_TRUE(wrangler.incognitoInterface.browserState->IsOffTheRecord());
+
+    // Test that the OTR browser has scene_state_ associated with it.
+    SceneState* otr_browser_scene_state =
+        SceneStateBrowserAgent::FromBrowser(wrangler.incognitoInterface.browser)
+            ->GetSceneState();
+    EXPECT_EQ(scene_state_, otr_browser_scene_state);
 
     [wrangler shutdown];
   }
@@ -72,6 +87,7 @@ TEST_F(BrowserViewWranglerTest, TestBrowserList) {
 
   BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:chrome_browser_state_.get()
+                       sceneState:scene_state_
        applicationCommandEndpoint:nil
       browsingDataCommandEndpoint:nil];
 
@@ -87,8 +103,13 @@ TEST_F(BrowserViewWranglerTest, TestBrowserList) {
   EXPECT_EQ(1UL, browser_list->AllIncognitoBrowsers().size());
 
   Browser* prior_otr_browser = observer.GetLastAddedIncognitoBrowser();
+
   // WARNING: after the following call, |last_otr_browser| is unsafe.
-  [wrangler destroyAndRebuildIncognitoBrowser];
+  [wrangler willDestroyIncognitoBrowserState];
+  chrome_browser_state_->DestroyOffTheRecordChromeBrowserState();
+  chrome_browser_state_->GetOffTheRecordChromeBrowserState();
+  [wrangler incognitoBrowserStateCreated];
+
   // Expect that the prior OTR browser was removed, and a new one was added.
   EXPECT_EQ(prior_otr_browser, observer.GetLastRemovedIncognitoBrowser());
   EXPECT_EQ(wrangler.incognitoInterface.browser,

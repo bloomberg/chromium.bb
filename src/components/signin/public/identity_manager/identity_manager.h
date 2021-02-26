@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
@@ -26,6 +26,12 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class AccountManager;
+}  // namespace chromeos
 #endif
 
 namespace gaia {
@@ -77,6 +83,14 @@ class IdentityManager : public KeyedService,
     // having a primary account (note that the user may still have an
     // *unconsented* primary account after this event; see./README.md).
     virtual void OnPrimaryAccountCleared(
+        const CoreAccountInfo& previous_primary_account_info) {}
+
+    // TODO(crbug.com/1046746): Move to |SigninClient|.
+    // Called Before notifying all the observers of |OnPrimaryAccountCleared|.
+    // |OnPrimaryAccountCleared| should be used instead in general.This function
+    // should be used carefully, as the value of the unconsented primary account
+    // is not properly defined when it is run and can be changed meanwhile.
+    virtual void BeforePrimaryAccountCleared(
         const CoreAccountInfo& previous_primary_account_info) {}
 
     // When the unconsented primary account (see ./README.md) of the user
@@ -364,22 +378,38 @@ class IdentityManager : public KeyedService,
   void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
 
   //  **************************************************************************
-  //  NOTE: All public methods methods below are either intended to be used only
-  //  by signin code, or are slated for deletion. Most IdentityManager consumers
-  //  should not need to interact with any methods below this line.
+  //  NOTE: All public methods and structures below are either intended to be
+  //  used only by signin code, or are slated for deletion. Most IdentityManager
+  //  consumers should not need to interact with any methods or structures below
+  //  this line.
   //  **************************************************************************
 
-  IdentityManager(
-      std::unique_ptr<AccountTrackerService> account_tracker_service,
-      std::unique_ptr<ProfileOAuth2TokenService> token_service,
-      std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
-      std::unique_ptr<PrimaryAccountManager> primary_account_manager,
-      std::unique_ptr<AccountFetcherService> account_fetcher_service,
-      std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
-      std::unique_ptr<AccountsMutator> accounts_mutator,
-      std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator,
-      std::unique_ptr<DiagnosticsProvider> diagnostics_provider,
-      std::unique_ptr<DeviceAccountsSynchronizer> device_accounts_synchronizer);
+  // The struct contains all fields required to initialize the
+  // IdentityManager instance.
+  struct InitParameters {
+    std::unique_ptr<ProfileOAuth2TokenService> token_service;
+    std::unique_ptr<AccountTrackerService> account_tracker_service;
+    std::unique_ptr<AccountFetcherService> account_fetcher_service;
+    std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service;
+    std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator;
+    std::unique_ptr<PrimaryAccountManager> primary_account_manager;
+    std::unique_ptr<PrimaryAccountMutator> primary_account_mutator;
+    std::unique_ptr<AccountsMutator> accounts_mutator;
+    std::unique_ptr<DeviceAccountsSynchronizer> device_accounts_synchronizer;
+    std::unique_ptr<DiagnosticsProvider> diagnostics_provider;
+#if defined(OS_CHROMEOS)
+    chromeos::AccountManager* chromeos_account_manager = nullptr;
+#endif
+
+    InitParameters();
+    InitParameters(InitParameters&&);
+    ~InitParameters();
+
+    InitParameters(const InitParameters&) = delete;
+    InitParameters& operator=(const InitParameters&) = delete;
+  };
+
+  explicit IdentityManager(IdentityManager::InitParameters&& parameters);
   ~IdentityManager() override;
 
   // Performs initialization that is dependent on the network being
@@ -536,6 +566,7 @@ class IdentityManager : public KeyedService,
   // order to drive its behavior.
   // TODO(https://crbug.com/943135): Find a better way to accomplish this.
   friend IdentityManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, Construct);
   FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
                            PrimaryAccountInfoAfterSigninAndAccountRemoval);
   FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
@@ -580,30 +611,19 @@ class IdentityManager : public KeyedService,
                            ForceRefreshOfExtendedAccountInfo);
 
   // Private getters used for testing only (i.e. see identity_test_utils.h).
-  PrimaryAccountManager* GetPrimaryAccountManager();
-  ProfileOAuth2TokenService* GetTokenService();
-  AccountTrackerService* GetAccountTrackerService();
-  AccountFetcherService* GetAccountFetcherService();
-  GaiaCookieManagerService* GetGaiaCookieManagerService();
+  PrimaryAccountManager* GetPrimaryAccountManager() const;
+  ProfileOAuth2TokenService* GetTokenService() const;
+  AccountTrackerService* GetAccountTrackerService() const;
+  AccountFetcherService* GetAccountFetcherService() const;
+  GaiaCookieManagerService* GetGaiaCookieManagerService() const;
+#if defined(OS_CHROMEOS)
+  chromeos::AccountManager* GetChromeOSAccountManager() const;
+#endif
 
   // Populates and returns an AccountInfo object corresponding to |account_id|,
   // which must be an account with a refresh token.
   AccountInfo GetAccountInfoForAccountWithRefreshToken(
       const CoreAccountId& account_id) const;
-
-  // Sets primary account to |account_info| and updates the unconsented primary
-  // account.
-  void SetPrimaryAccountInternal(base::Optional<CoreAccountInfo> account_info);
-
-  // Updates the cached version of unconsented primary account and notifies the
-  // observers if there is any change.
-  void UpdateUnconsentedPrimaryAccount();
-
-  // Figures out and returns the current unconsented primary account based on
-  // current cookies.
-  // Returns nullopt if the account could not be computed, and CoreAccountInfo()
-  // if there is no account.
-  base::Optional<CoreAccountInfo> ComputeUnconsentedPrimaryAccountInfo() const;
 
   // PrimaryAccountManager::Observer:
   void GoogleSigninSucceeded(const CoreAccountInfo& account_info) override;
@@ -662,22 +682,26 @@ class IdentityManager : public KeyedService,
   std::unique_ptr<DiagnosticsProvider> diagnostics_provider_;
 
   // Scoped observers.
-  ScopedObserver<PrimaryAccountManager, PrimaryAccountManager::Observer>
-      primary_account_manager_observer_{this};
-  ScopedObserver<ProfileOAuth2TokenService, ProfileOAuth2TokenServiceObserver>
-      token_service_observer_{this};
+  base::ScopedObservation<PrimaryAccountManager,
+                          PrimaryAccountManager::Observer>
+      primary_account_manager_observation_{this};
+  base::ScopedObservation<ProfileOAuth2TokenService,
+                          ProfileOAuth2TokenServiceObserver>
+      token_service_observation_{this};
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.
   base::ObserverList<Observer, true>::Unchecked observer_list_;
   base::ObserverList<DiagnosticsObserver, true>::Unchecked
-      diagnostics_observer_list_;
-
-  bool unconsented_primary_account_revoked_during_load_ = false;
+      diagnostics_observation_list_;
 
 #if defined(OS_ANDROID)
   // Java-side IdentityManager object.
   base::android::ScopedJavaGlobalRef<jobject> java_identity_manager_;
+#endif
+
+#if defined(OS_CHROMEOS)
+  chromeos::AccountManager* chromeos_account_manager_ = nullptr;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManager);

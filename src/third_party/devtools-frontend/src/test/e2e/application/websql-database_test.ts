@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {describe, it} from 'mocha';
 
-import {$, debuggerStatement, getBrowserAndPages, waitFor} from '../../shared/helper.js';
-
+import {debuggerStatement, getBrowserAndPages, waitFor} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
 import {doubleClickSourceTreeItem, navigateToApplicationTab} from '../helpers/application-helpers.js';
 
 const WEB_SQL_SELECTOR = '[aria-label="Web SQL"]';
@@ -20,8 +19,7 @@ describe('The Application Tab', async () => {
     await doubleClickSourceTreeItem(WEB_SQL_SELECTOR);
     await debuggerStatement(frontend);
 
-    await waitFor(DATABASES_SELECTOR);
-    const databaseList = await $(DATABASES_SELECTOR);
+    const databaseList = await waitFor(DATABASES_SELECTOR);
 
     const databaseNames = await databaseList.evaluate((list: Element) => {
       return Array.from(list.querySelectorAll('li')).map(node => node.textContent);

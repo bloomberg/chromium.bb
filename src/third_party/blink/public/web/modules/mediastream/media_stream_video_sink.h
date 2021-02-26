@@ -8,8 +8,8 @@
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
 
 namespace blink {
@@ -24,6 +24,10 @@ namespace blink {
 class BLINK_MODULES_EXPORT MediaStreamVideoSink : public WebMediaStreamSink {
  public:
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
+
+  // Required minimum frames per second needed for the sink. Default is zero
+  // unless overridden.
+  virtual double GetRequiredMinFramesPerSec() const;
 
  protected:
   MediaStreamVideoSink();

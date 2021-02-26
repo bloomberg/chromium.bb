@@ -6,8 +6,8 @@
 #define MEDIA_MOJO_MOJOM_VIDEO_ENCODE_ACCELERATOR_MOJOM_TRAITS_H_
 
 #include "media/base/ipc/media_param_traits.h"
-#include "media/mojo/mojom/media_types.mojom.h"
-#include "media/mojo/mojom/video_encode_accelerator.mojom.h"
+#include "media/mojo/mojom/media_types.mojom-shared.h"
+#include "media/mojo/mojom/video_encode_accelerator.mojom-shared.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
@@ -48,12 +48,12 @@ struct StructTraits<
 };
 
 template <>
-struct EnumTraits<media::mojom::VideoEncodeAccelerator::Error,
+struct EnumTraits<media::mojom::VideoEncodeAccelerator_Error,
                   media::VideoEncodeAccelerator::Error> {
-  static media::mojom::VideoEncodeAccelerator::Error ToMojom(
+  static media::mojom::VideoEncodeAccelerator_Error ToMojom(
       media::VideoEncodeAccelerator::Error error);
 
-  static bool FromMojom(media::mojom::VideoEncodeAccelerator::Error input,
+  static bool FromMojom(media::mojom::VideoEncodeAccelerator_Error input,
                         media::VideoEncodeAccelerator::Error* out);
 };
 
@@ -69,6 +69,43 @@ class StructTraits<media::mojom::VideoBitrateAllocationDataView,
 };
 
 template <>
+struct UnionTraits<media::mojom::CodecMetadataDataView,
+                   media::BitstreamBufferMetadata> {
+  static media::mojom::CodecMetadataDataView::Tag GetTag(
+      const media::BitstreamBufferMetadata& metadata) {
+    if (metadata.vp8) {
+      return media::mojom::CodecMetadataDataView::Tag::VP8;
+    } else if (metadata.vp9) {
+      return media::mojom::CodecMetadataDataView::Tag::VP9;
+    }
+    NOTREACHED();
+    return media::mojom::CodecMetadataDataView::Tag::VP8;
+  }
+
+  static bool IsNull(const media::BitstreamBufferMetadata& metadata) {
+    return !metadata.vp8 && !metadata.vp9;
+  }
+
+  static void SetToNull(media::BitstreamBufferMetadata* metadata) {
+    metadata->vp8.reset();
+    metadata->vp9.reset();
+  }
+
+  static const media::Vp8Metadata& vp8(
+      const media::BitstreamBufferMetadata& metadata) {
+    return *metadata.vp8;
+  }
+
+  static const media::Vp9Metadata& vp9(
+      const media::BitstreamBufferMetadata& metadata) {
+    return *metadata.vp9;
+  }
+
+  static bool Read(media::mojom::CodecMetadataDataView data,
+                   media::BitstreamBufferMetadata* metadata);
+};
+
+template <>
 class StructTraits<media::mojom::BitstreamBufferMetadataDataView,
                    media::BitstreamBufferMetadata> {
  public:
@@ -81,9 +118,9 @@ class StructTraits<media::mojom::BitstreamBufferMetadataDataView,
   static base::TimeDelta timestamp(const media::BitstreamBufferMetadata& bbm) {
     return bbm.timestamp;
   }
-  static const base::Optional<media::Vp8Metadata>& vp8(
+  static const media::BitstreamBufferMetadata& codec_metadata(
       const media::BitstreamBufferMetadata& bbm) {
-    return bbm.vp8;
+    return bbm;
   }
 
   static bool Read(media::mojom::BitstreamBufferMetadataDataView data,
@@ -110,24 +147,44 @@ class StructTraits<media::mojom::Vp8MetadataDataView, media::Vp8Metadata> {
 };
 
 template <>
-struct EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::StorageType,
+class StructTraits<media::mojom::Vp9MetadataDataView, media::Vp9Metadata> {
+ public:
+  static bool has_reference(const media::Vp9Metadata& vp9) {
+    return vp9.has_reference;
+  }
+  static bool temporal_up_switch(const media::Vp9Metadata& vp9) {
+    return vp9.temporal_up_switch;
+  }
+  static uint8_t temporal_idx(const media::Vp9Metadata& vp9) {
+    return vp9.temporal_idx;
+  }
+  static const std::vector<uint8_t>& p_diffs(const media::Vp9Metadata& vp9) {
+    return vp9.p_diffs;
+  }
+
+  static bool Read(media::mojom::Vp9MetadataDataView data,
+                   media::Vp9Metadata* out_metadata);
+};
+
+template <>
+struct EnumTraits<media::mojom::VideoEncodeAcceleratorConfig_StorageType,
                   media::VideoEncodeAccelerator::Config::StorageType> {
-  static media::mojom::VideoEncodeAcceleratorConfig::StorageType ToMojom(
+  static media::mojom::VideoEncodeAcceleratorConfig_StorageType ToMojom(
       media::VideoEncodeAccelerator::Config::StorageType input);
 
   static bool FromMojom(
-      media::mojom::VideoEncodeAcceleratorConfig::StorageType,
+      media::mojom::VideoEncodeAcceleratorConfig_StorageType,
       media::VideoEncodeAccelerator::Config::StorageType* output);
 };
 
 template <>
-struct EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::ContentType,
+struct EnumTraits<media::mojom::VideoEncodeAcceleratorConfig_ContentType,
                   media::VideoEncodeAccelerator::Config::ContentType> {
-  static media::mojom::VideoEncodeAcceleratorConfig::ContentType ToMojom(
+  static media::mojom::VideoEncodeAcceleratorConfig_ContentType ToMojom(
       media::VideoEncodeAccelerator::Config::ContentType input);
 
   static bool FromMojom(
-      media::mojom::VideoEncodeAcceleratorConfig::ContentType,
+      media::mojom::VideoEncodeAcceleratorConfig_ContentType,
       media::VideoEncodeAccelerator::Config::ContentType* output);
 };
 
@@ -219,6 +276,11 @@ struct StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
   static bool has_h264_output_level(
       const media::VideoEncodeAccelerator::Config& input) {
     return input.h264_output_level.has_value();
+  }
+
+  static bool is_constrained_h264(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.is_constrained_h264;
   }
 
   static media::VideoEncodeAccelerator::Config::StorageType storage_type(

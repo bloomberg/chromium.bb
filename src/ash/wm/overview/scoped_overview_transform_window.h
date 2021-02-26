@@ -11,10 +11,11 @@
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_types.h"
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "ui/aura/client/transient_window_client_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -35,10 +36,19 @@ class ScopedOverviewHideWindows;
 // fit in certain bounds. The window's state is restored when this object is
 // destroyed.
 class ASH_EXPORT ScopedOverviewTransformWindow
-    : public aura::client::TransientWindowClientObserver {
+    : public aura::client::TransientWindowClientObserver,
+      public aura::WindowObserver {
  public:
   using ScopedAnimationSettings =
       std::vector<std::unique_ptr<ScopedOverviewAnimationSettings>>;
+
+  // Information needed to do a clip on |window_|.
+  enum class ClippingType {
+    kEnter,   // Clips away the header if it exists.
+    kExit,    // Removes or resets clip.
+    kCustom,  // Clips to custom given bounds.
+  };
+  using ClippingData = std::pair<ClippingType, gfx::SizeF>;
 
   // Calculates and returns an optimal scale ratio. This is only taking into
   // account |size.height()| as the width can vary.
@@ -52,6 +62,9 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   ScopedOverviewTransformWindow(OverviewItem* overview_item,
                                 aura::Window* window);
+  ScopedOverviewTransformWindow(const ScopedOverviewTransformWindow&) = delete;
+  ScopedOverviewTransformWindow& operator=(
+      const ScopedOverviewTransformWindow&) = delete;
   ~ScopedOverviewTransformWindow() override;
 
   // Starts an animation sequence which will use animation settings specified by
@@ -94,9 +107,8 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // Sets the opacity of the managed windows.
   void SetOpacity(float opacity);
 
-  // Apply clipping on the managed windows. If |size| is empty, then restore
-  // |overview_clip_rect_|.
-  void SetClipping(const gfx::SizeF& size);
+  // Apply clipping on the managed windows.
+  void SetClipping(const ClippingData& clipping_data);
 
   // Returns |rect| having been shrunk to fit within |bounds| (preserving the
   // aspect ratio). Takes into account a window header that is |top_view_inset|
@@ -123,20 +135,23 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // change. Must be called before PositionWindows in OverviewGrid.
   void UpdateWindowDimensionsType();
 
-  // Updates the rounded corners and clipping on the window. Note that the
-  // rounded corners can be hidden with |show| set to false, but the clipping
-  // stays for the duration of overview once applied.
-  void UpdateRoundedCornersAndClip(bool show);
-
-  // Clip the top portion of the window that normally contains the caption (if
-  // any).
-  void ClipHeaderIfNeeded(bool animate);
+  // Updates the rounded corners on |window_|.
+  void UpdateRoundedCorners(bool show);
 
   // aura::client::TransientWindowClientObserver:
   void OnTransientChildWindowAdded(aura::Window* parent,
                                    aura::Window* transient_child) override;
   void OnTransientChildWindowRemoved(aura::Window* parent,
                                      aura::Window* transient_child) override;
+
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
 
   aura::Window* window() const { return window_; }
 
@@ -145,13 +160,20 @@ class ASH_EXPORT ScopedOverviewTransformWindow
  private:
   friend class OverviewHighlightControllerTest;
   friend class OverviewSessionTest;
+  FRIEND_TEST_ALL_PREFIXES(OverviewSessionTest, CloseAnimationShadow);
   class LayerCachingAndFilteringObserver;
+
+  // If true, makes Close() execute synchronously when used in tests.
+  static void SetImmediateCloseForTests(bool immediate);
 
   // Closes the window managed by |this|.
   void CloseWidget();
 
-  // Makes Close() execute synchronously when used in tests.
-  static void SetImmediateCloseForTests();
+  // Adds transient windows that should be hidden to the hidden window list. The
+  // windows are hidden in overview mode and the visibility of the windows is
+  // recovered after overview mode.
+  void AddHiddenTransientWindows(
+      const std::vector<aura::Window*>& transient_windows);
 
   // A weak pointer to the overview item that owns |this|. Guaranteed to be not
   // null for the lifetime of |this|.
@@ -183,20 +205,11 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // mode.
   gfx::Rect original_clip_rect_;
 
-  // The clippng on the layer of |window_| after entering overview mode.
-  // Additional clipping may be added, and when that additional clipping is
-  // removed, we should go back to this clipping.
-  gfx::Rect overview_clip_rect_;
-
-  // True if a window is clipped to match splitview bounds. If true, the
-  // splitview clipping overrides any top view inset clipping there may be.
-  bool has_aspect_ratio_clipping_ = false;
-
   std::unique_ptr<ScopedOverviewHideWindows> hidden_transient_children_;
 
-  base::WeakPtrFactory<ScopedOverviewTransformWindow> weak_ptr_factory_{this};
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedOverviewTransformWindow);
+  base::WeakPtrFactory<ScopedOverviewTransformWindow> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

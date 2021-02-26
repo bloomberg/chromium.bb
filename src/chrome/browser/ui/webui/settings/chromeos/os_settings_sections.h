@@ -36,6 +36,10 @@ namespace multidevice_setup {
 class MultiDeviceSetupClient;
 }  // namespace multidevice_setup
 
+namespace phonehub {
+class PhoneHubManager;
+}  // namespace phonehub
+
 namespace settings {
 
 // Collection of all OsSettingsSection implementations.
@@ -45,6 +49,7 @@ class OsSettingsSections {
       Profile* profile,
       SearchTagRegistry* search_tag_registry,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      phonehub::PhoneHubManager* phone_hub_manager,
       syncer::SyncService* sync_service,
       SupervisedUserService* supervised_user_service,
       KerberosCredentialsManager* kerberos_credentials_manager,
@@ -54,15 +59,18 @@ class OsSettingsSections {
       CupsPrintersManager* printers_manager);
   OsSettingsSections(const OsSettingsSections& other) = delete;
   OsSettingsSections& operator=(const OsSettingsSections& other) = delete;
-  ~OsSettingsSections();
+  virtual ~OsSettingsSections();
 
-  OsSettingsSection* GetSection(mojom::Section section);
+  const OsSettingsSection* GetSection(mojom::Section section) const;
 
   std::vector<std::unique_ptr<OsSettingsSection>>& sections() {
     return sections_;
   }
 
- private:
+ protected:
+  // Used by tests.
+  OsSettingsSections();
+
   std::unordered_map<mojom::Section, OsSettingsSection*> sections_map_;
   std::vector<std::unique_ptr<OsSettingsSection>> sections_;
 };

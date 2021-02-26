@@ -64,7 +64,8 @@ NudgeTracker::NudgeTracker()
           base::TimeDelta::FromMilliseconds(kSyncSchedulerDelayMilliseconds)) {
   // Default initialize all the type trackers.
   for (ModelType type : ProtocolTypes()) {
-    type_trackers_.emplace(type, std::make_unique<DataTypeTracker>());
+    type_trackers_.emplace(
+        type, std::make_unique<DataTypeTracker>(kDefaultMaxPayloadsPerType));
   }
 }
 
@@ -235,7 +236,8 @@ bool NudgeTracker::IsAnyTypeBlocked() const {
 }
 
 bool NudgeTracker::IsTypeBlocked(ModelType type) const {
-  DCHECK(type_trackers_.find(type) != type_trackers_.end());
+  DCHECK(type_trackers_.find(type) != type_trackers_.end())
+      << ModelTypeToString(type);
   return type_trackers_.find(type)->second->IsBlocked();
 }
 

@@ -34,6 +34,7 @@ import * as InlineEditor from '../inline_editor/inline_editor.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as SourceFrame from '../source_frame/source_frame.js';
+import * as TextEditor from '../text_editor/text_editor.js';  // eslint-disable-line no-unused-vars
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
@@ -58,17 +59,20 @@ export class CSSPlugin extends Plugin {
     this._spectrum = null;
     /** @type {?Element} */
     this._currentSwatch = null;
-    this._textEditor.configureAutocomplete(
-        {suggestionsCallback: this._cssSuggestions.bind(this), isWordChar: this._isWordChar.bind(this)});
+    this._textEditor.configureAutocomplete({
+      suggestionsCallback: this._cssSuggestions.bind(this),
+      isWordChar: this._isWordChar.bind(this),
+      anchorBehavior: undefined,
+      substituteRangeCallback: undefined,
+      tooltipCallback: undefined
+    });
     this._textEditor.addEventListener(
         SourceFrame.SourcesTextEditor.Events.ScrollChanged, this._textEditorScrolled, this);
     this._textEditor.addEventListener(UI.TextEditor.Events.TextChanged, this._onTextChanged, this);
     this._updateSwatches(0, this._textEditor.linesCount - 1);
+    this._boundHandleKeyDown = null;
 
-    this._shortcuts = {};
     this._registerShortcuts();
-    this._boundHandleKeyDown = this._handleKeyDown.bind(this);
-    this._textEditor.element.addEventListener('keydown', this._boundHandleKeyDown, false);
   }
 
   /**
@@ -81,30 +85,13 @@ export class CSSPlugin extends Plugin {
   }
 
   _registerShortcuts() {
-    const shortcutKeys = UI.ShortcutsScreen.SourcesPanelShortcuts;
-    for (const descriptor of shortcutKeys.IncreaseCSSUnitByOne) {
-      this._shortcuts[descriptor.key] = this._handleUnitModification.bind(this, 1);
-    }
-    for (const descriptor of shortcutKeys.DecreaseCSSUnitByOne) {
-      this._shortcuts[descriptor.key] = this._handleUnitModification.bind(this, -1);
-    }
-    for (const descriptor of shortcutKeys.IncreaseCSSUnitByTen) {
-      this._shortcuts[descriptor.key] = this._handleUnitModification.bind(this, 10);
-    }
-    for (const descriptor of shortcutKeys.DecreaseCSSUnitByTen) {
-      this._shortcuts[descriptor.key] = this._handleUnitModification.bind(this, -10);
-    }
-  }
-
-  /**
-   * @param {!Event} event
-   */
-  _handleKeyDown(event) {
-    const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(/** @type {!KeyboardEvent} */ (event));
-    const handler = this._shortcuts[shortcutKey];
-    if (handler && handler()) {
-      event.consume(true);
-    }
+    this._boundHandleKeyDown =
+        UI.ShortcutRegistry.ShortcutRegistry.instance().addShortcutListener(this._textEditor.element, {
+          'sources.increment-css': this._handleUnitModification.bind(this, 1),
+          'sources.increment-css-by-ten': this._handleUnitModification.bind(this, 10),
+          'sources.decrement-css': this._handleUnitModification.bind(this, -1),
+          'sources.decrement-css-by-ten': this._handleUnitModification.bind(this, -10)
+        });
   }
 
   _textEditorScrolled() {
@@ -129,9 +116,9 @@ export class CSSPlugin extends Plugin {
 
   /**
    * @param {number} change
-   * @return {boolean}
+   * @return {!Promise.<boolean>}
    */
-  _handleUnitModification(change) {
+  async _handleUnitModification(change) {
     const selection = this._textEditor.selection().normalize();
     let token = this._textEditor.tokenAtTextPosition(selection.startLine, selection.startColumn);
     if (!token) {
@@ -165,11 +152,14 @@ export class CSSPlugin extends Plugin {
    * @param {number} endLine
    */
   _updateSwatches(startLine, endLine) {
+    /** @type {!Array<!HTMLElement>} */
     const swatches = [];
+    /** @type {!Array<!TextUtils.TextRange.TextRange>} */
     const swatchPositions = [];
 
     const regexes =
         [SDK.CSSMetadata.VariableRegex, SDK.CSSMetadata.URLRegex, UI.Geometry.CubicBezier.Regex, Common.Color.Regex];
+    /** @type {!Map<!RegExp, function(string): ?HTMLElement>} */
     const handlers = new Map();
     handlers.set(Common.Color.Regex, this._createColorSwatch.bind(this));
     handlers.set(UI.Geometry.CubicBezier.Regex, this._createBezierSwatch.bind(this));
@@ -179,7 +169,8 @@ export class CSSPlugin extends Plugin {
       const results = TextUtils.TextUtils.Utils.splitStringByRegexes(line, regexes);
       for (let i = 0; i < results.length; i++) {
         const result = results[i];
-        if (result.regexIndex === -1 || !handlers.has(regexes[result.regexIndex])) {
+        const handler = handlers.get(regexes[result.regexIndex]);
+        if (result.regexIndex === -1 || !handler) {
           continue;
         }
         const delimiters = /[\s:;,(){}]/;
@@ -189,7 +180,7 @@ export class CSSPlugin extends Plugin {
             positionAfter < line.length && !delimiters.test(line.charAt(positionAfter))) {
           continue;
         }
-        const swatch = handlers.get(regexes[result.regexIndex])(result.value);
+        const swatch = handler(result.value);
         if (!swatch) {
           continue;
         }
@@ -212,37 +203,39 @@ export class CSSPlugin extends Plugin {
         const swatchPosition = swatchPositions[i];
         const bookmark =
             this._textEditor.addBookmark(swatchPosition.startLine, swatchPosition.startColumn, swatch, SwatchBookmark);
-        swatch[SwatchBookmark] = bookmark;
+        swatchToBookmark.set(swatch, bookmark);
       }
     }
   }
 
   /**
    * @param {string} text
-   * @return {?InlineEditor.ColorSwatch.ColorSwatch}
+   * @return {?HTMLElement}
    */
   _createColorSwatch(text) {
     const color = Common.Color.Color.parse(text);
     if (!color) {
       return null;
     }
-    const swatch = InlineEditor.ColorSwatch.ColorSwatch.create();
-    swatch.setColor(color);
-    swatch.iconElement().title = Common.UIString.UIString('Open color picker.');
-    swatch.iconElement().addEventListener('click', this._swatchIconClicked.bind(this, swatch), false);
-    swatch.hideText(true);
+    const swatch = InlineEditor.ColorSwatch.createColorSwatch();
+    swatch.renderColor(color, false, Common.UIString.UIString('Open color picker.'));
+    const value = swatch.createChild('span');
+    value.textContent = text;
+    value.setAttribute('hidden', 'true');
+
+    swatch.addEventListener('swatch-click', this._swatchIconClicked.bind(this, swatch), false);
     return swatch;
   }
 
   /**
    * @param {string} text
-   * @return {?InlineEditor.ColorSwatch.BezierSwatch}
+   * @return {?InlineEditor.Swatches.BezierSwatch}
    */
   _createBezierSwatch(text) {
     if (!UI.Geometry.CubicBezier.parse(text)) {
       return null;
     }
-    const swatch = InlineEditor.ColorSwatch.BezierSwatch.create();
+    const swatch = InlineEditor.Swatches.BezierSwatch.create();
     swatch.setBezierText(text);
     swatch.iconElement().title = Common.UIString.UIString('Open cubic bezier editor.');
     swatch.iconElement().addEventListener('click', this._swatchIconClicked.bind(this, swatch), false);
@@ -258,21 +251,30 @@ export class CSSPlugin extends Plugin {
     event.consume(true);
     this._hadSwatchChange = false;
     this._muteSwatchProcessing = true;
-    const swatchPosition = swatch[SwatchBookmark].position();
+    const bookmark = swatchToBookmark.get(swatch);
+    if (!bookmark) {
+      return;
+    }
+    const swatchPosition = bookmark.position();
+    if (!swatchPosition) {
+      return;
+    }
     this._textEditor.setSelection(swatchPosition);
     this._editedSwatchTextRange = swatchPosition.clone();
-    this._editedSwatchTextRange.endColumn += swatch.textContent.length;
+    if (this._editedSwatchTextRange) {
+      this._editedSwatchTextRange.endColumn += (swatch.textContent || '').length;
+    }
     this._currentSwatch = swatch;
 
-    if (swatch instanceof InlineEditor.ColorSwatch.ColorSwatch) {
-      this._showSpectrum(swatch);
-    } else if (swatch instanceof InlineEditor.ColorSwatch.BezierSwatch) {
+    if (swatch.localName === 'devtools-color-swatch') {
+      this._showSpectrum(/** @type {!InlineEditor.ColorSwatch.ColorSwatchClosureInterface} */ (swatch));
+    } else if (swatch instanceof InlineEditor.Swatches.BezierSwatch) {
       this._showBezierEditor(swatch);
     }
   }
 
   /**
-   * @param {!InlineEditor.ColorSwatch.ColorSwatch} swatch
+   * @param {!InlineEditor.ColorSwatch.ColorSwatchClosureInterface} swatch
    */
   _showSpectrum(swatch) {
     if (!this._spectrum) {
@@ -280,8 +282,8 @@ export class CSSPlugin extends Plugin {
       this._spectrum.addEventListener(ColorPicker.Spectrum.Events.SizeChanged, this._spectrumResized, this);
       this._spectrum.addEventListener(ColorPicker.Spectrum.Events.ColorChanged, this._spectrumChanged, this);
     }
-    this._spectrum.setColor(swatch.color(), swatch.format());
-    this._swatchPopoverHelper.show(this._spectrum, swatch.iconElement(), this._swatchPopoverHidden.bind(this));
+    this._spectrum.setColor(/** @type {!Common.Color.Color} */ (swatch.color), swatch.format || '');
+    this._swatchPopoverHelper.show(this._spectrum, swatch, this._swatchPopoverHidden.bind(this));
   }
 
   /**
@@ -297,27 +299,29 @@ export class CSSPlugin extends Plugin {
   _spectrumChanged(event) {
     const colorString = /** @type {string} */ (event.data);
     const color = Common.Color.Color.parse(colorString);
-    if (!color) {
+    if (!color || !this._currentSwatch) {
       return;
     }
-    this._currentSwatch.setColor(color);
+
+    if (this._currentSwatch.localName === 'devtools-color-swatch') {
+      const swatch = /** @type {!InlineEditor.ColorSwatch.ColorSwatchClosureInterface} */ (this._currentSwatch);
+      swatch.renderColor(color);
+    }
     this._changeSwatchText(colorString);
   }
 
   /**
-   * @param {!InlineEditor.ColorSwatch.BezierSwatch} swatch
+   * @param {!InlineEditor.Swatches.BezierSwatch} swatch
    */
   _showBezierEditor(swatch) {
+    const cubicBezier = UI.Geometry.CubicBezier.parse(swatch.bezierText()) ||
+        /** @type {!UI.Geometry.CubicBezier} */ (UI.Geometry.CubicBezier.parse('linear'));
     if (!this._bezierEditor) {
-      this._bezierEditor = new InlineEditor.BezierEditor.BezierEditor();
+      this._bezierEditor = new InlineEditor.BezierEditor.BezierEditor(cubicBezier);
       this._bezierEditor.addEventListener(InlineEditor.BezierEditor.Events.BezierChanged, this._bezierChanged, this);
+    } else {
+      this._bezierEditor.setBezier(cubicBezier);
     }
-    let cubicBezier = UI.Geometry.CubicBezier.parse(swatch.bezierText());
-    if (!cubicBezier) {
-      cubicBezier =
-          /** @type {!UI.Geometry.CubicBezier} */ (UI.Geometry.CubicBezier.parse('linear'));
-    }
-    this._bezierEditor.setBezier(cubicBezier);
     this._swatchPopoverHelper.show(this._bezierEditor, swatch.iconElement(), this._swatchPopoverHidden.bind(this));
   }
 
@@ -326,7 +330,9 @@ export class CSSPlugin extends Plugin {
    */
   _bezierChanged(event) {
     const bezierString = /** @type {string} */ (event.data);
-    this._currentSwatch.setBezierText(bezierString);
+    if (this._currentSwatch instanceof InlineEditor.Swatches.BezierSwatch) {
+      this._currentSwatch.setBezierText(bezierString);
+    }
     this._changeSwatchText(bezierString);
   }
 
@@ -335,9 +341,9 @@ export class CSSPlugin extends Plugin {
    */
   _changeSwatchText(text) {
     this._hadSwatchChange = true;
-    this._textEditor.editRange(
-        /** @type {!TextUtils.TextRange.TextRange} */ (this._editedSwatchTextRange), text, '*swatch-text-changed');
-    this._editedSwatchTextRange.endColumn = this._editedSwatchTextRange.startColumn + text.length;
+    const editedRange = /** @type {!TextUtils.TextRange.TextRange} */ (this._editedSwatchTextRange);
+    this._textEditor.editRange(editedRange, text, '*swatch-text-changed');
+    editedRange.endColumn = editedRange.startColumn + text.length;
   }
 
   /**
@@ -386,7 +392,20 @@ export class CSSPlugin extends Plugin {
     const line = this._textEditor.line(prefixRange.startLine);
     const tokenContent = line.substring(propertyToken.startColumn, propertyToken.endColumn);
     const propertyValues = SDK.CSSMetadata.cssMetadata().propertyValues(tokenContent);
-    return Promise.resolve(propertyValues.filter(value => value.startsWith(prefix)).map(value => ({text: value})));
+    return Promise.resolve(propertyValues.filter(value => value.startsWith(prefix)).map(value => {
+      return {
+        text: value,
+        title: undefined,
+        subtitle: undefined,
+        iconType: undefined,
+        priority: undefined,
+        isSecondary: undefined,
+        subtitleRenderer: undefined,
+        selectionRange: undefined,
+        hideGhostText: undefined,
+        iconElement: undefined,
+      };
+    }));
   }
 
   /**
@@ -435,7 +454,7 @@ export class CSSPlugin extends Plugin {
         SourceFrame.SourcesTextEditor.Events.ScrollChanged, this._textEditorScrolled, this);
     this._textEditor.removeEventListener(UI.TextEditor.Events.TextChanged, this._onTextChanged, this);
     this._textEditor.bookmarks(this._textEditor.fullRange(), SwatchBookmark).forEach(marker => marker.clear());
-    this._textEditor.element.removeEventListener('keydown', this._boundHandleKeyDown, false);
+    this._textEditor.element.removeEventListener('keydown', /** @type {!EventListener} */ (this._boundHandleKeyDown));
   }
 }
 
@@ -444,3 +463,6 @@ export const maxSwatchProcessingLength = 300;
 
 /** @type {symbol} */
 export const SwatchBookmark = Symbol('swatch');
+
+/** @type {!WeakMap<!Element, !TextEditor.CodeMirrorTextEditor.TextEditorBookMark>} */
+const swatchToBookmark = new WeakMap();

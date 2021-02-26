@@ -38,7 +38,6 @@ namespace dawn_native { namespace vulkan {
             totalDescriptorCount += it.second;
             mPoolSizes.push_back(VkDescriptorPoolSize{it.first, it.second});
         }
-        ASSERT(totalDescriptorCount <= kMaxBindingsPerGroup);
 
         if (totalDescriptorCount == 0) {
             // Vulkan requires that valid usage of vkCreateDescriptorPool must have a non-zero
@@ -49,6 +48,9 @@ namespace dawn_native { namespace vulkan {
             mPoolSizes.push_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1});
             mMaxSets = kMaxDescriptorsPerPool;
         } else {
+            ASSERT(totalDescriptorCount <= kMaxBindingsPerPipelineLayout);
+            static_assert(kMaxBindingsPerPipelineLayout <= kMaxDescriptorsPerPool, "");
+
             // Compute the total number of descriptors sets that fits given the max.
             mMaxSets = kMaxDescriptorsPerPool / totalDescriptorCount;
             ASSERT(mMaxSets > 0);
@@ -100,7 +102,7 @@ namespace dawn_native { namespace vulkan {
         // documentation for vkCmdBindDescriptorSets that the set may be consumed any time between
         // host execution of the command and the end of the draw/dispatch.
         Device* device = ToBackend(mLayout->GetDevice());
-        const Serial serial = device->GetPendingCommandSerial();
+        const ExecutionSerial serial = device->GetPendingCommandSerial();
         mPendingDeallocations.Enqueue({allocationInfo->poolIndex, allocationInfo->setIndex},
                                       serial);
 
@@ -113,7 +115,7 @@ namespace dawn_native { namespace vulkan {
         *allocationInfo = {};
     }
 
-    void DescriptorSetAllocator::FinishDeallocation(Serial completedSerial) {
+    void DescriptorSetAllocator::FinishDeallocation(ExecutionSerial completedSerial) {
         for (const Deallocation& dealloc : mPendingDeallocations.IterateUpTo(completedSerial)) {
             ASSERT(dealloc.poolIndex < mDescriptorPools.size());
 

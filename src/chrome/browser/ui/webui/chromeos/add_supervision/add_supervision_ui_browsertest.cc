@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_ui.h"
@@ -15,7 +14,6 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -24,10 +22,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
-
-// NOTE: This test is flaky and therefore disabled under MSAN:
-// https://crbug.com/1002560
-#if !defined(MEMORY_SANITIZER)
 
 namespace {
 
@@ -38,10 +32,7 @@ const char kGetAddSupervisionUIElementJS[] =
 // Base class for AddSupervision tests.
 class AddSupervisionBrowserTest : public InProcessBrowserTest {
  public:
-  AddSupervisionBrowserTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kParentalControlsSettings}, {});
-  }
+  AddSupervisionBrowserTest() = default;
   ~AddSupervisionBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -88,23 +79,15 @@ class AddSupervisionBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
 
   DISALLOW_COPY_AND_ASSIGN(AddSupervisionBrowserTest);
 };
 
-// Disabled on ASan and LSAn builds, because it's very flaky. See
-// crbug.com/1004237
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_URLParameters DISABLED_URLParameters
-#else
-#define MAYBE_URLParameters URLParameters
-#endif
-IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, MAYBE_URLParameters) {
+IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, URLParameters) {
   // Open the Add Supervision URL.
   ui_test_utils::NavigateToURL(browser(), add_supervision_webui_url());
-  content::WaitForLoadStop(contents());
+  EXPECT_TRUE(content::WaitForLoadStop(contents()));
 
   // Get the URL from the embedded webview.
   std::string webview_url;
@@ -141,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, MAYBE_URLParameters) {
 IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, ShowOfflineScreen) {
   // Open the Add Supervision URL.
   ui_test_utils::NavigateToURL(browser(), add_supervision_webui_url());
-  content::WaitForLoadStop(contents());
+  EXPECT_TRUE(content::WaitForLoadStop(contents()));
 
   // Webview div should be initially visible.
   ASSERT_TRUE(IsElementVisible(std::string(kGetAddSupervisionUIElementJS) +
@@ -172,18 +155,10 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, ShowOfflineScreen) {
                                std::string(".webviewDiv")));
 }
 
-// Disabled on ASan and LSAn builds, because it's very flaky. See
-// crbug.com/1004237
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_ShowConfirmSignoutDialog DISABLED_ShowConfirmSignoutDialog
-#else
-#define MAYBE_ShowConfirmSignoutDialog ShowConfirmSignoutDialog
-#endif
-IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest,
-                       MAYBE_ShowConfirmSignoutDialog) {
+IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, ShowConfirmSignoutDialog) {
   // Open the Add Supervision URL.
   ui_test_utils::NavigateToURL(browser(), add_supervision_webui_url());
-  content::WaitForLoadStop(contents());
+  EXPECT_TRUE(content::WaitForLoadStop(contents()));
 
   // Request that the dialog close before supervision has been enabled.
   ASSERT_TRUE(content::ExecuteScript(
@@ -206,14 +181,7 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest,
   ASSERT_TRUE(ConfirmSignoutDialog::IsShowing());
 }
 
-// Disabled on ASan and LSAn builds, because it's very flaky. See
-// crbug.com/1004237
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_UMATest DISABLED_UMATest
-#else
-#define MAYBE_UMATest UMATest
-#endif
-IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, MAYBE_UMATest) {
+IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, UMATest) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
 
@@ -227,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, MAYBE_UMATest) {
 
   // Open the Add Supervision URL.
   ui_test_utils::NavigateToURL(browser(), add_supervision_webui_url());
-  content::WaitForLoadStop(contents());
+  EXPECT_TRUE(content::WaitForLoadStop(contents()));
 
   // Simulate supervision being enabled.
   ASSERT_TRUE(content::ExecuteScript(
@@ -245,7 +213,5 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, MAYBE_UMATest) {
                 "AddSupervisionDialog_EnrollmentCompleted"),
             1);
 }
-
-#endif  // !defined(MEMORY_SANITIZER)
 
 }  // namespace chromeos

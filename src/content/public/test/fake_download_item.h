@@ -57,6 +57,8 @@ class FakeDownloadItem : public download::DownloadItem {
   bool IsTransient() const override;
   bool IsParallelDownload() const override;
   DownloadCreationType GetDownloadCreationType() const override;
+  const base::Optional<download::DownloadSchedule>& GetDownloadSchedule()
+      const override;
   bool IsDone() const override;
   const std::string& GetETag() const override;
   const std::string& GetLastModifiedTime() const override;
@@ -123,7 +125,8 @@ class FakeDownloadItem : public download::DownloadItem {
               RenameDownloadCallback callback) override;
   void OnAsyncScanningCompleted(
       download::DownloadDangerType danger_type) override;
-
+  void OnDownloadScheduleChanged(
+      base::Optional<download::DownloadSchedule> schedule) override;
   bool removed() const { return removed_; }
   void NotifyDownloadDestroyed();
   void NotifyDownloadRemoved();
@@ -179,6 +182,7 @@ class FakeDownloadItem : public download::DownloadItem {
   std::string etag_;
   std::string last_modified_time_;
   std::string hash_;
+  base::Optional<download::DownloadSchedule> download_schedule_;
 
   // The members below are to be returned by methods, which return by reference.
   std::string dummy_string;

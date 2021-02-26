@@ -51,10 +51,13 @@ class MODULES_EXPORT ManifestParser {
   // Used to indicate whether to strip whitespace when parsing a string.
   enum TrimType { Trim, NoTrim };
 
-  // Indicate whether a parsed URL should be restricted to document origin.
-  enum class ParseURLOriginRestrictions {
+  // Indicate restrictions to be placed on the parsed URL with respect to the
+  // document URL or manifest scope.
+  enum class ParseURLRestrictions {
     kNoRestrictions = 0,
-    kSameOriginOnly,
+    kSameOriginOnly,  // Parsed URLs must be same origin as the document URL.
+    kWithinScope,     // Parsed URLs must be within scope of the manifest scope
+                      // (implies same origin as document URL).
   };
 
   // Helper function to parse booleans present on a given |dictionary| in a
@@ -99,7 +102,7 @@ class MODULES_EXPORT ManifestParser {
   KURL ParseURL(const JSONObject* object,
                 const String& key,
                 const KURL& base_url,
-                ParseURLOriginRestrictions origin_restriction);
+                ParseURLRestrictions origin_restriction);
 
   // Parses the 'name' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-name-member
@@ -110,6 +113,17 @@ class MODULES_EXPORT ManifestParser {
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-short-name-member
   // Returns the parsed string if any, a null string if the parsing failed.
   String ParseShortName(const JSONObject* object);
+
+  // Parses the 'description' field of the manifest, as defined in:
+  // https://w3c.github.io/manifest/#description-member-0
+  // Returns the parsed string if any, a null string if the parsing failed.
+  String ParseDescription(const JSONObject* object);
+
+  // Parses the 'categories' field of the manifest, as defined in:
+  // https://w3c.github.io/manifest/#dfn-processing-the-categories-member
+  // Returns a vector of the parsed strings if any, or empty if the parsing
+  // failed.
+  Vector<String> ParseCategories(const JSONObject* object);
 
   // Parses the 'scope' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#scope-member. Returns the parsed KURL if
@@ -128,11 +142,20 @@ class MODULES_EXPORT ManifestParser {
   // parsing failed.
   blink::mojom::DisplayMode ParseDisplay(const JSONObject* object);
 
+  // Parses the 'display_override' field of the manifest.
+  // https://github.com/WICG/display-override/blob/master/explainer.md
+  // Returns a vector of the parsed DisplayMode if any, an empty vector if
+  // the field was not present or empty.
+  Vector<mojom::blink::DisplayMode> ParseDisplayOverride(
+      const JSONObject* object);
+
   // Parses the 'orientation' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-orientation-member
-  // Returns the parsed WebScreenOrientationLockType if any,
-  // WebScreenOrientationLockDefault if the parsing failed.
-  WebScreenOrientationLockType ParseOrientation(const JSONObject* object);
+  // Returns the parsed device::mojom::blink::ScreenOrientationLockType if any,
+  // device::mojom::blink::ScreenOrientationLockType::DEFAULT if the parsing
+  // failed.
+  device::mojom::blink::ScreenOrientationLockType ParseOrientation(
+      const JSONObject* object);
 
   // Parses the 'src' field of an icon, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-src-member-of-an-image
@@ -163,6 +186,18 @@ class MODULES_EXPORT ManifestParser {
   // Returns a vector of ManifestImageResourcePtr with the successfully parsed
   // icons, if any. An empty vector if the field was not present or empty.
   Vector<mojom::blink::ManifestImageResourcePtr> ParseIcons(
+      const JSONObject* object);
+
+  // Parses the 'screenshots' field of a Manifest, as defined in:
+  // https://w3c.github.io/manifest/#screenshots-member
+  // Returns a vector of ManifestImageResourcePtr with the successfully parsed
+  // screenshots, if any. An empty vector if the field was not present or empty.
+  Vector<mojom::blink::ManifestImageResourcePtr> ParseScreenshots(
+      const JSONObject* object);
+
+  // A helper function for parsing ImageResources under |key| in the manifest.
+  Vector<mojom::blink::ManifestImageResourcePtr> ParseImageResource(
+      const String& key,
       const JSONObject* object);
 
   // Parses the 'name' field of a shortcut, as defined in:
@@ -241,6 +276,25 @@ class MODULES_EXPORT ManifestParser {
   base::Optional<mojom::blink::ManifestShareTargetPtr> ParseShareTarget(
       const JSONObject* object);
 
+  // Parses the 'url_handlers' field of a Manifest, as defined in:
+  // https://github.com/WICG/pwa-url-handler/blob/master/explainer.md
+  // Returns the parsed list of UrlHandlers. The returned UrlHandlers are empty
+  // if the field didn't exist, parsing failed, the input list was empty, or if
+  // the blink feature flag is disabled.
+  // This feature is experimental and is only enabled by the blink feature flag:
+  // blink::features::kWebAppEnableUrlHandlers.
+  Vector<mojom::blink::ManifestUrlHandlerPtr> ParseUrlHandlers(
+      const JSONObject* object);
+
+  // Parses a single URL handler entry in 'url_handlers', as defined in:
+  // https://github.com/WICG/pwa-url-handler/blob/master/explainer.md
+  // Returns |base::nullopt| if the UrlHandler was invalid, or a UrlHandler if
+  // parsing succeeded.
+  // This feature is experimental and is only enabled by the blink feature flag:
+  // blink::features::kWebAppEnableUrlHandlers.
+  base::Optional<mojom::blink::ManifestUrlHandlerPtr> ParseUrlHandler(
+      const JSONObject* object);
+
   // Parses the 'file_handlers' field of a Manifest, as defined in:
   // https://github.com/WICG/file-handling/blob/master/explainer.md
   // Returns the parsed list of FileHandlers. The returned FileHandlers are
@@ -268,6 +322,25 @@ class MODULES_EXPORT ManifestParser {
   // parsed extension.
   bool ParseFileHandlerAcceptExtension(const JSONValue* extension,
                                        String* ouput);
+
+  // Parses the 'protocol_handlers' field of a Manifest, as defined in:
+  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/URLProtocolHandler/explainer.md
+  // Returns the parsed list of ProtocolHandlers. The returned ProtocolHandlers
+  // are empty if the field didn't exist, parsing failed, or the input list was
+  // empty.
+  // This feature is experimental and would only be enabled behind the blink
+  // feature flag: RuntimeEnabledFeatures::ParseUrlProtocolHandlerEnabled()
+  Vector<mojom::blink::ManifestProtocolHandlerPtr> ParseProtocolHandlers(
+      const JSONObject* object);
+
+  // Parses a single ProtocolHandle field of a Manifest, as defined in:
+  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/URLProtocolHandler/explainer.md
+  // Returns |base::nullopt| if the ProtocolHandler was invalid, or a
+  // ProtocolHandler if parsing succeeded.
+  // This feature is experimental and should only be used behind the blink
+  // feature flag: RuntimeEnabledFeatures::ParseUrlProtocolHandlerEnabled()
+  base::Optional<mojom::blink::ManifestProtocolHandlerPtr> ParseProtocolHandler(
+      const JSONObject* protocol_dictionary);
 
   // Parses the 'platform' field of a related application, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-platform-member-of-an-application

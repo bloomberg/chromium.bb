@@ -15,10 +15,11 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
-#include "chrome/browser/optimization_guide/optimization_guide_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
-#include "chrome/browser/optimization_guide/prediction/prediction_model.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
+#include "chrome/browser/optimization_guide/prediction/remote_decision_tree_predictor.h"
+#include "chrome/services/machine_learning/public/cpp/test_support/fake_service_connection.h"
+#include "chrome/services/machine_learning/public/mojom/decision_tree.mojom.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/optimization_guide/optimization_guide_features.h"
@@ -26,6 +27,8 @@
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
+#include "components/optimization_guide/optimization_guide_util.h"
+#include "components/optimization_guide/prediction_model.h"
 #include "components/optimization_guide/proto/hint_cache.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
@@ -53,7 +56,8 @@ constexpr int kUpdateFetchModelAndFeaturesTimeSecs = 24 * 60 * 60;  // 24 hours.
 
 namespace optimization_guide {
 
-std::unique_ptr<proto::PredictionModel> CreatePredictionModel() {
+std::unique_ptr<proto::PredictionModel> CreatePredictionModel(
+    bool output_model_as_download_url = false) {
   std::unique_ptr<optimization_guide::proto::PredictionModel> prediction_model =
       std::make_unique<optimization_guide::proto::PredictionModel>();
 
@@ -68,13 +72,17 @@ std::unique_ptr<proto::PredictionModel> CreatePredictionModel() {
       proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
   model_info->add_supported_model_types(
       proto::ModelType::MODEL_TYPE_DECISION_TREE);
-  prediction_model->mutable_model()->mutable_threshold()->set_value(5.0);
+  if (output_model_as_download_url)
+    prediction_model->mutable_model()->set_download_url("someurl");
+  else
+    prediction_model->mutable_model()->mutable_threshold()->set_value(5.0);
   return prediction_model;
 }
 
 std::unique_ptr<proto::GetModelsResponse> BuildGetModelsResponse(
     const std::vector<std::string>& hosts,
-    const std::vector<proto::ClientModelFeature>& client_model_features) {
+    const std::vector<proto::ClientModelFeature>& client_model_features,
+    bool output_model_as_download_url = false) {
   std::unique_ptr<proto::GetModelsResponse> get_models_response =
       std::make_unique<proto::GetModelsResponse>();
 
@@ -89,7 +97,7 @@ std::unique_ptr<proto::GetModelsResponse> BuildGetModelsResponse(
   }
 
   std::unique_ptr<proto::PredictionModel> prediction_model =
-      CreatePredictionModel();
+      CreatePredictionModel(output_model_as_download_url);
   for (const auto& client_model_feature : client_model_features) {
     prediction_model->mutable_model_info()->add_supported_model_features(
         client_model_feature);
@@ -162,6 +170,7 @@ enum class PredictionModelFetcherEndState {
   kFetchFailed = 0,
   kFetchSuccessWithModelsAndHostsModelFeatures = 1,
   kFetchSuccessWithEmptyResponse = 2,
+  kFetchSuccessWithModelDownloadUrls = 3,
 };
 
 // A mock class implementation of PredictionModelFetcher.
@@ -202,6 +211,12 @@ class TestPredictionModelFetcher : public PredictionModelFetcher {
         std::move(models_fetched_callback)
             .Run(BuildGetModelsResponse({} /* hosts */,
                                         {} /* client model features */));
+        return true;
+      case PredictionModelFetcherEndState::kFetchSuccessWithModelDownloadUrls:
+        models_fetched_ = true;
+        std::move(models_fetched_callback)
+            .Run(BuildGetModelsResponse(hosts, {},
+                                        /*output_model_as_download_url=*/true));
         return true;
     }
     return true;
@@ -320,6 +335,7 @@ class TestOptimizationGuideStore : public OptimizationGuideStore {
   bool WasHostModelFeaturesLoaded() const {
     return host_model_features_loaded_;
   }
+
  private:
   base::OnceClosure init_callback_;
   base::OnceClosure update_host_models_callback_;
@@ -369,6 +385,7 @@ class TestPredictionManager : public PredictionManager {
   using PredictionManager::GetHostModelFeaturesForHost;
   using PredictionManager::GetHostModelFeaturesForTesting;
   using PredictionManager::GetPredictionModelForTesting;
+  using PredictionManager::GetRemoteDecisionTreePredictorForTesting;
 
   std::unique_ptr<OptimizationGuideStore>
   CreateModelAndHostModelFeaturesStore() {
@@ -396,15 +413,17 @@ class TestPredictionManager : public PredictionManager {
 };
 
 class PredictionManagerTest
-    : public optimization_guide::ProtoDatabaseProviderTestBase,
-      public testing::WithParamInterface<proto::ClientModelFeature> {
+    : public optimization_guide::ProtoDatabaseProviderTestBase {
  public:
   PredictionManagerTest() = default;
   ~PredictionManagerTest() override = default;
 
+  PredictionManagerTest(const PredictionManagerTest&) = delete;
+  PredictionManagerTest& operator=(const PredictionManagerTest&) = delete;
+
   void SetUp() override {
     optimization_guide::ProtoDatabaseProviderTestBase::SetUp();
-    web_contents_factory_.reset(new content::TestWebContentsFactory);
+    web_contents_factory_ = std::make_unique<content::TestWebContentsFactory>();
 
     top_host_provider_ = std::make_unique<FakeTopHostProvider>(
         std::vector<std::string>({"example1.com", "example2.com"}));
@@ -462,14 +481,6 @@ class PredictionManagerTest
         std::make_unique<content::MockNavigationHandle>(web_contents);
     navigation_handle->set_url(url);
     return navigation_handle;
-  }
-
-  bool IsSameOriginNavigationFeature() {
-    return GetParam() == proto::CLIENT_MODEL_FEATURE_SAME_ORIGIN_NAVIGATION;
-  }
-
-  bool IsUnknownFeature() {
-    return GetParam() == proto::CLIENT_MODEL_FEATURE_UNKNOWN;
   }
 
   void TearDown() override {
@@ -533,16 +544,72 @@ class PredictionManagerTest
   TestingProfile testing_profile_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<content::TestWebContentsFactory> web_contents_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(PredictionManagerTest);
 };
 
 // No support for Mac, Windows or ChromeOS.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
 #endif
+
+class PredictionManagerMLServiceTest
+    : public PredictionManagerTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  PredictionManagerMLServiceTest() = default;
+  ~PredictionManagerMLServiceTest() override = default;
+
+  PredictionManagerMLServiceTest(const PredictionManagerMLServiceTest&) =
+      delete;
+  PredictionManagerMLServiceTest& operator=(
+      const PredictionManagerMLServiceTest&) = delete;
+
+  void SetUp() override {
+    service_connection_ =
+        std::make_unique<machine_learning::testing::FakeServiceConnection>();
+    service_connection_->SetAsyncModeForTesting(false);
+
+    PredictionManagerTest::SetUp();
+  }
+
+  void TearDown() override {
+    PredictionManagerTest::TearDown();
+    service_connection_.reset();
+  }
+
+  bool UsingMLService() const { return GetParam(); }
+
+  void SetLoadModelResult(machine_learning::mojom::LoadModelResult result) {
+    if (UsingMLService())
+      service_connection_->SetLoadModelResult(result);
+  }
+
+  void SetDecisionTreePredictionResult(
+      machine_learning::mojom::DecisionTreePredictionResult result,
+      double score) {
+    if (UsingMLService())
+      service_connection_->SetDecisionTreePredictionResult(result, score);
+  }
+
+  void RunScheduledCalls() {
+    if (UsingMLService())
+      service_connection_->RunScheduledCalls();
+  }
+
+  void ResetMLService() {
+    if (UsingMLService())
+      service_connection_->ResetServiceForTesting();
+  }
+
+ protected:
+  std::unique_ptr<machine_learning::testing::FakeServiceConnection>
+      service_connection_;
+};
+
+INSTANTIATE_TEST_SUITE_P(UsingMLService,
+                         PredictionManagerMLServiceTest,
+                         ::testing::Bool());
 
 TEST_F(PredictionManagerTest,
        OptimizationTargetProvidedAtInitializationIsRegistered) {
@@ -552,7 +619,18 @@ TEST_F(PredictionManagerTest,
   EXPECT_FALSE(prediction_manager()->registered_optimization_targets().empty());
 }
 
-TEST_F(PredictionManagerTest, OptimizationTargetNotRegisteredForNavigation) {
+TEST_P(PredictionManagerMLServiceTest,
+       OptimizationTargetNotRegisteredForNavigation) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+
+    SetLoadModelResult(machine_learning::mojom::LoadModelResult::kOk);
+  }
+
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -571,9 +649,22 @@ TEST_F(PredictionManagerTest, OptimizationTargetNotRegisteredForNavigation) {
 
   EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
 
-  EXPECT_EQ(OptimizationTargetDecision::kUnknown,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(), proto::OPTIMIZATION_TARGET_UNKNOWN));
+  if (UsingMLService()) {
+    prediction_manager()->ShouldTargetNavigationAsync(
+        navigation_handle.get(), proto::OPTIMIZATION_TARGET_UNKNOWN, {},
+        base::BindOnce([](OptimizationTargetDecision decision) {
+          EXPECT_EQ(OptimizationTargetDecision::kUnknown, decision);
+        }));
+
+    // Flush the Service connection pipe.
+    RunUntilIdle();
+  } else {
+    EXPECT_EQ(
+        OptimizationTargetDecision::kUnknown,
+        prediction_manager()->ShouldTargetNavigation(
+            navigation_handle.get(), proto::OPTIMIZATION_TARGET_UNKNOWN, {}));
+  }
+
   // OptimizationGuideNavData should not be populated.
   OptimizationGuideNavigationData* nav_data =
       OptimizationGuideNavigationData::GetFromNavigationHandle(
@@ -588,29 +679,50 @@ TEST_F(PredictionManagerTest, OptimizationTargetNotRegisteredForNavigation) {
                    .has_value());
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelEvaluationLatency." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN),
       0);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelEvaluationLatency." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       0);
 }
 
-TEST_F(PredictionManagerTest,
+TEST_P(PredictionManagerMLServiceTest,
        DISABLE_ON_WIN_MAC_CHROMEOS(
            NoPredictionModelForRegisteredOptimizationTarget)) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+  }
+
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://foo.com"));
 
   CreatePredictionManager({proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
-  EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+
+  if (UsingMLService()) {
+    prediction_manager()->ShouldTargetNavigationAsync(
+        navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+        {}, base::BindOnce([](OptimizationTargetDecision decision) {
+          EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
+                    decision);
+        }));
+
+    // Flush the Service connection pipe.
+    RunUntilIdle();
+  } else {
+    EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
+              prediction_manager()->ShouldTargetNavigation(
+                  navigation_handle.get(),
+                  proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
+  }
 
   // OptimizationGuideNavData should not be populated.
   OptimizationGuideNavigationData* nav_data =
@@ -629,12 +741,22 @@ TEST_F(PredictionManagerTest,
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelEvaluationLatency." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       0);
 }
 
-TEST_F(PredictionManagerTest, EvaluatePredictionModel) {
+TEST_P(PredictionManagerMLServiceTest, EvaluatePredictionModel) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+
+    SetLoadModelResult(machine_learning::mojom::LoadModelResult::kOk);
+  }
+
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -651,27 +773,41 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModel) {
   SetStoreInitialized();
   EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
 
-  EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  if (UsingMLService()) {
+    SetDecisionTreePredictionResult(
+        machine_learning::mojom::DecisionTreePredictionResult::kTrue,
+        /* score */ 0.6);
 
-  TestPredictionModel* test_prediction_model =
-      static_cast<TestPredictionModel*>(
-          prediction_manager()->GetPredictionModelForTesting(
-              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
-  EXPECT_TRUE(test_prediction_model);
-  EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+    prediction_manager()->ShouldTargetNavigationAsync(
+        navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+        {}, base::BindOnce([](OptimizationTargetDecision decision) {
+          EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches, decision);
+        }));
+
+    // Flush the Service connection pipe.
+    RunUntilIdle();
+  } else {
+    EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
+              prediction_manager()->ShouldTargetNavigation(
+                  navigation_handle.get(),
+                  proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
+    TestPredictionModel* test_prediction_model =
+        static_cast<TestPredictionModel*>(
+            prediction_manager()->GetPredictionModelForTesting(
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+    EXPECT_TRUE(test_prediction_model);
+    EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+  }
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelEvaluationLatency." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       1);
 
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.IsPredictionModelValid." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       true, 1);
 
@@ -680,14 +816,25 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModel) {
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelValidationLatency." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       1);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelValidationLatency", 1);
 }
 
-TEST_F(PredictionManagerTest, UpdatePredictionModelsWithInvalidModel) {
+TEST_P(PredictionManagerMLServiceTest, UpdatePredictionModelsWithInvalidModel) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+
+    SetLoadModelResult(
+        machine_learning::mojom::LoadModelResult::kLoadModelError);
+  }
+
   base::HistogramTester histogram_tester;
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -712,10 +859,22 @@ TEST_F(PredictionManagerTest, UpdatePredictionModelsWithInvalidModel) {
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelValidationLatency", 0);
   histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.PredictionModelUpdatedVersion.PainfulPageLoad", 0);
+      "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 0);
 }
 
-TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {
+TEST_P(PredictionManagerMLServiceTest, UpdateModelWithSameVersion) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+
+    SetLoadModelResult(machine_learning::mojom::LoadModelResult::kOk);
+  }
+
   base::HistogramTester histogram_tester;
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -745,19 +904,36 @@ TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {
   prediction_manager()->UpdatePredictionModelsForTesting(
       get_models_response.get());
 
-  TestPredictionModel* stored_prediction_model =
-      static_cast<TestPredictionModel*>(
-          prediction_manager()->GetPredictionModelForTesting(
-              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
-  EXPECT_TRUE(stored_prediction_model);
-  EXPECT_EQ(3, stored_prediction_model->GetVersion());
-
+  if (UsingMLService()) {
+    RemoteDecisionTreePredictor* stored_predictor_handle =
+        prediction_manager()->GetRemoteDecisionTreePredictorForTesting(
+            proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_TRUE(stored_predictor_handle);
+    EXPECT_EQ(3, stored_predictor_handle->version());
+  } else {
+    TestPredictionModel* stored_prediction_model =
+        static_cast<TestPredictionModel*>(
+            prediction_manager()->GetPredictionModelForTesting(
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+    EXPECT_TRUE(stored_prediction_model);
+    EXPECT_EQ(3, stored_prediction_model->GetVersion());
+  }
   histogram_tester.ExpectBucketCount("OptimizationGuide.IsPredictionModelValid",
                                      true, 2);
 }
 
-TEST_F(PredictionManagerTest,
+TEST_P(PredictionManagerMLServiceTest,
        EvaluatePredictionModelUsesDecisionFromPostiveEvalIfModelWasEvaluated) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+
+    SetLoadModelResult(machine_learning::mojom::LoadModelResult::kOk);
+  }
+
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://foo.com"));
@@ -781,23 +957,54 @@ TEST_F(PredictionManagerTest,
       proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       OptimizationTargetDecision::kPageLoadMatches);
 
-  TestPredictionModel* test_prediction_model =
-      static_cast<TestPredictionModel*>(
-          prediction_manager()->GetPredictionModelForTesting(
-              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
-  EXPECT_TRUE(test_prediction_model);
+  if (UsingMLService()) {
+    RemoteDecisionTreePredictor* predictor_handle =
+        prediction_manager()->GetRemoteDecisionTreePredictorForTesting(
+            proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_TRUE(predictor_handle);
 
-  // Make sure the cached decision is returned and that the model was not
-  // evaluated.
-  EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(),
+    // Set ML prediction result to False to ensure the actual model is not run.
+    SetDecisionTreePredictionResult(
+        machine_learning::mojom::DecisionTreePredictionResult::kUnknown,
+        /* score */ 0.0);
+
+    prediction_manager()->ShouldTargetNavigationAsync(
+        navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+        {}, base::BindOnce([](OptimizationTargetDecision decision) {
+          EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches, decision);
+        }));
+
+    // Flush the Service connection pipe.
+    RunUntilIdle();
+  } else {
+    TestPredictionModel* test_prediction_model =
+        static_cast<TestPredictionModel*>(
+            prediction_manager()->GetPredictionModelForTesting(
                 proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
-  EXPECT_FALSE(test_prediction_model->WasModelEvaluated());
+    EXPECT_TRUE(test_prediction_model);
+
+    // Make sure the cached decision is returned and that the model was not
+    // evaluated.
+    EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
+              prediction_manager()->ShouldTargetNavigation(
+                  navigation_handle.get(),
+                  proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
+    EXPECT_FALSE(test_prediction_model->WasModelEvaluated());
+  }
 }
 
-TEST_F(PredictionManagerTest,
+TEST_P(PredictionManagerMLServiceTest,
        EvaluatePredictionModelUsesDecisionFromNegativeEvalIfModelWasEvaluated) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+
+    SetLoadModelResult(machine_learning::mojom::LoadModelResult::kOk);
+  }
+
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -822,25 +1029,58 @@ TEST_F(PredictionManagerTest,
       proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       OptimizationTargetDecision::kPageLoadDoesNotMatch);
 
-  TestPredictionModel* test_prediction_model =
-      static_cast<TestPredictionModel*>(
-          prediction_manager()->GetPredictionModelForTesting(
-              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
-  EXPECT_TRUE(test_prediction_model);
+  if (UsingMLService()) {
+    RemoteDecisionTreePredictor* predictor_handle =
+        prediction_manager()->GetRemoteDecisionTreePredictorForTesting(
+            proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_TRUE(predictor_handle);
 
-  // Make sure the previous decision is reused and that the model was not
-  // evaluated.
-  EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(),
+    // Set ML prediction result to Unknown to ensure the actual model is not
+    // run.
+    SetDecisionTreePredictionResult(
+        machine_learning::mojom::DecisionTreePredictionResult::kUnknown,
+        /* score */ 0.0);
+
+    prediction_manager()->ShouldTargetNavigationAsync(
+        navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+        {}, base::BindOnce([](OptimizationTargetDecision decision) {
+          EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
+                    decision);
+        }));
+
+    // Flush the Service connection pipe.
+    RunUntilIdle();
+  } else {
+    TestPredictionModel* test_prediction_model =
+        static_cast<TestPredictionModel*>(
+            prediction_manager()->GetPredictionModelForTesting(
                 proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
-  EXPECT_FALSE(test_prediction_model->WasModelEvaluated());
+    EXPECT_TRUE(test_prediction_model);
+
+    // Make sure the previous decision is reused and that the model was not
+    // evaluated.
+    EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
+              prediction_manager()->ShouldTargetNavigation(
+                  navigation_handle.get(),
+                  proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
+    EXPECT_FALSE(test_prediction_model->WasModelEvaluated());
+  }
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus", 0);
 }
 
-TEST_F(PredictionManagerTest,
+TEST_P(PredictionManagerMLServiceTest,
        EvaluatePredictionModelUsesDecisionFromHoldbackEvalIfModelWasEvaluated) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+
+    SetLoadModelResult(machine_learning::mojom::LoadModelResult::kOk);
+  }
+
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://foo.com"));
@@ -864,22 +1104,92 @@ TEST_F(PredictionManagerTest,
       proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       OptimizationTargetDecision::kModelPredictionHoldback);
 
-  TestPredictionModel* test_prediction_model =
-      static_cast<TestPredictionModel*>(
-          prediction_manager()->GetPredictionModelForTesting(
-              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
-  EXPECT_TRUE(test_prediction_model);
+  if (UsingMLService()) {
+    RemoteDecisionTreePredictor* predictor_handle =
+        prediction_manager()->GetRemoteDecisionTreePredictorForTesting(
+            proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_TRUE(predictor_handle);
 
-  // Make sure the cached decision is returned and that the model was not
-  // evaluated.
-  EXPECT_EQ(OptimizationTargetDecision::kModelPredictionHoldback,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(),
+    // Set ML prediction result to Unknown to ensure the actual model is not
+    // run.
+    SetDecisionTreePredictionResult(
+        machine_learning::mojom::DecisionTreePredictionResult::kUnknown,
+        /* score */ 0.0);
+
+    prediction_manager()->ShouldTargetNavigationAsync(
+        navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+        {}, base::BindOnce([](OptimizationTargetDecision decision) {
+          EXPECT_EQ(OptimizationTargetDecision::kModelPredictionHoldback,
+                    decision);
+        }));
+
+    // Flush the Service connection pipe.
+    RunUntilIdle();
+  } else {
+    TestPredictionModel* test_prediction_model =
+        static_cast<TestPredictionModel*>(
+            prediction_manager()->GetPredictionModelForTesting(
                 proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
-  EXPECT_FALSE(test_prediction_model->WasModelEvaluated());
+    EXPECT_TRUE(test_prediction_model);
+
+    // Make sure the cached decision is returned and that the model was not
+    // evaluated.
+    EXPECT_EQ(OptimizationTargetDecision::kModelPredictionHoldback,
+              prediction_manager()->ShouldTargetNavigation(
+                  navigation_handle.get(),
+                  proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
+    EXPECT_FALSE(test_prediction_model->WasModelEvaluated());
+  }
 }
 
-TEST_F(PredictionManagerTest, EvaluatePredictionModelPopulatesNavData) {
+TEST_P(PredictionManagerMLServiceTest, UpdateModelWithDownloadUrl) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+
+    SetLoadModelResult(machine_learning::mojom::LoadModelResult::kOk);
+  }
+
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          GURL("https://foo.com"));
+
+  CreatePredictionManager({});
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::kFetchSuccessWithModelDownloadUrls));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  SetStoreInitialized();
+  EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
+
+  models_and_features_store()->RunUpdateHostModelFeaturesCallback();
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionManager.HostModelFeaturesStored", true, 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionManager.PredictionModelsStored", 0);
+
+  // TODO(crbug/1146151): Update test to incorporate downloading of model.
+}
+
+TEST_P(PredictionManagerMLServiceTest,
+       EvaluatePredictionModelPopulatesNavData) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+
+    SetLoadModelResult(machine_learning::mojom::LoadModelResult::kOk);
+  }
+
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -910,19 +1220,36 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModelPopulatesNavData) {
       proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       OptimizationTargetDecision::kModelNotAvailableOnClient);
 
-  // Make sure model gets evaluated despite there already being a decision in
-  // the navigation data.
-  EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  if (UsingMLService()) {
+    // Set ML prediction result to True to ensure the actual model is evaluated
+    // despite there already being a decision in the navigation data.
+    SetDecisionTreePredictionResult(
+        machine_learning::mojom::DecisionTreePredictionResult::kTrue,
+        /* score */ 0.6);
 
-  TestPredictionModel* test_prediction_model =
-      static_cast<TestPredictionModel*>(
-          prediction_manager()->GetPredictionModelForTesting(
-              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
-  EXPECT_TRUE(test_prediction_model);
-  EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+    prediction_manager()->ShouldTargetNavigationAsync(
+        navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+        {}, base::BindOnce([](OptimizationTargetDecision decision) {
+          EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches, decision);
+        }));
+
+    // Flush the Service connection pipe.
+    RunUntilIdle();
+  } else {
+    // Make sure model gets evaluated despite there already being a decision in
+    // the navigation data.
+    EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
+              prediction_manager()->ShouldTargetNavigation(
+                  navigation_handle.get(),
+                  proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
+
+    TestPredictionModel* test_prediction_model =
+        static_cast<TestPredictionModel*>(
+            prediction_manager()->GetPredictionModelForTesting(
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+    EXPECT_TRUE(test_prediction_model);
+    EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+  }
 
   EXPECT_EQ(2, *nav_data->GetModelVersionForOptimizationTarget(
                    proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
@@ -930,15 +1257,27 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModelPopulatesNavData) {
                      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
 }
 
-TEST_F(PredictionManagerTest,
+TEST_P(PredictionManagerMLServiceTest,
        EvaluatePredictionModelPopulatesNavDataEvenWithHoldback) {
-  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeaturesAndParameters(
-      {base::test::ScopedFeatureList::FeatureAndParams(
-          features::kOptimizationTargetPrediction,
-          {{"painful_page_load_metrics_only", "true"}})},
-      {});
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeaturesAndParameters(
+        {{features::kOptimizationTargetPrediction,
+          {{"painful_page_load_metrics_only", "true"}}},
+         {optimization_guide::features::
+              kOptimizationTargetPredictionUsingMLService,
+          {}}},
+        {});
+
+    SetLoadModelResult(machine_learning::mojom::LoadModelResult::kOk);
+  } else {
+    scoped_feature_list.InitWithFeaturesAndParameters(
+        {{features::kOptimizationTargetPrediction,
+          {{"painful_page_load_metrics_only", "true"}}}},
+        {});
+  }
+
+  base::HistogramTester histogram_tester;
 
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -957,17 +1296,34 @@ TEST_F(PredictionManagerTest,
   EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
   models_and_features_store()->RunUpdateHostModelFeaturesCallback();
 
-  EXPECT_EQ(OptimizationTargetDecision::kModelPredictionHoldback,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  if (UsingMLService()) {
+    // Set ML prediction result to True to ensure the actual model is evaluated.
+    SetDecisionTreePredictionResult(
+        machine_learning::mojom::DecisionTreePredictionResult::kTrue,
+        /* score */ 0.6);
 
-  TestPredictionModel* test_prediction_model =
-      static_cast<TestPredictionModel*>(
-          prediction_manager()->GetPredictionModelForTesting(
-              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
-  EXPECT_TRUE(test_prediction_model);
-  EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+    prediction_manager()->ShouldTargetNavigationAsync(
+        navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+        {}, base::BindOnce([](OptimizationTargetDecision decision) {
+          EXPECT_EQ(OptimizationTargetDecision::kModelPredictionHoldback,
+                    decision);
+        }));
+
+    // Flush the Service connection pipe.
+    RunUntilIdle();
+  } else {
+    EXPECT_EQ(OptimizationTargetDecision::kModelPredictionHoldback,
+              prediction_manager()->ShouldTargetNavigation(
+                  navigation_handle.get(),
+                  proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
+
+    TestPredictionModel* test_prediction_model =
+        static_cast<TestPredictionModel*>(
+            prediction_manager()->GetPredictionModelForTesting(
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+    EXPECT_TRUE(test_prediction_model);
+    EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+  }
 
   OptimizationGuideNavigationData* nav_data =
       OptimizationGuideNavigationData::GetFromNavigationHandle(
@@ -983,12 +1339,21 @@ TEST_F(PredictionManagerTest,
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       PredictionManagerModelStatus::kModelAvailable, 1);
 }
 
-TEST_F(PredictionManagerTest, ShouldTargetNavigationStoreAvailableNoModel) {
+TEST_P(PredictionManagerMLServiceTest,
+       ShouldTargetNavigationStoreAvailableNoModel) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+  }
+
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -1002,14 +1367,26 @@ TEST_F(PredictionManagerTest, ShouldTargetNavigationStoreAvailableNoModel) {
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
-  SetStoreInitialized(/*load_models=*/false,
-                      /*load_host_model_features=*/true,
-                      /*have_models_in_store=)*/ false);
+  SetStoreInitialized(/* load_models= */ false,
+                      /* load_host_model_features= */ true,
+                      /* have_models_in_store= */ false);
 
-  EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  if (UsingMLService()) {
+    prediction_manager()->ShouldTargetNavigationAsync(
+        navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+        {}, base::BindOnce([](OptimizationTargetDecision decision) {
+          EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
+                    decision);
+        }));
+
+    // Flush the Service connection pipe.
+    RunUntilIdle();
+  } else {
+    EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
+              prediction_manager()->ShouldTargetNavigation(
+                  navigation_handle.get(),
+                  proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
+  }
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus",
@@ -1017,13 +1394,20 @@ TEST_F(PredictionManagerTest, ShouldTargetNavigationStoreAvailableNoModel) {
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       PredictionManagerModelStatus::kStoreAvailableNoModelForTarget, 1);
 }
 
-TEST_F(PredictionManagerTest,
+TEST_P(PredictionManagerMLServiceTest,
        ShouldTargetNavigationStoreAvailableModelNotLoaded) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+  }
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -1037,14 +1421,26 @@ TEST_F(PredictionManagerTest,
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
-  SetStoreInitialized(/*load_models=*/false,
-                      /*load_host_model_features=*/true,
-                      /*have_models_in_store=)*/ true);
+  SetStoreInitialized(/* load_models= */ false,
+                      /* load_host_model_features= */ true,
+                      /* have_models_in_store= */ true);
 
-  EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  if (UsingMLService()) {
+    prediction_manager()->ShouldTargetNavigationAsync(
+        navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+        {}, base::BindOnce([](OptimizationTargetDecision decision) {
+          EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
+                    decision);
+        }));
+
+    // Flush the Service connection pipe.
+    RunUntilIdle();
+  } else {
+    EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
+              prediction_manager()->ShouldTargetNavigation(
+                  navigation_handle.get(),
+                  proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
+  }
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus",
@@ -1052,7 +1448,7 @@ TEST_F(PredictionManagerTest,
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       PredictionManagerModelStatus::kStoreAvailableModelNotLoaded, 1);
 
@@ -1060,9 +1456,16 @@ TEST_F(PredictionManagerTest,
       "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 0);
 }
 
-TEST_F(PredictionManagerTest,
+TEST_P(PredictionManagerMLServiceTest,
        DISABLE_ON_WIN_MAC_CHROMEOS(
            ShouldTargetNavigationStoreUnavailableModelUnknown)) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+  }
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -1076,10 +1479,22 @@ TEST_F(PredictionManagerTest,
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
-  EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  if (UsingMLService()) {
+    prediction_manager()->ShouldTargetNavigationAsync(
+        navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+        {}, base::BindOnce([](OptimizationTargetDecision decision) {
+          EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
+                    decision);
+        }));
+
+    // Flush the Service connection pipe.
+    RunUntilIdle();
+  } else {
+    EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
+              prediction_manager()->ShouldTargetNavigation(
+                  navigation_handle.get(),
+                  proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
+  }
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus",
@@ -1087,12 +1502,21 @@ TEST_F(PredictionManagerTest,
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus." +
-          GetStringNameForOptimizationTarget(
+          optimization_guide::GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       PredictionManagerModelStatus::kStoreUnavailableModelUnknown, 1);
 }
 
-TEST_F(PredictionManagerTest, UpdateModelForUnregisteredTarget) {
+TEST_P(PredictionManagerMLServiceTest, UpdateModelForUnregisteredTarget) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+    SetLoadModelResult(machine_learning::mojom::LoadModelResult::kOk);
+  }
+
   base::HistogramTester histogram_tester;
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -1111,20 +1535,38 @@ TEST_F(PredictionManagerTest, UpdateModelForUnregisteredTarget) {
   prediction_manager()->UpdatePredictionModelsForTesting(
       get_models_response.get());
 
-  TestPredictionModel* test_prediction_model =
-      static_cast<TestPredictionModel*>(
-          prediction_manager()->GetPredictionModelForTesting(
-              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
-  EXPECT_FALSE(test_prediction_model);
+  if (UsingMLService()) {
+    RemoteDecisionTreePredictor* predictor =
+        prediction_manager()->GetRemoteDecisionTreePredictorForTesting(
+            proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_FALSE(predictor);
+  } else {
+    TestPredictionModel* test_prediction_model =
+        static_cast<TestPredictionModel*>(
+            prediction_manager()->GetPredictionModelForTesting(
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+    EXPECT_FALSE(test_prediction_model);
+  }
+
   histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.PredictionManager.PredictionModelsStored", 0);
+      "OptimizationGuide.PredictionManager.PredictionModelsStored", 1);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 0);
 }
 
-TEST_F(
-    PredictionManagerTest,
+TEST_P(
+    PredictionManagerMLServiceTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(UpdateModelWithUnsupportedOptimizationTarget)) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (UsingMLService()) {
+    scoped_feature_list.InitWithFeatures(
+        {optimization_guide::features::
+             kOptimizationTargetPredictionUsingMLService},
+        {});
+  }
+
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://foo.com"));
@@ -1148,17 +1590,106 @@ TEST_F(
   prediction_manager()->UpdatePredictionModelsForTesting(
       get_models_response.get());
 
-  EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  if (UsingMLService()) {
+    prediction_manager()->ShouldTargetNavigationAsync(
+        navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+        {}, base::BindOnce([](OptimizationTargetDecision decision) {
+          EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
+                    decision);
+        }));
 
-  TestPredictionModel* test_prediction_model =
-      static_cast<TestPredictionModel*>(
-          prediction_manager()->GetPredictionModelForTesting(
-              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
-  EXPECT_FALSE(test_prediction_model);
+    // Flush the Service connection pipe.
+    RunUntilIdle();
+
+    RemoteDecisionTreePredictor* predictor =
+        prediction_manager()->GetRemoteDecisionTreePredictorForTesting(
+            proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_FALSE(predictor);
+  } else {
+    EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
+              prediction_manager()->ShouldTargetNavigation(
+                  navigation_handle.get(),
+                  proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
+
+    TestPredictionModel* test_prediction_model =
+        static_cast<TestPredictionModel*>(
+            prediction_manager()->GetPredictionModelForTesting(
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+    EXPECT_FALSE(test_prediction_model);
+  }
   EXPECT_FALSE(models_and_features_store()->WasModelLoaded());
+}
+
+class PredictionManagerMLServiceEnabledTest
+    : public PredictionManagerMLServiceTest {
+ public:
+  void SetUp() override {
+    PredictionManagerMLServiceTest::SetUp();
+    service_connection_->SetAsyncModeForTesting(true);
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(MLServiceEnabled,
+                         PredictionManagerMLServiceEnabledTest,
+                         ::testing::Values(true));
+
+TEST_P(PredictionManagerMLServiceEnabledTest,
+       ServiceDisconnectedAtModelEvaluation) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {optimization_guide::features::
+           kOptimizationTargetPredictionUsingMLService},
+      {});
+
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          GURL("https://foo.com"));
+
+  CreatePredictionManager({});
+  // The model will be loaded from the store.
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::kFetchSuccessWithEmptyResponse));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+  SetStoreInitialized();
+  EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
+
+  SetLoadModelResult(machine_learning::mojom::LoadModelResult::kOk);
+  RunScheduledCalls();
+
+  // Reset the service to cause disconnection.
+  ResetMLService();
+
+  // Still sets the evaluation result
+  SetDecisionTreePredictionResult(
+      machine_learning::mojom::DecisionTreePredictionResult::kTrue,
+      /* score */ 0.6);
+
+  prediction_manager()->ShouldTargetNavigationAsync(
+      navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {},
+      base::BindOnce([](OptimizationTargetDecision decision) {
+        EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
+                  decision);
+      }));
+
+  // Flush the Service connection pipe.
+  RunUntilIdle();
+  RunScheduledCalls();
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelEvaluationLatency." +
+          optimization_guide::GetStringNameForOptimizationTarget(
+              optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
+      0);
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.IsPredictionModelValid." +
+          optimization_guide::GetStringNameForOptimizationTarget(
+              optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
+      true, 1);
 }
 
 TEST_F(PredictionManagerTest, HasHostModelFeaturesForHost) {
@@ -1211,7 +1742,7 @@ TEST_F(PredictionManagerTest, NoHostModelFeaturesForHost) {
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   TestPredictionModel* test_prediction_model =
       static_cast<TestPredictionModel*>(
@@ -1232,7 +1763,6 @@ TEST_F(PredictionManagerTest, NoHostModelFeaturesForHost) {
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesMissingHost) {
-
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -1257,7 +1787,6 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesMissingHost) {
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeature) {
-
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -1281,7 +1810,6 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeature) {
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeatureName) {
-
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -1333,7 +1861,6 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesDoubleValue) {
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesIntValue) {
-
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -1457,7 +1984,25 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesUpdateDataInMap) {
   EXPECT_EQ(6.0, (*host_model_features)["host_feat_added"]);
 }
 
-TEST_P(PredictionManagerTest, ClientFeature) {
+class PredictionManagerClientFeatureTest
+    : public PredictionManagerTest,
+      public testing::WithParamInterface<proto::ClientModelFeature> {
+ public:
+  bool IsSameOriginNavigationFeature() {
+    return GetParam() == proto::CLIENT_MODEL_FEATURE_SAME_ORIGIN_NAVIGATION;
+  }
+
+  bool IsUnknownFeature() {
+    return GetParam() == proto::CLIENT_MODEL_FEATURE_UNKNOWN;
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(ClientFeature,
+                         PredictionManagerClientFeatureTest,
+                         testing::Range(proto::ClientModelFeature_MIN,
+                                        proto::ClientModelFeature_MAX));
+
+TEST_P(PredictionManagerClientFeatureTest, ClientFeature) {
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -1487,7 +2032,7 @@ TEST_P(PredictionManagerTest, ClientFeature) {
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   TestPredictionModel* test_prediction_model =
       static_cast<TestPredictionModel*>(
@@ -1507,11 +2052,6 @@ TEST_P(PredictionManagerTest, ClientFeature) {
     EXPECT_TRUE(navigation_data->GetValueForModelFeatureForTesting(GetParam()));
   }
 }
-
-INSTANTIATE_TEST_SUITE_P(ClientFeature,
-                         PredictionManagerTest,
-                         testing::Range(proto::ClientModelFeature_MIN,
-                                        proto::ClientModelFeature_MAX));
 
 TEST_F(PredictionManagerTest, PreviousSessionStatisticsUsed) {
   base::HistogramTester histogram_tester;
@@ -1554,7 +2094,7 @@ TEST_F(PredictionManagerTest, PreviousSessionStatisticsUsed) {
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   TestPredictionModel* test_prediction_model =
       static_cast<TestPredictionModel*>(
@@ -1574,6 +2114,81 @@ TEST_F(PredictionManagerTest, PreviousSessionStatisticsUsed) {
       evaluated_features["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_"
                          "SESSION_STANDARD_DEVIATION"],
       50.0);
+  EXPECT_FLOAT_EQ(
+      evaluated_features
+          ["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_PREVIOUS_PAGE_LOAD"],
+      200.0);
+}
+
+TEST_F(PredictionManagerTest,
+       OverriddenClientModelFeaturesUsedIfProvidedBackfilledIfNot) {
+  base::HistogramTester histogram_tester;
+  GURL previous_url = GURL("https://foo.com");
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          previous_url);
+  navigation_handle->set_url(previous_url);
+  navigation_handle->set_page_transition(
+      ui::PageTransition::PAGE_TRANSITION_RELOAD);
+
+  pref_service()->SetDouble(optimization_guide::prefs::kSessionStatisticFCPMean,
+                            200.0);
+  pref_service()->SetDouble(
+      optimization_guide::prefs::kSessionStatisticFCPStdDev, 50.0);
+
+  CreatePredictionManager({});
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::kFetchFailed));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  SetStoreInitialized();
+
+  std::unique_ptr<proto::GetModelsResponse> get_models_response =
+      BuildGetModelsResponse(
+          {},
+          {proto::CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN,
+           proto::
+               CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_STANDARD_DEVIATION,
+           proto::
+               CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_PREVIOUS_PAGE_LOAD});
+  prediction_manager()->UpdateHostModelFeaturesForTesting(
+      get_models_response.get());
+  prediction_manager()->UpdatePredictionModelsForTesting(
+      get_models_response.get());
+
+  EXPECT_EQ(
+      OptimizationTargetDecision::kPageLoadMatches,
+      prediction_manager()->ShouldTargetNavigation(
+          navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+          {
+              {proto::CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN,
+               3.0},
+              {proto::
+                   CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_STANDARD_DEVIATION,
+               5.0},
+          }));
+
+  TestPredictionModel* test_prediction_model =
+      static_cast<TestPredictionModel*>(
+          prediction_manager()->GetPredictionModelForTesting(
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+
+  EXPECT_TRUE(test_prediction_model);
+  EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+
+  base::flat_map<std::string, float> evaluated_features =
+      test_prediction_model->last_evaluated_features();
+  EXPECT_FLOAT_EQ(
+      evaluated_features
+          ["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN"],
+      3.0);
+  EXPECT_FLOAT_EQ(
+      evaluated_features["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_"
+                         "SESSION_STANDARD_DEVIATION"],
+      5.0);
   EXPECT_FLOAT_EQ(
       evaluated_features
           ["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_PREVIOUS_PAGE_LOAD"],

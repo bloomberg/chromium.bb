@@ -17,22 +17,11 @@
     "inspector_main",
     "sdk",
     "services",
-    "ui"
+    "ui",
+    "theme_support"
   ],
-  "scripts": [],
   "modules": [
-    "../third_party/lighthouse/report-assets/report.js",
-    "../third_party/lighthouse/report-assets/report-generator.js",
-    "lighthouse.js",
-    "lighthouse-legacy.js",
-    "RadioSetting.js",
-    "LighthousePanel.js",
-    "LighthouseController.js",
-    "LighthouseReportSelector.js",
-    "LighthouseReportRenderer.js",
-    "LighthouseStartView.js",
-    "LighthouseStatusView.js",
-    "LighthouseProtocolService.js"
+    "lighthouse-legacy.js"
   ],
   "resources": [
     "../third_party/lighthouse/report-assets/template.html",
@@ -44,6 +33,7 @@
     "lighthouseStartView.css"
   ],
   "skip_compilation": [
+    "lighthouse-legacy.js",
     "../third_party/lighthouse/report-assets/report.js",
     "../third_party/lighthouse/report-assets/report-generator.js"
   ]

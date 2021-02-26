@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/renderer/platform/loader/testing/mock_resource.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/testing/mock_context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
@@ -93,15 +95,18 @@ class MemoryCacheCorrectnessTest : public testing::Test {
   // RawResource.
   RawResource* FetchRawResource() {
     ResourceRequest resource_request{KURL(kResourceURL)};
-    resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
+    resource_request.SetRequestContext(
+        mojom::blink::RequestContextType::INTERNAL);
     resource_request.SetRequestorOrigin(GetSecurityOrigin());
-    FetchParameters fetch_params(std::move(resource_request));
+    FetchParameters fetch_params =
+        FetchParameters::CreateForTest(std::move(resource_request));
     return RawResource::Fetch(fetch_params, Fetcher(), nullptr);
   }
   MockResource* FetchMockResource() {
     ResourceRequest resource_request{KURL(kResourceURL)};
     resource_request.SetRequestorOrigin(GetSecurityOrigin());
-    FetchParameters fetch_params(std::move(resource_request));
+    FetchParameters fetch_params =
+        FetchParameters::CreateForTest(std::move(resource_request));
     return MockResource::Fetch(fetch_params, Fetcher(), nullptr);
   }
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
@@ -122,10 +127,12 @@ class MemoryCacheCorrectnessTest : public testing::Test {
     auto* properties =
         MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
     properties->SetShouldBlockLoadingSubResource(true);
-    fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(properties->MakeDetachable(), context,
-                            base::MakeRefCounted<scheduler::FakeTaskRunner>(),
-                            MakeGarbageCollected<TestLoaderFactory>()));
+    fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+        properties->MakeDetachable(), context,
+        base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+        base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+        MakeGarbageCollected<TestLoaderFactory>(),
+        MakeGarbageCollected<MockContextLifecycleNotifier>()));
     Resource::SetClockForTesting(platform_->test_task_runner()->GetMockClock());
   }
   void TearDown() override {
@@ -469,7 +476,7 @@ TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
   ResourceRequest request2{KURL(kResourceURL)};
   request2.SetHttpMethod(http_names::kPOST);
   request2.SetRequestorOrigin(GetSecurityOrigin());
-  FetchParameters fetch2(std::move(request2));
+  FetchParameters fetch2 = FetchParameters::CreateForTest(std::move(request2));
   RawResource* resource2 = RawResource::FetchSynchronously(fetch2, Fetcher());
   EXPECT_NE(resource1, resource2);
 }

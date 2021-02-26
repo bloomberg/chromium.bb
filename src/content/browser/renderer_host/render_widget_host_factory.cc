@@ -15,16 +15,15 @@ RenderWidgetHostFactory* RenderWidgetHostFactory::factory_ = nullptr;
 // static
 std::unique_ptr<RenderWidgetHostImpl> RenderWidgetHostFactory::Create(
     RenderWidgetHostDelegate* delegate,
-    RenderProcessHost* process,
+    AgentSchedulingGroupHost& agent_scheduling_group,
     int32_t routing_id,
-    mojo::PendingRemote<mojom::Widget> widget_interface,
     bool hidden) {
   if (factory_) {
-    return factory_->CreateRenderWidgetHost(
-        delegate, process, routing_id, std::move(widget_interface), hidden);
+    return factory_->CreateRenderWidgetHost(delegate, agent_scheduling_group,
+                                            routing_id, hidden);
   }
   return std::make_unique<RenderWidgetHostImpl>(
-      delegate, process, routing_id, std::move(widget_interface), hidden,
+      delegate, agent_scheduling_group, routing_id, hidden,
       std::make_unique<FrameTokenMessageQueue>());
 }
 

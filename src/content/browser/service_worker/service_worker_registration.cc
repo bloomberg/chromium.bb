@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -46,6 +47,9 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
     int64_t registration_id,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : scope_(options.scope),
+      // Safe to convert GURL to Origin because service workers are restricted
+      // to secure contexts.
+      origin_(url::Origin::Create(options.scope)),
       update_via_cache_(options.update_via_cache),
       registration_id_(registration_id),
       status_(Status::kIntact),
@@ -87,6 +91,13 @@ void ServiceWorkerRegistration::SetStatus(Status status) {
 #endif  // DCHECK_IS_ON()
 
   status_ = status;
+
+  if (active_version_)
+    active_version_->SetRegistrationStatus(status_);
+  if (waiting_version_)
+    waiting_version_->SetRegistrationStatus(status_);
+  if (installing_version_)
+    installing_version_->SetRegistrationStatus(status_);
 }
 
 bool ServiceWorkerRegistration::IsStored() const {
@@ -158,8 +169,10 @@ void ServiceWorkerRegistration::SetActiveVersion(
 
   auto mask =
       blink::mojom::ChangedServiceWorkerObjectsMask::New(false, false, false);
-  if (version)
+  if (version) {
     UnsetVersionInternal(version.get(), mask.get());
+    version->SetRegistrationStatus(status_);
+  }
   active_version_ = version;
   if (active_version_)
     active_version_->SetNavigationPreloadState(navigation_preload_state_);
@@ -177,8 +190,10 @@ void ServiceWorkerRegistration::SetWaitingVersion(
 
   auto mask =
       blink::mojom::ChangedServiceWorkerObjectsMask::New(false, false, false);
-  if (version)
+  if (version) {
     UnsetVersionInternal(version.get(), mask.get());
+    version->SetRegistrationStatus(status_);
+  }
   waiting_version_ = version;
   mask->waiting = true;
 
@@ -191,8 +206,10 @@ void ServiceWorkerRegistration::SetInstallingVersion(
     return;
   auto mask =
       blink::mojom::ChangedServiceWorkerObjectsMask::New(false, false, false);
-  if (version)
+  if (version) {
     UnsetVersionInternal(version.get(), mask.get());
+    version->SetRegistrationStatus(status_);
+  }
   installing_version_ = version;
   mask->installing = true;
   NotifyVersionAttributesChanged(std::move(mask));
@@ -283,7 +300,7 @@ void ServiceWorkerRegistration::ClaimClients() {
       continue;
 
     // "2. If client is not a secure context, continue."
-    if (!container_host->IsContextSecureForServiceWorker())
+    if (!container_host->IsEligibleForServiceWorkerController())
       continue;
 
     // "3. Let registration be the result of running Match Service Worker

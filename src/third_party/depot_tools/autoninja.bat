@@ -14,19 +14,30 @@ REM to see how quickly process creation is happening - often a critical clue on
 REM Windows. The trailing space is intentional.
 if "%NINJA_SUMMARIZE_BUILD%" == "1" set NINJA_STATUS=[%%r processes, %%f/%%t @ %%o/s : %%es ] 
 
+set scriptdir=%~dp0
+
+:loop
+IF NOT "%1"=="" (
+    @rem Tell goma to not do network compiles.
+    IF "%1"=="--offline" SET GOMA_DISABLED=1
+    IF "%1"=="-o" SET GOMA_DISABLED=1
+    SHIFT
+    GOTO :loop
+)
+
 REM Execute whatever is printed by autoninja.py.
 REM Also print it to reassure that the right settings are being used.
-FOR /f "usebackq tokens=*" %%a in (`vpython %~dp0autoninja.py "%*"`) do echo %%a & %%a
+FOR /f "usebackq tokens=*" %%a in (`vpython %scriptdir%autoninja.py "%*"`) do echo %%a & %%a
 @if errorlevel 1 goto buildfailure
 
 REM Use call to invoke vpython script here, because we use vpython via vpython.bat.
-@if "%NINJA_SUMMARIZE_BUILD%" == "1" call vpython.bat %~dp0post_build_ninja_summary.py %*
-@call vpython.bat %~dp0ninjalog_uploader_wrapper.py --cmdline %*
+@if "%NINJA_SUMMARIZE_BUILD%" == "1" call vpython.bat %scriptdir%post_build_ninja_summary.py %*
+@call vpython.bat %scriptdir%ninjalog_uploader_wrapper.py --cmdline %*
 
 exit /b
 :buildfailure
 
-@call vpython.bat %~dp0ninjalog_uploader_wrapper.py --cmdline %*
+@call vpython.bat %scriptdir%ninjalog_uploader_wrapper.py --cmdline %*
 
 REM Return an error code of 1 so that if a developer types:
 REM "autoninja chrome && chrome" then chrome won't run if the build fails.

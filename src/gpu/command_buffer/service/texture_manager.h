@@ -35,27 +35,9 @@ class ProgressReporter;
 
 namespace gpu {
 class DecoderContext;
-class ExternalVkImageBacking;
-class ExternalVkImageGlRepresentation;
 class ServiceDiscardableManager;
-class SharedImageBackingGLTexture;
-class SharedImageBackingFactoryGLTexture;
-class SharedImageBackingAHB;
-class SharedImageBackingEglImage;
-class SharedImageRepresentationGLTexture;
-class SharedImageRepresentationEglImageGLTexture;
-class SharedImageRepresentationGLTextureAHB;
-class SharedImageRepresentationSkiaGLAHB;
-class SharedImageBackingIOSurface;
-class SharedImageRepresentationGLTextureIOSurface;
-class SharedImageRepresentationSkiaIOSurface;
-class SharedImageRepresentationGLOzone;
-class SharedImageVideo;
-class StreamTexture;
-class TestSharedImageBacking;
 
 namespace gles2 {
-class GLStreamTextureImage;
 struct ContextState;
 struct DecoderFramebufferState;
 class ErrorState;
@@ -97,9 +79,8 @@ class GPU_GLES2_EXPORT TexturePassthrough final
 
   void SetStreamLevelImage(GLenum target,
                            GLint level,
-                           GLStreamTextureImage* stream_texture_image,
+                           gl::GLImage* stream_texture_image,
                            GLuint service_id);
-  GLStreamTextureImage* GetStreamLevelImage(GLenum target, GLint level) const;
 
   // Return true if and only if the decoder should BindTexImage / CopyTexImage
   // us before sampling.
@@ -120,8 +101,8 @@ class GPU_GLES2_EXPORT TexturePassthrough final
   void SetLevelImageInternal(GLenum target,
                              GLint level,
                              gl::GLImage* image,
-                             GLStreamTextureImage* stream_texture_image,
                              GLuint service_id);
+  void UpdateStreamTextureServiceId(GLenum target, GLint level);
 
   friend class base::RefCounted<TexturePassthrough>;
 
@@ -147,7 +128,6 @@ class GPU_GLES2_EXPORT TexturePassthrough final
     GLenum type = 0;
 
     scoped_refptr<gl::GLImage> image;
-    scoped_refptr<GLStreamTextureImage> stream_texture_image;
   };
 
   LevelInfo* GetLevelInfo(GLenum target, GLint level);
@@ -187,6 +167,27 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
     GLenum alpha;
   };
 
+  struct LevelInfo {
+    LevelInfo();
+    LevelInfo(const LevelInfo& rhs);
+    ~LevelInfo();
+
+    gfx::Rect cleared_rect;
+    GLenum target = 0;
+    GLint level = -1;
+    GLenum internal_format = 0;
+    GLsizei width = 0;
+    GLsizei height = 0;
+    GLsizei depth = 0;
+    GLint border = 0;
+    GLenum format = 0;
+    GLenum type = 0;
+    scoped_refptr<gl::GLImage> image;
+    ImageState image_state = UNBOUND;
+    uint32_t estimated_size = 0;
+    bool internal_workaround = false;
+  };
+
   explicit Texture(GLuint service_id);
 
   // TextureBase implementation:
@@ -198,21 +199,35 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
     return sampler_state_;
   }
 
+  void set_min_filter(GLenum min_filter) {
+    sampler_state_.min_filter = min_filter;
+  }
+
   GLenum min_filter() const {
     return sampler_state_.min_filter;
+  }
+
+  void set_mag_filter(GLenum mag_filter) {
+    sampler_state_.mag_filter = mag_filter;
   }
 
   GLenum mag_filter() const {
     return sampler_state_.mag_filter;
   }
 
+  void set_wrap_r(GLenum wrap_r) { sampler_state_.wrap_r = wrap_r; }
+
   GLenum wrap_r() const {
     return sampler_state_.wrap_r;
   }
 
+  void set_wrap_s(GLenum wrap_s) { sampler_state_.wrap_s = wrap_s; }
+
   GLenum wrap_s() const {
     return sampler_state_.wrap_s;
   }
+
+  void set_wrap_t(GLenum wrap_t) { sampler_state_.wrap_t = wrap_t; }
 
   GLenum wrap_t() const {
     return sampler_state_.wrap_t;
@@ -288,23 +303,22 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   bool GetLevelType(
       GLint target, GLint level, GLenum* type, GLenum* internal_format) const;
 
-  // Set the image for a particular level. If a GLStreamTextureImage was
-  // previously set with SetLevelStreamTextureImage(), this will reset
-  // |service_id_| back to |owned_service_id_|, removing the service id override
-  // set by the GLStreamTextureImage.
+  // Set the image for a particular level. If a GLImage was previously set with
+  // SetLevelStreamTextureImage(), this will reset |service_id_| back to
+  // |owned_service_id_|, removing the service id override set by the
+  // SetLevelStreamTextureImage.
   void SetLevelImage(GLenum target,
                      GLint level,
                      gl::GLImage* image,
                      ImageState state);
 
-  // Set the GLStreamTextureImage for a particular level.  This is like
-  // SetLevelImage, but it also makes it optional to override |service_id_| with
-  // a texture bound to the stream texture, and permits
-  // GetLevelStreamTextureImage to return the image. See
-  // SetStreamTextureServiceId() for the details of how |service_id| is used.
+  // Set the GLImage for a particular level.  This is like SetLevelImage, but it
+  // also makes it optional to override |service_id_| with a texture bound to
+  // the stream texture. See SetStreamTextureServiceId() for the details of how
+  // |service_id| is used.
   void SetLevelStreamTextureImage(GLenum target,
                                   GLint level,
-                                  GLStreamTextureImage* image,
+                                  gl::GLImage* image,
                                   ImageState state,
                                   GLuint service_id);
 
@@ -321,11 +335,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
                              GLint level,
                              ImageState* state) const;
   gl::GLImage* GetLevelImage(GLint target, GLint level) const;
-
-  // Like GetLevelImage, but will return NULL if the image wasn't set via
-  // a call to SetLevelStreamTextureImage.
-  GLStreamTextureImage* GetLevelStreamTextureImage(GLint target,
-                                                   GLint level) const;
 
   bool HasImages() const {
     return has_images_;
@@ -429,26 +438,43 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // Returns GL_NONE on error.
   GLenum GetInternalFormatOfBaseLevel() const;
 
+  void SetLightweightRef();
+
+  void RemoveLightweightRef(bool have_context);
+
+  // Set the info for a particular level.
+  void SetLevelInfo(GLenum target,
+                    GLint level,
+                    GLenum internal_format,
+                    GLsizei width,
+                    GLsizei height,
+                    GLsizei depth,
+                    GLint border,
+                    GLenum format,
+                    GLenum type,
+                    const gfx::Rect& cleared_rect);
+
+  // Returns the LevelInfo for |target| and |level| if it's set, else nullptr.
+  const LevelInfo* GetLevelInfo(GLint target, GLint level) const;
+
+  // Sets the Texture's target
+  // Parameters:
+  //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP or
+  //           GL_TEXTURE_EXTERNAL_OES or GL_TEXTURE_RECTANGLE_ARB
+  //           GL_TEXTURE_2D_ARRAY or GL_TEXTURE_3D (for GLES3)
+  //   max_levels: The maximum levels this type of target can have.
+  void SetTarget(GLenum target, GLint max_levels);
+
+  void SetCompatibilitySwizzle(const CompatibilitySwizzle* swizzle);
+
+  bool NeedsMips() const {
+    return sampler_state_.min_filter != GL_NEAREST &&
+           sampler_state_.min_filter != GL_LINEAR;
+  }
+
  private:
   friend class MailboxManagerSync;
   friend class MailboxManagerTest;
-  friend class gpu::ExternalVkImageBacking;
-  friend class gpu::ExternalVkImageGlRepresentation;
-  friend class gpu::SharedImageVideo;
-  friend class gpu::SharedImageBackingGLTexture;
-  friend class gpu::SharedImageBackingFactoryGLTexture;
-  friend class gpu::SharedImageBackingAHB;
-  friend class gpu::SharedImageBackingEglImage;
-  friend class gpu::SharedImageRepresentationGLTextureAHB;
-  friend class gpu::SharedImageRepresentationEglImageGLTexture;
-  friend class gpu::SharedImageRepresentationSkiaGLAHB;
-  friend class gpu::SharedImageBackingIOSurface;
-  friend class gpu::SharedImageRepresentationGLTextureIOSurface;
-  friend class gpu::SharedImageRepresentationSkiaIOSurface;
-  friend class gpu::SharedImageRepresentationGLOzone;
-  friend class gpu::StreamTexture;
-  friend class gpu::TestSharedImageBacking;
-  friend class AbstractTextureImplOnSharedContext;
   friend class TextureDefinition;
   friend class TextureManager;
   friend class TextureRef;
@@ -458,8 +484,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   ~Texture() override;
   void AddTextureRef(TextureRef* ref);
   void RemoveTextureRef(TextureRef* ref, bool have_context);
-  void SetLightweightRef();
-  void RemoveLightweightRef(bool have_context);
   void MaybeDeleteThis(bool have_context);
 
   // Condition on which this texture is renderable. Can be ONLY_IF_NPOT if it
@@ -474,28 +498,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
     CAN_RENDER_NEEDS_VALIDATION,
   };
 
-  struct LevelInfo {
-    LevelInfo();
-    LevelInfo(const LevelInfo& rhs);
-    ~LevelInfo();
-
-    gfx::Rect cleared_rect;
-    GLenum target;
-    GLint level;
-    GLenum internal_format;
-    GLsizei width;
-    GLsizei height;
-    GLsizei depth;
-    GLint border;
-    GLenum format;
-    GLenum type;
-    scoped_refptr<gl::GLImage> image;
-    scoped_refptr<GLStreamTextureImage> stream_texture_image;
-    ImageState image_state;
-    uint32_t estimated_size;
-    bool internal_workaround;
-  };
-
   struct FaceInfo {
     FaceInfo();
     FaceInfo(const FaceInfo& other);
@@ -507,29 +509,14 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
     std::vector<LevelInfo> level_infos;
   };
 
-  // Helper for SetLevel*Image.  |stream_texture_image| may be null.
+  // Helper for SetLevel*Image.
   void SetLevelImageInternal(GLenum target,
                              GLint level,
                              gl::GLImage* image,
-                             GLStreamTextureImage* stream_texture_image,
                              ImageState state);
 
-  // Returns the LevelInfo for |target| and |level| if it's set, else NULL.
-  const LevelInfo* GetLevelInfo(GLint target, GLint level) const;
   // Returns NULL if the base level is not defined.
   const LevelInfo* GetBaseLevelInfo() const;
-
-  // Set the info for a particular level.
-  void SetLevelInfo(GLenum target,
-                    GLint level,
-                    GLenum internal_format,
-                    GLsizei width,
-                    GLsizei height,
-                    GLsizei depth,
-                    GLint border,
-                    GLenum format,
-                    GLenum type,
-                    const gfx::Rect& cleared_rect);
 
   // Causes us to report |service_id| as our service id, but does not delete
   // it when we are destroyed.  Will rebind any OES_EXTERNAL texture units to
@@ -573,11 +560,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // Makes each of the mip levels as though they were generated.
   void MarkMipmapsGenerated();
 
-  bool NeedsMips() const {
-    return sampler_state_.min_filter != GL_NEAREST &&
-           sampler_state_.min_filter != GL_LINEAR;
-  }
-
   // True if this texture meets all the GLES2 criteria for rendering.
   // See section 3.8.2 of the GLES2 spec.
   bool CanRender(const FeatureInfo* feature_info) const;
@@ -617,14 +599,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
                                 GLenum internal_format,
                                 GLenum type,
                                 bool immutable);
-
-  // Sets the Texture's target
-  // Parameters:
-  //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP or
-  //           GL_TEXTURE_EXTERNAL_OES or GL_TEXTURE_RECTANGLE_ARB
-  //           GL_TEXTURE_2D_ARRAY or GL_TEXTURE_3D (for GLES3)
-  //   max_levels: The maximum levels this type of target can have.
-  void SetTarget(GLenum target, GLint max_levels);
 
   // Update info about this texture.
   void Update();
@@ -682,7 +656,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   GLuint owned_service_id() const { return owned_service_id_; }
 
   GLenum GetCompatibilitySwizzleForChannel(GLenum channel);
-  void SetCompatibilitySwizzle(const CompatibilitySwizzle* swizzle);
 
   // Info about each face and level of texture.
   std::vector<FaceInfo> face_infos_;
@@ -697,8 +670,8 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   TextureRef* memory_tracking_ref_ = nullptr;
 
   // The id of the texture that we are responsible for deleting.  Normally, this
-  // is the same as |service_id_|, unless a GLStreamTextureImage with its own
-  // service id is bound. In that case the GLStreamTextureImage service id is
+  // is the same as |service_id_|, unless a StreamTexture Image with its own
+  // service id is bound. In that case the StreamTexture service id is
   // stored in |service_id_| and overrides the owned service id for all purposes
   // except deleting the texture name.
   GLuint owned_service_id_;
@@ -1132,7 +1105,7 @@ class GPU_GLES2_EXPORT TextureManager
   void SetLevelStreamTextureImage(TextureRef* ref,
                                   GLenum target,
                                   GLint level,
-                                  GLStreamTextureImage* image,
+                                  gl::GLImage* image,
                                   Texture::ImageState state,
                                   GLuint service_id);
 

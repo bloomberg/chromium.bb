@@ -22,8 +22,8 @@ RawMachineAssembler::RawMachineAssembler(
     PoisoningMitigationLevel poisoning_level)
     : isolate_(isolate),
       graph_(graph),
-      schedule_(new (zone()) Schedule(zone())),
-      source_positions_(new (zone()) SourcePositionTable(graph)),
+      schedule_(zone()->New<Schedule>(zone())),
+      source_positions_(zone()->New<SourcePositionTable>(graph)),
       machine_(zone(), word, flags, alignment_requirements),
       common_(zone()),
       simplified_(zone()),
@@ -47,11 +47,22 @@ RawMachineAssembler::RawMachineAssembler(
   source_positions_->AddDecorator();
 }
 
-void RawMachineAssembler::SetSourcePosition(const char* file, int line) {
-  int file_id = isolate()->LookupOrAddExternallyCompiledFilename(file);
-  SourcePosition p = SourcePosition::External(line, file_id);
-  DCHECK(p.ExternalLine() == line);
+void RawMachineAssembler::SetCurrentExternalSourcePosition(
+    FileAndLine file_and_line) {
+  int file_id =
+      isolate()->LookupOrAddExternallyCompiledFilename(file_and_line.first);
+  SourcePosition p = SourcePosition::External(file_and_line.second, file_id);
+  DCHECK(p.ExternalLine() == file_and_line.second);
   source_positions()->SetCurrentPosition(p);
+}
+
+FileAndLine RawMachineAssembler::GetCurrentExternalSourcePosition() const {
+  SourcePosition p = source_positions_->GetCurrentPosition();
+  if (!p.IsKnown()) return {nullptr, -1};
+  int file_id = p.ExternalFileId();
+  const char* file_name = isolate()->GetExternallyCompiledFilename(file_id);
+  int line = p.ExternalLine();
+  return {file_name, line};
 }
 
 Node* RawMachineAssembler::NullConstant() {
@@ -621,6 +632,21 @@ void RawMachineAssembler::Return(int count, Node* vs[]) {
 }
 
 void RawMachineAssembler::PopAndReturn(Node* pop, Node* value) {
+  // PopAndReturn is supposed to be using ONLY in CSA/Torque builtins for
+  // dropping ALL JS arguments that are currently located on the stack.
+  // The check below ensures that there are no directly accessible stack
+  // parameters from current builtin, which implies that the builtin with
+  // JS calling convention (TFJ) was created with kDontAdaptArgumentsSentinel.
+  // This simplifies semantics of this instruction because in case of presence
+  // of directly accessible stack parameters it's impossible to distinguish
+  // the following cases:
+  // 1) stack parameter is included in JS arguments (and therefore it will be
+  //    dropped as a part of 'pop' number of arguments),
+  // 2) stack parameter is NOT included in JS arguments (and therefore it should
+  //    be dropped in ADDITION to the 'pop' number of arguments).
+  // Additionally, in order to simplify assembly code, PopAndReturn is also
+  // not allowed in builtins with stub linkage and parameters on stack.
+  CHECK_EQ(call_descriptor()->StackParameterCount(), 0);
   Node* values[] = {pop, value};
   Node* ret = MakeNode(common()->Return(1), 2, values);
   schedule()->AddReturn(CurrentBlock(), ret);
@@ -669,8 +695,8 @@ void RawMachineAssembler::Comment(const std::string& msg) {
   AddNode(machine()->Comment(zone_buffer));
 }
 
-void RawMachineAssembler::StaticAssert(Node* value) {
-  AddNode(common()->StaticAssert(), value);
+void RawMachineAssembler::StaticAssert(Node* value, const char* source) {
+  AddNode(common()->StaticAssert(source), value);
 }
 
 Node* RawMachineAssembler::CallN(CallDescriptor* call_descriptor,
@@ -810,8 +836,7 @@ BasicBlock* RawMachineAssembler::CurrentBlock() {
 
 Node* RawMachineAssembler::Phi(MachineRepresentation rep, int input_count,
                                Node* const* inputs) {
-  Node** buffer = new (zone()->New(sizeof(Node*) * (input_count + 1)))
-      Node*[input_count + 1];
+  Node** buffer = zone()->NewArray<Node*>(input_count + 1);
   std::copy(inputs, inputs + input_count, buffer);
   buffer[input_count] = graph()->start();
   return AddNode(common()->Phi(rep, input_count), input_count + 1, buffer);

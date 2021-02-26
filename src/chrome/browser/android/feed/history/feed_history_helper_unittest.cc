@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_service.h"
@@ -28,8 +28,7 @@ class FeedHistoryHelperTest : public testing::Test {
   FeedHistoryHelperTest() {}
 
   void SetUp() override {
-    ASSERT_TRUE(profile_.CreateHistoryService(/*delete_file=*/false,
-                                              /*no_db=*/false));
+    ASSERT_TRUE(profile_.CreateHistoryService());
     history_service_ = HistoryServiceFactory::GetForProfile(
         &profile_, ServiceAccessType::IMPLICIT_ACCESS);
     ASSERT_TRUE(history_service_);
@@ -39,7 +38,8 @@ class FeedHistoryHelperTest : public testing::Test {
         GURL(kURL1), base::Time(), /*context_id=*/nullptr,
         /*nav_entry_id=*/0,
         /*referrer=*/GURL(), history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
-        history::SOURCE_BROWSED, /*did_replace_entry=*/false);
+        history::SOURCE_BROWSED, /*did_replace_entry=*/false,
+        /*publicly_routable=*/false);
   }
 
   void CheckURLExist(GURL url, bool expected) {

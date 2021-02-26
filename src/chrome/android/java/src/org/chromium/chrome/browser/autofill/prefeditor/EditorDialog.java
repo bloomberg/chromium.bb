@@ -43,7 +43,7 @@ import androidx.core.view.MarginLayoutParamsCompat;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.settings.CreditCardNumberFormattingTextWatcher;
-import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.widget.AlwaysDismissedDialog;
@@ -104,13 +104,15 @@ public class EditorDialog
     @Nullable
     private Runnable mDeleteRunnable;
     private boolean mIsDismissed;
+    private Profile mProfile;
     /**
      * Builds the editor dialog.
      *
      * @param activity        The activity on top of which the UI should be displayed.
      * @param deleteRunnable  The runnable that when called will delete the profile.
+     * @param profile         The current profile that creates EditorDialog.
      */
-    public EditorDialog(Activity activity, Runnable deleteRunnable) {
+    public EditorDialog(Activity activity, Runnable deleteRunnable, Profile profile) {
         super(activity, R.style.Theme_Chromium_Fullscreen);
         // Sets transparent background for animating content view.
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -163,6 +165,7 @@ public class EditorDialog
 
         mCardNumberFormatter = new CreditCardNumberFormattingTextWatcher();
         mDeleteRunnable = deleteRunnable;
+        mProfile = profile;
     }
 
     /** Prevents screenshots of this editor. */
@@ -172,14 +175,10 @@ public class EditorDialog
         getWindow().setAttributes(attributes);
     }
 
-    /** Launches the Autofill help page on top of the current Context. */
-    public static void launchAutofillHelpPage(Context context) {
-        // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed not to cause data leakage from incognito to regular profile.
-        HelpAndFeedback.getInstance().show((Activity) context,
-                context.getString(R.string.help_context_autofill),
-                Profile.getLastUsedRegularProfile(), null);
+    /** Launches the Autofill help page on top of the current Context and current Profile. */
+    public static void launchAutofillHelpPage(Context context, Profile profile) {
+        HelpAndFeedbackLauncherImpl.getInstance().show((Activity) context,
+                context.getString(R.string.help_context_autofill), profile, null);
     }
 
     /**
@@ -206,7 +205,7 @@ public class EditorDialog
                     mDeleteRunnable.run();
                     animateOutDialog();
                 } else if (item.getItemId() == R.id.help_menu_id) {
-                    launchAutofillHelpPage(mContext);
+                    launchAutofillHelpPage(mContext, mProfile);
                 }
                 return true;
             }
@@ -572,10 +571,6 @@ public class EditorDialog
                 for (int i = 0; i < mEditableTextFields.size(); i++) {
                     mEditableTextFields.get(i).setEnabled(true);
                 }
-                // Note that keyboard will not show for dropdown field since it's not necessary.
-                if (getCurrentFocus() != null) {
-                    KeyboardVisibilityDelegate.getInstance().showKeyboard(getCurrentFocus());
-                }
                 mDialogInOutAnimator = null;
                 initFocus();
             }
@@ -585,20 +580,21 @@ public class EditorDialog
     }
 
     private void initFocus() {
-        // Immediately focus the first invalid field to make it faster to edit.
-        final List<EditorFieldView> invalidViews = getViewsWithInvalidInformation(false);
-        if (!invalidViews.isEmpty()) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    invalidViews.get(0).scrollToAndFocus();
-                    if (sObserverForTest != null) sObserverForTest.onEditorReadyToEdit();
-                }
-            });
-        } else {
-            // The first field will be focused, we are ready to edit.
+        mHandler.post(() -> {
+            List<EditorFieldView> invalidViews = getViewsWithInvalidInformation(false);
+            if (!invalidViews.isEmpty()) {
+                // Immediately focus the first invalid field to make it faster to edit.
+                invalidViews.get(0).scrollToAndFocus();
+            } else {
+                // Trigger default focus as it is not triggered automatically on Android P+.
+                mLayout.requestFocus();
+            }
+            // Note that keyboard will not be shown for dropdown field since it's not necessary.
+            if (getCurrentFocus() != null) {
+                KeyboardVisibilityDelegate.getInstance().showKeyboard(getCurrentFocus());
+            }
             if (sObserverForTest != null) sObserverForTest.onEditorReadyToEdit();
-        }
+        });
     }
 
     private List<EditorFieldView> getViewsWithInvalidInformation(boolean findAll) {

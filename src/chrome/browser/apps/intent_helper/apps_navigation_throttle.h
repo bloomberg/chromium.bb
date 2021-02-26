@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
 
@@ -37,6 +37,7 @@ namespace apps {
 // any handling apps.
 class AppsNavigationThrottle : public content::NavigationThrottle {
  public:
+  using ThrottleCheckResult = content::NavigationThrottle::ThrottleCheckResult;
   // Restricts the amount of apps displayed to the user without the need of a
   // ScrollView.
   enum { kMaxAppResults = 3 };
@@ -88,9 +89,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   // content::NavigationHandle overrides
   const char* GetNameForLogging() override;
-  content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
-  content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
-      override;
+  ThrottleCheckResult WillStartRequest() override;
+  ThrottleCheckResult WillRedirectRequest() override;
 
   // These enums are used to define the buckets for an enumerated UMA histogram
   // and need to be synced with the ArcIntentHandlerAction enum in enums.xml.
@@ -107,7 +107,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
     DIALOG_DEACTIVATED = 1,
     OBSOLETE_ALWAYS_PRESSED = 2,
     OBSOLETE_JUST_ONCE_PRESSED = 3,
-    PREFERRED_ACTIVITY_FOUND = 4,
+    PREFERRED_ARC_ACTIVITY_FOUND = 4,
     // The prefix "CHROME"/"ARC_APP"/"PWA_APP" determines whether the user
     // pressed [Stay in Chrome] or [Use app] at IntentPickerBubbleView.
     // "PREFERRED" denotes when the user decides to save this selection, whether
@@ -121,8 +121,11 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
     ERROR_BEFORE_PICKER = 10,
     INVALID = 11,
     DEVICE_PRESSED = 12,
-    MAC_NATIVE_APP_PRESSED = 13,
-    kMaxValue = MAC_NATIVE_APP_PRESSED,
+    MAC_OS_APP_PRESSED = 13,
+    PWA_APP_PREFERRED_PRESSED = 14,
+    PREFERRED_PWA_FOUND = 15,
+    PREFERRED_CHROME_BROWSER_FOUND = 16,
+    kMaxValue = PREFERRED_CHROME_BROWSER_FOUND,
   };
 
   // As for PickerAction, these define the buckets for an UMA histogram, so this
@@ -134,8 +137,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
     CHROME = 1,
     PWA = 2,
     DEVICE = 3,
-    MAC_NATIVE = 4,
-    kMaxValue = MAC_NATIVE,
+    MAC_OS = 4,
+    kMaxValue = MAC_OS,
   };
 
   // TODO(ajlinker): move these two functions below to IntentHandlingMetrics.
@@ -197,7 +200,9 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   virtual bool ShouldDeferNavigation(content::NavigationHandle* handle);
 
-  void ShowIntentPickerForApps(
+  virtual bool ShouldCancelNavigation(content::NavigationHandle* handle);
+
+  virtual void ShowIntentPickerForApps(
       content::WebContents* web_contents,
       IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url,
@@ -215,6 +220,11 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       const GURL& url);
 
   bool navigate_from_link() const;
+
+  bool ShouldAutoDisplayUi(
+      const std::vector<apps::IntentPickerAppInfo>& apps_for_picker,
+      content::WebContents* web_contents,
+      const GURL& url);
 
   // Keeps track of whether we already shown the UI or preferred app. Since
   // AppsNavigationThrottle cannot wait for the user (due to the non-blocking
@@ -234,12 +244,14 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   FRIEND_TEST_ALL_PREFIXES(chromeos::ChromeOsAppsNavigationThrottleTest,
                            TestGetDestinationPlatform);
 
-  // Returns whether navigation to |url| was captured by a web app
-  bool CaptureExperimentalTabStripWebAppScopeNavigations(
+  // Returns whether navigation to |url| was captured by a web app and what to
+  // do next if so.
+  base::Optional<ThrottleCheckResult>
+  CaptureExperimentalTabStripWebAppScopeNavigations(
       content::WebContents* web_contents,
       content::NavigationHandle* handle) const;
 
-  content::NavigationThrottle::ThrottleCheckResult HandleRequest();
+  ThrottleCheckResult HandleRequest();
 
   // A reference to the starting GURL.
   GURL starting_url_;

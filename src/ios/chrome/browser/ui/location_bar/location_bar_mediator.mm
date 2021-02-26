@@ -144,7 +144,8 @@
 #pragma mark - OverlayPresenterObserving
 
 - (void)overlayPresenter:(OverlayPresenter*)presenter
-    willShowOverlayForRequest:(OverlayRequest*)request {
+    willShowOverlayForRequest:(OverlayRequest*)request
+          initialPresentation:(BOOL)initialPresentation {
   self.webContentAreaShowingOverlay = YES;
   self.webContentAreaShowingHTTPAuthDialog =
       !!request->GetConfig<HTTPAuthOverlayRequestConfig>();
@@ -294,13 +295,13 @@
   return base::SysUTF16ToNSString(string);
 }
 
-// Some URLs (data://) should have their tail clipped when presented; while for
+// Data URLs (data://) should have their tail clipped when presented; while for
 // others (http://) it would be more appropriate to clip the head.
 - (BOOL)locationShouldClipTail {
   if (self.webContentAreaShowingHTTPAuthDialog)
     return YES;
   GURL url = self.locationBarModel->GetURL();
-  return url.SchemeIs(url::kDataScheme) || url.SchemeIs(url::kBlobScheme);
+  return url.SchemeIs(url::kDataScheme);
 }
 
 #pragma mark Security status icon helpers

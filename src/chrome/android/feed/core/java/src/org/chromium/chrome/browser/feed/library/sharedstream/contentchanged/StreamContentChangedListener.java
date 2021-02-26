@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.sharedstream.contentchanged;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 
 import java.util.HashSet;
 
@@ -26,6 +26,20 @@ public class StreamContentChangedListener implements ContentChangedListener {
     public void onContentChanged() {
         for (ContentChangedListener listener : mListeners) {
             listener.onContentChanged();
+        }
+    }
+
+    @Override
+    public void onAddFinished() {
+        for (ContentChangedListener listener : mListeners) {
+            listener.onAddFinished();
+        }
+    }
+
+    @Override
+    public void onAddStarting() {
+        for (ContentChangedListener listener : mListeners) {
+            listener.onAddStarting();
         }
     }
 }

@@ -123,7 +123,7 @@ TEST_F(TabActivityWatcherTest, LogAndMaybeSortLifecycleUnitWithTabRanker) {
   SetParams({{"scorer_type", "0"}});
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
+      CreateBrowserWithTestWindowForParams(params);
   TabStripModel* tab_strip_model = browser->tab_strip_model();
 
   // Create lifecycleunits.
@@ -149,7 +149,7 @@ TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithFrecencyScorer) {
   SetParams({{"scorer_type", "3"}});
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
+      CreateBrowserWithTestWindowForParams(params);
   TabStripModel* tab_strip_model = browser->tab_strip_model();
 
   // Create lifecycleunits.
@@ -184,7 +184,7 @@ TEST_F(TabActivityWatcherTest, GetFrecencyScore) {
   SetParams({{"scorer_type", "3"}});
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
+      CreateBrowserWithTestWindowForParams(params);
   TabStripModel* tab_strip_model = browser->tab_strip_model();
 
   LifecycleUnit* tab0 = AddNewTab(tab_strip_model, 0);
@@ -224,7 +224,7 @@ TEST_F(TabActivityWatcherTest,
   SetParams({{"disable_background_log_with_TabRanker", "true"}});
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
+      CreateBrowserWithTestWindowForParams(params);
   TabStripModel* tab_strip_model = browser->tab_strip_model();
 
   // Create lifecycleunits.
@@ -331,7 +331,7 @@ class TabMetricsTest : public TabActivityWatcherTest {
 TEST_F(TabMetricsTest, Basic) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
+      CreateBrowserWithTestWindowForParams(params);
 
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* fg_contents =
@@ -374,7 +374,7 @@ TEST_F(TabMetricsTest, Basic) {
 TEST_F(TabMetricsTest, TabEvents) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
+      CreateBrowserWithTestWindowForParams(params);
 
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* test_contents_1 =
@@ -436,7 +436,7 @@ TEST_F(TabMetricsTest, TabEvents) {
 TEST_F(TabMetricsTest, TabMetrics) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
+      CreateBrowserWithTestWindowForParams(params);
 
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* test_contents_1 =
@@ -506,7 +506,7 @@ TEST_F(TabMetricsTest, TabMetrics) {
 TEST_F(TabMetricsTest, InputEvents) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
+      CreateBrowserWithTestWindowForParams(params);
 
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* test_contents_1 =
@@ -526,7 +526,7 @@ TEST_F(TabMetricsTest, InputEvents) {
 
   // Fake some input events.
   content::RenderWidgetHost* widget_1 =
-      test_contents_1->GetRenderViewHost()->GetWidget();
+      test_contents_1->GetMainFrame()->GetRenderViewHost()->GetWidget();
   widget_1->ForwardMouseEvent(
       CreateMouseEvent(WebInputEvent::Type::kMouseDown));
   widget_1->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::Type::kMouseUp));
@@ -543,7 +543,7 @@ TEST_F(TabMetricsTest, InputEvents) {
 
   // The second tab's counts are independent of the other's.
   content::RenderWidgetHost* widget_2 =
-      test_contents_2->GetRenderViewHost()->GetWidget();
+      test_contents_2->GetMainFrame()->GetRenderViewHost()->GetWidget();
   widget_2->ForwardMouseEvent(
       CreateMouseEvent(WebInputEvent::Type::kMouseMove));
   expected_metrics_2[TabManager_TabMetrics::kMouseEventCountName] = 1;
@@ -575,7 +575,7 @@ TEST_F(TabMetricsTest, InputEvents) {
   // After a navigation, test that the counts are reset.
   WebContentsTester::For(test_contents_1)->NavigateAndCommit(TestUrls()[2]);
   // The widget may have been invalidated by the navigation.
-  widget_1 = test_contents_1->GetRenderViewHost()->GetWidget();
+  widget_1 = test_contents_1->GetMainFrame()->GetRenderViewHost()->GetWidget();
   widget_1->ForwardMouseEvent(
       CreateMouseEvent(WebInputEvent::Type::kMouseMove));
   expected_metrics_1[TabManager_TabMetrics::kMouseEventCountName] = 1;
@@ -594,7 +594,7 @@ TEST_F(TabMetricsTest, InputEvents) {
 TEST_F(TabMetricsTest, DISABLED_HideWebContents) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
+      CreateBrowserWithTestWindowForParams(params);
 
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* test_contents =
@@ -617,7 +617,7 @@ TEST_F(TabMetricsTest, DISABLED_HideWebContents) {
 // Tests navigation-related metrics.
 TEST_F(TabMetricsTest, Navigations) {
   Browser::CreateParams params(profile(), true);
-  auto browser = CreateBrowserWithTestWindowForParams(&params);
+  auto browser = CreateBrowserWithTestWindowForParams(params);
   TabStripModel* tab_strip_model = browser->tab_strip_model();
 
   // Set up first tab.
@@ -743,7 +743,7 @@ TEST_F(TabMetricsTest, Navigations) {
 TEST_F(TabMetricsTest, ReplaceForegroundTab) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
+      CreateBrowserWithTestWindowForParams(params);
 
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* orig_contents =
@@ -822,7 +822,7 @@ class ForegroundedOrClosedTest : public TabActivityWatcherTest {
 TEST_F(ForegroundedOrClosedTest, MAYBE_SingleTab) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
+      CreateBrowserWithTestWindowForParams(params);
 
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
@@ -837,7 +837,7 @@ TEST_F(ForegroundedOrClosedTest, MAYBE_SingleTab) {
 TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
+      CreateBrowserWithTestWindowForParams(params);
 
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,

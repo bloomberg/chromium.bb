@@ -7,8 +7,9 @@
 #ifndef XFA_FXFA_CXFA_FFBARCODE_H_
 #define XFA_FXFA_CXFA_FFBARCODE_H_
 
-#include "core/fxcrt/unowned_ptr.h"
 #include "fxbarcode/BC_Library.h"
+#include "v8/include/cppgc/member.h"
+#include "v8/include/cppgc/visitor.h"
 #include "xfa/fxfa/cxfa_ffpageview.h"
 #include "xfa/fxfa/cxfa_fftextedit.h"
 
@@ -78,8 +79,10 @@ enum class BarcodeType {
 };
 
 struct BarCodeInfo {
-  uint32_t uHash;     // |pName| hashed as if wide string.
-  const char* pName;  // Raw, POD struct.
+  // |pName| hashed as if wide string.
+  uint32_t uHash;
+  // Inline string data reduces size for small strings.
+  const char pName[20];
   BarcodeType eName;
   BC_TYPE eBCType;
 };
@@ -90,12 +93,14 @@ class CXFA_FFBarcode final : public CXFA_FFTextEdit {
  public:
   static const BarCodeInfo* GetBarcodeTypeByName(const WideString& wsName);
 
-  CXFA_FFBarcode(CXFA_Node* pNode, CXFA_Barcode* barcode);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_FFBarcode() override;
+
+  void Trace(cppgc::Visitor* visitor) const override;
 
   // CXFA_FFTextEdit
   bool LoadWidget() override;
-  void RenderWidget(CXFA_Graphics* pGS,
+  void RenderWidget(CFGAS_GEGraphics* pGS,
                     const CFX_Matrix& matrix,
                     HighlightOption highlight) override;
   void UpdateWidgetProperty() override;
@@ -104,7 +109,9 @@ class CXFA_FFBarcode final : public CXFA_FFTextEdit {
                                 FWL_MouseCommand command) override;
 
  private:
-  UnownedPtr<CXFA_Barcode> const barcode_;
+  CXFA_FFBarcode(CXFA_Node* pNode, CXFA_Barcode* barcode);
+
+  cppgc::Member<CXFA_Barcode> const barcode_;
 };
 
 #endif  // XFA_FXFA_CXFA_FFBARCODE_H_

@@ -284,7 +284,6 @@ public:
     bool isVertical() const { return false; }
 
     unsigned    getGlyphCount() { return this->generateGlyphCount(); }
-    void        getAdvance(SkGlyph*);
     void        getMetrics(SkGlyph*);
     void        getImage(const SkGlyph&);
     bool SK_WARN_UNUSED_RESULT getPath(SkPackedGlyphID, SkPath*);
@@ -316,7 +315,7 @@ public:
                                           SkScalerContextEffects* effects) {
         SkPaint paint;
         return MakeRecAndEffects(
-                font, paint, SkSurfaceProps(SkSurfaceProps::kLegacyFontHost_InitType),
+                font, paint, SkSurfaceProps(),
                 SkScalerContextFlags::kNone, SkMatrix::I(), rec, effects);
     }
 

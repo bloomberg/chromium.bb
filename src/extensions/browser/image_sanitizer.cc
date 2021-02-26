@@ -5,6 +5,7 @@
 #include "extensions/browser/image_sanitizer.h"
 
 #include "base/bind.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_util.h"
 #include "base/task_runner_util.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -34,7 +35,7 @@ std::tuple<std::vector<uint8_t>, bool, bool> ReadAndDeleteBinaryFile(
         base::ReadFile(path, reinterpret_cast<char*>(contents.data()),
                        file_size) == file_size;
   }
-  bool delete_success = base::DeleteFile(path, /*recursive=*/false);
+  bool delete_success = base::DeleteFile(path);
   return std::make_tuple(std::move(contents), read_success, delete_success);
 }
 
@@ -60,10 +61,11 @@ std::unique_ptr<ImageSanitizer> ImageSanitizer::CreateAndStart(
     const base::FilePath& image_dir,
     const std::set<base::FilePath>& image_paths,
     ImageDecodedCallback image_decoded_callback,
-    SanitizationDoneCallback done_callback) {
+    SanitizationDoneCallback done_callback,
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
   std::unique_ptr<ImageSanitizer> sanitizer(new ImageSanitizer(
       image_dir, image_paths, std::move(image_decoded_callback),
-      std::move(done_callback)));
+      std::move(done_callback), io_task_runner));
   sanitizer->Start(decoder);
   return sanitizer;
 }
@@ -72,11 +74,13 @@ ImageSanitizer::ImageSanitizer(
     const base::FilePath& image_dir,
     const std::set<base::FilePath>& image_relative_paths,
     ImageDecodedCallback image_decoded_callback,
-    SanitizationDoneCallback done_callback)
+    SanitizationDoneCallback done_callback,
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
     : image_dir_(image_dir),
       image_paths_(image_relative_paths),
       image_decoded_callback_(std::move(image_decoded_callback)),
-      done_callback_(std::move(done_callback)) {}
+      done_callback_(std::move(done_callback)),
+      io_task_runner_(io_task_runner) {}
 
 ImageSanitizer::~ImageSanitizer() = default;
 
@@ -122,7 +126,7 @@ void ImageSanitizer::Start(data_decoder::DataDecoder* decoder) {
   for (const base::FilePath& path : image_paths_) {
     base::FilePath full_image_path = image_dir_.Append(path);
     base::PostTaskAndReplyWithResult(
-        extensions::GetExtensionFileTaskRunner().get(), FROM_HERE,
+        io_task_runner_.get(), FROM_HERE,
         base::BindOnce(&ReadAndDeleteBinaryFile, full_image_path),
         base::BindOnce(&ImageSanitizer::ImageFileRead,
                        weak_factory_.GetWeakPtr(), path));
@@ -154,6 +158,14 @@ void ImageSanitizer::ImageDecoded(const base::FilePath& image_path,
     ReportError(Status::kDecodingError, image_path);
     return;
   }
+  if (decoded_image.colorType() != kN32_SkColorType) {
+    // The renderer should be sending us N32 32bpp bitmaps in reply, otherwise
+    // this can lead to out-of-bounds mistakes when transferring the pixels out
+    // of the bitmap into other buffers.
+    base::debug::DumpWithoutCrashing();
+    ReportError(Status::kDecodingError, image_path);
+    return;
+  }
 
   if (image_decoded_callback_)
     image_decoded_callback_.Run(image_path, decoded_image);
@@ -162,7 +174,7 @@ void ImageSanitizer::ImageDecoded(const base::FilePath& image_path,
   // though they may originally be .jpg, etc.  Figure something out.
   // http://code.google.com/p/chromium/issues/detail?id=12459
   base::PostTaskAndReplyWithResult(
-      extensions::GetExtensionFileTaskRunner().get(), FROM_HERE,
+      io_task_runner_.get(), FROM_HERE,
       base::BindOnce(&EncodeImage, decoded_image),
       base::BindOnce(&ImageSanitizer::ImageReencoded,
                      weak_factory_.GetWeakPtr(), image_path));
@@ -180,7 +192,7 @@ void ImageSanitizer::ImageReencoded(
 
   int size = base::checked_cast<int>(image_data.size());
   base::PostTaskAndReplyWithResult(
-      extensions::GetExtensionFileTaskRunner().get(), FROM_HERE,
+      io_task_runner_.get(), FROM_HERE,
       base::BindOnce(&WriteFile, image_dir_.Append(image_path),
                      std::move(image_data)),
       base::BindOnce(&ImageSanitizer::ImageWritten, weak_factory_.GetWeakPtr(),

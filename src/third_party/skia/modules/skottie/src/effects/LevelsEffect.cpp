@@ -8,6 +8,7 @@
 #include "modules/skottie/src/effects/Effects.h"
 
 #include "include/effects/SkTableColorFilter.h"
+#include "include/private/SkTPin.h"
 #include "modules/skottie/src/Adapter.h"
 #include "modules/skottie/src/SkottieValue.h"
 #include "modules/sksg/include/SkSGColorFilter.h"
@@ -290,7 +291,7 @@ private:
     using INHERITED = DiscardableAdapterBase<ProLevelsEffectAdapter, sksg::ExternalColorFilter>;
 };
 
-} // anonymous ns
+}  // namespace
 
 sk_sp<sksg::RenderNode> EffectBuilder::attachEasyLevelsEffect(const skjson::ArrayValue& jprops,
                                                               sk_sp<sksg::RenderNode> layer) const {

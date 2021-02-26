@@ -4,10 +4,10 @@
 
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder_stream_receiver.h"
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_status.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_instructions.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -18,7 +18,7 @@ QpackDecoderStreamReceiver::QpackDecoderStreamReceiver(Delegate* delegate)
   DCHECK(delegate_);
 }
 
-void QpackDecoderStreamReceiver::Decode(quiche::QuicheStringPiece data) {
+void QpackDecoderStreamReceiver::Decode(absl::string_view data) {
   if (data.empty() || error_detected_) {
     return;
   }
@@ -43,12 +43,20 @@ bool QpackDecoderStreamReceiver::OnInstructionDecoded(
   return true;
 }
 
-void QpackDecoderStreamReceiver::OnError(
-    quiche::QuicheStringPiece error_message) {
+void QpackDecoderStreamReceiver::OnInstructionDecodingError(
+    QpackInstructionDecoder::ErrorCode error_code,
+    absl::string_view error_message) {
   DCHECK(!error_detected_);
 
   error_detected_ = true;
-  delegate_->OnErrorDetected(error_message);
+
+  // There is no string literals on the decoder stream,
+  // the only possible error is INTEGER_TOO_LARGE.
+  QuicErrorCode quic_error_code =
+      (error_code == QpackInstructionDecoder::ErrorCode::INTEGER_TOO_LARGE)
+          ? QUIC_QPACK_DECODER_STREAM_INTEGER_TOO_LARGE
+          : QUIC_INTERNAL_ERROR;
+  delegate_->OnErrorDetected(quic_error_code, error_message);
 }
 
 }  // namespace quic

@@ -6,7 +6,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/check.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "build/branding_buildflags.h"
@@ -14,7 +16,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/bundle_locations.h"
 #endif
 
@@ -76,7 +78,7 @@ void AddCdmHostFilePaths(
     cdm_host_file_paths->emplace_back(file_path, GetSigFilePath(file_path));
   }
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 
   base::FilePath framework_dir = base::mac::FrameworkBundlePath();
   base::FilePath chrome_framework_path =
@@ -93,7 +95,7 @@ void AddCdmHostFilePaths(
   cdm_host_file_paths->emplace_back(chrome_framework_path,
                                     chrome_framework_sig_path);
 
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   base::FilePath chrome_exe_dir;
   if (!base::PathService::Get(base::DIR_EXE, &chrome_exe_dir))

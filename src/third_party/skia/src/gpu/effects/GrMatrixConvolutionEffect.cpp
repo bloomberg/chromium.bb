@@ -8,11 +8,12 @@
 
 #include "include/private/SkHalf.h"
 #include "src/gpu/GrBitmapTextureMaker.h"
-#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTextureProxy.h"
+#include "src/gpu/GrThreadSafeCache.h"
 #include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -39,14 +40,18 @@ private:
     UniformHandle               fBiasUni;
     UniformHandle               fKernelBiasUni;
 
-    typedef GrGLSLFragmentProcessor INHERITED;
+    using INHERITED = GrGLSLFragmentProcessor;
 };
 
-GrMatrixConvolutionEffect::KernelWrapper GrMatrixConvolutionEffect::KernelWrapper::Make(
-        GrRecordingContext* context, SkISize size, const GrCaps& caps, const SkScalar* values) {
-    if (nullptr == context || nullptr == values || size.isEmpty()) {
+GrMatrixConvolutionEffect::KernelWrapper::MakeResult
+GrMatrixConvolutionEffect::KernelWrapper::Make(GrRecordingContext* rContext,
+                                               SkISize size,
+                                               const GrCaps& caps,
+                                               const SkScalar* values) {
+    if (!rContext || !values || size.isEmpty()) {
         return {};
     }
+
     const int length = size.area();
     // Small kernel -> just fill the array.
     KernelWrapper result(size);
@@ -54,12 +59,12 @@ GrMatrixConvolutionEffect::KernelWrapper GrMatrixConvolutionEffect::KernelWrappe
         for (int i = 0; i < length; i++) {
             result.fArray[i] = SkScalarToFloat(values[i]);
         }
-        return result;
+        return {result, nullptr};
     }
 
-    ScalableSampler& scalableSampler = result.fScalableSampler;
+    BiasAndGain& scalableSampler = result.fBiasAndGain;
     bool useA16 =
-        context->defaultBackendFormat(kA16_float_SkColorType, GrRenderable::kNo).isValid();
+        rContext->defaultBackendFormat(kA16_float_SkColorType, GrRenderable::kNo).isValid();
     SkScalar min = values[0];
     if (!useA16) {
         // Determine min and max values to figure out inner gain & bias.
@@ -97,57 +102,60 @@ GrMatrixConvolutionEffect::KernelWrapper GrMatrixConvolutionEffect::KernelWrappe
     }
 
     // Find or create a texture.
-    GrProxyProvider* proxyProvider = context->priv().proxyProvider();
-    GrSurfaceProxyView view;
+    auto threadSafeCache = rContext->priv().threadSafeCache();
+
     SkColorType colorType = useA16 ? kA16_float_SkColorType : kAlpha_8_SkColorType;
-    sk_sp<GrTextureProxy> cachedKernel;
-    if (kCacheKernelTexture && (cachedKernel = proxyProvider->findOrCreateProxyByUniqueKey(key))) {
-        GrSwizzle swizzle =
-            context->priv().caps()->getReadSwizzle(cachedKernel->backendFormat(),
-                                                   SkColorTypeToGrColorType(colorType));
-        view = {std::move(cachedKernel), kTopLeft_GrSurfaceOrigin, swizzle};
-    } else {
-        SkBitmap bm;
-        auto info = SkImageInfo::Make({(int)GrNextPow2(length), 1}, colorType,
-                                      kPremul_SkAlphaType, nullptr);
-        if (!bm.tryAllocPixels(info)) {
-            return {};
-        }
-        for (int i = 0; i < length; i++) {
-            if (useA16) {
-                *bm.getAddr16(i, 0) = SkFloatToHalf(values[i]);
-            } else {
-                *bm.getAddr8(i, 0) =
-                    SkScalarRoundToInt((values[i] - min) / scalableSampler.fGain * 255);
-            }
-        }
-        bm.setImmutable();
-        GrBitmapTextureMaker maker(context, bm, GrImageTexGenPolicy::kNew_Uncached_Budgeted);
-        view = maker.view(GrMipMapped::kNo);
-        if (!view) {
-            return {};
-        }
-        if (kCacheKernelTexture) {
-            proxyProvider->assignUniqueKeyToProxy(key, view.asTextureProxy());
+
+    GrSurfaceProxyView view;
+    if (kCacheKernelTexture && (view = threadSafeCache->find(key))) {
+        SkASSERT(view.origin() == kTopLeft_GrSurfaceOrigin);
+        auto kernelFP = GrTextureEffect::Make(std::move(view), kUnknown_SkAlphaType);
+        return {result, std::move(kernelFP)};
+    }
+
+    SkBitmap bm;
+    auto info = SkImageInfo::Make({length, 1}, colorType, kPremul_SkAlphaType, nullptr);
+    if (!bm.tryAllocPixels(info)) {
+        return {};
+    }
+    for (int i = 0; i < length; i++) {
+        if (useA16) {
+            *bm.getAddr16(i, 0) = SkFloatToHalf(values[i]);
+        } else {
+            *bm.getAddr8(i, 0) =
+                SkScalarRoundToInt((values[i] - min) / scalableSampler.fGain * 255);
         }
     }
-    scalableSampler.fSampler = { std::move(view) };
-    return result;
+    bm.setImmutable();
+
+    GrBitmapTextureMaker maker(rContext, bm, GrImageTexGenPolicy::kNew_Uncached_Budgeted);
+    view = maker.view(GrMipmapped::kNo);
+    if (!view) {
+        return {};
+    }
+
+    if (kCacheKernelTexture) {
+        view = threadSafeCache->add(key, view);
+    }
+
+    SkASSERT(view.origin() == kTopLeft_GrSurfaceOrigin);
+    auto kernelFP = GrTextureEffect::Make(std::move(view), kUnknown_SkAlphaType);
+    return {result, std::move(kernelFP)};
 }
 
 bool GrMatrixConvolutionEffect::KernelWrapper::operator==(const KernelWrapper& k) const {
     if (fSize != k.fSize) {
         return false;
     } else if (this->isSampled()) {
-        return fScalableSampler == k.fScalableSampler;
+        return fBiasAndGain == k.fBiasAndGain;
     } else {
         return std::equal(fArray.begin(), fArray.begin() + fSize.area(), k.fArray.begin());
     }
 }
 
-bool GrMatrixConvolutionEffect::KernelWrapper::ScalableSampler::operator==(
-                                                                const ScalableSampler& k) const {
-    return fSampler == k.fSampler && fGain == k.fGain && fBias == k.fBias;
+bool GrMatrixConvolutionEffect::KernelWrapper::BiasAndGain::operator==(
+                                                                const BiasAndGain& k) const {
+    return fGain == k.fGain && fBias == k.fBias;
 }
 
 // For sampled kernels, emit a for loop that does all the kernel accumulation.
@@ -162,7 +170,6 @@ void GrGLMatrixConvolutionEffect::emitKernelBlock(EmitArgs& args, SkIPoint loc) 
     int kernelArea = kernelWidth * kernelHeight;
 
     if (mce.kernelIsSampled()) {
-        fragBuilder->codeAppendf("half2 kernelCoord = half2(0, 0);");
         fragBuilder->codeAppendf("for (int i = 0; i < %d; ++i)", (int)kernelArea);
     }
 
@@ -172,13 +179,11 @@ void GrGLMatrixConvolutionEffect::emitKernelBlock(EmitArgs& args, SkIPoint loc) 
     fragBuilder->codeAppend("half2 sourceOffset;");
     if (mce.kernelIsSampled()) {
         const char* kernelBias = uniformHandler->getUniformCStr(fKernelBiasUni);
-        fragBuilder->codeAppend("k = ");
-        fragBuilder->appendTextureLookup(args.fTexSamplers[0], "kernelCoord");
-        fragBuilder->codeAppendf(".w + %s;", kernelBias);
+        SkString kernelCoord = SkStringPrintf("float2(float(i) + 0.5, 0.5)");
+        SkString kernelSample = this->invokeChild(1, args, kernelCoord.c_str());
+        fragBuilder->codeAppendf("k = %s.w + %s;", kernelSample.c_str(), kernelBias);
         fragBuilder->codeAppendf("sourceOffset.y = floor(i / %d);", kernelWidth);
         fragBuilder->codeAppendf("sourceOffset.x = i - sourceOffset.y * %d;", kernelWidth);
-        float kernelStride = 1.0f / (float)GrNextPow2(kernelArea);
-        fragBuilder->codeAppendf("kernelCoord.x += %f;", kernelStride);
     } else {
         fragBuilder->codeAppendf("sourceOffset = half2(%d, %d);", loc.x(), loc.y());
         int offset = loc.y() * kernelWidth + loc.x();
@@ -191,7 +196,7 @@ void GrGLMatrixConvolutionEffect::emitKernelBlock(EmitArgs& args, SkIPoint loc) 
     auto sample = this->invokeChild(0, args, "coord + sourceOffset");
     fragBuilder->codeAppendf("half4 c = %s;", sample.c_str());
     if (!mce.convolveAlpha()) {
-        fragBuilder->codeAppend("c.rgb /= max(c.a, 0.0001);");
+        fragBuilder->codeAppend("c = unpremul(c);");
         fragBuilder->codeAppend("c.rgb = saturate(c.rgb);");
     }
     fragBuilder->codeAppend("sum += c * k;");
@@ -224,10 +229,8 @@ void GrGLMatrixConvolutionEffect::emitCode(EmitArgs& args) {
     const char* bias = uniformHandler->getUniformCStr(fBiasUni);
 
     GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
-    SkString coords2D = fragBuilder->ensureCoords2D(args.fTransformedCoords[0].fVaryingPoint,
-                                                    mce.sampleMatrix());
     fragBuilder->codeAppend("half4 sum = half4(0, 0, 0, 0);");
-    fragBuilder->codeAppendf("float2 coord = %s - %s;", coords2D.c_str(), kernelOffset);
+    fragBuilder->codeAppendf("float2 coord = %s - %s;", args.fSampleCoord, kernelOffset);
 
     if (mce.kernelIsSampled()) {
         this->emitKernelBlock(args, {});
@@ -245,7 +248,7 @@ void GrGLMatrixConvolutionEffect::emitCode(EmitArgs& args) {
         fragBuilder->codeAppendf("%s.rgb = clamp(%s.rgb, 0.0, %s.a);",
                                  args.fOutputColor, args.fOutputColor, args.fOutputColor);
     } else {
-        auto sample = this->invokeChild(0, args, coords2D.c_str());
+        auto sample = this->invokeChild(0, args);
         fragBuilder->codeAppendf("half4 c = %s;", sample.c_str());
         fragBuilder->codeAppendf("%s.a = c.a;", args.fOutputColor);
         fragBuilder->codeAppendf("%s.rgb = saturate(sum.rgb * %s + %s);", args.fOutputColor, gain, bias);
@@ -266,7 +269,7 @@ void GrGLMatrixConvolutionEffect::GenKey(const GrProcessor& processor,
 void GrGLMatrixConvolutionEffect::onSetData(const GrGLSLProgramDataManager& pdman,
                                             const GrFragmentProcessor& processor) {
     const GrMatrixConvolutionEffect& conv = processor.cast<GrMatrixConvolutionEffect>();
-    pdman.set2fv(fKernelOffsetUni, 1, conv.kernelOffset().ptr());
+    pdman.set2f(fKernelOffsetUni, conv.kernelOffset().fX, conv.kernelOffset().fY);
     float totalGain = conv.gain();
     if (conv.kernelIsSampled()) {
         totalGain *= conv.kernelSampleGain();
@@ -282,7 +285,8 @@ void GrGLMatrixConvolutionEffect::onSetData(const GrGLSLProgramDataManager& pdma
 }
 
 GrMatrixConvolutionEffect::GrMatrixConvolutionEffect(std::unique_ptr<GrFragmentProcessor> child,
-                                                     KernelWrapper kernel,
+                                                     const KernelWrapper& kernel,
+                                                     std::unique_ptr<GrFragmentProcessor> kernelFP,
                                                      SkScalar gain,
                                                      SkScalar bias,
                                                      const SkIPoint& kernelOffset,
@@ -290,18 +294,15 @@ GrMatrixConvolutionEffect::GrMatrixConvolutionEffect(std::unique_ptr<GrFragmentP
         // To advertise either the modulation or opaqueness optimizations we'd have to examine the
         // parameters.
         : INHERITED(kGrMatrixConvolutionEffect_ClassID, kNone_OptimizationFlags)
-        , fKernel(std::move(kernel))
+        , fKernel(kernel)
         , fGain(SkScalarToFloat(gain))
         , fBias(SkScalarToFloat(bias) / 255.0f)
         , fConvolveAlpha(convolveAlpha) {
-    child->setSampledWithExplicitCoords();
-    this->registerChildProcessor(std::move(child));
-    if (fKernel.isSampled()) {
-        this->setTextureSamplerCnt(1);
-    }
+    this->registerChild(std::move(child), SkSL::SampleUsage::Explicit());
+    this->registerChild(std::move(kernelFP), SkSL::SampleUsage::Explicit());
     fKernelOffset = {static_cast<float>(kernelOffset.x()),
                      static_cast<float>(kernelOffset.y())};
-    this->addCoordTransform(&fCoordTransform);
+    this->setUsesSampleCoordsDirectly();
 }
 
 GrMatrixConvolutionEffect::GrMatrixConvolutionEffect(const GrMatrixConvolutionEffect& that)
@@ -311,13 +312,8 @@ GrMatrixConvolutionEffect::GrMatrixConvolutionEffect(const GrMatrixConvolutionEf
         , fBias(that.fBias)
         , fKernelOffset(that.fKernelOffset)
         , fConvolveAlpha(that.fConvolveAlpha) {
-    auto child = that.childProcessor(0).clone();
-    child->setSampledWithExplicitCoords();
-    this->registerChildProcessor(std::move(child));
-    if (fKernel.isSampled()) {
-        this->setTextureSamplerCnt(1);
-    }
-    this->addCoordTransform(&fCoordTransform);
+    this->cloneAndRegisterAllChildProcessors(that);
+    this->setUsesSampleCoordsDirectly();
 }
 
 std::unique_ptr<GrFragmentProcessor> GrMatrixConvolutionEffect::clone() const {
@@ -342,90 +338,6 @@ bool GrMatrixConvolutionEffect::onIsEqual(const GrFragmentProcessor& sBase) cons
            fConvolveAlpha == s.convolveAlpha();
 }
 
-const GrFragmentProcessor::TextureSampler& GrMatrixConvolutionEffect::onTextureSampler(
-        int index) const {
-    return IthTextureSampler(index, fKernel.scalableSampler().fSampler);
-}
-
-static void fill_in_1D_gaussian_kernel_with_stride(float* kernel, int size, int stride,
-                                                   float twoSigmaSqrd) {
-    SkASSERT(!SkScalarNearlyZero(twoSigmaSqrd, SK_ScalarNearlyZero));
-
-    const float sigmaDenom = 1.0f / twoSigmaSqrd;
-    const int radius = size / 2;
-
-    float sum = 0.0f;
-    for (int i = 0; i < size; ++i) {
-        float term = static_cast<float>(i - radius);
-        // Note that the constant term (1/(sqrt(2*pi*sigma^2)) of the Gaussian
-        // is dropped here, since we renormalize the kernel below.
-        kernel[i * stride] = sk_float_exp(-term * term * sigmaDenom);
-        sum += kernel[i * stride];
-    }
-    // Normalize the kernel
-    float scale = 1.0f / sum;
-    for (int i = 0; i < size; ++i) {
-        kernel[i * stride] *= scale;
-    }
-}
-
-static void fill_in_2D_gaussian_kernel(float* kernel, int width, int height,
-                                       SkScalar sigmaX, SkScalar sigmaY) {
-    const float twoSigmaSqrdX = 2.0f * SkScalarToFloat(SkScalarSquare(sigmaX));
-    const float twoSigmaSqrdY = 2.0f * SkScalarToFloat(SkScalarSquare(sigmaY));
-
-    // TODO: in all of these degenerate cases we're uploading (and using) a whole lot of zeros.
-    if (SkScalarNearlyZero(twoSigmaSqrdX, SK_ScalarNearlyZero) ||
-        SkScalarNearlyZero(twoSigmaSqrdY, SK_ScalarNearlyZero)) {
-        // In this case the 2D Gaussian degenerates to a 1D Gaussian (in X or Y) or a point
-        SkASSERT(3 == width || 3 == height);
-        std::fill_n(kernel, width*height, 0);
-
-        if (SkScalarNearlyZero(twoSigmaSqrdX, SK_ScalarNearlyZero) &&
-            SkScalarNearlyZero(twoSigmaSqrdY, SK_ScalarNearlyZero)) {
-            // A point
-            SkASSERT(3 == width && 3 == height);
-            kernel[4] = 1.0f;
-        } else if (SkScalarNearlyZero(twoSigmaSqrdX, SK_ScalarNearlyZero)) {
-            // A 1D Gaussian in Y
-            SkASSERT(3 == width);
-            // Down the middle column of the kernel with a stride of width
-            fill_in_1D_gaussian_kernel_with_stride(&kernel[1], height, width, twoSigmaSqrdY);
-        } else {
-            // A 1D Gaussian in X
-            SkASSERT(SkScalarNearlyZero(twoSigmaSqrdY, SK_ScalarNearlyZero));
-            SkASSERT(3 == height);
-            // Down the middle row of the kernel with a stride of 1
-            fill_in_1D_gaussian_kernel_with_stride(&kernel[width], width, 1, twoSigmaSqrdX);
-        }
-        return;
-    }
-
-    const float sigmaXDenom = 1.0f / twoSigmaSqrdX;
-    const float sigmaYDenom = 1.0f / twoSigmaSqrdY;
-    const int xRadius = width / 2;
-    const int yRadius = height / 2;
-
-    float sum = 0.0f;
-    for (int x = 0; x < width; x++) {
-        float xTerm = static_cast<float>(x - xRadius);
-        xTerm = xTerm * xTerm * sigmaXDenom;
-        for (int y = 0; y < height; y++) {
-            float yTerm = static_cast<float>(y - yRadius);
-            float xyTerm = sk_float_exp(-(xTerm + yTerm * yTerm * sigmaYDenom));
-            // Note that the constant term (1/(sqrt(2*pi*sigma^2)) of the Gaussian
-            // is dropped here, since we renormalize the kernel below.
-            kernel[y * width + x] = xyTerm;
-            sum += xyTerm;
-        }
-    }
-    // Normalize the kernel
-    float scale = 1.0f / sum;
-    for (int i = 0; i < width * height; ++i) {
-        kernel[i] *= scale;
-    }
-}
-
 std::unique_ptr<GrFragmentProcessor> GrMatrixConvolutionEffect::Make(GrRecordingContext* context,
                                                                      GrSurfaceProxyView srcView,
                                                                      const SkIRect& srcBounds,
@@ -437,35 +349,16 @@ std::unique_ptr<GrFragmentProcessor> GrMatrixConvolutionEffect::Make(GrRecording
                                                                      GrSamplerState::WrapMode wm,
                                                                      bool convolveAlpha,
                                                                      const GrCaps& caps) {
-    auto kw = KernelWrapper::Make(context, kernelSize, caps, kernel);
-    if (!kw.isValid()) {
+    auto [kernelWrapper, kernelFP] = KernelWrapper::Make(context, kernelSize, caps, kernel);
+    if (!kernelWrapper.isValid()) {
         return nullptr;
     }
     GrSamplerState sampler(wm, GrSamplerState::Filter::kNearest);
     auto child = GrTextureEffect::MakeSubset(std::move(srcView), kPremul_SkAlphaType, SkMatrix::I(),
                                              sampler, SkRect::Make(srcBounds), caps);
-    return std::unique_ptr<GrFragmentProcessor>(new GrMatrixConvolutionEffect(
-            std::move(child), std::move(kw), gain, bias, kernelOffset, convolveAlpha));
-}
-
-std::unique_ptr<GrFragmentProcessor> GrMatrixConvolutionEffect::MakeGaussian(
-        GrRecordingContext* context,
-        GrSurfaceProxyView srcView,
-        const SkIRect& srcBounds,
-        const SkISize& kernelSize,
-        SkScalar gain,
-        SkScalar bias,
-        const SkIPoint& kernelOffset,
-        GrSamplerState::WrapMode wm,
-        bool convolveAlpha,
-        SkScalar sigmaX,
-        SkScalar sigmaY,
-        const GrCaps& caps) {
-    SkAutoSTMalloc<32, float> kernel(kernelSize.area());
-    fill_in_2D_gaussian_kernel(kernel.get(), kernelSize.width(), kernelSize.height(),
-                               sigmaX, sigmaY);
-    return Make(context, std::move(srcView), srcBounds, kernelSize, kernel.get(),
-                gain, bias, kernelOffset, wm, convolveAlpha, caps);
+    return std::unique_ptr<GrFragmentProcessor>(
+            new GrMatrixConvolutionEffect(std::move(child), kernelWrapper, std::move(kernelFP),
+                                          gain, bias, kernelOffset, convolveAlpha));
 }
 
 GR_DEFINE_FRAGMENT_PROCESSOR_TEST(GrMatrixConvolutionEffect);
@@ -498,7 +391,7 @@ std::unique_ptr<GrFragmentProcessor> GrMatrixConvolutionEffect::TestCreate(GrPro
     auto wm = static_cast<GrSamplerState::WrapMode>(
             d->fRandom->nextULessThan(GrSamplerState::kWrapModeCount));
     bool convolveAlpha = d->fRandom->nextBool();
-    return GrMatrixConvolutionEffect::Make(d->context()->priv().asRecordingContext(),
+    return GrMatrixConvolutionEffect::Make(d->context(),
                                            std::move(view),
                                            bounds,
                                            kernelSize,

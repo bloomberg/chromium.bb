@@ -8,13 +8,15 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -22,11 +24,14 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -40,8 +45,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_blocker.h"
@@ -49,7 +56,7 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
@@ -62,6 +69,9 @@ class ToggledNotificationBlocker : public message_center::NotificationBlocker {
       : message_center::NotificationBlocker(
             message_center::MessageCenter::Get()),
         notifications_enabled_(true) {}
+  ToggledNotificationBlocker(const ToggledNotificationBlocker&) = delete;
+  ToggledNotificationBlocker& operator=(const ToggledNotificationBlocker&) =
+      delete;
   ~ToggledNotificationBlocker() override {}
 
   void SetNotificationsEnabled(bool enabled) {
@@ -79,9 +89,33 @@ class ToggledNotificationBlocker : public message_center::NotificationBlocker {
 
  private:
   bool notifications_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToggledNotificationBlocker);
 };
+
+#if !defined(OS_ANDROID)
+// Browser test class that creates a fake monitor MediaStream device and auto
+// selects it when requesting one via navigator.mediaDevices.getDisplayMedia().
+class NotificationsTestWithFakeMediaStream : public NotificationsTest {
+ public:
+  NotificationsTestWithFakeMediaStream() {
+    feature_list_.InitAndEnableFeature(
+        features::kMuteNotificationsDuringScreenShare);
+  }
+  ~NotificationsTestWithFakeMediaStream() override = default;
+
+  // InProcessBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    NotificationsTest::SetUpCommandLine(command_line);
+    command_line->RemoveSwitch(switches::kUseFakeDeviceForMediaStream);
+    command_line->AppendSwitchASCII(switches::kUseFakeDeviceForMediaStream,
+                                    "display-media-type=monitor");
+    command_line->AppendSwitchASCII(switches::kAutoSelectDesktopCaptureSource,
+                                    "Entire screen");
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
@@ -442,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseTabWithPermissionRequestUI) {
 }
 
 // See crbug.com/248470
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_TestCrashRendererNotificationRemain \
     DISABLED_TestCrashRendererNotificationRemain
 #else
@@ -629,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayNormal) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -665,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
 
 // The Fake OSX fullscreen window doesn't like drawing a second fullscreen
 // window when another is visible.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayMultiFullscreen) {
   ASSERT_TRUE(embedded_test_server()->Start());
   AllowAllOrigins();
@@ -678,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayMultiFullscreen) {
   std::string result = CreateSimpleNotification(browser(), true);
   EXPECT_NE("-1", result);
 
-  // Set the notifcation page fullscreen
+  // Set the notification page fullscreen
   browser()->exclusive_access_manager()->fullscreen_controller()->
       ToggleBrowserFullscreenMode();
   {
@@ -714,7 +748,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayMultiFullscreen) {
 // Verify that a notification is actually displayed when the webpage that
 // creates it is fullscreen with the fullscreen notification flag turned on.
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayPopupNotification) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -743,3 +777,92 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayPopupNotification) {
       message_center::MessageCenter::Get()->GetPopupNotifications();
   ASSERT_EQ(1u, notifications.size());
 }
+
+#if !defined(OS_ANDROID)
+// TODO(knollr): Test fails on Windows and macOS on the bots as there is no real
+// display to test with. Need to find a way to run these without a display and
+// figure out why Lacros is timing out. Tests pass locally with a real display.
+#if defined(OS_MAC) || defined(OS_WIN) || BUILDFLAG(IS_LACROS)
+#define MAYBE_ShouldQueueDuringScreenPresent \
+  DISABLED_ShouldQueueDuringScreenPresent
+#else
+#define MAYBE_ShouldQueueDuringScreenPresent ShouldQueueDuringScreenPresent
+#endif
+IN_PROC_BROWSER_TEST_F(NotificationsTestWithFakeMediaStream,
+                       MAYBE_ShouldQueueDuringScreenPresent) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // Start second server so we can test screen recording on secure connections.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+  ASSERT_TRUE(https_server.Start());
+
+  AllowAllOrigins();
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
+  const int notification_tab = browser()->tab_strip_model()->active_index();
+
+  // We should see displayed notifications by default.
+  std::string result = CreateSimpleNotification(browser(), /*wait=*/false);
+  EXPECT_NE("-1", result);
+  message_center::NotificationList::Notifications notifications =
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
+  ASSERT_EQ(1u, notifications.size());
+  EXPECT_EQ(base::ASCIIToUTF16("My Title"), (*notifications.begin())->title());
+  EXPECT_EQ(base::ASCIIToUTF16("My Body"), (*notifications.begin())->message());
+
+  // Open a new tab to a diffent origin from the one that shows notifications.
+  chrome::NewTab(browser());
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server.GetURL("/notifications/notification_tester.html"));
+  const int screen_capture_tab = browser()->tab_strip_model()->active_index();
+
+  // Start a screen capture session.
+  content::WebContents* web_contents = GetActiveWebContents(browser());
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, "startScreenCapture();", &result));
+  ASSERT_EQ("success", result);
+
+  // Showing a notification during the screen capture session should show the
+  // "Notifications muted" notification.
+  browser()->tab_strip_model()->ActivateTabAt(notification_tab);
+  result = CreateSimpleNotification(browser(), /*wait=*/false);
+  EXPECT_NE("-1", result);
+  notifications =
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
+  ASSERT_EQ(2u, notifications.size());
+  EXPECT_EQ(l10n_util::GetPluralStringFUTF16(IDS_NOTIFICATION_MUTED_TITLE,
+                                             /*count=*/1),
+            (*notifications.begin())->title());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NOTIFICATION_MUTED_MESSAGE),
+            (*notifications.begin())->message());
+
+  // Showing another notification during the screen captuure session should
+  // update the "Notifications muted" notification title.
+  result = CreateSimpleNotification(browser(), /*wait=*/false);
+  EXPECT_NE("-1", result);
+  notifications =
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
+  ASSERT_EQ(2u, notifications.size());
+  EXPECT_EQ(l10n_util::GetPluralStringFUTF16(IDS_NOTIFICATION_MUTED_TITLE,
+                                             /*count=*/2),
+            (*notifications.begin())->title());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NOTIFICATION_MUTED_MESSAGE),
+            (*notifications.begin())->message());
+
+  // Stop the screen capture session.
+  browser()->tab_strip_model()->ActivateTabAt(screen_capture_tab);
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, "stopScreenCapture();", &result));
+  ASSERT_EQ("success", result);
+
+  // Stopping the screen capture session should display the queued notifications
+  // and close the "Notifications muted" notification.
+  notifications =
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
+  ASSERT_EQ(3u, notifications.size());
+  for (const auto* notification : notifications) {
+    EXPECT_EQ(base::ASCIIToUTF16("My Title"), notification->title());
+    EXPECT_EQ(base::ASCIIToUTF16("My Body"), notification->message());
+  }
+}
+#endif  // !defined(OS_ANDROID)

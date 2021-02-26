@@ -15,7 +15,7 @@ _util_sources = [
   "OSWindow.cpp",
   "OSWindow.h",
   "com_utils.h",
-  "frame_capture_utils.h",
+  "frame_capture_test_utils.h",
   "geometry_utils.cpp",
   "geometry_utils.h",
   "keyboard.h",
@@ -40,6 +40,14 @@ if (is_win) {
   }
 }
 
+if (is_linux) {
+  _util_sources += [
+    "display/DisplayPixmap.cpp",
+    "display/DisplayWindow.cpp",
+    "display/DisplayWindow.h",
+  ]
+}
+
 if (angle_use_x11) {
   _util_sources += [
     "x11/X11Pixmap.cpp",
@@ -51,10 +59,17 @@ if (angle_use_x11) {
 
 if (is_fuchsia) {
   _util_sources += [
+    "fuchsia/FuchsiaPixmap.cpp",
+    "fuchsia/FuchsiaPixmap.h",
     "fuchsia/ScenicWindow.cpp",
     "fuchsia/ScenicWindow.h",
   ]
-} else if (use_ozone) {
+} else if (use_ozone && !angle_use_x11 && !angle_use_vulkan_display) {
+  # Use X11 impl by default otherwise switch to fake Ozone impl that does not
+  # seem to do anything real.
+  # TODO(msisov): probably, we need to have a proper support for different
+  # Ozone backends, and be able to switch between them for proper tests.
+  # For example, Wayland, X11, etc.
   _util_sources += [
     "ozone/OzonePixmap.cpp",
     "ozone/OzoneWindow.cpp",
@@ -133,7 +148,7 @@ angle_source_set("angle_util_loader") {
 config("angle_util_config") {
   # Force users to include "util/header.h" instead of just "header.h".
   include_dirs = [ ".." ]
-  if (is_linux && angle_use_x11) {
+  if ((is_linux || is_chromeos) && angle_use_x11) {
     libs = [ "X11" ]
   }
 }
@@ -156,14 +171,13 @@ foreach(is_shared_library,
   target(library_type, library_name) {
     testonly = true
     sources = _util_sources
-    deps = [ "$angle_root:angle_common" ]
     public_deps = [
       ":angle_test_utils",
       ":angle_util_loader_headers",
     ]
     libs = []
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       libs += [
         "rt",
         "dl",
@@ -171,15 +185,13 @@ foreach(is_shared_library,
     }
 
     if (is_mac) {
-      libs += [
+      frameworks = [
         "AppKit.framework",
         "QuartzCore.framework",
       ]
     }
 
     if (is_android) {
-      # To prevent linux sources filtering on android
-      set_sources_assignment_filter([])
       libs += [
         "android",
         "log",
@@ -268,7 +280,8 @@ config("angle_test_util_config") {
 
 angle_source_set("angle_test_utils") {
   public_configs = [ ":angle_test_util_config" ]
-  deps = [ "$angle_root:angle_common" ]
+  public_deps = [ "$angle_root:angle_common" ]
+  deps = []
   sources = [
     "Timer.cpp",
     "Timer.h",

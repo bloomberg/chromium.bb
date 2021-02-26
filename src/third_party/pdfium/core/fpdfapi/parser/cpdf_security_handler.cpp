@@ -19,7 +19,9 @@
 #include "core/fpdfapi/parser/cpdf_object.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fxcrt/fx_random.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/check_op.h"
+#include "third_party/base/notreached.h"
+#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -552,7 +554,7 @@ void CPDF_SecurityHandler::OnCreateInternal(CPDF_Dictionary* pEncryptDict,
 
   if (m_Revision >= 5) {
     uint32_t random[4];
-    FX_Random_GenerateMT(random, FX_ArraySize(random));
+    FX_Random_GenerateMT(random, pdfium::size(random));
     CRYPT_sha2_context sha;
     CRYPT_SHA256Start(&sha);
     CRYPT_SHA256Update(&sha, reinterpret_cast<uint8_t*>(random),
@@ -718,5 +720,5 @@ void CPDF_SecurityHandler::AES256_SetPerms(CPDF_Dictionary* pEncryptDict) {
 
 void CPDF_SecurityHandler::InitCryptoHandler() {
   m_pCryptoHandler =
-      pdfium::MakeUnique<CPDF_CryptoHandler>(m_Cipher, m_EncryptKey, m_KeyLen);
+      std::make_unique<CPDF_CryptoHandler>(m_Cipher, m_EncryptKey, m_KeyLen);
 }

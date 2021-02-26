@@ -234,6 +234,11 @@ class ProcessManager : public KeyedService,
   std::vector<WorkerId> GetServiceWorkers(const ExtensionId& extension_id,
                                           int render_process_id) const;
 
+  // Returns all the Service Worker infos that is active for the extension with
+  // |extension_id|.
+  std::vector<WorkerId> GetServiceWorkersForExtension(
+      const ExtensionId& extension_id) const;
+
   bool startup_background_hosts_created_for_test() const {
     return startup_background_hosts_created_;
   }
@@ -243,7 +248,7 @@ class ProcessManager : public KeyedService,
  protected:
   static ProcessManager* Create(content::BrowserContext* context);
 
-  // |context| is incognito pass the master context as |original_context|.
+  // |context| is incognito pass the original context as |original_context|.
   // Otherwise pass the same context for both. Pass the ExtensionRegistry for
   // |context| as |registry|, or override it for testing.
   ProcessManager(content::BrowserContext* context,

@@ -81,9 +81,10 @@ MenuButtonController::PressedLock::~PressedLock() {
 
 MenuButtonController::MenuButtonController(
     Button* button,
-    ButtonListener* listener,
+    Button::PressedCallback callback,
     std::unique_ptr<ButtonControllerDelegate> delegate)
-    : ButtonController(button, std::move(delegate)), listener_(listener) {
+    : ButtonController(button, std::move(delegate)),
+      callback_(std::move(callback)) {
   // Triggers on button press by default, unless drag-and-drop is enabled, see
   // MenuButtonController::IsTriggerableEventType.
   set_notify_action(ButtonController::NotifyAction::kOnPress);
@@ -98,9 +99,9 @@ bool MenuButtonController::OnMousePressed(const ui::MouseEvent& event) {
   is_intentional_menu_trigger_ =
       (TimeTicks::Now() - menu_closed_time_) >= kMinimumTimeBetweenButtonClicks;
 
-  if (button()->request_focus_on_press())
+  if (button()->GetRequestFocusOnPress())
     button()->RequestFocus();
-  if (button()->state() != Button::STATE_DISABLED &&
+  if (button()->GetState() != Button::STATE_DISABLED &&
       button()->HitTestPoint(event.location()) && IsTriggerableEvent(event)) {
     return Activate(&event);
   }
@@ -112,12 +113,12 @@ bool MenuButtonController::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void MenuButtonController::OnMouseReleased(const ui::MouseEvent& event) {
-  if (button()->state() != Button::STATE_DISABLED &&
+  if (button()->GetState() != Button::STATE_DISABLED &&
       delegate()->IsTriggerableEvent(event) &&
       button()->HitTestPoint(event.location()) && !delegate()->InDrag()) {
     Activate(&event);
   } else {
-    if (button()->hide_ink_drop_when_showing_context_menu())
+    if (button()->GetHideInkDropWhenShowingContextMenu())
       button()->AnimateInkDrop(InkDropState::HIDDEN, &event);
     ButtonController::OnMouseReleased(event);
   }
@@ -180,35 +181,20 @@ void MenuButtonController::UpdateAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
 }
 
-void MenuButtonController::OnStateChanged(LabelButton::ButtonState old_state) {
-  // State change occurs in IncrementPressedLocked() and
-  // DecrementPressedLocked().
-  if (pressed_lock_count_ != 0) {
-    // The button's state was changed while it was supposed to be locked in a
-    // pressed state. This shouldn't happen, but conceivably could if a caller
-    // tries to switch from enabled to disabled or vice versa while the button
-    // is pressed.
-    if (button()->state() == Button::STATE_NORMAL)
-      should_disable_after_press_ = false;
-    else if (button()->state() == Button::STATE_DISABLED)
-      should_disable_after_press_ = true;
-  }
-}
-
 bool MenuButtonController::IsTriggerableEvent(const ui::Event& event) {
   return ButtonController::IsTriggerableEvent(event) &&
          IsTriggerableEventType(event) && is_intentional_menu_trigger_;
 }
 
 void MenuButtonController::OnGestureEvent(ui::GestureEvent* event) {
-  if (button()->state() != Button::STATE_DISABLED) {
+  if (button()->GetState() != Button::STATE_DISABLED) {
     auto ref = weak_factory_.GetWeakPtr();
     if (delegate()->IsTriggerableEvent(*event) && !Activate(event)) {
-      // When |Activate()| returns |false|, it means the click was handled by
-      // a button listener and has handled the gesture event. So, there is no
-      // need to further process the gesture event here. However, if the
-      // listener didn't run menu code, we should make sure to reset our state.
-      if (ref && button()->state() == Button::STATE_HOVERED)
+      // When Activate() returns false, it means the click was handled by a
+      // button listener and has handled the gesture event. So, there is no need
+      // to further process the gesture event here. However, if the listener
+      // didn't run menu code, we should make sure to reset our state.
+      if (ref && button()->GetState() == Button::STATE_HOVERED)
         button()->SetState(Button::STATE_NORMAL);
 
       return;
@@ -217,7 +203,7 @@ void MenuButtonController::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       if (pressed_lock_count_ == 0)
         button()->SetState(Button::STATE_HOVERED);
-    } else if (button()->state() == Button::STATE_HOVERED &&
+    } else if (button()->GetState() == Button::STATE_HOVERED &&
                (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
                 event->type() == ui::ET_GESTURE_END) &&
                pressed_lock_count_ == 0) {
@@ -228,7 +214,7 @@ void MenuButtonController::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 bool MenuButtonController::Activate(const ui::Event* event) {
-  if (listener_) {
+  if (callback_) {
     // We're about to show the menu from a mouse press. By showing from the
     // mouse press event we block RootView in mouse dispatching. This also
     // appears to cause RootView to get a mouse pressed BEFORE the mouse
@@ -245,7 +231,7 @@ bool MenuButtonController::Activate(const ui::Event* event) {
     bool increment_pressed_lock_called = false;
     increment_pressed_lock_called_ = &increment_pressed_lock_called;
 
-    // Allow for ButtonPressed() to delete this.
+    // Allow for the button callback to delete this.
     auto ref = weak_factory_.GetWeakPtr();
 
     // TODO(pbos): Make sure we always propagate an event. This requires changes
@@ -255,8 +241,8 @@ bool MenuButtonController::Activate(const ui::Event* event) {
     if (!event)
       event = &fake_event;
     // We don't set our state here. It's handled in the MenuController code or
-    // by our click listener.
-    listener_->ButtonPressed(button(), *event);
+    // by the callback.
+    callback_.Run(*event);
 
     if (!ref) {
       // The menu was deleted while showing. Don't attempt any processing.
@@ -288,7 +274,7 @@ bool MenuButtonController::IsTriggerableEventType(const ui::Event& event) {
     // trigger button actions. For example, menus should only active on left
     // mouse button, to prevent a menu from being activated when a right-click
     // would also activate a context menu.
-    if (!(mouse_event->button_flags() & button()->triggerable_event_flags()))
+    if (!(mouse_event->button_flags() & button()->GetTriggerableEventFlags()))
       return false;
 
     // Activate on release if dragging, otherwise activate based on
@@ -308,9 +294,15 @@ void MenuButtonController::IncrementPressedLocked(
     const ui::LocatedEvent* event) {
   ++pressed_lock_count_;
   if (increment_pressed_lock_called_)
-    *(increment_pressed_lock_called_) = true;
-  should_disable_after_press_ = button()->state() == Button::STATE_DISABLED;
-  if (button()->state() != Button::STATE_PRESSED) {
+    *increment_pressed_lock_called_ = true;
+  if (!state_changed_subscription_) {
+    state_changed_subscription_ =
+        button()->AddStateChangedCallback(base::BindRepeating(
+            &MenuButtonController::OnButtonStateChangedWhilePressedLocked,
+            base::Unretained(this)));
+  }
+  should_disable_after_press_ = button()->GetState() == Button::STATE_DISABLED;
+  if (button()->GetState() != Button::STATE_PRESSED) {
     if (snap_ink_drop_to_activated)
       delegate()->GetInkDrop()->SnapToActivated();
     else
@@ -327,6 +319,7 @@ void MenuButtonController::DecrementPressedLocked() {
   // If this was the last lock, manually reset state to the desired state.
   if (pressed_lock_count_ == 0) {
     menu_closed_time_ = TimeTicks::Now();
+    state_changed_subscription_.reset();
     LabelButton::ButtonState desired_state = Button::STATE_NORMAL;
     if (should_disable_after_press_) {
       desired_state = Button::STATE_DISABLED;
@@ -340,9 +333,20 @@ void MenuButtonController::DecrementPressedLocked() {
     button()->SetState(desired_state);
     // The widget may be null during shutdown. If so, it doesn't make sense to
     // try to add an ink drop effect.
-    if (button()->GetWidget() && button()->state() != Button::STATE_PRESSED)
+    if (button()->GetWidget() && button()->GetState() != Button::STATE_PRESSED)
       button()->AnimateInkDrop(InkDropState::DEACTIVATED, nullptr /* event */);
   }
+}
+
+void MenuButtonController::OnButtonStateChangedWhilePressedLocked() {
+  // The button's state was changed while it was supposed to be locked in a
+  // pressed state. This shouldn't happen, but conceivably could if a caller
+  // tries to switch from enabled to disabled or vice versa while the button is
+  // pressed.
+  if (button()->GetState() == Button::STATE_NORMAL)
+    should_disable_after_press_ = false;
+  else if (button()->GetState() == Button::STATE_DISABLED)
+    should_disable_after_press_ = true;
 }
 
 }  // namespace views

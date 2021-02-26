@@ -10,7 +10,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
@@ -171,6 +171,7 @@ constexpr const char* kExtensions[] = {
     "GL_OES_compressed_ETC1_RGB8_texture",
     "GL_OES_depth24",
     "GL_OES_depth_texture",
+    "GL_OES_draw_buffers_indexed",
     "GL_OES_EGL_image_external",
     "GL_OES_element_index_uint",
     "GL_OES_fbo_render_mipmap",
@@ -418,7 +419,8 @@ class CommandBufferSetup {
       mailbox.SetName(name);
       shared_image_factory_->CreateSharedImage(
           mailbox, viz::RGBA_8888, gfx::Size(256, 256),
-          gfx::ColorSpace::CreateSRGB(), gfx::kNullAcceleratedWidget, usage);
+          gfx::ColorSpace::CreateSRGB(), kTopLeft_GrSurfaceOrigin,
+          kPremul_SkAlphaType, gfx::kNullAcceleratedWidget, usage);
     }
 
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)

@@ -58,7 +58,7 @@ struct Service {
 
 class DemoSocketClient : public UdpSocket::Client {
  public:
-  DemoSocketClient(MdnsResponderAdapterImpl* mdns) : mdns_(mdns) {}
+  explicit DemoSocketClient(MdnsResponderAdapterImpl* mdns) : mdns_(mdns) {}
 
   void OnError(UdpSocket* socket, Error error) override {
     // TODO(crbug.com/openscreen/66): Change to OSP_LOG_FATAL.
@@ -86,7 +86,7 @@ void sigusr1_dump_services(int) {
 }
 
 void sigint_stop(int) {
-  OSP_LOG << "caught SIGINT, exiting...";
+  OSP_LOG_INFO << "caught SIGINT, exiting...";
   g_done = true;
 }
 
@@ -121,7 +121,7 @@ void SignalThings() {
   sigaction(SIGUSR1, &usr1_sa, &unused);
   sigaction(SIGINT, &int_sa, &unused);
 
-  OSP_LOG << "signal handlers setup" << std::endl << "pid: " << getpid();
+  OSP_LOG_INFO << "signal handlers setup" << std::endl << "pid: " << getpid();
 }
 
 std::vector<std::unique_ptr<UdpSocket>> SetUpMulticastSockets(
@@ -143,21 +143,21 @@ std::vector<std::unique_ptr<UdpSocket>> SetUpMulticastSockets(
     socket->SetMulticastOutboundInterface(ifindex);
     socket->Bind();
 
-    OSP_LOG << "listening on interface " << ifindex;
+    OSP_LOG_INFO << "listening on interface " << ifindex;
     sockets.emplace_back(std::move(socket));
   }
   return sockets;
 }
 
 void LogService(const Service& s) {
-  OSP_LOG << "PTR: (" << s.service_instance << ")" << std::endl
-          << "SRV: " << s.domain_name << ":" << s.port << std::endl
-          << "TXT:";
+  OSP_LOG_INFO << "PTR: (" << s.service_instance << ")" << std::endl
+               << "SRV: " << s.domain_name << ":" << s.port << std::endl
+               << "TXT:";
 
   for (const auto& l : s.txt) {
-    OSP_LOG << " | " << l;
+    OSP_LOG_INFO << " | " << l;
   }
-  OSP_LOG << "A: " << s.address;
+  OSP_LOG_INFO << "A: " << s.address;
 }
 
 void HandleEvents(MdnsResponderAdapterImpl* mdns_adapter) {
@@ -268,7 +268,7 @@ void BrowseDemo(TaskRunner* task_runner,
   const std::vector<InterfaceInfo> interfaces = GetNetworkInterfaces();
   std::vector<NetworkInterfaceIndex> index_list;
   for (const auto& interface : interfaces) {
-    OSP_LOG << "Found interface: " << interface;
+    OSP_LOG_INFO << "Found interface: " << interface;
     if (!interface.addresses.empty()) {
       index_list.push_back(interface.index);
     }
@@ -310,7 +310,7 @@ void BrowseDemo(TaskRunner* task_runner,
   while (!g_done) {
     HandleEvents(mdns_adapter.get());
     if (g_dump_services) {
-      OSP_LOG << "num services: " << g_services->size();
+      OSP_LOG_INFO << "num services: " << g_services->size();
       for (const auto& s : *g_services) {
         LogService(s.second);
       }
@@ -323,7 +323,7 @@ void BrowseDemo(TaskRunner* task_runner,
     }
     mdns_adapter->RunTasks();
   }
-  OSP_LOG << "num services: " << g_services->size();
+  OSP_LOG_INFO << "num services: " << g_services->size();
   for (const auto& s : *g_services) {
     LogService(s.second);
   }
@@ -361,7 +361,8 @@ int main(int argc, char** argv) {
   openscreen::osp::ServiceMap services;
   openscreen::osp::g_services = &services;
 
-  PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50});
+  PlatformClientPosix::Create(std::chrono::milliseconds(50),
+                              std::chrono::milliseconds(50));
 
   openscreen::osp::BrowseDemo(
       PlatformClientPosix::GetInstance()->GetTaskRunner(), labels[0], labels[1],

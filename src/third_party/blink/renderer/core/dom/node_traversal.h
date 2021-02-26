@@ -75,9 +75,8 @@ class NodeTraversal {
   static Node* Previous(const Node&, const Node* stay_within = nullptr);
 
   // Like previous, but skips children and starts with the next sibling.
-  CORE_EXPORT static Node* PreviousSkippingChildren(
-      const Node&,
-      const Node* stay_within = nullptr);
+  static Node* PreviousSkippingChildren(const Node&,
+                                        const Node* stay_within = nullptr);
 
   // Like next, but visits parents after their children.
   static Node* NextPostOrder(const Node&, const Node* stay_within = nullptr);
@@ -87,10 +86,12 @@ class NodeTraversal {
                                  const Node* stay_within = nullptr);
 
   // Pre-order traversal including the pseudo-elements.
-  static Node* PreviousIncludingPseudo(const Node&,
-                                       const Node* stay_within = nullptr);
-  static Node* NextIncludingPseudo(const Node&,
-                                   const Node* stay_within = nullptr);
+  CORE_EXPORT static Node* PreviousIncludingPseudo(
+      const Node&,
+      const Node* stay_within = nullptr);
+  CORE_EXPORT static Node* NextIncludingPseudo(
+      const Node&,
+      const Node* stay_within = nullptr);
   static Node* NextIncludingPseudoSkippingChildren(
       const Node&,
       const Node* stay_within = nullptr);

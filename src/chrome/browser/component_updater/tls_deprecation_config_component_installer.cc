@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -172,9 +172,7 @@ TLSDeprecationConfigComponentInstallerPolicy::GetMimeTypes() const {
   return std::vector<std::string>();
 }
 
-void RegisterTLSDeprecationConfigComponent(
-    ComponentUpdateService* cus,
-    const base::FilePath& user_data_dir) {
+void RegisterTLSDeprecationConfigComponent(ComponentUpdateService* cus) {
   DVLOG(1) << "Registering TLS Deprecation Config component.";
 
   auto installer = base::MakeRefCounted<ComponentInstaller>(

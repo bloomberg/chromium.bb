@@ -20,7 +20,6 @@
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/formfiller/cffl_formfiller.h"
 #include "public/fpdf_fwlevent.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -40,9 +39,9 @@ void UpdateAnnotRects(CPDFSDK_PageView* pPageView, CPDFSDK_BAAnnot* pBAAnnot) {
 
 }  // namespace
 
-CPDFSDK_BAAnnotHandler::CPDFSDK_BAAnnotHandler() {}
+CPDFSDK_BAAnnotHandler::CPDFSDK_BAAnnotHandler() = default;
 
-CPDFSDK_BAAnnotHandler::~CPDFSDK_BAAnnotHandler() {}
+CPDFSDK_BAAnnotHandler::~CPDFSDK_BAAnnotHandler() = default;
 
 void CPDFSDK_BAAnnotHandler::SetFormFillEnvironment(
     CPDFSDK_FormFillEnvironment* pFormFillEnv) {
@@ -56,7 +55,7 @@ bool CPDFSDK_BAAnnotHandler::CanAnswer(CPDFSDK_Annot* pAnnot) {
 std::unique_ptr<CPDFSDK_Annot> CPDFSDK_BAAnnotHandler::NewAnnot(
     CPDF_Annot* pAnnot,
     CPDFSDK_PageView* pPageView) {
-  return pdfium::MakeUnique<CPDFSDK_BAAnnot>(pAnnot, pPageView);
+  return std::make_unique<CPDFSDK_BAAnnot>(pAnnot, pPageView);
 }
 
 void CPDFSDK_BAAnnotHandler::ReleaseAnnot(
@@ -211,8 +210,8 @@ bool CPDFSDK_BAAnnotHandler::IsFocusableAnnot(
     const CPDF_Annot::Subtype& annot_type) const {
   ASSERT(annot_type != CPDF_Annot::Subtype::WIDGET);
 
-  return pdfium::ContainsValue(
-      form_fill_environment_->GetFocusableAnnotSubtypes(), annot_type);
+  return pdfium::Contains(form_fill_environment_->GetFocusableAnnotSubtypes(),
+                          annot_type);
 }
 
 void CPDFSDK_BAAnnotHandler::InvalidateRect(CPDFSDK_Annot* annot) {
@@ -274,6 +273,10 @@ WideString CPDFSDK_BAAnnotHandler::GetSelectedText(CPDFSDK_Annot* pAnnot) {
 
 void CPDFSDK_BAAnnotHandler::ReplaceSelection(CPDFSDK_Annot* pAnnot,
                                               const WideString& text) {}
+
+bool CPDFSDK_BAAnnotHandler::SelectAllText(CPDFSDK_Annot* pAnnot) {
+  return false;
+}
 
 bool CPDFSDK_BAAnnotHandler::CanUndo(CPDFSDK_Annot* pAnnot) {
   return false;

@@ -36,6 +36,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink-forward.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -54,13 +55,6 @@ enum RequestInitiatorContext : uint8_t {
 enum SynchronousPolicy : uint8_t {
   kRequestSynchronously,
   kRequestAsynchronously
-};
-
-// Used by the ThreadableLoader to turn off part of the CORS handling
-// logic in the ResourceFetcher to use its own CORS handling logic.
-enum CorsHandlingByResourceFetcher {
-  kDisableCorsHandlingByResourceFetcher,
-  kEnableCorsHandlingByResourceFetcher,
 };
 
 // Was the request generated from a "parser-inserted" element?
@@ -87,7 +81,7 @@ struct PLATFORM_EXPORT ResourceLoaderOptions {
   // resource_loader_options.cc because they require the full definition of
   // URLLoaderFactory for |url_loader_factory| data member, and we'd like
   // to avoid to include huge url_loader_factory.mojom-blink.h.
-  ResourceLoaderOptions();
+  explicit ResourceLoaderOptions(scoped_refptr<const DOMWrapperWorld> world);
   ResourceLoaderOptions(const ResourceLoaderOptions& other);
   ResourceLoaderOptions& operator=(const ResourceLoaderOptions& other);
   ~ResourceLoaderOptions();
@@ -100,14 +94,6 @@ struct PLATFORM_EXPORT ResourceLoaderOptions {
   RequestInitiatorContext request_initiator_context;
   SynchronousPolicy synchronous_policy;
 
-  // When set to kDisableCorsHandlingByResourceFetcher, the ResourceFetcher
-  // suppresses part of its CORS handling logic.
-  // Used by ThreadableLoader which does CORS handling by itself.
-  CorsHandlingByResourceFetcher cors_handling_by_resource_fetcher;
-
-  // Corresponds to the CORS flag in the Fetch spec.
-  bool cors_flag;
-
   // TODO(crbug.com/1064920): Remove this once PlzDedicatedWorker ships.
   RejectCoepUnsafeNone reject_coep_unsafe_none = RejectCoepUnsafeNone(false);
 
@@ -116,12 +102,20 @@ struct PLATFORM_EXPORT ResourceLoaderOptions {
   ParserDisposition parser_disposition;
   CacheAwareLoadingEnabled cache_aware_loading_enabled;
 
+  // The world in which this request initiated. This will be used for CSP checks
+  // if specified. If null, the CSP bound to the FetchContext is used.
+  scoped_refptr<const DOMWrapperWorld> world_for_csp;
+
   // If not null, this URLLoaderFactory should be used to load this resource
   // rather than whatever factory the system might otherwise use.
   // Used for example for loading blob: URLs and for prefetch loading.
   scoped_refptr<base::RefCountedData<
       mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>>>
       url_loader_factory;
+
+  // Used by DevTools to emulate unsupported image types. See crbug.com/1130556.
+  scoped_refptr<base::RefCountedData<HashSet<String>>>
+      unsupported_image_mime_types;
 };
 
 }  // namespace blink

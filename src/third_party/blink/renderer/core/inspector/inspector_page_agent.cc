@@ -34,14 +34,14 @@
 
 #include "base/containers/span.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
-#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Page.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -71,6 +72,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -78,6 +80,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -135,6 +138,16 @@ String NavigationPolicyToProtocol(NavigationPolicy policy) {
   return DispositionEnum::CurrentTab;
 }
 
+String FrameDetachTypeToProtocol(FrameDetachType type) {
+  namespace ReasonEnum = protocol::Page::FrameDetached::ReasonEnum;
+  switch (type) {
+    case FrameDetachType::kRemove:
+      return ReasonEnum::Remove;
+    case FrameDetachType::kSwap:
+      return ReasonEnum::Swap;
+  }
+}
+
 Resource* CachedResource(LocalFrame* frame,
                          const KURL& url,
                          InspectorResourceContentLoader* loader) {
@@ -153,7 +166,7 @@ Resource* CachedResource(LocalFrame* frame,
   }
   if (!cached_resource) {
     cached_resource = GetMemoryCache()->ResourceForURL(
-        url, document->Fetcher()->GetCacheIdentifier());
+        url, document->Fetcher()->GetCacheIdentifier(url));
   }
   if (!cached_resource)
     cached_resource = loader->ResourceForURL(url);
@@ -235,7 +248,7 @@ static std::unique_ptr<TextResourceDecoder> CreateResourceTextDecoder(
         TextResourceDecoderOptions::kPlainTextContent,
         WTF::TextEncoding(text_encoding_name)));
   }
-  if (DOMImplementation::IsXMLMIMEType(mime_type)) {
+  if (MIMETypeRegistry::IsXMLMIMEType(mime_type)) {
     TextResourceDecoderOptions options(TextResourceDecoderOptions::kXMLContent);
     options.SetUseLenientXMLDecoding();
     return std::make_unique<TextResourceDecoder>(options);
@@ -249,7 +262,7 @@ static std::unique_ptr<TextResourceDecoder> CreateResourceTextDecoder(
     return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent, UTF8Encoding()));
   }
-  if (DOMImplementation::IsTextMIMEType(mime_type)) {
+  if (MIMETypeRegistry::IsPlainTextMIMEType(mime_type)) {
     return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent,
         WTF::TextEncoding("ISO-8859-1")));
@@ -855,13 +868,14 @@ scoped_refptr<DOMWrapperWorld> InspectorPageAgent::EnsureDOMWrapperWorld(
   auto world_it = frame_worlds.find(world_name);
   if (world_it != frame_worlds.end())
     return world_it->value;
+  LocalDOMWindow* window = frame->DomWindow();
   scoped_refptr<DOMWrapperWorld> world =
-      frame->GetScriptController().CreateNewInspectorIsolatedWorld(world_name);
+      window->GetScriptController().CreateNewInspectorIsolatedWorld(world_name);
   if (!world)
     return nullptr;
   frame_worlds.Set(world_name, world);
   scoped_refptr<SecurityOrigin> security_origin =
-      frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
+      window->GetSecurityOrigin()->IsolatedCopy();
   if (grant_universal_access)
     security_origin->GrantUniversalAccess();
   DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world->GetWorldId(),
@@ -882,9 +896,9 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
     const String source = scripts_to_evaluate_on_load_.Get(key);
     const String world_name = worlds_to_evaluate_on_load_.Get(key);
     if (world_name.IsEmpty()) {
-      frame->GetScriptController().ExecuteScriptInMainWorld(
-          source, ScriptSourceLocationType::kUnknown,
-          ScriptController::kExecuteScriptWhenScriptsDisabled);
+      ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
+          ->RunScript(frame->DomWindow(),
+                      ScriptController::kExecuteScriptWhenScriptsDisabled);
       continue;
     }
 
@@ -896,14 +910,16 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
     // Note: An error event in an isolated world will never be dispatched to
     // a foreign world.
     v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
-    frame->GetScriptController().ExecuteScriptInIsolatedWorld(
-        world->GetWorldId(), source, KURL(), SanitizeScriptErrors::kSanitize);
+    ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
+        ->RunScriptInIsolatedWorldAndReturnValue(frame->DomWindow(),
+                                                 world->GetWorldId());
   }
 
   if (!script_to_evaluate_on_load_once_.IsEmpty()) {
-    frame->GetScriptController().ExecuteScriptInMainWorld(
-        script_to_evaluate_on_load_once_, ScriptSourceLocationType::kUnknown,
-        ScriptController::kExecuteScriptWhenScriptsDisabled);
+    ClassicScript::CreateUnspecifiedScript(
+        ScriptSourceCode(script_to_evaluate_on_load_once_))
+        ->RunScript(frame->DomWindow(),
+                    ScriptController::kExecuteScriptWhenScriptsDisabled);
   }
 }
 
@@ -945,8 +961,10 @@ void InspectorPageAgent::FrameAttachedToParent(LocalFrame* frame) {
   GetFrontend()->flush();
 }
 
-void InspectorPageAgent::FrameDetachedFromParent(LocalFrame* frame) {
-  GetFrontend()->frameDetached(IdentifiersFactory::FrameId(frame));
+void InspectorPageAgent::FrameDetachedFromParent(LocalFrame* frame,
+                                                 FrameDetachType type) {
+  GetFrontend()->frameDetached(IdentifiersFactory::FrameId(frame),
+                               FrameDetachTypeToProtocol(type));
 }
 
 bool InspectorPageAgent::ScreencastEnabled() {
@@ -1049,17 +1067,64 @@ void InspectorPageAgent::PageLayoutInvalidated(bool resized) {
     client_->PageLayoutInvalidated(resized);
 }
 
-void InspectorPageAgent::WindowOpen(Document* document,
-                                    const String& url,
+void InspectorPageAgent::WindowOpen(const KURL& url,
                                     const AtomicString& window_name,
                                     const WebWindowFeatures& window_features,
                                     bool user_gesture) {
-  KURL completed_url = url.IsEmpty() ? BlankURL() : document->CompleteURL(url);
-  GetFrontend()->windowOpen(completed_url.GetString(), window_name,
+  GetFrontend()->windowOpen(url.IsEmpty() ? BlankURL() : url, window_name,
                             GetEnabledWindowFeatures(window_features),
                             user_gesture);
   GetFrontend()->flush();
 }
+
+namespace {
+protocol::Page::SecureContextType CreateProtocolSecureContextType(
+    SecureContextModeExplanation explanation) {
+  switch (explanation) {
+    case SecureContextModeExplanation::kSecure:
+      return protocol::Page::SecureContextTypeEnum::Secure;
+    case SecureContextModeExplanation::kInsecureAncestor:
+      return protocol::Page::SecureContextTypeEnum::InsecureAncestor;
+    case SecureContextModeExplanation::kInsecureScheme:
+      return protocol::Page::SecureContextTypeEnum::InsecureScheme;
+    case SecureContextModeExplanation::kSecureLocalhost:
+      return protocol::Page::SecureContextTypeEnum::SecureLocalhost;
+  }
+}
+protocol::Page::CrossOriginIsolatedContextType
+CreateProtocolCrossOriginIsolatedContextType(ExecutionContext* context) {
+  if (context->CrossOriginIsolatedCapability()) {
+    return protocol::Page::CrossOriginIsolatedContextTypeEnum::Isolated;
+  } else if (context->IsFeatureEnabled(
+                 mojom::blink::FeaturePolicyFeature::kCrossOriginIsolated)) {
+    return protocol::Page::CrossOriginIsolatedContextTypeEnum::NotIsolated;
+  }
+  return protocol::Page::CrossOriginIsolatedContextTypeEnum::
+      NotIsolatedFeatureDisabled;
+}
+std::unique_ptr<std::vector<protocol::Page::GatedAPIFeatures>>
+CreateGatedAPIFeaturesArray(LocalDOMWindow* window) {
+  auto features =
+      std::make_unique<std::vector<protocol::Page::GatedAPIFeatures>>();
+  // SABs are available if at least one of the following is true:
+  //  - features::kWebAssemblyThreads enabled
+  //  - features::kSharedArrayBuffer enabled
+  //  - agent has the cross-origin isolated bit (but not necessarily the
+  //    capability)
+  if (RuntimeEnabledFeatures::SharedArrayBufferEnabled(window) ||
+      Agent::IsCrossOriginIsolated()) {
+    features->push_back(
+        protocol::Page::GatedAPIFeaturesEnum::SharedArrayBuffers);
+  }
+  if (window->SharedArrayBufferTransferAllowed()) {
+    features->push_back(protocol::Page::GatedAPIFeaturesEnum::
+                            SharedArrayBuffersTransferAllowed);
+  }
+  // TODO(chromium:1139899): Report availablility of performance.measureMemory()
+  // and performance.profile() once they are gated/available, respectively.
+  return features;
+}
+}  // namespace
 
 std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
     LocalFrame* frame) {
@@ -1069,9 +1134,20 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
           .setId(IdentifiersFactory::FrameId(frame))
           .setLoaderId(IdentifiersFactory::LoaderId(loader))
           .setUrl(UrlWithoutFragment(loader->Url()).GetString())
+          .setDomainAndRegistry(blink::network_utils::GetDomainAndRegistry(
+              loader->Url().Host(),
+              blink::network_utils::PrivateRegistryFilter::
+                  kIncludePrivateRegistries))
           .setMimeType(frame->Loader().GetDocumentLoader()->MimeType())
           .setSecurityOrigin(
               SecurityOrigin::Create(loader->Url())->ToRawString())
+          .setSecureContextType(CreateProtocolSecureContextType(
+              frame->DomWindow()
+                  ->GetSecurityContext()
+                  .GetSecureContextModeExplanation()))
+          .setCrossOriginIsolatedContextType(
+              CreateProtocolCrossOriginIsolatedContextType(frame->DomWindow()))
+          .setGatedAPIFeatures(CreateGatedAPIFeaturesArray(frame->DomWindow()))
           .build();
   if (loader->Url().HasFragmentIdentifier())
     frame_object->setUrlFragment("#" + loader->Url().FragmentIdentifier());
@@ -1087,6 +1163,13 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
   }
   if (loader && !loader->UnreachableURL().IsEmpty())
     frame_object->setUnreachableUrl(loader->UnreachableURL().GetString());
+  if (frame->IsAdRoot()) {
+    frame_object->setAdFrameType(protocol::Page::AdFrameTypeEnum::Root);
+  } else if (frame->IsAdSubframe()) {
+    frame_object->setAdFrameType(protocol::Page::AdFrameTypeEnum::Child);
+  } else {
+    frame_object->setAdFrameType(protocol::Page::AdFrameTypeEnum::None);
+  }
   return frame_object;
 }
 
@@ -1263,7 +1346,7 @@ protocol::Response InspectorPageAgent::createIsolatedWorld(
     return Response::ServerError("Could not create isolated world");
 
   LocalWindowProxy* isolated_world_window_proxy =
-      frame->GetScriptController().WindowProxy(*world);
+      frame->DomWindow()->GetScriptController().WindowProxy(*world);
   v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
   *execution_context_id = v8_inspector::V8ContextInfo::executionContextId(
       isolated_world_window_proxy->ContextIfInitialized());
@@ -1428,7 +1511,7 @@ Response InspectorPageAgent::generateTestReport(const String& message,
   return Response::Success();
 }
 
-void InspectorPageAgent::Trace(Visitor* visitor) {
+void InspectorPageAgent::Trace(Visitor* visitor) const {
   visitor->Trace(inspected_frames_);
   visitor->Trace(inspector_resource_content_loader_);
   visitor->Trace(isolated_worlds_);

@@ -207,7 +207,7 @@ int main(int argc, char **argv) {
     die("Failed to open %s for reading.", infile0_arg);
 
   if (aom_codec_enc_init(&codec, encoder, &cfg, 0))
-    die_codec(&codec, "Failed to initialize encoder");
+    die("Failed to initialize encoder");
   if (aom_codec_control(&codec, AOME_SET_CPUUSED, 8))
     die_codec(&codec, "Failed to set cpu to 8");
 

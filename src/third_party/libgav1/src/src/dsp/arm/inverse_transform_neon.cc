@@ -1193,29 +1193,24 @@ LIBGAV1_ALWAYS_INLINE void Adst4_NEON(void* dest, const void* source,
     }
   }
 
-  const int16x4_t kAdst4Multiplier_0 = vdup_n_s16(kAdst4Multiplier[0]);
-  const int16x4_t kAdst4Multiplier_1 = vdup_n_s16(kAdst4Multiplier[1]);
-  const int16x4_t kAdst4Multiplier_2 = vdup_n_s16(kAdst4Multiplier[2]);
-  const int16x4_t kAdst4Multiplier_3 = vdup_n_s16(kAdst4Multiplier[3]);
-
   // stage 1.
-  s[5] = vmull_s16(kAdst4Multiplier_1, vget_low_s16(x[3]));
-  s[6] = vmull_s16(kAdst4Multiplier_3, vget_low_s16(x[3]));
+  s[5] = vmull_n_s16(vget_low_s16(x[3]), kAdst4Multiplier[1]);
+  s[6] = vmull_n_s16(vget_low_s16(x[3]), kAdst4Multiplier[3]);
 
   // stage 2.
   const int32x4_t a7 = vsubl_s16(vget_low_s16(x[0]), vget_low_s16(x[2]));
   const int32x4_t b7 = vaddw_s16(a7, vget_low_s16(x[3]));
 
   // stage 3.
-  s[0] = vmull_s16(kAdst4Multiplier_0, vget_low_s16(x[0]));
-  s[1] = vmull_s16(kAdst4Multiplier_1, vget_low_s16(x[0]));
+  s[0] = vmull_n_s16(vget_low_s16(x[0]), kAdst4Multiplier[0]);
+  s[1] = vmull_n_s16(vget_low_s16(x[0]), kAdst4Multiplier[1]);
   // s[0] = s[0] + s[3]
-  s[0] = vmlal_s16(s[0], kAdst4Multiplier_3, vget_low_s16(x[2]));
+  s[0] = vmlal_n_s16(s[0], vget_low_s16(x[2]), kAdst4Multiplier[3]);
   // s[1] = s[1] - s[4]
-  s[1] = vmlsl_s16(s[1], kAdst4Multiplier_0, vget_low_s16(x[2]));
+  s[1] = vmlsl_n_s16(s[1], vget_low_s16(x[2]), kAdst4Multiplier[0]);
 
-  s[3] = vmull_s16(kAdst4Multiplier_2, vget_low_s16(x[1]));
-  s[2] = vmulq_s32(vmovl_s16(kAdst4Multiplier_2), b7);
+  s[3] = vmull_n_s16(vget_low_s16(x[1]), kAdst4Multiplier[2]);
+  s[2] = vmulq_n_s32(b7, kAdst4Multiplier[2]);
 
   // stage 4.
   s[0] = vaddq_s32(s[0], s[5]);
@@ -1304,13 +1299,9 @@ LIBGAV1_ALWAYS_INLINE bool Adst4DcOnlyColumn(void* dest, const void* source,
   do {
     const int16x4_t v_src = vld1_s16(&src[i]);
 
-    const int16x4_t kAdst4Multiplier_0 = vdup_n_s16(kAdst4Multiplier[0]);
-    const int16x4_t kAdst4Multiplier_1 = vdup_n_s16(kAdst4Multiplier[1]);
-    const int16x4_t kAdst4Multiplier_2 = vdup_n_s16(kAdst4Multiplier[2]);
-
-    s[0] = vmull_s16(kAdst4Multiplier_0, v_src);
-    s[1] = vmull_s16(kAdst4Multiplier_1, v_src);
-    s[2] = vmull_s16(kAdst4Multiplier_2, v_src);
+    s[0] = vmull_n_s16(v_src, kAdst4Multiplier[0]);
+    s[1] = vmull_n_s16(v_src, kAdst4Multiplier[1]);
+    s[2] = vmull_n_s16(v_src, kAdst4Multiplier[2]);
 
     const int32x4_t x0 = s[0];
     const int32x4_t x1 = s[1];
@@ -2064,16 +2055,15 @@ LIBGAV1_ALWAYS_INLINE void Identity16Row_NEON(void* dest, const void* source,
   auto* const dst = static_cast<int16_t*>(dest);
   const auto* const src = static_cast<const int16_t*>(source);
   const int32x4_t v_dual_round = vdupq_n_s32((1 + (shift << 1)) << 11);
-  const int16x4_t v_multiplier = vdup_n_s16(kIdentity16Multiplier);
   const int32x4_t v_shift = vdupq_n_s32(-(12 + shift));
 
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 2; ++j) {
       const int16x8_t v_src = vld1q_s16(&src[i * step + j * 8]);
       const int32x4_t v_src_mult_lo =
-          vmlal_s16(v_dual_round, vget_low_s16(v_src), v_multiplier);
-      const int32x4_t v_src_mult_hi =
-          vmlal_s16(v_dual_round, vget_high_s16(v_src), v_multiplier);
+          vmlal_n_s16(v_dual_round, vget_low_s16(v_src), kIdentity16Multiplier);
+      const int32x4_t v_src_mult_hi = vmlal_n_s16(
+          v_dual_round, vget_high_s16(v_src), kIdentity16Multiplier);
       const int32x4_t shift_lo = vqshlq_s32(v_src_mult_lo, v_shift);
       const int32x4_t shift_hi = vqshlq_s32(v_src_mult_hi, v_shift);
       vst1q_s16(&dst[i * step + j * 8],
@@ -3166,7 +3156,7 @@ void InverseTransformInit_NEON() { low_bitdepth::Init8bpp(); }
 
 }  // namespace dsp
 }  // namespace libgav1
-#else   // !LIBGAV1_ENABLE_NEON
+#else  // !LIBGAV1_ENABLE_NEON
 namespace libgav1 {
 namespace dsp {
 

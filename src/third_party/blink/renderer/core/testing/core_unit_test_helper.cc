@@ -19,24 +19,23 @@ namespace blink {
 LocalFrame* SingleChildLocalFrameClient::CreateFrame(
     const AtomicString& name,
     HTMLFrameOwnerElement* owner_element) {
-  DCHECK(!child_) << "This test helper only supports one child frame.";
 
   LocalFrame* parent_frame = owner_element->GetDocument().GetFrame();
   auto* child_client =
       MakeGarbageCollected<LocalFrameClientWithParent>(parent_frame);
-  child_ = MakeGarbageCollected<LocalFrame>(
-      child_client, *parent_frame->GetPage(), owner_element,
+  LocalFrame* child = MakeGarbageCollected<LocalFrame>(
+      child_client, *parent_frame->GetPage(), owner_element, parent_frame,
+      nullptr, FrameInsertType::kInsertInConstructor,
       base::UnguessableToken::Create(), &parent_frame->window_agent_factory(),
-      nullptr);
-  child_->CreateView(IntSize(500, 500), Color::kTransparent);
-  child_->Init();
+      nullptr, /* policy_container */ nullptr);
+  child->CreateView(IntSize(500, 500), Color::kTransparent);
+  child->Init(nullptr);
 
-  return child_.Get();
+  return child;
 }
 
 void LocalFrameClientWithParent::Detached(FrameDetachType) {
-  static_cast<SingleChildLocalFrameClient*>(Parent()->Client())
-      ->DidDetachChild();
+  parent_->RemoveChild(parent_->FirstChild());
 }
 
 void RenderingTestChromeClient::InjectGestureScrollEvent(
@@ -127,9 +126,7 @@ void RenderingTest::SetChildFrameHTML(const String& html) {
 
   // Setting HTML implies the frame loads contents, so we need to advance the
   // state machine to leave the initial empty document state.
-  auto* state_machine = ChildDocument().GetFrame()->Loader().StateMachine();
-  if (state_machine->IsDisplayingInitialEmptyDocument())
-    state_machine->AdvanceTo(FrameLoaderStateMachine::kCommittedFirstRealLoad);
+  ChildDocument().OverrideIsInitialEmptyDocument();
   // And let the frame view exit the initial throttled state.
   ChildDocument().View()->BeginLifecycleUpdates();
 }

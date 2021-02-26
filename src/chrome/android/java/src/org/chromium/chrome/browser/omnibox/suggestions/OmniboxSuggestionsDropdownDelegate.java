@@ -22,6 +22,7 @@ import android.view.WindowInsets;
 import androidx.annotation.NonNull;
 
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.ViewUtils;
@@ -29,7 +30,7 @@ import org.chromium.ui.base.ViewUtils;
 /** Common functionality of the Omnibox suggestions dropdown. */
 class OmniboxSuggestionsDropdownDelegate implements View.OnAttachStateChangeListener {
     private ViewGroup mSuggestionsDropdown;
-    private OmniboxSuggestionsDropdown.Embedder mEmbedder;
+    private OmniboxSuggestionsDropdownEmbedder mEmbedder;
     private OmniboxSuggestionsDropdown.Observer mObserver;
     private View mAnchorView;
     private View mAlignmentView;
@@ -59,7 +60,7 @@ class OmniboxSuggestionsDropdownDelegate implements View.OnAttachStateChangeList
     }
 
     /** Sets the embedder of the dropdown and creates necessary listeners. */
-    public void setEmbedder(OmniboxSuggestionsDropdown.Embedder embedder) {
+    public void setEmbedder(OmniboxSuggestionsDropdownEmbedder embedder) {
         assert mEmbedder == null;
         mEmbedder = embedder;
         mAnchorView = mEmbedder.getAnchorView();
@@ -70,6 +71,8 @@ class OmniboxSuggestionsDropdownDelegate implements View.OnAttachStateChangeList
         mAnchorViewLayoutListener = new OnGlobalLayoutListener() {
             private int mOffsetInWindow;
             private WindowInsets mWindowInsets;
+            private final Rect mTempRect = new Rect();
+            private final Rect mWindowRect = new Rect();
 
             @Override
             public void onGlobalLayout() {
@@ -88,6 +91,10 @@ class OmniboxSuggestionsDropdownDelegate implements View.OnAttachStateChangeList
                 if (Build.VERSION.SDK_INT >= 30) {
                     currentInsets = mAnchorView.getRootWindowInsets();
                     insetsHaveChanged = !currentInsets.equals(mWindowInsets);
+                } else if (isAdaptiveSuggestionsCountEnabled()) {
+                    mEmbedder.getWindowDelegate().getWindowVisibleDisplayFrame(mTempRect);
+                    insetsHaveChanged = !mTempRect.equals(mWindowRect);
+                    mWindowRect.set(mTempRect);
                 }
 
                 if (mOffsetInWindow == offsetInWindow && !insetsHaveChanged) return;
@@ -216,6 +223,7 @@ class OmniboxSuggestionsDropdownDelegate implements View.OnAttachStateChangeList
                 // A->B->A transitions and suppress the broadcasts.
                 if (mLastBroadcastedListViewMaxHeight == availableViewportHeight) return;
                 if (mObserver == null) return;
+
                 mObserver.onSuggestionDropdownHeightChanged(availableViewportHeight);
                 mLastBroadcastedListViewMaxHeight = availableViewportHeight;
             });
@@ -238,5 +246,11 @@ class OmniboxSuggestionsDropdownDelegate implements View.OnAttachStateChangeList
             }
         }
         return false;
+    }
+
+    /** @return Whether Adaptive Suggestions Count feature is enabled. */
+    private boolean isAdaptiveSuggestionsCountEnabled() {
+        return ChromeFeatureList.isInitialized() &&
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT);
     }
 }

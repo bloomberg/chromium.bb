@@ -13,6 +13,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/values.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 
 namespace chromeos {
@@ -34,7 +35,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
       const dbus::ObjectPath& device_path,
       ShillPropertyChangedObserver* observer) override;
   void GetProperties(const dbus::ObjectPath& device_path,
-                     DictionaryValueCallback callback) override;
+                     DBusMethodCallback<base::Value> callback) override;
   void SetProperty(const dbus::ObjectPath& device_path,
                    const std::string& name,
                    const base::Value& value,
@@ -69,11 +70,6 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
   void Reset(const dbus::ObjectPath& device_path,
              base::OnceClosure callback,
              ErrorCallback error_callback) override;
-  void PerformTDLSOperation(const dbus::ObjectPath& device_path,
-                            const std::string& operation,
-                            const std::string& peer,
-                            StringCallback callback,
-                            ErrorCallback error_callback) override;
   void AddWakeOnPacketConnection(const dbus::ObjectPath& device_path,
                                  const net::IPEndPoint& ip_endpoint,
                                  base::OnceClosure callback,
@@ -111,8 +107,6 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
                          const base::Value& value,
                          bool notify_changed) override;
   std::string GetDevicePathForType(const std::string& type) override;
-  void SetTDLSBusyCount(int count) override;
-  void SetTDLSState(const std::string& state) override;
   void SetSimLocked(const std::string& device_path, bool locked) override;
   void AddCellularFoundNetwork(const std::string& device_path) override;
   void SetUsbEthernetMacAddressSourceError(
@@ -138,7 +132,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
   bool SimTryPin(const std::string& device_path, const std::string& pin);
   bool SimTryPuk(const std::string& device_path, const std::string& pin);
   void PassStubDeviceProperties(const dbus::ObjectPath& device_path,
-                                DictionaryValueCallback callback) const;
+                                DBusMethodCallback<base::Value> callback) const;
 
   // Posts a task to run a void callback with status code |result|.
   void PostVoidCallback(VoidDBusMethodCallback callback, bool result);
@@ -158,20 +152,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
   PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path);
 
   // Dictionary of <device_name, Dictionary>.
-  base::DictionaryValue stub_devices_;
+  base::Value stub_devices_{base::Value::Type::DICTIONARY};
+
   // Observer list for each device.
   std::map<dbus::ObjectPath, std::unique_ptr<PropertyObserverList>>
       observer_list_;
-
-  // Number of times to return InProgress for TDLS. Set to -1 to emulate
-  // TDLS failure.
-  int initial_tdls_busy_count_;
-
-  // Current TDLS busy count.
-  int tdls_busy_count_;
-
-  // Fake state for TDLS.
-  std::string tdls_state_;
 
   // Wake on packet connections for each device.
   std::map<dbus::ObjectPath, std::set<net::IPEndPoint>>

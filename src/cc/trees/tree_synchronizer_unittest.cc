@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/format_macros.h"
@@ -26,8 +27,8 @@
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/task_runner_provider.h"
@@ -117,6 +118,8 @@ class TreeSynchronizerTest : public testing::Test {
   void ResetLayerTreeHost(const LayerTreeSettings& settings) {
     host_ = FakeLayerTreeHost::Create(&client_, &task_graph_runner_,
                                       animation_host_.get(), settings);
+    host_->InitializeSingleThreaded(&single_thread_client_,
+                                    base::ThreadTaskRunnerHandle::Get());
     host_->host_impl()->CreatePendingTree();
   }
 
@@ -591,8 +594,6 @@ TEST_F(TreeSynchronizerTest, SynchronizeCurrentlyScrollingNode) {
 }
 
 TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
-  host_->InitializeSingleThreaded(&single_thread_client_,
-                                  base::ThreadTaskRunnerHandle::Get());
   LayerTreeSettings settings;
   FakeLayerTreeHostImplClient client;
   FakeImplTaskRunnerProvider task_runner_provider;
@@ -661,12 +662,12 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
                               gfx::ScrollOffset(20, 30));
 
   // Pull ScrollOffset delta for main thread, and change offset on main thread
-  std::unique_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
-  scroll_tree.CollectScrollDeltas(scroll_info.get(), ElementId(),
+  std::unique_ptr<CompositorCommitData> commit_data(new CompositorCommitData());
+  scroll_tree.CollectScrollDeltas(commit_data.get(), ElementId(),
                                   settings.commit_fractional_scroll_deltas,
                                   base::flat_set<ElementId>());
   host_->proxy()->SetNeedsCommit();
-  host_->ApplyScrollAndScale(scroll_info.get());
+  host_->ApplyCompositorChanges(commit_data.get());
   EXPECT_EQ(gfx::ScrollOffset(20, 30), scroll_layer->scroll_offset());
   scroll_layer->SetScrollOffset(gfx::ScrollOffset(100, 100));
 
@@ -704,8 +705,6 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
 }
 
 TEST_F(TreeSynchronizerTest, RefreshPropertyTreesCachedData) {
-  host_->InitializeSingleThreaded(&single_thread_client_,
-                                  base::ThreadTaskRunnerHandle::Get());
   LayerTreeSettings settings;
   FakeLayerTreeHostImplClient client;
   FakeImplTaskRunnerProvider task_runner_provider;
@@ -751,48 +750,52 @@ TEST_F(TreeSynchronizerTest, RoundedScrollDeltasOnCommit) {
   LayerTreeSettings settings;
   settings.commit_fractional_scroll_deltas = false;
   ResetLayerTreeHost(settings);
+  FakeLayerTreeHostImpl* host_impl = host_->host_impl();
 
-  host_->InitializeSingleThreaded(&single_thread_client_,
-                                  base::ThreadTaskRunnerHandle::Get());
+  // Since this test simulates a scroll it needs an input handler.
+  // TODO(bokan): Required because scroll commit is part of InputHandler - that
+  // shouldn't be. See comment in ThreadedInputHandler::ProcessCommitDeltas.
+  InputHandler::Create(static_cast<CompositorDelegateForInput&>(*host_impl));
 
   scoped_refptr<Layer> scroll_layer = SetupScrollLayer();
 
   // Scroll the layer by a fractional amount.
-  FakeLayerTreeHostImpl* host_impl = host_->host_impl();
   LayerImpl* scroll_layer_impl =
       host_impl->active_tree()->LayerById(scroll_layer->id());
   scroll_layer_impl->ScrollBy(gfx::Vector2dF(0, 1.75f));
 
   // When we collect the scroll deltas, we should have truncated the fractional
   // part because the commit_fractional_scroll_deltas setting is enabled.
-  std::unique_ptr<ScrollAndScaleSet> scroll_info =
-      host_impl->ProcessScrollDeltas();
-  ASSERT_EQ(1u, scroll_info->scrolls.size());
-  EXPECT_EQ(2.f, scroll_info->scrolls[0].scroll_delta.y());
+  std::unique_ptr<CompositorCommitData> commit_data =
+      host_impl->ProcessCompositorDeltas();
+  ASSERT_EQ(1u, commit_data->scrolls.size());
+  EXPECT_EQ(2.f, commit_data->scrolls[0].scroll_delta.y());
 }
 
 TEST_F(TreeSynchronizerTest, PreserveFractionalScrollDeltasOnCommit) {
   LayerTreeSettings settings;
   settings.commit_fractional_scroll_deltas = true;
   ResetLayerTreeHost(settings);
+  FakeLayerTreeHostImpl* host_impl = host_->host_impl();
 
-  host_->InitializeSingleThreaded(&single_thread_client_,
-                                  base::ThreadTaskRunnerHandle::Get());
+  // Since this test simulates a scroll it needs an input handler.
+  // TODO(bokan): Required because scroll commit is part of InputHandler - that
+  // shouldn't be. See comment in ThreadedInputHandler::ProcessCommitDeltas.
+  InputHandler::Create(static_cast<CompositorDelegateForInput&>(*host_impl));
 
   scoped_refptr<Layer> scroll_layer = SetupScrollLayer();
 
   // Scroll the layer by a fractional amount.
-  FakeLayerTreeHostImpl* host_impl = host_->host_impl();
   LayerImpl* scroll_layer_impl =
       host_impl->active_tree()->LayerById(scroll_layer->id());
   scroll_layer_impl->ScrollBy(gfx::Vector2dF(0, 1.75f));
 
   // When we collect the scroll deltas, we should keep the fractional part
   // because the commit_fractional_scroll_deltas setting is disabled.
-  std::unique_ptr<ScrollAndScaleSet> scroll_info =
-      host_impl->ProcessScrollDeltas();
-  ASSERT_EQ(1u, scroll_info->scrolls.size());
-  EXPECT_EQ(1.75f, scroll_info->scrolls[0].scroll_delta.y());
+  std::unique_ptr<CompositorCommitData> commit_data =
+      host_impl->ProcessCompositorDeltas();
+  ASSERT_EQ(1u, commit_data->scrolls.size());
+  EXPECT_EQ(1.75f, commit_data->scrolls[0].scroll_delta.y());
 }
 
 }  // namespace

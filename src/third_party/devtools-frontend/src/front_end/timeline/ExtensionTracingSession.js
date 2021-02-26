@@ -20,8 +20,9 @@ export class ExtensionTracingSession {
   constructor(provider, performanceModel) {
     this._provider = provider;
     this._performanceModel = performanceModel;
-    /** @type {function()} */
+    /** @type {function(): void} */
     this._completionCallback;
+    /** @type {!Promise<void>} */
     this._completionPromise = new Promise(fulfill => {
       this._completionCallback = fulfill;
     });
@@ -73,7 +74,7 @@ export class ExtensionTracingSession {
     this._provider.start(this);
   }
 
-  /** @return {!Promise<string>} */
+  /** @return {!Promise<void>} */
   stop() {
     this._provider.stop();
     return this._completionPromise;

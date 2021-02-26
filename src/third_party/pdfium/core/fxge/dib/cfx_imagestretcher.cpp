@@ -7,14 +7,11 @@
 #include "core/fxge/dib/cfx_imagestretcher.h"
 
 #include <climits>
-#include <tuple>
-
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/dib/cfx_dibbase.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/dib/cstretchengine.h"
-#include "core/fxge/fx_dib.h"
-#include "third_party/base/ptr_util.h"
+#include "core/fxge/dib/fx_dib.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -27,19 +24,13 @@ bool SourceSizeWithinLimit(int width, int height) {
 
 FXDIB_Format GetStretchedFormat(const CFX_DIBBase& src) {
   FXDIB_Format format = src.GetFormat();
-  if (format == FXDIB_1bppMask)
-    return FXDIB_8bppMask;
-  if (format == FXDIB_1bppRgb)
-    return FXDIB_8bppRgb;
-  if (format == FXDIB_8bppRgb && src.GetPalette())
-    return FXDIB_Rgb;
+  if (format == FXDIB_Format::k1bppMask)
+    return FXDIB_Format::k8bppMask;
+  if (format == FXDIB_Format::k1bppRgb)
+    return FXDIB_Format::k8bppRgb;
+  if (format == FXDIB_Format::k8bppRgb && src.HasPalette())
+    return FXDIB_Format::kRgb;
   return format;
-}
-
-// Returns tuple c, m, y, k
-std::tuple<int, int, int, int> CmykDecode(const uint32_t cmyk) {
-  return std::make_tuple(FXSYS_GetCValue(cmyk), FXSYS_GetMValue(cmyk),
-                         FXSYS_GetYValue(cmyk), FXSYS_GetKValue(cmyk));
 }
 
 }  // namespace
@@ -56,18 +47,18 @@ CFX_ImageStretcher::CFX_ImageStretcher(ScanlineComposerIface* pDest,
       m_DestWidth(dest_width),
       m_DestHeight(dest_height),
       m_ClipRect(bitmap_rect),
-      m_DestFormat(GetStretchedFormat(*pSource)),
-      m_DestBPP(GetBppFromFormat(m_DestFormat)) {
+      m_DestFormat(GetStretchedFormat(*pSource)) {
   ASSERT(m_ClipRect.Valid());
 }
 
-CFX_ImageStretcher::~CFX_ImageStretcher() {}
+CFX_ImageStretcher::~CFX_ImageStretcher() = default;
 
 bool CFX_ImageStretcher::Start() {
   if (m_DestWidth == 0 || m_DestHeight == 0)
     return false;
 
-  if (m_pSource->GetFormat() == FXDIB_1bppRgb && m_pSource->GetPalette()) {
+  if (m_pSource->GetFormat() == FXDIB_Format::k1bppRgb &&
+      m_pSource->HasPalette()) {
     FX_ARGB pal[256];
     int a0;
     int r0;
@@ -90,32 +81,8 @@ bool CFX_ImageStretcher::Start() {
                           pal)) {
       return false;
     }
-  } else if (m_pSource->GetFormat() == FXDIB_1bppCmyk &&
-             m_pSource->GetPalette()) {
-    FX_CMYK pal[256];
-    int c0;
-    int m0;
-    int y0;
-    int k0;
-    std::tie(c0, m0, y0, k0) = CmykDecode(m_pSource->GetPaletteArgb(0));
-    int c1;
-    int m1;
-    int y1;
-    int k1;
-    std::tie(c1, m1, y1, k1) = CmykDecode(m_pSource->GetPaletteArgb(1));
-    for (int i = 0; i < 256; ++i) {
-      int c = c0 + (c1 - c0) * i / 255;
-      int m = m0 + (m1 - m0) * i / 255;
-      int y = y0 + (y1 - y0) * i / 255;
-      int k = k0 + (k1 - k0) * i / 255;
-      pal[i] = CmykEncode(c, m, y, k);
-    }
-    if (!m_pDest->SetInfo(m_ClipRect.Width(), m_ClipRect.Height(), m_DestFormat,
-                          pal)) {
-      return false;
-    }
   } else if (!m_pDest->SetInfo(m_ClipRect.Width(), m_ClipRect.Height(),
-                               m_DestFormat, nullptr)) {
+                               m_DestFormat, {})) {
     return false;
   }
   return StartStretch();
@@ -130,7 +97,7 @@ RetainPtr<CFX_DIBBase> CFX_ImageStretcher::source() {
 }
 
 bool CFX_ImageStretcher::StartStretch() {
-  m_pStretchEngine = pdfium::MakeUnique<CStretchEngine>(
+  m_pStretchEngine = std::make_unique<CStretchEngine>(
       m_pDest.Get(), m_DestFormat, m_DestWidth, m_DestHeight, m_ClipRect,
       m_pSource, m_ResampleOptions);
   m_pStretchEngine->StartStretchHorz();

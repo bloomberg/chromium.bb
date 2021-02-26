@@ -4,7 +4,10 @@
 
 #include "discovery/dnssd/public/dns_sd_instance_endpoint.h"
 
+#include <algorithm>
 #include <cctype>
+#include <utility>
+#include <vector>
 
 #include "util/osp_logging.h"
 
@@ -16,85 +19,66 @@ DnsSdInstanceEndpoint::DnsSdInstanceEndpoint(
     std::string service_id,
     std::string domain_id,
     DnsSdTxtRecord txt,
-    IPEndpoint endpoint,
-    NetworkInterfaceIndex network_interface)
-    : DnsSdInstance(std::move(instance_id),
-                    std::move(service_id),
-                    std::move(domain_id),
-                    std::move(txt),
-                    endpoint.port),
-      network_interface_(network_interface) {
-  OSP_DCHECK(endpoint);
-  if (endpoint.address.IsV4()) {
-    address_v4_ = std::move(endpoint.address);
-  } else if (endpoint.address.IsV6()) {
-    address_v6_ = std::move(endpoint.address);
-  } else {
-    OSP_NOTREACHED();
-  }
-}
-
-DnsSdInstanceEndpoint::DnsSdInstanceEndpoint(
-    DnsSdInstance record,
-    IPAddress address,
-    NetworkInterfaceIndex network_interface)
-    : DnsSdInstance(std::move(record)), network_interface_(network_interface) {
-  OSP_DCHECK(address);
-  if (address.IsV4()) {
-    address_v4_ = std::move(address);
-  } else if (address.IsV6()) {
-    address_v6_ = std::move(address);
-  } else {
-    OSP_NOTREACHED();
-  }
-}
+    NetworkInterfaceIndex network_interface,
+    std::vector<IPEndpoint> endpoints)
+    : DnsSdInstanceEndpoint(std::move(instance_id),
+                            std::move(service_id),
+                            std::move(domain_id),
+                            std::move(txt),
+                            network_interface,
+                            std::move(endpoints),
+                            std::vector<Subtype>{}) {}
 
 DnsSdInstanceEndpoint::DnsSdInstanceEndpoint(
     std::string instance_id,
     std::string service_id,
     std::string domain_id,
     DnsSdTxtRecord txt,
-    IPEndpoint ipv4_endpoint,
-    IPEndpoint ipv6_endpoint,
-    NetworkInterfaceIndex network_interface)
+    NetworkInterfaceIndex network_interface,
+    std::vector<IPEndpoint> endpoints,
+    std::vector<Subtype> subtypes)
     : DnsSdInstance(std::move(instance_id),
                     std::move(service_id),
                     std::move(domain_id),
                     std::move(txt),
-                    ipv4_endpoint.port),
-      address_v4_(std::move(ipv4_endpoint.address)),
-      address_v6_(std::move(ipv6_endpoint.address)),
+                    endpoints.empty() ? 0 : endpoints[0].port,
+                    std::move(subtypes)),
+      endpoints_(std::move(endpoints)),
       network_interface_(network_interface) {
-  OSP_CHECK(address_v4_);
-  OSP_CHECK(address_v6_);
-  OSP_CHECK(address_v4_.IsV4());
-  OSP_CHECK(address_v6_.IsV6());
-  OSP_CHECK_EQ(ipv4_endpoint.port, ipv6_endpoint.port);
+  InitializeEndpoints();
 }
 
 DnsSdInstanceEndpoint::DnsSdInstanceEndpoint(
     DnsSdInstance instance,
-    IPAddress ipv4_address,
-    IPAddress ipv6_address,
-    NetworkInterfaceIndex network_interface)
+    NetworkInterfaceIndex network_interface,
+    std::vector<IPEndpoint> endpoints)
     : DnsSdInstance(std::move(instance)),
-      address_v4_(std::move(ipv4_address)),
-      address_v6_(std::move(ipv6_address)),
+      endpoints_(std::move(endpoints)),
       network_interface_(network_interface) {
-  OSP_CHECK(address_v4_);
-  OSP_CHECK(address_v6_);
-  OSP_CHECK(address_v4_.IsV4());
-  OSP_CHECK(address_v6_.IsV6());
+  InitializeEndpoints();
 }
+
+DnsSdInstanceEndpoint::DnsSdInstanceEndpoint(
+    const DnsSdInstanceEndpoint& other) = default;
+
+DnsSdInstanceEndpoint::DnsSdInstanceEndpoint(DnsSdInstanceEndpoint&& other) =
+    default;
 
 DnsSdInstanceEndpoint::~DnsSdInstanceEndpoint() = default;
 
-IPEndpoint DnsSdInstanceEndpoint::endpoint_v4() const {
-  return address_v4_ ? IPEndpoint{address_v4_, port()} : IPEndpoint{};
-}
+DnsSdInstanceEndpoint& DnsSdInstanceEndpoint::operator=(
+    const DnsSdInstanceEndpoint& rhs) = default;
 
-IPEndpoint DnsSdInstanceEndpoint::endpoint_v6() const {
-  return address_v6_ ? IPEndpoint{address_v6_, port()} : IPEndpoint{};
+DnsSdInstanceEndpoint& DnsSdInstanceEndpoint::operator=(
+    DnsSdInstanceEndpoint&& rhs) = default;
+
+void DnsSdInstanceEndpoint::InitializeEndpoints() {
+  OSP_CHECK(!endpoints_.empty());
+  std::sort(endpoints_.begin(), endpoints_.end());
+  for (const auto& endpoint : endpoints_) {
+    OSP_DCHECK_EQ(endpoint.port, port());
+    addresses_.push_back(endpoint.address);
+  }
 }
 
 bool operator<(const DnsSdInstanceEndpoint& lhs,
@@ -103,12 +87,14 @@ bool operator<(const DnsSdInstanceEndpoint& lhs,
     return lhs.network_interface_ < rhs.network_interface_;
   }
 
-  if (lhs.address_v4_ != rhs.address_v4_) {
-    return lhs.address_v4_ < rhs.address_v4_;
+  if (lhs.endpoints_.size() != rhs.endpoints_.size()) {
+    return lhs.endpoints_.size() < rhs.endpoints_.size();
   }
 
-  if (lhs.address_v6_ != rhs.address_v6_) {
-    return lhs.address_v6_ < rhs.address_v6_;
+  for (int i = 0; i < static_cast<int>(lhs.endpoints_.size()); i++) {
+    if (lhs.endpoints_[i] != rhs.endpoints_[i]) {
+      return lhs.endpoints_[i] < rhs.endpoints_[i];
+    }
   }
 
   return static_cast<const DnsSdInstance&>(lhs) <

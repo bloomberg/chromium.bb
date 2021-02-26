@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 
@@ -26,7 +25,7 @@ class ProxiedPoliciesPropagatedWatcher;
 
 class CloudPolicyStore;
 class ConfigurationPolicyProvider;
-class ExtensionPolicyMigrator;
+class PolicyMigrator;
 class PolicyService;
 class PolicyServiceImpl;
 class SchemaRegistry;
@@ -39,6 +38,8 @@ class ChromeBrowserPolicyConnector;
 class ProfilePolicyConnector final {
  public:
   ProfilePolicyConnector();
+  ProfilePolicyConnector(const ProfilePolicyConnector&) = delete;
+  ProfilePolicyConnector& operator=(const ProfilePolicyConnector&) = delete;
   ~ProfilePolicyConnector();
 
   // |user| is only used in Chrome OS builds and should be set to nullptr
@@ -114,7 +115,7 @@ class ProfilePolicyConnector final {
   // [2] i.e. g_browser_process->local_state()
   std::unique_ptr<PolicyService> CreatePolicyServiceWithInitializationThrottled(
       const std::vector<ConfigurationPolicyProvider*>& policy_providers,
-      std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators,
+      std::vector<std::unique_ptr<PolicyMigrator>> migrators,
       ConfigurationPolicyProvider* user_policy_delegate);
 
   // Called when primary user policies that are proxied to the device-wide
@@ -164,8 +165,6 @@ class ProfilePolicyConnector final {
 
   std::unique_ptr<PolicyService> policy_service_;
   std::unique_ptr<bool> is_managed_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfilePolicyConnector);
 };
 
 }  // namespace policy

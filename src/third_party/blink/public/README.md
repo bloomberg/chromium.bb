@@ -21,7 +21,7 @@ Blink's needs change.
 Organization
 ------------
 
-The API is organized into two parts:
+The API is organized into three parts:
 
   - public/common
   - public/platform
@@ -80,6 +80,13 @@ details of Blink, and consumers of the API should not rely upon these types.
 
 Similarly, the API uses STL types outside of the INSIDE_BLINK preprocessor
 macro, which is for the convenience of the consumer.
+
+Naming Conventions
+------------------
+
+The public/common directory doesn't need to use 'Web' prefix for their classes,
+structs, and enums. But, public/platform/ and public/web/ directories keep using
+'Web' prefix for the internal consistency.
 
 Contact Information
 -------------------

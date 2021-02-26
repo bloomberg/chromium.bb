@@ -186,9 +186,11 @@
 
 .modal-pre {
   white-space: pre-line;
+  font-size: 13px;
+  user-select: text;
 }
 
-.modal-logs {
+.modal-logs, .modal-bash {
   white-space: pre-wrap;
   border: 1px solid #999;
   background: #eee;
@@ -196,7 +198,26 @@
   font-family: monospace;
   -webkit-user-select: text;
   margin-top: 10px;
+  margin-bottom: 10px;
   min-height: 50px;
   max-height: 40vh;
   overflow: scroll;
+}
+
+.modal-bash {
+  margin: 0;
+  padding: 5px 0;
+  overflow: auto;
+  min-height: 0;
+}
+
+.modal-textarea {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.modal-small {
+  font-size: 11px;
 }

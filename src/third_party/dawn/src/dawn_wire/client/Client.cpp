@@ -19,10 +19,32 @@
 
 namespace dawn_wire { namespace client {
 
+    namespace {
+
+        class NoopCommandSerializer final : public CommandSerializer {
+          public:
+            static NoopCommandSerializer* GetInstance() {
+                static NoopCommandSerializer gNoopCommandSerializer;
+                return &gNoopCommandSerializer;
+            }
+
+            ~NoopCommandSerializer() = default;
+
+            size_t GetMaximumAllocationSize() const final {
+                return 0;
+            }
+            void* GetCmdSpace(size_t size) final {
+                return nullptr;
+            }
+            bool Flush() final {
+                return false;
+            }
+        };
+
+    }  // anonymous namespace
+
     Client::Client(CommandSerializer* serializer, MemoryTransferService* memoryTransferService)
-        : ClientBase(),
-          mSerializer(serializer),
-          mMemoryTransferService(memoryTransferService) {
+        : ClientBase(), mSerializer(serializer), mMemoryTransferService(memoryTransferService) {
         if (mMemoryTransferService == nullptr) {
             // If a MemoryTransferService is not provided, fall back to inline memory.
             mOwnedMemoryTransferService = CreateInlineMemoryTransferService();
@@ -31,8 +53,14 @@ namespace dawn_wire { namespace client {
     }
 
     Client::~Client() {
-        if (mDevice != nullptr) {
-            DeviceAllocator().Free(mDevice);
+        DestroyAllObjects();
+    }
+
+    void Client::DestroyAllObjects() {
+        while (!mDevices.empty()) {
+            // Note: We don't send a DestroyObject command for the device
+            // since freeing a device object is done out of band.
+            DeviceAllocator().Free(static_cast<Device*>(mDevices.head()->value()));
         }
     }
 
@@ -44,35 +72,31 @@ namespace dawn_wire { namespace client {
     }
 
     ReservedTexture Client::ReserveTexture(WGPUDevice cDevice) {
-        Device* device = reinterpret_cast<Device*>(cDevice);
-        ObjectAllocator<Texture>::ObjectAndSerial* allocation = TextureAllocator().New(device);
+        Device* device = FromAPI(cDevice);
+        auto* allocation = TextureAllocator().New(device);
 
         ReservedTexture result;
-        result.texture = reinterpret_cast<WGPUTexture>(allocation->object.get());
+        result.texture = ToAPI(allocation->object.get());
         result.id = allocation->object->id;
         result.generation = allocation->generation;
         return result;
     }
 
-    void* Client::GetCmdSpace(size_t size) {
-        if (DAWN_UNLIKELY(mIsDisconnected)) {
-            if (size > mDummyCmdSpace.size()) {
-                mDummyCmdSpace.resize(size);
-            }
-            return mDummyCmdSpace.data();
-        }
-        return mSerializer->GetCmdSpace(size);
-    }
-
     void Client::Disconnect() {
-        if (mIsDisconnected) {
-            return;
-        }
-
-        mIsDisconnected = true;
+        mDisconnected = true;
+        mSerializer = ChunkedCommandSerializer(NoopCommandSerializer::GetInstance());
         if (mDevice != nullptr) {
             mDevice->HandleDeviceLost("GPU connection lost");
+            mDevice->CancelCallbacksForDisconnect();
         }
+    }
+
+    void Client::TrackObject(Device* device) {
+        mDevices.Append(device);
+    }
+
+    bool Client::IsDisconnected() const {
+        return mDisconnected;
     }
 
 }}  // namespace dawn_wire::client

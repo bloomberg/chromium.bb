@@ -37,6 +37,7 @@
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/bubble/bubble_dialog_model_host.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
@@ -88,10 +89,10 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
       // Trigger uninstall dialog.
       views::NamedWidgetShownWaiter waiter(
           views::test::AnyWidgetTestPasskey{},
-          "ExtensionUninstallDialogDelegateView");
+          views::BubbleDialogModelHost::kViewClassName);
       extensions::ExtensionContextMenuModel menu_model(
           extensions()[0].get(), browser(),
-          extensions::ExtensionContextMenuModel::VISIBLE, nullptr,
+          extensions::ExtensionContextMenuModel::PINNED, nullptr,
           false /* can_show_icon_in_toolbar */);
       menu_model.ExecuteCommand(
           extensions::ExtensionContextMenuModel::UNINSTALL, 0);
@@ -148,7 +149,7 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
     if (ui_test_name_ == "InstallDialog") {
       ExtensionsToolbarContainer* const container =
           GetExtensionsToolbarContainer();
-      views::BubbleDialogDelegateView* const install_bubble =
+      views::DialogDelegate* const install_bubble =
           container->GetViewForId(extensions()[0]->id())
               ->GetProperty(views::kAnchoredDialogKey);
       ASSERT_TRUE(install_bubble);
@@ -164,7 +165,7 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
     ExtensionsToolbarContainer* const container =
         GetExtensionsToolbarContainer();
     // Accept or cancel the dialog.
-    views::BubbleDialogDelegateView* const uninstall_bubble =
+    views::DialogDelegate* const uninstall_bubble =
         container->GetViewForId(extensions()[0]->id())
             ->GetProperty(views::kAnchoredDialogKey);
     ASSERT_TRUE(uninstall_bubble);
@@ -201,13 +202,20 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
           container->GetViewForId(extensions()[0]->id())->GetVisible());
     }
   }
+
   void TriggerSingleExtensionButton() {
+    ASSERT_EQ(1u, GetExtensionsMenuItemViews().size());
+    TriggerExtensionButton(0u);
+  }
+
+  void TriggerExtensionButton(size_t item_index) {
     auto menu_items = GetExtensionsMenuItemViews();
-    ASSERT_EQ(1u, menu_items.size());
+    ASSERT_LT(item_index, menu_items.size());
+
     ui::MouseEvent click_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                gfx::Point(), base::TimeTicks(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
-    menu_items[0]
+    menu_items[item_index]
         ->primary_action_button_for_testing()
         ->button_controller()
         ->OnMouseReleased(click_event);
@@ -253,7 +261,7 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
             extension_id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
         break;
       case ExtensionRemovalMethod::kBlocklist:
-        extension_service->BlacklistExtensionForTest(extension_id);
+        extension_service->BlocklistExtensionForTest(extension_id);
         break;
       case ExtensionRemovalMethod::kTerminate:
         extension_service->TerminateExtension(extension_id);
@@ -477,6 +485,33 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
 }
 
+// Test for crbug.com/1099456.
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       RemoveMultipleExtensionsWhileShowingPopup) {
+  auto& id1 = LoadTestExtension("extensions/simple_with_popup")->id();
+  auto& id2 = LoadTestExtension("extensions/uitest/window_open")->id();
+  ShowUi("");
+  VerifyUi();
+  TriggerExtensionButton(0u);
+
+  ExtensionsContainer* const extensions_container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()
+          ->extensions_container();
+  ASSERT_NE(nullptr, extensions_container->GetPoppedOutAction());
+
+  auto* extension_service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
+
+  extension_service->DisableExtension(
+      id1, extensions::disable_reason::DISABLE_USER_ACTION);
+  extension_service->DisableExtension(
+      id2, extensions::disable_reason::DISABLE_USER_ACTION);
+
+  EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
                        TriggeringExtensionClosesMenu) {
   LoadTestExtension("extensions/trigger_actions/browser_action");
@@ -523,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   // browser.
   extensions::ExtensionContextMenuModel menu(
       extensions()[0].get(), incognito_browser(),
-      extensions::ExtensionContextMenuModel::VISIBLE, nullptr,
+      extensions::ExtensionContextMenuModel::PINNED, nullptr,
       true /* can_show_icon_in_toolbar */);
   EXPECT_FALSE(menu.IsCommandIdEnabled(
       extensions::ExtensionContextMenuModel::TOGGLE_VISIBILITY));
@@ -533,9 +568,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
 
   ASSERT_TRUE(VerifyUi());
   ASSERT_EQ(1u, GetExtensionsMenuItemViews().size());
-  EXPECT_EQ(
-      views::Button::STATE_DISABLED,
-      GetExtensionsMenuItemViews().front()->pin_button_for_testing()->state());
+  EXPECT_EQ(views::Button::STATE_DISABLED, GetExtensionsMenuItemViews()
+                                               .front()
+                                               ->pin_button_for_testing()
+                                               ->GetState());
 
   DismissUi();
 }

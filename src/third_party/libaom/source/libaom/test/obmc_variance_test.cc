@@ -40,6 +40,7 @@ typedef libaom_test::FuncParam<ObmcVarF> TestFuncs;
 ////////////////////////////////////////////////////////////////////////////////
 
 class ObmcVarianceTest : public FunctionEquivalenceTest<ObmcVarF> {};
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ObmcVarianceTest);
 
 TEST_P(ObmcVarianceTest, RandomValues) {
   DECLARE_ALIGNED(32, uint8_t, pre[MAX_SB_SQUARE]);
@@ -197,6 +198,7 @@ INSTANTIATE_TEST_SUITE_P(AVX2, ObmcVarianceTest,
 ////////////////////////////////////////////////////////////////////////////////
 #if CONFIG_AV1_HIGHBITDEPTH
 class ObmcVarianceHBDTest : public FunctionEquivalenceTest<ObmcVarF> {};
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ObmcVarianceHBDTest);
 
 TEST_P(ObmcVarianceHBDTest, RandomValues) {
   DECLARE_ALIGNED(32, uint16_t, pre[MAX_SB_SQUARE]);

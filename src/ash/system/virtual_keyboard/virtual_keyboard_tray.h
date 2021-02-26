@@ -7,7 +7,7 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/macros.h"
@@ -31,6 +31,7 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   // TrayBackgroundView:
   void Initialize() override;
   base::string16 GetAccessibleNameForTray() override;
+  void HandleLocaleChange() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
   bool PerformAction(const ui::Event& event) override;

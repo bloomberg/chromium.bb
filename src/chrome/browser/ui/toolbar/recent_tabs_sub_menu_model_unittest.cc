@@ -10,13 +10,13 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sessions/chrome_tab_restore_service_client.h"
@@ -249,7 +249,7 @@ TEST_F(RecentTabsSubMenuModelTest, RecentlyClosedTabsFromCurrentSession) {
 
   EXPECT_EQ(NULL, model.GetLabelFontListAt(0));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(1));
-  EXPECT_TRUE(model.GetLabelFontListAt(2) != nullptr);
+  EXPECT_TRUE(model.GetLabelFontListAt(2));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(3));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(4));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(5));
@@ -369,7 +369,7 @@ TEST_F(RecentTabsSubMenuModelTest,
 
   EXPECT_EQ(NULL, model.GetLabelFontListAt(0));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(1));
-  EXPECT_TRUE(model.GetLabelFontListAt(2) != nullptr);
+  EXPECT_TRUE(model.GetLabelFontListAt(2));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(3));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(4));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(5));
@@ -465,12 +465,12 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   EXPECT_EQ(NULL, model.GetLabelFontListAt(1));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(2));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(3));
-  EXPECT_TRUE(model.GetLabelFontListAt(4) != nullptr);
+  EXPECT_TRUE(model.GetLabelFontListAt(4));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(5));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(6));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(7));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(8));
-  EXPECT_TRUE(model.GetLabelFontListAt(9) != nullptr);
+  EXPECT_TRUE(model.GetLabelFontListAt(9));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(10));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(11));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(12));

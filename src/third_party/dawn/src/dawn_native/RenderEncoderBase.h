@@ -25,9 +25,9 @@ namespace dawn_native {
         RenderEncoderBase(DeviceBase* device, EncodingContext* encodingContext);
 
         void Draw(uint32_t vertexCount,
-                  uint32_t instanceCount,
-                  uint32_t firstVertex,
-                  uint32_t firstInstance);
+                  uint32_t instanceCount = 1,
+                  uint32_t firstVertex = 0,
+                  uint32_t firstInstance = 0);
         void DrawIndexed(uint32_t vertexCount,
                          uint32_t instanceCount,
                          uint32_t firstIndex,
@@ -41,12 +41,17 @@ namespace dawn_native {
 
         void SetVertexBuffer(uint32_t slot, BufferBase* buffer, uint64_t offset, uint64_t size);
         void SetIndexBuffer(BufferBase* buffer, uint64_t offset, uint64_t size);
+        void SetIndexBufferWithFormat(BufferBase* buffer, wgpu::IndexFormat format, uint64_t offset,
+                                      uint64_t size);
 
       protected:
         // Construct an "error" render encoder base.
         RenderEncoderBase(DeviceBase* device, EncodingContext* encodingContext, ErrorTag errorTag);
 
       private:
+        void SetIndexBufferCommon(BufferBase* buffer, wgpu::IndexFormat format, uint64_t offset,
+                                  uint64_t size, bool requireFormat);
+
         const bool mDisableBaseVertex;
         const bool mDisableBaseInstance;
     };

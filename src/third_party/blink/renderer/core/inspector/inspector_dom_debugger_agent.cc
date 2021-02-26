@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_dom_debugger_agent.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -214,7 +213,7 @@ InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(
 
 InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent() = default;
 
-void InspectorDOMDebuggerAgent::Trace(Visitor* visitor) {
+void InspectorDOMDebuggerAgent::Trace(Visitor* visitor) const {
   visitor->Trace(dom_agent_);
   visitor->Trace(dom_breakpoints_);
   InspectorBaseAgent::Trace(visitor);
@@ -302,13 +301,13 @@ void InspectorDOMDebuggerAgent::DidRemoveDOMNode(Node* node) {
     dom_breakpoints_.erase(node);
     HeapVector<Member<Node>> stack(1, InspectorDOMAgent::InnerFirstChild(node));
     do {
-      Node* node = stack.back();
+      Node* child_node = stack.back();
       stack.pop_back();
-      if (!node)
+      if (!child_node)
         continue;
-      dom_breakpoints_.erase(node);
-      stack.push_back(InspectorDOMAgent::InnerFirstChild(node));
-      stack.push_back(InspectorDOMAgent::InnerNextSibling(node));
+      dom_breakpoints_.erase(child_node);
+      stack.push_back(InspectorDOMAgent::InnerFirstChild(child_node));
+      stack.push_back(InspectorDOMAgent::InnerNextSibling(child_node));
     } while (!stack.IsEmpty());
   }
 }

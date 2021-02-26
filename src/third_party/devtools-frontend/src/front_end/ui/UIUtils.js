@@ -35,6 +35,9 @@
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as ThemeSupport from '../theme_support/theme_support.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {Dialog} from './Dialog.js';
@@ -54,8 +57,6 @@ import {XLink} from './XLink.js';
 
 export const highlightedSearchResultClassName = 'highlighted-search-result';
 export const highlightedCurrentSearchResultClassName = 'current-search-result';
-
-export {markAsFocusedByKeyboard} from './utils/focus-changed.js';
 
 /**
  * @param {!Element} element
@@ -348,13 +349,22 @@ export const StyleValueDelimiters = ' \xA0\t\n"\':;,/()';
  * @param {!Event} event
  * @return {?string}
  */
-function _valueModificationDirection(event) {
+export function getValueModificationDirection(event) {
   let direction = null;
+  // TODO(crbug.com/1145518) Remove usage of MouseWheelEvent.
   if (event.type === 'mousewheel') {
     // When shift is pressed while spinning mousewheel, delta comes as wheelDeltaX.
     if (event.wheelDeltaY > 0 || event.wheelDeltaX > 0) {
       direction = 'Up';
     } else if (event.wheelDeltaY < 0 || event.wheelDeltaX < 0) {
+      direction = 'Down';
+    }
+  } else if (event.type === 'wheel') {
+    // When shift is pressed while spinning mousewheel, delta comes as wheelDeltaX.
+    // WheelEvent's deltaY is inverse from MouseWheelEvent.
+    if (event.deltaY < 0 || event.deltaX < 0) {
+      direction = 'Up';
+    } else if (event.deltaY > 0 || event.deltaX > 0) {
       direction = 'Down';
     }
   } else {
@@ -364,6 +374,7 @@ function _valueModificationDirection(event) {
       direction = 'Down';
     }
   }
+
   return direction;
 }
 
@@ -373,7 +384,7 @@ function _valueModificationDirection(event) {
  * @return {?string}
  */
 function _modifiedHexValue(hexString, event) {
-  const direction = _valueModificationDirection(event);
+  const direction = getValueModificationDirection(event);
   if (!direction) {
     return null;
   }
@@ -434,7 +445,7 @@ function _modifiedHexValue(hexString, event) {
  * @return {?number}
  */
 function _modifiedFloatNumber(number, event, modifierMultiplier) {
-  const direction = _valueModificationDirection(event);
+  const direction = getValueModificationDirection(event);
   if (!direction) {
     return null;
   }
@@ -755,19 +766,6 @@ function _windowFocused(document, event) {
   if (event.target.document.nodeType === Node.DOCUMENT_NODE) {
     document.body.classList.remove('inactive');
   }
-  UI._keyboardFocus = true;
-  const listener = () => {
-    const activeElement = document.deepActiveElement();
-    if (activeElement) {
-      activeElement.removeAttribute('data-keyboard-focus');
-    }
-    UI._keyboardFocus = false;
-  };
-  document.defaultView.requestAnimationFrame(() => {
-    UI._keyboardFocus = false;
-    document.removeEventListener('mousedown', listener, true);
-  });
-  document.addEventListener('mousedown', listener, true);
 }
 
 /**
@@ -778,14 +776,6 @@ function _windowBlurred(document, event) {
   if (event.target.document.nodeType === Node.DOCUMENT_NODE) {
     document.body.classList.add('inactive');
   }
-}
-
-/**
- * @param {!Element} element
- * @returns {boolean}
- */
-export function elementIsFocusedByKeyboard(element) {
-  return element.hasAttribute('data-keyboard-focus');
 }
 
 /**
@@ -821,14 +811,14 @@ export class ElementFocusRestorer {
  * @return {?Element}
  */
 export function highlightSearchResult(element, offset, length, domChanges) {
-  const result = highlightSearchResults(element, [new TextUtils.SourceRange(offset, length)], domChanges);
+  const result = highlightSearchResults(element, [new TextUtils.TextRange.SourceRange(offset, length)], domChanges);
   return result.length ? result[0] : null;
 }
 
 /**
  * @param {!Element} element
- * @param {!Array.<!TextUtils.SourceRange>} resultRanges
- * @param {!Array.<!Object>=} changes
+ * @param {!Array.<!TextUtils.TextRange.SourceRange>} resultRanges
+ * @param {!Array.<!HighlightChange>=} changes
  * @return {!Array.<!Element>}
  */
 export function highlightSearchResults(element, resultRanges, changes) {
@@ -855,9 +845,9 @@ export function runCSSAnimationOnce(element, className) {
 
 /**
  * @param {!Element} element
- * @param {!Array.<!TextUtils.SourceRange>} resultRanges
+ * @param {!Array.<!TextUtils.TextRange.SourceRange>} resultRanges
  * @param {string} styleClass
- * @param {!Array.<!Object>=} changes
+ * @param {!Array.<!HighlightChange>=} changes
  * @return {!Array.<!Element>}
  */
 export function highlightRangesWithStyleClass(element, resultRanges, styleClass, changes) {
@@ -1207,11 +1197,6 @@ export class LongClickController extends Common.ObjectWrapper.ObjectWrapper {
 
 LongClickController.TIME_MS = 200;
 
-function _trackKeyboardFocus() {
-  UI._keyboardFocus = true;
-  document.defaultView.requestAnimationFrame(() => void (UI._keyboardFocus = false));
-}
-
 /**
  * @param {!Document} document
  * @param {!Common.Settings.Setting<string>} themeSetting
@@ -1222,19 +1207,13 @@ export function initializeUIUtils(document, themeSetting) {
   document.defaultView.addEventListener('blur', _windowBlurred.bind(UI, document), false);
   document.addEventListener('focus', focusChanged.bind(UI), true);
 
-  // Track which focus changes occur due to keyboard input.
-  // When focus changes from tab navigation (keydown).
-  // When focus() is called in keyboard initiated click events (keyup).
-  document.addEventListener('keydown', _trackKeyboardFocus, true);
-  document.addEventListener('keyup', _trackKeyboardFocus, true);
-
-  if (!self.UI.themeSupport) {
-    self.UI.themeSupport = new ThemeSupport(themeSetting);
+  if (!ThemeSupport.ThemeSupport.hasInstance()) {
+    ThemeSupport.ThemeSupport.instance({forceNew: true, setting: themeSetting});
   }
-  self.UI.themeSupport.applyTheme(document);
+  ThemeSupport.ThemeSupport.instance().applyTheme(document);
 
   const body = /** @type {!Element} */ (document.body);
-  appendStyle(body, 'ui/inspectorStyle.css');
+  appendStyle(body, 'ui/inspectorStyle.css', {enableLegacyPatching: true});
   GlassPane.setContainer(/** @type {!Element} */ (document.body));
 }
 
@@ -1247,14 +1226,36 @@ export function beautifyFunctionName(name) {
 }
 
 /**
+ * @param {!Element|!DocumentFragment} element
  * @param {string} text
- * @param {function(!Event):*=} clickHandler
+ * @return {!Text}
+ */
+export const createTextChild = (element, text) => {
+  const textNode = element.ownerDocument.createTextNode(text);
+  element.appendChild(textNode);
+  return textNode;
+};
+
+/**
+ * @param {!Element|!DocumentFragment} element
+ * @param {...string} childrenText
+ */
+export const createTextChildren = (element, ...childrenText) => {
+  for (const child of childrenText) {
+    createTextChild(element, child);
+  }
+};
+
+/**
+ * @param {string} text
+ * @param {function(!Event):*=} eventHandler
  * @param {string=} className
  * @param {boolean=} primary
- * @return {!Element}
+ * @param {string=} alternativeEvent
+ * @return {!HTMLButtonElement}
  */
-export function createTextButton(text, clickHandler, className, primary) {
-  const element = document.createElement('button');
+export function createTextButton(text, eventHandler, className, primary, alternativeEvent) {
+  const element = /** @type {!HTMLButtonElement} */ (document.createElement('button'));
   if (className) {
     element.className = className;
   }
@@ -1263,17 +1264,18 @@ export function createTextButton(text, clickHandler, className, primary) {
   if (primary) {
     element.classList.add('primary-button');
   }
-  if (clickHandler) {
-    element.addEventListener('click', clickHandler, false);
+  if (eventHandler) {
+    element.addEventListener(alternativeEvent || 'click', eventHandler);
   }
   element.type = 'button';
   return element;
 }
 
+
 /**
  * @param {string=} className
  * @param {string=} type
- * @return {!Element}
+ * @return {!HTMLInputElement}
  */
 export function createInput(className, type) {
   const element = document.createElement('input');
@@ -1285,7 +1287,7 @@ export function createInput(className, type) {
   if (type) {
     element.type = type;
   }
-  return element;
+  return /** @type {!HTMLInputElement} */ (element);
 }
 
 /**
@@ -1311,23 +1313,23 @@ export function createLabel(title, className, associatedControl) {
  * @param {string} name
  * @param {string} title
  * @param {boolean=} checked
- * @return {!Element}
+ * @return {!DevToolsRadioButton}
  */
 export function createRadioLabel(name, title, checked) {
   const element = createElement('span', 'dt-radio');
   element.radioElement.name = name;
   element.radioElement.checked = !!checked;
-  element.labelElement.createTextChild(title);
-  return element;
+  createTextChild(element.labelElement, title);
+  return /** @type {!DevToolsRadioButton} */ (element);
 }
 
 /**
  * @param {string} title
  * @param {string} iconClass
- * @return {!Element}
+ * @return {!HTMLElement}
  */
 export function createIconLabel(title, iconClass) {
-  const element = createElement('span', 'dt-icon-label');
+  const element = /** @type {!HTMLElement} */ (createElement('span', 'dt-icon-label'));
   element.createChild('span').textContent = title;
   element.type = iconClass;
   return element;
@@ -1359,7 +1361,8 @@ export class CheckboxLabel extends HTMLSpanElement {
     this.textElement;
     CheckboxLabel._lastId = (CheckboxLabel._lastId || 0) + 1;
     const id = 'ui-checkbox-label' + CheckboxLabel._lastId;
-    this._shadowRoot = createShadowRootWithCoreStyles(this, 'ui/checkboxTextLabel.css');
+    this._shadowRoot = createShadowRootWithCoreStyles(
+        this, {cssFile: 'ui/checkboxTextLabel.css', enableLegacyPatching: true, delegatesFocus: undefined});
     this.checkboxElement = /** @type {!HTMLInputElement} */ (this._shadowRoot.createChild('input'));
     this.checkboxElement.type = 'checkbox';
     this.checkboxElement.setAttribute('id', id);
@@ -1420,23 +1423,49 @@ export class CheckboxLabel extends HTMLSpanElement {
   }
 }
 
-(function() {
-let labelId = 0;
-registerCustomElement('span', 'dt-radio', class extends HTMLSpanElement {
+export class DevToolsIconLabel extends HTMLSpanElement {
   constructor() {
     super();
-    this.radioElement = this.createChild('input', 'dt-radio-button');
+    const root = createShadowRootWithCoreStyles(this, {
+      enableLegacyPatching: true,
+      cssFile: undefined,
+      delegatesFocus: undefined,
+    });
+    this._iconElement = Icon.create();
+    this._iconElement.style.setProperty('margin-right', '4px');
+    root.appendChild(this._iconElement);
+    root.createChild('slot');
+  }
+
+  /**
+     * @param {string} type
+     * @this {Element}
+     */
+  set type(type) {
+    this._iconElement.setIconType(type);
+  }
+}
+
+let labelId = 0;
+
+export class DevToolsRadioButton extends HTMLSpanElement {
+  constructor() {
+    super();
+    this.radioElement = /** @type {!HTMLInputElement} */ (this.createChild('input', 'dt-radio-button'));
     this.labelElement = this.createChild('label');
 
     const id = 'dt-radio-button-id' + (++labelId);
     this.radioElement.id = id;
     this.radioElement.type = 'radio';
     this.labelElement.htmlFor = id;
-    const root = createShadowRootWithCoreStyles(this, 'ui/radioButton.css');
+    const root = createShadowRootWithCoreStyles(
+        this, {cssFile: 'ui/radioButton.css', enableLegacyPatching: true, delegatesFocus: undefined});
     root.createChild('slot');
     this.addEventListener('click', radioClickHandler, false);
   }
-});
+}
+
+registerCustomElement('span', 'dt-radio', DevToolsRadioButton);
 
 /**
    * @param {!Event} event
@@ -1451,29 +1480,13 @@ function radioClickHandler(event) {
   this.radioElement.dispatchEvent(new Event('change'));
 }
 
-registerCustomElement('span', 'dt-icon-label', class extends HTMLSpanElement {
+registerCustomElement('span', 'dt-icon-label', DevToolsIconLabel);
+
+class DevToolsSlider extends HTMLSpanElement {
   constructor() {
     super();
-    const root = createShadowRootWithCoreStyles(this);
-    this._iconElement = Icon.create();
-    this._iconElement.style.setProperty('margin-right', '4px');
-    root.appendChild(this._iconElement);
-    root.createChild('slot');
-  }
-
-  /**
-     * @param {string} type
-     * @this {Element}
-     */
-  set type(type) {
-    this._iconElement.setIconType(type);
-  }
-});
-
-registerCustomElement('span', 'dt-slider', class extends HTMLSpanElement {
-  constructor() {
-    super();
-    const root = createShadowRootWithCoreStyles(this, 'ui/slider.css');
+    const root = createShadowRootWithCoreStyles(
+        this, {cssFile: 'ui/slider.css', enableLegacyPatching: true, delegatesFocus: undefined});
     this.sliderElement = document.createElement('input');
     this.sliderElement.classList.add('dt-range-input');
     this.sliderElement.type = 'range';
@@ -1494,12 +1507,15 @@ registerCustomElement('span', 'dt-slider', class extends HTMLSpanElement {
   get value() {
     return this.sliderElement.value;
   }
-});
+}
 
-registerCustomElement('span', 'dt-small-bubble', class extends HTMLSpanElement {
+registerCustomElement('span', 'dt-slider', DevToolsSlider);
+
+export class DevToolsSmallBubble extends HTMLSpanElement {
   constructor() {
     super();
-    const root = createShadowRootWithCoreStyles(this, 'ui/smallBubble.css');
+    const root = createShadowRootWithCoreStyles(
+        this, {cssFile: 'ui/smallBubble.css', enableLegacyPatching: true, delegatesFocus: undefined});
     this._textElement = root.createChild('div');
     this._textElement.className = 'info';
     this._textElement.createChild('slot');
@@ -1512,12 +1528,15 @@ registerCustomElement('span', 'dt-small-bubble', class extends HTMLSpanElement {
   set type(type) {
     this._textElement.className = type;
   }
-});
+}
 
-registerCustomElement('div', 'dt-close-button', class extends HTMLDivElement {
+registerCustomElement('span', 'dt-small-bubble', DevToolsSmallBubble);
+
+export class DevToolsCloseButton extends HTMLDivElement {
   constructor() {
     super();
-    const root = createShadowRootWithCoreStyles(this, 'ui/closeButton.css');
+    const root = createShadowRootWithCoreStyles(
+        this, {cssFile: 'ui/closeButton.css', enableLegacyPatching: true, delegatesFocus: undefined});
     this._buttonElement = root.createChild('div', 'close-button');
     ARIAUtils.setAccessibleName(this._buttonElement, ls`Close`);
     ARIAUtils.markAsButton(this._buttonElement);
@@ -1562,8 +1581,9 @@ registerCustomElement('div', 'dt-close-button', class extends HTMLDivElement {
       this._buttonElement.tabIndex = -1;
     }
   }
-});
-})();
+}
+
+registerCustomElement('div', 'dt-close-button', DevToolsCloseButton);
 
 /**
  * @param {!Element} input
@@ -1725,295 +1745,6 @@ export function measureTextWidth(context, text) {
 }
 
 /**
- * @unrestricted
- */
-export class ThemeSupport {
-  /**
-   * @param {!Common.Settings.Setting<string>} setting
-   */
-  constructor(setting) {
-    const systemPreferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
-    this._themeName = setting.get() === 'systemPreferred' ? systemPreferredTheme : setting.get();
-    this._themableProperties = new Set([
-      'color', 'box-shadow', 'text-shadow', 'outline-color', 'background-image', 'background-color',
-      'border-left-color', 'border-right-color', 'border-top-color', 'border-bottom-color', '-webkit-border-image',
-      'fill', 'stroke'
-    ]);
-    /** @type {!Map<string, string>} */
-    this._cachedThemePatches = new Map();
-    this._setting = setting;
-    this._customSheets = new Set();
-    this._computedRoot = Common.Lazy.lazy(() => window.getComputedStyle(document.documentElement));
-  }
-
-  /**
-   * @param {string} variableName
-   * @returns {string}
-   */
-  getComputedValue(variableName) {
-    const computedRoot = this._computedRoot();
-
-    if (typeof computedRoot === 'symbol') {
-      throw new Error(`Computed value for property (${variableName}) could not be found on :root.`);
-    }
-
-    return computedRoot.getPropertyValue(variableName);
-  }
-
-  /**
-   * @return {boolean}
-   */
-  hasTheme() {
-    return this._themeName !== 'default';
-  }
-
-  /**
-   * @return {string}
-   */
-  themeName() {
-    return this._themeName;
-  }
-
-  /**
-   * @param {!Element|!ShadowRoot} element
-   */
-  injectHighlightStyleSheets(element) {
-    this._injectingStyleSheet = true;
-    appendStyle(element, 'ui/inspectorSyntaxHighlight.css');
-    if (this._themeName === 'dark') {
-      appendStyle(element, 'ui/inspectorSyntaxHighlightDark.css');
-    }
-    this._injectingStyleSheet = false;
-  }
-
-  /**
-   * @param {!Element|!ShadowRoot} element
-   */
-  injectCustomStyleSheets(element) {
-    for (const sheet of this._customSheets) {
-      const styleElement = createElement('style');
-      styleElement.textContent = sheet;
-      element.appendChild(styleElement);
-    }
-  }
-
-  /**
-   * @return {boolean}
-   */
-  isForcedColorsMode() {
-    return window.matchMedia('(forced-colors: active)').matches;
-  }
-
-  /**
-   * @param {string} sheetText
-   */
-  addCustomStylesheet(sheetText) {
-    this._customSheets.add(sheetText);
-  }
-
-  /**
-   * @param {!Document} document
-   */
-  applyTheme(document) {
-    if (!this.hasTheme() || this.isForcedColorsMode()) {
-      return;
-    }
-
-    if (this._themeName === 'dark') {
-      document.documentElement.classList.add('-theme-with-dark-background');
-    }
-
-    const styleSheets = document.styleSheets;
-    const result = [];
-    for (let i = 0; i < styleSheets.length; ++i) {
-      result.push(this._patchForTheme(styleSheets[i].href, styleSheets[i]));
-    }
-    result.push('/*# sourceURL=inspector.css.theme */');
-
-    const styleElement = createElement('style');
-    styleElement.textContent = result.join('\n');
-    document.head.appendChild(styleElement);
-  }
-
-  /**
-   * @param {string} id
-   * @param {string} text
-   * @return {string}
-   * @suppressGlobalPropertiesCheck
-   */
-  themeStyleSheet(id, text) {
-    if (!this.hasTheme() || this._injectingStyleSheet || this.isForcedColorsMode()) {
-      return '';
-    }
-
-    let patch = this._cachedThemePatches.get(id);
-    if (!patch) {
-      const styleElement = createElement('style');
-      styleElement.textContent = text;
-      document.body.appendChild(styleElement);
-      patch = this._patchForTheme(id, styleElement.sheet);
-      document.body.removeChild(styleElement);
-    }
-    return patch;
-  }
-
-  /**
-   * @param {string} id
-   * @param {!StyleSheet} styleSheet
-   * @return {string}
-   */
-  _patchForTheme(id, styleSheet) {
-    const cached = this._cachedThemePatches.get(id);
-    if (cached) {
-      return cached;
-    }
-
-    try {
-      const rules = styleSheet.cssRules;
-      const result = [];
-      for (let j = 0; j < rules.length; ++j) {
-        if (rules[j] instanceof CSSImportRule) {
-          result.push(this._patchForTheme(rules[j].styleSheet.href, rules[j].styleSheet));
-          continue;
-        }
-        const output = [];
-        const style = rules[j].style;
-        const selectorText = rules[j].selectorText;
-        for (let i = 0; style && i < style.length; ++i) {
-          this._patchProperty(selectorText, style, style[i], output);
-        }
-        if (output.length) {
-          result.push(rules[j].selectorText + '{' + output.join('') + '}');
-        }
-      }
-
-      const fullText = result.join('\n');
-      this._cachedThemePatches.set(id, fullText);
-      return fullText;
-    } catch (e) {
-      this._setting.set('default');
-      return '';
-    }
-  }
-
-  /**
-   * @param {string} selectorText
-   * @param {!CSSStyleDeclaration} style
-   * @param {string} name
-   * @param {!Array<string>} output
-   *
-   * Theming API is primarily targeted at making dark theme look good.
-   * - If rule has ".-theme-preserve" in selector, it won't be affected.
-   * - One can create specializations for dark themes via body.-theme-with-dark-background selector in host context.
-   */
-  _patchProperty(selectorText, style, name, output) {
-    if (!this._themableProperties.has(name)) {
-      return;
-    }
-
-    const value = style.getPropertyValue(name);
-    if (!value || value === 'none' || value === 'inherit' || value === 'initial' || value === 'transparent') {
-      return;
-    }
-    if (name === 'background-image' && value.indexOf('gradient') === -1) {
-      return;
-    }
-
-    if (selectorText.indexOf('-theme-') !== -1) {
-      return;
-    }
-
-    let colorUsage = ThemeSupport.ColorUsage.Unknown;
-    if (name.indexOf('background') === 0 || name.indexOf('border') === 0) {
-      colorUsage |= ThemeSupport.ColorUsage.Background;
-    }
-    if (name.indexOf('background') === -1) {
-      colorUsage |= ThemeSupport.ColorUsage.Foreground;
-    }
-
-    output.push(name);
-    output.push(':');
-    const items = value.replace(Common.Color.Regex, '\0$1\0').split('\0');
-    for (let i = 0; i < items.length; ++i) {
-      output.push(this.patchColorText(items[i], /** @type {!ThemeSupport.ColorUsage} */ (colorUsage)));
-    }
-    if (style.getPropertyPriority(name)) {
-      output.push(' !important');
-    }
-    output.push(';');
-  }
-
-  /**
-   * @param {string} text
-   * @param {!ThemeSupport.ColorUsage} colorUsage
-   * @return {string}
-   */
-  patchColorText(text, colorUsage) {
-    const color = Common.Color.Color.parse(text);
-    if (!color) {
-      return text;
-    }
-    const outColor = this.patchColor(color, colorUsage);
-    let outText = outColor.asString(null);
-    if (!outText) {
-      outText = outColor.asString(outColor.hasAlpha() ? Common.Color.Format.RGBA : Common.Color.Format.RGB);
-    }
-    return outText || text;
-  }
-
-  /**
-   * @param {!Common.Color.Color} color
-   * @param {!ThemeSupport.ColorUsage} colorUsage
-   * @return {!Common.Color.Color}
-   */
-  patchColor(color, colorUsage) {
-    const hsla = color.hsla();
-    this._patchHSLA(hsla, colorUsage);
-    const rgba = [];
-    Common.Color.Color.hsl2rgb(hsla, rgba);
-    return new Common.Color.Color(rgba, color.format());
-  }
-
-  /**
-   * @param {!Array<number>} hsla
-   * @param {!ThemeSupport.ColorUsage} colorUsage
-   */
-  _patchHSLA(hsla, colorUsage) {
-    const hue = hsla[0];
-    const sat = hsla[1];
-    let lit = hsla[2];
-    const alpha = hsla[3];
-
-    switch (this._themeName) {
-      case 'dark': {
-        const minCap = colorUsage & ThemeSupport.ColorUsage.Background ? 0.14 : 0;
-        const maxCap = colorUsage & ThemeSupport.ColorUsage.Foreground ? 0.9 : 1;
-        lit = 1 - lit;
-        if (lit < minCap * 2) {
-          lit = minCap + lit / 2;
-        } else if (lit > 2 * maxCap - 1) {
-          lit = maxCap - 1 / 2 + lit / 2;
-        }
-        break;
-      }
-    }
-    hsla[0] = Platform.NumberUtilities.clamp(hue, 0, 1);
-    hsla[1] = Platform.NumberUtilities.clamp(sat, 0, 1);
-    hsla[2] = Platform.NumberUtilities.clamp(lit, 0, 1);
-    hsla[3] = Platform.NumberUtilities.clamp(alpha, 0, 1);
-  }
-}
-
-/**
- * @enum {number}
- */
-ThemeSupport.ColorUsage = {
-  Unknown: 0,
-  Foreground: 1 << 0,
-  Background: 1 << 1,
-};
-
-/**
  * @param {string} article
  * @param {string} title
  * @return {!Element}
@@ -2065,7 +1796,7 @@ export function addReferrerToURLIfNecessary(url) {
 
 /**
  * @param {string} url
- * @return {!Promise<?Image>}
+ * @return {!Promise<?HTMLImageElement>}
  */
 export function loadImage(url) {
   return new Promise(fulfill => {
@@ -2078,7 +1809,7 @@ export function loadImage(url) {
 
 /**
  * @param {?string} data
- * @return {!Promise<?Image>}
+ * @return {!Promise<?HTMLImageElement>}
  */
 export function loadImageFromData(data) {
   return data ? loadImage('data:image/jpg;base64,' + data) : Promise.resolve(null);
@@ -2086,10 +1817,10 @@ export function loadImageFromData(data) {
 
 /**
  * @param {function(!File):*} callback
- * @return {!Node}
+ * @return {!HTMLInputElement}
  */
 export function createFileSelectorElement(callback) {
-  const fileSelectorElement = createElement('input');
+  const fileSelectorElement = /** @type {!HTMLInputElement} */ (createElement('input'));
   fileSelectorElement.type = 'file';
   fileSelectorElement.style.display = 'none';
   fileSelectorElement.setAttribute('tabindex', -1);
@@ -2116,7 +1847,9 @@ export class MessageDialog {
     const dialog = new Dialog();
     dialog.setSizeBehavior(SizeBehavior.MeasureContent);
     dialog.setDimmed(true);
-    const shadowRoot = createShadowRootWithCoreStyles(dialog.contentElement, 'ui/confirmDialog.css');
+    const shadowRoot = createShadowRootWithCoreStyles(
+        dialog.contentElement,
+        {cssFile: 'ui/confirmDialog.css', enableLegacyPatching: true, delegatesFocus: undefined});
     const content = shadowRoot.createChild('div', 'widget');
     await new Promise(resolve => {
       const okButton = createTextButton(Common.UIString.UIString('OK'), resolve, '', true);
@@ -2144,7 +1877,9 @@ export class ConfirmDialog {
     dialog.setSizeBehavior(SizeBehavior.MeasureContent);
     dialog.setDimmed(true);
     ARIAUtils.setAccessibleName(dialog.contentElement, message);
-    const shadowRoot = createShadowRootWithCoreStyles(dialog.contentElement, 'ui/confirmDialog.css');
+    const shadowRoot = createShadowRootWithCoreStyles(
+        dialog.contentElement,
+        {cssFile: 'ui/confirmDialog.css', enableLegacyPatching: true, delegatesFocus: undefined});
     const content = shadowRoot.createChild('div', 'widget');
     content.createChild('div', 'message').createChild('span').textContent = message;
     const buttonsBar = content.createChild('div', 'button');
@@ -2171,7 +1906,8 @@ export class ConfirmDialog {
  */
 export function createInlineButton(toolbarButton) {
   const element = createElement('span');
-  const shadowRoot = createShadowRootWithCoreStyles(element, 'ui/inlineButton.css');
+  const shadowRoot = createShadowRootWithCoreStyles(
+      element, {cssFile: 'ui/inlineButton.css', enableLegacyPatching: true, delegatesFocus: undefined});
   element.classList.add('inline-button');
   const toolbar = new Toolbar('');
   toolbar.appendToolbarItem(toolbarButton);
@@ -2201,7 +1937,7 @@ Renderer.render = async function(object, options) {
   if (!object) {
     throw new Error('Can\'t render ' + object);
   }
-  const renderer = await self.runtime.extension(Renderer, object).instance();
+  const renderer = await Root.Runtime.Runtime.instance().extension(Renderer, object).instance();
   return renderer ? renderer.render(object, options || {}) : null;
 };
 
@@ -2230,3 +1966,100 @@ export function formatTimestamp(timestamp, full) {
 
 /** @typedef {!{title: (string|!Element|undefined), editable: (boolean|undefined) }} */
 export let Options;
+
+/** @typedef {{
+ *  node: !Element,
+ *  type: string,
+ *  oldText: string,
+ *  newText: string,
+ *  nextSibling: (Node|undefined),
+ *  parent: (Node|undefined),
+ * }}
+ */
+export let HighlightChange;
+
+
+/**
+ * @param {!Element} element
+ * @return {boolean}
+ */
+export const isScrolledToBottom = element => {
+  // This code works only for 0-width border.
+  // The scrollTop, clientHeight and scrollHeight are computed in double values internally.
+  // However, they are exposed to javascript differently, each being either rounded (via
+  // round, ceil or floor functions) or left intouch.
+  // This adds up a total error up to 2.
+  return Math.abs(element.scrollTop + element.clientHeight - element.scrollHeight) <= 2;
+};
+
+/**
+ * @param {!Element} element
+ * @param {string} childType
+ * @param {string=} className
+ * @return {!Element}
+ */
+export function createSVGChild(element, childType, className) {
+  const child = element.ownerDocument.createSVGElement(childType, className);
+  element.appendChild(child);
+  return child;
+}
+
+
+/**
+ * @param {!Node} initialNode
+ * @param {!Array<string>} nameArray
+ * @return {?Node}
+ */
+export const enclosingNodeOrSelfWithNodeNameInArray = (initialNode, nameArray) => {
+  for (let node = initialNode; node && node !== initialNode.ownerDocument; node = node.parentNodeOrShadowHost()) {
+    for (let i = 0; i < nameArray.length; ++i) {
+      if (node.nodeName.toLowerCase() === nameArray[i].toLowerCase()) {
+        return node;
+      }
+    }
+  }
+  return null;
+};
+
+/**
+ * @param {!Node} node
+ * @param {string} nodeName
+ * @return {?Node}
+ */
+export const enclosingNodeOrSelfWithNodeName = function(node, nodeName) {
+  return enclosingNodeOrSelfWithNodeNameInArray(node, [nodeName]);
+};
+
+/**
+ * @param {null|undefined|!Document|!DocumentFragment} document
+ * @param {number} x
+ * @param {number} y
+ * @return {?Node}
+ */
+export const deepElementFromPoint = (document, x, y) => {
+  let container = document;
+  let node = null;
+  while (container) {
+    const innerNode = container.elementFromPoint(x, y);
+    if (!innerNode || node === innerNode) {
+      break;
+    }
+    node = innerNode;
+    container = node.shadowRoot;
+  }
+  return node;
+};
+
+/**
+ * @param {!Event} event
+ * @return {?Node}
+ */
+export const deepElementFromEvent = event => {
+  // Some synthetic events have zero coordinates which lead to a wrong element. Better return nothing in this case.
+  if (!event.which && !event.pageX && !event.pageY && !event.clientX && !event.clientY && !event.movementX &&
+      !event.movementY) {
+    return null;
+  }
+  const root = event.target && event.target.getComponentRoot();
+  return root ? deepElementFromPoint(root, event.pageX, event.pageY) : null;
+};

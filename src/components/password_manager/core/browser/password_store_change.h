@@ -8,7 +8,7 @@
 #include <ostream>
 #include <vector>
 
-#include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_form.h"
 
 namespace password_manager {
 
@@ -21,12 +21,12 @@ class PasswordStoreChange {
   // Linux backends production. It should be available only on Linux, and all
   // test code should be updates to the other constructor that accepts a
   // |primary_key|.
-  PasswordStoreChange(Type type, autofill::PasswordForm form)
+  PasswordStoreChange(Type type, PasswordForm form)
       : type_(type), form_(std::move(form)) {}
-  PasswordStoreChange(Type type, autofill::PasswordForm form, int primary_key)
+  PasswordStoreChange(Type type, PasswordForm form, int primary_key)
       : type_(type), form_(std::move(form)), primary_key_(primary_key) {}
   PasswordStoreChange(Type type,
-                      autofill::PasswordForm form,
+                      PasswordForm form,
                       int primary_key,
                       bool password_changed)
       : type_(type),
@@ -40,14 +40,14 @@ class PasswordStoreChange {
   virtual ~PasswordStoreChange() {}
 
   Type type() const { return type_; }
-  const autofill::PasswordForm& form() const { return form_; }
+  const PasswordForm& form() const { return form_; }
   int primary_key() const { return primary_key_; }
   bool password_changed() const { return password_changed_; }
 
   bool operator==(const PasswordStoreChange& other) const {
     return type() == other.type() &&
            form().signon_realm == other.form().signon_realm &&
-           form().origin == other.form().origin &&
+           form().url == other.form().url &&
            form().action == other.form().action &&
            form().submit_element == other.form().submit_element &&
            form().username_element == other.form().username_element &&
@@ -58,12 +58,12 @@ class PasswordStoreChange {
            form().new_password_value == other.form().new_password_value &&
            form().date_last_used == other.form().date_last_used &&
            form().date_created == other.form().date_created &&
-           form().blacklisted_by_user == other.form().blacklisted_by_user;
+           form().blocked_by_user == other.form().blocked_by_user;
   }
 
  private:
   Type type_;
-  autofill::PasswordForm form_;
+  PasswordForm form_;
   // The corresponding primary key in the database for this password.
   int primary_key_ = -1;
   bool password_changed_ = false;
@@ -72,8 +72,16 @@ class PasswordStoreChange {
 typedef std::vector<PasswordStoreChange> PasswordStoreChangeList;
 
 // For testing.
-std::ostream& operator<<(std::ostream& os,
-                         const PasswordStoreChange& password_store_change);
+#if defined(UNIT_TEST)
+inline std::ostream& operator<<(
+    std::ostream& os,
+    const PasswordStoreChange& password_store_change) {
+  return os << "type: " << password_store_change.type()
+            << ", primary key: " << password_store_change.primary_key()
+            << ", password change: " << password_store_change.password_changed()
+            << ", password form: " << password_store_change.form();
+}
+#endif
 
 }  // namespace password_manager
 

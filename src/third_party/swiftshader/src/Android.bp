@@ -46,6 +46,7 @@ cc_defaults {
             cflags: [
                 "-DHAVE_GRALLOC1",
                 "-DHAVE_GRALLOC3",
+                "-DHAVE_GRALLOC4",
             ],
             relative_install_path: "egl",
             header_libs: [
@@ -54,6 +55,7 @@ cc_defaults {
             ],
             shared_libs: [
                 "android.hardware.graphics.mapper@3.0",
+                "android.hardware.graphics.mapper@4.0",
                 "libnativewindow",
                 "libhardware",
                 "libhidlbase",
@@ -190,10 +192,11 @@ cc_defaults {
     srcs: [
         "Reactor/CPUID.cpp",
         "Reactor/Debug.cpp",
-        "Reactor/EmulatedReactor.cpp",
+        "Reactor/EmulatedIntrinsics.cpp",
         "Reactor/ExecutableMemory.cpp",
-        "Reactor/LLVMJIT.cpp",
+        "Reactor/LLVMJIT_ORCv1.cpp",  // TODO(b/171897980): Upgrade to ORCv2
         "Reactor/LLVMReactor.cpp",
+        "Reactor/OptimalIntrinsics.cpp",
         "Reactor/Reactor.cpp",
     ],
 
@@ -221,10 +224,11 @@ cc_defaults {
     srcs: [
         "Reactor/CPUID.cpp",
         "Reactor/Debug.cpp",
-        "Reactor/EmulatedReactor.cpp",
+        "Reactor/EmulatedIntrinsics.cpp",
         "Reactor/ExecutableMemory.cpp",
-        "Reactor/LLVMJIT.cpp",
+        "Reactor/LLVMJIT_ORCv1.cpp",  // TODO(b/171897980): Upgrade to ORCv2
         "Reactor/LLVMReactor.cpp",
+        "Reactor/OptimalIntrinsics.cpp",
         "Reactor/Reactor.cpp",
     ],
 
@@ -362,7 +366,7 @@ cc_defaults {
     defaults: [ "libswiftshader_debug" ],
     static_libs: [
         "libswiftshader_llvm_debug",
-        "libLLVM10_swiftshader",
+        "libLLVM10_swiftshader_debug",
     ],
 }
 
@@ -546,6 +550,7 @@ cc_defaults {
         "-D__STDC_FORMAT_MACROS",
         "-DHAVE_GRALLOC1",
         "-DHAVE_GRALLOC3",
+        "-DHAVE_GRALLOC4",
         "-DNO_SANITIZE_FUNCTION=",
         // FIXME: Use <android/api-level.h> instead?
         "-DANDROID_PLATFORM_SDK_VERSION=10000",
@@ -584,6 +589,7 @@ cc_defaults {
             ],
             shared_libs: [
                 "android.hardware.graphics.mapper@3.0",
+                "android.hardware.graphics.mapper@4.0",
                 "libnativewindow",
                 "libhardware",
                 "libhidlbase",
@@ -655,7 +661,7 @@ cc_defaults {
 
     include_dirs: [
         "external/swiftshader/third_party/SPIRV-Headers/include",
-        "external/swiftshader/include"
+        "external/swiftshader/include",
     ],
 }
 
@@ -678,7 +684,7 @@ cc_library_shared {
 
     static_libs: [
         "libswiftshadervk_llvm_debug",
-        "libLLVM10_swiftshader",
+        "libLLVM10_swiftshader_debug",
     ],
 
     cflags: [

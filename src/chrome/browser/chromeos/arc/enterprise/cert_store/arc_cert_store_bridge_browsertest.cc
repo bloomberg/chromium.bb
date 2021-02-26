@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
@@ -15,12 +15,14 @@
 #include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_cert_store_bridge.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions/extension_key_permissions_service.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions/extension_key_permissions_service_factory.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_service_factory.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/net/nss_context.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
@@ -66,12 +68,15 @@ namespace arc {
 class FakeArcCertStoreInstance : public mojom::CertStoreInstance {
  public:
   // mojom::CertStoreInstance:
-  void InitDeprecated(mojom::CertStoreHostPtr host) override {
-    Init(std::move(host), base::DoNothing());
+  void InitDeprecated(
+      mojo::PendingRemote<mojom::CertStoreHost> host_remote) override {
+    Init(std::move(host_remote), base::DoNothing());
   }
 
-  void Init(mojom::CertStoreHostPtr host, InitCallback callback) override {
-    host_ = std::move(host);
+  void Init(mojo::PendingRemote<mojom::CertStoreHost> host_remote,
+            InitCallback callback) override {
+    host_remote_.reset();
+    host_remote_.Bind(std::move(host_remote));
     std::move(callback).Run();
   }
 
@@ -89,7 +94,7 @@ class FakeArcCertStoreInstance : public mojom::CertStoreInstance {
   void clear_on_certs_changed() { is_on_certs_changed_called_ = false; }
 
  private:
-  mojom::CertStoreHostPtr host_;
+  mojo::Remote<mojom::CertStoreHost> host_remote_;
   std::vector<std::string> permissions_;
   bool is_on_certs_changed_called_ = false;
 };
@@ -126,6 +131,13 @@ class ArcCertStoreBridgeTest : public MixinBasedInProcessBrowserTest {
     // user profile and remove the use of this flag (crbug.com/795737).
     command_line->AppendSwitchASCII(
         chromeos::switches::kWaitForInitialPolicyFetchForTest, "true");
+  }
+
+  void SetUp() override {
+    chromeos::platform_keys::PlatformKeysServiceFactory::GetInstance()
+        ->SetTestingMode(true);
+
+    MixinBasedInProcessBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -166,6 +178,13 @@ class ArcCertStoreBridgeTest : public MixinBasedInProcessBrowserTest {
     MixinBasedInProcessBrowserTest::TearDownOnMainThread();
   }
 
+  void TearDown() override {
+    MixinBasedInProcessBrowserTest::TearDown();
+
+    chromeos::platform_keys::PlatformKeysServiceFactory::GetInstance()
+        ->SetTestingMode(false);
+  }
+
   ArcBridgeService* arc_bridge() {
     return ArcServiceManager::Get()->arc_bridge_service();
   }
@@ -201,22 +220,21 @@ class ArcCertStoreBridgeTest : public MixinBasedInProcessBrowserTest {
   void RegisterCorporateKeys() {
     ASSERT_NO_FATAL_FAILURE(ImportCerts());
 
-    policy::ProfilePolicyConnector* const policy_connector =
-        browser()->profile()->GetProfilePolicyConnector();
+    chromeos::platform_keys::KeyPermissionsService* const
+        key_permissions_service =
+            chromeos::platform_keys::KeyPermissionsServiceFactory::
+                GetForBrowserContext(browser()->profile());
 
-    extensions::StateStore* const state_store =
-        extensions::ExtensionSystem::Get(browser()->profile())->state_store();
-
-    chromeos::KeyPermissions permissions(
-        policy_connector->IsManaged(), browser()->profile()->GetPrefs(),
-        policy_connector->policy_service(), state_store);
+    ASSERT_TRUE(key_permissions_service);
 
     {
       base::RunLoop run_loop;
-      permissions.GetPermissionsForExtension(
-          kFakeExtensionId,
-          base::Bind(&ArcCertStoreBridgeTest::GotPermissionsForExtension,
-                     base::Unretained(this), run_loop.QuitClosure()));
+      chromeos::platform_keys::ExtensionKeyPermissionsServiceFactory::
+          GetForBrowserContextAndExtension(
+              base::BindOnce(
+                  &ArcCertStoreBridgeTest::GotPermissionsForExtension,
+                  base::Unretained(this), run_loop.QuitClosure()),
+              browser()->profile(), kFakeExtensionId, key_permissions_service);
       run_loop.Run();
     }
   }
@@ -244,8 +262,8 @@ class ArcCertStoreBridgeTest : public MixinBasedInProcessBrowserTest {
     base::RunLoop loop;
     GetNSSCertDatabaseForProfile(
         browser()->profile(),
-        base::Bind(&ArcCertStoreBridgeTest::SetUpTestClientCerts,
-                   base::Unretained(this), loop.QuitClosure()));
+        base::BindOnce(&ArcCertStoreBridgeTest::SetUpTestClientCerts,
+                       base::Unretained(this), loop.QuitClosure()));
     loop.Run();
     // Certificates must be imported.
     ASSERT_NE(nullptr, client_cert1_);
@@ -255,18 +273,32 @@ class ArcCertStoreBridgeTest : public MixinBasedInProcessBrowserTest {
   net::ScopedCERTCertificate client_cert2_;
 
  private:
+  void OnKeyRegisteredForCorporateUsage(
+      std::unique_ptr<chromeos::platform_keys::ExtensionKeyPermissionsService>
+          extension_key_permissions_service,
+      const base::Closure& done_callback,
+      chromeos::platform_keys::Status status) {
+    ASSERT_EQ(status, chromeos::platform_keys::Status::kSuccess);
+    done_callback.Run();
+  }
+
   // Register only client_cert1_ for corporate usage to test that
   // client_cert2_ is not allowed.
   void GotPermissionsForExtension(
       const base::Closure& done_callback,
-      std::unique_ptr<chromeos::KeyPermissions::PermissionsForExtension>
-          permissions_for_ext) {
+      std::unique_ptr<chromeos::platform_keys::ExtensionKeyPermissionsService>
+          extension_key_permissions_service) {
+    auto* extension_key_permissions_service_unowned =
+        extension_key_permissions_service.get();
     std::string client_cert1_spki(
         client_cert1_->derPublicKey.data,
         client_cert1_->derPublicKey.data + client_cert1_->derPublicKey.len);
-    permissions_for_ext->RegisterKeyForCorporateUsage(
-        client_cert1_spki, {chromeos::KeyPermissions::KeyLocation::kUserSlot});
-    done_callback.Run();
+    extension_key_permissions_service_unowned->RegisterKeyForCorporateUsage(
+        client_cert1_spki,
+        base::BindOnce(
+            &ArcCertStoreBridgeTest::OnKeyRegisteredForCorporateUsage,
+            base::Unretained(this),
+            std::move(extension_key_permissions_service), done_callback));
   }
 
   void SetUpTestClientCerts(const base::Closure& done_callback,

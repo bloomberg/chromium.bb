@@ -47,8 +47,7 @@ static int64_t GenerateSequenceNumber() {
 
 HistoryItem::HistoryItem()
     : item_sequence_number_(GenerateSequenceNumber()),
-      document_sequence_number_(GenerateSequenceNumber()),
-      scroll_restoration_type_(kScrollRestorationAuto) {}
+      document_sequence_number_(GenerateSequenceNumber()) {}
 
 HistoryItem::~HistoryItem() = default;
 
@@ -163,7 +162,7 @@ ResourceRequest HistoryItem::GenerateResourceRequest(
   return request;
 }
 
-void HistoryItem::Trace(Visitor* visitor) {
+void HistoryItem::Trace(Visitor* visitor) const {
   visitor->Trace(document_state_);
 }
 

@@ -7,7 +7,7 @@ const {assert} = chai;
 import {NodeURL} from '../../../../front_end/protocol_client/NodeURL.js';
 import {Platform} from '../../../../front_end/host/host.js';
 
-describe.skip('NodeURL', () => {
+describe('NodeURL', () => {
   describe('platform detection for paths', () => {
     it('works correctly on windows', () => {
       const isWindows = true;
@@ -65,7 +65,7 @@ describe.skip('NodeURL', () => {
         },
       };
 
-      NodeURL.patch(object as any);
+      NodeURL.patch(object as unknown as {url: string});
 
       assert.strictEqual(object.exceptionDetails.url, patchedUrl);
       assert.strictEqual(object.exceptionDetails.stackTrace.callFrames[0].url, patchedUrl);

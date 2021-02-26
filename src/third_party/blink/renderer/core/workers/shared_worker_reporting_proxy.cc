@@ -34,14 +34,6 @@ void SharedWorkerReportingProxy::CountFeature(WebFeature feature) {
                           CrossThreadUnretained(worker_), feature));
 }
 
-void SharedWorkerReportingProxy::CountDeprecation(WebFeature feature) {
-  DCHECK(!IsMainThread());
-  // Go through the same code path with countFeature() because a deprecation
-  // message is already shown on the worker console and a remaining work is just
-  // to record an API use.
-  CountFeature(feature);
-}
-
 void SharedWorkerReportingProxy::ReportException(
     const String& error_message,
     std::unique_ptr<SourceLocation>,
@@ -81,21 +73,12 @@ void SharedWorkerReportingProxy::DidFailToFetchModuleScript() {
                           CrossThreadUnretained(worker_)));
 }
 
-void SharedWorkerReportingProxy::DidEvaluateClassicScript(bool success) {
+void SharedWorkerReportingProxy::DidEvaluateTopLevelScript(bool success) {
   DCHECK(!IsMainThread());
   PostCrossThreadTask(
       *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBindOnce(&WebSharedWorkerImpl::DidEvaluateClassicScript,
-                          CrossThreadUnretained(worker_), success));
-}
-
-void SharedWorkerReportingProxy::DidEvaluateModuleScript(bool success) {
-  DCHECK(!IsMainThread());
-  PostCrossThreadTask(
-      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
-      FROM_HERE,
-      CrossThreadBindOnce(&WebSharedWorkerImpl::DidEvaluateModuleScript,
+      CrossThreadBindOnce(&WebSharedWorkerImpl::DidEvaluateTopLevelScript,
                           CrossThreadUnretained(worker_), success));
 }
 
@@ -117,7 +100,7 @@ void SharedWorkerReportingProxy::DidTerminateWorkerThread() {
                           CrossThreadUnretained(worker_)));
 }
 
-void SharedWorkerReportingProxy::Trace(Visitor* visitor) {
+void SharedWorkerReportingProxy::Trace(Visitor* visitor) const {
   visitor->Trace(parent_execution_context_task_runners_);
 }
 

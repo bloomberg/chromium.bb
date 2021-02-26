@@ -24,6 +24,7 @@
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
+#include "media/base/tuneable.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/waiting.h"
 #include "ui/gfx/geometry/size.h"
@@ -40,7 +41,7 @@ class TimeSource;
 class VideoRenderer;
 class WallClockTimeSource;
 
-class MEDIA_EXPORT RendererImpl : public Renderer {
+class MEDIA_EXPORT RendererImpl final : public Renderer {
  public:
   // Renders audio/video streams using |audio_renderer| and |video_renderer|
   // provided. All methods except for GetMediaTime() run on the |task_runner|.
@@ -58,6 +59,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
                   PipelineStatusCallback init_cb) final;
   void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) final;
   void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) final;
+  void SetPreservesPitch(bool preserves_pitch) final;
   void Flush(base::OnceClosure flush_cb) final;
   void StartPlayingFrom(base::TimeDelta time) final;
   void SetPlaybackRate(double playback_rate) final;
@@ -77,7 +79,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
     time_source_ = time_source;
   }
   void set_video_underflow_threshold_for_testing(base::TimeDelta threshold) {
-    video_underflow_threshold_ = threshold;
+    video_underflow_threshold_.set_for_testing(threshold);
   }
 
  private:
@@ -251,7 +253,10 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
 
   // The amount of time to wait before declaring underflow if the video renderer
   // runs out of data but the audio renderer still has enough.
-  base::TimeDelta video_underflow_threshold_;
+  Tuneable<base::TimeDelta> video_underflow_threshold_ = {
+      "MediaVideoUnderflowThreshold", base::TimeDelta::FromMilliseconds(1000),
+      base::TimeDelta::FromMilliseconds(3000),
+      base::TimeDelta::FromMilliseconds(8000)};
 
   // Lock used to protect access to the |restarting_audio_| flag and
   // |restarting_audio_time_|.

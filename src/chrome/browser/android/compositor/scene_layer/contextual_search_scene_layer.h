@@ -12,8 +12,8 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
+#include "chrome/browser/ui/android/layouts/scene_layer.h"
 
 namespace cc {
 class Layer;
@@ -24,6 +24,10 @@ namespace android {
 
 class ContextualSearchLayer;
 
+// A native-side, cc::Layer-based representation of how a Contextual Search
+// scene should be drawn.
+// This class delegates to the ContextualSearchLayer
+// that does the actual rendering of the Contextual Search Bar and content.
 class ContextualSearchSceneLayer : public SceneLayer,
                                    public BitmapFetcherDelegate {
  public:

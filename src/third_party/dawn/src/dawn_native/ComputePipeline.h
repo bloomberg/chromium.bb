@@ -20,6 +20,7 @@
 namespace dawn_native {
 
     class DeviceBase;
+    struct EntryPointMetadata;
 
     MaybeError ValidateComputePipelineDescriptor(DeviceBase* device,
                                                  const ComputePipelineDescriptor* descriptor);
@@ -31,6 +32,8 @@ namespace dawn_native {
 
         static ComputePipelineBase* MakeError(DeviceBase* device);
 
+        const EntryPointMetadata& GetMetadata() const;
+
         // Functors necessary for the unordered_set<ComputePipelineBase*>-based cache.
         struct HashFunc {
             size_t operator()(const ComputePipelineBase* pipeline) const;
@@ -41,10 +44,6 @@ namespace dawn_native {
 
       private:
         ComputePipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag);
-
-        // TODO(cwallez@chromium.org): Store a crypto hash of the module instead.
-        Ref<ShaderModuleBase> mModule;
-        std::string mEntryPoint;
     };
 
 }  // namespace dawn_native

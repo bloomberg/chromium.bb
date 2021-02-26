@@ -16,8 +16,8 @@ namespace content {
 class WebContents;
 }
 
-namespace signin {
-enum class ReauthResult;
+namespace signin_metrics {
+enum class ReauthAccessPoint;
 }
 
 // Interface to the platform-specific managers of the Signin and Sync
@@ -52,22 +52,12 @@ class SigninViewControllerDelegate {
       Browser* browser);
 
   // Returns a platform-specific SigninViewContolllerDelegate instance that
-  // displays the reauth modal dialog. The returned object should delete itself
-  // when the window it's managing is closed.
-  static SigninViewControllerDelegate* CreateReauthDelegate(
+  // displays the reauth confirmation modal dialog. The returned object should
+  // delete itself when the window it's managing is closed.
+  static SigninViewControllerDelegate* CreateReauthConfirmationDelegate(
       Browser* browser,
       const CoreAccountId& account_id,
-      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
-
-  // Returns a platform-specific SigninViewContolllerDelegate instance that
-  // displays the fake reauth modal dialog. The returned object should delete
-  // itself when the window it's managing is closed.
-  // WARNING: This dialog is for development use only and should not be used in
-  // production.
-  static SigninViewControllerDelegate* CreateFakeReauthDelegate(
-      Browser* browser,
-      const CoreAccountId& account_id,
-      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
+      signin_metrics::ReauthAccessPoint access_point);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -83,6 +73,9 @@ class SigninViewControllerDelegate {
 
   // Returns the web contents of the modal dialog.
   virtual content::WebContents* GetWebContents() = 0;
+
+  // Overrides currently displayed WebContents with |web_contents|.
+  virtual void SetWebContents(content::WebContents* web_contents) = 0;
 
  protected:
   SigninViewControllerDelegate();

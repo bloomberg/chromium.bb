@@ -20,6 +20,7 @@
 extern "C" {
 #endif
 
+/*!\cond */
 #define MAX_INTERP_FILTER_STATS 128
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
 
@@ -32,33 +33,99 @@ typedef struct {
   int64_t rd;
   unsigned int pred_sse;
 } INTERPOLATION_FILTER_STATS;
+/*!\endcond */
 
+/*!\brief Miscellaneous arguments for inter mode search.
+ */
 typedef struct {
-  // OBMC secondary prediction buffers and respective strides
+  /*!
+   * Buffer for the above predictor in OBMC
+   */
   uint8_t *above_pred_buf[MAX_MB_PLANE];
+  /*!
+   * Stride for the above predictor in OBMC
+   */
   int above_pred_stride[MAX_MB_PLANE];
+  /*!
+   * Buffer for the left predictor in OBMC
+   */
   uint8_t *left_pred_buf[MAX_MB_PLANE];
+  /*!
+   * Stride for the left predictor in OBMC
+   */
   int left_pred_stride[MAX_MB_PLANE];
+  /*!
+   * Pointer to the first member in a 2D array which holds
+   * single reference mode motion vectors to be used as a starting
+   * point in the mv search for compound modes. Each array is length REF_FRAMES,
+   * meaning there is a slot for a single reference motion vector for
+   * each possible reference frame. The 2D array consists of N of these arrays,
+   * where N is the length of the reference mv stack computed for the single
+   * reference case for that particular reference frame.
+   */
   int_mv (*single_newmv)[REF_FRAMES];
-  // Pointer to array of motion vectors to use for each ref and their rates
-  // Should point to first of 2 arrays in 2D array
+  /*!
+   * Pointer to the first array of a 2D array with the same setup as
+   * single_newmv array above. This is a 2D array to hold the rate
+   * corresponding to each of the single reference mode motion vectors
+   * held in single_newmv.
+   */
   int (*single_newmv_rate)[REF_FRAMES];
+  /*!
+   * Pointer to the first array of a 2D array with the same setup as
+   * single_newmv array above. This is a 2D array to hold a 0 or 1
+   * validity value corresponding to each of the single reference mode motion
+   * vectors held in single_newmv.
+   */
   int (*single_newmv_valid)[REF_FRAMES];
-  // Pointer to array of predicted rate-distortion
-  // Should point to first of 2 arrays in 2D array
+  /*!
+   * Pointer to the first array in a 3D array of predicted rate-distortion.
+   * The dimensions of this structure are:
+   * (number of possible inter modes) X
+   * (number of reference MVs) X
+   * (number of reference frames).
+   */
   int64_t (*modelled_rd)[MAX_REF_MV_SEARCH][REF_FRAMES];
+  /*!
+   * Holds an estimated entropy cost for picking the current reference frame.
+   * This is used to compute an rd estimate.
+   */
   int ref_frame_cost;
+  /*!
+   * Holds an estimated entropy cost for picking single or compound
+   * reference. This is used to compute an rd estimate.
+   */
   int single_comp_cost;
+  /*!
+   * Pointer to the first element in a 3D array holding rd's of
+   * SIMPLE_TRANSLATION used to prune out the motion mode search in single ref
+   * modes used to determine compound ref modes. The full structure is:
+   * (number of inter modes) X (length of refmv list) X (number of ref frames)
+   */
   int64_t (*simple_rd)[MAX_REF_MV_SEARCH][REF_FRAMES];
+  /*!
+   * An integer value 0 or 1 which indicates whether or not to skip the motion
+   * mode search and default to SIMPLE_TRANSLATION as a speed feature.
+   */
   int skip_motion_mode;
+  /*!
+   * A pointer to the first element in an array of INTERINTRA_MODE types. This
+   * contains the best inter_intra mode for each reference frame.
+   */
   INTERINTRA_MODE *inter_intra_mode;
-  int single_ref_first_pass;
-  SimpleRDState *simple_rd_state;
-  // [comp_idx][saved stat_idx]
+  /*!
+   * Array of saved interpolation filter stats collected to avoid repeating
+   * an interpolation filter search when the mv and ref_frame are the same
+   * as a previous search.
+   */
   INTERPOLATION_FILTER_STATS interp_filter_stats[MAX_INTERP_FILTER_STATS];
+  /*!
+   * Index of the last set of saved stats in the interp_filter_stats array.
+   */
   int interp_filter_stats_idx;
 } HandleInterModeArgs;
 
+/*!\cond */
 static const int_interpfilters filter_sets[DUAL_FILTER_SET_SIZE] = {
   { 0x00000000 }, { 0x00010000 }, { 0x00020000 },  // y = 0
   { 0x00000001 }, { 0x00010001 }, { 0x00020001 },  // y = 1
@@ -78,6 +145,7 @@ int64_t av1_interpolation_filter_search(
     int64_t *const rd, int *const switchable_rate, int *skip_build_pred,
     HandleInterModeArgs *args, int64_t ref_best_rd);
 
+/*!\endcond */
 #ifdef __cplusplus
 }  // extern "C"
 #endif

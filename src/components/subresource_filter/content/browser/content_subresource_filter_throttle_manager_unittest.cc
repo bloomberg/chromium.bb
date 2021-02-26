@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -21,12 +21,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/safe_browsing/core/db/database_manager.h"
+#include "components/safe_browsing/core/db/test_database_manager.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/subframe_navigation_test_utils.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/mojom/subresource_filter_agent.mojom.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
@@ -104,6 +107,17 @@ class FakeSubresourceFilterAgent : public mojom::SubresourceFilterAgent {
   mojo::AssociatedReceiver<mojom::SubresourceFilterAgent> receiver_{this};
 };
 
+// Overrides the TestSafeBrowsingDatabaseManager methods that are
+// expected to be called to eliminate error logs.
+class CustomTestSafeBrowsingDatabaseManager
+    : public safe_browsing::TestSafeBrowsingDatabaseManager {
+ public:
+  bool IsSupported() const override { return false; }
+
+ private:
+  ~CustomTestSafeBrowsingDatabaseManager() override = default;
+};
+
 // Simple throttle that sends page-level activation to the manager for a
 // specific set of URLs.
 class MockPageStateActivationThrottle : public content::NavigationThrottle {
@@ -162,10 +176,45 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
   DISALLOW_COPY_AND_ASSIGN(MockPageStateActivationThrottle);
 };
 
+class TestSubresourceFilterClient : public SubresourceFilterClient {
+ public:
+  TestSubresourceFilterClient() = default;
+  ~TestSubresourceFilterClient() override = default;
+
+  // SubresourceFilterClient:
+  void ShowNotification() override { ++disallowed_notification_count_; }
+  mojom::ActivationLevel OnPageActivationComputed(
+      content::NavigationHandle* navigation_handle,
+      mojom::ActivationLevel effective_activation_level,
+      ActivationDecision* decision) override {
+    return effective_activation_level;
+  }
+  void OnAdsViolationTriggered(
+      content::RenderFrameHost* rfh,
+      mojom::AdsViolation triggered_violation) override {}
+  const scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+  GetSafeBrowsingDatabaseManager() override {
+    return database_manager_;
+  }
+  void OnReloadRequested() override {}
+
+  void CreateSafeBrowsingDatabaseManager() {
+    database_manager_ =
+        base::MakeRefCounted<CustomTestSafeBrowsingDatabaseManager>();
+  }
+
+  int disallowed_notification_count() const {
+    return disallowed_notification_count_;
+  }
+
+ private:
+  scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager_;
+  int disallowed_notification_count_ = 0;
+};
+
 class ContentSubresourceFilterThrottleManagerTest
     : public content::RenderViewHostTestHarness,
       public content::WebContentsObserver,
-      public SubresourceFilterClient,
       public ::testing::WithParamInterface<PageActivationNotificationTiming> {
  public:
   ContentSubresourceFilterThrottleManagerTest() {}
@@ -182,8 +231,8 @@ class ContentSubresourceFilterThrottleManagerTest
 
     // Initialize the ruleset dealer.
     std::vector<proto::UrlRule> rules;
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
-        "whitelist.com", proto::ACTIVATION_TYPE_DOCUMENT,
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
+        "allowlist.com", proto::ACTIVATION_TYPE_DOCUMENT,
         {"page-with-activation.com"}));
     rules.push_back(testing::CreateSuffixRule("disallowed.html"));
     ASSERT_NO_FATAL_FAILURE(test_ruleset_creator_.CreateRulesetWithRules(
@@ -198,13 +247,19 @@ class ContentSubresourceFilterThrottleManagerTest
                                              /*expected_checksum=*/0,
                                              base::DoNothing());
 
+    auto subresource_filter_client =
+        std::make_unique<TestSubresourceFilterClient>();
+    client_ = subresource_filter_client.get();
     throttle_manager_ =
         std::make_unique<ContentSubresourceFilterThrottleManager>(
-            this, dealer_handle_.get(), web_contents);
+            std::move(subresource_filter_client), dealer_handle_.get(),
+            web_contents);
+
     Observe(web_contents);
   }
 
   void TearDown() override {
+    client_ = nullptr;
     throttle_manager_.reset();
     dealer_handle_.reset();
     base::RunLoop().RunUntilIdle();
@@ -259,7 +314,9 @@ class ContentSubresourceFilterThrottleManagerTest
     return throttle_manager_->ruleset_handle_for_testing();
   }
 
-  int disallowed_notification_count() { return disallowed_notification_count_; }
+  int disallowed_notification_count() const {
+    return client_->disallowed_notification_count();
+  }
 
  protected:
   // content::WebContentsObserver
@@ -286,7 +343,14 @@ class ContentSubresourceFilterThrottleManagerTest
         navigation_handle, state));
     throttle_manager_->MaybeAppendNavigationThrottles(navigation_handle,
                                                       &throttles);
+
+    created_safe_browsing_throttle_for_last_navigation_ = false;
     for (auto& it : throttles) {
+      if (strcmp(it->GetNameForLogging(),
+                 "SubresourceFilterSafeBrowsingActivationThrottle") == 0) {
+        created_safe_browsing_throttle_for_last_navigation_ = true;
+      }
+
       navigation_handle->RegisterThrottleForTesting(std::move(it));
     }
   }
@@ -301,22 +365,26 @@ class ContentSubresourceFilterThrottleManagerTest
     agent_map_[host] = std::move(new_agent);
   }
 
-  // SubresourceFilterClient:
-  void ShowNotification() override { ++disallowed_notification_count_; }
-  mojom::ActivationLevel OnPageActivationComputed(
-      content::NavigationHandle* navigation_handle,
-      mojom::ActivationLevel effective_activation_level,
-      ActivationDecision* decision) override {
-    return effective_activation_level;
-  }
-
   ContentSubresourceFilterThrottleManager* throttle_manager() {
     return throttle_manager_.get();
+  }
+
+  bool created_safe_browsing_throttle_for_current_navigation() const {
+    return created_safe_browsing_throttle_for_last_navigation_;
+  }
+
+  void CreateSafeBrowsingDatabaseManager() {
+    client_->CreateSafeBrowsingDatabaseManager();
+  }
+
+  VerifiedRulesetDealer::Handle* dealer_handle() {
+    return dealer_handle_.get();
   }
 
  private:
   testing::TestRulesetCreator test_ruleset_creator_;
   testing::TestRulesetPair test_ruleset_pair_;
+  TestSubresourceFilterClient* client_;
 
   std::unique_ptr<VerifiedRulesetDealer::Handle> dealer_handle_;
 
@@ -328,8 +396,7 @@ class ContentSubresourceFilterThrottleManagerTest
 
   std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
 
-  // Incremented on every OnFirstSubresourceLoadDisallowed call.
-  int disallowed_notification_count_ = 0;
+  bool created_safe_browsing_throttle_for_last_navigation_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterThrottleManagerTest);
 };
@@ -690,7 +757,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation) {
   EXPECT_EQ(1, disallowed_notification_count());
 }
 
-// Ensure activation propagates through whitelisted documents.
+// Ensure activation propagates through allowlisted documents.
 // crbug.com/1010000: crashes on win
 #if defined(OS_WIN)
 #define MAYBE_ActivationPropagation2 DISABLED_ActivationPropagation2
@@ -703,7 +770,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
 
   // Navigate a subframe that is not filtered, but should still activate.
-  CreateSubframeWithTestNavigation(GURL("https://whitelist.com"), main_rfh());
+  CreateSubframeWithTestNavigation(GURL("https://allowlist.com"), main_rfh());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             SimulateStartAndGetResult(navigation_simulator()));
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -712,7 +779,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       navigation_simulator()->GetFinalRenderFrameHost();
   ExpectActivationSignalForFrame(subframe1, true /* expect_activation */);
 
-  // Navigate a sub-subframe that is not filtered due to the whitelist.
+  // Navigate a sub-subframe that is not filtered due to the allowlist.
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/disallowed.html"), subframe1);
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -725,7 +792,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 
   EXPECT_EQ(0, disallowed_notification_count());
 
-  // An identical series of events that don't match whitelist rules cause
+  // An identical series of events that don't match allowlist rules cause
   // filtering.
   CreateSubframeWithTestNavigation(GURL("https://average-joe.com"), main_rfh());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -736,7 +803,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       navigation_simulator()->GetFinalRenderFrameHost();
   ExpectActivationSignalForFrame(subframe3, true /* expect_activation */);
 
-  // Navigate a sub-subframe that is not filtered due to the whitelist.
+  // Navigate a sub-subframe that is not filtered due to the allowlist.
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/disallowed.html"), subframe3);
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
@@ -774,6 +841,69 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_EQ(0, disallowed_notification_count());
 }
 
+TEST_F(ContentSubresourceFilterThrottleManagerTest, CreateForWebContents) {
+  auto web_contents =
+      content::RenderViewHostTestHarness::CreateTestWebContents();
+  ASSERT_EQ(ContentSubresourceFilterThrottleManager::FromWebContents(
+                web_contents.get()),
+            nullptr);
+
+  {
+    base::test::ScopedFeatureList scoped_feature;
+    scoped_feature.InitAndDisableFeature(kSafeBrowsingSubresourceFilter);
+
+    // CreateForWebContents() should not do anything if the subresource filter
+    // feature is not enabled.
+    ContentSubresourceFilterThrottleManager::CreateForWebContents(
+        web_contents.get(), std::make_unique<TestSubresourceFilterClient>(),
+        dealer_handle());
+    EXPECT_EQ(ContentSubresourceFilterThrottleManager::FromWebContents(
+                  web_contents.get()),
+              nullptr);
+  }
+
+  // If the subresource filter feature is enabled (as it is by default),
+  // CreateForWebContents() should create and attach an instance.
+  ContentSubresourceFilterThrottleManager::CreateForWebContents(
+      web_contents.get(), std::make_unique<TestSubresourceFilterClient>(),
+      dealer_handle());
+  auto* throttle_manager =
+      ContentSubresourceFilterThrottleManager::FromWebContents(
+          web_contents.get());
+  EXPECT_NE(throttle_manager, nullptr);
+
+  // A second call should not attach a different instance.
+  ContentSubresourceFilterThrottleManager::CreateForWebContents(
+      web_contents.get(), std::make_unique<TestSubresourceFilterClient>(),
+      dealer_handle());
+  EXPECT_EQ(ContentSubresourceFilterThrottleManager::FromWebContents(
+                web_contents.get()),
+            throttle_manager);
+}
+
+TEST_F(ContentSubresourceFilterThrottleManagerTest,
+       SafeBrowsingThrottleCreation) {
+  // If no safe browsing database is present, the throttle should not be
+  // created on a navigation.
+  NavigateAndCommitMainFrame(GURL(kTestURLWithNoActivation));
+  EXPECT_FALSE(created_safe_browsing_throttle_for_current_navigation());
+
+  CreateSafeBrowsingDatabaseManager();
+
+  // With a safe browsing database present, the throttle should be created on
+  // a main frame navigation.
+  NavigateAndCommitMainFrame(GURL(kTestURLWithNoActivation));
+  EXPECT_TRUE(created_safe_browsing_throttle_for_current_navigation());
+
+  // However, it still should not be created on a subframe navigation.
+  CreateSubframeWithTestNavigation(
+      GURL("https://www.example.com/disallowed.html"), main_rfh());
+  EXPECT_EQ(content::NavigationThrottle::PROCEED,
+            SimulateStartAndGetResult(navigation_simulator()));
+
+  EXPECT_FALSE(created_safe_browsing_throttle_for_current_navigation());
+}
+
 TEST_F(ContentSubresourceFilterThrottleManagerTest, LogActivation) {
   // This test assumes that we're not in DryRun mode.
   base::test::ScopedFeatureList scoped_feature;
@@ -798,7 +928,7 @@ TEST_F(ContentSubresourceFilterThrottleManagerTest, LogActivation) {
                            1);
 
   // Navigate a subframe that is not filtered, but should still activate.
-  CreateSubframeWithTestNavigation(GURL("https://whitelist.com"), main_rfh());
+  CreateSubframeWithTestNavigation(GURL("https://allowlist.com"), main_rfh());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             SimulateStartAndGetResult(navigation_simulator()));
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -808,13 +938,6 @@ TEST_F(ContentSubresourceFilterThrottleManagerTest, LogActivation) {
   ExpectActivationSignalForFrame(subframe1, true /* expect_activation */);
 
   tester.ExpectTotalCount(kActivationStateHistogram, 3);
-  // Only those with page level activation do ruleset lookups.
-  tester.ExpectTotalCount("SubresourceFilter.PageLoad.Activation.WallDuration",
-                          2);
-  // The *.CPUDuration histograms are recorded only if base::ThreadTicks is
-  // supported.
-  tester.ExpectTotalCount("SubresourceFilter.PageLoad.Activation.CPUDuration",
-                          base::ThreadTicks::IsSupported() ? 2 : 0);
 }
 
 // Check to make sure we don't send an IPC with the ad tag bit for ad frames

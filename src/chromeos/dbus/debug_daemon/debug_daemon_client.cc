@@ -17,10 +17,11 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"
@@ -47,6 +48,10 @@ const char kCrOSTraceLabel[] = "systemTraceEvents";
 
 // Because the cheets logs are very huge, we set the D-Bus timeout to 2 minutes.
 const int kBigLogsDBusTimeoutMS = 120 * 1000;
+
+// crash_sender could take a while to run if the network connection is slow, so
+// wait up to 20 seconds for it.
+const int kCrashSenderTimeoutMS = 20 * 1000;
 
 // A self-deleting object that wraps the pipe reader operations for reading the
 // big feedback logs. It will delete itself once the pipe stream has been
@@ -258,12 +263,12 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        pipe_reader->AsWeakPtr()));
   }
 
-  void BackupArcBugReport(const std::string& userhash,
+  void BackupArcBugReport(const cryptohome::AccountIdentifier& id,
                           VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kBackupArcBugReport);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(userhash);
+    writer.AppendString(id.account_id());
 
     DVLOG(1) << "Backing up ARC bug report";
     debugdaemon_proxy_->CallMethod(
@@ -396,13 +401,22 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void UploadCrashes() override {
+  void UploadCrashes(UploadCrashesCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kUploadCrashes);
     debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnStartMethod,
-                       weak_ptr_factory_.GetWeakPtr()));
+        &method_call, kCrashSenderTimeoutMS,
+        base::BindOnce(&DebugDaemonClientImpl::OnUploadCrashes,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void OnUploadCrashes(UploadCrashesCallback callback,
+                       dbus::Response* response) {
+    if (callback.is_null()) {
+      return;
+    }
+
+    std::move(callback).Run(response != nullptr);
   }
 
   void EnableDebuggingFeatures(const std::string& password,
@@ -517,26 +531,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        std::move(error_callback)));
   }
 
-  void StartConcierge(ConciergeCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kStartVmConcierge);
-    dbus::MessageWriter writer(&method_call);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnStartConcierge,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void StopConcierge(ConciergeCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kStopVmConcierge);
-    dbus::MessageWriter writer(&method_call);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnStopConcierge,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
   void StartPluginVmDispatcher(const std::string& owner_id,
                                const std::string& lang,
                                PluginVmDispatcherCallback callback) override {
@@ -548,8 +542,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnStartPluginVmDispatcher,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       owner_id));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void StopPluginVmDispatcher(PluginVmDispatcherCallback callback) override {
@@ -867,44 +860,10 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       std::move(error_callback).Run();
   }
 
-  void OnStartConcierge(ConciergeCallback callback, dbus::Response* response) {
-    bool result = false;
-    if (response) {
-      dbus::MessageReader reader(response);
-      reader.PopBool(&result);
-    }
-    std::move(callback).Run(result);
-  }
-
-  void OnStopConcierge(ConciergeCallback callback, dbus::Response* response) {
-    // Debugd just sends back an empty response, so we just check if
-    // the response exists
-    std::move(callback).Run(response != nullptr);
-  }
-
   void OnStartPluginVmDispatcher(PluginVmDispatcherCallback callback,
-                                 std::string owner_id,
                                  dbus::Response* response,
                                  dbus::ErrorResponse* error) {
     if (error) {
-      // Older versions of Chrome OS do not handle the |lang| arg, call again
-      // with just |owner_id| for now.
-      // TODO(crbug.com/1072082): Remove once new CrOS code is in Beta.
-      if (error->GetErrorName() == DBUS_ERROR_INVALID_ARGS &&
-          !owner_id.empty()) {
-        LOG(ERROR) << "Failed to start dispatcher due to invalid arguments in "
-                      "DBus call, retrying without language argument";
-        dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                     debugd::kStartVmPluginDispatcher);
-        dbus::MessageWriter writer(&method_call);
-        writer.AppendString(owner_id);
-        debugdaemon_proxy_->CallMethodWithErrorResponse(
-            &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-            base::BindOnce(&DebugDaemonClientImpl::OnStartPluginVmDispatcher,
-                           weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                           std::string()));
-        return;
-      }
       LOG(ERROR) << "Failed to start dispatcher, DBus error "
                  << error->GetErrorName();
       std::move(callback).Run(false);

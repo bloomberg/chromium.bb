@@ -33,8 +33,6 @@ class SkiaOutputDeviceWebView : public SkiaOutputDevice {
   SkiaOutputDeviceWebView& operator=(const SkiaOutputDeviceWebView&) = delete;
   ~SkiaOutputDeviceWebView() override;
 
-  bool supports_alpha() const { return supports_alpha_; }
-
   // SkiaOutputDevice implementation:
   bool Reshape(const gfx::Size& size,
                float device_scale_factor,
@@ -59,8 +57,6 @@ class SkiaOutputDeviceWebView : public SkiaOutputDevice {
   gfx::Size size_;
   gfx::ColorSpace color_space_;
   unsigned int last_frame_buffer_object_ = -1;
-
-  bool supports_alpha_ = false;
 
   base::WeakPtrFactory<SkiaOutputDeviceWebView> weak_ptr_factory_{this};
 };

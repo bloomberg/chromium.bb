@@ -147,7 +147,6 @@ const FieldTranslationEntry wifi_fields[] = {
     // { ::onc::wifi::kEAP, shill::kEap*},
     {::onc::wifi::kFrequency, shill::kWifiFrequency},
     {::onc::wifi::kFrequencyList, shill::kWifiFrequencyListProperty},
-    {::onc::wifi::kFTEnabled, shill::kWifiFTEnabled},
     {::onc::wifi::kHexSSID, shill::kWifiHexSsid},
     {::onc::wifi::kHiddenSSID, shill::kWifiHiddenSsid},
     {::onc::wifi::kPassphrase, shill::kPassphraseProperty},
@@ -200,6 +199,8 @@ const FieldTranslationEntry cellular_fields[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kActivationState, shill::kActivationStateProperty},
     {::onc::cellular::kAutoConnect, shill::kAutoConnectProperty},
+    {::onc::cellular::kICCID, shill::kIccidProperty},
+    {::onc::cellular::kIMSI, shill::kImsiProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kNetworkTechnology,
     //   shill::kNetworkTechnologyProperty},
@@ -213,6 +214,7 @@ const FieldTranslationEntry cellular_fields[] = {
 const FieldTranslationEntry network_fields[] = {
     {::onc::network_config::kGUID, shill::kGuidProperty},
     {::onc::network_config::kConnectable, shill::kConnectableProperty},
+    {::onc::network_config::kMetered, shill::kMeteredProperty},
     {::onc::network_config::kPriority, shill::kPriorityProperty},
 
     // Shill doesn't allow setting the name for non-VPN networks.
@@ -415,9 +417,11 @@ const FieldTranslationEntry kCellularDeviceTable[] = {
     {::onc::cellular::kHardwareRevision, shill::kHardwareRevisionProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kHomeProvider, shill::kHomeProviderProperty},
-    {::onc::cellular::kICCID, shill::kIccidProperty},
+    // ICCID is only copied from the Device if not provided by the Service.
+    // {::onc::cellular::kICCID, shill::kIccidProperty},
     {::onc::cellular::kIMEI, shill::kImeiProperty},
-    {::onc::cellular::kIMSI, shill::kImsiProperty},
+    // IMSI is only copied from the Device if not provided by the Service.
+    // {::onc::cellular::kIMSI, shill::kImsiProperty},
     {::onc::cellular::kManufacturer, shill::kManufacturerProperty},
     {::onc::cellular::kMDN, shill::kMdnProperty},
     {::onc::cellular::kMEID, shill::kMeidProperty},

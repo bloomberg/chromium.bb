@@ -4,6 +4,8 @@
 
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 
+#include <vector>
+
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -22,21 +24,23 @@ bool OverlayStrategySingleOnTop::Attempt(
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
-    RenderPassList* render_pass_list,
+    AggregatedRenderPassList* render_pass_list,
+    SurfaceDamageRectList* surface_damage_rect_list,
     const PrimaryPlane* primary_plane,
     OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
   // Before we attempt an overlay strategy, we shouldn't have a candidate.
   DCHECK(candidate_list->empty());
-  RenderPass* render_pass = render_pass_list->back().get();
+  auto* render_pass = render_pass_list->back().get();
   QuadList* quad_list = &render_pass->quad_list;
   // Build a list of candidates with the associated quad.
   OverlayCandidate best_candidate;
   auto best_quad_it = quad_list->end();
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     OverlayCandidate candidate;
-    if (OverlayCandidate::FromDrawQuad(resource_provider, output_color_matrix,
-                                       *it, &candidate) &&
+    if (OverlayCandidate::FromDrawQuad(resource_provider,
+                                       surface_damage_rect_list,
+                                       output_color_matrix, *it, &candidate) &&
         !OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(), it)) {
       // If the candidate has been promoted previously and has not changed
       // (resource ID is the same) for 3 frames, do not use it as Overlay as

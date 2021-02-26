@@ -362,9 +362,9 @@ def generate_version():
   with zipfile.ZipFile(get_main_script_path(), 'r') as z:
     for name in sorted(z.namelist()):
       with z.open(name) as f:
-        h.update(str(len(name)))
-        h.update(name)
+        h.update(str(len(name)).encode())
+        h.update(name.encode())
         content = f.read()
-        h.update(str(len(content)))
+        h.update(str(len(content)).encode())
         h.update(content)
   return h.hexdigest()

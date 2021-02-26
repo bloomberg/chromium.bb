@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/process/process_metrics.h"
@@ -17,6 +18,8 @@
 #include "base/trace_event/traced_value.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "third_party/perfetto/protos/perfetto/trace/memory_graph.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
 #if defined(OS_IOS)
 #include <mach/vm_page_size.h>
@@ -31,6 +34,9 @@
 
 #include <Psapi.h>
 #endif
+
+using ProcessSnapshot =
+    ::perfetto::protos::pbzero::MemoryTrackerSnapshot_ProcessSnapshot;
 
 namespace base {
 namespace trace_event {
@@ -94,7 +100,7 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
 #if defined(OS_WIN)
   std::unique_ptr<PSAPI_WORKING_SET_EX_INFORMATION[]> vec(
       new PSAPI_WORKING_SET_EX_INFORMATION[max_vec_size]);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   std::unique_ptr<char[]> vec(new char[max_vec_size]);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   std::unique_ptr<unsigned char[]> vec(new unsigned char[max_vec_size]);
@@ -120,7 +126,7 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
     // TODO(fuchsia): Port, see https://crbug.com/706592.
     ALLOW_UNUSED_LOCAL(chunk_start);
     ALLOW_UNUSED_LOCAL(page_count);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
     // mincore in MAC does not fail with EAGAIN.
     failure =
         !!mincore(reinterpret_cast<void*>(chunk_start), chunk_size, vec.get());
@@ -164,7 +170,7 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
 base::Optional<size_t> ProcessMemoryDump::CountResidentBytesInSharedMemory(
     void* start_address,
     size_t mapped_size) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   // On macOS, use mach_vm_region instead of mincore for performance
   // (crbug.com/742042).
   mach_vm_size_t dummy_size = 0;
@@ -223,7 +229,7 @@ base::Optional<size_t> ProcessMemoryDump::CountResidentBytesInSharedMemory(
   return resident_pages * PAGE_SIZE;
 #else
   return CountResidentBytes(start_address, mapped_size);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 }
 
 #endif  // defined(COUNT_RESIDENT_BYTES_SUPPORTED)
@@ -384,6 +390,30 @@ void ProcessMemoryDump::SerializeAllocatorDumpsInto(TracedValue* value) const {
     value->EndDictionary();
   }
   value->EndArray();
+}
+
+void ProcessMemoryDump::SerializeAllocatorDumpsInto(
+    perfetto::protos::pbzero::MemoryTrackerSnapshot* memory_snapshot,
+    const base::ProcessId pid) const {
+  ProcessSnapshot* process_snapshot =
+      memory_snapshot->add_process_memory_dumps();
+  process_snapshot->set_pid(static_cast<int>(pid));
+
+  for (const auto& allocator_dump_it : allocator_dumps_) {
+    ProcessSnapshot::MemoryNode* memory_node =
+        process_snapshot->add_allocator_dumps();
+    allocator_dump_it.second->AsProtoInto(memory_node);
+  }
+
+  for (const auto& it : allocator_dumps_edges_) {
+    const MemoryAllocatorDumpEdge& edge = it.second;
+    ProcessSnapshot::MemoryEdge* memory_edge =
+        process_snapshot->add_memory_edges();
+
+    memory_edge->set_source_id(edge.source.ToUint64());
+    memory_edge->set_target_id(edge.target.ToUint64());
+    memory_edge->set_importance(edge.importance);
+  }
 }
 
 void ProcessMemoryDump::AddOwnershipEdge(const MemoryAllocatorDumpGuid& source,

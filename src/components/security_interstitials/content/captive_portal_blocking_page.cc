@@ -99,14 +99,14 @@ std::string CaptivePortalBlockingPage::GetWiFiSSID() const {
   // currently associated WiFi access point. |WiFiService| isn't available on
   // Linux so |net::GetWifiSSID| is used instead.
   std::string ssid;
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
   std::unique_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
   wifi_service->Initialize(nullptr);
   std::string error;
   wifi_service->GetConnectedNetworkSSID(&ssid, &error);
   if (!error.empty())
     return std::string();
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   ssid = net::GetWifiSSID();
 #elif defined(OS_ANDROID)
   ssid = net::android::GetWifiSSID();
@@ -115,13 +115,6 @@ std::string CaptivePortalBlockingPage::GetWiFiSSID() const {
   if (!base::IsStringUTF8(ssid))
     return std::string();
   return ssid;
-}
-
-bool CaptivePortalBlockingPage::ShouldCreateNewNavigation() const {
-  // Captive portal interstitials always create new navigation entries, as
-  // opposed to SafeBrowsing subresource interstitials which just block access
-  // to the current page and don't create a new entry.
-  return true;
 }
 
 void CaptivePortalBlockingPage::PopulateInterstitialStrings(
@@ -184,6 +177,12 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
     }
   }
   load_time_data->SetString("primaryParagraph", paragraph);
+  load_time_data->SetString(
+      "optInLink",
+      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE));
+  load_time_data->SetString(
+      "enhancedProtectionMessage",
+      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_ENHANCED_PROTECTION_MESSAGE));
   // Explicitly specify other expected fields to empty.
   load_time_data->SetString("openDetails", "");
   load_time_data->SetString("closeDetails", "");
@@ -192,10 +191,14 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetString("recurrentErrorParagraph", "");
   load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
 
-  if (cert_report_helper())
+  if (cert_report_helper()) {
     cert_report_helper()->PopulateExtendedReportingOption(load_time_data);
-  else
+    cert_report_helper()->PopulateEnhancedProtectionMessage(load_time_data);
+  } else {
     load_time_data->SetBoolean(security_interstitials::kDisplayCheckBox, false);
+    load_time_data->SetBoolean(
+        security_interstitials::kDisplayEnhancedProtectionMessage, false);
+  }
 }
 
 void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {

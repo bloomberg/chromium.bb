@@ -23,7 +23,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/platform/graphics/scroll_types.h"
+#include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
 
 namespace blink {
 
@@ -38,6 +38,7 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
   ~LayoutFileUploadControl() override;
 
   bool IsOfType(LayoutObjectType type) const override {
+    NOT_DESTROYED();
     return type == kLayoutObjectFileUploadControl ||
            LayoutBlockFlow::IsOfType(type);
   }
@@ -51,7 +52,10 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
 
   static const int kAfterButtonSpacing = 4;
 
-  const char* GetName() const override { return "LayoutFileUploadControl"; }
+  const char* GetName() const override {
+    NOT_DESTROYED();
+    return "LayoutFileUploadControl";
+  }
 
  private:
   bool IsChildAllowed(LayoutObject* child,
@@ -62,7 +66,12 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
   int MaxFilenameWidth() const;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFileUploadControl, IsFileUploadControl());
+template <>
+struct DowncastTraits<LayoutFileUploadControl> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsFileUploadControl();
+  }
+};
 
 }  // namespace blink
 

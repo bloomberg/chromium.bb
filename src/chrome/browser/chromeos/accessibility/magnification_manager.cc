@@ -23,6 +23,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -30,7 +31,14 @@
 namespace chromeos {
 
 namespace {
+
+// The duration of time to ignore focus changes after the last mouse event.
+// Keep under one frame length (~16ms at 60hz).
+constexpr base::TimeDelta kTimeIgnoreFocusChangeAfterMouseEvent =
+    base::TimeDelta::FromMilliseconds(15);
+
 MagnificationManager* g_magnification_manager = nullptr;
+
 }  // namespace
 
 // static
@@ -97,6 +105,32 @@ double MagnificationManager::GetSavedScreenMagnifierScale() const {
 void MagnificationManager::OnProfileWillBeDestroyed(Profile* profile) {
   DCHECK_EQ(profile_, profile);
   SetProfile(nullptr);
+}
+
+void MagnificationManager::HandleFocusedRectChangedIfEnabled(
+    const gfx::Rect& bounds_in_screen,
+    bool is_editable) {
+  if (!fullscreen_magnifier_enabled_ && !IsDockedMagnifierEnabled())
+    return;
+
+  HandleFocusChanged(bounds_in_screen, is_editable);
+}
+
+void MagnificationManager::HandleMoveMagnifierToRectIfEnabled(
+    const gfx::Rect& rect) {
+  // Fullscreen magnifier and docked magnifier are mutually exclusive.
+  if (fullscreen_magnifier_enabled_) {
+    ash::Shell::Get()->magnification_controller()->HandleMoveMagnifierToRect(
+        rect);
+    return;
+  }
+  if (IsDockedMagnifierEnabled()) {
+    ash::DockedMagnifierController::Get()->MoveMagnifierToRect(rect);
+  }
+}
+
+void MagnificationManager::OnMouseEvent(ui::MouseEvent* event) {
+  last_mouse_event_ = base::TimeTicks::Now();
 }
 
 void MagnificationManager::OnViewEvent(views::View* view,
@@ -309,8 +343,17 @@ void MagnificationManager::HandleFocusChangedInPage(
 
 void MagnificationManager::HandleFocusChanged(const gfx::Rect& bounds_in_screen,
                                               bool is_editable) {
+  if (features::IsMagnifierNewFocusFollowingEnabled())
+    return;
+
   if (bounds_in_screen.IsEmpty())
     return;
+
+  // Ignore focus changes while mouse activity is occurring.
+  if (base::TimeTicks::Now() - last_mouse_event_ <
+      kTimeIgnoreFocusChangeAfterMouseEvent) {
+    return;
+  }
 
   // Fullscreen magnifier and docked magnifier are mutually exclusive.
   if (fullscreen_magnifier_enabled_) {

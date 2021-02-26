@@ -11,7 +11,6 @@
 #include "base/i18n/rtl.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/process_resource_usage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -38,7 +37,8 @@ namespace task_manager {
 namespace {
 
 base::string16 GetLocalizedTitle(const base::string16& title,
-                                 int process_type) {
+                                 int process_type,
+                                 ChildProcessTask::ProcessSubtype subtype) {
   base::string16 result_title = title;
   if (result_title.empty()) {
     switch (process_type) {
@@ -94,10 +94,15 @@ base::string16 GetLocalizedTitle(const base::string16& title,
                                         result_title);
     }
     case content::PROCESS_TYPE_RENDERER: {
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kTaskManagerShowExtraRenderers)) {
-        return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_RENDERER_PREFIX,
-                                          result_title);
+      switch (subtype) {
+        case ChildProcessTask::ProcessSubtype::kSpareRenderProcess:
+          return l10n_util::GetStringUTF16(
+              IDS_TASK_MANAGER_SPARE_RENDERER_PREFIX);
+        case ChildProcessTask::ProcessSubtype::kUnknownRenderProcess:
+          return l10n_util::GetStringUTF16(
+              IDS_TASK_MANAGER_UNKNOWN_RENDERER_PREFIX);
+        default:
+          break;
       }
       FALLTHROUGH;
     }
@@ -136,8 +141,8 @@ void ConnectResourceReporterOnIOThread(
 ProcessResourceUsage* CreateProcessResourcesSampler(
     int unique_child_process_id) {
   mojo::PendingRemote<content::mojom::ResourceUsageReporter> usage_reporter;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ConnectResourceReporterOnIOThread,
                      unique_child_process_id,
                      usage_reporter.InitWithNewPipeAndPassReceiver()));
@@ -160,8 +165,9 @@ bool UsesV8Memory(int process_type) {
 
 gfx::ImageSkia* ChildProcessTask::s_icon_ = nullptr;
 
-ChildProcessTask::ChildProcessTask(const content::ChildProcessData& data)
-    : Task(GetLocalizedTitle(data.name, data.process_type),
+ChildProcessTask::ChildProcessTask(const content::ChildProcessData& data,
+                                   ProcessSubtype subtype)
+    : Task(GetLocalizedTitle(data.name, data.process_type, subtype),
            FetchIcon(IDR_PLUGINS_FAVICON, &s_icon_),
            data.GetProcess().Handle()),
       process_resources_sampler_(CreateProcessResourcesSampler(data.id)),
@@ -188,7 +194,7 @@ void ChildProcessTask::Refresh(const base::TimeDelta& update_interval,
   // invoke it and record the current values (which might be invalid at the
   // moment. We can safely ignore that and count on future refresh cycles
   // potentially having valid values).
-  process_resources_sampler_->Refresh(base::Closure());
+  process_resources_sampler_->Refresh(base::DoNothing());
 
   v8_memory_allocated_ = base::saturated_cast<int64_t>(
       process_resources_sampler_->GetV8MemoryAllocated());

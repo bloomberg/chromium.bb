@@ -24,7 +24,13 @@ component("menu") {
     "//ui/gfx",
   ]
   if (use_x11) {
-    configs += [ "//build/config/linux:x11" ]
+    deps += [
+      "//ui/events/keycodes:x11",
+      "//ui/gfx/x",
+    ]
+  }
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 }
 

@@ -47,8 +47,7 @@
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "url/url_canon.h"
 
-#if defined(OS_FUCHSIA) || defined(USE_NSS_CERTS) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_FUCHSIA) || defined(USE_NSS_CERTS) || defined(OS_MAC)
 #include "net/cert/cert_verify_proc_builtin.h"
 #endif
 
@@ -56,7 +55,7 @@
 #include "net/cert/cert_verify_proc_android.h"
 #elif defined(OS_IOS)
 #include "net/cert/cert_verify_proc_ios.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "net/cert/cert_verify_proc_mac.h"
 #elif defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -502,7 +501,7 @@ scoped_refptr<CertVerifyProc> CertVerifyProc::CreateSystemVerifyProc(
   return new CertVerifyProcAndroid(std::move(cert_net_fetcher));
 #elif defined(OS_IOS)
   return new CertVerifyProcIOS();
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return new CertVerifyProcMac();
 #elif defined(OS_WIN)
   return new CertVerifyProcWin();
@@ -512,8 +511,7 @@ scoped_refptr<CertVerifyProc> CertVerifyProc::CreateSystemVerifyProc(
 }
 #endif
 
-#if defined(OS_FUCHSIA) || defined(USE_NSS_CERTS) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_FUCHSIA) || defined(USE_NSS_CERTS) || defined(OS_MAC)
 // static
 scoped_refptr<CertVerifyProc> CertVerifyProc::CreateBuiltinVerifyProc(
     scoped_refptr<CertNetFetcher> cert_net_fetcher) {
@@ -935,6 +933,9 @@ bool CertVerifyProc::HasTooLongValidity(const X509Certificate& cert) {
       base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1519862400);
   const base::Time time_2019_07_01 =
       base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1561939200);
+  // From Chrome Root Certificate Policy
+  const base::Time time_2020_09_01 =
+      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1598918400);
 
   // Compute the maximally permissive interpretations, accounting for leap
   // years.
@@ -957,18 +958,24 @@ bool CertVerifyProc::HasTooLongValidity(const X509Certificate& cert) {
     return true;
   }
 
-  // For certificates issued after the BR effective date of 1 July 2012: 60
-  // months.
+  // For certificates issued on-or-after the BR effective date of 1 July 2012:
+  // 60 months.
   if (start >= time_2012_07_01 && validity_duration > kSixtyMonths)
     return true;
 
-  // For certificates issued after 1 April 2015: 39 months.
+  // For certificates issued on-or-after 1 April 2015: 39 months.
   if (start >= time_2015_04_01 && validity_duration > kThirtyNineMonths)
     return true;
 
-  // For certificates issued after 1 March 2018: 825 days.
+  // For certificates issued on-or-after 1 March 2018: 825 days.
   if (start >= time_2018_03_01 &&
       validity_duration > base::TimeDelta::FromDays(825)) {
+    return true;
+  }
+
+  // For certificates issued on-or-after 1 September 2020: 398 days.
+  if (start >= time_2020_09_01 &&
+      validity_duration > base::TimeDelta::FromDays(398)) {
     return true;
   }
 

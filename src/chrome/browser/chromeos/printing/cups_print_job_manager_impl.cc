@@ -15,7 +15,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -154,10 +153,12 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
         print_job->set_state(State::STATE_ERROR);
       } else {
         print_job->set_state(State::STATE_STARTED);
+        print_job->set_error_code(PrinterErrorCode::NO_ERROR);
       }
       break;
     case ::printing::CupsJob::COMPLETED:
       DCHECK_GE(job.current_pages, print_job->total_page_number());
+      print_job->set_error_code(PrinterErrorCode::NO_ERROR);
       print_job->set_state(State::STATE_DOCUMENT_DONE);
       break;
     case ::printing::CupsJob::STOPPED:
@@ -166,6 +167,7 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
         print_job->set_error_code(PrinterErrorCode::FILTER_FAILED);
         print_job->set_state(State::STATE_FAILED);
       } else {
+        print_job->set_error_code(PrinterErrorCode::NO_ERROR);
         print_job->set_state(ConvertState(job.state));
       }
       break;
@@ -193,8 +195,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
       : CupsPrintJobManager(profile),
         cups_wrapper_(CupsWrapper::Create()),
         weak_ptr_factory_(this) {
-    timer_.SetTaskRunner(
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+    timer_.SetTaskRunner(content::GetUIThreadTaskRunner({}));
     registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                    content::NotificationService::AllSources());
   }
@@ -281,12 +282,6 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
       return false;
     }
 
-    // Records the number of jobs we're currently tracking when a new job is
-    // started.  This is equivalent to print queue size in the current
-    // implementation.
-    UMA_HISTOGRAM_EXACT_LINEAR("Printing.CUPS.PrintJobsQueued", jobs_.size(),
-                               20);
-
     // Create a new print job.
     auto cpj = std::make_unique<CupsPrintJob>(*printer, job_id, title,
                                               total_page_number, source,
@@ -302,9 +297,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     NotifyJobUpdated(job->GetWeakPtr());
 
     // Run a query now.
-    base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(&CupsPrintJobManagerImpl::PostQuery,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&CupsPrintJobManagerImpl::PostQuery,
                                   weak_ptr_factory_.GetWeakPtr()));
     // Start the timer for ongoing queries.
     ScheduleQuery();
@@ -470,7 +464,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
         NotifyJobDone(job);
         break;
       case State::STATE_ERROR:
-        NotifyJobUpdated(job);
+        NotifyJobFailed(job);
         break;
     }
   }

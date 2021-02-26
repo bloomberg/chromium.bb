@@ -16,8 +16,6 @@
 #include "include/private/GrTypesPriv.h"
 #include "src/gpu/GrSurface.h"
 
-class GrTexturePriv;
-
 class GrTexture : virtual public GrSurface {
 public:
     GrTexture* asTexture() override { return this; }
@@ -42,39 +40,48 @@ public:
                                     GrBackendTexture*,
                                     SkImage::BackendTextureReleaseProc*);
 
-    /** See addIdleProc. */
-    enum class IdleState {
-        kFlushed,
-        kFinished
-    };
     /**
-     * Installs a proc on this texture. It will be called when the texture becomes "idle". There
-     * are two types of idle states as indicated by IdleState. For managed backends (e.g. GL where
-     * a driver typically handles CPU/GPU synchronization of resource access) there is no difference
-     * between the two. They both mean "all work related to the resource has been flushed to the
-     * backend API and the texture is not owned outside the resource cache".
-     *
-     * If the API is unmanaged (e.g. Vulkan) then kFinished has the additional constraint that the
-     * work flushed to the GPU is finished.
+     * Installs a proc on this texture. It will be called when the texture becomes "idle". "Idle"
+     * means, accounting only for Skia's use of the texture, it is safe to delete in the underlying
+     * API. This is used to implement release procs for promise image textures because we cache
+     * the GrTexture object and thus can't rely on it's destructor to trigger a normal release proc.
      */
-    virtual void addIdleProc(sk_sp<GrRefCntedCallback> idleProc, IdleState) {
+    virtual void addIdleProc(sk_sp<GrRefCntedCallback> idleProc) {
         // This is the default implementation for the managed case where the IdleState can be
-        // ignored. Unmanaged backends, e.g. Vulkan, must override this to consider IdleState.
+        // ignored. Unmanaged backends, e.g. Vulkan, must override this to detect when the GPU
+        // is finished accessing the texture.
         fIdleProcs.push_back(std::move(idleProc));
     }
     /** Helper version of addIdleProc that creates the ref-counted wrapper. */
-    void addIdleProc(GrRefCntedCallback::Callback callback,
-                     GrRefCntedCallback::Context context,
-                     IdleState state) {
-        this->addIdleProc(sk_make_sp<GrRefCntedCallback>(callback, context), state);
+    void addIdleProc(GrRefCntedCallback::Callback callback, GrRefCntedCallback::Context context) {
+        this->addIdleProc(GrRefCntedCallback::Make(callback, context));
     }
 
-    /** Access methods that are only to be used within Skia code. */
-    inline GrTexturePriv texturePriv();
-    inline const GrTexturePriv texturePriv() const;
+    GrTextureType textureType() const { return fTextureType; }
+    bool hasRestrictedSampling() const {
+        return GrTextureTypeHasRestrictedSampling(this->textureType());
+    }
+
+    void markMipmapsDirty();
+    void markMipmapsClean();
+    GrMipmapped mipmapped() const {
+        return GrMipmapped(fMipmapStatus != GrMipmapStatus::kNotAllocated);
+    }
+    bool mipmapsAreDirty() const { return fMipmapStatus != GrMipmapStatus::kValid; }
+    GrMipmapStatus mipmapStatus() const { return fMipmapStatus; }
+    int maxMipmapLevel() const { return fMaxMipmapLevel; }
+
+    static void ComputeScratchKey(const GrCaps& caps,
+                                  const GrBackendFormat& format,
+                                  SkISize dimensions,
+                                  GrRenderable,
+                                  int sampleCnt,
+                                  GrMipmapped,
+                                  GrProtected,
+                                  GrScratchKey* key);
 
 protected:
-    GrTexture(GrGpu*, const SkISize&, GrProtected, GrTextureType, GrMipMapsStatus);
+    GrTexture(GrGpu*, const SkISize&, GrProtected, GrTextureType, GrMipmapStatus);
 
     virtual bool onStealBackendTexture(GrBackendTexture*, SkImage::BackendTextureReleaseProc*) = 0;
 
@@ -89,16 +96,13 @@ protected:
 
 private:
     size_t onGpuMemorySize() const override;
-    void markMipMapsDirty();
-    void markMipMapsClean();
 
     GrTextureType                 fTextureType;
-    GrMipMapsStatus               fMipMapsStatus;
-    int                           fMaxMipMapLevel;
-    friend class GrTexturePriv;
+    GrMipmapStatus                fMipmapStatus;
+    int                           fMaxMipmapLevel;
     friend class GrTextureResource;
 
-    typedef GrSurface INHERITED;
+    using INHERITED = GrSurface;
 };
 
 #endif

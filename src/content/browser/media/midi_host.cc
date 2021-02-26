@@ -5,7 +5,7 @@
 #include "content/browser/media/midi_host.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
@@ -128,6 +128,8 @@ void MidiHost::ReceiveMidiData(uint32_t port,
     // SendData() does.
     if (message[0] == kSysExByte) {
       if (!has_sys_ex_permission_) {
+        // TODO(987505): This should check permission with the Frame and not the
+        // Process.
         has_sys_ex_permission_ =
             ChildProcessSecurityPolicyImpl::GetInstance()
                 ->CanSendMidiSysExMessage(renderer_process_id_);
@@ -205,15 +207,13 @@ void MidiHost::SendData(uint32_t port,
   // Check |has_sys_ex_permission_| first to avoid searching kSysExByte in large
   // bulk data transfers for correct uses.
   if (!has_sys_ex_permission_ && base::Contains(data, kSysExByte)) {
+    has_sys_ex_permission_ =
+        ChildProcessSecurityPolicyImpl::GetInstance()->CanSendMidiSysExMessage(
+            renderer_process_id_);
     if (!has_sys_ex_permission_) {
-      has_sys_ex_permission_ =
-          ChildProcessSecurityPolicyImpl::GetInstance()
-              ->CanSendMidiSysExMessage(renderer_process_id_);
-      if (!has_sys_ex_permission_) {
-        bad_message::ReceivedBadMessage(renderer_process_id_,
-                                        bad_message::MH_SYS_EX_PERMISSION);
-        return;
-      }
+      bad_message::ReceivedBadMessage(renderer_process_id_,
+                                      bad_message::MH_SYS_EX_PERMISSION);
+      return;
     }
   }
 
@@ -236,8 +236,8 @@ void MidiHost::SendData(uint32_t port,
 template <typename Method, typename... Params>
 void MidiHost::CallClient(Method method, Params... params) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&MidiHost::CallClient<Method, Params...>,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&MidiHost::CallClient<Method, Params...>,
                                   AsWeakPtr(), method, std::move(params)...));
     return;
   }

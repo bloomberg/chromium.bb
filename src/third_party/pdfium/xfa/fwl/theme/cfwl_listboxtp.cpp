@@ -7,12 +7,11 @@
 #include "xfa/fwl/theme/cfwl_listboxtp.h"
 
 #include "build/build_config.h"
-#include "core/fxge/render_defines.h"
+#include "xfa/fgas/graphics/cfgas_gecolor.h"
+#include "xfa/fgas/graphics/cfgas_gepath.h"
 #include "xfa/fwl/cfwl_listbox.h"
 #include "xfa/fwl/cfwl_themebackground.h"
 #include "xfa/fwl/cfwl_widget.h"
-#include "xfa/fxgraphics/cxfa_gecolor.h"
-#include "xfa/fxgraphics/cxfa_gepath.h"
 
 CFWL_ListBoxTP::CFWL_ListBoxTP() = default;
 
@@ -55,22 +54,23 @@ void CFWL_ListBoxTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
   }
 }
 
-void CFWL_ListBoxTP::DrawListBoxItem(CXFA_Graphics* pGraphics,
+void CFWL_ListBoxTP::DrawListBoxItem(CFGAS_GEGraphics* pGraphics,
                                      uint32_t dwStates,
                                      const CFX_RectF& rtItem,
                                      const CFX_RectF* pData,
                                      const CFX_Matrix& matrix) {
   if (dwStates & CFWL_PartState_Selected) {
     pGraphics->SaveGraphState();
-    pGraphics->SetFillColor(CXFA_GEColor(FWLTHEME_COLOR_BKSelected));
-    CXFA_GEPath path;
-#if defined(OS_MACOSX)
+    pGraphics->SetFillColor(CFGAS_GEColor(FWLTHEME_COLOR_BKSelected));
+    CFGAS_GEPath path;
+#if defined(OS_APPLE)
     path.AddRectangle(rtItem.left, rtItem.top, rtItem.width - 1,
                       rtItem.height - 1);
 #else
     path.AddRectangle(rtItem.left, rtItem.top, rtItem.width, rtItem.height);
 #endif
-    pGraphics->FillPath(&path, FXFILL_WINDING, &matrix);
+    pGraphics->FillPath(&path, CFX_FillRenderOptions::FillType::kWinding,
+                        &matrix);
     pGraphics->RestoreGraphState();
   }
   if ((dwStates & CFWL_PartState_Focused) && pData)

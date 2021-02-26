@@ -338,6 +338,10 @@ BlobReader::Status BlobReader::CalculateSizeImpl(
   DCHECK(!total_size_calculated_);
   DCHECK(size_callback_.is_null());
 
+  if (!blob_data_) {
+    return ReportError(net::ERR_UNEXPECTED);
+  }
+
   net_error_ = net::OK;
   total_size_ = 0;
   const auto& items = blob_data_->items();
@@ -726,14 +730,12 @@ std::unique_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
               : item.length() - additional_offset;
       if (file_stream_provider_for_testing_) {
         return file_stream_provider_for_testing_->CreateFileStreamReader(
-            item.filesystem_url(), item.offset() + additional_offset,
+            item.filesystem_url().ToGURL(), item.offset() + additional_offset,
             max_bytes_to_read, item.expected_modification_time());
       }
       return item.file_system_context()->CreateFileStreamReader(
-          FileSystemURL(
-              item.file_system_context()->CrackURL(item.filesystem_url())),
-          item.offset() + additional_offset, max_bytes_to_read,
-          item.expected_modification_time());
+          item.filesystem_url(), item.offset() + additional_offset,
+          max_bytes_to_read, item.expected_modification_time());
     }
     case BlobDataItem::Type::kBytes:
     case BlobDataItem::Type::kBytesDescription:

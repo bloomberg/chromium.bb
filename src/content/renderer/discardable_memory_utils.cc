@@ -25,24 +25,18 @@
 
 namespace content {
 
-std::unique_ptr<base::DiscardableMemoryAllocator>
+scoped_refptr<discardable_memory::ClientDiscardableSharedMemoryManager>
 CreateDiscardableMemoryAllocator() {
-#if defined(OS_POSIX)
-  if (base::GetDiscardableMemoryBacking() ==
-      base::DiscardableMemoryBacking::kMadvFree) {
-    DVLOG(1) << "Using MADV_FREE for discardable memory";
-    return std::make_unique<base::MadvFreeDiscardableMemoryAllocatorPosix>();
-  }
-#endif  // defined(OS_POSIX)
   DVLOG(1) << "Using shared memory for discardable memory";
 
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
       manager_remote;
   ChildThread::Get()->BindHostReceiver(
       manager_remote.InitWithNewPipeAndPassReceiver());
-  return std::make_unique<
+  return base::MakeRefCounted<
       discardable_memory::ClientDiscardableSharedMemoryManager>(
-      std::move(manager_remote), ChildProcess::current()->io_task_runner());
+      std::move(manager_remote), ChildProcess::current()->io_task_runner(),
+      ChildProcess::current()->main_thread()->main_thread_runner());
 }
 
 }  // namespace content

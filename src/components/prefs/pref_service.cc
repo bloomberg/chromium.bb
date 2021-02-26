@@ -23,11 +23,14 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/util/values/values_util.h"
-#include "base/value_conversions.h"
 #include "build/build_config.h"
 #include "components/prefs/default_pref_store.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_registry.h"
+
+#if defined(OS_ANDROID)
+#include "components/prefs/android/pref_service_android.h"
+#endif
 
 namespace {
 
@@ -154,66 +157,48 @@ void PrefService::SchedulePendingLossyWrites() {
 bool PrefService::GetBoolean(const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  bool result = false;
-
   const base::Value* value = GetPreferenceValueChecked(path);
-  if (!value)
-    return result;
-  bool rv = value->GetAsBoolean(&result);
-  DCHECK(rv);
-  return result;
+  if (!value || !value->is_bool())
+    return false;
+  return value->GetBool();
 }
 
 int PrefService::GetInteger(const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  int result = 0;
-
   const base::Value* value = GetPreferenceValueChecked(path);
-  if (!value)
-    return result;
-  bool rv = value->GetAsInteger(&result);
-  DCHECK(rv);
-  return result;
+  if (!value || !value->is_int())
+    return 0;
+  return value->GetInt();
 }
 
 double PrefService::GetDouble(const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  double result = 0.0;
-
   const base::Value* value = GetPreferenceValueChecked(path);
-  if (!value)
-    return result;
-  bool rv = value->GetAsDouble(&result);
-  DCHECK(rv);
-  return result;
+  if (!value || !value->is_double())
+    return 0.0;
+  return value->GetDouble();
 }
 
 std::string PrefService::GetString(const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::string result;
-
   const base::Value* value = GetPreferenceValueChecked(path);
-  if (!value)
-    return result;
-  bool rv = value->GetAsString(&result);
-  DCHECK(rv);
-  return result;
+  if (!value || !value->is_string())
+    return std::string();
+  return value->GetString();
 }
 
 base::FilePath PrefService::GetFilePath(const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  base::FilePath result;
-
   const base::Value* value = GetPreferenceValueChecked(path);
   if (!value)
-    return base::FilePath(result);
-  bool rv = base::GetValueAsFilePath(*value, &result);
-  DCHECK(rv);
-  return result;
+    return base::FilePath();
+  base::Optional<base::FilePath> result = util::ValueToFilePath(*value);
+  DCHECK(result);
+  return *result;
 }
 
 bool PrefService::HasPrefPath(const std::string& path) const {
@@ -229,18 +214,19 @@ void PrefService::IteratePreferenceValues(
     callback.Run(it.first, *GetPreferenceValue(it.first));
 }
 
-std::unique_ptr<base::DictionaryValue> PrefService::GetPreferenceValues(
+base::Value PrefService::GetPreferenceValues(
     IncludeDefaults include_defaults) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::unique_ptr<base::DictionaryValue> out(new base::DictionaryValue);
+
+  base::Value out(base::Value::Type::DICTIONARY);
   for (const auto& it : *pref_registry_) {
     if (include_defaults == INCLUDE_DEFAULTS) {
-      out->Set(it.first, GetPreferenceValue(it.first)->CreateDeepCopy());
+      out.SetPath(it.first, GetPreferenceValue(it.first)->Clone());
     } else {
       const Preference* pref = FindPreference(it.first);
       if (pref->IsDefaultValue())
         continue;
-      out->Set(it.first, pref->GetValue()->CreateDeepCopy());
+      out.SetPath(it.first, pref->GetValue()->Clone());
     }
   }
   return out;
@@ -308,11 +294,7 @@ bool PrefService::IsUserModifiablePreference(
 
 const base::Value* PrefService::Get(const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  const base::Value* value = GetPreferenceValueChecked(path);
-  if (!value)
-    return nullptr;
-  return value;
+  return GetPreferenceValueChecked(path);
 }
 
 const base::DictionaryValue* PrefService::GetDictionary(
@@ -470,6 +452,15 @@ void PrefService::RemovePrefObserverAllPrefs(PrefObserver* obs) {
   pref_notifier_->RemovePrefObserverAllPrefs(obs);
 }
 
+#if defined(OS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject> PrefService::GetJavaObject() {
+  if (!pref_service_android_) {
+    pref_service_android_ = std::make_unique<PrefServiceAndroid>(this);
+  }
+  return pref_service_android_->GetJavaObject();
+}
+#endif
+
 void PrefService::Set(const std::string& path, const base::Value& value) {
   SetUserPrefValue(path, value.Clone());
 }
@@ -492,7 +483,7 @@ void PrefService::SetString(const std::string& path, const std::string& value) {
 
 void PrefService::SetFilePath(const std::string& path,
                               const base::FilePath& value) {
-  SetUserPrefValue(path, base::CreateFilePathValue(value));
+  SetUserPrefValue(path, util::FilePathToValue(value));
 }
 
 void PrefService::SetInt64(const std::string& path, int64_t value) {
@@ -514,15 +505,12 @@ uint64_t PrefService::GetUint64(const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const base::Value* value = GetPreferenceValueChecked(path);
-  if (!value)
+  if (!value || !value->is_string())
     return 0;
-  std::string result("0");
-  bool rv = value->GetAsString(&result);
-  DCHECK(rv);
 
-  uint64_t val;
-  base::StringToUint64(result, &val);
-  return val;
+  uint64_t result;
+  base::StringToUint64(value->GetString(), &result);
+  return result;
 }
 
 void PrefService::SetTime(const std::string& path, base::Time value) {
@@ -711,19 +699,19 @@ const base::Value* PrefService::GetPreferenceValue(
   CHECK(pref_value_store_);
 
   const base::Value* default_value = nullptr;
-  if (pref_registry_->defaults()->GetValue(path, &default_value)) {
-    const base::Value* found_value = nullptr;
-    base::Value::Type default_type = default_value->type();
-    if (pref_value_store_->GetValue(path, default_type, &found_value)) {
-      DCHECK(found_value->type() == default_type);
-      return found_value;
-    } else {
-      // Every registered preference has at least a default value.
-      NOTREACHED() << "no valid value found for registered pref " << path;
-    }
+  if (!pref_registry_->defaults()->GetValue(path, &default_value))
+    return nullptr;
+
+  const base::Value* found_value = nullptr;
+  base::Value::Type default_type = default_value->type();
+  if (!pref_value_store_->GetValue(path, default_type, &found_value)) {
+    // Every registered preference has at least a default value.
+    NOTREACHED() << "no valid value found for registered pref " << path;
+    return nullptr;
   }
 
-  return nullptr;
+  DCHECK_EQ(found_value->type(), default_type);
+  return found_value;
 }
 
 const base::Value* PrefService::GetPreferenceValueChecked(

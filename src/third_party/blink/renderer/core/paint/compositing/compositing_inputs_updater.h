@@ -26,6 +26,9 @@ class CompositingInputsUpdater {
   static void AssertNeedsCompositingInputsUpdateBitsCleared(PaintLayer*);
 #endif
 
+  // Combine all reasons for compositing a layer into a single boolean value
+  bool LayerOrDescendantShouldBeComposited(PaintLayer*);
+
  private:
   enum UpdateType {
     kDoNotForceUpdate,
@@ -39,7 +42,7 @@ class CompositingInputsUpdater {
     // layer. This variable stores the squashing composited layer for the
     // nearest PaintLayer ancestor which is squashed.
     PaintLayer* enclosing_squashing_composited_layer = nullptr;
-    PaintLayer* last_overflow_clip_layer = nullptr;
+    PaintLayer* last_scroll_container_layer = nullptr;
 
     PaintLayer* clip_chain_parent_for_absolute = nullptr;
     PaintLayer* clip_chain_parent_for_fixed = nullptr;
@@ -83,10 +86,9 @@ class CompositingInputsUpdater {
   // current value of AncestorInfo.
   void UpdateAncestorInfo(PaintLayer* const, UpdateType&, AncestorInfo&);
 
-  // Combine all reasons for compositing a layer into a single boolean value
-  bool LayerOrDescendantShouldBeComposited(PaintLayer*);
+  bool NeedsPaintOffsetTranslationForCompositing(PaintLayer*);
 
-  LayoutGeometryMap geometry_map_;
+  base::Optional<LayoutGeometryMap> geometry_map_;
   PaintLayer* root_layer_;
   PaintLayer* compositing_inputs_root_;
 };

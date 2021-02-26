@@ -4,8 +4,6 @@
 
 #include "components/url_formatter/spoof_checks/skeleton_generator.h"
 
-#include <ostream>
-
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
@@ -52,8 +50,7 @@ SkeletonGenerator::SkeletonGenerator(const USpoofChecker* checker)
   //      U+049F (ҟ), U+04A1(ҡ), U+04C4 (ӄ), U+051F (ԟ)} => k
   //   - {U+014B (ŋ), U+043F (п), U+0525 (ԥ), U+0E01 (ก), U+05D7 (ח)} => n
   //   - U+0153 (œ) => "ce"
-  //     TODO: see https://crbug.com/843352 for further work on
-  //     U+0525 and U+0153.
+  // TODO(crbug/843352): Handle multiple skeletons for U+0525 and U+0153.
   //   - {U+0167 (ŧ), U+0442 (т), U+04AD (ҭ), U+050F (ԏ), U+4E03 (七),
   //     U+4E05 (丅), U+4E06 (丆), U+4E01 (丁)} => t
   //   - {U+0185 (ƅ), U+044C (ь), U+048D (ҍ), U+0432 (в)} => b
@@ -110,7 +107,7 @@ SkeletonGenerator::SkeletonGenerator(const USpoofChecker* checker)
               "[—一―⸺⸻] > \\-;"),
           UTRANS_FORWARD, parse_error, status));
   DCHECK(U_SUCCESS(status))
-      << "Skeleton generator initalization failed due to an error: "
+      << "Skeleton generator initialization failed due to an error: "
       << u_errorName(status);
 }
 
@@ -119,7 +116,7 @@ SkeletonGenerator::~SkeletonGenerator() = default;
 Skeletons SkeletonGenerator::GetSkeletons(base::StringPiece16 hostname) {
   Skeletons skeletons;
   size_t hostname_length = hostname.length() - (hostname.back() == '.' ? 1 : 0);
-  icu::UnicodeString host(FALSE, hostname.data(), hostname_length);
+  icu::UnicodeString host(false, hostname.data(), hostname_length);
   // If input has any characters outside Latin-Greek-Cyrillic and [0-9._-],
   // there is no point in getting rid of diacritics because combining marks
   // attached to non-LGC characters are already blocked.
@@ -132,24 +129,7 @@ Skeletons SkeletonGenerator::GetSkeletons(base::StringPiece16 hostname) {
 
   // Map U+04CF (ӏ) to lowercase L in addition to what uspoof_getSkeleton does
   // (mapping it to lowercase I).
-  int32_t u04cf_pos;
-  if ((u04cf_pos = host.indexOf(0x4CF)) != -1) {
-    icu::UnicodeString host_alt(host);
-    size_t length = host_alt.length();
-    char16_t* buffer = host_alt.getBuffer(-1);
-    for (char16_t* uc = buffer + u04cf_pos; uc < buffer + length; ++uc) {
-      if (*uc == 0x4CF)
-        *uc = 0x6C;  // Lowercase L
-    }
-    host_alt.releaseBuffer(length);
-    uspoof_getSkeletonUnicodeString(checker_, 0, host_alt, ustr_skeleton,
-                                    &status);
-    if (U_SUCCESS(status)) {
-      std::string skeleton;
-      ustr_skeleton.toUTF8String(skeleton);
-      skeletons.insert(skeleton);
-    }
-  }
+  AddSkeletonMapping(host, 0x4CF /* ӏ */, 0x6C /* lowercase L */, &skeletons);
 
   uspoof_getSkeletonUnicodeString(checker_, 0, host, ustr_skeleton, &status);
   if (U_SUCCESS(status)) {
@@ -158,4 +138,31 @@ Skeletons SkeletonGenerator::GetSkeletons(base::StringPiece16 hostname) {
     skeletons.insert(skeleton);
   }
   return skeletons;
+}
+
+void SkeletonGenerator::AddSkeletonMapping(const icu::UnicodeString& host,
+                                           int32_t src_char,
+                                           int32_t mapped_char,
+                                           Skeletons* skeletons) {
+  int32_t src_pos = host.indexOf(src_char);
+  if (src_pos == -1) {
+    return;
+  }
+  icu::UnicodeString host_alt(host);
+  size_t length = host_alt.length();
+  char16_t* buffer = host_alt.getBuffer(-1);
+  for (char16_t* uc = buffer + src_pos; uc < buffer + length; ++uc) {
+    if (*uc == src_char)
+      *uc = mapped_char;
+  }
+  host_alt.releaseBuffer(length);
+  UErrorCode status = U_ZERO_ERROR;
+  icu::UnicodeString ustr_skeleton;
+  uspoof_getSkeletonUnicodeString(checker_, 0, host_alt, ustr_skeleton,
+                                  &status);
+  if (U_SUCCESS(status)) {
+    std::string skeleton;
+    ustr_skeleton.toUTF8String(skeleton);
+    skeletons->insert(skeleton);
+  }
 }

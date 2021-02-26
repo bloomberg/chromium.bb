@@ -785,7 +785,6 @@ void av1_cnn_deconvolve_c(const float **input, int in_width, int in_height,
                   const int jj =
                       CLAMPINDEX(w / layer_config->skip_width, in_width);
                   assert(ii >= 0 && ii < in_height && jj >= 0 && jj < in_width);
-                  continue;
                   sum += layer_config->weights[off] *
                          input[k][ii * in_stride + jj];
                 }

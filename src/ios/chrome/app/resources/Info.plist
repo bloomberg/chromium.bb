@@ -59,6 +59,15 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
+			<string>Web site URL</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>http</string>
+				<string>https</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
 			<string>${IOS_BUNDLE_ID_PREFIX}.${CHROMIUM_BUNDLE_ID:rfc1034identifier}</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
@@ -72,8 +81,6 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>0.0.0</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -84,7 +91,10 @@
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>${CHROMIUM_HANDOFF_ID}</string>
+		<string>${IOS_MOVE_TAB_ACTIVITY_TYPE}</string>
+		<string>NSUserActivityTypeBrowsingWeb</string>
 		<string>OpenInChromeIntent</string>
+		<string>OpenInChromeIncognitoIntent</string>
 		<string>SearchInChromeIntent</string>
 	</array>
 	<key>UIBackgroundModes</key>
@@ -191,8 +201,6 @@
 	<string>IDS_IOS_LOCATION_WHEN_IN_USE_USAGE_DESCRIPTION</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>IDS_IOS_MICROPHONE_USAGE_DESCRIPTION</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>IDS_IOS_PHOTO_LIBRARY_USAGE_DESCRIPTION</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>IDS_IOS_PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>

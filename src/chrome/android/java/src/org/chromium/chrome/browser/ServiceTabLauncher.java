@@ -20,18 +20,21 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.payments.PaymentRequestImpl;
+import org.chromium.chrome.browser.notifications.WebPlatformNotificationMetrics;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
+import org.chromium.chrome.browser.tabmodel.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
+import org.chromium.components.payments.PaymentRequestService;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -42,7 +45,6 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.url.GURL;
 import org.chromium.webapk.lib.client.WebApkIdentityServiceClient;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
-import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.List;
 
@@ -75,13 +77,19 @@ public class ServiceTabLauncher {
     public static void launchTab(final int requestId, boolean incognito, GURL url, int disposition,
             String referrerUrl, int referrerPolicy, String extraHeaders,
             ResourceRequestBody postData) {
+        WebPlatformNotificationMetrics.getInstance().onNewTabLaunched();
+
         // Open popup window in custom tab.
         // Note that this is used by PaymentRequestEvent.openWindow().
         if (disposition == WindowOpenDisposition.NEW_POPUP) {
             boolean success = false;
             if (PaymentHandlerCoordinator.isEnabled()) {
-                success = PaymentRequestImpl.openPaymentHandlerWindow(url,
-                        (webContents) -> onWebContentsForRequestAvailable(requestId, webContents));
+                WebContents paymentHandlerWebContent =
+                        PaymentRequestService.openPaymentHandlerWindow(url);
+                if (paymentHandlerWebContent != null) {
+                    success = true;
+                    onWebContentsForRequestAvailable(requestId, paymentHandlerWebContent);
+                }
             } else {
                 success = createPopupCustomTab(requestId, url.getSpec(), incognito);
             }

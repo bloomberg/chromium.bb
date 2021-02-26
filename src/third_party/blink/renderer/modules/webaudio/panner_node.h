@@ -133,7 +133,8 @@ class PannerHandler final : public AudioHandler {
                 AudioParamHandler& orientation_z);
 
   // BaseAudioContext's listener
-  AudioListener* Listener();
+  // AudioListener* Listener();
+  CrossThreadPersistent<AudioListener> Listener() const;
 
   bool SetPanningModel(Panner::PanningModel);  // Returns true on success.
   bool SetDistanceModel(unsigned);  // Returns true on success.
@@ -232,7 +233,7 @@ class PannerNode final : public AudioNode {
 
   PannerNode(BaseAudioContext&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   // Uses a 3D cartesian coordinate system
   AudioParam* positionX() const { return position_x_; }

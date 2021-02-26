@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
@@ -83,13 +84,14 @@ public class WebApkInstaller {
 
                 // Stores the source info of WebAPK in WebappDataStorage.
                 WebappRegistry.getInstance().register(
-                        WebappRegistry.webApkIdForPackage(packageName),
+                        WebappIntentUtils.getIdForWebApkPackage(packageName),
                         new WebappRegistry.FetchWebappDataStorageCallback() {
                             @Override
                             public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
                                 BrowserServicesIntentDataProvider intentDataProvider =
-                                        WebApkIntentDataProviderFactory.create(packageName, null,
-                                                source, false /* forceNavigation */,
+                                        WebApkIntentDataProviderFactory.create(new Intent(),
+                                                packageName, null, source,
+                                                false /* forceNavigation */,
                                                 false /* canUseSplashFromContentProvider */,
                                                 null /* shareData */,
                                                 null /* shareDataActivityClassName */);

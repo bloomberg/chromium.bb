@@ -6,10 +6,10 @@
 
 #include <limits>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/thread.h"
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"

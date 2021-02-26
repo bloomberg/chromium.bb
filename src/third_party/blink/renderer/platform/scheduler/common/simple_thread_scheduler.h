@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
 namespace blink {
@@ -54,14 +55,15 @@ class SimpleThreadScheduler : public ThreadScheduler {
   // Return the thread task runner (there's no separate task runner for them).
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> NonWakingTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
       override;
 
-  // Unsupported. Return nullptr, and it may cause a crash.
-  std::unique_ptr<PageScheduler> CreatePageScheduler(
-      PageScheduler::Delegate*) override;
+  // Unsupported. Return nullptr.
+  std::unique_ptr<WebAgentGroupScheduler> CreateAgentGroupScheduler() override;
+
+  // Return nullptr
+  WebAgentGroupScheduler* GetCurrentAgentGroupScheduler() override;
 
   // Unsupported. Return nullptr, and it may cause a crash.
   std::unique_ptr<RendererPauseHandle> PauseScheduler() override;

@@ -120,15 +120,11 @@ static int cbs_av1_write_uvlc(CodedBitstreamContext *ctx, PutBitContext *pbc,
     if (ctx->trace_enable)
         position = put_bits_count(pbc);
 
-    if (value == 0) {
-        zeroes = 0;
-        put_bits(pbc, 1, 1);
-    } else {
-        zeroes = av_log2(value + 1);
-        v = value - (1 << zeroes) + 1;
-        put_bits(pbc, zeroes + 1, 1);
-        put_bits(pbc, zeroes, v);
-    }
+    zeroes = av_log2(value + 1);
+    v = value - (1U << zeroes) + 1;
+    put_bits(pbc, zeroes, 0);
+    put_bits(pbc, 1, 1);
+    put_bits(pbc, zeroes, v);
 
     if (ctx->trace_enable) {
         char bits[65];
@@ -711,10 +707,11 @@ static size_t cbs_av1_get_payload_bytes_left(GetBitContext *gbc)
 
 #define infer(name, value) do { \
         if (current->name != (value)) { \
-            av_log(ctx->log_ctx, AV_LOG_WARNING, "Warning: " \
+            av_log(ctx->log_ctx, AV_LOG_ERROR, \
                    "%s does not match inferred value: " \
                    "%"PRId64", but should be %"PRId64".\n", \
                    #name, (int64_t)current->name, (int64_t)(value)); \
+            return AVERROR_INVALIDDATA; \
         } \
     } while (0)
 
@@ -797,7 +794,7 @@ static int cbs_av1_split_fragment(CodedBitstreamContext *ctx,
             goto fail;
         }
 
-        err = ff_cbs_insert_unit_data(ctx, frag, -1, header.obu_type,
+        err = ff_cbs_insert_unit_data(frag, -1, header.obu_type,
                                       data, obu_length, frag->data_ref);
         if (err < 0)
             goto fail;
@@ -810,50 +807,6 @@ static int cbs_av1_split_fragment(CodedBitstreamContext *ctx,
 fail:
     ctx->trace_enable = trace;
     return err;
-}
-
-static void cbs_av1_free_tile_data(AV1RawTileData *td)
-{
-    av_buffer_unref(&td->data_ref);
-}
-
-static void cbs_av1_free_padding(AV1RawPadding *pd)
-{
-    av_buffer_unref(&pd->payload_ref);
-}
-
-static void cbs_av1_free_metadata(AV1RawMetadata *md)
-{
-    switch (md->metadata_type) {
-    case AV1_METADATA_TYPE_ITUT_T35:
-        av_buffer_unref(&md->metadata.itut_t35.payload_ref);
-        break;
-    }
-}
-
-static void cbs_av1_free_obu(void *opaque, uint8_t *content)
-{
-    AV1RawOBU *obu = (AV1RawOBU*)content;
-
-    switch (obu->header.obu_type) {
-    case AV1_OBU_TILE_GROUP:
-        cbs_av1_free_tile_data(&obu->obu.tile_group.tile_data);
-        break;
-    case AV1_OBU_FRAME:
-        cbs_av1_free_tile_data(&obu->obu.frame.tile_group.tile_data);
-        break;
-    case AV1_OBU_TILE_LIST:
-        cbs_av1_free_tile_data(&obu->obu.tile_list.tile_data);
-        break;
-    case AV1_OBU_METADATA:
-        cbs_av1_free_metadata(&obu->obu.metadata);
-        break;
-    case AV1_OBU_PADDING:
-        cbs_av1_free_padding(&obu->obu.padding);
-        break;
-    }
-
-    av_freep(&obu);
 }
 
 static int cbs_av1_ref_tile_data(CodedBitstreamContext *ctx,
@@ -890,8 +843,7 @@ static int cbs_av1_read_unit(CodedBitstreamContext *ctx,
     GetBitContext gbc;
     int err, start_pos, end_pos;
 
-    err = ff_cbs_alloc_unit_content(ctx, unit, sizeof(*obu),
-                                    &cbs_av1_free_obu);
+    err = ff_cbs_alloc_unit_content2(ctx, unit);
     if (err < 0)
         return err;
     obu = unit->content;
@@ -923,9 +875,6 @@ static int cbs_av1_read_unit(CodedBitstreamContext *ctx,
     start_pos = get_bits_count(&gbc);
 
     if (obu->header.obu_extension_flag) {
-        priv->temporal_id = obu->header.temporal_id;
-        priv->spatial_id  = obu->header.spatial_id;
-
         if (obu->header.obu_type != AV1_OBU_SEQUENCE_HEADER &&
             obu->header.obu_type != AV1_OBU_TEMPORAL_DELIMITER &&
             priv->operating_point_idc) {
@@ -937,12 +886,7 @@ static int cbs_av1_read_unit(CodedBitstreamContext *ctx,
                 // Decoding will drop this OBU at this operating point.
             }
         }
-    } else {
-        priv->temporal_id = 0;
-        priv->spatial_id  = 0;
     }
-
-    priv->ref = (AV1ReferenceFrameState *)&priv->read_ref;
 
     switch (obu->header.obu_type) {
     case AV1_OBU_SEQUENCE_HEADER:
@@ -1086,8 +1030,6 @@ static int cbs_av1_write_obu(CodedBitstreamContext *ctx,
 
     td = NULL;
     start_pos = put_bits_count(pbc);
-
-    priv->ref = (AV1ReferenceFrameState *)&priv->write_ref;
 
     switch (obu->header.obu_type) {
     case AV1_OBU_SEQUENCE_HEADER:
@@ -1252,6 +1194,19 @@ static int cbs_av1_assemble_fragment(CodedBitstreamContext *ctx,
     return 0;
 }
 
+static void cbs_av1_flush(CodedBitstreamContext *ctx)
+{
+    CodedBitstreamAV1Context *priv = ctx->priv_data;
+
+    av_buffer_unref(&priv->frame_header_ref);
+    priv->sequence_header = NULL;
+    priv->frame_header = NULL;
+
+    memset(priv->ref, 0, sizeof(priv->ref));
+    priv->operating_point_idc = 0;
+    priv->seen_frame_header = 0;
+}
+
 static void cbs_av1_close(CodedBitstreamContext *ctx)
 {
     CodedBitstreamAV1Context *priv = ctx->priv_data;
@@ -1260,15 +1215,54 @@ static void cbs_av1_close(CodedBitstreamContext *ctx)
     av_buffer_unref(&priv->frame_header_ref);
 }
 
+static void cbs_av1_free_metadata(void *unit, uint8_t *content)
+{
+    AV1RawOBU *obu = (AV1RawOBU*)content;
+    AV1RawMetadata *md;
+
+    av_assert0(obu->header.obu_type == AV1_OBU_METADATA);
+    md = &obu->obu.metadata;
+
+    switch (md->metadata_type) {
+    case AV1_METADATA_TYPE_ITUT_T35:
+        av_buffer_unref(&md->metadata.itut_t35.payload_ref);
+        break;
+    }
+}
+
+static const CodedBitstreamUnitTypeDescriptor cbs_av1_unit_types[] = {
+    CBS_UNIT_TYPE_POD(AV1_OBU_SEQUENCE_HEADER,        AV1RawOBU),
+    CBS_UNIT_TYPE_POD(AV1_OBU_TEMPORAL_DELIMITER,     AV1RawOBU),
+    CBS_UNIT_TYPE_POD(AV1_OBU_FRAME_HEADER,           AV1RawOBU),
+    CBS_UNIT_TYPE_POD(AV1_OBU_REDUNDANT_FRAME_HEADER, AV1RawOBU),
+
+    CBS_UNIT_TYPE_INTERNAL_REF(AV1_OBU_TILE_GROUP, AV1RawOBU,
+                               obu.tile_group.tile_data.data),
+    CBS_UNIT_TYPE_INTERNAL_REF(AV1_OBU_FRAME,      AV1RawOBU,
+                               obu.frame.tile_group.tile_data.data),
+    CBS_UNIT_TYPE_INTERNAL_REF(AV1_OBU_TILE_LIST,  AV1RawOBU,
+                               obu.tile_list.tile_data.data),
+    CBS_UNIT_TYPE_INTERNAL_REF(AV1_OBU_PADDING,    AV1RawOBU,
+                               obu.padding.payload),
+
+    CBS_UNIT_TYPE_COMPLEX(AV1_OBU_METADATA, AV1RawOBU,
+                          &cbs_av1_free_metadata),
+
+    CBS_UNIT_TYPE_END_OF_LIST
+};
+
 const CodedBitstreamType ff_cbs_type_av1 = {
     .codec_id          = AV_CODEC_ID_AV1,
 
     .priv_data_size    = sizeof(CodedBitstreamAV1Context),
+
+    .unit_types        = cbs_av1_unit_types,
 
     .split_fragment    = &cbs_av1_split_fragment,
     .read_unit         = &cbs_av1_read_unit,
     .write_unit        = &cbs_av1_write_obu,
     .assemble_fragment = &cbs_av1_assemble_fragment,
 
+    .flush             = &cbs_av1_flush,
     .close             = &cbs_av1_close,
 };

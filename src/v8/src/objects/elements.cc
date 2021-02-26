@@ -177,7 +177,7 @@ void CopyObjectToObjectElements(Isolate* isolate, FixedArrayBase from_base,
   if (raw_copy_size < 0) {
     DCHECK_EQ(kCopyToEndAndInitializeToHole, raw_copy_size);
     copy_size =
-        Min(from_base.length() - from_start, to_base.length() - to_start);
+        std::min(from_base.length() - from_start, to_base.length() - to_start);
     int start = to_start + copy_size;
     int length = to_base.length() - start;
     if (length > 0) {
@@ -250,7 +250,7 @@ void CopyDoubleToObjectElements(Isolate* isolate, FixedArrayBase from_base,
     DisallowHeapAllocation no_allocation;
     DCHECK_EQ(kCopyToEndAndInitializeToHole, raw_copy_size);
     copy_size =
-        Min(from_base.length() - from_start, to_base.length() - to_start);
+        std::min(from_base.length() - from_start, to_base.length() - to_start);
     // Also initialize the area that will be copied over since HeapNumber
     // allocation below can cause an incremental marking step, requiring all
     // existing heap objects to be propertly initialized.
@@ -294,7 +294,7 @@ void CopyDoubleToDoubleElements(FixedArrayBase from_base, uint32_t from_start,
   if (raw_copy_size < 0) {
     DCHECK_EQ(kCopyToEndAndInitializeToHole, raw_copy_size);
     copy_size =
-        Min(from_base.length() - from_start, to_base.length() - to_start);
+        std::min(from_base.length() - from_start, to_base.length() - to_start);
     for (int i = to_start + copy_size; i < to_base.length(); ++i) {
       FixedDoubleArray::cast(to_base).set_the_hole(i);
     }
@@ -443,6 +443,8 @@ void CopyDictionaryToDoubleElements(Isolate* isolate, FixedArrayBase from_base,
 
 void SortIndices(Isolate* isolate, Handle<FixedArray> indices,
                  uint32_t sort_size) {
+  if (sort_size == 0) return;
+
   // Use AtomicSlot wrapper to ensure that std::sort uses atomic load and
   // store operations that are safe for concurrent marking.
   AtomicSlot start(indices->GetFirstElementAddress());
@@ -538,6 +540,8 @@ template <typename Subclass, typename ElementsTraitsParam>
 class ElementsAccessorBase : public InternalElementsAccessor {
  public:
   ElementsAccessorBase() = default;
+  ElementsAccessorBase(const ElementsAccessorBase&) = delete;
+  ElementsAccessorBase& operator=(const ElementsAccessorBase&) = delete;
 
   using ElementsTraits = ElementsTraitsParam;
   using BackingStore = typename ElementsTraitsParam::BackingStore;
@@ -700,7 +704,7 @@ class ElementsAccessorBase : public InternalElementsAccessor {
 
     // Check whether the backing store should be shrunk.
     uint32_t capacity = backing_store->length();
-    old_length = Min(old_length, capacity);
+    old_length = std::min(old_length, capacity);
     if (length == 0) {
       array->initialize_elements();
     } else if (length <= capacity) {
@@ -729,7 +733,7 @@ class ElementsAccessorBase : public InternalElementsAccessor {
       }
     } else {
       // Check whether the backing store should be expanded.
-      capacity = Max(length, JSObject::NewElementsCapacity(capacity));
+      capacity = std::max(length, JSObject::NewElementsCapacity(capacity));
       Subclass::GrowCapacityAndConvertImpl(array, capacity);
     }
 
@@ -1321,9 +1325,6 @@ class ElementsAccessorBase : public InternalElementsAccessor {
                                                         uint32_t length) {
     UNREACHABLE();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ElementsAccessorBase);
 };
 
 class DictionaryElementsAccessor
@@ -1361,7 +1362,7 @@ class DictionaryElementsAccessor
           // Find last non-deletable element in range of elements to be
           // deleted and adjust range accordingly.
           for (InternalIndex entry : dict->IterateEntries()) {
-            Object index = dict->KeyAt(entry);
+            Object index = dict->KeyAt(isolate, entry);
             if (dict->IsKey(roots, index)) {
               uint32_t number = static_cast<uint32_t>(index.Number());
               if (length <= number && number < old_length) {
@@ -1379,7 +1380,7 @@ class DictionaryElementsAccessor
           // Remove elements that should be deleted.
           int removed_entries = 0;
           for (InternalIndex entry : dict->IterateEntries()) {
-            Object index = dict->KeyAt(entry);
+            Object index = dict->KeyAt(isolate, entry);
             if (dict->IsKey(roots, index)) {
               uint32_t number = static_cast<uint32_t>(index.Number());
               if (length <= number && number < old_length) {
@@ -1419,9 +1420,10 @@ class DictionaryElementsAccessor
     DisallowHeapAllocation no_gc;
     NumberDictionary dict = NumberDictionary::cast(backing_store);
     if (!dict.requires_slow_elements()) return false;
-    ReadOnlyRoots roots = holder.GetReadOnlyRoots();
+    IsolateRoot isolate = GetIsolateForPtrCompr(holder);
+    ReadOnlyRoots roots = holder.GetReadOnlyRoots(isolate);
     for (InternalIndex i : dict.IterateEntries()) {
-      Object key = dict.KeyAt(i);
+      Object key = dict.KeyAt(isolate, i);
       if (!dict.IsKey(roots, key)) continue;
       PropertyDetails details = dict.DetailsAt(i);
       if (details.kind() == kAccessor) return true;
@@ -1484,7 +1486,7 @@ class DictionaryElementsAccessor
                            InternalIndex entry) {
     DisallowHeapAllocation no_gc;
     NumberDictionary dict = NumberDictionary::cast(store);
-    Object index = dict.KeyAt(entry);
+    Object index = dict.KeyAt(isolate, entry);
     return !index.IsTheHole(isolate);
   }
 
@@ -1531,7 +1533,7 @@ class DictionaryElementsAccessor
                                      InternalIndex entry,
                                      PropertyFilter filter) {
     DisallowHeapAllocation no_gc;
-    Object raw_key = dictionary->KeyAt(entry);
+    Object raw_key = dictionary->KeyAt(isolate, entry);
     if (!dictionary->IsKey(ReadOnlyRoots(isolate), raw_key)) return kMaxUInt32;
     return FilterKey(dictionary, entry, raw_key, filter);
   }
@@ -1550,7 +1552,7 @@ class DictionaryElementsAccessor
     ReadOnlyRoots roots(isolate);
     for (InternalIndex i : dictionary->IterateEntries()) {
       AllowHeapAllocation allow_gc;
-      Object raw_key = dictionary->KeyAt(i);
+      Object raw_key = dictionary->KeyAt(isolate, i);
       if (!dictionary->IsKey(roots, raw_key)) continue;
       uint32_t key = FilterKey(dictionary, i, raw_key, filter);
       if (key == kMaxUInt32) {
@@ -1597,9 +1599,9 @@ class DictionaryElementsAccessor
         NumberDictionary::cast(receiver->elements()), isolate);
     ReadOnlyRoots roots(isolate);
     for (InternalIndex i : dictionary->IterateEntries()) {
-      Object k = dictionary->KeyAt(i);
+      Object k = dictionary->KeyAt(isolate, i);
       if (!dictionary->IsKey(roots, k)) continue;
-      Object value = dictionary->ValueAt(i);
+      Object value = dictionary->ValueAt(isolate, i);
       DCHECK(!value.IsTheHole(isolate));
       DCHECK(!value.IsAccessorPair());
       DCHECK(!value.IsAccessorInfo());
@@ -1620,7 +1622,7 @@ class DictionaryElementsAccessor
     // must be accessed in order via the slow path.
     bool found = false;
     for (InternalIndex i : dictionary.IterateEntries()) {
-      Object k = dictionary.KeyAt(i);
+      Object k = dictionary.KeyAt(isolate, i);
       if (k == the_hole) continue;
       if (k == undefined) continue;
 
@@ -1634,7 +1636,7 @@ class DictionaryElementsAccessor
         // access getters out of order
         return false;
       } else if (!found) {
-        Object element_k = dictionary.ValueAt(i);
+        Object element_k = dictionary.ValueAt(isolate, i);
         if (value->SameValueZero(element_k)) found = true;
       }
     }
@@ -1807,7 +1809,7 @@ class DictionaryElementsAccessor
       if (k.Number() > NumberDictionary::kRequiresSlowElementsLimit) {
         requires_slow_elements = true;
       } else {
-        max_key = Max(max_key, Smi::ToInt(k));
+        max_key = std::max(max_key, Smi::ToInt(k));
       }
     }
     if (requires_slow_elements) {
@@ -3622,12 +3624,12 @@ class TypedElementsAccessor
     Handle<JSTypedArray> destination_ta =
         Handle<JSTypedArray>::cast(destination);
     DCHECK_LE(offset + length, destination_ta->length());
-    CHECK(!destination_ta->WasDetached());
 
     if (length == 0) return *isolate->factory()->undefined_value();
 
     // All conversions from TypedArrays can be done without allocation.
     if (source->IsJSTypedArray()) {
+      CHECK(!destination_ta->WasDetached());
       Handle<JSTypedArray> source_ta = Handle<JSTypedArray>::cast(source);
       ElementsKind source_kind = source_ta->GetElementsKind();
       bool source_is_bigint =
@@ -3642,6 +3644,7 @@ class TypedElementsAccessor
         return *isolate->factory()->undefined_value();
       }
     } else if (source->IsJSArray()) {
+      CHECK(!destination_ta->WasDetached());
       // Fast cases for packed numbers kinds where we don't need to allocate.
       Handle<JSArray> source_js_array = Handle<JSArray>::cast(source);
       size_t current_length;
@@ -3882,11 +3885,11 @@ class SloppyArgumentsElementsAccessor
                                 InternalIndex entry) {
     Handle<SloppyArgumentsElements> elements(
         SloppyArgumentsElements::cast(parameters), isolate);
-    uint32_t length = elements->parameter_map_length();
+    uint32_t length = elements->length();
     if (entry.as_uint32() < length) {
       // Read context mapped entry.
       DisallowHeapAllocation no_gc;
-      Object probe = elements->get_mapped_entry(entry.as_uint32());
+      Object probe = elements->mapped_entries(entry.as_uint32());
       DCHECK(!probe.IsTheHole(isolate));
       Context context = elements->context();
       int context_entry = Smi::ToInt(probe);
@@ -3918,13 +3921,13 @@ class SloppyArgumentsElementsAccessor
   static inline void SetImpl(FixedArrayBase store, InternalIndex entry,
                              Object value) {
     SloppyArgumentsElements elements = SloppyArgumentsElements::cast(store);
-    uint32_t length = elements.parameter_map_length();
+    uint32_t length = elements.length();
     if (entry.as_uint32() < length) {
       // Store context mapped entry.
       DisallowHeapAllocation no_gc;
-      Object probe = elements.get_mapped_entry(entry.as_uint32());
+      Object probe = elements.mapped_entries(entry.as_uint32());
       DCHECK(!probe.IsTheHole());
-      Context context = elements.context();
+      Context context = Context::cast(elements.context());
       int context_entry = Smi::ToInt(probe);
       DCHECK(!context.get(context_entry).IsTheHole());
       context.set(context_entry, value);
@@ -3935,7 +3938,7 @@ class SloppyArgumentsElementsAccessor
           ArgumentsAccessor::GetRaw(arguments, entry.adjust_down(length));
       if (current.IsAliasedArgumentsEntry()) {
         AliasedArgumentsEntry alias = AliasedArgumentsEntry::cast(current);
-        Context context = elements.context();
+        Context context = Context::cast(elements.context());
         int context_entry = alias.aliased_context_slot();
         DCHECK(!context.get(context_entry).IsTheHole());
         context.set(context_entry, value);
@@ -3955,7 +3958,7 @@ class SloppyArgumentsElementsAccessor
   static uint32_t GetCapacityImpl(JSObject holder, FixedArrayBase store) {
     SloppyArgumentsElements elements = SloppyArgumentsElements::cast(store);
     FixedArray arguments = elements.arguments();
-    return elements.parameter_map_length() +
+    return elements.length() +
            ArgumentsAccessor::GetCapacityImpl(holder, arguments);
   }
 
@@ -3967,7 +3970,7 @@ class SloppyArgumentsElementsAccessor
     size_t max_entries =
         ArgumentsAccessor::GetMaxNumberOfEntries(holder, arguments);
     DCHECK_LE(max_entries, std::numeric_limits<uint32_t>::max());
-    return elements.parameter_map_length() + static_cast<uint32_t>(max_entries);
+    return elements.length() + static_cast<uint32_t>(max_entries);
   }
 
   static uint32_t NumberOfElementsImpl(JSObject receiver,
@@ -3977,7 +3980,7 @@ class SloppyArgumentsElementsAccessor
         SloppyArgumentsElements::cast(backing_store);
     FixedArrayBase arguments = elements.arguments();
     uint32_t nof_elements = 0;
-    uint32_t length = elements.parameter_map_length();
+    uint32_t length = elements.length();
     for (uint32_t index = 0; index < length; index++) {
       if (HasParameterMapArg(isolate, elements, index)) nof_elements++;
     }
@@ -4004,7 +4007,7 @@ class SloppyArgumentsElementsAccessor
                            InternalIndex entry) {
     SloppyArgumentsElements elements =
         SloppyArgumentsElements::cast(parameters);
-    uint32_t length = elements.parameter_map_length();
+    uint32_t length = elements.length();
     if (entry.raw_value() < length) {
       return HasParameterMapArg(isolate, elements, entry.raw_value());
     }
@@ -4035,13 +4038,13 @@ class SloppyArgumentsElementsAccessor
     if (entry.is_not_found()) return entry;
     // Arguments entries could overlap with the dictionary entries, hence offset
     // them by the number of context mapped entries.
-    return entry.adjust_up(elements.parameter_map_length());
+    return entry.adjust_up(elements.length());
   }
 
   static PropertyDetails GetDetailsImpl(JSObject holder, InternalIndex entry) {
     SloppyArgumentsElements elements =
         SloppyArgumentsElements::cast(holder.elements());
-    uint32_t length = elements.parameter_map_length();
+    uint32_t length = elements.length();
     if (entry.as_uint32() < length) {
       return PropertyDetails(kData, NONE, PropertyCellType::kNoCell);
     }
@@ -4053,16 +4056,16 @@ class SloppyArgumentsElementsAccessor
   static bool HasParameterMapArg(Isolate* isolate,
                                  SloppyArgumentsElements elements,
                                  size_t index) {
-    uint32_t length = elements.parameter_map_length();
+    uint32_t length = elements.length();
     if (index >= length) return false;
-    return !elements.get_mapped_entry(static_cast<uint32_t>(index))
+    return !elements.mapped_entries(static_cast<uint32_t>(index))
                 .IsTheHole(isolate);
   }
 
   static void DeleteImpl(Handle<JSObject> obj, InternalIndex entry) {
     Handle<SloppyArgumentsElements> elements(
         SloppyArgumentsElements::cast(obj->elements()), obj->GetIsolate());
-    uint32_t length = elements->parameter_map_length();
+    uint32_t length = elements->length();
     InternalIndex delete_or_entry = entry;
     if (entry.as_uint32() < length) {
       delete_or_entry = InternalIndex::NotFound();
@@ -4071,8 +4074,8 @@ class SloppyArgumentsElementsAccessor
     // SloppyDeleteImpl allocates a new dictionary elements store. For making
     // heap verification happy we postpone clearing out the mapped entry.
     if (entry.as_uint32() < length) {
-      elements->set_mapped_entry(entry.as_uint32(),
-                                 obj->GetReadOnlyRoots().the_hole_value());
+      elements->set_mapped_entries(entry.as_uint32(),
+                                   obj->GetReadOnlyRoots().the_hole_value());
     }
   }
 
@@ -4107,10 +4110,10 @@ class SloppyArgumentsElementsAccessor
       uint32_t insertion_index = 0) {
     Handle<SloppyArgumentsElements> elements =
         Handle<SloppyArgumentsElements>::cast(backing_store);
-    uint32_t length = elements->parameter_map_length();
+    uint32_t length = elements->length();
 
     for (uint32_t i = 0; i < length; ++i) {
-      if (elements->get_mapped_entry(i).IsTheHole(isolate)) continue;
+      if (elements->mapped_entries(i).IsTheHole(isolate)) continue;
       if (convert == GetKeysConversion::kConvertToString) {
         Handle<String> index_string = isolate->factory()->Uint32ToString(i);
         list->set(insertion_index, *index_string);
@@ -4238,7 +4241,7 @@ class SlowSloppyArgumentsElementsAccessor
     Isolate* isolate = obj->GetIsolate();
     Handle<NumberDictionary> dict(NumberDictionary::cast(elements->arguments()),
                                   isolate);
-    uint32_t length = elements->parameter_map_length();
+    uint32_t length = elements->length();
     dict =
         NumberDictionary::DeleteEntry(isolate, dict, entry.adjust_down(length));
     elements->set_arguments(*dict);
@@ -4271,9 +4274,9 @@ class SlowSloppyArgumentsElementsAccessor
     Isolate* isolate = object->GetIsolate();
     Handle<SloppyArgumentsElements> elements =
         Handle<SloppyArgumentsElements>::cast(store);
-    uint32_t length = elements->parameter_map_length();
+    uint32_t length = elements->length();
     if (entry.as_uint32() < length) {
-      Object probe = elements->get_mapped_entry(entry.as_uint32());
+      Object probe = elements->mapped_entries(entry.as_uint32());
       DCHECK(!probe.IsTheHole(isolate));
       Context context = elements->context();
       int context_entry = Smi::ToInt(probe);
@@ -4281,8 +4284,8 @@ class SlowSloppyArgumentsElementsAccessor
       context.set(context_entry, *value);
 
       // Redefining attributes of an aliased element destroys fast aliasing.
-      elements->set_mapped_entry(entry.as_uint32(),
-                                 ReadOnlyRoots(isolate).the_hole_value());
+      elements->set_mapped_entries(entry.as_uint32(),
+                                   ReadOnlyRoots(isolate).the_hole_value());
       // For elements that are still writable we re-establish slow aliasing.
       if ((attributes & READ_ONLY) == 0) {
         value = isolate->factory()->NewAliasedArgumentsEntry(context_entry);
@@ -4339,7 +4342,7 @@ class FastSloppyArgumentsElementsAccessor
     // kMaxUInt32 indicates that a context mapped element got deleted. In this
     // case we only normalize the elements (aka. migrate to SLOW_SLOPPY).
     if (entry->is_not_found()) return dictionary;
-    uint32_t length = elements->parameter_map_length();
+    uint32_t length = elements->length();
     if (entry->as_uint32() >= length) {
       *entry =
           dictionary

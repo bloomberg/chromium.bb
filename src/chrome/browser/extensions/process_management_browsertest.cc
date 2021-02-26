@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -50,6 +52,13 @@ bool IsExtensionProcessSharingAllowed() {
 }
 
 class ProcessManagementTest : public ExtensionBrowserTest {
+ public:
+  ProcessManagementTest() {
+    // TODO(https://crbug.com/1110891): Remove this once Extensions are
+    // supported with BackForwardCache.
+    disabled_feature_list_.InitWithFeatures({}, {features::kBackForwardCache});
+  }
+
  private:
   // This is needed for testing isolated apps, which are still experimental.
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -62,6 +71,8 @@ class ProcessManagementTest : public ExtensionBrowserTest {
     ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
+
+  base::test::ScopedFeatureList disabled_feature_list_;
 };
 
 class ChromeWebStoreProcessTest : public ExtensionBrowserTest {
@@ -484,11 +495,18 @@ IN_PROC_BROWSER_TEST_F(ChromeWebStoreInIsolatedOriginTest,
       content::SiteInstance::CreateForURL(context, gallery_url());
   EXPECT_TRUE(cws_site_instance->RequiresDedicatedProcess());
 
+  // Calculate an URL that is 1) relative to the fake (i.e. test-controlled)
+  // Chrome Web Store gallery URL and 2) resolves to something that
+  // embedded_test_server can actually serve (e.g. title1.html test file).
+  GURL::Replacements replace_path;
+  replace_path.SetPathStr("/title1.html");
+  GURL cws_web_url = gallery_url().ReplaceComponents(replace_path);
+
   // Navigate to Chrome Web Store and check that it's loaded successfully.
-  ui_test_utils::NavigateToURL(browser(), gallery_url());
+  ui_test_utils::NavigateToURL(browser(), cws_web_url);
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(gallery_url(), web_contents->GetLastCommittedURL());
+  EXPECT_EQ(cws_web_url, web_contents->GetLastCommittedURL());
 
   // Verify that the Chrome Web Store hosted app is really loaded.
   content::RenderProcessHost* render_process_host =

@@ -6,7 +6,7 @@
 
 :host {
   padding: 12px;
- }
+}
 
 [is=dt-checkbox] {
   margin: 0 0 10px 0;
@@ -18,6 +18,10 @@
   margin-bottom: 10px;
   background: #f0f0f0;
   flex: none;
+}
+
+.panel-section-separator:last-child {
+  background: transparent;
 }
 
 .chrome-select-label {

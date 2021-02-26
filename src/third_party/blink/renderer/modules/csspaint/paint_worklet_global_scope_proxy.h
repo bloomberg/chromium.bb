@@ -22,8 +22,6 @@ class WorkletModuleResponsesMap;
 class MODULES_EXPORT PaintWorkletGlobalScopeProxy
     : public GarbageCollected<PaintWorkletGlobalScopeProxy>,
       public WorkletGlobalScopeProxy {
-  USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScopeProxy);
-
  public:
   static PaintWorkletGlobalScopeProxy* From(WorkletGlobalScopeProxy*);
 
@@ -47,7 +45,7 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
 
   PaintWorkletGlobalScope* global_scope() const { return global_scope_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   std::unique_ptr<MainThreadWorkletReportingProxy> reporting_proxy_;

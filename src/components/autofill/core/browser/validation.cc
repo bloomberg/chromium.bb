@@ -14,12 +14,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_regex_constants.h"
+#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/geo/state_names.h"
 #include "components/autofill/core/common/autofill_clock.h"
-#include "components/autofill/core/common/autofill_regex_constants.h"
-#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -80,6 +80,8 @@ bool HasCorrectLength(const base::string16& number) {
   if (type == kMasterCard && number.size() != 16)
     return false;
   if (type == kMirCard && number.size() != 16)
+    return false;
+  if (type == kTroyCard && number.size() != 16)
     return false;
   if (type == kUnionPay && (number.size() < 16 || number.size() > 19))
     return false;

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
@@ -44,7 +45,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
-#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -79,6 +79,7 @@
 #import "chrome/browser/ui/cocoa/share_menu_controller.h"
 #import "chrome/browser/ui/cocoa/tab_menu_bridge.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -93,6 +94,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 #include "components/handoff/handoff_manager.h"
 #include "components/handoff/handoff_utility.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -110,6 +112,7 @@
 #include "ui/base/cocoa/focus_window_set.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "url/gurl.h"
 
 using apps::AppShimManager;
 using base::UserMetricsAction;
@@ -135,7 +138,7 @@ bool g_is_opening_new_window = false;
 // there are only minimized windows), it will unminimize it.
 Browser* ActivateBrowser(Profile* profile) {
   Browser* browser = chrome::FindLastActiveWithProfile(
-      profile->IsGuestSession() ? profile->GetOffTheRecordProfile() : profile);
+      profile->IsGuestSession() ? profile->GetPrimaryOTRProfile() : profile);
   if (browser)
     browser->window()->Activate();
   return browser;
@@ -798,8 +801,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     _localPrefRegistrar.Init(localState);
     _localPrefRegistrar.Add(
         prefs::kAllowFileSelectionDialogs,
-        base::Bind(&chrome::BrowserCommandController::UpdateOpenFileState,
-                   _menuState.get()));
+        base::BindRepeating(
+            &chrome::BrowserCommandController::UpdateOpenFileState,
+            _menuState.get()));
   }
 
   _handoff_active_url_observer_bridge.reset(
@@ -860,8 +864,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   std::vector<Profile*> added_profiles;
   for (Profile* p : profiles) {
-    if (p->HasOffTheRecordProfile())
-      added_profiles.push_back(p->GetOffTheRecordProfile());
+    for (Profile* otr : p->GetAllOffTheRecordProfiles())
+      added_profiles.push_back(otr);
   }
   profiles.insert(profiles.end(), added_profiles.begin(), added_profiles.end());
 
@@ -880,7 +884,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
         // downloads page if the user chooses to wait.
         Browser* browser = chrome::FindBrowserWithProfile(profiles[i]);
         if (!browser) {
-          browser = new Browser(Browser::CreateParams(profiles[i], true));
+          browser = Browser::Create(Browser::CreateParams(profiles[i], true));
           browser->window()->Show();
         }
         DCHECK(browser);
@@ -1072,7 +1076,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
                              IDC_FOCUS_SEARCH);
       break;
     case IDC_NEW_INCOGNITO_WINDOW:
-      CreateBrowser(lastProfile->GetOffTheRecordProfile());
+      CreateBrowser(lastProfile->GetPrimaryOTRProfile());
       break;
     case IDC_RESTORE_TAB:
       chrome::OpenWindowWithRestoredTabs(lastProfile);
@@ -1249,10 +1253,26 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // profile are implemented as forced incognito, we can't open a new guest
   // browser either, so we have to show the User Manager as well.
   Profile* lastProfile = [self lastProfile];
+  if (!lastProfile) {
+    // Without a profile there's nothing that can be done, but still return NO
+    // to AppKit as there's nothing that it can do either.
+    return NO;
+  }
   if (lastProfile->IsGuestSession() || IsProfileSignedOut(lastProfile) ||
       lastProfile->IsSystemProfile()) {
+    // Note: If the profile picker feature is enabled, this opens the profile
+    // picker, unless forced signin is enabled (in which case the old user
+    // manager is still shown).
     UserManager::Show(base::FilePath(),
                       profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+  } else if (ProfilePicker::ShouldShowAtLaunch(
+                 // Pass an empty command line, because this is not application
+                 // startup. The original arguments (e.g. --incognito) are no
+                 // longer relevant.
+                 base::CommandLine(base::CommandLine::NO_PROGRAM),
+                 /*urls_to_launch=*/std::vector<GURL>())) {
+    ProfilePicker::Show(
+        ProfilePicker::EntryPoint::kNewSessionOnExistingProcess);
   } else {
     CreateBrowser(lastProfile);
   }
@@ -1363,7 +1383,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // Guest sessions must always be OffTheRecord. Use that when opening windows.
   if (profile->IsGuestSession())
-    return profile->GetOffTheRecordProfile();
+    return profile->GetPrimaryOTRProfile();
 
   return profile;
 }
@@ -1392,7 +1412,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   Browser* browser = chrome::FindLastActiveWithProfile(profile);
   // if no browser window exists then create one with no tabs to be filled in
   if (!browser) {
-    browser = new Browser(
+    browser = Browser::Create(
         Browser::CreateParams([self safeLastProfileForNewWindows], true));
     browser->window()->Show();
   }
@@ -1630,10 +1650,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   _profilePrefRegistrar->Init(_lastProfile->GetPrefs());
   _profilePrefRegistrar->Add(
       prefs::kIncognitoModeAvailability,
-      base::Bind(&chrome::BrowserCommandController::
-                     UpdateSharedCommandsForIncognitoAvailability,
-                 _menuState.get(),
-                 _lastProfile));
+      base::BindRepeating(&chrome::BrowserCommandController::
+                              UpdateSharedCommandsForIncognitoAvailability,
+                          _menuState.get(), _lastProfile));
 }
 
 - (void)updateMenuItemKeyEquivalents {

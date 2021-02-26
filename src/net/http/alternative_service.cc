@@ -14,32 +14,6 @@ namespace net {
 
 namespace {
 
-enum AlternativeProxyUsage {
-  // Alternative Proxy was used without racing a normal connection.
-  ALTERNATIVE_PROXY_USAGE_NO_RACE = 0,
-  // Alternative Proxy was used by winning a race with a normal connection.
-  ALTERNATIVE_PROXY_USAGE_WON_RACE = 1,
-  // Alternative Proxy was not used by losing a race with a normal connection.
-  ALTERNATIVE_PROXY_USAGE_LOST_RACE = 2,
-  // Maximum value for the enum.
-  ALTERNATIVE_PROXY_USAGE_MAX,
-};
-
-AlternativeProxyUsage ConvertProtocolUsageToProxyUsage(
-    AlternateProtocolUsage usage) {
-  switch (usage) {
-    case ALTERNATE_PROTOCOL_USAGE_NO_RACE:
-      return ALTERNATIVE_PROXY_USAGE_NO_RACE;
-    case ALTERNATE_PROTOCOL_USAGE_WON_RACE:
-      return ALTERNATIVE_PROXY_USAGE_WON_RACE;
-    case ALTERNATE_PROTOCOL_USAGE_LOST_RACE:
-      return ALTERNATIVE_PROXY_USAGE_LOST_RACE;
-    default:
-      NOTREACHED();
-      return ALTERNATIVE_PROXY_USAGE_MAX;
-  }
-}
-
 quic::ParsedQuicVersion ParsedQuicVersionFromAlpn(
     base::StringPiece str,
     quic::ParsedQuicVersionVector supported_versions) {
@@ -47,22 +21,19 @@ quic::ParsedQuicVersion ParsedQuicVersionFromAlpn(
     if (AlpnForVersion(version) == str)
       return version;
   }
-  return {quic::PROTOCOL_UNSUPPORTED, quic::QUIC_VERSION_UNSUPPORTED};
+  return quic::ParsedQuicVersion::Unsupported();
 }
 
 }  // anonymous namespace
 
 void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage,
-                                     bool proxy_server_used) {
-  if (proxy_server_used) {
-    DCHECK_LE(usage, ALTERNATE_PROTOCOL_USAGE_LOST_RACE);
-    LOCAL_HISTOGRAM_ENUMERATION("Net.QuicAlternativeProxy.Usage",
-                                ConvertProtocolUsageToProxyUsage(usage),
-                                ALTERNATIVE_PROXY_USAGE_MAX);
-  } else {
+                                     bool is_google_host) {
     UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolUsage", usage,
                               ALTERNATE_PROTOCOL_USAGE_MAX);
-  }
+    if (is_google_host) {
+      UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolUsageGoogle", usage,
+                                ALTERNATE_PROTOCOL_USAGE_MAX);
+    }
 }
 
 void HistogramBrokenAlternateProtocolLocation(
@@ -201,8 +172,7 @@ AlternativeServiceInfoVector ProcessAlternativeServices(
     } else if (!IsAlternateProtocolValid(protocol)) {
       quic::ParsedQuicVersion version = ParsedQuicVersionFromAlpn(
           alternative_service_entry.protocol_id, supported_quic_versions);
-      if (version.handshake_protocol == quic::PROTOCOL_UNSUPPORTED ||
-          version.transport_version == quic::QUIC_VERSION_UNSUPPORTED) {
+      if (version == quic::ParsedQuicVersion::Unsupported()) {
         continue;
       }
       protocol = kProtoQUIC;

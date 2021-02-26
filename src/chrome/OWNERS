@@ -14,6 +14,7 @@ yfriedman@chromium.org
 
 # Reviewers (in PST):
 dtrainor@chromium.org
+fgorski@chromium.org
 nyquist@chromium.org
 sky@chromium.org
 tedchoc@chromium.org
@@ -29,5 +30,3 @@ per-file VERSION=amineer@chromium.org
 per-file VERSION=anantha@chromium.org
 per-file VERSION=govind@chromium.org
 per-file VERSION=mmoss@chromium.org
-# COMPONENT: UI>Browser
-# TEAM: chromium-reviews@chromium.org

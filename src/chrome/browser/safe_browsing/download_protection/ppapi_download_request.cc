@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -27,7 +26,6 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
@@ -71,7 +69,7 @@ PPAPIDownloadRequest::PPAPIDownloadRequest(
         service->navigation_observer_manager()->HasUserGesture(web_contents);
     if (has_user_gesture_) {
       service->navigation_observer_manager()->OnUserGestureConsumed(
-          web_contents, base::Time::Now());
+          web_contents);
     }
   }
 }
@@ -109,14 +107,15 @@ void PPAPIDownloadRequest::Start() {
   // verdict. The weak pointer used for the timeout will be invalidated (and
   // hence would prevent the timeout) if the check completes on time and
   // execution reaches Finish().
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
-                        base::BindOnce(&PPAPIDownloadRequest::OnRequestTimedOut,
-                                       weakptr_factory_.GetWeakPtr()),
-                        base::TimeDelta::FromMilliseconds(
-                            service_->download_request_timeout_ms()));
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&PPAPIDownloadRequest::OnRequestTimedOut,
+                     weakptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(
+          service_->download_request_timeout_ms()));
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&PPAPIDownloadRequest::CheckWhitelistsOnIOThread,
                      requestor_url_, database_manager_,
                      weakptr_factory_.GetWeakPtr()));
@@ -143,8 +142,8 @@ void PPAPIDownloadRequest::CheckWhitelistsOnIOThread(
   bool url_was_whitelisted =
       requestor_url.is_valid() && database_manager &&
       database_manager->MatchDownloadWhitelistUrl(requestor_url);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PPAPIDownloadRequest::WhitelistCheckComplete,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PPAPIDownloadRequest::WhitelistCheckComplete,
                                 download_request, url_was_whitelisted));
 }
 

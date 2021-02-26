@@ -90,8 +90,7 @@ gfx::Rect ChildFrameCompositingHelper::PaintableRegion() {
 }
 
 scoped_refptr<cc::DisplayItemList>
-ChildFrameCompositingHelper::PaintContentsToDisplayList(
-    PaintingControlSetting) {
+ChildFrameCompositingHelper::PaintContentsToDisplayList() {
   DCHECK(crash_ui_layer_);
   auto layer_size = crash_ui_layer_->bounds();
   auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
@@ -134,10 +133,6 @@ ChildFrameCompositingHelper::PaintContentsToDisplayList(
 bool ChildFrameCompositingHelper::FillsBoundsCompletely() const {
   // Because we paint a full opaque gray background.
   return true;
-}
-
-size_t ChildFrameCompositingHelper::GetApproximateUnsharedMemoryUsage() const {
-  return sizeof(*this);
 }
 
 }  // namespace content

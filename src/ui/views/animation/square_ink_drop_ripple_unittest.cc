@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -254,7 +255,7 @@ TEST_F(SquareInkDropRippleCalculateTransformsTest, RippleIsPixelAligned) {
       SCOPED_TRACE(testing::Message()
                    << "target_size=" << target_size << " dsf=" << dsf);
       host_view->layer()->GetCompositor()->SetScaleAndSize(
-          dsf, gfx::Size(100, 100), viz::LocalSurfaceIdAllocation());
+          dsf, gfx::Size(100, 100), viz::LocalSurfaceId());
 
       SquareInkDropRippleTestApi::InkDropTransforms transforms;
       test_api.CalculateRectTransforms(gfx::Size(target_size, target_size), 0,
@@ -267,10 +268,10 @@ TEST_F(SquareInkDropRippleCalculateTransformsTest, RippleIsPixelAligned) {
         float float_max_x = rect.right();
         float float_max_y = rect.bottom();
 
-        int min_x = gfx::ToRoundedInt(float_min_x);
-        int min_y = gfx::ToRoundedInt(float_min_y);
-        int max_x = gfx::ToRoundedInt(float_max_x);
-        int max_y = gfx::ToRoundedInt(float_max_y);
+        int min_x = base::ClampRound(float_min_x);
+        int min_y = base::ClampRound(float_min_y);
+        int max_x = base::ClampRound(float_max_x);
+        int max_y = base::ClampRound(float_max_y);
 
         EXPECT_LT(std::abs(min_x - float_min_x), 0.01f);
         EXPECT_LT(std::abs(min_y - float_min_y), 0.01f);

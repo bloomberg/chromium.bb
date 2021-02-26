@@ -24,8 +24,6 @@ const CGFloat kURLButtonMargin = 10;
 
 // The type of the copied content
 @property(nonatomic) CopiedContentType type;
-// The copied text to be displayed if the type supports showing the string.
-@property(nonatomic, copy) NSString* copiedText;
 // The copied URL label containing the URL or a placeholder text.
 @property(nonatomic, strong) UILabel* copiedContentLabel;
 // The copied URL title label containing the title of the copied URL button.
@@ -38,7 +36,7 @@ const CGFloat kURLButtonMargin = 10;
 @property(nonatomic, strong) UIVisualEffectView* primaryEffectView;
 @property(nonatomic, strong) UIVisualEffectView* secondaryEffectView;
 
-// Updates the view to show the currently set |type| and |copiedText|.
+// Updates the view to show the currently set |type|.
 - (void)updateUI;
 
 @end
@@ -56,14 +54,10 @@ const CGFloat kURLButtonMargin = 10;
                   action:actionSelector
         forControlEvents:UIControlEventTouchUpInside];
 
-    UIVibrancyEffect* primaryEffect =
-        [UIVibrancyEffect widgetPrimaryVibrancyEffect];
-    UIVibrancyEffect* secondaryEffect =
-        [UIVibrancyEffect widgetSecondaryVibrancyEffect];
-    UIVibrancyEffect* backgroundEffect =
-        [UIVibrancyEffect widgetSecondaryVibrancyEffect];
-    UIVibrancyEffect* hairlineEffect =
-        [UIVibrancyEffect widgetSecondaryVibrancyEffect];
+    UIVibrancyEffect* primaryEffect = nil;
+    UIVibrancyEffect* secondaryEffect = nil;
+    UIVibrancyEffect* backgroundEffect = nil;
+    UIVibrancyEffect* hairlineEffect = nil;
     if (@available(iOS 13, *)) {
       primaryEffect = [UIVibrancyEffect
           widgetEffectForVibrancyStyle:UIVibrancyEffectStyleLabel];
@@ -74,6 +68,18 @@ const CGFloat kURLButtonMargin = 10;
       hairlineEffect = [UIVibrancyEffect
           widgetEffectForVibrancyStyle:UIVibrancyEffectStyleSeparator];
     }
+#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+    else {
+      primaryEffect = [UIVibrancyEffect widgetPrimaryVibrancyEffect];
+      secondaryEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
+      backgroundEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
+      hairlineEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
+    }
+#endif
+    DCHECK(primaryEffect);
+    DCHECK(secondaryEffect);
+    DCHECK(backgroundEffect);
+    DCHECK(hairlineEffect);
 
     _primaryEffectView =
         [[UIVisualEffectView alloc] initWithEffect:primaryEffect];
@@ -165,7 +171,7 @@ const CGFloat kURLButtonMargin = 10;
       [_copiedContentLabel.trailingAnchor
           constraintEqualToAnchor:_openCopiedContentTitleLabel.trailingAnchor],
     ]];
-    [self setCopiedContentType:CopiedContentTypeNone copiedText:nil];
+    [self setCopiedContentType:CopiedContentTypeNone];
     self.highlightableViews = @[
       _hairlineView, _copiedButtonView, _openCopiedContentTitleLabel,
       _copiedContentLabel
@@ -174,10 +180,8 @@ const CGFloat kURLButtonMargin = 10;
   return self;
 }
 
-- (void)setCopiedContentType:(CopiedContentType)type
-                  copiedText:(NSString*)copiedText {
+- (void)setCopiedContentType:(CopiedContentType)type {
   self.type = type;
-  self.copiedText = copiedText;
   [self updateUI];
 }
 
@@ -216,12 +220,10 @@ const CGFloat kURLButtonMargin = 10;
     }
     case CopiedContentTypeURL: {
       titleText = NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil);
-      contentText = self.copiedText;
       break;
     }
     case CopiedContentTypeString: {
       titleText = NSLocalizedString(@"IDS_IOS_OPEN_COPIED_TEXT", nil);
-      contentText = self.copiedText;
       break;
     }
     case CopiedContentTypeImage: {

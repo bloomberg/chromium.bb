@@ -2,6 +2,10 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
+<link rel="import" href="/components/common_styles.html">
+<link rel="import" href="/components/hd_iron_icon.html">
+<link rel="import" href="/components/oobe_i18n_behavior.html">
+
 <iron-iconset-svg name="oobe-hid-detection" size="24">
   <svg>
     <defs>
@@ -46,7 +50,7 @@
   </svg>
 </iron-iconset-svg>
 
-<dom-module id="hid-detection">
+<dom-module id="hid-detection-element">
   <template>
     <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="oobe_hid_detection.css">
@@ -72,7 +76,7 @@
         </div>
         <div class="layout vertical hid-selection-entry">
           <div id="hid-keyboard-row" class="flex layout horizontal center"
-              on-tap="openPinDialog_">
+              on-click="openPinDialog_">
             <hd-iron-icon id="keyboard-icon" alt=""
                 icon1x="oobe-hid-detection-20:keyboard"
                 icon2x="oobe-hid-detection-40:keyboard">
@@ -87,7 +91,7 @@
         </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
-        <oobe-text-button inverse on-tap="onHIDContinueTap_"
+        <oobe-text-button inverse on-click="onHIDContinueTap_"
             text-key="hidDetectionContinue"
             id="hid-continue-button"
             disabled="[[!continueButtonEnabled]]"></oobe-text-button>

@@ -113,7 +113,7 @@ class MetricsWebContentsObserverTest
         std::vector<mojom::ResourceDataUpdatePtr>(),
         mojom::FrameRenderDataUpdatePtr(base::in_place), timing.Clone(),
         mojom::DeferredResourceCountsPtr(base::in_place),
-        mojom::InputTimingPtr(base::in_place));
+        mojom::InputTimingPtr(base::in_place), blink::MobileFriendliness());
   }
 
   void SimulateTimingUpdate(const mojom::PageLoadTiming& timing,
@@ -139,7 +139,7 @@ class MetricsWebContentsObserverTest
         mojom::FrameRenderDataUpdatePtr(base::in_place),
         mojom::CpuTimingPtr(base::in_place),
         mojom::DeferredResourceCountsPtr(base::in_place),
-        mojom::InputTimingPtr(base::in_place));
+        mojom::InputTimingPtr(base::in_place), blink::MobileFriendliness());
   }
 
   void AttachObserver() {
@@ -279,9 +279,7 @@ TEST_F(MetricsWebContentsObserverTest,
        DISABLED_MainFrameNavigationInternalAbort) {
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
       GURL(kDefaultTestUrl), web_contents());
-  navigation->FailWithResponseHeaders(
-      net::ERR_ABORTED,
-      base::MakeRefCounted<net::HttpResponseHeaders>("some_headers"));
+  navigation->Fail(net::ERR_ABORTED);
   ASSERT_EQ(1u, observed_aborted_urls().size());
   ASSERT_EQ(kDefaultTestUrl, observed_aborted_urls().front().spec());
 }

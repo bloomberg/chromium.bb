@@ -13,10 +13,9 @@
 
 #include "base/bind.h"
 #include "base/memory/free_deleter.h"
-#include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/win_helper.h"
 #include "printing/buildflags/buildflags.h"
@@ -45,12 +44,12 @@ void AssignResult(PrintingContext::Result* out, PrintingContext::Result in) {
 // static
 std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
 #if BUILDFLAG(ENABLE_PRINTING)
-  return base::WrapUnique(new PrintingContextSystemDialogWin(delegate));
+  return std::make_unique<PrintingContextSystemDialogWin>(delegate);
 #else
   // The code in printing/ is still built when the GN |enable_basic_printing|
   // variable is set to false. Just return PrintingContextWin as a dummy
   // context.
-  return base::WrapUnique(new PrintingContextWin(delegate));
+  return std::make_unique<PrintingContextWin>(delegate);
 #endif
 }
 
@@ -78,7 +77,7 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
   scoped_refptr<PrintBackend> backend =
-      PrintBackend::CreateInstance(nullptr, delegate_->GetAppLocale());
+      PrintBackend::CreateInstance(delegate_->GetAppLocale());
   base::string16 default_printer =
       base::UTF8ToWide(backend->GetDefaultPrinterName());
   if (!default_printer.empty()) {
@@ -170,7 +169,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   // See MSDN documentation regarding DocumentProperties.
   std::unique_ptr<DEVMODE, base::FreeDeleter> scoped_dev_mode =
       CreateDevModeWithColor(printer.Get(), settings_->device_name(),
-                             settings_->color() != GRAY);
+                             settings_->color() != mojom::ColorModel::kGray);
   if (!scoped_dev_mode)
     return OnError();
 
@@ -244,8 +243,9 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   // Since CreateDevMode() doesn't honor color settings through the GDI call
   // to DocumentProperties(), ensure the requested values persist here.
   scoped_dev_mode->dmFields |= DM_COLOR;
-  scoped_dev_mode->dmColor =
-      settings_->color() != GRAY ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
+  scoped_dev_mode->dmColor = settings_->color() != mojom::ColorModel::kGray
+                                 ? DMCOLOR_COLOR
+                                 : DMCOLOR_MONOCHROME;
 
   return InitializeSettings(settings_->device_name(), scoped_dev_mode.get());
 }
@@ -300,8 +300,8 @@ PrintingContext::Result PrintingContextWin::NewDocument(
   }
 
   // No message loop running in unit tests.
-  DCHECK(!base::MessageLoopCurrent::Get() ||
-         !base::MessageLoopCurrent::Get()->NestableTasksAllowed());
+  DCHECK(!base::CurrentThread::Get() ||
+         !base::CurrentThread::Get()->NestableTasksAllowed());
 
   // Begin a print job by calling the StartDoc function.
   // NOTE: StartDoc() starts a message loop. That causes a lot of problems with

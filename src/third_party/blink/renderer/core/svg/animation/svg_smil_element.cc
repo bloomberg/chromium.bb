@@ -28,8 +28,9 @@
 #include <algorithm>
 
 #include "base/auto_reset.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
@@ -135,7 +136,7 @@ class ConditionEventListener final : public NativeEventListener {
         animation_->Elapsed() + condition_->Offset(), SMILTimeOrigin::kEvent);
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(animation_);
     visitor->Trace(condition_);
     NativeEventListener::Trace(visitor);
@@ -161,7 +162,7 @@ SVGSMILElement::Condition::Condition(Type type,
 
 SVGSMILElement::Condition::~Condition() = default;
 
-void SVGSMILElement::Condition::Trace(Visitor* visitor) {
+void SVGSMILElement::Condition::Trace(Visitor* visitor) const {
   visitor->Trace(base_element_);
   visitor->Trace(base_id_observer_);
   visitor->Trace(event_listener_);
@@ -344,20 +345,22 @@ void SVGSMILElement::RemovedFrom(ContainerNode& root_parent) {
 SMILTime SVGSMILElement::ParseOffsetValue(const String& data) {
   bool ok;
   double result = 0;
-  String parse = data.StripWhiteSpace();
-  if (parse.EndsWith('h'))
-    result = parse.Left(parse.length() - 1).ToDouble(&ok) * 60 * 60;
-  else if (parse.EndsWith("min"))
-    result = parse.Left(parse.length() - 3).ToDouble(&ok) * 60;
-  else if (parse.EndsWith("ms"))
-    result = parse.Left(parse.length() - 2).ToDouble(&ok) / 1000;
-  else if (parse.EndsWith('s'))
+  const String parse = data.StripWhiteSpace();
+  if (parse.EndsWith('h')) {
+    result = parse.Left(parse.length() - 1).ToDouble(&ok) *
+             base::Time::kSecondsPerHour;
+  } else if (parse.EndsWith("min")) {
+    result = parse.Left(parse.length() - 3).ToDouble(&ok) *
+             base::Time::kSecondsPerMinute;
+  } else if (parse.EndsWith("ms")) {
+    result = parse.Left(parse.length() - 2).ToDouble(&ok) /
+             base::Time::kMillisecondsPerSecond;
+  } else if (parse.EndsWith('s')) {
     result = parse.Left(parse.length() - 1).ToDouble(&ok);
-  else
+  } else {
     result = parse.ToDouble(&ok);
-  if (!ok)
-    return SMILTime::Unresolved();
-  return SMILTime::FromSecondsD(result);
+  }
+  return ok ? SMILTime::FromSecondsD(result) : SMILTime::Unresolved();
 }
 
 SMILTime SVGSMILElement::ParseClockValue(const String& data) {
@@ -524,13 +527,16 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     }
   } else if (name == svg_names::kOnbeginAttr) {
     SetAttributeEventListener(event_type_names::kBeginEvent,
-                              CreateAttributeEventListener(this, name, value));
+                              JSEventHandlerForContentAttribute::Create(
+                                  GetExecutionContext(), name, value));
   } else if (name == svg_names::kOnendAttr) {
     SetAttributeEventListener(event_type_names::kEndEvent,
-                              CreateAttributeEventListener(this, name, value));
+                              JSEventHandlerForContentAttribute::Create(
+                                  GetExecutionContext(), name, value));
   } else if (name == svg_names::kOnrepeatAttr) {
     SetAttributeEventListener(event_type_names::kRepeatEvent,
-                              CreateAttributeEventListener(this, name, value));
+                              JSEventHandlerForContentAttribute::Create(
+                                  GetExecutionContext(), name, value));
   } else if (name == svg_names::kRestartAttr) {
     if (value == "never")
       restart_ = kRestartNever;
@@ -1031,16 +1037,16 @@ SVGSMILElement::ProgressState SVGSMILElement::CalculateProgressState(
     // use a progress value of 1.0, otherwise we should return a value that is
     // within the interval (< 1.0), so subtract the smallest representable time
     // delta in that case.
-    repeat = last_active_duration / simple_duration;
+    repeat = last_active_duration.IntDiv(simple_duration);
     simple_time = last_active_duration % simple_duration;
     if (simple_time) {
       simple_time = simple_time - SMILTime::Epsilon();
     } else {
       simple_time = simple_duration;
-      repeat--;
+      --repeat;
     }
   } else {
-    repeat = active_time / simple_duration;
+    repeat = active_time.IntDiv(simple_duration);
     simple_time = active_time % simple_duration;
   }
   return {clampTo<float>(simple_time.InternalValueAsDouble() /
@@ -1168,6 +1174,16 @@ void SVGSMILElement::DispatchEvents(EventDispatchMask events_to_dispatch) {
                  TaskType::kDOMManipulation);
     EnqueueEvent(*Event::Create(AtomicString("repeatn")),
                  TaskType::kDOMManipulation);
+  }
+}
+
+void SVGSMILElement::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  SVGElement::AddedEventListener(event_type, registered_listener);
+  if (event_type == "repeatn") {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kSMILElementHasRepeatNEventListener);
   }
 }
 
@@ -1311,7 +1327,7 @@ void SVGSMILElement::DidChangeAnimationTarget() {
   is_scheduled_ = true;
 }
 
-void SVGSMILElement::Trace(Visitor* visitor) {
+void SVGSMILElement::Trace(Visitor* visitor) const {
   visitor->Trace(target_element_);
   visitor->Trace(target_id_observer_);
   visitor->Trace(time_container_);

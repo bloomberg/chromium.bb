@@ -47,7 +47,7 @@ static void
 client_destroy_notify(struct wl_listener *l, void *data)
 {
 	struct client_destroy_listener *listener =
-		container_of(l, struct client_destroy_listener, listener);
+		wl_container_of(l, listener, listener);
 
 	listener->done = 1;
 }

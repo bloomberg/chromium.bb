@@ -8,16 +8,14 @@
 #include <string>
 #include <vector>
 
-#include "base/json/json_parser.h"
+#include "base/json/json_reader.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_management_internal.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -308,9 +306,9 @@ class ExtensionAdminPolicyTest : public ExtensionManagementServiceTest {
   }
 
   // Wrappers for legacy admin policy functions, for testing purpose only.
-  bool BlacklistedByDefault(const base::ListValue* blacklist);
-  bool UserMayLoad(const base::ListValue* blacklist,
-                   const base::ListValue* whitelist,
+  bool BlocklistedByDefault(const base::ListValue* blocklist);
+  bool UserMayLoad(const base::ListValue* blocklist,
+                   const base::ListValue* allowlist,
                    const base::DictionaryValue* forcelist,
                    const base::ListValue* allowed_types,
                    const Extension* extension,
@@ -326,26 +324,26 @@ class ExtensionAdminPolicyTest : public ExtensionManagementServiceTest {
   scoped_refptr<Extension> extension_;
 };
 
-bool ExtensionAdminPolicyTest::BlacklistedByDefault(
-    const base::ListValue* blacklist) {
+bool ExtensionAdminPolicyTest::BlocklistedByDefault(
+    const base::ListValue* blocklist) {
   SetUpPolicyProvider();
-  if (blacklist)
-    SetPref(true, pref_names::kInstallDenyList, blacklist->CreateDeepCopy());
-  return extension_management_->BlacklistedByDefault();
+  if (blocklist)
+    SetPref(true, pref_names::kInstallDenyList, blocklist->CreateDeepCopy());
+  return extension_management_->BlocklistedByDefault();
 }
 
 bool ExtensionAdminPolicyTest::UserMayLoad(
-    const base::ListValue* blacklist,
-    const base::ListValue* whitelist,
+    const base::ListValue* blocklist,
+    const base::ListValue* allowlist,
     const base::DictionaryValue* forcelist,
     const base::ListValue* allowed_types,
     const Extension* extension,
     base::string16* error) {
   SetUpPolicyProvider();
-  if (blacklist)
-    SetPref(true, pref_names::kInstallDenyList, blacklist->CreateDeepCopy());
-  if (whitelist)
-    SetPref(true, pref_names::kInstallAllowList, whitelist->CreateDeepCopy());
+  if (blocklist)
+    SetPref(true, pref_names::kInstallDenyList, blocklist->CreateDeepCopy());
+  if (allowlist)
+    SetPref(true, pref_names::kInstallAllowList, allowlist->CreateDeepCopy());
   if (forcelist)
     SetPref(true, pref_names::kInstallForceList, forcelist->CreateDeepCopy());
   if (allowed_types)
@@ -410,9 +408,9 @@ TEST_F(ExtensionManagementServiceTest, LegacyAllowedTypes) {
   EXPECT_TRUE(base::Contains(allowed_types, Manifest::TYPE_USER_SCRIPT));
 }
 
-// Verify that preference controlled by legacy ExtensionInstallBlacklist policy
+// Verify that preference controlled by legacy ExtensionInstallBlocklist policy
 // is handled well.
-TEST_F(ExtensionManagementServiceTest, LegacyInstallBlacklist) {
+TEST_F(ExtensionManagementServiceTest, LegacyInstallBlocklist) {
   base::ListValue denied_list_pref;
   denied_list_pref.AppendString(kTargetExtension);
 
@@ -424,9 +422,9 @@ TEST_F(ExtensionManagementServiceTest, LegacyInstallBlacklist) {
             ExtensionManagement::INSTALLATION_ALLOWED);
 }
 
-// Verify that preference controlled by legacy ExtensionInstallWhitelist policy
+// Verify that preference controlled by legacy ExtensionInstallAllowlist policy
 // is handled well.
-TEST_F(ExtensionManagementServiceTest, LegacyInstallWhitelist) {
+TEST_F(ExtensionManagementServiceTest, LegacyAllowlist) {
   base::ListValue denied_list_pref;
   denied_list_pref.AppendString("*");
   base::ListValue allowed_list_pref;
@@ -441,7 +439,7 @@ TEST_F(ExtensionManagementServiceTest, LegacyInstallWhitelist) {
   EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
 
-  // Verify that install whitelist preference set by user is ignored.
+  // Verify that install allowlist preference set by user is ignored.
   RemovePref(true, pref_names::kInstallAllowList);
   SetPref(false, pref_names::kInstallAllowList,
           allowed_list_pref.CreateDeepCopy());
@@ -499,7 +497,7 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   SetExampleDictPref(kExampleDictPreference);
 
   // Verifies the installation mode settings.
-  EXPECT_TRUE(extension_management_->BlacklistedByDefault());
+  EXPECT_TRUE(extension_management_->BlocklistedByDefault());
   EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
   EXPECT_EQ(GetInstallationModeById(kTargetExtension2),
@@ -549,7 +547,7 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   EXPECT_TRUE(base::Contains(allowed_types, Manifest::TYPE_THEME));
   EXPECT_TRUE(base::Contains(allowed_types, Manifest::TYPE_USER_SCRIPT));
 
-  // Verifies blocked permission list settings.
+  // Verifies blocked permission allowlist settings.
   APIPermissionSet api_permission_set;
   api_permission_set.clear();
   api_permission_set.insert(APIPermission::kFileSystem);
@@ -718,16 +716,16 @@ TEST_F(ExtensionManagementServiceTest, NewAllowedTypes) {
 }
 
 // Tests functionality of new preference as to deprecate legacy
-// ExtensionInstallBlacklist policy.
-TEST_F(ExtensionManagementServiceTest, NewInstallBlacklist) {
+// ExtensionInstallBlocklist policy.
+TEST_F(ExtensionManagementServiceTest, NewInstallBlocklist) {
   // Set the new dictionary preference.
   {
     PrefUpdater updater(pref_service_);
-    updater.SetBlacklistedByDefault(false);  // Allowed by default.
+    updater.SetBlocklistedByDefault(false);  // Allowed by default.
     updater.SetIndividualExtensionInstallationAllowed(kTargetExtension, false);
     updater.ClearPerExtensionSettings(kTargetExtension2);
   }
-  EXPECT_FALSE(extension_management_->BlacklistedByDefault());
+  EXPECT_FALSE(extension_management_->BlocklistedByDefault());
   EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
   EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
@@ -746,7 +744,7 @@ TEST_F(ExtensionManagementServiceTest, NewInstallBlacklist) {
           allowed_list_pref.CreateDeepCopy());
 
   // Verifies that the new one have higher priority over the legacy ones.
-  EXPECT_FALSE(extension_management_->BlacklistedByDefault());
+  EXPECT_FALSE(extension_management_->BlocklistedByDefault());
   EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
   EXPECT_EQ(GetInstallationModeById(kTargetExtension2),
@@ -756,16 +754,16 @@ TEST_F(ExtensionManagementServiceTest, NewInstallBlacklist) {
 }
 
 // Tests functionality of new preference as to deprecate legacy
-// ExtensionInstallWhitelist policy.
-TEST_F(ExtensionManagementServiceTest, NewInstallWhitelist) {
+// ExtensionInstallAllowlist policy.
+TEST_F(ExtensionManagementServiceTest, NewAllowlist) {
   // Set the new dictionary preference.
   {
     PrefUpdater updater(pref_service_);
-    updater.SetBlacklistedByDefault(true);  // Disallowed by default.
+    updater.SetBlocklistedByDefault(true);  // Disallowed by default.
     updater.SetIndividualExtensionInstallationAllowed(kTargetExtension, true);
     updater.ClearPerExtensionSettings(kTargetExtension2);
   }
-  EXPECT_TRUE(extension_management_->BlacklistedByDefault());
+  EXPECT_TRUE(extension_management_->BlocklistedByDefault());
   EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
   EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
@@ -783,7 +781,7 @@ TEST_F(ExtensionManagementServiceTest, NewInstallWhitelist) {
           allowed_list_pref.CreateDeepCopy());
 
   // Verifies that the new one have higher priority over the legacy ones.
-  EXPECT_TRUE(extension_management_->BlacklistedByDefault());
+  EXPECT_TRUE(extension_management_->BlocklistedByDefault());
   EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
   EXPECT_EQ(GetInstallationModeById(kTargetExtension2),
@@ -828,7 +826,7 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyAllowed) {
   const char* removed = kTargetExtension9;
   const char* not_specified = kNonExistingExtension;
 
-  // BlacklistedByDefault() is true in example preference.
+  // BlocklistedByDefault() is true in example preference.
   EXPECT_TRUE(extension_management_->IsInstallationExplicitlyAllowed(allowed));
   EXPECT_TRUE(extension_management_->IsInstallationExplicitlyAllowed(forced));
   EXPECT_TRUE(
@@ -838,9 +836,9 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyAllowed) {
   EXPECT_FALSE(
       extension_management_->IsInstallationExplicitlyAllowed(not_specified));
 
-  // Set BlacklistedByDefault() to false.
+  // Set BlocklistedByDefault() to false.
   PrefUpdater pref(pref_service_);
-  pref.SetBlacklistedByDefault(false);
+  pref.SetBlocklistedByDefault(false);
 
   // The result should remain the same.
   EXPECT_TRUE(extension_management_->IsInstallationExplicitlyAllowed(allowed));
@@ -865,7 +863,7 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyBlocked) {
   const char* removed = kTargetExtension9;
   const char* not_specified = kNonExistingExtension;
 
-  // BlacklistedByDefault() is true in example preference.
+  // BlocklistedByDefault() is true in example preference.
   EXPECT_FALSE(extension_management_->IsInstallationExplicitlyBlocked(allowed));
   EXPECT_FALSE(extension_management_->IsInstallationExplicitlyBlocked(forced));
   EXPECT_FALSE(
@@ -876,7 +874,7 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyBlocked) {
       extension_management_->IsInstallationExplicitlyBlocked(not_specified));
 
   PrefUpdater pref(pref_service_);
-  pref.SetBlacklistedByDefault(false);
+  pref.SetBlocklistedByDefault(false);
 
   EXPECT_FALSE(extension_management_->IsInstallationExplicitlyBlocked(allowed));
   EXPECT_FALSE(extension_management_->IsInstallationExplicitlyBlocked(forced));
@@ -894,7 +892,7 @@ TEST_F(ExtensionManagementServiceTest,
   // default.
   SetPref(true, prefs::kCloudExtensionRequestEnabled,
           std::make_unique<base::Value>(true));
-  EXPECT_TRUE(extension_management_->BlacklistedByDefault());
+  EXPECT_TRUE(extension_management_->BlocklistedByDefault());
   EXPECT_EQ(ExtensionManagement::INSTALLATION_BLOCKED,
             GetInstallationModeById(kTargetExtension));
   // However, it will be overridden by ExtensionSettings
@@ -907,136 +905,140 @@ TEST_F(ExtensionManagementServiceTest,
             GetInstallationModeById(kTargetExtension));
 }
 
-// Tests the flag value indicating that extensions are blacklisted by default.
-TEST_F(ExtensionAdminPolicyTest, BlacklistedByDefault) {
-  EXPECT_FALSE(BlacklistedByDefault(NULL));
+// Tests the flag value indicating that extensions are blocklisted by default.
+TEST_F(ExtensionAdminPolicyTest, BlocklistedByDefault) {
+  EXPECT_FALSE(BlocklistedByDefault(nullptr));
 
-  base::ListValue blacklist;
-  blacklist.AppendString(kNonExistingExtension);
-  EXPECT_FALSE(BlacklistedByDefault(&blacklist));
-  blacklist.AppendString("*");
-  EXPECT_TRUE(BlacklistedByDefault(&blacklist));
+  base::ListValue blocklist;
+  blocklist.AppendString(kNonExistingExtension);
+  EXPECT_FALSE(BlocklistedByDefault(&blocklist));
+  blocklist.AppendString("*");
+  EXPECT_TRUE(BlocklistedByDefault(&blocklist));
 
-  blacklist.Clear();
-  blacklist.AppendString("*");
-  EXPECT_TRUE(BlacklistedByDefault(&blacklist));
+  blocklist.Clear();
+  blocklist.AppendString("*");
+  EXPECT_TRUE(BlocklistedByDefault(&blocklist));
 }
 
 // Tests UserMayLoad for required extensions.
 TEST_F(ExtensionAdminPolicyTest, UserMayLoadRequired) {
   CreateExtension(Manifest::COMPONENT);
-  EXPECT_TRUE(UserMayLoad(NULL, NULL, NULL, NULL, extension_.get(), NULL));
+  EXPECT_TRUE(UserMayLoad(nullptr, nullptr, nullptr, nullptr, extension_.get(),
+                          nullptr));
   base::string16 error;
-  EXPECT_TRUE(UserMayLoad(NULL, NULL, NULL, NULL, extension_.get(), &error));
+  EXPECT_TRUE(UserMayLoad(nullptr, nullptr, nullptr, nullptr, extension_.get(),
+                          &error));
   EXPECT_TRUE(error.empty());
 
-  // Required extensions may load even if they're on the blacklist.
-  base::ListValue blacklist;
-  blacklist.AppendString(extension_->id());
-  EXPECT_TRUE(
-      UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), NULL));
+  // Required extensions may load even if they're on the blocklist.
+  base::ListValue blocklist;
+  blocklist.AppendString(extension_->id());
+  EXPECT_TRUE(UserMayLoad(&blocklist, nullptr, nullptr, nullptr,
+                          extension_.get(), nullptr));
 
-  blacklist.AppendString("*");
-  EXPECT_TRUE(
-      UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), NULL));
+  blocklist.AppendString("*");
+  EXPECT_TRUE(UserMayLoad(&blocklist, nullptr, nullptr, nullptr,
+                          extension_.get(), nullptr));
 }
 
-// Tests UserMayLoad when no blacklist exists, or it's empty.
-TEST_F(ExtensionAdminPolicyTest, UserMayLoadNoBlacklist) {
+// Tests UserMayLoad when no blocklist exists, or it's empty.
+TEST_F(ExtensionAdminPolicyTest, UserMayLoadNoBlocklist) {
   CreateExtension(Manifest::INTERNAL);
-  EXPECT_TRUE(UserMayLoad(NULL, NULL, NULL, NULL, extension_.get(), NULL));
-  base::ListValue blacklist;
-  EXPECT_TRUE(
-      UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), NULL));
+  EXPECT_TRUE(UserMayLoad(nullptr, nullptr, nullptr, nullptr, extension_.get(),
+                          nullptr));
+  base::ListValue blocklist;
+  EXPECT_TRUE(UserMayLoad(&blocklist, nullptr, nullptr, nullptr,
+                          extension_.get(), nullptr));
   base::string16 error;
-  EXPECT_TRUE(
-      UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), &error));
-  EXPECT_TRUE(error.empty());
-}
-
-// Tests UserMayLoad for an extension on the whitelist.
-TEST_F(ExtensionAdminPolicyTest, UserMayLoadWhitelisted) {
-  CreateExtension(Manifest::INTERNAL);
-
-  base::ListValue whitelist;
-  whitelist.AppendString(extension_->id());
-  EXPECT_TRUE(
-      UserMayLoad(NULL, &whitelist, NULL, NULL, extension_.get(), NULL));
-
-  base::ListValue blacklist;
-  blacklist.AppendString(extension_->id());
-  EXPECT_TRUE(
-      UserMayLoad(NULL, &whitelist, NULL, NULL, extension_.get(), NULL));
-  base::string16 error;
-  EXPECT_TRUE(
-      UserMayLoad(NULL, &whitelist, NULL, NULL, extension_.get(), &error));
+  EXPECT_TRUE(UserMayLoad(&blocklist, nullptr, nullptr, nullptr,
+                          extension_.get(), &error));
   EXPECT_TRUE(error.empty());
 }
 
-// Tests UserMayLoad for an extension on the blacklist.
-TEST_F(ExtensionAdminPolicyTest, UserMayLoadBlacklisted) {
+// Tests UserMayLoad for an extension on the allowlist.
+TEST_F(ExtensionAdminPolicyTest, UserMayLoadAllowlisted) {
   CreateExtension(Manifest::INTERNAL);
 
-  // Blacklisted by default.
-  base::ListValue blacklist;
-  blacklist.AppendString("*");
-  EXPECT_FALSE(
-      UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), NULL));
+  base::ListValue allowlist;
+  allowlist.AppendString(extension_->id());
+  EXPECT_TRUE(UserMayLoad(nullptr, &allowlist, nullptr, nullptr,
+                          extension_.get(), nullptr));
+
+  base::ListValue blocklist;
+  blocklist.AppendString(extension_->id());
+  EXPECT_TRUE(UserMayLoad(nullptr, &allowlist, nullptr, nullptr,
+                          extension_.get(), nullptr));
   base::string16 error;
-  EXPECT_FALSE(
-      UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), &error));
+  EXPECT_TRUE(UserMayLoad(nullptr, &allowlist, nullptr, nullptr,
+                          extension_.get(), &error));
+  EXPECT_TRUE(error.empty());
+}
+
+// Tests UserMayLoad for an extension on the blocklist.
+TEST_F(ExtensionAdminPolicyTest, UserMayLoadBlocklisted) {
+  CreateExtension(Manifest::INTERNAL);
+
+  // Blocklisted by default.
+  base::ListValue blocklist;
+  blocklist.AppendString("*");
+  EXPECT_FALSE(UserMayLoad(&blocklist, nullptr, nullptr, nullptr,
+                           extension_.get(), nullptr));
+  base::string16 error;
+  EXPECT_FALSE(UserMayLoad(&blocklist, nullptr, nullptr, nullptr,
+                           extension_.get(), &error));
   EXPECT_FALSE(error.empty());
 
-  // Extension on the blacklist, with and without wildcard.
-  blacklist.AppendString(extension_->id());
-  EXPECT_FALSE(
-      UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), NULL));
-  blacklist.Clear();
-  blacklist.AppendString(extension_->id());
-  EXPECT_FALSE(
-      UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), NULL));
+  // Extension on the blocklist, with and without wildcard.
+  blocklist.AppendString(extension_->id());
+  EXPECT_FALSE(UserMayLoad(&blocklist, nullptr, nullptr, nullptr,
+                           extension_.get(), nullptr));
+  blocklist.Clear();
+  blocklist.AppendString(extension_->id());
+  EXPECT_FALSE(UserMayLoad(&blocklist, nullptr, nullptr, nullptr,
+                           extension_.get(), nullptr));
 
-  // With a whitelist. There's no such thing as a whitelist wildcard.
-  base::ListValue whitelist;
-  whitelist.AppendString("behllobkkfkfnphdnhnkndlbkcpglgmj");
-  EXPECT_FALSE(
-      UserMayLoad(&blacklist, &whitelist, NULL, NULL, extension_.get(), NULL));
-  whitelist.AppendString("*");
-  EXPECT_FALSE(
-      UserMayLoad(&blacklist, &whitelist, NULL, NULL, extension_.get(), NULL));
+  // With a allowlist. There's no such thing as a allowlist wildcard.
+  base::ListValue allowlist;
+  allowlist.AppendString("behllobkkfkfnphdnhnkndlbkcpglgmj");
+  EXPECT_FALSE(UserMayLoad(&blocklist, &allowlist, nullptr, nullptr,
+                           extension_.get(), nullptr));
+  allowlist.AppendString("*");
+  EXPECT_FALSE(UserMayLoad(&blocklist, &allowlist, nullptr, nullptr,
+                           extension_.get(), nullptr));
 }
 
 TEST_F(ExtensionAdminPolicyTest, UserMayLoadAllowedTypes) {
   CreateExtension(Manifest::INTERNAL);
-  EXPECT_TRUE(UserMayLoad(NULL, NULL, NULL, NULL, extension_.get(), NULL));
+  EXPECT_TRUE(UserMayLoad(nullptr, nullptr, nullptr, nullptr, extension_.get(),
+                          nullptr));
 
   base::ListValue allowed_types;
-  EXPECT_FALSE(
-      UserMayLoad(NULL, NULL, NULL, &allowed_types, extension_.get(), NULL));
+  EXPECT_FALSE(UserMayLoad(nullptr, nullptr, nullptr, &allowed_types,
+                           extension_.get(), nullptr));
 
   allowed_types.AppendInteger(Manifest::TYPE_EXTENSION);
-  EXPECT_TRUE(
-      UserMayLoad(NULL, NULL, NULL, &allowed_types, extension_.get(), NULL));
+  EXPECT_TRUE(UserMayLoad(nullptr, nullptr, nullptr, &allowed_types,
+                          extension_.get(), nullptr));
 
   CreateHostedApp(Manifest::INTERNAL);
-  EXPECT_FALSE(
-      UserMayLoad(NULL, NULL, NULL, &allowed_types, extension_.get(), NULL));
+  EXPECT_FALSE(UserMayLoad(nullptr, nullptr, nullptr, &allowed_types,
+                           extension_.get(), nullptr));
 
   CreateHostedApp(Manifest::EXTERNAL_POLICY_DOWNLOAD);
-  EXPECT_FALSE(
-      UserMayLoad(NULL, NULL, NULL, &allowed_types, extension_.get(), NULL));
+  EXPECT_FALSE(UserMayLoad(nullptr, nullptr, nullptr, &allowed_types,
+                           extension_.get(), nullptr));
 }
 
 TEST_F(ExtensionAdminPolicyTest, UserMayModifySettings) {
   CreateExtension(Manifest::INTERNAL);
-  EXPECT_TRUE(UserMayModifySettings(extension_.get(), NULL));
+  EXPECT_TRUE(UserMayModifySettings(extension_.get(), nullptr));
   base::string16 error;
   EXPECT_TRUE(UserMayModifySettings(extension_.get(), &error));
   EXPECT_TRUE(error.empty());
 
   CreateExtension(Manifest::EXTERNAL_POLICY_DOWNLOAD);
   error.clear();
-  EXPECT_FALSE(UserMayModifySettings(extension_.get(), NULL));
+  EXPECT_FALSE(UserMayModifySettings(extension_.get(), nullptr));
   EXPECT_FALSE(UserMayModifySettings(extension_.get(), &error));
   EXPECT_FALSE(error.empty());
 }
@@ -1073,14 +1075,14 @@ TEST_F(ExtensionAdminPolicyTest, ExtensionMayModifySettings) {
 
 TEST_F(ExtensionAdminPolicyTest, MustRemainEnabled) {
   CreateExtension(Manifest::EXTERNAL_POLICY_DOWNLOAD);
-  EXPECT_TRUE(MustRemainEnabled(extension_.get(), NULL));
+  EXPECT_TRUE(MustRemainEnabled(extension_.get(), nullptr));
   base::string16 error;
   EXPECT_TRUE(MustRemainEnabled(extension_.get(), &error));
   EXPECT_FALSE(error.empty());
 
   CreateExtension(Manifest::INTERNAL);
   error.clear();
-  EXPECT_FALSE(MustRemainEnabled(extension_.get(), NULL));
+  EXPECT_FALSE(MustRemainEnabled(extension_.get(), nullptr));
   EXPECT_FALSE(MustRemainEnabled(extension_.get(), &error));
   EXPECT_TRUE(error.empty());
 }

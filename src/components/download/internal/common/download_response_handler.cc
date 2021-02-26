@@ -94,8 +94,6 @@ void DownloadResponseHandler::OnReceiveResponse(
   cert_status_ = head->cert_status;
 
   // TODO(xingliu): Do not use http cache.
-  // Sets page transition type correctly and call
-  // |RecordDownloadSourcePageTransitionType| here.
   if (head->headers) {
     has_strong_validators_ = head->headers->HasStrongValidators();
     RecordDownloadHttpResponseCode(head->headers->response_code(),
@@ -241,16 +239,6 @@ void DownloadResponseHandler::OnComplete(
   if (client_remote_) {
     client_remote_->OnStreamCompleted(
         ConvertInterruptReasonToMojoNetworkRequestStatus(reason));
-  }
-
-  if (reason == DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED) {
-    base::UmaHistogramSparse("Download.MapErrorNetworkFailed.NetworkService",
-                             std::abs(status.error_code));
-    if (is_background_mode_) {
-      base::UmaHistogramSparse(
-          "Download.MapErrorNetworkFailed.NetworkService.BackgroundDownload",
-          std::abs(status.error_code));
-    }
   }
 
   if (started_) {

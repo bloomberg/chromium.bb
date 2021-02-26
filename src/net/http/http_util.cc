@@ -4,6 +4,7 @@
 
 // The rules for parsing content-types were borrowed from Firefox:
 // http://lxr.mozilla.org/mozilla/source/netwerk/base/src/nsURLHelper.cpp#834
+#include "base/strings/string_util.h"
 
 #include "net/http/http_util.h"
 
@@ -20,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/base/features.h"
+#include "net/base/parse_number.h"
 #include "net/base/url_util.h"
 
 namespace net {
@@ -364,11 +366,11 @@ bool HttpUtil::ParseContentRangeHeaderFor206(
 bool HttpUtil::ParseRetryAfterHeader(const std::string& retry_after_string,
                                      base::Time now,
                                      base::TimeDelta* retry_after) {
-  int seconds;
+  uint32_t seconds;
   base::Time time;
   base::TimeDelta interval;
 
-  if (base::StringToInt(retry_after_string, &seconds)) {
+  if (net::ParseUint32(retry_after_string, &seconds)) {
     interval = base::TimeDelta::FromSeconds(seconds);
   } else if (base::Time::FromUTCString(retry_after_string.c_str(), &time)) {
     interval = time - now;
@@ -1150,7 +1152,7 @@ bool HttpUtil::ParseAcceptEncoding(const std::string& accept_encoding,
     if (qvalue.empty())
       return false;
     if (qvalue[0] == '1') {
-      if (base::StringPiece("1.000").starts_with(qvalue)) {
+      if (base::StartsWith("1.000", qvalue)) {
         allowed_encodings->insert(base::ToLowerASCII(encoding));
         continue;
       }

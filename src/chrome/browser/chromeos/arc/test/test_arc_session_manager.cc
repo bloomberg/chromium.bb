@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
@@ -20,7 +22,8 @@ bool CreateFilesAndDirectories(const base::FilePath& temp_dir,
   // Create empty prop files so ArcSessionManager's property expansion code
   // works like production.
   for (const char* filename :
-       {"default.prop", "build.prop", "vendor_build.prop"}) {
+       {"default.prop", "build.prop", "vendor_build.prop",
+        "system_ext_build.prop", "product_build.prop", "odm_build.prop"}) {
     if (base::WriteFile(source_dir->Append(filename), "", 1) != 1)
       return false;
   }
@@ -32,13 +35,14 @@ bool CreateFilesAndDirectories(const base::FilePath& temp_dir,
 
 std::unique_ptr<ArcSessionManager> CreateTestArcSessionManager(
     std::unique_ptr<ArcSessionRunner> arc_session_runner) {
-  auto manager =
-      std::make_unique<ArcSessionManager>(std::move(arc_session_runner));
+  auto manager = std::make_unique<ArcSessionManager>(
+      std::move(arc_session_runner),
+      std::make_unique<AdbSideloadingAvailabilityDelegateImpl>());
   // Our unit tests the ArcSessionManager::ExpandPropertyFiles() function won't
   // be automatically called. Because of that, we can call
   // OnExpandPropertyFilesForTesting() instead with |true| for easier unit
   // testing (without calling base::RunLoop().RunUntilIdle() here and there.)
-  manager->OnExpandPropertyFilesForTesting(true);
+  manager->OnExpandPropertyFilesAndReadSaltForTesting(true);
   return manager;
 }
 
@@ -53,7 +57,7 @@ bool ExpandPropertyFilesForTesting(ArcSessionManager* arc_session_manager,
     return false;
   arc_session_manager->set_property_files_source_dir_for_testing(source_dir);
   arc_session_manager->set_property_files_dest_dir_for_testing(dest_dir);
-  arc_session_manager->ExpandPropertyFiles();
+  arc_session_manager->ExpandPropertyFilesAndReadSalt();
   return true;
 }
 

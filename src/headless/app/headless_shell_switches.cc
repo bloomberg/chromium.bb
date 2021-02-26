@@ -75,6 +75,9 @@ const char kProxyBypassList[] = "proxy-bypass-list";
 // affects HTTP and HTTPS requests.
 const char kProxyServer[] = "proxy-server";
 
+// Do not use system proxy configuration service.
+const char kNoSystemProxyConfigService[] = "no-system-proxy-config-service";
+
 // Use the given address instead of the default loopback for accepting remote
 // debugging connections. Should be used together with --remote-debugging-port.
 // Note that the remote debugging protocol does not perform any authentication,
@@ -119,8 +122,8 @@ const char kVirtualTimeBudget[] = "virtual-time-budget";
 // Sets the initial window size. Provided as string in the format "800,600".
 const char kWindowSize[] = "window-size";
 
-// Whitelist for Negotitate Auth servers.
-const char kAuthServerWhitelist[] = "auth-server-whitelist";
+// Allowlist for Negotiate Auth servers.
+const char kAuthServerAllowlist[] = "auth-server-whitelist";
 
 // Sets font render hinting when running headless, affects Skia rendering and
 // whether glyph subpixel positioning is enabled.

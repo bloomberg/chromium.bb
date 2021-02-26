@@ -12,7 +12,25 @@ function createAdIframe() {
 
 function createAdIframeWithSrc(src) {
   let frame = document.createElement('iframe');
-  document.body.appendChild(frame);
   frame.src = src;
+  document.body.appendChild(frame);
   return frame;
 }
+
+function createAdIframeAtRect(x, y, width, height) {
+  let frame = document.createElement('iframe');
+  frame.style.border = "0px none transparent";
+  frame.style.overflow = "hidden";
+  frame.style.position = "fixed";
+  frame.style.left = x;
+  frame.style.top = y;
+  frame.scrolling = "no";
+  frame.frameborder="0";
+  frame.allowTransparency="true";
+  frame.width = width;
+  frame.height = height;
+  document.body.appendChild(frame);
+  return frame;
+}
+
+document.scriptExecuted = true;

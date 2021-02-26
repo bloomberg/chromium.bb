@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -187,6 +189,7 @@ bool MixerOutputStreamAlsa::Start(int sample_rate, int channels) {
 
   rendering_delay_.timestamp_microseconds = kNoTimestamp;
   rendering_delay_.delay_microseconds = 0;
+  first_write_ = true;
 
   return true;
 }
@@ -240,7 +243,9 @@ bool MixerOutputStreamAlsa::Write(const float* data,
     int frames_or_error;
     while ((frames_or_error =
                 alsa_->PcmWritei(pcm_, output_data, frames_left)) < 0) {
-      *out_playback_interrupted = true;
+      if (!first_write_) {
+        *out_playback_interrupted = true;
+      }
       if (frames_or_error == -EBADFD &&
           MaybeRecoverDeviceFromSuspendedState()) {
         // Write data again, if recovered.
@@ -253,6 +258,7 @@ bool MixerOutputStreamAlsa::Write(const float* data,
     DCHECK_GE(frames_left, 0);
     output_data += frames_or_error * num_output_channels_ * bytes_per_sample;
   }
+  first_write_ = false;
   UpdateRenderingDelay();
 
   return true;

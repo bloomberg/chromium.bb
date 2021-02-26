@@ -44,8 +44,7 @@ class NGAbstractInlineTextBoxCache final {
   scoped_refptr<AbstractInlineTextBox> GetOrCreateInternal(
       const Fragment& fragment) {
     const auto it = map_.find(&fragment);
-    LayoutText* const layout_text =
-        ToLayoutText(fragment.GetMutableLayoutObject());
+    auto* const layout_text = To<LayoutText>(fragment.GetMutableLayoutObject());
     if (it != map_.end()) {
       CHECK(layout_text->HasAbstractInlineTextBox());
       return it->value;
@@ -231,7 +230,8 @@ unsigned NGAbstractInlineTextBox::Len() const {
   return cursor.Current().Text(cursor).length();
 }
 
-unsigned NGAbstractInlineTextBox::TextOffsetInContainer(unsigned offset) const {
+unsigned NGAbstractInlineTextBox::TextOffsetInFormattingContext(
+    unsigned offset) const {
   const NGInlineCursor& cursor = GetCursor();
   if (!cursor)
     return 0;

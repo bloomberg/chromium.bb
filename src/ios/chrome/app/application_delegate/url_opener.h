@@ -8,8 +8,10 @@
 #import <UIKit/UIKit.h>
 
 @class AppState;
+@protocol ConnectionInformation;
 @protocol StartupInformation;
 @protocol TabOpening;
+@class URLOpenerParams;
 
 // Handles the URL-opening methods of the ApplicationDelegate. This class has
 // only class methods and should not be instantiated.
@@ -17,21 +19,16 @@
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Handles open URL. The registered URL Schemes are defined in project
-// variables ${CHROMIUM_URL_SCHEME_x}.
-// The url can either be empty, in which case the app is simply opened or
-// can contain an URL that will be opened in a new tab.
-// Returns YES if the url can be opened, NO otherwise.
-+ (BOOL)openURL:(NSURL*)url
-     applicationActive:(BOOL)applicationActive
-               options:(NSDictionary<NSString*, id>*)options
-             tabOpener:(id<TabOpening>)tabOpener
-    startupInformation:(id<StartupInformation>)startupInformation;
++ (BOOL)openURL:(URLOpenerParams*)options
+        applicationActive:(BOOL)applicationActive
+                tabOpener:(id<TabOpening>)tabOpener
+    connectionInformation:(id<ConnectionInformation>)connectionInformation
+       startupInformation:(id<StartupInformation>)startupInformation;
 
-// Handles launch options: converts them to open URL options and opens them.
-+ (void)handleLaunchOptions:(NSDictionary*)launchOptions
-          applicationActive:(BOOL)applicationActive
+// Handles open URL at application startup.
++ (void)handleLaunchOptions:(URLOpenerParams*)options
                   tabOpener:(id<TabOpening>)tabOpener
+      connectionInformation:(id<ConnectionInformation>)connectionInformation
          startupInformation:(id<StartupInformation>)startupInformation
                    appState:(AppState*)appState;
 @end

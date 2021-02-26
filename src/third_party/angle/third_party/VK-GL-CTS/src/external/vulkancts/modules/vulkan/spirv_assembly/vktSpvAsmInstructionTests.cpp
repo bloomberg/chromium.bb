@@ -76,7 +76,9 @@
 #include "vktSpvAsmVaryingNameTests.hpp"
 #include "vktSpvAsmWorkgroupMemoryTests.hpp"
 #include "vktSpvAsmSignedIntCompareTests.hpp"
+#include "vktSpvAsmSignedOpTests.hpp"
 #include "vktSpvAsmPtrAccessChainTests.hpp"
+#include "vktSpvAsmVectorShuffleTests.hpp"
 #include "vktSpvAsmFloatControlsExtensionlessTests.hpp"
 #include "vktSpvAsmNonSemanticInfoTests.hpp"
 #include "vktSpvAsm64bitCompareTests.hpp"
@@ -3157,6 +3159,31 @@ void addOpUnreachableAmberTests(tcu::TestCaseGroup& group, tcu::TestContext& tes
 		const string fileName = cases[i].name + ".amber";
 		group.addChild(cts_amber::createAmberTestCase(testCtx, cases[i].name.c_str(), cases[i].desc.c_str(), dataDir, fileName));
 	}
+}
+
+tcu::TestCaseGroup* createOpArrayLengthComputeGroup (tcu::TestContext& testCtx)
+{
+	de::MovePtr<tcu::TestCaseGroup>	group		(new tcu::TestCaseGroup(testCtx, "oparraylength", "Test the OpArrayLength instruction"));
+	static const char				dataDir[]	= "spirv_assembly/instruction/compute/arraylength";
+
+	struct Case
+	{
+		string	name;
+		string	desc;
+	};
+
+	static const Case cases[] =
+	{
+		{ "array-stride-larger-than-element-size",	"Test using an unsized array with stride larger than the element size"	}
+	};
+
+	for (int i = 0; i < DE_LENGTH_OF_ARRAY(cases); ++i)
+	{
+		const string fileName = cases[i].name + ".amber";
+		group->addChild(cts_amber::createAmberTestCase(testCtx, cases[i].name.c_str(), cases[i].desc.c_str(), dataDir, fileName));
+	}
+
+	return group.release();
 }
 
 tcu::TestCaseGroup* createOpUnreachableGroup (tcu::TestContext& testCtx)
@@ -11237,7 +11264,8 @@ void finalizeTestsCreation (T&							specResource,
 							const std::string&			testName,
 							const VulkanFeatures&		vulkanFeatures,
 							const vector<string>&		extensions,
-							const IVec3&				numWorkGroups);
+							const IVec3&				numWorkGroups,
+							const bool					splitRenderArea = false);
 
 template<>
 void finalizeTestsCreation (GraphicsResources&			specResource,
@@ -11247,12 +11275,13 @@ void finalizeTestsCreation (GraphicsResources&			specResource,
 							const std::string&			testName,
 							const VulkanFeatures&		vulkanFeatures,
 							const vector<string>&		extensions,
-							const IVec3&				)
+							const IVec3&				,
+							const bool					splitRenderArea)
 {
 	RGBA defaultColors[4];
 	getDefaultColors(defaultColors);
 
-	createTestsForAllStages(testName, defaultColors, defaultColors, fragments, specResource, extensions, &testGroup, vulkanFeatures);
+	createTestsForAllStages(testName, defaultColors, defaultColors, fragments, specResource, extensions, &testGroup, vulkanFeatures, QP_TEST_RESULT_FAIL, std::string(), splitRenderArea);
 }
 
 template<>
@@ -11263,7 +11292,8 @@ void finalizeTestsCreation (ComputeShaderSpec&			specResource,
 							const std::string&			testName,
 							const VulkanFeatures&		vulkanFeatures,
 							const vector<string>&		extensions,
-							const IVec3&				numWorkGroups)
+							const IVec3&				numWorkGroups,
+							bool)
 {
 	specResource.numWorkGroups = numWorkGroups;
 	specResource.requestedVulkanFeatures = vulkanFeatures;
@@ -11576,7 +11606,7 @@ tcu::TestCaseGroup* createFloat16LogicalSet (tcu::TestContext& testCtx, const bo
 
 			features.extFloat16Int8 = EXTFLOAT16INT8FEATURES_FLOAT16;
 
-			finalizeTestsCreation(specResource, fragments, testCtx, *testGroup.get(), testName, features, extensions, IVec3(1, 1, 1));
+			finalizeTestsCreation(specResource, fragments, testCtx, *testGroup.get(), testName, features, extensions, IVec3(1, 1, 1), true);
 		}
 	}
 
@@ -13192,7 +13222,7 @@ tcu::TestCaseGroup* createFloat16CompositeInsertExtractSet (tcu::TestContext& te
 	const string						opName			(op);
 	const deUint32						opIndex			= (opName == "OpCompositeInsert") ? 0
 														: (opName == "OpCompositeExtract") ? 1
-														: -1;
+														: std::numeric_limits<deUint32>::max();
 
 	const StringTemplate preMain
 	(
@@ -13889,7 +13919,7 @@ tcu::TestCaseGroup* createFloat16CompositeInsertExtractSet (tcu::TestContext& te
 		},
 	};
 
-	DE_ASSERT(opIndex >= 0 && opIndex < DE_LENGTH_OF_ARRAY(opPartsArray));
+	DE_ASSERT(opIndex < DE_LENGTH_OF_ARRAY(opPartsArray));
 
 	const char*	accessPathF16[] =
 	{
@@ -18730,6 +18760,84 @@ tcu::TestCaseGroup* createFloat16ArithmeticSet (tcu::TestContext& testCtx)
 	return testGroup.release();
 }
 
+struct ComparisonCase
+{
+	string name;
+	string desc;
+};
+
+template<size_t C>
+tcu::TestCaseGroup* createFloat32ComparisonComputeSet (tcu::TestContext& testCtx)
+{
+	const string					testGroupName	("comparison_" + de::toString(C));
+	de::MovePtr<tcu::TestCaseGroup>	testGroup		(new tcu::TestCaseGroup(testCtx, testGroupName.c_str(), "Float 32 comparison tests"));
+	const char*						dataDir			= "spirv_assembly/instruction/float32/comparison";
+
+	const ComparisonCase			amberTests[]	=
+	{
+		{ "modfstruct",	"modf and modfStruct" }
+	};
+
+	for (ComparisonCase test : amberTests)
+	{
+		const string caseDesc ("Compare output of " + test.desc);
+		const string fileName (test.name + "_" + de::toString(C) + "_comp.amber");
+
+		testGroup->addChild(cts_amber::createAmberTestCase(testCtx,
+														   test.name.c_str(),
+														   caseDesc.c_str(),
+														   dataDir,
+														   fileName));
+	}
+
+	return testGroup.release();
+}
+
+struct ShaderStage
+{
+	string			name;
+	vector<string>	requirement;
+};
+
+template<size_t C>
+tcu::TestCaseGroup* createFloat32ComparisonGraphicsSet (tcu::TestContext& testCtx)
+{
+	const string					testGroupName	("comparison_" + de::toString(C));
+	de::MovePtr<tcu::TestCaseGroup>	testGroup		(new tcu::TestCaseGroup(testCtx, testGroupName.c_str(), "Float 32 comparison tests"));
+	const char*						dataDir			= "spirv_assembly/instruction/float32/comparison";
+
+	const ShaderStage				stages[]		=
+	{
+		{ "vert", vector<string>(0) },
+		{ "tesc", vector<string>(1, "Features.tessellationShader") },
+		{ "tese", vector<string>(1, "Features.tessellationShader") },
+		{ "geom", vector<string>(1, "Features.geometryShader") },
+		{ "frag", vector<string>(0) }
+	};
+
+	const ComparisonCase			amberTests[]	=
+	{
+		{ "modfstruct",	"modf and modfStruct" }
+	};
+
+	for (ComparisonCase test : amberTests)
+	for (ShaderStage stage : stages)
+	{
+		const string caseName (test.name + "_" + stage.name);
+		const string caseDesc ("Compare output of " + test.desc);
+		const string fileName (test.name + "_" + de::toString(C) + "_" + stage.name + ".amber");
+
+		testGroup->addChild(cts_amber::createAmberTestCase(testCtx,
+														   caseName.c_str(),
+														   caseDesc.c_str(),
+														   dataDir,
+														   fileName,
+														   stage.requirement));
+	}
+
+	return testGroup.release();
+}
+
 const string getNumberTypeName (const NumberType type)
 {
 	if (type == NUMBERTYPE_INT32)
@@ -19549,6 +19657,18 @@ tcu::TestCaseGroup* createFloat16Tests (tcu::TestContext& testCtx)
 	return testGroup.release();
 }
 
+tcu::TestCaseGroup* createFloat32Tests (tcu::TestContext& testCtx)
+{
+	de::MovePtr<tcu::TestCaseGroup>	testGroup	(new tcu::TestCaseGroup(testCtx, "float32", "Float 32 tests"));
+
+	testGroup->addChild(createFloat32ComparisonGraphicsSet<1>(testCtx));
+	testGroup->addChild(createFloat32ComparisonGraphicsSet<2>(testCtx));
+	testGroup->addChild(createFloat32ComparisonGraphicsSet<3>(testCtx));
+	testGroup->addChild(createFloat32ComparisonGraphicsSet<4>(testCtx));
+
+	return testGroup.release();
+}
+
 tcu::TestCaseGroup* createFloat16Group (tcu::TestContext& testCtx)
 {
 	de::MovePtr<tcu::TestCaseGroup>		testGroup			(new tcu::TestCaseGroup(testCtx, "float16", "Float 16 tests"));
@@ -19568,6 +19688,18 @@ tcu::TestCaseGroup* createFloat16Group (tcu::TestContext& testCtx)
 	testGroup->addChild(createFloat16ArithmeticSet<2, ComputeShaderSpec>(testCtx));
 	testGroup->addChild(createFloat16ArithmeticSet<3, ComputeShaderSpec>(testCtx));
 	testGroup->addChild(createFloat16ArithmeticSet<4, ComputeShaderSpec>(testCtx));
+
+	return testGroup.release();
+}
+
+tcu::TestCaseGroup* createFloat32Group (tcu::TestContext& testCtx)
+{
+	de::MovePtr<tcu::TestCaseGroup>	testGroup	(new tcu::TestCaseGroup(testCtx, "float32", "Float 32 tests"));
+
+	testGroup->addChild(createFloat32ComparisonComputeSet<1>(testCtx));
+	testGroup->addChild(createFloat32ComparisonComputeSet<2>(testCtx));
+	testGroup->addChild(createFloat32ComparisonComputeSet<3>(testCtx));
+	testGroup->addChild(createFloat32ComparisonComputeSet<4>(testCtx));
 
 	return testGroup.release();
 }
@@ -20259,7 +20391,7 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 	computeTests->addChild(createOpAtomicGroup(testCtx, false));
 	computeTests->addChild(createOpAtomicGroup(testCtx, true));					// Using new StorageBuffer decoration
 	computeTests->addChild(createOpAtomicGroup(testCtx, false, 1024, true));	// Return value validation
-	computeTests->addChild(createOpAtomicGroup(testCtx, true, 65536, false, true));	// volatile atomics
+	computeTests->addChild(createOpAtomicGroup(testCtx, true, 65535, false, true));	// volatile atomics
 	computeTests->addChild(createOpLineGroup(testCtx));
 	computeTests->addChild(createOpModuleProcessedGroup(testCtx));
 	computeTests->addChild(createOpNoLineGroup(testCtx));
@@ -20326,14 +20458,18 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 	computeTests->addChild(createOpMemberNameGroup(testCtx));
 	computeTests->addChild(createPointerParameterComputeGroup(testCtx));
 	computeTests->addChild(createFloat16Group(testCtx));
+	computeTests->addChild(createFloat32Group(testCtx));
 	computeTests->addChild(createBoolGroup(testCtx));
 	computeTests->addChild(createWorkgroupMemoryComputeGroup(testCtx));
 	computeTests->addChild(createSpirvIdsAbuseGroup(testCtx));
 	computeTests->addChild(createSignedIntCompareGroup(testCtx));
+	computeTests->addChild(createSignedOpTestsGroup(testCtx));
 	computeTests->addChild(createUnusedVariableComputeTests(testCtx));
 	computeTests->addChild(createPtrAccessChainGroup(testCtx));
+	computeTests->addChild(createVectorShuffleGroup(testCtx));
 	computeTests->addChild(createHlslComputeGroup(testCtx));
 	computeTests->addChild(create64bitCompareComputeGroup(testCtx));
+	computeTests->addChild(createOpArrayLengthComputeGroup(testCtx));
 
 	graphicsTests->addChild(createCrossStageInterfaceTests(testCtx));
 	graphicsTests->addChild(createSpivVersionCheckTests(testCtx, !testComputePipeline));
@@ -20395,6 +20531,7 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 	graphicsTests->addChild(createPointerParameterGraphicsGroup(testCtx));
 	graphicsTests->addChild(createVaryingNameGraphicsGroup(testCtx));
 	graphicsTests->addChild(createFloat16Tests(testCtx));
+	graphicsTests->addChild(createFloat32Tests(testCtx));
 	graphicsTests->addChild(createSpirvIdsAbuseTests(testCtx));
 	graphicsTests->addChild(create64bitCompareGraphicsGroup(testCtx));
 

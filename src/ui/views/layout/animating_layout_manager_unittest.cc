@@ -31,10 +31,8 @@ constexpr gfx::Size kChildViewSize{10, 10};
 // provided by |bounds|, if any.
 gfx::Size ConstrainSizeToBounds(const gfx::Size& size,
                                 const SizeBounds& bounds) {
-  return gfx::Size{
-      bounds.width() ? std::min(size.width(), *bounds.width()) : size.width(),
-      bounds.height() ? std::min(size.height(), *bounds.height())
-                      : size.height()};
+  return gfx::Size(bounds.width().min_of(size.width()),
+                   bounds.height().min_of(size.height()));
 }
 
 // View that allows directly setting minimum size.
@@ -3983,7 +3981,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest,
              gfx::Size(5, 5), true);
   const gfx::Size preferred = flex_layout()->GetPreferredSize(view());
   const gfx::Size result =
-      RunFlexRule(SizeBounds(preferred.width() + 5, base::nullopt));
+      RunFlexRule(SizeBounds(preferred.width() + 5, SizeBound()));
   EXPECT_EQ(preferred, result);
   EXPECT_EQ(3U, GetVisibleChildCount(result));
 }
@@ -3998,7 +3996,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest,
   const int height_for_width =
       flex_layout()->GetPreferredHeightForWidth(view(), width);
   DCHECK_GT(height_for_width, preferred.height());
-  const gfx::Size result = RunFlexRule(SizeBounds(width, base::nullopt));
+  const gfx::Size result = RunFlexRule(SizeBounds(width, SizeBound()));
   EXPECT_EQ(gfx::Size(width, height_for_width), result);
   EXPECT_EQ(3U, GetVisibleChildCount(result));
 }
@@ -4148,8 +4146,8 @@ TEST_F(AnimatingLayoutManagerInFlexLayoutTest, NoAnimation) {
   const gfx::Size preferred = target_layout()->GetPreferredSize(view());
   root_view()->SetSize(preferred);
   layout()->ResetLayout();
-  root_view()->Layout();
   AnimationEventLogger logger(layout());
+  root_view()->Layout();
   EXPECT_EQ(preferred, view()->size());
   const std::vector<bool> expected_events{};
   EXPECT_EQ(expected_events, logger.events());
@@ -4643,7 +4641,7 @@ TEST_F(AnimatingLayoutManagerRealtimeTest, TestAnimateStretch) {
 
 TEST_F(AnimatingLayoutManagerRealtimeTest, TestConstrainedSpaceStopsAnimation) {
   constexpr gfx::Insets kChildMargins(5);
-  constexpr SizeBounds kSizeBounds(45, base::nullopt);
+  constexpr SizeBounds kSizeBounds(45, SizeBound());
   layout()->SetBoundsAnimationMode(
       AnimatingLayoutManager::BoundsAnimationMode::kAnimateBothAxes);
   layout()->SetAnimationDuration(kMinimumAnimationTime);
@@ -4688,7 +4686,7 @@ TEST_F(AnimatingLayoutManagerRealtimeTest, TestConstrainedSpaceStopsAnimation) {
 
 TEST_F(AnimatingLayoutManagerRealtimeTest, TestConstrainedSpaceDoesNotRestart) {
   constexpr gfx::Insets kChildMargins(5);
-  constexpr SizeBounds kSizeBounds(45, base::nullopt);
+  constexpr SizeBounds kSizeBounds(45, SizeBound());
   layout()->SetBoundsAnimationMode(
       AnimatingLayoutManager::BoundsAnimationMode::kAnimateBothAxes);
   layout()->SetAnimationDuration(kMinimumAnimationTime);
@@ -4737,7 +4735,7 @@ TEST_F(AnimatingLayoutManagerRealtimeTest, TestConstrainedSpaceDoesNotRestart) {
 TEST_F(AnimatingLayoutManagerRealtimeTest,
        TestConstrainedSpaceRestartedAnimationSucceeds) {
   constexpr gfx::Insets kChildMargins(5);
-  constexpr SizeBounds kSizeBounds(45, base::nullopt);
+  constexpr SizeBounds kSizeBounds(45, SizeBound());
   layout()->SetBoundsAnimationMode(
       AnimatingLayoutManager::BoundsAnimationMode::kAnimateBothAxes);
   layout()->SetAnimationDuration(kMinimumAnimationTime);
@@ -4789,7 +4787,7 @@ TEST_F(AnimatingLayoutManagerRealtimeTest,
 // TODO(dfried): figure out why these tests absolutely do not animate properly
 // on Mac. Whatever magic makes the compositor animation runner go doesn't seem
 // to want to work on Mac in non-browsertests :(
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 
 // Test fixture for testing sequences of the following four actions:
 // * animating layout manager configured on host view
@@ -4984,6 +4982,6 @@ TEST_F(AnimatingLayoutManagerSequenceTest,
   ExpectResetToLayout();
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 }  // namespace views

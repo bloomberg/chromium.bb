@@ -27,9 +27,11 @@
 
 #include <algorithm>
 #include <memory>
+#include "base/callback.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/dynamic_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/static_constructors.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -43,16 +45,18 @@ using std::numeric_limits;
 
 namespace WTF {
 
-// As of Jan 2017, StringImpl needs 2 * sizeof(int) + 29 bits of data, and
-// sizeof(ThreadRestrictionVerifier) is 16 bytes. Thus, in DCHECK mode the
-// class may be padded to 32 bytes.
+namespace {
+
+struct SameSizeAsStringImpl {
 #if DCHECK_IS_ON()
-static_assert(sizeof(StringImpl) <= 8 * sizeof(int),
-              "StringImpl should stay small");
-#else
-static_assert(sizeof(StringImpl) <= 3 * sizeof(int),
-              "StringImpl should stay small");
+  ThreadRestrictionVerifier verifier;
 #endif
+  int fields[3];
+};
+
+ASSERT_SIZE(StringImpl, SameSizeAsStringImpl);
+
+}  // namespace
 
 void* StringImpl::operator new(size_t size) {
   DCHECK_EQ(size, sizeof(StringImpl));
@@ -75,11 +79,18 @@ void StringImpl::DestroyIfNotStatic() const {
     delete this;
 }
 
-void StringImpl::UpdateContainsOnlyASCIIOrEmpty() const {
-  contains_only_ascii_ = Is8Bit()
-                             ? CharactersAreAllASCII(Characters8(), length())
-                             : CharactersAreAllASCII(Characters16(), length());
-  needs_ascii_check_ = false;
+bool StringImpl::ContainsOnlyASCIIOrEmptySlowCase() const {
+  bool contains_only_ascii =
+      Is8Bit() ? CharactersAreAllASCII(Characters8(), length())
+               : CharactersAreAllASCII(Characters16(), length());
+  uint32_t new_flags = kAsciiCheckDone;
+  if (contains_only_ascii)
+    new_flags |= kContainsOnlyAscii;
+  const uint32_t previous_flags =
+      hash_and_flags_.fetch_or(new_flags, std::memory_order_relaxed);
+  static constexpr uint32_t mask = kAsciiCheckDone | kContainsOnlyAscii;
+  DCHECK((previous_flags & mask) == 0 || (previous_flags & mask) == new_flags);
+  return contains_only_ascii;
 }
 
 bool StringImpl::IsSafeToSendToAnotherThread() const {
@@ -338,79 +349,26 @@ wtf_size_t StringImpl::CopyTo(UChar* buffer,
   return number_of_characters_to_copy;
 }
 
+class StringImplAllocator {
+ public:
+  using ResultStringType = scoped_refptr<StringImpl>;
+
+  template <typename CharType>
+  scoped_refptr<StringImpl> Alloc(wtf_size_t length, CharType*& buffer) {
+    return StringImpl::CreateUninitialized(length, buffer);
+  }
+
+  scoped_refptr<StringImpl> CoerceOriginal(const StringImpl& string) {
+    return const_cast<StringImpl*>(&string);
+  }
+};
+
 scoped_refptr<StringImpl> StringImpl::LowerASCII() {
-  // First scan the string for uppercase and non-ASCII characters:
-  if (Is8Bit()) {
-    wtf_size_t first_index_to_be_lowered = length_;
-    for (wtf_size_t i = 0; i < length_; ++i) {
-      LChar ch = Characters8()[i];
-      if (IsASCIIUpper(ch)) {
-        first_index_to_be_lowered = i;
-        break;
-      }
-    }
-
-    // Nothing to do if the string is all ASCII with no uppercase.
-    if (first_index_to_be_lowered == length_) {
-      return this;
-    }
-
-    LChar* data8;
-    scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data8);
-    memcpy(data8, Characters8(), first_index_to_be_lowered);
-
-    for (wtf_size_t i = first_index_to_be_lowered; i < length_; ++i) {
-      LChar ch = Characters8()[i];
-      data8[i] = IsASCIIUpper(ch) ? ToASCIILower(ch) : ch;
-    }
-    return new_impl;
-  }
-  bool no_upper = true;
-  UChar ored = 0;
-
-  const UChar* end = Characters16() + length_;
-  for (const UChar* chp = Characters16(); chp != end; ++chp) {
-    if (IsASCIIUpper(*chp))
-      no_upper = false;
-    ored |= *chp;
-  }
-  // Nothing to do if the string is all ASCII with no uppercase.
-  if (no_upper && !(ored & ~0x7F))
-    return this;
-
-  CHECK_LE(length_, static_cast<wtf_size_t>(numeric_limits<wtf_size_t>::max()));
-  wtf_size_t length = length_;
-
-  UChar* data16;
-  scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data16);
-
-  for (wtf_size_t i = 0; i < length; ++i) {
-    UChar c = Characters16()[i];
-    data16[i] = IsASCIIUpper(c) ? ToASCIILower(c) : c;
-  }
-  return new_impl;
+  return ConvertASCIICase(*this, LowerConverter(), StringImplAllocator());
 }
 
 scoped_refptr<StringImpl> StringImpl::UpperASCII() {
-  if (Is8Bit()) {
-    LChar* data8;
-    scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data8);
-
-    for (wtf_size_t i = 0; i < length_; ++i) {
-      LChar c = Characters8()[i];
-      data8[i] = IsASCIILower(c) ? ToASCIIUpper(c) : c;
-    }
-    return new_impl;
-  }
-
-  UChar* data16;
-  scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data16);
-
-  for (wtf_size_t i = 0; i < length_; ++i) {
-    UChar c = Characters16()[i];
-    data16[i] = IsASCIILower(c) ? ToASCIIUpper(c) : c;
-  }
-  return new_impl;
+  return ConvertASCIICase(*this, UpperConverter(), StringImplAllocator());
 }
 
 scoped_refptr<StringImpl> StringImpl::Fill(UChar character) {
@@ -805,6 +763,26 @@ wtf_size_t StringImpl::Find(CharacterMatchFunctionPtr match_function,
   if (Is8Bit())
     return WTF::Find(Characters8(), length_, match_function, start);
   return WTF::Find(Characters16(), length_, match_function, start);
+}
+
+wtf_size_t StringImpl::Find(base::RepeatingCallback<bool(UChar)> match_callback,
+                            wtf_size_t index) const {
+  if (Is8Bit()) {
+    const LChar* characters8 = Characters8();
+    while (index < length_) {
+      if (match_callback.Run(characters8[index]))
+        return index;
+      ++index;
+    }
+    return kNotFound;
+  }
+  const UChar* characters16 = Characters16();
+  while (index < length_) {
+    if (match_callback.Run(characters16[index]))
+      return index;
+    ++index;
+  }
+  return kNotFound;
 }
 
 template <typename SearchCharacterType, typename MatchCharacterType>

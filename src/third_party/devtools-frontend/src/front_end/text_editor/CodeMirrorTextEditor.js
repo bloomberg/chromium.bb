@@ -27,15 +27,34 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
 
 import {changeObjectToEditOperation, toPos, toRange} from './CodeMirrorUtils.js';
 import {TextEditorAutocompleteController} from './TextEditorAutocompleteController.js';
+
+/**
+ * @typedef {{
+*   startColumn: number,
+*   endColumn: number,
+*   type: string
+* }}
+*/
+// @ts-ignore typedef
+export let Token;
+
+/**
+ * @typedef {{x: number, y: number, height: number}}
+  */
+// @ts-ignore typedef
+export let Coordinates;
 
 /**
  * @implements {UI.TextEditor.TextEditor}
@@ -49,8 +68,8 @@ export class CodeMirrorTextEditor extends UI.Widget.VBox {
     super();
     this._options = options;
 
-    this.registerRequiredCSS('cm/codemirror.css');
-    this.registerRequiredCSS('text_editor/cmdevtools.css');
+    this.registerRequiredCSS('cm/codemirror.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('text_editor/cmdevtools.css', {enableLegacyPatching: true});
 
     const {indentWithTabs, indentUnit} = CodeMirrorTextEditor._getIndentation(
         Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get());
@@ -66,7 +85,7 @@ export class CodeMirrorTextEditor extends UI.Widget.VBox {
       indentUnit,
       indentWithTabs,
       lineWrapping: options.lineWrapping,
-      lineWiseCopyCut: false,
+      lineWiseCopyCut: options.lineWiseCopyCut || false,
       tabIndex: 0,
       pollInterval: Math.pow(2, 31) - 1,  // ~25 days
       inputStyle: options.inputStyle || 'devToolsAccessibleTextArea'
@@ -306,7 +325,7 @@ export class CodeMirrorTextEditor extends UI.Widget.VBox {
     const installed = loadedMimeModeExtensions;
 
     const nameToExtension = new Map();
-    const extensions = self.runtime.extensions(CodeMirrorMimeMode);
+    const extensions = Root.Runtime.Runtime.instance().extensions(CodeMirrorMimeMode);
     for (const extension of extensions) {
       nameToExtension.set(extension.descriptor()['fileName'], extension);
     }
@@ -402,11 +421,10 @@ export class CodeMirrorTextEditor extends UI.Widget.VBox {
   }
 
   /**
-   * @protected
-   * @return {!CodeMirror}
+   * @return {!CodeMirror.Editor}
    */
   codeMirror() {
-    return this._codeMirror;
+    return /** @type {!CodeMirror.Editor} */ (this._codeMirror);
   }
 
   /**
@@ -659,7 +677,7 @@ export class CodeMirrorTextEditor extends UI.Widget.VBox {
   /**
    * @param {number} lineNumber
    * @param {number} column
-   * @return {?{x: number, y: number, height: number}}
+   * @return {?Coordinates}
    */
   cursorPositionToCoordinates(lineNumber, column) {
     if (lineNumber >= this._codeMirror.lineCount() || lineNumber < 0 || column < 0 ||
@@ -704,7 +722,7 @@ export class CodeMirrorTextEditor extends UI.Widget.VBox {
    * @override
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {?{startColumn: number, endColumn: number, type: string}}
+   * @return {?Token}
    */
   tokenAtTextPosition(lineNumber, columnNumber) {
     if (lineNumber < 0 || lineNumber >= this._codeMirror.lineCount()) {
@@ -1871,7 +1889,18 @@ export class CodeMirrorTextEditorFactory {
 // Because we target up-to-date Chrome, we can guarantee consistent input events. This lets us leave the current
 // line from the editor in our <textarea>. CodeMirror still expects a mostly empty <textarea>, so we pass CodeMirror a
 // fake <textarea> that only contains the users input.
-CodeMirror.inputStyles.devToolsAccessibleTextArea = class extends CodeMirror.inputStyles.textarea {
+export class DevToolsAccessibleTextArea extends CodeMirror.inputStyles.textarea {
+  /**
+   * @param {!CodeMirror.Editor} codeMirror
+   */
+  constructor(codeMirror) {
+    super(codeMirror);
+
+    /** @type {!HTMLTextAreaElement} */
+    this.textarea;
+    /** @type {!CodeMirror.Editor} */
+    this.cm;
+  }
   /**
    * @override
    * @param {!Object} display
@@ -1967,7 +1996,9 @@ CodeMirror.inputStyles.devToolsAccessibleTextArea = class extends CodeMirror.inp
     this.textarea = placeholder;
     return result;
   }
-};
+}
+
+CodeMirror.inputStyles.devToolsAccessibleTextArea = DevToolsAccessibleTextArea;
 
 /**
  * @typedef {{

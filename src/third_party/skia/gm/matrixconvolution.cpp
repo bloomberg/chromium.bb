@@ -140,7 +140,7 @@ private:
     const char* fNameSuffix;
     KernelFixture fKernelFixture;
 
-    typedef GM INHERITED;
+    using INHERITED = GM;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -150,4 +150,4 @@ DEF_GM(return new MatrixConvolutionGM(0xFFFF0000, 0xFF00FF00, KernelFixture::kBa
 DEF_GM(return new MatrixConvolutionGM(0xFFFFFFFF, 0x40404040, KernelFixture::kLarge_KernelFixture, "_big");)
 DEF_GM(return new MatrixConvolutionGM(0xFFFF0000, 0xFF00FF00, KernelFixture::kLarge_KernelFixture, "_big_color");)
 
-}
+}  // namespace skiagm

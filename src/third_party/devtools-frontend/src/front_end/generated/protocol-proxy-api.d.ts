@@ -127,6 +127,16 @@ declare namespace ProtocolProxyApi {
      * Fetches the entire accessibility tree
      */
     invoke_getFullAXTree(): Promise<Protocol.Accessibility.GetFullAXTreeResponse>;
+
+    /**
+     * Query a DOM node's accessibility subtree for accessible name and role.
+     * This command computes the name and role for all nodes in the subtree, including those that are
+     * ignored for accessibility, and returns those that mactch the specified name and role. If no DOM
+     * node is specified, or the DOM node does not exist, the command returns an error. If neither
+     * `accessibleName` or `role` is specified, it returns all the accessibility nodes in the subtree.
+     */
+    invoke_queryAXTree(params: Protocol.Accessibility.QueryAXTreeRequest):
+        Promise<Protocol.Accessibility.QueryAXTreeResponse>;
   }
   export interface AccessibilityDispatcher {}
 
@@ -377,6 +387,12 @@ declare namespace ProtocolProxyApi {
      * Set dock tile details, platform-specific.
      */
     invoke_setDockTile(params: Protocol.Browser.SetDockTileRequest): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Invoke custom browser commands used by telemetry.
+     */
+    invoke_executeBrowserCommand(params: Protocol.Browser.ExecuteBrowserCommandRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
   }
   export interface BrowserDispatcher {}
 
@@ -457,6 +473,22 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.CSS.GetStyleSheetTextResponse>;
 
     /**
+     * Starts tracking the given computed styles for updates. The specified array of properties
+     * replaces the one previously specified. Pass empty array to disable tracking.
+     * Use takeComputedStyleUpdates to retrieve the list of nodes that had properties modified.
+     * The changes to computed style properties are only tracked for nodes pushed to the front-end
+     * by the DOM agent. If no changes to the tracked properties occur after the node has been pushed
+     * to the front-end, no updates will be issued for the node.
+     */
+    invoke_trackComputedStyleUpdates(params: Protocol.CSS.TrackComputedStyleUpdatesRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Polls the next batch of computed style updates.
+     */
+    invoke_takeComputedStyleUpdates(): Promise<Protocol.CSS.TakeComputedStyleUpdatesResponse>;
+
+    /**
      * Find a rule with the given active property for the given node and set the new value for this
      * property
      */
@@ -505,6 +537,12 @@ declare namespace ProtocolProxyApi {
      * instrumentation)
      */
     invoke_takeCoverageDelta(): Promise<Protocol.CSS.TakeCoverageDeltaResponse>;
+
+    /**
+     * Enables/disables rendering of local CSS fonts (enabled by default).
+     */
+    invoke_setLocalFontsEnabled(params: Protocol.CSS.SetLocalFontsEnabledRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
   }
   export interface CSSDispatcher {
     /**
@@ -684,9 +722,17 @@ declare namespace ProtocolProxyApi {
 
     /**
      * Returns the root DOM node (and optionally the subtree) to the caller.
+     * Deprecated, as it is not designed to work well with the rest of the DOM agent.
+     * Use DOMSnapshot.captureSnapshot instead.
      */
     invoke_getFlattenedDocument(params: Protocol.DOM.GetFlattenedDocumentRequest):
         Promise<Protocol.DOM.GetFlattenedDocumentResponse>;
+
+    /**
+     * Finds nodes with a given computed style in a subtree.
+     */
+    invoke_getNodesForSubtreeByStyle(params: Protocol.DOM.GetNodesForSubtreeByStyleRequest):
+        Promise<Protocol.DOM.GetNodesForSubtreeByStyleResponse>;
 
     /**
      * Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is
@@ -1174,6 +1220,17 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
+     * Overrides the Idle state.
+     */
+    invoke_setIdleOverride(params: Protocol.Emulation.SetIdleOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Clears Idle state overrides.
+     */
+    invoke_clearIdleOverride(): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
      * Overrides value returned by the javascript navigator object.
      */
     invoke_setNavigatorOverrides(params: Protocol.Emulation.SetNavigatorOverridesRequest):
@@ -1222,6 +1279,9 @@ declare namespace ProtocolProxyApi {
      * on Android.
      */
     invoke_setVisibleSize(params: Protocol.Emulation.SetVisibleSizeRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    invoke_setDisabledImageTypes(params: Protocol.Emulation.SetDisabledImageTypesRequest):
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
@@ -1729,6 +1789,12 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
+     * Specifies whether to attach a page script stack id in requests
+     */
+    invoke_setAttachDebugStack(params: Protocol.Network.SetAttachDebugStackRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
      * Sets the requests to intercept that match the provided patterns and optionally resource types.
      * Deprecated, please use Fetch.enable instead.
      */
@@ -1740,6 +1806,18 @@ declare namespace ProtocolProxyApi {
      */
     invoke_setUserAgentOverride(params: Protocol.Network.SetUserAgentOverrideRequest):
         Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Returns information about the COEP/COOP isolation status.
+     */
+    invoke_getSecurityIsolationStatus(params: Protocol.Network.GetSecurityIsolationStatusRequest):
+        Promise<Protocol.Network.GetSecurityIsolationStatusResponse>;
+
+    /**
+     * Fetches the resource and returns the content.
+     */
+    invoke_loadNetworkResource(params: Protocol.Network.LoadNetworkResourceRequest):
+        Promise<Protocol.Network.LoadNetworkResourceResponse>;
   }
   export interface NetworkDispatcher {
     /**
@@ -1863,6 +1941,18 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.Overlay.GetHighlightObjectForTestResponse>;
 
     /**
+     * For Persistent Grid testing.
+     */
+    invoke_getGridHighlightObjectsForTest(params: Protocol.Overlay.GetGridHighlightObjectsForTestRequest):
+        Promise<Protocol.Overlay.GetGridHighlightObjectsForTestResponse>;
+
+    /**
+     * For Source Order Viewer testing.
+     */
+    invoke_getSourceOrderHighlightObjectForTest(params: Protocol.Overlay.GetSourceOrderHighlightObjectForTestRequest):
+        Promise<Protocol.Overlay.GetSourceOrderHighlightObjectForTestResponse>;
+
+    /**
      * Hides any highlight.
      */
     invoke_hideHighlight(): Promise<Protocol.ProtocolResponseWithError>;
@@ -1889,6 +1979,13 @@ declare namespace ProtocolProxyApi {
     invoke_highlightRect(params: Protocol.Overlay.HighlightRectRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
+     * Highlights the source order of the children of the DOM node with given id or with the given
+     * JavaScript object wrapper. Either nodeId or objectId must be specified.
+     */
+    invoke_highlightSourceOrder(params: Protocol.Overlay.HighlightSourceOrderRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
      * Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted.
      * Backend then generates 'inspectNodeRequested' event upon element selection.
      */
@@ -1913,6 +2010,12 @@ declare namespace ProtocolProxyApi {
      * Requests that backend shows the FPS counter
      */
     invoke_setShowFPSCounter(params: Protocol.Overlay.SetShowFPSCounterRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Highlight multiple elements with the CSS Grid overlay.
+     */
+    invoke_setShowGridOverlays(params: Protocol.Overlay.SetShowGridOverlaysRequest):
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
@@ -2539,6 +2642,12 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.Storage.GetUsageAndQuotaResponse>;
 
     /**
+     * Override quota for the specified origin
+     */
+    invoke_overrideQuotaForOrigin(params: Protocol.Storage.OverrideQuotaForOriginRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
      * Registers origin to be notified when an update occurs to its cache storage list.
      */
     invoke_trackCacheStorageForOrigin(params: Protocol.Storage.TrackCacheStorageForOriginRequest):
@@ -3024,6 +3133,13 @@ declare namespace ProtocolProxyApi {
      */
     invoke_setUserVerified(params: Protocol.WebAuthn.SetUserVerifiedRequest):
         Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Sets whether tests of user presence will succeed immediately (if true) or fail to resolve (if false) for an authenticator.
+     * The default is true.
+     */
+    invoke_setAutomaticPresenceSimulation(params: Protocol.WebAuthn.SetAutomaticPresenceSimulationRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
   }
   export interface WebAuthnDispatcher {}
 
@@ -3280,7 +3396,7 @@ declare namespace ProtocolProxyApi {
     /**
      * Steps over the statement.
      */
-    invoke_stepOver(): Promise<Protocol.ProtocolResponseWithError>;
+    invoke_stepOver(params: Protocol.Debugger.StepOverRequest): Promise<Protocol.ProtocolResponseWithError>;
   }
   export interface DebuggerDispatcher {
     /**
@@ -3421,6 +3537,21 @@ declare namespace ProtocolProxyApi {
      * Collect type profile.
      */
     invoke_takeTypeProfile(): Promise<Protocol.Profiler.TakeTypeProfileResponse>;
+
+    /**
+     * Enable counters collection.
+     */
+    invoke_enableCounters(): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Disable counters collection.
+     */
+    invoke_disableCounters(): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Retrieve counters.
+     */
+    invoke_getCounters(): Promise<Protocol.Profiler.GetCountersResponse>;
 
     /**
      * Enable run time call stats collection.
@@ -3564,8 +3695,6 @@ declare namespace ProtocolProxyApi {
      * If executionContextId is empty, adds binding with the given name on the
      * global objects of all inspected contexts, including those created later,
      * bindings survive reloads.
-     * If executionContextId is specified, adds binding only on global object of
-     * given execution context.
      * Binding function takes exactly one argument, this argument should be string,
      * in case of any other input, function throws an exception.
      * Each binding function call produces Runtime.bindingCalled notification.
@@ -3629,3 +3758,4 @@ declare namespace ProtocolProxyApi {
   }
   export interface SchemaDispatcher {}
 }
+

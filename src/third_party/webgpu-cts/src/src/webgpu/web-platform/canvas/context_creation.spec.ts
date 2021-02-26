@@ -1,11 +1,11 @@
-export const description = ``;
+export const description = '';
 
 import { Fixture } from '../../../common/framework/fixture.js';
-import { TestGroup } from '../../../common/framework/test_group.js';
+import { makeTestGroup } from '../../../common/framework/test_group.js';
 
-export const g = new TestGroup(Fixture);
+export const g = makeTestGroup(Fixture);
 
-g.test('canvas element getContext returns GPUCanvasContext', async t => {
+g.test('canvas_element_getContext_returns_GPUCanvasContext').fn(async t => {
   if (typeof document === 'undefined') {
     // Skip if there is no document (Workers, Node)
     t.skip('DOM is not available to create canvas element');
@@ -16,8 +16,8 @@ g.test('canvas element getContext returns GPUCanvasContext', async t => {
   canvas.height = 10;
 
   // TODO: fix types so these aren't necessary
-  // tslint:disable-next-line: no-any
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const ctx: any = canvas.getContext('gpupresent');
-  // tslint:disable-next-line: no-any
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   t.expect(ctx instanceof (window as any).GPUCanvasContext);
 });

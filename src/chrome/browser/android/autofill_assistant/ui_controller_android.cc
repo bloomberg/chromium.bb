@@ -23,13 +23,13 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantFormInput_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantFormModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantGenericUiModel_jni.h"
-#include "chrome/android/features/autofill_assistant/jni_headers/AssistantHeaderModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoBoxModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoBox_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantOverlayModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantUiController_jni.h"
-#include "chrome/browser/android/autofill_assistant/generic_ui_controller_android.h"
+#include "chrome/browser/android/autofill_assistant/client_android.h"
+#include "chrome/browser/android/autofill_assistant/generic_ui_root_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -40,6 +40,7 @@
 #include "chrome/common/channel_info.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill_assistant/browser/bottom_sheet_state.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/event_handler.h"
@@ -48,6 +49,7 @@
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/user_data_util.h"
+#include "components/autofill_assistant/browser/user_model.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
@@ -65,9 +67,6 @@ using base::android::JavaRef;
 namespace autofill_assistant {
 
 namespace {
-
-static const char* const kCancelChipIdentifier = "CANCEL_CHIP_ID";
-
 std::vector<float> ToFloatVector(const std::vector<RectF>& areas) {
   std::vector<float> flattened;
   for (const auto& rect : areas) {
@@ -242,6 +241,23 @@ base::Optional<bool> GetPreviousFormSelectionResult(
   return input_result.selection().selected(selection_index);
 }
 
+bool ShouldAllowSoftKeyboardForState(AutofillAssistantState state) {
+  switch (state) {
+    case AutofillAssistantState::STARTING:
+    case AutofillAssistantState::RUNNING:
+      return false;
+
+    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
+    case AutofillAssistantState::PROMPT:
+    case AutofillAssistantState::BROWSE:
+    case AutofillAssistantState::MODAL_DIALOG:
+    case AutofillAssistantState::STOPPED:
+    case AutofillAssistantState::TRACKING:
+    case AutofillAssistantState::INACTIVE:
+      return true;
+  }
+}
+
 }  // namespace
 
 // static
@@ -266,30 +282,34 @@ UiControllerAndroid::UiControllerAndroid(
       header_delegate_(this),
       collect_user_data_delegate_(this),
       form_delegate_(this),
-      generic_ui_delegate_(this) {
+      generic_ui_delegate_(this),
+      bottom_bar_delegate_(this) {
   java_object_ = Java_AutofillAssistantUiController_create(
       env, jactivity,
       /* allowTabSwitching= */
       base::FeatureList::IsEnabled(features::kAutofillAssistantChromeEntry),
       reinterpret_cast<intptr_t>(this), joverlay_coordinator);
+  header_model_ = std::make_unique<AssistantHeaderModel>(
+      Java_AssistantModel_getHeaderModel(env, GetModel()));
 
   // Register overlay_delegate_ as delegate for the overlay.
   Java_AssistantOverlayModel_setDelegate(env, GetOverlayModel(),
                                          overlay_delegate_.GetJavaObject());
 
   // Register header_delegate_ as delegate for clicks on header buttons.
-  Java_AssistantHeaderModel_setDelegate(env, GetHeaderModel(),
-                                        header_delegate_.GetJavaObject());
+  header_model_->SetDelegate(header_delegate_);
 
   // Register collect_user_data_delegate_ as delegate for the collect user data
   // UI.
   Java_AssistantCollectUserDataModel_setDelegate(
       env, GetCollectUserDataModel(),
       collect_user_data_delegate_.GetJavaObject());
+  Java_AssistantModel_setBottomBarDelegate(
+      env, GetModel(), bottom_bar_delegate_.GetJavaObject());
 }
 
 void UiControllerAndroid::Attach(content::WebContents* web_contents,
-                                 Client* client,
+                                 ClientAndroid* client,
                                  UiDelegate* ui_delegate) {
   DCHECK(web_contents);
   DCHECK(client);
@@ -298,80 +318,56 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
   client_ = client;
 
   // Detach from the current ui_delegate, if one was set previously.
-  if (ui_delegate_)
-    ui_delegate_->RemoveObserver(this);
+  Detach();
 
   // Attach to the new ui_delegate.
   ui_delegate_ = ui_delegate;
   ui_delegate_->AddObserver(this);
 
-  captured_debug_context_.clear();
-  destroy_timer_.reset();
-
   JNIEnv* env = AttachCurrentThread();
   auto java_web_contents = web_contents->GetJavaWebContents();
   Java_AutofillAssistantUiController_setWebContents(env, java_object_,
                                                     java_web_contents);
-  Java_AssistantModel_setWebContents(env, GetModel(), java_web_contents);
   Java_AssistantCollectUserDataModel_setWebContents(
       env, GetCollectUserDataModel(), java_web_contents);
   OnClientSettingsChanged(ui_delegate_->GetClientSettings());
+  Java_AssistantModel_setPeekModeDisabled(env, GetModel(),
+                                          ui_delegate->IsRunningLiteScript());
 
-  if (ui_delegate->GetState() != AutofillAssistantState::INACTIVE) {
+  if (ui_delegate->GetState() != AutofillAssistantState::INACTIVE &&
+      ui_delegate->IsTabSelected()) {
     // The UI was created for an existing Controller.
-    OnStatusMessageChanged(ui_delegate->GetStatusMessage());
-    OnBubbleMessageChanged(ui_delegate->GetBubbleMessage());
-    OnProgressChanged(ui_delegate->GetProgress());
-    OnProgressVisibilityChanged(ui_delegate->GetProgressVisible());
-    OnInfoBoxChanged(ui_delegate_->GetInfoBox());
-    OnDetailsChanged(ui_delegate->GetDetails());
-    OnUserActionsChanged(ui_delegate_->GetUserActions());
-    OnCollectUserDataOptionsChanged(ui_delegate->GetCollectUserDataOptions());
-    OnUserDataChanged(ui_delegate->GetUserData(), UserData::FieldChange::ALL);
-    OnGenericUserInterfaceChanged(ui_delegate->GetGenericUiProto());
-
-    std::vector<RectF> area;
-    ui_delegate->GetTouchableArea(&area);
-    std::vector<RectF> restricted_area;
-    ui_delegate->GetRestrictedArea(&restricted_area);
-    RectF visual_viewport;
-    ui_delegate->GetVisualViewport(&visual_viewport);
-    OnTouchableAreaChanged(visual_viewport, area, restricted_area);
-    OnViewportModeChanged(ui_delegate->GetViewportMode());
-    OnPeekModeChanged(ui_delegate->GetPeekMode());
-    OnFormChanged(ui_delegate->GetForm(), ui_delegate->GetFormResult());
-    // TODO(b/145204744): Store the collapsed or expanded state from the bottom
-    // sheet when detaching the UI so that it can be restored appropriately
-    // here.
-
-    UiDelegate::OverlayColors colors;
-    ui_delegate->GetOverlayColors(&colors);
-    OnOverlayColorsChanged(colors);
-
-    OnStateChanged(ui_delegate->GetState());
+    RestoreUi();
+  } else if (ui_delegate->GetState() == AutofillAssistantState::INACTIVE) {
+    SetVisible(true);
   }
+  // The call to set the web contents will, for some edge cases, trigger a call
+  // from the Java side to the onTabSelected method.
+  // We want this to happen only after the AttachUI method was fully executed,
+  // as it would otherwise find that IsTabSelected() is true when deciding if
+  // restoring the UI.
+  Java_AssistantModel_setWebContents(env, GetModel(), java_web_contents);
+}
 
-  SetVisible(true);
+void UiControllerAndroid::Detach() {
+  if (ui_delegate_) {
+    ui_delegate_->RemoveObserver(this);
+  }
+  ui_delegate_ = nullptr;
 }
 
 UiControllerAndroid::~UiControllerAndroid() {
   Java_AutofillAssistantUiController_clearNativePtr(AttachCurrentThread(),
                                                     java_object_);
-
-  if (ui_delegate_)
-    ui_delegate_->RemoveObserver(this);
+  if (ui_delegate_) {
+    ui_delegate_->SetUiShown(false);
+  }
+  Detach();
 }
 
 base::android::ScopedJavaLocalRef<jobject> UiControllerAndroid::GetModel() {
   return Java_AutofillAssistantUiController_getModel(AttachCurrentThread(),
                                                      java_object_);
-}
-
-// Header related methods.
-
-base::android::ScopedJavaLocalRef<jobject>
-UiControllerAndroid::GetHeaderModel() {
-  return Java_AssistantModel_getHeaderModel(AttachCurrentThread(), GetModel());
 }
 
 void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
@@ -388,6 +384,7 @@ void UiControllerAndroid::SetupForState() {
 
   UpdateActions(ui_delegate_->GetUserActions());
   AutofillAssistantState state = ui_delegate_->GetState();
+  AllowShowingSoftKeyboard(ShouldAllowSoftKeyboardForState(state));
   bool should_prompt_action_expand_sheet =
       ui_delegate_->ShouldPromptActionExpandSheet();
   switch (state) {
@@ -405,7 +402,7 @@ void UiControllerAndroid::SetupForState() {
       SetOverlayState(OverlayState::HIDDEN);
       SetSpinPoodle(false);
 
-      if (should_prompt_action_expand_sheet)
+      if (should_prompt_action_expand_sheet && ui_delegate_->IsTabSelected())
         ShowContentAndExpandBottomSheet();
       return;
 
@@ -413,7 +410,7 @@ void UiControllerAndroid::SetupForState() {
       SetOverlayState(OverlayState::PARTIAL);
       SetSpinPoodle(false);
 
-      if (should_prompt_action_expand_sheet)
+      if (should_prompt_action_expand_sheet && ui_delegate_->IsTabSelected())
         ShowContentAndExpandBottomSheet();
       return;
 
@@ -432,8 +429,9 @@ void UiControllerAndroid::SetupForState() {
       SetSpinPoodle(false);
 
       // Make sure the user sees the error message.
-      ShowContentAndExpandBottomSheet();
-      Detach();
+      if (ui_delegate_->IsTabSelected())
+        ShowContentAndExpandBottomSheet();
+      ResetGenericUiControllers();
       return;
 
     case AutofillAssistantState::TRACKING:
@@ -452,29 +450,36 @@ void UiControllerAndroid::SetupForState() {
 }
 
 void UiControllerAndroid::OnStatusMessageChanged(const std::string& message) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_AssistantHeaderModel_setStatusMessage(
-      env, GetHeaderModel(),
-      base::android::ConvertUTF8ToJavaString(env, message));
+  header_model_->SetStatusMessage(message);
 }
 
 void UiControllerAndroid::OnBubbleMessageChanged(const std::string& message) {
   if (!message.empty()) {
-    JNIEnv* env = AttachCurrentThread();
-    Java_AssistantHeaderModel_setBubbleMessage(
-        env, GetHeaderModel(),
-        base::android::ConvertUTF8ToJavaString(env, message));
+    header_model_->SetBubbleMessage(message);
   }
 }
 
 void UiControllerAndroid::OnProgressChanged(int progress) {
-  Java_AssistantHeaderModel_setProgress(AttachCurrentThread(), GetHeaderModel(),
-                                        progress);
+  header_model_->SetProgress(progress);
+}
+
+void UiControllerAndroid::OnProgressActiveStepChanged(int active_step) {
+  header_model_->SetProgressActiveStep(active_step);
 }
 
 void UiControllerAndroid::OnProgressVisibilityChanged(bool visible) {
-  Java_AssistantHeaderModel_setProgressVisible(AttachCurrentThread(),
-                                               GetHeaderModel(), visible);
+  header_model_->SetProgressVisible(visible);
+}
+
+void UiControllerAndroid::OnProgressBarErrorStateChanged(bool error) {
+  header_model_->SetProgressBarErrorState(error);
+}
+
+void UiControllerAndroid::OnStepProgressBarConfigurationChanged(
+    const ShowProgressBarProto::StepProgressBarConfiguration& configuration) {
+  header_model_->SetStepProgressBarConfiguration(
+      configuration, Java_AutofillAssistantUiController_getContext(
+                         AttachCurrentThread(), java_object_));
 }
 
 void UiControllerAndroid::OnViewportModeChanged(ViewportMode mode) {
@@ -510,21 +515,30 @@ void UiControllerAndroid::OnOverlayColorsChanged(
       ui_controller_android_utils::GetJavaColor(env, colors.highlight_border));
 }
 
+void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {
+  Java_AssistantModel_setAllowSoftKeyboard(AttachCurrentThread(), GetModel(),
+                                           enabled);
+}
+
 void UiControllerAndroid::ShowContentAndExpandBottomSheet() {
   Java_AutofillAssistantUiController_showContentAndExpandBottomSheet(
       AttachCurrentThread(), java_object_);
 }
 
 void UiControllerAndroid::SetSpinPoodle(bool enabled) {
-  Java_AssistantHeaderModel_setSpinPoodle(AttachCurrentThread(),
-                                          GetHeaderModel(), enabled);
+  header_model_->SetSpinPoodle(enabled);
 }
 
 void UiControllerAndroid::OnFeedbackButtonClicked() {
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_showFeedback(
       env, java_object_,
-      base::android::ConvertUTF8ToJavaString(env, GetDebugContext()));
+      base::android::ConvertUTF8ToJavaString(env,
+                                             ui_delegate_->GetDebugContext()));
+}
+
+void UiControllerAndroid::OnFeedbackFormRequested() {
+  OnFeedbackButtonClicked();
 }
 
 void UiControllerAndroid::OnViewEvent(const EventHandler::EventKey& key) {
@@ -578,15 +592,23 @@ void UiControllerAndroid::SnackbarResult(
   std::move(action).Run();
 }
 
-std::string UiControllerAndroid::GetDebugContext() {
-  if (captured_debug_context_.empty() && ui_delegate_) {
-    return ui_delegate_->GetDebugContext();
-  }
-  return captured_debug_context_;
-}
-
 void UiControllerAndroid::DestroySelf() {
-  client_->DestroyUI();
+  // Note: shutdown happens asynchronously (if at all), so calling code after
+  // |ShutdownIfNecessary| returns should be ok.
+  if (ui_delegate_)
+    ui_delegate_->ShutdownIfNecessary();
+
+  // Destroy self in separate task to avoid UaFs. Obviously, having this method
+  // in the first place is a terrible idea. We should refactor. The controller
+  // should always be in control. ui_controller should always hold a reference
+  // to ui_delegate, even when detached. ui_controller should not have a
+  // reference for client_android at all. It introduces a circular dependency,
+  // among other things.
+  //
+  // TODO(mcarlen): refactor lifecycle and deps of ui_controller.
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ClientAndroid::DestroyUI, client_->GetWeakPtr()));
 }
 
 void UiControllerAndroid::SetVisible(
@@ -604,6 +626,90 @@ void UiControllerAndroid::SetVisible(bool visible) {
   } else {
     SetOverlayState(OverlayState::HIDDEN);
   }
+  ui_delegate_->SetUiShown(visible);
+}
+
+void UiControllerAndroid::RestoreUi() {
+  if (ui_delegate_ == nullptr)
+    return;
+
+  OnStatusMessageChanged(ui_delegate_->GetStatusMessage());
+  OnBubbleMessageChanged(ui_delegate_->GetBubbleMessage());
+  auto step_progress_bar_configuration =
+      ui_delegate_->GetStepProgressBarConfiguration();
+  if (step_progress_bar_configuration.has_value()) {
+    OnStepProgressBarConfigurationChanged(*step_progress_bar_configuration);
+    if (step_progress_bar_configuration->use_step_progress_bar()) {
+      auto active_step = ui_delegate_->GetProgressActiveStep();
+      if (active_step.has_value()) {
+        OnProgressActiveStepChanged(*active_step);
+      }
+      OnProgressBarErrorStateChanged(ui_delegate_->GetProgressBarErrorState());
+    }
+  } else {
+    OnStepProgressBarConfigurationChanged(
+        ShowProgressBarProto::StepProgressBarConfiguration());
+    OnProgressChanged(ui_delegate_->GetProgress());
+  }
+  OnProgressVisibilityChanged(ui_delegate_->GetProgressVisible());
+  OnInfoBoxChanged(ui_delegate_->GetInfoBox());
+  OnDetailsChanged(ui_delegate_->GetDetails());
+  OnUserActionsChanged(ui_delegate_->GetUserActions());
+  OnCollectUserDataOptionsChanged(ui_delegate_->GetCollectUserDataOptions());
+  OnUserDataChanged(ui_delegate_->GetUserData(), UserData::FieldChange::ALL);
+  OnGenericUserInterfaceChanged(ui_delegate_->GetGenericUiProto());
+
+  std::vector<RectF> area;
+  ui_delegate_->GetTouchableArea(&area);
+  std::vector<RectF> restricted_area;
+  ui_delegate_->GetRestrictedArea(&restricted_area);
+  RectF visual_viewport;
+  ui_delegate_->GetVisualViewport(&visual_viewport);
+  OnTouchableAreaChanged(visual_viewport, area, restricted_area);
+  OnViewportModeChanged(ui_delegate_->GetViewportMode());
+  OnPeekModeChanged(ui_delegate_->GetPeekMode());
+  OnFormChanged(ui_delegate_->GetForm(), ui_delegate_->GetFormResult());
+  UiDelegate::OverlayColors colors;
+  ui_delegate_->GetOverlayColors(&colors);
+  OnOverlayColorsChanged(colors);
+  SetVisible(true);
+  Java_AutofillAssistantUiController_restoreBottomSheetState(
+      AttachCurrentThread(), java_object_,
+      ui_controller_android_utils::ToJavaBottomSheetState(
+          ui_delegate_->GetBottomSheetState()));
+}
+
+void UiControllerAndroid::OnTabSwitched(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint state,
+    jboolean activity_changed) {
+  if (ui_delegate_ == nullptr) {
+    return;
+  }
+
+  // TODO(b/167947210) Allow lite scripts to transition from CCT to regular
+  // scripts.
+  if (activity_changed && ui_delegate_->IsRunningLiteScript()) {
+    Shutdown(Metrics::DropOutReason::CUSTOM_TAB_CLOSED);
+    return;
+  }
+
+  ui_delegate_->SetBottomSheetState(
+      ui_controller_android_utils::ToNativeBottomSheetState(state));
+  ui_delegate_->SetTabSelected(false);
+}
+
+void UiControllerAndroid::OnTabSelected(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  if (ui_delegate_ == nullptr) {
+    return;
+  }
+  if (!ui_delegate_->IsTabSelected()) {
+    RestoreUi();
+    ui_delegate_->SetTabSelected(true);
+  }
 }
 
 // Actions carousels related methods.
@@ -615,83 +721,102 @@ void UiControllerAndroid::UpdateActions(
   JNIEnv* env = AttachCurrentThread();
 
   bool has_close_or_cancel = false;
-  auto chips = Java_AutofillAssistantUiController_createChipList(env);
+  auto jchips = Java_AutofillAssistantUiController_createChipList(env);
+  auto jsticky_chips = Java_AutofillAssistantUiController_createChipList(env);
   int user_action_count = static_cast<int>(user_actions.size());
   for (int i = 0; i < user_action_count; i++) {
     const auto& action = user_actions[i];
     const Chip& chip = action.chip();
+    base::android::ScopedJavaLocalRef<jobject> jchip;
+    // TODO(arbesser): Refactor this to use
+    // ui_controller_android_utils::CreateJavaAssistantChip.
     switch (chip.type) {
       default:  // Ignore actions with other chip types or with no chips.
         break;
 
       case HIGHLIGHTED_ACTION:
-        // Here and below, we set the identifier to the empty string so that we
-        // can hide all the chips except for the cancel chip when the keyboard
-        // is showing.
-        // TODO(b/149543425): Find a better way to do this.
-        Java_AutofillAssistantUiController_addHighlightedActionButton(
-            env, java_object_, chips, chip.icon,
-            base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled(), chip.sticky,
-            base::android::ConvertUTF8ToJavaString(env, ""));
+        jchip =
+            Java_AutofillAssistantUiController_createHighlightedActionButton(
+                env, java_object_, chip.icon,
+                base::android::ConvertUTF8ToJavaString(env, chip.text), i,
+                !action.enabled(), chip.sticky, chip.visible);
         break;
 
       case NORMAL_ACTION:
-        Java_AutofillAssistantUiController_addActionButton(
-            env, java_object_, chips, chip.icon,
+        jchip = Java_AutofillAssistantUiController_createActionButton(
+            env, java_object_, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled(), chip.sticky,
-            base::android::ConvertUTF8ToJavaString(env, ""));
+            !action.enabled(), chip.sticky, chip.visible);
+        break;
+
+      case FEEDBACK_ACTION:
+        // A "Send feedback" button which will show the feedback form before
+        // executing the action.
+        jchip = Java_AutofillAssistantUiController_createFeedbackButton(
+            env, java_object_, chip.icon,
+            base::android::ConvertUTF8ToJavaString(env, chip.text), i,
+            !action.enabled(), chip.sticky, chip.visible);
         break;
 
       case CANCEL_ACTION:
         // A Cancel button sneaks in an UNDO snackbar before executing the
         // action, while a close button behaves like a normal button.
-        Java_AutofillAssistantUiController_addCancelButton(
-            env, java_object_, chips, chip.icon,
+        jchip = Java_AutofillAssistantUiController_createCancelButton(
+            env, java_object_, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled(), chip.sticky,
-            base::android::ConvertUTF8ToJavaString(env, kCancelChipIdentifier));
+            !action.enabled(), chip.sticky, chip.visible);
         has_close_or_cancel = true;
         break;
 
       case CLOSE_ACTION:
-        Java_AutofillAssistantUiController_addActionButton(
-            env, java_object_, chips, chip.icon,
+        jchip = Java_AutofillAssistantUiController_createActionButton(
+            env, java_object_, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled(), chip.sticky,
-            base::android::ConvertUTF8ToJavaString(env, ""));
+            !action.enabled(), chip.sticky, chip.visible);
         has_close_or_cancel = true;
         break;
 
       case DONE_ACTION:
-        Java_AutofillAssistantUiController_addHighlightedActionButton(
-            env, java_object_, chips, chip.icon,
-            base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled(), chip.sticky,
-            base::android::ConvertUTF8ToJavaString(env, ""));
+        jchip =
+            Java_AutofillAssistantUiController_createHighlightedActionButton(
+                env, java_object_, chip.icon,
+                base::android::ConvertUTF8ToJavaString(env, chip.text), i,
+                !action.enabled(), chip.sticky, chip.visible);
         has_close_or_cancel = true;
         break;
+    }
+    if (jchip) {
+      Java_AutofillAssistantUiController_appendChipToList(env, jchips, jchip);
+      if (chip.sticky) {
+        Java_AutofillAssistantUiController_appendChipToList(env, jsticky_chips,
+                                                            jchip);
+      }
     }
   }
 
   if (!has_close_or_cancel) {
+    base::android::ScopedJavaLocalRef<jobject> jcancel_chip;
     if (ui_delegate_->GetState() == AutofillAssistantState::STOPPED) {
-      Java_AutofillAssistantUiController_addCloseButton(
-          env, java_object_, chips, ICON_CLEAR,
+      jcancel_chip = Java_AutofillAssistantUiController_createCloseButton(
+          env, java_object_, ICON_CLEAR,
           base::android::ConvertUTF8ToJavaString(env, ""),
-          /* disabled= */ false, /* sticky= */ true,
-          base::android::ConvertUTF8ToJavaString(env, ""));
+          /* disabled= */ false, /* sticky= */ true, /* visible=*/true);
     } else if (ui_delegate_->GetState() != AutofillAssistantState::INACTIVE) {
-      Java_AutofillAssistantUiController_addCancelButton(
-          env, java_object_, chips, ICON_CLEAR,
+      jcancel_chip = Java_AutofillAssistantUiController_createCancelButton(
+          env, java_object_, ICON_CLEAR,
           base::android::ConvertUTF8ToJavaString(env, ""), -1,
-          /* disabled= */ false, /* sticky= */ true,
-          base::android::ConvertUTF8ToJavaString(env, kCancelChipIdentifier));
+          /* disabled= */ false, /* sticky= */ true, /* visible=*/true);
+    }
+    if (jcancel_chip) {
+      Java_AutofillAssistantUiController_appendChipToList(env, jchips,
+                                                          jcancel_chip);
+      Java_AutofillAssistantUiController_appendChipToList(env, jsticky_chips,
+                                                          jcancel_chip);
     }
   }
 
-  Java_AutofillAssistantUiController_setActions(env, java_object_, chips);
+  Java_AutofillAssistantUiController_setActions(env, java_object_, jchips);
+  header_model_->SetChips(jsticky_chips);
 }
 
 void UiControllerAndroid::OnUserActionsChanged(
@@ -716,9 +841,11 @@ void UiControllerAndroid::OnCancelButtonClicked(
   // chip will be displayed right above the keyboard.
   if (Java_AutofillAssistantUiController_isKeyboardShown(env, java_object_)) {
     Java_AutofillAssistantUiController_hideKeyboard(env, java_object_);
-  } else {
-    CloseOrCancel(index, TriggerContext::CreateEmpty());
+    return;
   }
+
+  CloseOrCancel(index, TriggerContext::CreateEmpty(),
+                Metrics::DropOutReason::SHEET_CLOSED);
 }
 
 void UiControllerAndroid::OnCloseButtonClicked(
@@ -727,42 +854,87 @@ void UiControllerAndroid::OnCloseButtonClicked(
   DestroySelf();
 }
 
+void UiControllerAndroid::OnFeedbackButtonClicked(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint index) {
+  // Show the feedback form then directly run the associated action.
+  // Unfortunately there is no way to associate a callback to run after the user
+  // actually sent (or close) the form, so we have to continue directly after
+  // showing it. It should be good enough, given that in most use cases we will
+  // directly stop.
+  Java_AutofillAssistantUiController_showFeedback(
+      env, java_object_,
+      base::android::ConvertUTF8ToJavaString(env,
+                                             ui_delegate_->GetDebugContext()));
+
+  OnUserActionSelected(env, jcaller, index);
+}
+
 void UiControllerAndroid::OnKeyboardVisibilityChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     jboolean visible) {
-  // Hide all chips except cancel while the keyboard is shown, to prevent users
-  // from accidentally tapping chips while using the keyboard.
-  // TODO(b/149543425): Find a better way to do this.
-  Java_AutofillAssistantUiController_setAllChipsVisibleExcept(
-      env, java_object_,
-      base::android::ConvertUTF8ToJavaString(env, kCancelChipIdentifier),
-      !visible);
+  if (ui_delegate_)
+    ui_delegate_->OnKeyboardVisibilityChanged(visible);
 }
 
-bool UiControllerAndroid::OnBackButtonClicked(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller) {
+bool UiControllerAndroid::OnBackButtonClicked() {
   // If the keyboard is currently shown, clicking the back button should
   // hide the keyboard rather than close autofill assistant.
-  if (Java_AutofillAssistantUiController_isKeyboardShown(env, java_object_)) {
-    Java_AutofillAssistantUiController_hideKeyboard(env, java_object_);
+  if (Java_AutofillAssistantUiController_isKeyboardShown(AttachCurrentThread(),
+                                                         java_object_)) {
+    Java_AutofillAssistantUiController_hideKeyboard(AttachCurrentThread(),
+                                                    java_object_);
     return true;
   }
 
   // For BROWSE state the back button should react in its default way.
   if (ui_delegate_ != nullptr &&
-      ui_delegate_->GetState() == AutofillAssistantState::BROWSE) {
+      (ui_delegate_->GetState() == AutofillAssistantState::BROWSE)) {
     return false;
   }
 
-  CloseOrCancel(-1, TriggerContext::CreateEmpty());
+  if (ui_delegate_ == nullptr ||
+      ui_delegate_->GetState() == AutofillAssistantState::STOPPED ||
+      ui_delegate_->IsRunningLiteScript()) {
+    if (client_->GetWebContents() != nullptr &&
+        client_->GetWebContents()->GetController().CanGoBack()) {
+      client_->GetWebContents()->GetController().GoBack();
+    }
+
+    // Lite scripts should not shut down here. The navigation will be handled
+    // by the lite script coordinator.
+    if (!ui_delegate_ || !ui_delegate_->IsRunningLiteScript()) {
+      Shutdown(Metrics::DropOutReason::BACK_BUTTON_CLICKED);
+    }
+
+    return true;
+  }
+
+  // ui_delegate_ must never be nullptr here!
+  auto back_button_settings =
+      ui_delegate_->GetClientSettings().back_button_settings;
+  if (back_button_settings.has_value()) {
+    ui_delegate_->OnStop(back_button_settings->message(),
+                         back_button_settings->undo_label());
+  } else {
+    CloseOrCancel(-1, TriggerContext::CreateEmpty(),
+                  Metrics::DropOutReason::BACK_BUTTON_CLICKED);
+  }
   return true;
+}
+
+void UiControllerAndroid::OnBottomSheetClosedWithSwipe() {
+  if (ui_delegate_->IsTabSelected() && ui_delegate_->IsRunningLiteScript()) {
+    Shutdown(Metrics::DropOutReason::SHEET_CLOSED);
+  }
 }
 
 void UiControllerAndroid::CloseOrCancel(
     int action_index,
-    std::unique_ptr<TriggerContext> trigger_context) {
+    std::unique_ptr<TriggerContext> trigger_context,
+    Metrics::DropOutReason dropout_reason) {
   // Close immediately.
   if (!ui_delegate_ ||
       ui_delegate_->GetState() == AutofillAssistantState::STOPPED) {
@@ -785,16 +957,17 @@ void UiControllerAndroid::CloseOrCancel(
                l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
                base::BindOnce(&UiControllerAndroid::OnCancel,
                               weak_ptr_factory_.GetWeakPtr(), action_index,
-                              std::move(trigger_context)));
+                              std::move(trigger_context), dropout_reason));
 }
 
 void UiControllerAndroid::OnCancel(
     int action_index,
-    std::unique_ptr<TriggerContext> trigger_context) {
+    std::unique_ptr<TriggerContext> trigger_context,
+    Metrics::DropOutReason dropout_reason) {
   if (action_index == -1 || !ui_delegate_ ||
       !ui_delegate_->PerformUserActionWithContext(action_index,
                                                   std::move(trigger_context))) {
-    Shutdown(Metrics::DropOutReason::SHEET_CLOSED);
+    Shutdown(dropout_reason);
   }
 }
 
@@ -818,11 +991,26 @@ void UiControllerAndroid::SetOverlayState(OverlayState state) {
       state = OverlayState::FULL;
     }
   }
+  overlay_state_ = state;
 
+  if (ui_delegate_ && ui_delegate_->ShouldShowOverlay()) {
+    ApplyOverlayState(state);
+  }
+}
+
+void UiControllerAndroid::ApplyOverlayState(OverlayState state) {
   Java_AssistantOverlayModel_setState(AttachCurrentThread(), GetOverlayModel(),
                                       state);
   Java_AssistantModel_setAllowTalkbackOnWebsite(
       AttachCurrentThread(), GetModel(), state != OverlayState::FULL);
+}
+
+void UiControllerAndroid::OnShouldShowOverlayChanged(bool should_show) {
+  if (should_show) {
+    ApplyOverlayState(overlay_state_);
+  } else {
+    ApplyOverlayState(OverlayState::HIDDEN);
+  }
 }
 
 void UiControllerAndroid::OnTouchableAreaChanged(
@@ -870,19 +1058,6 @@ void UiControllerAndroid::OnUserInteractionInsideTouchableArea() {
 void UiControllerAndroid::CloseCustomTab() {
   Java_AutofillAssistantUiController_scheduleCloseCustomTab(
       AttachCurrentThread(), java_object_);
-}
-
-void UiControllerAndroid::Detach() {
-  if (!ui_delegate_)
-    return;
-
-  ResetGenericUiControllers();
-
-  // Capture the debug context, for including into a feedback possibly sent
-  // later.
-  captured_debug_context_ = ui_delegate_->GetDebugContext();
-  ui_delegate_->RemoveObserver(this);
-  ui_delegate_ = nullptr;
 }
 
 // Collect user data related methods.
@@ -983,6 +1158,34 @@ void UiControllerAndroid::OnTextFocusLost() {
       base::BindOnce(&UiControllerAndroid::HideKeyboardIfFocusNotOnText,
                      weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(50));
+}
+
+bool UiControllerAndroid::IsContactComplete(
+    autofill::AutofillProfile* contact) {
+  auto* options = ui_delegate_->GetCollectUserDataOptions();
+  if (options == nullptr) {
+    return false;
+  }
+  return IsCompleteContact(contact, *options);
+}
+
+bool UiControllerAndroid::IsShippingAddressComplete(
+    autofill::AutofillProfile* address) {
+  auto* options = ui_delegate_->GetCollectUserDataOptions();
+  if (options == nullptr) {
+    return false;
+  }
+  return IsCompleteShippingAddress(address, *options);
+}
+
+bool UiControllerAndroid::IsPaymentInstrumentComplete(
+    autofill::CreditCard* card,
+    autofill::AutofillProfile* address) {
+  auto* options = ui_delegate_->GetCollectUserDataOptions();
+  if (options == nullptr) {
+    return false;
+  }
+  return IsCompleteCreditCard(card, address, *options);
 }
 
 void UiControllerAndroid::HideKeyboardIfFocusNotOnText() {
@@ -1501,8 +1704,10 @@ void UiControllerAndroid::OnClientSettingsChanged(
         env, jcontext, image.text_size(), 0);
 
     Java_AssistantOverlayModel_setOverlayImage(
-        env, GetOverlayModel(),
-        base::android::ConvertUTF8ToJavaString(env, image.image_url()),
+        env, GetOverlayModel(), jcontext,
+        ui_controller_android_utils::CreateJavaDrawable(
+            env, jcontext, image.image_drawable(),
+            ui_delegate_->GetUserModel()),
         image_size, top_margin, bottom_margin,
         base::android::ConvertUTF8ToJavaString(env, image.text()),
         ui_controller_android_utils::GetJavaColor(env, image.text_color()),
@@ -1511,8 +1716,7 @@ void UiControllerAndroid::OnClientSettingsChanged(
     Java_AssistantOverlayModel_clearOverlayImage(env, GetOverlayModel());
   }
   if (settings.integration_test_settings.has_value()) {
-    Java_AssistantHeaderModel_setDisableAnimations(
-        env, GetHeaderModel(),
+    header_model_->SetDisableAnimations(
         settings.integration_test_settings->disable_header_animations());
     Java_AutofillAssistantUiController_setDisableChipChangeAnimations(
         env, java_object_,
@@ -1528,14 +1732,9 @@ void UiControllerAndroid::OnGenericUserInterfaceChanged(
   // Try to inflate user interface from proto.
   if (generic_ui != nullptr) {
     generic_ui_controller_ = CreateGenericUiControllerForProto(*generic_ui);
-    if (generic_ui_controller_ == nullptr) {
-      // If creation of generic UI fails, end the action.
-      LOG(ERROR) << "Failed to show generic ui: view inflation failed";
-      EndActionProto action_failed;
-      action_failed.set_status(INVALID_ACTION);
-      ui_delegate_->GetBasicInteractions()->EndAction(
-          /* view_inflation_successful = */ false, action_failed);
-    }
+    ClientStatus status(generic_ui_controller_ ? ACTION_APPLIED
+                                               : INVALID_ACTION);
+    ui_delegate_->GetBasicInteractions()->NotifyViewInflationFinished(status);
   } else {
     generic_ui_controller_.reset();
   }
@@ -1640,6 +1839,7 @@ void UiControllerAndroid::OnFatalError(
     return;
   ui_delegate_->OnFatalError(
       base::android::ConvertJavaStringToUTF8(env, jmessage),
+      /*show_feedback_chip=*/false,
       static_cast<Metrics::DropOutReason>(jreason));
 }
 
@@ -1656,13 +1856,13 @@ void UiControllerAndroid::ResetGenericUiControllers() {
   Java_AssistantGenericUiModel_setView(env, GetGenericUiModel(), nullptr);
 }
 
-std::unique_ptr<GenericUiControllerAndroid>
+std::unique_ptr<GenericUiRootControllerAndroid>
 UiControllerAndroid::CreateGenericUiControllerForProto(
     const GenericUserInterfaceProto& proto) {
   JNIEnv* env = AttachCurrentThread();
   auto jcontext =
       Java_AutofillAssistantUiController_getContext(env, java_object_);
-  return GenericUiControllerAndroid::CreateFromProto(
+  return GenericUiRootControllerAndroid::CreateFromProto(
       proto, base::android::ScopedJavaGlobalRef<jobject>(jcontext),
       generic_ui_delegate_.GetJavaObject(), ui_delegate_->GetEventHandler(),
       ui_delegate_->GetUserModel(), ui_delegate_->GetBasicInteractions());

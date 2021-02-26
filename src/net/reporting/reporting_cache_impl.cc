@@ -176,15 +176,11 @@ void ReportingCacheImpl::IncrementEndpointDeliveries(
 void ReportingCacheImpl::RemoveReports(
     const std::vector<const ReportingReport*>& reports,
     ReportingReport::Outcome outcome) {
-  base::Optional<base::TimeTicks> delivered = base::nullopt;
-  if (outcome == ReportingReport::Outcome::DELIVERED)
-    delivered = tick_clock().NowTicks();
   for (const ReportingReport* report : reports) {
     auto it = reports_.find(report);
     DCHECK(it != reports_.end());
 
     it->get()->outcome = outcome;
-    it->get()->delivered = delivered;
 
     if (it->get()->IsUploadPending()) {
       it->get()->status = ReportingReport::Status::DOOMED;
@@ -253,10 +249,6 @@ void ReportingCacheImpl::OnParsedHeader(
       AddOrUpdateEndpoint(std::move(new_endpoint));
     }
 
-    // Remove endpoints that may have been previously configured for this group,
-    // but which were not specified in the current header.
-    RemoveEndpointsInGroupOtherThan(new_group.group_key, new_endpoints);
-
     AddOrUpdateEndpointGroup(std::move(new_group));
   }
 
@@ -266,6 +258,15 @@ void ReportingCacheImpl::OnParsedHeader(
   // TODO(crbug.com/983000): Allow duplicate endpoint URLs.
   for (const auto& group_key_and_endpoint_set : endpoints_per_group) {
     new_client.endpoint_count += group_key_and_endpoint_set.second.size();
+
+    // Remove endpoints that may have been previously configured for this group,
+    // but which were not specified in the current header.
+    // This must be done all at once after all the groups in the header have
+    // been processed, rather than after each individual group, otherwise
+    // headers with multiple groups of the same name will clobber previous parts
+    // of themselves. See crbug.com/1116529.
+    RemoveEndpointsInGroupOtherThan(group_key_and_endpoint_set.first,
+                                    group_key_and_endpoint_set.second);
   }
 
   // Remove endpoint groups that may have been configured for an existing client

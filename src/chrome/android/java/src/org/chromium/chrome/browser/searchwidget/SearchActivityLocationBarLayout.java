@@ -9,10 +9,8 @@ import android.os.Handler;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
@@ -20,7 +18,6 @@ import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 
 /** Implementation of the {@link LocationBarLayout} that is displayed for widget searches. */
@@ -38,6 +35,8 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     private boolean mPendingSearchPromoDecision;
     private boolean mPendingBeginQuery;
     private boolean mNativeLibraryReady;
+    private boolean mHasWindowFocus;
+    private boolean mUrlBarFocusRequested;
 
     public SearchActivityLocationBarLayout(Context context, AttributeSet attrs) {
         super(context, attrs, R.layout.location_bar_base);
@@ -68,16 +67,14 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     }
 
     @Override
-    public void setUrlToPageUrl() {
+    protected void setUrl(String url) {
         // Explicitly do nothing.  The tab is invisible, so showing its URL would be confusing.
     }
 
     @Override
-    public void onNativeLibraryReady() {
-        super.onNativeLibraryReady();
+    public void onFinishNativeInitialization() {
+        super.onFinishNativeInitialization();
         mNativeLibraryReady = true;
-
-        setAutocompleteProfile(Profile.getLastUsedRegularProfile());
 
         mPendingSearchPromoDecision = LocaleManager.getInstance().needToCheckForSearchEnginePromo();
         getAutocompleteCoordinator().setShouldPreventOmniboxAutocomplete(
@@ -159,8 +156,8 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     //                we don't start processing non-cached suggestion requests until that state
     //                is finalized after native has been initialized.
     private void focusTextBox() {
-        if (!mUrlBar.hasFocus()) mUrlBar.requestFocus();
-        getAutocompleteCoordinator().setShowCachedZeroSuggestResults(true);
+        mUrlBarFocusRequested |= !mUrlBar.hasFocus();
+        ensureUrlBarFocusedAndTriggerZeroSuggest();
 
         new Handler().post(new Runnable() {
             @Override
@@ -168,5 +165,31 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
                 getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
             }
         });
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        mHasWindowFocus = hasFocus;
+        if (hasFocus) {
+            ensureUrlBarFocusedAndTriggerZeroSuggest();
+        } else {
+            mUrlBar.clearFocus();
+        }
+    }
+
+    /**
+     * Since there is a race condition between {@link #focusTextBox()} and {@link
+     * #onWindowFocusChanged(boolean)}, if call mUrlBar.requestFocus() before onWindowFocusChanged
+     * is called, clipboard data will not been received since receive clipboard data needs focus
+     * (https://developer.android.com/reference/android/content/ClipboardManager#getPrimaryClip()).
+     */
+    private void ensureUrlBarFocusedAndTriggerZeroSuggest() {
+        if (mUrlBarFocusRequested && mHasWindowFocus) {
+            mUrlBar.requestFocus();
+            mUrlBarFocusRequested = false;
+        }
+        // Use cached suggestions only if native is not yet ready.
+        getAutocompleteCoordinator().setShowCachedZeroSuggestResults(!mNativeLibraryReady);
     }
 }

@@ -70,6 +70,9 @@ class FileOperationHandler {
         item.progressValue = event.status.processedBytes;
         item.cancelCallback = this.fileOperationManager_.requestTaskCancel.bind(
             this.fileOperationManager_, event.taskId);
+        item.currentSpeed = event.status.currentSpeed;
+        item.averageSpeed = event.status.averageSpeed;
+        item.remainingTime = event.status.remainingTime;
         progressCenter.updateItem(item);
         break;
 
@@ -82,6 +85,9 @@ class FileOperationHandler {
         item.message = FileOperationHandler.getMessage_(event);
         item.progressMax = event.status.totalBytes;
         item.progressValue = event.status.processedBytes;
+        item.currentSpeed = event.status.currentSpeed;
+        item.averageSpeed = event.status.averageSpeed;
+        item.remainingTime = event.status.remainingTime;
         progressCenter.updateItem(item);
         break;
 
@@ -100,6 +106,9 @@ class FileOperationHandler {
           item.message = '';
           item.state = ProgressItemState.COMPLETED;
           item.progressValue = item.progressMax;
+          item.currentSpeed = event.status.currentSpeed;
+          item.averageSpeed = event.status.averageSpeed;
+          item.remainingTime = event.status.remainingTime;
         } else if (event.reason === EventType.CANCELED) {
           item.message = '';
           item.state = ProgressItemState.CANCELED;
@@ -216,7 +225,7 @@ class FileOperationHandler {
     if (event.reason === fileOperationUtil.EventRouter.EventType.ERROR) {
       switch (event.error.code) {
         case util.FileOperationErrorType.TARGET_EXISTS:
-          var name = event.error.data.name;
+          let name = event.error.data.name;
           if (event.error.data.isDirectory) {
             name += '/';
           }
@@ -257,7 +266,7 @@ class FileOperationHandler {
           }
       }
     } else if (event.status.numRemainingItems === 1) {
-      var name = event.status.processingEntryName;
+      const name = event.status.processingEntryName;
       switch (event.status.operationType) {
         case 'COPY':
           return strf('COPY_FILE_NAME', name);

@@ -31,6 +31,9 @@
  * Version 2 files support by Konstantin Shishkov
  */
 
+#include "config.h"
+
+#define CACHED_BITSTREAM_READER HAVE_FAST_64BIT
 #include "avcodec.h"
 #include "get_bits.h"
 #include "huffman.h"

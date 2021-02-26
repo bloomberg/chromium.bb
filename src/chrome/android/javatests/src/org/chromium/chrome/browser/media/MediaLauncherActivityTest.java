@@ -9,29 +9,34 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
+import androidx.test.filters.SmallTest;
+
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
 import org.chromium.chrome.test.TestContentProvider;
 import org.chromium.chrome.test.util.ActivityUtils;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.chrome.test.util.browser.Features;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -40,9 +45,13 @@ import java.util.concurrent.Callable;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Features.EnableFeatures(ChromeFeatureList.SHARE_BY_DEFAULT_IN_CCT)
 public class MediaLauncherActivityTest {
     @Rule
     public MultiActivityTestRule mTestRule = new MultiActivityTestRule();
+
+    @Rule
+    public TestRule mProcessor = new Features.JUnitProcessor();
 
     private Context mContext;
 
@@ -88,7 +97,7 @@ public class MediaLauncherActivityTest {
     @Test
     @SmallTest
     public void testFilterURI() {
-        List<Pair<String, String>> testCases = CollectionUtil.newArrayList(
+        List<Pair<String, String>> testCases = Arrays.asList(
                 new Pair<>("file:///test.jpg", "file:///test.jpg"),
                 new Pair<>("file:///test.jp!g", "file:///test.jp!g"),
                 new Pair<>("file:///test!$'.jpg", "file:///test.jpg"),
@@ -123,14 +132,10 @@ public class MediaLauncherActivityTest {
         CustomTabActivity cta = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), CustomTabActivity.class, trigger);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, new Callable<String>() {
-            @Override
-            public String call() {
-                Tab tab = cta.getActivityTab();
-                if (tab == null) return null;
-
-                return tab.getUrlString();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = cta.getActivityTab();
+            Criteria.checkThat(tab, Matchers.notNullValue());
+            Criteria.checkThat(tab.getUrlString(), Matchers.is(expectedUrl));
+        });
     }
 }

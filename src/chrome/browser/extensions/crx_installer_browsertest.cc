@@ -11,6 +11,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -28,13 +29,13 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/safe_browsing/buildflags.h"
@@ -138,25 +139,29 @@ SkBitmap CreateSquareBitmap(int size) {
 
 WebApplicationInfo CreateWebAppInfo(const char* title,
                                     const char* description,
-                                    const char* app_url,
+                                    const char* start_url,
                                     int size,
                                     bool create_with_shortcuts) {
   WebApplicationInfo web_app_info;
   web_app_info.title = base::UTF8ToUTF16(title);
   web_app_info.description = base::UTF8ToUTF16(description);
-  web_app_info.app_url = GURL(app_url);
-  web_app_info.scope = GURL(app_url);
-  web_app_info.icon_bitmaps[size] = CreateSquareBitmap(size);
+  web_app_info.start_url = GURL(start_url);
+  web_app_info.scope = GURL(start_url);
+  web_app_info.icon_bitmaps_any[size] = CreateSquareBitmap(size);
   if (create_with_shortcuts) {
-    WebApplicationShortcutInfo shortcut_item;
-    WebApplicationIconInfo icon;
+    WebApplicationShortcutsMenuItemInfo shortcut_item;
+    WebApplicationShortcutsMenuItemInfo::Icon icon;
+    std::map<SquareSizePx, SkBitmap> shortcut_icon_bitmaps;
     shortcut_item.name = base::UTF8ToUTF16(kShortcutItemName);
     shortcut_item.url = GURL(kShortcutUrl);
     icon.url = GURL(kShortcutIconUrl);
     icon.square_size_px = size;
     shortcut_item.shortcut_icon_infos.push_back(std::move(icon));
-    shortcut_item.shortcut_icon_bitmaps[size] = CreateSquareBitmap(size);
-    web_app_info.shortcut_infos.push_back(std::move(shortcut_item));
+    web_app_info.shortcuts_menu_item_infos.emplace_back(
+        std::move(shortcut_item));
+    shortcut_icon_bitmaps[size] = CreateSquareBitmap(size);
+    web_app_info.shortcuts_menu_icons_bitmaps.emplace_back(
+        std::move(shortcut_icon_bitmaps));
   }
   return web_app_info;
 }
@@ -701,21 +706,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Blacklist) {
-  scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db(
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Blocklist) {
+  scoped_refptr<FakeSafeBrowsingDatabaseManager> blocklist_db(
       new FakeSafeBrowsingDatabaseManager(true));
-  Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db(blacklist_db);
+  Blocklist::ScopedDatabaseManagerForTest scoped_blocklist_db(blocklist_db);
 
   const std::string extension_id = "gllekhaobjnhgeagipipnkpmmmpchacm";
-  blacklist_db->SetUnsafe(extension_id);
+  blocklist_db->SetUnsafe(extension_id);
 
   base::FilePath crx_path = test_data_dir_.AppendASCII("theme_hidpi_crx")
                                           .AppendASCII("theme_hidpi.crx");
   EXPECT_FALSE(InstallExtension(crx_path, 0));
 
   auto installation_failure =
-      InstallationReporter::Get(profile())->Get(extension_id);
-  EXPECT_EQ(InstallationReporter::FailureReason::CRX_INSTALL_ERROR_DECLINED,
+      InstallStageTracker::Get(profile())->Get(extension_id);
+  EXPECT_EQ(InstallStageTracker::FailureReason::CRX_INSTALL_ERROR_DECLINED,
             installation_failure.failure_reason);
   EXPECT_EQ(CrxInstallErrorDetail::EXTENSION_IS_BLOCKLISTED,
             installation_failure.install_error_detail);
@@ -977,8 +982,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   EXPECT_EQ("0.0", extension->VersionString());
 
   auto installation_failure =
-      InstallationReporter::Get(profile())->Get(extension_id);
-  EXPECT_EQ(InstallationReporter::FailureReason::
+      InstallStageTracker::Get(profile())->Get(extension_id);
+  EXPECT_EQ(InstallStageTracker::FailureReason::
                 CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE,
             installation_failure.failure_reason);
   EXPECT_EQ(base::nullopt, installation_failure.install_error_detail);
@@ -1020,8 +1025,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   EXPECT_EQ("0.0", extension->VersionString());
 
   auto installation_failure =
-      InstallationReporter::Get(profile())->Get(extension_id);
-  EXPECT_EQ(InstallationReporter::FailureReason::CRX_INSTALL_ERROR_OTHER,
+      InstallStageTracker::Get(profile())->Get(extension_id);
+  EXPECT_EQ(InstallStageTracker::FailureReason::CRX_INSTALL_ERROR_OTHER,
             installation_failure.failure_reason);
   EXPECT_EQ(CrxInstallErrorDetail::UNEXPECTED_ID,
             *installation_failure.install_error_detail);
@@ -1030,7 +1035,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, KioskOnlyTest) {
   base::ScopedAllowBlockingForTesting allow_io;
-  // kiosk_only is whitelisted from non-chromeos.
+  // kiosk_only is allowlisted from non-chromeos.
   base::FilePath crx_path =
       test_data_dir_.AppendASCII("kiosk/kiosk_only.crx");
   EXPECT_FALSE(InstallExtension(crx_path, 0));

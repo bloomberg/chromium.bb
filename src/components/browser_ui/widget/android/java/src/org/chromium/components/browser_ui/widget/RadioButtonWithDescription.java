@@ -15,6 +15,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewStub;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -30,6 +31,16 @@ import java.util.List;
  * </p>
  *
  * <p>
+ * A child widget can replace the end_view_stub ViewStub with a customized view at the end of the
+ * widget, by overriding {@link RadioButtonWithDescription#getEndStubLayoutResourceId()}.
+ * </p>
+ *
+ * <p>
+ * By default, R.attr.selectableItemBackground will be set as the background. If a different
+ * background is desired, use android:background to override.
+ * </p>
+ *
+ * <p>
  * The primary of the text and an optional description to be contained in the group may be set in
  * XML. Sample declaration in XML:
  * <pre> {@code
@@ -37,7 +48,6 @@ import java.util.List;
  *      android:id="@+id/system_default"
  *      android:layout_width="match_parent"
  *      android:layout_height="wrap_content"
- *      android:background="?attr/selectableItemBackground"
  *      app:primaryText="@string/feature_foo_option_one"
  *      app:descriptionText="@string/feature_foo_option_one_description" />
  * } </pre>
@@ -47,7 +57,7 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
     /**
      * Interface to listen to radio button changes.
      */
-    interface ButtonCheckedStateChangedListener {
+    public interface ButtonCheckedStateChangedListener {
         /**
          * Invoked when a {@link RadioButtonWithDescription} is selected.
          * @param checkedRadioButton The radio button that was selected.
@@ -65,6 +75,8 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
 
     private static final String SUPER_STATE_KEY = "superState";
     private static final String CHECKED_KEY = "isChecked";
+    // An id that indicates the layout doesn't exist.
+    private static final int NO_LAYOUT_ID = -1;
 
     /**
      * Constructor for inflating via XML.
@@ -94,7 +106,19 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
             TypedValue background = new TypedValue();
             getContext().getTheme().resolveAttribute(
                     android.R.attr.selectableItemBackground, background, true);
-            setBackgroundResource(background.resourceId);
+            if (getEndStubLayoutResourceId() != NO_LAYOUT_ID) {
+                // If the end view stub is replaced with a custom view, only set background in the
+                // button container, so the end view is not highlighted when the button is clicked.
+                View radioContainer = findViewById(R.id.radio_container);
+                radioContainer.setBackgroundResource(background.resourceId);
+                // Move the start padding into radio container, so it can be highlighted.
+                int paddingStart = getPaddingStart();
+                radioContainer.setPaddingRelative(paddingStart, radioContainer.getPaddingTop(),
+                        radioContainer.getPaddingEnd(), radioContainer.getPaddingBottom());
+                setPaddingRelative(0, getPaddingTop(), getPaddingEnd(), getPaddingBottom());
+            } else {
+                setBackgroundResource(background.resourceId);
+            }
         }
 
         // We want RadioButtonWithDescription to handle the clicks itself.
@@ -111,6 +135,13 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
         mRadioButton = getRadioButtonView();
         mPrimary = getPrimaryTextView();
         mDescription = getDescriptionTextView();
+
+        int endStubLayoutResourceId = getEndStubLayoutResourceId();
+        if (endStubLayoutResourceId != NO_LAYOUT_ID) {
+            ViewStub endStub = findViewById(R.id.end_view_stub);
+            endStub.setLayoutResource(endStubLayoutResourceId);
+            endStub.inflate();
+        }
     }
 
     /**
@@ -139,6 +170,14 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
      */
     protected TextView getDescriptionTextView() {
         return (TextView) findViewById(R.id.description);
+    }
+
+    /**
+     * @return Resource id that is used to replace the end_view_stub inside this {@link
+     *         RadioButtonWithDescription}.
+     */
+    protected int getEndStubLayoutResourceId() {
+        return NO_LAYOUT_ID;
     }
 
     /**

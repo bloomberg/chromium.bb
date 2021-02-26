@@ -16,11 +16,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request_base.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "components/download/public/common/download_item.h"
-#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -63,9 +63,13 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
                                   const std::string& response_body) override;
 
   // Uploads the binary for deep scanning if the reason and policies indicate
-  // it should be.
-  bool ShouldUploadBinary(DownloadCheckResultReason reason) override;
-  void UploadBinary(DownloadCheckResultReason reason) override;
+  // it should be. ShouldUploadBinary will returns the settings to apply for
+  // deep scanning if it should occur, or base::nullopt if no scan should be
+  // done.
+  base::Optional<enterprise_connectors::AnalysisSettings> ShouldUploadBinary(
+      DownloadCheckResultReason reason) override;
+  void UploadBinary(DownloadCheckResultReason reason,
+                    enterprise_connectors::AnalysisSettings settings) override;
 
   // Called when this request is completed.
   void NotifyRequestFinished(DownloadCheckResult result,

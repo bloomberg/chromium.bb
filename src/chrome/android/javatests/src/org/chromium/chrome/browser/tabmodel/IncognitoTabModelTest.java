@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -13,20 +13,22 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.ApplicationTestUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateExtractor;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for IncognitoTabModel.
@@ -68,7 +70,6 @@ public class IncognitoTabModelTest {
     @Test
     @SmallTest
     @Feature({"OffTheRecord"})
-    @RetryOnFailure
     public void testCloseAllDuringAddTabDoesNotCrash() {
         createTabOnUiThread();
         Assert.assertEquals(1, mTabModel.getCount());
@@ -84,11 +85,50 @@ public class IncognitoTabModelTest {
         createTabOnUiThread();
         // Need to wait for contentsState to be initialized for the tab to restore correctly.
         CriteriaHelper.pollUiThread(() -> {
-            return TabState.from(mActivityTestRule.getActivity().getActivityTab()).contentsState
+            return TabStateExtractor.from(mActivityTestRule.getActivity().getActivityTab())
+                           .contentsState
                     != null;
         });
         ChromeTabbedActivity newActivity =
                 ApplicationTestUtils.recreateActivity(mActivityTestRule.getActivity());
         CriteriaHelper.pollUiThread(() -> newActivity.getTabModelSelector().isIncognitoSelected());
+    }
+
+    @Test
+    @SmallTest
+    public void testRemoveLastTab() throws TimeoutException {
+        CallbackHelper didAddTabCallbackHelper = new CallbackHelper();
+        CallbackHelper tabRemovedCallbackHelper = new CallbackHelper();
+
+        mTabModel.addObserver(new TabModelObserver() {
+            @Override
+            public void tabRemoved(Tab tab) {
+                tabRemovedCallbackHelper.notifyCalled();
+            }
+
+            @Override
+            public void didAddTab(Tab tab, int type, int creationState) {
+                didAddTabCallbackHelper.notifyCalled();
+            }
+        });
+
+        createTabOnUiThread();
+        // Need to wait for contentsState to be initialized for the tab to restore correctly.
+        CriteriaHelper.pollUiThread(() -> {
+            return TabStateExtractor.from(mActivityTestRule.getActivity().getActivityTab())
+                           .contentsState
+                    != null;
+        });
+        didAddTabCallbackHelper.waitForCallback(
+                "TabModelObserver#didAddTab should have been called", 0);
+
+        Tab tab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
+        Assert.assertTrue(tab.isIncognito());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTabModel.removeTab(tab);
+            tab.destroy();
+        });
+        tabRemovedCallbackHelper.waitForCallback(
+                "TabModelObserver#tabRemoved should have been called", 0);
     }
 }

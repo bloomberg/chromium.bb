@@ -1,13 +1,15 @@
 # v-0012 - This fails because of the duplicated `foo` structure.
 
-type foo = struct {}
+struct foo {
+  [[offset (0)]] a : i32;
+};
 
-type foo = struct {
-  [[offset 0]] b : f32;
-}
+struct foo {
+  [[offset (0)]] b : f32;
+};
 
+[[stage(vertex)]]
 fn main() -> void {
   return;
 }
-entry_point vertex = main;
 

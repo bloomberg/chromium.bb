@@ -7,7 +7,10 @@
 #include <utility>
 
 #include "base/system/sys_info.h"
+#include "build/chromeos_buildflags.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_types.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/test/video.h"
 #include "media/gpu/test/video_player/video_decoder_client.h"
 
@@ -45,13 +48,23 @@ VideoPlayerTestEnvironment::VideoPlayerTestEnvironment(
     const DecoderImplementation implementation,
     const base::FilePath& output_folder,
     const FrameOutputConfig& frame_output_config)
-    : video_(std::move(video)),
+    : VideoTestEnvironment(
+          /*enabled_features=*/
+          {
+#if BUILDFLAG(USE_VAAPI)
+            // TODO(b/172217032): remove once enabled by default.
+            media::kVaapiAV1Decoder,
+#endif
+          },
+          /*disabled_featureas=*/{}),
+      video_(std::move(video)),
       enable_validator_(enable_validator),
       implementation_(implementation),
       frame_output_config_(frame_output_config),
       output_folder_(output_folder),
       gpu_memory_buffer_factory_(
-          gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr)) {}
+          gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr)) {
+}
 
 VideoPlayerTestEnvironment::~VideoPlayerTestEnvironment() = default;
 
@@ -64,15 +77,15 @@ void VideoPlayerTestEnvironment::SetUp() {
   // Note: buddy, guado and rikku support import mode for H.264 and VP9, but for
   // VP8 they use a different video decoder (V4L2 instead of VAAPI) and don't
   // support import mode.
-#if defined(OS_CHROMEOS)
-  constexpr const char* kImportModeBlacklist[] = {
+#if BUILDFLAG(IS_ASH)
+  constexpr const char* kImportModeBlocklist[] = {
       "buddy",      "guado",      "guado-cfm", "guado-kernelnext", "nyan_big",
       "nyan_blaze", "nyan_kitty", "rikku",     "rikku-cfm"};
   const std::string board = base::SysInfo::GetLsbReleaseBoard();
-  import_supported_ = (std::find(std::begin(kImportModeBlacklist),
-                                 std::end(kImportModeBlacklist),
-                                 board) == std::end(kImportModeBlacklist));
-#endif  // defined(OS_CHROMEOS)
+  import_supported_ = (std::find(std::begin(kImportModeBlocklist),
+                                 std::end(kImportModeBlocklist),
+                                 board) == std::end(kImportModeBlocklist));
+#endif  // BUILDFLAG(IS_ASH)
 
   // VideoDecoders always require import mode to be supported.
   DCHECK(import_supported_ || implementation_ == DecoderImplementation::kVDA);

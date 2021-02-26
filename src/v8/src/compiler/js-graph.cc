@@ -129,6 +129,9 @@ DEFINE_GETTER(BooleanMapConstant, HeapConstant(factory()->boolean_map()))
 DEFINE_GETTER(ToNumberBuiltinConstant,
               HeapConstant(BUILTIN_CODE(isolate(), ToNumber)))
 
+DEFINE_GETTER(PlainPrimitiveToNumberBuiltinConstant,
+              HeapConstant(BUILTIN_CODE(isolate(), PlainPrimitiveToNumber)))
+
 DEFINE_GETTER(EmptyFixedArrayConstant,
               HeapConstant(factory()->empty_fixed_array()))
 
@@ -141,6 +144,9 @@ DEFINE_GETTER(PropertyArrayMapConstant,
 
 DEFINE_GETTER(FixedDoubleArrayMapConstant,
               HeapConstant(factory()->fixed_double_array_map()))
+
+DEFINE_GETTER(WeakFixedArrayMapConstant,
+              HeapConstant(factory()->weak_fixed_array_map()))
 
 DEFINE_GETTER(HeapNumberMapConstant, HeapConstant(factory()->heap_number_map()))
 
@@ -173,11 +179,11 @@ DEFINE_GETTER(EmptyStateValues,
               graph()->NewNode(common()->StateValues(0,
                                                      SparseInputMask::Dense())))
 
-DEFINE_GETTER(SingleDeadTypedStateValues,
-              graph()->NewNode(common()->TypedStateValues(
-                  new (graph()->zone()->New(sizeof(ZoneVector<MachineType>)))
-                      ZoneVector<MachineType>(0, graph()->zone()),
-                  SparseInputMask(SparseInputMask::kEndMarker << 1))))
+DEFINE_GETTER(
+    SingleDeadTypedStateValues,
+    graph()->NewNode(common()->TypedStateValues(
+        graph()->zone()->New<ZoneVector<MachineType>>(0, graph()->zone()),
+        SparseInputMask(SparseInputMask::kEndMarker << 1))))
 
 #undef DEFINE_GETTER
 #undef GET_CACHED_FIELD

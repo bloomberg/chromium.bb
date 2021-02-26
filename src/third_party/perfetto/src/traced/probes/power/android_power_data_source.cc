@@ -149,7 +149,7 @@ void AndroidPowerDataSource::Tick() {
         if (weak_this)
           weak_this->Tick();
       },
-      poll_interval_ms_ - (now_ms % poll_interval_ms_));
+      poll_interval_ms_ - static_cast<uint32_t>(now_ms % poll_interval_ms_));
 
   WriteBatteryCounters();
   WritePowerRailsData();
@@ -208,7 +208,7 @@ void AndroidPowerDataSource::WritePowerRailsData() {
     // all rail names etc. on each one.
     rail_descriptors_logged_ = true;
     auto rail_descriptors = lib_->GetRailDescriptors();
-    if (rail_descriptors.size() == 0) {
+    if (rail_descriptors.empty()) {
       // No rails to collect data for. Don't try again in the next iteration.
       rails_collection_enabled_ = false;
       return;

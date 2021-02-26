@@ -22,26 +22,26 @@
 #include <sstream>
 
 class RenderPipelineValidationTest : public ValidationTest {
-    protected:
-        void SetUp() override {
-            ValidationTest::SetUp();
+  protected:
+    void SetUp() override {
+        ValidationTest::SetUp();
 
-            vsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
+        vsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
                 #version 450
                 void main() {
                     gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
                 })");
 
-            fsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
+        fsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) out vec4 fragColor;
                 void main() {
                     fragColor = vec4(0.0, 1.0, 0.0, 1.0);
                 })");
-        }
+    }
 
-        wgpu::ShaderModule vsModule;
-        wgpu::ShaderModule fsModule;
+    wgpu::ShaderModule vsModule;
+    wgpu::ShaderModule fsModule;
 };
 
 // Test cases where creation should succeed
@@ -152,11 +152,11 @@ TEST_F(RenderPipelineValidationTest, NonRenderableFormat) {
     }
 
     {
-        // Fails because RG11B10Float is non-renderable
+        // Fails because RG11B10Ufloat is non-renderable
         utils::ComboRenderPipelineDescriptor descriptor(device);
         descriptor.vertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
-        descriptor.cColorStates[0].format = wgpu::TextureFormat::RG11B10Float;
+        descriptor.cColorStates[0].format = wgpu::TextureFormat::RG11B10Ufloat;
 
         ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
     }
@@ -227,10 +227,9 @@ TEST_F(RenderPipelineValidationTest, SampleCountCompatibilityWithRenderPass) {
     baseTextureDescriptor.size.width = 4;
     baseTextureDescriptor.size.height = 4;
     baseTextureDescriptor.size.depth = 1;
-    baseTextureDescriptor.arrayLayerCount = 1;
     baseTextureDescriptor.mipLevelCount = 1;
     baseTextureDescriptor.dimension = wgpu::TextureDimension::e2D;
-    baseTextureDescriptor.usage = wgpu::TextureUsage::OutputAttachment;
+    baseTextureDescriptor.usage = wgpu::TextureUsage::RenderAttachment;
 
     utils::ComboRenderPipelineDescriptor nonMultisampledPipelineDescriptor(device);
     nonMultisampledPipelineDescriptor.sampleCount = 1;
@@ -368,6 +367,30 @@ TEST_F(RenderPipelineValidationTest, SampleCountCompatibilityWithRenderPass) {
     }
 }
 
+// Tests that the sample count of the render pipeline must be valid
+// when the alphaToCoverage mode is enabled.
+TEST_F(RenderPipelineValidationTest, AlphaToCoverageAndSampleCount) {
+    {
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.vertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.sampleCount = 4;
+        descriptor.alphaToCoverageEnabled = true;
+
+        device.CreateRenderPipeline(&descriptor);
+    }
+
+    {
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.vertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.sampleCount = 1;
+        descriptor.alphaToCoverageEnabled = true;
+
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    }
+}
+
 // Tests that the texture component type in shader must match the bind group layout.
 TEST_F(RenderPipelineValidationTest, TextureComponentTypeCompatibility) {
     constexpr uint32_t kNumTextureComponentType = 3u;
@@ -393,14 +416,9 @@ TEST_F(RenderPipelineValidationTest, TextureComponentTypeCompatibility) {
             descriptor.cFragmentStage.module = utils::CreateShaderModule(
                 device, utils::SingleShaderStage::Fragment, stream.str().c_str());
 
-            wgpu::BindGroupLayout bgl =
-                utils::MakeBindGroupLayout(device, {{0,
-                                                     wgpu::ShaderStage::Fragment,
-                                                     wgpu::BindingType::SampledTexture,
-                                                     false,
-                                                     false,
-                                                     wgpu::TextureViewDimension::e2D,
-                                                     kTextureComponentTypes[j]}});
+            wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
+                device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false,
+                          0, false, wgpu::TextureViewDimension::e2D, kTextureComponentTypes[j]}});
             descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
 
             if (i == j) {
@@ -448,14 +466,9 @@ TEST_F(RenderPipelineValidationTest, TextureViewDimensionCompatibility) {
             descriptor.cFragmentStage.module = utils::CreateShaderModule(
                 device, utils::SingleShaderStage::Fragment, stream.str().c_str());
 
-            wgpu::BindGroupLayout bgl =
-                utils::MakeBindGroupLayout(device, {{0,
-                                                     wgpu::ShaderStage::Fragment,
-                                                     wgpu::BindingType::SampledTexture,
-                                                     false,
-                                                     false,
-                                                     kTextureViewDimensions[j],
-                                                     wgpu::TextureComponentType::Float}});
+            wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
+                device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false,
+                          0, false, kTextureViewDimensions[j], wgpu::TextureComponentType::Float}});
             descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
 
             if (i == j) {
@@ -485,5 +498,299 @@ TEST_F(RenderPipelineValidationTest, StorageBufferInVertexShaderNoLayout) {
     descriptor.layout = nullptr;
     descriptor.vertexStage.module = vsModuleWithStorageBuffer;
     descriptor.cFragmentStage.module = fsModule;
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+}
+
+// Test that a pipeline with defaulted layout may not have multisampled array textures
+// TODO(enga): Also test multisampled cube, cube array, and 3D. These have no GLSL keywords.
+TEST_F(RenderPipelineValidationTest, MultisampledTexture) {
+    utils::ComboRenderPipelineDescriptor descriptor(device);
+    descriptor.layout = nullptr;
+    descriptor.cFragmentStage.module = fsModule;
+
+    // Base case works.
+    descriptor.vertexStage.module =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
+        #version 450
+        layout(set = 0, binding = 0) uniform texture2DMS texture;
+        void main() {
+        })");
+    device.CreateRenderPipeline(&descriptor);
+
+    // texture2DMSArray invalid
+    descriptor.vertexStage.module =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
+        #version 450
+        layout(set = 0, binding = 0) uniform texture2DMSArray texture;
+        void main() {
+        })");
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+}
+
+// Tests that strip primitive topologies require an index format
+TEST_F(RenderPipelineValidationTest, StripIndexFormatRequired) {
+    constexpr uint32_t kNumStripType = 2u;
+    constexpr uint32_t kNumListType = 3u;
+    constexpr uint32_t kNumIndexFormat = 3u;
+
+    std::array<wgpu::PrimitiveTopology, kNumStripType> kStripTopologyTypes = {{
+        wgpu::PrimitiveTopology::LineStrip,
+        wgpu::PrimitiveTopology::TriangleStrip
+    }};
+
+    std::array<wgpu::PrimitiveTopology, kNumListType> kListTopologyTypes = {{
+        wgpu::PrimitiveTopology::PointList,
+        wgpu::PrimitiveTopology::LineList,
+        wgpu::PrimitiveTopology::TriangleList
+    }};
+
+    std::array<wgpu::IndexFormat, kNumIndexFormat> kIndexFormatTypes = {{
+        wgpu::IndexFormat::Undefined,
+        wgpu::IndexFormat::Uint16,
+        wgpu::IndexFormat::Uint32
+    }};
+
+    for (wgpu::PrimitiveTopology primitiveTopology : kStripTopologyTypes) {
+        for (wgpu::IndexFormat indexFormat : kIndexFormatTypes) {
+            utils::ComboRenderPipelineDescriptor descriptor(device);
+            descriptor.vertexStage.module = vsModule;
+            descriptor.cFragmentStage.module = fsModule;
+            descriptor.primitiveTopology = primitiveTopology;
+            descriptor.cVertexState.indexFormat = indexFormat;
+
+            if (indexFormat == wgpu::IndexFormat::Undefined) {
+                // Fail because the index format is undefined and the primitive
+                // topology is a strip type.
+                ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+            } else {
+                // Succeeds because the index format is given.
+                device.CreateRenderPipeline(&descriptor);
+            }
+        }
+    }
+
+    for (wgpu::PrimitiveTopology primitiveTopology : kListTopologyTypes) {
+        for (wgpu::IndexFormat indexFormat : kIndexFormatTypes) {
+            utils::ComboRenderPipelineDescriptor descriptor(device);
+            descriptor.vertexStage.module = vsModule;
+            descriptor.cFragmentStage.module = fsModule;
+            descriptor.primitiveTopology = primitiveTopology;
+            descriptor.cVertexState.indexFormat = indexFormat;
+
+            if (indexFormat == wgpu::IndexFormat::Undefined) {
+                // Succeeds even when the index format is undefined because the
+                // primitive topology isn't a strip type.
+                device.CreateRenderPipeline(&descriptor);
+            } else {
+                // TODO(crbug.com/dawn/502): Once setIndexBuffer requires an
+                // indexFormat. this should fail. For now it succeeds to allow
+                // backwards compatibility during the deprecation period.
+                EXPECT_DEPRECATION_WARNING(device.CreateRenderPipeline(&descriptor));
+            }
+        }
+    }
+}
+
+// Test that the entryPoint names must be present for the correct stage in the shader module.
+TEST_F(RenderPipelineValidationTest, EntryPointNameValidation) {
+    DAWN_SKIP_TEST_IF(!HasWGSL());
+
+    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
+        [[builtin(position)]] var<out> position : vec4<f32>;
+        [[stage(vertex)]]
+        fn vertex_main() -> void {
+            position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+            return;
+        }
+
+        [[location(0)]] var<out> color : vec4<f32>;
+        [[stage(fragment)]]
+        fn fragment_main() -> void {
+            color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+            return;
+        }
+    )");
+
+    utils::ComboRenderPipelineDescriptor descriptor(device);
+    descriptor.vertexStage.module = module;
+    descriptor.vertexStage.entryPoint = "vertex_main";
+    descriptor.cFragmentStage.module = module;
+    descriptor.cFragmentStage.entryPoint = "fragment_main";
+
+    // Success case.
+    device.CreateRenderPipeline(&descriptor);
+
+    // Test for the vertex stage entryPoint name.
+    {
+        // The entryPoint name doesn't exist in the module.
+        descriptor.vertexStage.entryPoint = "main";
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+
+        // The entryPoint name exists, but not for the correct stage.
+        descriptor.vertexStage.entryPoint = "fragment_main";
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    }
+
+    descriptor.vertexStage.entryPoint = "vertex_main";
+
+    // Test for the fragment stage entryPoint name.
+    {
+        // The entryPoint name doesn't exist in the module.
+        descriptor.cFragmentStage.entryPoint = "main";
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+
+        // The entryPoint name exists, but not for the correct stage.
+        descriptor.cFragmentStage.entryPoint = "vertex_main";
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    }
+}
+
+// Test that vertex attrib validation is for the correct entryPoint
+TEST_F(RenderPipelineValidationTest, VertexAttribCorrectEntryPoint) {
+    DAWN_SKIP_TEST_IF(!HasWGSL());
+
+    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
+        [[builtin(position)]] var<out> position : vec4<f32>;
+        [[location(0)]] var<in> attrib0 : vec4<f32>;
+        [[location(1)]] var<in> attrib1 : vec4<f32>;
+
+        [[stage(vertex)]]
+        fn vertex0() -> void {
+            position = attrib0;
+            return;
+        }
+        [[stage(vertex)]]
+        fn vertex1() -> void {
+            position = attrib1;
+            return;
+        }
+    )");
+
+    utils::ComboRenderPipelineDescriptor descriptor(device);
+    descriptor.vertexStage.module = module;
+    descriptor.cFragmentStage.module = fsModule;
+
+    descriptor.cVertexState.vertexBufferCount = 1;
+    descriptor.cVertexState.cVertexBuffers[0].attributeCount = 1;
+    descriptor.cVertexState.cVertexBuffers[0].arrayStride = 16;
+    descriptor.cVertexState.cAttributes[0].format = wgpu::VertexFormat::Float4;
+    descriptor.cVertexState.cAttributes[0].offset = 0;
+
+    // Success cases, the attribute used by the entryPoint is declared in the pipeline.
+    descriptor.vertexStage.entryPoint = "vertex0";
+    descriptor.cVertexState.cAttributes[0].shaderLocation = 0;
+    device.CreateRenderPipeline(&descriptor);
+
+    descriptor.vertexStage.entryPoint = "vertex1";
+    descriptor.cVertexState.cAttributes[0].shaderLocation = 1;
+    device.CreateRenderPipeline(&descriptor);
+
+    // Error cases, the attribute used by the entryPoint isn't declared in the pipeline.
+    descriptor.vertexStage.entryPoint = "vertex1";
+    descriptor.cVertexState.cAttributes[0].shaderLocation = 0;
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+
+    descriptor.vertexStage.entryPoint = "vertex0";
+    descriptor.cVertexState.cAttributes[0].shaderLocation = 1;
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+}
+
+// Test that fragment output validation is for the correct entryPoint
+TEST_F(RenderPipelineValidationTest, FragmentOutputCorrectEntryPoint) {
+    DAWN_SKIP_TEST_IF(!HasWGSL());
+
+    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
+        [[location(0)]] var<out> colorFloat : vec4<f32>;
+        [[location(0)]] var<out> colorUint : vec4<u32>;
+
+        [[stage(fragment)]]
+        fn fragmentFloat() -> void {
+            colorFloat = vec4<f32>(0.0, 0.0, 0.0, 0.0);
+            return;
+        }
+        [[stage(fragment)]]
+        fn fragmentUint() -> void {
+            colorUint = vec4<u32>(0, 0, 0, 0);
+            return;
+        }
+    )");
+
+    utils::ComboRenderPipelineDescriptor descriptor(device);
+    descriptor.vertexStage.module = vsModule;
+    descriptor.cFragmentStage.module = module;
+
+    // Success case, the component type matches between the pipeline and the entryPoint
+    descriptor.cFragmentStage.entryPoint = "fragmentFloat";
+    descriptor.cColorStates[0].format = wgpu::TextureFormat::RGBA32Float;
+    device.CreateRenderPipeline(&descriptor);
+
+    descriptor.cFragmentStage.entryPoint = "fragmentUint";
+    descriptor.cColorStates[0].format = wgpu::TextureFormat::RGBA32Uint;
+    device.CreateRenderPipeline(&descriptor);
+
+    // Error case, the component type doesn't match between the pipeline and the entryPoint
+    descriptor.cFragmentStage.entryPoint = "fragmentUint";
+    descriptor.cColorStates[0].format = wgpu::TextureFormat::RGBA32Float;
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+
+    descriptor.cFragmentStage.entryPoint = "fragmentFloat";
+    descriptor.cColorStates[0].format = wgpu::TextureFormat::RGBA32Uint;
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+}
+
+// Test that fragment output validation is for the correct entryPoint
+// TODO(dawn:216): Re-enable when we correctly reflect which bindings are used for an entryPoint.
+TEST_F(RenderPipelineValidationTest, DISABLED_BindingsFromCorrectEntryPoint) {
+    DAWN_SKIP_TEST_IF(!HasWGSL());
+
+    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
+        [[block]] struct Uniforms {
+            [[offset 0]] data : vec4<f32>;
+        };
+        [[binding 0, set 0]] var<uniform> var0 : Uniforms;
+        [[binding 1, set 0]] var<uniform> var1 : Uniforms;
+        [[builtin(position)]] var<out> position : vec4<f32>;
+
+        fn vertex0() -> void {
+            position = var0.data;
+            return;
+        }
+        fn vertex1() -> void {
+            position = var1.data;
+            return;
+        }
+
+        entry_point vertex = vertex0;
+        entry_point vertex = vertex1;
+    )");
+
+    wgpu::BindGroupLayout bgl0 = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer}});
+    wgpu::PipelineLayout layout0 = utils::MakeBasicPipelineLayout(device, &bgl0);
+
+    wgpu::BindGroupLayout bgl1 = utils::MakeBindGroupLayout(
+        device, {{1, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer}});
+    wgpu::PipelineLayout layout1 = utils::MakeBasicPipelineLayout(device, &bgl1);
+
+    utils::ComboRenderPipelineDescriptor descriptor(device);
+    descriptor.vertexStage.module = module;
+    descriptor.cFragmentStage.module = fsModule;
+
+    // Success case, the BGL matches the bindings used by the entryPoint
+    descriptor.vertexStage.entryPoint = "vertex0";
+    descriptor.layout = layout0;
+    device.CreateRenderPipeline(&descriptor);
+
+    descriptor.vertexStage.entryPoint = "vertex1";
+    descriptor.layout = layout1;
+    device.CreateRenderPipeline(&descriptor);
+
+    // Error case, the BGL doesn't match the bindings used by the entryPoint
+    descriptor.vertexStage.entryPoint = "vertex1";
+    descriptor.layout = layout0;
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+
+    descriptor.vertexStage.entryPoint = "vertex0";
+    descriptor.layout = layout1;
     ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
 }

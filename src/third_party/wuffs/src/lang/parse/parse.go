@@ -32,6 +32,14 @@ func isDoubleUnderscore(s string) bool {
 	return len(s) >= 2 && s[0] == '_' && s[1] == '_'
 }
 
+func isStatusMessage(s string) bool {
+	if s == "" {
+		return false
+	}
+	c := s[0]
+	return (c == '@') || (c == '#') || (c == '$')
+}
+
 func Parse(tm *t.Map, filename string, src []t.Token, opts *Options) (*a.File, error) {
 	p := &parser{
 		tm:       tm,
@@ -69,6 +77,7 @@ type parser struct {
 	opts       Options
 	lastLine   uint32
 	funcEffect a.Effect
+	loops      a.LoopStack
 	allowVar   bool
 }
 
@@ -105,9 +114,9 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 	case t.IDUse:
 		p.src = p.src[1:]
 		path := p.peek1()
-		if !path.IsStrLiteral(p.tm) {
+		if !path.IsDQStrLiteral(p.tm) {
 			got := p.tm.ByID(path)
-			return nil, fmt.Errorf(`parse: expected string literal, got %q at %s:%d`, got, p.filename, p.line())
+			return nil, fmt.Errorf(`parse: expected "-string literal, got %q at %s:%d`, got, p.filename, p.line())
 		}
 		p.src = p.src[1:]
 		if x := p.peek1(); x != t.IDSemicolon {
@@ -130,6 +139,12 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 				return nil, err
 			}
 			// TODO: check AllowDoubleUnderscoreNames?
+
+			if x := p.peek1(); x != t.IDColon {
+				got := p.tm.ByID(x)
+				return nil, fmt.Errorf(`parse: expected ":", got %q at %s:%d`, got, p.filename, p.line())
+			}
+			p.src = p.src[1:]
 
 			typ, err := p.parseTypeExpr()
 			if err != nil {
@@ -197,7 +212,7 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 			}
 
 			p.allowVar = true
-			body, err := p.parseBlock()
+			body, err := p.parseBlock(false)
 			if err != nil {
 				return nil, err
 			}
@@ -209,16 +224,20 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 			}
 			p.src = p.src[1:]
 			p.funcEffect = 0
-			in := a.NewStruct(0, p.filename, line, t.IDArgs, argFields)
+			in := a.NewStruct(0, p.filename, line, t.IDArgs, nil, argFields)
 			return a.NewFunc(flags, p.filename, line, id0, id1, in, out, asserts, body).AsNode(), nil
 
 		case t.IDStatus:
 			p.src = p.src[1:]
 
 			message := p.peek1()
-			if !message.IsStrLiteral(p.tm) {
+			if !message.IsDQStrLiteral(p.tm) {
 				got := p.tm.ByID(message)
-				return nil, fmt.Errorf(`parse: expected string literal, got %q at %s:%d`, got, p.filename, p.line())
+				return nil, fmt.Errorf(`parse: expected "-string literal, got %q at %s:%d`, got, p.filename, p.line())
+			}
+			if s, _ := t.Unescape(p.tm.ByID(message)); !isStatusMessage(s) {
+				return nil, fmt.Errorf(`parse: status message %q does not start with `+
+					`@, # or $ at %s:%d`, s, p.filename, p.line())
 			}
 			p.src = p.src[1:]
 			if x := p.peek1(); x != t.IDSemicolon {
@@ -243,6 +262,19 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 				flags |= a.FlagsClassy
 				p.src = p.src[1:]
 			}
+
+			implements := []*a.Node(nil)
+			if p.peek1() == t.IDImplements {
+				p.src = p.src[1:]
+				implements, err = p.parseList(t.IDOpenParen, (*parser).parseQualifiedIdentNode)
+				if err != nil {
+					return nil, err
+				}
+				if len(implements) > a.MaxImplements {
+					return nil, fmt.Errorf(`parse: too many implements listed at %s:%d`, p.filename, p.line())
+				}
+			}
+
 			fields, err := p.parseList(t.IDCloseParen, (*parser).parseFieldNode)
 			if err != nil {
 				return nil, err
@@ -259,10 +291,18 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 				return nil, fmt.Errorf(`parse: expected (implicit) ";", got %q at %s:%d`, got, p.filename, p.line())
 			}
 			p.src = p.src[1:]
-			return a.NewStruct(flags, p.filename, line, name, fields).AsNode(), nil
+			return a.NewStruct(flags, p.filename, line, name, implements, fields).AsNode(), nil
 		}
 	}
 	return nil, fmt.Errorf(`parse: unrecognized top level declaration at %s:%d`, p.filename, line)
+}
+
+func (p *parser) parseQualifiedIdentNode() (*a.Node, error) {
+	pkg, name, err := p.parseQualifiedIdent()
+	if err != nil {
+		return nil, err
+	}
+	return a.NewTypeExpr(0, pkg, name, nil, nil, nil).AsNode(), nil
 }
 
 // parseQualifiedIdent parses "foo.bar" or "bar".
@@ -308,10 +348,12 @@ func (p *parser) parseList(stop t.ID, parseElem func(*parser) (*a.Node, error)) 
 
 	ret := []*a.Node(nil)
 	for len(p.src) > 0 {
-		if p.src[0].ID == stop {
+		if id := p.src[0].ID; id == stop {
 			if stop == t.IDCloseParen || stop == t.IDCloseBracket {
 				p.src = p.src[1:]
 			}
+			return ret, nil
+		} else if (stop == t.IDOpenDoubleCurly) && (id == t.IDOpenCurly) {
 			return ret, nil
 		}
 
@@ -498,18 +540,34 @@ func (p *parser) parseBracket(sep t.ID) (op t.ID, ei *a.Expr, ej *a.Expr, err er
 	return sep, ei, ej, nil
 }
 
-func (p *parser) parseBlock() ([]*a.Node, error) {
-	if x := p.peek1(); x != t.IDOpenCurly {
-		got := p.tm.ByID(x)
-		return nil, fmt.Errorf(`parse: expected "{", got %q at %s:%d`, got, p.filename, p.line())
+func (p *parser) parseBlock(doubleCurly bool) ([]*a.Node, error) {
+	if doubleCurly {
+		if x := p.peek1(); x != t.IDOpenDoubleCurly {
+			got := p.tm.ByID(x)
+			return nil, fmt.Errorf(`parse: expected "{{", got %q at %s:%d`, got, p.filename, p.line())
+		}
+	} else {
+		if x := p.peek1(); x != t.IDOpenCurly {
+			got := p.tm.ByID(x)
+			return nil, fmt.Errorf(`parse: expected "{", got %q at %s:%d`, got, p.filename, p.line())
+		}
 	}
 	p.src = p.src[1:]
 
 	block := []*a.Node(nil)
-	for len(p.src) > 0 {
-		if p.src[0].ID == t.IDCloseCurly {
-			p.src = p.src[1:]
-			return block, nil
+	for {
+		if len(p.src) == 0 {
+			return nil, fmt.Errorf(`parse: expected "}" or "}}" at %s:%d`, p.filename, p.line())
+		}
+
+		if doubleCurly {
+			if p.src[0].ID == t.IDCloseDoubleCurly {
+				break
+			}
+		} else {
+			if p.src[0].ID == t.IDCloseCurly {
+				break
+			}
 		}
 
 		s, err := p.parseStatement()
@@ -524,7 +582,9 @@ func (p *parser) parseBlock() ([]*a.Node, error) {
 		}
 		p.src = p.src[1:]
 	}
-	return nil, fmt.Errorf(`parse: expected "}" at %s:%d`, p.filename, p.line())
+
+	p.src = p.src[1:]
+	return block, nil
 }
 
 func (p *parser) assertsSorted(asserts []*a.Node) error {
@@ -571,9 +631,9 @@ func (p *parser) parseAssertNode() (*a.Node, error) {
 		if p.peek1() == t.IDVia {
 			p.src = p.src[1:]
 			reason = p.peek1()
-			if !reason.IsStrLiteral(p.tm) {
+			if !reason.IsDQStrLiteral(p.tm) {
 				got := p.tm.ByID(reason)
-				return nil, fmt.Errorf(`parse: expected string literal, got %q at %s:%d`, got, p.filename, p.line())
+				return nil, fmt.Errorf(`parse: expected "-string literal, got %q at %s:%d`, got, p.filename, p.line())
 			}
 			p.src = p.src[1:]
 			args, err = p.parseList(t.IDCloseParen, (*parser).parseArgNode)
@@ -611,6 +671,24 @@ func (p *parser) parseLabel() (t.ID, error) {
 	return 0, nil
 }
 
+func (p *parser) parseEndwhile(label t.ID) bool {
+	if p.peek1() != t.IDEndwhile {
+		return false
+	}
+	p.src = p.src[1:]
+	if label != 0 {
+		if p.peek1() != t.IDDot {
+			return false
+		}
+		p.src = p.src[1:]
+		if p.peek1() != label {
+			return false
+		}
+		p.src = p.src[1:]
+	}
+	return true
+}
+
 func (p *parser) parseStatement1() (*a.Node, error) {
 	x := p.peek1()
 	if x == t.IDVar {
@@ -633,7 +711,41 @@ func (p *parser) parseStatement1() (*a.Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		return a.NewJump(x, label).AsNode(), nil
+
+		loop := a.Loop(nil)
+		if len(p.loops) == 0 {
+			// No-op.
+		} else if label == 0 {
+			loop = p.loops[len(p.loops)-1]
+			if loop.Label() != 0 {
+				return nil, fmt.Errorf(`parse: unlabeled %s for labeled %s.%s at %s:%d`,
+					x.Str(p.tm), loop.Keyword().Str(p.tm), loop.Label().Str(p.tm), p.filename, p.line())
+			}
+		} else {
+			for i := len(p.loops) - 1; i >= 0; i-- {
+				if l := p.loops[i]; label == l.Label() {
+					loop = l
+					break
+				}
+			}
+		}
+		if loop == nil {
+			sepStr, labelStr := "", ""
+			if label != 0 {
+				sepStr, labelStr = ".", label.Str(p.tm)
+			}
+			return nil, fmt.Errorf(`parse: no matching while/iterate statement for %s%s%s at %s:%d`,
+				x.Str(p.tm), sepStr, labelStr, p.filename, p.line())
+		}
+
+		if x == t.IDBreak {
+			loop.SetHasBreak()
+		} else {
+			loop.SetHasContinue()
+		}
+		n := a.NewJump(x, label)
+		n.SetJumpTarget(loop)
+		return n.AsNode(), nil
 
 	case t.IDIOBind, t.IDIOLimit:
 		return p.parseIOBindNode()
@@ -660,6 +772,15 @@ func (p *parser) parseStatement1() (*a.Node, error) {
 		if err != nil {
 			return nil, err
 		}
+		if value.Effect().Impure() {
+			return nil, fmt.Errorf(`parse: %s an impure expression at %s:%d`,
+				x.Str(p.tm), p.filename, p.line())
+		}
+		if (x == t.IDReturn) && (value.Operator() == 0) {
+			if s := p.tm.ByID(value.Ident()); (len(s) > 1) && (s[0] == '"') && (s[1] == '$') {
+				return nil, fmt.Errorf(`parse: cannot return a suspension at %s:%d`, p.filename, p.line())
+			}
+		}
 		return a.NewRet(x, value).AsNode(), nil
 
 	case t.IDWhile:
@@ -680,11 +801,42 @@ func (p *parser) parseStatement1() (*a.Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		body, err := p.parseBlock()
+
+		n := a.NewWhile(label, condition, asserts)
+		if !p.loops.Push(n) {
+			return nil, fmt.Errorf(`parse: duplicate loop label %s at %s:%d`,
+				label.Str(p.tm), p.filename, p.line())
+		}
+		doubleCurly := p.peek1() == t.IDOpenDoubleCurly
+		if doubleCurly && !n.IsWhileTrue() {
+			return nil, fmt.Errorf(`parse: double {{ }} while loop condition isn't "true" at %s:%d`,
+				p.filename, p.line())
+		}
+		body, err := p.parseBlock(doubleCurly)
 		if err != nil {
 			return nil, err
 		}
-		return a.NewWhile(label, condition, asserts, body).AsNode(), nil
+		n.SetBody(body)
+		p.loops.Pop()
+
+		if !p.parseEndwhile(label) {
+			dotLabel := ""
+			if label != 0 {
+				dotLabel = "." + label.Str(p.tm)
+			}
+			return nil, fmt.Errorf(`parse: expected endwhile%s at %s:%d`,
+				dotLabel, p.filename, p.line())
+		}
+		if !doubleCurly {
+			// No-op.
+		} else if n.HasContinue() {
+			return nil, fmt.Errorf(`parse: double {{ }} while loop has explicit continue at %s:%d`,
+				p.filename, p.line())
+		} else if !a.Terminates(body) {
+			return nil, fmt.Errorf(`parse: double {{ }} while loop doesn't terminate at %s:%d`,
+				p.filename, p.line())
+		}
+		return n.AsNode(), nil
 	}
 	return p.parseAssignNode()
 }
@@ -775,7 +927,7 @@ func (p *parser) parseAsserts() ([]*a.Node, error) {
 	if p.peek1() == t.IDComma {
 		p.src = p.src[1:]
 		var err error
-		if asserts, err = p.parseList(t.IDOpenCurly, (*parser).parseAssertNode); err != nil {
+		if asserts, err = p.parseList(t.IDOpenDoubleCurly, (*parser).parseAssertNode); err != nil {
 			return nil, err
 		}
 		if err := p.assertsSorted(asserts); err != nil {
@@ -853,7 +1005,7 @@ func (p *parser) parseIOBindNode() (*a.Node, error) {
 	}
 	p.src = p.src[1:]
 
-	body, err := p.parseBlock()
+	body, err := p.parseBlock(false)
 	if err != nil {
 		return nil, err
 	}
@@ -875,7 +1027,7 @@ func (p *parser) parseIf() (*a.If, error) {
 		return nil, fmt.Errorf(`parse: if-condition %q is not effect-free at %s:%d`,
 			condition.Str(p.tm), p.filename, p.line())
 	}
-	bodyIfTrue, err := p.parseBlock()
+	bodyIfTrue, err := p.parseBlock(false)
 	if err != nil {
 		return nil, err
 	}
@@ -888,7 +1040,7 @@ func (p *parser) parseIf() (*a.If, error) {
 				return nil, err
 			}
 		} else {
-			bodyIfFalse, err = p.parseBlock()
+			bodyIfFalse, err = p.parseBlock(false)
 			if err != nil {
 				return nil, err
 			}
@@ -979,21 +1131,29 @@ func (p *parser) parseIterateBlock(label t.ID, assigns []*a.Node) (*a.Iterate, e
 	if err != nil {
 		return nil, err
 	}
-	body, err := p.parseBlock()
+	n := a.NewIterate(label, assigns, length, unroll, asserts)
+	// TODO: decide how break/continue work with iterate loops.
+	if !p.loops.Push(n) {
+		return nil, fmt.Errorf(`parse: duplicate loop label %s at %s:%d`,
+			label.Str(p.tm), p.filename, p.line())
+	}
+	body, err := p.parseBlock(false)
 	if err != nil {
 		return nil, err
 	}
+	n.SetBody(body)
+	p.loops.Pop()
 
-	elseIterate := (*a.Iterate)(nil)
 	if x := p.peek1(); x == t.IDElse {
 		p.src = p.src[1:]
-		elseIterate, err = p.parseIterateBlock(0, nil)
+		elseIterate, err := p.parseIterateBlock(0, nil)
 		if err != nil {
 			return nil, err
 		}
+		n.SetElseIterate(elseIterate)
 	}
 
-	return a.NewIterate(label, assigns, length, unroll, asserts, body, elseIterate), nil
+	return n, nil
 }
 
 func (p *parser) parseArgNode() (*a.Node, error) {
@@ -1068,7 +1228,7 @@ func (p *parser) parsePossibleListExpr() (*a.Expr, error) {
 	if err != nil {
 		return nil, err
 	}
-	return a.NewExpr(0, t.IDComma, 0, 0, nil, nil, nil, args), nil
+	return a.NewExpr(0, t.IDComma, 0, nil, nil, nil, args), nil
 }
 
 func (p *parser) parseExpr() (*a.Expr, error) {
@@ -1110,7 +1270,7 @@ func (p *parser) parseExpr1() (*a.Expr, error) {
 			if op == 0 {
 				return nil, fmt.Errorf(`parse: internal error: no binary form for token 0x%02X`, x)
 			}
-			return a.NewExpr(0, op, 0, 0, lhs.AsNode(), nil, rhs, nil), nil
+			return a.NewExpr(0, op, 0, lhs.AsNode(), nil, rhs, nil), nil
 		}
 
 		args := []*a.Node{lhs.AsNode(), rhs}
@@ -1126,7 +1286,7 @@ func (p *parser) parseExpr1() (*a.Expr, error) {
 		if op == 0 {
 			return nil, fmt.Errorf(`parse: internal error: no associative form for token 0x%02X`, x)
 		}
-		return a.NewExpr(0, op, 0, 0, nil, nil, nil, args), nil
+		return a.NewExpr(0, op, 0, nil, nil, nil, args), nil
 	}
 	return lhs, nil
 }
@@ -1143,11 +1303,11 @@ func (p *parser) parseOperand() (*a.Expr, error) {
 		if op == 0 {
 			return nil, fmt.Errorf(`parse: internal error: no unary form for token 0x%02X`, x)
 		}
-		return a.NewExpr(0, op, 0, 0, nil, nil, rhs.AsNode(), nil), nil
+		return a.NewExpr(0, op, 0, nil, nil, rhs.AsNode(), nil), nil
 
 	case x.IsLiteral(p.tm):
 		p.src = p.src[1:]
-		return a.NewExpr(0, 0, 0, x, nil, nil, nil, nil), nil
+		return a.NewExpr(0, 0, x, nil, nil, nil, nil), nil
 
 	case x == t.IDOpenParen:
 		p.src = p.src[1:]
@@ -1167,7 +1327,7 @@ func (p *parser) parseOperand() (*a.Expr, error) {
 	if err != nil {
 		return nil, err
 	}
-	lhs := a.NewExpr(0, 0, 0, id, nil, nil, nil, nil)
+	lhs := a.NewExpr(0, 0, id, nil, nil, nil, nil)
 
 	for first := true; ; first = false {
 		flags := a.Flags(0)
@@ -1184,35 +1344,27 @@ func (p *parser) parseOperand() (*a.Expr, error) {
 			if err != nil {
 				return nil, err
 			}
-			lhs = a.NewExpr(flags, t.IDOpenParen, 0, 0, lhs.AsNode(), nil, nil, args)
+			lhs = a.NewExpr(flags, t.IDOpenParen, 0, lhs.AsNode(), nil, nil, args)
 
 		case t.IDOpenBracket:
 			id0, mhs, rhs, err := p.parseBracket(t.IDDotDot)
 			if err != nil {
 				return nil, err
 			}
-			lhs = a.NewExpr(0, id0, 0, 0, lhs.AsNode(), mhs.AsNode(), rhs.AsNode(), nil)
+			lhs = a.NewExpr(0, id0, 0, lhs.AsNode(), mhs.AsNode(), rhs.AsNode(), nil)
 
 		case t.IDDot:
 			p.src = p.src[1:]
-
-			if x := p.peek1(); x.IsLiteral(p.tm) {
-				if x.IsNumLiteral(p.tm) {
-					return nil, fmt.Errorf(`parse: dot followed by numeric literal at %s:%d`, p.filename, p.line())
-				}
-				if !first {
-					return nil, fmt.Errorf(`parse: string literal %s has too many package qualifiers at %s:%d`,
-						x.Str(p.tm), p.filename, p.line())
-				}
+			selector := p.peek1()
+			if first && selector.IsDQStrLiteral(p.tm) {
 				p.src = p.src[1:]
-				return a.NewExpr(0, 0, id, x, nil, nil, nil, nil), nil
+			} else {
+				selector, err = p.parseIdent()
+				if err != nil {
+					return nil, err
+				}
 			}
-
-			selector, err := p.parseIdent()
-			if err != nil {
-				return nil, err
-			}
-			lhs = a.NewExpr(0, t.IDDot, 0, selector, lhs.AsNode(), nil, nil, nil)
+			lhs = a.NewExpr(0, t.IDDot, selector, lhs.AsNode(), nil, nil, nil)
 		}
 	}
 }

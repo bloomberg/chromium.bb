@@ -84,6 +84,154 @@ moved-from `base::{Once,Repeating}Callback` becomes null, as if its `Reset()`
 method had been called. Afterward, its `is_null()` method will return true and
 its `operator bool()` will return false.
 
+### Chaining callbacks
+
+When you have 2 callbacks that you wish to run in sequence, they can be joined
+together into a single callback through the use of `Then()`.
+
+Calling `Then()` on a `base::OnceCallback` joins a second callback that will be
+run together with, but after, the first callback. The return value from the
+first callback is passed along to the second, and the return value from the
+second callback is returned at the end. More concretely, calling `a.Then(b)`
+produces a new `base::OnceCallback` that will run `b(a());`, returning the
+result from `b`.
+
+This example uses `Then()` to join 2 `base::OnceCallback`s together:
+```cpp
+int Floor(float f) { return std::floor(f); }
+std::string IntToString(int i) { return base::NumberToString(i); }
+
+base::OnceCallback<int(float)> first = base::BindOnce(&Floor);
+base::OnceCallback<std::string(int)> second = base::BindOnce(&IntToString);
+
+// This will run |first|, run and pass the result to |second|, then return
+// the result from |second|.
+std::string r = std::move(first).Then(std::move(second)).Run(3.5f);
+// |r| will be "3". |first| and |second| are now both null, as they were
+// consumed to perform the join operation.
+```
+
+Similarly, `Then()` also works with `base::RepeatingCallback`; however, the
+joined callback must also be a `base::RepeatingCallback` to ensure the resulting
+callback can be invoked multiple times.
+
+This example uses `Then()` to join 2 `base::RepeatingCallback`s together:
+```cpp
+int Floor(float f) { return std::floor(f); }
+std::string IntToString(int i) { return base::NumberToString(i); }
+
+base::RepeatingCallback<int(float)> first = base::BindRepeating(&Floor);
+base::RepeatingCallback<std::string(int)> second = base::BindRepeating(&IntToString);
+
+// This creates a RepeatingCallback that will run |first|, run and pass the
+// result to |second|, then return the result from |second|.
+base::RepeatingCallback<std::string(float)> joined =
+    std::move(first).Then(std::move(second));
+// |first| and |second| are now both null, as they were consumed to perform
+// the join operation.
+
+// This runs the functor that was originally bound to |first|, then |second|.
+std::string r = joined.Run(3.5);
+// |r| will be "3".
+
+// It's valid to call it multiple times since all callbacks involved are
+// base::RepeatingCallbacks.
+r = joined.Run(2.5);
+// |r| is set to "2".
+```
+
+In the above example, casting the `base::RepeatingCallback` to an r-value with
+`std::move()` causes `Then()` to destroy the original callback, in the same way
+that occurs for joining `base::OnceCallback`s. However since a
+`base::RepeatingCallback` can be run multiple times, it can be joined
+non-destructively as well.
+```cpp
+int Floor(float f) { return std::floor(f); }
+std::string IntToString(int i) { return base::NumberToString(i); }
+
+base::RepeatingCallback<int(float)> first = base::BindRepeating(&Floor);
+base::RepeatingCallback<std::string(int)> second = base::BindRepeating(&IntToString);
+
+// This creates a RepeatingCallback that will run |first|, run and pass the
+// result to |second|, then return the result from |second|.
+std::string r = first.Then(second).Run(3.5f);
+// |r| will be 3, and |first| and |second| are still valid to use.
+
+// Runs Floor().
+int i = first.Run(5.5);
+// Runs IntToString().
+std::string s = second.Run(9);
+```
+
+If the second callback does not want to receive a value from the first callback,
+you may use `base::IgnoreResult` to drop the return value in between running the
+two.
+
+```cpp
+// Returns an integer.
+base::RepeatingCallback<int()> first = base::BindRepeating([](){ return 5; });
+// Does not want to receive an integer.
+base::RepeatingClosure second = base::BindRepeating([](){});
+
+// This will not compile, because |second| can not receive the return value from
+// |first|.
+//   first.Then(second).Run();
+
+// We can drop the result from |first| before running second.
+base::BindRepeating(base::IgnoreResult(first)).Then(second).Run();
+// This will effectively create a callback that when Run() will call
+// `first(); second();` instead of `second(first());`.
+```
+
+Note that the return value from |first| will be lost in the above example, and
+would be destroyed before |second| is run. If you want the return value from
+|first| to be preserved and ultimately returned after running both |first| and
+|second|, then you would need a primitive such as the  `base::PassThrough<T>()`
+helper in the [base::PassThrough CL](https://chromium-review.googlesource.com/c/chromium/src/+/2493243).
+If this would be helpful for you, please let danakj@chromium.org know or ping
+the CL.
+
+### Chaining callbacks across different task runners
+
+```cpp
+// The task runner for a different thread.
+scoped_refptr<base::SequencedTaskRunner> other_task_runner = ...;
+
+// A function to compute some interesting result, except it can only be run
+// safely from `other_task_runner` and not the current thread.
+int ComputeResult();
+
+base::OnceCallback<int()> compute_result_cb = base::BindOnce(&ComputeResult);
+
+// Task runner for the current thread.
+scoped_refptr<base::SequencedTaskRunner> current_task_runner =
+    base::SequencedTaskRunnerHandle::Get();
+
+// A function to accept the result, except it can only be run safely from the
+// current thread.
+void ProvideResult(int result);
+
+base::OnceCallback<void(int)> provide_result_cb =
+    base::BindOnce(&ProvideResult);
+```
+
+Using `Then()` to join `compute_result_cb` and `provide_result_cb` directly
+would be inappropriate. `ComputeResult()` and `ProvideResult()` would run on the
+same thread which isn't safe. However, `base::BindPostTask()` can be used to
+ensure `provide_result_cb` will run on `current_task_runner`.
+
+```cpp
+// The following two statements post a task to `other_task_runner` to run
+// `task`. This will invoke ComputeResult() on a different thread to get the
+// result value then post a task back to `current_task_runner` to invoke
+// ProvideResult() with the result.
+OnceClosure task =
+    std::move(compute_result_cb)
+        .Then(base::BindPostTask(current_task_runner,
+                                 std::move(provide_result_cb)));
+other_task_runner->PostTask(FROM_HERE, std::move(task));
+```
+
 ## Quick reference for basic stuff
 
 ### Binding A Bare Function
@@ -108,6 +256,15 @@ LOG(INFO) << lambda_cb.Run();  // Print 4.
 
 base::OnceCallback<int()> lambda_cb2 = base::BindOnce([] { return 3; });
 LOG(INFO) << std::move(lambda_cb2).Run();  // Print 3.
+
+base::OnceCallback<int()> lambda_cb3 = base::BindOnce([] { return 2; });
+base::OnceCallback<int(base::OnceCallback<int()>)> lambda_cb4 =
+    base::BindOnce(
+        [](base::OnceCallback<int()> callback) {
+            return std::move(callback).Run(); },
+        std::move(lambda_cb3));
+LOG(INFO) << std::move(lambda_cb4).Run();  // Print 2.
+
 ```
 
 ### Binding A Capturing Lambda (In Tests)
@@ -116,7 +273,7 @@ When writing tests, it is often useful to capture arguments that need to be
 modified in a callback.
 
 ``` cpp
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 
 int i = 2;
 base::Callback<void()> lambda_cb = base::BindLambdaForTesting([&]() { i++; });
@@ -409,8 +566,16 @@ doesn't expect a return value.
 
 ```cpp
 int DoSomething(int arg) { cout << arg << endl; }
-base::Callback<void(int)> cb =
-    base::Bind(IgnoreResult(&DoSomething));
+base::RepeatingCallback<void(int)> cb =
+    base::BindRepeating(IgnoreResult(&DoSomething));
+```
+
+Similarly, you may want to use an existing callback that returns a value in a
+place that expects a void return type.
+
+```cpp
+base::RepeatingCallback<int()> cb = base::BindRepeating([](){ return 5; });
+base::RepeatingClosure void_cb = base::BindRepeating(base::IgnoreResult(cb));
 ```
 
 ## Quick reference for binding parameters to Bind()
@@ -570,8 +735,8 @@ references. (Binding to non-const references is forbidden, see bind.h.)
 
 To change this behavior, we introduce a set of argument wrappers (e.g.,
 `base::Unretained()`).  These are simple container templates that are passed by
-value, and wrap a pointer to argument.  See the file-level comment in
-base/bind_helpers.h for more info.
+value, and wrap a pointer to argument.  Each helper has a comment describing it
+in base/bind.h.
 
 These types are passed to the `Unwrap()` functions to modify the behavior of
 `base::Bind()`.  The `Unwrap()` functions change behavior by doing partial

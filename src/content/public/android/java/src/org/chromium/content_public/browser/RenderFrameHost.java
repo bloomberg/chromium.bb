@@ -4,6 +4,8 @@
 
 package org.chromium.content_public.browser;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Callback;
 import org.chromium.services.service_manager.InterfaceProvider;
 import org.chromium.url.Origin;
@@ -15,8 +17,9 @@ public interface RenderFrameHost {
     /**
      * Get the last committed URL of the frame.
      *
-     * @return The last committed URL of the frame.
+     * @return The last committed URL of the frame or null when being destroyed.
      */
+    @Nullable
     String getLastCommittedURL();
 
     /**
@@ -24,8 +27,9 @@ public interface RenderFrameHost {
      * of getLastCommittedURL(), since it can be an "opaque" origin in such cases as, for example,
      * sandboxed frame.
      *
-     * @return The last committed Origin of the frame.
+     * @return The last committed Origin of the frame or null when being destroyed.
      */
+    @Nullable
     Origin getLastCommittedOrigin();
 
     /**
@@ -36,14 +40,13 @@ public interface RenderFrameHost {
     void getCanonicalUrlForSharing(Callback<String> callback);
 
     /**
-     * Returns whether the feature policy allows the "payment" feature in this frame.
+     * Returns whether the feature policy allows the feature in this frame.
      *
-     * TODO(rouslan): Expose the full set of feature policy enum values to Java. See:
-     * https://crbug.com/1027176
+     * @param feature A feature controlled by feature policy.
      *
-     * @return Whether the feature policy allows the "payment" feature in this frame.
+     * @return Whether the feature policy allows the feature in this frame.
      */
-    boolean isPaymentFeaturePolicyEnabled();
+    boolean isFeatureEnabled(@FeaturePolicyFeature int feature);
 
     /**
      * Returns an InterfaceProvider that provides access to interface implementations provided by

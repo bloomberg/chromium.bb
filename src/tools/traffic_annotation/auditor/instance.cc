@@ -13,6 +13,7 @@
 #include "third_party/protobuf/src/google/protobuf/io/tokenizer.h"
 #include "third_party/protobuf/src/google/protobuf/text_format.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_auditor.h"
+#include "tools/traffic_annotation/auditor/traffic_annotation_exporter.h"
 
 namespace {
 
@@ -386,6 +387,19 @@ AuditorResult AnnotationInstance::IsConsistent() const {
   return AuditorResult(AuditorResult::Type::RESULT_OK);
 }
 
+AuditorResult AnnotationInstance::InGroupingXML(
+    const std::set<std::string>& grouping_annotation_unique_ids) const {
+  const std::string& unique_id = proto.unique_id();
+
+  if (grouping_annotation_unique_ids.find(unique_id) ==
+      grouping_annotation_unique_ids.end()) {
+    return AuditorResult(AuditorResult::Type::ERROR_MISSING_GROUPING,
+                         unique_id.c_str(), proto.source().file(),
+                         proto.source().line());
+  }
+  return AuditorResult(AuditorResult::Type::RESULT_OK);
+}
+
 bool AnnotationInstance::IsCompletableWith(
     const AnnotationInstance& other) const {
   if (type != AnnotationInstance::Type::ANNOTATION_PARTIAL || second_id.empty())
@@ -543,7 +557,8 @@ AnnotationInstance AnnotationInstance::LoadFromArchive(
     int content_hash_code,
     const std::set<int>& semantics_fields,
     const std::set<int>& policy_fields,
-    const std::string& file_path) {
+    const std::string& file_path,
+    int added_in_milestone) {
   AnnotationInstance annotation;
 
   annotation.is_loaded_from_archive = true;
@@ -551,6 +566,7 @@ AnnotationInstance AnnotationInstance::LoadFromArchive(
   annotation.proto.set_unique_id(unique_id);
   annotation.proto.mutable_source()->set_file(file_path);
   annotation.unique_id_hash_code = unique_id_hash_code;
+  annotation.archive_added_in_milestone = added_in_milestone;
 
   if (annotation.NeedsTwoIDs()) {
     annotation.second_id_hash_code = second_id_hash_code;

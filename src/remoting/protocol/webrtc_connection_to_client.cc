@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "remoting/codec/video_encoder.h"
@@ -129,6 +130,14 @@ void WebrtcConnectionToClient::ApplySessionOptions(
   transport_->ApplySessionOptions(options);
 }
 
+PeerConnectionControls* WebrtcConnectionToClient::peer_connection_controls() {
+  return transport_.get();
+}
+
+WebrtcEventLogData* WebrtcConnectionToClient::rtc_event_log() {
+  return transport_->rtc_event_log();
+}
+
 void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -227,6 +236,17 @@ void WebrtcConnectionToClient::OnWebrtcTransportMediaStreamAdded(
 void WebrtcConnectionToClient::OnWebrtcTransportMediaStreamRemoved(
     scoped_refptr<webrtc::MediaStreamInterface> stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void WebrtcConnectionToClient::OnWebrtcTransportRouteChanged(
+    const TransportRoute& route) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(event_handler_);
+
+  // WebRTC route-change events are triggered at the transport level, so the
+  // channel name is not meaningful here.
+  std::string channel_name;
+  event_handler_->OnRouteChange(channel_name, route);
 }
 
 void WebrtcConnectionToClient::OnChannelInitialized(

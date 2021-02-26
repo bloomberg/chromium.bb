@@ -13,9 +13,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
-import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
@@ -29,9 +27,14 @@ import androidx.appcompat.content.res.AppCompatResources;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.browser_ui.util.AvatarGenerator;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ProfileDataSource;
+import org.chromium.components.signin.base.AccountInfo;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +45,8 @@ import java.util.Map;
  * should be provided by calling {@link #update(List)}
  */
 @MainThread
-public class ProfileDataCache implements ProfileDownloader.Observer, ProfileDataSource.Observer {
+public class ProfileDataCache implements ProfileDownloader.Observer, ProfileDataSource.Observer,
+                                         IdentityManager.Observer {
     /**
      * Observer to get notifications about changes in profile data.
      */
@@ -59,7 +63,7 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
      * a user avatar.
      */
     public static class BadgeConfig {
-        private final Drawable mBadge;
+        private @Nullable Drawable mBadge;
         private final int mBadgeSize;
         private final Point mPosition;
         private final int mBorderSize;
@@ -81,6 +85,11 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
             mBorderSize = borderSize;
         }
 
+        void setBadge(@Nullable Drawable badge) {
+            mBadge = badge;
+        }
+
+        @Nullable
         Drawable getBadge() {
             return mBadge;
         }
@@ -105,6 +114,7 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
     private final ObserverList<Observer> mObservers = new ObserverList<>();
     private final Map<String, DisplayableProfileData> mCachedProfileData = new HashMap<>();
     private @Nullable final ProfileDataSource mProfileDataSource;
+    private final IdentityManager mIdentityManager;
 
     public ProfileDataCache(Context context, @Px int imageSize) {
         this(context, imageSize, null);
@@ -123,6 +133,8 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
         mBadgeConfig = badgeConfig;
         mPlaceholderImage = getScaledPlaceholderImage(context, imageSize);
         mProfileDataSource = profileDataSource;
+        mIdentityManager = IdentityServicesProvider.get().getIdentityManager(
+                Profile.getLastUsedRegularProfile());
     }
 
     /**
@@ -142,6 +154,31 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
                 ProfileDownloader.startFetchingAccountInfoFor(
                         mContext, accounts.get(i), mImageSize, true);
             }
+        }
+    }
+
+    /**
+     * Creates a BadgeConfig object from the badgeResId and updates the profile image.
+     * @param badgeResId Resource id of the badge to be attached. If it is 0 then no badge is
+     *         attached
+     */
+    @MainThread
+    public void updateBadgeConfig(@DrawableRes int badgeResId) {
+        ThreadUtils.assertOnUiThread();
+        assert mBadgeConfig != null;
+        mBadgeConfig.setBadge(
+                badgeResId == 0 ? null : AppCompatResources.getDrawable(mContext, badgeResId));
+        if (mObservers.isEmpty()) {
+            return;
+        }
+
+        if (mProfileDataSource != null) {
+            updateCacheFromProfileDataSource();
+        } else {
+            // Clear mCachedProfileData and download the profiles again.
+            List<String> accounts = new ArrayList<>(mCachedProfileData.keySet());
+            mCachedProfileData.clear();
+            update(accounts);
         }
     }
 
@@ -166,10 +203,11 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
         if (mObservers.isEmpty()) {
             if (mProfileDataSource != null) {
                 mProfileDataSource.addObserver(this);
-                populateCacheFromProfileDataSource();
+                updateCacheFromProfileDataSource();
             } else {
                 ProfileDownloader.addObserver(this);
             }
+            mIdentityManager.addObserver(this);
         }
         mObservers.addObserver(observer);
     }
@@ -186,32 +224,30 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
             } else {
                 ProfileDownloader.removeObserver(this);
             }
+            mIdentityManager.removeObserver(this);
         }
     }
 
-    private void populateCacheFromProfileDataSource() {
-        for (Map.Entry<String, ProfileDataSource.ProfileData> entry :
-                mProfileDataSource.getProfileDataMap().entrySet()) {
-            mCachedProfileData.put(entry.getKey(), createDisplayableProfileData(entry.getValue()));
+    private void updateCacheFromProfileDataSource() {
+        for (ProfileDataSource.ProfileData profileData :
+                mProfileDataSource.getProfileDataMap().values()) {
+            updateCachedProfileDataAndNotifyObservers(createDisplayableProfileData(profileData));
         }
     }
 
     private DisplayableProfileData createDisplayableProfileData(
             ProfileDataSource.ProfileData profileData) {
         return new DisplayableProfileData(profileData.getAccountName(),
-                prepareAvatar(profileData.getAvatar()), profileData.getFullName(),
-                profileData.getGivenName());
+                prepareAvatar(profileData.getAvatar(), profileData.getAccountName()),
+                profileData.getFullName(), profileData.getGivenName());
     }
 
     @Override
     public void onProfileDownloaded(String accountId, String fullName, String givenName,
             Bitmap bitmap) {
         ThreadUtils.assertOnUiThread();
-        mCachedProfileData.put(accountId,
-                new DisplayableProfileData(accountId, prepareAvatar(bitmap), fullName, givenName));
-        for (Observer observer : mObservers) {
-            observer.onProfileDataUpdated(accountId);
-        }
+        updateCachedProfileDataAndNotifyObservers(new DisplayableProfileData(
+                accountId, prepareAvatar(bitmap, accountId), fullName, givenName));
     }
 
     @Override
@@ -221,35 +257,35 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
                 mProfileDataSource.getProfileDataForAccount(accountId);
         if (profileData == null) {
             mCachedProfileData.remove(accountId);
+            notifyObservers(accountId);
         } else {
-            mCachedProfileData.put(accountId, createDisplayableProfileData(profileData));
-        }
-
-        for (Observer observer : mObservers) {
-            observer.onProfileDataUpdated(accountId);
+            updateCachedProfileDataAndNotifyObservers(createDisplayableProfileData(profileData));
         }
     }
 
     /**
-     * Rescales avatar image and crops it into a circle.
+     * Implements {@link IdentityManager.Observer}.
      */
-    public static Drawable makeRoundAvatar(Resources resources, Bitmap bitmap, int imageSize) {
-        if (bitmap == null) return null;
+    @Override
+    public void onExtendedAccountInfoUpdated(AccountInfo accountInfo) {
+        final String accountEmail = accountInfo.getEmail();
+        DisplayableProfileData profileData = mCachedProfileData.get(accountEmail);
+        // if profileData is null, we will fetch monogram when generating
+        // the cache so that different sources will be handled in order.
+        if (profileData != null && profileData.getImage() == mPlaceholderImage) {
+            updateCachedProfileDataAndNotifyObservers(new DisplayableProfileData(accountEmail,
+                    prepareAvatar(accountInfo.getAccountImage(), accountEmail),
+                    profileData.getFullName(), profileData.getGivenName()));
+        }
+    }
 
-        Bitmap output = Bitmap.createBitmap(imageSize, imageSize, Config.ARGB_8888);
-        Canvas canvas = new Canvas(output);
-        // Fill the canvas with transparent color.
-        canvas.drawColor(Color.TRANSPARENT);
-        // Draw a white circle.
-        float radius = (float) imageSize / 2;
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setColor(Color.WHITE);
-        canvas.drawCircle(radius, radius, radius, paint);
-        // Use SRC_IN so white circle acts as a mask while drawing the avatar.
-        paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
-        canvas.drawBitmap(bitmap, null, new Rect(0, 0, imageSize, imageSize), paint);
-        return new BitmapDrawable(resources, output);
+    /**
+     * Returns a profile data cache object without a badge.The badge is put with respect to
+     * R.dimen.user_picture_size. So this method only works with the user avatar of this size.
+     * @param context Context of the application to extract resources from
+     */
+    public static ProfileDataCache createProfileDataCache(Context context) {
+        return createProfileDataCache(context, 0);
     }
 
     /**
@@ -258,7 +294,7 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
      * size.
      * @param context Context of the application to extract resources from
      * @param badgeResId Resource id of the badge to be attached. If it is 0 then no badge is
-     *                   attached
+     *         attached
      */
     public static ProfileDataCache createProfileDataCache(
             Context context, @DrawableRes int badgeResId) {
@@ -269,31 +305,47 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
     @VisibleForTesting
     static ProfileDataCache createProfileDataCache(
             Context context, @DrawableRes int badgeResId, ProfileDataSource profileDataSource) {
-        Resources resources = context.getResources();
-        int userPictureSize = resources.getDimensionPixelSize(R.dimen.user_picture_size);
-        if (badgeResId == 0) {
-            return new ProfileDataCache(context, userPictureSize, null, profileDataSource);
-        }
+        return new ProfileDataCache(context,
+                context.getResources().getDimensionPixelSize(R.dimen.user_picture_size),
+                createBadgeConfig(context, badgeResId), profileDataSource);
+    }
 
-        Drawable badge = AppCompatResources.getDrawable(context, badgeResId);
+    private static BadgeConfig createBadgeConfig(Context context, @DrawableRes int badgeResId) {
+        Resources resources = context.getResources();
+        Drawable badge =
+                badgeResId == 0 ? null : AppCompatResources.getDrawable(context, badgeResId);
         int badgePositionX = resources.getDimensionPixelOffset(R.dimen.badge_position_x);
         int badgePositionY = resources.getDimensionPixelOffset(R.dimen.badge_position_y);
         int badgeBorderSize = resources.getDimensionPixelSize(R.dimen.badge_border_size);
         int badgeSize = resources.getDimensionPixelSize(R.dimen.badge_size);
-        return new ProfileDataCache(context, userPictureSize,
-                new BadgeConfig(badge, badgeSize, new Point(badgePositionX, badgePositionY),
-                        badgeBorderSize),
-                profileDataSource);
+        return new BadgeConfig(
+                badge, badgeSize, new Point(badgePositionX, badgePositionY), badgeBorderSize);
     }
 
-    private Drawable prepareAvatar(Bitmap bitmap) {
+    private Drawable prepareAvatar(Bitmap bitmap, String accountEmail) {
+        if (bitmap == null) {
+            // If the given bitmap is null, try to fetch the account image which can be monogram
+            // from IdentityManager
+            bitmap = getAccountImageFromIdentityManager(accountEmail);
+        }
         Drawable croppedAvatar = bitmap != null
-                ? makeRoundAvatar(mContext.getResources(), bitmap, mImageSize)
+                ? AvatarGenerator.makeRoundAvatar(mContext.getResources(), bitmap, mImageSize)
                 : mPlaceholderImage;
-        if (mBadgeConfig == null) {
+        if (mBadgeConfig == null || mBadgeConfig.getBadge() == null) {
             return croppedAvatar;
         }
         return overlayBadgeOnUserPicture(croppedAvatar);
+    }
+
+    private void updateCachedProfileDataAndNotifyObservers(DisplayableProfileData profileData) {
+        mCachedProfileData.put(profileData.getAccountName(), profileData);
+        notifyObservers(profileData.getAccountName());
+    }
+
+    private void notifyObservers(String accountEmail) {
+        for (Observer observer : mObservers) {
+            observer.onProfileDataUpdated(accountEmail);
+        }
     }
 
     private Drawable overlayBadgeOnUserPicture(Drawable userPicture) {
@@ -337,5 +389,22 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
         drawable.setBounds(0, 0, imageSize, imageSize);
         drawable.draw(canvas);
         return new BitmapDrawable(context.getResources(), output);
+    }
+
+    /**
+     * Fetches the account image stored in {@link AccountInfo}.
+     *
+     * If user is signed in and has a profile photo, the profile photo will be returned, otherwise,
+     * a monogram is returned.
+     * If the user is signed out, returns null.
+     *
+     * TODO(https://crbug.com/1130545): We should refactor the different sources for getting
+     *  the profile image.
+     */
+    private @Nullable Bitmap getAccountImageFromIdentityManager(String accountEmail) {
+        AccountInfo accountInfo =
+                mIdentityManager.findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+                        accountEmail);
+        return accountInfo != null ? accountInfo.getAccountImage() : null;
     }
 }

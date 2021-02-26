@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
@@ -265,7 +266,7 @@ TEST(InvalidationSetTest, ClassInvalidatesElement) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   auto& document = dummy_page_holder->GetDocument();
   document.body()->setInnerHTML("<div id=test class='a b'>");
-  document.View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  document.View()->UpdateAllLifecyclePhasesForTest();
   Element* element = document.getElementById("test");
   ASSERT_TRUE(element);
 
@@ -290,7 +291,7 @@ TEST(InvalidationSetTest, AttributeInvalidatesElement) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   auto& document = dummy_page_holder->GetDocument();
   document.body()->setInnerHTML("<div id=test a b>");
-  document.View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  document.View()->UpdateAllLifecyclePhasesForTest();
   Element* element = document.getElementById("test");
   ASSERT_TRUE(element);
 

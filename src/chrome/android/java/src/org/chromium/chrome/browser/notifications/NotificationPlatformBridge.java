@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import static org.chromium.components.content_settings.PrefNames.NOTIFICATIONS_VIBRATE_ENABLED;
+
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.RemoteInput;
@@ -36,26 +38,26 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
-import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.usage_stats.NotificationSuspender;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkServiceClient;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.url.URI;
 import org.chromium.webapk.lib.client.WebApkIdentityServiceClient;
-import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.net.URISyntaxException;
 
@@ -223,20 +225,17 @@ public class NotificationPlatformBridge {
 
     @Nullable
     static String getNotificationReply(Intent intent) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            // RemoteInput was added in KITKAT_WATCH.
-            if (intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_REPLY) != null) {
-                // If the notification click went through the job scheduler, we will have set
-                // the reply as a standard string extra.
-                return intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_REPLY);
-            }
-            Bundle remoteInputResults = RemoteInput.getResultsFromIntent(intent);
-            if (remoteInputResults != null) {
-                CharSequence reply =
-                        remoteInputResults.getCharSequence(NotificationConstants.KEY_TEXT_REPLY);
-                if (reply != null) {
-                    return reply.toString();
-                }
+        if (intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_REPLY) != null) {
+            // If the notification click went through the job scheduler, we will have set
+            // the reply as a standard string extra.
+            return intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_REPLY);
+        }
+        Bundle remoteInputResults = RemoteInput.getResultsFromIntent(intent);
+        if (remoteInputResults != null) {
+            CharSequence reply =
+                    remoteInputResults.getCharSequence(NotificationConstants.KEY_TEXT_REPLY);
+            if (reply != null) {
+                return reply.toString();
             }
         }
         return null;
@@ -328,7 +327,7 @@ public class NotificationPlatformBridge {
             int actionIndex) {
         Uri intentData = makeIntentData(notificationId, origin, actionIndex);
         Intent intent = new Intent(action, intentData);
-        intent.setClass(context, NotificationService.Receiver.class);
+        intent.setClass(context, NotificationServiceImpl.Receiver.class);
 
         // Make sure to update NotificationJobService.getJobExtrasFromIntent() when changing any
         // of the extras included with the |intent|.
@@ -471,7 +470,7 @@ public class NotificationPlatformBridge {
      * @param scopeUrl The scope of the service worker registered by the site where the notification
      *                 comes from.
      * @param profileId Id of the profile that showed the notification.
-     * @param incognito if the session of the profile is an off the record one.
+     * @param profile The profile that showed the notification.
      * @param title Title to be displayed in the notification.
      * @param body Message to be displayed in the notification. Will be trimmed to one line of
      *             text by the Android notification system.
@@ -492,16 +491,19 @@ public class NotificationPlatformBridge {
     @CalledByNative
     private void displayNotification(final String notificationId,
             @NotificationType final int notificationType, final String origin,
-            final String scopeUrl, final String profileId, final boolean incognito,
+            final String scopeUrl, final String profileId, final Profile profile,
             final String title, final String body, final Bitmap image, final Bitmap icon,
             final Bitmap badge, final int[] vibrationPattern, final long timestamp,
             final boolean renotify, final boolean silent, final ActionInfo[] actions) {
+        final boolean vibrateEnabled = UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                               .getBoolean(NOTIFICATIONS_VIBRATE_ENABLED);
+        final boolean incognito = profile.isOffTheRecord();
         // TODO(peter): by-pass this check for non-Web Notification types.
         getWebApkPackage(scopeUrl).then(
                 (Callback<String>) (webApkPackage)
                         -> displayNotificationInternal(notificationId, notificationType, origin,
-                                scopeUrl, profileId, incognito, title, body, image, icon, badge,
-                                vibrationPattern, timestamp, renotify, silent, actions,
+                                scopeUrl, profileId, incognito, vibrateEnabled, title, body, image,
+                                icon, badge, vibrationPattern, timestamp, renotify, silent, actions,
                                 webApkPackage));
     }
 
@@ -519,18 +521,19 @@ public class NotificationPlatformBridge {
     /** Called after querying whether the browser backs the given WebAPK. */
     private void displayNotificationInternal(String notificationId,
             @NotificationType int notificationType, String origin, String scopeUrl,
-            String profileId, boolean incognito, String title, String body, Bitmap image,
-            Bitmap icon, Bitmap badge, int[] vibrationPattern, long timestamp, boolean renotify,
-            boolean silent, ActionInfo[] actions, String webApkPackage) {
+            String profileId, boolean incognito, boolean vibrateEnabled, String title, String body,
+            Bitmap image, Bitmap icon, Bitmap badge, int[] vibrationPattern, long timestamp,
+            boolean renotify, boolean silent, ActionInfo[] actions, String webApkPackage) {
         NotificationPlatformBridgeJni.get().storeCachedWebApkPackageForNotificationId(
                 mNativeNotificationPlatformBridge, NotificationPlatformBridge.this, notificationId,
                 webApkPackage);
         // Record whether it's known whether notifications can be shown to the user at all.
         NotificationSystemStatusUtil.recordAppNotificationStatusHistogram();
 
-        NotificationBuilderBase notificationBuilder = prepareNotificationBuilder(notificationId,
-                notificationType, origin, scopeUrl, profileId, incognito, title, body, image, icon,
-                badge, vibrationPattern, timestamp, renotify, silent, actions, webApkPackage);
+        NotificationBuilderBase notificationBuilder =
+                prepareNotificationBuilder(notificationId, notificationType, origin, scopeUrl,
+                        profileId, incognito, vibrateEnabled, title, body, image, icon, badge,
+                        vibrationPattern, timestamp, renotify, silent, actions, webApkPackage);
 
         // Delegate notification to WebAPK.
         if (!webApkPackage.isEmpty()) {
@@ -546,7 +549,7 @@ public class NotificationPlatformBridge {
             return;
         }
 
-        ChromeNotification notification = buildNotification(
+        NotificationWrapper notification = buildNotificationWrapper(
                 notificationBuilder, notificationType, notificationId, origin, actions, image);
 
         // Store notification if its origin is suspended.
@@ -571,9 +574,9 @@ public class NotificationPlatformBridge {
 
     private NotificationBuilderBase prepareNotificationBuilder(String notificationId,
             @NotificationType int notificationType, String origin, String scopeUrl,
-            String profileId, boolean incognito, String title, String body, Bitmap image,
-            Bitmap icon, Bitmap badge, int[] vibrationPattern, long timestamp, boolean renotify,
-            boolean silent, ActionInfo[] actions, String webApkPackage) {
+            String profileId, boolean incognito, boolean vibrateEnabled, String title, String body,
+            Bitmap image, Bitmap icon, Bitmap badge, int[] vibrationPattern, long timestamp,
+            boolean renotify, boolean silent, ActionInfo[] actions, String webApkPackage) {
         Context context = ContextUtils.getApplicationContext();
 
         PendingIntentProvider clickIntent = makePendingIntent(context,
@@ -630,8 +633,6 @@ public class NotificationPlatformBridge {
         // The Android framework applies a fallback vibration pattern for the sound when the device
         // is in vibrate mode, there is no custom pattern, and the vibration default has been
         // disabled. To truly prevent vibration, provide a custom empty pattern.
-        boolean vibrateEnabled =
-                PrefServiceBridge.getInstance().getBoolean(Pref.NOTIFICATIONS_VIBRATE_ENABLED);
         if (!vibrateEnabled) {
             vibrationPattern = EMPTY_VIBRATION_PATTERN;
         }
@@ -642,9 +643,9 @@ public class NotificationPlatformBridge {
         return notificationBuilder;
     }
 
-    private ChromeNotification buildNotification(NotificationBuilderBase notificationBuilder,
-            @NotificationType int notificationType, String notificationId, String origin,
-            ActionInfo[] actions, Bitmap image) {
+    private NotificationWrapper buildNotificationWrapper(
+            NotificationBuilderBase notificationBuilder, @NotificationType int notificationType,
+            String notificationId, String origin, ActionInfo[] actions, Bitmap image) {
         Context context = ContextUtils.getApplicationContext();
         Resources res = context.getResources();
 
@@ -751,6 +752,8 @@ public class NotificationPlatformBridge {
     @CalledByNative
     private void closeNotification(final String notificationId, String scopeUrl,
             boolean hasQueriedWebApkPackage, String webApkPackage) {
+        WebPlatformNotificationMetrics.getInstance().onNotificationClosed();
+
         if (!hasQueriedWebApkPackage) {
             final String webApkPackageFound = WebApkValidator.queryFirstWebApkPackage(
                     ContextUtils.getApplicationContext(), scopeUrl);

@@ -15,22 +15,15 @@ import {SettingsRoutes} from './settings_routes.js';
  */
 function addPrivacyChildRoutes(r) {
   r.SITE_SETTINGS = r.PRIVACY.createChild('/content');
-  if (loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-    r.SECURITY = r.PRIVACY.createChild('/security');
-    r.COOKIES = r.PRIVACY.createChild('/cookies');
-  }
+  r.COOKIES = r.PRIVACY.createChild('/cookies');
+  r.SECURITY = r.PRIVACY.createChild('/security');
 
   // <if expr="use_nss_certs">
-  r.CERTIFICATES = loadTimeData.getBoolean('privacySettingsRedesignEnabled') ?
-      r.SECURITY.createChild('/certificates') :
-      r.PRIVACY.createChild('/certificates');
+  r.CERTIFICATES = r.SECURITY.createChild('/certificates');
   // </if>
 
   if (loadTimeData.getBoolean('enableSecurityKeysSubpage')) {
-    r.SECURITY_KEYS =
-        loadTimeData.getBoolean('privacySettingsRedesignEnabled') ?
-        r.SECURITY.createChild('/securityKeys') :
-        r.PRIVACY.createChild('/securityKeys');
+    r.SECURITY_KEYS = r.SECURITY.createChild('/securityKeys');
   }
 
   r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');
@@ -42,36 +35,29 @@ function addPrivacyChildRoutes(r) {
   // TODO(tommycli): Find a way to refactor these repetitive category
   // routes.
   r.SITE_SETTINGS_ADS = r.SITE_SETTINGS.createChild('ads');
-  if (loadTimeData.getBoolean('enableWebXrContentSetting')) {
-    r.SITE_SETTINGS_AR = r.SITE_SETTINGS.createChild('ar');
-  }
+  r.SITE_SETTINGS_AR = r.SITE_SETTINGS.createChild('ar');
   r.SITE_SETTINGS_AUTOMATIC_DOWNLOADS =
       r.SITE_SETTINGS.createChild('automaticDownloads');
   r.SITE_SETTINGS_BACKGROUND_SYNC =
       r.SITE_SETTINGS.createChild('backgroundSync');
   r.SITE_SETTINGS_CAMERA = r.SITE_SETTINGS.createChild('camera');
   r.SITE_SETTINGS_CLIPBOARD = r.SITE_SETTINGS.createChild('clipboard');
-  r.SITE_SETTINGS_COOKIES = r.SITE_SETTINGS.createChild('cookies');
-  r.SITE_SETTINGS_SITE_DATA = r.SITE_SETTINGS_COOKIES.createChild('/siteData');
+  r.SITE_SETTINGS_SITE_DATA = r.COOKIES.createChild('/siteData');
   r.SITE_SETTINGS_DATA_DETAILS =
       r.SITE_SETTINGS_SITE_DATA.createChild('/cookies/detail');
+  r.SITE_SETTINGS_IDLE_DETECTION = r.SITE_SETTINGS.createChild('idleDetection');
   r.SITE_SETTINGS_IMAGES = r.SITE_SETTINGS.createChild('images');
-  if (loadTimeData.getBoolean('enableInsecureContentContentSetting')) {
-    r.SITE_SETTINGS_MIXEDSCRIPT =
-        r.SITE_SETTINGS.createChild('insecureContent');
-  }
+  r.SITE_SETTINGS_MIXEDSCRIPT = r.SITE_SETTINGS.createChild('insecureContent');
   r.SITE_SETTINGS_JAVASCRIPT = r.SITE_SETTINGS.createChild('javascript');
   r.SITE_SETTINGS_SOUND = r.SITE_SETTINGS.createChild('sound');
   r.SITE_SETTINGS_SENSORS = r.SITE_SETTINGS.createChild('sensors');
   r.SITE_SETTINGS_LOCATION = r.SITE_SETTINGS.createChild('location');
   r.SITE_SETTINGS_MICROPHONE = r.SITE_SETTINGS.createChild('microphone');
   r.SITE_SETTINGS_NOTIFICATIONS = r.SITE_SETTINGS.createChild('notifications');
-  r.SITE_SETTINGS_FLASH = r.SITE_SETTINGS.createChild('flash');
   r.SITE_SETTINGS_POPUPS = r.SITE_SETTINGS.createChild('popups');
-  r.SITE_SETTINGS_UNSANDBOXED_PLUGINS =
-      r.SITE_SETTINGS.createChild('unsandboxedPlugins');
   r.SITE_SETTINGS_MIDI_DEVICES = r.SITE_SETTINGS.createChild('midiDevices');
   r.SITE_SETTINGS_USB_DEVICES = r.SITE_SETTINGS.createChild('usbDevices');
+  r.SITE_SETTINGS_HID_DEVICES = r.SITE_SETTINGS.createChild('hidDevices');
   r.SITE_SETTINGS_SERIAL_PORTS = r.SITE_SETTINGS.createChild('serialPorts');
   if (loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend')) {
     r.SITE_SETTINGS_BLUETOOTH_DEVICES =
@@ -85,19 +71,16 @@ function addPrivacyChildRoutes(r) {
     r.SITE_SETTINGS_PAYMENT_HANDLER =
         r.SITE_SETTINGS.createChild('paymentHandler');
   }
-  if (loadTimeData.getBoolean('enableWebXrContentSetting')) {
-    r.SITE_SETTINGS_VR = r.SITE_SETTINGS.createChild('vr');
-  }
+  r.SITE_SETTINGS_VR = r.SITE_SETTINGS.createChild('vr');
   if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {
     r.SITE_SETTINGS_BLUETOOTH_SCANNING =
         r.SITE_SETTINGS.createChild('bluetoothScanning');
-    r.SITE_SETTINGS_HID_DEVICES = r.SITE_SETTINGS.createChild('hidDevices');
     r.SITE_SETTINGS_WINDOW_PLACEMENT =
         r.SITE_SETTINGS.createChild('windowPlacement');
   }
-  if (loadTimeData.getBoolean('enableNativeFileSystemWriteContentSetting')) {
-    r.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE =
-        r.SITE_SETTINGS.createChild('filesystem');
+  r.SITE_SETTINGS_FILE_SYSTEM_WRITE = r.SITE_SETTINGS.createChild('filesystem');
+  if (loadTimeData.getBoolean('enableFontAccessContentSetting')) {
+    r.SITE_SETTINGS_FONT_ACCESS = r.SITE_SETTINGS.createChild('fontAccess');
   }
 }
 
@@ -116,7 +99,8 @@ function createBrowserSettingsRoutes() {
   r.SIGN_OUT.isNavigableDialog = true;
 
   r.SEARCH = r.BASIC.createSection('/search', 'search');
-  if (!loadTimeData.getBoolean('isGuest')) {
+  if (!loadTimeData.getBoolean('isGuest') ||
+      loadTimeData.getBoolean('isEphemeralGuestProfile')) {
     r.PEOPLE = r.BASIC.createSection('/people', 'people');
     r.SYNC = r.PEOPLE.createChild('/syncSetup');
     r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
@@ -141,9 +125,10 @@ function createBrowserSettingsRoutes() {
   if (visibility.autofill !== false) {
     r.AUTOFILL = r.BASIC.createSection('/autofill', 'autofill');
     r.PASSWORDS = r.AUTOFILL.createChild('/passwords');
+    r.CHECK_PASSWORDS = r.PASSWORDS.createChild('check');
 
-    if (loadTimeData.getBoolean('enablePasswordCheck')) {
-      r.CHECK_PASSWORDS = r.PASSWORDS.createChild('check');
+    if (loadTimeData.getBoolean('enableAccountStorage')) {
+      r.DEVICE_PASSWORDS = r.PASSWORDS.createChild('device');
     }
 
     r.PAYMENTS = r.AUTOFILL.createChild('/payments');
@@ -157,9 +142,7 @@ function createBrowserSettingsRoutes() {
     r.PRIVACY = r.BASIC.createSection('/privacy', 'privacy');
     addPrivacyChildRoutes(r);
 
-    if (loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-      r.SAFETY_CHECK = r.BASIC.createSection('/safetyCheck', 'safetyCheck');
-    }
+    r.SAFETY_CHECK = r.BASIC.createSection('/safetyCheck', 'safetyCheck');
   }
 
   if (visibility.defaultBrowser !== false) {
@@ -186,9 +169,6 @@ function createBrowserSettingsRoutes() {
     if (visibility.downloads !== false) {
       r.DOWNLOADS = r.ADVANCED.createSection('/downloads', 'downloads');
     }
-
-    r.PRINTING = r.ADVANCED.createSection('/printing', 'printing');
-    r.CLOUD_PRINTERS = r.PRINTING.createChild('/cloudPrinters');
 
     r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
 
@@ -243,7 +223,5 @@ window.addEventListener('popstate', function(event) {
       new URLSearchParams(window.location.search), true);
 });
 
-// TODO(dpapad): Change to 'get routes() {}' in export when we fix a bug in
-// ChromePass that limits the syntax of what can be returned from cr.define().
 export const routes =
     /** @type {!SettingsRoutes} */ (Router.getInstance().getRoutes());

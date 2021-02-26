@@ -22,12 +22,13 @@ namespace ash {
 // view.
 class ArrowButtonView : public LoginButton {
  public:
-  ArrowButtonView(views::ButtonListener* listener, int size);
+  ArrowButtonView(PressedCallback callback, int size);
   ~ArrowButtonView() override;
 
   // views::Button:
   void PaintButtonContents(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  const char* GetClassName() const override;
 
   // Set background color of the button.
   void SetBackgroundColor(SkColor color);

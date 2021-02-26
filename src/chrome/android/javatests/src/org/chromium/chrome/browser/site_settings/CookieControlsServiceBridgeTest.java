@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.site_settings;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -16,17 +17,16 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.components.content_settings.ContentSettingsFeatureList;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.content_settings.CookieControlsMode;
+import org.chromium.components.content_settings.PrefNames;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -35,7 +35,6 @@ import org.chromium.net.test.EmbeddedTestServer;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@EnableFeatures(ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS)
 public class CookieControlsServiceBridgeTest {
     private class TestCallbackHandler
             implements CookieControlsServiceBridge.CookieControlsServiceObserver {
@@ -55,8 +54,7 @@ public class CookieControlsServiceBridgeTest {
     }
 
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     private EmbeddedTestServer mTestServer;
     private CallbackHelper mCallbackHelper;
     private TestCallbackHandler mCallbackHandler;
@@ -77,15 +75,10 @@ public class CookieControlsServiceBridgeTest {
         mTestServer.stopAndDestroyServer();
     }
 
-    private void setThirdPartyCookieBlocking(boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, enabled);
-        });
-    }
-
     private void setCookieControlsMode(@CookieControlsMode int mode) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setInteger(Pref.COOKIE_CONTROLS_MODE, mode);
+            PrefService prefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
+            prefService.setInteger(PrefNames.COOKIE_CONTROLS_MODE, mode);
         });
     }
 
@@ -95,7 +88,6 @@ public class CookieControlsServiceBridgeTest {
     @Test
     @SmallTest
     public void testCookieSettingsCheckedChanges() throws Exception {
-        setThirdPartyCookieBlocking(false);
         setCookieControlsMode(CookieControlsMode.OFF);
         final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
         Tab tab = mActivityTestRule.loadUrlInNewTab(url, true); // incognito tab
@@ -131,7 +123,7 @@ public class CookieControlsServiceBridgeTest {
         int expectedEnforcement = CookieControlsEnforcement.ENFORCED_BY_COOKIE_SETTING;
         mEnforcement = CookieControlsEnforcement.NO_ENFORCEMENT;
         currentCallCount = mCallbackHelper.getCallCount();
-        setThirdPartyCookieBlocking(true);
+        setCookieControlsMode(CookieControlsMode.BLOCK_THIRD_PARTY);
         mCallbackHelper.waitForCallback(currentCallCount, 1);
         Assert.assertEquals(expectedChecked, mChecked);
         Assert.assertEquals(expectedEnforcement, mEnforcement);
@@ -143,7 +135,6 @@ public class CookieControlsServiceBridgeTest {
     @Test
     @SmallTest
     public void testCookieBridgeWithTPCookiesDisabled() throws Exception {
-        setThirdPartyCookieBlocking(false);
         setCookieControlsMode(CookieControlsMode.OFF);
         final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
         Tab tab = mActivityTestRule.loadUrlInNewTab(url, true); // incognito tab.
@@ -159,7 +150,8 @@ public class CookieControlsServiceBridgeTest {
             mCookieControlsServiceBridge.handleCookieControlsToggleChanged(true);
 
             Assert.assertEquals("CookieControlsMode should be incognito_only",
-                    PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE),
+                    UserPrefs.get(Profile.getLastUsedRegularProfile())
+                            .getInteger(PrefNames.COOKIE_CONTROLS_MODE),
                     CookieControlsMode.INCOGNITO_ONLY);
         });
         // One initial callback after creation, then another after the toggle change.

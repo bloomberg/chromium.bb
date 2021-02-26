@@ -14,6 +14,7 @@ from dashboard.common import utils
 
 
 class ExistingBugHandler(api_request_handler.ApiRequestHandler):
+
   def _CheckUser(self):
     if not utils.IsValidSheriffUser():
       raise api_request_handler.ForbiddenError()
@@ -21,6 +22,7 @@ class ExistingBugHandler(api_request_handler.ApiRequestHandler):
   def Post(self):
     keys = self.request.get_all('key')
     bug_id = int(self.request.get('bug'))
+    project_id = self.request.get('project_id', 'chromium')
     alerts = ndb.get_multi([ndb.Key(urlsafe=k) for k in keys])
-    associate_alerts.AssociateAlerts(bug_id, alerts)
+    associate_alerts.AssociateAlerts(bug_id, project_id, alerts)
     return {}

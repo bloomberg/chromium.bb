@@ -19,7 +19,6 @@ class ScriptState;
 
 class NavigatorUAData : public ScriptWrappable, ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorUAData);
 
  public:
   static NavigatorUAData* Create(ExecutionContext* context) {
@@ -40,7 +39,7 @@ class NavigatorUAData : public ScriptWrappable, ExecutionContextClient {
   bool mobile() const;
   ScriptPromise getHighEntropyValues(ScriptState*, Vector<String>&) const;
 
-  void Trace(Visitor* visitor) final;
+  void Trace(Visitor* visitor) const final;
 
  private:
   HeapVector<Member<NavigatorUABrandVersion>> brand_set_;

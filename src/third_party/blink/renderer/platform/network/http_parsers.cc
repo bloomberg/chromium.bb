@@ -65,14 +65,31 @@ blink::CSPSourcePtr ConvertToBlink(CSPSourcePtr source) {
       source->is_port_wildcard);
 }
 
+blink::CSPHashSourcePtr ConvertToBlink(CSPHashSourcePtr hash) {
+  return blink::CSPHashSource::New(hash->algorithm,
+                                   String::FromUTF8(hash->value));
+}
+
 blink::CSPSourceListPtr ConvertToBlink(CSPSourceListPtr source_list) {
   WTF::Vector<blink::CSPSourcePtr> sources;
   for (auto& it : source_list->sources)
     sources.push_back(ConvertToBlink(std::move(it)));
 
-  return blink::CSPSourceList::New(std::move(sources), source_list->allow_self,
-                                   source_list->allow_star,
-                                   source_list->allow_response_redirects);
+  WTF::Vector<String> nonces;
+  for (const auto& nonce : source_list->nonces)
+    nonces.push_back(String::FromUTF8(std::move(nonce)));
+
+  WTF::Vector<blink::CSPHashSourcePtr> hashes;
+  for (auto& it : source_list->hashes)
+    hashes.push_back(ConvertToBlink(std::move(it)));
+
+  return blink::CSPSourceList::New(
+      std::move(sources), std::move(nonces), std::move(hashes),
+      source_list->allow_self, source_list->allow_star,
+      source_list->allow_response_redirects, source_list->allow_inline,
+      source_list->allow_eval, source_list->allow_wasm_eval,
+      source_list->allow_dynamic, source_list->allow_unsafe_hashes,
+      source_list->report_sample);
 }
 
 blink::CSPDirectiveName ConvertToBlink(CSPDirectiveName name) {
@@ -85,23 +102,38 @@ blink::ContentSecurityPolicyHeaderPtr ConvertToBlink(
       String::FromUTF8(header->header_value), header->type, header->source);
 }
 
+WTF::HashMap<blink::CSPDirectiveName, blink::CSPSourceListPtr> ConvertToBlink(
+    base::flat_map<CSPDirectiveName, CSPSourceListPtr> directives) {
+  WTF::HashMap<blink::CSPDirectiveName, blink::CSPSourceListPtr> out;
+
+  for (auto& list : directives) {
+    out.insert(ConvertToBlink(list.first),
+               ConvertToBlink(std::move(list.second)));
+  }
+
+  return out;
+}
+
+WTF::Vector<WTF::String> ConvertToBlink(std::vector<std::string> in) {
+  WTF::Vector<WTF::String> out;
+  for (auto& el : in)
+    out.push_back(String::FromUTF8(el));
+  return out;
+}
+
 blink::ContentSecurityPolicyPtr ConvertToBlink(
     ContentSecurityPolicyPtr policy_in) {
-  auto policy = blink::ContentSecurityPolicy::New();
-
-  policy->header = ConvertToBlink(std::move(policy_in->header));
-  policy->use_reporting_api = policy_in->use_reporting_api;
-
-  for (auto& list : policy_in->directives) {
-    policy->directives.insert(ConvertToBlink(list.first),
-                              ConvertToBlink(std::move(list.second)));
-  }
-  policy->upgrade_insecure_requests = policy_in->upgrade_insecure_requests;
-
-  for (auto& endpoint : policy_in->report_endpoints)
-    policy->report_endpoints.push_back(String::FromUTF8(endpoint));
-
-  return policy;
+  return blink::ContentSecurityPolicy::New(
+      ConvertToBlink(std::move(policy_in->directives)),
+      policy_in->upgrade_insecure_requests, policy_in->treat_as_public_address,
+      policy_in->sandbox, ConvertToBlink(std::move(policy_in->header)),
+      policy_in->use_reporting_api,
+      ConvertToBlink(std::move(policy_in->report_endpoints)),
+      policy_in->plugin_types.has_value()
+          ? base::Optional<WTF::Vector<WTF::String>>(
+                ConvertToBlink(std::move(policy_in->plugin_types.value())))
+          : base::nullopt,
+      ConvertToBlink(std::move(policy_in->parsing_errors)));
 }
 
 WTF::Vector<blink::ContentSecurityPolicyPtr> ConvertToBlink(
@@ -111,6 +143,24 @@ WTF::Vector<blink::ContentSecurityPolicyPtr> ConvertToBlink(
     blink_policies.push_back(ConvertToBlink(std::move(policy)));
 
   return blink_policies;
+}
+
+blink::AllowCSPFromHeaderValuePtr ConvertToBlink(
+    AllowCSPFromHeaderValuePtr allow_csp_from) {
+  if (!allow_csp_from)
+    return nullptr;
+  switch (allow_csp_from->which()) {
+    case AllowCSPFromHeaderValue::Tag::ALLOW_STAR:
+      return blink::AllowCSPFromHeaderValue::NewAllowStar(
+          allow_csp_from->get_allow_star());
+    case AllowCSPFromHeaderValue::Tag::ORIGIN:
+      return blink::AllowCSPFromHeaderValue::NewOrigin(
+          ::blink::SecurityOrigin::CreateFromUrlOrigin(
+              allow_csp_from->get_origin()));
+    case AllowCSPFromHeaderValue::Tag::ERROR_MESSAGE:
+      return blink::AllowCSPFromHeaderValue::NewErrorMessage(
+          String::FromUTF8(allow_csp_from->get_error_message()));
+  }
 }
 
 WTF::Vector<network::mojom::blink::WebClientHintsType> ConvertToBlink(
@@ -123,11 +173,18 @@ WTF::Vector<network::mojom::blink::WebClientHintsType> ConvertToBlink(
 blink::ParsedHeadersPtr ConvertToBlink(ParsedHeadersPtr parsed_headers) {
   return blink::ParsedHeaders::New(
       ConvertToBlink(std::move(parsed_headers->content_security_policy)),
+      ConvertToBlink(std::move(parsed_headers->allow_csp_from)),
       std::move(parsed_headers->cross_origin_embedder_policy),
       std::move(parsed_headers->cross_origin_opener_policy),
+      parsed_headers->origin_isolation,
       parsed_headers->accept_ch.has_value()
           ? base::make_optional(
                 ConvertToBlink(parsed_headers->accept_ch.value()))
+          : base::nullopt,
+      parsed_headers->accept_ch_lifetime,
+      parsed_headers->critical_ch.has_value()
+          ? base::make_optional(
+                ConvertToBlink(parsed_headers->critical_ch.value()))
           : base::nullopt);
 }
 

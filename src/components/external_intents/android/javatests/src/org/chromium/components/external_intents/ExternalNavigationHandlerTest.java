@@ -1,11 +1,10 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.components.external_intents;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -19,14 +18,14 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.test.mock.MockPackageManager;
 
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,14 +33,14 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisableIf;
-import org.chromium.components.external_intents.ExternalNavigationDelegate.StartActivityIfNeededResult;
+import org.chromium.base.test.util.Batch;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.Origin;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -54,13 +53,9 @@ import java.util.regex.Pattern;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 // clang-format off
-@DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-        sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+@Batch(Batch.UNIT_TESTS)
 public class ExternalNavigationHandlerTest {
     // clang-format on
-    @Rule
-    public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
-
     // Expectations
     private static final int IGNORE = 0x0;
     private static final int START_INCOGNITO = 0x1;
@@ -130,6 +125,7 @@ public class ExternalNavigationHandlerTest {
     private static final String WEBAPK_SCOPE = "https://www.template.com";
     private static final String WEBAPK_PACKAGE_PREFIX = "org.chromium.webapk";
     private static final String WEBAPK_PACKAGE_NAME = WEBAPK_PACKAGE_PREFIX + ".template";
+    private static final String INVALID_WEBAPK_PACKAGE_NAME = WEBAPK_PACKAGE_PREFIX + ".invalid";
 
     private static final String[] SUPERVISOR_START_ACTIONS = {
             "com.google.android.instantapps.START", "com.google.android.instantapps.nmr1.INSTALL",
@@ -152,6 +148,8 @@ public class ExternalNavigationHandlerTest {
     private final TestExternalNavigationDelegate mDelegate;
     private ExternalNavigationHandlerForTesting mUrlHandler;
 
+    private Context mApplicationContextToRestore;
+
     public ExternalNavigationHandlerTest() {
         mDelegate = new TestExternalNavigationDelegate();
         mUrlHandler = new ExternalNavigationHandlerForTesting(mDelegate);
@@ -159,10 +157,17 @@ public class ExternalNavigationHandlerTest {
 
     @Before
     public void setUp() {
+        mApplicationContextToRestore = ContextUtils.getApplicationContext();
+
         mContext = new TestContext(InstrumentationRegistry.getTargetContext(), mDelegate);
         ContextUtils.initApplicationContextForTests(mContext);
 
-        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
+    }
+
+    @After
+    public void tearDown() {
+        ContextUtils.initApplicationContextForTests(mApplicationContextToRestore);
     }
 
     @Test
@@ -331,16 +336,13 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testIgnore() {
         // Ensure the following URLs are not broadcast for external navigation.
-        String urlsToIgnore[] = new String[] {
-                "about:test",
+        String urlsToIgnore[] = new String[] {"about:test",
                 "content:test", // Content URLs should not be exposed outside of Chrome.
-                "chrome://history",
-                "chrome-native://newtab",
-                "devtools://foo",
+                "chrome://history", "chrome-native://newtab", "devtools://foo",
                 "intent:chrome-urls#Intent;package=com.android.chrome;scheme=about;end;",
                 "intent:chrome-urls#Intent;package=com.android.chrome;scheme=chrome;end;",
                 "intent://com.android.chrome.FileProvider/foo.html#Intent;scheme=content;end;",
-        };
+                "intent:///x.mhtml#Intent;package=com.android.chrome;action=android.intent.action.VIEW;scheme=file;end;"};
         for (String url : urlsToIgnore) {
             checkUrl(url).expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
             checkUrl(url).withIsIncognito(true).expecting(
@@ -870,8 +872,7 @@ public class ExternalNavigationHandlerTest {
         // IMDB app isn't installed.
         mDelegate.setCanResolveActivityForExternalSchemes(false);
 
-        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME)
-                              .withIsWebApk(true));
+        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME));
         checkUrl(INTENT_URL_WITH_FALLBACK_URL)
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_WEBAPK);
@@ -883,8 +884,7 @@ public class ExternalNavigationHandlerTest {
         // IMDB app isn't installed.
         mDelegate.setCanResolveActivityForExternalSchemes(false);
 
-        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME)
-                              .withIsWebApk(true));
+        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME));
         mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, TEXT_APP_1_PACKAGE_NAME));
         checkUrl(INTENT_URL_WITH_FALLBACK_URL)
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
@@ -945,16 +945,52 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
+    public void testFallbackUrl_SubframeFallbackToMarketApp() {
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
+
+        RedirectHandler redirectHandler = RedirectHandler.create();
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0);
+        String intent = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
+                + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
+                + "https://play.google.com/store/apps/details?id=com.imdb.mobile"
+                + "&referrer=mypage;end";
+        checkUrl(intent)
+                .withIsMainFrame(false)
+                .withHasUserGesture(true)
+                .withRedirectHandler(redirectHandler)
+                .withPageTransition(PageTransition.LINK)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+        Assert.assertEquals("market://details?id=com.imdb.mobile&referrer=mypage",
+                mDelegate.startActivityIntent.getDataString());
+
+        redirectHandler = RedirectHandler.create();
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0);
+        String intentBadUrl = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
+                + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
+                + "https://play.google.com/store/search?q=pub:imdb;end";
+        checkUrl(intentBadUrl)
+                .withIsMainFrame(false)
+                .withHasUserGesture(true)
+                .withRedirectHandler(redirectHandler)
+                .withPageTransition(PageTransition.LINK)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+    }
+
+    @Test
+    @SmallTest
     public void testFallbackUrl_RedirectToIntentToMarket() {
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
+
         RedirectHandler redirectHandler = RedirectHandler.create();
 
-        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0);
         checkUrl("http://goo.gl/abcdefg")
-                .withPageTransition(PageTransition.TYPED)
+                .withPageTransition(PageTransition.LINK)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
-        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, true, true, 0, 0);
         String realIntent = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
                 + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
                 + "https://play.google.com/store/apps/details?id=com.imdb.mobile"
@@ -969,6 +1005,42 @@ public class ExternalNavigationHandlerTest {
 
         Assert.assertEquals("market://details?id=com.imdb.mobile&referrer=mypage",
                 mDelegate.startActivityIntent.getDataString());
+    }
+
+    @Test
+    @SmallTest
+    public void testFallbackUrl_DontFallbackForAutoSubframe() {
+        // IMDB app isn't installed.
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
+
+        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME));
+
+        RedirectHandler redirectHandler = RedirectHandler.create();
+        redirectHandler.updateNewUrlLoading(PageTransition.AUTO_SUBFRAME, true, true, 0, 0);
+
+        checkUrl(INTENT_URL_WITH_FALLBACK_URL)
+                .withIsMainFrame(false)
+                .withHasUserGesture(true)
+                .withRedirectHandler(redirectHandler)
+                .withPageTransition(PageTransition.AUTO_SUBFRAME)
+                .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+    }
+
+    @Test
+    @SmallTest
+    public void testFallbackUrl_NoExternalFallbackWithoutGesture() {
+        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME));
+
+        RedirectHandler redirectHandler = RedirectHandler.create();
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 0);
+
+        checkUrl(INTENT_URL_WITH_FALLBACK_URL)
+                .withHasUserGesture(false)
+                .withRedirectHandler(redirectHandler)
+                .withPageTransition(PageTransition.LINK)
+                .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
     }
 
     @Test
@@ -1016,7 +1088,7 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
                         START_INCOGNITO | START_OTHER_ACTIVITY);
 
-        Intent invokedIntent = mDelegate.startActivityIntent;
+        Intent invokedIntent = mUrlHandler.mStartActivityInIncognitoIntent;
         Assert.assertTrue(invokedIntent.getData().toString().startsWith("market://"));
         Assert.assertEquals(null, mUrlHandler.mNewUrlAfterClobbering);
         Assert.assertEquals(null, mUrlHandler.mReferrerUrlForClobbering);
@@ -1255,6 +1327,37 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
+    public void testIntentWithFileSchemeFiltered() {
+        checkUrl("intent://#Intent;package=com.test.package;scheme=file;end;")
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+    }
+
+    @Test
+    @SmallTest
+    public void testIntentWithNoSchemeLaunched() {
+        checkUrl("intent://#Intent;package=com.test.package;end;")
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
+    @Test
+    @SmallTest
+    public void testIntentWithEmptySchemeLaunched() {
+        checkUrl("intent://#Intent;package=com.test.package;scheme=;end;")
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
+    @Test
+    @SmallTest
+    public void testIntentWithWeirdSchemeLaunched() {
+        checkUrl("intent://#Intent;package=com.test.package;scheme=w3irD;end;")
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
+    @Test
+    @SmallTest
     public void testIntentWithMissingReferrer() {
         mDelegate.add(new IntentActivity("http://refertest.com", "refertest"));
         mDelegate.add(new IntentActivity("https://refertest.com", "refertest"));
@@ -1419,7 +1522,7 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testLaunchWebApk_BypassIntentPicker() {
-        mDelegate.add(new IntentActivity(WEBAPK_SCOPE, WEBAPK_PACKAGE_NAME).withIsWebApk(true));
+        mDelegate.add(new IntentActivity(WEBAPK_SCOPE, WEBAPK_PACKAGE_NAME));
 
         checkUrl(WEBAPK_SCOPE)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_WEBAPK);
@@ -1433,8 +1536,7 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testLaunchWebApk_ShowIntentPickerMultipleIntentHandlers() {
         final String scope = "https://www.webapk.with.native.com";
-        mDelegate.add(new IntentActivity(scope, WEBAPK_PACKAGE_PREFIX + ".with.native")
-                              .withIsWebApk(true));
+        mDelegate.add(new IntentActivity(scope, WEBAPK_PACKAGE_PREFIX + ".with.native"));
         mDelegate.add(new IntentActivity(scope, "com.webapk.with.native.android"));
 
         checkUrl(scope).expecting(
@@ -1452,9 +1554,9 @@ public class ExternalNavigationHandlerTest {
         final String scope1WebApkPackageName = WEBAPK_PACKAGE_PREFIX + ".with.native";
         final String scope1NativeAppPackageName = "com.webapk.with.native.android";
         final String scope2 = "https://www.template.com";
-        mDelegate.add(new IntentActivity(scope1, scope1WebApkPackageName).withIsWebApk(true));
+        mDelegate.add(new IntentActivity(scope1, scope1WebApkPackageName));
         mDelegate.add(new IntentActivity(scope1, scope1NativeAppPackageName));
-        mDelegate.add(new IntentActivity(scope2, WEBAPK_PACKAGE_NAME).withIsWebApk(true));
+        mDelegate.add(new IntentActivity(scope2, WEBAPK_PACKAGE_NAME));
         mDelegate.setReferrerWebappPackageName(scope1WebApkPackageName);
 
         checkUrl(scope2).withReferrer(scope1).expecting(
@@ -1469,7 +1571,7 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testLaunchWebApk_ShowIntentPickerInvalidWebApk() {
-        mDelegate.add(new IntentActivity(WEBAPK_SCOPE, WEBAPK_PACKAGE_NAME).withIsWebApk(false));
+        mDelegate.add(new IntentActivity(WEBAPK_SCOPE, INVALID_WEBAPK_PACKAGE_NAME));
         checkUrl(WEBAPK_SCOPE)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
@@ -1503,7 +1605,7 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
                         START_INCOGNITO | START_OTHER_ACTIVITY);
 
-        Assert.assertTrue(mDelegate.startIncognitoIntentCalled);
+        Assert.assertTrue(mUrlHandler.mStartIncognitoIntentCalled);
     }
 
     @Test
@@ -1514,7 +1616,7 @@ public class ExternalNavigationHandlerTest {
                 .withIsIncognito(true)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
-        Assert.assertFalse(mDelegate.startIncognitoIntentCalled);
+        Assert.assertFalse(mUrlHandler.mStartIncognitoIntentCalled);
     }
 
     @Test
@@ -1528,8 +1630,8 @@ public class ExternalNavigationHandlerTest {
                 .withHasUserGesture(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
-        Assert.assertTrue(mDelegate.maybeSetUserGestureCalled);
-        Assert.assertFalse(mDelegate.startIncognitoIntentCalled);
+        Assert.assertTrue(mDelegate.maybeSetRequestMetadataCalled);
+        Assert.assertFalse(mUrlHandler.mStartIncognitoIntentCalled);
     }
 
     @Test
@@ -1544,8 +1646,22 @@ public class ExternalNavigationHandlerTest {
                 .withIsIncognito(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
                         START_INCOGNITO | START_OTHER_ACTIVITY);
-        Assert.assertTrue(mDelegate.maybeSetUserGestureCalled);
-        Assert.assertTrue(mDelegate.startIncognitoIntentCalled);
+        Assert.assertTrue(mDelegate.maybeSetRequestMetadataCalled);
+        Assert.assertTrue(mUrlHandler.mStartIncognitoIntentCalled);
+    }
+
+    @Test
+    @SmallTest
+    public void testRendererInitiated() {
+        // IMDB app is installed.
+        mDelegate.add(new IntentActivity("imdb:", INTENT_APP_PACKAGE_NAME));
+
+        checkUrl(INTENT_URL_WITH_FALLBACK_URL)
+                .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
+                .withIsRendererInitiated(true)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+        Assert.assertTrue(mDelegate.maybeSetRequestMetadataCalled);
     }
 
     @Test
@@ -1837,21 +1953,12 @@ public class ExternalNavigationHandlerTest {
             mPackageName = packageName;
         }
 
-        public IntentActivity withIsWebApk(boolean isWebApk) {
-            mIsWebApk = isWebApk;
-            return this;
-        }
-
         public String urlPrefix() {
             return mUrlPrefix;
         }
 
         public String packageName() {
             return mPackageName;
-        }
-
-        public boolean isWebApk() {
-            return mIsWebApk;
         }
 
         public boolean isSpecialized() {
@@ -1868,13 +1975,29 @@ public class ExternalNavigationHandlerTest {
         public String mNewUrlAfterClobbering;
         public String mReferrerUrlForClobbering;
         public boolean mStartFileIntentCalled;
+        public Intent mStartActivityInIncognitoIntent;
+        public boolean mStartIncognitoIntentCalled;
 
         public ExternalNavigationHandlerForTesting(ExternalNavigationDelegate delegate) {
             super(delegate);
         }
 
         @Override
+        protected boolean isValidWebApk(String packageName) {
+            return packageName.startsWith(WEBAPK_PACKAGE_PREFIX)
+                    && !packageName.equals(INVALID_WEBAPK_PACKAGE_NAME);
+        }
+
+        @Override
         public boolean blockExternalFormRedirectsWithoutGesture() {
+            return true;
+        }
+
+        @Override
+        protected boolean startIncognitoIntentInternal(Intent intent, String referrerUrl,
+                String fallbackUrl, boolean needsToCloseTab, boolean proxy) {
+            mStartActivityInIncognitoIntent = intent;
+            mStartIncognitoIntentCalled = true;
             return true;
         }
 
@@ -1940,7 +2063,7 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public Activity getActivityContext() {
+        public Context getContext() {
             return null;
         }
 
@@ -1984,14 +2107,6 @@ public class ExternalNavigationHandlerTest {
             startActivityIntent = intent;
             mCalledWithProxy = proxy;
             return StartActivityIfNeededResult.HANDLED_WITH_ACTIVITY_START;
-        }
-
-        @Override
-        public boolean startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl,
-                boolean needsToCloseTab, boolean proxy) {
-            startActivityIntent = intent;
-            startIncognitoIntentCalled = true;
-            return true;
         }
 
         @Override
@@ -2046,8 +2161,9 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public void maybeSetUserGesture(Intent intent) {
-            maybeSetUserGestureCalled = true;
+        public void maybeSetRequestMetadata(Intent intent, boolean hasUserGesture,
+                boolean isRendererInitiated, Origin initiatorOrigin) {
+            maybeSetRequestMetadataCalled = true;
         }
 
         @Override
@@ -2080,6 +2196,11 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
+        public boolean canCloseTabOnIncognitoIntentLaunch() {
+            return false;
+        }
+
+        @Override
         public boolean isIntentForTrustedCallingApp(Intent intent) {
             return mIsCallingAppTrusted;
         }
@@ -2092,16 +2213,6 @@ public class ExternalNavigationHandlerTest {
         @Override
         public boolean isIntentToAutofillAssistant(Intent intent) {
             return mIsIntentToAutofillAssistant;
-        }
-
-        @Override
-        public boolean isValidWebApk(String packageName) {
-            for (IntentActivity activity : mIntentActivities) {
-                if (activity.packageName().equals(packageName)) {
-                    return activity.isWebApk();
-                }
-            }
-            return false;
         }
 
         @Override
@@ -2172,7 +2283,7 @@ public class ExternalNavigationHandlerTest {
         public Intent startActivityIntent;
         public boolean startIncognitoIntentCalled;
         public boolean handleIncognitoIntentTargetingSelfCalled;
-        public boolean maybeSetUserGestureCalled;
+        public boolean maybeSetRequestMetadataCalled;
 
         private String mReferrerWebappPackageName;
 
@@ -2212,6 +2323,8 @@ public class ExternalNavigationHandlerTest {
         private boolean mIsBackgroundTabNavigation;
         private boolean mHasUserGesture;
         private RedirectHandler mRedirectHandler;
+        private boolean mIsRendererInitiated;
+        private boolean mIsMainFrame = true;
 
         private ExternalNavigationTestParams(String url) {
             mUrl = url;
@@ -2259,6 +2372,16 @@ public class ExternalNavigationHandlerTest {
             return this;
         }
 
+        public ExternalNavigationTestParams withIsRendererInitiated(boolean isRendererInitiated) {
+            mIsRendererInitiated = isRendererInitiated;
+            return this;
+        }
+
+        public ExternalNavigationTestParams withIsMainFrame(boolean isMainFrame) {
+            mIsMainFrame = isMainFrame;
+            return this;
+        }
+
         public void expecting(
                 @OverrideUrlLoadingResult int expectedOverrideResult, int otherExpectation) {
             boolean expectStartIncognito = (otherExpectation & START_INCOGNITO) != 0;
@@ -2279,34 +2402,41 @@ public class ExternalNavigationHandlerTest {
                             .setApplicationMustBeInForeground(mChromeAppInForegroundRequired)
                             .setRedirectHandler(mRedirectHandler)
                             .setIsBackgroundTabNavigation(mIsBackgroundTabNavigation)
-                            .setIsMainFrame(true)
+                            .setIsMainFrame(mIsMainFrame)
                             .setNativeClientPackageName(mDelegate.getReferrerWebappPackageName())
                             .setHasUserGesture(mHasUserGesture)
+                            .setIsRendererInitiated(mIsRendererInitiated)
                             .build();
             @OverrideUrlLoadingResult
             int result = mUrlHandler.shouldOverrideUrlLoading(params);
             boolean startActivityCalled = false;
             boolean startWebApkCalled = false;
-            if (mDelegate.startActivityIntent != null) {
+
+            // Incognito intent launching gets caught by the test URL handler, whereas non-incgonito
+            // intent launching gets caught by the test delegate.
+            Intent startActivityIntent = expectStartIncognito
+                    ? mUrlHandler.mStartActivityInIncognitoIntent
+                    : mDelegate.startActivityIntent;
+
+            if (startActivityIntent != null) {
                 startActivityCalled = true;
-                String packageName = mDelegate.startActivityIntent.getPackage();
+                String packageName = startActivityIntent.getPackage();
                 if (packageName != null) {
                     startWebApkCalled = packageName.startsWith(WEBAPK_PACKAGE_PREFIX);
                 }
             }
 
             Assert.assertEquals(expectedOverrideResult, result);
-            Assert.assertEquals(expectStartIncognito, mDelegate.startIncognitoIntentCalled);
+            Assert.assertEquals(expectStartIncognito, mUrlHandler.mStartIncognitoIntentCalled);
             Assert.assertEquals(expectStartActivity, startActivityCalled);
             Assert.assertEquals(expectStartWebApk, startWebApkCalled);
             Assert.assertEquals(expectStartFile, mUrlHandler.mStartFileIntentCalled);
             Assert.assertEquals(expectProxyForIA, mDelegate.mCalledWithProxy);
 
             if (startActivityCalled && expectSaneIntent) {
-                checkIntentSanity(mDelegate.startActivityIntent, "Intent");
-                if (mDelegate.startActivityIntent.getSelector() != null) {
-                    checkIntentSanity(
-                            mDelegate.startActivityIntent.getSelector(), "Intent's selector");
+                checkIntentSanity(startActivityIntent, "Intent");
+                if (startActivityIntent.getSelector() != null) {
+                    checkIntentSanity(startActivityIntent.getSelector(), "Intent's selector");
                 }
             }
         }

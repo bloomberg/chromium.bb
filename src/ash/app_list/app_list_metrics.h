@@ -8,13 +8,7 @@
 #include "ash/app_list/app_list_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/time/time.h"
-#include "ui/compositor/animation_metrics_recorder.h"
-#include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/events/event.h"
-
-namespace ui {
-class Compositor;
-}
 
 namespace ash {
 
@@ -86,6 +80,10 @@ constexpr char kAppListResultLaunchIsEmptyQuery[] =
 constexpr char kDriveQuickAccessResultPresence[] =
     "Apps.AppListDriveQuickAccessProvider.ResultPresence";
 
+// The UMA histogram that logs smoothness of folder show/hide animation.
+constexpr char kFolderShowHideAnimationSmoothness[] =
+    "Apps.AppListFolder.ShowHide.AnimationSmoothness";
+
 // The UMA histogram that logs which page gets opened by the user.
 constexpr char kPageOpenedHistogram[] = "Apps.AppListPageOpened";
 
@@ -120,11 +118,6 @@ constexpr char kSearchQueryLengthInClamshell[] =
 // opened in tablet mode.
 constexpr char kSearchQueryLengthInTablet[] =
     "Apps.AppListSearchQueryLength.TabletMode";
-
-// The UMA histogram that logs the Manhattan distance from the origin of the
-// search results to the selected result.
-constexpr char kSearchResultDistanceFromOrigin[] =
-    "Apps.AppListSearchResultDistanceFromOrigin";
 
 // The different ways to create a new page in the apps grid. These values are
 // written to logs. New enum values can be added, but existing enums must never
@@ -275,12 +268,6 @@ enum TabletModeAnimationTransition {
   // Activate a window from shelf to hide the launcher in tablet mode.
   kHideHomeLauncherForWindow,
 
-  // Enter the overview mode in tablet
-  kEnterOverviewMode,
-
-  // Exit the overview mode in tablet
-  kExitOverviewMode,
-
   // Enter the kFullscreenAllApps state (usually by deactivating the search box)
   kEnterFullscreenAllApps,
 
@@ -338,55 +325,11 @@ APP_LIST_EXPORT void RecordAppListAppLaunched(AppListLaunchedFrom launched_from,
 
 APP_LIST_EXPORT bool IsCommandIdAnAppLaunch(int command_id);
 
-class FolderShowHideAnimationReporter : public ui::AnimationMetricsReporter {
- public:
-  FolderShowHideAnimationReporter();
-  FolderShowHideAnimationReporter(FolderShowHideAnimationReporter&) = delete;
-  FolderShowHideAnimationReporter& operator=(FolderShowHideAnimationReporter&) =
-      delete;
-  ~FolderShowHideAnimationReporter() override;
+APP_LIST_EXPORT void ReportPaginationSmoothness(bool is_tablet_mode,
+                                                int smoothness);
 
-  // ui:AnimationMetricsReporter:
-  void Report(int value) override;
-};
-
-class PaginationTransitionAnimationReporter
-    : public ui::AnimationMetricsReporter {
- public:
-  PaginationTransitionAnimationReporter();
-  PaginationTransitionAnimationReporter(
-      PaginationTransitionAnimationReporter&) = delete;
-  PaginationTransitionAnimationReporter& operator=(
-      PaginationTransitionAnimationReporter&) = delete;
-  ~PaginationTransitionAnimationReporter() override;
-
-  // ui:AnimationMetricsReporter:
-  void Report(int value) override;
-
-  void set_is_tablet_mode(bool val) { is_tablet_mode_ = val; }
-
- private:
-  bool is_tablet_mode_ = false;
-};
-
-// App list specific animation metrics recorder which has a pointer to the
-// compositor the app list to simplify things for callsites.
-class AppListAnimationMetricsRecorder : public ui::AnimationMetricsRecorder {
- public:
-  explicit AppListAnimationMetricsRecorder(
-      ui::AnimationMetricsReporter* reporter);
-  AppListAnimationMetricsRecorder(AppListAnimationMetricsRecorder&) = delete;
-  AppListAnimationMetricsRecorder& operator=(AppListAnimationMetricsRecorder&) =
-      delete;
-  ~AppListAnimationMetricsRecorder();
-
-  void OnAnimationStart(base::TimeDelta expected_duration,
-                        ui::Compositor* compositor);
-  void OnAnimationEnd(ui::Compositor* compositor);
-
- private:
-  bool animation_started_ = false;
-};
+APP_LIST_EXPORT void ReportCardifiedSmoothness(bool is_entering_cardified,
+                                               int smoothness);
 
 }  // namespace ash
 

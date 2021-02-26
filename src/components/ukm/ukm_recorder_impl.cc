@@ -9,10 +9,12 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/component_export.h"
 #include "base/feature_list.h"
 #include "base/metrics/crc32.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/rand_util.h"
@@ -32,10 +34,11 @@
 
 namespace ukm {
 
-namespace {
-
+COMPONENT_EXPORT(UKM_RECORDER)
 const base::Feature kUkmSamplingRateFeature{"UkmSamplingRate",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+namespace {
 
 // Gets the list of whitelisted Entries as string. Format is a comma separated
 // list of Entry names (as strings).
@@ -85,6 +88,34 @@ bool HasSupportedScheme(const GURL& url) {
          url.SchemeIs(kExtensionScheme) || url.SchemeIs(kAppScheme);
 }
 
+void LogEventHashAsUmaHistogram(const std::string& histogram_name,
+                                uint64_t event_hash) {
+  // The enum for this histogram gets populated by the PopulateEnumWithUkmEvents
+  // function in populate_enums.py when producing the merged XML.
+  base::UmaHistogramSparse(histogram_name,
+                           // Truncate the unsigned 64-bit hash to 31 bits, to
+                           // make it a suitable histogram sample.
+                           event_hash & 0x7fffffff);
+}
+
+// Artificially inflates counts of some event types reported to UMA histogram.
+// TODO(crbug/1137922): remove this artificial inflation of counts after alerts
+// are tested.
+void MaybeInflateHistogramCount(const std::string& histogram_name,
+                                uint64_t event_hash) {
+  const static std::map<uint64_t, size_t> event_hash_to_multipliers = {
+      {builders::Media_BasicPlayback::kEntryNameHash, 4},
+      {builders::RendererSchedulerTask::kEntryNameHash, 2},
+      {builders::HistoryNavigation::kEntryNameHash, 99},
+  };
+
+  auto iter = event_hash_to_multipliers.find(event_hash);
+  if (iter != event_hash_to_multipliers.end()) {
+    for (size_t i = 0; i < iter->second; ++i)
+      LogEventHashAsUmaHistogram(histogram_name, event_hash);
+  }
+}
+
 enum class DroppedDataReason {
   NOT_DROPPED = 0,
   RECORDING_DISABLED = 1,
@@ -106,7 +137,9 @@ void RecordDroppedSource(DroppedDataReason reason) {
       static_cast<int>(DroppedDataReason::NUM_DROPPED_DATA_REASONS));
 }
 
-void RecordDroppedEntry(DroppedDataReason reason) {
+void RecordDroppedEntry(uint64_t event_hash, DroppedDataReason reason) {
+  LogEventHashAsUmaHistogram("UKM.Entries.Dropped.ByEntryHash", event_hash);
+
   UMA_HISTOGRAM_ENUMERATION(
       "UKM.Entries.Dropped", static_cast<int>(reason),
       static_cast<int>(DroppedDataReason::NUM_DROPPED_DATA_REASONS));
@@ -339,9 +372,9 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   for (const auto& kv : recordings_.sources) {
     // Don't keep sources of these types after current report because their
     // entries are logged only at source creation time.
-    if (GetSourceIdType(kv.first) == base::UkmSourceId::Type::APP_ID ||
-        GetSourceIdType(kv.first) == base::UkmSourceId::Type::HISTORY_ID ||
-        GetSourceIdType(kv.first) == base::UkmSourceId::Type::WEBAPK_ID ||
+    if (GetSourceIdType(kv.first) == ukm::SourceIdObj::Type::APP_ID ||
+        GetSourceIdType(kv.first) == ukm::SourceIdObj::Type::HISTORY_ID ||
+        GetSourceIdType(kv.first) == ukm::SourceIdObj::Type::WEBAPK_ID ||
         GetSourceIdType(kv.first) == SourceIdType::PAYMENT_APP_ID) {
       MarkSourceForDeletion(kv.first);
     }
@@ -363,8 +396,8 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
       if (!base::Contains(source_ids_seen, kv.first)) {
         continue;
       } else {
-        // Source of base::UkmSourceId::Type::UKM type will not be kept after
-        // entries are logged.
+        // Source of ukm::SourceIdObj::Type::DEFAULT type will not be kept
+        // after entries are logged.
         MarkSourceForDeletion(kv.first);
       }
     }
@@ -433,8 +466,9 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.UnmatchedSourcesCount",
                             num_sources_unmatched);
 
-  UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.SerializedCount2.Ukm",
-                            serialized_source_type_counts[SourceIdType::UKM]);
+  UMA_HISTOGRAM_COUNTS_1000(
+      "UKM.Sources.SerializedCount2.Default",
+      serialized_source_type_counts[SourceIdType::DEFAULT]);
   UMA_HISTOGRAM_COUNTS_1000(
       "UKM.Sources.SerializedCount2.Navigation",
       serialized_source_type_counts[SourceIdType::NAVIGATION_ID]);
@@ -514,6 +548,11 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
     }
   }
   source_counts_proto->set_entryless_sources(num_sources_entryless);
+
+  // Notify observers that a report was generated.
+  if (entry_filter_) {
+    entry_filter_->OnStoreRecordingsInReport();
+  }
 }
 
 bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {
@@ -681,12 +720,14 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
   DCHECK(!HasUnknownMetrics(decode_map_, *entry));
 
   if (!recording_enabled_) {
-    RecordDroppedEntry(DroppedDataReason::RECORDING_DISABLED);
+    RecordDroppedEntry(entry->event_hash,
+                       DroppedDataReason::RECORDING_DISABLED);
     return;
   }
 
   if (!ApplyEntryFilter(entry.get())) {
-    RecordDroppedEntry(DroppedDataReason::REJECTED_BY_FILTER);
+    RecordDroppedEntry(entry->event_hash,
+                       DroppedDataReason::REJECTED_BY_FILTER);
     return;
   }
 
@@ -703,7 +744,7 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
 
   if (ShouldRestrictToWhitelistedEntries() &&
       !base::Contains(whitelisted_entry_hashes_, entry->event_hash)) {
-    RecordDroppedEntry(DroppedDataReason::NOT_WHITELISTED);
+    RecordDroppedEntry(entry->event_hash, DroppedDataReason::NOT_WHITELISTED);
     event_aggregate.dropped_due_to_whitelist++;
     for (auto& metric : entry->metrics)
       event_aggregate.metrics[metric.first].dropped_due_to_whitelist++;
@@ -718,7 +759,7 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
     bool sampled_in = IsSampledIn(entry->source_id, entry->event_hash);
 
     if (!sampled_in) {
-      RecordDroppedEntry(DroppedDataReason::SAMPLED_OUT);
+      RecordDroppedEntry(entry->event_hash, DroppedDataReason::SAMPLED_OUT);
       event_aggregate.dropped_due_to_sampling++;
       for (auto& metric : entry->metrics)
         event_aggregate.metrics[metric.first].dropped_due_to_sampling++;
@@ -727,12 +768,19 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
   }
 
   if (recordings_.entries.size() >= GetMaxEntries()) {
-    RecordDroppedEntry(DroppedDataReason::MAX_HIT);
+    RecordDroppedEntry(entry->event_hash, DroppedDataReason::MAX_HIT);
     event_aggregate.dropped_due_to_limits++;
     for (auto& metric : entry->metrics)
       event_aggregate.metrics[metric.first].dropped_due_to_limits++;
     return;
   }
+
+  // Log a corresponding entry to UMA so we get a per-metric breakdown of UKM
+  // entry counts.
+  LogEventHashAsUmaHistogram("UKM.Entries.Recorded.ByEntryHash",
+                             entry->event_hash);
+  MaybeInflateHistogramCount("UKM.Entries.Recorded.ByEntryHash",
+                             entry->event_hash);
 
   recordings_.entries.push_back(std::move(entry));
 }

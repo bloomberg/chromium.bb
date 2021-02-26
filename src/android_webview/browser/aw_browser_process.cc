@@ -5,11 +5,15 @@
 #include "android_webview/browser/aw_browser_process.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/lifecycle/aw_contents_lifecycle_notifier.h"
 #include "android_webview/browser/metrics/visibility_metrics_logger.h"
+#include "android_webview/browser_jni_headers/AwBrowserProcess_jni.h"
+#include "android_webview/common/crash_reporter/crash_keys.h"
+#include "base/android/jni_string.h"
 #include "base/base_paths_posix.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "components/crash/core/common/crash_key.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -24,8 +28,8 @@ namespace prefs {
 const char kAuthAndroidNegotiateAccountType[] =
     "auth.android_negotiate_account_type";
 
-// Whitelist containing servers for which Integrated Authentication is enabled.
-const char kAuthServerWhitelist[] = "auth.server_whitelist";
+// Allowlist containing servers for which Integrated Authentication is enabled.
+const char kAuthServerAllowlist[] = "auth.server_allowlist";
 
 }  // namespace prefs
 
@@ -42,6 +46,9 @@ AwBrowserProcess::AwBrowserProcess(
     AwFeatureListCreator* aw_feature_list_creator) {
   g_aw_browser_process = this;
   aw_feature_list_creator_ = aw_feature_list_creator;
+  aw_contents_lifecycle_notifier_ =
+      std::make_unique<AwContentsLifecycleNotifier>(base::BindRepeating(
+          &AwBrowserProcess::OnLoseForeground, base::Unretained(this)));
 }
 
 AwBrowserProcess::~AwBrowserProcess() {
@@ -52,7 +59,7 @@ void AwBrowserProcess::PreMainMessageLoopRun() {
   pref_change_registrar_.Init(local_state());
   auto auth_pref_callback = base::BindRepeating(
       &AwBrowserProcess::OnAuthPrefsChanged, base::Unretained(this));
-  pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
+  pref_change_registrar_.Add(prefs::kAuthServerAllowlist, auth_pref_callback);
   pref_change_registrar_.Add(prefs::kAuthAndroidNegotiateAccountType,
                              auth_pref_callback);
 
@@ -72,6 +79,11 @@ void AwBrowserProcess::CreateLocalState() {
   DCHECK(local_state_);
 }
 
+void AwBrowserProcess::OnLoseForeground() {
+  if (local_state_)
+    local_state_->CommitPendingWrite();
+}
+
 AwBrowserPolicyConnector* AwBrowserProcess::browser_policy_connector() {
   if (!browser_policy_connector_)
     CreateBrowserPolicyConnector();
@@ -79,8 +91,17 @@ AwBrowserPolicyConnector* AwBrowserProcess::browser_policy_connector() {
 }
 
 VisibilityMetricsLogger* AwBrowserProcess::visibility_metrics_logger() {
-  if (!visibility_metrics_logger_)
+  if (!visibility_metrics_logger_) {
     visibility_metrics_logger_ = std::make_unique<VisibilityMetricsLogger>();
+
+    // Now that we may become visible, also initialize AndroidBatteryMetrics.
+    battery_metrics_ = std::make_unique<power_metrics::AndroidBatteryMetrics>();
+    visibility_metrics_logger_->SetOnVisibilityChangedCallback(
+        base::BindRepeating([](bool visible) {
+          AwBrowserProcess::GetInstance()
+              ->battery_metrics_->OnAppVisibilityChanged(visible);
+        }));
+  }
   return visibility_metrics_logger_.get();
 }
 
@@ -94,21 +115,21 @@ void AwBrowserProcess::CreateBrowserPolicyConnector() {
 
 void AwBrowserProcess::InitSafeBrowsing() {
   CreateSafeBrowsingUIManager();
-  CreateSafeBrowsingWhitelistManager();
+  CreateSafeBrowsingAllowlistManager();
 }
 
 void AwBrowserProcess::CreateSafeBrowsingUIManager() {
   safe_browsing_ui_manager_ = new AwSafeBrowsingUIManager();
 }
 
-void AwBrowserProcess::CreateSafeBrowsingWhitelistManager() {
+void AwBrowserProcess::CreateSafeBrowsingAllowlistManager() {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
-  safe_browsing_whitelist_manager_ =
-      std::make_unique<AwSafeBrowsingWhitelistManager>(background_task_runner,
+      content::GetIOThreadTaskRunner({});
+  safe_browsing_allowlist_manager_ =
+      std::make_unique<AwSafeBrowsingAllowlistManager>(background_task_runner,
                                                        io_task_runner);
 }
 
@@ -147,9 +168,9 @@ AwBrowserProcess::GetSafeBrowsingTriggerManager() {
   return safe_browsing_trigger_manager_.get();
 }
 
-AwSafeBrowsingWhitelistManager*
-AwBrowserProcess::GetSafeBrowsingWhitelistManager() const {
-  return safe_browsing_whitelist_manager_.get();
+AwSafeBrowsingAllowlistManager*
+AwBrowserProcess::GetSafeBrowsingAllowlistManager() const {
+  return safe_browsing_allowlist_manager_.get();
 }
 
 AwSafeBrowsingUIManager* AwBrowserProcess::GetSafeBrowsingUIManager() const {
@@ -159,7 +180,7 @@ AwSafeBrowsingUIManager* AwBrowserProcess::GetSafeBrowsingUIManager() const {
 // static
 void AwBrowserProcess::RegisterNetworkContextLocalStatePrefs(
     PrefRegistrySimple* pref_registry) {
-  pref_registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
+  pref_registry->RegisterStringPref(prefs::kAuthServerAllowlist, std::string());
   pref_registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
                                     std::string());
 }
@@ -170,7 +191,7 @@ AwBrowserProcess::CreateHttpAuthDynamicParams() {
       network::mojom::HttpAuthDynamicParams::New();
 
   auth_dynamic_params->server_allowlist =
-      local_state()->GetString(prefs::kAuthServerWhitelist);
+      local_state()->GetString(prefs::kAuthServerAllowlist);
   auth_dynamic_params->android_negotiate_account_type =
       local_state()->GetString(prefs::kAuthAndroidNegotiateAccountType);
 
@@ -182,6 +203,20 @@ AwBrowserProcess::CreateHttpAuthDynamicParams() {
 void AwBrowserProcess::OnAuthPrefsChanged() {
   content::GetNetworkService()->ConfigureHttpAuthPrefs(
       CreateHttpAuthDynamicParams());
+}
+
+// static
+void AwBrowserProcess::TriggerMinidumpUploading() {
+  Java_AwBrowserProcess_triggerMinidumpUploading(
+      base::android::AttachCurrentThread());
+}
+
+static void JNI_AwBrowserProcess_SetProcessNameCrashKey(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& processName) {
+  static ::crash_reporter::CrashKeyString<64> crash_key(
+      crash_keys::kAppProcessName);
+  crash_key.Set(ConvertJavaStringToUTF8(env, processName));
 }
 
 }  // namespace android_webview

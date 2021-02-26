@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_MANIFEST_UPDATE_TASK_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_MANIFEST_UPDATE_TASK_H_
 
-#include "base/logging.h"
+#include <map>
+
+#include "base/check_op.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
@@ -99,9 +102,13 @@ class ManifestUpdateTask final
   void LoadAndCheckIconContents();
   void OnIconsDownloaded(bool success, IconsMap icons_map);
   void OnAllIconsRead(IconsMap downloaded_icons_map,
-                      std::map<SquareSizePx, SkBitmap> disk_icon_bitmaps);
+                      IconBitmaps disk_icon_bitmaps);
   bool IsUpdateNeededForIconContents(
-      const std::map<SquareSizePx, SkBitmap>& disk_icon_bitmaps) const;
+      const IconBitmaps& disk_icon_bitmaps) const;
+  void OnAllShortcutsMenuIconsRead(
+      ShortcutsMenuIconsBitmaps disk_shortcuts_menu_icons);
+  bool IsUpdateNeededForShortcutsMenuIconsContents(
+      const ShortcutsMenuIconsBitmaps& disk_shortcuts_menu_icons) const;
   void UpdateAfterWindowsClose();
   void OnAllAppWindowsClosed();
   void OnInstallationComplete(

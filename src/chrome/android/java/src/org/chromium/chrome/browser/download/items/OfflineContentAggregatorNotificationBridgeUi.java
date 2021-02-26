@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadNotifier;
 import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -17,8 +18,8 @@ import org.chromium.components.offline_items_collection.OpenParams;
 import org.chromium.components.offline_items_collection.UpdateDelta;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * A glue class that bridges the Profile-attached OfflineContentProvider with the
@@ -72,7 +73,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
 
     // OfflineContentProvider.Observer implementation.
     @Override
-    public void onItemsAdded(ArrayList<OfflineItem> items) {
+    public void onItemsAdded(List<OfflineItem> items) {
         for (int i = 0; i < items.size(); ++i) getVisualsAndUpdateItem(items.get(i), null);
     }
 
@@ -148,8 +149,9 @@ public class OfflineContentAggregatorNotificationBridgeUi
 
     private void pushItemToUi(OfflineItem item, OfflineItemVisuals visuals) {
         // TODO(http://crbug.com/855141): Find a cleaner way to hide unimportant UI updates.
-        // If it's a suggested page, do not add it to the notification UI.
-        if (item.isSuggested) return;
+        // If it's a suggested page, or the user choose to download later. Do not add it to the
+        // notification UI.
+        if (item.isSuggested || item.schedule != null) return;
 
         DownloadInfo info = DownloadInfo.fromOfflineItem(item, visuals);
         switch (item.state) {
@@ -163,8 +165,8 @@ public class OfflineContentAggregatorNotificationBridgeUi
                 mUi.notifyDownloadCanceled(item.id);
                 break;
             case OfflineItemState.INTERRUPTED:
-                // TODO(dtrainor): Push the correct value for auto resume.
-                mUi.notifyDownloadInterrupted(info, true, item.pendingState);
+                mUi.notifyDownloadInterrupted(info,
+                        LegacyHelpers.isLegacyDownload(item.id) ? false : true, item.pendingState);
                 break;
             case OfflineItemState.PAUSED:
                 mUi.notifyDownloadPaused(info);

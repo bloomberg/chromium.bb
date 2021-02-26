@@ -7,6 +7,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -26,8 +27,9 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -138,8 +140,36 @@ TEST_F(ShelfWidgetTest, TestAlignmentForMultipleDisplays) {
   }
 }
 
-// Makes sure the shelf is initially sized correctly.
-TEST_F(ShelfWidgetTest, LauncherInitiallySized) {
+class ShelfWidgetLayoutBasicsTest
+    : public ShelfWidgetTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  ShelfWidgetLayoutBasicsTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kHideShelfControlsInTabletMode, std::get<1>(GetParam()));
+  }
+  ~ShelfWidgetLayoutBasicsTest() override = default;
+
+  void SetUp() override {
+    ShelfWidgetTest::SetUp();
+
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(
+        std::get<0>(GetParam()));
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// First parameter - whether test should run in tablet mode.
+// Second parameter - whether shelf navigation buttons are enabled in tablet
+// mode.
+INSTANTIATE_TEST_SUITE_P(All,
+                         ShelfWidgetLayoutBasicsTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
+
+// Makes sure the shelf is initially sized correctly in clamshell/tablet.
+TEST_P(ShelfWidgetLayoutBasicsTest, LauncherInitiallySized) {
   ShelfWidget* shelf_widget = GetShelfWidget();
   ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManager();
   ASSERT_TRUE(shelf_layout_manager);
@@ -152,13 +182,26 @@ TEST_F(ShelfWidgetTest, LauncherInitiallySized) {
   const int total_width =
       screen_util::GetDisplayBoundsWithShelf(shelf_widget->GetNativeWindow())
           .width();
-  const int nav_width =
-      shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
+
+  const gfx::Rect nav_widget_clip_rect =
+      shelf_widget->navigation_widget()->GetLayer()->clip_rect();
+  if (!nav_widget_clip_rect.IsEmpty())
+    EXPECT_EQ(gfx::Point(), nav_widget_clip_rect.origin());
+
+  int nav_width =
+      nav_widget_clip_rect.IsEmpty()
+          ? shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width()
+          : nav_widget_clip_rect.width();
+  ASSERT_GE(nav_width, 0);
+  if (nav_width) {
+    nav_width -= ShelfConfig::Get()->control_button_edge_spacing(
+        true /* is_primary_axis_edge */);
+  }
+
   const int hotseat_width =
       shelf_widget->hotseat_widget()->GetWindowBoundsInScreen().width();
-  const int margins = ShelfConfig::Get()->control_button_edge_spacing(
-                          true /* is_primary_axis_edge */) +
-                      ShelfConfig::Get()->app_icon_group_margin();
+  const int margins = 2 * ShelfConfig::Get()->GetAppIconGroupMargin();
+
   EXPECT_EQ(status_width, total_width - nav_width - hotseat_width - margins);
 }
 
@@ -200,18 +243,20 @@ TEST_F(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
       screen_util::GetDisplayBoundsWithShelf(shelf_widget1->GetNativeWindow())
           .width();
   const int nav_width1 =
-      shelf_widget1->navigation_widget()->GetWindowBoundsInScreen().width();
+      shelf_widget1->navigation_widget()->GetWindowBoundsInScreen().width() -
+      ShelfConfig::Get()->control_button_edge_spacing(
+          true /* is_primary_axis_edge */);
   const int hotseat_width1 =
       shelf_widget1->hotseat_widget()->GetWindowBoundsInScreen().width();
-  const int margins = ShelfConfig::Get()->control_button_edge_spacing(
-                          true /* is_primary_axis_edge */) +
-                      ShelfConfig::Get()->app_icon_group_margin();
+  const int margins = 2 * ShelfConfig::Get()->GetAppIconGroupMargin();
 
   const int total_width2 =
       screen_util::GetDisplayBoundsWithShelf(shelf_widget2->GetNativeWindow())
           .width();
   const int nav_width2 =
-      shelf_widget2->navigation_widget()->GetWindowBoundsInScreen().width();
+      shelf_widget2->navigation_widget()->GetWindowBoundsInScreen().width() -
+      ShelfConfig::Get()->control_button_edge_spacing(
+          true /* is_primary_axis_edge */);
   const int hotseat_width2 =
       shelf_widget2->hotseat_widget()->GetWindowBoundsInScreen().width();
 

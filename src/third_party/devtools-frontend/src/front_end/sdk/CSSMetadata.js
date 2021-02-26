@@ -34,9 +34,7 @@ import * as Common from '../common/common.js';
 import * as SupportedCSSProperties from '../generated/SupportedCSSProperties.js';
 import * as Platform from '../platform/platform.js';
 
-/**
- * @unrestricted
- */
+
 export class CSSMetadata {
   /**
    * @param {!Array<!CSSPropertyDefinition>} properties
@@ -199,6 +197,25 @@ export class CSSMetadata {
    * @param {string} propertyName
    * @return {boolean}
    */
+  isFontFamilyProperty(propertyName) {
+    return propertyName.toLowerCase() === 'font-family';
+  }
+
+  /**
+ * @param {string} propertyName
+ * @return {boolean}
+ */
+  isAngleAwareProperty(propertyName) {
+    const lowerCasedName = propertyName.toLowerCase();
+    // TODO: @Yisi, parse hsl(), hsla(), hwb() and lch()
+    // See also https://drafts.csswg.org/css-color/#hue-syntax
+    return _colorAwareProperties.has(lowerCasedName) || _angleAwareProperties.has(lowerCasedName);
+  }
+
+  /**
+   * @param {string} propertyName
+   * @return {boolean}
+   */
   isGridAreaDefiningProperty(propertyName) {
     propertyName = propertyName.toLowerCase();
     return propertyName === 'grid' || propertyName === 'grid-template' || propertyName === 'grid-template-areas';
@@ -286,8 +303,8 @@ export class CSSMetadata {
    */
   isCSSPropertyName(propertyName) {
     propertyName = propertyName.toLowerCase();
-    if (propertyName.startsWith('-moz-') || propertyName.startsWith('-o-') || propertyName.startsWith('-webkit-') ||
-        propertyName.startsWith('-ms-')) {
+    if ((propertyName.startsWith('--') && propertyName.length > 2) || propertyName.startsWith('-moz-') ||
+        propertyName.startsWith('-ms-') || propertyName.startsWith('-o-') || propertyName.startsWith('-webkit-')) {
       return true;
     }
     return this._valuesSet.has(propertyName);
@@ -411,24 +428,23 @@ const _imageValuePresetMap = new Map([
   ['url', 'url(||)'],
 ]);
 
+const _filterValuePresetMap = new Map([
+  ['blur', 'blur(|1px|)'],
+  ['brightness', 'brightness(|0.5|)'],
+  ['contrast', 'contrast(|0.5|)'],
+  ['drop-shadow', 'drop-shadow(|2px 4px 6px black|)'],
+  ['grayscale', 'grayscale(|1|)'],
+  ['hue-rotate', 'hue-rotate(|45deg|)'],
+  ['invert', 'invert(|1|)'],
+  ['opacity', 'opacity(|0.5|)'],
+  ['saturate', 'saturate(|0.5|)'],
+  ['sepia', 'sepia(|1|)'],
+  ['url', 'url(||)'],
+]);
+
 const _valuePresets = new Map([
-  [
-    'filter', new Map([
-      ['blur', 'blur(|1px|)'],
-      ['brightness', 'brightness(|0.5|)'],
-      ['contrast', 'contrast(|0.5|)'],
-      ['drop-shadow', 'drop-shadow(|2px 4px 6px black|)'],
-      ['grayscale', 'grayscale(|1|)'],
-      ['hue-rotate', 'hue-rotate(|45deg|)'],
-      ['invert', 'invert(|1|)'],
-      ['opacity', 'opacity(|0.5|)'],
-      ['saturate', 'saturate(|0.5|)'],
-      ['sepia', 'sepia(|1|)'],
-      ['url', 'url(||)'],
-    ])
-  ],
-  ['background', _imageValuePresetMap], ['background-image', _imageValuePresetMap],
-  ['-webkit-mask-image', _imageValuePresetMap],
+  ['filter', _filterValuePresetMap], ['backdrop-filter', _filterValuePresetMap], ['background', _imageValuePresetMap],
+  ['background-image', _imageValuePresetMap], ['-webkit-mask-image', _imageValuePresetMap],
   [
     'transform', new Map([
       ['scale', 'scale(|1.5|)'],
@@ -467,7 +483,6 @@ const _bezierAwareProperties = new Set([
 ]);
 
 const _colorAwareProperties = new Set([
-  'backdrop-filter',
   'background',
   'background-color',
   'background-image',
@@ -488,6 +503,7 @@ const _colorAwareProperties = new Set([
   'color',
   'column-rule',
   'column-rule-color',
+  'content',
   'fill',
   'list-style-image',
   'outline',
@@ -506,7 +522,6 @@ const _colorAwareProperties = new Set([
   '-webkit-box-reflect',
   '-webkit-box-shadow',
   '-webkit-column-rule-color',
-  '-webkit-filter',
   '-webkit-mask',
   '-webkit-mask-box-image',
   '-webkit-mask-box-image-source',
@@ -520,13 +535,30 @@ const _colorAwareProperties = new Set([
   '-webkit-text-stroke-color'
 ]);
 
+// In addition to `_colorAwareProperties`, the following properties contain CSS <angle> units.
+const _angleAwareProperties = new Set([
+  '-webkit-border-image',
+  'transform',
+  '-webkit-transform',
+  'rotate',
+  'filter',
+  '-webkit-filter',
+  'backdrop-filter',
+  'offset',
+  'offset-rotate',
+  'font-style',
+]);
+
 // manually maintained list of property values to add into autocomplete list
 const _extraPropertyValues = {
   'background-repeat': {values: ['repeat', 'repeat-x', 'repeat-y', 'no-repeat', 'space', 'round']},
   'content': {values: ['normal', 'close-quote', 'no-close-quote', 'no-open-quote', 'open-quote']},
   'baseline-shift': {values: ['baseline']},
   'max-height': {values: ['min-content', 'max-content', '-webkit-fill-available', 'fit-content']},
+  'color': {values: ['black']},
+  'background-color': {values: ['white']},
   'box-shadow': {values: ['inset']},
+  'text-shadow': {values: ['0 0 black']},
   '-webkit-writing-mode': {values: ['horizontal-tb', 'vertical-rl', 'vertical-lr']},
   'writing-mode': {values: ['lr', 'rl', 'tb', 'lr-tb', 'rl-tb', 'tb-rl']},
   'page-break-inside': {values: ['avoid']},
@@ -538,6 +570,7 @@ const _extraPropertyValues = {
   'overscroll-behavior': {values: ['contain']},
   'text-rendering': {values: ['optimizeSpeed', 'optimizeLegibility', 'geometricPrecision']},
   'text-align': {values: ['-webkit-auto', '-webkit-match-parent']},
+  'clip-path': {values: ['circle', 'ellipse', 'inset', 'polygon', 'url']},
   'color-interpolation': {values: ['sRGB', 'linearRGB']},
   'word-wrap': {values: ['normal', 'break-word']},
   'font-weight': {values: ['100', '200', '300', '400', '500', '600', '700', '800', '900']},
@@ -561,8 +594,13 @@ const _extraPropertyValues = {
   'border-image': {values: ['repeat', 'stretch', 'space', 'round']},
   'text-decoration':
       {values: ['blink', 'line-through', 'overline', 'underline', 'wavy', 'double', 'solid', 'dashed', 'dotted']},
-  'font-family':
-      {values: ['serif', 'sans-serif', 'cursive', 'fantasy', 'monospace', '-webkit-body', '-webkit-pictograph']},
+  // List taken from https://drafts.csswg.org/css-fonts-4/#generic-font-families
+  'font-family': {
+    values: [
+      'serif', 'sans-serif', 'cursive', 'fantasy', 'monospace', 'system-ui', 'emoji', 'math', 'fangsong', 'ui-serif',
+      'ui-sans-serif', 'ui-monospace', 'ui-rounded', '-webkit-body', '-webkit-pictograph'
+    ]
+  },
   'zoom': {values: ['normal']},
   'max-width': {values: ['min-content', 'max-content', '-webkit-fill-available', 'fit-content']},
   '-webkit-font-smoothing': {values: ['antialiased', 'subpixel-antialiased']},
@@ -674,6 +712,12 @@ const _extraPropertyValues = {
   '-webkit-column-span': {values: ['all']},
   '-webkit-column-gap': {values: ['normal']},
   'filter': {
+    values: [
+      'url', 'blur', 'brightness', 'contrast', 'drop-shadow', 'grayscale', 'hue-rotate', 'invert', 'opacity',
+      'saturate', 'sepia'
+    ]
+  },
+  'backdrop-filter': {
     values: [
       'url', 'blur', 'brightness', 'contrast', 'drop-shadow', 'grayscale', 'hue-rotate', 'invert', 'opacity',
       'saturate', 'sepia'

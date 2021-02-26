@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/files/file_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/search/local_ntp_browsertest_base.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -475,8 +475,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   policy::PolicyMap policies1;
   policies1.Set(policy::key::kNTPCustomBackgroundEnabled,
                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                policy::POLICY_SOURCE_CLOUD,
-                std::make_unique<base::Value>(false), nullptr);
+                policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   policy_provider_.UpdateChromePolicy(policies1);
   base::RunLoop().RunUntilIdle();
 
@@ -488,8 +487,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   policy::PolicyMap policies2;
   policies2.Set(policy::key::kNTPCustomBackgroundEnabled,
                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                policy::POLICY_SOURCE_CLOUD,
-                std::make_unique<base::Value>(true), nullptr);
+                policy::POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   policy_provider_.UpdateChromePolicy(policies2);
   base::RunLoop().RunUntilIdle();
 
@@ -510,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
 
 // TODO(crbug/980638): Update/Remove when Linux and/or ChromeOS support dark
 // mode.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 
 // Tests that dark mode styling is properly applied when a theme and/or custom
 // background is set.

@@ -5,7 +5,9 @@
 #include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
@@ -41,13 +43,9 @@ class ServiceConnectionImpl : public ServiceConnection {
       mojom::CrosHealthdDiagnosticsService::RunUrandomRoutineCallback callback)
       override;
   void RunBatteryCapacityRoutine(
-      uint32_t low_mah,
-      uint32_t high_mah,
       mojom::CrosHealthdDiagnosticsService::RunBatteryCapacityRoutineCallback
           callback) override;
   void RunBatteryHealthRoutine(
-      uint32_t maximum_cycle_count,
-      uint32_t percent_battery_wear_allowed,
       mojom::CrosHealthdDiagnosticsService::RunBatteryHealthRoutineCallback
           callback) override;
   void RunSmartctlCheckRoutine(
@@ -94,6 +92,41 @@ class ServiceConnectionImpl : public ServiceConnection {
       uint32_t maximum_discharge_percent_allowed,
       mojom::CrosHealthdDiagnosticsService::RunBatteryDischargeRoutineCallback
           callback) override;
+  void RunBatteryChargeRoutine(
+      base::TimeDelta exec_duration,
+      uint32_t minimum_charge_percent_required,
+      mojom::CrosHealthdDiagnosticsService::RunBatteryChargeRoutineCallback
+          callback) override;
+  void RunMemoryRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunMemoryRoutineCallback callback)
+      override;
+  void RunLanConnectivityRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunLanConnectivityRoutineCallback
+          callback) override;
+  void RunSignalStrengthRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunSignalStrengthRoutineCallback
+          callback) override;
+  void RunGatewayCanBePingedRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunGatewayCanBePingedRoutineCallback
+          callback) override;
+  void RunHasSecureWiFiConnectionRoutine(
+      mojom::CrosHealthdDiagnosticsService::
+          RunHasSecureWiFiConnectionRoutineCallback callback) override;
+  void RunDnsResolverPresentRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunDnsResolverPresentRoutineCallback
+          callback) override;
+  void RunDnsLatencyRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunDnsLatencyRoutineCallback
+          callback) override;
+  void RunDnsResolutionRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunDnsResolutionRoutineCallback
+          callback) override;
+  void RunCaptivePortalRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunCaptivePortalRoutineCallback
+          callback) override;
+  void RunHttpFirewallRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunHttpFirewallRoutineCallback
+          callback) override;
   void AddBluetoothObserver(
       mojo::PendingRemote<mojom::CrosHealthdBluetoothObserver> pending_observer)
       override;
@@ -105,14 +138,31 @@ class ServiceConnectionImpl : public ServiceConnection {
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
       override;
+  void ProbeProcessInfo(pid_t process_id,
+                        mojom::CrosHealthdProbeService::ProbeProcessInfoCallback
+                            callback) override;
   void GetDiagnosticsService(
       mojom::CrosHealthdDiagnosticsServiceRequest service) override;
   void GetProbeService(mojom::CrosHealthdProbeServiceRequest service) override;
+  void SetBindNetworkHealthServiceCallback(
+      BindNetworkHealthServiceCallback callback) override;
+  void SetBindNetworkDiagnosticsRoutinesCallback(
+      BindNetworkDiagnosticsRoutinesCallback callback) override;
+  void FlushForTesting() override;
+
+  // Uses |bind_network_health_callback_| if set to bind a remote to the
+  // NetworkHealthService and send the PendingRemote to the CrosHealthdService.
+  void BindAndSendNetworkHealthService();
+
+  // Uses |bind_network_diagnostics_callback_| if set to bind a remote to the
+  // NetworkDiagnosticsRoutines interface and send the PendingRemote to
+  // cros_healthd.
+  void BindAndSendNetworkDiagnosticsRoutines();
 
   // Binds the factory interface |cros_healthd_service_factory_| to an
   // implementation in the cros_healthd daemon, if it is not already bound. The
   // binding is accomplished via D-Bus bootstrap.
-  void BindCrosHealthdServiceFactoryIfNeeded();
+  void EnsureCrosHealthdServiceFactoryIsBound();
 
   // Uses |cros_healthd_service_factory_| to bind the diagnostics service remote
   // to an implementation in the cros_healethd daemon, if it is not already
@@ -140,7 +190,17 @@ class ServiceConnectionImpl : public ServiceConnection {
       cros_healthd_diagnostics_service_;
   mojo::Remote<mojom::CrosHealthdEventService> cros_healthd_event_service_;
 
+  // Repeating callback that binds a mojo::PendingRemote to the
+  // NetworkHealthService and returns it.
+  BindNetworkHealthServiceCallback bind_network_health_callback_;
+
+  // Repeating callback that binds a mojo::PendingRemote to the
+  // NetworkDiagnosticsRoutines interface and returns it.
+  BindNetworkDiagnosticsRoutinesCallback bind_network_diagnostics_callback_;
+
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<ServiceConnectionImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceConnectionImpl);
 };
@@ -174,25 +234,21 @@ void ServiceConnectionImpl::RunUrandomRoutine(
 }
 
 void ServiceConnectionImpl::RunBatteryCapacityRoutine(
-    uint32_t low_mah,
-    uint32_t high_mah,
     mojom::CrosHealthdDiagnosticsService::RunBatteryCapacityRoutineCallback
         callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindCrosHealthdDiagnosticsServiceIfNeeded();
   cros_healthd_diagnostics_service_->RunBatteryCapacityRoutine(
-      low_mah, high_mah, std::move(callback));
+      std::move(callback));
 }
 
 void ServiceConnectionImpl::RunBatteryHealthRoutine(
-    uint32_t maximum_cycle_count,
-    uint32_t percent_battery_wear_allowed,
     mojom::CrosHealthdDiagnosticsService::RunBatteryHealthRoutineCallback
         callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindCrosHealthdDiagnosticsServiceIfNeeded();
   cros_healthd_diagnostics_service_->RunBatteryHealthRoutine(
-      maximum_cycle_count, percent_battery_wear_allowed, std::move(callback));
+      std::move(callback));
 }
 
 void ServiceConnectionImpl::RunSmartctlCheckRoutine(
@@ -297,6 +353,105 @@ void ServiceConnectionImpl::RunBatteryDischargeRoutine(
       std::move(callback));
 }
 
+void ServiceConnectionImpl::RunBatteryChargeRoutine(
+    base::TimeDelta exec_duration,
+    uint32_t minimum_charge_percent_required,
+    mojom::CrosHealthdDiagnosticsService::RunBatteryChargeRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunBatteryChargeRoutine(
+      exec_duration.InSeconds(), minimum_charge_percent_required,
+      std::move(callback));
+}
+
+void ServiceConnectionImpl::RunMemoryRoutine(
+    mojom::CrosHealthdDiagnosticsService::RunMemoryRoutineCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunMemoryRoutine(std::move(callback));
+}
+
+void ServiceConnectionImpl::RunLanConnectivityRoutine(
+    mojom::CrosHealthdDiagnosticsService::RunLanConnectivityRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunLanConnectivityRoutine(
+      std::move(callback));
+}
+
+void ServiceConnectionImpl::RunSignalStrengthRoutine(
+    mojom::CrosHealthdDiagnosticsService::RunSignalStrengthRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunSignalStrengthRoutine(
+      std::move(callback));
+}
+
+void ServiceConnectionImpl::RunGatewayCanBePingedRoutine(
+    mojom::CrosHealthdDiagnosticsService::RunGatewayCanBePingedRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunGatewayCanBePingedRoutine(
+      std::move(callback));
+}
+
+void ServiceConnectionImpl::RunHasSecureWiFiConnectionRoutine(
+    mojom::CrosHealthdDiagnosticsService::
+        RunHasSecureWiFiConnectionRoutineCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunHasSecureWiFiConnectionRoutine(
+      std::move(callback));
+}
+
+void ServiceConnectionImpl::RunDnsResolverPresentRoutine(
+    mojom::CrosHealthdDiagnosticsService::RunDnsResolverPresentRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunDnsResolverPresentRoutine(
+      std::move(callback));
+}
+
+void ServiceConnectionImpl::RunDnsLatencyRoutine(
+    mojom::CrosHealthdDiagnosticsService::RunDnsLatencyRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunDnsLatencyRoutine(std::move(callback));
+}
+
+void ServiceConnectionImpl::RunDnsResolutionRoutine(
+    mojom::CrosHealthdDiagnosticsService::RunDnsResolutionRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunDnsResolutionRoutine(
+      std::move(callback));
+}
+
+void ServiceConnectionImpl::RunCaptivePortalRoutine(
+    mojom::CrosHealthdDiagnosticsService::RunCaptivePortalRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunCaptivePortalRoutine(
+      std::move(callback));
+}
+
+void ServiceConnectionImpl::RunHttpFirewallRoutine(
+    mojom::CrosHealthdDiagnosticsService::RunHttpFirewallRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunHttpFirewallRoutine(
+      std::move(callback));
+}
+
 void ServiceConnectionImpl::AddBluetoothObserver(
     mojo::PendingRemote<mojom::CrosHealthdBluetoothObserver> pending_observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -330,31 +485,89 @@ void ServiceConnectionImpl::ProbeTelemetryInfo(
                                                   std::move(callback));
 }
 
+void ServiceConnectionImpl::ProbeProcessInfo(
+    pid_t process_id,
+    mojom::CrosHealthdProbeService::ProbeProcessInfoCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(process_id > 0);
+  BindCrosHealthdProbeServiceIfNeeded();
+  cros_healthd_probe_service_->ProbeProcessInfo(
+      static_cast<uint32_t>(process_id), std::move(callback));
+}
+
 void ServiceConnectionImpl::GetDiagnosticsService(
     mojom::CrosHealthdDiagnosticsServiceRequest service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdServiceFactoryIfNeeded();
+  EnsureCrosHealthdServiceFactoryIsBound();
   cros_healthd_service_factory_->GetDiagnosticsService(std::move(service));
+}
+
+void ServiceConnectionImpl::SetBindNetworkHealthServiceCallback(
+    BindNetworkHealthServiceCallback callback) {
+  bind_network_health_callback_ = std::move(callback);
+  BindAndSendNetworkHealthService();
+}
+
+void ServiceConnectionImpl::SetBindNetworkDiagnosticsRoutinesCallback(
+    BindNetworkDiagnosticsRoutinesCallback callback) {
+  bind_network_diagnostics_callback_ = std::move(callback);
+  BindAndSendNetworkDiagnosticsRoutines();
+}
+
+void ServiceConnectionImpl::FlushForTesting() {
+  if (cros_healthd_service_factory_.is_bound())
+    cros_healthd_service_factory_.FlushForTesting();
+  if (cros_healthd_probe_service_.is_bound())
+    cros_healthd_probe_service_.FlushForTesting();
+  if (cros_healthd_diagnostics_service_.is_bound())
+    cros_healthd_diagnostics_service_.FlushForTesting();
+  if (cros_healthd_event_service_.is_bound())
+    cros_healthd_event_service_.FlushForTesting();
+}
+
+void ServiceConnectionImpl::BindAndSendNetworkHealthService() {
+  if (bind_network_health_callback_.is_null())
+    return;
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureCrosHealthdServiceFactoryIsBound();
+  auto remote = bind_network_health_callback_.Run();
+  cros_healthd_service_factory_->SendNetworkHealthService(std::move(remote));
+}
+
+void ServiceConnectionImpl::BindAndSendNetworkDiagnosticsRoutines() {
+  if (bind_network_diagnostics_callback_.is_null())
+    return;
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureCrosHealthdServiceFactoryIsBound();
+  auto remote = bind_network_diagnostics_callback_.Run();
+  cros_healthd_service_factory_->SendNetworkDiagnosticsRoutines(
+      std::move(remote));
 }
 
 void ServiceConnectionImpl::GetProbeService(
     mojom::CrosHealthdProbeServiceRequest service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdServiceFactoryIfNeeded();
+  EnsureCrosHealthdServiceFactoryIsBound();
   cros_healthd_service_factory_->GetProbeService(std::move(service));
 }
 
-void ServiceConnectionImpl::BindCrosHealthdServiceFactoryIfNeeded() {
+void ServiceConnectionImpl::EnsureCrosHealthdServiceFactoryIsBound() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (cros_healthd_service_factory_.is_bound())
     return;
 
-  cros_healthd_service_factory_ =
-      CrosHealthdClient::Get()->BootstrapMojoConnection(base::BindOnce(
-          &ServiceConnectionImpl::OnBootstrapMojoConnectionResponse,
-          base::Unretained(this)));
+  auto* client = CrosHealthdClient::Get();
+  if (!client)
+    return;
+
+  cros_healthd_service_factory_ = client->BootstrapMojoConnection(
+      base::BindOnce(&ServiceConnectionImpl::OnBootstrapMojoConnectionResponse,
+                     weak_factory_.GetWeakPtr()));
+
   cros_healthd_service_factory_.set_disconnect_handler(base::BindOnce(
-      &ServiceConnectionImpl::OnDisconnect, base::Unretained(this)));
+      &ServiceConnectionImpl::OnDisconnect, weak_factory_.GetWeakPtr()));
 }
 
 void ServiceConnectionImpl::BindCrosHealthdDiagnosticsServiceIfNeeded() {
@@ -362,11 +575,11 @@ void ServiceConnectionImpl::BindCrosHealthdDiagnosticsServiceIfNeeded() {
   if (cros_healthd_diagnostics_service_.is_bound())
     return;
 
-  BindCrosHealthdServiceFactoryIfNeeded();
+  EnsureCrosHealthdServiceFactoryIsBound();
   cros_healthd_service_factory_->GetDiagnosticsService(
       cros_healthd_diagnostics_service_.BindNewPipeAndPassReceiver());
   cros_healthd_diagnostics_service_.set_disconnect_handler(base::BindOnce(
-      &ServiceConnectionImpl::OnDisconnect, base::Unretained(this)));
+      &ServiceConnectionImpl::OnDisconnect, weak_factory_.GetWeakPtr()));
 }
 
 void ServiceConnectionImpl::BindCrosHealthdEventServiceIfNeeded() {
@@ -374,11 +587,11 @@ void ServiceConnectionImpl::BindCrosHealthdEventServiceIfNeeded() {
   if (cros_healthd_event_service_.is_bound())
     return;
 
-  BindCrosHealthdServiceFactoryIfNeeded();
+  EnsureCrosHealthdServiceFactoryIsBound();
   cros_healthd_service_factory_->GetEventService(
       cros_healthd_event_service_.BindNewPipeAndPassReceiver());
   cros_healthd_event_service_.set_disconnect_handler(base::BindOnce(
-      &ServiceConnectionImpl::OnDisconnect, base::Unretained(this)));
+      &ServiceConnectionImpl::OnDisconnect, weak_factory_.GetWeakPtr()));
 }
 
 void ServiceConnectionImpl::BindCrosHealthdProbeServiceIfNeeded() {
@@ -386,15 +599,16 @@ void ServiceConnectionImpl::BindCrosHealthdProbeServiceIfNeeded() {
   if (cros_healthd_probe_service_.is_bound())
     return;
 
-  BindCrosHealthdServiceFactoryIfNeeded();
+  EnsureCrosHealthdServiceFactoryIsBound();
   cros_healthd_service_factory_->GetProbeService(
       cros_healthd_probe_service_.BindNewPipeAndPassReceiver());
   cros_healthd_probe_service_.set_disconnect_handler(base::BindOnce(
-      &ServiceConnectionImpl::OnDisconnect, base::Unretained(this)));
+      &ServiceConnectionImpl::OnDisconnect, weak_factory_.GetWeakPtr()));
 }
 
 ServiceConnectionImpl::ServiceConnectionImpl() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  EnsureCrosHealthdServiceFactoryIsBound();
 }
 
 void ServiceConnectionImpl::OnDisconnect() {
@@ -405,6 +619,14 @@ void ServiceConnectionImpl::OnDisconnect() {
   cros_healthd_probe_service_.reset();
   cros_healthd_diagnostics_service_.reset();
   cros_healthd_event_service_.reset();
+
+  EnsureCrosHealthdServiceFactoryIsBound();
+  // If the cros_healthd_service_factory_ was able to be rebound, resend the
+  // Chrome services to the CrosHealthd instance.
+  if (cros_healthd_service_factory_.is_bound()) {
+    BindAndSendNetworkHealthService();
+    BindAndSendNetworkDiagnosticsRoutines();
+  }
 }
 
 void ServiceConnectionImpl::OnBootstrapMojoConnectionResponse(

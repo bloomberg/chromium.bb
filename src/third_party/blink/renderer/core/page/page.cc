@@ -21,8 +21,10 @@
 
 #include "third_party/blink/renderer/core/page/page.h"
 
+#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -32,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/vision_deficiency.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/visited_link_state.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
@@ -52,6 +55,7 @@
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/portal/document_portals.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
@@ -74,6 +78,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client_impl.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -84,10 +89,24 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/scheduler/public/agent_group_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
+
+namespace {
+// This seems like a reasonable upper bound, and otherwise mutually
+// recursive frameset pages can quickly bring the program to its knees
+// with exponential growth in the number of frames.
+const int kMaxNumberOfFrames = 1000;
+
+// It is possible to use a reduced frame limit for testing, but only two values
+// are permitted, the default or reduced limit.
+const int kTenFrames = 10;
+
+bool g_limit_max_frames_to_ten_for_testing = false;
+}  // namespace
 
 // Function defined in third_party/blink/public/web/blink.h.
 void ResetPluginCache(bool reload_pages) {
@@ -142,15 +161,23 @@ float DeviceScaleFactorDeprecated(LocalFrame* frame) {
 
 Page* Page::CreateNonOrdinary(PageClients& page_clients) {
   Page* page = MakeGarbageCollected<Page>(page_clients);
-  page->SetPageScheduler(ThreadScheduler::Current()->CreatePageScheduler(page));
+  std::unique_ptr<scheduler::WebAgentGroupScheduler> agent_group_scheduler =
+      ThreadScheduler::Current()->CreateAgentGroupScheduler();
+  page->SetPageScheduler(
+      agent_group_scheduler->AsAgentGroupScheduler().CreatePageScheduler(page));
+  page->SetAgentGroupSchedulerForNonOrdinary(std::move(agent_group_scheduler));
   return page;
 }
 
-Page* Page::CreateOrdinary(PageClients& page_clients, Page* opener) {
+Page* Page::CreateOrdinary(
+    PageClients& page_clients,
+    Page* opener,
+    scheduler::WebAgentGroupScheduler& agent_group_scheduler) {
   Page* page = MakeGarbageCollected<Page>(page_clients);
   page->is_ordinary_ = true;
   page->agent_metrics_collector_ = &GlobalAgentMetricsCollector();
-  page->SetPageScheduler(ThreadScheduler::Current()->CreatePageScheduler(page));
+  page->SetPageScheduler(
+      agent_group_scheduler.AsAgentGroupScheduler().CreatePageScheduler(page));
 
   if (opener) {
     // Before: ... -> opener -> next -> ...
@@ -199,11 +226,9 @@ Page::Page(PageClients& page_clients)
           MakeGarbageCollected<ValidationMessageClientImpl>(*this)),
       opened_by_dom_(false),
       tab_key_cycles_through_elements_(true),
-      paused_(false),
       device_scale_factor_(1),
-      visibility_state_(mojom::blink::PageVisibilityState::kVisible),
+      lifecycle_state_(mojom::blink::PageLifecycleState::New()),
       is_ordinary_(false),
-      page_lifecycle_state_(kDefaultPageLifecycleState),
       is_cursor_visible_(true),
       subframe_count_(0),
       next_related_page_(this),
@@ -232,7 +257,7 @@ void Page::CloseSoon() {
 
   // TODO(dcheng): Try to remove this in a followup, it's not obviously needed.
   if (auto* main_local_frame = DynamicTo<LocalFrame>(main_frame_.Get()))
-    main_local_frame->Loader().StopAllLoaders();
+    main_local_frame->Loader().StopAllLoaders(/*abort_client=*/true);
 
   GetChromeClient().CloseWindowSoon();
 }
@@ -328,9 +353,6 @@ void Page::DocumentDetached(Document* document) {
   if (validation_message_client_)
     validation_message_client_->DocumentDetached(*document);
 
-  if (agent_metrics_collector_)
-    agent_metrics_collector_->DidDetachDocument(*document);
-
   GetChromeClient().DocumentDetached(*document);
 }
 
@@ -416,13 +438,11 @@ void Page::SetPaused(bool paused) {
     return;
 
   paused_ = paused;
-  mojom::FrameLifecycleState state = paused
-                                         ? mojom::FrameLifecycleState::kPaused
-                                         : mojom::FrameLifecycleState::kRunning;
   for (Frame* frame = MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (auto* local_frame = DynamicTo<LocalFrame>(frame))
-      local_frame->SetLifecycleState(state);
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+      local_frame->OnPageLifecycleStateUpdated();
+    }
   }
 }
 
@@ -513,75 +533,72 @@ void Page::VisitedStateChanged(LinkHash link_hash) {
 void Page::SetVisibilityState(
     mojom::blink::PageVisibilityState visibility_state,
     bool is_initial_state) {
-  if (visibility_state_ == visibility_state)
+  if (lifecycle_state_->visibility == visibility_state)
     return;
-  visibility_state_ = visibility_state;
+  lifecycle_state_->visibility = visibility_state;
 
   if (is_initial_state)
     return;
 
-  page_visibility_observer_list_.ForEachObserver(
+  page_visibility_observer_set_.ForEachObserver(
       [](PageVisibilityObserver* observer) {
         observer->PageVisibilityChanged();
       });
 
   if (main_frame_) {
-    if (visibility_state_ == mojom::blink::PageVisibilityState::kVisible)
+    if (lifecycle_state_->visibility ==
+        mojom::blink::PageVisibilityState::kVisible)
       RestoreSVGImageAnimations();
     main_frame_->DidChangeVisibilityState();
   }
 }
 
 mojom::blink::PageVisibilityState Page::GetVisibilityState() const {
-  return visibility_state_;
+  return lifecycle_state_->visibility;
 }
 
 bool Page::IsPageVisible() const {
-  return visibility_state_ == mojom::blink::PageVisibilityState::kVisible;
+  return lifecycle_state_->visibility ==
+         mojom::blink::PageVisibilityState::kVisible;
 }
 
-void Page::SetLifecycleState(PageLifecycleState state) {
-  if (state == page_lifecycle_state_)
+bool Page::DispatchedPagehideAndStillHidden() {
+  return lifecycle_state_->pagehide_dispatch !=
+         mojom::blink::PagehideDispatch::kNotDispatched;
+}
+
+bool Page::DispatchedPagehidePersistedAndStillHidden() {
+  return lifecycle_state_->pagehide_dispatch ==
+         mojom::blink::PagehideDispatch::kDispatchedPersisted;
+}
+
+void Page::OnSetPageFrozen(bool frozen) {
+  if (frozen_ == frozen)
     return;
-  DCHECK_NE(state, PageLifecycleState::kUnknown);
+  frozen_ = frozen;
 
-  base::Optional<mojom::FrameLifecycleState> next_state;
-  if (state == PageLifecycleState::kFrozen) {
-    next_state = mojom::FrameLifecycleState::kFrozen;
-  } else if (page_lifecycle_state_ == PageLifecycleState::kFrozen) {
-    // TODO(fmeawad): Only resume the page that just became visible, blocked
-    // on task queues per frame.
-    DCHECK(state == PageLifecycleState::kActive ||
-           state == PageLifecycleState::kHiddenBackgrounded ||
-           state == PageLifecycleState::kHiddenForegrounded);
-    next_state = mojom::FrameLifecycleState::kRunning;
-  }
-
-  if (next_state) {
-    const bool dispatch_before_unload_on_freeze =
-        base::FeatureList::IsEnabled(features::kDispatchBeforeUnloadOnFreeze);
-    for (Frame* frame = main_frame_.Get(); frame;
-         frame = frame->Tree().TraverseNext()) {
-      if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-        // TODO(chrisha): Determine if dispatching the before unload
-        // makes sense and if so put it into a specification.
-        if (dispatch_before_unload_on_freeze &&
-            next_state == mojom::FrameLifecycleState::kFrozen) {
-          local_frame->DispatchBeforeUnloadEventForFreeze();
-        }
-        local_frame->SetLifecycleState(next_state.value());
-      }
+  for (Frame* frame = main_frame_.Get(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+      local_frame->OnPageLifecycleStateUpdated();
     }
   }
-  page_lifecycle_state_ = state;
-}
-
-PageLifecycleState Page::LifecycleState() const {
-  return page_lifecycle_state_;
 }
 
 bool Page::IsCursorVisible() const {
   return is_cursor_visible_;
+}
+
+// static
+int Page::MaxNumberOfFrames() {
+  if (UNLIKELY(g_limit_max_frames_to_ten_for_testing))
+    return kTenFrames;
+  return kMaxNumberOfFrames;
+}
+
+// static
+void Page::SetMaxNumberOfFramesToTenForTesting(bool enabled) {
+  g_limit_max_frames_to_ten_for_testing = enabled;
 }
 
 #if DCHECK_IS_ON()
@@ -589,6 +606,12 @@ void CheckFrameCountConsistency(int expected_frame_count, Frame* frame) {
   DCHECK_GE(expected_frame_count, 0);
 
   int actual_frame_count = 0;
+
+  if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+    actual_frame_count += static_cast<int>(
+        DocumentPortals::From(*local_frame->GetDocument()).GetPortals().size());
+  }
+
   for (; frame; frame = frame->Tree().TraverseNext())
     ++actual_frame_count;
 
@@ -621,8 +644,13 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
         TextAutosizer::UpdatePageInfoInAllFrames(MainFrame());
       }
       break;
-    case SettingsDelegate::kViewportScrollbarChange:
+    case SettingsDelegate::kViewportPaintPropertiesChange:
+      GetVisualViewport().SetNeedsPaintPropertyUpdate();
       GetVisualViewport().InitializeScrollbars();
+      if (auto* local_frame = DynamicTo<LocalFrame>(MainFrame())) {
+        if (LocalFrameView* view = local_frame->View())
+          view->SetNeedsPaintPropertyUpdate();
+      }
       break;
     case SettingsDelegate::kDNSPrefetchingChange:
       for (Frame* frame = MainFrame(); frame;
@@ -702,13 +730,9 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
         break;
       for (Frame* frame = MainFrame(); frame;
            frame = frame->Tree().TraverseNext()) {
-        LocalFrame* local_frame = nullptr;
-        if ((local_frame = DynamicTo<LocalFrame>(frame)) &&
-            !local_frame->Loader()
-                 .StateMachine()
-                 ->CreatingInitialEmptyDocument()) {
+        if (auto* window = DynamicTo<LocalDOMWindow>(frame->DomWindow())) {
           // Forcibly instantiate WindowProxy.
-          local_frame->GetScriptController().WindowProxy(
+          window->GetScriptController().WindowProxy(
               DOMWrapperWorld::MainWorld());
         }
       }
@@ -782,9 +806,8 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
         // any outstanding security origin cross agent cluster access since
         // newly allocated agent clusters will be the universal agent.
         if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-          local_frame->GetDocument()
-              ->GetMutableSecurityOrigin()
-              ->GrantCrossAgentClusterAccess();
+          auto* window = local_frame->DomWindow();
+          window->GetMutableSecurityOrigin()->GrantCrossAgentClusterAccess();
         }
       }
       break;
@@ -816,7 +839,7 @@ void Page::InvalidatePaint() {
     if (!local_frame)
       continue;
     if (LayoutView* view = local_frame->ContentLayoutObject())
-      view->InvalidatePaintForViewAndCompositedLayers();
+      view->InvalidatePaintForViewAndDescendants();
   }
 }
 
@@ -886,7 +909,7 @@ void Page::AcceptLanguagesChanged() {
     frames[i]->DomWindow()->AcceptLanguagesChanged();
 }
 
-void Page::Trace(Visitor* visitor) {
+void Page::Trace(Visitor* visitor) const {
   visitor->Trace(animator_);
   visitor->Trace(autoscroll_controller_);
   visitor->Trace(chrome_client_);
@@ -895,7 +918,7 @@ void Page::Trace(Visitor* visitor) {
   visitor->Trace(focus_controller_);
   visitor->Trace(context_menu_controller_);
   visitor->Trace(page_scale_constraints_set_);
-  visitor->Trace(page_visibility_observer_list_);
+  visitor->Trace(page_visibility_observer_set_);
   visitor->Trace(pointer_lock_controller_);
   visitor->Trace(scrolling_coordinator_);
   visitor->Trace(browser_controls_);
@@ -962,13 +985,14 @@ void Page::WillBeDestroyed() {
   if (agent_metrics_collector_)
     agent_metrics_collector_->ReportMetrics();
 
-  page_visibility_observer_list_.ForEachObserver(
+  page_visibility_observer_set_.ForEachObserver(
       [](PageVisibilityObserver* observer) {
-        observer->ObserverListWillBeCleared();
+        observer->ObserverSetWillBeCleared();
       });
-  page_visibility_observer_list_.Clear();
+  page_visibility_observer_set_.Clear();
 
-  page_scheduler_.reset();
+  page_scheduler_ = nullptr;
+  agent_group_scheduler_for_non_ordinary_ = nullptr;
 }
 
 void Page::RegisterPluginsChangedObserver(PluginsChangedObserver* observer) {
@@ -983,6 +1007,12 @@ ScrollbarTheme& Page::GetScrollbarTheme() const {
 
 PageScheduler* Page::GetPageScheduler() const {
   return page_scheduler_.get();
+}
+
+void Page::SetAgentGroupSchedulerForNonOrdinary(
+    std::unique_ptr<blink::scheduler::WebAgentGroupScheduler>
+        agent_group_scheduler) {
+  agent_group_scheduler_for_non_ordinary_ = std::move(agent_group_scheduler);
 }
 
 void Page::SetPageScheduler(std::unique_ptr<PageScheduler> page_scheduler) {
@@ -1088,5 +1118,13 @@ void Page::PrepareForLeakDetection() {
   for (Page* page : OrdinaryPages())
     page->RemoveSupplement<InternalSettingsPageSupplementBase>();
 }
+
+// Ensure the 10 bits reserved for connected frame count in NodeRareData are
+// sufficient.
+static_assert(kMaxNumberOfFrames <
+                  (1 << NodeRareData::kConnectedFrameCountBits),
+              "Frame limit should fit in rare data count");
+static_assert(kTenFrames < kMaxNumberOfFrames,
+              "Reduced frame limit for testing should actually be lower");
 
 }  // namespace blink

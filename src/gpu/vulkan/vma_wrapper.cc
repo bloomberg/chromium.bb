@@ -15,30 +15,35 @@ namespace vma {
 VkResult CreateAllocator(VkPhysicalDevice physical_device,
                          VkDevice device,
                          VkInstance instance,
+                         const VkDeviceSize* heap_size_limit,
                          VmaAllocator* pAllocator) {
   auto* function_pointers = gpu::GetVulkanFunctionPointers();
   VmaVulkanFunctions functions = {
-      function_pointers->vkGetPhysicalDevicePropertiesFn.get(),
-      function_pointers->vkGetPhysicalDeviceMemoryPropertiesFn.get(),
-      function_pointers->vkAllocateMemoryFn.get(),
-      function_pointers->vkFreeMemoryFn.get(),
-      function_pointers->vkMapMemoryFn.get(),
-      function_pointers->vkUnmapMemoryFn.get(),
-      function_pointers->vkFlushMappedMemoryRangesFn.get(),
-      function_pointers->vkInvalidateMappedMemoryRangesFn.get(),
-      function_pointers->vkBindBufferMemoryFn.get(),
-      function_pointers->vkBindImageMemoryFn.get(),
-      function_pointers->vkGetBufferMemoryRequirementsFn.get(),
-      function_pointers->vkGetImageMemoryRequirementsFn.get(),
-      function_pointers->vkCreateBufferFn.get(),
-      function_pointers->vkDestroyBufferFn.get(),
-      function_pointers->vkCreateImageFn.get(),
-      function_pointers->vkDestroyImageFn.get(),
-      function_pointers->vkCmdCopyBufferFn.get(),
-      function_pointers->vkGetBufferMemoryRequirements2Fn.get(),
-      function_pointers->vkGetImageMemoryRequirements2Fn.get(),
+      function_pointers->vkGetPhysicalDeviceProperties.get(),
+      function_pointers->vkGetPhysicalDeviceMemoryProperties.get(),
+      function_pointers->vkAllocateMemory.get(),
+      function_pointers->vkFreeMemory.get(),
+      function_pointers->vkMapMemory.get(),
+      function_pointers->vkUnmapMemory.get(),
+      function_pointers->vkFlushMappedMemoryRanges.get(),
+      function_pointers->vkInvalidateMappedMemoryRanges.get(),
+      function_pointers->vkBindBufferMemory.get(),
+      function_pointers->vkBindImageMemory.get(),
+      function_pointers->vkGetBufferMemoryRequirements.get(),
+      function_pointers->vkGetImageMemoryRequirements.get(),
+      function_pointers->vkCreateBuffer.get(),
+      function_pointers->vkDestroyBuffer.get(),
+      function_pointers->vkCreateImage.get(),
+      function_pointers->vkDestroyImage.get(),
+      function_pointers->vkCmdCopyBuffer.get(),
+      function_pointers->vkGetBufferMemoryRequirements2.get(),
+      function_pointers->vkGetImageMemoryRequirements2.get(),
+      function_pointers->vkBindBufferMemory2.get(),
+      function_pointers->vkBindImageMemory2.get(),
+      function_pointers->vkGetPhysicalDeviceMemoryProperties2.get(),
   };
 
+  static_assert(kVulkanRequiredApiVersion >= VK_API_VERSION_1_1, "");
   VmaAllocatorCreateInfo allocator_info = {
       .flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT,
       .physicalDevice = physical_device,
@@ -49,8 +54,10 @@ VkResult CreateAllocator(VkPhysicalDevice physical_device,
       // AMD allocator will start making blocks at 1/8 the max size and builds
       // up block size as needed before capping at the max set here.
       .preferredLargeHeapBlockSize = 4 * 1024 * 1024,
+      .pHeapSizeLimit = heap_size_limit,
       .pVulkanFunctions = &functions,
       .instance = instance,
+      .vulkanApiVersion = kVulkanRequiredApiVersion,
   };
 
   return vmaCreateAllocator(&allocator_info, pAllocator);
@@ -113,18 +120,18 @@ void FreeMemory(VmaAllocator allocator, VmaAllocation allocation) {
   vmaFreeMemory(allocator, allocation);
 }
 
-void FlushAllocation(VmaAllocator allocator,
-                     VmaAllocation allocation,
-                     VkDeviceSize offset,
-                     VkDeviceSize size) {
-  vmaFlushAllocation(allocator, allocation, offset, size);
+VkResult FlushAllocation(VmaAllocator allocator,
+                         VmaAllocation allocation,
+                         VkDeviceSize offset,
+                         VkDeviceSize size) {
+  return vmaFlushAllocation(allocator, allocation, offset, size);
 }
 
-void InvalidateAllocation(VmaAllocator allocator,
-                          VmaAllocation allocation,
-                          VkDeviceSize offset,
-                          VkDeviceSize size) {
-  vmaInvalidateAllocation(allocator, allocation, offset, size);
+VkResult InvalidateAllocation(VmaAllocator allocator,
+                              VmaAllocation allocation,
+                              VkDeviceSize offset,
+                              VkDeviceSize size) {
+  return vmaInvalidateAllocation(allocator, allocation, offset, size);
 }
 
 void GetAllocationInfo(VmaAllocator allocator,
@@ -147,6 +154,20 @@ void GetPhysicalDeviceProperties(
 
 void CalculateStats(VmaAllocator allocator, VmaStats* stats) {
   vmaCalculateStats(allocator, stats);
+}
+
+uint64_t GetTotalAllocatedMemory(VmaAllocator allocator) {
+  VmaBudget budget[VK_MAX_MEMORY_HEAPS];
+  vmaGetBudget(allocator, budget);
+  const VkPhysicalDeviceMemoryProperties* pPhysicalDeviceMemoryProperties;
+  vmaGetMemoryProperties(allocator, &pPhysicalDeviceMemoryProperties);
+  uint64_t total_allocated_memory = 0;
+  for (uint32_t i = 0; i < pPhysicalDeviceMemoryProperties->memoryHeapCount;
+       ++i) {
+    total_allocated_memory +=
+        std::max(budget[i].blockBytes, budget[i].allocationBytes);
+  }
+  return total_allocated_memory;
 }
 
 }  // namespace vma

@@ -46,8 +46,6 @@ class DraggedIsolatedFileSystemImpl final
     : public GarbageCollected<DraggedIsolatedFileSystemImpl>,
       public DraggedIsolatedFileSystem,
       public Supplement<DataObject> {
-  USING_GARBAGE_COLLECTED_MIXIN(DraggedIsolatedFileSystemImpl);
-
  public:
   static const char kSupplementName[];
 
@@ -59,7 +57,7 @@ class DraggedIsolatedFileSystemImpl final
 
   DraggedIsolatedFileSystemImpl() = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   static void PrepareForDataObject(DataObject*);
 

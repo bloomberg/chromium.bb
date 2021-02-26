@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -45,31 +46,20 @@
 
 namespace autofill {
 
-namespace {
-const int kTooltipBubbleWidth = 320;
-const int kTooltipIconSize = 12;
-
-std::unique_ptr<LegalMessageView> CreateLegalMessageView(
-    const LegalMessageLines& message_lines,
-    views::StyledLabelListener* listener) {
-  if (message_lines.empty())
-    return nullptr;
-
-  return std::make_unique<LegalMessageView>(message_lines, listener);
-}
-
-}  // namespace
-
 SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     views::View* anchor_view,
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
     : SaveCardBubbleViews(anchor_view, web_contents, controller) {
   SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
-  legal_message_view_ = SetFootnoteView(
-      CreateLegalMessageView(controller->GetLegalMessageLines(), this));
-  if (legal_message_view_)
+  const LegalMessageLines message_lines = controller->GetLegalMessageLines();
+  if (!message_lines.empty()) {
+    legal_message_view_ = SetFootnoteView(std::make_unique<LegalMessageView>(
+        message_lines,
+        base::BindRepeating(&SaveCardOfferBubbleViews::LinkClicked,
+                            base::Unretained(this))));
     InitFootnoteView(legal_message_view_);
+  }
 }
 
 void SaveCardOfferBubbleViews::Init() {
@@ -82,10 +72,10 @@ bool SaveCardOfferBubbleViews::Accept() {
     controller()->OnSaveButton(
         {cardholder_name_textfield_ ? cardholder_name_textfield_->GetText()
                                     : base::string16(),
-         month_input_dropdown_ ? month_input_dropdown_->model()->GetItemAt(
+         month_input_dropdown_ ? month_input_dropdown_->GetModel()->GetItemAt(
                                      month_input_dropdown_->GetSelectedIndex())
                                : base::string16(),
-         year_input_dropdown_ ? year_input_dropdown_->model()->GetItemAt(
+         year_input_dropdown_ ? year_input_dropdown_->GetModel()->GetItemAt(
                                     year_input_dropdown_->GetSelectedIndex())
                               : base::string16()});
   }
@@ -115,10 +105,10 @@ bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
     // the same time.
     DCHECK(!cardholder_name_textfield_);
     int month_value = 0, year_value = 0;
-    if (!base::StringToInt(month_input_dropdown_->model()->GetItemAt(
+    if (!base::StringToInt(month_input_dropdown_->GetModel()->GetItemAt(
                                month_input_dropdown_->GetSelectedIndex()),
                            &month_value) ||
-        !base::StringToInt(year_input_dropdown_->model()->GetItemAt(
+        !base::StringToInt(year_input_dropdown_->GetModel()->GetItemAt(
                                year_input_dropdown_->GetSelectedIndex()),
                            &year_value)) {
       return false;
@@ -130,25 +120,10 @@ bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
   return true;
 }
 
-void SaveCardOfferBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
-                                                      const gfx::Range& range,
-                                                      int event_flags) {
-  if (!controller())
-    return;
-
-  controller()->OnLegalMessageLinkClicked(
-      legal_message_view_->GetUrlForLink(label, range));
-}
-
 void SaveCardOfferBubbleViews::ContentsChanged(
     views::Textfield* sender,
     const base::string16& new_contents) {
   DCHECK_EQ(cardholder_name_textfield_, sender);
-  DialogModelChanged();
-}
-
-void SaveCardOfferBubbleViews::OnPerformAction(views::Combobox* sender) {
-  DCHECK(month_input_dropdown_ == sender || year_input_dropdown_ == sender);
   DialogModelChanged();
 }
 
@@ -181,7 +156,8 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
         std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(
                 IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME),
-            CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
+            views::style::CONTEXT_DIALOG_BODY_TEXT,
+            views::style::STYLE_SECONDARY);
     cardholder_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     cardholder_name_label_row->AddChildView(cardholder_name_label.release());
 
@@ -196,6 +172,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     if (!prefilled_name.empty() &&
         controller()->GetSyncState() !=
             AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
+      constexpr int kTooltipIconSize = 12;
       std::unique_ptr<views::TooltipIcon> cardholder_name_tooltip =
           std::make_unique<views::TooltipIcon>(
               l10n_util::GetStringUTF16(
@@ -249,7 +226,8 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
 
   // Set up the month and year comboboxes.
   month_input_dropdown_ = new views::Combobox(&month_combobox_model_);
-  month_input_dropdown_->set_listener(this);
+  month_input_dropdown_->SetCallback(base::BindRepeating(
+      &SaveCardOfferBubbleViews::DialogModelChanged, base::Unretained(this)));
   month_input_dropdown_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH));
   month_input_dropdown_->SetID(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH);
@@ -263,7 +241,8 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   }
 
   year_input_dropdown_ = new views::Combobox(&year_combobox_model_);
-  year_input_dropdown_->set_listener(this);
+  year_input_dropdown_->SetCallback(base::BindRepeating(
+      &SaveCardOfferBubbleViews::DialogModelChanged, base::Unretained(this)));
   year_input_dropdown_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR));
   year_input_dropdown_->SetID(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR);
@@ -286,7 +265,7 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   // Set up expiration date label.
   auto expiration_date_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_SETTINGS_CREDIT_CARD_EXPIRATION_DATE),
-      CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
+      views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_SECONDARY);
   expiration_date_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   expiration_date_view->AddChildView(expiration_date_label.release());
@@ -313,11 +292,18 @@ SaveCardOfferBubbleViews::CreateUploadExplanationView() {
        !cardholder_name_textfield_->GetText().empty())
           ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP
           : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
-  upload_explanation_tooltip->set_bubble_width(kTooltipBubbleWidth);
+  upload_explanation_tooltip->set_bubble_width(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
   upload_explanation_tooltip->set_anchor_point_arrow(
       views::BubbleBorder::Arrow::TOP_RIGHT);
   upload_explanation_tooltip->SetID(DialogViewId::UPLOAD_EXPLANATION_TOOLTIP);
   return upload_explanation_tooltip;
+}
+
+void SaveCardOfferBubbleViews::LinkClicked(const GURL& url) {
+  if (controller())
+    controller()->OnLegalMessageLinkClicked(url);
 }
 
 }  // namespace autofill

@@ -532,7 +532,7 @@ TEST_F(ExternalFrameBufferNonRefTest, ReleaseNonRefFrameBuffer) {
 }
 #endif  // CONFIG_WEBM_IO
 
-AV1_INSTANTIATE_TEST_CASE(
+AV1_INSTANTIATE_TEST_SUITE(
     ExternalFrameBufferMD5Test,
     ::testing::ValuesIn(libaom_test::kAV1TestVectors,
                         libaom_test::kAV1TestVectors +

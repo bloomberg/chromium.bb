@@ -15,6 +15,7 @@
 #include "dawn_native/vulkan/BindGroupLayoutVk.h"
 
 #include "common/BitSetIterator.h"
+#include "common/ityp_vector.h"
 #include "dawn_native/vulkan/BindGroupVk.h"
 #include "dawn_native/vulkan/DescriptorSetAllocator.h"
 #include "dawn_native/vulkan/DeviceVk.h"
@@ -56,6 +57,7 @@ namespace dawn_native { namespace vulkan {
             case wgpu::BindingType::ComparisonSampler:
                 return VK_DESCRIPTOR_TYPE_SAMPLER;
             case wgpu::BindingType::SampledTexture:
+            case wgpu::BindingType::MultisampledTexture:
                 return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
             case wgpu::BindingType::StorageBuffer:
             case wgpu::BindingType::ReadonlyStorageBuffer:
@@ -66,9 +68,6 @@ namespace dawn_native { namespace vulkan {
             case wgpu::BindingType::ReadonlyStorageTexture:
             case wgpu::BindingType::WriteonlyStorageTexture:
                 return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-            case wgpu::BindingType::StorageTexture:
-            default:
-                UNREACHABLE();
         }
     }
 
@@ -85,29 +84,30 @@ namespace dawn_native { namespace vulkan {
         // Compute the bindings that will be chained in the DescriptorSetLayout create info. We add
         // one entry per binding set. This might be optimized by computing continuous ranges of
         // bindings of the same type.
-        uint32_t numBindings = 0;
-        std::array<VkDescriptorSetLayoutBinding, kMaxBindingsPerGroup> bindings;
+        ityp::vector<BindingIndex, VkDescriptorSetLayoutBinding> bindings;
+        bindings.reserve(GetBindingCount());
+
         for (const auto& it : GetBindingMap()) {
             BindingNumber bindingNumber = it.first;
             BindingIndex bindingIndex = it.second;
             const BindingInfo& bindingInfo = GetBindingInfo(bindingIndex);
 
-            VkDescriptorSetLayoutBinding* vkBinding = &bindings[numBindings];
-            vkBinding->binding = bindingNumber;
-            vkBinding->descriptorType =
+            VkDescriptorSetLayoutBinding vkBinding;
+            vkBinding.binding = static_cast<uint32_t>(bindingNumber);
+            vkBinding.descriptorType =
                 VulkanDescriptorType(bindingInfo.type, bindingInfo.hasDynamicOffset);
-            vkBinding->descriptorCount = 1;
-            vkBinding->stageFlags = VulkanShaderStageFlags(bindingInfo.visibility);
-            vkBinding->pImmutableSamplers = nullptr;
+            vkBinding.descriptorCount = 1;
+            vkBinding.stageFlags = VulkanShaderStageFlags(bindingInfo.visibility);
+            vkBinding.pImmutableSamplers = nullptr;
 
-            numBindings++;
+            bindings.emplace_back(vkBinding);
         }
 
         VkDescriptorSetLayoutCreateInfo createInfo;
         createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
-        createInfo.bindingCount = numBindings;
+        createInfo.bindingCount = static_cast<uint32_t>(bindings.size());
         createInfo.pBindings = bindings.data();
 
         Device* device = ToBackend(GetDevice());
@@ -118,7 +118,7 @@ namespace dawn_native { namespace vulkan {
         // Compute the size of descriptor pools used for this layout.
         std::map<VkDescriptorType, uint32_t> descriptorCountPerType;
 
-        for (BindingIndex bindingIndex = 0; bindingIndex < GetBindingCount(); ++bindingIndex) {
+        for (BindingIndex bindingIndex{0}; bindingIndex < GetBindingCount(); ++bindingIndex) {
             const BindingInfo& bindingInfo = GetBindingInfo(bindingIndex);
             VkDescriptorType vulkanType =
                 VulkanDescriptorType(bindingInfo.type, bindingInfo.hasDynamicOffset);
@@ -174,7 +174,7 @@ namespace dawn_native { namespace vulkan {
         mBindGroupAllocator.Deallocate(bindGroup);
     }
 
-    void BindGroupLayout::FinishDeallocation(Serial completedSerial) {
+    void BindGroupLayout::FinishDeallocation(ExecutionSerial completedSerial) {
         mDescriptorSetAllocator->FinishDeallocation(completedSerial);
     }
 

@@ -11,9 +11,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/net/ios_net_buildflags.h"
 #include "net/cookies/cookie_constants.h"
 #include "url/gurl.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -73,13 +73,10 @@ void ReportUMACookieLoss(CookieLossType loss, CookieEvent event) {
 }  // namespace
 
 // Converts NSHTTPCookie to net::CanonicalCookie.
-net::CanonicalCookie CanonicalCookieFromSystemCookie(
+std::unique_ptr<net::CanonicalCookie> CanonicalCookieFromSystemCookie(
     NSHTTPCookie* cookie,
     const base::Time& ceation_time) {
   net::CookieSameSite same_site = net::CookieSameSite::NO_RESTRICTION;
-// TODO(crbug.com/1027279): Remove this once Cronet can have
-// iOS 13 symbols.
-#if !BUILDFLAG(CRONET_BUILD)
   if (@available(iOS 13, *)) {
     same_site = net::CookieSameSite::UNSPECIFIED;
     if ([cookie.sameSitePolicy isEqual:NSHTTPCookieSameSiteLax])
@@ -92,18 +89,18 @@ net::CanonicalCookie CanonicalCookieFromSystemCookie(
             isEqual:kNSHTTPCookieSameSiteNone])
       same_site = net::CookieSameSite::NO_RESTRICTION;
   }
-#endif
 
-  return net::CanonicalCookie(
+  return net::CanonicalCookie::FromStorage(
       base::SysNSStringToUTF8([cookie name]),
       base::SysNSStringToUTF8([cookie value]),
       base::SysNSStringToUTF8([cookie domain]),
       base::SysNSStringToUTF8([cookie path]), ceation_time,
       base::Time::FromDoubleT([[cookie expiresDate] timeIntervalSince1970]),
       base::Time(), [cookie isSecure], [cookie isHTTPOnly], same_site,
-      // When iOS begins to support 'Priority' attribute, pass it
-      // through here.
-      net::COOKIE_PRIORITY_DEFAULT);
+      // When iOS begins to support 'Priority' and 'SameParty' attributes, pass
+      // them through here.
+      net::COOKIE_PRIORITY_DEFAULT, false /* SameParty */,
+      net::CookieSourceScheme::kUnset, url::PORT_UNSPECIFIED);
 }
 
 void ReportGetCookiesForURLResult(SystemCookieStoreType store_type,
@@ -165,9 +162,6 @@ NSHTTPCookie* SystemCookieFromCanonicalCookie(
     [properties setObject:expiry forKey:NSHTTPCookieExpires];
   }
 
-// TODO(crbug.com/1027279): Remove this once Cronet can have
-// iOS 13 symbols.
-#if !BUILDFLAG(CRONET_BUILD)
   if (@available(iOS 13, *)) {
     // In iOS 13 sameSite property in NSHTTPCookie is used to specify the
     // samesite policy.
@@ -188,7 +182,6 @@ NSHTTPCookie* SystemCookieFromCanonicalCookie(
     }
     properties[NSHTTPCookieSameSitePolicy] = same_site;
   }
-#endif
 
   if (cookie.IsSecure())
     [properties setObject:@"Y" forKey:NSHTTPCookieSecure];

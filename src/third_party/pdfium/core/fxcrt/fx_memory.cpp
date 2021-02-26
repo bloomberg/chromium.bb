@@ -48,7 +48,7 @@ void* FXMEM_DefaultAlloc(size_t byte_size) {
 }
 
 void* FXMEM_DefaultCalloc(size_t num_elems, size_t byte_size) {
-  return internal::Calloc(num_elems, byte_size);
+  return pdfium::internal::Calloc(num_elems, byte_size);
 }
 
 void* FXMEM_DefaultRealloc(void* pointer, size_t new_size) {
@@ -62,7 +62,7 @@ void FXMEM_DefaultFree(void* pointer) {
   pdfium::base::PartitionFree(pointer);
 }
 
-NOINLINE void FX_OutOfMemoryTerminate() {
+NOINLINE void FX_OutOfMemoryTerminate(size_t size) {
   // Convince the linker this should not be folded with similar functions using
   // Identical Code Folding.
   static int make_this_function_aliased = 0xbd;
@@ -72,6 +72,7 @@ NOINLINE void FX_OutOfMemoryTerminate() {
   abort();
 }
 
+namespace pdfium {
 namespace internal {
 
 void* Alloc(size_t num_members, size_t member_size) {
@@ -89,14 +90,14 @@ void* Alloc(size_t num_members, size_t member_size) {
 void* AllocOrDie(size_t num_members, size_t member_size) {
   void* result = Alloc(num_members, member_size);
   if (!result)
-    FX_OutOfMemoryTerminate();  // Never returns.
+    FX_OutOfMemoryTerminate(0);  // Never returns.
 
   return result;
 }
 
 void* AllocOrDie2D(size_t w, size_t h, size_t member_size) {
   if (w >= std::numeric_limits<size_t>::max() / h)
-    FX_OutOfMemoryTerminate();  // Never returns.
+    FX_OutOfMemoryTerminate(0);  // Never returns.
 
   return AllocOrDie(w * h, member_size);
 }
@@ -129,14 +130,14 @@ void* Realloc(void* ptr, size_t num_members, size_t member_size) {
 void* CallocOrDie(size_t num_members, size_t member_size) {
   void* result = Calloc(num_members, member_size);
   if (!result)
-    FX_OutOfMemoryTerminate();  // Never returns.
+    FX_OutOfMemoryTerminate(0);  // Never returns.
 
   return result;
 }
 
 void* CallocOrDie2D(size_t w, size_t h, size_t member_size) {
   if (w >= std::numeric_limits<size_t>::max() / h)
-    FX_OutOfMemoryTerminate();  // Never returns.
+    FX_OutOfMemoryTerminate(0);  // Never returns.
 
   return CallocOrDie(w * h, member_size);
 }
@@ -144,12 +145,13 @@ void* CallocOrDie2D(size_t w, size_t h, size_t member_size) {
 void* ReallocOrDie(void* ptr, size_t num_members, size_t member_size) {
   void* result = Realloc(ptr, num_members, member_size);
   if (!result)
-    FX_OutOfMemoryTerminate();  // Never returns.
+    FX_OutOfMemoryTerminate(0);  // Never returns.
 
   return result;
 }
 
 }  // namespace internal
+}  // namespace pdfium
 
 void FX_Free(void* ptr) {
   // TODO(palmer): Removing this check exposes crashes when PDFium callers

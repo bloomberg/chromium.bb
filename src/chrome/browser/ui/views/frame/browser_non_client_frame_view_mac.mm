@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
+#include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
@@ -118,20 +119,18 @@ bool BrowserNonClientFrameViewMac::CaptionButtonsOnLeadingEdge() const {
 }
 
 gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
-    const views::View* tabstrip) const {
+    const gfx::Size& tabstrip_minimum_size) const {
   // TODO(weili): In the future, we should hide the title bar, and show the
   // tab strip directly under the menu bar. For now, just lay our content
   // under the native title bar. Use the default title bar height to avoid
   // calling through private APIs.
-  DCHECK(tabstrip);
-
   const bool restored = !frame()->IsMaximized() && !frame()->IsFullscreen();
   gfx::Rect bounds(0, GetTopInset(restored), width(),
-                   tabstrip->GetPreferredSize().height());
+                   tabstrip_minimum_size.height());
 
   // Do not draw caption buttons on fullscreen.
   if (!frame()->IsFullscreen()) {
-    constexpr int kCaptionWidth = 70;
+    const int kCaptionWidth = base::mac::IsAtMostOS10_15() ? 70 : 85;
     if (CaptionButtonsOnLeadingEdge())
       bounds.Inset(gfx::Insets(0, kCaptionWidth, 0, 0));
     else
@@ -215,8 +214,13 @@ void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI() {
   browser_view()->browser()->FullscreenTopUIStateChanged();
 
   // Re-layout if toolbar style changes in fullscreen mode.
-  if (frame()->IsFullscreen())
+  if (frame()->IsFullscreen()) {
     browser_view()->Layout();
+    // The web frame toolbar is visible in fullscreen mode on Mac and thus
+    // requires a re-layout when in fullscreen and shown.
+    if (web_app_frame_toolbar() && !ShouldHideTopUIForFullscreen())
+      InvalidateLayout();
+  }
 }
 
 bool BrowserNonClientFrameViewMac::ShouldHideTopUIForFullscreen() const {
@@ -294,7 +298,8 @@ void BrowserNonClientFrameViewMac::UpdateMinimumSize() {
 gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
   gfx::Size client_size = frame()->client_view()->GetMinimumSize();
   if (browser_view()->browser()->is_type_normal())
-    client_size.SetToMax(browser_view()->tabstrip()->GetMinimumSize());
+    client_size.SetToMax(
+        browser_view()->tab_strip_region_view()->GetMinimumSize());
 
   // macOS apps generally don't allow their windows to get shorter than a
   // certain height, which empirically seems to be related to their *minimum*

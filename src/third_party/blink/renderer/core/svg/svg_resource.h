@@ -71,7 +71,7 @@ class SVGResource : public GarbageCollected<SVGResource> {
   void AddClient(SVGResourceClient&);
   void RemoveClient(SVGResourceClient&);
 
-  virtual void Trace(Visitor*);
+  virtual void Trace(Visitor*) const;
 
  protected:
   SVGResource();
@@ -100,7 +100,7 @@ class LocalSVGResource final : public SVGResource {
   void NotifyResourceAttached(LayoutSVGResourceContainer&);
   void NotifyResourceDestroyed(LayoutSVGResourceContainer&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void TargetChanged(const AtomicString& id);
@@ -112,15 +112,13 @@ class LocalSVGResource final : public SVGResource {
 // External resource reference (see SVGResource.)
 class ExternalSVGResource final : public SVGResource,
                                   private SVGExternalDocumentCache::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(ExternalSVGResource);
-
  public:
   explicit ExternalSVGResource(const KURL&);
 
   void Load(Document&) override;
   void LoadWithoutCSP(Document&) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Element* ResolveTarget();

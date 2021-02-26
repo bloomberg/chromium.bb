@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/font_face_set_load_event.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
-#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/resolver/font_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -136,7 +136,7 @@ ScriptPromise FontFaceSetDocument::ready(ScriptState* script_state) {
 const HeapLinkedHashSet<Member<FontFace>>&
 FontFaceSetDocument::CSSConnectedFontFaceList() const {
   Document* document = this->GetDocument();
-  document->UpdateActiveStyle();
+  document->GetStyleEngine().UpdateActiveStyle();
   return GetFontSelector()->GetFontFaceCache()->CssConnectedFontFaces();
 }
 
@@ -166,15 +166,8 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
 
   // Interpret fontString in the same way as the 'font' attribute of
   // CanvasRenderingContext2D.
-  auto* parsed_style =
-      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
-  CSSParser::ParseValue(parsed_style, CSSPropertyID::kFont, font_string, true,
-                        GetDocument()->GetSecureContextMode());
-  if (parsed_style->IsEmpty())
-    return false;
-
-  String font_value = parsed_style->GetPropertyValue(CSSPropertyID::kFont);
-  if (css_property_parser_helpers::IsCSSWideKeyword(font_value))
+  auto* parsed_style = CSSParser::ParseFont(font_string, GetExecutionContext());
+  if (!parsed_style)
     return false;
 
   if (!GetDocument()->documentElement()) {
@@ -197,9 +190,8 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
 
   style->SetFontDescription(default_font_description);
 
-  GetDocument()->UpdateActiveStyle();
-  GetDocument()->EnsureStyleResolver().ComputeFont(
-      *GetDocument()->documentElement(), style.get(), *parsed_style);
+  GetDocument()->GetStyleEngine().ComputeFont(*GetDocument()->documentElement(),
+                                              style.get(), *parsed_style);
 
   font = style->GetFont();
 
@@ -228,6 +220,12 @@ FontFaceSetDocument* FontFaceSetDocument::From(Document& document) {
 }
 
 void FontFaceSetDocument::DidLayout(Document& document) {
+  if (!document.LoadEventFinished()) {
+    // https://www.w3.org/TR/2014/WD-css-font-loading-3-20140522/#font-face-set-ready
+    // doesn't say when document.fonts.ready should actually fire, but the
+    // existing tests depend on it firing after onload.
+    return;
+  }
   if (FontFaceSetDocument* fonts =
           Supplement<Document>::From<FontFaceSetDocument>(document))
     fonts->DidLayout();
@@ -266,7 +264,7 @@ void FontFaceSetDocument::LCPLimitReached(TimerBase*) {
   font_display_auto_align_histogram_.Record();
 }
 
-void FontFaceSetDocument::Trace(Visitor* visitor) {
+void FontFaceSetDocument::Trace(Visitor* visitor) const {
   Supplement<Document>::Trace(visitor);
   FontFaceSet::Trace(visitor);
 }

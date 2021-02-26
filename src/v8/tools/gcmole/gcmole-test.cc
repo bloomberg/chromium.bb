@@ -189,7 +189,7 @@ void TestGuardedDeadVarAnalysisNotOnStack(Isolate* isolate) {
 void TestGuardedDeadVarAnalysisNested(JSObject raw_obj, Isolate* isolate) {
   CauseGCRaw(raw_obj, isolate);
 
-  // Shouldn't cause warning.
+  // Should cause warning.
   raw_obj.Print();
 }
 
@@ -198,6 +198,9 @@ void TestGuardedDeadVarAnalysisCaller(Isolate* isolate) {
   JSObject raw_obj = *isolate->factory()->NewJSObjectWithNullProto();
 
   TestGuardedDeadVarAnalysisNested(raw_obj, isolate);
+
+  // Shouldn't cause warning.
+  raw_obj.Print();
 }
 
 JSObject GuardedAllocation(Isolate* isolate) {
@@ -209,6 +212,19 @@ void TestNestedDeadVarAnalysis(Isolate* isolate) {
   JSObject raw_obj = GuardedAllocation(isolate);
   CauseGCRaw(raw_obj, isolate);
 
+  // Should cause warning.
+  raw_obj.Print();
+}
+
+// Test that putting a guard in the middle of the function doesn't
+// mistakenly cover the whole scope of the raw variable.
+void TestGuardedDeadVarAnalysisMidFunction(Isolate* isolate) {
+  JSObject raw_obj = *isolate->factory()->NewJSObjectWithNullProto();
+
+  CauseGCRaw(raw_obj, isolate);
+
+  // Guarding the rest of the function from triggering a GC.
+  DisallowHeapAllocation no_gc;
   // Should cause warning.
   raw_obj.Print();
 }

@@ -8,8 +8,10 @@
 
 #include "base/json/json_writer.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/services/assistant/public/shared/constants.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
@@ -19,12 +21,6 @@ namespace {
 
 using base::Value;
 using network::mojom::URLLoaderFactory;
-
-constexpr base::StringPiece kSearchEndpoint =
-    "https://www.google.com/httpservice/web/KnowledgeApiService/Search?"
-    "fmt=json";
-
-constexpr char kPayloadParam[] = "reqpld";
 
 // The JSON we generate looks like this:
 // {
@@ -66,6 +62,7 @@ std::string BuildSearchRequestPayload(const std::string& selected_text) {
 
   return request_payload_str;
 }
+
 }  // namespace
 
 SearchResultLoader::SearchResultLoader(URLLoaderFactory* url_loader_factory,
@@ -74,17 +71,23 @@ SearchResultLoader::SearchResultLoader(URLLoaderFactory* url_loader_factory,
 
 SearchResultLoader::~SearchResultLoader() = default;
 
-GURL SearchResultLoader::BuildRequestUrl(
-    const std::string& selected_text) const {
-  GURL result = GURL(kSearchEndpoint);
+void SearchResultLoader::BuildRequest(
+    const PreprocessedOutput& preprocessed_output,
+    BuildRequestCallback callback) const {
+  GURL url = GURL(assistant::kKnowledgeApiEndpoint);
 
   // Add encoded request payload.
-  result = net::AppendOrReplaceQueryParameter(
-      result, kPayloadParam, BuildSearchRequestPayload(selected_text));
-  return result;
+  url = net::AppendOrReplaceQueryParameter(
+      url, assistant::kPayloadParamName,
+      BuildSearchRequestPayload(preprocessed_output.query));
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  std::move(callback).Run(std::move(resource_request), std::string());
 }
 
 void SearchResultLoader::ProcessResponse(
+    const PreprocessedOutput& preprocessed_output,
     std::unique_ptr<std::string> response_body,
     ResponseParserCallback complete_callback) {
   search_response_parser_ =

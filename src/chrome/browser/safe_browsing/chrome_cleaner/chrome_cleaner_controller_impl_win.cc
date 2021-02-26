@@ -12,13 +12,12 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -37,6 +36,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/scoped_token_privilege.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
@@ -96,7 +96,7 @@ base::FilePath VerifyAndRenameDownloadedCleaner(
     return base::FilePath();
 
   if (fetch_status != ChromeCleanerFetchStatus::kSuccess) {
-    base::DeleteFile(downloaded_path, /*recursive=*/false);
+    base::DeleteFile(downloaded_path);
     return base::FilePath();
   }
 
@@ -104,7 +104,7 @@ base::FilePath VerifyAndRenameDownloadedCleaner(
       downloaded_path.ReplaceExtension(FILE_PATH_LITERAL("exe")));
 
   if (!base::ReplaceFile(downloaded_path, executable_path, nullptr)) {
-    base::DeleteFile(downloaded_path, /*recursive=*/false);
+    base::DeleteFile(downloaded_path);
     return base::FilePath();
   }
 
@@ -161,22 +161,6 @@ void RecordReporterSequenceTypeHistogram(
                             static_cast<int>(SwReporterInvocationType::kMax));
 }
 
-void RecordReporterSequenceResultHistogram(
-    SwReporterInvocationType invocation_type,
-    SwReporterInvocationResult result) {
-  if (invocation_type == SwReporterInvocationType::kPeriodicRun) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SoftwareReporter.ReporterSequenceResult_Periodic",
-        static_cast<int>(result),
-        static_cast<int>(SwReporterInvocationResult::kMax));
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SoftwareReporter.ReporterSequenceResult_UserInitiated",
-        static_cast<int>(result),
-        static_cast<int>(SwReporterInvocationResult::kMax));
-  }
-}
-
 void RecordOnDemandUpdateRequiredHistogram(bool value) {
   UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.OnDemandUpdateRequired", value);
 }
@@ -218,6 +202,10 @@ void ChromeCleanerControllerDelegate::StartRebootPromptFlow(
     ChromeCleanerController* controller) {
   // The controller object decides if and when a prompt should be shown.
   ChromeCleanerRebootDialogControllerImpl::Create(controller);
+}
+
+bool ChromeCleanerControllerDelegate::IsAllowedByPolicy() {
+  return safe_browsing::SwReporterIsAllowedByPolicy();
 }
 
 // static
@@ -282,6 +270,11 @@ void ChromeCleanerControllerImpl::SetStateForTesting(State state) {
     idle_reason_ = IdleReason::kInitial;
 }
 
+void ChromeCleanerControllerImpl::SetIdleForTesting(IdleReason idle_reason) {
+  state_ = State::kIdle;
+  idle_reason_ = idle_reason;
+}
+
 // static
 void ChromeCleanerControllerImpl::ResetInstanceForTesting() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -303,6 +296,11 @@ void ChromeCleanerControllerImpl::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+bool ChromeCleanerControllerImpl::HasObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return observer_list_.HasObserver(observer);
+}
+
 void ChromeCleanerControllerImpl::OnReporterSequenceStarted() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -316,8 +314,6 @@ void ChromeCleanerControllerImpl::OnReporterSequenceDone(
     SwReporterInvocationResult result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(SwReporterInvocationResult::kUnspecified, result);
-
-  RecordReporterSequenceResultHistogram(pending_invocation_type_, result);
 
   // Ignore if any interaction with cleaner runs is ongoing. This can happen
   // in two situations:
@@ -350,12 +346,20 @@ void ChromeCleanerControllerImpl::OnReporterSequenceDone(
       break;
 
     case SwReporterInvocationResult::kNothingFound:
+    case SwReporterInvocationResult::kCleanupNotOffered: {
+      // TODO(crbug.com/1139806): The scan completion timestamp is not always
+      // written to the registry. As a workaround, write the completion
+      // timestamp also to a pref. This ensures that the timestamp is preserved
+      // in case Chrome is still opened when the scan completes. Remove this
+      // workaround once the timestamp is written to the registry in all cases.
+      PrefService* pref_service = g_browser_process->local_state();
+      if (pref_service) {
+        pref_service->SetTime(prefs::kChromeCleanerScanCompletionTime,
+                              base::Time::Now());
+      }
       idle_reason_ = IdleReason::kReporterFoundNothing;
       break;
-
-    case SwReporterInvocationResult::kCleanupNotOffered:
-      idle_reason_ = IdleReason::kReporterFoundNothing;
-      break;
+    }
 
     case SwReporterInvocationResult::kCleanupToBeOffered:
       // A request to scan will immediately follow this message, so no state
@@ -404,8 +408,8 @@ void ChromeCleanerControllerImpl::RequestUserInitiatedScan(Profile* profile) {
   if (cached_reporter_invocations_) {
     SwReporterInvocationSequence copied_sequence(*cached_reporter_invocations_);
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &safe_browsing::MaybeStartSwReporter, invocation_type,
             // The invocations will be modified by the |ReporterRunner|.
@@ -523,7 +527,7 @@ void ChromeCleanerControllerImpl::Reboot() {
 }
 
 bool ChromeCleanerControllerImpl::IsAllowedByPolicy() {
-  return safe_browsing::SwReporterIsAllowedByPolicy();
+  return delegate_->IsAllowedByPolicy();
 }
 
 bool ChromeCleanerControllerImpl::IsReportingManagedByPolicy(Profile* profile) {
@@ -662,6 +666,18 @@ void ChromeCleanerControllerImpl::OnPromptUser(
     idle_reason_ = IdleReason::kScanningFoundNothing;
     SetStateAndNotifyObservers(State::kIdle);
     RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_NOTHING_FOUND);
+
+    // TODO(crbug.com/1139806): The scan completion timestamp is not always
+    // written to the registry. As a workaround, write the completion
+    // timestamp also to a pref. This ensures that the timestamp is preserved
+    // in case Chrome is still opened when the scan completes. Remove this
+    // workaround once the timestamp is written to the registry in all cases.
+    PrefService* pref_service = g_browser_process->local_state();
+    if (pref_service) {
+      pref_service->SetTime(prefs::kChromeCleanerScanCompletionTime,
+                            base::Time::Now());
+    }
+
     return;
   }
 

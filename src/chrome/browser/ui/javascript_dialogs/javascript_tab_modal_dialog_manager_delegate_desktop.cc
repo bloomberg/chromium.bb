@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -35,6 +36,16 @@ JavaScriptTabModalDialogManagerDelegateDesktop::
 
 void JavaScriptTabModalDialogManagerDelegateDesktop::WillRunDialog() {
   BrowserList::AddObserver(this);
+  // SafeBrowsing Delayed Warnings experiment can delay some SafeBrowsing
+  // warnings until user interaction. If the current page has a delayed warning,
+  // it'll have a user interaction observer attached. Show the warning
+  // immediately in that case.
+  safe_browsing::SafeBrowsingUserInteractionObserver* observer =
+      safe_browsing::SafeBrowsingUserInteractionObserver::FromWebContents(
+          web_contents_);
+  if (observer) {
+    observer->OnJavaScriptDialog();
+  }
 }
 
 void JavaScriptTabModalDialogManagerDelegateDesktop::DidCloseDialog() {
@@ -46,7 +57,7 @@ void JavaScriptTabModalDialogManagerDelegateDesktop::SetTabNeedsAttention(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (!browser) {
     // It's possible that the WebContents is no longer in the tab strip. If so,
-    // just give up. https://crbug.com/786178#c7.
+    // just give up. https://crbug.com/786178
     return;
   }
 
@@ -58,7 +69,13 @@ void JavaScriptTabModalDialogManagerDelegateDesktop::SetTabNeedsAttention(
 
 bool JavaScriptTabModalDialogManagerDelegateDesktop::IsWebContentsForemost() {
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
-  DCHECK(browser);
+  if (!browser) {
+    // It's rare, but there are crashes from where sites are trying to show
+    // dialogs in the split second of time between when their Browser is gone
+    // and they're gone. In that case, bail. https://crbug.com/1142806
+    return false;
+  }
+
   return browser->tab_strip_model()->GetActiveWebContents() == web_contents_;
 }
 

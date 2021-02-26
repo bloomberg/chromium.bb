@@ -28,6 +28,9 @@ struct CC_EXPORT TransformNode {
   int id;
   // The node index of the parent node in the transform tree node vector.
   int parent_id;
+  // The node index of the nearest parent frame node in the transform tree node
+  // vector.
+  int parent_frame_id;
 
   ElementId element_id;
 
@@ -84,9 +87,6 @@ struct CC_EXPORT TransformNode {
   // root is flat.
   bool node_and_ancestors_are_flat : 1;
 
-  // This is needed to know if a layer can use lcd text.
-  bool node_and_ancestors_have_only_integer_translation : 1;
-
   bool scrolls : 1;
 
   bool should_be_snapped : 1;
@@ -105,6 +105,16 @@ struct CC_EXPORT TransformNode {
   // We need to track changes to to_screen transform to compute the damage rect.
   bool transform_changed : 1;
 
+  // Whether the parent transform node should be used for checking backface
+  // visibility, not this transform one.
+  bool delegates_to_parent_for_backface : 1;
+
+  // Set to true, if the compositing reason is will-change:transform.
+  bool will_change_transform : 1;
+
+  // Set to true, if the node or it's parent |will_change_transform| is true.
+  bool node_or_ancestors_will_change_transform : 1;
+
   gfx::ScrollOffset scroll_offset;
 
   // This value stores the snapped amount whenever we snap. If the snap is due
@@ -117,7 +127,13 @@ struct CC_EXPORT TransformNode {
   float maximum_animation_scale;
   float starting_animation_scale;
 
+  // Set to the element ID of containing document if this transform node is the
+  // root of a visible frame subtree.
+  ElementId visible_frame_element_id;
+
+#if DCHECK_IS_ON()
   bool operator==(const TransformNode& other) const;
+#endif
 
   void set_to_parent(const gfx::Transform& transform) {
     to_parent = transform;

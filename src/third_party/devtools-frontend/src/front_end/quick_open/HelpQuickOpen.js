@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Root from '../root/root.js';
+import * as UI from '../ui/ui.js';
+
 import {Provider} from './FilteredListWidget.js';
 import {QuickOpenImpl} from './QuickOpen.js';
 
@@ -10,7 +13,7 @@ export class HelpQuickOpen extends Provider {
     super();
     /** @type {!Array<{prefix: string, title: string}>} */
     this._providers = [];
-    self.runtime.extensions(Provider).forEach(this._addProvider.bind(this));
+    Root.Runtime.Runtime.instance().extensions(Provider).forEach(this._addProvider.bind(this));
   }
 
   /**
@@ -18,7 +21,7 @@ export class HelpQuickOpen extends Provider {
    */
   _addProvider(extension) {
     if (extension.title()) {
-      this._providers.push({prefix: extension.descriptor()['prefix'], title: extension.title()});
+      this._providers.push({prefix: extension.descriptor()['prefix'] || '', title: extension.title()});
     }
   }
 
@@ -60,7 +63,7 @@ export class HelpQuickOpen extends Provider {
     const provider = this._providers[itemIndex];
     const prefixElement = titleElement.createChild('span', 'monospace');
     prefixElement.textContent = (provider.prefix || '…') + ' ';
-    titleElement.createTextChild(provider.title);
+    UI.UIUtils.createTextChild(titleElement, provider.title);
   }
 
   /**

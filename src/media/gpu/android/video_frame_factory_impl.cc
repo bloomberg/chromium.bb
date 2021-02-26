@@ -8,8 +8,8 @@
 
 #include "base/android/android_image_reader_compat.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -19,6 +19,7 @@
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/texture_owner.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
@@ -33,22 +34,39 @@
 namespace media {
 namespace {
 
+// The frames must be copied when threaded texture mailboxes are in use
+// (http://crbug.com/582170). This texture copy can be avoided if
+// AImageReader/AHardwareBuffer is supported and AImageReader
+// max size is not limited to 1 (crbug.com/1091945).
+base::Optional<VideoFrameMetadata::CopyMode> GetVideoFrameCopyMode(
+    bool enable_threaded_texture_mailboxes) {
+  if (!enable_threaded_texture_mailboxes)
+    return base::nullopt;
+
+  return features::IsWebViewZeroCopyVideoEnabled()
+             ? VideoFrameMetadata::CopyMode::kCopyMailboxesOnly
+             : VideoFrameMetadata::CopyMode::kCopyToNewTexture;
+}
+
 gpu::TextureOwner::Mode GetTextureOwnerMode(
-    VideoFrameFactory::OverlayMode overlay_mode) {
-  const bool a_image_reader_supported =
-      base::android::AndroidImageReader::GetInstance().IsSupported();
+    VideoFrameFactory::OverlayMode overlay_mode,
+    const base::Optional<VideoFrameMetadata::CopyMode>& copy_mode) {
+  if (copy_mode == VideoFrameMetadata::kCopyMailboxesOnly) {
+    DCHECK(features::IsWebViewZeroCopyVideoEnabled());
+    return gpu::TextureOwner::Mode::kAImageReaderInsecureMultithreaded;
+  }
 
   switch (overlay_mode) {
     case VideoFrameFactory::OverlayMode::kDontRequestPromotionHints:
     case VideoFrameFactory::OverlayMode::kRequestPromotionHints:
-      return a_image_reader_supported
+      return features::IsAImageReaderEnabled()
                  ? gpu::TextureOwner::Mode::kAImageReaderInsecure
                  : gpu::TextureOwner::Mode::kSurfaceTextureInsecure;
     case VideoFrameFactory::OverlayMode::kSurfaceControlSecure:
-      DCHECK(a_image_reader_supported);
+      DCHECK(features::IsAImageReaderEnabled());
       return gpu::TextureOwner::Mode::kAImageReaderSecureSurfaceControl;
     case VideoFrameFactory::OverlayMode::kSurfaceControlInsecure:
-      DCHECK(a_image_reader_supported);
+      DCHECK(features::IsAImageReaderEnabled());
       return gpu::TextureOwner::Mode::kAImageReaderInsecureSurfaceControl;
   }
 
@@ -61,6 +79,7 @@ gpu::TextureOwner::Mode GetTextureOwnerMode(
 static void AllocateTextureOwnerOnGpuThread(
     VideoFrameFactory::InitCB init_cb,
     VideoFrameFactory::OverlayMode overlay_mode,
+    const base::Optional<VideoFrameMetadata::CopyMode>& copy_mode,
     scoped_refptr<gpu::SharedContextState> shared_context_state) {
   if (!shared_context_state) {
     std::move(init_cb).Run(nullptr);
@@ -69,7 +88,7 @@ static void AllocateTextureOwnerOnGpuThread(
 
   std::move(init_cb).Run(gpu::TextureOwner::Create(
       gpu::TextureOwner::CreateTexture(shared_context_state),
-      GetTextureOwnerMode(overlay_mode)));
+      GetTextureOwnerMode(overlay_mode, copy_mode)));
 }
 
 }  // namespace
@@ -81,11 +100,11 @@ VideoFrameFactoryImpl::VideoFrameFactoryImpl(
     const gpu::GpuPreferences& gpu_preferences,
     std::unique_ptr<SharedImageVideoProvider> image_provider,
     std::unique_ptr<MaybeRenderEarlyManager> mre_manager,
-    base::SequenceBound<FrameInfoHelper> frame_info_helper)
+    std::unique_ptr<FrameInfoHelper> frame_info_helper)
     : image_provider_(std::move(image_provider)),
       gpu_task_runner_(std::move(gpu_task_runner)),
-      enable_threaded_texture_mailboxes_(
-          gpu_preferences.enable_threaded_texture_mailboxes),
+      copy_mode_(GetVideoFrameCopyMode(
+          gpu_preferences.enable_threaded_texture_mailboxes)),
       mre_manager_(std::move(mre_manager)),
       frame_info_helper_(std::move(frame_info_helper)) {}
 
@@ -97,11 +116,12 @@ void VideoFrameFactoryImpl::Initialize(OverlayMode overlay_mode,
                                        InitCB init_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   overlay_mode_ = overlay_mode;
+
   // On init success, create the TextureOwner and hop it back to this thread to
   // call |init_cb|.
-  auto gpu_init_cb =
-      base::BindOnce(&AllocateTextureOwnerOnGpuThread,
-                     BindToCurrentLoop(std::move(init_cb)), overlay_mode);
+  auto gpu_init_cb = base::BindOnce(&AllocateTextureOwnerOnGpuThread,
+                                    BindToCurrentLoop(std::move(init_cb)),
+                                    overlay_mode, copy_mode_);
   image_provider_->Initialize(std::move(gpu_init_cb));
 }
 
@@ -168,12 +188,11 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
     return;
   }
 
-  auto image_ready_cb =
-      base::BindOnce(&VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady,
-                     weak_factory_.GetWeakPtr(), std::move(output_cb),
-                     timestamp, natural_size, codec_buffer_wait_coordinator_,
-                     std::move(promotion_hint_cb), pixel_format, overlay_mode_,
-                     enable_threaded_texture_mailboxes_, gpu_task_runner_);
+  auto image_ready_cb = base::BindOnce(
+      &VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady,
+      weak_factory_.GetWeakPtr(), std::move(output_cb), timestamp, natural_size,
+      !!codec_buffer_wait_coordinator_, std::move(promotion_hint_cb),
+      pixel_format, overlay_mode_, copy_mode_, gpu_task_runner_);
 
   RequestImage(std::move(output_buffer_renderer), std::move(image_ready_cb));
 }
@@ -181,55 +200,40 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
 void VideoFrameFactoryImpl::RequestImage(
     std::unique_ptr<CodecOutputBufferRenderer> buffer_renderer,
     ImageWithInfoReadyCB image_ready_cb) {
-  if (buffer_renderer && visible_size_ == buffer_renderer->size()) {
-    auto cb = base::BindOnce(std::move(image_ready_cb),
-                             std::move(buffer_renderer), frame_info_);
-
-    image_provider_->RequestImage(
-        std::move(cb), image_spec_,
-        codec_buffer_wait_coordinator_
-            ? codec_buffer_wait_coordinator_->texture_owner()
-            : nullptr);
-    return;
-  }
-
-  // We need to reset size to make sure VFFI pipeline is still ordered.
-  // e.g: CreateVideoFrame is called with new size. We post task to GPU thread
-  // to get new frame info. While we wait CreateVideoFrame might be called with
-  // old size again and if we don't reset size here we will skip GPU hop and new
-  // frame will be created earlier than first one.
-  visible_size_ = gfx::Size();
-
-  auto info_cb = BindToCurrentLoop(
+  auto info_cb =
       base::BindOnce(&VideoFrameFactoryImpl::CreateVideoFrame_OnFrameInfoReady,
                      weak_factory_.GetWeakPtr(), std::move(image_ready_cb),
-                     codec_buffer_wait_coordinator_));
+                     codec_buffer_wait_coordinator_);
 
-  frame_info_helper_.Post(FROM_HERE, &FrameInfoHelper::GetFrameInfo,
-                          std::move(buffer_renderer), std::move(info_cb));
+  frame_info_helper_->GetFrameInfo(std::move(buffer_renderer),
+                                   std::move(info_cb));
 }
 
 void VideoFrameFactoryImpl::CreateVideoFrame_OnFrameInfoReady(
     ImageWithInfoReadyCB image_ready_cb,
     scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
     std::unique_ptr<CodecOutputBufferRenderer> output_buffer_renderer,
-    FrameInfoHelper::FrameInfo frame_info,
-    bool success) {
-  // To get frame info we need to render frame which might fail for variety of
-  // reason. FrameInfoHelper will provide best values we can proceed with, but
-  // we should not cache it and attempt to get info for next frame.
-  if (success) {
-    frame_info_ = frame_info;
-    visible_size_ = output_buffer_renderer->size();
-  }
-
+    FrameInfoHelper::FrameInfo frame_info) {
   // If we don't have output buffer here we can't rely on reply from
   // FrameInfoHelper as there might be not cached value and we can't render
   // nothing. But in this case call comes from RunAfterPendingVideoFrames and we
   // just want to ask for the same image spec as before to order callback after
   // all RequestImage, so skip updating image_spec_ in this case.
-  if (output_buffer_renderer)
+  if (output_buffer_renderer) {
     image_spec_.coded_size = frame_info.coded_size;
+  } else {
+    // It is possible that we come here from RunAfterPendingVideoFrames before
+    // CreateVideoFrame was called. In this case we don't have coded_size, but
+    // it also means that there was no `image_provider_->RequestImage` calls so
+    // we can just run callback instantly.
+    if (image_spec_.coded_size.IsEmpty()) {
+      std::move(image_ready_cb)
+          .Run(nullptr, FrameInfoHelper::FrameInfo(),
+               SharedImageVideoProvider::ImageRecord());
+      return;
+    }
+  }
+  DCHECK(!image_spec_.coded_size.IsEmpty());
 
   auto cb = base::BindOnce(std::move(image_ready_cb),
                            std::move(output_buffer_renderer), frame_info);
@@ -246,11 +250,11 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
     OnceOutputCB output_cb,
     base::TimeDelta timestamp,
     gfx::Size natural_size,
-    scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
+    bool is_texture_owner_backed,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
     VideoPixelFormat pixel_format,
     OverlayMode overlay_mode,
-    bool enable_threaded_texture_mailboxes,
+    const base::Optional<VideoFrameMetadata::CopyMode>& copy_mode,
     scoped_refptr<base::SequencedTaskRunner> gpu_task_runner,
     std::unique_ptr<CodecOutputBufferRenderer> output_buffer_renderer,
     FrameInfoHelper::FrameInfo frame_info,
@@ -268,7 +272,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
   // When we remove the output buffer management from CodecImage, then that's
   // what we'd have a reference to here rather than CodecImage.
   record.codec_image_holder->codec_image_raw()->Initialize(
-      std::move(output_buffer_renderer), codec_buffer_wait_coordinator,
+      std::move(output_buffer_renderer), is_texture_owner_backed,
       std::move(promotion_hint_cb));
 
   // Send the CodecImage (via holder, since we can't touch the refcount here) to
@@ -297,37 +301,27 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
     std::move(output_cb).Run(nullptr);
     return;
   }
-
-  // The frames must be copied when threaded texture mailboxes are in use
-  // (http://crbug.com/582170).
-  if (enable_threaded_texture_mailboxes)
-    frame->metadata()->SetBoolean(VideoFrameMetadata::COPY_REQUIRED, true);
-
+  frame->metadata()->copy_mode = copy_mode;
   const bool is_surface_control =
       overlay_mode == OverlayMode::kSurfaceControlSecure ||
       overlay_mode == OverlayMode::kSurfaceControlInsecure;
   const bool wants_promotion_hints =
       overlay_mode == OverlayMode::kRequestPromotionHints;
 
-  // Remember that we can't access |codec_buffer_wait_coordinator|, but we can
-  // check if we have one here.
   bool allow_overlay = false;
   if (is_surface_control) {
-    DCHECK(codec_buffer_wait_coordinator);
+    DCHECK(is_texture_owner_backed);
     allow_overlay = true;
   } else {
     // We unconditionally mark the picture as overlayable, even if
-    // |!codec_buffer_wait_coordinator|, if we want to get hints.  It's
+    // |!is_texture_owner_backed|, if we want to get hints.  It's
     // required, else we won't get hints.
-    allow_overlay = !codec_buffer_wait_coordinator || wants_promotion_hints;
+    allow_overlay = !is_texture_owner_backed || wants_promotion_hints;
   }
 
-  frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
-                                allow_overlay);
-  frame->metadata()->SetBoolean(VideoFrameMetadata::WANTS_PROMOTION_HINT,
-                                wants_promotion_hints);
-  frame->metadata()->SetBoolean(VideoFrameMetadata::TEXTURE_OWNER,
-                                !!codec_buffer_wait_coordinator);
+  frame->metadata()->allow_overlay = allow_overlay;
+  frame->metadata()->wants_promotion_hint = wants_promotion_hints;
+  frame->metadata()->texture_owner = is_texture_owner_backed;
 
   // TODO(liberato): if this is run via being dropped, then it would be nice
   // to find that out rather than treating the image as unused.  If the renderer

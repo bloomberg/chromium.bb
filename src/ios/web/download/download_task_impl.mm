@@ -8,11 +8,9 @@
 #import <WebKit/WebKit.h>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #import "ios/net/cookies/system_cookie_util.h"
-#include "ios/web/common/features.h"
 #import "ios/web/net/cookies/wk_cookie_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/download/download_task_observer.h"
@@ -246,8 +244,8 @@ void DownloadTaskImpl::Start(
   if (original_url_.SchemeIs(url::kDataScheme)) {
     StartDataUrlParsing();
   } else {
-    GetCookies(base::Bind(&DownloadTaskImpl::StartWithCookies,
-                          weak_factory_.GetWeakPtr()));
+    GetCookies(base::BindRepeating(&DownloadTaskImpl::StartWithCookies,
+                                   weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -411,7 +409,7 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier,
 }
 
 void DownloadTaskImpl::GetCookies(
-    base::Callback<void(NSArray<NSHTTPCookie*>*)> callback) {
+    base::OnceCallback<void(NSArray<NSHTTPCookie*>*)> callback) {
   DCHECK_CURRENTLY_ON(WebThread::UI);
   scoped_refptr<net::URLRequestContextGetter> context_getter(
       web_state_->GetBrowserState()->GetRequestContext());
@@ -419,23 +417,23 @@ void DownloadTaskImpl::GetCookies(
   // net::URLRequestContextGetter must be used in the IO thread.
   base::PostTask(FROM_HERE, {WebThread::IO},
                  base::BindOnce(&DownloadTaskImpl::GetCookiesFromContextGetter,
-                                context_getter, callback));
+                                context_getter, std::move(callback)));
 }
 
 void DownloadTaskImpl::GetCookiesFromContextGetter(
     scoped_refptr<net::URLRequestContextGetter> context_getter,
-    base::Callback<void(NSArray<NSHTTPCookie*>*)> callback) {
+    base::OnceCallback<void(NSArray<NSHTTPCookie*>*)> callback) {
   DCHECK_CURRENTLY_ON(WebThread::IO);
   context_getter->GetURLRequestContext()->cookie_store()->GetAllCookiesAsync(
       base::BindOnce(
-          [](base::Callback<void(NSArray<NSHTTPCookie*>*)> callback,
+          [](base::OnceCallback<void(NSArray<NSHTTPCookie*>*)> callback,
              const net::CookieList& cookie_list) {
             NSArray<NSHTTPCookie*>* cookies =
                 SystemCookiesFromCanonicalCookieList(cookie_list);
             base::PostTask(FROM_HERE, {WebThread::UI},
-                           base::BindOnce(callback, cookies));
+                           base::BindOnce(std::move(callback), cookies));
           },
-          callback));
+          std::move(callback)));
 }
 
 void DownloadTaskImpl::StartWithCookies(NSArray<NSHTTPCookie*>* cookies) {
@@ -488,8 +486,7 @@ void DownloadTaskImpl::OnDownloadFinished(int error_code) {
   // when the current download is finished.
   // Check if writer_->AsFileWriter() is necessary because in some cases the
   // writer isn't a fileWriter as for Passkit downloads for example.
-  if (base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads) &&
-      writer_->AsFileWriter())
+  if (writer_->AsFileWriter())
     writer_->AsFileWriter()->DisownFile();
   error_code_ = error_code;
   state_ = State::kComplete;

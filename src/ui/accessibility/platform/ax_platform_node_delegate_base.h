@@ -35,7 +35,8 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // Get the accessibility tree data for this node.
   const AXTreeData& GetTreeData() const override;
 
-  // Get the unignored selection from the tree
+  base::string16 GetInnerText() const override;
+  base::string16 GetValueForControl() const override;
   const AXTree::Selection GetUnignoredSelection() const override;
 
   // Creates a text position rooted at this object.
@@ -62,18 +63,18 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
 
+  // Returns true if it has a modal dialog.
+  bool HasModalDialog() const override;
+
   gfx::NativeViewAccessible GetFirstChild() override;
   gfx::NativeViewAccessible GetLastChild() override;
   gfx::NativeViewAccessible GetNextSibling() override;
   gfx::NativeViewAccessible GetPreviousSibling() override;
 
-  // Returns true if an ancestor of this node (not including itself) is a
-  // leaf node, meaning that this node is not actually exposed to the
-  // platform.
   bool IsChildOfLeaf() const override;
-
-  // If this object is exposed to the platform, returns this object. Otherwise,
-  // returns the platform leaf under which this object is found.
+  bool IsDescendantOfPlainTextField() const override;
+  bool IsLeaf() const override;
+  bool IsToplevelBrowserWindow() override;
   gfx::NativeViewAccessible GetClosestPlatformObject() const override;
 
   class ChildIteratorBase : public ChildIterator {
@@ -106,8 +107,6 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   TextAttributeMap ComputeTextAttributeMap(
       const TextAttributeList& default_attributes) const override;
   std::string GetInheritedFontFamilyName() const override;
-
-  base::string16 GetInnerText() const override;
 
   gfx::Rect GetBoundsRect(const AXCoordinateSystem coordinate_system,
                           const AXClippingBehavior clipping_behavior,
@@ -157,6 +156,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
 
   // Get whether this node is a minimized window.
   bool IsMinimized() const override;
+  bool IsText() const override;
 
   // Get whether this node is in web content.
   bool IsWebContent() const override;

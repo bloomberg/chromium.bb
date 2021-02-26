@@ -6,6 +6,7 @@
 #define UTIL_WEAK_PTR_H_
 
 #include <memory>
+#include <utility>
 
 #include "util/osp_logging.h"
 
@@ -92,7 +93,7 @@ class WeakPtr {
   }
 
   // Create/Assign from nullptr.
-  WeakPtr(std::nullptr_t) {}
+  WeakPtr(std::nullptr_t) {}  // NOLINT
 
   WeakPtr& operator=(std::nullptr_t) {
     impl_.reset();

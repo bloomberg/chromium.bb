@@ -40,7 +40,7 @@ LocalCardMigrationIconView::LocalCardMigrationIconView(
 
 LocalCardMigrationIconView::~LocalCardMigrationIconView() {}
 
-views::BubbleDialogDelegateView* LocalCardMigrationIconView::GetBubble() const {
+views::BubbleDialogDelegate* LocalCardMigrationIconView::GetBubble() const {
   ManageMigrationUiController* controller = GetController();
   if (!controller)
     return nullptr;
@@ -119,7 +119,11 @@ void LocalCardMigrationIconView::UpdateImpl() {
         break;
     }
   } else {
-    SetHighlighted(false);
+    // Fade out inkdrop but only if icon was actually highlighted. Calling
+    // SetHighlighted() can result in a spurious fade-out animation and visual
+    // glitches.
+    if (this->GetHighlighted())
+      SetHighlighted(false);
     // Handle corner cases where users navigate away or close the tab.
     UnpauseAnimation();
   }

@@ -14,7 +14,7 @@
 
 import {ColumnDef} from '../../common/aggregation_data';
 import {Engine} from '../../common/engine';
-import {Sorting, TimestampedAreaSelection} from '../../common/state';
+import {Area, Sorting} from '../../common/state';
 import {toNs} from '../../common/time';
 import {Config, CPU_SLICE_TRACK_KIND} from '../../tracks/cpu_slices/common';
 import {globals} from '../globals';
@@ -23,11 +23,8 @@ import {AggregationController} from './aggregation_controller';
 
 
 export class CpuAggregationController extends AggregationController {
-  async createAggregateView(
-      engine: Engine, selectedArea: TimestampedAreaSelection) {
+  async createAggregateView(engine: Engine, area: Area) {
     await engine.query(`drop view if exists ${this.kind};`);
-    const area = selectedArea.area;
-    if (area === undefined) return false;
 
     const selectedCpus = [];
     for (const trackId of area.tracks) {
@@ -59,6 +56,8 @@ export class CpuAggregationController extends AggregationController {
   getTabName() {
     return 'CPU Slices';
   }
+
+  async getExtra() {}
 
   getDefaultSorting(): Sorting {
     return {column: 'total_dur', direction: 'DESC'};
@@ -94,7 +93,8 @@ export class CpuAggregationController extends AggregationController {
         title: 'Wall duration (ms)',
         kind: 'TIMESTAMP_NS',
         columnConstructor: Float64Array,
-        columnId: 'total_dur'
+        columnId: 'total_dur',
+        sum: true
       },
       {
         title: 'Avg Wall duration (ms)',
@@ -106,7 +106,8 @@ export class CpuAggregationController extends AggregationController {
         title: 'Occurrences',
         kind: 'NUMBER',
         columnConstructor: Uint16Array,
-        columnId: 'occurrences'
+        columnId: 'occurrences',
+        sum: true
       }
     ];
   }

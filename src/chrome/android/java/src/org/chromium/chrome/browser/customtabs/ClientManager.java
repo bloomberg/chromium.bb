@@ -477,8 +477,8 @@ class ClientManager {
             }
         };
 
-        params.originVerifier =
-                new OriginVerifier(params.getPackageName(), relation, /* webContents= */ null);
+        params.originVerifier = new OriginVerifier(params.getPackageName(), relation,
+                /* webContents= */ null, /* externalAuthUtils= */ null);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> { params.originVerifier.start(listener, origin); });
         if (relation == CustomTabsService.RELATION_HANDLE_ALL_URLS
@@ -513,7 +513,7 @@ class ClientManager {
     /**
      * @return The referrer that is associated with the client owning given session.
      */
-    public synchronized Referrer getReferrerForSession(CustomTabsSessionToken session) {
+    public synchronized Referrer getDefaultReferrerForSession(CustomTabsSessionToken session) {
         return IntentHandler.constructValidReferrerForAuthority(
                 getClientPackageNameForSession(session));
     }

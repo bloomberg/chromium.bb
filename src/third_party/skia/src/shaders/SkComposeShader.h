@@ -27,8 +27,8 @@ protected:
     SkShader_Blend(SkReadBuffer&);
     void flatten(SkWriteBuffer&) const override;
     bool onAppendStages(const SkStageRec&) const override;
-    skvm::Color onProgram(skvm::Builder*, skvm::F32 x, skvm::F32 y, skvm::Color paint,
-                          const SkMatrix& ctm, const SkMatrix* localM,
+    skvm::Color onProgram(skvm::Builder*, skvm::Coord device, skvm::Coord local, skvm::Color paint,
+                          const SkMatrixProvider&, const SkMatrix* localM,
                           SkFilterQuality, const SkColorInfo& dst,
                           skvm::Uniforms*, SkArenaAlloc*) const override;
 
@@ -39,7 +39,7 @@ private:
     sk_sp<SkShader>     fSrc;
     const SkBlendMode   fMode;
 
-    typedef SkShaderBase INHERITED;
+    using INHERITED = SkShaderBase;
 };
 
 class SkShader_Lerp final : public SkShaderBase {
@@ -60,8 +60,8 @@ protected:
     SkShader_Lerp(SkReadBuffer&);
     void flatten(SkWriteBuffer&) const override;
     bool onAppendStages(const SkStageRec&) const override;
-    skvm::Color onProgram(skvm::Builder*, skvm::F32 x, skvm::F32 y, skvm::Color paint,
-                          const SkMatrix& ctm, const SkMatrix* localM,
+    skvm::Color onProgram(skvm::Builder*, skvm::Coord device, skvm::Coord local, skvm::Color paint,
+                          const SkMatrixProvider&, const SkMatrix* localM,
                           SkFilterQuality, const SkColorInfo& dst,
                           skvm::Uniforms*, SkArenaAlloc*) const override;
 
@@ -72,7 +72,7 @@ private:
     sk_sp<SkShader> fSrc;
     const float     fWeight;
 
-    typedef SkShaderBase INHERITED;
+    using INHERITED = SkShaderBase;
 };
 
 #endif

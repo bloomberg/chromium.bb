@@ -10,6 +10,7 @@ goog.provide('BackgroundKeyboardHandler');
 
 goog.require('ChromeVoxState');
 goog.require('EventSourceState');
+goog.require('KeyCode');
 goog.require('MathHandler');
 goog.require('Output');
 goog.require('ChromeVoxKbHandler');
@@ -86,7 +87,7 @@ BackgroundKeyboardHandler = class {
         // ARC++ with TalkBack never get it. We only want to re-inject when
         // ChromeVox has no range.
         (ChromeVoxState.instance.currentRange &&
-         (evt.metaKey || evt.keyCode == 91))) {
+         (evt.metaKey || evt.keyCode === KeyCode.SEARCH))) {
       if (ChromeVox.passThroughMode) {
         this.passThroughState_ =
             KeyboardPassThroughState_.PENDING_PASS_THROUGH_SHORTCUT_KEYUPS;
@@ -100,7 +101,7 @@ BackgroundKeyboardHandler = class {
 
   /**
    * Handles key up events.
-   * @param {Event} evt The key down event to process.
+   * @param {Event} evt The key up event to process.
    * @return {boolean} This value has no effect since we ignore it in
    *     SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent.
    */
@@ -113,17 +114,17 @@ BackgroundKeyboardHandler = class {
 
     if (ChromeVox.passThroughMode) {
       this.passedThroughKeyDowns_.delete(evt.keyCode);
-      if (this.passThroughState_ ==
+      if (this.passThroughState_ ===
               KeyboardPassThroughState_.PENDING_PASS_THROUGH_SHORTCUT_KEYUPS &&
-          this.eatenKeyDowns_.size == 0) {
+          this.eatenKeyDowns_.size === 0) {
         // All keys of the pass through shortcut command have been released.
         // Ready to pass through the next shortcut.
         this.passThroughState_ =
             KeyboardPassThroughState_.PENDING_SHORTCUT_KEYUPS;
       } else if (
-          this.passThroughState_ ==
+          this.passThroughState_ ===
               KeyboardPassThroughState_.PENDING_SHORTCUT_KEYUPS &&
-          this.passedThroughKeyDowns_.size == 0) {
+          this.passedThroughKeyDowns_.size === 0) {
         // All keys of the passed through shortcut have been released. Ready to
         // go back to normal processing (aka no pass through).
         ChromeVox.passThroughMode = false;
@@ -132,23 +133,5 @@ BackgroundKeyboardHandler = class {
     }
 
     return false;
-  }
-
-  /**
-   * @param {number} keyCode
-   * @param {chrome.accessibilityPrivate.SyntheticKeyboardModifiers=}
-   *     modifiers
-   * @return {boolean}
-   */
-  static sendKeyPress(keyCode, modifiers) {
-    const key = {
-      type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
-      keyCode,
-      modifiers
-    };
-    chrome.accessibilityPrivate.sendSyntheticKeyEvent(key);
-    key['type'] = chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYUP;
-    chrome.accessibilityPrivate.sendSyntheticKeyEvent(key);
-    return true;
   }
 };

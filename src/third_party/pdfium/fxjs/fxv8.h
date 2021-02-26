@@ -12,7 +12,21 @@
 #include "core/fxcrt/fx_string.h"
 #include "v8/include/v8.h"
 
+// The fxv8 functions soften up the interface to the V8 API.
+
 namespace fxv8 {
+
+// These first check for empty locals.
+bool IsUndefined(v8::Local<v8::Value> value);
+bool IsNull(v8::Local<v8::Value> value);
+bool IsBoolean(v8::Local<v8::Value> value);
+bool IsString(v8::Local<v8::Value> value);
+bool IsNumber(v8::Local<v8::Value> value);
+bool IsInteger(v8::Local<v8::Value> value);
+bool IsObject(v8::Local<v8::Value> value);
+bool IsArray(v8::Local<v8::Value> value);
+bool IsDate(v8::Local<v8::Value> value);
+bool IsFunction(v8::Local<v8::Value> value);
 
 v8::Local<v8::Value> NewNullHelper(v8::Isolate* pIsolate);
 v8::Local<v8::Value> NewUndefinedHelper(v8::Isolate* pIsolate);
@@ -28,9 +42,12 @@ v8::Local<v8::Array> NewArrayHelper(v8::Isolate* pIsolate);
 v8::Local<v8::Object> NewObjectHelper(v8::Isolate* pIsolate);
 v8::Local<v8::Date> NewDateHelper(v8::Isolate* pIsolate, double d);
 
-int ReentrantToInt32Helper(v8::Isolate* pIsolate, v8::Local<v8::Value> pValue);
+int32_t ReentrantToInt32Helper(v8::Isolate* pIsolate,
+                               v8::Local<v8::Value> pValue);
 bool ReentrantToBooleanHelper(v8::Isolate* pIsolate,
                               v8::Local<v8::Value> pValue);
+float ReentrantToFloatHelper(v8::Isolate* pIsolate,
+                             v8::Local<v8::Value> pValue);
 double ReentrantToDoubleHelper(v8::Isolate* pIsolate,
                                v8::Local<v8::Value> pValue);
 WideString ReentrantToWideStringHelper(v8::Isolate* pIsolate,
@@ -49,6 +66,14 @@ v8::Local<v8::Value> ReentrantGetObjectPropertyHelper(
 std::vector<WideString> ReentrantGetObjectPropertyNamesHelper(
     v8::Isolate* pIsolate,
     v8::Local<v8::Object> pObj);
+bool ReentrantHasObjectOwnPropertyHelper(v8::Isolate* pIsolate,
+                                         v8::Local<v8::Object> pObj,
+                                         ByteStringView bsUTF8PropertyName,
+                                         bool bUseTypeGetter);
+bool ReentrantSetObjectOwnPropertyHelper(v8::Isolate* pIsolate,
+                                         v8::Local<v8::Object> pObj,
+                                         ByteStringView bsUTF8PropertyName,
+                                         v8::Local<v8::Value> pValue);
 bool ReentrantPutObjectPropertyHelper(v8::Isolate* pIsolate,
                                       v8::Local<v8::Object> pObj,
                                       ByteStringView bsUTF8PropertyName,
@@ -57,6 +82,9 @@ bool ReentrantPutArrayElementHelper(v8::Isolate* pIsolate,
                                     v8::Local<v8::Array> pArray,
                                     unsigned index,
                                     v8::Local<v8::Value> pValue);
+void ReentrantDeleteObjectPropertyHelper(v8::Isolate* pIsolate,
+                                         v8::Local<v8::Object> pObj,
+                                         ByteStringView bsUTF8PropertyName);
 v8::Local<v8::Value> ReentrantGetArrayElementHelper(v8::Isolate* pIsolate,
                                                     v8::Local<v8::Array> pArray,
                                                     unsigned index);

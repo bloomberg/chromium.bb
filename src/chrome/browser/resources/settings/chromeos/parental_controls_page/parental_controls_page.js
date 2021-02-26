@@ -34,7 +34,7 @@ Polymer({
 
   /** @override */
   created() {
-    this.browserProxy_ = parental_controls.BrowserProxyImpl.getInstance();
+    this.browserProxy_ = parental_controls.ParentalControlsBrowserProxyImpl.getInstance();
   },
 
   /** @override */
@@ -42,6 +42,14 @@ Polymer({
     // Set up online/offline listeners.
     window.addEventListener('offline', this.onOffline_.bind(this));
     window.addEventListener('online', this.onOnline_.bind(this));
+  },
+
+  /**
+   * Returns the setup parental controls CrButtonElement.
+   * @return {?CrButtonElement}
+   */
+  getSetupButton() {
+    return /** @type {?CrButtonElement} */ (this.$$('#setupButton'));
   },
 
   /**

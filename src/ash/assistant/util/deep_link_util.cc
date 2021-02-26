@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -22,8 +22,8 @@ namespace util {
 
 namespace {
 
-using chromeos::assistant::mojom::AssistantEntryPoint;
-using chromeos::assistant::mojom::AssistantQuerySource;
+using chromeos::assistant::AssistantEntryPoint;
+using chromeos::assistant::AssistantQuerySource;
 
 // Supported deep link param keys. These values must be kept in sync with the
 // server. See more details at go/cros-assistant-deeplink.
@@ -464,9 +464,14 @@ GURL GetChromeSettingsUrl(const base::Optional<std::string>& page) {
   // top-level Chrome OS Settings. We may wish to allow deep linking into
   // Browser Settings at some point in the future at which point we will define
   // an analogous collection of |kAllowedBrowserPages|.
+  // These values are copied from
+  // chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.
+  // We can not reuse the generated defines as we can not depend on //chrome.
+  // TODO(b/168138594): use generated defines once that header has been moved to
+  // chromeos.
   static const std::map<std::string, std::string> kAllowedOsPages = {
       {/*page=*/"googleAssistant", /*os_page=*/"googleAssistant"},
-      {/*page=*/"languages", /*os_page=*/"languages/details"}};
+      {/*page=*/"languages", /*os_page=*/"osLanguages/details"}};
 
   return page && base::Contains(kAllowedOsPages, page.value())
              ? GURL(kChromeOsSettingsUrl + kAllowedOsPages.at(page.value()))

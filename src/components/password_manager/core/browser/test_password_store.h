@@ -24,7 +24,7 @@ namespace password_manager {
 // A matcher that compares two PasswordForm instances but ignores the |in_store|
 // member.
 MATCHER_P(MatchesFormExceptStore, expected, "") {
-  autofill::PasswordForm arg_copy = arg;
+  PasswordForm arg_copy = arg;
   arg_copy.in_store = expected.in_store;
   return arg_copy == expected;
 }
@@ -35,10 +35,14 @@ MATCHER_P(MatchesFormExceptStore, expected, "") {
 // for testing have been implemented.
 class TestPasswordStore : public PasswordStore {
  public:
-  explicit TestPasswordStore(bool is_account_store = false);
+  // We need to qualify password_manager::IsAccountStore with the full
+  // namespace, otherwise, it's confused with the method
+  // PasswordStoreSync::IsAccountStore().
+  explicit TestPasswordStore(password_manager::IsAccountStore is_account_store =
+                                 password_manager::IsAccountStore(false));
 
   using PasswordMap = std::map<std::string /* signon_realm */,
-                               std::vector<autofill::PasswordForm>,
+                               std::vector<PasswordForm>,
                                std::less<>>;
 
   struct CompromisedCredentialsLess {
@@ -64,7 +68,7 @@ class TestPasswordStore : public PasswordStore {
   // Returns true if no passwords are stored in the store. Note that this is not
   // as simple as asking whether stored_passwords().empty(), because the map can
   // have entries of size 0.
-  bool IsEmpty() const;
+  bool IsEmpty() override;
 
   int fill_matching_logins_calls() const { return fill_matching_logins_calls_; }
 
@@ -75,21 +79,19 @@ class TestPasswordStore : public PasswordStore {
       const override;
 
   // PasswordStore interface
-  PasswordStoreChangeList AddLoginImpl(const autofill::PasswordForm& form,
+  PasswordStoreChangeList AddLoginImpl(const PasswordForm& form,
                                        AddLoginError* error) override;
-  PasswordStoreChangeList UpdateLoginImpl(const autofill::PasswordForm& form,
+  PasswordStoreChangeList UpdateLoginImpl(const PasswordForm& form,
                                           UpdateLoginError* error) override;
-  PasswordStoreChangeList RemoveLoginImpl(
-      const autofill::PasswordForm& form) override;
-  std::vector<std::unique_ptr<autofill::PasswordForm>> FillMatchingLogins(
+  PasswordStoreChangeList RemoveLoginImpl(const PasswordForm& form) override;
+  std::vector<std::unique_ptr<PasswordForm>> FillMatchingLogins(
       const FormDigest& form) override;
-  std::vector<std::unique_ptr<autofill::PasswordForm>>
-  FillMatchingLoginsByPassword(
+  std::vector<std::unique_ptr<PasswordForm>> FillMatchingLoginsByPassword(
       const base::string16& plain_text_password) override;
   bool FillAutofillableLogins(
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
+      std::vector<std::unique_ptr<PasswordForm>>* forms) override;
   bool FillBlacklistLogins(
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
+      std::vector<std::unique_ptr<PasswordForm>>* forms) override;
   DatabaseCleanupResult DeleteUndecryptableLogins() override;
   std::vector<InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) override;
@@ -150,7 +152,7 @@ class TestPasswordStore : public PasswordStore {
   bool DeleteAndRecreateDatabaseFile() override;
 
  private:
-  const bool is_account_store_;
+  const password_manager::IsAccountStore is_account_store_;
 
   PasswordMap stored_passwords_;
   CompromisedCredentialsStorage compromised_credentials_;

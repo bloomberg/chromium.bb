@@ -31,7 +31,6 @@
 
 #include "third_party/blink/renderer/core/loader/link_loader.h"
 
-#include "third_party/blink/public/common/prerender/prerender_rel_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -57,20 +56,23 @@ class WebPrescientNetworking;
 
 namespace {
 
-unsigned PrerenderRelTypesFromRelAttribute(
+// Decide the prerender type based on the link rel attribute. Returns
+// base::nullopt if the attribute doesn't indicate the prerender type.
+base::Optional<mojom::blink::PrerenderRelType> PrerenderRelTypeFromRelAttribute(
     const LinkRelAttribute& rel_attribute,
     Document& document) {
-  unsigned result = 0;
+  base::Optional<mojom::blink::PrerenderRelType> rel_type;
   if (rel_attribute.IsLinkPrerender()) {
-    result |= kPrerenderRelTypePrerender;
     UseCounter::Count(document, WebFeature::kLinkRelPrerender);
+    rel_type = mojom::blink::PrerenderRelType::kPrerender;
   }
   if (rel_attribute.IsLinkNext()) {
-    result |= kPrerenderRelTypeNext;
     UseCounter::Count(document, WebFeature::kLinkRelNext);
+    // Prioritize mojom::blink::PrerenderRelType::kPrerender.
+    if (!rel_type)
+      rel_type = mojom::blink::PrerenderRelType::kNext;
   }
-
-  return result;
+  return rel_type;
 }
 
 }  // namespace
@@ -104,7 +106,7 @@ class LinkLoader::FinishObserver final : public ResourceFinishObserver {
     resource_ = nullptr;
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(loader_);
     visitor->Trace(resource_);
     blink::ResourceFinishObserver::Trace(visitor);
@@ -194,20 +196,13 @@ bool LinkLoader::LoadLink(const LinkLoadParameters& params,
   PreloadHelper::ModulePreloadIfNeeded(
       params, document, nullptr /* viewport_description */, this);
 
-  if (const unsigned prerender_rel_types =
-          PrerenderRelTypesFromRelAttribute(params.rel, document)) {
-    if (!prerender_) {
-      prerender_ = PrerenderHandle::Create(document, this, params.href,
-                                           prerender_rel_types);
-    } else if (prerender_->Url() != params.href) {
-      prerender_->Cancel();
-      prerender_ = PrerenderHandle::Create(document, this, params.href,
-                                           prerender_rel_types);
-    }
-    // TODO(gavinp): Handle changes to rel types of existing prerenders.
-  } else if (prerender_) {
-    prerender_->Cancel();
-    prerender_.Clear();
+  base::Optional<mojom::blink::PrerenderRelType> prerender_rel_type =
+      PrerenderRelTypeFromRelAttribute(params.rel, document);
+  if (prerender_rel_type) {
+    // The previous prerender should already be aborted by Abort().
+    DCHECK(!prerender_);
+    prerender_ = PrerenderHandle::Create(document, this, params.href,
+                                         *prerender_rel_type);
   }
   return true;
 }
@@ -218,26 +213,17 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
                                 FetchParameters::DeferOption defer_option,
                                 Document& document,
                                 ResourceClient* link_client) {
-  Document* document_for_origin = &document;
-  if (document.ImportsController()) {
-    // For stylesheets loaded from HTML imported Documents, we use
-    // context document for getting origin and ResourceFetcher to use the main
-    // Document's origin, while using element document for CompleteURL() to use
-    // imported Documents' base URLs.
-    document_for_origin =
-        To<LocalDOMWindow>(document.GetExecutionContext())->document();
-  }
-
-  ResourceRequest resource_request(document.CompleteURL(params.href));
+  ExecutionContext* context = document.GetExecutionContext();
+  ResourceRequest resource_request(context->CompleteURL(params.href));
   resource_request.SetReferrerPolicy(params.referrer_policy);
 
   mojom::FetchImportanceMode importance_mode =
       GetFetchImportanceAttributeValue(params.importance);
   DCHECK(importance_mode == mojom::FetchImportanceMode::kImportanceAuto ||
-         RuntimeEnabledFeatures::PriorityHintsEnabled(&document));
+         RuntimeEnabledFeatures::PriorityHintsEnabled(context));
   resource_request.SetFetchImportanceMode(importance_mode);
 
-  ResourceLoaderOptions options;
+  ResourceLoaderOptions options(context->GetCurrentWorld());
   options.initiator_info.name = local_name;
   FetchParameters link_fetch_params(std::move(resource_request), options);
   link_fetch_params.SetCharset(charset);
@@ -248,24 +234,23 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
 
   CrossOriginAttributeValue cross_origin = params.cross_origin;
   if (cross_origin != kCrossOriginAttributeNotSet) {
-    link_fetch_params.SetCrossOriginAccessControl(
-        document_for_origin->GetSecurityOrigin(), cross_origin);
+    link_fetch_params.SetCrossOriginAccessControl(context->GetSecurityOrigin(),
+                                                  cross_origin);
   }
 
   String integrity_attr = params.integrity;
   if (!integrity_attr.IsEmpty()) {
     IntegrityMetadataSet metadata_set;
     SubresourceIntegrity::ParseIntegrityAttribute(
-        integrity_attr,
-        SubresourceIntegrityHelper::GetFeatures(document.GetExecutionContext()),
+        integrity_attr, SubresourceIntegrityHelper::GetFeatures(context),
         metadata_set);
     link_fetch_params.SetIntegrityMetadata(metadata_set);
     link_fetch_params.MutableResourceRequest().SetFetchIntegrity(
         integrity_attr);
   }
 
-  CSSStyleSheetResource::Fetch(link_fetch_params,
-                               document_for_origin->Fetcher(), link_client);
+  CSSStyleSheetResource::Fetch(link_fetch_params, context->Fetcher(),
+                               link_client);
 }
 
 void LinkLoader::Abort() {
@@ -279,7 +264,7 @@ void LinkLoader::Abort() {
   }
 }
 
-void LinkLoader::Trace(Visitor* visitor) {
+void LinkLoader::Trace(Visitor* visitor) const {
   visitor->Trace(finish_observer_);
   visitor->Trace(client_);
   visitor->Trace(prerender_);

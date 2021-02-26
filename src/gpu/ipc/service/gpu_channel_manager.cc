@@ -33,6 +33,7 @@
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
+#include "gpu/ipc/service/gpu_memory_ablation_experiment.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "third_party/skia/include/core/SkGraphics.h"
@@ -99,8 +100,13 @@ void FormatAllocationSourcesForTracing(
 
 }  // namespace
 
-GpuChannelManager::GpuPeakMemoryMonitor::GpuPeakMemoryMonitor()
-    : weak_factory_(this) {}
+GpuChannelManager::GpuPeakMemoryMonitor::GpuPeakMemoryMonitor(
+    GpuChannelManager* channel_manager,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : ablation_experiment_(
+          std::make_unique<GpuMemoryAblationExperiment>(channel_manager,
+                                                        task_runner)),
+      weak_factory_(this) {}
 
 GpuChannelManager::GpuPeakMemoryMonitor::~GpuPeakMemoryMonitor() = default;
 
@@ -114,6 +120,12 @@ GpuChannelManager::GpuPeakMemoryMonitor::GetPeakMemoryUsage(
   if (sequence != sequence_trackers_.end()) {
     *out_peak_memory = sequence->second.total_memory_;
     allocation_per_source = sequence->second.peak_memory_per_source_;
+
+    uint64_t ablation_memory =
+        ablation_experiment_->GetPeakMemory(sequence_num);
+    *out_peak_memory += ablation_memory;
+    allocation_per_source[GpuPeakMemoryAllocationSource::SHARED_IMAGE_STUB] +=
+        ablation_memory;
   }
   return allocation_per_source;
 }
@@ -123,6 +135,7 @@ void GpuChannelManager::GpuPeakMemoryMonitor::StartGpuMemoryTracking(
   sequence_trackers_.emplace(
       sequence_num,
       SequenceTracker(current_memory_, current_memory_per_source_));
+  ablation_experiment_->StartSequence(sequence_num);
   TRACE_EVENT_ASYNC_BEGIN2("gpu", "PeakMemoryTracking", sequence_num, "start",
                            current_memory_, "start_sources",
                            StartTrackingTracedValue());
@@ -136,6 +149,7 @@ void GpuChannelManager::GpuPeakMemoryMonitor::StopGpuMemoryTracking(
                            sequence->second.total_memory_, "end_sources",
                            StopTrackingTracedValue(sequence->second));
     sequence_trackers_.erase(sequence);
+    ablation_experiment_->StopSequence(sequence_num);
   }
 }
 
@@ -217,6 +231,8 @@ void GpuChannelManager::GpuPeakMemoryMonitor::OnMemoryAllocatedChange(
   uint64_t diff = new_size - old_size;
   current_memory_ += diff;
   current_memory_per_source_[source] += diff;
+
+  ablation_experiment_->OnMemoryAllocated(old_size, new_size);
   if (old_size < new_size) {
     // When memory has increased, iterate over the sequences to update their
     // peak.
@@ -279,24 +295,31 @@ GpuChannelManager::GpuChannelManager(
       image_decode_accelerator_worker_(image_decode_accelerator_worker),
       activity_flags_(std::move(activity_flags)),
       memory_pressure_listener_(
+          FROM_HERE,
           base::BindRepeating(&GpuChannelManager::HandleMemoryPressure,
                               base::Unretained(this))),
       vulkan_context_provider_(vulkan_context_provider),
       metal_context_provider_(metal_context_provider),
-      dawn_context_provider_(dawn_context_provider) {
+      dawn_context_provider_(dawn_context_provider),
+      peak_memory_monitor_(this, task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
   DCHECK(scheduler);
 
+  const bool using_skia_renderer = features::IsUsingSkiaRenderer();
   const bool enable_gr_shader_cache =
       (gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
        gpu::kGpuFeatureStatusEnabled) ||
-      features::IsUsingSkiaRenderer();
+      using_skia_renderer;
   const bool disable_disk_cache =
       gpu_preferences_.disable_gpu_shader_disk_cache;
-  if (enable_gr_shader_cache && !disable_disk_cache)
+  if (enable_gr_shader_cache && !disable_disk_cache) {
     gr_shader_cache_.emplace(gpu_preferences.gpu_program_cache_size, this);
+    if (using_skia_renderer) {
+      gr_shader_cache_->CacheClientIdOnDisk(gpu::kDisplayCompositorClientId);
+    }
+  }
 }
 
 GpuChannelManager::~GpuChannelManager() {
@@ -619,21 +642,52 @@ void GpuChannelManager::HandleMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (program_cache_)
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
+      "TotalDuration");
+
+  if (program_cache_) {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
+        "ProgramCacheHandleMemoryPressureDuration");
     program_cache_->HandleMemoryPressure(memory_pressure_level);
+  }
 
   // These caches require a current context for cleanup.
   if (shared_context_state_ &&
       shared_context_state_->MakeCurrent(nullptr, true /* needs_gl */)) {
-    discardable_manager_.HandleMemoryPressure(memory_pressure_level);
-    passthrough_discardable_manager_.HandleMemoryPressure(
-        memory_pressure_level);
+    {
+      SCOPED_UMA_HISTOGRAM_TIMER(
+          "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
+          "DiscardableManagerHandleMemoryPressureDuration");
+      discardable_manager_.HandleMemoryPressure(memory_pressure_level);
+    }
+    {
+      SCOPED_UMA_HISTOGRAM_TIMER(
+          "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
+          "PasshtroughDiscardableManagerHandleMemoryPressureDuration");
+      passthrough_discardable_manager_.HandleMemoryPressure(
+          memory_pressure_level);
+    }
+
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
+        "SharedContextStatePurgeMemoryDuration");
     shared_context_state_->PurgeMemory(memory_pressure_level);
   }
-  if (gr_shader_cache_)
+  if (gr_shader_cache_) {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
+        "GrShaderCachePurgeMemoryDuration");
     gr_shader_cache_->PurgeMemory(memory_pressure_level);
+  }
 #if defined(OS_WIN)
-  TrimD3DResources();
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
+        "TrimD3DResourcesDuration");
+    TrimD3DResources();
+  }
 #endif
 }
 
@@ -648,7 +702,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
 
   scoped_refptr<gl::GLSurface> surface = default_offscreen_surface();
   bool use_virtualized_gl_contexts = false;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Virtualize GpuPreference::kLowPower contexts by default on OS X to prevent
   // performance regressions when enabling FCM.
   // http://crbug.com/180463
@@ -721,11 +775,10 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   }
 
   // TODO(penghuang): https://crbug.com/899735 Handle device lost for Vulkan.
-  shared_context_state_ = base::MakeRefCounted<SharedContextState>(
+  auto shared_context_state = base::MakeRefCounted<SharedContextState>(
       std::move(share_group), std::move(surface), std::move(context),
       use_virtualized_gl_contexts,
-      base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
-                     /*synthetic_loss=*/false),
+      base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this)),
       gpu_preferences_.gr_context_type, vulkan_context_provider_,
       metal_context_provider_, dawn_context_provider_,
       peak_memory_monitor_.GetWeakPtr());
@@ -738,24 +791,33 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   // SkiaRenderer needs GrContext to composite output surface.
   need_gr_context |= features::IsUsingSkiaRenderer();
 
+  // GpuMemoryAblationExperiment needs a context to use Skia for Gpu
+  // allocations.
+  need_gr_context |= GpuMemoryAblationExperiment::ExperimentSupported();
+
   if (need_gr_context) {
     if (gpu_preferences_.gr_context_type == gpu::GrContextType::kGL) {
       auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
           gpu_driver_bug_workarounds(), gpu_feature_info());
-      if (!shared_context_state_->InitializeGL(gpu_preferences_,
-                                               feature_info.get())) {
-        shared_context_state_ = nullptr;
+      if (!shared_context_state->InitializeGL(gpu_preferences_,
+                                              feature_info.get())) {
         LOG(ERROR) << "ContextResult::kFatalFailure: Failed to Initialize GL "
                       "for SharedContextState";
         *result = ContextResult::kFatalFailure;
         return nullptr;
       }
     }
-    shared_context_state_->InitializeGrContext(
-        gpu_preferences_, gpu_driver_bug_workarounds_, gr_shader_cache(),
-        &activity_flags_, watchdog_);
+    if (!shared_context_state->InitializeGrContext(
+            gpu_preferences_, gpu_driver_bug_workarounds_, gr_shader_cache(),
+            &activity_flags_, watchdog_)) {
+      LOG(ERROR) << "ContextResult::kFatalFailure: Failed to Initialize"
+                    "GrContext for SharedContextState";
+      *result = ContextResult::kFatalFailure;
+      return nullptr;
+    }
   }
 
+  shared_context_state_ = std::move(shared_context_state);
   gr_cache_controller_.emplace(shared_context_state_.get(), task_runner_);
 
   *result = ContextResult::kSuccess;
@@ -776,8 +838,10 @@ void GpuChannelManager::OnContextLost(bool synthetic_loss) {
   }
 
   // Work around issues with recovery by allowing a new GPU process to launch.
-  if (gpu_driver_bug_workarounds_.exit_on_context_lost)
+  if (gpu_driver_bug_workarounds_.exit_on_context_lost ||
+      (shared_context_state_ && !shared_context_state_->GrContextIsGL())) {
     delegate_->MaybeExitOnContextLost();
+  }
 }
 
 void GpuChannelManager::ScheduleGrContextCleanup() {

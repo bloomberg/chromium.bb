@@ -10,7 +10,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -322,15 +321,13 @@ class ClientCertResolverTest : public testing::Test,
             "CommonName": "B CA"
           }
         })";
-    std::string error;
-    std::unique_ptr<base::Value> onc_pattern_value =
-        base::JSONReader::ReadAndReturnErrorDeprecated(
-            test_onc_pattern, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
-            &error);
-    ASSERT_TRUE(onc_pattern_value) << error;
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(
+            test_onc_pattern, base::JSON_ALLOW_TRAILING_COMMAS);
+    ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
 
     base::DictionaryValue* onc_pattern_dict;
-    onc_pattern_value->GetAsDictionary(&onc_pattern_dict);
+    parsed_json.value->GetAsDictionary(&onc_pattern_dict);
 
     client_cert_config->onc_source = onc_source;
     client_cert_config->client_cert_type = ::onc::client_cert::kPattern;
@@ -366,14 +363,13 @@ class ClientCertResolverTest : public testing::Test,
 
   void SetManagedNetworkPolicy(::onc::ONCSource onc_source,
                                base::StringPiece policy_json) {
-    std::string error;
-    std::unique_ptr<base::Value> policy_value =
-        base::JSONReader::ReadAndReturnErrorDeprecated(
-            policy_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
-    ASSERT_TRUE(policy_value) << error;
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(
+            policy_json, base::JSON_ALLOW_TRAILING_COMMAS);
+    ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
 
     base::ListValue* policy = nullptr;
-    ASSERT_TRUE(policy_value->GetAsList(&policy));
+    ASSERT_TRUE(parsed_json.value->GetAsList(&policy));
 
     std::string user_hash =
         onc_source == ::onc::ONC_SOURCE_USER_POLICY ? kUserHash : "";
@@ -390,11 +386,13 @@ class ClientCertResolverTest : public testing::Test,
   void GetServiceProperty(const std::string& prop_name,
                           std::string* prop_value) {
     prop_value->clear();
-    const base::DictionaryValue* properties =
+    const base::Value* properties =
         service_test_->GetServiceProperties(kWifiStub);
     if (!properties)
       return;
-    properties->GetStringWithoutPathExpansion(prop_name, prop_value);
+    const std::string* value = properties->FindStringKey(prop_name);
+    if (value)
+      *prop_value = *value;
   }
 
   // Returns a list of all certificates that are stored on |test_nsscertdb_|'s

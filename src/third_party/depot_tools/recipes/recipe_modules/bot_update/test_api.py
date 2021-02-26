@@ -18,8 +18,20 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
         'patch_failure': False
     }
 
+    revisions = {
+        project_name: self.gen_revision(project_name)
+        for project_name in set(revision_mapping.values())
+    }
+    if fixed_revisions:
+      for project_name, revision in fixed_revisions.items():
+        if revision == 'HEAD':
+          revision = self.gen_revision(project_name)
+        elif revision.startswith('refs/') or revision.startswith('origin/'):
+          revision = self.gen_revision('{}@{}'.format(project_name, revision))
+        revisions[project_name] = revision
+
     properties = {
-        property_name: self.gen_revision(project_name)
+        property_name: revisions[project_name]
         for property_name, project_name in revision_mapping.items()
     }
     properties.update({
@@ -34,26 +46,30 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
         'properties': properties,
         'step_text': 'Some step text'
     })
-    output.update({
-      'manifest': {
-          project_name: {
-              'repository': 'https://fake.org/%s.git' % project_name,
-              'revision': self.gen_revision(project_name),
-          }
-          for project_name in set(revision_mapping.values())}})
 
     output.update({
-      'source_manifest': {
-        'version': 0,
-        'directories': {
-          project_name: {
-            'git_checkout': {
-              'repo_url': 'https://fake.org/%s.git' % project_name,
-              'revision': self.gen_revision(project_name),
+        'manifest': {
+            project_name: {
+                'repository': 'https://fake.org/%s.git' % project_name,
+                'revision': revision,
             }
-          } for project_name in set(revision_mapping.values())
+            for project_name, revision in revisions.items()
         }
-      }
+    })
+
+    output.update({
+        'source_manifest': {
+            'version': 0,
+            'directories': {
+                project_name: {
+                    'git_checkout': {
+                        'repo_url': 'https://fake.org/%s.git' % project_name,
+                        'revision': revision
+                    }
+                }
+                for project_name, revision in revisions.items()
+            }
+        }
     })
 
     if fixed_revisions:

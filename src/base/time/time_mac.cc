@@ -18,6 +18,7 @@
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_mach_port.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/time/time_override.h"
@@ -30,8 +31,8 @@
 
 namespace {
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-int64_t MachAbsoluteTimeToTicks(uint64_t mach_absolute_time) {
+#if defined(OS_MAC)
+int64_t MachTimeToMicroseconds(uint64_t mach_time) {
   static mach_timebase_info_data_t timebase_info;
   if (timebase_info.denom == 0) {
     // Zero-initialization of statics guarantees that denom will be 0 before
@@ -45,7 +46,7 @@ int64_t MachAbsoluteTimeToTicks(uint64_t mach_absolute_time) {
 
   // timebase_info converts absolute time tick units into nanoseconds.  Convert
   // to microseconds up front to stave off overflows.
-  base::CheckedNumeric<uint64_t> result(mach_absolute_time /
+  base::CheckedNumeric<uint64_t> result(mach_time /
                                         base::Time::kNanosecondsPerMicrosecond);
   result *= timebase_info.numer;
   result /= timebase_info.denom;
@@ -55,7 +56,7 @@ int64_t MachAbsoluteTimeToTicks(uint64_t mach_absolute_time) {
   // reported in nanoseconds is enough to last nearly 585 years.
   return base::checked_cast<int64_t>(result.ValueOrDie());
 }
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
 // Returns monotonically growing number of ticks in microseconds since some
 // unspecified starting point.
@@ -89,7 +90,7 @@ int64_t ComputeCurrentTicks() {
   // mach_absolute_time is it when it comes to ticks on the Mac.  Other calls
   // with less precision (such as TickCount) just call through to
   // mach_absolute_time.
-  return MachAbsoluteTimeToTicks(mach_absolute_time());
+  return MachTimeToMicroseconds(mach_absolute_time());
 #endif  // defined(OS_IOS)
 }
 
@@ -155,11 +156,10 @@ Time Time::FromCFAbsoluteTime(CFAbsoluteTime t) {
                 "CFAbsoluteTime must have an infinity value");
   if (t == 0)
     return Time();  // Consider 0 as a null Time.
-  if (t == std::numeric_limits<CFAbsoluteTime>::infinity())
-    return Max();
-  return Time(static_cast<int64_t>((t + kCFAbsoluteTimeIntervalSince1970) *
-                                   kMicrosecondsPerSecond) +
-              kTimeTToMicrosecondsOffset);
+  return (t == std::numeric_limits<CFAbsoluteTime>::infinity())
+             ? Max()
+             : (UnixEpoch() + TimeDelta::FromSecondsD(double{
+                                  t + kCFAbsoluteTimeIntervalSince1970}));
 }
 
 CFAbsoluteTime Time::ToCFAbsoluteTime() const {
@@ -167,12 +167,19 @@ CFAbsoluteTime Time::ToCFAbsoluteTime() const {
                 "CFAbsoluteTime must have an infinity value");
   if (is_null())
     return 0;  // Consider 0 as a null Time.
-  if (is_max())
-    return std::numeric_limits<CFAbsoluteTime>::infinity();
-  return (static_cast<CFAbsoluteTime>(us_ - kTimeTToMicrosecondsOffset) /
-          kMicrosecondsPerSecond) -
-         kCFAbsoluteTimeIntervalSince1970;
+  return is_max() ? std::numeric_limits<CFAbsoluteTime>::infinity()
+                  : (CFAbsoluteTime{(*this - UnixEpoch()).InSecondsF()} -
+                     kCFAbsoluteTimeIntervalSince1970);
 }
+
+// TimeDelta ------------------------------------------------------------------
+
+#if defined(OS_MAC)
+// static
+TimeDelta TimeDelta::FromMachTime(uint64_t mach_time) {
+  return TimeDelta::FromMicroseconds(MachTimeToMicroseconds(mach_time));
+}
+#endif  // defined(OS_MAC)
 
 // TimeTicks ------------------------------------------------------------------
 
@@ -192,12 +199,12 @@ bool TimeTicks::IsConsistentAcrossProcesses() {
   return true;
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 // static
 TimeTicks TimeTicks::FromMachAbsoluteTime(uint64_t mach_absolute_time) {
-  return TimeTicks(MachAbsoluteTimeToTicks(mach_absolute_time));
+  return TimeTicks(MachTimeToMicroseconds(mach_absolute_time));
 }
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
 // static
 TimeTicks::Clock TimeTicks::GetClock() {

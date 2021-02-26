@@ -204,7 +204,7 @@ static bool do_jpeg(sk_sp<SkData> data, SkPDFDocument* doc, SkISize size,
     }
     bool yuv = jpegColorType == SkEncodedInfo::kYUV_Color;
     bool goodColorType = yuv || jpegColorType == SkEncodedInfo::kGray_Color;
-    if (jpegSize != size  // Sanity check.
+    if (jpegSize != size  // Safety check.
             || !goodColorType
             || kTopLeft_SkEncodedOrigin != exifOrientation) {
         return false;
@@ -239,7 +239,8 @@ static SkBitmap to_pixels(const SkImage* image) {
             bm.allocPixels(SkImageInfo::Make(w, h, kBGRA_8888_SkColorType, at));
         }
     }
-    if (!image->readPixels(bm.pixmap(), 0, 0)) {
+    // TODO: support GPU images in PDFs
+    if (!image->readPixels(nullptr, bm.pixmap(), 0, 0)) {
         bm.eraseColor(SkColorSetARGB(0xFF, 0, 0, 0));
     }
     return bm;
@@ -258,7 +259,7 @@ void serialize_image(const SkImage* img,
         return;
     }
     SkBitmap bm = to_pixels(img);
-    SkPixmap pm = bm.pixmap();
+    const SkPixmap& pm = bm.pixmap();
     bool isOpaque = pm.isOpaque() || pm.computeIsOpaque();
     if (encodingQuality <= 100 && isOpaque) {
         sk_sp<SkData> data = img->encodeToData(SkEncodedImageFormat::kJPEG, encodingQuality);

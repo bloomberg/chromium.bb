@@ -13,12 +13,17 @@
 ../../third_party/catapult/common/py_trace_event/third_party/protobuf/encoder.py
 ../../third_party/catapult/common/py_trace_event/third_party/protobuf/wire_format.py
 ../../third_party/catapult/common/py_utils/py_utils/__init__.py
+../../third_party/catapult/common/py_utils/py_utils/atexit_with_log.py
+../../third_party/catapult/common/py_utils/py_utils/binary_manager.py
 ../../third_party/catapult/common/py_utils/py_utils/cloud_storage.py
 ../../third_party/catapult/common/py_utils/py_utils/cloud_storage_global_lock.py
 ../../third_party/catapult/common/py_utils/py_utils/contextlib_ext.py
 ../../third_party/catapult/common/py_utils/py_utils/lock.py
 ../../third_party/catapult/common/py_utils/py_utils/modules_util.py
+../../third_party/catapult/common/py_utils/py_utils/retry_util.py
 ../../third_party/catapult/common/py_utils/py_utils/tempfile_ext.py
+../../third_party/catapult/common/py_utils/py_utils/ts_proxy_server.py
+../../third_party/catapult/common/py_utils/py_utils/webpagereplay_go_server.py
 ../../third_party/catapult/dependency_manager/dependency_manager/__init__.py
 ../../third_party/catapult/dependency_manager/dependency_manager/archive_info.py
 ../../third_party/catapult/dependency_manager/dependency_manager/base_config.py
@@ -38,7 +43,7 @@
 ../../third_party/catapult/devil/devil/android/constants/file_system.py
 ../../third_party/catapult/devil/devil/android/crash_handler.py
 ../../third_party/catapult/devil/devil/android/decorators.py
-../../third_party/catapult/devil/devil/android/device_blacklist.py
+../../third_party/catapult/devil/devil/android/device_denylist.py
 ../../third_party/catapult/devil/devil/android/device_errors.py
 ../../third_party/catapult/devil/devil/android/device_list.py
 ../../third_party/catapult/devil/devil/android/device_signal.py
@@ -125,6 +130,11 @@
 ../../tools/swarming_client/libs/logdog/streamname.py
 ../../tools/swarming_client/libs/logdog/varint.py
 ../gn_helpers.py
+../print_python_deps.py
+../skia_gold_common/__init__.py
+../skia_gold_common/skia_gold_properties.py
+../skia_gold_common/skia_gold_session.py
+../skia_gold_common/skia_gold_session_manager.py
 ../util/lib/common/chrome_test_server_spawner.py
 ../util/lib/common/unittest_util.py
 convert_dex_profile.py
@@ -143,6 +153,7 @@ pylib/base/environment.py
 pylib/base/environment_factory.py
 pylib/base/output_manager.py
 pylib/base/output_manager_factory.py
+pylib/base/result_sink.py
 pylib/base/test_collection.py
 pylib/base/test_exception.py
 pylib/base/test_instance.py
@@ -196,6 +207,7 @@ pylib/symbols/__init__.py
 pylib/symbols/deobfuscator.py
 pylib/symbols/stack_symbolizer.py
 pylib/utils/__init__.py
+pylib/utils/chrome_proxy_utils.py
 pylib/utils/decorators.py
 pylib/utils/device_dependencies.py
 pylib/utils/dexdump.py

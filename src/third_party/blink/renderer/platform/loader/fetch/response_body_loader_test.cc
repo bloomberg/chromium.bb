@@ -7,7 +7,9 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/data_pipe_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/testing/bytes_consumer_test_reader.h"
@@ -26,8 +28,6 @@ class ResponseBodyLoaderTest : public testing::Test {
   using Result = BytesConsumer::Result;
   class TestClient final : public GarbageCollected<TestClient>,
                            public ResponseBodyLoaderClient {
-    USING_GARBAGE_COLLECTED_MIXIN(TestClient);
-
    public:
     enum class Option {
       kNone,
@@ -55,7 +55,7 @@ class ResponseBodyLoaderTest : public testing::Test {
           loader_->Abort();
           break;
         case Option::kSuspendOnDidReceiveData:
-          loader_->Suspend();
+          loader_->Suspend(WebURLLoader::DeferType::kDeferred);
           break;
       }
     }
@@ -74,9 +74,10 @@ class ResponseBodyLoaderTest : public testing::Test {
       DCHECK(!failed_);
       cancelled_ = true;
     }
+    void EvictFromBackForwardCache(mojom::RendererEvictionReason) override {}
 
     void SetLoader(ResponseBodyLoader& loader) { loader_ = loader; }
-    void Trace(Visitor* visitor) override { visitor->Trace(loader_); }
+    void Trace(Visitor* visitor) const override { visitor->Trace(loader_); }
 
    private:
     const Option option_;
@@ -89,8 +90,6 @@ class ResponseBodyLoaderTest : public testing::Test {
 
   class ReadingClient final : public GarbageCollected<ReadingClient>,
                               public BytesConsumer::Client {
-    USING_GARBAGE_COLLECTED_MIXIN(ReadingClient);
-
    public:
     ReadingClient(BytesConsumer& bytes_consumer,
                   TestClient& test_response_body_loader_client)
@@ -122,7 +121,7 @@ class ResponseBodyLoaderTest : public testing::Test {
       EXPECT_FALSE(test_response_body_loader_client_->LoadingIsFailed());
     }
     String DebugName() const override { return "ReadingClient"; }
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       visitor->Trace(bytes_consumer_);
       visitor->Trace(test_response_body_loader_client_);
       BytesConsumer::Client::Trace(visitor);
@@ -434,6 +433,244 @@ TEST_F(ResponseBodyLoaderTest, DrainAsDataPipe) {
   EXPECT_FALSE(client->LoadingIsFailed());
   EXPECT_EQ("xyzabc", client->GetData());
 }
+
+class ResponseBodyLoaderLoadingTasksUnfreezableTest
+    : public ResponseBodyLoaderTest,
+      public ::testing::WithParamInterface<bool> {
+ protected:
+  ResponseBodyLoaderLoadingTasksUnfreezableTest() {
+    if (DeferWithBackForwardCacheEnabled()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kLoadingTasksUnfreezable);
+    }
+  }
+
+  bool DeferWithBackForwardCacheEnabled() { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(ResponseBodyLoaderLoadingTasksUnfreezableTest,
+       SuspendedThenSuspendedForBackForwardCacheThenResume) {
+  if (!DeferWithBackForwardCacheEnabled())
+    return;
+  auto task_runner = base::MakeRefCounted<scheduler::FakeTaskRunner>();
+  auto* consumer = MakeGarbageCollected<ReplayingBytesConsumer>(task_runner);
+  auto* client = MakeGarbageCollected<TestClient>();
+  auto* body_loader =
+      MakeGarbageCollected<ResponseBodyLoader>(*consumer, *client, task_runner);
+  consumer->Add(Command(Command::kData, "he"));
+  body_loader->Start();
+  task_runner->RunUntilIdle();
+  EXPECT_EQ("he", client->GetData());
+  EXPECT_FALSE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+
+  // Suspend (not for back-forward cache), then add some data to |consumer|.
+  body_loader->Suspend(WebURLLoader::DeferType::kDeferred);
+  consumer->Add(Command(Command::kData, "llo"));
+  EXPECT_FALSE(consumer->IsCommandsEmpty());
+  // Simulate the "readable again" signal.
+  consumer->TriggerOnStateChange();
+  task_runner->RunUntilIdle();
+
+  // When suspended not for back-forward cache, ResponseBodyLoader won't consume
+  // the data.
+  EXPECT_FALSE(consumer->IsCommandsEmpty());
+  EXPECT_EQ("he", client->GetData());
+  EXPECT_FALSE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+
+  // Suspend for back-forward cache, then add some more data to |consumer|.
+  body_loader->Suspend(WebURLLoader::DeferType::kDeferredWithBackForwardCache);
+  consumer->Add(Command(Command::kData, "w"));
+  consumer->Add(Command(Command::kWait));
+  consumer->Add(Command(Command::kData, "o"));
+
+  // ResponseBodyLoader will buffer data when deferred for back-forward cache,
+  // but won't notify the client until it's resumed.
+  EXPECT_FALSE(consumer->IsCommandsEmpty());
+  task_runner->RunUntilIdle();
+  EXPECT_TRUE(consumer->IsCommandsEmpty());
+
+  EXPECT_EQ("he", client->GetData());
+  EXPECT_FALSE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+
+  // The data received while suspended will be processed after resuming, before
+  // processing newer data.
+  body_loader->Resume();
+  consumer->Add(Command(Command::kData, "rld"));
+  consumer->Add(Command(Command::kDone));
+
+  task_runner->RunUntilIdle();
+  EXPECT_EQ("helloworld", client->GetData());
+  EXPECT_TRUE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+}
+
+TEST_P(ResponseBodyLoaderLoadingTasksUnfreezableTest,
+       FinishedWhileSuspendedThenSuspendedForBackForwardCacheThenResume) {
+  if (!DeferWithBackForwardCacheEnabled())
+    return;
+  auto task_runner = base::MakeRefCounted<scheduler::FakeTaskRunner>();
+  auto* consumer = MakeGarbageCollected<ReplayingBytesConsumer>(task_runner);
+  auto* client = MakeGarbageCollected<TestClient>();
+  auto* body_loader =
+      MakeGarbageCollected<ResponseBodyLoader>(*consumer, *client, task_runner);
+  consumer->Add(Command(Command::kData, "he"));
+  body_loader->Start();
+  task_runner->RunUntilIdle();
+  EXPECT_EQ("he", client->GetData());
+  EXPECT_FALSE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+
+  // Suspend (not for back-forward cache), then add some data to |consumer| with
+  // the finish signal at the end.
+  body_loader->Suspend(WebURLLoader::DeferType::kDeferred);
+  consumer->Add(Command(Command::kData, "llo"));
+  consumer->Add(Command(Command::kDone));
+  // Simulate the "readable again" signal.
+  consumer->TriggerOnStateChange();
+  EXPECT_FALSE(consumer->IsCommandsEmpty());
+  task_runner->RunUntilIdle();
+
+  // When suspended not for back-forward cache, ResponseBodyLoader won't consume
+  // the data, including the finish signal.
+  EXPECT_FALSE(consumer->IsCommandsEmpty());
+  EXPECT_EQ("he", client->GetData());
+  EXPECT_FALSE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+
+  // Suspend for back-forward cache.
+  body_loader->Suspend(WebURLLoader::DeferType::kDeferredWithBackForwardCache);
+  // ResponseBodyLoader will buffer data when deferred for back-forward cache,
+  // but won't notify the client until it's resumed.
+  EXPECT_FALSE(consumer->IsCommandsEmpty());
+  task_runner->RunUntilIdle();
+  EXPECT_TRUE(consumer->IsCommandsEmpty());
+
+  EXPECT_EQ("he", client->GetData());
+  EXPECT_FALSE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+
+  // The data received while suspended will be processed after resuming,
+  // including the finish signal.
+  body_loader->Resume();
+  task_runner->RunUntilIdle();
+  EXPECT_EQ("hello", client->GetData());
+  EXPECT_TRUE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+}
+
+TEST_P(ResponseBodyLoaderLoadingTasksUnfreezableTest,
+       SuspendedForBackForwardCacheThenSuspendedThenResume) {
+  if (!DeferWithBackForwardCacheEnabled())
+    return;
+  auto task_runner = base::MakeRefCounted<scheduler::FakeTaskRunner>();
+  auto* consumer = MakeGarbageCollected<ReplayingBytesConsumer>(task_runner);
+  auto* client = MakeGarbageCollected<TestClient>();
+  auto* body_loader =
+      MakeGarbageCollected<ResponseBodyLoader>(*consumer, *client, task_runner);
+  consumer->Add(Command(Command::kData, "he"));
+  body_loader->Start();
+  task_runner->RunUntilIdle();
+
+  EXPECT_EQ("he", client->GetData());
+  EXPECT_FALSE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+
+  // Suspend for back-forward cache, then add some more data to |consumer|.
+  body_loader->Suspend(WebURLLoader::DeferType::kDeferredWithBackForwardCache);
+  consumer->Add(Command(Command::kData, "llo"));
+  EXPECT_FALSE(consumer->IsCommandsEmpty());
+  // Simulate the "readable again" signal.
+  consumer->TriggerOnStateChange();
+
+  // ResponseBodyLoader will buffer data  when deferred for back-forward cache,
+  // but won't notify the client until it's resumed.
+  while (!consumer->IsCommandsEmpty()) {
+    task_runner->RunUntilIdle();
+  }
+
+  EXPECT_EQ("he", client->GetData());
+  EXPECT_FALSE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+
+  // Suspend (not for back-forward cache), then add some data to |consumer|.
+  body_loader->Suspend(WebURLLoader::DeferType::kDeferred);
+  consumer->Add(Command(Command::kData, "w"));
+  consumer->Add(Command(Command::kWait));
+  consumer->Add(Command(Command::kData, "o"));
+
+  // When suspended not for back-forward cache, ResponseBodyLoader won't consume
+  // the data, even with OnStateChange triggered.
+  for (int i = 0; i < 3; ++i) {
+    consumer->TriggerOnStateChange();
+    task_runner->RunUntilIdle();
+  }
+  EXPECT_FALSE(consumer->IsCommandsEmpty());
+  EXPECT_EQ("he", client->GetData());
+  EXPECT_FALSE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+
+  // The data received while suspended will be processed after resuming, before
+  // processing newer data.
+  body_loader->Resume();
+  consumer->Add(Command(Command::kData, "rld"));
+  consumer->Add(Command(Command::kDone));
+
+  task_runner->RunUntilIdle();
+  EXPECT_EQ("helloworld", client->GetData());
+  EXPECT_TRUE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+}
+
+TEST_P(ResponseBodyLoaderLoadingTasksUnfreezableTest,
+       ReadDataFromConsumerWhileSuspendedForBackForwardCacheLong) {
+  if (!DeferWithBackForwardCacheEnabled())
+    return;
+  auto task_runner = base::MakeRefCounted<scheduler::FakeTaskRunner>();
+  auto* consumer = MakeGarbageCollected<ReplayingBytesConsumer>(task_runner);
+  auto* client = MakeGarbageCollected<TestClient>();
+  auto* body_loader =
+      MakeGarbageCollected<ResponseBodyLoader>(*consumer, *client, task_runner);
+  body_loader->Start();
+  task_runner->RunUntilIdle();
+  EXPECT_EQ("", client->GetData());
+  EXPECT_FALSE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+
+  // Suspend, then add a long response body to |consumer|.
+  body_loader->Suspend(WebURLLoader::DeferType::kDeferredWithBackForwardCache);
+  std::string body(70000, '*');
+  consumer->Add(Command(Command::kDataAndDone, body.c_str()));
+
+  // ResponseBodyLoader will buffer data when deferred, and won't notify the
+  // client until it's resumed.
+  EXPECT_FALSE(consumer->IsCommandsEmpty());
+  // Simulate the "readable" signal.
+  consumer->TriggerOnStateChange();
+  while (!consumer->IsCommandsEmpty()) {
+    task_runner->RunUntilIdle();
+  }
+
+  EXPECT_EQ("", client->GetData());
+  EXPECT_FALSE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+
+  // The data received while suspended will be processed after resuming.
+  body_loader->Resume();
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(AtomicString(body.c_str()), client->GetData());
+  EXPECT_TRUE(client->LoadingIsFinished());
+  EXPECT_FALSE(client->LoadingIsFailed());
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ResponseBodyLoaderLoadingTasksUnfreezableTest,
+                         ::testing::Bool());
 
 TEST_F(ResponseBodyLoaderTest, DrainAsDataPipeAndReportError) {
   mojo::ScopedDataPipeConsumerHandle consumer_end;

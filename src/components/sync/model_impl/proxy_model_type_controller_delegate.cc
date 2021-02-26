@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/model/data_type_activation_request.h"
+#include "components/sync/model/type_entities_count.h"
 
 namespace syncer {
 namespace {
@@ -29,12 +30,12 @@ void GetAllNodesForDebuggingHelperOnModelThread(
   delegate->GetAllNodesForDebugging(std::move(callback_bound_to_ui_thread));
 }
 
-void GetStatusCountersForDebuggingHelperOnModelThread(
-    ProxyModelTypeControllerDelegate::StatusCountersCallback
+void GetTypeEntitiesCountForDebuggingHelperOnModelThread(
+    base::OnceCallback<void(const TypeEntitiesCount&)>
         callback_bound_to_ui_thread,
     base::WeakPtr<ModelTypeControllerDelegate> delegate) {
   DCHECK(delegate);
-  delegate->GetStatusCountersForDebugging(
+  delegate->GetTypeEntitiesCountForDebugging(
       std::move(callback_bound_to_ui_thread));
 }
 
@@ -95,10 +96,10 @@ void ProxyModelTypeControllerDelegate::GetAllNodesForDebugging(
                           BindToCurrentSequence(std::move(callback))));
 }
 
-void ProxyModelTypeControllerDelegate::GetStatusCountersForDebugging(
-    StatusCountersCallback callback) {
+void ProxyModelTypeControllerDelegate::GetTypeEntitiesCountForDebugging(
+    base::OnceCallback<void(const TypeEntitiesCount&)> callback) const {
   PostTask(FROM_HERE,
-           base::BindOnce(&GetStatusCountersForDebuggingHelperOnModelThread,
+           base::BindOnce(&GetTypeEntitiesCountForDebuggingHelperOnModelThread,
                           BindToCurrentSequence(std::move(callback))));
 }
 
@@ -110,7 +111,8 @@ void ProxyModelTypeControllerDelegate::RecordMemoryUsageAndCountsHistograms() {
 
 void ProxyModelTypeControllerDelegate::PostTask(
     const base::Location& location,
-    base::OnceCallback<void(base::WeakPtr<ModelTypeControllerDelegate>)> task) {
+    base::OnceCallback<void(base::WeakPtr<ModelTypeControllerDelegate>)> task)
+    const {
   task_runner_->PostTask(
       location,
       base::BindOnce(&RunModelTask, delegate_provider_, std::move(task)));

@@ -39,6 +39,7 @@ class BrowserLiveTabContext : public sessions::LiveTabContext {
   int GetTabCount() const override;
   int GetSelectedIndex() const override;
   std::string GetAppName() const override;
+  std::string GetUserTitle() const override;
   sessions::LiveTab* GetLiveTabAt(int index) const override;
   sessions::LiveTab* GetActiveLiveTab() const override;
   bool IsTabPinned(int index) const override;
@@ -82,7 +83,8 @@ class BrowserLiveTabContext : public sessions::LiveTabContext {
                                           const std::string& app_name,
                                           const gfx::Rect& bounds,
                                           ui::WindowShowState show_state,
-                                          const std::string& workspace);
+                                          const std::string& workspace,
+                                          const std::string& user_title);
 
   // see browser::FindBrowserForWebContents
   static sessions::LiveTabContext* FindContextForWebContents(
@@ -92,6 +94,13 @@ class BrowserLiveTabContext : public sessions::LiveTabContext {
   // Returns the LiveTabContext of the Browser with |desired_id| if
   // such a Browser exists.
   static sessions::LiveTabContext* FindContextWithID(SessionID desired_id);
+
+  // see chrome::FindBrowserWithGroup
+  // Returns the LiveTabContext of the Browser containing the group with ID
+  // |group| if such a Browser exists within the given |profile|.
+  static sessions::LiveTabContext* FindContextWithGroup(
+      tab_groups::TabGroupId group,
+      Profile* profile);
 
  private:
   Browser* const browser_;

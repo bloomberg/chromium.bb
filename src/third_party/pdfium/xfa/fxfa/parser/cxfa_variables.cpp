@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_variables.h"
 
 #include "fxjs/xfa/cjx_container.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -27,6 +27,8 @@ CXFA_Variables::CXFA_Variables(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Variables,
                 {},
                 kVariablesAttributeData,
-                pdfium::MakeUnique<CJX_Container>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Container>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Variables::~CXFA_Variables() = default;

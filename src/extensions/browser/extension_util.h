@@ -17,6 +17,7 @@ class FilePath;
 namespace content {
 class BrowserContext;
 class StoragePartition;
+class StoragePartitionConfig;
 }
 
 namespace extensions {
@@ -41,14 +42,16 @@ bool IsIncognitoEnabled(const std::string& extension_id,
 bool CanCrossIncognito(const extensions::Extension* extension,
                        content::BrowserContext* context);
 
-// Returns the site of the |extension_id|, given the associated |context|.
-// Suitable for use with BrowserContext::GetStoragePartitionForSite().
-GURL GetSiteForExtensionId(const std::string& extension_id,
-                           content::BrowserContext* context);
-
 // Returns the StoragePartition domain for |extension|.
 // Note: The reference returned has the same lifetime as |extension|.
 const std::string& GetPartitionDomainForExtension(const Extension* extension);
+
+// Returns an extension specific StoragePartitionConfig if the extension
+// associated with |extension_id| has isolated storage.
+// Otherwise, return the default StoragePartitionConfig.
+content::StoragePartitionConfig GetStoragePartitionConfigForExtensionId(
+    const std::string& extension_id,
+    content::BrowserContext* browser_context);
 
 content::StoragePartition* GetStoragePartitionForExtensionId(
     const std::string& extension_id,

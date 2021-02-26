@@ -16,7 +16,6 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
-#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -55,10 +54,6 @@ LegacyTLSBlockingPage::LegacyTLSBlockingPage(
 
 LegacyTLSBlockingPage::~LegacyTLSBlockingPage() = default;
 
-bool LegacyTLSBlockingPage::ShouldCreateNewNavigation() const {
-  return true;
-}
-
 security_interstitials::SecurityInterstitialPage::TypeID
 LegacyTLSBlockingPage::GetTypeForTesting() {
   return LegacyTLSBlockingPage::kTypeForTesting;
@@ -68,6 +63,7 @@ void LegacyTLSBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
   legacy_tls_ui_->PopulateStringsForHTML(load_time_data);
   cert_report_helper()->PopulateExtendedReportingOption(load_time_data);
+  cert_report_helper()->PopulateEnhancedProtectionMessage(load_time_data);
 }
 
 // This handles the commands sent from the interstitial JavaScript.

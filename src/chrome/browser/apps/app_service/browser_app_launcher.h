@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
 class Browser;
@@ -45,7 +46,7 @@ class BrowserAppLauncher {
   BrowserAppLauncher& operator=(const BrowserAppLauncher&) = delete;
 
   // Launches an app for the given |app_id| in a way specified by |params|.
-  content::WebContents* LaunchAppWithParams(const AppLaunchParams& params);
+  content::WebContents* LaunchAppWithParams(AppLaunchParams&& params);
 
   // Attempts to open |app_id| in a new window or tab. Open an empty browser
   // window if unsuccessful. The user's preferred launch container for the app
@@ -62,7 +63,7 @@ class BrowserAppLauncher {
 
  private:
   Profile* const profile_;
-  std::unique_ptr<web_app::WebAppLaunchManager> web_app_launch_manager_;
+  web_app::WebAppLaunchManager web_app_launch_manager_;
 };
 
 }  // namespace apps

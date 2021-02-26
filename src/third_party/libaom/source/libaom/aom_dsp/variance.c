@@ -363,8 +363,9 @@ void aom_comp_avg_upsampled_pred_c(MACROBLOCKD *xd, const AV1_COMMON *const cm,
                                    int ref_stride, int subpel_search) {
   int i, j;
 
-  aom_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred, width, height,
-                     subpel_x_q3, subpel_y_q3, ref, ref_stride, subpel_search);
+  aom_upsampled_pred_c(xd, cm, mi_row, mi_col, mv, comp_pred, width, height,
+                       subpel_x_q3, subpel_y_q3, ref, ref_stride,
+                       subpel_search);
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {
       comp_pred[j] = ROUND_POWER_OF_TWO(comp_pred[j] + pred[j], 1);
@@ -1182,6 +1183,7 @@ HIGHBD_MASK_SUBPIX_VAR(16, 64)
 HIGHBD_MASK_SUBPIX_VAR(64, 16)
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 
+#if !CONFIG_REALTIME_ONLY
 static INLINE void obmc_variance(const uint8_t *pre, int pre_stride,
                                  const int32_t *wsrc, const int32_t *mask,
                                  int w, int h, unsigned int *sse, int *sum) {
@@ -1481,3 +1483,28 @@ HIGHBD_OBMC_SUBPIX_VAR(16, 64)
 HIGHBD_OBMC_VAR(64, 16)
 HIGHBD_OBMC_SUBPIX_VAR(64, 16)
 #endif  // CONFIG_AV1_HIGHBITDEPTH
+#endif  // !CONFIG_REALTIME_ONLY
+
+uint64_t aom_mse_wxh_16bit_c(uint8_t *dst, int dstride, uint16_t *src,
+                             int sstride, int w, int h) {
+  uint64_t sum = 0;
+  for (int i = 0; i < h; i++) {
+    for (int j = 0; j < w; j++) {
+      int e = (uint16_t)dst[i * dstride + j] - src[i * sstride + j];
+      sum += e * e;
+    }
+  }
+  return sum;
+}
+
+uint64_t aom_mse_wxh_16bit_highbd_c(uint16_t *dst, int dstride, uint16_t *src,
+                                    int sstride, int w, int h) {
+  uint64_t sum = 0;
+  for (int i = 0; i < h; i++) {
+    for (int j = 0; j < w; j++) {
+      int e = dst[i * dstride + j] - src[i * sstride + j];
+      sum += e * e;
+    }
+  }
+  return sum;
+}

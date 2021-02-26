@@ -5,9 +5,9 @@
 #ifndef MEDIA_REMOTING_COURIER_RENDERER_H_
 #define MEDIA_REMOTING_COURIER_RENDERER_H_
 
-#include <stdint.h>
-
 #include <memory>
+#include <tuple>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
@@ -20,6 +20,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
 #include "media/mojo/mojom/remoting.mojom.h"
+#include "media/remoting/media_remoting_rpc.pb.h"
 #include "media/remoting/metrics.h"
 #include "media/remoting/rpc_broker.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -38,7 +39,7 @@ class RendererController;
 // A media::Renderer implementation that proxies all operations to a remote
 // renderer via RPCs. The CourierRenderer is instantiated by
 // AdaptiveRendererFactory when media remoting is meant to take place.
-class CourierRenderer : public Renderer {
+class CourierRenderer final : public Renderer {
  public:
   // The whole class except for constructor and GetMediaTime() runs on
   // |media_task_runner|. The constructor and GetMediaTime() run on render main
@@ -74,7 +75,6 @@ class CourierRenderer : public Renderer {
   void Initialize(MediaResource* media_resource,
                   RendererClient* client,
                   PipelineStatusCallback init_cb) final;
-  void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) final;
   void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) final;
   void Flush(base::OnceClosure flush_cb) final;
   void StartPlayingFrom(base::TimeDelta time) final;
@@ -114,7 +114,6 @@ class CourierRenderer : public Renderer {
   void AcquireRendererDone(std::unique_ptr<pb::RpcMessage> message);
   void InitializeCallback(std::unique_ptr<pb::RpcMessage> message);
   void FlushUntilCallback();
-  void SetCdmCallback(std::unique_ptr<pb::RpcMessage> message);
   void OnTimeUpdate(std::unique_ptr<pb::RpcMessage> message);
   void OnBufferingStateChange(std::unique_ptr<pb::RpcMessage> message);
   void OnAudioConfigChange(std::unique_ptr<pb::RpcMessage> message);
@@ -175,13 +174,15 @@ class CourierRenderer : public Renderer {
 
   // Callbacks.
   PipelineStatusCallback init_workflow_done_callback_;
-  CdmAttachedCB cdm_attached_cb_;
   base::OnceClosure flush_cb_;
 
   VideoRendererSink* const video_renderer_sink_;  // Outlives this class.
 
   // Current playback rate.
   double playback_rate_ = 0;
+
+  // Current volume.
+  float volume_ = 1.0f;
 
   // Ignores updates until this time.
   base::TimeTicks ignore_updates_until_time_;

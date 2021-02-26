@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text_path.h"
 
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_path_element.h"
 #include "third_party/blink/renderer/core/svg/svg_text_path_element.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
@@ -53,6 +54,7 @@ LayoutSVGTextPath::LayoutSVGTextPath(Element* element)
 
 bool LayoutSVGTextPath::IsChildAllowed(LayoutObject* child,
                                        const ComputedStyle&) const {
+  NOT_DESTROYED();
   if (child->IsText())
     return SVGLayoutSupport::IsLayoutableTextNode(child);
 
@@ -60,6 +62,7 @@ bool LayoutSVGTextPath::IsChildAllowed(LayoutObject* child,
 }
 
 std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::LayoutPath() const {
+  NOT_DESTROYED();
   const auto& text_path_element = To<SVGTextPathElement>(*GetNode());
   Element* target_element = SVGURIReference::TargetElementFromIRIString(
       text_path_element.HrefString(), text_path_element.OriginatingTreeScope());

@@ -17,13 +17,13 @@
 #include <objidl.h>
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #ifdef __OBJC__
 @class NSString;
 #else
 class NSString;
 #endif
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 namespace ui {
 
@@ -55,18 +55,14 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) ClipboardFormatType {
 
   // Get format identifiers for various types.
   static const ClipboardFormatType& GetUrlType();
-  static const ClipboardFormatType& GetMozUrlType();
   static const ClipboardFormatType& GetPlainTextType();
-  static const ClipboardFormatType& GetFilenameType();
   static const ClipboardFormatType& GetWebKitSmartPasteType();
   // Win: MS HTML Format, Other: Generic HTML format
   static const ClipboardFormatType& GetHtmlType();
+  static const ClipboardFormatType& GetSvgType();
   static const ClipboardFormatType& GetRtfType();
   static const ClipboardFormatType& GetBitmapType();
-  // TODO(raymes): Unify web custom data and pepper custom data:
-  // crbug.com/158399.
   static const ClipboardFormatType& GetWebCustomDataType();
-  static const ClipboardFormatType& GetPepperCustomDataType();
 
 #if defined(OS_WIN)
   // ANSI formats. Only Windows differentiates between ANSI and UNICODE formats
@@ -83,7 +79,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   static const ClipboardFormatType& GetFileDescriptorType();
   static const ClipboardFormatType& GetFileContentZeroType();
   static const ClipboardFormatType& GetFileContentAtIndexType(LONG index);
+  static const ClipboardFormatType& GetFilenameType();
   static const ClipboardFormatType& GetIDListType();
+  static const ClipboardFormatType& GetMozUrlType();
 #endif
 
   // ClipboardFormatType can be used in a set on some platforms.
@@ -94,14 +92,14 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   std::string GetName() const;
 #if defined(OS_WIN)
   const FORMATETC& ToFormatEtc() const { return data_; }
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   NSString* ToNSString() const { return data_; }
   // Custom copy and assignment constructor to handle NSString.
   ClipboardFormatType(const ClipboardFormatType& other);
   ClipboardFormatType& operator=(const ClipboardFormatType& other);
 #endif
 
-  bool Equals(const ClipboardFormatType& other) const;
+  bool operator==(const ClipboardFormatType& other) const;
 
  private:
   friend class base::NoDestructor<ClipboardFormatType>;
@@ -133,7 +131,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) ClipboardFormatType {
 #elif defined(USE_AURA) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   explicit ClipboardFormatType(const std::string& native_format);
   std::string data_;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   explicit ClipboardFormatType(NSString* native_format);
   NSString* data_;
 #else

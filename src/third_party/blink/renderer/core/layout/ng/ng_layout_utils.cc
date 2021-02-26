@@ -173,8 +173,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
   const ComputedStyle& style = node.Style();
   const NGPhysicalBoxFragment& physical_fragment =
       To<NGPhysicalBoxFragment>(layout_result.PhysicalFragment());
-  NGBoxFragment fragment(style.GetWritingMode(), style.Direction(),
-                         physical_fragment);
+  NGBoxFragment fragment(style.GetWritingDirection(), physical_fragment);
 
   if (fragment_geometry.border_box_size.inline_size != fragment.InlineSize())
     return NGLayoutCacheStatus::kNeedsLayout;
@@ -212,14 +211,17 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
       if (old_space.IsFixedBlockSize())
         return NGLayoutCacheStatus::kNeedsLayout;
 
-      // The intrinsic size of column flex-boxes can depend on the
-      // %-resolution-block-size. This occurs when a flex-box has "max-height:
-      // 100%" or similar on itself.
+      // The intrinsic size of flex-boxes can depend on the %-block-size. This
+      // occurs when:
+      //  - A column flex-box has "max-height: 100%" (or similar) on itself.
+      //  - A row flex-box has "height: 100%" (or similar) and children which
+      //    stretch to this size.
       //
       // Due to this we can't use cached |NGLayoutResult::IntrinsicBlockSize|
       // value, as the following |block_size| calculation would be incorrect.
-      if (style.ResolvedIsColumnFlexDirection() &&
-          layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
+      // TODO(dgrogan): We can hit the cache here for row flexboxes when they
+      // don't have stretchy children.
+      if (physical_fragment.DependsOnPercentageBlockSize()) {
         if (new_space.PercentageResolutionBlockSize() !=
             old_space.PercentageResolutionBlockSize())
           return NGLayoutCacheStatus::kNeedsLayout;
@@ -237,6 +239,18 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
   if (!is_block_size_equal) {
     // Only block-flow supports changing the block-size for simplified layout.
     if (!node.IsBlockFlow() || node.IsLayoutNGCustom())
+      return NGLayoutCacheStatus::kNeedsLayout;
+
+    // Fieldsets stretch their content to the final block-size, which might
+    // affect scrollbars.
+    if (node.IsFieldsetContainer())
+      return NGLayoutCacheStatus::kNeedsLayout;
+
+    // Textfields are block-flow, but we can't apply simplified layout due to
+    // -internal-align-self-block.
+    // TODO(tkent): We could store a bit on the |NGLayoutResult| which
+    // indicates if we have a child with "-internal-align-self-block:center".
+    if (node.IsTextField())
       return NGLayoutCacheStatus::kNeedsLayout;
 
     // If we are the document or body element in quirks mode, changing our size
@@ -297,7 +311,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     // this false-positive by checking if we have an initial indefinite
     // block-size.
     if (is_new_initial_block_size_indefinite &&
-        layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
+        physical_fragment.DependsOnPercentageBlockSize()) {
       DCHECK(is_old_initial_block_size_indefinite);
       if (new_space.PercentageResolutionBlockSize() !=
           old_space.PercentageResolutionBlockSize())
@@ -310,6 +324,58 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
 
   if (style.MayHavePadding() && fragment_geometry.padding != fragment.Padding())
     return NGLayoutCacheStatus::kNeedsLayout;
+
+  // Table-cells with vertical alignment might shift their contents if the
+  // block-size changes.
+  if (new_space.IsTableCell()) {
+    DCHECK(old_space.IsTableCell());
+
+    switch (style.VerticalAlign()) {
+      case EVerticalAlign::kTop:
+        // Do nothing special for 'top' vertical alignment.
+        break;
+      case EVerticalAlign::kBaselineMiddle:
+      case EVerticalAlign::kSub:
+      case EVerticalAlign::kSuper:
+      case EVerticalAlign::kTextTop:
+      case EVerticalAlign::kTextBottom:
+      case EVerticalAlign::kLength:
+        // All of the above are treated as 'baseline' for the purposes of
+        // table-cell vertical alignment.
+      case EVerticalAlign::kBaseline: {
+        auto new_alignment_baseline = new_space.TableCellAlignmentBaseline();
+        auto old_alignment_baseline = old_space.TableCellAlignmentBaseline();
+
+        // Do nothing if neither alignment baseline is set.
+        if (!new_alignment_baseline && !old_alignment_baseline)
+          break;
+
+        // If we only have an old alignment baseline set, we need layout, as we
+        // can't determine where the un-adjusted baseline is.
+        if (!new_alignment_baseline && old_alignment_baseline)
+          return NGLayoutCacheStatus::kNeedsLayout;
+
+        // We've been provided a new alignment baseline, just check that it
+        // matches the previously generated baseline.
+        if (!old_alignment_baseline) {
+          if (*new_alignment_baseline != physical_fragment.Baseline())
+            return NGLayoutCacheStatus::kNeedsLayout;
+          break;
+        }
+
+        // If the alignment baselines differ at this stage, we need layout.
+        if (*new_alignment_baseline != *old_alignment_baseline)
+          return NGLayoutCacheStatus::kNeedsLayout;
+        break;
+      }
+      case EVerticalAlign::kMiddle:
+      case EVerticalAlign::kBottom:
+        // 'middle', and 'bottom' vertical alignment depend on the block-size.
+        if (!is_block_size_equal)
+          return NGLayoutCacheStatus::kNeedsLayout;
+        break;
+    }
+  }
 
   // If we've reached here we know that we can potentially "stretch"/"shrink"
   // ourselves without affecting any of our children.
@@ -330,7 +396,7 @@ bool IntrinsicSizeWillChange(
   if (!*fragment_geometry)
     *fragment_geometry = CalculateInitialFragmentGeometry(new_space, node);
 
-  LayoutUnit inline_size = NGFragment(style.GetWritingMode(),
+  LayoutUnit inline_size = NGFragment(style.GetWritingDirection(),
                                       cached_layout_result.PhysicalFragment())
                                .InlineSize();
 
@@ -368,6 +434,8 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatus(
     if (new_space.AreSizesEqual(old_space))
       return NGLayoutCacheStatus::kHit;
 
+    // TODO(ikilpatrick): Always miss the cache for tables whose block
+    // size-constraints change.
     if (!SizeMayChange(node, new_space, old_space, cached_layout_result))
       return NGLayoutCacheStatus::kHit;
   }
@@ -464,7 +532,8 @@ bool MaySkipLayoutWithinBlockFormattingContext(
       !is_margin_strut_equal)
     return false;
 
-  const auto& physical_fragment = cached_layout_result.PhysicalFragment();
+  const auto& physical_fragment =
+      To<NGPhysicalBoxFragment>(cached_layout_result.PhysicalFragment());
 
   // Check we have a descendant that *may* be positioned above the block-start
   // edge. We abort if either the old or new space has floats, as we don't keep

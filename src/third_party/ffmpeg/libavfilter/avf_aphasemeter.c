@@ -76,23 +76,23 @@ static int query_formats(AVFilterContext *ctx)
     int ret;
 
     formats = ff_make_format_list(sample_fmts);
-    if ((ret = ff_formats_ref         (formats, &inlink->out_formats        )) < 0 ||
-        (ret = ff_formats_ref         (formats, &outlink->in_formats        )) < 0 ||
+    if ((ret = ff_formats_ref         (formats, &inlink->outcfg.formats        )) < 0 ||
+        (ret = ff_formats_ref         (formats, &outlink->incfg.formats        )) < 0 ||
         (ret = ff_add_channel_layout  (&layout, AV_CH_LAYOUT_STEREO         )) < 0 ||
-        (ret = ff_channel_layouts_ref (layout , &inlink->out_channel_layouts)) < 0 ||
-        (ret = ff_channel_layouts_ref (layout , &outlink->in_channel_layouts)) < 0)
+        (ret = ff_channel_layouts_ref (layout , &inlink->outcfg.channel_layouts)) < 0 ||
+        (ret = ff_channel_layouts_ref (layout , &outlink->incfg.channel_layouts)) < 0)
         return ret;
 
     formats = ff_all_samplerates();
-    if ((ret = ff_formats_ref(formats, &inlink->out_samplerates)) < 0 ||
-        (ret = ff_formats_ref(formats, &outlink->in_samplerates)) < 0)
+    if ((ret = ff_formats_ref(formats, &inlink->outcfg.samplerates)) < 0 ||
+        (ret = ff_formats_ref(formats, &outlink->incfg.samplerates)) < 0)
         return ret;
 
     if (s->do_video) {
         AVFilterLink *outlink = ctx->outputs[1];
 
         formats = ff_make_format_list(pix_fmts);
-        if ((ret = ff_formats_ref(formats, &outlink->in_formats)) < 0)
+        if ((ret = ff_formats_ref(formats, &outlink->incfg.formats)) < 0)
             return ret;
     }
 
@@ -227,11 +227,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 static av_cold void uninit(AVFilterContext *ctx)
 {
     AudioPhaseMeterContext *s = ctx->priv;
-    int i;
 
     av_frame_free(&s->out);
-    for (i = 0; i < ctx->nb_outputs; i++)
-        av_freep(&ctx->output_pads[i].name);
 }
 
 static av_cold int init(AVFilterContext *ctx)
@@ -241,30 +238,22 @@ static av_cold int init(AVFilterContext *ctx)
     int ret;
 
     pad = (AVFilterPad){
-        .name         = av_strdup("out0"),
+        .name         = "out0",
         .type         = AVMEDIA_TYPE_AUDIO,
     };
-    if (!pad.name)
-        return AVERROR(ENOMEM);
     ret = ff_insert_outpad(ctx, 0, &pad);
-    if (ret < 0) {
-        av_freep(&pad.name);
+    if (ret < 0)
         return ret;
-    }
 
     if (s->do_video) {
         pad = (AVFilterPad){
-            .name         = av_strdup("out1"),
+            .name         = "out1",
             .type         = AVMEDIA_TYPE_VIDEO,
             .config_props = config_video_output,
         };
-        if (!pad.name)
-            return AVERROR(ENOMEM);
         ret = ff_insert_outpad(ctx, 1, &pad);
-        if (ret < 0) {
-            av_freep(&pad.name);
+        if (ret < 0)
             return ret;
-        }
     }
 
     return 0;

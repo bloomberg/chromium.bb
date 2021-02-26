@@ -31,7 +31,6 @@ test("service_manager_unittests") {
     "//services/service_manager/public/mojom",
     "//services/service_manager/tests/connect",
     "//services/service_manager/tests/lifecycle",
-    "//services/service_manager/tests/sandbox",
     "//services/service_manager/tests/service_manager",
     "//services/service_manager/tests/shutdown",
     "//testing/gtest",
@@ -52,28 +51,6 @@ mojom("interfaces") {
     "background.test-mojom",
     "test_support.test-mojom",
   ]
-
-  if (is_linux) {
-    sources += [ "sandbox_status.test-mojom" ]
-  }
-}
-
-if (is_linux) {
-  source_set("sandbox_status_service") {
-    testonly = true
-    sources = [
-      "sandbox_status_service.cc",
-      "sandbox_status_service.h",
-    ]
-
-    deps = [
-      ":interfaces",
-      "//base",
-      "//services/service_manager/public/cpp",
-      "//services/service_manager/public/mojom",
-      "//services/service_manager/sandbox:sandbox",
-    ]
-  }
 }
 
 source_set("util") {

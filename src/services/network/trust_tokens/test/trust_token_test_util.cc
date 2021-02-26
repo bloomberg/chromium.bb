@@ -6,14 +6,15 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
-#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 
 namespace network {
 
-TestURLRequestMaker::TestURLRequestMaker() = default;
+TestURLRequestMaker::TestURLRequestMaker() {
+  context_.set_net_log(&net_log_);
+}
 TestURLRequestMaker::~TestURLRequestMaker() = default;
 
 std::unique_ptr<net::URLRequest> TestURLRequestMaker::MakeURLRequest(
@@ -70,9 +71,9 @@ std::string TrustTokenEnumToString(mojom::TrustTokenOperationType type) {
     case mojom::TrustTokenOperationType::kIssuance:
       return "token-request";
     case mojom::TrustTokenOperationType::kRedemption:
-      return "srr-token-redemption";
+      return "token-redemption";
     case mojom::TrustTokenOperationType::kSigning:
-      return "send-srr";
+      return "send-redemption-record";
   }
 }
 
@@ -122,14 +123,17 @@ TrustTokenTestParameters::TrustTokenTestParameters(
     base::Optional<network::mojom::TrustTokenRefreshPolicy> refresh_policy,
     base::Optional<network::mojom::TrustTokenSignRequestData> sign_request_data,
     base::Optional<bool> include_timestamp_header,
-    base::Optional<std::string> issuer_spec,
-    base::Optional<std::vector<std::string>> additional_signed_headers)
+    base::Optional<std::vector<std::string>> issuer_specs,
+    base::Optional<std::vector<std::string>> additional_signed_headers,
+    base::Optional<std::string> possibly_unsafe_additional_signing_data)
     : type(type),
       refresh_policy(refresh_policy),
       sign_request_data(sign_request_data),
       include_timestamp_header(include_timestamp_header),
-      issuer_spec(issuer_spec),
-      additional_signed_headers(additional_signed_headers) {}
+      issuer_specs(issuer_specs),
+      additional_signed_headers(additional_signed_headers),
+      possibly_unsafe_additional_signing_data(
+          possibly_unsafe_additional_signing_data) {}
 
 TrustTokenParametersAndSerialization
 SerializeTrustTokenParametersAndConstructExpectation(
@@ -159,9 +163,14 @@ SerializeTrustTokenParametersAndConstructExpectation(
         *input.include_timestamp_header;
   }
 
-  if (input.issuer_spec.has_value()) {
-    parameters.SetStringKey("issuer", *input.issuer_spec);
-    trust_token_params->issuer = url::Origin::Create(GURL(*input.issuer_spec));
+  if (input.issuer_specs.has_value()) {
+    base::Value issuers(base::Value::Type::LIST);
+    for (const std::string& issuer_spec : *input.issuer_specs) {
+      issuers.Append(issuer_spec);
+      trust_token_params->issuers.push_back(
+          url::Origin::Create(GURL(issuer_spec)));
+    }
+    parameters.SetKey("issuers", std::move(issuers));
   }
 
   if (input.additional_signed_headers.has_value()) {
@@ -174,22 +183,38 @@ SerializeTrustTokenParametersAndConstructExpectation(
     }
   }
 
+  if (input.possibly_unsafe_additional_signing_data.has_value()) {
+    parameters.SetStringKey("additionalSigningData",
+                            *input.possibly_unsafe_additional_signing_data);
+    trust_token_params->possibly_unsafe_additional_signing_data =
+        *input.possibly_unsafe_additional_signing_data;
+  }
+
   std::string serialized_parameters;
   JSONStringValueSerializer serializer(&serialized_parameters);
   CHECK(serializer.Serialize(parameters));
+
   return {std::move(trust_token_params), std::move(serialized_parameters)};
 }
 
-std::string WrapKeyCommitmentForIssuer(const url::Origin& issuer,
-                                       base::StringPiece commitment) {
+std::string WrapKeyCommitmentsForIssuers(
+    base::flat_map<url::Origin, base::StringPiece> issuers_and_commitments) {
   std::string ret;
   JSONStringValueSerializer serializer(&ret);
 
-  CHECK_NE(issuer.Serialize(),
-           "");  // guard against accidentally passing an opaque origin
-
   base::Value to_serialize(base::Value::Type::DICTIONARY);
-  to_serialize.SetKey(issuer.Serialize(), *base::JSONReader::Read(commitment));
+
+  for (const auto& kv : issuers_and_commitments) {
+    const url::Origin& issuer = kv.first;
+    base::StringPiece commitment = kv.second;
+
+    // guard against accidentally passing an origin without a unique
+    // serialization
+    CHECK_NE(issuer.Serialize(), "null");
+
+    to_serialize.SetKey(issuer.Serialize(),
+                        *base::JSONReader::Read(commitment));
+  }
   CHECK(serializer.Serialize(to_serialize));
   return ret;
 }

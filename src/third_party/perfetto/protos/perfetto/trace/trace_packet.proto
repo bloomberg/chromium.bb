@@ -18,7 +18,10 @@ syntax = "proto2";
 
 import "protos/perfetto/common/trace_stats.proto";
 import "protos/perfetto/config/trace_config.proto";
+import "protos/perfetto/trace/extension_descriptor.proto";
 import "protos/perfetto/trace/android/android_log.proto";
+import "protos/perfetto/trace/android/frame_timeline_event.proto";
+import "protos/perfetto/trace/android/gpu_mem_event.proto";
 import "protos/perfetto/trace/android/graphics_frame_event.proto";
 import "protos/perfetto/trace/android/initial_display_state.proto";
 import "protos/perfetto/trace/android/packages_list.proto";
@@ -35,10 +38,12 @@ import "protos/perfetto/trace/gpu/gpu_render_stage_event.proto";
 import "protos/perfetto/trace/gpu/vulkan_memory_event.proto";
 import "protos/perfetto/trace/gpu/vulkan_api_event.proto";
 import "protos/perfetto/trace/interned_data/interned_data.proto";
+import "protos/perfetto/trace/memory_graph.proto";
 import "protos/perfetto/trace/perfetto/perfetto_metatrace.proto";
 import "protos/perfetto/trace/perfetto/tracing_service_event.proto";
 import "protos/perfetto/trace/power/battery_counters.proto";
 import "protos/perfetto/trace/power/power_rails.proto";
+import "protos/perfetto/trace/profiling/deobfuscation.proto";
 import "protos/perfetto/trace/profiling/heap_graph.proto";
 import "protos/perfetto/trace/profiling/profile_common.proto";
 import "protos/perfetto/trace/profiling/profile_packet.proto";
@@ -58,11 +63,27 @@ import "protos/perfetto/trace/test_event.proto";
 
 package perfetto.protos;
 
-// The root object emitted by Perfetto. A perfetto trace is just a stream of
-// TracePacket(s).
+// TracePacket is the root object of a Perfeto trace.
+// A Perfetto trace is a linear sequence of TracePacket(s).
+//
+// The tracing service guarantees that all TracePacket(s) written by a given
+// TraceWriter are seen in-order, without gaps or duplicates. If, for any
+// reason, a TraceWriter sequence becomes invalid, no more packets are returned
+// to the Consumer (or written into the trace file).
+// TracePacket(s) written by different TraceWriter(s), hence even different
+// data sources, can be seen in arbitrary order.
+// The consumer can re-establish a total order, if interested, using the packet
+// timestamps, after having synchronized the different clocks onto a global
+// clock.
+//
+// The tracing service is agnostic of the content of TracePacket, with the
+// exception of few fields (e.g.. trusted_*, trace_config) that are written by
+// the service itself.
+//
+// See the [Buffers and Dataflow](/docs/concepts/buffers.md) doc for details.
 //
 // Next reserved id: 13 (up to 15).
-// Next id: 71.
+// Next id: 77.
 message TracePacket {
   // The timestamp of the TracePacket.
   // By default this timestamps refers to the trace clock (CLOCK_BOOTTIME on
@@ -80,7 +101,6 @@ message TracePacket {
   optional uint32 timestamp_clock_id = 58;
 
   oneof data {
-    FtraceEventBundle ftrace_events = 1;
     ProcessTree process_tree = 2;
     ProcessStats process_stats = 9;
     InodeFileMap inode_file_map = 4;
@@ -90,12 +110,14 @@ message TracePacket {
     TrackEvent track_event = 11;
 
     // IDs up to 15 are reserved. They take only one byte to encode their
-    // preamble so should be used for freqeuent events.
+    // preamble so should be used for frequent events.
 
     TraceConfig trace_config = 33;
     FtraceStats ftrace_stats = 34;
     TraceStats trace_stats = 35;
     ProfilePacket profile_packet = 37;
+    StreamingAllocation streaming_allocation = 74;
+    StreamingFree streaming_free = 75;
     BatteryCounters battery = 38;
     PowerRails power_rails = 40;
     AndroidLogPacket android_log = 39;
@@ -118,6 +140,9 @@ message TracePacket {
     SmapsPacket smaps_packet = 68;
     TracingServiceEvent service_event = 69;
     InitialDisplayState initial_display_state = 70;
+    GpuMemTotalEvent gpu_mem_total_event = 71;
+    MemoryTrackerSnapshot memory_tracker_snapshot = 73;
+    FrameTimelineEvent frame_timeline_event = 76;
 
     // Only used in profile packets.
     ProfiledFrameSymbols profiled_frame_symbols = 55;
@@ -133,6 +158,9 @@ message TracePacket {
     // Deprecated, use TrackDescriptor instead.
     ThreadDescriptor thread_descriptor = 44;
 
+    // Events from the Linux kernel ftrace infrastructure.
+    FtraceEventBundle ftrace_events = 1;
+
     // This field is emitted at periodic intervals (~10s) and
     // contains always the binary representation of the UUID
     // {82477a76-b28d-42ba-81dc-33326d57a079}. This is used to be able to
@@ -143,6 +171,13 @@ message TracePacket {
     // Each compressed_packets TracePacket (including the two field ids and
     // sizes) should be less than 512KB.
     bytes compressed_packets = 50;
+
+    // Data sources can extend the trace proto with custom extension protos (see
+    // docs/design-docs/extensions.md). When they do that, the descriptor of
+    // their extension proto descriptor is serialized in this packet. This
+    // allows trace_processor to deserialize extended messages using reflection
+    // even if the extension proto is not checked in the Perfetto repo.
+    ExtensionDescriptor extension_descriptor = 72;
 
     // This field is only used for testing.
     // In previous versions of this proto this field had the id 268435455

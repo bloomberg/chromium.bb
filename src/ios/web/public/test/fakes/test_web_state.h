@@ -39,6 +39,8 @@ class TestWebState : public WebState {
   bool IsWebUsageEnabled() const override;
   void SetWebUsageEnabled(bool enabled) override;
   UIView* GetView() override;
+  void DidCoverWebContent() override;
+  void DidRevealWebContent() override;
   void WasShown() override;
   void WasHidden() override;
   void SetKeepRenderProcessAlive(bool keep_alive) override;
@@ -91,12 +93,14 @@ class TestWebState : public WebState {
   void SetHasOpener(bool has_opener) override;
   bool CanTakeSnapshot() const override;
   void TakeSnapshot(const gfx::RectF& rect, SnapshotCallback callback) override;
+  void CreateFullPagePdf(base::OnceCallback<void(NSData*)> callback) override;
 
   // Setters for test data.
   void SetBrowserState(BrowserState* browser_state);
   void SetJSInjectionReceiver(CRWJSInjectionReceiver* injection_receiver);
   void SetTitle(const base::string16& title);
   void SetContentIsHTML(bool content_is_html);
+  void SetContentsMimeType(const std::string& mime_type);
   void SetLoading(bool is_loading);
   void SetCurrentURL(const GURL& url);
   void SetVisibleURL(const GURL& url);
@@ -162,7 +166,7 @@ class TestWebState : public WebState {
   UIView* view_;
   CRWWebViewProxyType web_view_proxy_;
   NSData* last_loaded_data_;
-  base::CallbackList<ScriptCommandCallbackSignature> callback_list_;
+  base::RepeatingCallbackList<ScriptCommandCallbackSignature> callback_list_;
 
   // A list of observers notified when page state changes. Weak references.
   base::ObserverList<WebStateObserver, true>::Unchecked observers_;

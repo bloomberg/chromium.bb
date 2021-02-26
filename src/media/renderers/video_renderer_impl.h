@@ -19,8 +19,10 @@
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/frame_rate_estimator.h"
+#include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/tuneable.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -309,8 +311,15 @@ class MEDIA_EXPORT VideoRendererImpl
   gfx::Size last_frame_natural_size_;
   bool last_frame_opaque_;
 
+  // The last value from |video_decoder_stream_->AverageDuration()|.
+  base::TimeDelta last_decoder_stream_avg_duration_;
+
   // Indicates if we've painted the first valid frame after StartPlayingFrom().
   bool painted_first_frame_;
+
+  // The initial value for |min_buffered_frames_| and |max_buffered_frames_|.
+  Tuneable<size_t> initial_buffering_size_ = {
+      "MediaInitialBufferingSizeForHaveEnough", 3, limits::kMaxVideoFrames, 10};
 
   // The number of frames required to transition from BUFFERING_HAVE_NOTHING to
   // BUFFERING_HAVE_ENOUGH.

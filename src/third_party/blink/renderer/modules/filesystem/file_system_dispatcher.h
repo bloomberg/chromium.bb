@@ -10,10 +10,11 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/platform/heap/disallow_new_wrapper.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_unique_receiver_set.h"
-#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace WTF {
@@ -31,9 +32,6 @@ class SecurityOrigin;
 // instances are created lazily by calling FileSystemDispatcher::From().
 class FileSystemDispatcher : public GarbageCollected<FileSystemDispatcher>,
                              public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(FileSystemDispatcher);
-  USING_PRE_FINALIZER(FileSystemDispatcher, Prefinalize);
-
  public:
   using StatusCallback = base::OnceCallback<void(base::File::Error error)>;
   using WriteCallback =
@@ -145,7 +143,7 @@ class FileSystemDispatcher : public GarbageCollected<FileSystemDispatcher>,
       const KURL& file_path,
       std::unique_ptr<SnapshotFileCallbackBase> callbacks);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class WriteListener;
@@ -198,19 +196,14 @@ class FileSystemDispatcher : public GarbageCollected<FileSystemDispatcher>,
 
   void RemoveOperationRemote(int operation_id);
 
-  void Prefinalize();
-
-  HeapMojoRemote<mojom::blink::FileSystemManager,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      file_system_manager_;
+  HeapMojoRemote<mojom::blink::FileSystemManager> file_system_manager_;
   using OperationsMap =
-      HashMap<int, mojo::Remote<mojom::blink::FileSystemCancellableOperation>>;
+      HeapHashMap<int,
+                  Member<DisallowNewWrapper<HeapMojoRemote<
+                      mojom::blink::FileSystemCancellableOperation>>>>;
   OperationsMap cancellable_operations_;
   int next_operation_id_;
-  HeapMojoUniqueReceiverSet<
-      mojom::blink::FileSystemOperationListener,
-      std::default_delete<mojom::blink::FileSystemOperationListener>,
-      HeapMojoWrapperMode::kWithoutContextObserver>
+  HeapMojoUniqueReceiverSet<mojom::blink::FileSystemOperationListener>
       op_listeners_;
 };
 

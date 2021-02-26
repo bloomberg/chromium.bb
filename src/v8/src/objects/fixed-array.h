@@ -9,7 +9,6 @@
 #include "src/objects/instance-type.h"
 #include "src/objects/objects.h"
 #include "src/objects/smi.h"
-#include "torque-generated/class-definitions-tq.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -54,7 +53,6 @@ namespace internal {
   V(SINGLE_CHARACTER_STRING_CACHE_SUB_TYPE)      \
   V(SLOW_TEMPLATE_INSTANTIATIONS_CACHE_SUB_TYPE) \
   V(STRING_SPLIT_CACHE_SUB_TYPE)                 \
-  V(STRING_TABLE_SUB_TYPE)                       \
   V(TEMPLATE_INFO_SUB_TYPE)                      \
   V(FEEDBACK_METADATA_SUB_TYPE)                  \
   V(WEAK_NEW_SPACE_OBJECT_TO_CODE_SUB_TYPE)
@@ -65,6 +63,8 @@ enum FixedArraySubInstanceType {
 #undef DEFINE_FIXED_ARRAY_SUB_INSTANCE_TYPE
       LAST_FIXED_ARRAY_SUB_TYPE = WEAK_NEW_SPACE_OBJECT_TO_CODE_SUB_TYPE
 };
+
+#include "torque-generated/src/objects/fixed-array-tq.inc"
 
 // Common superclass for FixedArrays that allow implementations to share
 // common accessors and some code paths.
@@ -101,7 +101,7 @@ class FixedArray
  public:
   // Setter and getter for elements.
   inline Object get(int index) const;
-  inline Object get(const Isolate* isolate, int index) const;
+  inline Object get(IsolateRoot isolate, int index) const;
 
   static inline Handle<Object> get(FixedArray array, int index,
                                    Isolate* isolate);
@@ -110,6 +110,13 @@ class FixedArray
   V8_EXPORT_PRIVATE static Handle<FixedArray> SetAndGrow(
       Isolate* isolate, Handle<FixedArray> array, int index,
       Handle<Object> value);
+
+  // Synchronized setters and getters.
+  inline Object synchronized_get(int index) const;
+  inline Object synchronized_get(IsolateRoot isolate, int index) const;
+  // Currently only Smis are written with release semantics, hence we can avoid
+  // a write barrier.
+  inline void synchronized_set(int index, Smi value);
 
   // Setter that uses write barrier.
   inline void set(int index, Object value);
@@ -261,7 +268,7 @@ class WeakFixedArray
     : public TorqueGeneratedWeakFixedArray<WeakFixedArray, HeapObject> {
  public:
   inline MaybeObject Get(int index) const;
-  inline MaybeObject Get(const Isolate* isolate, int index) const;
+  inline MaybeObject Get(IsolateRoot isolate, int index) const;
 
   inline void Set(
       int index, MaybeObject value,
@@ -290,7 +297,6 @@ class WeakFixedArray
 
   int AllocatedSize();
 
- protected:
   static int OffsetOfElementAt(int index) {
     STATIC_ASSERT(kObjectsOffset == SizeFor(0));
     return SizeFor(index);
@@ -337,7 +343,7 @@ class WeakArrayList
   V8_EXPORT_PRIVATE void Compact(Isolate* isolate);
 
   inline MaybeObject Get(int index) const;
-  inline MaybeObject Get(const Isolate* isolate, int index) const;
+  inline MaybeObject Get(IsolateRoot isolate, int index) const;
 
   // Set the element at index to obj. The underlying array must be large enough.
   // If you need to grow the WeakArrayList, use the static AddToEnd() method
@@ -350,7 +356,7 @@ class WeakArrayList
   }
 
   static constexpr int CapacityForLength(int length) {
-    return length + Max(length / 2, 2);
+    return length + std::max(length / 2, 2);
   }
 
   // Gives access to raw memory which stores the array's data.
@@ -400,6 +406,8 @@ class WeakArrayList
 class WeakArrayList::Iterator {
  public:
   explicit Iterator(WeakArrayList array) : index_(0), array_(array) {}
+  Iterator(const Iterator&) = delete;
+  Iterator& operator=(const Iterator&) = delete;
 
   inline HeapObject Next();
 
@@ -409,7 +417,6 @@ class WeakArrayList::Iterator {
 #ifdef DEBUG
   DisallowHeapAllocation no_gc_;
 #endif  // DEBUG
-  DISALLOW_COPY_AND_ASSIGN(Iterator);
 };
 
 // Generic array grows dynamically with O(1) amortized insertion.
@@ -438,7 +445,7 @@ class ArrayList : public TorqueGeneratedArrayList<ArrayList, FixedArray> {
   // storage capacity, i.e., length().
   inline void SetLength(int length);
   inline Object Get(int index) const;
-  inline Object Get(const Isolate* isolate, int index) const;
+  inline Object Get(IsolateRoot isolate, int index) const;
   inline ObjectSlot Slot(int index);
 
   // Set the element at index to obj. The underlying array must be large enough.
@@ -453,11 +460,14 @@ class ArrayList : public TorqueGeneratedArrayList<ArrayList, FixedArray> {
   // number returned by Length() is stored in the first entry.
   static Handle<FixedArray> Elements(Isolate* isolate, Handle<ArrayList> array);
 
+  static const int kHeaderFields = 1;
+
  private:
   static Handle<ArrayList> EnsureSpace(Isolate* isolate,
                                        Handle<ArrayList> array, int length);
   static const int kLengthIndex = 0;
   static const int kFirstIndex = 1;
+  STATIC_ASSERT(kHeaderFields == kFirstIndex);
   TQ_OBJECT_CONSTRUCTORS(ArrayList)
 };
 
@@ -465,7 +475,8 @@ enum SearchMode { ALL_ENTRIES, VALID_ENTRIES };
 
 template <SearchMode search_mode, typename T>
 inline int Search(T* array, Name name, int valid_entries = 0,
-                  int* out_insertion_index = nullptr);
+                  int* out_insertion_index = nullptr,
+                  bool concurrent_search = false);
 
 // ByteArray represents fixed sized byte arrays.  Used for the relocation info
 // that is attached to code objects.
@@ -580,7 +591,7 @@ class TemplateList
   static Handle<TemplateList> New(Isolate* isolate, int size);
   inline int length() const;
   inline Object get(int index) const;
-  inline Object get(const Isolate* isolate, int index) const;
+  inline Object get(IsolateRoot isolate, int index) const;
   inline void set(int index, Object value);
   static Handle<TemplateList> Add(Isolate* isolate, Handle<TemplateList> list,
                                   Handle<Object> value);

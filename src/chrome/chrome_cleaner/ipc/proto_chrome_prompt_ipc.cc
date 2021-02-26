@@ -6,7 +6,8 @@
 
 #include <windows.h>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
@@ -45,8 +46,8 @@ void ProtoChromePromptIPC::Initialize(ErrorHandler* error_handler) {
 
 void ProtoChromePromptIPC::PostPromptUserTask(
     const std::vector<base::FilePath>& files_to_delete,
-    const std::vector<base::string16>& registry_keys,
-    const std::vector<base::string16>& extension_ids,
+    const std::vector<std::wstring>& registry_keys,
+    const std::vector<std::wstring>& extension_ids,
     PromptUserCallback callback) {
   DCHECK(task_runner_);
   task_runner_->PostTask(
@@ -57,7 +58,7 @@ void ProtoChromePromptIPC::PostPromptUserTask(
 }
 
 void ProtoChromePromptIPC::PostDisableExtensionsTask(
-    const std::vector<base::string16>& extension_ids,
+    const std::vector<std::wstring>& extension_ids,
     DisableExtensionsCallback callback) {
   NOTIMPLEMENTED();
   OnConnectionError();
@@ -81,8 +82,8 @@ void ProtoChromePromptIPC::InitializeImpl() {
 
 void ProtoChromePromptIPC::RunPromptUserTask(
     const std::vector<base::FilePath>& files_to_delete,
-    const std::vector<base::string16>& registry_keys,
-    const std::vector<base::string16>& extension_ids,
+    const std::vector<std::wstring>& registry_keys,
+    const std::vector<std::wstring>& extension_ids,
     PromptUserCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(state_, State::kUninitialized);
@@ -104,8 +105,8 @@ void ProtoChromePromptIPC::RunPromptUserTask(
   chrome_cleaner::PromptUserRequest prompt_user_message;
   for (const base::FilePath& file_to_delete : files_to_delete) {
     std::string file_path_utf8;
-    if (!base::UTF16ToUTF8(file_to_delete.value().c_str(),
-                           file_to_delete.value().size(), &file_path_utf8)) {
+    if (!base::WideToUTF8(file_to_delete.value().c_str(),
+                          file_to_delete.value().size(), &file_path_utf8)) {
       std::move(callback).Run(PromptUserResponse::DENIED);
       return;
     } else {
@@ -113,10 +114,10 @@ void ProtoChromePromptIPC::RunPromptUserTask(
     }
   }
 
-  for (const base::string16& registry_key : registry_keys) {
+  for (const std::wstring& registry_key : registry_keys) {
     std::string registry_key_utf8;
-    if (!base::UTF16ToUTF8(registry_key.c_str(), registry_key.size(),
-                           &registry_key_utf8)) {
+    if (!base::WideToUTF8(registry_key.c_str(), registry_key.size(),
+                          &registry_key_utf8)) {
       std::move(callback).Run(PromptUserResponse::DENIED);
       return;
     } else {
@@ -124,10 +125,10 @@ void ProtoChromePromptIPC::RunPromptUserTask(
     }
   }
 
-  for (const base::string16& extension_id : extension_ids) {
+  for (const std::wstring& extension_id : extension_ids) {
     std::string extension_id_utf8;
-    if (!base::UTF16ToUTF8(extension_id.c_str(), extension_id.size(),
-                           &extension_id_utf8)) {
+    if (!base::WideToUTF8(extension_id.c_str(), extension_id.size(),
+                          &extension_id_utf8)) {
       std::move(callback).Run(PromptUserResponse::DENIED);
       return;
     } else {

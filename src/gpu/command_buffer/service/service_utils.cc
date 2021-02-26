@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -54,9 +55,10 @@ gl::GLContextAttribs GenerateGLContextAttribs(
     attribs.webgl_compatibility_context =
         IsWebGLContextType(attribs_helper.context_type);
 
-    // Always use the global texture share group for the passthrough command
-    // decoder
+    // Always use the global texture and semaphore share group for the
+    // passthrough command decoder
     attribs.global_texture_share_group = true;
+    attribs.global_semaphore_share_group = true;
 
     attribs.robust_resource_initialization = true;
     attribs.robust_buffer_access = true;
@@ -93,18 +95,7 @@ bool UsePassthroughCommandDecoder(const base::CommandLine* command_line) {
 }
 
 bool PassthroughCommandDecoderSupported() {
-#if defined(USE_EGL)
-  // Using the passthrough command buffer requires that specific ANGLE
-  // extensions are exposed
-  return gl::GLSurfaceEGL::IsCreateContextBindGeneratesResourceSupported() &&
-         gl::GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported() &&
-         gl::GLSurfaceEGL::IsRobustResourceInitSupported() &&
-         gl::GLSurfaceEGL::IsDisplayTextureShareGroupSupported() &&
-         gl::GLSurfaceEGL::IsCreateContextClientArraysSupported();
-#else
-  // The passthrough command buffer is only supported on top of ANGLE/EGL
-  return false;
-#endif  // defined(USE_EGL)
+  return gl::PassthroughCommandDecoderSupported();
 }
 
 GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
@@ -158,15 +149,24 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
       command_line->HasSwitch(switches::kEnableGPUServiceTracing);
   gpu_preferences.use_passthrough_cmd_decoder =
       gpu::gles2::UsePassthroughCommandDecoder(command_line);
-  gpu_preferences.ignore_gpu_blacklist =
-      command_line->HasSwitch(switches::kIgnoreGpuBlacklist);
+  gpu_preferences.ignore_gpu_blocklist =
+      command_line->HasSwitch(switches::kIgnoreGpuBlacklist) ||
+      command_line->HasSwitch(switches::kIgnoreGpuBlocklist);
+
+  if (command_line->HasSwitch(switches::kIgnoreGpuBlacklist)) {
+    LOG(ERROR) << "--" << switches::kIgnoreGpuBlacklist
+               << " is deprecated and will be removed in 2020Q4, use --"
+               << switches::kIgnoreGpuBlocklist << " instead.";
+  }
+
   gpu_preferences.enable_webgpu =
       command_line->HasSwitch(switches::kEnableUnsafeWebGPU);
   gpu_preferences.enable_dawn_backend_validation =
       command_line->HasSwitch(switches::kEnableDawnBackendValidation);
+  gpu_preferences.disable_dawn_robustness =
+      command_line->HasSwitch(switches::kDisableDawnRobustness);
   gpu_preferences.gr_context_type = ParseGrContextType();
-  gpu_preferences.use_vulkan = ParseVulkanImplementationName(
-      command_line, gpu_preferences.gr_context_type);
+  gpu_preferences.use_vulkan = ParseVulkanImplementationName(command_line);
   gpu_preferences.disable_vulkan_surface =
       command_line->HasSwitch(switches::kDisableVulkanSurface);
 
@@ -181,19 +181,24 @@ GrContextType ParseGrContextType() {
   if (base::FeatureList::IsEnabled(features::kSkiaDawn))
     return GrContextType::kDawn;
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return base::FeatureList::IsEnabled(features::kMetal) ? GrContextType::kMetal
                                                         : GrContextType::kGL;
 #else
-  return base::FeatureList::IsEnabled(features::kVulkan)
-             ? GrContextType::kVulkan
-             : GrContextType::kGL;
+  return features::IsUsingVulkan() ? GrContextType::kVulkan
+                                   : GrContextType::kGL;
 #endif
 }
 
 VulkanImplementationName ParseVulkanImplementationName(
-    const base::CommandLine* command_line,
-    GrContextType gr_context_type) {
+    const base::CommandLine* command_line) {
+#if defined(OS_ANDROID)
+  if (command_line->HasSwitch(switches::kWebViewDrawFunctorUsesVulkan) &&
+      base::FeatureList::IsEnabled(features::kWebViewVulkan)) {
+    return VulkanImplementationName::kForcedNative;
+  }
+#endif
+
   if (command_line->HasSwitch(switches::kUseVulkan)) {
     auto value = command_line->GetSwitchValueASCII(switches::kUseVulkan);
     if (value.empty() || value == switches::kVulkanImplementationNameNative) {
@@ -202,11 +207,17 @@ VulkanImplementationName ParseVulkanImplementationName(
       return VulkanImplementationName::kSwiftshader;
     }
   }
-  // If the vulkan implementation is not set from --use-vulkan, the native
-  // vulkan implementation will be used by default.
-  return gr_context_type == GrContextType::kVulkan
-             ? VulkanImplementationName::kNative
-             : VulkanImplementationName::kNone;
+
+  // GrContext is not going to use Vulkan.
+  if (!base::FeatureList::IsEnabled(features::kVulkan))
+    return VulkanImplementationName::kNone;
+
+  // If the vulkan feature is enabled from command line, we will force to use
+  // vulkan even if it is blocklisted.
+  return base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+             features::kVulkan.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE)
+             ? VulkanImplementationName::kForcedNative
+             : VulkanImplementationName::kNative;
 }
 
 }  // namespace gles2

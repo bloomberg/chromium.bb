@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -164,7 +164,13 @@ IN_PROC_BROWSER_TEST_F(ScrollbarTest, LongPromptScrollbar) {
 
 // Tests that a scrollbar isn't shown for this regression case.
 // See crbug.com/385570 for details.
-IN_PROC_BROWSER_TEST_F(ScrollbarTest, DISABLED_ScrollbarRegression) {
+// TODO(http://crbug.com/988934): Flaky on some Mac release bots.
+#if defined(OS_MAC) && defined(NDEBUG)
+#define MAYBE_ScrollbarRegression DISABLED_ScrollbarRegression
+#else
+#define MAYBE_ScrollbarRegression ScrollbarRegression
+#endif
+IN_PROC_BROWSER_TEST_F(ScrollbarTest, MAYBE_ScrollbarRegression) {
   base::string16 permission_string(base::ASCIIToUTF16(
       "Read and modify your data on *.facebook.com"));
   PermissionMessages permissions;
@@ -186,12 +192,12 @@ class ExtensionInstallDialogViewTest
       const ExtensionInstallDialogViewTest&) = delete;
 
  protected:
-  views::DialogDelegateView* CreateAndShowPrompt(
+  ExtensionInstallDialogView* CreateAndShowPrompt(
       ExtensionInstallPromptTestHelper* helper) {
     auto dialog = std::make_unique<ExtensionInstallDialogView>(
         profile(), web_contents(), helper->GetCallback(),
         CreatePrompt(ExtensionInstallPrompt::INSTALL_PROMPT));
-    views::DialogDelegateView* delegate_view = dialog.get();
+    ExtensionInstallDialogView* delegate_view = dialog.get();
 
     views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
         dialog.release(), nullptr,
@@ -205,16 +211,19 @@ class ExtensionInstallDialogViewTest
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
   {
-    // User presses install.
+    // User presses install. Note that we have to wait for the 0ms delay for
+    // the install button to become enabled, hence the RunLoop later.
+    ExtensionInstallDialogView::SetInstallButtonDelayForTesting(0);
     ExtensionInstallPromptTestHelper helper;
-    views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
+    ExtensionInstallDialogView* delegate_view = CreateAndShowPrompt(&helper);
+    base::RunLoop().RunUntilIdle();
     delegate_view->AcceptDialog();
     EXPECT_EQ(ExtensionInstallPrompt::Result::ACCEPTED, helper.result());
   }
   {
     // User presses cancel.
     ExtensionInstallPromptTestHelper helper;
-    views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
+    ExtensionInstallDialogView* delegate_view = CreateAndShowPrompt(&helper);
     delegate_view->CancelDialog();
     EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
   }
@@ -222,7 +231,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
     // Dialog is closed without the user explicitly choosing to proceed or
     // cancel.
     ExtensionInstallPromptTestHelper helper;
-    views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
+    ExtensionInstallDialogView* delegate_view = CreateAndShowPrompt(&helper);
+    // Note that the close button isn't present, but the dialog can still be
+    // closed this way via Esc.
+    EXPECT_FALSE(delegate_view->ShouldShowCloseButton());
     CloseAndWait(delegate_view->GetWidget());
     // TODO(devlin): Should this be ABORTED?
     EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
@@ -234,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, InstallButtonDelay) {
   ExtensionInstallDialogView::SetInstallButtonDelayForTesting(0);
   ExtensionInstallPromptTestHelper helper;
-  views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
+  ExtensionInstallDialogView* delegate_view = CreateAndShowPrompt(&helper);
 
   // Check that dialog is visible.
   EXPECT_TRUE(delegate_view->GetVisible());
@@ -617,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogWithWithholdPermissionsUI,
   prompt->AddPermissionSet(permissions);
   auto dialog = std::make_unique<ExtensionInstallDialogView>(
       profile(), web_contents(), helper.GetCallback(), std::move(prompt));
-  views::DialogDelegateView* delegate_view = dialog.get();
+  views::BubbleDialogDelegateView* delegate_view = dialog.get();
 
   views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
       dialog.release(), nullptr,

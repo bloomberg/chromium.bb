@@ -31,23 +31,6 @@ class CFX_ImageTransformer {
     int row_offset_r;
   };
 
-  struct BicubicData {
-    int res_x;
-    int res_y;
-    int src_col_l;
-    int src_row_l;
-    int src_col_r;
-    int src_row_r;
-    int pos_pixel[8];
-    int u_w[4];
-    int v_w[4];
-  };
-
-  struct DownSampleData {
-    int src_col;
-    int src_row;
-  };
-
   struct CalcData {
     CFX_DIBitmap* bitmap;
     const CFX_Matrix& matrix;
@@ -77,13 +60,10 @@ class CFX_ImageTransformer {
   void ContinueRotate(PauseIndicatorIface* pPause);
   void ContinueOther(PauseIndicatorIface* pPause);
 
-  void CalcMask(const CalcData& cdata);
-  void CalcAlpha(const CalcData& cdata);
-  void CalcMono(const CalcData& cdata, FXDIB_Format format);
-  void CalcColor(const CalcData& cdata, FXDIB_Format format, int Bpp);
-
-  bool IsBilinear() const;
-  bool IsBiCubic() const;
+  void CalcMask(const CalcData& calc_data);
+  void CalcAlpha(const CalcData& calc_data);
+  void CalcMono(const CalcData& calc_data);
+  void CalcColor(const CalcData& calc_data, FXDIB_Format format, int Bpp);
 
   RetainPtr<CFX_DIBBase> const m_pSrc;
   const CFX_Matrix m_matrix;

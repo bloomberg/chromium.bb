@@ -26,7 +26,6 @@
 #if defined(USE_X11)
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/events_x_utils.h"
-#include "ui/gfx/x/x11.h"
 #endif
 
 #if defined(OS_WIN)
@@ -265,11 +264,16 @@ void EventGenerator::SetTouchTilt(float x, float y) {
   touch_pointer_details_.tilt_y = y;
 }
 
-void EventGenerator::PressTouch() {
-  PressTouchId(0);
+void EventGenerator::PressTouch(
+    const base::Optional<gfx::Point>& touch_location_in_screen) {
+  PressTouchId(0, touch_location_in_screen);
 }
 
-void EventGenerator::PressTouchId(int touch_id) {
+void EventGenerator::PressTouchId(
+    int touch_id,
+    const base::Optional<gfx::Point>& touch_location_in_screen) {
+  if (touch_location_in_screen.has_value())
+    current_screen_location_ = *touch_location_in_screen;
   TestTouchEvent touchev(ui::ET_TOUCH_PRESSED, GetLocationInCurrentRoot(),
                          touch_id, flags_, ui::EventTimeForNow());
   Dispatch(&touchev);
@@ -588,12 +592,16 @@ void EventGenerator::CancelTrackpadRest() {
   Dispatch(&scroll);
 }
 
-void EventGenerator::PressKey(ui::KeyboardCode key_code, int flags) {
-  DispatchKeyEvent(true, key_code, flags);
+void EventGenerator::PressKey(ui::KeyboardCode key_code,
+                              int flags,
+                              int source_device_id) {
+  DispatchKeyEvent(true, key_code, flags, source_device_id);
 }
 
-void EventGenerator::ReleaseKey(ui::KeyboardCode key_code, int flags) {
-  DispatchKeyEvent(false, key_code, flags);
+void EventGenerator::ReleaseKey(ui::KeyboardCode key_code,
+                                int flags,
+                                int source_device_id) {
+  DispatchKeyEvent(false, key_code, flags, source_device_id);
 }
 
 void EventGenerator::Dispatch(ui::Event* event) {
@@ -635,17 +643,21 @@ void EventGenerator::Init(gfx::NativeWindow root_window,
 
 void EventGenerator::DispatchKeyEvent(bool is_press,
                                       ui::KeyboardCode key_code,
-                                      int flags) {
+                                      int flags,
+                                      int source_device_id) {
 #if defined(OS_WIN)
   UINT key_press = WM_KEYDOWN;
   uint16_t character = ui::DomCodeToUsLayoutCharacter(
       ui::UsLayoutKeyboardCodeToDomCode(key_code), flags);
   if (is_press && character) {
     MSG native_event = { NULL, WM_KEYDOWN, key_code, 0 };
+    native_event.time =
+        (ui::EventTimeForNow() - base::TimeTicks()).InMilliseconds() &
+        UINT32_MAX;
     ui::KeyEvent keyev(native_event, flags);
     Dispatch(&keyev);
     // On Windows, WM_KEYDOWN event is followed by WM_CHAR with a character
-    // if the key event cooresponds to a real character.
+    // if the key event corresponds to a real character.
     key_press = WM_CHAR;
     key_code = static_cast<ui::KeyboardCode>(character);
   }
@@ -658,6 +670,7 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
   ui::EventType type = is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
   ui::KeyEvent keyev(type, key_code, flags);
 #endif  // OS_WIN
+  keyev.set_source_device_id(source_device_id);
   Dispatch(&keyev);
 }
 

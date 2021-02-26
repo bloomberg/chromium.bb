@@ -20,10 +20,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "net/cookies/cookie_monster.h"
-#include "net/cookies/cookie_store.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using base::UserMetricsAction;
 
@@ -60,15 +56,13 @@ void LoginPerformer::OnAuthFailure(const AuthFailure& failure) {
 
   last_login_failure_ = failure;
   if (delegate_) {
-    delegate_->SetAuthFlowOffline(user_context_.GetAuthFlow() ==
-                                  UserContext::AUTH_FLOW_OFFLINE);
     delegate_->OnAuthFailure(failure);
     return;
-  } else {
-    // COULD_NOT_MOUNT_CRYPTOHOME, COULD_NOT_MOUNT_TMPFS:
-    // happens during offline auth only.
-    NOTREACHED();
   }
+
+  // COULD_NOT_MOUNT_CRYPTOHOME, COULD_NOT_MOUNT_TMPFS:
+  // happens during offline auth only.
+  NOTREACHED();
 }
 
 void LoginPerformer::OnAuthSuccess(const UserContext& user_context) {
@@ -97,11 +91,11 @@ void LoginPerformer::OnOffTheRecordAuthSuccess() {
     NOTREACHED();
 }
 
-void LoginPerformer::OnPasswordChangeDetected() {
+void LoginPerformer::OnPasswordChangeDetected(const UserContext& user_context) {
   password_changed_ = true;
   password_changed_callback_count_++;
   if (delegate_) {
-    delegate_->OnPasswordChangeDetected();
+    delegate_->OnPasswordChangeDetected(user_context);
   } else {
     NOTREACHED();
   }
@@ -120,9 +114,9 @@ void LoginPerformer::OnOldEncryptionDetected(const UserContext& user_context,
 ////////////////////////////////////////////////////////////////////////////////
 // LoginPerformer, public:
 
-void LoginPerformer::NotifyWhitelistCheckFailure() {
+void LoginPerformer::NotifyAllowlistCheckFailure() {
   if (delegate_)
-    delegate_->WhiteListCheckFailed(
+    delegate_->AllowlistCheckFailed(
         user_context_.GetAccountId().GetUserEmail());
   else
     NOTREACHED();
@@ -146,8 +140,9 @@ void LoginPerformer::DoPerformLogin(const UserContext& user_context,
   bool wildcard_match = false;
 
   const AccountId& account_id = user_context.GetAccountId();
-  if (!IsUserWhitelisted(account_id, &wildcard_match)) {
-    NotifyWhitelistCheckFailure();
+  if (!IsUserAllowlisted(account_id, &wildcard_match,
+                         user_context.GetUserType())) {
+    NotifyAllowlistCheckFailure();
     return;
   }
 
@@ -156,11 +151,11 @@ void LoginPerformer::DoPerformLogin(const UserContext& user_context,
 
   switch (auth_mode_) {
     case AuthorizationMode::kExternal: {
-      RunOnlineWhitelistCheck(
+      RunOnlineAllowlistCheck(
           account_id, wildcard_match, user_context.GetRefreshToken(),
           base::BindOnce(&LoginPerformer::StartLoginCompletion,
                          weak_factory_.GetWeakPtr()),
-          base::BindOnce(&LoginPerformer::NotifyWhitelistCheckFailure,
+          base::BindOnce(&LoginPerformer::NotifyAllowlistCheckFailure,
                          weak_factory_.GetWeakPtr()));
       break;
     }
@@ -171,51 +166,10 @@ void LoginPerformer::DoPerformLogin(const UserContext& user_context,
 }
 
 void LoginPerformer::LoginAsSupervisedUser(const UserContext& user_context) {
-  DCHECK_EQ(
-      user_manager::kSupervisedUserDomain,
-      gaia::ExtractDomainName(user_context.GetAccountId().GetUserEmail()));
-
-  user_context_ = user_context;
-  if (user_context_.GetUserType() != user_manager::USER_TYPE_SUPERVISED) {
-    LOG(FATAL) << "Incorrect supervised user type "
-               << user_context_.GetUserType();
-  }
-
-  if (RunTrustedCheck(
-          base::BindOnce(&LoginPerformer::TrustedLoginAsSupervisedUser,
-                         weak_factory_.GetWeakPtr(), user_context_))) {
-    return;
-  }
-  TrustedLoginAsSupervisedUser(user_context_);
-}
-
-void LoginPerformer::TrustedLoginAsSupervisedUser(
-    const UserContext& user_context) {
-  if (!AreSupervisedUsersAllowed()) {
-    LOG(ERROR) << "Login attempt of supervised user detected.";
-    delegate_->WhiteListCheckFailed(user_context.GetAccountId().GetUserEmail());
-    return;
-  }
-
-  SetupSupervisedUserFlow(user_context.GetAccountId());
-  UserContext user_context_copy = TransformSupervisedKey(user_context);
-
-  if (UseExtendedAuthenticatorForSupervisedUser(user_context)) {
-    EnsureExtendedAuthenticator();
-    // TODO(antrim) : Replace empty callback with explicit method.
-    // http://crbug.com/351268
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ExtendedAuthenticator::AuthenticateToMount,
-                       extended_authenticator_.get(), user_context_copy,
-                       ExtendedAuthenticator::ResultCallback()));
-
-  } else {
-    EnsureAuthenticator();
-    task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&Authenticator::LoginAsSupervisedUser,
-                                  authenticator_.get(), user_context_copy));
-  }
+  // TODO(crbug.com/866790): remove this method as a part of further clean-up.
+  LOG(ERROR) << "Login attempt of supervised user detected.";
+  delegate_->AllowlistCheckFailed(user_context.GetAccountId().GetUserEmail());
+  return;
 }
 
 void LoginPerformer::LoginAsPublicSession(const UserContext& user_context) {

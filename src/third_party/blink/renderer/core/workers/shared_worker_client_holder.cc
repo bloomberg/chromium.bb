@@ -86,7 +86,8 @@ void SharedWorkerClientHolder::Connect(
     MessagePortChannel port,
     const KURL& url,
     mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
-    mojom::blink::WorkerOptionsPtr options) {
+    mojom::blink::WorkerOptionsPtr options,
+    ukm::SourceId client_ukm_source_id) {
   DCHECK(IsMainThread());
   DCHECK(options);
 
@@ -124,7 +125,7 @@ void SharedWorkerClientHolder::Connect(
 
   auto info = mojom::blink::SharedWorkerInfo::New(
       url, std::move(options), header, header_type,
-      worker->GetExecutionContext()->GetSecurityContext().AddressSpace(),
+      worker->GetExecutionContext()->AddressSpace(),
       mojom::blink::FetchClientSettingsObject::New(
           outside_fetch_client_settings_object->GetReferrerPolicy(),
           KURL(outside_fetch_client_settings_object->GetOutgoingReferrer()),
@@ -137,10 +138,11 @@ void SharedWorkerClientHolder::Connect(
           : mojom::SharedWorkerCreationContextType::kNonsecure,
       port.ReleaseHandle(),
       mojo::PendingRemote<mojom::blink::BlobURLToken>(
-          blob_url_token.PassPipe(), mojom::blink::BlobURLToken::Version_));
+          blob_url_token.PassPipe(), mojom::blink::BlobURLToken::Version_),
+      client_ukm_source_id);
 }
 
-void SharedWorkerClientHolder::Trace(Visitor* visitor) {
+void SharedWorkerClientHolder::Trace(Visitor* visitor) const {
   visitor->Trace(connector_);
   visitor->Trace(client_receivers_);
   Supplement<LocalDOMWindow>::Trace(visitor);

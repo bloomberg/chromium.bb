@@ -4,6 +4,7 @@
 
 #import "ios/web/js_messaging/crw_js_window_id_manager.h"
 
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "crypto/random.h"
@@ -62,7 +63,7 @@ const size_t kUniqueKeyLength = 16;
                if (error) {
                  DCHECK(error.code == WKErrorWebViewInvalidated ||
                         error.code == WKErrorWebContentProcessTerminated)
-                     << error.description;
+                     << base::SysNSStringToUTF8(error.description);
                  return;
                }
 

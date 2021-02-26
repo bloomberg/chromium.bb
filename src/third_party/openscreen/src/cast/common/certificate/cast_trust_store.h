@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "cast/common/certificate/cast_cert_validator_internal.h"
 
 namespace openscreen {
@@ -20,8 +21,11 @@ class CastTrustStore {
   static CastTrustStore* CreateInstanceForTest(
       const std::vector<uint8_t>& trust_anchor_der);
 
+  static CastTrustStore* CreateInstanceFromPemFile(absl::string_view file_path);
+
   CastTrustStore();
-  CastTrustStore(const std::vector<uint8_t>& trust_anchor_der);
+  explicit CastTrustStore(const std::vector<uint8_t>& trust_anchor_der);
+  explicit CastTrustStore(TrustStore trust_store);
   CastTrustStore(const CastTrustStore&) = delete;
   ~CastTrustStore();
   CastTrustStore& operator=(const CastTrustStore&) = delete;

@@ -29,6 +29,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/shortcut.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -74,7 +75,7 @@ const int kMaxProfileShortcutFileNameLength = 64;
 // Incrementing this number will cause profile icons to be regenerated on
 // profile startup (it should be incremented whenever the product/avatar icons
 // change, etc).
-const int kCurrentProfileIconVersion = 6;
+const int kCurrentProfileIconVersion = 7;
 
 // Updates the preferences with the current icon version on icon creation
 // success.
@@ -101,7 +102,6 @@ void OnProfileIconCreateSuccess(base::FilePath profile_path) {
 // resources in the case of an unbadged icon.
 base::FilePath CreateOrUpdateShortcutIconForProfile(
     const base::FilePath& profile_path,
-    const SkBitmap& avatar_bitmap_1x,
     const SkBitmap& avatar_bitmap_2x) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -125,10 +125,10 @@ base::FilePath CreateOrUpdateShortcutIconForProfile(
     return base::FilePath();
 
   gfx::ImageFamily badged_bitmaps;
-  if (!avatar_bitmap_1x.empty()) {
+  if (!avatar_bitmap_2x.empty()) {
     badged_bitmaps.Add(gfx::Image::CreateFrom1xBitmap(
         profiles::GetBadgedWinIconBitmapForAvatar(app_icon_bitmap,
-                                                  avatar_bitmap_1x, 1)));
+                                                  avatar_bitmap_2x)));
   }
 
   SkBitmap large_app_icon_bitmap =
@@ -137,7 +137,7 @@ base::FilePath CreateOrUpdateShortcutIconForProfile(
   if (!large_app_icon_bitmap.isNull() && !avatar_bitmap_2x.empty()) {
     badged_bitmaps.Add(gfx::Image::CreateFrom1xBitmap(
         profiles::GetBadgedWinIconBitmapForAvatar(large_app_icon_bitmap,
-                                                  avatar_bitmap_2x, 2)));
+                                                  avatar_bitmap_2x)));
   }
 
   // If we have no badged bitmaps, we should just use the default chrome icon.
@@ -166,8 +166,8 @@ base::FilePath CreateOrUpdateShortcutIconForProfile(
   } else {
     SHChangeNotify(SHCNE_CREATE, SHCNF_PATH, icon_path.value().c_str(), NULL);
   }
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&OnProfileIconCreateSuccess, profile_path));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&OnProfileIconCreateSuccess, profile_path));
   return icon_path;
 }
 
@@ -341,7 +341,7 @@ void RenameChromeDesktopShortcutForProfile(
     const base::FilePath possible_new_system_shortcut =
         system_shortcuts_directory.Append(new_shortcut_filename);
     if (base::PathExists(possible_new_system_shortcut)) {
-      if (base::DeleteFile(old_shortcut_path, false)) {
+      if (base::DeleteFile(old_shortcut_path)) {
         profile_shortcuts->erase(old_shortcut_path);
         desktop_contents->erase(old_shortcut_path);
       } else {
@@ -384,11 +384,13 @@ struct CreateOrUpdateShortcutsParams {
       base::FilePath profile_path,
       ProfileShortcutManagerWin::CreateOrUpdateMode create_mode,
       ProfileShortcutManagerWin::NonProfileShortcutAction action,
-      bool single_profile)
+      bool single_profile,
+      bool incognito = false)
       : create_mode(create_mode),
         action(action),
         profile_path(profile_path),
-        single_profile(single_profile) {}
+        single_profile(single_profile),
+        incognito(incognito) {}
   ~CreateOrUpdateShortcutsParams() {}
 
   ProfileShortcutManagerWin::CreateOrUpdateMode create_mode;
@@ -405,8 +407,11 @@ struct CreateOrUpdateShortcutsParams {
   // badged icon or the name of profile in the shortcut name.
   bool single_profile;
 
-  // Avatar images for this profile.
-  SkBitmap avatar_image_1x;
+  // If true, this adds an incognito switch that allows the user to open an
+  // incognito window directly from the desktop shortcut.
+  bool incognito;
+
+  // Avatar image for this profile.
   SkBitmap avatar_image_2x;
 };
 
@@ -421,7 +426,7 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
                                                 base::BlockingType::MAY_BLOCK);
 
   const base::FilePath shortcut_icon = CreateOrUpdateShortcutIconForProfile(
-      params.profile_path, params.avatar_image_1x, params.avatar_image_2x);
+      params.profile_path, params.avatar_image_2x);
   if (shortcut_icon.empty() ||
       params.create_mode ==
           ProfileShortcutManagerWin::CREATE_OR_UPDATE_ICON_ONLY) {
@@ -437,7 +442,8 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
   std::set<base::FilePath> desktop_contents = ListUserDesktopContents(nullptr);
 
   const base::string16 command_line =
-      profiles::internal::CreateProfileShortcutFlags(params.profile_path);
+      profiles::internal::CreateProfileShortcutFlags(params.profile_path,
+                                                     params.incognito);
   ChromeCommandLineFilter filter(
       chrome_exe, command_line,
       params.action == ProfileShortcutManagerWin::UPDATE_NON_PROFILE_SHORTCUTS);
@@ -472,8 +478,8 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
   if (!params.single_profile)
     properties.set_icon(shortcut_icon, 0);
 
-  properties.set_app_id(shell_integration::win::GetChromiumModelIdForProfile(
-      params.profile_path));
+  properties.set_app_id(
+      shell_integration::win::GetAppUserModelIdForBrowser(params.profile_path));
 
   ShellUtil::ShortcutOperation operation =
       ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING;
@@ -545,7 +551,7 @@ void DeleteDesktopShortcuts(
     // doesn't consider the command-line of the shortcuts it deletes.
     // TODO(huangs): Refactor with ShellUtil::RemoveShortcuts().
     base::win::UnpinShortcutFromTaskbar(shortcut);
-    base::DeleteFile(shortcut, false);
+    base::DeleteFile(shortcut);
     // Notify the shell that the shortcut was deleted to ensure desktop refresh.
     SHChangeNotify(SHCNE_DELETE, SHCNF_PATH, shortcut.value().c_str(), nullptr);
   }
@@ -662,7 +668,7 @@ ShortcutFilenameMatcher::ShortcutFilenameMatcher(
     : profile_shortcut_filename_(GetShortcutFilenameForProfile(profile_name)),
       lnk_ext_(installer::kLnkExt),
       profile_shortcut_name_(profile_shortcut_filename_) {
-  DCHECK(profile_shortcut_name_.ends_with(lnk_ext_));
+  DCHECK(base::EndsWith(profile_shortcut_name_, lnk_ext_));
   profile_shortcut_name_.remove_suffix(lnk_ext_.size());
 }
 
@@ -672,26 +678,34 @@ bool ShortcutFilenameMatcher::IsCanonical(
     return true;
 
   base::StringPiece16 shortcut_suffix(filename);
-  if (!shortcut_suffix.starts_with(profile_shortcut_name_))
+  if (!base::StartsWith(shortcut_suffix, profile_shortcut_name_))
     return false;
   shortcut_suffix.remove_prefix(profile_shortcut_name_.size());
 
-  if (!shortcut_suffix.ends_with(lnk_ext_))
+  if (!base::EndsWith(shortcut_suffix, lnk_ext_))
     return false;
   shortcut_suffix.remove_suffix(lnk_ext_.size());
 
-  if (shortcut_suffix.size() < 4 || !shortcut_suffix.starts_with(L" (") ||
-      !shortcut_suffix.ends_with(L")")) {
+  if (shortcut_suffix.size() < 4 || !base::StartsWith(shortcut_suffix, L" (") ||
+      !base::EndsWith(shortcut_suffix, L")")) {
     return false;
   }
   return std::all_of(shortcut_suffix.begin() + 2, shortcut_suffix.end() - 1,
                      iswdigit);
 }
 
-base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path) {
-  return base::StringPrintf(
+base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path,
+                                          const bool incognito) {
+  base::string16 flags = base::StringPrintf(
       L"--%ls=\"%ls\"", base::ASCIIToUTF16(switches::kProfileDirectory).c_str(),
       profile_path.BaseName().value().c_str());
+
+  if (incognito) {
+    flags.append(base::StringPrintf(
+        L" --%ls", base::ASCIIToUTF16(switches::kIncognito).c_str()));
+  }
+
+  return flags;
 }
 
 }  // namespace internal
@@ -714,13 +728,17 @@ bool ProfileShortcutManager::IsFeatureEnabled() {
   if (command_line->HasSwitch(switches::kEnableProfileShortcutManager))
     return true;
 
+  base::FilePath policy_user_data_dir;
+  policy::path_parser::CheckUserDataDirPolicy(&policy_user_data_dir);
+
   base::FilePath user_data_dir;
   bool success = base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(success);
   base::FilePath default_user_data_dir;
   success = chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
   DCHECK(success);
-  return user_data_dir == default_user_data_dir;
+  return user_data_dir == default_user_data_dir ||
+         user_data_dir == policy_user_data_dir;
 }
 
 // static
@@ -743,13 +761,25 @@ ProfileShortcutManagerWin::~ProfileShortcutManagerWin() {
 void ProfileShortcutManagerWin::CreateOrUpdateProfileIcon(
     const base::FilePath& profile_path) {
   CreateOrUpdateShortcutsForProfileAtPath(
-      profile_path, CREATE_OR_UPDATE_ICON_ONLY, IGNORE_NON_PROFILE_SHORTCUTS);
+      profile_path, CREATE_OR_UPDATE_ICON_ONLY, IGNORE_NON_PROFILE_SHORTCUTS,
+      /*incognito=*/false);
+}
+
+// Creates an incognito desktop shortcut for the current profile.
+// TODO(crbug.com/1113162): Update the shortcut label and icon to chrome +
+// incognito.
+void ProfileShortcutManagerWin::CreateIncognitoProfileShortcut(
+    const base::FilePath& profile_path) {
+  CreateOrUpdateShortcutsForProfileAtPath(profile_path, CREATE_WHEN_NONE_FOUND,
+                                          IGNORE_NON_PROFILE_SHORTCUTS,
+                                          /*incognito=*/true);
 }
 
 void ProfileShortcutManagerWin::CreateProfileShortcut(
     const base::FilePath& profile_path) {
   CreateOrUpdateShortcutsForProfileAtPath(profile_path, CREATE_WHEN_NONE_FOUND,
-                                          IGNORE_NON_PROFILE_SHORTCUTS);
+                                          IGNORE_NON_PROFILE_SHORTCUTS,
+                                          /*incognito=*/false);
 }
 
 void ProfileShortcutManagerWin::RemoveProfileShortcuts(
@@ -810,9 +840,9 @@ void ProfileShortcutManagerWin::OnProfileAdded(
     // When the second profile is added, make existing non-profile and
     // non-badged shortcuts point to the first profile and be badged/named
     // appropriately.
-    CreateOrUpdateShortcutsForProfileAtPath(GetOtherProfilePath(profile_path),
-                                            UPDATE_EXISTING_ONLY,
-                                            UPDATE_NON_PROFILE_SHORTCUTS);
+    CreateOrUpdateShortcutsForProfileAtPath(
+        GetOtherProfilePath(profile_path), UPDATE_EXISTING_ONLY,
+        UPDATE_NON_PROFILE_SHORTCUTS, /*incognito=*/false);
   }
 }
 
@@ -829,7 +859,8 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
     // This is needed to unbadge the icon.
     CreateOrUpdateShortcutsForProfileAtPath(
         storage.GetAllProfilesAttributes().front()->GetPath(),
-        UPDATE_EXISTING_ONLY, IGNORE_NON_PROFILE_SHORTCUTS);
+        UPDATE_EXISTING_ONLY, IGNORE_NON_PROFILE_SHORTCUTS,
+        /*incognito=*/false);
   }
 
   base::FilePath first_profile_path;
@@ -848,7 +879,8 @@ void ProfileShortcutManagerWin::OnProfileNameChanged(
     const base::FilePath& profile_path,
     const base::string16& old_profile_name) {
   CreateOrUpdateShortcutsForProfileAtPath(profile_path, UPDATE_EXISTING_ONLY,
-                                          IGNORE_NON_PROFILE_SHORTCUTS);
+                                          IGNORE_NON_PROFILE_SHORTCUTS,
+                                          /*incognito=*/false);
 }
 
 void ProfileShortcutManagerWin::OnProfileAvatarChanged(
@@ -887,7 +919,8 @@ base::FilePath ProfileShortcutManagerWin::GetOtherProfilePath(
 void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
     const base::FilePath& profile_path,
     CreateOrUpdateMode create_mode,
-    NonProfileShortcutAction action) {
+    NonProfileShortcutAction action,
+    bool incognito) {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   ProfileAttributesStorage& storage =
@@ -900,7 +933,8 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
   bool remove_badging = storage.GetNumberOfProfiles() == 1u;
 
   CreateOrUpdateShortcutsParams params(profile_path, create_mode, action,
-                                       /*single_profile=*/remove_badging);
+                                       /*single_profile=*/remove_badging,
+                                       incognito);
 
   params.old_profile_name = entry->GetShortcutName();
 
@@ -920,8 +954,7 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
       params.profile_name = all_profiles[0]->GetName();
   } else {
     params.profile_name = entry->GetName();
-    profiles::GetWinAvatarImages(entry, &params.avatar_image_1x,
-                                 &params.avatar_image_2x);
+    params.avatar_image_2x = profiles::GetWin2xAvatarImage(entry);
   }
   base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()})
       ->PostTask(FROM_HERE,

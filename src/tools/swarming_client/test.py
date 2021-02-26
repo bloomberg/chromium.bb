@@ -13,6 +13,7 @@ TESTS_DIR = os.path.join(THIS_DIR, 'tests')
 LUCI_DIR = os.path.dirname(THIS_DIR)
 COMPONENTS_DIR = os.path.join(LUCI_DIR, 'appengine', 'components')
 
+
 def main():
   sys.path.insert(0, COMPONENTS_DIR)
 
@@ -26,7 +27,7 @@ def run_tests_parralel():
 
   # Need to specify config path explicitly
   # because test_env.setup() changes directory
-  cfg = os.path.join(COMPONENTS_DIR, 'test_support', 'unittest.cfg')
+  cfg = os.path.join(THIS_DIR, 'unittest.cfg')
   sys.argv.extend(['-c', cfg])
 
   # enable plugins only on linux
@@ -47,17 +48,17 @@ def run_tests_sequential():
   # These tests need to be run as executable
   # because they don't pass when running in parallel
   # or run via test runner
-  test_files = [
-      'tests/swarming_test.py',
-      'tests/run_isolated_test.py',
-      'tests/isolateserver_test.py',
-      'tests/logging_utils_test.py',
+  abs_path = lambda f: os.path.join(THIS_DIR, f)
+  test_cmds = [
+      [abs_path('tests/swarming_test.py')],
+      [abs_path('tests/run_isolated_test.py')],
+      [abs_path('tests/isolateserver_test.py')],
+      [abs_path('tests/logging_utils_test.py')],
   ]
-  abs_test_files = [os.path.join(THIS_DIR, t) for t in test_files]
 
   # execute test runner
   from test_support import sequential_test_runner
-  return sequential_test_runner.run_tests(abs_test_files, python3=six.PY3)
+  return sequential_test_runner.run_tests(test_cmds, python3=six.PY3)
 
 
 if __name__ == '__main__':

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -99,8 +100,9 @@ FirstUserActionRecorder::FirstUserActionRecorder(
       recorded_action_(false),
       action_pending_(false),
       background_duration_(background_duration),
-      action_callback_(base::Bind(&FirstUserActionRecorder::OnUserAction,
-                                  base::Unretained(this))) {
+      action_callback_(
+          base::BindRepeating(&FirstUserActionRecorder::OnUserAction,
+                              base::Unretained(this))) {
   base::AddActionCallback(action_callback_);
 }
 

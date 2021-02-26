@@ -9,20 +9,20 @@ if ((typeof mojo === 'undefined') || !mojo.bindingsLibraryInitialized) {
 }
 mojo.config.autoLoadMojomDeps = false;
 
-loadScript('chrome/common/media_router/mojom/media_controller.mojom');
-loadScript('chrome/common/media_router/mojom/media_router.mojom');
-loadScript('chrome/common/media_router/mojom/media_status.mojom');
+loadScript('components/media_router/common/mojom/media_controller.mojom');
+loadScript('components/media_router/common/mojom/media_router.mojom');
+loadScript('components/media_router/common/mojom/media_status.mojom');
 loadScript('components/mirroring/mojom/cast_message_channel.mojom');
 loadScript('components/mirroring/mojom/mirroring_service_host.mojom');
 loadScript('components/mirroring/mojom/session_observer.mojom');
 loadScript('components/mirroring/mojom/session_parameters.mojom');
 loadScript('extensions/common/mojom/keep_alive.mojom');
-loadScript('media/mojo/mojom/mirror_service_remoting.mojom');
 loadScript('media/mojo/mojom/remoting_common.mojom');
 loadScript('mojo/public/mojom/base/time.mojom');
 loadScript('mojo/public/mojom/base/unguessable_token.mojom');
 loadScript('net/interfaces/ip_address.mojom');
 loadScript('net/interfaces/ip_endpoint.mojom');
+loadScript('third_party/blink/public/mojom/presentation/presentation.mojom');
 loadScript('url/mojom/origin.mojom');
 loadScript('url/mojom/url.mojom');
 
@@ -352,100 +352,6 @@ MediaSinkExtraDataAdapter.prototype.toNewVersion = function() {
 };
 
 /**
- * Adapter for media.mojom.MirrorServiceRemoterPtr.
- * @constructor
- */
-function MirrorServiceRemoterPtrAdapter(handleOrPtrInfo) {
-  this.ptr = new mojo.InterfacePtrController(MirrorServiceRemoterAdapter,
-                                             handleOrPtrInfo);
-}
-
-MirrorServiceRemoterPtrAdapter.prototype =
-    Object.create(media.mojom.MirrorServiceRemoterPtr.prototype);
-MirrorServiceRemoterPtrAdapter.prototype.constructor =
-    MirrorServiceRemoterPtrAdapter;
-
-MirrorServiceRemoterPtrAdapter.prototype.startDataStreams = function() {
-  return MirrorServiceRemoterProxy.prototype.startDataStreams
-      .apply(this.ptr.getProxy(), arguments).then(function(response) {
-    return Promise.resolve({
-      'audio_stream_id': response.audioStreamId,
-      'video_stream_id': response.videoStreamId,
-    });
-  });
-};
-
-/**
- * Adapter for media.mojom.MirrorServiceRemoter.stubclass.
- * @constructor
- */
-function MirrorServiceRemoterStubAdapter(delegate) {
-  this.delegate_ = delegate;
-}
-
-MirrorServiceRemoterStubAdapter.prototype = Object.create(
-    media.mojom.MirrorServiceRemoter.stubClass.prototype);
-MirrorServiceRemoterStubAdapter.prototype.constructor =
-    MirrorServiceRemoterStubAdapter;
-
-MirrorServiceRemoterStubAdapter.prototype.startDataStreams =
-    function(hasAudio, hasVideo) {
-  return this.delegate_ && this.delegate_.startDataStreams &&
-      this.delegate_.startDataStreams(hasAudio, hasVideo).then(
-          function(response) {
-            return {
-              'audioStreamId': response.audio_stream_id,
-              'videoStreamId': response.video_stream_id,
-            };
-          });
-};
-
-/**
- * Adapter for media.mojom.MirrorServiceRemoter.
- */
-var MirrorServiceRemoterAdapter = {
-    name: 'media.mojom.MirrorServiceRemoter',
-    kVersion: 0,
-    ptrClass: MirrorServiceRemoterPtrAdapter,
-    proxyClass: media.mojom.MirrorServiceRemoter.proxyClass,
-    stubClass: MirrorServiceRemoterStubAdapter,
-    validateRequest: media.mojom.MirrorServiceRemoter.validateRequest,
-    validateResponse: media.mojom.MirrorServiceRemoter.validateResponse,
-};
-
-/**
- * Adapter for media.mojom.MirrorServiceRemotingSourcePtr.
- * @constructor
- */
-function MirrorServiceRemotingSourcePtrAdapter(handleOrPtrInfo) {
-  this.ptr = new mojo.InterfacePtrController(MirrorServiceRemotingSourceAdapter,
-                                             handleOrPtrInfo);
-}
-
-MirrorServiceRemotingSourcePtrAdapter.prototype =
-    Object.create(media.mojom.MirrorServiceRemotingSourcePtr.prototype);
-MirrorServiceRemotingSourcePtrAdapter.prototype.constructor =
-    MirrorServiceRemotingSourcePtrAdapter;
-
-MirrorServiceRemotingSourcePtrAdapter.prototype.onSinkAvailable =
-    function(metadata) {
-  return this.ptr.getProxy().onSinkAvailable(metadata.toNewVersion());
-};
-
-/**
- * Adapter for media.mojom.MirrorServiceRemotingSource.
- */
-var MirrorServiceRemotingSourceAdapter = {
-    name: 'media.mojom.MirrorServiceRemotingSource',
-    kVersion: 0,
-    ptrClass: MirrorServiceRemotingSourcePtrAdapter,
-    proxyClass: media.mojom.MirrorServiceRemotingSource.proxyClass,
-    stubClass: null,
-    validateRequest: media.mojom.MirrorServiceRemotingSource.validateRequest,
-    validateResponse: null,
-};
-
-/**
  * Adapter for mediaRouter.mojom.MediaStatusObserver.
  * @constructor
  */
@@ -536,7 +442,7 @@ function routeToMojo_(route) {
     'iconUrl': route.iconUrl,
     'isLocal': route.isLocal,
     'forDisplay': route.forDisplay,
-    'isIncognito': route.offTheRecord,
+    'isOffTheRecord': route.offTheRecord,
     'isLocalPresentation': route.isOffscreenPresentation,
     'controllerType': route.controllerType,
     'presentationId': route.presentationId,
@@ -568,11 +474,11 @@ function messageToMojo_(message) {
 /**
  * Converts presentation connection state to Mojo enum value.
  * @param {!string} state
- * @return {!mediaRouter.mojom.MediaRouter.PresentationConnectionState}
+ * @return {!blink.mojom.PresentationConnectionState}
  */
 function presentationConnectionStateToMojo_(state) {
   var PresentationConnectionState =
-      mediaRouter.mojom.MediaRouter.PresentationConnectionState;
+      blink.mojom.PresentationConnectionState;
   switch (state) {
     case 'connecting':
       return PresentationConnectionState.CONNECTING;
@@ -591,11 +497,11 @@ function presentationConnectionStateToMojo_(state) {
 /**
  * Converts presentation connection close reason to Mojo enum value.
  * @param {!string} reason
- * @return {!mediaRouter.mojom.MediaRouter.PresentationConnectionCloseReason}
+ * @return {!blink.mojom.PresentationConnectionCloseReason}
  */
 function presentationConnectionCloseReasonToMojo_(reason) {
   var PresentationConnectionCloseReason =
-      mediaRouter.mojom.MediaRouter.PresentationConnectionCloseReason;
+      blink.mojom.PresentationConnectionCloseReason;
   switch (reason) {
     case 'error':
       return PresentationConnectionCloseReason.CONNECTION_ERROR;
@@ -749,9 +655,6 @@ MediaRouter.prototype.getMojoExports = function() {
     MirroringSessionType: mirroring.mojom.SessionType,
     MirroringRemotingNamespace: mirroring.mojom.REMOTING_NAMESPACE,
     MirroringWebRtcNamespace: mirroring.mojom.WEB_RTC_NAMESPACE,
-    MirrorServiceRemoter: MirrorServiceRemoterAdapter,
-    MirrorServiceRemoterPtr: MirrorServiceRemoterPtrAdapter,
-    MirrorServiceRemotingSourcePtr: MirrorServiceRemotingSourcePtrAdapter,
     RemotingStopReason: media.mojom.RemotingStopReason,
     RemotingStartFailReason: media.mojom.RemotingStartFailReason,
     RemotingSinkFeature: media.mojom.RemotingSinkFeature,
@@ -952,24 +855,18 @@ MediaRouter.prototype.onRouteMessagesReceived = function(routeId, messages) {
 };
 
 /**
- * @param {number} tabId
- * @param {!media.mojom.MirrorServiceRemoterPtr} remoter
- * @param {!mojo.InterfaceRequest} remotingSource
- */
-MediaRouter.prototype.onMediaRemoterCreated = function(tabId, remoter,
-    remotingSource) {
-  this.service_.onMediaRemoterCreated(
-      tabId,
-      new media.mojom.MirrorServiceRemoterPtr(remoter.ptr.passInterface()),
-      remotingSource);
-}
-
-/**
  * Returns current status of media sink service in JSON format.
  * @return {!Promise<!{status: string}>}
  */
 MediaRouter.prototype.getMediaSinkServiceStatus = function() {
   return this.service_.getMediaSinkServiceStatus();
+}
+
+/**
+ * @return {!Promise<!{status: string}>}
+ */
+MediaRouter.prototype.getLogsAsString = function() {
+  return this.service_.getLogsAsString();
 }
 
 /**
@@ -1186,19 +1083,19 @@ MediaRouteProvider.prototype.stopObservingMediaSinks =
  * @param {!number} tabId ID of tab requesting presentation.
  * @param {!mojo_base.mojom.TimeDelta} timeout If positive, the timeout
  *     duration for the request. Otherwise, the default duration will be used.
- * @param {!boolean} incognito If true, the route is being requested by
- *     an incognito profile.
+ * @param {!boolean} off_the_record If true, the route is being requested by
+ *     an off_the_record profile.
  * @return {!Promise.<!Object>} A Promise resolving to an object describing
  *     the newly created media route, or rejecting with an error message on
  *     failure.
  */
 MediaRouteProvider.prototype.createRoute =
     function(sourceUrn, sinkId, presentationId, origin, tabId,
-             timeout, incognito) {
+             timeout, off_the_record) {
   this.handlers_.onBeforeInvokeHandler();
   return this.handlers_.createRoute(
       sourceUrn, sinkId, presentationId, origin, tabId,
-      Math.floor(timeout.microseconds / 1000), incognito)
+      Math.floor(timeout.microseconds / 1000), off_the_record)
       .then(function(route) {
         return toSuccessRouteResponse_(route);
       },
@@ -1217,19 +1114,19 @@ MediaRouteProvider.prototype.createRoute =
  * @param {!number} tabId ID of tab requesting join.
  * @param {!mojo_base.mojom.TimeDelta} timeout If positive, the timeout
  *     duration for the request. Otherwise, the default duration will be used.
- * @param {!boolean} incognito If true, the route is being requested by
- *     an incognito profile.
+ * @param {!boolean} off_the_record If true, the route is being requested by
+ *     an off_the_record profile.
  * @return {!Promise.<!Object>} A Promise resolving to an object describing
  *     the newly created media route, or rejecting with an error message on
  *     failure.
  */
 MediaRouteProvider.prototype.joinRoute =
     function(sourceUrn, presentationId, origin, tabId, timeout,
-             incognito) {
+             off_the_record) {
   this.handlers_.onBeforeInvokeHandler();
   return this.handlers_.joinRoute(
       sourceUrn, presentationId, origin, tabId,
-      Math.floor(timeout.microseconds / 1000), incognito)
+      Math.floor(timeout.microseconds / 1000), off_the_record)
       .then(function(route) {
         return toSuccessRouteResponse_(route);
       },
@@ -1249,19 +1146,19 @@ MediaRouteProvider.prototype.joinRoute =
  * @param {!number} tabId ID of tab requesting join.
  * @param {!mojo_base.mojom.TimeDelta} timeout If positive, the timeout
  *     duration for the request. Otherwise, the default duration will be used.
- * @param {!boolean} incognito If true, the route is being requested by
- *     an incognito profile.
+ * @param {!boolean} off_the_record If true, the route is being requested by
+ *     an off_the_record profile.
  * @return {!Promise.<!Object>} A Promise resolving to an object describing
  *     the newly created media route, or rejecting with an error message on
  *     failure.
  */
 MediaRouteProvider.prototype.connectRouteByRouteId =
     function(sourceUrn, routeId, presentationId, origin, tabId,
-             timeout, incognito) {
+             timeout, off_the_record) {
   this.handlers_.onBeforeInvokeHandler();
   return this.handlers_.connectRouteByRouteId(
       sourceUrn, routeId, presentationId, origin, tabId,
-      Math.floor(timeout.microseconds / 1000), incognito)
+      Math.floor(timeout.microseconds / 1000), off_the_record)
       .then(function(route) {
         return toSuccessRouteResponse_(route);
       },

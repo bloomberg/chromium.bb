@@ -12,23 +12,24 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
+#include "base/task/current_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/typed_macros.h"
 #include "mojo/public/c/system/quota.h"
 #include "mojo/public/cpp/bindings/features.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
 #include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
-#include "mojo/public/cpp/bindings/lib/tracing_helper.h"
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 #include "mojo/public/cpp/system/wait.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_mojo_event_info.pbzero.h"
 
 #if defined(ENABLE_IPC_FUZZER)
 #include "mojo/public/cpp/bindings/message_dumper.h"
@@ -96,7 +97,7 @@ class Connector::RunLoopNestingObserver
   }
 
   static RunLoopNestingObserver* GetForThread() {
-    if (!base::MessageLoopCurrent::Get())
+    if (!base::CurrentThread::Get())
       return nullptr;
     // The NestingObserver for each thread. Note that this is always a
     // Connector::RunLoopNestingObserver; we use the base type here because that
@@ -144,13 +145,15 @@ void Connector::ActiveDispatchTracker::NotifyBeginNesting() {
 
 Connector::Connector(ScopedMessagePipeHandle message_pipe,
                      ConnectorConfig config,
-                     scoped_refptr<base::SequencedTaskRunner> runner)
+                     scoped_refptr<base::SequencedTaskRunner> runner,
+                     const char* interface_name)
     : message_pipe_(std::move(message_pipe)),
       task_runner_(std::move(runner)),
       error_(false),
       force_immediate_dispatch_(!EnableTaskPerMessage()),
       outgoing_serialization_mode_(g_default_outgoing_serialization_mode),
       incoming_serialization_mode_(g_default_incoming_serialization_mode),
+      interface_name_(interface_name),
       nesting_observer_(RunLoopNestingObserver::GetForThread()) {
   if (config == MULTI_THREADED_SEND)
     lock_.emplace();
@@ -229,7 +232,7 @@ void Connector::SetConnectionGroup(ConnectionGroup::Ref ref) {
   connection_group_ = std::move(ref);
 }
 
-bool Connector::WaitForIncomingMessage(MojoDeadline deadline) {
+bool Connector::WaitForIncomingMessage() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (error_)
@@ -237,23 +240,13 @@ bool Connector::WaitForIncomingMessage(MojoDeadline deadline) {
 
   ResumeIncomingMethodCallProcessing();
 
-  // TODO(rockot): Use a timed Wait here. Nobody uses anything but 0 or
-  // INDEFINITE deadlines at present, so we only support those.
-  DCHECK(deadline == 0 || deadline == MOJO_DEADLINE_INDEFINITE);
-
-  MojoResult rv = MOJO_RESULT_UNKNOWN;
-  if (deadline == 0 && !message_pipe_->QuerySignalsState().readable())
+  MojoResult rv = Wait(message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE);
+  if (rv != MOJO_RESULT_OK) {
+    // Users that call WaitForIncomingMessage() should expect their code to be
+    // re-entered, so we call the error handler synchronously.
+    HandleError(rv != MOJO_RESULT_FAILED_PRECONDITION /* force_pipe_reset */,
+                false /* force_async_handler */);
     return false;
-
-  if (deadline == MOJO_DEADLINE_INDEFINITE) {
-    rv = Wait(message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE);
-    if (rv != MOJO_RESULT_OK) {
-      // Users that call WaitForIncomingMessage() should expect their code to be
-      // re-entered, so we call the error handler synchronously.
-      HandleError(rv != MOJO_RESULT_FAILED_PRECONDITION /* force_pipe_reset */,
-                  false /* force_async_handler */);
-      return false;
-    }
   }
 
   Message message;
@@ -361,14 +354,6 @@ void Connector::AllowWokenUpBySyncWatchOnSameThread() {
   sync_watcher_->AllowWokenUpBySyncWatchOnSameThread();
 }
 
-void Connector::SetWatcherHeapProfilerTag(const char* tag) {
-  if (tag) {
-    heap_profiler_tag_ = tag;
-    if (handle_watcher_)
-      handle_watcher_->set_heap_profiler_tag(tag);
-  }
-}
-
 void Connector::SetMessageQuotaChecker(
     scoped_refptr<internal::MessageQuotaChecker> checker) {
   DCHECK(checker && !quota_checker_);
@@ -424,9 +409,9 @@ void Connector::WaitToReadMore() {
   DCHECK(!handle_watcher_);
 
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  handle_watcher_.reset(new SimpleWatcher(
-      FROM_HERE, SimpleWatcher::ArmingPolicy::MANUAL, task_runner_));
-  handle_watcher_->set_heap_profiler_tag(heap_profiler_tag_);
+  handle_watcher_ = std::make_unique<SimpleWatcher>(
+      FROM_HERE, SimpleWatcher::ArmingPolicy::MANUAL, task_runner_,
+      interface_name_);
   MojoResult rv = handle_watcher_->Watch(
       message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::BindRepeating(&Connector::OnWatcherHandleReady,
@@ -475,11 +460,11 @@ MojoResult Connector::ReadMessage(Message* message) {
     // was a problem extracting handles from it. We treat this essentially as
     // a bad IPC because we don't really have a better option.
     //
-    // We include |heap_profiler_tag_| in the error message since it usually
+    // We include |interface_name_| in the error message since it usually
     // (via this Connector's owner) provides useful information about which
     // binding interface is using this Connector.
     NotifyBadMessage(handle.get(),
-                     std::string(heap_profiler_tag_) +
+                     std::string(interface_name_) +
                          "One or more handle attachments were invalid.");
     return MOJO_RESULT_ABORTED;
   }
@@ -505,12 +490,16 @@ bool Connector::DispatchMessage(Message message) {
               incoming_serialization_mode_);
   }
 
-  TRACE_EVENT_WITH_FLOW0(
-      TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), "mojo::Message Receive",
-      MANGLE_MESSAGE_ID(message.header()->trace_id), TRACE_EVENT_FLAG_FLOW_IN);
+  TRACE_EVENT_WITH_FLOW0("toplevel.flow", "mojo::Message Receive",
+                         message.header()->trace_id, TRACE_EVENT_FLAG_FLOW_IN);
 #if !BUILDFLAG(MOJO_TRACE_ENABLED)
   // This emits just full class name, and is inferior to mojo tracing.
-  TRACE_EVENT0("mojom", heap_profiler_tag_);
+  TRACE_EVENT("toplevel", "Connector::DispatchMessage",
+              [this](perfetto::EventContext ctx) {
+                ctx.event()
+                    ->set_chrome_mojo_event_info()
+                    ->set_watcher_notify_interface_tag(interface_name_);
+              });
 #endif
 
   if (connection_group_)

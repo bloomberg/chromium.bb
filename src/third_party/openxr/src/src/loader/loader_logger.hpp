@@ -1,6 +1,8 @@
-// Copyright (c) 2017-2019 The Khronos Group Inc.
+// Copyright (c) 2017-2020 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +25,10 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
+#include <set>
+#include <map>
 
 #include <openxr/openxr.h>
 
@@ -117,12 +122,15 @@ class LoaderLogRecorder {
 class LoaderLogger {
    public:
     static LoaderLogger& GetInstance() {
-        std::call_once(LoaderLogger::_once_flag, []() { _instance.reset(new LoaderLogger); });
-        return *(_instance.get());
+        static LoaderLogger instance;
+        return instance;
     }
 
     void AddLogRecorder(std::unique_ptr<LoaderLogRecorder>&& recorder);
     void RemoveLogRecorder(uint64_t unique_id);
+
+    void AddLogRecorderForXrInstance(XrInstance instance, std::unique_ptr<LoaderLogRecorder>&& recorder);
+    void RemoveLogRecordersForXrInstance(XrInstance instance);
 
     //! Called from LoaderXrTermSetDebugUtilsObjectNameEXT - an empty name means remove
     void AddObjectName(uint64_t object_handle, XrObjectType object_type, const std::string& object_name);
@@ -176,11 +184,11 @@ class LoaderLogger {
    private:
     LoaderLogger();
 
-    static std::unique_ptr<LoaderLogger> _instance;
-    static std::once_flag _once_flag;
-
-    // List of available recorder objects
+    // List of *all* available recorder objects (including created specifically for an Instance)
     std::vector<std::unique_ptr<LoaderLogRecorder>> _recorders;
+
+    // List of recorder objects only created specifically for an XrInstance
+    std::unordered_map<XrInstance, std::unordered_set<uint64_t>> _recordersByInstance;
 
     DebugUtilsData data_;
 };

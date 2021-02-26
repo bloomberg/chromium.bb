@@ -157,9 +157,7 @@ void MainThreadDebugger::ContextCreated(ScriptState* script_state,
       ToV8InspectorStringView(human_readable_name));
   context_info.origin = ToV8InspectorStringView(origin_string);
   context_info.auxData = ToV8InspectorStringView(aux_data);
-  context_info.hasMemoryOnConsole =
-      ExecutionContext::From(script_state) &&
-      ExecutionContext::From(script_state)->IsDocument();
+  context_info.hasMemoryOnConsole = LocalDOMWindow::From(script_state);
   GetV8Inspector()->contextCreated(context_info);
 }
 
@@ -310,7 +308,7 @@ void MainThreadDebugger::endEnsureAllContextsInGroup(int context_group_id) {
 
 bool MainThreadDebugger::canExecuteScripts(int context_group_id) {
   LocalFrame* frame = WeakIdentifierMap<LocalFrame>::Lookup(context_group_id);
-  return frame->GetDocument()->CanExecuteScripts(kNotAboutToExecuteScript);
+  return frame->DomWindow()->CanExecuteScripts(kNotAboutToExecuteScript);
 }
 
 void MainThreadDebugger::runIfWaitingForDebugger(int context_group_id) {
@@ -352,9 +350,7 @@ void MainThreadDebugger::consoleClear(int context_group_id) {
 v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(
     v8::Isolate* isolate,
     v8::Local<v8::Context> context) {
-  ExecutionContext* execution_context = ToExecutionContext(context);
-  DCHECK(execution_context);
-  DCHECK(execution_context->IsDocument());
+  DCHECK(ToLocalDOMWindow(context));
   return ToV8(
       MakeGarbageCollected<MemoryInfo>(MemoryInfo::Precision::Bucketized),
       context->Global(), isolate);
@@ -476,12 +472,12 @@ void MainThreadDebugger::XpathSelectorCallback(
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::Local<v8::Array> nodes = v8::Array::New(isolate);
     wtf_size_t index = 0;
-    while (Node* node = result->iterateNext(exception_state)) {
+    while (Node* next_node = result->iterateNext(exception_state)) {
       if (exception_state.HadException())
         return;
       if (!CreateDataPropertyInArray(
                context, nodes, index++,
-               ToV8(node, info.Holder(), info.GetIsolate()))
+               ToV8(next_node, info.Holder(), info.GetIsolate()))
                .FromMaybe(false))
         return;
     }

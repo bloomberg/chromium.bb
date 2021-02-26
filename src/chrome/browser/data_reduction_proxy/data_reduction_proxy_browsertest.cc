@@ -13,13 +13,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -34,6 +33,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/core/common/uma_util.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_experiments.h"
@@ -128,7 +128,7 @@ class TestSettingsObserver : public DataReductionProxySettingsObserver {
 
 }  // namespace
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
@@ -212,7 +212,7 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
       base::RunLoop().RunUntilIdle();
 
       content::FetchHistogramsFromChildProcesses();
-      SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+      metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
       const std::vector<base::Bucket> buckets =
           histogram_tester->GetAllSamples(histogram_name);

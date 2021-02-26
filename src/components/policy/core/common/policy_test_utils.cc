@@ -7,15 +7,15 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/policy_bundle.h"
 
-#if defined(OS_IOS) || defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/mac/scoped_cftyperef.h"
@@ -47,13 +47,13 @@ bool PolicyServiceIsEmpty(const PolicyService* service) {
   if (!map.empty()) {
     base::DictionaryValue dict;
     for (auto it = map.begin(); it != map.end(); ++it)
-      dict.SetKey(it->first, it->second.value->Clone());
+      dict.SetKey(it->first, it->second.value()->Clone());
     LOG(WARNING) << "There are pre-existing policies in this machine: " << dict;
   }
   return map.empty();
 }
 
-#if defined(OS_IOS) || defined(OS_MACOSX)
+#if defined(OS_APPLE)
 CFPropertyListRef ValueToProperty(const base::Value& value) {
   switch (value.type()) {
     case base::Value::Type::NONE:
@@ -87,7 +87,7 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
     case base::Value::Type::STRING: {
       std::string string_value;
       if (value.GetAsString(&string_value))
-        return base::SysUTF8ToCFStringRef(string_value);
+        return base::SysUTF8ToCFStringRef(string_value).release();
       break;
     }
 
@@ -146,7 +146,7 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
 
   return NULL;
 }
-#endif  // defined(OS_IOS) || defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 }  // namespace policy
 
@@ -204,7 +204,7 @@ std::ostream& operator<<(std::ostream& os, const policy::PolicyMap::Entry& e) {
   return os << "{" << std::endl
             << "  \"level\": " << e.level << "," << std::endl
             << "  \"scope\": " << e.scope << "," << std::endl
-            << "  \"value\": " << *e.value << "}";
+            << "  \"value\": " << *e.value() << "}";
 }
 
 std::ostream& operator<<(std::ostream& os, const policy::PolicyNamespace& ns) {

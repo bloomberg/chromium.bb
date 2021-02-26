@@ -17,6 +17,18 @@
   <message name="IDS_GENERIC_USER_AVATAR_LABEL" desc="Label shown for the user that is currently active, when there are multiple user accounts.">
     Current user
   </message>
+  <message name="IDS_AVATAR_BUTTON_GUEST" desc="Short label for the avatar button when the user is in guest mode and the number of open guest windows if there are more than one guest window open. [ICU Syntax]" meaning="This window is browsing in guest mode and there are more than one guest windows open. The counter is not shown when there is only one guest window open.">
+    {0, plural,
+      =1 {Guest}
+      other {Guest (#)}
+    }
+  </message>
+  <message name="IDS_GUEST_BUBBLE_ACCESSIBLE_TITLE" desc="Accessible title of the avatar menu, opened in guest mode. The message also shows the number of open guest windows if they are more than one. [ICU Syntax]">
+      {0, plural,
+        =1 {Guest}
+        other {# open guest windows}
+      }
+  </message>
   <message name="IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE" desc="Accessible title of the avatar menu, opened in incognito mode. The message also shows the number of open incognito windows if they are more than one. [ICU Syntax]">
       {0, plural,
         =1 {Incognito}
@@ -64,9 +76,20 @@
   <message name="IDS_PROFILES_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog when using the new Profiles UI.">
     People
   </message>
+  <message name="IDS_PROFILES_MENU_NAME" desc="The name of menu for profiles (Mac and linux) and name for the launcher menu section (Mac).">
+    Profiles
+  </message>
   <if expr="is_macosx">
     <message name="IDS_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="In Title Case. Create new profile menu item and button title.">
       Add Person...
+    </message>
+    <message name="IDS_PROFILES_ADD_PROFILE_LABEL" desc="In Title Case. Menu item for adding a new profile.">
+      Add Profile...
+    </message>
+  </if>
+  <if expr="is_linux">
+    <message name="IDS_PROFILES_ADD_PROFILE_LABEL" desc="Menu item for adding a new profile.">
+      Add profile...
     </message>
   </if>
   <message name="IDS_PROFILES_PROFILE_BUBBLE_ACCESSIBLE_TITLE" desc="Accessible title of the avatar menu bubble.">
@@ -130,6 +153,9 @@
     <message name="IDS_PROFILES_OTHER_PROFILES_TITLE" desc="Title in the profile menu of the 'other profiles' section.">
       Other people
     </message>
+    <message name="IDS_PROFILES_LIST_PROFILES_TITLE" desc="Title in the profile menu for the list of 'other profiles'.">
+      Other profiles
+    </message>
     <message name="IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to manage accounts for a profile.">
       Your accounts
     </message>
@@ -144,6 +170,9 @@
     <message name="IDS_PROFILES_OTHER_PROFILES_TITLE" desc="Title in the profile menu of the 'other profiles' section.">
       Other People
     </message>
+    <message name="IDS_PROFILES_LIST_PROFILES_TITLE" desc="Title in the profile menu for the list of 'other profiles'.">
+      Other Profiles
+    </message>
     <message name="IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to manage accounts for a profile.">
       Your Accounts
     </message>
@@ -154,11 +183,11 @@
       Manage People
     </message>
   </if>
-  <message name="IDS_PROFILES_EDIT_PROFILE_ACCESSIBLE_NAME" desc="Description of the Edit Profile button. This is used for accessibility.">
-    Edit person, <ph name="PROFILE_NAME">$1<ex>Jane Doe</ex></ph>
+  <message name="IDS_PROFILES_MANAGE_PROFILES_BUTTON_TOOLTIP" desc="Button in the avatar menu bubble view for launching the profile picker.">
+    Manage profiles
   </message>
-  <message name="IDS_PROFILES_EDIT_SIGNED_IN_PROFILE_ACCESSIBLE_NAME" desc="Description of the Edit Profile button for a signed-in profile. This is used for accessibility.">
-    Edit person, <ph name="PROFILE_NAME">$1<ex>Jane Doe</ex></ph>, <ph name="USERNAME">$2<ex>jane.doe@gmail.com</ex></ph>
+  <message name="IDS_PROFILES_CUSTOMIZE_PROFILE_BUTTON_TOOLTIP" desc="Button in the avatar menu bubble view for editing the current profile.">
+    Customize profile
   </message>
   <message name="IDS_PROFILES_GUEST_PROFILE_NAME" desc="Name of the guest profile.">
     Guest
@@ -318,6 +347,9 @@
   </message>
   <message name="IDS_DEFAULT_AVATAR_LABEL_25" desc="The label for the sun and cloud avatar.">
     Sun and clouds
+  </message>
+  <message name="IDS_DEFAULT_AVATAR_LABEL_26" desc="The label for the default avatar.">
+    Default avatar
   </message>
   <message name="IDS_DEFAULT_AVATAR_LABEL_27" desc="The label for the cat avatar.">
     Cat
@@ -659,6 +691,93 @@
     </message>
     <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_OUTRO_USER_NOT_FOUND" desc="Text of the label asking the user if they see their name">
       Don't see your name?
+    </message>
+  </if>
+
+  <if expr="not chromeos and not is_android">
+    <!-- Profile customization bubble -->
+    <message name="IDS_PROFILE_CUSTOMIZATION_DONE_BUTTON_LABEL" desc="Text for the Done button on the profile customization bubble">
+      Done
+    </message>
+    <message name="IDS_PROFILE_CUSTOMIZATION_PICK_THEME_TITLE" desc="Title of the section of the profile customization bubble where the user can select a theme color for the profile">
+      Pick a theme color
+    </message>
+
+    <!-- Profile Picker -->
+    <message name="IDS_PROFILE_PICKER_ADD_SPACE_BUTTON" desc="Text for the add space button on the profile picker main view">
+      Add
+    </message>
+    <message name="IDS_PROFILE_PICKER_BROWSE_AS_GUEST_BUTTON" desc="Text for the profile picker main view button that launches guest session.">
+      Browse as Guest
+    </message>
+    <message name="IDS_PROFILE_PICKER_BACK_BUTTON_LABEL" desc="Label for a button that navigates user to the previous page">
+      Back
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_MENU_BUTTON_NAME" desc="Text to be spoken when the focus is set to the menu button of the profile card on the picker main screen or shown on hover.">
+      Customize your profile, including its name
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_MENU_REMOVE_TEXT" desc="Text of the remove button in profile card menu.">
+      Remove
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_MENU_REMOVE_CONFIRM" desc="Text of the remove button in the remove warning.">
+      Remove this profile
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_MENU_CUSTOMIZE_TEXT" desc="Text of the customize button in profile card menu">
+      Customize
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_MENU_INCOGNITO_TEXT" desc="Text of the incognito button in profile card menu">
+      Incognito
+    </message>
+    <message name="IDS_PROFILE_PICKER_REMOVE_WARNING_LOCAL_PROFILE" desc="Main text shown as a warning when attempting to remove an user.">
+      This will permanently delete your browsing data from this device.
+    </message>
+    <message name="IDS_PROFILE_PICKER_REMOVE_WARNING_HISTORY" desc="The title of a statistic (browsing history) shown inside a table below the warning text when attempting to remove an user. A number is displayed next to it.">
+      Browsing history
+    </message>
+    <message name="IDS_PROFILE_PICKER_REMOVE_WARNING_PASSWORDS" desc="The title of a statistic (passwords) shown inside a table below the warning text when attempting to remove a profile. A number is displayed next to it.">
+      Passwords
+    </message>
+    <message name="IDS_PROFILE_PICKER_REMOVE_WARNING_BOOKMARKS" desc="The title of a statistic (bookmarks) shown inside a table below the warning text when attempting to remove a profile. A number is displayed next to it.">
+      Bookmarks
+    </message>
+    <message name="IDS_PROFILE_PICKER_REMOVE_WARNING_AUTOFILL" desc="The title of a statistic (autofill) shown inside a table below the warning text when attempting to remove a profile. A number is displayed next to it.">
+      Autofill form data
+    </message>
+    <message name="IDS_PROFILE_PICKER_REMOVE_WARNING_CALCULATING" desc="This is shown next to the loading statistics in the remove action menu. All occurrences of '...' will be eventually replaced by numbers when the statistics are loaded.">
+      ...
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_PROFILE_TYPE_CHOICE_SUBTITLE" desc="Profile picker profile type choice subtitle">
+      Sign in to Sync your bookmarks, passwords, history and more on all your devices
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_SIGNIN_BUTTON_LABEL" desc="Label for a button that prompts user to sign in">
+      Turn on sync...
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_NOT_NOW_BUTTON_LABEL" desc="Label for a button to decline a prompt to sign in">
+      Not now
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_TITLE" desc="Title for the local profile customiztion screen on the picker.">
+      Customize your profile
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_THEME_TEXT" desc="Text of a section to pick a color for the profile.">
+      Pick a theme color
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_AVATAR_TEXT" desc="Text of a section to pick an avatar for the profile.">
+      Pick an avatar
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_DONE" desc="Label of a button to finish the profile creation.">
+      Done
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_AVATAR_OK" desc="Label of a button to confirm avatar selection.">
+      OK
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_AVATAR_CANCEL" desc="Label of a button to cancel avatar selection.">
+      Cancel
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_INPUT_NAME" desc="Name of the input to configure the profile name in the profile customization window.">
+      Example: Work, Personal, Kids, or a name
+    </message>
+    <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_SHORTCUT_TEXT" desc="Text of a box creating a desktop shortcut for the profile.">
+      Create a desktop shortcut
     </message>
   </if>
 </grit-part>

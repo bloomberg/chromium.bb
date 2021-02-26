@@ -9,7 +9,6 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/collapse_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
@@ -26,7 +25,6 @@
 namespace ash {
 
 using ContentLayerType = AshColorProvider::ContentLayerType;
-using AshColorMode = AshColorProvider::AshColorMode;
 
 namespace {
 
@@ -64,11 +62,12 @@ void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
 
 class BackButton : public CustomShapeButton {
  public:
-  BackButton(views::ButtonListener* listener) : CustomShapeButton(listener) {
-    gfx::ImageSkia image = gfx::CreateVectorIcon(
-        kUnifiedMenuArrowBackIcon,
-        AshColorProvider::Get()->GetContentLayerColor(
-            ContentLayerType::kIconPrimary, AshColorMode::kDark));
+  BackButton(views::Button::PressedCallback callback)
+      : CustomShapeButton(std::move(callback)) {
+    gfx::ImageSkia image =
+        gfx::CreateVectorIcon(kUnifiedMenuArrowBackIcon,
+                              AshColorProvider::Get()->GetContentLayerColor(
+                                  ContentLayerType::kIconColorPrimary));
     SetImage(views::Button::STATE_NORMAL, image);
     SetImageHorizontalAlignment(ALIGN_RIGHT);
     SetImageVerticalAlignment(ALIGN_MIDDLE);
@@ -131,11 +130,10 @@ TriView* DetailedViewDelegate::CreateTitleRow(int string_id) {
 
   auto* label = TrayPopupUtils::CreateDefaultLabel();
   label->SetText(l10n_util::GetStringUTF16(string_id));
-  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE,
-                           true /* use_unified_theme */);
-  style.SetupLabel(label);
+  label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
+  TrayPopupUtils::SetLabelFontList(label, TrayPopupUtils::FontStyle::kTitle);
   tri_view->AddView(TriView::Container::CENTER, label);
-
   tri_view->SetContainerVisible(TriView::Container::END, false);
   tri_view->SetBorder(
       views::CreateEmptyBorder(kUnifiedDetailedViewTitlePadding));
@@ -146,7 +144,7 @@ TriView* DetailedViewDelegate::CreateTitleRow(int string_id) {
 views::View* DetailedViewDelegate::CreateTitleSeparator() {
   views::Separator* separator = new views::Separator();
   separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
-      ContentLayerType::kSeparator, AshColorMode::kDark));
+      ContentLayerType::kSeparatorColor));
   separator->SetBorder(views::CreateEmptyBorder(
       kTitleRowProgressBarHeight - views::Separator::kThickness, 0, 0, 0));
   return separator;
@@ -159,7 +157,7 @@ void DetailedViewDelegate::ShowStickyHeaderSeparator(views::View* view,
         views::CreateSolidSidedBorder(
             0, 0, kTraySeparatorWidth, 0,
             AshColorProvider::Get()->GetContentLayerColor(
-                ContentLayerType::kSeparator, AshColorMode::kDark)),
+                ContentLayerType::kSeparatorColor)),
         gfx::Insets(kMenuSeparatorVerticalPadding, 0,
                     kMenuSeparatorVerticalPadding - kTraySeparatorWidth, 0)));
   } else {
@@ -172,7 +170,7 @@ void DetailedViewDelegate::ShowStickyHeaderSeparator(views::View* view,
 views::Separator* DetailedViewDelegate::CreateListSubHeaderSeparator() {
   views::Separator* separator = new views::Separator();
   separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
-      ContentLayerType::kSeparator, AshColorMode::kDark));
+      ContentLayerType::kSeparatorColor));
   separator->SetBorder(views::CreateEmptyBorder(
       kMenuSeparatorVerticalPadding - views::Separator::kThickness, 0, 0, 0));
   return separator;
@@ -182,45 +180,46 @@ HoverHighlightView* DetailedViewDelegate::CreateScrollListItem(
     ViewClickListener* listener,
     const gfx::VectorIcon& icon,
     const base::string16& text) {
-  HoverHighlightView* item =
-      new HoverHighlightView(listener, true /* use_unified_theme */);
+  HoverHighlightView* item = new HoverHighlightView(listener);
   if (icon.is_empty())
     item->AddLabelRow(text);
   else
     item->AddIconAndLabel(
-        gfx::CreateVectorIcon(
-            icon, AshColorProvider::Get()->GetContentLayerColor(
-                      ContentLayerType::kIconPrimary, AshColorMode::kDark)),
+        gfx::CreateVectorIcon(icon,
+                              AshColorProvider::Get()->GetContentLayerColor(
+                                  ContentLayerType::kIconColorPrimary)),
         text);
   return item;
 }
 
 views::Button* DetailedViewDelegate::CreateBackButton(
-    views::ButtonListener* listener) {
-  return new BackButton(listener);
+    views::Button::PressedCallback callback) {
+  return new BackButton(std::move(callback));
 }
 
 views::Button* DetailedViewDelegate::CreateInfoButton(
-    views::ButtonListener* listener,
+    views::Button::PressedCallback callback,
     int info_accessible_name_id) {
-  return new TopShortcutButton(listener, kUnifiedMenuInfoIcon,
+  return new TopShortcutButton(std::move(callback), kUnifiedMenuInfoIcon,
                                info_accessible_name_id);
 }
 
 views::Button* DetailedViewDelegate::CreateSettingsButton(
-    views::ButtonListener* listener,
+    views::Button::PressedCallback callback,
     int setting_accessible_name_id) {
-  auto* button = new TopShortcutButton(listener, kUnifiedMenuSettingsIcon,
-                                       setting_accessible_name_id);
+  auto* button =
+      new TopShortcutButton(std::move(callback), kUnifiedMenuSettingsIcon,
+                            setting_accessible_name_id);
   if (!TrayPopupUtils::CanOpenWebUISettings())
     button->SetEnabled(false);
   return button;
 }
 
 views::Button* DetailedViewDelegate::CreateHelpButton(
-    views::ButtonListener* listener) {
-  auto* button = new TopShortcutButton(listener, vector_icons::kHelpOutlineIcon,
-                                       IDS_ASH_STATUS_TRAY_HELP);
+    views::Button::PressedCallback callback) {
+  auto* button =
+      new TopShortcutButton(std::move(callback), vector_icons::kHelpOutlineIcon,
+                            IDS_ASH_STATUS_TRAY_HELP);
   // Help opens a web page, so treat it like Web UI settings.
   if (!TrayPopupUtils::CanOpenWebUISettings())
     button->SetEnabled(false);

@@ -8,12 +8,13 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -23,12 +24,12 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -158,11 +159,11 @@ void ScrollBar::OnGestureEvent(ui::GestureEvent* event) {
     int scroll_amount;
     if (IsHorizontal()) {
       scroll_amount_f = event->details().scroll_x() - roundoff_error_.x();
-      scroll_amount = gfx::ToRoundedInt(scroll_amount_f);
+      scroll_amount = base::ClampRound(scroll_amount_f);
       roundoff_error_.set_x(scroll_amount - scroll_amount_f);
     } else {
       scroll_amount_f = event->details().scroll_y() - roundoff_error_.y();
-      scroll_amount = gfx::ToRoundedInt(scroll_amount_f);
+      scroll_amount = base::ClampRound(scroll_amount_f);
       roundoff_error_.set_y(scroll_amount - scroll_amount_f);
     }
     if (ScrollByContentsOffset(scroll_amount))
@@ -310,7 +311,7 @@ void ScrollBar::Update(int viewport_size,
   // content size multiplied by the height of the thumb track.
   float ratio =
       std::min<float>(1.0, static_cast<float>(viewport_size) / contents_size_);
-  thumb_->SetLength(gfx::ToRoundedInt(ratio * GetTrackSize()));
+  thumb_->SetLength(base::ClampRound(ratio * GetTrackSize()));
 
   int thumb_position = CalculateThumbPosition(contents_scroll_offset);
   thumb_->SetPosition(thumb_position);
@@ -343,7 +344,7 @@ ScrollBar::ScrollBar(bool is_horiz)
 ///////////////////////////////////////////////////////////////////////////////
 // ScrollBar, private:
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // static
 base::RetainingOneShotTimer* ScrollBar::GetHideTimerForTesting(
     ScrollBar* scroll_bar) {
@@ -409,7 +410,7 @@ int ScrollBar::CalculateContentsOffset(float thumb_position,
     thumb_position = thumb_position - (thumb_size / 2);
   float result = (thumb_position * (contents_size_ - viewport_size_)) /
                  (track_size - thumb_size);
-  return gfx::ToRoundedInt(result);
+  return base::ClampRound(result);
 }
 
 void ScrollBar::SetContentsScrollOffset(int contents_scroll_offset) {
@@ -460,11 +461,10 @@ base::Optional<int> ScrollBar::GetDesiredScrollOffset(ScrollAmount amount) {
   }
 }
 
-BEGIN_METADATA(ScrollBar)
-METADATA_PARENT_CLASS(View)
-ADD_READONLY_PROPERTY_METADATA(ScrollBar, int, MaxPosition)
-ADD_READONLY_PROPERTY_METADATA(ScrollBar, int, MinPosition)
-ADD_READONLY_PROPERTY_METADATA(ScrollBar, int, Position)
-END_METADATA()
+BEGIN_METADATA(ScrollBar, View)
+ADD_READONLY_PROPERTY_METADATA(int, MaxPosition)
+ADD_READONLY_PROPERTY_METADATA(int, MinPosition)
+ADD_READONLY_PROPERTY_METADATA(int, Position)
+END_METADATA
 
 }  // namespace views

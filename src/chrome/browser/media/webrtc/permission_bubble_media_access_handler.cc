@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/field_trial.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
@@ -18,7 +17,7 @@
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
@@ -34,13 +33,13 @@
 #if defined(OS_ANDROID)
 #include <vector>
 
-#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/media/webrtc/screen_capture_infobar_delegate_android.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
+#include "content/public/common/content_features.h"
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
@@ -54,13 +53,13 @@ using RepeatingMediaResponseCallback =
                                  blink::mojom::MediaStreamRequestResult result,
                                  std::unique_ptr<content::MediaStreamUI> ui)>;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 using system_media_permissions::SystemPermission;
 #endif
 
 namespace {
 
-void UpdateTabSpecificContentSettings(
+void UpdatePageSpecificContentSettings(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     ContentSetting audio_setting,
@@ -68,14 +67,15 @@ void UpdateTabSpecificContentSettings(
   if (!web_contents)
     return;
 
+  // TODO(https://crbug.com/1103176): We should extract the frame from |request|
   auto* content_settings =
-      content_settings::TabSpecificContentSettings::FromWebContents(
-          web_contents);
+      content_settings::PageSpecificContentSettings::GetForFrame(
+          web_contents->GetMainFrame());
   if (!content_settings)
     return;
 
-  content_settings::TabSpecificContentSettings::MicrophoneCameraState
-      microphone_camera_state = content_settings::TabSpecificContentSettings::
+  content_settings::PageSpecificContentSettings::MicrophoneCameraState
+      microphone_camera_state = content_settings::PageSpecificContentSettings::
           MICROPHONE_CAMERA_NOT_ACCESSED;
   std::string selected_audio_device;
   std::string selected_video_device;
@@ -92,10 +92,10 @@ void UpdateTabSpecificContentSettings(
             ? profile->GetPrefs()->GetString(prefs::kDefaultAudioCaptureDevice)
             : requested_audio_device;
     microphone_camera_state |=
-        content_settings::TabSpecificContentSettings::MICROPHONE_ACCESSED |
+        content_settings::PageSpecificContentSettings::MICROPHONE_ACCESSED |
         (audio_setting == CONTENT_SETTING_ALLOW
              ? 0
-             : content_settings::TabSpecificContentSettings::
+             : content_settings::PageSpecificContentSettings::
                    MICROPHONE_BLOCKED);
   }
 
@@ -105,10 +105,10 @@ void UpdateTabSpecificContentSettings(
             ? profile->GetPrefs()->GetString(prefs::kDefaultVideoCaptureDevice)
             : requested_video_device;
     microphone_camera_state |=
-        content_settings::TabSpecificContentSettings::CAMERA_ACCESSED |
+        content_settings::PageSpecificContentSettings::CAMERA_ACCESSED |
         (video_setting == CONTENT_SETTING_ALLOW
              ? 0
-             : content_settings::TabSpecificContentSettings::CAMERA_BLOCKED);
+             : content_settings::PageSpecificContentSettings::CAMERA_BLOCKED);
   }
 
   content_settings->OnMediaStreamPermissionSet(
@@ -194,8 +194,7 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
 
 #if defined(OS_ANDROID)
   if (blink::IsScreenCaptureMediaType(request.video_type) &&
-      !base::FeatureList::IsEnabled(
-          chrome::android::kUserMediaScreenCapturing)) {
+      !base::FeatureList::IsEnabled(features::kUserMediaScreenCapturing)) {
     // If screen capturing isn't enabled on Android, we'll use "invalid state"
     // as result, same as on desktop.
     std::move(callback).Run(
@@ -306,8 +305,8 @@ void PermissionBubbleMediaAccessHandler::OnMediaStreamRequestResponse(
   // policy we don't update the tab context.
   if (result != blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON &&
       !blocked_by_feature_policy) {
-    UpdateTabSpecificContentSettings(web_contents, request, audio_setting,
-                                     video_setting);
+    UpdatePageSpecificContentSettings(web_contents, request, audio_setting,
+                                      video_setting);
   }
 
   std::unique_ptr<content::MediaStreamUI> ui;
@@ -345,7 +344,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
 
   blink::mojom::MediaStreamRequestResult final_result = result;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // If the request was approved, ask for system permissions if needed, and run
   // this function again when done.
   if (result == blink::mojom::MediaStreamRequestResult::OK) {
@@ -407,7 +406,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
       }
     }
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   RepeatingMediaResponseCallback callback =
       std::move(request_it->second.callback);
@@ -417,8 +416,8 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
     // Post a task to process next queued request. It has to be done
     // asynchronously to make sure that calling infobar is not destroyed until
     // after this function returns.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest,
             base::Unretained(this), web_contents));

@@ -10,6 +10,8 @@ blink_modules_sources("media_capabilities") {
   sources = [
     "media_capabilities.cc",
     "media_capabilities.h",
+    "media_capabilities_identifiability_metrics.cc",
+    "media_capabilities_identifiability_metrics.h",
     "navigator_media_capabilities.cc",
     "navigator_media_capabilities.h",
     "worker_navigator_media_capabilities.cc",
@@ -18,6 +20,7 @@ blink_modules_sources("media_capabilities") {
   deps = [
     "//media",
     "//media/learning/mojo:impl",
+    "//third_party/blink/renderer/modules/encryptedmedia:encryptedmedia",
     "//third_party/blink/renderer/modules/mediarecorder",
   ]
 }

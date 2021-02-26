@@ -3,7 +3,10 @@
     "test_runner",
     "lighthouse"
   ],
-  "scripts": [
-    "LighthouseTestRunner.js"
+  "modules": [
+    "lighthouse_test_runner.js"
+  ],
+  "skip_compilation": [
+    "lighthouse_test_runner.js"
   ]
 }

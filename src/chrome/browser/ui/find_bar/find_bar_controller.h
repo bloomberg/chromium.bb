@@ -65,6 +65,7 @@ class FindBarController : public content::NotificationObserver,
                const content::NotificationDetails& details) override;
 
   // find_in_page::FindResultObserver:
+  void OnFindEmptyText(content::WebContents* web_contents) override;
   void OnFindResultAvailable(content::WebContents* web_contents) override;
 
   void SetText(base::string16 text);
@@ -73,13 +74,6 @@ class FindBarController : public content::NotificationObserver,
   void OnUserChangedFindText(base::string16 text);
 
   FindBar* find_bar() const { return find_bar_.get(); }
-
-  // Reposition |view_location| such that it avoids |avoid_overlapping_rect|,
-  // and return the new location.
-  static gfx::Rect GetLocationForFindbarView(
-      gfx::Rect view_location,
-      const gfx::Rect& dialog_bounds,
-      const gfx::Rect& avoid_overlapping_rect);
 
  private:
   // Sends an update to the find bar with the tab contents' current result. The

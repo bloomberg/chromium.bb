@@ -32,27 +32,18 @@ cr.define('chrome.sync.about_tab', function() {
     refreshAboutInfo(e.details);
   }
 
-  function onAboutInfoCountersUpdated(e) {
-    const details = e.details;
-
-    const modelType = details.modelType;
-    const counters = details.counters;
-
-    const typeStatusArray = chrome.sync.aboutInfo.type_status;
-    typeStatusArray.forEach(function(row) {
-      if (row.name === modelType) {
-        // There are three types of counters, only "status" counters have these
-        // fields. Keep the old values if updated fields are not present.
-        if (counters.numEntriesAndTombstones !== undefined) {
-          row.num_entries = counters.numEntriesAndTombstones;
-        }
-        if (counters.numEntries !== undefined) {
-          row.num_live = counters.numEntries;
-        }
+  function onEntityCountsUpdatedEvent(e) {
+    for (const count of e.details.entityCounts) {
+      const typeStatusRow = chrome.sync.aboutInfo.type_status.find(
+          row => row.name === count.modelType);
+      if (typeStatusRow) {
+        typeStatusRow.num_entries = count.entities;
+        typeStatusRow.num_live = count.nonTombstoneEntities;
       }
-    });
+    }
     jstProcess(
-        new JsEvalContext({type_status: typeStatusArray}), $('typeInfo'));
+        new JsEvalContext({type_status: chrome.sync.aboutInfo.type_status}),
+        $('typeInfo'));
   }
 
   /**
@@ -178,8 +169,7 @@ cr.define('chrome.sync.about_tab', function() {
           onAboutInfoUpdatedEvent);
 
       chrome.sync.events.removeEventListener(
-          'onCountersUpdated',
-          onAboutInfoCountersUpdated);
+          'onEntityCountsUpdated', onEntityCountsUpdatedEvent);
 
       const aboutInfo = JSON.parse(data);
       refreshAboutInfo(aboutInfo);
@@ -220,8 +210,7 @@ cr.define('chrome.sync.about_tab', function() {
         onAboutInfoUpdatedEvent);
 
     chrome.sync.events.addEventListener(
-        'onCountersUpdated',
-        onAboutInfoCountersUpdated);
+        'onEntityCountsUpdated', onEntityCountsUpdatedEvent);
 
     $('request-start').addEventListener('click', function(event) {
       chrome.sync.requestStart();
@@ -233,11 +222,8 @@ cr.define('chrome.sync.about_tab', function() {
       chrome.sync.requestStopClearData();
     });
 
-    // Register to receive a stream of event notifications.
-    chrome.sync.registerForEvents();
-
-    // Request an about info update event to initialize the page.
-    chrome.sync.requestUpdatedAboutInfo();
+    // Request initial data for the page and listen to updates.
+    chrome.sync.requestDataAndRegisterForUpdates();
   }
 
   return {

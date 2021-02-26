@@ -4,9 +4,12 @@
 
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -22,18 +25,19 @@
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/fake_surface_observer.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
+#include "components/viz/test/viz_test_suite.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-using testing::UnorderedElementsAre;
-using testing::IsEmpty;
-using testing::SizeIs;
-using testing::Invoke;
 using testing::_;
 using testing::Eq;
+using testing::Invoke;
+using testing::IsEmpty;
+using testing::SizeIs;
+using testing::UnorderedElementsAre;
 
 namespace viz {
 namespace {
@@ -645,13 +649,17 @@ TEST_F(CompositorFrameSinkSupportTest, ProhibitsUnprivilegedCopyRequests) {
       false /* not root frame sink */);
 
   bool did_receive_aborted_copy_result = false;
+  base::RunLoop aborted_copy_run_loop;
   auto request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(
-          [](bool* got_nothing, std::unique_ptr<CopyOutputResult> result) {
+          [](bool* got_nothing, base::OnceClosure finished,
+             std::unique_ptr<CopyOutputResult> result) {
             *got_nothing = result->IsEmpty();
+            std::move(finished).Run();
           },
-          &did_receive_aborted_copy_result));
+          &did_receive_aborted_copy_result,
+          aborted_copy_run_loop.QuitClosure()));
 
   auto frame = MakeDefaultCompositorFrame();
   ResourceId frame_resource_ids[] = {1, 2, 3};
@@ -660,6 +668,7 @@ TEST_F(CompositorFrameSinkSupportTest, ProhibitsUnprivilegedCopyRequests) {
 
   EXPECT_FALSE(SubmitCompositorFrameWithCopyRequest(std::move(frame),
                                                     std::move(request)));
+  aborted_copy_run_loop.Run();
   EXPECT_TRUE(did_receive_aborted_copy_result);
 
   // All the resources in the rejected frame should have been returned.
@@ -778,8 +787,10 @@ TEST_F(CompositorFrameSinkSupportTest, EvictOlderSurfaces) {
 }
 
 void CopyRequestTestCallback(bool* called,
+                             base::OnceClosure finished,
                              std::unique_ptr<CopyOutputResult> result) {
   *called = true;
+  std::move(finished).Run();
 }
 
 TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
@@ -796,9 +807,11 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   }
 
   bool called1 = false;
+  base::RunLoop called1_run_loop;
   auto request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-      base::BindOnce(&CopyRequestTestCallback, &called1));
+      base::BindOnce(&CopyRequestTestCallback, &called1,
+                     called1_run_loop.QuitClosure()));
   request->set_source(kArbitrarySourceId1);
 
   support_->RequestCopyOfOutput(local_surface_id_, std::move(request));
@@ -806,9 +819,11 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called1);
 
   bool called2 = false;
+  base::RunLoop called2_run_loop;
   request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-      base::BindOnce(&CopyRequestTestCallback, &called2));
+      base::BindOnce(&CopyRequestTestCallback, &called2,
+                     called2_run_loop.QuitClosure()));
   request->set_source(kArbitrarySourceId2);
 
   support_->RequestCopyOfOutput(local_surface_id_, std::move(request));
@@ -818,14 +833,17 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called2);
 
   bool called3 = false;
+  base::RunLoop called3_run_loop;
   request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-      base::BindOnce(&CopyRequestTestCallback, &called3));
+      base::BindOnce(&CopyRequestTestCallback, &called3,
+                     called3_run_loop.QuitClosure()));
   request->set_source(kArbitrarySourceId1);
 
   support_->RequestCopyOfOutput(local_surface_id_, std::move(request));
   GetSurfaceForId(surface_id)->TakeCopyOutputRequestsFromClient();
   // Two callbacks are from source1, so the first should be called.
+  called1_run_loop.Run();
   EXPECT_TRUE(called1);
   EXPECT_FALSE(called2);
   EXPECT_FALSE(called3);
@@ -834,6 +852,8 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   ExpireAllTemporaryReferences();
   local_surface_id_ = LocalSurfaceId();
   manager_.surface_manager()->GarbageCollectSurfaces();
+  called2_run_loop.Run();
+  called3_run_loop.Run();
   EXPECT_TRUE(called1);
   EXPECT_TRUE(called2);
   EXPECT_TRUE(called3);
@@ -1436,6 +1456,83 @@ TEST_F(CompositorFrameSinkSupportTest, ThrottleUnresponsiveClient) {
   testing::Mock::VerifyAndClearExpectations(&mock_client);
 
   support->SetNeedsBeginFrame(false);
+}
+
+// Verifies that when CompositorFrameSinkSupport has its |begin_frame_interval_|
+// set, any BeginFrame would be sent only after this interval has passed from
+// the time when the last BeginFrame was sent.
+TEST_F(CompositorFrameSinkSupportTest, BeginFrameInterval) {
+  FakeExternalBeginFrameSource begin_frame_source(0.f, false);
+
+  testing::NiceMock<MockCompositorFrameSinkClient> mock_client;
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, /*is_root=*/true);
+  SurfaceId id(kAnotherArbitraryFrameSinkId, local_surface_id_);
+  support->SetBeginFrameSource(&begin_frame_source);
+  support->SetNeedsBeginFrame(true);
+  constexpr uint8_t fps = 5;
+  constexpr base::TimeDelta throttled_interval =
+      base::TimeDelta::FromSeconds(1) / fps;
+  support->ThrottleBeginFrame(throttled_interval);
+
+  constexpr base::TimeDelta interval = BeginFrameArgs::DefaultInterval();
+  base::TimeTicks frame_time;
+  uint64_t sequence_number = 1;
+  int sent_frames = 0;
+  BeginFrameArgs args;
+
+  const base::TimeTicks end_time = frame_time + base::TimeDelta::FromSeconds(2);
+
+  base::TimeTicks next_expected_begin_frame = frame_time;
+  while (frame_time < end_time) {
+    args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                          sequence_number++, frame_time);
+    if (frame_time < next_expected_begin_frame) {
+      EXPECT_CALL(mock_client, OnBeginFrame(args, _)).Times(0);
+    } else {
+      EXPECT_CALL(mock_client, OnBeginFrame(args, _)).WillOnce([&]() {
+        support->SubmitCompositorFrame(local_surface_id_,
+                                       MakeDefaultCompositorFrame());
+        GetSurfaceForId(id)->MarkAsDrawn();
+        ++sent_frames;
+      });
+      next_expected_begin_frame = throttled_interval + frame_time;
+    }
+    begin_frame_source.TestOnBeginFrame(args);
+    testing::Mock::VerifyAndClearExpectations(&mock_client);
+
+    frame_time += interval;
+  }
+  // In total 10 frames should have been sent (5fps x 2 seconds).
+  EXPECT_EQ(sent_frames, 10);
+  support->SetNeedsBeginFrame(false);
+}
+
+TEST_F(CompositorFrameSinkSupportTest, ForceFullFrameToActivateSurface) {
+  FakeExternalBeginFrameSource begin_frame_source(0.f, false);
+  testing::NiceMock<MockCompositorFrameSinkClient> mock_client;
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, /*is_root=*/true);
+  SurfaceId id(kAnotherArbitraryFrameSinkId, local_surface_id_);
+  support->SetBeginFrameSource(&begin_frame_source);
+  support->SetNeedsBeginFrame(true);
+  const base::TimeTicks frame_time;
+  const int64_t sequence_number = 1;
+
+  // ComposterFrameSink hasn't had a surface activate yet.
+  EXPECT_FALSE(support->last_activated_surface_id().is_valid());
+
+  BeginFrameArgs args = CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, 0, sequence_number, frame_time);
+  EXPECT_FALSE(args.animate_only);
+  BeginFrameArgs args_animate_only = args;
+  args_animate_only.animate_only = true;
+  // Verify |animate_only| is toggled back to false before sending to client.
+  EXPECT_CALL(mock_client,
+              OnBeginFrame(testing::Field(&BeginFrameArgs::animate_only,
+                                          testing::IsFalse()),
+                           _));
+  begin_frame_source.TestOnBeginFrame(args_animate_only);
 }
 
 }  // namespace viz

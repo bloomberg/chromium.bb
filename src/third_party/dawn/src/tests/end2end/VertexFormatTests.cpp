@@ -46,8 +46,8 @@ std::vector<destType> BitCast(std::vector<srcType> data) {
 
 class VertexFormatTest : public DawnTest {
   protected:
-    void TestSetUp() override {
-        DawnTest::TestSetUp();
+    void SetUp() override {
+        DawnTest::SetUp();
 
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
     }
@@ -915,4 +915,8 @@ TEST_P(VertexFormatTest, Int4) {
     DoVertexFormatTest(wgpu::VertexFormat::Int4, vertexData, vertexData);
 }
 
-DAWN_INSTANTIATE_TEST(VertexFormatTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(VertexFormatTest,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend());

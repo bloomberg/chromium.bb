@@ -6,6 +6,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/types/event_type.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace ui {
 
@@ -57,6 +58,14 @@ PointerDetails GetMousePointerDetailsFromNative(
   return pointer_detail;
 }
 
+const gfx::Vector2dF& GetMouseMovementFromNative(
+    const PlatformEvent& native_event) {
+  DCHECK(native_event->IsMouseEvent() || native_event->IsScrollEvent());
+  const ui::MouseEvent* event =
+      static_cast<const ui::MouseEvent*>(native_event);
+  return event->movement();
+}
+
 KeyboardCode KeyboardCodeFromNative(const PlatformEvent& native_event) {
   const ui::KeyEvent* event = static_cast<const ui::KeyEvent*>(native_event);
   DCHECK(event->IsKeyEvent());
@@ -80,6 +89,13 @@ gfx::Vector2d GetMouseWheelOffset(const PlatformEvent& native_event) {
       static_cast<const ui::MouseWheelEvent*>(native_event);
   DCHECK(event->type() == ET_MOUSEWHEEL);
   return event->offset();
+}
+
+gfx::Vector2d GetMouseWheelTick120ths(const PlatformEvent& native_event) {
+  const ui::MouseWheelEvent* event =
+      static_cast<const ui::MouseWheelEvent*>(native_event);
+  DCHECK_EQ(event->type(), ET_MOUSEWHEEL);
+  return event->tick_120ths();
 }
 
 PlatformEvent CopyNativeEvent(const PlatformEvent& event) {

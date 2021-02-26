@@ -1,7 +1,6 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """URL endpoint for a cron job to automatically mark alerts which recovered."""
 from __future__ import print_function
 from __future__ import division
@@ -49,13 +48,17 @@ class MarkRecoveredAlertsHandler(request_handler.RequestHandler):
 
     # Handle task queue requests.
     bug_id = self.request.get('bug_id')
+    project_id = self.request.get('project_id')
     if bug_id:
       bug_id = int(bug_id)
+    if not project_id:
+      project_id = 'chromium'
     if self.request.get('check_alert'):
-      self.MarkAlertAndBugIfRecovered(self.request.get('alert_key'), bug_id)
+      self.MarkAlertAndBugIfRecovered(
+          self.request.get('alert_key'), bug_id, project_id)
       return
     if self.request.get('check_bug'):
-      self.CheckRecoveredAlertsForBug(bug_id)
+      self.CheckRecoveredAlertsForBug(bug_id, project_id)
       return
 
     # Kick off task queue jobs for untriaged anomalies.
@@ -64,7 +67,10 @@ class MarkRecoveredAlertsHandler(request_handler.RequestHandler):
     for alert in alerts:
       taskqueue.add(
           url='/mark_recovered_alerts',
-          params={'check_alert': 1, 'alert_key': alert.urlsafe()},
+          params={
+              'check_alert': 1,
+              'alert_key': alert.urlsafe()
+          },
           queue_name=_TASK_QUEUE_NAME)
 
     # Kick off task queue jobs for open bugs.
@@ -73,7 +79,10 @@ class MarkRecoveredAlertsHandler(request_handler.RequestHandler):
     for bug in bugs:
       taskqueue.add(
           url='/mark_recovered_alerts',
-          params={'check_bug': 1, 'bug_id': bug['id']},
+          params={
+              'check_bug': 1,
+              'bug_id': bug['id']
+          },
           queue_name=_TASK_QUEUE_NAME)
 
   def _FetchUntriagedAnomalies(self):
@@ -103,7 +112,7 @@ class MarkRecoveredAlertsHandler(request_handler.RequestHandler):
         maxResults=1000)
     return bugs['items']
 
-  def MarkAlertAndBugIfRecovered(self, alert_key_urlsafe, bug_id):
+  def MarkAlertAndBugIfRecovered(self, alert_key_urlsafe, bug_id, project_id):
     """Checks whether an alert has recovered, and marks it if so.
 
     An alert will be considered "recovered" if there's a change point in
@@ -125,7 +134,7 @@ class MarkRecoveredAlertsHandler(request_handler.RequestHandler):
     alert_entity.put()
     if bug_id:
       unrecovered, _, _ = anomaly.Anomaly.QueryAsync(
-          bug_id=bug_id, recovered=False).get_result()
+          bug_id=bug_id, project_id=project_id, recovered=False).get_result()
       if not unrecovered:
         # All alerts recovered! Update bug.
         logging.info('All alerts for bug %s recovered!', bug_id)
@@ -134,8 +143,10 @@ class MarkRecoveredAlertsHandler(request_handler.RequestHandler):
         issue_tracker = issue_tracker_service.IssueTrackerService(
             utils.ServiceAccountHttp())
         issue_tracker.AddBugComment(
-            bug_id, comment, labels='Performance-Regression-Recovered')
-
+            bug_id,
+            comment,
+            project=project_id,
+            labels='Performance-Regression-Recovered')
 
   def _IsAlertRecovered(self, alert_entity):
     test = alert_entity.GetTestMetadataKey().get()
@@ -145,24 +156,24 @@ class MarkRecoveredAlertsHandler(request_handler.RequestHandler):
                     alert_entity)
       return False
     config = anomaly_config.GetAnomalyConfigDict(test)
-    max_num_rows = config.get(
-        'max_window_size', find_anomalies.DEFAULT_NUM_POINTS)
+    max_num_rows = config.get('max_window_size',
+                              find_anomalies.DEFAULT_NUM_POINTS)
     rows = find_anomalies.GetRowsToAnalyze(test, max_num_rows)
     statistic = getattr(alert_entity, 'statistic')
     if not statistic:
       statistic = 'avg'
     rows = rows.get(statistic, [])
-    rows = [
-        (rev, row, val)
-        for (rev, row, val) in rows if row.revision > alert_entity.end_revision]
+    rows = [(rev, row, val)
+            for (rev, row, val) in rows
+            if row.revision > alert_entity.end_revision]
 
     change_points = find_anomalies.FindChangePointsForTest(rows, config)
-    delta_anomaly = (alert_entity.median_after_anomaly -
-                     alert_entity.median_before_anomaly)
+    delta_anomaly = (
+        alert_entity.median_after_anomaly - alert_entity.median_before_anomaly)
     for change in change_points:
       delta_change = change.median_after - change.median_before
-      if (self._IsOppositeDirection(delta_anomaly, delta_change) and
-          self._IsApproximatelyEqual(delta_anomaly, -delta_change)):
+      if (self._IsOppositeDirection(delta_anomaly, delta_change)
+          and self._IsApproximatelyEqual(delta_anomaly, -delta_change)):
         logging.debug('Anomaly %s recovered; recovery change point %s.',
                       alert_entity.key, change.AsDict())
         return True
@@ -176,15 +187,18 @@ class MarkRecoveredAlertsHandler(request_handler.RequestHandler):
     larger = max(delta1, delta2)
     return math_utils.RelativeChange(smaller, larger) <= _MAX_DELTA_DIFFERENCE
 
-  def CheckRecoveredAlertsForBug(self, bug_id):
+  def CheckRecoveredAlertsForBug(self, bug_id, project_id):
     unrecovered, _, _ = anomaly.Anomaly.QueryAsync(
         bug_id=bug_id, recovered=False).get_result()
-    logging.info('Queueing %d alerts for bug %s', len(unrecovered), bug_id)
+    logging.info('Queueing %d alerts for bug %s:%s', len(unrecovered),
+                 project_id, bug_id)
     for alert in unrecovered:
       taskqueue.add(
           url='/mark_recovered_alerts',
           params={
               'check_alert': 1,
               'alert_key': alert.key.urlsafe(),
-              'bug_id': bug_id},
+              'bug_id': bug_id,
+              'project_id': project_id,
+          },
           queue_name=_TASK_QUEUE_NAME)

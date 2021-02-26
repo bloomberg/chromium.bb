@@ -2,17 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "ash/ambient/model/ambient_backend_model.h"
 
-#include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/model/ambient_backend_model_observer.h"
+#include "ash/public/cpp/ambient/ambient_ui_model.h"
+#include "base/logging.h"
 
 namespace ash {
 
-AmbientBackendModel::AmbientBackendModel() {
-  SetPhotoRefreshInterval(kPhotoRefreshInterval);
+// PhotoWithDetails------------------------------------------------------------
+PhotoWithDetails::PhotoWithDetails() = default;
+
+PhotoWithDetails::PhotoWithDetails(const PhotoWithDetails&) = default;
+
+PhotoWithDetails& PhotoWithDetails::operator=(const PhotoWithDetails&) =
+    default;
+
+PhotoWithDetails::PhotoWithDetails(PhotoWithDetails&&) = default;
+
+PhotoWithDetails& PhotoWithDetails::operator=(PhotoWithDetails&&) = default;
+
+PhotoWithDetails::~PhotoWithDetails() = default;
+
+void PhotoWithDetails::Clear() {
+  photo = gfx::ImageSkia();
+  details = std::string();
 }
 
+bool PhotoWithDetails::IsNull() const {
+  return photo.isNull();
+}
+
+// AmbientBackendModel---------------------------------------------------------
+AmbientBackendModel::AmbientBackendModel() = default;
 AmbientBackendModel::~AmbientBackendModel() = default;
 
 void AmbientBackendModel::AddObserver(AmbientBackendModelObserver* observer) {
@@ -24,87 +48,92 @@ void AmbientBackendModel::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-bool AmbientBackendModel::ShouldFetchImmediately() const {
-  // If currently shown image is close to the end of images cache, we prefetch
-  // more image.
-  const int next_load_image_index = GetImageBufferLength() / 2;
-  return images_.empty() ||
-         current_image_index_ >
-             static_cast<int>(images_.size() - 1 - next_load_image_index);
+void AmbientBackendModel::AppendTopics(
+    const std::vector<AmbientModeTopic>& topics) {
+  topics_.insert(topics_.end(), topics.begin(), topics.end());
+  NotifyTopicsChanged();
 }
 
-void AmbientBackendModel::ShowNextImage() {
-  // Do not show next if have not downloaded enough images.
-  if (ShouldFetchImmediately())
-    return;
+bool AmbientBackendModel::ImagesReady() const {
+  return !current_image_.IsNull() && !next_image_.IsNull();
+}
 
-  const int max_current_image_index = GetImageBufferLength() / 2;
-  if (current_image_index_ >= max_current_image_index) {
-    // Pop the first image and keep |current_image_index_| unchanged, will be
-    // equivalent to show next image.
-    images_.pop_front();
+void AmbientBackendModel::AddNextImage(
+    const PhotoWithDetails& photo_with_details) {
+  ResetImageFailures();
+  if (current_image_.IsNull()) {
+    current_image_ = photo_with_details;
+  } else if (next_image_.IsNull()) {
+    next_image_ = photo_with_details;
+    NotifyImagesReady();
   } else {
-    ++current_image_index_;
+    current_image_ = next_image_;
+    next_image_ = photo_with_details;
   }
+
   NotifyImagesChanged();
 }
 
-void AmbientBackendModel::AddNextImage(const gfx::ImageSkia& image) {
-  images_.emplace_back(image);
-
-  // Update the first two images. The second image is used for photo transition
-  // animation.
-  if (images_.size() <= 2)
-    NotifyImagesChanged();
+bool AmbientBackendModel::HashMatchesNextImage(const std::string& hash) const {
+  return GetNextImage().hash == hash;
 }
 
-base::TimeDelta AmbientBackendModel::GetPhotoRefreshInterval() {
-  if (ShouldFetchImmediately())
+void AmbientBackendModel::AddImageFailure() {
+  failures_++;
+  if (ImageLoadingFailed()) {
+    DVLOG(3) << "image loading failed";
+    for (auto& observer : observers_)
+      observer.OnImagesFailed();
+  }
+}
+
+void AmbientBackendModel::ResetImageFailures() {
+  failures_ = 0;
+}
+
+bool AmbientBackendModel::ImageLoadingFailed() {
+  return !ImagesReady() && failures_ >= kMaxConsecutiveReadPhotoFailures;
+}
+
+base::TimeDelta AmbientBackendModel::GetPhotoRefreshInterval() const {
+  if (!ImagesReady())
     return base::TimeDelta();
 
-  return photo_refresh_interval_;
-}
-
-void AmbientBackendModel::SetPhotoRefreshInterval(base::TimeDelta interval) {
-  photo_refresh_interval_ = interval;
+  return AmbientUiModel::Get()->photo_refresh_interval();
 }
 
 void AmbientBackendModel::Clear() {
-  images_.clear();
-  current_image_index_ = 0;
+  topics_.clear();
+  current_image_.Clear();
+  next_image_.Clear();
 }
 
-gfx::ImageSkia AmbientBackendModel::GetPrevImage() const {
-  if (current_image_index_ == 0)
-    return gfx::ImageSkia();
+const PhotoWithDetails& AmbientBackendModel::GetNextImage() const {
+  if (!next_image_.IsNull())
+    return next_image_;
 
-  return images_[current_image_index_ - 1];
+  return current_image_;
 }
 
-gfx::ImageSkia AmbientBackendModel::GetCurrImage() const {
-  if (images_.empty())
-    return gfx::ImageSkia();
-
-  return images_[current_image_index_];
-}
-
-gfx::ImageSkia AmbientBackendModel::GetNextImage() const {
-  if (images_.empty() ||
-      static_cast<int>(images_.size() - current_image_index_) == 1) {
-    return gfx::ImageSkia();
-  }
-
-  return images_[current_image_index_ + 1];
+float AmbientBackendModel::GetTemperatureInCelsius() const {
+  return (temperature_fahrenheit_ - 32) * 5 / 9;
 }
 
 void AmbientBackendModel::UpdateWeatherInfo(
     const gfx::ImageSkia& weather_condition_icon,
-    float temperature) {
+    float temperature_fahrenheit,
+    bool show_celsius) {
   weather_condition_icon_ = weather_condition_icon;
-  temperature_ = temperature;
+  temperature_fahrenheit_ = temperature_fahrenheit;
+  show_celsius_ = show_celsius;
 
   if (!weather_condition_icon.isNull())
     NotifyWeatherInfoUpdated();
+}
+
+void AmbientBackendModel::NotifyTopicsChanged() {
+  for (auto& observer : observers_)
+    observer.OnTopicsChanged();
 }
 
 void AmbientBackendModel::NotifyImagesChanged() {
@@ -112,9 +141,9 @@ void AmbientBackendModel::NotifyImagesChanged() {
     observer.OnImagesChanged();
 }
 
-int AmbientBackendModel::GetImageBufferLength() const {
-  return buffer_length_for_testing_ == -1 ? kImageBufferLength
-                                          : buffer_length_for_testing_;
+void AmbientBackendModel::NotifyImagesReady() {
+  for (auto& observer : observers_)
+    observer.OnImagesReady();
 }
 
 void AmbientBackendModel::NotifyWeatherInfoUpdated() {

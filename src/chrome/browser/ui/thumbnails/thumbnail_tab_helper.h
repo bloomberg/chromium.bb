@@ -18,6 +18,8 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
+class ThumbnailScheduler;
+
 class ThumbnailTabHelper
     : public content::WebContentsUserData<ThumbnailTabHelper>,
       public viz::mojom::FrameSinkVideoConsumer {
@@ -52,6 +54,8 @@ class ThumbnailTabHelper
   };
 
   explicit ThumbnailTabHelper(content::WebContents* contents);
+
+  static ThumbnailScheduler& GetScheduler();
 
   // Begins periodic capture of thumbnails from a loading page.
   // This can be triggered by someone starting to observe a web contents by
@@ -98,6 +102,9 @@ class ThumbnailTabHelper
 
   // Times for computing metrics.
   base::TimeTicks start_video_capture_time_;
+
+  // Whether the first frame has been received after StartVideoCapture().
+  bool got_first_frame_ = false;
 
   // The thumbnail maintained by this instance.
   scoped_refptr<ThumbnailImage> thumbnail_;

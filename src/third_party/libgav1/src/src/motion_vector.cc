@@ -63,16 +63,12 @@ void SetupGlobalMv(const Tile::Block& block, int index,
   const ObuFrameHeader& frame_header = block.tile.frame_header();
   ReferenceFrameType reference_type = bp.reference_frame[index];
   const auto& gm = frame_header.global_motion[reference_type];
-  GlobalMotionTransformationType global_motion_type =
-      (reference_type != kReferenceFrameIntra)
-          ? gm.type
-          : kNumGlobalMotionTransformationTypes;
   if (reference_type == kReferenceFrameIntra ||
-      global_motion_type == kGlobalMotionTransformationTypeIdentity) {
+      gm.type == kGlobalMotionTransformationTypeIdentity) {
     mv->mv32 = 0;
     return;
   }
-  if (global_motion_type == kGlobalMotionTransformationTypeTranslation) {
+  if (gm.type == kGlobalMotionTransformationTypeTranslation) {
     for (int i = 0; i < 2; ++i) {
       mv->mv[i] = gm.params[i] >> (kWarpedModelPrecisionBits - 3);
     }
@@ -127,18 +123,19 @@ void SearchStack(const Tile::Block& block, const BlockParameters& mv_bp,
   *found_new_mv |= kPredictionModeNewMvMask.Contains(mv_bp.y_mode);
   *found_match = true;
   MotionVector* const ref_mv_stack = prediction_parameters.ref_mv_stack;
-  const auto result = std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
+  const int num_found = *num_mv_found;
+  const auto result = std::find_if(ref_mv_stack, ref_mv_stack + num_found,
                                    [&candidate_mv](const MotionVector& ref_mv) {
                                      return ref_mv == candidate_mv;
                                    });
-  if (result != ref_mv_stack + *num_mv_found) {
+  if (result != ref_mv_stack + num_found) {
     prediction_parameters.IncreaseWeight(std::distance(ref_mv_stack, result),
                                          weight);
     return;
   }
-  if (*num_mv_found >= kMaxRefMvStackSize) return;
-  ref_mv_stack[*num_mv_found] = candidate_mv;
-  prediction_parameters.SetWeightIndexStackEntry(*num_mv_found, weight);
+  if (num_found >= kMaxRefMvStackSize) return;
+  ref_mv_stack[num_found] = candidate_mv;
+  prediction_parameters.SetWeightIndexStackEntry(num_found, weight);
   ++*num_mv_found;
 }
 
@@ -163,19 +160,20 @@ void CompoundSearchStack(const Tile::Block& block, const BlockParameters& mv_bp,
   *found_match = true;
   CompoundMotionVector* const compound_ref_mv_stack =
       prediction_parameters.compound_ref_mv_stack;
+  const int num_found = *num_mv_found;
   const auto result =
-      std::find_if(compound_ref_mv_stack, compound_ref_mv_stack + *num_mv_found,
+      std::find_if(compound_ref_mv_stack, compound_ref_mv_stack + num_found,
                    [&candidate_mv](const CompoundMotionVector& ref_mv) {
                      return ref_mv == candidate_mv;
                    });
-  if (result != compound_ref_mv_stack + *num_mv_found) {
+  if (result != compound_ref_mv_stack + num_found) {
     prediction_parameters.IncreaseWeight(
         std::distance(compound_ref_mv_stack, result), weight);
     return;
   }
-  if (*num_mv_found >= kMaxRefMvStackSize) return;
-  compound_ref_mv_stack[*num_mv_found] = candidate_mv;
-  prediction_parameters.SetWeightIndexStackEntry(*num_mv_found, weight);
+  if (num_found >= kMaxRefMvStackSize) return;
+  compound_ref_mv_stack[num_found] = candidate_mv;
+  prediction_parameters.SetWeightIndexStackEntry(num_found, weight);
   ++*num_mv_found;
 }
 
@@ -305,24 +303,26 @@ void AddTemporalReferenceMvCandidate(
     }
     CompoundMotionVector* const compound_ref_mv_stack =
         prediction_parameters->compound_ref_mv_stack;
+    int num_found = *num_mv_found;
     int index = 0;
     do {
       const CompoundMotionVector& candidate_mv = candidate_mvs[index];
-      const auto result = std::find_if(
-          compound_ref_mv_stack, compound_ref_mv_stack + *num_mv_found,
-          [&candidate_mv](const CompoundMotionVector& ref_mv) {
-            return ref_mv == candidate_mv;
-          });
-      if (result != compound_ref_mv_stack + *num_mv_found) {
+      const auto result =
+          std::find_if(compound_ref_mv_stack, compound_ref_mv_stack + num_found,
+                       [&candidate_mv](const CompoundMotionVector& ref_mv) {
+                         return ref_mv == candidate_mv;
+                       });
+      if (result != compound_ref_mv_stack + num_found) {
         prediction_parameters->IncreaseWeight(
             std::distance(compound_ref_mv_stack, result), 2);
         continue;
       }
-      if (*num_mv_found >= kMaxRefMvStackSize) continue;
-      compound_ref_mv_stack[*num_mv_found] = candidate_mv;
-      prediction_parameters->SetWeightIndexStackEntry(*num_mv_found, 2);
-      ++*num_mv_found;
+      if (num_found >= kMaxRefMvStackSize) continue;
+      compound_ref_mv_stack[num_found] = candidate_mv;
+      prediction_parameters->SetWeightIndexStackEntry(num_found, 2);
+      ++num_found;
     } while (++index < count);
+    *num_mv_found = num_found;
     return;
   }
   MotionVector* const ref_mv_stack = prediction_parameters->ref_mv_stack;
@@ -333,19 +333,20 @@ void AddTemporalReferenceMvCandidate(
       *zero_mv_context = static_cast<int>(max_difference >= 16);
     }
     const MotionVector candidate_mv = {};
+    const int num_found = *num_mv_found;
     const auto result =
-        std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
+        std::find_if(ref_mv_stack, ref_mv_stack + num_found,
                      [&candidate_mv](const MotionVector& ref_mv) {
                        return ref_mv == candidate_mv;
                      });
-    if (result != ref_mv_stack + *num_mv_found) {
+    if (result != ref_mv_stack + num_found) {
       prediction_parameters->IncreaseWeight(std::distance(ref_mv_stack, result),
                                             2 * count);
       return;
     }
-    if (*num_mv_found >= kMaxRefMvStackSize) return;
-    ref_mv_stack[*num_mv_found] = candidate_mv;
-    prediction_parameters->SetWeightIndexStackEntry(*num_mv_found, 2 * count);
+    if (num_found >= kMaxRefMvStackSize) return;
+    ref_mv_stack[num_found] = candidate_mv;
+    prediction_parameters->SetWeightIndexStackEntry(num_found, 2 * count);
     ++*num_mv_found;
     return;
   }
@@ -361,24 +362,26 @@ void AddTemporalReferenceMvCandidate(
                  std::abs(candidate_mvs[0].mv[1] - global_mv[0].mv[1]));
     *zero_mv_context = static_cast<int>(max_difference >= 16);
   }
+  int num_found = *num_mv_found;
   int index = 0;
   do {
     const MotionVector& candidate_mv = candidate_mvs[index];
     const auto result =
-        std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
+        std::find_if(ref_mv_stack, ref_mv_stack + num_found,
                      [&candidate_mv](const MotionVector& ref_mv) {
                        return ref_mv == candidate_mv;
                      });
-    if (result != ref_mv_stack + *num_mv_found) {
+    if (result != ref_mv_stack + num_found) {
       prediction_parameters->IncreaseWeight(std::distance(ref_mv_stack, result),
                                             2);
       continue;
     }
-    if (*num_mv_found >= kMaxRefMvStackSize) continue;
-    ref_mv_stack[*num_mv_found] = candidate_mv;
-    prediction_parameters->SetWeightIndexStackEntry(*num_mv_found, 2);
-    ++*num_mv_found;
+    if (num_found >= kMaxRefMvStackSize) continue;
+    ref_mv_stack[num_found] = candidate_mv;
+    prediction_parameters->SetWeightIndexStackEntry(num_found, 2);
+    ++num_found;
   } while (++index < count);
+  *num_mv_found = num_found;
 }
 
 // Part of 7.10.2.5.
@@ -397,9 +400,6 @@ constexpr BitMaskSet kTemporalScanMask(kBlock8x8, kBlock8x16, kBlock8x32,
                                        kBlock32x8, kBlock32x16, kBlock32x32);
 
 // 7.10.2.5.
-//
-// The |zero_mv_context| output parameter may be null. If |zero_mv_context| is
-// not null, the function may set |*zero_mv_context|.
 void TemporalScan(const Tile::Block& block, bool is_compound,
                   int* const zero_mv_context, int* const num_mv_found) {
   const int step_w = (block.width4x4 >= 16) ? 4 : 2;
@@ -479,19 +479,28 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
   if (count != 0) {
     BlockParameters* const bp = block.bp;
     int reference_offsets[2];
-    const int offset_0 = GetRelativeDistance(
-        tile.frame_header().order_hint,
-        tile.current_frame().order_hint(bp->reference_frame[0]),
-        tile.sequence_header().order_hint_shift_bits);
+    const int offset_0 = tile.current_frame()
+                             .reference_info()
+                             ->relative_distance_to[bp->reference_frame[0]];
     reference_offsets[0] =
         Clip3(offset_0, -kMaxFrameDistance, kMaxFrameDistance);
     if (is_compound) {
-      const int offset_1 = GetRelativeDistance(
-          tile.frame_header().order_hint,
-          tile.current_frame().order_hint(bp->reference_frame[1]),
-          tile.sequence_header().order_hint_shift_bits);
+      const int offset_1 = tile.current_frame()
+                               .reference_info()
+                               ->relative_distance_to[bp->reference_frame[1]];
       reference_offsets[1] =
           Clip3(offset_1, -kMaxFrameDistance, kMaxFrameDistance);
+      // Pad so that SIMD implementations won't read uninitialized memory.
+      if ((count & 1) != 0) {
+        temporal_mvs[count].mv32 = 0;
+        temporal_reference_offsets[count] = 0;
+      }
+    } else {
+      // Pad so that SIMD implementations won't read uninitialized memory.
+      for (int i = count; i < ((count + 3) & ~3); ++i) {
+        temporal_mvs[i].mv32 = 0;
+        temporal_reference_offsets[i] = 0;
+      }
     }
     AddTemporalReferenceMvCandidate(
         tile.frame_header(), reference_offsets, temporal_mvs,
@@ -543,6 +552,7 @@ void AddExtraSingleMvCandidate(const Tile::Block& block, int mv_row,
   PredictionParameters& prediction_parameters =
       *block.bp->prediction_parameters;
   MotionVector* const ref_mv_stack = prediction_parameters.ref_mv_stack;
+  int num_found = *num_mv_found;
   for (int i = 0; i < 2; ++i) {
     const ReferenceFrameType candidate_reference_frame = bp.reference_frame[i];
     if (candidate_reference_frame <= kReferenceFrameIntra) continue;
@@ -552,15 +562,16 @@ void AddExtraSingleMvCandidate(const Tile::Block& block, int mv_row,
       candidate_mv.mv[0] *= -1;
       candidate_mv.mv[1] *= -1;
     }
-    assert(*num_mv_found <= 2);
-    if ((*num_mv_found != 0 && ref_mv_stack[0] == candidate_mv) ||
-        (*num_mv_found == 2 && ref_mv_stack[1] == candidate_mv)) {
+    assert(num_found <= 2);
+    if ((num_found != 0 && ref_mv_stack[0] == candidate_mv) ||
+        (num_found == 2 && ref_mv_stack[1] == candidate_mv)) {
       continue;
     }
-    ref_mv_stack[*num_mv_found] = candidate_mv;
-    prediction_parameters.SetWeightIndexStackEntry(*num_mv_found, 0);
-    ++*num_mv_found;
+    ref_mv_stack[num_found] = candidate_mv;
+    prediction_parameters.SetWeightIndexStackEntry(num_found, 0);
+    ++num_found;
   }
+  *num_mv_found = num_found;
 }
 
 // 7.10.2.12.
@@ -752,12 +763,12 @@ void AddSample(const Tile::Block& block, int delta_row, int delta_column,
 // or -1 so that it can be XORed and subtracted directly in ApplySign() and
 // corresponding SIMD implementations.
 bool MotionFieldProjection(
-    const ObuFrameHeader& frame_header, const RefCountedBuffer& current_frame,
+    const ObuFrameHeader& frame_header,
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
-    ReferenceFrameType source, unsigned int order_hint_shift_bits,
-    int reference_to_current_with_sign, int dst_sign, int y8_start, int y8_end,
-    int x8_start, int x8_end, TemporalMotionField* const motion_field) {
+    ReferenceFrameType source, int reference_to_current_with_sign, int dst_sign,
+    int y8_start, int y8_end, int x8_start, int x8_end,
+    TemporalMotionField* const motion_field) {
   const int source_index =
       frame_header.reference_frame_index[source - kReferenceFrameLast];
   auto* const source_frame = reference_frames[source_index].get();
@@ -770,12 +781,10 @@ bool MotionFieldProjection(
   }
   assert(reference_to_current_with_sign >= -kMaxFrameDistance);
   if (reference_to_current_with_sign > kMaxFrameDistance) return true;
+  const ReferenceInfo& reference_info = *source_frame->reference_info();
   const dsp::Dsp& dsp = *dsp::GetDspTable(8);
   dsp.motion_field_projection_kernel(
-      source_frame->motion_field_reference_frame(y8_start, 0),
-      source_frame->motion_field_mv(y8_start, 0),
-      source_frame->order_hint_array(), current_frame.order_hint(source),
-      order_hint_shift_bits, reference_to_current_with_sign, dst_sign, y8_start,
+      reference_info, reference_to_current_with_sign, dst_sign, y8_start,
       y8_end, x8_start, x8_end, motion_field);
   return true;
 }
@@ -921,62 +930,58 @@ void SetupMotionField(
     const ObuFrameHeader& frame_header, const RefCountedBuffer& current_frame,
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
-    unsigned int order_hint_shift_bits, int row4x4_start, int row4x4_end,
-    int column4x4_start, int column4x4_end,
+    int row4x4_start, int row4x4_end, int column4x4_start, int column4x4_end,
     TemporalMotionField* const motion_field) {
   assert(frame_header.use_ref_frame_mvs);
-  assert(order_hint_shift_bits != 0);
   const int y8_start = DivideBy2(row4x4_start);
   const int y8_end = DivideBy2(std::min(row4x4_end, frame_header.rows4x4));
   const int x8_start = DivideBy2(column4x4_start);
   const int x8_end =
       DivideBy2(std::min(column4x4_end, frame_header.columns4x4));
-  const int8_t* const reference_frame_index =
-      frame_header.reference_frame_index;
-  const int last_index = reference_frame_index[0];
-  const int last_alternate_order_hint =
-      reference_frames[last_index]->order_hint(kReferenceFrameAlternate);
-  const int current_gold_order_hint =
-      current_frame.order_hint(kReferenceFrameGolden);
-  if (last_alternate_order_hint != current_gold_order_hint) {
-    const int reference_offset_last =
-        -GetRelativeDistance(current_frame.order_hint(kReferenceFrameLast),
-                             frame_header.order_hint, order_hint_shift_bits);
-    if (std::abs(reference_offset_last) <= kMaxFrameDistance) {
-      MotionFieldProjection(frame_header, current_frame, reference_frames,
-                            kReferenceFrameLast, order_hint_shift_bits,
-                            reference_offset_last, -1, y8_start, y8_end,
-                            x8_start, x8_end, motion_field);
+  const int last_index = frame_header.reference_frame_index[0];
+  const ReferenceInfo& reference_info = *current_frame.reference_info();
+  if (!IsIntraFrame(reference_frames[last_index]->frame_type())) {
+    const int last_alternate_order_hint =
+        reference_frames[last_index]
+            ->reference_info()
+            ->order_hint[kReferenceFrameAlternate];
+    const int current_gold_order_hint =
+        reference_info.order_hint[kReferenceFrameGolden];
+    if (last_alternate_order_hint != current_gold_order_hint) {
+      const int reference_offset_last =
+          -reference_info.relative_distance_from[kReferenceFrameLast];
+      if (std::abs(reference_offset_last) <= kMaxFrameDistance) {
+        MotionFieldProjection(frame_header, reference_frames,
+                              kReferenceFrameLast, reference_offset_last, -1,
+                              y8_start, y8_end, x8_start, x8_end, motion_field);
+      }
     }
   }
   int ref_stamp = 1;
   const int reference_offset_backward =
-      GetRelativeDistance(current_frame.order_hint(kReferenceFrameBackward),
-                          frame_header.order_hint, order_hint_shift_bits);
+      reference_info.relative_distance_from[kReferenceFrameBackward];
   if (reference_offset_backward > 0 &&
-      MotionFieldProjection(frame_header, current_frame, reference_frames,
-                            kReferenceFrameBackward, order_hint_shift_bits,
-                            reference_offset_backward, 0, y8_start, y8_end,
-                            x8_start, x8_end, motion_field)) {
+      MotionFieldProjection(frame_header, reference_frames,
+                            kReferenceFrameBackward, reference_offset_backward,
+                            0, y8_start, y8_end, x8_start, x8_end,
+                            motion_field)) {
     --ref_stamp;
   }
   const int reference_offset_alternate2 =
-      GetRelativeDistance(current_frame.order_hint(kReferenceFrameAlternate2),
-                          frame_header.order_hint, order_hint_shift_bits);
+      reference_info.relative_distance_from[kReferenceFrameAlternate2];
   if (reference_offset_alternate2 > 0 &&
-      MotionFieldProjection(frame_header, current_frame, reference_frames,
-                            kReferenceFrameAlternate2, order_hint_shift_bits,
+      MotionFieldProjection(frame_header, reference_frames,
+                            kReferenceFrameAlternate2,
                             reference_offset_alternate2, 0, y8_start, y8_end,
                             x8_start, x8_end, motion_field)) {
     --ref_stamp;
   }
   if (ref_stamp >= 0) {
     const int reference_offset_alternate =
-        GetRelativeDistance(current_frame.order_hint(kReferenceFrameAlternate),
-                            frame_header.order_hint, order_hint_shift_bits);
+        reference_info.relative_distance_from[kReferenceFrameAlternate];
     if (reference_offset_alternate > 0 &&
-        MotionFieldProjection(frame_header, current_frame, reference_frames,
-                              kReferenceFrameAlternate, order_hint_shift_bits,
+        MotionFieldProjection(frame_header, reference_frames,
+                              kReferenceFrameAlternate,
                               reference_offset_alternate, 0, y8_start, y8_end,
                               x8_start, x8_end, motion_field)) {
       --ref_stamp;
@@ -984,13 +989,11 @@ void SetupMotionField(
   }
   if (ref_stamp >= 0) {
     const int reference_offset_last2 =
-        -GetRelativeDistance(current_frame.order_hint(kReferenceFrameLast2),
-                             frame_header.order_hint, order_hint_shift_bits);
+        -reference_info.relative_distance_from[kReferenceFrameLast2];
     if (std::abs(reference_offset_last2) <= kMaxFrameDistance) {
-      MotionFieldProjection(frame_header, current_frame, reference_frames,
-                            kReferenceFrameLast2, order_hint_shift_bits,
-                            reference_offset_last2, -1, y8_start, y8_end,
-                            x8_start, x8_end, motion_field);
+      MotionFieldProjection(frame_header, reference_frames,
+                            kReferenceFrameLast2, reference_offset_last2, -1,
+                            y8_start, y8_end, x8_start, x8_end, motion_field);
     }
   }
 }

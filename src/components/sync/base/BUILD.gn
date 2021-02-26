@@ -3,15 +3,15 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 
-jumbo_static_library("base") {
+declare_args() {
+  # Controls the product part of the user agent calculated in sync_util.cc.
+  sync_user_agent_product = "Chrome"
+}
+
+static_library("base") {
   sources = [
     "bind_to_task_runner.h",
-    "cancelation_observer.cc",
-    "cancelation_observer.h",
-    "cancelation_signal.cc",
-    "cancelation_signal.h",
     "client_tag_hash.cc",
     "client_tag_hash.h",
     "data_type_histogram.cc",
@@ -29,6 +29,8 @@ jumbo_static_library("base") {
     "invalidation_helper.h",
     "invalidation_interface.cc",
     "invalidation_interface.h",
+    "legacy_directory_deletion.cc",
+    "legacy_directory_deletion.h",
     "logging.cc",
     "logging.h",
     "model_type.cc",
@@ -51,6 +53,8 @@ jumbo_static_library("base") {
     "sync_prefs.cc",
     "sync_prefs.h",
     "sync_stop_metadata_fate.h",
+    "sync_util.cc",
+    "sync_util.h",
     "syncer_error.cc",
     "syncer_error.h",
     "system_encryptor.cc",
@@ -59,11 +63,8 @@ jumbo_static_library("base") {
     "time.h",
     "unique_position.cc",
     "unique_position.h",
-    "unrecoverable_error_handler.h",
     "unrecoverable_error_info.cc",
     "unrecoverable_error_info.h",
-    "user_demographics.cc",
-    "user_demographics.h",
     "user_selectable_type.cc",
     "user_selectable_type.h",
     "weak_handle.cc",
@@ -84,14 +85,18 @@ jumbo_static_library("base") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/version_info",
+    "//components/version_info:generate_version_info",
     "//crypto",
     "//net",
     "//third_party/zlib",
+    "//ui/base",
   ]
 
   if (is_chromeos) {
     deps += [ "//chromeos/constants" ]
   }
+
+  defines = [ "SYNC_USER_AGENT_PRODUCT=$sync_user_agent_product" ]
 }
 
 static_library("test_support") {
@@ -107,12 +112,8 @@ static_library("test_support") {
     "../test/trackable_mock_invalidation.h",
     "fake_encryptor.cc",
     "fake_encryptor.h",
-    "mock_unrecoverable_error_handler.cc",
-    "mock_unrecoverable_error_handler.h",
     "model_type_test_util.cc",
     "model_type_test_util.h",
-    "test_unrecoverable_error_handler.cc",
-    "test_unrecoverable_error_handler.h",
   ]
 
   public_deps = [

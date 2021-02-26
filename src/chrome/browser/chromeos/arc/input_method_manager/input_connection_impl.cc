@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/ime_keymap.h"
-#include "ui/base/ime/ime_bridge.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -223,7 +223,7 @@ void InputConnectionImpl::SetComposingText(
   if (!ime_engine_->SetComposition(
           input_context_id_, base::UTF16ToUTF8(text).c_str(), selection_start,
           selection_end, new_cursor_pos,
-          std::vector<input_method::InputMethodEngineBase::SegmentInfo>(),
+          std::vector<chromeos::InputMethodEngineBase::SegmentInfo>(),
           &error)) {
     LOG(ERROR) << "SetComposingText failed: pos=" << new_cursor_pos
                << ", error=\"" << error << "\"";
@@ -253,23 +253,22 @@ void InputConnectionImpl::SetSelection(const gfx::Range& new_selection_range) {
   client->SetEditableSelectionRange(new_selection_range);
 }
 
-void InputConnectionImpl::SendKeyEvent(mojom::KeyEventDataPtr data_ptr) {
+void InputConnectionImpl::SendKeyEvent(
+    std::unique_ptr<ui::KeyEvent> key_event) {
+  DCHECK(key_event);
   chromeos::InputMethodEngine::KeyboardEvent event;
-  if (data_ptr->pressed)
+  if (key_event->type() == ui::ET_KEY_PRESSED)
     event.type = "keydown";
   else
     event.type = "keyup";
 
-  ui::KeyboardCode key_code = static_cast<ui::KeyboardCode>(data_ptr->key_code);
-  ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-
-  event.key = ui::KeycodeConverter::DomCodeToCodeString(dom_code);
-  event.code = ui::KeyboardCodeToDomKeycode(key_code);
-  event.key_code = data_ptr->key_code;
-  event.alt_key = data_ptr->is_alt_down;
-  event.ctrl_key = data_ptr->is_control_down;
-  event.shift_key = data_ptr->is_shift_down;
-  event.caps_lock = data_ptr->is_capslock_on;
+  event.key = key_event->GetCodeString();
+  event.code = ui::KeyboardCodeToDomKeycode(key_event->key_code());
+  event.key_code = key_event->key_code();
+  event.alt_key = key_event->IsAltDown();
+  event.ctrl_key = key_event->IsControlDown();
+  event.shift_key = key_event->IsShiftDown();
+  event.caps_lock = key_event->IsCapsLockOn();
 
   std::string error;
   if (!ime_engine_->SendKeyEvents(input_context_id_, {event}, &error)) {
@@ -294,14 +293,13 @@ void InputConnectionImpl::SetCompositionRange(
 
   const int before = selection_range.start() - new_composition_range.start();
   const int after = new_composition_range.end() - selection_range.end();
-  input_method::InputMethodEngineBase::SegmentInfo segment_info;
+  chromeos::InputMethodEngineBase::SegmentInfo segment_info;
   segment_info.start = 0;
   segment_info.end = new_composition_range.length();
-  segment_info.style =
-      input_method::InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+  segment_info.style = chromeos::InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
 
   std::string error;
-  if (!ime_engine_->input_method::InputMethodEngineBase::SetCompositionRange(
+  if (!ime_engine_->chromeos::InputMethodEngineBase::SetCompositionRange(
           input_context_id_, before, after, {segment_info}, &error)) {
     LOG(ERROR) << "SetCompositionRange failed: range="
                << new_composition_range.ToString() << ", error=\"" << error

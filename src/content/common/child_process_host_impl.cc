@@ -23,6 +23,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "content/common/content_constants_internal.h"
 #include "content/public/common/child_process_host_delegate.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -36,12 +37,12 @@
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "base/linux_util.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "base/mac/foundation_util.h"
 #include "content/common/mac_helpers.h"
-#endif  // OS_LINUX
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
 #include "content/public/common/profiling_utils.h"
@@ -70,7 +71,7 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
   child_path = base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
       switches::kBrowserSubprocessPath);
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Use /proc/self/exe rather than our known binary path so updates
   // can't swap out the binary from underneath us.
   if (child_path.empty() && flags & CHILD_ALLOW_SELF)
@@ -82,10 +83,14 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
   if (child_path.empty())
     base::PathService::Get(CHILD_PROCESS_EXE, &child_path);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::string child_base_name = child_path.BaseName().value();
 
-  if (flags != CHILD_NORMAL && base::mac::AmIBundled()) {
+  if (flags != CHILD_NORMAL && base::mac::AmIBundled()
+#if defined(ARCH_CPU_ARM64)
+      && flags != CHILD_LAUNCH_X86_64
+#endif  // ARCH_CPU_ARM64
+  ) {
     // This is a specialized helper, with the |child_path| at
     // ../Framework.framework/Versions/X/Helpers/Chromium Helper.app/Contents/
     // MacOS/Chromium Helper. Go back up to the "Helpers" directory to select
@@ -122,14 +127,19 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate,
     // disconnected pipe so it quietly discards messages.
     ignore_result(child_process_.BindNewPipeAndPassReceiver());
     channel_ = IPC::ChannelMojo::Create(
-        mojo_invitation_->AttachMessagePipe(0), IPC::Channel::MODE_SERVER, this,
-        base::ThreadTaskRunnerHandle::Get(),
+        mojo_invitation_->AttachMessagePipe(
+            kChildProcessReceiverAttachmentName),
+        IPC::Channel::MODE_SERVER, this, base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(),
         mojo::internal::MessageQuotaChecker::MaybeCreate());
   } else if (ipc_mode_ == IpcMode::kNormal) {
     child_process_.Bind(mojo::PendingRemote<mojom::ChildProcess>(
-        mojo_invitation_->AttachMessagePipe(0), /*version=*/0));
-    child_process_->Initialize(bootstrap_receiver_.BindNewPipeAndPassRemote());
+        mojo_invitation_->AttachMessagePipe(
+            kChildProcessReceiverAttachmentName),
+        /*version=*/0));
+    receiver_.Bind(mojo::PendingReceiver<mojom::ChildProcessHost>(
+        mojo_invitation_->AttachMessagePipe(
+            kChildProcessHostRemoteAttachmentName)));
   }
 }
 
@@ -263,11 +273,6 @@ uint64_t ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
          1;
 }
 
-void ChildProcessHostImpl::BindProcessHost(
-    mojo::PendingReceiver<mojom::ChildProcessHost> receiver) {
-  receiver_.Bind(std::move(receiver));
-}
-
 void ChildProcessHostImpl::BindHostReceiver(
     mojo::GenericPendingReceiver receiver) {
   delegate_->BindHostReceiver(std::move(receiver));
@@ -331,5 +336,11 @@ void ChildProcessHostImpl::OnChannelError() {
 void ChildProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
   delegate_->OnBadMessageReceived(message);
 }
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+void ChildProcessHostImpl::DumpProfilingData(base::OnceClosure callback) {
+  child_process_->WriteClangProfilingProfile(std::move(callback));
+}
+#endif
 
 }  // namespace content

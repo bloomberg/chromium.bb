@@ -13,17 +13,17 @@ import * as UI from '../ui/ui.js';
 export class ThreadsSidebarPane extends UI.Widget.VBox {
   constructor() {
     super(true);
-    this.registerRequiredCSS('sources/threadsSidebarPane.css');
+    this.registerRequiredCSS('sources/threadsSidebarPane.css', {enableLegacyPatching: true});
 
     /** @type {!UI.ListModel.ListModel<!SDK.DebuggerModel.DebuggerModel>} */
     this._items = new UI.ListModel.ListModel();
     /** @type {!UI.ListControl.ListControl<!SDK.DebuggerModel.DebuggerModel>} */
     this._list = new UI.ListControl.ListControl(this._items, this, UI.ListControl.ListMode.NonViewport);
-    const currentTarget = self.UI.context.flavor(SDK.SDKModel.Target);
+    const currentTarget = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
     this._selectedModel = !!currentTarget ? currentTarget.model(SDK.DebuggerModel.DebuggerModel) : null;
     this.contentElement.appendChild(this._list.element);
 
-    self.UI.context.addFlavorChangeListener(SDK.SDKModel.Target, this._targetFlavorChanged, this);
+    UI.Context.Context.instance().addFlavorChangeListener(SDK.SDKModel.Target, this._targetFlavorChanged, this);
     SDK.SDKModel.TargetManager.instance().observeModels(SDK.DebuggerModel.DebuggerModel, this);
   }
 
@@ -47,10 +47,10 @@ export class ThreadsSidebarPane extends UI.Widget.VBox {
     element.appendChild(UI.Icon.Icon.create('smallicon-thick-right-arrow', 'selected-thread-icon'));
     element.tabIndex = -1;
     self.onInvokeElement(element, event => {
-      self.UI.context.setFlavor(SDK.SDKModel.Target, debuggerModel.target());
+      UI.Context.Context.instance().setFlavor(SDK.SDKModel.Target, debuggerModel.target());
       event.consume(true);
     });
-    const isSelected = self.UI.context.flavor(SDK.SDKModel.Target) === debuggerModel.target();
+    const isSelected = UI.Context.Context.instance().flavor(SDK.SDKModel.Target) === debuggerModel.target();
     element.classList.toggle('selected', isSelected);
     UI.ARIAUtils.setSelected(element, isSelected);
 
@@ -111,14 +111,16 @@ export class ThreadsSidebarPane extends UI.Widget.VBox {
    * @param {?Element} toElement
    */
   selectedItemChanged(from, to, fromElement, toElement) {
-    if (fromElement) {
-      fromElement.tabIndex = -1;
+    const fromEle = /** @type {?HTMLElement} */ (fromElement);
+    if (fromEle) {
+      fromEle.tabIndex = -1;
     }
-    if (toElement) {
-      this.setDefaultFocusedElement(toElement);
-      toElement.tabIndex = 0;
+    const toEle = /** @type {?HTMLElement} */ (toElement);
+    if (toEle) {
+      this.setDefaultFocusedElement(toEle);
+      toEle.tabIndex = 0;
       if (this.hasFocus()) {
-        toElement.focus();
+        toEle.focus();
       }
     }
   }
@@ -139,7 +141,7 @@ export class ThreadsSidebarPane extends UI.Widget.VBox {
    */
   modelAdded(debuggerModel) {
     this._items.insert(this._items.length, debuggerModel);
-    const currentTarget = self.UI.context.flavor(SDK.SDKModel.Target);
+    const currentTarget = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
     if (currentTarget === debuggerModel.target()) {
       this._list.selectItem(debuggerModel);
     }
@@ -160,6 +162,7 @@ export class ThreadsSidebarPane extends UI.Widget.VBox {
     const hadFocus = this.hasFocus();
     const target = /** @type {!SDK.SDKModel.Target} */ (event.data);
     const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+    this._list.selectItem(debuggerModel);
     if (debuggerModel) {
       this._list.refreshItem(debuggerModel);
     }

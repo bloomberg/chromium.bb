@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_layout.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -26,6 +26,8 @@ CXFA_Layout::CXFA_Layout(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Layout,
                 {},
                 kLayoutAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Layout::~CXFA_Layout() = default;

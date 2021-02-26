@@ -32,10 +32,13 @@
 
 #include <memory>
 #include "base/feature_list.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
@@ -55,8 +58,14 @@ SharedWorkerGlobalScope::SharedWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     SharedWorkerThread* thread,
     base::TimeTicks time_origin,
-    const base::UnguessableToken& appcache_host_id)
-    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
+    const SharedWorkerToken& token,
+    const base::UnguessableToken& appcache_host_id,
+    ukm::SourceId ukm_source_id)
+    : WorkerGlobalScope(std::move(creation_params),
+                        thread,
+                        time_origin,
+                        ukm_source_id),
+      token_(token) {
   appcache_host_ = MakeGarbageCollected<ApplicationCacheHostForWorker>(
       appcache_host_id, GetBrowserInterfaceBroker(),
       GetTaskRunner(TaskType::kInternalLoading), this);
@@ -76,7 +85,6 @@ void SharedWorkerGlobalScope::Initialize(
     const Vector<CSPHeaderAndType>& response_csp_headers,
     const Vector<String>* response_origin_trial_tokens,
     int64_t appcache_id) {
-
   // Step 12.3. "Set worker global scope's url to response's url."
   InitializeURL(response_url);
 
@@ -89,7 +97,7 @@ void SharedWorkerGlobalScope::Initialize(
   SetReferrerPolicy(response_referrer_policy);
 
   // https://wicg.github.io/cors-rfc1918/#integration-html
-  GetSecurityContext().SetAddressSpace(response_address_space);
+  SetAddressSpace(response_address_space);
 
   // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
   // on worker global scope and response. [CSP]"
@@ -125,6 +133,8 @@ void SharedWorkerGlobalScope::Initialize(
 // https://html.spec.whatwg.org/C/#worker-processing-model
 void SharedWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
@@ -132,7 +142,7 @@ void SharedWorkerGlobalScope::FetchAndRunClassicScript(
 
   // Step 12. "Fetch a classic worker script given url, outside settings,
   // destination, and inside settings."
-  auto context_type = mojom::RequestContextType::SHARED_WORKER;
+  auto context_type = mojom::blink::RequestContextType::SHARED_WORKER;
   network::mojom::RequestDestination destination =
       network::mojom::RequestDestination::kSharedWorker;
 
@@ -147,8 +157,8 @@ void SharedWorkerGlobalScope::FetchAndRunClassicScript(
       *this,
       CreateOutsideSettingsFetcher(outside_settings_object,
                                    outside_resource_timing_notifier),
-      script_url, context_type, destination,
-      network::mojom::RequestMode::kSameOrigin,
+      script_url, std::move(worker_main_script_load_params), context_type,
+      destination, network::mojom::RequestMode::kSameOrigin,
       network::mojom::CredentialsMode::kSameOrigin,
       WTF::Bind(&SharedWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
@@ -161,14 +171,21 @@ void SharedWorkerGlobalScope::FetchAndRunClassicScript(
 // https://html.spec.whatwg.org/C/#worker-processing-model
 void SharedWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode,
     RejectCoepUnsafeNone reject_coep_unsafe_none) {
   DCHECK(!reject_coep_unsafe_none);
+  if (worker_main_script_load_params) {
+    SetWorkerMainScriptLoadingParametersForModules(
+        std::move(worker_main_script_load_params));
+  }
+
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
-  auto context_type = mojom::RequestContextType::SHARED_WORKER;
+  auto context_type = mojom::blink::RequestContextType::SHARED_WORKER;
   auto destination = network::mojom::RequestDestination::kSharedWorker;
 
   // Step 13: "... Fetch a module worker script graph given url, outside
@@ -264,9 +281,13 @@ void SharedWorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
     debugger->ExceptionThrown(GetThread(), event);
 }
 
-void SharedWorkerGlobalScope::Trace(Visitor* visitor) {
+void SharedWorkerGlobalScope::Trace(Visitor* visitor) const {
   visitor->Trace(appcache_host_);
   WorkerGlobalScope::Trace(visitor);
+}
+
+bool SharedWorkerGlobalScope::CrossOriginIsolatedCapability() const {
+  return Agent::IsCrossOriginIsolated();
 }
 
 }  // namespace blink

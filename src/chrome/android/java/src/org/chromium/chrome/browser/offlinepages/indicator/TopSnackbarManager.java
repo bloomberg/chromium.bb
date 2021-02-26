@@ -13,8 +13,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -64,9 +64,6 @@ public class TopSnackbarManager implements OnClickListener, ApplicationStatus.Ac
     public void onBottomControlsHeightChanged(
             int bottomControlsHeight, int bottomControlsMinHeight) {}
 
-    @Override
-    public void onContentOffsetChanged(int offset) {}
-
     /**
      * Shows a snackbar at the top of the given activity.
      */
@@ -91,7 +88,7 @@ public class TopSnackbarManager implements OnClickListener, ApplicationStatus.Ac
 
         if (activity instanceof ChromeActivity) {
             ChromeActivity chromeActivity = (ChromeActivity) activity;
-            chromeActivity.getFullscreenManager().addObserver(this);
+            chromeActivity.getBrowserControlsManager().addObserver(this);
         }
 
         ApplicationStatus.registerStateListenerForActivity(this, activity);
@@ -117,7 +114,7 @@ public class TopSnackbarManager implements OnClickListener, ApplicationStatus.Ac
 
         if (mActivity instanceof ChromeActivity) {
             ChromeActivity chromeActivity = (ChromeActivity) mActivity;
-            chromeActivity.getFullscreenManager().removeObserver(this);
+            chromeActivity.getBrowserControlsManager().removeObserver(this);
         }
 
         mDismissSnackbarHandler.removeCallbacks(mDismissSnackbarRunnable);

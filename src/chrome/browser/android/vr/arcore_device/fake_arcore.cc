@@ -7,9 +7,6 @@
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/numerics/math_constants.h"
 #include "base/single_thread_task_runner.h"
-#include "ui/display/display.h"
-#include "ui/gfx/buffer_types.h"
-#include "ui/gl/gl_image_ahardwarebuffer.h"
 
 namespace {}
 
@@ -20,10 +17,24 @@ FakeArCore::FakeArCore()
 
 FakeArCore::~FakeArCore() = default;
 
-bool FakeArCore::Initialize(
-    base::android::ScopedJavaLocalRef<jobject> application_context) {
+ArCore::MinMaxRange FakeArCore::GetTargetFramerateRange() {
+  return {30.f, 30.f};
+}
+
+base::Optional<ArCore::InitializeResult> FakeArCore::Initialize(
+    base::android::ScopedJavaLocalRef<jobject> application_context,
+    const std::unordered_set<device::mojom::XRSessionFeature>&
+        required_features,
+    const std::unordered_set<device::mojom::XRSessionFeature>&
+        optional_features,
+    const std::vector<device::mojom::XRTrackedImagePtr>& tracked_images) {
   DCHECK(IsOnGlThread());
-  return true;
+
+  std::unordered_set<device::mojom::XRSessionFeature> enabled_features;
+  enabled_features.insert(required_features.begin(), required_features.end());
+  enabled_features.insert(optional_features.begin(), optional_features.end());
+
+  return ArCore::InitializeResult(enabled_features);
 }
 
 void FakeArCore::SetDisplayGeometry(
@@ -35,7 +46,7 @@ void FakeArCore::SetDisplayGeometry(
   frame_size_ = frame_size;
 }
 
-void FakeArCore::SetCameraTexture(GLuint texture) {
+void FakeArCore::SetCameraTexture(uint32_t texture) {
   DCHECK(IsOnGlThread());
   // This is a no-op for the FakeArCore implementation. We might want to
   // store the textureid for use in unit tests, but currently ArCoreDeviceTest
@@ -46,7 +57,7 @@ void FakeArCore::SetCameraTexture(GLuint texture) {
 }
 
 std::vector<float> FakeArCore::TransformDisplayUvCoords(
-    const base::span<const float> uvs) {
+    const base::span<const float> uvs) const {
   // Try to match ArCore's transfore values.
   //
   // Sample ArCore input: width=1080, height=1795, rotation=0,
@@ -76,6 +87,8 @@ std::vector<float> FakeArCore::TransformDisplayUvCoords(
   // SetDisplayGeometry should have been called first.
   DCHECK(frame_size_.width());
   DCHECK(frame_size_.height());
+
+  DCHECK_GE(uvs.size(), 6u);
 
   // Do clipping calculations in orientation ROTATE_0. screen U is left=0,
   // right=1. Screen V is bottom=0, top=1. We'll apply screen rotation later.
@@ -147,6 +160,7 @@ std::vector<float> FakeArCore::TransformDisplayUvCoords(
     uvs_out.push_back(v);
     DVLOG(2) << __FUNCTION__ << ": uv[" << i << "]=(" << u << ", " << v << ")";
   }
+
   return uvs_out;
 }
 
@@ -208,8 +222,8 @@ bool FakeArCore::RequestHitTest(
     const mojom::XRRayPtr& ray,
     std::vector<mojom::XRHitResultPtr>* hit_results) {
   mojom::XRHitResultPtr hit = mojom::XRHitResult::New();
-  // Identity matrix - no translation and default orientation.
-  hit->hit_matrix = gfx::Transform();
+  // Default-constructed `hit->mojo_from_result` is fine, no need to set
+  // anything.
   hit_results->push_back(std::move(hit));
 
   return true;
@@ -246,9 +260,7 @@ mojom::XRPlaneDetectionDataPtr FakeArCore::GetDetectedPlanesData() {
   std::vector<mojom::XRPlaneDataPtr> result;
 
   // 1m ahead of the origin, neutral orientation facing forward.
-  mojom::PosePtr pose = mojom::Pose::New();
-  pose->position = gfx::Point3F(0.0, 0.0, -1.0);
-  pose->orientation = gfx::Quaternion();
+  device::Pose pose(gfx::Point3F(0.0, 0.0, -1.0), gfx::Quaternion());
 
   // some random triangle
   std::vector<mojom::XRPlanePointDataPtr> vertices;
@@ -258,7 +270,7 @@ mojom::XRPlaneDetectionDataPtr FakeArCore::GetDetectedPlanesData() {
 
   result.push_back(
       mojom::XRPlaneData::New(1, device::mojom::XRPlaneOrientation::HORIZONTAL,
-                              std::move(pose), std::move(vertices)));
+                              pose, std::move(vertices)));
 
   return mojom::XRPlaneDetectionData::New(std::vector<uint64_t>{1},
                                           std::move(result));
@@ -269,12 +281,10 @@ mojom::XRAnchorsDataPtr FakeArCore::GetAnchorsData() {
   std::vector<uint64_t> result_ids;
 
   for (auto& anchor_id_and_data : anchors_) {
-    mojom::PosePtr pose = mojom::Pose::New();
-    pose->position = anchor_id_and_data.second.position;
-    pose->orientation = anchor_id_and_data.second.orientation;
+    device::Pose pose(anchor_id_and_data.second.position,
+                      anchor_id_and_data.second.orientation);
 
-    result.push_back(
-        mojom::XRAnchorData::New(anchor_id_and_data.first, std::move(pose)));
+    result.push_back(mojom::XRAnchorData::New(anchor_id_and_data.first, pose));
     result_ids.push_back(anchor_id_and_data.first);
   }
 
@@ -307,16 +317,22 @@ mojom::XRLightEstimationDataPtr FakeArCore::GetLightEstimationData() {
   return result;
 }
 
-void FakeArCore::CreatePlaneAttachedAnchor(const mojom::Pose& plane_from_anchor,
-                                           uint64_t plane_id,
-                                           CreateAnchorCallback callback) {
+mojom::XRDepthDataPtr FakeArCore::GetDepthData() {
+  return nullptr;
+}
+
+void FakeArCore::CreatePlaneAttachedAnchor(
+    const mojom::XRNativeOriginInformation& native_origin_information,
+    const device::Pose& native_origin_from_anchor,
+    uint64_t plane_id,
+    CreateAnchorCallback callback) {
   // TODO(992035): Fix this when implementing tests.
   std::move(callback).Run(mojom::CreateAnchorResult::FAILURE, 0);
 }
 
 void FakeArCore::CreateAnchor(
     const mojom::XRNativeOriginInformation& native_origin_information,
-    const mojom::Pose& native_origin_from_anchor,
+    const device::Pose& native_origin_from_anchor,
     CreateAnchorCallback callback) {
   std::move(callback).Run(mojom::CreateAnchorResult::FAILURE, 0);
 }
@@ -331,6 +347,11 @@ void FakeArCore::ProcessAnchorCreationRequests(
 void FakeArCore::DetachAnchor(uint64_t anchor_id) {
   auto count = anchors_.erase(anchor_id);
   DCHECK_EQ(1u, count);
+}
+
+mojom::XRTrackedImagesDataPtr FakeArCore::GetTrackedImages() {
+  std::vector<mojom::XRTrackedImageDataPtr> images_data;
+  return mojom::XRTrackedImagesData::New(std::move(images_data), base::nullopt);
 }
 
 void FakeArCore::Pause() {

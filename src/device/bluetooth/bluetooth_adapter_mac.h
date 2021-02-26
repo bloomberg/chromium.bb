@@ -67,34 +67,32 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   std::string GetAddress() const override;
   std::string GetName() const override;
   void SetName(const std::string& name,
-               const base::Closure& callback,
-               const ErrorCallback& error_callback) override;
+               base::OnceClosure callback,
+               ErrorCallback error_callback) override;
   bool IsInitialized() const override;
   bool IsPresent() const override;
   bool IsPowered() const override;
   bool IsDiscoverable() const override;
   void SetDiscoverable(bool discoverable,
-                       const base::Closure& callback,
-                       const ErrorCallback& error_callback) override;
+                       base::OnceClosure callback,
+                       ErrorCallback error_callback) override;
   bool IsDiscovering() const override;
   std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet>
   RetrieveGattConnectedDevicesWithDiscoveryFilter(
       const BluetoothDiscoveryFilter& discovery_filter) override;
   UUIDList GetUUIDs() const override;
-  void CreateRfcommService(
-      const BluetoothUUID& uuid,
-      const ServiceOptions& options,
-      const CreateServiceCallback& callback,
-      const CreateServiceErrorCallback& error_callback) override;
-  void CreateL2capService(
-      const BluetoothUUID& uuid,
-      const ServiceOptions& options,
-      const CreateServiceCallback& callback,
-      const CreateServiceErrorCallback& error_callback) override;
+  void CreateRfcommService(const BluetoothUUID& uuid,
+                           const ServiceOptions& options,
+                           CreateServiceCallback callback,
+                           CreateServiceErrorCallback error_callback) override;
+  void CreateL2capService(const BluetoothUUID& uuid,
+                          const ServiceOptions& options,
+                          CreateServiceCallback callback,
+                          CreateServiceErrorCallback error_callback) override;
   void RegisterAdvertisement(
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
-      const CreateAdvertisementCallback& callback,
-      const AdvertisementErrorCallback& error_callback) override;
+      CreateAdvertisementCallback callback,
+      AdvertisementErrorCallback error_callback) override;
   BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;
 
@@ -149,8 +147,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // not know about bool.
   using SetControllerPowerStateFunction = base::RepeatingCallback<void(int)>;
 
+  // Performs initialization steps which touch the Bluetooth API and might
+  // trigger a Bluetooth permission prompt.
+  void LazyInitialize();
+
   // Queries the state of the IOBluetoothHostController.
   HostControllerState GetHostControllerState();
+
+  // Allows configuring whether the adapter is present when running in a test
+  // configuration.
+  void SetPresentForTesting(bool present);
 
   // Resets |low_energy_central_manager_| to |central_manager| and sets
   // |low_energy_central_manager_delegate_| as the manager's delegate. Should
@@ -247,8 +253,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   bool DoesCollideWithKnownDevice(CBPeripheral* peripheral,
                                   BluetoothLowEnergyDeviceMac* device_mac);
 
+  // The Initialize() method intentionally does not initialize
+  // |low_energy_central_manager_| or |low_energy_peripheral_manager_| because
+  // Chromium might not have permission to access the Bluetooth adapter.
+  // Methods which require these to be initialized must call LazyInitialize()
+  // first.
+  bool lazy_initialized_ = false;
+
   std::string address_;
-  bool classic_powered_;
+  bool classic_powered_ = false;
+  base::Optional<bool> is_present_for_testing_;
 
   // Function returning the state of the HostController. Can be overridden for
   // tests.
@@ -269,7 +283,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   mutable std::string name_;
   // True if the name hasn't been acquired yet, the last acquired name is empty
   // or the address has changed indicating the name might have changed.
-  mutable bool should_update_name_;
+  mutable bool should_update_name_ = true;
 
   // Discovery manager for Bluetooth Classic.
   std::unique_ptr<BluetoothDiscoveryManagerMac> classic_discovery_manager_;
@@ -303,7 +317,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // corresponding device address.
   std::map<std::string, std::string> low_energy_devices_info_;
 
-  base::WeakPtrFactory<BluetoothAdapterMac> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothAdapterMac> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterMac);
 };

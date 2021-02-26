@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/features.h"
@@ -162,8 +161,8 @@ class AuraWindowVideoCaptureDeviceBrowserTest
       // Wait for at least the minimum capture period before checking for more
       // captured frames.
       base::RunLoop run_loop;
-      base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
-                            run_loop.QuitClosure(), GetMinCapturePeriod());
+      GetUIThreadTaskRunner({})->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(), GetMinCapturePeriod());
       run_loop.Run();
     }
   }
@@ -222,11 +221,12 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
   RunUntilIdle();
 }
 
+// Disabled (crbug.com/1096988)
 // Tests that the device starts, captures a frame, and then gracefully
 // errors-out because the target window is destroyed before the device is
 // stopped.
 IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
-                       ErrorsOutWhenWindowIsDestroyed) {
+                       DISABLED_ErrorsOutWhenWindowIsDestroyed) {
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
@@ -244,11 +244,12 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
   StopAndDeAllocate();
 }
 
+// Disabled (crbug.com/1096988)
 // Tests that the device stops delivering frames while suspended. When resumed,
 // any content changes that occurred during the suspend should cause a new frame
 // to be delivered, to ensure the client is up-to-date.
 IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
-                       SuspendsAndResumes) {
+                       DISABLED_SuspendsAndResumes) {
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
@@ -265,8 +266,8 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
   // frames were queued because the device should be suspended.
   ChangePageContentColor(SK_ColorGREEN);
   base::RunLoop run_loop;
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI}, run_loop.QuitClosure(),
-                        base::TimeDelta::FromSeconds(5));
+  GetUIThreadTaskRunner({})->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
+                                             base::TimeDelta::FromSeconds(5));
   run_loop.Run();
   EXPECT_FALSE(HasCapturedFramesInQueue());
 
@@ -278,10 +279,11 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
   StopAndDeAllocate();
 }
 
+// Disabled (crbug.com/1096988)
 // Tests that the device delivers refresh frames when asked, while the source
 // content is not changing.
 IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
-                       DeliversRefreshFramesUponRequest) {
+                       DISABLED_DeliversRefreshFramesUponRequest) {
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
@@ -301,10 +303,11 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
 }
 
 #if defined(OS_CHROMEOS)
+// Disabled (crbug.com/1096988)
 // On ChromeOS, another window may occlude a window that is being captured.
 // Make sure the visibility is set to visible during capture if it's occluded.
 IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
-                       CapturesOccludedWindows) {
+                       DISABLED_CapturesOccludedWindows) {
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
@@ -356,11 +359,12 @@ INSTANTIATE_TEST_SUITE_P(
                                      true /* fixed aspect ratio */)));
 #endif  // defined(OS_CHROMEOS)
 
+// Disabled (crbug.com/1096988)
 // Tests that the device successfully captures a series of content changes,
 // whether the browser is running with software compositing or GPU-accelerated
 // compositing.
 IN_PROC_BROWSER_TEST_P(AuraWindowVideoCaptureDeviceBrowserTestP,
-                       CapturesContentChanges) {
+                       DISABLED_CapturesContentChanges) {
   SCOPED_TRACE(testing::Message()
                << "Test parameters: "
                << (IsSoftwareCompositingTest() ? "Software Compositing"

@@ -13,10 +13,6 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 
-namespace autofill {
-struct PasswordForm;
-}  // namespace autofill
-
 class PrefService;
 
 namespace password_manager {
@@ -24,6 +20,7 @@ namespace password_manager {
 class LeakDetectionCheck;
 class LeakDetectionDelegateHelper;
 class PasswordManagerClient;
+struct PasswordForm;
 
 // The helper class that encapsulates the requests and their processing.
 class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
@@ -45,7 +42,7 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
   LeakDetectionCheck* leak_check() const { return leak_check_.get(); }
 #endif  // defined(UNIT_TEST)
 
-  void StartLeakCheck(const autofill::PasswordForm& form);
+  void StartLeakCheck(const PasswordForm& form);
 
  private:
   // LeakDetectionDelegateInterface:
@@ -59,7 +56,8 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
   void OnShowLeakDetectionNotification(IsSaved is_saved,
                                        IsReused is_reused,
                                        GURL url,
-                                       base::string16 username);
+                                       base::string16 username,
+                                       CompromisedSitesCount saved_sites);
 
   void OnError(LeakDetectionError error) override;
 

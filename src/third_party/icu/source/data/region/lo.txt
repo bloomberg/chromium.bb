@@ -1,5 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+// License & terms of use: http://www.unicode.org/copyright.html
+// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
 lo{
     Countries{
         001{"ໂລກ"}
@@ -222,7 +223,7 @@ lo{
         PM{"ເຊນ ປີແອ ມິເກວລອນ"}
         PN{"ໝູ່ເກາະພິດແຄນ"}
         PR{"ເພືອໂຕ ຣິໂກ"}
-        PS{"ປາເລສຕາຍ"}
+        PS{"ປາເລດສະຕິນ"}
         PT{"ພອລທູໂກ"}
         PW{"ປາລາວ"}
         PY{"ພາຣາກວຍ"}
@@ -310,5 +311,4 @@ lo{
         SZ{"ສະ​ວາ​ຊິ​ແລນ"}
         TL{"ທິມໍ ຕາເວັນອອກ"}
     }
-    Version{"37"}
 }

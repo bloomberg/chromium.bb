@@ -89,10 +89,12 @@ class Trans4x4FDCT : public libaom_test::TransformTestBase<OutputType>,
 };
 
 using Trans4x4FDCTTranLow = Trans4x4FDCT<tran_low_t>;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Trans4x4FDCTTranLow);
 TEST_P(Trans4x4FDCTTranLow, CoeffCheck) { RunCoeffCheck(); }
 TEST_P(Trans4x4FDCTTranLow, MemCheck) { RunMemCheck(); }
 
 using Trans4x4FDCTInt16 = Trans4x4FDCT<int16_t>;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Trans4x4FDCTInt16);
 TEST_P(Trans4x4FDCTInt16, CoeffCheck) { RunCoeffCheck(); }
 TEST_P(Trans4x4FDCTInt16, MemCheck) { RunMemCheck(); }
 

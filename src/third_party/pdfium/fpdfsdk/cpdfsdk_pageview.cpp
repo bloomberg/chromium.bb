@@ -228,6 +228,15 @@ void CPDFSDK_PageView::ReplaceSelection(const WideString& text) {
   }
 }
 
+bool CPDFSDK_PageView::SelectAllText() {
+  CPDFSDK_Annot* annot = GetFocusAnnot();
+  if (!annot)
+    return false;
+
+  CPDFSDK_AnnotHandlerMgr* handler = m_pFormFillEnv->GetAnnotHandlerMgr();
+  return handler->Annot_SelectAllText(annot);
+}
+
 bool CPDFSDK_PageView::CanUndo() {
   if (CPDFSDK_Annot* pAnnot = GetFocusAnnot()) {
     CPDFSDK_AnnotHandlerMgr* pAnnotHandlerMgr =
@@ -488,9 +497,9 @@ void CPDFSDK_PageView::LoadFXAnnots() {
   CPDF_Document::Extension* pContext = m_pFormFillEnv->GetDocExtension();
   if (pContext && pContext->ContainsExtensionFullForm()) {
     CXFA_FFPageView* pageView = protector->GetXFAPageView();
-    std::unique_ptr<IXFA_WidgetIterator> pWidgetHandler =
-        pageView->CreateFormWidgetIterator(XFA_WidgetStatus_Visible |
-                                           XFA_WidgetStatus_Viewable);
+    IXFA_WidgetIterator* pWidgetHandler =
+        pageView->CreateGCedFormWidgetIterator(XFA_WidgetStatus_Visible |
+                                               XFA_WidgetStatus_Viewable);
 
     while (CXFA_FFWidget* pXFAAnnot = pWidgetHandler->MoveToNext()) {
       std::unique_ptr<CPDFSDK_Annot> pNewAnnot =
@@ -510,7 +519,7 @@ void CPDFSDK_PageView::LoadFXAnnots() {
   bool bUpdateAP = CPDF_InteractiveForm::IsUpdateAPEnabled();
   // Disable the default AP construction.
   CPDF_InteractiveForm::SetUpdateAP(false);
-  m_pAnnotList = pdfium::MakeUnique<CPDF_AnnotList>(pPage);
+  m_pAnnotList = std::make_unique<CPDF_AnnotList>(pPage);
   CPDF_InteractiveForm::SetUpdateAP(bUpdateAP);
 
   const size_t nCount = m_pAnnotList->Count();
@@ -562,7 +571,7 @@ bool CPDFSDK_PageView::IsValidAnnot(const CPDF_Annot* p) const {
 bool CPDFSDK_PageView::IsValidSDKAnnot(const CPDFSDK_Annot* p) const {
   if (!p)
     return false;
-  return pdfium::ContainsValue(m_SDKAnnotArray, p);
+  return pdfium::Contains(m_SDKAnnotArray, p);
 }
 
 CPDFSDK_Annot* CPDFSDK_PageView::GetFocusAnnot() {

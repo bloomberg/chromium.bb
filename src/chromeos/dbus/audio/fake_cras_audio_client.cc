@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/logging.h"
+
 namespace chromeos {
 
 namespace {
@@ -13,6 +15,9 @@ namespace {
 FakeCrasAudioClient* g_instance = nullptr;
 
 }  // namespace
+
+const uint32_t kInputMaxSupportedChannels = 1;
+const uint32_t kOutputMaxSupportedChannels = 2;
 
 FakeCrasAudioClient::FakeCrasAudioClient() {
   CHECK(!g_instance);
@@ -25,6 +30,7 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
   output_1.is_input = false;
   output_1.id = 10001;
   output_1.stable_device_id_v1 = 10001;
+  output_1.max_supported_channels = kOutputMaxSupportedChannels;
   output_1.device_name = "Fake Speaker";
   output_1.type = "INTERNAL_SPEAKER";
   output_1.name = "Speaker";
@@ -34,6 +40,7 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
   output_2.is_input = false;
   output_2.id = 10002;
   output_2.stable_device_id_v1 = 10002;
+  output_2.max_supported_channels = kOutputMaxSupportedChannels;
   output_2.device_name = "Fake Headphone";
   output_2.type = "HEADPHONE";
   output_2.name = "Headphone";
@@ -43,6 +50,7 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
   output_3.is_input = false;
   output_3.id = 10003;
   output_3.stable_device_id_v1 = 10003;
+  output_3.max_supported_channels = kOutputMaxSupportedChannels;
   output_3.device_name = "Fake Bluetooth Headphone";
   output_3.type = "BLUETOOTH";
   output_3.name = "Headphone";
@@ -52,6 +60,7 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
   output_4.is_input = false;
   output_4.id = 10004;
   output_4.stable_device_id_v1 = 10004;
+  output_4.max_supported_channels = kOutputMaxSupportedChannels;
   output_4.device_name = "Fake HDMI Speaker";
   output_4.type = "HDMI";
   output_4.name = "HDMI Speaker";
@@ -62,6 +71,7 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
   input_1.is_input = true;
   input_1.id = 20001;
   input_1.stable_device_id_v1 = 20001;
+  input_1.max_supported_channels = kInputMaxSupportedChannels;
   input_1.device_name = "Fake Internal Mic";
   input_1.type = "INTERNAL_MIC";
   input_1.name = "Internal Mic";
@@ -71,6 +81,7 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
   input_2.is_input = true;
   input_2.id = 20002;
   input_2.stable_device_id_v1 = 20002;
+  input_2.max_supported_channels = kInputMaxSupportedChannels;
   input_2.device_name = "Fake USB Mic";
   input_2.type = "USB";
   input_2.name = "Mic";
@@ -80,6 +91,7 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
   input_3.is_input = true;
   input_3.id = 20003;
   input_3.stable_device_id_v1 = 20003;
+  input_3.max_supported_channels = kInputMaxSupportedChannels;
   input_3.device_name = "Fake Mic Jack";
   input_3.type = "MIC";
   input_3.name = "Some type of Mic";
@@ -135,6 +147,11 @@ void FakeCrasAudioClient::GetNodes(DBusMethodCallback<AudioNodeList> callback) {
 void FakeCrasAudioClient::GetNumberOfActiveOutputStreams(
     DBusMethodCallback<int> callback) {
   std::move(callback).Run(0);
+}
+
+void FakeCrasAudioClient::GetDeprioritizeBtWbsMic(
+    DBusMethodCallback<bool> callback) {
+  std::move(callback).Run(base::nullopt);
 }
 
 void FakeCrasAudioClient::SetOutputNodeVolume(uint64_t node_id,
@@ -193,7 +210,6 @@ void FakeCrasAudioClient::SetHotwordModel(uint64_t node_id,
                                           VoidDBusMethodCallback callback) {}
 
 void FakeCrasAudioClient::SetFixA2dpPacketSize(bool enabled) {}
-void FakeCrasAudioClient::SetNextHandsfreeProfile(bool enabled) {}
 
 void FakeCrasAudioClient::AddActiveInputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
@@ -233,6 +249,11 @@ void FakeCrasAudioClient::AddActiveOutputNode(uint64_t node_id) {
     if (node_list_[i].id == node_id)
       node_list_[i].active = true;
   }
+}
+
+void FakeCrasAudioClient::ResendBluetoothBattery() {
+  for (auto& observer : observers_)
+    observer.BluetoothBatteryChanged("11:22:33:44:55:66", battery_level_);
 }
 
 void FakeCrasAudioClient::WaitForServiceToBeAvailable(
@@ -289,6 +310,10 @@ void FakeCrasAudioClient::NotifyHotwordTriggeredForTesting(uint64_t tv_sec,
                                                            uint64_t tv_nsec) {
   for (auto& observer : observers_)
     observer.HotwordTriggered(tv_sec, tv_nsec);
+}
+
+void FakeCrasAudioClient::SetBluetoothBattteryLevelForTesting(uint32_t level) {
+  battery_level_ = level;
 }
 
 AudioNodeList::iterator FakeCrasAudioClient::FindNode(uint64_t node_id) {

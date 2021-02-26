@@ -120,12 +120,14 @@ struct decklink_ctx {
     unsigned int dropped;
     AVStream *audio_st;
     AVStream *video_st;
+    AVStream *klv_st;
     AVStream *teletext_st;
     uint16_t cdp_sequence_num;
 
     /* Options */
     int list_devices;
     int list_formats;
+    int enable_klv;
     int64_t teletext_lines;
     double preroll;
     int duplex_mode;
@@ -154,11 +156,7 @@ struct decklink_ctx {
 typedef enum { DIRECTION_IN, DIRECTION_OUT} decklink_direction_t;
 
 #ifdef _WIN32
-#if BLACKMAGIC_DECKLINK_API_VERSION < 0x0a040000
-typedef unsigned long buffercount_type;
-#else
 typedef unsigned int buffercount_type;
-#endif
 IDeckLinkIterator *CreateDeckLinkIteratorInstance(void);
 #else
 typedef uint32_t buffercount_type;
@@ -193,6 +191,11 @@ static const BMDTimecodeFormat decklink_timecode_format_map[] = {
     bmdTimecodeVITC,
     bmdTimecodeVITCField2,
     bmdTimecodeSerial,
+#if BLACKMAGIC_DECKLINK_API_VERSION >= 0x0b000000
+    bmdTimecodeRP188HighFrameRate,
+#else
+    (BMDTimecodeFormat)0,
+#endif
 };
 
 int ff_decklink_set_configs(AVFormatContext *avctx, decklink_direction_t direction);

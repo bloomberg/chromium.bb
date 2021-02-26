@@ -21,7 +21,6 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/common/chrome_features.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_context.h"
@@ -109,7 +108,8 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
       base::Time::Now() /* creation_time */, base::Time() /* expiration_time */,
       base::Time::Now() /* last_access_time */,
       !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
-      net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT);
+      net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT,
+      false /* same_party */);
   // TODO(crbug.com/1069974): The cookie source url must be faked here because
   // otherwise, this would fail to set a secure cookie if |app_url| is insecure.
   // Consider instead to use url::Replacements to force the scheme to be https.
@@ -196,8 +196,8 @@ void AndroidSmsAppSetupControllerImpl::OnSetRememberDeviceByDefaultCookieResult(
     const GURL& app_url,
     const GURL& install_url,
     SuccessCallback callback,
-    net::CanonicalCookie::CookieInclusionStatus status) {
-  if (!status.IsInclude()) {
+    net::CookieAccessResult result) {
+  if (!result.status.IsInclude()) {
     PA_LOG(WARNING)
         << "AndroidSmsAppSetupControllerImpl::"
         << "OnSetRememberDeviceByDefaultCookieResult(): Failed to set "
@@ -305,7 +305,6 @@ void AndroidSmsAppSetupControllerImpl::OnAppInstallResult(
   // Grant notification permission for the PWA.
   host_content_settings_map_->SetWebsiteSettingDefaultScope(
       app_url, GURL() /* top_level_url */, ContentSettingsType::NOTIFICATIONS,
-      content_settings::ResourceIdentifier(),
       std::make_unique<base::Value>(ContentSetting::CONTENT_SETTING_ALLOW));
 
   std::move(callback).Run(true /* success */);
@@ -328,7 +327,8 @@ void AndroidSmsAppSetupControllerImpl::SetMigrationCookie(
       base::Time::Now() /* creation_time */, base::Time() /* expiration_time */,
       base::Time::Now() /* last_access_time */,
       !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
-      net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT);
+      net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT,
+      false /* same_party */);
   // TODO(crbug.com/1069974): The cookie source url must be faked here because
   // otherwise, this would fail to set a secure cookie if |app_url| is insecure.
   // Consider instead to use url::Replacements to force the scheme to be https.
@@ -344,8 +344,8 @@ void AndroidSmsAppSetupControllerImpl::SetMigrationCookie(
 void AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult(
     const GURL& app_url,
     SuccessCallback callback,
-    net::CanonicalCookie::CookieInclusionStatus status) {
-  if (!status.IsInclude()) {
+    net::CookieAccessResult result) {
+  if (!result.status.IsInclude()) {
     PA_LOG(ERROR)
         << "AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult(): "
         << "Failed to set migration cookie for " << app_url << ". Proceeding "

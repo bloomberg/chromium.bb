@@ -38,9 +38,10 @@ scoped_refptr<StaticBitmapImage> MakeAccelerated(
 
   auto paint_image = source->PaintImageForCurrentFrame();
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(
-      source->Size(), context_provider_wrapper, kLow_SkFilterQuality,
-      CanvasColorParams(paint_image.GetSkImage()->imageInfo()),
-      source->IsOriginTopLeft(), CanvasResourceProvider::RasterMode::kGPU,
+      source->Size(), kLow_SkFilterQuality,
+      CanvasColorParams(paint_image.GetSkImageInfo()),
+      CanvasResourceProvider::ShouldInitialize::kNo, context_provider_wrapper,
+      RasterMode::kGPU, source->IsOriginTopLeft(),
       gpu::SHARED_IMAGE_USAGE_DISPLAY);
   if (!provider || !provider->IsAccelerated())
     return nullptr;
@@ -71,10 +72,10 @@ ImageLayerBridge::~ImageLayerBridge() {
 void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
   if (disposed_)
     return;
-  // There could be the case that the current SkImage (encapsulated in the image
-  // parameter of the function) is null, that means that something went wrong
-  // during the creation of the image and we should not try and setImage with it
-  if (image && !image->PaintImageForCurrentFrame().GetSkImage())
+  // There could be the case that the current PaintImage is null, meaning
+  // that something went wrong during the creation of the image and we should
+  // not try and setImage with it
+  if (image && !image->PaintImageForCurrentFrame())
     return;
 
   image_ = std::move(image);
@@ -94,8 +95,7 @@ void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
       // m_image->EnsureMailbox() call of
       // ImageLayerBridge::PrepareTransferableResource. To prevent a potential
       // memory leak we must flush the GrContext here.
-      image_->PaintImageForCurrentFrame().GetSkImage()->getBackendTexture(
-          true);  // GrContext flush.
+      image_->PaintImageForCurrentFrame().FlushPendingSkiaOps();
     }
   }
   has_presented_since_last_set_image_ = false;
@@ -173,7 +173,8 @@ bool ImageLayerBridge::PrepareTransferableResource(
     if (!image_)
       return false;
 
-    sk_sp<SkImage> sk_image = image_->PaintImageForCurrentFrame().GetSkImage();
+    sk_sp<SkImage> sk_image =
+        image_->PaintImageForCurrentFrame().GetSwSkImage();
     if (!sk_image)
       return false;
 

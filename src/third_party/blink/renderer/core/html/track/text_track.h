@@ -48,7 +48,6 @@ class TextTrackList;
 class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
                               public TrackBase {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(TextTrack);
 
  public:
   enum TextTrackType { kTrackElement, kAddTrack, kInBand };
@@ -127,7 +126,7 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   const HeapVector<Member<CSSStyleSheet>>& GetCSSStyleSheets() const {
     return style_sheets_;

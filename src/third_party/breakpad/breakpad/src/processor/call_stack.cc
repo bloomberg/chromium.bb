@@ -43,7 +43,7 @@ CallStack::~CallStack() {
 }
 
 void CallStack::Clear() {
-  for (vector<StackFrame *>::const_iterator iterator = frames_.begin();
+  for (vector<StackFrame*>::const_iterator iterator = frames_.begin();
        iterator != frames_.end();
        ++iterator) {
     delete *iterator;

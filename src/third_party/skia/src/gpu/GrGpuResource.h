@@ -12,7 +12,6 @@
 #include "include/private/GrTypesPriv.h"
 #include "include/private/SkNoncopyable.h"
 
-class GrContext;
 class GrGpu;
 class GrResourceCache;
 class SkTraceMemoryDump;
@@ -40,19 +39,22 @@ public:
 
     void unref() const {
         SkASSERT(this->getRefCnt() > 0);
-        if (1 == fRefCnt.fetch_add(-1, std::memory_order_acq_rel)) {
-            // At this point we better be the only thread accessing this resource.
-            // Trick out the notifyRefCntWillBeZero() call by adding back one more ref.
-            fRefCnt.fetch_add(+1, std::memory_order_relaxed);
-            static_cast<const DERIVED*>(this)->notifyRefCntWillBeZero();
-            // notifyRefCntWillBeZero() could have done anything, including re-refing this and
-            // passing on to another thread. Take away the ref-count we re-added above and see
-            // if we're back to zero.
-            // TODO: Consider making it so that refs can't be added and merge
-            //  notifyRefCntWillBeZero()/willRemoveLastRef() with notifyRefCntIsZero().
-            if (1 == fRefCnt.fetch_add(-1, std::memory_order_acq_rel)) {
-                static_cast<const DERIVED*>(this)->notifyRefCntIsZero();
-            }
+        if (1 == fRefCnt.fetch_add(-1, std::memory_order_acq_rel) &&
+            this->hasNoCommandBufferUsages()) {
+            this->notifyWillBeZero();
+        }
+    }
+
+    void addCommandBufferUsage() const {
+        // No barrier required.
+        (void)fCommandBufferUsageCnt.fetch_add(+1, std::memory_order_relaxed);
+    }
+
+    void removeCommandBufferUsage() const {
+        SkASSERT(!this->hasNoCommandBufferUsages());
+        if (1 == fCommandBufferUsageCnt.fetch_add(-1, std::memory_order_acq_rel) &&
+            0 == this->getRefCnt()) {
+            this->notifyWillBeZero();
         }
     }
 
@@ -63,9 +65,12 @@ public:
 protected:
     friend class GrResourceCache; // for internalHasRef
 
-    GrIORef() : fRefCnt(1) {}
+    GrIORef() : fRefCnt(1), fCommandBufferUsageCnt(0) {}
 
     bool internalHasRef() const { return SkToBool(this->getRefCnt()); }
+    bool internalHasNoCommandBufferUsages() const {
+        return SkToBool(this->hasNoCommandBufferUsages());
+    }
 
     // Privileged method that allows going from ref count = 0 to ref count = 1.
     void addInitialRef() const {
@@ -75,11 +80,37 @@ protected:
     }
 
 private:
+    void notifyWillBeZero() const {
+        // At this point we better be the only thread accessing this resource.
+        // Trick out the notifyRefCntWillBeZero() call by adding back one more ref.
+        fRefCnt.fetch_add(+1, std::memory_order_relaxed);
+        static_cast<const DERIVED*>(this)->notifyRefCntWillBeZero();
+        // notifyRefCntWillBeZero() could have done anything, including re-refing this and
+        // passing on to another thread. Take away the ref-count we re-added above and see
+        // if we're back to zero.
+        // TODO: Consider making it so that refs can't be added and merge
+        //  notifyRefCntWillBeZero()/willRemoveLastRef() with notifyRefCntIsZero().
+        if (1 == fRefCnt.fetch_add(-1, std::memory_order_acq_rel)) {
+            static_cast<const DERIVED*>(this)->notifyRefCntIsZero();
+        }
+    }
+
     int32_t getRefCnt() const { return fRefCnt.load(std::memory_order_relaxed); }
 
-    mutable std::atomic<int32_t> fRefCnt;
+    bool hasNoCommandBufferUsages() const {
+        if (0 == fCommandBufferUsageCnt.load(std::memory_order_acquire)) {
+            // The acquire barrier is only really needed if we return true.  It
+            // prevents code conditioned on the result of hasNoCommandBufferUsages() from running
+            // until previous owners are all totally done calling removeCommandBufferUsage().
+            return true;
+        }
+        return false;
+    }
 
-    typedef SkNoncopyable INHERITED;
+    mutable std::atomic<int32_t> fRefCnt;
+    mutable std::atomic<int32_t> fCommandBufferUsageCnt;
+
+    using INHERITED = SkNoncopyable;
 };
 
 /**
@@ -105,8 +136,8 @@ public:
      * they no longer have an owning context. Destroying a GrContext
      * automatically releases all its resources.
      */
-    const GrContext* getContext() const;
-    GrContext* getContext();
+    const GrDirectContext* getContext() const;
+    GrDirectContext* getContext();
 
     /**
      * Retrieves the amount of GPU memory used by this resource in bytes. It is
@@ -157,7 +188,7 @@ public:
      */
     class CacheAccess;
     inline CacheAccess cacheAccess();
-    inline const CacheAccess cacheAccess() const;
+    inline const CacheAccess cacheAccess() const;  // NOLINT(readability-const-return-type)
 
     /**
      * Internal-only helper class used for manipulations of the resource by GrSurfaceProxy.
@@ -170,7 +201,7 @@ public:
      */
     class ResourcePriv;
     inline ResourcePriv resourcePriv();
-    inline const ResourcePriv resourcePriv() const;
+    inline const ResourcePriv resourcePriv() const;  // NOLINT(readability-const-return-type)
 
     /**
      * Dumps memory usage information for this GrGpuResource to traceMemoryDump.
@@ -234,6 +265,7 @@ protected:
 private:
     bool isPurgeable() const;
     bool hasRef() const;
+    bool hasNoCommandBufferUsages() const;
 
     /**
      * Called by the registerWithCache if the resource is available to be used as scratch.
@@ -295,7 +327,7 @@ private:
     bool fRefsWrappedObjects = false;
     const UniqueID fUniqueID;
 
-    typedef GrIORef<GrGpuResource> INHERITED;
+    using INHERITED = GrIORef<GrGpuResource>;
     friend class GrIORef<GrGpuResource>; // to access notifyRefCntWillBeZero and notifyRefCntIsZero.
 };
 

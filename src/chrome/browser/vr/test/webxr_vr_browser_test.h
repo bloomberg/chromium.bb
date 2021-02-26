@@ -18,13 +18,8 @@
 #include "ui/gfx/geometry/vector3d_f.h"
 
 #if defined(OS_WIN)
-#include "services/service_manager/sandbox/features.h"
+#include "sandbox/policy/features.h"
 #endif
-
-#if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/vr/test/fake_xr_session_request_consent_manager.h"
-#include "chrome/browser/vr/test/mock_xr_session_request_consent_manager.h"
-#endif  // BUILDFLAG(ENABLE_VR)
 
 namespace vr {
 
@@ -56,24 +51,9 @@ class WebXrVrBrowserTestBase : public WebXrBrowserTestBase {
   permissions::PermissionRequestManager::AutoResponseType
       permission_auto_response_ =
           permissions::PermissionRequestManager::ACCEPT_ALL;
-
-  // Methods/objects for managing consent. If SetupFakeConsentManager is never
-  // called, the test will default to mocking out the consent prompt and always
-  // provide consent. Once SetupFakeConsentManager is called, the test will show
-  // the Consent Dialog, and then rely on it's configuration for whether to
-  // accept or reject the dialog programmatically. While this is a more thorough
-  // end-to-end test, the extra overhead should be avoided unless that is the
-  // feature under test.
-  // Consent dialogs don't appear on platforms with enable_vr = false.
-#if BUILDFLAG(ENABLE_VR)
-  void SetupFakeConsentManager(
-      FakeXRSessionRequestConsentManager::UserResponse user_response);
-  ::testing::NiceMock<MockXRSessionRequestConsentManager> consent_manager_;
-  std::unique_ptr<FakeXRSessionRequestConsentManager> fake_consent_manager_;
-#endif  // BUILDFLAG(ENABLE_VR)
 };
 
-// Test class with OpenVR disabled.
+// Test class with all runtimes disabled.
 class WebXrVrRuntimelessBrowserTest : public WebXrVrBrowserTestBase {
  public:
   WebXrVrRuntimelessBrowserTest();
@@ -85,16 +65,8 @@ class WebXrVrRuntimelessBrowserTestSensorless
   WebXrVrRuntimelessBrowserTestSensorless();
 };
 
-// OpenVR and WMR feature only defined on Windows.
+// WMR feature only defined on Windows.
 #ifdef OS_WIN
-// OpenVR-specific subclass of WebXrVrBrowserTestBase.
-class WebXrVrOpenVrBrowserTestBase : public WebXrVrBrowserTestBase {
- public:
-  WebXrVrOpenVrBrowserTestBase();
-  XrBrowserTestBase::RuntimeType GetRuntimeType() const override;
-  gfx::Vector3dF GetControllerOffset() const override;
-};
-
 // WMR-specific subclass of WebXrVrBrowserTestBase.
 class WebXrVrWmrBrowserTestBase : public WebXrVrBrowserTestBase {
  public:
@@ -122,12 +94,6 @@ class WebXrVrOpenXrBrowserTestBase : public WebXrVrBrowserTestBase {
 };
 #endif  // BUILDFLAG(ENABLE_OPENXR)
 
-// Test class with standard features enabled: WebXR and OpenVR.
-class WebXrVrOpenVrBrowserTest : public WebXrVrOpenVrBrowserTestBase {
- public:
-  WebXrVrOpenVrBrowserTest();
-};
-
 class WebXrVrWmrBrowserTest : public WebXrVrWmrBrowserTestBase {
  public:
   WebXrVrWmrBrowserTest();
@@ -139,13 +105,6 @@ class WebXrVrOpenXrBrowserTest : public WebXrVrOpenXrBrowserTestBase {
   WebXrVrOpenXrBrowserTest();
 };
 #endif  // BUILDFLAG(ENABLE_OPENXR)
-
-// Test classes with WebXR disabled.
-class WebXrVrOpenVrBrowserTestWebXrDisabled
-    : public WebXrVrOpenVrBrowserTestBase {
- public:
-  WebXrVrOpenVrBrowserTestWebXrDisabled();
-};
 
 class WebXrVrWmrBrowserTestWebXrDisabled : public WebXrVrWmrBrowserTestBase {
  public:

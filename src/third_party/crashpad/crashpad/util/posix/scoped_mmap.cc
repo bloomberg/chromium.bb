@@ -18,6 +18,7 @@
 
 #include <algorithm>
 
+#include "base/check_op.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
@@ -118,6 +119,13 @@ bool ScopedMmap::Mprotect(int prot) {
   }
 
   return true;
+}
+
+void* ScopedMmap::release() {
+  void* retval = addr_;
+  addr_ = MAP_FAILED;
+  len_ = 0;
+  return retval;
 }
 
 }  // namespace crashpad

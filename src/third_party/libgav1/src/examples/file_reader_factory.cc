@@ -38,7 +38,7 @@ bool FileReaderFactory::RegisterReader(OpenFunction open_function) {
 }
 
 std::unique_ptr<FileReaderInterface> FileReaderFactory::OpenReader(
-    absl::string_view file_name, const bool error_tolerant /*= false*/) {
+    const std::string& file_name, const bool error_tolerant /*= false*/) {
   for (auto* open_function : *GetFileReaderOpenFunctions()) {
     auto reader = open_function(file_name, error_tolerant);
     if (reader == nullptr) continue;

@@ -21,6 +21,7 @@
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/test/button_test_api.h"
 #include "ui/views/widget/widget.h"
 
 namespace keyboard_shortcut_viewer {
@@ -183,16 +184,16 @@ TEST_F(KeyboardShortcutViewTest, FocusOnSearchBox) {
 
   // Press a key should enter search mode.
   KeyPress(ui::VKEY_A, /*should_insert=*/true);
-  EXPECT_TRUE(GetSearchBoxView()->back_button()->GetVisible());
+  EXPECT_FALSE(GetSearchBoxView()->back_button()->GetVisible());
+  EXPECT_TRUE(GetSearchBoxView()->close_button()->GetVisible());
   EXPECT_FALSE(GetSearchBoxView()->search_box()->GetText().empty());
 
-  // Case 2: Exit search mode by clicking |back_button|. The focus should be on
+  // Case 2: Exit search mode by clicking |close_button|. The focus should be on
   // search box.
-  GetSearchBoxView()->ButtonPressed(
-      GetSearchBoxView()->back_button(),
-      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                     base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON,
-                     ui::EF_LEFT_MOUSE_BUTTON));
+  views::test::ButtonTestApi(GetSearchBoxView()->close_button())
+      .NotifyClick(ui::MouseEvent(
+          ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), base::TimeTicks(),
+          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_TRUE(GetSearchBoxView()->search_box()->GetText().empty());
   EXPECT_TRUE(GetSearchBoxView()->search_box()->HasFocus());
 

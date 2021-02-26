@@ -29,9 +29,9 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -134,13 +134,14 @@ bool BrowserNavigatorTest::OpenPOSTURLInNewForegroundTabAndGetTitle(
 
 Browser* BrowserNavigatorTest::CreateEmptyBrowserForType(Browser::Type type,
                                                          Profile* profile) {
-  Browser* browser = new Browser(Browser::CreateParams(type, profile, true));
+  Browser* browser =
+      Browser::Create(Browser::CreateParams(type, profile, true));
   chrome::AddTabAt(browser, GURL(), -1, true);
   return browser;
 }
 
 Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Profile* profile) {
-  Browser* browser = new Browser(Browser::CreateParams::CreateForApp(
+  Browser* browser = Browser::Create(Browser::CreateParams::CreateForApp(
       "Test", false /* trusted_source */, gfx::Rect(), profile, true));
   chrome::AddTabAt(browser, GURL(), -1, true);
   return browser;
@@ -941,7 +942,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabIncognitoLeak) {
   EXPECT_EQ(browser(), test_browser);
 }
 
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+#if defined(OS_MAC) && defined(ADDRESS_SANITIZER)
 // Flaky on ASAN on Mac. See https://crbug.com/674497.
 #define MAYBE_Disposition_Incognito DISABLED_Disposition_Incognito
 #else
@@ -961,7 +962,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_Disposition_Incognito) {
 
   // |source_contents| should be set to NULL because the profile for the new
   // page is different from the originating page.
-  EXPECT_EQ(NULL, params.source_contents);
+  EXPECT_FALSE(params.source_contents);
 
   // We should now have two windows, the browser() provided by the framework and
   // the new incognito window.
@@ -1447,8 +1448,11 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   params.url = GURL(chrome::kChromeUINewTabURL);
   ui_test_utils::NavigateToURL(&params);
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_TRUE(search::IsInstantNTP(
-      browser()->tab_strip_model()->GetActiveWebContents()));
+  EXPECT_EQ(local_ntp_test_utils::GetFinalNtpUrl(browser()->profile()),
+            browser()
+                ->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetLastCommittedURL());
 
   {
     content::WindowedNotificationObserver observer(
@@ -1784,7 +1788,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(base::UTF8ToUTF16(expected_url), omnibox_view->GetText());
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 // Flaky on Win and Linux. See https://crbug.com/1044335.
 #define MAYBE_ReuseRVHWithWebUI DISABLED_ReuseRVHWithWebUI
 #else
@@ -1818,7 +1822,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_ReuseRVHWithWebUI) {
   WebContents* popup = controller->GetWebContents();
   ASSERT_TRUE(popup);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  content::RenderViewHost* webui_rvh = popup->GetRenderViewHost();
+  content::RenderViewHost* webui_rvh =
+      popup->GetMainFrame()->GetRenderViewHost();
   content::RenderFrameHost* webui_rfh = popup->GetMainFrame();
   EXPECT_TRUE(content::BINDINGS_POLICY_MOJO_WEB_UI &
               webui_rfh->GetEnabledBindings());
@@ -1826,14 +1831,14 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_ReuseRVHWithWebUI) {
   // Navigate to another page in the popup.
   GURL nonwebui_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   ui_test_utils::NavigateToURL(browser(), nonwebui_url);
-  EXPECT_NE(webui_rvh, popup->GetRenderViewHost());
+  EXPECT_NE(webui_rvh, popup->GetMainFrame()->GetRenderViewHost());
 
   // Go back in the popup.  This should finish without crashing and should
   // reuse the old RenderViewHost.
   content::TestNavigationObserver back_load_observer(popup);
   controller->GoBack();
   back_load_observer.Wait();
-  EXPECT_EQ(webui_rvh, popup->GetRenderViewHost());
+  EXPECT_EQ(webui_rvh, popup->GetMainFrame()->GetRenderViewHost());
   EXPECT_TRUE(webui_rvh->IsRenderViewLive());
   EXPECT_TRUE(content::BINDINGS_POLICY_MOJO_WEB_UI &
               webui_rvh->GetMainFrame()->GetEnabledBindings());

@@ -86,7 +86,7 @@ public:
   // 4 or 8 (bytes)
   size_t value_size;
 
-  vector<Module::Extern *> externs;
+  vector<Module::Extern*> externs;
 };
 
 class ELFSymbolsToModuleTest32 : public ELFSymbolsToModuleTestFixture,

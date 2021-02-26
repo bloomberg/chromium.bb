@@ -16,7 +16,9 @@ namespace skvm {
     struct I32;
     struct F32;
     struct Color;
+    struct Color_Q14;
+    struct Coord;
     struct Uniforms;
-}
+}  // namespace skvm
 
 #endif//SkVM_fwd_DEFINED

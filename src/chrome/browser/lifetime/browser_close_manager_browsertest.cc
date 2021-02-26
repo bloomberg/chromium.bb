@@ -9,10 +9,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_mode_manager.h"
@@ -98,8 +99,8 @@ class RepeatedNotificationObserver : public content::NotificationObserver {
                const content::NotificationDetails& details) override {
     ASSERT_GT(num_outstanding_, 0);
     if (!--num_outstanding_ && running_) {
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     run_loop_.QuitClosure());
+      content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                   run_loop_.QuitClosure());
     }
   }
 
@@ -222,16 +223,18 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
     return true;
   }
 
-  static void SetDangerous(content::DownloadTargetCallback callback,
-                           const base::FilePath& target_path,
-                           download::DownloadItem::TargetDisposition disp,
-                           download::DownloadDangerType danger_type,
-                           download::DownloadItem::MixedContentStatus mcs,
-                           const base::FilePath& intermediate_path,
-                           download::DownloadInterruptReason reason) {
+  static void SetDangerous(
+      content::DownloadTargetCallback callback,
+      const base::FilePath& target_path,
+      download::DownloadItem::TargetDisposition disp,
+      download::DownloadDangerType danger_type,
+      download::DownloadItem::MixedContentStatus mcs,
+      const base::FilePath& intermediate_path,
+      base::Optional<download::DownloadSchedule> download_schedule,
+      download::DownloadInterruptReason reason) {
     std::move(callback).Run(target_path, disp,
                             download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL, mcs,
-                            intermediate_path, reason);
+                            intermediate_path, download_schedule, reason);
   }
 };
 
@@ -395,13 +398,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, PRE_TestSessionRestore) {
 // Test that the tab closed after the aborted shutdown attempt is not re-opened
 // when restoring the session.
 // Flaky on Windows trybots, see https://crbug.com/737860.
-#if defined(OS_WIN)
-#define MAYBE_TestSessionRestore DISABLED_TestSessionRestore
-#else
-#define MAYBE_TestSessionRestore TestSessionRestore
-#endif
+// Flaky on chromium.chromeos, chromium.linux, and chromium.mac bots. See
+// https://crbug.com/1145235.
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
-                       MAYBE_TestSessionRestore) {
+                       DISABLED_TestSessionRestore) {
   // The testing framework launches Chrome with about:blank as args.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(GURL(chrome::kChromeUIVersionURL),
@@ -738,7 +738,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 
 // TODO(crbug/713201):
 // BrowserCloseManagerBrowserTest.AddBeforeUnloadDuringClosing flaky on Mac.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_AddBeforeUnloadDuringClosing DISABLED_AddBeforeUnloadDuringClosing
 #else
 #define MAYBE_AddBeforeUnloadDuringClosing AddBeforeUnloadDuringClosing
@@ -758,22 +758,24 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   auto* browser2 = BrowserList::GetInstance()->get(0) != browser()
                        ? BrowserList::GetInstance()->get(0)
                        : BrowserList::GetInstance()->get(1);
-  content::WaitForLoadStop(browser2->tab_strip_model()->GetWebContentsAt(0));
+  EXPECT_TRUE(content::WaitForLoadStop(
+      browser2->tab_strip_model()->GetWebContentsAt(0)));
 
   // Let's work with second window only.
   // This page has beforeunload handler already.
   EXPECT_TRUE(browser2->tab_strip_model()
                   ->GetWebContentsAt(0)
-                  ->NeedToFireBeforeUnloadOrUnload());
+                  ->NeedToFireBeforeUnloadOrUnloadEvents());
   // This page doesn't have beforeunload handler. Yet.
   ui_test_utils::NavigateToURLWithDisposition(
       browser2, embedded_test_server()->GetURL("/title2.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-  content::WaitForLoadStop(browser2->tab_strip_model()->GetWebContentsAt(1));
+  EXPECT_TRUE(content::WaitForLoadStop(
+      browser2->tab_strip_model()->GetWebContentsAt(1)));
   EXPECT_FALSE(browser2->tab_strip_model()
                    ->GetWebContentsAt(1)
-                   ->NeedToFireBeforeUnloadOrUnload());
+                   ->NeedToFireBeforeUnloadOrUnloadEvents());
   EXPECT_EQ(2, browser2->tab_strip_model()->count());
 
   PrepareForDialog(browser2);
@@ -796,7 +798,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
       "function(event) { event.returnValue = 'Foo'; });"));
   EXPECT_TRUE(browser2->tab_strip_model()
                   ->GetWebContentsAt(1)
-                  ->NeedToFireBeforeUnloadOrUnload());
+                  ->NeedToFireBeforeUnloadOrUnloadEvents());
   // Accept closing the first tab.
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   // Just to be sure accepting a dialog doesn't have asynchronous tasks
@@ -926,7 +928,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 // Mac has its own in-progress download prompt in app_controller_mac.mm, so
 // BrowserCloseManager should simply close all browsers. If there are no
 // browsers, it should not crash.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, TestWithDownloads) {
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
 
@@ -941,7 +943,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, TestWithDownloads) {
   TestBrowserCloseManager::AttemptClose(
       TestBrowserCloseManager::NO_USER_CHOICE);
 }
-#else  // defined(OS_MACOSX)
+#else  // defined(OS_MAC)
 
 // Test shutdown with a DANGEROUS_URL download undecided.
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
@@ -1006,7 +1008,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, TestWithDownloads) {
 // Test shutdown with a download in progress in an off-the-record profile.
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
                        TestWithOffTheRecordDownloads) {
-  Profile* otr_profile = browser()->profile()->GetOffTheRecordProfile();
+  Profile* otr_profile = browser()->profile()->GetPrimaryOTRProfile();
   Browser* otr_browser = CreateBrowser(otr_profile);
   {
     browser()->window()->Close();
@@ -1038,7 +1040,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 // call to AttemptClose.
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
                        DISABLED_TestWithOffTheRecordWindowAndRegularDownload) {
-  Profile* otr_profile = browser()->profile()->GetOffTheRecordProfile();
+  Profile* otr_profile = browser()->profile()->GetPrimaryOTRProfile();
   Browser* otr_browser = CreateBrowser(otr_profile);
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
 
@@ -1093,8 +1095,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
         Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
   }
   Profile* other_profile_ptr = other_profile.get();
-  profile_manager->RegisterTestingProfile(std::move(other_profile), true,
-                                          false);
+  profile_manager->RegisterTestingProfile(std::move(other_profile), true);
   Browser* other_profile_browser = CreateBrowser(other_profile_ptr);
 
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
@@ -1157,7 +1158,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 

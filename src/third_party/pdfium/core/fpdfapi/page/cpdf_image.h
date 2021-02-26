@@ -7,8 +7,6 @@
 #ifndef CORE_FPDFAPI_PAGE_CPDF_IMAGE_H_
 #define CORE_FPDFAPI_PAGE_CPDF_IMAGE_H_
 
-#include <memory>
-
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
@@ -25,8 +23,7 @@ class IFX_SeekableReadStream;
 
 class CPDF_Image final : public Retainable {
  public:
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
+  CONSTRUCT_VIA_MAKE_RETAIN;
 
   static bool IsValidJpegComponent(int32_t comps);
   static bool IsValidJpegBitsPerComponent(int32_t bpc);
@@ -55,7 +52,7 @@ class CPDF_Image final : public Retainable {
 
   // Returns whether to Continue() or not.
   bool StartLoadDIBBase(const CPDF_Dictionary* pFormResource,
-                        CPDF_Dictionary* pPageResource,
+                        const CPDF_Dictionary* pPageResource,
                         bool bStdCS,
                         uint32_t GroupFamily,
                         bool bLoadMask);

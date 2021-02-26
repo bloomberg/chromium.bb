@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/i18n/file_util_icu.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -32,9 +31,9 @@ namespace web_app {
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const int kDesiredIconSizesForShortcut[] = {16, 32, 128, 256, 512};
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 // Linux supports icons of any size. FreeDesktop Icon Theme Specification states
 // that "Minimally you should install a 48x48 icon in the hicolor theme."
 const int kDesiredIconSizesForShortcut[] = {16, 32, 48, 128, 256, 512};
@@ -71,6 +70,24 @@ void CreatePlatformShortcutsAndPostCallback(
       FROM_HERE, base::BindOnce(std::move(callback), shortcut_created));
 }
 
+void DeletePlatformShortcutsAndPostCallback(
+    const base::FilePath& shortcut_data_path,
+    CreateShortcutsCallback callback,
+    const ShortcutInfo& shortcut_info) {
+  bool shortcut_deleted =
+      internals::DeletePlatformShortcuts(shortcut_data_path, shortcut_info);
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), shortcut_deleted));
+}
+
+void DeleteMultiProfileShortcutsForAppAndPostCallback(
+    const std::string& app_id,
+    CreateShortcutsCallback callback) {
+  web_app::internals::DeleteMultiProfileShortcutsForApp(app_id);
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
 }  // namespace
 
 ShortcutInfo::ShortcutInfo() = default;
@@ -82,7 +99,8 @@ ShortcutInfo::~ShortcutInfo() {
 ShortcutLocations::ShortcutLocations()
     : on_desktop(false),
       applications_menu_location(APP_MENU_LOCATION_NONE),
-      in_quick_launch_bar(false) {}
+      in_quick_launch_bar(false),
+      in_startup(false) {}
 
 std::string GenerateApplicationNameFromInfo(const ShortcutInfo& shortcut_info) {
   // TODO(loyso): Remove this empty()/non-empty difference.
@@ -165,6 +183,28 @@ void ScheduleCreatePlatformShortcuts(
                      std::move(shortcut_info));
 }
 
+void ScheduleDeletePlatformShortcuts(
+    const base::FilePath& shortcut_data_path,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
+    DeleteShortcutsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  PostShortcutIOTask(base::BindOnce(&DeletePlatformShortcutsAndPostCallback,
+                                    shortcut_data_path, std::move(callback)),
+                     std::move(shortcut_info));
+}
+
+void ScheduleDeleteMultiProfileShortcutsForApp(
+    const std::string& app_id,
+    DeleteShortcutsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  GetShortcutIOTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DeleteMultiProfileShortcutsForAppAndPostCallback, app_id,
+                     std::move(callback)));
+}
+
 void PostShortcutIOTaskAndReply(
     base::OnceCallback<void(const ShortcutInfo&)> task,
     std::unique_ptr<ShortcutInfo> shortcut_info,
@@ -193,23 +233,13 @@ scoped_refptr<base::TaskRunner> GetShortcutIOTaskRunner() {
 #endif
 }
 
-base::FilePath GetSanitizedFileName(const base::string16& name) {
-#if defined(OS_WIN)
-  base::string16 file_name = name;
-#else
-  std::string file_name = base::UTF16ToUTF8(name);
-#endif
-  base::i18n::ReplaceIllegalCharactersInPath(&file_name, '_');
-  return base::FilePath(file_name);
-}
-
 base::FilePath GetShortcutDataDir(const ShortcutInfo& shortcut_info) {
   return GetOsIntegrationResourcesDirectoryForApp(shortcut_info.profile_path,
                                                   shortcut_info.extension_id,
                                                   shortcut_info.url);
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
   // Multi-profile shortcuts exist only on macOS.
   NOTREACHED();

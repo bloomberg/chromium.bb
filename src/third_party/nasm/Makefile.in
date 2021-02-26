@@ -30,6 +30,7 @@ INTERNAL_CFLAGS = -I$(srcdir) -I$(objdir) \
 		  -I$(srcdir)/output -I$(objdir)/output
 ALL_CFLAGS	= $(BUILD_CFLAGS) $(INTERNAL_CFLAGS)
 LDFLAGS		= @LDFLAGS@
+ALL_LDFLAGS     = $(ALL_CFLAGS) $(LDFLAGS)
 LIBS		= @LIBS@
 
 AR		= @AR@
@@ -40,17 +41,24 @@ PERL		= perl
 PERLFLAGS	= -I$(srcdir)/perllib -I$(srcdir)
 RUNPERL         = $(PERL) $(PERLFLAGS)
 
+PYTHON3		= python3
+
 INSTALL		= @INSTALL@
 INSTALL_PROGRAM	= @INSTALL_PROGRAM@
 INSTALL_DATA	= @INSTALL_DATA@
 
+# Optional tools
 NROFF		= @NROFF@
 ASCIIDOC	= @ASCIIDOC@
 XMLTO		= @XMLTO@
+MAKENSIS	= @MAKENSIS@
+XZ              = @XZ@
 
-MAKENSIS	= makensis
+# Optional targets
+MANPAGES        = @MANPAGES@
+NSIS            = @NSIS@
 
-MKDIR		= mkdir -p
+MKDIR_P		= @MKDIR_P@
 RM_F		= rm -f
 RM_RF		= rm -rf
 LN_S		= @LN_S@
@@ -71,7 +79,7 @@ endif
 
 .PHONY: all doc rdf install clean distclean cleaner spotless install_rdf test
 .PHONY: install_doc everything install_everything strip perlreq dist tags TAGS
-.PHONY: manpages nsis
+.PHONY: nothing manpages nsis
 
 .c.$(O):
 	$(CC) -c $(ALL_CFLAGS) -o $@ $<
@@ -96,11 +104,12 @@ LIBOBJ = stdlib/snprintf.$(O) stdlib/vsnprintf.$(O) stdlib/strlcpy.$(O) \
 	stdlib/strnlen.$(O) stdlib/strrchrnul.$(O) \
 	\
 	nasmlib/ver.$(O) \
-	nasmlib/crc64.$(O) nasmlib/malloc.$(O) \
-	nasmlib/md5c.$(O) nasmlib/string.$(O) \
+	nasmlib/alloc.$(O) nasmlib/asprintf.$(O) nasmlib/errfile.$(O) \
+	nasmlib/crc64.$(O) nasmlib/md5c.$(O) \
+	nasmlib/string.$(O) nasmlib/nctype.$(O) \
 	nasmlib/file.$(O) nasmlib/mmap.$(O) nasmlib/ilog2.$(O) \
 	nasmlib/realpath.$(O) nasmlib/path.$(O) \
-	nasmlib/filename.$(O) nasmlib/srcfile.$(O) \
+	nasmlib/filename.$(O) nasmlib/rlimit.$(O) \
 	nasmlib/zerobuf.$(O) nasmlib/readnum.$(O) nasmlib/bsi.$(O) \
 	nasmlib/rbtree.$(O) nasmlib/hashtbl.$(O) \
 	nasmlib/raa.$(O) nasmlib/saa.$(O) \
@@ -113,8 +122,8 @@ LIBOBJ = stdlib/snprintf.$(O) stdlib/vsnprintf.$(O) stdlib/strlcpy.$(O) \
 	x86/regs.$(O) x86/regvals.$(O) x86/regflags.$(O) x86/regdis.$(O) \
 	x86/disp8.$(O) x86/iflag.$(O) \
 	\
-	asm/error.$(O) \
-	asm/float.$(O) \
+	asm/error.$(O) asm/warnings.$(O) \
+	asm/floats.$(O) \
 	asm/directiv.$(O) asm/directbl.$(O) \
 	asm/pragma.$(O) \
 	asm/assemble.$(O) asm/labels.$(O) asm/parser.$(O) \
@@ -125,11 +134,10 @@ LIBOBJ = stdlib/snprintf.$(O) stdlib/vsnprintf.$(O) stdlib/strlcpy.$(O) \
 	asm/segalloc.$(O) \
 	asm/preproc-nop.$(O) \
 	asm/rdstrnum.$(O) \
-	\
+	asm/srcfile.$(O) \
 	macros/macros.$(O) \
 	\
 	output/outform.$(O) output/outlib.$(O) output/legacy.$(O) \
-	output/strtbl.$(O) \
 	output/nulldbg.$(O) output/nullout.$(O) \
 	output/outbin.$(O) output/outaout.$(O) output/outcoff.$(O) \
 	output/outelf.$(O) \
@@ -144,9 +152,13 @@ XSUBDIRS = test doc nsis rdoff
 DEPDIRS  = . include config x86 rdoff $(SUBDIRS)
 #-- End File Lists --#
 
-all: nasm$(X) ndisasm$(X) rdf
+all: dirs
+	$(MAKE) nasm$(X) ndisasm$(X) rdf
 
 NASMLIB = libnasm.$(A)
+
+dirs:
+	$(MKDIR_P) $(SUBDIRS) $(XSUBDIRS)
 
 $(NASMLIB): $(LIBOBJ)
 	$(RM_F) $(NASMLIB)
@@ -154,10 +166,10 @@ $(NASMLIB): $(LIBOBJ)
 	$(RANLIB) $(NASMLIB)
 
 nasm$(X): $(NASM) $(NASMLIB)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o nasm$(X) $(NASM) $(NASMLIB) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o nasm$(X) $(NASM) $(NASMLIB) $(LIBS)
 
 ndisasm$(X): $(NDISASM) $(NASMLIB)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o ndisasm$(X) $(NDISASM) $(NASMLIB) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o ndisasm$(X) $(NDISASM) $(NASMLIB) $(LIBS)
 
 #-- Begin Generated File Rules --#
 
@@ -166,15 +178,21 @@ ndisasm$(X): $(NDISASM) $(NASMLIB)
 # have Perl just to recompile NASM from the distribution.
 
 # Perl-generated source files
-PERLREQ = x86/insnsb.c x86/insnsa.c x86/insnsd.c x86/insnsi.h x86/insnsn.c \
+PERLREQ = config/unconfig.h \
+	  x86/insnsb.c x86/insnsa.c x86/insnsd.c x86/insnsi.h x86/insnsn.c \
 	  x86/regs.c x86/regs.h x86/regflags.c x86/regdis.c x86/regdis.h \
 	  x86/regvals.c asm/tokhash.c asm/tokens.h asm/pptok.h asm/pptok.c \
 	  x86/iflag.c x86/iflaggen.h \
 	  macros/macros.c \
 	  asm/pptok.ph asm/directbl.c asm/directiv.h \
+	  asm/warnings.c include/warnings.h doc/warnings.src \
 	  version.h version.mac version.mak nsis/version.nsh
 
-INSDEP = x86/insns.dat x86/insns.pl x86/insns-iflags.ph
+INSDEP = x86/insns.dat x86/insns.pl x86/insns-iflags.ph x86/iflags.ph
+
+config/unconfig.h: config/config.h.in
+	$(RUNPERL) $(srcdir)/tools/unconfig.pl \
+		'$(srcdir)' config/config.h.in config/unconfig.h
 
 x86/iflag.c: $(INSDEP)
 	$(RUNPERL) $(srcdir)/x86/insns.pl -fc \
@@ -240,6 +258,23 @@ x86/regs.h: x86/regs.dat x86/regs.pl
 	$(RUNPERL) $(srcdir)/x86/regs.pl h \
 		$(srcdir)/x86/regs.dat > x86/regs.h
 
+# Extract warnings from source code. Since this depends on
+# ALL the source files, this is only done on demand.
+WARNFILES = asm/warnings.c include/warnings.h doc/warnings.src
+
+warnings:
+	$(RM_F) $(WARNFILES)
+	$(MAKE) $(WARNFILES)
+
+asm/warnings.c: asm/warnings.pl
+	$(RUNPERL) $(srcdir)/asm/warnings.pl c asm/warnings.c $(srcdir)
+
+include/warnings.h: asm/warnings.pl
+	$(RUNPERL) $(srcdir)/asm/warnings.pl h include/warnings.h $(srcdir)
+
+doc/warnings.src: asm/warnings.pl
+	$(RUNPERL) $(srcdir)/asm/warnings.pl doc doc/warnings.src $(srcdir)
+
 # Assembler token hash
 asm/tokhash.c: x86/insns.dat x86/regs.dat asm/tokens.dat asm/tokhash.pl \
 	perllib/phash.ph
@@ -279,7 +314,7 @@ perlreq: $(PERLREQ)
 
 # This rule is only used for RDOFF
 .$(O)$(X):
-	$(CC) $(ALL_CFLAGS) -o $@ $< $(LDFLAGS) $(RDFLIB) $(NASMLIB) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o $@ $< $(RDFLIB) $(NASMLIB) $(LIBS)
 
 RDFLN    = cd rdoff && ln -s
 RDFLNPFX =
@@ -327,8 +362,6 @@ $(RDFLIB): $(RDFLIBOBJ)
 
 #-- Begin NSIS Rules --#
 
-# NSIS is not built except by explicit request, as it only applies to
-# Windows platforms
 nsis/arch.nsh: nsis/getpearch.pl nasm$(X)
 	$(PERL) $(srcdir)/nsis/getpearch.pl nasm$(X) > nsis/arch.nsh
 
@@ -344,10 +377,10 @@ nsis: nsis/nasm.nsi nsis/arch.nsh nsis/version.nsh
 manpages: nasm.1 ndisasm.1
 
 install: nasm$(X) ndisasm$(X)
-	$(MKDIR) $(DESTDIR)$(bindir)
+	$(MKDIR_P) $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) nasm$(X) $(DESTDIR)$(bindir)/nasm$(X)
 	$(INSTALL_PROGRAM) ndisasm$(X) $(DESTDIR)$(bindir)/ndisasm$(X)
-	$(MKDIR) $(DESTDIR)$(mandir)/man1
+	$(MKDIR_P) $(DESTDIR)$(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/nasm.1 $(DESTDIR)$(mandir)/man1/nasm.1
 	$(INSTALL_DATA) $(srcdir)/ndisasm.1 $(DESTDIR)$(mandir)/man1/ndisasm.1
 
@@ -365,7 +398,8 @@ clean:
 distclean: clean
 	$(RM_F) config.log config.status config/config.h
 	for d in . $(SUBDIRS) $(XSUBDIRS); do \
-		$(RM_F) "$$d"/*~ "$$d"/*.bak "$$d"/*.lst "$$d"/*.bin ; \
+		$(RM_F) "$$d"/.\# "$$d"/\# "$$d"/*~ "$$d"/*.bak \
+			"$$d"/*.lst "$$d"/*.bin ; \
 	done
 	$(RM_F) test/*.$(O)
 	$(RM_RF) autom4te*.cache
@@ -396,7 +430,7 @@ cscope:
 	cscope -b -f cscope.out
 
 rdf_install install_rdf install_rdoff:
-	$(MKDIR) $(DESTDIR)$(bindir)
+	$(MKDIR_P) $(DESTDIR)$(bindir)
 	for f in $(RDFPROGS); do \
 		$(INSTALL_PROGRAM) "$$f" '$(DESTDIR)$(bindir)'/ ; \
 	done
@@ -405,28 +439,37 @@ rdf_install install_rdf install_rdoff:
 		bn=`basename "$$f"` && $(RM_F) "$$bn" && \
 		$(LN_S) rdf2bin$(X) "$$bn" ; \
 	done
-	$(MKDIR) $(DESTDIR)$(mandir)/man1
+	$(MKDIR_P) $(DESTDIR)$(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/rdoff/*.1 $(DESTDIR)$(mandir)/man1/
 
-doc:
+doc: doc/warnings.src
 	$(MAKE) -C doc all
 
 doc_install install_doc:
 	$(MAKE) -C doc install
 
-everything: all manpages doc rdf
+# Dummy target to prevent accidental invocation of the default "all" target
+nothing:
+
+always_everything: dirs
+	$(MAKE) all doc
+
+everything: always_everything
+	$(MAKE) $(MANPAGES) $(NSIS) nothing
 
 install_everything: everything install install_doc install_rdf
 
 dist:
 	$(MAKE) alldeps
-	$(MAKE) spotless perlreq manpages spec
+	$(MAKE) spotless perlreq manpages spec $(MANPAGES)
 	autoheader
 	autoconf
 	$(RM_RF) ./autom4te*.cache
 
 tar: dist
-	tar -cvj --exclude CVS -C .. -f ../nasm-`cat version`-`date +%Y%m%d`.tar.bz2 `basename \`pwd\``
+	tar -cv --exclude CVS -C .. -f - | \
+		$(XZ) -9e > \
+		../nasm-`cat version`-`date +%Y%m%d`.tar.xz `basename \`pwd\``
 
 spec: nasm.spec
 
@@ -435,11 +478,11 @@ ALLPERLSRC := $(shell find $(srcdir) -type f -name '*.p[lh]')
 perlbreq.si: $(ALLPERLSRC)
 	sed -n -r -e 's/^[[:space:]]*use[[:space:]]+([^[:space:];]+).*$$/BuildRequires: perl(\1)/p' $(ALLPERLSRC) | \
 	sed -r -e '/perl\((strict|warnings|Win32.*)\)/d' | \
-	sort | uniq > perlbreq.si || ( rm -f perlbreq.si ; false )
+	sort | uniq > perlbreq.si
 
 nasm.spec: nasm.spec.in nasm.spec.sed version.sed perlbreq.si
 	sed -f version.sed -f nasm.spec.sed \
-	< nasm.spec.in > nasm.spec || ( rm -f nasm.spec ; false )
+	< nasm.spec.in > nasm.spec
 
 splint:
 	splint -weak *.c
@@ -450,11 +493,14 @@ test: nasm$(X)
 golden: nasm$(X)
 	cd test && $(RUNPERL) performtest.pl --golden --nasm=../nasm *.asm
 
+travis: nasm$(X)
+	$(PYTHON3) travis/nasm-t.py run
+
 #
-# Rules to run autoreconf if necessary
+# Rules to run autogen if necessary
 #
-configure: configure.ac aclocal.m4
-	autoreconf
+configure: configure.ac autoconf/aclocal.m4
+	sh autogen.sh --recheck
 
 config.status: configure
 	@if [ ! -f config.status ]; then \
@@ -469,6 +515,14 @@ Makefile: config.status Makefile.in doc/Makefile.in
 doc/Makefile: Makefile
 
 config/config.h: config.status
+
+#
+# Dummy rules that changes make behavior
+# (at end to avoid confusing non-GNU makes)
+#
+.SECONDARY:
+
+.DELETE_ON_ERROR:
 
 #
 # Does this version of this file have external dependencies?  This definition
@@ -499,9 +553,6 @@ alldeps: $(PERLREQ) tools/syncfiles.pl tools/mkdep.pl
 		$(DEPDIRS)
 	$(RM_F) *.dep
 	if [ -f config.status ]; then \
-		if [ $(EXTERNAL_DEPENDENCIES) -eq 1 ]; then \
-			sh config.status --recheck; \
-		fi; \
 		sh config.status; \
 	fi
 
@@ -513,9 +564,6 @@ cleandeps: $(PERLREQ) tools/syncfiles.pl tools/mkdep.pl
 		$(DEPDIRS)
 	$(RM_F) *.dep
 	if [ -f config.status ]; then \
-		if [ $(EXTERNAL_DEPENDENCIES) -eq 0 ]; then \
-			sh config.status --recheck; \
-		fi; \
 		sh config.status; \
 	fi
 
@@ -523,7 +571,7 @@ cleandeps: $(PERLREQ) tools/syncfiles.pl tools/mkdep.pl
 # @object-ending: ".$(O)"
 # @path-separator: "/"
 # @external: "Makefile.dep"
-# @include-command: "-include"
+# @include-command: "include"
 # @selfrule: "1"
 #-- Everything below is generated by mkdep.pl - do not edit --#
--include Makefile.dep
+include Makefile.dep

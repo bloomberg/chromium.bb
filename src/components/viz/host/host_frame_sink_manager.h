@@ -171,6 +171,17 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void RequestCopyOfOutput(const SurfaceId& surface_id,
                            std::unique_ptr<CopyOutputRequest> request);
 
+  // Starts throttling the frame sinks specified by |frame_sink_ids| and all
+  // their descendant sinks to send BeginFrames at an interval of |interval|.
+  // |interval| should be greater than zero. Previous throttling operation
+  // on any frame sinks must be ended by EndThrottling() before applying the
+  // current throttling operation.
+  void StartThrottling(const std::vector<FrameSinkId>& frame_sink_ids,
+                       base::TimeDelta interval);
+
+  // Ends throttling of all previously throttled frame sinks.
+  void EndThrottling();
+
   // Add/Remove an observer to receive notifications of when the host receives
   // new hit test data.
   void AddHitTestRegionObserver(HitTestRegionObserver* observer);
@@ -185,6 +196,12 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // entry.
   uint32_t CacheBackBufferForRootSink(const FrameSinkId& root_sink_id);
   void EvictCachedBackBuffer(uint32_t cache_id);
+
+  void UpdateDebugRendererSettings(const DebugRendererSettings& debug_settings);
+
+  const DebugRendererSettings& debug_renderer_settings() const {
+    return debug_renderer_settings_;
+  }
 
  private:
   friend class HostFrameSinkManagerTest;
@@ -271,6 +288,9 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
   uint32_t next_cache_back_buffer_id_ = 1;
   uint32_t min_valid_cache_back_buffer_id_ = 1;
+
+  // This is kept in sync with implementation.
+  DebugRendererSettings debug_renderer_settings_;
 
   base::WeakPtrFactory<HostFrameSinkManager> weak_ptr_factory_{this};
 

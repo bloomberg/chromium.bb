@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_numericedit.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -36,7 +36,9 @@ CXFA_NumericEdit::CXFA_NumericEdit(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::NumericEdit,
                 kNumericEditPropertyData,
                 kNumericEditAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_NumericEdit::~CXFA_NumericEdit() = default;
 

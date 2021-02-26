@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_errors.h"
-#include "services/network/cross_origin_read_blocking.h"
+#include "services/network/public/cpp/cross_origin_read_blocking.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace net {
@@ -43,7 +43,7 @@ class CrossOriginReadBlockingChecker {
   CrossOriginReadBlockingChecker(
       const network::ResourceRequest& request,
       const network::mojom::URLResponseHead& response,
-      const url::Origin& request_initiator_site_lock,
+      const url::Origin& request_initiator_origin_lock,
       const storage::BlobDataHandle& blob_data_handle,
       base::OnceCallback<void(Result)> callback);
   ~CrossOriginReadBlockingChecker();

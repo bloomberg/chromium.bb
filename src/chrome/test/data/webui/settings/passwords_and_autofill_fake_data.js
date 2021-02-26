@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManager, PaymentsManager} from 'chrome://settings/lazy_load.js';
+import {MultiStoreExceptionEntry, MultiStorePasswordUiEntry} from 'chrome://settings/settings.js';
 
 import {assertEquals} from '../chai_assert.js';
 
@@ -12,17 +14,28 @@ import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 // clang-format on
 
 /**
- * Creates a single item for the list of passwords.
- * @param {string=} url
- * @param {string=} username
- * @param {number=} id
+ * Creates a single item for the list of passwords, in the format sent by the
+ * password manager native code. If no |id| is passed, it is set to a default,
+ * value so this should probably not be done in tests with multiple entries
+ * (|id| is unique). If no |frontendId| is passed, it is set to the same value
+ * set for |id|.
+ * @param {{ url: (string|undefined),
+ *            username: (string|undefined),
+ *            federationText: (string|undefined),
+ *            id: (number|undefined),
+ *            frontendId: (number|undefined),
+ *            fromAccountStore: (boolean|undefined)
+ *           }=} params
  * @return {chrome.passwordsPrivate.PasswordUiEntry}
  */
-export function createPasswordEntry(url, username, id) {
+export function createPasswordEntry(params) {
   // Generate fake data if param is undefined.
-  url = url || patternMaker_('www.xxxxxx.com', 16);
-  username = username || patternMaker_('user_xxxxx', 16);
-  id = id || 0;
+  params = params || {};
+  const url = params.url !== undefined ? params.url : 'www.foo.com';
+  const username = params.username !== undefined ? params.username : 'user';
+  const id = params.id !== undefined ? params.id : 42;
+  const frontendId = params.frontendId !== undefined ? params.frontendId : id;
+  const fromAccountStore = params.fromAccountStore || false;
 
   return {
     urls: {
@@ -31,20 +44,83 @@ export function createPasswordEntry(url, username, id) {
       link: 'http://' + url + '/login',
     },
     username: username,
+    federationText: params.federationText,
     id: id,
-    fromAccountStore: false,
+    frontendId: frontendId,
+    fromAccountStore: fromAccountStore,
   };
 }
 
 /**
- * Creates a single item for the list of password exceptions.
- * @param {string=} url
- * @param {number=} id
+ * Creates a multi-store password item with the same mock data as
+ * createPasswordEntry(), so can be used for verifying deduplication result.
+ * At least one of |accountId| and |deviceId| must be set.
+ * @param {!{ url: (string|undefined),
+ *            username: (string|undefined),
+ *            federationText: (string|undefined),
+ *            accountId: (number|undefined),
+ *            deviceId: (number|undefined),
+ *           }} params
+ * @return {MultiStorePasswordUiEntry}
+ */
+export function createMultiStorePasswordEntry(params) {
+  const dummyFrontendId = 42;
+  let deviceEntry, accountEntry;
+  if (params.deviceId !== undefined) {
+    deviceEntry = createPasswordEntry({
+      url: params.url,
+      username: params.username,
+      federationText: params.federationText,
+      id: params.deviceId,
+      frontendId: dummyFrontendId,
+      fromAccountStore: false
+    });
+  }
+  if (params.accountId !== undefined) {
+    accountEntry = createPasswordEntry({
+      url: params.url,
+      username: params.username,
+      federationText: params.federationText,
+      id: params.accountId,
+      frontendId: dummyFrontendId,
+      fromAccountStore: true
+    });
+  }
+
+  if (deviceEntry && accountEntry) {
+    const mergedEntry = new MultiStorePasswordUiEntry(deviceEntry);
+    mergedEntry.mergeInPlace(accountEntry);
+    return mergedEntry;
+  }
+  if (deviceEntry) {
+    return new MultiStorePasswordUiEntry(deviceEntry);
+  }
+  if (accountEntry) {
+    return new MultiStorePasswordUiEntry(accountEntry);
+  }
+
+  assertNotReached();
+  return new MultiStorePasswordUiEntry(createPasswordEntry());
+}
+
+/**
+ * Creates a single item for the list of password exceptions. If no |id| is
+ * passed, it is set to a default, value so this should probably not be done in
+ * tests with multiple entries (|id| is unique). If no |frontendId| is passed,
+ * it is set to the same value set for |id|.
+ * @param {{ url: (string|undefined),
+ *           id: (number|undefined),
+ *           frontendId: (number|undefined),
+ *           fromAccountStore: (boolean|undefined)
+ *         }=} params
  * @return {chrome.passwordsPrivate.ExceptionEntry}
  */
-export function createExceptionEntry(url, id) {
-  url = url || patternMaker_('www.xxxxxx.com', 16);
-  id = id || 0;
+export function createExceptionEntry(params) {
+  params = params || {};
+  const url = params.url !== undefined ? params.url : 'www.foo.com';
+  const id = params.id !== undefined ? params.id : 42;
+  const frontendId = params.frontendId !== undefined ? params.frontendId : id;
+  const fromAccountStore = params.fromAccountStore || false;
   return {
     urls: {
       origin: 'http://' + url + '/login',
@@ -52,9 +128,57 @@ export function createExceptionEntry(url, id) {
       link: 'http://' + url + '/login',
     },
     id: id,
-    fromAccountStore: false,
+    frontendId: frontendId,
+    fromAccountStore: fromAccountStore,
   };
 }
+
+/**
+ * Creates a multi-store password item with the same mock data as
+ * createExceptionEntry(), so it can be used for verifying deduplication result.
+ * At least one of |accountId| and |deviceId| must be set.
+ * @param {!{ url: (string|undefined),
+ *           accountId: (number|undefined),
+ *           deviceId: (number|undefined),
+ *         }} params
+ * @return {MultiStoreExceptionEntry}
+ */
+export function createMultiStoreExceptionEntry(params) {
+  const dummyFrontendId = 42;
+  let deviceEntry, accountEntry;
+  if (params.deviceId !== undefined) {
+    deviceEntry = createExceptionEntry({
+      url: params.url,
+      id: params.deviceId,
+      frontendId: dummyFrontendId,
+      fromAccountStore: false
+    });
+  }
+  if (params.accountId !== undefined) {
+    accountEntry = createExceptionEntry({
+      url: params.url,
+      id: params.accountId,
+      frontendId: dummyFrontendId,
+      fromAccountStore: true
+    });
+  }
+
+  if (deviceEntry && accountEntry) {
+    const mergedEntry = new MultiStoreExceptionEntry(deviceEntry);
+    mergedEntry.mergeInPlace(accountEntry);
+    return mergedEntry;
+  }
+  if (deviceEntry) {
+    return new MultiStoreExceptionEntry(deviceEntry);
+  }
+  if (accountEntry) {
+    return new MultiStoreExceptionEntry(accountEntry);
+  }
+
+  assertNotReached();
+  return new MultiStoreExceptionEntry(createExceptionEntry());
+}
+
 
 /**
  * Creates a new fake address entry for testing.
@@ -120,29 +244,44 @@ export function createCreditCardEntry() {
 }
 
 /**
+ * Creates a new insecure credential.
+ * @param {string} url
+ * @param {string} username
+ * @param {number=} id
+ * @return {chrome.passwordsPrivate.InsecureCredential}
+ * @private
+ */
+export function makeInsecureCredential(url, username, id) {
+  return {
+    id: id || 0,
+    formattedOrigin: url,
+    changePasswordUrl: `http://${url}/`,
+    username: username,
+    detailedOrigin: '',
+    isAndroidCredential: false,
+    signonRealm: '',
+  };
+}
+
+/**
  * Creates a new compromised credential.
  * @param {string} url
  * @param {string} username
  * @param {chrome.passwordsPrivate.CompromiseType} type
  * @param {number=} id
  * @param {number=} elapsedMinSinceCompromise
- * @return {chrome.passwordsPrivate.CompromisedCredential}
+ * @return {chrome.passwordsPrivate.InsecureCredential}
  * @private
  */
 export function makeCompromisedCredential(
     url, username, type, id, elapsedMinSinceCompromise) {
-  return {
-    id: id || 0,
-    formattedOrigin: url,
-    changePasswordUrl: `http://${url}/`,
-    username: username,
-    elapsedTimeSinceCompromise: `${elapsedMinSinceCompromise} minutes ago`,
+  const credential = makeInsecureCredential(url, username, id);
+  credential.compromisedInfo = {
     compromiseTime: Date.now() - (elapsedMinSinceCompromise * 60000),
+    elapsedTimeSinceCompromise: `${elapsedMinSinceCompromise} minutes ago`,
     compromiseType: type,
-    detailedOrigin: '',
-    isAndroidCredential: false,
-    signonRealm: '',
   };
+  return credential;
 }
 
 /**
@@ -230,7 +369,8 @@ export class PasswordSectionElementFactory {
    */
   createPasswordListItem(passwordEntry) {
     const passwordListItem = this.document.createElement('password-list-item');
-    passwordListItem.item = {entry: passwordEntry, password: ''};
+    passwordListItem.entry = new MultiStorePasswordUiEntry(passwordEntry);
+    passwordListItem.password = '';
     this.document.body.appendChild(passwordListItem);
     flush();
     return passwordListItem;
@@ -238,12 +378,15 @@ export class PasswordSectionElementFactory {
 
   /**
    * Helper method used to create a password editing dialog.
-   * @param {!chrome.passwordsPrivate.PasswordUiEntry} passwordEntry
+   * @param {!MultiStorePasswordUiEntry} passwordEntry
+   * @param {!Array<!MultiStorePasswordUiEntry>} passwords
    * @return {!Object}
    */
-  createPasswordEditDialog(passwordEntry) {
+  createPasswordEditDialog(passwordEntry, passwords) {
     const passwordDialog = this.document.createElement('password-edit-dialog');
-    passwordDialog.item = {entry: passwordEntry, password: ''};
+    passwordDialog.entry = passwordEntry;
+    passwordDialog.password = '';
+    passwordDialog.savedPasswords = passwords ? passwords : [];
     this.document.body.appendChild(passwordDialog);
     flush();
     return passwordDialog;
@@ -278,6 +421,7 @@ export class AutofillManagerExpectations {
   constructor() {
     this.requestedAddresses = 0;
     this.listeningAddresses = 0;
+    this.removeAddress = 0;
   }
 }
 
@@ -321,7 +465,9 @@ export class TestAutofillManager {
   saveAddress() {}
 
   /** @override */
-  removeAddress() {}
+  removeAddress() {
+    this.actual_.removeAddress++;
+  }
 
   /**
    * Verifies expectations.
@@ -331,6 +477,7 @@ export class TestAutofillManager {
     const actual = this.actual_;
     assertEquals(expected.requestedAddresses, actual.requestedAddresses);
     assertEquals(expected.listeningAddresses, actual.listeningAddresses);
+    assertEquals(expected.removeAddress, actual.removeAddress);
   }
 }
 

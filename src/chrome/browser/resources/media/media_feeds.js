@@ -21,9 +21,16 @@ function whenConfigTableIsPopulatedForTest() {
   return mediaFeedsConfigTableIsPopulatedResolver.promise;
 }
 
-const mediaFeedsConfigTableIsUpdatedResolver = new PromiseResolver();
-function whenConfigTableIsUpdatedForTest() {
-  return mediaFeedsConfigTableIsUpdatedResolver.promise;
+const mediaFeedsConfigTableSafeSearchPrefIsUpdatedResolver =
+    new PromiseResolver();
+function whenConfigTableSafeSearchPrefIsUpdatedForTest() {
+  return mediaFeedsConfigTableSafeSearchPrefIsUpdatedResolver.promise;
+}
+
+const mediaFeedsConfigTableBackgroundFetchingPrefIsUpdatedResolver =
+    new PromiseResolver();
+function whenConfigTableBackgroundFetchingPrefIsUpdatedForTest() {
+  return mediaFeedsConfigTableBackgroundFetchingPrefIsUpdatedResolver.promise;
 }
 
 (function() {
@@ -53,6 +60,10 @@ class MediaFeedsTableDelegate {
 
       a.addEventListener('click', () => {
         showFeedContents(dataRow);
+
+        // Clear old logs and hide the area from display.
+        $('fetch-logs').style.display = 'none';
+        $('fetch-logs-content').textContent = '';
       });
 
       td.appendChild(document.createElement('br'));
@@ -66,6 +77,9 @@ class MediaFeedsTableDelegate {
         store.fetchMediaFeed(dataRow.id).then(response => {
           updateFeedsTable();
           showFeedContents(dataRow);
+
+          $('fetch-logs').style.display = 'block';
+          $('fetch-logs-content').textContent = response.logs;
         });
       });
     }
@@ -91,6 +105,8 @@ class MediaFeedsTableDelegate {
         td.textContent = 'Auto';
       } else if (data == mediaFeeds.mojom.FeedUserStatus.kDisabled) {
         td.textContent = 'Disabled';
+      } else if (data == mediaFeeds.mojom.FeedUserStatus.kEnabled) {
+        td.textContent = 'Enabled';
       }
     } else if (key === 'lastFetchResult') {
       // Format a FetchResult.
@@ -155,7 +171,20 @@ class MediaFeedsTableDelegate {
           td.textContent = 'Movie';
           break;
       }
-    } else if (key == 'isFamilyFriendly' || key == 'clicked') {
+    } else if (key == 'isFamilyFriendly') {
+      // Format a IsFamilyFriendly.
+      switch (parseInt(data, 10)) {
+        case mediaFeeds.mojom.IsFamilyFriendly.kUnknown:
+          td.textContent = 'Unknown';
+          break;
+        case mediaFeeds.mojom.IsFamilyFriendly.kYes:
+          td.textContent = 'Yes';
+          break;
+        case mediaFeeds.mojom.IsFamilyFriendly.kNo:
+          td.textContent = 'No';
+          break;
+      }
+    } else if (key == 'clicked') {
       // Format a boolean.
       td.textContent = data ? 'Yes' : 'No';
     } else if (key == 'actionStatus') {
@@ -291,16 +320,6 @@ class MediaFeedsTableDelegate {
           td.textContent = 'Cache';
           break;
       }
-    } else if (key === 'associatedOrigins') {
-      // Format the array of origins.
-      const origins = [];
-
-      data.forEach((origin) => {
-        const {scheme, host, port} = origin;
-        origins.push(new URL(`${scheme}://${host}:${port}`).origin);
-      });
-
-      td.textContent = origins.join(', ');
     } else if (key === 'userIdentifier') {
       if (data) {
         td.textContent = 'Name=' + data.name;
@@ -338,7 +357,7 @@ class MediaFeedsTableDelegate {
         sortKey === 'fetchFailedCount' || sortKey === 'lastFetchItemCount' ||
         sortKey === 'lastFetchPlayNextCount' ||
         sortKey === 'lastFetchContentTypes' || sortKey === 'safeSearchResult' ||
-        sortKey === 'type') {
+        sortKey === 'type' || sortKey === 'cookieNameFilter') {
       return val1 > val2 ? 1 : -1;
     } else if (
         sortKey === 'lastDiscoveryTime' || sortKey === 'lastFetchTime' ||
@@ -358,7 +377,7 @@ class MediaFeedsTableDelegate {
  * @returns {number}
  */
 function timeDeltaToSeconds(timeDelta) {
-  return timeDelta.microseconds / 1000 / 1000;
+  return Number(timeDelta.microseconds) / 1000 / 1000;
 }
 
 /**
@@ -541,7 +560,7 @@ function createConfigRowWithToggle(name, value, clickAction) {
  * @param {!mediaFeeds.mojom.DebugInformation} info The debug info
  */
 function renderConfigTable(info) {
-  configTableBody.innerHTML = '';
+  configTableBody.innerHTML = trustedTypes.emptyHTML;
 
   configTableBody.appendChild(createConfigRow(
       'Safe Search Enabled (value)',
@@ -552,8 +571,25 @@ function renderConfigTable(info) {
       () => {
         store.setSafeSearchEnabledPref(!info.safeSearchPrefValue).then(() => {
           updateConfigTable().then(
-              () => mediaFeedsConfigTableIsUpdatedResolver.resolve());
+              () => mediaFeedsConfigTableSafeSearchPrefIsUpdatedResolver
+                        .resolve());
         });
+      }));
+
+  configTableBody.appendChild(createConfigRow(
+      'Background Fetching Enabled (value)',
+      formatFeatureFlag(info.backgroundFetchingFeatureEnabled)));
+
+  configTableBody.appendChild(createConfigRowWithToggle(
+      'Background Fetching Enabled (pref)',
+      formatFeatureFlag(info.backgroundFetchingPrefValue), () => {
+        store.setBackgroundFetchingPref(!info.backgroundFetchingPrefValue)
+            .then(() => {
+              updateConfigTable().then(
+                  () =>
+                      mediaFeedsConfigTableBackgroundFetchingPrefIsUpdatedResolver
+                          .resolve());
+            });
       }));
 }
 

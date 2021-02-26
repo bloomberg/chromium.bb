@@ -7,6 +7,7 @@
 #include "xfa/fxfa/cxfa_eventparam.h"
 
 #include "xfa/fxfa/fxfa.h"
+#include "xfa/fxfa/parser/cxfa_node.h"
 
 CXFA_EventParam::CXFA_EventParam() = default;
 
@@ -17,7 +18,8 @@ CXFA_EventParam::~CXFA_EventParam() = default;
 CXFA_EventParam& CXFA_EventParam::operator=(const CXFA_EventParam& other) =
     default;
 
-CXFA_EventParam& CXFA_EventParam::operator=(CXFA_EventParam&& other) = default;
+CXFA_EventParam& CXFA_EventParam::operator=(CXFA_EventParam&& other) noexcept =
+    default;
 
 WideString CXFA_EventParam::GetNewText() const {
   return m_wsPrevText.First(m_iSelStart) + m_wsChange +

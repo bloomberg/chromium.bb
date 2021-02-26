@@ -453,3 +453,10 @@ def devtools(c):
       'https://chromium.googlesource.com/devtools/devtools-frontend': (
           'devtools/devtools-frontend', 'HEAD'),
   })
+
+@config_ctx()
+def tint(c):
+  soln = c.solutions.add()
+  soln.name = 'tint'
+  soln.url = 'https://dawn.googlesource.com/tint.git'
+  c.got_revision_mapping['tint'] = 'got_revision'

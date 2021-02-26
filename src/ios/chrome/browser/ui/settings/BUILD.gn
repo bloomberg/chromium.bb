@@ -73,6 +73,7 @@ source_set("settings") {
     ":settings_root",
     "resources:app_icon_placeholder",
     "resources:encryption_error",
+    "resources:enterprise_icon",
     "resources:settings_about_chrome",
     "resources:settings_accounts_add_account",
     "resources:settings_addresses",
@@ -82,11 +83,17 @@ source_set("settings") {
     "resources:settings_content_settings",
     "resources:settings_debug",
     "resources:settings_error",
+    "resources:settings_google_services",
+    "resources:settings_info",
     "resources:settings_language_settings",
     "resources:settings_passwords",
     "resources:settings_payment_methods",
     "resources:settings_privacy",
+    "resources:settings_safe_browsing",
+    "resources:settings_safe_state",
+    "resources:settings_safety_check",
     "resources:settings_search_engine",
+    "resources:settings_unsafe_state",
     "resources:settings_voice_search",
     "resources:sync_and_google_services",
     "resources:sync_and_google_services_sync_error",
@@ -106,6 +113,7 @@ source_set("settings") {
     "//components/keyed_service/core",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
+    "//components/prefs",
     "//components/prefs/ios",
     "//components/resources",
     "//components/search_engines",
@@ -129,6 +137,7 @@ source_set("settings") {
     "//ios/chrome/browser/mailto:feature_flags",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/prerender:prerender_pref",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
@@ -140,6 +149,7 @@ source_set("settings") {
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/content_suggestions:feature_flags",
     "//ios/chrome/browser/ui/content_suggestions/cells",
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
@@ -147,24 +157,29 @@ source_set("settings") {
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/list_model",
+    "//ios/chrome/browser/ui/resources:password_key",
     "//ios/chrome/browser/ui/settings/autofill",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/settings/cells:public",
     "//ios/chrome/browser/ui/settings/clear_browsing_data",
+    "//ios/chrome/browser/ui/settings/default_browser",
+    "//ios/chrome/browser/ui/settings/default_browser/resources:default_browser_world",
+    "//ios/chrome/browser/ui/settings/elements:enterprise_info_popover_view_controller",
     "//ios/chrome/browser/ui/settings/google_services",
     "//ios/chrome/browser/ui/settings/language:language",
     "//ios/chrome/browser/ui/settings/language:language_ui",
     "//ios/chrome/browser/ui/settings/password",
     "//ios/chrome/browser/ui/settings/privacy",
+    "//ios/chrome/browser/ui/settings/safety_check",
     "//ios/chrome/browser/ui/settings/sync",
     "//ios/chrome/browser/ui/settings/sync/utils",
     "//ios/chrome/browser/ui/settings/utils",
-    "//ios/chrome/browser/ui/signin_interaction/public",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/table_view/cells/resources:table_view_cell_check_mark",
+    "//ios/chrome/browser/upgrade:public",
     "//ios/chrome/browser/voice",
     "//ios/chrome/browser/web:web",
     "//ios/chrome/common",
@@ -182,7 +197,7 @@ source_set("settings") {
     "//url",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/authentication" ]
-  libs = [
+  frameworks = [
     "CoreLocation.framework",
     "UIKit.framework",
   ]
@@ -194,11 +209,11 @@ source_set("constants") {
     "settings_table_view_controller_constants.h",
     "settings_table_view_controller_constants.mm",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
+  deps = [ "//ios/chrome/browser/ui/list_model" ]
 }
 
 source_set("test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -222,6 +237,7 @@ source_set("test_support") {
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//google_apis",
+    "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
@@ -232,6 +248,7 @@ source_set("test_support") {
     "//ios/chrome/browser/signin:test_support",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/sync:test_support",
+    "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/settings/password",
     "//ios/chrome/browser/ui/table_view:test_support",
     "//ios/chrome/test/app:test_support",
@@ -254,6 +271,7 @@ source_set("unit_tests") {
     "search_engine_table_view_controller_unittest.mm",
     "settings_navigation_controller_unittest.mm",
     "settings_root_table_view_controller_unittest.mm",
+    "settings_table_view_controller_unittest.mm",
     "translate_table_view_controller_unittest.mm",
     "voice_search_table_view_controller_unittest.mm",
   ]
@@ -273,6 +291,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/search_engines",
     "//components/strings",
+    "//components/sync/driver:test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//components/translate/core/browser",
@@ -290,13 +309,17 @@ source_set("unit_tests") {
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/prefs:browser_prefs",
+    "//ios/chrome/browser/prerender:prerender_pref",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:test_support",
     "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/sync:test_support",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/icons",
+    "//ios/chrome/browser/ui/settings:constants",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view:test_support",
@@ -307,6 +330,7 @@ source_set("unit_tests") {
     "//ios/chrome/test:test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
     "//ios/public/provider/chrome/browser/voice",
     "//ios/web/public/test",
     "//net",
@@ -317,104 +341,6 @@ source_set("unit_tests") {
     "//ui/base",
     "//url",
   ]
-}
-
-source_set("eg_test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "block_popups_app_interface.h",
-    "block_popups_app_interface.mm",
-    "settings_app_interface.h",
-    "settings_app_interface.mm",
-  ]
-  deps = [
-    "//base",
-    "//components/browsing_data/core",
-    "//components/content_settings/core/browser",
-    "//components/content_settings/core/common",
-    "//components/metrics",
-    "//components/prefs",
-    "//components/search_engines",
-    "//ios/chrome/app:app_internal",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser:pref_names",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/content_settings",
-    "//ios/chrome/browser/content_settings",
-    "//ios/chrome/browser/search_engines",
-    "//ios/chrome/test/app:test_support",
-    "//third_party/breakpad:client",
-  ]
-}
-
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
-  testonly = true
-  sources = [
-    "block_popups_egtest.mm",
-    "search_engine_settings_egtest.mm",
-    "settings_accessibility_egtest.mm",
-    "settings_egtest.mm",
-    "signin_settings_egtest.mm",
-  ]
-
-  deps = [
-    ":constants",
-    ":eg_test_support",
-    "//base",
-    "//base/test:test_support",
-    "//build:branding_buildflags",
-    "//components/autofill/core/common",
-    "//components/browser_sync",
-    "//components/browsing_data/core",
-    "//components/content_settings/core/browser",
-    "//components/keyed_service/core",
-    "//components/metrics",
-    "//components/password_manager/core/browser",
-    "//components/password_manager/core/common",
-    "//components/prefs",
-    "//components/search_engines",
-    "//components/strings",
-    "//ios/chrome/app:app_internal",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/app/theme",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/browsing_data:feature_flags",
-    "//ios/chrome/browser/content_settings",
-    "//ios/chrome/browser/ntp_snippets",
-    "//ios/chrome/browser/passwords:passwords",
-    "//ios/chrome/browser/search_engines",
-    "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/sync",
-    "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/authentication:eg_test_support",
-    "//ios/chrome/browser/ui/authentication/cells",
-    "//ios/chrome/browser/ui/authentication/signin:constants",
-    "//ios/chrome/browser/ui/settings:test_support",
-    "//ios/chrome/browser/ui/table_view/cells",
-    "//ios/chrome/test:eg_test_support",
-    "//ios/chrome/test:test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
-    "//ios/public/provider/chrome/browser/signin:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web:earl_grey_test_support",
-    "//ios/web/public/test/http_server",
-    "//net",
-    "//net:test_support",
-    "//ui/base",
-    "//url",
-  ]
-  libs = [ "UIKit.framework" ]
 }
 
 source_set("eg_app_support+eg2") {

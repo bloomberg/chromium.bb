@@ -11,7 +11,6 @@
 #include "include/private/GrTypesPriv.h"
 
 class GrClip;
-class GrContext;
 class GrPaint;
 class GrRecordingContext;
 class GrRenderTarget;
@@ -36,7 +35,7 @@ namespace GrBlurUtils {
      */
     void drawShapeWithMaskFilter(GrRecordingContext*,
                                  GrRenderTargetContext*,
-                                 const GrClip&,
+                                 const GrClip*,
                                  const SkPaint&,
                                  const SkMatrixProvider&,
                                  const GrStyledShape&);
@@ -47,11 +46,11 @@ namespace GrBlurUtils {
      */
     void drawShapeWithMaskFilter(GrRecordingContext*,
                                  GrRenderTargetContext*,
-                                 const GrClip&,
+                                 const GrClip*,
                                  const GrStyledShape&,
                                  GrPaint&&,
                                  const SkMatrix& viewMatrix,
                                  const SkMaskFilter*);
-};
+}  // namespace GrBlurUtils
 
 #endif

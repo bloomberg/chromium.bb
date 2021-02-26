@@ -20,11 +20,11 @@ namespace optimization_guide {
 namespace features {
 
 extern const base::Feature kOptimizationHints;
-extern const base::Feature kOptimizationHintsExperiments;
-constexpr char kOptimizationHintsExperimentNameParam[] = "experiment_name";
+extern const base::Feature kOptimizationHintsFieldTrials;
 extern const base::Feature kRemoteOptimizationGuideFetching;
 extern const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent;
 extern const base::Feature kOptimizationTargetPrediction;
+extern const base::Feature kOptimizationTargetPredictionUsingMLService;
 
 // The maximum number of hosts that can be stored in the
 // |kHintsFetcherTopHostBlacklist| dictionary pref when initialized. The top
@@ -104,9 +104,6 @@ base::TimeDelta GetHintsFetchRefreshDuration();
 // Service that should be allowed.
 size_t MaxConcurrentPageNavigationFetches();
 
-// Returns true if optimization target prediction is enabled.
-bool IsOptimizationTargetPredictionEnabled();
-
 // The amount of time host model features will be considered fresh enough
 // to be used and remain in the OptimizationGuideStore.
 base::TimeDelta StoredHostModelFeaturesFreshnessDuration();
@@ -124,8 +121,16 @@ size_t MaxHostsForOptimizationGuideServiceModelsFetch();
 size_t MaxHostModelFeaturesCacheSize();
 
 // The maximum number of hints allowed to be maintained in a least-recently-used
-// cache.
+// cache for hosts.
+size_t MaxHostKeyedHintCacheSize();
+
+// The maximum number of hints allowed to be maintained in a least-recently-used
+// cache for URLs.
 size_t MaxURLKeyedHintCacheSize();
+
+// Returns true if hints should be persisted to disk. If this is false, hints
+// will just be stored in-memory and evicted if not recently used.
+bool ShouldPersistHintsToDisk();
 
 // Returns true if the optimization target decision for |optimization_target|
 // should not be propagated to the caller in an effort to fully understand the
@@ -144,6 +149,14 @@ int PredictionModelFetchRandomMaxDelaySecs();
 // Returns a set of external Android app packages whose predictions have been
 // approved for fetching from the remote Optimization Guide Service.
 base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch();
+
+// Returns a set of field trial name hashes that can be sent in the request to
+// the remote Optimization Guide Service if the client is in one of the
+// specified field trials.
+base::flat_set<uint32_t> FieldTrialNameHashesAllowedForFetch();
+
+// Whether out-of-process model evaluation via the ML Service is enabled.
+bool ShouldUseMLServiceForPrediction();
 
 }  // namespace features
 }  // namespace optimization_guide

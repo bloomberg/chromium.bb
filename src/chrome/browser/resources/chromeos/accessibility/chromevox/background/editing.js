@@ -22,6 +22,7 @@ goog.require('LibLouis.FormType');
 
 goog.scope(function() {
 const AutomationEvent = chrome.automation.AutomationEvent;
+const AutomationIntent = chrome.automation.AutomationIntent;
 const AutomationNode = chrome.automation.AutomationNode;
 const Cursor = cursors.Cursor;
 const Dir = constants.Dir;
@@ -53,13 +54,19 @@ editing.TextEditHandler = class {
     this.editableText_;
 
     chrome.automation.getDesktop(function(desktop) {
+      // ChromeVox handles two general groups of text fields:
       // A rich text field is one where selection gets placed on a DOM
       // descendant to a root text field. This is one of:
       // - content editables (detected via richly editable state)
+      // - text areas (<textarea>) detected via its html tag
       //
-      // The only other editables we expect are all single line (including those
-      // from ARC++).
-      const useRichText = node.state[StateType.RICHLY_EDITABLE];
+      // A non-rich text field is one where accessibility only provides a value,
+      // and a pair of numbers for the selection start and end. ChromeVox places
+      // single-lined text fields, including those from web content, and ARC++
+      // in this group. In addition, multiline ARC++ text fields are treated
+      // this way.
+      const useRichText =
+          node.state[StateType.RICHLY_EDITABLE] || node.htmlTag === 'textarea';
 
       this.editableText_ = useRichText ? new AutomationRichEditableText(node) :
                                          new AutomationEditableText(node);
@@ -73,25 +80,18 @@ editing.TextEditHandler = class {
 
   /**
    * Receives the following kinds of events when the node provided to the
-   * constructor is focuse: |focus|, |textChanged|, |textSelectionChanged| and
-   * |valueChanged|.
+   * constructor is focused: |focus|, |textChanged|, |textSelectionChanged| and
+   * |valueInTextFieldChanged|.
    * An implementation of this method should emit the appropriate braille and
    * spoken feedback for the event.
    * @param {!ChromeVoxEvent} evt
    */
   onEvent(evt) {
-    if (evt.type !== EventType.TEXT_CHANGED &&
-        evt.type !== EventType.TEXT_SELECTION_CHANGED &&
-        evt.type !== EventType.DOCUMENT_SELECTION_CHANGED &&
-        evt.type !== EventType.VALUE_CHANGED && evt.type !== EventType.FOCUS) {
-      return;
-    }
-    if (!evt.target.state.focused || !evt.target.state.editable ||
-        evt.target != this.node_) {
+    if (!evt.target.state.focused || evt.target !== this.node_) {
       return;
     }
 
-    this.editableText_.onUpdate(evt.eventFrom);
+    this.editableText_.onUpdate(evt.eventFrom, evt.intents);
   }
 
   /**
@@ -118,7 +118,8 @@ editing.TextEditHandler = class {
                       this.node_, Dir.FORWARD, AutomationPredicate.object,
                       {skipInitialSubtree: true}) ||
         this.node_;
-    ChromeVoxState.instance.navigateToRange(cursors.Range.fromNode(after));
+    ChromeVoxState.instance.navigateToRange(
+        cursors.Range.fromNode(after), true, {}, true);
   }
 
   /**
@@ -168,14 +169,15 @@ const AutomationEditableText = class extends ChromeVoxEditableTextBase {
   /**
    * Called when the text field has been updated.
    * @param {string|undefined} eventFrom
+   * @param {!Array<AutomationIntent>} intents
    */
-  onUpdate(eventFrom) {
+  onUpdate(eventFrom, intents) {
     const oldValue = this.value;
     const oldStart = this.start;
     const oldEnd = this.end;
     const newValue =
         AutomationEditableText.getProcessedValue_(this.node_) || '';
-    if (oldValue != newValue) {
+    if (oldValue !== newValue) {
       this.lineBreaks_ = AutomationEditableText.getLineBreaks_(newValue);
     }
 
@@ -191,7 +193,7 @@ const AutomationEditableText = class extends ChromeVoxEditableTextBase {
    * Returns true if selection starts on the first line.
    */
   isSelectionOnFirstLine() {
-    return this.getLineIndex(this.start) == 0;
+    return this.getLineIndex(this.start) === 0;
   }
 
   /**
@@ -212,7 +214,7 @@ const AutomationEditableText = class extends ChromeVoxEditableTextBase {
 
   /** @override */
   getLineStart(lineIndex) {
-    if (lineIndex == 0) {
+    if (lineIndex === 0) {
       return 0;
     }
 
@@ -231,14 +233,14 @@ const AutomationEditableText = class extends ChromeVoxEditableTextBase {
     let lineIndex = this.getLineIndex(this.start);
     // Output braille at the end of the selection that changed, if start and end
     // differ.
-    if (this.start != this.end && this.start == oldStart) {
+    if (this.start !== this.end && this.start === oldStart) {
       lineIndex = this.getLineIndex(this.end);
     }
     const lineStart = this.getLineStart(lineIndex);
     let lineText =
         this.value.substr(lineStart, this.getLineEnd(lineIndex) - lineStart);
 
-    if (lineIndex == 0) {
+    if (lineIndex === 0) {
       lineText += ' ' +
           Msgs.getMsg(this.multiline ? 'tag_textarea_brl' : 'role_textbox_brl');
     }
@@ -248,7 +250,7 @@ const AutomationEditableText = class extends ChromeVoxEditableTextBase {
     // If the line is not the last line, and is empty, insert an explicit line
     // break so that braille output is correctly cleared and has a position for
     // a caret to be shown.
-    if (lineText == '' && lineIndex < this.lineBreaks_.length - 1) {
+    if (lineText === '' && lineIndex < this.lineBreaks_.length - 1) {
       lineText = '\n';
     }
 
@@ -264,7 +266,7 @@ const AutomationEditableText = class extends ChromeVoxEditableTextBase {
    */
   static getProcessedValue_(node) {
     const value = node.value;
-    return (value && node.inputType == 'tel') ? value['trimEnd']() : value;
+    return (value && node.inputType === 'tel') ? value['trimEnd']() : value;
   }
 
   /**
@@ -358,7 +360,7 @@ const AutomationRichEditableText = class extends AutomationEditableText {
     }
     const exited = AutomationUtil.getUniqueAncestors(next, deep);
     return !!exited.find(function(item) {
-      return item == this.node_;
+      return item === this.node_;
     }.bind(this));
   }
 
@@ -375,12 +377,12 @@ const AutomationRichEditableText = class extends AutomationEditableText {
     }
     const exited = AutomationUtil.getUniqueAncestors(next, deep);
     return !!exited.find(function(item) {
-      return item == this.node_;
+      return item === this.node_;
     }.bind(this));
   }
 
   /** @override */
-  onUpdate(eventFrom) {
+  onUpdate(eventFrom, intents) {
     const root = this.node_.root;
     if (!root.selectionStartObject || !root.selectionEndObject ||
         root.selectionStartOffset === undefined ||
@@ -416,6 +418,26 @@ const AutomationRichEditableText = class extends AutomationEditableText {
     const prev = this.line_;
     this.line_ = cur;
 
+    this.handleSpeech_(
+        cur, prev, startLine, endLine, prevStartLine, prevEndLine,
+        baseLineOnStart, intents);
+    this.handleBraille_();
+  }
+
+  /**
+   * @param {!editing.EditableLine} cur
+   * @param {!editing.EditableLine} prev
+   * @param {!editing.EditableLine} startLine
+   * @param {!editing.EditableLine} endLine
+   * @param {!editing.EditableLine} prevStartLine
+   * @param {!editing.EditableLine} prevEndLine
+   * @param {boolean} baseLineOnStart
+   * @param {!Array<AutomationIntent>} intents
+   * @private
+   */
+  handleSpeech_(
+      cur, prev, startLine, endLine, prevStartLine, prevEndLine,
+      baseLineOnStart, intents) {
     // During continuous read, skip speech (which gets handled in
     // CommandHandler). We use the speech end callback to trigger additional
     // speech.
@@ -423,8 +445,13 @@ const AutomationRichEditableText = class extends AutomationEditableText {
     if (ChromeVoxState.isReadingContinuously ||
         AutomationPredicate.shouldOnlyOutputSelectionChangeInBraille(
             this.node_)) {
-      this.brailleCurrentRichLine_();
       this.updateIntraLineState_(cur);
+      return;
+    }
+
+    // Before entering into our state machine below, use selected intents to
+    // decipher ambiguous cases.
+    if (this.maybeSpeakUsingIntents_(intents, cur, prev)) {
       return;
     }
 
@@ -451,7 +478,7 @@ const AutomationRichEditableText = class extends AutomationEditableText {
         // Delegate to EditableTextBase (via |changed|), which handles plain
         // text state output.
         let text = cur.text;
-        if (text == '\n') {
+        if (text === '\n') {
           text = '';
         }
         this.changed(
@@ -464,32 +491,27 @@ const AutomationRichEditableText = class extends AutomationEditableText {
                 new Range(prev.start_, prev.end_), Output.EventType.NAVIGATE)
             .go();
       }
-      this.brailleCurrentRichLine_();
 
       // Be careful to update state in EditableTextBase since we don't
       // explicitly call through to it here.
       this.updateIntraLineState_(cur);
 
-      // Finally, queue up any text markers/styles at bounds.
-      const container = cur.startContainer_;
-      if (!container) {
-        return;
-      }
-
-      this.speakTextMarker_(
-          container, cur.localStartOffset, cur.localEndOffset);
-
-      if (localStorage['announceRichTextAttributes'] == 'true') {
-        this.speakTextStyle_(container);
-      }
+      this.speakAllMarkers_(cur);
       return;
     }
 
     const curBase = baseLineOnStart ? endLine : startLine;
-    if ((cur.startContainer_.role == RoleType.TEXT_FIELD ||
-         (cur.startContainer_ == prev.startContainer_ &&
-          cur.endContainer_ == prev.endContainer_)) &&
-        cur.startContainerValue_ != prev.startContainerValue_) {
+    if (cur.text === '\u00a0' && cur.hasCollapsedSelection() &&
+        !cur.end_.node.nextOnLine) {
+      // This is a specific pattern seen in Google Docs. A single node (static
+      // text/in line text box), containing a non-breaking-space signifies a new
+      // line.
+      ChromeVox.tts.speak('\n', QueueMode.CATEGORY_FLUSH);
+    } else if (
+        (cur.startContainer_.role === RoleType.TEXT_FIELD ||
+         (cur.startContainer_ === prev.startContainer_ &&
+          cur.endContainer_ === prev.endContainer_)) &&
+        cur.startContainerValue_ !== prev.startContainerValue_) {
       // This block catches text changes between |prev| and | cur|. Note that we
       // can end up here if |prevStartLine| or |prevEndLine| were invalid
       // above for intra-line changes. This block therefore catches all text
@@ -507,13 +529,10 @@ const AutomationRichEditableText = class extends AutomationEditableText {
           new TextChangeEvent(
               cur.startContainerValue_, cur.localContainerStartOffset_,
               cur.localContainerEndOffset_, true));
-
-      // Braille here simply displays the current line.
-      this.brailleCurrentRichLine_();
-    } else if (cur.text == '') {
+    } else if (cur.text === '') {
       // This line has no text content. Describe the DOM selection.
       new Output()
-          .withRichSpeechAndBraille(
+          .withRichSpeech(
               new Range(cur.start_, cur.end_),
               new Range(prev.start_, prev.end_), Output.EventType.NAVIGATE)
           .go();
@@ -577,7 +596,6 @@ const AutomationRichEditableText = class extends AutomationEditableText {
 
       ChromeVox.tts.speak(text, QueueMode.CATEGORY_FLUSH);
       ChromeVox.tts.speak(Msgs.getMsg(suffixMsg), QueueMode.QUEUE);
-      this.brailleCurrentRichLine_();
     } else if (!cur.hasCollapsedSelection()) {
       // Without any other information, try describing the selection. This state
       // catches things like select all.
@@ -586,8 +604,6 @@ const AutomationRichEditableText = class extends AutomationEditableText {
           cur.localEndOffset);
       ChromeVox.tts.speak(text, QueueMode.CATEGORY_FLUSH);
       ChromeVox.tts.speak(Msgs.getMsg('selected'), QueueMode.QUEUE);
-      this.brailleCurrentRichLine_();
-
     } else {
       // A catch-all for any other transitions.
 
@@ -596,9 +612,81 @@ const AutomationRichEditableText = class extends AutomationEditableText {
       // above). This is also the code path for describing paste. It also covers
       // jump commands which are non-overlapping selections from prev to cur.
       this.speakCurrentRichLine_(prev);
-      this.brailleCurrentRichLine_();
     }
     this.updateIntraLineState_(cur);
+  }
+
+  /** @private */
+  handleBraille_() {
+    const isFirstLine = this.isSelectionOnFirstLine();
+    const cur = this.line_;
+    if (cur.value_ === null) {
+      return;
+    }
+
+    let value = new MultiSpannable(cur.value_);
+    if (!this.node_.constructor) {
+      return;
+    }
+    value.getSpansInstanceOf(this.node_.constructor).forEach(function(span) {
+      const style = span.role === RoleType.INLINE_TEXT_BOX ? span.parent : span;
+      if (!style) {
+        return;
+      }
+      let formType = FormType.PLAIN_TEXT;
+      // Currently no support for sub/superscript in 3rd party liblouis library.
+      if (style.bold) {
+        formType |= FormType.BOLD;
+      }
+      if (style.italic) {
+        formType |= FormType.ITALIC;
+      }
+      if (style.underline) {
+        formType |= FormType.UNDERLINE;
+      }
+      if (formType === FormType.PLAIN_TEXT) {
+        return;
+      }
+      const start = value.getSpanStart(span);
+      const end = value.getSpanEnd(span);
+      value.setSpan(
+          new BrailleTextStyleSpan(
+              /** @type {LibLouis.FormType<number>} */ (formType)),
+          start, end);
+    });
+
+    // Provide context for the current selection.
+    const context = cur.startContainer_;
+    if (context && context.role !== RoleType.TEXT_FIELD) {
+      const output = new Output().suppress('name').withBraille(
+          Range.fromNode(context), Range.fromNode(this.node_),
+          Output.EventType.NAVIGATE);
+      if (output.braille.length) {
+        const end = cur.containerEndOffset + 1;
+        const prefix = value.substring(0, end);
+        const suffix = value.substring(end, value.length);
+        value = prefix;
+        value.append(Output.SPACE);
+        value.append(output.braille);
+        if (suffix.length) {
+          if (suffix.toString()[0] !== Output.SPACE) {
+            value.append(Output.SPACE);
+          }
+          value.append(suffix);
+        }
+      }
+    }
+
+    if (isFirstLine) {
+      if (!/\s/.test(value.toString()[value.length - 1])) {
+        value.append(Output.SPACE);
+      }
+      value.append(Msgs.getMsg('tag_textarea_brl'));
+    }
+    value.setSpan(new ValueSpan(0), 0, cur.value_.length);
+    value.setSpan(new ValueSelectionSpan(), cur.startOffset, cur.endOffset);
+    ChromeVox.braille.write(new NavBraille(
+        {text: value, startIndex: cur.startOffset, endIndex: cur.endOffset}));
   }
 
   /**
@@ -613,7 +701,7 @@ const AutomationRichEditableText = class extends AutomationEditableText {
       return '';
     }
 
-    if (startNode == endNode) {
+    if (startNode === endNode) {
       return startNode.name ? startNode.name.substring(startOffset, endOffset) :
                               '';
     }
@@ -626,7 +714,7 @@ const AutomationRichEditableText = class extends AutomationEditableText {
     for (let node = startNode;
          (node = AutomationUtil.findNextNode(
               node, Dir.FORWARD, AutomationPredicate.leafOrStaticText)) &&
-         node != endNode;) {
+         node !== endNode;) {
       // Padding needs to get added to break up speech utterances.
       if (node.name) {
         text += ' ' + node.name;
@@ -660,12 +748,12 @@ const AutomationRichEditableText = class extends AutomationEditableText {
     }
 
     const msgs = [];
-    if (this.misspelled ==
+    if (this.misspelled ===
         !(markersWithinSelection[chrome.automation.MarkerType.SPELLING])) {
       this.misspelled = !this.misspelled;
       msgs.push(this.misspelled ? 'misspelling_start' : 'misspelling_end');
     }
-    if (this.grammarError ==
+    if (this.grammarError ===
         !(markersWithinSelection[chrome.automation.MarkerType.GRAMMAR])) {
       this.grammarError = !this.grammarError;
       msgs.push(this.grammarError ? 'grammar_start' : 'grammar_end');
@@ -777,7 +865,7 @@ const AutomationRichEditableText = class extends AutomationEditableText {
 
       // Ignore whitespace only output except if it is leading content on the
       // line.
-      if (!o.isOnlyWhitespace || i == 0) {
+      if (!o.isOnlyWhitespace || i === 0) {
         o.go();
       }
       prev = cur;
@@ -785,86 +873,12 @@ const AutomationRichEditableText = class extends AutomationEditableText {
     }
   }
 
-  /** @private */
-  brailleCurrentRichLine_() {
-    const isFirstLine = this.isSelectionOnFirstLine();
-    const cur = this.line_;
-    if (cur.value_ === null) {
-      return;
-    }
-
-    let value = new MultiSpannable(cur.value_);
-    if (!this.node_.constructor) {
-      return;
-    }
-    value.getSpansInstanceOf(this.node_.constructor).forEach(function(span) {
-      const style = span.role == RoleType.INLINE_TEXT_BOX ? span.parent : span;
-      if (!style) {
-        return;
-      }
-      let formType = FormType.PLAIN_TEXT;
-      // Currently no support for sub/superscript in 3rd party liblouis library.
-      if (style.bold) {
-        formType |= FormType.BOLD;
-      }
-      if (style.italic) {
-        formType |= FormType.ITALIC;
-      }
-      if (style.underline) {
-        formType |= FormType.UNDERLINE;
-      }
-      if (formType == FormType.PLAIN_TEXT) {
-        return;
-      }
-      const start = value.getSpanStart(span);
-      const end = value.getSpanEnd(span);
-      value.setSpan(
-          new BrailleTextStyleSpan(
-              /** @type {LibLouis.FormType<number>} */ (formType)),
-          start, end);
-    });
-
-    // Provide context for the current selection.
-    const context = cur.startContainer_;
-
-    if (context) {
-      const output = new Output().suppress('name').withBraille(
-          Range.fromNode(context), Range.fromNode(this.node_),
-          Output.EventType.NAVIGATE);
-      if (output.braille.length) {
-        const end = cur.containerEndOffset + 1;
-        const prefix = value.substring(0, end);
-        const suffix = value.substring(end, value.length);
-        value = prefix;
-        value.append(Output.SPACE);
-        value.append(output.braille);
-        if (suffix.length) {
-          if (suffix.toString()[0] != Output.SPACE) {
-            value.append(Output.SPACE);
-          }
-          value.append(suffix);
-        }
-      }
-    }
-
-    if (isFirstLine) {
-      if (!/\s/.test(value.toString()[value.length - 1])) {
-        value.append(Output.SPACE);
-      }
-      value.append(Msgs.getMsg('tag_textarea_brl'));
-    }
-    value.setSpan(new ValueSpan(0), 0, cur.value_.length);
-    value.setSpan(new ValueSelectionSpan(), cur.startOffset, cur.endOffset);
-    ChromeVox.braille.write(new NavBraille(
-        {text: value, startIndex: cur.startOffset, endIndex: cur.endOffset}));
-  }
-
   /** @override */
   describeSelectionChanged(evt) {
     // Note that since Chrome allows for selection to be placed immediately at
     // the end of a line (i.e. end == value.length) and since we try to describe
     // the character to the right, just describe it as a new line.
-    if ((this.start + 1) == evt.start && evt.start == this.value.length) {
+    if ((this.start + 1) === evt.start && evt.start === this.value.length) {
       this.speak('\n', evt.triggeredByUser);
       return;
     }
@@ -901,12 +915,72 @@ const AutomationRichEditableText = class extends AutomationEditableText {
    */
   updateIntraLineState_(cur) {
     let text = cur.text;
-    if (text == '\n') {
+    if (text === '\n') {
       text = '';
     }
     this.value = text;
     this.start = cur.startOffset;
     this.end = cur.endOffset;
+  }
+
+  /**
+   * @param {!Array<AutomationIntent>} intents
+   * @param {!editing.EditableLine} cur
+   * @param {!editing.EditableLine} prev
+   * @private
+   */
+  maybeSpeakUsingIntents_(intents, cur, prev) {
+    if (intents.length === 0) {
+      return false;
+    }
+
+    // Only consider selection moves.
+    const intent = intents.find(
+        i => i.command === chrome.automation.IntentCommandType.MOVE_SELECTION);
+    if (!intent) {
+      return false;
+    }
+
+    if (intent.textBoundary ===
+        chrome.automation.IntentTextBoundaryType.CHARACTER) {
+      this.updateIntraLineState_(cur);
+
+      // Read character to the right of the cursor. It is assumed to be a new
+      // line if empty.
+      const text =
+          cur.text.substring(cur.startOffset, cur.startOffset + 1) || '\n';
+      ChromeVox.tts.speak(text, QueueMode.CATEGORY_FLUSH);
+      this.speakAllMarkers_(cur);
+      return true;
+    }
+
+    if (intent.textBoundary ===
+            chrome.automation.IntentTextBoundaryType.LINE_START ||
+        intent.textBoundary ===
+            chrome.automation.IntentTextBoundaryType.LINE_END) {
+      this.updateIntraLineState_(cur);
+      this.speakCurrentRichLine_(prev);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * @param {!editing.EditableLine} cur
+   * @private
+   */
+  speakAllMarkers_(cur) {
+    const container = cur.startContainer_;
+    if (!container) {
+      return;
+    }
+
+    this.speakTextMarker_(container, cur.localStartOffset, cur.localEndOffset);
+
+    if (localStorage['announceRichTextAttributes'] === 'true') {
+      this.speakTextStyle_(container);
+    }
   }
 };
 
@@ -924,7 +998,7 @@ editing.EditingChromeVoxStateObserver = class {
   /** @override */
   onCurrentRangeChanged(range) {
     const inputType = range && range.start.node.inputType;
-    if (inputType == 'email' || inputType == 'url') {
+    if (inputType === 'email' || inputType === 'url') {
       BrailleBackground.getInstance().getTranslatorManager().refresh(
           localStorage['brailleTable8']);
       return;
@@ -971,16 +1045,19 @@ editing.EditableLine = class {
     // cursors.Cursor.deepEquivalent results in cursors to different container
     // nodes. The cursors can point directly to inline text boxes, in which case
     // we should not adjust the container start or end index.
-    if (startNode.role != RoleType.INLINE_TEXT_BOX &&
-        this.start_.node != startNode && this.start_.node.parent != startNode) {
-      startIndex = this.start_.index == cursors.NODE_INDEX ?
+    if (!AutomationPredicate.text(startNode) ||
+        (this.start_.node !== startNode &&
+         this.start_.node.parent !== startNode)) {
+      startIndex =
+          (this.start_.index === cursors.NODE_INDEX && this.start_.node.name) ?
           this.start_.node.name.length :
           this.start_.index;
     }
 
-    if (endNode.role != RoleType.INLINE_TEXT_BOX && this.end_.node != endNode &&
-        this.end_.node.parent != endNode) {
-      endIndex = this.end_.index == cursors.NODE_INDEX ?
+    if (!AutomationPredicate.text(endNode) ||
+        (this.end_.node !== endNode && this.end_.node.parent !== endNode)) {
+      endIndex =
+          (this.end_.index === cursors.NODE_INDEX && this.end_.node.name) ?
           this.end_.node.name.length :
           this.end_.index;
     }
@@ -1030,20 +1107,20 @@ editing.EditableLine = class {
     }
 
     this.value_ = new Spannable(lineBase.node.name || '', lineBase);
-    if (lineBase.node == lineExtend.node) {
+    if (lineBase.node === lineExtend.node) {
       this.value_.setSpan(lineExtend, 0, nameLen);
     }
 
     this.startContainer_ = this.start_.node;
-    if (this.startContainer_.role == RoleType.INLINE_TEXT_BOX) {
+    if (this.startContainer_.role === RoleType.INLINE_TEXT_BOX) {
       this.startContainer_ = this.startContainer_.parent;
     }
     this.startContainerValue_ =
-        this.startContainer_.role == RoleType.TEXT_FIELD ?
+        this.startContainer_.role === RoleType.TEXT_FIELD ?
         this.startContainer_.value || '' :
         this.startContainer_.name || '';
     this.endContainer_ = this.end_.node;
-    if (this.endContainer_.role == RoleType.INLINE_TEXT_BOX) {
+    if (this.endContainer_.role === RoleType.INLINE_TEXT_BOX) {
       this.endContainer_ = this.endContainer_.parent;
     }
 
@@ -1066,7 +1143,7 @@ editing.EditableLine = class {
     // Hack: note underlying bugs require these hacks.
     while ((lineStart.previousOnLine && lineStart.previousOnLine.role) ||
            (lineStart.previousSibling && lineStart.previousSibling.lastChild &&
-            lineStart.previousSibling.lastChild.nextOnLine == lineStart)) {
+            lineStart.previousSibling.lastChild.nextOnLine === lineStart)) {
       if (lineStart.previousOnLine) {
         lineStart = lineStart.previousOnLine;
       } else {
@@ -1075,9 +1152,9 @@ editing.EditableLine = class {
 
       this.lineStart_ = lineStart;
 
-      if (lineStart.role != RoleType.INLINE_TEXT_BOX) {
+      if (lineStart.role !== RoleType.INLINE_TEXT_BOX) {
         parents.unshift(lineStart);
-      } else if (parents[0] != lineStart.parent) {
+      } else if (parents[0] !== lineStart.parent) {
         parents.unshift(lineStart.parent);
       }
 
@@ -1092,7 +1169,7 @@ editing.EditableLine = class {
     // Hack: note underlying bugs require these hacks.
     while ((lineEnd.nextOnLine && lineEnd.nextOnLine.role) ||
            (lineEnd.nextSibling &&
-            lineEnd.nextSibling.previousOnLine == lineEnd)) {
+            lineEnd.nextSibling.previousOnLine === lineEnd)) {
       if (lineEnd.nextOnLine) {
         lineEnd = lineEnd.nextOnLine;
       } else {
@@ -1101,14 +1178,14 @@ editing.EditableLine = class {
 
       this.lineEnd_ = lineEnd;
 
-      if (lineEnd.role != RoleType.INLINE_TEXT_BOX) {
+      if (lineEnd.role !== RoleType.INLINE_TEXT_BOX) {
         parents.push(this.lineEnd_);
-      } else if (parents[parents.length - 1] != lineEnd.parent) {
+      } else if (parents[parents.length - 1] !== lineEnd.parent) {
         parents.push(this.lineEnd_.parent);
       }
 
       let annotation = lineEnd;
-      if (lineEnd == this.end_.node) {
+      if (lineEnd === this.end_.node) {
         annotation = this.end_;
       }
 
@@ -1158,13 +1235,13 @@ editing.EditableLine = class {
       let offset = 0;
 
       // Subtract off the text count before when at the start of line.
-      if (i == 0) {
+      if (i === 0) {
         currentLen -= textCountBeforeLineStart;
         offset = textCountBeforeLineStart;
       }
 
       // Subtract text count after when at the end of the line.
-      if (i == parents.length - 1) {
+      if (i === parents.length - 1) {
         currentLen -= textCountAfterLineEnd;
       }
 
@@ -1174,7 +1251,7 @@ editing.EditableLine = class {
         this.value_.setSpan(new Output.NodeSpan(parent, offset), prevLen, len);
 
         // Also, annotate this span if it is associated with line containre.
-        if (parent == this.startContainer_) {
+        if (parent === this.startContainer_) {
           this.value_.setSpan(parent, prevLen, len);
         }
       } catch (e) {
@@ -1191,7 +1268,7 @@ editing.EditableLine = class {
     // (e.g. in a multi-line selection).
     try {
       return this.value_.getSpanStart(this.start_) +
-          (this.start_.index == cursors.NODE_INDEX ? 0 : this.start_.index);
+          (this.start_.index === cursors.NODE_INDEX ? 0 : this.start_.index);
     } catch (e) {
       // When that happens, fall back to the start of this line.
       return 0;
@@ -1205,7 +1282,7 @@ editing.EditableLine = class {
   get endOffset() {
     try {
       return this.value_.getSpanStart(this.end_) +
-          (this.end_.index == cursors.NODE_INDEX ? 0 : this.end_.index);
+          (this.end_.index === cursors.NODE_INDEX ? 0 : this.end_.index);
     } catch (e) {
       return this.value_.length;
     }
@@ -1286,15 +1363,15 @@ editing.EditableLine = class {
     // Equality is intentionally loose here as any of the state nodes can be
     // invalidated at any time. We rely upon the start/anchor of the line
     // staying the same.
-    return (otherLine.lineStartContainer_ == this.lineStartContainer_ &&
-            otherLine.localLineStartContainerOffset_ ==
+    return (otherLine.lineStartContainer_ === this.lineStartContainer_ &&
+            otherLine.localLineStartContainerOffset_ ===
                 this.localLineStartContainerOffset_) ||
-        (otherLine.lineEndContainer_ == this.lineEndContainer_ &&
-         otherLine.localLineEndContainerOffset_ ==
+        (otherLine.lineEndContainer_ === this.lineEndContainer_ &&
+         otherLine.localLineEndContainerOffset_ ===
              this.localLineEndContainerOffset_) ||
-        (otherLine.lineStartContainerRecovery_.node ==
+        (otherLine.lineStartContainerRecovery_.node ===
              this.lineStartContainerRecovery_.node &&
-         otherLine.localLineStartContainerOffset_ ==
+         otherLine.localLineStartContainerOffset_ ===
              this.localLineStartContainerOffset_);
   }
 
@@ -1306,8 +1383,8 @@ editing.EditableLine = class {
    */
   isSameLineAndSelection(otherLine) {
     return this.isSameLine(otherLine) &&
-        this.startOffset == otherLine.startOffset &&
-        this.endOffset == otherLine.endOffset;
+        this.startOffset === otherLine.startOffset &&
+        this.endOffset === otherLine.endOffset;
   }
 
   /**
@@ -1320,7 +1397,7 @@ editing.EditableLine = class {
       return false;
     }
     return AutomationUtil.getDirection(
-               this.lineStartContainer_, otherLine.lineStartContainer_) ==
+               this.lineStartContainer_, otherLine.lineStartContainer_) ===
         Dir.FORWARD;
   }
 
@@ -1346,7 +1423,7 @@ editing.EditableLine = class {
     // check in both directions.
     let testStartNode = localStartNode;
     do {
-      if (testStartNode == localEndNode) {
+      if (testStartNode === localEndNode) {
         return true;
       }
 
@@ -1355,7 +1432,7 @@ editing.EditableLine = class {
         testStartNode = testStartNode.nextOnLine;
       } else if (
           testStartNode.nextSibling &&
-          testStartNode.nextSibling.previousOnLine == testStartNode) {
+          testStartNode.nextSibling.previousOnLine === testStartNode) {
         testStartNode = testStartNode.nextSibling;
       } else {
         break;
@@ -1364,7 +1441,7 @@ editing.EditableLine = class {
 
     let testEndNode = localEndNode;
     do {
-      if (testEndNode == localStartNode) {
+      if (testEndNode === localStartNode) {
         return true;
       }
 
@@ -1373,7 +1450,7 @@ editing.EditableLine = class {
         testEndNode = testEndNode.previousOnLine;
       } else if (
           testEndNode.previousSibling &&
-          testEndNode.previousSibling.nextOnLine == testEndNode) {
+          testEndNode.previousSibling.nextOnLine === testEndNode) {
         testEndNode = testEndNode.previousSibling;
       } else {
         break;

@@ -47,7 +47,7 @@ class WebGraphicsContext3DProviderForTests
   gpu::gles2::GLES2Interface* ContextGL() override { return gl_.get(); }
   gpu::raster::RasterInterface* RasterInterface() override { return nullptr; }
   bool IsContextLost() override { return false; }
-  GrContext* GetGrContext() override { return nullptr; }
+  GrDirectContext* GetGrContext() override { return nullptr; }
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override {
     return webgpu_.get();
   }
@@ -92,6 +92,8 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   void BindTexture(GLenum target, GLuint texture) override {
     if (target == GL_TEXTURE_2D)
       state_.active_texture2d_binding = texture;
+    if (target == GL_TEXTURE_CUBE_MAP)
+      state_.active_texturecubemap_binding = texture;
     bound_textures_.insert(target, texture);
   }
 
@@ -318,6 +320,10 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   void DrawingBufferClientRestoreTexture2DBinding() override {
     state_.active_texture2d_binding = saved_state_.active_texture2d_binding;
   }
+  void DrawingBufferClientRestoreTextureCubeMapBinding() override {
+    state_.active_texturecubemap_binding =
+        saved_state_.active_texturecubemap_binding;
+  }
   void DrawingBufferClientRestoreRenderbufferBinding() override {
     state_.renderbuffer_binding = saved_state_.renderbuffer_binding;
   }
@@ -367,6 +373,8 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
     EXPECT_EQ(state_.pack_alignment, saved_state_.pack_alignment);
     EXPECT_EQ(state_.active_texture2d_binding,
               saved_state_.active_texture2d_binding);
+    EXPECT_EQ(state_.active_texturecubemap_binding,
+              saved_state_.active_texturecubemap_binding);
     EXPECT_EQ(state_.renderbuffer_binding, saved_state_.renderbuffer_binding);
     EXPECT_EQ(state_.draw_framebuffer_binding,
               saved_state_.draw_framebuffer_binding);
@@ -384,7 +392,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
 
  private:
   // The target to use when binding a texture to a Chromium image.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   static constexpr GLuint kImageCHROMIUMTarget = GC3D_TEXTURE_RECTANGLE_ARB;
 #else
   static constexpr GLuint kImageCHROMIUMTarget = GL_TEXTURE_2D;
@@ -408,6 +416,8 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
 
     // The bound 2D texture for the active texture unit.
     GLuint active_texture2d_binding = 0;
+    // The bound cube map texture for the active texture unit.
+    GLuint active_texturecubemap_binding = 0;
     GLuint renderbuffer_binding = 0;
     GLuint draw_framebuffer_binding = 0;
     GLuint read_framebuffer_binding = 0;
@@ -471,6 +481,7 @@ class DrawingBufferForTests : public DrawingBuffer {
             false /* wantDepth */,
             false /* wantStencil */,
             DrawingBuffer::kAllowChromiumImage /* ChromiumImageUsage */,
+            kLow_SkFilterQuality,
             CanvasColorParams(),
             gl::GpuPreference::kHighPerformance),
         live_(nullptr) {}

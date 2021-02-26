@@ -5,6 +5,7 @@
 #include "chromeos/services/secure_channel/ble_scanner.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 
@@ -12,56 +13,61 @@ namespace chromeos {
 
 namespace secure_channel {
 
-BleScanner::BleScanner(Delegate* delegate) : delegate_(delegate) {}
+BleScanner::BleScanner() = default;
 
 BleScanner::~BleScanner() = default;
 
-void BleScanner::AddScanFilter(const ScanFilter& scan_filter) {
-  if (base::Contains(scan_filters_, scan_filter)) {
-    PA_LOG(ERROR) << "BleScanner::AddScanFilter(): Tried to add a scan filter "
-                  << "which already existed. Filter: " << scan_filter;
+void BleScanner::AddScanRequest(const ConnectionAttemptDetails& scan_request) {
+  if (base::Contains(scan_requests_, scan_request)) {
+    PA_LOG(ERROR) << "BleScanner::AddScanRequest(): Tried to add a scan "
+                  << "request which already existed: " << scan_request;
     NOTREACHED();
   }
 
-  scan_filters_.insert(scan_filter);
-  HandleScanFilterChange();
+  scan_requests_.insert(scan_request);
+  HandleScanRequestChange();
 }
 
-void BleScanner::RemoveScanFilter(const ScanFilter& scan_filter) {
-  if (!base::Contains(scan_filters_, scan_filter)) {
-    PA_LOG(ERROR) << "BleScanner::RemoveScanFilter(): Tried to remove a scan "
-                  << "filter which was not present. Filter: " << scan_filter;
+void BleScanner::RemoveScanRequest(
+    const ConnectionAttemptDetails& scan_request) {
+  if (!base::Contains(scan_requests_, scan_request)) {
+    PA_LOG(ERROR) << "BleScanner::RemoveScanRequest(): Tried to remove a scan "
+                  << "request which was not present: " << scan_request;
     NOTREACHED();
   }
 
-  scan_filters_.erase(scan_filter);
-  HandleScanFilterChange();
+  scan_requests_.erase(scan_request);
+  HandleScanRequestChange();
 }
 
-bool BleScanner::HasScanFilter(const ScanFilter& scan_filter) {
-  return base::Contains(scan_filters_, scan_filter);
+bool BleScanner::HasScanRequest(const ConnectionAttemptDetails& scan_request) {
+  return base::Contains(scan_requests_, scan_request);
+}
+
+void BleScanner::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void BleScanner::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 DeviceIdPairSet BleScanner::GetAllDeviceIdPairs() {
   DeviceIdPairSet set;
-  for (const auto& scan_filter : scan_filters_)
-    set.insert(scan_filter.first);
+  for (const auto& scan_request : scan_requests_)
+    set.insert(scan_request.device_id_pair());
   return set;
 }
 
 void BleScanner::NotifyReceivedAdvertisementFromDevice(
     const multidevice::RemoteDeviceRef& remote_device,
     device::BluetoothDevice* bluetooth_device,
+    ConnectionMedium connection_medium,
     ConnectionRole connection_role) {
-  delegate_->OnReceivedAdvertisement(remote_device, bluetooth_device,
-                                     connection_role);
-}
-
-std::ostream& operator<<(std::ostream& stream,
-                         const BleScanner::ScanFilter& scan_filter) {
-  stream << "{device_id_pair: " << scan_filter.first
-         << ", connection_role: " << scan_filter.second << "}";
-  return stream;
+  for (auto& observer : observer_list_) {
+    observer.OnReceivedAdvertisement(remote_device, bluetooth_device,
+                                     connection_medium, connection_role);
+  }
 }
 
 }  // namespace secure_channel

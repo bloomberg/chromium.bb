@@ -34,6 +34,16 @@ public interface FirstRunPageDelegate {
     void completeFirstRunExperience();
 
     /**
+     * Exit the First Run Experience without marking the flow complete. This will finish the first
+     * run activity and start the main activity without setting any of the preferences tracking
+     * whether first run has been completed.
+     *
+     * Exposing this function is intended for use in scenarios where FRE is partially or completely
+     * skipped. (e.g. in accordance with Enterprise polices)
+     */
+    void exitFirstRun();
+
+    /**
      * Notifies that the user refused to sign in (e.g. "NO, THANKS").
      */
     void refuseSignIn();
@@ -63,4 +73,7 @@ public interface FirstRunPageDelegate {
      * @param url Resource id for the URL of the web page.
      */
     void showInfoPage(int url);
+
+    /** Returns the provider of whether the device has app restrictions. */
+    FirstRunAppRestrictionInfo getFirstRunAppRestrictionInfo();
 }

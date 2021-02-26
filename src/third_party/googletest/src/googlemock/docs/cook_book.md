@@ -410,8 +410,8 @@ NOTE: `NiceMock` and `StrictMock` only affects *uninteresting* calls (calls of
 methods with expectations, but they don't match). See
 [Understanding Uninteresting vs Unexpected Calls](#uninteresting-vs-unexpected).
 
-There are some caveats though (I dislike them just as much as the next guy, but
-sadly they are side effects of C++'s limitations):
+There are some caveats though (sadly they are side effects of C++'s
+limitations):
 
 1.  `NiceMock<MockFoo>` and `StrictMock<MockFoo>` only work for mock methods
     defined using the `MOCK_METHOD` macro **directly** in the `MockFoo` class.
@@ -2686,7 +2686,7 @@ TEST(EventQueueTest, EnqueueEventTest) {
   EventQueue event_queue(&mock_event_dispatcher);
 
   const int32 kEventId = 321;
-  Notification done;
+  absl::Notification done;
   EXPECT_CALL(mock_event_dispatcher, DispatchEvent(kEventId))
       .WillOnce(Notify(&done));
 

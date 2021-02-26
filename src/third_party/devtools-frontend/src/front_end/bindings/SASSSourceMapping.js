@@ -36,13 +36,16 @@ import {ContentProviderBasedProject} from './ContentProviderBasedProject.js';
 import {CSSWorkspaceBinding, SourceMapping} from './CSSWorkspaceBinding.js';  // eslint-disable-line no-unused-vars
 import {NetworkProject} from './NetworkProject.js';
 
+/** @type {!WeakMap<!Workspace.UISourceCode.UISourceCode, !SDK.SourceMap.TextSourceMap>} */
+const uiSourceCodeToSourceMapMap = new WeakMap();
+
 /**
  * @implements {SourceMapping}
  */
 export class SASSSourceMapping {
   /**
    * @param {!SDK.SDKModel.Target} target
-   * @param {!SDK.SourceMapManager.SourceMapManager} sourceMapManager
+   * @param {!SDK.SourceMapManager.SourceMapManager<!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader>} sourceMapManager
    * @param {!Workspace.Workspace.WorkspaceImpl} workspace
    */
   constructor(target, sourceMapManager, workspace) {
@@ -103,7 +106,7 @@ export class SASSSourceMapping {
           null;
       uiSourceCode = this._project.createUISourceCode(sassURL, contentProvider.contentType());
       NetworkProject.setInitialFrameAttribution(uiSourceCode, header.frameId);
-      uiSourceCode[_sourceMapSymbol] = sourceMap;
+      uiSourceCodeToSourceMapMap.set(uiSourceCode, sourceMap);
       this._project.addUISourceCodeWithProvider(uiSourceCode, contentProvider, metadata, mimeType);
     }
     await CSSWorkspaceBinding.instance().updateLocations(header);
@@ -182,8 +185,7 @@ export class SASSSourceMapping {
    * @return {!Array<!SDK.CSSModel.CSSLocation>}
    */
   uiLocationToRawLocations(uiLocation) {
-    /** @type {!SDK.SourceMap.TextSourceMap} */
-    const sourceMap = uiLocation.uiSourceCode[_sourceMapSymbol];
+    const sourceMap = uiSourceCodeToSourceMapMap.get(uiLocation.uiSourceCode);
     if (!sourceMap) {
       return [];
     }
@@ -202,5 +204,3 @@ export class SASSSourceMapping {
     Common.EventTarget.EventTarget.removeEventListeners(this._eventListeners);
   }
 }
-
-const _sourceMapSymbol = Symbol('sourceMap');

@@ -1,6 +1,8 @@
 // Copyright (c) 2017 The Khronos Group Inc.
 // Copyright (c) 2016 Oculus VR, LLC.
 //
+// SPDX-License-Identifier: Apache-2.0
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -58,10 +60,12 @@ inline static void XrVector3f_Min(XrVector3f* result, const XrVector3f* a, const
 inline static void XrVector3f_Max(XrVector3f* result, const XrVector3f* a, const XrVector3f* b);
 inline static void XrVector3f_Decay(XrVector3f* result, const XrVector3f* a, const float value);
 inline static void XrVector3f_Lerp(XrVector3f* result, const XrVector3f* a, const XrVector3f* b, const float fraction);
+inline static void XrVector3f_Scale(XrVector3f* result, const XrVector3f* a, const float scaleFactor);
 inline static void XrVector3f_Normalize(XrVector3f* v);
 inline static float XrVector3f_Length(const XrVector3f* v);
 
 inline static void XrQuaternionf_Lerp(XrQuaternionf* result, const XrQuaternionf* a, const XrQuaternionf* b, const float fraction);
+inline static void XrQuaternionf_Multiply(XrQuaternionf* result, const XrQuaternionf* a, const XrQuaternionf* b;
 
 inline static void XrMatrix4x4f_CreateIdentity(XrMatrix4x4f* result);
 inline static void XrMatrix4x4f_CreateTranslation(XrMatrix4x4f* result, const float x, const float y, const float z);
@@ -177,6 +181,12 @@ inline static void XrVector3f_Lerp(XrVector3f* result, const XrVector3f* a, cons
     result->z = a->z + fraction * (b->z - a->z);
 }
 
+inline static void XrVector3f_Scale(XrVector3f* result, const XrVector3f* a, const float scaleFactor) {
+    result->x = a->x * scaleFactor;
+    result->y = a->y * scaleFactor;
+    result->z = a->z * scaleFactor;
+}
+
 inline static float XrVector3f_Dot(const XrVector3f* a, const XrVector3f* b) { return a->x * b->x + a->y * b->y + a->z * b->z; }
 
 // Compute cross product, which generates a normal vector.
@@ -219,6 +229,13 @@ inline static void XrQuaternionf_Lerp(XrQuaternionf* result, const XrQuaternionf
     result->y = y * lengthRcp;
     result->z = z * lengthRcp;
     result->w = w * lengthRcp;
+}
+
+inline static void XrQuaternionf_Multiply(XrQuaternionf* result, const XrQuaternionf* a, const XrQuaternionf* b) {
+    result->x = (b->w * a->x) + (b->x * a->w) + (b->y * a->z) - (b->z * a->y);
+    result->y = (b->w * a->y) - (b->x * a->z) + (b->y * a->w) + (b->z * a->x);
+    result->z = (b->w * a->z) + (b->x * a->y) - (b->y * a->x) + (b->z * a->w);
+    result->w = (b->w * a->w) - (b->x * a->x) - (b->y * a->y) - (b->z * a->z);
 }
 
 // Use left-multiplication to accumulate transformations.

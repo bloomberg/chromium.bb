@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_REPUTATION_REPUTATION_WEB_CONTENTS_OBSERVER_H_
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
 #include "chrome/browser/reputation/reputation_service.h"
 #include "chrome/browser/reputation/safety_tip_ui.h"
 #include "components/security_state/core/security_state.h"
@@ -16,6 +17,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 class Profile;
 
@@ -41,6 +43,9 @@ class ReputationWebContentsObserver
   // Allows tests to register a callback to be called when the next reputation
   // check finishes.
   void RegisterReputationCheckCallbackForTesting(base::OnceClosure callback);
+
+  // Allows tests to register a callback called when the warning closes.
+  void RegisterSafetyTipCloseCallbackForTesting(base::OnceClosure callback);
 
   // Allows tests to see whether a reputation check has already completed since
   // construction or last reset, and selectively register a callback if not.
@@ -83,17 +88,25 @@ class ReputationWebContentsObserver
       ukm::SourceId navigation_source_id);
 
   Profile* profile_;
+
   // Used to cache the last safety tip info (and associated navigation entry ID)
   // so that Page Info can fetch this information without performing a
   // reputation check. Resets type to kNone and safe_url to empty on new top
   // frame navigations. Set even if the feature to show the UI is disabled.
   security_state::SafetyTipInfo last_navigation_safety_tip_info_;
-
   int last_safety_tip_navigation_entry_id_ = 0;
+
+  // The initiator origin and URL of the most recently committed navigation.
+  // Presently, these are used in metrics to differentiate same-origin
+  // navigations (i.e. when the user stays on a flagged page).
+  base::Optional<url::Origin> last_committed_initiator_origin_;
+  GURL last_committed_url_;
 
   base::OnceClosure reputation_check_callback_for_testing_;
   // Whether or not heuristics have yet been checked yet.
   bool reputation_check_pending_for_testing_;
+
+  base::OnceClosure safety_tip_close_callback_for_testing_;
 
   base::WeakPtrFactory<ReputationWebContentsObserver> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();

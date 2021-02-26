@@ -22,10 +22,11 @@ namespace trace_processor {
 using perfetto::protos::pbzero::TracePacket;
 
 GraphicsEventModule::GraphicsEventModule(TraceProcessorContext* context)
-    : parser_(context) {
+    : parser_(context), frame_parser_(context) {
   RegisterForField(TracePacket::kGpuCounterEventFieldNumber, context);
   RegisterForField(TracePacket::kGpuRenderStageEventFieldNumber, context);
   RegisterForField(TracePacket::kGpuLogFieldNumber, context);
+  RegisterForField(TracePacket::kGpuMemTotalEventFieldNumber, context);
   RegisterForField(TracePacket::kGraphicsFrameEventFieldNumber, context);
   RegisterForField(TracePacket::kVulkanMemoryEventFieldNumber, context);
   RegisterForField(TracePacket::kVulkanApiEventFieldNumber, context);
@@ -42,22 +43,27 @@ void GraphicsEventModule::ParsePacket(const TracePacket::Decoder& decoder,
       return;
     case TracePacket::kGpuRenderStageEventFieldNumber:
       parser_.ParseGpuRenderStageEvent(ttp.timestamp,
+                                       ttp.packet_data.sequence_state.get(),
                                        decoder.gpu_render_stage_event());
       return;
     case TracePacket::kGpuLogFieldNumber:
       parser_.ParseGpuLog(ttp.timestamp, decoder.gpu_log());
       return;
     case TracePacket::kGraphicsFrameEventFieldNumber:
-      parser_.ParseGraphicsFrameEvent(ttp.timestamp,
-                                      decoder.graphics_frame_event());
+      frame_parser_.ParseGraphicsFrameEvent(ttp.timestamp,
+                                            decoder.graphics_frame_event());
       return;
     case TracePacket::kVulkanMemoryEventFieldNumber:
       PERFETTO_DCHECK(ttp.type == TimestampedTracePiece::Type::kTracePacket);
-      parser_.ParseVulkanMemoryEvent(ttp.packet_data.sequence_state,
+      parser_.ParseVulkanMemoryEvent(ttp.packet_data.sequence_state.get(),
                                      decoder.vulkan_memory_event());
       return;
     case TracePacket::kVulkanApiEventFieldNumber:
       parser_.ParseVulkanApiEvent(ttp.timestamp, decoder.vulkan_api_event());
+      return;
+    case TracePacket::kGpuMemTotalEventFieldNumber:
+      parser_.ParseGpuMemTotalEvent(ttp.timestamp,
+                                    decoder.gpu_mem_total_event());
       return;
   }
 }

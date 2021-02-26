@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -17,7 +19,7 @@
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/context_result.h"
 
-class GrContext;
+class GrDirectContext;
 
 namespace base {
 class Lock;
@@ -26,9 +28,7 @@ class Lock;
 namespace gpu {
 class ContextSupport;
 struct GpuFeatureInfo;
-class MemoryTracker;
 class SharedImageInterface;
-class SharedImageManager;
 
 namespace gles2 {
 class GLES2Interface;
@@ -93,7 +93,7 @@ class VIZ_COMMON_EXPORT ContextProvider {
   // Get a Skia GPU raster interface to the 3d context.  The context provider
   // must have been successfully bound to a thread before calling this.  Returns
   // nullptr if a GrContext fails to initialize on this context.
-  virtual class GrContext* GrContext() = 0;
+  virtual class GrDirectContext* GrContext() = 0;
 
   virtual gpu::SharedImageInterface* SharedImageInterface() = 0;
 
@@ -101,7 +101,7 @@ class VIZ_COMMON_EXPORT ContextProvider {
   // provider must have been successfully bound to a thread before calling this.
   virtual const gpu::Capabilities& ContextCapabilities() const = 0;
 
-  // Returns feature blacklist decisions and driver bug workarounds info.  The
+  // Returns feature blocklist decisions and driver bug workarounds info.  The
   // context provider must have been successfully bound to a thread before
   // calling this.
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const = 0;
@@ -109,12 +109,6 @@ class VIZ_COMMON_EXPORT ContextProvider {
   // Get a GLES2 interface to the 3d context.  The context provider must have
   // been successfully bound to a thread before calling this.
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
-
-  // Returns the SharedImageManager. Only available inside the GPU process.
-  virtual gpu::SharedImageManager* GetSharedImageManager();
-
-  // Plumbs out the memory tracker to be shared with overlay.
-  virtual gpu::MemoryTracker* GetMemoryTracker();
 
  protected:
   virtual ~ContextProvider() = default;

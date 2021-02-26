@@ -1,0 +1,177 @@
+<style include="profile-picker-shared cr-hidden-style">
+  :host {
+    --avatar-icon-size: 74px;
+    --banner-img-height: 400px;
+    --banner-img-width: 169px;
+  }
+
+  .banner {
+    height: var(--banner-img-height);
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    width: var(--banner-img-width);
+    z-index: -1;
+  }
+
+  #leftBanner {
+    background: url(images/left_banner_image.svg);
+    left: 0;
+  }
+
+  #rightBanner {
+    background: url(images/right_banner_image.svg);
+    right: 0;
+  }
+
+  .title-container {
+    margin: 30px auto 0 auto;
+    padding-inline-end: calc(var(--banner-img-width) - 10px);
+    padding-inline-start: calc(var(--banner-img-width) - 10px);
+    text-align: center;
+  }
+
+  #wrapper {
+    display: flex;
+    height: calc(max(100vh, var(--view-min-size)) - 290px);
+    margin-inline-end: 140px;
+    margin-inline-start: 140px;
+  }
+
+  .profiles-container {
+    --grid-gutter: 24px;
+    --profile-item-height:178px;
+    --profile-item-width: 162px;
+    align-items: center;
+    display: grid;
+    grid-column-gap: var(--grid-gutter);
+    grid-row-gap: var(--grid-gutter);
+    grid-template-columns: repeat(auto-fit, var(--profile-item-width));
+    justify-content: center;
+    margin: auto;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-inline-end: var(--scrollbar-width);
+    padding-inline-start: var(--scrollbar-width);
+    width: 100%;
+  }
+
+  .profiles-container::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+  }
+
+  /* Track */
+  .profiles-container::-webkit-scrollbar-track {
+    border-radius: var(--scrollbar-width);
+  }
+
+  /* Handle */
+  .profiles-container::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-background);
+    border-radius: var(--scrollbar-width);
+  }
+
+  .profile-item {
+    align-items: center;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    height: var(--profile-item-height);
+    justify-content: center;
+    width: var(--profile-item-width);
+  }
+
+  #addProfile {
+    border: 1px dashed;
+    border-color: var(--google-grey-400);
+  }
+
+  cr-icon-button[iron-icon='profiles:add'] {
+    --cr-icon-button-icon-size: var(--avatar-icon-size);
+    --cr-icon-button-size: 84px;
+    --cr-icon-button-fill-color: var(--google-grey-refresh-100);
+    --cr-icon-button-margin-end: 0;
+    --cr-icon-button-margin-start: 0;
+    --cr-icon-button-stroke-color: var(--google-grey-refresh-700);
+  }
+
+  #browseAsGuestButton {
+    margin-inline-start: var(--footer-margin);
+  }
+
+  #browseAsGuestButton > iron-icon {
+    margin-inline-end: 8px;
+  }
+
+  cr-checkbox {
+    --cr-checkbox-label-color:  var(--cr-secondary-text-color);
+    --cr-checkbox-label-padding-start: 8px;
+    justify-content: flex-end;
+    margin-inline-end: var(--footer-margin);
+    margin-inline-start: auto;
+    padding-inline-end: 5px;
+    padding-inline-start: 5px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    #leftBanner {
+      background: url(images/dark_mode_left_banner_image.svg);
+    }
+
+    #rightBanner {
+      background: url(images/dark_mode_right_banner_image.svg);
+    }
+
+    #addProfile {
+      border-color: var(--google-grey-refresh-700);
+    }
+
+    cr-icon-button[iron-icon='profiles:add'] {
+      --cr-icon-button-fill-color: var(--google-grey-refresh-500);
+      --cr-icon-button-stroke-color: rgb(48, 48, 50);
+      color: var(--google-grey-refresh-500);
+    }
+  }
+</style>
+
+<div id="leftBanner" class="banner"></div>
+<div class="title-container">
+  <img id="product-logo" on-click="onProductLogoTap_"
+      srcset="chrome://theme/current-channel-logo@1x 1x,
+              chrome://theme/current-channel-logo@2x 2x"
+      role="presentation">
+  <h2>$i18n{mainViewTitle}</h2>
+  <h3>$i18n{mainViewSubtitle}</h3>
+</div>
+<div id="wrapper" hidden$="[[!profilesListLoaded_]]">
+  <div class="profiles-container">
+    <template is="dom-repeat" items="[[profilesList_]]">
+      <profile-card
+          class="profile-item" profile-state="[[item]]">
+      </profile-card>
+    </template>
+    <div id="addProfile" class="profile-item">
+      <div id="addProfileButtonLabel" class="profile-card-info">
+        $i18n{addSpaceButton}
+      </div>
+      <cr-icon-button iron-icon="profiles:add"
+          on-click="onAddProfileClick_" aria-labelledby="addProfileButtonLabel">
+      </cr-icon-button>
+      <!-- Empty div to maintain alignment with other profile cards. -->
+      <div class="profile-card-info"></div>
+    </div>
+  </div>
+</div>
+<div id="rightBanner" class="banner"></div>
+
+<div class="footer">
+  <cr-button id="browseAsGuestButton" on-click="onLaunchGuestProfileClick_">
+    <iron-icon icon="profiles:account-circle"></iron-icon>
+    <div>$i18n{browseAsGuestButton}</div>
+  </cr-button>
+  <cr-checkbox checked="{{askOnStartup_}}"
+      on-change="onAskOnStartupChangedByUser_" hidden$="[[hideAskOnStartup_]]">
+    $i18n{askOnStartupCheckboxText}
+  </cr-checkbox>
+</div>

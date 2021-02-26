@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.tab;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -39,7 +40,7 @@ public class TabStateTest {
 
     @After
     public void tearDown() {
-        TabState.setChannelNameOverrideForTest(null);
+        TabStateFileManager.setChannelNameOverrideForTest(null);
         mTestTabModelDirectory.tearDown();
     }
 
@@ -47,17 +48,17 @@ public class TabStateTest {
         mTestTabModelDirectory.writeTabStateFile(info);
 
         File tabStateFile = new File(mTestTabModelDirectory.getBaseDirectory(), info.filename);
-        TabState tabState = TabState.restoreTabState(tabStateFile, false);
+        TabState tabState = TabStateFileManager.restoreTabState(tabStateFile, false);
         Assert.assertNotNull(tabState);
-        Assert.assertEquals(info.url, tabState.getVirtualUrlFromState());
-        Assert.assertEquals(info.title, tabState.getDisplayTitleFromState());
+        Assert.assertEquals(info.url, tabState.contentsState.getVirtualUrlFromState());
+        Assert.assertEquals(info.title, tabState.contentsState.getDisplayTitleFromState());
         Assert.assertEquals(info.version, tabState.contentsState.version());
     }
 
     @Test
     @SmallTest
     public void testLoadV0Tabs() throws Exception {
-        TabState.setChannelNameOverrideForTest("stable");
+        TabStateFileManager.setChannelNameOverrideForTest("stable");
         loadAndCheckTabState(TestTabModelDirectory.M18_GOOGLE_COM);
         loadAndCheckTabState(TestTabModelDirectory.M18_NTP);
     }
@@ -65,7 +66,7 @@ public class TabStateTest {
     @Test
     @SmallTest
     public void testLoadV1Tabs() throws Exception {
-        TabState.setChannelNameOverrideForTest(null);
+        TabStateFileManager.setChannelNameOverrideForTest(null);
         loadAndCheckTabState(TestTabModelDirectory.M26_GOOGLE_COM);
         loadAndCheckTabState(TestTabModelDirectory.M26_GOOGLE_CA);
     }
@@ -73,7 +74,7 @@ public class TabStateTest {
     @Test
     @SmallTest
     public void testLoadV2Tabs() throws Exception {
-        TabState.setChannelNameOverrideForTest(null);
+        TabStateFileManager.setChannelNameOverrideForTest(null);
 
         // Standard English tabs.
         loadAndCheckTabState(TestTabModelDirectory.V2_DUCK_DUCK_GO);

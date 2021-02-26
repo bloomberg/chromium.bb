@@ -5,16 +5,19 @@
 package org.chromium.chrome.browser.site_settings;
 
 import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
+import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -24,30 +27,28 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
-import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.permissions.PermissionTestRule;
+import org.chromium.chrome.browser.permissions.PermissionTestRule.PermissionUpdateWaiter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
-import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
+import org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
+import org.chromium.components.browser_ui.site_settings.R;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
@@ -55,48 +56,57 @@ import org.chromium.components.browser_ui.site_settings.TriStateSiteSettingsPref
 import org.chromium.components.browser_ui.site_settings.Website;
 import org.chromium.components.browser_ui.site_settings.WebsiteAddress;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
+import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.components.content_settings.ContentSettingValues;
-import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.permissions.nfc.NfcSystemLevelSetting;
+import org.chromium.components.policy.test.annotations.Policies;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
-import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.net.test.ServerCertificate;
-import org.chromium.policy.test.annotations.Policies;
+import org.chromium.device.geolocation.LocationProviderOverrider;
+import org.chromium.device.geolocation.MockLocationProvider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.concurrent.Callable;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for everything under Settings > Site Settings.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors"})
-@EnableFeatures(ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS)
 public class SiteSettingsTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public PermissionTestRule mPermissionRule = new PermissionTestRule(true);
 
-    private EmbeddedTestServer mTestServer;
+    private PermissionUpdateWaiter mPermissionUpdateWaiter;
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
-        mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
-                InstrumentationRegistry.getContext(), ServerCertificate.CERT_OK);
+        mPermissionRule.startMainActivityOnBlankPage();
     }
 
     @After
     public void tearDown() {
-        mTestServer.stopAndDestroyServer();
+        if (mPermissionUpdateWaiter != null) {
+            mPermissionRule.getActivity().getActivityTab().removeObserver(mPermissionUpdateWaiter);
+        }
+    }
+
+    private void initializeUpdateWaiter(final boolean expectGranted) {
+        if (mPermissionUpdateWaiter != null) {
+            mPermissionRule.getActivity().getActivityTab().removeObserver(mPermissionUpdateWaiter);
+        }
+        Tab tab = mPermissionRule.getActivity().getActivityTab();
+
+        mPermissionUpdateWaiter = new PermissionUpdateWaiter(
+                expectGranted ? "Granted" : "Denied", mPermissionRule.getActivity());
+        tab.addObserver(mPermissionUpdateWaiter);
     }
 
     private BrowserContextHandle getBrowserContextHandle() {
@@ -105,6 +115,7 @@ public class SiteSettingsTest {
 
     private void setAllowLocation(final boolean enabled) {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
+        LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
         final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
                 SiteSettingsCategory.Type.DEVICE_LOCATION);
 
@@ -123,58 +134,44 @@ public class SiteSettingsTest {
         });
     }
 
-    private InfoBarTestAnimationListener setInfoBarAnimationListener() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
-                new Callable<InfoBarTestAnimationListener>() {
-                    @Override
-                    public InfoBarTestAnimationListener call() {
-                        InfoBarContainer container = mActivityTestRule.getInfoBarContainer();
-                        InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
-                        container.addAnimationListener(listener);
-                        return listener;
-                    }
-                });
+    private void triggerEmbargoForOrigin(String url) throws TimeoutException {
+        // Ignore notification request 4 times to enter embargo. 5th one ensures that notifications
+        // are blocked by actually causing a deny-by-embargo.
+        for (int i = 0; i < 5; i++) {
+            mPermissionRule.loadUrl(url);
+            mPermissionRule.runJavaScriptCodeInCurrentTab("requestPermissionAndRespond()");
+        }
     }
 
     /**
      * Sets Allow Location Enabled to be true and make sure it is set correctly.
-     *
-     * TODO(timloh): Update this test once modals are enabled everywhere.
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
     public void testSetAllowLocationEnabled() throws Exception {
         setAllowLocation(true);
-        InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
 
-        // Launch a page that uses geolocation and make sure an infobar shows up.
-        mActivityTestRule.loadUrl(
-                mTestServer.getURL("/chrome/test/data/geolocation/geolocation_on_load.html"));
-        listener.addInfoBarAnimationFinished("InfoBar not added.");
+        initializeUpdateWaiter(true /* expectGranted */);
 
-        Assert.assertEquals("Wrong infobar count", 1, mActivityTestRule.getInfoBars().size());
+        // Launch a page that uses geolocation and make sure a permission prompt shows up.
+        mPermissionRule.runAllowTest(mPermissionUpdateWaiter,
+                "/chrome/test/data/geolocation/geolocation_on_load.html", "", 0, false, true);
     }
 
     /**
      * Sets Allow Location Enabled to be false and make sure it is set correctly.
-     *
-     * TODO(timloh): Update this test once modals are enabled everywhere.
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
-    public void testSetAllowLocationNotEnabled() {
+    public void testSetAllowLocationNotEnabled() throws Exception {
         setAllowLocation(false);
 
-        // Launch a page that uses geolocation.
-        mActivityTestRule.loadUrl(
-                mTestServer.getURL("/chrome/test/data/geolocation/geolocation_on_load.html"));
-
-        // No infobars are expected.
-        Assert.assertTrue(mActivityTestRule.getInfoBars().isEmpty());
+        // Launch a page that uses geolocation. No permission prompt is expected.
+        initializeUpdateWaiter(false /* expectGranted */);
+        mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
+                "/chrome/test/data/geolocation/geolocation_on_load.html", "", 0, false, true);
     }
 
     private void setCookiesEnabled(final SettingsActivity settingsActivity, final boolean enabled) {
@@ -200,54 +197,6 @@ public class SiteSettingsTest {
         });
     }
 
-    private void setCookiesEnabledOld(
-            final SettingsActivity settingsActivity, final boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                final SingleCategorySettings websitePreferences =
-                        (SingleCategorySettings) settingsActivity.getMainFragment();
-                final ChromeSwitchPreference cookies =
-                        (ChromeSwitchPreference) websitePreferences.findPreference(
-                                SingleCategorySettings.BINARY_TOGGLE_KEY);
-                final ChromeBaseCheckBoxPreference thirdPartyCookies =
-                        (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
-                                SingleCategorySettings.THIRD_PARTY_COOKIES_TOGGLE_KEY);
-
-                if (thirdPartyCookies != null) {
-                    Assert.assertEquals("Third-party cookie toggle should be "
-                                    + (doesAcceptCookies() ? "enabled" : " disabled"),
-                            doesAcceptCookies(), thirdPartyCookies.isEnabled());
-                }
-                websitePreferences.onPreferenceChange(cookies, enabled);
-                Assert.assertEquals("Cookies should be " + (enabled ? "allowed" : "blocked"),
-                        doesAcceptCookies(), enabled);
-            }
-
-            private boolean doesAcceptCookies() {
-                return WebsitePreferenceBridge.isCategoryEnabled(
-                        getBrowserContextHandle(), ContentSettingsType.COOKIES);
-            }
-        });
-    }
-
-    private void setThirdPartyCookiesEnabledOld(
-            final SettingsActivity settingsActivity, final boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            final SingleCategorySettings websitePreferences =
-                    (SingleCategorySettings) settingsActivity.getMainFragment();
-            final ChromeBaseCheckBoxPreference thirdPartyCookies =
-                    (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
-                            SingleCategorySettings.THIRD_PARTY_COOKIES_TOGGLE_KEY);
-
-            websitePreferences.onPreferenceChange(thirdPartyCookies, enabled);
-            Assert.assertEquals(
-                    "Third-party cookies should be " + (enabled ? "allowed" : "blocked"),
-                    PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES),
-                    enabled);
-        });
-    }
-
     private void setBlockCookiesSiteException(final SettingsActivity settingsActivity,
             final String hostname, final boolean thirdPartiesOnly) {
         TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -258,7 +207,6 @@ public class SiteSettingsTest {
 
                 Assert.assertTrue(doesAcceptCookies());
                 if (thirdPartiesOnly) {
-                    Assert.assertTrue(improvedControlsEnabled());
                     websitePreferences.onAddSite(SITE_WILDCARD, hostname);
                 } else {
                     websitePreferences.onAddSite(hostname, SITE_WILDCARD);
@@ -270,11 +218,6 @@ public class SiteSettingsTest {
                         getBrowserContextHandle(), ContentSettingsType.COOKIES);
             }
 
-            private boolean improvedControlsEnabled() {
-                return ContentSettingsFeatureList.isEnabled(
-                        ContentSettingsFeatureList
-                                .IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING);
-            }
         });
     }
 
@@ -308,8 +251,8 @@ public class SiteSettingsTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     "Third Party Cookie Blocking should be " + (expected ? "managed" : "unmanaged"),
-                    PrefServiceBridge.getInstance().isManagedPreference(
-                            Pref.BLOCK_THIRD_PARTY_COOKIES),
+                    UserPrefs.get(Profile.getLastUsedRegularProfile())
+                            .isManagedPreference(COOKIE_CONTROLS_MODE),
                     expected);
         });
     }
@@ -413,23 +356,6 @@ public class SiteSettingsTest {
     }
 
     /**
-     * Tests that disabling cookies turns off the third-party cookie toggle.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
-    @DisableFeatures(ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS)
-    public void testThirdPartyCookieToggleGetsDisabledOld() {
-        SettingsActivity settingsActivity =
-                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
-        setCookiesEnabledOld(settingsActivity, true);
-        setThirdPartyCookiesEnabledOld(settingsActivity, false);
-        setThirdPartyCookiesEnabledOld(settingsActivity, true);
-        setCookiesEnabledOld(settingsActivity, false);
-        settingsActivity.finish();
-    }
-
-    /**
      * Allows cookies to be set and ensures that they are.
      */
     @Test
@@ -441,19 +367,20 @@ public class SiteSettingsTest {
         setCookiesEnabled(settingsActivity, true);
         settingsActivity.finish();
 
-        final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
+        final String url = mPermissionRule.getURL("/chrome/test/data/android/cookie.html");
 
         // Load the page and clear any set cookies.
-        mActivityTestRule.loadUrl(url + "#clear");
-        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        mPermissionRule.loadUrl(url);
+        mPermissionRule.runJavaScriptCodeInCurrentTab("clearCookie()");
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mPermissionRule.runJavaScriptCodeInCurrentTab("setCookie()");
         Assert.assertEquals(
-                "\"Foo=Bar\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+                "\"Foo=Bar\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         // Load the page again and ensure the cookie still is set.
-        mActivityTestRule.loadUrl(url);
+        mPermissionRule.loadUrl(url);
         Assert.assertEquals(
-                "\"Foo=Bar\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+                "\"Foo=Bar\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
     }
 
     /**
@@ -468,17 +395,18 @@ public class SiteSettingsTest {
         setCookiesEnabled(settingsActivity, false);
         settingsActivity.finish();
 
-        final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
+        final String url = mPermissionRule.getURL("/chrome/test/data/android/cookie.html");
 
         // Load the page and clear any set cookies.
-        mActivityTestRule.loadUrl(url + "#clear");
-        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie()");
-        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mPermissionRule.loadUrl(url);
+        mPermissionRule.runJavaScriptCodeInCurrentTab("clearCookie()");
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mPermissionRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         // Load the page again and ensure the cookie remains unset.
-        mActivityTestRule.loadUrl(url);
-        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mPermissionRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
     }
 
     /**
@@ -487,38 +415,38 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    // Todo(eokoyomon) figure out how to set and test third party cookie setting in this test
-    // @EnableFeatures(
-    //         ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING)
+    // TODO(eokoyomon) figure out how to set and test third party cookie setting in this test
     public void testSiteExceptionCookiesBlocked() throws Exception {
         SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setCookiesEnabled(settingsActivity, true);
         settingsActivity.finish();
 
-        final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
+        final String url = mPermissionRule.getURL("/chrome/test/data/android/cookie.html");
 
         // Load the page and clear any set cookies.
-        mActivityTestRule.loadUrl(url + "#clear");
-        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mPermissionRule.loadUrl(url);
+        mPermissionRule.runJavaScriptCodeInCurrentTab("clearCookie()");
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         // Check cookies can be set for this website when there is no rule.
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        mPermissionRule.runJavaScriptCodeInCurrentTab("setCookie()");
         Assert.assertEquals(
-                "\"Foo=Bar\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+                "\"Foo=Bar\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         // Set specific rule to block site and ensure it cannot set cookies.
-        mActivityTestRule.loadUrl(url + "#clear");
+        mPermissionRule.loadUrl(url);
+        mPermissionRule.runJavaScriptCodeInCurrentTab("clearCookie()");
         settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setBlockCookiesSiteException(settingsActivity, url, false);
         settingsActivity.finish();
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie()");
-        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mPermissionRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         // Load the page again and ensure the cookie remains unset.
-        mActivityTestRule.loadUrl(url);
-        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mPermissionRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
     }
 
     /**
@@ -528,19 +456,19 @@ public class SiteSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testClearCookies() throws Exception {
-        final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
+        final String url = mPermissionRule.getURL("/chrome/test/data/android/cookie.html");
 
-        mActivityTestRule.loadUrl(url);
-        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        mPermissionRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mPermissionRule.runJavaScriptCodeInCurrentTab("setCookie()");
         Assert.assertEquals(
-                "\"Foo=Bar\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+                "\"Foo=Bar\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         resetSite(WebsiteAddress.create(url));
 
         // Load the page again and ensure the cookie is gone.
-        mActivityTestRule.loadUrl(url);
-        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mPermissionRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
     }
 
     /**
@@ -549,22 +477,23 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @FlakyTest(message = "https://crbug.com/1112409")
     public void testClearDomainCookies() throws Exception {
-        final String url = mTestServer.getURLWithHostName(
+        final String url = mPermissionRule.getURLWithHostName(
                 "test.example.com", "/chrome/test/data/android/cookie.html");
 
-        mActivityTestRule.loadUrl(url);
-        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie(\".example.com\")");
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie(\".test.example.com\")");
+        mPermissionRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mPermissionRule.runJavaScriptCodeInCurrentTab("setCookie(\".example.com\")");
+        mPermissionRule.runJavaScriptCodeInCurrentTab("setCookie(\".test.example.com\")");
         Assert.assertEquals("\"Foo=Bar; Foo=Bar\"",
-                mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+                mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         resetSite(WebsiteAddress.create("test.example.com"));
 
         // Load the page again and ensure the cookie is gone.
-        mActivityTestRule.loadUrl(url);
-        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mPermissionRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
     }
 
     /**
@@ -741,7 +670,7 @@ public class SiteSettingsTest {
         setEnablePopups(false);
 
         // Test that the popup doesn't open.
-        mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
+        mPermissionRule.setUpUrl("/chrome/test/data/android/popup.html");
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         Assert.assertEquals(1, getTabCount());
@@ -757,7 +686,7 @@ public class SiteSettingsTest {
         setEnablePopups(true);
 
         // Test that a popup opens.
-        mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
+        mPermissionRule.setUpUrl("/chrome/test/data/android/popup.html");
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         Assert.assertEquals(2, getTabCount());
@@ -787,7 +716,7 @@ public class SiteSettingsTest {
         NfcSystemLevelSetting.setNfcSettingForTesting(true);
 
         // If you add a category in the SiteSettings UI, please add a test for it below.
-        Assert.assertEquals(21, SiteSettingsCategory.Type.NUM_ENTRIES);
+        Assert.assertEquals(22, SiteSettingsCategory.Type.NUM_ENTRIES);
 
         String[] nullArray = new String[0];
         String[] binaryToggle = new String[] {"binary_toggle"};
@@ -795,7 +724,8 @@ public class SiteSettingsTest {
         String[] binaryToggleWithAllowed = new String[] {"binary_toggle", "allowed_group"};
         String[] binaryToggleWithOsWarningExtra =
                 new String[] {"binary_toggle", "os_permissions_warning_extra"};
-        String[] cookie = new String[] {"four_state_cookie_toggle", "add_exception"};
+        String[] cookie =
+                new String[] {"cookie_info_text", "four_state_cookie_toggle", "add_exception"};
         String[] protectedMedia = new String[] {"tri_state_toggle", "protected_content_learn_more"};
         String[] notifications_enabled;
         String[] notifications_disabled;
@@ -827,6 +757,8 @@ public class SiteSettingsTest {
         testCases.put(SiteSettingsCategory.Type.COOKIES, new Pair<>(cookie, cookie));
         testCases.put(SiteSettingsCategory.Type.DEVICE_LOCATION,
                 new Pair<>(binaryToggleWithAllowed, binaryToggleWithAllowed));
+        testCases.put(SiteSettingsCategory.Type.IDLE_DETECTION,
+                new Pair<>(binaryToggleWithAllowed, binaryToggleWithAllowed));
         testCases.put(SiteSettingsCategory.Type.JAVASCRIPT,
                 new Pair<>(binaryToggleWithException, binaryToggleWithException));
         testCases.put(SiteSettingsCategory.Type.MICROPHONE, new Pair<>(binaryToggle, binaryToggle));
@@ -841,6 +773,7 @@ public class SiteSettingsTest {
         testCases.put(SiteSettingsCategory.Type.USE_STORAGE, new Pair<>(nullArray, nullArray));
         testCases.put(
                 SiteSettingsCategory.Type.VIRTUAL_REALITY, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.BLUETOOTH, new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.BLUETOOTH_SCANNING,
                 new Pair<>(binaryToggle, binaryToggle));
 
@@ -939,18 +872,14 @@ public class SiteSettingsTest {
         setEnableCamera(false);
 
         // Test that the camera permission doesn't get requested.
-        mActivityTestRule.loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
-        mActivityTestRule.runJavaScriptCodeInCurrentTab(
-                "getUserMediaAndStop({video: true, audio: false});");
-
-        // No infobars are expected.
-        Assert.assertTrue(mActivityTestRule.getInfoBars().isEmpty());
+        initializeUpdateWaiter(false /* expectGranted */);
+        mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
+                "/content/test/data/media/getusermedia.html",
+                "getUserMediaAndStop({video: true, audio: false});", 0, false, true);
     }
 
     /**
      * Sets Allow Mic Enabled to be false and make sure it is set correctly.
-     *
-     * TODO(timloh): Update this test once modals are enabled everywhere.
      *
      * @throws Exception
      */
@@ -958,7 +887,6 @@ public class SiteSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add({ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM})
-    @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
     public void testMicBlocked() throws Exception {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.MICROPHONE, false);
 
@@ -969,64 +897,47 @@ public class SiteSettingsTest {
         });
 
         // Test that the microphone permission doesn't get requested.
-        mActivityTestRule.loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
-        mActivityTestRule.runJavaScriptCodeInCurrentTab(
-                "getUserMediaAndStop({video: false, audio: true});");
-
-        // No infobars are expected.
-        Assert.assertTrue(mActivityTestRule.getInfoBars().isEmpty());
+        initializeUpdateWaiter(false /* expectGranted */);
+        mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
+                "/content/test/data/media/getusermedia.html",
+                "getUserMediaAndStop({video: false, audio: true});", 0, true, true);
     }
 
     /**
      * Sets Allow Camera Enabled to be true and make sure it is set correctly.
      *
-     * TODO(timloh): Update this test once modals are enabled everywhere.
-     *
      * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add({ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM})
-    @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
     public void testCameraNotBlocked() throws Exception {
         setEnableCamera(true);
 
-        InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
-
-        // Launch a page that uses camera and make sure an infobar shows up.
-        mActivityTestRule.loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
-        mActivityTestRule.runJavaScriptCodeInCurrentTab(
-                "getUserMediaAndStop({video: true, audio: false});");
-
-        listener.addInfoBarAnimationFinished("InfoBar not added.");
-        Assert.assertEquals("Wrong infobar count", 1, mActivityTestRule.getInfoBars().size());
+        initializeUpdateWaiter(true /* expectGranted */);
+        mPermissionRule.runAllowTest(mPermissionUpdateWaiter,
+                "/content/test/data/media/getusermedia.html",
+                "getUserMediaAndStop({video: true, audio: false});", 0, false, true);
     }
 
     /**
      * Sets Allow Mic Enabled to be true and make sure it is set correctly.
      *
-     * TODO(timloh): Update this test once modals are enabled everywhere.
-     *
      * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add({ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM})
-    @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
     public void testMicNotBlocked() throws Exception {
         setEnableCamera(true);
 
-        InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
-
-        // Launch a page that uses the microphone and make sure an infobar shows up.
-        mActivityTestRule.loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
-        mActivityTestRule.runJavaScriptCodeInCurrentTab(
-                "getUserMediaAndStop({video: false, audio: true});");
-
-        listener.addInfoBarAnimationFinished("InfoBar not added.");
-        Assert.assertEquals("Wrong infobar count", 1, mActivityTestRule.getInfoBars().size());
+        // Launch a page that uses the microphone and make sure a permission prompt shows up.
+        initializeUpdateWaiter(true /* expectGranted */);
+        mPermissionRule.runAllowTest(mPermissionUpdateWaiter,
+                "/content/test/data/media/getusermedia.html",
+                "getUserMediaAndStop({video: false, audio: true});", 0, true, true);
     }
 
     /**
@@ -1146,6 +1057,36 @@ public class SiteSettingsTest {
     }
 
     /**
+     * Helper function to test allowing and blocking the Bluetooth chooser.
+     * @param enabled true to test enabling the Bluetooth chooser, false to test disabling the
+     *         feature.
+     */
+    private void doTestBluetoothGuardPermission(final boolean enabled) {
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.BLUETOOTH, enabled);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(
+                    "Bluetooth scanning should be " + (enabled ? "enabled" : "disabled"),
+                    WebsitePreferenceBridge.isCategoryEnabled(
+                            getBrowserContextHandle(), ContentSettingsType.BLUETOOTH_GUARD),
+                    enabled);
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowBluetoothGuard() {
+        doTestBluetoothScanningPermission(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockBluetoothGuard() {
+        doTestBluetoothScanningPermission(false);
+    }
+
+    /**
      * Helper function to test allowing and blocking NFC feature.
      * @param enabled true to test enabling NFC feature, false to test disabling the
      *         feature.
@@ -1234,7 +1175,7 @@ public class SiteSettingsTest {
 
     private int getTabCount() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+                () -> mPermissionRule.getActivity().getTabModelSelector().getTotalTabCount());
     }
 
     @Test
@@ -1242,19 +1183,15 @@ public class SiteSettingsTest {
     @Feature({"Preferences"})
     public void testEmbargoedNotificationSiteSettings() throws Exception {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-        final String url = mTestServer.getURLWithHostName(
+        final String url = mPermissionRule.getURLWithHostName(
                 "example.com", "/chrome/test/data/notifications/notification_tester.html");
 
-        // Ignore notification request 4 times to enter embargo. 5th one ensures that notifications
-        // are blocked by actually causing a deny-by-embargo.
-        for (int i = 0; i < 5; i++) {
-            mActivityTestRule.loadUrl(url);
-            mActivityTestRule.runJavaScriptCodeInCurrentTab("requestPermissionAndRespond()");
-        }
+        triggerEmbargoForOrigin(url);
 
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        Intent intent = settingsLauncher.createSettingsActivityIntent(
-                InstrumentationRegistry.getTargetContext(), SingleWebsiteSettings.class.getName(),
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent intent = settingsLauncher.createSettingsActivityIntent(context,
+                SingleWebsiteSettings.class.getName(),
                 SingleWebsiteSettings.createFragmentArgsForSite(url));
         final SettingsActivity settingsActivity =
                 (SettingsActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
@@ -1267,6 +1204,9 @@ public class SiteSettingsTest {
             final Preference notificationPreference =
                     websitePreferences.findPreference("push_notifications_list");
 
+            Assert.assertEquals(context.getString(R.string.automatically_blocked),
+                    notificationPreference.getSummary());
+
             websitePreferences.launchOsChannelSettingsFromPreference(notificationPreference);
 
             // Ensure that a proper separate channel has indeed been created to allow the user to
@@ -1277,5 +1217,156 @@ public class SiteSettingsTest {
         });
 
         settingsActivity.finish();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @DisabledTest(message = "https://crbug.com/1094934")
+    public void testEmbargoedNotificationCategorySiteSettings() throws Exception {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+        final String urlToEmbargo = mPermissionRule.getURLWithHostName(
+                "example.com", "/chrome/test/data/notifications/notification_tester.html");
+
+        triggerEmbargoForOrigin(urlToEmbargo);
+
+        final String urlToBlock = mPermissionRule.getURLWithHostName(
+                "exampleToBlock.com", "/chrome/test/data/notifications/notification_tester.html");
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            WebsitePreferenceBridgeJni.get().setSettingForOrigin(getBrowserContextHandle(),
+                    ContentSettingsType.NOTIFICATIONS, urlToBlock, urlToBlock,
+                    ContentSettingValues.BLOCK);
+        });
+
+        final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
+                SiteSettingsCategory.Type.NOTIFICATIONS);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            boolean blockedByEmbargo =
+                    WebsitePreferenceBridgeJni.get().isNotificationEmbargoedForOrigin(
+                            getBrowserContextHandle(), urlToEmbargo);
+            Assert.assertTrue(blockedByEmbargo);
+
+            final String blockedGroupKey = "blocked_group";
+            // Click on Blocked group in Category Settings. By default Blocked is closed, to be able
+            // to find any origins inside, Blocked should be opened.
+            SingleCategorySettings websitePreferences =
+                    (SingleCategorySettings) settingsActivity.getMainFragment();
+            websitePreferences.findPreference(blockedGroupKey).performClick();
+
+            // After triggering onClick on Blocked group, all UI will be discarded and reinitialized
+            // from scratch. Init all variables again, otherwise it will use stale information.
+            websitePreferences = (SingleCategorySettings) settingsActivity.getMainFragment();
+            ExpandablePreferenceGroup blockedGroup =
+                    (ExpandablePreferenceGroup) websitePreferences.findPreference(blockedGroupKey);
+
+            Assert.assertTrue(blockedGroup.isExpanded());
+            // Only |url| has been added under embargo.
+            Assert.assertEquals(2, blockedGroup.getPreferenceCount());
+
+            Assert.assertEquals(InstrumentationRegistry.getTargetContext().getString(
+                                        R.string.automatically_blocked),
+                    blockedGroup.getPreference(0).getSummary());
+
+            // Blocked origin should has no summary.
+            Assert.assertNull(blockedGroup.getPreference(1).getSummary());
+        });
+        settingsActivity.finish();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
+    public void testProtectedContentDefaultOption() throws Exception {
+        initializeUpdateWaiter(true /* expectGranted */);
+        mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
+                "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
+    public void testProtectedContentAskAllow() throws Exception {
+        setGlobalTriStateToggleForCategory(
+                SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.ASK);
+
+        initializeUpdateWaiter(true /* expectGranted */);
+        mPermissionRule.runAllowTest(mPermissionUpdateWaiter,
+                "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
+    public void testProtectedContentAskBlocked() throws Exception {
+        setGlobalTriStateToggleForCategory(
+                SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.ASK);
+
+        initializeUpdateWaiter(false /* expectGranted */);
+        mPermissionRule.runDenyTest(mPermissionUpdateWaiter,
+                "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
+    public void testProtectedContentBlocked() throws Exception {
+        setGlobalTriStateToggleForCategory(
+                SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.BLOCK);
+
+        initializeUpdateWaiter(false /* expectGranted */);
+        mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
+                "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
+    public void testProtectedContentAllowThenBlock() throws Exception {
+        initializeUpdateWaiter(true /* expectGranted */);
+        mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
+                "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
+
+        setGlobalTriStateToggleForCategory(
+                SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.BLOCK);
+
+        initializeUpdateWaiter(false /* expectGranted */);
+        mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
+                "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
+    }
+
+    /**
+     * Helper function to test allowing and blocking IDLE_DETECTION feature.
+     * @param enabled true to test enabling IDLE_DETECTION feature, false to test disabling the
+     *         feature.
+     */
+    private void doTestIdleDetectionPermission(final boolean enabled) {
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.IDLE_DETECTION, enabled);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals("Idle detection should be " + (enabled ? "enabled" : "disabled"),
+                    WebsitePreferenceBridge.isCategoryEnabled(
+                            getBrowserContextHandle(), ContentSettingsType.IDLE_DETECTION),
+                    enabled);
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowIdleDetection() {
+        doTestIdleDetectionPermission(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockIdleDetection() {
+        doTestIdleDetectionPermission(false);
     }
 }

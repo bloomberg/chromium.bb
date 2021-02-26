@@ -1,5 +1,11 @@
 use_relative_paths = True
 
+gclient_gn_args_file = 'build/config/gclient_args.gni'
+gclient_gn_args = [
+  'checkout_google_benchmark',
+  'mac_xcode_version',
+]
+
 vars = {
   # By default, we should check out everything needed to run on the main
   # chromium waterfalls. This var can be also be set to 'small', in order
@@ -7,7 +13,17 @@ vars = {
   # purposes.
   'checkout_configuration': 'default',
 
+  # By default, do not check out Google Benchmark. This only exists to satisfy
+  # V8-enabled builds that require this variable. Running Google Benchmark is
+  # not supported with PDFium.
+  'checkout_google_benchmark': False,
+
   'checkout_instrumented_libraries': 'checkout_linux and checkout_configuration != "small"',
+
+  # This can be overridden, e.g. with custom_vars, to download a nonstandard
+  # Xcode version in build/mac_toolchain.py
+  # instead of downloading the prebuilt pinned revision.
+  'mac_xcode_version': 'default',
 
   'chromium_git': 'https://chromium.googlesource.com',
   'pdfium_git': 'https://pdfium.googlesource.com',
@@ -15,23 +31,23 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_ndk
   # and whatever else without interference from each other.
-  'android_ndk_revision': '27c0a8d090c666a50e40fceb4ee5b40b1a2d3f87',
+  'android_ndk_revision': '85c22b30bd6d50ab62b6f705679e7dd289f6ada3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build
   # and whatever else without interference from each other.
-  'build_revision': '30fe96cfbe94ed9505d1e353948f77f943a943ac',
+  'build_revision': '50f81f2452a9cd5f05b45a0cb6c095a46822dbed',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling buildtools
   # and whatever else without interference from each other.
-  'buildtools_revision': '204a35a2a64f7179f8b76d7a0385653690839e21',
+  'buildtools_revision': '4be464e050b3d05060471788f926b34c641db9fd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '31b81b84c957c2216d70ba0f06f898a329b7dfc0',
+  'catapult_revision': '89eeef5150cb1c571c9c2f43d18ea0f3eb3f57c2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang
   # and whatever else without interference from each other.
-  'clang_revision': '54f2e0def1265895a776a92697a20b26b2c30140',
+  'clang_revision': 'c5290b5af7a91dd8aea12021107a62a21b2c9818',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang_dsymutil
   # and whatever else without interference from each other.
@@ -39,67 +55,67 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling code_coverage
   # and whatever else without interference from each other.
-  'code_coverage_revision': 'a8f20a1dacc200010cd99f4eabdb0da7d94be112',
+  'code_coverage_revision': 'f6bc2a9be76effcad556309b599747990f012ff4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling depot_tools
   # and whatever else without interference from each other.
-  'depot_tools_revision': '177e70c03eeeb4d275504bfb38204c088fcf85fd',
+  'depot_tools_revision': '422c039e8e1b95402a10734e1c1e376084fbd15e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': 'd79946311bf8c72d31a8dadc8ae33e298554c61b',
+  'freetype_revision': '007c109b4594c5e63948bd08b4d5011ad76ffb10',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling gtest
   # and whatever else without interference from each other.
-  'gtest_revision': 'e3f0319d89f4cbf32993de595d984183b1a9fc57',
+  'gtest_revision': '4fe018038f87675c083d0cfb6a6b57c274fb1753',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling icu
   # and whatever else without interference from each other.
-  'icu_revision': 'f2223961702f00a8833874b0560d615a2cc42738',
+  'icu_revision': 'aba3f0dfeeddc0c69730ec28ef423543b8a62693',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling instrumented_lib
   # and whatever else without interference from each other.
-  'instrumented_lib_revision': 'bb3f1802c237dd19105dd0f7919f99e536a39d10',
+  'instrumented_lib_revision': '6ba978ccb754d270b6cd12da58c8269b617e4f6e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling jinja2
   # and whatever else without interference from each other.
-  'jinja2_revision': '3f90fa05c85718505e28c9c3426c1ba52843b9b7',
+  'jinja2_revision': 'a82a4944a7f2496639f34a89c9923be5908b80aa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling jpeg_turbo
   # and whatever else without interference from each other.
-  'jpeg_turbo_revision': '7e3ad79800a7945fb37173149842b494ab8982b2',
+  'jpeg_turbo_revision': 'd5148db386ceb4a608058320071cbed890bd6ad2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling markupsafe
   # and whatever else without interference from each other.
-  'markupsafe_revision': '8f45f5cfa0009d2a70589bcda0349b8cb2b72783',
+  'markupsafe_revision': '0944e71f4b2cb9a871bcbe353f95e889b64a611a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nasm_source
   # and whatever else without interference from each other.
-  'nasm_source_revision': '4fa54ca5f7fc3a15a8c78ac94688e64d3e4e4fa1',
+  'nasm_source_revision': '19f3fad68da99277b2882939d3b2fa4c4b8d51d9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling pdfium_tests
   # and whatever else without interference from each other.
-  'pdfium_tests_revision': 'b4e9a126d289b49002d0f0acac71d1fdc26953b3',
+  'pdfium_tests_revision': '79c60bac7af87b386fd3df557eb782383e612a3a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling skia
   # and whatever else without interference from each other.
-  'skia_revision': '5443bb32a2ad2718680ff27af1f2601744d360cc',
+  'skia_revision': '4c3486e6f1ded4f058744e02d4ad8ddc60cb9ac2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling tools_memory
   # and whatever else without interference from each other.
-  'tools_memory_revision': '89552acb6e60f528fe3c98eac7b445d4c34183ee',
+  'tools_memory_revision': 'ee1e2448132431e7519c2a72ff612e079f13a9d6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling trace_event
   # and whatever else without interference from each other.
-  'trace_event_revision': 'dab187b372fc17e51f5b9fad8201813d0aed5129',
+  'trace_event_revision': '23ef5333a357fc7314630ef88b44c3a545881dee',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling v8
   # and whatever else without interference from each other.
-  'v8_revision': '6a91312c4fe4c3a4a75101318de7885d60b71e94',
+  'v8_revision': 'e1e716fb8eee8a5a1177f4baf850e9a40ce44e25',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling zlib
   # and whatever else without interference from each other.
-  'zlib_revision': '21c6af6f18e5ad9c3b9d103f8cfdbf926ca35f7c',
+  'zlib_revision': '26211a5a8e7e28286fc28a84a0e102cc96bf0f0b',
 }
 
 deps = {
@@ -220,16 +236,26 @@ specific_include_rules = {
 
 hooks = [
   {
+    # Ensure that the DEPS'd "depot_tools" has its self-update capability
+    # disabled.
+    'name': 'disable_depot_tools_selfupdate',
+    'pattern': '.',
+    'action': [ 'python',
+                'third_party/depot_tools/update_depot_tools_toggle.py',
+                '--disable',
+    ],
+  },
+  {
     # Case-insensitivity for the Win SDK. Must run before win_toolchain below.
     'name': 'ciopfs_linux',
     'pattern': '.',
     'condition': 'checkout_win and host_os == "linux"',
     'action': [ 'python',
-                'pdfium/third_party/depot_tools/download_from_google_storage.py',
+                'third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--no_auth',
                 '--bucket', 'chromium-browser-clang/ciopfs',
-                '-s', 'pdfium/build/ciopfs.sha1',
+                '-s', 'build/ciopfs.sha1',
     ]
   },
   {
@@ -237,13 +263,15 @@ hooks = [
     'name': 'win_toolchain',
     'pattern': '.',
     'condition': 'checkout_win',
-    'action': ['python', 'pdfium/build/vs_toolchain.py', 'update', '--force'],
+    'action': ['python', 'build/vs_toolchain.py', 'update', '--force'],
   },
   {
     # Update the Mac toolchain if necessary.
     'name': 'mac_toolchain',
     'pattern': '.',
-    'action': ['python', 'pdfium/build/mac_toolchain.py'],
+    'condition': 'checkout_mac',
+    'action': ['python', 'build/mac_toolchain.py',
+               '--xcode-version', Var('mac_xcode_version')],
   },
   # Pull clang-format binaries using checked-in hashes.
   {
@@ -251,11 +279,11 @@ hooks = [
     'pattern': '.',
     'condition': 'host_os == "win"',
     'action': [ 'python',
-                'pdfium/third_party/depot_tools/download_from_google_storage.py',
+                'third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--no_auth',
                 '--bucket', 'chromium-clang-format',
-                '-s', 'pdfium/buildtools/win/clang-format.exe.sha1',
+                '-s', 'buildtools/win/clang-format.exe.sha1',
     ],
   },
   {
@@ -263,11 +291,11 @@ hooks = [
     'pattern': '.',
     'condition': 'host_os == "mac"',
     'action': [ 'python',
-                'pdfium/third_party/depot_tools/download_from_google_storage.py',
+                'third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--no_auth',
                 '--bucket', 'chromium-clang-format',
-                '-s', 'pdfium/buildtools/mac/clang-format.sha1',
+                '-s', 'buildtools/mac/clang-format.sha1',
     ],
   },
   {
@@ -275,11 +303,11 @@ hooks = [
     'pattern': '.',
     'condition': 'host_os == "linux"',
     'action': [ 'python',
-                'pdfium/third_party/depot_tools/download_from_google_storage.py',
+                'third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--no_auth',
                 '--bucket', 'chromium-clang-format',
-                '-s', 'pdfium/buildtools/linux64/clang-format.sha1',
+                '-s', 'buildtools/linux64/clang-format.sha1',
     ],
   },
   {
@@ -287,42 +315,42 @@ hooks = [
     'name': 'clang',
     'pattern': '.',
     'action': ['python',
-               'pdfium/tools/clang/scripts/update.py'
+               'tools/clang/scripts/update.py'
     ],
   },
   {
     'name': 'sysroot_arm',
     'pattern': '.',
     'condition': 'checkout_linux and checkout_arm',
-    'action': ['python', 'pdfium/build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=arm'],
   },
   {
     'name': 'sysroot_arm64',
     'pattern': '.',
     'condition': 'checkout_linux and checkout_arm64',
-    'action': ['python', 'pdfium/build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=arm64'],
   },
   {
     'name': 'sysroot_x86',
     'pattern': '.',
     'condition': 'checkout_linux and (checkout_x86 or checkout_x64)',
-    'action': ['python', 'pdfium/build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=x86'],
   },
   {
     'name': 'sysroot_mips',
     'pattern': '.',
     'condition': 'checkout_linux and checkout_mips',
-    'action': ['python', 'pdfium/build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=mips'],
   },
   {
     'name': 'sysroot_x64',
     'pattern': '.',
     'condition': 'checkout_linux and checkout_x64',
-    'action': ['python', 'pdfium/build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=x64'],
   },
   {
@@ -330,11 +358,11 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_instrumented_libraries',
     'action': [ 'python',
-                'pdfium/third_party/depot_tools/download_from_google_storage.py',
+                'third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--no_auth',
                 '--bucket', 'chromium-instrumented-libraries',
-                '-s', 'pdfium/third_party/instrumented_libraries/binaries/msan-chained-origins-trusty.tgz.sha1',
+                '-s', 'third_party/instrumented_libraries/binaries/msan-chained-origins-trusty.tgz.sha1',
               ],
   },
   {
@@ -342,18 +370,18 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_instrumented_libraries',
     'action': [ 'python',
-                'pdfium/third_party/depot_tools/download_from_google_storage.py',
+                'third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--no_auth',
                 '--bucket', 'chromium-instrumented-libraries',
-                '-s', 'pdfium/third_party/instrumented_libraries/binaries/msan-no-origins-trusty.tgz.sha1',
+                '-s', 'third_party/instrumented_libraries/binaries/msan-no-origins-trusty.tgz.sha1',
               ],
   },
   {
     # Update LASTCHANGE.
     'name': 'lastchange',
     'pattern': '.',
-    'action': ['python', 'pdfium/build/util/lastchange.py',
-               '-o', 'pdfium/build/util/LASTCHANGE'],
+    'action': ['python', 'build/util/lastchange.py',
+               '-o', 'build/util/LASTCHANGE'],
   },
 ]

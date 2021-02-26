@@ -20,11 +20,11 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -59,6 +59,7 @@
 #include "components/dom_distiller/content/browser/uma_helper.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/url_utils.h"
+#include "components/media_router/browser/media_router_metrics.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
@@ -69,6 +70,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/profiling.h"
+#include "ui/base/accelerators/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/models/button_menu_item_model.h"
@@ -106,7 +108,7 @@ namespace {
 
 constexpr size_t kMaxAppNameLength = 30;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // An empty command used because of a bug in AppKit menus.
 // See comment in CreateActionToolbarOverflowMenu().
 const int kEmptyMenuItemCommand = 0;
@@ -134,7 +136,8 @@ base::Optional<base::string16> GetInstallPWAAppMenuItemName(Browser* browser) {
       banners::AppBannerManager::GetInstallableWebAppName(web_contents);
   if (app_name.empty())
     return base::nullopt;
-  return l10n_util::GetStringFUTF16(IDS_INSTALL_TO_OS_LAUNCH_SURFACE, app_name);
+  return l10n_util::GetStringFUTF16(IDS_INSTALL_TO_OS_LAUNCH_SURFACE,
+                                    ui::EscapeMenuLabelAmpersands(app_name));
 }
 
 }  // namespace
@@ -166,9 +169,6 @@ void ZoomMenuModel::Build() {
 // HelpMenuModel
 // Only used in branded builds.
 
-const base::Feature kIncludeBetaForumMenuItem{
-    "IncludeBetaForumMenuItem", base::FEATURE_DISABLED_BY_DEFAULT};
-
 class HelpMenuModel : public ui::SimpleMenuModel {
  public:
   HelpMenuModel(ui::SimpleMenuModel::Delegate* delegate, Browser* browser)
@@ -189,8 +189,6 @@ class HelpMenuModel : public ui::SimpleMenuModel {
     AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
 #endif
     AddItemWithStringId(IDC_HELP_PAGE_VIA_MENU, help_string_id);
-    if (base::FeatureList::IsEnabled(kIncludeBetaForumMenuItem))
-      AddItem(IDC_SHOW_BETA_FORUM, l10n_util::GetStringUTF16(IDS_BETA_FORUM));
     if (browser_defaults::kShowHelpMenuItemIcon) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE_VIA_MENU),
@@ -295,7 +293,7 @@ bool AppMenuModel::DoesCommandIdDismissMenu(int command_id) const {
 
 bool AppMenuModel::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == IDC_ZOOM_PERCENT_DISPLAY ||
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
          command_id == IDC_FULLSCREEN ||
 #elif defined(OS_WIN)
          command_id == IDC_PIN_TO_START_SCREEN ||
@@ -307,7 +305,7 @@ base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
   switch (command_id) {
     case IDC_ZOOM_PERCENT_DISPLAY:
       return zoom_label_;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     case IDC_FULLSCREEN: {
       int string_id = IDS_ENTER_FULLSCREEN_MAC;  // Default to Enter.
       // Note: On startup, |window()| may be NULL.
@@ -337,8 +335,9 @@ ui::ImageModel AppMenuModel::GetIconForCommandId(int command_id) const {
   if (command_id == IDC_UPGRADE_DIALOG) {
     DCHECK(browser_defaults::kShowUpgradeMenuItem);
     DCHECK(app_menu_icon_controller_);
-    return ui::ImageModel::FromImageSkia(
-        app_menu_icon_controller_->GetIconImage(false));
+    return ui::ImageModel::FromVectorIcon(
+        kBrowserToolsUpdateIcon,
+        app_menu_icon_controller_->GetIconColor(base::nullopt));
   }
   return ui::ImageModel();
 }
@@ -701,7 +700,7 @@ bool AppMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool AppMenuModel::IsCommandIdVisible(int command_id) const {
   switch (command_id) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     case kEmptyMenuItemCommand:
       return false;  // Always hidden (see CreateActionToolbarOverflowMenu).
 #endif
@@ -782,7 +781,8 @@ void AppMenuModel::Build() {
                            sub_menus_.back().get());
   }
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
-  if (!browser_->profile()->IsGuestSession()) {
+  if (!browser_->profile()->IsGuestSession() &&
+      !browser_->profile()->IsEphemeralGuestProfile()) {
     bookmark_sub_menu_model_ =
         std::make_unique<BookmarkSubMenuModel>(this, browser_);
     AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
@@ -822,7 +822,7 @@ void AppMenuModel::Build() {
                 ->GetActiveWebContents()
                 ->GetLastCommittedURL())) {
       // Show the menu option if we are on a distilled page.
-      AddItemWithStringId(IDC_DISTILL_PAGE, IDS_DISTILL_PAGE);
+      AddItemWithStringId(IDC_DISTILL_PAGE, IDS_EXIT_DISTILLED_PAGE);
     } else if (dom_distiller::ShowReaderModeOption(
                    browser_->profile()->GetPrefs())) {
       // Show the menu option if the page is distillable.
@@ -943,7 +943,8 @@ void AppMenuModel::UpdateZoomControls() {
 }
 
 bool AppMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
-  if (browser_->profile()->IsGuestSession())
+  if (browser_->profile()->IsGuestSession() ||
+      browser_->profile()->IsEphemeralGuestProfile())
     return false;
 
   return IncognitoModePrefs::GetAvailability(browser_->profile()->GetPrefs()) !=

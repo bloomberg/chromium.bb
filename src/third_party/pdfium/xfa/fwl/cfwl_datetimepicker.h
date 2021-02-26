@@ -7,14 +7,13 @@
 #ifndef XFA_FWL_CFWL_DATETIMEPICKER_H_
 #define XFA_FWL_CFWL_DATETIMEPICKER_H_
 
-#include <memory>
 #include <utility>
 
+#include "v8/include/cppgc/member.h"
 #include "xfa/fwl/cfwl_datetimeedit.h"
 #include "xfa/fwl/cfwl_event.h"
 #include "xfa/fwl/cfwl_monthcalendar.h"
 #include "xfa/fwl/cfwl_widget.h"
-#include "xfa/fwl/cfwl_widgetproperties.h"
 
 #define FWL_STYLEEXT_DTP_ShortDateFormat (1L << 1)
 #define FWL_STYLEEXT_DTP_EditHAlignMask (3L << 4)
@@ -31,17 +30,19 @@ class CFWL_DateTimeEdit;
 
 class CFWL_DateTimePicker final : public CFWL_Widget {
  public:
-  explicit CFWL_DateTimePicker(const CFWL_App* pApp);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CFWL_DateTimePicker() override;
 
-  // CFWL_Widget
+  // CFWL_Widget:
+  void PreFinalize() override;
+  void Trace(cppgc::Visitor* visitor) const override;
   FWL_Type GetClassID() const override;
   void Update() override;
   FWL_WidgetHit HitTest(const CFX_PointF& point) override;
-  void DrawWidget(CXFA_Graphics* pGraphics, const CFX_Matrix& matrix) override;
-  void SetThemeProvider(IFWL_ThemeProvider* pTP) override;
+  void DrawWidget(CFGAS_GEGraphics* pGraphics,
+                  const CFX_Matrix& matrix) override;
   void OnProcessMessage(CFWL_Message* pMessage) override;
-  void OnDrawWidget(CXFA_Graphics* pGraphics,
+  void OnDrawWidget(CFGAS_GEGraphics* pGraphics,
                     const CFX_Matrix& matrix) override;
 
   void GetCurSel(int32_t& iYear, int32_t& iMonth, int32_t& iDay);
@@ -76,8 +77,9 @@ class CFWL_DateTimePicker final : public CFWL_Widget {
   void ProcessSelChanged(int32_t iYear, int32_t iMonth, int32_t iDay);
 
  private:
-  void DrawDropDownButton(CXFA_Graphics* pGraphics,
-                          IFWL_ThemeProvider* pTheme,
+  explicit CFWL_DateTimePicker(CFWL_App* pApp);
+
+  void DrawDropDownButton(CFGAS_GEGraphics* pGraphics,
                           const CFX_Matrix* pMatrix);
   WideString FormatDateString(int32_t iYear, int32_t iMonth, int32_t iDay);
   void ResetEditAlignment();
@@ -90,7 +92,6 @@ class CFWL_DateTimePicker final : public CFWL_Widget {
   void OnLButtonUp(CFWL_MessageMouse* pMsg);
   void OnMouseMove(CFWL_MessageMouse* pMsg);
   void OnMouseLeave(CFWL_MessageMouse* pMsg);
-
   bool NeedsToShowButton() const;
 
   bool m_bLBtnDown = false;
@@ -101,8 +102,8 @@ class CFWL_DateTimePicker final : public CFWL_Widget {
   float m_fBtn = 0.0f;
   CFX_RectF m_BtnRect;
   CFX_RectF m_ClientRect;
-  std::unique_ptr<CFWL_DateTimeEdit> m_pEdit;
-  std::unique_ptr<CFWL_MonthCalendar> m_pMonthCal;
+  cppgc::Member<CFWL_DateTimeEdit> const m_pEdit;
+  cppgc::Member<CFWL_MonthCalendar> const m_pMonthCal;
 };
 
 #endif  // XFA_FWL_CFWL_DATETIMEPICKER_H_

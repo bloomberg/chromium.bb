@@ -8,7 +8,7 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/notreached.h"
@@ -22,6 +22,7 @@
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "ios/web_view/internal/app/application_context.h"
 

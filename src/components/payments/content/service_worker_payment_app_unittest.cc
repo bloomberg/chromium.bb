@@ -7,11 +7,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/payments/core/mock_payment_request_delegate.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_web_contents_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
@@ -20,8 +21,11 @@ namespace payments {
 class ServiceWorkerPaymentAppTest : public testing::Test,
                                     public PaymentRequestSpec::Observer {
  public:
-  ServiceWorkerPaymentAppTest() {}
-  ~ServiceWorkerPaymentAppTest() override {}
+  ServiceWorkerPaymentAppTest() {
+    web_contents_ =
+        test_web_contents_factory_.CreateWebContents(&browser_context_);
+  }
+  ~ServiceWorkerPaymentAppTest() override = default;
 
  protected:
   const SkBitmap* icon_bitmap() const { return icon_bitmap_; }
@@ -84,7 +88,7 @@ class ServiceWorkerPaymentAppTest : public testing::Test,
 
     spec_ = std::make_unique<PaymentRequestSpec>(
         mojom::PaymentOptions::New(), std::move(details),
-        std::move(method_data), this, "en-US");
+        std::move(method_data), weak_ptr_factory_.GetWeakPtr(), "en-US");
   }
 
   void TearDown() override {}
@@ -113,12 +117,10 @@ class ServiceWorkerPaymentAppTest : public testing::Test,
 
     icon_bitmap_ = stored_app->icon.get();
     app_ = std::make_unique<ServiceWorkerPaymentApp>(
-        &browser_context_, GURL("https://testmerchant.com"),
-        GURL("https://testmerchant.com/bobpay"), spec_.get(),
-        std::move(stored_app), &delegate_,
-        base::BindRepeating(
-            [](const url::Origin& origin,
-               int64_t registration_id) { /* Intentionally left blank. */ }));
+        web_contents_, GURL("https://testmerchant.com"),
+        GURL("https://testmerchant.com/bobpay"), spec_->AsWeakPtr(),
+        std::move(stored_app), /*is_incognito=*/false,
+        /*show_processing_spinner=*/base::DoNothing());
   }
 
   ServiceWorkerPaymentApp* GetApp() { return app_.get(); }
@@ -132,13 +134,15 @@ class ServiceWorkerPaymentAppTest : public testing::Test,
   }
 
  private:
-  MockPaymentRequestDelegate delegate_;
   content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
+  content::TestWebContentsFactory test_web_contents_factory_;
+  content::WebContents* web_contents_;
 
   std::unique_ptr<PaymentRequestSpec> spec_;
   std::unique_ptr<ServiceWorkerPaymentApp> app_;
   const SkBitmap* icon_bitmap_;
+  base::WeakPtrFactory<ServiceWorkerPaymentAppTest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentAppTest);
 };
@@ -152,9 +156,9 @@ TEST_F(ServiceWorkerPaymentAppTest, AppInfo) {
   EXPECT_EQ(base::UTF16ToUTF8(GetApp()->GetLabel()), "bobpay");
   EXPECT_EQ(base::UTF16ToUTF8(GetApp()->GetSublabel()), "bobpay.com");
 
-  const gfx::Size expected_size{icon_bitmap()->width(),
-                                icon_bitmap()->height()};
-  EXPECT_EQ(GetApp()->icon_image_skia().size(), expected_size);
+  ASSERT_NE(nullptr, GetApp()->icon_bitmap());
+  EXPECT_EQ(GetApp()->icon_bitmap()->width(), icon_bitmap()->width());
+  EXPECT_EQ(GetApp()->icon_bitmap()->height(), icon_bitmap()->height());
 }
 
 // Test payment request event data can be correctly constructed for invoking

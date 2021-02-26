@@ -116,14 +116,13 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           GetApplicationContext()->GetApplicationLocale())),
       infobar_manager_(infobar_manager),
       password_manager_(password_manager),
-      unmask_controller_(browser_state->GetPrefs(),
-                         browser_state->IsOffTheRecord()),
+      unmask_controller_(browser_state->GetPrefs()),
       // TODO(crbug.com/928595): Replace the closure with a callback to the
       // renderer that indicates if log messages should be sent from the
       // renderer.
       log_manager_(LogManager::Create(
           AutofillLogRouterFactory::GetForBrowserState(browser_state),
-          base::Closure())) {}
+          base::RepeatingClosure())) {}
 
 ChromeAutofillClientIOS::~ChromeAutofillClientIOS() {
   HideAutofillPopup(PopupHidingReason::kTabGone);
@@ -181,9 +180,11 @@ ukm::SourceId ChromeAutofillClientIOS::GetUkmSourceId() {
 }
 
 AddressNormalizer* ChromeAutofillClientIOS::GetAddressNormalizer() {
-  if (base::FeatureList::IsEnabled(features::kAutofillAddressNormalizer))
-    return AddressNormalizerFactory::GetInstance();
-  return nullptr;
+  return AddressNormalizerFactory::GetInstance();
+}
+
+const GURL& ChromeAutofillClientIOS::GetLastCommittedURL() {
+  return web_state_->GetLastCommittedURL();
 }
 
 security_state::SecurityLevel
@@ -191,16 +192,16 @@ ChromeAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
   return security_state::GetSecurityLevelForWebState(web_state_);
 }
 
-std::string ChromeAutofillClientIOS::GetPageLanguage() const {
+const translate::LanguageState* ChromeAutofillClientIOS::GetLanguageState() {
   // TODO(crbug.com/912597): iOS vs other platforms extracts language from
   // the top level frame vs whatever frame directly holds the form.
   auto* translate_client = ChromeIOSTranslateClient::FromWebState(web_state_);
   if (translate_client) {
     auto* translate_manager = translate_client->GetTranslateManager();
     if (translate_manager)
-      return translate_manager->GetLanguageState().original_language();
+      return translate_manager->GetLanguageState();
   }
-  return std::string();
+  return nullptr;
 }
 
 std::string ChromeAutofillClientIOS::GetVariationConfigCountryCode() const {
@@ -223,9 +224,9 @@ void ChromeAutofillClientIOS::ShowUnmaskPrompt(
     UnmaskCardReason reason,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
   unmask_controller_.ShowPrompt(
-      base::Bind(&CreateCardUnmaskPromptViewBridge,
-                 base::Unretained(&unmask_controller_),
-                 base::Unretained(base_view_controller_)),
+      base::BindOnce(&CreateCardUnmaskPromptViewBridge,
+                     base::Unretained(&unmask_controller_),
+                     base::Unretained(base_view_controller_)),
       card, reason, delegate);
 }
 
@@ -319,19 +320,15 @@ void ChromeAutofillClientIOS::ScanCreditCard(CreditCardScanCallback callback) {
 }
 
 void ChromeAutofillClientIOS::ShowAutofillPopup(
-    const gfx::RectF& element_bounds,
-    base::i18n::TextDirection text_direction,
-    const std::vector<Suggestion>& suggestions,
-    bool /*unused_autoselect_first_suggestion*/,
-    PopupType popup_type,
+    const AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
-  [bridge_ showAutofillPopup:suggestions popupDelegate:delegate];
+  [bridge_ showAutofillPopup:open_args.suggestions popupDelegate:delegate];
 }
 
 void ChromeAutofillClientIOS::UpdateAutofillPopupDataListValues(
     const std::vector<base::string16>& values,
     const std::vector<base::string16>& labels) {
-  NOTREACHED();
+  // No op. ios/web_view does not support display datalist.
 }
 
 base::span<const Suggestion> ChromeAutofillClientIOS::GetPopupSuggestions()
@@ -342,6 +339,12 @@ base::span<const Suggestion> ChromeAutofillClientIOS::GetPopupSuggestions()
 
 void ChromeAutofillClientIOS::PinPopupView() {
   NOTIMPLEMENTED();
+}
+
+AutofillClient::PopupOpenArgs ChromeAutofillClientIOS::GetReopenPopupArgs()
+    const {
+  NOTIMPLEMENTED();
+  return {};
 }
 
 void ChromeAutofillClientIOS::UpdatePopup(
@@ -391,6 +394,10 @@ void ChromeAutofillClientIOS::LoadRiskData(
 
 LogManager* ChromeAutofillClientIOS::GetLogManager() const {
   return log_manager_.get();
+}
+
+bool ChromeAutofillClientIOS::IsQueryIDRelevant(int query_id) {
+  return [bridge_ isQueryIDRelevant:query_id];
 }
 
 }  // namespace autofill

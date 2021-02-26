@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/renderer/platform/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mojo/features.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
@@ -19,8 +20,7 @@ namespace blink {
 // HeapMojoAssociatedRemote by default. HeapMojoAssociatedRemote must be
 // associated with context. HeapMojoAssociatedRemote's constructor takes context
 // as a mandatory parameter. HeapMojoAssociatedRemote resets the mojo connection
-// when 1) the owner object is garbage-collected and 2) the associated
-// ExecutionContext is detached.
+// when the associated ExecutionContext is detached.
 
 // TODO(crbug.com/1058076) HeapMojoWrapperMode should be removed once we ensure
 // that the interface is not used after ContextDestroyed().
@@ -64,9 +64,9 @@ class HeapMojoAssociatedRemote {
         std::move(task_runner));
   }
   mojo::PendingAssociatedReceiver<Interface>
-  BindNewEndpointAndPassDedicatedReceiverForTesting() WARN_UNUSED_RESULT {
+  BindNewEndpointAndPassDedicatedReceiver() WARN_UNUSED_RESULT {
     return wrapper_->associated_remote()
-        .BindNewEndpointAndPassDedicatedReceiverForTesting();
+        .BindNewEndpointAndPassDedicatedReceiver();
   }
   void Bind(mojo::PendingAssociatedRemote<Interface> pending_associated_remote,
             scoped_refptr<base::SequencedTaskRunner> task_runner) {
@@ -78,18 +78,14 @@ class HeapMojoAssociatedRemote {
     return wrapper_->associated_remote().FlushForTesting();
   }
 
-  void Trace(Visitor* visitor) { visitor->Trace(wrapper_); }
+  void Trace(Visitor* visitor) const { visitor->Trace(wrapper_); }
 
  private:
-  // Garbage collected wrapper class to add a prefinalizer.
+  // Garbage collected wrapper class to add ContextLifecycleObserver.
   class Wrapper final : public GarbageCollected<Wrapper>,
                         public ContextLifecycleObserver {
-    USING_PRE_FINALIZER(Wrapper, Dispose);
-    USING_GARBAGE_COLLECTED_MIXIN(Wrapper);
-
    public:
     explicit Wrapper(ContextLifecycleNotifier* notifier) {
-      DCHECK(notifier);
       SetContextLifecycleNotifier(notifier);
     }
     Wrapper(const Wrapper&) = delete;
@@ -97,11 +93,9 @@ class HeapMojoAssociatedRemote {
     Wrapper(Wrapper&&) = default;
     Wrapper& operator=(Wrapper&&) = default;
 
-    void Trace(Visitor* visitor) override {
+    void Trace(Visitor* visitor) const override {
       ContextLifecycleObserver::Trace(visitor);
     }
-
-    void Dispose() { associated_remote_.reset(); }
 
     mojo::AssociatedRemote<Interface>& associated_remote() {
       return associated_remote_;
@@ -109,7 +103,9 @@ class HeapMojoAssociatedRemote {
 
     // ContextLifecycleObserver methods
     void ContextDestroyed() override {
-      if (Mode == HeapMojoWrapperMode::kWithContextObserver)
+      if (Mode == HeapMojoWrapperMode::kWithContextObserver ||
+          (Mode == HeapMojoWrapperMode::kWithoutContextObserver &&
+           base::FeatureList::IsEnabled(kHeapMojoUseContextObserver)))
         associated_remote_.reset();
     }
 

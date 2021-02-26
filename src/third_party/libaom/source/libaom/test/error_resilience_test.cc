@@ -27,12 +27,13 @@ const int kMaxSFrames = 12;
 const int kCpuUsed = 1;
 
 class ErrorResilienceTestLarge
-    : public ::libaom_test::CodecTestWithParam<libaom_test::TestMode>,
+    : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int>,
       public ::libaom_test::EncoderTest {
  protected:
   ErrorResilienceTestLarge()
       : EncoderTest(GET_PARAM(0)), psnr_(0.0), nframes_(0), mismatch_psnr_(0.0),
-        mismatch_nframes_(0), encoding_mode_(GET_PARAM(1)), allow_mismatch_(0) {
+        mismatch_nframes_(0), encoding_mode_(GET_PARAM(1)), allow_mismatch_(0),
+        enable_altref_(GET_PARAM(2)) {
     Reset();
   }
 
@@ -77,7 +78,10 @@ class ErrorResilienceTestLarge
 
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {
-    if (video->frame() == 0) encoder->Control(AOME_SET_CPUUSED, kCpuUsed);
+    if (video->frame() == 0) {
+      encoder->Control(AOME_SET_CPUUSED, kCpuUsed);
+      encoder->Control(AOME_SET_ENABLEAUTOALTREF, enable_altref_);
+    }
     frame_flags_ &=
         ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF |
           AOM_EFLAG_NO_REF_FRAME_MVS | AOM_EFLAG_ERROR_RESILIENT |
@@ -134,7 +138,6 @@ class ErrorResilienceTestLarge
     encoder->Control(AV1E_SET_S_FRAME_MODE, 0);
     if (s_nframes_ > 0 &&
         (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
-      if (video->frame() == 0) encoder->Control(AOME_SET_ENABLEAUTOALTREF, 0);
       for (unsigned int i = 0; i < s_nframes_; ++i) {
         if (s_frames_[i] == video->frame()) {
           std::cout << "             Encoding S frame: " << s_frames_[i]
@@ -321,6 +324,7 @@ class ErrorResilienceTestLarge
   unsigned int s_frames_[kMaxSFrames];
   libaom_test::TestMode encoding_mode_;
   int allow_mismatch_;
+  int enable_altref_;
 };
 
 TEST_P(ErrorResilienceTestLarge, OnVersusOff) {
@@ -456,5 +460,92 @@ TEST_P(ErrorResilienceTestLarge, SFrameTest) {
   EXPECT_LE(GetMismatchFrames(), GetEncodedFrames() - s_frame_list[0]);
 }
 
-AV1_INSTANTIATE_TEST_CASE(ErrorResilienceTestLarge, NONREALTIME_TEST_MODES);
+AV1_INSTANTIATE_TEST_SUITE(ErrorResilienceTestLarge, NONREALTIME_TEST_MODES,
+                           ::testing::Values(0, 1));
+
+// This class is used to check the presence of SFrame.
+class SFramePresenceTestLarge
+    : public ::libaom_test::CodecTestWith3Params<libaom_test::TestMode,
+                                                 aom_rc_mode, int>,
+      public ::libaom_test::EncoderTest {
+ protected:
+  SFramePresenceTestLarge()
+      : EncoderTest(GET_PARAM(0)), encoding_mode_(GET_PARAM(1)),
+        rc_end_usage_(GET_PARAM(2)), enable_altref_(GET_PARAM(3)) {
+    is_sframe_present_ = 0;
+    is_sframe_position_violated_ = 0;
+  }
+  virtual ~SFramePresenceTestLarge() {}
+
+  virtual void SetUp() {
+    InitializeConfig();
+    SetMode(encoding_mode_);
+    const aom_rational timebase = { 1, 30 };
+    cfg_.g_timebase = timebase;
+    cfg_.rc_end_usage = rc_end_usage_;
+    cfg_.g_threads = 1;
+    cfg_.kf_min_dist = 0;
+    cfg_.kf_max_dist = 60;
+    cfg_.g_lag_in_frames = 35;
+    cfg_.sframe_dist = 5;
+    if (enable_altref_) cfg_.sframe_mode = 2;
+  }
+
+  virtual bool DoDecode() const { return 1; }
+
+  virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
+                                  ::libaom_test::Encoder *encoder) {
+    if (video->frame() == 0) {
+      encoder->Control(AOME_SET_CPUUSED, 5);
+      encoder->Control(AOME_SET_ENABLEAUTOALTREF, enable_altref_);
+    }
+  }
+
+  virtual bool HandleDecodeResult(const aom_codec_err_t res_dec,
+                                  libaom_test::Decoder *decoder) {
+    EXPECT_EQ(AOM_CODEC_OK, res_dec) << decoder->DecodeError();
+    if (AOM_CODEC_OK == res_dec) {
+      aom_codec_ctx_t *ctx_dec = decoder->GetDecoder();
+      AOM_CODEC_CONTROL_TYPECHECKED(ctx_dec, AOMD_GET_S_FRAME_INFO,
+                                    &sframe_info);
+      if (sframe_info.is_s_frame) {
+        is_sframe_present_ = 1;
+        if (enable_altref_ && is_sframe_position_violated_ == 0 &&
+            sframe_info.is_s_frame_at_altref == 0)
+          is_sframe_position_violated_ = 1;
+      }
+    }
+    return AOM_CODEC_OK == res_dec;
+  }
+
+  ::libaom_test::TestMode encoding_mode_;
+  aom_rc_mode rc_end_usage_;
+  int is_sframe_present_;
+  int is_sframe_position_violated_;
+  int enable_altref_;
+  aom_s_frame_info sframe_info;
+};
+
+// TODO(http://crbug.com/aomedia/2831): Disable the S frame unit test for frame
+// scheduling re-design.
+TEST_P(SFramePresenceTestLarge, DISABLED_SFramePresenceTest) {
+  libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+                                     cfg_.g_timebase.den, cfg_.g_timebase.num,
+                                     0, 100);
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+  ASSERT_EQ(is_sframe_present_, 1);
+  if (enable_altref_) {
+    ASSERT_EQ(is_sframe_position_violated_, 0);
+  }
+}
+
+/* TODO(anyone): Currently SFramePresenceTest fails when enable_altref_ = 1.
+ * Hence this configuration is not added. Add this configuration after the
+ * bug is fixed.
+ */
+AV1_INSTANTIATE_TEST_SUITE(SFramePresenceTestLarge,
+                           ::testing::Values(::libaom_test::kOnePassGood,
+                                             ::libaom_test::kTwoPassGood),
+                           ::testing::Values(AOM_Q, AOM_VBR, AOM_CBR, AOM_CQ),
+                           ::testing::Values(0));
 }  // namespace

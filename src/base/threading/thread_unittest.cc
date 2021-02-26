@@ -12,15 +12,17 @@
 
 #include "base/bind.h"
 #include "base/debug/leak_annotations.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/task_executor.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
@@ -105,7 +107,7 @@ class CaptureToEventList : public Thread {
 // Observer that writes a value into |event_list| when a message loop has been
 // destroyed.
 class CapturingDestructionObserver
-    : public base::MessageLoopCurrent::DestructionObserver {
+    : public base::CurrentThread::DestructionObserver {
  public:
   // |event_list| must remain valid throughout the observer's lifetime.
   explicit CapturingDestructionObserver(EventList* event_list)
@@ -126,8 +128,8 @@ class CapturingDestructionObserver
 
 // Task that adds a destruction observer to the current message loop.
 void RegisterDestructionObserver(
-    base::MessageLoopCurrent::DestructionObserver* observer) {
-  base::MessageLoopCurrent::Get()->AddDestructionObserver(observer);
+    base::CurrentThread::DestructionObserver* observer) {
+  base::CurrentThread::Get()->AddDestructionObserver(observer);
 }
 
 // Task that calls GetThreadId() of |thread|, stores the result into |id|, then
@@ -451,7 +453,7 @@ TEST_F(ThreadTest, SleepInsideInit) {
 //
 //  (1) Thread::CleanUp()
 //  (2) MessageLoop::~MessageLoop()
-//      MessageLoopCurrent::DestructionObservers called.
+//      CurrentThread::DestructionObservers called.
 TEST_F(ThreadTest, CleanUp) {
   EventList captured_events;
   CapturingDestructionObserver loop_destruction_observer(&captured_events);

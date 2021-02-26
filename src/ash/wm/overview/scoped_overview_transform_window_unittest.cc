@@ -9,7 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/window_state.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/numerics/safe_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -118,7 +118,7 @@ TEST_F(ScopedOverviewTransformWindowTest, TransformedRectIsCenteredWithInset) {
   EXPECT_LE(transformed_rect.x(), bounds.x());
   EXPECT_GE(transformed_rect.right(), bounds.right());
   EXPECT_GE(
-      transformed_rect.y() + gfx::ToCeiledInt(scale * inset) - header_height,
+      transformed_rect.y() + base::ClampCeil(scale * inset) - header_height,
       bounds.y());
   EXPECT_LE(transformed_rect.bottom(), bounds.bottom());
   EXPECT_NEAR(transformed_rect.x() - bounds.x(),
@@ -266,6 +266,61 @@ TEST_F(ScopedOverviewTransformWindowTest, InvisibleTransients) {
   EXPECT_EQ(transform, window->transform());
   EXPECT_EQ(transform, child->transform());
   EXPECT_TRUE(child2->transform().IsIdentity());
+}
+
+// Tests that the transient window which should be invisible in overview is not
+// visible even if the window property is changed after initializing
+// ScopedOverviewTransformWindow.
+TEST_F(ScopedOverviewTransformWindowTest,
+       InvisibleTransientsPropertyChangeAfterInit) {
+  auto window = CreateTestWindow(gfx::Rect(200, 200));
+  auto child = CreateTestWindow(gfx::Rect(100, 190, 100, 10),
+                                aura::client::WINDOW_TYPE_POPUP);
+  ::wm::AddTransientChild(window.get(), child.get());
+
+  ScopedOverviewTransformWindow scoped_window(nullptr, window.get());
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(child->IsVisible());
+
+  // Change property after construction of |scoped_window|.
+  child->SetProperty(kHideInOverviewKey, true);
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_FALSE(child->IsVisible());
+
+  // Clear property after construction of |scoped_window|.
+  child->ClearProperty(kHideInOverviewKey);
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(child->IsVisible());
+
+  // Change to hide again.
+  child->SetProperty(kHideInOverviewKey, true);
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_FALSE(child->IsVisible());
+}
+
+// Tests that the transient window which should be invisible in overview is not
+// visible even if the window is added after initializing
+// ScopedOverviewTransformWindow.
+TEST_F(ScopedOverviewTransformWindowTest, InvisibleTransientsAddedAfterInit) {
+  auto window = CreateTestWindow(gfx::Rect(200, 200));
+  auto child = CreateTestWindow(gfx::Rect(100, 190, 100, 10),
+                                aura::client::WINDOW_TYPE_POPUP);
+  auto child2 = CreateTestWindow(gfx::Rect(0, 190, 100, 10),
+                                 aura::client::WINDOW_TYPE_POPUP);
+  child2->SetProperty(kHideInOverviewKey, true);
+
+  ScopedOverviewTransformWindow scoped_window(nullptr, window.get());
+
+  // Add visible transient after construction of |scoped_window|.
+  ::wm::AddTransientChild(window.get(), child.get());
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(child->IsVisible());
+
+  // Add invisible transient after construction of |scoped_window|.
+  ::wm::AddTransientChild(window.get(), child2.get());
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(child->IsVisible());
+  EXPECT_FALSE(child2->IsVisible());
 }
 
 // Tests that the event targeting policies of a given window and transient

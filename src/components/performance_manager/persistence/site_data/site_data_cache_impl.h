@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "components/performance_manager/persistence/site_data/site_data_cache.h"
 #include "components/performance_manager/persistence/site_data/site_data_cache_inspector.h"
@@ -41,9 +41,9 @@ class SiteDataCacheImpl : public SiteDataCache,
   std::unique_ptr<SiteDataReader> GetReaderForOrigin(
       const url::Origin& origin) override;
   std::unique_ptr<SiteDataWriter> GetWriterForOrigin(
-      const url::Origin& origin,
-      performance_manager::TabVisibility tab_visibility) override;
-  bool IsRecordingForTesting() override;
+      const url::Origin& origin) override;
+  bool IsRecording() const override;
+  int Size() const override;
 
   const SiteDataMap& origin_data_map_for_testing() const {
     return origin_data_map_;

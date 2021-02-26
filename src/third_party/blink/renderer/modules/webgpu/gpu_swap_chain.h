@@ -19,7 +19,7 @@ class GPUDevice;
 class GPUTexture;
 
 class GPUSwapChain : public ScriptWrappable,
-                     public DawnObjectBase,
+                     public DeviceTreeObject,
                      public WebGPUSwapBufferProvider::Client {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -31,7 +31,7 @@ class GPUSwapChain : public ScriptWrappable,
                         SkFilterQuality);
   ~GPUSwapChain() override;
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   void Neuter();
   cc::Layer* CcLayer();

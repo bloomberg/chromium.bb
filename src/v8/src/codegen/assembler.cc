@@ -76,12 +76,21 @@ AssemblerOptions AssemblerOptions::Default(Isolate* isolate) {
   return options;
 }
 
+AssemblerOptions AssemblerOptions::DefaultForOffHeapTrampoline(
+    Isolate* isolate) {
+  AssemblerOptions options = AssemblerOptions::Default(isolate);
+  // Off-heap trampolines may not contain any metadata since their metadata
+  // offsets refer to the off-heap metadata area.
+  options.emit_code_comments = false;
+  return options;
+}
+
 namespace {
 
 class DefaultAssemblerBuffer : public AssemblerBuffer {
  public:
   explicit DefaultAssemblerBuffer(int size)
-      : buffer_(OwnedVector<uint8_t>::New(size)) {
+      : buffer_(OwnedVector<uint8_t>::NewForOverwrite(size)) {
 #ifdef DEBUG
     ZapCode(reinterpret_cast<Address>(buffer_.start()), size);
 #endif
@@ -255,7 +264,9 @@ Handle<HeapObject> AssemblerBase::GetEmbeddedObject(
 
 
 int Assembler::WriteCodeComments() {
-  if (!FLAG_code_comments || code_comments_writer_.entry_count() == 0) return 0;
+  CHECK_IMPLIES(code_comments_writer_.entry_count() > 0,
+                options().emit_code_comments);
+  if (code_comments_writer_.entry_count() == 0) return 0;
   int offset = pc_offset();
   code_comments_writer_.Emit(this);
   int size = pc_offset() - offset;

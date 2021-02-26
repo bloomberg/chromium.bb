@@ -26,8 +26,6 @@ namespace blink {
 class CORE_EXPORT ClassicPendingScript final : public PendingScript,
                                                public ResourceClient,
                                                public MemoryPressureListener {
-  USING_GARBAGE_COLLECTED_MIXIN(ClassicPendingScript);
-
  public:
   // https://html.spec.whatwg.org/C/#fetch-a-classic-script
   //
@@ -58,29 +56,24 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
                        bool is_external);
   ~ClassicPendingScript() override;
 
-  // ScriptStreamer callbacks.
-  void SetStreamer(ScriptStreamer*);
-  void StreamingFinished();
+  void Trace(Visitor*) const override;
 
-  void Trace(Visitor*) override;
-
-  mojom::ScriptType GetScriptType() const override {
-    return mojom::ScriptType::kClassic;
+  mojom::blink::ScriptType GetScriptType() const override {
+    return mojom::blink::ScriptType::kClassic;
   }
-
-  void WatchForLoad(PendingScriptClient*) override;
 
   ClassicScript* GetSource(const KURL& document_url) const override;
   bool IsReady() const override;
   bool IsExternal() const override { return is_external_; }
   bool WasCanceled() const override;
-  void StartStreamingIfPossible() override;
   KURL UrlForTracing() const override;
   void DisposeInternal() override;
 
   void SetNotStreamingReasonForTest(ScriptStreamer::NotStreamingReason reason) {
     not_streamed_reason_ = reason;
   }
+
+  bool IsEligibleForDelay() const override;
 
  private:
   // See AdvanceReadyState implementation for valid state transitions.
@@ -108,6 +101,7 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
       ScriptSchedulingType type,
       bool can_use_streamer,
       ScriptStreamer::NotStreamingReason reason);
+  void RecordThirdPartyRequestWithCookieIfNeeded(const ResourceResponse&) const;
 
   // MemoryPressureListener
   void OnPurgeMemory() override;

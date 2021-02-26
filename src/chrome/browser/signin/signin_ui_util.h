@@ -11,6 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "build/buildflag.h"
+#include "chrome/browser/signin/reauth_result.h"
+#include "chrome/browser/ui/signin_reauth_view_controller.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -45,12 +47,21 @@ void ShowSigninErrorLearnMorePage(Profile* profile);
 //   then it presents the Chrome sign-in page with |account.emil| prefilled.
 // * If token service has a valid refresh token for |account|, then it
 //   enables sync for |account|.
+void EnableSyncFromSingleAccountPromo(Browser* browser,
+                                      const AccountInfo& account,
+                                      signin_metrics::AccessPoint access_point);
+
+// This function is used to enable sync for a given account. It has the same
+// behavior as |EnableSyncFromSingleAccountPromo()| except that it also logs
+// some additional information if the action is started from a promo that
+// supports selecting the account that may be used for sync.
+//
 // |is_default_promo_account| is true if |account| corresponds to the default
 // account in the promo. It is ignored if |account| is empty.
-void EnableSyncFromPromo(Browser* browser,
-                         const AccountInfo& account,
-                         signin_metrics::AccessPoint access_point,
-                         bool is_default_promo_account);
+void EnableSyncFromMultiAccountPromo(Browser* browser,
+                                     const AccountInfo& account,
+                                     signin_metrics::AccessPoint access_point,
+                                     bool is_default_promo_account);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Returns the list of all accounts that have a token. The unconsented primary
@@ -118,6 +129,17 @@ void RecordProfileMenuViewShown(Profile* profile);
 
 // Called when a button/link in the profile menu was clicked.
 void RecordProfileMenuClick(Profile* profile);
+
+// Records the result of a re-auth challenge to finish a transaction (like
+// unlocking the account store for passwords).
+void RecordTransactionalReauthResult(
+    signin_metrics::ReauthAccessPoint access_point,
+    signin::ReauthResult result);
+
+// Records user action performed in a transactional reauth dialog/tab.
+void RecordTransactionalReauthUserAction(
+    signin_metrics::ReauthAccessPoint access_point,
+    SigninReauthViewController::UserAction user_action);
 
 }  // namespace signin_ui_util
 

@@ -30,6 +30,17 @@ void TestReadEntrySucceeds(const uint8_t* data,
   EXPECT_EQ(reader.remaining(), UINT64_C(0));
 }
 
+template <>
+void TestReadEntrySucceeds<MdnsMessage>(const uint8_t* data,
+                                        size_t size,
+                                        const MdnsMessage& expected) {
+  MdnsReader reader(Config{}, data, size);
+  const ErrorOr<MdnsMessage> message = reader.Read();
+  EXPECT_TRUE(message.is_value());
+  EXPECT_EQ(message.value(), expected);
+  EXPECT_EQ(reader.remaining(), UINT64_C(0));
+}
+
 template <class T>
 void TestReadEntryFails(const uint8_t* data, size_t size) {
   Config config;
@@ -41,6 +52,17 @@ void TestReadEntryFails(const uint8_t* data, size_t size) {
   EXPECT_EQ(reader.offset(), UINT64_C(0));
 }
 
+template <>
+void TestReadEntryFails<MdnsMessage>(const uint8_t* data, size_t size) {
+  Config config;
+  MdnsReader reader(config, data, size);
+  const ErrorOr<MdnsMessage> message = reader.Read();
+  EXPECT_TRUE(message.is_error());
+
+  // There should be no side effects for failing to read an entry. The
+  // underlying pointer should not have changed.
+  EXPECT_EQ(reader.offset(), UINT64_C(0));
+}
 }  // namespace
 
 TEST(MdnsReaderTest, ReadDomainName) {

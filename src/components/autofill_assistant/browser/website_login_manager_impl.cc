@@ -6,12 +6,13 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
+#include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_save_manager_impl.h"
 #include "components/password_manager/core/browser/votes_uploader.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -23,12 +24,12 @@ namespace {
 
 // Creates a |PasswordForm| with minimal initialization (origin, username,
 // password).
-autofill::PasswordForm CreatePasswordForm(
+password_manager::PasswordForm CreatePasswordForm(
     const WebsiteLoginManager::Login& login,
     const std::string& password) {
-  autofill::PasswordForm form;
-  form.signon_realm = login.origin.spec();
-  form.origin = login.origin.GetOrigin();
+  password_manager::PasswordForm form;
+  form.url = login.origin.GetOrigin();
+  form.signon_realm = password_manager::GetSignonRealm(form.url);
   form.username_value = base::UTF8ToUTF16(login.username);
   form.password_value = base::UTF8ToUTF16(password);
 
@@ -71,8 +72,8 @@ class WebsiteLoginManagerImpl::PendingRequest
     // destruction of |this|, which needs to happen *after* this call has
     // returned.
     if (notify_finished_callback_) {
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&PendingRequest::NotifyFinished,
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&PendingRequest::NotifyFinished,
                                     weak_ptr_factory_.GetWeakPtr(),
                                     std::move(notify_finished_callback_)));
     }
@@ -110,7 +111,7 @@ class WebsiteLoginManagerImpl::PendingFetchLoginsRequest
   void OnFetchCompleted() override {
     std::vector<Login> logins;
     for (const auto* match : form_fetcher_->GetBestMatches()) {
-      logins.emplace_back(match->origin.GetOrigin(),
+      logins.emplace_back(match->url.GetOrigin(),
                           base::UTF16ToUTF8(match->username_value));
     }
     std::move(callback_).Run(logins);
@@ -140,7 +141,7 @@ class WebsiteLoginManagerImpl::PendingFetchPasswordRequest
  protected:
   // From PendingRequest:
   void OnFetchCompleted() override {
-    std::vector<const autofill::PasswordForm*> matches =
+    std::vector<const password_manager::PasswordForm*> matches =
         form_fetcher_->GetNonFederatedMatches();
     for (const auto* match : matches) {
       if (base::UTF16ToUTF8(match->username_value) == login_.username) {
@@ -176,13 +177,15 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
                                    CreatePasswordSaveManagerImpl(client)),
         metrics_recorder_(
             base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
-                client->IsMainFrameSecure(),
-                client->GetUkmSourceId())),
+                client->IsCommittedMainFrameSecure(),
+                client->GetUkmSourceId(),
+                client->GetPrefs())),
         votes_uploader_(client, true /* is_possible_change_password_form */) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     password_manager::PasswordStore::FormDigest digest(
-        autofill::PasswordForm::Scheme::kHtml, login.origin.spec(), GURL());
+        password_manager::PasswordForm::Scheme::kHtml,
+        password_form_.signon_realm, password_form_.url);
     form_fetcher_ = std::make_unique<password_manager::FormFetcherImpl>(
         digest, client, true);
   }
@@ -194,7 +197,7 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
   }
 
   void CommitGeneratedPassword() {
-    password_save_manager_->Save(form_data_ /* observed_form */,
+    password_save_manager_->Save(&form_data_ /* observed_form */,
                                  password_form_);
   }
 
@@ -204,7 +207,7 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
                                  metrics_recorder_, &votes_uploader_);
     password_save_manager_->PresaveGeneratedPassword(password_form_);
     password_save_manager_->CreatePendingCredentials(
-        password_form_, form_data_ /* observed_form */,
+        password_form_, &form_data_ /* observed_form */,
         form_data_ /* submitted_form */, false /* is_http_auth */,
         false /* is_credential_api_save */);
 
@@ -214,7 +217,7 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
   }
 
  private:
-  const autofill::PasswordForm password_form_;
+  const password_manager::PasswordForm password_form_;
   const autofill::FormData form_data_;
   password_manager::PasswordManagerClient* const client_ = nullptr;
   // This callback will execute when presaving is completed.
@@ -229,8 +232,8 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
 
 WebsiteLoginManagerImpl::WebsiteLoginManagerImpl(
     password_manager::PasswordManagerClient* client,
-    password_manager::PasswordManagerDriver* driver)
-    : client_(client), driver_(driver), weak_ptr_factory_(this) {}
+    content::WebContents* web_contents)
+    : client_(client), web_contents_(web_contents), weak_ptr_factory_(this) {}
 
 WebsiteLoginManagerImpl::~WebsiteLoginManagerImpl() = default;
 
@@ -239,7 +242,8 @@ void WebsiteLoginManagerImpl::GetLoginsForUrl(
     base::OnceCallback<void(std::vector<Login>)> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   password_manager::PasswordStore::FormDigest digest(
-      autofill::PasswordForm::Scheme::kHtml, url.GetOrigin().spec(), GURL());
+      password_manager::PasswordForm::Scheme::kHtml, url.GetOrigin().spec(),
+      GURL());
   pending_requests_.emplace_back(std::make_unique<PendingFetchLoginsRequest>(
       digest, client_, std::move(callback),
       base::BindOnce(&WebsiteLoginManagerImpl::OnRequestFinished,
@@ -252,7 +256,8 @@ void WebsiteLoginManagerImpl::GetPasswordForLogin(
     base::OnceCallback<void(bool, std::string)> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   password_manager::PasswordStore::FormDigest digest(
-      autofill::PasswordForm::Scheme::kHtml, login.origin.spec(), GURL());
+      password_manager::PasswordForm::Scheme::kHtml, login.origin.spec(),
+      GURL());
   pending_requests_.emplace_back(std::make_unique<PendingFetchPasswordRequest>(
       digest, client_, login, std::move(callback),
       base::BindOnce(&WebsiteLoginManagerImpl::OnRequestFinished,
@@ -264,9 +269,19 @@ std::string WebsiteLoginManagerImpl::GeneratePassword(
     autofill::FormSignature form_signature,
     autofill::FieldSignature field_signature,
     uint64_t max_length) {
+  auto* factory =
+      password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+          web_contents_);
+  DCHECK(factory);
+  // TODO(crbug.com/1043132): Add support for non-main frames. If another
+  // frame has a different origin than the main frame, passwords-related
+  // features may not work.
+  auto* driver = factory->GetDriverForFrame(web_contents_->GetMainFrame());
+  DCHECK(driver);
+
   return base::UTF16ToUTF8(
-      driver_->GetPasswordGenerationHelper()->GeneratePassword(
-          driver_->GetLastCommittedURL(), form_signature, field_signature,
+      driver->GetPasswordGenerationHelper()->GeneratePassword(
+          driver->GetLastCommittedURL(), form_signature, field_signature,
           max_length));
 }
 

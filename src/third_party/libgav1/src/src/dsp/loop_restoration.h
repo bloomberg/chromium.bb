@@ -38,8 +38,45 @@
 namespace libgav1 {
 namespace dsp {
 
+enum {
+  // Precision of a division table (mtable)
+  kSgrProjScaleBits = 20,
+  kSgrProjReciprocalBits = 12,
+  // Core self-guided restoration precision bits.
+  kSgrProjSgrBits = 8,
+  // Precision bits of generated values higher than source before projection.
+  kSgrProjRestoreBits = 4
+};  // anonymous enum
+
+extern const uint8_t kSgrMaLookup[256];
+
 // Initializes Dsp::loop_restorations. This function is not thread-safe.
 void LoopRestorationInit_C();
+
+template <typename T>
+void Circulate3PointersBy1(T* p[3]) {
+  T* const p0 = p[0];
+  p[0] = p[1];
+  p[1] = p[2];
+  p[2] = p0;
+}
+
+template <typename T>
+void Circulate4PointersBy2(T* p[4]) {
+  std::swap(p[0], p[2]);
+  std::swap(p[1], p[3]);
+}
+
+template <typename T>
+void Circulate5PointersBy2(T* p[5]) {
+  T* const p0 = p[0];
+  T* const p1 = p[1];
+  p[0] = p[2];
+  p[1] = p[3];
+  p[2] = p[4];
+  p[3] = p0;
+  p[4] = p1;
+}
 
 }  // namespace dsp
 }  // namespace libgav1

@@ -10,7 +10,11 @@
 #include <limits>
 
 #include "base/big_endian.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/logging.h"
+#include "base/notreached.h"
+#include "chromecast/media/audio/capture_service/constants.h"
 #include "chromecast/media/audio/capture_service/packet_header.h"
 #include "media/base/limits.h"
 
@@ -19,13 +23,18 @@ namespace media {
 namespace capture_service {
 namespace {
 
-// Size in bytes of the total/message header.
-constexpr size_t kTotalHeaderBytes = 16;
-constexpr size_t kMessageHeaderBytes = kTotalHeaderBytes - sizeof(uint16_t);
+// Size in bytes of the header part of a handshake message.
+constexpr size_t kHandshakeHeaderBytes =
+    sizeof(HandshakePacket) - sizeof(uint16_t);
 
-static_assert(sizeof(PacketHeader) == kTotalHeaderBytes,
-              "Invalid packet header size.");
-static_assert(offsetof(struct PacketHeader, message_type) == sizeof(uint16_t),
+static_assert(kPcmAudioHeaderBytes ==
+                  sizeof(PcmPacketHeader) - sizeof(uint16_t),
+              "Invalid message header size.");
+static_assert(offsetof(struct PcmPacketHeader, message_type) ==
+                  sizeof(uint16_t),
+              "Invalid message header offset.");
+static_assert(offsetof(struct HandshakePacket, message_type) ==
+                  sizeof(uint16_t),
               "Invalid message header offset.");
 
 // Check if audio data is properly aligned and has valid frame size. Return the
@@ -140,103 +149,109 @@ bool ConvertData(int channels,
   return false;
 }
 
-bool HasPacketHeader(MessageType type) {
-  return type == MessageType::kAudio || type == MessageType::kAck;
-}
-
 }  // namespace
 
-char* PopulateHeader(char* data, size_t size, const PacketInfo& packet_info) {
-  DCHECK(HasPacketHeader(packet_info.message_type));
-  const StreamInfo& stream_info = packet_info.stream_info;
-  PacketHeader header;
-  header.message_type = static_cast<uint8_t>(packet_info.message_type);
-  header.stream_type = static_cast<uint8_t>(stream_info.stream_type);
-  header.num_channels = stream_info.num_channels;
-  header.sample_format = static_cast<uint8_t>(stream_info.sample_format);
-  header.sample_rate = stream_info.sample_rate;
-  // In audio message, the header contains a timestamp field, while in request
-  // message, it instead contains a frames field.
-  header.timestamp_or_frames = packet_info.message_type == MessageType::kAudio
-                                   ? packet_info.timestamp_us
-                                   : stream_info.frames_per_buffer;
+void FillBuffer(char* buf,
+                size_t buf_size,
+                const void* data,
+                size_t data_size) {
+  DCHECK_LE(data_size, buf_size - sizeof(uint16_t));
   base::WriteBigEndian(  // Deduct the size of |size| itself.
-      data, static_cast<uint16_t>(size - sizeof(uint16_t)));
-  DCHECK_EQ(sizeof(header), kTotalHeaderBytes);
-  memcpy(data + sizeof(uint16_t),
-         reinterpret_cast<const char*>(&header) +
-             offsetof(struct PacketHeader, message_type),
-         kMessageHeaderBytes);
-  return data + kTotalHeaderBytes;
+      buf, static_cast<uint16_t>(buf_size - sizeof(uint16_t)));
+  memcpy(buf + sizeof(uint16_t), data, data_size);
 }
 
-bool ReadHeader(const char* data, size_t size, PacketInfo* packet_info) {
-  DCHECK(packet_info);
-  if (size < kMessageHeaderBytes) {
-    LOG(ERROR) << "Message doesn't have a complete header.";
+char* PopulatePcmAudioHeader(char* data,
+                             size_t size,
+                             StreamType stream_type,
+                             int64_t timestamp_us) {
+  PcmPacketHeader header;
+  header.message_type = static_cast<uint8_t>(MessageType::kPcmAudio);
+  header.stream_type = static_cast<uint8_t>(stream_type);
+  header.timestamp_us = timestamp_us;
+  FillBuffer(data, size, &header.message_type,
+             sizeof(header) - sizeof(uint16_t));
+  return data + sizeof(header);
+}
+
+void PopulateHandshakeMessage(char* data,
+                              size_t size,
+                              const StreamInfo& stream_info) {
+  HandshakePacket packet;
+  packet.message_type = static_cast<uint8_t>(MessageType::kHandshake);
+  packet.stream_type = static_cast<uint8_t>(stream_info.stream_type);
+  packet.audio_codec = static_cast<uint8_t>(stream_info.audio_codec);
+  packet.sample_format = static_cast<uint8_t>(stream_info.sample_format);
+  packet.num_channels = stream_info.num_channels;
+  packet.num_frames = stream_info.frames_per_buffer;
+  packet.sample_rate = stream_info.sample_rate;
+  FillBuffer(data, size, &packet.message_type,
+             sizeof(packet) - sizeof(uint16_t));
+}
+
+bool ReadPcmAudioHeader(const char* data,
+                        size_t size,
+                        const StreamInfo& stream_info,
+                        int64_t* timestamp_us) {
+  DCHECK(timestamp_us);
+  if (size < kPcmAudioHeaderBytes) {
+    LOG(ERROR) << "Message doesn't have a complete header: " << size << " v.s. "
+               << kPcmAudioHeaderBytes << ".";
     return false;
   }
-  PacketHeader header;
-  memcpy(reinterpret_cast<char*>(&header) +
-             offsetof(struct PacketHeader, message_type),
-         data, kMessageHeaderBytes);
-  if (!HasPacketHeader(static_cast<MessageType>(header.message_type)) ||
-      header.stream_type > static_cast<uint8_t>(StreamType::kLastType) ||
-      header.sample_format > static_cast<uint8_t>(SampleFormat::LAST_FORMAT)) {
-    LOG(ERROR) << "Invalid message header.";
+  PcmPacketHeader header;
+  memcpy(&header.message_type, data, kPcmAudioHeaderBytes);
+  if (static_cast<MessageType>(header.message_type) != MessageType::kPcmAudio) {
+    LOG(ERROR) << "Message type mismatch.";
     return false;
   }
-  if (header.num_channels > ::media::limits::kMaxChannels) {
-    LOG(ERROR) << "Invalid number of channels: " << header.num_channels;
+  if (static_cast<StreamType>(header.stream_type) != stream_info.stream_type) {
+    LOG(ERROR) << "Stream type mistach.";
     return false;
   }
-  packet_info->message_type = static_cast<MessageType>(header.message_type);
-  packet_info->stream_info.stream_type =
-      static_cast<StreamType>(header.stream_type);
-  packet_info->stream_info.num_channels = header.num_channels;
-  packet_info->stream_info.sample_format =
-      static_cast<SampleFormat>(header.sample_format);
-  packet_info->stream_info.sample_rate = header.sample_rate;
-  if (packet_info->message_type == MessageType::kAck) {
-    packet_info->stream_info.frames_per_buffer = header.timestamp_or_frames;
-  } else {
-    packet_info->timestamp_us = header.timestamp_or_frames;
-  }
+  *timestamp_us = header.timestamp_us;
   return true;
 }
 
-scoped_refptr<net::IOBufferWithSize> MakeMessage(const PacketInfo& packet_info,
-                                                 const char* data,
-                                                 size_t data_size) {
-  if (!HasPacketHeader(packet_info.message_type)) {
-    LOG(ERROR) << "Only kAck and kAudio message have packet header, use "
-                  "MakeMetadataMessage otherwise.";
-    return nullptr;
-  }
-  const size_t total_size = kTotalHeaderBytes + data_size;
+scoped_refptr<net::IOBufferWithSize> MakePcmAudioMessage(StreamType stream_type,
+                                                         int64_t timestamp_us,
+                                                         const char* data,
+                                                         size_t data_size) {
+  const size_t total_size = sizeof(PcmPacketHeader) + data_size;
   DCHECK_LE(total_size, std::numeric_limits<uint16_t>::max());
   auto io_buffer = base::MakeRefCounted<net::IOBufferWithSize>(total_size);
-  char* ptr = PopulateHeader(io_buffer->data(), io_buffer->size(), packet_info);
+  char* ptr = PopulatePcmAudioHeader(io_buffer->data(), io_buffer->size(),
+                                     stream_type, timestamp_us);
   if (!ptr) {
     return nullptr;
   }
-  if (packet_info.message_type == MessageType::kAudio && data_size > 0) {
+  if (data_size > 0) {
     DCHECK(data);
     std::copy(data, data + data_size, ptr);
   }
   return io_buffer;
 }
 
-scoped_refptr<net::IOBufferWithSize> MakeMetadataMessage(const char* data,
-                                                         size_t data_size) {
+scoped_refptr<net::IOBufferWithSize> MakeHandshakeMessage(
+    const StreamInfo& stream_info) {
+  auto io_buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(sizeof(HandshakePacket));
+  PopulateHandshakeMessage(io_buffer->data(), io_buffer->size(), stream_info);
+  return io_buffer;
+}
+
+scoped_refptr<net::IOBufferWithSize> MakeSerializedMessage(
+    MessageType message_type,
+    const char* data,
+    size_t data_size) {
   if (data == nullptr || data_size == 0) {
     LOG(ERROR) << "Invalid data pointer or size: " << data << ", " << data_size
                << ".";
     return nullptr;
   }
 
-  const uint8_t message_type = static_cast<uint8_t>(MessageType::kMetadata);
-  const uint16_t message_size = sizeof(message_type) + data_size;
+  const uint8_t message_type_uint8 = static_cast<uint8_t>(message_type);
+  const uint16_t message_size = sizeof(message_type_uint8) + data_size;
   DCHECK_LE(message_size, std::numeric_limits<uint16_t>::max());
   auto io_buffer = base::MakeRefCounted<net::IOBufferWithSize>(
       sizeof(message_size) + message_size);
@@ -244,8 +259,8 @@ scoped_refptr<net::IOBufferWithSize> MakeMetadataMessage(const char* data,
   char* ptr = io_buffer->data();
   base::WriteBigEndian(ptr, message_size);
   ptr += sizeof(message_size);
-  memcpy(ptr, &message_type, sizeof(message_type));
-  ptr += sizeof(message_type);
+  memcpy(ptr, &message_type_uint8, sizeof(message_type_uint8));
+  ptr += sizeof(message_type_uint8);
 
   std::copy(data, data + data_size, ptr);
   return io_buffer;
@@ -258,8 +273,51 @@ bool ReadDataToAudioBus(const StreamInfo& stream_info,
   DCHECK(audio_bus);
   DCHECK_EQ(stream_info.num_channels, audio_bus->channels());
   return ConvertData(stream_info.num_channels, stream_info.sample_format,
-                     data + kMessageHeaderBytes, size - kMessageHeaderBytes,
+                     data + kPcmAudioHeaderBytes, size - kPcmAudioHeaderBytes,
                      audio_bus);
+}
+
+bool ReadPcmAudioMessage(const char* data,
+                         size_t size,
+                         const StreamInfo& stream_info,
+                         int64_t* timestamp_us,
+                         ::media::AudioBus* audio_bus) {
+  if (!ReadPcmAudioHeader(data, size, stream_info, timestamp_us)) {
+    return false;
+  }
+  return ReadDataToAudioBus(stream_info, data, size, audio_bus);
+}
+
+bool ReadHandshakeMessage(const char* data,
+                          size_t size,
+                          StreamInfo* stream_info) {
+  DCHECK(stream_info);
+  if (size != kHandshakeHeaderBytes) {
+    LOG(ERROR) << "Message doesn't have a complete handshake packet: " << size
+               << " v.s. " << kHandshakeHeaderBytes << ".";
+    return false;
+  }
+  HandshakePacket packet;
+  memcpy(&packet.message_type, data, kHandshakeHeaderBytes);
+  MessageType message_type = static_cast<MessageType>(packet.message_type);
+  if (message_type != MessageType::kHandshake ||
+      packet.stream_type > static_cast<uint8_t>(StreamType::kLastType) ||
+      packet.audio_codec > static_cast<uint8_t>(AudioCodec::kLastCodec) ||
+      packet.sample_format > static_cast<uint8_t>(SampleFormat::LAST_FORMAT)) {
+    LOG(ERROR) << "Invalid message header.";
+    return false;
+  }
+  if (packet.num_channels > ::media::limits::kMaxChannels) {
+    LOG(ERROR) << "Invalid number of channels: " << packet.num_channels;
+    return false;
+  }
+  stream_info->stream_type = static_cast<StreamType>(packet.stream_type);
+  stream_info->audio_codec = static_cast<AudioCodec>(packet.audio_codec);
+  stream_info->sample_format = static_cast<SampleFormat>(packet.sample_format);
+  stream_info->num_channels = packet.num_channels;
+  stream_info->frames_per_buffer = packet.num_frames;
+  stream_info->sample_rate = packet.sample_rate;
+  return true;
 }
 
 size_t DataSizeInBytes(const StreamInfo& stream_info) {

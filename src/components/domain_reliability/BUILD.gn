@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
-
 action("bake_in_configs") {
   visibility = [ ":*" ]
   script = "bake_in_configs.py"
@@ -45,7 +43,7 @@ action("bake_in_configs") {
   ]
 }
 
-jumbo_component("domain_reliability") {
+component("domain_reliability") {
   sources = [
     "baked_in_configs.h",
     "beacon.cc",
@@ -85,7 +83,7 @@ jumbo_component("domain_reliability") {
   ]
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "config_unittest.cc",

@@ -7,14 +7,15 @@
 
 #include "src/gpu/GrSoftwarePathRenderer.h"
 
+#include "include/gpu/GrDirectContext.h"
 #include "include/private/SkSemaphore.h"
 #include "src/core/SkTaskGroup.h"
 #include "src/core/SkTraceEvent.h"
 #include "src/gpu/GrAuditTrail.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrClip.h"
-#include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrDeferredProxyUploader.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrGpuResourcePriv.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProxyProvider.h"
@@ -68,15 +69,16 @@ static bool get_unclipped_shape_dev_bounds(const GrStyledShape& shape, const SkM
 // Gets the shape bounds, the clip bounds, and the intersection (if any). Returns false if there
 // is no intersection.
 bool GrSoftwarePathRenderer::GetShapeAndClipBounds(GrRenderTargetContext* renderTargetContext,
-                                                   const GrClip& clip,
+                                                   const GrClip* clip,
                                                    const GrStyledShape& shape,
                                                    const SkMatrix& matrix,
                                                    SkIRect* unclippedDevShapeBounds,
                                                    SkIRect* clippedDevShapeBounds,
                                                    SkIRect* devClipBounds) {
     // compute bounds as intersection of rt size, clip, and path
-    *devClipBounds = clip.getConservativeBounds(renderTargetContext->width(),
-                                                renderTargetContext->height());
+    *devClipBounds = clip ? clip->getConservativeBounds()
+                          : SkIRect::MakeWH(renderTargetContext->width(),
+                                            renderTargetContext->height());
 
     if (!get_unclipped_shape_dev_bounds(shape, matrix, unclippedDevShapeBounds)) {
         *unclippedDevShapeBounds = SkIRect::MakeEmpty();
@@ -95,7 +97,7 @@ bool GrSoftwarePathRenderer::GetShapeAndClipBounds(GrRenderTargetContext* render
 void GrSoftwarePathRenderer::DrawNonAARect(GrRenderTargetContext* renderTargetContext,
                                            GrPaint&& paint,
                                            const GrUserStencilSettings& userStencilSettings,
-                                           const GrClip& clip,
+                                           const GrClip* clip,
                                            const SkMatrix& viewMatrix,
                                            const SkRect& rect,
                                            const SkMatrix& localMatrix) {
@@ -106,7 +108,7 @@ void GrSoftwarePathRenderer::DrawNonAARect(GrRenderTargetContext* renderTargetCo
 void GrSoftwarePathRenderer::DrawAroundInvPath(GrRenderTargetContext* renderTargetContext,
                                                GrPaint&& paint,
                                                const GrUserStencilSettings& userStencilSettings,
-                                               const GrClip& clip,
+                                               const GrClip* clip,
                                                const SkMatrix& viewMatrix,
                                                const SkIRect& devClipBounds,
                                                const SkIRect& devPathBounds) {
@@ -147,7 +149,7 @@ void GrSoftwarePathRenderer::DrawToTargetWithShapeMask(
         GrRenderTargetContext* renderTargetContext,
         GrPaint&& paint,
         const GrUserStencilSettings& userStencilSettings,
-        const GrClip& clip,
+        const GrClip* clip,
         const SkMatrix& viewMatrix,
         const SkIPoint& textureOriginInDeviceSpace,
         const SkIRect& deviceSpaceRectToDraw) {
@@ -161,11 +163,11 @@ void GrSoftwarePathRenderer::DrawToTargetWithShapeMask(
     // We use device coords to compute the texture coordinates. We take the device coords and apply
     // a translation so that the top-left of the device bounds maps to 0,0, and then a scaling
     // matrix to normalized coords.
-    SkMatrix maskMatrix = SkMatrix::MakeTrans(SkIntToScalar(-textureOriginInDeviceSpace.fX),
+    SkMatrix maskMatrix = SkMatrix::Translate(SkIntToScalar(-textureOriginInDeviceSpace.fX),
                                               SkIntToScalar(-textureOriginInDeviceSpace.fY));
     maskMatrix.preConcat(viewMatrix);
 
-    paint.addCoverageFragmentProcessor(GrTextureEffect::Make(
+    paint.setCoverageFragmentProcessor(GrTextureEffect::Make(
             std::move(view), kPremul_SkAlphaType, maskMatrix, GrSamplerState::Filter::kNearest));
     DrawNonAARect(renderTargetContext, std::move(paint), userStencilSettings, clip, SkMatrix::I(),
                   dstRect, invert);
@@ -183,7 +185,7 @@ static GrSurfaceProxyView make_deferred_mask_texture_view(GrRecordingContext* co
     GrSwizzle swizzle = caps->getReadSwizzle(format, GrColorType::kAlpha_8);
 
     auto proxy =
-            proxyProvider->createProxy(format, dimensions, GrRenderable::kNo, 1, GrMipMapped::kNo,
+            proxyProvider->createProxy(format, dimensions, GrRenderable::kNo, 1, GrMipmapped::kNo,
                                        fit, SkBudgeted::kYes, GrProtected::kNo);
     return {std::move(proxy), kTopLeft_GrSurfaceOrigin, swizzle};
 }
@@ -216,7 +218,7 @@ private:
     GrAA fAA;
 };
 
-}
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // return true on success; false on failure
@@ -241,13 +243,13 @@ bool GrSoftwarePathRenderer::onDrawPath(const DrawPathArgs& args) {
                     args.fShape->hasUnstyledKey() && (GrAAType::kCoverage == args.fAAType);
 
     if (!GetShapeAndClipBounds(args.fRenderTargetContext,
-                               *args.fClip, *args.fShape,
+                               args.fClip, *args.fShape,
                                *args.fViewMatrix, &unclippedDevShapeBounds,
                                &clippedDevShapeBounds,
                                &devClipBounds)) {
         if (inverseFilled) {
             DrawAroundInvPath(args.fRenderTargetContext, std::move(args.fPaint),
-                              *args.fUserStencilSettings, *args.fClip, *args.fViewMatrix,
+                              *args.fUserStencilSettings, args.fClip, *args.fViewMatrix,
                               devClipBounds, unclippedDevShapeBounds);
         }
         return true;
@@ -326,7 +328,7 @@ bool GrSoftwarePathRenderer::onDrawPath(const DrawPathArgs& args) {
         GrAA aa = GrAA(GrAAType::kCoverage == args.fAAType);
 
         SkTaskGroup* taskGroup = nullptr;
-        if (auto direct = args.fContext->priv().asDirectContext()) {
+        if (auto direct = args.fContext->asDirectContext()) {
             taskGroup = direct->priv().getTaskGroup();
         }
 
@@ -382,11 +384,11 @@ bool GrSoftwarePathRenderer::onDrawPath(const DrawPathArgs& args) {
     SkASSERT(view);
     if (inverseFilled) {
         DrawAroundInvPath(args.fRenderTargetContext, GrPaint::Clone(args.fPaint),
-                          *args.fUserStencilSettings, *args.fClip, *args.fViewMatrix, devClipBounds,
+                          *args.fUserStencilSettings, args.fClip, *args.fViewMatrix, devClipBounds,
                           unclippedDevShapeBounds);
     }
     DrawToTargetWithShapeMask(std::move(view), args.fRenderTargetContext, std::move(args.fPaint),
-                              *args.fUserStencilSettings, *args.fClip, *args.fViewMatrix,
+                              *args.fUserStencilSettings, args.fClip, *args.fViewMatrix,
                               SkIPoint{boundsForMask->fLeft, boundsForMask->fTop}, *boundsForMask);
 
     return true;

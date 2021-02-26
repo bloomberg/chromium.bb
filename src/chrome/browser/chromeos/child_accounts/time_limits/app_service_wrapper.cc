@@ -17,9 +17,10 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/services/app_service/public/cpp/app_update.h"
-#include "chrome/services/app_service/public/cpp/instance_update.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "chrome/common/chrome_features.h"
+#include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/cpp/instance_update.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -29,28 +30,6 @@ namespace chromeos {
 namespace app_time {
 
 namespace {
-
-// Return whether app with |app_id| should be included for per-app time
-// limits.
-bool ShouldIncludeApp(const AppId& app_id, Profile* profile) {
-  if (app_id.app_type() == apps::mojom::AppType::kExtension) {
-    const extensions::Extension* extension =
-        extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-            app_id.app_id(),
-            extensions::ExtensionRegistry::IncludeFlag::EVERYTHING);
-
-    // If we are not able to find the extension, return false.
-    if (!extension)
-      return false;
-
-    // Some preinstalled apps that open in browser window are legacy packaged
-    // apps. Example Google Slides app.
-    return extension->is_hosted_app() || extension->is_legacy_packaged_app();
-  }
-
-  return app_id.app_type() == apps::mojom::AppType::kArc ||
-         app_id.app_type() == apps::mojom::AppType::kWeb;
-}
 
 // Gets AppId from |update|.
 AppId AppIdFromAppUpdate(const apps::AppUpdate& update) {
@@ -123,19 +102,54 @@ void AppServiceWrapper::LaunchApp(const std::string& app_service_id) {
 
 std::vector<AppId> AppServiceWrapper::GetInstalledApps() const {
   std::vector<AppId> installed_apps;
-  Profile* profile = profile_;
   GetAppCache().ForEachApp(
-      [&installed_apps, &profile](const apps::AppUpdate& update) {
+      [&installed_apps, this](const apps::AppUpdate& update) {
         if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser)
           return;
 
         const AppId app_id = AppIdFromAppUpdate(update);
-        if (!ShouldIncludeApp(app_id, profile))
+        if (!ShouldIncludeApp(app_id))
           return;
 
         installed_apps.push_back(app_id);
       });
   return installed_apps;
+}
+
+bool AppServiceWrapper::IsHiddenArcApp(const AppId& app_id) const {
+  if (app_id.app_type() != apps::mojom::AppType::kArc)
+    return false;
+
+  bool is_hidden = false;
+  const std::string app_service_id = AppServiceIdFromAppId(app_id, profile_);
+
+  GetAppCache().ForOneApp(
+      app_service_id, [&is_hidden](const apps::AppUpdate& update) {
+        if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser)
+          return;
+
+        is_hidden =
+            update.ShowInLauncher() == apps::mojom::OptionalBool::kFalse;
+      });
+
+  return is_hidden;
+}
+
+std::vector<AppId> AppServiceWrapper::GetHiddenArcApps() const {
+  std::vector<AppId> hidden_arc_apps;
+  GetAppCache().ForEachApp([&hidden_arc_apps](const apps::AppUpdate& update) {
+    if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser)
+      return;
+
+    const AppId app_id = AppIdFromAppUpdate(update);
+    if (app_id.app_type() != apps::mojom::AppType::kArc ||
+        update.ShowInLauncher() != apps::mojom::OptionalBool::kFalse) {
+      return;
+    }
+
+    hidden_arc_apps.push_back(app_id);
+  });
+  return hidden_arc_apps;
 }
 
 std::string AppServiceWrapper::GetAppName(const AppId& app_id) const {
@@ -156,20 +170,25 @@ void AppServiceWrapper::GetAppIcon(
     const {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
-  DCHECK(proxy);
   const std::string app_service_id = AppServiceIdFromAppId(app_id, profile_);
   DCHECK(!app_service_id.empty());
 
-  proxy->LoadIcon(
-      app_id.app_type(), app_service_id,
-      apps::mojom::IconCompression::kUncompressed, size_hint_in_dp,
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  proxy->LoadIconFromIconKey(
+      app_id.app_type(), app_service_id, apps::mojom::IconKey::New(), icon_type,
+      size_hint_in_dp,
       /* allow_placeholder_icon */ false,
       base::BindOnce(
           [](base::OnceCallback<void(base::Optional<gfx::ImageSkia>)> callback,
              apps::mojom::IconValuePtr icon_value) {
-            if (!icon_value ||
-                icon_value->icon_compression !=
-                    apps::mojom::IconCompression::kUncompressed) {
+            auto icon_type = (base::FeatureList::IsEnabled(
+                                 features::kAppServiceAdaptiveIcon))
+                                 ? apps::mojom::IconType::kStandard
+                                 : apps::mojom::IconType::kUncompressed;
+            if (!icon_value || icon_value->icon_type != icon_type) {
               std::move(callback).Run(base::nullopt);
             } else {
               std::move(callback).Run(icon_value->uncompressed);
@@ -213,7 +232,7 @@ void AppServiceWrapper::OnAppUpdate(const apps::AppUpdate& update) {
     return;
 
   const AppId app_id = AppIdFromAppUpdate(update);
-  if (!ShouldIncludeApp(app_id, profile_))
+  if (!ShouldIncludeApp(app_id))
     return;
 
   switch (update.Readiness()) {
@@ -234,7 +253,7 @@ void AppServiceWrapper::OnAppUpdate(const apps::AppUpdate& update) {
       break;
     case apps::mojom::Readiness::kDisabledByUser:
     case apps::mojom::Readiness::kDisabledByPolicy:
-    case apps::mojom::Readiness::kDisabledByBlacklist:
+    case apps::mojom::Readiness::kDisabledByBlocklist:
       for (auto& listener : listeners_)
         listener.OnAppBlocked(app_id);
       break;
@@ -253,7 +272,7 @@ void AppServiceWrapper::OnInstanceUpdate(const apps::InstanceUpdate& update) {
     return;
 
   const AppId app_id = AppIdFromInstanceUpdate(update, &GetAppCache());
-  if (!ShouldIncludeApp(app_id, profile_))
+  if (!ShouldIncludeApp(app_id))
     return;
 
   bool is_active = update.State() & apps::InstanceState::kActive;
@@ -278,24 +297,40 @@ void AppServiceWrapper::OnInstanceRegistryWillBeDestroyed(
 }
 
 apps::AppServiceProxy* AppServiceWrapper::GetAppProxy() {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
-  DCHECK(proxy);
-  return proxy;
+  return apps::AppServiceProxyFactory::GetForProfile(profile_);
 }
 
 apps::AppRegistryCache& AppServiceWrapper::GetAppCache() const {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
-  DCHECK(proxy);
-  return proxy->AppRegistryCache();
+  return apps::AppServiceProxyFactory::GetForProfile(profile_)
+      ->AppRegistryCache();
 }
 
 apps::InstanceRegistry& AppServiceWrapper::GetInstanceRegistry() const {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
-  DCHECK(proxy);
-  return proxy->InstanceRegistry();
+  return apps::AppServiceProxyFactory::GetForProfile(profile_)
+      ->InstanceRegistry();
+}
+
+bool AppServiceWrapper::ShouldIncludeApp(const AppId& app_id) const {
+  if (IsHiddenArcApp(app_id))
+    return false;
+
+  if (app_id.app_type() == apps::mojom::AppType::kExtension) {
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
+            app_id.app_id(),
+            extensions::ExtensionRegistry::IncludeFlag::EVERYTHING);
+
+    // If we are not able to find the extension, return false.
+    if (!extension)
+      return false;
+
+    // Some preinstalled apps that open in browser window are legacy packaged
+    // apps. Example Google Slides app.
+    return extension->is_hosted_app() || extension->is_legacy_packaged_app();
+  }
+
+  return app_id.app_type() == apps::mojom::AppType::kArc ||
+         app_id.app_type() == apps::mojom::AppType::kWeb;
 }
 
 }  // namespace app_time

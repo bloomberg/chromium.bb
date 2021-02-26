@@ -14,31 +14,42 @@
         "See the License for the specific language governing permissions and",
         "limitations under the License."
     ],
+    "_todos": [
+        "Remove usage of size_t because it is not network transparent"
+    ],
     "commands": {
         "buffer map async": [
             { "name": "buffer id", "type": "ObjectId" },
             { "name": "request serial", "type": "uint32_t" },
-            { "name": "is write", "type": "bool" },
+            { "name": "mode", "type": "map mode" },
+            { "name": "offset", "type": "size_t"},
+            { "name": "size", "type": "size_t"},
             { "name": "handle create info length", "type": "uint64_t" },
             { "name": "handle create info", "type": "uint8_t", "annotation": "const*", "length": "handle create info length", "skip_serialize": true}
-        ],
-        "buffer set sub data internal": [
-            {"name": "buffer id", "type": "ObjectId" },
-            {"name": "start", "type": "uint64_t"},
-            {"name": "count", "type": "uint64_t"},
-            {"name": "data", "type": "uint8_t", "annotation": "const*", "length": "count"}
         ],
         "buffer update mapped data": [
             { "name": "buffer id", "type": "ObjectId" },
             { "name": "write flush info length", "type": "uint64_t" },
             { "name": "write flush info", "type": "uint8_t", "annotation": "const*", "length": "write flush info length", "skip_serialize": true}
         ],
-        "device create buffer mapped": [
+        "device create buffer": [
             { "name": "device", "type": "device" },
             { "name": "descriptor", "type": "buffer descriptor", "annotation": "const*" },
             { "name": "result", "type": "ObjectHandle", "handle_type": "buffer" },
             { "name": "handle create info length", "type": "uint64_t" },
             { "name": "handle create info", "type": "uint8_t", "annotation": "const*", "length": "handle create info length", "skip_serialize": true}
+        ],
+        "device create ready compute pipeline": [
+            { "name": "device", "type": "device" },
+            { "name": "request serial", "type": "uint64_t" },
+            { "name": "pipeline object handle", "type": "ObjectHandle", "handle_type": "compute pipeline"},
+            { "name": "descriptor", "type": "compute pipeline descriptor", "annotation": "const*"}
+        ],
+        "device create ready render pipeline": [
+            { "name": "device", "type": "device" },
+            { "name": "request serial", "type": "uint64_t" },
+            { "name": "pipeline object handle", "type": "ObjectHandle", "handle_type": "render pipeline"},
+            { "name": "descriptor", "type": "render pipeline descriptor", "annotation": "const*"}
         ],
         "device pop error scope": [
             { "name": "device", "type": "device" },
@@ -47,20 +58,45 @@
         "destroy object": [
             { "name": "object type", "type": "ObjectType" },
             { "name": "object id", "type": "ObjectId" }
+        ],
+        "fence on completion": [
+            { "name": "fence id", "type": "ObjectId" },
+            { "name": "value", "type": "uint64_t" },
+            { "name": "request serial", "type": "uint64_t" }
+        ],
+        "queue write buffer internal": [
+            {"name": "queue id", "type": "ObjectId" },
+            {"name": "buffer id", "type": "ObjectId" },
+            {"name": "buffer offset", "type": "uint64_t"},
+            {"name": "data", "type": "uint8_t", "annotation": "const*", "length": "size"},
+            {"name": "size", "type": "size_t"}
+        ],
+        "queue write texture internal": [
+            {"name": "queue id", "type": "ObjectId" },
+            {"name": "destination", "type": "texture copy view", "annotation": "const*"},
+            {"name": "data", "type": "uint8_t", "annotation": "const*", "length": "data size"},
+            {"name": "data size", "type": "size_t"},
+            {"name": "data layout", "type": "texture data layout", "annotation": "const*"},
+            {"name": "writeSize", "type": "extent 3D", "annotation": "const*"}
         ]
     },
     "return commands": {
-        "buffer map read async callback": [
+        "buffer map async callback": [
             { "name": "buffer", "type": "ObjectHandle", "handle_type": "buffer" },
             { "name": "request serial", "type": "uint32_t" },
             { "name": "status", "type": "uint32_t" },
-            { "name": "initial data info length", "type": "uint64_t" },
-            { "name": "initial data info", "type": "uint8_t", "annotation": "const*", "length": "initial data info length", "skip_serialize": true }
+            { "name": "read initial data info length", "type": "uint64_t" },
+            { "name": "read initial data info", "type": "uint8_t", "annotation": "const*", "length": "read initial data info length", "skip_serialize": true }
         ],
-        "buffer map write async callback": [
-            { "name": "buffer", "type": "ObjectHandle", "handle_type": "buffer" },
-            { "name": "request serial", "type": "uint32_t" },
-            { "name": "status", "type": "uint32_t" }
+        "device create ready compute pipeline callback": [
+            { "name": "request serial", "type": "uint64_t" },
+            { "name": "status", "type": "create ready pipeline status" },
+            { "name": "message", "type": "char", "annotation": "const*", "length": "strlen" }
+        ],
+        "device create ready render pipeline callback": [
+            { "name": "request serial", "type": "uint64_t" },
+            { "name": "status", "type": "create ready pipeline status" },
+            { "name": "message", "type": "char", "annotation": "const*", "length": "strlen" }
         ],
         "device uncaptured error callback": [
             { "name": "type", "type": "error type"},
@@ -74,6 +110,11 @@
             { "name": "type", "type": "error type" },
             { "name": "message", "type": "char", "annotation": "const*", "length": "strlen" }
         ],
+        "fence on completion callback": [
+            { "name": "fence", "type": "ObjectHandle", "handle_type": "fence" },
+            { "name": "request serial", "type": "uint64_t" },
+            { "name": "status", "type": "fence completion status" }
+        ],
         "fence update completed value": [
             { "name": "fence", "type": "ObjectHandle", "handle_type": "fence" },
             { "name": "value", "type": "uint64_t" }
@@ -81,35 +122,39 @@
     },
     "special items": {
         "client_side_structures": [
-            "CreateBufferMappedResult",
             "SurfaceDescriptorFromMetalLayer",
             "SurfaceDescriptorFromWindowsHWND",
             "SurfaceDescriptorFromXlib"
         ],
         "client_side_commands": [
-            "BufferMapReadAsync",
-            "BufferMapWriteAsync",
-            "BufferSetSubData",
+            "BufferMapAsync",
+            "BufferGetConstMappedRange",
+            "BufferGetMappedRange",
+            "DeviceCreateBuffer",
+            "DeviceCreateReadyComputePipeline",
+            "DeviceCreateReadyRenderPipeline",
             "DevicePopErrorScope",
             "DeviceSetDeviceLostCallback",
             "DeviceSetUncapturedErrorCallback",
             "FenceGetCompletedValue",
-            "FenceOnCompletion"
+            "FenceOnCompletion",
+            "QueueWriteBuffer",
+            "QueueWriteTexture"
         ],
         "client_handwritten_commands": [
             "BufferDestroy",
             "BufferUnmap",
-            "DeviceCreateBuffer",
-            "DeviceCreateBufferMapped",
+            "DeviceCreateErrorBuffer",
             "DeviceGetDefaultQueue",
+            "DeviceInjectError",
             "DevicePushErrorScope",
-            "QueueCreateFence",
-            "QueueSignal"
+            "QueueCreateFence"
         ],
         "client_special_objects": [
             "Buffer",
             "Device",
-            "Fence"
+            "Fence",
+            "Queue"
         ],
         "server_custom_pre_handler_commands": [
             "BufferDestroy",

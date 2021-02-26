@@ -12,7 +12,6 @@
 #include "include/core/SkRefCnt.h"
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrFragmentProcessor.h"
-#include "src/gpu/GrNonAtomicRef.h"
 #include "src/gpu/GrProcessorSet.h"
 #include "src/gpu/GrScissorState.h"
 #include "src/gpu/GrSurfaceProxyView.h"
@@ -68,7 +67,6 @@ public:
 
     struct InitArgs {
         InputFlags fInputFlags = InputFlags::kNone;
-        const GrUserStencilSettings* fUserStencil = &GrUserStencilSettings::kUnused;
         const GrCaps* fCaps = nullptr;
         GrXferProcessor::DstProxyView fDstProxyView;
         GrSwizzle fWriteSwizzle;
@@ -82,19 +80,16 @@ public:
     GrPipeline(GrScissorTest scissor,
                SkBlendMode blend,
                const GrSwizzle& writeSwizzle,
-               InputFlags flags = InputFlags::kNone,
-               const GrUserStencilSettings* stencil = &GrUserStencilSettings::kUnused)
+               InputFlags flags = InputFlags::kNone)
             : GrPipeline(scissor,
                          GrPorterDuffXPFactory::MakeNoCoverageXP(blend),
                          writeSwizzle,
-                         flags,
-                         stencil) {}
+                         flags) {}
 
     GrPipeline(GrScissorTest,
                sk_sp<const GrXferProcessor>,
                const GrSwizzle& writeSwizzle,
-               InputFlags = InputFlags::kNone,
-               const GrUserStencilSettings* = &GrUserStencilSettings::kUnused);
+               InputFlags = InputFlags::kNone);
 
     GrPipeline(const InitArgs& args, sk_sp<const GrXferProcessor>, const GrAppliedHardClip&);
     GrPipeline(const InitArgs&, GrProcessorSet&&, GrAppliedClip&&);
@@ -107,15 +102,15 @@ public:
     ///////////////////////////////////////////////////////////////////////////
     /// @name GrFragmentProcessors
 
-    int numColorFragmentProcessors() const { return fNumColorProcessors; }
-    int numCoverageFragmentProcessors() const {
-        return fFragmentProcessors.count() - fNumColorProcessors;
-    }
     int numFragmentProcessors() const { return fFragmentProcessors.count(); }
+    bool isColorFragmentProcessor(int idx) const { return idx < fNumColorProcessors; }
+    bool isCoverageFragmentProcessor(int idx) const { return idx >= fNumColorProcessors; }
+
+    void visitTextureEffects(const std::function<void(const GrTextureEffect&)>&) const;
 
     const GrXferProcessor& getXferProcessor() const {
         if (fXferProcessor) {
-            return *fXferProcessor.get();
+            return *fXferProcessor;
         } else {
             // A null xp member means the common src-over case. GrXferProcessor's ref'ing
             // mechanism is not thread safe so we do not hold a ref on this global.
@@ -123,20 +118,34 @@ public:
         }
     }
 
+    GrDstSampleType dstSampleType() const {
+        return fDstSampleType;
+    }
+
+    // Helper functions to quickly know if this GrPipeline will access the dst as a texture or an
+    // input attachment.
+    bool usesDstTexture() const {
+        return GrDstSampleTypeUsesTexture(fDstSampleType);
+    }
+    bool usesInputAttachment() const {
+        return fDstSampleType == GrDstSampleType::kAsInputAttachment;
+    }
+
     /**
      * This returns the GrSurfaceProxyView for the texture used to access the dst color. If the
      * GrXferProcessor does not use the dst color then the proxy on the GrSurfaceProxyView will be
      * nullptr.
      */
-    const GrSurfaceProxyView& dstProxyView() const {
-        return fDstProxyView;
-    }
+    const GrSurfaceProxyView& dstProxyView() const { return fDstProxyView; }
 
     /**
      * If the GrXferProcessor uses a texture to access the dst color, then this returns that
      * texture and the offset to the dst contents within that texture.
      */
     GrTexture* peekDstTexture(SkIPoint* offset = nullptr) const {
+        if (!this->usesDstTexture()) {
+            return nullptr;
+        }
         if (offset) {
             *offset = fDstTextureOffset;
         }
@@ -148,29 +157,11 @@ public:
         return nullptr;
     }
 
-    const GrFragmentProcessor& getColorFragmentProcessor(int idx) const {
-        SkASSERT(idx < this->numColorFragmentProcessors());
-        return *fFragmentProcessors[idx].get();
-    }
-
-    const GrFragmentProcessor& getCoverageFragmentProcessor(int idx) const {
-        SkASSERT(idx < this->numCoverageFragmentProcessors());
-        return *fFragmentProcessors[fNumColorProcessors + idx].get();
-    }
-
     const GrFragmentProcessor& getFragmentProcessor(int idx) const {
-        return *fFragmentProcessors[idx].get();
+        return *fFragmentProcessors[idx];
     }
 
     /// @}
-
-    const GrUserStencilSettings* getUserStencil() const { return fUserStencilSettings; }
-    void setUserStencil(const GrUserStencilSettings* stencil) {
-        fUserStencilSettings = stencil;
-        if (!fUserStencilSettings->isDisabled(fFlags & Flags::kHasStencilClip)) {
-            fFlags |= Flags::kStencilEnabled;
-        }
-    }
 
     bool isScissorTestEnabled() const {
         return SkToBool(fFlags & Flags::kScissorTestEnabled);
@@ -187,9 +178,6 @@ public:
     bool hasStencilClip() const {
         return SkToBool(fFlags & Flags::kHasStencilClip);
     }
-    bool isStencilEnabled() const {
-        return SkToBool(fFlags & Flags::kStencilEnabled);
-    }
 #ifdef SK_DEBUG
     bool allProxiesInstantiated() const {
         for (int i = 0; i < fFragmentProcessors.count(); ++i) {
@@ -205,7 +193,7 @@ public:
     }
 #endif
 
-    GrXferBarrierType xferBarrierType(GrTexture*, const GrCaps&) const;
+    GrXferBarrierType xferBarrierType(const GrCaps&) const;
 
     // Used by Vulkan and Metal to cache their respective pipeline objects
     void genKey(GrProcessorKeyBuilder*, const GrCaps&) const;
@@ -220,20 +208,23 @@ private:
     /** This is a continuation of the public "InputFlags" enum. */
     enum class Flags : uint8_t {
         kHasStencilClip = (kLastInputFlag << 1),
-        kStencilEnabled = (kLastInputFlag << 2),
-        kScissorTestEnabled = (kLastInputFlag << 3),
+        kScissorTestEnabled = (kLastInputFlag << 2),
     };
 
     GR_DECL_BITFIELD_CLASS_OPS_FRIENDS(Flags);
 
     friend bool operator&(Flags, InputFlags);
 
-    using FragmentProcessorArray = SkAutoSTArray<8, std::unique_ptr<const GrFragmentProcessor>>;
+    // A pipeline can contain up to three processors: color, paint coverage, and clip coverage.
+    using FragmentProcessorArray = SkAutoSTArray<3, std::unique_ptr<const GrFragmentProcessor>>;
 
     GrSurfaceProxyView fDstProxyView;
     SkIPoint fDstTextureOffset;
+    // This is the GrDstSampleType that is used for the render pass that this GrPipeline will be
+    // used in (i.e. if this GrPipeline does read the dst, it will do so using this
+    // GrDstSampleType).
+    GrDstSampleType fDstSampleType = GrDstSampleType::kNone;
     GrWindowRectsState fWindowRectsState;
-    const GrUserStencilSettings* fUserStencilSettings;
     Flags fFlags;
     sk_sp<const GrXferProcessor> fXferProcessor;
     FragmentProcessorArray fFragmentProcessors;

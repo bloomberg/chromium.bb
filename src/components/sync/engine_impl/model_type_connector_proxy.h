@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/model_type_connector.h"
 
 namespace syncer {
@@ -26,12 +25,10 @@ class ModelTypeConnectorProxy : public ModelTypeConnector {
   ~ModelTypeConnectorProxy() override;
 
   // ModelTypeConnector implementation
-  void ConnectNonBlockingType(
+  void ConnectDataType(
       ModelType type,
       std::unique_ptr<DataTypeActivationResponse> activation_response) override;
-  void DisconnectNonBlockingType(ModelType type) override;
-  void RegisterDirectoryType(ModelType type, ModelSafeGroup group) override;
-  void UnregisterDirectoryType(ModelType type) override;
+  void DisconnectDataType(ModelType type) override;
   void ConnectProxyType(ModelType type) override;
   void DisconnectProxyType(ModelType type) override;
 

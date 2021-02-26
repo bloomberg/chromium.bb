@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/notreached.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -28,9 +29,13 @@
 #include "content/public/common/url_constants.h"
 #include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "mojo/public/js/grit/mojo_bindings_resources_map.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "skia/grit/skia_resources.h"
+#include "skia/grit/skia_resources_map.h"
 #include "ui/base/layout.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/resources/grit/webui_resources.h"
+#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_generated_resources_map.h"
 #include "ui/resources/grit/webui_resources_map.h"
 
 #if defined(OS_CHROMEOS)
@@ -48,47 +53,25 @@ namespace {
 
 using ResourcesMap = std::unordered_map<std::string, int>;
 
-#if defined(OS_CHROMEOS)
-const char kPolymerHtml[] = "polymer/v1_0/polymer/polymer.html";
-const char kPolymerJs[] = "polymer/v1_0/polymer/polymer-extracted.js";
-const char kPolymer2Html[] = "polymer/v1_0/polymer2/polymer.html";
-const char kPolymer2Js[] = "polymer/v1_0/polymer2/polymer-extracted.js";
-
-// Utility for determining if both Polymer 1 and Polymer 2 are needed.
-bool UsingMultiplePolymerVersions() {
-  return base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions);
-}
-#endif  // defined(OS_CHROMEOS)
-
 const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
   // TODO(rkc): Once we have a separate source for apps, remove '*/apps/'
   // aliases.
   std::map<std::string, std::string> aliases = {
-    {"../../../third_party/polymer/v1_0/components-chromium/", "polymer/v1_0/"},
-    {"../../../third_party/polymer/v3_0/components-chromium/", "polymer/v3_0/"},
-    {"../../../third_party/web-animations-js/sources/",
-     "polymer/v1_0/web-animations-js/"},
     {"../../views/resources/default_100_percent/common/", "images/apps/"},
     {"../../views/resources/default_200_percent/common/", "images/2x/apps/"},
-    {"../../webui/resources/cr_components/", "cr_components/"},
-    {"../../webui/resources/cr_elements/", "cr_elements/"},
     {"@out_folder@/gen/ui/webui/resources/", ""},
 #if defined(OS_ANDROID)
     // This is a temporary fix for `target_cpu = "arm64"`. See the bug for
     // more context: crbug.com/1020284.
     {"@out_folder@/android_clang_arm/gen/ui/webui/resources/", ""},
 #endif  // defined(OS_ANDROID)
-  };
-
 #if defined(OS_CHROMEOS)
-  if (UsingMultiplePolymerVersions())
-    return aliases;
+    {"@out_folder@/gen/ui/chromeos/", "chromeos/"},
 #endif  // defined(OS_CHROMEOS)
+  };
 
 #if !defined(OS_ANDROID)
   aliases["../../../third_party/lottie/"] = "lottie/";
-  aliases["../../../third_party/polymer/v1_0/components-chromium/polymer2/"] =
-      "polymer/v1_0/polymer/";
 #endif  // !defined(OS_ANDROID)
   return aliases;
 }
@@ -103,41 +86,20 @@ const std::map<int, std::string> CreateContentResourceIdToAliasMap() {
        "mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js"},
       {IDR_URL_MOJO_HTML, "mojo/url/mojom/url.mojom.html"},
       {IDR_URL_MOJO_JS, "mojo/url/mojom/url.mojom-lite.js"},
+      {IDR_URL_MOJOM_WEBUI_JS, "mojo/url/mojom/url.mojom-webui.js"},
       {IDR_VULKAN_INFO_MOJO_JS, "gpu/ipc/common/vulkan_info.mojom-lite.js"},
       {IDR_VULKAN_TYPES_MOJO_JS, "gpu/ipc/common/vulkan_types.mojom-lite.js"},
   };
 }
 
-const std::map<int, std::string> CreateMojoResourceIdToAliasMap() {
-  return std::map<int, std::string> {
-    {IDR_MOJO_MOJO_BINDINGS_LITE_HTML,
-     "mojo/mojo/public/js/mojo_bindings_lite.html"},
-        {IDR_MOJO_MOJO_BINDINGS_LITE_JS,
-         "mojo/mojo/public/js/mojo_bindings_lite.js"},
-        {IDR_MOJO_BIG_BUFFER_MOJOM_HTML,
-         "mojo/mojo/public/mojom/base/big_buffer.mojom.html"},
-        {IDR_MOJO_BIG_BUFFER_MOJOM_LITE_JS,
-         "mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js"},
-        {IDR_MOJO_FILE_MOJOM_HTML,
-         "mojo/mojo/public/mojom/base/file.mojom.html"},
-        {IDR_MOJO_FILE_MOJOM_LITE_JS,
-         "mojo/mojo/public/mojom/base/file.mojom-lite.js"},
-        {IDR_MOJO_STRING16_MOJOM_HTML,
-         "mojo/mojo/public/mojom/base/string16.mojom.html"},
-        {IDR_MOJO_STRING16_MOJOM_LITE_JS,
-         "mojo/mojo/public/mojom/base/string16.mojom-lite.js"},
-        {IDR_MOJO_TEXT_DIRECTION_MOJOM_HTML,
-         "mojo/mojo/public/mojom/base/text_direction.mojom.html"},
-        {IDR_MOJO_TEXT_DIRECTION_MOJOM_LITE_JS,
-         "mojo/mojo/public/mojom/base/text_direction.mojom-lite.js"},
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_ANDROID)
-        {IDR_MOJO_TIME_MOJOM_HTML,
-         "mojo/mojo/public/mojom/base/time.mojom.html"},
-        {IDR_MOJO_TIME_MOJOM_LITE_JS,
-         "mojo/mojo/public/mojom/base/time.mojom-lite.js"},
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
-        //  defined(OS_ANDROID)
+const std::map<int, std::string> CreateSkiaResourceIdToAliasMap() {
+  return std::map<int, std::string>{
+      {IDR_SKIA_BITMAP_MOJOM_LITE_JS,
+       "mojo/skia/public/mojom/bitmap.mojom-lite.js"},
+      {IDR_SKIA_IMAGE_INFO_MOJOM_LITE_JS,
+       "mojo/skia/public/mojom/image_info.mojom-lite.js"},
+      {IDR_SKIA_SKCOLOR_MOJOM_LITE_JS,
+       "mojo/skia/public/mojom/skcolor.mojom-lite.js"},
   };
 }
 
@@ -186,27 +148,21 @@ const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
       {IDR_IP_ADDRESS_MOJOM_LITE_JS,
        "mojo/services/network/public/mojom/"
        "ip_address.mojom-lite.js"},
+      {IDR_NETWORK_HEALTH_MOJOM_HTML,
+       "mojo/chromeos/services/network_health/public/mojom/"
+       "network_health.mojom.html"},
+      {IDR_NETWORK_HEALTH_MOJOM_LITE_JS,
+       "mojo/chromeos/services/network_health/public/mojom/"
+       "network_health.mojom-lite.js"},
+      {IDR_NETWORK_DIAGNOSTICS_MOJOM_HTML,
+       "mojo/chromeos/services/network_health/public/mojom/"
+       "network_diagnostics.mojom.html"},
+      {IDR_NETWORK_DIAGNOSTICS_MOJOM_LITE_JS,
+       "mojo/chromeos/services/network_health/public/mojom/"
+       "network_diagnostics.mojom-lite.js"},
   };
 }
 #endif  // !defined(OS_CHROMEOS)
-
-#if !defined(OS_ANDROID)
-bool ShouldIgnore(std::string resource) {
-#if defined(OS_CHROMEOS)
-  if (UsingMultiplePolymerVersions())
-    return false;
-#endif  // defined(OS_CHROMEOS)
-
-  if (base::StartsWith(
-          resource,
-          "../../../third_party/polymer/v1_0/components-chromium/polymer/",
-          base::CompareCase::SENSITIVE)) {
-    return true;
-  }
-
-  return false;
-}
-#endif  // !defined(OS_ANDROID)
 
 void AddResource(const std::string& path,
                  int resource_id,
@@ -221,12 +177,6 @@ void AddResourcesToMap(ResourcesMap* resources_map) {
 
   for (size_t i = 0; i < kWebuiResourcesSize; ++i) {
     const auto& resource = kWebuiResources[i];
-
-#if !defined(OS_ANDROID)
-    if (ShouldIgnore(resource.name))
-      continue;
-#endif  // !defined(OS_ANDROID)
-
     AddResource(resource.name, resource.value, resources_map);
 
     for (auto it = aliases.begin(); it != aliases.end(); ++it) {
@@ -259,6 +209,14 @@ void AddAliasedResourcesToMap(
   }
 }
 
+// Adds |resources| to |resources_map| using the path given by resource_path in
+// each GRD entry.
+void AddGritResourcesToMap(base::span<const GritResourceMap> resources,
+                           ResourcesMap* resources_map) {
+  for (const GritResourceMap& entry : resources)
+    AddResource(entry.name, entry.value, resources_map);
+}
+
 const ResourcesMap* CreateResourcesMap() {
   ResourcesMap* result = new ResourcesMap();
   AddResourcesToMap(result);
@@ -267,9 +225,14 @@ const ResourcesMap* CreateResourcesMap() {
   AddAliasedResourcesToMap(CreateContentResourceIdToAliasMap(),
                            kMediaInternalsResources,
                            kMediaInternalsResourcesSize, result);
-  AddAliasedResourcesToMap(CreateMojoResourceIdToAliasMap(),
-                           kMojoBindingsResources, kMojoBindingsResourcesSize,
-                           result);
+  AddGritResourcesToMap(
+      base::make_span(kWebuiGeneratedResources, kWebuiGeneratedResourcesSize),
+      result);
+  AddGritResourcesToMap(
+      base::make_span(kMojoBindingsResources, kMojoBindingsResourcesSize),
+      result);
+  AddAliasedResourcesToMap(CreateSkiaResourceIdToAliasMap(), kSkiaResources,
+                           kSkiaResourcesSize, result);
 #if defined(OS_CHROMEOS)
   AddAliasedResourcesToMap(CreateChromeosMojoResourceIdToAliasMap(),
                            kChromeosResources, kChromeosResourcesSize, result);
@@ -291,14 +254,39 @@ int GetIdrForPath(const std::string& path) {
 
 }  // namespace
 
-SharedResourcesDataSource::SharedResourcesDataSource() {
+// static
+std::unique_ptr<SharedResourcesDataSource>
+SharedResourcesDataSource::CreateForChromeScheme() {
+  return std::make_unique<SharedResourcesDataSource>(PassKey(),
+                                                     kChromeUIScheme);
 }
 
-SharedResourcesDataSource::~SharedResourcesDataSource() {
+// static
+std::unique_ptr<SharedResourcesDataSource>
+SharedResourcesDataSource::CreateForChromeUntrustedScheme() {
+  return std::make_unique<SharedResourcesDataSource>(PassKey(),
+                                                     kChromeUIUntrustedScheme);
 }
+
+SharedResourcesDataSource::SharedResourcesDataSource(PassKey,
+                                                     const std::string& scheme)
+    : scheme_(scheme) {}
+
+SharedResourcesDataSource::~SharedResourcesDataSource() = default;
 
 std::string SharedResourcesDataSource::GetSource() {
-  return kChromeUIResourcesHost;
+  // URLDataManagerBackend assumes that chrome:// data sources return just the
+  // hostname for GetSource().
+  if (scheme_ == kChromeUIScheme)
+    return kChromeUIResourcesHost;
+
+  // We only expect chrome-untrusted:// scheme at this point.
+  DCHECK_EQ(kChromeUIUntrustedScheme, scheme_);
+
+  // Other schemes (i.e. chrome-untrusted://) return the scheme and host
+  // together.
+  return base::StrCat(
+      {scheme_, url::kStandardSchemeSeparator, kChromeUIResourcesHost});
 }
 
 void SharedResourcesDataSource::StartDataRequest(
@@ -306,25 +294,14 @@ void SharedResourcesDataSource::StartDataRequest(
     const WebContents::Getter& wc_getter,
     URLDataSource::GotDataCallback callback) {
   const std::string path = URLDataSource::URLToRequestPath(url);
-  std::string updated_path = path;
-#if defined(OS_CHROMEOS)
-  // If this is a Polymer request and multiple Polymer versions are enabled,
-  // return the Polymer 2 path unless the request is from the
-  // |disabled_polymer2_host_|.
-  if ((path == kPolymerHtml || path == kPolymerJs) &&
-      UsingMultiplePolymerVersions() && !IsPolymer2DisabledForPage(wc_getter)) {
-    updated_path = path == kPolymerHtml ? kPolymer2Html : kPolymer2Js;
-  }
-#endif  // defined(OS_CHROMEOS)
-
-  int idr = GetIdrForPath(updated_path);
-  DCHECK_NE(-1, idr) << " path: " << updated_path;
+  int idr = GetIdrForPath(path);
+  DCHECK_NE(-1, idr) << " path: " << path;
   scoped_refptr<base::RefCountedMemory> bytes;
 
-  if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS) {
+  if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS_CSS) {
     std::string css = webui::GetWebUiCssTextDefaults();
     bytes = base::RefCountedString::TakeString(&css);
-  } else if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS_MD) {
+  } else if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS_MD_CSS) {
     std::string css = webui::GetWebUiCssTextDefaultsMd();
     bytes = base::RefCountedString::TakeString(&css);
   } else {
@@ -386,12 +363,12 @@ bool SharedResourcesDataSource::ShouldServeMimeTypeAsContentTypeHeader() {
 
 std::string SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
     const std::string& origin) {
-  // For now we give access only for "chrome://*" origins.
+  // For now we give access only for origins with the allowed scheme.
   // According to CORS spec, Access-Control-Allow-Origin header doesn't support
   // wildcards, so we need to set its value explicitly by passing the |origin|
   // back.
-  std::string allowed_origin_prefix = kChromeUIScheme;
-  allowed_origin_prefix += "://";
+  const std::string allowed_origin_prefix =
+      base::StrCat({scheme_, url::kStandardSchemeSeparator});
   if (!base::StartsWith(origin, allowed_origin_prefix,
                         base::CompareCase::SENSITIVE)) {
     return "null";
@@ -399,30 +376,20 @@ std::string SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
   return origin;
 }
 
-std::string SharedResourcesDataSource::GetContentSecurityPolicyWorkerSrc() {
-  return "worker-src blob: 'self';";
+std::string SharedResourcesDataSource::GetContentSecurityPolicy(
+    network::mojom::CSPDirectiveName directive) {
+  if (directive == network::mojom::CSPDirectiveName::WorkerSrc) {
+    return "worker-src blob: 'self';";
+  } else if (directive ==
+                 network::mojom::CSPDirectiveName::RequireTrustedTypesFor ||
+             directive == network::mojom::CSPDirectiveName::TrustedTypes) {
+    // TODO(crbug.com/1098690): Trusted Type Polymer
+    // This removes require-trusted-types-for and trusted-types directives
+    // from the CSP header.
+    return std::string();
+  }
+
+  return content::URLDataSource::GetContentSecurityPolicy(directive);
 }
 
-#if defined(OS_CHROMEOS)
-void SharedResourcesDataSource::DisablePolymer2ForHost(
-    const std::string& host) {
-  DCHECK(disabled_polymer2_host_.empty() || host == disabled_polymer2_host_);
-  disabled_polymer2_host_ = host;
-}
-
-// Returns true if the WebContents making the request has disabled Polymer 2.
-bool SharedResourcesDataSource::IsPolymer2DisabledForPage(
-    const WebContents::Getter& wc_getter) {
-  // Return false in these cases, which sometimes occur in tests.
-  if (!wc_getter)
-    return false;
-
-  content::WebContents* web_contents = wc_getter.Run();
-  if (!web_contents)
-    return false;
-
-  return web_contents->GetLastCommittedURL().host_piece() ==
-         disabled_polymer2_host_;
-}
-#endif  // defined(OS_CHROMEOS)
 }  // namespace content

@@ -136,15 +136,15 @@ namespace {
         };
     }
 
-    struct DrawCallParamForTest : DawnTestParam {
-        DrawCallParamForTest(const DawnTestParam& backendParam, DrawCallParam param)
-            : DawnTestParam(backendParam), param(param) {
+    struct DrawCallParamForTest : AdapterTestParam {
+        DrawCallParamForTest(const AdapterTestParam& backendParam, DrawCallParam param)
+            : AdapterTestParam(backendParam), param(param) {
         }
         DrawCallParam param;
     };
 
     std::ostream& operator<<(std::ostream& ostream, const DrawCallParamForTest& testParams) {
-        ostream << static_cast<const DawnTestParam&>(testParams);
+        ostream << static_cast<const AdapterTestParam&>(testParams);
 
         const DrawCallParam& param = testParams.param;
 
@@ -227,7 +227,7 @@ class DrawCallPerf : public DawnPerfTestWithParams<DrawCallParamForTest> {
     }
     ~DrawCallPerf() override = default;
 
-    void TestSetUp() override;
+    void SetUp() override;
 
   protected:
     DrawCallParam GetParam() const {
@@ -267,8 +267,8 @@ class DrawCallPerf : public DawnPerfTestWithParams<DrawCallParamForTest> {
     wgpu::RenderBundle mRenderBundle;
 };
 
-void DrawCallPerf::TestSetUp() {
-    DawnPerfTestWithParams::TestSetUp();
+void DrawCallPerf::SetUp() {
+    DawnPerfTestWithParams::SetUp();
 
     // Compute aligned uniform / vertex data sizes.
     mAlignedUniformSize = Align(kUniformSize, kMinDynamicBufferOffsetAlignment);
@@ -285,7 +285,7 @@ void DrawCallPerf::TestSetUp() {
         descriptor.size.width = kTextureSize;
         descriptor.size.height = kTextureSize;
         descriptor.size.depth = 1;
-        descriptor.usage = wgpu::TextureUsage::OutputAttachment;
+        descriptor.usage = wgpu::TextureUsage::RenderAttachment;
 
         descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
         mColorAttachment = device.CreateTexture(&descriptor).CreateView();
@@ -568,18 +568,20 @@ void DrawCallPerf::Step() {
         switch (GetParam().bindGroupType) {
             case BindGroup::NoChange:
             case BindGroup::Redundant:
-                mUniformBuffers[0].SetSubData(0, 3 * sizeof(float), mUniformBufferData.data());
+                queue.WriteBuffer(mUniformBuffers[0], 0, mUniformBufferData.data(),
+                                  3 * sizeof(float));
                 break;
             case BindGroup::NoReuse:
             case BindGroup::Multiple:
                 for (uint32_t i = 0; i < kNumDraws; ++i) {
-                    mUniformBuffers[i].SetSubData(
-                        0, 3 * sizeof(float), mUniformBufferData.data() + i * mNumUniformFloats);
+                    queue.WriteBuffer(mUniformBuffers[i], 0,
+                                      mUniformBufferData.data() + i * mNumUniformFloats,
+                                      3 * sizeof(float));
                 }
                 break;
             case BindGroup::Dynamic:
-                mUniformBuffers[0].SetSubData(0, mUniformBufferData.size() * sizeof(float),
-                                              mUniformBufferData.data());
+                queue.WriteBuffer(mUniformBuffers[0], 0, mUniformBufferData.data(),
+                                  mUniformBufferData.size() * sizeof(float));
                 break;
         }
     }

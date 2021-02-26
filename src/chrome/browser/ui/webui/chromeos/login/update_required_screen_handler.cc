@@ -46,6 +46,8 @@ void UpdateRequiredScreenHandler::DeclareLocalizedValues(
   builder->Add("checkingForUpdatesTitle", IDS_CHECKING_FOR_UPDATES);
   builder->Add("updatingTitle", IDS_UPDATING_SCREEN_TITLE);
   builder->Add("updatingMessage", IDS_UPDATE_REQUIRED_UPDATING_MESSAGE);
+  builder->AddF("updatingMessage", IDS_UPDATE_REQUIRED_UPDATING_MESSAGE,
+                ui::GetChromeOSDeviceName());
   builder->Add("downloading", IDS_DOWNLOADING);
   builder->Add("downloadingTimeLeftLong", IDS_DOWNLOADING_TIME_LEFT_LONG);
   builder->Add("downloadingTimeLeftStatusOneHour",
@@ -57,7 +59,7 @@ void UpdateRequiredScreenHandler::DeclareLocalizedValues(
   builder->Add(
       "updateOverCellularPromptTitle",
       ui::SubstituteChromeOSDeviceType(IDS_UPDATE_OVER_CELLULAR_PROMPT_TITLE));
-  builder->Add("updateOverCellularPromptMessage",
+  builder->Add("updateOverMeteredNetworkMessage",
                IDS_UPDATE_REQUIRED_SCREEN_METERED_MESSAGE);
   builder->Add("AcceptUpdateOverCellularButton",
                IDS_UPDATE_REQUIRED_SCREEN_ALLOW_METERED);
@@ -65,6 +67,19 @@ void UpdateRequiredScreenHandler::DeclareLocalizedValues(
                IDS_OFFERS_CONSENT_INFOBAR_DISABLE_BUTTON);
   builder->Add("noNetworkMessage",
                IDS_UPDATE_REQUIRED_SCREEN_NO_NETWORK_MESSAGE);
+  builder->Add("eolAdminMessageTitle", IDS_UPDATE_REQUIRED_EOL_ADMIN_MESSAGE);
+  builder->Add("eolDeleteUsersDataMessage",
+               IDS_UPDATE_REQUIRED_EOL_DELETE_USERS_DATA_MESSAGE);
+  builder->Add("eolNoUsersDataMessage",
+               IDS_UPDATE_REQUIRED_EOL_NO_USERS_DATA_MESSAGE);
+  builder->Add("eolDeleteUsersDataPopupMessage",
+               IDS_UPDATE_REQUIRED_EOL_DELETE_USERS_DATA_POPUP_MESSAGE);
+  builder->Add("eolDeleteUsersDataPopupTitle",
+               IDS_UPDATE_REQUIRED_EOL_DELETE_USERS_DATA_POPUP_TITLE);
+  builder->Add("eolDeleteUsersDataConfirm",
+               IDS_UPDATE_REQUIRED_EOL_DELETE_USERS_DATA_CONFIRM);
+  builder->Add("eolDeleteUsersDataCancel",
+               IDS_UPDATE_REQUIRED_EOL_DELETE_USERS_DATA_CANCEL);
 }
 
 void UpdateRequiredScreenHandler::Initialize() {
@@ -79,6 +94,10 @@ void UpdateRequiredScreenHandler::SetEnterpriseAndDeviceName(
     const base::string16& deviceName) {
   CallJS("login.UpdateRequiredScreen.setEnterpriseAndDeviceName",
          enterpriseDomain, deviceName);
+}
+
+void UpdateRequiredScreenHandler::SetEolMessage(const std::string& eolMessage) {
+  CallJS("login.UpdateRequiredScreen.setEolMessage", eolMessage);
 }
 
 void UpdateRequiredScreenHandler::Show() {
@@ -131,6 +150,10 @@ void UpdateRequiredScreenHandler::SetEstimatedTimeLeft(int seconds_left) {
 void UpdateRequiredScreenHandler::SetUIState(
     UpdateRequiredView::UIState ui_state) {
   CallJS("login.UpdateRequiredScreen.setUIState", static_cast<int>(ui_state));
+}
+
+void UpdateRequiredScreenHandler::SetIsUserDataPresent(bool data_present) {
+  CallJS("login.UpdateRequiredScreen.setIsUserDataPresent", data_present);
 }
 
 }  // namespace chromeos

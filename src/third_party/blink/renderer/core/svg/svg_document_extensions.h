@@ -69,9 +69,8 @@ class CORE_EXPORT SVGDocumentExtensions final
   void UpdatePan(const FloatPoint& pos) const;
 
   static SVGSVGElement* rootElement(const Document&);
-  SVGSVGElement* rootElement() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
 
  private:
   Member<Document> document_;

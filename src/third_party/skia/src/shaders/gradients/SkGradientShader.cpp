@@ -9,6 +9,7 @@
 #include "include/core/SkMallocPixelRef.h"
 #include "include/private/SkFloatBits.h"
 #include "include/private/SkHalf.h"
+#include "include/private/SkTPin.h"
 #include "include/private/SkVx.h"
 #include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkConvertPixels.h"
@@ -299,7 +300,8 @@ bool SkGradientShaderBase::onAppendStages(const SkStageRec& rec) const {
             decal_ctx->limit_x = SkBits2Float(SkFloat2Bits(1.0f) + 1);
             // reuse mask + limit_x stage, or create a custom decal_1 that just stores the mask
             p->append(SkRasterPipeline::decal_x, decal_ctx);
-            // fall-through to clamp
+            [[fallthrough]];
+
         case SkTileMode::kClamp:
             if (!fOrigPos) {
                 // We clamp only when the stops are evenly spaced.
@@ -419,21 +421,22 @@ bool SkGradientShaderBase::onAppendStages(const SkStageRec& rec) const {
 }
 
 skvm::Color SkGradientShaderBase::onProgram(skvm::Builder* p,
-                                            skvm::F32 x, skvm::F32 y, skvm::Color /*paint*/,
-                                            const SkMatrix& ctm, const SkMatrix* localM,
+                                            skvm::Coord device, skvm::Coord local,
+                                            skvm::Color /*paint*/,
+                                            const SkMatrixProvider& mats, const SkMatrix* localM,
                                             SkFilterQuality quality, const SkColorInfo& dstInfo,
                                             skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const {
     SkMatrix inv;
-    if (!this->computeTotalInverse(ctm, localM, &inv)) {
+    if (!this->computeTotalInverse(mats.localToDevice(), localM, &inv)) {
         return {};
     }
     inv.postConcat(fPtsToUnit);
     inv.normalizePerspective();
 
-    SkShaderBase::ApplyMatrix(p, inv, &x,&y,uniforms);
+    local = SkShaderBase::ApplyMatrix(p, inv, local, uniforms);
 
     skvm::I32 mask = p->splat(~0);
-    skvm::F32 t = this->transformT(p,uniforms, x,y, &mask);
+    skvm::F32 t = this->transformT(p,uniforms, local, &mask);
 
     // Perhaps unexpectedly, clamping is handled naturally by our search, so we
     // don't explicitly clamp t to [0,1].  That clamp would break hard stops
@@ -692,17 +695,18 @@ static SkColor4f average_gradient_color(const SkColor4f colors[], const SkScalar
     // the integral between the two endpoints is 0.5 * (ci + cj) * (pj - pi), which provides that
     // intervals average color. The overall average color is thus the sum of each piece. The thing
     // to keep in mind is that the provided gradient definition may implicitly use p=0 and p=1.
-    Sk4f blend(0.0);
-    // Bake 1/(colorCount - 1) uniform stop difference into this scale factor
-    SkScalar wScale = pos ? 0.5 : 0.5 / (colorCount - 1);
+    Sk4f blend(0.0f);
     for (int i = 0; i < colorCount - 1; ++i) {
         // Calculate the average color for the interval between pos(i) and pos(i+1)
         Sk4f c0 = Sk4f::Load(&colors[i]);
         Sk4f c1 = Sk4f::Load(&colors[i + 1]);
+
         // when pos == null, there are colorCount uniformly distributed stops, going from 0 to 1,
         // so pos[i + 1] - pos[i] = 1/(colorCount-1)
-        SkScalar w = pos ? (pos[i + 1] - pos[i]) : SK_Scalar1;
-        blend += wScale * w * (c1 + c0);
+        SkScalar w = pos ? (pos[i + 1] - pos[i])
+                         : (1.0f / (colorCount - 1));
+
+        blend += 0.5f * w * (c1 + c0);
     }
 
     // Now account for any implicit intervals at the start or end of the stop definitions

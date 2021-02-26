@@ -5,6 +5,8 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_slider/cr_slider.m.js';
+import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
+import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
@@ -137,6 +139,11 @@ Polymer({
       type: Boolean,
     },
 
+    showDiskSlider_: {
+      type: Boolean,
+      value: false,
+    },
+
     username_: {
       type: String,
       value: loadTimeData.getString('defaultContainerUsername')
@@ -165,14 +172,15 @@ Polymer({
       callbackRouter.onInstallFinished.addListener(error => {
         if (error === InstallerError.kNone) {
           // Install succeeded.
-          this.closeDialog_();
+          this.closePage_();
         } else {
           assert(this.state_ === State.INSTALLING);
           this.errorMessage_ = this.getErrorMessage_(error);
           this.state_ = State.ERROR;
         }
       }),
-      callbackRouter.onCanceled.addListener(() => this.closeDialog_()),
+      callbackRouter.onCanceled.addListener(() => this.closePage_()),
+      callbackRouter.requestClose.addListener(() => this.cancelOrBack_(true)),
     ];
 
     // TODO(lxj): The listener should only be invoked once, so it is fine to use
@@ -191,6 +199,9 @@ Polymer({
               this.maxDisk_ = ticks[ticks.length - 1].label;
 
               this.isLowSpaceAvailable_ = isLowSpaceAvailable;
+              if (isLowSpaceAvailable) {
+                this.showDiskSlider_ = true;
+              }
               resolve();
             }
           }));
@@ -198,7 +209,7 @@ Polymer({
 
     document.addEventListener('keyup', event => {
       if (event.key == 'Escape') {
-        this.onCancelButtonClick_();
+        this.cancelOrBack_();
         event.preventDefault();
       }
     });
@@ -244,7 +255,11 @@ Polymer({
     assert(this.showInstallButton_(this.state_));
     var diskSize = 0;
     if (loadTimeData.getBoolean('diskResizingEnabled')) {
-      diskSize = this.diskSizeTicks_[this.$.diskSlider.value].value;
+      if (this.showDiskSlider_) {
+        diskSize = this.diskSizeTicks_[this.$$('#diskSlider').value].value;
+      } else {
+        diskSize = this.diskSizeTicks_[this.defaultDiskSizeTick_].value;
+      }
     }
     this.installerState_ = InstallerState.kStart;
     this.installerProgress_ = 0;
@@ -252,15 +267,29 @@ Polymer({
     BrowserProxy.getInstance().handler.install(diskSize, this.username_);
   },
 
-  /** @private */
+  /**
+   * This is used in app.html so that the event argument is not passed to
+   * cancelOrBack_().
+   *
+   * @private
+   */
   onCancelButtonClick_() {
+    this.cancelOrBack_();
+  },
+
+  /** @private */
+  cancelOrBack_(forceCancel = false) {
     switch (this.state_) {
       case State.PROMPT:
         BrowserProxy.getInstance().handler.cancelBeforeStart();
-        this.closeDialog_();
+        this.closePage_();
         break;
       case State.CONFIGURE:
-        this.state_ = State.PROMPT;
+        if (forceCancel) {
+          this.closePage_();
+        } else {
+          this.state_ = State.PROMPT;
+        }
         break;
       case State.INSTALLING:
         this.state_ = State.CANCELING;
@@ -268,11 +297,11 @@ Polymer({
         break;
       case State.ERROR:
       case State.ERROR_NO_RETRY:
-        this.closeDialog_();
+        this.closePage_();
         break;
       case State.CANCELING:
         // Although cancel button has been disabled, we can reach here if users
-        // press <esc> key.
+        // press <esc> key or from mojom "RequestClose()".
         break;
       default:
         assertNotReached();
@@ -280,8 +309,8 @@ Polymer({
   },
 
   /** @private */
-  closeDialog_() {
-    BrowserProxy.getInstance().handler.close();
+  closePage_() {
+    BrowserProxy.getInstance().handler.onPageClosed();
   },
 
   /**
@@ -328,11 +357,7 @@ Polymer({
    * @private
    */
   showInstallButton_(state) {
-    if (this.configurePageAccessible_()) {
-      return state === State.CONFIGURE || state === State.ERROR;
-    } else {
-      return state === State.PROMPT || state === State.ERROR;
-    }
+    return state === State.CONFIGURE || state === State.ERROR;
   },
 
   /**
@@ -355,7 +380,7 @@ Polymer({
    * @private
    */
   showNextButton_(state) {
-    return this.configurePageAccessible_() && state === State.PROMPT;
+    return state === State.PROMPT;
   },
 
   /**
@@ -364,9 +389,6 @@ Polymer({
    * @private
    */
   getInstallButtonLabel_(state) {
-    if (!this.configurePageAccessible_() && state === State.PROMPT) {
-      return loadTimeData.getString('install');
-    }
     switch (state) {
       case State.CONFIGURE:
         return loadTimeData.getString('install');
@@ -389,9 +411,6 @@ Polymer({
         break;
       case InstallerState.kInstallImageLoader:
         messageId = 'loadTerminaMessage';
-        break;
-      case InstallerState.kStartConcierge:
-        messageId = 'startConciergeMessage';
         break;
       case InstallerState.kCreateDiskImage:
         messageId = 'createDiskImageMessage';
@@ -439,9 +458,6 @@ Polymer({
       case InstallerError.kErrorLoadingTermina:
         messageId = 'loadTerminaError';
         break;
-      case InstallerError.kErrorStartingConcierge:
-        messageId = 'startConciergeError';
-        break;
       case InstallerError.kErrorCreatingDiskImage:
         messageId = 'createDiskImageError';
         break;
@@ -485,22 +501,8 @@ Polymer({
   /**
    * @private
    */
-  configurePageAccessible_() {
-    return this.showDiskResizing_() || this.showUsernameSelection_();
-  },
-
-  /**
-   * @private
-   */
   showDiskResizing_() {
     return loadTimeData.getBoolean('diskResizingEnabled');
-  },
-
-  /**
-   * @private
-   */
-  showUsernameSelection_() {
-    return loadTimeData.getBoolean('crostiniCustomUsername');
   },
 
   /**
@@ -509,7 +511,7 @@ Polymer({
   getConfigureMessageTitle_() {
     // If the flags only allow username config, then we show a username specific
     // subtitle instead of a generic configure subtitle.
-    if (this.showUsernameSelection_() && !this.showDiskResizing_())
+    if (!this.showDiskResizing_())
       return loadTimeData.getString('usernameMessage');
     return loadTimeData.getString('configureMessage');
   },
@@ -542,4 +544,10 @@ Polymer({
   showErrorMessage_(state) {
     return state === State.ERROR || state === State.ERROR_NO_RETRY;
   },
+
+  /** @private */
+  onDiskSizeRadioChanged_(event) {
+    this.showDiskSlider_ =
+        (event.detail.value !== 'recommended' || !!this.isLowSpaceAvailable_);
+  }
 });

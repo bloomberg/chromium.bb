@@ -127,6 +127,9 @@ extern const char kContentSettingsExceptionsLearnMoreURL[];
 // "Learn more" URL for cookies.
 extern const char kCookiesSettingsHelpCenterURL[];
 
+// The URL for the "learn more" link on the SSE2 obsolescence infobar.
+extern const char kCpuX86Sse2ObsoleteURL[];
+
 // "Learn more" URL for "Aw snap" page when showing "Reload" button.
 extern const char kCrashReasonURL[];
 
@@ -164,6 +167,9 @@ extern const char kGoogleAccountChooserURL[];
 // URL of the Google Password Manager.
 extern const char kGooglePasswordManagerURL[];
 
+// URL of the Google Photos.
+extern const char kGooglePhotosURL[];
+
 // The URL for the "Learn more" page for the usage/crash reporting option in the
 // first run dialog.
 extern const char kLearnMoreReportingURL[];
@@ -190,6 +196,9 @@ extern const char kPageInfoHelpCenterURL[];
 // Help URL for the bulk password check.
 extern const char kPasswordCheckLearnMoreURL[];
 
+// Help URL for password generation.
+extern const char kPasswordGenerationLearnMoreURL[];
+
 extern const char kPasswordManagerLearnMoreURL[];
 
 // Help URL for the Payment methods page of the Google Pay site.
@@ -212,6 +221,10 @@ extern const char kSafeBrowsingHelpCenterURL[];
 // "Learn more" URL for safety tip bubble.
 extern const char kSafetyTipHelpCenterURL[];
 
+// The URL for the "See more security tips" with advices how to create a strong
+// password.
+extern const char kSeeMoreSecurityTipsURL[];
+
 // Help URL for the settings page's search feature.
 extern const char kSettingsSearchHelpURL[];
 
@@ -233,6 +246,9 @@ extern const char kUpgradeHelpCenterBaseURL[];
 
 // Help center URL for who the account administrator is.
 extern const char kWhoIsMyAdministratorHelpURL[];
+
+// Link to the flash roadmap
+extern const char kChromeFlashRoadmapURL[];
 
 #if defined(OS_ANDROID)
 extern const char kAndroidAppScheme[];
@@ -282,9 +298,6 @@ extern const char kChromeOSGestureEducationHelpURL[];
 // Palette help link for Chrome.
 extern const char kChromePaletteHelpURL[];
 
-// The URL for "How do I sign in to Classroom?" page.
-extern const char kClassroomSigninLearnMoreURL[];
-
 extern const char kCrosScheme[];
 
 extern const char kCupsPrintLearnMoreURL[];
@@ -294,8 +307,14 @@ extern const char kCupsPrintPPDLearnMoreURL[];
 // The URL for the "Learn more" link the the Easy Unlock settings.
 extern const char kEasyUnlockLearnMoreUrl[];
 
+// The URL for the help center article about redeeming Chromebook offers.
+extern const char kEchoLearnMoreURL[];
+
 // The URL for EOL notification
 extern const char kEolNotificationURL[];
+
+// The URL for Auto Update Policy.
+extern const char kAutoUpdatePolicyURL[];
 
 // The URL for providing more information about Google nameservers.
 extern const char kGoogleNameserversLearnMoreURL[];
@@ -327,9 +346,6 @@ extern const char kLinuxAppsLearnMoreURL[];
 // The URL for additional help that is given when Linux export/import fails.
 extern const char kLinuxExportImportHelpURL[];
 
-// Credits for Linux for Chromebooks.
-extern const char kLinuxCreditsPath[];
-
 // The URL for the "Learn more" link for natural scrolling on ChromeOS.
 extern const char kNaturalScrollHelpURL[];
 
@@ -358,6 +374,9 @@ extern const char kTimeZoneSettingsLearnMoreURL[];
 // The URL for the "Learn more" page for the network file shares settings page.
 extern const char kSmbSharesLearnMoreURL[];
 
+// The URL for the "Learn more" page for Suggested Content in the privacy page.
+extern const char kSuggestedContentLearnMoreURL[];
+
 // The URL to a support article with more information about gestures available
 // in tablet mode on Chrome OS (gesture to go to home screen, overview, or to go
 // back). Used as a "Learn more" link URL for the accessibility option to shelf
@@ -369,12 +388,12 @@ extern const char kTabletModeGesturesLearnMoreURL[];
 extern const char kWifiSyncLearnMoreURL[];
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // "Learn more" URL for the enterprise sign-in confirmation dialog.
 extern const char kChromeEnterpriseSignInLearnMoreURL[];
 
-// The URL for the "learn more" link on the 10.9 obsolescence infobar.
-extern const char kMac10_9_ObsoleteURL[];
+// The URL for the "learn more" link on the 10.10 obsolescence infobar.
+extern const char kMac10_10_ObsoleteURL[];
 #endif
 
 #if defined(OS_WIN)

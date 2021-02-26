@@ -16,6 +16,8 @@
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/version_updater/version_updater.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "components/user_manager/remove_user_delegate.h"
 
 namespace base {
 class Clock;
@@ -24,17 +26,19 @@ class Clock;
 namespace chromeos {
 
 class ErrorScreensHistogramHelper;
-class ScreenManager;
 class UpdateRequiredView;
 
 // Controller for the update required screen.
 class UpdateRequiredScreen : public BaseScreen,
                              public VersionUpdater::Delegate,
-                             public NetworkStateHandlerObserver {
+                             public NetworkStateHandlerObserver,
+                             public user_manager::RemoveUserDelegate {
  public:
-  static UpdateRequiredScreen* Get(ScreenManager* manager);
+  using TView = UpdateRequiredView;
 
-  UpdateRequiredScreen(UpdateRequiredView* view, ErrorScreen* error_screen);
+  UpdateRequiredScreen(UpdateRequiredView* view,
+                       ErrorScreen* error_screen,
+                       base::RepeatingClosure exit_callback);
   ~UpdateRequiredScreen() override;
 
   // Called when the being destroyed. This should call Unbind() on the
@@ -54,6 +58,9 @@ class UpdateRequiredScreen : public BaseScreen,
       const VersionUpdater::UpdateInfo& update_info) override;
   void FinishExitUpdate(VersionUpdater::Result result) override;
 
+  // Exit the screen.
+  void Exit();
+
   VersionUpdater* GetVersionUpdaterForTesting();
 
   // Set a base clock (used to set current time) for testing EOL.
@@ -69,11 +76,18 @@ class UpdateRequiredScreen : public BaseScreen,
 
   void EnsureScreenIsShown();
 
+  // Callback for changes to chromeos::kMinimumChromeVersionAueMessage.
+  void OnEolMessageChanged();
+
   void OnSelectNetworkButtonClicked();
   void OnUpdateButtonClicked();
 
   // NetworkStateHandlerObserver:
   void DefaultNetworkChanged(const NetworkState* network) override;
+
+  // user_manager::RemoveUserDelegate:
+  void OnBeforeUserRemoved(const AccountId& account_id) override;
+  void OnUserRemoved(const AccountId& account_id) override;
 
   void RefreshNetworkState();
   void RefreshView(const VersionUpdater::UpdateInfo& update_info);
@@ -93,12 +107,16 @@ class UpdateRequiredScreen : public BaseScreen,
 
   void OnErrorScreenHidden();
 
+  // Deletes all users data on the device.
+  void DeleteUsersData();
+
   // True if there was no notification about captive portal state for
   // the default network.
   bool is_first_portal_notification_ = true;
 
   UpdateRequiredView* view_ = nullptr;
   ErrorScreen* error_screen_;
+  base::RepeatingClosure exit_callback_;
   std::unique_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 
   // Whether the screen is shown.
@@ -125,6 +143,9 @@ class UpdateRequiredScreen : public BaseScreen,
   base::Clock* clock_;
 
   base::TimeDelta error_message_delay_;
+
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      eol_message_subscription_;
 
   ErrorScreen::ConnectRequestCallbackSubscription connect_request_subscription_;
 

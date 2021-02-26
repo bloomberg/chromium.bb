@@ -9,10 +9,9 @@ import android.content.Context;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.invalidation.SessionsInvalidationManager;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
@@ -24,14 +23,15 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
+import org.chromium.chrome.browser.sync.AndroidSyncSettings;
+import org.chromium.chrome.browser.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
-import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.lang.annotation.Retention;
@@ -54,11 +54,13 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         void onUpdated();
     }
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({PromoState.PROMO_NONE, PromoState.PROMO_SIGNIN_PERSONALIZED, PromoState.PROMO_SYNC})
+    @IntDef({PromoState.PROMO_NONE, PromoState.PROMO_SIGNIN_PERSONALIZED,
+            PromoState.PROMO_SYNC_PERSONALIZED, PromoState.PROMO_SYNC})
     @interface PromoState {
         int PROMO_NONE = 0;
         int PROMO_SIGNIN_PERSONALIZED = 1;
-        int PROMO_SYNC = 2;
+        int PROMO_SYNC_PERSONALIZED = 2;
+        int PROMO_SYNC = 3;
     }
 
     private static final int RECENTLY_CLOSED_MAX_TAB_COUNT = 5;
@@ -101,10 +103,9 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mRecentlyClosedTabManager = sRecentlyClosedTabManagerForTests != null
                 ? sRecentlyClosedTabManagerForTests
                 : new RecentlyClosedBridge(profile);
-        mSignInManager = IdentityServicesProvider.get().getSigninManager();
+        mSignInManager = IdentityServicesProvider.get().getSigninManager(mProfile);
 
-        int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
-        mProfileDataCache = new ProfileDataCache(context, imageSize);
+        mProfileDataCache = ProfileDataCache.createProfileDataCache(context);
         mSigninPromoController = new SigninPromoController(SigninAccessPoint.RECENT_TABS);
 
         mRecentlyClosedTabManager.setTabsUpdatedRunnable(() -> {
@@ -362,6 +363,12 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
             if (!mSignInManager.isSignInAllowed()) {
                 return PromoState.PROMO_NONE;
             }
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+                    && mSignInManager.getIdentityManager().getPrimaryAccountInfo(
+                               ConsentLevel.NOT_REQUIRED)
+                            != null) {
+                return PromoState.PROMO_SYNC_PERSONALIZED;
+            }
             return PromoState.PROMO_SIGNIN_PERSONALIZED;
         }
 
@@ -372,28 +379,17 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         return PromoState.PROMO_SYNC;
     }
 
-    void recordRecentTabMetrics() {
-        RecordHistogram.recordCountHistogram(
-                "Android.RecentTabsManager.RecentlyClosedTabs", mRecentlyClosedTabs.size());
-        RecordHistogram.recordCountHistogram(
-                "Android.RecentTabsManager.OtherDevices", mForeignSessions.size());
-
-        int totalCount = mRecentlyClosedTabs.size();
-        for (int i = 0; i < mForeignSessions.size(); i++) {
-            ForeignSession foreignSession = mForeignSessions.get(i);
-            for (int j = 0; j < foreignSession.windows.size(); j++) {
-                totalCount += foreignSession.windows.get(j).tabs.size();
-            }
-        }
-        RecordHistogram.recordCountHistogram("Android.RecentTabsManager.TotalTabs", totalCount);
-    }
-
     /**
      * Sets up the personalized signin promo and records user actions for promo impressions.
      * @param view The view to be configured.
      */
     void setupPersonalizedSigninPromo(PersonalizedSigninPromoView view) {
-        SigninPromoUtil.setupPromoViewFromCache(
+        SigninPromoUtil.setupSigninPromoViewFromCache(
+                mSigninPromoController, mProfileDataCache, view, null);
+    }
+
+    void setupPersonalizedSyncPromo(PersonalizedSigninPromoView view) {
+        SigninPromoUtil.setupSyncPromoViewFromCache(
                 mSigninPromoController, mProfileDataCache, view, null);
     }
 
@@ -433,6 +429,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     }
 
     private void update() {
+        // TODO(crbug.com/1129853): Re-evaluate whether it's necessary to post
+        // a task.
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (mIsDestroyed) return;
             updateForeignSessions();

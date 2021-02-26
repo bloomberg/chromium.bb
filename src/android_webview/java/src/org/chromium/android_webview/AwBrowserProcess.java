@@ -19,22 +19,25 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.PlatformServiceBridge;
-import org.chromium.android_webview.common.metrics.AwNonembeddedUmaReplayer;
 import org.chromium.android_webview.common.services.ICrashReceiverService;
 import org.chromium.android_webview.common.services.IMetricsBridgeService;
 import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.metrics.AwMetricsServiceClient;
+import org.chromium.android_webview.metrics.AwNonembeddedUmaReplayer;
 import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord;
-import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecordList;
 import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConfigHelper;
+import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
+import org.chromium.base.PowerMonitor;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
@@ -43,10 +46,10 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.components.minidump_uploader.CrashFileManager;
+import org.chromium.components.policy.CombinedPolicyProvider;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
-import org.chromium.policy.CombinedPolicyProvider;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -54,6 +57,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Wrapper for the steps needed to initialize the java and native sides of webview chromium.
@@ -63,6 +67,9 @@ public final class AwBrowserProcess {
     private static final String TAG = "AwBrowserProcess";
 
     private static final String WEBVIEW_DIR_BASENAME = "webview";
+
+    private static final int MINUTES_PER_DAY =
+            (int) TimeUnit.SECONDS.toMinutes(TimeUtils.SECONDS_PER_DAY);
 
     // To avoid any potential synchronization issues we post all minidump-copying actions to
     // the same sequence to be run serially.
@@ -121,6 +128,7 @@ public final class AwBrowserProcess {
     public static void start() {
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("AwBrowserProcess.start")) {
             final Context appContext = ContextUtils.getApplicationContext();
+            AwBrowserProcessJni.get().setProcessNameCrashKey(ContextUtils.getProcessName());
             AwDataDirLock.lock(appContext);
             // We must post to the UI thread to cover the case that the user
             // has invoked Chromium startup by using the (thread-safe)
@@ -147,6 +155,8 @@ public final class AwBrowserProcess {
                     BrowserStartupController.getInstance().startBrowserProcessesSync(
                             LibraryProcessType.PROCESS_WEBVIEW, !multiProcess);
                 }
+
+                PowerMonitor.create();
             });
         }
     }
@@ -179,7 +189,7 @@ public final class AwBrowserProcess {
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped(
                      "AwBrowserProcess.handleMinidumpsAndSetMetricsConsent")) {
             final boolean enableMinidumpUploadingForTesting = CommandLine.getInstance().hasSwitch(
-                    AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+                    BaseSwitches.ENABLE_CRASH_REPORTER_FOR_TESTING);
             if (enableMinidumpUploadingForTesting) {
                 handleMinidumps(true /* enabled */);
             }
@@ -310,10 +320,14 @@ public final class AwBrowserProcess {
             intent.setClassName(getWebViewPackageName(), ServiceNames.CRASH_RECEIVER_SERVICE);
 
             ServiceConnection connection = new ServiceConnection() {
+                private boolean mHasConnected;
+
                 @Override
                 public void onServiceConnected(ComponentName className, IBinder service) {
-                    // onServiceConnected is called on the UI thread, so punt this back to the
-                    // background thread.
+                    if (mHasConnected) return;
+                    mHasConnected = true;
+                    // onServiceConnected is called on the UI thread, so punt this back to
+                    // the background thread.
                     sSequencedTaskRunner.postTask(() -> {
                         transmitMinidumps(minidumpFiles, crashesInfoMap,
                                 ICrashReceiverService.Stub.asInterface(service));
@@ -348,18 +362,47 @@ public final class AwBrowserProcess {
     }
 
     /**
+     * Record very long times UMA histogram up to 4 days.
+     *
+     * @param name histogram name.
+     * @param time time sample in millis.
+     */
+    private static void recordVeryLongTimesHistogram(String name, long time) {
+        long timeMins = TimeUnit.MILLISECONDS.toMinutes(time);
+        int sample;
+        // Safely convert to int to avoid positive or negative overflow.
+        if (timeMins > Integer.MAX_VALUE) {
+            sample = Integer.MAX_VALUE;
+        } else if (timeMins < Integer.MIN_VALUE) {
+            sample = Integer.MIN_VALUE;
+        } else {
+            sample = (int) timeMins;
+        }
+        RecordHistogram.recordCustomCountHistogram(name, sample, 1, 4 * MINUTES_PER_DAY, 50);
+    }
+
+    /**
      * Connect to {@link org.chromium.android_webview.services.MetricsBridgeService} to retrieve
      * any recorded UMA metrics from nonembedded WebView services and transmit them back using
      * UMA APIs.
      */
-    public static void transmitRecordedMetrics() {
+    public static void collectNonembeddedMetrics() {
         final Context appContext = ContextUtils.getApplicationContext();
+        if (AwMetricsServiceClient.isAppOptedOut(appContext)) {
+            Log.d(TAG, "App opted out from metrics collection, not connecting to metrics service");
+            return;
+        }
+
         final Intent intent = new Intent();
         intent.setClassName(getWebViewPackageName(), ServiceNames.METRICS_BRIDGE_SERVICE);
 
         ServiceConnection connection = new ServiceConnection() {
+            private boolean mHasConnected;
+
             @Override
             public void onServiceConnected(ComponentName className, IBinder service) {
+                if (mHasConnected) return;
+                mHasConnected = true;
                 // onServiceConnected is called on the UI thread, so punt this back to the
                 // background thread.
                 PostTask.postTask(TaskTraits.THREAD_POOL_BEST_EFFORT, () -> {
@@ -367,13 +410,22 @@ public final class AwBrowserProcess {
                         IMetricsBridgeService metricsService =
                                 IMetricsBridgeService.Stub.asInterface(service);
 
-                        byte[] data = metricsService.retrieveNonembeddedMetrics();
-                        HistogramRecordList list = HistogramRecordList.parseFrom(data);
+                        List<byte[]> data = metricsService.retrieveNonembeddedMetrics();
+                        // Subtract one to avoid skewing NumHistograms because of the meta
+                        // RetrieveMetricsTaskStatus histogram which is always added to the list.
                         RecordHistogram.recordCount1000Histogram(
                                 "Android.WebView.NonEmbeddedMetrics.NumHistograms",
-                                list.getRecordsList().size());
-                        for (HistogramRecord record : list.getRecordsList()) {
+                                data.size() - 1);
+                        long systemTime = System.currentTimeMillis();
+                        for (byte[] recordData : data) {
+                            HistogramRecord record = HistogramRecord.parseFrom(recordData);
                             AwNonembeddedUmaReplayer.replayMethodCall(record);
+                            if (record.hasMetadata()) {
+                                long timeRecorded = record.getMetadata().getTimeRecorded();
+                                recordVeryLongTimesHistogram(
+                                        "Android.WebView.NonEmbeddedMetrics.HistogramRecordAge",
+                                        systemTime - timeRecorded);
+                            }
                         }
                         logTransmissionResult(TransmissionResult.SUCCESS);
                     } catch (InvalidProtocolBufferException e) {
@@ -399,4 +451,9 @@ public final class AwBrowserProcess {
 
     // Do not instantiate this class.
     private AwBrowserProcess() {}
+
+    @NativeMethods
+    interface Natives {
+        void setProcessNameCrashKey(String processName);
+    }
 }

@@ -6,17 +6,26 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/path_service.h"
+#include "base/profiler/profiler_buildflags.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/profiler/unwinder.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#include "base/android/apk_assets.h"
+#include "base/files/memory_mapped_file.h"
+#include "base/profiler/chrome_unwinder_android.h"
+#include "base/profiler/native_unwinder_android.h"
+#endif
 
 #if defined(OS_WIN)
 // Windows doesn't provide an alloca function like Linux does.
@@ -26,6 +35,13 @@
 #else
 #include <alloca.h>
 #endif
+
+extern "C" {
+// The address of |__executable_start| gives the start address of the
+// executable or shared library. This value is used to find the offset address
+// of the instruction in binary from PC.
+extern char __executable_start;
+}
 
 namespace base {
 
@@ -78,6 +94,67 @@ void OtherLibraryCallback(void* arg) {
   volatile int i = 0;
   ALLOW_UNUSED_LOCAL(i);
 }
+
+#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+std::unique_ptr<NativeUnwinderAndroid> CreateNativeUnwinderAndroidForTesting(
+    uintptr_t exclude_module_with_base_address) {
+  class NativeUnwinderAndroidForTesting : public NativeUnwinderAndroid {
+   public:
+    explicit NativeUnwinderAndroidForTesting(
+        std::unique_ptr<unwindstack::Maps> memory_regions_map,
+        std::unique_ptr<unwindstack::Memory> process_memory,
+        uintptr_t exclude_module_with_base_address)
+        : NativeUnwinderAndroid(memory_regions_map.get(),
+                                process_memory.get(),
+                                exclude_module_with_base_address),
+          memory_regions_map_(std::move(memory_regions_map)),
+          process_memory_(std::move(process_memory)) {}
+    ~NativeUnwinderAndroidForTesting() override = default;
+
+   private:
+    std::unique_ptr<unwindstack::Maps> memory_regions_map_;
+    std::unique_ptr<unwindstack::Memory> process_memory_;
+  };
+  auto maps = NativeUnwinderAndroid::CreateMaps();
+  auto memory = NativeUnwinderAndroid::CreateProcessMemory();
+  return std::make_unique<NativeUnwinderAndroidForTesting>(
+      std::move(maps), std::move(memory), exclude_module_with_base_address);
+}
+
+std::unique_ptr<Unwinder> CreateChromeUnwinderAndroidForTesting(
+    uintptr_t chrome_module_base_address) {
+  static constexpr char kCfiFileName[] = "assets/unwind_cfi_32";
+  class ChromeUnwinderAndroidForTesting : public ChromeUnwinderAndroid {
+   public:
+    ChromeUnwinderAndroidForTesting(std::unique_ptr<MemoryMappedFile> cfi_file,
+                                    std::unique_ptr<ArmCFITable> cfi_table,
+                                    uintptr_t chrome_module_base_address)
+        : ChromeUnwinderAndroid(cfi_table.get(), chrome_module_base_address),
+          cfi_file_(std::move(cfi_file)),
+          cfi_table_(std::move(cfi_table)) {}
+    ~ChromeUnwinderAndroidForTesting() override = default;
+
+   private:
+    std::unique_ptr<MemoryMappedFile> cfi_file_;
+    std::unique_ptr<ArmCFITable> cfi_table_;
+  };
+
+  MemoryMappedFile::Region cfi_region;
+  int fd = base::android::OpenApkAsset(kCfiFileName, &cfi_region);
+  if (fd < 0)
+    return nullptr;
+  auto cfi_file = std::make_unique<MemoryMappedFile>();
+  if (!cfi_file->Initialize(base::File(fd), cfi_region))
+    return nullptr;
+  std::unique_ptr<ArmCFITable> cfi_table =
+      ArmCFITable::Parse({cfi_file->data(), cfi_file->length()});
+  if (!cfi_table)
+    return nullptr;
+
+  return std::make_unique<ChromeUnwinderAndroidForTesting>(
+      std::move(cfi_file), std::move(cfi_table), chrome_module_base_address);
+}
+#endif  // #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
 
 }  // namespace
 
@@ -240,7 +317,8 @@ std::vector<Frame> SampleScenario(UnwindScenario* scenario,
                                              std::vector<Frame> result_sample) {
                       sample = std::move(result_sample);
                       sampling_thread_completed.Signal();
-                    })));
+                    })),
+                CreateCoreUnwindersFactoryForTesting(module_cache));
             if (aux_unwinder_factory)
               profiler.AddAuxUnwinder(std::move(aux_unwinder_factory).Run());
             profiler.Start();
@@ -294,7 +372,7 @@ void ExpectStackDoesNotContain(
 
   std::set<FunctionAddressRange, FunctionAddressRangeCompare> seen_functions;
   for (const auto& frame : stack) {
-    for (const auto function : functions) {
+    for (const auto& function : functions) {
       if (frame.instruction_pointer >=
               reinterpret_cast<uintptr_t>(function.start) &&
           frame.instruction_pointer <=
@@ -304,7 +382,7 @@ void ExpectStackDoesNotContain(
     }
   }
 
-  for (const auto function : seen_functions) {
+  for (const auto& function : seen_functions) {
     ADD_FAILURE() << "Function at " << function.start
                   << " was unexpectedly found in stack:\n"
                   << FormatSampleForDiagnosticOutput(stack);
@@ -336,6 +414,24 @@ uintptr_t GetAddressInOtherLibrary(NativeLibrary library) {
       GetFunctionPointerFromNativeLibrary(library, "InvokeCallbackFunction"));
   EXPECT_NE(address, 0u);
   return address;
+}
+
+StackSamplingProfiler::UnwindersFactory CreateCoreUnwindersFactoryForTesting(
+    ModuleCache* module_cache) {
+#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+  std::vector<std::unique_ptr<Unwinder>> unwinders;
+  unwinders.push_back(CreateNativeUnwinderAndroidForTesting(
+      reinterpret_cast<uintptr_t>(&__executable_start)));
+  unwinders.push_back(CreateChromeUnwinderAndroidForTesting(
+      reinterpret_cast<uintptr_t>(&__executable_start)));
+  return BindOnce(
+      [](std::vector<std::unique_ptr<Unwinder>> unwinders) {
+        return unwinders;
+      },
+      std::move(unwinders));
+#else
+  return StackSamplingProfiler::UnwindersFactory();
+#endif
 }
 
 }  // namespace base

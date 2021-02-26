@@ -4,15 +4,18 @@
 
 import * as UI from '../ui/ui.js';
 
-import {Events} from './CSSOverviewController.js';
+import {Events, OverviewController} from './CSSOverviewController.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
  */
 export class CSSOverviewStartView extends UI.Widget.Widget {
+  /**
+   * @param {!OverviewController} controller
+   */
   constructor(controller) {
     super();
-    this.registerRequiredCSS('css_overview/cssOverviewStartView.css');
+    this.registerRequiredCSS('css_overview/cssOverviewStartView.css', {enableLegacyPatching: true});
 
     this._controller = controller;
     this._render();

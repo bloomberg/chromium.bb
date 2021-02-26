@@ -12,9 +12,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
@@ -47,6 +48,7 @@
 namespace em = enterprise_management;
 
 using content::BrowserThread;
+using google::protobuf::RepeatedPtrField;
 using ownership::OwnerKeyUtil;
 using ownership::PrivateKey;
 using ownership::PublicKey;
@@ -56,8 +58,8 @@ namespace chromeos {
 namespace {
 
 using ReloadKeyCallback =
-    base::Callback<void(const scoped_refptr<PublicKey>& public_key,
-                        const scoped_refptr<PrivateKey>& private_key)>;
+    base::OnceCallback<void(const scoped_refptr<PublicKey>& public_key,
+                            const scoped_refptr<PrivateKey>& private_key)>;
 
 bool IsOwnerInTests(const std::string& user_id) {
   if (user_id.empty() ||
@@ -76,13 +78,14 @@ void LoadPrivateKeyByPublicKeyOnWorkerThread(
     const scoped_refptr<OwnerKeyUtil>& owner_key_util,
     crypto::ScopedPK11Slot public_slot,
     crypto::ScopedPK11Slot private_slot,
-    const ReloadKeyCallback& callback) {
+    ReloadKeyCallback callback) {
   std::vector<uint8_t> public_key_data;
   scoped_refptr<PublicKey> public_key;
   if (!owner_key_util->ImportPublicKey(&public_key_data)) {
     scoped_refptr<PrivateKey> private_key;
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(callback, public_key, private_key));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), public_key, private_key));
     return;
   }
   public_key = new PublicKey();
@@ -103,14 +106,14 @@ void LoadPrivateKeyByPublicKeyOnWorkerThread(
     private_key = new PrivateKey(owner_key_util->FindPrivateKeyInSlot(
         public_key->data(), public_slot.get()));
   }
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback, public_key, private_key));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), public_key, private_key));
 }
 
 void ContinueLoadPrivateKeyOnIOThread(
     const scoped_refptr<OwnerKeyUtil>& owner_key_util,
     const std::string username_hash,
-    const ReloadKeyCallback& callback,
+    ReloadKeyCallback callback,
     crypto::ScopedPK11Slot private_slot) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -125,19 +128,23 @@ void ContinueLoadPrivateKeyOnIOThread(
       FROM_HERE,
       base::BindOnce(&LoadPrivateKeyByPublicKeyOnWorkerThread, owner_key_util,
                      crypto::GetPublicSlotForChromeOSUser(username_hash),
-                     std::move(private_slot), callback));
+                     std::move(private_slot), std::move(callback)));
 }
 
 void LoadPrivateKeyOnIOThread(const scoped_refptr<OwnerKeyUtil>& owner_key_util,
                               const std::string username_hash,
-                              const ReloadKeyCallback& callback) {
+                              ReloadKeyCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   crypto::EnsureNSSInit();
 
-  auto continue_load_private_key_callback =
-      base::Bind(&ContinueLoadPrivateKeyOnIOThread, owner_key_util,
-                 username_hash, callback);
+  // TODO(crbug.com/1007635): Consider changing the
+  // `crypto::GetPrivateSlotForChromeOSUser()` signature so that, instead of
+  // returning the private slot when available synchronously, it always calls
+  // the callback. This would avoid needing `base::AdaptCallbackForRepeating()`.
+  auto continue_load_private_key_callback = base::AdaptCallbackForRepeating(
+      base::BindOnce(&ContinueLoadPrivateKeyOnIOThread, owner_key_util,
+                     username_hash, std::move(callback)));
 
   crypto::ScopedPK11Slot private_slot = crypto::GetPrivateSlotForChromeOSUser(
       username_hash, continue_load_private_key_callback);
@@ -389,8 +396,8 @@ void OwnerSettingsServiceChromeOS::IsOwnerForSafeModeAsync(
 
   // Make sure NSS is initialized and NSS DB is loaded for the user before
   // searching for the owner key.
-  base::PostTaskAndReply(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&crypto::InitializeNSSForChromeOSUser),
                      user_hash,
                      ProfileHelper::GetProfilePathByUserIdHash(user_hash)),
@@ -436,9 +443,19 @@ void OwnerSettingsServiceChromeOS::FixupLocalOwnerPolicy(
   if (!settings->has_allow_new_users())
     settings->mutable_allow_new_users()->set_allow_new_users(true);
 
-  em::UserWhitelistProto* whitelist_proto = settings->mutable_user_whitelist();
-  if (!base::Contains(whitelist_proto->user_whitelist(), user_id))
-    whitelist_proto->add_user_whitelist(user_id);
+  // Only add the owner id to the whitelist if the allowlist doesn't exist.
+  // Otherwise, use the allowlist.
+  if (settings->has_user_whitelist() && !settings->has_user_allowlist()) {
+    em::UserWhitelistProto* whitelist_proto =
+        settings->mutable_user_whitelist();
+    if (!base::Contains(whitelist_proto->user_whitelist(), user_id))
+      whitelist_proto->add_user_whitelist(user_id);
+  } else {
+    em::UserAllowlistProto* allowlist_proto =
+        settings->mutable_user_allowlist();
+    if (!base::Contains(allowlist_proto->user_allowlist(), user_id))
+      allowlist_proto->add_user_allowlist(user_id);
+  }
 }
 
 // static
@@ -568,16 +585,20 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
     else
       NOTREACHED();
   } else if (path == kAccountsPrefUsers) {
-    em::UserWhitelistProto* whitelist_proto = settings.mutable_user_whitelist();
-    whitelist_proto->clear_user_whitelist();
-    const base::ListValue* users;
-    if (value.GetAsList(&users)) {
-      for (base::ListValue::const_iterator i = users->begin();
-           i != users->end();
-           ++i) {
-        std::string email;
-        if (i->GetAsString(&email))
-          whitelist_proto->add_user_whitelist(email);
+    RepeatedPtrField<std::string>* list = nullptr;
+    // Only use the whitelist if the allowlist isn't being used.
+    if (settings.has_user_whitelist() && !settings.has_user_allowlist()) {
+      list = settings.mutable_user_whitelist()->mutable_user_whitelist();
+    } else {
+      // Clear the whitelist when using the allowlist
+      settings.mutable_user_whitelist()->clear_user_whitelist();
+      list = settings.mutable_user_allowlist()->mutable_user_allowlist();
+    }
+    DCHECK(list);
+    list->Clear();
+    for (const auto& user : value.GetList()) {
+      if (user.is_string()) {
+        list->Add(std::string(user.GetString()));
       }
     }
   } else if (path == kAccountsPrefEphemeralUsersEnabled) {
@@ -634,6 +655,7 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
   } else {
     // The remaining settings don't support Set(), since they are not
     // intended to be customizable by the user:
+    //   kAccountsPrefFamilyLinkAccountsAllowed
     //   kAccountsPrefSupervisedUsersEnabled
     //   kAccountsPrefTransferSAMLCookies
     //   kDeviceAttestationEnabled
@@ -643,9 +665,11 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
     //   kReleaseChannelDelegated
     //   kReportDeviceActivityTimes
     //   KReportDeviceBacklightInfo
+    //   kReportDeviceBluetoothInfo
     //   kReportDeviceBoardStatus
     //   kReportDeviceBootMode
     //   kReportDeviceCpuInfo
+    //   kReportDeviceFanInfo
     //   kReportDeviceHardwareStatus
     //   kReportDeviceLocation
     //   kReportDeviceMemoryInfo
@@ -656,8 +680,10 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
     //   kReportDeviceGraphicsStatus
     //   kReportDeviceCrashReportInfoStatus
     //   kReportDeviceVersionInfo
+    //   kReportDeviceVpdInfo
     //   kReportDeviceUsers
     //   kReportDeviceAppInfo
+    //   kReportDeviceSystemInfo
     //   kServiceAccountIdentity
     //   kSystemTimezonePolicy
     //   kVariationsRestrictParameter
@@ -682,9 +708,10 @@ void OwnerSettingsServiceChromeOS::OnPostKeypairLoadedActions() {
   has_pending_fixups_ = true;
 }
 
-void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
-    void(const scoped_refptr<PublicKey>& public_key,
-         const scoped_refptr<PrivateKey>& private_key)>& callback) {
+void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(
+    base::OnceCallback<void(const scoped_refptr<PublicKey>& public_key,
+                            const scoped_refptr<PrivateKey>& private_key)>
+        callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // The profile may not be fully created yet: abort, and wait till it is. The
@@ -698,11 +725,11 @@ void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
   if (waiting_for_tpm_token_ || waiting_for_easy_unlock_operation_finshed_)
     return;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&LoadPrivateKeyOnIOThread, owner_key_util_,
                      ProfileHelper::GetUserIdHashFromProfile(profile_),
-                     callback));
+                     std::move(callback)));
 }
 
 void OwnerSettingsServiceChromeOS::StorePendingChanges() {

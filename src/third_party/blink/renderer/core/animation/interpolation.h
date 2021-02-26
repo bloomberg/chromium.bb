@@ -74,7 +74,7 @@ class CORE_EXPORT Interpolation : public GarbageCollected<Interpolation> {
   // optimise away computing underlying values.
   virtual bool DependsOnUnderlyingValue() const { return false; }
 
-  virtual void Trace(Visitor*) {}
+  virtual void Trace(Visitor*) const {}
 
  protected:
   Interpolation() = default;
@@ -83,7 +83,7 @@ class CORE_EXPORT Interpolation : public GarbageCollected<Interpolation> {
 
 using ActiveInterpolations = HeapVector<Member<Interpolation>, 1>;
 using ActiveInterpolationsMap =
-    HeapHashMap<PropertyHandle, ActiveInterpolations>;
+    HeapHashMap<PropertyHandle, Member<ActiveInterpolations>>;
 
 }  // namespace blink
 

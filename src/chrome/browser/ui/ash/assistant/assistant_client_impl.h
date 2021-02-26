@@ -14,7 +14,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/ash/assistant/device_actions.h"
 #include "chromeos/services/assistant/public/cpp/assistant_client.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
 #include "chromeos/services/assistant/service.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -24,10 +23,15 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+namespace chromeos {
+namespace bloom {
+class BloomController;
+}  // namespace bloom
+}  // namespace chromeos
+
 class AssistantSetup;
 class AssistantWebViewFactoryImpl;
 class ConversationStartersClientImpl;
-class ProactiveSuggestionsClientImpl;
 class Profile;
 
 // Class to handle all Assistant in-browser-process functionalities.
@@ -45,9 +49,6 @@ class AssistantClientImpl : public ash::AssistantClient,
   void MaybeStartAssistantOptInFlow();
 
   // ash::AssistantClient overrides:
-  void BindAssistant(
-      mojo::PendingReceiver<chromeos::assistant::mojom::Assistant> receiver)
-      override;
   void RequestAssistantStructure(
       ash::AssistantClient::RequestAssistantStructureCallback callback)
       override;
@@ -60,15 +61,6 @@ class AssistantClientImpl : public ash::AssistantClient,
   // chromeos::assistant::AssisantClient overrides:
   void OnAssistantStatusChanged(
       chromeos::assistant::AssistantStatus new_status) override;
-  void RequestAssistantAlarmTimerController(
-      mojo::PendingReceiver<ash::mojom::AssistantAlarmTimerController> receiver)
-      override;
-  void RequestAssistantNotificationController(
-      mojo::PendingReceiver<ash::mojom::AssistantNotificationController>
-          receiver) override;
-  void RequestAssistantScreenContextController(
-      mojo::PendingReceiver<ash::mojom::AssistantScreenContextController>
-          receiver) override;
   void RequestAssistantVolumeControl(
       mojo::PendingReceiver<ash::mojom::AssistantVolumeControl> receiver)
       override;
@@ -113,14 +105,8 @@ class AssistantClientImpl : public ash::AssistantClient,
   std::unique_ptr<chromeos::assistant::Service> service_;
   std::unique_ptr<AssistantSetup> assistant_setup_;
   std::unique_ptr<AssistantWebViewFactoryImpl> assistant_web_view_factory_;
-
   std::unique_ptr<ConversationStartersClientImpl> conversation_starters_client_;
-  std::unique_ptr<ProactiveSuggestionsClientImpl> proactive_suggestions_client_;
-
-  // Assistant interface receivers to be bound once we're initialized. These
-  // accumulate when BindAssistant is called before initialization.
-  std::vector<mojo::PendingReceiver<chromeos::assistant::mojom::Assistant>>
-      pending_assistant_receivers_;
+  std::unique_ptr<chromeos::bloom::BloomController> bloom_controller_;
 
   bool initialized_ = false;
 

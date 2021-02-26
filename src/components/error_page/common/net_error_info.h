@@ -24,7 +24,8 @@ enum NetworkErrorPageEvent {
 
   NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED = 7,  // More button clicked.
 
-  NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD = 8,  // Reload from browser.
+  // Obsolete:
+  // NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD = 8,  // Reload from browser.
 
   // Obsolete values used for when "Show saved copy" and "Reload" buttons were
   // both shown.
@@ -35,10 +36,9 @@ enum NetworkErrorPageEvent {
 
   NETWORK_ERROR_EASTER_EGG_ACTIVATED = 12,  // Easter egg activated.
 
-  // For "Google cached copy" button experiment.
-  NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN = 13,
-  NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_CLICKED = 14,
   // Obsolete. No longer experimenting with the label.
+  // NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN = 13,
+  // NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_CLICKED = 14,
   // NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_SHOWN = 15,
   // NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_CLICKED = 16,
 

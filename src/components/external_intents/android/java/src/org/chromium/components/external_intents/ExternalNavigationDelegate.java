@@ -4,16 +4,18 @@
 
 package org.chromium.components.external_intents;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.Origin;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -23,10 +25,15 @@ import java.lang.annotation.RetentionPolicy;
  */
 public interface ExternalNavigationDelegate {
     /**
-     * Returns the Activity with which this delegate is associated, or null if there
-     * is no such Activity at the time of invocation.
+     * Returns the Context with which this delegate is associated, or null if there is no such
+     * Context at the time of invocation. The returned Context may or may not be a wrapper around an
+     * Activity with which the delegate is associated. Note that when obtaining resources, however,
+     * the handler should do so directly via the returned Context (i.e., not via the Activity that
+     * it is wrapping, even if it is in fact wrapping one). The reason is that some embedders handle
+     * resource fetching via special logic in the ContextWrapper object that is wrapping the
+     * Activity.
      */
-    Activity getActivityContext();
+    Context getContext();
 
     /**
      * Determine if this app is the default or only handler for a given intent. If true, this app
@@ -88,22 +95,6 @@ public interface ExternalNavigationDelegate {
     int maybeHandleStartActivityIfNeeded(Intent intent, boolean proxy);
 
     /**
-     * Display a dialog warning the user that they may be leaving this app by starting this
-     * intent. Give the user the opportunity to cancel the action. And if it is canceled, a
-     * navigation will happen in this app. Catches BadTokenExceptions caused by showing the dialog
-     * on certain devices. (crbug.com/782602)
-     * @param intent The intent for external application that will be sent.
-     * @param referrerUrl The referrer for the current navigation.
-     * @param fallbackUrl The URL to load if the user doesn't proceed with external intent.
-     * @param needsToCloseTab Whether the current tab has to be closed after the intent is sent.
-     * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
-     *              used by Instant Apps intents.
-     * @return True if the function returned error free, false if it threw an exception.
-     */
-    boolean startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl,
-            boolean needsToCloseTab, boolean proxy);
-
-    /**
      * Handle the incognito intent by loading it as a URL in the embedder, using the fallbackUrl if
      * the intent URL cannot be handled by the embedder.
      * @param intent The intent to be handled by the embedder.
@@ -133,8 +124,12 @@ public interface ExternalNavigationDelegate {
      */
     void maybeAdjustInstantAppExtras(Intent intent, boolean isIntentToInstantApp);
 
-    /** Invoked for intents with user gestures and records the user gesture if desired. */
-    void maybeSetUserGesture(Intent intent);
+    /**
+     * Invoked for intents with request metadata such as user gesture, whether request is renderer
+     * initiated and the initiator origin. Records the information if desired.
+     */
+    void maybeSetRequestMetadata(Intent intent, boolean hasUserGesture, boolean isRendererInitiated,
+            @Nullable Origin initiatorOrigin);
 
     /**
      * Records the pending incognito URL if desired. Called only if the
@@ -173,6 +168,15 @@ public interface ExternalNavigationDelegate {
      * @return Whether this delegate has a valid tab available.
      */
     boolean hasValidTab();
+
+    /**
+     * @return Whether it's possible to close the current tab on launching on an incognito intent.
+     * TODO(blundell): Investigate whether it would be feasible to change the //chrome
+     * implementation of this method to be identical to that of its implementation of
+     * ExternalNavigationDelegate#hasValidTab() and then eliminate this method in favor of
+     * ExternalNavigationHandler calling hasValidTab() if so.
+     */
+    boolean canCloseTabOnIncognitoIntentLaunch();
 
     /**
      * @return whether this delegate supports creation of new tabs. If this method returns false,
@@ -216,12 +220,6 @@ public interface ExternalNavigationDelegate {
      * @return Whether the Intent points to Autofill Assistant
      */
     boolean isIntentToAutofillAssistant(Intent intent);
-
-    /**
-     * @param packageName The package to check.
-     * @return Whether the package is a valid WebAPK package.
-     */
-    boolean isValidWebApk(String packageName);
 
     /**
      * Gives the embedder a chance to handle the intent via the autofill assistant.

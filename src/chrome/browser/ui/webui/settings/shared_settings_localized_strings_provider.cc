@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -24,12 +26,12 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "media/base/media_switches.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
-
 #if defined(OS_CHROMEOS)
-#include "ui/base/l10n/l10n_util.h"
-#endif
+#include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace settings {
 #if defined(OS_CHROMEOS)
@@ -49,8 +51,9 @@ base::string16 GetHelpUrlWithBoard(const std::string& original_url) {
 void AddCaptionSubpageStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"captionsTitle", IDS_SETTINGS_CAPTIONS},
-      {"captionsSettings", IDS_SETTINGS_CAPTIONS_SETTINGS},
-      {"captionsPreview", IDS_SETTINGS_CAPTIONS_PREVIEW},
+      {"captionsPreferencesTitle", IDS_SETTINGS_CAPTIONS_PREFERENCES_TITLE},
+      {"captionsPreferencesSubtitle",
+       IDS_SETTINGS_CAPTIONS_PREFERENCES_SUBTITLE},
       {"captionsTextSize", IDS_SETTINGS_CAPTIONS_TEXT_SIZE},
       {"captionsTextFont", IDS_SETTINGS_CAPTIONS_TEXT_FONT},
       {"captionsTextColor", IDS_SETTINGS_CAPTIONS_TEXT_COLOR},
@@ -78,8 +81,15 @@ void AddCaptionSubpageStrings(content::WebUIDataSource* html_source) {
       {"captionsColorCyan", IDS_SETTINGS_CAPTIONS_COLOR_CYAN},
       {"captionsColorMagenta", IDS_SETTINGS_CAPTIONS_COLOR_MAGENTA},
       {"captionsDefaultSetting", IDS_SETTINGS_CAPTIONS_DEFAULT_SETTING},
+      {"captionsEnableLiveCaptionTitle",
+       IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_TITLE},
+      {"captionsEnableLiveCaptionSubtitle",
+       IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddBoolean("enableLiveCaption",
+                          base::FeatureList::IsEnabled(media::kLiveCaption));
 }
 
 void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source) {
@@ -140,16 +150,9 @@ void AddSyncAccountControlStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PEOPLE_SYNC_PASSWORDS_NOT_WORKING},
       {"peopleSignOut", IDS_SETTINGS_PEOPLE_SIGN_OUT},
       {"useAnotherAccount", IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT},
+      {"syncAdvancedPageTitle", IDS_SETTINGS_NEW_SYNC_ADVANCED_PAGE_TITLE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-  if (base::FeatureList::IsEnabled(features::kSyncSetupFriendlySettings)) {
-    html_source->AddLocalizedString("syncAdvancedPageTitle",
-                                    IDS_SETTINGS_NEW_SYNC_ADVANCED_PAGE_TITLE);
-
-  } else {
-    html_source->AddLocalizedString("syncAdvancedPageTitle",
-                                    IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE);
-  }
 }
 
 #if defined(OS_CHROMEOS)
@@ -187,6 +190,7 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
       {"syncPageTitle", IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
       {"passphraseConfirmationPlaceholder",
        IDS_SETTINGS_PASSPHRASE_CONFIRMATION_PLACEHOLDER},
+      {"readingListCheckboxLabel", IDS_SETTINGS_READING_LIST_CHECKBOX_LABEL},
       {"syncLoading", IDS_SETTINGS_SYNC_LOADING},
       {"themesAndWallpapersCheckboxLabel",
        IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL},
@@ -198,6 +202,8 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
       {"syncSetupCancelDialogBody", IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_BODY},
       {"personalizeGoogleServicesTitle",
        IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE},
+      {"manageSyncedDataTitle",
+       IDS_SETTINGS_NEW_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
@@ -231,15 +237,62 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
 #else
           base::ASCIIToUTF16(chrome::kSyncEncryptionHelpURL)));
 #endif
-  if (base::FeatureList::IsEnabled(features::kSyncSetupFriendlySettings)) {
-    html_source->AddLocalizedString(
-        "manageSyncedDataTitle",
-        IDS_SETTINGS_NEW_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT);
-  } else {
-    html_source->AddLocalizedString(
-        "manageSyncedDataTitle",
-        IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT);
-  }
 }
+
+#if defined(OS_CHROMEOS)
+void AddNearbyShareData(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"nearbyShareTitle", IDS_SETTINGS_NEARBY_SHARE_TITLE},
+      {"nearbyShareDeviceNameRowTitle",
+       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ROW_TITLE},
+      {"nearbyShareDeviceNameDialogTitle",
+       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_DIALOG_TITLE},
+      {"nearbyShareEditDeviceName", IDS_SETTINGS_NEARBY_SHARE_EDIT_DEVICE_NAME},
+      {"nearbyShareDeviceNameAriaDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ARIA_DESCRIPTION},
+      {"nearbyShareEditDataUsage", IDS_SETTINGS_NEARBY_SHARE_EDIT_DATA_USAGE},
+      {"nearbyShareUpdateDataUsage",
+       IDS_SETTINGS_NEARBY_SHARE_UPDATE_DATA_USAGE},
+      {"nearbyShareDataUsageDialogTitle",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DIALOG_TITLE},
+      {"nearbyShareDataUsageWifiOnlyLabel",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_WIFI_ONLY_LABEL},
+      {"nearbyShareDataUsageWifiOnlyDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_WIFI_ONLY_DESCRIPTION},
+      {"nearbyShareDataUsageDataLabel",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DATA_LABEL},
+      {"nearbyShareDataUsageDataDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DATA_DESCRIPTION},
+      {"nearbyShareDataUsageOfflineLabel",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_OFFLINE_LABEL},
+      {"nearbyShareDataUsageOfflineDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_OFFLINE_DESCRIPTION},
+      {"nearbyShareDataUsageDataEditButtonDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_EDIT_BUTTON_DATA_DESCRIPTION},
+      {"nearbyShareDataUsageWifiOnlyEditButtonDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_EDIT_BUTTON_WIFI_ONLY_DESCRIPTION},
+      {"nearbyShareDataUsageOfflineEditButtonDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_EDIT_BUTTON_OFFLINE_DESCRIPTION},
+      {"nearbyShareContactVisibilityRowTitle",
+       IDS_SETTINGS_NEARBY_SHARE_CONTACT_VISIBILITY_ROW_TITLE},
+      {"nearbyShareEditVisibility", IDS_SETTINGS_NEARBY_SHARE_EDIT_VISIBILITY},
+      {"nearbyShareVisibilityDialogTitle",
+       IDS_SETTINGS_NEARBY_SHARE_VISIBILITY_DIALOG_TITLE}};
+
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddBoolean(
+      "nearbySharingFeatureFlag",
+      base::FeatureList::IsEnabled(features::kNearbySharing));
+
+  // To use lottie, the worker-src CSP needs to be updated for the web ui that
+  // is using it. Since as of now there are only a couple of webuis using
+  // lottie animations, this update has to be performed manually. As the usage
+  // increases, set this as the default so manual override is no longer
+  // required.
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace settings

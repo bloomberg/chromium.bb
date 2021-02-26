@@ -123,6 +123,9 @@ class AccountReconcilor : public KeyedService,
   // from being invalidated during the deletion.
   std::unique_ptr<ScopedSyncedDataDeletion> GetScopedSyncDataDeletion();
 
+  // Returns true if reconcilor is blocked.
+  bool IsReconcileBlocked() const;
+
  private:
   friend class AccountReconcilorTest;
   friend class DiceBrowserTest;
@@ -262,8 +265,7 @@ class AccountReconcilor : public KeyedService,
   // Overridden from content_settings::Observer.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,
-                               ContentSettingsType content_type,
-                               const std::string& resource_identifier) override;
+                               ContentSettingsType content_type) override;
 
   // Overridden from signin::IdentityManager::Observer.
   void OnEndBatchOfRefreshTokenStateChanges() override;
@@ -291,7 +293,6 @@ class AccountReconcilor : public KeyedService,
   void DecrementLockCount();
   void BlockReconcile();
   void UnblockReconcile();
-  bool IsReconcileBlocked() const;
 
   void HandleReconcileTimeout();
 

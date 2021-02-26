@@ -7,10 +7,7 @@
 
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/tools/quic_backend_response.h"
-
-namespace spdy {
-class SpdyHeaderBlock;
-}  // namespace spdy
+#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 
 namespace quic {
 
@@ -49,7 +46,7 @@ class QuicSimpleServerBackend {
   // If the response has to be fetched over the network, the function
   // asynchronously calls |request_handler| with the HTTP response.
   virtual void FetchResponseFromBackend(
-      const spdy::SpdyHeaderBlock& request_headers,
+      const spdy::Http2HeaderBlock& request_headers,
       const std::string& request_body,
       RequestHandler* request_handler) = 0;
   // Clears the state of the backend  instance

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
+#include "components/blocked_content/popup_opener_tab_helper.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -98,8 +98,7 @@ IN_PROC_BROWSER_TEST_F(PopupOpenerTabHelperBrowserTest,
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   host_content_settings_map->SetContentSettingDefaultScope(
-      first_url, first_url, ContentSettingsType::POPUPS, std::string(),
-      CONTENT_SETTING_ALLOW);
+      first_url, first_url, ContentSettingsType::POPUPS, CONTENT_SETTING_ALLOW);
 
   // Open and close two pop-ups, the opener id does not change.
   const ukm::SourceId opener_source_id =

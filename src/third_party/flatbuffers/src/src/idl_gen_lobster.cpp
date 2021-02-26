@@ -29,7 +29,8 @@ class LobsterGenerator : public BaseGenerator {
  public:
   LobsterGenerator(const Parser &parser, const std::string &path,
                    const std::string &file_name)
-      : BaseGenerator(parser, path, file_name, "" /* not used */, "_") {
+      : BaseGenerator(parser, path, file_name, "" /* not used */, "_",
+                      "lobster") {
     static const char *const keywords[] = {
       "nil",    "true",    "false",     "return",  "struct",    "class",
       "import", "int",     "float",     "string",  "any",       "def",
@@ -83,15 +84,15 @@ class LobsterGenerator : public BaseGenerator {
 
   // This uses Python names for now..
   std::string GenTypeBasic(const Type &type) {
-    static const char *ctypename[] = {
     // clang-format off
+    static const char *ctypename[] = {
       #define FLATBUFFERS_TD(ENUM, IDLTYPE, \
-        CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, RTYPE, KTYPE) \
+              CTYPE, JTYPE, GTYPE, NTYPE, PTYPE, ...) \
         #PTYPE,
-      FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
+        FLATBUFFERS_GEN_TYPES(FLATBUFFERS_TD)
       #undef FLATBUFFERS_TD
-      // clang-format on
     };
+    // clang-format on
     return ctypename[type.base_type];
   }
 
@@ -367,8 +368,8 @@ class LobsterGenerator : public BaseGenerator {
       auto &struct_def = **it;
       GenStruct(struct_def, &code);
     }
-    return SaveFile((path_ + file_name_ + "_generated.lobster").c_str(), code,
-                    false);
+    return SaveFile(GeneratedFileName(path_, file_name_, parser_.opts).c_str(),
+                    code, false);
   }
 
  private:

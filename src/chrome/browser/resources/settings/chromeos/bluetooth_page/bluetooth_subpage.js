@@ -20,6 +20,7 @@ Polymer({
   behaviors: [
     I18nBehavior,
     CrScrollableBehavior,
+    DeepLinkingBehavior,
     ListPropertyUpdateBehavior,
     settings.RouteObserverBehavior,
   ],
@@ -32,7 +33,10 @@ Polymer({
     },
 
     /** Reflects the bluetooth-page property. */
-    stateChangeInProgress: Boolean,
+    stateChangeInProgress: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
 
     /**
      * The bluetooth adapter state, cached by bluetooth-page.
@@ -139,7 +143,7 @@ Polymer({
 
     /**
      * Used by FocusRowBehavior to track the last focused element on a row.
-     * @private
+     * @private {?Object}
      */
     lastFocused_: Object,
 
@@ -148,6 +152,31 @@ Polymer({
      * @private
      */
     listBlurred_: Boolean,
+
+    /**
+     * Contains the settingId of any deep link that wasn't able to be shown,
+     * null otherwise.
+     * @private {?chromeos.settings.mojom.Setting}
+     */
+    pendingSettingId_: {
+      type: Number,
+      value: null,
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kBluetoothOnOff,
+        chromeos.settings.mojom.Setting.kBluetoothConnectToDevice,
+        chromeos.settings.mojom.Setting.kBluetoothDisconnectFromDevice,
+        chromeos.settings.mojom.Setting.kBluetoothPairDevice,
+        chromeos.settings.mojom.Setting.kBluetoothUnpairDevice,
+      ]),
+    },
   },
 
   observers: [
@@ -162,6 +191,28 @@ Polymer({
    * @private
    */
   updateTimerId_: undefined,
+
+  /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
+   */
+  beforeDeepLinkAttempt(settingId) {
+    // If lastFocused_ is an internal element of a Focus Row (such as the menu
+    // button on a paired device), FocusRowBehavior prevents the Focus Row from
+    // being focused. We clear lastFocused_ so that we can focus the row (such
+    // as a paired/unpaired device).
+    if (settingId ===
+            chromeos.settings.mojom.Setting.kBluetoothConnectToDevice ||
+        settingId ===
+            chromeos.settings.mojom.Setting.kBluetoothDisconnectFromDevice ||
+        settingId === chromeos.settings.mojom.Setting.kBluetoothPairDevice ||
+        settingId === chromeos.settings.mojom.Setting.kBluetoothUnpairDevice) {
+      this.lastFocused_ = null;
+    }
+    // Should continue with deep link attempt.
+    return true;
+  },
 
   /** @override */
   detached() {
@@ -178,8 +229,23 @@ Polymer({
    * @protected
    */
   currentRouteChanged(route) {
+    // Any navigation resets the previous attempt to deep link.
+    this.pendingSettingId_ = null;
     this.updateDiscovery_();
     this.startOrStopRefreshingDeviceList_();
+
+    // Does not apply to this page.
+    if (route !== settings.routes.BLUETOOTH_DEVICES) {
+      return;
+    }
+
+    this.attemptDeepLink().then(result => {
+      if (!result.deepLinkShown && result.pendingSettingId) {
+        // Store any deep link settingId that wasn't shown so we can try again
+        // in refreshBluetoothList_.
+        this.pendingSettingId_ = result.pendingSettingId;
+      }
+    });
   },
 
   /** @private */
@@ -249,7 +315,7 @@ Polymer({
     if (!this.adapterState || !this.adapterState.powered) {
       return;
     }
-    if (settings.Router.getInstance().getCurrentRoute() ==
+    if (settings.Router.getInstance().getCurrentRoute() ===
         settings.routes.BLUETOOTH_DEVICES) {
       this.startDiscovery_();
     } else {
@@ -266,7 +332,7 @@ Polymer({
     this.bluetooth.startDiscovery(function() {
       const lastError = chrome.runtime.lastError;
       if (lastError) {
-        if (lastError.message == 'Starting discovery failed') {
+        if (lastError.message === 'Starting discovery failed') {
           return;
         }  // May happen if also started elsewhere, ignore.
         console.error('startDiscovery Error: ' + lastError.message);
@@ -283,7 +349,7 @@ Polymer({
     this.bluetooth.stopDiscovery(function() {
       const lastError = chrome.runtime.lastError;
       if (lastError) {
-        if (lastError.message == 'Failed to stop discovery') {
+        if (lastError.message === 'Failed to stop discovery') {
           return;
         }  // May happen if also stopped elsewhere, ignore.
         console.error('stopDiscovery Error: ' + lastError.message);
@@ -301,11 +367,11 @@ Polymer({
   onDeviceEvent_(e) {
     const action = e.detail.action;
     const device = e.detail.device;
-    if (action == 'connect') {
+    if (action === 'connect') {
       this.connectDevice_(device);
-    } else if (action == 'disconnect') {
+    } else if (action === 'disconnect') {
       this.disconnectDevice_(device);
-    } else if (action == 'remove') {
+    } else if (action === 'remove') {
       this.forgetDevice_(device);
     } else {
       console.error('Unexected action: ' + action);
@@ -317,7 +383,7 @@ Polymer({
    * @private
    */
   onEnableTap_(event) {
-    if (this.isToggleEnabled_()) {
+    if (this.isAdapterAvailable_() && !this.stateChangeInProgress) {
       this.bluetoothToggleState = !this.bluetoothToggleState;
     }
     event.stopPropagation();
@@ -341,9 +407,8 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isToggleEnabled_() {
-    return this.adapterState !== undefined && this.adapterState.available &&
-        !this.stateChangeInProgress;
+  isAdapterAvailable_() {
+    return !!this.adapterState && this.adapterState.available;
   },
 
   /**
@@ -363,7 +428,7 @@ Polymer({
    * @private
    */
   showNoDevices_(bluetoothToggleState, deviceList) {
-    return bluetoothToggleState && deviceList.length == 0;
+    return bluetoothToggleState && deviceList.length === 0;
   },
 
   /**
@@ -395,7 +460,7 @@ Polymer({
       }
 
       // If |pairingDevice_| has changed, ignore the connect result.
-      if (this.pairingDevice_ && address != this.pairingDevice_.address) {
+      if (this.pairingDevice_ && address !== this.pairingDevice_.address) {
         return;
       }
 
@@ -406,7 +471,7 @@ Polymer({
               result)) {
         this.openDialog_();
       } else if (
-          result != chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS) {
+          result !== chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS) {
         this.$.deviceDialog.close();
       }
     });
@@ -466,6 +531,18 @@ Polymer({
   },
 
   /**
+   * Return the sorted devices based on the connected statuses, connected
+   * devices are first followed by non-connected devices.
+   *
+   * @param {!Array<!chrome.bluetooth.Device>} devices
+   * @return {!Array<!chrome.bluetooth.Device>}
+   * @private
+   */
+  sortDevices_(devices) {
+    return devices.sort((a, b) => a.connected ? -1 : (b.connected ? 1 : 0));
+  },
+
+  /**
    * Requests bluetooth device list from Chrome. Update deviceList_ once the
    * results are returned from chrome.
    * @private
@@ -476,7 +553,19 @@ Polymer({
       limit: MAX_NUMBER_DEVICE_SHOWN
     };
     this.bluetooth.getDevices(filter, devices => {
-      this.deviceList_ = devices;
+      this.deviceList_ = this.sortDevices_(devices);
+
+      // Check if we have yet to focus a deep-linked element.
+      if (!this.pendingSettingId_) {
+        return;
+      }
+
+      this.beforeDeepLinkAttempt(this.pendingSettingId_);
+      this.showDeepLink(this.pendingSettingId_).then(result => {
+        if (result.deepLinkShown) {
+          this.pendingSettingId_ = null;
+        }
+      });
     });
   },
 

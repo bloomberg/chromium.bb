@@ -32,6 +32,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -40,16 +41,15 @@
 
 namespace blink {
 
-class LocalFrame;
+class LocalDOMWindow;
 
 class CORE_EXPORT Screen final : public ScriptWrappable,
                                  public ExecutionContextClient,
                                  public Supplementable<Screen> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Screen);
 
  public:
-  explicit Screen(LocalFrame*);
+  explicit Screen(LocalDOMWindow*);
 
   int height() const;
   int width() const;
@@ -60,11 +60,10 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
   int availHeight() const;
   int availWidth() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
-  // Proposed extensions to the Screen interface.
-  // https://github.com/webscreens/screen-enumeration
-  // TODO(msw): Resolve different info sources, caching, and lifetimes.
+  // TODO(crbug.com/1116528): Use a dictionary, not the Screen interface, for
+  // proposed multi-screen info: https://github.com/webscreens/window-placement
   Screen(display::mojom::blink::DisplayPtr display,
          bool internal,
          bool primary,
@@ -83,20 +82,20 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
 
  private:
   // A static snapshot of the display's information, provided upon construction.
-  // This member is only valid for Screen objects obtained via the experimental
-  // Screen Enumeration API.
+  // This member is only non-null for Screen objects obtained via the
+  // experimental Window Placement API.
   const display::mojom::blink::DisplayPtr display_;
   // True if this is an internal display of the device; it is a static value
   // provided upon construction. This member is only valid for Screen objects
-  // obtained via the experimental Screen Enumeration API.
+  // obtained via the experimental Window Placement API.
   const base::Optional<bool> internal_;
   // True if this is the primary screen of the operating system; it is a static
   // value provided upon construction. This member is only valid for Screen
-  // objects obtained via the experimental Screen Enumeration API.
+  // objects obtained via the experimental Window Placement API.
   const base::Optional<bool> primary_;
   // A web-exposed device id; it is a static value provided upon construction.
   // This member is only valid for Screen objects obtained via the experimental
-  // Screen Enumeration API.
+  // Window Placement API.
   const String id_;
 };
 

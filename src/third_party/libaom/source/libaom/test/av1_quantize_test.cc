@@ -202,6 +202,7 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
 
   QuantizeFuncParams params_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1QuantizeTest);
 
 TEST_P(AV1QuantizeTest, BitExactCheck) { RunQuantizeTest(); }
 TEST_P(AV1QuantizeTest, EobVerify) { RunEobTest(); }

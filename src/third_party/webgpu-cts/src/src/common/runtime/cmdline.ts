@@ -1,18 +1,19 @@
-// tslint:disable: no-console
+/* eslint no-console: "off" */
+/* eslint no-process-exit: "off" */
 
 import * as fs from 'fs';
 import * as process from 'process';
 
-import { TestSpecID } from '../framework/id.js';
-import { TestLoader } from '../framework/loader.js';
-import { LiveTestCaseResult, Logger } from '../framework/logger.js';
-import { makeQueryString } from '../framework/url_query.js';
+import { DefaultTestFileLoader } from '../framework/file_loader.js';
+import { Logger } from '../framework/logging/logger.js';
+import { LiveTestCaseResult } from '../framework/logging/result.js';
+import { parseQuery } from '../framework/query/parseQuery.js';
 import { assert, unreachable } from '../framework/util/util.js';
 
 function usage(rc: number): never {
   console.log('Usage:');
   console.log('  tools/run [OPTIONS...] QUERIES...');
-  console.log('  tools/run unittests: webgpu:buffers/');
+  console.log("  tools/run 'unittests:*' 'webgpu:buffers,*'");
   console.log('Options:');
   console.log('  --verbose     Print result/log of every test as it runs.');
   console.log('  --debug       Include debug messages in logging.');
@@ -28,7 +29,7 @@ if (!fs.existsSync('src/common/runtime/cmdline.ts')) {
 let verbose = false;
 let debug = false;
 let printJSON = false;
-const filterArgs = [];
+const queries: string[] = [];
 for (const a of process.argv.slice(2)) {
   if (a.startsWith('-')) {
     if (a === '--verbose') {
@@ -41,49 +42,52 @@ for (const a of process.argv.slice(2)) {
       usage(1);
     }
   } else {
-    filterArgs.push(a);
+    queries.push(a);
   }
 }
 
-if (filterArgs.length === 0) {
+if (queries.length === 0) {
   usage(0);
 }
 
 (async () => {
   try {
-    const loader = new TestLoader();
-    const files = await loader.loadTestsFromCmdLine(filterArgs);
+    const loader = new DefaultTestFileLoader();
+    assert(queries.length === 1, 'currently, there must be exactly one query on the cmd line');
+    const testcases = await loader.loadCases(parseQuery(queries[0]));
 
-    const log = new Logger();
+    const log = new Logger(debug);
 
-    const failed: Array<[TestSpecID, LiveTestCaseResult]> = [];
-    const warned: Array<[TestSpecID, LiveTestCaseResult]> = [];
-    const skipped: Array<[TestSpecID, LiveTestCaseResult]> = [];
+    const failed: Array<[string, LiveTestCaseResult]> = [];
+    const warned: Array<[string, LiveTestCaseResult]> = [];
+    const skipped: Array<[string, LiveTestCaseResult]> = [];
 
     let total = 0;
-    for (const f of files) {
-      if (!('g' in f.spec)) {
-        continue;
+
+    for (const testcase of testcases) {
+      const name = testcase.query.toString();
+      const [rec, res] = log.record(name);
+      await testcase.run(rec);
+
+      if (verbose) {
+        printResults([[name, res]]);
       }
 
-      const [rec] = log.record(f.id);
-      for (const t of f.spec.g.iterate(rec)) {
-        const res = await t.run(debug);
-        if (verbose) {
-          printResults([[f.id, res]]);
-        }
-
-        total++;
-        if (res.status === 'pass') {
-        } else if (res.status === 'fail') {
-          failed.push([f.id, res]);
-        } else if (res.status === 'warn') {
-          warned.push([f.id, res]);
-        } else if (res.status === 'skip') {
-          skipped.push([f.id, res]);
-        } else {
+      total++;
+      switch (res.status) {
+        case 'pass':
+          break;
+        case 'fail':
+          failed.push([name, res]);
+          break;
+        case 'warn':
+          warned.push([name, res]);
+          break;
+        case 'skip':
+          skipped.push([name, res]);
+          break;
+        default:
           unreachable('unrecognized status');
-        }
       }
     }
 
@@ -111,13 +115,11 @@ if (filterArgs.length === 0) {
     }
 
     const passed = total - warned.length - failed.length - skipped.length;
-    function pct(x: number): string {
-      return ((100 * x) / total).toFixed(2);
-    }
-    function rpt(x: number): string {
+    const pct = (x: number) => ((100 * x) / total).toFixed(2);
+    const rpt = (x: number) => {
       const xs = x.toString().padStart(1 + Math.log10(total), ' ');
       return `${xs} / ${total} = ${pct(x).padStart(6, ' ')}%`;
-    }
+    };
     console.log('');
     console.log(`** Summary **
 Passed  w/o warnings = ${rpt(passed)}
@@ -134,9 +136,9 @@ Failed               = ${rpt(failed.length)}`);
   }
 })();
 
-function printResults(results: Array<[TestSpecID, LiveTestCaseResult]>): void {
-  for (const [id, r] of results) {
-    console.log(`[${r.status}] ${makeQueryString(id, r)} (${r.timems}ms). Log:`);
+function printResults(results: Array<[string, LiveTestCaseResult]>): void {
+  for (const [name, r] of results) {
+    console.log(`[${r.status}] ${name} (${r.timems}ms). Log:`);
     if (r.logs) {
       for (const l of r.logs) {
         console.log('  - ' + l.toJSON().replace(/\n/g, '\n    '));

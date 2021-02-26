@@ -33,13 +33,21 @@ class NGLayoutInputNode;
 enum class LengthResolvePhase { kIntrinsic, kLayout };
 
 inline bool NeedMinMaxSize(const ComputedStyle& style) {
-  // This check is technically too broad (fill-available does not need intrinsic
-  // size computation) but that's a rare case and only affects performance, not
-  // correctness.
-  return style.LogicalWidth().IsIntrinsic() ||
-         style.LogicalMinWidth().IsIntrinsic() ||
-         style.LogicalMaxWidth().IsIntrinsic();
+  return style.LogicalWidth().IsContentOrIntrinsic() ||
+         style.LogicalMinWidth().IsContentOrIntrinsic() ||
+         style.LogicalMaxWidth().IsContentOrIntrinsic();
 }
+
+CORE_EXPORT LayoutUnit
+InlineSizeFromAspectRatio(const NGBoxStrut& border_padding,
+                          const LogicalSize& aspect_ratio,
+                          EBoxSizing box_sizing,
+                          LayoutUnit block_size);
+
+LayoutUnit BlockSizeFromAspectRatio(const NGBoxStrut& border_padding,
+                                    const LogicalSize& aspect_ratio,
+                                    EBoxSizing box_sizing,
+                                    LayoutUnit inline_size);
 
 // Returns if the given |Length| is unresolvable, e.g. the length is %-based
 // during the intrinsic phase. For block lengths we also consider 'auto',
@@ -67,14 +75,14 @@ ResolveInlineLengthInternal(const NGConstraintSpace&,
                             const base::Optional<MinMaxSizes>&,
                             const Length&);
 
-// Same as ResolveInlineLengthInternal, except here |content_size| roughly plays
-// the part of |MinMaxSizes|.
+// Same as ResolveInlineLengthInternal, except here |intrinsic_size| roughly
+// plays the part of |MinMaxSizes|.
 CORE_EXPORT LayoutUnit ResolveBlockLengthInternal(
     const NGConstraintSpace&,
     const ComputedStyle&,
     const NGBoxStrut& border_padding,
     const Length&,
-    LayoutUnit content_size,
+    LayoutUnit intrinsic_size,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr);
 
@@ -91,8 +99,12 @@ inline LayoutUnit ResolveMinInlineLength(
     return border_padding.InlineSum();
 
   base::Optional<MinMaxSizes> min_max_sizes;
-  if (length.IsIntrinsic())
-    min_max_sizes = min_max_sizes_func().sizes;
+  if (length.IsContentOrIntrinsic()) {
+    min_max_sizes =
+        min_max_sizes_func(length.IsMinIntrinsic() ? MinMaxSizesType::kIntrinsic
+                                                   : MinMaxSizesType::kContent)
+            .sizes;
+  }
 
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
                                      min_max_sizes, length);
@@ -126,8 +138,12 @@ inline LayoutUnit ResolveMaxInlineLength(
     return LayoutUnit::Max();
 
   base::Optional<MinMaxSizes> min_max_sizes;
-  if (length.IsIntrinsic())
-    min_max_sizes = min_max_sizes_func().sizes;
+  if (length.IsContentOrIntrinsic()) {
+    min_max_sizes =
+        min_max_sizes_func(length.IsMinIntrinsic() ? MinMaxSizesType::kIntrinsic
+                                                   : MinMaxSizesType::kContent)
+            .sizes;
+  }
 
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
                                      min_max_sizes, length);
@@ -157,8 +173,12 @@ inline LayoutUnit ResolveMainInlineLength(
     const MinMaxSizesFunc& min_max_sizes_func,
     const Length& length) {
   base::Optional<MinMaxSizes> min_max_sizes;
-  if (length.IsIntrinsic())
-    min_max_sizes = min_max_sizes_func().sizes;
+  if (length.IsContentOrIntrinsic()) {
+    min_max_sizes =
+        min_max_sizes_func(length.IsMinIntrinsic() ? MinMaxSizesType::kIntrinsic
+                                                   : MinMaxSizesType::kContent)
+            .sizes;
+  }
 
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
                                      min_max_sizes, length);
@@ -219,7 +239,7 @@ inline LayoutUnit ResolveMainBlockLength(
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
     const Length& length,
-    LayoutUnit content_size,
+    LayoutUnit intrinsic_size,
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr) {
@@ -227,10 +247,10 @@ inline LayoutUnit ResolveMainBlockLength(
                BlockLengthUnresolvable(
                    constraint_space, length, phase,
                    opt_percentage_resolution_block_size_for_min_max)))
-    return content_size;
+    return intrinsic_size;
 
   return ResolveBlockLengthInternal(
-      constraint_space, style, border_padding, length, content_size,
+      constraint_space, style, border_padding, length, intrinsic_size,
       opt_percentage_resolution_block_size_for_min_max);
 }
 
@@ -251,7 +271,7 @@ inline LayoutUnit ResolveMainBlockLength(
     return intrinsic_block_size_func();
 
   LayoutUnit intrinsic_block_size = kIndefiniteSize;
-  if (length.IsIntrinsicOrAuto())
+  if (length.IsAutoOrContentOrIntrinsic())
     intrinsic_block_size = intrinsic_block_size_func();
 
   return ResolveBlockLengthInternal(
@@ -271,7 +291,7 @@ inline LayoutUnit ResolveMainBlockLength(
 // coordinate system.
 CORE_EXPORT MinMaxSizes
 ComputeMinAndMaxContentContributionForTest(WritingMode writing_mode,
-                                           const ComputedStyle&,
+                                           const NGBlockNode&,
                                            const MinMaxSizes&);
 
 // A version of ComputeMinAndMaxContentContribution that does not require you
@@ -284,15 +304,46 @@ ComputeMinAndMaxContentContributionForTest(WritingMode writing_mode,
 // size of the child).
 MinMaxSizesResult ComputeMinAndMaxContentContribution(
     const ComputedStyle& parent_style,
-    NGLayoutInputNode child,
+    const NGBlockNode& child,
     const MinMaxSizesInput&);
+
+// Computes the min-block-size and max-block-size values for a node.
+MinMaxSizes ComputeMinMaxBlockSize(
+    const NGConstraintSpace&,
+    const ComputedStyle&,
+    const NGBoxStrut& border_padding,
+    LayoutUnit intrinsic_size,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
+        nullptr);
+
+MinMaxSizes ComputeTransferredMinMaxInlineSizes(
+    const LogicalSize& ratio,
+    const MinMaxSizes& block_min_max,
+    const NGBoxStrut& border_padding,
+    const EBoxSizing sizing);
+
+// Computes the transferred min/max inline sizes from the min/max block
+// sizes and the aspect ratio.
+// This will compute the min/max block sizes for you, but it only works with
+// styles that have a LogicalAspectRatio. It doesn't work if the aspect ratio is
+// coming from a replaced element.
+MinMaxSizes ComputeMinMaxInlineSizesFromAspectRatio(
+    const NGConstraintSpace&,
+    const ComputedStyle&,
+    const NGBoxStrut& border_padding,
+    LengthResolvePhase);
 
 // Tries to compute the inline size of a node from its block size and
 // aspect ratio. If there is no aspect ratio or the block size is indefinite,
 // returns kIndefiniteSize.
-LayoutUnit ComputeInlineSizeFromAspectRatio(const NGConstraintSpace&,
-                                            const ComputedStyle&,
-                                            const NGBoxStrut& border_padding);
+// This function will not do the right thing when used on a replaced element.
+// block_size can be specified to base the calculation off of that size
+// instead of calculating it.
+LayoutUnit ComputeInlineSizeFromAspectRatio(
+    const NGConstraintSpace&,
+    const ComputedStyle&,
+    const NGBoxStrut& border_padding,
+    LayoutUnit block_size = kIndefiniteSize);
 
 // Returns inline size of the node's border box by resolving the computed value
 // in style.logicalWidth (Length) to a layout unit, adding border and padding,
@@ -313,7 +364,7 @@ CORE_EXPORT LayoutUnit
 ComputeBlockSizeForFragment(const NGConstraintSpace&,
                             const ComputedStyle&,
                             const NGBoxStrut& border_padding,
-                            LayoutUnit content_size,
+                            LayoutUnit intrinsic_size,
                             base::Optional<LayoutUnit> inline_size);
 
 // Intrinsic size for replaced elements is computed as:
@@ -334,6 +385,7 @@ CORE_EXPORT void ComputeReplacedSize(
 
 // Based on available inline size, CSS computed column-width, CSS computed
 // column-count and CSS used column-gap, return CSS used column-count.
+// If computed column-count is auto, pass 0 as |computed_count|.
 CORE_EXPORT int ResolveUsedColumnCount(int computed_count,
                                        LayoutUnit computed_size,
                                        LayoutUnit used_gap,
@@ -371,12 +423,12 @@ CORE_EXPORT NGBoxStrut ComputeMarginsFor(const NGConstraintSpace&,
                                          const ComputedStyle&,
                                          const NGConstraintSpace& compute_for);
 
-inline NGBoxStrut ComputeMarginsFor(const ComputedStyle& child_style,
-                                    LayoutUnit percentage_resolution_size,
-                                    WritingMode container_writing_mode,
-                                    TextDirection container_direction) {
+inline NGBoxStrut ComputeMarginsFor(
+    const ComputedStyle& child_style,
+    LayoutUnit percentage_resolution_size,
+    WritingDirectionMode container_writing_direction) {
   return ComputePhysicalMargins(child_style, percentage_resolution_size)
-      .ConvertToLogical(container_writing_mode, container_direction);
+      .ConvertToLogical(container_writing_direction);
 }
 
 // Compute margins for the style owner.
@@ -388,7 +440,7 @@ inline NGBoxStrut ComputeMarginsForSelf(
   LayoutUnit percentage_resolution_size =
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
   return ComputePhysicalMargins(style, percentage_resolution_size)
-      .ConvertToLogical(style.GetWritingMode(), style.Direction());
+      .ConvertToLogical(style.GetWritingDirection());
 }
 
 // Compute line logical margins for the style owner.
@@ -403,7 +455,7 @@ inline NGLineBoxStrut ComputeLineMarginsForSelf(
   LayoutUnit percentage_resolution_size =
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
   return ComputePhysicalMargins(style, percentage_resolution_size)
-      .ConvertToLineLogical(style.GetWritingMode(), style.Direction());
+      .ConvertToLineLogical(style.GetWritingDirection());
 }
 
 // Compute line logical margins for the constraint space, in the visual order
@@ -416,8 +468,8 @@ inline NGLineBoxStrut ComputeLineMarginsForVisualContainer(
   LayoutUnit percentage_resolution_size =
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
   return ComputePhysicalMargins(style, percentage_resolution_size)
-      .ConvertToLineLogical(constraint_space.GetWritingMode(),
-                            TextDirection::kLtr);
+      .ConvertToLineLogical(
+          {constraint_space.GetWritingMode(), TextDirection::kLtr});
 }
 
 // Compute margins for a child during the min-max size calculation.
@@ -425,7 +477,7 @@ CORE_EXPORT NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
                                             NGLayoutInputNode child);
 
 CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
-                                      const ComputedStyle&);
+                                      const NGBlockNode&);
 
 CORE_EXPORT NGBoxStrut ComputeBordersForInline(const ComputedStyle& style);
 
@@ -451,8 +503,16 @@ inline NGLineBoxStrut ComputeLinePadding(
                         style.IsFlippedLinesWritingMode());
 }
 
-CORE_EXPORT NGBoxStrut ComputeScrollbars(const NGConstraintSpace&,
-                                         const NGLayoutInputNode);
+// Compute the scrollbars and scrollbar gutters.
+CORE_EXPORT NGBoxStrut ComputeScrollbarsForNonAnonymous(const NGBlockNode&);
+
+inline NGBoxStrut ComputeScrollbars(const NGConstraintSpace& space,
+                                    const NGBlockNode& node) {
+  if (space.IsAnonymous())
+    return NGBoxStrut();
+
+  return ComputeScrollbarsForNonAnonymous(node);
+}
 
 // Return true if we need to know the inline size of the fragment in order to
 // calculate its line-left offset. This is the case when we have auto margins,
@@ -500,10 +560,15 @@ CORE_EXPORT NGFragmentGeometry
 CalculateInitialMinMaxFragmentGeometry(const NGConstraintSpace&,
                                        const NGBlockNode&);
 
-// Shrink and return the available size by an inset. This may e.g. be used to
-// convert from border-box to content-box size. Indefinite block size is
-// allowed, in which case the inset will be ignored for block size.
-LogicalSize ShrinkAvailableSize(LogicalSize size, const NGBoxStrut& inset);
+// Shrinks the logical |size| by |insets|.
+LogicalSize ShrinkLogicalSize(LogicalSize size, const NGBoxStrut& insets);
+
+// Calculates the available size that children of the node should use.
+LogicalSize CalculateChildAvailableSize(
+    const NGConstraintSpace&,
+    const NGBlockNode& node,
+    const LogicalSize border_box_size,
+    const NGBoxStrut& border_scrollbar_padding);
 
 // Calculates the percentage resolution size that children of the node should
 // use.

@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -23,16 +24,17 @@ class NativeDisplayDelegate;
 }
 
 namespace ui {
-
-class CursorFactoryOzone;
-class InputController;
+class CursorFactory;
 class GpuPlatformSupportHost;
+class InputController;
 class OverlayManagerOzone;
-class PlatformScreen;
-class SurfaceFactoryOzone;
-class SystemInputInjector;
 class PlatformClipboard;
 class PlatformGLEGLUtility;
+class PlatformMenuUtils;
+class PlatformScreen;
+class PlatformUserInputMonitor;
+class SurfaceFactoryOzone;
+class SystemInputInjector;
 
 namespace internal {
 class InputMethodDelegate;
@@ -71,6 +73,11 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
 
   // Struct used to indicate platform properties.
   struct PlatformProperties {
+    PlatformProperties();
+    PlatformProperties(const PlatformProperties& other) = delete;
+    PlatformProperties& operator=(const PlatformProperties& other) = delete;
+    ~PlatformProperties();
+
     // Fuchsia only: set to true when the platforms requires |view_token| field
     // in PlatformWindowInitProperties when creating a window.
     bool needs_view_token = false;
@@ -88,12 +95,32 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     base::MessagePumpType message_pump_type_for_gpu =
         base::MessagePumpType::DEFAULT;
 
+    // Determines the type of message pump that should be used for viz
+    // compositor thread.
+    base::MessagePumpType message_pump_type_for_viz_compositor =
+        base::MessagePumpType::DEFAULT;
+
     // Determines if the platform supports vulkan swap chain.
     bool supports_vulkan_swap_chain = false;
 
     // Wayland only: determines if the client must ignore the screen bounds when
     // calculating bounds of menu windows.
     bool ignore_screen_bounds_for_menus = false;
+
+    // Wayland only: determines whether BufferQueue needs a background image to
+    // be stacked below an AcceleratedWidget to make a widget opaque.
+    bool needs_background_image = false;
+
+    // If true, the platform shows and updates the drag image.
+    bool platform_shows_drag_image = true;
+
+    // Linux only, but see a TODO in BrowserDesktopWindowTreeHostLinux.
+    // Determines whether the platform supports the global application menu.
+    bool supports_global_application_menus = false;
+
+    // Determines if the application modal dialogs should use the event blocker
+    // to allow the only browser window receiving UI events.
+    bool app_modal_dialogs_use_event_blocker = false;
   };
 
   // Properties available in the host process after initialization.
@@ -103,6 +130,30 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // logic can be skipped.
     bool supports_overlays = false;
   };
+
+  // Corresponds to chrome_browser_main_extra_parts.h.
+  //
+  // The browser process' initialization involves several steps -
+  // PreEarlyInitialization, PostMainMessageLoopStart, PostMainMessageLoopRun,
+  // etc. In order to be consistent with that and allow platform specific
+  // initialization steps, the OzonePlatform has three methods - one static
+  // PreEarlyInitialization that is expected to do some early non-ui
+  // initialization (like error handlers that X11 sets), and two non-static
+  // methods - PostMainmessageLoopStart and PostMainMessageLoopRun. The latter
+  // two are supposed to be called on a post start and a post-run of the
+  // MessageLoop. Please note that this methods must be run on the browser' UI
+  // thread.
+  //
+  // Creates OzonePlatform and does pre-early initialization (internally, sets
+  // error handlers if supported so that we can print errors during the browser
+  // process' start up).
+  static void PreEarlyInitialization();
+  // Sets error handlers if supported for the browser process after the message
+  // loop started. It's required to call this so that we can exit cleanly if the
+  // server can exit before we do.
+  virtual void PostMainMessageLoopStart(base::OnceCallback<void()> shutdown_cb);
+  // Resets the error handlers if set.
+  virtual void PostMainMessageLoopRun();
 
   // Initializes the subsystems/resources necessary for the UI process (e.g.
   // events) with additional properties to customize the ozone platform
@@ -129,7 +180,7 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   // inject these objects themselves. Ownership is retained by OzonePlatform.
   virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() = 0;
   virtual ui::OverlayManagerOzone* GetOverlayManager() = 0;
-  virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() = 0;
+  virtual ui::CursorFactory* GetCursorFactory() = 0;
   virtual ui::InputController* GetInputController() = 0;
   virtual ui::GpuPlatformSupportHost* GetGpuPlatformSupportHost() = 0;
   virtual std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() = 0;
@@ -144,6 +195,7 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
       internal::InputMethodDelegate* delegate,
       gfx::AcceleratedWidget widget) = 0;
   virtual PlatformGLEGLUtility* GetPlatformGLEGLUtility();
+  virtual PlatformMenuUtils* GetPlatformMenuUtils();
 
   // Returns true if the specified buffer format is supported.
   virtual bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
@@ -182,6 +234,13 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   // issues.
   virtual void AfterSandboxEntry();
 
+  // Creates a user input monitor.
+  // The user input comes from I/O devices and must be handled on the IO thread.
+  // |io_task_runner| must be bound to the IO thread so the implementation could
+  // ensure that calls happen on the right thread.
+  virtual std::unique_ptr<PlatformUserInputMonitor> GetPlatformUserInputMonitor(
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+
  protected:
   bool has_initialized_ui() const { return initialized_ui_; }
   bool has_initialized_gpu() const { return initialized_gpu_; }
@@ -189,13 +248,21 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   bool single_process() const { return single_process_; }
 
  private:
+  // Optional method for pre-early initialization. In case of X11, sets X11
+  // error handlers so that errors can be caught if early initialization fails.
+  virtual void PreEarlyInitialize();
+
   virtual void InitializeUI(const InitParams& params) = 0;
   virtual void InitializeGPU(const InitParams& params) = 0;
 
   bool initialized_ui_ = false;
   bool initialized_gpu_ = false;
+  bool prearly_initialized_ = false;
 
-  bool single_process_ = false;
+  // This value is checked on multiple threads. Declaring it volatile makes
+  // modifications to |single_process_| visible by other threads. Mutex is not
+  // needed since it's set before other threads are started.
+  volatile bool single_process_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatform);
 };

@@ -1283,7 +1283,7 @@ var checkCanvasRectColor = function(gl, x, y, width, height, color, opt_errorRan
           was += "," + buf[offset + j];
         }
         differentFn('at (' + (x + (i % width)) + ', ' + (y + Math.floor(i / width)) +
-                    ') expected: ' + color + ' was ' + was);
+                    ') expected: ' + color + ' was ' + was, buf);
         return;
       }
     }
@@ -1751,13 +1751,23 @@ var framebufferStatusShouldBe = function(gl, target, glStatuses, opt_msg) {
     return glEnumToString(gl, status);
   }).join(' or ');
   if (ndx < 0) {
-    var msg = "checkFramebufferStatus expected" + ((glStatuses.length > 1) ? " one of: " : ": ");
-    testFailed(msg + expected +  ". Was " + glEnumToString(gl, status) + " : " + opt_msg);
-  } else {
-    var msg = "checkFramebufferStatus was " + ((glStatuses.length > 1) ? "one of: " : "expected value: ");
-    testPassed(msg + expected + " : " + opt_msg);
+    let msg = "checkFramebufferStatus expected" + ((glStatuses.length > 1) ? " one of: " : ": ") +
+      expected +  ". Was " + glEnumToString(gl, status);
+    if (opt_msg) {
+      msg += ": " + opt_msg;
+    }
+    testFailed(msg);
+    return false;
   }
-  return status;
+  let msg = `checkFramebufferStatus was ${glEnumToString(gl, status)}`;
+  if (glStatuses.length > 1) {
+    msg += `, one of: ${expected}`;
+  }
+  if (opt_msg) {
+    msg += ": " + opt_msg;
+  }
+  testPassed(msg);
+  return [status];
 }
 
 /**
@@ -2913,6 +2923,14 @@ var requestAnimFrame = function(callback) {
   _requestAnimFrame.call(window, callback);
 };
 
+/**
+ * Provides video.requestVideoFrameCallback in a cross browser way.
+ * Returns a property, or undefined if unsuported.
+ */
+var getRequestVidFrameCallback = function() {
+  return HTMLVideoElement.prototype["requestVideoFrameCallback"];
+};
+
 var _cancelAnimFrame;
 
 /**
@@ -3115,21 +3133,27 @@ var runSteps = function(steps) {
  *        video is ready.
  */
 var startPlayingAndWaitForVideo = function(video, callback) {
-  var timeWatcher = function() {
-    if (video.currentTime > 0) {
-      callback(video);
-    } else {
-      requestAnimFrame.call(window, timeWatcher);
-    }
-  };
+  var rvfc = getRequestVidFrameCallback();
+  if (rvfc === undefined) {
+    var timeWatcher = function() {
+      if (video.currentTime > 0) {
+        callback(video);
+      } else {
+        requestAnimFrame.call(window, timeWatcher);
+      }
+    };
+
+    timeWatcher();
+  } else {
+    // Calls video.requestVideoFrameCallback(_ => { callback(video) })
+    rvfc.call(video, _ => { callback(video) });
+  }
 
   video.loop = true;
   video.muted = true;
   // See whether setting the preload flag de-flakes video-related tests.
   video.preload = 'auto';
   video.play();
-
-  timeWatcher();
 };
 
 var getHost = function(url) {
@@ -3157,13 +3181,16 @@ var getBaseDomain = function(host) {
 }
 
 var runningOnLocalhost = function() {
-  return window.location.hostname.indexOf("localhost") != -1 ||
-      window.location.hostname.indexOf("127.0.0.1") != -1;
+  let hostname = window.location.hostname;
+  return hostname == "localhost" ||
+    hostname == "127.0.0.1" ||
+    hostname == "::1";
 }
 
 var getLocalCrossOrigin = function() {
   var domain;
   if (window.location.host.indexOf("localhost") != -1) {
+    // TODO(kbr): figure out whether to use an IPv6 loopback address.
     domain = "127.0.0.1";
   } else {
     domain = "localhost";
@@ -3196,19 +3223,19 @@ var getRelativePath = function(path) {
 }
 
 async function loadCrossOriginImage(img, webUrl, localUrl) {
-  img.src = getUrlOptions().imgUrl || webUrl;
-  try {
-    console.log('[loadCrossOriginImage]', 'trying', img.src);
-    await img.decode();
-    return;
-  } catch {}
-
   if (runningOnLocalhost()) {
     img.src = getLocalCrossOrigin() + getRelativePath(localUrl);
     console.log('[loadCrossOriginImage]', '  trying', img.src);
     await img.decode();
     return;
   }
+
+  try {
+    img.src = getUrlOptions().imgUrl || webUrl;
+    console.log('[loadCrossOriginImage]', 'trying', img.src);
+    await img.decode();
+    return;
+  } catch {}
 
   throw 'createCrossOriginImage failed';
 }
@@ -3355,11 +3382,15 @@ async function awaitTimeout(ms) {
   });
 }
 
-async function awaitOrTimeout(promise, timeout_ms) {
+async function awaitOrTimeout(promise, opt_timeout_ms) {
   async function throwOnTimeout(ms) {
     await awaitTimeout(ms);
     throw 'timeout';
   }
+
+  let timeout_ms = opt_timeout_ms;
+  if (timeout_ms === undefined)
+    timeout_ms = 5000;
 
   await Promise.race([promise, throwOnTimeout(timeout_ms)]);
 }

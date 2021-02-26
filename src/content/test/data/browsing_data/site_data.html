@@ -34,8 +34,9 @@
   }
 
   function setCookieStore() {
-    cookieStore.set('cookie-name', 'cookie-value', {sameSite: 'none'})
-      .then(success_).catch(failure_);
+    cookieStore.set({
+      name: 'cookie-name', value: 'cookie-value', sameSite: 'none'
+    }).then(success_).catch(failure_);
   }
 
   function hasCookieStore() {
@@ -108,6 +109,26 @@
 
   function hasFileSystem() {
     openFile_('foo.txt', { create: false }, success_, failure_);
+  }
+
+  async function setFileSystemAccess() {
+    try {
+      let dir = await navigator.storage.getDirectory();
+      await dir.getFileHandle('foo.txt', {create: true});
+      success_();
+    } catch (e) {
+      failure_();
+    }
+  }
+
+  async function hasFileSystemAccess() {
+    try {
+      let dir = await navigator.storage.getDirectory();
+      await dir.getFileHandle('foo.txt', { create: false });
+      success_();
+    } catch (e) {
+      failure_();
+    }
   }
 
   function setWebSql() {

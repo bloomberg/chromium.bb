@@ -5,17 +5,19 @@
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
+option java_package = "org.chromium.components.metrics";
 
 option java_outer_classname = "SystemProfileProtos";
-option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
 import "extension_install.proto";
 
 // Stores information about the user's brower and system configuration.
-// The system configuration fields are recorded once per client session.
-// Next tag: 35
+// Almost all the fields should be populated on every upload. (The only
+// exception is some fields in the stability section that are only uploaded
+// once per browsing session, usually shortly after startup.)
+// Next tag: 36
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -94,12 +96,16 @@ message SystemProfileProto {
   // Next tag: 8
   message OS {
     // The user's operating system. This should be one of:
-    // - Android
-    // - Windows NT
-    // - Linux (includes ChromeOS)
-    // - iOS (iOS versions >= 9)
-    // - iPhone OS (iOS versions <= 8)
-    // - Mac OS X
+    // - 'Android'
+    // - 'Windows NT'
+    // - 'CrOS' (as of 07/2020)
+    // - 'Lacros'  (the Lacros browser runs on Chrome OS, but reports a special
+    //              OS name to differentiate itself from the built-in ash
+    //              browser + window manager binary.)
+    // - 'Linux' (includes ChromeOS prior to 07/2020)
+    // - 'iOS' (iOS versions >= 9)
+    // - 'iPhone OS' (iOS versions <= 8)
+    // - 'Mac OS X'
     optional string name = 1;
 
     // The version of the OS.  The meaning of this field is OS-dependent.
@@ -141,7 +147,7 @@ message SystemProfileProto {
   optional OS os = 5;
 
   // Information on the user's hardware.
-  // Next tag: 20
+  // Next tag: 21
   message Hardware {
     // CPU architecture. Taken from uname -m and modified in Chromium logic.
     // Common options are: x86, x86_64, armv7l, armv8l, aarch64.
@@ -235,9 +241,6 @@ message SystemProfileProto {
       // The driver version on the GPU.
       optional string driver_version = 3;
 
-      // The driver date on the GPU.
-      optional string driver_date = 4;
-
       // The GL_VENDOR string. An example of a gl_vendor string is
       // "Imagination Technologies". "" if we are not using OpenGL.
       optional string gl_vendor = 6;
@@ -251,6 +254,58 @@ message SystemProfileProto {
     // Whether the internal display produces touch events. Omitted if unknown.
     // Logged on ChromeOS only.
     optional bool internal_display_supports_touch = 14;
+
+    // Internal storage device information on ChromeOS.
+    // TODO(dlunev): Expand comment about which milestone this
+    // started to be logged on once the client code is submitted.
+    // Next tag: 9
+    message InternalStorageDevice {
+      // Id of the storage device manufcaturer.
+      // Can be vendor_id(32bit), oemid(16bit) etc. depending on the device
+      // type.
+      optional uint32 vendor_id = 1;
+
+      // Id of the storage device product.
+      // Can be product_id(32bit), PNM(48bit) etc. depending on the device type.
+      optional uint64 product_id = 2;
+
+      // Revision of the storage device product.
+      // Can be PCIe rev(8bit), PRV(8bit) etc. depending on the device type.
+      optional uint32 revision = 3;
+
+      // Storage Device model. Comes from /sys/block/<device>/device/model.
+      optional string model = 4;
+
+      // Storage Device capacity in MB.
+      optional uint32 size_mb = 5;
+
+      // 8 byte FW revision of a storage device. Usually a string, but may
+      // contain non-printable characters.
+      optional uint64 firmware_version = 6;
+
+      // Type of the storage device interface.
+      // TYPE_UNKNOWN signifies an error on population side.
+      enum Type {
+        TYPE_UNKNOWN = 0;
+        TYPE_EMMC = 1;
+        TYPE_NVME = 2;
+        TYPE_UFS = 3;
+        TYPE_SD_EXPRESS_INTERNAL = 4;
+      }
+      optional Type type = 7;
+
+      // Purpose defines how the OS uses the device.
+      // PURPOSE_UNKNOWN signifies an error on population side.
+      enum Purpose {
+        PURPOSE_UNKNOWN = 0;
+        PURPOSE_BOOT = 1;
+        PURPOSE_SWAP = 2;
+        PURPOSE_BOOT_SWAP = 3;
+      }
+      optional Purpose purpose = 8;
+    }
+    // List of internal storage devices on a Chrome OS device.
+    repeated InternalStorageDevice internal_storage_devices = 20;
 
     // Drive messages are currently logged on Windows 7+, iOS, and Android.
     message Drive {
@@ -288,6 +343,7 @@ message SystemProfileProto {
       // to be used in logs processing as a more convenient way to manage the
       // ambiguous case when breaking down stats by connection_type.
       CONNECTION_AMBIGUOUS = 8;
+      CONNECTION_5G = 9;
     }
     // The connection type according to NetworkChangeNotifier.
     optional ConnectionType connection_type = 2;
@@ -308,52 +364,6 @@ message SystemProfileProto {
     }
     // The physical layer mode of the associated wifi access point, if any.
     optional WifiPHYLayerProtocol wifi_phy_layer_protocol = 4;
-
-    // Describe wifi access point information.
-    message WifiAccessPoint {
-      // Vendor prefix of the access point's BSSID. These are OUIs
-      // (Organizationally Unique Identifiers) registered by
-      // the IEEE and are encoded with the first byte in bits 16-23, the
-      // second byte in bits 8-15 and the third byte in bits 0-7.
-      optional uint32 vendor_prefix = 1;
-
-      // Access point security mode definitions.
-      enum SecurityMode {
-        SECURITY_UNKNOWN = 0;
-        SECURITY_WPA = 1;
-        SECURITY_WEP = 2;
-        SECURITY_RSN = 3;
-        SECURITY_802_1X = 4;
-        SECURITY_PSK = 5;
-        SECURITY_NONE = 6;
-      }
-      // The security mode of the access point.
-      optional SecurityMode security_mode = 2;
-
-      // Vendor specific information.
-      message VendorInformation {
-        // The model number, for example "0".
-        optional string model_number = 1;
-
-        // The model name (sometimes the same as the model_number),
-        // for example "WZR-HP-AG300H".
-        optional string model_name = 2;
-
-        // The device name (sometimes the same as the model_number),
-        // for example "Dummynet".
-        optional string device_name = 3;
-
-        // The list of vendor-specific OUIs (Organizationally Unique
-        // Identifiers). These are provided by the vendor through WPS
-        // (Wireless Provisioning Service) information elements, which
-        // identifies the content of the element.
-        repeated uint32 element_identifier = 4;
-      }
-      // The wireless access point vendor information.
-      optional VendorInformation vendor_info = 3;
-    }
-    // Information of the wireless access point that device is connected to.
-    optional WifiAccessPoint access_point_info = 5;
 
     // Derived from net::NetworkQualityEstimator::EffectiveConnectionType
     // translated through NetworkMetricsProvider::GetConnectionType.
@@ -597,7 +607,6 @@ message SystemProfileProto {
   // for this session.
   optional string variations_seed_version = 28;
 
-  // TODO(b/148689907): Deprecate this field once the analysis has been done.
   // Whether the client_id in the log matches the client_id we used to assign
   // field trials.
   optional bool client_id_was_used_for_trial_assignment = 33;
@@ -939,6 +948,8 @@ message SystemProfileProto {
     DEMO_MODE_RESOURCES = 24;
     ON_DEVICE_HEAD_SUGGEST = 25;
     CROS_SMART_DIM = 26;
+    ZXCVBN_DATA = 27;
+    AUTOFILL_REGEX_CONSTANTS = 28;
   }
 
   // Information about what Chrome components are registered and at which
@@ -969,6 +980,22 @@ message SystemProfileProto {
   // The Chrome package name on Android, if it's different from
   // "com.android.chrome".
   optional string app_package_name = 26;
+
+  // The package which installed Chrome, as reported by
+  // PackageManager.getInstallerPackageName().
+  enum InstallerPackage {
+    // This field was not set.
+    INSTALLER_PACKAGE_UNKNOWN = 0;
+    // The installer package name returned by Android was empty.
+    INSTALLER_PACKAGE_NONE = 1;
+    // 'com.android.vending'.
+    INSTALLER_PACKAGE_GOOGLE_PLAY_STORE = 2;
+    // Any other non-empty value.
+    INSTALLER_PACKAGE_OTHER = 3;
+  }
+
+  // The package which installed Chrome, as reported by Android.
+  optional InstallerPackage installer_package = 35;
 
   // Data related to the "Better Together" multi-device features. This is only
   // uploaded on Chrome OS.

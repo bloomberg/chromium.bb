@@ -26,7 +26,7 @@
 #include <assert.h>
 
 #include "test-runner.h"
-#include "wayland-private.h"
+#include "wayland-server-private.h"
 
 static void
 signal_notify(struct wl_listener *listener, void *data)

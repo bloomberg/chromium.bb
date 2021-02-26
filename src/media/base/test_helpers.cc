@@ -168,6 +168,7 @@ static VideoCodecProfile MinProfile(VideoCodec codec) {
 
 static const gfx::Size kNormalSize(320, 240);
 static const gfx::Size kLargeSize(640, 480);
+static const gfx::Size kExtraLargeSize(15360, 8640);
 
 // static
 VideoDecoderConfig TestVideoConfig::Invalid() {
@@ -231,6 +232,31 @@ VideoDecoderConfig TestVideoConfig::LargeEncrypted(VideoCodec codec) {
 }
 
 // static
+VideoDecoderConfig TestVideoConfig::ExtraLarge(VideoCodec codec) {
+  return GetTestConfig(codec, MinProfile(codec), VideoColorSpace::JPEG(),
+                       VIDEO_ROTATION_0, kExtraLargeSize, false);
+}
+
+// static
+VideoDecoderConfig TestVideoConfig::ExtraLargeEncrypted(VideoCodec codec) {
+  return GetTestConfig(codec, MinProfile(codec), VideoColorSpace::JPEG(),
+                       VIDEO_ROTATION_0, kExtraLargeSize, true);
+}
+
+// static
+VideoDecoderConfig TestVideoConfig::Custom(gfx::Size size, VideoCodec codec) {
+  return GetTestConfig(codec, MinProfile(codec), VideoColorSpace::JPEG(),
+                       VIDEO_ROTATION_0, size, false);
+}
+
+// static
+VideoDecoderConfig TestVideoConfig::CustomEncrypted(gfx::Size size,
+                                                    VideoCodec codec) {
+  return GetTestConfig(codec, MinProfile(codec), VideoColorSpace::JPEG(),
+                       VIDEO_ROTATION_0, size, true);
+}
+
+// static
 gfx::Size TestVideoConfig::NormalCodedSize() {
   return kNormalSize;
 }
@@ -240,16 +266,41 @@ gfx::Size TestVideoConfig::LargeCodedSize() {
   return kLargeSize;
 }
 
+// static
+gfx::Size TestVideoConfig::ExtraLargeCodedSize() {
+  return kExtraLargeSize;
+}
+
 AudioDecoderConfig TestAudioConfig::Normal() {
   return AudioDecoderConfig(kCodecVorbis, kSampleFormatPlanarF32,
-                            CHANNEL_LAYOUT_STEREO, 44100, EmptyExtraData(),
-                            EncryptionScheme::kUnencrypted);
+                            CHANNEL_LAYOUT_STEREO, NormalSampleRateValue(),
+                            EmptyExtraData(), EncryptionScheme::kUnencrypted);
 }
 
 AudioDecoderConfig TestAudioConfig::NormalEncrypted() {
   return AudioDecoderConfig(kCodecVorbis, kSampleFormatPlanarF32,
-                            CHANNEL_LAYOUT_STEREO, 44100, EmptyExtraData(),
-                            EncryptionScheme::kCenc);
+                            CHANNEL_LAYOUT_STEREO, NormalSampleRateValue(),
+                            EmptyExtraData(), EncryptionScheme::kCenc);
+}
+
+AudioDecoderConfig TestAudioConfig::HighSampleRate() {
+  return AudioDecoderConfig(kCodecVorbis, kSampleFormatPlanarF32,
+                            CHANNEL_LAYOUT_STEREO, HighSampleRateValue(),
+                            EmptyExtraData(), EncryptionScheme::kUnencrypted);
+}
+
+AudioDecoderConfig TestAudioConfig::HighSampleRateEncrypted() {
+  return AudioDecoderConfig(kCodecVorbis, kSampleFormatPlanarF32,
+                            CHANNEL_LAYOUT_STEREO, HighSampleRateValue(),
+                            EmptyExtraData(), EncryptionScheme::kCenc);
+}
+
+int TestAudioConfig::NormalSampleRateValue() {
+  return 44100;
+}
+
+int TestAudioConfig::HighSampleRateValue() {
+  return 192000;
 }
 
 // static
@@ -294,6 +345,45 @@ scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
     for (size_t i = 0; i < frames; ++i) {
       buffer[is_planar ? i : ch + i * channels] =
           static_cast<T>(v + i * increment);
+    }
+  }
+  return output;
+}
+
+template <>
+scoped_refptr<AudioBuffer> MakeAudioBuffer<float>(SampleFormat format,
+                                                  ChannelLayout channel_layout,
+                                                  size_t channel_count,
+                                                  int sample_rate,
+                                                  float start,
+                                                  float increment,
+                                                  size_t frames,
+                                                  base::TimeDelta timestamp) {
+  const size_t channels = ChannelLayoutToChannelCount(channel_layout);
+  scoped_refptr<AudioBuffer> output = AudioBuffer::CreateBuffer(
+      format, channel_layout, static_cast<int>(channel_count), sample_rate,
+      static_cast<int>(frames));
+  output->set_timestamp(timestamp);
+
+  const bool is_planar =
+      format == kSampleFormatPlanarS16 || format == kSampleFormatPlanarF32;
+
+  // Values in channel 0 will be:
+  //   (start) / max_value
+  //   (start + increment) / max_value
+  //   (start + 2 * increment) / max_value, ...
+  // While, values in channel 1 will be:
+  //   (start + frames * increment) / max_value
+  //   (start + (frames + 1) * increment) / max_value
+  //   (start + (frames + 2) * increment) / max_value, ...
+  for (size_t ch = 0; ch < channels; ++ch) {
+    float* buffer =
+        reinterpret_cast<float*>(output->channel_data()[is_planar ? ch : 0]);
+    const float v = static_cast<float>(start + ch * frames * increment);
+    for (size_t i = 0; i < frames; ++i) {
+      buffer[is_planar ? i : ch + i * channels] =
+          static_cast<float>(v + i * increment) /
+          std::numeric_limits<uint16_t>::max();
     }
   }
   return output;
@@ -357,7 +447,6 @@ void VerifyBitstreamAudioBus(AudioBus* bus,
 DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(uint8_t);
 DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(int16_t);
 DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(int32_t);
-DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(float);
 
 static const char kFakeVideoBufferHeader[] = "FakeVideoBufferForTest";
 

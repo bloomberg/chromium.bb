@@ -10,11 +10,12 @@
  **************************************************************************************************/
 #ifndef GrUnrolledBinaryGradientColorizer_DEFINED
 #define GrUnrolledBinaryGradientColorizer_DEFINED
-#include "include/core/SkTypes.h"
-#include "include/core/SkM44.h"
 
-#include "src/gpu/GrCoordTransform.h"
+#include "include/core/SkM44.h"
+#include "include/core/SkTypes.h"
+
 #include "src/gpu/GrFragmentProcessor.h"
+
 class GrUnrolledBinaryGradientColorizer : public GrFragmentProcessor {
 public:
     static const int kMaxColorCount = 16;
@@ -25,6 +26,7 @@ public:
     GrUnrolledBinaryGradientColorizer(const GrUnrolledBinaryGradientColorizer& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "UnrolledBinaryGradientColorizer"; }
+    bool usesExplicitReturn() const override;
     int32_t intervalCount;
     SkPMColor4f scale0_1;
     SkPMColor4f scale2_3;
@@ -84,11 +86,16 @@ private:
             , bias12_13(bias12_13)
             , bias14_15(bias14_15)
             , thresholds1_7(thresholds1_7)
-            , thresholds9_13(thresholds9_13) {}
+            , thresholds9_13(thresholds9_13) {
+        this->setUsesSampleCoordsDirectly();
+    }
     GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
+#if GR_TEST_UTILS
+    SkString onDumpInfo() const override;
+#endif
     GR_DECLARE_FRAGMENT_PROCESSOR_TEST
-    typedef GrFragmentProcessor INHERITED;
+    using INHERITED = GrFragmentProcessor;
 };
 #endif

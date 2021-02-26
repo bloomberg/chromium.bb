@@ -16,7 +16,7 @@ export class CSSOverviewSidebarPanel extends UI.Widget.VBox {
   constructor() {
     super(true);
 
-    this.registerRequiredCSS('css_overview/cssOverviewSidebarPanel.css');
+    this.registerRequiredCSS('css_overview/cssOverviewSidebarPanel.css', {enableLegacyPatching: true});
     this.contentElement.classList.add('overview-sidebar-panel');
     this.contentElement.addEventListener('click', this._onItemClick.bind(this));
 
@@ -30,6 +30,11 @@ export class CSSOverviewSidebarPanel extends UI.Widget.VBox {
     toolbar.appendToolbarItem(clearResultsButton);
   }
 
+
+  /**
+   * @param {string} name
+   * @param {string} id
+   */
   addItem(name, id) {
     const item = this.contentElement.createChild('div', CSSOverviewSidebarPanel.ITEM_CLASS_NAME);
     item.textContent = name;
@@ -42,22 +47,29 @@ export class CSSOverviewSidebarPanel extends UI.Widget.VBox {
 
   _deselectAllItems() {
     const items = this.contentElement.querySelectorAll(`.${CSSOverviewSidebarPanel.ITEM_CLASS_NAME}`);
-    for (const item of items) {
+    items.forEach(item => {
       item.classList.remove(CSSOverviewSidebarPanel.SELECTED);
-    }
+    });
   }
 
+  /** @param {!Event} event */
   _onItemClick(event) {
-    const target = event.path[0];
+    const target = /** @type {!HTMLElement} */ (event.composedPath()[0]);
     if (!target.classList.contains(CSSOverviewSidebarPanel.ITEM_CLASS_NAME)) {
       return;
     }
 
     const {id} = target.dataset;
+    if (!id) {
+      return;
+    }
     this.select(id);
     this.dispatchEventToListeners(SidebarEvents.ItemSelected, id);
   }
 
+  /**
+   * @param {string} id
+   */
   select(id) {
     const target = this.contentElement.querySelector(`[data-id=${CSS.escape(id)}]`);
     if (!target) {

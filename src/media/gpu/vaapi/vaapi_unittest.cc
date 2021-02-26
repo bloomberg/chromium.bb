@@ -11,16 +11,21 @@
 #include <vector>
 
 #include <va/va.h>
+#include <va/va_str.h>
 
 #include "base/files/file.h"
 #include "base/files/scoped_file.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
+#include "build/chromeos_buildflags.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 namespace {
@@ -28,16 +33,22 @@ namespace {
 base::Optional<VAProfile> ConvertToVAProfile(VideoCodecProfile profile) {
   // A map between VideoCodecProfile and VAProfile.
   const std::map<VideoCodecProfile, VAProfile> kProfileMap = {
-      {H264PROFILE_BASELINE, VAProfileH264Baseline},
-      {H264PROFILE_MAIN, VAProfileH264Main},
-      {H264PROFILE_HIGH, VAProfileH264High},
-      {VP8PROFILE_ANY, VAProfileVP8Version0_3},
-      {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
-      {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
-      // TODO(crbug.com/1011454, crbug.com/1011469): Reenable
-      // VP9PROFILE_PROFILE2 and _PROFILE3 when P010 is completely supported.
-      //{VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
-      //{VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
+    // VAProfileH264Baseline is deprecated in <va/va.h> from libva 2.0.0.
+    {H264PROFILE_BASELINE, VAProfileH264ConstrainedBaseline},
+    {H264PROFILE_MAIN, VAProfileH264Main},
+    {H264PROFILE_HIGH, VAProfileH264High},
+    {VP8PROFILE_ANY, VAProfileVP8Version0_3},
+    {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
+    {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
+#if BUILDFLAG(IS_ASH)
+    // TODO(hiroh): Remove if-macro once libva for linux-chrome is upreved to
+    // 2.9.0 or newer.
+    // https://source.chromium.org/chromium/chromium/src/+/master:build/linux/sysroot_scripts/generated_package_lists/sid.amd64
+    {AV1PROFILE_PROFILE_MAIN, VAProfileAV1Profile0},
+#endif
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+    {HEVCPROFILE_MAIN, VAProfileHEVCMain},
+#endif
   };
   auto it = kProfileMap.find(profile);
   return it != kProfileMap.end() ? base::make_optional<VAProfile>(it->second)
@@ -47,19 +58,26 @@ base::Optional<VAProfile> ConvertToVAProfile(VideoCodecProfile profile) {
 // Converts the given string to VAProfile
 base::Optional<VAProfile> StringToVAProfile(const std::string& va_profile) {
   const std::map<std::string, VAProfile> kStringToVAProfile = {
-      {"VAProfileNone", VAProfileNone},
-      {"VAProfileH264ConstrainedBaseline", VAProfileH264ConstrainedBaseline},
-      {"VAProfileH264Baseline", VAProfileH264Baseline},
-      {"VAProfileH264Main", VAProfileH264Main},
-      {"VAProfileH264High", VAProfileH264High},
-      {"VAProfileJPEGBaseline", VAProfileJPEGBaseline},
-      {"VAProfileVP8Version0_3", VAProfileVP8Version0_3},
-      {"VAProfileVP9Profile0", VAProfileVP9Profile0},
-      {"VAProfileVP9Profile1", VAProfileVP9Profile1},
-      // TODO(crbug.com/1011454, crbug.com/1011469): Reenable
-      // VP9PROFILE_PROFILE2 and _PROFILE3 when P010 is completely supported.
-      // {"VAProfileVP9Profile2", VAProfileVP9Profile2},
-      // {"VAProfileVP9Profile3", VAProfileVP9Profile3},
+    {"VAProfileNone", VAProfileNone},
+    {"VAProfileH264ConstrainedBaseline", VAProfileH264ConstrainedBaseline},
+    // Even though it's deprecated, we leave VAProfileH264Baseline's
+    // translation here to assert we never encounter it.
+    {"VAProfileH264Baseline", VAProfileH264Baseline},
+    {"VAProfileH264Main", VAProfileH264Main},
+    {"VAProfileH264High", VAProfileH264High},
+    {"VAProfileJPEGBaseline", VAProfileJPEGBaseline},
+    {"VAProfileVP8Version0_3", VAProfileVP8Version0_3},
+    {"VAProfileVP9Profile0", VAProfileVP9Profile0},
+    {"VAProfileVP9Profile2", VAProfileVP9Profile2},
+#if BUILDFLAG(IS_ASH)
+    // TODO(hiroh): Remove if-macro once libva for linux-chrome is upreved to
+    // 2.9.0 or newer.
+    // https://source.chromium.org/chromium/chromium/src/+/master:build/linux/sysroot_scripts/generated_package_lists/sid.amd64
+    {"VAProfileAV1Profile0", VAProfileAV1Profile0},
+#endif
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+    {"VAProfileHEVCMain", VAProfileHEVCMain},
+#endif
   };
 
   auto it = kStringToVAProfile.find(va_profile);
@@ -122,17 +140,7 @@ std::map<VAProfile, std::vector<VAEntrypoint>> ParseVainfo(
   return info;
 }
 
-TEST_F(VaapiTest, VaapiSandboxInitialization) {
-  // VASupportedProfiles::Get() is called in PreSandboxInitialization().
-  // It queries VA-API driver their capabilities.
-  VaapiWrapper::PreSandboxInitialization();
-}
-
-TEST_F(VaapiTest, VaapiProfiles) {
-  // VASupportedProfiles::Get() is called in PreSandboxInitialization().
-  // It queries VA-API driver their capabilities.
-  VaapiWrapper::PreSandboxInitialization();
-
+std::map<VAProfile, std::vector<VAEntrypoint>> RetrieveVAInfoOutput() {
   int fds[2];
   PCHECK(pipe(fds) == 0);
   base::File read_pipe(fds[0]);
@@ -150,65 +158,90 @@ TEST_F(VaapiTest, VaapiProfiles) {
   EXPECT_LT(n, 4096);
   std::string output(buf, n);
   DVLOG(4) << output;
-  auto va_info = ParseVainfo(output);
-
-  for (const auto& profile : VaapiWrapper::GetSupportedDecodeProfiles()) {
-    auto va_profile = ConvertToVAProfile(profile.profile);
-    ASSERT_TRUE(va_profile.has_value());
-
-    bool is_profile_supported =
-        base::Contains(va_info[*va_profile], VAEntrypointVLD);
-    if (profile.profile == H264PROFILE_BASELINE) {
-      // ConstrainedBaseline is the fallback profile for H264PROFILE_BASELINE.
-      // This is the same logic as in vaapi_wrapper.cc.
-      is_profile_supported |= base::Contains(
-          va_info[VAProfileH264ConstrainedBaseline], VAEntrypointVLD);
-    }
-
-    EXPECT_TRUE(is_profile_supported) << " profile: " << profile.profile;
-  }
-
-  for (const auto& profile : VaapiWrapper::GetSupportedEncodeProfiles()) {
-    auto va_profile = ConvertToVAProfile(profile.profile);
-    ASSERT_TRUE(va_profile.has_value());
-    bool is_profile_supported =
-        base::Contains(va_info[*va_profile], VAEntrypointEncSlice) ||
-        base::Contains(va_info[*va_profile], VAEntrypointEncSliceLP);
-    if (profile.profile == H264PROFILE_BASELINE) {
-      // ConstrainedBaseline is the fallback profile for H264PROFILE_BASELINE.
-      // This is the same logic as in vaapi_wrapper.cc.
-      is_profile_supported |=
-          base::Contains(va_info[VAProfileH264ConstrainedBaseline],
-                         VAEntrypointEncSlice) ||
-          base::Contains(va_info[VAProfileH264ConstrainedBaseline],
-                         VAEntrypointEncSliceLP);
-    }
-
-    EXPECT_TRUE(is_profile_supported) << " profile: " << profile.profile;
-  }
-
-  EXPECT_EQ(VaapiWrapper::IsDecodeSupported(VAProfileJPEGBaseline),
-            base::Contains(va_info[VAProfileJPEGBaseline], VAEntrypointVLD));
-  EXPECT_EQ(
-      VaapiWrapper::IsJpegEncodeSupported(),
-      base::Contains(va_info[VAProfileJPEGBaseline], VAEntrypointEncPicture));
+  return ParseVainfo(output);
 }
 
+TEST_F(VaapiTest, VaapiSandboxInitialization) {
+  // Here we just test that the PreSandboxInitialization() in SetUp() worked
+  // fine. Said initialization is buried in internal singletons, but we can
+  // verify that at least the implementation type has been filled in.
+  EXPECT_NE(VaapiWrapper::GetImplementationType(), VAImplementation::kInvalid);
+}
+
+// Commit [1] deprecated VAProfileH264Baseline from libva in 2017 (release
+// 2.0.0). This test verifies that such profile is never seen in the lab.
+// [1] https://github.com/intel/libva/commit/6f69256f8ccc9a73c0b196ab77ac69ab1f4f33c2
+TEST_F(VaapiTest, VerifyNoVAProfileH264Baseline) {
+  const auto va_info = RetrieveVAInfoOutput();
+  EXPECT_FALSE(base::Contains(va_info, VAProfileH264Baseline));
+}
+
+// Verifies that every VAProfile from VaapiWrapper::GetSupportedDecodeProfiles()
+// is indeed supported by the command line vainfo utility and by
+// VaapiWrapper::IsDecodeSupported().
+TEST_F(VaapiTest, GetSupportedDecodeProfiles) {
+  const auto va_info = RetrieveVAInfoOutput();
+
+  for (const auto& profile : VaapiWrapper::GetSupportedDecodeProfiles(
+           gpu::GpuDriverBugWorkarounds())) {
+    const auto va_profile = ConvertToVAProfile(profile.profile);
+    ASSERT_TRUE(va_profile.has_value());
+
+    EXPECT_TRUE(base::Contains(va_info.at(*va_profile), VAEntrypointVLD))
+        << " profile: " << GetProfileName(profile.profile)
+        << ", va profile: " << vaProfileStr(*va_profile);
+    EXPECT_TRUE(VaapiWrapper::IsDecodeSupported(*va_profile))
+        << " profile: " << GetProfileName(profile.profile)
+        << ", va profile: " << vaProfileStr(*va_profile);
+  }
+}
+
+// Verifies that every VAProfile from VaapiWrapper::GetSupportedEncodeProfiles()
+// is indeed supported by the command line vainfo utility.
+TEST_F(VaapiTest, GetSupportedEncodeProfiles) {
+  const auto va_info = RetrieveVAInfoOutput();
+
+  for (const auto& profile : VaapiWrapper::GetSupportedEncodeProfiles()) {
+    const auto va_profile = ConvertToVAProfile(profile.profile);
+    ASSERT_TRUE(va_profile.has_value());
+
+    EXPECT_TRUE(base::Contains(va_info.at(*va_profile), VAEntrypointEncSlice) ||
+                base::Contains(va_info.at(*va_profile), VAEntrypointEncSliceLP))
+        << " profile: " << GetProfileName(profile.profile)
+        << ", va profile: " << vaProfileStr(*va_profile);
+  }
+}
+
+// Verifies that if JPEG decoding and encoding are supported by VaapiWrapper,
+// they are also supported by by the command line vainfo utility.
+TEST_F(VaapiTest, VaapiProfilesJPEG) {
+  const auto va_info = RetrieveVAInfoOutput();
+
+  EXPECT_EQ(VaapiWrapper::IsDecodeSupported(VAProfileJPEGBaseline),
+            base::Contains(va_info.at(VAProfileJPEGBaseline), VAEntrypointVLD));
+  EXPECT_EQ(VaapiWrapper::IsJpegEncodeSupported(),
+            base::Contains(va_info.at(VAProfileJPEGBaseline),
+                           VAEntrypointEncPicture));
+}
+
+// Verifies that the default VAEntrypoint as per VaapiWrapper is indeed among
+// the supported ones.
 TEST_F(VaapiTest, DefaultEntrypointIsSupported) {
   for (size_t i = 0; i < VaapiWrapper::kCodecModeMax; ++i) {
-    const VaapiWrapper::CodecMode mode =
-        static_cast<VaapiWrapper::CodecMode>(i);
+    const auto wrapper_mode = static_cast<VaapiWrapper::CodecMode>(i);
     std::map<VAProfile, std::vector<VAEntrypoint>> configurations =
-        VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(mode);
+        VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(
+            wrapper_mode);
     for (const auto& profile_and_entrypoints : configurations) {
       const VAEntrypoint default_entrypoint =
-          VaapiWrapper::GetDefaultVaEntryPoint(mode,
+          VaapiWrapper::GetDefaultVaEntryPoint(wrapper_mode,
                                                profile_and_entrypoints.first);
       const auto& supported_entrypoints = profile_and_entrypoints.second;
       EXPECT_TRUE(base::Contains(supported_entrypoints, default_entrypoint))
-          << "Default VAEntrypoint " << default_entrypoint
-          << " (mode = " << mode << ") is not supported for VAProfile = "
-          << profile_and_entrypoints.first;
+          << "Default VAEntrypoint " << vaEntrypointStr(default_entrypoint)
+          << " (VaapiWrapper mode = " << wrapper_mode
+          << ") is not supported for "
+          << vaProfileStr(profile_and_entrypoints.first);
     }
   }
 }
@@ -217,6 +250,8 @@ TEST_F(VaapiTest, DefaultEntrypointIsSupported) {
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
 
+  // PreSandboxInitialization() loads and opens the driver, queries its
+  // capabilities and fills in the VASupportedProfiles.
   media::VaapiWrapper::PreSandboxInitialization();
 
   return base::LaunchUnitTests(

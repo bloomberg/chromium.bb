@@ -107,8 +107,7 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
     _unmaskingView =
         std::make_unique<ios_web_view::WebViewCardUnmaskPromptView>(self);
     _unmaskingController =
-        std::make_unique<autofill::CardUnmaskPromptControllerImpl>(
-            prefs, isOffTheRecord);
+        std::make_unique<autofill::CardUnmaskPromptControllerImpl>(prefs);
     _unmaskingController->ShowPrompt(
         base::BindOnce(^autofill::CardUnmaskPromptView*() {
           return _unmaskingView.get();
@@ -175,21 +174,6 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
       base::SysNSStringToUTF16(CVC), base::SysNSStringToUTF16(expirationMonth),
       base::SysNSStringToUTF16(expirationYear), /*should_store_pan=*/false,
       /*enable_fido_auth=*/false);
-}
-
-- (void)verifyWithCVC:(NSString*)CVC
-      expirationMonth:(nullable NSString*)expirationMonth
-       expirationYear:(nullable NSString*)expirationYear
-         storeLocally:(BOOL)storeLocally
-             riskData:(NSString*)riskData
-    completionHandler:(void (^)(NSError* _Nullable error))completionHandler {
-  DCHECK(!storeLocally) << "|storeLocally| is deprecated, please call the "
-                           "method without this parameter.";
-  [self verifyWithCVC:CVC
-        expirationMonth:expirationMonth
-         expirationYear:expirationYear
-               riskData:riskData
-      completionHandler:completionHandler];
 }
 
 - (BOOL)isCVCValid:(NSString*)CVC {

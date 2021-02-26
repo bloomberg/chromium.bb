@@ -85,6 +85,8 @@ public class BackgroundTaskSchedulerUmaTest {
         assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_DOWNLOAD_AUTO_RESUMPTION,
                 BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(
                         TaskIds.DOWNLOAD_AUTO_RESUMPTION_JOB_ID));
+        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_DOWNLOAD_LATER,
+                BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(TaskIds.DOWNLOAD_LATER_JOB_ID));
         assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_WEBVIEW_VARIATIONS,
                 BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(
                         TaskIds.WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID));
@@ -123,7 +125,7 @@ public class BackgroundTaskSchedulerUmaTest {
                 BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(TaskIds.QUERY_TILE_JOB_ID));
         assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_FEEDV2_REFRESH,
                 BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(TaskIds.FEEDV2_REFRESH_JOB_ID));
-        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_COUNT, 25);
+        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_COUNT, 26);
     }
 
     @Test
@@ -302,16 +304,6 @@ public class BackgroundTaskSchedulerUmaTest {
         verify(mUmaSpy, times(1))
                 .cacheEvent(eq("Android.BackgroundTaskScheduler.TaskStopped"),
                         ArgumentMatchers.eq(BackgroundTaskSchedulerUma.BACKGROUND_TASK_GCM));
-    }
-
-    @Test
-    @Feature({"BackgroundTaskScheduler"})
-    public void testReportMigrationToProto() {
-        doNothing().when(mUmaSpy).cacheEvent(anyString(), anyInt());
-        BackgroundTaskSchedulerUma.getInstance().reportMigrationToProto(TaskIds.TEST);
-        verify(mUmaSpy, times(1))
-                .cacheEvent(eq("Android.BackgroundTaskScheduler.MigrationToProto"),
-                        ArgumentMatchers.eq(BackgroundTaskSchedulerUma.BACKGROUND_TASK_TEST));
     }
 
     @Test

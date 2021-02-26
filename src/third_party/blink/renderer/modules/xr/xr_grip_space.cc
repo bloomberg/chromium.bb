@@ -21,21 +21,22 @@ base::Optional<TransformationMatrix> XRGripSpace::MojoFromNative() {
     return base::nullopt;
   }
 
-  if (!input_source_->MojoFromInput())
-    return base::nullopt;
-
-  return *(input_source_->MojoFromInput());
-}
-
-base::Optional<TransformationMatrix> XRGripSpace::NativeFromMojo() {
-  return XRSpace::TryInvert(MojoFromNative());
+  return input_source_->MojoFromInput();
 }
 
 bool XRGripSpace::EmulatedPosition() const {
   return input_source_->emulatedPosition();
 }
 
-base::Optional<XRNativeOriginInformation> XRGripSpace::NativeOrigin() const {
+base::Optional<device::mojom::blink::XRNativeOriginInformation>
+XRGripSpace::NativeOrigin() const {
+  // Grip space's native origin is equal to input source's native origin, but
+  // only when using tracked pointer for input.
+  if (input_source_->TargetRayMode() !=
+      device::mojom::XRTargetRayMode::POINTING) {
+    return base::nullopt;
+  }
+
   return input_source_->nativeOrigin();
 }
 
@@ -45,7 +46,11 @@ bool XRGripSpace::IsStationary() const {
   return false;
 }
 
-void XRGripSpace::Trace(Visitor* visitor) {
+std::string XRGripSpace::ToString() const {
+  return "XRGripSpace";
+}
+
+void XRGripSpace::Trace(Visitor* visitor) const {
   visitor->Trace(input_source_);
   XRSpace::Trace(visitor);
 }

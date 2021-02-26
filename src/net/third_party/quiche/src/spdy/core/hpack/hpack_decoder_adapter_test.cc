@@ -13,15 +13,16 @@
 #include <utility>
 #include <vector>
 
+#include "absl/base/macros.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_state.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_tables.h"
 #include "net/third_party/quiche/src/http2/hpack/tools/hpack_block_builder.h"
 #include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_encoder.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_output_stream.h"
+#include "net/third_party/quiche/src/spdy/core/recording_headers_handler.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_test_utils.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_string_utils.h"
@@ -65,8 +66,8 @@ class HpackDecoderAdapterPeer {
   explicit HpackDecoderAdapterPeer(HpackDecoderAdapter* decoder)
       : decoder_(decoder) {}
 
-  void HandleHeaderRepresentation(quiche::QuicheStringPiece name,
-                                  quiche::QuicheStringPiece value) {
+  void HandleHeaderRepresentation(absl::string_view name,
+                                  absl::string_view value) {
     decoder_->listener_adapter_.OnHeader(HpackString(name), HpackString(value));
   }
 
@@ -133,7 +134,7 @@ class HpackDecoderAdapterTest
     }
   }
 
-  bool HandleControlFrameHeadersData(quiche::QuicheStringPiece str) {
+  bool HandleControlFrameHeadersData(absl::string_view str) {
     SPDY_VLOG(3) << "HandleControlFrameHeadersData:\n" << SpdyHexDump(str);
     bytes_passed_in_ += str.size();
     return decoder_.HandleControlFrameHeadersData(str.data(), str.size());
@@ -147,7 +148,7 @@ class HpackDecoderAdapterTest
     return rc;
   }
 
-  bool DecodeHeaderBlock(quiche::QuicheStringPiece str,
+  bool DecodeHeaderBlock(absl::string_view str,
                          bool check_decoded_size = true) {
     // Don't call this again if HandleControlFrameHeadersData failed previously.
     EXPECT_FALSE(decode_has_failed_);
@@ -178,7 +179,7 @@ class HpackDecoderAdapterTest
         decode_has_failed_ = true;
         return false;
       }
-      total_hpack_bytes = handler_.compressed_header_bytes_parsed();
+      total_hpack_bytes = handler_.compressed_header_bytes();
     } else {
       if (!HandleControlFrameHeadersComplete(&total_hpack_bytes)) {
         decode_has_failed_ = true;
@@ -187,7 +188,8 @@ class HpackDecoderAdapterTest
     }
     EXPECT_EQ(total_hpack_bytes, bytes_passed_in_);
     if (check_decoded_size && start_choice_ == START_WITH_HANDLER) {
-      EXPECT_EQ(handler_.header_bytes_parsed(), SizeOfHeaders(decoded_block()));
+      EXPECT_EQ(handler_.uncompressed_header_bytes(),
+                SizeOfHeaders(decoded_block()));
     }
     return true;
   }
@@ -225,8 +227,7 @@ class HpackDecoderAdapterTest
     return size;
   }
 
-  const SpdyHeaderBlock& DecodeBlockExpectingSuccess(
-      quiche::QuicheStringPiece str) {
+  const SpdyHeaderBlock& DecodeBlockExpectingSuccess(absl::string_view str) {
     EXPECT_TRUE(DecodeHeaderBlock(str));
     return decoded_block();
   }
@@ -253,7 +254,7 @@ class HpackDecoderAdapterTest
   http2::test::Http2Random random_;
   HpackDecoderAdapter decoder_;
   test::HpackDecoderAdapterPeer decoder_peer_;
-  TestHeadersHandler handler_;
+  RecordingHeadersHandler handler_;
   StartChoice start_choice_;
   bool randomly_split_input_buffer_;
   bool decode_has_failed_ = false;
@@ -434,11 +435,10 @@ TEST_P(HpackDecoderAdapterTest, HandleHeaderRepresentation) {
       decoded_block(),
       ElementsAre(
           Pair("cookie", " part 1; part 2 ; part3;  fin!"),
-          Pair("passed-through", quiche::QuicheStringPiece("foo\0baz", 7)),
-          Pair("joined",
-               quiche::QuicheStringPiece("joined\0value 1\0value 2", 22)),
+          Pair("passed-through", absl::string_view("foo\0baz", 7)),
+          Pair("joined", absl::string_view("joined\0value 1\0value 2", 22)),
           Pair("empty", ""),
-          Pair("empty-joined", quiche::QuicheStringPiece("\0foo\0\0", 6))));
+          Pair("empty-joined", absl::string_view("\0foo\0\0", 6))));
 }
 
 // Decoding indexed static table field should work.
@@ -503,7 +503,7 @@ TEST_P(HpackDecoderAdapterTest, ContextUpdateMaximumSize) {
     output_stream.AppendUint32(126);
 
     output_stream.TakeString(&input);
-    EXPECT_TRUE(DecodeHeaderBlock(quiche::QuicheStringPiece(input)));
+    EXPECT_TRUE(DecodeHeaderBlock(absl::string_view(input)));
     EXPECT_EQ(126u, decoder_peer_.header_table_size_limit());
   }
   {
@@ -513,7 +513,7 @@ TEST_P(HpackDecoderAdapterTest, ContextUpdateMaximumSize) {
     output_stream.AppendUint32(kDefaultHeaderTableSizeSetting);
 
     output_stream.TakeString(&input);
-    EXPECT_TRUE(DecodeHeaderBlock(quiche::QuicheStringPiece(input)));
+    EXPECT_TRUE(DecodeHeaderBlock(absl::string_view(input)));
     EXPECT_EQ(kDefaultHeaderTableSizeSetting,
               decoder_peer_.header_table_size_limit());
   }
@@ -524,7 +524,7 @@ TEST_P(HpackDecoderAdapterTest, ContextUpdateMaximumSize) {
     output_stream.AppendUint32(kDefaultHeaderTableSizeSetting + 1);
 
     output_stream.TakeString(&input);
-    EXPECT_FALSE(DecodeHeaderBlock(quiche::QuicheStringPiece(input)));
+    EXPECT_FALSE(DecodeHeaderBlock(absl::string_view(input)));
     EXPECT_EQ(kDefaultHeaderTableSizeSetting,
               decoder_peer_.header_table_size_limit());
   }
@@ -542,7 +542,7 @@ TEST_P(HpackDecoderAdapterTest, TwoTableSizeUpdates) {
     output_stream.AppendUint32(122);
 
     output_stream.TakeString(&input);
-    EXPECT_TRUE(DecodeHeaderBlock(quiche::QuicheStringPiece(input)));
+    EXPECT_TRUE(DecodeHeaderBlock(absl::string_view(input)));
     EXPECT_EQ(122u, decoder_peer_.header_table_size_limit());
   }
 }
@@ -562,7 +562,7 @@ TEST_P(HpackDecoderAdapterTest, ThreeTableSizeUpdatesError) {
 
     output_stream.TakeString(&input);
 
-    EXPECT_FALSE(DecodeHeaderBlock(quiche::QuicheStringPiece(input)));
+    EXPECT_FALSE(DecodeHeaderBlock(absl::string_view(input)));
     EXPECT_EQ(10u, decoder_peer_.header_table_size_limit());
   }
 }
@@ -581,7 +581,7 @@ TEST_P(HpackDecoderAdapterTest, TableSizeUpdateSecondError) {
 
     output_stream.TakeString(&input);
 
-    EXPECT_FALSE(DecodeHeaderBlock(quiche::QuicheStringPiece(input)));
+    EXPECT_FALSE(DecodeHeaderBlock(absl::string_view(input)));
     EXPECT_EQ(kDefaultHeaderTableSizeSetting,
               decoder_peer_.header_table_size_limit());
   }
@@ -604,7 +604,7 @@ TEST_P(HpackDecoderAdapterTest, TableSizeUpdateFirstThirdError) {
 
     output_stream.TakeString(&input);
 
-    EXPECT_FALSE(DecodeHeaderBlock(quiche::QuicheStringPiece(input)));
+    EXPECT_FALSE(DecodeHeaderBlock(absl::string_view(input)));
     EXPECT_EQ(60u, decoder_peer_.header_table_size_limit());
   }
 }
@@ -616,7 +616,7 @@ TEST_P(HpackDecoderAdapterTest, LiteralHeaderNoIndexing) {
   // name.
   const char input[] = "\x04\x0c/sample/path\x00\x06:path2\x0e/sample/path/2";
   const SpdyHeaderBlock& header_set = DecodeBlockExpectingSuccess(
-      quiche::QuicheStringPiece(input, QUICHE_ARRAYSIZE(input) - 1));
+      absl::string_view(input, ABSL_ARRAYSIZE(input) - 1));
 
   SpdyHeaderBlock expected_header_set;
   expected_header_set[":path"] = "/sample/path";
@@ -629,7 +629,7 @@ TEST_P(HpackDecoderAdapterTest, LiteralHeaderNoIndexing) {
 TEST_P(HpackDecoderAdapterTest, LiteralHeaderIncrementalIndexing) {
   const char input[] = "\x44\x0c/sample/path\x40\x06:path2\x0e/sample/path/2";
   const SpdyHeaderBlock& header_set = DecodeBlockExpectingSuccess(
-      quiche::QuicheStringPiece(input, QUICHE_ARRAYSIZE(input) - 1));
+      absl::string_view(input, ABSL_ARRAYSIZE(input) - 1));
 
   SpdyHeaderBlock expected_header_set;
   expected_header_set[":path"] = "/sample/path";
@@ -642,23 +642,23 @@ TEST_P(HpackDecoderAdapterTest, LiteralHeaderWithIndexingInvalidNameIndex) {
   EXPECT_TRUE(EncodeAndDecodeDynamicTableSizeUpdates(0, 0));
 
   // Name is the last static index. Works.
-  EXPECT_TRUE(DecodeHeaderBlock(quiche::QuicheStringPiece("\x7d\x03ooo")));
+  EXPECT_TRUE(DecodeHeaderBlock(absl::string_view("\x7d\x03ooo")));
   // Name is one beyond the last static index. Fails.
-  EXPECT_FALSE(DecodeHeaderBlock(quiche::QuicheStringPiece("\x7e\x03ooo")));
+  EXPECT_FALSE(DecodeHeaderBlock(absl::string_view("\x7e\x03ooo")));
 }
 
 TEST_P(HpackDecoderAdapterTest, LiteralHeaderNoIndexingInvalidNameIndex) {
   // Name is the last static index. Works.
-  EXPECT_TRUE(DecodeHeaderBlock(quiche::QuicheStringPiece("\x0f\x2e\x03ooo")));
+  EXPECT_TRUE(DecodeHeaderBlock(absl::string_view("\x0f\x2e\x03ooo")));
   // Name is one beyond the last static index. Fails.
-  EXPECT_FALSE(DecodeHeaderBlock(quiche::QuicheStringPiece("\x0f\x2f\x03ooo")));
+  EXPECT_FALSE(DecodeHeaderBlock(absl::string_view("\x0f\x2f\x03ooo")));
 }
 
 TEST_P(HpackDecoderAdapterTest, LiteralHeaderNeverIndexedInvalidNameIndex) {
   // Name is the last static index. Works.
-  EXPECT_TRUE(DecodeHeaderBlock(quiche::QuicheStringPiece("\x1f\x2e\x03ooo")));
+  EXPECT_TRUE(DecodeHeaderBlock(absl::string_view("\x1f\x2e\x03ooo")));
   // Name is one beyond the last static index. Fails.
-  EXPECT_FALSE(DecodeHeaderBlock(quiche::QuicheStringPiece("\x1f\x2f\x03ooo")));
+  EXPECT_FALSE(DecodeHeaderBlock(absl::string_view("\x1f\x2f\x03ooo")));
 }
 
 TEST_P(HpackDecoderAdapterTest, TruncatedIndex) {
@@ -710,7 +710,7 @@ TEST_P(HpackDecoderAdapterTest, HuffmanEOSError) {
 // Round-tripping the header set from RFC 7541 C.3.1 should work.
 // http://httpwg.org/specs/rfc7541.html#rfc.section.C.3.1
 TEST_P(HpackDecoderAdapterTest, BasicC31) {
-  HpackEncoder encoder(ObtainHpackHuffmanTable());
+  HpackEncoder encoder;
 
   SpdyHeaderBlock expected_header_set;
   expected_header_set[":method"] = "GET";
@@ -1055,10 +1055,10 @@ TEST_P(HpackDecoderAdapterTest, ReuseNameOfEvictedEntry) {
   hbb.AppendDynamicTableSizeUpdate(0);
   hbb.AppendDynamicTableSizeUpdate(63);
 
-  const quiche::QuicheStringPiece name("some-name");
-  const quiche::QuicheStringPiece value1("some-value");
-  const quiche::QuicheStringPiece value2("another-value");
-  const quiche::QuicheStringPiece value3("yet-another-value");
+  const absl::string_view name("some-name");
+  const absl::string_view value1("some-value");
+  const absl::string_view value2("another-value");
+  const absl::string_view value3("yet-another-value");
 
   // Add an entry that will become the first in the dynamic table, entry 62.
   hbb.AppendLiteralNameAndValue(HpackEntryType::kIndexedLiteralHeader, false,
@@ -1106,7 +1106,7 @@ TEST_P(HpackDecoderAdapterTest, ReuseNameOfEvictedEntry) {
   EXPECT_EQ(expected_header_set, decoded_block());
 
   if (start_choice_ == START_WITH_HANDLER) {
-    EXPECT_EQ(handler_.header_bytes_parsed(),
+    EXPECT_EQ(handler_.uncompressed_header_bytes(),
               6 * name.size() + 2 * value1.size() + 2 * value2.size() +
                   2 * value3.size());
   }

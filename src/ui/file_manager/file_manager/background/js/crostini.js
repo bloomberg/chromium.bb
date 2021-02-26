@@ -104,14 +104,6 @@ class CrostiniImpl {
     } else {
       this.shared_paths_[url] = [vmName];
     }
-
-    // Record UMA.
-    const root = this.getRoot_(entry);
-    let suffix = CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.get(root) ||
-        CrostiniImpl.UMA_ROOT_TYPE_OTHER;
-    metrics.recordSmallCount(
-        'CrostiniSharedPaths.Depth.' + suffix,
-        entry.fullPath.split('/').length - 1);
   }
 
   /**
@@ -143,7 +135,7 @@ class CrostiniImpl {
 
   /**
    * Handles events for enable/disable, share/unshare.
-   * @param {chrome.fileManagerPrivate.CrostiniEvent} event
+   * @param {!chrome.fileManagerPrivate.CrostiniEvent} event
    * @private
    */
   onCrostiniChanged_(event) {
@@ -156,12 +148,12 @@ class CrostiniImpl {
         break;
       case chrome.fileManagerPrivate.CrostiniEventType.SHARE:
         for (const entry of event.entries) {
-          this.registerSharedPath(event.vmName, entry);
+          this.registerSharedPath(event.vmName, assert(entry));
         }
         break;
       case chrome.fileManagerPrivate.CrostiniEventType.UNSHARE:
         for (const entry of event.entries) {
-          this.unregisterSharedPath(event.vmName, entry);
+          this.unregisterSharedPath(event.vmName, assert(entry));
         }
         break;
     }
@@ -257,8 +249,6 @@ CrostiniImpl.DEFAULT_VM = 'termina';
 CrostiniImpl.PLUGIN_VM = 'PvmDefault';
 
 /**
- * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
- * histogram_suffix.
  * @type {!Map<?VolumeManagerCommon.RootType, string>}
  * @const
  */
@@ -272,10 +262,6 @@ CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT, 'TeamDrive'],
   [VolumeManagerCommon.RootType.SHARED_DRIVE, 'TeamDrive'],
   [VolumeManagerCommon.RootType.CROSTINI, 'Crostini'],
+  [VolumeManagerCommon.RootType.ARCHIVE, 'Archive'],
+  [VolumeManagerCommon.RootType.SMB, 'SMB'],
 ]);
-
-/**
- * @private {string}
- * @const
- */
-CrostiniImpl.UMA_ROOT_TYPE_OTHER = 'Other';

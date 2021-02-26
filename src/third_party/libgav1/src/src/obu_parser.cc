@@ -31,10 +31,6 @@
 namespace libgav1 {
 namespace {
 
-// This is set to 0 since we only support one layer. This should be part of
-// DecoderSettings if we support more than one layer.
-constexpr int kOperatingPoint = 0;
-
 // 5.9.16.
 // Find the smallest value of k such that block_size << k is greater than or
 // equal to target.
@@ -192,6 +188,16 @@ bool ObuParser::ParseColorConfig(ObuSequenceHeader* sequence_header) {
       color_config->color_range = kColorRangeFull;
       color_config->subsampling_x = 0;
       color_config->subsampling_y = 0;
+      // YUV 4:4:4 is only allowed in profile 1, or profile 2 with bit depth 12.
+      // See the table at the beginning of Section 6.4.1.
+      if (sequence_header->profile != kProfile1 &&
+          (sequence_header->profile != kProfile2 ||
+           color_config->bitdepth != 12)) {
+        LIBGAV1_DLOG(ERROR,
+                     "YUV 4:4:4 is not allowed in profile %d for bitdepth %d.",
+                     sequence_header->profile, color_config->bitdepth);
+        return false;
+      }
     } else {
       OBU_READ_BIT_OR_FAIL;
       color_config->color_range = static_cast<ColorRange>(scratch);
@@ -335,6 +341,13 @@ bool ObuParser::ParseSequenceHeader(bool seen_frame_header) {
     const auto initial_display_delay_present_flag = static_cast<bool>(scratch);
     OBU_READ_LITERAL_OR_FAIL(5);
     sequence_header.operating_points = static_cast<int>(1 + scratch);
+    if (operating_point_ >= sequence_header.operating_points) {
+      LIBGAV1_DLOG(
+          ERROR,
+          "Invalid operating point: %d (valid range is [0,%d] inclusive).",
+          operating_point_, sequence_header.operating_points - 1);
+      return false;
+    }
     for (int i = 0; i < sequence_header.operating_points; ++i) {
       OBU_READ_LITERAL_OR_FAIL(12);
       sequence_header.operating_point_idc[i] = static_cast<int>(scratch);
@@ -474,7 +487,7 @@ bool ObuParser::ParseSequenceHeader(bool seen_frame_header) {
   // OperatingPointIdc is equal to 0, then obu_extension_flag is equal to 0 for
   // all OBUs that follow this sequence header until the next sequence header.
   extension_disallowed_ =
-      (sequence_header_.operating_point_idc[kOperatingPoint] == 0);
+      (sequence_header_.operating_point_idc[operating_point_] == 0);
   return true;
 }
 
@@ -547,12 +560,12 @@ bool ObuParser::ParseSuperResParametersAndComputeImageSize() {
   int64_t scratch;
   // SuperRes.
   frame_header_.upscaled_width = frame_header_.width;
-  bool use_superres = false;
+  frame_header_.use_superres = false;
   if (sequence_header_.enable_superres) {
     OBU_READ_BIT_OR_FAIL;
-    use_superres = static_cast<bool>(scratch);
+    frame_header_.use_superres = static_cast<bool>(scratch);
   }
-  if (use_superres) {
+  if (frame_header_.use_superres) {
     OBU_READ_LITERAL_OR_FAIL(3);
     // 9 is the smallest value for the denominator.
     frame_header_.superres_scale_denominator = scratch + 9;
@@ -864,8 +877,8 @@ bool ObuParser::ParseLoopFilterParameters() {
   loop_filter->delta_enabled = static_cast<bool>(scratch);
   if (loop_filter->delta_enabled) {
     OBU_READ_BIT_OR_FAIL;
-    const auto loop_filter_delta_update = static_cast<bool>(scratch);
-    if (loop_filter_delta_update) {
+    loop_filter->delta_update = static_cast<bool>(scratch);
+    if (loop_filter->delta_update) {
       for (auto& ref_delta : loop_filter->ref_deltas) {
         OBU_READ_BIT_OR_FAIL;
         const auto update_ref_delta = static_cast<bool>(scratch);
@@ -891,6 +904,8 @@ bool ObuParser::ParseLoopFilterParameters() {
         }
       }
     }
+  } else {
+    loop_filter->delta_update = false;
   }
   return true;
 }
@@ -1080,29 +1095,32 @@ void ObuParser::ComputeSegmentLosslessAndQIndex() {
 }
 
 bool ObuParser::ParseCdefParameters() {
+  const int coeff_shift = sequence_header_.color_config.bitdepth - 8;
   if (frame_header_.coded_lossless || frame_header_.allow_intrabc ||
       !sequence_header_.enable_cdef) {
-    frame_header_.cdef.damping = 3;
+    frame_header_.cdef.damping = 3 + coeff_shift;
     return true;
   }
   Cdef* const cdef = &frame_header_.cdef;
   int64_t scratch;
   OBU_READ_LITERAL_OR_FAIL(2);
-  cdef->damping = scratch + 3;
+  cdef->damping = scratch + 3 + coeff_shift;
   OBU_READ_LITERAL_OR_FAIL(2);
   cdef->bits = scratch;
   for (int i = 0; i < (1 << cdef->bits); ++i) {
     OBU_READ_LITERAL_OR_FAIL(4);
-    cdef->y_primary_strength[i] = scratch;
+    cdef->y_primary_strength[i] = scratch << coeff_shift;
     OBU_READ_LITERAL_OR_FAIL(2);
     cdef->y_secondary_strength[i] = scratch;
     if (cdef->y_secondary_strength[i] == 3) ++cdef->y_secondary_strength[i];
+    cdef->y_secondary_strength[i] <<= coeff_shift;
     if (sequence_header_.color_config.is_monochrome) continue;
     OBU_READ_LITERAL_OR_FAIL(4);
-    cdef->uv_primary_strength[i] = scratch;
+    cdef->uv_primary_strength[i] = scratch << coeff_shift;
     OBU_READ_LITERAL_OR_FAIL(2);
     cdef->uv_secondary_strength[i] = scratch;
     if (cdef->uv_secondary_strength[i] == 3) ++cdef->uv_secondary_strength[i];
+    cdef->uv_secondary_strength[i] <<= coeff_shift;
   }
   return true;
 }
@@ -1141,8 +1159,7 @@ bool ObuParser::ParseLoopRestorationParameters() {
         unit_shift += unit_extra_shift;
       }
     }
-    loop_restoration->unit_size[kPlaneY] =
-        kLoopRestorationTileSizeMax >> (2 - unit_shift);
+    loop_restoration->unit_size_log2[kPlaneY] = 6 + unit_shift;
     uint8_t uv_shift = 0;
     if (sequence_header_.color_config.subsampling_x != 0 &&
         sequence_header_.color_config.subsampling_y != 0 &&
@@ -1150,9 +1167,9 @@ bool ObuParser::ParseLoopRestorationParameters() {
       OBU_READ_BIT_OR_FAIL;
       uv_shift = scratch;
     }
-    loop_restoration->unit_size[kPlaneU] =
-        loop_restoration->unit_size[kPlaneV] =
-            loop_restoration->unit_size[0] >> uv_shift;
+    loop_restoration->unit_size_log2[kPlaneU] =
+        loop_restoration->unit_size_log2[kPlaneV] =
+            loop_restoration->unit_size_log2[0] - uv_shift;
   }
   return true;
 }
@@ -1192,6 +1209,12 @@ bool ObuParser::IsSkipModeAllowed() {
     const unsigned int reference_hint =
         decoder_state_
             .reference_order_hint[frame_header_.reference_frame_index[i]];
+    // TODO(linfengz): |relative_distance| equals
+    // current_frame_->reference_info()->
+    //     relative_distance_from[i + kReferenceFrameLast];
+    // However, the unit test ObuParserTest.SkipModeParameters() would fail.
+    // Will figure out how to initialize |current_frame_.reference_info_| in the
+    // RefCountedBuffer later.
     const int relative_distance =
         GetRelativeDistance(reference_hint, frame_header_.order_hint,
                             sequence_header_.order_hint_shift_bits);
@@ -1663,14 +1686,15 @@ bool ObuParser::ParseTileInfoSyntax() {
       tile_info->tile_column_start[i] = sb_start << sb_shift;
       const int max_width =
           std::min(sb_columns - sb_start, static_cast<int>(sb_max_tile_width));
-      int sb_size;
-      if (!bit_reader_->DecodeUniform(max_width, &sb_size)) {
+      if (!bit_reader_->DecodeUniform(
+              max_width, &tile_info->tile_column_width_in_superblocks[i])) {
         LIBGAV1_DLOG(ERROR, "Not enough bits.");
         return false;
       }
-      ++sb_size;
-      widest_tile_sb = std::max(sb_size, widest_tile_sb);
-      sb_start += sb_size;
+      ++tile_info->tile_column_width_in_superblocks[i];
+      widest_tile_sb = std::max(tile_info->tile_column_width_in_superblocks[i],
+                                widest_tile_sb);
+      sb_start += tile_info->tile_column_width_in_superblocks[i];
     }
     tile_info->tile_column_start[i] = frame_header_.columns4x4;
     tile_info->tile_columns = i;
@@ -1689,19 +1713,23 @@ bool ObuParser::ParseTileInfoSyntax() {
       }
       tile_info->tile_row_start[i] = sb_start << sb_shift;
       const int max_height = std::min(sb_rows - sb_start, max_tile_height_sb);
-      int sb_size;
-      if (!bit_reader_->DecodeUniform(max_height, &sb_size)) {
+      if (!bit_reader_->DecodeUniform(
+              max_height, &tile_info->tile_row_height_in_superblocks[i])) {
         LIBGAV1_DLOG(ERROR, "Not enough bits.");
         return false;
       }
-      ++sb_size;
-      sb_start += sb_size;
+      ++tile_info->tile_row_height_in_superblocks[i];
+      sb_start += tile_info->tile_row_height_in_superblocks[i];
     }
     tile_info->tile_row_start[i] = frame_header_.rows4x4;
     tile_info->tile_rows = i;
     tile_info->tile_rows_log2 = CeilLog2(tile_info->tile_rows);
   }
   tile_info->tile_count = tile_info->tile_rows * tile_info->tile_columns;
+  if (!tile_buffers_.reserve(tile_info->tile_count)) {
+    LIBGAV1_DLOG(ERROR, "Unable to allocate memory for tile_buffers_.");
+    return false;
+  }
   tile_info->context_update_id = 0;
   const int tile_bits =
       tile_info->tile_columns_log2 + tile_info->tile_rows_log2;
@@ -1842,7 +1870,7 @@ bool ObuParser::ParseFrameParameters() {
   if (frame_header_.frame_type == kFrameKey && frame_header_.show_frame) {
     decoder_state_.reference_valid.fill(false);
     decoder_state_.reference_order_hint.fill(0);
-    current_frame_->ClearOrderHints();
+    decoder_state_.reference_frame.fill(nullptr);
   }
   OBU_READ_BIT_OR_FAIL;
   frame_header_.enable_cdf_update = !static_cast<bool>(scratch);
@@ -1872,27 +1900,28 @@ bool ObuParser::ParseFrameParameters() {
     frame_header_.current_frame_id = static_cast<uint16_t>(scratch);
     const int previous_frame_id = decoder_state_.current_frame_id;
     decoder_state_.current_frame_id = frame_header_.current_frame_id;
-    if ((frame_header_.frame_type != kFrameKey || !frame_header_.show_frame) &&
-        previous_frame_id >= 0) {
-      // Section 6.8.2: ..., it is a requirement of bitstream conformance
-      // that all of the following conditions are true:
-      //   * current_frame_id is not equal to PrevFrameID,
-      //   * DiffFrameID is less than 1 << ( idLen - 1 )
-      int diff_frame_id = decoder_state_.current_frame_id - previous_frame_id;
-      const int id_length_max_value = 1
-                                      << sequence_header_.frame_id_length_bits;
-      if (diff_frame_id <= 0) {
-        diff_frame_id += id_length_max_value;
+    if (frame_header_.frame_type != kFrameKey || !frame_header_.show_frame) {
+      if (previous_frame_id >= 0) {
+        // Section 6.8.2: ..., it is a requirement of bitstream conformance
+        // that all of the following conditions are true:
+        //   * current_frame_id is not equal to PrevFrameID,
+        //   * DiffFrameID is less than 1 << ( idLen - 1 )
+        int diff_frame_id = decoder_state_.current_frame_id - previous_frame_id;
+        const int id_length_max_value =
+            1 << sequence_header_.frame_id_length_bits;
+        if (diff_frame_id <= 0) {
+          diff_frame_id += id_length_max_value;
+        }
+        if (diff_frame_id >= DivideBy2(id_length_max_value)) {
+          LIBGAV1_DLOG(ERROR,
+                       "current_frame_id (%d) equals or differs too much from "
+                       "previous_frame_id (%d).",
+                       decoder_state_.current_frame_id, previous_frame_id);
+          return false;
+        }
       }
-      if (diff_frame_id >= DivideBy2(id_length_max_value)) {
-        LIBGAV1_DLOG(ERROR,
-                     "current_frame_id (%d) equals or differs too much from "
-                     "previous_frame_id (%d).",
-                     decoder_state_.current_frame_id, previous_frame_id);
-        return false;
-      }
+      MarkInvalidReferenceFrames();
     }
-    MarkInvalidReferenceFrames();
   } else {
     frame_header_.current_frame_id = 0;
     decoder_state_.current_frame_id = frame_header_.current_frame_id;
@@ -1982,14 +2011,24 @@ bool ObuParser::ParseFrameParameters() {
         OBU_READ_LITERAL_OR_FAIL(3);
         frame_header_.reference_frame_index[i] = scratch;
       }
+      const int reference_frame_index = frame_header_.reference_frame_index[i];
+      assert(reference_frame_index >= 0);
+      // Section 6.8.2: It is a requirement of bitstream conformance that
+      // RefValid[ ref_frame_idx[ i ] ] is equal to 1 ...
+      // The remainder of the statement is handled by ParseSequenceHeader().
+      // Note if support for Annex C: Error resilience behavior is added this
+      // check should be omitted per C.5 Decoder consequences of processable
+      // frames.
+      if (!decoder_state_.reference_valid[reference_frame_index]) {
+        LIBGAV1_DLOG(ERROR, "ref_frame_idx[%d] (%d) is not valid.", i,
+                     reference_frame_index);
+        return false;
+      }
       // Check if the inter frame requests a nonexistent reference, whether or
       // not frame_refs_short_signaling is used.
-      assert(frame_header_.reference_frame_index[i] >= 0);
-      if (decoder_state_
-              .reference_frame[frame_header_.reference_frame_index[i]] ==
-          nullptr) {
+      if (decoder_state_.reference_frame[reference_frame_index] == nullptr) {
         LIBGAV1_DLOG(ERROR, "ref_frame_idx[%d] (%d) is not a decoded frame.", i,
-                     frame_header_.reference_frame_index[i]);
+                     reference_frame_index);
         return false;
       }
       if (sequence_header_.frame_id_numbers_present) {
@@ -2008,29 +2047,13 @@ bool ObuParser::ParseFrameParameters() {
         // Section 6.8.2: It is a requirement of bitstream conformance that
         // RefValid[ ref_frame_idx[ i ] ] is equal to 1, ...
         if (frame_header_.expected_frame_id[i] !=
-                decoder_state_.reference_frame_id
-                    [frame_header_.reference_frame_index[i]] ||
-            !decoder_state_
-                 .reference_valid[frame_header_.reference_frame_index[i]]) {
+                decoder_state_.reference_frame_id[reference_frame_index] ||
+            !decoder_state_.reference_valid[reference_frame_index]) {
           LIBGAV1_DLOG(ERROR,
                        "Reference buffer %d has a frame id number mismatch.",
-                       frame_header_.reference_frame_index[i]);
+                       reference_frame_index);
           return false;
         }
-      }
-    }
-    // Validate frame_header_.primary_reference_frame.
-    if (frame_header_.primary_reference_frame != kPrimaryReferenceNone) {
-      const int index =
-          frame_header_
-              .reference_frame_index[frame_header_.primary_reference_frame];
-      if (decoder_state_.reference_frame[index] == nullptr) {
-        LIBGAV1_DLOG(ERROR,
-                     "primary_ref_frame is %d but ref_frame_idx[%d] (%d) is "
-                     "not a decoded frame.",
-                     frame_header_.primary_reference_frame,
-                     frame_header_.primary_reference_frame, index);
-        return false;
       }
     }
     if (frame_header_.frame_size_override_flag &&
@@ -2092,16 +2115,44 @@ bool ObuParser::ParseFrameParameters() {
     return false;
   }
   if (!IsIntraFrame(frame_header_.frame_type)) {
-    for (int i = 0; i < kNumInterReferenceFrameTypes; ++i) {
-      const auto reference_frame =
-          static_cast<ReferenceFrameType>(kReferenceFrameLast + i);
+    // Initialize the kReferenceFrameIntra type reference frame information to
+    // simplify the frame type validation in motion field projection.
+    // Set the kReferenceFrameIntra type |order_hint_| to
+    // |frame_header_.order_hint|. This guarantees that in SIMD implementations,
+    // the other reference frame information of the kReferenceFrameIntra type
+    // could be correctly initialized using the following loop with
+    // |frame_header_.order_hint| being the |hint|.
+    ReferenceInfo* const reference_info = current_frame_->reference_info();
+    reference_info->order_hint[kReferenceFrameIntra] = frame_header_.order_hint;
+    reference_info->relative_distance_from[kReferenceFrameIntra] = 0;
+    reference_info->relative_distance_to[kReferenceFrameIntra] = 0;
+    reference_info->skip_references[kReferenceFrameIntra] = true;
+    reference_info->projection_divisions[kReferenceFrameIntra] = 0;
+
+    for (int i = kReferenceFrameLast; i <= kNumInterReferenceFrameTypes; ++i) {
+      const auto reference_frame = static_cast<ReferenceFrameType>(i);
       const uint8_t hint =
-          decoder_state_
-              .reference_order_hint[frame_header_.reference_frame_index[i]];
-      current_frame_->set_order_hint(reference_frame, hint);
-      decoder_state_.reference_frame_sign_bias[reference_frame] =
+          decoder_state_.reference_order_hint
+              [frame_header_.reference_frame_index[i - kReferenceFrameLast]];
+      reference_info->order_hint[reference_frame] = hint;
+      const int relative_distance_from =
           GetRelativeDistance(hint, frame_header_.order_hint,
-                              sequence_header_.order_hint_shift_bits) > 0;
+                              sequence_header_.order_hint_shift_bits);
+      const int relative_distance_to =
+          GetRelativeDistance(frame_header_.order_hint, hint,
+                              sequence_header_.order_hint_shift_bits);
+      reference_info->relative_distance_from[reference_frame] =
+          relative_distance_from;
+      reference_info->relative_distance_to[reference_frame] =
+          relative_distance_to;
+      reference_info->skip_references[reference_frame] =
+          relative_distance_to > kMaxFrameDistance || relative_distance_to <= 0;
+      reference_info->projection_divisions[reference_frame] =
+          reference_info->skip_references[reference_frame]
+              ? 0
+              : kProjectionMvDivisionLookup[relative_distance_to];
+      decoder_state_.reference_frame_sign_bias[reference_frame] =
+          relative_distance_from > 0;
     }
   }
   if (frame_header_.enable_cdf_update &&
@@ -2120,6 +2171,9 @@ bool ObuParser::ParseFrameHeader() {
   if (!has_sequence_header_) return false;
   if (!ParseFrameParameters()) return false;
   if (frame_header_.show_existing_frame) return true;
+  assert(!obu_headers_.empty());
+  current_frame_->set_spatial_id(obu_headers_.back().spatial_id);
+  current_frame_->set_temporal_id(obu_headers_.back().temporal_id);
   bool status = ParseTileInfoSyntax() && ParseQuantizerParameters() &&
                 ParseSegmentationParameters();
   if (!status) return false;
@@ -2128,6 +2182,11 @@ bool ObuParser::ParseFrameHeader() {
       ParseQuantizerIndexDeltaParameters() && ParseLoopFilterDeltaParameters();
   if (!status) return false;
   ComputeSegmentLosslessAndQIndex();
+  // Section 6.8.2: It is a requirement of bitstream conformance that
+  // delta_q_present is equal to 0 when CodedLossless is equal to 1.
+  if (frame_header_.coded_lossless && frame_header_.delta_q.present) {
+    return false;
+  }
   status = ParseLoopFilterParameters();
   if (!status) return false;
   current_frame_->SetLoopFilterDeltas(frame_header_.loop_filter);
@@ -2440,33 +2499,61 @@ bool ObuParser::ParseMetadata(const uint8_t* data, size_t size) {
   return true;
 }
 
-bool ObuParser::ValidateTileGroup() {
-  const auto& tile_group = tile_groups_.back();
-  if (tile_group.start != next_tile_group_start_ ||
-      tile_group.start > tile_group.end ||
-      tile_group.end >= frame_header_.tile_info.tile_count) {
+bool ObuParser::AddTileBuffers(int start, int end, size_t total_size,
+                               size_t tg_header_size,
+                               size_t bytes_consumed_so_far) {
+  // Validate that the tile group start and end are within the allowed range.
+  if (start != next_tile_group_start_ || start > end ||
+      end >= frame_header_.tile_info.tile_count) {
     LIBGAV1_DLOG(ERROR,
                  "Invalid tile group start %d or end %d: expected tile group "
                  "start %d, tile_count %d.",
-                 tile_group.start, tile_group.end, next_tile_group_start_,
+                 start, end, next_tile_group_start_,
                  frame_header_.tile_info.tile_count);
     return false;
   }
-  next_tile_group_start_ = tile_group.end + 1;
-  return true;
-}
+  next_tile_group_start_ = end + 1;
 
-bool ObuParser::SetTileDataOffset(size_t total_size, size_t tg_header_size,
-                                  size_t bytes_consumed_so_far) {
   if (total_size < tg_header_size) {
     LIBGAV1_DLOG(ERROR, "total_size (%zu) is less than tg_header_size (%zu).)",
                  total_size, tg_header_size);
     return false;
   }
-  auto& tile_group = tile_groups_.back();
-  tile_group.data_size = total_size - tg_header_size;
-  tile_group.data_offset = bytes_consumed_so_far + tg_header_size;
-  tile_group.data = data_ + tile_group.data_offset;
+  size_t bytes_left = total_size - tg_header_size;
+  const uint8_t* data = data_ + bytes_consumed_so_far + tg_header_size;
+  for (int tile_number = start; tile_number <= end; ++tile_number) {
+    size_t tile_size = 0;
+    if (tile_number != end) {
+      RawBitReader bit_reader(data, bytes_left);
+      if (!bit_reader.ReadLittleEndian(frame_header_.tile_info.tile_size_bytes,
+                                       &tile_size)) {
+        LIBGAV1_DLOG(ERROR, "Could not read tile size for tile #%d",
+                     tile_number);
+        return false;
+      }
+      ++tile_size;
+      data += frame_header_.tile_info.tile_size_bytes;
+      bytes_left -= frame_header_.tile_info.tile_size_bytes;
+      if (tile_size > bytes_left) {
+        LIBGAV1_DLOG(ERROR, "Invalid tile size %zu for tile #%d", tile_size,
+                     tile_number);
+        return false;
+      }
+    } else {
+      tile_size = bytes_left;
+      if (tile_size == 0) {
+        LIBGAV1_DLOG(ERROR, "Invalid tile size %zu for tile #%d", tile_size,
+                     tile_number);
+        return false;
+      }
+    }
+    // The memory for this has been allocated in ParseTileInfoSyntax(). So it is
+    // safe to use push_back_unchecked here.
+    tile_buffers_.push_back_unchecked({data, tile_size});
+    data += tile_size;
+    bytes_left -= tile_size;
+  }
+  bit_reader_->SkipBytes(total_size - tg_header_size);
   return true;
 }
 
@@ -2475,29 +2562,19 @@ bool ObuParser::ParseTileGroup(size_t size, size_t bytes_consumed_so_far) {
   const size_t start_offset = bit_reader_->byte_offset();
   const int tile_bits =
       tile_info->tile_columns_log2 + tile_info->tile_rows_log2;
-  if (!tile_groups_.emplace_back()) {
-    LIBGAV1_DLOG(ERROR, "Could not add an element to tile_groups_.");
-    return false;
-  }
-  auto& tile_group = tile_groups_.back();
   if (tile_bits == 0) {
-    tile_group.start = 0;
-    tile_group.end = 0;
-    if (!ValidateTileGroup()) return false;
-    return SetTileDataOffset(size, 0, bytes_consumed_so_far);
+    return AddTileBuffers(0, 0, size, 0, bytes_consumed_so_far);
   }
   int64_t scratch;
   OBU_READ_BIT_OR_FAIL;
   const auto tile_start_and_end_present_flag = static_cast<bool>(scratch);
   if (!tile_start_and_end_present_flag) {
-    tile_group.start = 0;
-    tile_group.end = tile_info->tile_count - 1;
-    if (!ValidateTileGroup()) return false;
     if (!bit_reader_->AlignToNextByte()) {
       LIBGAV1_DLOG(ERROR, "Byte alignment has non zero bits.");
       return false;
     }
-    return SetTileDataOffset(size, 1, bytes_consumed_so_far);
+    return AddTileBuffers(0, tile_info->tile_count - 1, size, 1,
+                          bytes_consumed_so_far);
   }
   if (obu_headers_.back().type == kObuFrame) {
     // 6.10.1: If obu_type is equal to OBU_FRAME, it is a requirement of
@@ -2508,16 +2585,16 @@ bool ObuParser::ParseTileGroup(size_t size, size_t bytes_consumed_so_far) {
     return false;
   }
   OBU_READ_LITERAL_OR_FAIL(tile_bits);
-  tile_group.start = static_cast<int>(scratch);
+  const int start = static_cast<int>(scratch);
   OBU_READ_LITERAL_OR_FAIL(tile_bits);
-  tile_group.end = static_cast<int>(scratch);
-  if (!ValidateTileGroup()) return false;
+  const int end = static_cast<int>(scratch);
   if (!bit_reader_->AlignToNextByte()) {
     LIBGAV1_DLOG(ERROR, "Byte alignment has non zero bits.");
     return false;
   }
   const size_t tg_header_size = bit_reader_->byte_offset() - start_offset;
-  return SetTileDataOffset(size, tg_header_size, bytes_consumed_so_far);
+  return AddTileBuffers(start, end, size, tg_header_size,
+                        bytes_consumed_so_far);
 }
 
 bool ObuParser::ParseHeader() {
@@ -2586,7 +2663,7 @@ StatusCode ObuParser::ParseOneFrame(RefCountedBufferPtr* const current_frame) {
   obu_headers_.clear();
   frame_header_ = {};
   metadata_ = {};
-  tile_groups_.clear();
+  tile_buffers_.clear();
   next_tile_group_start_ = 0;
 
   bool parsed_one_full_frame = false;
@@ -2625,11 +2702,12 @@ StatusCode ObuParser::ParseOneFrame(RefCountedBufferPtr* const current_frame) {
     const ObuType obu_type = obu_header.type;
     if (obu_type != kObuSequenceHeader && obu_type != kObuTemporalDelimiter &&
         has_sequence_header_ &&
-        sequence_header_.operating_point_idc[kOperatingPoint] != 0 &&
+        sequence_header_.operating_point_idc[operating_point_] != 0 &&
         obu_header.has_extension &&
-        (!InTemporalLayer(sequence_header_.operating_point_idc[kOperatingPoint],
-                          obu_header.temporal_id) ||
-         !InSpatialLayer(sequence_header_.operating_point_idc[kOperatingPoint],
+        (!InTemporalLayer(
+             sequence_header_.operating_point_idc[operating_point_],
+             obu_header.temporal_id) ||
+         !InSpatialLayer(sequence_header_.operating_point_idc[operating_point_],
                          obu_header.spatial_id))) {
       obu_headers_.pop_back();
       bit_reader_->SkipBytes(obu_size);
@@ -2727,7 +2805,6 @@ StatusCode ObuParser::ParseOneFrame(RefCountedBufferPtr* const current_frame) {
           LIBGAV1_DLOG(ERROR, "Failed to parse TileGroup in Frame OBU.");
           return kStatusBitstreamError;
         }
-        bit_reader_->SkipBytes(tile_groups_.back().data_size);
         parsed_one_full_frame = true;
         break;
       }
@@ -2737,9 +2814,8 @@ StatusCode ObuParser::ParseOneFrame(RefCountedBufferPtr* const current_frame) {
           LIBGAV1_DLOG(ERROR, "Failed to parse TileGroup OBU.");
           return kStatusBitstreamError;
         }
-        bit_reader_->SkipBytes(tile_groups_.back().data_size);
         parsed_one_full_frame =
-            (tile_groups_.back().end == frame_header_.tile_info.tile_count - 1);
+            (next_tile_group_start_ == frame_header_.tile_info.tile_count);
         break;
       case kObuTileList:
         LIBGAV1_DLOG(ERROR, "Decoding of tile list OBUs is not supported.");

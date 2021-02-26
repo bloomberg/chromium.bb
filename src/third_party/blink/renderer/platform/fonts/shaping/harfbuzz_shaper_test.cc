@@ -203,22 +203,6 @@ INSTANTIATE_TEST_SUITE_P(HarfBuzzShaperTest,
                          testing::Values(TextDirection::kLtr,
                                          TextDirection::kRtl));
 
-TEST_F(HarfBuzzShaperTest, MutableUnique) {
-  scoped_refptr<ShapeResult> result =
-      ShapeResult::Create(&font, 0, 0, TextDirection::kLtr);
-  EXPECT_TRUE(result->HasOneRef());
-
-  // At this point, |result| has only one ref count.
-  scoped_refptr<ShapeResult> result2 = result->MutableUnique();
-  EXPECT_EQ(result.get(), result2.get());
-  EXPECT_FALSE(result2->HasOneRef());
-
-  // Since |result| has 2 ref counts, it should return a clone.
-  scoped_refptr<ShapeResult> result3 = result->MutableUnique();
-  EXPECT_NE(result.get(), result3.get());
-  EXPECT_TRUE(result3->HasOneRef());
-}
-
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin) {
   String latin_common = To16Bit("ABC DEF.", 8);
   HarfBuzzShaper shaper(latin_common);
@@ -436,7 +420,7 @@ TEST_F(HarfBuzzShaperTest, ShapeLatinSegment) {
 // <div>0x647<span style="color: red;">0x64A</span></
 // Cannot be enabled on Mac yet, compare
 // https:// https://github.com/harfbuzz/harfbuzz/issues/1415
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_ShapeArabicWithContext DISABLED_ShapeArabicWithContext
 #else
 #define MAYBE_ShapeArabicWithContext ShapeArabicWithContext
@@ -667,7 +651,7 @@ TEST_P(ShapeParameterTest, MaxGlyphsClusterDevanagari) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
   EXPECT_EQ(length, result->NumCharacters());
-#if defined(OS_LINUX) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
   // Linux and Fuchsia use Lohit Devanagari. When using that font the shaper
   // returns 32767 glyphs instead of 32769.
   // TODO(crbug.com/933551): Add Noto Sans Devanagari to
@@ -714,7 +698,7 @@ TEST_F(HarfBuzzShaperTest, NegativeLetterSpacing) {
   ShapeResultSpacing<String> spacing(string);
   FontDescription font_description;
   font_description.SetLetterSpacing(-5);
-  spacing.SetSpacing(font_description);
+  spacing.SetSpacing(Font(font_description));
   result->ApplySpacing(spacing);
 
   EXPECT_EQ(5 * 5, width - result->Width());
@@ -729,7 +713,7 @@ TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingTo0) {
   ShapeResultSpacing<String> spacing(string);
   FontDescription font_description;
   font_description.SetLetterSpacing(-char_width);
-  spacing.SetSpacing(font_description);
+  spacing.SetSpacing(Font(font_description));
   result->ApplySpacing(spacing);
 
   // EXPECT_EQ(0.0f, result->Width());
@@ -744,7 +728,7 @@ TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingToNegative) {
   ShapeResultSpacing<String> spacing(string);
   FontDescription font_description;
   font_description.SetLetterSpacing(-2 * char_width);
-  spacing.SetSpacing(font_description);
+  spacing.SetSpacing(Font(font_description));
   result->ApplySpacing(spacing);
 
   // CSS does not allow negative width, it should be clampled to 0.
@@ -1492,20 +1476,78 @@ TEST_F(HarfBuzzShaperTest, MAYBE_SafeToBreakArabicCommonLigatures) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kRtl);
 
-  Vector<unsigned> safe_to_break_positions;
-
-#if defined(OS_MACOSX)
-  safe_to_break_positions = {0, 2, 3, 4, 11};
+  EXPECT_EQ(0u, result->NextSafeToBreakOffset(0));
+  EXPECT_EQ(3u, result->NextSafeToBreakOffset(1));
+  EXPECT_EQ(3u, result->NextSafeToBreakOffset(2));
+  EXPECT_EQ(3u, result->NextSafeToBreakOffset(3));
+  EXPECT_EQ(4u, result->NextSafeToBreakOffset(4));
+#if defined(OS_MAC)
+  EXPECT_EQ(12u, result->NextSafeToBreakOffset(5));
+  EXPECT_EQ(12u, result->NextSafeToBreakOffset(6));
+  EXPECT_EQ(12u, result->NextSafeToBreakOffset(7));
+  EXPECT_EQ(12u, result->NextSafeToBreakOffset(8));
+  EXPECT_EQ(12u, result->NextSafeToBreakOffset(9));
+  EXPECT_EQ(12u, result->NextSafeToBreakOffset(10));
+  EXPECT_EQ(12u, result->NextSafeToBreakOffset(11));
 #else
-  safe_to_break_positions = {0, 3, 4, 5, 7, 11};
+  EXPECT_EQ(5u, result->NextSafeToBreakOffset(5));
+  EXPECT_EQ(7u, result->NextSafeToBreakOffset(6));
+  EXPECT_EQ(7u, result->NextSafeToBreakOffset(7));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(8));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(9));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(10));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(11));
 #endif
-  unsigned compare_safe_to_break_position = 0;
-  for (unsigned i = 0; i < string.length() - 1; ++i) {
-    EXPECT_EQ(safe_to_break_positions[compare_safe_to_break_position],
-              result->NextSafeToBreakOffset(i));
-    if (i == safe_to_break_positions[compare_safe_to_break_position])
-      compare_safe_to_break_position++;
-  }
+  EXPECT_EQ(12u, result->NextSafeToBreakOffset(12));
+
+  EXPECT_EQ(0u, result->PreviousSafeToBreakOffset(0));
+  EXPECT_EQ(0u, result->PreviousSafeToBreakOffset(1));
+  EXPECT_EQ(0u, result->PreviousSafeToBreakOffset(2));
+  EXPECT_EQ(3u, result->PreviousSafeToBreakOffset(3));
+  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(4));
+#if defined(OS_MAC)
+  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(5));
+  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(6));
+  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(7));
+  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(8));
+  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(9));
+  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(10));
+  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(11));
+#else
+  EXPECT_EQ(5u, result->PreviousSafeToBreakOffset(5));
+  EXPECT_EQ(5u, result->PreviousSafeToBreakOffset(6));
+  EXPECT_EQ(7u, result->PreviousSafeToBreakOffset(7));
+  EXPECT_EQ(7u, result->PreviousSafeToBreakOffset(8));
+  EXPECT_EQ(7u, result->PreviousSafeToBreakOffset(9));
+  EXPECT_EQ(7u, result->PreviousSafeToBreakOffset(10));
+  EXPECT_EQ(11u, result->PreviousSafeToBreakOffset(11));
+#endif
+  EXPECT_EQ(12u, result->PreviousSafeToBreakOffset(12));
+}
+
+// http://crbug.com/1170334
+TEST_F(HarfBuzzShaperTest, SafeToBreakU0635) {
+  FontDescription::VariantLigatures ligatures;
+  ligatures.common = FontDescription::kEnabledLigaturesState;
+
+  // Five U+0635. This sequence should be rendered once.
+  String string(u"\u0635\u0635\u0635\u0635\u0635");
+  HarfBuzzShaper shaper(string);
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kRtl);
+
+  EXPECT_EQ(0u, result->NextSafeToBreakOffset(0));
+  EXPECT_EQ(5u, result->NextSafeToBreakOffset(1));
+  EXPECT_EQ(5u, result->NextSafeToBreakOffset(2));
+  EXPECT_EQ(5u, result->NextSafeToBreakOffset(3));
+  EXPECT_EQ(5u, result->NextSafeToBreakOffset(4));
+  EXPECT_EQ(5u, result->NextSafeToBreakOffset(5));
+
+  EXPECT_EQ(0u, result->PreviousSafeToBreakOffset(0));
+  EXPECT_EQ(0u, result->PreviousSafeToBreakOffset(1));
+  EXPECT_EQ(0u, result->PreviousSafeToBreakOffset(2));
+  EXPECT_EQ(0u, result->PreviousSafeToBreakOffset(3));
+  EXPECT_EQ(0u, result->PreviousSafeToBreakOffset(4));
+  EXPECT_EQ(5u, result->PreviousSafeToBreakOffset(5));
 }
 
 // TODO(layout-dev): Expand RTL test coverage and add tests for mixed

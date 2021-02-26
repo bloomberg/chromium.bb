@@ -6,8 +6,11 @@
 
 #include <utility>
 
+#include "base/process/process.h"
+#include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/time/time_override.h"
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
@@ -35,6 +38,23 @@ static constexpr const char* kInstanceCounterNames[] = {
     INSTANCE_COUNTERS_LIST(INSTANCE_COUNTER_NAME)
 #undef INSTANCE_COUNTER_NAME
 };
+
+std::unique_ptr<base::ProcessMetrics> GetCurrentProcessMetrics() {
+  base::ProcessHandle handle = base::Process::Current().Handle();
+#if defined(OS_MAC)
+  // Port provider can be null if querying the current process.
+  return base::ProcessMetrics::CreateProcessMetrics(handle, nullptr);
+#else
+  return base::ProcessMetrics::CreateProcessMetrics(handle);
+#endif
+}
+
+base::TimeDelta GetCurrentProcessTime() {
+  std::unique_ptr<base::ProcessMetrics> process_metrics =
+      GetCurrentProcessMetrics();
+  base::TimeDelta process_time = process_metrics->GetCumulativeCPUUsage();
+  return process_time;
+}
 
 }  // namespace
 
@@ -221,6 +241,9 @@ Response InspectorPerformanceAgent::getMetrics(
   base::TimeDelta thread_time = GetThreadTimeNow() - thread_time_origin_;
   AppendMetric(result.get(), "ThreadTime", thread_time.InSecondsF());
 
+  base::TimeDelta process_time = GetCurrentProcessTime();
+  AppendMetric(result.get(), "ProcessTime", process_time.InSecondsF());
+
   v8::HeapStatistics heap_statistics;
   V8PerIsolateData::MainThreadIsolate()->GetHeapStatistics(&heap_statistics);
   AppendMetric(result.get(), "JSHeapUsedSize",
@@ -387,7 +410,7 @@ void InspectorPerformanceAgent::DidProcessTask(base::TimeTicks start_time,
   task_start_ticks_ = base::TimeTicks();
 }
 
-void InspectorPerformanceAgent::Trace(Visitor* visitor) {
+void InspectorPerformanceAgent::Trace(Visitor* visitor) const {
   visitor->Trace(inspected_frames_);
   InspectorBaseAgent<protocol::Performance::Metainfo>::Trace(visitor);
 }

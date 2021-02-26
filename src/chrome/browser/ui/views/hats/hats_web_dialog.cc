@@ -19,7 +19,6 @@
 #include "chrome/grit/browser_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,6 +28,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 #include "url/url_canon.h"
 #include "url/url_util.h"
 
@@ -81,6 +81,7 @@ HatsWebDialog::HatsWebDialog(Browser* browser, const std::string& site_id)
           Profile::OTRProfileID::CreateUnique("HaTS:WebDialog"))),
       browser_(browser),
       site_id_(site_id) {
+  set_can_resize(false);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   otr_profile_->AddObserver(this);
 
@@ -91,11 +92,11 @@ HatsWebDialog::HatsWebDialog(Browser* browser, const std::string& site_id)
   settings_map->SetContentSettingCustomScope(
       ContentSettingsPattern::FromString("[*.]google.com"),
       ContentSettingsPattern::Wildcard(), ContentSettingsType::COOKIES,
-      /* resource_identifier= */ std::string(), CONTENT_SETTING_ALLOW);
+      CONTENT_SETTING_ALLOW);
   settings_map->SetContentSettingCustomScope(
       ContentSettingsPattern::FromString("[*.]doubleclick.net"),
       ContentSettingsPattern::Wildcard(), ContentSettingsType::COOKIES,
-      /* resource_identifier= */ std::string(), CONTENT_SETTING_ALLOW);
+      CONTENT_SETTING_ALLOW);
 }
 
 HatsWebDialog::~HatsWebDialog() {
@@ -129,10 +130,6 @@ void HatsWebDialog::GetWebUIMessageHandlers(
 
 void HatsWebDialog::GetDialogSize(gfx::Size* size) const {
   size->SetSize(kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
-}
-
-bool HatsWebDialog::CanResizeDialog() const {
-  return false;
 }
 
 std::string HatsWebDialog::GetDialogArgs() const {
@@ -197,6 +194,10 @@ void HatsWebDialog::OnMainFrameResourceLoadComplete(
   }
 }
 
+ui::WebDialogDelegate::FrameKind HatsWebDialog::GetWebDialogFrameKind() const {
+  return ui::WebDialogDelegate::FrameKind::kDialog;
+}
+
 views::View* HatsWebDialog::GetContentsView() {
   return webview_;
 }
@@ -232,8 +233,7 @@ void HatsWebDialog::CreateWebDialog(Browser* browser) {
   // Create a web dialog aligned to the bottom center of the location bar.
   SetButtons(ui::DIALOG_BUTTON_NONE);
   webview_ = new views::WebDialogView(
-      otr_profile_, this, std::make_unique<ChromeWebContentsHandler>(),
-      /* use_dialog_frame= */ true);
+      otr_profile_, this, std::make_unique<ChromeWebContentsHandler>());
   webview_->SetPreferredSize(
       gfx::Size(kDefaultHatsDialogWidth, kDefaultHatsDialogHeight));
   preloading_widget_ = constrained_window::CreateBrowserModalDialogViews(
@@ -245,9 +245,6 @@ void HatsWebDialog::CreateWebDialog(Browser* browser) {
   // and background scripts.
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       webview_->web_contents());
-
-  performance_manager::PerformanceManagerRegistry::GetInstance()
-      ->CreatePageNodeForWebContents(webview_->web_contents());
 
   // Start the loading timer once it is created.
   loading_timer_.Start(FROM_HERE, ContentLoadingTimeout(),

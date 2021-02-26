@@ -14,7 +14,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.modaldialog.ChromeTabModalPresenter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -23,13 +23,12 @@ import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * Mediator class responsible for the logic of showing the password manager dialog (e.g. onboarding
- * dialog).
+ * Mediator class responsible for the logic of showing the password manager dialog.
  */
 class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
     private final ModalDialogManager mDialogManager;
     private final View mAndroidContentView;
-    private final ChromeFullscreenManager mFullscreenManager;
+    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
     private final int mContainerHeightResource;
 
     private PropertyModel.Builder mHostDialogModelBuilder;
@@ -67,11 +66,11 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
 
     PasswordManagerDialogMediator(PropertyModel.Builder hostDialogModelBuilder,
             ModalDialogManager manager, View androidContentView,
-            ChromeFullscreenManager fullscreenManager, int containerHeightResource) {
+            BrowserControlsStateProvider controlsStateProvider, int containerHeightResource) {
         mDialogManager = manager;
         mHostDialogModelBuilder = hostDialogModelBuilder;
         mAndroidContentView = androidContentView;
-        mFullscreenManager = fullscreenManager;
+        mBrowserControlsStateProvider = controlsStateProvider;
         mContainerHeightResource = containerHeightResource;
         mAndroidContentView.addOnLayoutChangeListener(this);
     }
@@ -97,8 +96,9 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
     private boolean hasSufficientSpaceForIllustration(int heightPx) {
         // If |mResources| is null, it means that the dialog was not initialized yet.
         if (mResources == null) return false;
-        heightPx -= ChromeTabModalPresenter.getContainerTopMargin(mResources, mFullscreenManager);
-        heightPx -= ChromeTabModalPresenter.getContainerBottomMargin(mFullscreenManager);
+        heightPx -= ChromeTabModalPresenter.getContainerTopMargin(
+                mResources, mBrowserControlsStateProvider);
+        heightPx -= ChromeTabModalPresenter.getContainerBottomMargin(mBrowserControlsStateProvider);
         return heightPx >= mResources.getDimensionPixelSize(
                        R.dimen.password_manager_dialog_min_vertical_space_to_show_illustration);
     }

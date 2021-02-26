@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static org.chromium.components.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
+import static org.chromium.webapk.lib.common.WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME;
+
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
@@ -15,37 +17,16 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
-import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
-import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
-import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
-import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
-import org.chromium.webapk.lib.common.WebApkConstants;
-
-import java.util.ArrayList;
 
 /**
  * Displays a webapp in a nearly UI-less Chrome (InfoBars still appear).
  */
-public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponent> {
+public class WebappActivity extends BaseCustomTabActivity {
     public static final String WEBAPP_SCHEME = "webapp";
 
-    private static final String TAG = "WebappActivity";
-
     private static BrowserServicesIntentDataProvider sIntentDataProviderOverride;
-
-    private WebappActivityTabController mTabController;
-    private TabObserverRegistrar mTabObserverRegistrar;
 
     @Override
     protected BrowserServicesIntentDataProvider buildIntentDataProvider(
@@ -72,39 +53,10 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         // We cannot get WebAPK package name from BrowserServicesIntentDataProvider because
         // {@link WebappActivity#performPreInflationStartup()} may not have been called yet.
         String webApkPackageName =
-                IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
+                IntentUtils.safeGetStringExtra(intent, EXTRA_WEBAPK_PACKAGE_NAME);
 
         // Use the lightweight FRE for unbound WebAPKs.
-        return webApkPackageName != null
-                && !webApkPackageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
-    }
-
-    @Override
-    public void initializeState() {
-        super.initializeState();
-
-        mTabController.initializeState();
-    }
-
-    @Override
-    protected WebappActivityComponent createComponent(ChromeActivityCommonsModule commonsModule) {
-        IntentIgnoringCriterion intentIgnoringCriterion =
-                (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
-
-        BaseCustomTabActivityModule baseCustomTabModule = new BaseCustomTabActivityModule(
-                mIntentDataProvider, mNightModeStateController, intentIgnoringCriterion);
-        WebappActivityModule webappModule = new WebappActivityModule();
-        WebappActivityComponent component =
-                ChromeApplication.getComponent().createWebappActivityComponent(
-                        commonsModule, baseCustomTabModule, webappModule);
-        onComponentCreated(component);
-
-        mTabController = component.resolveTabController();
-        mTabObserverRegistrar = component.resolveTabObserverRegistrar();
-
-        mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
-
-        return component;
+        return webApkPackageName != null && !webApkPackageName.startsWith(WEBAPK_PACKAGE_PREFIX);
     }
 
     @Override
@@ -114,24 +66,13 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     @Override
-    public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
-        return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
-                getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), mBookmarkBridgeSupplier,
-                CustomTabsUiType.MINIMAL_UI_WEBAPP, new ArrayList<String>(),
-                true /* is opened by Chrome */, true /* should show share */,
-                false /* should show star (bookmarking) */, false /* should show download */,
-                false /* is incognito */);
-    }
-
-    @Override
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
         // Disable creating bookmark.
         if (id == R.id.bookmark_this_page_id) {
             return true;
         }
         if (id == R.id.open_in_browser_id) {
-            openCurrentUrlInChrome();
+            mNavigationController.openCurrentUrlInBrowser(false);
             if (fromMenu) {
                 RecordUserAction.record("WebappMenuOpenInChrome");
             } else {
@@ -142,36 +83,8 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         return super.onMenuOrKeyboardAction(id, fromMenu);
     }
 
-    /**
-     * Opens the URL currently being displayed in the browser by reparenting the tab.
-     */
-    private boolean openCurrentUrlInChrome() {
-        Tab tab = getActivityTab();
-        if (tab == null) return false;
-
-        String url = tab.getOriginalUrl();
-        if (TextUtils.isEmpty(url)) {
-            url = IntentHandler.getUrlFromIntent(getIntent());
-        }
-
-        // TODO(piotrs): Bring reparenting back once CCT animation is fixed. See crbug/774326
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setClass(this, ChromeLauncherActivity.class);
-        IntentHandler.startActivityForTrustedIntent(intent);
-
-        return true;
-    }
-
     @Override
     protected Drawable getBackgroundDrawable() {
         return null;
-    }
-
-    // We're temporarily disable CS on webapp since there are some issues. (http://crbug.com/471950)
-    // TODO(changwan): re-enable it once the issues are resolved.
-    @Override
-    protected boolean isContextualSearchAllowed() {
-        return false;
     }
 }

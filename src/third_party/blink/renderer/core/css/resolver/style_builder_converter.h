@@ -123,7 +123,7 @@ class StyleBuilderConverter {
       StyleResolverState&,
       const CSSValue&);
   static scoped_refptr<FontVariationSettings> ConvertFontVariationSettings(
-      StyleResolverState&,
+      const StyleResolverState&,
       const CSSValue&);
   static FontDescription::Size ConvertFontSize(StyleResolverState&,
                                                const CSSValue&);
@@ -152,18 +152,18 @@ class StyleBuilderConverter {
   static StyleContentAlignmentData ConvertContentAlignmentData(
       StyleResolverState&,
       const CSSValue&);
-  static GapLength ConvertGapLength(StyleResolverState&, const CSSValue&);
   static GridAutoFlow ConvertGridAutoFlow(StyleResolverState&, const CSSValue&);
   static GridPosition ConvertGridPosition(StyleResolverState&, const CSSValue&);
   static GridTrackSize ConvertGridTrackSize(StyleResolverState&,
                                             const CSSValue&);
-  static Vector<GridTrackSize> ConvertGridTrackSizeList(StyleResolverState&,
-                                                        const CSSValue&);
+  static GridTrackList ConvertGridTrackSizeList(StyleResolverState&,
+                                                const CSSValue&);
   template <typename T>
   static T ConvertLineWidth(StyleResolverState&, const CSSValue&);
   static float ConvertBorderWidth(StyleResolverState&, const CSSValue&);
   static LayoutUnit ConvertLayoutUnit(StyleResolverState&, const CSSValue&);
-  static GapLength ConvertGapLength(const StyleResolverState&, const CSSValue&);
+  static base::Optional<Length> ConvertGapLength(const StyleResolverState&,
+                                                 const CSSValue&);
   static Length ConvertLength(const StyleResolverState&, const CSSValue&);
   static UnzoomedLength ConvertUnzoomedLength(const StyleResolverState&,
                                               const CSSValue&);
@@ -226,7 +226,7 @@ class StyleBuilderConverter {
 
   static void ConvertGridTrackList(
       const CSSValue&,
-      Vector<GridTrackSize>&,
+      GridTrackList&,
       NamedGridLinesMap&,
       OrderedNamedGridLines&,
       Vector<GridTrackSize>& auto_repeat_track_sizes,
@@ -279,9 +279,11 @@ class StyleBuilderConverter {
 
   static LengthSize ConvertIntrinsicSize(StyleResolverState&, const CSSValue&);
 
-  static base::Optional<IntSize> ConvertAspectRatio(StyleResolverState&,
-                                                    const CSSValue&);
+  static StyleAspectRatio ConvertAspectRatio(StyleResolverState&,
+                                             const CSSValue&);
 
+  static bool ConvertInternalAlignSelfBlock(StyleResolverState& state,
+                                            const CSSValue& value);
   static bool ConvertInternalEmptyLineHeight(StyleResolverState& state,
                                              const CSSValue& value);
 
@@ -289,6 +291,12 @@ class StyleBuilderConverter {
 
   static RubyPosition ConvertRubyPosition(StyleResolverState& state,
                                           const CSSValue& value);
+
+  static ScrollbarGutter ConvertScrollbarGutter(StyleResolverState& state,
+                                                const CSSValue& value);
+
+  static void CountSystemColorComputeToSelfUsage(
+      const StyleResolverState& state);
 };
 
 template <typename T>

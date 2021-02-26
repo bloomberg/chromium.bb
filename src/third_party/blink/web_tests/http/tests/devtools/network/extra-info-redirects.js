@@ -19,16 +19,17 @@ new Promise(resolve => {
 });
 `);
 
-  const reqs = SDK.networkLog.requests().map(request => {
-    return {
-      url: request.url(),
-      hasExtraRequestInfo: request.hasExtraRequestInfo(),
-      hasExtraResponseInfo: request.hasExtraResponseInfo(),
-      requestHostHeader: request.requestHeaderValue('host'),
-      responseXDevToolsRedirectHeader:
-          request.responseHeaderValue('x-devtools-redirect')
-    };
-  });
+  const reqs = NetworkTestRunner.networkRequests()
+                   .map(request => {
+                     return {
+                       url: request.url(),
+                       hasExtraRequestInfo: request.hasExtraRequestInfo(),
+                       hasExtraResponseInfo: request.hasExtraResponseInfo(),
+                       requestHostHeader: request.requestHeaderValue('host'),
+                       responseXDevToolsRedirectHeader:
+                           request.responseHeaderValue('x-devtools-redirect')
+                     };
+                   });
   TestRunner.addResult(JSON.stringify(reqs, null, 2));
   TestRunner.completeTest();
 })();

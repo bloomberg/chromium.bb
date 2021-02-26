@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
@@ -505,6 +505,7 @@ class TestSocketFactory : public net::ClientSocketFactory {
   std::unique_ptr<net::TransportClientSocket> CreateTransportClientSocket(
       const net::AddressList&,
       std::unique_ptr<net::SocketPerformanceWatcher>,
+      net::NetworkQualityEstimator* network_quality_estimator,
       net::NetLog*,
       const net::NetLogSource&) override {
     providers_.push_back(std::make_unique<net::StaticSocketDataProvider>(

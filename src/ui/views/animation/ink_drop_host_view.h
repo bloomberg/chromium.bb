@@ -11,6 +11,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_event_handler.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/view.h"
 
 namespace ui {
@@ -89,25 +90,17 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // subclasses/clients to specify the flavor of ink drop.
   void SetInkDropMode(InkDropMode ink_drop_mode);
 
-  void set_ink_drop_visible_opacity(float visible_opacity) {
-    ink_drop_visible_opacity_ = visible_opacity;
-  }
-  float ink_drop_visible_opacity() const { return ink_drop_visible_opacity_; }
+  void SetInkDropVisibleOpacity(float visible_opacity);
+  float GetInkDropVisibleOpacity() const;
 
-  void set_ink_drop_highlight_opacity(base::Optional<float> opacity) {
-    ink_drop_highlight_opacity_ = opacity;
-  }
+  void SetInkDropHighlightOpacity(base::Optional<float> opacity);
+  base::Optional<float> GetInkDropHighlightOpacity() const;
 
-  void set_ink_drop_corner_radii(int small_radius, int large_radius) {
-    ink_drop_small_corner_radius_ = small_radius;
-    ink_drop_large_corner_radius_ = large_radius;
-  }
-  int ink_drop_small_corner_radius() const {
-    return ink_drop_small_corner_radius_;
-  }
-  int ink_drop_large_corner_radius() const {
-    return ink_drop_large_corner_radius_;
-  }
+  void SetInkDropSmallCornerRadius(int small_radius);
+  int GetInkDropSmallCornerRadius() const;
+
+  void SetInkDropLargeCornerRadius(int large_radius);
+  int GetInkDropLargeCornerRadius() const;
 
   // Allows InstallableInkDrop to override our InkDropEventHandler
   // instance.
@@ -137,6 +130,17 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // InstallableInkDrop refactor. TODO(crbug.com/931964): make non-virtual when
   // this isn't necessary anymore.
   virtual InkDrop* GetInkDrop();
+
+  // Returns whether the ink drop should be considered "highlighted" (in or
+  // animating into "highlight visible" steady state).
+  bool GetHighlighted() const;
+
+  PropertyChangedSubscription AddHighlightedChangedCallback(
+      PropertyChangedCallback callback);
+
+  // Should be called by InkDrop implementations when their highlight state
+  // changes, to trigger the corresponding property change notification here.
+  void OnInkDropHighlightedChanged();
 
  protected:
   // Size used for the default SquareInkDropRipple.
@@ -186,6 +190,10 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // Returns a large ink drop size based on the |small_size| that works well
   // with the SquareInkDropRipple animation durations.
   static gfx::Size CalculateLargeInkDropSize(const gfx::Size& small_size);
+
+  // View:
+  void OnLayerTransformed(const gfx::Transform& old_transform,
+                          ui::PropertyChangeReason reason) override;
 
  private:
   friend class test::InkDropHostViewTestApi;
@@ -239,6 +247,16 @@ class VIEWS_EXPORT InkDropHostView : public View {
   DISALLOW_COPY_AND_ASSIGN(InkDropHostView);
 };
 
+BEGIN_VIEW_BUILDER(VIEWS_EXPORT, InkDropHostView, View)
+VIEW_BUILDER_PROPERTY(base::Optional<float>, InkDropHighlightOpacity)
+VIEW_BUILDER_PROPERTY(int, InkDropLargeCornerRadius)
+VIEW_BUILDER_PROPERTY(InkDropHostView::InkDropMode, InkDropMode)
+VIEW_BUILDER_PROPERTY(int, InkDropSmallCornerRadius)
+VIEW_BUILDER_PROPERTY(float, InkDropVisibleOpacity)
+END_VIEW_BUILDER
+
 }  // namespace views
+
+DEFINE_VIEW_BUILDER(VIEWS_EXPORT, InkDropHostView)
 
 #endif  // UI_VIEWS_ANIMATION_INK_DROP_HOST_VIEW_H_

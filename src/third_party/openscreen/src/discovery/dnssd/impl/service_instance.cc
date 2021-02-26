@@ -36,8 +36,8 @@ ServiceInstance::ServiceInstance(TaskRunner* task_runner,
              !network_config_.HasAddressV6());
 
   if (config.enable_querying) {
-    querier_ = std::make_unique<QuerierImpl>(mdns_service_.get(), task_runner_,
-                                             &network_config_);
+    querier_ = std::make_unique<QuerierImpl>(
+        mdns_service_.get(), task_runner_, reporting_client, &network_config_);
   }
   if (config.enable_publication) {
     publisher_ = std::make_unique<PublisherImpl>(

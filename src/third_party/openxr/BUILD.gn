@@ -24,7 +24,6 @@ if (enable_openxr) {
       "src/src/common/extra_algorithms.h",
       "src/src/common/filesystem_utils.cpp",
       "src/src/common/filesystem_utils.hpp",
-      "src/src/common/hex_and_handles.cpp",
       "src/src/common/hex_and_handles.h",
       "src/src/common/loader_interfaces.h",
       "src/src/common/object_info.cpp",
@@ -48,7 +47,7 @@ if (enable_openxr) {
       "src/src/loader/runtime_interface.cpp",
       "src/src/loader/runtime_interface.hpp",
       "src/src/loader/xr_generated_loader.cpp",
-      "src/src/loader/xr_generated_loader.h",
+      "src/src/loader/xr_generated_loader.hpp",
       "src/src/xr_generated_dispatch_table.c",
       "src/src/xr_generated_dispatch_table.h",
     ]
@@ -73,6 +72,7 @@ if (enable_openxr) {
       "-Wno-microsoft-cast",
       "-Wno-microsoft-include",
       "-Wno-unused-function",
+      "-Wno-extra-semi",
     ]
   }
 

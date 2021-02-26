@@ -8,9 +8,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/sequenced_task_runner.h"
@@ -293,7 +294,7 @@ void CastMetricsHelper::LogMediumTimeHistogramEvent(const std::string& name,
 base::Value CastMetricsHelper::CreateEventBase(const std::string& name) {
   base::Value cast_event(base::Value::Type::DICTIONARY);
   cast_event.SetKey("name", base::Value(name));
-  const double time = (Now() - base::TimeTicks()).InMicroseconds();
+  const double time = (Now() - base::TimeTicks()).InMicrosecondsF();
   cast_event.SetKey("time", base::Value(time));
   return cast_event;
 }

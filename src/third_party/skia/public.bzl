@@ -2,39 +2,27 @@
 # Skylark macros
 ################################################################################
 
-is_bazel = not hasattr(native, "genmpm")
-
-def portable_select(select_dict, bazel_condition, default_condition):
-    """Replaces select() with a Bazel-friendly wrapper.
-
-    Args:
-      select_dict: Dictionary in the same format as select().
-    Returns:
-      If Blaze platform, returns select() using select_dict.
-      If Bazel platform, returns dependencies for condition
-          bazel_condition, or empty list if none specified.
-    """
-    if is_bazel:
-        return select_dict.get(bazel_condition, select_dict[default_condition])
-    else:
-        return select(select_dict)
-
 def skia_select(conditions, results):
-    """Replaces select() for conditions [UNIX, ANDROID, IOS, WASM]
+    """select() for conditions provided externally.
+
+    Instead of {"conditionA": resultA, "conditionB": resultB},
+    this takes two arrays, ["conditionA", "conditionB"] and [resultA, resultB].
+
+    This allows the exact targets of the conditions to be provided externally while
+    the results can live here, hiding the structure of those conditions in Google3.
+
+    Maybe this is too much paranoia?
 
     Args:
-      conditions: [CONDITION_UNIX, CONDITION_ANDROID, CONDITION_IOS, CONDITION_WASM]
-      results: [RESULT_UNIX, RESULT_ANDROID, RESULT_IOS, RESULT_WASM]
+      conditions: [CONDITION_UNIX, CONDITION_ANDROID, CONDITION_IOS, CONDITION_WASM, ...]
+      results: [RESULT_UNIX, RESULT_ANDROID, RESULT_IOS, RESULT_WASM, ....]
     Returns:
-      The result matching the platform condition.
+      The result matching the active condition.
     """
-    if len(conditions) != 4 or len(results) != 4:
-        fail("Must provide exactly 4 conditions and 4 results")
-
     selector = {}
-    for i in range(4):
+    for i in range(len(conditions)):
         selector[conditions[i]] = results[i]
-    return portable_select(selector, conditions[2], conditions[0])
+    return select(selector)
 
 def skia_glob(srcs):
     """Replaces glob() with a version that accepts a struct.
@@ -244,8 +232,12 @@ BASE_SRCS_ALL = struct(
         "src/svg/**/*",  # Depends on xml, SkJpegCodec, and SkPngCodec.
         "src/xml/**/*",  # Avoid dragging in expat when not needed.
 
-        # Conflicting dependencies among Lua versions. See cl/107087297.
-        "src/utils/SkLua*",
+        # Exclude all GL specific files
+        "src/gpu/gl/*",
+        "src/gpu/gl/builders/*",
+
+        # Exclude all WebGL specific files
+        "src/gpu/gl/webgl/*",
 
         # Currently exclude all vulkan specific files
         "src/gpu/vk/*",
@@ -261,9 +253,6 @@ BASE_SRCS_ALL = struct(
 
         # Only used to regenerate the lexer
         "src/sksl/lex/*",
-
-        # Atlas text
-        "src/atlastext/*",
     ],
 )
 
@@ -281,7 +270,8 @@ def codec_srcs(limited):
 
 GL_SRCS_UNIX = struct(
     include = [
-        "src/gpu/gl/GrGLMakeNativeInterface_none.cpp",
+        "src/gpu/gl/*",
+        "src/gpu/gl/builders/*",
     ],
     exclude = [],
 )
@@ -299,6 +289,7 @@ PORTS_SRCS_UNIX = struct(
         "src/ports/*mozalloc*",
         "src/ports/*nacl*",
         "src/ports/*win*",
+        "src/ports/*NDK*",
         "src/ports/SkFontMgr_custom_directory_factory.cpp",
         "src/ports/SkFontMgr_custom_embedded_factory.cpp",
         "src/ports/SkFontMgr_custom_empty_factory.cpp",
@@ -311,9 +302,13 @@ PORTS_SRCS_UNIX = struct(
 
 GL_SRCS_ANDROID = struct(
     include = [
+        "src/gpu/gl/*",
+        "src/gpu/gl/builders/*",
         "src/gpu/gl/android/*.cpp",
     ],
-    exclude = [],
+    exclude = [
+        "src/gpu/gl/GrGLMakeNativeInterface_none.cpp",
+    ],
 )
 PORTS_SRCS_ANDROID = struct(
     include = [
@@ -330,6 +325,7 @@ PORTS_SRCS_ANDROID = struct(
         "src/ports/*mozalloc*",
         "src/ports/*nacl*",
         "src/ports/*win*",
+        "src/ports/*NDK*",  # TODO (scroggo): enable NDK decoding/encoding in Google3
         "src/ports/SkDebug_stdio.cpp",
         "src/ports/SkFontMgr_custom_directory_factory.cpp",
         "src/ports/SkFontMgr_custom_embedded_factory.cpp",
@@ -342,9 +338,13 @@ PORTS_SRCS_ANDROID = struct(
 
 GL_SRCS_IOS = struct(
     include = [
+        "src/gpu/gl/*",
+        "src/gpu/gl/builders/*",
         "src/gpu/gl/iOS/GrGLMakeNativeInterface_iOS.cpp",
     ],
-    exclude = [],
+    exclude = [
+        "src/gpu/gl/GrGLMakeNativeInterface_none.cpp",
+    ],
 )
 PORTS_SRCS_IOS = struct(
     include = [
@@ -362,6 +362,7 @@ PORTS_SRCS_IOS = struct(
         "src/ports/*mozalloc*",
         "src/ports/*nacl*",
         "src/ports/*win*",
+        "src/ports/*NDK*",
         "src/ports/SkFontMgr_custom.cpp",
         "src/ports/SkFontMgr_custom_directory.cpp",
         "src/ports/SkFontMgr_custom_embedded.cpp",
@@ -377,10 +378,14 @@ PORTS_SRCS_IOS = struct(
 
 GL_SRCS_WASM = struct(
     include = [
+        "src/gpu/gl/*",
+        "src/gpu/gl/builders/*",
         "src/gpu/gl/GrGLMakeNativeInterface_egl.cpp",
         "src/gpu/gl/egl/GrGLMakeNativeInterface_egl.cpp",
     ],
-    exclude = [],
+    exclude = [
+        "src/gpu/gl/GrGLMakeNativeInterface_none.cpp",
+    ],
 )
 PORTS_SRCS_WASM = struct(
     include = [
@@ -391,7 +396,7 @@ PORTS_SRCS_WASM = struct(
         # commented lines below left in because they indicate specifically what is
         # included here and not in other PORTS_SRCS lists.
         "src/ports/*FontConfig*",
-        "src/ports/*FreeType*",
+        #"src/ports/*FreeType*",
         "src/ports/*WIC*",
         "src/ports/*CG*",
         "src/ports/*android*",
@@ -401,12 +406,13 @@ PORTS_SRCS_WASM = struct(
         "src/ports/*mozalloc*",
         "src/ports/*nacl*",
         "src/ports/*win*",
+        "src/ports/*NDK*",
         #"src/ports/SkDebug_stdio.cpp",
-        "src/ports/SkFontMgr_custom.cpp",
+        #"src/ports/SkFontMgr_custom.cpp",
         "src/ports/SkFontMgr_custom_directory.cpp",
         "src/ports/SkFontMgr_custom_directory_factory.cpp",
-        "src/ports/SkFontMgr_custom_embedded.cpp",
-        "src/ports/SkFontMgr_custom_embedded_factory.cpp",
+        #"src/ports/SkFontMgr_custom_embedded.cpp",
+        #"src/ports/SkFontMgr_custom_embedded_factory.cpp",
         "src/ports/SkFontMgr_custom_empty.cpp",
         "src/ports/SkFontMgr_custom_empty_factory.cpp",
         # "src/ports/SkFontMgr_empty_factory.cpp",
@@ -415,6 +421,57 @@ PORTS_SRCS_WASM = struct(
         "src/ports/SkImageGenerator_none.cpp",
     ],
 )
+
+GL_SRCS_FUCHSIA = struct(
+    include = [
+        "src/gpu/vk/*",
+    ],
+    exclude = [],
+)
+PORTS_SRCS_FUCHSIA = struct(
+    include = [
+        "src/ports/**/*.cpp",
+        "src/ports/**/*.h",
+    ],
+    exclude = [
+        "src/ports/*FontConfig*",
+        #"src/ports/*FreeType*",
+        "src/ports/*WIC*",
+        "src/ports/*CG*",
+        "src/ports/*android*",
+        "src/ports/*chromium*",
+        "src/ports/*fontconfig*",
+        "src/ports/*mac*",
+        "src/ports/*mozalloc*",
+        "src/ports/*nacl*",
+        "src/ports/*win*",
+        "src/ports/*NDK*",
+        #"src/ports/SkDebug_stdio.cpp",
+        #"src/ports/SkFontMgr_custom.cpp",
+        "src/ports/SkFontMgr_custom_directory.cpp",
+        "src/ports/SkFontMgr_custom_directory_factory.cpp",
+        "src/ports/SkFontMgr_custom_embedded.cpp",
+        "src/ports/SkFontMgr_custom_embedded_factory.cpp",
+        "src/ports/SkFontMgr_custom_empty.cpp",
+        "src/ports/SkFontMgr_custom_empty_factory.cpp",
+        #"src/ports/SkFontMgr_empty_factory.cpp",
+        "src/ports/SkFontMgr_fontconfig_factory.cpp",
+        #"src/ports/SkFontMgr_fuchsia.cpp",
+        "src/ports/SkImageGenerator_none.cpp",
+    ],
+)
+
+GL_SRCS_MACOS = struct(
+    include = [
+        "src/gpu/gl/*",
+        "src/gpu/gl/builders/*",
+        "src/gpu/gl/mac/GrGLMakeNativeInterface_mac.cpp",
+    ],
+    exclude = [
+        "src/gpu/gl/GrGLMakeNativeInterface_none.cpp",
+    ],
+)
+PORTS_SRCS_MACOS = PORTS_SRCS_IOS
 
 def base_srcs():
     return skia_glob(BASE_SRCS_ALL)
@@ -427,6 +484,8 @@ def ports_srcs(os_conditions):
             skia_glob(PORTS_SRCS_ANDROID),
             skia_glob(PORTS_SRCS_IOS),
             skia_glob(PORTS_SRCS_WASM),
+            skia_glob(PORTS_SRCS_FUCHSIA),
+            skia_glob(PORTS_SRCS_MACOS),
         ],
     )
 
@@ -438,6 +497,8 @@ def gl_srcs(os_conditions):
             skia_glob(GL_SRCS_ANDROID),
             skia_glob(GL_SRCS_IOS),
             skia_glob(GL_SRCS_WASM),
+            skia_glob(GL_SRCS_FUCHSIA),
+            skia_glob(GL_SRCS_MACOS),
         ],
     )
 
@@ -505,12 +566,13 @@ DM_SRCS_ALL = struct(
         "dm/*.h",
         "experimental/pipe/*.cpp",
         "experimental/pipe/*.h",
-        "experimental/svg/model/*.cpp",
-        "experimental/svg/model/*.h",
         "gm/*.cpp",
         "gm/*.h",
         "gm/verifiers/*.cpp",
         "gm/verifiers/*.h",
+        # TODO(fmalita): SVG sources should not be included here
+        "modules/svg/include/*.h",
+        "modules/svg/src/*.cpp",
         "src/utils/SkMultiPictureDocument.cpp",
         "src/xml/*.cpp",
         "tests/*.cpp",
@@ -576,7 +638,6 @@ DM_SRCS_ALL = struct(
         "tests/FontMgrFontConfigTest.cpp",  # FontConfig-only.
         "tests/SkParagraphTest.cpp",  # Skipping tests for now.
         "tests/skia_test.cpp",  # Old main.
-        "tools/gpu/atlastext/*",
         "tools/gpu/d3d/*",
         "tools/gpu/dawn/*",
         "tools/gpu/gl/angle/*",
@@ -601,8 +662,10 @@ def dm_srcs(os_conditions):
         [
             ["tests/FontMgrFontConfigTest.cpp"],
             ["tests/FontMgrAndroidParserTest.cpp"],
-            [],
-            [],
+            [],  # iOS
+            [],  # WASM
+            [],  # Fuchsia
+            [],  # macOS
         ],
     )
 
@@ -624,12 +687,11 @@ def DM_ARGS(asan):
 ################################################################################
 
 def base_copts(os_conditions):
-    return skia_select(
+    return ["-Wno-implicit-fallthrough"] + skia_select(
         os_conditions,
         [
             # UNIX
             [
-                "-Wno-implicit-fallthrough",  # Some intentional fallthrough.
                 # Internal use of deprecated methods. :(
                 "-Wno-deprecated-declarations",
                 # TODO(kjlubick)
@@ -637,19 +699,14 @@ def base_copts(os_conditions):
             ],
             # ANDROID
             [
-                "-Wno-implicit-fallthrough",  # Some intentional fallthrough.
                 # 'GrResourceCache' declared with greater visibility than the
                 # type of its field 'GrResourceCache::fPurgeableQueue'... bogus.
                 "-Wno-error=attributes",
             ],
-            # IOS
-            [
-                "-Wno-implicit-fallthrough",  # Some intentional fallthrough.
-            ],
-            # WASM
-            [
-                "-Wno-implicit-fallthrough",  # Some intentional fallthrough.
-            ],
+            [],  # iOS
+            [],  # wasm
+            [],  # Fuchsia
+            [],  # macOS
         ],
     )
 
@@ -689,6 +746,7 @@ def base_defines(os_conditions):
                 "SK_ENCODE_PNG",
                 "SK_ENCODE_WEBP",
                 "SK_R32_SHIFT=16",
+                "SK_GL",
             ],
             # ANDROID
             [
@@ -697,6 +755,7 @@ def base_defines(os_conditions):
                 "SK_CODEC_DECODES_WEBP",
                 "SK_ENCODE_PNG",
                 "SK_ENCODE_WEBP",
+                "SK_GL",
             ],
             # IOS
             [
@@ -704,17 +763,35 @@ def base_defines(os_conditions):
                 "SK_BUILD_NO_OPTS",
                 "SKNX_NO_SIMD",
                 "SK_NO_COMMAND_BUFFER",  # Test tools that use thread_local.
+                "SK_GL",
             ],
             # WASM
             [
                 "SK_DISABLE_LEGACY_SHADERCONTEXT",
                 "SK_DISABLE_TRACING",
+                "SK_GL",
                 "GR_GL_CHECK_ALLOC_WITH_GET_ERROR=0",
                 "SK_SUPPORT_GPU=1",
                 "SK_DISABLE_AAA",
                 "SK_DISABLE_EFFECT_DESERIALIZATION",
                 "SK_FORCE_8_BYTE_ALIGNMENT",
                 "SKNX_NO_SIMD",
+            ],
+            # FUCHSIA
+            [
+                "SK_BUILD_FOR_UNIX",
+                "SK_CODEC_DECODES_PNG",
+                "SK_CODEC_DECODES_WEBP",
+                "SK_ENCODE_PNG",
+                "SK_ENCODE_WEBP",
+                "SK_R32_SHIFT=16",
+                "SK_VULKAN",
+            ],
+            # MACOS
+            [
+                "SK_BUILD_FOR_MAC",
+                "SK_BUILD_NO_OPTS",
+                "SK_GL",
             ],
         ],
     )
@@ -729,8 +806,7 @@ def base_linkopts(os_conditions):
     ] + skia_select(
         os_conditions,
         [
-            # UNIX
-            [],
+            [],  # Unix
             # ANDROID
             [
                 "-lEGL",
@@ -744,8 +820,16 @@ def base_linkopts(os_conditions):
                 "-framework ImageIO",
                 "-framework MobileCoreServices",
             ],
-            # WASM
-            [],
+            [],  # wasm
+            [],  # Fuchsia
+            # MACOS
+            [
+                "-framework CoreFoundation",
+                "-framework CoreGraphics",
+                "-framework CoreText",
+                "-framework ImageIO",
+                "-framework ApplicationServices",
+            ],
         ],
     )
 
@@ -822,6 +906,18 @@ def skottie_lib_srcs():
     )
 
 ################################################################################
+## skottie_utils
+################################################################################
+
+SKOTTIE_UTILS_HDRS = [
+    "modules/skottie/utils/SkottieUtils.h",
+]
+
+SKOTTIE_UTILS_SRCS = [
+    "modules/skottie/utils/SkottieUtils.cpp",
+]
+
+################################################################################
 ## skottie_shaper
 ################################################################################
 
@@ -855,6 +951,8 @@ SKSHAPER_HARFBUZZ_SRCS = [
     "modules/skshaper/src/SkShaper.cpp",
     "modules/skshaper/src/SkShaper_harfbuzz.cpp",
     "modules/skshaper/src/SkShaper_primitive.cpp",
+    "modules/skshaper/src/SkUnicode.h",
+    "modules/skshaper/src/SkUnicode_icu.cpp",
 ]
 
 SKSHAPER_PRIMITIVE_SRCS = [
@@ -883,4 +981,25 @@ SKOTTIE_IOS_LIB_HDRS = [
 SKOTTIE_IOS_LIB_SDK_FRAMEWORKS = [
     "Foundation",
     "UIKit",
+]
+
+################################################################################
+## svg_lib
+################################################################################
+
+def svg_lib_hdrs():
+    return native.glob(["modules/svg/include/*.h"])
+
+def svg_lib_srcs():
+    return native.glob(["modules/svg/src/*.cpp"])
+
+################################################################################
+## svg_tool
+################################################################################
+
+SVG_TOOL_SRCS = [
+    "modules/svg/utils/SvgTool.cpp",
+    # TODO(benjaminwagner): Add "flags" target.
+    "tools/flags/CommandLineFlags.cpp",
+    "tools/flags/CommandLineFlags.h",
 ]

@@ -38,16 +38,16 @@
 #include <mmsystem.h>
 #include <stdint.h>
 
+#include <atomic>
+
 #include "base/atomicops.h"
 #include "base/bit_cast.h"
 #include "base/check_op.h"
 #include "base/cpu.h"
-#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time_override.h"
-#include "base/time/time_win_features.h"
 
 namespace base {
 
@@ -62,13 +62,17 @@ int64_t FileTimeToMicroseconds(const FILETIME& ft) {
   return bit_cast<int64_t, FILETIME>(ft) / 10;
 }
 
-void MicrosecondsToFileTime(int64_t us, FILETIME* ft) {
-  DCHECK_GE(us, 0LL) << "Time is less than 0, negative values are not "
-      "representable in FILETIME";
+bool CanConvertToFileTime(int64_t us) {
+  return us >= 0 && us <= (std::numeric_limits<int64_t>::max() / 10);
+}
+
+FILETIME MicrosecondsToFileTime(int64_t us) {
+  DCHECK(CanConvertToFileTime(us)) << "Out-of-range: Cannot convert " << us
+                                   << " microseconds to FILETIME units.";
 
   // Multiply by 10 to convert microseconds to 100-nanoseconds. Bit_cast will
   // handle alignment problems. This only works on little-endian machines.
-  *ft = bit_cast<FILETIME, int64_t>(us * 10);
+  return bit_cast<FILETIME, int64_t>(us * 10);
 }
 
 int64_t CurrentWallclockMicroseconds() {
@@ -88,13 +92,11 @@ void InitializeClock() {
   g_initial_time = CurrentWallclockMicroseconds();
 }
 
-// Interval to use when on DC power.
-UINT g_battery_power_interval_ms = 4;
 // Track the last value passed to timeBeginPeriod so that we can cancel that
 // call by calling timeEndPeriod with the same value. A value of zero means that
 // the timer frequency is not currently raised.
 UINT g_last_interval_requested_ms = 0;
-// Track if MinTimerIntervalHighResMs() or MinTimerIntervalLowResMs() is active.
+// Track if kMinTimerIntervalHighResMs or kMinTimerIntervalLowResMs is active.
 // For most purposes this could also be named g_is_on_ac_power.
 bool g_high_res_timer_enabled = false;
 // How many times the high resolution timer has been called.
@@ -121,16 +123,12 @@ Lock* GetHighResLock() {
 // Used when a faster timer has been requested (g_high_res_timer_count > 0) and
 // the computer is running on AC power (plugged in) so that it's okay to go to
 // the highest frequency.
-UINT MinTimerIntervalHighResMs() {
-  return 1;
-}
+constexpr UINT kMinTimerIntervalHighResMs = 1;
 
 // Used when a faster timer has been requested (g_high_res_timer_count > 0) and
 // the computer is running on DC power (battery) so that we don't want to raise
 // the timer frequency as much.
-UINT MinTimerIntervalLowResMs() {
-  return g_battery_power_interval_ms;
-}
+constexpr UINT kMinTimerIntervalLowResMs = 8;
 
 // Calculate the desired timer interrupt interval. Note that zero means that the
 // system default should be used.
@@ -138,8 +136,8 @@ UINT GetIntervalMs() {
   if (!g_high_res_timer_count)
     return 0;  // Use the default, typically 15.625
   if (g_high_res_timer_enabled)
-    return MinTimerIntervalHighResMs();
-  return MinTimerIntervalLowResMs();
+    return kMinTimerIntervalHighResMs;
+  return kMinTimerIntervalLowResMs;
 }
 
 // Compare the currently requested timer interrupt interval to the last interval
@@ -241,17 +239,7 @@ FILETIME Time::ToFileTime() const {
     result.dwLowDateTime = std::numeric_limits<DWORD>::max();
     return result;
   }
-  FILETIME utc_ft;
-  MicrosecondsToFileTime(us_, &utc_ft);
-  return utc_ft;
-}
-
-void Time::ReadMinTimerIntervalLowResMs() {
-  AutoLock lock(*GetHighResLock());
-  // Read the setting for what interval to use on battery power.
-  g_battery_power_interval_ms =
-      base::FeatureList::IsEnabled(base::kSlowDCTimerInterruptsWin) ? 8 : 4;
-  UpdateTimerIntervalLocked();
+  return MicrosecondsToFileTime(us_);
 }
 
 // static
@@ -296,7 +284,7 @@ bool Time::ActivateHighResolutionTimer(bool activating) {
 // See if the timer interrupt interval has been set to the lowest value.
 bool Time::IsHighResolutionTimerInUse() {
   AutoLock lock(*GetHighResLock());
-  return g_last_interval_requested_ms == MinTimerIntervalHighResMs();
+  return g_last_interval_requested_ms == kMinTimerIntervalHighResMs;
 }
 
 // static
@@ -325,7 +313,7 @@ double Time::GetHighResolutionTimerUsage() {
     // activation.
     used_time += now - g_high_res_timer_last_activation;
   }
-  return used_time.InMillisecondsF() / elapsed_time.InMillisecondsF() * 100;
+  return used_time / elapsed_time * 100;
 }
 
 // static
@@ -357,25 +345,18 @@ bool Time::FromExploded(bool is_local, const Exploded& exploded, Time* time) {
     success = !!SystemTimeToFileTime(&st, &ft);
   }
 
-  if (!success) {
-    *time = Time(0);
-    return false;
-  }
-
-  *time = Time(FileTimeToMicroseconds(ft));
-  return true;
+  *time = Time(success ? FileTimeToMicroseconds(ft) : 0);
+  return success;
 }
 
 void Time::Explode(bool is_local, Exploded* exploded) const {
-  if (us_ < 0LL) {
+  if (!CanConvertToFileTime(us_)) {
     // We are not able to convert it to FILETIME.
     ZeroMemory(exploded, sizeof(*exploded));
     return;
   }
 
-  // FILETIME in UTC.
-  FILETIME utc_ft;
-  MicrosecondsToFileTime(us_, &utc_ft);
+  const FILETIME utc_ft = MicrosecondsToFileTime(us_);
 
   // FILETIME in local time if necessary.
   bool success = true;
@@ -394,7 +375,6 @@ void Time::Explode(bool is_local, Exploded* exploded) const {
   }
 
   if (!success) {
-    NOTREACHED() << "Unable to convert time, don't know why";
     ZeroMemory(exploded, sizeof(*exploded));
     return;
   }
@@ -531,15 +511,10 @@ TimeTicksNowFunction g_time_ticks_now_ignoring_override_function =
     &InitialNowFunction;
 int64_t g_qpc_ticks_per_second = 0;
 
-// As of January 2015, use of <atomic> is forbidden in Chromium code. This is
-// what std::atomic_thread_fence does on Windows on all Intel architectures when
-// the memory_order argument is anything but std::memory_order_seq_cst:
-#define ATOMIC_THREAD_FENCE(memory_order) _ReadWriteBarrier();
-
 TimeDelta QPCValueToTimeDelta(LONGLONG qpc_value) {
   // Ensure that the assignment to |g_qpc_ticks_per_second|, made in
   // InitializeNowFunctionPointer(), has happened by this point.
-  ATOMIC_THREAD_FENCE(memory_order_acquire);
+  std::atomic_thread_fence(std::memory_order_acquire);
 
   DCHECK_GT(g_qpc_ticks_per_second, 0);
 
@@ -578,13 +553,11 @@ void InitializeNowFunctionPointer() {
   //
   // Otherwise, Now uses the high-resolution QPC clock. As of 21 August 2015,
   // ~72% of users fall within this category.
-  TimeTicksNowFunction now_function;
   CPU cpu;
-  if (ticks_per_sec.QuadPart <= 0 || !cpu.has_non_stop_time_stamp_counter()) {
-    now_function = &RolloverProtectedNow;
-  } else {
-    now_function = &QPCNow;
-  }
+  const TimeTicksNowFunction now_function =
+      (ticks_per_sec.QuadPart <= 0 || !cpu.has_non_stop_time_stamp_counter())
+          ? &RolloverProtectedNow
+          : &QPCNow;
 
   // Threading note 1: In an unlikely race condition, it's possible for two or
   // more threads to enter InitializeNowFunctionPointer() in parallel. This is
@@ -596,7 +569,7 @@ void InitializeNowFunctionPointer() {
   // assignment to |g_qpc_ticks_per_second| happens before the function pointers
   // are changed.
   g_qpc_ticks_per_second = ticks_per_sec.QuadPart;
-  ATOMIC_THREAD_FENCE(memory_order_release);
+  std::atomic_thread_fence(std::memory_order_release);
   // Also set g_time_ticks_now_function to avoid the additional indirection via
   // TimeTicksNowIgnoringOverride() for future calls to TimeTicks::Now(). But
   // g_time_ticks_now_function may have already be overridden.
@@ -658,8 +631,8 @@ bool TimeTicks::IsConsistentAcrossProcesses() {
 
 // static
 TimeTicks::Clock TimeTicks::GetClock() {
-  return IsHighResolution() ?
-      Clock::WIN_QPC : Clock::WIN_ROLLOVER_PROTECTED_TIME_GET_TIME;
+  return IsHighResolution() ? Clock::WIN_QPC
+                            : Clock::WIN_ROLLOVER_PROTECTED_TIME_GET_TIME;
 }
 
 // ThreadTicks ----------------------------------------------------------------
@@ -686,23 +659,24 @@ ThreadTicks ThreadTicks::GetForThread(
   ::GetThreadTimes(thread_handle.platform_handle(), &creation_time, &exit_time,
                    &kernel_time, &user_time);
 
-  int64_t us = FileTimeToMicroseconds(user_time);
-  return ThreadTicks(us);
+  const int64_t us = FileTimeToMicroseconds(user_time);
 #else
   // Get the number of TSC ticks used by the current thread.
   ULONG64 thread_cycle_time = 0;
   ::QueryThreadCycleTime(thread_handle.platform_handle(), &thread_cycle_time);
 
   // Get the frequency of the TSC.
-  double tsc_ticks_per_second = TSCTicksPerSecond();
+  const double tsc_ticks_per_second = TSCTicksPerSecond();
   if (tsc_ticks_per_second == 0)
     return ThreadTicks();
 
   // Return the CPU time of the current thread.
-  double thread_time_seconds = thread_cycle_time / tsc_ticks_per_second;
-  return ThreadTicks(
-      static_cast<int64_t>(thread_time_seconds * Time::kMicrosecondsPerSecond));
+  const double thread_time_seconds = thread_cycle_time / tsc_ticks_per_second;
+  const int64_t us =
+      static_cast<int64_t>(thread_time_seconds * Time::kMicrosecondsPerSecond);
 #endif
+
+  return ThreadTicks(us);
 }
 
 // static
@@ -733,7 +707,7 @@ double ThreadTicks::TSCTicksPerSecond() {
 
   // Increase the thread priority to reduces the chances of having a context
   // switch during a reading of the TSC and the performance counter.
-  int previous_priority = ::GetThreadPriority(::GetCurrentThread());
+  const int previous_priority = ::GetThreadPriority(::GetCurrentThread());
   ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
 
   // The first time that this function is called, make an initial reading of the
@@ -744,8 +718,8 @@ double ThreadTicks::TSCTicksPerSecond() {
 
   // Make a another reading of the TSC and the performance counter every time
   // that this function is called.
-  uint64_t tsc_now = __rdtsc();
-  uint64_t perf_counter_now = QPCNowRaw();
+  const uint64_t tsc_now = __rdtsc();
+  const uint64_t perf_counter_now = QPCNowRaw();
 
   // Reset the thread priority.
   ::SetThreadPriority(::GetCurrentThread(), previous_priority);
@@ -762,17 +736,17 @@ double ThreadTicks::TSCTicksPerSecond() {
   LARGE_INTEGER perf_counter_frequency = {};
   ::QueryPerformanceFrequency(&perf_counter_frequency);
   DCHECK_GE(perf_counter_now, perf_counter_initial);
-  uint64_t perf_counter_ticks = perf_counter_now - perf_counter_initial;
-  double elapsed_time_seconds =
+  const uint64_t perf_counter_ticks = perf_counter_now - perf_counter_initial;
+  const double elapsed_time_seconds =
       perf_counter_ticks / static_cast<double>(perf_counter_frequency.QuadPart);
 
-  static constexpr double kMinimumEvaluationPeriodSeconds = 0.05;
+  constexpr double kMinimumEvaluationPeriodSeconds = 0.05;
   if (elapsed_time_seconds < kMinimumEvaluationPeriodSeconds)
     return 0;
 
   // Compute the frequency of the TSC.
   DCHECK_GE(tsc_now, tsc_initial);
-  uint64_t tsc_ticks = tsc_now - tsc_initial;
+  const uint64_t tsc_ticks = tsc_now - tsc_initial;
   tsc_ticks_per_second = tsc_ticks / elapsed_time_seconds;
 
   return tsc_ticks_per_second;

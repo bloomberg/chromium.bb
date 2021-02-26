@@ -8,13 +8,13 @@
 
 #include <iostream>
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "absl/base/macros.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_status.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
 #include "net/third_party/quiche/src/http2/tools/random_decoder_test.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 
 using ::testing::AssertionResult;
 
@@ -36,7 +36,7 @@ TEST(HuffmanBitBufferTest, AppendBytesAligned) {
   s.push_back('\x11');
   s.push_back('\x22');
   s.push_back('\x33');
-  quiche::QuicheStringPiece sp(s);
+  absl::string_view sp(s);
 
   HuffmanBitBuffer bb;
   sp.remove_prefix(bb.AppendBytes(sp));
@@ -85,7 +85,7 @@ TEST(HuffmanBitBufferTest, ConsumeBits) {
   s.push_back('\x11');
   s.push_back('\x22');
   s.push_back('\x33');
-  quiche::QuicheStringPiece sp(s);
+  absl::string_view sp(s);
 
   HuffmanBitBuffer bb;
   sp.remove_prefix(bb.AppendBytes(sp));
@@ -117,7 +117,7 @@ TEST(HuffmanBitBufferTest, AppendBytesUnaligned) {
   s.push_back('\xbb');
   s.push_back('\xcc');
   s.push_back('\xdd');
-  quiche::QuicheStringPiece sp(s);
+  absl::string_view sp(s);
 
   HuffmanBitBuffer bb;
   sp.remove_prefix(bb.AppendBytes(sp));
@@ -161,10 +161,10 @@ class HpackHuffmanDecoderTest : public RandomDecoderTest {
 
   DecodeStatus ResumeDecoding(DecodeBuffer* b) override {
     input_bytes_seen_ += b->Remaining();
-    quiche::QuicheStringPiece sp(b->cursor(), b->Remaining());
+    absl::string_view sp(b->cursor(), b->Remaining());
     if (decoder_.Decode(sp, &output_buffer_)) {
       b->AdvanceCursor(b->Remaining());
-      // Successfully decoded (or buffered) the bytes in QuicheStringPiece.
+      // Successfully decoded (or buffered) the bytes in absl::string_view.
       EXPECT_LE(input_bytes_seen_, input_bytes_expected_);
       // Have we reached the end of the encoded string?
       if (input_bytes_expected_ == input_bytes_seen_) {
@@ -197,7 +197,7 @@ TEST_F(HpackHuffmanDecoderTest, SpecRequestExamples) {
       Http2HexDecode("25a849e95bb8e8b4bf"),
       "custom-value",
   };
-  for (size_t i = 0; i != QUICHE_ARRAYSIZE(test_table); i += 2) {
+  for (size_t i = 0; i != ABSL_ARRAYSIZE(test_table); i += 2) {
     const std::string& huffman_encoded(test_table[i]);
     const std::string& plain_string(test_table[i + 1]);
     std::string buffer;
@@ -228,7 +228,7 @@ TEST_F(HpackHuffmanDecoderTest, SpecResponseExamples) {
     "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1",
   };
   // clang-format on
-  for (size_t i = 0; i != QUICHE_ARRAYSIZE(test_table); i += 2) {
+  for (size_t i = 0; i != ABSL_ARRAYSIZE(test_table); i += 2) {
     const std::string& huffman_encoded(test_table[i]);
     const std::string& plain_string(test_table[i + 1]);
     std::string buffer;

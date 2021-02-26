@@ -42,26 +42,22 @@ namespace OT {
 
 
 struct hb_intersects_context_t :
-       hb_dispatch_context_t<hb_intersects_context_t, bool, 0>
+       hb_dispatch_context_t<hb_intersects_context_t, bool>
 {
-  const char *get_name () { return "INTERSECTS"; }
   template <typename T>
   return_t dispatch (const T &obj) { return obj.intersects (this->glyphs); }
   static return_t default_return_value () { return false; }
   bool stop_sublookup_iteration (return_t r) const { return r; }
 
   const hb_set_t *glyphs;
-  unsigned int debug_depth;
 
   hb_intersects_context_t (const hb_set_t *glyphs_) :
-			     glyphs (glyphs_),
-			     debug_depth (0) {}
+			     glyphs (glyphs_) {}
 };
 
 struct hb_closure_context_t :
-       hb_dispatch_context_t<hb_closure_context_t, hb_empty_t, 0>
+       hb_dispatch_context_t<hb_closure_context_t>
 {
-  const char *get_name () { return "CLOSURE"; }
   typedef return_t (*recurse_func_t) (hb_closure_context_t *c, unsigned int lookup_index);
   template <typename T>
   return_t dispatch (const T &obj) { obj.closure (this); return hb_empty_t (); }
@@ -93,6 +89,9 @@ struct hb_closure_context_t :
 
   bool is_lookup_done (unsigned int lookup_index)
   {
+    if (done_lookups->in_error ())
+      return true;
+
     /* Have we visited this lookup with the current set of glyphs? */
     return done_lookups->get (lookup_index) == glyphs->get_population ();
   }
@@ -102,7 +101,6 @@ struct hb_closure_context_t :
   hb_set_t output[1];
   recurse_func_t recurse_func;
   unsigned int nesting_level_left;
-  unsigned int debug_depth;
 
   hb_closure_context_t (hb_face_t *face_,
 			hb_set_t *glyphs_,
@@ -112,7 +110,6 @@ struct hb_closure_context_t :
 			  glyphs (glyphs_),
 			  recurse_func (nullptr),
 			  nesting_level_left (nesting_level_left_),
-			  debug_depth (0),
 			  done_lookups (done_lookups_),
 			  lookup_count (0)
   {}
@@ -134,9 +131,8 @@ struct hb_closure_context_t :
 };
 
 struct hb_closure_lookups_context_t :
-       hb_dispatch_context_t<hb_closure_lookups_context_t, hb_empty_t, 0>
+       hb_dispatch_context_t<hb_closure_lookups_context_t>
 {
-  const char *get_name () { return "CLOSURE_LOOKUPS"; }
   typedef return_t (*recurse_func_t) (hb_closure_lookups_context_t *c, unsigned lookup_index);
   template <typename T>
   return_t dispatch (const T &obj) { obj.closure_lookups (this); return hb_empty_t (); }
@@ -170,6 +166,9 @@ struct hb_closure_lookups_context_t :
     if (lookup_count++ > HB_MAX_LOOKUP_INDICES)
       return true;
 
+    if (visited_lookups->in_error ())
+      return true;
+
     return visited_lookups->has (lookup_index);
   }
 
@@ -177,7 +176,6 @@ struct hb_closure_lookups_context_t :
   const hb_set_t *glyphs;
   recurse_func_t recurse_func;
   unsigned int nesting_level_left;
-  unsigned int debug_depth;
 
   hb_closure_lookups_context_t (hb_face_t *face_,
 				const hb_set_t *glyphs_,
@@ -188,7 +186,6 @@ struct hb_closure_lookups_context_t :
 				glyphs (glyphs_),
 				recurse_func (nullptr),
 				nesting_level_left (nesting_level_left_),
-				debug_depth (0),
 				visited_lookups (visited_lookups_),
 				inactive_lookups (inactive_lookups_),
 				lookup_count (0) {}
@@ -202,9 +199,8 @@ struct hb_closure_lookups_context_t :
 };
 
 struct hb_would_apply_context_t :
-       hb_dispatch_context_t<hb_would_apply_context_t, bool, 0>
+       hb_dispatch_context_t<hb_would_apply_context_t, bool>
 {
-  const char *get_name () { return "WOULD_APPLY"; }
   template <typename T>
   return_t dispatch (const T &obj) { return obj.would_apply (this); }
   static return_t default_return_value () { return false; }
@@ -214,7 +210,6 @@ struct hb_would_apply_context_t :
   const hb_codepoint_t *glyphs;
   unsigned int len;
   bool zero_context;
-  unsigned int debug_depth;
 
   hb_would_apply_context_t (hb_face_t *face_,
 			    const hb_codepoint_t *glyphs_,
@@ -223,15 +218,12 @@ struct hb_would_apply_context_t :
 			      face (face_),
 			      glyphs (glyphs_),
 			      len (len_),
-			      zero_context (zero_context_),
-			      debug_depth (0) {}
+			      zero_context (zero_context_) {}
 };
 
-
 struct hb_collect_glyphs_context_t :
-       hb_dispatch_context_t<hb_collect_glyphs_context_t, hb_empty_t, 0>
+       hb_dispatch_context_t<hb_collect_glyphs_context_t>
 {
-  const char *get_name () { return "COLLECT_GLYPHS"; }
   typedef return_t (*recurse_func_t) (hb_collect_glyphs_context_t *c, unsigned int lookup_index);
   template <typename T>
   return_t dispatch (const T &obj) { obj.collect_glyphs (this); return hb_empty_t (); }
@@ -282,7 +274,6 @@ struct hb_collect_glyphs_context_t :
   recurse_func_t recurse_func;
   hb_set_t *recursed_lookups;
   unsigned int nesting_level_left;
-  unsigned int debug_depth;
 
   hb_collect_glyphs_context_t (hb_face_t *face_,
 			       hb_set_t  *glyphs_before, /* OUT.  May be NULL */
@@ -297,8 +288,7 @@ struct hb_collect_glyphs_context_t :
 			      output (glyphs_output ? glyphs_output : hb_set_get_empty ()),
 			      recurse_func (nullptr),
 			      recursed_lookups (hb_set_create ()),
-			      nesting_level_left (nesting_level_left_),
-			      debug_depth (0) {}
+			      nesting_level_left (nesting_level_left_) {}
   ~hb_collect_glyphs_context_t () { hb_set_destroy (recursed_lookups); }
 
   void set_recurse_func (recurse_func_t func) { recurse_func = func; }
@@ -308,10 +298,9 @@ struct hb_collect_glyphs_context_t :
 
 template <typename set_t>
 struct hb_collect_coverage_context_t :
-       hb_dispatch_context_t<hb_collect_coverage_context_t<set_t>, const Coverage &, HB_DEBUG_GET_COVERAGE>
+       hb_dispatch_context_t<hb_collect_coverage_context_t<set_t>, const Coverage &>
 {
-  const char *get_name () { return "GET_COVERAGE"; }
-  typedef const Coverage &return_t;
+  typedef const Coverage &return_t; // Stoopid that we have to dupe this here.
   template <typename T>
   return_t dispatch (const T &obj) { return obj.get_coverage (); }
   static return_t default_return_value () { return Null (Coverage); }
@@ -322,11 +311,9 @@ struct hb_collect_coverage_context_t :
   }
 
   hb_collect_coverage_context_t (set_t *set_) :
-				   set (set_),
-				   debug_depth (0) {}
+				   set (set_) {}
 
   set_t *set;
-  unsigned int debug_depth;
 };
 
 
@@ -354,7 +341,7 @@ struct hb_ot_apply_context_t :
     void set_mask (hb_mask_t mask_) { mask = mask_; }
     void set_syllable (uint8_t syllable_)  { syllable = syllable_; }
     void set_match_func (match_func_t match_func_,
-				const void *match_data_)
+			 const void *match_data_)
     { match_func = match_func_; match_data = match_data_; }
 
     enum may_match_t {
@@ -549,7 +536,6 @@ struct hb_ot_apply_context_t :
   unsigned int lookup_index;
   unsigned int lookup_props;
   unsigned int nesting_level_left;
-  unsigned int debug_depth;
 
   bool has_glyph_classes;
   bool auto_zwnj;
@@ -560,8 +546,8 @@ struct hb_ot_apply_context_t :
 
 
   hb_ot_apply_context_t (unsigned int table_index_,
-		      hb_font_t *font_,
-		      hb_buffer_t *buffer_) :
+			 hb_font_t *font_,
+			 hb_buffer_t *buffer_) :
 			iter_input (), iter_context (),
 			font (font_), face (font->face), buffer (buffer_),
 			recurse_func (nullptr),
@@ -579,7 +565,6 @@ struct hb_ot_apply_context_t :
 			lookup_index ((unsigned int) -1),
 			lookup_props (0),
 			nesting_level_left (HB_MAX_NESTING_LEVEL),
-			debug_depth (0),
 			has_glyph_classes (gdef.has_glyph_classes ()),
 			auto_zwnj (true),
 			auto_zwj (true),
@@ -645,63 +630,60 @@ struct hb_ot_apply_context_t :
     return true;
   }
 
-  void _set_glyph_class (hb_codepoint_t glyph_index,
-			 unsigned int class_guess = 0,
-			 bool ligature = false,
-			 bool component = false) const
+  void _set_glyph_props (hb_codepoint_t glyph_index,
+			  unsigned int class_guess = 0,
+			  bool ligature = false,
+			  bool component = false) const
   {
-    unsigned int props = _hb_glyph_info_get_glyph_props (&buffer->cur());
-
-    props |= HB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED;
+    unsigned int add_in = _hb_glyph_info_get_glyph_props (&buffer->cur()) &
+			  HB_OT_LAYOUT_GLYPH_PROPS_PRESERVE;
+    add_in |= HB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED;
     if (ligature)
     {
-      props |= HB_OT_LAYOUT_GLYPH_PROPS_LIGATED;
+      add_in |= HB_OT_LAYOUT_GLYPH_PROPS_LIGATED;
       /* In the only place that the MULTIPLIED bit is used, Uniscribe
        * seems to only care about the "last" transformation between
        * Ligature and Multiple substitutions.  Ie. if you ligate, expand,
        * and ligate again, it forgives the multiplication and acts as
        * if only ligation happened.  As such, clear MULTIPLIED bit.
        */
-      props &= ~HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED;
+      add_in &= ~HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED;
     }
     if (component)
-      props |= HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED;
-
+      add_in |= HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED;
     if (likely (has_glyph_classes))
-      props = (props & ~HB_OT_LAYOUT_GLYPH_PROPS_CLASS_MASK) | gdef.get_glyph_props (glyph_index);
+      _hb_glyph_info_set_glyph_props (&buffer->cur(), add_in | gdef.get_glyph_props (glyph_index));
     else if (class_guess)
-      props = (props & ~HB_OT_LAYOUT_GLYPH_PROPS_CLASS_MASK) | class_guess;
-
-    _hb_glyph_info_set_glyph_props (&buffer->cur(), props);
+      _hb_glyph_info_set_glyph_props (&buffer->cur(), add_in | class_guess);
   }
 
   void replace_glyph (hb_codepoint_t glyph_index) const
   {
-    _set_glyph_class (glyph_index);
+    _set_glyph_props (glyph_index);
     buffer->replace_glyph (glyph_index);
   }
   void replace_glyph_inplace (hb_codepoint_t glyph_index) const
   {
-    _set_glyph_class (glyph_index);
+    _set_glyph_props (glyph_index);
     buffer->cur().codepoint = glyph_index;
   }
   void replace_glyph_with_ligature (hb_codepoint_t glyph_index,
 				    unsigned int class_guess) const
   {
-    _set_glyph_class (glyph_index, class_guess, true);
+    _set_glyph_props (glyph_index, class_guess, true);
     buffer->replace_glyph (glyph_index);
   }
   void output_glyph_for_component (hb_codepoint_t glyph_index,
 				   unsigned int class_guess) const
   {
-    _set_glyph_class (glyph_index, class_guess, false, true);
+    _set_glyph_props (glyph_index, class_guess, false, true);
     buffer->output_glyph (glyph_index);
   }
 };
 
 
 struct hb_get_subtables_context_t :
-       hb_dispatch_context_t<hb_get_subtables_context_t, hb_empty_t, HB_DEBUG_APPLY>
+       hb_dispatch_context_t<hb_get_subtables_context_t>
 {
   template <typename Type>
   static inline bool apply_to (const void *obj, OT::hb_ot_apply_context_t *c)
@@ -737,7 +719,6 @@ struct hb_get_subtables_context_t :
   typedef hb_vector_t<hb_applicable_t> array_t;
 
   /* Dispatch interface. */
-  const char *get_name () { return "GET_SUBTABLES"; }
   template <typename T>
   return_t dispatch (const T &obj)
   {
@@ -748,11 +729,9 @@ struct hb_get_subtables_context_t :
   static return_t default_return_value () { return hb_empty_t (); }
 
   hb_get_subtables_context_t (array_t &array_) :
-			      array (array_),
-			      debug_depth (0) {}
+			      array (array_) {}
 
   array_t &array;
-  unsigned int debug_depth;
 };
 
 
@@ -791,15 +770,15 @@ static inline bool intersects_coverage (const hb_set_t *glyphs, const HBUINT16 &
   return (data+coverage).intersects (glyphs);
 }
 
-static inline bool intersects_array (const hb_set_t *glyphs,
-				     unsigned int count,
-				     const HBUINT16 values[],
-				     intersects_func_t intersects_func,
-				     const void *intersects_data)
+static inline bool array_is_subset_of (const hb_set_t *glyphs,
+				       unsigned int count,
+				       const HBUINT16 values[],
+				       intersects_func_t intersects_func,
+				       const void *intersects_data)
 {
   for (const HBUINT16 &_ : + hb_iter (values, count))
-    if (intersects_func (glyphs, _, intersects_data)) return true;
-  return false;
+    if (!intersects_func (glyphs, _, intersects_data)) return false;
+  return true;
 }
 
 
@@ -1144,7 +1123,7 @@ static inline bool match_lookahead (hb_ot_apply_context_t *c,
 struct LookupRecord
 {
   LookupRecord* copy (hb_serialize_context_t *c,
-		      const hb_map_t         *lookup_map)
+		      const hb_map_t         *lookup_map) const
   {
     TRACE_SERIALIZE (this);
     auto *out = c->embed (*this);
@@ -1325,9 +1304,9 @@ static inline bool context_intersects (const hb_set_t *glyphs,
 				       const HBUINT16 input[], /* Array of input values--start with second glyph */
 				       ContextClosureLookupContext &lookup_context)
 {
-  return intersects_array (glyphs,
-			   inputCount ? inputCount - 1 : 0, input,
-			   lookup_context.funcs.intersects, lookup_context.intersects_data);
+  return array_is_subset_of (glyphs,
+			     inputCount ? inputCount - 1 : 0, input,
+			     lookup_context.funcs.intersects, lookup_context.intersects_data);
 }
 
 static inline void context_closure_lookup (hb_closure_context_t *c,
@@ -1450,6 +1429,47 @@ struct Rule
     return_trace (context_apply_lookup (c, inputCount, inputZ.arrayZ, lookupCount, lookupRecord.arrayZ, lookup_context));
   }
 
+  bool serialize (hb_serialize_context_t *c,
+		  const hb_map_t *input_mapping, /* old->new glyphid or class mapping */
+		  const hb_map_t *lookup_map) const
+  {
+    TRACE_SERIALIZE (this);
+    auto *out = c->start_embed (this);
+    if (unlikely (!c->extend_min (out))) return_trace (false);
+
+    out->inputCount = inputCount;
+    out->lookupCount = lookupCount;
+
+    const hb_array_t<const HBUINT16> input = inputZ.as_array (inputCount - 1);
+    for (const auto org : input)
+    {
+      HBUINT16 d;
+      d = input_mapping->get (org);
+      c->copy (d);
+    }
+
+    const UnsizedArrayOf<LookupRecord> &lookupRecord = StructAfter<UnsizedArrayOf<LookupRecord>>
+						       (inputZ.as_array ((inputCount ? inputCount - 1 : 0)));
+    for (unsigned i = 0; i < (unsigned) lookupCount; i++)
+      c->copy (lookupRecord[i], lookup_map);
+
+    return_trace (true);
+  }
+
+  bool subset (hb_subset_context_t *c,
+	       const hb_map_t *lookup_map,
+	       const hb_map_t *klass_map = nullptr) const
+  {
+    TRACE_SUBSET (this);
+
+    const hb_array_t<const HBUINT16> input = inputZ.as_array ((inputCount ? inputCount - 1 : 0));
+    if (!input.length) return_trace (false);
+
+    const hb_map_t *mapping = klass_map == nullptr ? c->plan->glyph_map : klass_map;
+    if (!hb_all (input, mapping)) return_trace (false);
+    return_trace (serialize (c->serializer, mapping, lookup_map));
+  }
+
   public:
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -1546,6 +1566,36 @@ struct RuleSet
     ;
   }
 
+  bool subset (hb_subset_context_t *c,
+	       const hb_map_t *lookup_map,
+	       const hb_map_t *klass_map = nullptr) const
+  {
+    TRACE_SUBSET (this);
+
+    auto snap = c->serializer->snapshot ();
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
+
+    for (const OffsetTo<Rule>& _ : rule)
+    {
+      if (!_) continue;
+      auto *o = out->rule.serialize_append (c->serializer);
+      if (unlikely (!o)) continue;
+
+      auto o_snap = c->serializer->snapshot ();
+      if (!o->serialize_subset (c, _, this, lookup_map, klass_map))
+      {
+	out->rule.pop ();
+	c->serializer->revert (o_snap);
+      }
+    }
+
+    bool ret = bool (out->rule);
+    if (!ret) c->serializer->revert (snap);
+
+    return_trace (ret);
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -1603,6 +1653,8 @@ struct ContextFormat1
     ;
   }
 
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const {}
+
   void collect_glyphs (hb_collect_glyphs_context_t *c) const
   {
     (this+coverage).collect_coverage (c->input);
@@ -1648,8 +1700,26 @@ struct ContextFormat1
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    // TODO(subset)
-    return_trace (false);
+    const hb_set_t &glyphset = *c->plan->glyphset ();
+    const hb_map_t &glyph_map = *c->plan->glyph_map;
+
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
+    out->format = format;
+
+    const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
+    hb_sorted_vector_t<hb_codepoint_t> new_coverage;
+    + hb_zip (this+coverage, ruleSet)
+    | hb_filter (glyphset, hb_first)
+    | hb_filter (subset_offset_array (c, out->ruleSet, this, lookup_map), hb_second)
+    | hb_map (hb_first)
+    | hb_map (glyph_map)
+    | hb_sink (new_coverage)
+    ;
+
+    out->coverage.serialize (c->serializer, out)
+		 .serialize (c->serializer, new_coverage.iter ());
+    return_trace (bool (new_coverage));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1686,10 +1756,12 @@ struct ContextFormat2
     };
 
     return
-    + hb_enumerate (ruleSet)
-    | hb_map ([&] (const hb_pair_t<unsigned, const OffsetTo<RuleSet> &> p)
+    + hb_iter (ruleSet)
+    | hb_map (hb_add (this))
+    | hb_enumerate
+    | hb_map ([&] (const hb_pair_t<unsigned, const RuleSet &> p)
 	      { return class_def.intersects_class (glyphs, p.first) &&
-		       (this+p.second).intersects (glyphs, lookup_context); })
+		       p.second.intersects (glyphs, lookup_context); })
     | hb_any
     ;
   }
@@ -1724,6 +1796,8 @@ struct ContextFormat2
     | hb_apply ([&] (const RuleSet &_) { _.closure_lookups (c); })
     ;
   }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const {}
 
   void collect_glyphs (hb_collect_glyphs_context_t *c) const
   {
@@ -1774,8 +1848,45 @@ struct ContextFormat2
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    // TODO(subset)
-    return_trace (false);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
+    out->format = format;
+    if (unlikely (!out->coverage.serialize_subset (c, coverage, this)))
+      return_trace (false);
+
+    hb_map_t klass_map;
+    out->classDef.serialize_subset (c, classDef, this, &klass_map);
+
+    const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
+    bool ret = true;
+    int non_zero_index = 0, index = 0;
+    for (const hb_pair_t<unsigned, const OffsetTo<RuleSet>&> _ : + hb_enumerate (ruleSet)
+								 | hb_filter (klass_map, hb_first))
+    {
+      auto *o = out->ruleSet.serialize_append (c->serializer);
+      if (unlikely (!o))
+      {
+	ret = false;
+	break;
+      }
+
+      if (o->serialize_subset (c, _.second, this, lookup_map, &klass_map))
+	non_zero_index = index;
+
+      index++;
+    }
+
+    if (!ret) return_trace (ret);
+
+    //prune empty trailing ruleSets
+    --index;
+    while (index > non_zero_index)
+    {
+      out->ruleSet.pop ();
+      index--;
+    }
+
+    return_trace (bool (out->ruleSet));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1838,6 +1949,8 @@ struct ContextFormat3
     recurse_lookups (c, lookupCount, lookupRecord);
   }
 
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const {}
+
   void collect_glyphs (hb_collect_glyphs_context_t *c) const
   {
     (this+coverageZ[0]).collect_coverage (c->input);
@@ -1886,8 +1999,28 @@ struct ContextFormat3
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    // TODO(subset)
-    return_trace (false);
+    auto *out = c->serializer->start_embed (this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
+
+    out->format = format;
+    out->glyphCount = glyphCount;
+    out->lookupCount = lookupCount;
+
+    auto coverages = coverageZ.as_array (glyphCount);
+
+    for (const OffsetTo<Coverage>& offset : coverages)
+    {
+      auto *o = c->serializer->allocate_size<OffsetTo<Coverage>> (OffsetTo<Coverage>::static_size);
+      if (unlikely (!o)) return_trace (false);
+      if (!o->serialize_subset (c, offset, this)) return_trace (false);
+    }
+
+    const LookupRecord *lookupRecord = &StructAfter<LookupRecord> (coverageZ.as_array (glyphCount));
+    const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
+    for (unsigned i = 0; i < (unsigned) lookupCount; i++)
+      c->serializer->copy (lookupRecord[i], lookup_map);
+
+    return_trace (true);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1972,15 +2105,15 @@ static inline bool chain_context_intersects (const hb_set_t *glyphs,
 					     const HBUINT16 lookahead[],
 					     ChainContextClosureLookupContext &lookup_context)
 {
-  return intersects_array (glyphs,
-			   backtrackCount, backtrack,
-			   lookup_context.funcs.intersects, lookup_context.intersects_data[0])
-      && intersects_array (glyphs,
-			   inputCount ? inputCount - 1 : 0, input,
-			   lookup_context.funcs.intersects, lookup_context.intersects_data[1])
-      && intersects_array (glyphs,
-			  lookaheadCount, lookahead,
-			  lookup_context.funcs.intersects, lookup_context.intersects_data[2]);
+  return array_is_subset_of (glyphs,
+			     backtrackCount, backtrack,
+			     lookup_context.funcs.intersects, lookup_context.intersects_data[0])
+      && array_is_subset_of (glyphs,
+			     inputCount ? inputCount - 1 : 0, input,
+			     lookup_context.funcs.intersects, lookup_context.intersects_data[1])
+      && array_is_subset_of (glyphs,
+			     lookaheadCount, lookahead,
+			     lookup_context.funcs.intersects, lookup_context.intersects_data[2]);
 }
 
 static inline void chain_context_closure_lookup (hb_closure_context_t *c,
@@ -2171,6 +2304,7 @@ struct ChainRule
   }
 
   ChainRule* copy (hb_serialize_context_t *c,
+		   const hb_map_t *lookup_map,
 		   const hb_map_t *backtrack_map,
 		   const hb_map_t *input_map = nullptr,
 		   const hb_map_t *lookahead_map = nullptr) const
@@ -2193,13 +2327,19 @@ struct ChainRule
     serialize_array (c, lookahead.len, + lookahead.iter ()
 				       | hb_map (mapping));
 
-    const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>> (lookahead);
-    c->copy (lookup);
+    const ArrayOf<LookupRecord> &lookupRecord = StructAfter<ArrayOf<LookupRecord>> (lookahead);
+    HBUINT16 lookupCount;
+    lookupCount = lookupRecord.len;
+    if (!c->copy (lookupCount)) return_trace (nullptr);
+
+    for (unsigned i = 0; i < (unsigned) lookupCount; i++)
+      if (!c->copy (lookupRecord[i], lookup_map)) return_trace (nullptr);
 
     return_trace (out);
   }
 
   bool subset (hb_subset_context_t *c,
+	       const hb_map_t *lookup_map,
 	       const hb_map_t *backtrack_map = nullptr,
 	       const hb_map_t *input_map = nullptr,
 	       const hb_map_t *lookahead_map = nullptr) const
@@ -2217,7 +2357,7 @@ struct ChainRule
 	  !hb_all (lookahead, glyphset))
 	return_trace (false);
 
-      copy (c->serializer, c->plan->glyph_map);
+      copy (c->serializer, lookup_map, c->plan->glyph_map);
     }
     else
     {
@@ -2226,7 +2366,7 @@ struct ChainRule
 	  !hb_all (lookahead, lookahead_map))
 	return_trace (false);
 
-      copy (c->serializer, backtrack_map, input_map, lookahead_map);
+      copy (c->serializer, lookup_map, backtrack_map, input_map, lookahead_map);
     }
 
     return_trace (true);
@@ -2327,6 +2467,7 @@ struct ChainRuleSet
   }
 
   bool subset (hb_subset_context_t *c,
+	       const hb_map_t *lookup_map,
 	       const hb_map_t *backtrack_klass_map = nullptr,
 	       const hb_map_t *input_klass_map = nullptr,
 	       const hb_map_t *lookahead_klass_map = nullptr) const
@@ -2345,6 +2486,7 @@ struct ChainRuleSet
 
       auto o_snap = c->serializer->snapshot ();
       if (!o->serialize_subset (c, _, this,
+				lookup_map,
 				backtrack_klass_map,
 				input_klass_map,
 				lookahead_klass_map))
@@ -2416,6 +2558,8 @@ struct ChainContextFormat1
     ;
   }
 
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const {}
+
   void collect_glyphs (hb_collect_glyphs_context_t *c) const
   {
     (this+coverage).collect_coverage (c->input);
@@ -2467,10 +2611,11 @@ struct ChainContextFormat1
     if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
     out->format = format;
 
+    const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
     hb_sorted_vector_t<hb_codepoint_t> new_coverage;
     + hb_zip (this+coverage, ruleSet)
     | hb_filter (glyphset, hb_first)
-    | hb_filter (subset_offset_array (c, out->ruleSet, this), hb_second)
+    | hb_filter (subset_offset_array (c, out->ruleSet, this, lookup_map), hb_second)
     | hb_map (hb_first)
     | hb_map (glyph_map)
     | hb_sink (new_coverage)
@@ -2518,10 +2663,12 @@ struct ChainContextFormat2
     };
 
     return
-    + hb_enumerate (ruleSet)
-    | hb_map ([&] (const hb_pair_t<unsigned, const OffsetTo<ChainRuleSet> &> p)
+    + hb_iter (ruleSet)
+    | hb_map (hb_add (this))
+    | hb_enumerate
+    | hb_map ([&] (const hb_pair_t<unsigned, const ChainRuleSet &> p)
 	      { return input_class_def.intersects_class (glyphs, p.first) &&
-		       (this+p.second).intersects (glyphs, lookup_context); })
+		       p.second.intersects (glyphs, lookup_context); })
     | hb_any
     ;
   }
@@ -2559,6 +2706,8 @@ struct ChainContextFormat2
     | hb_apply ([&] (const ChainRuleSet &_) { _.closure_lookups (c); })
     ;
   }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const {}
 
   void collect_glyphs (hb_collect_glyphs_context_t *c) const
   {
@@ -2631,16 +2780,23 @@ struct ChainContextFormat2
 
     hb_map_t backtrack_klass_map;
     out->backtrackClassDef.serialize_subset (c, backtrackClassDef, this, &backtrack_klass_map);
+    if (unlikely (!c->serializer->check_success (!backtrack_klass_map.in_error ())))
+      return_trace (false);
 
     // subset inputClassDef based on glyphs survived in Coverage subsetting
     hb_map_t input_klass_map;
     out->inputClassDef.serialize_subset (c, inputClassDef, this, &input_klass_map);
+    if (unlikely (!c->serializer->check_success (!input_klass_map.in_error ())))
+      return_trace (false);
 
     hb_map_t lookahead_klass_map;
     out->lookaheadClassDef.serialize_subset (c, lookaheadClassDef, this, &lookahead_klass_map);
+    if (unlikely (!c->serializer->check_success (!lookahead_klass_map.in_error ())))
+      return_trace (false);
 
-    hb_vector_t<unsigned> rulesets;
+    unsigned non_zero_index = 0, index = 0;
     bool ret = true;
+    const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
     for (const OffsetTo<ChainRuleSet>& _ : + hb_enumerate (ruleSet)
 					   | hb_filter (input_klass_map, hb_first)
 					   | hb_map (hb_second))
@@ -2651,24 +2807,24 @@ struct ChainContextFormat2
 	ret = false;
 	break;
       }
-      if (!o->serialize_subset (c, _, this,
-				&backtrack_klass_map,
-				&input_klass_map,
-				&lookahead_klass_map))
-      {
-	rulesets.push (0);
-      }
-      else rulesets.push (1);
+      if (o->serialize_subset (c, _, this,
+			       lookup_map,
+			       &backtrack_klass_map,
+			       &input_klass_map,
+			       &lookahead_klass_map))
+	non_zero_index = index;
+
+      index++;
     }
 
     if (!ret) return_trace (ret);
 
     //prune empty trailing ruleSets
-    unsigned count = rulesets.length;
-    while (count > 0 && rulesets[count-1] == 0)
+    --index;
+    while (index > non_zero_index)
     {
       out->ruleSet.pop ();
-      count--;
+      index--;
     }
 
     return_trace (bool (out->ruleSet));
@@ -2757,6 +2913,8 @@ struct ChainContextFormat3
     const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>> (lookahead);
     recurse_lookups (c, lookup.len, lookup.arrayZ);
   }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const {}
 
   void collect_glyphs (hb_collect_glyphs_context_t *c) const
   {
@@ -2856,8 +3014,16 @@ struct ChainContextFormat3
     if (!serialize_coverage_offsets (c, lookahead.iter (), this))
       return_trace (false);
 
-    const ArrayOf<LookupRecord> &lookup = StructAfter<ArrayOf<LookupRecord>> (lookahead);
-    return_trace (c->serializer->copy (lookup));
+    const ArrayOf<LookupRecord> &lookupRecord = StructAfter<ArrayOf<LookupRecord>> (lookahead);
+    HBUINT16 lookupCount;
+    lookupCount = lookupRecord.len;
+    if (!c->serializer->copy (lookupCount)) return_trace (false);
+
+    const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
+    for (unsigned i = 0; i < (unsigned) lookupCount; i++)
+      if (!c->serializer->copy (lookupRecord[i], lookup_map)) return_trace (false);
+
+    return_trace (true);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -2935,6 +3101,9 @@ struct ExtensionFormat1
     if (unlikely (!c->may_dispatch (this, this))) return_trace (c->no_dispatch_return_value ());
     return_trace (get_subtable<typename T::SubTable> ().dispatch (c, get_type (), hb_forward<Ts> (ds)...));
   }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
+  { dispatch (c); }
 
   /* This is called from may_dispatch() above with hb_sanitize_context_t. */
   bool sanitize (hb_sanitize_context_t *c) const
@@ -3097,6 +3266,21 @@ struct GSUBGPOS
   }
 
   template <typename TLookup>
+  void closure_lookups (hb_face_t      *face,
+			const hb_set_t *glyphs,
+			hb_set_t       *lookup_indexes /* IN/OUT */) const
+  {
+    hb_set_t visited_lookups, inactive_lookups;
+    OT::hb_closure_lookups_context_t c (face, glyphs, &visited_lookups, &inactive_lookups);
+
+    for (unsigned lookup_index : + hb_iter (lookup_indexes))
+      reinterpret_cast<const TLookup &> (get_lookup (lookup_index)).closure_lookups (&c, lookup_index);
+
+    hb_set_union (lookup_indexes, &visited_lookups);
+    hb_set_subtract (lookup_indexes, &inactive_lookups);
+  }
+
+  template <typename TLookup>
   bool subset (hb_subset_layout_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -3142,7 +3326,8 @@ struct GSUBGPOS
     unsigned int feature_count = hb_min (get_feature_count (), (unsigned) HB_MAX_FEATURES);
     for (unsigned i = 0; i < feature_count; i++)
     {
-      if (get_feature (i).intersects_lookup_indexes (lookup_indexes))
+      const Feature& f = get_feature (i);
+      if ((!f.featureParams.is_null ()) || f.intersects_lookup_indexes (lookup_indexes))
 	feature_indexes->add (i);
     }
 #ifndef HB_NO_VAR
@@ -3183,7 +3368,7 @@ struct GSUBGPOS
     void init (hb_face_t *face)
     {
       this->table = hb_sanitize_context_t ().reference_table<T> (face);
-      if (unlikely (this->table->is_blacklisted (this->table.get_blob (), face)))
+      if (unlikely (this->table->is_blocklisted (this->table.get_blob (), face)))
       {
 	hb_blob_destroy (this->table.get_blob ());
 	this->table = hb_blob_get_empty ();

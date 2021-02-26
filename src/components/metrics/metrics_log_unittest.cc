@@ -15,10 +15,12 @@
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/sample_vector.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/metrics/cpu_metrics_provider.h"
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/environment_recorder.h"
@@ -72,6 +74,24 @@ class TestMetricsLog : public MetricsLog {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMetricsLog);
 };
+
+// Returns the expected hardware class for a metrics log.
+std::string GetExpectedHardwareClass() {
+#if defined(OS_CHROMEOS)
+  // Currently, we are relying on base/ implementation for functionality on our
+  // side which can be fragile if in the future someone decides to change that.
+  // This replicates the logic to get the hardware class for ChromeOS and this
+  // result should match with the result by calling
+  // base::SysInfo::HardwareModelName().
+  std::string board = base::SysInfo::GetLsbReleaseBoard();
+  const size_t index = board.find("-signed-");
+  if (index != std::string::npos)
+    board.resize(index);
+  return base::ToUpperASCII(board);
+#else
+  return base::SysInfo::HardwareModelName();
+#endif
+}
 
 }  // namespace
 
@@ -162,12 +182,18 @@ TEST_F(MetricsLogTest, BasicRecord) {
   hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
 #endif
   hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
-  hardware->set_hardware_class(base::SysInfo::HardwareModelName());
+  hardware->set_hardware_class(GetExpectedHardwareClass());
 #if defined(OS_WIN)
   hardware->set_dll_base(reinterpret_cast<uint64_t>(CURRENT_MODULE()));
 #endif
 
+#if BUILDFLAG(IS_LACROS)
+  system_profile->mutable_os()->set_name("Lacros");
+#elif defined(OS_CHROMEOS)
+  system_profile->mutable_os()->set_name("CrOS");
+#else
   system_profile->mutable_os()->set_name(base::SysInfo::OperatingSystemName());
+#endif
   system_profile->mutable_os()->set_version(
       base::SysInfo::OperatingSystemVersion());
 #if defined(OS_CHROMEOS)
@@ -188,6 +214,10 @@ TEST_F(MetricsLogTest, BasicRecord) {
   // Hard to mock.
   system_profile->set_build_timestamp(
       parsed.system_profile().build_timestamp());
+#if defined(OS_ANDROID)
+  system_profile->set_installer_package(
+      parsed.system_profile().installer_package());
+#endif
 
   EXPECT_EQ(expected.SerializeAsString(), encoded);
 }
@@ -392,6 +422,15 @@ TEST_F(MetricsLogTest, TruncateEvents) {
   EXPECT_EQ(internal::kUserActionEventLimit,
             log.uma_proto().user_action_event_size());
   EXPECT_EQ(internal::kOmniboxEventLimit, log.uma_proto().omnibox_event_size());
+}
+
+TEST_F(MetricsLogTest, ToInstallerPackage) {
+  using internal::ToInstallerPackage;
+  EXPECT_EQ(SystemProfileProto::INSTALLER_PACKAGE_NONE, ToInstallerPackage(""));
+  EXPECT_EQ(SystemProfileProto::INSTALLER_PACKAGE_GOOGLE_PLAY_STORE,
+            ToInstallerPackage("com.android.vending"));
+  EXPECT_EQ(SystemProfileProto::INSTALLER_PACKAGE_OTHER,
+            ToInstallerPackage("foo"));
 }
 
 }  // namespace metrics

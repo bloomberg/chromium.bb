@@ -11,8 +11,10 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -111,6 +113,8 @@ DesktopCloudPolicyStore::DesktopCloudPolicyStore(
 DesktopCloudPolicyStore::~DesktopCloudPolicyStore() {}
 
 void DesktopCloudPolicyStore::LoadImmediately() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   DVLOG(1) << "Initiating immediate policy load from disk";
   // Cancel any pending Load/Store/Validate operations.
   weak_factory_.InvalidateWeakPtrs();
@@ -122,12 +126,12 @@ void DesktopCloudPolicyStore::LoadImmediately() {
 }
 
 void DesktopCloudPolicyStore::Clear() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   background_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                policy_path_, false));
+      FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), policy_path_));
   background_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile), key_path_, false));
+      FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), key_path_));
   policy_.reset();
   policy_map_.Clear();
   policy_signature_public_key_.clear();
@@ -136,6 +140,8 @@ void DesktopCloudPolicyStore::Clear() {
 }
 
 void DesktopCloudPolicyStore::Load() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   DVLOG(1) << "Initiating policy load from disk";
   // Cancel any pending Load/Store/Validate operations.
   weak_factory_.InvalidateWeakPtrs();
@@ -345,6 +351,8 @@ void DesktopCloudPolicyStore::InstallLoadedPolicyAfterValidation(
 }
 
 void DesktopCloudPolicyStore::Store(const em::PolicyFetchResponse& policy) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
 

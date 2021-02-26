@@ -5,14 +5,14 @@ include_rules = [
   # crbug.com/728877
   "+chrome/browser/ui/views/chrome_layout_provider.h",
 
-  "+chrome/services/app_service/public",
   "+chrome/services/keymaster/public",
   "+chrome/services/wilco_dtc_supportd/public",
+  "+components/account_manager_core",
   "+components/guest_os",
+  "+components/services/app_service/public",
   "+cros",
   "+dbus",
   "+device/bluetooth",
-  "+mash/public/mojom",
   "+media/audio/sounds",  # For system sounds
   "+media/base/media_switches.h",  # For media command line switches.
   "+media/mojo/mojom",  # For platform verification mojom interface.
@@ -32,7 +32,6 @@ specific_include_rules = {
   ".*test.*": [
    "!ash",
    "+ash/public",
-   "+ash/keyboard/ui/public",
   ],
   "assistant_util_unittest\.cc": [
     "+ui/events/devices/device_data_manager.h",
@@ -50,12 +49,11 @@ specific_include_rules = {
   "event_rewriter_unittest\.cc": [
     "+ui/events/devices/device_data_manager.h",
   ],
+  "external_protocol_dialog\.cc": [
+    "+chrome/browser/ui/views/external_protocol_dialog.h",
+  ],
   "file_manager_browsertest_base.cc": [
     "+chrome/browser/ui/views/extensions/extension_dialog.h",
     "+chrome/browser/ui/views/select_file_dialog_extension.h",
-  ],
-  "server_printers_fetcher\.cc": [
-    # IPP protocol; it is needed for communication with print servers.
-    "+third_party/libipp/libipp/ipp.h",
   ],
 }

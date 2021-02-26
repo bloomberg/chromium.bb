@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include "third_party/boringssl/src/include/openssl/ssl.h"
+#include "net/third_party/quiche/src/quic/core/frames/quic_ack_frequency_frame.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream_sequencer.h"
@@ -66,10 +67,9 @@ class QUIC_NO_EXPORT TlsChloExtractor
       const QuicVersionNegotiationPacket& /*packet*/) override {}
   void OnRetryPacket(QuicConnectionId /*original_connection_id*/,
                      QuicConnectionId /*new_connection_id*/,
-                     quiche::QuicheStringPiece /*retry_token*/,
-                     quiche::QuicheStringPiece /*retry_integrity_tag*/,
-                     quiche::QuicheStringPiece /*retry_without_tag*/) override {
-  }
+                     absl::string_view /*retry_token*/,
+                     absl::string_view /*retry_integrity_tag*/,
+                     absl::string_view /*retry_without_tag*/) override {}
   bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override;
   bool OnUnauthenticatedHeader(const QuicPacketHeader& /*header*/) override {
     return true;
@@ -151,12 +151,24 @@ class QUIC_NO_EXPORT TlsChloExtractor
   bool OnHandshakeDoneFrame(const QuicHandshakeDoneFrame& /*frame*/) override {
     return true;
   }
+  bool OnAckFrequencyFrame(const QuicAckFrequencyFrame& /*frame*/) override {
+    return true;
+  }
   void OnPacketComplete() override {}
   bool IsValidStatelessResetToken(QuicUint128 /*token*/) const override {
     return true;
   }
   void OnAuthenticatedIetfStatelessResetPacket(
       const QuicIetfStatelessResetPacket& /*packet*/) override {}
+  void OnKeyUpdate(KeyUpdateReason /*reason*/) override {}
+  void OnDecryptedFirstPacketInKeyPhase() override {}
+  std::unique_ptr<QuicDecrypter> AdvanceKeysAndCreateCurrentOneRttDecrypter()
+      override {
+    return nullptr;
+  }
+  std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() override {
+    return nullptr;
+  }
 
   // Methods from QuicStreamSequencer::StreamInterface.
   void OnDataAvailable() override;

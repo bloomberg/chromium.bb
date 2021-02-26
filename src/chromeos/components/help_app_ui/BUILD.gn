@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/test/base/js2gtest.gni")
+import("//chromeos/components/web_applications/system_apps.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
@@ -24,6 +25,9 @@ static_library("help_app_ui") {
   deps = [
     ":mojo_bindings",
     ":mojo_bindings_js",
+    "//chromeos/components/local_search_service:local_search_service_proxy",
+    "//chromeos/components/local_search_service/public/mojom:mojom",
+    "//chromeos/components/local_search_service/public/mojom:mojom_js",
     "//chromeos/components/web_applications",
     "//chromeos/constants",
     "//chromeos/resources:help_app_bundle_resources",
@@ -34,6 +38,7 @@ static_library("help_app_ui") {
     "//content/public/common",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/platform",
+    "//ui/resources:webui_generated_resources_grd_grit",
     "//ui/resources:webui_resources_grd_grit",
     "//ui/webui",
   ]
@@ -46,8 +51,10 @@ mojom("mojo_bindings") {
 group("closure_compile") {
   testonly = true
   deps = [
-    ":closure_compile_tests",
+    ":closure_compile_browsertests",
+    ":closure_compile_test_lib",
     "resources:closure_compile",
+    "resources/mock:closure_compile",
   ]
 }
 
@@ -87,18 +94,24 @@ source_set("browser_test_support") {
   ]
 }
 
-# Note we compile with reportUnknownTypes while it works, but if dependencies
-# get more complex, we should remove it and only enable in developer builds.
-js_type_check("closure_compile_tests") {
+js_type_check("closure_compile_test_lib") {
   testonly = true
-  closure_flags = default_closure_args + [
-                    "jscomp_error=strictCheckTypes",
-                    "jscomp_error=reportUnknownTypes",
-                  ]
+  closure_flags = system_app_closure_flags_strict
   deps = [
     ":test_driver_api_js",
     ":test_driver_js",
     ":test_guest_query_receiver_js",
+  ]
+}
+
+# Use relaxed flags for the browsertest files themselves. This removes null
+# checks and "could not determine type" errors which don't add a lot of value.
+js_type_check("closure_compile_browsertests") {
+  testonly = true
+  closure_flags = system_app_closure_flags
+  deps = [
+    ":test_help_app_guest_ui_browsertest_js",
+    ":test_help_app_ui_browsertest_js",
   ]
 }
 
@@ -110,7 +123,11 @@ js_library("test_driver_api_js") {
 js_library("test_guest_query_receiver_js") {
   testonly = true
   sources = [ "test/guest_query_receiver.js" ]
-  deps = [ ":test_driver_api_js" ]
+  deps = [
+    ":test_driver_api_js",
+    "//chromeos/components/help_app_ui/resources:receiver",
+    "//chromeos/components/system_apps/public/js:message_pipe",
+  ]
 }
 
 js_library("test_driver_js") {
@@ -118,6 +135,31 @@ js_library("test_driver_js") {
   sources = [ "test/driver.js" ]
   deps = [
     ":test_driver_api_js",
-    "//ui/webui/resources/js:assert",
+    "//chromeos/components/help_app_ui/resources:browser_proxy",
+    "//chromeos/components/system_apps/public/js:message_pipe",
+  ]
+}
+
+js_library("test_help_app_ui_browsertest_js") {
+  testonly = true
+  sources = [ "test/help_app_ui_browsertest.js" ]
+  externs_list =
+      [ "//chromeos/components/web_applications/js2gtest_support.externs.js" ]
+  deps = [
+    ":test_driver_js",
+    "//chromeos/components/help_app_ui/resources:browser_proxy",
+    "//chromeos/components/system_apps/public/js:message_pipe",
+  ]
+}
+
+js_library("test_help_app_guest_ui_browsertest_js") {
+  testonly = true
+  sources = [ "test/help_app_guest_ui_browsertest.js" ]
+  externs_list =
+      [ "//chromeos/components/web_applications/js2gtest_support.externs.js" ]
+  deps = [
+    ":test_driver_js",
+    "//chromeos/components/help_app_ui/resources:receiver",
+    "//chromeos/components/system_apps/public/js:message_pipe",
   ]
 }

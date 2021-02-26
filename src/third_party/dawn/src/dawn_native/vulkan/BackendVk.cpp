@@ -14,6 +14,7 @@
 
 #include "dawn_native/vulkan/BackendVk.h"
 
+#include "common/BitSetIterator.h"
 #include "common/Log.h"
 #include "common/SystemUtils.h"
 #include "dawn_native/Instance.h"
@@ -109,14 +110,16 @@ namespace dawn_native { namespace vulkan {
     MaybeError Backend::Initialize(bool useSwiftshader) {
         DAWN_TRY(LoadVulkan(useSwiftshader));
 
-        // TODO(crbug.com/dawn/406): In order to not modify the environment variables of
-        // the rest of an application embedding Dawn, we should set these only
-        // in the scope of this function. See ANGLE's ScopedVkLoaderEnvironment
+        // These environment variables need only be set while loading procs and gathering device
+        // info.
+        ScopedEnvironmentVar vkICDFilenames;
+        ScopedEnvironmentVar vkLayerPath;
+
         if (useSwiftshader) {
 #if defined(DAWN_SWIFTSHADER_VK_ICD_JSON)
             std::string fullSwiftshaderICDPath =
                 GetExecutableDirectory() + DAWN_SWIFTSHADER_VK_ICD_JSON;
-            if (!SetEnvironmentVar("VK_ICD_FILENAMES", fullSwiftshaderICDPath.c_str())) {
+            if (!vkICDFilenames.Set("VK_ICD_FILENAMES", fullSwiftshaderICDPath.c_str())) {
                 return DAWN_INTERNAL_ERROR("Couldn't set VK_ICD_FILENAMES");
             }
 #else
@@ -128,7 +131,7 @@ namespace dawn_native { namespace vulkan {
         if (GetInstance()->IsBackendValidationEnabled()) {
 #if defined(DAWN_ENABLE_VULKAN_VALIDATION_LAYERS)
             std::string vkDataDir = GetExecutableDirectory() + DAWN_VK_DATA_DIR;
-            if (!SetEnvironmentVar("VK_LAYER_PATH", vkDataDir.c_str())) {
+            if (!vkLayerPath.Set("VK_LAYER_PATH", vkDataDir.c_str())) {
                 return DAWN_INTERNAL_ERROR("Couldn't set VK_LAYER_PATH");
             }
 #else
@@ -147,7 +150,7 @@ namespace dawn_native { namespace vulkan {
 
         DAWN_TRY(mFunctions.LoadInstanceProcs(mInstance, mGlobalInfo));
 
-        if (usedGlobalKnobs.debugReport) {
+        if (usedGlobalKnobs.HasExt(InstanceExt::DebugReport)) {
             DAWN_TRY(RegisterDebugReport());
         }
 
@@ -174,9 +177,7 @@ namespace dawn_native { namespace vulkan {
 
     ResultOrError<VulkanGlobalKnobs> Backend::CreateInstance() {
         VulkanGlobalKnobs usedKnobs = {};
-
-        std::vector<const char*> layersToRequest;
-        std::vector<const char*> extensionsToRequest;
+        std::vector<const char*> layerNames;
 
         // vktrace works by instering a layer, but we hide it behind a macro due to the vktrace
         // layer crashes when used without vktrace server started. See this vktrace issue:
@@ -185,7 +186,7 @@ namespace dawn_native { namespace vulkan {
         // by other layers.
 #if defined(DAWN_USE_VKTRACE)
         if (mGlobalInfo.vktrace) {
-            layersToRequest.push_back(kLayerNameLunargVKTrace);
+            layerNames.push_back(kLayerNameLunargVKTrace);
             usedKnobs.vktrace = true;
         }
 #endif
@@ -193,76 +194,33 @@ namespace dawn_native { namespace vulkan {
         // it unless we are debugging in RenderDoc so we hide it behind a macro.
 #if defined(DAWN_USE_RENDERDOC)
         if (mGlobalInfo.renderDocCapture) {
-            layersToRequest.push_back(kLayerNameRenderDocCapture);
+            layerNames.push_back(kLayerNameRenderDocCapture);
             usedKnobs.renderDocCapture = true;
         }
 #endif
 
         if (GetInstance()->IsBackendValidationEnabled()) {
             if (mGlobalInfo.validation) {
-                layersToRequest.push_back(kLayerNameKhronosValidation);
+                layerNames.push_back(kLayerNameKhronosValidation);
                 usedKnobs.validation = true;
             }
-            if (mGlobalInfo.debugReport) {
-                extensionsToRequest.push_back(kExtensionNameExtDebugReport);
-                usedKnobs.debugReport = true;
-            }
         }
 
-        // Always request all extensions used to create VkSurfaceKHR objects so that they are
-        // always available for embedders looking to create VkSurfaceKHR on our VkInstance.
-        if (mGlobalInfo.fuchsiaImagePipeSwapchain) {
-            layersToRequest.push_back(kLayerNameFuchsiaImagePipeSwapchain);
-            usedKnobs.fuchsiaImagePipeSwapchain = true;
-        }
-        if (mGlobalInfo.metalSurface) {
-            extensionsToRequest.push_back(kExtensionNameExtMetalSurface);
-            usedKnobs.metalSurface = true;
-        }
-        if (mGlobalInfo.surface) {
-            extensionsToRequest.push_back(kExtensionNameKhrSurface);
-            usedKnobs.surface = true;
-        }
-        if (mGlobalInfo.waylandSurface) {
-            extensionsToRequest.push_back(kExtensionNameKhrWaylandSurface);
-            usedKnobs.waylandSurface = true;
-        }
-        if (mGlobalInfo.win32Surface) {
-            extensionsToRequest.push_back(kExtensionNameKhrWin32Surface);
-            usedKnobs.win32Surface = true;
-        }
-        if (mGlobalInfo.xcbSurface) {
-            extensionsToRequest.push_back(kExtensionNameKhrXcbSurface);
-            usedKnobs.xcbSurface = true;
-        }
-        if (mGlobalInfo.xlibSurface) {
-            extensionsToRequest.push_back(kExtensionNameKhrXlibSurface);
-            usedKnobs.xlibSurface = true;
-        }
-        if (mGlobalInfo.fuchsiaImagePipeSurface) {
-            extensionsToRequest.push_back(kExtensionNameFuchsiaImagePipeSurface);
-            usedKnobs.fuchsiaImagePipeSurface = true;
-        }
+        // Available and known instance extensions default to being requested, but some special
+        // cases are removed.
+        InstanceExtSet extensionsToRequest = mGlobalInfo.extensions;
 
-        // Mark the promoted extensions as present if the core version in which they were promoted
-        // is used. This allows having a single boolean that checks if the functionality from that
-        // extension is available (instead of checking extension || coreVersion).
-        if (mGlobalInfo.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
-            usedKnobs.getPhysicalDeviceProperties2 = true;
-            usedKnobs.externalMemoryCapabilities = true;
-            usedKnobs.externalSemaphoreCapabilities = true;
-        } else {
-            if (mGlobalInfo.externalMemoryCapabilities) {
-                extensionsToRequest.push_back(kExtensionNameKhrExternalMemoryCapabilities);
-                usedKnobs.externalMemoryCapabilities = true;
-            }
-            if (mGlobalInfo.externalSemaphoreCapabilities) {
-                extensionsToRequest.push_back(kExtensionNameKhrExternalSemaphoreCapabilities);
-                usedKnobs.externalSemaphoreCapabilities = true;
-            }
-            if (mGlobalInfo.getPhysicalDeviceProperties2) {
-                extensionsToRequest.push_back(kExtensionNameKhrGetPhysicalDeviceProperties2);
-                usedKnobs.getPhysicalDeviceProperties2 = true;
+        if (!GetInstance()->IsBackendValidationEnabled()) {
+            extensionsToRequest.Set(InstanceExt::DebugReport, false);
+        }
+        usedKnobs.extensions = extensionsToRequest;
+
+        std::vector<const char*> extensionNames;
+        for (uint32_t ext : IterateBitSet(extensionsToRequest.extensionBitSet)) {
+            const InstanceExtInfo& info = GetInstanceExtInfo(static_cast<InstanceExt>(ext));
+
+            if (info.versionPromoted > mGlobalInfo.apiVersion) {
+                extensionNames.push_back(info.name);
             }
         }
 
@@ -273,17 +231,27 @@ namespace dawn_native { namespace vulkan {
         appInfo.applicationVersion = 0;
         appInfo.pEngineName = nullptr;
         appInfo.engineVersion = 0;
-        appInfo.apiVersion = mGlobalInfo.apiVersion;
+        // Vulkan 1.0 implementations were required to return VK_ERROR_INCOMPATIBLE_DRIVER if
+        // apiVersion was larger than 1.0. Meanwhile, as long as the instance supports at least
+        // Vulkan 1.1, an application can use different versions of Vulkan with an instance than
+        // it does with a device or physical device. So we should set apiVersion to Vulkan 1.0
+        // if the instance only supports Vulkan 1.0. Otherwise we set apiVersion to Vulkan 1.2,
+        // treat 1.2 as the highest API version dawn targets.
+        if (mGlobalInfo.apiVersion == VK_MAKE_VERSION(1, 0, 0)) {
+            appInfo.apiVersion = mGlobalInfo.apiVersion;
+        } else {
+            appInfo.apiVersion = VK_MAKE_VERSION(1, 2, 0);
+        }
 
         VkInstanceCreateInfo createInfo;
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
         createInfo.pApplicationInfo = &appInfo;
-        createInfo.enabledLayerCount = static_cast<uint32_t>(layersToRequest.size());
-        createInfo.ppEnabledLayerNames = layersToRequest.data();
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensionsToRequest.size());
-        createInfo.ppEnabledExtensionNames = extensionsToRequest.data();
+        createInfo.enabledLayerCount = static_cast<uint32_t>(layerNames.size());
+        createInfo.ppEnabledLayerNames = layerNames.data();
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensionNames.size());
+        createInfo.ppEnabledExtensionNames = extensionNames.data();
 
         DAWN_TRY(CheckVkSuccess(mFunctions.CreateInstance(&createInfo, nullptr, &mInstance),
                                 "vkCreateInstance"));

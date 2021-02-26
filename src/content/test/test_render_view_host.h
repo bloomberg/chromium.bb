@@ -17,9 +17,9 @@
 #include "components/viz/host/host_frame_sink_client.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/public/common/web_preferences.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/layout.h"
 #include "ui/base/page_transition_types.h"
@@ -47,7 +47,6 @@ namespace content {
 class SiteInstance;
 class TestRenderFrameHost;
 class TestWebContents;
-struct FrameReplicationState;
 
 // Utility function to initialize FrameHostMsg_DidCommitProvisionalLoad_Params
 // with given parameters.
@@ -81,11 +80,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void WasUnOccluded() override;
   void WasOccluded() override;
   gfx::Rect GetViewBounds() override;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override {}
   void SpeakSelection() override;
-#endif  // defined(OS_MACOSX)
+  void SetWindowFrameInScreen(const gfx::Rect& rect) override;
+#endif  // defined(OS_MAC)
 
   // Advances the fallback surface to the first surface after navigation. This
   // ensures that stale surfaces are not presented to the user for an indefinite
@@ -93,15 +93,16 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void ResetFallbackToFirstNavigationSurface() override {}
 
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
-  void EnsureSurfaceSynchronizedForWebTest() override {}
+  void EnsureSurfaceSynchronizedForWebTest() override;
 
   // RenderWidgetHostViewBase:
+  uint32_t GetCaptureSequenceNumber() const override;
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
                    const gfx::Rect& bounds) override {}
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override {}
   void Focus() override {}
   void SetIsLoading(bool is_loading) override {}
-  void UpdateCursor(const WebCursor& cursor) override {}
+  void UpdateCursor(const WebCursor& cursor) override;
   void RenderProcessGone() override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override {}
@@ -110,8 +111,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   blink::mojom::PointerLockResult ChangeMouseLock(bool) override;
   void UnlockMouse() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
-  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
-      const override;
+  const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
@@ -123,9 +123,14 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
 
+  const WebCursor& last_cursor() const { return last_cursor_; }
+
  protected:
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;
+  base::Optional<DisplayFeature> GetDisplayFeature() override;
+  void SetDisplayFeatureForTesting(
+      const DisplayFeature* display_feature) override;
 
   viz::FrameSinkId frame_sink_id_;
 
@@ -133,10 +138,18 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   bool is_showing_;
   bool is_occluded_;
   ui::DummyTextInputClient text_input_client_;
+  WebCursor last_cursor_;
+
+  // Latest capture sequence number which is incremented when the caller
+  // requests surfaces be synchronized via
+  // EnsureSurfaceSynchronizedForWebTest().
+  uint32_t latest_capture_sequence_number_ = 0u;
 
 #if defined(USE_AURA)
   std::unique_ptr<aura::Window> window_;
 #endif
+
+  base::Optional<DisplayFeature> display_feature_;
 };
 
 // TestRenderViewHost ----------------------------------------------------------
@@ -189,42 +202,35 @@ class TestRenderViewHost
   // RenderViewHostImpl, see below.
   void SimulateWasHidden() override;
   void SimulateWasShown() override;
-  WebPreferences TestComputeWebPreferences() override;
+  blink::web_pref::WebPreferences TestComputeWebPreferences() override;
 
   void TestOnUpdateStateWithFile(const base::FilePath& file_path);
 
-  void TestOnStartDragging(const DropData& drop_data);
+  void TestStartDragging(const DropData& drop_data, SkBitmap bitmap = {});
 
   // If set, *delete_counter is incremented when this object destructs.
   void set_delete_counter(int* delete_counter) {
     delete_counter_ = delete_counter;
   }
 
-  // If set, *webkit_preferences_changed_counter is incremented when
-  // OnWebkitPreferencesChanged() is called.
-  void set_webkit_preferences_changed_counter(int* counter) {
-    webkit_preferences_changed_counter_ = counter;
-  }
-
   // The opener frame route id passed to CreateRenderView().
-  int opener_frame_route_id() const { return opener_frame_route_id_; }
+  const base::Optional<base::UnguessableToken>& opener_frame_token() const {
+    return opener_frame_token_;
+  }
 
   // RenderWidgetHost overrides (same value, but in the Mock* type)
   MockRenderProcessHost* GetProcess() override;
 
-  bool CreateTestRenderView(const base::string16& frame_name,
-                            int opener_frame_route_id,
-                            int proxy_route_id,
-                            bool window_was_created_with_opener) override;
+  bool CreateTestRenderView(
+      const base::Optional<base::UnguessableToken>& opener_frame_token,
+      int proxy_route_id,
+      bool window_was_created_with_opener) override;
 
   // RenderViewHost:
-  bool CreateRenderView(int opener_frame_route_id,
-                        int proxy_route_id,
-                        const base::UnguessableToken& frame_token,
-                        const base::UnguessableToken& devtools_frame_token,
-                        const FrameReplicationState& replicated_frame_state,
-                        bool window_was_created_with_opener) override;
-  void OnWebkitPreferencesChanged() override;
+  bool CreateRenderView(
+      const base::Optional<base::UnguessableToken>& opener_frame_token,
+      int proxy_route_id,
+      bool window_was_created_with_opener) override;
 
   // RenderViewHostImpl:
   bool IsTestRenderViewHost() const override;
@@ -251,11 +257,8 @@ class TestRenderViewHost
   // See set_delete_counter() above. May be NULL.
   int* delete_counter_;
 
-  // See set_webkit_preferences_changed_counter() above. May be NULL.
-  int* webkit_preferences_changed_counter_;
-
   // See opener_frame_route_id() above.
-  int opener_frame_route_id_;
+  base::Optional<base::UnguessableToken> opener_frame_token_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };

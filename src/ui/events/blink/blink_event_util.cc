@@ -26,7 +26,6 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/angle_conversions.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/transform.h"
 
@@ -323,8 +322,8 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
   gesture.SetPositionInWidget(location);
   gesture.SetPositionInScreen(raw_location);
 
-  gesture.is_source_touch_event_set_non_blocking =
-      details.is_source_touch_event_set_non_blocking();
+  gesture.is_source_touch_event_set_blocking =
+      details.is_source_touch_event_set_blocking();
   gesture.primary_pointer_type =
       ToWebPointerType(details.primary_pointer_type());
   gesture.unique_touch_event_id = unique_touch_event_id;
@@ -707,17 +706,6 @@ blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(DomCode code) {
   return static_cast<blink::WebInputEvent::Modifiers>(0);
 }
 
-bool IsGestureScroll(WebInputEvent::Type type) {
-  switch (type) {
-    case blink::WebGestureEvent::Type::kGestureScrollBegin:
-    case blink::WebGestureEvent::Type::kGestureScrollUpdate:
-    case blink::WebGestureEvent::Type::kGestureScrollEnd:
-      return true;
-    default:
-      return false;
-  }
-}
-
 bool IsContinuousGestureEvent(WebInputEvent::Type type) {
   switch (type) {
     case blink::WebGestureEvent::Type::kGestureScrollUpdate:
@@ -767,16 +755,6 @@ blink::WebGestureEvent ScrollBeginFromScrollUpdate(
   scroll_begin.data.scroll_begin.scrollable_area_element_id = 0;
 
   return scroll_begin;
-}
-
-gfx::PointF PositionInWidgetFromInputEvent(const blink::WebInputEvent& event) {
-  if (WebInputEvent::IsMouseEventType(event.GetType())) {
-    return static_cast<const WebMouseEvent&>(event).PositionInWidget();
-  } else if (WebInputEvent::IsGestureEventType(event.GetType())) {
-    return static_cast<const WebGestureEvent&>(event).PositionInWidget();
-  } else {
-    return gfx::PointF(0, 0);
-  }
 }
 
 #if defined(OS_ANDROID)

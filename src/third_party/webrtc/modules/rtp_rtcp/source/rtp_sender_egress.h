@@ -13,19 +13,25 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "absl/types/optional.h"
 #include "api/call/transport.h"
 #include "api/rtc_event_log/rtc_event_log.h"
+#include "api/task_queue/task_queue_base.h"
 #include "api/units/data_rate.h"
-#include "modules/rtp_rtcp/include/rtp_rtcp.h"
+#include "modules/remote_bitrate_estimator/test/bwe_test_logging.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtp_packet_history.h"
 #include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
+#include "modules/rtp_rtcp/source/rtp_rtcp_interface.h"
 #include "modules/rtp_rtcp/source/rtp_sequence_number_map.h"
-#include "rtc_base/critical_section.h"
 #include "rtc_base/rate_statistics.h"
+#include "rtc_base/synchronization/mutex.h"
+#include "rtc_base/synchronization/sequence_checker.h"
+#include "rtc_base/task_utils/pending_task_safety_flag.h"
+#include "rtc_base/task_utils/repeating_task.h"
 #include "rtc_base/thread_annotations.h"
 
 namespace webrtc {
@@ -36,20 +42,23 @@ class RtpSenderEgress {
   // without passing through an actual paced sender.
   class NonPacedPacketSender : public RtpPacketSender {
    public:
-    explicit NonPacedPacketSender(RtpSenderEgress* sender);
+    NonPacedPacketSender(RtpSenderEgress* sender,
+                         SequenceNumberAssigner* sequence_number_assigner);
     virtual ~NonPacedPacketSender();
 
     void EnqueuePackets(
         std::vector<std::unique_ptr<RtpPacketToSend>> packets) override;
 
    private:
+    void PrepareForSend(RtpPacketToSend* packet);
     uint16_t transport_sequence_number_;
     RtpSenderEgress* const sender_;
+    SequenceNumberAssigner* sequence_number_assigner_;
   };
 
-  RtpSenderEgress(const RtpRtcp::Configuration& config,
+  RtpSenderEgress(const RtpRtcpInterface::Configuration& config,
                   RtpPacketHistory* packet_history);
-  ~RtpSenderEgress() = default;
+  ~RtpSenderEgress();
 
   void SendPacket(RtpPacketToSend* packet, const PacedPacketInfo& pacing_info)
       RTC_LOCKS_EXCLUDED(lock_);
@@ -57,7 +66,6 @@ class RtpSenderEgress {
   absl::optional<uint32_t> RtxSsrc() const { return rtx_ssrc_; }
   absl::optional<uint32_t> FlexFecSsrc() const { return flexfec_ssrc_; }
 
-  void ProcessBitrateAndNotifyObservers() RTC_LOCKS_EXCLUDED(lock_);
   RtpSendRates GetSendRates() const RTC_LOCKS_EXCLUDED(lock_);
   void GetDataCounters(StreamDataCounters* rtp_stats,
                        StreamDataCounters* rtx_stats) const
@@ -78,13 +86,18 @@ class RtpSenderEgress {
       rtc::ArrayView<const uint16_t> sequence_numbers) const
       RTC_LOCKS_EXCLUDED(lock_);
 
+  void SetFecProtectionParameters(const FecProtectionParams& delta_params,
+                                  const FecProtectionParams& key_params);
+  std::vector<std::unique_ptr<RtpPacketToSend>> FetchFecPackets();
+
  private:
   // Maps capture time in milliseconds to send-side delay in milliseconds.
   // Send-side delay is the difference between transmission time and capture
   // time.
   typedef std::map<int64_t, int> SendDelayMap;
 
-  RtpSendRates GetSendRatesLocked() const RTC_EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  RtpSendRates GetSendRatesLocked(int64_t now_ms) const
+      RTC_EXCLUSIVE_LOCKS_REQUIRED(lock_);
   bool HasCorrectSsrc(const RtpPacketToSend& packet) const;
   void AddPacketToTransportFeedback(uint16_t packet_id,
                                     const RtpPacketToSend& packet,
@@ -100,9 +113,21 @@ class RtpSenderEgress {
   bool SendPacketToNetwork(const RtpPacketToSend& packet,
                            const PacketOptions& options,
                            const PacedPacketInfo& pacing_info);
-  void UpdateRtpStats(const RtpPacketToSend& packet)
-      RTC_EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
+  void UpdateRtpStats(int64_t now_ms,
+                      uint32_t packet_ssrc,
+                      RtpPacketMediaType packet_type,
+                      RtpPacketCounter counter,
+                      size_t packet_size);
+#if BWE_TEST_LOGGING_COMPILE_TIME_ENABLE
+  void BweTestLoggingPlot(int64_t now_ms, uint32_t packet_ssrc);
+#endif
+
+  // Called on a timer, once a second, on the worker_queue_.
+  void PeriodicUpdate();
+
+  TaskQueueBase* const worker_queue_;
+  SequenceChecker pacer_checker_;
   const uint32_t ssrc_;
   const absl::optional<uint32_t> rtx_ssrc_;
   const absl::optional<uint32_t> flexfec_ssrc_;
@@ -112,8 +137,11 @@ class RtpSenderEgress {
   RtpPacketHistory* const packet_history_;
   Transport* const transport_;
   RtcEventLog* const event_log_;
+#if BWE_TEST_LOGGING_COMPILE_TIME_ENABLE
   const bool is_audio_;
+#endif
   const bool need_rtp_packet_infos_;
+  VideoFecGenerator* const fec_generator_ RTC_GUARDED_BY(pacer_checker_);
 
   TransportFeedbackObserver* const transport_feedback_observer_;
   SendSideDelayObserver* const send_side_delay_observer_;
@@ -121,10 +149,10 @@ class RtpSenderEgress {
   StreamDataCountersCallback* const rtp_stats_callback_;
   BitrateStatisticsObserver* const bitrate_callback_;
 
-  rtc::CriticalSection lock_;
-  bool media_has_been_sent_ RTC_GUARDED_BY(lock_);
+  mutable Mutex lock_;
+  bool media_has_been_sent_ RTC_GUARDED_BY(pacer_checker_);
   bool force_part_of_allocation_ RTC_GUARDED_BY(lock_);
-  uint32_t timestamp_offset_ RTC_GUARDED_BY(lock_);
+  uint32_t timestamp_offset_ RTC_GUARDED_BY(worker_queue_);
 
   SendDelayMap send_delays_ RTC_GUARDED_BY(lock_);
   SendDelayMap::const_iterator max_delay_it_ RTC_GUARDED_BY(lock_);
@@ -135,13 +163,17 @@ class RtpSenderEgress {
   StreamDataCounters rtx_rtp_stats_ RTC_GUARDED_BY(lock_);
   // One element per value in RtpPacketMediaType, with index matching value.
   std::vector<RateStatistics> send_rates_ RTC_GUARDED_BY(lock_);
+  absl::optional<std::pair<FecProtectionParams, FecProtectionParams>>
+      pending_fec_params_ RTC_GUARDED_BY(lock_);
 
   // Maps sent packets' sequence numbers to a tuple consisting of:
   // 1. The timestamp, without the randomizing offset mandated by the RFC.
   // 2. Whether the packet was the first in its frame.
   // 3. Whether the packet was the last in its frame.
   const std::unique_ptr<RtpSequenceNumberMap> rtp_sequence_number_map_
-      RTC_GUARDED_BY(lock_);
+      RTC_GUARDED_BY(worker_queue_);
+  RepeatingTaskHandle update_task_ RTC_GUARDED_BY(worker_queue_);
+  ScopedTaskSafety task_safety_;
 };
 
 }  // namespace webrtc

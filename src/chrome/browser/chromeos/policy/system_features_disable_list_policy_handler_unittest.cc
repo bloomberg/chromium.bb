@@ -30,11 +30,10 @@ TEST_F(SystemFeaturesDisableListPolicyHandlerTest, ApplyListTest) {
   PrefValueMap prefs;
   base::Value* value = nullptr;
   SystemFeaturesDisableListPolicyHandler policy_handler;
-  std::unique_ptr<base::Value> features_list =
-      std::make_unique<base::Value>(base::Value::Type::LIST);
+  base::Value features_list(base::Value::Type::LIST);
 
-  features_list->Append("camera");
-  features_list->Append("browser_settings");
+  features_list.Append("camera");
+  features_list.Append("browser_settings");
 
   policy_map.Set(policy::key::kSystemFeaturesDisableList,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
@@ -63,13 +62,17 @@ TEST_F(SystemFeaturesDisableListPolicyHandlerTest, ApplyListTest) {
                                       SystemFeature::OS_SETTINGS,
                                       /*amount*/ 0);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
+                                      SystemFeature::SCANNING,
+                                      /*amount*/ 0);
+  histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
                                       SystemFeature::UNKNOWN_SYSTEM_FEATURE,
                                       /*amount*/ 0);
 
-  features_list = std::make_unique<base::Value>(base::Value::Type::LIST);
-  features_list->Append("camera");
-  features_list->Append("os_settings");
-  features_list->Append("gallery");
+  features_list.ClearList();
+  features_list.Append("camera");
+  features_list.Append("os_settings");
+  features_list.Append("scanning");
+  features_list.Append("gallery");
 
   policy_map.Set(policy::key::kSystemFeaturesDisableList,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
@@ -83,12 +86,13 @@ TEST_F(SystemFeaturesDisableListPolicyHandlerTest, ApplyListTest) {
   expected_list.ClearList();
   expected_list.Append(SystemFeature::CAMERA);
   expected_list.Append(SystemFeature::OS_SETTINGS);
+  expected_list.Append(SystemFeature::SCANNING);
   expected_list.Append(SystemFeature::UNKNOWN_SYSTEM_FEATURE);
 
   EXPECT_TRUE(prefs.GetValue(policy_prefs::kSystemFeaturesDisableList, &value));
   EXPECT_EQ(expected_list, *value);
 
-  histogram_tester_.ExpectTotalCount(kSystemFeaturesDisableListHistogram, 4);
+  histogram_tester_.ExpectTotalCount(kSystemFeaturesDisableListHistogram, 5);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
                                       SystemFeature::CAMERA,
                                       /*amount*/ 1);
@@ -97,6 +101,9 @@ TEST_F(SystemFeaturesDisableListPolicyHandlerTest, ApplyListTest) {
                                       /*amount*/ 1);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
                                       SystemFeature::OS_SETTINGS,
+                                      /*amount*/ 1);
+  histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
+                                      SystemFeature::SCANNING,
                                       /*amount*/ 1);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
                                       SystemFeature::UNKNOWN_SYSTEM_FEATURE,

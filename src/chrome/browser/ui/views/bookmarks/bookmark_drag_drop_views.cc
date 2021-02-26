@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -19,6 +19,7 @@
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -193,7 +194,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
   void Start(const BookmarkNode* drag_node) {
     drag_node_id_ = drag_node->id();
 
-    gfx::ImageSkia icon;
+    ui::ImageModel icon;
     if (drag_node->is_url()) {
       const gfx::Image& image = model_->GetFavicon(drag_node);
       // If favicon is not loaded, the above call will initiate loading, and
@@ -204,7 +205,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
       if (!drag_node->is_favicon_loaded())
         return;
 
-      icon = image.AsImageSkia();
+      icon = ui::ImageModel::FromImage(image);
     } else {
       icon = GetBookmarkFolderIcon(
           ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
@@ -215,14 +216,14 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
   }
 
   void OnBookmarkIconLoaded(const BookmarkNode* drag_node,
-                            const gfx::ImageSkia& icon) {
+                            const ui::ImageModel& icon) {
     gfx::ImageSkia drag_image(
         std::make_unique<BookmarkDragImageSource>(
             drag_node->GetTitle(),
-            icon.isNull()
+            icon.IsEmpty()
                 ? *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                       IDR_DEFAULT_FAVICON)
-                : icon,
+                : *icon.GetImage().ToImageSkia(),
             count_),
         BookmarkDragImageSource::kBookmarkDragImageSize);
 
@@ -251,10 +252,11 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
     if (node->id() != drag_node_id_)
       return;
 
-    const gfx::Image& image = model_->GetFavicon(node);
+    const ui::ImageModel& image =
+        ui::ImageModel::FromImage(model_->GetFavicon(node));
     DCHECK(node->is_favicon_loaded());
 
-    OnBookmarkIconLoaded(node, image.AsImageSkia());
+    OnBookmarkIconLoaded(node, image);
   }
 
   BookmarkModel* model_;
@@ -262,7 +264,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
   int64_t drag_node_id_ = -1;
   int count_;
   gfx::NativeView native_view_;
-  ui::DragDropTypes::DragEventSource source_;
+  ui::mojom::DragEventSource source_;
   const gfx::Point start_point_;
   int operation_;
 
@@ -280,11 +282,11 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
 
 void DoDragImpl(std::unique_ptr<ui::OSExchangeData> drag_data,
                 gfx::NativeView native_view,
-                ui::DragDropTypes::DragEventSource source,
+                ui::mojom::DragEventSource source,
                 gfx::Point point,
                 int operation) {
   // Allow nested run loop so we get DnD events as we drag this around.
-  base::MessageLoopCurrent::ScopedNestableTaskAllower nestable_task_allower;
+  base::CurrentThread::ScopedNestableTaskAllower nestable_task_allower;
 
   views::Widget* widget = views::Widget::GetWidgetForNativeView(native_view);
   if (widget) {

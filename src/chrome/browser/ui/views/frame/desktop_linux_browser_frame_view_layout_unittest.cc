@@ -52,6 +52,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   bool IsRegularOrGuestSession() const override { return true; }
   bool IsMaximized() const override { return false; }
   bool IsMinimized() const override { return false; }
+  bool IsFullscreen() const override { return false; }
   bool IsTabStripVisible() const override { return true; }
   int GetTabStripHeight() const override {
     return GetLayoutConstant(TAB_HEIGHT);
@@ -151,10 +152,9 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
 
  protected:
   views::ImageButton* InitWindowCaptionButton(ViewID view_id) {
-    views::ImageButton* button = new views::ImageButton(nullptr);
+    auto button = std::make_unique<views::ImageButton>();
     button->SetID(view_id);
-    root_view_->AddChildView(button);
-    return button;
+    return root_view_->AddChildView(std::move(button));
   }
 
   void ResetNativeNavButtonImagesFromButtonProvider() {

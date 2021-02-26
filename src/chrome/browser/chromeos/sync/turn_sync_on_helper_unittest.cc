@@ -50,7 +50,7 @@ class TurnSyncOnHelperTest : public BrowserWithTestWindowTest {
  public:
   TurnSyncOnHelperTest() {
     feature_list_.InitWithFeatures({chromeos::features::kSplitSettingsSync,
-                                    chromeos::features::kSplitSyncConsent},
+                                    chromeos::features::kUseBrowserSyncConsent},
                                    {});
   }
   ~TurnSyncOnHelperTest() override = default;
@@ -196,9 +196,7 @@ TEST_F(TurnSyncOnHelperTest, UrlKeyedMetricsConsent) {
   // User is not consented by default.
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper> consent_helper =
       UrlKeyedDataCollectionConsentHelper::
-          NewAnonymizedDataCollectionConsentHelper(
-              profile()->GetPrefs(),
-              ProfileSyncServiceFactory::GetForProfile(profile()));
+          NewAnonymizedDataCollectionConsentHelper(profile()->GetPrefs());
   ASSERT_FALSE(consent_helper->IsEnabled());
 
   // Simulate user consenting to sync.

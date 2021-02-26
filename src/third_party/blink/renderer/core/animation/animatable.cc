@@ -56,12 +56,17 @@ UnrestrictedDoubleOrKeyframeEffectOptions CoerceEffectOptions(
 
 }  // namespace
 
+// https://drafts.csswg.org/web-animations/#dom-animatable-animate
 Animation* Animatable::animate(
     ScriptState* script_state,
     const ScriptValue& keyframes,
     const UnrestrictedDoubleOrKeyframeAnimationOptions& options,
     ExceptionState& exception_state) {
+  if (!script_state->ContextIsValid())
+    return nullptr;
   Element* element = GetAnimationTarget();
+  if (!element->GetExecutionContext())
+    return nullptr;
   KeyframeEffect* effect =
       KeyframeEffect::Create(script_state, element, keyframes,
                              CoerceEffectOptions(options), exception_state);
@@ -70,16 +75,33 @@ Animation* Animatable::animate(
 
   ReportFeaturePolicyViolationsIfNecessary(*element->GetExecutionContext(),
                                            *effect->Model());
-  Animation* animation = element->GetDocument().Timeline().Play(effect);
-  if (options.IsKeyframeAnimationOptions())
-    animation->setId(options.GetAsKeyframeAnimationOptions()->id());
+  if (!options.IsKeyframeAnimationOptions())
+    return element->GetDocument().Timeline().Play(effect);
+
+  Animation* animation;
+  const KeyframeAnimationOptions* options_dict =
+      options.GetAsKeyframeAnimationOptions();
+  if (!options_dict->hasTimeline()) {
+    animation = element->GetDocument().Timeline().Play(effect);
+  } else if (AnimationTimeline* timeline = options_dict->timeline()) {
+    animation = timeline->Play(effect);
+  } else {
+    animation = Animation::Create(element->GetExecutionContext(), effect,
+                                  nullptr, exception_state);
+  }
+
+  animation->setId(options_dict->id());
   return animation;
 }
 
 Animation* Animatable::animate(ScriptState* script_state,
                                const ScriptValue& keyframes,
                                ExceptionState& exception_state) {
+  if (!script_state->ContextIsValid())
+    return nullptr;
   Element* element = GetAnimationTarget();
+  if (!element->GetExecutionContext())
+    return nullptr;
   KeyframeEffect* effect =
       KeyframeEffect::Create(script_state, element, keyframes, exception_state);
   if (exception_state.HadException())

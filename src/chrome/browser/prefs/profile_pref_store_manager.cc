@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -54,7 +53,7 @@ ProfilePrefStoreManager::ProfilePrefStoreManager(
       seed_(seed),
       legacy_device_id_(legacy_device_id) {}
 
-ProfilePrefStoreManager::~ProfilePrefStoreManager() {}
+ProfilePrefStoreManager::~ProfilePrefStoreManager() = default;
 
 // static
 void ProfilePrefStoreManager::RegisterProfilePrefs(

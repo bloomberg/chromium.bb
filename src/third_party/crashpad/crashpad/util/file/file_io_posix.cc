@@ -26,6 +26,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -152,7 +153,7 @@ FileHandle LoggingOpenFileForWrite(const base::FilePath& path,
   return fd;
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 FileHandle LoggingOpenMemoryFileForReadAndWrite(const base::FilePath& name) {
   DCHECK(name.value().find('/') == std::string::npos);
 

@@ -5,11 +5,11 @@
 #include "ash/wm/workspace/multi_window_resize_controller.h"
 
 #include "ash/frame/non_client_frame_view_ash.h"
-#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -20,6 +20,7 @@
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -29,6 +30,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+using chromeos::kResizeInsideBoundsSize;
+using chromeos::kResizeOutsideBoundsSize;
+using chromeos::WindowStateType;
+
 namespace ash {
 
 namespace {
@@ -37,15 +42,12 @@ namespace {
 // which is actually used in Ash.
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
-  TestWidgetDelegate() = default;
+  TestWidgetDelegate() {}
   ~TestWidgetDelegate() override = default;
 
-  // views::WidgetDelegateView:
-  bool CanResize() const override { return true; }
-
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new NonClientFrameViewAsh(widget);
+    return std::make_unique<NonClientFrameViewAsh>(widget);
   }
 
  private:
@@ -140,6 +142,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   std::unique_ptr<views::Widget> w1(new views::Widget);
   views::Widget::InitParams params1;
   params1.delegate = new TestWidgetDelegate;
+  params1.delegate->SetCanResize(true);
   params1.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params1.bounds = gfx::Rect(100, 200);
   params1.context = GetContext();
@@ -149,6 +152,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   std::unique_ptr<views::Widget> w2(new views::Widget);
   views::Widget::InitParams params2;
   params2.delegate = new TestWidgetDelegate;
+  params2.delegate->SetCanResize(true);
   params2.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params2.bounds = gfx::Rect(100, 0, 100, 100);
   params2.context = GetContext();
@@ -158,6 +162,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   std::unique_ptr<views::Widget> w3(new views::Widget);
   views::Widget::InitParams params3;
   params3.delegate = new TestWidgetDelegate;
+  params3.delegate->SetCanResize(true);
   params3.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params3.bounds = gfx::Rect(100, 100, 100, 100);
   params3.context = GetContext();
@@ -648,6 +653,25 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   EXPECT_EQ(HTRIGHT, window_state_delegate1->GetComponentAndReset());
   EXPECT_EQ(gfx::PointF(300, resize_widget_center.y()),
             window_state_delegate1->GetLocationAndReset());
+}
+
+TEST_F(MultiWindowResizeControllerTest, HiddenInOverview) {
+  // Create two windows side by side, but not overlapping horizontally. Note
+  // that when creating a window, the window is slightly larger than the given
+  // bounds so position |window2| accordingly.
+  auto window1 = CreateAppWindow(gfx::Rect(0, 0, 100, 100));
+  auto window2 = CreateAppWindow(gfx::Rect(104, 0, 100, 100));
+
+  // Move the mouse to the middle of the two windows. The multi window resizer
+  // should appear.
+  GetEventGenerator()->MoveMouseTo(gfx::Point(104, 50));
+  EXPECT_TRUE(HasPendingShow());
+  EXPECT_TRUE(IsShowing());
+
+  // Tests that after starting overview, the widget is hidden.
+  Shell::Get()->overview_controller()->StartOverview();
+  EXPECT_FALSE(HasPendingShow());
+  EXPECT_FALSE(IsShowing());
 }
 
 }  // namespace ash

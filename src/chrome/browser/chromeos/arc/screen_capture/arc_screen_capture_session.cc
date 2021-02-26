@@ -23,14 +23,12 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_native_pixmap.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/compositor/dip_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -85,11 +83,12 @@ struct ArcScreenCaptureSession::DesktopTexture {
 
 // static
 mojo::PendingRemote<mojom::ScreenCaptureSession>
-ArcScreenCaptureSession::Create(mojom::ScreenCaptureSessionNotifierPtr notifier,
-                                const std::string& display_name,
-                                content::DesktopMediaID desktop_id,
-                                const gfx::Size& size,
-                                bool enable_notification) {
+ArcScreenCaptureSession::Create(
+    mojo::PendingRemote<mojom::ScreenCaptureSessionNotifier> notifier,
+    const std::string& display_name,
+    content::DesktopMediaID desktop_id,
+    const gfx::Size& size,
+    bool enable_notification) {
   // This will get cleaned up when the connection error handler is called.
   ArcScreenCaptureSession* session =
       new ArcScreenCaptureSession(std::move(notifier), size);
@@ -101,7 +100,7 @@ ArcScreenCaptureSession::Create(mojom::ScreenCaptureSessionNotifierPtr notifier,
 }
 
 ArcScreenCaptureSession::ArcScreenCaptureSession(
-    mojom::ScreenCaptureSessionNotifierPtr notifier,
+    mojo::PendingRemote<mojom::ScreenCaptureSessionNotifier> notifier,
     const gfx::Size& size)
     : notifier_(std::move(notifier)),
       size_(size),
@@ -199,7 +198,7 @@ void ArcScreenCaptureSession::SetOutputBuffer(
   handle.type = gfx::NATIVE_PIXMAP;
   // Dummy modifier.
   handle.native_pixmap_handle.modifier = 0;
-  base::PlatformFile platform_file;
+  base::ScopedPlatformFile platform_file;
   MojoResult mojo_result =
       mojo::UnwrapPlatformFile(std::move(graphics_buffer), &platform_file);
   if (mojo_result != MOJO_RESULT_OK) {
@@ -209,7 +208,7 @@ void ArcScreenCaptureSession::SetOutputBuffer(
   }
   handle.native_pixmap_handle.planes.emplace_back(
       stride * kBytesPerPixel, 0, stride * kBytesPerPixel * size_.height(),
-      base::ScopedFD(platform_file));
+      std::move(platform_file));
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
       gpu::GpuMemoryBufferImplNativePixmap::CreateFromHandle(
           client_native_pixmap_factory_.get(), std::move(handle), size_,

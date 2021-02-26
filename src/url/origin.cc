@@ -65,10 +65,10 @@ Origin Origin::Resolve(const GURL& url, const Origin& base_origin) {
   return base_origin.DeriveNewOpaqueOrigin();
 }
 
-Origin::Origin(const Origin& other) = default;
-Origin& Origin::operator=(const Origin& other) = default;
-Origin::Origin(Origin&& other) = default;
-Origin& Origin::operator=(Origin&& other) = default;
+Origin::Origin(const Origin&) = default;
+Origin& Origin::operator=(const Origin&) = default;
+Origin::Origin(Origin&&) noexcept = default;
+Origin& Origin::operator=(Origin&&) noexcept = default;
 Origin::~Origin() = default;
 
 // static
@@ -244,7 +244,7 @@ Origin Origin::DeriveNewOpaqueOrigin() const {
   return Origin(Nonce(), tuple_);
 }
 
-std::string Origin::GetDebugString() const {
+std::string Origin::GetDebugString(bool include_nonce) const {
   // Handle non-opaque origins first, as they are simpler.
   if (!opaque()) {
     std::string out = Serialize();
@@ -256,11 +256,15 @@ std::string Origin::GetDebugString() const {
   // For opaque origins, log the nonce and precursor as well. Without this,
   // EXPECT_EQ failures between opaque origins are nearly impossible to
   // understand.
-  std::string nonce = nonce_->raw_token().is_empty()
-                          ? std::string("nonce TBD")
-                          : nonce_->raw_token().ToString();
-
-  std::string out = base::StrCat({Serialize(), " [internally: (", nonce, ")"});
+  std::string out = base::StrCat({Serialize(), " [internally:"});
+  if (include_nonce) {
+    out += " (";
+    if (nonce_->raw_token().is_empty())
+      out += "nonce TBD";
+    else
+      out += nonce_->raw_token().ToString();
+    out += ")";
+  }
   if (!tuple_.IsValid())
     base::StrAppend(&out, {" anonymous]"});
   else
@@ -283,11 +287,20 @@ Origin::Origin(const Nonce& nonce, SchemeHostPort precursor)
   DCHECK_EQ(0U, port());
 }
 
+base::Optional<std::string> Origin::SerializeWithNonce() const {
+  return SerializeWithNonceImpl();
+}
+
+base::Optional<std::string> Origin::SerializeWithNonceAndInitIfNeeded() {
+  GetNonceForSerialization();
+  return SerializeWithNonceImpl();
+}
+
 // The pickle is saved in the following format, in order:
 // string - tuple_.GetURL().spec().
 // uint64_t (if opaque) - high bits of nonce if opaque. 0 if not initialized.
 // uint64_t (if opaque) - low bits of nonce if opaque. 0 if not initialized.
-base::Optional<std::string> Origin::SerializeWithNonce() const {
+base::Optional<std::string> Origin::SerializeWithNonceImpl() const {
   if (!opaque() && !tuple_.IsValid())
     return base::nullopt;
 
@@ -376,7 +389,7 @@ bool IsSameOriginWith(const GURL& a, const GURL& b) {
   return Origin::Create(a).IsSameOriginWith(Origin::Create(b));
 }
 
-Origin::Nonce::Nonce() {}
+Origin::Nonce::Nonce() = default;
 Origin::Nonce::Nonce(const base::UnguessableToken& token) : token_(token) {
   CHECK(!token_.is_empty());
 }
@@ -438,7 +451,8 @@ ScopedOriginCrashKey::ScopedOriginCrashKey(
     const url::Origin* value)
     : base::debug::ScopedCrashKeyString(
           crash_key,
-          value ? value->GetDebugString() : "nullptr") {}
+          value ? value->GetDebugString(false /* include_nonce */)
+                : "nullptr") {}
 
 ScopedOriginCrashKey::~ScopedOriginCrashKey() = default;
 

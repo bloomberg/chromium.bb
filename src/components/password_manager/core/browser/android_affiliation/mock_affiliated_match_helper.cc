@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
+#include "components/password_manager/core/browser/android_affiliation/android_affiliation_service.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,7 +16,7 @@ namespace password_manager {
 MockAffiliatedMatchHelper::MockAffiliatedMatchHelper()
     : AffiliatedMatchHelper(nullptr, nullptr) {}
 
-MockAffiliatedMatchHelper::~MockAffiliatedMatchHelper() {}
+MockAffiliatedMatchHelper::~MockAffiliatedMatchHelper() = default;
 
 void MockAffiliatedMatchHelper::ExpectCallToGetAffiliatedAndroidRealms(
     const PasswordStore::FormDigest& expected_observed_form,
@@ -57,7 +57,8 @@ void MockAffiliatedMatchHelper::GetAffiliatedWebRealms(
 }
 
 void MockAffiliatedMatchHelper::InjectAffiliationAndBrandingInformation(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
+    std::vector<std::unique_ptr<PasswordForm>> forms,
+    AndroidAffiliationService::StrategyOnCacheMiss strategy_on_cache_miss,
     PasswordFormsCallback result_callback) {
   const std::vector<AffiliationAndBrandingInformation>& information =
       OnInjectAffiliationAndBrandingInformationCalled();

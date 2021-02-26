@@ -12,11 +12,11 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.TouchDelegate;
 import android.view.View;
+import android.widget.FrameLayout;
 
+import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.omnibox.status.StatusView;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.util.List;
@@ -24,12 +24,12 @@ import java.util.List;
 /**
  * A location bar implementation specific for smaller/phone screens.
  */
-public class LocationBarPhone extends LocationBarLayout {
+class LocationBarPhone extends LocationBarLayout {
     private static final int ACTION_BUTTON_TOUCH_OVERFLOW_LEFT = 15;
 
     private View mFirstVisibleFocusedView;
     private View mUrlBar;
-    private StatusView mStatusView;
+    private View mStatusView;
 
     /**
      * Constructor used to inflate from XML.
@@ -43,9 +43,10 @@ public class LocationBarPhone extends LocationBarLayout {
         super.onFinishInflate();
 
         mUrlBar = findViewById(R.id.url_bar);
-        updateUrlBarPaddingForSearchEngineIcon();
+        mStatusView = findViewById(R.id.location_bar_status);
         // Assign the first visible view here only if it hasn't been set by the DSE icon experiment.
-        // See onNativeLibrary ready for when this variable is set for the DSE icon case.
+        // See onFinishNativeInitialization ready for when this variable is set for the DSE icon
+        // case.
         mFirstVisibleFocusedView =
                 mFirstVisibleFocusedView == null ? mUrlBar : mFirstVisibleFocusedView;
 
@@ -58,18 +59,16 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     @Override
-    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+    protected void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
         super.updateSearchEngineStatusIcon(
                 shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
 
         // The search engine icon will be the first visible focused view when it's showing.
         shouldShowSearchEngineLogo = SearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                getToolbarDataProvider().isIncognito());
+                mLocationBarDataProvider.isIncognito());
 
         // This branch will be hit if the search engine logo experiment is enabled.
-        // This value can never revert back to false, so it's safe to initialize mStatusView here
-        // without a corresponding else that nulls it out.
         if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
             // Setup the padding once we're loaded, the focused padding changes will happen with
             // post-layout positioning via setTranslation. This is a byproduct of the way we do the
@@ -81,18 +80,11 @@ public class LocationBarPhone extends LocationBarLayout {
             int lateralPadding = getResources().getDimensionPixelOffset(
                     R.dimen.sei_location_bar_lateral_padding);
             setPaddingRelative(lateralPadding, getPaddingTop(), lateralPadding, getPaddingBottom());
-            updateUrlBarPaddingForSearchEngineIcon();
-            mStatusView = findViewById(R.id.location_bar_status);
         }
 
         // This branch will be hit if the search engine logo experiment is enabled and we should
         // show the logo.
         if (shouldShowSearchEngineLogo) {
-            mStatusView.updateSearchEngineStatusIcon(
-                    shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
-            mFirstVisibleFocusedView = mStatusView;
-            updateUrlBarPaddingForSearchEngineIcon();
-
             // When the search engine icon is enabled, icons are translations into the parent view's
             // padding area. Set clip padding to false to prevent them from getting clipped.
             setClipToPadding(false);
@@ -101,25 +93,117 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     /**
-     * Factor in extra padding added for the focused state when the search engine icon is active.
+     * Updates progress of current the URL focus change animation.
+     *
+     * @param fraction 1.0 is 100% focused, 0 is completely unfocused.
      */
-    private void updateUrlBarPaddingForSearchEngineIcon() {
-        if (mUrlBar == null || mStatusView == null) return;
+    @Override
+    public void setUrlFocusChangeFraction(float fraction) {
+        super.setUrlFocusChangeFraction(fraction);
 
-        mUrlBar.post(() -> {
-            // TODO(crbug.com/1019019): Come up with a better solution for M80 or M81.
-            // This padding prevents the UrlBar's content from extending past the available space
-            // and into the next view while focused.
-            final int endPadding = SearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                                           mToolbarDataProvider.isIncognito())
-                            && hasFocus()
-                    ? mStatusView.getEndPaddingPixelSizeForFocusState(true)
-                            - mStatusView.getEndPaddingPixelSizeForFocusState(false)
-                    : 0;
+        if (fraction > 0f) {
+            mUrlActionContainer.setVisibility(VISIBLE);
+        } else if (fraction == 0f && !isUrlFocusChangeInProgress()) {
+            // If a URL focus change is in progress, then it will handle setting the visibility
+            // correctly after it completes.  If done here, it would cause the URL to jump due
+            // to a badly timed layout call.
+            mUrlActionContainer.setVisibility(GONE);
+        }
 
-            mUrlBar.setPaddingRelative(mUrlBar.getPaddingStart(), mUrlBar.getPaddingTop(),
-                    endPadding, mUrlBar.getPaddingBottom());
-        });
+        updateButtonVisibility();
+        mStatusCoordinator.setUrlFocusChangePercent(fraction);
+    }
+
+    @Override
+    public void onUrlFocusChange(boolean hasFocus) {
+        if (hasFocus) {
+            // Remove the focus of this view once the URL field has taken focus as this view no
+            // longer needs it.
+            setFocusable(false);
+            setFocusableInTouchMode(false);
+        }
+        setUrlFocusChangeInProgress(true);
+        updateShouldAnimateIconChanges();
+        super.onUrlFocusChange(hasFocus);
+    }
+
+    @Override
+    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+        boolean needsCanvasRestore = false;
+        if (child == mUrlBar && mUrlActionContainer.getVisibility() == VISIBLE) {
+            canvas.save();
+
+            // Clip the URL bar contents to ensure they do not draw under the URL actions during
+            // focus animations.  Based on the RTL state of the location bar, the url actions
+            // container can be on the left or right side, so clip accordingly.
+            if (mUrlBar.getLeft() < mUrlActionContainer.getLeft()) {
+                canvas.clipRect(0, 0, (int) mUrlActionContainer.getX(), getBottom());
+            } else {
+                canvas.clipRect(mUrlActionContainer.getX() + mUrlActionContainer.getWidth(), 0,
+                        getWidth(), getBottom());
+            }
+            needsCanvasRestore = true;
+        }
+        boolean retVal = super.drawChild(canvas, child, drawingTime);
+        if (needsCanvasRestore) {
+            canvas.restore();
+        }
+        return retVal;
+    }
+
+    @Override
+    public void finishUrlFocusChange(boolean hasFocus, boolean shouldShowKeyboard) {
+        super.finishUrlFocusChange(hasFocus, shouldShowKeyboard);
+        if (!hasFocus) {
+            mUrlActionContainer.setVisibility(GONE);
+        }
+        mStatusCoordinator.onUrlAnimationFinished(hasFocus);
+    }
+
+    @Override
+    protected void updateButtonVisibility() {
+        super.updateButtonVisibility();
+        updateMicButtonVisibility();
+    }
+
+    @Override
+    public void updateShouldAnimateIconChanges() {
+        notifyShouldAnimateIconChanges(isUrlBarFocused() || isUrlFocusChangeInProgress());
+    }
+
+    @Override
+    public void setShowIconsWhenUrlFocused(boolean showIcon) {
+        super.setShowIconsWhenUrlFocused(showIcon);
+        mFirstVisibleFocusedView = showIcon ? mStatusView : mUrlBar;
+        mStatusCoordinator.setShowIconsWhenUrlFocused(showIcon);
+    }
+
+    @Override
+    public void updateVisualsForState() {
+        super.updateVisualsForState();
+        boolean isIncognito = mLocationBarDataProvider.isIncognito();
+        setShowIconsWhenUrlFocused(SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito));
+        updateStatusVisibility();
+    }
+
+    @Override
+    public void onTabLoadingNTP(NewTabPage ntp) {
+        super.onTabLoadingNTP(ntp);
+        updateStatusVisibility();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        try (TraceEvent e = TraceEvent.scoped("LocationBarPhone.onMeasure")) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        }
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        try (TraceEvent e = TraceEvent.scoped("LocationBarPhone.onLayout")) {
+            super.onLayout(changed, left, top, right, bottom);
+        }
     }
 
     /**
@@ -158,6 +242,17 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     /**
+     * Returns {@link FrameLayout.LayoutParams} of the LocationBar view.
+     *
+     * <p>TODO(1133482): Hide this View interaction if possible.
+     *
+     * @see View#getLayoutParams()
+     */
+    public FrameLayout.LayoutParams getFrameLayoutParams() {
+        return (FrameLayout.LayoutParams) getLayoutParams();
+    }
+
+    /**
      * Calculates the offset required for the focused LocationBar to appear as it's still unfocused
      * so it can animate to a focused state.
      *
@@ -166,16 +261,16 @@ public class LocationBarPhone extends LocationBarLayout {
      * @return The offset for the location bar when showing the dse icon.
      */
     public int getLocationBarOffsetForFocusAnimation(boolean hasFocus) {
-        if (mStatusView == null) return 0;
+        if (mStatusCoordinator == null) return 0;
 
         // No offset is required if the experiment is disabled.
         if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                    getToolbarDataProvider().isIncognito())) {
+                    mLocationBarDataProvider.isIncognito())) {
             return 0;
         }
 
         // On non-NTP pages, there will always be an icon when unfocused.
-        if (mToolbarDataProvider.getNewTabPageForCurrentTab() == null) return 0;
+        if (!mLocationBarDataProvider.getNewTabPageDelegate().isCurrentlyVisible()) return 0;
 
         // This offset is only required when the focus animation is running.
         if (!hasFocus) return 0;
@@ -185,7 +280,7 @@ public class LocationBarPhone extends LocationBarLayout {
         // For LTR, the value is negative because we are making space on the left-hand side.
         // For RTL, the value is positive because we are pushing the icon further to the
         // right-hand side.
-        int offset = mStatusViewCoordinator.getStatusIconWidth() - getAdditionalOffsetForNTP();
+        int offset = mStatusCoordinator.getStatusIconWidth() - getAdditionalOffsetForNTP();
         return getLayoutDirection() == LAYOUT_DIRECTION_RTL ? offset : -offset;
     }
 
@@ -201,11 +296,11 @@ public class LocationBarPhone extends LocationBarLayout {
     public float getUrlBarTranslationXForToolbarAnimation(
             float urlExpansionPercent, boolean hasFocus) {
         // This will be called before status view is ready.
-        if (mStatusView == null) return 0;
+        if (mStatusCoordinator == null) return 0;
 
         // No offset is required if the experiment is disabled.
         if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                    getToolbarDataProvider().isIncognito())) {
+                    mLocationBarDataProvider.isIncognito())) {
             return 0;
         }
 
@@ -214,12 +309,11 @@ public class LocationBarPhone extends LocationBarLayout {
         // states and also accounts for the translation that the status icon will do. In the end,
         // this translation will be the distance that the url bar needs to travel to arrive at the
         // desired padding when focused.
-        float translation = urlExpansionPercent
-                * (mStatusView.getEndPaddingPixelSizeForFocusState(true)
-                        - mStatusView.getEndPaddingPixelSizeForFocusState(false));
+        float translation =
+                urlExpansionPercent * mStatusCoordinator.getEndPaddingPixelSizeOnFocusDelta();
 
-        if (!hasFocus && mStatusView.isSearchEngineStatusIconVisible()
-                && SearchEngineLogoUtils.currentlyOnNTP(mToolbarDataProvider)) {
+        if (!hasFocus && mStatusCoordinator.isSearchEngineStatusIconVisible()
+                && SearchEngineLogoUtils.currentlyOnNTP(mLocationBarDataProvider)) {
             // When:
             // 1. unfocusing the LocationBar on the NTP.
             // 2. scrolling the fakebox to the LocationBar on the NTP.
@@ -229,7 +323,7 @@ public class LocationBarPhone extends LocationBarLayout {
             // completely overlap the status icon and end up in a state that matches the fakebox.
             float overStatusIconTranslation = translation
                     - (1f - urlExpansionPercent)
-                            * (mStatusViewCoordinator.getStatusIconWidth()
+                            * (mStatusCoordinator.getStatusIconWidth()
                                     - getAdditionalOffsetForNTP());
             // The value returned changes based on if the layout is LTR or RTL.
             // For LTR, the value is negative because the status icon is left of the url bar on the
@@ -242,130 +336,22 @@ public class LocationBarPhone extends LocationBarLayout {
         return isRtl ? -translation : translation;
     }
 
-    /**
-     * Updates percentage of current the URL focus change animation.
-     * @param percent 1.0 is 100% focused, 0 is completely unfocused.
-     */
-    public void setUrlFocusChangePercent(float percent) {
-        mUrlFocusChangePercent = percent;
-
-        if (percent > 0f) {
-            mUrlActionContainer.setVisibility(VISIBLE);
-        } else if (percent == 0f && !isUrlFocusChangeInProgress()) {
-            // If a URL focus change is in progress, then it will handle setting the visibility
-            // correctly after it completes.  If done here, it would cause the URL to jump due
-            // to a badly timed layout call.
-            mUrlActionContainer.setVisibility(GONE);
-        }
-
-        updateButtonVisibility();
-        mStatusViewCoordinator.setUrlFocusChangePercent(percent);
-    }
-
-    @Override
-    public void onUrlFocusChange(boolean hasFocus) {
-        if (hasFocus) {
-            // Remove the focus of this view once the URL field has taken focus as this view no
-            // longer needs it.
-            setFocusable(false);
-            setFocusableInTouchMode(false);
-        }
-        updateUrlBarPaddingForSearchEngineIcon();
-        setUrlFocusChangeInProgress(true);
-        updateShouldAnimateIconChanges();
-        super.onUrlFocusChange(hasFocus);
-    }
-
-    @Override
-    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-        boolean needsCanvasRestore = false;
-        if (child == mUrlBar && mUrlActionContainer.getVisibility() == VISIBLE) {
-            canvas.save();
-
-            // Clip the URL bar contents to ensure they do not draw under the URL actions during
-            // focus animations.  Based on the RTL state of the location bar, the url actions
-            // container can be on the left or right side, so clip accordingly.
-            if (mUrlBar.getLeft() < mUrlActionContainer.getLeft()) {
-                canvas.clipRect(0, 0, (int) mUrlActionContainer.getX(), getBottom());
-            } else {
-                canvas.clipRect(mUrlActionContainer.getX() + mUrlActionContainer.getWidth(), 0,
-                        getWidth(), getBottom());
-            }
-            needsCanvasRestore = true;
-        }
-        boolean retVal = super.drawChild(canvas, child, drawingTime);
-        if (needsCanvasRestore) {
-            canvas.restore();
-        }
-        return retVal;
-    }
-
-    @Override
-    public void finishUrlFocusChange(boolean hasFocus) {
-        super.finishUrlFocusChange(hasFocus);
-        if (!hasFocus) {
-            mUrlActionContainer.setVisibility(GONE);
-        }
-        updateUrlBarPaddingForSearchEngineIcon();
-        mStatusViewCoordinator.onUrlAnimationFinished(hasFocus);
-    }
-
-    @Override
-    protected void updateButtonVisibility() {
-        super.updateButtonVisibility();
-        updateMicButtonVisibility();
-    }
-
-    @Override
-    public void updateShouldAnimateIconChanges() {
-        notifyShouldAnimateIconChanges(isUrlBarFocused() || isUrlFocusChangeInProgress());
-    }
-
-    @Override
-    public void setShowIconsWhenUrlFocused(boolean showIcon) {
-        super.setShowIconsWhenUrlFocused(showIcon);
-        mStatusViewCoordinator.setShowIconsWhenUrlFocused(showIcon);
-    }
-
     private int getAdditionalOffsetForNTP() {
         return getResources().getDimensionPixelSize(R.dimen.sei_search_box_lateral_padding)
                 - getResources().getDimensionPixelSize(R.dimen.sei_location_bar_lateral_padding);
     }
 
-    @Override
-    public void updateVisualsForState() {
-        super.updateVisualsForState();
-        boolean isIncognito = getToolbarDataProvider().isIncognito();
-        boolean shouldShowSearchEngineLogo =
-                SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito);
-        setShowIconsWhenUrlFocused(shouldShowSearchEngineLogo);
-        mFirstVisibleFocusedView = shouldShowSearchEngineLogo ? mStatusView : mUrlBar;
-
-        updateStatusVisibility();
-        updateUrlBarPaddingForSearchEngineIcon();
-    }
-
-    @Override
-    public void onTabLoadingNTP(NewTabPage ntp) {
-        super.onTabLoadingNTP(ntp);
-        updateStatusVisibility();
-    }
-
-    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
-        mAutocompleteCoordinator.setOverviewModeBehavior(overviewModeBehavior);
-    }
-
     /** Update the status visibility according to the current state held in LocationBar. */
     private void updateStatusVisibility() {
-        boolean incognito = getToolbarDataProvider().isIncognito();
+        boolean incognito = mLocationBarDataProvider.isIncognito();
         if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(incognito)) {
             return;
         }
 
-        if (SearchEngineLogoUtils.currentlyOnNTP(mToolbarDataProvider)) {
-            mStatusViewCoordinator.setStatusIconShown(hasFocus());
+        if (SearchEngineLogoUtils.currentlyOnNTP(mLocationBarDataProvider)) {
+            mStatusCoordinator.setStatusIconShown(hasFocus());
         } else {
-            mStatusViewCoordinator.setStatusIconShown(true);
+            mStatusCoordinator.setStatusIconShown(true);
         }
     }
 }

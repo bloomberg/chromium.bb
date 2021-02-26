@@ -7,9 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
@@ -43,10 +41,14 @@ blink::WebElement ChromePrintRenderFrameHelperDelegate::GetPdfElement(
       url.host_piece() == extension_misc::kPdfExtensionId;
   if (inside_print_preview || inside_pdf_extension) {
     // <object> with id="plugin" is created in
-    // chrome/browser/resources/pdf/pdf_viewer.js.
-    auto plugin_element = frame->GetDocument().GetElementById("plugin");
-    if (!plugin_element.IsNull()) {
-      return plugin_element;
+    // chrome/browser/resources/pdf/pdf_viewer_base.js.
+    auto viewer_element = frame->GetDocument().GetElementById("viewer");
+    if (!viewer_element.IsNull() && !viewer_element.ShadowRoot().IsNull()) {
+      auto plugin_element =
+          viewer_element.ShadowRoot().QuerySelector("#plugin");
+      if (!plugin_element.IsNull()) {
+        return plugin_element;
+      }
     }
     NOTREACHED();
   }
@@ -79,5 +81,5 @@ bool ChromePrintRenderFrameHelperDelegate::OverridePrint(
 }
 
 bool ChromePrintRenderFrameHelperDelegate::ShouldGenerateTaggedPDF() {
-  return base::FeatureList::IsEnabled(features::kExportTaggedPDF);
+  return true;
 }

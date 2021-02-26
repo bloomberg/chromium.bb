@@ -5,6 +5,7 @@
 #include "components/previews/content/previews_user_data.h"
 
 #include "base/rand_util.h"
+#include "content/public/browser/render_frame_host.h"
 
 namespace previews {
 
@@ -23,8 +24,7 @@ PreviewsUserData::PreviewsUserData(const PreviewsUserData& other)
       data_savings_inflation_percent_(other.data_savings_inflation_percent_),
       cache_control_no_transform_directive_(
           other.cache_control_no_transform_directive_),
-      offline_preview_used_(other.offline_preview_used_),
-      black_listed_for_lite_page_(other.black_listed_for_lite_page_),
+      block_listed_for_lite_page_(other.block_listed_for_lite_page_),
       committed_previews_type_without_holdback_(
           other.committed_previews_type_without_holdback_),
       allowed_previews_state_without_holdback_(
@@ -33,6 +33,17 @@ PreviewsUserData::PreviewsUserData(const PreviewsUserData& other)
           other.committed_previews_state_without_holdback_),
       coin_flip_holdback_result_(other.coin_flip_holdback_result_),
       preview_eligibility_reasons_(other.preview_eligibility_reasons_) {}
+
+PreviewsUserData::DocumentDataHolder::DocumentDataHolder(
+    content::RenderFrameHost* render_frame_host) {
+  // PreviewsUserData and DocumentDataHolder should only be made for main
+  // frames.
+  // TODO(crbug.com/1090679): This should be page-associated instead of just
+  // document-associated. Use PageUserData when it's available.
+  DCHECK(!render_frame_host->GetParent());
+}
+
+PreviewsUserData::DocumentDataHolder::~DocumentDataHolder() = default;
 
 void PreviewsUserData::SetCommittedPreviewsType(
     previews::PreviewsType previews_type) {
@@ -84,26 +95,26 @@ previews::PreviewsType PreviewsUserData::CommittedPreviewsType() const {
   return committed_previews_type_without_holdback_;
 }
 
-content::PreviewsState PreviewsUserData::PreHoldbackAllowedPreviewsState()
-    const {
+blink::PreviewsState PreviewsUserData::PreHoldbackAllowedPreviewsState() const {
   return allowed_previews_state_without_holdback_;
 }
 
-content::PreviewsState PreviewsUserData::AllowedPreviewsState() const {
+blink::PreviewsState PreviewsUserData::AllowedPreviewsState() const {
   if (coin_flip_holdback_result_ == CoinFlipHoldbackResult::kHoldback)
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
   return allowed_previews_state_without_holdback_;
 }
 
-content::PreviewsState PreviewsUserData::PreHoldbackCommittedPreviewsState()
+blink::PreviewsState PreviewsUserData::PreHoldbackCommittedPreviewsState()
     const {
   return committed_previews_state_without_holdback_;
 }
 
-content::PreviewsState PreviewsUserData::CommittedPreviewsState() const {
+blink::PreviewsState PreviewsUserData::CommittedPreviewsState() const {
   if (coin_flip_holdback_result_ == CoinFlipHoldbackResult::kHoldback)
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
   return committed_previews_state_without_holdback_;
 }
 
+RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(PreviewsUserData::DocumentDataHolder)
 }  // namespace previews

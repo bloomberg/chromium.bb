@@ -58,7 +58,6 @@ TEST(CSSParserFastPathsTest, ParseRevert) {
   // Revert enabled, IsKeywordPropertyID=false
   {
     DCHECK(!CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID::kMarginTop));
-    ScopedCSSRevertForTest scoped_revert(true);
     CSSValue* value = CSSParserFastPaths::MaybeParseValue(
         CSSPropertyID::kMarginTop, "revert", kHTMLStandardMode);
     ASSERT_TRUE(value);
@@ -67,30 +66,11 @@ TEST(CSSParserFastPathsTest, ParseRevert) {
 
   // Revert enabled, IsKeywordPropertyID=true
   {
-    DCHECK(CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID::kDisplay));
-    ScopedCSSRevertForTest scoped_revert(true);
+    DCHECK(CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID::kDirection));
     CSSValue* value = CSSParserFastPaths::MaybeParseValue(
-        CSSPropertyID::kDisplay, "revert", kHTMLStandardMode);
+        CSSPropertyID::kDirection, "revert", kHTMLStandardMode);
     ASSERT_TRUE(value);
     EXPECT_TRUE(value->IsRevertValue());
-  }
-
-  // Revert disabled, IsKeywordPropertyID=false
-  {
-    DCHECK(!CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID::kMarginTop));
-    ScopedCSSRevertForTest scoped_revert(false);
-    CSSValue* value = CSSParserFastPaths::MaybeParseValue(
-        CSSPropertyID::kMarginTop, "revert", kHTMLStandardMode);
-    EXPECT_FALSE(value);
-  }
-
-  // Revert disabled, IsKeywordPropertyID=true
-  {
-    DCHECK(CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID::kDisplay));
-    ScopedCSSRevertForTest scoped_revert(false);
-    CSSValue* value = CSSParserFastPaths::MaybeParseValue(
-        CSSPropertyID::kDisplay, "revert", kHTMLStandardMode);
-    EXPECT_FALSE(value);
   }
 }
 
@@ -223,6 +203,21 @@ TEST(CSSParserFastPathsTest, ParseColorWithDecimal) {
   EXPECT_NE(nullptr, value);
   EXPECT_TRUE(value->IsColorValue());
   EXPECT_EQ(Color::kWhite, To<cssvalue::CSSColorValue>(*value).Value());
+}
+
+TEST(CSSParserFastPathsTest, IsValidKeywordPropertyAndValueOverflowClip) {
+  {
+    ScopedOverflowClipForTest overflow_clip_feature_enabler(false);
+    EXPECT_FALSE(CSSParserFastPaths::IsValidKeywordPropertyAndValue(
+        CSSPropertyID::kOverflowX, CSSValueID::kClip,
+        CSSParserMode::kHTMLStandardMode));
+  }
+  {
+    ScopedOverflowClipForTest overflow_clip_feature_enabler(true);
+    EXPECT_TRUE(CSSParserFastPaths::IsValidKeywordPropertyAndValue(
+        CSSPropertyID::kOverflowX, CSSValueID::kClip,
+        CSSParserMode::kHTMLStandardMode));
+  }
 }
 
 }  // namespace blink

@@ -9,6 +9,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "dbus/message.h"
 
@@ -281,8 +282,8 @@ void AppendValueData(MessageWriter* writer, const base::Value& value) {
       value.GetAsList(&list);
       dbus::MessageWriter array_writer(nullptr);
       writer->OpenArray("v", &array_writer);
-      for (const auto& value : *list) {
-        AppendValueDataAsVariant(&array_writer, value);
+      for (const auto& value_in_list : *list) {
+        AppendValueDataAsVariant(&array_writer, value_in_list);
       }
       writer->CloseContainer(&array_writer);
       break;

@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/task/post_task.h"
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_file_impl.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
@@ -162,8 +161,8 @@ void DownloadFileWithError::Initialize(
     if (download::DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
       // Don't execute a, probably successful, Initialize; just
       // return the error.
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(std::move(callback_to_use), error_to_return, 0));
       return;
     }
@@ -183,10 +182,17 @@ DownloadFileWithError::ValidateAndWriteDataToFile(int64_t offset,
                                                   const char* data,
                                                   size_t bytes_to_validate,
                                                   size_t bytes_to_write) {
-  return ShouldReturnError(
-      TestFileErrorInjector::FILE_OPERATION_WRITE,
+  download::DownloadInterruptReason origin_error =
       download::DownloadFileImpl::ValidateAndWriteDataToFile(
-          offset, data, bytes_to_validate, bytes_to_write));
+          offset, data, bytes_to_validate, bytes_to_write);
+  if (error_info_.data_write_offset == -1 ||
+      ((offset <= error_info_.data_write_offset) &&
+       (offset + bytes_to_write >=
+        static_cast<size_t>(error_info_.data_write_offset)))) {
+    return ShouldReturnError(TestFileErrorInjector::FILE_OPERATION_WRITE,
+                             origin_error);
+  }
+  return origin_error;
 }
 
 download::DownloadInterruptReason
@@ -219,8 +225,8 @@ void DownloadFileWithError::RenameAndUniquify(
     if (download::DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
       // Don't execute a, probably successful, RenameAndUniquify; just
       // return the error.
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(std::move(callback), error_to_return,
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), error_to_return,
                                     base::FilePath()));
       return;
     }
@@ -255,8 +261,8 @@ void DownloadFileWithError::RenameAndAnnotate(
     if (download::DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
       // Don't execute a, probably successful, RenameAndAnnotate; just
       // return the error.
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(std::move(callback), error_to_return,
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), error_to_return,
                                     base::FilePath()));
       return;
     }
@@ -415,14 +421,14 @@ void TestFileErrorInjector::DestroyingDownloadFile() {
 }
 
 void TestFileErrorInjector::RecordDownloadFileConstruction() {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&TestFileErrorInjector::DownloadFileCreated, this));
 }
 
 void TestFileErrorInjector::RecordDownloadFileDestruction() {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&TestFileErrorInjector::DestroyingDownloadFile, this));
 }
 

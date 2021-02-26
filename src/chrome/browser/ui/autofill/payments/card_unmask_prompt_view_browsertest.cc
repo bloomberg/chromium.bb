@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -70,8 +70,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
       content::WebContents* contents,
       scoped_refptr<content::MessageLoopRunner> runner)
       : CardUnmaskPromptControllerImpl(
-            user_prefs::UserPrefs::Get(contents->GetBrowserContext()),
-            false),
+            user_prefs::UserPrefs::Get(contents->GetBrowserContext())),
         runner_(runner) {}
 
   // CardUnmaskPromptControllerImpl:.
@@ -229,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
   ShowUi(kExpiryExpired);
   controller()->OnUnmaskPromptAccepted(
       base::ASCIIToUTF16("123"), base::ASCIIToUTF16("10"),
-      base::ASCIIToUTF16("2020"), /*should_store_locally=*/false,
+      base::ASCIIToUTF16(test::NextYear()), /*should_store_locally=*/false,
       /*enable_fido_auth=*/false);
   EXPECT_EQ(base::ASCIIToUTF16("123"), delegate()->details().cvc);
   controller()->OnVerificationResult(AutofillClient::SUCCESS);

@@ -187,15 +187,21 @@ namespace dawn_native { namespace metal {
 
 #if defined(DAWN_PLATFORM_IOS)
             mAdapterType = wgpu::AdapterType::IntegratedGPU;
+            const char* systemName = "iOS ";
 #elif defined(DAWN_PLATFORM_MACOS)
             if ([device isLowPower]) {
                 mAdapterType = wgpu::AdapterType::IntegratedGPU;
             } else {
                 mAdapterType = wgpu::AdapterType::DiscreteGPU;
             }
+            const char* systemName = "macOS ";
 #else
 #    error "Unsupported Apple platform."
 #endif
+
+            NSString* osVersion = [[NSProcessInfo processInfo] operatingSystemVersionString];
+            mDriverDescription =
+                "Metal driver on " + std::string(systemName) + [osVersion UTF8String];
 
             InitializeSupportedExtensions();
         }
@@ -215,6 +221,16 @@ namespace dawn_native { namespace metal {
                 mSupportedExtensions.EnableExtension(Extension::TextureCompressionBC);
             }
 #endif
+
+            if (@available(macOS 10.15, iOS 14.0, *)) {
+                if ([mDevice supportsFamily:MTLGPUFamilyMac2] ||
+                    [mDevice supportsFamily:MTLGPUFamilyApple5]) {
+                    mSupportedExtensions.EnableExtension(Extension::PipelineStatisticsQuery);
+                    mSupportedExtensions.EnableExtension(Extension::TimestampQuery);
+                }
+            }
+
+            mSupportedExtensions.EnableExtension(Extension::ShaderFloat16);
         }
 
         id<MTLDevice> mDevice = nil;

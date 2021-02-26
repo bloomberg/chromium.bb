@@ -7,8 +7,11 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/model/virtual_keyboard_model.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -23,7 +26,8 @@ namespace ash {
 class ASH_EXPORT ShelfConfig : public TabletModeObserver,
                                public AppListControllerObserver,
                                public display::DisplayObserver,
-                               public VirtualKeyboardModel::Observer {
+                               public VirtualKeyboardModel::Observer,
+                               public OverviewObserver {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -45,6 +49,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Remove observers from this object's dependencies.
   void Shutdown();
 
+  // OverviewObserver:
+  void OnOverviewModeWillStart() override;
+  void OnOverviewModeEnding(OverviewSession* overview_session) override;
+
   // TabletModeObserver:
   void OnTabletModeStarting() override;
   void OnTabletModeEnding() override;
@@ -63,23 +71,17 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // reasons.
   bool ShelfControlsForcedShownForAccessibility() const;
 
-  // Returns the shelf button size. If |force_dense| is true, returns the
-  // shelf button size for dense shelf layout; otherwise, returns the optimal
-  // shelf button size for the current state.
-  int GetShelfButtonSize(bool force_dense) const;
+  // Returns the optimal shelf button size for the given hotseat density.
+  int GetShelfButtonSize(HotseatDensity density) const;
 
-  // Returns the icon size of shelf button. If |force_dense| is true, returns
-  // the icon size for dense shelf layout; otherwise, returns the optimal
-  // icon size for the current state.
-  int GetShelfButtonIconSize(bool force_dense) const;
+  // Returns the optimal shelf icon size for the given hotseat density.
+  int GetShelfButtonIconSize(HotseatDensity density) const;
 
-  // Returns the hotseat height. If |force_dense| is true, returns the hotseat
-  // height for dense shelf layout; otherwise, returns the optimal hotseat
-  // height for the current state.
+  // Returns the hotseat height for the given hotseat density.
   // NOTE: This may not match the actual hotseat size, as hotseat may get scaled
   // down if it does not fit in available bounds within the shelf. Use
   // HotseatWidget::GetHotseatSize() to get the actual widget size.
-  int GetHotseatSize(bool force_dense) const;
+  int GetHotseatSize(HotseatDensity density) const;
 
   // Size of the shelf when visible (height when the shelf is horizontal and
   // width when the shelf is vertical).
@@ -122,17 +124,13 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The extra padding added to status area tray buttons on the shelf.
   int status_area_hit_region_padding() const;
 
-  // Returns whether we are within an app.
+  // Returns whether the in app shelf should be shown.
   bool is_in_app() const;
 
   // The threshold relative to the size of the shelf that is used to determine
   // if the shelf visibility should change during a drag.
   float drag_hide_ratio_threshold() const;
 
-  int app_icon_group_margin() const { return app_icon_group_margin_; }
-  SkColor shelf_control_permanent_highlight_background() const {
-    return shelf_control_permanent_highlight_background_;
-  }
   SkColor shelf_focus_border_color() const { return shelf_focus_border_color_; }
   int workspace_area_visible_inset() const {
     return workspace_area_visible_inset_;
@@ -143,13 +141,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   int hidden_shelf_in_screen_portion() const {
     return hidden_shelf_in_screen_portion_;
   }
-  SkColor shelf_ink_drop_base_color() const {
-    return shelf_ink_drop_base_color_;
-  }
-  float shelf_ink_drop_visible_opacity() const {
-    return shelf_ink_drop_visible_opacity_;
-  }
-  SkColor shelf_icon_color() const { return shelf_icon_color_; }
   int status_indicator_offset_from_shelf_edge() const {
     return status_indicator_offset_from_shelf_edge_;
   }
@@ -182,6 +173,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   bool is_virtual_keyboard_shown() const { return is_virtual_keyboard_shown_; }
 
+  bool in_tablet_mode() const { return in_tablet_mode_; }
+
+  bool in_overview_mode() const { return overview_mode_; }
+
   // Gets the current color for the shelf control buttons.
   SkColor GetShelfControlButtonColor() const;
 
@@ -191,10 +186,8 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Gets the shelf color when a window is maximized.
   SkColor GetMaximizedShelfColor() const;
 
-  // Calculates a themed color for shelf and system menu based on the wallpaper.
-  // Uses alpha value from the provided base_color, returns base_color unchanged
-  // if the wallpaper can not be used to generate a themed color.
-  SkColor GetThemedColorFromWallpaper(SkColor base_color) const;
+  // Gets the base layer type for shelf color.
+  AshColorProvider::BaseLayerType GetShelfBaseLayerType() const;
 
   // Gets the default shelf color, calculated using the wallpaper color if
   // available.
@@ -205,6 +198,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // The padding between the app icon and the end of the scrollable shelf.
   int GetAppIconEndPadding() const;
+
+  // Returns the margin on either side of the group of app icons.
+  int GetAppIconGroupMargin() const;
 
   // The animation time for dimming shelf icons, widgets, and buttons.
   base::TimeDelta DimAnimationDuration() const;
@@ -239,6 +235,12 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Updates shelf config - called when the accessibility state changes.
   void UpdateConfigForAccessibilityState();
 
+  // Whether the in app shelf should be shown in overview mode.
+  bool use_in_app_shelf_in_overview_;
+
+  // True if device is currently in overview mode.
+  bool overview_mode_;
+
   // True if device is currently in tablet mode.
   bool in_tablet_mode_;
 
@@ -257,10 +259,12 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // Size of the icons within shelf buttons.
   const int shelf_button_icon_size_;
+  const int shelf_button_icon_size_median_;
   const int shelf_button_icon_size_dense_;
 
   // Size allocated for each app button on the shelf.
   const int shelf_button_size_;
+  const int shelf_button_size_median_;
   const int shelf_button_size_dense_;
 
   // Size of the space between buttons on the shelf.
@@ -270,10 +274,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   const int shelf_status_area_hit_region_padding_;
   const int shelf_status_area_hit_region_padding_dense_;
 
-  // The margin on either side of the group of app icons.
-  const int app_icon_group_margin_;
-
-  const SkColor shelf_control_permanent_highlight_background_;
+  // The margin on either side of the group of app icons in tablet/clamshell.
+  const int app_icon_group_margin_tablet_;
+  const int app_icon_group_margin_clamshell_;
 
   const SkColor shelf_focus_border_color_;
 
@@ -287,16 +290,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // Portion of the shelf that's within the screen bounds when auto-hidden.
   const int hidden_shelf_in_screen_portion_;
-
-  // Ink drop color for shelf items.
-  const SkColor shelf_ink_drop_base_color_;
-
-  // Opacity of the ink drop ripple for shelf items when the ripple is visible.
-  const float shelf_ink_drop_visible_opacity_;
-
-  // The foreground color of the icons used in the shelf (launcher,
-  // notifications, etc).
-  const SkColor shelf_icon_color_;
 
   // The distance between the edge of the shelf and the status indicators.
   const int status_indicator_offset_from_shelf_edge_;

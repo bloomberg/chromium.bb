@@ -45,8 +45,7 @@ bool Mixer::SortData::operator<(const SortData& other) const {
 // Used to group relevant providers together for mixing their results.
 class Mixer::Group {
  public:
-  Group(size_t max_results, double multiplier, double boost)
-      : max_results_(max_results), multiplier_(multiplier), boost_(boost) {}
+  explicit Group(size_t max_results) : max_results_(max_results) {}
   ~Group() {}
 
   void AddProvider(SearchProvider* provider) {
@@ -62,10 +61,8 @@ class Mixer::Group {
 
         // We cannot rely on providers to give relevance scores in the range
         // [0.0, 1.0]. Clamp to that range.
-        const double relevance =
-            base::ClampToRange(result->relevance(), 0.0, 1.0);
-        double boost = boost_;
-        results_.emplace_back(result.get(), relevance * multiplier_ + boost);
+        results_.emplace_back(
+            result.get(), base::ClampToRange(result->relevance(), 0.0, 1.0));
       }
     }
 
@@ -81,8 +78,6 @@ class Mixer::Group {
  private:
   typedef std::vector<SearchProvider*> Providers;
   const size_t max_results_;
-  const double multiplier_;
-  const double boost_;
 
   Providers providers_;  // Not owned.
   SortedResults results_;
@@ -104,8 +99,8 @@ void Mixer::InitializeRankers(Profile* profile,
   }
 }
 
-size_t Mixer::AddGroup(size_t max_results, double multiplier, double boost) {
-  groups_.push_back(std::make_unique<Group>(max_results, multiplier, boost));
+size_t Mixer::AddGroup(size_t max_results) {
+  groups_.push_back(std::make_unique<Group>(max_results));
   return groups_.size() - 1;
 }
 
@@ -127,11 +122,6 @@ void Mixer::MixAndPublish(size_t num_max_results, const base::string16& query) {
     results.insert(results.end(), group->results().begin(),
                    group->results().begin() + num_results);
   }
-  // Remove results with duplicate IDs before sorting. If two providers give a
-  // result with the same ID, the result from the provider with the *lower group
-  // number* will be kept (e.g., an app result takes priority over a web store
-  // result with the same ID).
-  RemoveDuplicates(&results);
 
   // Zero state search results: if any search provider won't have any results
   // displayed, but has a high-scoring result that the user hasn't seen many
@@ -149,13 +139,11 @@ void Mixer::MixAndPublish(size_t num_max_results, const base::string16& query) {
   const size_t original_size = results.size();
   if (original_size < num_max_results) {
     // We didn't get enough results. Insert all the results again, and this
-    // time, do not limit the maximum number of results from each group. (This
-    // will result in duplicates, which will be removed by RemoveDuplicates.)
+    // time, do not limit the maximum number of results from each group.
     for (const auto& group : groups_) {
       results.insert(results.end(), group->results().begin(),
                      group->results().end());
     }
-    RemoveDuplicates(&results);
     // Sort just the newly added results. This ensures that, for example, if
     // there are 6 Omnibox results (score = 0.8) and 1 People result (score =
     // 0.4) that the People result will be 5th, not 7th, because the Omnibox
@@ -170,21 +158,6 @@ void Mixer::MixAndPublish(size_t num_max_results, const base::string16& query) {
     new_results.push_back(sort_data.result);
   }
   model_updater_->PublishSearchResults(new_results);
-}
-
-void Mixer::RemoveDuplicates(SortedResults* results) {
-  SortedResults final;
-  final.reserve(results->size());
-
-  std::set<std::string> id_set;
-  for (const SortData& sort_data : *results) {
-    if (!id_set.insert(sort_data.result->id()).second)
-      continue;
-
-    final.emplace_back(sort_data);
-  }
-
-  results->swap(final);
 }
 
 void Mixer::FetchResults(const base::string16& query) {

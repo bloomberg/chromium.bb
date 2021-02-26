@@ -13,7 +13,6 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/focus/focus_manager.h"
@@ -29,7 +28,6 @@ namespace ash {
 // notifications. There are currently two UI implementations toggled by the
 // NotificationStackedBarRedesign feature flag.
 class StackedNotificationBar : public views::View,
-                               public views::ButtonListener,
                                public message_center::MessageCenterObserver {
  public:
   explicit StackedNotificationBar(
@@ -37,9 +35,10 @@ class StackedNotificationBar : public views::View,
   ~StackedNotificationBar() override;
 
   // Sets the icons and overflow count for hidden notifications as well as the
-  // total notifications count. Returns true if the state of the bar has
-  // changed.
+  // total/pinned notifications count. Returns true if the state of the bar
+  // has changed.
   bool Update(int total_notification_count,
+              int pinned_notification_count,
               std::vector<message_center::Notification*> stacked_notifications);
 
   // Sets the current animation state.
@@ -57,9 +56,6 @@ class StackedNotificationBar : public views::View,
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // message_center::MessageCenterObserver:
   void OnNotificationAdded(const std::string& id) override;
@@ -98,6 +94,7 @@ class StackedNotificationBar : public views::View,
       std::vector<message_center::Notification*> stacked_notifications);
 
   int total_notification_count_ = 0;
+  int pinned_notification_count_ = 0;
   int stacked_notification_count_ = 0;
 
   UnifiedMessageCenterAnimationState animation_state_ =

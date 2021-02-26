@@ -1,8 +1,17 @@
 import { timeout } from './timeout.js';
 
-export function assert(condition: boolean, msg?: string): asserts condition {
+export function assert(condition: boolean, msg?: string | (() => string)): asserts condition {
   if (!condition) {
-    throw new Error(msg);
+    throw new Error(msg && (typeof msg === 'string' ? msg : msg()));
+  }
+}
+
+export async function assertReject(p: Promise<unknown>, msg?: string): Promise<void> {
+  try {
+    await p;
+    unreachable(msg);
+  } catch (ex) {
+    // Assertion OK
   }
 }
 
@@ -11,23 +20,40 @@ export function unreachable(msg?: string): never {
 }
 
 // performance.now() is available in all browsers, but not in scope by default in Node.
-// tslint:disable-next-line no-var-requires
 const perf = typeof performance !== 'undefined' ? performance : require('perf_hooks').performance;
 
 export function now(): number {
   return perf.now();
 }
 
-export function rejectOnTimeout(ms: number, msg: string): Promise<never> {
-  return new Promise((resolve, reject) => {
+export function resolveOnTimeout(ms: number): Promise<void> {
+  return new Promise(resolve => {
     timeout(() => {
-      reject(new Error(msg));
+      resolve();
+    }, ms);
+  });
+}
+
+export class PromiseTimeoutError extends Error {}
+
+export function rejectOnTimeout(ms: number, msg: string): Promise<never> {
+  return new Promise((_resolve, reject) => {
+    timeout(() => {
+      reject(new PromiseTimeoutError(msg));
     }, ms);
   });
 }
 
 export function raceWithRejectOnTimeout<T>(p: Promise<T>, ms: number, msg: string): Promise<T> {
   return Promise.race([p, rejectOnTimeout(ms, msg)]);
+}
+
+export function sortObjectByKey(v: { [k: string]: unknown }): { [k: string]: unknown } {
+  const sortedObject: { [k: string]: unknown } = {};
+  for (const k of Object.keys(v).sort()) {
+    sortedObject[k] = v[k];
+  }
+  return sortedObject;
 }
 
 export function objectEquals(x: unknown, y: unknown): boolean {

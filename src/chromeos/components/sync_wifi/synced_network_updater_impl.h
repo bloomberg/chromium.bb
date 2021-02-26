@@ -33,7 +33,7 @@ class SyncedNetworkUpdaterImpl
   SyncedNetworkUpdaterImpl(
       std::unique_ptr<PendingNetworkConfigurationTracker> tracker,
       network_config::mojom::CrosNetworkConfig* cros_network_config,
-      std::unique_ptr<TimerFactory> timer_factory,
+      TimerFactory* timer_factory,
       SyncedNetworkMetricsLogger* metrics_logger);
   ~SyncedNetworkUpdaterImpl() override;
 
@@ -41,6 +41,8 @@ class SyncedNetworkUpdaterImpl
       const sync_pb::WifiConfigurationSpecifics& specifics) override;
 
   void RemoveNetwork(const NetworkIdentifier& id) override;
+
+  bool IsUpdateInProgress(const std::string& network_guid) override;
 
   // CrosNetworkConfigObserver:
   void OnNetworkStateListChanged() override;
@@ -98,9 +100,10 @@ class SyncedNetworkUpdaterImpl
   mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
       cros_network_config_observer_receiver_{this};
   std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks_;
-  std::unique_ptr<TimerFactory> timer_factory_;
+  TimerFactory* timer_factory_;
   base::flat_map<std::string, std::unique_ptr<base::OneShotTimer>>
       change_guid_to_timer_map_;
+  base::flat_map<std::string, int> network_guid_to_updates_counter_;
   SyncedNetworkMetricsLogger* metrics_logger_;
 
   base::WeakPtrFactory<SyncedNetworkUpdaterImpl> weak_ptr_factory_{this};

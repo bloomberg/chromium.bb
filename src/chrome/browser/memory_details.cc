@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,8 +38,8 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-#include "services/service_manager/zygote/zygote_host_linux.h"
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
+#include "content/public/browser/zygote_host/zygote_host_linux.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -149,8 +148,8 @@ void MemoryDetails::StartFetch() {
 
   // In order to process this request, we need to use the plugin information.
   // However, plugin process information is only available from the IO thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MemoryDetails::CollectChildInfoOnIOThread, this));
 }
 
@@ -297,7 +296,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 
       // If this is a RVH for a subframe; skip it to avoid double-counting the
       // WebContents.
-      if (rvh != contents->GetRenderViewHost())
+      if (rvh != contents->GetMainFrame()->GetRenderViewHost())
         continue;
 
       // The rest of this block will happen only once per WebContents.
@@ -340,8 +339,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       process.titles.push_back(title);
     }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-    if (service_manager::ZygoteHost::GetInstance()->IsZygotePid(process.pid)) {
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
+    if (content::ZygoteHost::GetInstance()->IsZygotePid(process.pid)) {
       process.process_type = content::PROCESS_TYPE_ZYGOTE;
     }
 #endif

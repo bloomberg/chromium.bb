@@ -10,19 +10,17 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/idle_manager.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/idle_test_utils.h"
 
 #include "content/public/test/content_browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using content::RenderFrameHost;
 using ::testing::NiceMock;
 
 namespace {
@@ -62,19 +60,9 @@ IN_PROC_BROWSER_TEST_F(IdleBrowserTest, Start) {
   GURL url = embedded_test_server()->GetURL("localhost", "/simple_page.html");
   auto* map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
-  map->SetContentSettingDefaultScope(url, url,
-                                     ContentSettingsType::NOTIFICATIONS,
-                                     std::string(), CONTENT_SETTING_ALLOW);
+  map->SetContentSettingDefaultScope(
+      url, url, ContentSettingsType::IDLE_DETECTION, CONTENT_SETTING_ALLOW);
   ui_test_utils::NavigateToURL(browser(), url);
-
-  auto mock_time_provider = std::make_unique<NiceMock<MockIdleTimeProvider>>();
-
-  content::RenderFrameHost* const frame =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-  content::RenderProcessHost* const process = frame->GetProcess();
-
-  content::IdleManager* idle_mgr =
-      process->GetStoragePartition()->GetIdleManager();
 
   // Test that statuses are updated after idleDetector.start().
   std::string script = R"(
@@ -95,6 +83,8 @@ IN_PROC_BROWSER_TEST_F(IdleBrowserTest, Start) {
     }) ();
   )";
 
+  auto mock_time_provider = std::make_unique<NiceMock<MockIdleTimeProvider>>();
+
   EXPECT_CALL(*mock_time_provider, CalculateIdleTime())
       // Simulates a user going idle.
       .WillOnce(testing::Return(base::TimeDelta::FromSeconds(60)))
@@ -111,7 +101,9 @@ IN_PROC_BROWSER_TEST_F(IdleBrowserTest, Start) {
       // Simulates an unlocked screen as user goes back to active.
       .WillRepeatedly(testing::Return(false));
 
-  idle_mgr->SetIdleTimeProviderForTest(std::move(mock_time_provider));
+  content::IdleManagerHelper::SetIdleTimeProviderForTest(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      std::move(mock_time_provider));
 
   std::string result =
       EvalJs(browser()->tab_strip_model()->GetActiveWebContents(), script)

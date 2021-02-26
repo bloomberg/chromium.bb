@@ -14,9 +14,6 @@ namespace mojo {
 
 using network::mojom::DnsConfigOverrides;
 using network::mojom::DnsConfigOverridesDataView;
-using network::mojom::DnsHost;
-using network::mojom::DnsHostDataView;
-using network::mojom::DnsHostPtr;
 using network::mojom::DnsOverHttpsServer;
 using network::mojom::DnsOverHttpsServerDataView;
 using network::mojom::DnsOverHttpsServerPtr;
@@ -46,46 +43,6 @@ base::Optional<bool> FromTristate(DnsConfigOverrides::Tristate tristate) {
   }
 }
 
-bool ReadHostData(mojo::ArrayDataView<DnsHostDataView> data,
-                  base::Optional<net::DnsHosts>* out) {
-  if (data.is_null()) {
-    out->reset();
-    return true;
-  }
-
-  out->emplace();
-  for (size_t i = 0; i < data.size(); ++i) {
-    DnsHostDataView host_data;
-    data.GetDataView(i, &host_data);
-
-    std::string hostname;
-    if (!host_data.ReadHostname(&hostname))
-      return false;
-
-    net::IPAddress address;
-    if (!host_data.ReadAddress(&address) || !address.IsValid())
-      return false;
-
-    net::AddressFamily address_family;
-    if (address.IsIPv4()) {
-      address_family = net::ADDRESS_FAMILY_IPV4;
-    } else if (address.IsIPv6()) {
-      address_family = net::ADDRESS_FAMILY_IPV6;
-    } else {
-      return false;
-    }
-
-    net::DnsHostsKey key = std::make_pair(std::move(hostname), address_family);
-    if (out->value().find(key) != out->value().end()) {
-      // Each DnsHostsKey expected to be unique.
-      return false;
-    }
-    out->value()[std::move(key)] = std::move(address);
-  }
-
-  return true;
-}
-
 bool ReadDnsOverHttpsServerData(
     mojo::ArrayDataView<DnsOverHttpsServerDataView> data,
     base::Optional<std::vector<net::DnsOverHttpsServerConfig>>* out) {
@@ -111,48 +68,33 @@ bool ReadDnsOverHttpsServerData(
 }
 
 OptionalSecureDnsMode ToOptionalSecureDnsMode(
-    base::Optional<net::DnsConfig::SecureDnsMode> optional) {
+    base::Optional<net::SecureDnsMode> optional) {
   if (!optional)
     return OptionalSecureDnsMode::NO_OVERRIDE;
   switch (optional.value()) {
-    case net::DnsConfig::SecureDnsMode::OFF:
+    case net::SecureDnsMode::kOff:
       return OptionalSecureDnsMode::OFF;
-    case net::DnsConfig::SecureDnsMode::AUTOMATIC:
+    case net::SecureDnsMode::kAutomatic:
       return OptionalSecureDnsMode::AUTOMATIC;
-    case net::DnsConfig::SecureDnsMode::SECURE:
+    case net::SecureDnsMode::kSecure:
       return OptionalSecureDnsMode::SECURE;
   }
 }
 
 }  // namespace
 
-base::Optional<net::DnsConfig::SecureDnsMode> FromOptionalSecureDnsMode(
+base::Optional<net::SecureDnsMode> FromOptionalSecureDnsMode(
     OptionalSecureDnsMode mode) {
   switch (mode) {
     case OptionalSecureDnsMode::NO_OVERRIDE:
       return base::nullopt;
     case OptionalSecureDnsMode::OFF:
-      return net::DnsConfig::SecureDnsMode::OFF;
+      return net::SecureDnsMode::kOff;
     case OptionalSecureDnsMode::AUTOMATIC:
-      return net::DnsConfig::SecureDnsMode::AUTOMATIC;
+      return net::SecureDnsMode::kAutomatic;
     case OptionalSecureDnsMode::SECURE:
-      return net::DnsConfig::SecureDnsMode::SECURE;
+      return net::SecureDnsMode::kSecure;
   }
-}
-
-// static
-base::Optional<std::vector<DnsHostPtr>>
-StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::hosts(
-    const net::DnsConfigOverrides& overrides) {
-  if (!overrides.hosts)
-    return base::nullopt;
-
-  std::vector<DnsHostPtr> out_hosts;
-  for (const net::DnsHosts::value_type& host : overrides.hosts.value()) {
-    out_hosts.push_back(DnsHost::New(host.first.first, host.second));
-  }
-
-  return base::make_optional(std::move(out_hosts));
 }
 
 // static
@@ -160,13 +102,6 @@ DnsConfigOverrides::Tristate
 StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::
     append_to_multi_label_name(const net::DnsConfigOverrides& overrides) {
   return ToTristate(overrides.append_to_multi_label_name);
-}
-
-// static
-DnsConfigOverrides::Tristate
-StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::
-    randomize_ports(const net::DnsConfigOverrides& overrides) {
-  return ToTristate(overrides.randomize_ports);
 }
 
 // static
@@ -223,14 +158,8 @@ bool StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::Read(
   if (!data.ReadSearch(&out->search))
     return false;
 
-  mojo::ArrayDataView<DnsHostDataView> hosts_data;
-  data.GetHostsDataView(&hosts_data);
-  if (!ReadHostData(hosts_data, &out->hosts))
-    return false;
-
   out->append_to_multi_label_name =
       FromTristate(data.append_to_multi_label_name());
-  out->randomize_ports = FromTristate(data.randomize_ports());
 
   if (data.ndots() < -1)
     return false;
@@ -238,7 +167,7 @@ bool StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::Read(
     out->ndots = data.ndots();
   // if == -1, leave nullopt.
 
-  if (!data.ReadTimeout(&out->timeout))
+  if (!data.ReadFallbackPeriod(&out->fallback_period))
     return false;
 
   if (data.attempts() < -1)
@@ -264,6 +193,8 @@ bool StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::Read(
   if (!data.ReadDisabledUpgradeProviders(&out->disabled_upgrade_providers))
     return false;
 
+  out->clear_hosts = data.clear_hosts();
+
   return true;
 }
 
@@ -283,7 +214,9 @@ DnsQueryType EnumTraits<DnsQueryType, net::DnsQueryType>::ToMojom(
       return DnsQueryType::PTR;
     case net::DnsQueryType::SRV:
       return DnsQueryType::SRV;
-    case net::DnsQueryType::ESNI:
+    case net::DnsQueryType::HTTPS:
+      return DnsQueryType::HTTPS;
+    case net::DnsQueryType::INTEGRITY:
       NOTIMPLEMENTED();
       return DnsQueryType::UNSPECIFIED;
   }
@@ -311,6 +244,9 @@ bool EnumTraits<DnsQueryType, net::DnsQueryType>::FromMojom(
       return true;
     case DnsQueryType::SRV:
       *output = net::DnsQueryType::SRV;
+      return true;
+    case DnsQueryType::HTTPS:
+      *output = net::DnsQueryType::HTTPS;
       return true;
   }
 }
@@ -391,14 +327,14 @@ bool EnumTraits<MdnsListenClient::UpdateType,
 
 // static
 network::mojom::SecureDnsMode
-EnumTraits<network::mojom::SecureDnsMode, net::DnsConfig::SecureDnsMode>::
-    ToMojom(net::DnsConfig::SecureDnsMode secure_dns_mode) {
+EnumTraits<network::mojom::SecureDnsMode, net::SecureDnsMode>::ToMojom(
+    net::SecureDnsMode secure_dns_mode) {
   switch (secure_dns_mode) {
-    case net::DnsConfig::SecureDnsMode::OFF:
+    case net::SecureDnsMode::kOff:
       return network::mojom::SecureDnsMode::OFF;
-    case net::DnsConfig::SecureDnsMode::AUTOMATIC:
+    case net::SecureDnsMode::kAutomatic:
       return network::mojom::SecureDnsMode::AUTOMATIC;
-    case net::DnsConfig::SecureDnsMode::SECURE:
+    case net::SecureDnsMode::kSecure:
       return network::mojom::SecureDnsMode::SECURE;
   }
   NOTREACHED();
@@ -406,18 +342,18 @@ EnumTraits<network::mojom::SecureDnsMode, net::DnsConfig::SecureDnsMode>::
 }
 
 // static
-bool EnumTraits<network::mojom::SecureDnsMode, net::DnsConfig::SecureDnsMode>::
-    FromMojom(network::mojom::SecureDnsMode in,
-              net::DnsConfig::SecureDnsMode* out) {
+bool EnumTraits<network::mojom::SecureDnsMode, net::SecureDnsMode>::FromMojom(
+    network::mojom::SecureDnsMode in,
+    net::SecureDnsMode* out) {
   switch (in) {
     case network::mojom::SecureDnsMode::OFF:
-      *out = net::DnsConfig::SecureDnsMode::OFF;
+      *out = net::SecureDnsMode::kOff;
       return true;
     case network::mojom::SecureDnsMode::AUTOMATIC:
-      *out = net::DnsConfig::SecureDnsMode::AUTOMATIC;
+      *out = net::SecureDnsMode::kAutomatic;
       return true;
     case network::mojom::SecureDnsMode::SECURE:
-      *out = net::DnsConfig::SecureDnsMode::SECURE;
+      *out = net::SecureDnsMode::kSecure;
       return true;
   }
   return false;

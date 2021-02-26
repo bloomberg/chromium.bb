@@ -23,6 +23,7 @@ import {
   OBJECTS_ALLOCATED_NOT_FREED_KEY,
   SPACE_MEMORY_ALLOCATED_NOT_FREED_KEY
 } from '../common/flamegraph_util';
+import {slowlyCountRows} from '../common/query_iterator';
 import {CallsiteInfo, HeapProfileFlamegraph} from '../common/state';
 import {fromNs} from '../common/time';
 import {HeapProfileDetails} from '../frontend/globals';
@@ -216,15 +217,16 @@ export class HeapProfileController extends Controller<'main'> {
       // id, name, parent_id, depth, total_size
       const tableName =
           await this.prepareViewsAndTables(ts, upid, type, focusRegex);
-      currentData =
-          await this.getFlamegraphDataFromTables(tableName, viewingOption);
+      currentData = await this.getFlamegraphDataFromTables(
+          tableName, viewingOption, focusRegex);
       this.flamegraphDatasets.set(key, currentData);
     }
     return currentData;
   }
 
   async getFlamegraphDataFromTables(
-      tableName: string, viewingOption = DEFAULT_VIEWING_OPTION) {
+      tableName: string, viewingOption = DEFAULT_VIEWING_OPTION,
+      focusRegex: string) {
     let orderBy = '';
     let sizeIndex = 4;
     let selfIndex = 9;
@@ -272,7 +274,7 @@ export class HeapProfileController extends Controller<'main'> {
 
     const flamegraphData: CallsiteInfo[] = new Array();
     const hashToindex: Map<number, number> = new Map();
-    for (let i = 0; i < callsites.numRecords; i++) {
+    for (let i = 0; i < slowlyCountRows(callsites); i++) {
       const hash = callsites.columns[0].longValues![i];
       let name = callsites.columns[1].stringValues![i];
       const parentHash = callsites.columns[2].longValues![i];
@@ -280,6 +282,8 @@ export class HeapProfileController extends Controller<'main'> {
       const totalSize = +callsites.columns[sizeIndex].longValues![i];
       const mapping = callsites.columns[8].stringValues![i];
       const selfSize = +callsites.columns[selfIndex].longValues![i];
+      const highlighted = focusRegex !== '' &&
+          name.toLocaleLowerCase().includes(focusRegex.toLocaleLowerCase());
       const parentId =
           hashToindex.has(+parentHash) ? hashToindex.get(+parentHash)! : -1;
       if (depth === maxDepth - 1) {
@@ -297,7 +301,8 @@ export class HeapProfileController extends Controller<'main'> {
         name,
         selfSize,
         mapping,
-        merged: false
+        merged: false,
+        highlighted
       });
     }
     return flamegraphData;
@@ -324,8 +329,9 @@ export class HeapProfileController extends Controller<'main'> {
   getMinSizeDisplayed(flamegraphData: CallsiteInfo[], rootSize?: number):
       number {
     const timeState = globals.state.frontendLocalState.visibleState;
-    const width =
-        (timeState.endSec - timeState.startSec) / timeState.resolution;
+    let width = (timeState.endSec - timeState.startSec) / timeState.resolution;
+    // TODO(168048193): Remove screen size hack:
+    width = Math.max(width, 800);
     if (rootSize === undefined) {
       rootSize = findRootSize(flamegraphData);
     }

@@ -35,6 +35,7 @@
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
+#include "third_party/blink/public/common/mobile_metrics/mobile_friendliness.h"
 #include "ui/base/page_transition_types.h"
 
 namespace page_load_metrics {
@@ -76,23 +77,6 @@ void MetricsWebContentsObserver::RecordFeatureUsage(
     observer->OnBrowserFeatureUsage(render_frame_host, new_features);
 }
 
-MetricsWebContentsObserver::MetricsWebContentsObserver(
-    content::WebContents* web_contents,
-    std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
-    : content::WebContentsObserver(web_contents),
-      in_foreground_(web_contents->GetVisibility() !=
-                     content::Visibility::HIDDEN),
-      embedder_interface_(std::move(embedder_interface)),
-      has_navigated_(false),
-      page_load_metrics_receiver_(web_contents, this) {
-  // Prerenders erroneously report that they are initially visible, so we
-  // manually override visibility state for prerender.
-  if (embedder_interface_->IsPrerender(web_contents))
-    in_foreground_ = false;
-
-  RegisterInputEventObserver(web_contents->GetRenderViewHost());
-}
-
 // static
 MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
     content::WebContents* web_contents,
@@ -123,6 +107,7 @@ void MetricsWebContentsObserver::WebContentsDestroyed() {
   // PageLoadMetricsObservers can cause code to execute that wants to be able to
   // access the current WebContents.
   committed_load_ = nullptr;
+  ukm_smoothness_data_ = {};
   provisional_loads_.clear();
   aborted_provisional_loads_.clear();
 
@@ -186,6 +171,23 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
 
   WillStartNavigationRequestImpl(navigation_handle);
   has_navigated_ = true;
+}
+
+MetricsWebContentsObserver::MetricsWebContentsObserver(
+    content::WebContents* web_contents,
+    std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
+    : content::WebContentsObserver(web_contents),
+      in_foreground_(web_contents->GetVisibility() !=
+                     content::Visibility::HIDDEN),
+      embedder_interface_(std::move(embedder_interface)),
+      has_navigated_(false),
+      page_load_metrics_receiver_(web_contents, this) {
+  // Prerenders erroneously report that they are initially visible, so we
+  // manually override visibility state for prerender.
+  if (embedder_interface_->IsPrerender(web_contents))
+    in_foreground_ = false;
+
+  RegisterInputEventObserver(web_contents->GetRenderViewHost());
 }
 
 void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
@@ -397,6 +399,22 @@ void MetricsWebContentsObserver::OnCookiesAccessedImpl(
   }
 }
 
+void MetricsWebContentsObserver::DidActivatePortal(
+    content::WebContents* predecessor_web_contents,
+    base::TimeTicks activation_time) {
+  // The |predecessor_web_contents| is the WebContents that instantiated the
+  // portal.
+  MetricsWebContentsObserver* predecessor_observer =
+      MetricsWebContentsObserver::FromWebContents(predecessor_web_contents);
+  // We only track the portal activation if the predecessor is also being
+  // tracked.
+  if (!committed_load_ || !predecessor_observer ||
+      !predecessor_observer->committed_load_) {
+    return;
+  }
+  committed_load_->DidActivatePortal(activation_time);
+}
+
 void MetricsWebContentsObserver::OnStorageAccessed(const GURL& url,
                                                    const GURL& first_party_url,
                                                    bool blocked_by_policy,
@@ -531,6 +549,17 @@ void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
 
   for (auto& observer : testing_observers_)
     observer.OnCommit(committed_load_.get());
+
+  if (ukm_smoothness_data_.IsValid()) {
+    auto* render_frame_host = navigation_handle->GetRenderFrameHost();
+    const bool is_main_frame =
+        render_frame_host && render_frame_host->GetParent() == nullptr;
+    if (is_main_frame) {
+      committed_load_->metrics_update_dispatcher()
+          ->SetUpSharedMemoryForSmoothness(render_frame_host,
+                                           std::move(ukm_smoothness_data_));
+    }
+  }
 }
 
 void MetricsWebContentsObserver::MaybeStorePageLoadTrackerForBackForwardCache(
@@ -574,7 +603,11 @@ bool MetricsWebContentsObserver::MaybeRestorePageLoadTrackerForBackForwardCache(
 
   committed_load_ = std::move(it->second);
   back_forward_cached_pages_.erase(it);
-  committed_load_->OnRestoreFromBackForwardCache();
+  committed_load_->OnRestoreFromBackForwardCache(navigation_handle);
+
+  for (auto& observer : testing_observers_)
+    observer.OnRestoredFromBackForwardCache(committed_load_.get());
+
   return true;
 }
 
@@ -603,6 +636,9 @@ void MetricsWebContentsObserver::FinalizeCurrentlyCommittedLoad(
     if (is_non_user_initiated_client_redirect) {
       committed_load_->NotifyClientRedirectTo(newly_committed_navigation);
     }
+
+    // Ensure that any pending update gets dispatched.
+    committed_load_->metrics_update_dispatcher()->FlushPendingTimingUpdates();
   }
 }
 
@@ -771,7 +807,8 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing,
     mojom::DeferredResourceCountsPtr new_deferred_resource_data,
-    mojom::InputTimingPtr input_timing_delta) {
+    mojom::InputTimingPtr input_timing_delta,
+    const blink::MobileFriendliness& mobile_friendliness) {
   // We may receive notifications from frames that have been navigated away
   // from. We simply ignore them.
   // TODO(crbug.com/1061060): We should not ignore page timings if the page is
@@ -783,24 +820,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
 
   const bool is_main_frame = (render_frame_host->GetParent() == nullptr);
   if (is_main_frame) {
-    // While timings arriving for the wrong frame are expected, we do not expect
-    // any of the errors below for main frames. Thus, we track occurrences of
-    // all errors below, rather than returning early after encountering an
-    // error.
-    // TODO(crbug/1061090): Update page load metrics IPC validation to ues
-    // mojo::ReportBadMessage.
-    bool error = false;
-    if (!committed_load_) {
-      RecordInternalError(ERR_IPC_WITH_NO_RELEVANT_LOAD);
-      error = true;
-    }
-
-    if (!web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
-      RecordInternalError(ERR_IPC_FROM_BAD_URL_SCHEME);
-      error = true;
-    }
-
-    if (error)
+    if (DoesTimingUpdateHaveError())
       return;
   } else if (!committed_load_) {
     RecordInternalError(ERR_SUBFRAME_IPC_WITH_NO_RELEVANT_LOAD);
@@ -811,8 +831,28 @@ void MetricsWebContentsObserver::OnTimingUpdated(
         render_frame_host, std::move(timing), std::move(metadata),
         std::move(new_features), resources, std::move(render_data),
         std::move(cpu_timing), std::move(new_deferred_resource_data),
-        std::move(input_timing_delta));
+        std::move(input_timing_delta), std::move(mobile_friendliness));
   }
+}
+
+bool MetricsWebContentsObserver::DoesTimingUpdateHaveError() {
+  // While timings arriving for the wrong frame are expected, we do not expect
+  // any of the errors below for main frames. Thus, we track occurrences of
+  // all errors below, rather than returning early after encountering an
+  // error.
+  // TODO(crbug/1061090): Update page load metrics IPC validation to ues
+  // mojo::ReportBadMessage.
+  bool error = false;
+  if (!committed_load_) {
+    RecordInternalError(ERR_IPC_WITH_NO_RELEVANT_LOAD);
+    error = true;
+  }
+
+  if (!web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
+    RecordInternalError(ERR_IPC_FROM_BAD_URL_SCHEME);
+    error = true;
+  }
+  return error;
 }
 
 void MetricsWebContentsObserver::UpdateTiming(
@@ -823,13 +863,34 @@ void MetricsWebContentsObserver::UpdateTiming(
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing,
     mojom::DeferredResourceCountsPtr new_deferred_resource_data,
-    mojom::InputTimingPtr input_timing_delta) {
+    mojom::InputTimingPtr input_timing_delta,
+    const blink::MobileFriendliness& mobile_friendliness) {
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_receiver_.GetCurrentTargetFrame();
   OnTimingUpdated(render_frame_host, std::move(timing), std::move(metadata),
                   std::move(new_features), resources, std::move(render_data),
                   std::move(cpu_timing), std::move(new_deferred_resource_data),
-                  std::move(input_timing_delta));
+                  std::move(input_timing_delta),
+                  std::move(mobile_friendliness));
+}
+
+void MetricsWebContentsObserver::SetUpSharedMemoryForSmoothness(
+    base::ReadOnlySharedMemoryRegion shared_memory) {
+  content::RenderFrameHost* render_frame_host =
+      page_load_metrics_receiver_.GetCurrentTargetFrame();
+  const bool is_main_frame = render_frame_host->GetParent() == nullptr;
+  if (!is_main_frame) {
+    // TODO(1115136): Merge smoothness metrics from OOPIFs with the main-frame.
+    return;
+  }
+
+  if (committed_load_) {
+    committed_load_->metrics_update_dispatcher()
+        ->SetUpSharedMemoryForSmoothness(render_frame_host,
+                                         std::move(shared_memory));
+  } else {
+    ukm_smoothness_data_ = std::move(shared_memory);
+  }
 }
 
 bool MetricsWebContentsObserver::ShouldTrackMainFrameNavigation(
@@ -837,12 +898,6 @@ bool MetricsWebContentsObserver::ShouldTrackMainFrameNavigation(
   DCHECK(navigation_handle->IsInMainFrame());
   DCHECK(!navigation_handle->HasCommitted() ||
          !navigation_handle->IsSameDocument());
-  // If there is an outer WebContents, then this WebContents is embedded into
-  // another one (it is either a portal or a Chrome App <webview>). Ignore these
-  // navigations for now.
-  if (web_contents()->GetOuterWebContents())
-    return false;
-
   // Ignore non-HTTP schemes (e.g. chrome://).
   if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
     return false;

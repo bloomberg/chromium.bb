@@ -18,10 +18,14 @@
 #include "third_party/mDNSResponder/src/mDNSCore/mDNSEmbeddedAPI.h"
 #include "util/osp_logging.h"
 
+namespace {
+
 using std::chrono::duration_cast;
 using std::chrono::hours;
 using std::chrono::milliseconds;
 using std::chrono::seconds;
+
+}  // namespace
 
 extern "C" {
 
@@ -73,7 +77,11 @@ void mDNSPlatformLock(const mDNS* m) {
 void mDNSPlatformUnlock(const mDNS* m) {}
 
 void mDNSPlatformStrCopy(void* dst, const void* src) {
-  std::strcpy(static_cast<char*>(dst), static_cast<const char*>(src));
+  // Unfortunately, the caller is responsible for making sure that dst
+  // if of sufficient length to store the src string. Otherwise we may
+  // cause an access violation.
+  std::strcpy(static_cast<char*>(dst),  // NOLINT
+              static_cast<const char*>(src));
 }
 
 mDNSu32 mDNSPlatformStrLen(const void* src) {
@@ -183,15 +191,17 @@ void mDNSPlatformTCPCloseConnection(TCPSocket* sock) {
   OSP_UNIMPLEMENTED();
 }
 
-long mDNSPlatformReadTCP(TCPSocket* sock,
+long mDNSPlatformReadTCP(TCPSocket* sock,  // NOLINT
                          void* buf,
-                         unsigned long buflen,
+                         unsigned long buflen,  // NOLINT
                          mDNSBool* closed) {
   OSP_UNIMPLEMENTED();
   return 0;
 }
 
-long mDNSPlatformWriteTCP(TCPSocket* sock, const char* msg, unsigned long len) {
+long mDNSPlatformWriteTCP(TCPSocket* sock,  // NOLINT
+                          const char* msg,
+                          unsigned long len) {  // NOLINT
   OSP_UNIMPLEMENTED();
   return 0;
 }

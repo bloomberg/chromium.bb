@@ -12,11 +12,12 @@ import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.util.ConversionUtils;
+import org.chromium.components.browser_ui.util.GlobalDiscardableReferencePool;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTile;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinator;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinatorFactory;
@@ -95,6 +96,20 @@ public class OmniboxQueryTileCoordinator {
         suggestionView.addView(tilesView);
     }
 
+    /**
+     * Triggered when current user profile is changed. This method creates image fetcher using
+     * current user profile.
+     * @param profile Current user profile.
+     */
+    public void setProfile(Profile profile) {
+        if (mImageFetcher != null) {
+            mImageFetcher.destroy();
+            mImageFetcher = null;
+        }
+
+        mImageFetcher = createImageFetcher(profile);
+    }
+
     /** @return A {@link ImageTileCoordinator} instance. Creates if it doesn't exist yet. */
     private ImageTileCoordinator getTileCoordinator() {
         if (mTileCoordinator == null) {
@@ -128,14 +143,23 @@ public class OmniboxQueryTileCoordinator {
         getImageFetcher().fetchImage(params, bitmap -> callback.onResult(Arrays.asList(bitmap)));
     }
 
-    /** Create an ImageFetcher instance. Only created if needed. */
+    /** @return {@link ImageFetcher} instance. Only creates if needed. */
     private ImageFetcher getImageFetcher() {
         if (mImageFetcher == null) {
-            mImageFetcher = ImageFetcherFactory.createImageFetcher(
-                    ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
-                    GlobalDiscardableReferencePool.getReferencePool(), MAX_IMAGE_CACHE_SIZE);
+            // This will be called only if there is no tab. Using regular profile is safe, since
+            // mImageFetcher is updated, when switching to incognito mode.
+            mImageFetcher = createImageFetcher(Profile.getLastUsedRegularProfile());
         }
         return mImageFetcher;
+    }
+
+    /**
+     * @param profile The profile to create image fetcher.
+     * @return an {@link ImageFetcher} instance for given profile.
+     */
+    private ImageFetcher createImageFetcher(Profile profile) {
+        return ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
+                profile, GlobalDiscardableReferencePool.getReferencePool(), MAX_IMAGE_CACHE_SIZE);
     }
 
     private void onTileClicked(ImageTile tile) {

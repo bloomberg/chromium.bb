@@ -10,12 +10,14 @@
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/identifiability_metrics.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/renderer_extension_registry.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -115,8 +117,14 @@ bool ResourceRequestPolicy::CanRequestResource(
   // extension with no web accessible resources. We aren't worried about any
   // extensions with web accessible resources, since those are inherently
   // identifiable.
-  if (!is_dev_tools && !web_accessible_ids_.count(extension_origin.host()))
+  if (!is_dev_tools && !web_accessible_ids_.count(extension_origin.host())) {
+    // Failures are recorded here, successes will be in the browser.
+    RecordExtensionResourceAccessResult(
+        ukm::SourceIdObj::FromInt64(frame->GetDocument().GetUkmSourceId()),
+        resource_url, ExtensionResourceAccessResult::kFailure);
+
     return false;
+  }
 
   const Extension* extension =
       RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(resource_url);
@@ -147,6 +155,9 @@ bool ResourceRequestPolicy::CanRequestResource(
           .ContainsPath(resource_root_relative_path)) {
     LOG(ERROR) << "Denying load of " << resource_url.spec() << " from "
                << "hosted app.";
+    RecordExtensionResourceAccessResult(
+        ukm::SourceIdObj::FromInt64(frame->GetDocument().GetUkmSourceId()),
+        resource_url, ExtensionResourceAccessResult::kFailure);
     return false;
   }
 
@@ -165,6 +176,9 @@ bool ResourceRequestPolicy::CanRequestResource(
     frame->AddMessageToConsole(
         blink::WebConsoleMessage(blink::mojom::ConsoleMessageLevel::kError,
                                  blink::WebString::FromUTF8(message)));
+    RecordExtensionResourceAccessResult(
+        ukm::SourceIdObj::FromInt64(frame->GetDocument().GetUkmSourceId()),
+        resource_url, ExtensionResourceAccessResult::kFailure);
     return false;
   }
 

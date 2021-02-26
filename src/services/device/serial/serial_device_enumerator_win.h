@@ -23,14 +23,8 @@ class SerialDeviceEnumeratorWin : public SerialDeviceEnumerator {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~SerialDeviceEnumeratorWin() override;
 
-  // Searches for the COM port in the device's friendly name and returns the
-  // appropriate device path or nullopt if the input did not contain a valid
-  // name.
-  static base::Optional<base::FilePath> GetPath(
-      const std::string& friendly_name);
-
-  void OnPathAdded(const base::string16& device_path);
-  void OnPathRemoved(const base::string16& device_path);
+  void OnPathAdded(const std::wstring& device_path);
+  void OnPathRemoved(const std::wstring& device_path);
 
  private:
   class UiThreadHelper;

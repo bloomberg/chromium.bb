@@ -14,6 +14,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 
 namespace chromeos {
@@ -35,14 +36,14 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
       const dbus::ObjectPath& service_path,
       ShillPropertyChangedObserver* observer) override;
   void GetProperties(const dbus::ObjectPath& service_path,
-                     DictionaryValueCallback callback) override;
+                     DBusMethodCallback<base::Value> callback) override;
   void SetProperty(const dbus::ObjectPath& service_path,
                    const std::string& name,
                    const base::Value& value,
                    base::OnceClosure callback,
                    ErrorCallback error_callback) override;
   void SetProperties(const dbus::ObjectPath& service_path,
-                     const base::DictionaryValue& properties,
+                     const base::Value& properties,
                      base::OnceClosure callback,
                      ErrorCallback error_callback) override;
   void ClearProperty(const dbus::ObjectPath& service_path,
@@ -62,15 +63,12 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   void Remove(const dbus::ObjectPath& service_path,
               base::OnceClosure callback,
               ErrorCallback error_callback) override;
-  void ActivateCellularModem(const dbus::ObjectPath& service_path,
-                             const std::string& carrier,
-                             base::OnceClosure callback,
-                             ErrorCallback error_callback) override;
   void CompleteCellularActivation(const dbus::ObjectPath& service_path,
                                   base::OnceClosure callback,
                                   ErrorCallback error_callback) override;
-  void GetLoadableProfileEntries(const dbus::ObjectPath& service_path,
-                                 DictionaryValueCallback callback) override;
+  void GetLoadableProfileEntries(
+      const dbus::ObjectPath& service_path,
+      DBusMethodCallback<base::Value> callback) override;
   void GetWiFiPassphrase(const dbus::ObjectPath& service_path,
                          StringCallback callback,
                          ErrorCallback error_callback) override;
@@ -90,17 +88,17 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
                               const std::string& state,
                               const std::string& ipconfig_path,
                               bool visible) override;
-  base::DictionaryValue* SetServiceProperties(const std::string& service_path,
-                                              const std::string& guid,
-                                              const std::string& name,
-                                              const std::string& type,
-                                              const std::string& state,
-                                              bool visible) override;
+  base::Value* SetServiceProperties(const std::string& service_path,
+                                    const std::string& guid,
+                                    const std::string& name,
+                                    const std::string& type,
+                                    const std::string& state,
+                                    bool visible) override;
   void RemoveService(const std::string& service_path) override;
   bool SetServiceProperty(const std::string& service_path,
                           const std::string& property,
                           const base::Value& value) override;
-  const base::DictionaryValue* GetServiceProperties(
+  const base::Value* GetServiceProperties(
       const std::string& service_path) const override;
   bool ClearConfiguredServiceProperties(
       const std::string& service_path) override;
@@ -118,16 +116,15 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
 
   void NotifyObserversPropertyChanged(const dbus::ObjectPath& service_path,
                                       const std::string& property);
-  base::DictionaryValue* GetModifiableServiceProperties(
-      const std::string& service_path,
-      bool create_if_missing);
+  base::Value* GetModifiableServiceProperties(const std::string& service_path,
+                                              bool create_if_missing);
   PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path);
   void SetOtherServicesOffline(const std::string& service_path);
   void SetCellularActivated(const dbus::ObjectPath& service_path,
                             ErrorCallback error_callback);
   void ContinueConnect(const std::string& service_path);
 
-  base::DictionaryValue stub_services_;
+  base::Value stub_services_{base::Value::Type::DICTIONARY};
 
   // Per network service, stores a closure that is executed on each connection
   // attempt. The callback can for example modify the services properties in

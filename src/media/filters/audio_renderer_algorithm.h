@@ -40,11 +40,6 @@ class AudioBus;
 
 class MEDIA_EXPORT AudioRendererAlgorithm {
  public:
-  // Upper and lower bounds at which we prefer to use a resampler rather than
-  // WSOLA, to prevent audio artifacts.
-  static constexpr double kUpperResampleThreshold = 1.06;
-  static constexpr double kLowerResampleThreshold = 0.95;
-
   AudioRendererAlgorithm(MediaLog* media_log);
   AudioRendererAlgorithm(MediaLog* media_log,
                          AudioRendererAlgorithmParameters params);
@@ -89,6 +84,11 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // |playback_threshold_|. It may also cause an increase in |capacity_|. A
   // value of nullopt indicates the algorithm should restore the default value.
   void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint);
+
+  // Sets a flag indicating whether apply pitch adjustments when playing back
+  // at rates other than 1.0. Concretely, we use WSOLA when this is true, and
+  // resampling when this is false.
+  void SetPreservesPitch(bool preserves_pitch);
 
   // Returns true if the |audio_buffer_| is >= |playback_threshold_|.
   bool IsQueueAdequateForPlayback();
@@ -202,6 +202,11 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // start latency. See SetLatencyHint();
   base::Optional<base::TimeDelta> latency_hint_;
 
+  // Whether to apply pitch adjusments or not when playing back at rates other
+  // than 1.0. In other words, we use WSOLA to preserve pitch when this is on,
+  // and resampling when this
+  bool preserves_pitch_ = true;
+
   // How many frames to have in queue before beginning playback.
   int64_t playback_threshold_;
 
@@ -252,6 +257,11 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // prevent noticeable audio artifacts introduced by WSOLA, at the expense of
   // changing the pitch of the audio.
   std::unique_ptr<MultiChannelResampler> resampler_;
+
+  // True when the last call to OnResamplerRead() only gave silence to
+  // |resampler_|. Used to determine whether or not we have played out all the
+  // valid audio from |resampler.BufferedFrames()|.
+  bool resampler_only_has_silence_ = false;
 
   // This stores a part of the output that is created but couldn't be rendered.
   // Output is generated frame-by-frame which at some point might exceed the

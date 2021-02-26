@@ -15,14 +15,23 @@ namespace openscreen {
 class TrivialClockTraits {
  public:
   // TrivialClock named requirements: std::chrono templates can/may use these.
+  // NOTE: unless you are specifically integrating with the clock, you probably
+  // don't want to use these types, and instead should reference the std::chrono
+  // types directly.
   using duration = std::chrono::microseconds;
   using rep = duration::rep;
   using period = duration::period;
   using time_point = std::chrono::time_point<TrivialClockTraits, duration>;
   static constexpr bool is_steady = true;
 
+  // Helper method for named requirements.
+  template <typename D>
+  static constexpr duration to_duration(D d) {
+    return std::chrono::duration_cast<duration>(d);
+  }
+
   // Time point values from the clock use microsecond precision, as a reasonably
-  // high-resoulution clock is required. The time source must tick forward at
+  // high-resolution clock is required. The time source must tick forward at
   // least 10000 times per second.
   using kRequiredResolution = std::ratio<1, 10000>;
 

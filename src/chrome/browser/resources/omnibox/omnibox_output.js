@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
-import './chrome/browser/ui/webui/omnibox/omnibox.mojom-lite.js';
+import {ACMatchClassification, AutocompleteMatch, OmniboxResponse} from '/chrome/browser/ui/webui/omnibox/omnibox.mojom-webui.js';
 
 import {OmniboxElement} from './omnibox_element.js';
-import {OmniboxInput, DisplayInputs} from './omnibox_input.js';
+import {DisplayInputs, OmniboxInput} from './omnibox_input.js';
 
 /**
  * @typedef  {{
@@ -33,7 +32,7 @@ export class OmniboxOutput extends OmniboxElement {
 
     /** @private {number} */
     this.selectedResponseIndex_ = 0;
-    /** @type {!Array<!Array<!mojom.OmniboxResponse>>} */
+    /** @type {!Array<!Array<!OmniboxResponse>>} */
     this.responsesHistory = [];
     /** @private {!Array<!OutputResultsGroup>} */
     this.resultsGroups_ = [];
@@ -55,7 +54,7 @@ export class OmniboxOutput extends OmniboxElement {
     this.updateFilterHighlights_();
   }
 
-  /** @param {!Array<!Array<!mojom.OmniboxResponse>>} responsesHistory */
+  /** @param {!Array<!Array<!OmniboxResponse>>} responsesHistory */
   setResponsesHistory(responsesHistory) {
     this.responsesHistory = responsesHistory;
     this.dispatchEvent(new CustomEvent(
@@ -79,7 +78,7 @@ export class OmniboxOutput extends OmniboxElement {
         'responses-count-changed', {detail: this.responsesHistory.length}));
   }
 
-  /** @param {!mojom.OmniboxResponse} response */
+  /** @param {!OmniboxResponse} response */
   addAutocompleteResponse(response) {
     const lastIndex = this.responsesHistory.length - 1;
     this.responsesHistory[lastIndex].push(response);
@@ -99,7 +98,7 @@ export class OmniboxOutput extends OmniboxElement {
 
   /**
    * Creates and adds a result group to the UI.
-   * @private @param {!mojom.OmniboxResponse} response
+   * @private @param {!OmniboxResponse} response
    */
   createResultsGroup_(response) {
     const resultsGroup = OutputResultsGroup.create(response);
@@ -187,7 +186,7 @@ export class OmniboxOutput extends OmniboxElement {
  */
 class OutputResultsGroup extends OmniboxElement {
   /**
-   * @param {!mojom.OmniboxResponse} resultsGroup
+   * @param {!OmniboxResponse} resultsGroup
    * @return {!OutputResultsGroup}
    */
   static create(resultsGroup) {
@@ -200,7 +199,7 @@ class OutputResultsGroup extends OmniboxElement {
     super('output-results-group-template');
   }
 
-  /** @param {!mojom.OmniboxResponse} resultsGroup */
+  /** @param {!OmniboxResponse} resultsGroup */
   setResultsGroup(resultsGroup) {
     /** @private {ResultsDetails} */
     this.details_ = {
@@ -357,7 +356,7 @@ class OutputResultsDetails extends OmniboxElement {
  */
 class OutputResultsTable extends HTMLTableSectionElement {
   /**
-   * @param {!Array<!mojom.AutocompleteMatch>} results
+   * @param {!Array<!AutocompleteMatch>} results
    * @return {!OutputResultsTable}
    */
   static create(results) {
@@ -373,7 +372,7 @@ class OutputResultsTable extends HTMLTableSectionElement {
     this.autocompleteMatches = [];
   }
 
-  /** @param {!Array<!mojom.AutocompleteMatch>} results */
+  /** @param {!Array<!AutocompleteMatch>} results */
   set results(results) {
     this.autocompleteMatches.forEach(match => match.remove());
     this.autocompleteMatches = results.map(OutputMatch.create);
@@ -404,7 +403,7 @@ class OutputMatch extends HTMLTableRowElement {
   }
 
   /**
-   * @param {!mojom.AutocompleteMatch} match
+   * @param {!AutocompleteMatch} match
    * @return {!OutputMatch}
    */
   static create(match) {
@@ -414,7 +413,7 @@ class OutputMatch extends HTMLTableRowElement {
     return outputMatch;
   }
 
-  /** @param {!mojom.AutocompleteMatch} match */
+  /** @param {!AutocompleteMatch} match */
   set match(match) {
     /** @type {!Object<string, !OutputProperty>} */
     this.properties = {};
@@ -703,11 +702,11 @@ class OutputAnswerProperty extends FlexWrappingOutputProperty {
         this.values_;
     OutputAnswerProperty.renderClassifiedText_(
         this.contents_, /** @type {string} */ (contents),
-        /** @type {!Array<!mojom.ACMatchClassification>} */
+        /** @type {!Array<!ACMatchClassification>} */
         (contentsClassification));
     OutputAnswerProperty.renderClassifiedText_(
         this.description_, /** @type {string} */ (description),
-        /** @type {!Array<!mojom.ACMatchClassification>} */
+        /** @type {!Array<!ACMatchClassification>} */
         (descriptionClassification));
     this.answer_.textContent = answer;
     this.imageUrl_.textContent = image;
@@ -723,7 +722,7 @@ class OutputAnswerProperty extends FlexWrappingOutputProperty {
    * @private
    * @param {!Element} container
    * @param {string} string
-   * @param {!Array<!mojom.ACMatchClassification>} classes
+   * @param {!Array<!ACMatchClassification>} classes
    */
   static renderClassifiedText_(container, string, classes) {
     clearChildren(container);
@@ -736,7 +735,7 @@ class OutputAnswerProperty extends FlexWrappingOutputProperty {
 
   /**
    * @param {string} string
-   * @param {!Array<!mojom.ACMatchClassification>} classes
+   * @param {!Array<!ACMatchClassification>} classes
    * @return {!Array<{string: string, style: number}>}
    */
   static classify(string, classes) {
@@ -1052,22 +1051,22 @@ const COLUMNS = [
       ],
       OutputAnswerProperty),
   new Column(
-      ['S'], '', 'swapContentsAndDescription', false,
+      ['sw'], '', 'swapContentsAndDescription', false,
       'Swap Contents and Description', ['swapContentsAndDescription'],
       OutputBooleanProperty),
   new Column(
-      ['D'], '', 'allowedToBeDefaultMatch', true,
+      ['df'], '', 'allowedToBeDefaultMatch', true,
       'Can be Default\nA green checkmark indicates that the result can be ' +
           'the default match (i.e., can be the match that pressing enter ' +
           'in the omnibox navigates to).',
       ['allowedToBeDefaultMatch'], OutputBooleanProperty),
   new Column(
-      ['S'], '', 'starred', false,
-      'Starred\nA green checkmark indicates that the result has been ' +
+      ['bk'], '', 'starred', false,
+      'Bookmarked\nA green checkmark indicates that the result has been ' +
           'bookmarked.',
       ['starred'], OutputBooleanProperty),
   new Column(
-      ['T'], '', 'hasTabMatch', false,
+      ['tb'], '', 'hasTabMatch', false,
       'Has Tab Match\nA green checkmark indicates that the result URL ' +
           'matches an open tab.',
       ['hasTabMatch'], OutputBooleanProperty),
@@ -1084,12 +1083,12 @@ const COLUMNS = [
           'selection following the cursor, if this match is shown inline.',
       ['fillIntoEdit', 'inlineAutocompletion'], OutputOverlappingPairProperty),
   new Column(
-      ['D'], '', 'deletable', false,
+      ['dl'], '', 'deletable', false,
       'Deletable\nA green checkmark indicates that the result can be ' +
           'deleted from the visit history.',
       ['deletable'], OutputBooleanProperty),
   new Column(
-      ['P'], '', 'fromPrevious', false,
+      ['pr'], '', 'fromPrevious', false,
       'From Previous\nTrue if this match is from a previous result.',
       ['fromPrevious'], OutputBooleanProperty),
   new Column(
@@ -1099,7 +1098,7 @@ const COLUMNS = [
       'transition', false, 'Transition\nHow the user got to the result.',
       ['transition'], OutputTextProperty),
   new Column(
-      ['D'], '', 'providerDone', false,
+      ['dn'], '', 'providerDone', false,
       'Done\nA green checkmark indicates that the provider is done looking ' +
           'for more results.',
       ['providerDone'], OutputBooleanProperty),
@@ -1113,10 +1112,15 @@ const COLUMNS = [
       'Keyword\nThe keyword of the search engine to be used.', ['keyword'],
       OutputTextProperty),
   new Column(
-      ['D'], '', 'duplicates', false,
+      ['dp'], '', 'duplicates', false,
       'Duplicates\nThe number of matches that have been marked as ' +
           'duplicates of this match.',
       ['duplicates'], OutputTextProperty),
+  new Column(
+      ['pi'],
+      'https://source.chromium.org/chromium/chromium/src/+/master:components/omnibox/browser/omnibox_pedal_concepts.h;l=19;drc=c741e070dbfcc33b2369e7a5131be87c7b21bb99',
+      'pedalId', false, 'Pedal ID\nThe ID of attached Pedal, or zero if none.',
+      ['pedalId'], OutputTextProperty),
   new Column(
       ['Additional Info'], '', 'additionalInfo', false,
       'Additional Info\nProvider-specific information about the result.',

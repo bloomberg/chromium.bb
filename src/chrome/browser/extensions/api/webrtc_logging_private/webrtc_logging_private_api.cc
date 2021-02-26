@@ -91,13 +91,13 @@ content::RenderProcessHost* WebrtcLoggingPrivateFunction::RphFromRequest(
     std::string* error) {
   // There are 2 ways these API functions can get called.
   //
-  //  1. From a whitelisted component extension on behalf of a page with the
+  //  1. From an allowlisted component extension on behalf of a page with the
   //  appropriate origin via a message from that page. In this case, either the
   //  guest process id or the tab id is on the message received by the component
   //  extension, and the extension can pass that along in RequestInfo as
   //  |guest_process_id| or |tab_id|.
   //
-  //  2. From a whitelisted app that hosts a page in a webview. In this case,
+  //  2. From an allowlisted app that hosts a page in a webview. In this case,
   //  the app should call these API functions with the |target_webview| flag
   //  set, from a web contents that has exactly 1 webview .
 
@@ -220,7 +220,7 @@ void WebrtcLoggingPrivateFunctionWithUploadCallback::FireCallback(
   if (success) {
     api::webrtc_logging_private::UploadResult result;
     result.report_id = report_id;
-    Respond(OneArgument(result.ToValue()));
+    Respond(OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
   } else {
     Respond(Error(error_message));
   }
@@ -241,7 +241,7 @@ void WebrtcLoggingPrivateFunctionWithRecordingDoneCallback::FireCallback(
   result.prefix_path = prefix_path;
   result.did_stop = did_stop;
   result.did_manual_stop = did_manual_stop;
-  Respond(OneArgument(result.ToValue()));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
 }
 
 ExtensionFunction::ResponseAction
@@ -261,7 +261,8 @@ WebrtcLoggingPrivateSetMetaDataFunction::Run() {
   for (const MetaDataEntry& entry : params->meta_data)
     (*meta_data)[entry.key] = entry.value;
 
-  webrtc_logging_controller->SetMetaData(std::move(meta_data), callback);
+  webrtc_logging_controller->SetMetaData(std::move(meta_data),
+                                         std::move(callback));
   return RespondLater();
 }
 
@@ -276,7 +277,7 @@ ExtensionFunction::ResponseAction WebrtcLoggingPrivateStartFunction::Run() {
   if (!webrtc_logging_controller)
     return RespondNow(Error(std::move(error)));
 
-  webrtc_logging_controller->StartLogging(callback);
+  webrtc_logging_controller->StartLogging(std::move(callback));
   return RespondLater();
 }
 
@@ -310,7 +311,7 @@ ExtensionFunction::ResponseAction WebrtcLoggingPrivateStopFunction::Run() {
   if (!webrtc_logging_controller)
     return RespondNow(Error(std::move(error)));
 
-  webrtc_logging_controller->StopLogging(callback);
+  webrtc_logging_controller->StopLogging(std::move(callback));
   return RespondLater();
 }
 
@@ -328,7 +329,7 @@ ExtensionFunction::ResponseAction WebrtcLoggingPrivateStoreFunction::Run() {
   const std::string local_log_id(HashIdWithOrigin(params->security_origin,
                                                   params->log_id));
 
-  webrtc_logging_controller->StoreLog(local_log_id, callback);
+  webrtc_logging_controller->StoreLog(local_log_id, std::move(callback));
   return RespondLater();
 }
 
@@ -350,7 +351,7 @@ WebrtcLoggingPrivateUploadStoredFunction::Run() {
   const std::string local_log_id(HashIdWithOrigin(params->security_origin,
                                                   params->log_id));
 
-  logging_controller->UploadStoredLog(local_log_id, callback);
+  logging_controller->UploadStoredLog(local_log_id, std::move(callback));
   return RespondLater();
 }
 
@@ -367,7 +368,7 @@ ExtensionFunction::ResponseAction WebrtcLoggingPrivateUploadFunction::Run() {
   WebRtcLoggingController::UploadDoneCallback callback =
       base::Bind(&WebrtcLoggingPrivateUploadFunction::FireCallback, this);
 
-  logging_controller->UploadLog(callback);
+  logging_controller->UploadLog(std::move(callback));
   return RespondLater();
 }
 
@@ -382,7 +383,7 @@ ExtensionFunction::ResponseAction WebrtcLoggingPrivateDiscardFunction::Run() {
   if (!webrtc_logging_controller)
     return RespondNow(Error(std::move(error)));
 
-  webrtc_logging_controller->DiscardLog(callback);
+  webrtc_logging_controller->DiscardLog(std::move(callback));
   return RespondLater();
 }
 
@@ -415,7 +416,7 @@ WebrtcLoggingPrivateStartRtpDumpFunction::Run() {
   WebRtcLoggingController::GenericDoneCallback callback =
       base::Bind(&WebrtcLoggingPrivateStartRtpDumpFunction::FireCallback, this);
 
-  webrtc_logging_controller->StartRtpDump(type, callback);
+  webrtc_logging_controller->StartRtpDump(type, std::move(callback));
   return RespondLater();
 }
 
@@ -448,7 +449,7 @@ WebrtcLoggingPrivateStopRtpDumpFunction::Run() {
   WebRtcLoggingController::GenericDoneCallback callback =
       base::Bind(&WebrtcLoggingPrivateStopRtpDumpFunction::FireCallback, this);
 
-  webrtc_logging_controller->StopRtpDump(type, callback);
+  webrtc_logging_controller->StopRtpDump(type, std::move(callback));
   return RespondLater();
 }
 
@@ -560,7 +561,7 @@ void WebrtcLoggingPrivateStartEventLoggingFunction::FireCallback(
     DCHECK(error_message.empty());
     api::webrtc_logging_private::StartEventLoggingResult result;
     result.log_id = log_id;
-    Respond(OneArgument(result.ToValue()));
+    Respond(OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
   } else {
     DCHECK(log_id.empty());
     DCHECK(!error_message.empty());
@@ -605,7 +606,7 @@ void WebrtcLoggingPrivateGetLogsDirectoryFunction::FireCallback(
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("fileSystemId", filesystem_id);
   dict->SetString("baseName", base_name);
-  Respond(OneArgument(std::move(dict)));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
 }
 
 void WebrtcLoggingPrivateGetLogsDirectoryFunction::FireErrorCallback(

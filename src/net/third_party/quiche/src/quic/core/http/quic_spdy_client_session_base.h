@@ -102,13 +102,13 @@ class QUIC_EXPORT_PRIVATE QuicSpdyClientSessionBase
   void ResetPromised(QuicStreamId id, QuicRstStreamErrorCode error_code);
 
   // Release headers stream's sequencer buffer if it's empty.
-  void CloseStreamInner(QuicStreamId stream_id, bool rst_sent) override;
-
-  // Release headers stream's sequencer buffer if it's empty.
   void OnStreamClosed(QuicStreamId stream_id) override;
 
   // Returns true if there are no active requests and no promised streams.
   bool ShouldReleaseHeadersStreamSequencerBuffer() override;
+
+  // Override to wait for all received responses to be consumed by application.
+  bool ShouldKeepConnectionAlive() const override;
 
   size_t get_max_promises() const {
     return max_open_incoming_unidirectional_streams() *
@@ -120,7 +120,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyClientSessionBase
   }
 
   // Override to serialize the settings and pass it down to the handshaker.
-  void OnSettingsFrame(const SettingsFrame& frame) override;
+  bool OnSettingsFrame(const SettingsFrame& frame) override;
 
  private:
   // For QuicSpdyClientStream to detect that a response corresponds to a

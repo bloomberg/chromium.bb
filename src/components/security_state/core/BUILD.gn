@@ -2,26 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
-
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
 }
 
-jumbo_static_library("core") {
+static_library("core") {
   sources = [
     "insecure_input_event_data.h",
     "security_state.cc",
     "security_state.h",
-    "security_state_pref_names.cc",
-    "security_state_pref_names.h",
   ]
 
   public_deps = [
     ":features",
     "//base",
-    "//components/prefs",
     "//net",
     "//url",
   ]
@@ -40,7 +35,7 @@ if (is_android) {
   }
 }
 
-jumbo_source_set("unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [ "security_state_unittest.cc" ]
 

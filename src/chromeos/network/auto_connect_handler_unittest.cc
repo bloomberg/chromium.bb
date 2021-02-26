@@ -79,22 +79,23 @@ class TestCertResolveObserver : public ClientCertResolver::Observer {
 class TestNetworkConnectionHandler : public NetworkConnectionHandler {
  public:
   TestNetworkConnectionHandler(
-      const base::Callback<void(const std::string&)>& disconnect_handler)
-      : NetworkConnectionHandler(), disconnect_handler_(disconnect_handler) {}
+      base::OnceCallback<void(const std::string&)> disconnect_handler)
+      : NetworkConnectionHandler(),
+        disconnect_handler_(std::move(disconnect_handler)) {}
   ~TestNetworkConnectionHandler() override = default;
 
   // NetworkConnectionHandler:
   void DisconnectNetwork(
       const std::string& service_path,
       base::OnceClosure success_callback,
-      const network_handler::ErrorCallback& error_callback) override {
-    disconnect_handler_.Run(service_path);
+      network_handler::ErrorCallback error_callback) override {
+    std::move(disconnect_handler_).Run(service_path);
     std::move(success_callback).Run();
   }
 
   void ConnectToNetwork(const std::string& service_path,
                         base::OnceClosure success_callback,
-                        const network_handler::ErrorCallback& error_callback,
+                        network_handler::ErrorCallback error_callback,
                         bool check_error_state,
                         ConnectCallbackMode mode) override {}
 
@@ -104,7 +105,7 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
                 managed_network_configuration_handler) override {}
 
  private:
-  base::Callback<void(const std::string&)> disconnect_handler_;
+  base::OnceCallback<void(const std::string&)> disconnect_handler_;
 };
 
 }  // namespace
@@ -143,7 +144,7 @@ class AutoConnectHandlerTest : public testing::Test {
         nullptr /* prohibited_technologies_handler */);
 
     test_network_connection_handler_.reset(
-        new TestNetworkConnectionHandler(base::Bind(
+        new TestNetworkConnectionHandler(base::BindOnce(
             &AutoConnectHandlerTest::SetDisconnected, base::Unretained(this))));
 
     client_cert_resolver_.reset(new ClientCertResolver());
@@ -223,28 +224,25 @@ class AutoConnectHandlerTest : public testing::Test {
   void SetupPolicy(const std::string& network_configs_json,
                    const base::DictionaryValue& global_config,
                    bool user_policy) {
-    std::unique_ptr<base::ListValue> network_configs(new base::ListValue);
+    base::ListValue network_configs;
     if (!network_configs_json.empty()) {
-      std::string error;
-      std::unique_ptr<base::Value> network_configs_value =
-          base::JSONReader::ReadAndReturnErrorDeprecated(
-              network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
-              &error);
-      ASSERT_TRUE(network_configs_value) << error;
+      base::JSONReader::ValueWithError parsed_json =
+          base::JSONReader::ReadAndReturnValueWithError(
+              network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS);
+      ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
       base::ListValue* network_configs_list = nullptr;
-      ASSERT_TRUE(network_configs_value->GetAsList(&network_configs_list));
-      ignore_result(network_configs_value.release());
-      network_configs.reset(network_configs_list);
+      ASSERT_TRUE(parsed_json.value->GetAsList(&network_configs_list));
+      network_configs = std::move(*network_configs_list);
     }
 
     if (user_policy) {
       managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
-                                         helper_.UserHash(), *network_configs,
+                                         helper_.UserHash(), network_configs,
                                          global_config);
     } else {
       managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY,
                                          std::string(),  // no username hash
-                                         *network_configs, global_config);
+                                         network_configs, global_config);
     }
     task_environment_.RunUntilIdle();
   }
@@ -582,7 +580,7 @@ TEST_F(AutoConnectHandlerTest, ManualConnectAbortsReconnectAfterLogin) {
   EXPECT_EQ(0, test_observer_->num_auto_connect_events());
 }
 
-TEST_F(AutoConnectHandlerTest, DisconnectFromBlacklistedNetwork) {
+TEST_F(AutoConnectHandlerTest, DisconnectFromBlockedNetwork) {
   std::string wifi0_service_path =
       ConfigureService(kConfigWifi0UnmanagedSharedConnected);
   ASSERT_FALSE(wifi0_service_path.empty());
@@ -598,18 +596,18 @@ TEST_F(AutoConnectHandlerTest, DisconnectFromBlacklistedNetwork) {
 
   // Apply a device policy, which blocks wifi0. No disconnects should occur
   // since we wait for both device & user policy before possibly disconnecting.
-  base::Value::ListStorage blacklist;
-  blacklist.push_back(base::Value("7769666930"));  // hex(wifi0) = 7769666930
+  base::Value::ListStorage blocked;
+  blocked.push_back(base::Value("7769666930"));  // hex(wifi0) = 7769666930
   base::DictionaryValue global_config;
-  global_config.SetKey(::onc::global_network_config::kBlacklistedHexSSIDs,
-                       base::Value(blacklist));
+  global_config.SetKey(::onc::global_network_config::kBlockedHexSSIDs,
+                       base::Value(blocked));
   SetupPolicy(std::string(), global_config, false /* load as device policy */);
   EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
   EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
   EXPECT_TRUE(helper().profile_test()->HasService(wifi0_service_path));
 
-  // Apply an empty user policy (no whitelist for wifi0). Connection to wifi0
-  // should be disconnected due to being blacklisted.
+  // Apply an empty user policy (no allow list for wifi0). Connection to wifi0
+  // should be disconnected due to being blocked.
   SetupPolicy(std::string(), base::DictionaryValue(),
               true /* load as user policy */);
   EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi0_service_path));
@@ -644,7 +642,7 @@ TEST_F(AutoConnectHandlerTest, AllowOnlyPolicyNetworksToConnectIfAvailable) {
   EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
   EXPECT_TRUE(helper().profile_test()->HasService(wifi0_service_path));
 
-  // Apply an empty user policy (no whitelist for wifi0). Connection to wifi0
+  // Apply an empty user policy (no allow list for wifi0). Connection to wifi0
   // should be disconnected due to being unmanaged and managed network wifi1
   // being available. wifi0 configuration should not be removed.
   SetupPolicy(std::string(), base::DictionaryValue(),

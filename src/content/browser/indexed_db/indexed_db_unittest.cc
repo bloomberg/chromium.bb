@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -49,7 +49,7 @@ void CreateAndBindTransactionPlaceholder(
 
 class LevelDBLock {
  public:
-  LevelDBLock() : env_(nullptr), lock_(nullptr) {}
+  LevelDBLock() = default;
   LevelDBLock(leveldb::Env* env, leveldb::FileLock* lock)
       : env_(env), lock_(lock) {}
   ~LevelDBLock() {
@@ -58,8 +58,8 @@ class LevelDBLock {
   }
 
  private:
-  leveldb::Env* env_;
-  leveldb::FileLock* lock_;
+  leveldb::Env* env_ = nullptr;
+  leveldb::FileLock* lock_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBLock);
 };
@@ -85,21 +85,22 @@ class IndexedDBTest : public testing::Test {
   IndexedDBTest()
       : kNormalOrigin(url::Origin::Create(GURL("http://normal/"))),
         kSessionOnlyOrigin(url::Origin::Create(GURL("http://session-only/"))),
-        special_storage_policy_(
-            base::MakeRefCounted<storage::MockSpecialStoragePolicy>()),
         quota_manager_proxy_(
             base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr,
                                                                  nullptr)),
         context_(base::MakeRefCounted<IndexedDBContextImpl>(
             CreateAndReturnTempDir(&temp_dir_),
-            /*special_storage_policy=*/special_storage_policy_.get(),
             quota_manager_proxy_.get(),
             base::DefaultClock::GetInstance(),
             /*blob_storage_context=*/mojo::NullRemote(),
             /*native_file_system_context=*/mojo::NullRemote(),
             base::SequencedTaskRunnerHandle::Get(),
             base::SequencedTaskRunnerHandle::Get())) {
-    special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin.GetURL());
+    std::vector<storage::mojom::IndexedDBStoragePolicyUpdatePtr> policy_updates;
+    bool should_purge_on_shutdown = true;
+    policy_updates.push_back(storage::mojom::IndexedDBStoragePolicyUpdate::New(
+        kSessionOnlyOrigin, should_purge_on_shutdown));
+    context_->ApplyPolicyUpdates(std::move(policy_updates));
   }
   ~IndexedDBTest() override {
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
@@ -152,7 +153,6 @@ class IndexedDBTest : public testing::Test {
 
  protected:
   IndexedDBContextImpl* context() const { return context_.get(); }
-  scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
 
  private:
@@ -228,7 +228,7 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
   IndexedDBConnection* connection() { return connection_.get(); }
 
  protected:
-  ~ForceCloseDBCallbacks() override {}
+  ~ForceCloseDBCallbacks() override = default;
 
  private:
   scoped_refptr<IndexedDBContextImpl> idb_context_;

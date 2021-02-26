@@ -64,6 +64,9 @@ public:
      *  the vertex shader. For positions or vectors, markerName identifies what matrix is used in
      *  the vertex shader to transform the data. Those names should match a named transform on the
      *  CTM stack, created by calling SkCanvas::markCTM().
+     *
+     *  For attributes with a usage of kVector, kNormalVector, or kPosition, a null markerName
+     *  will transform the attribute by the canvas CTM matrix.
      */
     struct Attribute {
         enum class Type : uint8_t {
@@ -169,7 +172,7 @@ public:
 
     // Provides access to functions that aren't part of the public API.
     SkVerticesPriv priv();
-    const SkVerticesPriv priv() const;
+    const SkVerticesPriv priv() const;  // NOLINT(readability-const-return-type)
 
 private:
     SkVertices() {}

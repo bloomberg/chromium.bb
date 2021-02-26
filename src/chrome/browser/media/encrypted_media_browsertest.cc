@@ -78,7 +78,8 @@ const char kExternalClearKeyStorageIdTestKeySystem[] =
 // Sessions to load.
 const char kNoSessionToLoad[] = "";
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-const char kLoadableSession[] = "LoadableSession";
+const char kPersistentLicense[] = "PersistentLicense";
+const char kPersistentUsageRecord[] = "PersistentUsageRecord";
 const char kUnknownSession[] = "UnknownSession";
 #endif
 
@@ -354,6 +355,9 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
     command_line->AppendSwitchASCII(
         switches::kOverrideEnabledCdmInterfaceVersion,
         base::NumberToString(GetCdmInterfaceVersion()));
+    command_line->AppendSwitchASCII(
+        switches::kEnableBlinkFeatures,
+        "EncryptedMediaPersistentUsageRecordSession");
   }
 };
 
@@ -368,7 +372,7 @@ class ECKEncryptedMediaOutputProtectionTest
     // Make sure the Clear Key CDM is properly registered in CdmRegistry.
     EXPECT_TRUE(IsLibraryCdmRegistered(media::kClearKeyCdmGuid));
 
-#if defined(OS_LINUX) && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
     // QueryOutputProtectionStatus() is known to fail on Linux Chrome OS builds.
     std::string expected_title = kEmeUnitTestFailure;
 #else
@@ -859,8 +863,9 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_MessageTypeTest) {
   EXPECT_EQ(3, num_received_message_types);
 }
 
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadLoadableSession) {
-  TestPlaybackCase(kExternalClearKeyKeySystem, kLoadableSession, media::kEnded);
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadPersistentLicense) {
+  TestPlaybackCase(kExternalClearKeyKeySystem, kPersistentLicense,
+                   media::kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadUnknownSession) {
@@ -873,6 +878,18 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadSessionAfterClose) {
   RunEncryptedMediaTestPage("eme_load_session_after_close_test.html",
                             kExternalClearKeyKeySystem, query_params,
                             media::kEnded);
+}
+
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, VerifyPersistentUsageRecord) {
+  TestPlaybackCase(kExternalClearKeyKeySystem, kPersistentUsageRecord,
+                   media::kEnded);
+}
+
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, RemovePersistentUsageRecord) {
+  RunEncryptedMediaTest("eme_remove_session_test.html",
+                        "bear-320x240-v_enc-v.webm", kExternalClearKeyKeySystem,
+                        SrcType::MSE, kPersistentUsageRecord, false,
+                        PlayCount::ONCE, media::kEnded);
 }
 
 const char kExternalClearKeyDecryptOnlyKeySystem[] =

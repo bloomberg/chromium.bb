@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -68,25 +70,27 @@ IncidentReportUploaderImpl::~IncidentReportUploaderImpl() {
 // static
 std::unique_ptr<IncidentReportUploader>
 IncidentReportUploaderImpl::UploadReport(
-    const OnResultCallback& callback,
+    OnResultCallback callback,
     const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
     const ClientIncidentReport& report) {
   std::string post_data;
   if (!report.SerializeToString(&post_data))
     return std::unique_ptr<IncidentReportUploader>();
-  return std::unique_ptr<IncidentReportUploader>(
-      new IncidentReportUploaderImpl(callback, url_loader_factory, post_data));
+  return std::unique_ptr<IncidentReportUploader>(new IncidentReportUploaderImpl(
+      std::move(callback), url_loader_factory, post_data));
 }
 
 IncidentReportUploaderImpl::IncidentReportUploaderImpl(
-    const OnResultCallback& callback,
+    OnResultCallback callback,
     const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
     const std::string& post_data)
-    : IncidentReportUploader(callback) {
+    : IncidentReportUploader(std::move(callback)) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GetIncidentReportUrl();
   resource_request->method = "POST";
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  if (base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies))
+    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), kSafeBrowsingIncidentTrafficAnnotation);
   url_loader_->AttachStringForUpload(post_data, "application/octet-stream");
@@ -140,7 +144,7 @@ void IncidentReportUploaderImpl::OnURLLoaderCompleteInternal(
   }
   // Callbacks have a tendency to delete the uploader, so no touching anything
   // after this.
-  callback_.Run(result, std::move(response));
+  std::move(callback_).Run(result, std::move(response));
 }
 
 }  // namespace safe_browsing

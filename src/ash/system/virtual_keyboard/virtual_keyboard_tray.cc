@@ -52,12 +52,17 @@ VirtualKeyboardTray::~VirtualKeyboardTray() {
 void VirtualKeyboardTray::Initialize() {
   TrayBackgroundView::Initialize();
   SetVisiblePreferred(
-      Shell::Get()->accessibility_controller()->virtual_keyboard_enabled());
+      Shell::Get()->accessibility_controller()->virtual_keyboard().enabled());
 }
 
 base::string16 VirtualKeyboardTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(
       IDS_ASH_VIRTUAL_KEYBOARD_TRAY_ACCESSIBLE_NAME);
+}
+
+void VirtualKeyboardTray::HandleLocaleChange() {
+  icon_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD));
 }
 
 void VirtualKeyboardTray::HideBubbleWithView(
@@ -95,7 +100,7 @@ bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
 
 void VirtualKeyboardTray::OnAccessibilityStatusChanged() {
   bool new_enabled =
-      Shell::Get()->accessibility_controller()->virtual_keyboard_enabled();
+      Shell::Get()->accessibility_controller()->virtual_keyboard().enabled();
   SetVisiblePreferred(new_enabled);
 }
 
@@ -118,7 +123,7 @@ void VirtualKeyboardTray::UpdateIcon() {
       icon,
       TrayIconColor(Shell::Get()->session_controller()->GetSessionState()));
   icon_->SetImage(image);
-  icon_->set_tooltip_text(l10n_util::GetStringUTF16(
+  icon_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD));
   const int vertical_padding = (kTrayItemSize - image.height()) / 2;
   const int horizontal_padding = (kTrayItemSize - image.width()) / 2;

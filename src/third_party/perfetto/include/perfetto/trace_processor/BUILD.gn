@@ -14,6 +14,7 @@
 
 source_set("trace_processor") {
   sources = [
+    "iterator.h",
     "read_trace.h",
     "trace_processor.h",
   ]
@@ -33,4 +34,5 @@ source_set("basic_types") {
     "basic_types.h",
     "status.h",
   ]
+  public_deps = [ "../base" ]
 }

@@ -4,6 +4,7 @@
 
 #include "device/fido/win/type_conversions.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/containers/span.h"
@@ -79,7 +80,9 @@ ToAuthenticatorMakeCredentialResponse(
 }
 
 base::Optional<AuthenticatorGetAssertionResponse>
-ToAuthenticatorGetAssertionResponse(const WEBAUTHN_ASSERTION& assertion) {
+ToAuthenticatorGetAssertionResponse(
+    const WEBAUTHN_ASSERTION& assertion,
+    const std::vector<PublicKeyCredentialDescriptor>& allow_list) {
   auto authenticator_data =
       AuthenticatorData::DecodeAuthenticatorData(base::span<const uint8_t>(
           assertion.pbAuthenticatorData, assertion.cbAuthenticatorData));
@@ -93,13 +96,11 @@ ToAuthenticatorGetAssertionResponse(const WEBAUTHN_ASSERTION& assertion) {
       std::move(*authenticator_data),
       std::vector<uint8_t>(assertion.pbSignature,
                            assertion.pbSignature + assertion.cbSignature));
-  if (assertion.Credential.cbId > 0) {
-    response.SetCredential(PublicKeyCredentialDescriptor(
-        CredentialType::kPublicKey,
-        std::vector<uint8_t>(
-            assertion.Credential.pbId,
-            assertion.Credential.pbId + assertion.Credential.cbId)));
-  }
+  response.SetCredential(PublicKeyCredentialDescriptor(
+      CredentialType::kPublicKey,
+      std::vector<uint8_t>(
+          assertion.Credential.pbId,
+          assertion.Credential.pbId + assertion.Credential.cbId)));
   if (assertion.cbUserId > 0) {
     response.SetUserEntity(PublicKeyCredentialUserEntity(std::vector<uint8_t>(
         assertion.pbUserId, assertion.pbUserId + assertion.cbUserId)));
@@ -150,6 +151,7 @@ static uint32_t ToWinTransportsMask(
         result |= WEBAUTHN_CTAP_TRANSPORT_BLE;
         break;
       case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
+      case FidoTransportProtocol::kAndroidAccessory:
         // caBLE is unsupported by the Windows API.
         break;
       case FidoTransportProtocol::kInternal:
@@ -274,9 +276,10 @@ uint32_t ToWinAttestationConveyancePreference(
       return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
     case AttestationConveyancePreference::kDirect:
       return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
-    case AttestationConveyancePreference::kEnterprise:
+    case AttestationConveyancePreference::kEnterpriseIfRPListedOnAuthenticator:
+    case AttestationConveyancePreference::kEnterpriseApprovedByBrowser:
       // Windows does not support enterprise attestation.
-      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
+      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;
   }
   NOTREACHED();
   return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;

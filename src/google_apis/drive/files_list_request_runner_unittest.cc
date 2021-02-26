@@ -24,6 +24,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_network_service_client.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,6 +76,10 @@ class FilesListRequestRunnerTest : public testing::Test {
         network_service_remote.BindNewPipeAndPassReceiver());
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
+    // Use a dummy CertVerifier that always passes cert verification, since
+    // these unittests don't need to test CertVerifier behavior.
+    context_params->cert_verifier_params =
+        network::FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
     network_service_remote->CreateNetworkContext(
         network_context_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
@@ -106,8 +111,8 @@ class FilesListRequestRunnerTest : public testing::Test {
         TRAFFIC_ANNOTATION_FOR_TESTS);
 
     test_server_.RegisterRequestHandler(
-        base::Bind(&FilesListRequestRunnerTest::OnFilesListRequest,
-                   base::Unretained(this), test_server_.base_url()));
+        base::BindRepeating(&FilesListRequestRunnerTest::OnFilesListRequest,
+                            base::Unretained(this), test_server_.base_url()));
     ASSERT_TRUE(test_server_.Start());
 
     runner_.reset(new FilesListRequestRunner(
@@ -176,8 +181,8 @@ TEST_F(FilesListRequestRunnerTest, Success_NoBackoff) {
   SetFakeServerResponse(net::HTTP_OK, kSuccessResource);
   runner_->CreateAndStartWithSizeBackoff(
       kMaxResults, FilesListCorpora::DEFAULT, std::string(), kQuery, kFields,
-      base::Bind(&FilesListRequestRunnerTest::OnCompleted,
-                 base::Unretained(this)));
+      base::BindOnce(&FilesListRequestRunnerTest::OnCompleted,
+                     base::Unretained(this)));
 
   base::RunLoop run_loop;
   on_completed_callback_ = run_loop.QuitClosure();
@@ -199,8 +204,8 @@ TEST_F(FilesListRequestRunnerTest, Success_Backoff) {
                         kResponseTooLargeErrorResource);
   runner_->CreateAndStartWithSizeBackoff(
       kMaxResults, FilesListCorpora::DEFAULT, std::string(), kQuery, kFields,
-      base::Bind(&FilesListRequestRunnerTest::OnCompleted,
-                 base::Unretained(this)));
+      base::BindOnce(&FilesListRequestRunnerTest::OnCompleted,
+                     base::Unretained(this)));
   {
     base::RunLoop run_loop;
     runner_->SetRequestCompletedCallbackForTesting(run_loop.QuitClosure());
@@ -239,8 +244,8 @@ TEST_F(FilesListRequestRunnerTest, Failure_TooManyBackoffs) {
                         kResponseTooLargeErrorResource);
   runner_->CreateAndStartWithSizeBackoff(
       kMaxResults, FilesListCorpora::DEFAULT, std::string(), kQuery, kFields,
-      base::Bind(&FilesListRequestRunnerTest::OnCompleted,
-                 base::Unretained(this)));
+      base::BindOnce(&FilesListRequestRunnerTest::OnCompleted,
+                     base::Unretained(this)));
   {
     base::RunLoop run_loop;
     runner_->SetRequestCompletedCallbackForTesting(run_loop.QuitClosure());
@@ -298,8 +303,8 @@ TEST_F(FilesListRequestRunnerTest, Failure_AnotherError) {
                         kQuotaExceededErrorResource);
   runner_->CreateAndStartWithSizeBackoff(
       kMaxResults, FilesListCorpora::DEFAULT, std::string(), kQuery, kFields,
-      base::Bind(&FilesListRequestRunnerTest::OnCompleted,
-                 base::Unretained(this)));
+      base::BindOnce(&FilesListRequestRunnerTest::OnCompleted,
+                     base::Unretained(this)));
 
   base::RunLoop run_loop;
   on_completed_callback_ = run_loop.QuitClosure();

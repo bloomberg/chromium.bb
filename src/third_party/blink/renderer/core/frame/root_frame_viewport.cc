@@ -310,7 +310,7 @@ mojom::blink::ScrollBehavior RootFrameViewport::ScrollBehaviorStyle() const {
   return LayoutViewport().ScrollBehaviorStyle();
 }
 
-WebColorScheme RootFrameViewport::UsedColorScheme() const {
+mojom::blink::ColorScheme RootFrameViewport::UsedColorScheme() const {
   return LayoutViewport().UsedColorScheme();
 }
 
@@ -514,6 +514,7 @@ cc::Layer* RootFrameViewport::LayerForScrollCorner() const {
   return LayoutViewport().LayerForScrollCorner();
 }
 
+// This method distributes the scroll between the visual and layout viewport.
 ScrollResult RootFrameViewport::UserScroll(
     ScrollGranularity granularity,
     const FloatSize& delta,
@@ -526,13 +527,7 @@ ScrollResult RootFrameViewport::UserScroll(
 
   UpdateScrollAnimator();
 
-  // Distribute the scroll between the visual and layout viewport.
-
-  float step_x = ScrollStep(granularity, kHorizontalScrollbar);
-  float step_y = ScrollStep(granularity, kVerticalScrollbar);
-
-  FloatSize pixel_delta(delta);
-  pixel_delta.Scale(step_x, step_y);
+  FloatSize pixel_delta = ResolveScrollDelta(granularity, delta);
 
   // Precompute the amount of possible scrolling since, when animated,
   // ScrollAnimator::userScroll will report having consumed the total given
@@ -682,7 +677,7 @@ base::Optional<FloatPoint> RootFrameViewport::GetSnapPositionAndSetTarget(
   return LayoutViewport().GetSnapPositionAndSetTarget(strategy);
 }
 
-void RootFrameViewport::Trace(Visitor* visitor) {
+void RootFrameViewport::Trace(Visitor* visitor) const {
   visitor->Trace(visual_viewport_);
   visitor->Trace(layout_viewport_);
   ScrollableArea::Trace(visitor);

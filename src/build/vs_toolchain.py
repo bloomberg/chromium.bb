@@ -164,7 +164,8 @@ def GetVisualStudioVersion():
                               '/Microsoft Visual Studio/%s' % version)
     if path and any(
         os.path.exists(os.path.join(path, edition))
-        for edition in ('Enterprise', 'Professional', 'Community', 'Preview')):
+        for edition in ('Enterprise', 'Professional', 'Community', 'Preview',
+                        'BuildTools')):
       available_versions.append(version)
       break
 
@@ -199,6 +200,9 @@ def DetectVisualStudioPath():
                          version_as_year),
       os.path.expandvars('%ProgramFiles(x86)%' +
                          '/Microsoft Visual Studio/%s/Preview' %
+                         version_as_year),
+      os.path.expandvars('%ProgramFiles(x86)%' +
+                         '/Microsoft Visual Studio/%s/BuildTools' %
                          version_as_year)):
     if path and os.path.exists(path):
       return path
@@ -245,7 +249,8 @@ def _SortByHighestVersionNumberFirst(list_of_str_versions):
 
   list_of_str_versions.sort(key=to_number_sequence, reverse=True)
 
-def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
+
+def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, suffix):
   """Copy both the msvcp and vccorlib runtime DLLs, only if the target doesn't
   exist, but the target directory does exist."""
   if target_cpu == 'arm64':
@@ -263,8 +268,11 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
          .format(MSVC_TOOLSET_VERSION[GetVisualStudioVersion()])
       source_dir = os.path.join(vc_redist_root, 'debug_nonredist',
                                 'arm64', vc_toolset_dir)
-  for file_part in ('msvcp', 'vccorlib', 'vcruntime'):
-    dll = dll_pattern % file_part
+  file_parts = ('msvcp140', 'vccorlib140', 'vcruntime140')
+  if target_cpu == 'x64' and GetVisualStudioVersion() != '2017':
+    file_parts = file_parts + ('vcruntime140_1', )
+  for file_part in file_parts:
+    dll = file_part + suffix
     target = os.path.join(target_dir, dll)
     source = os.path.join(source_dir, dll)
     _CopyRuntimeImpl(target, source)
@@ -299,17 +307,16 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
     if not suffix.startswith('.'):
       # ucrtbased.dll is located at {win_sdk_dir}/bin/{a.b.c.d}/{target_cpu}/
       # ucrt/.
-      sdk_redist_root = os.path.join(win_sdk_dir, 'bin')
-      sdk_bin_sub_dirs = os.listdir(sdk_redist_root)
+      sdk_bin_root = os.path.join(win_sdk_dir, 'bin')
+      sdk_bin_sub_dirs = glob.glob(os.path.join(sdk_bin_root, '10.*'))
       # Select the most recent SDK if there are multiple versions installed.
       _SortByHighestVersionNumberFirst(sdk_bin_sub_dirs)
       for directory in sdk_bin_sub_dirs:
-        sdk_redist_root_version = os.path.join(sdk_redist_root, directory)
+        sdk_redist_root_version = os.path.join(sdk_bin_root, directory)
         if not os.path.isdir(sdk_redist_root_version):
           continue
-        if re.match(r'10\.\d+\.\d+\.\d+', directory):
-          source_dir = os.path.join(sdk_redist_root_version, target_cpu, 'ucrt')
-          break
+        source_dir = os.path.join(sdk_redist_root_version, target_cpu, 'ucrt')
+        break
     _CopyRuntimeImpl(os.path.join(target_dir, 'ucrtbase' + suffix),
                      os.path.join(source_dir, 'ucrtbase' + suffix))
 
@@ -350,8 +357,7 @@ def _CopyRuntime(target_dir, source_dir, target_cpu, debug):
   directory does exist. Handles VS 2015, 2017 and 2019."""
   suffix = 'd.dll' if debug else '.dll'
   # VS 2015, 2017 and 2019 use the same CRT DLLs.
-  _CopyUCRTRuntime(target_dir, source_dir, target_cpu, '%s140' + suffix,
-                    suffix)
+  _CopyUCRTRuntime(target_dir, source_dir, target_cpu, suffix)
 
 
 def CopyDlls(target_dir, configuration, target_cpu):
@@ -402,17 +408,20 @@ def _CopyDebugger(target_dir, target_cpu):
   # List of debug files that should be copied, the first element of the tuple is
   # the name of the file and the second indicates if it's optional.
   debug_files = [('dbghelp.dll', False), ('dbgcore.dll', True)]
+  # The UCRT is not a redistributable component on arm64.
+  if target_cpu != 'arm64':
+    debug_files.extend([('api-ms-win-downlevel-kernel32-l2-1-0.dll', False),
+                        ('api-ms-win-eventing-provider-l1-1-0.dll', False)])
   for debug_file, is_optional in debug_files:
     full_path = os.path.join(win_sdk_dir, 'Debuggers', target_cpu, debug_file)
     if not os.path.exists(full_path):
       if is_optional:
         continue
       else:
-        # TODO(crbug.com/773476): remove version requirement.
-        raise Exception('%s not found in "%s"\r\nYou must install the '
-                        '"Debugging Tools for Windows" feature from the Windows'
-                        ' 10 SDK.'
-                        % (debug_file, full_path))
+        raise Exception('%s not found in "%s"\r\nYou must install'
+                        'Windows 10 SDK version 10.0.19041.0 including the '
+                        '"Debugging Tools for Windows" feature.' %
+                        (debug_file, full_path))
     target_path = os.path.join(target_dir, debug_file)
     _CopyRuntimeImpl(target_path, full_path)
 
@@ -431,12 +440,11 @@ def _GetDesiredVsToolchainHashes():
   * //docs/windows_build_instructions.md mentions of VS or Windows SDK.
     Keeps the document consistent with the toolchain version.
   """
-  # VS 2019 Update 9 (16.3.29324.140) with 10.0.18362 SDK, 10.0.17763 version of
-  # Debuggers, and 10.0.17134 version of d3dcompiler_47.dll, with ARM64
-  # libraries and UWP support.
+  # VS 2019 16.61 with 10.0.19041 SDK, and 10.0.17134 version of
+  # d3dcompiler_47.dll, with ARM64 libraries and UWP support.
   # See go/chromium-msvc-toolchain for instructions about how to update the
   # toolchain.
-  toolchain_hash = '9ff60e43ba91947baca460d0ca3b1b980c3a2c23'
+  toolchain_hash = 'a687d8e2e4114d9015eb550e1b156af21381faac'
   # Third parties that do not have access to the canonical toolchain can map
   # canonical toolchain version to their own toolchain versions.
   toolchain_hash_mapping_key = 'GYP_MSVS_HASH_%s' % toolchain_hash

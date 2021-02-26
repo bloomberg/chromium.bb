@@ -72,7 +72,7 @@ class CORE_EXPORT DisplayLockUtilities {
 
       void Destroy();
 
-      void Trace(Visitor* visitor) {
+      void Trace(Visitor* visitor) const {
         visitor->Trace(node_);
         visitor->Trace(forced_context_set_);
         visitor->Trace(parent_frame_impl_);
@@ -110,15 +110,18 @@ class CORE_EXPORT DisplayLockUtilities {
   static const Element* NearestLockedInclusiveAncestor(const Node& node);
   static Element* NearestLockedInclusiveAncestor(Node& node);
 
+  // Returns the nearest inclusive ancestor of |element| that has
+  // content-visibility: hidden-matchable.
+  static Element* NearestHiddenMatchableInclusiveAncestor(Element& element);
+
   // Returns the nearest non-inclusive ancestor of |node| that is display
   // locked.
   static Element* NearestLockedExclusiveAncestor(const Node& node);
 
-  // Returns the highest inclusive ancestor of |node| that is display locked.
-  static Element* HighestLockedInclusiveAncestor(const Node& node);
-
   // Returns the highest exclusive ancestor of |node| that is display locked.
+  // Note that this function crosses local frames.
   static Element* HighestLockedExclusiveAncestor(const Node& node);
+  static Element* HighestLockedInclusiveAncestor(const Node& node);
 
   // LayoutObject versions of the NearestLocked* ancestor functions.
   static Element* NearestLockedInclusiveAncestor(const LayoutObject& object);
@@ -168,6 +171,10 @@ class CORE_EXPORT DisplayLockUtilities {
   static void SelectionChanged(const EphemeralRangeInFlatTree& old_selection,
                                const EphemeralRangeInFlatTree& new_selection);
   static void SelectionRemovedFromDocument(Document& document);
+
+  static bool PrePaintBlockedInParentFrame(LayoutView* layout_view);
+
+  static bool IsAutoWithoutLayout(const LayoutObject& object);
 
  private:
   static bool UpdateStyleAndLayoutForRangeIfNeeded(

@@ -9,10 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
@@ -27,10 +24,12 @@ class WebContents;
 
 namespace web_app {
 
-class FileHandlerManager : public AppRegistrarObserver {
+class FileHandlerManager {
  public:
   explicit FileHandlerManager(Profile* profile);
-  ~FileHandlerManager() override;
+  FileHandlerManager(const FileHandlerManager&) = delete;
+  FileHandlerManager& operator=(const FileHandlerManager&) = delete;
+  virtual ~FileHandlerManager();
 
   // |registrar| is used to observe OnWebAppInstalled/Uninstalled events.
   void SetSubsystems(AppRegistrar* registrar);
@@ -108,7 +107,7 @@ class FileHandlerManager : public AppRegistrarObserver {
   AppRegistrar* registrar() { return registrar_; }
 
   // Gets all file handlers for |app_id|. |nullptr| if the app has no file
-  // handlers.
+  // handlers or if app_id was uninstalled.
   // Note: The lifetime of the file handlers are tied to the app they belong to.
   virtual const apps::FileHandlers* GetAllFileHandlers(const AppId& app_id) = 0;
 
@@ -134,16 +133,8 @@ class FileHandlerManager : public AppRegistrarObserver {
   // handlers unregistered, for use in tests.
   int CleanupAfterOriginTrials();
 
-  // AppRegistrarObserver:
-  void OnWebAppUninstalled(const AppId& app_id) override;
-  void OnWebAppProfileWillBeDeleted(const AppId& app_id) override;
-  void OnAppRegistrarDestroyed() override;
-
-  ScopedObserver<AppRegistrar, AppRegistrarObserver> registrar_observer_;
-
   base::WeakPtrFactory<FileHandlerManager> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(FileHandlerManager);
 };
 
 }  // namespace web_app

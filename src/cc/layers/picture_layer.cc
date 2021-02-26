@@ -4,6 +4,9 @@
 
 #include "cc/layers/picture_layer.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
@@ -58,8 +61,6 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   DropRecordingSourceContentIfInvalid();
 
   layer_impl->SetNearestNeighbor(picture_layer_inputs_.nearest_neighbor);
-  layer_impl->SetUseTransformedRasterization(
-      ShouldUseTransformedRasterization());
   layer_impl->set_gpu_raster_max_texture_size(
       layer_tree_host()->device_viewport_rect().size());
   layer_impl->SetIsBackdropFilterMask(is_backdrop_filter_mask());
@@ -137,9 +138,16 @@ bool PictureLayer::Update() {
       &last_updated_invalidation_, layer_size, recorded_viewport);
 
   if (updated) {
-    picture_layer_inputs_.display_list =
-        picture_layer_inputs_.client->PaintContentsToDisplayList(
-            ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+    {
+      auto old_display_list = std::move(picture_layer_inputs_.display_list);
+      picture_layer_inputs_.display_list =
+          picture_layer_inputs_.client->PaintContentsToDisplayList();
+      if (old_display_list &&
+          picture_layer_inputs_.display_list
+              ->NeedsAdditionalInvalidationForLCDText(*old_display_list)) {
+        last_updated_invalidation_ = gfx::Rect(bounds());
+      }
+    }
 
     // Clear out previous directly composited image state - if the layer
     // qualifies we'll set up the state below.
@@ -158,11 +166,8 @@ bool PictureLayer::Update() {
       picture_layer_inputs_.nearest_neighbor = result->nearest_neighbor;
     }
 
-    picture_layer_inputs_.painter_reported_memory_usage =
-        picture_layer_inputs_.client->GetApproximateUnsharedMemoryUsage();
     recording_source_->UpdateDisplayItemList(
         picture_layer_inputs_.display_list,
-        picture_layer_inputs_.painter_reported_memory_usage,
         layer_tree_host()->recording_scale_factor());
 
     SetNeedsPushProperties();
@@ -181,8 +186,7 @@ sk_sp<SkPicture> PictureLayer::GetPicture() const {
     return nullptr;
 
   scoped_refptr<DisplayItemList> display_list =
-      picture_layer_inputs_.client->PaintContentsToDisplayList(
-          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+      picture_layer_inputs_.client->PaintContentsToDisplayList();
   SkPictureRecorder recorder;
   SkCanvas* canvas =
       recorder.beginRecording(bounds().width(), bounds().height());
@@ -204,14 +208,6 @@ void PictureLayer::SetNearestNeighbor(bool nearest_neighbor) {
   SetNeedsCommit();
 }
 
-void PictureLayer::SetTransformedRasterizationAllowed(bool allowed) {
-  if (picture_layer_inputs_.transformed_rasterization_allowed == allowed)
-    return;
-
-  picture_layer_inputs_.transformed_rasterization_allowed = allowed;
-  SetNeedsCommit();
-}
-
 bool PictureLayer::HasDrawableContent() const {
   return picture_layer_inputs_.client && Layer::HasDrawableContent();
 }
@@ -229,7 +225,7 @@ void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {
 }
 
 void PictureLayer::CaptureContent(const gfx::Rect& rect,
-                                  std::vector<NodeId>* content) {
+                                  std::vector<NodeInfo>* content) {
   if (!DrawsContent())
     return;
 
@@ -252,6 +248,22 @@ void PictureLayer::CaptureContent(const gfx::Rect& rect,
     return;
 
   display_item_list->CaptureContent(transformed, content);
+  if (auto* outer_viewport_layer = layer_tree_host()->LayerByElementId(
+          layer_tree_host()->OuterViewportScrollElementId())) {
+    if (transform_tree_index() == outer_viewport_layer->transform_tree_index())
+      return;
+    gfx::Transform inverse_outer_screen_space_transform;
+    if (!outer_viewport_layer->ScreenSpaceTransform().GetInverse(
+            &inverse_outer_screen_space_transform)) {
+      return;
+    }
+    gfx::Transform combined_transform{ScreenSpaceTransform(),
+                                      inverse_outer_screen_space_transform};
+    for (auto& i : *content) {
+      i.visual_rect = MathUtil::ProjectEnclosingClippedRect(combined_transform,
+                                                            i.visual_rect);
+    }
+  }
 }
 
 void PictureLayer::DropRecordingSourceContentIfInvalid() {
@@ -274,48 +286,7 @@ void PictureLayer::DropRecordingSourceContentIfInvalid() {
     // longer valid. In this case just destroy the recording source.
     recording_source_->SetEmptyBounds();
     picture_layer_inputs_.display_list = nullptr;
-    picture_layer_inputs_.painter_reported_memory_usage = 0;
   }
-}
-
-bool PictureLayer::ShouldUseTransformedRasterization() const {
-  if (!picture_layer_inputs_.transformed_rasterization_allowed)
-    return false;
-
-  // Background color overfill is undesirable with transformed rasterization.
-  // However, without background overfill, the tiles will be non-opaque on
-  // external edges, and layer opaque region can't be computed in layer space
-  // due to rounding under extreme scaling. This defeats many opaque layer
-  // optimization. Prefer optimization over quality for this particular case.
-  if (contents_opaque())
-    return false;
-
-  const TransformTree& transform_tree =
-      layer_tree_host()->property_trees()->transform_tree;
-  DCHECK(!transform_tree.needs_update());
-  auto* transform_node = transform_tree.Node(transform_tree_index());
-  DCHECK(transform_node);
-  // TODO(pdr): This is a workaround for https://crbug.com/708951 to avoid
-  // crashing when there's no transform node. This workaround should be removed.
-  if (!transform_node)
-    return false;
-
-  if (transform_node->to_screen_is_potentially_animated)
-    return false;
-
-  const gfx::Transform& to_screen =
-      transform_tree.ToScreen(transform_tree_index());
-  if (!to_screen.IsScaleOrTranslation())
-    return false;
-
-  float origin_x =
-      to_screen.matrix().getFloat(0, 3) + offset_to_transform_parent().x();
-  float origin_y =
-      to_screen.matrix().getFloat(1, 3) + offset_to_transform_parent().y();
-  if (origin_x - floorf(origin_x) == 0.f && origin_y - floorf(origin_y) == 0.f)
-    return false;
-
-  return true;
 }
 
 const DisplayItemList* PictureLayer::GetDisplayItemList() {

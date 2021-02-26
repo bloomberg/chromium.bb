@@ -7,8 +7,10 @@ package org.chromium.chrome.test.pagecontroller.tests;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.SmallTest;
+import android.os.Build.VERSION_CODES;
+
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,6 +21,8 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.test.pagecontroller.controllers.ntp.ChromeMenu;
 import org.chromium.chrome.test.pagecontroller.controllers.ntp.NewTabPageController;
 import org.chromium.chrome.test.pagecontroller.controllers.urlpage.UrlPage;
@@ -46,11 +50,15 @@ public class NewTabPageControllerTest {
     }
 
     @Test
-    public void testIsCurrentPageThis() {
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O_MR1,
+            message = "https://crbug.com/1130617 https://crbug.com/1141179")
+    public void
+    testIsCurrentPageThis() {
         Assert.assertTrue(mController.isCurrentPageThis());
     }
 
     @Test
+    @DisabledTest(message = "https://crbug.com/1091640")
     public void testHideArticles() {
         boolean isHidden = mController.areArticlesHidden();
         mController.toggleHideArticles();
@@ -59,6 +67,8 @@ public class NewTabPageControllerTest {
 
     @LargeTest
     @Test
+    @DisableIf.
+    Build(sdk_is_greater_than = VERSION_CODES.O_MR1, message = "https://crbug.com/1130617")
     public void testScrollPage() {
         mController.scrollToTop();
         assertTrue(mController.hasScrolledToTop());
@@ -67,13 +77,19 @@ public class NewTabPageControllerTest {
     }
 
     @Test
-    public void testOpenChromeMenu() {
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O_MR1,
+            message = "https://crbug.com/1130617 https://crbug.com/1141179")
+    public void
+    testOpenChromeMenu() {
         ChromeMenu menu = mController.openChromeMenu();
         Assert.assertTrue(menu.isCurrentPageThis());
     }
 
     @Test
-    public void testOmniboxSearch() {
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O_MR1,
+            message = "https://crbug.com/1130617 https://crbug.com/1141179")
+    public void
+    testOmniboxSearch() {
         UrlPage urlPage = mController.omniboxSearch("www.google.com");
         Assert.assertTrue(urlPage.isCurrentPageThis());
     }

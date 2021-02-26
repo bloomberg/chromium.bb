@@ -43,8 +43,7 @@ if sys.platform == 'win32':
   from ctypes import wintypes  # pylint: disable=ungrouped-imports
   from ctypes.wintypes import windll  # pylint: disable=ungrouped-imports
 elif sys.platform == 'darwin':
-  import Carbon.File
-  import MacOS
+  from utils import macos
 
 
 if sys.platform == 'win32':
@@ -575,17 +574,12 @@ elif sys.platform == 'darwin':
   def _native_case(p):
     """Gets the native path case. Warning: this function resolves symlinks."""
     try:
-      rel_ref, _ = Carbon.File.FSPathMakeRef(p.encode('utf-8'))
-      # The OSX underlying code uses NFD but python strings are in NFC. This
-      # will cause issues with os.listdir() for example. Since the dtrace log
-      # *is* in NFC, normalize it here.
-      out = unicodedata.normalize(
-          'NFC', rel_ref.FSRefMakePath().decode('utf-8'))
+      out = macos.native_case(p)
       if p.endswith(os.path.sep) and not out.endswith(os.path.sep):
         return out + os.path.sep
       return out
-    except MacOS.Error as e:
-      if e.args[0] in (-43, -120):
+    except macos.Error as e:
+      if macos.get_errno(e) in (-43, -120):
         # The path does not exist. Try to recurse and reconstruct the path.
         # -43 means file not found.
         # -120 means directory not found.
@@ -593,7 +587,7 @@ elif sys.platform == 'darwin':
         rest = os.path.basename(p)
         return os.path.join(_native_case(base), rest)
       raise OSError(
-          e.args[0], 'Failed to get native path for %s' % p, p, e.args[1])
+          macos.get_errno(e), 'Failed to get native path for %s' % p, p, str(e))
 
 
   def _split_at_symlink_native(base_path, rest):
@@ -854,7 +848,7 @@ def get_free_space(path):
     return free_bytes.value
   # For OSes other than Windows.
   f = fs.statvfs(path)  # pylint: disable=E1101
-  return f.f_bfree * f.f_frsize
+  return f.f_bavail * f.f_frsize
 
 
 ### Write file functions.
@@ -934,7 +928,7 @@ def try_remove(filepath):
   """Removes a file without crashing even if it doesn't exist.
 
   Returns:
-    True if the removal successed.
+    True if the removal succeeded.
   """
   try:
     remove(filepath)
@@ -1045,35 +1039,6 @@ def ensure_tree(path, perm=0o777):
         raise
 
 
-def make_tree_read_only(root):
-  """Makes all the files in the directories read only.
-
-  Also makes the directories read only, only if it makes sense on the platform.
-
-  This means no file can be created or deleted.
-  """
-  err = None
-  logging.debug('make_tree_read_only(%s)', root)
-  for dirpath, dirnames, filenames in fs.walk(root, topdown=True):
-    for filename in filenames:
-      e = set_read_only_swallow(os.path.join(dirpath, filename), True)
-      if not err:
-        err = e
-    if sys.platform != 'win32':
-      # It must not be done on Windows.
-      for dirname in dirnames:
-        e = set_read_only_swallow(os.path.join(dirpath, dirname), True)
-        if not err:
-          err = e
-  if sys.platform != 'win32':
-    e = set_read_only_swallow(root, True)
-    if not err:
-      err = e
-  if err:
-    # pylint: disable=raising-bad-type
-    raise err
-
-
 def make_tree_files_read_only(root):
   """Makes all the files in the directories read only but not the directories
   themselves.
@@ -1086,26 +1051,6 @@ def make_tree_files_read_only(root):
   for dirpath, dirnames, filenames in fs.walk(root, topdown=True):
     for filename in filenames:
       set_read_only(os.path.join(dirpath, filename), True)
-    if sys.platform != 'win32':
-      # It must not be done on Windows.
-      for dirname in dirnames:
-        set_read_only(os.path.join(dirpath, dirname), False)
-
-
-def make_tree_writeable(root):
-  """Makes all the files in the directories writeable.
-
-  Also makes the directories writeable, only if it makes sense on the platform.
-
-  It is different from make_tree_deleteable() because it unconditionally affects
-  the files.
-  """
-  logging.debug('make_tree_writeable(%s)', root)
-  if sys.platform != 'win32':
-    set_read_only(root, False)
-  for dirpath, dirnames, filenames in fs.walk(root, topdown=True):
-    for filename in filenames:
-      set_read_only(os.path.join(dirpath, filename), False)
     if sys.platform != 'win32':
       # It must not be done on Windows.
       for dirname in dirnames:

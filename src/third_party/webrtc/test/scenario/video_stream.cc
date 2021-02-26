@@ -265,6 +265,7 @@ VideoEncoderConfig CreateVideoEncoderConfig(VideoStreamConfig config) {
   if (config.encoder.max_framerate) {
     for (auto& layer : encoder_config.simulcast_layers) {
       layer.max_framerate = *config.encoder.max_framerate;
+      layer.min_bitrate_bps = config.encoder.min_data_rate->bps_or(-1);
     }
   }
 
@@ -323,6 +324,7 @@ std::unique_ptr<FrameGeneratorInterface> CreateFrameGenerator(
 VideoReceiveStream::Config CreateVideoReceiveStreamConfig(
     VideoStreamConfig config,
     Transport* feedback_transport,
+    VideoDecoderFactory* decoder_factory,
     VideoReceiveStream::Decoder decoder,
     rtc::VideoSinkInterface<VideoFrame>* renderer,
     uint32_t local_ssrc,
@@ -338,6 +340,7 @@ VideoReceiveStream::Config CreateVideoReceiveStreamConfig(
   recv.rtp.nack.rtp_history_ms = config.stream.nack_history_time.ms();
   recv.rtp.protected_by_flexfec = config.stream.use_flexfec;
   recv.rtp.remote_ssrc = ssrc;
+  recv.decoder_factory = decoder_factory;
   recv.decoders.push_back(decoder);
   recv.renderer = renderer;
   if (config.stream.use_rtx) {
@@ -373,7 +376,7 @@ SendVideoStream::SendVideoStream(CallClient* sender,
     case Encoder::Implementation::kFake:
       encoder_factory_ =
           std::make_unique<FunctionVideoEncoderFactory>([this]() {
-            rtc::CritScope cs(&crit_);
+            MutexLock lock(&mutex_);
             std::unique_ptr<FakeEncoder> encoder;
             if (config_.encoder.codec == Codec::kVideoCodecVP8) {
               encoder = std::make_unique<test::FakeVp8Encoder>(sender_->clock_);
@@ -410,6 +413,8 @@ SendVideoStream::SendVideoStream(CallClient* sender,
   send_config.encoder_settings.encoder_factory = encoder_factory_.get();
   send_config.encoder_settings.bitrate_allocator_factory =
       bitrate_allocator_factory_.get();
+  send_config.suspend_below_min_bitrate =
+      config.encoder.suspend_below_min_bitrate;
 
   sender_->SendTask([&] {
     if (config.stream.fec_controller_factory) {
@@ -452,7 +457,7 @@ void SendVideoStream::Stop() {
 void SendVideoStream::UpdateConfig(
     std::function<void(VideoStreamConfig*)> modifier) {
   sender_->SendTask([&] {
-    rtc::CritScope cs(&crit_);
+    MutexLock lock(&mutex_);
     VideoStreamConfig prior_config = config_;
     modifier(&config_);
     if (prior_config.encoder.fake.max_rate != config_.encoder.fake.max_rate) {
@@ -461,7 +466,8 @@ void SendVideoStream::UpdateConfig(
       }
     }
     // TODO(srte): Add more conditions that should cause reconfiguration.
-    if (prior_config.encoder.max_framerate != config_.encoder.max_framerate) {
+    if (prior_config.encoder.max_framerate != config_.encoder.max_framerate ||
+        prior_config.encoder.max_data_rate != config_.encoder.max_data_rate) {
       VideoEncoderConfig encoder_config = CreateVideoEncoderConfig(config_);
       send_stream_->ReconfigureVideoEncoder(std::move(encoder_config));
     }
@@ -473,18 +479,16 @@ void SendVideoStream::UpdateConfig(
 
 void SendVideoStream::UpdateActiveLayers(std::vector<bool> active_layers) {
   sender_->task_queue_.PostTask([=] {
-    rtc::CritScope cs(&crit_);
+    MutexLock lock(&mutex_);
     if (config_.encoder.codec ==
         VideoStreamConfig::Encoder::Codec::kVideoCodecVP8) {
       send_stream_->UpdateActiveSimulcastLayers(active_layers);
-    } else {
-      VideoEncoderConfig encoder_config = CreateVideoEncoderConfig(config_);
-      RTC_CHECK_EQ(encoder_config.simulcast_layers.size(),
-                   active_layers.size());
-      for (size_t i = 0; i < encoder_config.simulcast_layers.size(); ++i)
-        encoder_config.simulcast_layers[i].active = active_layers[i];
-      send_stream_->ReconfigureVideoEncoder(std::move(encoder_config));
     }
+    VideoEncoderConfig encoder_config = CreateVideoEncoderConfig(config_);
+    RTC_CHECK_EQ(encoder_config.simulcast_layers.size(), active_layers.size());
+    for (size_t i = 0; i < encoder_config.simulcast_layers.size(); ++i)
+      encoder_config.simulcast_layers[i].active = active_layers[i];
+    send_stream_->ReconfigureVideoEncoder(std::move(encoder_config));
   });
 }
 
@@ -549,7 +553,6 @@ ReceiveVideoStream::ReceiveVideoStream(CallClient* receiver,
   VideoReceiveStream::Decoder decoder =
       CreateMatchingDecoder(CodecTypeToPayloadType(config.encoder.codec),
                             CodecTypeToPayloadString(config.encoder.codec));
-  decoder.decoder_factory = decoder_factory_.get();
   size_t num_streams = 1;
   if (config.encoder.codec == VideoStreamConfig::Encoder::Codec::kVideoCodecVP8)
     num_streams = config.encoder.layers.spatial;
@@ -561,7 +564,7 @@ ReceiveVideoStream::ReceiveVideoStream(CallClient* receiver,
       renderer = render_taps_.back().get();
     }
     auto recv_config = CreateVideoReceiveStreamConfig(
-        config, feedback_transport, decoder, renderer,
+        config, feedback_transport, decoder_factory_.get(), decoder, renderer,
         receiver_->GetNextVideoLocalSsrc(), send_stream->ssrcs_[i],
         send_stream->rtx_ssrcs_[i]);
     if (config.stream.use_flexfec) {

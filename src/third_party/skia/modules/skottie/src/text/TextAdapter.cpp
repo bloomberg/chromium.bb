@@ -9,6 +9,7 @@
 
 #include "include/core/SkFontMgr.h"
 #include "include/core/SkM44.h"
+#include "include/private/SkTPin.h"
 #include "modules/skottie/src/SkottieJson.h"
 #include "modules/skottie/src/text/RangeSelector.h"
 #include "modules/skottie/src/text/TextAnimator.h"
@@ -138,16 +139,29 @@ void TextAdapter::addFragment(const Shaper::Fragment& frag) {
 
     SkASSERT(fText->fHasFill || fText->fHasStroke);
 
-    if (fText->fHasFill) {
-        rec.fFillColorNode = sksg::Color::Make(fText->fFillColor);
-        rec.fFillColorNode->setAntiAlias(true);
-        draws.push_back(sksg::Draw::Make(blob_node, rec.fFillColorNode));
-    }
-    if (fText->fHasStroke) {
-        rec.fStrokeColorNode = sksg::Color::Make(fText->fStrokeColor);
-        rec.fStrokeColorNode->setAntiAlias(true);
-        rec.fStrokeColorNode->setStyle(SkPaint::kStroke_Style);
-        draws.push_back(sksg::Draw::Make(blob_node, rec.fStrokeColorNode));
+    auto add_fill = [&]() {
+        if (fText->fHasFill) {
+            rec.fFillColorNode = sksg::Color::Make(fText->fFillColor);
+            rec.fFillColorNode->setAntiAlias(true);
+            draws.push_back(sksg::Draw::Make(blob_node, rec.fFillColorNode));
+        }
+    };
+    auto add_stroke = [&] {
+        if (fText->fHasStroke) {
+            rec.fStrokeColorNode = sksg::Color::Make(fText->fStrokeColor);
+            rec.fStrokeColorNode->setAntiAlias(true);
+            rec.fStrokeColorNode->setStyle(SkPaint::kStroke_Style);
+            rec.fStrokeColorNode->setStrokeWidth(fText->fStrokeWidth);
+            draws.push_back(sksg::Draw::Make(blob_node, rec.fStrokeColorNode));
+        }
+    };
+
+    if (fText->fPaintOrder == TextPaintOrder::kFillStroke) {
+        add_fill();
+        add_stroke();
+    } else {
+        add_stroke();
+        add_fill();
     }
 
     SkASSERT(!draws.empty());
@@ -256,10 +270,12 @@ void TextAdapter::reshape() {
         fText->fTypeface,
         fText->fTextSize,
         fText->fLineHeight,
+        fText->fLineShift,
         fText->fAscent,
         fText->fHAlign,
         fText->fVAlign,
         fText->fResize,
+        fText->fLineBreak,
         this->shaperFlags(),
     };
     const auto shape_result = Shaper::Shape(fText->fText, text_desc, fText->fBox, fFontMgr);
@@ -302,9 +318,9 @@ void TextAdapter::reshape() {
     bounds_color->setStrokeWidth(1);
     bounds_color->setAntiAlias(true);
 
-    fRoot->addChild(sksg::Draw::Make(sksg::Rect::Make(fText.fBox),
+    fRoot->addChild(sksg::Draw::Make(sksg::Rect::Make(fText->fBox),
                                      std::move(box_color)));
-    fRoot->addChild(sksg::Draw::Make(sksg::Rect::Make(shape_result.computeBounds()),
+    fRoot->addChild(sksg::Draw::Make(sksg::Rect::Make(shape_result.computeVisualBounds()),
                                      std::move(bounds_color)));
 #endif
 }
@@ -345,9 +361,11 @@ void TextAdapter::onSync() {
     }
 
     size_t grouping_span_index = 0;
+    SkV2           line_offset = { 0, 0 }; // cumulative line spacing
 
     // Finally, push all props to their corresponding fragment.
     for (const auto& line_span : fMaps.fLinesMap) {
+        SkV2 line_spacing = { 0, 0 };
         float line_tracking = 0;
         bool line_has_tracking = false;
 
@@ -370,11 +388,21 @@ void TextAdapter::onSync() {
 
             line_tracking += props.tracking;
             line_has_tracking |= !SkScalarNearlyZero(props.tracking);
+
+            line_spacing += props.line_spacing;
         }
 
-        if (line_has_tracking) {
-            this->adjustLineTracking(buf, line_span, line_tracking);
+        // line spacing of the first line is ignored (nothing to "space" against)
+        if (&line_span != &fMaps.fLinesMap.front()) {
+            // For each line, the actual spacing is an average of individual fragment spacing
+            // (to preserve the "line").
+            line_offset += line_spacing / line_span.fCount;
         }
+
+        if (line_offset != SkV2{0, 0} || line_has_tracking) {
+            this->adjustLineProps(buf, line_span, line_offset, line_tracking);
+        }
+
     }
 }
 
@@ -466,9 +494,10 @@ void TextAdapter::pushPropsToFragment(const TextAnimator::ResolvedProps& props,
     }
 }
 
-void TextAdapter::adjustLineTracking(const TextAnimator::ModulatorBuffer& buf,
-                                     const TextAnimator::DomainSpan& line_span,
-                                     float total_tracking) const {
+void TextAdapter::adjustLineProps(const TextAnimator::ModulatorBuffer& buf,
+                                  const TextAnimator::DomainSpan& line_span,
+                                  const SkV2& line_offset,
+                                  float total_tracking) const {
     SkASSERT(line_span.fCount > 0);
 
     // AE tracking is defined per glyph, based on two components: |before| and |after|.
@@ -507,7 +536,9 @@ void TextAdapter::adjustLineTracking(const TextAnimator::ModulatorBuffer& buf,
                 fragment_offset = align_offset + tracking_acc + track_before;
 
         const auto& frag = fFragments[i];
-        const auto m = SkM44::Translate(fragment_offset, 0) * frag.fMatrixNode->getMatrix();
+        const auto m = SkM44::Translate(line_offset.x + fragment_offset,
+                                        line_offset.y) *
+                       frag.fMatrixNode->getMatrix();
         frag.fMatrixNode->setMatrix(m);
 
         tracking_acc += track_before + track_after;

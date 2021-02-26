@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 
 namespace blink {
 
@@ -19,7 +20,7 @@ class ExecutionContext;
 class ScriptPromiseResolver;
 class WakeLockSentinel;
 
-// https://w3c.github.io/wake-lock/#concepts-and-state-record
+// https://w3c.github.io/screen-wake-lock/#concepts-and-state-record
 // Per-document and per-wake lock type internal data.
 class MODULES_EXPORT WakeLockManager final
     : public GarbageCollected<WakeLockManager> {
@@ -31,7 +32,7 @@ class MODULES_EXPORT WakeLockManager final
 
   void UnregisterSentinel(WakeLockSentinel*);
 
-  void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) const;
 
  private:
   // Handle connection errors from |wake_lock_|.
@@ -50,6 +51,11 @@ class MODULES_EXPORT WakeLockManager final
 
   // ExecutionContext from which we will connect to |wake_lock_service_|.
   Member<ExecutionContext> execution_context_;
+
+  // Do not put a page into BackForwardCache if a page has acquired WakeLock.
+  // The page becomes cache-able when all locks are released.
+  FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
+      feature_handle_for_scheduler_;
 
   FRIEND_TEST_ALL_PREFIXES(WakeLockManagerTest, AcquireWakeLock);
   FRIEND_TEST_ALL_PREFIXES(WakeLockManagerTest, ReleaseAllWakeLocks);

@@ -6,29 +6,30 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
+#include "base/task/current_thread.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
-#include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/navigation_entry_impl.h"
+#include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/navigation_policy.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/content_browser_sanity_checker.h"
+#include "content/test/content_browser_consistency_checker.h"
 #include "content/test/test_navigation_url_loader_factory.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_frame_host_factory.h"
@@ -37,6 +38,8 @@
 #include "content/test/test_render_widget_host_factory.h"
 #include "content/test/test_web_contents.h"
 #include "net/base/mock_network_change_notifier.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 
 #if defined(OS_ANDROID)
 #include "ui/android/dummy_screen_android.h"
@@ -51,7 +54,7 @@
 #include "ui/aura/test/aura_test_helper.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
@@ -94,16 +97,28 @@ RenderViewHostTester* RenderViewHostTester::For(RenderViewHost* host) {
 void RenderViewHostTester::SimulateFirstPaint(RenderViewHost* rvh) {
   static_cast<RenderViewHostImpl*>(rvh)
       ->GetWidget()
-      ->OnFirstVisuallyNonEmptyPaint();
+      ->DidFirstVisuallyNonEmptyPaint();
 }
 
 // static
-bool RenderViewHostTester::HasTouchEventHandler(RenderViewHost* rvh) {
+std::unique_ptr<content::InputMsgWatcher>
+RenderViewHostTester::CreateInputWatcher(RenderViewHost* rvh,
+                                         blink::WebInputEvent::Type type) {
   RenderWidgetHostImpl* host_impl =
       RenderWidgetHostImpl::From(rvh->GetWidget());
-  return host_impl->has_touch_handler();
+  return std::make_unique<content::InputMsgWatcher>(host_impl, type);
 }
 
+// static
+void RenderViewHostTester::SendTouchEvent(
+    RenderViewHost* rvh,
+    blink::SyntheticWebTouchEvent* touch_event) {
+  RenderWidgetHostImpl* host_impl =
+      RenderWidgetHostImpl::From(rvh->GetWidget());
+  auto* input_event_router = host_impl->delegate()->GetInputEventRouter();
+  input_event_router->RouteTouchEvent(host_impl->GetView(), touch_event,
+                                      ui::LatencyInfo());
+}
 
 // RenderViewHostTestEnabler --------------------------------------------------
 
@@ -117,7 +132,7 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
   // graphics services. Some tests have their own, so this only creates one
   // (single-threaded) when none exists. This means tests must ensure any
   // TaskEnvironment they make is created before the RenderViewHostTestEnabler.
-  if (!base::MessageLoopCurrent::Get()) {
+  if (!base::CurrentThread::Get()) {
     task_environment_ =
         std::make_unique<base::test::SingleThreadTaskEnvironment>();
   }
@@ -129,16 +144,16 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
     screen_.reset(ui::CreateDummyScreenAndroid());
   display::Screen::SetScreenInstance(screen_.get());
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (base::ThreadTaskRunnerHandle::IsSet())
     ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 }
 
 RenderViewHostTestEnabler::~RenderViewHostTestEnabler() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::WindowResizeHelperMac::Get()->ShutdownForTests();
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 #if !defined(OS_ANDROID)
   // RenderWidgetHostView holds on to a reference to SurfaceManager, so it
   // must be shut down before the ImageTransportFactory.
@@ -163,7 +178,7 @@ WebContents* RenderViewHostTestHarness::web_contents() {
 }
 
 RenderViewHost* RenderViewHostTestHarness::rvh() {
-  RenderViewHost* result = web_contents()->GetRenderViewHost();
+  RenderViewHost* result = web_contents()->GetMainFrame()->GetRenderViewHost();
   CHECK_EQ(result, web_contents()->GetMainFrame()->GetRenderViewHost());
   return result;
 }
@@ -245,7 +260,7 @@ void RenderViewHostTestHarness::SetUp() {
   aura_test_helper_->SetUp();
 #endif
 
-  sanity_checker_ = std::make_unique<ContentBrowserSanityChecker>();
+  consistency_checker_ = std::make_unique<ContentBrowserConsistencyChecker>();
 
 #if !defined(OS_ANDROID)
   network_change_notifier_ = net::test::MockNetworkChangeNotifier::Create();
@@ -287,8 +302,8 @@ void RenderViewHostTestHarness::TearDown() {
   // queue. This is preferable to immediate deletion because it will behave
   // properly if the |rph_factory_| reset above enqueued any tasks which
   // depend on |browser_context_|.
-  base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
-                   browser_context_.release());
+  content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                                 browser_context_.release());
 
   // Although this isn't required by many, some subclasses members require that
   // the task environment is gone by the time that they are destroyed (akin to

@@ -15,7 +15,7 @@ import {ElementsPanel} from './ElementsPanel.js';
 export class ClassesPaneWidget extends UI.Widget.Widget {
   constructor() {
     super(true);
-    this.registerRequiredCSS('elements/classesPaneWidget.css');
+    this.registerRequiredCSS('elements/classesPaneWidget.css', {enableLegacyPatching: true});
     this.contentElement.className = 'styles-element-classes-pane';
     const container = this.contentElement.createChild('div', 'title-container');
     this._input = container.createChild('div', 'new-class-input monospace');
@@ -40,7 +40,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
     this._updateNodeThrottler = new Common.Throttler.Throttler(0);
     /** @type {?SDK.DOMModel.DOMNode} */
     this._previousTarget = null;
-    self.UI.context.addFlavorChangeListener(SDK.DOMModel.DOMNode, this._onSelectedNodeChanged, this);
+    UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this._onSelectedNodeChanged, this);
   }
 
   /**
@@ -66,7 +66,8 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
       }
     }
 
-    let text = event.target.textContent;
+    const eventTarget = /** @type {!HTMLElement} */ (event.target);
+    let text = /** @type {string} */ (eventTarget.textContent);
     if (isEscKey(event)) {
       if (!Platform.StringUtilities.isWhitespace(text)) {
         event.consume(true);
@@ -75,15 +76,16 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
     }
 
     this._prompt.clearAutocomplete();
-    event.target.textContent = '';
+    eventTarget.textContent = '';
 
-    const node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
+    const node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
     if (!node) {
       return;
     }
 
     const classNames = this._splitTextIntoClasses(text);
     if (!classNames.length) {
+      this._installNodeClasses(node);
       return;
     }
 
@@ -102,7 +104,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
   }
 
   _onTextChanged() {
-    const node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
+    const node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
     if (!node) {
       return;
     }
@@ -117,7 +119,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
     if (this._mutatingNodes.has(node)) {
       return;
     }
-    delete node[ClassesPaneWidget._classesSymbol];
+    cachedClassesMap.delete(node);
     this._update();
   }
 
@@ -145,12 +147,13 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
       return;
     }
 
-    let node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
+    let node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
     if (node) {
       node = node.enclosingElementOrSelf();
     }
 
     this._classesContainer.removeChildren();
+    // @ts-ignore this._input is a div, not an input element. So this line makes no sense at all
     this._input.disabled = !node;
 
     if (!node) {
@@ -159,9 +162,8 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
 
     const classes = this._nodeClasses(node);
     const keys = [...classes.keys()];
-    keys.sort(String.caseInsensetiveComparator);
-    for (let i = 0; i < keys.length; ++i) {
-      const className = keys[i];
+    keys.sort(Platform.StringUtilities.caseInsensetiveComparator);
+    for (const className of keys) {
       const label = UI.UIUtils.CheckboxLabel.create(className, classes.get(className));
       label.classList.add('monospace');
       label.checkboxElement.addEventListener('click', this._onClick.bind(this, className), false);
@@ -174,11 +176,11 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
    * @param {!Event} event
    */
   _onClick(className, event) {
-    const node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
+    const node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
     if (!node) {
       return;
     }
-    const enabled = event.target.checked;
+    const enabled = /** @type {!HTMLInputElement} */ (event.target).checked;
     this._toggleClass(node, className, enabled);
     this._installNodeClasses(node);
   }
@@ -188,7 +190,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
    * @return {!Map<string, boolean>}
    */
   _nodeClasses(node) {
-    let result = node[ClassesPaneWidget._classesSymbol];
+    let result = cachedClassesMap.get(node);
     if (!result) {
       const classAttribute = node.getAttribute('class') || '';
       const classes = classAttribute.split(/\s/);
@@ -200,7 +202,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
         }
         result.set(className, true);
       }
-      node[ClassesPaneWidget._classesSymbol] = result;
+      cachedClassesMap.set(node, result);
     }
     return result;
   }
@@ -239,18 +241,18 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
-  _flushPendingClasses() {
+  async _flushPendingClasses() {
     const promises = [];
     for (const node of this._pendingNodeClasses.keys()) {
       this._mutatingNodes.add(node);
-      const promise = node.setAttributeValuePromise('class', this._pendingNodeClasses.get(node))
+      const promise = node.setAttributeValuePromise('class', /** @type {string} */ (this._pendingNodeClasses.get(node)))
                           .then(onClassValueUpdated.bind(this, node));
       promises.push(promise);
     }
     this._pendingNodeClasses.clear();
-    return Promise.all(promises);
+    await Promise.all(promises);
 
     /**
      * @param {!SDK.DOMModel.DOMNode} node
@@ -262,7 +264,8 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
   }
 }
 
-ClassesPaneWidget._classesSymbol = Symbol('ClassesPaneWidget._classesSymbol');
+/** @type {!WeakMap<!SDK.DOMModel.DOMNode, !Map<string, boolean>>} */
+const cachedClassesMap = new WeakMap();
 
 /**
  * @implements {UI.Toolbar.Provider}
@@ -302,6 +305,7 @@ export class ClassNamePrompt extends UI.TextPrompt.TextPrompt {
     this._nodeClasses = nodeClasses;
     this.initialize(this._buildClassNameCompletions.bind(this), ' ');
     this.disableDefaultSuggestionForEmptyInput();
+    /** @type {?string} */
     this._selectedFrameId = '';
     this._classNamesPromise = null;
   }
@@ -329,7 +333,10 @@ export class ClassNamePrompt extends UI.TextPrompt.TextPrompt {
       promises.push(cssPromise);
     }
 
-    const domPromise = selectedNode.domModel().classNamesPromise(selectedNode.ownerDocument.id).then(classes => {
+    const ownerDocumentId = /** @type {number} */ (
+        /** @type {!SDK.DOMModel.DOMDocument} */ (selectedNode.ownerDocument).id);
+
+    const domPromise = selectedNode.domModel().classNamesPromise(ownerDocumentId).then(classes => {
       for (const className of classes) {
         completions.add(className);
       }
@@ -350,7 +357,7 @@ export class ClassNamePrompt extends UI.TextPrompt.TextPrompt {
       this._classNamesPromise = null;
     }
 
-    const selectedNode = self.UI.context.flavor(SDK.DOMModel.DOMNode);
+    const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
     if (!selectedNode || (!prefix && !force && !expression.trim())) {
       return Promise.resolve([]);
     }
@@ -366,7 +373,18 @@ export class ClassNamePrompt extends UI.TextPrompt.TextPrompt {
       if (prefix[0] === '.') {
         completions = completions.map(value => '.' + value);
       }
-      return completions.filter(value => value.startsWith(prefix)).sort().map(completion => ({text: completion}));
+      return completions.filter(value => value.startsWith(prefix)).sort().map(completion => ({
+                                                                                text: completion,
+                                                                                title: undefined,
+                                                                                subtitle: undefined,
+                                                                                iconType: undefined,
+                                                                                priority: undefined,
+                                                                                isSecondary: undefined,
+                                                                                subtitleRenderer: undefined,
+                                                                                selectionRange: undefined,
+                                                                                hideGhostText: undefined,
+                                                                                iconElement: undefined,
+                                                                              }));
     });
   }
 }

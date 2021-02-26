@@ -62,8 +62,17 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStreamBase : public QuicCryptoStream {
   virtual void SendServerConfigUpdate(
       const CachedNetworkParameters* cached_network_params) = 0;
 
+  // Returns true if the connection was a successful 0-RTT resumption.
   virtual bool IsZeroRtt() const = 0;
-  virtual bool ZeroRttAttempted() const = 0;
+
+  // Returns true if the connection was the result of a resumption handshake,
+  // whether 0-RTT or not.
+  virtual bool IsResumption() const = 0;
+
+  // Returns true if the client attempted a resumption handshake, whether or not
+  // the resumption actually occurred.
+  virtual bool ResumptionAttempted() const = 0;
+
   virtual const CachedNetworkParameters* PreviousCachedNetworkParams()
       const = 0;
   virtual void SetPreviousCachedNetworkParams(
@@ -75,6 +84,12 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStreamBase : public QuicCryptoStream {
   // However, it is exposed here because that is the only place where the
   // configuration for the certificate used in the connection is accessible.
   virtual bool ShouldSendExpectCTHeader() const = 0;
+
+  // Returns the Details from the latest call to ProofSource::GetProof or
+  // ProofSource::ComputeTlsSignature. Returns nullptr if no such call has been
+  // made. The Details are owned by the QuicCryptoServerStreamBase and the
+  // pointer is only valid while the owning object is still valid.
+  virtual const ProofSource::Details* ProofSourceDetails() const = 0;
 };
 
 // Creates an appropriate QuicCryptoServerStream for the provided parameters,

@@ -32,6 +32,7 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
@@ -114,7 +115,7 @@ void PagePopupController::setWindowRect(int x, int y, int width, int height) {
   popup_.SetWindowRect(IntRect(x, y, width, height));
 }
 
-void PagePopupController::Trace(Visitor* visitor) {
+void PagePopupController::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   Supplement<Page>::Trace(visitor);
 }

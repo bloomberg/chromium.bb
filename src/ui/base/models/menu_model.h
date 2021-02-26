@@ -5,11 +5,11 @@
 #ifndef UI_BASE_MODELS_MENU_MODEL_H_
 #define UI_BASE_MODELS_MENU_MODEL_H_
 
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/models/menu_model_delegate.h"
 #include "ui/base/models/menu_separator_types.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -23,7 +23,8 @@ class ButtonMenuItemModel;
 class ImageModel;
 
 // An interface implemented by an object that provides the content of a menu.
-class UI_BASE_EXPORT MenuModel : public base::SupportsWeakPtr<MenuModel> {
+class COMPONENT_EXPORT(UI_BASE) MenuModel
+    : public base::SupportsWeakPtr<MenuModel> {
  public:
   // The type of item.
   enum ItemType {
@@ -64,6 +65,10 @@ class UI_BASE_EXPORT MenuModel : public base::SupportsWeakPtr<MenuModel> {
 
   // Returns the label of the item at the specified index.
   virtual base::string16 GetLabelAt(int index) const = 0;
+
+  // Returns the secondary label of the item at the specified index. Secondary
+  // label is shown below the label.
+  virtual base::string16 GetSecondaryLabelAt(int index) const;
 
   // Returns the minor text of the item at the specified index. The minor text
   // is rendered to the right of the label and using the font GetLabelFontAt().
@@ -107,6 +112,15 @@ class UI_BASE_EXPORT MenuModel : public base::SupportsWeakPtr<MenuModel> {
 
   // Returns true if the menu item is visible.
   virtual bool IsVisibleAt(int index) const;
+
+  // Returns true if the item is rendered specially to draw attention
+  // for in-product help.
+  virtual bool IsAlertedAt(int index) const;
+
+  // Returns true if the menu item grants access to a new feature that we want
+  // to show off to users (items marked as new will receive a "New" badge when
+  // the appropriate flag is enabled).
+  virtual bool IsNewFeatureAt(int index) const;
 
   // Returns the model for the submenu at the specified index.
   virtual MenuModel* GetSubmenuModelAt(int index) const = 0;

@@ -5,9 +5,11 @@
 #include "third_party/blink/renderer/core/timing/profiler_group.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_profiler_init_options.h"
 #include "third_party/blink/renderer/core/timing/profiler.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -172,6 +174,63 @@ TEST(ProfilerGroupTest, V8ProfileLimit) {
   for (auto profiler : profilers) {
     profiler->stop(scope.GetScriptState());
   }
+}
+
+TEST(ProfilerGroupTest, Bug1119865) {
+  class ExpectNoCallFunction : public ScriptFunction {
+   public:
+    static v8::Local<v8::Function> Create(ScriptState* state) {
+      return MakeGarbageCollected<ExpectNoCallFunction>(state)
+          ->BindToV8Function();
+    }
+
+    explicit ExpectNoCallFunction(ScriptState* state) : ScriptFunction(state) {}
+
+    ScriptValue Call(ScriptValue) override {
+      EXPECT_FALSE(true)
+          << "Promise should not resolve without dispatching a task";
+      return ScriptValue();
+    }
+  };
+
+  V8TestingScope scope;
+
+  ProfilerGroup* profiler_group = ProfilerGroup::From(scope.GetIsolate());
+
+  ProfilerInitOptions* init_options = ProfilerInitOptions::Create();
+  init_options->setSampleInterval(0);
+
+  auto* profiler = profiler_group->CreateProfiler(
+      scope.GetScriptState(), *init_options, base::TimeTicks(),
+      scope.GetExceptionState());
+
+  auto function = ExpectNoCallFunction::Create(scope.GetScriptState());
+  profiler->stop(scope.GetScriptState()).Then(function);
+}
+
+// Tests that a leaked profiler doesn't crash when disposed alongside its
+// context.
+TEST(ProfilerGroupTest, LeakProfilerWithContext) {
+  Profiler* profiler;
+  {
+    V8TestingScope scope;
+    ProfilerGroup* profiler_group = ProfilerGroup::From(scope.GetIsolate());
+
+    ProfilerInitOptions* init_options = ProfilerInitOptions::Create();
+    init_options->setSampleInterval(0);
+    init_options->setMaxBufferSize(0);
+    profiler = profiler_group->CreateProfiler(scope.GetScriptState(),
+                                              *init_options, base::TimeTicks(),
+                                              scope.GetExceptionState());
+
+    EXPECT_FALSE(profiler->stopped());
+  }
+
+  // Force a collection of the underlying Profiler and v8::Context, and ensure
+  // a crash doesn't occur.
+  profiler = nullptr;
+  ThreadState::Current()->CollectAllGarbageForTesting();
+  test::RunPendingTasks();
 }
 
 }  // namespace blink

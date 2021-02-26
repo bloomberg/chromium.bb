@@ -77,6 +77,10 @@ class BrowserBackend(app_backend.AppBackend):
     return self.app_type
 
   @property
+  def screenshot_timeout(self):
+    return None
+
+  @property
   def supports_uploading_logs(self):
     # Specific browser backend is responsible for overriding this properly.
     return False
@@ -138,9 +142,9 @@ class BrowserBackend(app_backend.AppBackend):
     """
     suffix = artifact_logger.GetTimestampSuffix()
     data = debug_data.DebugData()
-    self._CollectScreenshot(log_level, suffix)
-    self._CollectSystemLog(log_level, suffix, data)
-    self._CollectStdout(log_level, suffix, data)
+    self._CollectScreenshot(log_level, suffix + '.png')
+    self._CollectSystemLog(log_level, suffix + '.txt', data)
+    self._CollectStdout(log_level, suffix + '.txt', data)
     self._SymbolizeAndLogMinidumps(log_level, data)
     return data
 
@@ -154,7 +158,8 @@ class BrowserBackend(app_backend.AppBackend):
           logging.ERROR.
       suffix: The suffix to append to the names of any created artifacts.
     """
-    screenshot_handle = screenshot.TryCaptureScreenShot(self.browser.platform)
+    screenshot_handle = screenshot.TryCaptureScreenShot(
+        self.browser.platform, timeout=self.screenshot_timeout)
     if screenshot_handle:
       with open(screenshot_handle.GetAbsPath(), 'rb') as infile:
         artifact_name = posixpath.join(
@@ -379,7 +384,7 @@ class BrowserBackend(app_backend.AppBackend):
   def supports_memory_dumping(self):
     return False
 
-  def DumpMemory(self, timeout=None):
+  def DumpMemory(self, timeout=None, detail_level=None):
     raise NotImplementedError()
 
 # pylint: disable=invalid-name
@@ -412,3 +417,7 @@ class BrowserBackend(app_backend.AppBackend):
 
   def ExitOverviewMode(self, timeout): # pylint: disable=unused-argument
     raise exceptions.StoryActionError('Overview mode is not supported')
+
+  def ExecuteBrowserCommand(
+      self, command_id, timeout): # pylint: disable=unused-argument
+    raise exceptions.StoryActionError('Execute browser command not supported')

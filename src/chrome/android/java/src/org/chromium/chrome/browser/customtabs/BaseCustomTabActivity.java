@@ -7,12 +7,12 @@ package org.chromium.chrome.browser.customtabs;
 import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
 import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
 
+import static org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason.USER_NAVIGATION;
+
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.PixelFormat;
 import android.util.Pair;
 import android.view.KeyEvent;
-import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -20,20 +20,24 @@ import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.KeyboardShortcuts;
-import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.browserservices.ui.trustedwebactivity.TrustedWebActivityCoordinator;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
+import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
+import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
+import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
@@ -44,27 +48,26 @@ import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.webapps.SameTaskWebApkActivity;
 import org.chromium.chrome.browser.webapps.WebappActivityCoordinator;
 import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Contains functionality which is shared between {@link WebappActivity} and
  * {@link CustomTabActivity}. Purpose of the class is to simplify merging {@link WebappActivity}
  * and {@link CustomTabActivity}.
- * @param <C> - type of associated Dagger component.
  */
-public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityComponent>
-        extends ChromeActivity<C> {
+public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTabActivityComponent> {
     protected static Integer sOverrideCoreCountForTesting;
 
     protected BrowserServicesIntentDataProvider mIntentDataProvider;
     protected CustomTabDelegateFactory mDelegateFactory;
     protected CustomTabToolbarCoordinator mToolbarCoordinator;
     protected CustomTabActivityNavigationController mNavigationController;
+    protected CustomTabActivityTabController mTabController;
     protected CustomTabActivityTabProvider mTabProvider;
     protected CustomTabStatusBarColorProvider mStatusBarColorProvider;
     protected CustomTabActivityTabFactory mTabFactory;
@@ -72,6 +75,7 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     protected CustomTabNightModeStateController mNightModeStateController;
     protected @Nullable WebappActivityCoordinator mWebappActivityCoordinator;
     protected @Nullable TrustedWebActivityCoordinator mTwaCoordinator;
+    protected Verifier mVerifier;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
@@ -137,32 +141,73 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     @Override
     protected RootUiCoordinator createRootUiCoordinator() {
         return new BaseCustomTabRootUiCoordinator(this, getShareDelegateSupplier(),
-                mToolbarCoordinator, mNavigationController, getActivityTabProvider(),
-                mTabModelProfileSupplier, mBookmarkBridgeSupplier);
+                ()
+                        -> mToolbarCoordinator,
+                ()
+                        -> mNavigationController,
+                getActivityTabProvider(), mTabModelProfileSupplier, mBookmarkBridgeSupplier,
+                this::getContextualSearchManager, mTabModelSelectorSupplier);
     }
 
-    /**
-     * Called when the {@link BaseCustomTabActivityComponent} was created.
-     */
-    protected void onComponentCreated(BaseCustomTabActivityComponent component) {
+    @Override
+    public boolean shouldAllocateChildConnection() {
+        return mTabController.shouldAllocateChildConnection();
+    }
+
+    @Override
+    protected BaseCustomTabActivityComponent createComponent(
+            ChromeActivityCommonsModule commonsModule) {
+        // mIntentHandler comes from the base class.
+        IntentIgnoringCriterion intentIgnoringCriterion =
+                (intent) -> mIntentHandler.shouldIgnoreIntent(intent, /*startedActivity=*/true);
+
+        BaseCustomTabActivityModule baseCustomTabsModule =
+                new BaseCustomTabActivityModule(mIntentDataProvider, getStartupTabPreloader(),
+                        mNightModeStateController, intentIgnoringCriterion);
+        BaseCustomTabActivityComponent component =
+                ChromeApplication.getComponent().createBaseCustomTabActivityComponent(
+                        commonsModule, baseCustomTabsModule);
+
         mDelegateFactory = component.resolveTabDelegateFactory();
         mToolbarCoordinator = component.resolveToolbarCoordinator();
         mNavigationController = component.resolveNavigationController();
+        mTabController = component.resolveTabController();
         mTabProvider = component.resolveTabProvider();
         mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
         mTabFactory = component.resolveTabFactory();
         mCustomTabIntentHandler = component.resolveIntentHandler();
+        mVerifier = component.resolveVerifier();
 
         component.resolveCompositorContentInitializer();
         component.resolveTaskDescriptionHelper();
+        component.resolveUmaTracker();
+        CustomTabActivityClientConnectionKeeper connectionKeeper =
+                component.resolveConnectionKeeper();
+        mNavigationController.setFinishHandler((reason) -> {
+            if (reason == USER_NAVIGATION) connectionKeeper.recordClientConnectionStatus();
+            handleFinishAndClose();
+        });
+        component.resolveSessionHandler();
 
         BrowserServicesIntentDataProvider intentDataProvider = getIntentDataProvider();
+
+        if (intentDataProvider.isIncognito()) {
+            component.resolveCustomTabIncognitoManager();
+        }
+
         if (intentDataProvider.isWebappOrWebApkActivity()) {
             mWebappActivityCoordinator = component.resolveWebappActivityCoordinator();
         }
+
         if (intentDataProvider.isWebApkActivity()) {
             component.resolveWebApkActivityCoordinator();
         }
+
+        if (mIntentDataProvider.isTrustedWebActivity()) {
+            mTwaCoordinator = component.resolveTrustedWebActivityCoordinator();
+        }
+
+        return component;
     }
 
     /**
@@ -217,68 +262,23 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     }
 
     @Override
-    protected void doLayoutInflation() {
-        // Conditionally do layout inflation synchronously if device has low core count.
-        // When layout inflation is done asynchronously, it blocks UI thread startup. While
-        // blocked, the UI thread will draw unnecessary frames - causing the lower priority
-        // layout inflation thread to be de-scheduled significantly more often, especially on
-        // devices with low core count. Thus for low core count devices, there is a startup
-        // performance improvement incurred by doing layout inflation synchronously.
-        // TODO: Determine whether this webapp speed optimization is still helpful given
-        // the current CCT speed optimizations.
-        if (!mIntentDataProvider.isWebappOrWebApkActivity() || getCoreCount() <= 2) {
-            super.doLayoutInflation();
-            return;
+    public void initializeState() {
+        super.initializeState();
+
+        // TODO(pkotwicz): Determine whether finishing tab initialization in initializeState() has a
+        // positive performance impact.
+        if (getIntentDataProvider().isWebappOrWebApkActivity()) {
+            mTabController.finishNativeInitialization();
         }
-
-        // Because we delay the layout inflation, the CompositorSurfaceManager and its
-        // SurfaceView(s) are created and attached late (ie after the first draw). At the time of
-        // the first attach of a SurfaceView to the view hierarchy (regardless of the SurfaceView's
-        // actual opacity), the window transparency hint changes (because the window creates a
-        // transparent hole and attaches the SurfaceView to that hole). This may cause older android
-        // versions to destroy the window and redraw it causing a flicker. This line sets the window
-        // transparency hint early so that when the SurfaceView gets attached later, the
-        // transparency hint need not change and no flickering occurs.
-        getWindow().setFormat(PixelFormat.TRANSLUCENT);
-        // No need to inflate layout synchronously since splash screen is displayed.
-        Runnable inflateTask = () -> {
-            ViewGroup mainView = WarmupManager.inflateViewHierarchy(BaseCustomTabActivity.this,
-                    getControlContainerLayoutId(), getToolbarLayoutId());
-            if (isActivityFinishingOrDestroyed()) return;
-            if (mainView != null) {
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-                    if (isActivityFinishingOrDestroyed()) return;
-                    onLayoutInflated(mainView);
-                });
-            } else {
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-                    if (isActivityFinishingOrDestroyed()) return;
-                    BaseCustomTabActivity.super.doLayoutInflation();
-                });
-            }
-        };
-
-        new Thread(inflateTask).start();
-    }
-
-    private void onLayoutInflated(ViewGroup mainView) {
-        ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
-        WarmupManager.transferViewHeirarchy(mainView, contentView);
-        onInitialLayoutInflationComplete();
-    }
-
-    @Override
-    protected void onInitialLayoutInflationComplete() {
-        if (mWebappActivityCoordinator != null) {
-            mWebappActivityCoordinator.onInitialLayoutInflationComplete();
-        }
-        super.onInitialLayoutInflationComplete();
     }
 
     @Override
     public void finishNativeInitialization() {
         if (isTaskRoot() && UsageStatsService.isEnabled()) {
             UsageStatsService.getInstance().createPageViewObserver(getTabModelSelector(), this);
+        }
+        if (!getIntentDataProvider().isWebappOrWebApkActivity()) {
+            mTabController.finishNativeInitialization();
         }
 
         super.finishNativeInitialization();
@@ -318,6 +318,19 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     }
 
     @Override
+    public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
+        return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
+                getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
+                getWindow().getDecorView(), mBookmarkBridgeSupplier, mVerifier,
+                mIntentDataProvider.getUiType(), mIntentDataProvider.getMenuTitles(),
+                mIntentDataProvider.isOpenedByChrome(),
+                mIntentDataProvider.shouldShowShareMenuItem(),
+                mIntentDataProvider.shouldShowStarButton(),
+                mIntentDataProvider.shouldShowDownloadButton(), mIntentDataProvider.isIncognito(),
+                getModalDialogManager(), mIntentDataProvider.shouldShowOpenInChromeMenuItem());
+    }
+
+    @Override
     protected int getControlContainerLayoutId() {
         return R.layout.custom_tabs_control_container;
     }
@@ -347,6 +360,11 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
 
     @Override
     protected boolean handleBackPressed() {
+        // TODO(1091411): Find a better mechanism for back-press handling for features.
+        if (mRootUiCoordinator.getBottomSheetController().handleBackPress()) {
+            return true;
+        }
+
         return mNavigationController.navigateOnBack();
     }
 
@@ -418,9 +436,6 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
         }
         super.initDeferredStartupForActivity();
     }
-
-    @Override
-    public void onUpdateStateChanged() {}
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {

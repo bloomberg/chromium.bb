@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -14,16 +14,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.components.payments.PaymentManifestParser.ManifestParseCallback;
 import org.chromium.components.payments.WebAppManifestSection;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.url.GURL;
 
 /** An integration test for the payment manifest parser. */
@@ -31,8 +29,7 @@ import org.chromium.url.GURL;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentManifestParserTest implements ManifestParseCallback {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private final PaymentManifestParser mParser = new PaymentManifestParser();
     private GURL[] mWebAppManifestUris;
@@ -63,8 +60,9 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
 
     @Before
     public void setUp() throws Throwable {
-        mRule.startMainActivityOnBlankPage();
-        mRule.runOnUiThread((Runnable) () -> mParser.createNative(mRule.getWebContents()));
+        mActivityTestRule.startMainActivityOnBlankPage();
+        mActivityTestRule.runOnUiThread(
+                (Runnable) () -> mParser.createNative(mActivityTestRule.getWebContents()));
         mWebAppManifestUris = null;
         mSupportedOrigins = null;
         mWebAppManifest = null;
@@ -75,50 +73,41 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
 
     @After
     public void tearDown() throws Throwable {
-        mRule.runOnUiThread((Runnable) () -> mParser.destroyNative());
+        mActivityTestRule.runOnUiThread((Runnable) () -> mParser.destroyNative());
     }
 
     @Test
     @MediumTest
     @Feature({"Payments"})
     public void testParseInvalidPaymentMethodManifest() throws Throwable {
-        mRule.runOnUiThread(
+        mActivityTestRule.runOnUiThread(
                 (Runnable) ()
                         -> mParser.parsePaymentMethodManifest(
                                 new GURL("https://chromium.org/pmm.json"),
                                 "invalid payment method manifest", PaymentManifestParserTest.this));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mParseFailure;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mParseFailure);
     }
 
     @Test
     @MediumTest
     @Feature({"Payments"})
     public void testParsePaymentMethodManifest() throws Throwable {
-        mRule.runOnUiThread((Runnable) ()
-                                    -> mParser.parsePaymentMethodManifest(
-                                            new GURL("https://bobpay.com/pmm.json"),
-                                            "{"
-                                                    + "  \"default_applications\": ["
-                                                    + "    \"https://bobpay.com/app.json\","
-                                                    + "    \"https://alicepay.com/app.json\""
-                                                    + "  ],"
-                                                    + "  \"supported_origins\": ["
-                                                    + "    \"https://charliepay.com\","
-                                                    + "    \"https://evepay.com\""
-                                                    + "  ]"
-                                                    + "}",
-                                            PaymentManifestParserTest.this));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mParsePaymentMethodManifestSuccess;
-            }
-        });
+        mActivityTestRule.runOnUiThread(
+                (Runnable) ()
+                        -> mParser.parsePaymentMethodManifest(
+                                new GURL("https://bobpay.com/pmm.json"),
+                                "{"
+                                        + "  \"default_applications\": ["
+                                        + "    \"https://bobpay.com/app.json\","
+                                        + "    \"https://alicepay.com/app.json\""
+                                        + "  ],"
+                                        + "  \"supported_origins\": ["
+                                        + "    \"https://charliepay.com\","
+                                        + "    \"https://evepay.com\""
+                                        + "  ]"
+                                        + "}",
+                                PaymentManifestParserTest.this));
+        CriteriaHelper.pollInstrumentationThread(() -> mParsePaymentMethodManifestSuccess);
         Assert.assertNotNull(mWebAppManifestUris);
         Assert.assertEquals(2, mWebAppManifestUris.length);
         Assert.assertEquals(new GURL("https://bobpay.com/app.json"), mWebAppManifestUris[0]);
@@ -134,7 +123,7 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
     @Feature({"Payments"})
     public void testParsePaymentMethodManifestSupportedOriginsWildcardNotSupported()
             throws Throwable {
-        mRule.runOnUiThread(
+        mActivityTestRule.runOnUiThread(
                 (Runnable) ()
                         -> mParser.parsePaymentMethodManifest(
                                 new GURL("https://bobpay.com/pmm.json"),
@@ -147,41 +136,35 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testParseInvalidWebAppManifest() throws Throwable {
-        mRule.runOnUiThread((Runnable) () -> mParser.parseWebAppManifest(
-                "invalid web app manifest", PaymentManifestParserTest.this));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mParseFailure;
-            }
-        });
+        mActivityTestRule.runOnUiThread(
+                (Runnable) ()
+                        -> mParser.parseWebAppManifest(
+                                "invalid web app manifest", PaymentManifestParserTest.this));
+        CriteriaHelper.pollInstrumentationThread(() -> mParseFailure);
     }
 
     @Test
     @MediumTest
     @Feature({"Payments"})
     public void testParseWebAppManifest() throws Throwable {
-        mRule.runOnUiThread((Runnable) () -> mParser.parseWebAppManifest("{"
-                        + "  \"related_applications\": [{"
-                        + "    \"platform\": \"play\", "
-                        + "    \"id\": \"com.bobpay.app\", "
-                        + "    \"min_version\": \"1\", "
-                        + "    \"fingerprints\": [{"
-                        + "      \"type\": \"sha256_cert\", "
-                        + "      \"value\": \""
-                        + "00:01:02:03:04:05:06:07:08:09:"
-                        + "A0:A1:A2:A3:A4:A5:A6:A7:A8:A9:"
-                        + "B0:B1:B2:B3:B4:B5:B6:B7:B8:B9:C0:C1\""
-                        + "    }]"
-                        + "  }]"
-                        + "}",
-                PaymentManifestParserTest.this));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mParseWebAppManifestSuccess;
-            }
-        });
+        mActivityTestRule.runOnUiThread(
+                (Runnable) ()
+                        -> mParser.parseWebAppManifest("{"
+                                        + "  \"related_applications\": [{"
+                                        + "    \"platform\": \"play\", "
+                                        + "    \"id\": \"com.bobpay.app\", "
+                                        + "    \"min_version\": \"1\", "
+                                        + "    \"fingerprints\": [{"
+                                        + "      \"type\": \"sha256_cert\", "
+                                        + "      \"value\": \""
+                                        + "00:01:02:03:04:05:06:07:08:09:"
+                                        + "A0:A1:A2:A3:A4:A5:A6:A7:A8:A9:"
+                                        + "B0:B1:B2:B3:B4:B5:B6:B7:B8:B9:C0:C1\""
+                                        + "    }]"
+                                        + "  }]"
+                                        + "}",
+                                PaymentManifestParserTest.this));
+        CriteriaHelper.pollInstrumentationThread(() -> mParseWebAppManifestSuccess);
         Assert.assertNotNull(mWebAppManifest);
         Assert.assertEquals(1, mWebAppManifest.length);
         Assert.assertNotNull(mWebAppManifest[0]);

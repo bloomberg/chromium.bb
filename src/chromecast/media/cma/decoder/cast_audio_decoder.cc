@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -184,15 +184,15 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
   }
 
   void OnDecodeStatus(base::TimeDelta buffer_timestamp,
-                      ::media::DecodeStatus status) {
+                      ::media::Status status) {
     DCHECK(pending_decode_callback_);
 
     Status result_status = kDecodeOk;
     scoped_refptr<media::DecoderBufferBase> decoded;
-    if (status == ::media::DecodeStatus::OK && !decoded_chunks_.empty()) {
+    if (status.is_ok() && !decoded_chunks_.empty()) {
       decoded = ConvertDecoded();
     } else {
-      if (status != ::media::DecodeStatus::OK)
+      if (!status.is_ok())
         result_status = kDecodeError;
       decoded = base::MakeRefCounted<media::DecoderBufferAdapter>(
           output_config_.id, base::MakeRefCounted<::media::DecoderBuffer>(0));

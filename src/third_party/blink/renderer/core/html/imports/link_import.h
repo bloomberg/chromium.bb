@@ -45,8 +45,6 @@ class HTMLImportChild;
 // A LinkResource subclasss used for @rel=import.
 //
 class LinkImport final : public LinkResource, public HTMLImportChildClient {
-  USING_GARBAGE_COLLECTED_MIXIN(LinkImport);
-
  public:
   explicit LinkImport(HTMLLinkElement* owner);
   ~LinkImport() final;
@@ -55,7 +53,7 @@ class LinkImport final : public LinkResource, public HTMLImportChildClient {
   void Process() final;
   LinkResourceType GetType() const final { return kImport; }
   bool HasLoaded() const final;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void OwnerInserted() final;
   void OwnerRemoved() final;
 

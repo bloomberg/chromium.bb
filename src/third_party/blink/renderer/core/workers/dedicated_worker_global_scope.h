@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/core/animation_frame/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
@@ -57,7 +58,8 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   static DedicatedWorkerGlobalScope* Create(
       std::unique_ptr<GlobalScopeCreationParams>,
       DedicatedWorkerThread*,
-      base::TimeTicks time_origin);
+      base::TimeTicks time_origin,
+      ukm::SourceId ukm_source_id);
 
   // Do not call this. Use Create() instead. This is public only for
   // MakeGarbageCollected.
@@ -66,7 +68,9 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       DedicatedWorkerThread*,
       base::TimeTicks time_origin,
       std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
-      const BeginFrameProviderParams& begin_frame_provider_params);
+      const BeginFrameProviderParams& begin_frame_provider_params,
+      ukm::SourceId ukm_source_id,
+      bool parent_cross_origin_isolated_capability);
 
   ~DedicatedWorkerGlobalScope() override;
 
@@ -93,11 +97,15 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
                   int64_t appcache_host) override;
   void FetchAndRunClassicScript(
       const KURL& script_url,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) override;
   void FetchAndRunModuleScript(
       const KURL& module_url_record,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::CredentialsMode,
@@ -123,9 +131,48 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   }
 
   // Called by the Oilpan.
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
+
+  // Returns the token that uniquely identifies this worker.
+  const DedicatedWorkerToken& GetDedicatedWorkerToken() const { return token_; }
+  WorkerToken GetWorkerToken() const final { return token_; }
+  bool CrossOriginIsolatedCapability() const final {
+    return cross_origin_isolated_capability_;
+  }
+  ExecutionContextToken GetExecutionContextToken() const final {
+    return token_;
+  }
+
+  // Returns the ExecutionContextToken that uniquely identifies the parent
+  // context that created this dedicated worker.
+  base::Optional<ExecutionContextToken> GetParentExecutionContextToken()
+      const final {
+    return parent_token_;
+  }
 
  private:
+  struct ParsedCreationParams {
+    std::unique_ptr<GlobalScopeCreationParams> creation_params;
+    ExecutionContextToken parent_context_token;
+  };
+
+  static ParsedCreationParams ParseCreationParams(
+      std::unique_ptr<GlobalScopeCreationParams> creation_params);
+
+  // The public constructor extracts the |parent_context_token| from
+  // |creation_params| and redirects here, otherwise the token is lost when we
+  // move the |creation_params| to WorkerGlobalScope, and other worker types
+  // don't care about that particular parameter. The helper function is required
+  // because there's no guarantee about the order of evaluation of arguments.
+  DedicatedWorkerGlobalScope(
+      ParsedCreationParams parsed_creation_params,
+      DedicatedWorkerThread* thread,
+      base::TimeTicks time_origin,
+      std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
+      const BeginFrameProviderParams& begin_frame_provider_params,
+      ukm::SourceId ukm_source_id,
+      bool parent_cross_origin_isolated_capability);
+
   void DidReceiveResponseForClassicScript(
       WorkerClassicScriptLoader* classic_script_loader);
   void DidFetchClassicScript(WorkerClassicScriptLoader* classic_script_loader,
@@ -133,6 +180,11 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
 
   DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
 
+  // A unique ID for this context.
+  const DedicatedWorkerToken token_;
+  // The ID of the parent context that owns this worker.
+  const ExecutionContextToken parent_token_;
+  bool cross_origin_isolated_capability_;
   Member<WorkerAnimationFrameProvider> animation_frame_provider_;
   RejectCoepUnsafeNone reject_coep_unsafe_none_ = RejectCoepUnsafeNone(false);
 };

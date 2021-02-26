@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/CacheStorage.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -26,7 +26,7 @@ class MODULES_EXPORT InspectorCacheStorageAgent final
 
   explicit InspectorCacheStorageAgent(InspectedFrames*);
   ~InspectorCacheStorageAgent() override;
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void requestCacheNames(const String& security_origin,
                          std::unique_ptr<RequestCacheNamesCallback>) override;

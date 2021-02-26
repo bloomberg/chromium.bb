@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import android.app.Activity;
-import android.content.Context;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +20,6 @@ import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.ApplicationInfo;
 import org.chromium.chrome.browser.feed.library.api.host.config.ApplicationInfo.BuildType;
@@ -51,6 +49,7 @@ import org.chromium.chrome.browser.feed.library.common.time.TimingUtils;
 import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.chrome.browser.feed.library.piet.host.CustomElementProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.HostBindingProvider;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Tests for {@link StreamScopeBuilder}. */
@@ -105,7 +104,7 @@ public class StreamScopeBuilderTest {
     @Mock
     private FeedExtensionRegistry mFeedExtensionRegistry;
 
-    private Context mContext;
+    private Activity mActivity;
     private MainThreadRunner mMainThreadRunner;
     private ThreadUtils mThreadUtils;
     private TimingUtils mTimingUtils;
@@ -116,12 +115,12 @@ public class StreamScopeBuilderTest {
     @Before
     public void setUp() {
         initMocks(this);
-        mContext = Robolectric.buildActivity(Activity.class).get();
+        mActivity = Robolectric.buildActivity(Activity.class).get();
         mMainThreadRunner = new MainThreadRunner();
         mThreadUtils = new ThreadUtils();
         mTimingUtils = new TimingUtils();
         mClock = new FakeClock();
-        mApplicationInfo = new ApplicationInfo.Builder(mContext).setBuildType(BUILD_TYPE).build();
+        mApplicationInfo = new ApplicationInfo.Builder(mActivity).setBuildType(BUILD_TYPE).build();
         when(mConfig.getValueOrDefault(
                      eq(ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS), anyLong()))
                 .thenReturn(1000L);
@@ -131,7 +130,7 @@ public class StreamScopeBuilderTest {
 
     @Test
     public void testBasicBuild() {
-        StreamScope streamScope = new StreamScopeBuilder(mContext, mActionApi, mImageLoaderApi,
+        StreamScope streamScope = new StreamScopeBuilder(mActivity, mActionApi, mImageLoaderApi,
                 mProtocolAdapter, mFeedSessionManager, mThreadUtils, mTimingUtils, mTaskQueue,
                 mMainThreadRunner, mClock, DEBUG_BEHAVIOR, mStreamConfiguration, mCardConfiguration,
                 mActionManager, mConfig, mSnackbarApi, mBasicLoggingApi, mOfflineIndicatorApi,
@@ -144,7 +143,7 @@ public class StreamScopeBuilderTest {
 
     @Test
     public void testComplexBuild() {
-        StreamScope streamScope = new StreamScopeBuilder(mContext, mActionApi, mImageLoaderApi,
+        StreamScope streamScope = new StreamScopeBuilder(mActivity, mActionApi, mImageLoaderApi,
                 mProtocolAdapter, mFeedSessionManager, mThreadUtils, mTimingUtils, mTaskQueue,
                 mMainThreadRunner, mClock, DEBUG_BEHAVIOR, mStreamConfiguration, mCardConfiguration,
                 mActionManager, mConfig, mSnackbarApi, mBasicLoggingApi, mOfflineIndicatorApi,
@@ -162,7 +161,7 @@ public class StreamScopeBuilderTest {
     public void testStreamFactoryBuild() {
         setupStreamFactory(mStream);
 
-        StreamScope streamScope = new StreamScopeBuilder(mContext, mActionApi, mImageLoaderApi,
+        StreamScope streamScope = new StreamScopeBuilder(mActivity, mActionApi, mImageLoaderApi,
                 mProtocolAdapter, mFeedSessionManager, mThreadUtils, mTimingUtils, mTaskQueue,
                 mMainThreadRunner, mClock, DEBUG_BEHAVIOR, mStreamConfiguration, mCardConfiguration,
                 mActionManager, mConfig, mSnackbarApi, mBasicLoggingApi, mOfflineIndicatorApi,
@@ -180,7 +179,7 @@ public class StreamScopeBuilderTest {
                 imageLoaderApi, customElementProvider, debugBehavior, clock, modelProviderFactory,
                 hostBindingProvider, offlineIndicatorApi, configuration, actionApi, actionManager,
                 snackbarApi, streamConfiguration, feedExtensionRegistry, basicLoggingApi,
-                mainThreadRunner, isBackgroundDark, tooltipApi, threadUtils,
-                knownContentApi) -> streamToReturn;
+                mainThreadRunner, isBackgroundDark, tooltipApi, threadUtils, knownContentApi,
+                isPlaceholderShown) -> streamToReturn;
     }
 }

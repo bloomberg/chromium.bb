@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/syncable/syncable_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -268,6 +268,11 @@ void MockModelTypeWorker::FailOneCommit() {
   processor_->OnCommitCompleted(
       model_type_state_,
       /*committed_response_list=*/CommitResponseDataList(), list);
+}
+
+void MockModelTypeWorker::FailFullCommitRequest() {
+  pending_commits_.pop_front();
+  processor_->OnCommitFailed(SyncCommitError::kBadServerResponse);
 }
 
 CommitResponseData MockModelTypeWorker::SuccessfulCommitResponse(

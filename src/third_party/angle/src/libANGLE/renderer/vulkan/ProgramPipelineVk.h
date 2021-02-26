@@ -45,15 +45,21 @@ class ProgramPipelineVk : public ProgramPipelineImpl
     void fillProgramStateMap(const ContextVk *contextVk,
                              gl::ShaderMap<const gl::ProgramState *> *programStatesOut);
 
-    angle::Result link(const gl::Context *context) override;
-
-    angle::Result transformShaderSpirV(const gl::Context *glContext);
+    angle::Result link(const gl::Context *glContext,
+                       const gl::ProgramMergedVaryings &mergedVaryings) override;
 
     angle::Result updateUniforms(ContextVk *contextVk);
 
     bool dirtyUniforms(const gl::State &glState);
+    void onProgramBind(ContextVk *contextVk);
 
   private:
+    size_t calcUniformUpdateRequiredSpace(ContextVk *contextVk,
+                                          const gl::ProgramExecutable &glExecutable,
+                                          const gl::State &glState,
+                                          gl::ShaderMap<VkDeviceSize> *uniformOffsets) const;
+    void setAllDefaultUniformsDirty(const gl::State &glState);
+
     ProgramExecutableVk mExecutable;
 };
 

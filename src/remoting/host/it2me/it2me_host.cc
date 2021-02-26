@@ -17,7 +17,6 @@
 #include "components/policy/policy_constants.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
-#include "remoting/base/chromium_url_request.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/service_urls.h"
@@ -57,6 +56,10 @@ typedef ValidatingAuthenticator::ResultCallback ValidationResultCallback;
 
 }  // namespace
 
+It2MeHost::DeferredConnectContext::DeferredConnectContext() = default;
+
+It2MeHost::DeferredConnectContext::~DeferredConnectContext() = default;
+
 It2MeHost::It2MeHost() = default;
 
 It2MeHost::~It2MeHost() {
@@ -94,10 +97,8 @@ void It2MeHost::Connect(
     std::unique_ptr<ChromotingHostContext> host_context,
     std::unique_ptr<base::DictionaryValue> policies,
     std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
-    std::unique_ptr<RegisterSupportHostRequest> register_request,
-    std::unique_ptr<LogToServer> log_to_server,
     base::WeakPtr<It2MeHost::Observer> observer,
-    std::unique_ptr<SignalStrategy> signal_strategy,
+    CreateDeferredConnectContext create_context,
     const std::string& username,
     const protocol::IceConfig& ice_config) {
   DCHECK(host_context->ui_task_runner()->BelongsToCurrentThread());
@@ -105,8 +106,6 @@ void It2MeHost::Connect(
   host_context_ = std::move(host_context);
   observer_ = std::move(observer);
   confirmation_dialog_factory_ = std::move(dialog_factory);
-  signal_strategy_ = std::move(signal_strategy);
-  log_to_server_ = std::move(log_to_server);
 
   OnPolicyUpdate(std::move(policies));
 
@@ -120,7 +119,7 @@ void It2MeHost::Connect(
   host_context_->network_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&It2MeHost::ConnectOnNetworkThread, this, username,
-                     ice_config, std::move(register_request)));
+                     ice_config, std::move(create_context)));
 }
 
 void It2MeHost::Disconnect() {
@@ -132,11 +131,17 @@ void It2MeHost::Disconnect() {
 void It2MeHost::ConnectOnNetworkThread(
     const std::string& username,
     const protocol::IceConfig& ice_config,
-    std::unique_ptr<RegisterSupportHostRequest> register_request) {
+    CreateDeferredConnectContext create_context) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(kDisconnected, state_);
 
   SetState(kStarting, ErrorCode::OK);
+
+  auto connection_context = std::move(create_context).Run(host_context_.get());
+  log_to_server_ = std::move(connection_context->log_to_server);
+  signal_strategy_ = std::move(connection_context->signal_strategy);
+  DCHECK(log_to_server_);
+  DCHECK(signal_strategy_);
 
   // Check the host domain policy.
   if (!required_host_domain_list_.empty()) {
@@ -159,18 +164,24 @@ void It2MeHost::ConnectOnNetworkThread(
   host_key_pair_ = RsaKeyPair::Generate();
 
   // Request registration of the host for support.
-  register_request->StartRequest(
+  register_request_ = std::move(connection_context->register_request);
+  register_request_->StartRequest(
       signal_strategy_.get(), host_key_pair_,
       base::BindOnce(&It2MeHost::OnReceivedSupportID, base::Unretained(this)));
-  // Beyond this point nothing can fail, so save the config and request.
-  register_request_ = std::move(register_request);
 
-  HOST_LOG << "NAT state: " << nat_traversal_enabled_;
+  HOST_LOG << "NAT traversal enabled: " << nat_traversal_enabled_;
+  HOST_LOG << "Relay connections allowed: " << relay_connections_allowed_;
 
-  protocol::NetworkSettings network_settings(
-     nat_traversal_enabled_ ?
-     protocol::NetworkSettings::NAT_TRAVERSAL_FULL :
-     protocol::NetworkSettings::NAT_TRAVERSAL_DISABLED);
+  uint32_t network_flags = protocol::NetworkSettings::NAT_TRAVERSAL_DISABLED;
+  if (nat_traversal_enabled_) {
+    network_flags = protocol::NetworkSettings::NAT_TRAVERSAL_STUN |
+                    protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING;
+    if (relay_connections_allowed_) {
+      network_flags |= protocol::NetworkSettings::NAT_TRAVERSAL_RELAY;
+    }
+  }
+
+  protocol::NetworkSettings network_settings(network_flags);
 
   if (!udp_port_range_.is_null()) {
     network_settings.port_range = udp_port_range_;
@@ -187,9 +198,8 @@ void It2MeHost::ConnectOnNetworkThread(
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
           std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
-          std::make_unique<ChromiumUrlRequestFactory>(
-              host_context_->url_loader_factory()),
-          network_settings, protocol::TransportRole::SERVER);
+          host_context_->url_loader_factory(), network_settings,
+          protocol::TransportRole::SERVER);
   transport_context->set_turn_ice_config(ice_config);
 
   std::unique_ptr<protocol::SessionManager> session_manager(
@@ -245,8 +255,8 @@ void It2MeHost::OnAccessDenied(const std::string& jid) {
 void It2MeHost::OnClientConnected(const std::string& jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
-  // ChromotingHost doesn't allow multiple concurrent connection and the
-  // host is destroyed in OnClientDisconnected() after the first connection.
+  // ChromotingHost doesn't allow concurrent connections and the host is
+  // destroyed in OnClientDisconnected() after the first connection.
   CHECK_NE(state_, kConnected);
 
   std::string client_username;
@@ -286,11 +296,21 @@ void It2MeHost::OnPolicyUpdate(
     return;
   }
 
-  bool nat_policy;
-  if (policies->GetBoolean(policy::key::kRemoteAccessHostFirewallTraversal,
-                           &nat_policy)) {
-    UpdateNatPolicy(nat_policy);
+  bool nat_policy_value = false;
+  if (!policies->GetBoolean(policy::key::kRemoteAccessHostFirewallTraversal,
+                            &nat_policy_value)) {
+    HOST_LOG << "Failed to read kRemoteAccessHostFirewallTraversal policy";
+    nat_policy_value = nat_traversal_enabled_;
   }
+  bool relay_policy_value = false;
+  if (!policies->GetBoolean(
+          policy::key::kRemoteAccessHostAllowRelayedConnection,
+          &relay_policy_value)) {
+    HOST_LOG << "Failed to read kRemoteAccessHostAllowRelayedConnection policy";
+    relay_policy_value = relay_connections_allowed_;
+  }
+  UpdateNatPolicies(nat_policy_value, relay_policy_value);
+
   const base::ListValue* host_domain_list;
   if (policies->GetList(policy::key::kRemoteAccessHostDomainList,
                         &host_domain_list)) {
@@ -300,6 +320,7 @@ void It2MeHost::OnPolicyUpdate(
     }
     UpdateHostDomainListPolicy(std::move(host_domain_list_vector));
   }
+
   const base::ListValue* client_domain_list;
   if (policies->GetList(policy::key::kRemoteAccessHostClientDomainList,
                         &client_domain_list)) {
@@ -317,23 +338,30 @@ void It2MeHost::OnPolicyUpdate(
   }
 }
 
-void It2MeHost::UpdateNatPolicy(bool nat_traversal_enabled) {
+void It2MeHost::UpdateNatPolicies(bool nat_policy_value,
+                                  bool relay_policy_value) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
-  VLOG(2) << "UpdateNatPolicy: " << nat_traversal_enabled;
+  VLOG(2) << "UpdateNatPolicies: nat_policy_value: " << nat_policy_value;
+  bool nat_traversal_value_changed = nat_traversal_enabled_ != nat_policy_value;
+  nat_traversal_enabled_ = nat_policy_value;
 
-  // When transitioning from enabled to disabled, force disconnect any
-  // existing session.
-  if (nat_traversal_enabled_ && !nat_traversal_enabled && IsRunning()) {
+  VLOG(2) << "UpdateNatPolicies: relay_policy_value: " << relay_policy_value;
+  bool relay_value_changed = relay_connections_allowed_ != relay_policy_value;
+  relay_connections_allowed_ = relay_policy_value;
+
+  // Force disconnect when transitioning either policy setting to disabled.
+  if (((nat_traversal_value_changed && !nat_traversal_enabled_) ||
+       (relay_value_changed && !relay_connections_allowed_)) &&
+      IsRunning()) {
     DisconnectOnNetworkThread();
   }
 
-  nat_traversal_enabled_ = nat_traversal_enabled;
-
-  // Notify the web-app of the policy setting.
+  // Notify listeners of the policy setting change.
   host_context_->ui_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&It2MeHost::Observer::OnNatPolicyChanged,
-                                observer_, nat_traversal_enabled_));
+      FROM_HERE,
+      base::BindOnce(&It2MeHost::Observer::OnNatPoliciesChanged, observer_,
+                     nat_traversal_enabled_, relay_connections_allowed_));
 }
 
 void It2MeHost::UpdateHostDomainListPolicy(
@@ -358,7 +386,7 @@ void It2MeHost::UpdateClientDomainListPolicy(
   VLOG(2) << "UpdateClientDomainPolicy: "
           << base::JoinString(client_domain_list, ", ");
 
-  // When setting a client  domain policy, disconnect any existing session.
+  // When setting a client domain policy, disconnect any existing session.
   if (!client_domain_list.empty() && IsRunning()) {
     DisconnectOnNetworkThread();
   }
@@ -478,7 +506,7 @@ void It2MeHost::OnReceivedSupportID(const std::string& support_id,
 void It2MeHost::DisconnectOnNetworkThread() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
-  // Disconnect() may be called even when after the host been already stopped.
+  // Disconnect() may be called even after the host has already been stopped.
   // Ignore repeated calls.
   if (state_ == kDisconnected) {
     return;
@@ -572,8 +600,8 @@ void It2MeHost::ValidateConnectionDetails(
         confirmation_dialog_factory_->Create());
     confirmation_dialog_proxy_->Show(
         client_username,
-        base::Bind(&It2MeHost::OnConfirmationResult, base::Unretained(this),
-                   base::Passed(std::move(result_callback))));
+        base::BindOnce(&It2MeHost::OnConfirmationResult, base::Unretained(this),
+                       base::Passed(std::move(result_callback))));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

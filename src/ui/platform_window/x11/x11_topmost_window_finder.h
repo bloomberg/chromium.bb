@@ -12,7 +12,6 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/x/x11.h"
 #include "ui/platform_window/x11/x11_window_export.h"
 
 namespace ui {
@@ -30,15 +29,16 @@ class X11_WINDOW_EXPORT X11TopmostWindowFinder
   // Returns the topmost window at |screen_loc_in_pixels|, ignoring the windows
   // in |ignore|. Returns null widget if the topmost window at
   // |screen_loc_in_pixels| does not belong to Chrome.
-  XID FindLocalProcessWindowAt(const gfx::Point& screen_loc_in_pixels,
-                               const std::set<gfx::AcceleratedWidget>& ignore);
+  x11::Window FindLocalProcessWindowAt(
+      const gfx::Point& screen_loc_in_pixels,
+      const std::set<gfx::AcceleratedWidget>& ignore);
 
   // Returns the topmost window at |screen_loc_in_pixels|.
-  XID FindWindowAt(const gfx::Point& screen_loc_in_pixels) override;
+  x11::Window FindWindowAt(const gfx::Point& screen_loc_in_pixels) override;
 
  private:
   // ui::EnumerateWindowsDelegate:
-  bool ShouldStopIterating(XID xid) override;
+  bool ShouldStopIterating(x11::Window window) override;
 
   // Returns true if |window| does not not belong to |ignore|, is visible and
   // contains |screen_loc_|.
@@ -46,7 +46,7 @@ class X11_WINDOW_EXPORT X11TopmostWindowFinder
 
   gfx::Point screen_loc_in_pixels_;
   std::set<gfx::AcceleratedWidget> ignore_;
-  XID toplevel_ = x11::None;
+  x11::Window toplevel_ = x11::Window::None;
 
   DISALLOW_COPY_AND_ASSIGN(X11TopmostWindowFinder);
 };

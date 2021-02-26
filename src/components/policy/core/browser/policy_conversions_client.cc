@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -94,14 +95,15 @@ base::Value PolicyConversionsClient::GetChromePolicies() {
   // Get a list of all the errors in the policy values.
   const ConfigurationPolicyHandlerList* handler_list = GetHandlerList();
   PolicyErrorMap errors;
-  DeprecatedPoliciesSet deprecated_policies;
-  handler_list->ApplyPolicySettings(map, nullptr, &errors,
-                                    &deprecated_policies);
+  PoliciesSet deprecated_policies;
+  PoliciesSet future_policies;
+  handler_list->ApplyPolicySettings(map, nullptr, &errors, &deprecated_policies,
+                                    &future_policies);
 
   // Convert dictionary values to strings for display.
   handler_list->PrepareForDisplaying(&map);
 
-  return GetPolicyValues(map, &errors, deprecated_policies,
+  return GetPolicyValues(map, &errors, deprecated_policies, future_policies,
                          GetKnownPolicies(schema_map, policy_namespace));
 }
 
@@ -134,7 +136,8 @@ Value PolicyConversionsClient::CopyAndMaybeConvert(
 Value PolicyConversionsClient::GetPolicyValue(
     const std::string& policy_name,
     const PolicyMap::Entry& policy,
-    const DeprecatedPoliciesSet& deprecated_policies,
+    const PoliciesSet& deprecated_policies,
+    const PoliciesSet& future_policies,
     PolicyErrorMap* errors,
     const base::Optional<PolicyConversions::PolicyToSchemaMap>&
         known_policy_schemas) const {
@@ -142,7 +145,7 @@ Value PolicyConversionsClient::GetPolicyValue(
       GetKnownPolicySchema(known_policy_schemas, policy_name);
   Value value(Value::Type::DICTIONARY);
   value.SetKey("value",
-               CopyAndMaybeConvert(*policy.value, known_policy_schema));
+               CopyAndMaybeConvert(*policy.value(), known_policy_schema));
   if (convert_types_enabled_) {
     value.SetKey(
         "scope",
@@ -150,7 +153,9 @@ Value PolicyConversionsClient::GetPolicyValue(
     value.SetKey("level", Value(Value((policy.level == POLICY_LEVEL_RECOMMENDED)
                                           ? "recommended"
                                           : "mandatory")));
-    value.SetKey("source", Value(kPolicySources[policy.source].name));
+    value.SetKey("source", Value(policy.IsDefaultValue()
+                                     ? "sourceDefault"
+                                     : kPolicySources[policy.source].name));
   } else {
     value.SetKey("scope", Value(policy.scope));
     value.SetKey("level", Value(policy.level));
@@ -205,18 +210,21 @@ Value PolicyConversionsClient::GetPolicyValue(
   if (!warning.empty())
     value.SetKey("warning", Value(warning));
 
-  if (policy.IsBlockedOrIgnored())
+  if (policy.ignored())
     value.SetBoolKey("ignored", true);
 
   if (deprecated_policies.find(policy_name) != deprecated_policies.end())
     value.SetBoolKey("deprecated", true);
 
+  if (future_policies.find(policy_name) != future_policies.end())
+    value.SetBoolKey("future", true);
+
   if (!policy.conflicts.empty()) {
     Value conflict_values(Value::Type::LIST);
     for (const auto& conflict : policy.conflicts) {
       base::Value conflicted_policy_value =
-          GetPolicyValue(policy_name, conflict, deprecated_policies, errors,
-                         known_policy_schemas);
+          GetPolicyValue(policy_name, conflict, deprecated_policies,
+                         future_policies, errors, known_policy_schemas);
       conflict_values.Append(std::move(conflicted_policy_value));
     }
 
@@ -229,7 +237,8 @@ Value PolicyConversionsClient::GetPolicyValue(
 Value PolicyConversionsClient::GetPolicyValues(
     const PolicyMap& map,
     PolicyErrorMap* errors,
-    const DeprecatedPoliciesSet& deprecated_policies,
+    const PoliciesSet& deprecated_policies,
+    const PoliciesSet& future_policies,
     const base::Optional<PolicyConversions::PolicyToSchemaMap>&
         known_policy_schemas) const {
   base::Value values(base::Value::Type::DICTIONARY);
@@ -238,8 +247,9 @@ Value PolicyConversionsClient::GetPolicyValues(
     const PolicyMap::Entry& policy = entry.second;
     if (policy.scope == POLICY_SCOPE_USER && !user_policies_enabled_)
       continue;
-    base::Value value = GetPolicyValue(policy_name, policy, deprecated_policies,
-                                       errors, known_policy_schemas);
+    base::Value value =
+        GetPolicyValue(policy_name, policy, deprecated_policies,
+                       future_policies, errors, known_policy_schemas);
     values.SetKey(policy_name, std::move(value));
   }
   return values;
@@ -293,8 +303,8 @@ bool PolicyConversionsClient::GetUserPoliciesEnabled() const {
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 Value PolicyConversionsClient::GetUpdaterPolicies() {
   return updater_policies_
-             ? GetPolicyValues(*updater_policies_, nullptr,
-                               DeprecatedPoliciesSet(), updater_policy_schemas_)
+             ? GetPolicyValues(*updater_policies_, nullptr, PoliciesSet(),
+                               PoliciesSet(), updater_policy_schemas_)
              : base::Value(base::Value::Type::DICTIONARY);
 }
 

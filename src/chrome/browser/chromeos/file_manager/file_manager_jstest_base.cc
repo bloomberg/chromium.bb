@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_manager/file_manager_jstest_base.h"
 
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/test_data_source.h"
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/url_data_source.h"
@@ -22,6 +24,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace {
 
@@ -89,6 +92,8 @@ class TestFilesDataSource : public content::URLDataSource {
     std::move(callback).Run(response.get());
   }
 
+  bool ShouldServeMimeTypeAsContentTypeHeader() override { return true; }
+
   // It currently only serves HTML/JS/CSS/SVG.
   std::string GetMimeType(const std::string& path) override {
     if (base::EndsWith(path, ".html", base::CompareCase::INSENSITIVE_ASCII)) {
@@ -111,10 +116,20 @@ class TestFilesDataSource : public content::URLDataSource {
     return {};
   }
 
-  std::string GetContentSecurityPolicyScriptSrc() override {
-    // Add 'unsafe-inline' to CSP to allow the inline <script> in the generated
-    // HTML to run see js_test_gen_html.py.
-    return "script-src chrome://resources 'self'  'unsafe-inline'; ";
+  std::string GetContentSecurityPolicy(
+      const network::mojom::CSPDirectiveName directive) override {
+    if (directive == network::mojom::CSPDirectiveName::ScriptSrc) {
+      // Add 'unsafe-inline' to CSP to allow the inline <script> in the
+      // generated HTML to run see js_test_gen_html.py.
+      return "script-src chrome://resources chrome://test 'self'  "
+             "'unsafe-inline'; ";
+    } else if (directive ==
+                   network::mojom::CSPDirectiveName::RequireTrustedTypesFor ||
+               directive == network::mojom::CSPDirectiveName::TrustedTypes) {
+      return std::string();
+    }
+
+    return content::URLDataSource::GetContentSecurityPolicy(directive);
   }
 
   // Root of repository source, where files are served directly from.
@@ -135,8 +150,12 @@ class TestWebUIProvider
 
   std::unique_ptr<content::WebUIController> NewWebUI(content::WebUI* web_ui,
                                                      const GURL& url) override {
-    content::URLDataSource::Add(Profile::FromWebUI(web_ui),
+    auto* profile = Profile::FromWebUI(web_ui);
+    content::URLDataSource::Add(profile,
                                 std::make_unique<TestFilesDataSource>());
+    content::URLDataSource::Add(profile,
+                                std::make_unique<TestDataSource>("webui"));
+
     return std::make_unique<content::WebUIController>(web_ui);
   }
 

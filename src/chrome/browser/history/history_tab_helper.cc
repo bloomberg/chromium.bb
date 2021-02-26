@@ -10,25 +10,24 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/content/browser/history_context_helper.h"
+#include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/ntp_snippets/features.h"
+#include "components/no_state_prefetch/browser/prerender_manager.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/frame_navigate_params.h"
-#include "third_party/blink/public/mojom/referrer.mojom.h"
+#include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/background_tab_manager.h"
+#include "components/feed/feed_feature_list.h"
 #else
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -44,8 +43,7 @@ using content::WebContents;
 HistoryTabHelper::HistoryTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
 
-HistoryTabHelper::~HistoryTabHelper() {
-}
+HistoryTabHelper::~HistoryTabHelper() {}
 
 void HistoryTabHelper::UpdateHistoryForNavigation(
     const history::HistoryAddPageArgs& add_page_args) {
@@ -54,46 +52,63 @@ void HistoryTabHelper::UpdateHistoryForNavigation(
     hs->AddPage(add_page_args);
 }
 
-history::HistoryAddPageArgs
-HistoryTabHelper::CreateHistoryAddPageArgs(
+history::HistoryAddPageArgs HistoryTabHelper::CreateHistoryAddPageArgs(
     const GURL& virtual_url,
     base::Time timestamp,
     int nav_entry_id,
     content::NavigationHandle* navigation_handle) {
+  ui::PageTransition page_transition = navigation_handle->GetPageTransition();
+#if defined(OS_ANDROID)
   // Clicks on content suggestions on the NTP should not contribute to the
   // Most Visited tiles in the NTP.
   const GURL& referrer_url = navigation_handle->GetReferrer().url;
   const bool content_suggestions_navigation =
-      referrer_url == ntp_snippets::GetContentSuggestionsReferrerURL() &&
-      ui::PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
+      referrer_url == feed::GetFeedReferrerUrl() &&
+      ui::PageTransitionCoreTypeIs(page_transition,
                                    ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+#else
+  const bool content_suggestions_navigation = false;
+#endif
 
   const bool status_code_is_error =
       navigation_handle->GetResponseHeaders() &&
       (navigation_handle->GetResponseHeaders()->response_code() >= 400) &&
       (navigation_handle->GetResponseHeaders()->response_code() < 600);
-  // Top-level frame navigations are visible; everything else is hidden.
-  // Also hide top-level navigations that result in an error in order to
-  // prevent the omnibox from suggesting URLs that have never been navigated
-  // to successfully.  (If a top-level navigation to the URL succeeds at some
-  // point, the URL will be unhidden and thus eligible to be suggested by the
-  // omnibox.)
-  const bool hidden =
-      !ui::PageTransitionIsMainFrame(navigation_handle->GetPageTransition()) ||
-      status_code_is_error;
+  // Top-level frame navigations are visible, unless hiding all visits;
+  // everything else is hidden. Also hide top-level navigations that result in
+  // an error in order to prevent the omnibox from suggesting URLs that have
+  // never been navigated to successfully.  (If a top-level navigation to the
+  // URL succeeds at some point, the URL will be unhidden and thus eligible to
+  // be suggested by the omnibox.)
+  // Don't attempt hide navigations that increment the typed count. Doing that
+  // would lead to a state where the omnibox would suggest urls that don't
+  // show up in history.
+  const bool hide_normally_visible_navigation =
+      hide_all_navigations_ && ui::PageTransitionIsMainFrame(page_transition) &&
+      !history::HistoryBackend::IsTypedIncrement(page_transition);
+  const bool hidden = hide_normally_visible_navigation ||
+                      !ui::PageTransitionIsMainFrame(page_transition) ||
+                      status_code_is_error;
+  if (hide_normally_visible_navigation) {
+    // Add PAGE_TRANSITION_FROM_API_3 so that VisitsDatabase won't return this
+    // visit in queries for visible visits.
+    page_transition = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_FROM_API_3 |
+                                                page_transition);
+  }
   history::HistoryAddPageArgs add_page_args(
       navigation_handle->GetURL(), timestamp,
       history::ContextIDForWebContents(web_contents()), nav_entry_id,
       navigation_handle->GetReferrer().url,
-      navigation_handle->GetRedirectChain(),
-      navigation_handle->GetPageTransition(), hidden, history::SOURCE_BROWSED,
-      navigation_handle->DidReplaceEntry(), !content_suggestions_navigation,
+      navigation_handle->GetRedirectChain(), page_transition, hidden,
+      history::SOURCE_BROWSED, navigation_handle->DidReplaceEntry(),
+      !content_suggestions_navigation,
+      navigation_handle->GetSocketAddress().address().IsPubliclyRoutable(),
       navigation_handle->IsSameDocument()
           ? base::Optional<base::string16>(
                 navigation_handle->GetWebContents()->GetTitle())
           : base::nullopt);
 
-  if (ui::PageTransitionIsMainFrame(navigation_handle->GetPageTransition()) &&
+  if (ui::PageTransitionIsMainFrame(page_transition) &&
       virtual_url != navigation_handle->GetURL()) {
     // Hack on the "virtual" URL so that it will appear in history. For some
     // types of URLs, we will display a magic URL that is different from where
@@ -135,6 +150,17 @@ void HistoryTabHelper::DidFinishNavigation(
   if (navigation_handle->GetWebContents()->IsPortal())
     return;
 
+  // Prerenders should not update history. Prerenders will have their own
+  // WebContents with all observers (including |this|), and go through the
+  // normal flow of a navigation, including commit.
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          web_contents()->GetBrowserContext());
+  if (prerender_manager &&
+      prerender_manager->IsWebContentsPrerendering(web_contents())) {
+    return;
+  }
+
   // Most of the time, the displayURL matches the loaded URL, but for about:
   // URLs, we use a data: URL as the real value.  We actually want to save the
   // about: URL to the history db and keep the data: URL hidden. This is what
@@ -144,18 +170,6 @@ void HistoryTabHelper::DidFinishNavigation(
   const history::HistoryAddPageArgs& add_page_args = CreateHistoryAddPageArgs(
       web_contents()->GetLastCommittedURL(), last_committed->GetTimestamp(),
       last_committed->GetUniqueID(), navigation_handle);
-
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForBrowserContext(
-          web_contents()->GetBrowserContext());
-  if (prerender_manager) {
-    prerender::PrerenderContents* prerender_contents =
-        prerender_manager->GetPrerenderContents(web_contents());
-    if (prerender_contents) {
-      prerender_contents->DidNavigate(add_page_args);
-      return;
-    }
-  }
 
 #if defined(OS_ANDROID)
   auto* background_tab_manager = BackgroundTabManager::GetInstance();
@@ -180,7 +194,8 @@ void HistoryTabHelper::DidFinishNavigation(
 // TODO(mcnee): Investigate whether the early return cases in
 // DidFinishNavigation apply to portal activation. See https://crbug.com/1072762
 void HistoryTabHelper::DidActivatePortal(
-    content::WebContents* predecessor_contents) {
+    content::WebContents* predecessor_contents,
+    base::TimeTicks activation_time) {
   history::HistoryService* hs = GetHistoryService();
   if (!hs)
     return;
@@ -201,7 +216,7 @@ void HistoryTabHelper::DidActivatePortal(
       /* redirects */ {}, ui::PAGE_TRANSITION_LINK,
       /* hidden */ false, history::SOURCE_BROWSED, did_replace_entry,
       /* consider_for_ntp_most_visited */ true,
-      last_committed_entry->GetTitle());
+      /* publicly_routable */ false, last_committed_entry->GetTitle());
   hs->AddPage(add_page_args);
 }
 

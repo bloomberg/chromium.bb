@@ -28,8 +28,6 @@ using testing::WithArgs;
 
 class MockChildProcess : public mojom::ChildProcess {
  public:
-  MOCK_METHOD1(Initialize,
-               void(mojo::PendingRemote<mojom::ChildProcessHostBootstrap>));
   MOCK_METHOD0(ProcessShutdown, void());
   MOCK_METHOD1(GetTaskPort, void(GetTaskPortCallback));
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
@@ -37,6 +35,8 @@ class MockChildProcess : public mojom::ChildProcess {
 #endif
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   MOCK_METHOD1(SetProfilingFile, void(base::File));
+  MOCK_METHOD1(WriteClangProfilingProfile,
+               void(WriteClangProfilingProfileCallback));
 #endif
   MOCK_METHOD1(GetBackgroundTracingAgentProvider,
                void(mojo::PendingReceiver<

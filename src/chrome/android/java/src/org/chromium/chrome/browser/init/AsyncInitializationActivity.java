@@ -40,11 +40,13 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcherImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
@@ -60,6 +62,8 @@ import java.lang.reflect.Field;
  */
 public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatActivity
         implements ChromeActivityNativeDelegate, BrowserParts, ModalDialogManagerHolder {
+    @VisibleForTesting
+    public static final String FIRST_DRAW_COMPLETED_TIME_MS_UMA = "FirstDrawCompletedTime";
     private static final String TAG = "AsyncInitActivity";
     protected final Handler mHandler;
 
@@ -73,9 +77,6 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     /** Time at which onCreate is called. This is realtime, counted in ms since device boot. */
     private long mOnCreateTimestampMs;
-
-    /** Time at which onCreate is called. This is uptime, to be sent to native code. */
-    private long mOnCreateTimestampUptimeMs;
 
     private ActivityWindowAndroid mWindowAndroid;
     private final ObservableSupplierImpl<ModalDialogManager> mModalDialogManagerSupplier =
@@ -158,7 +159,8 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     @Override
     public final void setContentViewAndLoadLibrary(Runnable onInflationCompleteCallback) {
-        boolean enableInstantStart = TabUiFeatureUtilities.supportInstantStart(isTablet());
+        boolean enableInstantStart =
+                TabUiFeatureUtilities.supportInstantStart(isTablet()) && !mHadWarmStart;
         mOnInflationCompleteCallback = onInflationCompleteCallback;
         if (enableInstantStart) {
             triggerLayoutInflation();
@@ -193,7 +195,17 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     @Override
     public final void postInflationStartup() {
         performPostInflationStartup();
+        dispatchOnInflationComplete();
         mLifecycleDispatcher.dispatchPostInflationStartup();
+    }
+
+    /**
+     * This function allows subclasses overriding and adding additional tasks between calling
+     * mLifecycleDispatcher.dispatchOnInflationComplete() and
+     * mLifecycleDispatcher.dispatchPostInflationStartup().
+     */
+    protected void dispatchOnInflationComplete() {
+        mLifecycleDispatcher.dispatchOnInflationComplete();
     }
 
     /**
@@ -206,6 +218,9 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         assert firstDrawView != null;
         FirstDrawDetector.waitForFirstDraw(firstDrawView, () -> {
             mFirstDrawComplete = true;
+            StartSurfaceConfiguration.recordHistogram(FIRST_DRAW_COMPLETED_TIME_MS_UMA,
+                    SystemClock.elapsedRealtime() - getOnCreateTimestampMs(),
+                    TabUiFeatureUtilities.supportInstantStart(isTablet()));
             if (!mStartupDelayed) {
                 onFirstDrawComplete();
             }
@@ -228,11 +243,11 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
             if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction())) return;
             String url = IntentHandler.getUrlFromIntent(intent);
             if (url == null) return;
-            // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
-            // incognito profile) instead of always using regular profile. It is wrong and needs to
-            // be fixed.
-            WarmupManager.getInstance().maybePreconnectUrlAndSubResources(
-                    Profile.getLastUsedRegularProfile(), url);
+            // Blocking pre-connect for all off-the-record profiles.
+            if (!IncognitoUtils.hasAnyIncognitoExtra(intent)) {
+                WarmupManager.getInstance().maybePreconnectUrlAndSubResources(
+                        Profile.getLastUsedRegularProfile(), url);
+            }
         } finally {
             TraceEvent.end("maybePreconnect");
         }
@@ -322,7 +337,6 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
             super.onCreate(transformSavedInstanceStateForOnCreate(savedInstanceState));
         }
         mOnCreateTimestampMs = SystemClock.elapsedRealtime();
-        mOnCreateTimestampUptimeMs = SystemClock.uptimeMillis();
         mSavedInstanceState = savedInstanceState;
 
         mWindowAndroid = createWindowAndroid();
@@ -440,13 +454,6 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     }
 
     /**
-     * @return The elapsed real time for the activity creation in ms.
-     */
-    protected long getOnCreateTimestampUptimeMs() {
-        return mOnCreateTimestampUptimeMs;
-    }
-
-    /**
      * @return The uptime for the activity creation in ms.
      */
     protected long getOnCreateTimestampMs() {
@@ -504,7 +511,8 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     @CallSuper
     @Override
-    protected void onNewIntent(Intent intent) {
+    @SuppressLint("MissingSuperCall") // Empty method in parent Activity class.
+    public void onNewIntent(Intent intent) {
         if (intent == null) return;
         mNativeInitializationController.onNewIntent(intent);
         setIntent(intent);
@@ -512,6 +520,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     @CallSuper
     @Override
+    @SuppressLint("MissingSuperCall") // Empty method in parent Activity class.
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         mNativeInitializationController.onActivityResult(requestCode, resultCode, data);
     }

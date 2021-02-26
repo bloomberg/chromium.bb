@@ -17,6 +17,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <poll.h>
+#include <string.h>
 #include <sys/socket.h>
 
 #include "base/logging.h"
@@ -122,7 +123,7 @@ class SSLStream : public Stream {
         return false;
       }
     } else {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
       if (SSL_CTX_load_verify_locations(
               ctx_.get(), nullptr, "/etc/ssl/certs") <= 0) {
         LOG(ERROR) << "SSL_CTX_load_verify_locations";

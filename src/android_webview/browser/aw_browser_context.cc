@@ -19,7 +19,7 @@
 #include "android_webview/browser/cookie_manager.h"
 #include "android_webview/browser/metrics/aw_metrics_service_client.h"
 #include "android_webview/browser/network_service/net_helpers.h"
-#include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_allowlist_manager.h"
 #include "android_webview/browser_jni_headers/AwBrowserContext_jni.h"
 #include "android_webview/common/aw_features.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
@@ -38,7 +38,7 @@
 #include "components/keyed_service/core/simple_key_map.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
-#include "components/policy/core/browser/url_blacklist_manager.h"
+#include "components/policy/core/browser/url_blocklist_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/json_pref_store.h"
@@ -48,11 +48,9 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
-#include "components/variations/net/variations_http_headers.h"
 #include "components/visitedlink/browser/visitedlink_writer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
@@ -278,7 +276,7 @@ void AwBrowserContext::CreateUserPrefService() {
       base::MakeRefCounted<JsonPrefStore>(GetPrefStorePath()), persistent_prefs,
       mojo::Remote<::prefs::mojom::TrackedPreferenceValidationDelegate>()));
 
-  policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry.get());
+  policy::URLBlocklistManager::RegisterProfilePrefs(pref_registry.get());
   AwBrowserPolicyConnector* browser_policy_connector =
       AwBrowserProcess::GetInstance()->browser_policy_connector();
   pref_service_factory.set_managed_prefs(
@@ -511,11 +509,6 @@ void AwBrowserContext::ConfigureNetworkContextParams(
 
   context_params->check_clear_text_permitted =
       AwContentBrowserClient::get_check_cleartext_permitted();
-
-  // Update the cors_exempt_header_list to include internally-added headers, to
-  // avoid triggering CORS checks.
-  content::UpdateCorsExemptHeader(context_params);
-  variations::UpdateCorsExemptHeaderForVariations(context_params);
 
   // Add proxy settings
   AwProxyConfigMonitor::GetInstance()->AddProxyToNetworkContextParams(

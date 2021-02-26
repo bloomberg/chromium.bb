@@ -17,8 +17,11 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "rtc_base/async_invoker.h"
 #include "rtc_base/network_monitor.h"
-#include "rtc_base/thread_checker.h"
+#include "rtc_base/network_monitor_factory.h"
+#include "rtc_base/thread.h"
+#include "rtc_base/thread_annotations.h"
 #include "sdk/android/src/jni/jni_helpers.h"
 
 namespace webrtc {
@@ -26,7 +29,7 @@ namespace jni {
 
 typedef int64_t NetworkHandle;
 
-// c++ equivalent of java NetworkMonitorAutoDetect.ConnectionType.
+// c++ equivalent of java NetworkChangeDetector.ConnectionType.
 enum NetworkType {
   NETWORK_UNKNOWN,
   NETWORK_ETHERNET,
@@ -60,7 +63,7 @@ struct NetworkInformation {
   std::string ToString() const;
 };
 
-class AndroidNetworkMonitor : public rtc::NetworkMonitorBase,
+class AndroidNetworkMonitor : public rtc::NetworkMonitorInterface,
                               public rtc::NetworkBinderInterface {
  public:
   AndroidNetworkMonitor(JNIEnv* env,
@@ -79,8 +82,9 @@ class AndroidNetworkMonitor : public rtc::NetworkMonitorBase,
   rtc::AdapterType GetAdapterType(const std::string& if_name) override;
   rtc::AdapterType GetVpnUnderlyingAdapterType(
       const std::string& if_name) override;
-  void OnNetworkConnected(const NetworkInformation& network_info);
-  void OnNetworkDisconnected(NetworkHandle network_handle);
+  rtc::NetworkPreference GetNetworkPreference(
+      const std::string& if_name) override;
+
   // Always expected to be called on the network thread.
   void SetNetworkInfos(const std::vector<NetworkInformation>& network_infos);
 
@@ -95,26 +99,40 @@ class AndroidNetworkMonitor : public rtc::NetworkMonitorBase,
   void NotifyOfActiveNetworkList(JNIEnv* env,
                                  const JavaRef<jobject>& j_caller,
                                  const JavaRef<jobjectArray>& j_network_infos);
+  void NotifyOfNetworkPreference(JNIEnv* env,
+                                 const JavaRef<jobject>& j_caller,
+                                 const JavaRef<jobject>& j_connection_type,
+                                 jint preference);
 
   // Visible for testing.
   absl::optional<NetworkHandle> FindNetworkHandleFromAddress(
       const rtc::IPAddress& address) const;
 
  private:
-  void OnNetworkConnected_w(const NetworkInformation& network_info);
-  void OnNetworkDisconnected_w(NetworkHandle network_handle);
+  void OnNetworkConnected_n(const NetworkInformation& network_info);
+  void OnNetworkDisconnected_n(NetworkHandle network_handle);
+  void OnNetworkPreference_n(NetworkType type,
+                             rtc::NetworkPreference preference);
 
   const int android_sdk_int_;
   ScopedJavaGlobalRef<jobject> j_application_context_;
   ScopedJavaGlobalRef<jobject> j_network_monitor_;
-  rtc::ThreadChecker thread_checker_;
-  bool started_ = false;
-  std::map<std::string, rtc::AdapterType> adapter_type_by_name_;
-  std::map<std::string, rtc::AdapterType> vpn_underlying_adapter_type_by_name_;
-  std::map<rtc::IPAddress, NetworkHandle> network_handle_by_address_;
-  std::map<NetworkHandle, NetworkInformation> network_info_by_handle_;
-  bool find_network_handle_without_ipv6_temporary_part_;
-  bool surface_cellular_types_;
+  rtc::Thread* network_thread_;
+  bool started_ RTC_GUARDED_BY(network_thread_) = false;
+  std::map<std::string, rtc::AdapterType> adapter_type_by_name_
+      RTC_GUARDED_BY(network_thread_);
+  std::map<std::string, rtc::AdapterType> vpn_underlying_adapter_type_by_name_
+      RTC_GUARDED_BY(network_thread_);
+  std::map<rtc::IPAddress, NetworkHandle> network_handle_by_address_
+      RTC_GUARDED_BY(network_thread_);
+  std::map<NetworkHandle, NetworkInformation> network_info_by_handle_
+      RTC_GUARDED_BY(network_thread_);
+  std::map<rtc::AdapterType, rtc::NetworkPreference>
+      network_preference_by_adapter_type_ RTC_GUARDED_BY(network_thread_);
+  bool find_network_handle_without_ipv6_temporary_part_
+      RTC_GUARDED_BY(network_thread_) = false;
+  bool surface_cellular_types_ RTC_GUARDED_BY(network_thread_) = false;
+  rtc::AsyncInvoker invoker_;
 };
 
 class AndroidNetworkMonitorFactory : public rtc::NetworkMonitorFactory {

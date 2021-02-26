@@ -5,6 +5,7 @@
 #include "ash/system/message_center/metrics_utils.h"
 
 #include "ash/public/cpp/notification_utils.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "ui/message_center/message_center.h"
@@ -98,14 +99,18 @@ NotificationTypeDetailed GetNotificationTypeForCrosSystemPriority(
     const message_center::Notification& notification) {
   // The warning level is not stored in the notification data, so we need to
   // infer it from the accent color.
-  SkColor accent_color = notification.rich_notification_data().accent_color;
+  base::Optional<SkColor> accent_color =
+      notification.rich_notification_data().accent_color;
   message_center::SystemNotificationWarningLevel warning_level =
       message_center::SystemNotificationWarningLevel::NORMAL;
-  if (accent_color == kSystemNotificationColorWarning) {
-    warning_level = message_center::SystemNotificationWarningLevel::WARNING;
-  } else if (accent_color == kSystemNotificationColorCriticalWarning) {
-    warning_level =
-        message_center::SystemNotificationWarningLevel::CRITICAL_WARNING;
+  if (accent_color.has_value()) {
+    if (accent_color.value() == kSystemNotificationColorWarning) {
+      warning_level = message_center::SystemNotificationWarningLevel::WARNING;
+    } else if (accent_color.value() ==
+               kSystemNotificationColorCriticalWarning) {
+      warning_level =
+          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING;
+    }
   }
 
   bool pinned = notification.rich_notification_data().pinned;
@@ -181,10 +186,29 @@ NotificationTypeDetailed GetNotificationTypeForWeb(
   return require_interaction ? WEB_REQUIRE_INTERACTION : WEB;
 }
 
+NotificationTypeDetailed GetNotificationTypeForPhoneHub(
+    const message_center::Notification& notification) {
+  int priority = notification.rich_notification_data().priority;
+  switch (priority) {
+    case -2:
+      return PHONEHUB_PRIORITY_MINUS_TWO;
+    case -1:
+      return PHONEHUB_PRIORITY_MINUS_ONE;
+    case 0:
+      return PHONEHUB_PRIORITY_ZERO;
+    case 1:
+      return PHONEHUB_PRIORITY_ONE;
+    case 2:
+      return PHONEHUB_PRIORITY_TWO;
+    default:
+      NOTREACHED();
+      return OTHER;
+  }
+}
+
 NotificationTypeDetailed GetNotificationType(
     const message_center::Notification& notification) {
   message_center::NotifierType notifier_type = notification.notifier_id().type;
-
   switch (notifier_type) {
     case message_center::NotifierType::APPLICATION:
       return GetNotificationTypeForChromeApp(notification);
@@ -194,6 +218,8 @@ NotificationTypeDetailed GetNotificationType(
       return GetNotificationTypeForWeb(notification);
     case message_center::NotifierType::SYSTEM_COMPONENT:
       return GetNotificationTypeForCros(notification);
+    case message_center::NotifierType::PHONE_HUB:
+      return GetNotificationTypeForPhoneHub(notification);
     case message_center::NotifierType::CROSTINI_APPLICATION:
     default:
       return OTHER;
@@ -237,6 +263,20 @@ void LogClickedActionButton(const std::string& notification_id, bool is_popup) {
   } else {
     UMA_HISTOGRAM_ENUMERATION(
         "Notifications.Cros.Actions.Tray.ClickedActionButton", type.value());
+  }
+}
+
+void LogInlineReplySent(const std::string& notification_id, bool is_popup) {
+  auto type = GetNotificationType(notification_id);
+  if (!type.has_value())
+    return;
+
+  if (is_popup) {
+    base::UmaHistogramEnumeration(
+        "Notifications.Cros.Actions.Popup.InlineReplySent", type.value());
+  } else {
+    base::UmaHistogramEnumeration(
+        "Notifications.Cros.Actions.Tray.InlineReplySent", type.value());
   }
 }
 
@@ -340,6 +380,15 @@ void LogClosedByClearAll(const std::string& notification_id) {
 
   UMA_HISTOGRAM_ENUMERATION("Notifications.Cros.Actions.Tray.ClosedByClearAll",
                             type.value());
+}
+
+void LogNotificationAdded(const std::string& notification_id) {
+  auto type = GetNotificationType(notification_id);
+  if (!type.has_value())
+    return;
+
+  base::UmaHistogramEnumeration("Notifications.Cros.Actions.NotificationAdded",
+                                type.value());
 }
 
 }  // namespace metrics_utils

@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -369,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, WiFi_SSID_LoginURL) {
 }
 
 // Flaky on mac: https://crbug.com/690170
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_WiFi_NoSSID_LoginURL DISABLED_WiFi_NoSSID_LoginURL
 #else
 #define MAYBE_WiFi_NoSSID_LoginURL WiFi_NoSSID_LoginURL
@@ -384,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
 }
 
 // Flaky on mac: https://crbug.com/690125
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_WiFi_SSID_NoLoginURL DISABLED_WiFi_SSID_NoLoginURL
 #else
 #define MAYBE_WiFi_SSID_NoLoginURL WiFi_SSID_NoLoginURL

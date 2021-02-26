@@ -15,7 +15,7 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/enterprise_util.h"
 #include "base/environment.h"
@@ -43,6 +43,7 @@
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "build/branding_buildflags.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -51,12 +52,13 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_config.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_util_win.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/browser/web_applications/chrome_pwa_launcher/last_browser_file_util.h"
 #include "chrome/browser/web_applications/chrome_pwa_launcher/launcher_log_reporter.h"
 #include "chrome/browser/web_applications/chrome_pwa_launcher/launcher_update.h"
-#include "chrome/browser/web_applications/components/web_app_file_handler_registration_win.h"
+#include "chrome/browser/web_applications/components/web_app_handler_registration_utils_win.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_elf_init.h"
@@ -67,13 +69,13 @@
 #include "chrome/browser/win/util_win_service.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/conflicts/module_watcher_win.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/install_static/install_details.h"
@@ -86,7 +88,9 @@
 #include "components/crash/core/app/dump_hung_process_with_ptype.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/os_crypt/os_crypt.h"
+#include "components/prefs/pref_service.h"
 #include "components/version_info/channel.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -446,10 +450,10 @@ void ShowCloseBrowserFirstMessageBox() {
 
 void MaybePostSettingsResetPrompt() {
   if (base::FeatureList::IsEnabled(safe_browsing::kSettingsResetPrompt)) {
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(safe_browsing::MaybeShowSettingsResetPromptWithDelay));
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(
+                       safe_browsing::MaybeShowSettingsResetPromptWithDelay));
   }
 }
 
@@ -479,14 +483,36 @@ void UpdatePwaLaunchersForProfile(const base::FilePath& profile_dir) {
     }
   }
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(&web_app::UpdatePwaLaunchers,
                      std::move(pwa_launcher_paths)));
 }
 
+void MigratePinnedTaskBarShortcutsIfNeeded() {
+  // Update this number when users should go through a taskbar shortcut
+  // migration again. The last reason to do this was crrev.com/798174. @
+  // 86.0.4231.0.
+  //
+  // Note: If shortcut updates need to be done once after a future OS upgrade,
+  // that should be done by re-versioning Active Setup (see //chrome/installer
+  // and https://crbug.com/577697 for details).
+  const base::Version kLastVersionNeedingMigration({86, 0, 4231, 0});
+
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state) {
+    const base::Version last_version_migrated(
+        local_state->GetString(prefs::kShortcutMigrationVersion));
+    if (!last_version_migrated.IsValid() ||
+        last_version_migrated < kLastVersionNeedingMigration) {
+      shell_integration::win::MigrateTaskbarPins(base::BindOnce(
+          &PrefService::SetString, base::Unretained(local_state),
+          prefs::kShortcutMigrationVersion, version_info::GetVersionNumber()));
+    }
+  }
+}
 // This error message is not localized because we failed to load the
 // localization data files.
 const char kMissingLocaleDataTitle[] = "Missing File Error";
@@ -669,9 +695,9 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   }
   // Record UMA data about whether the fault-tolerant heap is enabled.
   // Use a delayed task to minimize the impact on startup time.
-  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                        base::BindOnce(&DetectFaultTolerantHeap),
-                        base::TimeDelta::FromMinutes(1));
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&DetectFaultTolerantHeap),
+      base::TimeDelta::FromMinutes(1));
 
   // Record Processor Metrics. This is a very low priority, hence posting to
   // start after Chrome startup has completed. This metric is only available
@@ -686,9 +712,8 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   // Write current executable path to the User Data directory to inform
   // Progressive Web App launchers, which run from within the User Data
   // directory, which chrome.exe to launch from.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&web_app::WriteChromePathToLastBrowserFile,
                      user_data_dir()));
 
@@ -703,10 +728,15 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   }
 
   // Record the result of the latest Progressive Web App launcher launch.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&web_app::RecordPwaLauncherResult));
+
+  // Possibly migrate pinned taskbar shortcuts.
+  content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT,
+                                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&MigratePinnedTaskBarShortcutsIfNeeded));
 
   base::ImportantFileWriterCleaner::GetInstance().Start();
 }
@@ -757,16 +787,10 @@ void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
     LOG(WARNING) << "Cannot find RegisterApplicationRestart in kernel32.dll";
     return;
   }
-  // The Windows Restart Manager expects a string of command line flags only,
-  // without the program.
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendArguments(parsed_command_line, false);
-  if (!command_line.HasSwitch(switches::kRestoreLastSession))
-    command_line.AppendSwitch(switches::kRestoreLastSession);
-
   // Restart Chrome if the computer is restarted as the result of an update.
   // This could be extended to handle crashes, hangs, and patches.
-  const auto& command_line_string = command_line.GetCommandLineString();
+  const auto command_line_string =
+      GetRestartCommandLine(parsed_command_line).GetCommandLineString();
   HRESULT hr = register_application_restart(
       command_line_string.c_str(),
       RESTART_NO_CRASH | RESTART_NO_HANG | RESTART_NO_PATCH);
@@ -796,7 +820,7 @@ int ChromeBrowserMainPartsWin::HandleIconsCommands(
       ShellExecute(NULL, NULL, L"appwiz.cpl", NULL, NULL, SW_SHOWNORMAL);
 
     // Exit as we are not launching the browser.
-    return service_manager::RESULT_CODE_NORMAL_EXIT;
+    return content::RESULT_CODE_NORMAL_EXIT;
   }
   // We don't hide icons so we shouldn't do anything special to show them
   return chrome::RESULT_CODE_UNSUPPORTED_PARAM;
@@ -872,4 +896,24 @@ base::string16 TranslationDelegate::GetLocalizedString(
 void ChromeBrowserMainPartsWin::SetupInstallerUtilStrings() {
   static base::NoDestructor<TranslationDelegate> delegate;
   installer::SetTranslationDelegate(delegate.get());
+}
+
+// static
+base::CommandLine ChromeBrowserMainPartsWin::GetRestartCommandLine(
+    const base::CommandLine& command_line) {
+  base::CommandLine restart_command(base::CommandLine::NO_PROGRAM);
+  base::CommandLine::SwitchMap switches = command_line.GetSwitches();
+
+  // Remove flag switches added by about::flags.
+  about_flags::RemoveFlagsSwitches(&switches);
+  // Add remaining switches, but not non-switch arguments.
+  for (const auto& it : switches)
+    restart_command.AppendSwitchNative(it.first, it.second);
+
+  if (!command_line.HasSwitch(switches::kRestoreLastSession))
+    restart_command.AppendSwitch(switches::kRestoreLastSession);
+
+  // TODO(crbug.com/964541): Remove other unneeded switches, including
+  // duplicates, perhaps harmonize with switches::RemoveSwitchesForAutostart.
+  return restart_command;
 }

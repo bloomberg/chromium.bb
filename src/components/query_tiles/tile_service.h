@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/query_tiles/logger.h"
 #include "components/query_tiles/tile.h"
 
 namespace gfx {
@@ -42,6 +43,25 @@ class TileService : public KeyedService, public base::SupportsUserData {
 
   // Cancel any existing scheduled task, and reset backoff.
   virtual void CancelTask() = 0;
+
+  // Used for debugging and testing only. Clear everything in db.
+  virtual void PurgeDb() = 0;
+
+  // Used for setting the server url for test.
+  virtual void SetServerUrl(const std::string& base_url) = 0;
+
+  // Called when a tile was clicked.
+  virtual void OnTileClicked(const std::string& tile_id) = 0;
+
+  // Called when the final level of tile is selected. |parent_tile_id| is
+  // the Id of the parent tile, if it exists.
+  virtual void OnQuerySelected(
+      const base::Optional<std::string>& parent_tile_id,
+      const base::string16& query_text) = 0;
+
+  // Returns a Logger instance that is meant to be used by logging and debug UI
+  // components in the larger system.
+  virtual Logger* GetLogger() = 0;
 
   TileService() = default;
   ~TileService() override = default;

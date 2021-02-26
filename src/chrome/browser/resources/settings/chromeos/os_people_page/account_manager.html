@@ -7,12 +7,14 @@
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_tooltip_icon.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/icon.html">
-<link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="../../i18n_setup.html">
+<link rel="import" href="../deep_linking_behavior.html">
+<link rel="import" href="../metrics_recorder.html">
 <link rel="import" href="../os_route.html">
+<link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../../people_page/account_manager_browser_proxy.html">
 
@@ -46,12 +48,26 @@
         margin-inline-start: 60px;
       }
 
+      .middle .secondary {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
       .secondary-accounts-policy-indicator {
         margin-inline-end: 12px;
       }
 
       .settings-box.user-message {
         align-items: flex-end;
+      }
+
+      #account-description {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      #account-description > p {
+        margin-bottom: 0;
       }
 
       #account-list-header > h2 {
@@ -99,6 +115,10 @@
 
       .management-status {
         color: var(--cr-secondary-text-color);
+        overflow: hidden;
+        text-align: end;
+        text-overflow: ellipsis;
+        width: 18ch;
       }
 
       .edu-account-label {
@@ -111,12 +131,16 @@
       }
     </style>
 
-    <div class="settings-box first">
+    <div id="account-description" class="settings-box first">
       <settings-localized-link
           class="account-manager-description"
           localized-string="[[getAccountManagerDescription_()]]"
           link-url="$i18nRaw{accountManagerLearnMoreUrl}">
       </settings-localized-link>
+      <template is="dom-if" if="[[isChildUser_]]">
+        <p>$i18n{accountManagerChildFirstMessage}</p>
+        <p>$i18n{accountManagerChildSecondMessage}</p>
+      </template>
     </div>
 
     <div id="settings-box-user-message" class="settings-box first user-message"
@@ -135,7 +159,8 @@
         <h2>$i18n{accountListHeader}</h2>
       </div>
       <cr-button disabled="[[!isSecondaryGoogleAccountSigninAllowed_]]"
-          id="add-account-button" on-tap="addAccount_">
+          id="add-account-button" on-click="addAccount_"
+          deep-link-focus-id$="[[Setting.kAddAccount]]">
         <div id="add-account-icon"></div>
         [[getAddAccountLabel_(isChildUser_,
             isSecondaryGoogleAccountSigninAllowed_)]]
@@ -211,7 +236,8 @@
                 aria-label="[[getMoreActionsTitle_(item)]]"
                 aria-describedby$="fullName-[[index]]
                                    edu-account-label-[[index]]"
-                on-click="onAccountActionsMenuButtonTap_">
+                on-click="onAccountActionsMenuButtonTap_"
+                deep-link-focus-id$="[[Setting.kRemoveAccount]]">
             </cr-icon-button>
           </template>
         </div>

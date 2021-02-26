@@ -52,7 +52,7 @@ BrowserContextKeyedAPIFactory<ActivityLogAPI>::DeclareFactoryDependencies() {
 }
 
 ActivityLogAPI::ActivityLogAPI(content::BrowserContext* context)
-    : browser_context_(context), initialized_(false) {
+    : browser_context_(context) {
   if (!EventRouter::Get(browser_context_)) {  // Check for testing.
     DVLOG(1) << "ExtensionSystem event_router does not exist.";
     return;
@@ -65,9 +65,6 @@ ActivityLogAPI::ActivityLogAPI(content::BrowserContext* context)
   initialized_ = true;
 }
 
-ActivityLogAPI::~ActivityLogAPI() {
-}
-
 void ActivityLogAPI::Shutdown() {
   if (!initialized_) {  // Check for testing.
     DVLOG(1) << "ExtensionSystem event_router does not exist.";
@@ -78,7 +75,7 @@ void ActivityLogAPI::Shutdown() {
 }
 
 // static
-bool ActivityLogAPI::IsExtensionWhitelisted(const std::string& extension_id) {
+bool ActivityLogAPI::IsExtensionAllowlisted(const std::string& extension_id) {
   // TODO(devlin): Pass in a HashedExtensionId to avoid this conversion.
   return FeatureProvider::GetPermissionFeatures()
       ->GetFeature("activityLogPrivate")

@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "absl/strings/string_view.h"
 #include "url/gurl.h"
 #include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_client_stream.h"
@@ -22,23 +23,8 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_protocol.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_stream.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
-
-namespace {
-// ProofHandler is primarily used by QUIC crypto to persist QUIC server configs
-// and perform some of related debug logging.  QuicTransport does not support
-// QUIC crypto, so those methods are not called.
-class DummyProofHandler : public QuicCryptoClientStream::ProofHandler {
- public:
-  void OnProofValid(
-      const QuicCryptoClientConfig::CachedState& /*cached*/) override {}
-  void OnProofVerifyDetailsAvailable(
-      const ProofVerifyDetails& /*verify_details*/) override {}
-};
-
-}  // namespace
 
 QuicTransportClientSession::QuicTransportClientSession(
     QuicConnection* connection,
@@ -61,16 +47,13 @@ QuicTransportClientSession::QuicTransportClientSession(
     QUIC_BUG_IF(version.handshake_protocol != PROTOCOL_TLS1_3)
         << "QuicTransport requires TLS 1.3 handshake";
   }
-  // ProofHandler API is not used by TLS 1.3.
-  static DummyProofHandler* proof_handler = new DummyProofHandler();
   crypto_stream_ = std::make_unique<QuicCryptoClientStream>(
       QuicServerId(url.host(), url.EffectiveIntPort()), this,
       crypto_config->proof_verifier()->CreateDefaultContext(), crypto_config,
-      proof_handler, /*has_application_state = */ true);
+      /*proof_handler=*/this, /*has_application_state = */ true);
 }
 
-void QuicTransportClientSession::OnAlpnSelected(
-    quiche::QuicheStringPiece alpn) {
+void QuicTransportClientSession::OnAlpnSelected(absl::string_view alpn) {
   // Defense in-depth: ensure the ALPN selected is the desired one.
   if (alpn != QuicTransportAlpn()) {
     QUIC_BUG << "QuicTransport negotiated non-QuicTransport ALPN: " << alpn;
@@ -104,8 +87,8 @@ void QuicTransportClientSession::SetDefaultEncryptionLevel(
   }
 }
 
-void QuicTransportClientSession::OnOneRttKeysAvailable() {
-  QuicSession::OnOneRttKeysAvailable();
+void QuicTransportClientSession::OnTlsHandshakeComplete() {
+  QuicSession::OnTlsHandshakeComplete();
   SendClientIndication();
 }
 
@@ -253,8 +236,7 @@ void QuicTransportClientSession::SendClientIndication() {
   visitor_->OnSessionReady();
 }
 
-void QuicTransportClientSession::OnMessageReceived(
-    quiche::QuicheStringPiece message) {
+void QuicTransportClientSession::OnMessageReceived(absl::string_view message) {
   visitor_->OnDatagramReceived(message);
 }
 
@@ -266,5 +248,11 @@ void QuicTransportClientSession::OnCanCreateNewOutgoingStream(
     visitor_->OnCanCreateNewOutgoingBidirectionalStream();
   }
 }
+
+void QuicTransportClientSession::OnProofValid(
+    const QuicCryptoClientConfig::CachedState& /*cached*/) {}
+
+void QuicTransportClientSession::OnProofVerifyDetailsAvailable(
+    const ProofVerifyDetails& /*verify_details*/) {}
 
 }  // namespace quic

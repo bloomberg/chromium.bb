@@ -19,8 +19,6 @@ class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationSync final
     : public GarbageCollected<ServiceWorkerRegistrationSync>,
       public Supplement<ServiceWorkerRegistration> {
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationSync);
-
  public:
   static const char kSupplementName[];
 
@@ -38,7 +36,7 @@ class ServiceWorkerRegistrationSync final
   PeriodicSyncManager* periodicSync();
   SyncManager* sync();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   Member<ServiceWorkerRegistration> registration_;

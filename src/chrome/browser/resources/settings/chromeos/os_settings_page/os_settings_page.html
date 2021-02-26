@@ -2,21 +2,22 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="main_page_behavior.html">
+<link rel="import" href="settings_idle_load.html">
 <link rel="import" href="../os_a11y_page/os_a11y_page.html">
 <link rel="import" href="../os_apps_page/android_apps_browser_proxy.html">
 <link rel="import" href="../os_apps_page/os_apps_page.html">
 <link rel="import" href="../os_people_page/os_people_page.html">
+<link rel="import" href="../os_privacy_page/os_privacy_page.html">
 <link rel="import" href="../os_search_page/os_search_page.html">
 <link rel="import" href="../personalization_page/personalization_page.html">
-<link rel="import" href="../../controls/settings_idle_load.html">
-<link rel="import" href="../../settings_page/main_page_behavior.html">
 <link rel="import" href="../../settings_page/settings_section.html">
 <link rel="import" href="../../settings_page_css.html">
 <link rel="import" href="../bluetooth_page/bluetooth_page.html">
 <link rel="import" href="../crostini_page/crostini_page.html">
-<link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../device_page/device_page.html">
@@ -34,12 +35,27 @@
 
       .banner {
         align-items: center;
-        background-color: var(--cros-default-bg-color);
+        background-color: var(--cros-bg-color);
         border: var(--cr-hairline);
         border-radius: var(--cr-card-border-radius);
         display: flex;
         margin-bottom: var(--cr-section-vertical-margin);
         margin-top: var(--cr-section-vertical-margin);
+      }
+
+      .eol-warning-icon {
+        align-items: center;
+        background: var(--google-yellow-50);
+        border-radius: 50%;
+        display: flex;
+        height: 40px;
+        justify-content: center;
+        margin-inline-end: var(--cr-section-padding);
+        width: 40px;
+      }
+
+      .eol-warning-icon iron-icon {
+        margin: 0;
       }
 
       #advancedToggle {
@@ -61,15 +77,6 @@
         font-weight: 600;
       }
 
-      #browserSettingsBanner {
-        color: var(--cros-default-text-color-secondary);
-        font-weight: 500;
-      }
-
-      #browserSettingsBanner > div {
-        margin-bottom: 0;
-      }
-
       #openInNewBrowserSettingsIcon {
         fill: var(--cros-link-color);
         margin-inline-start: 0;
@@ -87,7 +94,7 @@
 
       #toggleContainer {
         align-items: center;
-        color: var(--cros-default-text-color);
+        color: var(--cros-text-color-primary);
         display: flex;
         font: inherit;
         justify-content: center;
@@ -107,15 +114,19 @@
     <template is="dom-if" if="[[showBasicPage_(
         currentRoute_, inSearchMode, hasExpandedSection_)]]">
       <div id="basicPage">
-        <template is="dom-if" if="[[showBrowserSettingsBanner_]]">
-          <div id="browserSettingsBanner" class="settings-box banner">
-            <div class="start" on-click="onBrowserSettingsClick_">
-              $i18nRaw{browserSettingsBannerText}
+        <template is="dom-if" if="[[computeShowUpdateRequiredEolBanner_(
+            hasExpandedSection_, showUpdateRequiredEolBanner_)]]">
+          <div id="updateRequiredEolBanner"
+              class="settings-box two-line banner">
+            <div class="eol-warning-icon">
+              <iron-icon icon="cr20:banner-warning"></iron-icon>
             </div>
-            <cr-icon-button class="icon-clear"
-                id="closeBrowserSettings"
-                title="$i18n{close}"
-                on-click="onBrowserSettingsBannerClosed_">
+            <settings-localized-link id="bannerText" class="start"
+                localized-string="$i18n{updateRequiredEolBannerText}">
+            </settings-localized-link>
+            <cr-icon-button title="$i18n{close}" id="closeUpdateRequiredEol"
+                class="icon-clear" on-click="onCloseEolBannerClicked_"
+                aria-describedby="bannerText">
             </cr-icon-button>
           </div>
         </template>

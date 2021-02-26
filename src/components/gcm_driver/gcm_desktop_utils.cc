@@ -12,7 +12,7 @@
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
-#include "components/sync/driver/sync_util.h"
+#include "components/sync/base/sync_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -23,7 +23,7 @@ namespace {
 GCMClient::ChromePlatform GetPlatform() {
 #if defined(OS_WIN)
   return GCMClient::PLATFORM_WIN;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return GCMClient::PLATFORM_MAC;
 #elif defined(OS_IOS)
   return GCMClient::PLATFORM_IOS;

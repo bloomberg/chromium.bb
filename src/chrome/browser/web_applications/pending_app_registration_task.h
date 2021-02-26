@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_PENDING_APP_REGISTRATION_TASK_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "content/public/browser/service_worker_context_observer.h"
 
 class GURL;
@@ -30,23 +30,26 @@ class PendingAppRegistrationTaskBase
  public:
   ~PendingAppRegistrationTaskBase() override;
 
-  const GURL& launch_url() const { return launch_url_; }
+  const GURL& install_url() const { return install_url_; }
 
  protected:
-  explicit PendingAppRegistrationTaskBase(const GURL& launch_url);
+  explicit PendingAppRegistrationTaskBase(const GURL& install_url);
 
  private:
-  const GURL launch_url_;
+  const GURL install_url_;
 };
 
 class PendingAppRegistrationTask : public PendingAppRegistrationTaskBase {
  public:
   using RegistrationCallback = base::OnceCallback<void(RegistrationResultCode)>;
 
-  PendingAppRegistrationTask(const GURL& launch_url,
+  PendingAppRegistrationTask(const GURL& install_url,
                              WebAppUrlLoader* url_loader,
                              content::WebContents* web_contents,
                              RegistrationCallback callback);
+  PendingAppRegistrationTask(const PendingAppRegistrationTask&) = delete;
+  PendingAppRegistrationTask& operator=(const PendingAppRegistrationTask&) =
+      delete;
   ~PendingAppRegistrationTask() override;
 
   // ServiceWorkerContextObserver:
@@ -57,6 +60,8 @@ class PendingAppRegistrationTask : public PendingAppRegistrationTaskBase {
 
  private:
   void OnDidCheckHasServiceWorker(content::ServiceWorkerCapability capability);
+
+  void OnWebContentsReady(WebAppUrlLoader::Result result);
 
   void OnRegistrationTimeout();
 
@@ -71,7 +76,6 @@ class PendingAppRegistrationTask : public PendingAppRegistrationTaskBase {
 
   static int registration_timeout_in_seconds_;
 
-  DISALLOW_COPY_AND_ASSIGN(PendingAppRegistrationTask);
 };
 
 }  // namespace web_app

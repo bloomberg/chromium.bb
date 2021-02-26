@@ -23,6 +23,8 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/url_loader.h"
@@ -163,27 +165,22 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
     bool is_download,
     bool is_async,
     bool is_service_worker_script,
-    base::Optional<int64_t> navigation_id)
+    base::Optional<int64_t> navigation_id,
+    ukm::SourceIdObj ukm_source_id)
     : id(request_id),
       url(request.url),
-      site_for_cookies(request.site_for_cookies),
       render_process_id(render_process_id),
       routing_id(routing_id),
       frame_id(render_frame_id),
       method(request.method),
       is_navigation_request(!!navigation_ui_data),
       initiator(request.request_initiator),
-      type(static_cast<blink::mojom::ResourceType>(request.resource_type)),
       is_async(is_async),
       extra_request_headers(request.headers),
       is_service_worker_script(is_service_worker_script),
-      navigation_id(std::move(navigation_id)) {
-  if (url.SchemeIsWSOrWSS())
-    web_request_type = WebRequestResourceType::WEB_SOCKET;
-  else if (is_download)
-    web_request_type = WebRequestResourceType::OTHER;
-  else
-    web_request_type = ToWebRequestResourceType(type);
+      navigation_id(std::move(navigation_id)),
+      ukm_source_id(ukm_source_id) {
+  web_request_type = ToWebRequestResourceType(request, is_download);
 
   DCHECK_EQ(is_navigation_request, navigation_id.has_value());
 
@@ -230,7 +227,6 @@ void WebRequestInfoInitParams::InitializeWebViewAndFrameData(
 WebRequestInfo::WebRequestInfo(WebRequestInfoInitParams params)
     : id(params.id),
       url(std::move(params.url)),
-      site_for_cookies(std::move(params.site_for_cookies)),
       render_process_id(params.render_process_id),
       routing_id(params.routing_id),
       frame_id(params.frame_id),
@@ -238,7 +234,6 @@ WebRequestInfo::WebRequestInfo(WebRequestInfoInitParams params)
       is_navigation_request(params.is_navigation_request),
       initiator(std::move(params.initiator)),
       frame_data(std::move(params.frame_data)),
-      type(params.type),
       web_request_type(params.web_request_type),
       is_async(params.is_async),
       extra_request_headers(std::move(params.extra_request_headers)),
@@ -249,6 +244,7 @@ WebRequestInfo::WebRequestInfo(WebRequestInfoInitParams params)
       web_view_embedder_process_id(params.web_view_embedder_process_id),
       is_service_worker_script(params.is_service_worker_script),
       navigation_id(std::move(params.navigation_id)),
+      ukm_source_id(params.ukm_source_id),
       parent_routing_id(params.parent_routing_id) {}
 
 WebRequestInfo::~WebRequestInfo() = default;

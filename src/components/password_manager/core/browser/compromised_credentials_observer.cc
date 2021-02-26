@@ -7,21 +7,13 @@
 #include <memory>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
-#include "components/password_manager/core/common/password_manager_features.h"
-#include "components/safe_browsing/core/features.h"
 
 namespace password_manager {
 
 void ProcessLoginsChanged(const PasswordStoreChangeList& changes,
                           const RemoveCompromisedCallback& remove_callback) {
-  bool password_protection_show_domains_for_saved_password_is_on =
-      base::FeatureList::IsEnabled(
-          safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords);
-  if (!password_protection_show_domains_for_saved_password_is_on &&
-      !base::FeatureList::IsEnabled(password_manager::features::kPasswordCheck))
-    return;
-
   for (const PasswordStoreChange& change : changes) {
     // New passwords are not interesting.
     if (change.type() == PasswordStoreChange::ADD)
@@ -32,7 +24,7 @@ void ProcessLoginsChanged(const PasswordStoreChangeList& changes,
       continue;
     auto reason = RemoveCompromisedCredentialsReason::kUpdate;
     if (change.type() == PasswordStoreChange::REMOVE &&
-        std::none_of(changes.begin(), changes.end(), [](const auto& change) {
+        base::ranges::none_of(changes, [](const auto& change) {
           return change.type() == PasswordStoreChange::ADD;
         })) {
       reason = RemoveCompromisedCredentialsReason::kRemove;

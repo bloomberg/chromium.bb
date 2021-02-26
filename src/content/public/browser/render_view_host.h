@@ -12,8 +12,8 @@
 #include "content/public/common/page_zoom.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/system/core.h"
+#include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
-#include "third_party/blink/public/platform/web_drag_operation.h"
 
 namespace gfx {
 class Point;
@@ -26,7 +26,6 @@ class RenderProcessHost;
 class RenderViewHostDelegate;
 class RenderWidgetHost;
 class SiteInstance;
-struct WebPreferences;
 
 // A RenderViewHost is responsible for creating and talking to a RenderView
 // object in a child process. It exposes a high level API to users, for things
@@ -47,7 +46,7 @@ struct WebPreferences;
 //
 // For context, please see https://crbug.com/467770 and
 // https://www.chromium.org/developers/design-documents/site-isolation.
-class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
+class CONTENT_EXPORT RenderViewHost {
  public:
   // Returns the RenderViewHost given its ID and the ID of its render process.
   // Returns nullptr if the IDs do not correspond to a live RenderViewHost.
@@ -57,7 +56,7 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // RenderWidgetHost. Returns nullptr if there is no such RenderViewHost.
   static RenderViewHost* From(RenderWidgetHost* rwh);
 
-  ~RenderViewHost() override {}
+  virtual ~RenderViewHost() {}
 
   // Returns the RenderWidgetHost for this RenderViewHost.
   virtual RenderWidgetHost* GetWidget() = 0;
@@ -91,28 +90,6 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
 
   // Returns true if the RenderView is active and has not crashed.
   virtual bool IsRenderViewLive() = 0;
-
-  // Notification that a move or resize renderer's containing window has
-  // started.
-  virtual void NotifyMoveOrResizeStarted() = 0;
-
-  // TODO(mustaq): Replace "Webkit" from the following three method names.
-  //
-  // Returns the current WebKit preferences. Note: WebPreferences is cached, so
-  // this lookup will be fast.
-  virtual WebPreferences GetWebkitPreferences() = 0;
-
-  // Passes current web preferences to the renderer after possibly recomputing
-  // them as follows: all "fast" preferences (those not requiring slow
-  // platform/device polling) are recomputed unconditionally; the remaining
-  // "slow" ones are recomputed only if they have not been computed before.
-  //
-  // This method must be called if any state that affects web preferences has
-  // changed.
-  virtual void OnWebkitPreferencesChanged() = 0;
-
-  // Passes a list of Webkit preferences to the renderer.
-  virtual void UpdateWebkitPreferences(const WebPreferences& prefs) = 0;
 
  private:
   // This interface should only be implemented inside content.

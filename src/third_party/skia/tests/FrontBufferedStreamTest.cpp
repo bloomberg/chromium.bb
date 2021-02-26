@@ -153,7 +153,7 @@ public:
 
 private:
     bool fIsAtEnd;
-    typedef SkMemoryStream INHERITED;
+    using INHERITED = SkMemoryStream;
 };
 
 // This test ensures that buffering the exact length of the stream and attempting to read beyond it
@@ -166,7 +166,7 @@ static void test_read_beyond_buffer(skiatest::Reporter* reporter, size_t bufferS
     // Create a buffer that matches the length of the stream.
     auto bufferedStream = android::skia::FrontBufferedStream::Make(
             std::unique_ptr<SkStream>(memStream), bufferSize);
-    test_hasLength(reporter, *bufferedStream.get(), *memStream);
+    test_hasLength(reporter, *bufferedStream, *memStream);
 
     // Attempt to read one more than the bufferSize
     test_read(reporter, bufferedStream.get(), gAbcs, bufferSize + 1);
@@ -176,7 +176,7 @@ static void test_read_beyond_buffer(skiatest::Reporter* reporter, size_t bufferS
     test_read(reporter, bufferedStream.get(), gAbcs, bufferSize);
 }
 
-// Dummy stream that optionally has a length and/or position. Tests that FrontBufferedStream's
+// Mock stream that optionally has a length and/or position. Tests that FrontBufferedStream's
 // length depends on the stream it's buffering having a length and position.
 class LengthOptionalStream : public SkStream {
 public:
@@ -214,7 +214,7 @@ static void test_length_combos(skiatest::Reporter* reporter, size_t bufferSize) 
                     new LengthOptionalStream(SkToBool(hasLen), SkToBool(hasPos));
             auto buffered = android::skia::FrontBufferedStream::Make(
                     std::unique_ptr<SkStream>(stream), bufferSize);
-            test_hasLength(reporter, *buffered.get(), *stream);
+            test_hasLength(reporter, *buffered, *stream);
         }
     }
 }
@@ -268,7 +268,7 @@ DEF_TEST(FrontBufferedStream, reporter) {
 }
 
 // Test that a FrontBufferedStream does not allow reading after the end of a stream.
-// This class is a dummy SkStream which reports that it is at the end on the first
+// This class is a mock SkStream which reports that it is at the end on the first
 // read (simulating a failure). Then it tracks whether someone calls read() again.
 class FailingStream : public SkStream {
 public:

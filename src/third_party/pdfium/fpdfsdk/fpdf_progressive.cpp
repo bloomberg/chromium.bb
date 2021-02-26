@@ -6,6 +6,7 @@
 
 #include "public/fpdf_progressive.h"
 
+#include <memory>
 #include <utility>
 
 #include "core/fpdfapi/page/cpdf_page.h"
@@ -16,9 +17,8 @@
 #include "fpdfsdk/cpdfsdk_pauseadapter.h"
 #include "fpdfsdk/cpdfsdk_renderpage.h"
 #include "public/fpdfview.h"
-#include "third_party/base/ptr_util.h"
 
-#ifdef _SKIA_SUPPORT_PATHS_
+#if defined(_SKIA_SUPPORT_PATHS_)
 #include "core/fxge/cfx_renderdevice.h"
 #endif
 
@@ -59,12 +59,12 @@ FPDF_RenderPageBitmapWithColorScheme_Start(FPDF_BITMAP bitmap,
   if (!pPage)
     return FPDF_RENDER_FAILED;
 
-  auto pOwnedContext = pdfium::MakeUnique<CPDF_PageRenderContext>();
+  auto pOwnedContext = std::make_unique<CPDF_PageRenderContext>();
   CPDF_PageRenderContext* pContext = pOwnedContext.get();
   pPage->SetRenderContext(std::move(pOwnedContext));
 
   RetainPtr<CFX_DIBitmap> pBitmap(CFXDIBitmapFromFPDFBitmap(bitmap));
-  auto pOwnedDevice = pdfium::MakeUnique<CFX_DefaultRenderDevice>();
+  auto pOwnedDevice = std::make_unique<CFX_DefaultRenderDevice>();
   CFX_DefaultRenderDevice* pDevice = pOwnedDevice.get();
   pContext->m_pDevice = std::move(pOwnedDevice);
   pDevice->Attach(pBitmap, !!(flags & FPDF_REVERSE_BYTE_ORDER), nullptr, false);
@@ -74,7 +74,7 @@ FPDF_RenderPageBitmapWithColorScheme_Start(FPDF_BITMAP bitmap,
                                 size_y, rotate, flags, color_scheme,
                                 /*need_to_restore=*/false, &pause_adapter);
 
-#ifdef _SKIA_SUPPORT_PATHS_
+#if defined(_SKIA_SUPPORT_PATHS_)
   pDevice->Flush(false);
   pBitmap->UnPreMultiply();
 #endif
@@ -115,7 +115,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDF_RenderPage_Continue(FPDF_PAGE page,
 
   CPDFSDK_PauseAdapter pause_adapter(pause);
   pContext->m_pRenderer->Continue(&pause_adapter);
-#ifdef _SKIA_SUPPORT_PATHS_
+#if defined(_SKIA_SUPPORT_PATHS_)
   CFX_RenderDevice* pDevice = pContext->m_pDevice.get();
   pDevice->Flush(false);
   pDevice->GetBitmap()->UnPreMultiply();
@@ -126,7 +126,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDF_RenderPage_Continue(FPDF_PAGE page,
 FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage_Close(FPDF_PAGE page) {
   CPDF_Page* pPage = CPDFPageFromFPDFPage(page);
   if (pPage) {
-#ifdef _SKIA_SUPPORT_PATHS_
+#if defined(_SKIA_SUPPORT_PATHS_)
     auto* pContext =
         static_cast<CPDF_PageRenderContext*>(pPage->GetRenderContext());
     if (pContext && pContext->m_pRenderer) {

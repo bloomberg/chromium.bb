@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+import os
 import pprint
 import shlex
 import socket
@@ -26,7 +27,25 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
 
   def __init__(self, platform_backend, browser_options,
                browser_directory, profile_directory,
-               supports_extensions, supports_tab_control):
+               supports_extensions, supports_tab_control, build_dir=None):
+    """
+    Args:
+      platform_backend: The platform_backend.PlatformBackend instance to use.
+      browser_options: The browser_options.BrowserOptions instance to use.
+      browser_directory: A string containing a path to the directory where the
+          the browser is installed. This is typically the directory containing
+          the browser executable, but not guaranteed.
+      profile_directory: A string containing a path to the directory to store
+          browser profile information in.
+      supports_extensions: A boolean indicating whether the browser supports
+          extensions.
+      supports_tab_control: A boolean indicating whether the browser supports
+          the concept of tabs.
+      build_dir: A string containing a path to the directory that the browser
+          was built in, for finding debug artifacts. Can be None if the browser
+          was not locally built, or the directory otherwise cannot be
+          determined.
+    """
     super(ChromeBrowserBackend, self).__init__(
         platform_backend=platform_backend,
         browser_options=browser_options,
@@ -35,6 +54,7 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
     self._browser_directory = browser_directory
     self._profile_directory = profile_directory
     self._supports_tab_control = supports_tab_control
+    self._build_dir = build_dir
 
     self._devtools_client = None
 
@@ -47,6 +67,10 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
       logging.warning('Not overriding profile. This can cause unexpected '
                       'effects due to profile-specific settings, such as '
                       'about:flags settings, cookies, and extensions.')
+
+  @property
+  def build_dir(self):
+    return self._build_dir
 
   @property
   def devtools_client(self):
@@ -216,6 +240,12 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
       tracing_backend.FlushTracing()
 
     if self._devtools_client:
+      if "ENSURE_CLEAN_CHROME_SHUTDOWN" in os.environ:
+        # Forces a clean shutdown by sending a command to close the browser via
+        # the devtools client. Uses a long timeout as a clean shutdown can
+        # sometime take a long time to complete.
+        self._devtools_client.CloseBrowser()
+        py_utils.WaitFor(lambda: not self.IsBrowserRunning(), 300)
       self._devtools_client.Close()
       self._devtools_client = None
 
@@ -232,8 +262,9 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
   def supports_memory_dumping(self):
     return True
 
-  def DumpMemory(self, timeout=None):
-    return self.devtools_client.DumpMemory(timeout=timeout)
+  def DumpMemory(self, timeout=None, detail_level=None):
+    return self.devtools_client.DumpMemory(timeout=timeout,
+                                           detail_level=detail_level)
 
   @property
   def supports_overriding_memory_pressure_notifications(self):
@@ -270,3 +301,6 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
   @property
   def supports_memory_metrics(self):
     return True
+
+  def ExecuteBrowserCommand(self, command_id, timeout):
+    self.devtools_client.ExecuteBrowserCommand(command_id, timeout)

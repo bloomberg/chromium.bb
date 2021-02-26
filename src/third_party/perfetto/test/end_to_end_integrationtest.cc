@@ -50,6 +50,7 @@
 #include "protos/perfetto/trace/ftrace/ftrace.gen.h"
 #include "protos/perfetto/trace/ftrace/ftrace_event.gen.h"
 #include "protos/perfetto/trace/ftrace/ftrace_event_bundle.gen.h"
+#include "protos/perfetto/trace/ftrace/ftrace_stats.gen.h"
 #include "protos/perfetto/trace/power/battery_counters.gen.h"
 #include "protos/perfetto/trace/test_event.gen.h"
 #include "protos/perfetto/trace/trace.gen.h"
@@ -65,7 +66,7 @@ using ::testing::ContainsRegex;
 using ::testing::ElementsAreArray;
 using ::testing::HasSubstr;
 
-constexpr size_t kBuiltinPackets = 8;
+constexpr size_t kBuiltinPackets = 12;
 
 std::string RandomTraceFileName() {
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
@@ -368,6 +369,78 @@ TEST_F(PerfettoTest, TreeHuggerOnly(TestFtraceFlush)) {
   ASSERT_EQ(marker_found, 1);
 }
 
+// Disable this test:
+// 1. On cuttlefish (x86-kvm). It's too slow when running on GCE (b/171771440).
+//    We cannot change the length of the production code in
+//    CanReadKernelSymbolAddresses() to deal with it.
+// 2. On user (i.e. non-userdebug) builds. As that doesn't work there by design.
+#if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD) && \
+    (defined(__i386__) ||                         \
+     !PERFETTO_BUILDFLAG(PERFETTO_ANDROID_USERDEBUG_BUILD))
+#define MAYBE_KernelAddressSymbolization DISABLED_KernelAddressSymbolization
+#else
+#define MAYBE_KernelAddressSymbolization KernelAddressSymbolization
+#endif
+TEST_F(PerfettoTest, MAYBE_KernelAddressSymbolization) {
+  // On Android in-tree builds (TreeHugger): this test must always run to
+  // prevent selinux / property-related regressions.
+  // On standalone builds and Linux, this can be optionally skipped because
+  // there it requires root to lower kptr_restrict.
+#if !PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
+  if (geteuid() != 0)
+    GTEST_SKIP();
+#endif
+
+  base::TestTaskRunner task_runner;
+
+  TestHelper helper(&task_runner);
+  helper.StartServiceIfRequired();
+
+#if PERFETTO_BUILDFLAG(PERFETTO_START_DAEMONS)
+  ProbesProducerThread probes(TEST_PRODUCER_SOCK_NAME);
+  probes.Connect();
+#endif
+
+  helper.ConnectConsumer();
+  helper.WaitForConsumerConnect();
+
+  TraceConfig trace_config;
+  trace_config.add_buffers()->set_size_kb(1024);
+
+  // The symbolizer is initialized asynchronously in a dedicated PostTask in
+  // FtraceController::StartDataSource. There is no easy way to linearize with
+  // that. Here the duration needs to be long enough so that the PostTask() for
+  // the deferred parse is enqueued before the stop. The kallsyms parsing can
+  // take longer.
+  trace_config.set_duration_ms(5000);
+
+  auto* ds_config = trace_config.add_data_sources()->mutable_config();
+  ds_config->set_name("linux.ftrace");
+  protos::gen::FtraceConfig ftrace_cfg;
+  ftrace_cfg.set_symbolize_ksyms(true);
+  ds_config->set_ftrace_config_raw(ftrace_cfg.SerializeAsString());
+
+  helper.StartTracing(trace_config);
+  helper.WaitForTracingDisabled();
+
+  helper.ReadData();
+  helper.WaitForReadData();
+
+  const auto& packets = helper.trace();
+  ASSERT_GT(packets.size(), 0u);
+
+  int symbols_parsed = -1;
+  for (const auto& packet : packets) {
+    if (!packet.has_ftrace_stats())
+      continue;
+    if (packet.ftrace_stats().phase() != protos::gen::FtraceStats::END_OF_TRACE)
+      continue;
+    symbols_parsed =
+        static_cast<int>(packet.ftrace_stats().kernel_symbols_parsed());
+  }
+  ASSERT_GT(symbols_parsed, 100);
+}
+
 // TODO(b/73453011): reenable on more platforms (including standalone Android).
 TEST_F(PerfettoTest, TreeHuggerOnly(TestBatteryTracing)) {
   base::TestTaskRunner task_runner;
@@ -418,8 +491,8 @@ TEST_F(PerfettoTest, TreeHuggerOnly(TestBatteryTracing)) {
     has_battery_packet = true;
     // Unfortunately we cannot make any assertions on the charge counter.
     // On some devices it can reach negative values (b/64685329).
-    EXPECT_GE(packet.battery().capacity_percent(), 0);
-    EXPECT_LE(packet.battery().capacity_percent(), 100);
+    EXPECT_GE(packet.battery().capacity_percent(), 0.f);
+    EXPECT_LE(packet.battery().capacity_percent(), 100.f);
   }
 
   ASSERT_TRUE(has_battery_packet);
@@ -1012,6 +1085,8 @@ TEST_F(PerfettoCmdlineTest, DISABLED_NoDataNoFileWithoutTrigger) {
   protos::gen::TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(1024);
   trace_config.set_allow_user_build_tracing(true);
+  auto* incident_config = trace_config.mutable_incident_report_config();
+  incident_config->set_destination_package("foo.bar.baz");
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
   ds_config->set_name("android.perfetto.FakeProducer");
   ds_config->mutable_for_testing()->set_message_count(kMessageCount);
@@ -1055,7 +1130,7 @@ TEST_F(PerfettoCmdlineTest, DISABLED_NoDataNoFileWithoutTrigger) {
   background_trace.join();
 
   EXPECT_THAT(stderr_str,
-              ::testing::HasSubstr("Skipping write to dropbox. Empty trace."));
+              ::testing::HasSubstr("Skipping write to incident. Empty trace."));
 }
 
 TEST_F(PerfettoCmdlineTest, NoSanitizers(StopTracingTriggerFromConfig)) {

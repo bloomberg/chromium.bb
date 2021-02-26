@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace gpu {
@@ -15,8 +16,12 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
     GpuMemoryBufferSupport* support) {
   GpuMemoryBufferConfigurationSet configurations;
 
-#if defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_WIN) || \
+#if defined(USE_OZONE) || defined(OS_MAC) || defined(OS_WIN) || \
     defined(OS_ANDROID)
+#if defined(USE_OZONE)
+  if (!features::IsUsingOzonePlatform())
+    return configurations;
+#endif
   const gfx::BufferFormat kBufferFormats[] = {
       gfx::BufferFormat::R_8,          gfx::BufferFormat::R_16,
       gfx::BufferFormat::RG_88,        gfx::BufferFormat::BGR_565,
@@ -34,7 +39,9 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
       gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
       gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
       gfx::BufferUsage::SCANOUT_VDA_WRITE,
+      gfx::BufferUsage::PROTECTED_SCANOUT_VDA_WRITE,
       gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+      gfx::BufferUsage::SCANOUT_VEA_CPU_READ,
       gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
   };
 
@@ -44,7 +51,7 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
         configurations.insert(gfx::BufferUsageAndFormat(usage, format));
     }
   }
-#endif  // defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_WIN) ||
+#endif  // defined(USE_OZONE) || defined(OS_MAC) || defined(OS_WIN) ||
         // defined(OS_ANDROID)
 
   return configurations;
@@ -54,7 +61,7 @@ bool GetImageNeedsPlatformSpecificTextureTarget(gfx::BufferFormat format,
                                                 gfx::BufferUsage usage) {
   if (!NativeBufferNeedsPlatformSpecificTextureTarget(format))
     return false;
-#if defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_WIN) || \
+#if defined(USE_OZONE) || defined(OS_MAC) || defined(OS_WIN) || \
     defined(OS_ANDROID)
   GpuMemoryBufferSupport support;
   GpuMemoryBufferConfigurationSet native_configurations =

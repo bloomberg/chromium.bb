@@ -8,10 +8,11 @@
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "content/browser/native_io/native_io_context.h"
+#include "content/test/fake_mojo_message_dispatch_context.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -77,6 +78,18 @@ class NativeIOHostSync {
     return names;
   }
 
+  bool RenameFile(const std::string& old_name, const std::string& new_name) {
+    bool success = false;
+    base::RunLoop run_loop;
+    io_host_->RenameFile(old_name, new_name,
+                         base::BindLambdaForTesting([&](bool backend_success) {
+                           success = backend_success;
+                           run_loop.Quit();
+                         }));
+    run_loop.Run();
+    return success;
+  }
+
  private:
   blink::mojom::NativeIOHost* const io_host_;
 };
@@ -98,6 +111,21 @@ class NativeIOFileHostSync {
     file_host_->Close(run_loop.QuitClosure());
     run_loop.Run();
     return;
+  }
+
+  std::pair<bool, base::File> SetLength(const int64_t length, base::File file) {
+    bool success;
+    base::RunLoop run_loop;
+    file_host_->SetLength(
+        length, std::move(file),
+        base::BindLambdaForTesting(
+            [&](bool backend_success, base::File backend_file) {
+              success = backend_success;
+              file = std::move(backend_file);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return {success, std::move(file)};
   }
 
  private:
@@ -142,17 +170,18 @@ class NativeIOContextTest : public testing::Test {
   mojo::Remote<blink::mojom::NativeIOHost> google_host_remote_;
   std::unique_ptr<NativeIOHostSync> example_host_;
   std::unique_ptr<NativeIOHostSync> google_host_;
-};
 
-TEST_F(NativeIOContextTest, OpenFile_BadNames) {
-  std::vector<std::string> bad_names = {
+  // Names disallowed by NativeIO
+  const std::vector<std::string> bad_names_ = {
       "Uppercase",
       "has-dash",
       "has.dot",
       "has/slash",
   };
+};
 
-  for (const std::string& bad_name : bad_names) {
+TEST_F(NativeIOContextTest, OpenFile_BadNames) {
+  for (const std::string& bad_name : bad_names_) {
     mojo::test::BadMessageObserver bad_message_observer;
 
     mojo::Remote<blink::mojom::NativeIOFileHost> file_host;
@@ -199,14 +228,7 @@ TEST_F(NativeIOContextTest, OpenFile_SameName) {
 }
 
 TEST_F(NativeIOContextTest, DeleteFile_BadNames) {
-  std::vector<std::string> bad_names = {
-      "Uppercase",
-      "has-dash",
-      "has.dot",
-      "has/slash",
-  };
-
-  for (const std::string& bad_name : bad_names) {
+  for (const std::string& bad_name : bad_names_) {
     mojo::test::BadMessageObserver bad_message_observer;
 
     EXPECT_FALSE(example_host_->DeleteFile(bad_name));
@@ -221,6 +243,30 @@ TEST_F(NativeIOContextTest, OpenFile_Locks_DeleteFile) {
   EXPECT_TRUE(file.IsValid());
 
   EXPECT_FALSE(example_host_->DeleteFile("test_file"));
+}
+
+TEST_F(NativeIOContextTest, OpenFile_Locks_RenameFile) {
+  mojo::Remote<blink::mojom::NativeIOFileHost> file_host;
+  base::File file = example_host_->OpenFile(
+      "test_file_in_use", file_host.BindNewPipeAndPassReceiver());
+  EXPECT_TRUE(file.IsValid());
+
+  mojo::Remote<blink::mojom::NativeIOFileHost> file_host2;
+  base::File file2 = example_host_->OpenFile(
+      "test_file_closed", file_host2.BindNewPipeAndPassReceiver());
+  EXPECT_TRUE(file2.IsValid());
+  file2.Close();
+  NativeIOFileHostSync file_host2_sync(file_host2.get());
+  file_host2_sync.Close();
+
+  EXPECT_FALSE(
+      example_host_->RenameFile("test_file_in_use", "renamed_test_file"))
+      << "An open file cannot be renamed";
+
+  EXPECT_FALSE(
+      example_host_->RenameFile("test_file_closed", "test_file_in_use"))
+      << "An open file cannot be overwritten";
+  ;
 }
 
 TEST_F(NativeIOContextTest, DeleteFile_WipesData) {
@@ -264,6 +310,51 @@ TEST_F(NativeIOContextTest, GetAllFiles_AfterOpen) {
   EXPECT_EQ("test_file", file_names[0]);
 }
 
+TEST_F(NativeIOContextTest, RenameFile_AfterOpenAndRename) {
+  mojo::Remote<blink::mojom::NativeIOFileHost> file_host_remote;
+  base::File file = example_host_->OpenFile(
+      "test_file", file_host_remote.BindNewPipeAndPassReceiver());
+  file.Close();
+  NativeIOFileHostSync file_host(file_host_remote.get());
+  file_host.Close();
+
+  example_host_->RenameFile("test_file", "renamed_test_file");
+  std::vector<std::string> file_names = example_host_->GetAllFileNames();
+  EXPECT_EQ(1u, file_names.size());
+  EXPECT_EQ("renamed_test_file", file_names[0]);
+}
+
+TEST_F(NativeIOContextTest, RenameFile_BadNames) {
+  mojo::Remote<blink::mojom::NativeIOFileHost> file_host_remote;
+  base::File file = example_host_->OpenFile(
+      "test_file", file_host_remote.BindNewPipeAndPassReceiver());
+  file.Close();
+  NativeIOFileHostSync file_host(file_host_remote.get());
+  file_host.Close();
+
+  for (const std::string& bad_name : bad_names_) {
+    mojo::test::BadMessageObserver bad_message_observer;
+
+    EXPECT_FALSE(example_host_->RenameFile("test_file", bad_name));
+    EXPECT_EQ("Invalid file name", bad_message_observer.WaitForBadMessage());
+
+    EXPECT_FALSE(example_host_->RenameFile(bad_name, "inexistant_test_file"));
+    EXPECT_EQ("Invalid file name", bad_message_observer.WaitForBadMessage());
+  }
+}
+
+TEST_F(NativeIOContextTest, SetLength_NegativeLength) {
+  mojo::Remote<blink::mojom::NativeIOFileHost> file_host_remote;
+  base::File file = example_host_->OpenFile(
+      "test_file", file_host_remote.BindNewPipeAndPassReceiver());
+  NativeIOFileHostSync file_host(file_host_remote.get());
+  std::pair<bool, base::File> res = file_host.SetLength(-5, std::move(file));
+  EXPECT_FALSE(res.first) << "A file can have no negative length.";
+
+  res.second.Close();
+  file_host.Close();
+}
+
 TEST_F(NativeIOContextTest, OriginIsolation) {
   const std::string kTestData("Test Data");
 
@@ -289,6 +380,18 @@ TEST_F(NativeIOContextTest, OriginIsolation) {
   EXPECT_TRUE(same_file.IsValid());
   char read_buffer[kTestData.size()];
   EXPECT_EQ(0, same_file.Read(0, read_buffer, kTestData.size()));
+}
+
+TEST_F(NativeIOContextTest, BindReceiver_UntrustworthyOrigin) {
+  mojo::Remote<blink::mojom::NativeIOHost> insecure_host_remote_;
+
+  // Create a fake dispatch context to trigger a bad message in.
+  FakeMojoMessageDispatchContext fake_dispatch_context;
+  mojo::test::BadMessageObserver bad_message_observer;
+  context_->BindReceiver(url::Origin::Create(GURL("http://insecure.com")),
+                         insecure_host_remote_.BindNewPipeAndPassReceiver());
+  EXPECT_EQ("Called NativeIO from an insecure context",
+            bad_message_observer.WaitForBadMessage());
 }
 
 }  // namespace

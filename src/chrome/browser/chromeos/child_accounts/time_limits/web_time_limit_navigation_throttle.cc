@@ -25,7 +25,6 @@
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -42,23 +41,23 @@ bool IsWebBlocked(content::BrowserContext* context) {
   return child_user_service->WebTimeLimitReached();
 }
 
-bool IsURLWhitelisted(const GURL& url, content::BrowserContext* context) {
+bool IsURLAllowlisted(const GURL& url, content::BrowserContext* context) {
   auto* child_user_service =
       ChildUserServiceFactory::GetForBrowserContext(context);
   if (!child_user_service)
     return false;
 
-  return child_user_service->WebTimeLimitWhitelistedURL(url);
+  return child_user_service->WebTimeLimitAllowlistedURL(url);
 }
 
-bool IsWebAppWhitelisted(const std::string& app_id_string,
+bool IsWebAppAllowlisted(const std::string& app_id_string,
                          content::BrowserContext* context) {
   const chromeos::app_time::AppId app_id(apps::mojom::AppType::kWeb,
                                          app_id_string);
   auto* child_user_service =
       ChildUserServiceFactory::GetForBrowserContext(context);
   DCHECK(child_user_service);
-  return child_user_service->AppTimeLimitWhitelistedApp(app_id);
+  return child_user_service->AppTimeLimitAllowlistedApp(app_id);
 }
 
 base::TimeDelta GetWebTimeLimit(content::BrowserContext* context) {
@@ -138,7 +137,7 @@ WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest() {
       navigation_handle()->GetWebContents()->GetBrowserContext();
 
   if (!IsWebBlocked(browser_context) ||
-      IsURLWhitelisted(navigation_handle()->GetURL(), browser_context)) {
+      IsURLAllowlisted(navigation_handle()->GetURL(), browser_context)) {
     return NavigationThrottle::PROCEED;
   }
 
@@ -199,8 +198,8 @@ WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest() {
   if (is_windowed)
     return PROCEED;
 
-  //  Don't throttle whitelisted applications.
-  if (IsWebAppWhitelisted(web_app_helper->GetAppId(), browser_context))
+  //  Don't throttle allowlisted applications.
+  if (IsWebAppAllowlisted(web_app_helper->GetAppId(), browser_context))
     return PROCEED;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);

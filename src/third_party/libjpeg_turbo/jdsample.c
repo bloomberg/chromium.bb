@@ -8,6 +8,7 @@
  * Copyright (C) 2010, 2015-2016, D. R. Commander.
  * Copyright (C) 2014, MIPS Technologies, Inc., California.
  * Copyright (C) 2015, Google, Inc.
+ * Copyright (C) 2019, Arm Limited.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *

@@ -84,7 +84,7 @@ fail:
   return NULL;
 }
 
-int av1_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
+int av1_lookahead_push(struct lookahead_ctx *ctx, const YV12_BUFFER_CONFIG *src,
                        int64_t ts_start, int64_t ts_end, int use_highbitdepth,
                        aom_enc_frame_flags_t flags) {
   struct lookahead_entry *buf;

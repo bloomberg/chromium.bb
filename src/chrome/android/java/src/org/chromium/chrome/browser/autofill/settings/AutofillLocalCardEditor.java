@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill.settings;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,11 +23,12 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
+import org.chromium.chrome.browser.version.ChromeVersionInfo;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -36,13 +38,17 @@ import java.util.Locale;
  * Local credit card settings.
  */
 public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
+    protected Button mDoneButton;
     private TextInputLayout mNameLabel;
     private EditText mNameText;
+    protected TextInputLayout mNicknameLabel;
+    protected EditText mNicknameText;
     private TextInputLayout mNumberLabel;
     private EditText mNumberText;
     private Spinner mExpirationMonth;
     private Spinner mExpirationYear;
-
+    // Since the nickname field is optional, an empty nickname is a valid nickname.
+    private boolean mIsValidNickname = true;
     private int mInitialExpirationMonthPos;
     private int mInitialExpirationYearPos;
 
@@ -61,11 +67,19 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
 
         View v = super.onCreateView(inflater, container, savedInstanceState);
 
+        mDoneButton = (Button) v.findViewById(R.id.button_primary);
         mNameLabel = (TextInputLayout) v.findViewById(R.id.credit_card_name_label);
         mNameText = (EditText) v.findViewById(R.id.credit_card_name_edit);
+        mNicknameLabel = (TextInputLayout) v.findViewById(R.id.credit_card_nickname_label);
+        mNicknameText = (EditText) v.findViewById(R.id.credit_card_nickname_edit);
         mNumberLabel = (TextInputLayout) v.findViewById(R.id.credit_card_number_label);
         mNumberText = (EditText) v.findViewById(R.id.credit_card_number_edit);
 
+        // Set the visibility of the nickname field based on the experiment flag.
+        mNicknameLabel.setVisibility(isNicknameManagementEnabled() ? View.VISIBLE : View.GONE);
+        mNicknameText.addTextChangedListener(nicknameTextWatcher());
+        mNicknameText.setOnFocusChangeListener(
+                (view, hasFocus) -> mNicknameLabel.setCounterEnabled(hasFocus));
         // Set text watcher to format credit card number
         mNumberText.addTextChangedListener(new CreditCardNumberFormattingTextWatcher());
 
@@ -132,7 +146,7 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
 
     private void addCardDataToEditFields() {
         if (mCard == null) {
-            mNameLabel.requestFocus();
+            mNumberLabel.requestFocus();
             return;
         }
 
@@ -172,6 +186,10 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
             mInitialExpirationYearPos = 0;
         }
         mExpirationYear.setSelection(mInitialExpirationYearPos);
+
+        if (!mCard.getNickname().isEmpty()) {
+            mNicknameText.setText(mCard.getNickname());
+        }
     }
 
     @Override
@@ -193,11 +211,15 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
         card.setMonth(String.valueOf(mExpirationMonth.getSelectedItemPosition() + 1));
         card.setYear((String) mExpirationYear.getSelectedItem());
         card.setBillingAddressId(((AutofillProfile) mBillingAddress.getSelectedItem()).getGUID());
+        card.setNickname(mNicknameText.getText().toString().trim());
         // Set GUID for adding a new card.
         card.setGUID(personalDataManager.setCreditCard(card));
         SettingsAutofillAndPaymentsObserver.getInstance().notifyOnCreditCardUpdated(card);
         if (mIsNewEntry) {
             RecordUserAction.record("AutofillCreditCardsAdded");
+            if (!card.getNickname().isEmpty()) {
+                RecordUserAction.record("AutofillCreditCardsAddedWithNickname");
+            }
         }
         return true;
     }
@@ -220,16 +242,42 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
         mExpirationMonth.setOnItemSelectedListener(this);
         mExpirationYear.setOnItemSelectedListener(this);
 
-        // Listen for touch events for drop down menus. We clear the keyboard when user touches
-        // any of these fields.
+        // Listen for touch events for drop down menus. We clear the keyboard when user touches any
+        // of these fields.
         mExpirationMonth.setOnTouchListener(this);
         mExpirationYear.setOnTouchListener(this);
     }
 
     private void updateSaveButtonEnabled() {
-        // Enable save button if credit card number is not empty. We validate the credit card number
-        // when user presses the save button.
-        boolean enabled = !TextUtils.isEmpty(mNumberText.getText());
-        ((Button) getView().findViewById(R.id.button_primary)).setEnabled(enabled);
+        // Enable save button if credit card number is not empty and the nickname is valid. We
+        // validate the credit card number when user presses the save button.
+        boolean enabled = !TextUtils.isEmpty(mNumberText.getText()) && mIsValidNickname;
+        mDoneButton.setEnabled(enabled);
+    }
+
+    private boolean isNicknameManagementEnabled() {
+        return ChromeFeatureList.isEnabled(
+                ChromeFeatureList.AUTOFILL_ENABLE_CARD_NICKNAME_MANAGEMENT);
+    }
+
+    private TextWatcher nicknameTextWatcher() {
+        return new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Show an error message if nickname contains any digits.
+                mIsValidNickname = !s.toString().matches(".*\\d.*");
+                mNicknameLabel.setError(mIsValidNickname
+                                ? ""
+                                : mContext.getResources().getString(
+                                        R.string.autofill_credit_card_editor_invalid_nickname));
+                updateSaveButtonEnabled();
+            }
+        };
     }
 }

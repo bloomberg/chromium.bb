@@ -118,7 +118,8 @@ void CrashMetricsReporter::ChildProcessExited(
       info.app_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES;
   const bool intentional_kill = info.was_killed_intentionally_by_browser;
   const bool android_oom_kill = !info.was_killed_intentionally_by_browser &&
-                                !crashed && !info.normal_termination;
+                                !crashed && !info.normal_termination &&
+                                !info.renderer_shutdown_requested;
   const bool renderer_visible = info.renderer_has_visible_clients;
   const bool renderer_subframe = info.renderer_was_subframe;
   const bool renderer_allocation_failed =
@@ -170,7 +171,7 @@ void CrashMetricsReporter::ChildProcessExited(
         ReportCrashCount(ProcessedCrashCounts::
                              kRendererForegroundVisibleNormalTermNoMinidump,
                          &reported_counts);
-      } else {
+      } else if (!info.renderer_shutdown_requested) {
         DCHECK(android_oom_kill);
         if (renderer_subframe) {
           ReportCrashCount(
@@ -259,6 +260,12 @@ void CrashMetricsReporter::ChildProcessExited(
       ReportCrashCount(ProcessedCrashCounts::kUtilityCrashAll,
                        &reported_counts);
     }
+  }
+
+  if (!info.was_killed_intentionally_by_browser && !crashed &&
+      !info.normal_termination && info.renderer_shutdown_requested) {
+    ReportCrashCount(ProcessedCrashCounts::kRendererProcessHostShutdown,
+                     &reported_counts);
   }
 
   if (app_foreground && android_oom_kill &&

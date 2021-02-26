@@ -8,16 +8,21 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -72,8 +77,11 @@ class PrinterConfigCacheImpl : public PrinterConfigCache {
  public:
   explicit PrinterConfigCacheImpl(
       const base::Clock* clock,
-      network::mojom::URLLoaderFactory* loader_factory)
-      : clock_(clock), loader_factory_(loader_factory), weak_factory_(this) {}
+      base::RepeatingCallback<network::mojom::URLLoaderFactory*()>
+          loader_factory_dispenser)
+      : clock_(clock),
+        loader_factory_dispenser_(std::move(loader_factory_dispenser)),
+        weak_factory_(this) {}
 
   ~PrinterConfigCacheImpl() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -89,8 +97,10 @@ class PrinterConfigCacheImpl : public PrinterConfigCache {
     if (finding != cache_.end()) {
       const Entry& entry = finding->second;
       if (entry.time_of_fetch + expiration > clock_->Now()) {
-        std::move(cb).Run(
-            FetchResult::Success(key, entry.contents, entry.time_of_fetch));
+        base::SequencedTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(cb), FetchResult::Success(
+                                                         key, entry.contents,
+                                                         entry.time_of_fetch)));
         return;
       }
     }
@@ -149,8 +159,9 @@ class PrinterConfigCacheImpl : public PrinterConfigCache {
     // TODO(crbug.com/888189): add traffic annotation.
     fetcher_ = network::SimpleURLLoader::Create(std::move(request),
                                                 MISSING_TRAFFIC_ANNOTATION);
+
     fetcher_->DownloadToString(
-        loader_factory_,
+        loader_factory_dispenser_.Run(),
         base::BindOnce(&PrinterConfigCacheImpl::FinishNetworkedFetch,
                        weak_factory_.GetWeakPtr(), std::move(context)),
         network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
@@ -169,11 +180,15 @@ class PrinterConfigCacheImpl : public PrinterConfigCache {
       // (if extant) or retain no entry at all (if not).
       const Entry newly_inserted = Entry(*contents, clock_->Now());
       cache_.insert_or_assign(context->key, newly_inserted);
-      std::move(context->cb)
-          .Run(FetchResult::Success(context->key, newly_inserted.contents,
-                                    newly_inserted.time_of_fetch));
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(context->cb),
+                                    FetchResult::Success(
+                                        context->key, newly_inserted.contents,
+                                        newly_inserted.time_of_fetch)));
     } else {
-      std::move(context->cb).Run(FetchResult::Failure(context->key));
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(context->cb),
+                                    FetchResult::Failure(context->key)));
     }
 
     fetcher_.reset();
@@ -189,8 +204,10 @@ class PrinterConfigCacheImpl : public PrinterConfigCache {
   // Dispenses Time objects to mark time of fetch on Entry instances.
   const base::Clock* clock_;
 
-  // Mutably borrowed from caller at construct-time.
-  network::mojom::URLLoaderFactory* loader_factory_;
+  // Dispenses fresh URLLoaderFactory instances; see header comment
+  // on Create().
+  base::RepeatingCallback<network::mojom::URLLoaderFactory*()>
+      loader_factory_dispenser_;
 
   // Talks to the networked service to fetch resources.
   //
@@ -210,8 +227,10 @@ class PrinterConfigCacheImpl : public PrinterConfigCache {
 // static
 std::unique_ptr<PrinterConfigCache> PrinterConfigCache::Create(
     const base::Clock* clock,
-    network::mojom::URLLoaderFactory* loader_factory) {
-  return std::make_unique<PrinterConfigCacheImpl>(clock, loader_factory);
+    base::RepeatingCallback<network::mojom::URLLoaderFactory*()>
+        loader_factory_dispenser) {
+  return std::make_unique<PrinterConfigCacheImpl>(
+      clock, std::move(loader_factory_dispenser));
 }
 
 }  // namespace chromeos

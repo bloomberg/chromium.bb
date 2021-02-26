@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
@@ -184,8 +185,7 @@ TEST_F(ComputeLayerSelectionTest, PositionInScroller) {
       To<HTMLInputElement>(GetDocument().getElementById("target")));
 
   Element* e = GetDocument().getElementById("scroller");
-  PaintLayerScrollableArea* scroller =
-      ToLayoutBox(e->GetLayoutObject())->GetScrollableArea();
+  PaintLayerScrollableArea* scroller = e->GetLayoutBox()->GetScrollableArea();
   scroller->SetScrollOffset(ScrollOffset(900, 800),
                             mojom::blink::ScrollType::kProgrammatic);
   ASSERT_EQ(ScrollOffset(900, 800), scroller->GetScrollOffset());

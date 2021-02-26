@@ -32,6 +32,7 @@ GPURenderBundleEncoder* GPURenderBundleEncoder::Create(
         AsDawnEnum<WGPUTextureFormat>(webgpu_desc->depthStencilFormat());
   }
 
+  std::string label;
   WGPURenderBundleEncoderDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.colorFormatsCount = color_formats_count;
@@ -39,7 +40,8 @@ GPURenderBundleEncoder* GPURenderBundleEncoder::Create(
   dawn_desc.depthStencilFormat = depth_stencil_format;
   dawn_desc.sampleCount = webgpu_desc->sampleCount();
   if (webgpu_desc->hasLabel()) {
-    dawn_desc.label = webgpu_desc->label().Utf8().data();
+    label = webgpu_desc->label().Utf8();
+    dawn_desc.label = label.c_str();
   }
 
   return MakeGarbageCollected<GPURenderBundleEncoder>(
@@ -90,8 +92,8 @@ void GPURenderBundleEncoder::setBindGroup(
 }
 
 void GPURenderBundleEncoder::pushDebugGroup(String groupLabel) {
-  GetProcs().renderBundleEncoderPushDebugGroup(GetHandle(),
-                                               groupLabel.Utf8().data());
+  std::string label = groupLabel.Utf8();
+  GetProcs().renderBundleEncoderPushDebugGroup(GetHandle(), label.c_str());
 }
 
 void GPURenderBundleEncoder::popDebugGroup() {
@@ -99,8 +101,8 @@ void GPURenderBundleEncoder::popDebugGroup() {
 }
 
 void GPURenderBundleEncoder::insertDebugMarker(String markerLabel) {
-  GetProcs().renderBundleEncoderInsertDebugMarker(GetHandle(),
-                                                  markerLabel.Utf8().data());
+  std::string label = markerLabel.Utf8();
+  GetProcs().renderBundleEncoderInsertDebugMarker(GetHandle(), label.c_str());
 }
 
 void GPURenderBundleEncoder::setPipeline(GPURenderPipeline* pipeline) {
@@ -110,8 +112,26 @@ void GPURenderBundleEncoder::setPipeline(GPURenderPipeline* pipeline) {
 void GPURenderBundleEncoder::setIndexBuffer(GPUBuffer* buffer,
                                             uint64_t offset,
                                             uint64_t size) {
+  device_->AddConsoleWarning(
+      "Calling setIndexBuffer without a GPUIndexFormat is deprecated.");
   GetProcs().renderBundleEncoderSetIndexBuffer(GetHandle(), buffer->GetHandle(),
                                                offset, size);
+}
+
+void GPURenderBundleEncoder::setIndexBuffer(GPUBuffer* buffer,
+                                            const WTF::String& format,
+                                            uint64_t offset,
+                                            uint64_t size,
+                                            ExceptionState& exception_state) {
+  if (format != "uint16" && format != "uint32") {
+    exception_state.ThrowTypeError(
+        "The provided value '" + format +
+        "' is not a valid enum value of type GPUIndexFormat.");
+    return;
+  }
+  GetProcs().renderBundleEncoderSetIndexBufferWithFormat(
+      GetHandle(), buffer->GetHandle(), AsDawnEnum<WGPUIndexFormat>(format),
+      offset, size);
 }
 
 void GPURenderBundleEncoder::setVertexBuffer(uint32_t slot,
@@ -130,6 +150,14 @@ void GPURenderBundleEncoder::draw(uint32_t vertexCount,
                                      firstVertex, firstInstance);
 }
 
+void GPURenderBundleEncoder::draw(uint32_t vertexCount,
+                                  uint32_t instanceCount,
+                                  uint32_t firstVertex,
+                                  uint32_t firstInstance,
+                                  v8::FastApiCallbackOptions& options) {
+  draw(vertexCount, instanceCount, firstVertex, firstInstance);
+}
+
 void GPURenderBundleEncoder::drawIndexed(uint32_t indexCount,
                                          uint32_t instanceCount,
                                          uint32_t firstIndex,
@@ -138,6 +166,15 @@ void GPURenderBundleEncoder::drawIndexed(uint32_t indexCount,
   GetProcs().renderBundleEncoderDrawIndexed(GetHandle(), indexCount,
                                             instanceCount, firstIndex,
                                             baseVertex, firstInstance);
+}
+
+void GPURenderBundleEncoder::drawIndexed(uint32_t indexCount,
+                                         uint32_t instanceCount,
+                                         uint32_t firstIndex,
+                                         int32_t baseVertex,
+                                         uint32_t firstInstance,
+                                         v8::FastApiCallbackOptions& options) {
+  drawIndexed(indexCount, instanceCount, firstIndex, baseVertex, firstInstance);
 }
 
 void GPURenderBundleEncoder::drawIndirect(GPUBuffer* indirectBuffer,
@@ -154,10 +191,12 @@ void GPURenderBundleEncoder::drawIndexedIndirect(GPUBuffer* indirectBuffer,
 
 GPURenderBundle* GPURenderBundleEncoder::finish(
     const GPURenderBundleDescriptor* webgpu_desc) {
+  std::string label;
   WGPURenderBundleDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   if (webgpu_desc->hasLabel()) {
-    dawn_desc.label = webgpu_desc->label().Utf8().data();
+    label = webgpu_desc->label().Utf8();
+    dawn_desc.label = label.c_str();
   }
 
   WGPURenderBundle render_bundle =

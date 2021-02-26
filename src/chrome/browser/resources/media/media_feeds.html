@@ -14,6 +14,7 @@
   <script src="chrome://resources/mojo/url/mojom/url.mojom-lite.js"></script>
   <script src="ui/gfx/geometry/mojom/geometry.mojom-lite.js"></script>
   <script src="services/media_session/public/mojom/media_session.mojom-lite.js"></script>
+  <script src="chrome://resources/js/assert.js"></script>
   <script src="chrome://resources/js/util.js"></script>
 
   <script src="chrome/browser/media/feeds/media_feeds_store.mojom-lite.js">
@@ -79,6 +80,10 @@
     th[sort-reverse].sort-column::after {
       content: '▼';
       position: absolute;
+    }
+
+    div#fetch-logs-content {
+      color: red;
     }
   </style>
 </head>
@@ -147,8 +152,11 @@
         <th sort-key="resetReason">
           Reset Reason
         </th>
-        <th data-key="associatedOrigins">
-          Associated Origins
+        <th data-key="cookieNameFilter">
+          Cookie Name Filter
+        </th>
+        <th data-key="safeSearchResult">
+          Safe Search Result
         </th>
         <th data-key="logos">
           Logos
@@ -233,6 +241,10 @@
       <tbody>
       </tbody>
     </table>
+    <div id="fetch-logs">
+      <h3>Fetch logs:</h3>
+      <div id="fetch-logs-content"></div>
+    </div>
   </div>
 </body>
 </html>

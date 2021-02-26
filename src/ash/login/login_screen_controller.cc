@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/focus_cycler.h"
-#include "ash/login/parent_access_controller.h"
 #include "ash/login/security_token_request_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
@@ -136,41 +135,6 @@ void LoginScreenController::AuthenticateUserWithPasswordOrPin(
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void LoginScreenController::AuthenticateUserWithExternalBinary(
-    const AccountId& account_id,
-    OnAuthenticateCallback callback) {
-  // It is an error to call this function while an authentication is in
-  // progress.
-  LOG_IF(FATAL, IsAuthenticating())
-      << "Duplicate authentication attempt; current authentication stage is "
-      << static_cast<int>(authentication_stage_);
-
-  if (!client_) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-
-  authentication_stage_ = AuthenticationStage::kDoAuthenticate;
-  client_->AuthenticateUserWithExternalBinary(
-      account_id,
-      base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void LoginScreenController::EnrollUserWithExternalBinary(
-    OnAuthenticateCallback callback) {
-  if (!client_) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-
-  client_->EnrollUserWithExternalBinary(base::BindOnce(
-      [](OnAuthenticateCallback callback, bool success) {
-        std::move(callback).Run(base::make_optional<bool>(success));
-      },
-      std::move(callback)));
-}
-
 void LoginScreenController::AuthenticateUserWithEasyUnlock(
     const AccountId& account_id) {
   // TODO(jdufault): integrate this into authenticate stage after mojom is
@@ -276,12 +240,6 @@ void LoginScreenController::ShowGaiaSignin(const AccountId& prefilled_account) {
   client_->ShowGaiaSignin(prefilled_account);
 }
 
-void LoginScreenController::HideGaiaSignin() {
-  if (!client_)
-    return;
-  client_->HideGaiaSignin();
-}
-
 void LoginScreenController::OnRemoveUserWarningShown() {
   if (!client_)
     return;
@@ -311,12 +269,6 @@ void LoginScreenController::RequestPublicSessionKeyboardLayouts(
   client_->RequestPublicSessionKeyboardLayouts(account_id, locale);
 }
 
-void LoginScreenController::ShowFeedback() {
-  if (!client_)
-    return;
-  client_->ShowFeedback();
-}
-
 void LoginScreenController::SetClient(LoginScreenClient* client) {
   client_ = client;
 }
@@ -337,7 +289,7 @@ void LoginScreenController::FocusLoginShelf(bool reverse) {
   Shelf* shelf = Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow());
   // Tell the focus direction to the status area or the shelf so they can focus
   // the correct child view.
-  if (reverse) {
+  if (reverse || !shelf->shelf_widget()->login_shelf_view()->IsFocusable()) {
     if (!Shell::GetPrimaryRootWindowController()->IsSystemTrayVisible())
       return;
     shelf->GetStatusAreaWidget()
@@ -368,11 +320,11 @@ void LoginScreenController::EnableShutdownButton(bool enable) {
       ->SetShutdownButtonEnabled(enable);
 }
 
-void LoginScreenController::ShowGuestButtonInOobe(bool show) {
+void LoginScreenController::SetIsFirstSigninStep(bool is_first) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
       ->login_shelf_view()
-      ->ShowGuestButtonInOobe(show);
+      ->SetIsFirstSigninStep(is_first);
 }
 
 void LoginScreenController::ShowParentAccessButton(bool show) {
@@ -395,18 +347,6 @@ LoginScreenController::GetScopedGuestButtonBlocker() {
       ->shelf_widget()
       ->login_shelf_view()
       ->GetScopedGuestButtonBlocker();
-}
-
-void LoginScreenController::ShowParentAccessWidget(
-    const AccountId& child_account_id,
-    base::OnceCallback<void(bool success)> callback,
-    ParentAccessRequestReason reason,
-    bool extra_dimmer,
-    base::Time validation_time) {
-  DCHECK(!PinRequestWidget::Get());
-  Shell::Get()->parent_access_controller()->ShowWidget(
-      child_account_id, std::move(callback), reason, extra_dimmer,
-      validation_time);
 }
 
 void LoginScreenController::RequestSecurityTokenPin(
@@ -440,11 +380,12 @@ void LoginScreenController::ShowLockScreen() {
 
 void LoginScreenController::ShowLoginScreen() {
   // Login screen can only be used during login.
-  CHECK_EQ(session_manager::SessionState::LOGIN_PRIMARY,
-           Shell::Get()->session_controller()->GetSessionState())
+  session_manager::SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+  CHECK(session_state == session_manager::SessionState::LOGIN_PRIMARY ||
+        session_state == session_manager::SessionState::LOGIN_SECONDARY)
       << "Not showing login screen since session state is "
-      << static_cast<int>(
-             Shell::Get()->session_controller()->GetSessionState());
+      << static_cast<int>(session_state);
 
   OnShow();
   // TODO(jdufault): rename LockScreen to LoginScreen.
@@ -453,15 +394,19 @@ void LoginScreenController::ShowLoginScreen() {
 
 void LoginScreenController::SetKioskApps(
     const std::vector<KioskAppMenuEntry>& kiosk_apps,
-    const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app) {
+    const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
+    const base::RepeatingClosure& on_show_menu) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
       ->login_shelf_view()
-      ->SetKioskApps(kiosk_apps, launch_app);
+      ->SetKioskApps(kiosk_apps, launch_app, on_show_menu);
 }
 
-void LoginScreenController::ShowResetScreen() {
-  client_->ShowResetScreen();
+void LoginScreenController::HandleAccelerator(
+    ash::LoginAcceleratorAction action) {
+  if (!client_)
+    return;
+  client_->HandleAccelerator(action);
 }
 
 void LoginScreenController::ShowAccountAccessHelpApp(
@@ -518,6 +463,12 @@ void LoginScreenController::OnFocusLeavingSystemTray(bool reverse) {
   if (!client_)
     return;
   client_->OnFocusLeavingSystemTray(reverse);
+}
+
+void LoginScreenController::NotifyLoginScreenShown() {
+  if (!client_)
+    return;
+  client_->OnLoginScreenShown();
 }
 
 }  // namespace ash

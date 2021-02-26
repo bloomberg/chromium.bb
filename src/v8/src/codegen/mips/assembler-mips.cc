@@ -307,6 +307,15 @@ Assembler::Assembler(const AssemblerOptions& options,
 void Assembler::GetCode(Isolate* isolate, CodeDesc* desc,
                         SafepointTableBuilder* safepoint_table_builder,
                         int handler_table_offset) {
+  // As a crutch to avoid having to add manual Align calls wherever we use a
+  // raw workflow to create Code objects (mostly in tests), add another Align
+  // call here. It does no harm - the end of the Code object is aligned to the
+  // (larger) kCodeAlignment anyways.
+  // TODO(jgruber): Consider moving responsibility for proper alignment to
+  // metadata table builders (safepoint, handler, constant pool, code
+  // comments).
+  DataAlign(Code::kMetadataAlignment);
+
   EmitForbiddenSlotInstruction();
 
   int code_comments_size = WriteCodeComments();
@@ -3550,6 +3559,7 @@ void Assembler::GrowBuffer() {
   buffer_ = std::move(new_buffer);
   buffer_start_ = new_start;
   pc_ += pc_delta;
+  last_call_pc_ += pc_delta;
   reloc_info_writer.Reposition(reloc_info_writer.pos() + rc_delta,
                                reloc_info_writer.last_pc() + pc_delta);
 
@@ -3568,17 +3578,20 @@ void Assembler::GrowBuffer() {
 
 void Assembler::db(uint8_t data) {
   CheckForEmitInForbiddenSlot();
-  EmitHelper(data);
+  *reinterpret_cast<uint8_t*>(pc_) = data;
+  pc_ += sizeof(uint8_t);
 }
 
 void Assembler::dd(uint32_t data) {
   CheckForEmitInForbiddenSlot();
-  EmitHelper(data);
+  *reinterpret_cast<uint32_t*>(pc_) = data;
+  pc_ += sizeof(uint32_t);
 }
 
 void Assembler::dq(uint64_t data) {
   CheckForEmitInForbiddenSlot();
-  EmitHelper(data);
+  *reinterpret_cast<uint64_t*>(pc_) = data;
+  pc_ += sizeof(uint64_t);
 }
 
 void Assembler::dd(Label* label) {
@@ -3652,8 +3665,12 @@ void Assembler::CheckTrampolinePool() {
           }
         }
       }
-      bind(&after_pool);
+      // If unbound_labels_count_ is big enough, label after_pool will
+      // need a trampoline too, so we must create the trampoline before
+      // the bind operation to make sure function 'bind' can get this
+      // information.
       trampoline_ = Trampoline(pool_start, unbound_labels_count_);
+      bind(&after_pool);
 
       trampoline_emitted_ = true;
       // As we are only going to emit trampoline once, we need to prevent any
@@ -3794,6 +3811,7 @@ void Assembler::GenPCRelativeJumpAndLink(Register t, int32_t imm32,
   addu(t, ra, t);
   jalr(t);
   if (bdslot == PROTECT) nop();
+  set_last_call_pc_(pc_);
 }
 
 UseScratchRegisterScope::UseScratchRegisterScope(Assembler* assembler)

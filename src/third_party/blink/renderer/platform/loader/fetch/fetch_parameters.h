@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_PARAMETERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_PARAMETERS_H_
 
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
@@ -39,6 +40,7 @@
 
 namespace blink {
 
+class DOMWrapperWorld;
 class SecurityOrigin;
 
 // A FetchParameters is a "parameter object" for
@@ -72,7 +74,9 @@ class PLATFORM_EXPORT FetchParameters {
     ResourceWidth() : width(0), is_set(false) {}
   };
 
-  explicit FetchParameters(ResourceRequest);
+  static FetchParameters CreateForTest(ResourceRequest);
+
+  FetchParameters(ResourceRequest, scoped_refptr<const DOMWrapperWorld> world);
   FetchParameters(ResourceRequest, const ResourceLoaderOptions&);
   FetchParameters(const FetchParameters&) = delete;
   FetchParameters& operator=(const FetchParameters&) = delete;
@@ -85,7 +89,7 @@ class PLATFORM_EXPORT FetchParameters {
   }
   const KURL& Url() const { return resource_request_.Url(); }
 
-  void SetRequestContext(mojom::RequestContextType context) {
+  void SetRequestContext(mojom::blink::RequestContextType context) {
     resource_request_.SetRequestContext(context);
   }
 

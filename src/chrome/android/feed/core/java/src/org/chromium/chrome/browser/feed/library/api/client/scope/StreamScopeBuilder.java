@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.client.scope;
 
-import android.content.Context;
+import android.app.Activity;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.ApplicationInfo;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -40,11 +39,12 @@ import org.chromium.chrome.browser.feed.library.feedmodelprovider.FeedModelProvi
 import org.chromium.chrome.browser.feed.library.piet.host.CustomElementProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.HostBindingProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.ThrowingCustomElementProvider;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 
 /** A builder that creates a {@link StreamScope}. */
 public final class StreamScopeBuilder {
     // Required external dependencies.
-    private final Context mContext;
+    private final Activity mActivity;
     private final ActionApi mActionApi;
     private final ImageLoaderApi mImageLoaderApi;
 
@@ -68,6 +68,7 @@ public final class StreamScopeBuilder {
     private final ApplicationInfo mApplicationInfo;
     private final FeedExtensionRegistry mFeedExtensionRegistry;
     private boolean mIsBackgroundDark;
+    private boolean mIsPlaceholderShown;
 
     // Optional internal components to override the default implementations.
     private ActionParserFactory mActionParserFactory;
@@ -78,7 +79,7 @@ public final class StreamScopeBuilder {
     private HostBindingProvider mHostBindingProvider;
 
     /** Construct this builder using {@link ProcessScope#createStreamScopeBuilder} */
-    public StreamScopeBuilder(Context context, ActionApi actionApi, ImageLoaderApi imageLoaderApi,
+    public StreamScopeBuilder(Activity activity, ActionApi actionApi, ImageLoaderApi imageLoaderApi,
             ProtocolAdapter protocolAdapter, FeedSessionManager feedSessionManager,
             ThreadUtils threadUtils, TimingUtils timingUtils, TaskQueue taskQueue,
             MainThreadRunner mainThreadRunner, Clock clock, DebugBehavior debugBehavior,
@@ -88,7 +89,7 @@ public final class StreamScopeBuilder {
             FeedKnownContent feedKnownContent, TooltipApi tooltipApi,
             TooltipSupportedApi tooltipSupportedApi, ApplicationInfo applicationInfo,
             FeedExtensionRegistry feedExtensionRegistry) {
-        this.mContext = context;
+        this.mActivity = activity;
         this.mActionApi = actionApi;
         this.mImageLoaderApi = imageLoaderApi;
         this.mProtocolAdapter = protocolAdapter;
@@ -114,6 +115,11 @@ public final class StreamScopeBuilder {
 
     public StreamScopeBuilder setIsBackgroundDark(boolean isBackgroundDark) {
         this.mIsBackgroundDark = isBackgroundDark;
+        return this;
+    }
+
+    public StreamScopeBuilder setIsPlaceholderShown(boolean isPlaceholderShown) {
+        this.mIsPlaceholderShown = isPlaceholderShown;
         return this;
     }
 
@@ -155,14 +161,14 @@ public final class StreamScopeBuilder {
         if (mStreamFactory == null) {
             mStreamFactory = new BasicStreamFactory();
         }
-        mStream = mStreamFactory.build(Validators.checkNotNull(mActionParserFactory), mContext,
+        mStream = mStreamFactory.build(Validators.checkNotNull(mActionParserFactory), mActivity,
                 mApplicationInfo.getBuildType(), mCardConfiguration, mImageLoaderApi,
                 Validators.checkNotNull(mCustomElementProvider), mDebugBehavior, mClock,
                 Validators.checkNotNull(mModelProviderFactory),
                 Validators.checkNotNull(mHostBindingProvider), mOfflineIndicatorApi, mConfig,
                 mActionApi, mActionManager, mSnackbarApi, mStreamConfiguration,
                 mFeedExtensionRegistry, mBasicLoggingApi, mMainThreadRunner, mIsBackgroundDark,
-                mTooltipApi, mThreadUtils, mFeedKnownContent);
+                mTooltipApi, mThreadUtils, mFeedKnownContent, mIsPlaceholderShown);
         return new FeedStreamScope(
                 Validators.checkNotNull(mStream), Validators.checkNotNull(mModelProviderFactory));
     }

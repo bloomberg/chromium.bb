@@ -17,9 +17,9 @@
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 #include "components/autofill/content/browser/key_press_handler_manager.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -102,7 +102,6 @@ class PasswordGenerationPopupControllerImpl
   void GeneratedPasswordRejected();
 
   // content::WebContentsObserver overrides
-  void DidAttachInterstitialPage() override;
   void WebContentsDestroyed() override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -128,14 +127,17 @@ class PasswordGenerationPopupControllerImpl
  private:
   class KeyPressRegistrator;
   // PasswordGenerationPopupController implementation:
-  void Hide(autofill::PopupHidingReason reason) override;
+  void Hide(autofill::PopupHidingReason) override;
   void ViewDestroyed() override;
   void SelectionCleared() override;
   void SetSelected() override;
   void PasswordAccepted() override;
   gfx::NativeView container_view() const override;
+  content::WebContents* GetWebContents() const override;
   const gfx::RectF& element_bounds() const override;
   bool IsRTL() const override;
+
+  void HideImpl();
 
   GenerationUIState state() const override;
   bool password_selected() const override;

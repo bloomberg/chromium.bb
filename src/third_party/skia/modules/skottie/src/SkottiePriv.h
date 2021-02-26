@@ -14,6 +14,7 @@
 #include "include/core/SkString.h"
 #include "include/core/SkTypeface.h"
 #include "include/private/SkTHash.h"
+#include "include/utils/SkCustomTypeface.h"
 #include "modules/skottie/include/SkottieProperty.h"
 #include "modules/skottie/src/animator/Animator.h"
 #include "modules/sksg/include/SkSGScene.h"
@@ -63,10 +64,12 @@ public:
     AnimationInfo parse(const skjson::ObjectValue&);
 
     struct FontInfo {
-        SkString                  fFamily,
-                                  fStyle;
-        SkScalar                  fAscentPct;
-        sk_sp<SkTypeface>         fTypeface;
+        SkString                fFamily,
+                                fStyle,
+                                fPath;
+        SkScalar                fAscentPct;
+        sk_sp<SkTypeface>       fTypeface;
+        SkCustomTypefaceBuilder fCustomBuilder;
 
         bool matches(const char family[], const char style[]) const;
     };
@@ -74,8 +77,10 @@ public:
 
     void log(Logger::Level, const skjson::Value*, const char fmt[], ...) const;
 
-    sk_sp<sksg::Transform> attachMatrix2D(const skjson::ObjectValue&, sk_sp<sksg::Transform>) const;
-    sk_sp<sksg::Transform> attachMatrix3D(const skjson::ObjectValue&, sk_sp<sksg::Transform>) const;
+    sk_sp<sksg::Transform> attachMatrix2D(const skjson::ObjectValue&, sk_sp<sksg::Transform>,
+                                          bool auto_orient = false) const;
+    sk_sp<sksg::Transform> attachMatrix3D(const skjson::ObjectValue&, sk_sp<sksg::Transform>,
+                                          bool auto_orient = false) const;
 
     sk_sp<sksg::Transform> attachCamera(const skjson::ObjectValue& jlayer,
                                         const skjson::ObjectValue& jtransform,
@@ -182,12 +187,17 @@ private:
     void parseFonts (const skjson::ObjectValue* jfonts,
                      const skjson::ArrayValue* jchars);
 
+    // Return true iff all fonts were resolved.
+    bool resolveNativeTypefaces();
+    bool resolveEmbeddedTypefaces(const skjson::ArrayValue& jchars);
+
     void dispatchMarkers(const skjson::ArrayValue*) const;
 
     sk_sp<sksg::RenderNode> attachBlendMode(const skjson::ObjectValue&,
                                             sk_sp<sksg::RenderNode>) const;
 
-    sk_sp<sksg::RenderNode> attachShape(const skjson::ArrayValue*, AttachShapeContext*) const;
+    sk_sp<sksg::RenderNode> attachShape(const skjson::ArrayValue*, AttachShapeContext*,
+                                        bool suppress_draws = false) const;
     const FootageAssetInfo* loadFootageAsset(const skjson::ObjectValue&) const;
     sk_sp<sksg::RenderNode> attachFootageAsset(const skjson::ObjectValue&, LayerInfo*) const;
 
@@ -200,6 +210,7 @@ private:
     sk_sp<sksg::RenderNode> attachShapeLayer  (const skjson::ObjectValue&, LayerInfo*) const;
     sk_sp<sksg::RenderNode> attachSolidLayer  (const skjson::ObjectValue&, LayerInfo*) const;
     sk_sp<sksg::RenderNode> attachTextLayer   (const skjson::ObjectValue&, LayerInfo*) const;
+    sk_sp<sksg::RenderNode> attachAudioLayer  (const skjson::ObjectValue&, LayerInfo*) const;
 
     // Delay resolving the fontmgr until it is actually needed.
     struct LazyResolveFontMgr {

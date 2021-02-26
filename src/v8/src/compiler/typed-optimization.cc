@@ -181,7 +181,7 @@ Reduction TypedOptimization::ReduceMaybeGrowFastElements(Node* node) {
         simplified()->CheckBounds(FeedbackSource{},
                                   CheckBoundsFlag::kAbortOnOutOfBounds),
         index, length, effect, control);
-    ReplaceWithValue(node, elements);
+    ReplaceWithValue(node, elements, check_bounds);
     return Replace(check_bounds);
   }
 
@@ -813,7 +813,7 @@ Reduction TypedOptimization::ReduceJSToNumberInput(Node* input) {
 
   if (input_type.Is(Type::String())) {
     HeapObjectMatcher m(input);
-    if (m.HasValue() && m.Ref(broker()).IsString()) {
+    if (m.HasResolvedValue() && m.Ref(broker()).IsString()) {
       StringRef input_value = m.Ref(broker()).AsString();
       double number;
       ASSIGN_RETURN_NO_CHANGE_IF_DATA_MISSING(number, input_value.ToNumber());

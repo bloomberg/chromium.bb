@@ -49,7 +49,13 @@ class PLATFORM_EXPORT BaseConstraint {
  public:
   explicit BaseConstraint(const char* name);
   virtual ~BaseConstraint();
-  virtual bool IsEmpty() const = 0;
+
+  bool IsPresent() const { return is_present_ || !IsUnconstrained(); }
+  void SetIsPresent(bool is_present) { is_present_ = is_present; }
+
+  // true if the Cconstraint has neither Mandatory (min/max/exact) not Ideal
+  // values, false otherwise.
+  virtual bool IsUnconstrained() const = 0;
   bool HasMandatory() const;
   virtual bool HasMin() const { return false; }
   virtual bool HasMax() const { return false; }
@@ -59,6 +65,7 @@ class PLATFORM_EXPORT BaseConstraint {
 
  private:
   const char* name_;
+  bool is_present_ = false;
 };
 
 // Note this class refers to the "long" WebIDL definition which is
@@ -88,7 +95,7 @@ class PLATFORM_EXPORT LongConstraint : public BaseConstraint {
   }
 
   bool Matches(int32_t value) const;
-  bool IsEmpty() const override;
+  bool IsUnconstrained() const override;
   bool HasMin() const override { return has_min_; }
   bool HasMax() const override { return has_max_; }
   bool HasExact() const override { return has_exact_; }
@@ -140,7 +147,7 @@ class PLATFORM_EXPORT DoubleConstraint : public BaseConstraint {
   }
 
   bool Matches(double value) const;
-  bool IsEmpty() const override;
+  bool IsUnconstrained() const override;
   bool HasMin() const override { return has_min_; }
   bool HasMax() const override { return has_max_; }
   bool HasExact() const override { return has_exact_; }
@@ -177,7 +184,7 @@ class PLATFORM_EXPORT StringConstraint : public BaseConstraint {
   void SetIdeal(const Vector<String>& ideal) { ideal_ = ideal; }
 
   bool Matches(String value) const;
-  bool IsEmpty() const override;
+  bool IsUnconstrained() const override;
   bool HasExact() const override { return !exact_.IsEmpty(); }
   String ToString() const override;
   bool HasIdeal() const { return !ideal_.IsEmpty(); }
@@ -206,7 +213,7 @@ class PLATFORM_EXPORT BooleanConstraint : public BaseConstraint {
   }
 
   bool Matches(bool value) const;
-  bool IsEmpty() const override;
+  bool IsUnconstrained() const override;
   bool HasExact() const override { return has_exact_; }
   String ToString() const override;
   bool HasIdeal() const { return has_ideal_; }
@@ -280,7 +287,7 @@ struct MediaTrackConstraintSetPlatform {
   BooleanConstraint goog_payload_padding;
   LongConstraint goog_latency_ms;
 
-  PLATFORM_EXPORT bool IsEmpty() const;
+  PLATFORM_EXPORT bool IsUnconstrained() const;
   PLATFORM_EXPORT bool HasMandatory() const;
   PLATFORM_EXPORT bool HasMandatoryOutsideSet(const Vector<String>&,
                                               String&) const;
@@ -307,7 +314,7 @@ class MediaConstraints {
 
   PLATFORM_EXPORT void Reset();
   bool IsNull() const { return private_.IsNull(); }
-  PLATFORM_EXPORT bool IsEmpty() const;
+  PLATFORM_EXPORT bool IsUnconstrained() const;
 
   PLATFORM_EXPORT void Initialize();
   PLATFORM_EXPORT void Initialize(

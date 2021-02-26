@@ -14,17 +14,16 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "content/browser/frame_host/back_forward_cache_metrics.h"
-#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/dedicated_worker_id.h"
-#include "content/public/browser/shared_worker_id.h"
+#include "content/public/browser/service_worker_client_info.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/site_for_cookies.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
@@ -42,8 +41,8 @@ class ServiceWorkerObjectHostTest;
 }
 
 class ServiceWorkerContextCore;
+class ServiceWorkerHost;
 class ServiceWorkerObjectHost;
-class ServiceWorkerProviderHost;
 class ServiceWorkerRegistrationObjectHost;
 class ServiceWorkerVersion;
 
@@ -84,9 +83,9 @@ class ServiceWorkerVersion;
 // registration settles, if need.
 //
 // For service worker execution contexts, ServiceWorkerContainerHost is owned
-// by ServiceWorkerProviderHost, which in turn is owned by ServiceWorkerVersion.
-// The container host and provider host are destructed when the service worker
-// is stopped.
+// by ServiceWorkerHost, which in turn is owned by ServiceWorkerVersion. The
+// container host and worker host are destructed when the service worker is
+// stopped.
 class CONTENT_EXPORT ServiceWorkerContainerHost final
     : public blink::mojom::ServiceWorkerContainerHost,
       public ServiceWorkerRegistration::Listener {
@@ -111,9 +110,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
       int process_id,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
           container_remote,
-      blink::mojom::ServiceWorkerClientType client_type,
-      DedicatedWorkerId dedicated_worker_id,
-      SharedWorkerId shared_worker_id);
+      ServiceWorkerClientInfo client_info);
 
   ~ServiceWorkerContainerHost() override;
 
@@ -233,8 +230,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   blink::mojom::ServiceWorkerObjectInfoPtr CreateServiceWorkerObjectInfoToSend(
       scoped_refptr<ServiceWorkerVersion> version);
 
-  // Returns a ServiceWorkerObjectHost instance for |version| for this provider
-  // host. A new instance is created if one does not already exist.
+  // Returns a ServiceWorkerObjectHost instance for |version| for this
+  // container host. A new instance is created if one does not already exist.
   // ServiceWorkerObjectHost will have an ownership of the |version|.
   base::WeakPtr<ServiceWorkerObjectHost> GetOrCreateServiceWorkerObjectHost(
       scoped_refptr<ServiceWorkerVersion> version);
@@ -270,7 +267,13 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
       int container_frame_id,
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-          coep_reporter);
+          coep_reporter,
+      ukm::SourceId document_ukm_source_id);
+
+  // For service worker window clients. Called after the navigation commits to a
+  // render frame host. At this point, the previous ServiceWorkerContainerHost
+  // for that render frame host no longer exists.
+  void OnEndNavigationCommit();
 
   // For service worker clients that are shared workers or dedicated workers.
   // Called when the web worker main script resource has finished loading.
@@ -278,7 +281,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // After this is called, is_response_committed() and is_execution_ready()
   // return true.
   void CompleteWebWorkerPreparation(
-      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy);
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      ukm::SourceId worker_ukm_source_id);
 
   // Sets |url_|, |site_for_cookies_| and |top_frame_origin_|. For service
   // worker clients, updates the client uuid if it's a cross-origin transition.
@@ -360,7 +364,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
 
   // The URL representing the first-party site for this context.
   // For service worker execution contexts, top_frame_origin() always
-  // returns the origin of the service worker script URL.
+  // returns the origin of the service worker scope's URL.
   // For shared worker it is the origin of the document that created the worker.
   // For dedicated worker it is the top-frame origin of the document that owns
   // the worker.
@@ -375,7 +379,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // If non-empty, |script_url| is the script the service worker will run.
   bool AllowServiceWorker(const GURL& scope, const GURL& script_url);
 
-  // Returns whether this provider host is secure enough to have a service
+  // Returns whether this container host is secure enough to have a service
   // worker controller.
   // Analogous to Blink's Document::IsSecureContext. Because of how service
   // worker intercepts main resource requests, this check must be done
@@ -383,7 +387,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // ServiceWorkerNetworkProviderForFrame::Create). This function uses
   // |url_| and |is_parent_frame_secure_| to determine context security, so they
   // must be set properly before calling this function.
-  bool IsContextSecureForServiceWorker() const;
+  bool IsEligibleForServiceWorkerController() const;
 
   // For service worker clients. True if the response for the main resource load
   // was committed to the renderer. When this is false, the client's URL may
@@ -407,7 +411,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   base::TimeTicks create_time() const { return create_time_; }
   int process_id() const { return process_id_; }
   int frame_id() const { return frame_id_; }
-  int frame_tree_node_id() const { return frame_tree_node_id_; }
+  int frame_tree_node_id() const { return client_info_->GetFrameTreeNodeId(); }
 
   // For service worker clients.
   const std::string& client_uuid() const;
@@ -424,8 +428,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   ServiceWorkerRegistration* controller_registration() const;
 
   // For service worker execution contexts.
-  void set_service_worker_host(ServiceWorkerProviderHost* service_worker_host);
-  ServiceWorkerProviderHost* service_worker_host();
+  void set_service_worker_host(ServiceWorkerHost* service_worker_host);
+  ServiceWorkerHost* service_worker_host();
 
   // BackForwardCache:
   // For service worker clients that are windows.
@@ -439,10 +443,27 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // OnRestoreFromBackForwardCache will not be called.
   void OnRestoreFromBackForwardCache();
 
+  bool navigation_commit_ended() const { return navigation_commit_ended_; }
+
   void EnterBackForwardCacheForTesting() { is_in_back_forward_cache_ = true; }
   void LeaveBackForwardCacheForTesting() { is_in_back_forward_cache_ = false; }
 
+  // For service worker clients. Returns the URL that is used for scope matching
+  // algorithm. This can be different from url() in the case of blob URL
+  // workers. In that case, url() may be like "blob://https://a.test" and the
+  // scope matching URL is "https://a.test", inherited from the parent container
+  // host.
+  const GURL& GetUrlForScopeMatch() const;
+
+  // For service worker clients that are dedicated workers. Inherits the
+  // controller of the creator document or worker. Used when the client was
+  // created with a blob URL.
+  void InheritControllerFrom(ServiceWorkerContainerHost& creator_host,
+                             const GURL& blob_url);
+
   base::WeakPtr<ServiceWorkerContainerHost> GetWeakPtr();
+
+  ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
 
  private:
   friend class ServiceWorkerContainerHostTest;
@@ -615,7 +636,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
       std::map<size_t, scoped_refptr<ServiceWorkerRegistration>>;
   // Contains all living registrations whose scope this client's URL starts
   // with, used for .ready and claim(). It is empty if
-  // IsContextSecureForServiceWorker() is false. See also
+  // IsEligibleForServiceWorkerController() is false. See also
   // AddMatchingRegistration().
   ServiceWorkerRegistrationMap matching_registrations_;
 
@@ -644,12 +665,16 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainer> container_;
 
   // The type of client.
-  const base::Optional<blink::mojom::ServiceWorkerClientType> client_type_;
+  const base::Optional<ServiceWorkerClientInfo> client_info_;
+
+  // The source id of the client's ExecutionContext, set on response commit.
+  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
+
+  // The URL used for service worker scope matching. It is empty except in the
+  // case of a service worker client with a blob URL.
+  GURL scope_match_url_for_blob_client_;
 
   // For window clients only ---------------------------------------------------
-
-  // The ID of the frame tree node where the navigation occurs.
-  const int frame_tree_node_id_ = FrameTreeNode::kFrameTreeNodeInvalidId;
 
   // A token used internally to identify this context in requests. Corresponds
   // to the Fetch specification's concept of a request's associated window:
@@ -680,18 +705,13 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // and RenderFrameHost have the same lifetime.
   bool is_in_back_forward_cache_ = false;
 
-  // For worker clients only ---------------------------------------------------
-
-  // The ID of the client, if the client is a dedicated worker.
-  DedicatedWorkerId dedicated_worker_id_;
-
-  // The ID of the client, if the client is a shared worker.
-  SharedWorkerId shared_worker_id_;
+  // Indicates if OnEndNavigationCommit() was called on this container host.
+  bool navigation_commit_ended_ = false;
 
   // For service worker execution contexts -------------------------------------
 
-  // The ServiceWorkerProviderHost that owns |this|.
-  ServiceWorkerProviderHost* service_worker_host_ = nullptr;
+  // The ServiceWorkerHost that owns |this|.
+  ServiceWorkerHost* service_worker_host_ = nullptr;
 
   base::WeakPtrFactory<ServiceWorkerContainerHost> weak_factory_{this};
 };

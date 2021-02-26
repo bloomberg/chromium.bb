@@ -218,6 +218,8 @@ To<Longhand>(resolved_property).{{apply_call}};
     {% set animation = 'Animation' if property.style_builder_template == 'animation' else 'Transition' %}
     {% set vector = attribute + "List()" %}
     {% call(property) apply_initial(property) %}
+  if (!state.Style()->{{animation}}s())
+    return;
   CSS{{animation}}Data& data = state.Style()->Access{{animation}}s();
   data.{{vector}}.clear();
   data.{{vector}}.push_back(CSS{{animation}}Data::Initial{{attribute}}());
@@ -304,13 +306,11 @@ To<Longhand>(resolved_property).{{apply_call}};
     {% set is_visited = property.style_builder_template == 'visited_color' %}
     {% set main_getter = is_visited and property.unvisited_property.getter or property.getter %}
     {% call(property) apply_initial(property) %}
-  auto color = {{initial_color}}();
-  {{set_value(property)}}(color);
+  {{set_value(property)}}({{initial_color}}());
     {% endcall %}
 
     {% call(property) apply_inherit(property) %}
-  auto color = state.ParentStyle()->{{main_getter}}();
-  {{set_value(property)}}(color);
+  {{set_value(property)}}(state.ParentStyle()->{{main_getter}}());
     {% endcall %}
 
     {% call(property) apply_value(property) %}
@@ -359,8 +359,10 @@ To<Longhand>(resolved_property).{{apply_call}};
     map.insert(identifier, CounterDirectives()).stored_value->value;
         {% if action == 'Reset' %}
     directives.SetResetValue(counter_value);
-        {% else %}
+        {% elif action == 'Increment' %}
     directives.AddIncrementValue(counter_value);
+        {% else %}
+    directives.SetSetValue(counter_value);
         {% endif %}
   }
   DCHECK(!map.IsEmpty());
@@ -390,7 +392,7 @@ To<Longhand>(resolved_property).{{apply_call}};
     {% endcall %}
 
     {% call(property) apply_value(property) %}
-  Vector<GridTrackSize> track_sizes;
+  GridTrackList track_sizes;
   Vector<GridTrackSize> auto_repeat_track_sizes;
   NamedGridLinesMap named_grid_lines;
   OrderedNamedGridLines ordered_named_grid_lines;

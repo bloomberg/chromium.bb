@@ -4,6 +4,8 @@
 
 #include "cc/paint/scoped_raster_flags.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "cc/paint/paint_op_buffer.h"
@@ -28,8 +30,8 @@ class MockImageProvider : public ImageProvider {
     sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
 
     return ScopedResult(
-        DecodedDrawImage(image, SkSize::MakeEmpty(), SkSize::Make(1.0f, 1.0f),
-                         draw_image.filter_quality(), true),
+        DecodedDrawImage(image, nullptr, SkSize::MakeEmpty(),
+                         SkSize::Make(1.0f, 1.0f), draw_image.filter_quality()),
         base::BindOnce(&MockImageProvider::UnrefImage, base::Unretained(this)));
   }
 
@@ -131,13 +133,13 @@ TEST(ScopedRasterFlagsTest, ThinAliasedStroke) {
     uint8_t expect_alpha;
   } tests[] = {
       // No downscaling                    => no stroke change.
-      {SkMatrix::MakeScale(1.0f, 1.0f), 255, true, false, 1.0f, 0xFF},
+      {SkMatrix::Scale(1.0f, 1.0f), 255, true, false, 1.0f, 0xFF},
       // Symmetric downscaling             => modulated hairline stroke.
-      {SkMatrix::MakeScale(0.5f, 0.5f), 255, false, false, 0.0f, 0x80},
+      {SkMatrix::Scale(0.5f, 0.5f), 255, false, false, 0.0f, 0x80},
       // Symmetric downscaling w/ alpha    => modulated hairline stroke.
-      {SkMatrix::MakeScale(0.5f, 0.5f), 127, false, false, 0.0f, 0x40},
+      {SkMatrix::Scale(0.5f, 0.5f), 127, false, false, 0.0f, 0x40},
       // Anisotropic scaling              => AA stroke.
-      {SkMatrix::MakeScale(0.5f, 1.5f), 255, false, true, 1.0f, 0xFF},
+      {SkMatrix::Scale(0.5f, 1.5f), 255, false, true, 1.0f, 0xFF},
   };
 
   for (const auto& test : tests) {

@@ -18,8 +18,6 @@ class Event;
 class MODULES_EXPORT DeviceOrientationController
     : public DeviceSingleWindowEventController,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationController);
-
  public:
   static const char kSupplementName[];
 
@@ -36,10 +34,10 @@ class MODULES_EXPORT DeviceOrientationController
   void SetOverride(DeviceOrientationData*);
   void ClearOverride();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   static void LogToConsolePolicyFeaturesDisabled(
-      LocalFrame*,
+      LocalFrame&,
       const AtomicString& event_name);
 
  protected:

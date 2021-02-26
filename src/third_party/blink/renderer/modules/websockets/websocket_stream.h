@@ -38,7 +38,6 @@ class MODULES_EXPORT WebSocketStream final
       public ExecutionContextLifecycleObserver,
       public WebSocketChannelClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(WebSocketStream);
 
  public:
   // IDL constructors
@@ -83,7 +82,7 @@ class MODULES_EXPORT WebSocketStream final
   // Implementation of ActiveScriptWrappable.
   bool HasPendingActivity() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class UnderlyingSource;

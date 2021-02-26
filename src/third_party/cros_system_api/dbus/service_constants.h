@@ -10,11 +10,13 @@
 // We use relative includes here to make this compatible with both the
 // Chromium OS and Chromium environment.
 #include "anomaly_detector/dbus-constants.h"
+#include "arc-data-snapshotd/dbus-constants.h"
 #include "authpolicy/dbus-constants.h"
 #include "biod/dbus-constants.h"
 #include "bluetooth/dbus-constants.h"
 #include "bootlockbox/dbus-constants.h"
 #include "cecservice/dbus-constants.h"
+#include "cfm/dbus-constants.h"
 #include "chunneld/dbus-constants.h"
 #include "cros-disks/dbus-constants.h"
 #include "cros_healthd/dbus-constants.h"
@@ -26,6 +28,7 @@
 #include "ip_peripheral/dbus-constants.h"
 #include "login_manager/dbus-constants.h"
 #include "lorgnette/dbus-constants.h"
+#include "ocr/dbus-constants.h"
 #include "oobe_config/dbus-constants.h"
 #include "patchpanel/dbus-constants.h"
 #include "permission_broker/dbus-constants.h"
@@ -175,6 +178,17 @@ const char kScreenLockServiceInterface[] =
     "org.chromium.ScreenLockServiceInterface";
 const char kScreenLockServiceShowLockScreenMethod[] = "ShowLockScreen";
 
+const char kUserAuthenticationServiceName[] =
+    "org.chromium.UserAuthenticationService";
+const char kUserAuthenticationServicePath[] =
+    "/org/chromium/UserAuthenticationService";
+const char kUserAuthenticationServiceInterface[] =
+    "org.chromium.UserAuthenticationServiceInterface";
+const char kUserAuthenticationServiceShowAuthDialogMethod[] = "ShowAuthDialog";
+const char kUserAuthenticationServiceCancelMethod[] = "Cancel";
+const char kUserAuthenticationServiceIsAuthenticatorAvailableMethod[] =
+    "IsAuthenticatorAvailable";
+
 constexpr char kVirtualFileRequestServiceName[] =
     "org.chromium.VirtualFileRequestService";
 constexpr char kVirtualFileRequestServicePath[] =
@@ -190,14 +204,16 @@ const char kChromeFeaturesServiceName[] = "org.chromium.ChromeFeaturesService";
 const char kChromeFeaturesServicePath[] = "/org/chromium/ChromeFeaturesService";
 const char kChromeFeaturesServiceInterface[] =
     "org.chromium.ChromeFeaturesServiceInterface";
-const char kChromeFeaturesServiceIsFeatureEnabledMethod[] =
-    "IsFeatureEnabled";
+const char kChromeFeaturesServiceIsFeatureEnabledMethod[] = "IsFeatureEnabled";
 const char kChromeFeaturesServiceIsCrostiniEnabledMethod[] =
     "IsCrostiniEnabled";
 const char kChromeFeaturesServiceIsCryptohomeDistributedModelEnabledMethod[] =
     "IsCryptohomeDistributedModelEnabled";
 const char kChromeFeaturesServiceIsCryptohomeUserDataAuthEnabledMethod[] =
     "IsCryptohomeUserDataAuthEnabled";
+const char
+    kChromeFeaturesServiceIsCryptohomeUserDataAuthKillswitchEnabledMethod[] =
+        "IsCryptohomeUserDataAuthKillswitchEnabled";
 const char kChromeFeaturesServiceIsPluginVmEnabledMethod[] =
     "IsPluginVmEnabled";
 const char kChromeFeaturesServiceIsUsbguardEnabledMethod[] =
@@ -247,6 +263,16 @@ constexpr char kMlDecisionServiceInterface[] = "org.chromium.MlDecisionService";
 constexpr char kMlDecisionServiceShouldDeferScreenDimMethod[] =
     "ShouldDeferScreenDim";
 
+const char kVmPermissionServiceName[] = "org.chromium.VmPermissionService";
+const char kVmPermissionServicePath[] = "/org/chromium/VmPermissionService";
+const char kVmPermissionServiceInterface[] =
+    "org.chromium.VmPermissionServiceInterface";
+
+const char kVmPermissionServiceRegisterVmMethod[] = "RegisterVm";
+const char kVmPermissionServiceUnregisterVmMethod[] = "UnregisterVm";
+const char kVmPermissionServiceGetPermissionsMethod[] = "GetPermissions";
+const char kVmPermissionServiceSetPermissionsMethod[] = "SetPermissions";
+
 }  // namespace chromeos
 
 namespace media_perception {
@@ -284,8 +310,7 @@ const char kModemManager1ModemInterface[] =
     "org.freedesktop.ModemManager1.Modem";
 const char kModemManager1MessagingInterface[] =
     "org.freedesktop.ModemManager1.Modem.Messaging";
-const char kModemManager1SmsInterface[] =
-    "org.freedesktop.ModemManager1.Sms";
+const char kModemManager1SmsInterface[] = "org.freedesktop.ModemManager1.Sms";
 const char kSMSAddedSignal[] = "Added";
 }  // namespace modemmanager
 
@@ -378,6 +403,8 @@ const char kSetPlayerPosition[] = "SetPlayerPosition";
 const char kSetPlayerMetadata[] = "SetPlayerMetadata";
 const char kSetNextHandsfreeProfile[] = "SetNextHandsfreeProfile";
 const char kSetFixA2dpPacketSize[] = "SetFixA2dpPacketSize";
+const char kResendBluetoothBattery[] = "ResendBluetoothBattery";
+const char kGetDeprioritizeBtWbsMic[] = "GetDeprioritizeBtWbsMic";
 
 // Names of properties returned by GetNodes()
 const char kIsInputProperty[] = "IsInput";
@@ -387,7 +414,6 @@ const char kNameProperty[] = "Name";
 const char kDeviceNameProperty[] = "DeviceName";
 const char kActiveProperty[] = "Active";
 const char kPluggedTimeProperty[] = "PluggedTime";
-const char kMicPositionsProperty[] = "MicPositions";
 const char kStableDeviceIdProperty[] = "StableDeviceId";
 const char kStableDeviceIdNewProperty[] = "StableDeviceIdNew";
 const char kMaxSupportedChannelsProperty[] = "MaxSupportedChannels";
@@ -443,13 +469,16 @@ const char kCreateSecureMessageMethod[] = "CreateSecureMessage";
 const char kUnwrapSecureMessageMethod[] = "UnwrapSecureMessage";
 }  // namespace easy_unlock
 
-namespace arc_oemcrypto {
-const char kArcOemCryptoServiceInterface[] = "org.chromium.ArcOemCrypto";
-const char kArcOemCryptoServiceName[] = "org.chromium.ArcOemCrypto";
-const char kArcOemCryptoServicePath[] = "/org/chromium/ArcOemCrypto";
+namespace cdm_oemcrypto {
+const char kCdmFactoryDaemonServiceInterface[] =
+    "org.chromium.CdmFactoryDaemon";
+const char kCdmFactoryDaemonServiceName[] = "org.chromium.CdmFactoryDaemon";
+const char kCdmFactoryDaemonServicePath[] = "/org/chromium/CdmFactoryDaemon";
 // Methods
 const char kBootstrapMojoConnection[] = "BootstrapMojoConnection";
-}  // namespace arc_oemcrypto
+const char kBootstrapCdmFactoryDaemonMojoConnection[] =
+    "BootstrapCdmFactoryDaemonMojoConnection";
+}  // namespace cdm_oemcrypto
 
 namespace midis {
 constexpr char kMidisServiceName[] = "org.chromium.Midis";
@@ -469,6 +498,43 @@ constexpr char kBootstrapMojoConnectionMethod[] = "BootstrapMojoConnection";
 constexpr char kBootstrapMojoConnectionChannelToken[] = "ml-service-bootstrap";
 }  // namespace ml
 
+namespace federated {
+constexpr char kFederatedServiceName[] = "org.chromium.Federated";
+constexpr char kFederatedServicePath[] = "/org/chromium/Federated";
+constexpr char kFederatedInterfaceName[] = "org.chromium.Federated";
+// Methods
+constexpr char kBootstrapMojoConnectionMethod[] = "BootstrapMojoConnection";
+// Token identifying the primordial Mojo pipe passed to BootstrapMojoConnection.
+constexpr char kBootstrapMojoConnectionChannelToken[] =
+    "federated-service-bootstrap";
+}  // namespace federated
+
+// D-Bus MojoConnectionServiceProvider (go/mojo_connection_service) is a D-Bus
+// service provider in Chrome that bootstraps CrOS services' mojo connection.
+namespace mojo_connection_service {
+constexpr char kMojoConnectionServiceServiceName[] =
+    "org.chromium.MojoConnectionService";
+constexpr char kMojoConnectionServiceServicePath[] =
+    "/org/chromium/MojoConnectionService";
+constexpr char kMojoConnectionServiceInterface[] =
+    "org.chromium.MojoConnectionService";
+
+// Methods
+constexpr char kBootstrapMojoConnectionForIioServiceMethod[] =
+    "BootstrapMojoConnectionForIioService";
+// Token identifying the primordial Mojo pipe passed to
+// BootstrapMojoConnectionForIioService.
+constexpr char kBootstrapMojoConnectionForIioServiceChannelToken[] =
+    "sensors-iioservice-bootstrap";
+
+constexpr char kBootstrapMojoConnectionForSensorClientsMethod[] =
+    "BootstrapMojoConnectionForSensorClients";
+// Token identifying the primordial Mojo pipe passed to
+// BootstrapMojoConnectionForSensorClients.
+constexpr char kBootstrapMojoConnectionForSensorClientsChannelToken[] =
+    "sensors-clients-bootstrap";
+}  // namespace mojo_connection_service
+
 namespace virtual_file_provider {
 constexpr char kVirtualFileProviderServiceName[] =
     "org.chromium.VirtualFileProvider";
@@ -477,7 +543,9 @@ constexpr char kVirtualFileProviderServicePath[] =
 constexpr char kVirtualFileProviderInterface[] =
     "org.chromium.VirtualFileProvider";
 // Methods
+constexpr char kGenerateVirtualFileIdMethod[] = "GenerateVirtualFileId";
 constexpr char kOpenFileMethod[] = "OpenFile";
+constexpr char kOpenFileByIdMethod[] = "OpenFileById";
 }  // namespace virtual_file_provider
 
 namespace crosdns {
@@ -487,7 +555,7 @@ constexpr char kCrosDnsInterfaceName[] = "org.chromium.CrosDns";
 // Methods
 constexpr char kSetHostnameIpMappingMethod[] = "SetHostnameIpMapping";
 constexpr char kRemoveHostnameIpMappingMethod[] = "RemoveHostnameIpMapping";
-}
+}  // namespace crosdns
 
 namespace arc {
 
@@ -533,6 +601,17 @@ constexpr char kUnmountMethod[] = "Unmount";
 constexpr char kOpenFileMethod[] = "OpenFile";
 }  // namespace appfuse
 
+namespace sensor {
+// D-Bus service constants.
+constexpr char kArcSensorServiceInterface[] = "org.chromium.ArcSensorService";
+constexpr char kArcSensorServiceServicePath[] =
+    "/org/chromium/ArcSensorService";
+constexpr char kArcSensorServiceServiceName[] = "org.chromium.ArcSensorService";
+
+// Method names.
+constexpr char kBootstrapMojoConnectionMethod[] = "BootstrapMojoConnection";
+}  // namespace sensor
+
 }  // namespace arc
 
 namespace libvda {
@@ -566,14 +645,6 @@ constexpr char kArcCameraServiceInterface[] = "org.chromium.ArcCamera";
 constexpr char kStartServiceMethod[] = "StartService";
 }  // namespace arc_camera
 
-// DEPRECATED, DO NOT USE
-namespace machine_learning {
-constexpr char kMlDecisionServiceName[] = "org.chromium.MlDecisionService";
-constexpr char kMlDecisionServicePath[] = "/org/chromium/MlDecisionService";
-constexpr char kMlDecisionServiceInterface[] = "org.chromium.MlDecisionService";
-constexpr char kShouldDeferScreenDimMethod[] = "ShouldDeferScreenDim";
-}  // namespace machine_learning
-
 namespace modemfwd {
 const char kModemfwdInterface[] = "org.chromium.Modemfwd";
 const char kModemfwdServicePath[] = "/org/chromium/Modemfwd";
@@ -591,5 +662,18 @@ const char kLockToSingleUserServiceName[] = "org.chromium.LockToSingleUser";
 
 const char kNotifyVmStartingMethod[] = "NotifyVmStarting";
 }  // namespace lock_to_single_user
+
+namespace memory_pressure {
+const char kMemoryPressureInterface[] = "org.chromium.MemoryPressure";
+const char kMemoryPressureServicePath[] = "/org/chromium/MemoryPressure";
+const char kMemoryPressureServiceName[] = "org.chromium.MemoryPressure";
+// Method names.
+const char kGetAvailableMemoryKBMethod[] = "GetAvailableMemoryKB";
+const char kGetMemoryMarginKBMethod[] = "GetMemoryMarginKB";
+const char kGetMemoryMarginsKBMethod[] = "GetMemoryMarginsKB";
+// Signals.
+const char kCriticalMemoryPressure[] = "CriticalMemoryPressure";
+const char kModerateMemoryPressure[] = "ModerateMemoryPressure";
+}  // namespace memory_pressure
 
 #endif  // SYSTEM_API_DBUS_SERVICE_CONSTANTS_H_

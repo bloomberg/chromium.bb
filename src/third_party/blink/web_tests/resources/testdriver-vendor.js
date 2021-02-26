@@ -300,6 +300,7 @@
       hasUserVerification: false,
       isUserConsenting: true,
       isUserVerified: false,
+      extensions: [],
     }, options);
     let mojoOptions = {};
     switch (options.protocol) {
@@ -308,6 +309,11 @@
         break;
       case "ctap2":
         mojoOptions.protocol = blink.test.mojom.ClientToAuthenticatorProtocol.CTAP2;
+        mojoOptions.ctap2Version = blink.test.mojom.Ctap2Version.CTAP2_0;
+        break;
+      case "ctap2_1":
+        mojoOptions.protocol = blink.test.mojom.ClientToAuthenticatorProtocol.CTAP2;
+        mojoOptions.ctap2Version = blink.test.mojom.Ctap2Version.CTAP2_1;
         break;
       default:
         throw "Unknown protocol "  + options.protocol;
@@ -334,9 +340,11 @@
     }
     mojoOptions.hasResidentKey = options.hasResidentKey;
     mojoOptions.hasUserVerification = options.hasUserVerification;
+    mojoOptions.hasLargeBlob = options.extensions.indexOf("largeBlob") !== -1;
     mojoOptions.isUserPresent = options.isUserConsenting;
 
     let authenticator = (await manager.createAuthenticator(mojoOptions)).authenticator;
+    await authenticator.setUserVerified(options.isUserVerified);
     return (await authenticator.getUniqueId()).id;
   };
 
@@ -408,6 +416,10 @@
     // |permission_params.one_realm| and will always consider it is set to false.
     return internals.setPermission(permission_params.descriptor,
                                    permission_params.state);
+  }
+
+  window.test_driver_internal.set_storage_access = function(origin, embedding_origin, blocked) {
+    return internals.setStorageAccess(origin, embedding_origin, blocked);
   }
 
   // Enable automation so we don't wait for user input on unimplemented APIs

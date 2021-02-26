@@ -40,7 +40,6 @@ static_library("handler") {
   }
 
   if (crashpad_is_linux || crashpad_is_android) {
-    set_sources_assignment_filter([])
     sources += [
       "linux/capture_snapshot.cc",
       "linux/capture_snapshot.h",
@@ -77,6 +76,7 @@ static_library("handler") {
     "../minidump",
     "../snapshot",
     "../tools:tool_support",
+    "//build:chromeos_buildflags",
   ]
 
   if (crashpad_is_win) {
@@ -146,11 +146,17 @@ if (!crashpad_is_ios) {
         remove_configs = [ "//build/config/win:console" ]
         configs = [ "//build/config/win:windowed" ]
       } else {
-        remove_configs =
-            [ "//third_party/mini_chromium/mini_chromium/build:win_console" ]
-        configs =
-            [ "//third_party/mini_chromium/mini_chromium/build:win_windowed" ]
+        remove_configs = [
+          "//third_party/mini_chromium/mini_chromium/build/config:win_console",
+        ]
+        configs = [
+          "//third_party/mini_chromium/mini_chromium/build/config:win_windowed",
+        ]
       }
+    }
+
+    if (crashpad_is_linux) {
+      deps += [ "../client:pthread_create" ]
     }
   }
 }
@@ -169,18 +175,19 @@ if (crashpad_is_android) {
   }
 
   crashpad_executable("crashpad_handler_trampoline") {
-    set_sources_assignment_filter([])
     output_name = "libcrashpad_handler_trampoline.so"
 
     sources = [ "linux/handler_trampoline.cc" ]
 
-    ldflags = [ "-llog" ]
+    deps = [ "../util:no_cfi_icall" ]
+
+    libs = [ "log" ]
 
     if (crashpad_is_in_chromium) {
       no_default_deps = true
+      remove_configs =
+          [ "//build/config/android:default_orderfile_instrumentation" ]
     }
-    remove_configs =
-        [ "//build/config/android:default_orderfile_instrumentation" ]
   }
 }
 

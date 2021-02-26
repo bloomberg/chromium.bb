@@ -21,9 +21,8 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/sync/model/fake_model_type_change_processor.h"
 #include "components/sync/model/model_type_store.h"
-#include "components/sync/model/model_type_store_test_util.h"
+#include "components/sync/test/model/model_type_store_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,7 +97,7 @@ class EnterprisePrintersProviderTest : public testing::Test {
     sync_preferences::TestingPrefServiceSyncable* prefs =
         profile_.GetTestingPrefService();
     // TestingPrefSyncableService assumes ownership of |value|.
-    prefs->SetManagedPref(prefs::kRecommendedNativePrinters, std::move(value));
+    prefs->SetManagedPref(prefs::kRecommendedPrinters, std::move(value));
   }
 
   // Must outlive |profile_|.

@@ -44,8 +44,7 @@ deps = {
     'condition': 'checkout_mac or checkout_win',
   },
   'src/third_party/webrtc': {
-    'url': '{webrtc_git}/src.git',
-    'revision': '{webrtc_rev}',
+    'url': '{webrtc_git}/src.git@{webrtc_rev}',
   },
   'src/third_party/intellij': {
     'packages': [{
@@ -87,12 +86,26 @@ hooks = [
 
     self.assertEqual(Commit(0).Deps(), frozenset([]))
 
+  def testDepsIgnoresInvalid(self):
+    # A file that fails gclient_eval.Parse's validation.
+    self.file_contents.return_value = """
+deps = {
+  'some_dep': {'invalid_key': ''}
+}
+    """
+
+    self.assertEqual(Commit(0).Deps(), frozenset([]))
+
   def testAsDict(self):
     self.commit_info.side_effect = None
     self.commit_info.return_value = {
-        'author': {'email': 'author@chromium.org'},
+        'author': {
+            'email': 'author@chromium.org'
+        },
         'commit': 'aaa7336',
-        'committer': {'time': 'Fri Jan 01 00:01:00 2016'},
+        'committer': {
+            'time': 'Fri Jan 01 00:01:00 2016'
+        },
         'message': 'Subject.\n\n'
                    'Commit message.\n'
                    'Reviewed-on: https://foo/c/chromium/src/+/123\n'
@@ -118,9 +131,13 @@ hooks = [
   def testAsDict_UtcOffsetPositive(self):
     self.commit_info.side_effect = None
     self.commit_info.return_value = {
-        'author': {'email': 'author@chromium.org'},
+        'author': {
+            'email': 'author@chromium.org'
+        },
         'commit': 'aaa7336',
-        'committer': {'time': 'Fri Jan 01 00:01:00 2016 +0000'},
+        'committer': {
+            'time': 'Fri Jan 01 00:01:00 2016 +0000'
+        },
         'message': 'Subject.\n\n'
                    'Commit message.\n'
                    'Cr-Commit-Position: refs/heads/master@{#437745}',
@@ -143,9 +160,13 @@ hooks = [
   def testAsDict_UtcOffsetNegative(self):
     self.commit_info.side_effect = None
     self.commit_info.return_value = {
-        'author': {'email': 'author@chromium.org'},
+        'author': {
+            'email': 'author@chromium.org'
+        },
         'commit': 'aaa7336',
-        'committer': {'time': 'Fri Jan 01 00:01:00 2016 -0000'},
+        'committer': {
+            'time': 'Fri Jan 01 00:01:00 2016 -0000'
+        },
         'message': 'Subject.\n\n'
                    'Commit message.\n'
                    'Cr-Commit-Position: refs/heads/master@{#437745}',
@@ -238,7 +259,12 @@ hooks = [
     self.assertEqual(c, expected)
 
     mock_put.assert_called_once_with(
-        expected.id_string, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY,
+        expected.id_string,
+        mock.ANY,
+        mock.ANY,
+        mock.ANY,
+        mock.ANY,
+        mock.ANY,
         memcache_timeout=1800)
 
   def testFromDictFailureFromUnknownRepo(self):
@@ -290,8 +316,7 @@ class MidpointTest(test.TestCase):
     self.assertEqual(midpoint,
                      commit.Commit(repository='chromium', git_hash='commit_2'))
 
-  @mock.patch.object(
-      commit.deferred, 'defer')
+  @mock.patch.object(commit.deferred, 'defer')
   def testMidpointCachesData(self, mock_defer):
     c1 = commit.Commit(repository='chromium', git_hash='commit_0')
     c2 = commit.Commit(repository='chromium', git_hash='mc_4')
@@ -300,8 +325,8 @@ class MidpointTest(test.TestCase):
     commits = commit.Commit.CommitRange(c1, c2)
     commits.pop(0)
 
-    mock_defer.assert_called_once_with(
-        commit._CacheCommitDetails, midpoint.repository, commits)
+    mock_defer.assert_called_once_with(commit._CacheCommitDetails,
+                                       midpoint.repository, commits)
 
   def testContinuousMidpointWithMergeCommits(self):
 

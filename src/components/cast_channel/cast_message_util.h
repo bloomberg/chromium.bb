@@ -17,8 +17,6 @@ using ::cast::channel::CastMessage;
 using ::cast::channel::DeviceAuthMessage;
 
 // Reserved message namespaces for internal messages.
-static constexpr char kCastInternalNamespacePrefix[] =
-    "urn:x-cast:com.google.cast.";
 static constexpr char kAuthNamespace[] =
     "urn:x-cast:com.google.cast.tp.deviceauth";
 static constexpr char kHeartbeatNamespace[] =
@@ -137,15 +135,23 @@ enum class V2MessageType {
 
 // Receiver App Type determines App types that can be supported by a Cast media
 // source. All Cast media sources support the web type.
+// Please keep it in sync with the EnumTable in
+// components/media_router/common/providers/cast/cast_media_source.cc.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Please keep it in sync with
+// MediaRouterResponseReceiverAppType in tools/metrics/histograms/enums.xml.
 enum class ReceiverAppType {
+  kOther = 0,
+
   // Web-based Cast receiver apps. This is supported by all Cast media source
   // by default.
-  kWeb,
+  kWeb = 1,
 
   // A media source may support launching an Android TV app in addition to a
   // Cast web app.
-  kAndroidTv,
+  kAndroidTv = 2,
 
+  // Do not reorder existing entries, and add new types above |kMaxValue|.
   kMaxValue = kAndroidTv,
 };
 
@@ -156,7 +162,7 @@ bool IsCastMessageValid(const CastMessage& message_proto);
 
 // Returns true if |message_namespace| is a namespace reserved for internal
 // messages.
-bool IsCastInternalNamespace(const std::string& message_namespace);
+bool IsCastReservedNamespace(base::StringPiece message_namespace);
 
 // Returns the value in the "type" field or |kOther| if the field is not found.
 // The result is only valid if |payload| is a Cast application protocol message.
@@ -173,9 +179,6 @@ CastMessageType CastMessageTypeFromString(const std::string& type);
 // Returns the V2MessageType for |type|, or |kOther| if it does not
 // correspond to a known type.
 V2MessageType V2MessageTypeFromString(const std::string& type);
-
-// Returns a human readable string for |message_proto|.
-std::string CastMessageToString(const CastMessage& message_proto);
 
 // Returns a human readable string for |message|.
 std::string AuthMessageToString(const DeviceAuthMessage& message);
@@ -253,7 +256,8 @@ CastMessage CreateLaunchRequest(
     int request_id,
     const std::string& app_id,
     const std::string& locale,
-    const std::vector<std::string>& supported_app_types);
+    const std::vector<std::string>& supported_app_types,
+    const base::Optional<base::Value>& app_params);
 
 CastMessage CreateStopRequest(const std::string& source_id,
                               int request_id,
@@ -301,12 +305,17 @@ struct LaunchSessionResponse {
   enum Result { kOk, kError, kTimedOut, kUnknown, kMaxValue = kUnknown };
 
   LaunchSessionResponse();
+  LaunchSessionResponse(const LaunchSessionResponse& other) = delete;
   LaunchSessionResponse(LaunchSessionResponse&& other);
+  LaunchSessionResponse& operator=(const LaunchSessionResponse& other) = delete;
+  LaunchSessionResponse& operator=(LaunchSessionResponse&& other);
   ~LaunchSessionResponse();
 
   Result result = Result::kUnknown;
   // Populated if |result| is |kOk|.
   base::Optional<base::Value> receiver_status;
+  // Populated if |result| is |kError|.
+  std::string error_msg;
 };
 
 // Parses |payload| into a LaunchSessionResponse. Returns an empty
@@ -314,6 +323,11 @@ struct LaunchSessionResponse {
 // response. |payload| must be a dictionary from the string payload of a
 // CastMessage.
 LaunchSessionResponse GetLaunchSessionResponse(const base::Value& payload);
+
+LaunchSessionResponse GetLaunchSessionResponseError(std::string error_msg);
+
+// Returns what connection type should be used based on the destination ID.
+VirtualConnectionType GetConnectionType(const std::string& destination_id);
 
 }  // namespace cast_channel
 

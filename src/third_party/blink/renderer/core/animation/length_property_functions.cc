@@ -38,6 +38,7 @@ ValueRange LengthPropertyFunctions::GetValueRange(const CSSProperty& property) {
     case CSSPropertyID::kRowGap:
     case CSSPropertyID::kColumnWidth:
     case CSSPropertyID::kWidth:
+    case CSSPropertyID::kTabSize:
       return kValueRangeNonNegative;
     default:
       return kValueRangeAll;
@@ -256,14 +257,14 @@ bool LengthPropertyFunctions::GetLength(const CSSProperty& property,
       result = Length::Fixed(style.VerticalBorderSpacing());
       return true;
     case CSSPropertyID::kRowGap:
-      if (style.RowGap().IsNormal())
+      if (!style.RowGap())
         return false;
-      result = style.RowGap().GetLength();
+      result = *style.RowGap();
       return true;
     case CSSPropertyID::kColumnGap:
-      if (style.ColumnGap().IsNormal())
+      if (!style.ColumnGap())
         return false;
-      result = style.ColumnGap().GetLength();
+      result = *style.ColumnGap();
       return true;
     case CSSPropertyID::kColumnRuleWidth:
       result = Length::Fixed(style.ColumnRuleWidth());
@@ -285,6 +286,11 @@ bool LengthPropertyFunctions::GetLength(const CSSProperty& property,
       if (style.SpecifiedLineHeight().IsPercentOrCalc())
         return false;
       result = style.SpecifiedLineHeight();
+      return true;
+    case CSSPropertyID::kTabSize:
+      if (style.GetTabSize().IsSpaces())
+        return false;
+      result = Length::Fixed(style.GetTabSize().float_value_);
       return true;
     case CSSPropertyID::kPerspective:
       if (!style.HasPerspective())
@@ -445,6 +451,9 @@ bool LengthPropertyFunctions::SetLength(const CSSProperty& property,
     case CSSPropertyID::kColumnWidth:
     case CSSPropertyID::kWebkitTransformOriginZ:
     case CSSPropertyID::kWordSpacing:
+    case CSSPropertyID::kTabSize:
+      return false;
+
       return false;
 
     default:

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/android/build_vars.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/python.gni")
@@ -15,33 +16,33 @@ if (enable_java_templates) {
     create_cache = true
   }
 
+  android_library("lint_test_java") {
+    sources = [ "java/test/LintTest.java" ]
+  }
+
+  android_apk("lint_test_apk") {
+    # This cannot be marked testonly since lint has special ignores for testonly
+    # targets. We need to test linting a normal apk target.
+    apk_name = "LintTest"
+    deps = [ ":lint_test_java" ]
+    android_manifest = "//build/android/AndroidManifest.xml"
+  }
+
+  android_lint("android_lint_test") {
+    lint_expected_warnings = "DefaultLocale,NewApi"
+    _test_apk_target = ":lint_test_apk"
+    deps = [ "${_test_apk_target}__java" ]
+    build_config_dep = "$_test_apk_target$build_config_target_suffix"
+    build_config = get_label_info(_test_apk_target, "target_gen_dir") + "/" +
+                   get_label_info(_test_apk_target, "name") + ".build_config"
+  }
+
   if (enable_jdk_library_desugaring) {
     dex_jdk_libs("all_jdk_libs") {
       output = "$target_out_dir/$target_name.l8.dex"
       min_sdk_version = default_min_sdk_version
     }
   }
-
-  # Write to a file some GN vars that are useful to scripts that use the output
-  # directory. Format is chosen as easliy importable by both python and bash.
-  _lines = [
-    "android_sdk_build_tools=" +
-        rebase_path(android_sdk_build_tools, root_build_dir),
-    "android_sdk_build_tools_version=$android_sdk_build_tools_version",
-    "android_sdk_root=" + rebase_path(android_sdk_root, root_build_dir),
-    "android_sdk_version=$android_sdk_version",
-    "android_ndk_root=" + rebase_path(android_ndk_root, root_build_dir),
-    "android_tool_prefix=" + rebase_path(android_tool_prefix, root_build_dir),
-    "android_configuration_failure_dir=" +
-        rebase_path(android_configuration_failure_dir, root_build_dir),
-  ]
-  if (defined(android_secondary_abi_cpu)) {
-    _secondary_label_info =
-        get_label_info(":foo($android_secondary_abi_toolchain)", "root_out_dir")
-    _lines += [ "android_secondary_abi_toolchain=" +
-                rebase_path(_secondary_label_info, root_build_dir) ]
-  }
-  write_file(android_build_vars, _lines)
 }
 
 python_library("devil_chromium_py") {
@@ -66,11 +67,12 @@ python_library("test_runner_py") {
     "${android_sdk_build_tools}/lib64/libc++.so",
     "${android_sdk_build_tools}/split-select",
     "${android_sdk_root}/platform-tools/adb",
+    "//third_party/requests/",
   ]
   data_deps = [ ":devil_chromium_py" ]
   if (build_with_chromium) {
     data += [
-      "//third_party/android_build_tools/bundletool/bundletool-all-0.13.3.jar",
+      "//third_party/android_build_tools/bundletool/bundletool-all-1.2.0.jar",
       "//tools/android/avd/proto/",
     ]
     data_deps +=
@@ -97,7 +99,7 @@ python_library("resource_sizes_py") {
     "//third_party/catapult/tracing:convert_chart_json",
   ]
   data = [
-    android_build_vars,
+    build_vars_file,
     android_readelf,
   ]
 }
@@ -105,7 +107,7 @@ python_library("resource_sizes_py") {
 python_library("bundle_wrapper_script_py") {
   pydeps_file = "gyp/create_bundle_wrapper_script.pydeps"
   data = [
-    "//third_party/android_build_tools/bundletool/bundletool-all-0.13.3.jar",
+    "//third_party/android_build_tools/bundletool/bundletool-all-1.2.0.jar",
   ]
 }
 
@@ -125,3 +127,19 @@ if (build_with_chromium) {
         [ "//third_party/android_platform/development/scripts:stack_py" ]
   }
 }
+
+# GN evaluates each .gn file once per toolchain, so restricting to default
+# toolchain will ensure write_file() is called only once.
+assert(current_toolchain == default_toolchain)
+
+# NOTE: If other platforms would benefit from exporting variables, we should
+# move this to a more top-level place.
+# It is currently here (instead of //BUILD.gn) to ensure that the file is
+# written even for non-chromium embedders of //build.
+_build_vars_json = {
+  # Underscore prefix so that it appears at the top.
+  _HEADER = "Generated during 'gn gen' by //build/android/BUILD.gn."
+  forward_variables_from(android_build_vars_json, "*")
+}
+
+write_file(build_vars_file, _build_vars_json, "json")

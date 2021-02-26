@@ -311,8 +311,7 @@ void HTMLParserScriptRunner::PendingScriptFinished(
   document_->GetTaskRunner(TaskType::kInternalContinueScriptLoading)
       ->PostTask(FROM_HERE,
                  WTF::Bind(&HTMLParserScriptRunnerHost::NotifyScriptLoaded,
-                           WrapPersistent(host_.Get()),
-                           WrapPersistent(pending_script)));
+                           WrapPersistent(host_.Get())));
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#scriptEndTag">
@@ -380,11 +379,20 @@ void HTMLParserScriptRunner::ExecuteParsingBlockingScripts() {
   // that is blocking scripts and the script's "ready to be parser-executed"
   // flag is set.</spec>
   //
-  // These conditions correspond to isParserBlockingScriptReady() and
-  // if it is false, executeParsingBlockingScripts() will be called later
-  // when isParserBlockingScriptReady() becomes true:
-  // (1) from HTMLParserScriptRunner::executeScriptsWaitingForResources(), or
-  // (2) from HTMLParserScriptRunner::executeScriptsWaitingForLoad().
+  // These conditions correspond to IsParserBlockingScriptReady().
+  // If it is false at the time of #prepare-a-script,
+  // ExecuteParsingBlockingScripts() will be called later
+  // when IsParserBlockingScriptReady() might become true:
+  // - Called from HTMLParserScriptRunner::ExecuteScriptsWaitingForResources()
+  //   when the parser's Document has no style sheet that is blocking scripts,
+  // - Called from HTMLParserScriptRunner::ExecuteScriptsWaitingForLoad()
+  //   when the script's "ready to be parser-executed" flag is set, or
+  // - Other cases where any of the conditions isn't met or even when there are
+  //   no longer parser blocking scripts at all.
+  //   (For example, see the comment in ExecuteScriptsWaitingForLoad())
+  //
+  // Because we check the conditions below and do nothing if the conditions
+  // aren't met, it's safe to have extra ExecuteParsingBlockingScripts() calls.
   while (HasParserBlockingScript() && IsParserBlockingScriptReady()) {
     DCHECK(document_);
     DCHECK(!IsExecutingScript());
@@ -406,13 +414,17 @@ void HTMLParserScriptRunner::ExecuteParsingBlockingScripts() {
   }
 }
 
-void HTMLParserScriptRunner::ExecuteScriptsWaitingForLoad(
-    PendingScript* pending_script) {
+void HTMLParserScriptRunner::ExecuteScriptsWaitingForLoad() {
+  // Note(https://crbug.com/1093051): ExecuteScriptsWaitingForLoad() is
+  // triggered asynchronously from PendingScriptFinished(pending_script), but
+  // the |pending_script| might be no longer the ParserBlockginScript() here,
+  // because it might have been evaluated or disposed after
+  // PendingScriptFinished() before ExecuteScriptsWaitingForLoad(). Anyway we
+  // call ExecuteParsingBlockingScripts(), because necessary conditions for
+  // evaluation are checked safely there.
+
   TRACE_EVENT0("blink", "HTMLParserScriptRunner::executeScriptsWaitingForLoad");
   DCHECK(!IsExecutingScript());
-  DCHECK(HasParserBlockingScript());
-  DCHECK_EQ(pending_script, ParserBlockingScript());
-  DCHECK(ParserBlockingScript()->IsReady());
   ExecuteParsingBlockingScripts();
 }
 
@@ -523,7 +535,6 @@ void HTMLParserScriptRunner::RequestParsingBlockingScript(
   // Callers will attempt to run the m_parserBlockingScript if possible before
   // returning control to the parser.
   if (!ParserBlockingScript()->IsReady()) {
-    parser_blocking_script_->StartStreamingIfPossible();
     parser_blocking_script_->WatchForLoad(this);
   }
 }
@@ -532,12 +543,6 @@ void HTMLParserScriptRunner::RequestDeferredScript(
     ScriptLoader* script_loader) {
   PendingScript* pending_script =
       script_loader->TakePendingScript(ScriptSchedulingType::kDefer);
-  if (!pending_script)
-    return;
-
-  if (!pending_script->IsReady()) {
-    pending_script->StartStreamingIfPossible();
-  }
 
   DCHECK(!script_loader->IsForceDeferred());
   DCHECK(pending_script->IsExternalOrModule());
@@ -553,12 +558,6 @@ void HTMLParserScriptRunner::RequestForceDeferredScript(
     ScriptLoader* script_loader) {
   PendingScript* pending_script =
       script_loader->TakePendingScript(ScriptSchedulingType::kForceDefer);
-  if (!pending_script)
-    return;
-
-  if (!pending_script->IsReady()) {
-    pending_script->StartStreamingIfPossible();
-  }
 
   DCHECK(script_loader->IsForceDeferred());
 
@@ -699,7 +698,7 @@ void HTMLParserScriptRunner::RecordMetricsAtParseEnd() const {
   }
 }
 
-void HTMLParserScriptRunner::Trace(Visitor* visitor) {
+void HTMLParserScriptRunner::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(host_);
   visitor->Trace(parser_blocking_script_);

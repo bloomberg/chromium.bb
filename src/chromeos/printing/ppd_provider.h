@@ -107,7 +107,9 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   };
 
   // Defines the limitations on when we show a particular PPD
-  struct Restrictions {
+  // Not to be confused with the new Restrictions struct used in the
+  // v3 PpdProvider, defined in ppd_metadata_parser.h
+  struct LegacyRestrictions {
     // Minimum milestone for ChromeOS build
     base::Version min_milestone = base::Version("0.0");
 
@@ -126,12 +128,9 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   // Result of a ResolvePpd() call.
   // If the result code is SUCCESS, then:
   //    string holds the contents of a PPD (that may or may not be gzipped).
-  //    required_filters holds the names of the filters referenced in the ppd.
   // Otherwise, these fields will be empty.
-  using ResolvePpdCallback = base::OnceCallback<void(
-      CallbackResultCode,
-      const std::string&,
-      const std::vector<std::string>& required_filters)>;
+  using ResolvePpdCallback =
+      base::OnceCallback<void(CallbackResultCode, const std::string&)>;
 
   // Result of a ResolveManufacturers() call.  If the result code is SUCCESS,
   // then the vector contains a sorted list of manufacturers for which we have
@@ -178,11 +177,16 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
                               const std::string& manufacturer,
                               const std::string& model)>;
 
+  // Called to get the current URLLoaderFactory on demand. Needs to be
+  // Repeating since it gets called once per fetch.
+  using LoaderFactoryGetter =
+      base::RepeatingCallback<network::mojom::URLLoaderFactory*()>;
+
   // Create and return a new PpdProvider with the given cache and options.
   // A references to |url_context_getter| is taken.
   static scoped_refptr<PpdProvider> Create(
       const std::string& browser_locale,
-      network::mojom::URLLoaderFactory* loader_factory,
+      LoaderFactoryGetter loader_factory_getter,
       scoped_refptr<PpdCache> cache,
       const base::Version& current_version,
       const Options& options = Options());
@@ -191,6 +195,11 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   // localized in the default browser locale or the closest available fallback.
   //
   // |cb| will be called on the invoking thread, and will be sequenced.
+  //
+  // PpdProvider will enqueue calls to this method and answer them in
+  // the order received; it will opt to invoke |cb| with failure if the
+  // queue grows overlong, failing the oldest calls first. The exact
+  // queue length at which this occurs is unspecified.
   virtual void ResolveManufacturers(ResolveManufacturersCallback cb) = 0;
 
   // Get all models from a given manufacturer, localized in the
@@ -226,6 +235,11 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
 
   // For a given PpdReference, retrieve the make and model strings used to
   // construct that reference.
+  //
+  // PpdProvider will enqueue calls to this method and answer them in
+  // the order received; it will opt to invoke |cb| with failure if the
+  // queue grows overlong, failing the oldest calls first. The exact
+  // queue length at which this occurs is unspecified.
   virtual void ReverseLookup(const std::string& effective_make_and_model,
                              ReverseLookupCallback cb) = 0;
 

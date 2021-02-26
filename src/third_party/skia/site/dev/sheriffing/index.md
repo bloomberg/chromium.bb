@@ -22,7 +22,7 @@ Tree Sheriffs Documentation
 What does a sheriff do?
 -----------------------
 
-A sheriff keeps an eye on the tree, DEPS rolls, Gold tool and the Perf tool.
+A sheriff keeps an eye on the tree, DEPS rolls, Gold tool, the Perf tool, and triages Chrome bugs.
 
 Below is a brief summary of what the sheriff does for each task:
 
@@ -37,6 +37,11 @@ Below is a brief summary of what the sheriff does for each task:
 * Read and update the [Ongoing Issues section](https://docs.google.com/document/d/1y2jUf4vXI0fwhu2TiCLVIfWC1JOxFcHXGw39y7i-y_I/edit#heading=h.tpualuc3p7z0) in the handoff doc.
 * (Optional) Document significant events that occurred during your sheriff shift in the [Weekly
   Handoff Notes section](https://docs.google.com/document/d/1y2jUf4vXI0fwhu2TiCLVIfWC1JOxFcHXGw39y7i-y_I/edit#heading=h.y49irwbutzr) in the handoff doc.
+
+<a name="triage"></a>
+### Triage
+You should triage bugs that show up under "Untriaged Bugs" on the [status page](https://status.skia.org).
+For a more detailed view of bugs see [Skia Bugs Central](https://bugs-central.skia.org/).
 
 <a name="blamer"></a>
 ### Blamer

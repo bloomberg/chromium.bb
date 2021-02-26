@@ -26,40 +26,62 @@ void CaptionHostImpl::Create(
 
 CaptionHostImpl::CaptionHostImpl(content::RenderFrameHost* frame_host)
     : frame_host_(frame_host) {
-  if (!frame_host_)
+  content::WebContents* web_contents = GetWebContents();
+  if (!web_contents)
     return;
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(frame_host_);
-  if (!web_contents) {
-    frame_host_ = nullptr;
-    return;
-  }
   Observe(web_contents);
 }
 
 CaptionHostImpl::~CaptionHostImpl() = default;
 
 void CaptionHostImpl::OnTranscription(
-    chrome::mojom::TranscriptionResultPtr transcription_result) {
-  if (!frame_host_)
-    return;
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(frame_host_);
+    chrome::mojom::TranscriptionResultPtr transcription_result,
+    OnTranscriptionCallback reply) {
+  content::WebContents* web_contents = GetWebContents();
   if (!web_contents) {
-    frame_host_ = nullptr;
+    std::move(reply).Run(false);
     return;
   }
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (!profile)
+  CaptionController* caption_controller = GetCaptionController(web_contents);
+  if (!caption_controller) {
+    std::move(reply).Run(false);
     return;
-  CaptionControllerFactory::GetForProfile(profile)->DispatchTranscription(
-      web_contents, transcription_result);
+  }
+  std::move(reply).Run(caption_controller->DispatchTranscription(
+      web_contents, transcription_result));
+}
+
+void CaptionHostImpl::OnError() {
+  content::WebContents* web_contents = GetWebContents();
+  if (!web_contents)
+    return;
+  CaptionController* caption_controller = GetCaptionController(web_contents);
+  if (caption_controller)
+    caption_controller->OnError(web_contents);
 }
 
 void CaptionHostImpl::RenderFrameDeleted(content::RenderFrameHost* frame_host) {
   if (frame_host == frame_host_)
     frame_host_ = nullptr;
+}
+
+content::WebContents* CaptionHostImpl::GetWebContents() {
+  if (!frame_host_)
+    return nullptr;
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame_host_);
+  if (!web_contents)
+    frame_host_ = nullptr;
+  return web_contents;
+}
+
+CaptionController* CaptionHostImpl::GetCaptionController(
+    content::WebContents* web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile)
+    return nullptr;
+  return CaptionControllerFactory::GetForProfile(profile);
 }
 
 }  // namespace captions

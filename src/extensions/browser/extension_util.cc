@@ -5,8 +5,10 @@
 #include "extensions/browser/extension_util.h"
 
 #include "base/no_destructor.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -20,8 +22,25 @@
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "base/system/sys_info.h"
+#endif
+
 namespace extensions {
 namespace util {
+
+namespace {
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+bool IsSigninProfileTestExtensionOnTestImage(const Extension* extension) {
+  if (extension->id() != extension_misc::kSigninProfileTestExtensionId)
+    return false;
+  base::SysInfo::CrashIfChromeOSNonTestImage();
+  return true;
+}
+#endif
+
+}  // namespace
 
 bool CanBeIncognitoEnabled(const Extension* extension) {
   return IncognitoInfo::IsIncognitoAllowed(extension) &&
@@ -43,6 +62,10 @@ bool IsIncognitoEnabled(const std::string& extension_id,
       return true;
     if (extension->is_login_screen_extension())
       return true;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    if (IsSigninProfileTestExtensionOnTestImage(extension))
+      return true;
+#endif
   }
   return ExtensionPrefs::Get(context)->IsIncognitoEnabled(extension_id);
 }
@@ -57,27 +80,35 @@ bool CanCrossIncognito(const Extension* extension,
          !IncognitoInfo::IsSplitMode(extension);
 }
 
-GURL GetSiteForExtensionId(const std::string& extension_id,
-                           content::BrowserContext* context) {
-  GURL site = content::SiteInstance::GetSiteForURL(
-      context, Extension::GetBaseURLFromExtensionId(extension_id));
-  DCHECK_EQ(extension_id, site.host());
-  return site;
-}
-
 const std::string& GetPartitionDomainForExtension(const Extension* extension) {
   // Extensions use their own ID for a partition domain.
   return extension->id();
+}
+
+content::StoragePartitionConfig GetStoragePartitionConfigForExtensionId(
+    const std::string& extension_id,
+    content::BrowserContext* browser_context) {
+  if (ExtensionsBrowserClient::Get()->HasIsolatedStorage(extension_id,
+                                                         browser_context)) {
+    // For extensions with isolated storage, the |extension_id| is
+    // the |partition_domain|. The |in_memory| and |partition_name| are only
+    // used in guest schemes so they are cleared here.
+    return content::StoragePartitionConfig::Create(
+        extension_id, std::string() /* partition_name */, false /*in_memory */);
+  }
+
+  return content::StoragePartitionConfig::CreateDefault();
 }
 
 content::StoragePartition* GetStoragePartitionForExtensionId(
     const std::string& extension_id,
     content::BrowserContext* browser_context,
     bool can_create) {
-  GURL site_url = GetSiteForExtensionId(extension_id, browser_context);
+  auto storage_partition_config =
+      GetStoragePartitionConfigForExtensionId(extension_id, browser_context);
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartitionForSite(browser_context,
-                                                          site_url, can_create);
+      content::BrowserContext::GetStoragePartition(
+          browser_context, storage_partition_config, can_create);
   return storage_partition;
 }
 

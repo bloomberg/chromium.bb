@@ -1,7 +1,8 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "components/query_tiles/internal/tile_service_scheduler.h"
+
+#include "components/query_tiles/internal/tile_service_scheduler_impl.h"
 
 #include <utility>
 #include <vector>
@@ -13,11 +14,15 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/query_tiles/internal/black_hole_log_sink.h"
 #include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/internal/tile_store.h"
 #include "components/query_tiles/switches.h"
 #include "components/query_tiles/test/test_utils.h"
+#include "components/query_tiles/tile_service_prefs.h"
+#include "net/base/backoff_entry_serializer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,6 +31,15 @@ using ::testing::Invoke;
 
 namespace query_tiles {
 namespace {
+
+constexpr net::BackoffEntry::Policy kTestPolicy = {
+    0 /*num_errors_to_ignore*/,
+    1000 /*init_delay_ms*/,
+    2 /*multiply_factor*/,
+    0 /*jitter_factor*/,
+    4000 /*max_backoff_ms*/,
+    -1 /*entry_lifetime_ms*/,
+    false /*always_use_init_delay*/};
 
 class MockBackgroundTaskScheduler
     : public background_task::BackgroundTaskScheduler {
@@ -46,17 +60,11 @@ class TileServiceSchedulerTest : public testing::Test {
     EXPECT_TRUE(base::Time::FromString("05/18/20 01:00:00 AM", &fake_now));
     clock_.SetNow(fake_now);
     query_tiles::RegisterPrefs(prefs()->registry());
-    auto policy = std::make_unique<net::BackoffEntry::Policy>();
-    policy->num_errors_to_ignore = 0;
-    policy->initial_delay_ms = 1 * 1000;
-    policy->multiply_factor = 2;
-    policy->jitter_factor = 0;
-    policy->maximum_backoff_ms = 4 * 1000;
-    policy->always_use_initial_delay = false;
-    policy->entry_lifetime_ms = -1;
-    tile_service_scheduler_ =
-        TileServiceScheduler::Create(&mocked_native_scheduler_, &prefs_,
-                                     &clock_, &tick_clock_, std::move(policy));
+    log_sink_ = std::make_unique<test::BlackHoleLogSink>();
+    auto policy = std::make_unique<net::BackoffEntry::Policy>(kTestPolicy);
+    tile_service_scheduler_ = std::make_unique<TileServiceSchedulerImpl>(
+        &mocked_native_scheduler_, &prefs_, &clock_, &tick_clock_,
+        std::move(policy), log_sink_.get());
     EXPECT_CALL(
         *native_scheduler(),
         Cancel(static_cast<int>(background_task::TaskIds::QUERY_TILE_JOB_ID)));
@@ -67,10 +75,26 @@ class TileServiceSchedulerTest : public testing::Test {
   MockBackgroundTaskScheduler* native_scheduler() {
     return &mocked_native_scheduler_;
   }
+
   TileServiceScheduler* tile_service_scheduler() {
     return tile_service_scheduler_.get();
   }
+
   TestingPrefServiceSimple* prefs() { return &prefs_; }
+
+  base::SimpleTestClock* clock() { return &clock_; }
+
+  base::SimpleTestTickClock* tick_clock() { return &tick_clock_; }
+
+  std::unique_ptr<net::BackoffEntry> GetBackoffPolicy() {
+    std::unique_ptr<net::BackoffEntry> result;
+    const base::ListValue* value = prefs()->GetList(kBackoffEntryKey);
+    if (value) {
+      result = net::BackoffEntrySerializer::DeserializeFromValue(
+          *value, &kTestPolicy, tick_clock(), clock()->Now());
+    }
+    return result;
+  }
 
  private:
   base::test::TaskEnvironment task_environment_;
@@ -79,7 +103,7 @@ class TileServiceSchedulerTest : public testing::Test {
   base::SimpleTestTickClock tick_clock_;
   TestingPrefServiceSimple prefs_;
   MockBackgroundTaskScheduler mocked_native_scheduler_;
-
+  std::unique_ptr<LogSink> log_sink_;
   std::unique_ptr<TileServiceScheduler> tile_service_scheduler_;
 };
 
@@ -133,6 +157,8 @@ TEST_F(TileServiceSchedulerTest, OnFetchCompletedSuspend) {
   EXPECT_CALL(*native_scheduler(), Schedule(TaskInfoEq(4000, 4000)));
   tile_service_scheduler()->OnFetchCompleted(
       TileInfoRequestStatus::kShouldSuspend);
+  auto backoff = GetBackoffPolicy();
+  EXPECT_EQ(backoff->GetTimeUntilRelease().InMilliseconds(), 4000);
 }
 
 // Verify the failure will add delay that using test backoff policy.
@@ -141,6 +167,9 @@ TEST_F(TileServiceSchedulerTest, OnFetchCompletedFailure) {
     EXPECT_CALL(*native_scheduler(),
                 Schedule(TaskInfoEq(1000 * pow(2, i), 1000 * pow(2, i))));
     tile_service_scheduler()->OnFetchCompleted(TileInfoRequestStatus::kFailure);
+    auto backoff = GetBackoffPolicy();
+    EXPECT_EQ(backoff->GetTimeUntilRelease().InMilliseconds(),
+              1000 * pow(2, i));
   }
 }
 
@@ -183,6 +212,54 @@ TEST_F(TileServiceSchedulerTest, OnTileGroupLoadedWithOtherStatus) {
   for (const auto status : other_status) {
     tile_service_scheduler()->OnTileManagerInitialized(status);
   }
+}
+
+// OnTileManagerInitialized(NoTiles) could be called many time before the first
+// fetch task started. Ensure only the first one actually schedules the task,
+// other calls should not override the existing task until it is executed and
+// marked finished.
+TEST_F(TileServiceSchedulerTest, FirstKickoffNotOverride) {
+  // Verifying only schedule once also implying only the first schedule
+  // call works.
+  EXPECT_CALL(*native_scheduler(), Schedule(_)).Times(1);
+  auto now = clock()->Now();
+  tile_service_scheduler()->OnTileManagerInitialized(TileGroupStatus::kNoTiles);
+  EXPECT_EQ(prefs()->GetTime(kFirstScheduleTimeKey), now);
+  auto two_hours_later = now + base::TimeDelta::FromHours(2);
+  clock()->SetNow(two_hours_later);
+  tile_service_scheduler()->OnTileManagerInitialized(TileGroupStatus::kNoTiles);
+  tile_service_scheduler()->OnTileManagerInitialized(TileGroupStatus::kNoTiles);
+  EXPECT_EQ(prefs()->GetTime(kFirstScheduleTimeKey), now);
+
+  EXPECT_CALL(*native_scheduler(), Schedule(_)).Times(1);
+  tile_service_scheduler()->OnFetchCompleted(TileInfoRequestStatus::kSuccess);
+  EXPECT_EQ(prefs()->GetTime(kFirstScheduleTimeKey), base::Time());
+}
+
+TEST_F(TileServiceSchedulerTest, FirstRunFinishedAfterInstantFetchComplete) {
+  base::test::ScopedCommandLine scoped_command_line;
+  auto now = clock()->Now();
+  EXPECT_CALL(*native_scheduler(), Schedule(_)).Times(1);
+  tile_service_scheduler()->OnTileManagerInitialized(TileGroupStatus::kNoTiles);
+  EXPECT_EQ(prefs()->GetTime(kFirstScheduleTimeKey), now);
+
+  // Set instant-fetch flag to true after first-kickoff flow was marked and
+  // scheduled, expecting the mark of first flow also being reset.
+  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      query_tiles::switches::kQueryTilesInstantBackgroundTask, "true");
+  EXPECT_CALL(*native_scheduler(), Schedule(_)).Times(0);
+  tile_service_scheduler()->OnFetchCompleted(TileInfoRequestStatus::kSuccess);
+  EXPECT_EQ(prefs()->GetTime(kFirstScheduleTimeKey), base::Time());
+
+  // Set instant-fetch flag to false after 2 hours. Chrome restarts with no
+  // tiles, the scheduler should start a new first kickoff flow.
+  scoped_command_line.GetProcessCommandLine()->RemoveSwitch(
+      query_tiles::switches::kQueryTilesInstantBackgroundTask);
+  auto two_hours_later = now + base::TimeDelta::FromHours(2);
+  clock()->SetNow(two_hours_later);
+  EXPECT_CALL(*native_scheduler(), Schedule(_)).Times(1);
+  tile_service_scheduler()->OnTileManagerInitialized(TileGroupStatus::kNoTiles);
+  EXPECT_EQ(prefs()->GetTime(kFirstScheduleTimeKey), two_hours_later);
 }
 
 }  // namespace

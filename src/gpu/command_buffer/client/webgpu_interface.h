@@ -28,14 +28,32 @@ class WebGPUInterface : public InterfaceBase {
   virtual ~WebGPUInterface() {}
 
   virtual const DawnProcTable& GetProcs() const = 0;
+
+  // Flush all commands.
   virtual void FlushCommands() = 0;
+
+  // Flush all commands on the device client.
+  virtual void FlushCommands(DawnDeviceClientID device_client_id) = 0;
+
+  // Ensure the awaiting flush flag is set on the device client. Returns false
+  // if a flush has already been indicated, or a flush is not needed (there may
+  // be no commands to flush). Returns true if the caller should schedule a
+  // flush.
+  virtual void EnsureAwaitingFlush(DawnDeviceClientID device_client_id,
+                                   bool* needs_flush) = 0;
+
+  // If the awaiting flush flag is set, flushes commands. Otherwise, does
+  // nothing.
+  virtual void FlushAwaitingCommands(DawnDeviceClientID device_client_id) = 0;
+
   virtual WGPUDevice GetDevice(DawnDeviceClientID device_client_id) = 0;
   virtual ReservedTexture ReserveTexture(
       DawnDeviceClientID device_client_id) = 0;
   virtual bool RequestAdapterAsync(
       PowerPreference power_preference,
-      base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
-          request_adapter_callback) = 0;
+      base::OnceCallback<void(int32_t,
+                              const WGPUDeviceProperties&,
+                              const char*)> request_adapter_callback) = 0;
   virtual bool RequestDeviceAsync(
       uint32_t adapter_service_id,
       const WGPUDeviceProperties& requested_device_properties,

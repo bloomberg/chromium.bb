@@ -27,7 +27,6 @@
 #error "This file requires ARC support."
 #endif
 
-#if defined(CHROME_EARL_GREY_2)
 // TODO(crbug.com/1015113) The EG2 macro is breaking indexing for some reason
 // without the trailing semicolon.  For now, disable the extra semi warning
 // so Xcode indexing works for the egtest.
@@ -35,7 +34,6 @@
 #pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(AdaptiveToolbarAppInterface);
 #pragma clang diagnostic pop
-#endif  // defined(CHROME_EARL_GREY_2)
 
 namespace {
 
@@ -161,21 +159,6 @@ void CheckVisibleInSecondaryToolbar(id<GREYMatcher> matcher, BOOL visible) {
       assertWithMatcher:assertionMatcher];
 }
 
-// Returns a matcher for a UIControl object being spotlighted.
-id<GREYMatcher> Spotlighted() {
-  GREYMatchesBlock matches = ^BOOL(UIControl* control) {
-    return control.state & kControlStateSpotlighted;
-  };
-  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
-    [description appendText:@"is spotlighted"];
-  };
-  return grey_allOf(
-      grey_kindOfClass([UIControl class]),
-      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                           descriptionBlock:describe],
-      nil);
-}
-
 // Rotate the device if it is an iPhone or change the trait collection to
 // compact width if it is an iPad. Returns the new trait collection.
 UITraitCollection* RotateOrChangeTraitCollection(
@@ -190,8 +173,8 @@ UITraitCollection* RotateOrChangeTraitCollection(
             forViewController:topViewController];
   } else {
     // On iPhone rotate to test the the landscape orientation.
-    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
-                                        error:nil];
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                                  error:nil];
     return topViewController.traitCollection;
   }
 }
@@ -292,12 +275,12 @@ void CheckButtonsVisibilityIPad() {
 
   CheckVisibilityInToolbar(ShareButton(), ButtonVisibilityPrimary);
   CheckVisibilityInToolbar(ReloadButton(), ButtonVisibilityPrimary);
-  CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityPrimary);
+  CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityNone);
+  CheckVisibilityInToolbar(TabGridButton(), ButtonVisibilityPrimary);
 
   CheckVisibilityInToolbar(BackButton(), ButtonVisibilityPrimary);
   CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilityPrimary);
   CheckVisibilityInToolbar(NewTabButton(), ButtonVisibilityNone);
-  CheckVisibilityInToolbar(TabGridButton(), ButtonVisibilityNone);
   CheckVisibilityInToolbar(ToolsMenuButton(), ButtonVisibilityPrimary);
 
   // The secondary toolbar is not visible.
@@ -369,12 +352,8 @@ UIViewController* TopPresentedViewControllerFrom(
 
 UIViewController* TopPresentedViewController() {
   UIViewController* rootViewController =
-#if defined(CHROME_EARL_GREY_1)
-      [[UIApplication sharedApplication] keyWindow].rootViewController;
-#else
       [[GREY_REMOTE_CLASS_IN_APP(UIApplication) sharedApplication] keyWindow]
           .rootViewController;
-#endif
   return TopPresentedViewControllerFrom(rootViewController);
 }
 
@@ -388,50 +367,6 @@ UIViewController* TopPresentedViewController() {
 @end
 
 @implementation AdaptiveToolbarTestCase
-
-// Tests that bookmarks button is spotlighted for the bookmarked pages.
-- (void)testBookmarkButton {
-  if (![ChromeEarlGrey isRegularXRegularSizeClass]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"The bookmark button is only visible on Regular x Regular size "
-        @"classes.");
-  }
-
-  // Setup the bookmarks.
-  [ChromeEarlGrey waitForBookmarksToFinishLoading];
-  [ChromeEarlGrey clearBookmarks];
-
-  // Setup the server.
-  self.testServer->RegisterRequestHandler(
-      base::BindRepeating(&StandardResponse));
-  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
-
-  // Navigate to a page and check the bookmark button is not spotlighted.
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
-  [[EarlGrey selectElementWithMatcher:BookmarkButton()]
-      assertWithMatcher:grey_allOf(grey_kindOfClass([UIControl class]),
-                                   grey_not(Spotlighted()), nil)];
-
-  // Bookmark the page.
-  [[EarlGrey selectElementWithMatcher:BookmarkButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:BookmarkButton()]
-      assertWithMatcher:Spotlighted()];
-
-  // Navigate to a different page and check the button is not selected.
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL2)];
-  [[EarlGrey selectElementWithMatcher:BookmarkButton()]
-      assertWithMatcher:grey_allOf(grey_kindOfClass([UIControl class]),
-                                   grey_not(Spotlighted()), nil)];
-
-  // Navigate back to the bookmarked page and check the button.
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
-  [[EarlGrey selectElementWithMatcher:BookmarkButton()]
-      assertWithMatcher:Spotlighted()];
-
-  // Clean the bookmarks
-  [ChromeEarlGrey clearBookmarks];
-}
 
 // Tests that tapping a button cancels the focus on the omnibox.
 - (void)testCancelOmniboxEdit {
@@ -480,8 +415,7 @@ UIViewController* TopPresentedViewController() {
     }
   } else {
     // Cancel the rotation.
-    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-                                        error:nil];
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
   }
 
   // Check the visiblity after a rotation.
@@ -519,8 +453,7 @@ UIViewController* TopPresentedViewController() {
     }
   } else {
     // Cancel the rotation.
-    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-                                        error:nil];
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
   }
 
   // Check the visiblity after a size class change. This should let the trait
@@ -605,8 +538,8 @@ UIViewController* TopPresentedViewController() {
 - (void)testShareButton {
   if (![ChromeEarlGrey isIPadIdiom]) {
     // If this test is run on an iPhone, rotate it to have the unsplit toolbar.
-    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
-                                        error:nil];
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                                  error:nil];
   }
 
   // Setup the server.
@@ -622,8 +555,7 @@ UIViewController* TopPresentedViewController() {
 
   if (![ChromeEarlGrey isIPadIdiom]) {
     // Cancel rotation.
-    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-                                        error:nil];
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
   }
 }
 
@@ -684,8 +616,7 @@ UIViewController* TopPresentedViewController() {
     }
   } else {
     // Cancel the rotation.
-    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-                                        error:nil];
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
   }
 }
 

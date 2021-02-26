@@ -45,46 +45,48 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/logging.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #endif  // OS_WIN
 
 namespace {
 
 static const char* const kAcceptLanguageList[] = {
-    "af",     // Afrikaans
-    "am",     // Amharic
-    "an",     // Aragonese
-    "ar",     // Arabic
-    "ast",    // Asturian
-    "az",     // Azerbaijani
-    "be",     // Belarusian
-    "bg",     // Bulgarian
-    "bh",     // Bihari
-    "bn",     // Bengali
-    "br",     // Breton
-    "bs",     // Bosnian
-    "ca",     // Catalan
-    "ceb",    // Cebuano
-    "ckb",    // Kurdish (Arabci),  Sorani
-    "co",     // Corsican
-    "cs",     // Czech
-    "cy",     // Welsh
-    "da",     // Danish
-    "de",     // German
-    "de-AT",  // German (Austria)
-    "de-CH",  // German (Switzerland)
-    "de-DE",  // German (Germany)
-    "de-LI",  // German (Liechtenstein)
-    "el",     // Greek
-    "en",     // English
-    "en-AU",  // English (Australia)
-    "en-CA",  // English (Canada)
-    "en-GB",  // English (UK)
-    "en-IN",  // English (India)
-    "en-NZ",  // English (New Zealand)
-    "en-US",  // English (US)
-    "en-ZA",  // English (South Africa)
-    "eo",     // Esperanto
+    "af",              // Afrikaans
+    "am",              // Amharic
+    "an",              // Aragonese
+    "ar",              // Arabic
+    "ast",             // Asturian
+    "az",              // Azerbaijani
+    "be",              // Belarusian
+    "bg",              // Bulgarian
+    "bh",              // Bihari
+    "bn",              // Bengali
+    "br",              // Breton
+    "bs",              // Bosnian
+    "ca",              // Catalan
+    "ceb",             // Cebuano
+    "ckb",             // Kurdish (Arabic),  Sorani
+    "co",              // Corsican
+    "cs",              // Czech
+    "cy",              // Welsh
+    "da",              // Danish
+    "de",              // German
+    "de-AT",           // German (Austria)
+    "de-CH",           // German (Switzerland)
+    "de-DE",           // German (Germany)
+    "de-LI",           // German (Liechtenstein)
+    "el",              // Greek
+    "en",              // English
+    "en-AU",           // English (Australia)
+    "en-CA",           // English (Canada)
+    "en-GB",           // English (UK)
+    "en-GB-oxendict",  // English (UK, OED spelling)
+    "en-IN",           // English (India)
+    "en-NZ",           // English (New Zealand)
+    "en-US",           // English (US)
+    "en-ZA",           // English (South Africa)
+    "eo",              // Esperanto
     // TODO(jungshik) : Do we want to list all es-Foo for Latin-American
     // Spanish speaking countries?
     "es",      // Spanish
@@ -256,7 +258,7 @@ bool IsLocalePartiallyPopulated(const std::string& locale_name) {
   return !l10n_util::IsLocaleNameTranslated("en", locale_name);
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 bool IsLocaleAvailable(const std::string& locale) {
   // If locale has any illegal characters in it, we don't want to try to
   // load it because it may be pointing outside the locale data file directory.
@@ -268,9 +270,6 @@ bool IsLocaleAvailable(const std::string& locale) {
   // under a system locale Chrome is not localized to (e.g.Farsi on Linux),
   // but it'd slow down the start up time a little bit for locales Chrome is
   // localized to. So, we don't call it here.
-  if (!l10n_util::IsLocaleSupportedByOS(locale))
-    return false;
-
   return ui::ResourceBundle::LocaleDataPakExists(locale);
 }
 #endif
@@ -281,7 +280,7 @@ bool IsLocaleAvailable(const std::string& locale) {
 // if "foo bar" is RTL. So this function prepends the necessary RLM in such
 // cases.
 void AdjustParagraphDirectionality(base::string16* paragraph) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_ANDROID)
   if (base::i18n::IsRTL() &&
       base::i18n::StringContainsStrongRTLChars(*paragraph)) {
     paragraph->insert(0, 1,
@@ -306,8 +305,6 @@ struct AvailableLocalesTraits
       // Filter out locales for which we have only partially populated data
       // and to which Chrome is not localized.
       if (IsLocalePartiallyPopulated(locale_name))
-        continue;
-      if (!l10n_util::IsLocaleSupportedByOS(locale_name))
         continue;
       // Normalize underscores to hyphens because that's what our locale files
       // use.
@@ -342,7 +339,7 @@ std::string GetLanguage(const std::string& locale) {
 // and generic locale fallback based on ICU/CLDR.
 bool CheckAndResolveLocale(const std::string& locale,
                            std::string* resolved_locale) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   if (IsLocaleAvailable(locale)) {
     *resolved_locale = locale;
     return true;
@@ -382,18 +379,15 @@ bool CheckAndResolveLocale(const std::string& locale,
         tmp_locale.append("-CN");
       }
     } else if (base::LowerCaseEqualsASCII(lang, "en")) {
-      // Map Australian, Canadian, Indian, New Zealand and South African
-      // English to British English for now.
+      // Map Liberian and Filipino English to US English, and everything
+      // else to British English.
       // TODO(jungshik): en-CA may have to change sides once
       // we have OS locale separate from app locale (Chrome's UI language).
-      if (base::LowerCaseEqualsASCII(region, "au") ||
-          base::LowerCaseEqualsASCII(region, "ca") ||
-          base::LowerCaseEqualsASCII(region, "in") ||
-          base::LowerCaseEqualsASCII(region, "nz") ||
-          base::LowerCaseEqualsASCII(region, "za")) {
-        tmp_locale.append("-GB");
-      } else {
+      if (base::LowerCaseEqualsASCII(region, "lr") ||
+          base::LowerCaseEqualsASCII(region, "ph")) {
         tmp_locale.append("-US");
+      } else {
+        tmp_locale.append("-GB");
       }
     }
     if (IsLocaleAvailable(tmp_locale)) {
@@ -422,12 +416,12 @@ bool CheckAndResolveLocale(const std::string& locale,
   }
 #else
   NOTIMPLEMENTED();
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
   return false;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 std::string GetApplicationLocaleInternalMac(const std::string& pref_locale) {
   // Use any override (Cocoa for the browser), otherwise use the preference
   // passed to the function.
@@ -444,7 +438,7 @@ std::string GetApplicationLocaleInternalMac(const std::string& pref_locale) {
 }
 #endif
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 std::string GetApplicationLocaleInternalNonMac(const std::string& pref_locale) {
   std::string resolved_locale;
   std::vector<std::string> candidates;
@@ -511,10 +505,10 @@ std::string GetApplicationLocaleInternalNonMac(const std::string& pref_locale) {
 
   return std::string();
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   return GetApplicationLocaleInternalMac(pref_locale);
 #else
   return GetApplicationLocaleInternalNonMac(pref_locale);
@@ -728,7 +722,7 @@ base::string16 GetStringFUTF16(int message_id,
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const base::string16& format_string = rb.GetLocalizedString(message_id);
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   // Make sure every replacement string is being used, so we don't just
   // silently fail to insert one. If |offsets| is non-NULL, then don't do this
   // check as the code may simply want to find the placeholders rather than

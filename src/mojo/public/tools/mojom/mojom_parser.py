@@ -11,6 +11,7 @@ generate usable language bindings.
 """
 
 import argparse
+import codecs
 import errno
 import json
 import os
@@ -97,7 +98,7 @@ def _GetModuleFilename(mojom_filename):
 
 
 def _EnsureInputLoaded(mojom_abspath, module_path, abs_paths, asts,
-                       dependencies, loaded_modules):
+                       dependencies, loaded_modules, module_metadata):
   """Recursively ensures that a module and its dependencies are loaded.
 
   Args:
@@ -110,10 +111,8 @@ def _EnsureInputLoaded(mojom_abspath, module_path, abs_paths, asts,
         by absolute file path.
     loaded_modules: A mapping of all modules loaded so far, including non-input
         modules that were pulled in as transitive dependencies of the inputs.
-    import_set: The working set of mojom imports processed so far in this
-        call stack. Used to detect circular dependencies.
-    import_stack: An ordered list of imports processed so far in this call
-        stack. Used to report circular dependencies.
+    module_metadata: Metadata to be attached to every module loaded by this
+        helper.
 
   Returns:
     None
@@ -128,7 +127,7 @@ def _EnsureInputLoaded(mojom_abspath, module_path, abs_paths, asts,
   for dep_abspath, dep_path in dependencies[mojom_abspath]:
     if dep_abspath not in loaded_modules:
       _EnsureInputLoaded(dep_abspath, dep_path, abs_paths, asts, dependencies,
-                         loaded_modules)
+                         loaded_modules, module_metadata)
 
   imports = {}
   for imp in asts[mojom_abspath].import_list:
@@ -136,6 +135,7 @@ def _EnsureInputLoaded(mojom_abspath, module_path, abs_paths, asts,
     imports[path] = loaded_modules[abs_paths[path]]
   loaded_modules[mojom_abspath] = translate.OrderedModule(
       asts[mojom_abspath], module_path, imports)
+  loaded_modules[mojom_abspath].metadata = dict(module_metadata)
 
 
 def _CollectAllowedImportsFromBuildMetadata(build_metadata_filename):
@@ -160,6 +160,7 @@ def _ParseMojoms(mojom_files,
                  input_root_paths,
                  output_root_path,
                  enabled_features,
+                 module_metadata,
                  allowed_imports=None):
   """Parses a set of mojom files and produces serialized module outputs.
 
@@ -175,6 +176,8 @@ def _ParseMojoms(mojom_files,
         modules for any transitive dependencies not listed in mojom_files.
     enabled_features: A list of enabled feature names, controlling which AST
         nodes are filtered by [EnableIf] attributes.
+    module_metadata: A list of 2-tuples representing metadata key-value pairs to
+        attach to each compiled module output.
 
   Returns:
     None.
@@ -193,7 +196,7 @@ def _ParseMojoms(mojom_files,
   abs_paths = dict(
       (path, abs_path) for abs_path, path in mojom_files_to_parse.items())
   for mojom_abspath, _ in mojom_files_to_parse.items():
-    with open(mojom_abspath) as f:
+    with codecs.open(mojom_abspath, encoding='utf-8') as f:
       ast = parser.Parse(''.join(f.readlines()), mojom_abspath)
       conditional_features.RemoveDisabledDefinitions(ast, enabled_features)
       loaded_mojom_asts[mojom_abspath] = ast
@@ -235,7 +238,7 @@ def _ParseMojoms(mojom_files,
   num_existing_modules_loaded = len(loaded_modules)
   for mojom_abspath, mojom_path in mojom_files_to_parse.items():
     _EnsureInputLoaded(mojom_abspath, mojom_path, abs_paths, loaded_mojom_asts,
-                       input_dependencies, loaded_modules)
+                       input_dependencies, loaded_modules, module_metadata)
   assert (num_existing_modules_loaded +
           len(mojom_files_to_parse) == len(loaded_modules))
 
@@ -332,6 +335,16 @@ already present in the provided output root.""")
       'build-time dependency checking for mojom imports, where each build '
       'metadata file corresponds to a build target in the dependency graph of '
       'a typical build system.')
+  arg_parser.add_argument(
+      '--add-module-metadata',
+      dest='module_metadata',
+      default=[],
+      action='append',
+      metavar='KEY=VALUE',
+      help='Adds a metadata key-value pair to the output module. This can be '
+      'used by build toolchains to augment parsed mojom modules with product-'
+      'specific metadata for later extraction and use by custom bindings '
+      'generators.')
 
   args, _ = arg_parser.parse_known_args(command_line)
   if args.mojom_file_list:
@@ -352,8 +365,9 @@ already present in the provided output root.""")
   else:
     allowed_imports = None
 
+  module_metadata = map(lambda kvp: tuple(kvp.split('=')), args.module_metadata)
   _ParseMojoms(mojom_files, input_roots, output_root, args.enabled_features,
-               allowed_imports)
+               module_metadata, allowed_imports)
 
 
 if __name__ == '__main__':

@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as DataGrid from '../data_grid/data_grid.js';
 import * as HeapSnapshotModel from '../heap_snapshot_model/heap_snapshot_model.js';
@@ -110,7 +113,7 @@ export class HeapSnapshotGridNode extends DataGrid.DataGrid.DataGridNode {
   /**
    * @override
    * @param {string} columnId
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   createCell(columnId) {
     const cell = super.createCell(columnId);
@@ -222,10 +225,10 @@ export class HeapSnapshotGridNode extends DataGrid.DataGrid.DataGridNode {
 
   /**
    * @param {string} columnId
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _createValueCell(columnId) {
-    const cell = UI.Fragment.html`<td class="numeric-column" />`;
+    const cell = /** @type {!HTMLElement} */ (UI.Fragment.html`<td class="numeric-column" />`);
     if (this.dataGrid.snapshot.totalSize !== 0) {
       const div = createElement('div');
       const valueSpan = UI.Fragment.html`<span>${this.data[columnId]}</span>`;
@@ -272,7 +275,9 @@ export class HeapSnapshotGridNode extends DataGrid.DataGrid.DataGridNode {
    */
   _populateChildren(fromPosition, toPosition) {
     let afterPopulate;
-    const promise = new Promise(resolve => afterPopulate = resolve);
+    const promise = new Promise(resolve => {
+      afterPopulate = resolve;
+    });
     fromPosition = fromPosition || 0;
     toPosition = toPosition || fromPosition + this._dataGrid.defaultPopulateCount();
     let firstNotSerializedPosition = fromPosition;
@@ -520,7 +525,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
   /**
    * @override
    * @param {string} columnId
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   createCell(columnId) {
     const cell = columnId !== 'object' ? this._createValueCell(columnId) : this._createObjectCell();
@@ -531,7 +536,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
   }
 
   /**
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _createObjectCell() {
     let value = this._name;
@@ -569,7 +574,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
   /**
    * @param {string} valueStyle
    * @param {string} value
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   _createObjectCellWithValue(valueStyle, value) {
     const fragment = UI.Fragment.Fragment.build`
@@ -589,7 +594,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
       div.appendChild(UI.Fragment.html`<span class="heap-object-tag" title="${ls`Detached from DOM tree`}">✀</span>`);
     }
     this._appendSourceLocation(div);
-    const cell = fragment.element();
+    const cell = /** @type {!HTMLElement} */ (fragment.element());
     if (this.depth) {
       cell.style.setProperty('padding-left', (this.depth * this.dataGrid.indentWidth) + 'px');
     }
@@ -696,7 +701,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
           Common.Console.Console.instance().error(ls`Preview is not available`);
         } else {
           await SDK.ConsoleModel.ConsoleModel.instance().saveToTempVariable(
-              self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext), remoteObject);
+              UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext), remoteObject);
         }
       });
     }
@@ -827,7 +832,7 @@ export class HeapSnapshotObjectNode extends HeapSnapshotGenericObjectNode {
     if (this._cycledWithAncestorGridNode) {
       div.classList.add('cycled-ancessor-node');
     }
-    div.prepend(UI.Fragment.html`<span class="${nameClass}">${name}</span>
+    div.prepend(UI.Fragment.html`<span class="property-name ${nameClass}">${name}</span>
                         <span class="grayed">${this._edgeNodeSeparator()}</span>`);
   }
 
@@ -1071,7 +1076,7 @@ export class HeapSnapshotConstructorNode extends HeapSnapshotGridNode {
   /**
    * @override
    * @param {string} columnId
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   createCell(columnId) {
     const cell = columnId === 'object' ? super.createCell(columnId) : this._createValueCell(columnId);
@@ -1263,7 +1268,7 @@ export class HeapSnapshotDiffNode extends HeapSnapshotGridNode {
   /**
    * @override
    * @param {string} columnId
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   createCell(columnId) {
     const cell = super.createCell(columnId);
@@ -1407,7 +1412,7 @@ export class AllocationGridNode extends HeapSnapshotGridNode {
   /**
    * @override
    * @param {string} columnId
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   createCell(columnId) {
     if (columnId !== 'name') {

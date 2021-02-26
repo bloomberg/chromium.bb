@@ -17,12 +17,11 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/assistant/device_actions_delegate.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using chromeos::assistant::mojom::AndroidAppInfo;
-using chromeos::assistant::mojom::AndroidAppInfoPtr;
-using chromeos::assistant::mojom::AppStatus;
+using chromeos::assistant::AndroidAppInfo;
+using chromeos::assistant::AppStatus;
 
 namespace {
 
@@ -32,8 +31,8 @@ constexpr char kUnregisteredAppName[] = "unregistered_app_name";
 
 class FakeDeviceActionsDelegate : public DeviceActionsDelegate {
   AppStatus GetAndroidAppStatus(const std::string& package_name) override {
-    return apps_.find(package_name) != apps_.end() ? AppStatus::AVAILABLE
-                                                   : AppStatus::UNAVAILABLE;
+    return apps_.find(package_name) != apps_.end() ? AppStatus::kAvailable
+                                                   : AppStatus::kUnavailable;
   }
 
  private:
@@ -44,7 +43,7 @@ class FakeDeviceActionsDelegate : public DeviceActionsDelegate {
 
 class DeviceActionsTest : public ChromeAshTestBase {
  public:
-  DeviceActionsTest() {}
+  DeviceActionsTest() = default;
   ~DeviceActionsTest() override = default;
 
   void SetUp() override {
@@ -61,10 +60,10 @@ class DeviceActionsTest : public ChromeAshTestBase {
   DeviceActions* device_actions() { return device_actions_.get(); }
 
   AppStatus GetAppStatus(std::string package_name) {
-    AndroidAppInfoPtr app_info = AndroidAppInfo::New();
-    app_info->package_name = package_name;
+    AndroidAppInfo app_info;
+    app_info.package_name = package_name;
 
-    return device_actions()->GetAndroidAppStatus(*app_info);
+    return device_actions()->GetAndroidAppStatus(app_info);
   }
 
  private:
@@ -72,18 +71,18 @@ class DeviceActionsTest : public ChromeAshTestBase {
 };
 
 TEST_F(DeviceActionsTest, RegisteredAppShouldBeAvailable) {
-  ASSERT_EQ(GetAppStatus(kRegisteredAppName), AppStatus::AVAILABLE);
+  ASSERT_EQ(GetAppStatus(kRegisteredAppName), AppStatus::kAvailable);
 }
 
 TEST_F(DeviceActionsTest, UnregisteredAppShouldBeUnavailable) {
-  ASSERT_EQ(GetAppStatus(kUnregisteredAppName), AppStatus::UNAVAILABLE);
+  ASSERT_EQ(GetAppStatus(kUnregisteredAppName), AppStatus::kUnavailable);
 }
 
 TEST_F(DeviceActionsTest, UnknownAppShouldBeUnknown) {
 }
 
 TEST_F(DeviceActionsTest, MultipleAppsShouldBeVerifiedCorrectly) {
-  ASSERT_EQ(GetAppStatus(kRegisteredAppName), AppStatus::AVAILABLE);
-  ASSERT_EQ(GetAppStatus(kUnregisteredAppName), AppStatus::UNAVAILABLE);
-  ASSERT_EQ(GetAppStatus(kOtherRegisteredAppName), AppStatus::AVAILABLE);
+  ASSERT_EQ(GetAppStatus(kRegisteredAppName), AppStatus::kAvailable);
+  ASSERT_EQ(GetAppStatus(kUnregisteredAppName), AppStatus::kUnavailable);
+  ASSERT_EQ(GetAppStatus(kOtherRegisteredAppName), AppStatus::kAvailable);
 }

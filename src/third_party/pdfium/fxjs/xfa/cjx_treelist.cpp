@@ -22,7 +22,7 @@ CJX_TreeList::CJX_TreeList(CXFA_TreeList* list) : CJX_List(list) {
   DefineMethods(MethodSpecs);
 }
 
-CJX_TreeList::~CJX_TreeList() {}
+CJX_TreeList::~CJX_TreeList() = default;
 
 bool CJX_TreeList::DynamicTypeIs(TypeTag eType) const {
   return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
@@ -43,9 +43,6 @@ CJS_Result CJX_TreeList::namedItem(
   if (!pNode)
     return CJS_Result::Success();
 
-  CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(pNode);
-
   return CJS_Result::Success(
-      value->DirectGetValue().Get(runtime->GetIsolate()));
+      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(pNode));
 }

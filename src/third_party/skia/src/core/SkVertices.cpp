@@ -24,7 +24,7 @@ static int32_t next_id() {
 
     int32_t id;
     do {
-        id = nextID++;
+        id = nextID.fetch_add(1, std::memory_order_relaxed);
     } while (id == SK_InvalidGenID);
     return id;
 }
@@ -121,7 +121,7 @@ struct SkVertices::Sizes {
                 return;
             }
             if (attr.fMarkerName) {
-                fNameSize = safe.add(fNameSize, strlen(attr.fMarkerName));
+                fNameSize = safe.add(fNameSize, strlen(attr.fMarkerName) + 1 /*null terminator*/);
             }
         }
         fNameSize = SkAlign4(fNameSize);
@@ -174,7 +174,7 @@ struct SkVertices::Sizes {
 
     bool isValid() const { return fTotal != 0; }
 
-    size_t fTotal;  // size of entire SkVertices allocation (obj + arrays)
+    size_t fTotal = 0;  // size of entire SkVertices allocation (obj + arrays)
     size_t fAttrSize;  // size of attributes
     size_t fNameSize;  // size of attribute marker names
     size_t fArrays; // size of all the data arrays (V + D + T + C + I)
@@ -247,7 +247,7 @@ void SkVertices::Builder::init(const Desc& desc) {
         Attribute& attr(fVertices->fAttributes[i]);
         if (attr.fMarkerName) {
             attr.fMarkerName = strcpy(markerNames, attr.fMarkerName);
-            markerNames += (strlen(markerNames) + 1);
+            markerNames += (strlen(markerNames) + 1 /*null terminator*/);
         }
     }
 
@@ -269,7 +269,7 @@ sk_sp<SkVertices> SkVertices::Builder::detach() {
     if (fVertices) {
         fVertices->fBounds.setBounds(fVertices->fPositions, fVertices->fVertexCount);
         if (fVertices->fMode == kTriangleFan_VertexMode) {
-            if (fIntermediateFanIndices.get()) {
+            if (fIntermediateFanIndices) {
                 SkASSERT(fVertices->fIndexCount);
                 auto tempIndices = this->indices();
                 for (int t = 0; t < fVertices->fIndexCount - 2; ++t) {

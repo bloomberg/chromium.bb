@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.feedback;
 
 import static org.chromium.chrome.browser.feedback.ConnectivityCheckerTestRule.TIMEOUT_MS;
 
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -16,12 +16,11 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.feedback.ConnectivityTask.FeedbackData;
 import org.chromium.chrome.browser.feedback.ConnectivityTask.Type;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.ConnectionType;
 
@@ -64,12 +63,9 @@ public class ConnectivityTaskTest {
                     }
                 });
 
-        CriteriaHelper.pollUiThread(new Criteria("Should be finished by now.") {
-            @Override
-            public boolean isSatisfied() {
-                return task.isDone();
-            }
-        }, TIMEOUT_MS, RESULT_CHECK_INTERVAL_MS);
+        CriteriaHelper.pollUiThread(() -> {
+            return task.isDone();
+        }, "Should be finished by now.", TIMEOUT_MS, RESULT_CHECK_INTERVAL_MS);
         FeedbackData feedback = getResult(task);
         verifyConnections(feedback, ConnectivityCheckResult.NOT_CONNECTED);
         Assert.assertEquals("The timeout value is wrong.", TIMEOUT_MS, feedback.getTimeoutMs());
@@ -185,12 +181,8 @@ public class ConnectivityTaskTest {
                     }
                 });
         thrown.expect(AssertionError.class);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return task.isDone();
-            }
-        }, TIMEOUT_MS / 5, RESULT_CHECK_INTERVAL_MS);
+        CriteriaHelper.pollUiThread(
+                () -> { return task.isDone(); }, TIMEOUT_MS / 5, RESULT_CHECK_INTERVAL_MS);
         FeedbackData feedback = getResult(task);
         verifyConnections(feedback, ConnectivityCheckResult.UNKNOWN);
         Assert.assertEquals("The timeout value is wrong.", TIMEOUT_MS, feedback.getTimeoutMs());

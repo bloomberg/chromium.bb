@@ -32,9 +32,6 @@ def run_shell_out(url, mode):
   # Enable 'report_on_exception_exit' even though main file is *_test.py.
   on_error._is_in_test = lambda: False
 
-  # Hack it out so registering works.
-  on_error._ENABLED_DOMAINS = (socket.getfqdn(),)
-
   # Don't try to authenticate into localhost.
   on_error.authenticators.OAuthAuthenticator = lambda *_: None
 

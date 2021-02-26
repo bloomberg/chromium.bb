@@ -13,7 +13,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "extensions/browser/extension_registry.h"
@@ -35,7 +35,7 @@ class ExtensionInstallEventLogCollector
     : public chromeos::PowerManagerClient::Observer,
       public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public extensions::ExtensionRegistryObserver,
-      public extensions::InstallationReporter::Observer {
+      public extensions::InstallStageTracker::Observer {
  public:
   // The delegate that events are forwarded to for inclusion in the log.
   class Delegate {
@@ -93,10 +93,23 @@ class ExtensionInstallEventLogCollector
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override;
 
-  // InstallationReporter::Observer overrides
+  // InstallStageTracker::Observer overrides
   void OnExtensionInstallationFailed(
       const extensions::ExtensionId& extension_id,
-      extensions::InstallationReporter::FailureReason reason) override;
+      extensions::InstallStageTracker::FailureReason reason) override;
+  void OnExtensionInstallationStageChanged(
+      const extensions::ExtensionId& id,
+      extensions::InstallStageTracker::Stage stage) override;
+  void OnExtensionDownloadingStageChanged(
+      const extensions::ExtensionId& id,
+      extensions::ExtensionDownloaderDelegate::Stage stage) override;
+  void OnExtensionInstallCreationStageChanged(
+      const extensions::ExtensionId& id,
+      extensions::InstallStageTracker::InstallCreationStage stage) override;
+  void OnExtensionDownloadCacheStatusRetrieved(
+      const extensions::ExtensionId& id,
+      extensions::ExtensionDownloaderDelegate::CacheStatus cache_status)
+      override;
 
   // Reports success events for the extensions which are requested from policy
   // and are already loaded.
@@ -104,7 +117,7 @@ class ExtensionInstallEventLogCollector
 
   // Adds success events and notifies delegate that extension is loaded
   // successfully.
-  void AddSuccessEvent(const extensions::ExtensionId& id);
+  void AddSuccessEvent(const extensions::Extension* extension);
 
  private:
   extensions::ExtensionRegistry* registry_;
@@ -117,9 +130,9 @@ class ExtensionInstallEventLogCollector
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       registry_observer_{this};
-  ScopedObserver<extensions::InstallationReporter,
-                 extensions::InstallationReporter::Observer>
-      reporter_observer_{this};
+  ScopedObserver<extensions::InstallStageTracker,
+                 extensions::InstallStageTracker::Observer>
+      stage_tracker_observer_{this};
 };
 
 }  // namespace policy

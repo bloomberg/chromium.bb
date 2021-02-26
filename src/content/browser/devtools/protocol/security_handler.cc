@@ -11,7 +11,7 @@
 
 #include "base/base64.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -120,8 +120,7 @@ SecurityHandler::SecurityHandler()
       host_(nullptr) {
 }
 
-SecurityHandler::~SecurityHandler() {
-}
+SecurityHandler::~SecurityHandler() = default;
 
 void SecurityHandler::Wire(UberDispatcher* dispatcher) {
   frontend_.reset(new Security::Frontend(dispatcher->channel()));

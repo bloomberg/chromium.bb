@@ -9,9 +9,12 @@
 #include <vector>
 
 #include "base/i18n/case_conversion.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
+#include "components/database_utils/url_converter.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/url_formatter/url_formatter.h"
 #include "sql/statement.h"
@@ -45,18 +48,6 @@ URLDatabase::URLDatabase()
 }
 
 URLDatabase::~URLDatabase() {
-}
-
-// static
-std::string URLDatabase::GURLToDatabaseURL(const GURL& gurl) {
-  // TODO(brettw): do something fancy here with encoding, etc.
-
-  // Strip username and password from URL before sending to DB.
-  GURL::Replacements replacements;
-  replacements.ClearUsername();
-  replacements.ClearPassword();
-
-  return (gurl.ReplaceComponents(replacements)).spec();
 }
 
 // Convenience to fill a URLRow. Must be in sync with the fields in
@@ -140,7 +131,7 @@ bool URLDatabase::GetURLRow(URLID url_id, URLRow* info) {
 URLID URLDatabase::GetRowForURL(const GURL& url, URLRow* info) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE url=?"));
-  std::string url_string = GURLToDatabaseURL(url);
+  std::string url_string = database_utils::GurlToDatabaseUrl(url);
   statement.BindString(0, url_string);
 
   if (!statement.Step())
@@ -188,7 +179,7 @@ URLID URLDatabase::AddURLInternal(const URLRow& info, bool is_temporary) {
 
   sql::Statement statement(GetDB().GetCachedStatement(
       sql::StatementID(__FILE__, statement_line), statement_sql));
-  statement.BindString(0, GURLToDatabaseURL(info.url()));
+  statement.BindString(0, database_utils::GurlToDatabaseUrl(info.url()));
   statement.BindString16(1, info.title());
   statement.BindInt(2, info.visit_count());
   statement.BindInt(3, info.typed_count());
@@ -243,7 +234,7 @@ bool URLDatabase::InsertOrUpdateURLRowByID(const URLRow& info) {
       "VALUES (?, ?, ?, ?, ?, ?, ?)"));
 
   statement.BindInt64(0, info.id());
-  statement.BindString(1, GURLToDatabaseURL(info.url()));
+  statement.BindString(1, database_utils::GurlToDatabaseUrl(info.url()));
   statement.BindString16(2, info.title());
   statement.BindInt(3, info.visit_count());
   statement.BindInt(4, info.typed_count());
@@ -572,7 +563,7 @@ bool URLDatabase::GetKeywordSearchTermRows(
     row.url_id = statement.ColumnInt64(1);
     row.keyword_id = statement.ColumnInt64(0);
     row.term = term;
-    row.normalized_term = statement.ColumnInt64(2);
+    row.normalized_term = statement.ColumnString16(2);
     rows->push_back(row);
   }
   return true;
@@ -630,33 +621,64 @@ void URLDatabase::GetMostRecentKeywordSearchTerms(
   }
 }
 
-std::vector<KeywordSearchTermVisit>
-URLDatabase::GetMostRecentKeywordSearchTerms(KeywordID keyword_id,
-                                             int max_count) {
+std::vector<NormalizedKeywordSearchTermVisit>
+URLDatabase::GetMostRecentNormalizedKeywordSearchTerms(
+    KeywordID keyword_id,
+    base::Time age_threshold) {
   // NOTE: the keyword_id can be zero if on first run the user does a query
   // before the TemplateURLService has finished loading. As the chances of this
   // occurring are small, we ignore it.
   if (!keyword_id)
     return {};
 
-  sql::Statement statement(GetDB().GetCachedStatement(
-      SQL_FROM_HERE,
-      "SELECT DISTINCT "
-      "kv.term, kv.normalized_term, u.visit_count, u.last_visit_time "
-      "FROM keyword_search_terms kv JOIN urls u ON kv.url_id = u.id "
-      "WHERE kv.keyword_id = ? "
-      "ORDER BY u.last_visit_time DESC LIMIT ?"));
+  // Extracts the most recent normalized search terms from the
+  // keyword_search_terms table joined with the urls table. For a given search
+  // term, those search query URLs that are visited too closely to the original
+  // search query URL are ignored in order to avoid erroneously boosting the
+  // term when frecency ranking is used. This is done by rounding down the URLs'
+  // last_visit_time to the largest ? ms interval and picking the oldest URL out
+  // of all the URLs with the same rounded last visit time. The average of visit
+  // counts for those URLs is then used as the visit count of this emerging
+  // deduplicated URL This way no bare column (chosen at random) is returned by
+  // the aggregate query.
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+                                                      R"(
+      SELECT
+        normalized_term,
+        SUM(visit_count) AS visit_count,
+        MAX(last_visit_time) AS last_visit_time
+      FROM
+        (
+          SELECT
+            normalized_term,
+            AVG(visit_count) AS visit_count,
+            MIN(u.last_visit_time) AS last_visit_time,
+            u.last_visit_time - (u.last_visit_time % ?) as rnd_last_visit_time
+          FROM
+            keyword_search_terms kv JOIN urls u ON kv.url_id = u.id
+          WHERE
+            kv.keyword_id = ?
+            AND u.last_visit_time > ?
+            AND kv.normalized_term IS NOT NULL
+            AND kv.normalized_term != ""
+          GROUP BY normalized_term, rnd_last_visit_time
+        )
+      GROUP BY normalized_term
+      ORDER BY last_visit_time DESC
+      )"));
 
-  statement.BindInt64(0, keyword_id);
-  statement.BindInt(1, max_count);
+  statement.BindInt64(
+      0, kAutocompleteDuplicateVisitIntervalThreshold.ToInternalValue());
+  statement.BindInt64(1, keyword_id);
+  statement.BindInt64(2, age_threshold.ToInternalValue());
 
-  std::vector<KeywordSearchTermVisit> visits;
+  std::vector<NormalizedKeywordSearchTermVisit> visits;
   while (statement.Step()) {
-    KeywordSearchTermVisit visit;
-    visit.term = statement.ColumnString16(0);
-    visit.normalized_term = statement.ColumnString16(1);
-    visit.visits = statement.ColumnInt(2);
-    visit.time = base::Time::FromInternalValue(statement.ColumnInt64(3));
+    NormalizedKeywordSearchTermVisit visit;
+    visit.normalized_term = statement.ColumnString16(0);
+    visit.visits = statement.ColumnInt(1);
+    visit.most_recent_visit_time =
+        base::Time::FromInternalValue(statement.ColumnInt64(2));
     visits.push_back(visit);
   }
   return visits;
@@ -688,6 +710,11 @@ bool URLDatabase::DeleteKeywordSearchTermForURL(URLID url_id) {
       SQL_FROM_HERE, "DELETE FROM keyword_search_terms WHERE url_id=?"));
   statement.BindInt64(0, url_id);
   return statement.Run();
+}
+
+bool URLDatabase::GetVisitsForUrl2(URLID url_id, VisitVector* visits) {
+  NOTREACHED();
+  return false;
 }
 
 bool URLDatabase::DropStarredIDFromURLs() {
@@ -768,6 +795,9 @@ bool URLDatabase::RecreateURLTableWithAllContents() {
 const int kLowQualityMatchTypedLimit = 1;
 const int kLowQualityMatchVisitLimit = 4;
 const int kLowQualityMatchAgeLimitInDays = 3;
+
+const base::TimeDelta kAutocompleteDuplicateVisitIntervalThreshold =
+    base::TimeDelta::FromMinutes(5);
 
 base::Time AutocompleteAgeThreshold() {
   return (base::Time::Now() -

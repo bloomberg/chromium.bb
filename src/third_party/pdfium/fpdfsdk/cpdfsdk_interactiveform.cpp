@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <memory>
 #include <sstream>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -36,7 +35,6 @@
 #include "fpdfsdk/ipdfsdk_annothandler.h"
 #include "fxjs/ijs_event_context.h"
 #include "fxjs/ijs_runtime.h"
-#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -114,7 +112,7 @@ bool FDFToURLEncodedData(
 CPDFSDK_InteractiveForm::CPDFSDK_InteractiveForm(
     CPDFSDK_FormFillEnvironment* pFormFillEnv)
     : m_pFormFillEnv(pFormFillEnv),
-      m_pInteractiveForm(pdfium::MakeUnique<CPDF_InteractiveForm>(
+      m_pInteractiveForm(std::make_unique<CPDF_InteractiveForm>(
           m_pFormFillEnv->GetPDFDocument())) {
   m_pInteractiveForm->SetNotifierIface(this);
   RemoveAllHighLights();

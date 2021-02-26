@@ -31,13 +31,14 @@ enum FWL_BCDAttribute {
 
 class CFWL_Barcode final : public CFWL_Edit {
  public:
-  explicit CFWL_Barcode(const CFWL_App* pApp);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CFWL_Barcode() override;
 
   // CFWL_Widget
   FWL_Type GetClassID() const override;
   void Update() override;
-  void DrawWidget(CXFA_Graphics* pGraphics, const CFX_Matrix& matrix) override;
+  void DrawWidget(CFGAS_GEGraphics* pGraphics,
+                  const CFX_Matrix& matrix) override;
   void OnProcessEvent(CFWL_Event* pEvent) override;
 
   // CFWL_Edit
@@ -65,6 +66,8 @@ class CFWL_Barcode final : public CFWL_Edit {
     kNeedUpdate,
     kEncodeSuccess,
   };
+
+  explicit CFWL_Barcode(CFWL_App* pApp);
 
   void GenerateBarcodeImageCache();
   void CreateBarcodeEngine();

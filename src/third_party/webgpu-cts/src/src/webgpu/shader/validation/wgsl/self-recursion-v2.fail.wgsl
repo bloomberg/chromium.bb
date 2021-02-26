@@ -1,6 +1,5 @@
 # v-0004 - Self recursion is dis-allowed and `c` calls itself.
 
-
 fn d() -> i32 {
   return 2;
 }
@@ -17,9 +16,8 @@ fn a() -> i32 {
   return b();
 }
 
+[[stage(vertex)]]
 fn main() -> void {
   var v : i32 = a();
   return;
 }
-entry_point vertex = main;
-

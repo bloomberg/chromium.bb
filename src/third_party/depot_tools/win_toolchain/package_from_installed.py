@@ -60,7 +60,8 @@ def GetVSPath():
   command = (r'C:\Program Files (x86)\Microsoft Visual Studio\Installer'
              r'\vswhere.exe -prerelease')
   marker = 'installationPath: '
-  for line in subprocess.check_output(command).splitlines():
+  output = subprocess.check_output(command, universal_newlines=True)
+  for line in output.splitlines():
     if line.startswith(marker):
       return line[len(marker):]
   raise Exception('VS %s path not found in vswhere output' % (VS_VERSION))
@@ -181,11 +182,12 @@ def BuildFileList(override_dir, include_arm):
       combined = os.path.normpath(os.path.join(root, f))
       # Some of the files in this directory are exceedingly long (and exceed
       # _MAX_PATH for any moderately long root), so exclude them. We don't need
-      # them anyway. Exclude others just to save space.
+      # them anyway. Exclude/filter/skip others just to save space.
       tail = combined[len(sdk_path) + 1:]
       skip_dir = False
       for dir in ['References\\', 'Windows Performance Toolkit\\', 'Testing\\',
-                  'App Certification Kit\\', 'Extension SDKs\\']:
+                  'App Certification Kit\\', 'Extension SDKs\\',
+                  'Assessment and Deployment Kit\\']:
         if tail.startswith(dir):
           skip_dir = True
       if skip_dir:
@@ -266,86 +268,90 @@ def GenerateSetEnvCmd(target_dir):
   do it here manually since we do not do a full install."""
   vc_tools_parts = VC_TOOLS.split('/')
 
-  # All these paths are relative to the directory containing SetEnv.cmd.
+  # All these paths are relative to the grandparent of the directory containing
+  # SetEnv.cmd.
   include_dirs = [
-    ['..', '..', 'win_sdk', 'Include', WIN_VERSION, 'um'],
-    ['..', '..', 'win_sdk', 'Include', WIN_VERSION, 'shared'],
-    ['..', '..', 'win_sdk', 'Include', WIN_VERSION, 'winrt'],
+    ['win_sdk', 'Include', WIN_VERSION, 'um'],
+    ['win_sdk', 'Include', WIN_VERSION, 'shared'],
+    ['win_sdk', 'Include', WIN_VERSION, 'winrt'],
   ]
-  include_dirs.append(['..', '..', 'win_sdk', 'Include', WIN_VERSION, 'ucrt'])
+  include_dirs.append(['win_sdk', 'Include', WIN_VERSION, 'ucrt'])
   include_dirs.extend([
-    ['..', '..'] + vc_tools_parts + ['include'],
-    ['..', '..'] + vc_tools_parts + ['atlmfc', 'include'],
+    vc_tools_parts + ['include'],
+    vc_tools_parts + ['atlmfc', 'include'],
   ])
   libpath_dirs = [
-    ['..', '..'] + vc_tools_parts + ['lib', 'x86', 'store', 'references'],
-    ['..', '..', 'win_sdk', 'UnionMetadata', WIN_VERSION],
+    vc_tools_parts + ['lib', 'x86', 'store', 'references'],
+    ['win_sdk', 'UnionMetadata', WIN_VERSION],
   ]
   # Common to x86, x64, and arm64
   env = collections.OrderedDict([
     # Yuck: These have a trailing \ character. No good way to represent this in
     # an OS-independent way.
-    ('VSINSTALLDIR', [['..', '..\\']]),
-    ('VCINSTALLDIR', [['..', '..', 'VC\\']]),
+    ('VSINSTALLDIR', [['.\\']]),
+    ('VCINSTALLDIR', [['VC\\']]),
     ('INCLUDE', include_dirs),
     ('LIBPATH', libpath_dirs),
   ])
   # x86. Always use amd64_x86 cross, not x86 on x86.
-  env['VCToolsInstallDir'] = [['..', '..'] + vc_tools_parts[:]]
+  env['VCToolsInstallDir'] = [vc_tools_parts[:]]
   # Yuck: This one ends in a slash as well.
   env['VCToolsInstallDir'][0][-1] += '\\'
   env_x86 = collections.OrderedDict([
       (
           'PATH',
           [
-              ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
-              ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x86'],
-              ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'
+              ['win_sdk', 'bin', WIN_VERSION, 'x64'],
+              vc_tools_parts + ['bin', 'HostX64', 'x86'],
+              vc_tools_parts + ['bin', 'HostX64', 'x64'
                                               ],  # Needed for mspdb1x0.dll.
           ]),
       ('LIB', [
-          ['..', '..'] + vc_tools_parts + ['lib', 'x86'],
-          ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x86'],
-          ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x86'],
-          ['..', '..'] + vc_tools_parts + ['atlmfc', 'lib', 'x86'],
+          vc_tools_parts + ['lib', 'x86'],
+          ['win_sdk', 'Lib', WIN_VERSION, 'um', 'x86'],
+          ['win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x86'],
+          vc_tools_parts + ['atlmfc', 'lib', 'x86'],
       ]),
   ])
 
   # x64.
   env_x64 = collections.OrderedDict([
       ('PATH', [
-          ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
-          ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'],
+          ['win_sdk', 'bin', WIN_VERSION, 'x64'],
+          vc_tools_parts + ['bin', 'HostX64', 'x64'],
       ]),
       ('LIB', [
-          ['..', '..'] + vc_tools_parts + ['lib', 'x64'],
-          ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x64'],
-          ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x64'],
-          ['..', '..'] + vc_tools_parts + ['atlmfc', 'lib', 'x64'],
+          vc_tools_parts + ['lib', 'x64'],
+          ['win_sdk', 'Lib', WIN_VERSION, 'um', 'x64'],
+          ['win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x64'],
+          vc_tools_parts + ['atlmfc', 'lib', 'x64'],
       ]),
   ])
 
   # arm64.
   env_arm64 = collections.OrderedDict([
       ('PATH', [
-          ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
-          ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'arm64'],
-          ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'],
+          ['win_sdk', 'bin', WIN_VERSION, 'x64'],
+          vc_tools_parts + ['bin', 'HostX64', 'arm64'],
+          vc_tools_parts + ['bin', 'HostX64', 'x64'],
       ]),
       ('LIB', [
-          ['..', '..'] + vc_tools_parts + ['lib', 'arm64'],
-          ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'arm64'],
-          ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'arm64'],
-          ['..', '..'] + vc_tools_parts + ['atlmfc', 'lib', 'arm64'],
+          vc_tools_parts + ['lib', 'arm64'],
+          ['win_sdk', 'Lib', WIN_VERSION, 'um', 'arm64'],
+          ['win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'arm64'],
+          vc_tools_parts + ['atlmfc', 'lib', 'arm64'],
       ]),
   ])
 
   def BatDirs(dirs):
-    return ';'.join(['%~dp0' + os.path.join(*d) for d in dirs])
+    return ';'.join(['%cd%\\' + os.path.join(*d) for d in dirs])
   set_env_prefix = os.path.join(target_dir, r'win_sdk\bin\SetEnv')
   with open(set_env_prefix + '.cmd', 'w') as f:
+    # The prologue changes the current directory to the grandparent so that the
+    # path entries can be set up without needing ..\..\ components.
     f.write('@echo off\n'
-            ':: Generated by win_toolchain\\package_from_installed.py.\n')
+            ':: Generated by win_toolchain\\package_from_installed.py.\n'
+            'pushd %~dp0..\..\n')
     for var, dirs in env.items():
       f.write('set %s=%s\n' % (var, BatDirs(dirs)))
     f.write('if "%1"=="/x64" goto x64\n')
@@ -354,30 +360,33 @@ def GenerateSetEnvCmd(target_dir):
     for var, dirs in env_x86.items():
       f.write('set %s=%s%s\n' % (
           var, BatDirs(dirs), ';%PATH%' if var == 'PATH' else ''))
-    f.write('goto :EOF\n')
+    f.write('goto :END\n')
 
     f.write(':x64\n')
     for var, dirs in env_x64.items():
       f.write('set %s=%s%s\n' % (
           var, BatDirs(dirs), ';%PATH%' if var == 'PATH' else ''))
-    f.write('goto :EOF\n')
+    f.write('goto :END\n')
 
     f.write(':arm64\n')
     for var, dirs in env_arm64.items():
       f.write('set %s=%s%s\n' % (
           var, BatDirs(dirs), ';%PATH%' if var == 'PATH' else ''))
-    f.write('goto :EOF\n')
-  with open(set_env_prefix + '.x86.json', 'wb') as f:
+    f.write('goto :END\n')
+    f.write(':END\n')
+    # Restore the original directory.
+    f.write('popd\n')
+  with open(set_env_prefix + '.x86.json', 'wt', newline='') as f:
     assert not set(env.keys()) & set(env_x86.keys()), 'dupe keys'
-    json.dump({'env': collections.OrderedDict(env.items() + env_x86.items())},
+    json.dump({'env': collections.OrderedDict(list(env.items()) + list(env_x86.items()))},
               f)
-  with open(set_env_prefix + '.x64.json', 'wb') as f:
+  with open(set_env_prefix + '.x64.json', 'wt', newline='') as f:
     assert not set(env.keys()) & set(env_x64.keys()), 'dupe keys'
-    json.dump({'env': collections.OrderedDict(env.items() + env_x64.items())},
+    json.dump({'env': collections.OrderedDict(list(env.items()) + list(env_x64.items()))},
               f)
-  with open(set_env_prefix + '.arm64.json', 'wb') as f:
+  with open(set_env_prefix + '.arm64.json', 'wt', newline='') as f:
     assert not set(env.keys()) & set(env_arm64.keys()), 'dupe keys'
-    json.dump({'env': collections.OrderedDict(env.items() + env_arm64.items())},
+    json.dump({'env': collections.OrderedDict(list(env.items()) + list(env_arm64.items()))},
               f)
 
 
@@ -397,7 +406,7 @@ def AddEnvSetup(files, include_arm):
     files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.arm64.json'),
                   'win_sdk\\bin\\SetEnv.arm64.json'))
   vs_version_file = os.path.join(tempdir, 'VS_VERSION')
-  with open(vs_version_file, 'wb') as version:
+  with open(vs_version_file, 'wt', newline='') as version:
     print(VS_VERSION, file=version)
   files.append((vs_version_file, 'VS_VERSION'))
 
@@ -415,6 +424,10 @@ def RenameToSha1(output):
     zf.extractall(rel_dir)
   print('Hashing...')
   sha1 = get_toolchain_if_necessary.CalculateHash(rel_dir, None)
+  # Shorten from forty characters to ten. This is still enough to avoid
+  # collisions, while being less unwieldy and reducing the risk of MAX_PATH
+  # failures.
+  sha1 = sha1[:10]
   os.chdir(old_dir)
   shutil.rmtree(tempdir)
   final_name = sha1 + '.zip'
@@ -423,11 +436,14 @@ def RenameToSha1(output):
 
 
 def main():
+  if sys.version_info[0] < 3:
+    print('This script requires Python 3')
+    sys.exit(10)
   usage = 'usage: %prog [options] 2017|2019'
   parser = optparse.OptionParser(usage)
   parser.add_option('-w', '--winver', action='store', type='string',
-                    dest='winver', default='10.0.14393.0',
-                    help='Windows SDK version, such as 10.0.14393.0')
+                    dest='winver', default='10.0.18362.0',
+                    help='Windows SDK version, such as 10.0.18362.0')
   parser.add_option('-d', '--dryrun', action='store_true', dest='dryrun',
                     default=False,
                     help='scan for file existence and prints statistics')
@@ -492,17 +508,16 @@ def main():
       if not options.repackage_dir and disk_name.count(WIN_VERSION) > 0:
         version_match_count += 1
       if os.path.exists(disk_name):
-        if options.dryrun:
-          total_size += os.path.getsize(disk_name)
-        else:
+        total_size += os.path.getsize(disk_name)
+        if not options.dryrun:
           zf.write(disk_name, archive_name)
       else:
         missing_files = True
         sys.stdout.write('\r%s does not exist.\n\n' % disk_name)
         sys.stdout.flush()
+  sys.stdout.write('\r%1.3f GB of data in %d files, %d files for %s.%s\n' %
+      (total_size / 1e9, count, version_match_count, WIN_VERSION, ' '*50))
   if options.dryrun:
-    sys.stdout.write('\r%1.3f GB of data in %d files, %d files for %s.%s\n' %
-        (total_size / 1e9, count, version_match_count, WIN_VERSION, ' '*50))
     return 0
   if missing_files:
     raise Exception('One or more files were missing - aborting')

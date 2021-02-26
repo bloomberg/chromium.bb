@@ -26,6 +26,10 @@ namespace policy {
 class ComponentUpdaterPolicyTest;
 }
 
+namespace speech {
+class SODAInstallerImpl;
+}
+
 namespace update_client {
 class ComponentInstaller;
 class Configurator;
@@ -143,6 +147,7 @@ class ComponentUpdateService {
   virtual bool GetComponentDetails(const std::string& id,
                                    CrxUpdateItem* item) const = 0;
 
+  friend class speech::SODAInstallerImpl;
   friend class ::ComponentsHandler;
   FRIEND_TEST_ALL_PREFIXES(ComponentInstallerTest, RegisterComponent);
 };
@@ -166,6 +171,8 @@ class OnDemandUpdater {
   friend class ::PluginObserver;
   friend class SwReporterOnDemandFetcher;
   friend class SODAComponentInstallerPolicy;
+  friend class SodaEnUsComponentInstallerPolicy;
+  friend class SodaJaJpComponentInstallerPolicy;
 #if defined(OS_CHROMEOS)
   friend class CrOSComponentInstaller;
 #endif  // defined(OS_CHROMEOS)

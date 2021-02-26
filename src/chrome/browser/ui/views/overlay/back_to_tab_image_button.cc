@@ -21,8 +21,8 @@ constexpr SkColor kBackToTabIconColor = SK_ColorWHITE;
 
 namespace views {
 
-BackToTabImageButton::BackToTabImageButton(ButtonListener* listener)
-    : ImageButton(listener) {
+BackToTabImageButton::BackToTabImageButton(PressedCallback callback)
+    : ImageButton(std::move(callback)) {
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   SetImage(views::Button::STATE_NORMAL,
@@ -30,7 +30,6 @@ BackToTabImageButton::BackToTabImageButton(ButtonListener* listener)
                                  kBackToTabIconColor));
 
   // Accessibility.
-  SetFocusForPlatform();
   const base::string16 back_to_tab_button_label(l10n_util::GetStringUTF16(
       IDS_PICTURE_IN_PICTURE_BACK_TO_TAB_CONTROL_TEXT));
   SetAccessibleName(back_to_tab_button_label);

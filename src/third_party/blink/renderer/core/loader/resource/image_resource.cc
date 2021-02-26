@@ -30,6 +30,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
@@ -50,7 +51,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
-#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -71,14 +71,12 @@ constexpr auto kFlushDelay = base::TimeDelta::FromSeconds(1);
 class ImageResource::ImageResourceInfoImpl final
     : public GarbageCollected<ImageResourceInfoImpl>,
       public ImageResourceInfo {
-  USING_GARBAGE_COLLECTED_MIXIN(ImageResourceInfoImpl);
-
  public:
   explicit ImageResourceInfoImpl(ImageResource* resource)
       : resource_(resource) {
     DCHECK(resource_);
   }
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(resource_);
     ImageResourceInfo::Trace(visitor);
   }
@@ -121,7 +119,7 @@ class ImageResource::ImageResourceInfoImpl final
       const KURL& url,
       const AtomicString& initiator_name) override {
     fetcher->EmulateLoadStartedForInspector(
-        resource_.Get(), url, mojom::RequestContextType::IMAGE,
+        resource_.Get(), url, mojom::blink::RequestContextType::IMAGE,
         network::mojom::RequestDestination::kImage, initiator_name);
   }
 
@@ -135,6 +133,12 @@ class ImageResource::ImageResourceInfoImpl final
 
   bool IsAdResource() const override {
     return resource_->GetResourceRequest().IsAdResource();
+  }
+
+  const HashSet<String>* GetUnsupportedImageMimeTypes() const override {
+    if (!resource_->Options().unsupported_image_mime_types)
+      return nullptr;
+    return &resource_->Options().unsupported_image_mime_types->data;
   }
 
   const Member<ImageResource> resource_;
@@ -157,8 +161,8 @@ class ImageResource::ImageResourceFactory : public NonTextResourceFactory {
 ImageResource* ImageResource::Fetch(FetchParameters& params,
                                     ResourceFetcher* fetcher) {
   if (params.GetResourceRequest().GetRequestContext() ==
-      mojom::RequestContextType::UNSPECIFIED) {
-    params.SetRequestContext(mojom::RequestContextType::IMAGE);
+      mojom::blink::RequestContextType::UNSPECIFIED) {
+    params.SetRequestContext(mojom::blink::RequestContextType::IMAGE);
     params.SetRequestDestination(network::mojom::RequestDestination::kImage);
   }
 
@@ -183,8 +187,10 @@ bool ImageResource::CanUseCacheValidator() const {
   return Resource::CanUseCacheValidator();
 }
 
-ImageResource* ImageResource::Create(const ResourceRequest& request) {
-  ResourceLoaderOptions options;
+ImageResource* ImageResource::Create(
+    const ResourceRequest& request,
+    scoped_refptr<const DOMWrapperWorld> world) {
+  ResourceLoaderOptions options(std::move(world));
   return MakeGarbageCollected<ImageResource>(
       request, options, ImageResourceContent::CreateNotStarted());
 }
@@ -195,11 +201,11 @@ ImageResource* ImageResource::CreateForTest(const KURL& url) {
   // These are needed because some unittests don't go through the usual
   // request setting path in ResourceFetcher.
   request.SetRequestorOrigin(SecurityOrigin::CreateUniqueOpaque());
-  request.SetReferrerPolicy(
-      ReferrerPolicyResolveDefault(request.GetReferrerPolicy()));
+  request.SetReferrerPolicy(ReferrerUtils::MojoReferrerPolicyResolveDefault(
+      request.GetReferrerPolicy()));
   request.SetPriority(WebURLRequest::Priority::kLow);
 
-  return Create(request);
+  return Create(request, nullptr);
 }
 
 ImageResource::ImageResource(const ResourceRequest& resource_request,
@@ -230,7 +236,7 @@ void ImageResource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
     dump->AddScalar("size", "bytes", content_->GetImage()->Data()->size());
 }
 
-void ImageResource::Trace(Visitor* visitor) {
+void ImageResource::Trace(Visitor* visitor) const {
   visitor->Trace(multipart_parser_);
   visitor->Trace(content_);
   Resource::Trace(visitor);

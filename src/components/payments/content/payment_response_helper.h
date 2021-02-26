@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/payments/core/payment_app.h"
+#include "components/payments/content/payment_app.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace payments {
@@ -36,12 +36,12 @@ class PaymentResponseHelper
 
   // The spec, selected_app and delegate cannot be null.
   PaymentResponseHelper(const std::string& app_locale,
-                        PaymentRequestSpec* spec,
-                        PaymentApp* selected_app,
+                        base::WeakPtr<PaymentRequestSpec> spec,
+                        base::WeakPtr<PaymentApp> selected_app,
                         PaymentRequestDelegate* payment_request_delegate,
                         autofill::AutofillProfile* selected_shipping_profile,
                         autofill::AutofillProfile* selected_contact_profile,
-                        Delegate* delegate);
+                        base::WeakPtr<Delegate> delegate);
   ~PaymentResponseHelper() override;
 
   // PaymentApp::Delegate
@@ -65,10 +65,10 @@ class PaymentResponseHelper
   bool is_waiting_for_shipping_address_normalization_;
   bool is_waiting_for_instrument_details_;
 
+  base::WeakPtr<PaymentRequestSpec> spec_;
+  base::WeakPtr<Delegate> delegate_;
+  base::WeakPtr<PaymentApp> selected_app_;
   // Not owned, cannot be null.
-  PaymentRequestSpec* spec_;
-  Delegate* delegate_;
-  PaymentApp* selected_app_;
   PaymentRequestDelegate* payment_request_delegate_;
 
   // Not owned, can be null (dependent on the spec).

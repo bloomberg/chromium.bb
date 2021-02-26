@@ -82,7 +82,7 @@ SkMatrix& SkMatrix::setAffine(const SkScalar buffer[]) {
     return *this;
 }
 
-// this guy aligns with the masks, so we can compute a mask from a varaible 0/1
+// this aligns with the masks, so we can compute a mask from a variable 0/1
 enum {
     kTranslate_Shift,
     kScale_Shift,
@@ -384,7 +384,7 @@ SkMatrix& SkMatrix::postScale(SkScalar sx, SkScalar sy) {
     return this->postConcat(m);
 }
 
-// this guy perhaps can go away, if we have a fract/high-precision way to
+// this perhaps can go away, if we have a fract/high-precision way to
 // scale matrices
 bool SkMatrix::postIDiv(int divx, int divy) {
     if (divx == 0 || divy == 0) {
@@ -720,25 +720,27 @@ static inline SkScalar dcross_dscale(double a, double b,
     return SkDoubleToScalar(dcross(a, b, c, d) * scale);
 }
 
-static double sk_inv_determinant(const float mat[9], int isPerspective) {
-    double det;
-
+static double sk_determinant(const float mat[9], int isPerspective) {
     if (isPerspective) {
-        det = mat[SkMatrix::kMScaleX] *
-              dcross(mat[SkMatrix::kMScaleY], mat[SkMatrix::kMPersp2],
-                     mat[SkMatrix::kMTransY], mat[SkMatrix::kMPersp1])
-              +
-              mat[SkMatrix::kMSkewX]  *
-              dcross(mat[SkMatrix::kMTransY], mat[SkMatrix::kMPersp0],
-                     mat[SkMatrix::kMSkewY],  mat[SkMatrix::kMPersp2])
-              +
-              mat[SkMatrix::kMTransX] *
-              dcross(mat[SkMatrix::kMSkewY],  mat[SkMatrix::kMPersp1],
-                     mat[SkMatrix::kMScaleY], mat[SkMatrix::kMPersp0]);
+        return mat[SkMatrix::kMScaleX] *
+                    dcross(mat[SkMatrix::kMScaleY], mat[SkMatrix::kMPersp2],
+                           mat[SkMatrix::kMTransY], mat[SkMatrix::kMPersp1])
+                    +
+                    mat[SkMatrix::kMSkewX]  *
+                    dcross(mat[SkMatrix::kMTransY], mat[SkMatrix::kMPersp0],
+                           mat[SkMatrix::kMSkewY],  mat[SkMatrix::kMPersp2])
+                    +
+                    mat[SkMatrix::kMTransX] *
+                    dcross(mat[SkMatrix::kMSkewY],  mat[SkMatrix::kMPersp1],
+                           mat[SkMatrix::kMScaleY], mat[SkMatrix::kMPersp0]);
     } else {
-        det = dcross(mat[SkMatrix::kMScaleX], mat[SkMatrix::kMScaleY],
-                     mat[SkMatrix::kMSkewX], mat[SkMatrix::kMSkewY]);
+        return dcross(mat[SkMatrix::kMScaleX], mat[SkMatrix::kMScaleY],
+                      mat[SkMatrix::kMSkewX], mat[SkMatrix::kMSkewY]);
     }
+}
+
+static double sk_inv_determinant(const float mat[9], int isPerspective) {
+    double det = sk_determinant(mat, isPerspective);
 
     // Since the determinant is on the order of the cube of the matrix members,
     // compare to the cube of the default nearly-zero constant (although an
@@ -1457,10 +1459,10 @@ template <MinMaxOrBoth MIN_MAX_OR_BOTH> bool get_scale_factor(SkMatrix::TypeMask
     if (!(typeMask & SkMatrix::kAffine_Mask)) {
         if (kMin_MinMaxOrBoth == MIN_MAX_OR_BOTH) {
              results[0] = std::min(SkScalarAbs(m[SkMatrix::kMScaleX]),
-                                      SkScalarAbs(m[SkMatrix::kMScaleY]));
+                                   SkScalarAbs(m[SkMatrix::kMScaleY]));
         } else if (kMax_MinMaxOrBoth == MIN_MAX_OR_BOTH) {
              results[0] = std::max(SkScalarAbs(m[SkMatrix::kMScaleX]),
-                                      SkScalarAbs(m[SkMatrix::kMScaleY]));
+                                   SkScalarAbs(m[SkMatrix::kMScaleY]));
         } else {
             results[0] = SkScalarAbs(m[SkMatrix::kMScaleX]);
             results[1] = SkScalarAbs(m[SkMatrix::kMScaleY]);
@@ -1519,7 +1521,6 @@ template <MinMaxOrBoth MIN_MAX_OR_BOTH> bool get_scale_factor(SkMatrix::TypeMask
     // Due to the floating point inaccuracy, there might be an error in a, b, c
     // calculated by sdot, further deepened by subsequent arithmetic operations
     // on them. Therefore, we allow and cap the nearly-zero negative values.
-    SkASSERT(results[0] >= -SK_ScalarNearlyZero);
     if (results[0] < 0) {
         results[0] = 0;
     }
@@ -1528,7 +1529,6 @@ template <MinMaxOrBoth MIN_MAX_OR_BOTH> bool get_scale_factor(SkMatrix::TypeMask
         if (!SkScalarIsFinite(results[1])) {
             return false;
         }
-        SkASSERT(results[1] >= -SK_ScalarNearlyZero);
         if (results[1] < 0) {
             results[1] = 0;
         }
@@ -1856,4 +1856,39 @@ SkFilterQuality SkMatrixPriv::AdjustHighQualityFilterLevel(const SkMatrix& matri
     }
 
     return kHigh_SkFilterQuality;
+}
+
+SkScalar SkMatrixPriv::DifferentialAreaScale(const SkMatrix& m, const SkPoint& p) {
+    //              [m00 m01 m02]                                 [f(u,v)]
+    // Assuming M = [m10 m11 m12], define the projected p'(u,v) = [g(u,v)] where
+    //              [m20 m12 m22]
+    //                                                        [x]     [u]
+    // f(u,v) = x(u,v) / w(u,v), g(u,v) = y(u,v) / w(u,v) and [y] = M*[v]
+    //                                                        [w]     [1]
+    //
+    // Then the differential scale factor between p = (u,v) and p' is |det J|,
+    // where J is the Jacobian for p': [df/du dg/du]
+    //                                 [df/dv dg/dv]
+    // and df/du = (w*dx/du - x*dw/du)/w^2,   dg/du = (w*dy/du - y*dw/du)/w^2
+    //     df/dv = (w*dx/dv - x*dw/dv)/w^2,   dg/dv = (w*dy/dv - y*dw/dv)/w^2
+    //
+    // From here, |det J| can be rewritten as |det J'/w^3|, where
+    //      [x     y     w    ]   [x   y   w  ]
+    // J' = [dx/du dy/du dw/du] = [m00 m10 m20]
+    //      [dx/dv dy/dv dw/dv]   [m01 m11 m21]
+    SkPoint3 xyw;
+    m.mapHomogeneousPoints(&xyw, &p, 1);
+
+    if (xyw.fZ < SK_ScalarNearlyZero) {
+        // Reaching the discontinuity of xy/w and where the point would clip to w >= 0
+        return SK_ScalarInfinity;
+    }
+    SkMatrix jacobian = SkMatrix::MakeAll(xyw.fX, xyw.fY, xyw.fZ,
+                                          m.getScaleX(), m.getSkewY(), m.getPerspX(),
+                                          m.getSkewX(), m.getScaleY(), m.getPerspY());
+
+    SkScalar denom = 1.f / xyw.fZ; // 1/w
+    denom = denom * denom * denom; // 1/w^3
+
+    return SkScalarAbs(SkDoubleToScalar(sk_determinant(jacobian.fMat, true)) * denom);
 }

@@ -24,7 +24,7 @@ using FinishedReason = ServiceWorkerInstalledScriptReader::FinishedReason;
 ServiceWorkerInstalledScriptLoader::ServiceWorkerInstalledScriptLoader(
     uint32_t options,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-    std::unique_ptr<ServiceWorkerResponseReader> response_reader,
+    mojo::Remote<storage::mojom::ServiceWorkerResourceReader> resource_reader,
     scoped_refptr<ServiceWorkerVersion>
         version_for_main_script_http_response_info,
     const GURL& request_url)
@@ -43,7 +43,7 @@ ServiceWorkerInstalledScriptLoader::ServiceWorkerInstalledScriptLoader(
         std::move(version_for_main_script_http_response_info);
   }
   reader_ = std::make_unique<ServiceWorkerInstalledScriptReader>(
-      std::move(response_reader), this);
+      std::move(resource_reader), this);
   reader_->Start();
   // We continue in OnStarted().
 }
@@ -53,7 +53,7 @@ ServiceWorkerInstalledScriptLoader::~ServiceWorkerInstalledScriptLoader() =
 
 void ServiceWorkerInstalledScriptLoader::OnStarted(
     network::mojom::URLResponseHeadPtr response_head,
-    scoped_refptr<net::IOBufferWithSize> metadata,
+    base::Optional<mojo_base::BigBuffer> metadata,
     mojo::ScopedDataPipeConsumerHandle body_handle,
     mojo::ScopedDataPipeConsumerHandle metadata_handle) {
   DCHECK(response_head);
@@ -77,9 +77,7 @@ void ServiceWorkerInstalledScriptLoader::OnStarted(
 
   client_->OnReceiveResponse(std::move(response_head));
   if (metadata) {
-    mojo_base::BigBuffer metadata_buffer(
-        base::as_bytes(base::make_span(metadata->data(), metadata->size())));
-    client_->OnReceiveCachedMetadata(std::move(metadata_buffer));
+    client_->OnReceiveCachedMetadata(std::move(*metadata));
   }
   client_->OnStartLoadingResponseBody(std::move(body_handle_));
   // We continue in OnFinished().
@@ -94,7 +92,7 @@ void ServiceWorkerInstalledScriptLoader::OnFinished(FinishedReason reason) {
     case FinishedReason::kCreateDataPipeError:
       net_error = net::ERR_INSUFFICIENT_RESOURCES;
       break;
-    case FinishedReason::kNoHttpInfoError:
+    case FinishedReason::kNoResponseHeadError:
     case FinishedReason::kResponseReaderError:
       net_error = net::ERR_FILE_NOT_FOUND;
       break;

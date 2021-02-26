@@ -8,8 +8,7 @@
 
 ChromeTemplateURLServiceClient::ChromeTemplateURLServiceClient(
     history::HistoryService* history_service)
-    : owner_(NULL),
-      history_service_(history_service) {
+    : owner_(nullptr), history_service_(history_service) {
   // TODO(sky): bug 1166191. The keywords should be moved into the history
   // db, which will mean we no longer need this notification and the history
   // backend can handle automatically adding the search terms as the user
@@ -53,10 +52,11 @@ void ChromeTemplateURLServiceClient::SetKeywordSearchTermsForURL(
 
 void ChromeTemplateURLServiceClient::AddKeywordGeneratedVisit(const GURL& url) {
   if (history_service_)
-    history_service_->AddPage(url, base::Time::Now(), NULL, 0, GURL(),
-                              history::RedirectList(),
-                              ui::PAGE_TRANSITION_KEYWORD_GENERATED,
-                              history::SOURCE_BROWSED, false);
+    history_service_->AddPage(
+        url, base::Time::Now(), /*context_id=*/NULL, /*nav_entry_id=*/0,
+        /*referrer=*/GURL(), history::RedirectList(),
+        ui::PAGE_TRANSITION_KEYWORD_GENERATED, history::SOURCE_BROWSED,
+        /*did_replace_entry=*/false, /*publicly_routable=*/false);
 }
 
 void ChromeTemplateURLServiceClient::OnURLVisited(

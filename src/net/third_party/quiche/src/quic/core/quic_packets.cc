@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
@@ -14,7 +16,6 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_utils.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace quic {
@@ -185,7 +186,7 @@ QuicPacketHeader::QuicPacketHeader()
       long_packet_type(INITIAL),
       possible_stateless_reset_token(0),
       retry_token_length_length(VARIABLE_LENGTH_INTEGER_LENGTH_0),
-      retry_token(quiche::QuicheStringPiece()),
+      retry_token(absl::string_view()),
       length_length(VARIABLE_LENGTH_INTEGER_LENGTH_0),
       remaining_packet_length(0) {}
 
@@ -263,8 +264,8 @@ std::ostream& operator<<(std::ostream& os, const QuicPacketHeader& header) {
   }
   if (header.nonce != nullptr) {
     os << ", diversification_nonce: "
-       << quiche::QuicheTextUtils::HexEncode(quiche::QuicheStringPiece(
-              header.nonce->data(), header.nonce->size()));
+       << absl::BytesToHexString(
+              absl::string_view(header.nonce->data(), header.nonce->size()));
   }
   os << ", packet_number: " << header.packet_number << " }\n";
   return os;
@@ -276,7 +277,7 @@ QuicData::QuicData(const char* buffer, size_t length)
 QuicData::QuicData(const char* buffer, size_t length, bool owns_buffer)
     : buffer_(buffer), length_(length), owns_buffer_(owns_buffer) {}
 
-QuicData::QuicData(quiche::QuicheStringPiece packet_data)
+QuicData::QuicData(absl::string_view packet_data)
     : buffer_(packet_data.data()),
       length_(packet_data.length()),
       owns_buffer_(false) {}
@@ -335,7 +336,7 @@ QuicEncryptedPacket::QuicEncryptedPacket(const char* buffer,
                                          bool owns_buffer)
     : QuicData(buffer, length, owns_buffer) {}
 
-QuicEncryptedPacket::QuicEncryptedPacket(quiche::QuicheStringPiece data)
+QuicEncryptedPacket::QuicEncryptedPacket(absl::string_view data)
     : QuicData(data) {}
 
 std::unique_ptr<QuicEncryptedPacket> QuicEncryptedPacket::Clone() const {
@@ -426,9 +427,9 @@ std::ostream& operator<<(std::ostream& os, const QuicReceivedPacket& s) {
   return os;
 }
 
-quiche::QuicheStringPiece QuicPacket::AssociatedData(
+absl::string_view QuicPacket::AssociatedData(
     QuicTransportVersion version) const {
-  return quiche::QuicheStringPiece(
+  return absl::string_view(
       data(),
       GetStartOfEncryptedData(version, destination_connection_id_length_,
                               source_connection_id_length_, includes_version_,
@@ -437,14 +438,13 @@ quiche::QuicheStringPiece QuicPacket::AssociatedData(
                               retry_token_length_, length_length_));
 }
 
-quiche::QuicheStringPiece QuicPacket::Plaintext(
-    QuicTransportVersion version) const {
+absl::string_view QuicPacket::Plaintext(QuicTransportVersion version) const {
   const size_t start_of_encrypted_data = GetStartOfEncryptedData(
       version, destination_connection_id_length_, source_connection_id_length_,
       includes_version_, includes_diversification_nonce_, packet_number_length_,
       retry_token_length_length_, retry_token_length_, length_length_);
-  return quiche::QuicheStringPiece(data() + start_of_encrypted_data,
-                                   length() - start_of_encrypted_data);
+  return absl::string_view(data() + start_of_encrypted_data,
+                           length() - start_of_encrypted_data);
 }
 
 SerializedPacket::SerializedPacket(QuicPacketNumber packet_number,
@@ -456,18 +456,19 @@ SerializedPacket::SerializedPacket(QuicPacketNumber packet_number,
     : encrypted_buffer(encrypted_buffer),
       encrypted_length(encrypted_length),
       has_crypto_handshake(NOT_HANDSHAKE),
-      num_padding_bytes(0),
       packet_number(packet_number),
       packet_number_length(packet_number_length),
       encryption_level(ENCRYPTION_INITIAL),
       has_ack(has_ack),
       has_stop_waiting(has_stop_waiting),
       transmission_type(NOT_RETRANSMISSION),
-      has_ack_frame_copy(false) {}
+      has_ack_frame_copy(false),
+      has_ack_frequency(false),
+      has_message(false),
+      fate(SEND_TO_WRITER) {}
 
 SerializedPacket::SerializedPacket(SerializedPacket&& other)
     : has_crypto_handshake(other.has_crypto_handshake),
-      num_padding_bytes(other.num_padding_bytes),
       packet_number(other.packet_number),
       packet_number_length(other.packet_number_length),
       encryption_level(other.encryption_level),
@@ -475,7 +476,11 @@ SerializedPacket::SerializedPacket(SerializedPacket&& other)
       has_stop_waiting(other.has_stop_waiting),
       transmission_type(other.transmission_type),
       largest_acked(other.largest_acked),
-      has_ack_frame_copy(other.has_ack_frame_copy) {
+      has_ack_frame_copy(other.has_ack_frame_copy),
+      has_ack_frequency(other.has_ack_frequency),
+      has_message(other.has_message),
+      fate(other.fate),
+      peer_address(other.peer_address) {
   if (this != &other) {
     if (release_encrypted_buffer && encrypted_buffer != nullptr) {
       release_encrypted_buffer(encrypted_buffer);
@@ -515,10 +520,13 @@ SerializedPacket* CopySerializedPacket(const SerializedPacket& serialized,
       serialized.encrypted_buffer, serialized.encrypted_length,
       serialized.has_ack, serialized.has_stop_waiting);
   copy->has_crypto_handshake = serialized.has_crypto_handshake;
-  copy->num_padding_bytes = serialized.num_padding_bytes;
   copy->encryption_level = serialized.encryption_level;
   copy->transmission_type = serialized.transmission_type;
   copy->largest_acked = serialized.largest_acked;
+  copy->has_ack_frequency = serialized.has_ack_frequency;
+  copy->has_message = serialized.has_message;
+  copy->fate = serialized.fate;
+  copy->peer_address = serialized.peer_address;
 
   if (copy_buffer) {
     copy->encrypted_buffer = CopyBuffer(serialized);
@@ -559,7 +567,7 @@ ReceivedPacketInfo::ReceivedPacketInfo(const QuicSocketAddress& self_address,
       version_flag(false),
       use_length_prefix(false),
       version_label(0),
-      version(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
+      version(ParsedQuicVersion::Unsupported()),
       destination_connection_id(EmptyQuicConnectionId()),
       source_connection_id(EmptyQuicConnectionId()) {}
 

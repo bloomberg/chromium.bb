@@ -17,6 +17,7 @@
 #include "ios/web/common/features.h"
 #include "ios/web/common/url_util.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
+#import "ios/web/navigation/error_page_helper.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/session_storage_builder.h"
@@ -91,6 +92,9 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       web_frames_manager_(*this),
       interstitial_(nullptr),
       created_with_opener_(params.created_with_opener),
+      user_agent_type_(features::UseWebClientDefaultUserAgent()
+                           ? UserAgentType::AUTOMATIC
+                           : UserAgentType::MOBILE),
       weak_factory_(this) {
   navigation_manager_ = std::make_unique<WKBasedNavigationManagerImpl>();
 
@@ -426,15 +430,31 @@ void WebStateImpl::CloseWebState() {
   }
 }
 
-void WebStateImpl::OnAuthRequired(
-    NSURLProtectionSpace* protection_space,
-    NSURLCredential* proposed_credential,
-    const WebStateDelegate::AuthCallback& callback) {
+UserAgentType WebStateImpl::GetUserAgentForNextNavigation(const GURL& url) {
+  if (user_agent_type_ == UserAgentType::AUTOMATIC) {
+    UIView* container =
+        GetWebViewContainer() ? GetWebViewContainer() : GetView();
+    return GetWebClient()->GetDefaultUserAgent(container, url);
+  }
+  return user_agent_type_;
+}
+
+UserAgentType WebStateImpl::GetUserAgentForSessionRestoration() const {
+  return user_agent_type_;
+}
+
+void WebStateImpl::SetUserAgent(UserAgentType user_agent) {
+  user_agent_type_ = user_agent;
+}
+
+void WebStateImpl::OnAuthRequired(NSURLProtectionSpace* protection_space,
+                                  NSURLCredential* proposed_credential,
+                                  WebStateDelegate::AuthCallback callback) {
   if (delegate_) {
     delegate_->OnAuthRequired(this, protection_space, proposed_credential,
-                              callback);
+                              std::move(callback));
   } else {
-    callback.Run(nil, nil);
+    std::move(callback).Run(nil, nil);
   }
 }
 
@@ -562,6 +582,16 @@ void WebStateImpl::SetWebUsageEnabled(bool enabled) {
 
 UIView* WebStateImpl::GetView() {
   return [web_controller_ view];
+}
+
+void WebStateImpl::DidCoverWebContent() {
+  [web_controller_ removeWebViewFromViewHierarchy];
+  WasHidden();
+}
+
+void WebStateImpl::DidRevealWebContent() {
+  [web_controller_ addWebViewToViewHierarchy];
+  WasShown();
 }
 
 void WebStateImpl::WasShown() {
@@ -784,11 +814,25 @@ void WebStateImpl::TakeSnapshot(const gfx::RectF& rect,
                              }];
 }
 
+void WebStateImpl::CreateFullPagePdf(
+    base::OnceCallback<void(NSData*)> callback) {
+  // Move the callback to a __block pointer, which will be in scope as long
+  // as the callback is retained.
+  __block base::OnceCallback<void(NSData*)> callback_for_block =
+      std::move(callback);
+  [web_controller_
+      createFullPagePDFWithCompletion:^(NSData* pdf_document_data) {
+        std::move(callback_for_block).Run(pdf_document_data);
+      }];
+}
+
 void WebStateImpl::OnNavigationStarted(web::NavigationContextImpl* context) {
   // Navigation manager loads internal URLs to restore session history and
   // create back-forward entries for WebUI. Do not trigger external callbacks.
   if ((!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
        context->IsPlaceholderNavigation()) ||
+      (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+       [ErrorPageHelper isErrorPageFileURL:context->GetUrl()]) ||
       wk_navigation_util::IsRestoreSessionUrl(context->GetUrl())) {
     return;
   }
@@ -807,6 +851,8 @@ void WebStateImpl::OnNavigationFinished(web::NavigationContextImpl* context) {
   // create back-forward entries for WebUI. Do not trigger external callbacks.
   if ((!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
        context->IsPlaceholderNavigation()) ||
+      (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+       [ErrorPageHelper isErrorPageFileURL:context->GetUrl()]) ||
       wk_navigation_util::IsRestoreSessionUrl(context->GetUrl())) {
     return;
   }
@@ -895,6 +941,10 @@ void WebStateImpl::OnNavigationItemCommitted(NavigationItem* item) {
 
 WebState* WebStateImpl::GetWebState() {
   return this;
+}
+
+void WebStateImpl::SetWebStateUserAgent(UserAgentType user_agent_type) {
+  SetUserAgent(user_agent_type);
 }
 
 id<CRWWebViewNavigationProxy> WebStateImpl::GetWebViewNavigationProxy() const {

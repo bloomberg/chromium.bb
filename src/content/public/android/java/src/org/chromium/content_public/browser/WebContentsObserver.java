@@ -30,6 +30,24 @@ public abstract class WebContentsObserver {
     }
 
     /**
+     * Called when a RenderFrame for renderFrameHost is created in the
+     * renderer process.
+     * To avoid creating a RenderFrameHost object without necessity, only process id and frame id
+     * are passed. Call WebContents#getRenderFrameHostFromId() to get the RenderFrameHostImpl object
+     * if needed.
+     */
+    public void renderFrameCreated(int renderProcessId, int renderFrameId) {}
+
+    /**
+     * Called when a RenderFrame for renderFrameHost is deleted in the
+     * renderer process.
+     * To avoid creating a RenderFrameHost object without necessity, only process id and frame id
+     * are passed. Call WebContents#getRenderFrameHostFromId() to get the RenderFrameHostImpl object
+     * if needed.
+     */
+    public void renderFrameDeleted(int renderProcessId, int renderFrameId) {}
+
+    /**
      * Called when the RenderView of the current RenderViewHost is ready, e.g. because we recreated
      * it after a crash.
      */
@@ -150,16 +168,6 @@ public abstract class WebContentsObserver {
      * Called when navigation entries were changed.
      */
     public void navigationEntriesChanged() {}
-
-    /**
-     * Called when an interstitial page gets attached to the tab content.
-     */
-    public void didAttachInterstitialPage() {}
-
-    /**
-     * Called when an interstitial page gets detached from the tab content.
-     */
-    public void didDetachInterstitialPage() {}
 
     /**
      * Called when the theme color was changed.

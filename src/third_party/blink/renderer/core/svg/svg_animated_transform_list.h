@@ -44,7 +44,6 @@ class SVGAnimatedTransformList final
     : public ScriptWrappable,
       public SVGAnimatedProperty<SVGTransformList> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedTransformList);
 
  public:
   SVGAnimatedTransformList(SVGElement* context_element,
@@ -56,7 +55,7 @@ class SVGAnimatedTransformList final
             MakeGarbageCollected<SVGTransformList>(),
             css_property_id) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     SVGAnimatedProperty<SVGTransformList>::Trace(visitor);
     ScriptWrappable::Trace(visitor);
   }

@@ -4,15 +4,20 @@
 
 package org.chromium.chrome.browser.signin;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.matcher.RootMatchers.isDialog;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.pressBack;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -26,10 +31,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import org.chromium.base.Callback;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
@@ -46,7 +53,14 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Batch(ConfirmSyncDataIntegrationTest.CONFIRM_SYNC_DATA_BATCH_NAME)
 public class ConfirmSyncDataIntegrationTest extends DummyUiActivityTestCase {
+    public static final String CONFIRM_SYNC_DATA_BATCH_NAME = "confirm_sync_data";
+
+    private static final String OLD_ACCOUNT_NAME = "test.account.old@gmail.com";
+    private static final String NEW_ACCOUNT_NAME = "test.account.new@gmail.com";
+    private static final String MANAGED_DOMAIN = "managed-domain.com";
+
     @Rule
     public final JniMocker mocker = new JniMocker();
 
@@ -62,6 +76,9 @@ public class ConfirmSyncDataIntegrationTest extends DummyUiActivityTestCase {
     @Mock
     private ConfirmSyncDataStateMachine.Listener mListenerMock;
 
+    @Mock
+    private Profile mProfile;
+
     private ConfirmSyncDataStateMachineDelegate mDelegate;
 
     @Before
@@ -69,39 +86,93 @@ public class ConfirmSyncDataIntegrationTest extends DummyUiActivityTestCase {
         initMocks(this);
         mocker.mock(SigninManagerJni.TEST_HOOKS, mSigninManagerNativeMock);
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProviderMock);
-        when(IdentityServicesProvider.get().getSigninManager()).thenReturn(mSigninManagerMock);
+        Profile.setLastUsedProfileForTesting(mProfile);
+        when(IdentityServicesProvider.get().getSigninManager(any())).thenReturn(mSigninManagerMock);
         mDelegate =
                 new ConfirmSyncDataStateMachineDelegate(getActivity().getSupportFragmentManager());
     }
 
     @Test
     @MediumTest
-    public void testNonManagedAccountPositiveButtonInConfirmImportSyncDataDialog() {
+    public void testTwoDifferentNonManagedAccountsFlow() {
         mockSigninManagerIsAccountManaged(false);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(
-                    mDelegate, "test.account1@gmail.com", "test.account2@gmail.com", mListenerMock);
-        });
+        startConfirmSyncFlow(OLD_ACCOUNT_NAME, NEW_ACCOUNT_NAME);
         onView(withId(R.id.sync_keep_separate_choice)).inRoot(isDialog()).perform(click());
         onView(withText(R.string.continue_button)).perform(click());
         verify(mListenerMock).onConfirm(true);
+        verify(mListenerMock, never()).onCancel();
     }
 
     @Test
     @MediumTest
-    public void testManagedAccountPositiveButtonInConfirmImportSyncDataDialog() {
+    public void testTwoDifferentNonManagedAccountsCancelledFlow() {
+        mockSigninManagerIsAccountManaged(false);
+        startConfirmSyncFlow(OLD_ACCOUNT_NAME, NEW_ACCOUNT_NAME);
+        onView(withId(R.id.sync_keep_separate_choice)).inRoot(isDialog()).perform(click());
+        onView(isRoot()).perform(pressBack());
+        verify(mListenerMock, never()).onConfirm(anyBoolean());
+        verify(mListenerMock).onCancel();
+    }
+
+    @Test
+    @MediumTest
+    public void testNonManagedAccountToManagedAccountFlow() {
         mockSigninManagerIsAccountManaged(true);
-        String managedNewAccountName = "test.account@manageddomain.com";
-        String domain = "manageddomain.com";
-        when(mSigninManagerNativeMock.extractDomainName(managedNewAccountName)).thenReturn(domain);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(
-                    mDelegate, "test.account1@gmail.com", managedNewAccountName, mListenerMock);
-        });
+        String managedNewAccountName = "test.account@" + MANAGED_DOMAIN;
+        when(mSigninManagerNativeMock.extractDomainName(managedNewAccountName))
+                .thenReturn(MANAGED_DOMAIN);
+        startConfirmSyncFlow(OLD_ACCOUNT_NAME, managedNewAccountName);
         onView(withId(R.id.sync_confirm_import_choice)).inRoot(isDialog()).perform(click());
         onView(withText(R.string.continue_button)).perform(click());
         onView(withText(R.string.policy_dialog_proceed)).inRoot(isDialog()).perform(click());
         verify(mListenerMock).onConfirm(false);
+        verify(mListenerMock, never()).onCancel();
+    }
+
+    @Test
+    @MediumTest
+    public void testNonManagedAccountToManagedAccountCancelledFlow() {
+        mockSigninManagerIsAccountManaged(true);
+        String managedNewAccountName = "test.account@" + MANAGED_DOMAIN;
+        when(mSigninManagerNativeMock.extractDomainName(managedNewAccountName))
+                .thenReturn(MANAGED_DOMAIN);
+        startConfirmSyncFlow(OLD_ACCOUNT_NAME, managedNewAccountName);
+        onView(withId(R.id.sync_keep_separate_choice)).inRoot(isDialog()).perform(click());
+        onView(withText(R.string.continue_button)).perform(click());
+        onView(isRoot()).perform(pressBack());
+        verify(mListenerMock, never()).onConfirm(anyBoolean());
+        verify(mListenerMock).onCancel();
+    }
+
+    @Test
+    @MediumTest
+    public void testTwoSameNonManagedAccountsFlow() {
+        mockSigninManagerIsAccountManaged(false);
+        startConfirmSyncFlow(OLD_ACCOUNT_NAME, OLD_ACCOUNT_NAME);
+        onView(withId(R.id.sync_import_data_prompt)).check(doesNotExist());
+        onView(withText(R.string.sign_in_managed_account)).check(doesNotExist());
+        verify(mListenerMock).onConfirm(false);
+        verify(mListenerMock, never()).onCancel();
+    }
+
+    @Test
+    @MediumTest
+    public void testNoPreviousAccountToManagedAccountFlow() {
+        mockSigninManagerIsAccountManaged(true);
+        String managedNewAccountName = "test.account@" + MANAGED_DOMAIN;
+        when(mSigninManagerNativeMock.extractDomainName(managedNewAccountName))
+                .thenReturn(MANAGED_DOMAIN);
+        startConfirmSyncFlow("", managedNewAccountName);
+        onView(withText(R.string.policy_dialog_proceed)).inRoot(isDialog()).perform(click());
+        verify(mListenerMock).onConfirm(false);
+        verify(mListenerMock, never()).onCancel();
+    }
+
+    private void startConfirmSyncFlow(String oldAccountName, String newAccountName) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(
+                    mDelegate, oldAccountName, newAccountName, mListenerMock);
+        });
     }
 
     private void mockSigninManagerIsAccountManaged(boolean isAccountManaged) {

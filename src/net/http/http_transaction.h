@@ -24,6 +24,7 @@ class AuthCredentials;
 struct HttpRequestInfo;
 class HttpResponseInfo;
 class IOBuffer;
+struct TransportInfo;
 struct LoadTimingInfo;
 class NetLogWithSource;
 class QuicServerInfo;
@@ -37,7 +38,29 @@ class NET_EXPORT_PRIVATE HttpTransaction {
  public:
   // If |*defer| is set to true, the transaction will wait until
   // ResumeNetworkStart is called before establishing a connection.
-  typedef base::Callback<void(bool* defer)> BeforeNetworkStartCallback;
+  using BeforeNetworkStartCallback = base::OnceCallback<void(bool* defer)>;
+
+  // Called each time a connection is obtained, before any data is sent.
+  //
+  // |info| describes the newly-obtained connection.
+  //
+  // This can be called multiple times for a single transaction, in the case of
+  // retries, auth challenges, and split range requests.
+  //
+  // If this callback returns an error, the transaction fails with that error.
+  // Otherwise the transaction continues unimpeded.
+  // Must not return ERR_IO_PENDING.
+  //
+  // TODO(crbug.com/986744): Fix handling of OnConnected() when proxy
+  // authentication is required. We should notify this callback that a
+  // connection was established, even though the stream might not be ready for
+  // us to send data through it.
+  //
+  // TODO(crbug.com/591068): Allow ERR_IO_PENDING, add a new state machine state
+  // to wait on a callback (either passed to this callback or a new explicit
+  // method like ResumeNetworkStart()) to be called before continuing.
+  using ConnectedCallback =
+      base::RepeatingCallback<int(const TransportInfo& info)>;
 
   // Stops any pending IO and destroys the transaction object.
   virtual ~HttpTransaction() {}
@@ -171,7 +194,10 @@ class NET_EXPORT_PRIVATE HttpTransaction {
 
   // Sets the callback to receive notification just before network use.
   virtual void SetBeforeNetworkStartCallback(
-      const BeforeNetworkStartCallback& callback) = 0;
+      BeforeNetworkStartCallback callback) = 0;
+
+  // Sets the callback to receive a notification upon connection.
+  virtual void SetConnectedCallback(const ConnectedCallback& callback) = 0;
 
   virtual void SetRequestHeadersCallback(RequestHeadersCallback callback) = 0;
   virtual void SetResponseHeadersCallback(ResponseHeadersCallback callback) = 0;

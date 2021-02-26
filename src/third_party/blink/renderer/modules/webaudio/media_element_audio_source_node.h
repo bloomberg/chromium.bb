@@ -49,7 +49,7 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
       HTMLMediaElement&);
   ~MediaElementAudioSourceHandler() override;
 
-  HTMLMediaElement* MediaElement() const;
+  CrossThreadPersistent<HTMLMediaElement> MediaElement() const;
 
   // AudioHandler
   void Dispose() override;
@@ -116,7 +116,6 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
 class MediaElementAudioSourceNode final : public AudioNode,
                                           public AudioSourceProviderClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceNode);
 
  public:
   static MediaElementAudioSourceNode* Create(AudioContext&,
@@ -127,7 +126,7 @@ class MediaElementAudioSourceNode final : public AudioNode,
 
   MediaElementAudioSourceNode(AudioContext&, HTMLMediaElement&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   MediaElementAudioSourceHandler& GetMediaElementAudioSourceHandler() const;
 
   HTMLMediaElement* mediaElement() const;

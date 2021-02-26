@@ -15,6 +15,7 @@
 #include "android_webview/browser/aw_web_ui_controller_factory.h"
 #include "android_webview/browser/metrics/aw_metrics_service_client.h"
 #include "android_webview/browser/network_service/aw_network_change_notifier_factory.h"
+#include "android_webview/browser/tracing/background_tracing_field_trial.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_resource.h"
@@ -24,14 +25,14 @@
 #include "base/android/build_info.h"
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/base_paths_android.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
+#include "base/task/current_thread.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/embedder_support/android/metrics/memory_metrics_logger.h"
@@ -75,14 +76,14 @@ int AwBrowserMainParts::PreEarlyInitialization() {
 
   // Creates a SingleThreadTaskExecutor for Android WebView if doesn't exist.
   DCHECK(!main_task_executor_.get());
-  if (!base::MessageLoopCurrent::IsSet()) {
+  if (!base::CurrentThread::IsSet()) {
     main_task_executor_ = std::make_unique<base::SingleThreadTaskExecutor>(
         base::MessagePumpType::UI);
   }
 
   browser_process_ = std::make_unique<AwBrowserProcess>(
       browser_client_->aw_feature_list_creator());
-  return service_manager::RESULT_CODE_NORMAL_EXIT;
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 int AwBrowserMainParts::PreCreateThreads() {
@@ -118,7 +119,7 @@ int AwBrowserMainParts::PreCreateThreads() {
   crash_reporter::InitializeCrashKeys();
   variations::InitCrashKeys();
 
-  return service_manager::RESULT_CODE_NORMAL_EXIT;
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
@@ -141,6 +142,8 @@ void AwBrowserMainParts::PostCreateThreads() {
   heap_profiling::Mode mode = heap_profiling::GetModeForStartup();
   if (mode != heap_profiling::Mode::kNone)
     heap_profiling::Supervisor::GetInstance()->Start(base::NullCallback());
+
+  SetupBackgroundTracingFieldTrial();
 }
 
 }  // namespace android_webview

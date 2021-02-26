@@ -9,8 +9,11 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
@@ -21,6 +24,16 @@ class NSSCertDatabase;
 }
 
 namespace chromeos {
+
+// An observer that gets notified when the global NSSCertDatabase is about to be
+// destroyed.
+class SystemTokenCertDBObserver : public base::CheckedObserver {
+ public:
+  // Called when the global NSSCertDatabase is about to be destroyed.
+  // Consumers of that database should drop any reference to it and stop using
+  // it.
+  virtual void OnSystemTokenCertDBDestroyed() = 0;
+};
 
 // Initializes a global NSSCertDatabase for the system token and starts
 // NetworkCertLoader with that database.
@@ -50,9 +63,16 @@ class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
   // |callback|. If the database is already initialized, calls |callback|
   // immediately. Otherwise, |callback| will be called when the database is
   // initialized.
+  // To be notified when the returned NSSCertDatabase becomes invalid, callers
+  // should register as SystemTokenCertDBObserver.
   using GetSystemTokenCertDbCallback =
       base::OnceCallback<void(net::NSSCertDatabase*)>;
   void GetSystemTokenCertDb(GetSystemTokenCertDbCallback callback);
+
+  // Adds |observer| as SystemTokenCertDBObserver.
+  void AddObserver(SystemTokenCertDBObserver* observer);
+  // Removes |observer| as SystemTokenCertDBObserver.
+  void RemoveObserver(SystemTokenCertDBObserver* observer);
 
  private:
   // Called once the cryptohome service is available.
@@ -67,10 +87,6 @@ class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
   // database, unless it was already started before.
   void MaybeStartInitializingDatabase();
 
-  // This is called when the system token certificate database is created to run
-  // all entries in |get_system_token_cert_db_callback_list_| and clear it.
-  void RunAndClearGetSystemTokenCertDbCallbackList();
-
   // Initializes the global system token NSSCertDatabase with |system_slot|.
   // Also starts NetworkCertLoader with the system token database.
   void InitializeDatabase(crypto::ScopedPK11Slot system_slot);
@@ -83,8 +99,12 @@ class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
 
   // List of callbacks that should be executed when the system token certificate
   // database is created.
-  std::vector<GetSystemTokenCertDbCallback>
+  base::OnceCallbackList<GetSystemTokenCertDbCallback::RunType>
       get_system_token_cert_db_callback_list_;
+
+  // List of observers that will be notified when the global system token
+  // NSSCertDatabase is destroyed.
+  base::ObserverList<SystemTokenCertDBObserver> observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

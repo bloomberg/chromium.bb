@@ -46,7 +46,7 @@ namespace {
 
 // Path to the tool used to get system info, and delimiters for the output
 // format of the tool.
-const char* kCrosSystemTool[] = { "/usr/bin/crossystem" };
+const char* kCrosSystemTool[] = {"/usr/bin/crossystem"};
 const char kCrosSystemEq[] = "=";
 const char kCrosSystemDelim[] = "\n";
 const char kCrosSystemCommentDelim[] = "#";
@@ -184,6 +184,8 @@ const char kShouldSendRlzPingKey[] = "should_send_rlz_ping";
 const char kShouldSendRlzPingValueFalse[] = "0";
 const char kShouldSendRlzPingValueTrue[] = "1";
 const char kRlzEmbargoEndDateKey[] = "rlz_embargo_end_date";
+const char kEnterpriseManagementEmbargoEndDateKey[] =
+    "enterprise_management_embargo_end_date";
 const char kCustomizationIdKey[] = "customization_id";
 const char kDevSwitchBootKey[] = "devsw_boot";
 const char kDevSwitchBootValueDev[] = "1";
@@ -315,7 +317,8 @@ void StatisticsProviderImpl::SignalStatisticsLoaded() {
     // and unblock pending WaitForStatisticsLoaded() calls.
     statistics_loaded_.Signal();
 
-    VLOG(1) << "Finished loading statistics.";
+    // TODO(crbug.com/1123153): Downgrade to VLOG(1) after the bug is fixed.
+    LOG(WARNING) << "Finished loading statistics.";
   }
 
   // Schedule callbacks that were in |statistics_loaded_callbacks_|.
@@ -341,8 +344,8 @@ bool StatisticsProviderImpl::WaitForStatisticsLoaded() {
     return true;
   }
 
-  LOG(ERROR) << "Statistics not loaded after waiting "
-             << dtime.InMilliseconds() << "ms.";
+  LOG(ERROR) << "Statistics not loaded after waiting " << dtime.InMilliseconds()
+             << "ms.";
   return false;
 }
 
@@ -418,8 +421,7 @@ bool StatisticsProviderImpl::GetMachineStatistic(const std::string& name,
   if (iter == machine_info_.end()) {
     if (GetRegionalInformation(name, result))
       return true;
-    if (result != nullptr &&
-        base::SysInfo::IsRunningOnChromeOS() &&
+    if (result != nullptr && base::SysInfo::IsRunningOnChromeOS() &&
         (oem_manifest_loaded_ || !HasOemPrefix(name))) {
       VLOG(1) << "Requested statistic not found: " << name;
     }
@@ -440,8 +442,7 @@ bool StatisticsProviderImpl::GetMachineFlag(const std::string& name,
 
   MachineFlags::const_iterator iter = machine_flags_.find(name);
   if (iter == machine_flags_.end()) {
-    if (result != nullptr &&
-        base::SysInfo::IsRunningOnChromeOS() &&
+    if (result != nullptr && base::SysInfo::IsRunningOnChromeOS() &&
         (oem_manifest_loaded_ || !HasOemPrefix(name))) {
       VLOG(1) << "Requested machine flag not found: " << name;
     }
@@ -568,15 +569,11 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     }
   }
 
-  parser.GetNameValuePairsFromFile(machine_info_path,
-                                   kMachineHardwareInfoEq,
+  parser.GetNameValuePairsFromFile(machine_info_path, kMachineHardwareInfoEq,
                                    kMachineHardwareInfoDelim);
   parser.GetNameValuePairsFromFile(base::FilePath(kEchoCouponFile),
-                                   kEchoCouponEq,
-                                   kEchoCouponDelim);
-  parser.GetNameValuePairsFromFile(vpd_path,
-                                   kVpdEq,
-                                   kVpdDelim);
+                                   kEchoCouponEq, kEchoCouponDelim);
+  parser.GetNameValuePairsFromFile(vpd_path, kVpdEq, kVpdDelim);
 
   // Ensure that the hardware class key is present with the expected
   // key name, and if it couldn't be retrieved, that the value is "unknown".
@@ -620,7 +617,8 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     region_ =
         command_line->GetSwitchValueASCII(chromeos::switches::kCrosRegion);
     machine_info_[kRegionKey] = region_;
-    VLOG(1) << "CrOS region set to '" << region_ << "'";
+    // TODO(crbug.com/1123153): Downgrade to VLOG(1) after the bug is fixed.
+    LOG(WARNING) << "CrOS region set to '" << region_ << "'";
   }
 
   if (regional_data_.get() && !region_.empty() && !GetRegionDictionary())
@@ -661,17 +659,15 @@ void StatisticsProviderImpl::LoadOemManifestFromFile(
     LOG(WARNING) << "Unable to load OEM Manifest file: " << file.value();
     return;
   }
-  machine_info_[kOemDeviceRequisitionKey] =
-      oem_manifest.device_requisition;
-  machine_flags_[kOemIsEnterpriseManagedKey] =
-      oem_manifest.enterprise_managed;
+  machine_info_[kOemDeviceRequisitionKey] = oem_manifest.device_requisition;
+  machine_flags_[kOemIsEnterpriseManagedKey] = oem_manifest.enterprise_managed;
   machine_flags_[kOemCanExitEnterpriseEnrollmentKey] =
       oem_manifest.can_exit_enrollment;
-  machine_flags_[kOemKeyboardDrivenOobeKey] =
-      oem_manifest.keyboard_driven_oobe;
+  machine_flags_[kOemKeyboardDrivenOobeKey] = oem_manifest.keyboard_driven_oobe;
 
   oem_manifest_loaded_ = true;
-  VLOG(1) << "Loaded OEM Manifest statistics from " << file.value();
+  // TODO(crbug.com/1123153): Downgrade to VLOG(1) after the bug is fixed.
+  LOG(WARNING) << "Loaded OEM Manifest statistics from " << file.value();
 }
 
 StatisticsProviderImpl* StatisticsProviderImpl::GetInstance() {

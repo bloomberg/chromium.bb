@@ -71,6 +71,10 @@ bool QuicCryptoClientStream::EarlyDataAccepted() const {
   return handshaker_->EarlyDataAccepted();
 }
 
+ssl_early_data_reason_t QuicCryptoClientStream::EarlyDataReason() const {
+  return handshaker_->EarlyDataReason();
+}
+
 bool QuicCryptoClientStream::ReceivedInchoateReject() const {
   return handshaker_->ReceivedInchoateReject();
 }
@@ -105,6 +109,20 @@ size_t QuicCryptoClientStream::BufferSizeLimitForLevel(
   return handshaker_->BufferSizeLimitForLevel(level);
 }
 
+bool QuicCryptoClientStream::KeyUpdateSupportedLocally() const {
+  return handshaker_->KeyUpdateSupportedLocally();
+}
+
+std::unique_ptr<QuicDecrypter>
+QuicCryptoClientStream::AdvanceKeysAndCreateCurrentOneRttDecrypter() {
+  return handshaker_->AdvanceKeysAndCreateCurrentOneRttDecrypter();
+}
+
+std::unique_ptr<QuicEncrypter>
+QuicCryptoClientStream::CreateCurrentOneRttEncrypter() {
+  return handshaker_->CreateCurrentOneRttEncrypter();
+}
+
 std::string QuicCryptoClientStream::chlo_hash() const {
   return handshaker_->chlo_hash();
 }
@@ -126,9 +144,10 @@ void QuicCryptoClientStream::OnHandshakeDoneReceived() {
   handshaker_->OnHandshakeDoneReceived();
 }
 
-void QuicCryptoClientStream::OnApplicationState(
+void QuicCryptoClientStream::SetServerApplicationStateForResumption(
     std::unique_ptr<ApplicationState> application_state) {
-  handshaker_->OnApplicationState(std::move(application_state));
+  handshaker_->SetServerApplicationStateForResumption(
+      std::move(application_state));
 }
 
 }  // namespace quic

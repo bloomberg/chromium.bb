@@ -14,8 +14,9 @@ import subprocess
 import sys
 import tempfile
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
+CLIENT_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__.decode(sys.getfilesystemencoding()))))
 sys.path.insert(0, CLIENT_DIR)
 
 from utils import net
@@ -25,11 +26,10 @@ def download_isolated_file(h, workdir, isolate_server, namespace):
   """Download the isolated file with the given hash and return its contents."""
   dst = os.path.join(workdir, h)
   if not os.path.isfile(dst):
-    subprocess.check_call(['python', 'isolateserver.py', 'download',
-                           '-I', isolate_server,
-                           '--namespace', namespace,
-                           '-t', workdir,
-                           '-f', h, h],
+    subprocess.check_call([
+        'python', 'isolateserver.py', 'download', '-I', isolate_server,
+        '--namespace', namespace, '-t', workdir, '-f', h, h
+    ],
                           cwd=CLIENT_DIR)
   with open(dst) as f:
     return f.read()
@@ -49,9 +49,8 @@ def build_recursive_isolate_structure(h, workdir, isolate_server, namespace):
   """
   rv = get_and_parse_isolated_file(h, workdir, isolate_server, namespace)
   rv['includes'] = sorted(
-    build_recursive_isolate_structure(i, workdir, isolate_server, namespace)
-    for i in rv.get('includes', [])
-  )
+      build_recursive_isolate_structure(i, workdir, isolate_server, namespace)
+      for i in rv.get('includes', []))
   return rv
 
 
@@ -75,19 +74,25 @@ def main():
   parser = argparse.ArgumentParser(description=sys.modules[__name__].__doc__)
   parser.add_argument('hash1')
   parser.add_argument('hash2')
-  parser.add_argument('--difftool', '-d', default='diff',
-                      help='Diff tool to use.')
-  parser.add_argument('--isolate-server', '-I',
-                      default=os.environ.get('ISOLATE_SERVER', ''),
-                      help='URL of the Isolate Server to use. Defaults to the'
-                           'environment variable ISOLATE_SERVER if set. No '
-                           'need to specify https://, this is assumed.')
-  parser.add_argument('--namespace', default='default-gzip',
-                      help='The namespace to use on the Isolate Server, '
-                           'default: %(default)s')
-  parser.add_argument('--workdir', '-w',
-                      help='Working directory to use. If not specified, a '
-                           'tmp dir is created.')
+  parser.add_argument(
+      '--difftool', '-d', default='diff', help='Diff tool to use.')
+  parser.add_argument(
+      '--isolate-server',
+      '-I',
+      default=os.environ.get('ISOLATE_SERVER', ''),
+      help='URL of the Isolate Server to use. Defaults to the'
+      'environment variable ISOLATE_SERVER if set. No '
+      'need to specify https://, this is assumed.')
+  parser.add_argument(
+      '--namespace',
+      default='default-gzip',
+      help='The namespace to use on the Isolate Server, '
+      'default: %(default)s')
+  parser.add_argument(
+      '--workdir',
+      '-w',
+      help='Working directory to use. If not specified, a '
+      'tmp dir is created.')
   args = parser.parse_args()
 
   if not args.isolate_server:

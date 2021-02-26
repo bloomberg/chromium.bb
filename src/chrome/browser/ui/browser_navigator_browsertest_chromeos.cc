@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/window_pin_type.h"
-#include "ash/public/cpp/window_properties.h"
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager.h"
@@ -24,6 +22,8 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/ui/base/window_pin_type.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "components/account_id/account_id.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -82,6 +82,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToOSSettings) {
   EXPECT_NE(browser(), os_settings_browser);
 }
 
+// Verifies that new browser is not opened for Signin profile.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, RestrictSigninProfile) {
+  EXPECT_EQ(chrome::GetTotalBrowserCount(), 1u);
+
+  EXPECT_EQ(Browser::BrowserCreationStatus::kErrorProfileUnsuitable,
+            Browser::GetBrowserCreationStatusForProfile(
+                chromeos::ProfileHelper::GetSigninProfile()));
+}
+
 // This test verifies that the settings page is opened in a new browser window.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToSettings) {
   // Install the Settings App.
@@ -117,8 +126,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS,
                        NavigationBlockedInLockedFullscreen) {
   // Set locked fullscreen state.
   aura::Window* window = browser()->window()->GetNativeWindow();
-  window->SetProperty(ash::kWindowPinTypeKey,
-                      ash::WindowPinType::kTrustedPinned);
+  window->SetProperty(chromeos::kWindowPinTypeKey,
+                      chromeos::WindowPinType::kTrustedPinned);
 
   // Navigate to a page.
   auto url = GURL(chrome::kChromeUIVersionURL);
@@ -138,7 +147,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS,
   // As a sanity check unset the locked fullscreen state and make sure that the
   // navigation happens (the following EXPECTs fail if the next line isn't
   // executed).
-  window->SetProperty(ash::kWindowPinTypeKey, ash::WindowPinType::kNone);
+  window->SetProperty(chromeos::kWindowPinTypeKey,
+                      chromeos::WindowPinType::kNone);
 
   Navigate(&params);
 

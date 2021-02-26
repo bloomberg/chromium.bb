@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -23,8 +22,9 @@
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
-#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
+#include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -39,6 +39,7 @@
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
+#include "chrome/browser/sync/sync_invalidations_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -47,19 +48,14 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/browser_sync/browser_sync_switches.h"
-#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
@@ -83,10 +79,6 @@
 #include "chromeos/constants/chromeos_features.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN)
-#include "chrome/browser/sync/roaming_profile_directory_deleter_win.h"
-#endif  // defined(OS_WIN)
-
 namespace {
 
 void UpdateNetworkTimeOnUIThread(base::Time network_time,
@@ -100,8 +92,8 @@ void UpdateNetworkTimeOnUIThread(base::Time network_time,
 void UpdateNetworkTime(const base::Time& network_time,
                        const base::TimeDelta& resolution,
                        const base::TimeDelta& latency) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&UpdateNetworkTimeOnUIThread, network_time,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&UpdateNetworkTimeOnUIThread, network_time,
                                 resolution, latency, base::TimeTicks::Now()));
 }
 
@@ -151,6 +143,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
+  DependsOn(SyncInvalidationsServiceFactory::GetInstance());
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
   DependsOn(SecurityEventRecorderFactory::GetInstance());
@@ -193,7 +186,8 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
           : std::make_unique<browser_sync::ChromeSyncClient>(profile);
 
   init_params.sync_client = std::move(sync_client);
-  init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
+  init_params.network_time_update_callback =
+      base::BindRepeating(&UpdateNetworkTime);
   init_params.url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();
@@ -201,17 +195,14 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
       content::GetNetworkConnectionTracker();
   init_params.channel = chrome::GetChannel();
   init_params.debug_identifier = profile->GetDebugName();
-  init_params.autofill_enable_account_wallet_storage =
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableAccountWalletStorage);
-  init_params.enable_passwords_account_storage = base::FeatureList::IsEnabled(
-      password_manager::features::kEnablePasswordsAccountStorage);
 
+  init_params.policy_service =
+      profile->GetProfilePolicyConnector()->policy_service();
   bool local_sync_backend_enabled = false;
 
-// Since the local sync backend is currently only supported on Windows don't
-// even check the pref on other os-es.
-#if defined(OS_WIN)
+// Only check the local sync backend pref on the supported platforms of
+// Windows, Mac and Linux.
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
   syncer::SyncPrefs prefs(profile->GetPrefs());
   local_sync_backend_enabled = prefs.IsLocalSyncEnabled();
   UMA_HISTOGRAM_BOOLEAN("Sync.Local.Enabled", local_sync_backend_enabled);
@@ -229,7 +220,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 
     init_params.start_behavior = syncer::ProfileSyncService::AUTO_START;
   }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
   if (!local_sync_backend_enabled) {
     // Always create the GCMProfileService instance such that we can listen to
@@ -270,12 +261,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 
   auto pss =
       std::make_unique<syncer::ProfileSyncService>(std::move(init_params));
-
-#if defined(OS_WIN)
-  if (!local_sync_backend_enabled)
-    DeleteRoamingUserDataDirectoryLater();
-#endif
-
   pss->Initialize();
 
   // Hook PSS into PersonalDataManager (a circular dependency).
@@ -303,7 +288,8 @@ bool ProfileSyncServiceFactory::IsSyncAllowed(Profile* profile) {
   // No ProfileSyncService created yet - we don't want to create one, so just
   // infer the accessible state by looking at prefs/command line flags.
   syncer::SyncPrefs prefs(profile->GetPrefs());
-  return switches::IsSyncAllowedByFlag() && !prefs.IsManaged();
+  return switches::IsSyncAllowedByFlag() &&
+         (!prefs.IsManaged() || prefs.IsLocalSyncEnabled());
 }
 
 // static

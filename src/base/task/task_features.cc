@@ -17,10 +17,31 @@ const Feature kNoDetachBelowInitialCapacity = {
 const Feature kMayBlockWithoutDelay = {"MayBlockWithoutDelay",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-const Feature kFixedMaxBestEffortTasks = {"FixedMaxBestEffortTasks",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const Feature kDisableJobYield = {"DisableJobYield",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+const Feature kDisableFairJobScheduling = {"DisableFairJobScheduling",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const Feature kDisableJobUpdatePriority = {"DisableJobUpdatePriority",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const Feature kWakeUpStrategyFeature = {"WakeUpStrategyFeature",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+constexpr FeatureParam<WakeUpStrategy>::Option kWakeUpStrategyOptions[] = {
+    {WakeUpStrategy::kCentralizedWakeUps, "centralized-wakeups"},
+    {WakeUpStrategy::kSerializedWakeUps, "serialized-wakeups"},
+    {WakeUpStrategy::kExponentialWakeUps, "exponential-wakeups"}};
+
+const base::FeatureParam<WakeUpStrategy> kWakeUpStrategyParam{
+    &kWakeUpStrategyFeature, "strategy", WakeUpStrategy::kExponentialWakeUps,
+    &kWakeUpStrategyOptions};
+
+const Feature kWakeUpAfterGetWork = {"WakeUpAfterGetWork",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_WIN) || defined(OS_APPLE)
 const Feature kUseNativeThreadPool = {"UseNativeThreadPool",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif

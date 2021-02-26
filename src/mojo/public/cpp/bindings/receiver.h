@@ -8,8 +8,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
@@ -185,9 +185,9 @@ class Receiver {
   }
 
   // Sets the message filter to be notified of each incoming message before
-  // dispatch. If a filter returns |false| from Accept(), the message is not
-  // dispatched and the pipe is closed. Filters cannot be removed once added
-  // and only one can be set.
+  // dispatch. If a filter returns |false| from WillDispatch(), the message is
+  // not dispatched and the pipe is closed. Filters cannot be removed once
+  // added and only one can be set.
   void SetFilter(std::unique_ptr<MessageFilter> filter) {
     DCHECK(is_bound());
     internal_state_.SetFilter(std::move(filter));
@@ -204,7 +204,7 @@ class Receiver {
   // Blocks the calling thread until a new message arrives and is dispatched
   // to the bound implementation.
   bool WaitForIncomingCall() {
-    return internal_state_.WaitForIncomingMethodCall(MOJO_DEADLINE_INDEFINITE);
+    return internal_state_.WaitForIncomingMethodCall();
   }
 
   // Pauses the Remote endpoint, stopping dispatch of callbacks on that end. Any

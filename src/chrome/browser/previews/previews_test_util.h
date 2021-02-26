@@ -33,10 +33,10 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
                                         const std::string& histogram_name,
                                         size_t count);
 
-// Previews InfoBar (which these tests triggers) does not work on Mac.
+// Previews InfoBar (which these tests trigger) does not work on Mac.
 // See https://crbug.com/782322 for details. Also occasional flakes on win7
 // (https://crbug.com/789542).
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) x

@@ -20,10 +20,12 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/pref_names.h"
 #include "chromecast/base/version.h"
+#include "chromecast/crash/build_info.h"
 #include "chromecast/crash/cast_crashdump_uploader.h"
 #include "chromecast/crash/linux/dump_info.h"
 #include "chromecast/public/cast_sys_info.h"
@@ -83,7 +85,6 @@ MinidumpUploader::MinidumpUploader(CastSysInfo* sys_info,
       system_version_(sys_info->GetSystemBuildNumber()),
       upload_location_(!server_url.empty() ? server_url
                                            : kCrashServerProduction),
-      last_upload_ratelimited_(true),
       reboot_scheduled_(false),
       filestate_initialized_(false),
       uploader_(uploader),
@@ -150,30 +151,24 @@ bool MinidumpUploader::DoWork() {
       ignore_and_erase_dump = true;
     }
 
-    // Ratelimiting persists across reboots, thus we to keep track of
-    // last_upload_ratelimited_ to detect when we first become ratelimited.
-    // Otherwise once ratelimited, we will reboot every time we try to upload a
-    // dump.
-    if (CanUploadDump()) {
-      last_upload_ratelimited_ = false;
-    } else {
-      LOG(INFO) << "Can't upload dump: Ratelimited.";
+    // Ratelimiting persists across reboots.
+    if (reboot_scheduled_) {
+      LOG(INFO) << "Already rate limited with a reboot scheduled, removing "
+                   "crash dump";
       ignore_and_erase_dump = true;
-
-      // If the last upload wasn't ratelimited and this one is, then this is the
-      // first time we reached the ratelimit. Reboot the device.
-      if (!last_upload_ratelimited_)
-        reboot_scheduled_ = true;
-
-      last_upload_ratelimited_ = true;
+    } else if (CanUploadDump()) {
+      // Record dump for ratelimiting
+      IncrementNumDumpsInCurrentPeriod();
+    } else {
+      LOG(INFO) << "Can't upload dump due to rate limit, will reboot";
+      ResetRateLimitPeriod();
+      ignore_and_erase_dump = true;
+      reboot_scheduled_ = true;
     }
 
-    // Record dump for ratelimiting
-    IncrementNumDumpsInCurrentPeriod();
-
     if (ignore_and_erase_dump) {
-      base::DeleteFile(dump_path, false);
-      base::DeleteFile(log_path, false);
+      base::DeleteFile(dump_path);
+      base::DeleteFile(log_path);
       dumps.erase(dumps.begin());
       continue;
     }
@@ -203,14 +198,11 @@ bool MinidumpUploader::DoWork() {
     std::stringstream uptime_stream;
     uptime_stream << dump.params().process_uptime;
 
-    const std::string version(dump.params().cast_release_version + "." +
-                              dump.params().cast_build_number +
-                              dump.params().suffix);
     // attempt to upload
     LOG(INFO) << "Uploading crash to " << upload_location_;
     CastCrashdumpData crashdump_data;
     crashdump_data.product = kProductName;
-    crashdump_data.version = version;
+    crashdump_data.version = GetVersionString();
     crashdump_data.guid = client_id;
     crashdump_data.ptime = uptime_stream.str();
     crashdump_data.comments = comment.str();
@@ -233,10 +225,12 @@ bool MinidumpUploader::DoWork() {
     g.SetParameter("ro.product.release.track", release_channel_);
     g.SetParameter("ro.hardware", board_name_);
     g.SetParameter("ro.product.name", product_name_);
+    g.SetParameter("device", product_name_);
     g.SetParameter("ro.product.model", device_model_);
     g.SetParameter("ro.product.manufacturer", manufacturer_);
     g.SetParameter("ro.system.version", system_version_);
     g.SetParameter("release.virtual-channel", virtual_channel);
+    g.SetParameter("ro.build.type", GetBuildVariant());
     if (pref_service->HasPrefPath(kLatestUiVersion)) {
       g.SetParameter("ui.version",
                      pref_service->GetString(kLatestUiVersion));
@@ -257,6 +251,21 @@ bool MinidumpUploader::DoWork() {
     if (!dump.params().stadia_session_id.empty()) {
       g.SetParameter("stadia_session_id", dump.params().stadia_session_id);
     }
+    if (!dump.params().extra_info.empty()) {
+      std::vector<std::string> pairs = base::SplitString(dump.params().extra_info,
+                                                         " ",
+                                                         base::TRIM_WHITESPACE,
+                                                         base::SPLIT_WANT_NONEMPTY
+                                                        );
+      for (const auto& pair : pairs) {
+        std::vector<std::string> key_value =
+                base::SplitString(pair, "=", base::TRIM_WHITESPACE,
+                                  base::SPLIT_WANT_NONEMPTY);
+        if (key_value.size() == 2) {
+          g.SetParameter(key_value[0], key_value[1]);
+        }
+      }
+    }
 
     std::string response;
     if (!g.Upload(&response)) {
@@ -276,12 +285,12 @@ bool MinidumpUploader::DoWork() {
     // delete the dump if it exists in /data/minidumps.
     // (We may use a fake dump file which should not be deleted.)
     if (!dump_path.empty() && dump_path.DirName() == dump_path_ &&
-        !base::DeleteFile(dump_path, false)) {
+        !base::DeleteFile(dump_path)) {
       LOG(WARNING) << "remove dump " << dump_path.value() << " failed"
                    << strerror(errno);
     }
     // delete the log if exists
-    if (!log_path.empty() && !base::DeleteFile(log_path, false)) {
+    if (!log_path.empty() && !base::DeleteFile(log_path)) {
       LOG(WARNING) << "remove log " << log_path.value() << " failed"
                    << strerror(errno);
     }

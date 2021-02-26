@@ -121,6 +121,12 @@ NET_ERROR(BLOCKED_BY_RESPONSE, -27)
 // requests. Used for NetworkSecurityPolicy on Android.
 NET_ERROR(CLEARTEXT_NOT_PERMITTED, -29)
 
+// The request was blocked by a Content Security Policy
+NET_ERROR(BLOCKED_BY_CSP, -30)
+
+// The request was blocked because of no H/2 or QUIC session.
+NET_ERROR(H2_OR_QUIC_REQUIRED, -31)
+
 // A connection was closed (corresponding to a TCP FIN).
 NET_ERROR(CONNECTION_CLOSED, -100)
 
@@ -789,6 +795,10 @@ NET_ERROR(HTTP_RESPONSE_CODE_FAILURE, -379)
 // and the origin connected to is not on a list of domains where unknown roots
 // are allowed.
 NET_ERROR(QUIC_CERT_ROOT_NOT_KNOWN, -380)
+
+// A GOAWAY frame has been received indicating that the request has not been
+// processed and is therefore safe to retry on a different connection.
+NET_ERROR(QUIC_GOAWAY_REQUEST_CAN_BE_RETRIED, -381)
 
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)

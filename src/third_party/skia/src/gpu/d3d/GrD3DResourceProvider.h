@@ -10,20 +10,29 @@
 
 #include "include/gpu/d3d/GrD3DTypes.h"
 #include "include/private/SkTArray.h"
+#include "include/private/SkTHash.h"
 #include "src/core/SkLRUCache.h"
 #include "src/gpu/GrProgramDesc.h"
-#include "src/gpu/d3d/GrD3DAttachmentViewManager.h"
+#include "src/gpu/GrRingBuffer.h"
+#include "src/gpu/d3d/GrD3DCommandSignature.h"
+#include "src/gpu/d3d/GrD3DCpuDescriptorManager.h"
+#include "src/gpu/d3d/GrD3DDescriptorTableManager.h"
 #include "src/gpu/d3d/GrD3DRootSignature.h"
+#include "src/gpu/d3d/GrD3DUtil.h"
 
 #include <memory>
 
+class GrD3DCommandSignature;
 class GrD3DDirectCommandList;
 class GrD3DGpu;
 class GrD3DPipelineState;
+class GrSamplerState;
 
 class GrD3DResourceProvider {
 public:
     GrD3DResourceProvider(GrD3DGpu*);
+
+    void destroyResources();
 
     std::unique_ptr<GrD3DDirectCommandList> findOrCreateDirectCommandList();
 
@@ -31,14 +40,42 @@ public:
 
     sk_sp<GrD3DRootSignature> findOrCreateRootSignature(int numTextureSamplers);
 
-    D3D12_CPU_DESCRIPTOR_HANDLE createRenderTargetView(ID3D12Resource* textureResource);
-    void recycleRenderTargetView(D3D12_CPU_DESCRIPTOR_HANDLE*);
+    sk_sp<GrD3DCommandSignature> findOrCreateCommandSignature(GrD3DCommandSignature::ForIndexed,
+                                                              unsigned int slot);
 
-    D3D12_CPU_DESCRIPTOR_HANDLE createDepthStencilView(ID3D12Resource* textureResource);
-    void recycleDepthStencilView(D3D12_CPU_DESCRIPTOR_HANDLE*);
+    GrD3DDescriptorHeap::CPUHandle createRenderTargetView(ID3D12Resource* textureResource);
+    void recycleRenderTargetView(const GrD3DDescriptorHeap::CPUHandle&);
 
-   sk_sp<GrD3DPipelineState> findOrCreateCompatiblePipelineState(GrRenderTarget*,
+    GrD3DDescriptorHeap::CPUHandle createDepthStencilView(ID3D12Resource* textureResource);
+    void recycleDepthStencilView(const GrD3DDescriptorHeap::CPUHandle&);
+
+    GrD3DDescriptorHeap::CPUHandle createConstantBufferView(ID3D12Resource* bufferResource,
+                                                            size_t offset,
+                                                            size_t size);
+    GrD3DDescriptorHeap::CPUHandle createShaderResourceView(ID3D12Resource* resource);
+    void recycleConstantOrShaderView(const GrD3DDescriptorHeap::CPUHandle&);
+
+    D3D12_CPU_DESCRIPTOR_HANDLE findOrCreateCompatibleSampler(const GrSamplerState& params);
+
+    sk_sp<GrD3DDescriptorTable> findOrCreateShaderResourceTable(
+            const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& shaderResourceViews);
+    sk_sp<GrD3DDescriptorTable> findOrCreateSamplerTable(
+            const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& samplers);
+    GrD3DDescriptorTableManager* descriptorTableMgr() {
+        return &fDescriptorTableManager;
+    }
+
+    sk_sp<GrD3DPipelineState> findOrCreateCompatiblePipelineState(GrRenderTarget*,
                                                                  const GrProgramInfo&);
+
+    D3D12_GPU_VIRTUAL_ADDRESS uploadConstantData(void* data, size_t size);
+    void prepForSubmit();
+
+    void markPipelineStateUniformsDirty() { fPipelineStateCache->markPipelineStateUniformsDirty(); }
+
+#if GR_TEST_UTILS
+    void resetShaderCacheForTesting() const { fPipelineStateCache->release(); }
+#endif
 
 private:
 #ifdef SK_DEBUG
@@ -50,7 +87,10 @@ private:
         PipelineStateCache(GrD3DGpu* gpu);
         ~PipelineStateCache();
 
+        void release();
         sk_sp<GrD3DPipelineState> refPipelineState(GrRenderTarget*, const GrProgramInfo&);
+
+        void markPipelineStateUniformsDirty();
 
     private:
         struct Entry;
@@ -71,14 +111,54 @@ private:
 #endif
     };
 
+    class DescriptorTableCache : public ::SkNoncopyable {
+    public:
+        DescriptorTableCache(GrD3DGpu* gpu) : fGpu(gpu), fMap(64) {
+            // Initialize the array we pass into CopyDescriptors for ranges.
+            // At the moment any descriptor we pass into CopyDescriptors is only itself,
+            // not the beginning of a range, so each range size is always 1.
+            for (int i = 0; i < kRangeSizesCount; ++i) {
+                fRangeSizes[i] = 1;
+            }
+        }
+        ~DescriptorTableCache() = default;
+
+        void release();
+        typedef std::function<sk_sp<GrD3DDescriptorTable>(GrD3DGpu*, unsigned int)> CreateFunc;
+        sk_sp<GrD3DDescriptorTable> findOrCreateDescTable(
+                const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>&, CreateFunc);
+
+    private:
+        GrD3DGpu* fGpu;
+
+        typedef std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> DescTableKey;
+        typedef sk_sp<GrD3DDescriptorTable> DescTableValue;
+        struct DescTableHash {
+            uint32_t operator()(DescTableKey key) const {
+                return SkOpts::hash_fn(key.data(),
+                                       key.size()*sizeof(D3D12_CPU_DESCRIPTOR_HANDLE), 0);
+            }
+        };
+        SkLRUCache<DescTableKey, DescTableValue, DescTableHash> fMap;
+        static constexpr int kRangeSizesCount = 8;
+        unsigned int fRangeSizes[kRangeSizesCount];
+    };
+
     GrD3DGpu* fGpu;
 
     SkSTArray<4, std::unique_ptr<GrD3DDirectCommandList>> fAvailableDirectCommandLists;
     SkSTArray<4, sk_sp<GrD3DRootSignature>> fRootSignatures;
+    SkSTArray<2, sk_sp<GrD3DCommandSignature>> fCommandSignatures;
 
-    GrD3DAttachmentViewManager fAttachmentViewManager;
+    GrD3DCpuDescriptorManager fCpuDescriptorManager;
+    GrD3DDescriptorTableManager fDescriptorTableManager;
 
     std::unique_ptr<PipelineStateCache> fPipelineStateCache;
+
+    SkTHashMap<uint32_t, D3D12_CPU_DESCRIPTOR_HANDLE> fSamplers;
+
+    DescriptorTableCache fShaderResourceDescriptorTableCache;
+    DescriptorTableCache fSamplerDescriptorTableCache;
 };
 
 #endif

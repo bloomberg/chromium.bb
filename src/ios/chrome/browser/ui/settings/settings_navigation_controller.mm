@@ -18,13 +18,14 @@
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -39,12 +40,16 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 @interface SettingsNavigationController () <
     GoogleServicesSettingsCoordinatorDelegate,
+    PasswordsCoordinatorDelegate,
     UIAdaptivePresentationControllerDelegate,
     UINavigationControllerDelegate>
 
 // Google services settings coordinator.
 @property(nonatomic, strong)
     GoogleServicesSettingsCoordinator* googleServicesSettingsCoordinator;
+
+// Saved passwords settings coordinator.
+@property(nonatomic, strong) PasswordsCoordinator* savedPasswordsCoordinator;
 
 // Current UIViewController being presented by this Navigation Controller.
 // If nil it means the Navigation Controller is not presenting anything, or the
@@ -96,7 +101,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
       initWithRootViewController:controller
                          browser:browser
                         delegate:delegate];
-  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
   return nc;
 }
 
@@ -127,7 +131,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   DCHECK(browser);
   SyncEncryptionPassphraseTableViewController* controller =
       [[SyncEncryptionPassphraseTableViewController alloc]
-          initWithBrowserState:browser->GetBrowserState()];
+          initWithBrowser:browser];
   controller.dispatcher = [delegate handlerForSettings];
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
@@ -140,22 +144,20 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 + (instancetype)
     savePasswordsControllerForBrowser:(Browser*)browser
                              delegate:(id<SettingsNavigationControllerDelegate>)
-                                          delegate {
+                                          delegate
+      startPasswordCheckAutomatically:(BOOL)startCheck {
   DCHECK(browser);
-  PasswordsTableViewController* controller =
-      [[PasswordsTableViewController alloc]
-          initWithBrowserState:browser->GetBrowserState()];
-  controller.dispatcher = [delegate handlerForSettings];
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
-      initWithRootViewController:controller
+      initWithRootViewController:nil
                          browser:browser
                         delegate:delegate];
-  [controller navigationItem].rightBarButtonItem = [nc doneButton];
+  [nc showSavedPasswordsAndStartPasswordCheck:startCheck];
 
   // Make sure the cancel button is always present, as the Save Passwords screen
   // isn't just shown from Settings.
-  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
+  [nc.savedPasswordsCoordinator.viewController navigationItem]
+      .leftBarButtonItem = [nc cancelButton];
   return nc;
 }
 
@@ -164,7 +166,8 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                             delegate:(id<SettingsNavigationControllerDelegate>)
                                          delegate
                   feedbackDataSource:(id<UserFeedbackDataSource>)dataSource
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
+                              sender:(UserFeedbackSender)sender
+                             handler:(id<ApplicationCommands>)handler {
   DCHECK(browser);
   DCHECK(ios::GetChromeBrowserProvider()
              ->GetUserFeedbackProvider()
@@ -172,7 +175,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   UIViewController* controller =
       ios::GetChromeBrowserProvider()
           ->GetUserFeedbackProvider()
-          ->CreateViewController(dataSource, dispatcher);
+          ->CreateViewController(dataSource, handler, sender);
   DCHECK(controller);
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
@@ -284,11 +287,20 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  self.view.backgroundColor = UIColor.cr_systemBackgroundColor;
+
   if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
-    self.navigationBar.backgroundColor = UIColor.whiteColor;
+    self.navigationBar.translucent = NO;
+    self.navigationBar.barTintColor = UIColor.cr_systemBackgroundColor;
+
+    self.toolbar.translucent = NO;
+    self.toolbar.barTintColor = UIColor.cr_systemBackgroundColor;
   }
+
   self.navigationBar.prefersLargeTitles = YES;
   self.navigationBar.accessibilityIdentifier = @"SettingNavigationBar";
+
   // Set the NavigationController delegate.
   self.delegate = self;
 }
@@ -312,9 +324,10 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     }
   }
 
-  // GoogleServicesSettingsCoordinator must be stopped before dismissing the
-  // sync settings view.
+  // GoogleServicesSettingsCoordinator and PasswordsCoordinator must be stopped
+  // before dismissing the sync settings view.
   [self stopGoogleServicesSettingsCoordinator];
+  [self stopPasswordsCoordinator];
 
   // Reset the delegate to prevent any queued transitions from attempting to
   // close the settings.
@@ -369,7 +382,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
           initWithBaseNavigationController:self
                                    browser:self.browser
                                       mode:GoogleServicesSettingsModeSettings];
-  self.googleServicesSettingsCoordinator.dispatcher =
+  self.googleServicesSettingsCoordinator.handler =
       _settingsNavigationDelegate.handlerForSettings;
   self.googleServicesSettingsCoordinator.delegate = self;
   [self.googleServicesSettingsCoordinator start];
@@ -381,12 +394,39 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   self.googleServicesSettingsCoordinator = nil;
 }
 
+// Shows the saved passwords and starts the password check is
+// |startPasswordCheck| is true.
+- (void)showSavedPasswordsAndStartPasswordCheck:(BOOL)startPasswordCheck {
+  self.savedPasswordsCoordinator = [[PasswordsCoordinator alloc]
+      initWithBaseNavigationController:self
+                               browser:self.browser];
+  self.savedPasswordsCoordinator.delegate = self;
+  [self.savedPasswordsCoordinator start];
+  if (startPasswordCheck) {
+    [self.savedPasswordsCoordinator checkSavedPasswords];
+  }
+}
+
+// Stops the underlying passwords coordinator if it exists.
+- (void)stopPasswordsCoordinator {
+  [self.savedPasswordsCoordinator stop];
+  self.savedPasswordsCoordinator.delegate = nil;
+  self.savedPasswordsCoordinator = nil;
+}
+
 #pragma mark - GoogleServicesSettingsCoordinatorDelegate
 
 - (void)googleServicesSettingsCoordinatorDidRemove:
     (GoogleServicesSettingsCoordinator*)coordinator {
   DCHECK_EQ(self.googleServicesSettingsCoordinator, coordinator);
   [self stopGoogleServicesSettingsCoordinator];
+}
+
+#pragma mark - PasswordsCoordinatorDelegate
+
+- (void)passwordsCoordinatorDidRemove:(PasswordsCoordinator*)coordinator {
+  DCHECK_EQ(self.savedPasswordsCoordinator, coordinator);
+  [self stopPasswordsCoordinator];
 }
 
 #pragma mark - UIAdaptivePresentationControllerDelegate
@@ -461,6 +501,15 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 - (void)navigationController:(UINavigationController*)navigationController
       willShowViewController:(UIViewController*)viewController
                     animated:(BOOL)animated {
+  if ([viewController isMemberOfClass:[SettingsTableViewController class]] &&
+      ![self.currentPresentedViewController
+          isMemberOfClass:[SettingsTableViewController class]] &&
+      [self.currentPresentedViewController
+          conformsToProtocol:@protocol(SettingsControllerProtocol)]) {
+    // Navigated back to root SettingsController from leaf SettingsController.
+    [self.currentPresentedViewController
+        performSelector:@selector(reportBackUserAction)];
+  }
   self.currentPresentedViewController = base::mac::ObjCCast<
       UIViewController<UIAdaptivePresentationControllerDelegate>>(
       viewController);
@@ -506,7 +555,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (UIViewController*)baseViewController {
   SyncEncryptionPassphraseTableViewController* controller =
       [[SyncEncryptionPassphraseTableViewController alloc]
-          initWithBrowserState:self.browser->GetBrowserState()];
+          initWithBrowser:self.browser];
   controller.dispatcher = [self.settingsNavigationDelegate handlerForSettings];
   [self pushViewController:controller animated:YES];
 }
@@ -514,11 +563,12 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
 - (void)showSavedPasswordsSettingsFromViewController:
     (UIViewController*)baseViewController {
-  PasswordsTableViewController* controller =
-      [[PasswordsTableViewController alloc]
-          initWithBrowserState:self.browser->GetBrowserState()];
-  controller.dispatcher = [self.settingsNavigationDelegate handlerForSettings];
-  [self pushViewController:controller animated:YES];
+  [self showSavedPasswordsAndStartPasswordCheck:NO];
+}
+
+- (void)showSavedPasswordsSettingsAndStartPasswordCheckFromViewController:
+    (UIViewController*)baseViewController {
+  [self showSavedPasswordsAndStartPasswordCheck:YES];
 }
 
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.

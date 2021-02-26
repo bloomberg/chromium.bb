@@ -26,6 +26,11 @@ namespace {
 const char kMouseLockBubbleReshowsHistogramName[] =
     "ExclusiveAccess.BubbleReshowsPerSession.MouseLock";
 
+// The amount of time to disallow repeated pointer lock calls after the user
+// successfully escapes from one lock request.
+constexpr base::TimeDelta kEffectiveUserEscapeDuration =
+    base::TimeDelta::FromMilliseconds(1250);
+
 }  // namespace
 
 MouseLockController::MouseLockController(ExclusiveAccessManager* manager)
@@ -53,17 +58,27 @@ void MouseLockController::RequestToLockMouse(WebContents* web_contents,
   if (lock_state_callback_for_test_)
     std::move(lock_state_callback_for_test_).Run();
 
-  // Must have a user gesture to prevent misbehaving sites from constantly
-  // re-locking the mouse. Exceptions are when the page has unlocked
-  // (i.e. not the user), or if we're in tab fullscreen (user gesture required
-  // for that)
-  if (!last_unlocked_by_target && !user_gesture &&
+  // To prevent misbehaving sites from constantly re-locking the mouse, the
+  // lock-requesting page must have transient user activation and it must not
+  // request for a lock within |kEffectiveUserEscapeDuration| time since the
+  // user successfully escaped from a previous lock.  Exceptions are when the
+  // page has unlocked (i.e. not the user), or if we're in tab fullscreen (which
+  // requires its own transient user activation).
+  if (!last_unlocked_by_target &&
       !exclusive_access_manager()
            ->fullscreen_controller()
            ->IsFullscreenForTabOrPending(web_contents)) {
-    web_contents->GotResponseToLockMouseRequest(
-        blink::mojom::PointerLockResult::kRequiresUserGesture);
-    return;
+    if (!user_gesture) {
+      web_contents->GotResponseToLockMouseRequest(
+          blink::mojom::PointerLockResult::kRequiresUserGesture);
+      return;
+    }
+    if (base::TimeTicks::Now() <
+        last_user_escape_time_ + kEffectiveUserEscapeDuration) {
+      web_contents->GotResponseToLockMouseRequest(
+          blink::mojom::PointerLockResult::kUserRejected);
+      return;
+    }
   }
   SetTabWithExclusiveAccess(web_contents);
 
@@ -111,6 +126,7 @@ void MouseLockController::RecordBubbleReshowsHistogram(
 bool MouseLockController::HandleUserPressedEscape() {
   if (IsMouseLocked()) {
     ExitExclusiveAccessIfNecessary();
+    last_user_escape_time_ = base::TimeTicks::Now();
     return true;
   }
 
@@ -139,19 +155,10 @@ void MouseLockController::UnlockMouse() {
     return;
 
   content::RenderWidgetHostView* mouse_lock_view = nullptr;
-  FullscreenController* fullscreen_controller =
-      exclusive_access_manager()->fullscreen_controller();
-  if ((fullscreen_controller->exclusive_access_tab() == tab) &&
-      fullscreen_controller->IsPrivilegedFullscreenForTab()) {
-    mouse_lock_view =
-        exclusive_access_tab()->GetFullscreenRenderWidgetHostView();
-  }
-
-  if (!mouse_lock_view) {
-    RenderViewHost* const rvh = exclusive_access_tab()->GetRenderViewHost();
-    if (rvh)
-      mouse_lock_view = rvh->GetWidget()->GetView();
-  }
+  RenderViewHost* const rvh =
+      exclusive_access_tab()->GetMainFrame()->GetRenderViewHost();
+  if (rvh)
+    mouse_lock_view = rvh->GetWidget()->GetView();
 
   if (mouse_lock_view)
     mouse_lock_view->UnlockMouse();

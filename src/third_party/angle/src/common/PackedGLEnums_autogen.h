@@ -57,11 +57,12 @@ enum class BufferBinding : uint8_t
     PixelPack         = 7,
     PixelUnpack       = 8,
     ShaderStorage     = 9,
-    TransformFeedback = 10,
-    Uniform           = 11,
+    Texture           = 10,
+    TransformFeedback = 11,
+    Uniform           = 12,
 
-    InvalidEnum = 12,
-    EnumCount   = 12,
+    InvalidEnum = 13,
+    EnumCount   = 13,
 };
 
 template <>
@@ -160,9 +161,10 @@ enum class GraphicsResetStatus : uint8_t
     GuiltyContextReset   = 1,
     InnocentContextReset = 2,
     UnknownContextReset  = 3,
+    PurgedContextResetNV = 4,
 
-    InvalidEnum = 4,
-    EnumCount   = 4,
+    InvalidEnum = 5,
+    EnumCount   = 5,
 };
 
 template <>
@@ -515,10 +517,12 @@ enum class TextureTarget : uint8_t
     CubeMapNegativeY    = 10,
     CubeMapPositiveZ    = 11,
     CubeMapNegativeZ    = 12,
-    VideoImage          = 13,
+    CubeMapArray        = 13,
+    VideoImage          = 14,
+    Buffer              = 15,
 
-    InvalidEnum = 14,
-    EnumCount   = 14,
+    InvalidEnum = 16,
+    EnumCount   = 16,
 };
 
 template <>
@@ -536,10 +540,12 @@ enum class TextureType : uint8_t
     External            = 5,
     Rectangle           = 6,
     CubeMap             = 7,
-    VideoImage          = 8,
+    CubeMapArray        = 8,
+    VideoImage          = 9,
+    Buffer              = 10,
 
-    InvalidEnum = 9,
-    EnumCount   = 9,
+    InvalidEnum = 11,
+    EnumCount   = 11,
 };
 
 template <>

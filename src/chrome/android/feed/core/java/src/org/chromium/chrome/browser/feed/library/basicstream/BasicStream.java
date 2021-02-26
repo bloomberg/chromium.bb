@@ -4,14 +4,17 @@
 
 package org.chromium.chrome.browser.feed.library.basicstream;
 
+import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
+
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkNotNull;
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import android.os.Bundle;
 import android.util.Base64;
+import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -25,8 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
@@ -56,6 +58,7 @@ import org.chromium.chrome.browser.feed.library.basicstream.internal.StreamRecyc
 import org.chromium.chrome.browser.feed.library.basicstream.internal.drivers.StreamDriver;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.scroll.BasicStreamScrollMonitor;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.scroll.ScrollRestorer;
+import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.PietViewHolder;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewloggingupdater.ViewLoggingUpdater;
 import org.chromium.chrome.browser.feed.library.common.concurrent.CancelableTask;
 import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunner;
@@ -80,11 +83,16 @@ import org.chromium.chrome.browser.feed.library.sharedstream.piet.PietStringForm
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.menumeasurer.MenuMeasurer;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.ScrollListenerNotifier;
-import org.chromium.chrome.feed.R;
+import org.chromium.chrome.browser.feed.shared.stream.Header;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.UiContext;
 import org.chromium.components.feed.core.proto.libraries.basicstream.internal.StreamSavedInstanceStateProto.StreamSavedInstanceState;
 import org.chromium.components.feed.core.proto.libraries.sharedstream.ScrollStateProto.ScrollState;
 import org.chromium.components.feed.core.proto.libraries.sharedstream.UiRefreshReasonProto.UiRefreshReason;
+import org.chromium.components.user_prefs.UserPrefs;
 
 import java.util.List;
 
@@ -95,11 +103,12 @@ import java.util.List;
 public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChangeListener {
     private static final String TAG = "BasicStream";
 
-    @VisibleForTesting
-    static final String KEY_STREAM_STATE = "stream-state";
     private static final long DEFAULT_LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS = 1000L;
     private static final long DEFAULT_MINIMUM_SPINNER_SHOW_TIME_MS = 500L;
     private static final long DEFAULT_SPINNER_DELAY_TIME_MS = 500L;
+    // The height of dense Feed article card is always 157dp based on the Feed Piet templates which
+    // are server-driven and may change later.
+    private static final int FEED_CARD_HEIGHT_DENSE_PX = dpToPx(157);
 
     private final CardConfiguration mCardConfiguration;
     private final Clock mClock;
@@ -139,6 +148,7 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
     private boolean mIsRestoring;
     private boolean mIsDestroyed;
     private boolean mIsStreamContentVisible = true;
+    private boolean mIsPlaceholderShown;
 
     @LoggingState
     private int mLoggingState = LoggingState.STARTING;
@@ -165,7 +175,8 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
             @Nullable HostBindingProvider hostBindingProvider, ActionManager actionManager,
             Configuration configuration, SnackbarApi snackbarApi, BasicLoggingApi basicLoggingApi,
             OfflineIndicatorApi offlineIndicatorApi, MainThreadRunner mainThreadRunner,
-            FeedKnownContent feedKnownContent, TooltipApi tooltipApi, boolean isBackgroundDark) {
+            FeedKnownContent feedKnownContent, TooltipApi tooltipApi, boolean isBackgroundDark,
+            boolean isPlaceholderShown) {
         this.mCardConfiguration = cardConfiguration;
         this.mClock = clock;
         this.mThreadUtils = threadUtils;
@@ -199,6 +210,7 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
                 ConfigKey.SPINNER_MINIMUM_SHOW_TIME_MS, DEFAULT_MINIMUM_SPINNER_SHOW_TIME_MS);
         this.mSpinnerDelayTime = configuration.getValueOrDefault(
                 ConfigKey.SPINNER_DELAY_MS, DEFAULT_SPINNER_DELAY_TIME_MS);
+        this.mIsPlaceholderShown = isPlaceholderShown;
     }
 
     @VisibleForTesting
@@ -222,16 +234,6 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
                 .setClock(clock)
                 .setIsDarkTheme(Suppliers.of(isBackgroundDark))
                 .build();
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
-            onCreate((String) null);
-            return;
-        }
-
-        onCreate(savedInstanceState.getString(KEY_STREAM_STATE));
     }
 
     @Override
@@ -282,12 +284,6 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
     }
 
     @Override
-    public void onActive() {}
-
-    @Override
-    public void onInactive() {}
-
-    @Override
     public void onHide() {
         mAdapter.setShown(false);
         mContextMenuManager.dismissPopup();
@@ -312,14 +308,8 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
         mStreamOfflineMonitor.onDestroy();
         mUiSessionRequestLogger.onDestroy();
         mActionManager.setViewport(null);
+        mActionManager.setCanUploadClicksAndViewsWhenNoticeCardIsPresent(canUpload());
         mIsDestroyed = true;
-    }
-
-    @Override
-    public Bundle getSavedInstanceState() {
-        Bundle bundle = new Bundle();
-        bundle.putString(KEY_STREAM_STATE, getSavedInstanceStateString());
-        return bundle;
     }
 
     @Override
@@ -464,6 +454,17 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
     }
 
     @Override
+    public boolean isPlaceholderShown() {
+        return mIsPlaceholderShown;
+    }
+
+    @Override
+    public void hidePlaceholder() {
+        mRecyclerView.getBackground().setAlpha(255);
+        mIsPlaceholderShown = false;
+    }
+
+    @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
             int oldTop, int oldRight, int oldBottom) {
         if ((oldLeft != 0 && left != oldLeft) || (oldRight != 0 && right != oldRight)) {
@@ -472,6 +473,31 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
         }
         mContextMenuManager.dismissPopup();
         mActionManager.onLayoutChange();
+    }
+
+    @Override
+    public int getFirstCardDensity() {
+        if (mContext.getResources().getConfiguration().orientation == ORIENTATION_PORTRAIT) {
+            RecyclerView.ViewHolder firstArticleCard =
+                    mRecyclerView.findViewHolderForAdapterPosition(mHeaders.size());
+            for (int i = mHeaders.size();
+                    firstArticleCard != null && !(firstArticleCard instanceof PietViewHolder);
+                    i++) {
+                firstArticleCard = mRecyclerView.findViewHolderForAdapterPosition(i);
+            }
+            if (firstArticleCard != null) {
+                int firstCardHeight = firstArticleCard.itemView.getHeight();
+                return firstCardHeight <= FEED_CARD_HEIGHT_DENSE_PX
+                        ? FeedFirstCardDensity.DENSE
+                        : FeedFirstCardDensity.NOT_DENSE;
+            }
+        }
+        return FeedFirstCardDensity.UNKNOWN;
+    }
+
+    private static int dpToPx(int dp) {
+        return (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, dp, Resources.getSystem().getDisplayMetrics());
     }
 
     private void setupRecyclerView() {
@@ -489,24 +515,29 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
         new ItemTouchHelper(new StreamItemTouchCallbacks()).attachToRecyclerView(mRecyclerView);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setClipToPadding(false);
-        if (VERSION.SDK_INT > VERSION_CODES.JELLY_BEAN) {
-            mRecyclerView.setPaddingRelative(mStreamConfiguration.getPaddingStart(),
-                    mStreamConfiguration.getPaddingTop(), mStreamConfiguration.getPaddingEnd(),
-                    mStreamConfiguration.getPaddingBottom());
-        } else {
-            mRecyclerView.setPadding(mStreamConfiguration.getPaddingStart(),
-                    mStreamConfiguration.getPaddingTop(), mStreamConfiguration.getPaddingEnd(),
-                    mStreamConfiguration.getPaddingBottom());
-        }
+        mRecyclerView.setPaddingRelative(mStreamConfiguration.getPaddingStart(),
+                mStreamConfiguration.getPaddingTop(), mStreamConfiguration.getPaddingEnd(),
+                mStreamConfiguration.getPaddingBottom());
 
-        mItemAnimator = new StreamItemAnimator(mStreamContentChangedListener, mActionManager);
+        mItemAnimator = new StreamItemAnimator(
+                mStreamContentChangedListener, mActionManager, mRecyclerView);
         mItemAnimator.setStreamVisibility(mIsStreamContentVisible);
 
         mRecyclerView.setItemAnimator(mItemAnimator);
         mRecyclerView.addOnLayoutChangeListener(this);
 
         mActionManager.setViewport(mRecyclerView);
+        mActionManager.setCanUploadClicksAndViewsWhenNoticeCardIsPresent(canUpload());
         addScrollListener(mActionManager.getScrollListener());
+    }
+
+    private boolean canUpload() {
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.INTEREST_FEEDV1_CLICKS_AND_VIEWS_CONDITIONAL_UPLOAD)) {
+            return UserPrefs.get(Profile.getLastUsedRegularProfile())
+                    .getBoolean(Pref.HAS_REACHED_CLICK_AND_VIEW_ACTIONS_UPLOAD_CONDITIONS);
+        }
+        return true;
     }
 
     private void updateAdapterAfterSessionStart(ModelProvider modelProvider) {
@@ -705,7 +736,9 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
                     mIsInitialLoad, mMainThreadRunner, mTooltipApi,
                     UiRefreshReason.getDefaultInstance(), mScrollListenerNotifier);
 
-            showSpinnerWithDelay();
+            if (!mIsPlaceholderShown) {
+                showSpinnerWithDelay();
+            }
             mAdapter.setDriver(mStreamDriver);
         }
     }

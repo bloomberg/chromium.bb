@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
@@ -74,6 +74,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     uint32_t restart_id = BeginFrameSource::kNotRestartableId;
     bool run_all_compositor_stages_before_draw = false;
     bool log_capture_pipeline_in_webrtc = false;
+    DebugRendererSettings debug_renderer_settings;
   };
   explicit FrameSinkManagerImpl(const InitParams& params);
   // TODO(kylechar): Cleanup tests and remove this constructor.
@@ -135,6 +136,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                        const FrameSinkId& root_frame_sink_id) override;
   void EvictBackBuffer(uint32_t cache_id,
                        EvictBackBufferCallback callback) override;
+  void UpdateDebugRendererSettings(
+      const DebugRendererSettings& debug_settings) override;
+  void StartThrottling(const std::vector<FrameSinkId>& frame_sink_ids,
+                       base::TimeDelta interval) override;
+  void EndThrottling() override;
 
   // SurfaceObserver implementation.
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
@@ -275,6 +281,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   bool ChildContains(const FrameSinkId& child_frame_sink_id,
                      const FrameSinkId& search_frame_sink_id) const;
 
+  // Updates throttling recursively on a frame sink specified by its |id|
+  // and all its descendants to send BeginFrames at |interval|.
+  void UpdateThrottlingRecursively(const FrameSinkId& id,
+                                   base::TimeDelta interval);
+
   // SharedBitmapManager for the viz display service for receiving software
   // resources in CompositorFrameSinks.
   SharedBitmapManager* const shared_bitmap_manager_;
@@ -296,6 +307,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   // Whether capture pipeline should emit log messages to webrtc log.
   const bool log_capture_pipeline_in_webrtc_;
+
+  // This is viz-global instance of DebugRendererSettings.
+  DebugRendererSettings debug_settings_;
 
   // Contains registered frame sink ids, debug labels and synchronization
   // labels. Map entries will be created when frame sink is registered and
@@ -325,6 +339,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       video_capturers_;
 
   base::flat_map<uint32_t, base::ScopedClosureRunner> cached_back_buffers_;
+
+  // This tells if any frame sinks are currently throttled.
+  bool frame_sinks_throttled_ = false;
 
   THREAD_CHECKER(thread_checker_);
 

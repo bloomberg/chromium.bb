@@ -95,7 +95,7 @@ class MessageValidator {
 
  private:
   MessageValidator(DOMUint8Array* array)
-      : data_(array->Data()), length_(array->lengthAsSizeT()), offset_(0) {}
+      : data_(array->Data()), length_(array->length()), offset_(0) {}
 
   bool Process(ExceptionState& exception_state, bool sysex_enabled) {
     // data_ is put into a WTF::Vector eventually, which only has wtf_size_t
@@ -315,14 +315,13 @@ void MIDIOutput::DidOpen(bool opened) {
   for (auto& data : queued_data) {
     midiAccess()->SendMIDIData(
         port_index_, data.first->Data(),
-        base::checked_cast<wtf_size_t>(data.first->lengthAsSizeT()),
-        data.second);
+        base::checked_cast<wtf_size_t>(data.first->length()), data.second);
   }
   queued_data.clear();
   DCHECK(pending_data_.IsEmpty());
 }
 
-void MIDIOutput::Trace(Visitor* visitor) {
+void MIDIOutput::Trace(Visitor* visitor) const {
   MIDIPort::Trace(visitor);
   visitor->Trace(pending_data_);
 }
@@ -346,9 +345,9 @@ void MIDIOutput::SendInternal(DOMUint8Array* array,
   if (IsOpening()) {
     pending_data_.emplace_back(array, timestamp);
   } else {
-    midiAccess()->SendMIDIData(
-        port_index_, array->Data(),
-        base::checked_cast<wtf_size_t>(array->lengthAsSizeT()), timestamp);
+    midiAccess()->SendMIDIData(port_index_, array->Data(),
+                               base::checked_cast<wtf_size_t>(array->length()),
+                               timestamp);
   }
 }
 

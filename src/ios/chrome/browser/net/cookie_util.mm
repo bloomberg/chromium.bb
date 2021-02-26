@@ -10,7 +10,7 @@
 #include <sys/sysctl.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
@@ -48,7 +48,8 @@ scoped_refptr<net::SQLitePersistentCookieStore> CreatePersistentCookieStore(
       new net::SQLitePersistentCookieStore(
           path, base::CreateSingleThreadTaskRunner({web::WebThread::IO}),
           base::ThreadPool::CreateSequencedTaskRunner(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+               base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
           restore_old_session_cookies, crypto_delegate));
 }
 

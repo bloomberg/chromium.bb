@@ -145,7 +145,7 @@ namespace dawn_native {
 #    if defined(DAWN_ENABLE_SWIFTSHADER)
         Register(vulkan::Connect(this, true), wgpu::BackendType::Vulkan);
 #    endif  // defined(DAWN_ENABLE_SWIFTSHADER)
-#endif  // defined(DAWN_ENABLE_BACKEND_VULKAN)
+#endif      // defined(DAWN_ENABLE_BACKEND_VULKAN)
 #if defined(DAWN_ENABLE_BACKEND_OPENGL)
         Register(opengl::Connect(this), wgpu::BackendType::OpenGL);
 #endif  // defined(DAWN_ENABLE_BACKEND_OPENGL)
@@ -200,6 +200,14 @@ namespace dawn_native {
 
     bool InstanceBase::IsBackendValidationEnabled() const {
         return mEnableBackendValidation;
+    }
+
+    void InstanceBase::EnableGPUBasedBackendValidation(bool enableGPUBasedBackendValidation) {
+        mEnableGPUValidation = enableGPUBasedBackendValidation;
+    }
+
+    bool InstanceBase::IsGPUBasedBackendValidationEnabled() const {
+        return mEnableGPUValidation;
     }
 
     void InstanceBase::EnableBeginCaptureOnStartup(bool beginCaptureOnStartup) {

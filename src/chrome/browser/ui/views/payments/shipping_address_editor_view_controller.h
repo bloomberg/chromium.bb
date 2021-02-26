@@ -37,9 +37,9 @@ class ShippingAddressEditorViewController : public EditorViewController {
   // it's a valid pointer to a card that needs to be updated, and which will
   // outlive this controller.
   ShippingAddressEditorViewController(
-      PaymentRequestSpec* spec,
-      PaymentRequestState* state,
-      PaymentRequestDialogView* dialog,
+      base::WeakPtr<PaymentRequestSpec> spec,
+      base::WeakPtr<PaymentRequestState> state,
+      base::WeakPtr<PaymentRequestDialogView> dialog,
       BackNavigationType back_navigation_type,
       base::OnceClosure on_edited,
       base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
@@ -57,12 +57,14 @@ class ShippingAddressEditorViewController : public EditorViewController {
       const EditorField& field) override;
   std::unique_ptr<ui::ComboboxModel> GetComboboxModelForType(
       const autofill::ServerFieldType& type) override;
-  void OnPerformAction(views::Combobox* combobox) override;
+  void OnPerformAction(ValidatingCombobox* combobox) override;
   void UpdateEditorView() override;
 
   // PaymentRequestSheetController:
   base::string16 GetSheetTitle() override;
-  std::unique_ptr<views::Button> CreatePrimaryButton() override;
+
+ protected:
+  int GetPrimaryButtonId() override;
 
  private:
   friend class ShippingAddressValidationDelegate;
@@ -78,12 +80,12 @@ class ShippingAddressEditorViewController : public EditorViewController {
     base::string16 Format(const base::string16& text) override;
     bool IsValidTextfield(views::Textfield* textfield,
                           base::string16* error_message) override;
-    bool IsValidCombobox(views::Combobox* combobox,
+    bool IsValidCombobox(ValidatingCombobox* combobox,
                          base::string16* error_message) override;
     bool TextfieldValueChanged(views::Textfield* textfield,
                                bool was_blurred) override;
-    bool ComboboxValueChanged(views::Combobox* combobox) override;
-    void ComboboxModelChanged(views::Combobox* combobox) override;
+    bool ComboboxValueChanged(ValidatingCombobox* combobox) override;
+    void ComboboxModelChanged(ValidatingCombobox* combobox) override;
 
    private:
     bool ValidateValue(const base::string16& value,
@@ -120,7 +122,7 @@ class ShippingAddressEditorViewController : public EditorViewController {
 
   // When a combobox model has changed, a view update might be needed, e.g., if
   // there is no data in the combobox and it must be converted to a text field.
-  void OnComboboxModelChanged(views::Combobox* combobox);
+  void OnComboboxModelChanged(ValidatingCombobox* combobox);
 
   // Called when |profile_to_edit_| was successfully edited.
   base::OnceClosure on_edited_;

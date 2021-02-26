@@ -15,7 +15,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+/*!\cond */
+struct AV1_COMP;
 // TODO(any): These two variables are only used in avx2, sse2, sse4
 // implementations, where the block size is still hard coded. This should be
 // fixed to align with the c implementation.
@@ -25,8 +26,14 @@ extern "C" {
 // Block size used in temporal filtering.
 #define TF_BLOCK_SIZE BLOCK_32X32
 
+// Window size for temporal filtering.
+#define TF_WINDOW_LENGTH 5
+
 // Hyper-parameters used to compute filtering weight. These hyper-parameters can
 // be tuned for a better performance.
+// 0. A scale factor used in temporal filtering to raise the filter weight from
+//    `double` with range [0, 1] to `int` with range [0, 1000].
+#define TF_WEIGHT_SCALE 1000
 // 1. Weight factor used to balance the weighted-average between window error
 //    and block error. The weight is for window error while the weight for block
 //    error is always set as 1.
@@ -47,14 +54,40 @@ extern "C" {
 //    i.e., smaller than this threshold), we will adjust the filtering weight
 //    based on the strength value.
 #define TF_STRENGTH_THRESHOLD 4
-
-// Window size for temporal filtering.
-#define TF_WINDOW_LENGTH 5
-// A scale factor used in temporal filtering to raise the filter weight from
-// `double` with range [0, 1] to `int` with range [0, 1000].
-#define TF_WEIGHT_SCALE 1000
+// 5. Threshold for using motion search distance to adjust the filtering weight.
+//    Concretely, larger motion search vector leads to a higher probability of
+//    unreliable search. Hence, we would like to reduce the filtering strength
+//    when the distance is large enough. Considering that the distance actually
+//    relies on the frame size, this threshold is also a resolution-based
+//    threshold. Taking 720p videos as an instance, if this field equals to 0.1,
+//    then the actual threshold will be 720 * 0.1 = 72. Similarly, the threshold
+//    for 360p videos will be 360 * 0.1 = 36.
+#define TF_SEARCH_DISTANCE_THRESHOLD 0.1
 
 #define NOISE_ESTIMATION_EDGE_THRESHOLD 50
+
+// Sum and SSE source vs filtered frame difference returned by
+// temporal filter.
+typedef struct {
+  int64_t sum;
+  int64_t sse;
+} FRAME_DIFF;
+
+// Data related to temporal filtering.
+typedef struct {
+  // Source vs filtered frame error.
+  FRAME_DIFF diff;
+  // Pointer to temporary block info used to store state in temporal filtering
+  // process.
+  MB_MODE_INFO *tmp_mbmi;
+  // Pointer to accumulator buffer used in temporal filtering process.
+  uint32_t *accum;
+  // Pointer to count buffer used in temporal filtering process.
+  uint16_t *count;
+  // Pointer to predictor used in temporal filtering process.
+  uint8_t *pred;
+} TemporalFilterData;
+
 // Estimates noise level from a given frame using a single plane (Y, U, or V).
 // This is an adaptation of the mehtod in the following paper:
 // Shen-Chuan Tai, Shih-Ming Yang, "A fast method for image noise
@@ -73,26 +106,32 @@ double av1_estimate_noise_from_single_plane(const YV12_BUFFER_CONFIG *frame,
                                             const int bit_depth);
 
 #define TF_QINDEX 128  // Q-index used in temporal filtering.
-#define TF_NUM_FILTERING_FRAMES_FOR_KEY_FRAME 7
-// Performs temporal filtering if needed.
-// NOTE: In this function, the lookahead index is different from the 0-based
-// real index. For example, if we want to filter the first frame in the
-// pre-fetched buffer `cpi->lookahead`, the lookahead index will be -1 instead
-// of 0. More concretely, 0 indicates the first LOOKAHEAD frame, which is the
-// second frame in the pre-fetched buffer. Another example: if we want to filter
-// the 17-th frame, which is an ARF, the lookahead index is 15 instead of 16.
-// Futhermore, negative number is used for key frame in one-pass mode, where key
-// frame is filtered with the frames before it instead of after it. For example,
-// -15 means to filter the 17-th frame, which is a key frame in one-pass mode.
-// Inputs:
-//   cpi: Pointer to the composed information of input video.
-//   filter_frame_lookahead_idx: The index of the to-filter frame in the
-//                               lookahead buffer `cpi->lookahead`.
-//   show_existing_arf: Whether to show existing ARF. This field will be updated
-//                      in this function.
-// Returns:
-//   Whether temporal filtering is successfully done.
-int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
+
+/*!\endcond */
+/*!\brief Performs temporal filtering if needed on a source frame.
+ * For example to create a filtered alternate reference frame (ARF)
+ *
+ * In this function, the lookahead index is different from the 0-based
+ * real index. For example, if we want to filter the first frame in the
+ * pre-fetched buffer `cpi->lookahead`, the lookahead index will be -1 instead
+ * of 0. More concretely, 0 indicates the first LOOKAHEAD frame, which is the
+ * second frame in the pre-fetched buffer. Another example: if we want to filter
+ * the 17-th frame, which is an ARF, the lookahead index is 15 instead of 16.
+ * Futhermore, negative number is used for key frame in one-pass mode, where key
+ * frame is filtered with the frames before it instead of after it. For example,
+ * -15 means to filter the 17-th frame, which is a key frame in one-pass mode.
+ *
+ * \ingroup src_frame_proc
+ * \param[in]   cpi                        Top level encoder instance structure
+ * \param[in]   filter_frame_lookahead_idx The index of the to-filter frame in
+ *                                         the lookahead buffer cpi->lookahead.
+ * \param[in,out]   show_existing_arf      Whether to show existing ARF. This
+ *                                         field is updated in this function.
+ *
+ * \return Whether temporal filtering is successfully done.
+ */
+int av1_temporal_filter(struct AV1_COMP *cpi,
+                        const int filter_frame_lookahead_idx,
                         int *show_existing_arf);
 
 #ifdef __cplusplus

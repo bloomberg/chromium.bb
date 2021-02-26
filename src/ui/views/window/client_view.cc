@@ -11,6 +11,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -28,8 +29,8 @@ int ClientView::NonClientHitTest(const gfx::Point& point) {
   return bounds().Contains(point) ? HTCLIENT : HTNOWHERE;
 }
 
-bool ClientView::CanClose() {
-  return true;
+CloseRequestResult ClientView::OnWindowCloseRequested() {
+  return CloseRequestResult::kCanClose;
 }
 
 void ClientView::WidgetClosing() {}
@@ -40,7 +41,18 @@ void ClientView::WidgetClosing() {}
 gfx::Size ClientView::CalculatePreferredSize() const {
   // |contents_view_| is allowed to be NULL up until the point where this view
   // is attached to a Container.
-  return contents_view_ ? contents_view_->GetPreferredSize() : gfx::Size();
+  if (!contents_view_)
+    return gfx::Size();
+
+  return contents_view_->GetPreferredSize();
+}
+
+int ClientView::GetHeightForWidth(int width) const {
+  // |contents_view_| is allowed to be NULL up until the point where this view
+  // is attached to a Container.
+  if (!contents_view_)
+    return 0;
+  return contents_view_->GetHeightForWidth(width);
 }
 
 gfx::Size ClientView::GetMaximumSize() const {
@@ -80,8 +92,7 @@ void ClientView::ViewHierarchyChanged(
   }
 }
 
-BEGIN_METADATA(ClientView)
-METADATA_PARENT_CLASS(View)
-END_METADATA()
+BEGIN_METADATA(ClientView, View)
+END_METADATA
 
 }  // namespace views

@@ -59,8 +59,10 @@
 #define GET_LIST_HEADER() \
     fourcc_tag = avio_rl32(pb); \
     size       = avio_rl32(pb); \
-    if (fourcc_tag != LIST_TAG) \
-        return AVERROR_INVALIDDATA; \
+    if (fourcc_tag != LIST_TAG) { \
+        ret = AVERROR_INVALIDDATA; \
+        goto fail; \
+    } \
     fourcc_tag = avio_rl32(pb);
 
 typedef struct AudioTrack {
@@ -210,12 +212,13 @@ static int fourxm_read_header(AVFormatContext *s)
     unsigned int size;
     int header_size;
     FourxmDemuxContext *fourxm = s->priv_data;
-    unsigned char *header;
+    unsigned char *header = NULL;
     int i, ret;
 
     fourxm->track_count = 0;
     fourxm->tracks      = NULL;
     fourxm->fps         = (AVRational){1,1};
+    fourxm->video_stream_index = -1;
 
     /* skip the first 3 32-bit numbers */
     avio_skip(pb, 12);
@@ -323,6 +326,8 @@ static int fourxm_read_packet(AVFormatContext *s,
             /* allocate 8 more bytes than 'size' to account for fourcc
              * and size */
             if (size > INT_MAX - AV_INPUT_BUFFER_PADDING_SIZE - 8)
+                return AVERROR_INVALIDDATA;
+            if (fourxm->video_stream_index < 0)
                 return AVERROR_INVALIDDATA;
             if ((ret = av_new_packet(pkt, size + 8)) < 0)
                 return ret;

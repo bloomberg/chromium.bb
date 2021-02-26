@@ -21,7 +21,6 @@
 #include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
 #include "chrome/browser/metrics/variations/ui_string_overrider_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -39,7 +38,9 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#endif  // OS_ANDROID
+#else
+#include "chrome/browser/ui/browser_list.h"
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
@@ -244,7 +245,7 @@ bool ChromeMetricsServicesManagerClient::GetSamplingRatePerMille(int* rate) {
 void ChromeMetricsServicesManagerClient::OnCrosSettingsCreated() {
   reporting_setting_observer_ =
       chromeos::StatsReportingController::Get()->AddObserver(
-          base::Bind(&OnCrosMetricsReportingSettingChange));
+          base::BindRepeating(&OnCrosMetricsReportingSettingChange));
   // Invoke the callback once initially to set the metrics reporting state.
   OnCrosMetricsReportingSettingChange();
 }
@@ -259,7 +260,7 @@ std::unique_ptr<rappor::RapporServiceImpl>
 ChromeMetricsServicesManagerClient::CreateRapporServiceImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return std::make_unique<rappor::RapporServiceImpl>(
-      local_state_, base::Bind(&chrome::IsIncognitoSessionActive));
+      local_state_, base::BindRepeating(&chrome::IsOffTheRecordSessionActive));
 }
 
 std::unique_ptr<variations::VariationsService>
@@ -284,8 +285,8 @@ ChromeMetricsServicesManagerClient::GetMetricsStateManager() {
   if (!metrics_state_manager_) {
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
         local_state_, enabled_state_provider_.get(), GetRegistryBackupKey(),
-        base::Bind(&PostStoreMetricsClientInfo),
-        base::Bind(&GoogleUpdateSettings::LoadMetricsClientInfo));
+        base::BindRepeating(&PostStoreMetricsClientInfo),
+        base::BindRepeating(&GoogleUpdateSettings::LoadMetricsClientInfo));
   }
   return metrics_state_manager_.get();
 }
@@ -304,7 +305,7 @@ bool ChromeMetricsServicesManagerClient::IsMetricsConsentGiven() {
   return enabled_state_provider_->IsConsentGiven();
 }
 
-bool ChromeMetricsServicesManagerClient::IsIncognitoSessionActive() {
+bool ChromeMetricsServicesManagerClient::IsOffTheRecordSessionActive() {
 #if defined(OS_ANDROID)
   // This differs from TabModelList::IsOffTheRecordSessionActive in that it
   // does not ignore TabModels that have no open tabs, because it may be checked
@@ -312,6 +313,7 @@ bool ChromeMetricsServicesManagerClient::IsIncognitoSessionActive() {
   // conservative in case unused TabModels are not cleaned up, but it seems to
   // work correctly.
   // TODO(crbug/741888): Check if TabModelList's version can be updated safely.
+  // TODO(crbug/1023759): This function should return true for Incognito CCTs.
   for (TabModelList::const_iterator i = TabModelList::begin();
        i != TabModelList::end(); i++) {
     if ((*i)->IsOffTheRecord())
@@ -322,7 +324,7 @@ bool ChromeMetricsServicesManagerClient::IsIncognitoSessionActive() {
 #else
   // Depending directly on BrowserList, since that is the implementation
   // that we get correct notifications for.
-  return BrowserList::IsIncognitoSessionActive();
+  return BrowserList::IsOffTheRecordBrowserActive();
 #endif
 }
 

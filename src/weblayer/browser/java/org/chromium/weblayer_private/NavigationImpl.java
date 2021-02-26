@@ -147,6 +147,27 @@ public final class NavigationImpl extends INavigation.Stub {
         return NavigationImplJni.get().wasStopCalled(mNativeNavigationImpl);
     }
 
+    @Override
+    public boolean isPageInitiated() {
+        StrictModeWorkaround.apply();
+        throwIfNativeDestroyed();
+        return NavigationImplJni.get().isPageInitiated(mNativeNavigationImpl);
+    }
+
+    @Override
+    public boolean isReload() {
+        StrictModeWorkaround.apply();
+        throwIfNativeDestroyed();
+        return NavigationImplJni.get().isReload(mNativeNavigationImpl);
+    }
+
+    @Override
+    public void disableNetworkErrorAutoReload() {
+        if (!NavigationImplJni.get().disableNetworkErrorAutoReload(mNativeNavigationImpl)) {
+            throw new IllegalStateException();
+        }
+    }
+
     private void throwIfNativeDestroyed() {
         if (mNativeNavigationImpl == 0) {
             throw new IllegalStateException("Using Navigation after native destroyed");
@@ -168,6 +189,8 @@ public final class NavigationImpl extends INavigation.Stub {
                 return LoadError.CONNECTIVITY_ERROR;
             case ImplLoadError.OTHER_ERROR:
                 return LoadError.OTHER_ERROR;
+            case ImplLoadError.SAFE_BROWSING_ERROR:
+                return LoadError.SAFE_BROWSING_ERROR;
             default:
                 throw new IllegalArgumentException("Unexpected load error " + loadError);
         }
@@ -195,5 +218,8 @@ public final class NavigationImpl extends INavigation.Stub {
         boolean isValidRequestHeaderName(String name);
         boolean isValidRequestHeaderValue(String value);
         boolean setUserAgentString(long nativeNavigationImpl, String value);
+        boolean isPageInitiated(long nativeNavigationImpl);
+        boolean isReload(long nativeNavigationImpl);
+        boolean disableNetworkErrorAutoReload(long nativeNavigationImpl);
     }
 }

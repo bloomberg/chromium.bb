@@ -42,6 +42,9 @@
   <message name="IDS_DEVTOOLS_6b8a6e4cad0454926dd845d32b525f04" desc="Error message when reading a file.">
     Can&apos;t read file: <ph name="PATH"><ex>c:\dir\file.js</ex>$1s</ph>: <ph name="READER_ERROR"><ex>Underlying error</ex>$2s</ph>
   </message>
+  <message name="IDS_DEVTOOLS_780b04f4f89a6fac135c5eb3b44b2588" desc="Error message when attempting to create a binding from a malformed URI.">
+    The attempt to bind &quot;<ph name="URL">$1s<ex>file://%E0%A4%A</ex></ph>&quot; in the workspace failed as this URI is malformed.
+  </message>
   <message name="IDS_DEVTOOLS_7b4639e8d528d7a3eedafe23e9cdfee1" desc="A tag of Enable Local Overrides setting that can be searched in the command menu">
     rewrite
   </message>
@@ -71,6 +74,9 @@
   </message>
   <message name="IDS_DEVTOOLS_ef1e313a589a406cf35afebfba156df5" desc="Error message when reading a remote blob">
     Blob could not be loaded.
+  </message>
+  <message name="IDS_DEVTOOLS_f731d3159e0551ef6deb043b9147f045" desc="Context menu item for saving an image">
+    Save image
   </message>
   <message name="IDS_DEVTOOLS_fddede572fa09e1b1bb28504d8c43343" desc="Text in Edit File System View of the Workspace settings in Settings">
     Folder path

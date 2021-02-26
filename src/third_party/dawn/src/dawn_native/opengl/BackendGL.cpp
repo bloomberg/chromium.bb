@@ -162,12 +162,16 @@ namespace dawn_native { namespace opengl {
             mFunctions.Enable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
             mFunctions.Enable(GL_MULTISAMPLE);
             mFunctions.Enable(GL_FRAMEBUFFER_SRGB);
+            mFunctions.Enable(GL_SAMPLE_MASK);
 
             mPCIInfo.name = reinterpret_cast<const char*>(mFunctions.GetString(GL_RENDERER));
 
             // Workaroud to find vendor id from vendor name
             const char* vendor = reinterpret_cast<const char*>(mFunctions.GetString(GL_VENDOR));
             mPCIInfo.vendorId = GetVendorIdFromVendors(vendor);
+
+            mDriverDescription = std::string("OpenGL version ") +
+                                 reinterpret_cast<const char*>(mFunctions.GetString(GL_VERSION));
 
             InitializeSupportedExtensions();
 

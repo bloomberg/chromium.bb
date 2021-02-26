@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//chromeos/assistant/assistant.gni")
 
 assert(is_chromeos)
@@ -17,6 +18,8 @@ component("lib") {
   defines = [ "IS_ASSISTANT_SERVICE_IMPL" ]
 
   sources = [
+    "assistant_interaction_logger.cc",
+    "assistant_interaction_logger.h",
     "assistant_manager_service.h",
     "fake_assistant_manager_service_impl.cc",
     "fake_assistant_manager_service_impl.h",
@@ -41,6 +44,7 @@ component("lib") {
     "//components/prefs",
     "//components/signin/public/identity_manager",
     "//components/user_manager",
+    "//media",
     "//services/device/public/mojom",
     "//services/network/public/cpp:cpp",
     "//ui/accessibility:ax_assistant",
@@ -101,7 +105,15 @@ component("lib") {
       "utils.h",
     ]
 
+    if (enable_fake_assistant_microphone) {
+      sources += [
+        "platform/fake_input_device.cc",
+        "platform/fake_input_device.h",
+      ]
+    }
+
     deps += [
+      ":buildflags",
       "//chromeos/assistant/internal",
       "//chromeos/assistant/internal:libassistant",
       "//chromeos/assistant/internal/proto/google3",
@@ -128,6 +140,7 @@ source_set("tests") {
   testonly = true
   deps = [
     ":lib",
+    ":test_support",
     "//ash/public/cpp/assistant/test_support",
     "//ash/public/mojom",
     "//base",
@@ -175,8 +188,6 @@ source_set("tests") {
       "test_support/fake_platform_api.h",
       "test_support/fake_service_context.cc",
       "test_support/fake_service_context.h",
-      "test_support/mock_assistant_interaction_subscriber.cc",
-      "test_support/mock_assistant_interaction_subscriber.h",
       "test_support/mock_media_manager.cc",
       "test_support/mock_media_manager.h",
     ]
@@ -190,6 +201,7 @@ source_set("tests") {
       "//chromeos/services/network_config/public/mojom",
       "//services/audio/public/cpp:test_support",
       "//services/device/public/cpp:test_support",
+      "//services/media_session/public/mojom",
     ]
   }
 }
@@ -199,6 +211,8 @@ static_library("test_support") {
   sources = [
     "test_support/mock_assistant.cc",
     "test_support/mock_assistant.h",
+    "test_support/mock_assistant_interaction_subscriber.cc",
+    "test_support/mock_assistant_interaction_subscriber.h",
   ]
   deps = [
     "//base",
@@ -207,4 +221,11 @@ static_library("test_support") {
     "//chromeos/services/assistant/public/shared",
     "//testing/gmock",
   ]
+}
+
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+
+  flags =
+      [ "ENABLE_FAKE_ASSISTANT_MICROPHONE=$enable_fake_assistant_microphone" ]
 }

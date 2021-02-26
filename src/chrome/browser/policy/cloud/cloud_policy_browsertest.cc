@@ -55,7 +55,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -139,7 +138,7 @@ std::string GetTestPolicy(const char* homepage, int key_version) {
       "    \"mandatory\": {"
       "      \"ShowHomeButton\": true,"
       "      \"RestoreOnStartup\": 4,"
-      "      \"URLBlacklist\": [ \"dev.chromium.org\", \"youtube.com\" ],"
+      "      \"URLBlocklist\": [ \"dev.chromium.org\", \"youtube.com\" ],"
       "      \"MaxInvalidationFetchDelay\": 1000"
       "    },"
       "    \"recommended\": {"
@@ -161,22 +160,21 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
   GetExpectedDefaultPolicy(expected);
 
   expected->Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
-                nullptr);
+                POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   expected->Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                std::make_unique<base::Value>(4), nullptr);
+                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(4),
+                nullptr);
   base::ListValue list;
   list.AppendString("dev.chromium.org");
   list.AppendString("youtube.com");
-  expected->Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+  expected->Set(key::kURLBlocklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   expected->Set(key::kMaxInvalidationFetchDelay, POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                std::make_unique<base::Value>(1000), nullptr);
+                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(1000),
+                nullptr);
   expected->Set(key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
-                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                std::make_unique<base::Value>(homepage), nullptr);
+                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(homepage),
+                nullptr);
 }
 
 }  // namespace
@@ -199,6 +197,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
 
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
+    ChromeBrowserPolicyConnector::EnableCommandLineSupportForTesting();
   }
 
   void CreatedBrowserMainParts(

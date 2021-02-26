@@ -108,7 +108,7 @@ bool CSSGradientColorStop::IsCacheable() const {
          !To<CSSNumericLiteralValue>(*offset_).IsFontRelativeLength();
 }
 
-void CSSGradientColorStop::Trace(Visitor* visitor) {
+void CSSGradientColorStop::Trace(Visitor* visitor) const {
   visitor->Trace(offset_);
   visitor->Trace(color_);
 }
@@ -348,8 +348,8 @@ void CSSGradientValue::AddComputedStops(
           stop.color_ = CSSColorValue::Create(
               style.VisitedDependentColor(GetCSSPropertyColor()).Rgb());
         } else {
-          stop.color_ =
-              ComputedStyleUtils::CurrentColorOrValidColor(style, StyleColor());
+          stop.color_ = ComputedStyleUtils::CurrentColorOrValidColor(
+              style, StyleColor(), CSSValuePhase::kComputedValue);
         }
         break;
       default:

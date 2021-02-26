@@ -10,14 +10,13 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -51,12 +50,16 @@ class DocumentSuggestionsServiceTest : public testing::Test {
     identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
 
     // Set up a variation.
-    variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-    variations::AssociateGoogleVariationID(variations::GOOGLE_WEB_PROPERTIES,
-                                           "trial name", "group name",
-                                           kVariationID);
+    variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
+    variations::AssociateGoogleVariationID(
+        variations::GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, "trial name",
+        "group name", kVariationID);
     base::FieldTrialList::CreateFieldTrial("trial name", "group name")->group();
   }
+  DocumentSuggestionsServiceTest(const DocumentSuggestionsServiceTest&) =
+      delete;
+  DocumentSuggestionsServiceTest& operator=(
+      const DocumentSuggestionsServiceTest&) = delete;
 
   base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -64,17 +67,14 @@ class DocumentSuggestionsServiceTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
   signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<DocumentSuggestionsService> document_suggestions_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(DocumentSuggestionsServiceTest);
 };
 
 TEST_F(DocumentSuggestionsServiceTest, VariationHeaders) {
   test_url_loader_factory_.SetInterceptor(
       base::BindLambdaForTesting([](const network::ResourceRequest& request) {
         EXPECT_TRUE(variations::HasVariationsHeader(request));
-        std::string variation =
-            variations::VariationsHttpHeaderProvider::GetInstance()
-                ->GetVariationsString();
+        std::string variation = variations::VariationsIdsProvider::GetInstance()
+                                    ->GetVariationsString();
         EXPECT_EQ(variation, " " + base::NumberToString(kVariationID) + " ");
       }));
 

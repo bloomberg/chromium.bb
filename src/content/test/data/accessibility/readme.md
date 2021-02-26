@@ -32,8 +32,8 @@ the document finishes loading. See more on this below.
 
 ## Compiling and running the tests:
 ```
-ninja -C out/Debug content_browsertests
-out/Debug/content_browsertests --gtest_filter="DumpAccessibility*"
+autoninja -C out/Debug content_browsertests
+out/Debug/content_browsertests --gtest_filter="All/DumpAccessibility*"
 ```
 
 ## Files used:
@@ -127,14 +127,15 @@ ready and all `@WAIT-FOR:` strings have been found.
 Example: `@EXECUTE-AND-WAIT-FOR: foo()`
 
 Or, you may need to write an event test that keeps dumping events until a
-specific event line. In this case, use `@RUN-UNTIL-EVENT` with a substring that
-should occur in the event log, e.g.,
-`@RUN-UNTIL-EVENT:IA2_EVENT_TEXT_CARET_MOVED`. Note that `@RUN-UNTIL-EVENT` is
-only used in dump events tests, and not used in dump tree tests.
+specific event line. In this case, use `@WIN-RUN-UNTIL-EVENT` (or similar for
+other platforms) with a substring that should occur in the event log, e.g.,
+`@WIN-RUN-UNTIL-EVENT:IA2_EVENT_TEXT_CARET_MOVED`.
+Note that `@*-RUN-UNTIL-EVENT` is only used in dump events tests, and not used
+in dump tree tests.
 
-If you add multiple `@RUN-UNTIL-EVENT` directives, the test will finish once any
-of them are satisfied. Note that any other events that come along with the last
-event will also be logged.
+If you add multiple `@*-RUN-UNTIL-EVENT` directives, the test will finish once
+any of them are satisfied. Note that any other events that come along with the
+last event will also be logged.
 
 To skip dumping a particular element, make its accessible name equal to
 `@NO_DUMP`, for example `<div aria-label="@NO_DUMP"></div>`.
@@ -146,6 +147,14 @@ name equal to `@NO_CHILDREN_DUMP`, for example
 To load an iframe from a different site, forcing it into a different process,
 use `/cross-site/HOSTNAME/` in the url, for example:
 `<iframe src="cross-site/1.com/accessibility/html/frame.html"></iframe>`
+
+If you do not expect an iframe or object to load, (e.g. testing fallback), you
+can use the `@NO-LOAD-EXPECTED:` to cause the test to not wait for that frame to
+finish loading. For example the test would not wait for a url containing
+"broken.jpg" to load:
+`@NO-LOAD-EXPECTED:broken.jpg`
+`<object data="./broken.jpg">Fallback</object`
+
 
 ## Generating expectations and rebaselining:
 
@@ -171,6 +180,14 @@ To run on a single platform, replace the wildcard, e.g.:
 For more information, see the detailed help with:
 ```
   out/Debug/content_browsertests --gtest_help
+```
+
+Note: For Android, generated expectations will replace the existing files on
+the test device. For example, if running on an emulator, for an ARIA test
+called `my-test.html`, the generated output can be found:
+```
+  /storage/emulated/0/chromium_tests_root/content/test/
+     data/accessibility/aria/my-test-expected-android.txt
 ```
 
 ## Adding a new test:

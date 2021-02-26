@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "components/sync/base/unique_position.h"
-#include "components/sync/engine/non_blocking_sync_common.h"
+#include "components/sync/engine/commit_and_get_updates_types.h"
 
 namespace bookmarks {
 class BookmarkModel;
@@ -51,6 +51,10 @@ class BookmarkModelMerger {
   // and metadata entities in the injected tracker.
   void Merge();
 
+  size_t valid_updates_without_full_title_for_uma() const {
+    return valid_updates_without_full_title_;
+  }
+
  private:
   // Internal representation of a remote tree, composed of nodes.
   class RemoteTreeNode final {
@@ -64,8 +68,10 @@ class BookmarkModelMerger {
     // |updates_per_parent_id| must not be null. All updates
     // |*updates_per_parent_id| must represent valid updates. Updates
     // corresponding from descendant nodes are moved away from
-    // |*updates_per_parent_id|.
+    // |*updates_per_parent_id|. |max_depth| is the max tree depth to sync
+    // after which content is silently ignored.
     static RemoteTreeNode BuildTree(syncer::UpdateResponseData update,
+                                    size_t max_depth,
                                     UpdatesPerParentId* updates_per_parent_id);
 
     ~RemoteTreeNode();
@@ -197,6 +203,8 @@ class BookmarkModelMerger {
   // permanent node. Computed upon construction via BuildRemoteForest().
   const RemoteForest remote_forest_;
   std::unordered_map<std::string, GuidMatch> guid_to_match_map_;
+
+  size_t valid_updates_without_full_title_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelMerger);
 };

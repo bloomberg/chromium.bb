@@ -5,6 +5,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlcomcli.h>
+#include <datetimeapi.h>
 #include <lmerr.h>
 #include <unknwn.h>
 #include <wrl/client.h>
@@ -23,6 +24,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
@@ -30,19 +32,21 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/win_util.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/extension/extension_strings.h"
+#include "chrome/credential_provider/extension/extension_utils.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
+#include "chrome/credential_provider/setup/gcpw_files.h"
 #include "chrome/credential_provider/setup/setup_lib.h"
+#include "chrome/credential_provider/setup/setup_utils.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace credential_provider {
-
-constexpr base::FilePath::CharType kCredentialProviderSetupExe[] =
-    FILE_PATH_LITERAL("gcp_setup.exe");
 
 class GcpSetupTest : public ::testing::Test {
  protected:
@@ -89,8 +93,104 @@ class GcpSetupTest : public ::testing::Test {
 
   FakesForTesting* fakes_for_testing() { return &fakes_; }
 
- private:
+  std::wstring uninstall_reg_key() {
+    std::wstring uninstall_reg = kRegUninstall;
+    uninstall_reg.append(L"\\");
+    uninstall_reg.append(kRegUninstallProduct);
+    return uninstall_reg;
+  }
+
+  base::FilePath CreateFilePath(const std::string& file_name) {
+    return temp_dir_.GetPath().AppendASCII(file_name.c_str());
+  }
+
+  void CreateJsonFile(const base::FilePath& path, const std::string& data) {
+    ASSERT_EQ(static_cast<int>(data.size()),
+              base::WriteFile(path, data.data(), data.size()));
+  }
+
+  void assert_addremove_reg_exists() {
+    base::win::RegKey uninstall_key;
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.Open(HKEY_LOCAL_MACHINE,
+                                 uninstall_reg_key().c_str(), KEY_ALL_ACCESS));
+    base::string16 uninstall_args;
+    base::string16 display_name;
+    base::string16 install_location;
+    base::string16 display_icon;
+    base::string16 install_date;
+    DWORD no_modify;
+    DWORD no_repair;
+    base::string16 publisher_name;
+    base::string16 version_str;
+    base::string16 display_version;
+    DWORD version_major;
+    DWORD version_minor;
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.ReadValue(kRegUninstallString, &uninstall_args));
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.ReadValue(kRegUninstallDisplayName, &display_name));
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.ReadValue(kRegInstallLocation, &install_location));
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.ReadValue(kRegDisplayIcon, &display_icon));
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.ReadValue(kRegInstallDate, &install_date));
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.ReadValueDW(kRegNoModify, &no_modify));
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.ReadValueDW(kRegNoRepair, &no_repair));
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.ReadValue(kRegPublisherName, &publisher_name));
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.ReadValue(kRegVersion, &version_str));
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.ReadValue(kRegDisplayVersion, &display_version));
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.ReadValueDW(kRegVersionMajor, &version_major));
+    ASSERT_EQ(ERROR_SUCCESS,
+              uninstall_key.ReadValueDW(kRegVersionMinor, &version_minor));
+
+    base::CommandLine uninstall_cmdline(
+        installed_path().Append(kCredentialProviderSetupExe));
+    uninstall_cmdline.AppendSwitch(switches::kUninstall);
+    ASSERT_EQ(uninstall_args, uninstall_cmdline.GetCommandLineString().c_str());
+    ASSERT_EQ(display_name, GetStringResource(IDS_PROJNAME_BASE));
+    ASSERT_EQ(install_location, installed_path().value());
+    ASSERT_EQ(publisher_name, kRegPublisher);
+
+    base::FilePath setup_exe =
+        installed_path().Append(kCredentialProviderSetupExe);
+    ASSERT_EQ(display_icon, (setup_exe.value() + L",0").c_str());
+    ASSERT_EQ(install_date, GetCurrentDateForTesting());
+    ASSERT_EQ(no_modify, (DWORD)1);
+    ASSERT_EQ(no_repair, (DWORD)1);
+
+    base::Version version(CHROME_VERSION_STRING);
+    ASSERT_EQ(version_str, base::ASCIIToUTF16(version.GetString()));
+    ASSERT_EQ(display_version, base::ASCIIToUTF16(version.GetString()));
+
+    const std::vector<uint32_t>& version_components = version.components();
+    ASSERT_EQ(version_major, static_cast<DWORD>(version_components[2]));
+    ASSERT_EQ(version_minor, static_cast<DWORD>(version_components[3]));
+  }
+
   void SetUp() override;
+
+ private:
+  base::string16 GetCurrentDateForTesting() {
+    static const wchar_t kDateFormat[] = L"yyyyMMdd";
+    wchar_t date_str[base::size(kDateFormat)] = {0};
+    int len = GetDateFormatW(LOCALE_INVARIANT, 0, nullptr, kDateFormat,
+                             date_str, base::size(date_str));
+    if (len) {
+      --len;  // Subtract terminating \0.
+    } else {
+      return L"";
+    }
+
+    return base::string16(date_str, len);
+  }
 
   void GetModulePathAndProductVersion(base::FilePath* module_path,
                                       base::string16* product_version);
@@ -101,15 +201,18 @@ class GcpSetupTest : public ::testing::Test {
   base::ScopedTempDir scoped_temp_prog_dir_;
   base::ScopedTempDir scoped_temp_start_menu_dir_;
   base::ScopedTempDir scoped_temp_progdata_dir_;
+  base::ScopedTempDir temp_dir_;
   std::unique_ptr<base::ScopedPathOverride> program_files_override_;
   std::unique_ptr<base::ScopedPathOverride> start_menu_override_;
   std::unique_ptr<base::ScopedPathOverride> programdata_override_;
   std::unique_ptr<base::ScopedPathOverride> dll_path_override_;
   base::FilePath module_path_;
   base::string16 product_version_;
+  FakeGCPWFiles fake_gcpw_files_;
   FakeOSUserManager fake_os_user_manager_;
   FakeOSProcessManager fake_os_process_manager_;
   FakeScopedLsaPolicyFactory fake_scoped_lsa_policy_factory_;
+  FakeOSServiceManager fake_os_service_manager_;
   FakesForTesting fakes_;
 };
 
@@ -158,18 +261,23 @@ void GcpSetupTest::ExpectAllFilesToExist(
   base::FilePath root = installed_path_for_version(product_version);
   EXPECT_EQ(exist, base::PathExists(root));
 
-  const base::FilePath::CharType* const* filenames;
-  size_t number_of_files;
-  GetInstalledFileBasenames(&filenames, &number_of_files);
+  bool extension_found = false;
+  auto install_files = GCPWFiles::Get()->GetEffectiveInstallFiles();
 
-  for (size_t i = 0; i < number_of_files; ++i)
-    EXPECT_EQ(exist, base::PathExists(root.Append(filenames[i])));
+  for (auto& install_file : install_files) {
+    if (kCredentialProviderExtensionExe.find(install_file) !=
+        base::FilePath::StringType::npos)
+      extension_found = true;
+    EXPECT_EQ(exist, base::PathExists(root.Append(install_file)));
+  }
+
+  EXPECT_EQ(extension::IsGCPWExtensionEnabled(), extension_found);
 }
 
 void GcpSetupTest::ExpectCredentialProviderToBeRegistered(
     bool registered,
     const base::string16& product_version) {
-  auto guid_string = base::win::String16FromGUID(CLSID_GaiaCredentialProvider);
+  auto guid_string = base::win::WStringFromGUID(CLSID_GaiaCredentialProvider);
 
   // Make sure COM object is registered.
   base::string16 register_key_path =
@@ -246,6 +354,8 @@ void GcpSetupTest::SetUp() {
   programdata_override_.reset(new base::ScopedPathOverride(
       base::DIR_COMMON_APP_DATA, scoped_temp_progdata_dir_.GetPath()));
 
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
   // In non-component builds, base::FILE_MODULE will always return the path
   // to base.dll because of the way CURRENT_MODULE works.  Therefore overriding
   // to point to gaia1_0.dll's destination path (i.e. after it is installed).
@@ -284,8 +394,63 @@ TEST_F(GcpSetupTest, DoInstall) {
       fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaUsername]);
 }
 
-TEST_F(GcpSetupTest, DoInstallOverOldInstall) {
+TEST_F(GcpSetupTest, DoInstallWithExtension) {
   logging::ResetEventSourceForTesting();
+
+  base::win::RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS, key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName,
+                                      KEY_SET_VALUE | KEY_WOW64_32KEY));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(extension::kEnableGCPWExtension, 1));
+
+  ASSERT_EQ(S_OK,
+            DoInstall(module_path(), product_version(), fakes_for_testing()));
+  ExpectAllFilesToExist(true, product_version());
+  ExpectCredentialProviderToBeRegistered(true, product_version());
+  ExpectRequiredRegistryEntriesToBePresent();
+
+  EXPECT_FALSE(
+      fake_os_user_manager()->GetUserInfo(kDefaultGaiaAccountName).sid.empty());
+  EXPECT_FALSE(fake_scoped_lsa_policy_factory()
+                   ->private_data()[kLsaKeyGaiaPassword]
+                   .empty());
+  EXPECT_EQ(
+      kDefaultGaiaAccountName,
+      fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaUsername]);
+}
+
+// Tests install over old install for different types of installations.
+// 0 - Indicates that initial installation is standalone.
+// 1 - Indicates that the initial installation is through MSI.
+class GcpInstallOverOldInstallTest : public GcpSetupTest,
+                                     public ::testing::WithParamInterface<int> {
+ public:
+  void SetInstallerConfig(bool add_installer_data) {
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+
+    // Indicates fresh installation.
+    command_line.AppendSwitch(switches::kStandaloneInstall);
+
+    if (add_installer_data) {
+      // Only set if installation source is MSI.
+
+      std::string installer_json = "{\"distribution\": {\"msi\": true}}";
+      base::FilePath installer_data_path = CreateFilePath("myfile.txt");
+      CreateJsonFile(installer_data_path, installer_json);
+
+      command_line.AppendSwitchPath(switches::kInstallerData,
+                                    installer_data_path);
+    }
+
+    StandaloneInstallerConfigurator::Get()->ConfigureInstallationType(
+        command_line);
+  }
+};
+
+TEST_P(GcpInstallOverOldInstallTest, DoInstallOverOldInstall) {
+  logging::ResetEventSourceForTesting();
+
+  // Set installer data argument to indicate the installation source.
+  SetInstallerConfig(GetParam());
 
   // Install using some old version.
   const base::string16 old_version(L"1.0.0.0");
@@ -304,6 +469,17 @@ TEST_F(GcpSetupTest, DoInstallOverOldInstall) {
   EXPECT_EQ(old_username, kDefaultGaiaAccountName);
 
   logging::ResetEventSourceForTesting();
+
+  // Don't include any flag to indicate the installation source as
+  // the registry was set the first time this is called.
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+
+  StandaloneInstallerConfigurator::Get()->ConfigureInstallationType(
+      command_line);
+
+  EXPECT_TRUE(
+      StandaloneInstallerConfigurator::Get()->IsStandaloneInstallation() ==
+      !GetParam());
 
   // Now install a newer version.
   ASSERT_EQ(S_OK,
@@ -324,6 +500,10 @@ TEST_F(GcpSetupTest, DoInstallOverOldInstall) {
       old_username,
       fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaUsername]);
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpInstallOverOldInstallTest,
+                         ::testing::Values(0, 1));
 
 TEST_F(GcpSetupTest, DoInstallOverOldLockedInstall) {
   logging::ResetEventSourceForTesting();
@@ -350,12 +530,10 @@ TEST_F(GcpSetupTest, DoInstallOverOldLockedInstall) {
   ExpectAllFilesToExist(true, product_version());
 
   // The locked file will still exist, the others are gone.
-  const base::FilePath::CharType* const* filenames;
-  size_t count;
-  GetInstalledFileBasenames(&filenames, &count);
-  for (size_t i = 0; i < count; ++i) {
+  auto install_files = GCPWFiles::Get()->GetEffectiveInstallFiles();
+  for (auto& install_file : install_files) {
     const base::FilePath path =
-        installed_path_for_version(old_version).Append(filenames[i]);
+        installed_path_for_version(old_version).Append(install_file);
     EXPECT_EQ(path == dll_path, base::PathExists(path));
   }
 }
@@ -386,12 +564,11 @@ TEST_F(GcpSetupTest, LaunchGcpAfterInstall) {
   ExpectAllFilesToExist(true, product_version());
 
   // The locked file will still exist, the others are gone.
-  const base::FilePath::CharType* const* filenames;
-  size_t count;
-  GetInstalledFileBasenames(&filenames, &count);
-  for (size_t i = 0; i < count; ++i) {
+  auto install_files = GCPWFiles::Get()->GetEffectiveInstallFiles();
+
+  for (auto& install_file : install_files) {
     const base::FilePath path =
-        installed_path_for_version(old_version).Append(filenames[i]);
+        installed_path_for_version(old_version).Append(install_file);
     EXPECT_EQ(path == dll_path, base::PathExists(path));
   }
 
@@ -407,8 +584,70 @@ TEST_F(GcpSetupTest, LaunchGcpAfterInstall) {
   ExpectAllFilesToExist(false, old_version);
 }
 
-TEST_F(GcpSetupTest, DoUninstall) {
+// Tests installations from exe and MSI.
+// 0 - installation is not standalone.
+// 1 - installation is standalone.
+class GcpInstallerTest : public GcpSetupTest,
+                         public ::testing::WithParamInterface<int> {};
+
+TEST_P(GcpInstallerTest, DoUninstall) {
+  int standalone_installer = GetParam();
+
   logging::ResetEventSourceForTesting();
+
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kStandaloneInstall);
+
+  if (!standalone_installer) {
+    std::string installer_json = "{\"distribution\": {\"msi\": true}}";
+    base::FilePath installer_data_path = CreateFilePath("myfile.txt");
+    CreateJsonFile(installer_data_path, installer_json);
+
+    command_line.AppendSwitchPath(switches::kInstallerData,
+                                  installer_data_path);
+  }
+
+  StandaloneInstallerConfigurator::Get()->ConfigureInstallationType(
+      command_line);
+
+  ASSERT_EQ(S_OK,
+            DoInstall(module_path(), product_version(), fakes_for_testing()));
+
+  if (standalone_installer)
+    assert_addremove_reg_exists();
+
+  CreateSentinelFileToSimulateCrash(product_version());
+  logging::ResetEventSourceForTesting();
+
+  ASSERT_EQ(S_OK,
+            DoUninstall(module_path(), installed_path(), fakes_for_testing()));
+  ExpectAllFilesToExist(false, product_version());
+  ExpectSentinelFileToNotExist(product_version());
+  ExpectCredentialProviderToBeRegistered(false, product_version());
+  EXPECT_TRUE(
+      fake_os_user_manager()->GetUserInfo(kDefaultGaiaAccountName).sid.empty());
+  EXPECT_TRUE(fake_scoped_lsa_policy_factory()
+                  ->private_data()[kLsaKeyGaiaPassword]
+                  .empty());
+  EXPECT_TRUE(fake_scoped_lsa_policy_factory()
+                  ->private_data()[kLsaKeyGaiaUsername]
+                  .empty());
+
+  base::win::RegKey uninstall_key;
+  EXPECT_NE(ERROR_SUCCESS,
+            uninstall_key.Open(HKEY_LOCAL_MACHINE, uninstall_reg_key().c_str(),
+                               KEY_ALL_ACCESS));
+}
+
+INSTANTIATE_TEST_SUITE_P(All, GcpInstallerTest, ::testing::Values(0, 1));
+
+TEST_F(GcpSetupTest, DoUninstallWithExtension) {
+  logging::ResetEventSourceForTesting();
+
+  base::win::RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS, key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName,
+                                      KEY_SET_VALUE | KEY_WOW64_32KEY));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(extension::kEnableGCPWExtension, 1));
 
   ASSERT_EQ(S_OK,
             DoInstall(module_path(), product_version(), fakes_for_testing()));
@@ -431,6 +670,8 @@ TEST_F(GcpSetupTest, DoUninstall) {
 }
 
 TEST_F(GcpSetupTest, ValidLsaWithNoExistingUser) {
+  logging::ResetEventSourceForTesting();
+
   // Create the default user so that name is not taken when the user is created.
   CComBSTR sid;
   DWORD error;
@@ -443,7 +684,6 @@ TEST_F(GcpSetupTest, ValidLsaWithNoExistingUser) {
       L"gaia1";
   fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaPassword] =
       L"password";
-  logging::ResetEventSourceForTesting();
 
   ASSERT_EQ(S_OK,
             DoInstall(module_path(), product_version(), fakes_for_testing()));
@@ -521,7 +761,7 @@ TEST_F(GcpSetupTest, EnableDisableStats) {
   EXPECT_EQ(0u, value);
 }
 
-TEST_F(GcpSetupTest, WriteUninstallStrings) {
+TEST_F(GcpSetupTest, WriteUninstallStringsForMSI) {
   base::win::RegKey key;
 
   ASSERT_EQ(ERROR_SUCCESS,
@@ -556,12 +796,27 @@ TEST_F(GcpSetupTest, WriteCredentialProviderRegistryValues) {
   ASSERT_NE(ERROR_SUCCESS,
             key.Open(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_ALL_ACCESS));
 
+  base::win::RegKey uninstall_key;
+  ASSERT_NE(ERROR_SUCCESS,
+            uninstall_key.Open(HKEY_LOCAL_MACHINE, uninstall_reg_key().c_str(),
+                               KEY_ALL_ACCESS));
+
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  // Set the standalone registry, but not installer data so that EXE
+  // installation is indicated.
+  command_line.AppendSwitch(switches::kStandaloneInstall);
+
+  StandaloneInstallerConfigurator::Get()->ConfigureInstallationType(
+      command_line);
+
   // Write GCPW registry keys.
-  ASSERT_EQ(S_OK, WriteCredentialProviderRegistryValues());
+  ASSERT_EQ(S_OK, WriteCredentialProviderRegistryValues(installed_path()));
 
   // Verify keys were created.
   ASSERT_EQ(ERROR_SUCCESS,
             key.Open(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_ALL_ACCESS));
+
+  assert_addremove_reg_exists();
 }
 
 TEST_F(GcpSetupTest, DoInstallWritesUninstallStrings) {

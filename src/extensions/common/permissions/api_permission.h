@@ -66,7 +66,7 @@ class APIPermission {
     kBrowser = 22,
     kBrowsingData = 23,
     kCast = 24,
-    kCastStreaming = 25,
+    kDeleted_kCastStreaming = 25,
     kChromeosInfoPrivate = 26,
     kClipboardRead = 27,
     kClipboardWrite = 28,
@@ -147,7 +147,7 @@ class APIPermission {
     kMDns = 103,
     kMusicManagerPrivate = 104,
     kNativeMessaging = 105,
-    kNetworkingConfig = 106,
+    kDeleted_NetworkingConfig = 106,
     kNetworkingPrivate = 107,
     kDeleted_NotificationProvider = 108,
     kNotifications = 109,
@@ -268,6 +268,10 @@ class APIPermission {
     kPrinting = 224,
     kCrashReportPrivate = 225,
     kAutofillAssistantPrivate = 226,
+    kEnterpriseNetworkingAttributes = 227,
+    kSearch = 228,
+    kTabGroups = 229,
+    kScripting = 230,
     // Last entry: Add new entries above and ensure to update the
     // "ExtensionPermission3" enum in tools/metrics/histograms/enums.xml
     // (by running update_extension_permission.py).

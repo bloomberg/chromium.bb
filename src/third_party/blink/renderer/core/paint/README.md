@@ -114,9 +114,10 @@ are treated in different ways during painting:
     concept.
 
 *   Visual rect: the bounding box of all pixels that will be painted by a
-    [display item client](../../platform/graphics/paint/README.md#display-items).
+    for a [display item](../../platform/graphics/paint/README.md#display-items)
     It's in the space of the containing transform property node (see [Building
-    paint property trees](#building-paint-property-trees)).
+    paint property trees](#building-paint-property-trees)). It's calculated
+    during paint for each display item.
 
 *   Isolation nodes/boundary: In certain situations, it is possible to put in
     place a barrier that isolates a subtree from being affected by its
@@ -124,6 +125,12 @@ are treated in different ways during painting:
     in the property trees as isolation nodes that serve as roots for any
     descendant property nodes. Currently, the `contain: paint` css property
     establishes an isolation boundary.
+
+*   Local property tree state: the `PropertyTreeState` associated with each
+    fragment. All fragments have a well-defined local property tree state.
+    This is often cached in the `LocalBorderBoxProperties`
+    struct that belongs to `FragmentData`. Some `FragmentData` objects don't
+    have a `LocalBorderBoxProperties`, but that is merely a memory optimization.
 
 ## Overview
 
@@ -590,7 +597,7 @@ point to the ith parent's transform.
 
 Each `FragmentData` receives its own `ClipPaintPropertyNode`. They
 also store a unique `PaintOffset, `PaginationOffset and
-`LocalBordreBoxProperties` object.
+`LocalBorderBoxProperties` object.
 
 See
 [`LayoutMultiColumnFlowThread.h`](../layout/layout_multi_column_flow_thread.h)
@@ -683,7 +690,13 @@ structures:
    areas of the page that disallow touch events due to blocking touch event
    handlers.
 
-3. [`HitTestData::scroll_translation`](../../platform/graphics/paint/hit_test_data.h)
+3. [`HitTestData::wheel_event_rects`](../../platform/graphics/paint/hit_test_data.h)
+
+   Used for [wheel event handler regions](https://docs.google.com/document/d/1ar4WhVnLA-fmw6atgP-23iq-ys_NfFoGb3LA5AgaylA/view)
+      which are areas of the page that disallow default wheel event processing
+      due to blocking wheel event handlers.
+
+4. [`HitTestData::scroll_translation`](../../platform/graphics/paint/hit_test_data.h)
    and
    [`HitTestData::scroll_hit_test_rect`](../../platform/graphics/paint/hit_test_data.h)
 
@@ -720,7 +733,7 @@ display items directly.
 
 ### PaintNG
 
-[LayoutNG](../layout/ng/README.md]) is a project that will change how Layout
+[LayoutNG](../layout/ng/README.md) is a project that will change how Layout
 generates geometry/style information for painting. Instead of modifying
 LayoutObjects, LayoutNG will generate an NGFragment tree.
 

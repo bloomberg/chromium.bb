@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/strcat.h"
 #include "build/build_config.h"
@@ -96,7 +97,7 @@ class DevToolsUIDataSourceTest : public testing::Test {
  private:
   void OnDataReceived(scoped_refptr<base::RefCountedMemory> bytes) {
     data_received_ = true;
-    if (bytes.get() != nullptr) {
+    if (bytes.get()) {
       data_ = base::StringPiece(reinterpret_cast<const char*>(bytes->front()),
                                 bytes->size())
                   .as_string();
@@ -128,7 +129,7 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledURLWithQueryParam) {
   EXPECT_FALSE(data().empty());
 }
 
-TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledURLWithSwitch) {
+TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledFileURLWithSwitch) {
 #if defined(OS_WIN)
   const char* flag_value = "file://C:/tmp/";
 #else
@@ -141,6 +142,17 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledURLWithSwitch) {
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
   EXPECT_EQ(data(), "file: devtools_app.html");
+}
+
+TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledRemoteURLWithSwitch) {
+  const char* flag_value = "http://example.com/example/path/";
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kCustomDevtoolsFrontend, flag_value);
+  const GURL path =
+      DevToolsUrl().Resolve(DevToolsBundledPath(kDevToolsUITestFrontEndUrl));
+  StartRequest(path.path());
+  EXPECT_TRUE(data_received());
+  EXPECT_EQ(data(), "url: http://example.com/example/path/devtools_app.html");
 }
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsInvalidBundledURL) {

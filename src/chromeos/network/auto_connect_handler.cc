@@ -7,7 +7,7 @@
 #include <sstream>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -212,7 +212,7 @@ void AutoConnectHandler::ScanCompleted(const DeviceState* device) {
     if (connected_network && !connected_network->IsManagedByPolicy()) {
       network_connection_handler_->ConnectToNetwork(
           managed_network->path(), base::DoNothing(),
-          base::Bind(&ConnectToNetworkErrorCallback), false,
+          base::BindOnce(&ConnectToNetworkErrorCallback), false,
           ConnectCallbackMode::ON_COMPLETED);
       return;
     }
@@ -316,13 +316,13 @@ void AutoConnectHandler::CheckBestConnection() {
 void AutoConnectHandler::DisconnectIfPolicyRequires() {
   // Wait for both (user & device) policies to be applied. The device policy
   // holds all the policies, which might require disconnects, while the user
-  // policy might whitelist some networks again. This also ensures that we only
+  // policy might allow some networks again. This also ensures that we only
   // disconnect from blocked networks in user sessions.
   if (!device_policy_applied_ || !user_policy_applied_)
     return;
 
-  std::vector<std::string> blacklisted_hex_ssids =
-      managed_configuration_handler_->GetBlacklistedHexSSIDs();
+  std::vector<std::string> blocked_hex_ssids =
+      managed_configuration_handler_->GetBlockedHexSSIDs();
   bool only_managed =
       managed_configuration_handler_->AllowOnlyPolicyNetworksToConnect();
   bool only_managed_autoconnect =
@@ -339,8 +339,8 @@ void AutoConnectHandler::DisconnectIfPolicyRequires() {
     applied_autoconnect_policy_ = only_managed_autoconnect;
 
   // Early exit if no policy is set that requires any disconnects.
-  if (!only_managed && !only_managed_autoconnect &&
-      blacklisted_hex_ssids.empty() && !available_only) {
+  if (!only_managed && !only_managed_autoconnect && blocked_hex_ssids.empty() &&
+      !available_only) {
     return;
   }
 
@@ -372,7 +372,7 @@ void AutoConnectHandler::DisconnectNetwork(const std::string& service_path) {
                  << NetworkPathId(service_path);
   network_connection_handler_->DisconnectNetwork(
       service_path, base::DoNothing(),
-      base::Bind(&DisconnectErrorCallback, service_path));
+      base::BindOnce(&DisconnectErrorCallback, service_path));
 }
 
 void AutoConnectHandler::RemoveNetworkConfigurationForNetwork(
@@ -381,7 +381,7 @@ void AutoConnectHandler::RemoveNetworkConfigurationForNetwork(
                  << NetworkPathId(service_path);
   managed_configuration_handler_->RemoveConfiguration(
       service_path, base::DoNothing(),
-      base::Bind(&RemoveNetworkConfigurationErrorCallback));
+      base::BindOnce(&RemoveNetworkConfigurationErrorCallback));
 }
 
 void AutoConnectHandler::DisableAutoconnectForWiFiNetwork(
@@ -393,7 +393,7 @@ void AutoConnectHandler::DisableAutoconnectForWiFiNetwork(
                      base::Value(false));
   managed_configuration_handler_->SetProperties(
       service_path, properties, base::DoNothing(),
-      base::Bind(&SetPropertiesErrorCallback));
+      base::BindOnce(&SetPropertiesErrorCallback));
 }
 
 void AutoConnectHandler::CallShillConnectToBestServices() {

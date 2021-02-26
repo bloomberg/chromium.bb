@@ -24,12 +24,12 @@
 #include "printing/backend/print_backend_consts.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "printing/backend/cups_connection.h"
 #include "printing/backend/cups_ipp_utils.h"
 #include "printing/backend/print_backend_cups_ipp.h"
 #include "printing/printing_features.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 namespace printing {
 
@@ -85,7 +85,7 @@ bool PrintBackendCUPS::PrinterBasicInfoFromCUPS(
         printer.options[opt_index].value;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac, "printer-info" option specifies the printer name and
   // "printer-make-and-model" specifies the printer description.
   if (info)
@@ -164,7 +164,8 @@ bool PrintBackendCUPS::GetPrinterSemanticCapsAndDefaults(
   if (!GetPrinterCapsAndDefaults(printer_name, &info))
     return false;
 
-  return ParsePpdCapabilities(printer_name, locale(), info.printer_capabilities,
+  ScopedDestination dest = GetNamedDest(printer_name);
+  return ParsePpdCapabilities(dest.get(), locale(), info.printer_capabilities,
                               printer_info);
 }
 
@@ -185,7 +186,7 @@ bool PrintBackendCUPS::GetPrinterCapsAndDefaults(
   std::string content;
   bool res = base::ReadFileToString(ppd_path, &content);
 
-  base::DeleteFile(ppd_path, false);
+  base::DeleteFile(ppd_path);
 
   if (res) {
     printer_info->printer_capabilities.swap(content);
@@ -222,13 +223,13 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
     const base::DictionaryValue* print_backend_settings,
     const std::string& locale,
     bool for_cloud_print) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!for_cloud_print &&
       base::FeatureList::IsEnabled(features::kCupsIppPrintingBackend)) {
     return base::MakeRefCounted<PrintBackendCupsIpp>(
         CreateConnection(print_backend_settings), locale);
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   std::string print_server_url_str, cups_blocking;
   int encryption = HTTP_ENCRYPT_NEVER;
   if (print_backend_settings) {
@@ -297,7 +298,7 @@ base::FilePath PrintBackendCUPS::GetPPD(const char* name) {
         LOG(ERROR) << "Error downloading PPD file, name: " << name
                    << ", CUPS error: " << static_cast<int>(error_code)
                    << ", HTTP error: " << http_error;
-        base::DeleteFile(ppd_path, false);
+        base::DeleteFile(ppd_path);
         ppd_path.clear();
       }
     }

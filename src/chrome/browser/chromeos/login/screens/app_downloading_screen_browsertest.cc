@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
@@ -33,27 +32,34 @@
 
 namespace chromeos {
 
+namespace {
+
+constexpr char kAppDownloadingId[] = "app-downloading";
+
+const test::UIPath kTitlePlural = {kAppDownloadingId, "title-plural"};
+const test::UIPath kTitleSingular = {kAppDownloadingId, "title-singular"};
+const test::UIPath kContinueSetupButton = {kAppDownloadingId,
+                                           "continue-setup-button"};
+
+}  // namespace
+
 class AppDownloadingScreenTest : public OobeBaseTest {
  public:
-  AppDownloadingScreenTest() {
-    // To reuse existing wizard controller in the flow.
-    feature_list_.InitAndEnableFeature(
-        chromeos::features::kOobeScreensPriority);
-  }
+  AppDownloadingScreenTest() = default;
   ~AppDownloadingScreenTest() override = default;
 
   // OobeBaseTest:
   void SetUpOnMainThread() override {
     OobeBaseTest::SetUpOnMainThread();
-    app_downloading_screen_ = AppDownloadingScreen::Get(
-        WizardController::default_controller()->screen_manager());
+    app_downloading_screen_ = WizardController::default_controller()
+                                  ->GetScreen<AppDownloadingScreen>();
     app_downloading_screen_->set_exit_callback_for_testing(base::BindRepeating(
         &AppDownloadingScreenTest::HandleScreenExit, base::Unretained(this)));
   }
 
   void Login() {
-    login_manager_.LoginAsNewReguarUser();
-    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    login_manager_.LoginAsNewRegularUser();
+    OobeScreenExitWaiter(GetFirstSigninScreen()).Wait();
   }
 
   void ShowAppDownloadingScreen() {
@@ -83,8 +89,6 @@ class AppDownloadingScreenTest : public OobeBaseTest {
 
   base::OnceClosure screen_exit_callback_;
 
-  base::test::ScopedFeatureList feature_list_;
-
   LoginManagerMixin login_manager_{&mixin_host_};
 };
 
@@ -92,21 +96,18 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, NoAppsSelected) {
   Login();
   ShowAppDownloadingScreen();
 
-  const std::initializer_list<base::StringPiece> continue_button = {
-      "app-downloading-screen", "app-downloading-continue-setup-button"};
-  test::OobeJS().CreateVisibilityWaiter(true, continue_button)->Wait();
-  test::OobeJS().ExpectEnabledPath(continue_button);
+  test::OobeJS().CreateVisibilityWaiter(true, kContinueSetupButton)->Wait();
+  test::OobeJS().ExpectEnabledPath(kContinueSetupButton);
 
-  test::OobeJS().ExpectVisiblePath({"app-downloading-screen", "title-plural"});
-  test::OobeJS().ExpectHiddenPath({"app-downloading-screen", "title-singular"});
+  test::OobeJS().ExpectVisiblePath(kTitlePlural);
+  test::OobeJS().ExpectHiddenPath(kTitleSingular);
 
-  test::OobeJS().ExpectEQ(
-      test::GetOobeElementPath({"app-downloading-screen", "title-plural"}) +
-          ".textContent.trim()",
+  test::OobeJS().ExpectElementText(
       l10n_util::GetStringFUTF8(IDS_LOGIN_APP_DOWNLOADING_SCREEN_TITLE_PLURAL,
-                                base::ASCIIToUTF16("0")));
+                                base::ASCIIToUTF16("0")),
+      kTitlePlural);
 
-  test::OobeJS().TapOnPath(continue_button);
+  test::OobeJS().TapOnPath(kContinueSetupButton);
 
   WaitForScreenExit();
 }
@@ -120,22 +121,17 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, SingleAppSelected) {
       arc::prefs::kArcFastAppReinstallPackages, std::move(apps));
   ShowAppDownloadingScreen();
 
-  const std::initializer_list<base::StringPiece> continue_button = {
-      "app-downloading-screen", "app-downloading-continue-setup-button"};
-  test::OobeJS().CreateVisibilityWaiter(true, continue_button)->Wait();
-  test::OobeJS().ExpectEnabledPath(continue_button);
+  test::OobeJS().CreateVisibilityWaiter(true, kContinueSetupButton)->Wait();
+  test::OobeJS().ExpectEnabledPath(kContinueSetupButton);
 
-  test::OobeJS().ExpectVisiblePath(
-      {"app-downloading-screen", "title-singular"});
-  test::OobeJS().ExpectHiddenPath({"app-downloading-screen", "title-plural"});
+  test::OobeJS().ExpectVisiblePath(kTitleSingular);
+  test::OobeJS().ExpectHiddenPath(kTitlePlural);
 
-  test::OobeJS().ExpectEQ(
-      test::GetOobeElementPath({"app-downloading-screen", "title-singular"}) +
-          ".textContent.trim()",
-      l10n_util::GetStringUTF8(
-          IDS_LOGIN_APP_DOWNLOADING_SCREEN_TITLE_SINGULAR));
+  test::OobeJS().ExpectElementText(
+      l10n_util::GetStringUTF8(IDS_LOGIN_APP_DOWNLOADING_SCREEN_TITLE_SINGULAR),
+      kTitleSingular);
 
-  test::OobeJS().TapOnPath(continue_button);
+  test::OobeJS().TapOnPath(kContinueSetupButton);
 
   WaitForScreenExit();
 }
@@ -151,21 +147,18 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, MultipleAppsSelected) {
 
   ShowAppDownloadingScreen();
 
-  const std::initializer_list<base::StringPiece> continue_button = {
-      "app-downloading-screen", "app-downloading-continue-setup-button"};
-  test::OobeJS().CreateVisibilityWaiter(true, continue_button)->Wait();
-  test::OobeJS().ExpectEnabledPath(continue_button);
+  test::OobeJS().CreateVisibilityWaiter(true, kContinueSetupButton)->Wait();
+  test::OobeJS().ExpectEnabledPath(kContinueSetupButton);
 
-  test::OobeJS().ExpectVisiblePath({"app-downloading-screen", "title-plural"});
-  test::OobeJS().ExpectHiddenPath({"app-downloading-screen", "title-singular"});
+  test::OobeJS().ExpectVisiblePath(kTitlePlural);
+  test::OobeJS().ExpectHiddenPath(kTitleSingular);
 
-  test::OobeJS().ExpectEQ(
-      test::GetOobeElementPath({"app-downloading-screen", "title-plural"}) +
-          ".textContent.trim()",
+  test::OobeJS().ExpectElementText(
       l10n_util::GetStringFUTF8(IDS_LOGIN_APP_DOWNLOADING_SCREEN_TITLE_PLURAL,
-                                base::ASCIIToUTF16("2")));
+                                base::ASCIIToUTF16("2")),
+      kTitlePlural);
 
-  test::OobeJS().TapOnPath(continue_button);
+  test::OobeJS().TapOnPath(kContinueSetupButton);
 
   WaitForScreenExit();
 }

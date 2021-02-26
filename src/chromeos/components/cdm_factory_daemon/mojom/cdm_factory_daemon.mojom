@@ -1,0 +1,76 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This defines the mojo interface used between Chrome and the Chrome OS for
+// remoting of the Widevine CE CDM and the underlying OEMCrypto implementation.
+// This CdmFactoryDaemon interface is bootstrapped over D-Bus and then methods
+// can be invoked on it to create a factory and then CDM instance, that same
+// interface can also be used to connect directly to the OEMCrypto
+// implementation for ARC.
+
+// Next MinVersion: 3
+
+module chromeos.cdm.mojom;
+
+import "chromeos/components/cdm_factory_daemon/mojom/cdm_storage.mojom";
+import "chromeos/components/cdm_factory_daemon/mojom/content_decryption_module.mojom";
+import "chromeos/components/cdm_factory_daemon/mojom/output_protection.mojom";
+import "components/arc/mojom/oemcrypto.mojom";
+import "components/arc/mojom/protected_buffer_manager.mojom";
+
+// Next Method ID: 2
+interface CdmFactory {
+  // Deprecated, do not use.
+  CreateCdmDeprecated@0(
+      pending_associated_remote<ContentDecryptionModuleClient> client,
+      pending_associated_remote<CdmStorage> storage,
+      pending_associated_receiver<ContentDecryptionModule> cdm);
+
+  // Creates a new ContentDecryptionModule instance with the corresponding
+  // client, remote storage implementation and output protection. Use an
+  // associated interface to ensure ordering and that all become invalidated at
+  // the same time.
+  [MinVersion=1]
+  CreateCdm@1(pending_associated_remote<ContentDecryptionModuleClient> client,
+              pending_associated_remote<CdmStorage> storage,
+              pending_associated_receiver<ContentDecryptionModule> cdm,
+              pending_remote<OutputProtection> output_protection);
+};
+
+// Next Method ID: 5
+// Used for bootstrapping the connection between Chrome and the daemon, then
+// methods can be invoked to obtain interfaces to perform CDM or OEMCrypto
+// operations.
+interface CdmFactoryDaemon {
+  // Used to create CdmFactory interfaces which are then used to create a CDM
+  // interface. |key_system| should specify what key system we are using,
+  // currently only com.widevine.alpha is supported. Returns null if we can't
+  // get the interface from the daemon.
+  CreateFactory@0(string key_system) => (pending_remote<CdmFactory>? factory);
+
+  // Deprecated, do not use.
+  ConnectOemCryptoDeprecated@1(
+      pending_receiver<arc.mojom.OemCryptoService> oemcryptor,
+      pending_remote<arc.mojom.ProtectedBufferManager>
+          protected_buffer_manager);
+
+  // Used to establish a connection to the OEMCrypto implementation to provide
+  // that service to ARC.
+  [MinVersion=1] ConnectOemCrypto@2(
+      pending_receiver<arc.mojom.OemCryptoService> oemcryptor,
+      pending_remote<arc.mojom.ProtectedBufferManager>
+          protected_buffer_manager,
+      pending_remote<OutputProtection> output_protection);
+
+  // Creates a new OutputProtection interface to be used for passing into the
+  // CreateCdm call in CdmFactory.
+  [MinVersion=1]
+  GetOutputProtection@3(pending_receiver<OutputProtection> output_protection);
+
+  // Returns binary configuration data used for setting up HW decrypt+decode. If
+  // successful, |success| will be true and |config_data| will be valid.
+  // Otherwise |success| will be false and |config_data| should not be used.
+  [MinVersion=2]
+  GetHwConfigData@4() => (bool success, array<uint8> config_data);
+};

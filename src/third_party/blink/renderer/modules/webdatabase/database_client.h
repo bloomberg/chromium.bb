@@ -47,14 +47,12 @@ class Page;
 
 class MODULES_EXPORT DatabaseClient : public GarbageCollected<DatabaseClient>,
                                       public Supplement<Page> {
-  USING_GARBAGE_COLLECTED_MIXIN(DatabaseClient);
-
  public:
   static const char kSupplementName[];
 
   DatabaseClient();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   bool AllowDatabase(ExecutionContext*);
 

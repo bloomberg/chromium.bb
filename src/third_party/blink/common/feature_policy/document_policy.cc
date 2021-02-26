@@ -14,7 +14,7 @@ namespace blink {
 // static
 std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
     const ParsedDocumentPolicy& header_policy) {
-  DocumentPolicy::FeatureState feature_defaults;
+  DocumentPolicyFeatureState feature_defaults;
   for (const auto& entry : GetDocumentPolicyFeatureInfoMap())
     feature_defaults.emplace(entry.first, entry.second.default_value);
   return CreateWithHeaderPolicy(header_policy.feature_state,
@@ -39,17 +39,16 @@ net::structured_headers::Item PolicyValueToItem(const PolicyValue& value) {
 
 // static
 base::Optional<std::string> DocumentPolicy::Serialize(
-    const FeatureState& policy) {
+    const DocumentPolicyFeatureState& policy) {
   return DocumentPolicy::SerializeInternal(policy,
                                            GetDocumentPolicyFeatureInfoMap());
 }
 
 // static
 base::Optional<std::string> DocumentPolicy::SerializeInternal(
-    const FeatureState& policy,
+    const DocumentPolicyFeatureState& policy,
     const DocumentPolicyFeatureInfoMap& feature_info_map) {
-  net::structured_headers::List root;
-  root.reserve(policy.size());
+  net::structured_headers::Dictionary root;
 
   std::vector<std::pair<mojom::DocumentPolicyFeature, PolicyValue>>
       sorted_policy(policy.begin(), policy.end());
@@ -63,52 +62,49 @@ base::Optional<std::string> DocumentPolicy::SerializeInternal(
             });
 
   for (const auto& policy_entry : sorted_policy) {
-    const auto& info = feature_info_map.at(policy_entry.first /* feature */);
-
+    const mojom::DocumentPolicyFeature feature = policy_entry.first;
+    const std::string& feature_name = feature_info_map.at(feature).feature_name;
     const PolicyValue& value = policy_entry.second;
-    if (value.Type() == mojom::PolicyValueType::kBool) {
-      root.push_back(net::structured_headers::ParameterizedMember(
-          net::structured_headers::Item(
-              (value.BoolValue() ? "" : "no-") + info.feature_name,
-              net::structured_headers::Item::ItemType::kTokenType),
-          {}));
-    } else {
-      net::structured_headers::Parameters params;
-      params.push_back(std::pair<std::string, net::structured_headers::Item>{
-          info.feature_param_name, PolicyValueToItem(value)});
-      root.push_back(net::structured_headers::ParameterizedMember(
-          net::structured_headers::Item(
-              info.feature_name,
-              net::structured_headers::Item::ItemType::kTokenType),
-          params));
-    }
+
+    root[feature_name] = net::structured_headers::ParameterizedMember(
+        PolicyValueToItem(value), /* parameters */ {});
   }
 
-  return net::structured_headers::SerializeList(root);
+  return net::structured_headers::SerializeDictionary(root);
 }
 
 // static
-DocumentPolicy::FeatureState DocumentPolicy::MergeFeatureState(
-    const DocumentPolicy::FeatureState& policy1,
-    const DocumentPolicy::FeatureState& policy2) {
-  DocumentPolicy::FeatureState result;
-  auto i1 = policy1.begin();
-  auto i2 = policy2.begin();
+DocumentPolicyFeatureState DocumentPolicy::MergeFeatureState(
+    const DocumentPolicyFeatureState& base_policy,
+    const DocumentPolicyFeatureState& override_policy) {
+  DocumentPolicyFeatureState result;
+  auto i1 = base_policy.begin();
+  auto i2 = override_policy.begin();
 
   // Because std::map is by default ordered in ascending order based on key
   // value, we can run 2 iterators simultaneously through both maps to merge
   // them.
-  while (i1 != policy1.end() || i2 != policy2.end()) {
-    if (i1 == policy1.end()) {
+  while (i1 != base_policy.end() || i2 != override_policy.end()) {
+    if (i1 == base_policy.end()) {
       result.insert(*i2);
       i2++;
-    } else if (i2 == policy2.end()) {
+    } else if (i2 == override_policy.end()) {
       result.insert(*i1);
       i1++;
     } else {
       if (i1->first == i2->first) {
-        // Take the stricter policy when there is a key conflict.
-        result.emplace(i1->first, std::min(i1->second, i2->second));
+        const PolicyValue& base_value = i1->second;
+        const PolicyValue& override_value = i2->second;
+        // When policy value has strictness ordering e.g. boolean, take the
+        // stricter one. In this case a.IsCompatibleWith(b) means a is eq or
+        // stricter than b.
+        // When policy value does not have strictness ordering, e.g. enum,
+        // take override_value. In this case a.IsCompatibleWith(b) means
+        // a != b.
+        const PolicyValue& new_value =
+            base_value.IsCompatibleWith(override_value) ? base_value
+                                                        : override_value;
+        result.emplace(i1->first, new_value);
         i1++;
         i2++;
       } else if (i1->first < i2->first) {
@@ -135,7 +131,7 @@ bool DocumentPolicy::IsFeatureEnabled(
 bool DocumentPolicy::IsFeatureEnabled(
     mojom::DocumentPolicyFeature feature,
     const PolicyValue& threshold_value) const {
-  return GetFeatureValue(feature) >= threshold_value;
+  return threshold_value.IsCompatibleWith(GetFeatureValue(feature));
 }
 
 PolicyValue DocumentPolicy::GetFeatureValue(
@@ -153,29 +149,17 @@ const base::Optional<std::string> DocumentPolicy::GetFeatureEndpoint(
   }
 }
 
-bool DocumentPolicy::IsFeatureSupported(
-    mojom::DocumentPolicyFeature feature) const {
-  // TODO(iclelland): Generate this switch block
-  switch (feature) {
-    case mojom::DocumentPolicyFeature::kFontDisplay:
-    case mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages:
-    case mojom::DocumentPolicyFeature::kForceLoadAtTop:
-      return true;
-    default:
-      return false;
-  }
-}
-
-void DocumentPolicy::UpdateFeatureState(const FeatureState& feature_state) {
+void DocumentPolicy::UpdateFeatureState(
+    const DocumentPolicyFeatureState& feature_state) {
   for (const auto& feature_and_value : feature_state) {
     internal_feature_state_[static_cast<size_t>(feature_and_value.first)] =
         feature_and_value.second;
   }
 }
 
-DocumentPolicy::DocumentPolicy(const FeatureState& header_policy,
+DocumentPolicy::DocumentPolicy(const DocumentPolicyFeatureState& header_policy,
                                const FeatureEndpointMap& endpoint_map,
-                               const DocumentPolicy::FeatureState& defaults)
+                               const DocumentPolicyFeatureState& defaults)
     : endpoint_map_(endpoint_map) {
   // Fill the internal feature state with default value first,
   // and overwrite the value if it is specified in the header.
@@ -185,9 +169,9 @@ DocumentPolicy::DocumentPolicy(const FeatureState& header_policy,
 
 // static
 std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
-    const FeatureState& header_policy,
+    const DocumentPolicyFeatureState& header_policy,
     const FeatureEndpointMap& endpoint_map,
-    const DocumentPolicy::FeatureState& defaults) {
+    const DocumentPolicyFeatureState& defaults) {
   std::unique_ptr<DocumentPolicy> new_policy = base::WrapUnique(
       new DocumentPolicy(header_policy, endpoint_map, defaults));
   return new_policy;
@@ -195,13 +179,9 @@ std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
 
 // static
 bool DocumentPolicy::IsPolicyCompatible(
-    const DocumentPolicy::FeatureState& required_policy,
-    const DocumentPolicy::FeatureState& incoming_policy) {
+    const DocumentPolicyFeatureState& required_policy,
+    const DocumentPolicyFeatureState& incoming_policy) {
   for (const auto& required_entry : required_policy) {
-    // feature value > threshold => enabled, where feature value is the value in
-    // document policy and threshold is the value to test against.
-    // The smaller the feature value, the stricter the policy.
-    // Incoming policy should be at least as strict as the required one.
     const auto& feature = required_entry.first;
     const auto& required_value = required_entry.second;
     // Use default value when incoming policy does not specify a value.
@@ -211,7 +191,7 @@ bool DocumentPolicy::IsPolicyCompatible(
             ? incoming_entry->second
             : GetDocumentPolicyFeatureInfoMap().at(feature).default_value;
 
-    if (required_value < incoming_value)
+    if (!incoming_value.IsCompatibleWith(required_value))
       return false;
   }
   return true;

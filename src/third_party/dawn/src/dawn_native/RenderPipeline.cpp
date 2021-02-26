@@ -85,12 +85,25 @@ namespace dawn_native {
         }
 
         MaybeError ValidateVertexStateDescriptor(
+            DeviceBase* device,
             const VertexStateDescriptor* descriptor,
+            wgpu::PrimitiveTopology primitiveTopology,
             std::bitset<kMaxVertexAttributes>* attributesSetMask) {
             if (descriptor->nextInChain != nullptr) {
                 return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
             }
             DAWN_TRY(ValidateIndexFormat(descriptor->indexFormat));
+
+            // Pipeline descriptors using strip topologies must not have an undefined index format.
+            if (IsStripPrimitiveTopology(primitiveTopology)) {
+                if (descriptor->indexFormat == wgpu::IndexFormat::Undefined) {
+                    return DAWN_VALIDATION_ERROR(
+                        "indexFormat must not be undefined when using strip primitive topologies");
+                }
+            } else if (descriptor->indexFormat != wgpu::IndexFormat::Undefined) {
+                device->EmitDeprecationWarning(
+                    "Specifying an indexFormat when using list primitive topologies is deprecated");
+            }
 
             if (descriptor->vertexBufferCount > kMaxVertexBuffers) {
                 return DAWN_VALIDATION_ERROR("Vertex buffer count exceeds maximum");
@@ -131,7 +144,8 @@ namespace dawn_native {
 
         MaybeError ValidateColorStateDescriptor(const DeviceBase* device,
                                                 const ColorStateDescriptor& descriptor,
-                                                Format::Type fragmentOutputBaseType) {
+                                                bool fragmentWritten,
+                                                wgpu::TextureComponentType fragmentOutputBaseType) {
             if (descriptor.nextInChain != nullptr) {
                 return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
             }
@@ -148,8 +162,8 @@ namespace dawn_native {
             if (!format->IsColor() || !format->isRenderable) {
                 return DAWN_VALIDATION_ERROR("Color format must be color renderable");
             }
-            if (fragmentOutputBaseType != Format::Type::Other &&
-                fragmentOutputBaseType != format->type) {
+            if (fragmentWritten &&
+                fragmentOutputBaseType != format->GetAspectInfo(Aspect::Color).baseType) {
                 return DAWN_VALIDATION_ERROR(
                     "Color format must match the fragment stage output type");
             }
@@ -192,7 +206,7 @@ namespace dawn_native {
                 return sizeof(uint16_t);
             case wgpu::IndexFormat::Uint32:
                 return sizeof(uint32_t);
-            default:
+            case wgpu::IndexFormat::Undefined:
                 UNREACHABLE();
         }
     }
@@ -233,8 +247,6 @@ namespace dawn_native {
             case wgpu::VertexFormat::UInt:
             case wgpu::VertexFormat::Int:
                 return 1;
-            default:
-                UNREACHABLE();
         }
     }
 
@@ -274,8 +286,6 @@ namespace dawn_native {
             case wgpu::VertexFormat::Int3:
             case wgpu::VertexFormat::Int4:
                 return sizeof(int32_t);
-            default:
-                UNREACHABLE();
         }
     }
 
@@ -283,7 +293,12 @@ namespace dawn_native {
         return VertexFormatNumComponents(format) * VertexFormatComponentSize(format);
     }
 
-    MaybeError ValidateRenderPipelineDescriptor(const DeviceBase* device,
+    bool IsStripPrimitiveTopology(wgpu::PrimitiveTopology primitiveTopology) {
+        return primitiveTopology == wgpu::PrimitiveTopology::LineStrip ||
+               primitiveTopology == wgpu::PrimitiveTopology::TriangleStrip;
+    }
+
+    MaybeError ValidateRenderPipelineDescriptor(DeviceBase* device,
                                                 const RenderPipelineDescriptor* descriptor) {
         if (descriptor->nextInChain != nullptr) {
             return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
@@ -298,12 +313,14 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("Null fragment stage is not supported (yet)");
         }
 
+        DAWN_TRY(ValidatePrimitiveTopology(descriptor->primitiveTopology));
+
         std::bitset<kMaxVertexAttributes> attributesSetMask;
         if (descriptor->vertexState) {
-            DAWN_TRY(ValidateVertexStateDescriptor(descriptor->vertexState, &attributesSetMask));
+            DAWN_TRY(ValidateVertexStateDescriptor(device,
+                descriptor->vertexState, descriptor->primitiveTopology, &attributesSetMask));
         }
 
-        DAWN_TRY(ValidatePrimitiveTopology(descriptor->primitiveTopology));
         DAWN_TRY(ValidateProgrammableStageDescriptor(
             device, &descriptor->vertexStage, descriptor->layout, SingleShaderStage::Vertex));
         DAWN_TRY(ValidateProgrammableStageDescriptor(
@@ -313,8 +330,9 @@ namespace dawn_native {
             DAWN_TRY(ValidateRasterizationStateDescriptor(descriptor->rasterizationState));
         }
 
-        if ((descriptor->vertexStage.module->GetUsedVertexAttributes() & ~attributesSetMask)
-                .any()) {
+        const EntryPointMetadata& vertexMetadata =
+            descriptor->vertexStage.module->GetEntryPoint(descriptor->vertexStage.entryPoint);
+        if (!IsSubset(vertexMetadata.usedVertexAttributes, attributesSetMask)) {
             return DAWN_VALIDATION_ERROR(
                 "Pipeline vertex stage uses vertex buffers not in the vertex state");
         }
@@ -328,27 +346,27 @@ namespace dawn_native {
         }
 
         if (descriptor->colorStateCount == 0 && !descriptor->depthStencilState) {
-            return DAWN_VALIDATION_ERROR("Should have at least one attachment");
+            return DAWN_VALIDATION_ERROR(
+                "Should have at least one colorState or a depthStencilState");
         }
 
         ASSERT(descriptor->fragmentStage != nullptr);
-        const ShaderModuleBase::FragmentOutputBaseTypes& fragmentOutputBaseTypes =
-            descriptor->fragmentStage->module->GetFragmentOutputBaseTypes();
-        for (uint32_t i = 0; i < descriptor->colorStateCount; ++i) {
-            DAWN_TRY(ValidateColorStateDescriptor(device, descriptor->colorStates[i],
-                                                  fragmentOutputBaseTypes[i]));
+        const EntryPointMetadata& fragmentMetadata =
+            descriptor->fragmentStage->module->GetEntryPoint(descriptor->fragmentStage->entryPoint);
+        for (ColorAttachmentIndex i(uint8_t(0));
+             i < ColorAttachmentIndex(static_cast<uint8_t>(descriptor->colorStateCount)); ++i) {
+            DAWN_TRY(ValidateColorStateDescriptor(
+                device, descriptor->colorStates[static_cast<uint8_t>(i)],
+                fragmentMetadata.fragmentOutputsWritten[i],
+                fragmentMetadata.fragmentOutputFormatBaseTypes[i]));
         }
 
         if (descriptor->depthStencilState) {
             DAWN_TRY(ValidateDepthStencilStateDescriptor(device, descriptor->depthStencilState));
         }
 
-        if (descriptor->sampleMask != 0xFFFFFFFF) {
-            return DAWN_VALIDATION_ERROR("sampleMask must be 0xFFFFFFFF (for now)");
-        }
-
-        if (descriptor->alphaToCoverageEnabled) {
-            return DAWN_VALIDATION_ERROR("alphaToCoverageEnabled isn't supported (yet)");
+        if (descriptor->alphaToCoverageEnabled && descriptor->sampleCount <= 1) {
+            return DAWN_VALIDATION_ERROR("Enabling alphaToCoverage requires sampleCount > 1");
         }
 
         return {};
@@ -380,36 +398,36 @@ namespace dawn_native {
                                            const RenderPipelineDescriptor* descriptor)
         : PipelineBase(device,
                        descriptor->layout,
-                       wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment),
+                       {{SingleShaderStage::Vertex, &descriptor->vertexStage},
+                        {SingleShaderStage::Fragment, descriptor->fragmentStage}}),
           mAttachmentState(device->GetOrCreateAttachmentState(descriptor)),
           mPrimitiveTopology(descriptor->primitiveTopology),
           mSampleMask(descriptor->sampleMask),
-          mAlphaToCoverageEnabled(descriptor->alphaToCoverageEnabled),
-          mVertexModule(descriptor->vertexStage.module),
-          mVertexEntryPoint(descriptor->vertexStage.entryPoint),
-          mFragmentModule(descriptor->fragmentStage->module),
-          mFragmentEntryPoint(descriptor->fragmentStage->entryPoint) {
+          mAlphaToCoverageEnabled(descriptor->alphaToCoverageEnabled) {
         if (descriptor->vertexState != nullptr) {
             mVertexState = *descriptor->vertexState;
         } else {
             mVertexState = VertexStateDescriptor();
         }
 
-        for (uint32_t slot = 0; slot < mVertexState.vertexBufferCount; ++slot) {
+        for (uint8_t slot = 0; slot < mVertexState.vertexBufferCount; ++slot) {
             if (mVertexState.vertexBuffers[slot].attributeCount == 0) {
                 continue;
             }
 
-            mVertexBufferSlotsUsed.set(slot);
-            mVertexBufferInfos[slot].arrayStride = mVertexState.vertexBuffers[slot].arrayStride;
-            mVertexBufferInfos[slot].stepMode = mVertexState.vertexBuffers[slot].stepMode;
+            VertexBufferSlot typedSlot(slot);
 
-            uint32_t location = 0;
+            mVertexBufferSlotsUsed.set(typedSlot);
+            mVertexBufferInfos[typedSlot].arrayStride =
+                mVertexState.vertexBuffers[slot].arrayStride;
+            mVertexBufferInfos[typedSlot].stepMode = mVertexState.vertexBuffers[slot].stepMode;
+
             for (uint32_t i = 0; i < mVertexState.vertexBuffers[slot].attributeCount; ++i) {
-                location = mVertexState.vertexBuffers[slot].attributes[i].shaderLocation;
+                VertexAttributeLocation location = VertexAttributeLocation(static_cast<uint8_t>(
+                    mVertexState.vertexBuffers[slot].attributes[i].shaderLocation));
                 mAttributeLocationsUsed.set(location);
                 mAttributeInfos[location].shaderLocation = location;
-                mAttributeInfos[location].vertexBufferSlot = slot;
+                mAttributeInfos[location].vertexBufferSlot = typedSlot;
                 mAttributeInfos[location].offset =
                     mVertexState.vertexBuffers[slot].attributes[i].offset;
                 mAttributeInfos[location].format =
@@ -444,8 +462,8 @@ namespace dawn_native {
             mDepthStencilState.stencilWriteMask = 0xff;
         }
 
-        for (uint32_t i : IterateBitSet(mAttachmentState->GetColorAttachmentsMask())) {
-            mColorStates[i] = descriptor->colorStates[i];
+        for (ColorAttachmentIndex i : IterateBitSet(mAttachmentState->GetColorAttachmentsMask())) {
+            mColorStates[i] = descriptor->colorStates[static_cast<uint8_t>(i)];
         }
 
         // TODO(cwallez@chromium.org): Check against the shader module that the correct color
@@ -472,30 +490,33 @@ namespace dawn_native {
         return &mVertexState;
     }
 
-    const std::bitset<kMaxVertexAttributes>& RenderPipelineBase::GetAttributeLocationsUsed() const {
+    const ityp::bitset<VertexAttributeLocation, kMaxVertexAttributes>&
+    RenderPipelineBase::GetAttributeLocationsUsed() const {
         ASSERT(!IsError());
         return mAttributeLocationsUsed;
     }
 
-    const VertexAttributeInfo& RenderPipelineBase::GetAttribute(uint32_t location) const {
+    const VertexAttributeInfo& RenderPipelineBase::GetAttribute(
+        VertexAttributeLocation location) const {
         ASSERT(!IsError());
         ASSERT(mAttributeLocationsUsed[location]);
         return mAttributeInfos[location];
     }
 
-    const std::bitset<kMaxVertexBuffers>& RenderPipelineBase::GetVertexBufferSlotsUsed() const {
+    const ityp::bitset<VertexBufferSlot, kMaxVertexBuffers>&
+    RenderPipelineBase::GetVertexBufferSlotsUsed() const {
         ASSERT(!IsError());
         return mVertexBufferSlotsUsed;
     }
 
-    const VertexBufferInfo& RenderPipelineBase::GetVertexBuffer(uint32_t slot) const {
+    const VertexBufferInfo& RenderPipelineBase::GetVertexBuffer(VertexBufferSlot slot) const {
         ASSERT(!IsError());
         ASSERT(mVertexBufferSlotsUsed[slot]);
         return mVertexBufferInfos[slot];
     }
 
     const ColorStateDescriptor* RenderPipelineBase::GetColorStateDescriptor(
-        uint32_t attachmentSlot) const {
+        ColorAttachmentIndex attachmentSlot) const {
         ASSERT(!IsError());
         ASSERT(attachmentSlot < mColorStates.size());
         return &mColorStates[attachmentSlot];
@@ -521,7 +542,28 @@ namespace dawn_native {
         return mRasterizationState.frontFace;
     }
 
-    std::bitset<kMaxColorAttachments> RenderPipelineBase::GetColorAttachmentsMask() const {
+    bool RenderPipelineBase::IsDepthBiasEnabled() const {
+        ASSERT(!IsError());
+        return mRasterizationState.depthBias != 0 || mRasterizationState.depthBiasSlopeScale != 0;
+    }
+
+    int32_t RenderPipelineBase::GetDepthBias() const {
+        ASSERT(!IsError());
+        return mRasterizationState.depthBias;
+    }
+
+    float RenderPipelineBase::GetDepthBiasSlopeScale() const {
+        ASSERT(!IsError());
+        return mRasterizationState.depthBiasSlopeScale;
+    }
+
+    float RenderPipelineBase::GetDepthBiasClamp() const {
+        ASSERT(!IsError());
+        return mRasterizationState.depthBiasClamp;
+    }
+
+    ityp::bitset<ColorAttachmentIndex, kMaxColorAttachments>
+    RenderPipelineBase::GetColorAttachmentsMask() const {
         ASSERT(!IsError());
         return mAttachmentState->GetColorAttachmentsMask();
     }
@@ -531,7 +573,8 @@ namespace dawn_native {
         return mAttachmentState->HasDepthStencilAttachment();
     }
 
-    wgpu::TextureFormat RenderPipelineBase::GetColorAttachmentFormat(uint32_t attachment) const {
+    wgpu::TextureFormat RenderPipelineBase::GetColorAttachmentFormat(
+        ColorAttachmentIndex attachment) const {
         ASSERT(!IsError());
         return mColorStates[attachment].format;
     }
@@ -547,32 +590,33 @@ namespace dawn_native {
         return mAttachmentState->GetSampleCount();
     }
 
+    uint32_t RenderPipelineBase::GetSampleMask() const {
+        ASSERT(!IsError());
+        return mSampleMask;
+    }
+
+    bool RenderPipelineBase::IsAlphaToCoverageEnabled() const {
+        ASSERT(!IsError());
+        return mAlphaToCoverageEnabled;
+    }
+
     const AttachmentState* RenderPipelineBase::GetAttachmentState() const {
         ASSERT(!IsError());
 
         return mAttachmentState.Get();
     }
 
-    std::bitset<kMaxVertexAttributes> RenderPipelineBase::GetAttributesUsingVertexBuffer(
-        uint32_t slot) const {
-        ASSERT(!IsError());
-        return attributesUsingVertexBuffer[slot];
-    }
-
     size_t RenderPipelineBase::HashFunc::operator()(const RenderPipelineBase* pipeline) const {
-        size_t hash = 0;
-
         // Hash modules and layout
-        HashCombine(&hash, pipeline->GetLayout());
-        HashCombine(&hash, pipeline->mVertexModule.Get(), pipeline->mFragmentEntryPoint);
-        HashCombine(&hash, pipeline->mFragmentModule.Get(), pipeline->mFragmentEntryPoint);
+        size_t hash = PipelineBase::HashForCache(pipeline);
 
         // Hierarchically hash the attachment state.
         // It contains the attachments set, texture formats, and sample count.
         HashCombine(&hash, pipeline->mAttachmentState.Get());
 
         // Hash attachments
-        for (uint32_t i : IterateBitSet(pipeline->mAttachmentState->GetColorAttachmentsMask())) {
+        for (ColorAttachmentIndex i :
+             IterateBitSet(pipeline->mAttachmentState->GetColorAttachmentsMask())) {
             const ColorStateDescriptor& desc = *pipeline->GetColorStateDescriptor(i);
             HashCombine(&hash, desc.writeMask);
             HashCombine(&hash, desc.colorBlend.operation, desc.colorBlend.srcFactor,
@@ -593,15 +637,15 @@ namespace dawn_native {
 
         // Hash vertex state
         HashCombine(&hash, pipeline->mAttributeLocationsUsed);
-        for (uint32_t i : IterateBitSet(pipeline->mAttributeLocationsUsed)) {
-            const VertexAttributeInfo& desc = pipeline->GetAttribute(i);
+        for (VertexAttributeLocation location : IterateBitSet(pipeline->mAttributeLocationsUsed)) {
+            const VertexAttributeInfo& desc = pipeline->GetAttribute(location);
             HashCombine(&hash, desc.shaderLocation, desc.vertexBufferSlot, desc.offset,
                         desc.format);
         }
 
         HashCombine(&hash, pipeline->mVertexBufferSlotsUsed);
-        for (uint32_t i : IterateBitSet(pipeline->mVertexBufferSlotsUsed)) {
-            const VertexBufferInfo& desc = pipeline->GetVertexBuffer(i);
+        for (VertexBufferSlot slot : IterateBitSet(pipeline->mVertexBufferSlotsUsed)) {
+            const VertexBufferInfo& desc = pipeline->GetVertexBuffer(slot);
             HashCombine(&hash, desc.arrayStride, desc.stepMode);
         }
 
@@ -623,11 +667,8 @@ namespace dawn_native {
 
     bool RenderPipelineBase::EqualityFunc::operator()(const RenderPipelineBase* a,
                                                       const RenderPipelineBase* b) const {
-        // Check modules and layout
-        if (a->GetLayout() != b->GetLayout() || a->mVertexModule.Get() != b->mVertexModule.Get() ||
-            a->mVertexEntryPoint != b->mVertexEntryPoint ||
-            a->mFragmentModule.Get() != b->mFragmentModule.Get() ||
-            a->mFragmentEntryPoint != b->mFragmentEntryPoint) {
+        // Check the layout and shader stages.
+        if (!PipelineBase::EqualForCache(a, b)) {
             return false;
         }
 
@@ -637,7 +678,8 @@ namespace dawn_native {
             return false;
         }
 
-        for (uint32_t i : IterateBitSet(a->mAttachmentState->GetColorAttachmentsMask())) {
+        for (ColorAttachmentIndex i :
+             IterateBitSet(a->mAttachmentState->GetColorAttachmentsMask())) {
             const ColorStateDescriptor& descA = *a->GetColorStateDescriptor(i);
             const ColorStateDescriptor& descB = *b->GetColorStateDescriptor(i);
             if (descA.writeMask != descB.writeMask) {
@@ -685,9 +727,9 @@ namespace dawn_native {
             return false;
         }
 
-        for (uint32_t i : IterateBitSet(a->mAttributeLocationsUsed)) {
-            const VertexAttributeInfo& descA = a->GetAttribute(i);
-            const VertexAttributeInfo& descB = b->GetAttribute(i);
+        for (VertexAttributeLocation loc : IterateBitSet(a->mAttributeLocationsUsed)) {
+            const VertexAttributeInfo& descA = a->GetAttribute(loc);
+            const VertexAttributeInfo& descB = b->GetAttribute(loc);
             if (descA.shaderLocation != descB.shaderLocation ||
                 descA.vertexBufferSlot != descB.vertexBufferSlot || descA.offset != descB.offset ||
                 descA.format != descB.format) {
@@ -699,9 +741,9 @@ namespace dawn_native {
             return false;
         }
 
-        for (uint32_t i : IterateBitSet(a->mVertexBufferSlotsUsed)) {
-            const VertexBufferInfo& descA = a->GetVertexBuffer(i);
-            const VertexBufferInfo& descB = b->GetVertexBuffer(i);
+        for (VertexBufferSlot slot : IterateBitSet(a->mVertexBufferSlotsUsed)) {
+            const VertexBufferInfo& descA = a->GetVertexBuffer(slot);
+            const VertexBufferInfo& descB = b->GetVertexBuffer(slot);
             if (descA.arrayStride != descB.arrayStride || descA.stepMode != descB.stepMode) {
                 return false;
             }

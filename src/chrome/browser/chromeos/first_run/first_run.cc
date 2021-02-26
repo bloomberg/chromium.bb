@@ -55,7 +55,6 @@ namespace {
 void LaunchApp(Profile* profile, std::string app_id) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy);
 
   proxy->Launch(app_id, ui::EventFlags::EF_NONE,
                 apps::mojom::LaunchSource::kFromChromeInternal,
@@ -81,6 +80,11 @@ bool IsRegularUserOrSupervisedChild(user_manager::UserManager* user_manager) {
 // accounts.
 bool ShouldShowGetStarted(Profile* profile,
                           user_manager::UserManager* user_manager) {
+  // If we are disabling the first run experience, we don't show the getting
+  // started module.
+  if (!base::FeatureList::IsEnabled(chromeos::features::kHelpAppFirstRun))
+    return false;
+
   // Child users return true for IsManaged. These are not EDU accounts though,
   // should still see the getting started module.
   if (profile->IsChild())
@@ -138,6 +142,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // See crbug.com/752361
   registry->RegisterBooleanPref(prefs::kFirstRunTutorialShown, false);
   registry->RegisterBooleanPref(prefs::kHelpAppShouldShowGetStarted, false);
+  registry->RegisterBooleanPref(prefs::kHelpAppShouldShowParentalControl,
+                                false);
   registry->RegisterBooleanPref(prefs::kHelpAppTabletModeDuringOobe, false);
 }
 
@@ -151,6 +157,9 @@ bool ShouldLaunchHelpApp(Profile* profile) {
   profile->GetPrefs()->SetBoolean(prefs::kHelpAppTabletModeDuringOobe,
                                   ash::TabletMode::Get()->InTabletMode());
 
+  if (WizardController::default_controller())
+    WizardController::default_controller()->PrepareFirstRunPrefs();
+
   if (!IsRegularUserOrSupervisedChild(user_manager))
     return false;
 
@@ -160,6 +169,9 @@ bool ShouldLaunchHelpApp(Profile* profile) {
   if (command_line->HasSwitch(switches::kForceFirstRunUI)) {
     return true;
   }
+
+  if (!base::FeatureList::IsEnabled(chromeos::features::kHelpAppFirstRun))
+    return false;
 
   // ash::TabletMode does not exist in some tests.
   if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())
@@ -188,12 +200,7 @@ bool ShouldLaunchHelpApp(Profile* profile) {
 }
 
 void LaunchHelpApp(Profile* profile) {
-  if (base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2)) {
-    AppLauncher::LaunchHelpAfterSWALoad(profile);
-    return;
-  }
-
-  LaunchApp(profile, extension_misc::kGeniusAppId);
+  AppLauncher::LaunchHelpAfterSWALoad(profile);
 }
 
 void LaunchTutorial() {

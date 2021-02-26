@@ -286,11 +286,12 @@ def RunTests(args):
   typ_runner.args.top_level_dir = options.top_level_dir
   typ_runner.args.write_full_results_to = options.write_full_results_to
   typ_runner.args.write_trace_to = options.write_trace_to
+  typ_runner.args.disable_resultsink = options.disable_resultsink
 
-  typ_runner.setup_fn = _SetUpProcess
-  typ_runner.teardown_fn = _TearDownProcess
   typ_runner.classifier = _GetClassifier(typ_runner)
   typ_runner.path_delimiter = test_class.GetJSONResultsDelimiter()
+  typ_runner.setup_fn = _SetUpProcess
+  typ_runner.teardown_fn = _TearDownProcess
 
   tests_to_run = LoadTestCasesToBeRun(
       test_class=test_class, finder_options=typ_runner.context.finder_options,
@@ -314,6 +315,7 @@ def RunTests(args):
   assert all(os.path.isabs(path) for path in test_class_expectations_files)
   typ_runner.args.expectations_files.extend(
       test_class_expectations_files)
+  typ_runner.args.ignored_tags.extend(test_class.IgnoredTags())
 
   # Since sharding logic is handled by browser_test_runner harness by passing
   # browser_test_context.test_case_ids_to_run to subprocess to indicate test

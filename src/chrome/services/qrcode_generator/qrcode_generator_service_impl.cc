@@ -40,7 +40,7 @@ void QRCodeGeneratorServiceImpl::InitializeDinoBitmap() {
 
   dino_bitmap_.allocN32Pixels(dino_image::kDinoWidth, dino_image::kDinoHeight);
   dino_bitmap_.eraseARGB(0xFF, 0xFF, 0xFF, 0xFF);
-  SkCanvas canvas(dino_bitmap_);
+  SkCanvas canvas(dino_bitmap_, SkSurfaceProps{});
   SkPaint paint;
   paint.setColor(SK_ColorBLACK);
 
@@ -104,8 +104,14 @@ void QRCodeGeneratorServiceImpl::DrawDino(SkCanvas* canvas,
           kModuleSizePixels * kModuleSizePixels,
       (dest_rect.bottom() + dino_border_px + kModuleSizePixels - 1) /
           kModuleSizePixels * kModuleSizePixels);
-
   canvas->drawRect(background, paint_background);
+
+  // Center the dino within the cleared space, and draw it.
+  SkScalar delta_x =
+      SkScalarRoundToScalar(background.centerX() - dest_rect.centerX());
+  SkScalar delta_y =
+      SkScalarRoundToScalar(background.centerY() - dest_rect.centerY());
+  dest_rect.offset(delta_x, delta_y);
   SkRect dino_bounds;
   dino_bitmap_.getBounds(&dino_bounds);
   canvas->drawBitmapRect(dino_bitmap_, dino_bounds, dest_rect, nullptr);
@@ -170,7 +176,7 @@ void QRCodeGeneratorServiceImpl::RenderBitmap(
   bitmap.allocN32Pixels(data_size.width() * kModuleSizePixels,
                         data_size.height() * kModuleSizePixels);
   bitmap.eraseARGB(0xFF, 0xFF, 0xFF, 0xFF);
-  SkCanvas canvas(bitmap);
+  SkCanvas canvas(bitmap, SkSurfaceProps{});
   SkPaint paint_black;
   paint_black.setColor(SK_ColorBLACK);
   SkPaint paint_white;
@@ -226,34 +232,55 @@ void QRCodeGeneratorServiceImpl::GenerateQRCode(
   mojom::GenerateQRCodeResponsePtr response =
       mojom::GenerateQRCodeResponse::New();
 
-  // TODO(skare): Use a higher QR code version to allow for more data.
-  // TODO(skare): cap string length with message in the UI.
-  if (request->data.length() > QRCodeGenerator::kInputBytes) {
+  if (!request->data.data()) {
+    response->error_code = mojom::QRCodeGeneratorError::UNKNOWN_ERROR;
+    std::move(callback).Run(std::move(response));
+    return;
+  }
+
+  // Possible QR version lengths, which we round up to with space-padding vs.
+  // null-padding.
+  // TODO(skare): ideally this shouldn't have any insight into supported
+  // versions.
+  constexpr size_t version_sizes[] = {84, 122, 180, 288};
+  constexpr size_t kLengthMax = 288;
+  if (request->data.length() > kLengthMax) {
     response->error_code = mojom::QRCodeGeneratorError::INPUT_TOO_LONG;
     std::move(callback).Run(std::move(response));
     return;
   }
 
-  // TODO(skare): Use a higher QR code vdersion. Until then, use the size
-  // from the common encoder.
-  const gfx::Size qr_output_data_size = {QRCodeGenerator::kSize,
-                                         QRCodeGenerator::kSize};
-  // TODO(skare): cap string length with message in the UI.
-  uint8_t input[QRCodeGenerator::kInputBytes + 1] = {0};
+  uint8_t input[kLengthMax + 1] = {0};
   base::strlcpy(reinterpret_cast<char*>(input), request->data.c_str(),
-                QRCodeGenerator::kInputBytes);
-  // Pad with spaces rather than null for better reader compatibility.
-  // This will go away when supporting multiple versions/data length.
-  for (size_t i = request->data.length(); i < QRCodeGenerator::kInputBytes; i++)
+                kLengthMax);
+  size_t data_size = 0;
+  for (const size_t& version_size : version_sizes) {
+    if (request->data.length() <= version_size) {
+      data_size = version_size;
+      break;
+    }
+  }
+
+  for (size_t i = request->data.length(); i < data_size; i++)
     input[i] = 0x20;
-  input[QRCodeGenerator::kInputBytes] = 0;
+  input[data_size - 1] = 0;
 
   QRCodeGenerator qr;
-  auto qr_data_span = qr.Generate(base::span<const uint8_t>(
-      reinterpret_cast<const uint8_t*>(request->data.data()),
-      request->data.size()));
+  base::Optional<QRCodeGenerator::GeneratedCode> qr_data =
+      qr.Generate(base::span<const uint8_t>(
+          reinterpret_cast<const uint8_t*>(request->data.data()),
+          request->data.size()));
+  if (!qr_data || qr_data->data.data() == nullptr ||
+      qr_data->data.size() == 0) {
+    // The above check should have caught the too-long-URL case.
+    // Remaining errors can be treated as UNKNOWN.
+    response->error_code = mojom::QRCodeGeneratorError::UNKNOWN_ERROR;
+    std::move(callback).Run(std::move(response));
+    return;
+  }
+  auto& qr_data_span = qr_data->data;
 
-  // The least significant bit of each byte in |qr_data_span| is set if the tile
+  // The least significant bit of each byte in |qr_data.span| is set if the tile
   // should be black.
   for (size_t i = 0; i < qr_data_span.size(); i++) {
     qr_data_span[i] &= 1;
@@ -261,9 +288,9 @@ void QRCodeGeneratorServiceImpl::GenerateQRCode(
 
   response->data.insert(response->data.begin(), qr_data_span.begin(),
                         qr_data_span.end());
-  response->data_size = qr_output_data_size;
+  response->data_size = {qr_data->qr_size, qr_data->qr_size};
   response->error_code = mojom::QRCodeGeneratorError::NONE;
-  RenderBitmap(qr_data_span.data(), qr_output_data_size, request, &response);
+  RenderBitmap(qr_data_span.data(), response->data_size, request, &response);
 
   std::move(callback).Run(std::move(response));
 }

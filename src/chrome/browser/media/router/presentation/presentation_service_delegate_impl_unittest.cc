@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
+#include "components/media_router/browser/presentation/presentation_service_delegate_impl.h"
 
 #include "base/bind.h"
 #include "base/test/mock_callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/media/router/presentation/local_presentation_manager.h"
-#include "chrome/browser/media/router/presentation/local_presentation_manager_factory.h"
-#include "chrome/browser/media/router/presentation/web_contents_presentation_manager.h"
-#include "chrome/browser/media/router/test/mock_media_router.h"
-#include "chrome/browser/media/router/test/mock_screen_availability_listener.h"
-#include "chrome/browser/media/router/test/test_helper.h"
+#include "chrome/browser/media/router/test/provider_test_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/route_request_result.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/media_router/browser/presentation/local_presentation_manager.h"
+#include "components/media_router/browser/presentation/local_presentation_manager_factory.h"
+#include "components/media_router/browser/presentation/web_contents_presentation_manager.h"
+#include "components/media_router/browser/test/mock_media_router.h"
+#include "components/media_router/browser/test/mock_screen_availability_listener.h"
+#include "components/media_router/common/media_source.h"
+#include "components/media_router/common/pref_names.h"
+#include "components/media_router/common/route_request_result.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/presentation_request.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
@@ -179,7 +180,7 @@ class PresentationServiceDelegateImplTest
     return *mock_local_manager_;
   }
 
-  void RunDefaultPresentationUrlCallbackTest(bool incognito) {
+  void RunDefaultPresentationUrlCallbackTest(bool off_the_record) {
     auto callback = base::BindRepeating(
         &PresentationServiceDelegateImplTest::OnDefaultPresentationStarted,
         base::Unretained(this));
@@ -203,7 +204,7 @@ class PresentationServiceDelegateImplTest
         frame_origin_);
     MediaRoute media_route("differentRouteId", source2_, "mediaSinkId", "",
                            true, true);
-    media_route.set_incognito(incognito);
+    media_route.set_off_the_record(off_the_record);
     result =
         RouteRequestResult::FromSuccess(media_route, "differentPresentationId");
     delegate_impl_->OnPresentationResponse(different_request,
@@ -213,7 +214,7 @@ class PresentationServiceDelegateImplTest
     // Should trigger callback since request matches.
     EXPECT_CALL(*this, OnDefaultPresentationStarted(_)).Times(1);
     MediaRoute media_route2("routeId", source1_, "mediaSinkId", "", true, true);
-    media_route2.set_incognito(incognito);
+    media_route2.set_off_the_record(off_the_record);
     result = RouteRequestResult::FromSuccess(media_route2, "presentationId");
     delegate_impl_->OnPresentationResponse(request, /** connection */ nullptr,
                                            *result);
@@ -227,7 +228,7 @@ class PresentationServiceDelegateImplTest
   }
 
   void SetMockLocalPresentationManager() {
-    LocalPresentationManagerFactory::GetInstanceForTest()->SetTestingFactory(
+    ChromeLocalPresentationManagerFactory::GetInstance()->SetTestingFactory(
         profile(), base::BindRepeating(&BuildMockLocalPresentationManager));
     mock_local_manager_ = static_cast<MockLocalPresentationManager*>(
         LocalPresentationManagerFactory::GetOrCreateForBrowserContext(
@@ -264,29 +265,28 @@ class PresentationServiceDelegateImplTest
 class PresentationServiceDelegateImplIncognitoTest
     : public PresentationServiceDelegateImplTest {
  public:
-  PresentationServiceDelegateImplIncognitoTest()
-      : incognito_web_contents_(nullptr) {}
+  PresentationServiceDelegateImplIncognitoTest() = default;
 
  protected:
   content::WebContents* GetWebContents() override {
-    if (!incognito_web_contents_) {
-      Profile* incognito_profile = profile()->GetOffTheRecordProfile();
-      incognito_web_contents_ =
+    if (!off_the_record_web_contents_) {
+      Profile* incognito_profile = profile()->GetPrimaryOTRProfile();
+      off_the_record_web_contents_ =
           content::WebContentsTester::CreateTestWebContents(incognito_profile,
                                                             nullptr);
     }
-    return incognito_web_contents_.get();
+    return off_the_record_web_contents_.get();
   }
 
   void TearDown() override {
-    // We must delete the incognito WC first, as that triggers observers which
-    // require RenderViewHost, etc., that in turn are deleted by
+    // We must delete the OffTheRecord WC first, as that triggers observers
+    // which require RenderViewHost, etc., that in turn are deleted by
     // RenderViewHostTestHarness::TearDown().
-    incognito_web_contents_.reset();
+    off_the_record_web_contents_.reset();
     PresentationServiceDelegateImplTest::TearDown();
   }
 
-  std::unique_ptr<content::WebContents> incognito_web_contents_;
+  std::unique_ptr<content::WebContents> off_the_record_web_contents_{nullptr};
 };
 
 TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {
@@ -556,8 +556,8 @@ TEST_F(PresentationServiceDelegateImplTest,
   EXPECT_CALL(success_cb, Run(_));
 
   delegate_impl_->OnStartPresentationSucceeded(
-      rfh_id, success_cb.Get(), presentation_info, /** connection */ nullptr,
-      media_route);
+      rfh_id, success_cb.Get(), presentation_info,
+      /** connection */ nullptr, media_route);
 
   EXPECT_CALL(mock_local_manager,
               UnregisterLocalPresentationController(kPresentationId, rfh_id))
@@ -778,7 +778,7 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
 
   // Set the user preference for |origin| to prefer tab mirroring.
   {
-    ListPrefUpdate update(profile()->GetOffTheRecordProfile()->GetPrefs(),
+    ListPrefUpdate update(profile()->GetPrimaryOTRProfile()->GetPrefs(),
                           prefs::kMediaRouterTabMirroringSources);
     update->AppendIfNotPresent(std::make_unique<base::Value>(origin));
   }
@@ -787,12 +787,12 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
   EXPECT_CALL(mock_local_manager, IsLocalPresentation(kPresentationId))
       .WillRepeatedly(Return(false));
 
-  // Setting the pref in incognito shouldn't set it for the non-incognito
+  // Setting the pref in OffTheRecord shouldn't set it for the regular
   // profile.
-  const base::ListValue* non_incognito_origins =
+  const base::ListValue* non_off_the_record_origins =
       profile()->GetPrefs()->GetList(prefs::kMediaRouterTabMirroringSources);
-  EXPECT_EQ(non_incognito_origins->Find(base::Value(origin)),
-            non_incognito_origins->end());
+  EXPECT_EQ(non_off_the_record_origins->Find(base::Value(origin)),
+            non_off_the_record_origins->end());
 
   // Auto-join requests should be rejected.
   EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionError(_));
@@ -807,9 +807,9 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
           &MockCreatePresentationConnnectionCallbacks::OnCreateConnectionError,
           base::Unretained(&mock_create_connection_callbacks)));
 
-  // Remove the user preference for |origin| in incognito.
+  // Remove the user preference for |origin| in OffTheRecord.
   {
-    ListPrefUpdate update(profile()->GetOffTheRecordProfile()->GetPrefs(),
+    ListPrefUpdate update(profile()->GetPrimaryOTRProfile()->GetPrefs(),
                           prefs::kMediaRouterTabMirroringSources);
     update->Remove(base::Value(origin), nullptr);
   }

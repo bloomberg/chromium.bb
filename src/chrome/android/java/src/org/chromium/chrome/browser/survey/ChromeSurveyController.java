@@ -18,7 +18,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -35,7 +34,9 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
+import org.chromium.chrome.browser.version.ChromeVersionInfo;
+import org.chromium.components.infobars.InfoBarAnimationListener;
+import org.chromium.components.infobars.InfoBarUiItem;
 import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.lang.annotation.Retention;
@@ -46,8 +47,7 @@ import java.util.Random;
 /**
  * Class that controls if and when to show surveys related to the Chrome Home experiment.
  */
-public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimationListener {
-
+public class ChromeSurveyController implements InfoBarAnimationListener {
     private static final String CHROME_SURVEY_TRIAL_NAME = "ChromeSurvey";
     private static final String MAX_NUMBER = "max-number";
     private static final String SITE_ID_PARAM_NAME = "site-id";

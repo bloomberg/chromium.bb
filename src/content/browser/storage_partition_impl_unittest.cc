@@ -15,10 +15,10 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/run_loop.h"
+#include "base/scoped_observation.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,6 +33,7 @@
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/generated_code_cache_settings.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
@@ -42,17 +43,19 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_store.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "net/cookies/cookie_access_result.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/cookie_manager.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/test/mock_quota_client.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -148,7 +151,7 @@ class RemoveCookieTester {
   }
 
   void AddCookie(const url::Origin& origin) {
-    CanonicalCookie::CookieInclusionStatus status;
+    net::CookieInclusionStatus status;
     std::unique_ptr<net::CanonicalCookie> cc(
         net::CanonicalCookie::Create(origin.GetURL(), "A=1", base::Time::Now(),
                                      base::nullopt /* server_time */, &status));
@@ -160,8 +163,9 @@ class RemoveCookieTester {
   }
 
  private:
-  void GetCookieListCallback(const net::CookieStatusList& cookie_list,
-                             const net::CookieStatusList& excluded_cookies) {
+  void GetCookieListCallback(
+      const net::CookieAccessResultList& cookie_list,
+      const net::CookieAccessResultList& excluded_cookies) {
     std::string cookie_line =
         net::CanonicalCookie::BuildCookieLine(cookie_list);
     if (cookie_line == "A=1") {
@@ -173,8 +177,8 @@ class RemoveCookieTester {
     await_completion_.Notify();
   }
 
-  void SetCookieCallback(CanonicalCookie::CookieInclusionStatus result) {
-    ASSERT_TRUE(result.IsInclude());
+  void SetCookieCallback(net::CookieAccessResult result) {
+    ASSERT_TRUE(result.status.IsInclude());
     await_completion_.Notify();
   }
 
@@ -564,15 +568,15 @@ class RemovePluginPrivateDataTester {
     storage::FileSystemQuotaUtil* quota_util = backend->GetQuotaUtil();
 
     // Determine the set of origins used.
-    std::set<url::Origin> origins;
-    quota_util->GetOriginsForTypeOnFileTaskRunner(
-        storage::kFileSystemTypePluginPrivate, &origins);
-    *data_exists_for_origin = origins.find(origin) != origins.end();
+    std::vector<url::Origin> origins =
+        quota_util->GetOriginsForTypeOnFileTaskRunner(
+            storage::kFileSystemTypePluginPrivate);
+    *data_exists_for_origin = base::Contains(origins, origin);
 
     // AwaitCompletionHelper and MessageLoop don't work on a
     // SequencedTaskRunner, so post a task on the IO thread.
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&AwaitCompletionHelper::Notify,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&AwaitCompletionHelper::Notify,
                                   base::Unretained(await_completion)));
   }
 
@@ -586,6 +590,24 @@ class RemovePluginPrivateDataTester {
   DISALLOW_COPY_AND_ASSIGN(RemovePluginPrivateDataTester);
 };
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+class MockDataRemovalObserver : public StoragePartition::DataRemovalObserver {
+ public:
+  explicit MockDataRemovalObserver(StoragePartition* partition) {
+    observation_.Observe(partition);
+  }
+
+  MOCK_METHOD4(OnOriginDataCleared,
+               void(uint32_t,
+                    base::RepeatingCallback<bool(const url::Origin&)>,
+                    base::Time,
+                    base::Time));
+
+ private:
+  base::ScopedObservation<StoragePartition,
+                          StoragePartition::DataRemovalObserver>
+      observation_{this};
+};
 
 bool IsWebSafeSchemeForTest(const std::string& scheme) {
   return scheme == url::kHttpScheme;
@@ -732,6 +754,9 @@ class StoragePartitionImplTest : public testing::Test {
   StoragePartitionImplTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()) {
+    // Configures the Conversion API to run in memory to speed up it's
+    // initialization and avoid timeouts. See https://crbug.com/1080764.
+    ConversionManagerImpl::RunInMemoryForTesting();
     feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
   }
 
@@ -739,8 +764,15 @@ class StoragePartitionImplTest : public testing::Test {
     if (!quota_manager_.get()) {
       quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
           browser_context_->IsOffTheRecord(), browser_context_->GetPath(),
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(),
+          GetIOThreadTaskRunner({}).get(),
           browser_context_->GetSpecialStoragePolicy());
+      auto quota_client = base::MakeRefCounted<storage::MockQuotaClient>(
+          quota_manager_->proxy(), base::span<const storage::MockOriginData>(),
+          storage::QuotaClientType::kFileSystem);
+      quota_manager_->proxy()->RegisterClient(
+          std::move(quota_client), storage::QuotaClientType::kFileSystem,
+          {blink::mojom::StorageType::kTemporary,
+           blink::mojom::StorageType::kPersistent});
     }
     return quota_manager_.get();
   }
@@ -1796,6 +1828,55 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForFilter) {
   EXPECT_EQ(2u, GetConversionsToReportForTesting(conversion_manager,
                                                  base::Time::Max())
                     .size());
+}
+
+TEST_F(StoragePartitionImplTest, DataRemovalObserver) {
+  const uint32_t kTestClearMask =
+      content::StoragePartition::REMOVE_DATA_MASK_APPCACHE |
+      content::StoragePartition::REMOVE_DATA_MASK_WEBSQL;
+  const uint32_t kTestQuotaClearMask = 0;
+  const auto kTestOrigin = GURL("https://example.com");
+  const auto kBeginTime = base::Time() + base::TimeDelta::FromHours(1);
+  const auto kEndTime = base::Time() + base::TimeDelta::FromHours(2);
+  const auto origin_callback_valid =
+      [&](base::RepeatingCallback<bool(const url::Origin&)> callback) {
+        return callback.Run(url::Origin::Create(kTestOrigin));
+      };
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  MockDataRemovalObserver observer(partition);
+
+  // Confirm that each of the StoragePartition interfaces for clearing origin
+  // based data notify observers appropriately.
+  EXPECT_CALL(
+      observer,
+      OnOriginDataCleared(kTestClearMask, testing::Truly(origin_callback_valid),
+                          base::Time(), base::Time::Max()));
+  partition->ClearDataForOrigin(kTestClearMask, kTestQuotaClearMask,
+                                kTestOrigin);
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(
+      observer,
+      OnOriginDataCleared(kTestClearMask, testing::Truly(origin_callback_valid),
+                          kBeginTime, kEndTime));
+  partition->ClearData(kTestClearMask, kTestQuotaClearMask, kTestOrigin,
+                       kBeginTime, kEndTime, base::DoNothing());
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(
+      observer,
+      OnOriginDataCleared(kTestClearMask, testing::Truly(origin_callback_valid),
+                          kBeginTime, kEndTime));
+  partition->ClearData(
+      kTestClearMask, kTestQuotaClearMask,
+      base::BindLambdaForTesting([&](const url::Origin& origin,
+                                     storage::SpecialStoragePolicy* policy) {
+        return origin == url::Origin::Create(kTestOrigin);
+      }),
+      /* cookie_deletion_filter */ nullptr, /* perform_storage_cleanup */ false,
+      kBeginTime, kEndTime, base::DoNothing());
 }
 
 }  // namespace content

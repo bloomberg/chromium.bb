@@ -14,6 +14,18 @@ constexpr char kAmbientBackdropClientId[] = "ash.ambient.backdrop.client.id";
 
 constexpr char kAmbientModeEnabled[] = "settings.ambient_mode.enabled";
 
+constexpr char kAmbientModePhotoSourcePref[] =
+    "settings.ambient_mode.photo_source_enum";
+
+constexpr char kAmbientModeLockScreenInactivityTimeoutSeconds[] =
+    "ash.ambient.lock_screen_idle_timeout";
+
+constexpr char kAmbientModeLockScreenBackgroundTimeoutSeconds[] =
+    "ash.ambient.lock_screen_background_timeout";
+
+constexpr char kAmbientModePhotoRefreshIntervalSeconds[] =
+    "ash.ambient.photo_refresh_interval";
+
 }  // namespace prefs
 }  // namespace ambient
 }  // namespace ash

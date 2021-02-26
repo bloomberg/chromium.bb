@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/local_discovery/local_discovery_ui_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -211,13 +210,6 @@ void PrivetNotificationService::DeviceCacheFlushed() {
 // static
 bool PrivetNotificationService::IsEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(
-      switches::kDisableDeviceDiscoveryNotifications);
-}
-
-// static
-bool PrivetNotificationService::IsForced() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kEnableDeviceDiscoveryNotifications);
 }
 
@@ -240,10 +232,7 @@ void PrivetNotificationService::AddNotification(
   // existing notification but not add a new one.
   const bool notification_exists =
       base::Contains(displayed_notifications, kPrivetNotificationID);
-  const bool add_new_notification =
-      device_added &&
-      !local_discovery::LocalDiscoveryUIHandler::GetHasVisible();
-  if (!notification_exists && !add_new_notification)
+  if (!notification_exists && !device_added)
     return;
 
   message_center::RichNotificationData rich_notification_data;
@@ -309,9 +298,7 @@ void PrivetNotificationService::OnNotificationsEnabledChanged() {
 #if BUILDFLAG(ENABLE_MDNS)
   traffic_detector_.reset();
 
-  if (IsForced()) {
-    StartLister();
-  } else if (*enable_privet_notification_member_) {
+  if (*enable_privet_notification_member_) {
     traffic_detector_ = std::make_unique<PrivetTrafficDetector>(
         profile_, base::BindRepeating(&PrivetNotificationService::StartLister,
                                       AsWeakPtr()));
@@ -321,7 +308,7 @@ void PrivetNotificationService::OnNotificationsEnabledChanged() {
     privet_notifications_listener_.reset();
   }
 #else
-  if (IsForced() || *enable_privet_notification_member_) {
+  if (*enable_privet_notification_member_) {
     StartLister();
   } else {
     device_lister_.reset();

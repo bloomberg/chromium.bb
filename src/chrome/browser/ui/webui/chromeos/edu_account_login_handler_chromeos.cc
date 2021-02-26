@@ -18,7 +18,7 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
@@ -65,7 +65,10 @@ constexpr char kCreateRaptResultHistogram[] =
 
 EduAccountLoginHandler::EduAccountLoginHandler(
     const base::RepeatingClosure& close_dialog_closure)
-    : close_dialog_closure_(close_dialog_closure) {}
+    : close_dialog_closure_(close_dialog_closure) {
+  network_state_informer_ = base::MakeRefCounted<NetworkStateInformer>();
+  network_state_informer_->Init();
+}
 
 EduAccountLoginHandler::~EduAccountLoginHandler() {
   close_dialog_closure_.Run();
@@ -122,6 +125,10 @@ void EduAccountLoginHandler::ProfileImageFetcher::OnImageFetched(
 
 void EduAccountLoginHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
+      "isNetworkReady",
+      base::BindRepeating(&EduAccountLoginHandler::HandleIsNetworkReady,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "getParents",
       base::BindRepeating(&EduAccountLoginHandler::HandleGetParents,
                           base::Unretained(this)));
@@ -143,6 +150,14 @@ void EduAccountLoginHandler::OnJavascriptDisallowed() {
   profile_image_fetcher_.reset();
   get_parents_callback_id_.clear();
   parent_signin_callback_id_.clear();
+}
+
+void EduAccountLoginHandler::HandleIsNetworkReady(const base::ListValue* args) {
+  AllowJavascript();
+
+  bool is_network_ready =
+      network_state_informer_->state() == NetworkStateInformer::ONLINE;
+  ResolveJavascriptCallback(args->GetList()[0], base::Value(is_network_ready));
 }
 
 void EduAccountLoginHandler::HandleGetParents(const base::ListValue* args) {
@@ -193,11 +208,11 @@ void EduAccountLoginHandler::HandleUpdateEduCoexistenceFlowResult(
   const base::Value::ConstListView& args_list = args->GetList();
   CHECK_EQ(args_list.size(), 1u);
   int result = args_list[0].GetInt();
-  DCHECK(result <= static_cast<int>(InlineLoginHandlerDialogChromeOS::
-                                        EduCoexistenceFlowResult::kMaxValue));
-  InlineLoginHandlerDialogChromeOS::UpdateEduCoexistenceFlowResult(
-      static_cast<InlineLoginHandlerDialogChromeOS::EduCoexistenceFlowResult>(
-          result));
+  DCHECK(result <=
+         static_cast<int>(
+             InlineLoginDialogChromeOS::EduCoexistenceFlowResult::kMaxValue));
+  InlineLoginDialogChromeOS::UpdateEduCoexistenceFlowResult(
+      static_cast<InlineLoginDialogChromeOS::EduCoexistenceFlowResult>(result));
 }
 
 void EduAccountLoginHandler::FetchFamilyMembers() {
@@ -211,7 +226,7 @@ void EduAccountLoginHandler::FetchFamilyMembers() {
 
   family_fetcher_ = std::make_unique<FamilyInfoFetcher>(
       this, IdentityManagerFactory::GetForProfile(profile),
-      account_manager->GetUrlLoaderFactory());
+      profile->GetURLLoaderFactory());
   family_fetcher_->StartGetFamilyMembers();
 }
 
@@ -246,7 +261,8 @@ void EduAccountLoginHandler::FetchAccessToken(
               &EduAccountLoginHandler::CreateReAuthProofTokenForParent,
               base::Unretained(this), std::move(obfuscated_gaia_id),
               std::move(password)),
-          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
+          signin::ConsentLevel::kNotRequired);
 }
 
 void EduAccountLoginHandler::FetchReAuthProofTokenForParent(
@@ -262,7 +278,7 @@ void EduAccountLoginHandler::FetchReAuthProofTokenForParent(
   DCHECK(account_manager);
 
   gaia_auth_fetcher_ = std::make_unique<GaiaAuthFetcher>(
-      this, gaia::GaiaSource::kChrome, account_manager->GetUrlLoaderFactory());
+      this, gaia::GaiaSource::kChrome, profile->GetURLLoaderFactory());
   gaia_auth_fetcher_->StartCreateReAuthProofTokenForParent(
       child_oauth_access_token, parent_obfuscated_gaia_id, parent_credential);
 }

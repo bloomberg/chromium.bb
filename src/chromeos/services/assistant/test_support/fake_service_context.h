@@ -27,23 +27,23 @@ class FakeServiceContext : public ServiceContext {
   ~FakeServiceContext() override;
 
   FakeServiceContext& set_assistant_alarm_timer_controller(
-      ash::mojom::AssistantAlarmTimerController*);
+      ash::AssistantAlarmTimerController*);
   FakeServiceContext& set_main_task_runner(
       scoped_refptr<base::SingleThreadTaskRunner>);
   FakeServiceContext& set_power_manager_client(PowerManagerClient*);
   FakeServiceContext& set_primary_account_gaia_id(std::string);
   FakeServiceContext& set_assistant_state(ash::AssistantStateBase*);
   FakeServiceContext& set_assistant_notification_controller(
-      ash::mojom::AssistantNotificationController*);
+      ash::AssistantNotificationController*);
 
   // ServiceContext implementation:
-  ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller()
+  ash::AssistantAlarmTimerController* assistant_alarm_timer_controller()
       override;
   ash::AssistantController* assistant_controller() override;
-  ash::mojom::AssistantNotificationController*
-  assistant_notification_controller() override;
-  ash::mojom::AssistantScreenContextController*
-  assistant_screen_context_controller() override;
+  ash::AssistantNotificationController* assistant_notification_controller()
+      override;
+  ash::AssistantScreenContextController* assistant_screen_context_controller()
+      override;
   ash::AssistantStateBase* assistant_state() override;
   CrasAudioHandler* cras_audio_handler() override;
   DeviceActions* device_actions() override;
@@ -56,10 +56,10 @@ class FakeServiceContext : public ServiceContext {
   ash::AssistantStateBase* assistant_state_ = nullptr;
   PowerManagerClient* power_manager_client_ = nullptr;
   std::string gaia_id_ = kGaiaId;
-  ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller_ =
+  ash::AssistantAlarmTimerController* assistant_alarm_timer_controller_ =
       nullptr;
-  ash::mojom::AssistantNotificationController*
-      assistant_notification_controller_ = nullptr;
+  ash::AssistantNotificationController* assistant_notification_controller_ =
+      nullptr;
 };
 }  // namespace assistant
 }  // namespace chromeos

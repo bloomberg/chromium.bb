@@ -17,24 +17,11 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/version.h"
-#import "chrome/updater/mac/setup/info_plist.h"
-#import "chrome/updater/server/mac/service_protocol.h"
-#import "chrome/updater/server/mac/update_service_wrappers.h"
+#import "chrome/updater/app/server/mac/service_protocol.h"
+#import "chrome/updater/app/server/mac/update_service_wrappers.h"
+#import "chrome/updater/mac/xpc_service_names.h"
+#include "chrome/updater/test/test_app/constants.h"
 #include "chrome/updater/test/test_app/test_app_version.h"
-
-namespace {
-
-NSString* GetLaunchdServiceName() {
-  return base::SysUTF8ToNSString(
-      base::StrCat({UPDATER_APP_BUNDLE_IDENTIFIER_STRING, ".service"}));
-}
-
-NSString* GetMachServiceName() {
-  return [GetLaunchdServiceName()
-      stringByAppendingFormat:@".%lu", [GetLaunchdServiceName() hash]];
-}
-
-}  // namespace
 
 @interface CRUUpdateClientOnDemandImpl : NSObject <CRUUpdateChecking> {
   base::scoped_nsobject<NSXPCConnection> _xpcConnection;
@@ -49,7 +36,7 @@ NSString* GetMachServiceName() {
 - (instancetype)init {
   if (self = [super init]) {
     _xpcConnection.reset([[NSXPCConnection alloc]
-        initWithMachServiceName:GetMachServiceName()
+        initWithMachServiceName:updater::GetServiceMachName()
                         options:0]);
 
     _xpcConnection.get().remoteObjectInterface =
@@ -71,15 +58,15 @@ NSString* GetMachServiceName() {
   return self;
 }
 
-- (void)getUpdaterVersionWithReply:(void (^_Nonnull)(NSString* version))reply {
+- (void)getVersionWithReply:(void (^_Nonnull)(NSString* version))reply {
   auto errorHandler = ^(NSError* xpcError) {
-    LOG(ERROR) << "XPC connection failed: "
+    LOG(ERROR) << "XPC Connection failed: "
                << base::SysNSStringToUTF8([xpcError description]);
     reply(nil);
   };
 
-  [[_xpcConnection.get() remoteObjectProxyWithErrorHandler:errorHandler]
-      getUpdaterVersionWithReply:reply];
+  [[_xpcConnection remoteObjectProxyWithErrorHandler:errorHandler]
+      getVersionWithReply:reply];
 }
 
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
@@ -126,19 +113,6 @@ NSString* GetMachServiceName() {
                         reply:reply];
 }
 
-- (void)haltForUpdateToVersion:(NSString* _Nonnull)version
-                         reply:(void (^_Nonnull)(bool shouldUpdate))reply {
-  auto errorHandler = ^(NSError* xpcError) {
-    LOG(ERROR) << "XPC connection failed: "
-               << base::SysNSStringToUTF8([xpcError description]);
-    reply(NO);
-  };
-
-  [[_xpcConnection remoteObjectProxyWithErrorHandler:errorHandler]
-      haltForUpdateToVersion:version
-                       reply:reply];
-}
-
 - (BOOL)CanDialIPC {
   return true;
 }
@@ -170,8 +144,7 @@ void UpdateClientMac::BeginRegister(const std::string& brand_code,
                                   static_cast<UpdateService::Result>(error)));
   };
 
-  [client_.get() registerForUpdatesWithAppId:base::SysUTF8ToNSString(
-                                                 base::mac::BaseBundleID())
+  [client_.get() registerForUpdatesWithAppId:base::SysUTF8ToNSString(kTestAppId)
                                    brandCode:base::SysUTF8ToNSString(brand_code)
                                          tag:base::SysUTF8ToNSString(tag)
                                      version:base::SysUTF8ToNSString(version)

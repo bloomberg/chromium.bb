@@ -123,13 +123,23 @@ VirtualKeyboardPrivateGetKeyboardConfigFunction::Run() {
 
 void VirtualKeyboardPrivateGetKeyboardConfigFunction::OnKeyboardConfig(
     std::unique_ptr<base::DictionaryValue> results) {
-  Respond(results ? OneArgument(std::move(results)) : Error(kUnknownError));
+  Respond(results
+              ? OneArgument(base::Value::FromUniquePtrValue(std::move(results)))
+              : Error(kUnknownError));
 }
 
 ExtensionFunction::ResponseAction
 VirtualKeyboardPrivateOpenSettingsFunction::Run() {
-  if (!delegate()->IsLanguageSettingsEnabled() ||
-      !delegate()->ShowLanguageSettings()) {
+  if (!delegate()->IsSettingsEnabled() || !delegate()->ShowLanguageSettings()) {
+    return RespondNow(Error(kUnknownError));
+  }
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateOpenSuggestionSettingsFunction::Run() {
+  if (!delegate()->IsSettingsEnabled() ||
+      !delegate()->ShowSuggestionSettings()) {
     return RespondNow(Error(kUnknownError));
   }
   return RespondNow(NoArguments());
@@ -153,7 +163,7 @@ VirtualKeyboardPrivateSetContainerBehaviorFunction::Run() {
 
 void VirtualKeyboardPrivateSetContainerBehaviorFunction::OnSetContainerBehavior(
     bool success) {
-  Respond(OneArgument(std::make_unique<base::Value>(success)));
+  Respond(OneArgument(base::Value(success)));
 }
 
 ExtensionFunction::ResponseAction

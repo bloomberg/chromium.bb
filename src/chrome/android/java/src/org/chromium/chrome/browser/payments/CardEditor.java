@@ -18,7 +18,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.autofill.CreditCardScanner;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -29,9 +29,10 @@ import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel.EditorFi
 import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel.EditorValueIconGenerator;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorModel;
 import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.DropdownKeyValue;
-import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.components.payments.BasicCardUtils;
 import org.chromium.components.payments.MethodStrings;
+import org.chromium.components.payments.PaymentRequestService;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
 
@@ -109,9 +110,6 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     /** Used for verifying billing address completeness and also editing billing addresses. */
     private final AddressEditor mAddressEditor;
 
-    /** An optional observer used by tests. */
-    @Nullable private final PaymentRequestServiceObserverForTest mObserverForTest;
-
     /**
      * A mapping from all card issuer networks recognized in Chrome to information about these
      * networks. The networks (e.g., "visa") are defined in:
@@ -167,16 +165,14 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
      *                        billing addresses.
      * @param includeOrgLabel Whether the labels in the billing address dropdown should include the
      *                        organization name.
-     * @param observerForTest Optional observer for test.
      */
-    public CardEditor(WebContents webContents, AddressEditor addressEditor, boolean includeOrgLabel,
-            @Nullable PaymentRequestServiceObserverForTest observerForTest) {
+    public CardEditor(
+            WebContents webContents, AddressEditor addressEditor, boolean includeOrgLabel) {
         assert webContents != null;
         assert addressEditor != null;
 
         mWebContents = webContents;
         mAddressEditor = addressEditor;
-        mObserverForTest = observerForTest;
 
         List<AutofillProfile> profiles =
                 PersonalDataManager.getInstance().getBillingAddressesToSuggest(includeOrgLabel);
@@ -356,25 +352,30 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             final Callback<AutofillPaymentInstrument> cancelCallback) {
         super.edit(toEdit, doneCallback, cancelCallback);
 
-        // If |toEdit| is null, we're creating a new credit card.
-        final boolean isNewCard = toEdit == null;
+        final boolean isNewCard;
+        final AutofillPaymentInstrument instrument;
+        final EditorModel editor;
 
-        // Ensure that |instrument| and |card| are never null.
-        final AutofillPaymentInstrument instrument = isNewCard
-                ? new AutofillPaymentInstrument(mWebContents, new CreditCard(),
-                        null /* billingAddress */, null /* methodName */)
-                : toEdit;
+        if (toEdit == null) {
+            // We're creating a new credit card.
+            isNewCard = true;
+            // Ensure that |instrument| is never null.
+            instrument = new AutofillPaymentInstrument(mWebContents, new CreditCard(),
+                    null /* billingAddress */, null /* methodName */);
+            editor = new EditorModel(mContext.getString(R.string.payments_add_card));
+        } else {
+            isNewCard = false;
+            instrument = toEdit;
+            editor = new EditorModel(toEdit.getEditTitle());
+        }
+
         final CreditCard card = instrument.getCard();
-
-        final EditorModel editor = new EditorModel(
-                isNewCard ? mContext.getString(R.string.payments_add_card) : toEdit.getEditTitle());
-
         if (card.getIsLocal()) {
             Calendar calendar = null;
             try {
                 calendar = mCalendar.get();
             } catch (InterruptedException | ExecutionException e) {
-                mHandler.post(() -> cancelCallback.onResult(toEdit));
+                mHandler.post(cancelCallback.bind(toEdit));
                 return;
             }
             assert calendar != null;
@@ -397,7 +398,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         // If the user clicks [Cancel], send |toEdit| card back to the caller (will return original
         // state, which could be null, a full card, or a partial card).
-        editor.setCancelCallback(() -> cancelCallback.onResult(toEdit));
+        editor.setCancelCallback(cancelCallback.bind(toEdit));
 
         // If the user clicks [Done], save changes on disk, mark the card "complete," and send it
         // back to the caller.
@@ -544,11 +545,12 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                           R.string.payments_card_expiration_invalid_validation_message));
             mMonthField.setIsFullLine(false);
 
-            if (mObserverForTest != null) {
+            if (PaymentRequestService.getObserverForTest() != null) {
                 mMonthField.setDropdownCallback(new Callback<Pair<String, Runnable>>() {
                     @Override
                     public void onResult(final Pair<String, Runnable> eventData) {
-                        mObserverForTest.onPaymentRequestServiceExpirationMonthChange();
+                        PaymentRequestService.getObserverForTest()
+                                .onPaymentRequestServiceExpirationMonthChange();
                     }
                 });
             }
@@ -675,8 +677,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                 final boolean isSelectingIncompleteAddress =
                         mIncompleteProfilesForBillingAddress.containsKey(eventData.first);
                 if (!isAddingNewAddress && !isSelectingIncompleteAddress) {
-                    if (mObserverForTest != null) {
-                        mObserverForTest.onPaymentRequestServiceBillingAddressChangeProcessed();
+                    if (PaymentRequestService.getObserverForTest() != null) {
+                        PaymentRequestService.getObserverForTest()
+                                .onPaymentRequestServiceBillingAddressChangeProcessed();
                     }
                     return;
                 }

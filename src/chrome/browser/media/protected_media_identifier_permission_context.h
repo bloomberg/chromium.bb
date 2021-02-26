@@ -52,7 +52,7 @@ class ProtectedMediaIdentifierPermissionContext
 
  private:
   friend class ProtectedMediaIdentifierPermissionContextTest;
-  static bool IsOriginWhitelisted(const GURL& origin);
+  static bool IsOriginAllowed(const GURL& origin);
 
   void UpdateTabContext(const permissions::PermissionRequestID& id,
                         const GURL& requesting_frame,
@@ -71,6 +71,7 @@ class ProtectedMediaIdentifierPermissionContext
       const permissions::PermissionRequestID& id,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
+      bool user_gesture,
       permissions::BrowserPermissionCallback callback,
       chromeos::attestation::PlatformVerificationDialog::ConsentResponse
           response);

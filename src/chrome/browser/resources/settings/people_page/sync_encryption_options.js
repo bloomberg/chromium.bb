@@ -68,6 +68,15 @@ Polymer({
   },
 
   /**
+   * Returns the encryption options CrRadioGroupElement.
+   * @return {?CrRadioGroupElement}
+   */
+  getEncryptionsRadioButtons() {
+    return /** @type {?CrRadioGroupElement} */ (
+        this.$$('#encryptionRadioGroup'));
+  },
+
+  /**
    * Whether we should disable the radio buttons that allow choosing the
    * encryption options for Sync.
    * We disable the buttons if:
@@ -110,7 +119,7 @@ Polymer({
    * @private
    */
   onNewPassphraseInputKeypress_(e) {
-    if (e.type == 'keypress' && e.key != 'Enter') {
+    if (e.type === 'keypress' && e.key !== 'Enter') {
       return;
     }
     this.saveNewPassphrase_();
@@ -130,7 +139,7 @@ Polymer({
     chrome.metricsPrivate.recordUserAction('Sync_SaveNewPassphraseClicked');
     // Might happen within the transient time between the request to
     // |setSyncEncryption| and receiving the response.
-    if (this.syncPrefs.encryptAllData) {
+    if (this.syncPrefs.setNewPassphrase) {
       return;
     }
     // If a new password has been entered but it is invalid, do not send the
@@ -139,7 +148,6 @@ Polymer({
       return;
     }
 
-    this.syncPrefs.encryptAllData = true;
     this.syncPrefs.setNewPassphrase = true;
     this.syncPrefs.passphrase = this.passphrase_;
 
@@ -157,7 +165,7 @@ Polymer({
    */
   onEncryptionRadioSelectionChanged_(event) {
     this.creatingNewPassphrase_ =
-        event.detail.value == RadioButtonNames.ENCRYPT_WITH_PASSPHRASE;
+        event.detail.value === RadioButtonNames.ENCRYPT_WITH_PASSPHRASE;
   },
 
   /**
@@ -179,7 +187,7 @@ Polymer({
    */
   validateCreatedPassphrases_() {
     const emptyPassphrase = !this.passphrase_;
-    const mismatchedPassphrase = this.passphrase_ != this.confirmation_;
+    const mismatchedPassphrase = this.passphrase_ !== this.confirmation_;
 
     this.$$('#passphraseInput').invalid = emptyPassphrase;
     this.$$('#passphraseConfirmationInput').invalid =
@@ -193,7 +201,7 @@ Polymer({
    * @private
    */
   onLearnMoreClick_(event) {
-    if (event.target.tagName == 'A') {
+    if (event.target.tagName === 'A') {
       // Stop the propagation of events, so that clicking on links inside
       // checkboxes or radio buttons won't change the value.
       event.stopPropagation();

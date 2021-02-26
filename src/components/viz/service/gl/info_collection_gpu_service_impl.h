@@ -28,14 +28,18 @@ class VIZ_SERVICE_EXPORT InfoCollectionGpuServiceImpl
       scoped_refptr<base::SingleThreadTaskRunner> main_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
       const gpu::DevicePerfInfo& device_perf_info,
+      const gpu::GPUInfo::GPUDevice& gpu_device,
       mojo::PendingReceiver<mojom::InfoCollectionGpuService> pending_receiver);
 
   ~InfoCollectionGpuServiceImpl() override;
 
   void RequestDxDiagNodeInfo(RequestDxDiagNodeInfoCallback callback) override;
 
-  void GetGpuSupportedRuntimeVersionAndDevicePerfInfo(
-      GetGpuSupportedRuntimeVersionAndDevicePerfInfoCallback callback) override;
+  void GetGpuSupportedDx12VersionAndDevicePerfInfo(
+      GetGpuSupportedDx12VersionAndDevicePerfInfoCallback callback) override;
+
+  void GetGpuSupportedVulkanVersionInfo(
+      GetGpuSupportedVulkanVersionInfoCallback callback) override;
 
  private:
   void BindOnIO(
@@ -43,8 +47,11 @@ class VIZ_SERVICE_EXPORT InfoCollectionGpuServiceImpl
 
   void RequestDxDiagNodeInfoOnMain(RequestDxDiagNodeInfoCallback callback);
 
-  void GetGpuSupportedRuntimeVersionAndDevicePerfInfoOnMain(
-      GetGpuSupportedRuntimeVersionAndDevicePerfInfoCallback callback);
+  void GetGpuSupportedDx12VersionAndDevicePerfInfoOnMain(
+      GetGpuSupportedDx12VersionAndDevicePerfInfoCallback callback);
+
+  void GetGpuSupportedVulkanVersionInfoOnMain(
+      GetGpuSupportedVulkanVersionInfoCallback callback);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
@@ -52,6 +59,10 @@ class VIZ_SERVICE_EXPORT InfoCollectionGpuServiceImpl
   // Information related to device perf category, only collected on the second
   // unsandboxed GPU process.
   const gpu::DevicePerfInfo device_perf_info_;
+
+  // The GPU ids and the driver version that was passed down from the browser
+  // process
+  const gpu::GPUInfo::GPUDevice gpu_device_;
 
   // Should only be accessed on the IO thread after creation.
   mojo::Receiver<mojom::InfoCollectionGpuService> receiver_{this};

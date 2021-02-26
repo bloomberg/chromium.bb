@@ -9,13 +9,18 @@
 #include "chromeos/components/help_app_ui/help_app_page_handler.h"
 #include "chromeos/components/help_app_ui/help_app_untrusted_ui.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
-#include "chromeos/components/web_applications/manifest_request_filter.h"
+#include "chromeos/components/local_search_service/local_search_service_sync_proxy.h"
+#include "chromeos/components/local_search_service/local_search_service_sync_proxy_factory.h"
+#include "chromeos/components/local_search_service/public/mojom/types.mojom.h"
 #include "chromeos/grit/chromeos_help_app_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "ui/webui/webui_allowlist.h"
 
 namespace chromeos {
 
@@ -26,15 +31,17 @@ content::WebUIDataSource* CreateHostDataSource() {
   // TODO(crbug.com/1012578): This is a placeholder only, update with the
   // actual app content.
   source->SetDefaultResource(IDR_HELP_APP_HOST_INDEX_HTML);
-  source->AddResourcePath("pwa.html", IDR_HELP_APP_PWA_HTML);
   source->AddResourcePath("app_icon_192.png", IDR_HELP_APP_ICON_192);
   source->AddResourcePath("app_icon_512.png", IDR_HELP_APP_ICON_512);
-  source->AddResourcePath("browser_proxy.js", IDR_HELP_APP_BROWSER_PROXY_JS);
+  source->AddResourcePath("help_app_index_scripts.js",
+                          IDR_HELP_APP_INDEX_SCRIPTS_JS);
   source->AddResourcePath("help_app.mojom-lite.js",
                           IDR_HELP_APP_HELP_APP_MOJOM_JS);
+  source->AddResourcePath("local_search_service_types.mojom-lite.js",
+                          IDR_HELP_APP_LOCAL_SEARCH_SERVICE_TYPES_MOJOM_JS);
+  source->AddResourcePath("local_search_service_proxy.mojom-lite.js",
+                          IDR_HELP_APP_LOCAL_SEARCH_SERVICE_PROXY_MOJOM_JS);
   source->AddLocalizedString("appTitle", IDS_HELP_APP_EXPLORE);
-  web_app::SetManifestRequestFilter(source, IDR_HELP_APP_MANIFEST,
-                                    IDS_HELP_APP_EXPLORE);
   return source;
 }
 }  // namespace
@@ -49,7 +56,8 @@ HelpAppUI::HelpAppUI(content::WebUI* web_ui,
   // We need a CSP override to use the chrome-untrusted:// scheme in the host.
   std::string csp =
       std::string("frame-src ") + kChromeUIHelpAppUntrustedURL + ";";
-  host_source->OverrideContentSecurityPolicyChildSrc(csp);
+  host_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::FrameSrc, csp);
 
   content::WebUIDataSource* untrusted_source =
       CreateHelpAppUntrustedDataSource(delegate_.get());
@@ -58,6 +66,20 @@ HelpAppUI::HelpAppUI(content::WebUI* web_ui,
 
   // Add ability to request chrome-untrusted: URLs.
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
+
+  // Register common permissions for chrome-untrusted:// pages.
+  // TODO(https://crbug.com/1113568): Remove this after common permissions are
+  // granted by default.
+  auto* permissions_allowlist = WebUIAllowlist::GetOrCreate(browser_context);
+  const url::Origin untrusted_origin =
+      url::Origin::Create(GURL(kChromeUIHelpAppUntrustedURL));
+  permissions_allowlist->RegisterAutoGrantedPermissions(
+      untrusted_origin, {
+                            ContentSettingsType::COOKIES,
+                            ContentSettingsType::IMAGES,
+                            ContentSettingsType::JAVASCRIPT,
+                            ContentSettingsType::SOUND,
+                        });
 }
 
 HelpAppUI::~HelpAppUI() = default;
@@ -66,6 +88,16 @@ void HelpAppUI::BindInterface(
     mojo::PendingReceiver<help_app_ui::mojom::PageHandlerFactory> receiver) {
   page_factory_receiver_.reset();
   page_factory_receiver_.Bind(std::move(receiver));
+}
+
+void HelpAppUI::BindInterface(
+    mojo::PendingReceiver<chromeos::local_search_service::mojom::IndexSyncProxy>
+        index_receiver) {
+  chromeos::local_search_service::LocalSearchServiceSyncProxyFactory::
+      GetForBrowserContext(web_ui()->GetWebContents()->GetBrowserContext())
+          ->GetIndex(chromeos::local_search_service::IndexId::kHelpApp,
+                     chromeos::local_search_service::Backend::kInvertedIndex,
+                     delegate_->GetLocalState(), std::move(index_receiver));
 }
 
 void HelpAppUI::CreatePageHandler(

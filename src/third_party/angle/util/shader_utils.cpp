@@ -11,6 +11,7 @@
 #include <iostream>
 #include <vector>
 
+#include "common/utilities.h"
 #include "util/test_utils.h"
 
 namespace
@@ -74,6 +75,20 @@ GLuint CompileProgramInternal(const char *vsSource,
     glLinkProgram(program);
 
     return CheckLinkStatusAndReturnProgram(program, true);
+}
+
+void KHRONOS_APIENTRY DebugMessageCallback(GLenum source,
+                                           GLenum type,
+                                           GLuint id,
+                                           GLenum severity,
+                                           GLsizei length,
+                                           const GLchar *message,
+                                           const void *userParam)
+{
+    std::string sourceText   = gl::GetDebugMessageSourceString(source);
+    std::string typeText     = gl::GetDebugMessageTypeString(type);
+    std::string severityText = gl::GetDebugMessageSeverityString(severity);
+    std::cerr << sourceText << ", " << typeText << ", " << severityText << ": " << message << "\n";
 }
 }  // namespace
 
@@ -282,6 +297,26 @@ bool LinkAttachedProgram(GLuint program)
     return (CheckLinkStatusAndReturnProgram(program, true) != 0);
 }
 
+void EnableDebugCallback(const void *userParam)
+{
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    // Enable medium and high priority messages.
+    glDebugMessageControlKHR(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH, 0, nullptr,
+                             GL_TRUE);
+    glDebugMessageControlKHR(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM, 0, nullptr,
+                             GL_TRUE);
+    // Disable low and notification priority messages.
+    glDebugMessageControlKHR(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0, nullptr,
+                             GL_FALSE);
+    glDebugMessageControlKHR(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr,
+                             GL_FALSE);
+    // Disable performance messages to reduce spam.
+    glDebugMessageControlKHR(GL_DONT_CARE, GL_DEBUG_TYPE_PERFORMANCE, GL_DONT_CARE, 0, nullptr,
+                             GL_FALSE);
+    glDebugMessageCallbackKHR(DebugMessageCallback, userParam);
+}
+
 namespace angle
 {
 
@@ -370,13 +405,29 @@ varying vec4 v_position;
 
 void main()
 {
-    if (v_position.x * v_position.y > 0.0)
+    bool isLeft = v_position.x < 0.0;
+    bool isTop = v_position.y < 0.0;
+    if (isLeft)
     {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        if (isTop)
+        {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        }
+        else
+        {
+            gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+        }
     }
     else
     {
-        gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+        if (isTop)
+        {
+            gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+        }
+        else
+        {
+            gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+        }
     }
 })";
 }
@@ -447,6 +498,14 @@ const char *PositionAttrib()
 {
     return "a_position";
 }
+const char *Texture2DUniform()
+{
+    return "u_tex2D";
+}
+const char *LodUniform()
+{
+    return "u_lod";
+}
 
 namespace vs
 {
@@ -483,6 +542,21 @@ void main()
 {
     gl_Position = a_position;
     v_position = a_position;
+})";
+}
+
+// A shader that simply passes through attribute a_position, setting it to gl_Position and varying
+// texcoord.
+const char *Texture2DLod()
+{
+    return R"(#version 300 es
+in vec4 a_position;
+out vec2 v_texCoord;
+
+void main()
+{
+    gl_Position = vec4(a_position.xy, 0.0, 1.0);
+    v_texCoord = a_position.xy * 0.5 + vec2(0.5);
 })";
 }
 
@@ -524,6 +598,22 @@ out vec4 my_FragColor;
 void main()
 {
     my_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+})";
+}
+
+// A shader that samples the texture at a given lod.
+const char *Texture2DLod()
+{
+    return R"(#version 300 es
+precision mediump float;
+uniform sampler2D u_tex2D;
+uniform float u_lod;
+in vec2 v_texCoord;
+out vec4 my_FragColor;
+
+void main()
+{
+    my_FragColor = textureLod(u_tex2D, v_texCoord, u_lod);
 })";
 }
 
@@ -602,6 +692,20 @@ out vec4 my_FragColor;
 void main()
 {
     my_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+})";
+}
+
+// A shader that renders a simple gradient of red to green. Needs varying v_position.
+const char *RedGreenGradient()
+{
+    return R"(#version 310 es
+precision highp float;
+in vec4 v_position;
+out vec4 my_FragColor;
+
+void main()
+{
+    my_FragColor = vec4(v_position.x, v_position.y, 0.0, 1.0);
 })";
 }
 

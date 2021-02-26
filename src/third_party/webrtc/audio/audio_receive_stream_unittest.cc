@@ -53,8 +53,6 @@ AudioDecodingCallStats MakeAudioDecodeStatsForTest() {
 
 const uint32_t kRemoteSsrc = 1234;
 const uint32_t kLocalSsrc = 5678;
-const size_t kOneByteExtensionHeaderLength = 4;
-const size_t kOneByteExtensionLength = 4;
 const int kAudioLevelId = 3;
 const int kTransportSequenceNumberId = 4;
 const int kJitterBufferDelay = -7;
@@ -69,9 +67,8 @@ const std::pair<int, SdpAudioFormat> kReceiveCodec = {
     123,
     {"codec_name_recv", 96000, 0}};
 const NetworkStatistics kNetworkStats = {
-    123, 456, false, 789012, 3456, 123, 456, 789, 543, 123,
-    432, 321, 123,   101,    0,    {},  789, 12,  345, 678,
-    901, 0,   -1,    -1,     -1,   -1,  0,   0,   0,   0};
+    123, 456, false, 789012, 3456, 123, 456, 789, 543, 123, 432, 321, 123,
+    101, 789, 12,    345,    678,  901, 0,   -1,  -1,  0,   0,   0,   0};
 const AudioDecodingCallStats kAudioDecodeStats = MakeAudioDecodeStatsForTest();
 
 struct ConfigHelper {
@@ -148,7 +145,7 @@ struct ConfigHelper {
         .WillOnce(Return(kTotalOutputEnergy));
     EXPECT_CALL(*channel_receive_, GetTotalOutputDuration())
         .WillOnce(Return(kTotalOutputDuration));
-    EXPECT_CALL(*channel_receive_, GetNetworkStatistics())
+    EXPECT_CALL(*channel_receive_, GetNetworkStatistics(_))
         .WillOnce(Return(kNetworkStats));
     EXPECT_CALL(*channel_receive_, GetDecodingCallStatistics())
         .WillOnce(Return(kAudioDecodeStats));
@@ -168,45 +165,6 @@ struct ConfigHelper {
   RtpStreamReceiverController rtp_stream_receiver_controller_;
   MockTransport rtcp_send_transport_;
 };
-
-void BuildOneByteExtension(std::vector<uint8_t>::iterator it,
-                           int id,
-                           uint32_t extension_value,
-                           size_t value_length) {
-  const uint16_t kRtpOneByteHeaderExtensionId = 0xBEDE;
-  ByteWriter<uint16_t>::WriteBigEndian(&(*it), kRtpOneByteHeaderExtensionId);
-  it += 2;
-
-  ByteWriter<uint16_t>::WriteBigEndian(&(*it), kOneByteExtensionLength / 4);
-  it += 2;
-  const size_t kExtensionDataLength = kOneByteExtensionLength - 1;
-  uint32_t shifted_value = extension_value
-                           << (8 * (kExtensionDataLength - value_length));
-  *it = (id << 4) + (static_cast<uint8_t>(value_length) - 1);
-  ++it;
-  ByteWriter<uint32_t, kExtensionDataLength>::WriteBigEndian(&(*it),
-                                                             shifted_value);
-}
-
-const std::vector<uint8_t> CreateRtpHeaderWithOneByteExtension(
-    int extension_id,
-    uint32_t extension_value,
-    size_t value_length) {
-  std::vector<uint8_t> header;
-  header.resize(webrtc::kRtpHeaderSize + kOneByteExtensionHeaderLength +
-                kOneByteExtensionLength);
-  header[0] = 0x80;   // Version 2.
-  header[0] |= 0x10;  // Set extension bit.
-  header[1] = 100;    // Payload type.
-  header[1] |= 0x80;  // Marker bit is set.
-  ByteWriter<uint16_t>::WriteBigEndian(&header[2], 0x1234);  // Sequence number.
-  ByteWriter<uint32_t>::WriteBigEndian(&header[4], 0x5678);  // Timestamp.
-  ByteWriter<uint32_t>::WriteBigEndian(&header[8], 0x4321);  // SSRC.
-
-  BuildOneByteExtension(header.begin() + webrtc::kRtpHeaderSize, extension_id,
-                        extension_value, value_length);
-  return header;
-}
 
 const std::vector<uint8_t> CreateRtcpSenderReport() {
   std::vector<uint8_t> packet;
@@ -242,27 +200,6 @@ TEST(AudioReceiveStreamTest, ConstructDestruct) {
   }
 }
 
-TEST(AudioReceiveStreamTest, ReceiveRtpPacket) {
-  for (bool use_null_audio_processing : {false, true}) {
-    ConfigHelper helper(use_null_audio_processing);
-    helper.config().rtp.transport_cc = true;
-    auto recv_stream = helper.CreateAudioReceiveStream();
-    const int kTransportSequenceNumberValue = 1234;
-    std::vector<uint8_t> rtp_packet = CreateRtpHeaderWithOneByteExtension(
-        kTransportSequenceNumberId, kTransportSequenceNumberValue, 2);
-    constexpr int64_t packet_time_us = 5678000;
-
-    RtpPacketReceived parsed_packet;
-    ASSERT_TRUE(parsed_packet.Parse(&rtp_packet[0], rtp_packet.size()));
-    parsed_packet.set_arrival_time_ms((packet_time_us + 500) / 1000);
-
-    EXPECT_CALL(*helper.channel_receive(),
-                OnRtpPacket(::testing::Ref(parsed_packet)));
-
-    recv_stream->OnRtpPacket(parsed_packet);
-  }
-}
-
 TEST(AudioReceiveStreamTest, ReceiveRtcpPacket) {
   for (bool use_null_audio_processing : {false, true}) {
     ConfigHelper helper(use_null_audio_processing);
@@ -281,7 +218,8 @@ TEST(AudioReceiveStreamTest, GetStats) {
     ConfigHelper helper(use_null_audio_processing);
     auto recv_stream = helper.CreateAudioReceiveStream();
     helper.SetupMockForGetStats();
-    AudioReceiveStream::Stats stats = recv_stream->GetStats();
+    AudioReceiveStream::Stats stats =
+        recv_stream->GetStats(/*get_and_clear_legacy_stats=*/true);
     EXPECT_EQ(kRemoteSsrc, stats.remote_ssrc);
     EXPECT_EQ(kCallStats.payload_bytes_rcvd, stats.payload_bytes_rcvd);
     EXPECT_EQ(kCallStats.header_and_padding_bytes_rcvd,

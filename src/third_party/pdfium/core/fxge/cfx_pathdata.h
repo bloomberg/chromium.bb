@@ -36,7 +36,7 @@ class CFX_PathData {
  public:
   CFX_PathData();
   CFX_PathData(const CFX_PathData& src);
-  CFX_PathData(CFX_PathData&& src);
+  CFX_PathData(CFX_PathData&& src) noexcept;
   ~CFX_PathData();
 
   void Clear();
@@ -76,8 +76,7 @@ class CFX_PathData {
 
 class CFX_RetainablePathData final : public Retainable, public CFX_PathData {
  public:
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
+  CONSTRUCT_VIA_MAKE_RETAIN;
 
   RetainPtr<CFX_RetainablePathData> Clone() const;
 

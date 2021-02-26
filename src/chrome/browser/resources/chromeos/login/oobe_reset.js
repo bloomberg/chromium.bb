@@ -44,7 +44,7 @@ const POWERWASH_MODE_DETAILS = new Map([
 ]);
 
 Polymer({
-  is: 'oobe-reset',
+  is: 'oobe-reset-element',
 
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
@@ -165,12 +165,19 @@ Polymer({
   ready() {
     this.initializeLoginScreen('ResetScreen', {
       resetAllowed: false,
-      enableDebuggingAllowed: false,
     });
   },
 
   focus() {
     this.$.resetDialog.focus();
+  },
+
+  reset() {
+    this.screenState_ = RESET_SCREEN_STATE.RESTART_REQUIRED;
+    this.thispowerwashMode_ = POWERWASH_MODE.POWERWASH_ONLY;
+    this.tpmUpdateAvailable_ = false;
+    this.isRollbackAvailable_ = false;
+    this.isRollbackRequested_ = false;
   },
 
   /* ---------- EXTERNAL API BEGIN ---------- */

@@ -5,17 +5,14 @@
 import("//build/config/ui.gni")
 
 declare_args() {
-  # If debug_devtools is set to true, JavaScript files for DevTools are stored
-  # as is and loaded from disk. Otherwise, a concatenated file is stored in
-  # resources.pak. It is still possible to load JS files from disk by passing
-  # --debug-devtools cmdline switch.
-  debug_devtools = false
-
   # Enables additional Oilpan heap verification instrumentation.
   enable_blink_heap_verification = false
 
   # Enables young generation collections in Oilpan.
   enable_blink_heap_young_generation = false
+
+  # Enables Blink's heap to use V8's version of Oilpan.
+  enable_blink_heap_use_v8_oilpan = false
 }
 
 declare_args() {
@@ -33,4 +30,4 @@ declare_args() {
 enable_unhandled_tap = is_android
 
 # Use Minikin hyphenation engine.
-use_minikin_hyphenation = is_android
+use_minikin_hyphenation = !is_mac

@@ -20,11 +20,11 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,17 +43,17 @@ class FakeDownloadFeedback : public DownloadFeedback {
   FakeDownloadFeedback(base::TaskRunner* file_task_runner,
                        const std::string& ping_request,
                        const std::string& ping_response,
-                       base::Closure deletion_callback)
+                       base::OnceClosure deletion_callback)
       : ping_request_(ping_request),
         ping_response_(ping_response),
-        deletion_callback_(deletion_callback),
+        deletion_callback_(std::move(deletion_callback)),
         start_called_(false) {}
 
-  ~FakeDownloadFeedback() override { deletion_callback_.Run(); }
+  ~FakeDownloadFeedback() override { std::move(deletion_callback_).Run(); }
 
-  void Start(const base::Closure& finish_callback) override {
+  void Start(base::OnceClosure finish_callback) override {
     start_called_ = true;
-    finish_callback_ = finish_callback;
+    finish_callback_ = std::move(finish_callback);
   }
 
   const std::string& GetPingRequestForTesting() const override {
@@ -64,7 +64,7 @@ class FakeDownloadFeedback : public DownloadFeedback {
     return ping_response_;
   }
 
-  base::Closure finish_callback() const { return finish_callback_; }
+  base::OnceClosure finish_callback() { return std::move(finish_callback_); }
 
   bool start_called() const { return start_called_; }
 
@@ -73,8 +73,8 @@ class FakeDownloadFeedback : public DownloadFeedback {
   std::string ping_request_;
   std::string ping_response_;
 
-  base::Closure finish_callback_;
-  base::Closure deletion_callback_;
+  base::OnceClosure finish_callback_;
+  base::OnceClosure deletion_callback_;
   bool start_called_;
 };
 
@@ -90,8 +90,8 @@ class FakeDownloadFeedbackFactory : public DownloadFeedbackFactory {
       const std::string& ping_response) override {
     FakeDownloadFeedback* feedback = new FakeDownloadFeedback(
         file_task_runner, ping_request, ping_response,
-        base::Bind(&FakeDownloadFeedbackFactory::DownloadFeedbackSent,
-                   base::Unretained(this), feedbacks_.size()));
+        base::BindOnce(&FakeDownloadFeedbackFactory::DownloadFeedbackSent,
+                       base::Unretained(this), feedbacks_.size()));
     feedbacks_.push_back(feedback);
     return base::WrapUnique(feedback);
   }
@@ -104,6 +104,16 @@ class FakeDownloadFeedbackFactory : public DownloadFeedbackFactory {
 
  private:
   std::vector<FakeDownloadFeedback*> feedbacks_;
+};
+
+class FakeDownloadProtectionService : public DownloadProtectionService {
+ public:
+  FakeDownloadProtectionService() : DownloadProtectionService(nullptr) {}
+
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
+      content::BrowserContext* browser_context) override {
+    return nullptr;
+  }
 };
 
 bool WillStorePings(DownloadCheckResult result,
@@ -156,6 +166,8 @@ class DownloadFeedbackServiceTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   FakeDownloadFeedbackFactory download_feedback_factory_;
+  TestingProfile profile_;
+  FakeDownloadProtectionService fake_download_service_;
 };
 
 TEST_F(DownloadFeedbackServiceTest, MaybeStorePingsForDownload) {
@@ -217,12 +229,13 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndDiscardDownload) {
         download_discarded_callback = std::move(arg);
       });
 
-  DownloadFeedbackService service(nullptr, file_task_runner_.get());
+  DownloadFeedbackService service(&fake_download_service_,
+                                  file_task_runner_.get());
   service.MaybeStorePingsForDownload(DownloadCheckResult::UNCOMMON,
                                      true /* upload_requested */, &item,
                                      ping_request, ping_response);
   ASSERT_TRUE(DownloadFeedbackService::IsEnabledForDownload(item));
-  service.BeginFeedbackForDownload(&item, DownloadCommands::DISCARD);
+  service.BeginFeedbackForDownload(&profile_, &item, DownloadCommands::DISCARD);
   ASSERT_FALSE(download_discarded_callback.is_null());
   EXPECT_EQ(0U, num_feedbacks());
 
@@ -262,12 +275,13 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndKeepDownload) {
   GURL empty_url;
   EXPECT_CALL(item, GetURL()).WillOnce(ReturnRef(empty_url));
 
-  DownloadFeedbackService service(nullptr, file_task_runner_.get());
+  DownloadFeedbackService service(&fake_download_service_,
+                                  file_task_runner_.get());
   service.MaybeStorePingsForDownload(DownloadCheckResult::UNCOMMON,
                                      true /* upload_requested */, &item,
                                      ping_request, ping_response);
   ASSERT_TRUE(DownloadFeedbackService::IsEnabledForDownload(item));
-  service.BeginFeedbackForDownload(&item, DownloadCommands::KEEP);
+  service.BeginFeedbackForDownload(&profile_, &item, DownloadCommands::KEEP);
   ASSERT_FALSE(download_discarded_callback.is_null());
   EXPECT_EQ(0U, num_feedbacks());
 
@@ -313,10 +327,12 @@ TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
   }
 
   {
-    DownloadFeedbackService service(nullptr, file_task_runner_.get());
+    DownloadFeedbackService service(&fake_download_service_,
+                                    file_task_runner_.get());
     for (size_t i = 0; i < kNumDownloads; ++i) {
       SCOPED_TRACE(i);
-      service.BeginFeedbackForDownload(&item[i], DownloadCommands::DISCARD);
+      service.BeginFeedbackForDownload(&profile_, &item[i],
+                                       DownloadCommands::DISCARD);
       ASSERT_FALSE(download_discarded_callback[i].is_null());
     }
     EXPECT_EQ(0U, num_feedbacks());
@@ -385,10 +401,12 @@ TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
   }
 
   {
-    DownloadFeedbackService service(nullptr, file_task_runner_.get());
+    DownloadFeedbackService service(&fake_download_service_,
+                                    file_task_runner_.get());
     for (size_t i = 0; i < kNumDownloads; ++i) {
       SCOPED_TRACE(i);
-      service.BeginFeedbackForDownload(&item[i], DownloadCommands::DISCARD);
+      service.BeginFeedbackForDownload(&profile_, &item[i],
+                                       DownloadCommands::DISCARD);
       ASSERT_FALSE(download_discarded_callback[i].is_null());
     }
     EXPECT_EQ(0U, num_feedbacks());

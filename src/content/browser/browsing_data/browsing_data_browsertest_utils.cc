@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -59,9 +60,8 @@ ServiceWorkerActivationObserver::ServiceWorkerActivationObserver(
     ServiceWorkerContextWrapper* context,
     base::OnceClosure callback)
     : context_(context),
-      scoped_observer_(this),
       callback_(std::move(callback)) {
-  scoped_observer_.Add(context);
+  scoped_observation_.Observe(context);
 }
 
 ServiceWorkerActivationObserver::~ServiceWorkerActivationObserver() {}

@@ -16,12 +16,14 @@ android_java_prebuilt("runner_java") {
 }
 
 android_java_prebuilt("exposed_instrumentation_api_publish_java") {
-  skip_jetify = true
   jar_path = "lib/exposed-instrumentation-api-publish-no-dep.jar"
 }
 
 android_aar_prebuilt("rules_java") {
   testonly = true
   aar_path = "lib/rules.aar"
+
+  # Strip 'app_name' resource.
+  strip_resources = true
   deps = [ "//third_party/android_support_test_runner:runner_java" ]
 }

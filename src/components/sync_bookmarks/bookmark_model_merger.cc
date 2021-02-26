@@ -50,6 +50,10 @@ const char kBookmarkBarTag[] = "bookmark_bar";
 const char kMobileBookmarksTag[] = "synced_bookmarks";
 const char kOtherBookmarksTag[] = "other_bookmarks";
 
+// Maximum depth to sync bookmarks tree to protect against stack overflow.
+// Keep in sync with |base::internal::kAbsoluteMaxDepth| in json_common.h.
+const size_t kMaxBookmarkTreeDepth = 200;
+
 // The value must be a list since there is a container using pointers to its
 // elements.
 using UpdatesPerParentId =
@@ -204,6 +208,25 @@ void ReparentAllChildren(const std::string& from_parent_id,
   // No need to update iterators since splice doesn't invalidate them.
 }
 
+// Returns true the |next_update| is selected to keep and the |previous_update|
+// should be removed. False is returned otherwise. |next_update| and
+// |previous_update| must have the same GUID.
+bool CompareDuplicateUpdates(const UpdateResponseData& next_update,
+                             const UpdateResponseData& previous_update) {
+  DCHECK_EQ(next_update.entity.specifics.bookmark().guid(),
+            previous_update.entity.specifics.bookmark().guid());
+  DCHECK_NE(next_update.entity.id, previous_update.entity.id);
+
+  if (next_update.entity.is_folder != previous_update.entity.is_folder) {
+    // There are two entities, one of them is a folder and another one is a
+    // URL. Prefer to save the folder as it may contain many bookmarks.
+    return next_update.entity.is_folder;
+  }
+  // Choose the latest element to keep if both updates have the same type.
+  return next_update.entity.creation_time >
+         previous_update.entity.creation_time;
+}
+
 void DeduplicateValidUpdatesByGUID(UpdatesPerParentId* updates_per_parent_id) {
   DCHECK(updates_per_parent_id);
 
@@ -219,6 +242,7 @@ void DeduplicateValidUpdatesByGUID(UpdatesPerParentId* updates_per_parent_id) {
          ++updates_iter) {
       const UpdateResponseData& update = *updates_iter;
       DCHECK(!update.entity.is_deleted());
+      DCHECK(update.entity.server_defined_unique_tag.empty());
 
       const std::string& guid_in_specifics =
           update.entity.specifics.bookmark().guid();
@@ -239,16 +263,13 @@ void DeduplicateValidUpdatesByGUID(UpdatesPerParentId* updates_per_parent_id) {
           MatchBookmarksGUIDDuplicates(update, duplicate_update);
       base::UmaHistogramEnumeration("Sync.BookmarksGUIDDuplicates",
                                     match_result);
-      if (match_result == BookmarksGUIDDuplicates::kDifferentTypes ||
-          !base::FeatureList::IsEnabled(
+      if (!base::FeatureList::IsEnabled(
               switches::kSyncDeduplicateAllBookmarksWithSameGUID)) {
-        // There shouldn't be cases with different types for duplicate
-        // entities.
         continue;
       }
 
-      // Choose the latest element to keep.
-      if (update.entity.creation_time > duplicate_update.entity.creation_time) {
+      if (CompareDuplicateUpdates(/*next_update=*/update,
+                                  /*previous_update=*/duplicate_update)) {
         updates_to_remove.push_back(it_and_success.first->second);
         // Update |guid_to_update| to find a duplicate folder and merge them.
         guid_to_update[guid_in_specifics] = updates_iter;
@@ -265,6 +286,10 @@ void DeduplicateValidUpdatesByGUID(UpdatesPerParentId* updates_per_parent_id) {
           updates_iter->entity.specifics.bookmark().guid();
       DCHECK_EQ(1U, guid_to_update.count(guid));
       DCHECK(guid_to_update[guid] != updates_iter);
+
+      // Never remove a folder if its duplicate is a URL.
+      DCHECK(guid_to_update[guid]->entity.is_folder);
+
       // Merge doesn't affect iterators.
       ReparentAllChildren(
           /*from_parent_id=*/updates_iter->entity.id,
@@ -278,51 +303,71 @@ void DeduplicateValidUpdatesByGUID(UpdatesPerParentId* updates_per_parent_id) {
   }
 }
 
-// Groups all valid updates by the server ID of their parent and moves them away
-// from |*updates|. |updates| must not be null.
-UpdatesPerParentId GroupValidUpdatesByParentId(
-    UpdateResponseDataList* updates) {
-  UpdatesPerParentId updates_per_parent_id;
+// Checks that the |update| is valid and returns false otherwise. It is used to
+// verify non-deletion updates. |update| must not be a deletion and a permanent
+// node (they are processed in a different way).
+bool IsValidUpdate(const UpdateResponseData& update) {
+  const EntityData& update_entity = update.entity;
 
-  for (UpdateResponseData& update : *updates) {
+  DCHECK(!update_entity.is_deleted());
+  DCHECK(update_entity.server_defined_unique_tag.empty());
+
+  if (!syncer::UniquePosition::FromProto(update_entity.unique_position)
+           .IsValid()) {
+    // Ignore updates with invalid positions.
+    DLOG(ERROR)
+        << "Remote update with invalid position: "
+        << update_entity.specifics.bookmark().legacy_canonicalized_title();
+    LogProblematicBookmark(RemoteBookmarkUpdateError::kInvalidUniquePosition);
+    return false;
+  }
+  if (!IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
+                                update_entity.is_folder)) {
+    // Ignore updates with invalid specifics.
+    DLOG(ERROR) << "Remote update with invalid specifics";
+    LogProblematicBookmark(RemoteBookmarkUpdateError::kInvalidSpecifics);
+    return false;
+  }
+  if (!HasExpectedBookmarkGuid(update_entity.specifics.bookmark(),
+                               update_entity.originator_cache_guid,
+                               update_entity.originator_client_item_id)) {
+    // Ignore updates with an unexpected GUID.
+    DLOG(ERROR) << "Remote update with unexpected GUID";
+    LogProblematicBookmark(RemoteBookmarkUpdateError::kUnexpectedGuid);
+    return false;
+  }
+  return true;
+}
+
+struct GroupedUpdates {
+  // |updates_per_parent_id| contains all valid updates grouped by their
+  // |parent_id|. Permanent nodes and deletions are filtered out. Permanent
+  // nodes are stored in a dedicated list |permanent_node_updates|.
+  UpdatesPerParentId updates_per_parent_id;
+  UpdateResponseDataList permanent_node_updates;
+};
+
+// Groups all valid updates by the server ID of their parent. Permanent nodes
+// are grouped in a dedicated |permanent_node_updates| list in a returned value.
+GroupedUpdates GroupValidUpdates(UpdateResponseDataList updates) {
+  GroupedUpdates grouped_updates;
+  for (UpdateResponseData& update : updates) {
     const EntityData& update_entity = update.entity;
     if (update_entity.is_deleted()) {
       continue;
     }
-    // No need to associate permanent nodes with their parent (the root node).
-    // We start merging from the permanent nodes.
     if (!update_entity.server_defined_unique_tag.empty()) {
+      grouped_updates.permanent_node_updates.push_back(std::move(update));
       continue;
     }
-    if (!syncer::UniquePosition::FromProto(update_entity.unique_position)
-             .IsValid()) {
-      // Ignore updates with invalid positions.
-      DLOG(ERROR)
-          << "Remote update with invalid position: "
-          << update_entity.specifics.bookmark().legacy_canonicalized_title();
-      LogProblematicBookmark(RemoteBookmarkUpdateError::kInvalidUniquePosition);
+    if (!IsValidUpdate(update)) {
       continue;
     }
-    if (!IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
-                                  update_entity.is_folder)) {
-      // Ignore updates with invalid specifics.
-      DLOG(ERROR) << "Remote update with invalid specifics";
-      LogProblematicBookmark(RemoteBookmarkUpdateError::kInvalidSpecifics);
-      continue;
-    }
-    if (!HasExpectedBookmarkGuid(update_entity.specifics.bookmark(),
-                                 update_entity.originator_cache_guid,
-                                 update_entity.originator_client_item_id)) {
-      // Ignore updates with an unexpected GUID.
-      DLOG(ERROR) << "Remote update with unexpected GUID";
-      LogProblematicBookmark(RemoteBookmarkUpdateError::kUnexpectedGuid);
-      continue;
-    }
-
-    updates_per_parent_id[update_entity.parent_id].push_back(std::move(update));
+    grouped_updates.updates_per_parent_id[update_entity.parent_id].push_back(
+        std::move(update));
   }
 
-  return updates_per_parent_id;
+  return grouped_updates;
 }
 
 }  // namespace
@@ -370,11 +415,18 @@ bool BookmarkModelMerger::RemoteTreeNode::UniquePositionLessThan(
 BookmarkModelMerger::RemoteTreeNode
 BookmarkModelMerger::RemoteTreeNode::BuildTree(
     UpdateResponseData update,
+    size_t max_depth,
     UpdatesPerParentId* updates_per_parent_id) {
   DCHECK(updates_per_parent_id);
 
   RemoteTreeNode node;
   node.update_ = std::move(update);
+
+  // Ensure we have not reached the maximum tree depth to guard against stack
+  // overflows.
+  if (max_depth == 0) {
+    return node;
+  }
 
   // Only folders may have descendants (ignore them otherwise). Treat
   // permanent nodes as folders explicitly.
@@ -398,8 +450,8 @@ BookmarkModelMerger::RemoteTreeNode::BuildTree(
     DCHECK(IsValidBookmarkSpecifics(child_update.entity.specifics.bookmark(),
                                     child_update.entity.is_folder));
 
-    node.children_.push_back(
-        BuildTree(std::move(child_update), updates_per_parent_id));
+    node.children_.push_back(BuildTree(std::move(child_update), max_depth - 1,
+                                       updates_per_parent_id));
   }
 
   // Sort the children according to their unique position.
@@ -455,6 +507,13 @@ void BookmarkModelMerger::Merge() {
     MergeSubtree(/*local_subtree_root=*/permanent_folder,
                  /*remote_node=*/tree_tag_and_root.second);
   }
+
+  if (base::FeatureList::IsEnabled(switches::kSyncReuploadBookmarkFullTitles)) {
+    // When the reupload feature is enabled, all new empty trackers are
+    // automatically reuploaded (since there are no entities to reupload). This
+    // is used to disable reupload after initial merge.
+    bookmark_tracker_->SetBookmarksFullTitleReuploaded();
+  }
 }
 
 // static
@@ -462,30 +521,30 @@ BookmarkModelMerger::RemoteForest BookmarkModelMerger::BuildRemoteForest(
     syncer::UpdateResponseDataList updates) {
   // Filter out invalid remote updates and group the valid ones by the server ID
   // of their parent.
-  UpdatesPerParentId updates_per_parent_id =
-      GroupValidUpdatesByParentId(&updates);
+  GroupedUpdates grouped_updates = GroupValidUpdates(std::move(updates));
 
-  DeduplicateValidUpdatesByGUID(&updates_per_parent_id);
+  DeduplicateValidUpdatesByGUID(&grouped_updates.updates_per_parent_id);
 
   // Construct one tree per permanent entity.
   RemoteForest update_forest;
-  for (UpdateResponseData& update : updates) {
-    if (update.entity.server_defined_unique_tag.empty()) {
-      continue;
-    }
-
+  for (UpdateResponseData& permanent_node_update :
+       grouped_updates.permanent_node_updates) {
     // Make a copy of the string to avoid relying on argument evaluation order.
     const std::string server_defined_unique_tag =
-        update.entity.server_defined_unique_tag;
+        permanent_node_update.entity.server_defined_unique_tag;
+    DCHECK(!server_defined_unique_tag.empty());
 
     update_forest.emplace(
         server_defined_unique_tag,
-        RemoteTreeNode::BuildTree(std::move(update), &updates_per_parent_id));
+        RemoteTreeNode::BuildTree(std::move(permanent_node_update),
+                                  kMaxBookmarkTreeDepth,
+                                  &grouped_updates.updates_per_parent_id));
   }
 
   // All remaining entries in |updates_per_parent_id| must be unreachable from
   // permanent entities, since otherwise they would have been moved away.
-  for (const auto& parent_id_and_updates : updates_per_parent_id) {
+  for (const auto& parent_id_and_updates :
+       grouped_updates.updates_per_parent_id) {
     for (const UpdateResponseData& update : parent_id_and_updates.second) {
       if (!update.entity.is_deleted() &&
           update.entity.specifics.has_bookmark()) {
@@ -544,14 +603,9 @@ BookmarkModelMerger::FindGuidMatchesOrReassignLocal(
 
     if (node->is_folder() != remote_entity.is_folder ||
         (node->is_url() &&
-         node->url() != remote_entity.specifics.bookmark().url()) ||
-        !base::FeatureList::IsEnabled(switches::kMergeBookmarksUsingGUIDs)) {
+         node->url() != remote_entity.specifics.bookmark().url())) {
       // If local node and its remote node match are conflicting in node type or
-      // URL, replace local GUID with a random GUID. The logic is applied
-      // unconditionally if kMergeBookmarksUsingGUIDs is disabled, since no
-      // GUID-based matches take place and GUIDs need to be reassigned to avoid
-      // collisions (they will be reassigned once again if there is a semantic
-      // match).
+      // URL, replace local GUID with a random GUID.
       // TODO(crbug.com/978430): Local GUIDs should also be reassigned if they
       // match a remote originator_client_item_id.
       nodes_to_replace_guid.push_back(node);
@@ -586,8 +640,9 @@ void BookmarkModelMerger::MergeSubtree(
       remote_node.response_version(), remote_update_entity.creation_time,
       remote_update_entity.unique_position, remote_update_entity.specifics);
   if (!local_subtree_root->is_permanent_node() &&
-      IsFullTitleReuploadNeeded(remote_update_entity.specifics.bookmark())) {
+      IsBookmarkEntityReuploadNeeded(remote_update_entity)) {
     bookmark_tracker_->IncrementSequenceNumber(entity);
+    ++valid_updates_without_full_title_;
   }
 
   // If there are remote child updates, try to match them.
@@ -738,8 +793,9 @@ void BookmarkModelMerger::ProcessRemoteCreation(
       bookmark_node, remote_update_entity.id, remote_node.response_version(),
       remote_update_entity.creation_time, remote_update_entity.unique_position,
       specifics);
-  if (IsFullTitleReuploadNeeded(specifics.bookmark())) {
+  if (IsBookmarkEntityReuploadNeeded(remote_node.entity())) {
     bookmark_tracker_->IncrementSequenceNumber(entity);
+    ++valid_updates_without_full_title_;
   }
 
   // Recursively, match by GUID or, if not possible, create local node for all
@@ -771,8 +827,6 @@ void BookmarkModelMerger::ProcessLocalCreation(
   // Since we are merging top down, parent entity must be tracked.
   DCHECK(parent_entity);
 
-  // Similar to the directory implementation here:
-  // https://cs.chromium.org/chromium/src/components/sync/syncable/mutable_entry.cc?l=237&gsn=CreateEntryKernel
   // Assign a temp server id for the entity. Will be overridden by the actual
   // server id upon receiving commit response.
   const bookmarks::BookmarkNode* node = parent->children()[index].get();

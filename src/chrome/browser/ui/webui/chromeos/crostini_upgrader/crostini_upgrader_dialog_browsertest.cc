@@ -37,12 +37,13 @@ class CrostiniUpgraderDialogBrowserTest : public CrostiniDialogBrowserTest {
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    chromeos::CrostiniUpgraderDialog::Show(base::DoNothing(), false);
+    chromeos::CrostiniUpgraderDialog::Show(browser()->profile(),
+                                           base::DoNothing(), false);
   }
 
   chromeos::CrostiniUpgraderDialog* GetCrostiniUpgraderDialog() {
     auto url = GURL{chrome::kChromeUICrostiniUpgraderUrl};
-    return reinterpret_cast<chromeos::CrostiniUpgraderDialog*>(
+    return static_cast<chromeos::CrostiniUpgraderDialog*>(
         chromeos::SystemWebDialogDelegate::FindInstance(url.spec()));
   }
 
@@ -90,8 +91,7 @@ class CrostiniUpgraderDialogBrowserTest : public CrostiniDialogBrowserTest {
     os_release.set_id("debian");
     os_release.set_version_id("9");
     auto container_id = crostini::DefaultContainerId();
-    crostini_manager()->SetContainerOsRelease(
-        container_id.vm_name, container_id.container_name, os_release);
+    crostini_manager()->SetContainerOsRelease(container_id, os_release);
   }
 
   const std::string& app_id() const { return app_id_; }
@@ -107,12 +107,29 @@ class CrostiniUpgraderDialogBrowserTest : public CrostiniDialogBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CrostiniUpgraderDialogBrowserTest,
-                       NoDialogOnNormalStartup) {
+                       NoDialogBeforeLaunch) {
   base::HistogramTester histogram_tester;
   RegisterApp();
 
-  crostini::LaunchCrostiniApp(browser()->profile(), app_id(), kDisplayId);
+  bool is_successful_app_launch = false;
   ExpectNoDialog();
+  base::RunLoop run_loop;
+  crostini::LaunchCrostiniApp(
+      browser()->profile(), app_id(), kDisplayId, {},
+      base::BindOnce(
+          [](base::RunLoop* run_loop, bool* is_successful_app_launch,
+             bool success, const std::string& failure_reason) {
+            // In tests, we don't expect Crostini to restart successfully, but
+            // the error message should start as below.
+            auto pos = failure_reason.find("crostini restart to launch app");
+            *is_successful_app_launch = (pos == 0);
+            run_loop->Quit();
+          },
+          &run_loop, &is_successful_app_launch));
+  run_loop.Run();
+
+  ExpectNoDialog();
+  EXPECT_TRUE(is_successful_app_launch);
 }
 
 IN_PROC_BROWSER_TEST_F(CrostiniUpgraderDialogBrowserTest, ShowsOnAppLaunch) {
@@ -121,18 +138,31 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpgraderDialogBrowserTest, ShowsOnAppLaunch) {
   DowngradeOSRelease();
   RegisterApp();
 
-  crostini::LaunchCrostiniApp(browser()->profile(), app_id(), kDisplayId);
+  chromeos::CrostiniUpgraderDialog::Show(browser()->profile(),
+                                         base::DoNothing());
   ExpectDialog();
+
+  base::RunLoop run_loop;
+  bool is_successful_app_launch = false;
+  crostini::LaunchCrostiniApp(
+      browser()->profile(), app_id(), kDisplayId, {},
+      base::BindOnce(
+          [](base::RunLoop* run_loop, bool* is_successful_app_launch,
+             bool success, const std::string& failure_reason) {
+            *is_successful_app_launch = success;
+            run_loop->Quit();
+          },
+          &run_loop, &is_successful_app_launch));
+
+  run_loop.Run();
+  ExpectDialog();
+  EXPECT_FALSE(is_successful_app_launch);
 
   SafelyCloseDialog();
   ExpectNoDialog();
 
-  // Once only - second time we launch an app, the dialog should not appear.
-  crostini::LaunchCrostiniApp(browser()->profile(), app_id(), kDisplayId);
-  ExpectNoDialog();
-
   histogram_tester.ExpectUniqueSample(
-      crostini::kUpgradeDialogEventHistogram,
+      "Crostini.UpgradeDialogEvent",
       static_cast<base::HistogramBase::Sample>(
           crostini::UpgradeDialogEvent::kDialogShown),
       1);

@@ -14,6 +14,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/session_manager/core/session_manager_observer.h"
 
 class Profile;
 
@@ -26,10 +27,12 @@ namespace chromeos {
 // Enforces a limit on the length of time for which a user authenticated via
 // SAML can use offline authentication against a cached password before being
 // forced to go through online authentication against GAIA again.
-class SAMLOfflineSigninLimiter : public KeyedService,
-                                 public base::PowerObserver {
+class SAMLOfflineSigninLimiter
+    : public KeyedService,
+      public base::PowerObserver,
+      public session_manager::SessionManagerObserver {
  public:
-  // Called when the user successfully authenticates. |auth_flow| indicates
+  // Called when the user successfully authenticates. `auth_flow` indicates
   // the type of authentication flow that the user went through.
   void SignedIn(UserContext::AuthFlow auth_flow);
 
@@ -42,17 +45,20 @@ class SAMLOfflineSigninLimiter : public KeyedService,
   // base::PowerObserver:
   void OnResume() override;
 
+  // session_manager::SessionManagerObserver
+  void OnSessionStateChanged() override;
+
  private:
   friend class SAMLOfflineSigninLimiterFactory;
   friend class SAMLOfflineSigninLimiterTest;
 
-  // |profile| and |clock| must remain valid until Shutdown() is called. If
-  // |clock| is NULL, the shared base::DefaultClock instance will be used.
+  // `profile` and `clock` must remain valid until Shutdown() is called. If
+  // `clock` is NULL, the shared base::DefaultClock instance will be used.
   SAMLOfflineSigninLimiter(Profile* profile, base::Clock* clock);
   ~SAMLOfflineSigninLimiter() override;
 
   // Recalculates the amount of time remaining until online login should be
-  // forced and sets the |offline_signin_limit_timer_| accordingly. If the limit
+  // forced and sets the `offline_signin_limit_timer_` accordingly. If the limit
   // has expired already, sets the flag enforcing online login immediately.
   void UpdateLimit();
 

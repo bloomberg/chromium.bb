@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="device_page_browser_proxy.html">
 <link rel="import" href="storage_external.html">
 <link rel="import" href="../route_origin_behavior.html">
 <link rel="import" href="../../prefs/prefs.html">
@@ -223,14 +224,6 @@
     <template is="dom-if" if="[[showOtherUsers_]]">
       <cr-link-row id="otherUsersSize" class="hr" on-click="onOtherUsersTap_"
           label="$i18n{storageItemOtherUsers}"
-          sub-label="$i18n{storageSizeComputing}"
-          role-description="$i18n{subpageArrowRoleDescription}">
-      </cr-link-row>
-    </template>
-    <template is="dom-if" if="[[allowDlcSubpage_]]">
-      <cr-link-row id="downloadedContentSize" class="hr"
-          on-click="onDownloadedContentClick_"
-          label="$i18n{storageManageDownloadedContentRowTitle}"
           sub-label="$i18n{storageSizeComputing}"
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>

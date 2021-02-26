@@ -53,6 +53,7 @@ class AV1CompRoundShiftTest
 
   libaom_test::ACMRandom rnd_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1CompRoundShiftTest);
 
 AV1CompRoundShiftTest::~AV1CompRoundShiftTest() { ; }
 

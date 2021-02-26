@@ -20,7 +20,7 @@ class Url {
  public:
   explicit Url(const std::string& source);
   Url(const Url&);
-  Url(Url&&);
+  Url(Url&&) noexcept;
   ~Url();
 
   Url& operator=(const Url&);

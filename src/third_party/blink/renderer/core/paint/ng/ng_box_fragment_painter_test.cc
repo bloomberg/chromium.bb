@@ -19,6 +19,24 @@ using testing::ElementsAre;
 
 namespace blink {
 
+namespace {
+
+void ExtractLinks(const cc::PaintOpBuffer* buffer, std::vector<GURL>* links) {
+  for (cc::PaintOpBuffer::Iterator it(buffer); it; ++it) {
+    if (it->GetType() == cc::PaintOpType::Annotate) {
+      auto* annotate_op = static_cast<cc::AnnotateOp*>(*it);
+      links->push_back(GURL(
+          std::string(reinterpret_cast<const char*>(annotate_op->data->data()),
+                      annotate_op->data->size())));
+    } else if (it->GetType() == cc::PaintOpType::DrawRecord) {
+      auto* record_op = static_cast<cc::DrawRecordOp*>(*it);
+      ExtractLinks(record_op->record.get(), links);
+    }
+  }
+}
+
+}  // namespace
+
 class NGBoxFragmentPainterTest : public PaintControllerPaintTest,
                                  private ScopedLayoutNGForTest {
  public:
@@ -45,7 +63,7 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
     </style>
     <div id='scroller'>TEXT</div>
   )HTML");
-  auto& scroller = ToLayoutBox(*GetLayoutObjectByElementId("scroller"));
+  auto& scroller = *GetLayoutBoxByElementId("scroller");
 
   const DisplayItemClient& root_fragment =
       scroller.PaintFragment()
@@ -57,19 +75,18 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
   const DisplayItemClient& text_fragment =
       *cursor.Current().GetDisplayItemClient();
 
-  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
-                                   DisplayItem::kDocumentBackground),
+  EXPECT_THAT(ContentDisplayItems(),
+              ElementsAre(VIEW_SCROLLING_BACKGROUND_DISPLAY_ITEM,
                           IsSameId(&text_fragment, kForegroundType)));
   HitTestData scroll_hit_test;
   scroll_hit_test.scroll_translation =
-      &scroller.FirstFragment().ContentsProperties().Transform();
+      scroller.FirstFragment().PaintProperties()->ScrollTranslation();
   scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 40, 40);
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_THAT(
-        RootPaintController().PaintChunks(),
+        ContentPaintChunks(),
         ElementsAre(
-            IsPaintChunk(0, 0), IsPaintChunk(0, 1),  // LayoutView chunks.
+            VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
             IsPaintChunk(
                 1, 1,
                 PaintChunk::Id(*scroller.Layer(), DisplayItem::kLayerChunk),
@@ -82,9 +99,9 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
             IsPaintChunk(1, 2)));
   } else {
     EXPECT_THAT(
-        RootPaintController().PaintChunks(),
+        ContentPaintChunks(),
         ElementsAre(
-            IsPaintChunk(0, 1),  // LayutView.
+            VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
             IsPaintChunk(
                 1, 1,
                 PaintChunk::Id(root_fragment, DisplayItem::kScrollHitTest),
@@ -126,10 +143,12 @@ TEST_P(NGBoxFragmentPainterTest, AddUrlRects) {
           kGlobalPaintFlattenCompositingLayers,
       CullRect::Infinite());
 
-  builder.EndRecording();
-  ASSERT_EQ(tracker.GetLinks().size(), 2U);
-  EXPECT_EQ(tracker.GetLinks()[0]->url, "https://www.chromium.org/");
-  EXPECT_EQ(tracker.GetLinks()[1]->url, "https://www.wikipedia.org/");
+  auto record = builder.EndRecording();
+  std::vector<GURL> links;
+  ExtractLinks(record.get(), &links);
+  ASSERT_EQ(links.size(), 2U);
+  EXPECT_EQ(links[0].spec(), "https://www.chromium.org/");
+  EXPECT_EQ(links[1].spec(), "https://www.wikipedia.org/");
 }
 
 }  // namespace blink

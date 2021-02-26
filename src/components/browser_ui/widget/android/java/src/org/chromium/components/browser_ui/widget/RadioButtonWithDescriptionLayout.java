@@ -19,8 +19,7 @@ import java.util.List;
 
 /**
  * <p>
- * Manages a group of exclusive RadioButtonWithDescriptions, automatically inserting a margin in
- * between the rows to prevent them from squishing together. Has the option to set an accessory view
+ * Manages a group of exclusive RadioButtonWithDescriptions. Has the option to set an accessory view
  * on any given RadioButtonWithDescription. Only one accessory view per layout is supported.
  * <pre>
  * -------------------------------------------------
@@ -35,13 +34,15 @@ import java.util.List;
  *
  * <p>
  * To declare in XML, define a RadioButtonWithDescriptionLayout that contains
- * RadioButtonWithDescription and/or RadioButtonWithEditText children.
- * For example:
+ * RadioButtonWithDescription, RadioButtonWithDescriptionAndAuxButton and/or
+ * RadioButtonWithEditText children. For example:
  * <pre>{@code
  *  <org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout
  *       android:layout_width="match_parent"
  *       android:layout_height="match_parent" >
  *       <org.chromium.components.browser_ui.widget.RadioButtonWithDescription
+ *           ... />
+ *       <org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionAndAuxButton
  *           ... />
  *       <org.chromium.components.browser_ui.widget.RadioButtonWithEditText
  *           ... />
@@ -51,7 +52,6 @@ import java.util.List;
  */
 public final class RadioButtonWithDescriptionLayout
         extends RadioGroup implements RadioButtonWithDescription.ButtonCheckedStateChangedListener {
-    private final int mMarginBetweenRows;
     private final List<RadioButtonWithDescription> mRadioButtonsWithDescriptions;
     private OnCheckedChangeListener mOnCheckedChangeListener;
 
@@ -61,9 +61,6 @@ public final class RadioButtonWithDescriptionLayout
 
     public RadioButtonWithDescriptionLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mMarginBetweenRows = context.getResources().getDimensionPixelSize(
-                R.dimen.default_vertical_margin_between_items);
-
         mRadioButtonsWithDescriptions = new ArrayList<>();
     }
 
@@ -76,12 +73,12 @@ public final class RadioButtonWithDescriptionLayout
             RadioButtonWithDescription b = (RadioButtonWithDescription) getChildAt(i);
             setupButton(b);
         }
-
-        updateMargins();
     }
 
     /**
-     * @see RadioGroup.OnCheckedChangeListener
+     * Registers an observer for the group of radio buttons in this layout. Aggregates events from
+     * all of the contained radio buttons. You may find this method more preferable to registering
+     * individual listeners to each radio button.
      */
     @Override
     public void setOnCheckedChangeListener(OnCheckedChangeListener onCheckedChangeListener) {
@@ -89,11 +86,15 @@ public final class RadioButtonWithDescriptionLayout
     }
 
     /**
+     * Listens for cheked state changed events for the contained {@link RadioButtonWithDescription}
+     * and forwards them along to the observer set in {@link #setOnCheckedChangeListener(...)}.
      * @see RadioButtonWithDescription.ButtonCheckedStateChangedListener
      */
     @Override
     public void onButtonCheckedStateChanged(RadioButtonWithDescription checkedRadioButton) {
-        mOnCheckedChangeListener.onCheckedChanged(this, checkedRadioButton.getId());
+        if (mOnCheckedChangeListener != null) {
+            mOnCheckedChangeListener.onCheckedChanged(this, checkedRadioButton.getId());
+        }
     }
 
     /**
@@ -107,8 +108,6 @@ public final class RadioButtonWithDescriptionLayout
             setupButton(b);
             addView(b, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         }
-
-        updateMargins();
     }
 
     private View removeAttachedAccessoryView(View view) {
@@ -134,18 +133,6 @@ public final class RadioButtonWithDescriptionLayout
         int attachmentPointIndex = indexOfChild(attachmentPoint);
         assert attachmentPointIndex >= 0 : "attachmentPoint view must a child of layout.";
         addView(accessoryView, attachmentPointIndex + 1);
-    }
-
-    /** Sets margins between each of the radio buttons. */
-    private void updateMargins() {
-        int childCount = getChildCount();
-        for (int i = 0; i < childCount - 1; i++) {
-            View child = getChildAt(i);
-            MarginLayoutParams params = (MarginLayoutParams) child.getLayoutParams();
-            params.bottomMargin = mMarginBetweenRows;
-        }
-        // LayoutParam changes only take effect after the next layout pass.
-        requestLayout();
     }
 
     private void setupButton(RadioButtonWithDescription radioButton) {

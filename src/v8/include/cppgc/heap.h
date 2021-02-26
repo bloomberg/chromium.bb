@@ -10,9 +10,21 @@
 
 #include "cppgc/common.h"
 #include "cppgc/custom-space.h"
+#include "cppgc/platform.h"
 #include "v8config.h"  // NOLINT(build/include_directory)
 
+/**
+ * cppgc - A C++ garbage collection library.
+ */
 namespace cppgc {
+
+class AllocationHandle;
+
+/**
+ * Implementation details of cppgc. Those details are considered internal and
+ * may change at any point in time without notice. Users should never rely on
+ * the contents of this namespace.
+ */
 namespace internal {
 class Heap;
 }  // namespace internal
@@ -24,18 +36,80 @@ class V8_EXPORT Heap {
    */
   using StackState = EmbedderStackState;
 
+  /**
+   * Specifies whether conservative stack scanning is supported.
+   */
+  enum class StackSupport : uint8_t {
+    /**
+     * Conservative stack scan is supported.
+     */
+    kSupportsConservativeStackScan,
+    /**
+     * Conservative stack scan is not supported. Embedders may use this option
+     * when using custom infrastructure that is unsupported by the library.
+     */
+    kNoConservativeStackScan,
+  };
+
+  /**
+   * Constraints for a Heap setup.
+   */
+  struct ResourceConstraints {
+    /**
+     * Allows the heap to grow to some initial size in bytes before triggering
+     * garbage collections. This is useful when it is known that applications
+     * need a certain minimum heap to run to avoid repeatedly invoking the
+     * garbage collector when growing the heap.
+     */
+    size_t initial_heap_size_bytes = 0;
+  };
+
+  /**
+   * Options specifying Heap properties (e.g. custom spaces) when initializing a
+   * heap through `Heap::Create()`.
+   */
   struct HeapOptions {
+    /**
+     * Creates reasonable defaults for instantiating a Heap.
+     *
+     * \returns the HeapOptions that can be passed to `Heap::Create()`.
+     */
     static HeapOptions Default() { return {}; }
 
     /**
      * Custom spaces added to heap are required to have indices forming a
-     * numbered sequence starting at 0, i.e., their kSpaceIndex must correspond
-     * to the index they reside in the vector.
+     * numbered sequence starting at 0, i.e., their `kSpaceIndex` must
+     * correspond to the index they reside in the vector.
      */
     std::vector<std::unique_ptr<CustomSpaceBase>> custom_spaces;
+
+    /**
+     * Specifies whether conservative stack scan is supported. When conservative
+     * stack scan is not supported, the collector may try to invoke
+     * garbage collections using non-nestable task, which are guaranteed to have
+     * no interesting stack, through the provided Platform. If such tasks are
+     * not supported by the Platform, the embedder must take care of invoking
+     * the GC through `ForceGarbageCollectionSlow()`.
+     */
+    StackSupport stack_support = StackSupport::kSupportsConservativeStackScan;
+
+    /**
+     * Resource constraints specifying various properties that the internal
+     * GC scheduler follows.
+     */
+    ResourceConstraints resource_constraints;
   };
 
-  static std::unique_ptr<Heap> Create(HeapOptions = HeapOptions::Default());
+  /**
+   * Creates a new heap that can be used for object allocation.
+   *
+   * \param platform implemented and provided by the embedder.
+   * \param options HeapOptions specifying various properties for the Heap.
+   * \returns a new Heap instance.
+   */
+  static std::unique_ptr<Heap> Create(
+      std::shared_ptr<Platform> platform,
+      HeapOptions options = HeapOptions::Default());
 
   virtual ~Heap() = default;
 
@@ -51,6 +125,12 @@ class V8_EXPORT Heap {
   void ForceGarbageCollectionSlow(
       const char* source, const char* reason,
       StackState stack_state = StackState::kMayContainHeapPointers);
+
+  /**
+   * \returns the opaque handle for allocating objects using
+   * `MakeGarbageCollected()`.
+   */
+  AllocationHandle& GetAllocationHandle();
 
  private:
   Heap() = default;

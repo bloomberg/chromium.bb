@@ -14,9 +14,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -147,10 +148,49 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, Echo) {
   ASSERT_TRUE(ExecuteScript(
       shell(), base::StringPrintf(R"JS(
     async function run() {
-      const transport = new QuicTransport('quic-transport:localhost:%d/echo');
+      const transport = new QuicTransport('quic-transport://localhost:%d/echo');
 
       const writer = transport.sendDatagrams().getWriter();
       const reader = transport.receiveDatagrams().getReader();
+
+      const data = new Uint8Array([65, 66, 67]);
+      const id = setInterval(() => {
+        writer.write(data);
+      }, 10);
+
+      const {done, value} = await reader.read();
+      clearInterval(id);
+      if (done) {
+        throw Error('Got an unexpected DONE signal');
+      }
+      if (value.length !== 3 ||
+          value[0] !== 65 || value[1] !== 66 || value[2] !== 67) {
+        throw Error('Got invalid data');
+      }
+    }
+
+    run().then(() => { document.title = 'PASS'; },
+               (e) => { console.log(e); document.title = 'FAIL'; });
+)JS",
+                                  server_.server_address().port())));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+}
+
+IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, EchoViaWebTransport) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+
+  ASSERT_TRUE(ExecuteScript(
+      shell(), base::StringPrintf(R"JS(
+    async function run() {
+      const transport = new WebTransport('quic-transport://localhost:%d/echo');
+
+      const writer = transport.datagramWritable.getWriter();
+      const reader = transport.datagramReadable.getReader();
 
       const data = new Uint8Array([65, 66, 67]);
       const id = setInterval(() => {
@@ -237,8 +277,9 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, CreateSendStream) {
   ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
 }
 
-// Flaky on many platforms (see crbug/1064434).
-IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, DISABLED_ReceiveStream) {
+// ReceiveStream is flaky: crbug.com/1140193
+#define MAYBE_ReceiveStream DISABLED_ReceiveStream
+IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, MAYBE_ReceiveStream) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
@@ -309,6 +350,125 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, BidirectionalStream) {
       await writer.write(new Uint8Array(data));
 
       const reader = bidiStream.readable.getReader();
+
+      const {value, done: done1} = await reader.read();
+      if (done1) {
+        throw new Error('reading should not be done');
+      }
+      const actual = Array.from(value);
+      if (JSON.stringify(actual) !== JSON.stringify(data)) {
+        throw new Error('arrays do not match');
+      }
+
+      await writer.close();
+
+      const {done: done2} = await reader.read();
+      if (!done2) {
+        throw new Error('receiveStream should be done');
+      }
+    }
+
+    run().then(() => { document.title = 'PASS'; },
+               (e) => { console.log(e); document.title = 'FAIL'; });
+)JS",
+                                  server_.server_address().port())));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+}
+
+IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, CertificateFingerprint) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+
+  ASSERT_TRUE(ExecuteScript(
+      shell(), base::StringPrintf(R"JS(
+    async function run() {
+      // The connection fails because the fingerprint does not match.
+      const transport = new QuicTransport(
+          'quic-transport://localhost:%d/echo', {
+            serverCertificateFingerprints: [
+              {
+                algorithm: "sha-256",
+                value: "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:" +
+                       "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+              },
+            ],
+          });
+
+      let fulfilled = false;
+      try {
+        await transport.ready;
+        fulfilled = true
+      } catch {}
+
+      if (fulfilled) {
+        throw Error('ready should be rejected');
+      }
+
+      try {
+        await transport.closed;
+      } catch (e) {
+        return;
+      }
+      throw Error('closed should be rejected');
+    }
+
+    run().then(() => { document.title = 'PASS'; },
+               (e) => { console.log(e); document.title = 'FAIL'; });
+)JS",
+                                  server_.server_address().port())));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+}
+
+IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, ReceiveBidirectionalStream) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+
+  ASSERT_TRUE(ExecuteScript(
+      shell(), base::StringPrintf(R"JS(
+    async function run() {
+      const transport = new QuicTransport(
+        'quic-transport://localhost:%d/receive-bidirectional');
+
+      await transport.ready;
+
+      // Trigger the server to create a bidirectional stream.
+      const sendStream = await transport.createSendStream();
+      // Need to actually write some data to inform the server.
+      sendStream.writable.getWriter().write(new Uint8Array([1]));
+
+      const streams = transport.receiveBidirectionalStreams();
+      const reader = streams.getReader();
+      const {value, done} = await reader.read();
+      if (done) {
+        throw new Error('bidirectional streams should not be closed');
+      }
+      await testBidiStream(value);
+    }
+
+    async function testBidiStream(bidiStream) {
+      // Consume the initial "hello" that is sent by the server.
+      const reader = bidiStream.readable.getReader();
+      const {value: valueAsBinary, done: done0} = await reader.read();
+      if (done0) {
+        throw new Error('at least one read should happen');
+      }
+      const valueAsString = new TextDecoder().decode(valueAsBinary);
+      if (valueAsString !== 'hello') {
+        throw new Error(`expected 'hello', got '${valueAsString}'`);
+      }
+
+      const data = [65, 66, 67];
+
+      const writer = bidiStream.writable.getWriter();
+      await writer.write(new Uint8Array(data));
 
       const {value, done: done1} = await reader.read();
       if (done1) {

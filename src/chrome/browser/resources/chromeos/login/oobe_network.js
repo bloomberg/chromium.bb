@@ -7,12 +7,14 @@
  */
 
 Polymer({
-  is: 'oobe-network-md',
+  is: 'oobe-network-element',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
-  observers:
-      ['onDemoModeSetupChanged_(isDemoModeSetup, offlineDemoModeEnabled)'],
+  EXTERNAL_API: [
+    'setOfflineDemoModeEnabled',
+    'showError',
+  ],
 
   properties: {
     /**
@@ -47,26 +49,29 @@ Polymer({
     },
   },
 
+  observers:
+      ['onDemoModeSetupChanged_(isDemoModeSetup, offlineDemoModeEnabled)'],
+
   /** Called when dialog is shown. */
-  onBeforeShow() {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
+  onBeforeShow(data) {
+    var isDemoModeSetupKey = 'isDemoModeSetup';
+    var isDemoModeSetup =
+        data && isDemoModeSetupKey in data && data[isDemoModeSetupKey];
+    this.isDemoModeSetup = isDemoModeSetup;
     this.$.networkSelectLogin.onBeforeShow();
+    this.show();
   },
 
   /** Called when dialog is hidden. */
   onBeforeHide() {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeHide)
-        behavior.onBeforeHide.call(this);
-    });
-    this.$.networkSelectLogin.onBeforeHide();
+    cr.ui.login.invokePolymerMethod(this.$.networkSelectLogin, 'onBeforeHide');
   },
 
   /** @override */
   ready() {
+    this.initializeLoginScreen('NetworkScreen', {
+      resetAllowed: true,
+    });
     this.updateLocalizedContent();
   },
 
@@ -82,6 +87,30 @@ Polymer({
   /** Updates localized elements of the UI. */
   updateLocalizedContent() {
     this.i18nUpdateLocale();
+  },
+
+  /**
+   * Shows the network error message.
+   * @param {string} message Message to be shown.
+   */
+  showError(message) {
+    // TODO(crbug.com/1096003): Investigate how showError works here - seems no
+    // error message is shown when this is called. Also need to check how to
+    // close such message and what if it is called multiple times.
+    var error = document.createElement('div');
+    var messageDiv = document.createElement('div');
+    messageDiv.className = 'error-message-bubble';
+    messageDiv.textContent = message;
+    error.appendChild(messageDiv);
+    error.setAttribute('role', 'alert');
+  },
+
+  /**
+   * Enables or disables the offline Demo Mode option.
+   * @param {boolean} enabled
+   */
+  setOfflineDemoModeEnabled(enabled) {
+    this.offlineDemoModeEnabled = enabled;
   },
 
   /**

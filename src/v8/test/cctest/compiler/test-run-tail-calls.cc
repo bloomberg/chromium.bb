@@ -28,8 +28,8 @@ Handle<Code> BuildCallee(Isolate* isolate, CallDescriptor* call_descriptor) {
   int param_count = static_cast<int>(call_descriptor->StackParameterCount());
   TNode<IntPtrT> sum = __ IntPtrConstant(0);
   for (int i = 0; i < param_count; ++i) {
-    TNode<WordT> product =
-        __ IntPtrMul(__ Parameter(i), __ IntPtrConstant(i + 1));
+    TNode<WordT> product = __ IntPtrMul(__ UncheckedParameter<IntPtrT>(i),
+                                        __ IntPtrConstant(i + 1));
     sum = __ Signed(__ IntPtrAdd(sum, product));
   }
   __ Return(sum);
@@ -92,17 +92,17 @@ CallDescriptor* CreateDescriptorForStackArguments(Zone* zone,
         i - stack_param_count, MachineType::IntPtr()));
   }
 
-  return new (zone)
-      CallDescriptor(CallDescriptor::kCallCodeObject,  // kind
-                     MachineType::AnyTagged(),         // target MachineType
-                     LinkageLocation::ForAnyRegister(
-                         MachineType::AnyTagged()),  // target location
-                     locations.Build(),              // location_sig
-                     stack_param_count,              // stack_parameter_count
-                     Operator::kNoProperties,        // properties
-                     kNoCalleeSaved,                 // callee-saved registers
-                     kNoCalleeSaved,                 // callee-saved fp
-                     CallDescriptor::kNoFlags);      // flags
+  return zone->New<CallDescriptor>(
+      CallDescriptor::kCallCodeObject,  // kind
+      MachineType::AnyTagged(),         // target MachineType
+      LinkageLocation::ForAnyRegister(
+          MachineType::AnyTagged()),  // target location
+      locations.Build(),              // location_sig
+      stack_param_count,              // stack_parameter_count
+      Operator::kNoProperties,        // properties
+      kNoCalleeSaved,                 // callee-saved registers
+      kNoCalleeSaved,                 // callee-saved fp
+      CallDescriptor::kNoFlags);      // flags
 }
 
 // Test a tail call from a caller with n parameters to a callee with m

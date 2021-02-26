@@ -134,7 +134,12 @@ class COMPONENT_EXPORT(VULKAN) VulkanImplementation {
   virtual std::unique_ptr<SysmemBufferCollection>
   RegisterSysmemBufferCollection(VkDevice device,
                                  gfx::SysmemBufferCollectionId id,
-                                 zx::channel token) = 0;
+                                 zx::channel token,
+                                 gfx::BufferFormat format,
+                                 gfx::BufferUsage usage,
+                                 gfx::Size size,
+                                 size_t min_buffer_count,
+                                 bool register_with_image_pipe) = 0;
 #endif  // defined(OS_FUCHSIA)
 
   bool use_swiftshader() const { return use_swiftshader_; }
@@ -152,7 +157,8 @@ COMPONENT_EXPORT(VULKAN)
 std::unique_ptr<VulkanDeviceQueue> CreateVulkanDeviceQueue(
     VulkanImplementation* vulkan_implementation,
     uint32_t option,
-    const GPUInfo* gpu_info = nullptr);
+    const GPUInfo* gpu_info = nullptr,
+    uint32_t heap_memory_limit = 0);
 
 }  // namespace gpu
 

@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/clang_profiling_buildflags.h"
 #include "base/files/scoped_file.h"
 #include "base/optional.h"
 #include "build/build_config.h"
@@ -80,7 +81,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
     // No special behavior requested.
     CHILD_NORMAL = 0,
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     // Indicates that the child execed after forking may be execced from
     // /proc/self/exe rather than using the "real" app path. This prevents
     // autoupdate from confusing us if it changes the file out from under us.
@@ -89,7 +90,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
     // gdb). In this case, you'd use GetChildPath to get the real executable
     // file name, and then prepend the GDB command to the command line.
     CHILD_ALLOW_SELF = 1 << 0,
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     // Note, on macOS these are not bitwise flags and each value is mutually
     // exclusive with the others. Each one of these options should correspond
     // to a value in //content/public/app/mac_helpers.gni.
@@ -115,6 +116,15 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
     // ID as the main binary, so this flag should be used when needing to load
     // third-party plug-ins.
     CHILD_PLUGIN,
+
+#if defined(ARCH_CPU_ARM64)
+    // Launch the child process as CHILD_NORMAL, but as x86_64 code under
+    // Rosetta translation. The executable being launched must contain x86_64
+    // code, either as a thin Mach-O file targeting x86_64, or a fat file with
+    // an x86_64 slice. Aside from the architecture, semantics are identical to
+    // CHILD_NORMAL, and this cannot be combined with any other CHILD_* values.
+    CHILD_LAUNCH_X86_64,
+#endif  // ARCH_CPU_ARM64
 #endif
   };
 
@@ -167,6 +177,12 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   virtual void RunService(
       const std::string& service_name,
       mojo::PendingReceiver<service_manager::mojom::Service> receiver) = 0;
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  // Write out the accumulated code profiling profile to the configured file.
+  // The callback is invoked once the profile has been flushed to disk.
+  virtual void DumpProfilingData(base::OnceClosure callback) = 0;
+#endif
 };
 
 }  // namespace content

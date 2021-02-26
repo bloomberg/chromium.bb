@@ -6,6 +6,107 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+* Expose `maxThreads` to `avifDecoder`, add `--jobs` to `avifdec`
+
+## [0.8.3] - 2020-11-09
+
+### Added
+* SVT-AV1 encode support (jonsneyers)
+* Basic libyuv support (8bpc only, see usage/limitations in avif.h)
+* Refactor avifChromaUpsampling for ease in high level decision making and adding more filters in the future (minor, benign breaking change due to enum reordering)
+* New CMake options: `AVIF_CODEC_AOM_DECODE`, `AVIF_CODEC_AOM_ENCODE`
+* New examples in `examples/` dir (encode, decode_file, decode_memory, decode_streaming) to replace stale, not-compiled examples in README
+
+### Changed
+* avifenc: Explicitly signal SRGB CP/TC if the source image and user don't specify, and no ICC profile is present
+* Set g_lag_in_frames to 1 if encoding single image (encode memory optimization, wantehchang)
+* Early-out with OK in avifParse() if the expected top-level boxes were already parsed (streaming optimization)
+* Check increading item_ID and ipmaSeen in ipma box (wantehchang)
+* Fail gracefully in avifEncoderAddImage() if libavif wasn't compiled with encoding support
+* Add size_t casts to fix MSVC x86 compiler warnings (wantehchang)
+* Link with {ZLIB_LIBRARY} after ${PNG_LIBRARY} (wantehchang)
+* Fix a crash in avifJPEGRead() on fopen() failure (wantehchang)
+* No need to include `${ZLIB_INCLUDE_DIR}` (wantehchang)
+* Put the value of `ZLIB_INCLUDE_DIR` in the cache (wantehchang)
+* Don't set image->alphaRange to yuvRange (wantehchang)
+* Expose chroma sample position in decoded images (wantehchang)
+* avifDecoderNthImage: tighten decoder flush (wantehchang)
+* Cleanup avifIOReadFunc comments for clarity (wantehchang)
+* Minor code cleanup
+* Minor CMake cleanup
+
+### Removed
+
+* Remove disableGridImages from avifDecoder (wantehchang)
+
+## [0.8.2] - 2020-10-14
+### Added
+* `avifIO` reader API: allowing for parsing / image decoding without having the entire AVIF payload yet
+* Codec-specific options plumbing for advanced encoding settings
+* Add libaom codec-specific options (wantehchang)
+* avifenc: Allow endusers to ignore an AVIF's ICC profile during conversion (`--ignore-icc`)
+* avifenc: Allow the setting/overriding of XMP, Exif, and ICC profiles
+* Add the `disableGridImages` setting to `avifDecoder`
+* Add AVIF_FMT_ZU to fix compiling with non-standard/old compilers
+* Add `AVIF_ENABLE_WERROR` (ON by default)
+* Add `AVIF_ENABLE_COVERAGE` for basic llvm coverage report generation
+
+### Changed
+* Support multiple extents in an ItemLocationBox
+* Store all alpha payloads before color payloads in mdat
+* Perform 0.5 UV bias with integers, as 128/512/2048 aren't exactly 0.5, but are expected to behave as such
+* Avoid libpng's complaints about specific ICC profiles
+* Disable receiving one-frame-per-layer when decoding scalable AVIFs with aom and dav1d
+* Fix incorrect 8-to-16 monochrome YUV conversion
+* Set max image size to 16384 * 16384
+* Remove range and sample position from avifImageStealPlanes()
+* Ensure only one of each mandatory-unique box in a meta box exists
+* Ensure each item ID is cited once in an iloc box
+* Sanity check merged extents item size against the file size
+* Various image grid bugfixes
+* Error out with AVIF_RESULT_REFORMAT_FAILED if request uses an unsupported MC
+* Fix memory leak in avifenc when encoding image sequences
+* Move oss-fuzz fuzzer implementation into `tests/oss-fuzz`
+* avifdec: actually propagate the commandline codecChoice to the avifDecoder
+* Fix an infinite loop in codec_dav1d on a carefully-malformed AV1 payload
+* Fix a few issues with warnings in gcc/clang
+* Various comments tweaks
+
+## [0.8.1] - 2020-08-05
+
+### Added
+* Add `ignoreAlpha` field to avifRGBImage (linkmauve)
+* Save support in gdk-pixbuf component (novomesk)
+
+### Changed
+* Only ever create one iref box, filled with multiple cdsc boxes (#247)
+* Fix incorrect 16-to-8 monochrome YUV conversion
+* Make decoding optional in CMake, like encoding is
+* Include avif INTERFACE_INCLUDE_DIRECTORIES first (cryptomilk)
+* Set C standard to C99, adjust flags for dav1d (1480c1)
+* Minor cleanup/fixes in reformat.c (wantehchang)
+* Fix a crash in the gdk-pixbuf loader, removed unnecessary asserts (novomesk)
+
+## [0.8.0] - 2020-07-14
+
+### Added
+* Monochrome (YUV400) support **
+  * All encoding/decoding and internal memory savings are done/functional
+  * libaom has a bug in chroma_check() which crashes when encoding monochrome, to be fixed in a future (>v2.0.0) version
+  * rav1e didn't implement CS400 until rav1e v0.4.0
+  * libavif safely falls back to YUV420 when these earlier codec versions are detected
+    * NOTE: If you want to do heavy monochrome testing, wait for newer versions to libaom/rav1e!
+* Image sequence encoding support
+  * Required medium-sized refactors in the codec layers
+  * Image sequences (tracks) now fully support all metadata properly (Exif/XMP/transforms)
+  * avifenc can now encode a series of same-sized images with a consistent framerate, or each with their own custom duration
+* Bilinear upsampling support
+* avifenc: Add --ignore-icc, which avoids embedding the ICC profile found in the source image
+* avifdec: Add --info, which attempts to decode all frames and display their basic info (merge of avifdump)
+* avifenc: add --tilerowslog2 and --tilecolslog2 (wantehchang)
+* Added `contrib` dir for any unofficially supported code contributions (e.g. gdk-pixbuf)
+
 ### Changed
 * CICP Refactor (breaking change!)
   * Remove most references to "NCLX", as it is mostly an implementation detail, and the values are really from MPEG-CICP
@@ -19,8 +120,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * Added comments explaining various decisions and citing standards
   * Removed ICC inspection code regarding chroma-derived mtxCoeffs; this was overdesigned. Now just honor the assoc. colorPrimaries enum
   * Reworked all examples in the README to reflect the new state of things, and clean out some cruft
-* Switch libaom.cmd to point at v2.0.0-rc1
+  * Harvest CICP from AV1 bitstream as a fallback in avifDecoderParse() if nclx box is absent
+* All data other than actual pixel data should be available and valid after a call to avifDecoderParse()
+* Refactor avifDecoder internal structures to properly handle meta boxes in trak boxes (see avifMeta)
+* Update libaom.cmd to point at the v2.0.0 tag
+* Update dav1d.cmd to point at the 0.7.1 tag
 * Re-enable cpu-used=7+ in codec_aom when libaom major version > 1
+* Memory allocation failures now cause libavif to abort the process (rather than undefined behavior)
+* Fix to maintain alpha range when decoding an image grid with alpha
+* Improvements to avifyuv to show drift when yuv and rgb depths differ
+* Remove any references to (incorrect) "av01" brand (wantehchang)
+* Set up libaom to use reduced_still_picture_header (wantehchang)
+* Use libaom cpu_used 6 in "good quality" usage mode (wantehchang)
+* Update avifBitsReadUleb128 with latest dav1d code (wantehchang)
+* Set encoder chroma sample position (wantehchang)
 
 ## [0.7.3] - 2020-05-04
 ### Added
@@ -422,7 +535,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Constants `AVIF_VERSION`, `AVIF_VERSION_MAJOR`, `AVIF_VERSION_MINOR`, `AVIF_VERSION_PATCH`
 - `avifVersion()` function
 
-[Unreleased]: https://github.com/AOMediaCodec/libavif/compare/v0.7.3...HEAD
+[Unreleased]: https://github.com/AOMediaCodec/libavif/compare/v0.8.3...HEAD
+[0.8.3]: https://github.com/AOMediaCodec/libavif/compare/v0.8.2...v0.8.3
+[0.8.2]: https://github.com/AOMediaCodec/libavif/compare/v0.8.1...v0.8.2
+[0.8.1]: https://github.com/AOMediaCodec/libavif/compare/v0.8.0...v0.8.1
+[0.8.0]: https://github.com/AOMediaCodec/libavif/compare/v0.7.3...v0.8.0
 [0.7.3]: https://github.com/AOMediaCodec/libavif/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/AOMediaCodec/libavif/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/AOMediaCodec/libavif/compare/v0.7.0...v0.7.1

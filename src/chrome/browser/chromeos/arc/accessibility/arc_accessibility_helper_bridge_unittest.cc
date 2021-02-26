@@ -7,25 +7,29 @@
 #include <memory>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "ash/public/cpp/app_types.h"
-#include "ash/system/message_center/arc/arc_notification_constants.h"
-#include "ash/system/message_center/arc/arc_notification_content_view.h"
-#include "ash/system/message_center/arc/arc_notification_surface.h"
-#include "ash/system/message_center/arc/arc_notification_surface_manager.h"
-#include "ash/system/message_center/arc/arc_notification_view.h"
-#include "ash/system/message_center/arc/mock_arc_notification_item.h"
-#include "ash/system/message_center/arc/mock_arc_notification_surface.h"
+#include "ash/public/cpp/external_arc/message_center/arc_notification_content_view.h"
+#include "ash/public/cpp/external_arc/message_center/arc_notification_surface.h"
+#include "ash/public/cpp/external_arc/message_center/arc_notification_surface_manager.h"
+#include "ash/public/cpp/external_arc/message_center/arc_notification_view.h"
+#include "ash/public/cpp/external_arc/message_center/mock_arc_notification_item.h"
+#include "ash/public/cpp/external_arc/message_center/mock_arc_notification_surface.h"
+#include "ash/public/cpp/message_center/arc_notification_constants.h"
 #include "base/command_line.h"
 #include "base/observer_list.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/exo/shell_surface.h"
@@ -83,6 +87,10 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
 
     void SetActiveWindowId(const std::string& id) {
       exo::SetShellApplicationId(window_.get(), id);
+    }
+
+    void SetAccessibilityWindowId(int32_t id) {
+      exo::SetShellClientAccessibilityId(window_.get(), id);
     }
 
     int GetEventCount(const std::string& event_name) const {
@@ -313,6 +321,95 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
 
   helper_bridge->OnTaskDestroyed(2);
   ASSERT_EQ(0U, key_to_tree.size());
+}
+
+TEST_F(ArcAccessibilityHelperBridgeTest, WindowIdTaskIdMapping) {
+  TestArcAccessibilityHelperBridge* helper_bridge =
+      accessibility_helper_bridge();
+  aura::Window* test_window = accessibility_helper_bridge()->window_.get();
+
+  const auto& key_to_tree = helper_bridge->trees_for_test();
+
+  auto event = arc::mojom::AccessibilityEventData::New();
+  event->source_id = 1;
+  event->task_id = kNoTaskId;  // ARC R and later.
+  event->window_id = 10;
+  event->event_type = arc::mojom::AccessibilityEventType::VIEW_FOCUSED;
+  event->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  event->node_data[0]->id = 10;
+  arc::SetProperty(event->node_data[0]->int_list_properties,
+                   mojom::AccessibilityIntListProperty::CHILD_NODE_IDS,
+                   {1, 2, 3});
+  for (int i = 1; i <= 3; i++) {
+    // This creates focusable nodes.
+    // TODO(hirokisato): consider mock AXTreeSourceArc.
+    event->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+    event->node_data[i]->id = i;
+    arc::SetProperty(event->node_data[i]->boolean_properties,
+                     mojom::AccessibilityBooleanProperty::IMPORTANCE, true);
+    arc::SetProperty(event->node_data[i]->boolean_properties,
+                     mojom::AccessibilityBooleanProperty::VISIBLE_TO_USER,
+                     true);
+    arc::SetProperty(event->node_data[i]->string_properties,
+                     mojom::AccessibilityStringProperty::CONTENT_DESCRIPTION,
+                     "node" + base::NumberToString(i) + " description");
+  }
+  event->window_data =
+      std::vector<arc::mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(arc::mojom::AccessibilityWindowInfoData::New());
+  arc::mojom::AccessibilityWindowInfoData* root_window =
+      event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
+
+  // There's no active window.
+  helper_bridge->OnAccessibilityEvent(event.Clone());
+  ASSERT_EQ(0U, key_to_tree.size());
+
+  // Set task ID 1 as the active window.
+  helper_bridge->SetActiveWindowId(std::string("org.chromium.arc.1"));
+  // Also, set a11y window id to the active window.
+  helper_bridge->SetAccessibilityWindowId(10);
+  helper_bridge->OnWindowPropertyChanged(test_window, nullptr, -1);
+
+  helper_bridge->OnAccessibilityEvent(event.Clone());
+
+  // By checking the focused id, we can confirm that tree is updated.
+  ASSERT_EQ(1U, key_to_tree.size());
+  AXTreeSourceArc* tree = key_to_tree.begin()->second.get();
+  ui::AXTreeData tree_data;
+  EXPECT_TRUE(tree->GetTreeData(&tree_data));
+  EXPECT_EQ(tree_data.focus_id, 1);
+
+  // In the same task, update window id.
+  helper_bridge->SetAccessibilityWindowId(11);
+  helper_bridge->OnWindowPropertyChanged(test_window, nullptr, -1);
+  event->window_id = 11;
+
+  // Update the focused node as well.
+  event->source_id = 2;
+
+  helper_bridge->OnAccessibilityEvent(event.Clone());
+
+  // Check the focused node.
+  ASSERT_EQ(1U, key_to_tree.size());
+  EXPECT_TRUE(tree->GetTreeData(&tree_data));
+  EXPECT_EQ(tree_data.focus_id, 2);
+
+  // Revert the window id in the event to the previous one.
+  // Don't update window property so that this emulates mojo events arrive
+  // before exo property is updated.
+  event->window_id = 10;
+
+  // Update the focused node.
+  event->source_id = 3;
+
+  helper_bridge->OnAccessibilityEvent(event.Clone());
+
+  // Check the focused node.
+  ASSERT_EQ(1U, key_to_tree.size());
+  EXPECT_TRUE(tree->GetTreeData(&tree_data));
+  EXPECT_EQ(tree_data.focus_id, 3);
 }
 
 TEST_F(ArcAccessibilityHelperBridgeTest, FilterTypeChange) {
@@ -664,13 +761,12 @@ TEST_F(ArcAccessibilityHelperBridgeTest,
       CreateNotification();
   std::unique_ptr<ArcNotificationView> notification_view =
       CreateArcNotificationView(item.get(), *notification.get());
-  notification_view->set_owned_by_client();
 
   // Prepare widget to hold it.
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   widget->widget_delegate()->SetCanActivate(false);
   widget->Deactivate();
-  widget->SetContentsView(notification_view.get());
+  widget->SetContentsView(std::move(notification_view));
   widget->Show();
 
   // Assert that the widget is not activatable.
@@ -718,18 +814,19 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TextSelectionChangedFocusContentView) {
       std::make_unique<MockArcNotificationItem>(kNotificationKey);
   std::unique_ptr<message_center::Notification> notification =
       CreateNotification();
-  std::unique_ptr<ArcNotificationView> notification_view =
+  std::unique_ptr<ArcNotificationView> owning_notification_view =
       CreateArcNotificationView(item.get(), *notification.get());
-  notification_view->set_owned_by_client();
 
   // focus_stealer is a view which has initial focus.
-  std::unique_ptr<views::View> focus_stealer = std::make_unique<views::View>();
-  focus_stealer->set_owned_by_client();
+  std::unique_ptr<views::View> owning_focus_stealer =
+      std::make_unique<views::View>();
 
   // Prepare a widget to hold them.
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
-  widget->GetRootView()->AddChildView(notification_view.get());
-  widget->GetRootView()->AddChildView(focus_stealer.get());
+  ArcNotificationView* notification_view =
+      widget->GetRootView()->AddChildView(std::move(owning_notification_view));
+  views::View* focus_stealer =
+      widget->GetRootView()->AddChildView(std::move(owning_focus_stealer));
   widget->Show();
 
   // Put focus on focus_stealer.
@@ -738,7 +835,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TextSelectionChangedFocusContentView) {
 
   // Assert that focus is on focus_stealer.
   ASSERT_TRUE(widget->IsActive());
-  ASSERT_EQ(focus_stealer.get(), widget->GetFocusManager()->GetFocusedView());
+  ASSERT_EQ(focus_stealer, widget->GetFocusManager()->GetFocusedView());
 
   accessibility_helper_bridge()->OnNotificationStateChanged(
       kNotificationKey,
@@ -756,7 +853,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TextSelectionChangedFocusContentView) {
   accessibility_helper_bridge()->OnAccessibilityEvent(event.Clone());
 
   // Focus moves to contents view with text selection change.
-  EXPECT_EQ(GetContentsView(notification_view.get()),
+  EXPECT_EQ(GetContentsView(notification_view),
             widget->GetFocusManager()->GetFocusedView());
 
   // Explicitly clear the focus to avoid ArcNotificationContentView::OnBlur is

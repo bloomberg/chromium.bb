@@ -46,29 +46,22 @@ util::Status ExperimentalCounterDurGenerator::ValidateConstraints(
 }
 
 std::unique_ptr<Table> ExperimentalCounterDurGenerator::ComputeTable(
-    const std::vector<Constraint>& cs,
+    const std::vector<Constraint>&,
     const std::vector<Order>&) {
-  std::vector<Constraint> constraints;
-  for (const auto& c : cs) {
-    if (c.col_idx ==
-        static_cast<uint32_t>(tables::CounterTable::ColumnIndex::track_id)) {
-      constraints.push_back(c);
-    }
+  if (!dur_column_) {
+    dur_column_.reset(
+        new NullableVector<int64_t>(ComputeDurColumn(*counter_table_)));
   }
-  Table table = counter_table_->Filter(constraints);
-
-  std::unique_ptr<SparseVector<int64_t>> dur_column(
-      new SparseVector<int64_t>(ComputeDurColumn(table)));
-  return std::unique_ptr<Table>(new Table(table.ExtendWithColumn(
-      "dur", std::move(dur_column), TypedColumn<int64_t>::default_flags())));
+  return std::unique_ptr<Table>(new Table(counter_table_->ExtendWithColumn(
+      "dur", dur_column_.get(), TypedColumn<int64_t>::default_flags())));
 }
 
 // static
-SparseVector<int64_t> ExperimentalCounterDurGenerator::ComputeDurColumn(
+NullableVector<int64_t> ExperimentalCounterDurGenerator::ComputeDurColumn(
     const Table& table) {
   // Keep track of the last seen row for each track id.
   std::unordered_map<TrackId, uint32_t> last_row_for_track_id;
-  SparseVector<int64_t> dur;
+  NullableVector<int64_t> dur;
 
   const auto* ts_col =
       TypedColumn<int64_t>::FromColumn(table.GetColumnByName("ts"));

@@ -32,7 +32,6 @@ class MODULES_EXPORT PaymentResponse final
       public ExecutionContextClient,
       public ActiveScriptWrappable<PaymentResponse> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PaymentResponse);
 
  public:
   PaymentResponse(ScriptState* script_state,
@@ -71,7 +70,7 @@ class MODULES_EXPORT PaymentResponse final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   String request_id_;

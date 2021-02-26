@@ -5,6 +5,7 @@
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
+import * as Root from '../root/root.js';
 import * as UI from '../ui/ui.js';
 
 import {defaultMobileScaleFactor, DeviceModeModel, Type, UA} from './DeviceModeModel.js';
@@ -16,11 +17,15 @@ import {EmulatedDevice, EmulatedDevicesList, Events, Horizontal, HorizontalSpann
 export class DeviceModeToolbar {
   /**
    * @param {!DeviceModeModel} model
-   * @param {!Common.Settings.Setting} showMediaInspectorSetting
-   * @param {!Common.Settings.Setting} showRulersSetting
+   * @param {!Common.Settings.Setting<boolean>} showMediaInspectorSetting
+   * @param {!Common.Settings.Setting<boolean>} showRulersSetting
    */
   constructor(model, showMediaInspectorSetting, showRulersSetting) {
     this._model = model;
+    const device = model.device();
+    if (device) {
+      this._recordDeviceChange(device, null);
+    }
     this._showMediaInspectorSetting = showMediaInspectorSetting;
     this._showRulersSetting = showRulersSetting;
 
@@ -83,6 +88,43 @@ export class DeviceModeToolbar {
       modeToolbar.setEnabled(enabled);
       optionsToolbar.setEnabled(enabled);
     }
+
+    /** @type {!UI.Toolbar.ToolbarButton} */
+    this._spanButton;
+    /** @type {!UI.Toolbar.ToolbarButton} */
+    this._modeButton;
+    /** @type {!HTMLInputElement} */
+    this._widthInput;
+    /** @type {!HTMLInputElement} */
+    this._heightInput;
+    /** @type {!UI.Toolbar.ToolbarMenuButton} */
+    this._deviceScaleItem;
+    /** @type {!UI.Toolbar.ToolbarMenuButton} */
+    this._deviceSelectItem;
+    /** @type {!UI.Toolbar.ToolbarMenuButton} */
+    this._scaleItem;
+    /** @type {!UI.Toolbar.ToolbarMenuButton} */
+    this._uaItem;
+    /** @type {?UI.Toolbar.ToolbarToggle} */
+    this._experimentalButton;
+    /** @type {?number} */
+    this._cachedDeviceScale;
+    /** @type {?string} */
+    this._cachedUaType;
+    /** @type {function(string):void} */
+    this._updateWidthInput;
+  }
+
+  /**
+   * @param {!EmulatedDevice} device
+   * @param {?EmulatedDevice} oldDevice
+   */
+  _recordDeviceChange(device, oldDevice) {
+    if (device !== oldDevice && device && device.isDualScreen) {
+      // When we start emulating a device, whether we start a new emulation session, or switch to
+      // a new device, if the device is dual screen, we count this once.
+      Host.userMetrics.dualScreenDeviceEmulated(Host.UserMetrics.DualScreenDeviceEmulated.DualScreenDeviceSelected);
+    }
   }
 
   /**
@@ -139,7 +181,7 @@ export class DeviceModeToolbar {
      */
     function validateHeight(value) {
       if (!value) {
-        return {valid: true};
+        return {valid: true, errorMessage: undefined};
       }
       return DeviceModeModel.heightValidator(value);
     }
@@ -174,6 +216,7 @@ export class DeviceModeToolbar {
     toolbar.appendToolbarItem(this._scaleItem);
 
     toolbar.appendToolbarItem(this._wrapToolbarItem(this._createEmptyToolbarElement()));
+
     this._deviceScaleItem = new UI.Toolbar.ToolbarMenuButton(this._appendDeviceScaleMenuItems.bind(this));
     this._deviceScaleItem.setVisible(this._showDeviceScaleFactorSetting.get());
     this._deviceScaleItem.setTitle(Common.UIString.UIString('Device pixel ratio'));
@@ -209,7 +252,31 @@ export class DeviceModeToolbar {
       this._spanButton = new UI.Toolbar.ToolbarButton('', 'largeicon-dual-screen');
       this._spanButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._spanClicked, this);
       toolbar.appendToolbarItem(this._spanButton);
+
+      this._createExperimentalButton(toolbar);
     }
+  }
+
+  /**
+   * @param {!UI.Toolbar.Toolbar} toolbar
+   */
+  _createExperimentalButton(toolbar) {
+    toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSeparator(true));
+
+    const title = (this._model.webPlatformExperimentalFeaturesEnabled()) ?
+        Common.UIString.UIString('\"Experimental Web Platform Feature\" flag is enabled. Click to disable it.') :
+        Common.UIString.UIString('\"Experimental Web Platform Feature\" flag is disabled. Click to enable it.');
+    this._experimentalButton = new UI.Toolbar.ToolbarToggle(title, 'largeicon-experimental-api');
+    this._experimentalButton.setToggled(this._model.webPlatformExperimentalFeaturesEnabled());
+    this._experimentalButton.setEnabled(true);
+    this._experimentalButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._experimentalClicked, this);
+
+    toolbar.appendToolbarItem(this._experimentalButton);
+  }
+
+  _experimentalClicked() {
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(
+        'chrome://flags/#enable-experimental-web-platform-features');
   }
 
   /**
@@ -338,7 +405,7 @@ export class DeviceModeToolbar {
 
     /**
      * @param {!UI.ContextMenu.Section} section
-     * @param {!Common.Settings.Setting} setting
+     * @param {!Common.Settings.Setting<?>} setting
      * @param {string} title1
      * @param {string} title2
      * @param {boolean=} disabled
@@ -365,8 +432,9 @@ export class DeviceModeToolbar {
    * @return {!UI.Toolbar.ToolbarItem}
    */
   _wrapToolbarItem(element) {
-    const container = createElement('div');
-    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(container, 'emulation/deviceModeToolbar.css');
+    const container = document.createElement('div');
+    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
+        container, {cssFile: 'emulation/deviceModeToolbar.css', enableLegacyPatching: true, delegatesFocus: undefined});
     shadowRoot.appendChild(element);
     return new UI.Toolbar.ToolbarItem(container);
   }
@@ -376,6 +444,7 @@ export class DeviceModeToolbar {
    */
   _emulateDevice(device) {
     const scale = this._autoAdjustScaleSetting.get() ? undefined : this._model.scaleSetting().get();
+    this._recordDeviceChange(device, this._model.device());
     this._model.emulate(Type.Device, device, this._lastMode.get(device) || device.modes[0], scale);
   }
 
@@ -385,7 +454,7 @@ export class DeviceModeToolbar {
 
   /**
    * @param {!Array<!EmulatedDevice>} devices
-   * @return {!Array<!Emulation.EmulatedDevice>}
+   * @return {!Array<!EmulatedDevice>}
    */
   _filterDevices(devices) {
     devices = devices.filter(function(d) {
@@ -465,11 +534,15 @@ export class DeviceModeToolbar {
   }
 
   _updateDeviceScaleFactorVisibility() {
-    this._deviceScaleItem.setVisible(this._showDeviceScaleFactorSetting.get());
+    if (this._deviceScaleItem) {
+      this._deviceScaleItem.setVisible(this._showDeviceScaleFactorSetting.get());
+    }
   }
 
   _updateUserAgentTypeVisibility() {
-    this._uaItem.setVisible(this._showUserAgentTypeSetting.get());
+    if (this._uaItem) {
+      this._uaItem.setVisible(this._showUserAgentTypeSetting.get());
+    }
   }
 
   /**
@@ -478,12 +551,18 @@ export class DeviceModeToolbar {
   _spanClicked(event) {
     const device = this._model.device();
 
-    if (!device.isDualScreen) {
+    if (!device || !device.isDualScreen) {
       return;
     }
 
+    Host.userMetrics.dualScreenDeviceEmulated(Host.UserMetrics.DualScreenDeviceEmulated.SpanButtonClicked);
     const scale = this._autoAdjustScaleSetting.get() ? undefined : this._model.scaleSetting().get();
-    const newMode = device.getSpanPartner(this._model.mode());
+    const mode = this._model.mode();
+    if (!mode) {
+      return;
+    }
+
+    const newMode = device.getSpanPartner(mode);
     if (!newMode) {
       return;
     }
@@ -510,16 +589,34 @@ export class DeviceModeToolbar {
       return;
     }
 
+    if (!device) {
+      return;
+    }
+
     if ((device.isDualScreen || device.modes.length === 2) &&
         device.modes[0].orientation !== device.modes[1].orientation) {
       const scale = autoAdjustScaleSetting.get() ? undefined : model.scaleSetting().get();
-      model.emulate(model.type(), model.device(), device.getRotationPartner(model.mode()), scale);
+      const mode = model.mode();
+      if (!mode) {
+        return;
+      }
+      const rotationPartner = device.getRotationPartner(mode);
+      if (!rotationPartner) {
+        return;
+      }
+
+      model.emulate(model.type(), model.device(), rotationPartner, scale);
+      return;
+    }
+
+    if (!this._modeButton) {
       return;
     }
 
     const contextMenu = new UI.ContextMenu.ContextMenu(
         /** @type {!Event} */ (event.data), false, this._modeButton.element.totalOffsetLeft(),
-        this._modeButton.element.totalOffsetTop() + this._modeButton.element.offsetHeight);
+        this._modeButton.element.totalOffsetTop() +
+            /** @type {!HTMLElement} */ (this._modeButton.element).offsetHeight);
     addOrientation(Vertical, Common.UIString.UIString('Portrait'));
     addOrientation(Horizontal, Common.UIString.UIString('Landscape'));
     contextMenu.show();
@@ -529,6 +626,10 @@ export class DeviceModeToolbar {
      * @param {string} title
      */
     function addOrientation(orientation, title) {
+      if (!device) {
+        return;
+      }
+
       const modes = device.modesForOrientation(orientation);
       if (!modes.length) {
         return;
@@ -570,13 +671,11 @@ export class DeviceModeToolbar {
     if (this._model.type() !== this._cachedModelType) {
       this._cachedModelType = this._model.type();
       this._widthInput.disabled = this._model.type() !== Type.Responsive;
+
       this._heightInput.disabled = this._model.type() !== Type.Responsive;
       this._deviceScaleItem.setEnabled(this._model.type() === Type.Responsive);
       this._uaItem.setEnabled(this._model.type() === Type.Responsive);
 
-      if (this._experimentDualScreenSupport) {
-        this._spanButton.setEnabled(false);
-      }
       if (this._model.type() === Type.Responsive) {
         this._modeButton.setEnabled(true);
         this._modeButton.setTitle(ls`Rotate`);
@@ -586,10 +685,12 @@ export class DeviceModeToolbar {
     }
 
     const size = this._model.appliedDeviceSize();
-    this._updateHeightInput(
-        this._model.type() === Type.Responsive && this._model.isFullHeight() ? '' : String(size.height));
+    if (this._updateHeightInput) {
+      this._updateHeightInput(
+          this._model.type() === Type.Responsive && this._model.isFullHeight() ? '' : String(size.height));
+    }
     this._updateWidthInput(String(size.width));
-    this._heightInput.placeholder = size.height;
+    this._heightInput.placeholder = String(size.height);
 
     if (this._model.scale() !== this._cachedScale) {
       this._scaleItem.setText(Common.UIString.UIString('%.0f%%', this._model.scale() * 100));
@@ -612,8 +713,9 @@ export class DeviceModeToolbar {
     if (this._model.type() === Type.Responsive) {
       deviceItemTitle = Common.UIString.UIString('Responsive');
     }
-    if (this._model.type() === Type.Device) {
-      deviceItemTitle = this._model.device().title;
+    const device = this._model.device();
+    if (this._model.type() === Type.Device && device) {
+      deviceItemTitle = device.title;
     }
     this._deviceSelectItem.setText(deviceItemTitle);
 
@@ -625,14 +727,20 @@ export class DeviceModeToolbar {
         this._modeButton.setTitle(
             modeCount === 2 ? Common.UIString.UIString('Rotate') :
                               Common.UIString.UIString('Screen orientation options'));
-        if (this._experimentDualScreenSupport) {
-          if (device.isDualScreen) {
-            this._spanButton.setEnabled(true);
-          }
-          this._spanButton.setTitle(Common.UIString.UIString('Toggle dual-screen mode'));
-        }
       }
       this._cachedModelDevice = device;
+    }
+
+    if (this._experimentDualScreenSupport && this._experimentalButton) {
+      const device = this._model.device();
+      if (device && device.isDualScreen) {
+        this._spanButton.setEnabled(true);
+        this._experimentalButton.setVisible(true);
+      } else {
+        this._spanButton.setEnabled(false);
+        this._experimentalButton.setVisible(false);
+      }
+      this._spanButton.setTitle(Common.UIString.UIString('Toggle dual-screen mode'));
     }
 
     if (this._model.type() === Type.Device) {
@@ -644,10 +752,12 @@ export class DeviceModeToolbar {
     if (this._model.mode() !== this._cachedModelMode && this._model.type() !== Type.None) {
       this._cachedModelMode = this._model.mode();
       const value = this._persistenceSetting.get();
-      if (this._model.device()) {
-        value.device = this._model.device().title;
-        value.orientation = this._model.mode() ? this._model.mode().orientation : '';
-        value.mode = this._model.mode() ? this._model.mode().title : '';
+      const device = this._model.device();
+      if (device) {
+        value.device = device.title;
+        const mode = this._model.mode();
+        value.orientation = mode ? mode.orientation : '';
+        value.mode = mode ? mode.title : '';
       } else {
         value.device = '';
         value.orientation = '';

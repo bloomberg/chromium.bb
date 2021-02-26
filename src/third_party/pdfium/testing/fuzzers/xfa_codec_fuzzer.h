@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "core/fxcodec/fx_codec.h"
-#include "core/fxcodec/progressivedecoder.h"
+#include "core/fxcodec/progressive_decoder.h"
 #include "core/fxcrt/cfx_readonlymemorystream.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
@@ -21,9 +21,7 @@ const int kXFACodecFuzzerPixelLimit = 64000000;
 class XFACodecFuzzer {
  public:
   static int Fuzz(const uint8_t* data, size_t size, FXCODEC_IMAGE_TYPE type) {
-    auto* mgr = fxcodec::ModuleMgr::GetInstance();
-    std::unique_ptr<ProgressiveDecoder> decoder =
-        mgr->CreateProgressiveDecoder();
+    auto decoder = std::make_unique<ProgressiveDecoder>();
     auto source = pdfium::MakeRetain<CFX_ReadOnlyMemoryStream>(
         pdfium::make_span(data, size));
     CFX_DIBAttribute attr;
@@ -42,7 +40,8 @@ class XFACodecFuzzer {
     }
 
     auto bitmap = pdfium::MakeRetain<CFX_DIBitmap>();
-    bitmap->Create(decoder->GetWidth(), decoder->GetHeight(), FXDIB_Argb);
+    bitmap->Create(decoder->GetWidth(), decoder->GetHeight(),
+                   FXDIB_Format::kArgb);
 
     size_t frames;
     std::tie(status, frames) = decoder->GetFrames();

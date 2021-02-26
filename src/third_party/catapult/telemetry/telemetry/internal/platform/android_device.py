@@ -8,10 +8,16 @@ import os
 from telemetry.internal.platform import cros_device
 from telemetry.internal.platform import device
 
-from devil.android import device_blacklist
+from devil.android import device_denylist
 from devil.android import device_errors
 from devil.android import device_utils
 from devil.android.sdk import adb_wrapper
+
+
+HIGH_PERFORMANCE_MODE = 'high'
+NORMAL_PERFORMANCE_MODE = 'normal'
+LITTLE_ONLY_PERFORMANCE_MODE = 'little-only'
+KEEP_PERFORMANCE_MODE = 'keep'
 
 
 class AndroidDevice(device.Device):
@@ -21,41 +27,34 @@ class AndroidDevice(device.Device):
     device_id: the device's serial string created by adb to uniquely
       identify an emulator/device instance. This string can be found by running
       'adb devices' command
-    enable_performance_mode: when this is set to True, android platform will be
-    set to high performance mode after browser is started.
   """
-  def __init__(self, device_id, enable_performance_mode=True):
+  def __init__(self, device_id):
     super(AndroidDevice, self).__init__(
         name='Android device %s' % device_id, guid=device_id)
     self._device_id = device_id
-    self._enable_performance_mode = enable_performance_mode
 
   @classmethod
-  def GetAllConnectedDevices(cls, blacklist):
-    device_serials = GetDeviceSerials(blacklist)
+  def GetAllConnectedDevices(cls, denylist):
+    device_serials = GetDeviceSerials(denylist)
     return [cls(s) for s in device_serials]
 
   @property
   def device_id(self):
     return self._device_id
 
-  @property
-  def enable_performance_mode(self):
-    return self._enable_performance_mode
 
-
-def _ListSerialsOfHealthyOnlineDevices(blacklist):
+def _ListSerialsOfHealthyOnlineDevices(denylist):
   return [d.adb.GetDeviceSerial()
-          for d in device_utils.DeviceUtils.HealthyDevices(blacklist)]
+          for d in device_utils.DeviceUtils.HealthyDevices(denylist)]
 
 
-def GetDeviceSerials(blacklist):
+def GetDeviceSerials(denylist):
   """Return the list of device serials of healthy devices.
 
   If a preferred device has been set with ANDROID_SERIAL, it will be first in
   the returned list. The arguments specify what devices to include in the list.
   """
-  device_serials = _ListSerialsOfHealthyOnlineDevices(blacklist)
+  device_serials = _ListSerialsOfHealthyOnlineDevices(denylist)
 
   preferred_device = os.environ.get('ANDROID_SERIAL')
   if preferred_device in device_serials:
@@ -75,19 +74,17 @@ def GetDevice(finder_options):
         'No adb command found. Will not try searching for Android browsers.')
     return None
 
-  if android_platform_options.android_blacklist_file:
-    blacklist = device_blacklist.Blacklist(
-        android_platform_options.android_blacklist_file)
+  if android_platform_options.android_denylist_file:
+    denylist = device_denylist.Denylist(
+        android_platform_options.android_denylist_file)
   else:
-    blacklist = None
+    denylist = None
 
   if (android_platform_options.device
-      and android_platform_options.device in GetDeviceSerials(blacklist)):
-    return AndroidDevice(
-        android_platform_options.device,
-        enable_performance_mode=not finder_options.no_performance_mode)
+      and android_platform_options.device in GetDeviceSerials(denylist)):
+    return AndroidDevice(android_platform_options.device)
 
-  devices = AndroidDevice.GetAllConnectedDevices(blacklist)
+  devices = AndroidDevice.GetAllConnectedDevices(denylist)
   if len(devices) == 0:
     logging.warning('No android devices found.')
     return None
@@ -143,11 +140,11 @@ def FindAllAvailableDevices(options):
   devices = []
   try:
     if CanDiscoverDevices():
-      blacklist = None
-      if android_platform_options.android_blacklist_file:
-        blacklist = device_blacklist.Blacklist(
-            android_platform_options.android_blacklist_file)
-      devices = AndroidDevice.GetAllConnectedDevices(blacklist)
+      denylist = None
+      if android_platform_options.android_denylist_file:
+        denylist = device_denylist.Denylist(
+            android_platform_options.android_denylist_file)
+      devices = AndroidDevice.GetAllConnectedDevices(denylist)
   finally:
     if not devices and _HasValidAdb():
       try:

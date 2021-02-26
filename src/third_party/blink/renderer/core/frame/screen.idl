@@ -31,24 +31,26 @@
 [
     Exposed=Window
 ] interface Screen {
-    [HighEntropy, Measure] readonly attribute long availWidth;
-    [HighEntropy, Measure] readonly attribute long availHeight;
-    [HighEntropy, Measure] readonly attribute long width;
-    [HighEntropy, Measure] readonly attribute long height;
-    [HighEntropy, Measure] readonly attribute unsigned long colorDepth;
+    [HighEntropy=Direct, Measure] readonly attribute long availWidth;
+    [HighEntropy=Direct, Measure] readonly attribute long availHeight;
+    [HighEntropy=Direct, Measure] readonly attribute long width;
+    [HighEntropy=Direct, Measure] readonly attribute long height;
+    [HighEntropy=Direct, Measure] readonly attribute unsigned long colorDepth;
+    // pixelDepth() is an alias for colorDepth(), no need to instrument it twice.
     [HighEntropy, Measure] readonly attribute unsigned long pixelDepth;
 
     // Non-standard
-    [HighEntropy, Measure] readonly attribute long availLeft;
-    [HighEntropy, Measure] readonly attribute long availTop;
+    [HighEntropy=Direct, Measure] readonly attribute long availLeft;
+    [HighEntropy=Direct, Measure] readonly attribute long availTop;
 
     // Proposed
-    // https://github.com/webscreens/screen-enumeration
-    [RuntimeEnabled=WindowPlacement] readonly attribute long left;
-    [RuntimeEnabled=WindowPlacement] readonly attribute long top;
-    [RuntimeEnabled=WindowPlacement] readonly attribute boolean internal;
-    [RuntimeEnabled=WindowPlacement] readonly attribute boolean primary;
+    // https://github.com/webscreens/window-placement
+    // TODO(crbug.com/1116528): Use a dictionary, not the Screen interface, for proposed multi-screen info.
+    [HighEntropy=Direct, MeasureAs=WindowScreenLeft, RuntimeEnabled=WindowPlacement] readonly attribute long left;
+    [HighEntropy=Direct, MeasureAs=WindowScreenTop, RuntimeEnabled=WindowPlacement] readonly attribute long top;
+    [HighEntropy=Direct, MeasureAs=WindowScreenInternal, RuntimeEnabled=WindowPlacement] readonly attribute boolean internal;
+    [HighEntropy=Direct, MeasureAs=WindowScreenPrimary, RuntimeEnabled=WindowPlacement] readonly attribute boolean primary;
     [RuntimeEnabled=WindowPlacement] readonly attribute float scaleFactor;
-    [RuntimeEnabled=WindowPlacement] readonly attribute DOMString id;
-    [RuntimeEnabled=WindowPlacement] readonly attribute boolean touchSupport;
+    [HighEntropy=Direct, MeasureAs=WindowScreenId, RuntimeEnabled=WindowPlacement] readonly attribute DOMString id;
+    [HighEntropy=Direct, MeasureAs=WindowScreenTouchSupport, RuntimeEnabled=WindowPlacement] readonly attribute boolean touchSupport;
 };

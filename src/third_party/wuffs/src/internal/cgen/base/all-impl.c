@@ -1,4 +1,4 @@
-// After editing this file, run "go generate" in the parent directory.
+// After editing this file, run "go generate" in the ../data directory.
 
 // Copyright 2017 The Wuffs Authors.
 //
@@ -28,36 +28,34 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
-// GCC does not warn for unused *static inline* functions, but clang does.
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"
+// Note that Clang also defines __GNUC__.
+#ifdef __cplusplus
+#if __cplusplus >= 201103L
+#include <memory>
+#elif defined(__GNUC__)
+#warning "Wuffs' C++ code expects -std=c++11 or later"
+#elif defined(_MSC_VER)
+#pragma message("Wuffs' C++ code expects C++11 or later")
 #endif
 
-#ifdef __cplusplus
 extern "C" {
 #endif
 
 // !! INSERT base/all-public.h.
 
+// !! INSERT InterfaceDeclarations.
+
+// ----------------
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
 // WUFFS C HEADER ENDS HERE.
 #ifdef WUFFS_IMPLEMENTATION
-
-// GCC does not warn for unused *static inline* functions, but clang does.
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,7 +63,10 @@ extern "C" {
 
 // !! INSERT base/all-private.h.
 
-#if !defined(WUFFS_CONFIG__MODULES) || defined(WUFFS_CONFIG__MODULE__BASE)
+// ----------------
+
+#if !defined(WUFFS_CONFIG__MODULES) || defined(WUFFS_CONFIG__MODULE__BASE) || \
+    defined(WUFFS_CONFIG__MODULE__BASE__CORE)
 
 const uint8_t wuffs_base__low_bits_mask__u8[9] = {
     0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF,
@@ -110,19 +111,66 @@ const uint64_t wuffs_base__low_bits_mask__u64[65] = {
     0x7FFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF,
 };
 
+const uint32_t wuffs_base__pixel_format__bits_per_channel[16] = {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x0A, 0x0C, 0x10, 0x18, 0x20, 0x30, 0x40,
+};
+
 // !! INSERT wuffs_base__status strings.
 
-// !! INSERT base/image-impl.c.
+// !! INSERT vtable names.
 
 #endif  // !defined(WUFFS_CONFIG__MODULES) ||
-        // defined(WUFFS_CONFIG__MODULE__BASE)
+        // defined(WUFFS_CONFIG__MODULE__BASE)  ||
+        // defined(WUFFS_CONFIG__MODULE__BASE__CORE)
+
+#if !defined(WUFFS_CONFIG__MODULES) || defined(WUFFS_CONFIG__MODULE__BASE) || \
+    defined(WUFFS_CONFIG__MODULE__BASE__INTERFACES)
+
+// !! INSERT InterfaceDefinitions.
+
+#endif  // !defined(WUFFS_CONFIG__MODULES) ||
+        // defined(WUFFS_CONFIG__MODULE__BASE) ||
+        // defined(WUFFS_CONFIG__MODULE__BASE__INTERFACES)
+
+#if !defined(WUFFS_CONFIG__MODULES) || defined(WUFFS_CONFIG__MODULE__BASE) || \
+    defined(WUFFS_CONFIG__MODULE__BASE__FLOATCONV)
+
+// !! INSERT base/floatconv-submodule.c.
+
+#endif  // !defined(WUFFS_CONFIG__MODULES) ||
+        // defined(WUFFS_CONFIG__MODULE__BASE) ||
+        // defined(WUFFS_CONFIG__MODULE__BASE__FLOATCONV)
+
+#if !defined(WUFFS_CONFIG__MODULES) || defined(WUFFS_CONFIG__MODULE__BASE) || \
+    defined(WUFFS_CONFIG__MODULE__BASE__INTCONV)
+
+// !! INSERT base/intconv-submodule.c.
+
+#endif  // !defined(WUFFS_CONFIG__MODULES) ||
+        // defined(WUFFS_CONFIG__MODULE__BASE) ||
+        // defined(WUFFS_CONFIG__MODULE__BASE__INTCONV)
+
+#if !defined(WUFFS_CONFIG__MODULES) || defined(WUFFS_CONFIG__MODULE__BASE) || \
+    defined(WUFFS_CONFIG__MODULE__BASE__PIXCONV)
+
+// !! INSERT base/pixconv-submodule.c.
+
+#endif  // !defined(WUFFS_CONFIG__MODULES) ||
+        // defined(WUFFS_CONFIG__MODULE__BASE) ||
+        // defined(WUFFS_CONFIG__MODULE__BASE__PIXCONV)
+
+#if !defined(WUFFS_CONFIG__MODULES) || defined(WUFFS_CONFIG__MODULE__BASE) || \
+    defined(WUFFS_CONFIG__MODULE__BASE__UTF8)
+
+// !! INSERT base/utf8-submodule.c.
+
+#endif  // !defined(WUFFS_CONFIG__MODULES) ||
+        // defined(WUFFS_CONFIG__MODULE__BASE) ||
+        // defined(WUFFS_CONFIG__MODULE__BASE__UTF8)
 
 #ifdef __cplusplus
 }  // extern "C"
-#endif
-
-#ifdef __clang__
-#pragma clang diagnostic pop
 #endif
 
 #endif  // WUFFS_IMPLEMENTATION

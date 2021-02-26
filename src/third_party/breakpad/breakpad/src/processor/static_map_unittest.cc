@@ -46,7 +46,7 @@ typedef std::map< KeyType, ValueType > StdMap;
 template<typename Key, typename Value>
 class SimpleMapSerializer {
  public:
-  static char* Serialize(const std::map<Key, Value> &stdmap,
+  static char* Serialize(const std::map<Key, Value>& stdmap,
                    unsigned int* size = NULL) {
     unsigned int size_per_node =
         sizeof(uint32_t) + sizeof(Key) + sizeof(Value);
@@ -237,19 +237,19 @@ class TestValidMap : public ::testing::Test {
     }
   }
 
-  void FindTester(int test_case, const KeyType &key) {
+  void FindTester(int test_case, const KeyType& key) {
     iter_test = test_map[test_case].find(key);
     iter_std = std_map[test_case].find(key);
     CompareLookupResult(test_case);
   }
 
-  void LowerBoundTester(int test_case, const KeyType &key) {
+  void LowerBoundTester(int test_case, const KeyType& key) {
     iter_test = test_map[test_case].lower_bound(key);
     iter_std = std_map[test_case].lower_bound(key);
     CompareLookupResult(test_case);
   }
 
-  void UpperBoundTester(int test_case, const KeyType &key) {
+  void UpperBoundTester(int test_case, const KeyType& key) {
     iter_test = test_map[test_case].upper_bound(key);
     iter_std = std_map[test_case].upper_bound(key);
     CompareLookupResult(test_case);

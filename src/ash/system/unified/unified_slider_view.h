@@ -13,8 +13,7 @@
 
 namespace ash {
 
-class UnifiedSliderListener : public views::ButtonListener,
-                              public views::SliderListener {
+class UnifiedSliderListener : public views::SliderListener {
  public:
   // Instantiates UnifiedSliderView. The view will be onwed by views hierarchy.
   // The view should be always deleted after the controller is destructed.
@@ -23,40 +22,10 @@ class UnifiedSliderListener : public views::ButtonListener,
   ~UnifiedSliderListener() override = default;
 };
 
-// Custom slider for the system menu to use different color scheme.
-class SystemSlider : public views::Slider {
- public:
-  explicit SystemSlider(views::SliderListener* listener);
-
- private:
-  SkColor GetThumbColor() const override;
-  SkColor GetTroughColor() const override;
-};
-
-// A slider that ignores inputs.
-// TODO(tetsui): Move to anonymous namespace.
-class ReadOnlySlider : public SystemSlider {
- public:
-  ReadOnlySlider();
-
- private:
-  // views::View:
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
-  const char* GetClassName() const override;
-
-  // ui::EventHandler:
-  void OnGestureEvent(ui::GestureEvent* event) override;
-
-  DISALLOW_COPY_AND_ASSIGN(ReadOnlySlider);
-};
-
 // A button used in a slider row of UnifiedSystemTray. The button is togglable.
-class UnifiedSliderButton : public views::ToggleImageButton {
+class UnifiedSliderButton : public views::ImageButton {
  public:
-  UnifiedSliderButton(views::ButtonListener* listener,
+  UnifiedSliderButton(PressedCallback callback,
                       const gfx::VectorIcon& icon,
                       int accessible_name_id);
   ~UnifiedSliderButton() override;
@@ -67,27 +36,24 @@ class UnifiedSliderButton : public views::ToggleImageButton {
   // Change the toggle state.
   void SetToggled(bool toggled);
 
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-
-  // views::Button:
-  const char* GetClassName() const override;
-
-  // views::ToggleImageButton:
+  // views::ImageButton:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-
   void PaintButtonContents(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  const char* GetClassName() const override;
+  gfx::Size CalculatePreferredSize() const override;
+  void OnThemeChanged() override;
 
  private:
+  void UpdateVectorIcon();
+
   // True if the button is currently toggled.
   bool toggled_ = false;
 
-  // Icon used when the button is toggled.
-  gfx::ImageSkia toggled_icon_;
+  const gfx::VectorIcon* icon_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSliderButton);
 };
@@ -97,7 +63,8 @@ class UnifiedSliderButton : public views::ToggleImageButton {
 class UnifiedSliderView : public views::View {
  public:
   // If |readonly| is set, the slider will not accept any user events.
-  UnifiedSliderView(UnifiedSliderListener* listener,
+  UnifiedSliderView(views::Button::PressedCallback callback,
+                    UnifiedSliderListener* listener,
                     const gfx::VectorIcon& icon,
                     int accessible_name_id,
                     bool readonly = false);

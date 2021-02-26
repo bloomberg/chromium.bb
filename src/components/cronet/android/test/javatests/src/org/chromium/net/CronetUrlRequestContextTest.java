@@ -21,8 +21,9 @@ import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
-import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
+
+import androidx.test.filters.SmallTest;
 
 import org.json.JSONObject;
 import org.junit.After;
@@ -1265,8 +1266,8 @@ public class CronetUrlRequestContextTest {
         // reflect the change.
         builder.enableQuic(false);
         builder.enableHttpCache(HTTP_CACHE_IN_MEMORY, 54321);
-        builder.setUserAgent("efgh");
         builder.setExperimentalOptions("ijkl");
+        builder.setUserAgent("efgh");
         builder.setStoragePath(getTestStorage(getContext()));
         builder.enablePublicKeyPinningBypassForLocalTrustAnchors(false);
         nativeVerifyUrlRequestContextQuicOffConfig(

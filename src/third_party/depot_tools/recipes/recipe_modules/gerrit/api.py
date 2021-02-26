@@ -5,7 +5,7 @@
 from recipe_engine import recipe_api
 
 class GerritApi(recipe_api.RecipeApi):
-  """Module for interact with gerrit endpoints"""
+  """Module for interact with Gerrit endpoints"""
 
   def __init__(self, *args, **kwargs):
     super(GerritApi, self).__init__(*args, **kwargs)
@@ -30,11 +30,10 @@ class GerritApi(recipe_api.RecipeApi):
                            **kwargs)
 
   def create_gerrit_branch(self, host, project, branch, commit, **kwargs):
-    """
-    Create a new branch from given project and commit
+    """Creates a new branch from given project and commit
 
     Returns:
-      the ref of the branch created
+      The ref of the branch created
     """
     args = [
         'branch',
@@ -52,11 +51,10 @@ class GerritApi(recipe_api.RecipeApi):
   # TODO(machenbach): Rename to get_revision? And maybe above to
   # create_ref?
   def get_gerrit_branch(self, host, project, branch, **kwargs):
-    """
-    Get a branch from given project and commit
+    """Gets a branch from given project and commit
 
     Returns:
-      the revision of the branch
+      The revision of the branch
     """
     args = [
         'branchinfo',
@@ -71,8 +69,7 @@ class GerritApi(recipe_api.RecipeApi):
     return revision
 
   def get_change_description(self, host, change, patchset):
-    """
-    Get the description for a given CL and patchset.
+    """Gets the description for a given CL and patchset.
 
     Args:
       host: URL of Gerrit host to query.
@@ -117,19 +114,19 @@ class GerritApi(recipe_api.RecipeApi):
 
   def get_changes(self, host, query_params, start=None, limit=None,
                   o_params=None, step_test_data=None, **kwargs):
-    """
-    Query changes for the given host.
+    """Queries changes for the given host.
 
     Args:
-      host: URL of Gerrit host to query.
-      query_params: Query parameters as list of (key, value) tuples to form a
+      * host: URL of Gerrit host to query.
+      * query_params: Query parameters as list of (key, value) tuples to form a
           query as documented here:
           https://gerrit-review.googlesource.com/Documentation/user-search.html#search-operators
-      start: How many changes to skip (starting with the most recent).
-      limit: Maximum number of results to return.
-      o_params: A list of additional output specifiers, as documented here:
+      * start: How many changes to skip (starting with the most recent).
+      * limit: Maximum number of results to return.
+      * o_params: A list of additional output specifiers, as documented here:
           https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
-      step_test_data: Optional mock test data for the underlying gerrit client.
+      * step_test_data: Optional mock test data for the underlying gerrit client.
+
     Returns:
       A list of change dicts as documented here:
           https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
@@ -173,6 +170,30 @@ class GerritApi(recipe_api.RecipeApi):
 
     return self(
         name or 'abandon',
+        args,
+        step_test_data=step_test_data,
+    ).json.output
+
+  def move_changes(self,
+                   host,
+                   project,
+                   from_branch,
+                   to_branch,
+                   step_test_data=None):
+    args = [
+        'movechanges', '--host', host, '-p',
+        'project=%s' % project, '-p',
+        'branch=%s' % from_branch, '-p', 'status=open', '--destination_branch',
+        to_branch, '--json_file',
+        self.m.json.output()
+    ]
+
+    if not step_test_data:
+      step_test_data = lambda: self.test_api.get_one_change_response_data(
+          branch=to_branch)
+
+    return self(
+        'move changes',
         args,
         step_test_data=step_test_data,
     ).json.output

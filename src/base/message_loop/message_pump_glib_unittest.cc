@@ -11,19 +11,20 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/waitable_event_watcher.h"
+#include "base/task/current_thread.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
@@ -447,8 +448,6 @@ class GLibLoopRunner : public RefCounted<GLibLoopRunner> {
 };
 
 void TestGLibLoopInternal(EventInjector* injector, OnceClosure done) {
-  // Allow tasks to be processed from 'native' event loops.
-  MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
   scoped_refptr<GLibLoopRunner> runner = new GLibLoopRunner();
 
   int task_count = 0;
@@ -472,7 +471,10 @@ void TestGLibLoopInternal(EventInjector* injector, OnceClosure done) {
       TimeDelta::FromMilliseconds(40));
 
   // Run a nested, straight GLib message loop.
-  runner->RunGLib();
+  {
+    CurrentThread::ScopedNestableTaskAllower allow_nestable_tasks;
+    runner->RunGLib();
+  }
 
   ASSERT_EQ(3, task_count);
   EXPECT_EQ(4, injector->processed_events());
@@ -480,8 +482,6 @@ void TestGLibLoopInternal(EventInjector* injector, OnceClosure done) {
 }
 
 void TestGtkLoopInternal(EventInjector* injector, OnceClosure done) {
-  // Allow tasks to be processed from 'native' event loops.
-  MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
   scoped_refptr<GLibLoopRunner> runner = new GLibLoopRunner();
 
   int task_count = 0;
@@ -505,7 +505,10 @@ void TestGtkLoopInternal(EventInjector* injector, OnceClosure done) {
       TimeDelta::FromMilliseconds(40));
 
   // Run a nested, straight Gtk message loop.
-  runner->RunLoop();
+  {
+    CurrentThread::ScopedNestableTaskAllower allow_nestable_tasks;
+    runner->RunLoop();
+  }
 
   ASSERT_EQ(3, task_count);
   EXPECT_EQ(4, injector->processed_events());
@@ -742,7 +745,7 @@ TEST_F(MessagePumpGLibFdWatchTest, QuitWatcher) {
                           Unretained(watcher.get()), &event,
                           std::move(write_fd_task), io_runner()));
 
-  // Queue |event| to signal on |MessageLoopCurrentForUI::Get()|.
+  // Queue |event| to signal on |CurrentUIThread::Get()|.
   ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&event)));
 

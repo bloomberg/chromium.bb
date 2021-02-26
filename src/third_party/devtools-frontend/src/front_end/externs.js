@@ -153,15 +153,6 @@ Array.prototype.mergeOrdered = function(array, comparator) {};
  */
 Int32Array.prototype.lowerBound = function(object, comparator, left, right) {};
 
-// TODO(luoe): remove these BigInt and ArrayLike types once closure supports them.
-/**
- * @param {number|string} value
- */
-const BigInt = function(value) {};
-
-/** @typedef {*} */
-const bigint = null;
-
 /** @typedef {Array|NodeList|Arguments|{length: number}} */
 let ArrayLike;
 
@@ -491,6 +482,9 @@ CodeMirror.prototype = {
   undo: function() {},
   unlinkDoc: function(other) {}
 };
+CodeMirror.Editor = class extends CodeMirror {};
+CodeMirror.Doc = class extends CodeMirror {};
+CodeMirror.LineHandle = class {};
 /** @type {!{cursorDiv: Element, lineSpace: Element, gutters: Element}} */
 CodeMirror.prototype.display;
 /** @type {!{devtoolsAccessibleName: string, mode: string, lineWrapping: boolean}} */
@@ -508,7 +502,10 @@ CodeMirror.startState = function(mode) {};
 CodeMirror.copyState = function(mode, state) {};
 CodeMirror.inputStyles = {};
 CodeMirror.inputStyles.textarea = class {
-  constructor() {
+  /**
+   * @param {!CodeMirror.Editor} codeMirror
+   */
+  constructor(codeMirror) {
     /** @type {!HTMLTextAreaElement} */
     this.textarea;
     this.prevInput = '';
@@ -557,11 +554,16 @@ CodeMirror.Pos.prototype.ch;
  */
 CodeMirror.cmpPos = function(pos1, pos2) {};
 
-/** @constructor */
-CodeMirror.StringStream = function(line) {
+/**
+ * @constructor
+ * @param {string} line
+ * @param {number=} index
+ */
+CodeMirror.StringStream = function(line, index) {
   this.pos = 0;
   this.start = 0;
 };
+
 CodeMirror.StringStream.prototype = {
   backUp: function(n) {},
   column: function() {},
@@ -612,76 +614,6 @@ CodeMirror.defineMIME = function(mime, mode) {};
 
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;
-
-const acorn = {
-  /**
-   * @param {string} text
-   * @param {Object.<string, boolean>} options
-   * @return {!ESTree.Node}
-   */
-  parse: function(text, options) {},
-
-  /**
-   * @param {string} text
-   * @param {Object.<string, boolean>} options
-   * @return {!Acorn.Tokenizer}
-   */
-  tokenizer: function(text, options) {},
-
-  tokTypes: {
-    _true: new Acorn.TokenType(),
-    _false: new Acorn.TokenType(),
-    _null: new Acorn.TokenType(),
-    num: new Acorn.TokenType(),
-    regexp: new Acorn.TokenType(),
-    string: new Acorn.TokenType(),
-    name: new Acorn.TokenType(),
-    eof: new Acorn.TokenType()
-  }
-};
-
-acorn.loose = {};
-
-/**
- * @param {string} text
- * @param {Object.<string, boolean>} options
- * @return {!ESTree.Node}
- */
-acorn.loose.parse = function(text, options) {};
-
-const Acorn = {};
-/**
- * @constructor
- */
-Acorn.Tokenizer = function() {
-  /** @type {function():!Acorn.Token} */
-  this.getToken;
-};
-
-/**
- * @constructor
- */
-Acorn.TokenType = function() {
-  /** @type {string} */
-  this.label;
-  /** @type {(string|undefined)} */
-  this.keyword;
-};
-
-/**
- * @typedef {{type: !Acorn.TokenType, value: string, start: number, end: number}}
- */
-Acorn.Token;
-
-/**
- * @typedef {{type: string, value: string, start: number, end: number}}
- */
-Acorn.Comment;
-
-/**
- * @typedef {(!Acorn.Token|!Acorn.Comment)}
- */
-Acorn.TokenOrComment;
 
 const dagre = {};
 dagre.graphlib = {};
@@ -775,6 +707,62 @@ ESTree.TemplateLiteralNode = function() {
   /** @type {!Array.<!ESTree.Node>} */
   this.expressions;
 };
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.SimpleLiteral = function() {
+  /** @type {?(string|boolean|number)} */
+  this.value;
+  /** @type {(string|undefined)} */
+  this.raw;
+};
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.ForStatement = function() {
+  /** @type {(!ESTree.Node|undefined)} */
+  this.update;
+};
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.ForInStatement = function() {};
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.ForOfStatement = function() {};
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.IfStatement = function() {
+  /** @type {(!ESTree.Node|undefined)} */
+  this.consequent;
+};
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.TryStatement = function() {
+  /** @type {(!ESTree.Node|undefined)} */
+  this.block;
+};
+
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.CatchClause = function() {};
 
 /**
  * @type {string}
@@ -877,42 +865,15 @@ const mod = function(m, n) {};
 
 /**
  * @param {string} query
- * @param {boolean} caseSensitive
- * @param {boolean} isRegex
- * @return {!RegExp}
- */
-const createSearchRegex = function(query, caseSensitive, isRegex) {};
-
-/**
- * @param {string} query
  * @param {string=} flags
  * @return {!RegExp}
  */
 const createPlainTextSearchRegex = function(query, flags) {};
 
 /**
- * @param {number} spacesCount
- * @return {string}
- */
-const spacesPadding = function(spacesCount) {};
-
-/**
- * @param {number} value
- * @param {number} symbolsCount
- * @return {string}
- */
-const numberToStringWithSpacesPadding = function(value, symbolsCount) {};
-
-/**
  * @param {*} value
  */
 const suppressUnused = function(value) {};
-
-/**
- * TODO: move into its own module
- * @param {function()} callback
- */
-const runOnWindowLoad = function(callback) {};
 
 /**
  * @template T
@@ -935,216 +896,9 @@ const unescapeCssString = function(input) {};
 
 /**
  * @constructor
- * @param {function(!Array<*>)} callback
- */
-const ResizeObserver = function(callback) {};
-
-
-// Lighthouse Report Renderer
-
-/**
- * @constructor
  * @param {!Document} document
  */
 const DOM = function(document) {};
-
-/**
- * @constructor
- * @param {!DOM} dom
- */
-const ReportRenderer = function(dom) {};
-
-ReportRenderer.prototype = {
-  /**
-   * @param {!ReportRenderer.ReportJSON} report
-   * @param {!Element} container Parent element to render the report into.
-   */
-  renderReport: function(report, container) {},
-
-  /**
-   * @param {!Document|!Element} context
-   */
-  setTemplateContext: function(context) {},
-
-};
-
-/**
- * @constructor
- * @param {!DOM} dom
- */
-const ReportUIFeatures = function(dom) {
-  /** @type {!ReportRenderer.ReportJSON} */
-  this.json;
-
-  /** @type {!Document} */
-  this._document;
-};
-
-ReportUIFeatures.prototype = {
-  /**
-   * @param {!Document|!Element} context
-   */
-  setTemplateContext: function(context) {},
-
-  /**
-   * @param {!ReportRenderer.ReportJSON} report
-   */
-  initFeatures: function(report) {},
-
-  _resetUIState: function() {},
-};
-
-/**
- * @typedef {{
- *     rawValue: (number|boolean|undefined),
- *     id: string,
- *     title: string,
- *     description: string,
- *     explanation: (string|undefined),
- *     errorMessage: (string|undefined),
- *     displayValue: (string|Array<string|number>|undefined),
- *     scoreDisplayMode: string,
- *     error: boolean,
- *     score: (number|null),
- *     details: (!DetailsRenderer.DetailsJSON|undefined),
- * }}
- */
-ReportRenderer.AuditResultJSON;
-
-/**
- * @typedef {{
- *     id: string,
- *     score: (number|null),
- *     weight: number,
- *     group: (string|undefined),
- *     result: ReportRenderer.AuditResultJSON
- * }}
- */
-ReportRenderer.AuditJSON;
-
-/**
- * @typedef {{
- *     title: string,
- *     id: string,
- *     score: (number|null),
- *     description: (string|undefined),
- *     manualDescription: string,
- *     auditRefs: !Array<!ReportRenderer.AuditJSON>
- * }}
- */
-ReportRenderer.CategoryJSON;
-
-/**
- * @typedef {{
- *     title: string,
- *     description: (string|undefined),
- * }}
- */
-ReportRenderer.GroupJSON;
-
-/**
- * @typedef {{
- *     lighthouseVersion: string,
- *     userAgent: string,
- *     fetchTime: string,
- *     timing: {total: number},
- *     requestedUrl: string,
- *     finalUrl: string,
- *     runWarnings: (!Array<string>|undefined),
- *     artifacts: {traces: {defaultPass: {traceEvents: !Array}}},
- *     audits: !Object<string, !ReportRenderer.AuditResultJSON>,
- *     categories: !Object<string, !ReportRenderer.CategoryJSON>,
- *     categoryGroups: !Object<string, !ReportRenderer.GroupJSON>,
- * }}
- */
-ReportRenderer.ReportJSON;
-
-/**
- * @typedef {{
- *     traces: {defaultPass: {traceEvents: !Array}},
- * }}
- */
-ReportRenderer.RunnerResultArtifacts;
-
-/**
- * @typedef {{
- *     lhr: !ReportRenderer.ReportJSON,
- *     artifacts: ReportRenderer.RunnerResultArtifacts,
- *     report: string,
- *     stack: string
- * }}
- */
-ReportRenderer.RunnerResult;
-
-
-/**
- * @constructor
- * @param {!DOM} dom
- * @param {!DetailsRenderer} detailsRenderer
- */
-const CategoryRenderer = function(dom, detailsRenderer) {};
-
-
-/**
- * @constructor
- * @param {!DOM} dom
- */
-const DetailsRenderer = function(dom) {};
-
-DetailsRenderer.prototype = {
-  /**
-   * @param {!DetailsRenderer.NodeDetailsJSON} item
-   * @return {!Element}
-   */
-  renderNode: function(item) {},
-};
-
-/**
- * @typedef {{
- *     type: string,
- *     value: (string|number|undefined),
- *     summary: (DetailsRenderer.OpportunitySummary|undefined),
- *     granularity: (number|undefined),
- *     displayUnit: (string|undefined)
- * }}
- */
-DetailsRenderer.DetailsJSON;
-
-/**
- * @typedef {{
- *     type: string,
- *     path: (string|undefined),
- *     selector: (string|undefined),
- *     snippet:(string|undefined)
- * }}
- */
-DetailsRenderer.NodeDetailsJSON;
-
-/**
- * @typedef {{
- *     sourceUrl: (string|undefined),
- *     sourceLine: (string|undefined),
- *     sourceColumn: (string|undefined),
- * }}
- */
-DetailsRenderer.SourceLocationDetailsJSON;
-
-/** @typedef {{
- *     wastedMs: (number|undefined),
- *     wastedBytes: (number|undefined),
- * }}
- */
-DetailsRenderer.OpportunitySummary;
-
-const LighthouseReportGenerator = class {
-  /**
-   * @param {!ReportRenderer.ReportJSON} lhr
-   * @return {string}
-   */
-  generateReportHtml(lhr) {
-    return '';
-  }
-};
 
 /** @interface */
 class InspectorFrontendHostAPI {
@@ -1276,7 +1030,7 @@ class InspectorFrontendHostAPI {
    * @param {string} url
    * @param {string} headers
    * @param {number} streamId
-   * @param {function(!InspectorFrontendHostAPI.LoadNetworkResourceResult)} callback
+   * @param {function(!InspectorFrontendHostAPI.LoadNetworkResourceResult): void} callback
    */
   loadNetworkResource(url, headers, streamId, callback) {
   }
@@ -1316,7 +1070,7 @@ class InspectorFrontendHostAPI {
   }
 
   /**
-   * @param {string} actionName
+   * @param {!InspectorFrontendHostAPI.EnumeratedHistogram} actionName
    * @param {number} actionCode
    * @param {number} bucketSize
    */
@@ -1383,6 +1137,20 @@ class InspectorFrontendHostAPI {
    * @param {function()} callback
    */
   setIsDocked(isDocked, callback) {
+  }
+
+  /**
+   * @param {string} trigger
+   * @param {function(!InspectorFrontendHostAPI.ShowSurveyResult): void} callback
+   */
+  showSurvey(trigger, callback) {
+  }
+
+  /**
+   * @param {string} trigger
+   * @param {function(InspectorFrontendHostAPI.CanShowSurveyResult): void} callback
+   */
+  canShowSurvey(trigger, callback) {
   }
 
   /**
@@ -1462,13 +1230,54 @@ InspectorFrontendHostAPI.ContextMenuDescriptor;
 }} */
 InspectorFrontendHostAPI.LoadNetworkResourceResult;
 
+/** @typedef
+{{
+  surveyShown: boolean
+}} */
+InspectorFrontendHostAPI.ShowSurveyResult;
+
+/** @typedef
+{{
+  canShowSurvey: boolean
+}} */
+InspectorFrontendHostAPI.CanShowSurveyResult;
+
+/**
+ * Enum for recordEnumeratedHistogram
+ * Warning: There are two other definitions of this enum in the DevTools code
+ * base, keep them in sync:
+ * front_end/devtools_compatibility.js
+ * front_end/host/InspectorFrontendHostAPI.js
+ * @readonly
+ * @enum {string}
+ */
+InspectorFrontendHostAPI.EnumeratedHistogram = {
+  ActionTaken: 'DevTools.ActionTaken',
+  ColorPickerFixedColor: 'DevTools.ColorPicker.FixedColor',
+  PanelClosed: 'DevTools.PanelClosed',
+  PanelShown: 'DevTools.PanelShown',
+  SidebarPaneShown: 'DevTools.SidebarPaneShown',
+  KeyboardShortcutFired: 'DevTools.KeyboardShortcutFired',
+  IssuesPanelIssueExpanded: 'DevTools.IssuesPanelIssueExpanded',
+  IssuesPanelOpenedFrom: 'DevTools.IssuesPanelOpenedFrom',
+  IssuesPanelResourceOpened: 'DevTools.IssuesPanelResourceOpened',
+  KeybindSetSettingChanged: 'DevTools.KeybindSetSettingChanged',
+  DualScreenDeviceEmulated: 'DevTools.DualScreenDeviceEmulated',
+  CSSGridSettings: 'DevTools.CSSGridSettings2',
+  HighlightedPersistentCSSGridCount: 'DevTools.HighlightedPersistentCSSGridCount',
+  ExperimentEnabledAtLaunch: 'DevTools.ExperimentEnabledAtLaunch',
+  ExperimentEnabled: 'DevTools.ExperimentEnabled',
+  ExperimentDisabled: 'DevTools.ExperimentDisabled',
+  GridOverlayOpenedFrom: 'DevTools.GridOverlayOpenedFrom',
+};
+
 /**
  * @interface
  */
 class ServicePort {
   /**
    * @param {function(string)} messageHandler
-   * @param {function(string)} closeHandler
+   * @param {function()} closeHandler
    */
   setHandlers(messageHandler, closeHandler) {
   }

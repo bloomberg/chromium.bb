@@ -7,9 +7,9 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 
-// This file exists in //ash/public because the values are shared between webui
-// login code in chrome and views-based login code in ash. If the webui login
-// code is ever removed this file can move to //ash/login.
+// TODO(crbug/1148231): Delete this file, move ash/login/ui constants
+// to ash/login/ui/login_constant.h and chrome/browser constants to the
+// files where they are used.
 
 namespace ash {
 namespace login_constants {
@@ -18,17 +18,15 @@ namespace login_constants {
 // extracted from wallpaper is invalid.
 constexpr SkColor kDefaultBaseColor = SK_ColorBLACK;
 
-// Color used on text associated with an auth method, e.g., password,
-// fingerprint.
-constexpr SkColor kAuthMethodsTextColor =
-    SkColorSetARGB(0xAB, 0xFF, 0xFF, 0xFF);
+// The light mode base color of the login/lock screen when the color extracted
+// from the wallpaper is invalid.
+constexpr SkColor kLightModeBaseColor = SK_ColorWHITE;
 
-// When the wallpaper is not blurred, a black background with this alpha should
+// When the wallpaper is not blurred, a background with this alpha should
 // be rendered behind UI elements so they remain legible.
 constexpr int kNonBlurredWallpaperBackgroundAlpha = 0xCC;  // 0xCC -> 80% of 255
 
-// Per above, the black background should be a rounded rect with this corner
-// radius.
+// Per above, the background should be a rounded rect with this corner radius.
 constexpr int kNonBlurredWallpaperBackgroundRadiusDp = 4;
 
 // The alpha value for the login/lock screen background.
@@ -51,12 +49,15 @@ constexpr float kClearBlurSigma = 0.0f;
 // show/hide animation.
 constexpr int kChangeUserAnimationDurationMs = 300;
 
-// Color of enabled buttons.
-constexpr SkColor kButtonEnabledColor = SK_ColorWHITE;
-
 // An alpha value for disabled buttons.
 // In specs this is listed as 34% = 0x57 / 0xFF.
 constexpr SkAlpha kButtonDisabledAlpha = 0x57;
+
+// The most used font size on login/lock screen.
+constexpr int kDefaultFontSize = 13;
+
+// The most used font on login/lock screen.
+constexpr char kDefaultFontName[] = "Roboto";
 
 }  // namespace login_constants
 }  // namespace ash

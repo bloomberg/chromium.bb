@@ -12,6 +12,7 @@ import os
 import random
 import stat
 import string
+import subprocess
 import sys
 import time
 
@@ -61,9 +62,8 @@ def is_valid_file(path, size):
   try:
     actual_size = fs.stat(path).st_size
   except OSError as e:
-    logging.warning(
-        'Can\'t read item %s, assuming it\'s invalid: %s',
-        os.path.basename(path), e)
+    logging.warning('Can\'t read item %s, assuming it\'s invalid: %s',
+                    os.path.basename(path), e)
     return False
   if size != actual_size:
     logging.warning(
@@ -113,6 +113,7 @@ def _use_scandir():
   # Do not use in other OS due to crbug.com/989409
   return sys.platform == 'win32'
 
+
 def _get_recursive_size(path):
   """Returns the total data size for the specified path.
 
@@ -123,12 +124,14 @@ def _get_recursive_size(path):
     if _use_scandir():
 
       if sys.platform == 'win32':
+
         def direntIsJunction(entry):
           # both st_file_attributes and FILE_ATTRIBUTE_REPARSE_POINT are
           # windows-only symbols.
-          return bool(entry.stat().st_file_attributes &
-                      scandir.FILE_ATTRIBUTE_REPARSE_POINT)
+          return bool(entry.stat().st_file_attributes & scandir
+                      .FILE_ATTRIBUTE_REPARSE_POINT)
       else:
+
         def direntIsJunction(_entry):
           return False
 
@@ -152,8 +155,8 @@ def _get_recursive_size(path):
           continue
         total += st.st_size
     return total
-  except (IOError, OSError, UnicodeEncodeError) as exc:
-    logging.warning('Exception while getting the size of %s:\n%s', path, exc)
+  except (IOError, OSError, UnicodeEncodeError):
+    logging.exception('Exception while getting the size of %s', path)
     return None
 
 
@@ -198,11 +201,12 @@ class CacheMiss(Exception):
   """Raised when an item is not in cache."""
   def __init__(self, digest):
     self.digest = digest
-    super(CacheMiss, self).__init__(
-        'Item with digest %r is not found in cache' % digest)
+    super(CacheMiss,
+          self).__init__('Item with digest %r is not found in cache' % digest)
 
 
 class Cache(object):
+
   def __init__(self, cache_dir):
     if cache_dir is not None:
       assert isinstance(cache_dir, six.text_type), cache_dir
@@ -214,6 +218,13 @@ class Cache(object):
     self._used = []
 
   def __nonzero__(self):
+    """A cache is always True.
+
+    Otherwise it falls back to __len__, which is surprising.
+    """
+    return True
+
+  def __bool__(self):
     """A cache is always True.
 
     Otherwise it falls back to __len__, which is surprising.
@@ -550,7 +561,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
     # Verify hash of every single item to detect corruption. the corrupted
     # files will be evicted.
     with self._lock:
-      for digest, (_, timestamp) in self._lru._items.items():
+      for digest, (_, timestamp) in list(self._lru._items.items()):
         # verify only if the mtime is grather than the timestamp in state.json
         # to avoid take too long time.
         if self._get_mtime(digest) <= timestamp:
@@ -727,12 +738,9 @@ class DiskContentAddressedCache(ContentAddressedCache):
       logging.warning(
           'Trimmed %d file(s) (%.1fkb) due to not enough free disk space:'
           ' %.1fkb free, %.1fkb cache (%.1f%% of its maximum capacity of '
-          '%.1fkb)',
-          len(evicted), sum(evicted) / 1024.,
-          self._free_disk / 1024.,
-          total_usage / 1024.,
-          usage_percent,
-          self.policies.max_cache_size / 1024.)
+          '%.1fkb)', len(evicted),
+          sum(evicted) / 1024., self._free_disk / 1024., total_usage / 1024.,
+          usage_percent, self.policies.max_cache_size / 1024.)
     self._save()
     return evicted
 
@@ -779,10 +787,8 @@ class DiskContentAddressedCache(ContentAddressedCache):
     # real trimming but doing this quick version here makes it possible to map
     # an isolated that is larger than the current amount of free disk space when
     # the cache size is already large.
-    while (
-        self.policies.min_free_space and
-        self._lru and
-        self._free_disk < self.policies.min_free_space):
+    while (self.policies.min_free_space and self._lru and
+           self._free_disk < self.policies.min_free_space):
       # self._free_disk is updated by this call.
       if self._remove_lru_file(False) == -1:
         break
@@ -850,11 +856,19 @@ class NamedCache(Cache):
     elif fs.isfile(self.state_file):
       try:
         self._lru = lru.LRUDict.load(self.state_file)
+        for _, size in self._lru.values():
+          if not isinstance(size, six.integer_types):
+            with open(self.state_file, 'r') as f:
+              logging.info('named cache state file: %s\n%s', self.state_file,
+                           f.read())
+            raise ValueError("size is not integer: %s" % size)
+
       except ValueError:
         logging.exception(
             'NamedCache: failed to load named cache state file; obliterating')
         file_path.rmtree(self.cache_dir)
         fs.makedirs(self.cache_dir)
+        self._lru = lru.LRUDict()
       with self._lock:
         self._try_upgrade()
     if time_fn:
@@ -865,6 +879,17 @@ class NamedCache(Cache):
     """Returns a set of names of available caches."""
     with self._lock:
       return set(self._lru)
+
+  def _sudo_chown(self, path):
+    if sys.platform == 'win32':
+      return
+    uid = os.getuid()
+    if os.stat(path).st_uid == uid:
+      return
+    # Maybe owner of |path| is different from runner of this script. This is to
+    # make fs.rename work in that case.
+    # https://crbug.com/986676
+    subprocess.check_call(['sudo', '-n', 'chown', str(uid), path])
 
   def install(self, dst, name):
     """Creates the directory |dst| and moves a previous named cache |name| if it
@@ -895,6 +920,7 @@ class NamedCache(Cache):
           if fs.isdir(abs_cache):
             logging.info('- reusing %r; size was %d', rel_cache, size)
             file_path.ensure_tree(os.path.dirname(dst))
+            self._sudo_chown(abs_cache)
             fs.rename(abs_cache, dst)
             self._remove(name)
             return size
@@ -912,7 +938,7 @@ class NamedCache(Cache):
         # Raise using the original traceback.
         exc = NamedCacheError(
             'cannot install cache named %r at %r: %s' % (name, dst, ex))
-        six.reraise(exc, None, sys.exc_info()[2])
+        six.reraise(type(exc), exc, sys.exc_info()[2])
       finally:
         self._save()
 
@@ -944,20 +970,19 @@ class NamedCache(Cache):
           logging.error('- overwriting existing cache!')
           self._remove(name)
 
-        # Calculate the size of the named cache to keep. It's important because
-        # if size is zero (it's empty), we do not want to add it back to the
-        # named caches cache.
+        # Calculate the size of the named cache to keep.
         size = _get_recursive_size(src)
-        logging.info('- Size is %d', size)
-        if not size:
-          # Do not save empty named cache.
-          return size
+        logging.info('- Size is %s', size)
+        if size is None:
+          # Do not save a named cache that was deleted.
+          return
 
         # Move the dir and create an entry for the named cache.
         rel_cache = self._allocate_dir()
         abs_cache = os.path.join(self.cache_dir, rel_cache)
         logging.info('- Moving to %r', rel_cache)
         file_path.ensure_tree(os.path.dirname(abs_cache))
+        self._sudo_chown(src)
         fs.rename(src, abs_cache)
 
         self._lru.add(name, (rel_cache, size))
@@ -985,7 +1010,7 @@ class NamedCache(Cache):
         # Raise using the original traceback.
         exc = NamedCacheError(
             'cannot uninstall cache named %r at %r: %s' % (name, src, ex))
-        six.reraise(exc, None, sys.exc_info()[2])
+        six.reraise(type(exc), exc, sys.exc_info()[2])
       finally:
         # Call save() at every uninstall. The assumptions are:
         # - The total the number of named caches is low, so the state.json file
@@ -1204,8 +1229,7 @@ class NamedCache(Cache):
     while len(tried) < 1000:
       i = random.randint(0, abc_len * abc_len - 1)
       rel_path = (
-        self._DIR_ALPHABET[i / abc_len] +
-        self._DIR_ALPHABET[i % abc_len])
+          self._DIR_ALPHABET[i // abc_len] + self._DIR_ALPHABET[i % abc_len])
       if rel_path in tried:
         continue
       abs_path = os.path.join(self.cache_dir, rel_path)

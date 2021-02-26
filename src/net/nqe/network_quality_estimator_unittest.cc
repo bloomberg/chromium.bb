@@ -20,6 +20,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/platform_thread.h"
@@ -65,6 +66,20 @@ void ExpectBucketCountAtLeast(base::HistogramTester* histogram_tester,
   EXPECT_LE(expected_min_count_samples, actual_count_samples)
       << " histogram=" << histogram << " bucket_min=" << bucket_min
       << " expected_min_count_samples=" << expected_min_count_samples;
+}
+
+size_t GetHistogramCount(base::HistogramTester* histogram_tester,
+                         const std::string& histogram_name) {
+  base::ThreadPoolInstance::Get()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  const std::vector<base::Bucket> buckets =
+      histogram_tester->GetAllSamples(histogram_name);
+  size_t total_count = 0;
+  for (const auto& bucket : buckets) {
+    total_count += bucket.count;
+  }
+  return total_count;
 }
 
 }  // namespace
@@ -1392,9 +1407,16 @@ TEST_F(NetworkQualityEstimatorTest, TestGetMetricsSince) {
   }
 }
 
+#if defined(OS_IOS)
+// Flaky on iOS: crbug.com/672917.
+#define MAYBE_TestThroughputNoRequestOverlap \
+  DISABLED_TestThroughputNoRequestOverlap
+#else
+#define MAYBE_TestThroughputNoRequestOverlap TestThroughputNoRequestOverlap
+#endif
 // Tests if the throughput observation is taken correctly when local and network
 // requests do not overlap.
-TEST_F(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
+TEST_F(NetworkQualityEstimatorTest, MAYBE_TestThroughputNoRequestOverlap) {
   base::HistogramTester histogram_tester;
   std::map<std::string, std::string> variation_params;
   variation_params["throughput_min_requests_in_flight"] = "1";
@@ -2241,8 +2263,12 @@ TEST_F(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
 }
 
 TEST_F(NetworkQualityEstimatorTest, TestRecordNetworkIDAvailability) {
-  base::HistogramTester histogram_tester;
   TestNetworkQualityEstimator estimator;
+
+  // Create the histogram tester after |estimator| is constructed. This ensures
+  // that any network checks done at the time of |estimator| construction do not
+  // affect |histogram_tester|.
+  base::HistogramTester histogram_tester;
 
   // The NetworkID is recorded as available on Wi-Fi connection.
   estimator.SimulateNetworkChange(
@@ -3051,60 +3077,84 @@ TEST_F(NetworkQualityEstimatorTest, TestPeerToPeerConnectionsCountObserver) {
   EXPECT_EQ(3u, observer.count());
 }
 
+// Fails only for Android. https://crbug.com/1130720
+#if defined(OS_ANDROID)
+#define MAYBE_CheckSignalStrength DISABLED_CheckSignalStrength
+#else
+#define MAYBE_CheckSignalStrength CheckSignalStrength
+#endif
+
 // Tests that the signal strength API is not called too frequently.
-TEST_F(NetworkQualityEstimatorTest, CheckSignalStrength) {
+TEST_F(NetworkQualityEstimatorTest, MAYBE_CheckSignalStrength) {
+  constexpr char histogram_name[] = "NQE.SignalStrengthQueried.WiFi";
+  constexpr int kWiFiSignalStrengthQueryIntervalSeconds = 30 * 60;
+
   std::map<std::string, std::string> variation_params;
   variation_params["get_signal_strength_and_detailed_network_id"] = "true";
   TestNetworkQualityEstimator estimator(variation_params);
 
+  estimator.SimulateNetworkChange(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test");
+
   base::SimpleTestTickClock tick_clock;
-  tick_clock.SetNowTicks(base::TimeTicks::Now());
+  // SimulateNetworkChange() above can produce entries in the histogram bucket
+  // if the test system has real wifi or cellular connections, and can also
+  // leave the NQE inside its timeout. To avoid that, fastforward fake time for
+  // more than the query interval.
+  tick_clock.SetNowTicks(base::TimeTicks::Now() +
+                         base::TimeDelta::FromSeconds(
+                             kWiFiSignalStrengthQueryIntervalSeconds * 2));
 
   estimator.SetTickClockForTesting(&tick_clock);
 
+  base::HistogramTester histogram_tester;
   base::Optional<int32_t> signal_strength =
       estimator.GetCurrentSignalStrengthWithThrottling();
-  EXPECT_FALSE(signal_strength);
 
   signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
-  EXPECT_FALSE(signal_strength);
+  histogram_tester.ExpectTotalCount(histogram_name, 1);
 
-  // Advance clock by 30 seconds. The signal strength API should now be called.
-  tick_clock.Advance(base::TimeDelta::FromSeconds(30));
+  // Advance clock by |kWiFiSignalStrengthQueryIntervalSeconds|. The signal
+  // strength API should now be called.
+  tick_clock.Advance(
+      base::TimeDelta::FromSeconds(kWiFiSignalStrengthQueryIntervalSeconds));
   signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
-  EXPECT_TRUE(signal_strength);
+  histogram_tester.ExpectTotalCount(histogram_name, 2);
 
   // Calling it again should return no value.
   signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
-  EXPECT_FALSE(signal_strength);
 
-  tick_clock.Advance(base::TimeDelta::FromSeconds(27));
+  tick_clock.Advance(base::TimeDelta::FromSeconds(
+      kWiFiSignalStrengthQueryIntervalSeconds - 3));
   signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
-  EXPECT_FALSE(signal_strength);
+  histogram_tester.ExpectTotalCount(histogram_name, 2);
 
   // Move the clock by another 4 seconds. Since it's more than 30 seconds since
   // the strength was last available, it should be available again.
-  tick_clock.Advance(base::TimeDelta::FromSeconds(4));
+  tick_clock.Advance(base::TimeDelta::FromSeconds(3));
   signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
-  EXPECT_TRUE(signal_strength);
+  histogram_tester.ExpectTotalCount(histogram_name, 3);
 
   signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
-  EXPECT_FALSE(signal_strength);
+  histogram_tester.ExpectTotalCount(histogram_name, 3);
 
   // Changing the connection type should make the signal strength available
-  // again.
+  // again. Verify that the signal strength is not queried too frequently
+  // (currently, the threshold is set to 5). This is partially indeterminsitic
+  // due to the indeterminism at the connection change.
   estimator.SimulateNetworkChange(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
-  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
-  EXPECT_TRUE(signal_strength);
+      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test");
+  size_t samples_count = GetHistogramCount(&histogram_tester, histogram_name);
+  EXPECT_LE(4u, samples_count);
+  EXPECT_GE(8u, samples_count);
 
   tick_clock.Advance(base::TimeDelta::FromMilliseconds(2));
   signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
-  EXPECT_TRUE(signal_strength);
+  histogram_tester.ExpectTotalCount(histogram_name, samples_count + 1);
 
   tick_clock.Advance(base::TimeDelta::FromMilliseconds(2));
   signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
-  EXPECT_FALSE(signal_strength);
+  histogram_tester.ExpectTotalCount(histogram_name, samples_count + 1);
 }
 
 TEST_F(NetworkQualityEstimatorTest, CheckSignalStrengthDisabledByDefault) {

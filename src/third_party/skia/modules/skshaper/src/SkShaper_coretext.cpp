@@ -7,8 +7,6 @@
 
 #include "modules/skshaper/include/SkShaper.h"
 
-#if defined(SK_BUILD_FOR_MAC) || defined(SK_BUILD_FOR_IOS)
-
 #ifdef SK_BUILD_FOR_MAC
 #import <ApplicationServices/ApplicationServices.h>
 #endif
@@ -22,8 +20,12 @@
 
 #include "include/ports/SkTypeface_mac.h"
 #include "src/core/SkArenaAlloc.h"
+#include "src/utils/SkUTF.h"
+#include "src/utils/mac/SkCGBase.h"
+#include "src/utils/mac/SkUniqueCFRef.h"
 
 #include <vector>
+#include <utility>
 
 class SkShaper_CoreText : public SkShaper {
 public:
@@ -96,15 +98,6 @@ void SkShaper_CoreText::shape(const char* utf8, size_t utf8Bytes,
                        width, handler);
 }
 
-template <typename T> class AutoCF {
-    T fObj;
-public:
-    AutoCF(T obj) : fObj(obj) {}
-    ~AutoCF() { CFRelease(fObj); }
-
-    T get() const { return fObj; }
-};
-
 // CTFramesetter/CTFrame can do this, but require version 10.14
 class LineBreakIter {
     CTTypesetterRef fTypesetter;
@@ -116,40 +109,27 @@ public:
         fStart = 0;
     }
 
-    CTLineRef nextLine() {
-        CFIndex count = CTTypesetterSuggestLineBreak(fTypesetter, fStart, fWidth);
-        if (count == 0) {
+    SkUniqueCFRef<CTLineRef> nextLine() {
+        CFRange stringRange {fStart, CTTypesetterSuggestLineBreak(fTypesetter, fStart, fWidth)};
+        if (stringRange.length == 0) {
             return nullptr;
         }
-        auto line = CTTypesetterCreateLine(fTypesetter, {fStart, count});
-        fStart += count;
-        return line;
+        fStart += stringRange.length;
+        return SkUniqueCFRef<CTLineRef>(CTTypesetterCreateLine(fTypesetter, stringRange));
     }
 };
 
 static void dict_add_double(CFMutableDictionaryRef d, const void* name, double value) {
-    AutoCF<CFNumberRef> number = CFNumberCreate(kCFAllocatorDefault, kCFNumberDoubleType, &value);
+    SkUniqueCFRef<CFNumberRef> number(
+            CFNumberCreate(kCFAllocatorDefault, kCFNumberDoubleType, &value));
     CFDictionaryAddValue(d, name, number.get());
 }
 
-static void dump(CFDictionaryRef d) {
-    CFIndex count = CFDictionaryGetCount(d);
-    std::vector<const void*> keys(count);
-    std::vector<const void*> vals(count);
-
-    CFDictionaryGetKeysAndValues(d, keys.data(), vals.data());
-
-    for (CFIndex i = 0; i < count; ++i) {
-        CFStringRef kstr = (CFStringRef)keys[i];
-        const char* ckstr = CFStringGetCStringPtr(kstr, kCFStringEncodingUTF8);
-        SkDebugf("dict[%d] %s %p\n", i, ckstr, vals[i]);
-    }
-}
-
-static CTFontRef create_ctfont_from_font(const SkFont& font) {
+static SkUniqueCFRef<CTFontRef> create_ctfont_from_font(const SkFont& font) {
     auto typeface = font.getTypefaceOrDefault();
     auto ctfont = SkTypeface_GetCTFontRef(typeface);
-    return CTFontCreateCopyWithAttributes(ctfont, font.getSize(), nullptr, nullptr);
+    return SkUniqueCFRef<CTFontRef>(
+            CTFontCreateCopyWithAttributes(ctfont, font.getSize(), nullptr, nullptr));
 }
 
 static SkFont run_to_font(CTRunRef run, const SkFont& orig) {
@@ -157,7 +137,7 @@ static SkFont run_to_font(CTRunRef run, const SkFont& orig) {
     CTFontRef ct = (CTFontRef)CFDictionaryGetValue(attr, kCTFontAttributeName);
     if (!ct) {
         SkDebugf("no ctfont in Run Attributes\n");
-        dump(attr);
+        CFShow(attr);
         return orig;
     }
     // Do I need to add a local cache, or allow the caller to manage this lookup?
@@ -165,6 +145,53 @@ static SkFont run_to_font(CTRunRef run, const SkFont& orig) {
     font.setTypeface(SkMakeTypefaceFromCTFont(ct));
     return font;
 }
+
+namespace {
+class UTF16ToUTF8IndicesMap {
+public:
+    /** Builds a UTF-16 to UTF-8 indices map; the text is not retained
+     * @return true if successful
+     */
+    bool setUTF8(const char* utf8, size_t size) {
+        SkASSERT(utf8 != nullptr);
+
+        if (!SkTFitsIn<int32_t>(size)) {
+            SkDEBUGF("UTF16ToUTF8IndicesMap: text too long");
+            return false;
+        }
+
+        auto utf16Size = SkUTF::UTF8ToUTF16(nullptr, 0, utf8, size);
+        if (utf16Size < 0) {
+            SkDEBUGF("UTF16ToUTF8IndicesMap: Invalid utf8 input");
+            return false;
+        }
+
+        // utf16Size+1 to also store the size
+        fUtf16ToUtf8Indices = std::vector<size_t>(utf16Size + 1);
+        auto utf16 = fUtf16ToUtf8Indices.begin();
+        auto utf8Begin = utf8, utf8End = utf8 + size;
+        while (utf8Begin < utf8End) {
+            *utf16 = utf8Begin - utf8;
+            utf16 += SkUTF::ToUTF16(SkUTF::NextUTF8(&utf8Begin, utf8End), nullptr);
+        }
+        *utf16 = size;
+
+        return true;
+    }
+
+    size_t mapIndex(size_t index) const {
+        SkASSERT(index < fUtf16ToUtf8Indices.size());
+        return fUtf16ToUtf8Indices[index];
+    }
+
+    std::pair<size_t, size_t> mapRange(size_t start, size_t size) const {
+        auto utf8Start = mapIndex(start);
+        return {utf8Start, mapIndex(start + size) - utf8Start};
+    }
+private:
+    std::vector<size_t> fUtf16ToUtf8Indices;
+};
+} // namespace
 
 // kCTTrackingAttributeName not available until 10.12
 const CFStringRef kCTTracking_AttributeName = CFSTR("CTTracking");
@@ -174,25 +201,21 @@ void SkShaper_CoreText::shape(const char* utf8, size_t utf8Bytes,
                               bool /* leftToRight */,
                               SkScalar width,
                               RunHandler* handler) const {
-    auto cgfloat_to_scalar = [](CGFloat x) {
-        SkScalar s;
-        if (sizeof(CGFloat) == sizeof(double)) {
-            s = SkDoubleToScalar(x);
-        } else {
-            s = x;
-        }
-        return s;
-    };
+    SkUniqueCFRef<CFStringRef> textString(
+            CFStringCreateWithBytes(kCFAllocatorDefault, (const uint8_t*)utf8, utf8Bytes,
+                                    kCFStringEncodingUTF8, false));
 
-    AutoCF<CFStringRef> textString = CFStringCreateWithBytes(nullptr, (const uint8_t*)utf8, utf8Bytes,
-                                                     kCFStringEncodingUTF8, false);
+    UTF16ToUTF8IndicesMap utf8IndicesMap;
+    if (!utf8IndicesMap.setUTF8(utf8, utf8Bytes)) {
+        return;
+    }
 
-    AutoCF<CTFontRef> ctfont = create_ctfont_from_font(font);
+    SkUniqueCFRef<CTFontRef> ctfont = create_ctfont_from_font(font);
 
-    AutoCF<CFMutableDictionaryRef> attr =
+    SkUniqueCFRef<CFMutableDictionaryRef> attr(
             CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
                                       &kCFTypeDictionaryKeyCallBacks,
-                                      &kCFTypeDictionaryValueCallBacks);
+                                      &kCFTypeDictionaryValueCallBacks));
     CFDictionaryAddValue(attr.get(), kCTFontAttributeName, ctfont.get());
     if (false) {
         // trying to see what these affect
@@ -200,13 +223,11 @@ void SkShaper_CoreText::shape(const char* utf8, size_t utf8Bytes,
         dict_add_double(attr.get(), kCTKernAttributeName, 0.0);
     }
 
-    AutoCF<CFAttributedStringRef> attrString =
-            CFAttributedStringCreate(nullptr, textString.get(), attr.get());
+    SkUniqueCFRef<CFAttributedStringRef> attrString(
+            CFAttributedStringCreate(kCFAllocatorDefault, textString.get(), attr.get()));
 
-    AutoCF<CTTypesetterRef> typesetter =
-            CTTypesetterCreateWithAttributedStringAndOptions(attrString.get(), nullptr);
-
-    SkSTArenaAlloc<4096> arena;
+    SkUniqueCFRef<CTTypesetterRef> typesetter(
+            CTTypesetterCreateWithAttributedString(attrString.get()));
 
     // We have to compute RunInfos in a loop, and then reuse them in a 2nd loop,
     // so we store them in an array (we reuse the array's storage for each line).
@@ -214,14 +235,15 @@ void SkShaper_CoreText::shape(const char* utf8, size_t utf8Bytes,
     std::vector<SkShaper::RunHandler::RunInfo> infos;
 
     LineBreakIter iter(typesetter.get(), width);
-    while (CTLineRef line = iter.nextLine()) {
-        CFArrayRef run_array = CTLineGetGlyphRuns(line);
+    while (SkUniqueCFRef<CTLineRef> line = iter.nextLine()) {
+        CFArrayRef run_array = CTLineGetGlyphRuns(line.get());
         CFIndex runCount = CFArrayGetCount(run_array);
         if (runCount == 0) {
             continue;
         }
         handler->beginLine();
         fontStorage.clear();
+        fontStorage.reserve(runCount); // ensure the refs won't get invalidated
         infos.clear();
         for (CFIndex j = 0; j < runCount; ++j) {
             CTRunRef run = (CTRunRef)CFArrayGetValueAtIndex(run_array, j);
@@ -229,15 +251,16 @@ void SkShaper_CoreText::shape(const char* utf8, size_t utf8Bytes,
 
             SkASSERT(sizeof(CGGlyph) == sizeof(uint16_t));
 
+            SkSTArenaAlloc<4096> arena;
             CGSize* advances = arena.makeArrayDefault<CGSize>(runGlyphs);
             CTRunGetAdvances(run, {0, runGlyphs}, advances);
             SkScalar adv = 0;
             for (CFIndex k = 0; k < runGlyphs; ++k) {
                 adv += advances[k].width;
             }
-            arena.reset();
 
-            CFRange range = CTRunGetStringRange(run);
+            CFRange cfRange = CTRunGetStringRange(run);
+            auto range = utf8IndicesMap.mapRange(cfRange.location, cfRange.length);
 
             fontStorage.push_back(run_to_font(run, font));
             infos.push_back({
@@ -245,13 +268,14 @@ void SkShaper_CoreText::shape(const char* utf8, size_t utf8Bytes,
                 0,                  // need fBidiLevel
                 {adv, 0},
                 (size_t)runGlyphs,
-                {(size_t)range.location, (size_t)range.length},
+                {range.first, range.second},
             });
             handler->runInfo(infos.back());
         }
         handler->commitRunInfo();
 
         // Now loop through again and fill in the buffers
+        SkScalar lineAdvance = 0;
         for (CFIndex j = 0; j < runCount; ++j) {
             const auto& info = infos[j];
             auto buffer = handler->runBuffer(info);
@@ -262,6 +286,7 @@ void SkShaper_CoreText::shape(const char* utf8, size_t utf8Bytes,
 
             CTRunGetGlyphs(run, {0, runGlyphs}, buffer.glyphs);
 
+            SkSTArenaAlloc<4096> arena;
             CGPoint* positions = arena.makeArrayDefault<CGPoint>(runGlyphs);
             CTRunGetPositions(run, {0, runGlyphs}, positions);
             CFIndex* indices = nullptr;
@@ -272,25 +297,19 @@ void SkShaper_CoreText::shape(const char* utf8, size_t utf8Bytes,
 
             for (CFIndex k = 0; k < runGlyphs; ++k) {
                 buffer.positions[k] = {
-                    buffer.point.fX + cgfloat_to_scalar(positions[k].x),
+                    buffer.point.fX + SkScalarFromCGFloat(positions[k].x) - lineAdvance,
                     buffer.point.fY,
                 };
                 if (buffer.offsets) {
                     buffer.offsets[k] = {0, 0}; // offset relative to the origin for this glyph
                 }
                 if (buffer.clusters) {
-                    buffer.clusters[k] = indices[k];
+                    buffer.clusters[k] = utf8IndicesMap.mapIndex(indices[k]);
                 }
             }
-            arena.reset();
             handler->commitRunBuffer(info);
+            lineAdvance += info.fAdvance.fX;
         }
         handler->commitLine();
     }
 }
-
-#else
-std::unique_ptr<SkShaper> SkShaper::MakeCoreText() {
-    return nullptr;
-}
-#endif

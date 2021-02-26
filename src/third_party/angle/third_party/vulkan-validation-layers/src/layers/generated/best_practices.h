@@ -956,6 +956,13 @@ void PostCallRecordSignalSemaphoreKHR(
     VkResult                                    result);
 
 
+void PostCallRecordGetPhysicalDeviceFragmentShadingRatesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t*                                   pFragmentShadingRateCount,
+    VkPhysicalDeviceFragmentShadingRateKHR*     pFragmentShadingRates,
+    VkResult                                    result);
+
+
 #ifdef VK_ENABLE_BETA_EXTENSIONS
 
 void PostCallRecordCreateDeferredOperationKHR(
@@ -1107,10 +1114,46 @@ void PostCallRecordAcquireXlibDisplayEXT(
 
 #endif // VK_USE_PLATFORM_XLIB_XRANDR_EXT
 
+#ifdef VK_USE_PLATFORM_XLIB_XRANDR_EXT
+
+void PostCallRecordGetRandROutputDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    Display*                                    dpy,
+    RROutput                                    rrOutput,
+    VkDisplayKHR*                               pDisplay,
+    VkResult                                    result);
+
+
+#endif // VK_USE_PLATFORM_XLIB_XRANDR_EXT
+
 void PostCallRecordGetPhysicalDeviceSurfaceCapabilities2EXT(
     VkPhysicalDevice                            physicalDevice,
     VkSurfaceKHR                                surface,
     VkSurfaceCapabilities2EXT*                  pSurfaceCapabilities,
+    VkResult                                    result);
+
+
+void PostCallRecordDisplayPowerControlEXT(
+    VkDevice                                    device,
+    VkDisplayKHR                                display,
+    const VkDisplayPowerInfoEXT*                pDisplayPowerInfo,
+    VkResult                                    result);
+
+
+void PostCallRecordRegisterDeviceEventEXT(
+    VkDevice                                    device,
+    const VkDeviceEventInfoEXT*                 pDeviceEventInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkFence*                                    pFence,
+    VkResult                                    result);
+
+
+void PostCallRecordRegisterDisplayEventEXT(
+    VkDevice                                    device,
+    VkDisplayKHR                                display,
+    const VkDisplayEventInfoEXT*                pDisplayEventInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkFence*                                    pFence,
     VkResult                                    result);
 
 
@@ -1202,6 +1245,13 @@ void PostCallRecordGetMemoryAndroidHardwareBufferANDROID(
 
 
 #endif // VK_USE_PLATFORM_ANDROID_KHR
+
+void PostCallRecordGetImageDrmFormatModifierPropertiesEXT(
+    VkDevice                                    device,
+    VkImage                                     image,
+    VkImageDrmFormatModifierPropertiesEXT*      pProperties,
+    VkResult                                    result);
+
 
 void PostCallRecordCreateAccelerationStructureNV(
     VkDevice                                    device,
@@ -1466,6 +1516,18 @@ void PostCallRecordSetPrivateDataEXT(
     VkResult                                    result);
 
 
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+
+void PostCallRecordCreateDirectFBSurfaceEXT(
+    VkInstance                                  instance,
+    const VkDirectFBSurfaceCreateInfoEXT*       pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSurfaceKHR*                               pSurface,
+    VkResult                                    result);
+
+
+#endif // VK_USE_PLATFORM_DIRECTFB_EXT
+
 #ifdef VK_ENABLE_BETA_EXTENSIONS
 
 void PostCallRecordCreateAccelerationStructureKHR(
@@ -1585,7 +1647,7 @@ const std::unordered_map<std::string, DeprecationData>  deprecated_extensions = 
     {"VK_AMD_negative_viewport_height", {kExtObsoleted, "VK_KHR_maintenance1"}},
     {"VK_EXT_buffer_device_address", {kExtDeprecated, "VK_KHR_buffer_device_address"}},
     {"VK_EXT_debug_marker", {kExtPromoted, "VK_EXT_debug_utils"}},
-// ADD BACK AFTER LAYER TESTS SWITCH TO DEBUG_UTILS!       {"VK_EXT_debug_report", {kExtDeprecated, "VK_EXT_debug_utils"}},
+    {"VK_EXT_debug_report", {kExtDeprecated, "VK_EXT_debug_utils"}},
     {"VK_EXT_descriptor_indexing", {kExtPromoted, "VK_VERSION_1_2"}},
     {"VK_EXT_host_query_reset", {kExtPromoted, "VK_VERSION_1_2"}},
     {"VK_EXT_sampler_filter_minmax", {kExtPromoted, "VK_VERSION_1_2"}},
@@ -1636,6 +1698,8 @@ const std::unordered_map<std::string, DeprecationData>  deprecated_extensions = 
     {"VK_KHR_uniform_buffer_standard_layout", {kExtPromoted, "VK_VERSION_1_2"}},
     {"VK_KHR_variable_pointers", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_vulkan_memory_model", {kExtPromoted, "VK_VERSION_1_2"}},
+    {"VK_MVK_ios_surface", {kExtDeprecated, "VK_EXT_metal_surface"}},
+    {"VK_MVK_macos_surface", {kExtDeprecated, "VK_EXT_metal_surface"}},
     {"VK_NV_dedicated_allocation", {kExtDeprecated, "VK_KHR_dedicated_allocation"}},
     {"VK_NV_external_memory", {kExtDeprecated, "VK_KHR_external_memory"}},
     {"VK_NV_external_memory_capabilities", {kExtDeprecated, "VK_KHR_external_memory_capabilities"}},

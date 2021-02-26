@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_xmlconnection.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -31,6 +31,8 @@ CXFA_XmlConnection::CXFA_XmlConnection(CXFA_Document* doc,
                 XFA_Element::XmlConnection,
                 kXmlConnectionPropertyData,
                 kXmlConnectionAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_XmlConnection::~CXFA_XmlConnection() = default;

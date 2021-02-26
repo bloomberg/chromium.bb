@@ -14,17 +14,9 @@
 
 TabGroupHighlight::TabGroupHighlight(TabGroupViews* tab_group_views,
                                      const tab_groups::TabGroupId& group)
-    : tab_group_views_(tab_group_views), group_(group) {
-  // Set non-zero bounds to start with, so that painting isn't pruned.
-  // Needed because UpdateBounds() happens during OnPaint(), which is called
-  // after painting is pruned.
-  const int corner_radius = TabStyle::GetCornerRadius();
-  SetBounds(0, 0, corner_radius * 4, GetLayoutConstant(TAB_HEIGHT));
-}
+    : tab_group_views_(tab_group_views), group_(group) {}
 
 void TabGroupHighlight::OnPaint(gfx::Canvas* canvas) {
-  SetBoundsRect(tab_group_views_->GetBounds());
-
   SkPath path = GetPath();
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
@@ -41,7 +33,7 @@ void TabGroupHighlight::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawPath(path, flags);
 }
 
-bool TabGroupHighlight::CanProcessEventsWithinSubtree() const {
+bool TabGroupHighlight::GetCanProcessEventsWithinSubtree() const {
   // Don't accept any mouse events, otherwise this will prevent tabs and group
   // headers from getting clicked.
   return false;

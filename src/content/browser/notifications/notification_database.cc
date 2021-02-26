@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "content/browser/notifications/notification_database_conversions.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -276,11 +275,13 @@ NotificationDatabase::Status NotificationDatabase::ForEachNotificationData(
       std::move(callback));
 }
 
-NotificationDatabase::Status NotificationDatabase::ReadAllNotificationData(
-    std::vector<NotificationDatabaseData>* notification_data_vector) const {
-  return ReadAllNotificationDataInternal(
-      GURL() /* origin */, blink::mojom::kInvalidServiceWorkerRegistrationId,
-      notification_data_vector);
+NotificationDatabase::Status
+NotificationDatabase::ForEachNotificationDataForServiceWorkerRegistration(
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    ReadAllNotificationsCallback callback) const {
+  return ForEachNotificationDataInternal(origin, service_worker_registration_id,
+                                         std::move(callback));
 }
 
 NotificationDatabase::Status
@@ -350,8 +351,8 @@ NotificationDatabase::Status NotificationDatabase::DeleteNotificationData(
   NotificationDatabaseData data;
   Status status = ReadNotificationData(notification_id, origin, &data);
   if (status == STATUS_OK && record_notification_to_ukm_callback_) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(record_notification_to_ukm_callback_, data));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(record_notification_to_ukm_callback_, data));
   }
 
   leveldb::WriteBatch batch;
@@ -506,8 +507,8 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
     }
 
     if (record_notification_to_ukm_callback_) {
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(record_notification_to_ukm_callback_,
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(record_notification_to_ukm_callback_,
                                     notification_database_data));
     }
 

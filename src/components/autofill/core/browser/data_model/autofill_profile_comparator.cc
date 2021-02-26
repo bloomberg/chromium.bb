@@ -10,20 +10,18 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/unicodestring.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/lock.h"
 #include "components/autofill/core/browser/address_rewriter.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/state_names.h"
 #include "components/autofill/core/common/autofill_clock.h"
-#include "third_party/icu/source/common/unicode/unistr.h"
-#include "third_party/icu/source/i18n/unicode/translit.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "third_party/libphonenumber/phonenumber_api.h"
 
 using base::UTF16ToUTF8;
@@ -124,7 +122,7 @@ NormalizingIterator::NormalizingIterator(
     : previous_was_skippable_(false),
       collapse_skippable_(whitespace_spec ==
                           AutofillProfileComparator::RETAIN_WHITESPACE),
-      iter_(base::i18n::UTF16CharIterator(text.data(), text.length())) {
+      iter_(text) {
   int32_t character = iter_.get();
 
   while (!iter_.end() && IsPunctuationOrWhitespace(u_charType(character))) {
@@ -190,50 +188,24 @@ int32_t NormalizingIterator::GetNextChar() {
   return iter_.get();
 }
 
-// This RAII class provides a thread-safe interface to a shared transliterator.
-// Sharing a single transliterator is advisable due its high construction cost.
-class BorrowedTransliterator {
- public:
-  BorrowedTransliterator() : auto_lock_(GetLock()) {}
-
-  void Transliterate(icu::UnicodeString* text) const {
-    if (GetTransliterator() != nullptr) {
-      GetTransliterator()->transliterate(*text);
-    } else {
-      *text = text->toLower();
-    }
+// Copies the address line information and structured tokens from |source| to
+// |target|.
+void CopyAddressLineInformationFromProfile(const AutofillProfile& source,
+                                           Address* target) {
+  ServerFieldTypeSet types_to_copy;
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillAddressEnhancementVotes)) {
+    types_to_copy = {
+        ADDRESS_HOME_STREET_ADDRESS,        ADDRESS_HOME_STREET_NAME,
+        ADDRESS_HOME_DEPENDENT_STREET_NAME, ADDRESS_HOME_HOUSE_NUMBER,
+        ADDRESS_HOME_PREMISE_NAME,          ADDRESS_HOME_SUBPREMISE};
+  } else {
+    types_to_copy = {ADDRESS_HOME_STREET_ADDRESS};
   }
 
- private:
-  static base::Lock& GetLock() {
-    static base::NoDestructor<base::Lock> instance;
-    return *instance;
-  }
-
-  // Use ICU transliteration to remove diacritics and fold case.
-  // See http://userguide.icu-project.org/transforms/general
-  static std::unique_ptr<icu::Transliterator> CreateTransliterator() {
-    UErrorCode status = U_ZERO_ERROR;
-    std::unique_ptr<icu::Transliterator> transliterator(
-        icu::Transliterator::createInstance(
-            "NFD; [:Nonspacing Mark:] Remove; Lower; NFC", UTRANS_FORWARD,
-            status));
-    if (U_FAILURE(status) || transliterator == nullptr) {
-      // TODO(rogerm): Add a histogram to count how often this happens.
-      LOG(ERROR) << "Failed to create ICU Transliterator: "
-                 << u_errorName(status);
-    }
-    return transliterator;
-  }
-
-  static std::unique_ptr<icu::Transliterator>& GetTransliterator() {
-    static base::NoDestructor<std::unique_ptr<icu::Transliterator>> instance(
-        CreateTransliterator());
-    return *instance;
-  }
-
-  base::AutoLock auto_lock_;
-};
+  for (const auto& type : types_to_copy)
+    target->SetRawInfo(type, source.GetRawInfo(type));
+}
 
 }  // namespace
 
@@ -290,7 +262,7 @@ bool AutofillProfileComparator::HasOnlySkippableCharacters(
 
 base::string16 AutofillProfileComparator::NormalizeForComparison(
     base::StringPiece16 text,
-    AutofillProfileComparator::WhitespaceSpec whitespace_spec) const {
+    AutofillProfileComparator::WhitespaceSpec whitespace_spec) {
   // This algorithm is not designed to be perfect, we could get arbitrarily
   // fancy here trying to canonicalize address lines. Instead, this is designed
   // to handle common cases for all types of data (addresses and names) without
@@ -310,8 +282,7 @@ base::string16 AutofillProfileComparator::NormalizeForComparison(
   base::string16 result;
   result.reserve(text.length());
   bool previous_was_whitespace = (whitespace_spec == RETAIN_WHITESPACE);
-  for (base::i18n::UTF16CharIterator iter(text.data(), text.length());
-       !iter.end(); iter.Advance()) {
+  for (base::i18n::UTF16CharIterator iter(text); !iter.end(); iter.Advance()) {
     if (IsPunctuationOrWhitespace(u_charType(iter.get()))) {
       if (!previous_was_whitespace && whitespace_spec == RETAIN_WHITESPACE) {
         result.push_back(' ');
@@ -327,9 +298,7 @@ base::string16 AutofillProfileComparator::NormalizeForComparison(
   if (previous_was_whitespace && !result.empty())
     result.resize(result.size() - 1);
 
-  icu::UnicodeString value = icu::UnicodeString(result.data(), result.length());
-  BorrowedTransliterator().Transliterate(&value);
-  return base::i18n::UnicodeStringToString16(value);
+  return RemoveDiacriticsAndConvertToLowerCase(result);
 }
 
 bool AutofillProfileComparator::AreMergeable(const AutofillProfile& p1,
@@ -373,9 +342,41 @@ bool AutofillProfileComparator::MergeNames(const AutofillProfile& p1,
   DCHECK(HaveMergeableNames(p1, p2));
 
   const AutofillType kFullName(NAME_FULL);
-  const base::string16& full_name_1 = p1.GetInfo(kFullName, app_locale_);
-  const base::string16& full_name_2 = p2.GetInfo(kFullName, app_locale_);
+  const base::string16 full_name_1 = p1.GetInfo(kFullName, app_locale_);
+  const base::string16 full_name_2 = p2.GetInfo(kFullName, app_locale_);
 
+  // At this state it is already determined that the two names are mergeable.
+  // This can mean of of the following things:
+  // * One name is empty. In this scenario the non-empty name is used.
+  // * The names are token equivalent: In this scenario a merge of the tree
+  // structure should be possible.
+  // * One name is a variant of the other. In this scenario, use the non-variant
+  // name. Note, p1 is the newer profile.
+  if (structured_address::StructuredNamesEnabled()) {
+    // First, set info to the original profile.
+    *name_info = p2.GetNameInfo();
+    // If the name of the |p1| is empty, just keep the state of p2.
+    if (HasOnlySkippableCharacters(full_name_1))
+      return true;
+    // Vice verse set name to the one of |p1| if |p2| has an empty name
+    if (HasOnlySkippableCharacters(full_name_2)) {
+      *name_info = p1.GetNameInfo();
+      return true;
+    }
+    // Try to apply a direct merging.
+    if (name_info->MergeStructuredName(p1.GetNameInfo()))
+      return true;
+    // If the name in |p2| is a variant of |p1| use the one in |p1|.
+    if (IsNameVariantOf(NormalizeForComparison(full_name_1),
+                        NormalizeForComparison(full_name_2))) {
+      *name_info = p1.GetNameInfo();
+      return true;
+    }
+    // The only left case is that |p1| is a variant of |p2|.
+    DCHECK(IsNameVariantOf(NormalizeForComparison(full_name_2),
+                           NormalizeForComparison(full_name_1)));
+    return true;
+  }
   const base::string16* best_name = nullptr;
   if (HasOnlySkippableCharacters(full_name_1)) {
     // p1 has no name, so use the name from p2.
@@ -664,6 +665,15 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
                                                Address* address) const {
   DCHECK(HaveMergeableAddresses(p1, p2));
 
+  // TODO(crbug.com/1130194): Clean legacy implementation once structured
+  // addresses are fully launched.
+  if (structured_address::StructuredAddressesEnabled()) {
+    // Note that p1 is the newer address. Using p2 as the base.
+    *address = p2.GetAddress();
+    return address->MergeStructuredAddress(p1.GetAddress(),
+                                           p2.use_date() < p1.use_date());
+  }
+
   // One of the countries is empty or they are the same modulo case, so we just
   // have to find the non-empty one, if any.
   const AutofillType kCountryCode(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE);
@@ -808,17 +818,17 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
   const base::string16& address2 = p2.GetInfo(kStreetAddress, app_locale_);
   // If one of the addresses is empty then use the other.
   if (address1.empty()) {
-    address->SetInfo(kStreetAddress, address2, app_locale_);
+    CopyAddressLineInformationFromProfile(p2, address);
   } else if (address2.empty()) {
-    address->SetInfo(kStreetAddress, address1, app_locale_);
+    CopyAddressLineInformationFromProfile(p1, address);
   } else {
     // Prefer the multi-line address if one is multi-line and the other isn't.
     bool address1_multiline = ContainsNewline(address1);
     bool address2_multiline = ContainsNewline(address2);
     if (address1_multiline && !address2_multiline) {
-      address->SetInfo(kStreetAddress, address1, app_locale_);
+      CopyAddressLineInformationFromProfile(p1, address);
     } else if (address2_multiline && !address1_multiline) {
-      address->SetInfo(kStreetAddress, address2, app_locale_);
+      CopyAddressLineInformationFromProfile(p2, address);
     } else {
       // Prefer the one with more tokens if they're both single-line or both
       // multi-line addresses, making sure to apply address normalization and
@@ -829,19 +839,20 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
       switch (result) {
         case SAME_TOKENS:
           // They have the same set of unique tokens. Let's pick the one that's
-          // longer.
-          address->SetInfo(
-              kStreetAddress,
-              (p2.use_date() > p1.use_date() ? address2 : address1),
-              app_locale_);
+          // newer.
+          if (p2.use_date() > p1.use_date()) {
+            CopyAddressLineInformationFromProfile(p2, address);
+          } else {
+            CopyAddressLineInformationFromProfile(p1, address);
+          }
           break;
         case S1_CONTAINS_S2:
           // address1 has more unique tokens than address2.
-          address->SetInfo(kStreetAddress, address1, app_locale_);
+          CopyAddressLineInformationFromProfile(p1, address);
           break;
         case S2_CONTAINS_S1:
           // address2 has more unique tokens than address1.
-          address->SetInfo(kStreetAddress, address2, app_locale_);
+          CopyAddressLineInformationFromProfile(p2, address);
           break;
         case DIFFERENT_TOKENS:
         default:
@@ -1024,12 +1035,19 @@ bool AutofillProfileComparator::HaveMergeableNames(
     return true;
   }
 
+  // If the two names are just a permutation of each other, they are mergeable
+  // for structured names.
+  if (structured_address::StructuredNamesEnabled() &&
+      structured_address::AreStringTokenEquivalent(full_name_1, full_name_2))
+    return true;
+
   base::string16 canon_full_name_1 = NormalizeForComparison(full_name_1);
   base::string16 canon_full_name_2 = NormalizeForComparison(full_name_2);
 
   // Is it reasonable to merge the names from p1 and p2.
-  return IsNameVariantOf(canon_full_name_1, canon_full_name_2) ||
-         IsNameVariantOf(canon_full_name_2, canon_full_name_1);
+  bool result = IsNameVariantOf(canon_full_name_1, canon_full_name_2) ||
+                IsNameVariantOf(canon_full_name_2, canon_full_name_1);
+  return result;
 }
 
 bool AutofillProfileComparator::HaveMergeableEmailAddresses(
@@ -1092,6 +1110,13 @@ bool AutofillProfileComparator::HaveMergeablePhoneNumbers(
 bool AutofillProfileComparator::HaveMergeableAddresses(
     const AutofillProfile& p1,
     const AutofillProfile& p2) const {
+  // TODO(crbug.com/1130194): Clean legacy implementation once structured
+  // addresses are fully launched.
+  if (structured_address::StructuredAddressesEnabled()) {
+    // Note that p1 is the newer address. Using p2 as the base.
+    return p2.GetAddress().IsStructuredAddressMergeable(p1.GetAddress());
+  }
+
   // If the address are not in the same country, then they're not the same. If
   // one of the address countries is unknown/invalid the comparison continues.
   const AutofillType kCountryCode(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE);

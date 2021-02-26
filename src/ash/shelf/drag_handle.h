@@ -37,8 +37,6 @@ class ASH_EXPORT DragHandle : public views::View,
 
   DragHandle& operator=(const DragHandle&) = delete;
 
-  void SetColorAndOpacity(SkColor color, float opacity);
-
   // views::ViewTargeterDelegate:
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
@@ -58,11 +56,13 @@ class ASH_EXPORT DragHandle : public views::View,
 
   // Immediately begins the animation to return the drag handle back to its
   // original position and hide the tooltip.
-  void HideDragHandleNudge(contextual_tooltip::DismissNudgeReason context);
+  void HideDragHandleNudge(contextual_tooltip::DismissNudgeReason reason);
 
   // Called when the window drag from shelf starts or ends. The drag handle
   // contextual nudge will remain visible while the gesture is in progress.
   void SetWindowDragFromShelfInProgress(bool gesture_in_progress);
+
+  void UpdateColor();
 
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;

@@ -12,12 +12,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/device/adb/adb_client_socket.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/net_errors.h"
@@ -47,8 +47,8 @@ class ResolveHostAndOpenSocket final : public network::ResolveHostClientBase {
                            const AdbClientSocket::SocketCallback& callback)
       : callback_(callback) {
     mojo::Remote<network::mojom::HostResolver> resolver;
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(
                        [](mojo::PendingReceiver<network::mojom::HostResolver>
                               pending_receiver) {
                          g_browser_process->system_network_context_manager()
@@ -79,8 +79,9 @@ class ResolveHostAndOpenSocket final : public network::ResolveHostClientBase {
       delete this;
       return;
     }
-    std::unique_ptr<net::StreamSocket> socket(new net::TCPClientSocket(
-        resolved_addresses.value(), nullptr, nullptr, net::NetLogSource()));
+    std::unique_ptr<net::StreamSocket> socket(
+        new net::TCPClientSocket(resolved_addresses.value(), nullptr, nullptr,
+                                 nullptr, net::NetLogSource()));
     net::StreamSocket* socket_ptr = socket.get();
     net::CompletionRepeatingCallback on_connect =
         base::AdaptCallbackForRepeating(
@@ -152,12 +153,12 @@ void TCPDeviceProvider::OpenSocket(const std::string& serial,
 
 void TCPDeviceProvider::ReleaseDevice(const std::string& serial) {
   if (!release_callback_.is_null())
-    release_callback_.Run();
+    std::move(release_callback_).Run();
 }
 
 void TCPDeviceProvider::set_release_callback_for_test(
-    const base::Closure& callback) {
-  release_callback_ = callback;
+    base::OnceClosure callback) {
+  release_callback_ = std::move(callback);
 }
 
 TCPDeviceProvider::~TCPDeviceProvider() {

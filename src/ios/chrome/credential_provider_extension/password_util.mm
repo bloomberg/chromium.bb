@@ -7,12 +7,19 @@
 #import <Security/Security.h>
 
 #import "base/logging.h"
+#include "ios/chrome/common/app_group/app_group_metrics.h"
+#import "ios/chrome/credential_provider_extension/metrics_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 NSString* PasswordWithKeychainIdentifier(NSString* identifier) {
+  if (!identifier) {
+    UpdateUMACountForKey(
+        app_group::kCredentialExtensionFetchPasswordNilArgumentCount);
+    return @"";
+  }
   NSDictionary* query = @{
     (__bridge id)kSecClass : (__bridge id)kSecClassGenericPassword,
     (__bridge id)kSecAttrAccount : identifier,
@@ -24,9 +31,11 @@ NSString* PasswordWithKeychainIdentifier(NSString* identifier) {
   OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query,
                                         (CFTypeRef*)&secDataRef);
   NSData* data = (__bridge_transfer NSData*)secDataRef;
-  DCHECK(status == errSecSuccess)
-      << "Error retrieving password, OSStatus: " << status;
-  NSString* password = [[NSString alloc] initWithData:data
-                                             encoding:NSUTF8StringEncoding];
-  return password;
+  if (status == errSecSuccess) {
+    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+  }
+  UpdateUMACountForKey(
+      app_group::kCredentialExtensionFetchPasswordFailureCount);
+  DLOG(ERROR) << "Error retrieving password, OSStatus: " << status;
+  return @"";
 }

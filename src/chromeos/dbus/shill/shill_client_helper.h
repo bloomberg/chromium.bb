@@ -13,15 +13,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/values.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 
 namespace base {
-
+class ListValue;
 class Value;
-class DictionaryValue;
-
 }  // namespace base
 
 namespace dbus {
@@ -39,16 +36,6 @@ namespace chromeos {
 class ShillClientHelper {
  public:
   class RefHolder;
-
-  // A callback to handle responses for methods with DictionaryValue results.
-  using DictionaryValueCallback =
-      base::OnceCallback<void(DBusMethodCallStatus call_status,
-                              const base::DictionaryValue& result)>;
-
-  // A callback to handle responses for methods with DictionaryValue results.
-  // This is used by CallDictionaryValueMethodWithErrorCallback.
-  using DictionaryValueCallbackWithoutStatus =
-      base::OnceCallback<void(const base::DictionaryValue& result)>;
 
   // A callback to handle responses of methods returning a ListValue.
   using ListValueCallback =
@@ -97,8 +84,8 @@ class ShillClientHelper {
                                              ErrorCallback error_callback);
 
   // Calls a method with a dictionary value result.
-  void CallDictionaryValueMethod(dbus::MethodCall* method_call,
-                                 DictionaryValueCallback callback);
+  void CallValueMethod(dbus::MethodCall* method_call,
+                       DBusMethodCallback<base::Value> callback);
 
   // Calls a method without results with error callback.
   void CallVoidMethodWithErrorCallback(dbus::MethodCall* method_call,
@@ -116,9 +103,9 @@ class ShillClientHelper {
                                          ErrorCallback error_callback);
 
   // Calls a method with a dictionary value result with error callback.
-  void CallDictionaryValueMethodWithErrorCallback(
+  void CallValueMethodWithErrorCallback(
       dbus::MethodCall* method_call,
-      DictionaryValueCallbackWithoutStatus callback,
+      base::OnceCallback<void(base::Value result)> callback,
       ErrorCallback error_callback);
 
   // Calls a method with a boolean array result with error callback.
@@ -128,16 +115,16 @@ class ShillClientHelper {
 
   const dbus::ObjectProxy* object_proxy() const { return proxy_; }
 
-  // Appends the value to the writer as a variant. If |value| is a Dictionary it
-  // will be written as a string -> varient dictionary, a{sv}. If |value| is a
-  // List then it must be a List of String values and is writen as type 'as'.
+  // Appends the value to the writer as a variant. If |value| is a dictionary it
+  // will be written as a string -> variant dictionary, a{sv}. If |value| is a
+  // List then it must be a List of String values and is written as type 'as'.
   static void AppendValueDataAsVariant(dbus::MessageWriter* writer,
                                        const base::Value& value);
 
   // Appends a string-to-variant dictionary to the writer as an '{sv}' array.
   // Each value is written using AppendValueDataAsVariant.
-  static void AppendServicePropertiesDictionary(dbus::MessageWriter* writer,
-                                                const base::DictionaryValue&);
+  static void AppendServiceProperties(dbus::MessageWriter* writer,
+                                      const base::Value& dictionary);
 
  protected:
   // Reference / Ownership management. If the number of active refs (observers

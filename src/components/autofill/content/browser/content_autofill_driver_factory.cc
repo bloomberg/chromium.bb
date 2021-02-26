@@ -9,11 +9,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace autofill {
@@ -127,29 +130,69 @@ ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
 
 void ContentAutofillDriverFactory::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
+  AutofillDriver* driver = DriverForKey(render_frame_host);
+  if (driver) {
+    static_cast<ContentAutofillDriver*>(driver)
+        ->MaybeReportAutofillWebOTPMetrics();
+  }
   DeleteForKey(render_frame_host);
+}
+
+void ContentAutofillDriverFactory::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // TODO(crbug/1117451): Clean up experiment code.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillProbableFormSubmissionInBrowser) &&
+      navigation_handle->IsRendererInitiated() &&
+      !navigation_handle->WasInitiatedByLinkClick() &&
+      navigation_handle->IsInMainFrame()) {
+    content::GlobalFrameRoutingId id =
+        navigation_handle->GetPreviousRenderFrameHostId();
+    content::RenderFrameHost* render_frame_host =
+        content::RenderFrameHost::FromID(id);
+    if (render_frame_host) {
+      DriverForFrame(render_frame_host)->ProbablyFormSubmitted();
+    }
+  }
 }
 
 void ContentAutofillDriverFactory::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // For the purposes of this code, a navigation is not important if it has not
-  // committed yet or if it's in a subframe.
-  if (!navigation_handle->HasCommitted() ||
-      !navigation_handle->IsInMainFrame()) {
-    return;
+  if (navigation_handle->HasCommitted() &&
+      (navigation_handle->IsInMainFrame() ||
+       navigation_handle->HasSubframeNavigationEntryCommitted())) {
+    NavigationFinished();
+    DriverForFrame(navigation_handle->GetRenderFrameHost())
+        ->DidNavigateFrame(navigation_handle);
   }
-
-  // A main frame navigation has occured. We suppress the autofill popup and
-  // tell the autofill driver.
-  NavigationFinished();
-  DriverForFrame(navigation_handle->GetRenderFrameHost())
-      ->DidNavigateMainFrame(navigation_handle);
 }
 
 void ContentAutofillDriverFactory::OnVisibilityChanged(
     content::Visibility visibility) {
   if (visibility == content::Visibility::HIDDEN)
     TabHidden();
+}
+
+void ContentAutofillDriverFactory::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  content::RenderFrameHost* render_frame_host =
+      navigation_handle->GetRenderFrameHost();
+  content::GlobalFrameRoutingId render_frame_host_id(
+      render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRoutingID());
+  // No need to report the metrics here if navigating to a different
+  // RenderFrameHost. It will be reported in |RenderFrameDeleted|.
+  // TODO(crbug.com/936696): Remove this logic when RenderDocument is enabled
+  // everywhere.
+  if (render_frame_host_id !=
+      navigation_handle->GetPreviousRenderFrameHostId()) {
+    return;
+  }
+  AutofillDriver* driver = DriverForFrame(render_frame_host);
+  if (!driver)
+    return;
+  static_cast<ContentAutofillDriver*>(driver)
+      ->MaybeReportAutofillWebOTPMetrics();
 }
 
 }  // namespace autofill

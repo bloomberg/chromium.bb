@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen_x11.h"
 
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
@@ -19,11 +21,13 @@
 #include "ui/display/util/display_util.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/switches.h"
 #include "ui/platform_window/x11/x11_topmost_window_finder.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 
 namespace views {
 
@@ -32,7 +36,9 @@ DesktopScreenX11::DesktopScreenX11() {
     display_scale_factor_observer_.Add(LinuxUI::instance());
 }
 
-DesktopScreenX11::~DesktopScreenX11() = default;
+DesktopScreenX11::~DesktopScreenX11() {
+  display::Screen::SetScreenInstance(old_screen_);
+}
 
 void DesktopScreenX11::Init() {
   if (x11_display_manager_->IsXrandrAvailable() &&
@@ -44,14 +50,18 @@ void DesktopScreenX11::Init() {
 gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
   TRACE_EVENT0("views", "DesktopScreenX11::GetCursorScreenPoint()");
 
-  base::Optional<gfx::Point> point;
+  base::Optional<gfx::Point> point_in_pixels;
   if (const auto* const event_source = ui::X11EventSource::GetInstance())
-    point = event_source->GetRootCursorLocationFromCurrentEvent();
-  return gfx::ConvertPointToDIP(
-      GetXDisplayScaleFactor(),
-      // NB: Do NOT call value_or() here, since that would defeat the purpose of
-      // caching |point|.
-      point ? point.value() : x11_display_manager_->GetCursorLocation());
+    point_in_pixels = event_source->GetRootCursorLocationFromCurrentEvent();
+  if (!point_in_pixels) {
+    // This call is expensive so we explicitly only call it when
+    // |point_in_pixels| is not set. We note that base::Optional::value_or()
+    // would cause it to be called regardless.
+    point_in_pixels = x11_display_manager_->GetCursorLocation();
+  }
+  // TODO(danakj): Should this be rounded? Or kept as a floating point?
+  return gfx::ToFlooredPoint(
+      gfx::ConvertPointToDips(*point_in_pixels, GetXDisplayScaleFactor()));
 }
 
 bool DesktopScreenX11::IsWindowUnderCursor(gfx::NativeWindow window) {
@@ -60,12 +70,14 @@ bool DesktopScreenX11::IsWindowUnderCursor(gfx::NativeWindow window) {
 
 gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(
     const gfx::Point& point) {
-  auto accelerated_widget =
-      ui::X11TopmostWindowFinder().FindLocalProcessWindowAt(
-          gfx::ConvertPointToPixel(GetXDisplayScaleFactor(), point), {});
-  return accelerated_widget
+  // TODO(danakj): Should this be rounded?
+  gfx::Point point_in_pixels = gfx::ToFlooredPoint(
+      gfx::ConvertPointToPixels(point, GetXDisplayScaleFactor()));
+  auto window = ui::X11TopmostWindowFinder().FindLocalProcessWindowAt(
+      point_in_pixels, {});
+  return window != x11::Window::None
              ? views::DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
-                   static_cast<gfx::AcceleratedWidget>(accelerated_widget))
+                   static_cast<gfx::AcceleratedWidget>(window))
              : nullptr;
 }
 
@@ -75,13 +87,14 @@ gfx::NativeWindow DesktopScreenX11::GetLocalProcessWindowAtPoint(
   std::set<gfx::AcceleratedWidget> ignore_widgets;
   for (auto* const window : ignore)
     ignore_widgets.emplace(window->GetHost()->GetAcceleratedWidget());
-  auto accelerated_widget =
-      ui::X11TopmostWindowFinder().FindLocalProcessWindowAt(
-          gfx::ConvertPointToPixel(GetXDisplayScaleFactor(), point),
-          ignore_widgets);
-  return accelerated_widget
+  // TODO(danakj): Should this be rounded?
+  gfx::Point point_in_pixels = gfx::ToFlooredPoint(
+      gfx::ConvertPointToPixels(point, GetXDisplayScaleFactor()));
+  auto window = ui::X11TopmostWindowFinder().FindLocalProcessWindowAt(
+      point_in_pixels, ignore_widgets);
+  return window != x11::Window::None
              ? views::DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
-                   static_cast<gfx::AcceleratedWidget>(accelerated_widget))
+                   static_cast<gfx::AcceleratedWidget>(window))
              : nullptr;
 }
 
@@ -109,9 +122,10 @@ display::Display DesktopScreenX11::GetDisplayNearestWindow(
         DesktopWindowTreeHostLinux::GetHostForWidget(
             host->GetAcceleratedWidget());
     if (desktop_host) {
-      const gfx::Rect pixel_rect = desktop_host->GetBoundsInPixels();
-      return GetDisplayMatching(
-          gfx::ConvertRectToDIP(GetXDisplayScaleFactor(), pixel_rect));
+      gfx::Rect match_rect_in_pixels = desktop_host->GetBoundsInPixels();
+      gfx::Rect match_rect = gfx::ToEnclosingRect(gfx::ConvertRectToDips(
+          match_rect_in_pixels, GetXDisplayScaleFactor()));
+      return GetDisplayMatching(match_rect);
     }
   }
 
@@ -148,9 +162,8 @@ std::string DesktopScreenX11::GetCurrentWorkspace() {
   return x11_display_manager_->GetCurrentWorkspace();
 }
 
-bool DesktopScreenX11::DispatchXEvent(XEvent* event) {
-  return x11_display_manager_->CanProcessEvent(*event) &&
-         x11_display_manager_->ProcessEvent(event);
+bool DesktopScreenX11::DispatchXEvent(x11::Event* event) {
+  return x11_display_manager_->ProcessEvent(event);
 }
 
 void DesktopScreenX11::OnDeviceScaleFactorChanged() {
@@ -174,14 +187,6 @@ float DesktopScreenX11::GetXDisplayScaleFactor() const {
   return display::Display::HasForceDeviceScaleFactor()
              ? display::Display::GetForcedDeviceScaleFactor()
              : 1.0f;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-display::Screen* CreateDesktopScreen() {
-  auto* screen = new DesktopScreenX11;
-  screen->Init();
-  return screen;
 }
 
 }  // namespace views

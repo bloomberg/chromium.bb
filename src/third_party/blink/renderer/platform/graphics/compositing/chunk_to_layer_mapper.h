@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CHUNK_TO_LAYER_MAPPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CHUNK_TO_LAYER_MAPPER_H_
 
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
@@ -21,10 +22,8 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
   DISALLOW_NEW();
 
  public:
-  ChunkToLayerMapper(
-      const PropertyTreeState& layer_state,
-      const gfx::Vector2dF& layer_offset,
-      const FloatSize& visual_rect_subpixel_offset = FloatSize());
+  ChunkToLayerMapper(const PropertyTreeState& layer_state,
+                     const gfx::Vector2dF& layer_offset);
 
   // This class can map from multiple chunks. Before mapping from a chunk, this
   // method must be called to prepare for the chunk.
@@ -45,18 +44,17 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
   friend class ChunkToLayerMapperTest;
 
   IntRect MapUsingGeometryMapper(const IntRect&) const;
-  void AdjustVisualRectBySubpixelOffset(FloatRect&) const;
+  void InflateForRasterEffectOutset(FloatRect&) const;
 
   const PropertyTreeState layer_state_;
   const gfx::Vector2dF layer_offset_;
-  const FloatSize visual_rect_subpixel_offset_;
 
   // The following fields are chunk-specific which are updated in
   // SwitchToChunk().
   PropertyTreeState chunk_state_;
-  float outset_for_raster_effects_ = 0.f;
   GeometryMapper::Translation2DOrMatrix translation_2d_or_matrix_;
   FloatClipRect clip_rect_;
+  RasterEffectOutset raster_effect_outset_ = RasterEffectOutset::kNone;
   // True if there is any pixel-moving filter between chunk state and layer
   // state, and we will call GeometryMapper for each mapping.
   bool has_filter_that_moves_pixels_ = false;

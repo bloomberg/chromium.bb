@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/public/common/screen_info.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/icc_profile.h"
@@ -14,14 +13,13 @@
 namespace content {
 
 // static
-void DisplayUtil::DisplayToScreenInfo(ScreenInfo* screen_info,
+void DisplayUtil::DisplayToScreenInfo(blink::ScreenInfo* screen_info,
                                       const display::Display& display) {
   screen_info->rect = display.bounds();
   // TODO(husky): Remove any Android system controls from availableRect.
   screen_info->available_rect = display.work_area();
   screen_info->device_scale_factor = display.device_scale_factor();
-  screen_info->color_space = display.color_spaces().GetOutputColorSpace(
-      gfx::ContentColorUsage::kHDR, false);
+  screen_info->display_color_spaces = display.color_spaces();
   screen_info->depth = display.color_depth();
   screen_info->depth_per_component = display.depth_per_component();
   screen_info->is_monochrome = display.is_monochrome();
@@ -37,7 +35,7 @@ void DisplayUtil::DisplayToScreenInfo(ScreenInfo* screen_info,
   // other words, relative to the physical display.
   // Spec: https://w3c.github.io/screen-orientation/#dom-screenorientation-angle
   // TODO(ccameron): Should this apply to macOS? Should this be reconciled at a
-  // higher level (say, in conversion to WebScreenInfo)?
+  // higher level (say, in conversion to ScreenInfo)?
   if (screen_info->orientation_angle == 90)
     screen_info->orientation_angle = 270;
   else if (screen_info->orientation_angle == 270)
@@ -52,31 +50,17 @@ void DisplayUtil::DisplayToScreenInfo(ScreenInfo* screen_info,
 }
 
 // static
-void DisplayUtil::GetDefaultScreenInfo(ScreenInfo* screen_info) {
-  // Some tests are run with no Screen initialized.
-  display::Screen* screen = display::Screen::GetScreen();
-  if (!screen) {
-    *screen_info = ScreenInfo();
-    return;
-  }
-#if defined(USE_AURA)
-  // This behavior difference between Aura and other platforms may or may not
-  // be intentional, and may or may not have any effect.
-  gfx::NativeView null_native_view = nullptr;
-  display::Display display = screen->GetDisplayNearestView(null_native_view);
-#else
-  display::Display display = screen->GetPrimaryDisplay();
-#endif
-  DisplayToScreenInfo(screen_info, display);
+void DisplayUtil::GetDefaultScreenInfo(blink::ScreenInfo* screen_info) {
+  return GetNativeViewScreenInfo(screen_info, nullptr);
 }
 
 // static
-void DisplayUtil::GetNativeViewScreenInfo(ScreenInfo* screen_info,
+void DisplayUtil::GetNativeViewScreenInfo(blink::ScreenInfo* screen_info,
                                           gfx::NativeView native_view) {
   // Some tests are run with no Screen initialized.
   display::Screen* screen = display::Screen::GetScreen();
   if (!screen) {
-    *screen_info = ScreenInfo();
+    *screen_info = blink::ScreenInfo();
     return;
   }
   display::Display display = native_view
@@ -86,7 +70,7 @@ void DisplayUtil::GetNativeViewScreenInfo(ScreenInfo* screen_info,
 }
 
 // static
-ScreenOrientationValues DisplayUtil::GetOrientationTypeForMobile(
+blink::mojom::ScreenOrientation DisplayUtil::GetOrientationTypeForMobile(
     const display::Display& display) {
   int angle = display.PanelRotationAsDegree();
   const gfx::Rect& bounds = display.bounds();
@@ -100,25 +84,29 @@ ScreenOrientationValues DisplayUtil::GetOrientationTypeForMobile(
 
   switch (angle) {
     case 0:
-      return natural_portrait ? SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY
-                              : SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
+      return natural_portrait
+                 ? blink::mojom::ScreenOrientation::kPortraitPrimary
+                 : blink::mojom::ScreenOrientation::kLandscapePrimary;
     case 90:
-      return natural_portrait ? SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY
-                              : SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
+      return natural_portrait
+                 ? blink::mojom::ScreenOrientation::kLandscapePrimary
+                 : blink::mojom::ScreenOrientation::kPortraitSecondary;
     case 180:
-      return natural_portrait ? SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY
-                              : SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
+      return natural_portrait
+                 ? blink::mojom::ScreenOrientation::kPortraitSecondary
+                 : blink::mojom::ScreenOrientation::kLandscapeSecondary;
     case 270:
-      return natural_portrait ? SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY
-                              : SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+      return natural_portrait
+                 ? blink::mojom::ScreenOrientation::kLandscapeSecondary
+                 : blink::mojom::ScreenOrientation::kPortraitPrimary;
     default:
       NOTREACHED();
-      return SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+      return blink::mojom::ScreenOrientation::kPortraitPrimary;
   }
 }
 
 // static
-ScreenOrientationValues DisplayUtil::GetOrientationTypeForDesktop(
+blink::mojom::ScreenOrientation DisplayUtil::GetOrientationTypeForDesktop(
     const display::Display& display) {
   static int primary_landscape_angle = -1;
   static int primary_portrait_angle = -1;
@@ -135,13 +123,13 @@ ScreenOrientationValues DisplayUtil::GetOrientationTypeForDesktop(
 
   if (is_portrait) {
     return primary_portrait_angle == angle
-               ? SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY
-               : SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
+               ? blink::mojom::ScreenOrientation::kPortraitPrimary
+               : blink::mojom::ScreenOrientation::kPortraitSecondary;
   }
 
   return primary_landscape_angle == angle
-             ? SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY
-             : SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
+             ? blink::mojom::ScreenOrientation::kLandscapePrimary
+             : blink::mojom::ScreenOrientation::kLandscapeSecondary;
 }
 
 }  // namespace content

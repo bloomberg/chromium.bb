@@ -28,6 +28,7 @@ enum InterpolationType
 {
     INTERPOLATION_SMOOTH,
     INTERPOLATION_CENTROID,
+    INTERPOLATION_SAMPLE,
     INTERPOLATION_FLAT,
     INTERPOLATION_NOPERSPECTIVE
 };
@@ -120,6 +121,10 @@ struct ShaderVariable
                               const ShaderVariable **leafVar,
                               std::string *originalFullName) const;
 
+    // Find the child field which matches 'fullName' == var.name + "." + field.name.
+    // Return nullptr if not found.
+    const sh::ShaderVariable *findField(const std::string &fullName, uint32_t *fieldIndexOut) const;
+
     bool isBuiltIn() const;
     bool isEmulatedBuiltIn() const;
 
@@ -195,6 +200,9 @@ struct ShaderVariable
     bool isSameVaryingAtLinkTime(const ShaderVariable &other, int shaderVersion) const;
     // Deprecated version of isSameVaryingAtLinkTime, which assumes ESSL1.
     bool isSameVaryingAtLinkTime(const ShaderVariable &other) const;
+
+    // If the variable is a sampler that has ever been statically used with texelFetch
+    bool texelFetchStaticUse;
 
   protected:
     bool isSameVariableAtLinkTime(const ShaderVariable &other,

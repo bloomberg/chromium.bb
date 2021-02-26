@@ -5,6 +5,8 @@
 #include "ui/ozone/platform/x11/gl_egl_utility_x11.h"
 
 #include "ui/base/x/x11_gl_egl_utility.h"
+#include "ui/base/x/x11_util.h"
+#include "ui/gl/gl_utils.h"
 
 namespace ui {
 
@@ -20,6 +22,20 @@ void GLEGLUtilityX11::GetAdditionalEGLAttributes(
 void GLEGLUtilityX11::ChooseEGLAlphaAndBufferSize(EGLint* alpha_size,
                                                   EGLint* buffer_size) {
   ChoosePlatformCustomAlphaAndBufferSize(alpha_size, buffer_size);
+}
+
+bool GLEGLUtilityX11::IsTransparentBackgroundSupported() const {
+  return ui::IsTransparentBackgroundSupported();
+}
+
+void GLEGLUtilityX11::CollectGpuExtraInfo(
+    bool enable_native_gpu_memory_buffers,
+    gfx::GpuExtraInfo& gpu_extra_info) const {
+  gl::CollectX11GpuExtraInfo(enable_native_gpu_memory_buffers, gpu_extra_info);
+}
+
+bool GLEGLUtilityX11::X11DoesVisualHaveAlphaForTest() const {
+  return ui::DoesVisualHaveAlphaForTest();
 }
 
 }  // namespace ui

@@ -18,7 +18,6 @@ namespace android {
 };
 #endif
 
-class GrContext;
 class SkCanvas;
 class SkDrawable;
 class SkMiniRecorder;
@@ -31,12 +30,6 @@ public:
     SkPictureRecorder();
     ~SkPictureRecorder();
 
-    enum RecordFlags {
-        // If you call drawPicture() or drawDrawable() on the recording canvas, this flag forces
-        // that object to playback its contents immediately rather than reffing the object.
-        kPlaybackDrawPicture_RecordFlag     = 1 << 0,
-    };
-
     enum FinishFlags {
     };
 
@@ -47,20 +40,14 @@ public:
         @param recordFlags optional flags that control recording.
         @return the canvas.
     */
-    SkCanvas* beginRecording(const SkRect& bounds,
-                             sk_sp<SkBBoxHierarchy> bbh,
-                             uint32_t recordFlags = 0);
+    SkCanvas* beginRecording(const SkRect& bounds, sk_sp<SkBBoxHierarchy> bbh);
 
-    SkCanvas* beginRecording(const SkRect& bounds,
-                             SkBBHFactory* bbhFactory = nullptr,
-                             uint32_t recordFlags = 0);
+    SkCanvas* beginRecording(const SkRect& bounds, SkBBHFactory* bbhFactory = nullptr);
 
     SkCanvas* beginRecording(SkScalar width, SkScalar height,
-                             SkBBHFactory* bbhFactory = nullptr,
-                             uint32_t recordFlags = 0) {
-        return this->beginRecording(SkRect::MakeWH(width, height), bbhFactory, recordFlags);
+                             SkBBHFactory* bbhFactory = nullptr) {
+        return this->beginRecording(SkRect::MakeWH(width, height), bbhFactory);
     }
-
 
     /** Returns the recording canvas if one is active, or NULL if recording is
         not active. This does not alter the refcnt on the canvas (if present).
@@ -77,7 +64,7 @@ public:
      *  reflect their current state, but will not contain a live reference to the drawables
      *  themselves.
      */
-    sk_sp<SkPicture> finishRecordingAsPicture(uint32_t endFlags = 0);
+    sk_sp<SkPicture> finishRecordingAsPicture();
 
     /**
      *  Signal that the caller is done recording, and update the cull rect to use for bounding
@@ -88,8 +75,7 @@ public:
      *                  and subsequent culling operations.
      *  @return the picture containing the recorded content.
      */
-    sk_sp<SkPicture> finishRecordingAsPictureWithCull(const SkRect& cullRect,
-                                                      uint32_t endFlags = 0);
+    sk_sp<SkPicture> finishRecordingAsPictureWithCull(const SkRect& cullRect);
 
     /**
      *  Signal that the caller is done recording. This invalidates the canvas returned by
@@ -101,7 +87,7 @@ public:
      *  and therefore this drawable will reflect the current state of those nested drawables anytime
      *  it is drawn or a new picture is snapped from it (by calling drawable->newPictureSnapshot()).
      */
-    sk_sp<SkDrawable> finishRecordingAsDrawable(uint32_t endFlags = 0);
+    sk_sp<SkDrawable> finishRecordingAsDrawable();
 
 private:
     void reset();
@@ -116,7 +102,6 @@ private:
     void partialReplay(SkCanvas* canvas) const;
 
     bool                        fActivelyRecording;
-    uint32_t                    fFlags;
     SkRect                      fCullRect;
     sk_sp<SkBBoxHierarchy>      fBBH;
     std::unique_ptr<SkRecorder> fRecorder;

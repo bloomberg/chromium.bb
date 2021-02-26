@@ -17,17 +17,17 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
@@ -37,7 +37,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -52,7 +51,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
-#include "third_party/blink/public/common/switches.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 
 namespace {
 
@@ -259,7 +258,8 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
 
   virtual std::unique_ptr<base::FeatureList> EnabledFeatures() {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine("UserAgentClientHint", "");
+    feature_list->InitializeFromCommandLine(
+        "UserAgentClientHint,LangClientHintHeader", "");
     return feature_list;
   }
 
@@ -281,8 +281,6 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitchASCII(network::switches::kForceEffectiveConnectionType,
                            net::kEffectiveConnectionType2G);
-    cmd->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                           "LangClientHintHeader");
   }
 
   void SetClientHintExpectationsOnMainFrame(bool expect_client_hints) {
@@ -302,15 +300,10 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   // Verify that the user is not notified that cookies or JavaScript were
   // blocked on the webpage due to the checks done by client hints.
   void VerifyContentSettingsNotNotified() const {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    EXPECT_FALSE(content_settings::TabSpecificContentSettings::FromWebContents(
-                     web_contents)
-                     ->IsContentBlocked(ContentSettingsType::COOKIES));
-
-    EXPECT_FALSE(content_settings::TabSpecificContentSettings::FromWebContents(
-                     web_contents)
-                     ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
+    auto* pscs = content_settings::PageSpecificContentSettings::GetForFrame(
+        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
+    EXPECT_FALSE(pscs->IsContentBlocked(ContentSettingsType::COOKIES));
+    EXPECT_FALSE(pscs->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
   }
 
   void SetExpectedEffectiveConnectionType(
@@ -319,13 +312,12 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   }
 
   void SetJsEnabledForActiveView(bool enabled) {
-    content::RenderViewHost* view = browser()
-                                        ->tab_strip_model()
-                                        ->GetActiveWebContents()
-                                        ->GetRenderViewHost();
-    content::WebPreferences prefs = view->GetWebkitPreferences();
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    blink::web_pref::WebPreferences prefs =
+        web_contents->GetOrCreateWebPreferences();
     prefs.javascript_enabled = enabled;
-    view->UpdateWebkitPreferences(prefs);
+    web_contents->SetWebPreferences(prefs);
   }
 
   void TestProfilesIndependent(Browser* browser_a, Browser* browser_b);
@@ -815,7 +807,8 @@ class ClientHintsAllowThirdPartyBrowserTest : public ClientHintsBrowserTest {
   std::unique_ptr<base::FeatureList> EnabledFeatures() override {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
-        "AllowClientHintsToThirdParty,UserAgentClientHint", "");
+        "AllowClientHintsToThirdParty,UserAgentClientHint,LangClientHintHeader",
+        "");
     return feature_list;
   }
 };
@@ -869,7 +862,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, ClientHintsHttps) {
     histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
 
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   if (GetParam()) {
     histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
@@ -892,7 +885,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, PRE_ClientHintsClearSession) {
   ContentSettingsForOneType host_settings;
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -903,7 +896,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, PRE_ClientHintsClearSession) {
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
 
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
@@ -915,7 +908,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, PRE_ClientHintsClearSession) {
 
   // Clients hints preferences for one origin should be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
 
@@ -942,7 +935,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsClearSession) {
 
   // Clients hints preferences for one origin should be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -977,13 +970,13 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::CLIENT_HINTS, std::string(), &client_hints_settings);
+      ContentSettingsType::CLIENT_HINTS, &client_hints_settings);
   ASSERT_EQ(1U, client_hints_settings.size());
 
   // Copy the client hints setting for localhost to foo.com.
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       GURL("https://foo.com/"), GURL(), ContentSettingsType::CLIENT_HINTS,
-      std::string(),
+
       std::make_unique<base::Value>(
           client_hints_settings.at(0).setting_value.Clone()));
 
@@ -991,7 +984,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::CLIENT_HINTS, std::string(), &client_hints_settings);
+      ContentSettingsType::CLIENT_HINTS, &client_hints_settings);
   ASSERT_EQ(2U, client_hints_settings.size());
 
   // Navigating to without_accept_ch_without_lifetime_img_localhost() should
@@ -1003,7 +996,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
       browser(), without_accept_ch_without_lifetime_img_localhost());
   base::RunLoop().RunUntilIdle();
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // The user agent hint is attached to all three requests, as is UA-mobile:
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
@@ -1021,7 +1014,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
       browser(), without_accept_ch_without_lifetime_img_foo_com());
   base::RunLoop().RunUntilIdle();
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // The device-memory and dprheader is attached to the main frame request.
 #if defined(OS_ANDROID)
@@ -1056,7 +1049,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
       browser(), without_accept_ch_without_lifetime_img_localhost());
   base::RunLoop().RunUntilIdle();
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // The user agent hint is attached to all three requests:
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
@@ -1327,7 +1320,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ContentSettingsForOneType host_settings;
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -1336,7 +1329,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
 
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // accept_ch_without_lifetime_with_iframe_url() loads
   // accept_ch_with_lifetime() in an iframe. The request to persist client
@@ -1363,7 +1356,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   ContentSettingsForOneType host_settings;
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -1372,7 +1365,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
 
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // accept_ch_without_lifetime_with_iframe_url() loads
   // accept_ch_with_lifetime() in a cross origin iframe. The request to persist
@@ -1395,7 +1388,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   ContentSettingsForOneType host_settings;
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -1404,7 +1397,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
 
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // accept_ch_without_lifetime_with_subresource_url() loads
   // accept_ch_with_lifetime() as a subresource. The request to persist client
@@ -1428,7 +1421,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   ContentSettingsForOneType host_settings;
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -1437,7 +1430,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
 
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // |gurl| loads accept_ch_with_lifetime() or
   // http_equiv_accept_ch_with_lifetime() as a subresource in an iframe. The
@@ -1459,7 +1452,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ContentSettingsForOneType host_settings;
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -1468,7 +1461,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
 
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                       expected_client_hints_number, 1);
@@ -1481,7 +1474,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 
   // Clients hints preferences for one origin should be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
 
@@ -1509,7 +1502,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, NoClientHintsHttps) {
   histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
 
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // no_client_hints_url() does not sets the client hints.
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
@@ -1525,7 +1518,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   ContentSettingsForOneType host_settings;
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -1539,7 +1532,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
     histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
 
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   base::RunLoop().RunUntilIdle();
 
   if (GetParam()) {
@@ -1556,7 +1549,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
     // Clients hints preferences for one origin should be persisted.
     HostContentSettingsMapFactory::GetForProfile(browser()->profile())
         ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
-                                std::string(), &host_settings);
+                                &host_settings);
     EXPECT_EQ(1u, host_settings.size());
   }
 
@@ -1589,7 +1582,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ContentSettingsForOneType host_settings;
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -1599,7 +1592,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
 
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                       expected_client_hints_number, 1);
@@ -1611,7 +1604,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 
   // Clients hints preferences for one origin should be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
 
@@ -1644,13 +1637,13 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(gurl_with, GURL(),
                                       ContentSettingsType::COOKIES,
-                                      std::string(), CONTENT_SETTING_BLOCK);
+                                      CONTENT_SETTING_BLOCK);
 
   // Fetching |gurl_with| should persist the request for client hints.
   ui_test_utils::NavigateToURL(browser(), gurl_with);
   histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 1);
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
   VerifyContentSettingsNotNotified();
@@ -1664,7 +1657,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ContentSettingsForOneType host_settings;
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -1672,7 +1665,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), gurl_with);
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
@@ -1684,7 +1677,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 
   // Clients hints preferences for one origin should be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
 
@@ -1692,7 +1685,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(gurl_without, GURL(),
                                       ContentSettingsType::COOKIES,
-                                      std::string(), CONTENT_SETTING_BLOCK);
+                                      CONTENT_SETTING_BLOCK);
 
   SetClientHintExpectationsOnMainFrame(true);
   SetClientHintExpectationsOnSubresources(true);
@@ -1730,24 +1723,22 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // Block the JavaScript: Client hint preferences should not be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetContentSettingDefaultScope(gurl, GURL(),
-                                      ContentSettingsType::JAVASCRIPT,
-                                      std::string(), CONTENT_SETTING_BLOCK);
+      ->SetContentSettingDefaultScope(
+          gurl, GURL(), ContentSettingsType::JAVASCRIPT, CONTENT_SETTING_BLOCK);
   ui_test_utils::NavigateToURL(browser(), accept_ch_with_lifetime_url());
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
   VerifyContentSettingsNotNotified();
 
   // Allow the JavaScript: Client hint preferences should be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetContentSettingDefaultScope(gurl, GURL(),
-                                      ContentSettingsType::JAVASCRIPT,
-                                      std::string(), CONTENT_SETTING_ALLOW);
+      ->SetContentSettingDefaultScope(
+          gurl, GURL(), ContentSettingsType::JAVASCRIPT, CONTENT_SETTING_ALLOW);
   ui_test_utils::NavigateToURL(browser(), accept_ch_with_lifetime_url());
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
 
@@ -1766,7 +1757,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ContentSettingsForOneType host_settings;
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -1775,7 +1766,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), gurl);
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   EXPECT_EQ(1u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(1u, count_ua_mobile_client_hints_headers_seen());
 
@@ -1789,7 +1780,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 
   // Clients hints preferences for one origin should be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
 
@@ -1812,7 +1803,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(without_accept_ch_without_lifetime_url(),
                                       GURL(), ContentSettingsType::JAVASCRIPT,
-                                      std::string(), CONTENT_SETTING_BLOCK);
+                                      CONTENT_SETTING_BLOCK);
   ui_test_utils::NavigateToURL(browser(),
                                without_accept_ch_without_lifetime_url());
   EXPECT_EQ(0u, count_client_hints_headers_seen());
@@ -1824,7 +1815,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(without_accept_ch_without_lifetime_url(),
                                       GURL(), ContentSettingsType::JAVASCRIPT,
-                                      std::string(), CONTENT_SETTING_ALLOW);
+                                      CONTENT_SETTING_ALLOW);
 
   SetClientHintExpectationsOnMainFrame(true);
   SetClientHintExpectationsOnSubresources(true);
@@ -1865,12 +1856,12 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
       (base::Time::Now() + base::TimeDelta::FromDays(1)).ToDoubleT());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       without_accept_ch_without_lifetime_url(), GURL(),
-      ContentSettingsType::CLIENT_HINTS, std::string(),
+      ContentSettingsType::CLIENT_HINTS,
       std::make_unique<base::Value>(expiration_times_dictionary->Clone()));
 
   // Reading the settings should now return one setting.
   host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::CLIENT_HINTS, std::string(), &client_hints_settings);
+      ContentSettingsType::CLIENT_HINTS, &client_hints_settings);
   EXPECT_EQ(1U, client_hints_settings.size());
 
   SetClientHintExpectationsOnMainFrame(false);
@@ -1890,7 +1881,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   ContentSettingsForOneType host_settings;
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -1899,8 +1890,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(
           accept_ch_without_lifetime_img_localhost(), GURL(),
-          ContentSettingsType::JAVASCRIPT, std::string(),
-          CONTENT_SETTING_BLOCK);
+          ContentSettingsType::JAVASCRIPT, CONTENT_SETTING_BLOCK);
   ui_test_utils::NavigateToURL(browser(),
                                accept_ch_without_lifetime_img_localhost());
   EXPECT_EQ(0u, count_user_agent_hint_headers_seen());
@@ -1913,8 +1903,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(
           accept_ch_without_lifetime_img_localhost(), GURL(),
-          ContentSettingsType::JAVASCRIPT, std::string(),
-          CONTENT_SETTING_ALLOW);
+          ContentSettingsType::JAVASCRIPT, CONTENT_SETTING_ALLOW);
 
   SetClientHintExpectationsOnSubresources(true);
   ui_test_utils::NavigateToURL(browser(),
@@ -1936,8 +1925,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(
           accept_ch_without_lifetime_img_localhost(), GURL(),
-          ContentSettingsType::JAVASCRIPT, std::string(),
-          CONTENT_SETTING_BLOCK);
+          ContentSettingsType::JAVASCRIPT, CONTENT_SETTING_BLOCK);
   ui_test_utils::NavigateToURL(browser(),
                                accept_ch_without_lifetime_img_localhost());
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
@@ -1965,15 +1953,14 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
       CookieSettingsFactory::GetForProfile(browser()->profile());
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
   // Block cookies.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetContentSettingDefaultScope(gurl, GURL(),
-                                      ContentSettingsType::COOKIES,
-                                      std::string(), CONTENT_SETTING_BLOCK);
+      ->SetContentSettingDefaultScope(
+          gurl, GURL(), ContentSettingsType::COOKIES, CONTENT_SETTING_BLOCK);
   base::RunLoop().RunUntilIdle();
 
   SetClientHintExpectationsOnSubresources(true);
@@ -2000,7 +1987,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ContentSettingsForOneType host_settings;
 
   HostContentSettingsMapFactory::GetForProfile(incognito->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
@@ -2010,7 +1997,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
 
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                       expected_client_hints_number, 1);
@@ -2022,7 +2009,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 
   // Clients hints preferences for one origin should be persisted.
   HostContentSettingsMapFactory::GetForProfile(incognito->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
 
@@ -2060,7 +2047,7 @@ class ClientHintsEnterprisePolicyTest : public ClientHintsBrowserTest {
     policy::PolicyTest::SetUpInProcessBrowserTestFixture();
     policy::PolicyMap policies;
     SetPolicy(&policies, policy::key::kUserAgentClientHintsEnabled,
-              std::make_unique<base::Value>(false));
+              base::Value(false));
     provider_.UpdateChromePolicy(policies);
   }
 };
@@ -2105,7 +2092,8 @@ class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
             ->AssociateFieldTrialParams(kTrialName, kGroupName, params));
 
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine("UserAgentClientHint", "");
+    feature_list->InitializeFromCommandLine(
+        "UserAgentClientHint,LangClientHintHeader", "");
     feature_list->RegisterFieldTrialOverride(
         features::kNetworkQualityEstimatorWebHoldback.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
@@ -2143,7 +2131,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsWebHoldbackBrowserTest,
       browser(), accept_ch_without_lifetime_with_subresource_url());
   base::RunLoop().RunUntilIdle();
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());

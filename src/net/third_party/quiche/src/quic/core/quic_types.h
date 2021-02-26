@@ -46,9 +46,6 @@ using PacketTimeVector = std::vector<std::pair<QuicPacketNumber, QuicTime>>;
 enum : size_t { kQuicPathFrameBufferSize = 8 };
 using QuicPathFrameBuffer = std::array<uint8_t, kQuicPathFrameBufferSize>;
 
-// Application error code used in the QUIC Stop Sending frame.
-using QuicApplicationErrorCode = uint16_t;
-
 // The connection id sequence number specifies the order that connection
 // ids must be used in. This is also the sequence number carried in
 // the IETF QUIC NEW_CONNECTION_ID and RETIRE_CONNECTION_ID frames.
@@ -151,6 +148,11 @@ struct QUIC_EXPORT_PRIVATE WriteResult {
   // Number of packets dropped as a result of this write.
   // Only used by batch writers. Otherwise always 0.
   uint16_t dropped_packets = 0;
+  // The delta between a packet's ideal and actual send time:
+  //     actual_send_time = ideal_send_time + send_time_offset
+  //                      = (now + release_time_delay) + send_time_offset
+  // Only valid if |status| is WRITE_STATUS_OK.
+  QuicTime::Delta send_time_offset = QuicTime::Delta::Zero();
   // TODO(wub): In some cases, WRITE_STATUS_ERROR may set an error_code and
   // WRITE_STATUS_BLOCKED_DATA_BUFFERED may set bytes_written. This may need
   // some cleaning up so that perhaps both values can be set and valid.
@@ -163,19 +165,22 @@ struct QUIC_EXPORT_PRIVATE WriteResult {
 enum TransmissionType : int8_t {
   NOT_RETRANSMISSION,
   FIRST_TRANSMISSION_TYPE = NOT_RETRANSMISSION,
-  HANDSHAKE_RETRANSMISSION,  // Retransmits due to handshake timeouts.
-  // TODO(fayang): remove ALL_UNACKED_RETRANSMISSION.
-  ALL_UNACKED_RETRANSMISSION,  // Retransmits all unacked packets.
-  ALL_INITIAL_RETRANSMISSION,  // Retransmits all initially encrypted packets.
-  LOSS_RETRANSMISSION,         // Retransmits due to loss detection.
-  RTO_RETRANSMISSION,          // Retransmits due to retransmit time out.
-  TLP_RETRANSMISSION,          // Tail loss probes.
-  PTO_RETRANSMISSION,          // Retransmission due to probe timeout.
-  PROBING_RETRANSMISSION,      // Retransmission in order to probe bandwidth.
+  HANDSHAKE_RETRANSMISSION,     // Retransmits due to handshake timeouts.
+  ALL_ZERO_RTT_RETRANSMISSION,  // Retransmits all packets encrypted with 0-RTT
+                                // key.
+  LOSS_RETRANSMISSION,          // Retransmits due to loss detection.
+  RTO_RETRANSMISSION,           // Retransmits due to retransmit time out.
+  TLP_RETRANSMISSION,           // Tail loss probes.
+  PTO_RETRANSMISSION,           // Retransmission due to probe timeout.
+  PROBING_RETRANSMISSION,       // Retransmission in order to probe bandwidth.
   LAST_TRANSMISSION_TYPE = PROBING_RETRANSMISSION,
 };
 
 QUIC_EXPORT_PRIVATE std::string TransmissionTypeToString(
+    TransmissionType transmission_type);
+
+QUIC_EXPORT_PRIVATE std::ostream& operator<<(
+    std::ostream& os,
     TransmissionType transmission_type);
 
 enum HasRetransmittableData : uint8_t {
@@ -203,6 +208,7 @@ QUIC_EXPORT_PRIVATE std::ostream& operator<<(
 // Should a connection be closed silently or not.
 enum class ConnectionCloseBehavior {
   SILENT_CLOSE,
+  SILENT_CLOSE_WITH_CONNECTION_CLOSE_PACKET_SERIALIZED,
   SEND_CONNECTION_CLOSE_PACKET
 };
 
@@ -224,6 +230,8 @@ enum QuicFrameType : uint8_t {
   STOP_WAITING_FRAME = 6,
   PING_FRAME = 7,
   CRYPTO_FRAME = 8,
+  // TODO(b/157935330): stop hard coding this when deprecate T050.
+  HANDSHAKE_DONE_FRAME = 9,
 
   // STREAM and ACK frames are special frames. They are encoded differently on
   // the wire and their values do not need to be stable.
@@ -245,10 +253,15 @@ enum QuicFrameType : uint8_t {
   MESSAGE_FRAME,
   NEW_TOKEN_FRAME,
   RETIRE_CONNECTION_ID_FRAME,
-  HANDSHAKE_DONE_FRAME,
+  ACK_FREQUENCY_FRAME,
 
   NUM_FRAME_TYPES
 };
+
+// Human-readable string suitable for logging.
+QUIC_EXPORT_PRIVATE std::string QuicFrameTypeToString(QuicFrameType t);
+QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
+                                             const QuicFrameType& t);
 
 // Ietf frame types. These are defined in the IETF QUIC Specification.
 // Explicit values are given in the enum so that we can be sure that
@@ -305,6 +318,9 @@ enum QuicIetfFrameType : uint8_t {
   IETF_EXTENSION_MESSAGE = 0x21,
   IETF_EXTENSION_MESSAGE_NO_LENGTH_V99 = 0x30,
   IETF_EXTENSION_MESSAGE_V99 = 0x31,
+
+  // An QUIC extension frame for sender control of acknowledgement delays
+  IETF_ACK_FREQUENCY = 0xaf
 };
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                              const QuicIetfFrameType& c);
@@ -343,8 +359,8 @@ enum QuicPacketNumberLength : uint8_t {
   PACKET_3BYTE_PACKET_NUMBER = 3,  // Used in versions 45+.
   PACKET_4BYTE_PACKET_NUMBER = 4,
   IETF_MAX_PACKET_NUMBER_LENGTH = 4,
-  // TODO(rch): Remove these when we remove QUIC_VERSION_43 since these values
-  // are not representable with v46 and above.
+  // TODO(b/145819870): Remove 6 and 8 when we remove Q043 since these values
+  // are not representable with later versions.
   PACKET_6BYTE_PACKET_NUMBER = 6,
   PACKET_8BYTE_PACKET_NUMBER = 8
 };
@@ -374,8 +390,9 @@ enum QuicPacketPublicFlags {
   PACKET_PUBLIC_FLAGS_0BYTE_CONNECTION_ID = 0,
   PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID = 1 << 3,
 
-  // QUIC_VERSION_32 and earlier use two bits for an 8 byte
-  // connection id.
+  // Deprecated version 32 and earlier used two bits to indicate an 8-byte
+  // connection ID. We send this from the client because of some broken
+  // middleboxes that are still checking this bit.
   PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID_OLD = 1 << 3 | 1 << 2,
 
   // Bits 4 and 5 describe the packet number length as follows:
@@ -439,6 +456,9 @@ inline bool EncryptionLevelIsValid(EncryptionLevel level) {
 }
 
 QUIC_EXPORT_PRIVATE std::string EncryptionLevelToString(EncryptionLevel level);
+
+QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
+                                             EncryptionLevel level);
 
 // Enumeration of whether a server endpoint will request a client certificate,
 // and whether that endpoint requires a valid client certificate to establish a
@@ -510,6 +530,9 @@ enum SentPacketState : uint8_t {
   PTO_RETRANSMITTED,
   // This packet has been retransmitted for probing purpose.
   PROBE_RETRANSMITTED,
+  // Do not collect RTT sample if this packet is the largest_acked of an
+  // incoming ACK.
+  NOT_CONTRIBUTING_RTT,
   LAST_PACKET_STATE = PROBE_RETRANSMITTED,
 };
 
@@ -579,8 +602,8 @@ QUIC_EXPORT_PRIVATE std::string QuicLongHeaderTypeToString(
     QuicLongHeaderType type);
 
 enum QuicPacketHeaderTypeFlags : uint8_t {
-  // Bit 2: Reserved for experimentation for short header.
-  FLAGS_EXPERIMENTATION_BIT = 1 << 2,
+  // Bit 2: Key phase bit for IETF QUIC short header packets.
+  FLAGS_KEY_PHASE_BIT = 1 << 2,
   // Bit 3: Google QUIC Demultiplexing bit, the short header always sets this
   // bit to 0, allowing to distinguish Google QUIC packets from short header
   // packets.
@@ -664,8 +687,6 @@ enum PacketNumberSpace : uint8_t {
 QUIC_EXPORT_PRIVATE std::string PacketNumberSpaceToString(
     PacketNumberSpace packet_number_space);
 
-enum AckMode { TCP_ACKING, ACK_DECIMATION, ACK_DECIMATION_WITH_REORDERING };
-
 // Used to return the result of processing a received ACK frame.
 enum AckResult {
   PACKETS_NEWLY_ACKED,
@@ -682,15 +703,19 @@ enum AckResult {
 
 // Indicates the fate of a serialized packet in WritePacket().
 enum SerializedPacketFate : uint8_t {
-  COALESCE,                          // Try to coalesce packet.
-  BUFFER,                            // Buffer packet in buffered_packets_.
-  SEND_TO_WRITER,                    // Send packet to writer.
-  FAILED_TO_WRITE_COALESCED_PACKET,  // Packet cannot be coalesced, error occurs
-                                     // when sending existing coalesced packet.
+  DISCARD,         // Discard the packet.
+  COALESCE,        // Try to coalesce packet.
+  BUFFER,          // Buffer packet in buffered_packets_.
+  SEND_TO_WRITER,  // Send packet to writer.
+  LEGACY_VERSION_ENCAPSULATE,  // Perform Legacy Version Encapsulation on this
+                               // packet.
 };
 
 QUIC_EXPORT_PRIVATE std::string SerializedPacketFateToString(
     SerializedPacketFate fate);
+
+QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
+                                             const SerializedPacketFate fate);
 
 // There are three different forms of CONNECTION_CLOSE.
 enum QuicConnectionCloseType {
@@ -733,6 +758,61 @@ struct QUIC_NO_EXPORT NextReleaseTimeResult {
   // Whether it is allowed to send the packet before release_time.
   bool allow_burst;
 };
+
+// QuicPacketBuffer bundles a buffer and a function that releases it. Note
+// it does not assume ownership of buffer, i.e. it doesn't release the buffer on
+// destruction.
+struct QUIC_NO_EXPORT QuicPacketBuffer {
+  QuicPacketBuffer() = default;
+
+  QuicPacketBuffer(char* buffer,
+                   std::function<void(const char*)> release_buffer)
+      : buffer(buffer), release_buffer(std::move(release_buffer)) {}
+
+  char* buffer = nullptr;
+  std::function<void(const char*)> release_buffer;
+};
+
+// QuicOwnedPacketBuffer is a QuicPacketBuffer that assumes buffer ownership.
+struct QUIC_NO_EXPORT QuicOwnedPacketBuffer : public QuicPacketBuffer {
+  QuicOwnedPacketBuffer(const QuicOwnedPacketBuffer&) = delete;
+  QuicOwnedPacketBuffer& operator=(const QuicOwnedPacketBuffer&) = delete;
+
+  QuicOwnedPacketBuffer(char* buffer,
+                        std::function<void(const char*)> release_buffer)
+      : QuicPacketBuffer(buffer, std::move(release_buffer)) {}
+
+  QuicOwnedPacketBuffer(QuicOwnedPacketBuffer&& owned_buffer)
+      : QuicPacketBuffer(std::move(owned_buffer)) {
+    // |owned_buffer| does not own a buffer any more.
+    owned_buffer.buffer = nullptr;
+  }
+
+  explicit QuicOwnedPacketBuffer(QuicPacketBuffer&& packet_buffer)
+      : QuicPacketBuffer(std::move(packet_buffer)) {}
+
+  ~QuicOwnedPacketBuffer() {
+    if (release_buffer != nullptr && buffer != nullptr) {
+      release_buffer(buffer);
+    }
+  }
+};
+
+// These values must remain stable as they are uploaded to UMA histograms.
+enum class KeyUpdateReason {
+  kInvalid = 0,
+  kRemote = 1,
+  kLocalForTests = 2,
+  kLocalForInteropRunner = 3,
+  kLocalAeadConfidentialityLimit = 4,
+  kLocalKeyUpdateLimitOverride = 5,
+  kMaxValue = kLocalKeyUpdateLimitOverride,
+};
+
+QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
+                                             const KeyUpdateReason reason);
+
+QUIC_EXPORT_PRIVATE std::string KeyUpdateReasonString(KeyUpdateReason reason);
 
 }  // namespace quic
 

@@ -6,7 +6,7 @@
 
 #include <thread>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -28,11 +28,14 @@
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/config/gpu_test_config.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gl/buffer_format_utils.h"
@@ -42,6 +45,9 @@
 #include "ui/gl/gl_image_stub.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
+#include "ui/gl/progress_reporter.h"
+
+using testing::AtLeast;
 
 namespace gpu {
 namespace {
@@ -77,6 +83,15 @@ bool IsAndroid() {
 #endif
 }
 
+class MockProgressReporter : public gl::ProgressReporter {
+ public:
+  MockProgressReporter() = default;
+  ~MockProgressReporter() override = default;
+
+  // gl::ProgressReporter implementation.
+  MOCK_METHOD0(ReportProgress, void());
+};
+
 class SharedImageBackingFactoryGLTextureTestBase
     : public testing::TestWithParam<std::tuple<bool, viz::ResourceFormat>> {
  public:
@@ -103,7 +118,7 @@ class SharedImageBackingFactoryGLTextureTestBase
     preferences.use_passthrough_cmd_decoder = use_passthrough();
     backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
         preferences, workarounds, GpuFeatureInfo(), factory,
-        shared_image_manager_->batch_access_manager());
+        shared_image_manager_->batch_access_manager(), &progress_reporter_);
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =
@@ -116,11 +131,31 @@ class SharedImageBackingFactoryGLTextureTestBase
            gles2::PassthroughCommandDecoderSupported();
   }
 
+  bool can_create_non_scanout_shared_image(viz::ResourceFormat format) const {
+    if (format == viz::ResourceFormat::BGRA_1010102 ||
+        format == viz::ResourceFormat::RGBA_1010102) {
+      return supports_ar30_ || supports_ab30_;
+    } else if (format == viz::ResourceFormat::ETC1) {
+      return supports_etc1_;
+    }
+    return true;
+  }
+
+  bool can_create_scanout_or_gmb_shared_image(
+      viz::ResourceFormat format) const {
+    if (format == viz::ResourceFormat::BGRA_1010102)
+      return supports_ar30_;
+    else if (format == viz::ResourceFormat::RGBA_1010102)
+      return supports_ab30_;
+    return true;
+  }
+
   viz::ResourceFormat get_format() { return std::get<1>(GetParam()); }
 
-  GrContext* gr_context() { return context_state_->gr_context(); }
+  GrDirectContext* gr_context() { return context_state_->gr_context(); }
 
  protected:
+  ::testing::NiceMock<MockProgressReporter> progress_reporter_;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<SharedContextState> context_state_;
@@ -203,22 +238,30 @@ class CreateAndValidateSharedImageRepresentations {
 };
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
+  // TODO(jonahr): Test fails on Mac with ANGLE/passthrough
+  // (crbug.com/1100975)
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("mac passthrough")) {
+    return;
+  }
+
+  const bool should_succeed = can_create_non_scanout_shared_image(get_format());
+  if (should_succeed)
+    EXPECT_CALL(progress_reporter_, ReportProgress).Times(AtLeast(1));
   auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = get_format();
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, surface_handle, size, color_space, usage,
-      false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, surface_origin,
+      alpha_type, usage, false /* is_thread_safe */);
 
-  // As long as either |chromium_image_ar30| or |chromium_image_ab30| is
-  // enabled, we can create a non-scanout SharedImage with format
-  // viz::ResourceFormat::{BGRA,RGBA}_1010102.
-  if ((format == viz::ResourceFormat::BGRA_1010102 ||
-       format == viz::ResourceFormat::RGBA_1010102) &&
-      !supports_ar30_ && !supports_ab30_) {
+  if (!should_succeed) {
     EXPECT_FALSE(backing);
     return;
   }
@@ -328,25 +371,36 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
+  // TODO(jonahr): Test crashes on Mac with ANGLE/passthrough
+  // (crbug.com/1100975)
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("mac passthrough")) {
+    return;
+  }
+
+  const bool should_succeed =
+      can_create_scanout_or_gmb_shared_image(get_format());
+  if (should_succeed)
+    EXPECT_CALL(progress_reporter_, ReportProgress).Times(AtLeast(1));
   auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = get_format();
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_SCANOUT;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, surface_handle, size, color_space, usage,
-      false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, surface_origin,
+      alpha_type, usage, false /* is_thread_safe */);
 
-  // We can only create a scanout SharedImage with format
-  // viz::ResourceFormat::{BGRA,RGBA}_1010102 if the corresponding
-  // |chromium_image_ar30| or |chromium_image_ab30| is enabled.
-  if ((format == viz::ResourceFormat::BGRA_1010102 && !supports_ar30_) ||
-      (format == viz::ResourceFormat::RGBA_1010102 && !supports_ab30_)) {
+  if (!should_succeed) {
     EXPECT_FALSE(backing);
     return;
   }
   ASSERT_TRUE(backing);
+  ::testing::Mock::VerifyAndClearExpectations(&progress_reporter_);
 
   // Check clearing.
   if (!backing->IsCleared()) {
@@ -451,14 +505,15 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
 
   if (!use_passthrough() &&
       context_state_->feature_info()->feature_flags().ext_texture_rg) {
+    EXPECT_CALL(progress_reporter_, ReportProgress).Times(AtLeast(1));
     // Create a R-8 image texture, and check that the internal_format is that
     // of the image (GL_RGBA for TextureImageFactory). This only matters for
     // the validating decoder.
     auto format = viz::ResourceFormat::RED_8;
     gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
     backing = backing_factory_->CreateSharedImage(
-        mailbox, format, surface_handle, size, color_space, usage,
-        false /* is_thread_safe */);
+        mailbox, format, surface_handle, size, color_space, surface_origin,
+        alpha_type, usage, false /* is_thread_safe */);
     EXPECT_TRUE(backing);
     shared_image = shared_image_manager_->Register(std::move(backing),
                                                    memory_type_tracker_.get());
@@ -482,30 +537,25 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InitialData) {
   for (auto format :
        {viz::ResourceFormat::RGBA_8888, viz::ResourceFormat::ETC1,
         viz::ResourceFormat::BGRA_1010102, viz::ResourceFormat::RGBA_1010102}) {
+    const bool should_succeed = can_create_non_scanout_shared_image(format);
+    if (should_succeed)
+      EXPECT_CALL(progress_reporter_, ReportProgress).Times(AtLeast(1));
     auto mailbox = Mailbox::GenerateForSharedImage();
     gfx::Size size(256, 256);
     auto color_space = gfx::ColorSpace::CreateSRGB();
+    GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+    SkAlphaType alpha_type = kPremul_SkAlphaType;
     uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
     std::vector<uint8_t> initial_data(
         viz::ResourceSizes::CheckedSizeInBytes<unsigned int>(size, format));
     auto backing = backing_factory_->CreateSharedImage(
-        mailbox, format, size, color_space, usage, initial_data);
-
-    if (format == viz::ResourceFormat::ETC1 && !supports_etc1_) {
+        mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+        initial_data);
+    ::testing::Mock::VerifyAndClearExpectations(&progress_reporter_);
+    if (!should_succeed) {
       EXPECT_FALSE(backing);
       continue;
     }
-
-    // As long as either |chromium_image_ar30| or |chromium_image_ab30| is
-    // enabled, we can create a non-scanout SharedImage with format
-    // viz::ResourceFormat::{BGRA,RGBA}_1010102.
-    if ((format == viz::ResourceFormat::BGRA_1010102 ||
-         format == viz::ResourceFormat::RGBA_1010102) &&
-        !supports_ar30_ && !supports_ab30_) {
-      EXPECT_FALSE(backing);
-      continue;
-    }
-
     ASSERT_TRUE(backing);
     EXPECT_TRUE(backing->IsCleared());
 
@@ -547,20 +597,22 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InitialData) {
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, InitialDataImage) {
+  const bool should_succeed =
+      can_create_scanout_or_gmb_shared_image(get_format());
+  if (should_succeed)
+    EXPECT_CALL(progress_reporter_, ReportProgress).Times(AtLeast(1));
   auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = get_format();
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_SCANOUT;
   std::vector<uint8_t> initial_data(256 * 256 * 4);
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, usage, initial_data);
-
-  // We can only create a scanout SharedImage with format
-  // viz::ResourceFormat::{BGRA,RGBA}_1010102 if the corresponding
-  // |chromium_image_ar30| or |chromium_image_ab30| is enabled.
-  if ((format == viz::ResourceFormat::BGRA_1010102 && !supports_ar30_) ||
-      (format == viz::ResourceFormat::RGBA_1010102 && !supports_ab30_)) {
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      initial_data);
+  if (!should_succeed) {
     EXPECT_FALSE(backing);
     return;
   }
@@ -600,14 +652,18 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InitialDataWrongSize) {
   auto format = get_format();
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
   std::vector<uint8_t> initial_data_small(256 * 128 * 4);
   std::vector<uint8_t> initial_data_large(256 * 512 * 4);
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, usage, initial_data_small);
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      initial_data_small);
   EXPECT_FALSE(backing);
   backing = backing_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, usage, initial_data_large);
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      initial_data_large);
   EXPECT_FALSE(backing);
 }
 
@@ -616,11 +672,13 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InvalidFormat) {
   auto format = viz::ResourceFormat::YUV_420_BIPLANAR;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, surface_handle, size, color_space, usage,
-      false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, surface_origin,
+      alpha_type, usage, false /* is_thread_safe */);
   EXPECT_FALSE(backing);
 }
 
@@ -629,37 +687,39 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InvalidSize) {
   auto format = get_format();
   gfx::Size size(0, 0);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, surface_handle, size, color_space, usage,
-      false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, surface_origin,
+      alpha_type, usage, false /* is_thread_safe */);
   EXPECT_FALSE(backing);
 
   size = gfx::Size(INT_MAX, INT_MAX);
-  backing = backing_factory_->CreateSharedImage(mailbox, format, surface_handle,
-                                                size, color_space, usage,
-                                                false /* is_thread_safe */);
+  backing = backing_factory_->CreateSharedImage(
+      mailbox, format, surface_handle, size, color_space, surface_origin,
+      alpha_type, usage, false /* is_thread_safe */);
   EXPECT_FALSE(backing);
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, EstimatedSize) {
+  const bool should_succeed = can_create_non_scanout_shared_image(get_format());
+  if (should_succeed)
+    EXPECT_CALL(progress_reporter_, ReportProgress).Times(AtLeast(1));
   auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = get_format();
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, surface_handle, size, color_space, usage,
-      false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, surface_origin,
+      alpha_type, usage, false /* is_thread_safe */);
 
-  // As long as either |chromium_image_ar30| or |chromium_image_ab30| is
-  // enabled, we can create a non-scanout SharedImage with format
-  // viz::ResourceFormat::{BGRA,RGBA}_1010102.
-  if ((format == viz::ResourceFormat::BGRA_1010102 ||
-       format == viz::ResourceFormat::RGBA_1010102) &&
-      !supports_ar30_ && !supports_ab30_) {
+  if (!should_succeed) {
     EXPECT_FALSE(backing);
     return;
   }
@@ -821,34 +881,40 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
   gfx::Size size(256, 256);
   gfx::BufferFormat format = viz::BufferFormat(get_format());
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
 
   gfx::GpuMemoryBufferHandle handle;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, kClientId, std::move(handle), format, kNullSurfaceHandle, size,
-      color_space, usage);
+      color_space, surface_origin, alpha_type, usage);
   EXPECT_FALSE(backing);
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
        GpuMemoryBufferImportNative) {
+  // TODO(jonahr): Test crashes on Mac with ANGLE/passthrough
+  // (crbug.com/1100975)
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("mac passthrough")) {
+    return;
+  }
   auto mailbox = Mailbox::GenerateForSharedImage();
   gfx::Size size(256, 256);
   gfx::BufferFormat format = viz::BufferFormat(get_format());
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::NATIVE_PIXMAP;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, kClientId, std::move(handle), format, kNullSurfaceHandle, size,
-      color_space, usage);
-
-  // We can only create a GMB SharedImage with format
-  // viz::ResourceFormat::{BGRA,RGBA}_1010102 if the corresponding
-  // |chromium_image_ar30| or |chromium_image_ab30| is enabled.
-  if ((get_format() == viz::ResourceFormat::BGRA_1010102 && !supports_ar30_) ||
-      (get_format() == viz::ResourceFormat::RGBA_1010102 && !supports_ab30_)) {
+      color_space, surface_origin, alpha_type, usage);
+  if (!can_create_scanout_or_gmb_shared_image(get_format())) {
     EXPECT_FALSE(backing);
     return;
   }
@@ -860,9 +926,23 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
   scoped_refptr<gl::GLImage> image = GetImageFromMailbox(mailbox);
   ASSERT_EQ(image->GetType(), gl::GLImage::Type::NONE);
   auto* stub_image = static_cast<StubImage*>(image.get());
-  EXPECT_TRUE(stub_image->bound());
+  EXPECT_FALSE(stub_image->bound());
   int update_counter = stub_image->update_counter();
   ref->Update(nullptr);
+  EXPECT_EQ(stub_image->update_counter(), update_counter);
+  EXPECT_FALSE(stub_image->bound());
+
+  {
+    auto skia_representation =
+        shared_image_representation_factory_->ProduceSkia(mailbox,
+                                                          context_state_);
+    std::vector<GrBackendSemaphore> begin_semaphores;
+    std::vector<GrBackendSemaphore> end_semaphores;
+    std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
+        scoped_read_access;
+    skia_representation->BeginScopedReadAccess(&begin_semaphores,
+                                               &end_semaphores);
+  }
   EXPECT_TRUE(stub_image->bound());
   EXPECT_GT(stub_image->update_counter(), update_counter);
 }
@@ -873,6 +953,8 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
   gfx::Size size(256, 256);
   gfx::BufferFormat format = viz::BufferFormat(get_format());
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
 
   size_t shm_size = 0u;
@@ -887,13 +969,8 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
 
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, kClientId, std::move(handle), format, kNullSurfaceHandle, size,
-      color_space, usage);
-
-  // We can only create a GMB SharedImage with format
-  // viz::ResourceFormat::{BGRA,RGBA}_1010102 if the corresponding
-  // |chromium_image_ar30| or |chromium_image_ab30| is enabled.
-  if ((get_format() == viz::ResourceFormat::BGRA_1010102 && !supports_ar30_) ||
-      (get_format() == viz::ResourceFormat::RGBA_1010102 && !supports_ab30_)) {
+      color_space, surface_origin, alpha_type, usage);
+  if (!can_create_scanout_or_gmb_shared_image(get_format())) {
     EXPECT_FALSE(backing);
     return;
   }
@@ -917,19 +994,16 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
   gfx::Size size(256, 256);
   gfx::BufferFormat format = viz::BufferFormat(get_format());
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::NATIVE_PIXMAP;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, kClientId, std::move(handle), format, kNullSurfaceHandle, size,
-      color_space, usage);
-
-  // We can only create a GMB SharedImage with format
-  // viz::ResourceFormat::{BGRA,RGBA}_1010102 if the corresponding
-  // |chromium_image_ar30| or |chromium_image_ab30| is enabled.
-  if ((get_format() == viz::ResourceFormat::BGRA_1010102 && !supports_ar30_) ||
-      (get_format() == viz::ResourceFormat::RGBA_1010102 && !supports_ab30_)) {
+      color_space, surface_origin, alpha_type, usage);
+  if (!can_create_scanout_or_gmb_shared_image(get_format())) {
     EXPECT_FALSE(backing);
     return;
   }
@@ -1068,6 +1142,8 @@ CreateAndValidateSharedImageRepresentations::
       context_state->MakeCurrent(context_state->surface(), true /* needs_gl*/));
   mailbox_ = Mailbox::GenerateForSharedImage();
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
 
   // SHARED_IMAGE_USAGE_DISPLAY for skia read and SHARED_IMAGE_USAGE_RASTER for
@@ -1076,8 +1152,8 @@ CreateAndValidateSharedImageRepresentations::
   if (!is_thread_safe)
     usage |= SHARED_IMAGE_USAGE_DISPLAY;
   backing_ = backing_factory->CreateSharedImage(
-      mailbox_, format, surface_handle, size_, color_space, usage,
-      is_thread_safe);
+      mailbox_, format, surface_handle, size_, color_space, surface_origin,
+      alpha_type, usage, is_thread_safe);
 
   // As long as either |chromium_image_ar30| or |chromium_image_ab30| is
   // enabled, we can create a non-scanout SharedImage with format

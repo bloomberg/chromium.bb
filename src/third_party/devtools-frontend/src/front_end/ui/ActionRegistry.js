@@ -2,32 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+import * as Root from '../root/root.js';  // eslint-disable-line no-unused-vars
 
 import {Action} from './Action.js';
 import {Context} from './Context.js';  // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
+/** @type {!ActionRegistry} */
+let actionRegistryInstance;
+
 export class ActionRegistry {
+  /**
+   * @private
+   */
   constructor() {
     /** @type {!Map.<string, !Action>} */
     this._actionsById = new Map();
     this._registerActions();
   }
 
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!actionRegistryInstance || forceNew) {
+      actionRegistryInstance = new ActionRegistry();
+    }
+
+    return actionRegistryInstance;
+  }
+
   _registerActions() {
-    self.runtime.extensions('action').forEach(registerExtension, this);
+    Root.Runtime.Runtime.instance().extensions('action').forEach(registerExtension, this);
 
     /**
      * @param {!Root.Runtime.Extension} extension
      * @this {ActionRegistry}
      */
     function registerExtension(extension) {
-      const actionId = extension.descriptor()['actionId'];
-      console.assert(actionId);
+      const actionId = extension.descriptor().actionId;
+      if (!actionId) {
+        console.error(`No actionId provided for extension ${extension.descriptor().name}`);
+        return;
+      }
       console.assert(!this._actionsById.get(actionId));
 
       const action = new Action(extension);
@@ -46,7 +63,7 @@ export class ActionRegistry {
    * @return {!Array.<!Action>}
    */
   availableActions() {
-    return this.applicableActions([...this._actionsById.keys()], self.UI.context);
+    return this.applicableActions([...this._actionsById.keys()], Context.instance());
   }
 
   /**
@@ -63,12 +80,12 @@ export class ActionRegistry {
    */
   applicableActions(actionIds, context) {
     const extensions = [];
-    actionIds.forEach(function(actionId) {
+    for (const actionId of actionIds) {
       const action = this._actionsById.get(actionId);
       if (action && action.enabled()) {
         extensions.push(action.extension());
       }
-    }, this);
+    }
     return [...context.applicableExtensions(extensions)].map(extensionToAction.bind(this));
 
     /**
@@ -77,8 +94,8 @@ export class ActionRegistry {
      * @this {ActionRegistry}
      */
     function extensionToAction(extension) {
-      return (
-          /** @type {!Action} */ (this.action(extension.descriptor()['actionId'])));
+      const actionId = /** @type {string} */ (extension.descriptor().actionId);
+      return /** @type {!Action} */ (this.action(actionId));
     }
   }
 

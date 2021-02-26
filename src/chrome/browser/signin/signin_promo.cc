@@ -11,13 +11,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/signin_promo_util.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/common/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
@@ -93,11 +93,10 @@ GURL GetAddAccountURLForDice(const std::string& email,
 
 content::StoragePartition* GetSigninPartition(
     content::BrowserContext* browser_context) {
-  const GURL signin_site_url =
-      extensions::WebViewGuest::GetSiteForGuestPartitionConfig(
-          "chrome-signin", /* partition_name= */ "", /* in_memory= */ true);
-  return content::BrowserContext::GetStoragePartitionForSite(browser_context,
-                                                             signin_site_url);
+  const auto signin_partition_config = content::StoragePartitionConfig::Create(
+      "chrome-signin", /* partition_name= */ "", /* in_memory= */ true);
+  return content::BrowserContext::GetStoragePartition(browser_context,
+                                                      signin_partition_config);
 }
 
 signin_metrics::AccessPoint GetAccessPointForEmbeddedPromoURL(const GURL& url) {

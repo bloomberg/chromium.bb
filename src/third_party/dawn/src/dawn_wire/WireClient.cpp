@@ -25,11 +25,6 @@ namespace dawn_wire {
         mImpl.reset();
     }
 
-    // static
-    DawnProcTable WireClient::GetProcs() {
-        return client::GetProcs();
-    }
-
     WGPUDevice WireClient::GetDevice() const {
         return mImpl->GetDevice();
     }
@@ -47,6 +42,8 @@ namespace dawn_wire {
     }
 
     namespace client {
+        MemoryTransferService::MemoryTransferService() = default;
+
         MemoryTransferService::~MemoryTransferService() = default;
 
         MemoryTransferService::ReadHandle*
@@ -59,7 +56,11 @@ namespace dawn_wire {
             return CreateWriteHandle(size);
         }
 
+        MemoryTransferService::ReadHandle::ReadHandle() = default;
+
         MemoryTransferService::ReadHandle::~ReadHandle() = default;
+
+        MemoryTransferService::WriteHandle::WriteHandle() = default;
 
         MemoryTransferService::WriteHandle::~WriteHandle() = default;
     }  // namespace client

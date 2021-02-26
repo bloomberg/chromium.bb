@@ -1,8 +1,8 @@
 diff --git a/source/data/locales/ko.txt b/source/data/locales/ko.txt
-index 6bbb88b4..af2bb6c6 100644
+index b7d03a2c..9dfa7ae7 100644
 --- a/source/data/locales/ko.txt
 +++ b/source/data/locales/ko.txt
-@@ -1483,7 +1483,7 @@ ko{
+@@ -1547,7 +1547,7 @@ ko{
                      y{"y. M. d. (E) ~ y. M. d. (E)"}
                  }
                  yMMM{
@@ -11,7 +11,7 @@ index 6bbb88b4..af2bb6c6 100644
                      y{"y년 M월 ~ y년 M월"}
                  }
                  yMMMEEEEd{
-@@ -1502,7 +1502,7 @@ ko{
+@@ -1566,7 +1566,7 @@ ko{
                  }
                  yMMMd{
                      M{"y년 M월 d일 ~ M월 d일"}
@@ -21,7 +21,7 @@ index 6bbb88b4..af2bb6c6 100644
                  }
                  yMd{
 diff --git a/source/data/zone/ko.txt b/source/data/zone/ko.txt
-index b23a41dd..2e45aaea 100644
+index ecd9f4ba..99798b33 100644
 --- a/source/data/zone/ko.txt
 +++ b/source/data/zone/ko.txt
 @@ -1330,24 +1330,24 @@ ko{

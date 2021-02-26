@@ -4,8 +4,20 @@
 
 // require: event_target.js
 
+// clang-format off
+// #import {assertInstanceof} from '../../assert.m.js';
+// #import {NativeEventTarget as EventTarget} from '../event_target.m.js'
+// #import {EventTracker} from '../../event_tracker.m.js'
+// #import {isWindows, isLinux, isMac, isLacros, dispatchPropertyChange} from '../../cr.m.js';
+// #import {decorate} from '../ui.m.js';
+// #import {Menu} from './menu.m.js';
+// #import {MenuItem} from './menu_item.m.js';
+// #import {HideType} from './menu_button.m.js';
+// #import {positionPopupAtPoint} from './position_util.m.js';
+// clang-format on
+
 cr.define('cr.ui', function() {
-  /** @const */ const Menu = cr.ui.Menu;
+  /* #ignore */ /** @const */ const Menu = cr.ui.Menu;
 
   /**
    * Handles context menus.
@@ -162,7 +174,8 @@ cr.define('cr.ui', function() {
         case 'mousedown':
           if (!this.menu.contains(e.target)) {
             this.hideMenu();
-            if (e.button === 0 /* Left button */ && (cr.isLinux || cr.isMac)) {
+            if (e.button === 0 /* Left button */ &&
+                (cr.isLinux || cr.isMac || cr.isLacros)) {
               // Emulate Mac and Linux, which swallow native 'mousedown' events
               // that close menus.
               e.preventDefault();
@@ -303,9 +316,10 @@ cr.define('cr.ui', function() {
    * The singleton context menu handler.
    * @type {!ContextMenuHandler}
    */
-  const contextMenuHandler = new ContextMenuHandler;
+  /* #export */ const contextMenuHandler = new ContextMenuHandler;
 
   // Export
+  // #cr_define_end
   return {
     contextMenuHandler: contextMenuHandler,
   };

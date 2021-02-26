@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/apple/tweak_info_plist.gni")
 import("//build/config/ios/rules.gni")
-import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//ios/third_party/earl_grey2/ios_eg2_test.gni")
@@ -32,6 +32,19 @@ template("chrome_ios_eg2_test_app_host") {
       ]
       if (ios_chrome_info_plist_additions != []) {
         info_plists += ios_chrome_info_plist_additions
+      }
+      if (ios_enable_multi_window) {
+        info_plists +=
+            [ "//ios/chrome/app/resources/MultiWindowEnabled+Info.plist" ]
+      } else if (ios_enable_scene_startup) {
+        info_plists +=
+            [ "//ios/chrome/app/resources/MultiWindowDisabled+Info.plist" ]
+      }
+      if (ios_chrome_info_plist_addition_targets != []) {
+        if (!defined(deps)) {
+          deps = []
+        }
+        deps += ios_chrome_info_plist_addition_targets
       }
       if (defined(invoker.extra_info_plists)) {
         info_plists += invoker.extra_info_plists
@@ -120,6 +133,7 @@ template("chrome_ios_eg2_test_app_host") {
       "SSOAUTH_URL_SCHEME=$url_ssoauth_scheme",
       "CONTENT_WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.ContentTodayExtension",
       "CHROMIUM_BUNDLE_ID=gtest.$target_name",
+      "IOS_MOVE_TAB_ACTIVITY_TYPE=$ios_move_tab_activity_type",
     ]
   }
 }
@@ -129,6 +143,20 @@ set_defaults("chrome_ios_eg_v2_test_app_host") {
 }
 
 template("chrome_ios_eg2_test") {
+  _deps_group_name = target_name + "_deps_group"
+  group(_deps_group_name) {
+    testonly = true
+
+    public_deps = []
+    if (defined(invoker.deps)) {
+      public_deps += invoker.deps
+    }
+
+    if (defined(invoker.public_deps)) {
+      public_deps += invoker.public_deps
+    }
+  }
+
   assert(defined(invoker.xcode_test_application_name),
          "xcode_test_application_name must be defined for $target_name")
   assert(
@@ -160,6 +188,7 @@ template("chrome_ios_eg2_test") {
     bundle_deps += [
       "//ios/chrome/app/resources",
       "//ios/third_party/gtx:gtx+bundle",
+      "//third_party/icu:icudata",
     ]
   }
 }

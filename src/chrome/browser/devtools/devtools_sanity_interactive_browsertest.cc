@@ -17,7 +17,7 @@
 #include "content/public/test/browser_test.h"
 #include "ui/display/types/display_constants.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
@@ -26,7 +26,7 @@
 // asynchronously as an event received from a different process.
 class CheckWaiter {
  public:
-  explicit CheckWaiter(base::Callback<bool()> callback, bool expected)
+  CheckWaiter(base::RepeatingCallback<bool()> callback, bool expected)
       : callback_(callback),
         expected_(expected),
         timeout_(base::Time::NowFromSystemTime() +
@@ -59,11 +59,11 @@ class CheckWaiter {
     return true;
   }
 
-  base::Callback<bool()> callback_;
+  base::RepeatingCallback<bool()> callback_;
   bool expected_;
   base::Time timeout_;
   // The waiter's RunLoop quit closure.
-  base::Closure quit_;
+  base::RepeatingClosure quit_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckWaiter);
 };
@@ -90,24 +90,24 @@ class DevToolsManagerDelegateTest : public InProcessBrowserTest {
   }
 
   void CheckIsMaximized(bool maximized) {
-    CheckWaiter(base::Bind(&BrowserWindow::IsMaximized,
-                           base::Unretained(browser()->window())),
+    CheckWaiter(base::BindRepeating(&BrowserWindow::IsMaximized,
+                                    base::Unretained(browser()->window())),
                 maximized)
         .Wait();
     EXPECT_EQ(maximized, browser()->window()->IsMaximized());
   }
 
   void CheckIsMinimized(bool minimized) {
-    CheckWaiter(base::Bind(&BrowserWindow::IsMinimized,
-                           base::Unretained(browser()->window())),
+    CheckWaiter(base::BindRepeating(&BrowserWindow::IsMinimized,
+                                    base::Unretained(browser()->window())),
                 minimized)
         .Wait();
     EXPECT_EQ(minimized, browser()->window()->IsMinimized());
   }
 
   void CheckIsFullscreen(bool fullscreen) {
-    CheckWaiter(base::Bind(&BrowserWindow::IsFullscreen,
-                           base::Unretained(browser()->window())),
+    CheckWaiter(base::BindRepeating(&BrowserWindow::IsFullscreen,
+                                    base::Unretained(browser()->window())),
                 fullscreen)
         .Wait();
     EXPECT_EQ(fullscreen, browser()->window()->IsFullscreen());
@@ -118,9 +118,10 @@ class DevToolsManagerDelegateTest : public InProcessBrowserTest {
   }
 
   void CheckWindowBounds(gfx::Rect expected) {
-    CheckWaiter(base::Bind(&DevToolsManagerDelegateTest::IsWindowBoundsEqual,
-                           base::Unretained(this), expected),
-                true)
+    CheckWaiter(
+        base::BindRepeating(&DevToolsManagerDelegateTest::IsWindowBoundsEqual,
+                            base::Unretained(this), expected),
+        true)
         .Wait();
     EXPECT_EQ(expected, browser()->window()->GetBounds());
   }
@@ -133,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, NormalWindowChangeBounds) {
   CheckWindowBounds(gfx::Rect(200, 100, 600, 400));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // MacViews does not yet implement maximized windows: https://crbug.com/836327
 #define MAYBE_NormalToMaximizedWindow DISABLED_NormalToMaximizedWindow
 #else
@@ -153,18 +154,18 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, NormalToMinimizedWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, NormalToFullscreenWindow) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen faker;
 #endif
   CheckIsFullscreen(false);
   SendCommand("fullscreen");
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   faker.FinishTransition();
 #endif
   CheckIsFullscreen(true);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // MacViews does not yet implement maximized windows: https://crbug.com/836327
 #define MAYBE_MaximizedToMinimizedWindow DISABLED_MaximizedToMinimizedWindow
 #else
@@ -180,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
   CheckIsMinimized(true);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // MacViews does not yet implement maximized windows: https://crbug.com/836327
 #define MAYBE_MaximizedToFullscreenWindow DISABLED_MaximizedToFullscreenWindow
 #else
@@ -203,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, ShowMinimizedWindow) {
   CheckIsMinimized(false);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // MacViews does not yet implement maximized windows: https://crbug.com/836327
 #define MAYBE_RestoreMaximizedWindow DISABLED_RestoreMaximizedWindow
 #else
@@ -218,17 +219,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, ExitFullscreenWindow) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen faker;
 #endif
   browser()->window()->GetExclusiveAccessContext()->EnterFullscreen(
       GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, display::kInvalidDisplayId);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   faker.FinishTransition();
 #endif
   CheckIsFullscreen(true);
   SendCommand("normal");
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   faker.FinishTransition();
 #endif
   CheckIsFullscreen(false);

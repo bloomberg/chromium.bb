@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "ui/ozone/platform/wayland/host/shell_popup_wrapper.h"
 
 namespace ui {
@@ -40,6 +41,11 @@ class XDGPopupWrapperImpl : public ShellPopupWrapper {
   struct zxdg_positioner_v6* CreatePositionerV6(WaylandConnection* connection,
                                                 WaylandWindow* parent_window,
                                                 const gfx::Rect& bounds);
+
+  MenuType GetMenuTypeForPositioner(WaylandConnection* connection,
+                                    WaylandWindow* parent_window) const;
+
+  bool CanGrabPopup(WaylandConnection* connection) const;
 
   // xdg_popup_listener
   static void Configure(void* data,

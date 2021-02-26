@@ -6,82 +6,31 @@
 
 #include <cmath>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/task/task_traits.h"
-#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/audio_timestamp_helper.h"
-#include "media/base/media_switches.h"
-#include "media/base/silent_sink_suspender.h"
 
 namespace media {
 
-enum { kPauseDelaySeconds = 10 };
-
-// Tracks the maximum value of a counter and logs it into a UMA histogram upon
-// each increase of the maximum. NOT thread-safe, make sure it is used under
-// lock.
-class AudioRendererMixer::UMAMaxValueTracker {
- public:
-  UMAMaxValueTracker(UmaLogCallback log_callback)
-      : log_callback_(std::move(log_callback)), count_(0), max_count_(0) {}
-
-  ~UMAMaxValueTracker() = default;
-
-  // Increments the counter, updates the maximum.
-  void Increment() {
-    ++count_;
-    if (max_count_ < count_) {
-      max_count_ = count_;
-      log_callback_.Run(max_count_);
-    }
-  }
-
-  // Decrements the counter.
-  void Decrement() {
-    DCHECK_GE(count_, 0);
-    --count_;
-  }
-
- private:
-  const UmaLogCallback log_callback_;
-  int count_;
-  int max_count_;
-  DISALLOW_COPY_AND_ASSIGN(UMAMaxValueTracker);
-};
+constexpr base::TimeDelta kPauseDelay = base::TimeDelta::FromSeconds(10);
 
 AudioRendererMixer::AudioRendererMixer(const AudioParameters& output_params,
-                                       scoped_refptr<AudioRendererSink> sink,
-                                       UmaLogCallback log_callback)
+                                       scoped_refptr<AudioRendererSink> sink)
     : output_params_(output_params),
       audio_sink_(std::move(sink)),
       master_converter_(output_params, output_params, true),
-      pause_delay_(base::TimeDelta::FromSeconds(kPauseDelaySeconds)),
+      pause_delay_(kPauseDelay),
       last_play_time_(base::TimeTicks::Now()),
       // Initialize |playing_| to true since Start() results in an auto-play.
-      playing_(true),
-      input_count_tracker_(new UMAMaxValueTracker(std::move(log_callback))) {
+      playing_(true) {
   DCHECK(audio_sink_);
 
   // If enabled we will disable the real audio output stream for muted/silent
   // playbacks after some time elapses.
   RenderCallback* callback = this;
-  if (base::FeatureList::IsEnabled(media::kSuspendMutedAudio)) {
-    // We use slightly more than |pause_delay_| time before suspending the sink
-    // to ensure that we just Pause() entirely instead of using a fake sink when
-    // possible.
-    muted_suspender_.reset(new SilentSinkSuspender(
-        this, pause_delay_ + base::TimeDelta::FromMilliseconds(500),
-        output_params, audio_sink_, GetSuspenderTaskRunner()));
-    callback = muted_suspender_.get();
-  }
-
   audio_sink_->Initialize(output_params, callback);
   audio_sink_->Start();
 }
@@ -89,7 +38,6 @@ AudioRendererMixer::AudioRendererMixer(const AudioParameters& output_params,
 AudioRendererMixer::~AudioRendererMixer() {
   // AudioRendererSink must be stopped before mixer is destructed.
   audio_sink_->Stop();
-  muted_suspender_.reset();
 
   // Ensure that all mixer inputs have removed themselves prior to destruction.
   DCHECK(master_converter_.empty());
@@ -126,8 +74,6 @@ void AudioRendererMixer::AddMixerInput(const AudioParameters& input_params,
     }
     converter->second->AddInput(input);
   }
-
-  input_count_tracker_->Increment();
 }
 
 void AudioRendererMixer::RemoveMixerInput(
@@ -148,8 +94,6 @@ void AudioRendererMixer::RemoveMixerInput(
       converters_.erase(converter);
     }
   }
-
-  input_count_tracker_->Decrement();
 }
 
 void AudioRendererMixer::AddErrorCallback(AudioRendererMixerInput* input) {
@@ -186,8 +130,6 @@ int AudioRendererMixer::Render(base::TimeDelta delay,
     last_play_time_ = now;
   } else if (now - last_play_time_ >= pause_delay_ && playing_) {
     audio_sink_->Pause();
-    if (muted_suspender_)
-      muted_suspender_->OnPaused();
     playing_ = false;
   }
 
@@ -207,16 +149,6 @@ void AudioRendererMixer::OnRenderError() {
   base::AutoLock auto_lock(lock_);
   for (auto* input : error_callbacks_)
     input->OnRenderError();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-AudioRendererMixer::GetSuspenderTaskRunner() {
-  if (!suspender_task_runner_) {
-    suspender_task_runner_ = base::ThreadPool::CreateSingleThreadTaskRunner(
-        {base::TaskPriority::USER_VISIBLE,
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  }
-  return suspender_task_runner_;
 }
 
 }  // namespace media

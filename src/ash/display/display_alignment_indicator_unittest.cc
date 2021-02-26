@@ -8,7 +8,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/views/widget/widget.h"
 
@@ -45,21 +44,22 @@ TEST_F(DisplayAlignmentIndicatorTest, IndicatorWithPill) {
   ASSERT_TRUE(display::ComputeBoundary(primary_display, secondary_display,
                                        &primary_edge, &secondary_edge));
 
-  DisplayAlignmentIndicator indicator(primary_display, primary_edge, "test");
+  auto indicator = DisplayAlignmentIndicator::CreateWithPill(
+      primary_display, primary_edge, "test");
 
-  ASSERT_TRUE(DoesPillExist(indicator));
-  EXPECT_TRUE(IsPillVisible(indicator));
-  EXPECT_TRUE(IsHighlightVisible(indicator));
+  ASSERT_TRUE(DoesPillExist(*indicator));
+  EXPECT_TRUE(IsPillVisible(*indicator));
+  EXPECT_TRUE(IsHighlightVisible(*indicator));
 
-  indicator.Hide();
+  indicator->Hide();
 
-  EXPECT_FALSE(IsPillVisible(indicator));
-  EXPECT_FALSE(IsHighlightVisible(indicator));
+  EXPECT_FALSE(IsPillVisible(*indicator));
+  EXPECT_FALSE(IsHighlightVisible(*indicator));
 
-  indicator.Show();
+  indicator->Show();
 
-  EXPECT_TRUE(IsPillVisible(indicator));
-  EXPECT_TRUE(IsHighlightVisible(indicator));
+  EXPECT_TRUE(IsPillVisible(*indicator));
+  EXPECT_TRUE(IsHighlightVisible(*indicator));
 }
 
 TEST_F(DisplayAlignmentIndicatorTest, IndicatorWithoutPill) {
@@ -74,18 +74,19 @@ TEST_F(DisplayAlignmentIndicatorTest, IndicatorWithoutPill) {
   ASSERT_TRUE(display::ComputeBoundary(primary_display, secondary_display,
                                        &primary_edge, &secondary_edge));
 
-  DisplayAlignmentIndicator indicator(primary_display, primary_edge, "");
+  auto indicator =
+      DisplayAlignmentIndicator::Create(primary_display, primary_edge);
 
-  ASSERT_FALSE(DoesPillExist(indicator));
-  EXPECT_TRUE(IsHighlightVisible(indicator));
+  ASSERT_FALSE(DoesPillExist(*indicator));
+  EXPECT_TRUE(IsHighlightVisible(*indicator));
 
-  indicator.Hide();
+  indicator->Hide();
 
-  EXPECT_FALSE(IsHighlightVisible(indicator));
+  EXPECT_FALSE(IsHighlightVisible(*indicator));
 
-  indicator.Show();
+  indicator->Show();
 
-  EXPECT_TRUE(IsHighlightVisible(indicator));
+  EXPECT_TRUE(IsHighlightVisible(*indicator));
 }
 
 }  // namespace ash

@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/services/secure_channel/public/mojom/nearby_connector.mojom.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_base.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -60,6 +61,7 @@ class SecureChannelInitializer : public SecureChannelBase {
         const multidevice::RemoteDevice& device_to_connect,
         const multidevice::RemoteDevice& local_device,
         const std::string& feature,
+        ConnectionMedium connection_medium,
         ConnectionPriority connection_priority,
         mojo::PendingRemote<mojom::ConnectionDelegate> delegate,
         bool is_listen_request);
@@ -68,6 +70,7 @@ class SecureChannelInitializer : public SecureChannelBase {
     multidevice::RemoteDevice device_to_connect;
     multidevice::RemoteDevice local_device;
     std::string feature;
+    ConnectionMedium connection_medium;
     ConnectionPriority connection_priority;
     mojo::PendingRemote<mojom::ConnectionDelegate> delegate;
     bool is_listen_request;
@@ -78,18 +81,23 @@ class SecureChannelInitializer : public SecureChannelBase {
       const multidevice::RemoteDevice& device_to_connect,
       const multidevice::RemoteDevice& local_device,
       const std::string& feature,
+      ConnectionMedium connection_medium,
       ConnectionPriority connection_priority,
       mojo::PendingRemote<mojom::ConnectionDelegate> delegate) override;
   void InitiateConnectionToDevice(
       const multidevice::RemoteDevice& device_to_connect,
       const multidevice::RemoteDevice& local_device,
       const std::string& feature,
+      ConnectionMedium connection_medium,
       ConnectionPriority connection_priority,
       mojo::PendingRemote<mojom::ConnectionDelegate> delegate) override;
+  void SetNearbyConnector(
+      mojo::PendingRemote<mojom::NearbyConnector> nearby_connector) override;
 
   void OnBluetoothAdapterReceived(
       scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
 
+  mojo::PendingRemote<mojom::NearbyConnector> nearby_connector_;
   std::queue<std::unique_ptr<ConnectionRequestArgs>> pending_args_;
   std::unique_ptr<mojom::SecureChannel> secure_channel_impl_;
 

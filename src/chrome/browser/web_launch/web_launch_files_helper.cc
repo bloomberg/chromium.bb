@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -19,8 +18,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom.h"
+#include "third_party/blink/public/mojom/file_system_access/native_file_system_directory_handle.mojom.h"
 #include "url/origin.h"
 
 namespace web_launch {
@@ -70,6 +70,25 @@ void WebLaunchFilesHelper::DidFinishNavigation(
 
 namespace {
 
+// On Chrome OS paths that exist on an external mount point need to be treated
+// differently to make sure the native file system code accesses these paths via
+// the correct file system backend. This method checks if this is the case, and
+// updates `entry_path` to the path that should be used by the native file
+// system implementation.
+content::NativeFileSystemEntryFactory::PathType MaybeRemapPath(
+    base::FilePath* entry_path) {
+#if defined(OS_CHROMEOS)
+  base::FilePath virtual_path;
+  auto* external_mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  if (external_mount_points->GetVirtualPath(*entry_path, &virtual_path)) {
+    *entry_path = std::move(virtual_path);
+    return content::NativeFileSystemEntryFactory::PathType::kExternal;
+  }
+#endif
+  return content::NativeFileSystemEntryFactory::PathType::kLocal;
+}
+
 class EntriesBuilder {
  public:
   EntriesBuilder(
@@ -83,16 +102,25 @@ class EntriesBuilder {
                            ->GetNativeFileSystemEntryFactory()),
         context_(url::Origin::Create(launch_url),
                  launch_url,
-                 web_contents->GetMainFrame()->GetProcess()->GetID(),
-                 web_contents->GetMainFrame()->GetRoutingID()) {}
+                 content::GlobalFrameRoutingId(
+                     web_contents->GetMainFrame()->GetProcess()->GetID(),
+                     web_contents->GetMainFrame()->GetRoutingID())) {}
 
   void AddFileEntry(const base::FilePath& path) {
-    entries_ref_->push_back(
-        entry_factory_->CreateFileEntryFromPath(context_, path));
+    base::FilePath entry_path = path;
+    content::NativeFileSystemEntryFactory::PathType path_type =
+        MaybeRemapPath(&entry_path);
+    entries_ref_->push_back(entry_factory_->CreateFileEntryFromPath(
+        context_, path_type, entry_path,
+        content::NativeFileSystemEntryFactory::UserAction::kOpen));
   }
   void AddDirectoryEntry(const base::FilePath& path) {
-    entries_ref_->push_back(
-        entry_factory_->CreateDirectoryEntryFromPath(context_, path));
+    base::FilePath entry_path = path;
+    content::NativeFileSystemEntryFactory::PathType path_type =
+        MaybeRemapPath(&entry_path);
+    entries_ref_->push_back(entry_factory_->CreateDirectoryEntryFromPath(
+        context_, path_type, entry_path,
+        content::NativeFileSystemEntryFactory::UserAction::kOpen));
   }
 
  private:
@@ -118,8 +146,8 @@ WebLaunchFilesHelper::WebLaunchFilesHelper(
     entries_builder.AddFileEntry(path);
 
   // Asynchronously call MaybeSendLaunchEntries, since it may destroy |this|.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&WebLaunchFilesHelper::MaybeSendLaunchEntries,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&WebLaunchFilesHelper::MaybeSendLaunchEntries,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -141,8 +169,8 @@ WebLaunchFilesHelper::WebLaunchFilesHelper(
     entries_builder.AddFileEntry(path);
 
   // Asynchronously call MaybeSendLaunchEntries, since it may destroy |this|.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&WebLaunchFilesHelper::MaybeSendLaunchEntries,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&WebLaunchFilesHelper::MaybeSendLaunchEntries,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 

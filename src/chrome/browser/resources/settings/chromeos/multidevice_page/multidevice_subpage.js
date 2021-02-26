@@ -10,7 +10,11 @@
 Polymer({
   is: 'settings-multidevice-subpage',
 
-  behaviors: [MultiDeviceFeatureBehavior],
+  behaviors: [
+    DeepLinkingBehavior,
+    MultiDeviceFeatureBehavior,
+    settings.RouteObserverBehavior,
+  ],
 
   properties: {
     /**
@@ -21,6 +25,26 @@ Polymer({
       type: Object,
       value: settings.routes,
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kInstantTetheringOnOff,
+        chromeos.settings.mojom.Setting.kMultiDeviceOnOff,
+        chromeos.settings.mojom.Setting.kSmartLockOnOff,
+        chromeos.settings.mojom.Setting.kMessagesSetUp,
+        chromeos.settings.mojom.Setting.kMessagesOnOff,
+        chromeos.settings.mojom.Setting.kForgetPhone,
+        chromeos.settings.mojom.Setting.kPhoneHubOnOff,
+        chromeos.settings.mojom.Setting.kPhoneHubNotificationsOnOff,
+        chromeos.settings.mojom.Setting.kPhoneHubTaskContinuationOnOff,
+        chromeos.settings.mojom.Setting.kWifiSyncOnOff,
+      ]),
+    },
   },
 
   /** @private {?settings.MultiDeviceBrowserProxy} */
@@ -29,6 +53,19 @@ Polymer({
   /** @override */
   created() {
     this.browserProxy_ = settings.MultiDeviceBrowserProxyImpl.getInstance();
+  },
+
+  /**
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route !== settings.routes.MULTIDEVICE_FEATURES) {
+      return;
+    }
+
+    this.attemptDeepLink();
   },
 
   /** @private */
@@ -120,5 +157,13 @@ Polymer({
     return !this.isSuiteOn() ||
         messagesFeatureState ===
         settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY;
-  }
+  },
+
+  getPhoneHubNotificationsTooltip_() {
+    if (!this.isPhoneHubNotificationAccessProhibited()) {
+      return '';
+    }
+
+    return this.i18n('multideviceNotificationAccessProhibitedTooltip');
+  },
 });

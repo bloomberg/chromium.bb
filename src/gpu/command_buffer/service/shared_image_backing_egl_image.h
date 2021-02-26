@@ -40,6 +40,8 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       size_t estimated_size,
       GLuint gl_format,
@@ -71,6 +73,7 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
  private:
   friend class SharedImageBatchAccessManager;
   friend class SharedImageRepresentationEglImageGLTexture;
+  class TextureHolder;
 
   // Use to create EGLImage texture target from the same EGLImage object.
   gles2::Texture* GenEGLImageSibling();
@@ -79,11 +82,8 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
 
   const GLuint gl_format_;
   const GLuint gl_type_;
-  gles2::Texture* source_texture_ = nullptr;
-
-#if DCHECK_IS_ON()
+  scoped_refptr<TextureHolder> source_texture_holder_;
   gl::GLApi* created_on_context_;
-#endif
 
   // This class encapsulates the EGLImage object for android.
   scoped_refptr<gles2::NativeImageBuffer> egl_image_buffer_ GUARDED_BY(lock_);

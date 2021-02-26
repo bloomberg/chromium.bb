@@ -18,9 +18,11 @@
 
 #include "src/trace_processor/importers/common/process_tracker.h"
 #include "src/trace_processor/importers/proto/heap_graph_tracker.h"
+#include "src/trace_processor/importers/proto/profiler_util.h"
 #include "src/trace_processor/storage/trace_storage.h"
 #include "src/trace_processor/types/trace_processor_context.h"
 
+#include "protos/perfetto/trace/profiling/deobfuscation.pbzero.h"
 #include "protos/perfetto/trace/profiling/heap_graph.pbzero.h"
 
 namespace perfetto {
@@ -127,18 +129,27 @@ void HeapGraphModule::ParseHeapGraph(uint32_t seq_id,
     obj.self_size = object.self_size();
     obj.type_id = object.type_id();
 
-    std::vector<uint64_t> field_ids;
-    std::vector<uint64_t> object_ids;
+    uint64_t base_obj_id = object.reference_field_id_base();
 
+    // In S+ traces, this field will not be set for normal instances. It will be
+    // set in the corresponding HeapGraphType instead. It will still be set for
+    // class objects.
+    //
+    // grep-friendly: reference_field_id
     bool parse_error = ForEachVarInt<
         protos::pbzero::HeapGraphObject::kReferenceFieldIdFieldNumber>(
-        object, [&field_ids](uint64_t value) { field_ids.push_back(value); });
+        object,
+        [&obj](uint64_t value) { obj.field_name_ids.push_back(value); });
 
     if (!parse_error) {
+      // grep-friendly: reference_object_id
       parse_error = ForEachVarInt<
           protos::pbzero::HeapGraphObject::kReferenceObjectIdFieldNumber>(
-          object,
-          [&object_ids](uint64_t value) { object_ids.push_back(value); });
+          object, [&obj, base_obj_id](uint64_t value) {
+            if (value)
+              value += base_obj_id;
+            obj.referred_objects.push_back(value);
+          });
     }
 
     if (parse_error) {
@@ -146,35 +157,41 @@ void HeapGraphModule::ParseHeapGraph(uint32_t seq_id,
           stats::heap_graph_malformed_packet, static_cast<int>(upid));
       break;
     }
-    if (field_ids.size() != object_ids.size()) {
+    if (!obj.field_name_ids.empty() &&
+        (obj.field_name_ids.size() != obj.referred_objects.size())) {
       context_->storage->IncrementIndexedStats(
           stats::heap_graph_malformed_packet, static_cast<int>(upid));
       continue;
     }
-    for (size_t i = 0; i < field_ids.size(); ++i) {
-      HeapGraphTracker::SourceObject::Reference ref;
-      ref.field_name_id = field_ids[i];
-      ref.owned_object_id = object_ids[i];
-      obj.references.emplace_back(std::move(ref));
-    }
     heap_graph_tracker->AddObject(seq_id, upid, ts, std::move(obj));
   }
   for (auto it = heap_graph.types(); it; ++it) {
+    std::vector<uint64_t> field_name_ids;
     protos::pbzero::HeapGraphType::Decoder entry(*it);
     const char* str = reinterpret_cast<const char*>(entry.class_name().data);
     auto str_view = base::StringView(str, entry.class_name().size);
 
+    // grep-friendly: reference_field_id
+    bool parse_error = ForEachVarInt<
+        protos::pbzero::HeapGraphType::kReferenceFieldIdFieldNumber>(
+        entry,
+        [&field_name_ids](uint64_t value) { field_name_ids.push_back(value); });
+
+    if (parse_error) {
+      context_->storage->IncrementIndexedStats(
+          stats::heap_graph_malformed_packet, static_cast<int>(upid));
+      continue;
+    }
+
+    bool no_fields =
+        entry.kind() == protos::pbzero::HeapGraphType::KIND_NOREFERENCES ||
+        entry.kind() == protos::pbzero::HeapGraphType::KIND_ARRAY ||
+        entry.kind() == protos::pbzero::HeapGraphType::KIND_STRING;
+
     heap_graph_tracker->AddInternedType(
         seq_id, entry.id(), context_->storage->InternString(str_view),
-        entry.location_id());
-  }
-  for (auto it = heap_graph.type_names(); it; ++it) {
-    protos::pbzero::InternedString::Decoder entry(*it);
-    const char* str = reinterpret_cast<const char*>(entry.str().data);
-    auto str_view = base::StringView(str, entry.str().size);
-
-    heap_graph_tracker->AddInternedTypeName(
-        seq_id, entry.iid(), context_->storage->InternString(str_view));
+        entry.location_id(), entry.object_size(), std::move(field_name_ids),
+        entry.superclass_id(), entry.classloader_id(), no_fields);
   }
   for (auto it = heap_graph.field_names(); it; ++it) {
     protos::pbzero::InternedString::Decoder entry(*it);
@@ -198,6 +215,7 @@ void HeapGraphModule::ParseHeapGraph(uint32_t seq_id,
 
     HeapGraphTracker::SourceRoot src_root;
     src_root.root_type = context_->storage->InternString(str_view);
+    // grep-friendly: object_ids
     bool parse_error =
         ForEachVarInt<protos::pbzero::HeapGraphRoot::kObjectIdsFieldNumber>(
             entry, [&src_root](uint64_t value) {
@@ -225,23 +243,22 @@ void HeapGraphModule::DeobfuscateClass(
                                       obfuscated_class_name_id);
 
   if (cls_objects) {
-    heap_graph_tracker->AddDeobfuscationMapping(
-        package_name_id, obfuscated_class_name_id,
-        context_->storage->InternString(
-            base::StringView(cls.deobfuscated_name())));
-
     for (tables::HeapGraphClassTable::Id id : *cls_objects) {
       uint32_t row =
           *context_->storage->heap_graph_class_table().id().IndexOf(id);
-      const StringPool::Id obfuscated_type_name =
+      const StringPool::Id obfuscated_type_name_id =
           context_->storage->heap_graph_class_table().name()[row];
-      StringPool::Id deobfuscated_type_name =
-          heap_graph_tracker->MaybeDeobfuscate(package_name_id,
-                                               obfuscated_type_name);
-      PERFETTO_CHECK(!deobfuscated_type_name.is_null());
+      const base::StringView obfuscated_type_name =
+          context_->storage->GetString(obfuscated_type_name_id);
+      NormalizedType normalized_type = GetNormalizedType(obfuscated_type_name);
+      std::string deobfuscated_type_name =
+          DenormalizeTypeName(normalized_type, cls.deobfuscated_name());
+      StringPool::Id deobfuscated_type_name_id =
+          context_->storage->InternString(
+              base::StringView(deobfuscated_type_name));
       context_->storage->mutable_heap_graph_class_table()
           ->mutable_deobfuscated_name()
-          ->Set(row, deobfuscated_type_name);
+          ->Set(row, deobfuscated_type_name_id);
     }
   } else {
     PERFETTO_DLOG("Class %s not found",
@@ -282,17 +299,8 @@ void HeapGraphModule::ParseDeobfuscationMapping(protozero::ConstBytes blob) {
       std::string merged_obfuscated = cls.obfuscated_name().ToStdString() +
                                       "." +
                                       member.obfuscated_name().ToStdString();
-      std::string merged_deobfuscated;
-      std::string member_deobfuscated_name =
-          member.deobfuscated_name().ToStdString();
-      if (member_deobfuscated_name.find('.') == std::string::npos) {
-        // Name relative to class.
-        merged_deobfuscated = cls.deobfuscated_name().ToStdString() + "." +
-                              member_deobfuscated_name;
-      } else {
-        // Fully qualified name.
-        merged_deobfuscated = std::move(member_deobfuscated_name);
-      }
+      std::string merged_deobfuscated =
+          FullyQualifiedDeobfuscatedName(cls, member);
 
       auto obfuscated_field_name_id = context_->storage->string_pool().GetId(
           base::StringView(merged_obfuscated));

@@ -56,10 +56,10 @@ class MockMemoryRegion: public MemoryRegion {
  public:
   MOCK_CONST_METHOD0(GetBase, uint64_t());
   MOCK_CONST_METHOD0(GetSize, uint32_t());
-  MOCK_CONST_METHOD2(GetMemoryAtAddress, bool(uint64_t, uint8_t *));
-  MOCK_CONST_METHOD2(GetMemoryAtAddress, bool(uint64_t, uint16_t *));
-  MOCK_CONST_METHOD2(GetMemoryAtAddress, bool(uint64_t, uint32_t *));
-  MOCK_CONST_METHOD2(GetMemoryAtAddress, bool(uint64_t, uint64_t *));
+  MOCK_CONST_METHOD2(GetMemoryAtAddress, bool(uint64_t, uint8_t*));
+  MOCK_CONST_METHOD2(GetMemoryAtAddress, bool(uint64_t, uint16_t*));
+  MOCK_CONST_METHOD2(GetMemoryAtAddress, bool(uint64_t, uint32_t*));
+  MOCK_CONST_METHOD2(GetMemoryAtAddress, bool(uint64_t, uint64_t*));
   MOCK_CONST_METHOD0(Print, void());
 };
 
@@ -70,10 +70,10 @@ struct CFIFixture {
   void ExpectNoMemoryReferences() {
     EXPECT_CALL(memory, GetBase()).Times(0);
     EXPECT_CALL(memory, GetSize()).Times(0);
-    EXPECT_CALL(memory, GetMemoryAtAddress(_, A<uint8_t *>())).Times(0);
-    EXPECT_CALL(memory, GetMemoryAtAddress(_, A<uint16_t *>())).Times(0);
-    EXPECT_CALL(memory, GetMemoryAtAddress(_, A<uint32_t *>())).Times(0);
-    EXPECT_CALL(memory, GetMemoryAtAddress(_, A<uint64_t *>())).Times(0);
+    EXPECT_CALL(memory, GetMemoryAtAddress(_, A<uint8_t*>())).Times(0);
+    EXPECT_CALL(memory, GetMemoryAtAddress(_, A<uint16_t*>())).Times(0);
+    EXPECT_CALL(memory, GetMemoryAtAddress(_, A<uint32_t*>())).Times(0);
+    EXPECT_CALL(memory, GetMemoryAtAddress(_, A<uint64_t*>())).Times(0);
   }
 
   CFIFrameInfo cfi;
@@ -292,9 +292,9 @@ TEST_F(Scope, SeparateTempsRA) {
 
 class MockCFIRuleParserHandler: public CFIRuleParser::Handler {
  public:
-  MOCK_METHOD1(CFARule, void(const string &));
-  MOCK_METHOD1(RARule,  void(const string &));
-  MOCK_METHOD2(RegisterRule, void(const string &, const string &));
+  MOCK_METHOD1(CFARule, void(const string&));
+  MOCK_METHOD1(RARule,  void(const string&));
+  MOCK_METHOD2(RegisterRule, void(const string&, const string&));
 };
 
 // A fixture class for testing CFIRuleParser.
@@ -509,12 +509,12 @@ TEST_F(SimpleWalker, Walk) {
 
   // Saved r0.
   EXPECT_CALL(memory,
-              GetMemoryAtAddress(stack_top, A<uint64_t *>()))
+              GetMemoryAtAddress(stack_top, A<uint64_t*>()))
       .WillRepeatedly(DoAll(SetArgumentPointee<1>(0xdc1975eba8602302ULL),
                             Return(true)));
   // Saved return address.
   EXPECT_CALL(memory,
-              GetMemoryAtAddress(stack_top + 16, A<uint64_t *>()))
+              GetMemoryAtAddress(stack_top + 16, A<uint64_t*>()))
       .WillRepeatedly(DoAll(SetArgumentPointee<1>(0xba5ad6d9acce28deULL),
                             Return(true)));
 

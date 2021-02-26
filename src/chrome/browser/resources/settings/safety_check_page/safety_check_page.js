@@ -16,12 +16,15 @@ import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../settings_shared_css.m.js';
-import './safety_check_extensions_element.js';
-import './safety_check_passwords_element.js';
-import './safety_check_safe_browsing_element.js';
-import './safety_check_updates_element.js';
+import './safety_check_extensions_child.js';
+import './safety_check_passwords_child.js';
+import './safety_check_safe_browsing_child.js';
+import './safety_check_updates_child.js';
 
-import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+// <if expr="_google_chrome and is_win">
+import './safety_check_chrome_cleaner_child.js';
+// </if>
+
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
@@ -68,7 +71,7 @@ Polymer({
     parentDisplayString_: String,
   },
 
-  /** @private {SafetyCheckBrowserProxy} */
+  /** @private {?SafetyCheckBrowserProxy} */
   safetyCheckBrowserProxy_: null,
 
   /** @private {?MetricsBrowserProxy} */
@@ -120,7 +123,11 @@ Polymer({
   onSafetyCheckParentChanged_: function(event) {
     this.parentStatus_ = event.newState;
     this.parentDisplayString_ = event.displayString;
-    if (this.parentStatus_ === SafetyCheckParentStatus.AFTER) {
+    if (this.parentStatus_ === SafetyCheckParentStatus.CHECKING) {
+      // Ensure the re-run button is visible and focus it.
+      flush();
+      this.focusIconButton_();
+    } else if (this.parentStatus_ === SafetyCheckParentStatus.AFTER) {
       // Start periodic safety check parent ran string updates.
       const update = async () => {
         this.parentDisplayString_ =
@@ -158,16 +165,10 @@ Polymer({
     HatsBrowserProxyImpl.getInstance().tryShowSurvey();
 
     this.runSafetyCheck_();
-
-    // Update parent element so that re-run button is visible and can be
-    // focused.
-    this.parentStatus_ = SafetyCheckParentStatus.CHECKING;
-    flush();
-    this.focusParent_();
   },
 
   /** @private */
-  focusParent_() {
+  focusIconButton_() {
     const element =
         /** @type {!Element} */ (this.$$('#safetyCheckParentIconButton'));
     element.focus();
@@ -178,6 +179,6 @@ Polymer({
    * @return {boolean}
    */
   shouldShowChildren_: function() {
-    return this.parentStatus_ != SafetyCheckParentStatus.BEFORE;
+    return this.parentStatus_ !== SafetyCheckParentStatus.BEFORE;
   },
 });

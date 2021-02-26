@@ -28,8 +28,8 @@ function verifyEvent(entry, eventType, targetId, isFirst=false, minDuration=104,
   assert_equals(entry.entryType, 'event');
   assert_greater_than_equal(entry.duration, minDuration,
       "The entry's duration should be greater than or equal to " + minDuration + " ms.");
-  assert_greater_than(entry.processingStart, entry.startTime,
-      "The entry's processingStart should be greater than startTime.");
+  assert_greater_than_equal(entry.processingStart, entry.startTime,
+      "The entry's processingStart should be greater than or equal to startTime.");
   assert_greater_than_equal(entry.processingEnd, entry.processingStart,
       "The entry's processingEnd must be at least as large as processingStart.");
   // |duration| is a number rounded to the nearest 8 ms, so add 4 to get a lower bound
@@ -182,28 +182,46 @@ function notCancelable(eventType) {
   return ['mouseenter', 'mouseleave', 'pointerenter', 'pointerleave'].includes(eventType);
 }
 
+// Tests the given |eventType|'s performance.eventCounts value. Since this is populated only when
+// the event is processed, we check every 10 ms until we've found the |expectedCount|.
+function testCounts(t, resolve, looseCount, eventType, expectedCount) {
+  const counts = performance.eventCounts.get(eventType);
+  if (counts < expectedCount) {
+    t.step_timeout(() => {
+      testCounts(t, resolve, looseCount, eventType, expectedCount);
+    }, 10);
+    return;
+  }
+  if (looseCount) {
+    assert_greater_than_equal(performance.eventCounts.get(eventType), expectedCount,
+        `Should have at least ${expectedCount} ${eventType} events`)
+  } else {
+    assert_equals(performance.eventCounts.get(eventType), expectedCount,
+        `Should have ${expectedCount} ${eventType} events`);
+  }
+  resolve();
+}
+
 // Tests the given |eventType| by creating events whose target are the element with id
 // 'target'. The test assumes that such element already exists. |looseCount| is set for
-// eventTypes for which events would occur for other elements besides the target, so the
-// counts will be larger.
+// eventTypes for which events would occur for other interactions other than the ones being
+// specified for the target, so the counts could be larger.
 async function testEventType(t, eventType, looseCount=false) {
   assert_implements(window.EventCounts, "Event Counts isn't supported");
-  assert_equals(performance.eventCounts.get(eventType), 0);
   const target = document.getElementById('target');
   if (requiresListener(eventType)) {
     target.addEventListener(eventType, () =>{});
   }
-  assert_equals(performance.eventCounts.get(eventType), 0, 'No events yet.');
+  const initialCount = performance.eventCounts.get(eventType);
+  if (!looseCount) {
+    assert_equals(initialCount, 0, 'No events yet.');
+  }
   // Trigger two 'fast' events of the type.
   await applyAction(eventType, target);
   await applyAction(eventType, target);
-  if (looseCount) {
-    assert_greater_than_equal(performance.eventCounts.get(eventType), 2,
-        `Should have at least 2 ${eventType} events`)
-  } else {
-    assert_equals(performance.eventCounts.get(eventType), 2,
-        `Should have 2 ${eventType} events`);
-  }
+  await new Promise(t.step_func(resolve => {
+    testCounts(t, resolve, looseCount, eventType, initialCount + 2);
+  }));
   // The durationThreshold used by the observer. A slow events needs to be slower than that.
   const durationThreshold = 16;
   // Now add an event handler to cause a slow event.
@@ -236,14 +254,9 @@ async function testEventType(t, eventType, looseCount=false) {
                   false /* isFirst */,
                   durationThreshold,
                   notCancelable(eventType));
-      if (looseCount) {
-        assert_greater_than_equal(performance.eventCounts.get(eventType), 3,
-            `Should have at least 3 ${eventType} events`)
-      } else {
-        assert_equals(performance.eventCounts.get(eventType), 3,
-            `Should have 3 ${eventType} events`);
-      }
-      resolve();
+      // Shouldn't need async testing here since we already got the observer entry, but might as
+      // well reuse the method.
+      testCounts(t, resolve, looseCount, eventType, initialCount + 3);
     })).observe({type: 'event', durationThreshold: durationThreshold});
   });
   // Cause a slow event.

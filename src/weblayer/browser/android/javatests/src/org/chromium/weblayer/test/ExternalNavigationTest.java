@@ -8,9 +8,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.test.filters.SmallTest;
 
 import androidx.fragment.app.Fragment;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Browser;
+import org.chromium.weblayer.NavigateParams;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabListCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
@@ -454,12 +455,15 @@ public class ExternalNavigationTest {
      * the external intent being launched due to the navigation being specified as being from a link
      * with a user gesture (if the navigation were specified as being from user typing the intent
      * would be blocked due to Chrome's policy on not launching intents from user-typed navigations
-     * without a redirect).
+     * without a redirect). Also verifies that WebLayer eliminates the navigation entry that
+     * launched the intent, so that the user is back on the original URL (i.e., the URL before that
+     * of the page that launched the intent in onload().
      */
     @Test
     @SmallTest
     public void testExternalIntentViaOnLoadLaunched() throws Throwable {
-        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        String initialUrl = ABOUT_BLANK_URL;
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(initialUrl);
         IntentInterceptor intentInterceptor = new IntentInterceptor();
         activity.setIntentInterceptor(intentInterceptor);
 
@@ -467,13 +471,13 @@ public class ExternalNavigationTest {
 
         Tab tab = mActivityTestRule.getActivity().getTab();
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { tab.getNavigationController().navigate(Uri.parse(url)); });
+        mActivityTestRule.navigateAndWait(url);
 
         intentInterceptor.waitForIntent();
 
-        // The current URL should not have changed, and the intent should have been launched.
-        Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
+        // The intent should have been launched, and the user should now be back on the original
+        // URL.
+        Assert.assertEquals(initialUrl, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
         Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
@@ -528,5 +532,36 @@ public class ExternalNavigationTest {
         Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
         Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
         Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
+    }
+
+    /**
+     * Verifies that disableIntentProcessing() does in fact disable intent processing.
+     */
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(87)
+    public void testDisableIntentProcessing() throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        String url = mActivityTestRule.getTestDataURL(PAGE_THAT_INTENTS_TO_CHROME_ON_LOAD_FILE);
+
+        Tab tab = mActivityTestRule.getActivity().getTab();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            NavigateParams.Builder navigateParamsBuilder = new NavigateParams.Builder();
+            navigateParamsBuilder.disableIntentProcessing();
+            tab.getNavigationController().navigate(Uri.parse(url), navigateParamsBuilder.build());
+        });
+
+        NavigationWaiter waiter = new NavigationWaiter(
+                INTENT_TO_CHROME_URL, tab, /*expectFailure=*/true, /*waitForPaint=*/false);
+        waiter.waitForNavigation();
+
+        Assert.assertNull(intentInterceptor.mLastIntent);
+
+        // The current URL should not have changed.
+        Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
     }
 }

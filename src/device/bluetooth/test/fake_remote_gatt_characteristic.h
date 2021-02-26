@@ -10,9 +10,10 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "build/chromeos_buildflags.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
-#include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom-forward.h"
+#include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
 #include "device/bluetooth/test/fake_read_response.h"
 #include "device/bluetooth/test/fake_remote_gatt_descriptor.h"
 
@@ -68,11 +69,15 @@ class FakeRemoteGattCharacteristic
   // any of its descriptors.
   bool AllResponsesConsumed();
 
-  // Returns the last sucessfully written value to the characteristic. Returns
+  // Returns the last successfully written value to the characteristic. Returns
   // nullopt if no value has been written yet.
   const base::Optional<std::vector<uint8_t>>& last_written_value() {
     return last_written_value_;
   }
+
+  // Returns the write type of the last successfully written value to the
+  // characteristic. Returns kNone if no value has been written yet.
+  mojom::WriteType last_write_type() { return last_write_type_; }
 
   // device::BluetoothGattCharacteristic overrides:
   std::string GetIdentifier() const override;
@@ -86,17 +91,21 @@ class FakeRemoteGattCharacteristic
   void ReadRemoteCharacteristic(ValueCallback callback,
                                 ErrorCallback error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
+                                 WriteType write_type,
                                  base::OnceClosure callback,
                                  ErrorCallback error_callback) override;
-#if defined(OS_CHROMEOS)
+  void DeprecatedWriteRemoteCharacteristic(
+      const std::vector<uint8_t>& value,
+      base::OnceClosure callback,
+      ErrorCallback error_callback) override;
+#if BUILDFLAG(IS_ASH)
   void PrepareWriteRemoteCharacteristic(const std::vector<uint8_t>& value,
                                         base::OnceClosure callback,
                                         ErrorCallback error_callback) override;
 #endif
-  bool WriteWithoutResponse(base::span<const uint8_t> value) override;
 
  protected:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   // device::BluetoothRemoteGattCharacteristic overrides:
   void SubscribeToNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
@@ -120,7 +129,8 @@ class FakeRemoteGattCharacteristic
                             ErrorCallback error_callback);
   void DispatchWriteResponse(base::OnceClosure callback,
                              ErrorCallback error_callback,
-                             const std::vector<uint8_t>& value);
+                             const std::vector<uint8_t>& value,
+                             mojom::WriteType write_type);
   void DispatchSubscribeToNotificationsResponse(base::OnceClosure callback,
                                                 ErrorCallback error_callback);
   void DispatchUnsubscribeFromNotificationsResponse(
@@ -135,6 +145,9 @@ class FakeRemoteGattCharacteristic
 
   // Last successfully written value to the characteristic.
   base::Optional<std::vector<uint8_t>> last_written_value_;
+
+  // Write type of last successfully written value to the characteristic.
+  mojom::WriteType last_write_type_ = mojom::WriteType::kNone;
 
   // Used to decide which callback should be called when
   // ReadRemoteCharacteristic is called.

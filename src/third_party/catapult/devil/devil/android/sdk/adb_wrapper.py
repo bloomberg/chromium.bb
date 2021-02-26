@@ -39,7 +39,7 @@ DEFAULT_RETRIES = 2
 
 _ADB_VERSION_RE = re.compile(r'Android Debug Bridge version (\d+\.\d+\.\d+)')
 _EMULATOR_RE = re.compile(r'^emulator-[0-9]+$')
-_DEVICE_NOT_FOUND_RE = re.compile(r"error: device '(?P<serial>.+)' not found")
+_DEVICE_NOT_FOUND_RE = re.compile(r"device '(?P<serial>.+)' not found")
 _READY_STATE = 'device'
 _VERITY_DISABLE_RE = re.compile(r'(V|v)erity (is )?(already )?disabled'
                                 r'|Successfully disabled verity')
@@ -286,21 +286,24 @@ class AdbWrapper(object):
     if additional_env:
       env.update(additional_env)
     try:
-      status, output = cmd_helper.GetCmdStatusAndOutputWithTimeout(
-          cls._BuildAdbCmd(args, device_serial, cpu_affinity=cpu_affinity),
-          timeout,
-          env=env)
+      adb_cmd = cls._BuildAdbCmd(args, device_serial, cpu_affinity=cpu_affinity)
+      status, output = cmd_helper.GetCmdStatusAndOutputWithTimeout(adb_cmd,
+                                                                   timeout,
+                                                                   env=env)
     except OSError as e:
       if e.errno in (errno.ENOENT, errno.ENOEXEC):
         raise device_errors.NoAdbError(msg=str(e))
       else:
         raise
+    except cmd_helper.TimeoutError:
+      logger.error('Timeout on adb command: %r', adb_cmd)
+      raise
 
     # Best effort to catch errors from adb; unfortunately adb is very
     # inconsistent with error reporting so many command failures present
     # differently.
     if status != 0 or (check_error and output.startswith('error:')):
-      not_found_m = _DEVICE_NOT_FOUND_RE.match(output)
+      not_found_m = _DEVICE_NOT_FOUND_RE.search(output)
       device_waiting_m = _WAITING_FOR_DEVICE_RE.match(output)
       if (device_waiting_m is not None
           or (not_found_m is not None
@@ -1066,7 +1069,16 @@ class AdbWrapper(object):
       timeout: (optional) Timeout per try in seconds.
       retries: (optional) Number of retries to attempt.
     """
-    output = self._RunDeviceAdbCmd(['root'], timeout, retries)
+    try:
+      output = self._RunDeviceAdbCmd(['root'], timeout, retries)
+    except device_errors.AdbCommandFailedError as e:
+      # For some devices, root can occasionally fail with this error and kick
+      # the device into adb 'offline' mode. Assuming this is transient, try
+      # waiting for the device to come back up before re-raising the exception
+      # and proceeding with any retries.
+      if 'unable to connect for root: closed' in e.output:
+        self.WaitForDevice()
+      raise
     if 'cannot' in output:
       raise device_errors.AdbCommandFailedError(
           ['root'], output, device_serial=self._device_serial)
@@ -1112,6 +1124,7 @@ class AdbWrapper(object):
           ['enable-verity'], output, device_serial=self._device_serial)
     return output
 
+  # Deprecated use device_utils#is_emulator instead.
   @property
   def is_emulator(self):
     return _EMULATOR_RE.match(self._device_serial)

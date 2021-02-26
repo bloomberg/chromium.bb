@@ -25,6 +25,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
@@ -48,16 +50,16 @@ export class Spectrum extends UI.Widget.VBox {
      * @param {!Element} parentElement
      */
     function appendSwitcherIcon(parentElement) {
-      const icon = parentElement.createSVGChild('svg');
+      const icon = UI.UIUtils.createSVGChild(parentElement, 'svg');
       icon.setAttribute('height', 16);
       icon.setAttribute('width', 16);
-      const path = icon.createSVGChild('path');
+      const path = UI.UIUtils.createSVGChild(icon, 'path');
       path.setAttribute('d', 'M5,6 L11,6 L8,2 Z M5,10 L11,10 L8,14 Z');
       return icon;
     }
 
     super(true);
-    this.registerRequiredCSS('color_picker/spectrum.css');
+    this.registerRequiredCSS('color_picker/spectrum.css', {enableLegacyPatching: true});
 
     this._colorElement = this.contentElement.createChild('div', 'spectrum-color');
     this._colorElement.tabIndex = 0;
@@ -156,7 +158,7 @@ export class Spectrum extends UI.Widget.VBox {
       this._contrastOverlay = new ContrastOverlay(this._contrastInfo, this._colorElement);
       this._contrastDetails = new ContrastDetails(
           this._contrastInfo, this.contentElement, this._toggleColorPicker.bind(this),
-          this._contrastPanelExpanded.bind(this));
+          this._contrastPanelExpanded.bind(this), this.colorSelected.bind(this));
 
       this._contrastDetailsBackgroundColorPickedToggledBound =
           this._contrastDetailsBackgroundColorPickedToggled.bind(this);
@@ -443,10 +445,12 @@ export class Spectrum extends UI.Widget.VBox {
       colorElement.tabIndex = -1;
       colorElement.addEventListener(
           'mousedown',
-          this._paletteColorSelected.bind(this, palette.colors[i], palette.colorNames[i], palette.matchUserFormat));
+          this._paletteColorSelected.bind(
+              this, palette.colors[i], palette.colorNames[i], Boolean(palette.matchUserFormat)));
       colorElement.addEventListener(
           'focus',
-          this._paletteColorSelected.bind(this, palette.colors[i], palette.colorNames[i], palette.matchUserFormat));
+          this._paletteColorSelected.bind(
+              this, palette.colors[i], palette.colorNames[i], Boolean(palette.matchUserFormat)));
       colorElement.addEventListener('keydown', this._onPaletteColorKeydown.bind(this, i));
       if (palette.mutable) {
         colorElement.__mutable = true;
@@ -561,7 +565,7 @@ export class Spectrum extends UI.Widget.VBox {
    * @return {boolean}
    */
   _paletteDragStart(e) {
-    const element = e.deepElementFromPoint();
+    const element = UI.UIUtils.deepElementFromEvent(e);
     if (!element || !element.__mutable) {
       return false;
     }
@@ -868,6 +872,13 @@ export class Spectrum extends UI.Widget.VBox {
   }
 
   /**
+   * @param {!Common.Color.Color} color
+   */
+  colorSelected(color) {
+    this._innerSetColor(color.hsva(), '', undefined /* colorName */, undefined /* colorFormat */, ChangeSource.Other);
+  }
+
+  /**
    * @param {!Array<number>|undefined} hsva
    * @param {string|undefined} colorString
    * @param {string|undefined} colorName
@@ -897,8 +908,8 @@ export class Spectrum extends UI.Widget.VBox {
       this._colorFormat = colorFormat;
     }
 
-    if (hsva && this._contrastInfo) {
-      this._contrastInfo.setColor(Common.Color.Color.fromHSVA(hsva));
+    if (this._contrastInfo) {
+      this._contrastInfo.setColor(Common.Color.Color.fromHSVA(this._hsv), this._colorFormat);
     }
 
     this._updateHelperLocations();
@@ -1390,5 +1401,5 @@ export class Swatch {
   }
 }
 
-/** @typedef {{ title: string, colors: !Array<string>, colorNames: !Array<string>, mutable: boolean }} */
+/** @typedef {{ title: string, colors: !Array<string>, colorNames: !Array<string>, mutable: boolean, matchUserFormat: (boolean|undefined) }} */
 export let Palette;

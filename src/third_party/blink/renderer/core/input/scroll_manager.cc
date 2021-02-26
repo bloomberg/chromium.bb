@@ -78,7 +78,7 @@ void ScrollManager::Clear() {
   ClearGestureScrollState();
 }
 
-void ScrollManager::Trace(Visitor* visitor) {
+void ScrollManager::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(scroll_gesture_handling_node_);
   visitor->Trace(previous_gesture_scrolled_node_);
@@ -190,13 +190,16 @@ void ScrollManager::RecomputeScrollChain(const Node& start_node,
 
 bool ScrollManager::CanScroll(const ScrollState& scroll_state,
                               const Node& current_node) {
-  if (!current_node.GetLayoutBox())
+  LayoutBox* scrolling_box = current_node.GetLayoutBox();
+  if (auto* element = DynamicTo<Element>(current_node))
+    scrolling_box = element->GetLayoutBoxForScrolling();
+  if (!scrolling_box)
     return false;
 
   // We need to always add the global root scroller even if it isn't scrollable
   // since we can always pinch-zoom and scroll as well as for overscroll
   // effects.
-  if (current_node.GetLayoutBox()->IsGlobalRootScroller())
+  if (scrolling_box->IsGlobalRootScroller())
     return true;
 
   // If this is the main LayoutView, and it's not the root scroller, that means
@@ -205,13 +208,12 @@ bool ScrollManager::CanScroll(const ScrollState& scroll_state,
   // so ensure it gets added to the scroll chain. See LTHI::ApplyScroll for the
   // equivalent behavior in CC. Node::NativeApplyScroll contains a special
   // handler for this case.
-  if (IsA<LayoutView>(current_node.GetLayoutBox()) &&
+  if (IsA<LayoutView>(scrolling_box) &&
       current_node.GetDocument().GetFrame()->IsMainFrame()) {
     return true;
   }
 
-  ScrollableArea* scrollable_area =
-      current_node.GetLayoutBox()->GetScrollableArea();
+  ScrollableArea* scrollable_area = scrolling_box->GetScrollableArea();
 
   if (!scrollable_area)
     return false;
@@ -277,7 +279,7 @@ bool ScrollManager::LogicalScroll(mojom::blink::ScrollDirection direction,
     Node* scroll_chain_node = DOMNodeIds::NodeForId(scroll_chain.TakeLast());
     DCHECK(scroll_chain_node);
 
-    LayoutBox* box = ToLayoutBox(scroll_chain_node->GetLayoutObject());
+    auto* box = To<LayoutBox>(scroll_chain_node->GetLayoutObject());
     DCHECK(box);
 
     ScrollDirectionPhysical physical_direction =
@@ -445,6 +447,11 @@ void ScrollManager::RecordScrollRelatedMetrics(const WebGestureDevice device) {
 WebInputEventResult ScrollManager::HandleGestureScrollBegin(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollBegin");
+  DCHECK(!RuntimeEnabledFeatures::ScrollUnificationEnabled());
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+    return WebInputEventResult::kNotHandled;
+  }
+
   Document* document = frame_->GetDocument();
 
   if (!document->GetLayoutView())
@@ -537,6 +544,11 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollUpdate");
   DCHECK_EQ(gesture_event.GetType(), WebInputEvent::Type::kGestureScrollUpdate);
+
+  DCHECK(!RuntimeEnabledFeatures::ScrollUnificationEnabled());
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+    return WebInputEventResult::kNotHandled;
+  }
 
   Node* node = scroll_gesture_handling_node_.Get();
   if (!node || !node->GetLayoutObject()) {
@@ -672,6 +684,12 @@ void ScrollManager::HandleDeferredGestureScrollEnd(
 WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollEnd");
+
+  DCHECK(!RuntimeEnabledFeatures::ScrollUnificationEnabled());
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+    return WebInputEventResult::kNotHandled;
+  }
+
   GetPage()->GetBrowserControls().ScrollEnd();
 
   Node* node = scroll_gesture_handling_node_;
@@ -889,12 +907,11 @@ WebInputEventResult ScrollManager::PassScrollGestureEvent(
     LayoutObject* layout_object) {
   DCHECK(gesture_event.IsScrollEvent());
 
-  if (!last_gesture_scroll_over_embedded_content_view_ || !layout_object ||
-      !layout_object->IsLayoutEmbeddedContent())
+  auto* embedded = DynamicTo<LayoutEmbeddedContent>(layout_object);
+  if (!last_gesture_scroll_over_embedded_content_view_ || !embedded)
     return WebInputEventResult::kNotHandled;
 
-  FrameView* frame_view =
-      ToLayoutEmbeddedContent(layout_object)->ChildFrameView();
+  FrameView* frame_view = embedded->ChildFrameView();
 
   if (!frame_view)
     return WebInputEventResult::kNotHandled;
@@ -1063,7 +1080,7 @@ Node* ScrollManager::NodeTargetForScrollableAreaElementId(
 
   Node* event_target = nullptr;
   if (layout_box->GetDocument().GetFrame() == frame_) {
-    event_target = scrollable_area->GetLayoutBox()->GetNode();
+    event_target = scrollable_area->EventTargetNode();
   } else {
     // The targeted ScrollableArea may not belong to this frame. If that
     // is the case, target its ancestor HTMLFrameOwnerElement that exists
@@ -1072,6 +1089,11 @@ Node* ScrollManager::NodeTargetForScrollableAreaElementId(
     LocalFrame* current_frame = layout_box->GetDocument().GetFrame();
     while (current_frame) {
       HTMLFrameOwnerElement* owner = current_frame->GetDocument()->LocalOwner();
+      // If the hosting element has no layout box, don't return it for targeting
+      // since there's nothing to scroll.
+      if (!owner->GetLayoutBox())
+        break;
+
       LocalFrame* owner_frame =
           owner ? owner->GetDocument().GetFrame() : nullptr;
       if (owner_frame == frame_) {

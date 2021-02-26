@@ -5,15 +5,18 @@
 #include "chrome/browser/chromeos/smb_client/smbfs_share.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog.h"
+#include "crypto/sha2.h"
 #include "storage/browser/file_system/external_mount_points.h"
 
 namespace chromeos {
@@ -22,6 +25,7 @@ namespace smb_client {
 namespace {
 
 constexpr char kMountDirPrefix[] = "smbfs-";
+constexpr char kMountIdHashSeparator[] = "#";
 constexpr base::TimeDelta kAllowCredentialsTimeout =
     base::TimeDelta::FromSeconds(5);
 
@@ -57,8 +61,7 @@ SmbFsShare::SmbFsShare(Profile* profile,
       share_url_(share_url),
       display_name_(display_name),
       options_(options),
-      mount_id_(
-          base::ToLowerASCII(base::UnguessableToken::Create().ToString())) {
+      mount_id_(GenerateStableMountId()) {
   DCHECK(share_url_.IsValid());
 }
 
@@ -159,7 +162,11 @@ void SmbFsShare::Unmount(SmbFsShare::UnmountCallback callback) {
     return;
   }
 
-  // Remove volume from VolumeManager.
+  // Remove volume from VolumeManager. It's critical this is done before
+  // revoking the filesystem from ExternalMountPoints as some observers
+  // (ie. Crostini) need to create a cracked FileSystemURL (which
+  // requires the mount to still be registered with ExternalMountPoints)
+  // during the unmount process.
   file_manager::VolumeManager::Get(profile_)->RemoveSmbFsVolume(
       host_->mount_path());
 
@@ -303,6 +310,41 @@ void SmbFsShare::OnRemoveSavedCredentialsDone(bool success) {
 void SmbFsShare::SetMounterCreationCallbackForTest(
     MounterCreationCallback callback) {
   mounter_creation_callback_for_test_ = std::move(callback);
+}
+
+std::string SmbFsShare::GenerateStableMountId() const {
+  std::string hash_input = GenerateStableMountIdInput();
+  return base::ToLowerASCII(base::HexEncode(
+      crypto::SHA256HashString(hash_input).c_str(), crypto::kSHA256Length));
+}
+
+std::string SmbFsShare::GenerateStableMountIdInput() const {
+  std::vector<std::string> mount_id_hash_components;
+
+  // Shares are unique based on the user the profile is owned by.
+  mount_id_hash_components.push_back(
+      chromeos::ProfileHelper::Get()->GetUserIdHashFromProfile(profile_));
+
+  // The hostname in the URL should be that entered by the user or
+  // specified in the preconfigured share policy. It should not have
+  // been resolved to an IP address if a hostname was specified.
+  //
+  // This property is true implicitly due to the call path for
+  // SmbFsShare creation.
+  mount_id_hash_components.push_back(share_url_.ToString());
+
+  // Distinguish between Kerberos and user-supplied credentials.
+  mount_id_hash_components.push_back(
+      base::NumberToString(options_.kerberos_options ? 1 : 0));
+
+  // Distinguish between domains / workgroups (may be empty for guest or
+  // Kerberos).
+  mount_id_hash_components.push_back(options_.workgroup);
+
+  // Distinguish between usernames (may be empty for guest or Kerberos).
+  mount_id_hash_components.push_back(options_.username);
+
+  return base::JoinString(mount_id_hash_components, kMountIdHashSeparator);
 }
 
 }  // namespace smb_client

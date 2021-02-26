@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -44,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
   if (content::IsInProcessNetworkService())
     return;
   // |NetworkServiceTestHelper| doesn't work on browser_tests on macOS.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   StoragePartition* partition =
       BrowserContext::GetDefaultStoragePartition(browser()->profile());
 
@@ -73,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
   if (content::IsInProcessNetworkService())
     return;
   // |NetworkServiceTestHelper| doesn't work on browser_tests on macOS.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   SystemNetworkContextManager* system_network_context_manager =
       g_browser_process->system_network_context_manager();
 

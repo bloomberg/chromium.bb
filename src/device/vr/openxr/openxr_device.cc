@@ -6,9 +6,11 @@
 
 #include <string>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
+#include "build/build_config.h"
 #include "device/vr/openxr/openxr_api_wrapper.h"
 #include "device/vr/openxr/openxr_render_loop.h"
+#include "device/vr/openxr/openxr_statics.h"
 #include "device/vr/util/transform_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
@@ -25,10 +27,8 @@ constexpr unsigned int kRenderHeight = 1024;
 // However our mojo interface expects display info right away to support WebVR.
 // We create a fake display info to use, then notify the client that the display
 // info changed when we get real data.
-mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
+mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo() {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
-
-  display_info->id = id;
 
   display_info->left_eye = mojom::VREyeParameters::New();
   display_info->right_eye = mojom::VREyeParameters::New();
@@ -53,10 +53,19 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
 
 }  // namespace
 
-OpenXrDevice::OpenXrDevice()
+// OpenXrDevice must not take ownership of the OpenXrStatics passed in.
+// The OpenXrStatics object is owned by IsolatedXRRuntimeProvider.
+OpenXrDevice::OpenXrDevice(OpenXrStatics* openxr_statics)
     : VRDeviceBase(device::mojom::XRDeviceId::OPENXR_DEVICE_ID),
+      instance_(openxr_statics->GetXrInstance()),
+      extension_helper_(instance_, openxr_statics->GetExtensionEnumeration()),
       weak_ptr_factory_(this) {
-  SetVRDisplayInfo(CreateFakeVRDisplayInfo(GetId()));
+  mojom::VRDisplayInfoPtr display_info = CreateFakeVRDisplayInfo();
+  SetVRDisplayInfo(std::move(display_info));
+  SetArBlendModeSupported(IsArBlendModeSupported(openxr_statics));
+#if defined(OS_WIN)
+  SetLuid(openxr_statics->GetLuid(extension_helper_));
+#endif
 }
 
 OpenXrDevice::~OpenXrDevice() {
@@ -77,15 +86,14 @@ void OpenXrDevice::EnsureRenderLoop() {
   if (!render_loop_) {
     auto on_info_changed = base::BindRepeating(&OpenXrDevice::SetVRDisplayInfo,
                                                weak_ptr_factory_.GetWeakPtr());
-    render_loop_ =
-        std::make_unique<OpenXrRenderLoop>(std::move(on_info_changed));
+    render_loop_ = std::make_unique<OpenXrRenderLoop>(
+        std::move(on_info_changed), instance_, extension_helper_);
   }
 }
 
 void OpenXrDevice::RequestSession(
     mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
-  DCHECK_EQ(options->mode, mojom::XRSessionMode::kImmersiveVr);
   EnsureRenderLoop();
 
   if (!render_loop_->IsRunning()) {
@@ -175,6 +183,20 @@ void OpenXrDevice::CreateImmersiveOverlay(
   } else {
     overlay_receiver_ = std::move(overlay_receiver);
   }
+}
+
+bool OpenXrDevice::IsArBlendModeSupported(OpenXrStatics* openxr_statics) {
+  XrSystemId system;
+  if (XR_FAILED(GetSystem(openxr_statics->GetXrInstance(), &system)))
+    return false;
+
+  std::vector<XrEnvironmentBlendMode> environment_blend_modes =
+      GetSupportedBlendModes(openxr_statics->GetXrInstance(), system);
+
+  return base::Contains(environment_blend_modes,
+                        XR_ENVIRONMENT_BLEND_MODE_ADDITIVE) ||
+         base::Contains(environment_blend_modes,
+                        XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND);
 }
 
 }  // namespace device

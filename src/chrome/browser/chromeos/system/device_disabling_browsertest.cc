@@ -119,18 +119,6 @@ void DeviceDisablingTest::MarkDisabledAndWaitForPolicyFetch() {
   run_loop.Run();
 }
 
-std::string DeviceDisablingTest::GetCurrentScreenName(
-    content::WebContents* web_contents ) {
-  std::string screen_name;
-  if (!content::ExecuteScriptAndExtractString(
-          web_contents,
-          "domAutomationController.send(Oobe.getInstance().currentScreen.id);",
-          &screen_name)) {
-    ADD_FAILURE();
-  }
-  return screen_name;
-}
-
 void DeviceDisablingTest::SetUpOnMainThread() {
   network_state_change_wait_run_loop_.reset(new base::RunLoop);
 
@@ -147,7 +135,11 @@ void DeviceDisablingTest::UpdateState(NetworkError::ErrorReason reason) {
 
 IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableDuringNormalOperation) {
   MarkDisabledAndWaitForPolicyFetch();
-  EXPECT_TRUE(DeviceDisabledScreenShown());
+  // Check for WizardController state.
+  OobeScreenWaiter(DeviceDisabledScreenView::kScreenId).Wait();
+  // Check for WebUI
+  test::CreateOobeScreenWaiter("device-disabled")->Wait();
+
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }
 
@@ -167,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   connect_run_loop.Run();
 
   // Skip to the login screen.
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(GetFirstSigninScreen()).Wait();
 
   // Mark the device as disabled and wait until cros settings update.
   MarkDisabledAndWaitForPolicyFetch();
@@ -187,12 +179,14 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   base::RunLoop run_loop;
   ProfileHelper::Get()->ClearSigninProfile(run_loop.QuitClosure());
   run_loop.Run();
-  base::RunLoop().RunUntilIdle();
 
   // Verify that the login screen was not shown and the device disabled screen
   // is still being shown instead.
-  EXPECT_EQ(DeviceDisabledScreenView::kScreenId.name,
-            GetCurrentScreenName(web_contents));
+
+  // Check for WizardController state.
+  OobeScreenWaiter(DeviceDisabledScreenView::kScreenId).Wait();
+  // Check for WebUI
+  test::CreateOobeScreenWaiter("device-disabled")->Wait();
 
   // Disconnect from the fake Ethernet network.
   OobeUI* const oobe_ui = host->GetOobeUI();
@@ -214,8 +208,32 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
 
   // Verify that the offline error screen was not shown and the device disabled
   // screen is still being shown instead.
-  EXPECT_EQ(DeviceDisabledScreenView::kScreenId.name,
-            GetCurrentScreenName(web_contents));
+  // Check for WizardController state.
+  OobeScreenWaiter(DeviceDisabledScreenView::kScreenId).Wait();
+  // Check for WebUI
+  test::CreateOobeScreenWaiter("device-disabled")->Wait();
+}
+
+class DeviceDisablingWithUsersTest : public DeviceDisablingTest {
+ public:
+  DeviceDisablingWithUsersTest() { login_manager_.AppendRegularUsers(2); }
+
+ private:
+  LoginManagerMixin login_manager_{&mixin_host_};
+};
+
+// Checks that OOBE dialog is not hidden when the device disabled screen is
+// shown and "StartSignInScreen" is called.
+IN_PROC_BROWSER_TEST_F(DeviceDisablingWithUsersTest, DialogNotHidden) {
+  EXPECT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  OobeScreenWaiter(GetFirstSigninScreen()).Wait();
+  MarkDisabledAndWaitForPolicyFetch();
+  OobeScreenWaiter(DeviceDisabledScreenView::kScreenId).Wait();
+  LoginDisplayHost::default_host()->StartSignInScreen();
+
+  // Dialog should not be hidden.
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }
 
 // Sets the device disabled policy before the browser is started.
@@ -278,7 +296,11 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingBeforeLoginHostCreated,
   EXPECT_NE(nullptr,
             g_browser_process->platform_part()->device_disabling_manager());
   ShowLoginWizard(OobeScreen::SCREEN_UNKNOWN);
+  // Check for WizardController state.
   OobeScreenWaiter(DeviceDisabledScreenView::kScreenId).Wait();
+  // Check for WebUI
+  test::CreateOobeScreenWaiter("device-disabled")->Wait();
+
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }
 

@@ -264,7 +264,7 @@ class PolicyTestCase {
     const std::string os("win");
 #elif defined(OS_IOS)
     const std::string os("ios");
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
     const std::string os("mac");
 #elif defined(OS_CHROMEOS)
     const std::string os("chromeos");
@@ -315,14 +315,12 @@ class PolicyTestCases {
       ADD_FAILURE();
       return;
     }
-    int error_code = -1;
-    std::string error_string;
     base::DictionaryValue* dict = nullptr;
-    std::unique_ptr<base::Value> value =
-        base::JSONReader::ReadAndReturnErrorDeprecated(
-            json, base::JSON_PARSE_RFC, &error_code, &error_string);
-    if (!value.get() || !value->GetAsDictionary(&dict)) {
-      ADD_FAILURE() << "Error parsing policy_test_cases.json: " << error_string;
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(json);
+    if (!parsed_json.value || !parsed_json.value->GetAsDictionary(&dict)) {
+      ADD_FAILURE() << "Error parsing policy_test_cases.json: "
+                    << parsed_json.error_message;
       return;
     }
     for (const auto& it : dict->DictItems()) {
@@ -356,12 +354,15 @@ void SetProviderPolicy(MockConfigurationPolicyProvider* provider,
                        const base::Value& policies,
                        PolicyLevel level) {
   PolicyMap policy_map;
+#if defined(OS_CHROMEOS)
+  SetEnterpriseUsersDefaults(&policy_map);
+#endif  // defined(OS_CHROMEOS)
   for (const auto& it : policies.DictItems()) {
     const PolicyDetails* policy_details = GetChromePolicyDetails(it.first);
     ASSERT_TRUE(policy_details);
     policy_map.Set(
         it.first, level, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-        it.second.CreateDeepCopy(),
+        it.second.Clone(),
         policy_details->max_external_data_size
             ? std::make_unique<ExternalDataFetcher>(nullptr, it.first)
             : nullptr);
@@ -402,7 +403,7 @@ void VerifyAllPoliciesHaveATestCase(const base::FilePath& test_case_path) {
     LOG_IF(WARNING, !has_test_case_for_this_os)
         << "Policy " << policy->first
         << " is marked as supported on this OS in policy_templates.json but "
-        << "have a test for this platform in policy_test_cases.json.";
+        << "there is no test for this platform in policy_test_cases.json.";
   }
 }
 
@@ -493,8 +494,10 @@ void VerifyPolicyToPrefMappings(const base::FilePath& test_case_path,
             EXPECT_FALSE(pref->IsUserControlled());
             EXPECT_TRUE(pref->IsManaged());
           }
-          if (pref_case->value())
-            EXPECT_TRUE(pref->GetValue()->Equals(pref_case->value()));
+          if (pref_case->value()) {
+            EXPECT_TRUE(pref->GetValue()->Equals(pref_case->value()))
+                << *pref->GetValue() << " != " << *pref_case->value();
+          }
         }
       }
     }

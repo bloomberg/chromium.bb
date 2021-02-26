@@ -22,27 +22,77 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace performance_manager {
+
+namespace {
+
+// Returns true if the opener relationship exists, false otherwise.
+bool ConnectWindowOpenRelationshipIfExists(PerformanceManagerTabHelper* helper,
+                                           content::WebContents* web_contents) {
+  // Prefer to use GetOpener() if available, as it is more specific and points
+  // directly to the frame that actually called window.open.
+  auto* opener_rfh = web_contents->GetOpener();
+  if (!opener_rfh) {
+    // If the child page is opened with "noopener" then the parent document
+    // maintains the ability to close the child, but the child can't reach back
+    // and see it's parent. In this case there will be no "Opener", but there
+    // will be an "OriginalOpener".
+    opener_rfh = web_contents->GetOriginalOpener();
+  }
+
+  if (!opener_rfh)
+    return false;
+
+  // You can't simultaneously be a portal (an embedded child element of a
+  // document loaded via the <portal> tag) and a popup (a child document
+  // loaded in a new window).
+  DCHECK(!web_contents->IsPortal());
+
+  // Connect this new page to its opener.
+  auto* opener_wc = content::WebContents::FromRenderFrameHost(opener_rfh);
+  auto* opener_helper = PerformanceManagerTabHelper::FromWebContents(opener_wc);
+  DCHECK(opener_helper);  // We should already have seen the opener WC.
+
+  // On CrOS the opener can be the ChromeKeyboardWebContents, whose RFHs never
+  // make it to a "created" state, so the PM never learns about them.
+  // https://crbug.com/1090374
+  auto* opener_frame_node = opener_helper->GetFrameNode(opener_rfh);
+  if (!opener_frame_node)
+    return false;
+
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::SetOpenerFrameNodeAndOpenedType,
+                                base::Unretained(helper->page_node()),
+                                base::Unretained(opener_frame_node),
+                                PageNode::OpenedType::kPopup));
+  return true;
+}
+
+}  // namespace
 
 PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
+  // Create the page node.
   page_node_ = PerformanceManagerImpl::CreatePageNode(
       WebContentsProxy(weak_factory_.GetWeakPtr()),
       web_contents->GetBrowserContext()->UniqueId(),
       web_contents->GetVisibleURL(),
       web_contents->GetVisibility() == content::Visibility::VISIBLE,
       web_contents->IsCurrentlyAudible(), web_contents->GetLastActiveTime());
-  // Dispatch creation notifications for any pre-existing frames.
-  std::vector<content::RenderFrameHost*> existing_frames =
-      web_contents->GetAllFrames();
-  for (content::RenderFrameHost* frame : existing_frames) {
-    // Only send notifications for created frames, the others will generate
-    // creation notifications in due course (or not at all).
-    if (frame->IsRenderFrameCreated())
-      RenderFrameCreated(frame);
-  }
+
+  // We have an early WebContents creation hook so should see it when there is
+  // only a single frame, and it is not yet created. We sanity check that here.
+#if DCHECK_IS_ON()
+  DCHECK(!web_contents->GetMainFrame()->IsRenderFrameCreated());
+  std::vector<content::RenderFrameHost*> frames = web_contents->GetAllFrames();
+  DCHECK_EQ(1u, frames.size());
+  DCHECK_EQ(web_contents->GetMainFrame(), frames[0]);
+#endif
+
+  ConnectWindowOpenRelationshipIfExists(this, web_contents);
 }
 
 PerformanceManagerTabHelper::~PerformanceManagerTabHelper() {
@@ -117,7 +167,7 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
           process_node, page_node_.get(), parent_frame_node,
           render_frame_host->GetFrameTreeNodeId(),
           render_frame_host->GetRoutingID(),
-          render_frame_host->GetDevToolsFrameToken(),
+          blink::LocalFrameToken(render_frame_host->GetFrameToken()),
           site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
           base::BindOnce(
               [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {
@@ -207,8 +257,14 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
                          old_frame->SetIsCurrent(false);
                        }
                        if (new_frame) {
-                         DCHECK(!new_frame->is_current());
-                         new_frame->SetIsCurrent(true);
+                         if (!new_frame->is_current()) {
+                           new_frame->SetIsCurrent(true);
+                         } else {
+                           // The very first frame to be created is already
+                           // current by default. In which case the swap must be
+                           // from no frame to a frame.
+                           DCHECK(!old_frame);
+                         }
                        }
                      },
                      old_frame, new_frame));
@@ -227,6 +283,25 @@ void PerformanceManagerTabHelper::OnAudioStateChanged(bool audible) {
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE, base::BindOnce(&PageNodeImpl::SetIsAudible,
                                 base::Unretained(page_node_.get()), audible));
+}
+
+void PerformanceManagerTabHelper::OnFrameAudioStateChanged(
+    content::RenderFrameHost* render_frame_host,
+    bool is_audible) {
+  auto frame_it = frames_.find(render_frame_host);
+  // Ideally this would be a DCHECK, but RenderFrameHost sends out one last
+  // notification in its destructor; at this point we've already torn down the
+  // FrameNode in response to the RenderFrameDeleted which comes *before* the
+  // destructor is run.
+  if (frame_it == frames_.end()) {
+    // We should only ever see this for a frame transitioning to *not* audible.
+    DCHECK(!is_audible);
+    return;
+  }
+  auto* frame_node = frame_it->second.get();
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(&FrameNodeImpl::SetIsAudible,
+                                base::Unretained(frame_node), is_audible));
 }
 
 void PerformanceManagerTabHelper::DidFinishNavigation(
@@ -261,7 +336,8 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
 
   // Make sure the hierarchical structure is constructed before sending signal
   // to the performance manager.
-  OnMainFrameNavigation(navigation_handle->GetNavigationId());
+  OnMainFrameNavigation(navigation_handle->GetNavigationId(),
+                        navigation_handle->IsSameDocument());
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
       base::BindOnce(
@@ -283,12 +359,93 @@ void PerformanceManagerTabHelper::TitleWasSet(content::NavigationEntry* entry) {
                                 base::Unretained(page_node_.get())));
 }
 
+void PerformanceManagerTabHelper::InnerWebContentsAttached(
+    content::WebContents* inner_web_contents,
+    content::RenderFrameHost* render_frame_host,
+    bool /* is_full_page */) {
+  // Note that we sometimes learn of contents creation at this point (before
+  // other helpers get a chance to attach), so we need to ensure our helper
+  // exists.
+  CreateForWebContents(inner_web_contents);
+  auto* helper = FromWebContents(inner_web_contents);
+  DCHECK(helper);
+  auto* page = helper->page_node_.get();
+  DCHECK(page);
+  auto* frame = GetFrameNode(render_frame_host);
+
+  // Determine the opened type.
+  auto opened_type = PageNode::OpenedType::kInvalid;
+  if (inner_web_contents->IsPortal()) {
+    opened_type = PageNode::OpenedType::kPortal;
+
+    // In the case of portals there can be a temporary RFH that is created that
+    // will never actually be committed to the frame tree (for which we'll never
+    // see RenderFrameCreated and RenderFrameDestroyed notifications). Find a
+    // parent that we do know about instead. Note that this is not *always*
+    // true, because portals are reusable.
+    if (!frame)
+      frame = GetFrameNode(render_frame_host->GetParent());
+  } else {
+    opened_type = PageNode::OpenedType::kGuestView;
+    // For a guest view, the RFH should already have been seen.
+
+    // Note that guest views can simultaneously have openers *and* be embedded.
+    // The embedded relationship has higher priority, but we'll fall back to
+    // using the window.open relationship if the embedded relationship is
+    // severed.
+  }
+  DCHECK_NE(PageNode::OpenedType::kInvalid, opened_type);
+  if (!frame) {
+    DCHECK(!render_frame_host->IsRenderFrameCreated());
+    DCHECK(!inner_web_contents->IsPortal());
+    // TODO(crbug.com/1133361):
+    // WebContentsImplBrowserTest.AttachNestedInnerWebContents calls
+    // WebContents::AttachInnerWebContents without creating RenderFrame.
+    // Removing this conditional once either the test is fixed or this function
+    // is adjusted to handle the case without the render frame.
+    return;
+  }
+
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::SetOpenerFrameNodeAndOpenedType,
+                                base::Unretained(page), base::Unretained(frame),
+                                opened_type));
+}
+
+void PerformanceManagerTabHelper::InnerWebContentsDetached(
+    content::WebContents* inner_web_contents) {
+  auto* helper = FromWebContents(inner_web_contents);
+  DCHECK(helper);
+
+  // Fall back to using the window.open opener if it exists. If not, simply
+  // clear the opener relationship entirely.
+  if (!ConnectWindowOpenRelationshipIfExists(helper, inner_web_contents)) {
+    PerformanceManagerImpl::CallOnGraphImpl(
+        FROM_HERE,
+        base::BindOnce(&PageNodeImpl::ClearOpenerFrameNodeAndOpenedType,
+                       base::Unretained(helper->page_node())));
+  }
+}
+
 void PerformanceManagerTabHelper::WebContentsDestroyed() {
+  // Remember the contents, as TearDown clears observer.
+  auto* contents = web_contents();
   TearDown();
+  // Immediately remove ourselves from the WCUD. After TearDown the tab helper
+  // is in an inconsistent state. This will prevent other
+  // WCO::WebContentsDestroyed handlers from trying to access the tab helper in
+  // this inconsistent state.
+  contents->RemoveUserData(UserDataKey());
 }
 
 void PerformanceManagerTabHelper::DidUpdateFaviconURL(
+    content::RenderFrameHost* render_frame_host,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
+  // This favicon change might have been initiated by a different frame some
+  // time ago and the main frame might have changed.
+  if (!render_frame_host->IsCurrent())
+    return;
+
   // TODO(siggi): This logic belongs in the policy layer rather than here.
   if (!first_time_favicon_set_) {
     first_time_favicon_set_ = true;
@@ -335,6 +492,10 @@ int64_t PerformanceManagerTabHelper::LastNavigationId() const {
   return last_navigation_id_;
 }
 
+int64_t PerformanceManagerTabHelper::LastNewDocNavigationId() const {
+  return last_new_doc_navigation_id_;
+}
+
 FrameNodeImpl* PerformanceManagerTabHelper::GetFrameNode(
     content::RenderFrameHost* render_frame_host) {
   auto it = frames_.find(render_frame_host);
@@ -349,8 +510,11 @@ void PerformanceManagerTabHelper::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id) {
+void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id,
+                                                        bool same_doc) {
   last_navigation_id_ = navigation_id;
+  if (!same_doc)
+    last_new_doc_navigation_id_ = navigation_id;
   ukm_source_id_ =
       ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
   PerformanceManagerImpl::CallOnGraphImpl(

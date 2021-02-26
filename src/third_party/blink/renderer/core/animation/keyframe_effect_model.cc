@@ -287,7 +287,25 @@ bool KeyframeEffectModelBase::IsTransformRelatedEffect() const {
          Affects(PropertyHandle(GetCSSPropertyTranslate()));
 }
 
-void KeyframeEffectModelBase::Trace(Visitor* visitor) {
+bool KeyframeEffectModelBase::SetLogicalPropertyResolutionContext(
+    TextDirection text_direction,
+    WritingMode writing_mode) {
+  bool changed = false;
+  for (wtf_size_t i = 0; i < keyframes_.size(); i++) {
+    if (auto* string_keyframe = DynamicTo<StringKeyframe>(*keyframes_[i])) {
+      if (string_keyframe->HasLogicalProperty()) {
+        string_keyframe->SetLogicalPropertyResolutionContext(text_direction,
+                                                             writing_mode);
+        changed = true;
+      }
+    }
+  }
+  if (changed)
+    ClearCachedData();
+  return changed;
+}
+
+void KeyframeEffectModelBase::Trace(Visitor* visitor) const {
   visitor->Trace(keyframes_);
   visitor->Trace(keyframe_groups_);
   visitor->Trace(interpolation_effect_);
@@ -310,17 +328,10 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
       zero_offset_easing = &keyframe->Easing();
 
     for (const PropertyHandle& property : keyframe->Properties()) {
-      KeyframeGroupMap::iterator group_iter = keyframe_groups_->find(property);
-      PropertySpecificKeyframeGroup* group;
-      if (group_iter == keyframe_groups_->end()) {
-        group =
-            keyframe_groups_
-                ->insert(property,
-                         MakeGarbageCollected<PropertySpecificKeyframeGroup>())
-                .stored_value->value.Get();
-      } else {
-        group = group_iter->value.Get();
-      }
+      Member<PropertySpecificKeyframeGroup>& group =
+          keyframe_groups_->insert(property, nullptr).stored_value->value;
+      if (!group)
+        group = MakeGarbageCollected<PropertySpecificKeyframeGroup>();
 
       Keyframe::PropertySpecificKeyframe* property_specific_keyframe =
           keyframe->CreatePropertySpecificKeyframe(property, composite_,
@@ -338,6 +349,17 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
 
     entry.value->RemoveRedundantKeyframes();
   }
+}
+
+bool KeyframeEffectModelBase::HasNonVariableProperty() const {
+  for (const auto& keyframe : keyframes_) {
+    for (const auto& property : keyframe->Properties()) {
+      if (!property.IsCSSProperty() ||
+          property.GetCSSProperty().PropertyID() != CSSPropertyID::kVariable)
+        return true;
+    }
+  }
+  return false;
 }
 
 void KeyframeEffectModelBase::EnsureInterpolationEffectPopulated() const {

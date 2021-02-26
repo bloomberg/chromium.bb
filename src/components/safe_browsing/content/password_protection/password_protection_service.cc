@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
@@ -62,35 +61,28 @@ PasswordProtectionService::PasswordProtectionService(
       url_loader_factory_(url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (history_service)
-    history_service_observer_.Add(history_service);
+    history_service_observation_.Observe(history_service);
 
-  common_spoofed_domains_ = {
-      "login.live.com"
-      "facebook.com",
-      "box.com",
-      "google.com",
-      "paypal.com",
-      "apple.com",
-      "yahoo.com",
-      "adobe.com",
-      "amazon.com",
-      "linkedin.com"};
+  common_spoofed_domains_ = {"login.live.com", "facebook.com", "box.com",
+                             "google.com",     "paypal.com",   "apple.com",
+                             "yahoo.com",      "adobe.com",    "amazon.com",
+                             "linkedin.com"};
 }
 
 PasswordProtectionService::~PasswordProtectionService() {
   tracker_.TryCancelAll();
   CancelPendingRequests();
-  history_service_observer_.RemoveAll();
+  if (history_service_observation_.IsObserving())
+    history_service_observation_.RemoveObservation();
   weak_factory_.InvalidateWeakPtrs();
 }
 
 bool PasswordProtectionService::CanGetReputationOfURL(const GURL& url) {
-  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS() || net::IsLocalhost(url))
+  if (!safe_browsing::CanGetReputationOfUrl(url)) {
     return false;
-
+  }
   const std::string hostname = url.HostNoBrackets();
-  return !net::IsHostnameNonUnique(hostname) &&
-         hostname.find('.') != std::string::npos;
+  return !net::IsHostnameNonUnique(hostname);
 }
 
 #if defined(ON_FOCUS_PING_ENABLED)
@@ -101,23 +93,27 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
     const GURL& password_form_frame_url,
     const std::string& hosted_domain) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RequestOutcome reason;
-  if (CanSendPing(LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                  main_frame_url,
-                  GetPasswordProtectionReusedPasswordAccountType(
-                      PasswordType::PASSWORD_TYPE_UNKNOWN,
-                      /*username=*/""),
-                  &reason)) {
+  LoginReputationClientRequest::TriggerType trigger_type =
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE;
+  ReusedPasswordAccountType reused_password_account_type =
+      GetPasswordProtectionReusedPasswordAccountType(
+          PasswordType::PASSWORD_TYPE_UNKNOWN,
+          /*username=*/"");
+  if (CanSendPing(trigger_type, main_frame_url, reused_password_account_type)) {
     StartRequest(web_contents, main_frame_url, password_form_action,
                  password_form_frame_url, /* username */ "",
                  PasswordType::PASSWORD_TYPE_UNKNOWN,
                  {}, /* matching_reused_credentials: not used for this type */
                  LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
+  } else {
+    RequestOutcome reason = GetPingNotSentReason(trigger_type, main_frame_url,
+                                                 reused_password_account_type);
+    LogNoPingingReason(trigger_type, reason, reused_password_account_type);
   }
 }
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
 void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     WebContents* web_contents,
     const GURL& main_frame_url,
@@ -127,13 +123,11 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
         matching_reused_credentials,
     bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  LoginReputationClientRequest::TriggerType trigger_type =
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT;
   ReusedPasswordAccountType reused_password_account_type =
       GetPasswordProtectionReusedPasswordAccountType(password_type, username);
-  RequestOutcome reason;
-  // Need to populate |reason| to be passed into CanShowInterstitial.
-  bool can_send_ping =
-      CanSendPing(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                  main_frame_url, reused_password_account_type, &reason);
+
   if (IsSupportedPasswordTypeForPinging(password_type)) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
     // Collect metrics about typical page-zoom on login pages.
@@ -143,7 +137,8 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
         "PasswordProtection.PageZoomFactor",
         static_cast<int>(100 * blink::PageZoomLevelToZoomFactor(zoom_level)));
 #endif  // defined(FULL_SAFE_BROWSING)
-    if (can_send_ping) {
+    if (CanSendPing(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                    main_frame_url, reused_password_account_type)) {
       saved_passwords_matching_reused_credentials_ =
           matching_reused_credentials;
       StartRequest(web_contents, main_frame_url, GURL(), GURL(), username,
@@ -151,27 +146,31 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                    password_field_exists);
     } else {
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+      RequestOutcome reason = GetPingNotSentReason(
+          trigger_type, main_frame_url, reused_password_account_type);
+      LogNoPingingReason(trigger_type, reason, reused_password_account_type);
+#if defined(PASSWORD_REUSE_WARNING_ENABLED)
       if (reused_password_account_type.is_account_syncing())
         MaybeLogPasswordReuseLookupEvent(web_contents, reason, password_type,
                                          nullptr);
-#endif  // defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+#endif  // defined(PASSWORD_REUSE_WARNING_ENABLED)
     }
   }
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
-  if (CanShowInterstitial(reason, reused_password_account_type,
-                          main_frame_url)) {
+#if defined(PASSWORD_REUSE_WARNING_ENABLED)
+  if (CanShowInterstitial(reused_password_account_type, main_frame_url)) {
+    LogPasswordAlertModeOutcome(RequestOutcome::SUCCEEDED,
+                                reused_password_account_type);
     username_for_last_shown_warning_ = username;
     reused_password_account_type_for_last_shown_warning_ =
         reused_password_account_type;
     ShowInterstitial(web_contents, reused_password_account_type);
   }
-#endif  // defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+#endif  // defined(PASSWORD_REUSE_WARNING_ENABLED)
 }
-#endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#endif  // defined(PASSWORD_REUSE_DETECTION_ENABLED)
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+#if defined(PASSWORD_REUSE_WARNING_ENABLED)
 bool PasswordProtectionService::ShouldShowModalWarning(
     LoginReputationClientRequest::TriggerType trigger_type,
     ReusedPasswordAccountType password_type,
@@ -247,24 +246,10 @@ void PasswordProtectionService::StartRequest(
 bool PasswordProtectionService::CanSendPing(
     LoginReputationClientRequest::TriggerType trigger_type,
     const GURL& main_frame_url,
-    ReusedPasswordAccountType password_type,
-    RequestOutcome* reason) {
-  *reason = RequestOutcome::UNKNOWN;
-  bool is_pinging_enabled =
-      IsPingingEnabled(trigger_type, password_type, reason);
-  // Pinging is enabled for password_reuse trigger level; however we need to
-  // make sure *reason is set appropriately.
-  PasswordProtectionTrigger trigger_level =
-      GetPasswordProtectionWarningTriggerPref(password_type);
-  if (trigger_level == PASSWORD_REUSE) {
-    *reason = RequestOutcome::PASSWORD_ALERT_MODE;
-  }
-  if (is_pinging_enabled &&
-      !IsURLWhitelistedForPasswordEntry(main_frame_url, reason)) {
-    return true;
-  }
-  LogNoPingingReason(trigger_type, *reason, password_type);
-  return false;
+    ReusedPasswordAccountType password_type) {
+  return IsPingingEnabled(trigger_type, password_type) &&
+         !IsURLWhitelistedForPasswordEntry(main_frame_url) &&
+         !IsInExcludedCountry();
 }
 
 void PasswordProtectionService::RequestFinished(
@@ -298,7 +283,7 @@ void PasswordProtectionService::RequestFinished(
       return;
     }
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+#if defined(PASSWORD_REUSE_WARNING_ENABLED)
     if (ShouldShowModalWarning(request->trigger_type(), password_type,
                                response->verdict_type())) {
       username_for_last_shown_warning_ = request->username();
@@ -403,13 +388,14 @@ void PasswordProtectionService::FillUserPopulation(
       IsUnderAdvancedProtection());
 #endif
   user_population->set_is_incognito(IsIncognito());
+  user_population->set_is_mbb_enabled(IsUserMBBOptedIn());
 }
 
 void PasswordProtectionService::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindRepeating(&PasswordProtectionService::
                               RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
                           GetWeakPtr(), deletion_info.IsAllHistory(),
@@ -418,7 +404,8 @@ void PasswordProtectionService::OnURLsDeleted(
 
 void PasswordProtectionService::HistoryServiceBeingDeleted(
     history::HistoryService* history_service) {
-  history_service_observer_.RemoveAll();
+  DCHECK(history_service_observation_.IsObservingSource(history_service));
+  history_service_observation_.RemoveObservation();
 }
 
 std::unique_ptr<PasswordProtectionNavigationThrottle>
@@ -595,7 +582,7 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForModalWarning(
 #endif
 }
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 void PasswordProtectionService::GetPhishingDetector(
     service_manager::InterfaceProvider* provider,
     mojo::Remote<mojom::PhishingDetector>* phishing_detector) {

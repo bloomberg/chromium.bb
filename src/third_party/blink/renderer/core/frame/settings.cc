@@ -28,9 +28,11 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
+#include "build/chromeos_buildflags.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace blink {
 
@@ -41,16 +43,20 @@ namespace blink {
 //     Darwin/MacOS/Android (and then abusing the terminology);
 //  4) EditingAndroidBehavior comprises Android builds.
 // 99) MacEditingBehavior is used a fallback.
-static EditingBehaviorType EditingBehaviorTypeForPlatform() {
+static mojom::blink::EditingBehavior EditingBehaviorTypeForPlatform() {
   return
-#if defined(OS_MACOSX)
-      kEditingMacBehavior
+#if defined(OS_MAC)
+      mojom::blink::EditingBehavior::kEditingMacBehavior
 #elif defined(OS_WIN)
-      kEditingWindowsBehavior
+      mojom::blink::EditingBehavior::kEditingWindowsBehavior
 #elif defined(OS_ANDROID)
-      kEditingAndroidBehavior
+      mojom::blink::EditingBehavior::kEditingAndroidBehavior
+#elif BUILDFLAG(IS_ASH)
+      base::FeatureList::IsEnabled(features::kCrOSAutoSelect)
+          ? mojom::blink::EditingBehavior::kEditingChromeOSBehavior
+          : mojom::blink::EditingBehavior::kEditingUnixBehavior
 #else  // Rest of the UNIX-like systems
-      kEditingUnixBehavior
+      mojom::blink::EditingBehavior::kEditingUnixBehavior
 #endif
       ;
 }

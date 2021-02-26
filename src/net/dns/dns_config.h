@@ -14,6 +14,7 @@
 #include "net/base/net_export.h"
 #include "net/dns/dns_hosts.h"
 #include "net/dns/public/dns_over_https_server_config.h"
+#include "net/dns/public/secure_dns_mode.h"
 
 namespace base {
 class Value;
@@ -21,8 +22,8 @@ class Value;
 
 namespace net {
 
-// Default to 1 second timeout (before exponential backoff).
-constexpr base::TimeDelta kDnsDefaultTimeout = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kDnsDefaultFallbackPeriod =
+    base::TimeDelta::FromSeconds(1);
 
 // DnsConfig stores configuration of the system resolver.
 struct NET_EXPORT DnsConfig {
@@ -45,24 +46,11 @@ struct NET_EXPORT DnsConfig {
 
   // Returns a Value representation of |this|. For performance reasons, the
   // Value only contains the number of hosts rather than the full list.
-  std::unique_ptr<base::Value> ToValue() const;
+  base::Value ToValue() const;
 
   bool IsValid() const {
     return !nameservers.empty() || !dns_over_https_servers.empty();
   }
-
-  // The SecureDnsMode specifies what types of lookups (secure/insecure) should
-  // be performed and in what order when resolving a specific query. The int
-  // values should not be changed as they are logged.
-  enum class SecureDnsMode : int {
-    // In OFF mode, no DoH lookups should be performed.
-    OFF = 0,
-    // In AUTOMATIC mode, DoH lookups should be performed first if DoH is
-    // available, and insecure DNS lookups should be performed as a fallback.
-    AUTOMATIC = 1,
-    // In SECURE mode, only DoH lookups should be performed.
-    SECURE = 2,
-  };
 
   // List of name server addresses.
   std::vector<IPEndPoint> nameservers;
@@ -85,16 +73,15 @@ struct NET_EXPORT DnsConfig {
   // True, except on Windows where it can be configured.
   bool append_to_multi_label_name;
 
-  // Indicates that source port randomization is required. This uses additional
-  // resources on some platforms.
-  bool randomize_ports;
-
   // Resolver options; see man resolv.conf.
 
   // Minimum number of dots before global resolution precedes |search|.
   int ndots;
   // Time between retransmissions, see res_state.retrans.
-  base::TimeDelta timeout;
+  // Used by Chrome as the initial transaction attempt fallback period (before
+  // exponential backoff and dynamic period determination based on previous
+  // attempts.)
+  base::TimeDelta fallback_period;
   // Maximum number of attempts, see res_state.retry.
   int attempts;
   // Maximum number of times a DoH server is attempted per attempted per DNS

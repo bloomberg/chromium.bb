@@ -58,9 +58,15 @@ class SessionFileReader {
     file_ = std::make_unique<base::File>(
         path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   }
-  // Reads the contents of the file specified in the constructor, returning
-  // true on success, and filling up |commands| with commands.
-  bool Read(std::vector<std::unique_ptr<sessions::SessionCommand>>* commands);
+
+  // Returns true if the file has a valid header. A return value of false
+  // most likely means the file was not written by this code. This function
+  // is implicitly called by Read(), but may be called separately for checking
+  // if the file is valid.
+  bool HasValidHeader();
+
+  // Reads the contents of the file specified in the constructor.
+  std::vector<std::unique_ptr<sessions::SessionCommand>> Read();
 
  private:
   // Reads a single command, returning it. A return value of null indicates
@@ -107,32 +113,40 @@ class SessionFileReader {
   // Count of the number of commands encountered.
   int command_counter_ = 0;
 
+  bool did_check_header_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(SessionFileReader);
 };
 
-bool SessionFileReader::Read(
-    std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
+bool SessionFileReader::HasValidHeader() {
+  // This function advances |file| and should only be called once.
+  DCHECK(!did_check_header_);
+  did_check_header_ = true;
+
   if (!file_->IsValid())
     return false;
   FileHeader header;
-  int read_count;
-  read_count =
+  const int read_count =
       file_->ReadAtCurrentPos(reinterpret_cast<char*>(&header), sizeof(header));
-  if (read_count != sizeof(header) || header.signature != kFileSignature) {
-    const bool encrypt = aead_.get() != nullptr;
-    if ((encrypt && header.version != kEncryptedFileCurrentVersion) ||
-        (!encrypt && header.version != kFileCurrentVersion)) {
-      return false;
-    }
-  }
+  if (read_count != sizeof(header) || header.signature != kFileSignature)
+    return false;
+  const bool encrypt = aead_.get() != nullptr;
+  return (encrypt && header.version == kEncryptedFileCurrentVersion) ||
+         (!encrypt && header.version == kFileCurrentVersion);
+}
+
+std::vector<std::unique_ptr<sessions::SessionCommand>>
+SessionFileReader::Read() {
+  if (!HasValidHeader())
+    return {};
 
   std::vector<std::unique_ptr<sessions::SessionCommand>> read_commands;
   for (std::unique_ptr<sessions::SessionCommand> command = ReadCommand();
        command && !errored_; command = ReadCommand())
     read_commands.push_back(std::move(command));
-  if (!errored_)
-    read_commands.swap(*commands);
-  return !errored_;
+  if (errored_)
+    return {};
+  return read_commands;
 }
 
 std::unique_ptr<sessions::SessionCommand> SessionFileReader::ReadCommand() {
@@ -263,6 +277,12 @@ CommandStorageBackend::CommandStorageBackend(
     const base::FilePath& path)
     : RefCountedDeleteOnSequence(owning_task_runner), path_(path) {}
 
+// static
+bool CommandStorageBackend::IsValidFile(const base::FilePath& path) {
+  SessionFileReader file_reader(path, {});
+  return file_reader.HasValidHeader();
+}
+
 void CommandStorageBackend::AppendCommands(
     std::vector<std::unique_ptr<sessions::SessionCommand>> commands,
     bool truncate,
@@ -301,18 +321,12 @@ void CommandStorageBackend::AppendCommands(
   }
 }
 
-void CommandStorageBackend::ReadCurrentSessionCommands(
-    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-    const std::vector<uint8_t>& crypto_key,
-    GetCommandsCallback callback) {
-  if (is_canceled.Run())
-    return;
-
+std::vector<std::unique_ptr<SessionCommand>>
+CommandStorageBackend::ReadCurrentSessionCommands(
+    const std::vector<uint8_t>& crypto_key) {
   InitIfNecessary();
 
-  std::vector<std::unique_ptr<sessions::SessionCommand>> commands;
-  ReadCommandsFromFile(path_, crypto_key, &commands);
-  std::move(callback).Run(std::move(commands));
+  return ReadCommandsFromFile(path_, crypto_key);
 }
 
 bool CommandStorageBackend::AppendCommandsToFile(
@@ -344,12 +358,18 @@ void CommandStorageBackend::InitIfNecessary() {
   DoInit();
 }
 
-bool CommandStorageBackend::ReadCommandsFromFile(
+void CommandStorageBackend::SetPath(const base::FilePath& path) {
+  // Do not change the path if the file is open
+  DCHECK(!file_);
+  path_ = path;
+}
+
+std::vector<std::unique_ptr<sessions::SessionCommand>>
+CommandStorageBackend::ReadCommandsFromFile(
     const base::FilePath& path,
-    const std::vector<uint8_t>& crypto_key,
-    std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
+    const std::vector<uint8_t>& crypto_key) {
   SessionFileReader file_reader(path, crypto_key);
-  return file_reader.Read(commands);
+  return file_reader.Read();
 }
 
 void CommandStorageBackend::CloseFile() {

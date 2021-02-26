@@ -8,13 +8,13 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "components/history/core/browser/url_database.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search/search.h"
 #include "components/variations/variations_associated_data.h"
@@ -28,6 +28,8 @@ class OmniboxFieldTrialTest : public testing::Test {
   OmniboxFieldTrialTest() {
     ResetFieldTrialList();
   }
+  OmniboxFieldTrialTest(const OmniboxFieldTrialTest&) = delete;
+  OmniboxFieldTrialTest& operator=(const OmniboxFieldTrialTest&) = delete;
 
   void ResetFieldTrialList() {
     scoped_feature_list_.Reset();
@@ -79,8 +81,6 @@ class OmniboxFieldTrialTest : public testing::Test {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxFieldTrialTest);
 };
 
 // static
@@ -355,31 +355,38 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
   }
 }
 
-TEST_F(OmniboxFieldTrialTest, GetZeroSuggestVariantsCanUseMultipleFeatures) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeaturesAndParameters(
-      {
-          {omnibox::kOnFocusSuggestions,
-           // 7 is NTP omnibox.
-           {{"ZeroSuggestVariant:7:*", "omnibox1,omnibox2"}}},
-          {omnibox::kZeroSuggestionsOnNTPRealbox,
-           // 15 is NTP realbox.
-           {{"ZeroSuggestVariant:15:*", "realbox1, realbox2"}}},
-      },
+TEST_F(OmniboxFieldTrialTest, LocalZeroSuggestAgeThreshold) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  // The default value can be overridden.
+  scoped_feature_list_.InitWithFeaturesAndParameters(
+      {{omnibox::kOmniboxLocalZeroSuggestAgeThreshold,
+        {{OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam, "7"}}}},
       {});
+  base::Time age_threshold =
+      OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold();
+  EXPECT_EQ(7, base::TimeDelta(base::Time::Now() - age_threshold).InDays());
 
-  std::vector<std::string> omnibox_variants =
-      OmniboxFieldTrial::GetZeroSuggestVariants(
-          OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS);
-  ASSERT_EQ(2U, omnibox_variants.size());
-  EXPECT_EQ("omnibox1", omnibox_variants[0]);
-  EXPECT_EQ("omnibox2", omnibox_variants[1]);
+  // If the age threshold is not parsable to an unsigned integer, the default
+  // value is used.
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeaturesAndParameters(
+      {{omnibox::kOmniboxLocalZeroSuggestAgeThreshold,
+        {{OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam, "j"}}}},
+      {});
+  age_threshold = OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold();
+  EXPECT_EQ(history::kLowQualityMatchAgeLimitInDays,
+            base::TimeDelta(base::Time::Now() - age_threshold).InDays());
 
-  std::vector<std::string> realbox_variants =
-      OmniboxFieldTrial::GetZeroSuggestVariants(OmniboxEventProto::NTP_REALBOX);
-  ASSERT_EQ(2U, realbox_variants.size());
-  EXPECT_EQ("realbox1", realbox_variants[0]);
-  EXPECT_EQ("realbox2", realbox_variants[1]);
+  // If new search features are disabled, the default value is used.
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeaturesAndParameters(
+      {{omnibox::kOmniboxLocalZeroSuggestAgeThreshold,
+        {{OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam, "7"}}}},
+      {omnibox::kNewSearchFeatures});
+  age_threshold = OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold();
+  EXPECT_EQ(history::kLowQualityMatchAgeLimitInDays,
+            base::TimeDelta(base::Time::Now() - age_threshold).InDays());
 }
 
 TEST_F(OmniboxFieldTrialTest, HUPNewScoringFieldTrial) {

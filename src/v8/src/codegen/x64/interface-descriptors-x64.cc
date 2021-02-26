@@ -48,16 +48,16 @@ void EphemeronKeyBarrierDescriptor::InitializePlatformSpecific(
   data->InitializePlatformSpecific(kParameterCount, default_stub_registers);
 }
 
-const Register FastNewFunctionContextDescriptor::ScopeInfoRegister() {
-  return rdi;
-}
-const Register FastNewFunctionContextDescriptor::SlotsRegister() { return rax; }
-
 const Register LoadDescriptor::ReceiverRegister() { return rdx; }
 const Register LoadDescriptor::NameRegister() { return rcx; }
 const Register LoadDescriptor::SlotRegister() { return rax; }
 
 const Register LoadWithVectorDescriptor::VectorRegister() { return rbx; }
+
+const Register
+LoadWithReceiverAndVectorDescriptor::LookupStartObjectRegister() {
+  return rdi;
+}
 
 const Register StoreDescriptor::ReceiverRegister() { return rdx; }
 const Register StoreDescriptor::NameRegister() { return rcx; }
@@ -193,11 +193,6 @@ void AbortDescriptor::InitializePlatformSpecific(
   data->InitializePlatformSpecific(arraysize(registers), registers);
 }
 
-void AllocateHeapNumberDescriptor::InitializePlatformSpecific(
-    CallInterfaceDescriptorData* data) {
-  data->InitializePlatformSpecific(0, nullptr);
-}
-
 void CompareDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
   Register registers[] = {rdx, rax};
@@ -282,41 +277,6 @@ void FrameDropperTrampolineDescriptor::InitializePlatformSpecific(
 void RunMicrotasksEntryDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
   Register registers[] = {arg_reg_1, arg_reg_2};
-  data->InitializePlatformSpecific(arraysize(registers), registers);
-}
-
-void BinaryOp_WithFeedbackDescriptor::InitializePlatformSpecific(
-    CallInterfaceDescriptorData* data) {
-  Register registers[] = {rdx,   // kLeft
-                          rax,   // kRight
-                          rdi,   // Slot
-                          rbx};  // kMaybeFeedbackVector
-  data->InitializePlatformSpecific(arraysize(registers), registers);
-}
-
-void CallTrampoline_WithFeedbackDescriptor::InitializePlatformSpecific(
-    CallInterfaceDescriptorData* data) {
-  Register registers[] = {rdi,   // kFunction
-                          rax,   // kActualArgumentsCount
-                          rcx,   // kSlot
-                          rbx};  // kMaybeFeedbackVector
-  data->InitializePlatformSpecific(arraysize(registers), registers);
-}
-
-void Compare_WithFeedbackDescriptor::InitializePlatformSpecific(
-    CallInterfaceDescriptorData* data) {
-  Register registers[] = {rdx,   // kLeft
-                          rax,   // kRight
-                          rdi,   // Slot
-                          rbx};  // kMaybeFeedbackVector
-  data->InitializePlatformSpecific(arraysize(registers), registers);
-}
-
-void UnaryOp_WithFeedbackDescriptor::InitializePlatformSpecific(
-    CallInterfaceDescriptorData* data) {
-  Register registers[] = {rdx,   // kValue
-                          rax,   // kSlot
-                          rdi};  // kMaybeFeedbackVector
   data->InitializePlatformSpecific(arraysize(registers), registers);
 }
 

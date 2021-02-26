@@ -8,7 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
-#include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,15 +20,17 @@ class SaveUnsyncedCredentialsLocallyBubbleControllerTest
     : public ::testing::Test {
  public:
   SaveUnsyncedCredentialsLocallyBubbleControllerTest() {
-    unsynced_credentials_.resize(1);
-    unsynced_credentials_[0].username_value = ASCIIToUTF16("user");
-    unsynced_credentials_[0].password_value = ASCIIToUTF16("password");
+    unsynced_credentials_.resize(2);
+    unsynced_credentials_[0].username_value = ASCIIToUTF16("user1");
+    unsynced_credentials_[0].password_value = ASCIIToUTF16("password1");
+    unsynced_credentials_[1].username_value = ASCIIToUTF16("user2");
+    unsynced_credentials_[1].password_value = ASCIIToUTF16("password2");
   }
   ~SaveUnsyncedCredentialsLocallyBubbleControllerTest() override = default;
 
  protected:
   NiceMock<PasswordsModelDelegateMock> model_delegate_mock_;
-  std::vector<autofill::PasswordForm> unsynced_credentials_;
+  std::vector<password_manager::PasswordForm> unsynced_credentials_;
 };
 
 TEST_F(SaveUnsyncedCredentialsLocallyBubbleControllerTest,
@@ -38,4 +40,27 @@ TEST_F(SaveUnsyncedCredentialsLocallyBubbleControllerTest,
   SaveUnsyncedCredentialsLocallyBubbleController controller(
       model_delegate_mock_.AsWeakPtr());
   EXPECT_EQ(controller.unsynced_credentials(), unsynced_credentials_);
+}
+
+TEST_F(SaveUnsyncedCredentialsLocallyBubbleControllerTest,
+       ShouldSaveSelectedCredentialsInProfileStoreOnSaveButtonClicked) {
+  EXPECT_CALL(model_delegate_mock_, GetUnsyncedCredentials())
+      .WillOnce(ReturnRef(unsynced_credentials_));
+  SaveUnsyncedCredentialsLocallyBubbleController controller(
+      model_delegate_mock_.AsWeakPtr());
+  EXPECT_CALL(model_delegate_mock_,
+              SaveUnsyncedCredentialsInProfileStore(
+                  std::vector<password_manager::PasswordForm>{
+                      unsynced_credentials_[1]}));
+  controller.OnSaveClicked({false, true});
+}
+
+TEST_F(SaveUnsyncedCredentialsLocallyBubbleControllerTest,
+       ShouldDiscardCredentialsInProfileStoreOnCancelButtonClicked) {
+  EXPECT_CALL(model_delegate_mock_, GetUnsyncedCredentials())
+      .WillOnce(ReturnRef(unsynced_credentials_));
+  SaveUnsyncedCredentialsLocallyBubbleController controller(
+      model_delegate_mock_.AsWeakPtr());
+  EXPECT_CALL(model_delegate_mock_, DiscardUnsyncedCredentials);
+  controller.OnCancelClicked();
 }

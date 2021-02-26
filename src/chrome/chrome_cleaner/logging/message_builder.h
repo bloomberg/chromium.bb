@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 
 namespace chrome_cleaner {
@@ -24,7 +23,7 @@ namespace chrome_cleaner {
 //   {
 //     MessageBuilder::ScopedIndent scoped_indent(&builder);
 //     builder
-//         .AddFieldValueLine(L"String16 field", L"abc")
+//         .AddFieldValueLine(L"WString field", L"abc")
 //         .AddFieldValueLine(L"Int field", 10)
 //         .AddFieldValueLine(L"String field", "xyz");
 //     {
@@ -41,7 +40,7 @@ namespace chrome_cleaner {
 // At the end, builder.content() will contain (| represents the start of the
 // line):
 //     |Main header:
-//     |\tString16 field: abc
+//     |\tWString field: abc
 //     |\tInt field: 10
 //     |\tString field: xyz
 //     |\t\tabc xyz 10
@@ -98,14 +97,14 @@ class MessageBuilder {
   // Adds a new line with |title| indented with |indentation_level| tabs.
   // Equivalent to:
   //   Add(title, ":").NewLine()
-  MessageBuilder& AddHeaderLine(base::StringPiece16 title);
+  MessageBuilder& AddHeaderLine(base::WStringPiece title);
 
   // AddFieldValueLine adds a new line for a pair (|field_name|, |value|)
   // indented with |indentation_level| tabs.
   // Equivalent to:
   //   Add(field_name, ": ", value).NewLine()
   template <typename Value>
-  MessageBuilder& AddFieldValueLine(base::StringPiece16 field_name,
+  MessageBuilder& AddFieldValueLine(base::WStringPiece field_name,
                                     const Value& value) {
     Add(field_name, L": ", value).NewLine();
     return *this;
@@ -113,7 +112,7 @@ class MessageBuilder {
 
   MessageBuilder::ScopedIndent Indent();
 
-  base::string16 content() const { return content_; }
+  std::wstring content() const { return content_; }
 
  protected:
   // Updates the current indentation level and appends a L'\n' if it's not the
@@ -127,20 +126,20 @@ class MessageBuilder {
   // list in AddInternal().
   class MessageItem {
    public:
-    explicit MessageItem(base::StringPiece16 value);
+    explicit MessageItem(base::WStringPiece value);
     explicit MessageItem(base::StringPiece value);
     explicit MessageItem(int value);
 
-    const base::string16& value() const { return value_; }
+    const std::wstring& value() const { return value_; }
 
    private:
-    base::string16 value_;
+    std::wstring value_;
   };
 
   void AddInternal(std::initializer_list<MessageItem> values);
   void IndentIfNewLine();
 
-  base::string16 content_;
+  std::wstring content_;
   int indentation_level_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBuilder);

@@ -8,27 +8,51 @@
 #include <memory>
 #include <string>
 
-namespace chrome_lang_id {
-class NNetLanguageIdentifier;
-}  // namespace chrome_lang_id
+#include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "chromeos/services/machine_learning/public/mojom/text_classifier.mojom.h"
 
 namespace chromeos {
 namespace quick_answers {
 
-// Utility class for langugage detection.
+// Utility class for language detection.
+// TODO(b/172992698): Add test support.
 class LanguageDetector {
  public:
-  LanguageDetector();
+  using DetectLanguageCallback =
+      base::OnceCallback<void(base::Optional<std::string>)>;
+
+  explicit LanguageDetector(
+      chromeos::machine_learning::mojom::TextClassifier* text_classifier);
+
   LanguageDetector(const LanguageDetector&) = delete;
   LanguageDetector& operator=(const LanguageDetector&) = delete;
-  virtual ~LanguageDetector();
 
-  // Returns the ISO 639 language code of the specified |text|, or empty string
-  // if it failed. Virtual for testing.
-  virtual std::string DetectLanguage(const std::string& text);
+  ~LanguageDetector();
+
+  // Returns language code of the specified |selected_text|.
+  // Fall back to language code of |surrounding_text| if the confidence level is
+  // not high enough.
+  // Returns no value if no language can be detected.
+  void DetectLanguage(const std::string& surrounding_text,
+                      const std::string& selected_text,
+                      DetectLanguageCallback callback);
 
  private:
-  std::unique_ptr<chrome_lang_id::NNetLanguageIdentifier> lang_id_;
+  void FindLanguagesForSelectedTextCallback(
+      const std::string& surrounding_text,
+      DetectLanguageCallback callback,
+      std::vector<machine_learning::mojom::TextLanguagePtr> languages);
+
+  void FindLanguagesForSurroundingTextCallback(
+      DetectLanguageCallback callback,
+      std::vector<machine_learning::mojom::TextLanguagePtr> languages);
+
+  // Owned by IntentGenerator.
+  chromeos::machine_learning::mojom::TextClassifier* text_classifier_ = nullptr;
+
+  base::WeakPtrFactory<LanguageDetector> weak_factory_{this};
 };
 
 }  // namespace quick_answers

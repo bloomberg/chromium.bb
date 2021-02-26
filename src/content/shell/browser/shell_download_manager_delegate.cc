@@ -19,7 +19,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -78,7 +77,7 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
         download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
         download::DownloadItem::MixedContentStatus::UNKNOWN,
-        download->GetForcedFilePath(),
+        download->GetForcedFilePath(), base::nullopt /*download_schedule*/,
         download::DOWNLOAD_INTERRUPT_REASON_NONE);
     return true;
   }
@@ -129,8 +128,8 @@ void ShellDownloadManagerDelegate::GenerateFilename(
     base::CreateDirectory(suggested_directory);
 
   base::FilePath suggested_path(suggested_directory.Append(generated_name));
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), suggested_path));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), suggested_path));
 }
 
 void ShellDownloadManagerDelegate::OnDownloadPathGenerated(
@@ -145,6 +144,7 @@ void ShellDownloadManagerDelegate::OnDownloadPathGenerated(
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
         download::DownloadItem::MixedContentStatus::UNKNOWN,
         suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
+        base::nullopt /*download_schedule*/,
         download::DOWNLOAD_INTERRUPT_REASON_NONE);
     return;
   }
@@ -196,7 +196,8 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
                           download::DownloadItem::TARGET_DISPOSITION_PROMPT,
                           download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                           download::DownloadItem::MixedContentStatus::UNKNOWN,
-                          result, download::DOWNLOAD_INTERRUPT_REASON_NONE);
+                          result, base::nullopt /*download_schedule*/,
+                          download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 void ShellDownloadManagerDelegate::SetDownloadBehaviorForTesting(

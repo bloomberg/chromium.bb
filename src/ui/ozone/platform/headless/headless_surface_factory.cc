@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -72,8 +73,11 @@ class FileSurface : public SurfaceOzoneCanvas {
 
   // SurfaceOzoneCanvas overrides:
   void ResizeCanvas(const gfx::Size& viewport_size) override {
-    surface_ = SkSurface::MakeRaster(SkImageInfo::MakeN32Premul(
-        viewport_size.width(), viewport_size.height()));
+    SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
+    surface_ = SkSurface::MakeRaster(
+        SkImageInfo::MakeN32Premul(viewport_size.width(),
+                                   viewport_size.height()),
+        &props);
   }
   SkCanvas* GetCanvas() override { return surface_->getCanvas(); }
   void PresentCanvas(const gfx::Rect& damage) override {
@@ -150,13 +154,15 @@ class TestPixmap : public gfx::NativePixmap {
   }
   gfx::Size GetBufferSize() const override { return gfx::Size(); }
   uint32_t GetUniqueId() const override { return 0; }
-  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                            int plane_z_order,
-                            gfx::OverlayTransform plane_transform,
-                            const gfx::Rect& display_bounds,
-                            const gfx::RectF& crop_rect,
-                            bool enable_blend,
-                            std::unique_ptr<gfx::GpuFence> gpu_fence) override {
+  bool ScheduleOverlayPlane(
+      gfx::AcceleratedWidget widget,
+      int plane_z_order,
+      gfx::OverlayTransform plane_transform,
+      const gfx::Rect& display_bounds,
+      const gfx::RectF& crop_rect,
+      bool enable_blend,
+      std::vector<gfx::GpuFence> acquire_fences,
+      std::vector<gfx::GpuFence> release_fences) override {
     return true;
   }
   gfx::NativePixmapHandle ExportHandle() override {
@@ -234,9 +240,7 @@ GLOzone* HeadlessSurfaceFactory::GetGLOzone(
 }
 
 std::unique_ptr<SurfaceOzoneCanvas>
-HeadlessSurfaceFactory::CreateCanvasForWidget(
-    gfx::AcceleratedWidget widget,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+HeadlessSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
   return std::make_unique<FileSurface>(GetPathForWidget(base_path_, widget));
 }
 

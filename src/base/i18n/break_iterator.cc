@@ -102,18 +102,18 @@ class DefaultLocaleBreakIteratorCache {
  private:
   UErrorCode main_status_;
   UBreakIterator* main_;
-  bool main_could_be_leased_;
+  bool main_could_be_leased_ GUARDED_BY(lock_);
   Lock lock_;
 };
 
-static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_CHARACTER>>::
-    DestructorAtExit char_break_cache = LAZY_INSTANCE_INITIALIZER;
-static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_WORD>>::
-    DestructorAtExit word_break_cache = LAZY_INSTANCE_INITIALIZER;
-static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_SENTENCE>>::
-    DestructorAtExit sentence_break_cache = LAZY_INSTANCE_INITIALIZER;
-static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_LINE>>::
-    DestructorAtExit line_break_cache = LAZY_INSTANCE_INITIALIZER;
+static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_CHARACTER>>::Leaky
+    char_break_cache = LAZY_INSTANCE_INITIALIZER;
+static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_WORD>>::Leaky
+    word_break_cache = LAZY_INSTANCE_INITIALIZER;
+static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_SENTENCE>>::Leaky
+    sentence_break_cache = LAZY_INSTANCE_INITIALIZER;
+static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_LINE>>::Leaky
+    line_break_cache = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -297,7 +297,7 @@ bool BreakIterator::IsGraphemeBoundary(size_t position) const {
 }
 
 string16 BreakIterator::GetString() const {
-  return GetStringPiece().as_string();
+  return string16(GetStringPiece());
 }
 
 StringPiece16 BreakIterator::GetStringPiece() const {

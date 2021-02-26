@@ -5,10 +5,10 @@
 #import "ios/chrome/browser/ui/infobars/test/test_infobar_password_delegate.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -18,7 +18,7 @@
 #error "This file requires ARC support."
 #endif
 
-using autofill::PasswordForm;
+using password_manager::PasswordForm;
 using base::ASCIIToUTF16;
 
 namespace {
@@ -57,7 +57,7 @@ class MockFormSaver : public password_manager::StubFormSaver {
 std::unique_ptr<password_manager::CredentialManagerPasswordFormManager>
 CreateFormManager() {
   PasswordForm form_to_save;
-  form_to_save.origin = GURL("https://example.com/path");
+  form_to_save.url = GURL("https://example.com/path");
   form_to_save.signon_realm = "https://example.com/";
   form_to_save.username_value = ASCIIToUTF16("user1");
   form_to_save.password_value = ASCIIToUTF16("pass1");

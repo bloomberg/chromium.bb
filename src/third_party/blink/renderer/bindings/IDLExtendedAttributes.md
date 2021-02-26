@@ -92,7 +92,7 @@ attribute DOMString item;
 [ImplementedAs=setItem] setter DOMString (unsigned long index);
 ```
 
-There is one interface extended attribute that only affects special operations: `[OverrideBuiltins]`.
+There is one interface extended attribute that only affects special operations: `[LegacyOverrideBuiltIns]`.
 
 The following extended attributes are used on special operations, as on methods generally: `[RaisesException]`.
 
@@ -109,7 +109,9 @@ Extended attributes on partial interface members work as normal. However, only t
 * If a flag obviously applies to only one member of a single-member interface (i.e., it is named after that member), the extended attribute should be on the member.
 
 The remaining extended attribute, `[ImplementedAs]`, is mandatory. A partial
-interface must have `[ImplementedAs]` extended attribute to specify a static-only C++ class.
+interface must have `[ImplementedAs]` extended attribute to specify the C++ class that includes the required static methods.
+This may be a static-only class, or for cases where a single static method is a simple getter for an object, that object's
+class may implement the required static method.
 This is stored internally via `[PartialInterfaceImplementedAs]` (see below).
 
 ### interface mixins
@@ -129,12 +131,6 @@ Extended attributes are generally not inherited: only extended attributes on the
 ## Standard Web IDL Extended Attributes
 
 These are defined in the [ECMAScript-specific extended attributes](http://heycam.github.io/webidl/#es-extended-attributes) section of the [Web IDL spec](http://heycam.github.io/webidl/), and alter the binding behavior.
-
-*** note
-Unsupported: `[LenientThis]`
-
-Undocumented: `[TreatNonObjectAsNull]`
-***
 
 ### [CEReactions] _(m, a)_
 
@@ -252,11 +248,11 @@ Calling the `[EnforceRange]` version of `setColorEnforced()` with an out of rang
 
 Standard: [Exposed](http://heycam.github.io/webidl/#Exposed)
 
-Summary: Indicates on which global object or objects (e.g., Window, WorkerGlobalScope) the interface property is generated, i.e., in which global scope or scopes an interface exists. This is primarily of interest for the constructor, i.e., the [interface object Call method](https://heycam.github.io/webidl/#es-interface-call). If `[Exposed]` is not present or overridden by a standard extended attribute `[NoInterfaceObject]` (the value of the property on the global object corresponding to the interface is called the **interface object**), which results in no interface property being generated.
+Summary: Indicates on which global object or objects (e.g., Window, WorkerGlobalScope) the interface property is generated, i.e., in which global scope or scopes an interface exists. This is primarily of interest for the constructor, i.e., the [interface object Call method](https://heycam.github.io/webidl/#es-interface-call). If `[Exposed]` is not present or overridden by a standard extended attribute `[LegacyNoInterfaceObject]` (the value of the property on the global object corresponding to the interface is called the **interface object**), which results in no interface property being generated.
 
-As with `[NoInterfaceObject]` does not affect generated code for the interface itself, only the code for the corresponding global object. A partial interface is generated at build time, containing an attribute for each interface property on that global object.
+As with `[LegacyNoInterfaceObject]` does not affect generated code for the interface itself, only the code for the corresponding global object. A partial interface is generated at build time, containing an attribute for each interface property on that global object.
 
-All non-callback interfaces without `[NoInterfaceObject]` have a corresponding interface property on the global object. Note that in the Web IDL spec, callback interfaces with constants also have interface properties, but in Blink callback interfaces only have methods (no constants or attributes), so this is not applicable. `[Exposed]` can be used with different values to indicate on which global object or objects the property should be generated. Valid values are:
+All non-callback interfaces without `[LegacyNoInterfaceObject]` have a corresponding interface property on the global object. Note that in the Web IDL spec, callback interfaces with constants also have interface properties, but in Blink callback interfaces only have methods (no constants or attributes), so this is not applicable. `[Exposed]` can be used with different values to indicate on which global object or objects the property should be generated. Valid values are:
 
 * `Window`
 * [Worker](http://www.whatwg.org/specs/web-apps/current-work/multipage/workers.html#the-workerglobalscope-common-interface)
@@ -268,7 +264,7 @@ For reference, see [ECMAScript 5.1: 15.1 The Global Object](http://www.ecma-inte
 
 It is possible to have the global constructor generated on several interfaces by listing them, e.g. `[Exposed=(Window,WorkerGlobalScope)]`.
 
-Usage: `[Exposed]` can be specified on interfaces that do not have the `[NoInterfaceObject]` extended attribute.
+Usage: `[Exposed]` can be specified on interfaces that do not have the `[LegacyNoInterfaceObject]` extended attribute.
 
 ```webidl
 [
@@ -304,15 +300,15 @@ Standard: [HTMLConstructor](https://html.spec.whatwg.org/C/#html-element-constru
 
 Summary: HTML Elements have special constructor behavior. Interface object of given interface with the `[HTMLConstructor]` attribute will have specific behavior when called.
 
-Usage: Must take no arguments, and must not appear on anything other than an interface. It must appear once on an interface, and the interface cannot be annotated with `[Constructor]` or `[NoInterfaceObject]` extended attributes. It must not be used on a callback interface.
+Usage: Must take no arguments, and must not appear on anything other than an interface. It must appear once on an interface, and the interface cannot be annotated with `[Constructor]` or `[LegacyNoInterfaceObject]` extended attributes. It must not be used on a callback interface.
 
-### [LenientSetter] _(a)_
+### [LegacyLenientSetter] _(a)_
 
-Standard: [LenientSetter](https://heycam.github.io/webidl/#LenientSetter)
+Standard: [LegacyLenientSetter](https://heycam.github.io/webidl/#LenientSetter)
 
-Summary: `[LenientSetter]` indicates that a no-op setter will be generated for a readonly attribute’s accessor property. This results in erroneous assignments to the property in strict mode to be ignored rather than causing an exception to be thrown.
+Summary: `[LegacyLenientSetter]` indicates that a no-op setter will be generated for a readonly attribute’s accessor property. This results in erroneous assignments to the property in strict mode to be ignored rather than causing an exception to be thrown.
 
-`[LenientSetter]` must take no arguments, and must not appear on anything other than a readonly regular attribute.
+`[LegacyLenientSetter]` must take no arguments, and must not appear on anything other than a readonly regular attribute.
 
 ### [LegacyUnenumerableNamedProperties] _(i)_
 
@@ -381,40 +377,40 @@ Summary: Signals that a method that returns an object type always returns a new 
 
 When a method returns an interface type, this extended attribute generates a test in debug mode to ensure that no wrapper object for the returned DOM object exists yet. Also see `[DoNotTestNewObject]`. When a method returns a Promise, this extended attribute currently does nothing.
 
-### [NoInterfaceObject] _(i)_
+### [LegacyNoInterfaceObject] _(i)_
 
-Standard: [NoInterfaceObject](https://heycam.github.io/webidl/#NoInterfaceObject)
+Standard: [LegacyNoInterfaceObject](https://heycam.github.io/webidl/#NoInterfaceObject)
 
-Summary: If the `[NoInterfaceObject]` extended attribute appears on an interface, it indicates that an interface object will not exist for the interface in the ECMAScript binding. See also the standard `[Exposed=xxx]` extended attribute; these two do _not_ change the generated code for the interface itself.
+Summary: If the `[LegacyNoInterfaceObject]` extended attribute appears on an interface, it indicates that an interface object will not exist for the interface in the ECMAScript binding. See also the standard `[Exposed=xxx]` extended attribute; these two do _not_ change the generated code for the interface itself.
 
 Note that every interface has a corresponding property on the ECMAScript global object, _except:_
 
 * callback interfaces with no constants, and
-* non-callback interface with the `[NoInterfaceObject]` extended attribute,
+* non-callback interface with the `[LegacyNoInterfaceObject]` extended attribute,
 
-Usage: `[NoInterfaceObject]` can be specified on interfaces.
+Usage: `[LegacyNoInterfaceObject]` can be specified on interfaces.
 
 ```webidl
 [
-    NoInterfaceObject
+    LegacyNoInterfaceObject
 ] interface XXX {
     ...
 };
 ```
 
-Note that `[NoInterfaceObject]` **MUST** be specified on testing interfaces, as follows:
+Note that `[LegacyNoInterfaceObject]` **MUST** be specified on testing interfaces, as follows:
 
 ```webidl
 [
-    NoInterfaceObject  // testing interfaces do not appear on global objects
+    LegacyNoInterfaceObject  // testing interfaces do not appear on global objects
 ] interface TestingInterfaceX {
     ...
 };
 ```
 
-### [OverrideBuiltins] _(i)_
+### [LegacyOverrideBuiltIns] _(i)_
 
-Standard: [OverrideBuiltins](http://heycam.github.io/webidl/#OverrideBuiltins)
+Standard: [LegacyOverrideBuiltIns](https://heycam.github.io/webidl/#LegacyOverrideBuiltIns)
 
 Summary: Affects named property operations, making named properties shadow built-in properties of the object.
 
@@ -555,22 +551,22 @@ attribute TrustedString str;
 void func(TrustedString str);
 ```
 
-### [Unforgeable] _(m,a)_
+### [LegacyUnforgeable] _(m,a)_
 
-Standard: [Unforgeable](http://heycam.github.io/webidl/#Unforgeable)
+Standard: [LegacyUnforgeable](https://heycam.github.io/webidl/#Unforgeable)
 
 Summary: Makes interface members unconfigurable and also controls where the member is defined.
 
 Usage: Can be specified on interface methods or non-static interface attributes:
 
 ```webidl
-[Unforgeable] void func();
-[Unforgeable] attribute DOMString str;
+[LegacyUnforgeable] void func();
+[LegacyUnforgeable] attribute DOMString str;
 ```
 
-By default, interface members are configurable (i.e. you can modify a property descriptor corresponding to the member and also you can delete the property). `[Unforgeable]` makes the member unconfiguable so that you cannot modify or delete the property corresponding to the member.
+By default, interface members are configurable (i.e. you can modify a property descriptor corresponding to the member and also you can delete the property). `[LegacyUnforgeable]` makes the member unconfiguable so that you cannot modify or delete the property corresponding to the member.
 
-`[Unforgeable]` changes where the member is defined, too. By default, attribute getters/setters and methods are defined on a prototype chain. `[Unforgeable]` defines the member on the instance object instead of the prototype object.
+`[LegacyUnforgeable]` changes where the member is defined, too. By default, attribute getters/setters and methods are defined on a prototype chain. `[LegacyUnforgeable]` defines the member on the instance object instead of the prototype object.
 
 ### [Unscopable] _(o, a)_
 
@@ -640,13 +636,35 @@ Usage:
 
 For methods all calls are logged, and by default for attributes all access (calls to getter or setter) are logged, but this can be restricted to just read (getter) or just write (setter).
 
-### [CallWith] _(m, a)_, [SetterCallWith] _(a)_, [ConstructorCallWith] _(i)_
+### [CallWith] _(m, a)_, [GetterCallWith] _(a)_, [SetterCallWith] _(a)_, [ConstructorCallWith] _(i)_
 
 Summary: `[CallWith]` indicates that the bindings code calls the Blink implementation with additional information.
 
 Each value changes the signature of the Blink methods by adding an additional parameter to the head of the parameter list, such as `ScriptState*` for `[CallWith=ScriptState]`.
 
-`[SetterCallWith]` applies to attributes, and only affects the signature of the setter.
+`[GetterCallWith]` and `[SetterCallWith]` apply to attributes, and only affects the signature of the getter and setter, respectively.
+
+NOTE: The `ExecutionContext` that you can get with [CallWith=ExecutionContext] or that you can extract from [CallWith=ScriptState] is the ExecutionContext associated with the V8 wrapper of the receiver object, which might be different from the ExecutionContext of the document tree to which the receiver object belongs.  See the following example.
+
+```js
+// V8 wrapper of |span| is associated with |windowA|.
+span = windowA.document.createElement("span");
+// |span| belongs to the document tree of |windowB|.
+windowB.document.body.appendChild(span);
+```
+
+```c++
+// Suppose [CallWith=ExecutionContext] void foo();
+void HTMLSpanElement::foo(ExecutionContext* execution_context) {
+  // The ExecutionContext associated with the creation context of the V8 wrapper
+  // of the receiver object.
+  execution_context;  // the ExecutionContext of |windowA|
+
+  // Node::GetExecutionContext() returns the ExecutionContext of the document
+  // tree to which |this| (the receiver object) belongs.
+  GetExecutionContext();  // the ExecutionContext of |windowB|
+}
+```
 
 #### [CallWith=ScriptState] _(m, a*)_
 
@@ -770,6 +788,12 @@ Usage: `[ContextEnabled=FeatureName]`. FeatureName is an arbitrary name used to 
 When applied to an interface, the generated code for the relevant global object will include a public `InstallFeatureName()` method which can be called to install the interface on the global object.
 
 Note that `[ContextEnabled]` is not mututally exclusive to `[RuntimeEnabled]`, and a feature which may be enabled by either mechanism will be enabled if the appropriate `[RuntimeEnabled]` feature is enabled; _or_ if the appropriate `[ContextEnabled]` feature is enabled; _or_ if both are enabled.
+
+### [CSSProperty] _(a)_
+
+Summary: `[CSSProperty]` indicates that the attribute implements a CSS property and Blink optimizes the property installation accordingly.
+
+`[CSSProperty]` must be applied only at `CSSStyleDeclaration`'s IDL attributes implementing CSS properties ([camel-cased attributes](https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-camel_cased_attribute), [webkit-cased attributes](https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-camel_cased_attribute), [dashed attributes](https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-dashed_attribute)).
 
 ### [Custom] _(i, m, s, a, f)_
 
@@ -964,6 +988,13 @@ This attribute must be accompanied by either `[Measure]` or `[MeasureAs]`.
 [HighEntropy, MeasureAs=InterestingNamedAttribute] attribute Node interestingNamedAttribute;
 [HighEntropy, Measure] Node getInterestingNode();
 [HighEntropy, Measure] const INTERESTING_CONSTANT = 1;
+```
+
+Attributes and methods labeled with `[HighEntropy=Direct]` are simple surfaces which can be expressed as a sequence of bytes without any need for additional parsing logic.
+For now, this label is only supported for attribute getters, although the `[HighEntropy]` label is supported more broadly.
+
+```webidl
+[HighEntropy=Direct, MeasureAs=SimpleNamedAttribute] attribute unsigned long simpleNamedAttribute;
 ```
 
 ### [DeprecateAs] _(m, a, c)_
@@ -1562,7 +1593,7 @@ Marked functions are allowed to be nondeterministic, throw exceptions, force lay
 
 All DOM constructors are assumed to have side effects. However, an exception can be explicitly indicated when calling constructors using the V8 API method Function::NewInstanceWithSideEffectType().
 
-There is not yet support for marking SymbolKeyedMethodConfigurations as side-effect free. This requires additional support in V8 to whitelist Intrinsics.
+There is not yet support for marking SymbolKeyedMethodConfigurations as side-effect free. This requires additional support in V8 to allow Intrinsics.
 
 Usage for attributes and operations: `[Affects=Nothing]` can be specified on an operation, or on an attribute to indicate that its getter callback is side effect free:
 
@@ -1598,6 +1629,27 @@ In case of `func1(...)`, if JavaScript calls `func1(100, 200)`, then `HTMLFoo::f
 
 In case of `func2(...)` which adds `[DefaultValue=Undefined]`, if JavaScript calls `func2(100, 200)`, then it behaves as if JavaScript called `func2(100, 200, undefined)`. Consequently, `HTMLFoo::func2(int a, int b, int c)` is called in Blink. 100 is passed to `a`, 200 is passed to `b`, and 0 is passed to `c`. (A JavaScript `undefined` is converted to 0, following the value conversion rule in the Web IDL spec; if it were a DOMString parameter, it would end up as the string `"undefined"`.) In this way, Blink needs to just implement `func2(int a, int b, int c)` and needs not to implement both `func2(int a, int b)` and `func2(int a, int b, int c)`.
 
+
+### [NoAllocDirectCall]
+
+Summary: `[NoAllocDirectCall]` marks a given method as being usable with the fast API calls implemented in V8. They get their value conversions inlined in TurboFan, leading to overall better performance.
+
+Usage: The method must adhere to the following requirements:
+
+1. Doesn't trigger GC, i.e., doesn't allocate Blink or V8 objects;
+2. Doesn't trigger JavaScript execution;
+3. Has no side effect.
+
+Those requirements lead to the specific inability to throw JS exceptions and to log warnings to the console, as logging uses `MakeGarbageCollected<ConsoleMessage>`. If any such error reporting needs to happen, the method marked with `[NoAllocDirectCall]` should expect a last parameter `bool* has_error`, in which it might store `true` to signal V8. V8 will in turn re-execute the "default" callback, giving the possibility of the exception/error to be reported. This mechanism also implies that the "fast" callback is idempotent up to the point of reporting the error.
+
+
+### [IsCodeLike] _(t)_
+
+This implements the TC39 "Dynamic Code Brand Checks" proposal. By attaching
+the [IsCodeLike] attribute to a type, its instances will be treated as
+"code like" objects, as detailed in the spec.
+
+Standard: [TC39 Dynamic Code Brand Checks](https://github.com/tc39/proposal-dynamic-code-brand-checks)
 
 ## Discouraged Blink-specific IDL Extended Attributes
 

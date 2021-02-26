@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "media/base/content_decryption_module.h"
 #include "media/mojo/common/media_type_converters.h"
@@ -33,19 +33,21 @@ void MojoAudioDecoderService::Construct(
   client_.Bind(std::move(client));
 }
 
-void MojoAudioDecoderService::Initialize(const AudioDecoderConfig& config,
-                                         int32_t cdm_id,
-                                         InitializeCallback callback) {
+void MojoAudioDecoderService::Initialize(
+    const AudioDecoderConfig& config,
+    const base::Optional<base::UnguessableToken>& cdm_id,
+    InitializeCallback callback) {
   DVLOG(1) << __func__ << " " << config.AsHumanReadableString();
 
   // |cdm_context_ref_| must be kept as long as |cdm_context| is used by the
   // |decoder_|. We do NOT support resetting |cdm_context_ref_| because in
   // general we don't support resetting CDM in the media pipeline.
-  if (cdm_id != CdmContext::kInvalidCdmId) {
-    if (cdm_id_ == CdmContext::kInvalidCdmId) {
+  if (cdm_id) {
+    if (!cdm_id_) {
       DCHECK(!cdm_context_ref_);
       cdm_id_ = cdm_id;
-      cdm_context_ref_ = mojo_cdm_service_context_->GetCdmContextRef(cdm_id);
+      cdm_context_ref_ =
+          mojo_cdm_service_context_->GetCdmContextRef(cdm_id.value());
     } else if (cdm_id != cdm_id_) {
       // TODO(xhwang): Replace with mojo::ReportBadMessage().
       NOTREACHED() << "The caller should not switch CDM";
@@ -60,7 +62,9 @@ void MojoAudioDecoderService::Initialize(const AudioDecoderConfig& config,
       cdm_context_ref_ ? cdm_context_ref_->GetCdmContext() : nullptr;
 
   if (config.is_encrypted() && !cdm_context) {
-    DVLOG(1) << "CdmContext for " << cdm_id << " not found for encrypted audio";
+    DVLOG(1) << "CdmContext for "
+             << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id))
+             << " not found for encrypted audio";
     OnInitialized(std::move(callback),
                   StatusCode::kDecoderMissingCdmForEncryptedContent);
     return;
@@ -136,9 +140,9 @@ void MojoAudioDecoderService::OnReaderFlushDone(ResetCallback callback) {
 }
 
 void MojoAudioDecoderService::OnDecodeStatus(DecodeCallback callback,
-                                             media::DecodeStatus status) {
-  DVLOG(3) << __func__ << " status:" << status;
-  std::move(callback).Run(status);
+                                             const Status status) {
+  DVLOG(3) << __func__ << " status:" << status.code();
+  std::move(callback).Run(std::move(status));
 }
 
 void MojoAudioDecoderService::OnResetDone(ResetCallback callback) {

@@ -13,8 +13,7 @@
 #include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
-#include "chromeos/dbus/power/power_manager_client.h"
+#include "base/util/timer/wall_clock_timer.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/policy/weekly_time/weekly_time_interval.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -37,8 +36,7 @@ namespace off_hours {
 //
 // "OffHours" mode is never on until device time is synchronized with
 // network time because in this case device time could be incorrect.
-class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
-                                 public chromeos::PowerManagerClient::Observer {
+class DeviceOffHoursController : public chromeos::SystemClockClient::Observer {
  public:
   // Observer interface.
   class Observer {
@@ -73,10 +71,7 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
 
   // Return "OffHours" mode end time during "OffHours" mode is on. Return null
   // when "OffHours" mode is off.
-  base::TimeTicks GetOffHoursEndTime() const { return off_hours_end_time_; }
-
-  // chromeos::PowerManagerClient::Observer:
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  base::Time GetOffHoursEndTime() const { return off_hours_end_time_; }
 
   // chromeos::SystemClockClient::Observer:
   void SystemClockUpdated() override;
@@ -104,7 +99,7 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
   void SetOffHoursMode(bool off_hours_enabled);
 
   // Set "OffHours" mode end time.
-  void SetOffHoursEndTime(base::TimeTicks off_hours_end_time);
+  void SetOffHoursEndTime(base::Time off_hours_end_time);
 
   // Timer for update "OffHours" mode.
   void StartOffHoursTimer(base::TimeDelta delay);
@@ -126,11 +121,11 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
 
   // "OffHours" mode end time. It is needed to show "OffHours" session limit
   // notification. When "OffHours" mode is off the value is null.
-  base::TimeTicks off_hours_end_time_;
+  base::Time off_hours_end_time_;
 
   // Timer for updating device settings at the begin of next “OffHours” interval
   // or at the end of current "OffHours" interval.
-  std::unique_ptr<base::OneShotTimer> timer_;
+  std::unique_ptr<util::WallClockTimer> timer_;
 
   // Used for testing purposes, otherwise it's an instance of
   // base::DefaultClock.

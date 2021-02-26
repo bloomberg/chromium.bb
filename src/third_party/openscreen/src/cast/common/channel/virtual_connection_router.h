@@ -62,10 +62,15 @@ class VirtualConnectionRouter final : public CastSocket::Client {
   Error Send(VirtualConnection virtual_conn,
              ::cast::channel::CastMessage message);
 
+  Error BroadcastFromLocalPeer(std::string local_id,
+                               ::cast::channel::CastMessage message);
+
   // CastSocket::Client overrides.
   void OnError(CastSocket* socket, Error error) override;
   void OnMessage(CastSocket* socket,
                  ::cast::channel::CastMessage message) override;
+
+  VirtualConnectionManager* manager() { return vc_manager_; }
 
  private:
   struct SocketWithHandler {

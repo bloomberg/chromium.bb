@@ -57,12 +57,10 @@ class Blob;
 class ExecutionContext;
 class ImageBitmapSource;
 
-class ImageBitmapFactories final
+class CORE_EXPORT ImageBitmapFactories final
     : public GarbageCollected<ImageBitmapFactories>,
       public Supplement<ExecutionContext>,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
-
  public:
   static const char kSupplementName[];
 
@@ -78,10 +76,15 @@ class ImageBitmapFactories final
                                          int sh,
                                          const ImageBitmapOptions*,
                                          ExceptionState&);
+  static ScriptPromise CreateImageBitmap(ScriptState*,
+                                         ImageBitmapSource*,
+                                         base::Optional<IntRect> crop_rect,
+                                         const ImageBitmapOptions*,
+                                         ExceptionState&);
 
   virtual ~ImageBitmapFactories() = default;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "ImageBitmapLoader";
   }
@@ -90,8 +93,6 @@ class ImageBitmapFactories final
   class ImageBitmapLoader final : public GarbageCollected<ImageBitmapLoader>,
                                   public ExecutionContextLifecycleObserver,
                                   public FileReaderLoaderClient {
-    USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapLoader);
-
    public:
     static ImageBitmapLoader* Create(ImageBitmapFactories& factory,
                                      base::Optional<IntRect> crop_rect,
@@ -109,7 +110,7 @@ class ImageBitmapFactories final
     void LoadBlobAsync(Blob*);
     ScriptPromise Promise() { return resolver_->Promise(); }
 
-    void Trace(Visitor*) override;
+    void Trace(Visitor*) const override;
 
     ~ImageBitmapLoader() override;
 
@@ -144,11 +145,6 @@ class ImageBitmapFactories final
   };
 
   static ImageBitmapFactories& From(ExecutionContext&);
-  static ScriptPromise CreateImageBitmap(ScriptState*,
-                                         ImageBitmapSource*,
-                                         base::Optional<IntRect> crop_rect,
-                                         const ImageBitmapOptions*,
-                                         ExceptionState&);
   static ScriptPromise CreateImageBitmapFromBlob(
       ScriptState*,
       ImageBitmapSource*,

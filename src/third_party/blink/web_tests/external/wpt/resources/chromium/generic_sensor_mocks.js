@@ -21,6 +21,10 @@ class RingBuffer {
     return { done: false, value: value };
   }
 
+  value() {
+    return this.data_[this.bufferPosition_];
+  }
+
   [Symbol.iterator]() {
     return this;
   }
@@ -41,8 +45,15 @@ var GenericSensorTest = (() => {
       this.sensorReadingTimerId_ = null;
       this.readingData_ = null;
       this.requestedFrequencies_ = [];
+      // The Blink implementation (third_party/blink/renderer/modules/sensor/sensor.cc)
+      // sets a timestamp by creating a DOMHighResTimeStamp from a given platform timestamp.
+      // In this mock implementation we use a starting value
+      // and an increment step value that resemble a platform timestamp reasonably enough.
+      this.timestamp_ = window.performance.timeOrigin;
       let rv = handle.mapBuffer(offset, size);
-      assert_equals(rv.result, Mojo.RESULT_OK, "Failed to map shared buffer");
+      if (rv.result != Mojo.RESULT_OK) {
+        throw new Error("MockSensor(): Failed to map shared buffer");
+      }
       this.buffer_ = new Float64Array(rv.buffer);
       this.buffer_.fill(0);
       this.binding_ = new mojo.Binding(device.mojom.Sensor, this,
@@ -60,8 +71,6 @@ var GenericSensorTest = (() => {
     // Adds configuration for the sensor and starts reporting fake data
     // through setSensorReading function.
     async addConfiguration(configuration) {
-      assert_not_equals(configuration, null, "Invalid sensor configuration.");
-
       this.requestedFrequencies_.push(configuration.frequency);
       // Sort using descending order.
       this.requestedFrequencies_.sort(
@@ -93,6 +102,14 @@ var GenericSensorTest = (() => {
       this.notifyOnReadingChange_ = notifyOnReadingChange;
     }
 
+    resume() {
+      this.startReading();
+    }
+
+    suspend() {
+      this.stopReading();
+    }
+
     // Mock functions
 
     // Resets mock Sensor state.
@@ -112,6 +129,17 @@ var GenericSensorTest = (() => {
       return this;
     }
 
+    // This is a workaround to accommodate Blink's Device Orientation
+    // implementation. In general, all tests should use setSensorReading()
+    // instead.
+    setSensorReadingImmediately(readingData) {
+      this.setSensorReading(readingData);
+
+      const reading = this.readingData_.value();
+      this.buffer_.set(reading, 2);
+      this.buffer_[1] = this.timestamp_++;
+    }
+
     // Sets flag that forces sensor to fail when addConfiguration is invoked.
     setStartShouldFail(shouldFail) {
       this.startShouldFail_ = shouldFail;
@@ -128,13 +156,16 @@ var GenericSensorTest = (() => {
           // |buffer_| is a TypedArray, so we need to make sure pass an
           // array to set().
           const reading = this.readingData_.next().value;
-          assert_true(Array.isArray(reading), "The readings passed to " +
-              "setSensorReading() must be arrays.");
+          if (!Array.isArray(reading)) {
+            throw new TypeError("startReading(): The readings passed to " +
+              "setSensorReading() must be arrays");
+          }
           this.buffer_.set(reading, 2);
         }
         // For all tests sensor reading should have monotonically
-        // increasing timestamp in seconds.
-        this.buffer_[1] = window.performance.now() * 0.001;
+        // increasing timestamp.
+        this.buffer_[1] = this.timestamp_++;
+
         if (this.reportingMode_ === device.mojom.ReportingMode.ON_CHANGE &&
             this.notifyOnReadingChange_) {
           this.client_.sensorReadingChanged();
@@ -150,8 +181,14 @@ var GenericSensorTest = (() => {
     }
 
     getSamplingFrequency() {
-       assert_true(this.requestedFrequencies_.length > 0);
+      if (this.requestedFrequencies_.length == 0) {
+        throw new Error("getSamplingFrequency(): No configured frequency");
+      }
        return this.requestedFrequencies_[0];
+    }
+
+    isReadingData() {
+      return this.sensorReadingTimerId_ != null;
     }
   }
 
@@ -164,7 +201,9 @@ var GenericSensorTest = (() => {
       this.sharedBufferSizeInBytes_ = this.readingSizeInBytes_ *
               (device.mojom.SensorType.MAX_VALUE + 1);
       const rv = Mojo.createSharedBuffer(this.sharedBufferSizeInBytes_);
-      assert_equals(rv.result, Mojo.RESULT_OK, "Failed to create buffer");
+      if (rv.result != Mojo.RESULT_OK) {
+        throw new Error("MockSensorProvider: Failed to map shared buffer");
+      }
       this.sharedBufferHandle_ = rv.handle;
       this.activeSensors_ = new Map();
       this.resolveFuncs_ = new Map();
@@ -224,8 +263,9 @@ var GenericSensorTest = (() => {
       }
 
       const rv = this.sharedBufferHandle_.duplicateBufferHandle();
-
-      assert_equals(rv.result, Mojo.RESULT_OK);
+      if (rv.result != Mojo.RESULT_OK) {
+        throw new Error("getSensor(): failed to duplicate Mojo buffer handler");
+      }
 
       const defaultConfig = { frequency: DEFAULT_FREQUENCY };
       // Consider sensor traits to meet assertions in C++ code (see
@@ -310,7 +350,9 @@ var GenericSensorTest = (() => {
     // Returns mock sensor that was created in getSensor to the layout test.
     getCreatedSensor(sensorType) {
       const type = this.mojomSensorType_.get(sensorType);
-      assert_equals(typeof type, "number", "A sensor type must be specified.");
+      if (typeof type != "number") {
+        throw new TypeError(`getCreatedSensor(): Invalid sensor type ${sensorType}`);
+      }
 
       if (this.activeSensors_.has(type)) {
         return Promise.resolve(this.activeSensors_.get(type));
@@ -350,10 +392,15 @@ var GenericSensorTest = (() => {
         throw new Error('Call reset() before initialize().');
 
       // Grant sensor permissions for Chromium testdriver.
-      for (const entry of ['accelerometer', 'gyroscope',
-          'magnetometer', 'ambient-light-sensor']) {
-        await test_driver.set_permission({ name: entry }, 'granted', false);
-      };
+      // testdriver.js only works in the top-level browsing context, so do
+      // nothing if we're in e.g. an iframe.
+      if (window.parent === window) {
+        for (const entry
+                 of ['accelerometer', 'gyroscope', 'magnetometer',
+                     'ambient-light-sensor']) {
+          await test_driver.set_permission({name: entry}, 'granted', false);
+        }
+      }
 
       testInternal.sensorProvider = new MockSensorProvider;
       testInternal.initialized = true;

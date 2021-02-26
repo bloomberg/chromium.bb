@@ -10,8 +10,8 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -114,6 +114,7 @@ void ArcKioskAppManager::AddAutoLaunchAppForTest(
 
   auto_launch_account_id_ = account_id;
   auto_launched_with_zero_delay_ = true;
+  NotifyKioskAppsChanged();
 }
 
 const AccountId& ArcKioskAppManager::GetAutoLaunchAccountId() const {

@@ -5,6 +5,7 @@
 #ifndef MEDIA_GPU_TEST_VIDEO_H_
 #define MEDIA_GPU_TEST_VIDEO_H_
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -33,8 +34,12 @@ class Video {
         const base::FilePath& metadata_file_path);
   ~Video();
 
-  // Load the video file from disk.
-  bool Load();
+  // Create a new Video instance by copying and converting |data_| to NV12.
+  std::unique_ptr<Video> ConvertToNV12() const;
+
+  // Load the video file from disk. |max_frames| is the maximum number of
+  // frames to be read from disk.
+  bool Load(const size_t max_frames = std::numeric_limits<size_t>::max());
   // Returns true if the video file was loaded.
   bool IsLoaded() const;
 
@@ -42,6 +47,7 @@ class Video {
   const base::FilePath& FilePath() const;
   // Get the video data, will be empty if the video hasn't been loaded yet.
   const std::vector<uint8_t>& Data() const;
+  std::vector<uint8_t>& Data();
 
   // Decode the video, replacing the video stream data in |data_| with raw video
   // data. This is currently only supported for VP9 videos. Returns whether
@@ -97,14 +103,20 @@ class Video {
   base::Optional<base::FilePath> ResolveFilePath(
       const base::FilePath& file_path);
 
-  // Decode the video on a separate thread.
+  // Decode the video on a separate thread. The |resolution| needs to be
+  // specified here as the resolution of the decoded frames might differ due to
+  // the software decoder alignment.
   static void DecodeTask(const std::vector<uint8_t> data,
+                         const gfx::Size& resolution,
+                         const size_t num_frames,
                          std::vector<uint8_t>* decompressed_data,
                          bool* success,
                          base::WaitableEvent* done);
-  // Called each time a |frame| is decoded while decoding a video. The decoded
-  // frame will be appended to the specified |data|.
-  static void OnFrameDecoded(std::vector<uint8_t>* data,
+  // Called each time a |frame| is decoded while decoding a video. The area
+  // specified by |resolution| of the decoded frame will be appended to the
+  // |data|.
+  static void OnFrameDecoded(const gfx::Size& resolution,
+                             std::vector<uint8_t>* data,
                              scoped_refptr<VideoFrame> frame);
 
   // The path where all test video files are stored.

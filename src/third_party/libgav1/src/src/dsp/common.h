@@ -17,7 +17,6 @@
 #ifndef LIBGAV1_SRC_DSP_COMMON_H_
 #define LIBGAV1_SRC_DSP_COMMON_H_
 
-#include <cstddef>  // ptrdiff_t
 #include <cstdint>
 
 #include "src/dsp/constants.h"
@@ -25,6 +24,8 @@
 #include "src/utils/memory.h"
 
 namespace libgav1 {
+
+enum { kSgrStride = kRestorationUnitWidth + 8 };  // anonymous enum
 
 // Self guided projection filter.
 struct SgrProjInfo {
@@ -35,8 +36,8 @@ struct SgrProjInfo {
 struct WienerInfo {
   static const int kVertical = 0;
   static const int kHorizontal = 1;
-
-  alignas(kMaxAlignment) int16_t filter[2][kSubPixelTaps];
+  int16_t number_leading_zero_coefficients[2];
+  alignas(kMaxAlignment) int16_t filter[2][(kWienerFilterTaps + 1) / 2];
 };
 
 struct RestorationUnitInfo : public MaxAlignedAllocable {
@@ -45,15 +46,35 @@ struct RestorationUnitInfo : public MaxAlignedAllocable {
   WienerInfo wiener_info;
 };
 
-struct RestorationBuffer {
+struct SgrBuffer {
+  alignas(kMaxAlignment) uint16_t sum3[4 * kSgrStride];
+  alignas(kMaxAlignment) uint16_t sum5[5 * kSgrStride];
+  alignas(kMaxAlignment) uint32_t square_sum3[4 * kSgrStride];
+  alignas(kMaxAlignment) uint32_t square_sum5[5 * kSgrStride];
+  alignas(kMaxAlignment) uint16_t ma343[4 * kRestorationUnitWidth];
+  alignas(kMaxAlignment) uint16_t ma444[3 * kRestorationUnitWidth];
+  alignas(kMaxAlignment) uint16_t ma565[2 * kRestorationUnitWidth];
+  alignas(kMaxAlignment) uint32_t b343[4 * kRestorationUnitWidth];
+  alignas(kMaxAlignment) uint32_t b444[3 * kRestorationUnitWidth];
+  alignas(kMaxAlignment) uint32_t b565[2 * kRestorationUnitWidth];
+  // The following 2 buffers are only used by the C functions. Since SgrBuffer
+  // is smaller than |wiener_buffer| in RestorationBuffer which is an union,
+  // it's OK to always keep the following 2 buffers.
+  alignas(kMaxAlignment) uint8_t ma[kSgrStride];  // [0, 255]
+  // b is less than 2^16 for 8-bit. However, making it a template slows down the
+  // C function by 5%. So b is fixed to 32-bit.
+  alignas(kMaxAlignment) uint32_t b[kSgrStride];
+};
+
+union RestorationBuffer {
   // For self-guided filter.
-  int* box_filter_process_output[2];
-  ptrdiff_t box_filter_process_output_stride;
-  uint32_t* box_filter_process_intermediate[2];
-  ptrdiff_t box_filter_process_intermediate_stride;
+  SgrBuffer sgr_buffer;
   // For wiener filter.
-  uint16_t* wiener_buffer;
-  ptrdiff_t wiener_buffer_stride;
+  // The array |intermediate| in Section 7.17.4, the intermediate results
+  // between the horizontal and vertical filters.
+  alignas(kMaxAlignment) int16_t
+      wiener_buffer[(kRestorationUnitHeight + kWienerFilterTaps - 1) *
+                    kRestorationUnitWidth];
 };
 
 }  // namespace libgav1

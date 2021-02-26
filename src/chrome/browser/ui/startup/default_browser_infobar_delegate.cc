@@ -28,10 +28,7 @@ void DefaultBrowserInfoBarDelegate::Create(InfoBarService* infobar_service,
 }
 
 DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(Profile* profile)
-    : ConfirmInfoBarDelegate(),
-      profile_(profile),
-      should_expire_(false),
-      action_taken_(false) {
+    : profile_(profile) {
   // We want the info-bar to stick-around for few seconds and then be hidden
   // on the next navigation after that.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -110,9 +107,8 @@ bool DefaultBrowserInfoBarDelegate::Accept() {
   // The worker pointer is reference counted. While it is running, the
   // message loops of the FILE and UI thread will hold references to it
   // and it will be automatically freed once all its tasks have finished.
-  base::MakeRefCounted<shell_integration::DefaultBrowserWorker>(
-      shell_integration::DefaultWebClientWorkerCallback())
-      ->StartSetAsDefault();
+  base::MakeRefCounted<shell_integration::DefaultBrowserWorker>()
+      ->StartSetAsDefault(base::NullCallback());
   return true;
 }
 

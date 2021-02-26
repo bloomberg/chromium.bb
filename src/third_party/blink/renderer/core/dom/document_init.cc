@@ -29,18 +29,25 @@
 
 #include "third_party/blink/renderer/core/dom/document_init.h"
 
-#include "services/network/public/cpp/web_sandbox_flags.h"
-#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
-#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/dom/sink_document.h"
+#include "third_party/blink/renderer/core/dom/xml_document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/html_view_source_document.h"
+#include "third_party/blink/renderer/core/html/image_document.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/media_document.h"
+#include "third_party/blink/renderer/core/html/plugin_document.h"
+#include "third_party/blink/renderer/core/html/text_document.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -48,20 +55,8 @@
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
-#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
-
-// FIXME: Broken with OOPI.
-static Document* ParentDocument(DocumentLoader* loader) {
-  DCHECK(loader);
-  DCHECK(loader->GetFrame());
-
-  Element* owner_element = loader->GetFrame()->DeprecatedLocalOwner();
-  if (!owner_element)
-    return nullptr;
-  return &owner_element->GetDocument();
-}
 
 // static
 DocumentInit DocumentInit::Create() {
@@ -72,6 +67,16 @@ DocumentInit::DocumentInit(const DocumentInit&) = default;
 
 DocumentInit::~DocumentInit() = default;
 
+DocumentInit& DocumentInit::ForTest() {
+  DCHECK(!execution_context_);
+  DCHECK(!window_);
+#if DCHECK_IS_ON()
+  DCHECK(!for_test_);
+  for_test_ = true;
+#endif
+  return *this;
+}
+
 DocumentInit& DocumentInit::WithImportsController(
     HTMLImportsController* controller) {
   imports_controller_ = controller;
@@ -79,82 +84,31 @@ DocumentInit& DocumentInit::WithImportsController(
 }
 
 bool DocumentInit::ShouldSetURL() const {
-  DocumentLoader* loader = MasterDocumentLoader();
-  return (loader && loader->GetFrame()->Tree().Parent()) || !url_.IsEmpty();
+  return (window_ && !window_->GetFrame()->IsMainFrame()) || !url_.IsEmpty();
 }
 
 bool DocumentInit::IsSrcdocDocument() const {
-  // TODO(dgozman): why do we check |parent_document_| here?
-  return parent_document_ && is_srcdoc_document_;
+  return window_ && !window_->GetFrame()->IsMainFrame() && is_srcdoc_document_;
 }
 
-DocumentLoader* DocumentInit::MasterDocumentLoader() const {
-  if (document_loader_)
-    return document_loader_;
-  if (imports_controller_) {
-    return imports_controller_->Master()
-        ->GetFrame()
-        ->Loader()
-        .GetDocumentLoader();
-  }
-  return nullptr;
-}
-
-network::mojom::blink::WebSandboxFlags DocumentInit::GetSandboxFlags() const {
-  network::mojom::blink::WebSandboxFlags flags = sandbox_flags_;
-  if (DocumentLoader* loader = MasterDocumentLoader())
-    flags |= loader->GetFrame()->Loader().EffectiveSandboxFlags();
-  // If the load was blocked by CSP, force the Document's origin to be unique,
-  // so that the blocked document appears to be a normal cross-origin
-  // document's load per CSP spec:
-  // https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
-  if (blocked_by_csp_)
-    flags |= network::mojom::blink::WebSandboxFlags::kOrigin;
-  return flags;
-}
-
-mojom::blink::InsecureRequestPolicy DocumentInit::GetInsecureRequestPolicy()
-    const {
-  DCHECK(MasterDocumentLoader());
-  Frame* parent_frame = MasterDocumentLoader()->GetFrame()->Tree().Parent();
-  if (!parent_frame)
-    return mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
-  return parent_frame->GetSecurityContext()->GetInsecureRequestPolicy();
-}
-
-const SecurityContext::InsecureNavigationsSet*
-DocumentInit::InsecureNavigationsToUpgrade() const {
-  DCHECK(MasterDocumentLoader());
-  Frame* parent_frame = MasterDocumentLoader()->GetFrame()->Tree().Parent();
-  if (!parent_frame)
-    return nullptr;
-  return &parent_frame->GetSecurityContext()->InsecureNavigationsToUpgrade();
-}
-
-network::mojom::IPAddressSpace DocumentInit::GetIPAddressSpace() const {
-  return ip_address_space_;
-}
-
-Settings* DocumentInit::GetSettings() const {
-  DCHECK(MasterDocumentLoader());
-  return MasterDocumentLoader()->GetFrame()->GetSettings();
-}
-
-DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader) {
-  DCHECK(!document_loader_);
+DocumentInit& DocumentInit::WithWindow(LocalDOMWindow* window,
+                                       Document* owner_document) {
+  DCHECK(!window_);
+  DCHECK(!execution_context_);
   DCHECK(!imports_controller_);
-  document_loader_ = loader;
-  if (document_loader_)
-    parent_document_ = ParentDocument(document_loader_);
+#if DCHECK_IS_ON()
+  DCHECK(!for_test_);
+#endif
+  DCHECK(window);
+  window_ = window;
+  execution_context_ = window;
+  owner_document_ = owner_document;
   return *this;
 }
 
-LocalFrame* DocumentInit::GetFrame() const {
-  return document_loader_ ? document_loader_->GetFrame() : nullptr;
-}
-
-UseCounter* DocumentInit::GetUseCounter() const {
-  return document_loader_;
+DocumentInit& DocumentInit::ForInitialEmptyDocument(bool empty) {
+  is_initial_empty_document_ = empty;
+  return *this;
 }
 
 // static
@@ -207,13 +161,16 @@ DocumentInit::Type DocumentInit::ComputeDocumentType(
     }
   }
 
-  if (DOMImplementation::IsTextMIMEType(mime_type))
+  if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type) ||
+      MIMETypeRegistry::IsJSONMimeType(mime_type) ||
+      MIMETypeRegistry::IsPlainTextMIMEType(mime_type)) {
     return Type::kText;
+  }
 
   if (mime_type == "image/svg+xml")
     return Type::kSVG;
 
-  if (DOMImplementation::IsXMLMIMEType(mime_type))
+  if (MIMETypeRegistry::IsXMLMIMEType(mime_type))
     return Type::kXML;
 
   return Type::kHTML;
@@ -234,19 +191,19 @@ PluginData* DocumentInit::GetPluginData(LocalFrame* frame, const KURL& url) {
 
 DocumentInit& DocumentInit::WithTypeFrom(const String& mime_type) {
   mime_type_ = mime_type;
-  type_ = ComputeDocumentType(GetFrame(), Url(), mime_type_,
-                              &is_for_external_handler_);
-  if (type_ == Type::kPlugin) {
-    plugin_background_color_ =
-        GetPluginData(GetFrame(), Url())
-            ->PluginBackgroundColorForMimeType(mime_type_);
-  }
+  type_ = ComputeDocumentType(window_ ? window_->GetFrame() : nullptr, Url(),
+                              mime_type_, &is_for_external_handler_);
   return *this;
 }
 
-DocumentInit& DocumentInit::WithContextDocument(Document* context_document) {
-  DCHECK(!context_document_);
-  context_document_ = context_document;
+DocumentInit& DocumentInit::WithExecutionContext(
+    ExecutionContext* execution_context) {
+  DCHECK(!execution_context_);
+  DCHECK(!window_);
+#if DCHECK_IS_ON()
+  DCHECK(!for_test_);
+#endif
+  execution_context_ = execution_context;
   return *this;
 }
 
@@ -256,52 +213,8 @@ DocumentInit& DocumentInit::WithURL(const KURL& url) {
   return *this;
 }
 
-scoped_refptr<SecurityOrigin> DocumentInit::GetDocumentOrigin() const {
-  // Origin to commit is specified by the browser process, it must be taken
-  // and used directly. It is currently supplied only for session history
-  // navigations, where the origin was already calcuated previously and
-  // stored on the session history entry.
-  if (origin_to_commit_)
-    return origin_to_commit_;
-
-  if (owner_document_)
-    return owner_document_->GetMutableSecurityOrigin();
-
-  // Otherwise, create an origin that propagates precursor information
-  // as needed. For non-opaque origins, this creates a standard tuple
-  // origin, but for opaque origins, it creates an origin with the
-  // initiator origin as the precursor.
-  return SecurityOrigin::CreateWithReferenceOrigin(url_,
-                                                   initiator_origin_.get());
-}
-
-DocumentInit& DocumentInit::WithOwnerDocument(Document* owner_document) {
-  DCHECK(!owner_document_);
-  DCHECK(!initiator_origin_ || !owner_document ||
-         owner_document->GetSecurityOrigin() == initiator_origin_);
-  owner_document_ = owner_document;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithInitiatorOrigin(
-    scoped_refptr<const SecurityOrigin> initiator_origin) {
-  DCHECK(!initiator_origin_);
-  DCHECK(!initiator_origin || !owner_document_ ||
-         owner_document_->GetSecurityOrigin() == initiator_origin);
-  initiator_origin_ = std::move(initiator_origin);
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithOriginToCommit(
-    scoped_refptr<SecurityOrigin> origin_to_commit) {
-  origin_to_commit_ = std::move(origin_to_commit);
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithIPAddressSpace(
-    network::mojom::IPAddressSpace ip_address_space) {
-  ip_address_space_ = ip_address_space;
-  return *this;
+const KURL& DocumentInit::GetCookieUrl() const {
+  return owner_document_ ? owner_document_->CookieURL() : url_;
 }
 
 DocumentInit& DocumentInit::WithSrcdocDocument(bool is_srcdoc_document) {
@@ -309,16 +222,6 @@ DocumentInit& DocumentInit::WithSrcdocDocument(bool is_srcdoc_document) {
   return *this;
 }
 
-DocumentInit& DocumentInit::WithBlockedByCSP(bool blocked_by_csp) {
-  blocked_by_csp_ = blocked_by_csp;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithGrantLoadLocalResources(
-    bool grant_load_local_resources) {
-  grant_load_local_resources_ = grant_load_local_resources;
-  return *this;
-}
 
 DocumentInit& DocumentInit::WithRegistrationContext(
     V0CustomElementRegistrationContext* registration_context) {
@@ -346,121 +249,53 @@ V0CustomElementRegistrationContext* DocumentInit::RegistrationContext(
   return registration_context_;
 }
 
-Document* DocumentInit::ContextDocument() const {
-  return context_document_;
-}
-
-DocumentInit& DocumentInit::WithFeaturePolicyHeader(const String& header) {
-  DCHECK(feature_policy_header_.IsEmpty());
-  feature_policy_header_ = header;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithReportOnlyFeaturePolicyHeader(
-    const String& header) {
-  DCHECK(report_only_feature_policy_header_.IsEmpty());
-  report_only_feature_policy_header_ = header;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithOriginTrialsHeader(const String& header) {
-  DCHECK(origin_trials_header_.IsEmpty());
-  origin_trials_header_ = header;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithSandboxFlags(
-    network::mojom::blink::WebSandboxFlags flags) {
-  // Only allow adding more sandbox flags.
-  sandbox_flags_ |= flags;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithContentSecurityPolicy(
-    ContentSecurityPolicy* policy) {
-  content_security_policy_ = policy;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithContentSecurityPolicyFromContextDoc() {
-  content_security_policy_from_context_doc_ = true;
-  return *this;
-}
-
-ContentSecurityPolicy* DocumentInit::GetContentSecurityPolicy() const {
-  DCHECK(
-      !(content_security_policy_ && content_security_policy_from_context_doc_));
-  if (context_document_ && content_security_policy_from_context_doc_) {
-    // Return a copy of the context documents' CSP. The return value will be
-    // modified, so this must be a copy.
-    ContentSecurityPolicy* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-    csp->CopyStateFrom(context_document_->GetContentSecurityPolicy());
-    return csp;
-  }
-  return content_security_policy_;
-}
-
-DocumentInit& DocumentInit::WithFramePolicy(
-    const base::Optional<FramePolicy>& frame_policy) {
-  frame_policy_ = frame_policy;
-  if (frame_policy_.has_value()) {
-    DCHECK(document_loader_);
-    // Make the snapshot value of sandbox flags from the beginning of navigation
-    // available in frame loader, so that the value could be further used to
-    // initialize sandbox flags in security context. crbug.com/1026627
-    document_loader_->GetFrame()->Loader().SetFrameOwnerSandboxFlags(
-        frame_policy_.value().sandbox_flags);
-  }
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithDocumentPolicy(
-    const DocumentPolicy::ParsedDocumentPolicy& document_policy) {
-  document_policy_ = document_policy;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithReportOnlyDocumentPolicyHeader(
-    const String& header) {
-  DCHECK(report_only_document_policy_header_.IsEmpty());
-  report_only_document_policy_header_ = header;
-  return *this;
-}
-
 DocumentInit& DocumentInit::WithWebBundleClaimedUrl(
     const KURL& web_bundle_claimed_url) {
   web_bundle_claimed_url_ = web_bundle_claimed_url;
   return *this;
 }
 
-bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
-  return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
-         WebTestSupport::IsRunningWebTest();
+DocumentInit& DocumentInit::WithUkmSourceId(ukm::SourceId ukm_source_id) {
+  ukm_source_id_ = ukm_source_id;
+  return *this;
 }
 
-WindowAgentFactory* DocumentInit::GetWindowAgentFactory() const {
-  // If we are a page popup in LayoutTests ensure we use the popup
-  // owner's frame for looking up the Agent so the tests can possibly
-  // access the document via internals API.
-  LocalFrame* frame = nullptr;
-  if (IsPagePopupRunningInWebTest(GetFrame()))
-    frame = GetFrame()->PagePopupOwner()->GetDocument().GetFrame();
-  else if (GetFrame())
-    frame = GetFrame();
-  else if (Document* context_document = ContextDocument())
-    return context_document->GetWindowAgentFactory();
-  return frame ? &frame->window_agent_factory() : nullptr;
-}
-
-Settings* DocumentInit::GetSettingsForWindowAgentFactory() const {
-  LocalFrame* frame = nullptr;
-  if (IsPagePopupRunningInWebTest(GetFrame()))
-    frame = GetFrame()->PagePopupOwner()->GetDocument().GetFrame();
-  else if (GetFrame())
-    frame = GetFrame();
-  else if (Document* context_document = ContextDocument())
-    frame = context_document->GetFrame();
-  return frame ? frame->GetSettings() : nullptr;
+Document* DocumentInit::CreateDocument() const {
+#if DCHECK_IS_ON()
+  DCHECK(execution_context_ || for_test_);
+#endif
+  switch (type_) {
+    case Type::kHTML:
+      return MakeGarbageCollected<HTMLDocument>(*this);
+    case Type::kXHTML:
+      return XMLDocument::CreateXHTML(*this);
+    case Type::kImage:
+      return MakeGarbageCollected<ImageDocument>(*this);
+    case Type::kPlugin: {
+      DCHECK(window_);
+      if (window_->IsSandboxed(
+              network::mojom::blink::WebSandboxFlags::kPlugins)) {
+        return MakeGarbageCollected<SinkDocument>(*this);
+      }
+      return MakeGarbageCollected<PluginDocument>(*this);
+    }
+    case Type::kMedia:
+      return MakeGarbageCollected<MediaDocument>(*this);
+    case Type::kSVG:
+      return XMLDocument::CreateSVG(*this);
+    case Type::kXML:
+      return MakeGarbageCollected<XMLDocument>(*this);
+    case Type::kViewSource:
+      return MakeGarbageCollected<HTMLViewSourceDocument>(*this);
+    case Type::kText:
+      return MakeGarbageCollected<TextDocument>(*this);
+    case Type::kUnspecified:
+      FALLTHROUGH;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace blink

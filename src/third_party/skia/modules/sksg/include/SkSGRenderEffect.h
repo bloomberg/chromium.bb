@@ -57,7 +57,7 @@ class ShaderEffect final : public EffectNode {
 public:
     ~ShaderEffect() override;
 
-    static sk_sp<ShaderEffect> Make(sk_sp<RenderNode> child, sk_sp<Shader> shader = 0);
+    static sk_sp<ShaderEffect> Make(sk_sp<RenderNode> child, sk_sp<Shader> shader = nullptr);
 
     void setShader(sk_sp<Shader>);
 
@@ -107,7 +107,7 @@ public:
     }
 
 protected:
-    explicit ImageFilter(sk_sp<ImageFilter> input = 0);
+    explicit ImageFilter(sk_sp<ImageFilter> input = nullptr);
 
     using InputsT = std::vector<sk_sp<ImageFilter>>;
     explicit ImageFilter(std::unique_ptr<InputsT> inputs);
@@ -242,6 +242,25 @@ protected:
 
 private:
     BlendModeEffect(sk_sp<RenderNode>, SkBlendMode);
+
+    SkBlendMode fMode;
+
+    using INHERITED = EffectNode;
+};
+
+class LayerEffect final : public EffectNode {
+public:
+    ~LayerEffect() override;
+
+    static sk_sp<LayerEffect> Make(sk_sp<RenderNode> child,
+                                   SkBlendMode mode = SkBlendMode::kSrcOver);
+
+    SG_ATTRIBUTE(Mode, SkBlendMode, fMode)
+
+private:
+    LayerEffect(sk_sp<RenderNode> child, SkBlendMode mode);
+
+    void onRender(SkCanvas*, const RenderContext*) const override;
 
     SkBlendMode fMode;
 

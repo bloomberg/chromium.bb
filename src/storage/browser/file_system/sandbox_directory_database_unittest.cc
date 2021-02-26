@@ -96,7 +96,7 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
 
   void ClearDatabaseAndDirectory() {
     db_.reset();
-    ASSERT_TRUE(base::DeleteFileRecursively(path()));
+    ASSERT_TRUE(base::DeletePathRecursively(path()));
     ASSERT_TRUE(base::CreateDirectory(path()));
     db_.reset(new SandboxDirectoryDatabase(path(), nullptr));
   }
@@ -530,7 +530,7 @@ TEST_F(SandboxDirectoryDatabaseTest, TestConsistencyCheck_BackingMultiEntry) {
   CreateFile(0, FPL("foo"), kBackingFileName, nullptr);
 
   EXPECT_TRUE(db()->IsFileSystemConsistent());
-  ASSERT_TRUE(base::DeleteFile(path().Append(kBackingFileName), false));
+  ASSERT_TRUE(base::DeleteFile(path().Append(kBackingFileName)));
   CreateFile(0, FPL("bar"), kBackingFileName, nullptr);
   EXPECT_FALSE(db()->IsFileSystemConsistent());
 }
@@ -540,7 +540,7 @@ TEST_F(SandboxDirectoryDatabaseTest, TestConsistencyCheck_FileLost) {
   CreateFile(0, FPL("foo"), kBackingFileName, nullptr);
 
   EXPECT_TRUE(db()->IsFileSystemConsistent());
-  ASSERT_TRUE(base::DeleteFile(path().Append(kBackingFileName), false));
+  ASSERT_TRUE(base::DeleteFile(path().Append(kBackingFileName)));
   EXPECT_TRUE(db()->IsFileSystemConsistent());
 }
 

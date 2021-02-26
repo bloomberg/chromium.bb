@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "core/fxge/cfx_defaultrenderdevice.h"
+#include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_graphstatedata.h"
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_renderdevice.h"
+#include "core/fxge/cfx_textrenderoptions.h"
 #include "core/fxge/skia/fx_skia_device.h"
 #include "core/fxge/text_char_pos.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
@@ -40,7 +42,7 @@ void CommonTest(CFX_SkiaDeviceDriver* driver, const State& state) {
   TextCharPos charPos[1];
   charPos[0].m_Origin = CFX_PointF(0, 1);
   charPos[0].m_GlyphIndex = 1;
-  charPos[0].m_FontCharWidth = 4u;
+  charPos[0].m_FontCharWidth = 4;
 
   CFX_Font font;
   float fontSize = 1;
@@ -57,16 +59,18 @@ void CommonTest(CFX_SkiaDeviceDriver* driver, const State& state) {
   CFX_Matrix matrix2;
   matrix2.Translate(1, 0);
   CFX_GraphStateData graphState;
+  static constexpr CFX_TextRenderOptions kTextOptions;
   if (state.m_save == State::Save::kYes)
     driver->SaveState();
   if (state.m_clip != State::Clip::kNo)
-    driver->SetClip_PathFill(&clipPath, &clipMatrix, 0);
+    driver->SetClip_PathFill(&clipPath, &clipMatrix, CFX_FillRenderOptions());
   if (state.m_graphic == State::Graphic::kPath) {
     driver->DrawPath(&path1, &matrix, &graphState, 0xFF112233, 0,
-                     FXFILL_WINDING, BlendMode::kNormal);
+                     CFX_FillRenderOptions::WindingOptions(),
+                     BlendMode::kNormal);
   } else if (state.m_graphic == State::Graphic::kText) {
     driver->DrawDeviceText(SK_ARRAY_COUNT(charPos), charPos, &font, matrix,
-                           fontSize, 0xFF445566);
+                           fontSize, 0xFF445566, kTextOptions);
   }
   if (state.m_save == State::Save::kYes)
     driver->RestoreState(true);
@@ -79,17 +83,18 @@ void CommonTest(CFX_SkiaDeviceDriver* driver, const State& state) {
       fontSize = 2;
   }
   if (state.m_clip == State::Clip::kSame)
-    driver->SetClip_PathFill(&clipPath, &clipMatrix, 0);
+    driver->SetClip_PathFill(&clipPath, &clipMatrix, CFX_FillRenderOptions());
   else if (state.m_clip == State::Clip::kDifferentPath)
-    driver->SetClip_PathFill(&clipPath2, &clipMatrix, 0);
+    driver->SetClip_PathFill(&clipPath2, &clipMatrix, CFX_FillRenderOptions());
   else if (state.m_clip == State::Clip::kDifferentMatrix)
-    driver->SetClip_PathFill(&clipPath, &clipMatrix2, 0);
+    driver->SetClip_PathFill(&clipPath, &clipMatrix2, CFX_FillRenderOptions());
   if (state.m_graphic == State::Graphic::kPath) {
     driver->DrawPath(&path2, &matrix2, &graphState, 0xFF112233, 0,
-                     FXFILL_WINDING, BlendMode::kNormal);
+                     CFX_FillRenderOptions::WindingOptions(),
+                     BlendMode::kNormal);
   } else if (state.m_graphic == State::Graphic::kText) {
     driver->DrawDeviceText(SK_ARRAY_COUNT(charPos), charPos, &font, matrix2,
-                           fontSize, 0xFF445566);
+                           fontSize, 0xFF445566, kTextOptions);
   }
   if (state.m_save == State::Save::kYes)
     driver->RestoreState(false);
@@ -101,18 +106,18 @@ void OutOfSequenceClipTest(CFX_SkiaDeviceDriver* driver, const State&) {
   clipPath.AppendRect(1, 0, 3, 1);
   CFX_Matrix clipMatrix;
   driver->SaveState();
-  driver->SetClip_PathFill(&clipPath, &clipMatrix, 0);
+  driver->SetClip_PathFill(&clipPath, &clipMatrix, CFX_FillRenderOptions());
   driver->RestoreState(true);
   driver->SaveState();
-  driver->SetClip_PathFill(&clipPath, &clipMatrix, 0);
+  driver->SetClip_PathFill(&clipPath, &clipMatrix, CFX_FillRenderOptions());
   driver->RestoreState(false);
   driver->RestoreState(false);
 
   driver->SaveState();
   driver->SaveState();
-  driver->SetClip_PathFill(&clipPath, &clipMatrix, 0);
+  driver->SetClip_PathFill(&clipPath, &clipMatrix, CFX_FillRenderOptions());
   driver->RestoreState(true);
-  driver->SetClip_PathFill(&clipPath, &clipMatrix, 0);
+  driver->SetClip_PathFill(&clipPath, &clipMatrix, CFX_FillRenderOptions());
   driver->RestoreState(false);
   driver->RestoreState(false);
 }
@@ -158,7 +163,7 @@ TEST(fxge, SkiaStatePath) {
                         State::Graphic::kPath, 0xFF112233});
 }
 
-#ifdef _SKIA_SUPPORT_
+#if defined(_SKIA_SUPPORT_)
 // TODO(crbug.com/pdfium/11): Fix this test and enable.
 TEST(fxge, DISABLED_SkiaStateText) {
   Harness(&CommonTest,

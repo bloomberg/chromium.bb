@@ -78,7 +78,7 @@ void HTMLMarqueeElement::DidAddUserAgentShadowRoot(ShadowRoot& shadow_root) {
 }
 
 class HTMLMarqueeElement::RequestAnimationFrameCallback final
-    : public FrameRequestCallbackCollection::FrameCallback {
+    : public FrameCallback {
  public:
   explicit RequestAnimationFrameCallback(HTMLMarqueeElement* marquee)
       : marquee_(marquee) {}
@@ -88,9 +88,9 @@ class HTMLMarqueeElement::RequestAnimationFrameCallback final
     marquee_->ContinueAnimation();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(marquee_);
-    FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
+    FrameCallback::Trace(visitor);
   }
 
  private:
@@ -108,7 +108,7 @@ class HTMLMarqueeElement::AnimationFinished final : public NativeEventListener {
     marquee_->start();
   }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(marquee_);
     NativeEventListener::Trace(visitor);
   }
@@ -244,7 +244,7 @@ StringKeyframeEffectModel* HTMLMarqueeElement::CreateEffectModel(
   MutableCSSPropertyValueSet::SetResult set_result;
 
   SecureContextMode secure_context_mode =
-      mover_->GetDocument().GetSecureContextMode();
+      mover_->GetExecutionContext()->GetSecureContextMode();
 
   StringKeyframeVector keyframes;
   auto* keyframe1 = MakeGarbageCollected<StringKeyframe>();
@@ -486,7 +486,7 @@ AtomicString HTMLMarqueeElement::CreateTransform(double value) const {
          String::NumberToStringECMAScript(value) + "px)";
 }
 
-void HTMLMarqueeElement::Trace(Visitor* visitor) {
+void HTMLMarqueeElement::Trace(Visitor* visitor) const {
   visitor->Trace(mover_);
   visitor->Trace(player_);
   HTMLElement::Trace(visitor);

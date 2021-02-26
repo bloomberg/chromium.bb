@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -54,7 +53,7 @@ class TranslateUIDelegate {
   size_t GetNumberOfLanguages() const;
 
   // Returns the original language index.
-  size_t GetOriginalLanguageIndex() const;
+  size_t GetOriginalLanguageIndex() const { return original_language_index_; }
 
   // Returns the original language code.
   std::string GetOriginalLanguageCode() const;
@@ -65,7 +64,7 @@ class TranslateUIDelegate {
   void UpdateOriginalLanguage(const std::string& language_code);
 
   // Returns the target language index.
-  size_t GetTargetLanguageIndex() const;
+  size_t GetTargetLanguageIndex() const { return target_language_index_; }
 
   // Returns the target language code.
   std::string GetTargetLanguageCode() const;
@@ -134,6 +133,11 @@ class TranslateUIDelegate {
   // Returns true if the UI should offer the user a shortcut to never translate
   // the language, when we think the user wants that functionality.
   bool ShouldShowNeverTranslateShortcut() const;
+
+  // Updates metrics when a user's action closes the translate UI. This includes
+  // when: the user presses the 'x' button, the user selects to never translate
+  // this site, and the user selects to never translate this language.
+  void OnUIClosedByUser();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TranslateUIDelegateTest, GetPageHost);

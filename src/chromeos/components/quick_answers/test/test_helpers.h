@@ -43,11 +43,16 @@ class MockResultLoaderDelegate : public ResultLoader::ResultLoaderDelegate {
 };
 
 MATCHER_P(QuickAnswerEqual, quick_answer, "") {
-  return (arg->primary_answer == quick_answer->primary_answer);
+  return (arg->primary_answer == quick_answer->primary_answer &&
+          arg->secondary_answer == quick_answer->secondary_answer);
 }
 
 MATCHER_P(QuickAnswersRequestEqual, quick_answers_request, "") {
   return (arg.selected_text == quick_answers_request.selected_text);
+}
+
+MATCHER_P(PreprocessedOutputEqual, preprocessed_output, "") {
+  return (arg.query == preprocessed_output.query);
 }
 
 }  // namespace quick_answers

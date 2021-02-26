@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
@@ -60,7 +59,6 @@ class ShortcutsProviderExtensionTest : public testing::Test {
   void TearDown() override;
 
   content::BrowserTaskEnvironment task_environment_;
-  base::test::ScopedFeatureList feature_list_;
   TestingProfile profile_;
   ChromeAutocompleteProviderClient client_;
   scoped_refptr<ShortcutsBackend> backend_;
@@ -71,16 +69,13 @@ ShortcutsProviderExtensionTest::ShortcutsProviderExtensionTest()
     : client_(&profile_) {}
 
 void ShortcutsProviderExtensionTest::SetUp() {
-  feature_list_.InitWithFeatures(
-      {history::HistoryService::kHistoryServiceUsesTaskScheduler}, {});
-
   ShortcutsBackendFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_,
       base::BindRepeating(
           &ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting));
   backend_ = ShortcutsBackendFactory::GetForProfile(&profile_);
   ASSERT_TRUE(backend_.get());
-  ASSERT_TRUE(profile_.CreateHistoryService(true, false));
+  ASSERT_TRUE(profile_.CreateHistoryService());
   provider_ = new ShortcutsProvider(&client_);
   PopulateShortcutsBackendWithTestData(client_.GetShortcutsBackend(),
                                        shortcut_test_db,
@@ -90,9 +85,7 @@ void ShortcutsProviderExtensionTest::SetUp() {
 void ShortcutsProviderExtensionTest::TearDown() {
   // Run all pending tasks or else some threads hold on to the message loop
   // and prevent it from being deleted.
-  base::RunLoop().RunUntilIdle();
-
-  profile_.BlockUntilHistoryBackendDestroyed();
+  task_environment_.RunUntilIdle();
 }
 
 // Actual tests ---------------------------------------------------------------

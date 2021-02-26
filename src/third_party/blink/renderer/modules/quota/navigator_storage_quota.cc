@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/modules/quota/navigator_storage_quota.h"
 
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/quota/deprecated_storage_quota.h"
@@ -69,7 +70,7 @@ StorageManager* NavigatorStorageQuota::storage(Navigator& navigator) {
 DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage() const {
   if (!temporary_storage_) {
     temporary_storage_ = MakeGarbageCollected<DeprecatedStorageQuota>(
-        DeprecatedStorageQuota::kTemporary);
+        DeprecatedStorageQuota::kTemporary, GetSupplementable()->DomWindow());
   }
   return temporary_storage_.Get();
 }
@@ -77,20 +78,32 @@ DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage() const {
 DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage() const {
   if (!persistent_storage_) {
     persistent_storage_ = MakeGarbageCollected<DeprecatedStorageQuota>(
-        DeprecatedStorageQuota::kPersistent);
+        DeprecatedStorageQuota::kPersistent, GetSupplementable()->DomWindow());
   }
   return persistent_storage_.Get();
 }
 
 StorageManager* NavigatorStorageQuota::storage() const {
   if (!storage_manager_) {
-    storage_manager_ = MakeGarbageCollected<StorageManager>(
-        GetSupplementable() ? GetSupplementable()->DomWindow() : nullptr);
+    mojo::Remote<mojom::blink::QuotaManagerHost> backend;
+
+    auto* supplementable = GetSupplementable();
+    auto* execution_context =
+        supplementable ? supplementable->GetExecutionContext() : nullptr;
+    if (execution_context) {
+      if (&execution_context->GetBrowserInterfaceBroker() !=
+          &GetEmptyBrowserInterfaceBroker()) {
+        execution_context->GetBrowserInterfaceBroker().GetInterface(
+            backend.BindNewPipeAndPassReceiver());
+      }
+    }
+    storage_manager_ = MakeGarbageCollected<StorageManager>(execution_context,
+                                                            std::move(backend));
   }
   return storage_manager_.Get();
 }
 
-void NavigatorStorageQuota::Trace(Visitor* visitor) {
+void NavigatorStorageQuota::Trace(Visitor* visitor) const {
   visitor->Trace(temporary_storage_);
   visitor->Trace(persistent_storage_);
   visitor->Trace(storage_manager_);

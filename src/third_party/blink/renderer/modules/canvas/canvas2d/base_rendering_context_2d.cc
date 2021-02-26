@@ -8,6 +8,7 @@
 #include <cmath>
 #include <memory>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/public/common/features.h"
@@ -32,7 +33,25 @@ const char BaseRenderingContext2D::kDefaultFont[] = "10px sans-serif";
 const char BaseRenderingContext2D::kInheritDirectionString[] = "inherit";
 const char BaseRenderingContext2D::kRtlDirectionString[] = "rtl";
 const char BaseRenderingContext2D::kLtrDirectionString[] = "ltr";
+const char BaseRenderingContext2D::kAutoKerningString[] = "auto";
+const char BaseRenderingContext2D::kNormalKerningString[] = "normal";
+const char BaseRenderingContext2D::kNoneKerningString[] = "none";
+const char BaseRenderingContext2D::kNormalVariantString[] = "normal";
+const char BaseRenderingContext2D::kSmallCapsVariantString[] = "small-caps";
+const char BaseRenderingContext2D::kAllSmallCapsVariantString[] =
+    "all-small-caps";
+const char BaseRenderingContext2D::kPetiteVariantString[] = "petite-caps";
+const char BaseRenderingContext2D::kAllPetiteVariantString[] =
+    "all-petite-caps";
+const char BaseRenderingContext2D::kUnicaseVariantString[] = "unicase";
+const char BaseRenderingContext2D::kTitlingCapsVariantString[] = "titling-caps";
 const double BaseRenderingContext2D::kCDeviceScaleFactor = 1.0;
+const char BaseRenderingContext2D::kAutoRendering[] = "auto";
+const char BaseRenderingContext2D::kOptimizeSpeedRendering[] = "optimizespeed";
+const char BaseRenderingContext2D::kOptimizeLegibilityRendering[] =
+    "optimizelegibility";
+const char BaseRenderingContext2D::kGeometricPrecisionRendering[] =
+    "geometricprecision";
 
 BaseRenderingContext2D::BaseRenderingContext2D()
     : clip_antialiasing_(kNotAntiAliased), origin_tainted_by_content_(false) {
@@ -94,13 +113,13 @@ void BaseRenderingContext2D::restore() {
     return;
   // Verify that the current state's transform is invertible.
   if (GetState().IsTransformInvertible())
-    path_.Transform(GetState().Transform());
+    path_.Transform(GetState().GetTransform());
 
   state_stack_.pop_back();
   state_stack_.back()->ClearResolvedFilter();
 
   if (GetState().IsTransformInvertible())
-    path_.Transform(GetState().Transform().Inverse());
+    path_.Transform(GetState().GetTransform().Inverse());
 
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
 
@@ -120,7 +139,8 @@ void BaseRenderingContext2D::RestoreMatrixClipStack(cc::PaintCanvas* c) const {
     c->setMatrix(SkMatrix::I());
     if (curr_state->Get()) {
       curr_state->Get()->PlaybackClips(c);
-      c->setMatrix(AffineTransformToSkMatrix(curr_state->Get()->Transform()));
+      c->setMatrix(
+          TransformationMatrixToSkMatrix(curr_state->Get()->GetTransform()));
     }
     c->save();
   }
@@ -137,7 +157,7 @@ void BaseRenderingContext2D::UnwindStateStack() {
   }
 }
 
-void BaseRenderingContext2D::Reset() {
+void BaseRenderingContext2D::reset() {
   ValidateStateStack();
   UnwindStateStack();
   state_stack_.resize(1);
@@ -174,6 +194,20 @@ static inline void ConvertCanvasStyleToUnionType(
   return_value.SetString(style->GetColor());
 }
 
+void BaseRenderingContext2D::IdentifiabilityMaybeUpdateForStyleUnion(
+    const StringOrCanvasGradientOrCanvasPattern& style) {
+  if (style.IsString()) {
+    identifiability_study_helper_.MaybeUpdateBuilder(
+        IdentifiabilityBenignStringToken(style.GetAsString()));
+  } else if (style.IsCanvasPattern()) {
+    identifiability_study_helper_.MaybeUpdateBuilder(
+        style.GetAsCanvasPattern()->GetIdentifiableToken());
+  } else if (style.IsCanvasGradient()) {
+    identifiability_study_helper_.MaybeUpdateBuilder(
+        style.GetAsCanvasGradient()->GetIdentifiableToken());
+  }
+}
+
 void BaseRenderingContext2D::strokeStyle(
     StringOrCanvasGradientOrCanvasPattern& return_value) const {
   ConvertCanvasStyleToUnionType(GetState().StrokeStyle(), return_value);
@@ -182,6 +216,8 @@ void BaseRenderingContext2D::strokeStyle(
 void BaseRenderingContext2D::setStrokeStyle(
     const StringOrCanvasGradientOrCanvasPattern& style) {
   DCHECK(!style.IsNull());
+  identifiability_study_helper_.MaybeUpdateBuilder(CanvasOps::kSetStrokeStyle);
+  IdentifiabilityMaybeUpdateForStyleUnion(style);
 
   String color_string;
   CanvasStyle* canvas_style = nullptr;
@@ -225,6 +261,9 @@ void BaseRenderingContext2D::setFillStyle(
     const StringOrCanvasGradientOrCanvasPattern& style) {
   DCHECK(!style.IsNull());
   ValidateStateStack();
+  identifiability_study_helper_.MaybeUpdateBuilder(CanvasOps::kSetFillStyle);
+  IdentifiabilityMaybeUpdateForStyleUnion(style);
+
   String color_string;
   CanvasStyle* canvas_style = nullptr;
   if (style.IsString()) {
@@ -442,11 +481,11 @@ void BaseRenderingContext2D::scale(double sx, double sy) {
   if (!std::isfinite(sx) || !std::isfinite(sy))
     return;
 
-  AffineTransform new_transform = GetState().Transform();
+  TransformationMatrix new_transform = GetState().GetTransform();
   float fsx = clampTo<float>(sx);
   float fsy = clampTo<float>(sy);
   new_transform.ScaleNonUniform(fsx, fsy);
-  if (GetState().Transform() == new_transform)
+  if (GetState().GetTransform() == new_transform)
     return;
 
   ModifiableState().SetTransform(new_transform);
@@ -465,9 +504,9 @@ void BaseRenderingContext2D::rotate(double angle_in_radians) {
   if (!std::isfinite(angle_in_radians))
     return;
 
-  AffineTransform new_transform = GetState().Transform();
-  new_transform.RotateRadians(angle_in_radians);
-  if (GetState().Transform() == new_transform)
+  TransformationMatrix new_transform = GetState().GetTransform();
+  new_transform.Rotate(rad2deg(angle_in_radians));
+  if (GetState().GetTransform() == new_transform)
     return;
 
   ModifiableState().SetTransform(new_transform);
@@ -487,12 +526,12 @@ void BaseRenderingContext2D::translate(double tx, double ty) {
   if (!std::isfinite(tx) || !std::isfinite(ty))
     return;
 
-  AffineTransform new_transform = GetState().Transform();
+  TransformationMatrix new_transform = GetState().GetTransform();
   // clamp to float to avoid float cast overflow when used as SkScalar
   float ftx = clampTo<float>(tx);
   float fty = clampTo<float>(ty);
   new_transform.Translate(ftx, fty);
-  if (GetState().Transform() == new_transform)
+  if (GetState().GetTransform() == new_transform)
     return;
 
   ModifiableState().SetTransform(new_transform);
@@ -524,16 +563,16 @@ void BaseRenderingContext2D::transform(double m11,
   float fdx = clampTo<float>(dx);
   float fdy = clampTo<float>(dy);
 
-  AffineTransform transform(fm11, fm12, fm21, fm22, fdx, fdy);
-  AffineTransform new_transform = GetState().Transform() * transform;
-  if (GetState().Transform() == new_transform)
+  TransformationMatrix transform(fm11, fm12, fm21, fm22, fdx, fdy);
+  TransformationMatrix new_transform = GetState().GetTransform() * transform;
+  if (GetState().GetTransform() == new_transform)
     return;
 
   ModifiableState().SetTransform(new_transform);
   if (!GetState().IsTransformInvertible())
     return;
 
-  c->concat(AffineTransformToSkMatrix(transform));
+  c->concat(TransformationMatrixToSkMatrix(transform));
   path_.Transform(transform.Inverse());
 }
 
@@ -542,7 +581,7 @@ void BaseRenderingContext2D::resetTransform() {
   if (!c)
     return;
 
-  AffineTransform ctm = GetState().Transform();
+  TransformationMatrix ctm = GetState().GetTransform();
   bool invertible_ctm = GetState().IsTransformInvertible();
   // It is possible that CTM is identity while CTM is not invertible.
   // When CTM becomes non-invertible, realizeSaves() can make CTM identity.
@@ -551,7 +590,7 @@ void BaseRenderingContext2D::resetTransform() {
 
   // resetTransform() resolves the non-invertible CTM state.
   ModifiableState().ResetTransform();
-  c->setMatrix(AffineTransformToSkMatrix(AffineTransform()));
+  c->setMatrix(TransformationMatrixToSkMatrix(TransformationMatrix()));
 
   if (invertible_ctm)
     path_.Transform(ctm);
@@ -595,7 +634,7 @@ void BaseRenderingContext2D::setTransform(DOMMatrix2DInit* transform,
 }
 
 DOMMatrix* BaseRenderingContext2D::getTransform() {
-  const AffineTransform& t = GetState().Transform();
+  const TransformationMatrix& t = GetState().GetTransform();
   DOMMatrix* m = DOMMatrix::Create();
   m->setA(t.A());
   m->setB(t.B());
@@ -642,7 +681,10 @@ void BaseRenderingContext2D::DrawPathInternal(
        { c->drawPath(sk_path, *flags); },
        [](const SkIRect& rect)  // overdraw test lambda
        { return false; },
-       bounds, paint_type);
+       bounds, paint_type,
+       GetState().HasPattern(paint_type)
+           ? CanvasRenderingContext2DState::kNonOpaqueImage
+           : CanvasRenderingContext2DState::kNoImage);
 }
 
 static SkPathFillType ParseWinding(const String& winding_rule_string) {
@@ -699,15 +741,25 @@ void BaseRenderingContext2D::fillRect(double x,
   // pattern was unaccelerated is because it was not possible to hold that image
   // in an accelerated texture - that is, into the GPU). That's why we disable
   // the acceleration to be sure that it will work.
-  if (IsAccelerated() && GetState().HasPattern() &&
-      !GetState().PatternIsAccelerated())
+  if (IsAccelerated() &&
+      GetState().HasPattern(CanvasRenderingContext2DState::kFillPaintType) &&
+      !GetState().PatternIsAccelerated(
+          CanvasRenderingContext2DState::kFillPaintType)) {
     DisableAcceleration();
+    base::UmaHistogramEnumeration(
+        "Blink.Canvas.GPUFallbackToCPU",
+        GPUFallbackToCPUScenario::kLargePatternDrawnToGPU);
+  }
+
   SkRect rect = SkRect::MakeXYWH(fx, fy, fwidth, fheight);
   Draw([&rect](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
        { c->drawRect(rect, *flags); },
        [&rect, this](const SkIRect& clip_bounds)  // overdraw test lambda
        { return RectContainsTransformedRect(rect, clip_bounds); },
-       rect, CanvasRenderingContext2DState::kFillPaintType);
+       rect, CanvasRenderingContext2DState::kFillPaintType,
+       GetState().HasPattern(CanvasRenderingContext2DState::kFillPaintType)
+           ? CanvasRenderingContext2DState::kNonOpaqueImage
+           : CanvasRenderingContext2DState::kNoImage);
 }
 
 static void StrokeRectOnCanvas(const FloatRect& rect,
@@ -755,7 +807,10 @@ void BaseRenderingContext2D::strokeRect(double x,
        { StrokeRectOnCanvas(rect, c, flags); },
        [](const SkIRect& clip_bounds)  // overdraw test lambda
        { return false; },
-       bounds, CanvasRenderingContext2DState::kStrokePaintType);
+       bounds, CanvasRenderingContext2DState::kStrokePaintType,
+       GetState().HasPattern(CanvasRenderingContext2DState::kStrokePaintType)
+           ? CanvasRenderingContext2DState::kNonOpaqueImage
+           : CanvasRenderingContext2DState::kNoImage);
 }
 
 void BaseRenderingContext2D::ClipInternal(const Path& path,
@@ -811,7 +866,7 @@ bool BaseRenderingContext2D::IsPointInPathInternal(
   if (!std::isfinite(x) || !std::isfinite(y))
     return false;
   FloatPoint point(clampTo<float>(x), clampTo<float>(y));
-  AffineTransform ctm = GetState().Transform();
+  TransformationMatrix ctm = GetState().GetTransform();
   FloatPoint transformed_point = ctm.Inverse().MapPoint(point);
 
   return path.Contains(transformed_point,
@@ -840,7 +895,7 @@ bool BaseRenderingContext2D::IsPointInStrokeInternal(const Path& path,
   if (!std::isfinite(x) || !std::isfinite(y))
     return false;
   FloatPoint point(clampTo<float>(x), clampTo<float>(y));
-  AffineTransform ctm = GetState().Transform();
+  AffineTransform ctm = GetState().GetAffineTransform();
   FloatPoint transformed_point = ctm.Inverse().MapPoint(point);
 
   StrokeData stroke_data;
@@ -949,17 +1004,16 @@ static inline CanvasImageSource* ToImageSourceInternal(
             .IsEmpty()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kInvalidStateError,
-          String::Format("The image argument is a canvas element with a width "
-                         "or height of 0."));
+          "The image argument is a canvas element with a width "
+          "or height of 0.");
       return nullptr;
     }
     return value.GetAsHTMLCanvasElement();
   }
   if (value.IsImageBitmap()) {
     if (static_cast<ImageBitmap*>(value.GetAsImageBitmap())->IsNeutered()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kInvalidStateError,
-          String::Format("The image source is detached"));
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        "The image source is detached");
       return nullptr;
     }
     return value.GetAsImageBitmap();
@@ -967,9 +1021,8 @@ static inline CanvasImageSource* ToImageSourceInternal(
   if (value.IsOffscreenCanvas()) {
     if (static_cast<OffscreenCanvas*>(value.GetAsOffscreenCanvas())
             ->IsNeutered()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kInvalidStateError,
-          String::Format("The image source is detached"));
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        "The image source is detached");
       return nullptr;
     }
     if (static_cast<OffscreenCanvas*>(value.GetAsOffscreenCanvas())
@@ -977,8 +1030,8 @@ static inline CanvasImageSource* ToImageSourceInternal(
             .IsEmpty()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kInvalidStateError,
-          String::Format("The image argument is an OffscreenCanvas element "
-                         "with a width or height of 0."));
+          "The image argument is an OffscreenCanvas element "
+          "with a width or height of 0.");
       return nullptr;
     }
     return value.GetAsOffscreenCanvas();
@@ -1179,9 +1232,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   FloatSize default_object_size(Width(), Height());
   SourceImageStatus source_image_status = kInvalidSourceImageStatus;
   if (!image_source->IsVideoElement()) {
-    AccelerationHint hint =
-        IsAccelerated() ? kPreferAcceleration : kPreferNoAcceleration;
-    image = image_source->GetSourceImageForCanvas(&source_image_status, hint,
+    image = image_source->GetSourceImageForCanvas(&source_image_status,
                                                   default_object_size);
     if (source_image_status == kUndecodableSourceImageStatus) {
       exception_state.ThrowDOMException(
@@ -1317,7 +1368,7 @@ bool BaseRenderingContext2D::RectContainsTransformedRect(
   FloatQuad transformed_quad(
       FloatRect(transformed_rect.x(), transformed_rect.y(),
                 transformed_rect.width(), transformed_rect.height()));
-  return GetState().Transform().MapQuad(quad).ContainsQuad(transformed_quad);
+  return GetState().GetTransform().MapQuad(quad).ContainsQuad(transformed_quad);
 }
 
 CanvasGradient* BaseRenderingContext2D::createLinearGradient(double x0,
@@ -1372,6 +1423,22 @@ CanvasGradient* BaseRenderingContext2D::createRadialGradient(
   return gradient;
 }
 
+CanvasGradient* BaseRenderingContext2D::createConicGradient(double startAngle,
+                                                            double centerX,
+                                                            double centerY) {
+  if (!std::isfinite(startAngle) || !std::isfinite(centerX) ||
+      !std::isfinite(centerY))
+    return nullptr;
+
+  // clamp to float to avoid float cast overflow
+  float a = clampTo<float>(startAngle);
+  float x = clampTo<float>(centerX);
+  float y = clampTo<float>(centerY);
+
+  auto* gradient = MakeGarbageCollected<CanvasGradient>(a, FloatPoint(x, y));
+  return gradient;
+}
+
 CanvasPattern* BaseRenderingContext2D::createPattern(
     ScriptState* script_state,
     const CanvasImageSourceUnion& image_source,
@@ -1405,8 +1472,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
 
   FloatSize default_object_size(Width(), Height());
   scoped_refptr<Image> image_for_rendering =
-      image_source->GetSourceImageForCanvas(&status, kPreferNoAcceleration,
-                                            default_object_size);
+      image_source->GetSourceImageForCanvas(&status, default_object_size);
 
   switch (status) {
     case kNormalSourceImageStatus:
@@ -1457,7 +1523,7 @@ bool BaseRenderingContext2D::ComputeDirtyRect(
     const FloatRect& local_rect,
     const SkIRect& transformed_clip_bounds,
     SkIRect* dirty_rect) {
-  FloatRect canvas_rect = GetState().Transform().MapRect(local_rect);
+  FloatRect canvas_rect = GetState().GetTransform().MapRect(local_rect);
 
   if (AlphaChannel(GetState().ShadowColor())) {
     FloatRect shadow_rect(canvas_rect);
@@ -1529,26 +1595,6 @@ ImageData* BaseRenderingContext2D::createImageData(
                                     exception_state);
 }
 
-ImageData* BaseRenderingContext2D::createImageData(
-    ImageDataArray& data_array,
-    unsigned width,
-    unsigned height,
-    ExceptionState& exception_state) const {
-  return ImageData::CreateImageData(data_array, width, height,
-                                    ImageDataColorSettings::Create(),
-                                    exception_state);
-}
-
-ImageData* BaseRenderingContext2D::createImageData(
-    ImageDataArray& data_array,
-    unsigned width,
-    unsigned height,
-    ImageDataColorSettings* color_settings,
-    ExceptionState& exception_state) const {
-  return ImageData::CreateImageData(data_array, width, height, color_settings,
-                                    exception_state);
-}
-
 ImageData* BaseRenderingContext2D::getImageData(
     int sx,
     int sy,
@@ -1613,11 +1659,21 @@ ImageData* BaseRenderingContext2D::getImageData(
   // Deferred offscreen canvases might have recorded commands, make sure
   // that those get drawn here
   FinalizeFrame();
-  scoped_refptr<StaticBitmapImage> snapshot = GetImage(kPreferNoAcceleration);
+  scoped_refptr<StaticBitmapImage> snapshot = GetImage();
 
-  // GetImagedata is faster in Unaccelerated canvases
-  if (IsAccelerated())
-    DisableAcceleration();
+  // TODO(crbug.com/1101055): Remove the check for NewCanvas2DAPI flag once
+  // released.
+  // New Canvas2D API utilizes willReadFrequently attribute that let the users
+  // indicate if a canvas will be read frequently through getImageData, thus
+  // uses CPU rendering from the start in such cases. (crbug.com/1090180)
+  if (!RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
+    // GetImagedata is faster in Unaccelerated canvases
+    if (IsAccelerated()) {
+      DisableAcceleration();
+      base::UmaHistogramEnumeration("Blink.Canvas.GPUFallbackToCPU",
+                                    GPUFallbackToCPUScenario::kGetImageData);
+    }
+  }
 
   size_t size_in_bytes;
   if (!StaticBitmapImage::GetSizeInBytes(image_data_rect, color_params)
@@ -1781,7 +1837,8 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
            .AssignIfValid(&data_length))
     return;
 
-  if (data_color_params.NeedsColorConversion(context_color_params) ||
+  if (data_color_params.ColorSpace() != context_color_params.ColorSpace() ||
+      data_color_params.PixelFormat() != context_color_params.PixelFormat() ||
       PixelFormat() == CanvasPixelFormat::kF16) {
     std::unique_ptr<uint8_t[]> converted_pixels(new uint8_t[data_length]);
     if (data->ImageDataInCanvasColorSettings(
@@ -1792,8 +1849,11 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
                    IntPoint(dest_offset));
     }
   } else {
-    PutByteArray(data->data()->Data(), IntSize(data->width(), data->height()),
-                 source_rect, IntPoint(dest_offset));
+    // TODO(crbug.com/1115317): PutByteArray works with uint8 only. It should be
+    // compatible with uint16 and float32.
+    PutByteArray(data->data().GetAsUint8ClampedArray()->Data(),
+                 IntSize(data->width(), data->height()), source_rect,
+                 IntPoint(dest_offset));
   }
 
   if (!IsPaint2D()) {
@@ -1836,7 +1896,13 @@ void BaseRenderingContext2D::PutByteArray(const unsigned char* source,
   DCHECK_GE(origin_y, 0);
   DCHECK_LT(origin_y, source_rect.MaxY());
 
-  const size_t src_bytes_per_row = bytes_per_pixel * source_size.Width();
+  const base::CheckedNumeric<size_t> src_bytes_per_row_checked =
+      base::CheckMul(bytes_per_pixel, source_size.Width());
+  if (!src_bytes_per_row_checked.IsValid()) {
+    VLOG(1) << "Invalid sizes";
+    return;
+  }
+  const size_t src_bytes_per_row = src_bytes_per_row_checked.ValueOrDie();
   const void* src_addr =
       source + origin_y * src_bytes_per_row + origin_x * bytes_per_pixel;
 
@@ -1852,17 +1918,11 @@ void BaseRenderingContext2D::PutByteArray(const unsigned char* source,
     alpha_type = kUnpremul_SkAlphaType;
   }
 
-  SkImageInfo info;
-  if (ColorParams().GetSkColorSpaceForSkSurfaces()) {
-    info = SkImageInfo::Make(source_rect.Width(), source_rect.Height(),
-                             ColorParams().GetSkColorType(), alpha_type,
-                             ColorParams().GetSkColorSpaceForSkSurfaces());
-    if (info.colorType() == kN32_SkColorType)
-      info = info.makeColorType(kRGBA_8888_SkColorType);
-  } else {
-    info = SkImageInfo::Make(source_rect.Width(), source_rect.Height(),
-                             kRGBA_8888_SkColorType, alpha_type);
-  }
+  SkImageInfo info = SkImageInfo::Make(
+      source_rect.Width(), source_rect.Height(), ColorParams().GetSkColorType(),
+      alpha_type, ColorParams().GetSkColorSpace());
+  if (info.colorType() == kN32_SkColorType)
+    info = info.makeColorType(kRGBA_8888_SkColorType);
   WritePixels(info, src_addr, src_bytes_per_row, dest_x, dest_y);
 }
 
@@ -1966,6 +2026,18 @@ void BaseRenderingContext2D::CheckOverdraw(
   WillOverwriteCanvas();
 }
 
+double BaseRenderingContext2D::textLetterSpacing() const {
+  return GetState().GetTextLetterSpacing();
+}
+
+double BaseRenderingContext2D::textWordSpacing() const {
+  return GetState().GetTextWordSpacing();
+}
+
+String BaseRenderingContext2D::textRendering() const {
+  return ToString(GetState().GetTextRendering());
+}
+
 float BaseRenderingContext2D::GetFontBaseline(
     const SimpleFontData& font_data) const {
   return TextMetrics::GetFontBaseline(GetState().GetTextBaseline(), font_data);
@@ -1976,6 +2048,8 @@ String BaseRenderingContext2D::textAlign() const {
 }
 
 void BaseRenderingContext2D::setTextAlign(const String& s) {
+  identifiability_study_helper_.MaybeUpdateBuilder(
+      CanvasOps::kSetTextAlign, IdentifiabilityBenignStringToken(s));
   TextAlign align;
   if (!ParseTextAlign(s, align))
     return;
@@ -1989,6 +2063,8 @@ String BaseRenderingContext2D::textBaseline() const {
 }
 
 void BaseRenderingContext2D::setTextBaseline(const String& s) {
+  identifiability_study_helper_.MaybeUpdateBuilder(
+      CanvasOps::kSetTextBaseline, IdentifiabilityBenignStringToken(s));
   TextBaseline baseline;
   if (!ParseTextBaseline(s, baseline))
     return;
@@ -1997,7 +2073,15 @@ void BaseRenderingContext2D::setTextBaseline(const String& s) {
   ModifiableState().SetTextBaseline(baseline);
 }
 
-void BaseRenderingContext2D::Trace(Visitor* visitor) {
+String BaseRenderingContext2D::fontKerning() const {
+  return FontDescription::ToString(GetState().GetFontKerning());
+}
+
+String BaseRenderingContext2D::fontVariantCaps() const {
+  return FontDescription::ToString(GetState().GetFontVariantCaps());
+}
+
+void BaseRenderingContext2D::Trace(Visitor* visitor) const {
   visitor->Trace(state_stack_);
 }
 

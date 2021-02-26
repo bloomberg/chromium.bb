@@ -34,7 +34,6 @@
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "services/service_manager/embedder/descriptors.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace {
@@ -93,7 +92,7 @@ class FFDecryptorClientListener
 
   void ParseSignons(const base::FilePath& sqlite_file,
                     ParseSignonsCallback callback) override {
-    std::vector<autofill::PasswordForm> forms;
+    std::vector<importer::ImportedPasswordForm> forms;
     decryptor_.ReadAndParseSignons(sqlite_file, &forms);
     std::move(callback).Run(forms);
   }
@@ -154,7 +153,7 @@ class FFDecryptorServerChannelListener {
 
   // Results of the calls.
   base::string16 result_string_;
-  std::vector<autofill::PasswordForm> result_vector_;
+  std::vector<importer::ImportedPasswordForm> result_vector_;
   bool result_bool_;
   // True if mojo call succeeded and data in above variables is valid.
   bool got_result_;
@@ -173,8 +172,9 @@ class FFDecryptorServerChannelListener {
     std::move(quit_closure).Run();
   }
 
-  void ParseSignonsReply(base::OnceClosure quit_closure,
-                         const std::vector<autofill::PasswordForm>& forms) {
+  void ParseSignonsReply(
+      base::OnceClosure quit_closure,
+      const std::vector<importer::ImportedPasswordForm>& forms) {
     result_vector_ = forms;
     got_result_ = true;
     std::move(quit_closure).Run();
@@ -241,12 +241,12 @@ base::string16 FFUnitTestDecryptorProxy::Decrypt(const std::string& crypt) {
   return base::string16();
 }
 
-std::vector<autofill::PasswordForm> FFUnitTestDecryptorProxy::ParseSignons(
-    const base::FilePath& signons_path) {
+std::vector<importer::ImportedPasswordForm>
+FFUnitTestDecryptorProxy::ParseSignons(const base::FilePath& signons_path) {
   listener_->ParseSignons(signons_path);
   if (listener_->got_result_)
     return listener_->result_vector_;
-  return std::vector<autofill::PasswordForm>();
+  return std::vector<importer::ImportedPasswordForm>();
 }
 
 // Entry function in child process.

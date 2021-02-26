@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+
 import * as SDKModule from './sdk.js';
 
 self.SDK = self.SDK || {};
@@ -251,6 +253,5 @@ SDK.TracingModel.DevToolsMetadataEventCategory = SDKModule.TracingModel.DevTools
 SDK.TracingModel.Event = SDKModule.TracingModel.Event;
 
 self.SDK.targetManager = SDKModule.SDKModel.TargetManager.instance();
-self.SDK.isolateManager = new SDKModule.IsolateManager.IsolateManager();
-self.SDK.domModelUndoStack = new SDKModule.DOMModel.DOMModelUndoStack();
-self.SDK.networkLog = new SDKModule.NetworkLog.NetworkLog();
+self.SDK.isolateManager = SDKModule.IsolateManager.IsolateManager.instance({forceNew: true});
+self.SDK.domModelUndoStack = SDKModule.DOMModel.DOMModelUndoStack.instance();

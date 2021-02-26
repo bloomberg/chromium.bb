@@ -11,7 +11,7 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
@@ -99,17 +99,17 @@ const char* GetStatusString(
 template <DemuxerStream::Type StreamType>
 DecoderStream<StreamType>::DecoderStream(
     std::unique_ptr<DecoderStreamTraits<StreamType>> traits,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     CreateDecodersCB create_decoders_cb,
     MediaLog* media_log)
     : traits_(std::move(traits)),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       media_log_(media_log),
       state_(STATE_UNINITIALIZED),
       stream_(nullptr),
       cdm_context_(nullptr),
       decoder_produced_a_frame_(false),
-      decoder_selector_(task_runner, std::move(create_decoders_cb), media_log),
+      decoder_selector_(task_runner_, std::move(create_decoders_cb), media_log),
       decoding_eos_(false),
       preparing_output_(false),
       pending_decode_requests_(0),
@@ -122,7 +122,7 @@ DecoderStream<StreamType>::DecoderStream(
 template <DemuxerStream::Type StreamType>
 DecoderStream<StreamType>::~DecoderStream() {
   FUNCTION_DVLOG(1);
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (init_cb_) {
     task_runner_->PostTask(FROM_HERE,
@@ -154,7 +154,7 @@ void DecoderStream<StreamType>::Initialize(DemuxerStream* stream,
                                            StatisticsCB statistics_cb,
                                            WaitingCB waiting_cb) {
   FUNCTION_DVLOG(1);
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   DCHECK(!init_cb_);
   DCHECK(init_cb);
@@ -178,7 +178,7 @@ void DecoderStream<StreamType>::Initialize(DemuxerStream* stream,
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::Read(ReadCB read_cb) {
   FUNCTION_DVLOG(3);
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_ != STATE_UNINITIALIZED && state_ != STATE_INITIALIZING)
       << state_;
   // No two reads in the flight at any time.
@@ -216,7 +216,7 @@ void DecoderStream<StreamType>::Read(ReadCB read_cb) {
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::Reset(base::OnceClosure closure) {
   FUNCTION_DVLOG(2);
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_NE(state_, STATE_UNINITIALIZED);
   DCHECK(!reset_cb_);
 
@@ -265,20 +265,24 @@ void DecoderStream<StreamType>::Reset(base::OnceClosure closure) {
 
 template <DemuxerStream::Type StreamType>
 bool DecoderStream<StreamType>::CanReadWithoutStalling() const {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return !ready_outputs_.empty() || !unprepared_outputs_.empty() ||
          (decoder_ && decoder_->CanReadWithoutStalling());
 }
 
 template <>
 bool DecoderStream<DemuxerStream::AUDIO>::CanReadWithoutStalling() const {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return true;
 }
 
 template <DemuxerStream::Type StreamType>
 int DecoderStream<StreamType>::GetMaxDecodeRequests() const {
-  return decoder_->GetMaxDecodeRequests();
+  // The decoder is owned by |decoder_selector_| during reinitialization, so
+  // during that time we disallow decode requests.
+  return state_ != STATE_REINITIALIZING_DECODER
+             ? decoder_->GetMaxDecodeRequests()
+             : 0;
 }
 
 template <>
@@ -287,8 +291,22 @@ int DecoderStream<DemuxerStream::AUDIO>::GetMaxDecodeRequests() const {
 }
 
 template <DemuxerStream::Type StreamType>
+int DecoderStream<StreamType>::GetMaxReadyOutputs() const {
+  // The decoder is owned by |decoder_selector_| during reinitialization, so
+  // during that time we assume the minimum viable number of max ready outputs.
+  return state_ != STATE_REINITIALIZING_DECODER
+             ? decoder_->GetMaxDecodeRequests()
+             : 1;
+}
+
+template <>
+int DecoderStream<DemuxerStream::AUDIO>::GetMaxReadyOutputs() const {
+  return 1;
+}
+
+template <DemuxerStream::Type StreamType>
 bool DecoderStream<StreamType>::CanDecodeMore() const {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   bool buffers_left = !(fallback_buffers_.empty() && decoding_eos_);
 
@@ -301,21 +319,21 @@ bool DecoderStream<StreamType>::CanDecodeMore() const {
 
 template <DemuxerStream::Type StreamType>
 base::TimeDelta DecoderStream<StreamType>::AverageDuration() const {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return duration_tracker_.count() ? duration_tracker_.Average()
                                    : base::TimeDelta();
 }
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::SetPrepareCB(PrepareCB prepare_cb) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   prepare_cb_ = std::move(prepare_cb);
 }
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::SkipPrepareUntil(
     base::TimeDelta start_timestamp) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   skip_prepare_until_timestamp_ = start_timestamp;
 }
 
@@ -335,7 +353,7 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   FUNCTION_DVLOG(1) << ": "
                     << (selected_decoder ? selected_decoder->GetDisplayName()
                                          : "No decoder selected.");
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_ == STATE_INITIALIZING || state_ == STATE_REINITIALIZING_DECODER)
       << state_;
 
@@ -343,8 +361,6 @@ void DecoderStream<StreamType>::OnDecoderSelected(
     DCHECK(init_cb_);
     DCHECK(!read_cb_);
     DCHECK(!reset_cb_);
-  } else if (state_ == STATE_REINITIALIZING_DECODER) {
-    DCHECK(decoder_);
   }
 
   auto* original_stream = stream_;
@@ -487,9 +503,9 @@ void DecoderStream<StreamType>::DecodeInternal(
   const int buffer_size = is_eos ? 0 : buffer->data_size();
   decoder_->Decode(
       std::move(buffer),
-      base::BindRepeating(&DecoderStream<StreamType>::OnDecodeDone,
-                          fallback_weak_factory_.GetWeakPtr(), buffer_size,
-                          decoding_eos_, base::Passed(&trace_event)));
+      base::BindOnce(&DecoderStream<StreamType>::OnDecodeDone,
+                     fallback_weak_factory_.GetWeakPtr(), buffer_size,
+                     decoding_eos_, base::Passed(&trace_event)));
 }
 
 template <DemuxerStream::Type StreamType>
@@ -504,8 +520,8 @@ void DecoderStream<StreamType>::OnDecodeDone(
     int buffer_size,
     bool end_of_stream,
     std::unique_ptr<ScopedDecodeTrace> trace_event,
-    DecodeStatus status) {
-  FUNCTION_DVLOG(3) << ": " << status;
+    Status status) {
+  FUNCTION_DVLOG(status.is_ok() ? 3 : 1) << ": " << status.code();
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_ERROR)
       << state_;
@@ -518,7 +534,7 @@ void DecoderStream<StreamType>::OnDecodeDone(
   if (end_of_stream) {
     DCHECK(!pending_decode_requests_);
     decoding_eos_ = false;
-    if (status == DecodeStatus::OK) {
+    if (status.is_ok()) {
       // Even if no frames were decoded, completing a flush counts as
       // successfully selecting a decoder. This allows back-to-back config
       // changes to select from all decoders.
@@ -536,40 +552,13 @@ void DecoderStream<StreamType>::OnDecodeDone(
   if (reset_cb_)
     return;
 
-  switch (status) {
-    case DecodeStatus::DECODE_ERROR:
-      if (!decoder_produced_a_frame_ &&
-          base::FeatureList::IsEnabled(kFallbackAfterDecodeError)) {
-        pending_decode_requests_ = 0;
-
-        // Prevent all pending decode requests and outputs from those requests
-        // from being called back.
-        fallback_weak_factory_.InvalidateWeakPtrs();
-
-        std::string fallback_message =
-            GetStreamTypeString() +
-            " fallback to new decoder after initial decode error.";
-        FUNCTION_DVLOG(1) << ": " << fallback_message;
-        MEDIA_LOG(WARNING, media_log_) << fallback_message;
-        state_ = STATE_REINITIALIZING_DECODER;
-        SelectDecoder();
-      } else {
-        std::string error_message = GetStreamTypeString() + " decode error!";
-        FUNCTION_DVLOG(1) << ": " << error_message;
-        MEDIA_LOG(ERROR, media_log_) << error_message;
-        state_ = STATE_ERROR;
-        ClearOutputs();
-        if (read_cb_)
-          SatisfyRead(DECODE_ERROR, nullptr);
-      }
-      return;
-
-    case DecodeStatus::ABORTED:
-      // Decoder can return DecodeStatus::ABORTED during Reset() or during
+  switch (status.code()) {
+    case StatusCode::kAborted:
+      // Decoder can return kAborted during Reset() or during
       // destruction.
       return;
 
-    case DecodeStatus::OK:
+    case StatusCode::kOk:
       // Any successful decode counts!
       if (buffer_size > 0)
         traits_->ReportStatistics(statistics_cb_, buffer_size);
@@ -589,6 +578,31 @@ void DecoderStream<StreamType>::OnDecodeDone(
 
       if (state_ == STATE_FLUSHING_DECODER && !pending_decode_requests_)
         ReinitializeDecoder();
+      return;
+
+    default:
+      if (!decoder_produced_a_frame_ &&
+          base::FeatureList::IsEnabled(kFallbackAfterDecodeError)) {
+        MEDIA_LOG(WARNING, media_log_)
+            << GetStreamTypeString()
+            << " decoder fallback after initial decode error.";
+
+        // Prevent all pending decode requests and outputs from those requests
+        // from being called back.
+        fallback_weak_factory_.InvalidateWeakPtrs();
+        pending_decode_requests_ = 0;
+        state_ = STATE_REINITIALIZING_DECODER;
+        SelectDecoder();
+      } else {
+        media_log_->NotifyError(std::move(status));
+        MEDIA_LOG(ERROR, media_log_)
+            << GetStreamTypeString() << " decode error!";
+
+        state_ = STATE_ERROR;
+        ClearOutputs();
+        if (read_cb_)
+          SatisfyRead(DECODE_ERROR, nullptr);
+      }
       return;
   }
 }
@@ -683,7 +697,7 @@ void DecoderStream<StreamType>::OnBufferReady(
   FUNCTION_DVLOG(3) << ": " << status << ", "
                     << (buffer ? buffer->AsHumanReadableString() : "nullptr");
 
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(pending_demuxer_read_);
   if (!decoder_produced_a_frame_) {
     DCHECK(state_ == STATE_ERROR || state_ == STATE_REINITIALIZING_DECODER ||
@@ -820,50 +834,19 @@ void DecoderStream<StreamType>::OnBufferReady(
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::ReinitializeDecoder() {
   FUNCTION_DVLOG(2);
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(state_, STATE_FLUSHING_DECODER);
   DCHECK_EQ(pending_decode_requests_, 0);
 
   state_ = STATE_REINITIALIZING_DECODER;
-
-  // TODO(sandersd): Detect whether a new decoder is required before
-  // attempting reinitialization.
-  traits_->InitializeDecoder(
-      decoder_.get(), traits_->GetDecoderConfig(stream_),
-      stream_->liveness() == DemuxerStream::LIVENESS_LIVE, cdm_context_,
-      base::BindOnce(&DecoderStream<StreamType>::OnDecoderReinitialized,
-                     weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&DecoderStream<StreamType>::OnDecodeOutputReady,
-                          fallback_weak_factory_.GetWeakPtr()),
-      waiting_cb_);
-}
-
-template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::OnDecoderReinitialized(Status status) {
-  FUNCTION_DVLOG(2) << ": success = " << status.is_ok();
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_REINITIALIZING_DECODER);
-
-  // ReinitializeDecoder() can be called in two cases:
-  // 1, Flushing decoder finished (see OnDecodeOutputReady()).
-  // 2, Reset() was called during flushing decoder (see OnDecoderReset()).
-  // Also, Reset() can be called during pending ReinitializeDecoder().
-  // This function needs to handle them all!
-
-  if (!status.is_ok()) {
-    // Reinitialization failed. Try to fall back to one of the remaining
-    // decoders. This will consume at least one decoder so doing it more than
-    // once is safe.
-    SelectDecoder();
-  } else {
-    CompleteDecoderReinitialization(true);
-  }
+  decoder_selector_.PrependDecoder(std::move(decoder_));
+  SelectDecoder();
 }
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::CompleteDecoderReinitialization(bool success) {
   FUNCTION_DVLOG(2);
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(state_, STATE_REINITIALIZING_DECODER);
 
   state_ = success ? STATE_NORMAL : STATE_ERROR;
@@ -901,7 +884,7 @@ void DecoderStream<StreamType>::CompleteDecoderReinitialization(bool success) {
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::ResetDecoder() {
   FUNCTION_DVLOG(2);
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_ERROR || state_ == STATE_END_OF_STREAM)
       << state_;
@@ -914,7 +897,7 @@ void DecoderStream<StreamType>::ResetDecoder() {
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecoderReset() {
   FUNCTION_DVLOG(2);
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_ERROR || state_ == STATE_END_OF_STREAM)
       << state_;
@@ -951,7 +934,7 @@ void DecoderStream<StreamType>::ClearOutputs() {
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::MaybePrepareAnotherOutput() {
   FUNCTION_DVLOG(3);
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_END_OF_STREAM ||
          state_ == STATE_REINITIALIZING_DECODER)
@@ -962,7 +945,7 @@ void DecoderStream<StreamType>::MaybePrepareAnotherOutput() {
     return;
 
   // If there's too many ready outputs, we're done.
-  if (ready_outputs_.size() >= static_cast<size_t>(GetMaxDecodeRequests()))
+  if (ready_outputs_.size() >= static_cast<size_t>(GetMaxReadyOutputs()))
     return;
 
   // Retain a copy to avoid dangling reference in OnPreparedOutputReady().
@@ -980,7 +963,7 @@ template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnPreparedOutputReady(
     scoped_refptr<Output> output) {
   FUNCTION_DVLOG(2);
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // Errors and reset invalidate the WeakPtr factory for this function, so it
   // should only be called in normal and flush states.

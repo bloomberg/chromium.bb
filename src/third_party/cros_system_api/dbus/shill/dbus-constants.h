@@ -55,6 +55,7 @@ const char kAddWakeOnPacketConnectionFunction[] = "AddWakeOnPacketConnection";
 const char kAddWakeOnPacketOfTypesFunction[] = "AddWakeOnPacketOfTypes";
 const char kChangePinFunction[] = "ChangePin";
 const char kEnterPinFunction[] = "EnterPin";
+// Deprecated: crbug.com/938698.
 const char kPerformTDLSOperationFunction[] = "PerformTDLSOperation";
 const char kRegisterFunction[] = "Register";
 const char kRemoveAllWakeOnPacketConnectionsFunction[] =
@@ -110,7 +111,6 @@ const char kCheckPortalListProperty[] = "CheckPortalList";
 const char kIgnoredDNSSearchPathsProperty[] = "IgnoredDNSSearchPaths";
 const char kLinkMonitorTechnologiesProperty[] = "LinkMonitorTechnologies";
 const char kNoAutoConnectTechnologiesProperty[] = "NoAutoConnectTechnologies";
-const char kOfflineModeProperty[] = "OfflineMode";
 const char kProhibitedTechnologiesProperty[] = "ProhibitedTechnologies";
 
 // DHCP property names for both Manager and Service.
@@ -140,6 +140,8 @@ const char kPassphraseRequiredProperty[] = "PassphraseRequired";
 const char kPortalDetectionFailedPhaseProperty[] = "PortalDetectionFailedPhase";
 const char kPortalDetectionFailedStatusProperty[] =
     "PortalDetectionFailedStatus";
+const char kPortalDetectionFailedStatusCodeProperty[] =
+    "PortalDetectionFailedStatusCode";
 const char kPreviousErrorProperty[] = "PreviousError";
 const char kPreviousErrorSerialNumberProperty[] = "PreviousErrorSerialNumber";
 const char kPriorityProperty[] = "Priority";
@@ -210,15 +212,11 @@ const char kSecurityClassProperty[] = "SecurityClass";
 const char kSecurityProperty[] = "Security";
 const char kSSIDProperty[] = "SSID";
 const char kWifiBSsid[] = "WiFi.BSSID";
-const char kWifiFTEnabled[] = "WiFi.FTEnabled";
 const char kWifiFrequencyListProperty[] = "WiFi.FrequencyList";
 const char kWifiFrequency[] = "WiFi.Frequency";
 const char kWifiHexSsid[] = "WiFi.HexSSID";
 const char kWifiHiddenSsid[] = "WiFi.HiddenSSID";
 const char kWifiPhyMode[] = "WiFi.PhyMode";
-const char kWifiPreferredDeviceProperty[] = "WiFi.PreferredDevice";
-const char kWifiProtectedManagementFrameRequiredProperty[] =
-    "WiFi.ProtectedManagementFrameRequired";
 const char kWifiVendorInformationProperty[] = "WiFi.VendorInformation";
 
 // Base VPN Service property names.
@@ -325,6 +323,7 @@ const char kDhcpv6PreferredLeaseDurationSecondsProperty[] =
 // Base Device property names.
 const char kAddressProperty[] = "Address";  // Also used for IPConfig.
 const char kIPConfigsProperty[] = "IPConfigs";
+const char kIPv6DisabledProperty[] = "IPv6Disabled";
 const char kInterfaceProperty[] = "Interface";  // Network interface name.
 const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
 // kNameProperty: Defined above for Service. DEPRECATED (crbug.com/1011136).
@@ -452,6 +451,7 @@ const char kApnNameProperty[] = "name";
 const char kApnLocalizedNameProperty[] = "localized_name";
 const char kApnLanguageProperty[] = "language";
 const char kApnAuthenticationProperty[] = "authentication";
+const char kApnAttachProperty[] = "attach";
 
 // APN authentication property values (as expected by ModemManager).
 const char kApnAuthenticationPap[] = "pap";
@@ -537,12 +537,13 @@ const char kTypePPPoE[] = "pppoe";
 const char kModeManaged[] = "managed";
 
 // Flimflam security options.
-const char kSecurityWpa[] = "wpa";
-const char kSecurityWep[] = "wep";
-const char kSecurityRsn[] = "rsn";
-const char kSecurity8021x[] = "802_1x";
-const char kSecurityPsk[] = "psk";
 const char kSecurityNone[] = "none";
+const char kSecurityWep[] = "wep";
+const char kSecurityPsk[] = "psk";
+const char kSecurityWpa[] = "wpa";
+const char kSecurityRsn[] = "rsn";
+const char kSecurityWpa3[] = "wpa3";
+const char kSecurity8021x[] = "802_1x";
 
 // Compress option values as expected by OpenVPN.
 const char kOpenVPNCompressFramingOnly[] = "";
@@ -585,6 +586,7 @@ const char kErrorOutOfRange[] = "out-of-range";
 const char kErrorPinMissing[] = "pin-missing";
 const char kErrorPppAuthFailed[] = "ppp-auth-failed";
 const char kErrorTooManySTAs[] = "too-many-stas";
+const char kErrorDisconnect[] = "disconnect-failure";
 const char kErrorUnknownFailure[] = "unknown-failure";
 
 // Flimflam error result codes.
@@ -676,12 +678,14 @@ const char kReceiveBitrateProperty[] = "ReceiveBitrate";
 const char kTransmitBitrateProperty[] = "TransmitBitrate";
 const char kTransmitRetriesProperty[] = "TransmitRetries";
 
+// Deprecated: crbug.com/938698.
 // WiFi TDLS operations.
 const char kTDLSDiscoverOperation[] = "Discover";
 const char kTDLSSetupOperation[] = "Setup";
 const char kTDLSStatusOperation[] = "Status";
 const char kTDLSTeardownOperation[] = "Teardown";
 
+// Deprecated: crbug.com/938698.
 // WiFi TDLS states.
 const char kTDLSConnectedState[] = "Connected";
 const char kTDLSDisabledState[] = "Disabled";

@@ -35,8 +35,7 @@ OpenXrTestHelper::OpenXrTestHelper()
     // since openxr_statics is created first, so the first instance returned
     // should be a fake one since openxr_statics does not need to use
     // test_hook_;
-    : create_fake_instance_(true),
-      system_id_(0),
+    : system_id_(0),
       session_(XR_NULL_HANDLE),
       swapchain_(XR_NULL_HANDLE),
       session_state_(XR_SESSION_STATE_UNKNOWN),
@@ -54,7 +53,6 @@ void OpenXrTestHelper::Reset() {
   swapchain_ = XR_NULL_HANDLE;
   session_state_ = XR_SESSION_STATE_UNKNOWN;
 
-  create_fake_instance_ = true;
   system_id_ = 0;
   frame_begin_ = false;
   d3d_device_ = nullptr;
@@ -193,16 +191,6 @@ XrSwapchain OpenXrTestHelper::GetSwapchain() {
 }
 
 XrInstance OpenXrTestHelper::CreateInstance() {
-  // Return the test helper object back to the OpenXrAPIWrapper so it can use
-  // it as the TestHookRegistration.However we have to return different instance
-  // for openxr_statics since openxr loader records instance created and
-  // detroyed. The first instance is used by openxr_statics which does not need
-  // to use test_hook_, So we can give it an arbitrary instance as long as
-  // ValidateInstance method remember it's an valid option.
-  if (create_fake_instance_) {
-    create_fake_instance_ = false;
-    return reinterpret_cast<XrInstance>(this + 1);
-  }
   return reinterpret_cast<XrInstance>(this);
 }
 
@@ -370,8 +358,8 @@ XrResult OpenXrTestHelper::BeginSession() {
 }
 
 XrResult OpenXrTestHelper::EndSession() {
-  RETURN_IF_FALSE(IsSessionRunning(), XR_ERROR_SESSION_NOT_RUNNING,
-                  "EndSession session is not running");
+  // Per OpenXR 1.0 spec: "An application can only call xrEndSession when the
+  // session is in the XR_SESSION_STATE_STOPPING state"
   RETURN_IF(session_state_ != XR_SESSION_STATE_STOPPING,
             XR_ERROR_SESSION_NOT_STOPPING,
             "Session state is not XR_ERROR_SESSION_NOT_STOPPING");
@@ -718,13 +706,13 @@ void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
   base::Optional<gfx::Transform> transform = base::nullopt;
 
   if (reference_spaces_.count(space) == 1) {
-    if (reference_spaces_.at(space).compare(kLocalReferenceSpacePath) == 0) {
-      // this locate space call try to get tranform from stage to local which we
+    if (reference_spaces_.at(space).compare(kStageReferenceSpacePath) == 0) {
+      // This locate space call wants the transform from local to stage which we
       // only need to give it identity matrix.
       transform = gfx::Transform();
     } else if (reference_spaces_.at(space).compare(kViewReferenceSpacePath) ==
                0) {
-      // this locate space try to locate transform of head pose
+      // This locate space call wants the transform of the head pose.
       transform = GetPose();
     } else {
       NOTREACHED()
@@ -884,8 +872,7 @@ XrResult OpenXrTestHelper::ValidateInstance(XrInstance instance) const {
   // The Fake OpenXr Runtime returns this global OpenXrTestHelper object as the
   // instance value on xrCreateInstance.
 
-  RETURN_IF(reinterpret_cast<OpenXrTestHelper*>(instance) != this &&
-                reinterpret_cast<OpenXrTestHelper*>(instance) != (this + 1),
+  RETURN_IF(reinterpret_cast<OpenXrTestHelper*>(instance) != this,
             XR_ERROR_HANDLE_INVALID, "XrInstance invalid");
 
   return XR_SUCCESS;

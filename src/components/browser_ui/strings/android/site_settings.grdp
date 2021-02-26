@@ -30,6 +30,9 @@
   <message name="IDS_CLIPBOARD_PERMISSION_TITLE" desc="Title of the permission to read from clipboard [CHAR-LIMIT=32]">
     Clipboard
   </message>
+  <message name="IDS_WEBSITE_SETTINGS_IDLE_DETECTION" desc="Title of the permission to detect user activity [CHAR-LIMIT=32]">
+    Your presence
+  </message>
   <message name="IDS_JAVASCRIPT_PERMISSION_TITLE" desc="Title of the permission to run javascript [CHAR-LIMIT=32]">
     JavaScript
   </message>
@@ -86,13 +89,6 @@
   </message>
 
   <!-- Site settings supplemental global toggle settings -->
-
-  <message name="IDS_BLOCK_THIRD_PARTY_COOKIES_TITLE" desc="Title for Block Third Party Cookies preference">
-    Block third-party cookies
-  </message>
-  <message name="IDS_BLOCK_THIRD_PARTY_COOKIES_SUMMARY" desc="Summary text for Block Third Party Cookies preference">
-    Prevent third-party websites from saving and reading cookie data
-  </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_QUIET" desc="A setting that, if turned on will enable a quieter permission prompt for notifications.">
     Use quieter messaging (blocks notification prompts from interrupting you)
   </message>
@@ -121,10 +117,10 @@
     Managed by app
   </message>
   <message name="IDS_ANDROID_PERMISSION_OFF" desc="Text at the top of the Website list, explaining to the user that a permission, such as the location service, is turned off. Contains a link to the settings menu to change it.">
-    Turn on permission for Chrome in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    Turn on permission for <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
   <message name="IDS_ANDROID_PERMISSION_OFF_PLURAL" desc="Text at the top of the Website list, explaining to the user that multiple permissions, such as the location service, are turned off. Contains a link to the settings menu to change it.">
-    Turn on permissions for Chrome in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    Turn on permissions for <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
   <message name="IDS_WEBSITE_SETTINGS_EMBEDDED_ON" desc="String used to indicate the embedder origin of a site">
     Embedded on <ph name="WEBSITE_URL">%1$s<ex>google.com</ex></ph>
@@ -141,20 +137,29 @@
   <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_CATEGORY" desc="The headline above all the permissions on the website details page.">
     Permissions
   </message>
+  <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_DESCRIPTION" desc="The description explaining what the website site settings page is for">
+    Control this site's access to your device
+  </message>
   <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOW" desc="Summary text explaining that Chrome will allow a website to access some permission, e.g. JavaScript: allow.">
     Allow
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOW_DSE" desc="Summary text explaining that Chrome will allow the default search engine to access the user's location, both when performed from the address bar and from search result pages. e.g. Location access: Allow for current search engine">
+  <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOW_DSE" desc="Summary text explaining that Chrome will allow the default search engine to access this permission, both when performed from the address bar and from search result pages. e.g. Location access: Allow for current search engine">
     Allow for current search engine
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOWED_DSE" desc="Status message explaining that the default search engine is allowed to access this permission. Displayed in Site Settings page. e.g. Location: Allowed for current search engine">
+    Allowed for current search engine
   </message>
   <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_BLOCK" desc="Summary text explaining that Chrome will block a website from accessing some permission, e.g. JavaScript: block.">
     Block
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_BLOCK_DSE" desc="Summary text explaining that Chrome will block the default search engine from accessing the user's location, both when performed from the address bar and from search result pages. e.g. Location access: Block for current search engine">
+  <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_BLOCK_DSE" desc="Summary text explaining that Chrome will block the default search engine from accessing this permission, both when performed from the address bar and from search result pages. e.g. Location access: Block for current search engine">
     Block for current search engine
   </message>
+  <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_BLOCKED_DSE" desc="Status message explaining that the default search engine is blocked from accessing this permission. Displayed in Site Settings page. e.g. Location: Blocked for current search engine">
+    Blocked for current search engine
+  </message>
   <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_EXCEPTION_LABEL" desc="The label for site exceptions that affect third party cookies.">
-   All cookies, on this site only
+   Including third-party cookies on this site
   </message>
 
   <!-- Site settings Add Exception dialog -->
@@ -168,7 +173,7 @@
   <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_ADD_BUTTON" desc="The label for the button to add a website to a list.">
     Add
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_TOAST" desc="The toast shown when a new site has been added to the whitelist.">
+  <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_TOAST" desc="The toast shown when a new site has been added to the exception list.">
     Site <ph name="SITE_NAME">%1$s<ex>google.com</ex></ph> added
   </message>
   <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_SITE_URL" desc="The label for the input field where the user can type a website URL.">
@@ -208,7 +213,7 @@
     You'll be signed out of all sites.
   </message>
   <message name="IDS_STORAGE_CLEAR_SITE_STORAGE_TITLE" desc="Title of clear storage dialogs used in a couple different places to confirm clearing site storage data. [CHAR-LIMIT=24]">
-    Clear site storage?
+    Clear site data?
   </message>
   <message name="IDS_STORAGE_CLEAR_DIALOG_CLEAR_STORAGE_OPTION" desc="Text of the button that will clear website storage.">
     Clear
@@ -252,7 +257,7 @@
     Block sites from creating a 3D map of your surroundings or tracking camera position
   </message>
   <message name="IDS_ANDROID_AR_CAMERA_PERMISSION_OFF" desc="The message to show when the camera permission needs to be turned on in Android settings in order to use Augmented Reality.">
-    To let Chrome use AR, also turn on camera in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    To let <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> use AR, also turn on camera in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
 
   <!-- Automatic downloads -->
@@ -269,6 +274,18 @@
 
   <!-- Bluetooth -->
 
+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLUETOOTH_ASK" desc="Summary text explaining that the Bluetooth permission is set to ask the user for permission to access individual devices. To be shown in the list of permission categories.">
+    Ask before allowing sites to connect to a device (recommended)
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLUETOOTH_BLOCKED" desc="Summary text explaining that the Bluetooth permission is set to block all requests for access to devices. To be shown in the list of permission categories.">
+    Block sites from connecting to devices
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_BLUETOOTH" desc="Title for Bluetooth settings, which control which of the user's Bluetooth devices can be accessed from websites.">
+    Bluetooth
+  </message>
+
+  <!-- Bluetooth Scanning -->
+
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLUETOOTH_SCANNING_ASK" desc="Summary text explaining that the Bluetooth scanning permission is set to ask the user for permission to do Bluetooth scanning. To be shown in the list of permission categories.">
     Ask when a site wants to discover nearby Bluetooth devices (recommended)
   </message>
@@ -278,11 +295,8 @@
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_CAMERA_ASK" desc="Summary text explaining that sites need to ask for permission before accessing the camera and that it is the recommended setting.">
     Ask first before allowing sites to use your camera (recommended)
   </message>
-  <message name="IDS_CAMERA_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied video access for the website [CHAR-LIMIT=32]">
-    Access your camera
-  </message>
   <message name="IDS_ANDROID_CAMERA_PERMISSION_OFF" desc="The message to show when the camera permission needs to be turned on not just in Chrome, but also in Android settings.">
-    To let Chrome access your camera, also turn on camera in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    To let <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> access your camera, also turn on camera in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
 
   <!-- Clipboard -->
@@ -333,6 +347,14 @@
     Cookies are files created by websites you visit. Sites use them to remember your preferences. Third-party cookies are created by other sites. These sites own some of the content, like ads or images, that you see on the webpage you visit.
   </message>
 
+  <!-- Idle Detection -->
+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_IDLE_DETECTION_ASK" desc="The description for the option to allow sites to ask for permission to access your activity state">
+    Ask when a site wants to know when you're present
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_IDLE_DETECTION_BLOCKED" desc="The description for the option to block sites from accessing your activity state">
+    Block sites from knowing when you're present
+  </message>
+
   <!-- JavaScript -->
 
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_JAVASCRIPT_ALLOWED" desc="Summary text explaining that sites are allowed to run Javascript and that it is the recommended setting.">
@@ -347,9 +369,6 @@
 
   <!-- Location -->
 
-  <message name="IDS_GEOLOCATION_PERMISSION_TITLE" desc="Title for the permission of accessing the current location of a device [CHAR-LIMIT=32]">
-    Location access
-  </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_LOCATION_ASK" desc="Summary text explaining that sites need to ask for permission before knowing location and that it is the recommended setting.">
     Ask before allowing sites to know your location (recommended)
   </message>
@@ -360,19 +379,19 @@
     Location access is off for this device. Turn it on in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
   <message name="IDS_ANDROID_LOCATION_PERMISSION_OFF" desc="The message to show when the location permission needs to be turned on not just in Chrome, but also in Android settings.">
-    To let Chrome access your location, also turn on location in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    To let <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> access your location, also turn on location in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+  </message>
+  <message name="IDS_WEBSITE_LOCATION_SETTINGS" is_accessibility_with_no_ui="true" desc="Accessibility string for the location settings">
+    Open Location Settings
   </message>
 
   <!-- Microphone -->
 
-  <message name="IDS_MIC_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied voice access for the website [CHAR-LIMIT=32]">
-    Access your microphone
-  </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_MIC_ASK" desc="Summary text explaining that sites need to ask for permission before accessing the microphone and that it is the recommended setting.">
     Ask first before allowing sites to use your microphone (recommended)
   </message>
   <message name="IDS_ANDROID_MICROPHONE_PERMISSION_OFF" desc="The message to show when the microphone permission needs to be turned on not just in Chrome, but also in Android settings.">
-    To let Chrome access your microphone, also turn on microphone in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    To let <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> access your microphone, also turn on microphone in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
 
   <!-- Motion/Light sensors -->
@@ -416,11 +435,11 @@
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_ASK" desc="Summary text explaining that sites need to ask for permission before sending notifications.">
     Sites can ask to send notifications
   </message>
-  <message name="IDS_WEBSITE_NOTIFICATION_MANAGED_BY_APP" desc="String used to indicate that notifications are managed by an installed app">
-    Managed by <ph name="APP_NAME">%1$s<ex>Notification App Name</ex></ph>
+  <message name="IDS_WEBSITE_SETTING_MANAGED_BY_APP" desc="String used to indicate that a site setting is managed by an installed app">
+    Managed by <ph name="APP_NAME">%1$s<ex>App Name</ex></ph>
   </message>
   <message name="IDS_ANDROID_NOTIFICATIONS_PERMISSION_OFF" desc="The message to show when the notifications permission needs to be turned on not just in Chrome, but also in Android settings.">
-    To let Chrome send you notifications, also turn on notifications in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    To let <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> send you notifications, also turn on notifications in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
   <message name="IDS_WEBSITE_NOTIFICATION_SETTINGS" desc="Accessibility string for the notification settings">
     Open notification settings
@@ -471,7 +490,7 @@
   <!-- Storage -->
 
   <message name="IDS_WEBSITE_SETTINGS_STORAGE" desc="Title for Storage settings which show how much data websites are storing on the user's device. [CHAR-LIMIT=32]">
-    Storage
+    Data stored
   </message>
   <message name="IDS_NO_SAVED_WEBSITE_SETTINGS" desc="Text to display when there are no saved website settings.">
     Files saved by websites appear here
@@ -480,7 +499,7 @@
     <ph name="STORAGE_AMOUNT">%1$s<ex>2 MB</ex></ph> stored data
   </message>
   <message name="IDS_STORAGE_CLEAR_BUTTON_TITLE" desc="Title of a button in the storage UI used to clear all storage data. [CHAR-LIMIT=24]">
-    Clear site storage
+    Clear all data
   </message>
 
   <!-- USB -->

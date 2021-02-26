@@ -8,14 +8,14 @@
 #include <limits>
 
 #include "base/check.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/insets_f.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 #if defined(OS_IOS)
 #include <CoreGraphics/CoreGraphics.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
@@ -32,7 +32,7 @@ static void AdjustAlongAxis(float dst_origin,
     *origin = std::min(dst_origin + dst_size, *origin + *size) - *size;
 }
 
-#if defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_APPLE)
 RectF::RectF(const CGRect& r)
     : origin_(r.origin.x, r.origin.y), size_(r.size.width, r.size.height) {
 }
@@ -223,9 +223,12 @@ float RectF::ManhattanInternalDistance(const RectF& rect) const {
 }
 
 bool RectF::IsExpressibleAsRect() const {
-  return IsExpressibleAsInt(x()) && IsExpressibleAsInt(y()) &&
-      IsExpressibleAsInt(width()) && IsExpressibleAsInt(height()) &&
-      IsExpressibleAsInt(right()) && IsExpressibleAsInt(bottom());
+  return base::IsValueInRangeForNumericType<int>(x()) &&
+         base::IsValueInRangeForNumericType<int>(y()) &&
+         base::IsValueInRangeForNumericType<int>(width()) &&
+         base::IsValueInRangeForNumericType<int>(height()) &&
+         base::IsValueInRangeForNumericType<int>(right()) &&
+         base::IsValueInRangeForNumericType<int>(bottom());
 }
 
 std::string RectF::ToString() const {

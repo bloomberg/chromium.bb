@@ -41,6 +41,7 @@ source_set("android") {
 android_library("java") {
   sources = [
     "java/src/org/chromium/components/browser_ui/site_settings/AddExceptionPreference.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/AllSiteSettings.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ChosenObjectInfo.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ChosenObjectSettings.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ClearWebsiteStorage.java",
@@ -64,8 +65,6 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsClient.java",
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsFeatureList.java",
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsHelpClient.java",
-    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsPrefClient.java",
-    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsPreference.java",
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsPreferenceFragment.java",
     "java/src/org/chromium/components/browser_ui/site_settings/StorageInfo.java",
     "java/src/org/chromium/components/browser_ui/site_settings/TriStateSiteSettingsPreference.java",
@@ -77,6 +76,7 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/site_settings/WebsitePreferenceBridge.java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  resources_package = "org.chromium.components.browser_ui.site_settings"
   deps = [
     ":java_resources",
     "//base:base_java",
@@ -89,15 +89,20 @@ android_library("java") {
     "//components/embedder_support/android:util_java",
     "//components/location/android:location_java",
     "//components/permissions/android:java",
+    "//components/prefs/android:java",
     "//components/subresource_filter/android:java",
     "//components/url_formatter/android:url_formatter_java",
+    "//components/user_prefs/android:java",
     "//content/public/android:content_java",
     "//services/device/public/java:device_feature_list_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_preference_preference_java",
     "//ui/android:ui_full_java",
     "//ui/android:ui_utils_java",
   ]
+  srcjar_deps =
+      [ "//components/content_settings/android:java_pref_names_srcjar" ]
 }
 
 android_library("javatests") {
@@ -105,7 +110,10 @@ android_library("javatests") {
   sources = [ "javatests/src/org/chromium/components/browser_ui/site_settings/WebsiteAddressTest.java" ]
   deps = [
     ":java",
+    "//base:base_java",
     "//base:base_java_test_support",
+    "//third_party/android_deps:androidx_test_runner_java",
+    "//third_party/junit",
   ]
 }
 
@@ -182,6 +190,7 @@ android_resources("java_resources") {
     "java/res/drawable-xxxhdpi/settings_usb.png",
     "java/res/drawable-xxxhdpi/web_asset.png",
     "java/res/drawable/ic_person_24dp.xml",
+    "java/res/drawable/settings_bluetooth.xml",
     "java/res/layout/add_site_dialog.xml",
     "java/res/layout/clear_data_dialog.xml",
     "java/res/layout/clear_storage.xml",
@@ -191,6 +200,7 @@ android_resources("java_resources") {
     "java/res/layout/website_features.xml",
     "java/res/menu/website_preferences_menu.xml",
     "java/res/values/ids.xml",
+    "java/res/xml/all_site_preferences.xml",
     "java/res/xml/single_website_preferences.xml",
     "java/res/xml/site_settings_preferences.xml",
     "java/res/xml/website_preferences.xml",
@@ -203,5 +213,4 @@ android_resources("java_resources") {
     "//components/permissions/android:java_resources",
     "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
-  custom_package = "org.chromium.components.browser_ui.site_settings"
 }

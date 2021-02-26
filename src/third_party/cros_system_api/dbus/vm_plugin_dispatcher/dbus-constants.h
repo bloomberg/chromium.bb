@@ -14,6 +14,7 @@ const char kVmPluginDispatcherServicePath[] =
 const char kVmPluginDispatcherServiceName[] = "org.chromium.VmPluginDispatcher";
 
 const char kShutdownDispatherMethod[] = "ShutdownDispatcher";
+const char kSendProblemReportMethod[] = "SendProblemReport";
 
 const char kRegisterVmMethod[] = "RegisterVm";
 const char kUnregisterVmMethod[] = "UnregisterVm";

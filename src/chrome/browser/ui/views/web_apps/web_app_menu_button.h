@@ -5,20 +5,20 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_MENU_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_MENU_BUTTON_H_
 
+#include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/views/controls/button/button.h"
 
 class BrowserView;
 
 // The 'app menu' button for a web app window.
-class WebAppMenuButton : public AppMenuButton, public views::ButtonListener {
+class WebAppMenuButton : public AppMenuButton {
  public:
   static int GetMenuButtonSizeForBrowser(Browser* browser);
-
-  explicit WebAppMenuButton(BrowserView* browser_view);
+  explicit WebAppMenuButton(BrowserView* browser_view,
+                            base::string16 accessible_name = base::string16());
   ~WebAppMenuButton() override;
 
   // Sets the color of the menu button icon and highlight.
@@ -27,8 +27,7 @@ class WebAppMenuButton : public AppMenuButton, public views::ButtonListener {
   // Fades the menu button highlight on and off.
   void StartHighlightAnimation();
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* source, const ui::Event& event) override;
+  void ButtonPressed(const ui::Event& event);
 
   // AppMenuButton:
   SkColor GetInkDropBaseColor() const override;

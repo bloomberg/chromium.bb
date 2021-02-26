@@ -11,11 +11,13 @@
       :host dialog {
         --drawer-width: 256px;
         --transition-timing: 200ms ease;
-        background-color: #fff;
+        background-color: var(--cr-drawer-background-color, #fff);
         border: none;
         bottom: 0;
         left: calc(-1 * var(--drawer-width));
         margin: 0;
+        max-height: initial;
+        max-width: initial;
         overflow: hidden;
         padding: 0;
         position: absolute;
@@ -26,7 +28,7 @@
 
       @media (prefers-color-scheme: dark) {
         :host dialog {
-          background: var(--google-grey-900)
+          background: var(--cr-drawer-background-color, var(--google-grey-900))
               linear-gradient(rgba(255, 255, 255, .04), rgba(255, 255, 255, .04));
         }
       }

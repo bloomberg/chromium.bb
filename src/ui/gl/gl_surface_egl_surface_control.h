@@ -13,7 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "ui/gl/android/android_surface_control_compat.h"
+#include "ui/gfx/android/android_surface_control_compat.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl.h"
 
@@ -90,7 +90,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
 
   struct SurfaceState {
     SurfaceState();
-    SurfaceState(const SurfaceControl::Surface& parent,
+    SurfaceState(const gfx::SurfaceControl::Surface& parent,
                  const std::string& name);
     ~SurfaceState();
 
@@ -110,7 +110,9 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
     // one pending.
     bool buffer_updated_in_pending_transaction = true;
 
-    scoped_refptr<SurfaceControl::Surface> surface;
+    // Indicates whether the |surface| will be visible or hidden.
+    bool visibility = true;
+    scoped_refptr<gfx::SurfaceControl::Surface> surface;
   };
 
   struct ResourceRef {
@@ -120,7 +122,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
     ResourceRef(ResourceRef&& other);
     ResourceRef& operator=(ResourceRef&& other);
 
-    scoped_refptr<SurfaceControl::Surface> surface;
+    scoped_refptr<gfx::SurfaceControl::Surface> surface;
     std::unique_ptr<base::android::ScopedHardwareBufferFenceSync> scoped_buffer;
   };
   using ResourceRefs = base::flat_map<ASurfaceControl*, ResourceRef>;
@@ -132,9 +134,44 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
     PendingPresentationCallback(PendingPresentationCallback&& other);
     PendingPresentationCallback& operator=(PendingPresentationCallback&& other);
 
+    base::TimeTicks available_time;
+    base::TimeTicks ready_time;
     base::TimeTicks latch_time;
+
     base::ScopedFD present_fence;
     PresentationCallback callback;
+  };
+
+  struct PrimaryPlaneFences {
+    PrimaryPlaneFences();
+    ~PrimaryPlaneFences();
+
+    PrimaryPlaneFences(PrimaryPlaneFences&& other);
+    PrimaryPlaneFences& operator=(PrimaryPlaneFences&& other);
+
+    base::ScopedFD available_fence;
+    base::ScopedFD ready_fence;
+  };
+
+  using TransactionId = uint64_t;
+  class TransactionAckTimeoutManager {
+   public:
+    TransactionAckTimeoutManager(
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+    ~TransactionAckTimeoutManager();
+
+    void ScheduleHangDetection();
+    void OnTransactionAck();
+
+   private:
+    void OnTransactionTimeout(TransactionId transaction_id);
+
+    scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
+    TransactionId current_transaction_id_ = 0;
+    TransactionId last_acked_transaction_id_ = 0;
+    base::CancelableOnceClosure hang_detection_cb_;
+
+    DISALLOW_COPY_AND_ASSIGN(TransactionAckTimeoutManager);
   };
 
   void CommitPendingTransaction(const gfx::Rect& damage_rect,
@@ -147,7 +184,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
       SwapCompletionCallback completion_callback,
       PresentationCallback presentation_callback,
       ResourceRefs released_resources,
-      SurfaceControl::TransactionStats transaction_stats);
+      base::Optional<PrimaryPlaneFences> primary_plane_fences,
+      gfx::SurfaceControl::TransactionStats transaction_stats);
 
   void CheckPendingPresentationCallbacks();
 
@@ -162,7 +200,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   gfx::Rect window_rect_;
 
   // Holds the surface state changes made since the last call to SwapBuffers.
-  base::Optional<SurfaceControl::Transaction> pending_transaction_;
+  base::Optional<gfx::SurfaceControl::Transaction> pending_transaction_;
   size_t pending_surfaces_count_ = 0u;
   // Resources in the pending frame, for which updates are being
   // collected in |pending_transaction_|. These are resources for which the
@@ -170,8 +208,12 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   // transferred to the framework.
   ResourceRefs pending_frame_resources_;
 
+  // The fences associated with the primary plane (renderer by the display
+  // compositor) for the pending frame.
+  base::Optional<PrimaryPlaneFences> primary_plane_fences_;
+
   // Transactions waiting to be applied once the previous transaction is acked.
-  std::queue<SurfaceControl::Transaction> pending_transaction_queue_;
+  std::queue<gfx::SurfaceControl::Transaction> pending_transaction_queue_;
 
   // PresentationCallbacks for transactions which have been acked but their
   // present fence has not fired yet.
@@ -188,7 +230,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
 
   // The root surface tied to the ANativeWindow that places the content of this
   // GLSurface in the java view tree.
-  scoped_refptr<SurfaceControl::Surface> root_surface_;
+  scoped_refptr<gfx::SurfaceControl::Surface> root_surface_;
 
   // The last context made current with this surface.
   scoped_refptr<GLContext> context_;
@@ -206,6 +248,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
 
   // Set if a swap failed and the surface is no longer usable.
   bool surface_lost_ = false;
+
+  TransactionAckTimeoutManager transaction_ack_timeout_manager_;
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtrFactory<GLSurfaceEGLSurfaceControl> weak_factory_{this};

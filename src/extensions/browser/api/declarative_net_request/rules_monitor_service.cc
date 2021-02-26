@@ -10,10 +10,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
@@ -31,6 +33,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry_factory.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_service_factory.h"
 #include "extensions/browser/warning_set.h"
@@ -53,6 +56,10 @@ static base::LazyInstance<
 
 bool RulesetInfoCompareByID(const RulesetInfo& lhs, const RulesetInfo& rhs) {
   return lhs.source().id() < rhs.source().id();
+}
+
+void LogLoadRulesetResult(LoadRulesetResult result) {
+  UMA_HISTOGRAM_ENUMERATION(kLoadRulesetResultHistogram, result);
 }
 
 }  // namespace
@@ -168,7 +175,8 @@ RulesMonitorService::RulesMonitorService(
       warning_service_(WarningService::Get(browser_context)),
       context_(browser_context),
       ruleset_manager_(browser_context),
-      action_tracker_(browser_context) {
+      action_tracker_(browser_context),
+      global_rules_tracker_(prefs_, extension_registry_) {
   // Don't monitor extension lifecycle if the API is not available. This is
   // useful since we base some of our actions (like loading dynamic ruleset on
   // extension load) on the presence of certain extension prefs. These may still
@@ -196,6 +204,26 @@ RulesMonitorService::~RulesMonitorService() = default;
       - UI -> File -> UI -> IPC to extension
 */
 
+void RulesMonitorService::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update,
+    const std::string& old_name) {
+  if (!is_update || Manifest::IsUnpackedLocation(extension->location()))
+    return;
+
+  if (!base::FeatureList::IsEnabled(kDeclarativeNetRequestGlobalRules))
+    return;
+
+  // Allow the extension to retain its pre-update allocation during the next
+  // extension load. This can allow the extension to enable some
+  // non-manifest-enabled rulesets and to retain much of its pre-update
+  // behavior. The preference is set in OnExtensionWillBeInstalled instead of
+  // OnExtensionInstalled because OnExtensionInstalled is called after
+  // OnExtensionLoaded.
+  prefs_->SetDNRKeepExcessAllocation(extension->id(), true);
+}
+
 void RulesMonitorService::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
@@ -217,12 +245,17 @@ void RulesMonitorService::OnExtensionLoaded(
       bool enabled = prefs_enabled_rulesets
                          ? base::Contains(*prefs_enabled_rulesets, source.id())
                          : source.enabled_by_default();
-      if (!enabled)
+
+      bool ignored =
+          prefs_->ShouldIgnoreDNRRuleset(extension->id(), source.id());
+
+      if (!enabled || ignored)
         continue;
 
       if (!prefs_->GetDNRStaticRulesetChecksum(extension->id(), source.id(),
                                                &expected_ruleset_checksum)) {
         // This might happen on prefs corruption.
+        LogLoadRulesetResult(LoadRulesetResult::kErrorChecksumNotFound);
         ruleset_failed_to_load = true;
         continue;
       }
@@ -275,6 +308,15 @@ void RulesMonitorService::OnExtensionUnloaded(
     UnloadedExtensionReason reason) {
   DCHECK_EQ(context_, browser_context);
 
+  // If the extension is unloaded for any reason other than an update, the
+  // unused rule allocation should not be kept for this extension the next time
+  // its rulesets are loaded, as it is no longer "the first load after an
+  // update".
+  if (base::FeatureList::IsEnabled(kDeclarativeNetRequestGlobalRules) &&
+      reason != UnloadedExtensionReason::UPDATE) {
+    prefs_->SetDNRKeepExcessAllocation(extension->id(), false);
+  }
+
   // Return early if the extension does not have an active indexed ruleset.
   if (!ruleset_manager_.GetMatcherForExtension(extension->id()))
     return;
@@ -292,6 +334,9 @@ void RulesMonitorService::OnExtensionUninstalled(
   if (reason == UNINSTALL_REASON_REINSTALL)
     return;
 
+  if (base::FeatureList::IsEnabled(kDeclarativeNetRequestGlobalRules))
+    global_rules_tracker_.ClearExtensionAllocation(extension->id());
+
   // Skip if the extension doesn't have a dynamic ruleset.
   int dynamic_checksum;
   if (!prefs_->GetDNRDynamicRulesetChecksum(extension->id(),
@@ -306,9 +351,8 @@ void RulesMonitorService::OnExtensionUninstalled(
       RulesetSource::CreateDynamic(browser_context, extension->id());
   DCHECK_EQ(source.json_path().DirName(), source.indexed_path().DirName());
   GetExtensionFileTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                     source.json_path().DirName(), false /* recursive */));
+      FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(),
+                                source.json_path().DirName()));
 }
 
 void RulesMonitorService::UpdateDynamicRulesInternal(
@@ -356,21 +400,16 @@ void RulesMonitorService::UpdateEnabledStaticRulesetsInternal(
 
   LoadRequestData load_data(extension_id);
 
-  // Don't hop to the file sequence if there are no rulesets to load.
-  // TODO(karandeepb): Hop to the file sequence in this case as well to ensure
-  // that subsequent updateEnabledRulesets calls complete in FIFO order.
-  if (ids_to_enable.empty()) {
-    OnNewStaticRulesetsLoaded(std::move(callback), std::move(ids_to_disable),
-                              std::move(ids_to_enable), std::move(load_data));
-    return;
-  }
+  // Don't short-circuit the case of |ids_to_enable| being empty by calling
+  // OnNewStaticRulesetsLoaded directly. This can interfere with the expected
+  // FIFO ordering of updateEnabledRulesets calls.
 
   int expected_ruleset_checksum = -1;
   for (const RulesetID& id_to_enable : ids_to_enable) {
     if (!prefs_->GetDNRStaticRulesetChecksum(extension_id, id_to_enable,
                                              &expected_ruleset_checksum)) {
       // This might happen on prefs corruption.
-      // TODO(crbug.com/754526): Log metrics on how often this happens.
+      LogLoadRulesetResult(LoadRulesetResult::kErrorChecksumNotFound);
       std::move(callback).Run(kInternalErrorUpdatingEnabledRulesets);
       return;
     }
@@ -405,7 +444,7 @@ void RulesMonitorService::OnInitialRulesetsLoaded(LoadRequestData load_data) {
   if (test_observer_)
     test_observer_->OnRulesetLoadComplete(load_data.extension_id);
 
-  UpdateRulesetChecksumsIfNeeded(load_data);
+  LogMetricsAndUpdateChecksumsIfNeeded(load_data);
 
   // It's possible that the extension has been disabled since the initial load
   // ruleset request. If it's disabled, do nothing.
@@ -430,6 +469,17 @@ void RulesMonitorService::OnInitialRulesetsLoaded(LoadRequestData load_data) {
   size_t static_rules_count = 0;
   size_t static_regex_rules_count = 0;
   bool notify_ruleset_failed_to_load = false;
+  bool global_rule_limit_exceeded = false;
+
+  bool global_rules_enabled =
+      base::FeatureList::IsEnabled(kDeclarativeNetRequestGlobalRules);
+
+  size_t static_rule_limit = global_rules_enabled
+                                 ? global_rules_tracker_.GetAvailableAllocation(
+                                       load_data.extension_id) +
+                                       GetStaticGuaranteedMinimumRuleCount()
+                                 : GetStaticRuleLimit();
+
   for (RulesetInfo& ruleset : load_data.rulesets) {
     if (!ruleset.did_load_successfully()) {
       notify_ruleset_failed_to_load = true;
@@ -441,7 +491,7 @@ void RulesMonitorService::OnInitialRulesetsLoaded(LoadRequestData load_data) {
     // Per-ruleset limits should have been enforced during
     // indexing/installation.
     DCHECK_LE(matcher->GetRegexRulesCount(),
-              static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES));
+              static_cast<size_t>(GetRegexRuleLimit()));
     DCHECK_LE(matcher->GetRulesCount(), ruleset.source().rule_count_limit());
 
     if (ruleset.source().is_dynamic_ruleset()) {
@@ -450,13 +500,14 @@ void RulesMonitorService::OnInitialRulesetsLoaded(LoadRequestData load_data) {
     }
 
     size_t new_rules_count = static_rules_count + matcher->GetRulesCount();
-    if (new_rules_count > static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES))
+    if (new_rules_count > static_rule_limit) {
+      global_rule_limit_exceeded = global_rules_enabled;
       continue;
+    }
 
     size_t new_regex_rules_count =
         static_regex_rules_count + matcher->GetRegexRulesCount();
-    if (new_regex_rules_count >
-        static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES)) {
+    if (new_regex_rules_count > static_cast<size_t>(GetRegexRuleLimit())) {
       continue;
     }
 
@@ -468,6 +519,18 @@ void RulesMonitorService::OnInitialRulesetsLoaded(LoadRequestData load_data) {
   if (notify_ruleset_failed_to_load) {
     warning_service_->AddWarnings(
         {Warning::CreateRulesetFailedToLoadWarning(load_data.extension_id)});
+  }
+
+  if (global_rule_limit_exceeded) {
+    warning_service_->AddWarnings(
+        {Warning::CreateEnabledRuleCountExceededWarning(
+            load_data.extension_id)});
+  }
+
+  if (global_rules_enabled) {
+    bool allocation_updated = global_rules_tracker_.OnExtensionRuleCountUpdated(
+        load_data.extension_id, static_rules_count);
+    DCHECK(allocation_updated);
   }
 
   if (matchers.empty())
@@ -482,7 +545,7 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
     std::set<RulesetID> ids_to_disable,
     std::set<RulesetID> ids_to_enable,
     LoadRequestData load_data) {
-  UpdateRulesetChecksumsIfNeeded(load_data);
+  LogMetricsAndUpdateChecksumsIfNeeded(load_data);
 
   // It's possible that the extension has been disabled since the initial
   // request. If it's disabled, return early.
@@ -495,6 +558,8 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
 
   size_t static_rules_count = 0;
   size_t static_regex_rules_count = 0;
+  bool global_rules_enabled =
+      base::FeatureList::IsEnabled(kDeclarativeNetRequestGlobalRules);
   CompositeMatcher* matcher =
       ruleset_manager_.GetMatcherForExtension(load_data.extension_id);
   if (matcher) {
@@ -523,7 +588,6 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
   new_matchers.reserve(load_data.rulesets.size());
   for (RulesetInfo& ruleset : load_data.rulesets) {
     if (!ruleset.did_load_successfully()) {
-      // TODO(crbug.com/754526): Log metrics on how often this happens.
       std::move(callback).Run(kInternalErrorUpdatingEnabledRulesets);
       return;
     }
@@ -533,7 +597,7 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
     // Per-ruleset limits should have been enforced during
     // indexing/installation.
     DCHECK_LE(matcher->GetRegexRulesCount(),
-              static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES));
+              static_cast<size_t>(GetRegexRuleLimit()));
     DCHECK_LE(matcher->GetRulesCount(), ruleset.source().rule_count_limit());
 
     static_rules_count += matcher->GetRulesCount();
@@ -541,14 +605,24 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
     new_matchers.push_back(std::move(matcher));
   }
 
-  if (static_rules_count > static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES)) {
+  if (!global_rules_enabled &&
+      static_rules_count > static_cast<size_t>(GetStaticRuleLimit())) {
     std::move(callback).Run(kEnabledRulesetsRuleCountExceeded);
     return;
   }
 
-  if (static_regex_rules_count >
-      static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES)) {
+  if (static_regex_rules_count > static_cast<size_t>(GetRegexRuleLimit())) {
     std::move(callback).Run(kEnabledRulesetsRegexRuleCountExceeded);
+    return;
+  }
+
+  // If global rules are enabled, attempt to update the extension's extra rule
+  // count. If this update cannot be completed without exceeding the global
+  // limit, then the update is not applied and an error is returned.
+  if (global_rules_enabled &&
+      !global_rules_tracker_.OnExtensionRuleCountUpdated(load_data.extension_id,
+                                                         static_rules_count)) {
+    std::move(callback).Run(kEnabledRulesetsRuleCountExceeded);
     return;
   }
 
@@ -564,26 +638,8 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
 
   bool had_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();
 
-  // Do another pass over the existing matchers for the extension to compute the
-  // final set of matchers.
-  {
-    CompositeMatcher::MatcherList old_matchers = matcher->GetAndResetMatchers();
-    base::EraseIf(old_matchers,
-                  [&ids_to_disable, &ids_to_enable](
-                      const std::unique_ptr<RulesetMatcher>& matcher) {
-                    // We also check |ids_to_enable| to omit duplicate matchers.
-                    // |new_matchers| already contains RulesetMatchers
-                    // corresponding to |ids_to_enable|.
-                    return base::Contains(ids_to_disable, matcher->id()) ||
-                           base::Contains(ids_to_enable, matcher->id());
-                  });
-
-    new_matchers.insert(new_matchers.end(),
-                        std::make_move_iterator(old_matchers.begin()),
-                        std::make_move_iterator(old_matchers.end()));
-  }
-
-  matcher->SetMatchers(std::move(new_matchers));
+  matcher->RemoveRulesetsWithIDs(ids_to_disable);
+  matcher->AddOrUpdateRulesets(std::move(new_matchers));
 
   prefs_->SetDNREnabledStaticRulesets(load_data.extension_id,
                                       matcher->ComputeStaticRulesetIDs());
@@ -615,33 +671,13 @@ void RulesMonitorService::OnDynamicRulesUpdated(
     base::Optional<std::string> error) {
   DCHECK_EQ(1u, load_data.rulesets.size());
 
-  RulesetInfo& dynamic_ruleset = load_data.rulesets[0];
-  DCHECK_EQ(dynamic_ruleset.did_load_successfully(), !error.has_value());
-
-  // The extension may have been uninstalled by this point. Return early if
-  // that's the case.
-  if (!extension_registry_->GetInstalledExtension(load_data.extension_id)) {
-    // Still dispatch the |callback|, even though it's probably a no-op.
-    std::move(callback).Run(std::move(error));
-    return;
-  }
-
-  // Update the ruleset checksums if needed. Note it's possible that
-  // new_checksum() is valid while did_load_successfully() returns false below.
-  // This should be rare but can happen when updating the rulesets succeeds but
-  // we fail to create a RulesetMatcher from the indexed ruleset file (e.g. due
-  // to a file read error). We still update the prefs checksum to ensure the
-  // next ruleset load succeeds.
-  // Note: We also do this for a non-enabled extension. The ruleset on the disk
-  // has already been modified at this point. So we do want to update the
-  // checksum for it to be in sync with what's on disk.
-  if (dynamic_ruleset.new_checksum()) {
-    prefs_->SetDNRDynamicRulesetChecksum(load_data.extension_id,
-                                         *dynamic_ruleset.new_checksum());
-  }
+  LogMetricsAndUpdateChecksumsIfNeeded(load_data);
 
   // Respond to the extension.
   std::move(callback).Run(std::move(error));
+
+  RulesetInfo& dynamic_ruleset = load_data.rulesets[0];
+  DCHECK_EQ(dynamic_ruleset.did_load_successfully(), !error.has_value());
 
   if (!dynamic_ruleset.did_load_successfully())
     return;
@@ -709,8 +745,15 @@ void RulesMonitorService::AdjustExtraHeaderListenerCountIfNeeded(
   }
 }
 
-void RulesMonitorService::UpdateRulesetChecksumsIfNeeded(
+void RulesMonitorService::LogMetricsAndUpdateChecksumsIfNeeded(
     const LoadRequestData& load_data) {
+  for (const RulesetInfo& ruleset : load_data.rulesets) {
+    // The |load_ruleset_result()| might be empty if CreateVerifiedMatcher
+    // wasn't called on the ruleset.
+    if (ruleset.load_ruleset_result())
+      LogLoadRulesetResult(*ruleset.load_ruleset_result());
+  }
+
   // The extension may have been uninstalled by this point. Return early if
   // that's the case.
   if (!extension_registry_->GetInstalledExtension(load_data.extension_id))

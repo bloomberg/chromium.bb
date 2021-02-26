@@ -17,7 +17,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -219,13 +218,15 @@ class SelectDirectoryDialog : public ui::SelectFileDialog::Listener,
                               public base::RefCounted<SelectDirectoryDialog> {
  public:
   // Selected file path, or an empty path if the user canceled.
-  typedef base::Callback<void(const base::FilePath&)> Callback;
+  using Callback = base::RepeatingCallback<void(const base::FilePath&)>;
 
-  SelectDirectoryDialog(WebContents* web_contents, const Callback& callback)
-      : web_contents_(web_contents), callback_(callback) {
+  SelectDirectoryDialog(WebContents* web_contents, Callback callback)
+      : web_contents_(web_contents), callback_(std::move(callback)) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
   }
+  SelectDirectoryDialog(const SelectDirectoryDialog&) = delete;
+  SelectDirectoryDialog& operator=(const SelectDirectoryDialog&) = delete;
 
   void Show(const base::FilePath& default_path) {
     AddRef();  // Balanced in the two reachable listener outcomes.
@@ -256,13 +257,11 @@ class SelectDirectoryDialog : public ui::SelectFileDialog::Listener,
 
  private:
   friend class base::RefCounted<SelectDirectoryDialog>;
-  ~SelectDirectoryDialog() override {}
+  ~SelectDirectoryDialog() override = default;
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   WebContents* web_contents_;
   Callback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelectDirectoryDialog);
 };
 
 // Returns a web contents to use as the source for a prompt showing to the user.
@@ -304,7 +303,7 @@ MediaGalleriesEventRouter::MediaGalleriesEventRouter(
   gallery_watch_manager()->AddObserver(profile_, this);
 }
 
-MediaGalleriesEventRouter::~MediaGalleriesEventRouter() {}
+MediaGalleriesEventRouter::~MediaGalleriesEventRouter() = default;
 
 void MediaGalleriesEventRouter::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -374,7 +373,7 @@ void MediaGalleriesEventRouter::OnGalleryWatchDropped(
     MediaGalleryPrefId gallery_id) {
   MediaGalleries::GalleryChangeDetails details;
   details.type = MediaGalleries::GALLERY_CHANGE_TYPE_WATCH_DROPPED;
-  details.gallery_id = gallery_id;
+  details.gallery_id = base::NumberToString(gallery_id);
   DispatchEventToExtension(
       extension_id, extensions::events::MEDIA_GALLERIES_ON_GALLERY_CHANGED,
       MediaGalleries::OnGalleryChanged::kEventName,
@@ -430,12 +429,12 @@ void MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit(
       // chrome.getMediaFileSystems for this extension, call
       // GetMediaFileSystemsForExtension() here solely so that
       // MediaFileSystemRegistry will send preference changes.
-      GetMediaFileSystemsForExtension(base::Bind(
+      GetMediaFileSystemsForExtension(base::BindOnce(
           &MediaGalleriesGetMediaFileSystemsFunction::AlwaysShowDialog, this));
       return;
     }
     case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_IF_NEEDED: {
-      GetMediaFileSystemsForExtension(base::Bind(
+      GetMediaFileSystemsForExtension(base::BindOnce(
           &MediaGalleriesGetMediaFileSystemsFunction::ShowDialogIfNoGalleries,
           this));
       return;
@@ -463,7 +462,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialogIfNoGalleries(
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries() {
-  GetMediaFileSystemsForExtension(base::Bind(
+  GetMediaFileSystemsForExtension(base::BindOnce(
       &MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries, this));
 }
 
@@ -477,7 +476,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
   }
 
   // The custom JS binding will use this list to create DOMFileSystem objects.
-  Respond(OneArgument(std::move(list)));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(list))));
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
@@ -490,22 +489,22 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
   }
 
   // Controller will delete itself.
-  base::Closure cb = base::Bind(
+  base::OnceClosure cb = base::BindOnce(
       &MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries, this);
-  new MediaGalleriesPermissionController(contents, *extension(), cb);
+  new MediaGalleriesPermissionController(contents, *extension(), std::move(cb));
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
-    const MediaFileSystemsCallback& cb) {
+    MediaFileSystemsCallback cb) {
   if (!render_frame_host()) {
-    cb.Run(std::vector<MediaFileSystemInfo>());
+    std::move(cb).Run(std::vector<MediaFileSystemInfo>());
     return;
   }
   MediaFileSystemRegistry* registry = media_file_system_registry();
   Profile* profile = Profile::FromBrowserContext(browser_context());
   DCHECK(registry->GetPreferences(profile)->IsInitialized());
   registry->GetMediaFileSystemsForExtension(GetSenderWebContents(), extension(),
-                                            cb);
+                                            std::move(cb));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -546,10 +545,10 @@ void MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit() {
   base::FilePath last_used_path =
       extensions::file_system_api::GetLastChooseEntryDirectory(
           extensions::ExtensionPrefs::Get(browser_context()), app_id);
-  SelectDirectoryDialog::Callback callback = base::Bind(
+  SelectDirectoryDialog::Callback callback = base::BindRepeating(
       &MediaGalleriesAddUserSelectedFolderFunction::OnDirectorySelected, this);
-  auto select_directory_dialog =
-      base::MakeRefCounted<SelectDirectoryDialog>(contents, callback);
+  auto select_directory_dialog = base::MakeRefCounted<SelectDirectoryDialog>(
+      contents, std::move(callback));
   select_directory_dialog->Show(last_used_path);
 }
 
@@ -557,7 +556,7 @@ void MediaGalleriesAddUserSelectedFolderFunction::OnDirectorySelected(
     const base::FilePath& selected_directory) {
   if (selected_directory.empty()) {
     // User cancelled case.
-    GetMediaFileSystemsForExtension(base::Bind(
+    GetMediaFileSystemsForExtension(base::BindOnce(
         &MediaGalleriesAddUserSelectedFolderFunction::ReturnGalleriesAndId,
         this, kInvalidMediaGalleryPrefId));
     return;
@@ -574,7 +573,7 @@ void MediaGalleriesAddUserSelectedFolderFunction::OnDirectorySelected(
       selected_directory, MediaGalleryPrefInfo::kUserAdded);
   preferences->SetGalleryPermissionForExtension(*extension(), pref_id, true);
 
-  GetMediaFileSystemsForExtension(base::Bind(
+  GetMediaFileSystemsForExtension(base::BindOnce(
       &MediaGalleriesAddUserSelectedFolderFunction::ReturnGalleriesAndId, this,
       pref_id));
 }
@@ -601,13 +600,13 @@ void MediaGalleriesAddUserSelectedFolderFunction::ReturnGalleriesAndId(
   std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue);
   results->SetWithoutPathExpansion("mediaFileSystems", std::move(list));
   results->SetKey("selectedFileSystemIndex", base::Value(index));
-  Respond(OneArgument(std::move(results)));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(results))));
 }
 
 void MediaGalleriesAddUserSelectedFolderFunction::
-    GetMediaFileSystemsForExtension(const MediaFileSystemsCallback& cb) {
+    GetMediaFileSystemsForExtension(MediaFileSystemsCallback cb) {
   if (!render_frame_host()) {
-    cb.Run(std::vector<MediaFileSystemInfo>());
+    std::move(cb).Run(std::vector<MediaFileSystemInfo>());
     return;
   }
   MediaFileSystemRegistry* registry = media_file_system_registry();
@@ -615,7 +614,7 @@ void MediaGalleriesAddUserSelectedFolderFunction::
       registry->GetPreferences(Profile::FromBrowserContext(browser_context()))
           ->IsInitialized());
   registry->GetMediaFileSystemsForExtension(GetSenderWebContents(), extension(),
-                                            cb);
+                                            std::move(cb));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -667,8 +666,8 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::string mime_type;
-  bool mime_type_sniffed = net::SniffMimeTypeFromLocalData(
-      blob_header->c_str(), blob_header->size(), &mime_type);
+  bool mime_type_sniffed =
+      net::SniffMimeTypeFromLocalData(*blob_header, &mime_type);
 
   if (!mime_type_sniffed) {
     Respond(Error("Could not determine MIME type."));
@@ -682,7 +681,8 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
     std::unique_ptr<base::DictionaryValue> result_dictionary(
         new base::DictionaryValue);
     result_dictionary->Set(kMetadataKey, metadata.ToValue());
-    Respond(OneArgument(std::move(result_dictionary)));
+    Respond(OneArgument(
+        base::Value::FromUniquePtrValue(std::move(result_dictionary))));
     return;
   }
 
@@ -725,7 +725,8 @@ void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
                          SerializeMediaMetadata(std::move(metadata)));
 
   if (attached_images->empty()) {
-    Respond(OneArgument(std::move(result_dictionary)));
+    Respond(OneArgument(
+        base::Value::FromUniquePtrValue(std::move(result_dictionary))));
     return;
   }
 
@@ -798,7 +799,8 @@ void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
 
   // All Blobs have been constructed. The renderer will take ownership.
   SetTransferredBlobUUIDs(*blob_uuids);
-  Respond(OneArgument(std::move(result_dictionary)));
+  Respond(OneArgument(
+      base::Value::FromUniquePtrValue(std::move(result_dictionary))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -844,8 +846,8 @@ void MediaGalleriesAddGalleryWatchFunction::OnPreferencesInit(
 
   gallery_watch_manager()->AddWatch(
       profile, extension(), gallery_pref_id,
-      base::Bind(&MediaGalleriesAddGalleryWatchFunction::HandleResponse, this,
-                 gallery_pref_id));
+      base::BindOnce(&MediaGalleriesAddGalleryWatchFunction::HandleResponse,
+                     this, gallery_pref_id));
 }
 
 void MediaGalleriesAddGalleryWatchFunction::HandleResponse(
@@ -868,9 +870,10 @@ void MediaGalleriesAddGalleryWatchFunction::HandleResponse(
   }
 
   result.success = error.empty();
-  Respond(error.empty() ? OneArgument(result.ToValue())
-                        : ErrorWithArguments(
-                              AddGalleryWatch::Results::Create(result), error));
+  Respond(error.empty()
+              ? OneArgument(base::Value::FromUniquePtrValue(result.ToValue()))
+              : ErrorWithArguments(AddGalleryWatch::Results::Create(result),
+                                   error));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

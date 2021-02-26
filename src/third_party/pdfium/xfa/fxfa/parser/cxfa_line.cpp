@@ -7,7 +7,7 @@
 #include "xfa/fxfa/parser/cxfa_line.h"
 
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_edge.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 
@@ -37,7 +37,9 @@ CXFA_Line::CXFA_Line(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Line,
                 kLinePropertyData,
                 kLineAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Line::~CXFA_Line() = default;
 

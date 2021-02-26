@@ -5,23 +5,28 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
 
 import org.chromium.base.supplier.ObservableSupplier;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.base.supplier.OneshotSupplierImpl;
+import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestions;
+import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
 import org.chromium.chrome.features.start_surface.StartSurface;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.module_installer.builder.ModuleInterface;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -35,7 +40,8 @@ import java.lang.annotation.RetentionPolicy;
 @ModuleInterface(module = "tab_management",
         impl = "org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegateImpl")
 public interface TabManagementDelegate {
-    @IntDef({TabSwitcherType.GRID, TabSwitcherType.CAROUSEL, TabSwitcherType.SINGLE})
+    @IntDef({TabSwitcherType.GRID, TabSwitcherType.CAROUSEL, TabSwitcherType.SINGLE,
+            TabSwitcherType.NONE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TabSwitcherType {
         int GRID = 0;
@@ -47,38 +53,51 @@ public interface TabManagementDelegate {
     /**
      * Create the {@link TasksSurface}
      * @param activity The {@link ChromeActivity} that creates this surface.
+     * @param scrimCoordinator The {@link ScrimCoordinator} that controls scrim view.
      * @param propertyModel The {@link PropertyModel} contains the {@link TasksSurfaceProperties} to
      *         communicate with this surface.
      * @param tabSwitcherType The type of the tab switcher to show.
+     * @param parentTabSupplier {@link Supplier} to provide parent tab for the
+     *         TasksSurface.
      * @param hasMVTiles whether has MV tiles on the surface.
+     * @param hasTrendyTerms whether has trendy terms on the surface.
      * @return The {@link TasksSurface}.
      */
-    TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
-            @TabSwitcherType int tabSwitcherType, boolean hasMVTiles);
+    TasksSurface createTasksSurface(ChromeActivity activity, ScrimCoordinator scrimCoordinator,
+            PropertyModel propertyModel, @TabSwitcherType int tabSwitcherType,
+            Supplier<Tab> parentTabSupplier, boolean hasMVTiles, boolean hasTrendyTerms);
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in grid.
      * @param context The {@link Context} of this switcher.
      * @param containerView The {@link ViewGroup} to add the switcher to.
+     * @param scrimCoordinator The {@link ScrimCoordinator} to control the scrim view.
      * @return The {@link TabSwitcher}.
      */
-    TabSwitcher createGridTabSwitcher(ChromeActivity context, ViewGroup containerView);
+    TabSwitcher createGridTabSwitcher(
+            ChromeActivity context, ViewGroup containerView, ScrimCoordinator scrimCoordinator);
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in carousel.
      * @param context The {@link Context} of this switcher.
      * @param containerView The {@link ViewGroup} to add the switcher to.
+     * @param scrimCoordinator The {@link ScrimCoordinator} to control the scrim view.
      * @return The {@link TabSwitcher}.
      */
-    TabSwitcher createCarouselTabSwitcher(ChromeActivity context, ViewGroup containerView);
+    TabSwitcher createCarouselTabSwitcher(
+            ChromeActivity context, ViewGroup containerView, ScrimCoordinator scrimCoordinator);
 
     /**
      * Create the {@link TabGroupUi}.
      * @param parentView The parent view of this UI.
      * @param themeColorProvider The {@link ThemeColorProvider} for this UI.
+     * @param scrimCoordinator   The {@link ScrimCoordinator} to control scrim view.
+     * @param omniboxFocusStateSupplier Supplier to access the focus state of the omnibox.
      * @return The {@link TabGroupUi}.
      */
-    TabGroupUi createTabGroupUi(ViewGroup parentView, ThemeColorProvider themeColorProvider);
+    TabGroupUi createTabGroupUi(ViewGroup parentView, ThemeColorProvider themeColorProvider,
+            ScrimCoordinator scrimCoordinator,
+            ObservableSupplier<Boolean> omniboxFocusStateSupplier);
 
     /**
      * Create the {@link StartSurfaceLayout}.
@@ -86,17 +105,29 @@ public interface TabManagementDelegate {
      * @param updateHost The parent {@link LayoutUpdateHost}.
      * @param renderHost The parent {@link LayoutRenderHost}.
      * @param startSurface The {@link StartSurface} the layout should own.
+     * @param browserControlsStateProviderSupplier The {@link ObservableSupplier} for
+     *                                             {@link BrowserControlsStateProvider}.
      * @return The {@link StartSurfaceLayout}.
      */
     Layout createStartSurfaceLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, StartSurface startSurface);
+            LayoutRenderHost renderHost, StartSurface startSurface,
+            ObservableSupplier<BrowserControlsStateProvider> browserControlsStateProviderSupplier);
 
     /**
      * Create the {@link StartSurface}
      * @param activity The {@link ChromeActivity} creates this {@link StartSurface}.
+     * @param scrimCoordinator The {@link ScrimCoordinator} to control the scrim view.
+     * @param sheetController A {@link BottomSheetController} to show content in the bottom sheet.
+     * @param parentTabSupplier A {@link Supplier} to provide parent tab for
+     *         StartSurface.
+     * @param hadWarmStart Whether the activity had a warm start because the native library was
+     *         already fully loaded and initialized
      * @return the {@link StartSurface}
      */
-    StartSurface createStartSurface(ChromeActivity activity);
+    StartSurface createStartSurface(ChromeActivity activity, ScrimCoordinator scrimCoordinator,
+            BottomSheetController sheetController,
+            OneshotSupplierImpl<StartSurface> startSurfaceOneshotSupplier,
+            Supplier<Tab> parentTabSupplier, boolean hadWarmStart);
 
     /**
      * Create a {@link TabGroupModelFilter} for the given {@link TabModel}.
@@ -110,14 +141,4 @@ public interface TabManagementDelegate {
      * @return the {@link TabSuggestions} for the activity
      */
     TabSuggestions createTabSuggestions(ChromeActivity activity);
-
-    /**
-     * Create the {@link TabGroupPopupUi}.
-     * @param themeColorProvider The {@link ThemeColorProvider} for this UI.
-     * @param parentViewSupplier The {@link ObservableSupplier} that provides parent view of this
-     *         component.
-     * @return The {@link TabGroupPopupUi}.
-     */
-    TabGroupPopupUi createTabGroupPopUi(
-            ThemeColorProvider themeColorProvider, ObservableSupplier<View> parentViewSupplier);
 }

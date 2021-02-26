@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -18,7 +19,6 @@
 #include "components/prefs/pref_member.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "net/dns/dns_config.h"
 #include "services/network/public/mojom/host_resolver.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
@@ -123,9 +123,12 @@ class SystemNetworkContextManager {
       network::mojom::CertVerifierCreationParams*
           cert_verifier_creation_params);
 
-  // Same as ConfigureDefaultNetworkContextParams() but returns a newly
-  // allocated network::mojom::NetworkContextParams with the
-  // CertVerifierCreationParams already placed into the NetworkContextParams.
+  // Performs the same function as ConfigureDefaultNetworkContextParams(), and
+  // then returns a newly allocated network::mojom::NetworkContextParams with
+  // some modifications: if the CertVerifierService is enabled, the new
+  // NetworkContextParams will contain a CertVerifierServiceRemoteParams.
+  // Otherwise the newly configured CertVerifierCreationParams is placed
+  // directly into the NetworkContextParams.
   network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams();
 
   // Returns a shared global NetExportFileWriter instance, used by net-export.
@@ -160,6 +163,10 @@ class SystemNetworkContextManager {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(
+      SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
+      Test);
+
   class URLLoaderFactoryForSystem;
 
   // Constructor. |pref_service| must out live this object.

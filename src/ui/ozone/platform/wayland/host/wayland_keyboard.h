@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_KEYBOARD_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_KEYBOARD_H_
 
-#include <wayland-client.h>
+#include <keyboard-extension-unstable-v1-client-protocol.h>
 
 #include "base/time/time.h"
 #include "ui/base/buildflags.h"
@@ -29,7 +29,16 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
  public:
   class Delegate;
 
+  using LayoutEngine =
+#if BUILDFLAG(USE_XKBCOMMON)
+      XkbKeyboardLayoutEngine
+#else
+      KeyboardLayoutEngine
+#endif
+      ;
+
   WaylandKeyboard(wl_keyboard* keyboard,
+                  zcr_keyboard_extension_v1* keyboard_extension_v1,
                   WaylandConnection* connection,
                   KeyboardLayoutEngine* keyboard_layout_engine,
                   Delegate* delegate);
@@ -40,6 +49,7 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
               int modifiers,
               DomKey* out_dom_key,
               KeyboardCode* out_key_code);
+  LayoutEngine* layout_engine() const { return layout_engine_; }
 
  private:
   // wl_keyboard_listener
@@ -88,6 +98,7 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
                    int flags) override;
 
   wl::Object<wl_keyboard> obj_;
+  wl::Object<zcr_extended_keyboard_v1> extended_keyboard_v1_;
   WaylandConnection* const connection_;
   Delegate* const delegate_;
 
@@ -97,11 +108,7 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
   base::OnceClosure auto_repeat_closure_;
   wl::Object<wl_callback> sync_callback_;
 
-#if BUILDFLAG(USE_XKBCOMMON)
-  XkbKeyboardLayoutEngine* layout_engine_;
-#else
-  KeyboardLayoutEngine* layout_engine_;
-#endif
+  LayoutEngine* layout_engine_;
 };
 
 class WaylandKeyboard::Delegate {
@@ -110,12 +117,16 @@ class WaylandKeyboard::Delegate {
   virtual void OnKeyboardDestroyed(WaylandKeyboard* keyboard) = 0;
   virtual void OnKeyboardFocusChanged(WaylandWindow* window, bool focused) = 0;
   virtual void OnKeyboardModifiersChanged(int modifiers) = 0;
-  virtual void OnKeyboardKeyEvent(EventType type,
-                                  DomCode dom_code,
-                                  DomKey dom_key,
-                                  KeyboardCode key_code,
-                                  bool repeat,
-                                  base::TimeTicks timestamp) = 0;
+  // Returns a mask of ui::PostDispatchAction indicating how the event was
+  // dispatched.
+  virtual uint32_t OnKeyboardKeyEvent(EventType type,
+                                      DomCode dom_code,
+                                      bool repeat,
+                                      base::TimeTicks timestamp) = 0;
+
+ protected:
+  // Prevent deletion through a WaylandKeyboard::Delegate pointer.
+  virtual ~Delegate() = default;
 };
 
 }  // namespace ui

@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -35,7 +36,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 
@@ -64,11 +64,13 @@ StyleImage* CSSImageValue::CacheImage(
       ReResolveURL(document);
     ResourceRequest resource_request(absolute_url_);
     resource_request.SetReferrerPolicy(
-        ReferrerPolicyResolveDefault(referrer_.referrer_policy));
+        ReferrerUtils::MojoReferrerPolicyResolveDefault(
+            referrer_.referrer_policy));
     resource_request.SetReferrerString(referrer_.referrer);
     if (is_ad_related_)
       resource_request.SetIsAdResource();
-    ResourceLoaderOptions options;
+    ResourceLoaderOptions options(
+        document.GetExecutionContext()->GetCurrentWorld());
     options.initiator_info.name = initiator_name_.IsEmpty()
                                       ? fetch_initiator_type_names::kCSS
                                       : initiator_name_;
@@ -76,8 +78,8 @@ StyleImage* CSSImageValue::CacheImage(
     FetchParameters params(std::move(resource_request), options);
 
     if (cross_origin != kCrossOriginAttributeNotSet) {
-      params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
-                                         cross_origin);
+      params.SetCrossOriginAccessControl(
+          document.GetExecutionContext()->GetSecurityOrigin(), cross_origin);
     }
 
     bool is_lazily_loaded =
@@ -95,9 +97,10 @@ StyleImage* CSSImageValue::CacheImage(
     if (base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
         params.Url().ProtocolIsInHTTPFamily() &&
         GetNetworkStateNotifier().SaveDataEnabled()) {
-      auto& resource_request = params.MutableResourceRequest();
-      resource_request.SetPreviewsState(resource_request.GetPreviewsState() |
-                                        WebURLRequest::kSubresourceRedirectOn);
+      auto& subresource_request = params.MutableResourceRequest();
+      subresource_request.SetPreviewsState(
+          subresource_request.GetPreviewsState() |
+          PreviewsTypes::kSubresourceRedirectOn);
     }
 
     if (origin_clean_ != OriginClean::kTrue)
@@ -114,11 +117,11 @@ void CSSImageValue::RestoreCachedResourceIfNeeded(
   if (!cached_image_ || !document.Fetcher() || absolute_url_.IsNull())
     return;
 
-  ImageResourceContent* resource = cached_image_->CachedImage();
-  if (!resource)
+  ImageResourceContent* cached_content = cached_image_->CachedImage();
+  if (!cached_content)
     return;
 
-  resource->EmulateLoadStartedForInspector(
+  cached_content->EmulateLoadStartedForInspector(
       document.Fetcher(), KURL(absolute_url_),
       initiator_name_.IsEmpty() ? fetch_initiator_type_names::kCSS
                                 : initiator_name_);
@@ -127,8 +130,8 @@ void CSSImageValue::RestoreCachedResourceIfNeeded(
 bool CSSImageValue::HasFailedOrCanceledSubresources() const {
   if (!cached_image_)
     return false;
-  if (ImageResourceContent* cached_resource = cached_image_->CachedImage())
-    return cached_resource->LoadFailedOrCanceled();
+  if (ImageResourceContent* cached_content = cached_image_->CachedImage())
+    return cached_content->LoadFailedOrCanceled();
   return true;
 }
 

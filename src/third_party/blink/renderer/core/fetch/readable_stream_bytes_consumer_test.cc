@@ -31,15 +31,13 @@ using PublicState = BytesConsumer::PublicState;
 
 class MockClient : public GarbageCollected<MockClient>,
                    public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(MockClient);
-
  public:
   MockClient() = default;
 
   MOCK_METHOD0(OnStateChange, void());
   String DebugName() const override { return "MockClient"; }
 
-  void Trace(Visitor* visitor) override {}
+  void Trace(Visitor* visitor) const override {}
 };
 
 TEST(ReadableStreamBytesConsumerTest, Create) {
@@ -52,8 +50,7 @@ TEST(ReadableStreamBytesConsumerTest, Create) {
   ASSERT_FALSE(exception_state.HadException());
 
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
-                                                        ASSERT_NO_EXCEPTION);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream);
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 }
@@ -69,8 +66,7 @@ TEST(ReadableStreamBytesConsumerTest, EmptyStream) {
   underlying_source->Close();
 
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
-                                                        ASSERT_NO_EXCEPTION);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream);
 
   Persistent<MockClient> client = MakeGarbageCollected<MockClient>();
   consumer->SetClient(client);
@@ -109,8 +105,7 @@ TEST(ReadableStreamBytesConsumerTest, ErroredStream) {
       script_state->GetIsolate(), v8::Undefined(script_state->GetIsolate())));
 
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
-                                                        ASSERT_NO_EXCEPTION);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream);
   Persistent<MockClient> client = MakeGarbageCollected<MockClient>();
   consumer->SetClient(client);
   Checkpoint checkpoint;
@@ -166,8 +161,7 @@ TEST(ReadableStreamBytesConsumerTest, TwoPhaseRead) {
   }
 
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
-                                                        ASSERT_NO_EXCEPTION);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream);
   Persistent<MockClient> client = MakeGarbageCollected<MockClient>();
   consumer->SetClient(client);
   Checkpoint checkpoint;
@@ -258,8 +252,7 @@ TEST(ReadableStreamBytesConsumerTest, EnqueueUndefined) {
   underlying_source->Close();
 
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
-                                                        ASSERT_NO_EXCEPTION);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream);
   Persistent<MockClient> client = MakeGarbageCollected<MockClient>();
   consumer->SetClient(client);
   Checkpoint checkpoint;
@@ -298,8 +291,7 @@ TEST(ReadableStreamBytesConsumerTest, EnqueueNull) {
   underlying_source->Close();
 
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
-                                                        ASSERT_NO_EXCEPTION);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream);
   Persistent<MockClient> client = MakeGarbageCollected<MockClient>();
   consumer->SetClient(client);
   Checkpoint checkpoint;
@@ -339,8 +331,7 @@ TEST(ReadableStreamBytesConsumerTest, EnqueueString) {
   underlying_source->Close();
 
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
-                                                        ASSERT_NO_EXCEPTION);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream);
   Persistent<MockClient> client = MakeGarbageCollected<MockClient>();
   consumer->SetClient(client);
   Checkpoint checkpoint;

@@ -15,7 +15,9 @@
 #include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/controls/tree/tree_view_drawing_provider.h"
 #include "ui/views/examples/grit/views_examples_resources.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/view_class_properties.h"
 
 using l10n_util::GetStringUTF16;
 using l10n_util::GetStringUTF8;
@@ -93,41 +95,43 @@ void TreeViewExample::CreateExampleView(View* container) {
   tree_view->SetDrawingProvider(
       std::make_unique<ExampleTreeViewDrawingProvider>());
   auto add = std::make_unique<LabelButton>(
-      this, GetStringUTF16(IDS_TREE_VIEW_ADD_BUTTON_LABEL));
-  add->SetFocusForPlatform();
-  add->set_request_focus_on_press(true);
+      base::BindRepeating(&TreeViewExample::AddNewNode, base::Unretained(this)),
+      GetStringUTF16(IDS_TREE_VIEW_ADD_BUTTON_LABEL));
+  add->SetRequestFocusOnPress(true);
   auto remove = std::make_unique<LabelButton>(
-      this, GetStringUTF16(IDS_TREE_VIEW_REMOVE_BUTTON_LABEL));
-  remove->SetFocusForPlatform();
-  remove->set_request_focus_on_press(true);
+      base::BindRepeating(&TreeViewExample::RemoveSelectedNode,
+                          base::Unretained(this)),
+      GetStringUTF16(IDS_TREE_VIEW_REMOVE_BUTTON_LABEL));
+  remove->SetRequestFocusOnPress(true);
   auto change_title = std::make_unique<LabelButton>(
-      this, GetStringUTF16(IDS_TREE_VIEW_CHANGE_TITLE_LABEL));
-  change_title->SetFocusForPlatform();
-  change_title->set_request_focus_on_press(true);
+      base::BindRepeating(&TreeViewExample::SetSelectedNodeTitle,
+                          base::Unretained(this)),
+      GetStringUTF16(IDS_TREE_VIEW_CHANGE_TITLE_LABEL));
+  change_title->SetRequestFocusOnPress(true);
 
-  GridLayout* layout =
-      container->SetLayoutManager(std::make_unique<views::GridLayout>());
+  container->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(LayoutOrientation::kVertical);
 
-  const int tree_view_column = 0;
-  ColumnSet* column_set = layout->AddColumnSet(tree_view_column);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  layout->StartRow(1 /* expand */, tree_view_column);
+  auto full_flex = FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                                     MaximumFlexSizeRule::kUnbounded)
+                       .WithWeight(1);
+
   tree_view_ = tree_view.get();
-  layout->AddView(TreeView::CreateScrollViewWithTree(std::move(tree_view)));
+  container
+      ->AddChildView(TreeView::CreateScrollViewWithTree(std::move(tree_view)))
+      ->SetProperty(views::kFlexBehaviorKey, full_flex);
 
   // Add control buttons horizontally.
-  const int button_column = 1;
-  column_set = layout->AddColumnSet(button_column);
-  for (size_t i = 0; i < 3; i++) {
-    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
-                          GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  }
+  auto* button_panel = container->AddChildView(std::make_unique<View>());
+  button_panel->SetLayoutManager(std::make_unique<FlexLayout>())
+      ->SetOrientation(LayoutOrientation::kHorizontal);
 
-  layout->StartRow(0 /* no expand */, button_column);
-  add_ = layout->AddView(std::move(add));
-  remove_ = layout->AddView(std::move(remove));
-  change_title_ = layout->AddView(std::move(change_title));
+  add_ = button_panel->AddChildView(std::move(add));
+  remove_ = button_panel->AddChildView(std::move(remove));
+  change_title_ = button_panel->AddChildView(std::move(change_title));
+
+  for (View* view : button_panel->children())
+    view->SetProperty(views::kFlexBehaviorKey, full_flex);
 }
 
 void TreeViewExample::AddNewNode() {
@@ -140,26 +144,24 @@ void TreeViewExample::AddNewNode() {
   tree_view_->SetSelectedNode(new_node);
 }
 
+void TreeViewExample::RemoveSelectedNode() {
+  auto* selected_node = static_cast<NodeType*>(tree_view_->GetSelectedNode());
+  DCHECK(selected_node);
+  DCHECK_NE(model_.GetRoot(), selected_node);
+  model_.Remove(selected_node->parent(), selected_node);
+}
+
+void TreeViewExample::SetSelectedNodeTitle() {
+  auto* selected_node = static_cast<NodeType*>(tree_view_->GetSelectedNode());
+  DCHECK(selected_node);
+  model_.SetTitle(
+      selected_node,
+      selected_node->GetTitle() + GetStringUTF16(IDS_TREE_VIEW_NEW_NODE_LABEL));
+}
+
 bool TreeViewExample::IsCommandIdEnabled(int command_id) {
   return command_id != ID_REMOVE ||
          tree_view_->GetSelectedNode() != model_.GetRoot();
-}
-
-void TreeViewExample::ButtonPressed(Button* sender, const ui::Event& event) {
-  NodeType* selected_node =
-      static_cast<NodeType*>(tree_view_->GetSelectedNode());
-  if (sender == add_) {
-    AddNewNode();
-  } else if (sender == remove_) {
-    DCHECK(selected_node);
-    DCHECK_NE(model_.GetRoot(), selected_node);
-    model_.Remove(selected_node->parent(), selected_node);
-  } else if (sender == change_title_) {
-    DCHECK(selected_node);
-    model_.SetTitle(selected_node,
-                    selected_node->GetTitle() +
-                        GetStringUTF16(IDS_TREE_VIEW_NEW_NODE_LABEL));
-  }
 }
 
 void TreeViewExample::OnTreeViewSelectionChanged(TreeView* tree_view) {

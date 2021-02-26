@@ -20,6 +20,7 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace viz {
 
@@ -358,13 +359,13 @@ void ClientResourceProvider::ShutdownAndReleaseAllResources() {
 }
 
 ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(
-    GrContext* gr_context,
+    GrDirectContext* gr_context,
     sk_sp<SkColorSpace> color_space,
     GLuint texture_id,
     GLenum texture_target,
     const gfx::Size& size,
     ResourceFormat format,
-    bool can_use_lcd_text,
+    SkSurfaceProps surface_props,
     int msaa_sample_count) {
   GrGLTextureInfo texture_info;
   texture_info.fID = texture_id;
@@ -372,10 +373,9 @@ ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(
   texture_info.fFormat = TextureStorageFormat(format);
   GrBackendTexture backend_texture(size.width(), size.height(),
                                    GrMipMapped::kNo, texture_info);
-  SkSurfaceProps surface_props = ComputeSurfaceProps(can_use_lcd_text);
   // This type is used only for gpu raster, which implies gpu compositing.
   bool gpu_compositing = true;
-  surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+  surface_ = SkSurface::MakeFromBackendTexture(
       gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, msaa_sample_count,
       ResourceFormatToClosestSkColorType(gpu_compositing, format), color_space,
       &surface_props);
@@ -383,20 +383,7 @@ ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(
 
 ClientResourceProvider::ScopedSkSurface::~ScopedSkSurface() {
   if (surface_)
-    surface_->flush();
-}
-
-SkSurfaceProps ClientResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
-    bool can_use_lcd_text) {
-  uint32_t flags = 0;
-  // Use unknown pixel geometry to disable LCD text.
-  SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
-  if (can_use_lcd_text) {
-    // LegacyFontHost will get LCD text and skia figures out what type to use.
-    surface_props =
-        SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
-  }
-  return surface_props;
+    surface_->flushAndSubmit();
 }
 
 void ClientResourceProvider::ValidateResource(ResourceId id) const {

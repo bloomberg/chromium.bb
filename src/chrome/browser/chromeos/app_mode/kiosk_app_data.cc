@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -108,8 +107,8 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
                        std::unique_ptr<base::DictionaryValue> original_manifest,
                        const extensions::Extension* extension,
                        const SkBitmap& install_icon,
-                       extensions::declarative_net_request::RulesetChecksums
-                           ruleset_checksums) override {
+                       extensions::declarative_net_request::RulesetInstallPrefs
+                           ruleset_install_prefs) override {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     const extensions::KioskModeInfo* info =
@@ -156,8 +155,8 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
                    << temp_dir_.GetPath().value();
     }
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&CrxLoader::NotifyFinishedOnUIThread, this));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&CrxLoader::NotifyFinishedOnUIThread, this));
   }
 
   void NotifyFinishedOnUIThread() {
@@ -361,7 +360,6 @@ void KioskAppData::SetStatus(Status status) {
 
   switch (status_) {
     case STATUS_INIT:
-      break;
     case STATUS_LOADING:
     case STATUS_LOADED:
       delegate_->OnKioskAppDataChanged(app_id());
@@ -458,6 +456,7 @@ void KioskAppData::OnWebstoreParseSuccess(
 }
 
 void KioskAppData::OnWebstoreParseFailure() {
+  LOG(WARNING) << "Webstore request parse failure for app_id=" << app_id();
   SetStatus(STATUS_ERROR);
 }
 
@@ -564,16 +563,14 @@ void KioskAppData::OnCrxLoadFinished(const CrxLoader* crx_loader) {
     return;
 
   if (!crx_loader->success()) {
-    // If we did get some data before in from Local State, but the extentension
-    // file got corrupted, we should notify the ExternalCache to remove it and
-    // redownload it upon next session start(kiosk or login).
-    if (status() == STATUS_LOADED) {
-      // Our cache is corrupted, we need to notify ExternalCache about that.
-      if (delegate_)
-        delegate_->OnExternalCacheDamaged(app_id());
-    } else {
-      SetStatus(STATUS_ERROR);
-    }
+    LOG(ERROR) << "Failed to load cached extension data for app_id="
+               << app_id();
+    // If after unpacking the cached extension we received an error, schedule a
+    // redownload upon next session start(kiosk or login).
+    if (delegate_)
+      delegate_->OnExternalCacheDamaged(app_id());
+
+    SetStatus(STATUS_INIT);
     return;
   }
 

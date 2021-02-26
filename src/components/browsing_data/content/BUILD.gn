@@ -39,6 +39,9 @@ static_library("content") {
     "//components/browsing_data/core",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
+    "//components/no_state_prefetch/browser",
+    "//components/prefs",
+    "//components/site_isolation",
     "//content/public/browser",
     "//net",
   ]

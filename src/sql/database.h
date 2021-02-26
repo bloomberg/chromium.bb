@@ -17,6 +17,7 @@
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -24,6 +25,7 @@
 #include "base/sequence_checker.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "sql/internal_api_token.h"
+#include "sql/sql_features.h"
 #include "sql/statement_id.h"
 
 struct sqlite3;
@@ -46,6 +48,46 @@ namespace test {
 class ScopedErrorExpecter;
 }  // namespace test
 
+struct COMPONENT_EXPORT(SQL) DatabaseOptions {
+  // Default page size for newly created databases.
+  //
+  // Guaranteed to match SQLITE_DEFAULT_PAGE_SIZE.
+  static constexpr int kDefaultPageSize = 4096;
+
+  // If true, the database can only be opened by one process at a time.
+  //
+  // Exclusive mode is strongly recommended. It reduces the I/O cost of setting
+  // up a transaction. It also removes the need of handling transaction failures
+  // due to lock contention.
+  bool exclusive_locking = true;
+
+  // If true, enables SQLite's Write-Ahead Logging (WAL).
+  //
+  // WAL integration is under development, and should not be used in shipping
+  // Chrome features yet. In particular, our custom database recovery code does
+  // not support the WAL log file.
+  //
+  // More details at https://www.sqlite.org/wal.html
+  bool wal_mode =
+      base::FeatureList::IsEnabled(sql::features::kEnableWALModeByDefault);
+
+  // Database page size.
+  //
+  // Larger page sizes result in shallower B-trees, because they allow an inner
+  // page to hold more keys. On the flip side, larger page sizes may result in
+  // more I/O when making small changes to existing records.
+  int page_size = kDefaultPageSize;
+
+  // The size of in-memory cache, in pages.
+  //
+  // SQLite's database cache will take up at most (`page_size` * `cache_size`)
+  // bytes of RAM.
+  //
+  // 0 invokes SQLite's default, which is currently to size up the cache to use
+  // exactly 2,048,000 bytes of RAM.
+  int cache_size = 0;
+};
+
 // Handle to an open SQLite database.
 //
 // Instances of this class are thread-unsafe and DCHECK that they are accessed
@@ -57,8 +99,20 @@ class COMPONENT_EXPORT(SQL) Database {
  public:
   // The database is opened by calling Open[InMemory](). Any uncommitted
   // transactions will be rolled back when this object is deleted.
+  //
+  // This constructor is deprecated.
+  // TODO(crbug.com/1126968): Remove this constructor after migrating all
+  //                          uses to the explicit constructor below.
   Database();
+  // |options| only affects newly created databases.
+  explicit Database(DatabaseOptions options);
   ~Database();
+
+  // Allows mmapping to be disabled globally by default in the calling process.
+  // Must be called before any threads attempt to create a Database.
+  //
+  // TODO(crbug.com/1117049): Remove this global configuration.
+  static void DisableMmapByDefault();
 
   // Pre-init configuration ----------------------------------------------------
 
@@ -73,11 +127,11 @@ class COMPONENT_EXPORT(SQL) Database {
     DCHECK(!(page_size & (page_size - 1)))
         << "page_size must be a power of two";
 
-    page_size_ = page_size;
+    options_.page_size = page_size;
   }
 
   // The page size that will be used when creating a new database.
-  int page_size() const { return page_size_; }
+  int page_size() const { return options_.page_size; }
 
   // Sets the number of pages that will be cached in memory by sqlite. The
   // total cache size in bytes will be page_size * cache_size. This must be
@@ -85,20 +139,46 @@ class COMPONENT_EXPORT(SQL) Database {
   void set_cache_size(int cache_size) {
     DCHECK_GE(cache_size, 0);
 
-    cache_size_ = cache_size;
+    options_.cache_size = cache_size;
   }
 
-  // Call to put the database in exclusive locking mode. There is no "back to
-  // normal" flag because of some additional requirements sqlite puts on this
-  // transaction (requires another access to the DB) and because we don't
-  // actually need it.
+  // Returns whether a database will be opened in WAL mode.
+  bool UseWALMode() const;
+
+  // Enables/disables WAL mode (https://www.sqlite.org/wal.html) when
+  // opening a new database.
   //
-  // Exclusive mode means that the database is not unlocked at the end of each
-  // transaction, which means there may be less time spent initializing the
-  // next transaction because it doesn't have to re-aquire locks.
+  // WAL mode is currently not fully supported on FuchsiaOS. It will only be
+  // turned on if the database is also using exclusive locking mode.
+  // (https://crbug.com/1082059)
+  //
+  // Note: Changing page size is not supported when in WAL mode. So running
+  // 'PRAGMA page_size = <new-size>' or using set_page_size will result in
+  // no-ops.
   //
   // This must be called before Open() to have an effect.
-  void set_exclusive_locking() { exclusive_locking_ = true; }
+  void want_wal_mode(bool enabled) { options_.wal_mode = enabled; }
+
+  // Makes database accessible by only one process at a time.
+  //
+  // TODO(https://crbug.com/1120969): This should be the default mode. The
+  //                                  "NORMAL" mode should be opt-in.
+  //
+  // SQLite supports a locking protocol that allows multiple processes to safely
+  // operate on the same database at the same time. The locking protocol is used
+  // on every transaction, and comes with a small performance penalty.
+  //
+  // Calling this method causes the locking protocol to be used once, when the
+  // database is opened. No other process will be able to access the database at
+  // the same time.
+  //
+  // This method must be called before Open() to have an effect.
+  //
+  // More details at https://www.sqlite.org/pragma.html#pragma_locking_mode
+  //
+  // SQLite's locking protocol is summarized at
+  // https://www.sqlite.org/c3ref/io_methods.html
+  void set_exclusive_locking() { options_.exclusive_locking = true; }
 
   // Call to use alternative status-tracking for mmap.  Usually this is tracked
   // in the meta table, but some databases have no meta table.
@@ -259,7 +339,7 @@ class COMPONENT_EXPORT(SQL) Database {
   // these all return false, since it is unlikely that the caller
   // could fix them.
   //
-  // The database's page size is taken from |page_size_|.  The
+  // The database's page size is taken from |options_.page_size|.  The
   // existing database's |auto_vacuum| setting is lost (the
   // possibility of corruption makes it unreliable to pull it from the
   // existing database).  To re-enable on the empty database requires
@@ -396,6 +476,14 @@ class COMPONENT_EXPORT(SQL) Database {
   // See GetCachedStatement above for examples and error information.
   scoped_refptr<StatementRef> GetUniqueStatement(const char* sql);
 
+  // Performs a passive checkpoint on the main attached database if it is in
+  // WAL mode. Returns true if the checkpoint was successful and false in case
+  // of an error. It is a no-op if the database is not in WAL mode.
+  //
+  // Note: Checkpointing is a very slow operation and will block any writes
+  // until it is finished. Please use with care.
+  bool CheckpointDatabase();
+
   // Info querying -------------------------------------------------------------
 
   // Returns true if the given structure exists.  Instead of test-then-create,
@@ -422,6 +510,15 @@ class COMPONENT_EXPORT(SQL) Database {
   // statement executed. Will be 0 if no statement has executed or the database
   // is closed.
   int GetLastChangeCount() const;
+
+  // Approximates the amount of memory used by SQLite for this database.
+  //
+  // This measures the memory used for the page cache (most likely the biggest
+  // consumer), database schema, and prepared statements.
+  //
+  // The memory used by the page cache can be recovered by calling TrimMemory(),
+  // which will cause SQLite to drop the page cache.
+  int GetMemoryUsage();
 
   // Errors --------------------------------------------------------------------
 
@@ -480,11 +577,6 @@ class COMPONENT_EXPORT(SQL) Database {
   // iterate on our SQLite configuration, features must avoid relying on
   // the existence of specific files.
   static base::FilePath SharedMemoryFilePath(const base::FilePath& db_path);
-
-  // Default page size for newly created databases.
-  //
-  // Guaranteed to match SQLITE_DEFAULT_PAGE_SIZE.
-  static constexpr int kDefaultPageSize = 4096;
 
   // Internal state accessed by other classes in //sql.
   sqlite3* db(InternalApiToken) const { return db_; }
@@ -687,13 +779,11 @@ class COMPONENT_EXPORT(SQL) Database {
 
   // The actual sqlite database. Will be null before Init has been called or if
   // Init resulted in an error.
-  sqlite3* db_;
+  sqlite3* db_ = nullptr;
 
-  // Parameters we'll configure in sqlite before doing anything else. Zero means
-  // use the default value.
-  int page_size_;
-  int cache_size_;
-  bool exclusive_locking_;
+  // TODO(shuagga@microsoft.com): Make `options_` const after removing all
+  // setters.
+  DatabaseOptions options_;
 
   // Holds references to all cached statements so they remain active.
   //
@@ -708,36 +798,36 @@ class COMPONENT_EXPORT(SQL) Database {
   std::set<StatementRef*> open_statements_;
 
   // Number of currently-nested transactions.
-  int transaction_nesting_;
+  int transaction_nesting_ = 0;
 
   // True if any of the currently nested transactions have been rolled back.
   // When we get to the outermost transaction, this will determine if we do
   // a rollback instead of a commit.
-  bool needs_rollback_;
+  bool needs_rollback_ = false;
 
   // True if database is open with OpenInMemory(), False if database is open
   // with Open().
-  bool in_memory_;
+  bool in_memory_ = false;
 
   // |true| if the Database was closed using RazeAndClose().  Used
   // to enable diagnostics to distinguish calls to never-opened
   // databases (incorrect use of the API) from calls to once-valid
   // databases.
-  bool poisoned_;
+  bool poisoned_ = false;
 
   // |true| to use alternate storage for tracking mmap status.
-  bool mmap_alt_status_;
+  bool mmap_alt_status_ = false;
 
   // |true| if SQLite memory-mapped I/O is not desired for this database.
   bool mmap_disabled_;
 
   // |true| if SQLite memory-mapped I/O was enabled for this database.
   // Used by ReleaseCacheMemoryIfNeeded().
-  bool mmap_enabled_;
+  bool mmap_enabled_ = false;
 
   // Used by ReleaseCacheMemoryIfNeeded() to track if new changes have happened
   // since memory was last released.
-  int total_changes_at_last_release_;
+  int total_changes_at_last_release_ = 0;
 
   ErrorCallback error_callback_;
 
@@ -745,7 +835,7 @@ class COMPONENT_EXPORT(SQL) Database {
   std::string histogram_tag_;
 
   // Linear histogram for RecordEvent().
-  base::HistogramBase* stats_histogram_;
+  base::HistogramBase* stats_histogram_ = nullptr;
 
   // Stores the dump provider object when db is open.
   std::unique_ptr<DatabaseMemoryDumpProvider> memory_dump_provider_;

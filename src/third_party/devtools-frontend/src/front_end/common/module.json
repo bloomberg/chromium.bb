@@ -7,10 +7,13 @@
     "common-legacy.js",
     "EventTarget.js",
     "Object.js",
+    "WasmDisassembly.js",
     "Worker.js",
     "TextDictionary.js",
     "Color.js",
+    "ColorUtils.js",
     "Console.js",
+    "Debouncer.js",
     "ParsedURL.js",
     "Progress.js",
     "ResourceType.js",
@@ -27,8 +30,9 @@
     "Revealer.js",
     "Runnable.js",
     "StringOutputStream.js",
+    "SimpleHistoryManager.js",
     "CharacterIdMap.js",
-    "Lazy.js"
-  ],
-  "scripts": []
+    "Lazy.js",
+    "Base64.js"
+  ]
 }

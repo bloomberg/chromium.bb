@@ -40,7 +40,6 @@ class ExceptionState;
 class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
                                             public ScriptElementBase {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLScriptElement);
 
  public:
   HTMLScriptElement(Document&, const CreateElementFlags);
@@ -64,7 +63,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   Document& GetDocument() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   void FinishParsingChildren() override;
 

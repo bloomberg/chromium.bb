@@ -16,7 +16,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
-class Value;
 class ListValue;
 }
 
@@ -42,11 +41,11 @@ class QuotaInternalsHandler : public content::WebUIMessageHandler {
   void ReportPerHostInfo(const std::vector<PerHostStorageInfo>& hosts);
   void ReportPerOriginInfo(const std::vector<PerOriginStorageInfo>& origins);
   void ReportStatistics(const Statistics& stats);
+  void ReportStoragePressureFlag();
 
  private:
   void OnRequestInfo(const base::ListValue*);
   void OnTriggerStoragePressure(const base::ListValue*);
-  void SendMessage(const std::string& message, const base::Value& value);
 
   scoped_refptr<QuotaInternalsProxy> proxy_;
 

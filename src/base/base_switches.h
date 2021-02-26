@@ -8,6 +8,7 @@
 #define BASE_BASE_SWITCHES_H_
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace switches {
 
@@ -38,7 +39,7 @@ extern const char kDisableHighResTimer[];
 extern const char kDisableUsbKeyboardDetect[];
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS)
 extern const char kDisableDevShmUsage[];
 #endif
 
@@ -48,10 +49,13 @@ extern const char kEnableCrashReporterForTesting[];
 
 #if defined(OS_ANDROID)
 extern const char kEnableReachedCodeProfiler[];
-extern const char kOrderfileMemoryOptimization[];
+extern const char kReachedCodeSamplingIntervalUs[];
+extern const char kDefaultCountryCodeAtInstall[];
+extern const char kEnableIdleTracing[];
+extern const char kForceFieldTrialParams[];
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 extern const char kEnableThreadInstructionCount[];
 #endif
 

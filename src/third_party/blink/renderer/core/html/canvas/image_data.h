@@ -89,6 +89,20 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
                            unsigned width,
                            unsigned height,
                            ExceptionState&);
+  static ImageData* Create(NotShared<DOMUint16Array>,
+                           unsigned width,
+                           ExceptionState&);
+  static ImageData* Create(NotShared<DOMUint16Array>,
+                           unsigned width,
+                           unsigned height,
+                           ExceptionState&);
+  static ImageData* Create(NotShared<DOMFloat32Array>,
+                           unsigned width,
+                           ExceptionState&);
+  static ImageData* Create(NotShared<DOMFloat32Array>,
+                           unsigned width,
+                           unsigned height,
+                           ExceptionState&);
 
   static ImageData* CreateImageData(unsigned width,
                                     unsigned height,
@@ -117,8 +131,8 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   static CanvasColorSpace GetCanvasColorSpace(const String&);
   static String CanvasColorSpaceName(CanvasColorSpace);
   static ImageDataStorageFormat GetImageDataStorageFormat(const String&);
-  static unsigned StorageFormatDataSize(const String&);
-  static unsigned StorageFormatDataSize(ImageDataStorageFormat);
+  static unsigned StorageFormatBytesPerPixel(const String&);
+  static unsigned StorageFormatBytesPerPixel(ImageDataStorageFormat);
   static NotShared<DOMArrayBufferView>
   ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       ArrayBufferContents&,
@@ -129,14 +143,13 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   int width() const { return size_.Width(); }
   int height() const { return size_.Height(); }
 
-  DOMUint8ClampedArray* data();
-  const DOMUint8ClampedArray* data() const;
-  ImageDataArray& dataUnion() { return data_union_; }
-  const ImageDataArray& dataUnion() const { return data_union_; }
-  void dataUnion(ImageDataArray& result) { result = data_union_; }
+  ImageDataArray& data() { return data_; }
+  const ImageDataArray& data() const { return data_; }
+  void data(ImageDataArray& result) { result = data_; }
 
   DOMArrayBufferBase* BufferBase() const;
   CanvasColorParams GetCanvasColorParams();
+  SkImageInfo GetSkImageInfo();
 
   // DataU8ColorType param specifies if the converted pixels in uint8 pixel
   // format should respect the "native" 32bit ARGB format of Skia's blitters.
@@ -158,7 +171,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
                                   const ImageBitmapOptions*,
                                   ExceptionState&) override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,
@@ -177,8 +190,8 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
  private:
   IntSize size_;
   Member<ImageDataColorSettings> color_settings_;
-  ImageDataArray data_union_;
-  NotShared<DOMUint8ClampedArray> data_;
+  ImageDataArray data_;
+  NotShared<DOMUint8ClampedArray> data_u8_;
   NotShared<DOMUint16Array> data_u16_;
   NotShared<DOMFloat32Array> data_f32_;
 

@@ -2,13 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/apple/tweak_info_plist.gni")
 import("//build/config/mac/rules.gni")
+import("//build/config/python.gni")
 import("//build/util/version.gni")
 import("//chrome/updater/branding.gni")
 
 group("mac") {
   deps = [
-    ":install_app",
+    ":browser_install_script",
     ":updater_bundle",
     ":updater_install_script",
     "//chrome/updater/mac/signing",
@@ -45,15 +47,18 @@ source_set("updater_tests") {
   ]
 }
 
-mac_app_bundle("updater_bundle") {
+tweak_info_plist("updater_plist") {
   info_plist = "Info.plist"
+}
+
+mac_app_bundle("updater_bundle") {
+  info_plist_target = ":updater_plist"
   output_name = updater_product_full_name
   extra_substitutions =
       [ "MAC_BUNDLE_IDENTIFIER=$mac_updater_bundle_identifier" ]
 
   sources = [ "main.cc" ]
   deps = [
-    ":install_app",
     ":network_fetcher_sources",
     ":updater_setup_sources",
     "//chrome/updater:lib",
@@ -62,8 +67,6 @@ mac_app_bundle("updater_bundle") {
 
 source_set("xpc_names") {
   sources = [
-    "setup/info_plist.h",
-    "setup/info_plist.mm",
     "xpc_service_names.h",
     "xpc_service_names.mm",
   ]
@@ -73,7 +76,21 @@ source_set("xpc_names") {
     "//chrome/updater:version_header",
   ]
 
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
+}
+
+source_set("util") {
+  sources = [
+    "util.h",
+    "util.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/updater:version_header",
+  ]
+
+  frameworks = [ "Foundation.framework" ]
 }
 
 source_set("updater_setup_sources") {
@@ -84,6 +101,7 @@ source_set("updater_setup_sources") {
 
   deps = [
     ":network_fetcher_sources",
+    ":util",
     ":xpc_names",
     "//base",
     "//chrome/common/mac:launchd",
@@ -95,32 +113,16 @@ source_set("updater_setup_sources") {
 
   allow_circular_includes_from = [ "//chrome/updater:base" ]
 
-  libs = [
+  frameworks = [
     "AppKit.framework",
     "CoreServices.framework",
     "ServiceManagement.framework",
   ]
 }
 
-source_set("install_app") {
-  sources = [
-    "setup/install_app.cc",
-    "setup/install_app.h",
-    "setup/swap_app.cc",
-    "setup/swap_app.h",
-  ]
-
-  deps = [
-    ":updater_setup_sources",
-    "//base",
-    "//chrome/updater:lib",
-  ]
-
-  allow_circular_includes_from = [ "//chrome/updater:lib" ]
-}
-
-action("updater_install_script") {
-  script = "setup/embed_version.py"
+# TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
+python2_action("updater_install_script") {
+  script = "embed_variables.py"
 
   inputs = [
     script,
@@ -134,6 +136,28 @@ action("updater_install_script") {
     rebase_path("setup/.install.sh"),
     "-o",
     rebase_path(root_out_dir + "/chrome/updater/.install"),
+    "-p",
+    updater_product_full_name,
+  ]
+}
+
+# TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
+python2_action("browser_install_script") {
+  script = "embed_variables.py"
+
+  inputs = [
+    script,
+    ".install.sh",
+  ]
+
+  outputs = [ "$root_out_dir/$browser_product_name Packaging/updater/.install" ]
+
+  args = [
+    "-i",
+    rebase_path(".install.sh"),
+    "-o",
+    rebase_path(
+        root_out_dir + "/$browser_product_name Packaging/updater/.install"),
     "-v",
     chrome_version_full,
   ]
@@ -156,7 +180,6 @@ source_set("updater_setup_tests") {
   data = [ "//chrome/test/data/updater/updater_setup_test_dmg.dmg" ]
 
   deps = [
-    ":install_app",
     ":installer_sources",
     ":updater_setup_sources",
     "//base",

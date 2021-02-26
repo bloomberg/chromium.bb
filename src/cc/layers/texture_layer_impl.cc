@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -104,7 +105,7 @@ bool TextureLayerImpl::WillDraw(
   return resource_id_;
 }
 
-void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
+void TextureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
   DCHECK(resource_id_);
 

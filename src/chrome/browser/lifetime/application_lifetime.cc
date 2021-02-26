@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
-#include "base/task/post_task.h"
 #include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -140,8 +139,8 @@ void AttemptRestartInternal(IgnoreUnloadHandlers ignore_unload_handlers) {
   // Make sure we don't send stop request to the session manager.
   g_send_stop_request_to_session_manager = false;
   // Run exit process in clean stack.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&ExitIgnoreUnloadHandlers));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ExitIgnoreUnloadHandlers));
 #else
   // Set the flag to restore state after the restart.
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
@@ -165,7 +164,7 @@ void MarkAsCleanShutdown() {
 
 void AttemptExitInternal(bool try_to_quit_application) {
   // On Mac, the platform-specific part handles setting this.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   if (try_to_quit_application)
     browser_shutdown::SetTryingToQuit(true);
 #endif

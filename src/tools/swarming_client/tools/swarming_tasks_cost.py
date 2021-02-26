@@ -20,8 +20,9 @@ import sys
 from six.moves import urllib
 
 
-CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
+CLIENT_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__.decode(sys.getfilesystemencoding()))))
 
 _EPOCH = datetime.datetime.utcfromtimestamp(0)
 
@@ -86,14 +87,9 @@ def parse_time_option(value):
     return _EPOCH + datetime.timedelta(seconds=int(value))
   except ValueError:
     pass
-  for fmt in (
-      '%Y-%m-%d',
-      '%Y-%m-%d %H:%M',
-      '%Y-%m-%dT%H:%M',
-      '%Y-%m-%d %H:%M:%S',
-      '%Y-%m-%dT%H:%M:%S',
-      '%Y-%m-%d %H:%M:%S.%f',
-      '%Y-%m-%dT%H:%M:%S.%f'):
+  for fmt in ('%Y-%m-%d', '%Y-%m-%d %H:%M', '%Y-%m-%dT%H:%M',
+              '%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S.%f',
+              '%Y-%m-%dT%H:%M:%S.%f'):
     try:
       return datetime.datetime.strptime(value, fmt)
     except ValueError:
@@ -159,13 +155,17 @@ def fetch_data(options):
       'end': int((options.end - _EPOCH).total_seconds()),
   })
   cmd = [
-    sys.executable, os.path.join(CLIENT_DIR, 'swarming.py'),
-    'query',
-    '-S', options.swarming,
-    '--json', options.json,
-    '--limit', '0',
-    '--progress',
-    url,
+      sys.executable,
+      os.path.join(CLIENT_DIR, 'swarming.py'),
+      'query',
+      '-S',
+      options.swarming,
+      '--json',
+      options.json,
+      '--limit',
+      '0',
+      '--progress',
+      url,
   ]
   if options.verbose:
     cmd.extend(('--verbose', '--verbose', '--verbose'))
@@ -183,8 +183,8 @@ def stats(tasks, show_cost):
   # - 'ri' means ran, idempotent
   # - 'dd' means deduplicated.
   rn = [
-    i for i in tasks
-    if not i.get('deduped_from') and not i.get('properties_hash')
+      i for i in tasks
+      if not i.get('deduped_from') and not i.get('properties_hash')
   ]
   ri = [
     i for i in tasks if not i.get('deduped_from') and i.get('properties_hash')
@@ -195,7 +195,8 @@ def stats(tasks, show_cost):
   failures = [i for i in tasks if i.get('failure')]
   internal_failures = [i for i in tasks if i.get('internal_failure')]
   two_tries = [
-    i for i in tasks if i.get('try_number') == '2' and not i.get('deduped_from')
+      i for i in tasks
+      if i.get('try_number') == '2' and not i.get('deduped_from')
   ]
   # TODO(maruel): 'state'
 
@@ -208,10 +209,10 @@ def stats(tasks, show_cost):
   cost_ri = sum(sum(i.get('costs_usd') or [0.]) for i in ri)
   cost_dd = sum(i.get('cost_saved_usd', 0.) for i in dd)
   cost_total = cost_rn + cost_ri + cost_dd
-  pendings = sorted(
-    (parse_time(i['started_ts']) - parse_time(i['created_ts'])).total_seconds()
-    for i in tasks if i.get('started_ts') and not i.get('deduped_from')
-  )
+  pendings = sorted((parse_time(i['started_ts']) -
+                     parse_time(i['created_ts'])).total_seconds()
+                    for i in tasks
+                    if i.get('started_ts') and not i.get('deduped_from'))
   pending_total = datetime.timedelta(seconds=round(sum(pendings), 2))
   pending_avg = datetime.timedelta(seconds=round(average(pendings), 2))
   pending_med = datetime.timedelta(seconds=round(median(pendings), 2))
@@ -238,36 +239,28 @@ def stats(tasks, show_cost):
   # Print results as a table.
   if rn:
     cost = '  %7.2f$ (%5.1f%%)' % (cost_rn, percent_rn_cost_total)
-    print(
-        '  %6d (%5.1f%%)  %18s (%5.1f%%)%s  '
-        'Real tasks executed, not idempotent' % (
-          len(rn), percent_rn_nb_total,
-          seconds_to_timedelta(duration_rn), percent_rn_duration_total,
-          cost if show_cost else ''))
+    print('  %6d (%5.1f%%)  %18s (%5.1f%%)%s  '
+          'Real tasks executed, not idempotent' %
+          (len(rn), percent_rn_nb_total, seconds_to_timedelta(duration_rn),
+           percent_rn_duration_total, cost if show_cost else ''))
   if ri:
     cost = '  %7.2f$ (%5.1f%%)' % (cost_ri, percent_ri_cost_total)
-    print(
-        '  %6d (%5.1f%%)  %18s (%5.1f%%)%s  '
-        'Real tasks executed, idempotent' % (
-          len(ri), percent_ri_nb_total,
-          seconds_to_timedelta(duration_ri), percent_ri_duration_total,
-          cost if show_cost else ''))
+    print('  %6d (%5.1f%%)  %18s (%5.1f%%)%s  '
+          'Real tasks executed, idempotent' %
+          (len(ri), percent_ri_nb_total, seconds_to_timedelta(duration_ri),
+           percent_ri_duration_total, cost if show_cost else ''))
   if ri and rn:
     cost = '  %7.2f$      ' % (cost_rn + cost_ri)
-    print(
-        '  %6d           %18s         %s     '
-        'Real tasks executed, all types' % (
-          len(rn) + len(ri),
-          seconds_to_timedelta(duration_rn + duration_ri),
-          cost if show_cost else ''))
+    print('  %6d           %18s         %s     '
+          'Real tasks executed, all types' %
+          (len(rn) + len(ri), seconds_to_timedelta(duration_rn + duration_ri),
+           cost if show_cost else ''))
   if dd:
     cost = '  %7.2f$*(%5.1f%%)' % (cost_dd, percent_dd_cost_total)
-    print(
-        '  %6d*(%5.1f%%)  %18s*(%5.1f%%)%s  *Wasn\'t run, '
-        'previous results reused' % (
-          len(dd), percent_dd_nb_total,
-          seconds_to_timedelta(duration_dd), percent_dd_duration_total,
-          cost if show_cost else ''))
+    print('  %6d*(%5.1f%%)  %18s*(%5.1f%%)%s  *Wasn\'t run, '
+          'previous results reused' %
+          (len(dd), percent_dd_nb_total, seconds_to_timedelta(duration_dd),
+           percent_dd_duration_total, cost if show_cost else ''))
     cost = '           (%5.1f%%)' % (percent_dd_cost_rel)
     print(
         '         (%5.1f%%)                     (%5.1f%%)%s  '
@@ -336,39 +329,50 @@ def present_users(items):
 def main():
   parser = optparse.OptionParser(description=sys.modules['__main__'].__doc__)
   parser.add_option(
-      '-S', '--swarming',
-      metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
+      '-S',
+      '--swarming',
+      metavar='URL',
+      default=os.environ.get('SWARMING_SERVER', ''),
       help='Swarming server to use')
   parser.add_option(
       '--start', help='Starting date in UTC; defaults to 25 hours ago')
-  parser.add_option(
-      '--end', help='End date in UTC; defaults to --start+1 day')
+  parser.add_option('--end', help='End date in UTC; defaults to --start+1 day')
   parser.add_option(
       '--no-cost', action='store_false', dest='cost', default=True,
       help='Strip $ from display')
   parser.add_option(
       '--users', action='store_true', help='Display top users instead')
   parser.add_option(
-      '--json', default='tasks.json',
+      '--json',
+      default='tasks.json',
       help='File containing raw data; default: %default')
   parser.add_option('-v', '--verbose', action='count', default=0)
 
   group = optparse.OptionGroup(parser, 'Grouping')
   group.add_option(
-      '--major-os', action='store_const',
-      dest='bucket', const=MAJOR_OS, default=MAJOR_OS,
+      '--major-os',
+      action='store_const',
+      dest='bucket',
+      const=MAJOR_OS,
+      default=MAJOR_OS,
       help='Classify by OS type, independent of OS version (default)')
   group.add_option(
-      '--minor-os', action='store_const',
-      dest='bucket', const=MINOR_OS,
+      '--minor-os',
+      action='store_const',
+      dest='bucket',
+      const=MINOR_OS,
       help='Classify by minor OS version')
   group.add_option(
-      '--gpu', action='store_const',
-      dest='bucket', const=MINOR_OS_GPU,
+      '--gpu',
+      action='store_const',
+      dest='bucket',
+      const=MINOR_OS_GPU,
       help='Classify by minor OS version and GPU type when requested')
   group.add_option(
-      '--asan', action='store_const',
-      dest='bucket', const=MAJOR_OS_ASAN,
+      '--asan',
+      action='store_const',
+      dest='bucket',
+      const=MAJOR_OS_ASAN,
       help='Classify by major OS version and ASAN')
   parser.add_option_group(group)
 
@@ -386,12 +390,9 @@ def main():
     items = json.load(f)['items']
   first = items[-1]
   last = items[0]
-  print(
-      'From %s to %s  (%s)' % (
-        first['created_ts'].split('.')[0],
-        last['created_ts'].split('.')[0],
-        parse_time(last['created_ts']) - parse_time(first['created_ts'])
-        ))
+  print('From %s to %s  (%s)' %
+        (first['created_ts'].split('.')[0], last['created_ts'].split('.')[0],
+         parse_time(last['created_ts']) - parse_time(first['created_ts'])))
   print('')
 
   if options.users:

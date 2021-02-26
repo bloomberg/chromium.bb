@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_COMBOBOX_COMBOBOX_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -15,6 +16,7 @@
 #include "ui/base/models/combobox_model_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/prefix_delegate.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/style/typography.h"
 
 namespace gfx {
@@ -30,7 +32,6 @@ namespace test {
 class ComboboxTestApi;
 }
 
-class ComboboxListener;
 class FocusRing;
 class MenuRunner;
 class PrefixSelector;
@@ -39,13 +40,16 @@ class PrefixSelector;
 // Combobox has two distinct parts, the drop down arrow and the text.
 class VIEWS_EXPORT Combobox : public View,
                               public PrefixDelegate,
-                              public ButtonListener,
                               public ui::ComboboxModelObserver {
  public:
   METADATA_HEADER(Combobox);
 
   static constexpr int kDefaultComboboxTextContext = style::CONTEXT_BUTTON;
   static constexpr int kDefaultComboboxTextStyle = style::STYLE_PRIMARY;
+
+  // A combobox with an empty model.
+  explicit Combobox(int text_context = kDefaultComboboxTextContext,
+                    int text_style = kDefaultComboboxTextStyle);
 
   // |model| is owned by the combobox when using this constructor.
   explicit Combobox(std::unique_ptr<ui::ComboboxModel> model,
@@ -59,8 +63,10 @@ class VIEWS_EXPORT Combobox : public View,
 
   const gfx::FontList& GetFontList() const;
 
-  // Sets the listener which will be called when a selection has been made.
-  void set_listener(ComboboxListener* listener) { listener_ = listener; }
+  // Sets the callback which will be called when a selection has been made.
+  void SetCallback(base::RepeatingClosure callback) {
+    callback_ = std::move(callback);
+  }
 
   // Gets/Sets the selected index.
   int GetSelectedIndex() const { return selected_index_; }
@@ -70,10 +76,15 @@ class VIEWS_EXPORT Combobox : public View,
   // the found index and returns true. Otherwise simply noops and returns false.
   bool SelectValue(const base::string16& value);
 
-  ui::ComboboxModel* model() const { return model_; }
+  void SetOwnedModel(std::unique_ptr<ui::ComboboxModel> model);
 
-  // Set the tooltip text, and the accessible name if it is currently empty.
-  void SetTooltipText(const base::string16& tooltip_text);
+  void SetModel(ui::ComboboxModel* model);
+  ui::ComboboxModel* GetModel() const { return model_; }
+
+  // Gets/Sets the tooltip text, and the accessible name if it is currently
+  // empty.
+  base::string16 GetTooltipTextAndAccessibleName() const;
+  void SetTooltipTextAndAccessibleName(const base::string16& tooltip_text);
 
   // Set the accessible name of the combobox.
   void SetAccessibleName(const base::string16& name);
@@ -84,6 +95,10 @@ class VIEWS_EXPORT Combobox : public View,
   // Callers are responsible for restoring validity with selection changes.
   void SetInvalid(bool invalid);
   bool GetInvalid() const { return invalid_; }
+
+  // Whether the combobox should use the largest label as the content size.
+  void SetSizeToLargestLabel(bool size_to_largest_label);
+  bool GetSizeToLargestLabel() const { return size_to_largest_label_; }
 
   // Overridden from View:
   gfx::Size CalculatePreferredSize() const override;
@@ -103,16 +118,13 @@ class VIEWS_EXPORT Combobox : public View,
   void SetSelectedRow(int row) override;
   base::string16 GetTextForRow(int row) override;
 
-  // Overridden from ButtonListener:
-  void ButtonPressed(Button* sender, const ui::Event& event) override;
-
  protected:
-  void set_size_to_largest_label(bool size_to_largest_label) {
-    size_to_largest_label_ = size_to_largest_label;
-  }
-
   // Overridden from ComboboxModelObserver:
   void OnComboboxModelChanged(ui::ComboboxModel* model) override;
+
+  // Getters to be used by metadata.
+  const base::RepeatingClosure& GetCallback() const;
+  const std::unique_ptr<ui::ComboboxModel>& GetOwnedModel() const;
 
  private:
   friend class test::ComboboxTestApi;
@@ -126,7 +138,10 @@ class VIEWS_EXPORT Combobox : public View,
   void AdjustBoundsForRTLUI(gfx::Rect* rect) const;
 
   // Draws the selected value of the drop down list
-  void PaintText(gfx::Canvas* canvas);
+  void PaintIconAndText(gfx::Canvas* canvas);
+
+  // Opens the dropdown menu in response to |event|.
+  void ArrowButtonPressed(const ui::Event& event);
 
   // Show the drop down list
   void ShowDropDownMenu(ui::MenuSourceType source_type);
@@ -153,7 +168,7 @@ class VIEWS_EXPORT Combobox : public View,
   std::unique_ptr<ui::ComboboxModel> owned_model_;
 
   // Reference to our model, which may be owned or not.
-  ui::ComboboxModel* model_;
+  ui::ComboboxModel* model_ = nullptr;
 
   // Typography context for the text written in the combobox and the options
   // shown in the drop-down menu.
@@ -163,14 +178,14 @@ class VIEWS_EXPORT Combobox : public View,
   // in the drop-down menu.
   const int text_style_;
 
-  // Our listener. Not owned. Notified when the selected index change.
-  ComboboxListener* listener_;
+  // Callback notified when the selected index changes.
+  base::RepeatingClosure callback_;
 
   // The current selected index; -1 and means no selection.
-  int selected_index_;
+  int selected_index_ = -1;
 
   // True when the selection is visually denoted as invalid.
-  bool invalid_;
+  bool invalid_ = false;
 
   // The accessible name of this combobox.
   base::string16 accessible_name_;
@@ -204,16 +219,29 @@ class VIEWS_EXPORT Combobox : public View,
   // When true, the size of contents is defined by the selected label.
   // Otherwise, it's defined by the widest label in the menu. If this is set to
   // true, the parent view must relayout in ChildPreferredSizeChanged().
-  bool size_to_largest_label_;
+  bool size_to_largest_label_ = true;
 
   // The focus ring for this Combobox.
-  std::unique_ptr<FocusRing> focus_ring_;
+  FocusRing* focus_ring_ = nullptr;
 
   ScopedObserver<ui::ComboboxModel, ui::ComboboxModelObserver> observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Combobox);
 };
 
+BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Combobox, View)
+VIEW_BUILDER_PROPERTY(base::RepeatingClosure, Callback)
+VIEW_BUILDER_PROPERTY(std::unique_ptr<ui::ComboboxModel>, OwnedModel)
+VIEW_BUILDER_PROPERTY(ui::ComboboxModel*, Model)
+VIEW_BUILDER_PROPERTY(int, SelectedIndex)
+VIEW_BUILDER_PROPERTY(bool, Invalid)
+VIEW_BUILDER_PROPERTY(bool, SizeToLargestLabel)
+VIEW_BUILDER_PROPERTY(base::string16, AccessibleName)
+VIEW_BUILDER_PROPERTY(base::string16, TooltipTextAndAccessibleName)
+END_VIEW_BUILDER
+
 }  // namespace views
+
+DEFINE_VIEW_BUILDER(VIEWS_EXPORT, Combobox)
 
 #endif  // UI_VIEWS_CONTROLS_COMBOBOX_COMBOBOX_H_

@@ -4,8 +4,8 @@
 
 #include "net/third_party/quiche/src/quic/core/crypto/tls_connection.h"
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -93,12 +93,15 @@ TlsConnection::TlsConnection(SSL_CTX* ssl_ctx,
       this);
 }
 // static
-bssl::UniquePtr<SSL_CTX> TlsConnection::CreateSslCtx() {
+bssl::UniquePtr<SSL_CTX> TlsConnection::CreateSslCtx(int cert_verify_mode) {
   CRYPTO_library_init();
   bssl::UniquePtr<SSL_CTX> ssl_ctx(SSL_CTX_new(TLS_with_buffers_method()));
   SSL_CTX_set_min_proto_version(ssl_ctx.get(), TLS1_3_VERSION);
   SSL_CTX_set_max_proto_version(ssl_ctx.get(), TLS1_3_VERSION);
   SSL_CTX_set_quic_method(ssl_ctx.get(), &kSslQuicMethod);
+  if (cert_verify_mode != SSL_VERIFY_NONE) {
+    SSL_CTX_set_custom_verify(ssl_ctx.get(), cert_verify_mode, &VerifyCallback);
+  }
   return ssl_ctx;
 }
 
@@ -108,32 +111,16 @@ TlsConnection* TlsConnection::ConnectionFromSsl(const SSL* ssl) {
       ssl, SslIndexSingleton::GetInstance()->ssl_ex_data_index_connection()));
 }
 
+// static
+enum ssl_verify_result_t TlsConnection::VerifyCallback(SSL* ssl,
+                                                       uint8_t* out_alert) {
+  return ConnectionFromSsl(ssl)->delegate_->VerifyCert(out_alert);
+}
+
 const SSL_QUIC_METHOD TlsConnection::kSslQuicMethod{
     TlsConnection::SetReadSecretCallback, TlsConnection::SetWriteSecretCallback,
     TlsConnection::WriteMessageCallback, TlsConnection::FlushFlightCallback,
     TlsConnection::SendAlertCallback};
-
-// static
-int TlsConnection::SetEncryptionSecretCallback(
-    SSL* ssl,
-    enum ssl_encryption_level_t level,
-    const uint8_t* read_key,
-    const uint8_t* write_key,
-    size_t key_length) {
-  // TODO(nharper): replace these vectors and memcpys with spans (which
-  // unfortunately doesn't yet exist in quic/platform/api).
-  std::vector<uint8_t> read_secret(key_length), write_secret(key_length);
-  memcpy(read_secret.data(), read_key, key_length);
-  memcpy(write_secret.data(), write_key, key_length);
-  TlsConnection::Delegate* delegate = ConnectionFromSsl(ssl)->delegate_;
-  const SSL_CIPHER* cipher = SSL_get_pending_cipher(ssl);
-  delegate->SetWriteSecret(QuicEncryptionLevel(level), cipher, write_secret);
-  if (!delegate->SetReadSecret(QuicEncryptionLevel(level), cipher,
-                               read_secret)) {
-    return 0;
-  }
-  return 1;
-}
 
 // static
 int TlsConnection::SetReadSecretCallback(SSL* ssl,
@@ -173,7 +160,7 @@ int TlsConnection::WriteMessageCallback(SSL* ssl,
                                         size_t len) {
   ConnectionFromSsl(ssl)->delegate_->WriteMessage(
       QuicEncryptionLevel(level),
-      quiche::QuicheStringPiece(reinterpret_cast<const char*>(data), len));
+      absl::string_view(reinterpret_cast<const char*>(data), len));
   return 1;
 }
 

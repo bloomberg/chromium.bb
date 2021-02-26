@@ -9,7 +9,7 @@
 #include <sstream>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -20,12 +20,6 @@
 namespace media {
 
 namespace {
-
-std::ostream& operator<<(std::ostream& ostream,
-                         const VideoFrame::StorageType& storage_type) {
-  ostream << VideoFrame::StorageTypeToString(storage_type);
-  return ostream;
-}
 
 // Verify if the format of |frame| matches |config|.
 bool CheckVideoFrameFormat(const ImageProcessor::PortConfig& config,
@@ -42,12 +36,6 @@ bool CheckVideoFrameFormat(const ImageProcessor::PortConfig& config,
   if (frame.layout().coded_size() != config.size) {
     VLOGF(1) << "Invalid frame size=" << frame.layout().coded_size().ToString()
              << ", expected=" << config.size.ToString();
-    return false;
-  }
-
-  if (frame.storage_type() != config.storage_type()) {
-    VLOGF(1) << "Invalid frame.storage_type=" << frame.storage_type()
-             << ", input_storage_type=" << config.storage_type();
     return false;
   }
 
@@ -70,6 +58,7 @@ std::unique_ptr<ImageProcessor> ImageProcessor::Create(
     const PortConfig& input_config,
     const PortConfig& output_config,
     const std::vector<OutputMode>& preferred_output_modes,
+    VideoRotation relative_rotation,
     ErrorCB error_cb,
     scoped_refptr<base::SequencedTaskRunner> client_task_runner) {
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner =
@@ -77,9 +66,9 @@ std::unique_ptr<ImageProcessor> ImageProcessor::Create(
   auto wrapped_error_cb = base::BindRepeating(
       base::IgnoreResult(&base::SequencedTaskRunner::PostTask),
       client_task_runner, FROM_HERE, std::move(error_cb));
-  std::unique_ptr<ImageProcessorBackend> backend =
-      create_backend_cb.Run(input_config, output_config, preferred_output_modes,
-                            std::move(wrapped_error_cb), backend_task_runner);
+  std::unique_ptr<ImageProcessorBackend> backend = create_backend_cb.Run(
+      input_config, output_config, preferred_output_modes, relative_rotation,
+      std::move(wrapped_error_cb), backend_task_runner);
   if (!backend)
     return nullptr;
 

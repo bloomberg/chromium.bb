@@ -18,10 +18,10 @@
 #include "utils/SystemUtils.h"
 #include "utils/WGPUHelpers.h"
 
-#include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <vector>
 
 wgpu::Device device;
 
@@ -43,67 +43,44 @@ wgpu::RenderPipeline planePipeline;
 wgpu::RenderPipeline reflectionPipeline;
 
 void initBuffers() {
-    static const uint32_t indexData[6*6] = {
-        0, 1, 2,
-        0, 2, 3,
+    static const uint32_t indexData[6 * 6] = {0,  1,  2,  0,  2,  3,
 
-        4, 5, 6,
-        4, 6, 7,
+                                              4,  5,  6,  4,  6,  7,
 
-        8, 9, 10,
-        8, 10, 11,
+                                              8,  9,  10, 8,  10, 11,
 
-        12, 13, 14,
-        12, 14, 15,
+                                              12, 13, 14, 12, 14, 15,
 
-        16, 17, 18,
-        16, 18, 19,
+                                              16, 17, 18, 16, 18, 19,
 
-        20, 21, 22,
-        20, 22, 23
-    };
+                                              20, 21, 22, 20, 22, 23};
     indexBuffer =
         utils::CreateBufferFromData(device, indexData, sizeof(indexData), wgpu::BufferUsage::Index);
 
     static const float vertexData[6 * 4 * 6] = {
-        -1.0, -1.0,  1.0,    1.0, 0.0, 0.0,
-        1.0, -1.0,  1.0,    1.0, 0.0, 0.0,
-        1.0,  1.0,  1.0,    1.0, 0.0, 0.0,
-        -1.0,  1.0,  1.0,    1.0, 0.0, 0.0,
+        -1.0, -1.0, 1.0,  1.0, 0.0, 0.0, 1.0,  -1.0, 1.0,  1.0, 0.0, 0.0,
+        1.0,  1.0,  1.0,  1.0, 0.0, 0.0, -1.0, 1.0,  1.0,  1.0, 0.0, 0.0,
 
-        -1.0, -1.0, -1.0,    1.0, 1.0, 0.0,
-        -1.0,  1.0, -1.0,    1.0, 1.0, 0.0,
-        1.0,  1.0, -1.0,    1.0, 1.0, 0.0,
-        1.0, -1.0, -1.0,    1.0, 1.0, 0.0,
+        -1.0, -1.0, -1.0, 1.0, 1.0, 0.0, -1.0, 1.0,  -1.0, 1.0, 1.0, 0.0,
+        1.0,  1.0,  -1.0, 1.0, 1.0, 0.0, 1.0,  -1.0, -1.0, 1.0, 1.0, 0.0,
 
-        -1.0,  1.0, -1.0,    1.0, 0.0, 1.0,
-        -1.0,  1.0,  1.0,    1.0, 0.0, 1.0,
-        1.0,  1.0,  1.0,    1.0, 0.0, 1.0,
-        1.0,  1.0, -1.0,    1.0, 0.0, 1.0,
+        -1.0, 1.0,  -1.0, 1.0, 0.0, 1.0, -1.0, 1.0,  1.0,  1.0, 0.0, 1.0,
+        1.0,  1.0,  1.0,  1.0, 0.0, 1.0, 1.0,  1.0,  -1.0, 1.0, 0.0, 1.0,
 
-        -1.0, -1.0, -1.0,    0.0, 1.0, 0.0,
-        1.0, -1.0, -1.0,    0.0, 1.0, 0.0,
-        1.0, -1.0,  1.0,    0.0, 1.0, 0.0,
-        -1.0, -1.0,  1.0,    0.0, 1.0, 0.0,
+        -1.0, -1.0, -1.0, 0.0, 1.0, 0.0, 1.0,  -1.0, -1.0, 0.0, 1.0, 0.0,
+        1.0,  -1.0, 1.0,  0.0, 1.0, 0.0, -1.0, -1.0, 1.0,  0.0, 1.0, 0.0,
 
-        1.0, -1.0, -1.0,    0.0, 1.0, 1.0,
-        1.0,  1.0, -1.0,    0.0, 1.0, 1.0,
-        1.0,  1.0,  1.0,    0.0, 1.0, 1.0,
-        1.0, -1.0,  1.0,    0.0, 1.0, 1.0,
+        1.0,  -1.0, -1.0, 0.0, 1.0, 1.0, 1.0,  1.0,  -1.0, 0.0, 1.0, 1.0,
+        1.0,  1.0,  1.0,  0.0, 1.0, 1.0, 1.0,  -1.0, 1.0,  0.0, 1.0, 1.0,
 
-        -1.0, -1.0, -1.0,    1.0, 1.0, 1.0,
-        -1.0, -1.0,  1.0,    1.0, 1.0, 1.0,
-        -1.0,  1.0,  1.0,    1.0, 1.0, 1.0,
-        -1.0,  1.0, -1.0,    1.0, 1.0, 1.0
-    };
+        -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, -1.0, -1.0, 1.0,  1.0, 1.0, 1.0,
+        -1.0, 1.0,  1.0,  1.0, 1.0, 1.0, -1.0, 1.0,  -1.0, 1.0, 1.0, 1.0};
     vertexBuffer = utils::CreateBufferFromData(device, vertexData, sizeof(vertexData),
                                                wgpu::BufferUsage::Vertex);
 
     static const float planeData[6 * 4] = {
-        -2.0, -1.0, -2.0,    0.5, 0.5, 0.5,
-        2.0, -1.0, -2.0,    0.5, 0.5, 0.5,
-        2.0, -1.0,  2.0,    0.5, 0.5, 0.5,
-        -2.0, -1.0,  2.0,    0.5, 0.5, 0.5,
+        -2.0, -1.0, -2.0, 0.5, 0.5, 0.5, 2.0,  -1.0, -2.0, 0.5, 0.5, 0.5,
+        2.0,  -1.0, 2.0,  0.5, 0.5, 0.5, -2.0, -1.0, 2.0,  0.5, 0.5, 0.5,
     };
     planeBuffer = utils::CreateBufferFromData(device, planeData, sizeof(planeData),
                                               wgpu::BufferUsage::Vertex);
@@ -119,7 +96,7 @@ void init() {
 
     queue = device.GetDefaultQueue();
     swapchain = GetSwapChain(device);
-    swapchain.Configure(GetPreferredSwapChainTextureFormat(), wgpu::TextureUsage::OutputAttachment,
+    swapchain.Configure(GetPreferredSwapChainTextureFormat(), wgpu::TextureUsage::RenderAttachment,
                         640, 480);
 
     initBuffers();
@@ -191,15 +168,13 @@ void init() {
     transformBuffer[1] = utils::CreateBufferFromData(device, &transform, sizeof(glm::mat4),
                                                      wgpu::BufferUsage::Uniform);
 
-    bindGroup[0] = utils::MakeBindGroup(device, bgl, {
-        {0, cameraBuffer, 0, sizeof(CameraData)},
-        {1, transformBuffer[0], 0, sizeof(glm::mat4)}
-    });
+    bindGroup[0] = utils::MakeBindGroup(
+        device, bgl,
+        {{0, cameraBuffer, 0, sizeof(CameraData)}, {1, transformBuffer[0], 0, sizeof(glm::mat4)}});
 
-    bindGroup[1] = utils::MakeBindGroup(device, bgl, {
-        {0, cameraBuffer, 0, sizeof(CameraData)},
-        {1, transformBuffer[1], 0, sizeof(glm::mat4)}
-    });
+    bindGroup[1] = utils::MakeBindGroup(
+        device, bgl,
+        {{0, cameraBuffer, 0, sizeof(CameraData)}, {1, transformBuffer[1], 0, sizeof(glm::mat4)}});
 
     depthStencilView = CreateDefaultDepthStencilView(device);
 
@@ -250,19 +225,22 @@ void init() {
     cameraData.proj = glm::perspective(glm::radians(45.0f), 1.f, 1.0f, 100.0f);
 }
 
-struct {uint32_t a; float b;} s;
+struct {
+    uint32_t a;
+    float b;
+} s;
 void frame() {
     s.a = (s.a + 1) % 256;
     s.b += 0.01f;
-    if (s.b >= 1.0f) {s.b = 0.0f;}
+    if (s.b >= 1.0f) {
+        s.b = 0.0f;
+    }
 
-    cameraData.view = glm::lookAt(
-        glm::vec3(8.f * std::sin(glm::radians(s.b * 360.f)), 2.f, 8.f * std::cos(glm::radians(s.b * 360.f))),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(0.0f, 1.0f, 0.0f)
-    );
+    cameraData.view = glm::lookAt(glm::vec3(8.f * std::sin(glm::radians(s.b * 360.f)), 2.f,
+                                            8.f * std::cos(glm::radians(s.b * 360.f))),
+                                  glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    cameraBuffer.SetSubData(0, sizeof(CameraData), &cameraData);
+    queue.WriteBuffer(cameraBuffer, 0, &cameraData, sizeof(CameraData));
 
     wgpu::TextureView backbufferView = swapchain.GetCurrentTextureView();
     utils::ComboRenderPassDescriptor renderPass({backbufferView}, depthStencilView);
@@ -273,7 +251,7 @@ void frame() {
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup[0]);
         pass.SetVertexBuffer(0, vertexBuffer);
-        pass.SetIndexBuffer(indexBuffer);
+        pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32);
         pass.DrawIndexed(36);
 
         pass.SetStencilReference(0x1);

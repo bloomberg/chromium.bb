@@ -23,10 +23,54 @@ mojom("mojom") {
   ]
 
   if (is_chromeos) {
-    sources += [ "pdf_flattener.mojom" ]
+    sources += [
+      "pdf_flattener.mojom",
+      "pdf_thumbnailer.mojom",
+    ]
+    deps += [ "//skia/public/mojom" ]
   }
 
   if (is_win) {
     sources += [ "pdf_to_emf_converter.mojom" ]
   }
+
+  if (is_win || is_mac || is_linux || is_chromeos) {
+    sources += [ "print_backend_service.mojom" ]
+  }
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "printing.mojom.PdfRenderSettings"
+          cpp = "::printing::PdfRenderSettings"
+        },
+        {
+          mojom = "printing.mojom.PdfRenderSettings::Mode"
+          cpp = "::printing::PdfRenderSettings::Mode"
+        },
+      ]
+      traits_headers = [ "pdf_render_settings_mojom_traits.h" ]
+      traits_sources = [ "pdf_render_settings_mojom_traits.cc" ]
+      traits_public_deps = [ "//printing" ]
+    },
+    {
+      types = [
+        {
+          mojom = "printing.mojom.PwgRasterSettings::TransformType"
+          cpp = "::printing::PwgRasterTransformType"
+        },
+        {
+          mojom = "printing.mojom.PwgRasterSettings"
+          cpp = "::printing::PwgRasterSettings"
+        },
+      ]
+      traits_headers = [ "pdf_to_pwg_raster_converter_mojom_traits.h" ]
+      traits_sources = [ "pdf_to_pwg_raster_converter_mojom_traits.cc" ]
+      traits_public_deps = [
+        "//printing",
+        "//printing/mojom",
+      ]
+    },
+  ]
 }

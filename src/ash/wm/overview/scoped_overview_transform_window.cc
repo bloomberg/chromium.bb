@@ -27,13 +27,18 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/scoped_window_event_targeting_blocker.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_observer.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
@@ -51,6 +56,72 @@ bool immediate_close_for_tests = false;
 
 // Delay closing window to allow it to shrink and fade out.
 constexpr int kCloseWindowDelayInMilliseconds = 150;
+
+// Layer animation observer that is attached to a clip animation. Removes the
+// clip and then self destructs after the animation is finished.
+class RemoveClipObserver : public ui::ImplicitAnimationObserver,
+                           public aura::WindowObserver {
+ public:
+  explicit RemoveClipObserver(aura::Window* window) : window_(window) {
+    auto* animator = window_->layer()->GetAnimator();
+    DCHECK(window_->layer()->GetAnimator()->is_animating());
+
+    const auto original_transition_duration = animator->GetTransitionDuration();
+    // Don't let |settings| overwrite the existing animation's duration.
+    ui::ScopedLayerAnimationSettings settings{animator};
+    settings.SetTransitionDuration(original_transition_duration);
+    settings.AddObserver(this);
+    window_->AddObserver(this);
+  }
+  RemoveClipObserver(const RemoveClipObserver&) = delete;
+  RemoveClipObserver& operator=(const RemoveClipObserver&) = delete;
+  ~RemoveClipObserver() override {
+    StopObservingImplicitAnimations();
+    window_->RemoveObserver(this);
+    window_ = nullptr;
+  }
+
+ private:
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    window_->layer()->SetClipRect(gfx::Rect());
+    delete this;
+  }
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    DCHECK_EQ(window_, window);
+    delete this;
+  }
+
+  // Guaranteed to be not null for the duration of |this|.
+  aura::Window* window_;
+};
+
+// Clips |window| to |clip_rect|. If |clip_rect| is empty and there is an
+// animation, animate first to a clip the size of |window|, then remove the
+// clip. Otherwise the clip animation will clip away all the contents while it
+// animates towards an empty clip rect (but not yet empty) before reshowing it
+// once the clip rect is really empty. An empty clip rect means a request to
+// clip nothing.
+void ClipWindow(aura::Window* window, const gfx::Rect& clip_rect) {
+  DCHECK(window);
+
+  ui::LayerAnimator* animator = window->layer()->GetAnimator();
+  const gfx::Rect target_clip_rect = animator->GetTargetClipRect();
+  if (target_clip_rect == clip_rect)
+    return;
+
+  gfx::Rect new_clip_rect = clip_rect;
+  if (new_clip_rect.IsEmpty() && animator->is_animating()) {
+    // Animate to a clip the size of |window|. Create a self deleting object
+    // which removes the clip when the animation is finished.
+    new_clip_rect = gfx::Rect(window->bounds().size());
+    new RemoveClipObserver(window);
+  }
+
+  window->layer()->SetClipRect(new_clip_rect);
+}
 
 }  // namespace
 
@@ -96,7 +167,11 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
     event_targeting_blocker_map_[transient] =
         std::make_unique<aura::ScopedWindowEventTargetingBlocker>(transient);
 
-    transient->SetProperty(kIsShowingInOverviewKey, true);
+    transient->SetProperty(chromeos::kIsShowingInOverviewKey, true);
+
+    // Add this as |aura::WindowObserver| for observing |kHideInOverviewKey|
+    // property changes.
+    window_observer_.Add(transient);
 
     // Hide transient children which have been specified to be hidden in
     // overview mode.
@@ -104,10 +179,8 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
       transient_children_to_hide.push_back(transient);
   }
 
-  if (!transient_children_to_hide.empty()) {
-    hidden_transient_children_ = std::make_unique<ScopedOverviewHideWindows>(
-        std::move(transient_children_to_hide), /*forced_hidden=*/true);
-  }
+  if (!transient_children_to_hide.empty())
+    AddHiddenTransientWindows(std::move(transient_children_to_hide));
 
   aura::client::GetTransientWindowClient()->AddObserver(this);
 
@@ -142,16 +215,22 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
 }
 
 ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
+  // Reset clipping in the case RestoreWindow() is not called, such as when
+  // |this| is dragged to another display. This is a no-op if SetClipping() was
+  // called in RestoreWindow().
+  // See crbug.com/1140639.
+  SetClipping({ClippingType::kExit, gfx::SizeF()});
+
   for (auto* transient : GetTransientTreeIterator(window_)) {
-    transient->ClearProperty(kIsShowingInOverviewKey);
+    transient->ClearProperty(chromeos::kIsShowingInOverviewKey);
     DCHECK(event_targeting_blocker_map_.contains(transient));
     event_targeting_blocker_map_.erase(transient);
   }
 
-  // Remove rounded corners and clipping.
-  UpdateRoundedCornersAndClip(/*show=*/false);
-  window_->layer()->SetClipRect(original_clip_rect_);
+  UpdateRoundedCorners(/*show=*/false);
   aura::client::GetTransientWindowClient()->RemoveObserver(this);
+
+  window_observer_.RemoveAll();
 }
 
 // static
@@ -217,6 +296,7 @@ void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform) {
   ScopedOverviewAnimationSettings animation_settings(
       overview_item_->GetExitOverviewAnimationType(), window_);
   SetOpacity(original_opacity_);
+  SetClipping({ClippingType::kExit, gfx::SizeF()});
 }
 
 void ScopedOverviewTransformWindow::BeginScopedAnimation(
@@ -225,7 +305,7 @@ void ScopedOverviewTransformWindow::BeginScopedAnimation(
   if (animation_type == OVERVIEW_ANIMATION_NONE)
     return;
 
-  for (auto* window : GetVisibleTransientTreeIterator(window_)) {
+  for (auto* window : window_util::GetVisibleTransientTreeIterator(window_)) {
     auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
         animation_type, window);
     settings->DeferPaint();
@@ -261,14 +341,14 @@ bool ScopedOverviewTransformWindow::Contains(const aura::Window* target) const {
 }
 
 gfx::RectF ScopedOverviewTransformWindow::GetTransformedBounds() const {
-  return ::ash::GetTransformedBounds(window_, GetTopInset());
+  return window_util::GetTransformedBounds(window_, GetTopInset());
 }
 
 int ScopedOverviewTransformWindow::GetTopInset() const {
   // Mirror window doesn't have insets.
   if (IsMinimized())
     return 0;
-  for (auto* window : GetVisibleTransientTreeIterator(window_)) {
+  for (auto* window : window_util::GetVisibleTransientTreeIterator(window_)) {
     // If there are regular windows in the transient ancestor tree, all those
     // windows are shown in the same overview item and the header is not masked.
     if (window != window_ &&
@@ -280,27 +360,47 @@ int ScopedOverviewTransformWindow::GetTopInset() const {
 }
 
 void ScopedOverviewTransformWindow::SetOpacity(float opacity) {
-  for (auto* window : GetVisibleTransientTreeIterator(GetOverviewWindow()))
+  for (auto* window :
+       window_util::GetVisibleTransientTreeIterator(GetOverviewWindow()))
     window->layer()->SetOpacity(opacity);
 }
 
-void ScopedOverviewTransformWindow::SetClipping(const gfx::SizeF& size) {
-  has_aspect_ratio_clipping_ = !size.IsEmpty();
-
-  // If width or height are 0, restore the overview clipping.
-  if (size.IsEmpty()) {
-    window_->layer()->SetClipRect(overview_clip_rect_);
-    return;
+void ScopedOverviewTransformWindow::SetClipping(
+    const ClippingData& clipping_data) {
+  gfx::SizeF size;
+  switch (clipping_data.first) {
+    case ClippingType::kEnter:
+      size = gfx::SizeF(window_->bounds().size());
+      break;
+    case ClippingType::kExit:
+      ClipWindow(window_, original_clip_rect_);
+      return;
+    case ClippingType::kCustom:
+      size = clipping_data.second;
+      if (size.IsEmpty()) {
+        // Given size is empty so we fallback to the overview clipping, which is
+        // the size of the window. The header will be accounted for below.
+        size = gfx::SizeF(window_->bounds().size());
+      } else {
+        // Transform affects the clip rect, so take that into account.
+        const gfx::Vector2dF scale =
+            window_->layer()->GetTargetTransform().Scale2d();
+        size.Scale(1 / scale.x(), 1 / scale.y());
+      }
+      break;
   }
 
-  // Compute the clip rect. Transform affects the clip rect, so take that into
-  // account.
-  gfx::Rect clip_rect;
-  const gfx::Vector2dF scale = window_->layer()->GetTargetTransform().Scale2d();
-  clip_rect.set_y(GetTopInset());
-  clip_rect.set_width(size.width() / scale.x());
-  clip_rect.set_height(size.height() / scale.y());
-  window_->layer()->SetClipRect(clip_rect);
+  if (size.IsEmpty())
+    return;
+
+  gfx::Rect clip_rect(gfx::ToRoundedSize(size));
+  // We add 1 to the top_inset, because in some cases, the header is not
+  // clipped fully due to what seems to be a rounding error.
+  // TODO(afakhry|sammiequon): Investigate a proper fix for this.
+  const int top_inset = GetTopInset();
+  if (top_inset > 0)
+    clip_rect.Inset(gfx::Insets(top_inset + 1, 0, 0, 0));
+  ClipWindow(window_, clip_rect);
 }
 
 gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
@@ -346,7 +446,11 @@ gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
       break;
   }
 
-  return new_bounds;
+  // If we do not use whole numbers, there may be some artifacts drawn (i.e.
+  // shadows, notches). This may be an effect of subpixel rendering. It's ok to
+  // round it here since this is the last calculation (we don't have to worry
+  // about roundoff error).
+  return gfx::RectF(gfx::ToRoundedRect(new_bounds));
 }
 
 aura::Window* ScopedOverviewTransformWindow::GetOverviewWindow() const {
@@ -380,7 +484,8 @@ void ScopedOverviewTransformWindow::PrepareForOverview() {
   // enter animation and the whole time during overview mode. For the exit
   // animation of overview mode, we need to add those requests again.
   if (features::IsTrilinearFilteringEnabled()) {
-    for (auto* window : GetVisibleTransientTreeIterator(GetOverviewWindow())) {
+    for (auto* window :
+         window_util::GetVisibleTransientTreeIterator(GetOverviewWindow())) {
       cached_and_filtered_layer_observers_.push_back(
           std::make_unique<LayerCachingAndFilteringObserver>(window->layer()));
     }
@@ -395,52 +500,19 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
   type_ = GetWindowDimensionsType(window_->bounds().size());
 }
 
-void ScopedOverviewTransformWindow::UpdateRoundedCornersAndClip(bool show) {
+void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show) {
   // Hide the corners if minimized, OverviewItemView will handle showing the
   // rounded corners on the UI.
-  const bool show_corners = show && !IsMinimized();
-  // Add the clipping which gives the overview item rounded corners, and add the
-  // shadow around the window.
+  if (IsMinimized())
+    DCHECK(!show);
+
   ui::Layer* layer = window_->layer();
   const float scale = layer->transform().Scale2d().x();
   const int radius =
       views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_LOW);
-  const gfx::RoundedCornersF radii(show_corners ? (radius / scale) : 0.0f);
+  const gfx::RoundedCornersF radii(show ? (radius / scale) : 0.0f);
   layer->SetRoundedCornerRadius(radii);
   layer->SetIsFastRoundedCorner(true);
-
-  if (!show || layer->GetAnimator()->is_animating() || IsMinimized())
-    return;
-
-  ClipHeaderIfNeeded(true);
-}
-
-void ScopedOverviewTransformWindow::ClipHeaderIfNeeded(bool animate) {
-  const int top_inset = GetTopInset();
-  if (top_inset <= 0)
-    return;
-
-  // Clipping a window to preserve aspect ratios will account for the header, so
-  // no need to clip here.
-  if (has_aspect_ratio_clipping_)
-    return;
-
-  gfx::Rect clip_rect(window_->bounds().size());
-  // We add 1 to the top_inset, because in some cases, the header is not
-  // clipped fully due to what seems to be a rounding error.
-  // TODO(afakhry|sammiequon): Investigate a proper fix for this.
-  clip_rect.Inset(0, top_inset + 1, 0, 0);
-
-  if (overview_clip_rect_ == clip_rect)
-    return;
-
-  std::unique_ptr<ScopedOverviewAnimationSettings> settings;
-  if (animate) {
-    settings = std::make_unique<ScopedOverviewAnimationSettings>(
-        OVERVIEW_ANIMATION_FRAME_HEADER_CLIP, window_);
-  }
-  window_->layer()->SetClipRect(clip_rect);
-  overview_clip_rect_ = clip_rect;
 }
 
 void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(
@@ -453,7 +525,17 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(
   event_targeting_blocker_map_[transient_child] =
       std::make_unique<aura::ScopedWindowEventTargetingBlocker>(
           transient_child);
-  transient_child->SetProperty(kIsShowingInOverviewKey, true);
+  transient_child->SetProperty(chromeos::kIsShowingInOverviewKey, true);
+
+  // Hide transient children which have been specified to be hidden in
+  // overview mode.
+  if (transient_child != window_ &&
+      transient_child->GetProperty(kHideInOverviewKey))
+    AddHiddenTransientWindows({transient_child});
+
+  // Add this as |aura::WindowObserver| for observing |kHideInOverviewKey|
+  // property changes.
+  window_observer_.Add(transient_child);
 }
 
 void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
@@ -462,9 +544,54 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
   if (parent != window_ && !::wm::HasTransientAncestor(parent, window_))
     return;
 
-  transient_child->ClearProperty(kIsShowingInOverviewKey);
+  transient_child->ClearProperty(chromeos::kIsShowingInOverviewKey);
   DCHECK(event_targeting_blocker_map_.contains(transient_child));
   event_targeting_blocker_map_.erase(transient_child);
+
+  if (window_observer_.IsObserving(transient_child))
+    window_observer_.Remove(transient_child);
+}
+
+void ScopedOverviewTransformWindow::OnWindowPropertyChanged(
+    aura::Window* window,
+    const void* key,
+    intptr_t old) {
+  if (key != kHideInOverviewKey)
+    return;
+
+  const auto current_value = window->GetProperty(kHideInOverviewKey);
+  if (current_value == old)
+    return;
+
+  if (current_value) {
+    AddHiddenTransientWindows({window});
+  } else {
+    hidden_transient_children_->RemoveWindow(window);
+  }
+}
+
+void ScopedOverviewTransformWindow::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
+  if (window == window_)
+    return;
+
+  // Transient window is repositioned. The new position within the
+  // overview item needs to be recomputed. No need to recompute if the
+  // transient is invisible. It will get placed properly when it reshows on
+  // overview end.
+  if (!window->IsVisible())
+    return;
+
+  overview_item_->SetBounds(overview_item_->target_bounds(),
+                            OVERVIEW_ANIMATION_NONE);
+}
+
+// static
+void ScopedOverviewTransformWindow::SetImmediateCloseForTests(bool immediate) {
+  immediate_close_for_tests = immediate;
 }
 
 void ScopedOverviewTransformWindow::CloseWidget() {
@@ -473,9 +600,15 @@ void ScopedOverviewTransformWindow::CloseWidget() {
     window_util::CloseWidgetForWindow(parent_window);
 }
 
-// static
-void ScopedOverviewTransformWindow::SetImmediateCloseForTests() {
-  immediate_close_for_tests = true;
+void ScopedOverviewTransformWindow::AddHiddenTransientWindows(
+    const std::vector<aura::Window*>& transient_windows) {
+  if (!hidden_transient_children_) {
+    hidden_transient_children_ = std::make_unique<ScopedOverviewHideWindows>(
+        std::move(transient_windows), /*forced_hidden=*/true);
+  } else {
+    for (auto* window : transient_windows)
+      hidden_transient_children_->AddWindow(window);
+  }
 }
 
 }  // namespace ash

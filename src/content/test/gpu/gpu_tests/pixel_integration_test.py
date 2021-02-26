@@ -64,6 +64,7 @@ class PixelIntegrationTest(
     pages = namespace.DefaultPages(cls.test_base_name)
     pages += namespace.GpuRasterizationPages(cls.test_base_name)
     pages += namespace.ExperimentalCanvasFeaturesPages(cls.test_base_name)
+    pages += namespace.LowLatencyPages(cls.test_base_name)
     pages += namespace.PaintWorkletPages(cls.test_base_name)
     # pages += namespace.NoGpuProcessPages(cls.test_base_name)
     # The following pages should run only on platforms where SwiftShader is
@@ -77,7 +78,6 @@ class PixelIntegrationTest(
       pages += namespace.DualGPUMacSpecificPages(cls.test_base_name)
     if sys.platform.startswith('win'):
       pages += namespace.DirectCompositionPages(cls.test_base_name)
-      pages += namespace.LowLatencySwapChainPages(cls.test_base_name)
       pages += namespace.HdrTestPages(cls.test_base_name)
     for p in pages:
       yield (p.name, skia_gold_integration_test_base.GPU_RELATIVE_PATH + p.url,
@@ -88,8 +88,7 @@ class PixelIntegrationTest(
     # Some pixel tests require non-standard browser arguments. Need to
     # check before running each page that it can run in the current
     # browser instance.
-    self.RestartBrowserIfNecessaryWithArgs(
-        self._AddDefaultArgs(page.browser_args))
+    self.RestartBrowserIfNecessaryWithArgs(page.browser_args)
     url = self.UrlOfStaticFilePath(test_path)
     # This property actually comes off the class, not 'self'.
     tab = self.tab
@@ -143,7 +142,14 @@ class PixelIntegrationTest(
     # Actually run the test and capture the screenshot.
     if not tab.EvaluateJavaScript('domAutomationController._succeeded'):
       self.fail('page indicated test failure')
-    screenshot = tab.Screenshot(5)
+    # Special case some tests on Fuchsia that need to grab the entire contents
+    # in the screenshot instead of just the visible portion due to small screen
+    # sizes.
+    if (PixelIntegrationTest.browser.platform.GetOSName() == 'fuchsia'
+        and page.name in pixel_test_pages.PROBLEMATIC_FUCHSIA_TESTS):
+      screenshot = tab.FullScreenshot(5)
+    else:
+      screenshot = tab.Screenshot(5)
     if screenshot is None:
       self.fail('Could not capture screenshot')
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
@@ -153,17 +159,8 @@ class PixelIntegrationTest(
                                    int(page.test_rect[2] * dpr),
                                    int(page.test_rect[3] * dpr))
 
-    build_id_args = self._GetBuildIdArgs()
-
-    # Compare images against approved images/colors.
-    if page.expected_colors:
-      # Use expected colors instead of hash comparison for validation.
-      self._ValidateScreenshotSamplesWithSkiaGold(tab, page, screenshot, dpr,
-                                                  build_id_args)
-      return
     image_name = self._UrlToImageName(page.name)
-    self._UploadTestResultToSkiaGold(
-        image_name, screenshot, page, build_id_args=build_id_args)
+    self._UploadTestResultToSkiaGold(image_name, screenshot, page)
 
   def _DoPageAction(self, tab, page):
     getattr(self, '_' + page.optional_action)(tab, page)

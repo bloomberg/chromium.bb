@@ -8,6 +8,7 @@
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/ios/ios_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
@@ -30,14 +31,13 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/ukm/ios/features.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/synthetic_trials_active_group_id_provider.h"
 #include "components/variations/variations_crash_keys.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "ios/chrome/browser/application_context_impl.h"
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -48,6 +48,7 @@
 #include "ios/chrome/browser/install_time_util.h"
 #include "ios/chrome/browser/metrics/ios_expired_histograms_array.h"
 #include "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
+#include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
@@ -75,6 +76,23 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+// Do not install allocator shim on iOS 13.4 due to high crash volume on this
+// particular version of OS. TODO(crbug.com/1108219): Remove this workaround
+// when/if the bug gets fixed.
+//
+// Do not install allocator shim for now, until it's clear why Chrome crashes
+// on iOS 14.3+ on startup.
+// TODO(crbug.com/1150599): Remove this workaround when/if the bug gets fixed.
+bool ShouldInstallAllocatorShim() {
+  return false;
+}
+#endif
+
+}  // namespace
+
 IOSChromeMainParts::IOSChromeMainParts(
     const base::CommandLine& parsed_command_line)
     : parsed_command_line_(parsed_command_line), local_state_(nullptr) {
@@ -88,7 +106,9 @@ IOSChromeMainParts::~IOSChromeMainParts() {}
 
 void IOSChromeMainParts::PreEarlyInitialization() {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  base::allocator::InitializeAllocatorShim();
+  if (ShouldInstallAllocatorShim()) {
+    base::allocator::InitializeAllocatorShim();
+  }
 #endif
 }
 
@@ -154,13 +174,18 @@ void IOSChromeMainParts::PreCreateThreads() {
   SetupFieldTrials();
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  // Start heap profiling as early as possible so it can start recording
-  // memory allocations. Requires the allocator shim to be enabled.
-  heap_profiler_controller_ = std::make_unique<HeapProfilerController>();
-  metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
-      base::BindRepeating(
-          &metrics::CallStackProfileMetricsProvider::ReceiveProfile));
-  heap_profiler_controller_->Start();
+  // Do not install allocator shim on iOS 13.4 due to high crash volume on this
+  // particular version of OS. TODO(crbug.com/1108219): Remove this workaround
+  // when/if the bug gets fixed.
+  if (ShouldInstallAllocatorShim()) {
+    // Start heap profiling as early as possible so it can start recording
+    // memory allocations. Requires the allocator shim to be enabled.
+    heap_profiler_controller_ = std::make_unique<HeapProfilerController>();
+    metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
+        base::BindRepeating(
+            &metrics::CallStackProfileMetricsProvider::ReceiveProfile));
+    heap_profiler_controller_->Start();
+  }
 #endif
 
   variations::InitCrashKeys();
@@ -230,20 +255,28 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
     variations_service->PerformPreMainMessageLoopStartup();
   }
 
-  if (base::FeatureList::IsEnabled(
-          safe_browsing::kSafeBrowsingAvailableOnIOS)) {
-    // Ensure that Safe Browsing is initialized.
-    SafeBrowsingService* safe_browsing_service =
-        application_context_->GetSafeBrowsingService();
-    base::FilePath user_data_path;
-    CHECK(base::PathService::Get(ios::DIR_USER_DATA, &user_data_path));
-    safe_browsing_service->Initialize(last_used_browser_state->GetPrefs(),
-                                      user_data_path);
+  // Initialize Chrome Browser Cloud Management.
+  auto* policy_connector = application_context_->GetBrowserPolicyConnector();
+  if (policy_connector) {
+    policy_connector->chrome_browser_cloud_management_controller()->Init(
+        application_context_->GetLocalState(),
+        application_context_->GetSharedURLLoaderFactory());
   }
+
+  // Ensure that Safe Browsing is initialized.
+  SafeBrowsingService* safe_browsing_service =
+      application_context_->GetSafeBrowsingService();
+  base::FilePath user_data_path;
+  CHECK(base::PathService::Get(ios::DIR_USER_DATA, &user_data_path));
+  safe_browsing_service->Initialize(last_used_browser_state->GetPrefs(),
+                                    user_data_path);
 }
 
 void IOSChromeMainParts::PostMainMessageLoopRun() {
   TranslateServiceIOS::Shutdown();
+#if BUILDFLAG(ENABLE_RLZ)
+  rlz::RLZTracker::CleanupRlz();
+#endif  // BUILDFLAG(ENABLE_RLZ)
   application_context_->StartTearDown();
 }
 
@@ -277,8 +310,7 @@ void IOSChromeMainParts::SetupFieldTrials() {
   // feature overrides.
   application_context_->GetVariationsService()->SetupFieldTrials(
       "dummy-enable-gpu-benchmarking", switches::kEnableFeatures,
-      switches::kDisableFeatures,
-      /*unforceable_field_trials=*/std::set<std::string>(), variation_ids,
+      switches::kDisableFeatures, variation_ids,
       std::vector<base::FeatureList::FeatureOverrideInfo>(),
       std::move(feature_list), &ios_field_trials_);
 }
@@ -286,7 +318,7 @@ void IOSChromeMainParts::SetupFieldTrials() {
 void IOSChromeMainParts::SetupMetrics() {
   metrics::MetricsService* metrics = application_context_->GetMetricsService();
   metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
-      variations::VariationsHttpHeaderProvider::GetInstance());
+      variations::VariationsIdsProvider::GetInstance());
   metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
   // Now that field trials have been created, initializes metrics recording.

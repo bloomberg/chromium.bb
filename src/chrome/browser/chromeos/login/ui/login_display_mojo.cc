@@ -64,7 +64,7 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
                             bool show_guest,
                             bool show_users,
                             bool show_new_user) {
-  host_->SetUsers(filtered_users);
+  host_->SetUserCount(filtered_users.size());
   auto* client = LoginScreenClient::Get();
 
   // ExistingUserController::DeviceSettingsChanged and others may initialize the
@@ -111,6 +111,7 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
     if (filtered_users.empty())
       return;
 
+    // TODO(crbug.com/1105387): Part of initial screen logic.
     // Check whether factory reset or debugging feature have been requested in
     // prior session, and start reset or enable debugging wizard as needed.
     // This has to happen after login-prompt-visible, as some reset dialog
@@ -137,8 +138,10 @@ void LoginDisplayMojo::OnPreferencesChanged() {
 }
 
 void LoginDisplayMojo::SetUIEnabled(bool is_enabled) {
-  if (is_enabled)
+  // OOBE UI is null iff we display the user adding screen.
+  if (is_enabled && host_->GetOobeUI() != nullptr) {
     host_->GetOobeUI()->ShowOobeUI(false);
+  }
 }
 
 void LoginDisplayMojo::ShowError(int error_msg_id,
@@ -150,6 +153,9 @@ void LoginDisplayMojo::ShowError(int error_msg_id,
           << ", attempts:" << login_attempts
           << ", help_topic_id: " << help_topic_id;
   if (!webui_handler_)
+    return;
+
+  if (!host_->IsOobeUIDialogVisible())
     return;
 
   std::string error_text;
@@ -165,8 +171,9 @@ void LoginDisplayMojo::ShowError(int error_msg_id,
 
   // Only display hints about keyboard layout if the error is authentication-
   // related.
-  if (error_msg_id != IDS_LOGIN_ERROR_WHITELIST &&
-      error_msg_id != IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST &&
+  if (error_msg_id != IDS_LOGIN_ERROR_ALLOWLIST &&
+      error_msg_id != IDS_ENTERPRISE_LOGIN_ERROR_ALLOWLIST &&
+      error_msg_id != IDS_ENTERPRISE_AND_FAMILY_LINK_LOGIN_ERROR_ALLOWLIST &&
       error_msg_id != IDS_LOGIN_ERROR_OWNER_KEY_LOST &&
       error_msg_id != IDS_LOGIN_ERROR_OWNER_REQUIRED &&
       error_msg_id != IDS_LOGIN_ERROR_GOOGLE_ACCOUNT_NOT_ALLOWED &&
@@ -189,21 +196,17 @@ void LoginDisplayMojo::ShowError(int error_msg_id,
                             help_topic_id);
 }
 
-void LoginDisplayMojo::ShowErrorScreen(LoginDisplay::SigninError error_id) {
-  host_->ShowErrorScreen(error_id);
-}
-
 void LoginDisplayMojo::ShowPasswordChangedDialog(bool show_password_error,
-                                                 const std::string& email) {
-  host_->ShowPasswordChangedDialog(show_password_error, email);
+                                                 const AccountId& account_id) {
+  host_->ShowPasswordChangedDialog(show_password_error, account_id);
 }
 
 void LoginDisplayMojo::ShowSigninUI(const std::string& email) {
   host_->ShowSigninUI(email);
 }
 
-void LoginDisplayMojo::ShowWhitelistCheckFailedError() {
-  host_->ShowWhitelistCheckFailedError();
+void LoginDisplayMojo::ShowAllowlistCheckFailedError() {
+  host_->ShowAllowlistCheckFailedError();
 }
 
 void LoginDisplayMojo::Login(const UserContext& user_context,
@@ -218,20 +221,12 @@ bool LoginDisplayMojo::IsSigninInProgress() const {
   return false;
 }
 
-void LoginDisplayMojo::Signout() {
-  NOTIMPLEMENTED();
-}
-
 void LoginDisplayMojo::OnSigninScreenReady() {
   if (delegate_)
     delegate_->OnSigninScreenReady();
 }
 
 void LoginDisplayMojo::ShowEnterpriseEnrollmentScreen() {
-  NOTIMPLEMENTED();
-}
-
-void LoginDisplayMojo::ShowEnableDebuggingScreen() {
   NOTIMPLEMENTED();
 }
 
@@ -247,15 +242,7 @@ void LoginDisplayMojo::ShowWrongHWIDScreen() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayMojo::ShowUpdateRequiredScreen() {
-  NOTIMPLEMENTED();
-}
-
 void LoginDisplayMojo::CancelUserAdding() {
-  NOTIMPLEMENTED();
-}
-
-void LoginDisplayMojo::RemoveUser(const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 
@@ -264,22 +251,12 @@ void LoginDisplayMojo::SetWebUIHandler(
   webui_handler_ = webui_handler;
 }
 
-bool LoginDisplayMojo::IsShowGuest() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool LoginDisplayMojo::IsShowUsers() const {
   NOTIMPLEMENTED();
   return false;
 }
 
 bool LoginDisplayMojo::ShowUsersHasChanged() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool LoginDisplayMojo::IsAllowNewUser() const {
   NOTIMPLEMENTED();
   return false;
 }

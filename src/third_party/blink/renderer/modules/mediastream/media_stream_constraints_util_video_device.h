@@ -24,15 +24,17 @@ namespace blink {
 MODULES_EXPORT WebString
 GetVideoKindForFormat(const media::VideoCaptureFormat& format);
 
-MODULES_EXPORT WebMediaStreamTrack::FacingMode ToWebFacingMode(
+MODULES_EXPORT MediaStreamTrackPlatform::FacingMode ToPlatformFacingMode(
     media::VideoFacingMode video_facing);
 
 // This is a temporary struct to bridge blink and content mojo types.
 struct MODULES_EXPORT VideoInputDeviceCapabilities {
-  VideoInputDeviceCapabilities(String device_id,
-                               String group_id,
-                               Vector<media::VideoCaptureFormat> formats,
-                               media::VideoFacingMode facing_mode);
+  VideoInputDeviceCapabilities(
+      String device_id,
+      String group_id,
+      const media::VideoCaptureControlSupport& control_support,
+      Vector<media::VideoCaptureFormat> formats,
+      media::VideoFacingMode facing_mode);
   VideoInputDeviceCapabilities();
   VideoInputDeviceCapabilities(VideoInputDeviceCapabilities&& other);
   VideoInputDeviceCapabilities& operator=(VideoInputDeviceCapabilities&& other);
@@ -40,6 +42,7 @@ struct MODULES_EXPORT VideoInputDeviceCapabilities {
 
   String device_id;
   String group_id;
+  media::VideoCaptureControlSupport control_support;
   Vector<media::VideoCaptureFormat> formats;
   media::VideoFacingMode facing_mode;
 };

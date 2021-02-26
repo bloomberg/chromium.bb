@@ -141,7 +141,7 @@ typedef struct AudioRNNContext {
     DenoiseState *st;
 
     DECLARE_ALIGNED(32, float, window)[WINDOW_SIZE];
-    float dct_table[NB_BANDS*NB_BANDS];
+    DECLARE_ALIGNED(32, float, dct_table)[FFALIGN(NB_BANDS, 4)][FFALIGN(NB_BANDS, 4)];
 
     RNNModel *model;
 
@@ -413,8 +413,7 @@ static void inverse_transform(DenoiseState *st, float *out, const AVComplexFloat
     AVComplexFloat x[WINDOW_SIZE];
     AVComplexFloat y[WINDOW_SIZE];
 
-    for (int i = 0; i < FREQ_SIZE; i++)
-        x[i] = in[i];
+    RNN_COPY(x, in, FREQ_SIZE);
 
     for (int i = FREQ_SIZE; i < WINDOW_SIZE; i++) {
         x[i].re =  x[WINDOW_SIZE - i].re;
@@ -781,7 +780,7 @@ static float compute_pitch_gain(float xy, float xx, float yy)
     return xy / sqrtf(1.f + xx * yy);
 }
 
-static const int second_check[16] = {0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2};
+static const uint8_t second_check[16] = {0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2};
 static float remove_doubling(float *x, int maxperiod, int minperiod, int N,
                              int *T0_, int prev_period, float prev_gain)
 {
@@ -992,11 +991,9 @@ static void pitch_search(const float *x_lp, float *y,
 static void dct(AudioRNNContext *s, float *out, const float *in)
 {
     for (int i = 0; i < NB_BANDS; i++) {
-        float sum = 0.f;
+        float sum;
 
-        for (int j = 0; j < NB_BANDS; j++) {
-            sum += in[j] * s->dct_table[j * NB_BANDS + i];
-        }
+        sum = s->fdsp->scalarproduct_float(in, s->dct_table[i], FFALIGN(NB_BANDS, 4));
         out[i] = sum * sqrtf(2.f / 22);
     }
 }
@@ -1007,7 +1004,7 @@ static int compute_frame_features(AudioRNNContext *s, DenoiseState *st, AVComple
     float E = 0;
     float *ceps_0, *ceps_1, *ceps_2;
     float spec_variability = 0;
-    float Ly[NB_BANDS];
+    LOCAL_ALIGNED_32(float, Ly, [NB_BANDS]);
     LOCAL_ALIGNED_32(float, p, [WINDOW_SIZE]);
     float pitch_buf[PITCH_BUF_SIZE>>1];
     int pitch_index;
@@ -1323,21 +1320,19 @@ static void compute_rnn(AudioRNNContext *s, RNNState *rnn, float *gains, float *
     compute_gru(s, rnn->model->vad_gru, rnn->vad_gru_state, dense_out);
     compute_dense(rnn->model->vad_output, vad, rnn->vad_gru_state);
 
-    for (int i = 0; i < rnn->model->input_dense_size; i++)
-        noise_input[i] = dense_out[i];
-    for (int i = 0; i < rnn->model->vad_gru_size; i++)
-        noise_input[i + rnn->model->input_dense_size] = rnn->vad_gru_state[i];
-    for (int i = 0; i < INPUT_SIZE; i++)
-        noise_input[i + rnn->model->input_dense_size + rnn->model->vad_gru_size] = input[i];
+    memcpy(noise_input, dense_out, rnn->model->input_dense_size * sizeof(float));
+    memcpy(noise_input + rnn->model->input_dense_size,
+           rnn->vad_gru_state, rnn->model->vad_gru_size * sizeof(float));
+    memcpy(noise_input + rnn->model->input_dense_size + rnn->model->vad_gru_size,
+           input, INPUT_SIZE * sizeof(float));
 
     compute_gru(s, rnn->model->noise_gru, rnn->noise_gru_state, noise_input);
 
-    for (int i = 0; i < rnn->model->vad_gru_size; i++)
-        denoise_input[i] = rnn->vad_gru_state[i];
-    for (int i = 0; i < rnn->model->noise_gru_size; i++)
-        denoise_input[i + rnn->model->vad_gru_size] = rnn->noise_gru_state[i];
-    for (int i = 0; i < INPUT_SIZE; i++)
-        denoise_input[i + rnn->model->vad_gru_size + rnn->model->noise_gru_size] = input[i];
+    memcpy(denoise_input, rnn->vad_gru_state, rnn->model->vad_gru_size * sizeof(float));
+    memcpy(denoise_input + rnn->model->vad_gru_size,
+           rnn->noise_gru_state, rnn->model->noise_gru_size * sizeof(float));
+    memcpy(denoise_input + rnn->model->vad_gru_size + rnn->model->noise_gru_size,
+           input, INPUT_SIZE * sizeof(float));
 
     compute_gru(s, rnn->model->denoise_gru, rnn->denoise_gru_state, denoise_input);
     compute_dense(rnn->model->denoise_output, gains, rnn->denoise_gru_state);
@@ -1349,7 +1344,7 @@ static float rnnoise_channel(AudioRNNContext *s, DenoiseState *st, float *out, c
     AVComplexFloat P[WINDOW_SIZE];
     float x[FRAME_SIZE];
     float Ex[NB_BANDS], Ep[NB_BANDS];
-    float Exp[NB_BANDS];
+    LOCAL_ALIGNED_32(float, Exp, [NB_BANDS]);
     float features[NB_FEATURES];
     float g[NB_BANDS];
     float gf[FREQ_SIZE];
@@ -1477,9 +1472,9 @@ static av_cold int init(AVFilterContext *ctx)
 
     for (int i = 0; i < NB_BANDS; i++) {
         for (int j = 0; j < NB_BANDS; j++) {
-            s->dct_table[i*NB_BANDS + j] = cosf((i + .5f) * j * M_PI / NB_BANDS);
+            s->dct_table[j][i] = cosf((i + .5f) * j * M_PI / NB_BANDS);
             if (j == 0)
-                s->dct_table[i*NB_BANDS + j] *= sqrtf(.5);
+                s->dct_table[j][i] *= sqrtf(.5);
         }
     }
 

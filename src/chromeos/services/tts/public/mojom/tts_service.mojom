@@ -1,0 +1,84 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module chromeos.tts.mojom;
+
+import "services/audio/public/mojom/stream_factory.mojom";
+
+// The main interface to the TTS engine on Chrome OS. Only used by and private
+// to the Chrome OS Google TTS engine component extension. TtsService lives in a
+// tts-sandboxed process.  TtsEngineExtensionObserver, the other end of this
+// interface, in the browser process, brokers a connection between TtsService
+// and the Google TTS engine component extension through a TtsStream, but does
+// not participate otherwise.
+interface TtsService {
+  // Binds a TtsStream to this service and returns an AudioOutputStream receiver
+  // which this service uses to play audio.
+  BindTtsStream(pending_receiver<TtsStream> receiver,
+                pending_remote<audio.mojom.StreamFactory> stream_factory);
+};
+
+// Interface for the Google component TTS engine to control
+// the TtsService's production of audio. There is only ever one TtsStream
+// owned by the TtsService.
+//
+// The component extension sets up the stream's voice by doing:
+// InstallVoice(data, "voice")
+// InstallVoice(other_data, "other_voice")
+// SelectVoice("other_voice")
+//
+// After speaking using the stream (see below), the component extension can do:
+// SelectVoice("voice")
+// to change voices.
+//
+// The component extension calls the following two methods repeatedly and
+// optionally observes events.
+//
+// Speak(<a proto containing text "Hello there.">)
+// Speak(<proto containing text "Testing 1, 2, 3.")
+// Stop()
+//
+// Note that the component extension may call Stop() early, if the TTS api
+// wants to, for example, stop speech.
+interface TtsStream {
+  // Forward and install the |voice_name| encoded by |voice_bytes|.
+  InstallVoice(string voice_name, array<uint8> voice_bytes)
+      => (bool success);
+
+  // Selects a voice for streaming given a |voice_name|.
+  SelectVoice(string voice_name) => (bool success);
+
+  // Speak text described by a serialized proto.speech.tts.Text proto.
+  Speak(array<uint8> text_jspb)
+      => (pending_receiver<TtsEventObserver> event_observer);
+
+  // Stop speaking the currently speaking text, if any.
+  Stop();
+
+  // Sets the volume of the tts playback (0.0 to 1.0).
+  SetVolume(float volume);
+
+  // Pauses tts playback. Safe to call repeatedly (no-op for subsequent calls).
+  Pause();
+
+  // Resumes tts playback. Safe to call repeatedly (no-op for subsequent calls).
+  Resume();
+};
+
+// Returned to callers of TtsStream.speak(). It receives notable events
+// pertaining to the text spoken.
+interface TtsEventObserver {
+  // TtsStream.Speak started speech playback.
+  OnStart();
+
+  // TtsStream.Speak is playing text at |char_index| approximately at the
+  // current time.
+  OnTimepoint(int32 char_index);
+
+  // TtsStream.Speak ended speech playback.
+  OnEnd();
+
+  // TtsStream.Speak encountered an error.
+  OnError();
+};

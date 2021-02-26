@@ -51,7 +51,7 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
   MockVideoCaptureImpl(const media::VideoCaptureSessionId& session_id,
                        PauseResumeCallback* pause_callback,
                        base::OnceClosure destruct_callback)
-      : VideoCaptureImpl(session_id),
+      : VideoCaptureImpl(session_id, base::ThreadTaskRunnerHandle::Get()),
         pause_callback_(pause_callback),
         destruct_callback_(std::move(destruct_callback)) {}
 
@@ -83,7 +83,9 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
 
   MOCK_METHOD1(RequestRefreshFrame, void(const base::UnguessableToken&));
   MOCK_METHOD3(ReleaseBuffer,
-               void(const base::UnguessableToken&, int32_t, double));
+               void(const base::UnguessableToken&,
+                    int32_t,
+                    const media::VideoFrameFeedback&));
 
   void GetDeviceSupportedFormats(const base::UnguessableToken&,
                                  const base::UnguessableToken&,

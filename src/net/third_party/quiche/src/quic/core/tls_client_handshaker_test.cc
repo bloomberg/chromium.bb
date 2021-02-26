@@ -6,20 +6,25 @@
 #include <string>
 #include <utility>
 
+#include "absl/base/macros.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
+#include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_framer_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/simple_session_cache.h"
 #include "net/third_party/quiche/src/quic/tools/fake_proof_verifier.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
 #include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
 
 using testing::_;
@@ -47,7 +52,7 @@ class TestProofVerifier : public ProofVerifier {
       const uint16_t port,
       const std::string& server_config,
       QuicTransportVersion quic_version,
-      quiche::QuicheStringPiece chlo_hash,
+      absl::string_view chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,
       const std::string& signature,
@@ -69,15 +74,16 @@ class TestProofVerifier : public ProofVerifier {
       const ProofVerifyContext* context,
       std::string* error_details,
       std::unique_ptr<ProofVerifyDetails>* details,
+      uint8_t* out_alert,
       std::unique_ptr<ProofVerifierCallback> callback) override {
     if (!active_) {
-      return verifier_->VerifyCertChain(hostname, port, certs, ocsp_response,
-                                        cert_sct, context, error_details,
-                                        details, std::move(callback));
+      return verifier_->VerifyCertChain(
+          hostname, port, certs, ocsp_response, cert_sct, context,
+          error_details, details, out_alert, std::move(callback));
     }
     pending_ops_.push_back(std::make_unique<VerifyChainPendingOp>(
         hostname, port, certs, ocsp_response, cert_sct, context, error_details,
-        details, std::move(callback), verifier_.get()));
+        details, out_alert, std::move(callback), verifier_.get()));
     return QUIC_PENDING;
   }
 
@@ -118,6 +124,7 @@ class TestProofVerifier : public ProofVerifier {
                          const ProofVerifyContext* context,
                          std::string* error_details,
                          std::unique_ptr<ProofVerifyDetails>* details,
+                         uint8_t* out_alert,
                          std::unique_ptr<ProofVerifierCallback> callback,
                          ProofVerifier* delegate)
         : hostname_(hostname),
@@ -128,6 +135,7 @@ class TestProofVerifier : public ProofVerifier {
           context_(context),
           error_details_(error_details),
           details_(details),
+          out_alert_(out_alert),
           callback_(std::move(callback)),
           delegate_(delegate) {}
 
@@ -138,7 +146,7 @@ class TestProofVerifier : public ProofVerifier {
       // synchronously.
       QuicAsyncStatus status = delegate_->VerifyCertChain(
           hostname_, port_, certs_, ocsp_response_, cert_sct_, context_,
-          error_details_, details_,
+          error_details_, details_, out_alert_,
           std::make_unique<FailingProofVerifierCallback>());
       ASSERT_NE(status, QUIC_PENDING);
       callback_->Run(status == QUIC_SUCCESS, *error_details_, details_);
@@ -153,6 +161,7 @@ class TestProofVerifier : public ProofVerifier {
     const ProofVerifyContext* context_;
     std::string* error_details_;
     std::unique_ptr<ProofVerifyDetails>* details_;
+    uint8_t* out_alert_;
     std::unique_ptr<ProofVerifierCallback> callback_;
     ProofVerifier* delegate_;
   };
@@ -167,13 +176,12 @@ class TlsClientHandshakerTest : public QuicTestWithParam<ParsedQuicVersion> {
   TlsClientHandshakerTest()
       : supported_versions_({GetParam()}),
         server_id_(kServerHostname, kServerPort, false),
-        crypto_config_(std::make_unique<QuicCryptoClientConfig>(
-            std::make_unique<TestProofVerifier>(),
-            std::make_unique<test::SimpleSessionCache>())),
         server_compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize) {
-    SetQuicReloadableFlag(quic_enable_tls_resumption, true);
-    SetQuicReloadableFlag(quic_enable_zero_rtt_for_tls, true);
+    SetQuicRestartFlag(quic_enable_zero_rtt_for_tls_v2, true);
+    crypto_config_ = std::make_unique<QuicCryptoClientConfig>(
+        std::make_unique<TestProofVerifier>(),
+        std::make_unique<test::SimpleSessionCache>());
     server_crypto_config_ = crypto_test_utils::CryptoServerConfigForTesting();
     CreateConnection();
   }
@@ -197,13 +205,18 @@ class TlsClientHandshakerTest : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   void CompleteCryptoHandshake() {
+    CompleteCryptoHandshakeWithServerALPN(
+        AlpnForVersion(connection_->version()));
+  }
+
+  void CompleteCryptoHandshakeWithServerALPN(const std::string& alpn) {
     EXPECT_CALL(*connection_, SendCryptoData(_, _, _))
         .Times(testing::AnyNumber());
     stream()->CryptoConnect();
     QuicConfig config;
     crypto_test_utils::HandshakeWithFakeServer(
         &config, server_crypto_config_.get(), &server_helper_, &alarm_factory_,
-        connection_, stream(), AlpnForVersion(connection_->version()));
+        connection_, stream(), alpn);
   }
 
   QuicCryptoClientStream* stream() {
@@ -224,10 +237,9 @@ class TlsClientHandshakerTest : public QuicTestWithParam<ParsedQuicVersion> {
     server_session_.reset(server_session);
     std::string alpn = AlpnForVersion(connection_->version());
     EXPECT_CALL(*server_session_, SelectAlpn(_))
-        .WillRepeatedly(
-            [alpn](const std::vector<quiche::QuicheStringPiece>& alpns) {
-              return std::find(alpns.cbegin(), alpns.cend(), alpn);
-            });
+        .WillRepeatedly([alpn](const std::vector<absl::string_view>& alpns) {
+          return std::find(alpns.cbegin(), alpns.cend(), alpn);
+        });
   }
 
   MockQuicConnectionHelper server_helper_;
@@ -277,8 +289,8 @@ TEST_P(TlsClientHandshakerTest, ConnectionClosedOnTlsError) {
       0, 0, 0,  // uint24 length
   };
   stream()->crypto_message_parser()->ProcessInput(
-      quiche::QuicheStringPiece(bogus_handshake_message,
-                                QUICHE_ARRAYSIZE(bogus_handshake_message)),
+      absl::string_view(bogus_handshake_message,
+                        ABSL_ARRAYSIZE(bogus_handshake_message)),
       ENCRYPTION_INITIAL);
 
   EXPECT_FALSE(stream()->one_rtt_keys_available());
@@ -324,6 +336,8 @@ TEST_P(TlsClientHandshakerTest, HandshakeWithAsyncProofVerifier) {
 }
 
 TEST_P(TlsClientHandshakerTest, Resumption) {
+  // Disable 0-RTT on the server so that we're only testing 1-RTT resumption:
+  SSL_CTX_set_early_data_enabled(server_crypto_config_->ssl_ctx(), false);
   // Finish establishing the first connection:
   CompleteCryptoHandshake();
 
@@ -340,6 +354,168 @@ TEST_P(TlsClientHandshakerTest, Resumption) {
   EXPECT_TRUE(stream()->encryption_established());
   EXPECT_TRUE(stream()->one_rtt_keys_available());
   EXPECT_TRUE(stream()->IsResumption());
+}
+
+TEST_P(TlsClientHandshakerTest, ResumptionRejection) {
+  // Disable 0-RTT on the server before the first connection so the client
+  // doesn't attempt a 0-RTT resumption, only a 1-RTT resumption.
+  SSL_CTX_set_early_data_enabled(server_crypto_config_->ssl_ctx(), false);
+  // Finish establishing the first connection:
+  CompleteCryptoHandshake();
+
+  EXPECT_EQ(PROTOCOL_TLS1_3, stream()->handshake_protocol());
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->one_rtt_keys_available());
+  EXPECT_FALSE(stream()->IsResumption());
+
+  // Create a second connection, but disable resumption on the server.
+  SSL_CTX_set_options(server_crypto_config_->ssl_ctx(), SSL_OP_NO_TICKET);
+  CreateConnection();
+  CompleteCryptoHandshake();
+
+  EXPECT_EQ(PROTOCOL_TLS1_3, stream()->handshake_protocol());
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->one_rtt_keys_available());
+  EXPECT_FALSE(stream()->IsResumption());
+  EXPECT_FALSE(stream()->EarlyDataAccepted());
+  EXPECT_EQ(stream()->EarlyDataReason(),
+            ssl_early_data_unsupported_for_session);
+}
+
+TEST_P(TlsClientHandshakerTest, ZeroRttResumption) {
+  // Finish establishing the first connection:
+  CompleteCryptoHandshake();
+
+  EXPECT_EQ(PROTOCOL_TLS1_3, stream()->handshake_protocol());
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->one_rtt_keys_available());
+  EXPECT_FALSE(stream()->IsResumption());
+
+  // Create a second connection
+  CreateConnection();
+  // OnConfigNegotiated should be called twice - once when processing saved
+  // 0-RTT transport parameters, and then again when receiving transport
+  // parameters from the server.
+  EXPECT_CALL(*session_, OnConfigNegotiated()).Times(2);
+  EXPECT_CALL(*connection_, SendCryptoData(_, _, _))
+      .Times(testing::AnyNumber());
+  // Start the second handshake and confirm we have keys before receiving any
+  // messages from the server.
+  stream()->CryptoConnect();
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_NE(stream()->crypto_negotiated_params().cipher_suite, 0);
+  EXPECT_NE(stream()->crypto_negotiated_params().key_exchange_group, 0);
+  EXPECT_NE(stream()->crypto_negotiated_params().peer_signature_algorithm, 0);
+  // Finish the handshake with the server.
+  QuicConfig config;
+  crypto_test_utils::HandshakeWithFakeServer(
+      &config, server_crypto_config_.get(), &server_helper_, &alarm_factory_,
+      connection_, stream(), AlpnForVersion(connection_->version()));
+
+  EXPECT_EQ(PROTOCOL_TLS1_3, stream()->handshake_protocol());
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->one_rtt_keys_available());
+  EXPECT_TRUE(stream()->IsResumption());
+  EXPECT_TRUE(stream()->EarlyDataAccepted());
+  EXPECT_EQ(stream()->EarlyDataReason(), ssl_early_data_accepted);
+}
+
+TEST_P(TlsClientHandshakerTest, ZeroRttRejection) {
+  // Finish establishing the first connection:
+  CompleteCryptoHandshake();
+
+  EXPECT_EQ(PROTOCOL_TLS1_3, stream()->handshake_protocol());
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->one_rtt_keys_available());
+  EXPECT_FALSE(stream()->IsResumption());
+
+  // Create a second connection, but disable 0-RTT on the server.
+  SSL_CTX_set_early_data_enabled(server_crypto_config_->ssl_ctx(), false);
+  CreateConnection();
+
+  // OnConfigNegotiated should be called twice - once when processing saved
+  // 0-RTT transport parameters, and then again when receiving transport
+  // parameters from the server.
+  EXPECT_CALL(*session_, OnConfigNegotiated()).Times(2);
+
+  // 4 packets will be sent in this connection: initial handshake packet, 0-RTT
+  // packet containing SETTINGS, handshake packet upon 0-RTT rejection, 0-RTT
+  // packet retransmission.
+  EXPECT_CALL(*connection_,
+              OnPacketSent(ENCRYPTION_INITIAL, NOT_RETRANSMISSION));
+  if (VersionUsesHttp3(session_->transport_version())) {
+    EXPECT_CALL(*connection_,
+                OnPacketSent(ENCRYPTION_ZERO_RTT, NOT_RETRANSMISSION));
+  }
+  EXPECT_CALL(*connection_,
+              OnPacketSent(ENCRYPTION_HANDSHAKE, NOT_RETRANSMISSION));
+  if (VersionUsesHttp3(session_->transport_version())) {
+    // TODO(b/158027651): change transmission type to
+    // ALL_ZERO_RTT_RETRANSMISSION.
+    EXPECT_CALL(*connection_,
+                OnPacketSent(ENCRYPTION_FORWARD_SECURE, LOSS_RETRANSMISSION));
+  }
+
+  CompleteCryptoHandshake();
+
+  QuicFramer* framer = QuicConnectionPeer::GetFramer(connection_);
+  EXPECT_EQ(nullptr, QuicFramerPeer::GetEncrypter(framer, ENCRYPTION_ZERO_RTT));
+
+  EXPECT_EQ(PROTOCOL_TLS1_3, stream()->handshake_protocol());
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->one_rtt_keys_available());
+  EXPECT_TRUE(stream()->IsResumption());
+  EXPECT_FALSE(stream()->EarlyDataAccepted());
+  EXPECT_EQ(stream()->EarlyDataReason(), ssl_early_data_peer_declined);
+}
+
+TEST_P(TlsClientHandshakerTest, ZeroRttAndResumptionRejection) {
+  // Finish establishing the first connection:
+  CompleteCryptoHandshake();
+
+  EXPECT_EQ(PROTOCOL_TLS1_3, stream()->handshake_protocol());
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->one_rtt_keys_available());
+  EXPECT_FALSE(stream()->IsResumption());
+
+  // Create a second connection, but disable resumption on the server.
+  SSL_CTX_set_options(server_crypto_config_->ssl_ctx(), SSL_OP_NO_TICKET);
+  CreateConnection();
+
+  // OnConfigNegotiated should be called twice - once when processing saved
+  // 0-RTT transport parameters, and then again when receiving transport
+  // parameters from the server.
+  EXPECT_CALL(*session_, OnConfigNegotiated()).Times(2);
+
+  // 4 packets will be sent in this connection: initial handshake packet, 0-RTT
+  // packet containing SETTINGS, handshake packet upon 0-RTT rejection, 0-RTT
+  // packet retransmission.
+  EXPECT_CALL(*connection_,
+              OnPacketSent(ENCRYPTION_INITIAL, NOT_RETRANSMISSION));
+  if (VersionUsesHttp3(session_->transport_version())) {
+    EXPECT_CALL(*connection_,
+                OnPacketSent(ENCRYPTION_ZERO_RTT, NOT_RETRANSMISSION));
+  }
+  EXPECT_CALL(*connection_,
+              OnPacketSent(ENCRYPTION_HANDSHAKE, NOT_RETRANSMISSION));
+  if (VersionUsesHttp3(session_->transport_version())) {
+    // TODO(b/158027651): change transmission type to
+    // ALL_ZERO_RTT_RETRANSMISSION.
+    EXPECT_CALL(*connection_,
+                OnPacketSent(ENCRYPTION_FORWARD_SECURE, LOSS_RETRANSMISSION));
+  }
+
+  CompleteCryptoHandshake();
+
+  QuicFramer* framer = QuicConnectionPeer::GetFramer(connection_);
+  EXPECT_EQ(nullptr, QuicFramerPeer::GetEncrypter(framer, ENCRYPTION_ZERO_RTT));
+
+  EXPECT_EQ(PROTOCOL_TLS1_3, stream()->handshake_protocol());
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->one_rtt_keys_available());
+  EXPECT_FALSE(stream()->IsResumption());
+  EXPECT_FALSE(stream()->EarlyDataAccepted());
+  EXPECT_EQ(stream()->EarlyDataReason(), ssl_early_data_session_not_resumed);
 }
 
 TEST_P(TlsClientHandshakerTest, ClientSendsNoSNI) {
@@ -383,20 +559,50 @@ TEST_P(TlsClientHandshakerTest, ServerRequiresCustomALPN) {
   InitializeFakeServer();
   const std::string kTestAlpn = "An ALPN That Client Did Not Offer";
   EXPECT_CALL(*server_session_, SelectAlpn(_))
-      .WillOnce(
-          [kTestAlpn](const std::vector<quiche::QuicheStringPiece>& alpns) {
-            return std::find(alpns.cbegin(), alpns.cend(), kTestAlpn);
-          });
-  EXPECT_CALL(*connection_, CloseConnection(QUIC_HANDSHAKE_FAILED,
-                                            "Server did not select ALPN", _));
+      .WillOnce([kTestAlpn](const std::vector<absl::string_view>& alpns) {
+        return std::find(alpns.cbegin(), alpns.cend(), kTestAlpn);
+      });
+  EXPECT_CALL(*server_connection_,
+              CloseConnection(QUIC_HANDSHAKE_FAILED,
+                              "TLS handshake failure (ENCRYPTION_INITIAL) 120: "
+                              "no application protocol",
+                              _));
+
   stream()->CryptoConnect();
   crypto_test_utils::AdvanceHandshake(connection_, stream(), 0,
                                       server_connection_, server_stream(), 0);
 
   EXPECT_FALSE(stream()->one_rtt_keys_available());
-  EXPECT_TRUE(stream()->encryption_established());
   EXPECT_FALSE(server_stream()->one_rtt_keys_available());
-  EXPECT_TRUE(server_stream()->encryption_established());
+  EXPECT_FALSE(stream()->encryption_established());
+  EXPECT_FALSE(server_stream()->encryption_established());
+}
+
+TEST_P(TlsClientHandshakerTest, ZeroRTTNotAttemptedOnALPNChange) {
+  // Finish establishing the first connection:
+  CompleteCryptoHandshake();
+
+  EXPECT_EQ(PROTOCOL_TLS1_3, stream()->handshake_protocol());
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->one_rtt_keys_available());
+  EXPECT_FALSE(stream()->IsResumption());
+
+  // Create a second connection
+  CreateConnection();
+  // Override the ALPN to send on the second connection.
+  const std::string kTestAlpn = "Test ALPN";
+  EXPECT_CALL(*session_, GetAlpnsToOffer())
+      .WillRepeatedly(testing::Return(std::vector<std::string>({kTestAlpn})));
+  // OnConfigNegotiated should only be called once: when transport parameters
+  // are received from the server.
+  EXPECT_CALL(*session_, OnConfigNegotiated()).Times(1);
+
+  CompleteCryptoHandshakeWithServerALPN(kTestAlpn);
+  EXPECT_EQ(PROTOCOL_TLS1_3, stream()->handshake_protocol());
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->one_rtt_keys_available());
+  EXPECT_FALSE(stream()->EarlyDataAccepted());
+  EXPECT_EQ(stream()->EarlyDataReason(), ssl_early_data_alpn_mismatch);
 }
 
 TEST_P(TlsClientHandshakerTest, InvalidSNI) {
@@ -423,7 +629,6 @@ TEST_P(TlsClientHandshakerTest, BadTransportParams) {
   if (!connection_->version().UsesHttp3()) {
     return;
   }
-  SetQuicReloadableFlag(quic_notify_handshaker_on_connection_close, true);
   // Finish establishing the first connection:
   CompleteCryptoHandshake();
 
@@ -431,14 +636,15 @@ TEST_P(TlsClientHandshakerTest, BadTransportParams) {
   CreateConnection();
 
   stream()->CryptoConnect();
-  auto* id_manager = QuicSessionPeer::v99_streamid_manager(session_.get());
+  auto* id_manager = QuicSessionPeer::ietf_streamid_manager(session_.get());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             id_manager->max_outgoing_bidirectional_streams());
   QuicConfig config;
   config.SetMaxBidirectionalStreamsToSend(
       config.GetMaxBidirectionalStreamsToSend() - 1);
 
-  EXPECT_CALL(*connection_, CloseConnection(QUIC_MAX_STREAMS_ERROR, _, _))
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_ZERO_RTT_REJECTION_LIMIT_REDUCED, _, _))
       .WillOnce(testing::Invoke(connection_,
                                 &MockQuicConnection::ReallyCloseConnection));
   // Close connection will be called again in the handshaker, but this will be

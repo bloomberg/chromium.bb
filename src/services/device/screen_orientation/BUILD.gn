@@ -11,10 +11,7 @@ if (is_android) {
 source_set("screen_orientation") {
   visibility = [ "//services/device:lib" ]
 
-  sources = [
-    "screen_orientation_listener_android.cc",
-    "screen_orientation_listener_android.h",
-  ]
+  sources = []
 
   deps = [
     "//base",
@@ -24,6 +21,10 @@ source_set("screen_orientation") {
   public_deps = [ "//services/device/public/mojom" ]
 
   if (is_android) {
+    sources += [
+      "screen_orientation_listener_android.cc",
+      "screen_orientation_listener_android.h",
+    ]
     deps += [ ":screen_orientation_jni_headers" ]
   }
 }
@@ -42,7 +43,7 @@ if (is_android) {
     sources = [ "android/java/src/org/chromium/device/screen_orientation/ScreenOrientationListener.java" ]
     deps = [
       "//base:base_java",
-      "//ui/android:ui_java",
+      "//ui/android:ui_no_recycler_view_java",
     ]
   }
 }

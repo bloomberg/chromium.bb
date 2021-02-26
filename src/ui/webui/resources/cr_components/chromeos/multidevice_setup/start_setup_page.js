@@ -51,6 +51,24 @@ Polymer({
      * @type {!multidevice_setup.MultiDeviceSetupDelegate}
      */
     delegate: Object,
+
+    /** @private */
+    phoneHubEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.valueExists('phoneHubEnabled') &&
+            loadTimeData.getBoolean('phoneHubEnabled');
+      },
+    },
+
+    /** @private */
+    wifiSyncEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.valueExists('wifiSyncEnabled') &&
+            loadTimeData.getBoolean('wifiSyncEnabled');
+      },
+    },
   },
 
   behaviors: [

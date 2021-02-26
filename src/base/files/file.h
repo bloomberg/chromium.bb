@@ -24,8 +24,8 @@
 
 namespace base {
 
-#if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL) || \
-  defined(OS_FUCHSIA) || (defined(OS_ANDROID) && __ANDROID_API__ < 21)
+#if defined(OS_BSD) || defined(OS_APPLE) || defined(OS_NACL) || \
+    defined(OS_FUCHSIA) || (defined(OS_ANDROID) && __ANDROID_API__ < 21)
 typedef struct stat stat_wrapper_t;
 #elif defined(OS_POSIX)
 typedef struct stat64 stat_wrapper_t;
@@ -299,7 +299,7 @@ class BASE_EXPORT File {
   //  * Within a process, locking the same file (by the same or new handle)
   //    will succeed. The new lock replaces the old lock.
   //  * Closing any descriptor on a given file releases the lock.
-  Error Lock(LockMode mode = LockMode::kExclusive);
+  Error Lock(LockMode mode);
 
   // Unlock a file previously locked.
   Error Unlock();

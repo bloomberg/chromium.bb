@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,10 @@
 
 #include <memory>
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
@@ -353,6 +355,25 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
   file_manager::EventRouter* event_router_ = nullptr;
 };
 
+// Parameterize by whether holding space feature is enabled.
+class FileManagerPrivateHoldingSpaceApiTest
+    : public FileManagerPrivateApiTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  FileManagerPrivateHoldingSpaceApiTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        ash::features::kTemporaryHoldingSpace, GetParam());
+  }
+  ~FileManagerPrivateHoldingSpaceApiTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(HoldingSpaceEnabled,
+                         FileManagerPrivateHoldingSpaceApiTest,
+                         testing::Bool());
+
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
   using chromeos::file_system_provider::IconSet;
   profile()->GetPrefs()->SetBoolean(drive::prefs::kDisableDrive, true);
@@ -463,6 +484,61 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Recent) {
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/recent_test"));
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, MediaMetadata) {
+  const base::FilePath test_dir = temp_dir_.GetPath();
+  AddLocalFileSystem(browser()->profile(), test_dir);
+
+  // Get source media/test/data directory path.
+  base::FilePath root_dir;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_dir));
+  const base::FilePath media_test_data_dir =
+      root_dir.AppendASCII("media").AppendASCII("test").AppendASCII("data");
+
+  // Returns a path to a media/test/data test file.
+  auto get_media_test_data_file = [&](const std::string& file) {
+    return media_test_data_dir.Append(base::FilePath::FromUTF8Unsafe(file));
+  };
+
+  // Create media test files.
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+
+    const base::FilePath video = get_media_test_data_file("90rotation.mp4");
+    ASSERT_TRUE(base::CopyFile(video, test_dir.Append(video.BaseName())));
+
+    const base::FilePath audio = get_media_test_data_file("id3_png_test.mp3");
+    ASSERT_TRUE(base::CopyFile(audio, test_dir.Append(audio.BaseName())));
+  }
+
+  // Get source chrome/test/data/chromeos/file_manager directory path.
+  const base::FilePath files_test_data_dir = root_dir.AppendASCII("chrome")
+                                                 .AppendASCII("test")
+                                                 .AppendASCII("data")
+                                                 .AppendASCII("chromeos")
+                                                 .AppendASCII("file_manager");
+
+  // Returns a path to a chrome/test/data/chromeos/file_manager test file.
+  auto get_files_test_data_dir = [&](const std::string& file) {
+    return files_test_data_dir.Append(base::FilePath::FromUTF8Unsafe(file));
+  };
+
+  // Create files test files.
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+
+    const base::FilePath broke = get_files_test_data_dir("broken.jpg");
+    ASSERT_TRUE(base::CopyFile(broke, test_dir.Append(broke.BaseName())));
+
+    const base::FilePath empty = get_files_test_data_dir("empty.txt");
+    ASSERT_TRUE(base::CopyFile(empty, test_dir.Append(empty.BaseName())));
+
+    const base::FilePath image = get_files_test_data_dir("image3.jpg");
+    ASSERT_TRUE(base::CopyFile(image, test_dir.Append(image.BaseName())));
+  }
+
+  ASSERT_TRUE(RunComponentExtensionTest("file_browser/media_metadata"));
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   crostini::FakeCrostiniFeatures crostini_features;
   crostini_features.set_ui_allowed(true);
@@ -526,11 +602,36 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, CrostiniIncognito) {
   scoped_refptr<extensions::FileManagerPrivateMountCrostiniFunction> function(
       new extensions::FileManagerPrivateMountCrostiniFunction());
   // Use incognito profile.
-  function->set_browser_context(browser()->profile()->GetOffTheRecordProfile());
+  function->set_browser_context(browser()->profile()->GetPrimaryOTRProfile());
 
   extensions::api_test_utils::SendResponseHelper response_helper(
       function.get());
   function->RunWithValidation()->Execute();
   response_helper.WaitForResponse();
   EXPECT_TRUE(response_helper.GetResponse());
+}
+
+IN_PROC_BROWSER_TEST_P(FileManagerPrivateHoldingSpaceApiTest, HoldingSpace) {
+  const base::FilePath test_dir = temp_dir_.GetPath();
+  AddLocalFileSystem(browser()->profile(), test_dir);
+
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    base::File image_file(test_dir.Append("test_image.jpg"),
+                          base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(image_file.IsValid());
+    base::File audio_file(test_dir.Append("test_audio.mp3"),
+                          base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(audio_file.IsValid());
+    base::File video_file(test_dir.Append("test_video.mp4"),
+                          base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(video_file.IsValid());
+  }
+
+  if (GetParam()) {
+    EXPECT_TRUE(RunComponentExtensionTest("file_browser/holding_space"));
+  } else {
+    EXPECT_TRUE(
+        RunComponentExtensionTest("file_browser/holding_space_disabled"));
+  }
 }

@@ -6,7 +6,6 @@
 #define ASH_SYSTEM_UNIFIED_COLLAPSE_BUTTON_H_
 
 #include "ash/system/unified/custom_shape_button.h"
-#include "base/bind.h"
 
 namespace ash {
 
@@ -16,7 +15,7 @@ namespace ash {
 // By pressing the button, the state of the bubble will be toggled.
 class CollapseButton : public CustomShapeButton {
  public:
-  explicit CollapseButton(views::ButtonListener* listener);
+  explicit CollapseButton(PressedCallback callback);
   ~CollapseButton() override;
 
   // Change the expanded state. The icon will change.
@@ -27,15 +26,10 @@ class CollapseButton : public CustomShapeButton {
   SkPath CreateCustomShapePath(const gfx::Rect& bounds) const override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
+  void OnThemeChanged() override;
 
  private:
-  void OnEnabledChanged();
-
   double expanded_amount_ = 1.0;
-  views::PropertyChangedSubscription enabled_changed_subscription_ =
-      AddEnabledChangedCallback(
-          base::BindRepeating(&CollapseButton::OnEnabledChanged,
-                              base::Unretained(this)));
 
   DISALLOW_COPY_AND_ASSIGN(CollapseButton);
 };

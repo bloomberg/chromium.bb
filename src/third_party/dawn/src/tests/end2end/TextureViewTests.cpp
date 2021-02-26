@@ -37,8 +37,7 @@ namespace {
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = width;
         descriptor.size.height = height;
-        descriptor.size.depth = 1;
-        descriptor.arrayLayerCount = arrayLayerCount;
+        descriptor.size.depth = arrayLayerCount;
         descriptor.sampleCount = 1;
         descriptor.format = kDefaultFormat;
         descriptor.mipLevelCount = mipLevelCount;
@@ -71,15 +70,15 @@ namespace {
 }  // anonymous namespace
 
 class TextureViewSamplingTest : public DawnTest {
-protected:
+  protected:
     // Generates an arbitrary pixel value per-layer-per-level, used for the "actual" uploaded
     // textures and the "expected" results.
     static int GenerateTestPixelValue(uint32_t layer, uint32_t level) {
         return static_cast<int>(level * 10) + static_cast<int>(layer + 1);
     }
 
-    void TestSetUp() override {
-        DawnTest::TestSetUp();
+    void SetUp() override {
+        DawnTest::SetUp();
 
         mRenderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
@@ -105,8 +104,8 @@ protected:
         const uint32_t textureHeightLevel0 = 1 << mipLevelCount;
         constexpr wgpu::TextureUsage kUsage =
             wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
-        mTexture = Create2DTexture(
-            device, textureWidthLevel0, textureHeightLevel0, arrayLayerCount, mipLevelCount, kUsage);
+        mTexture = Create2DTexture(device, textureWidthLevel0, textureHeightLevel0, arrayLayerCount,
+                                   mipLevelCount, kUsage);
 
         mDefaultTextureViewDescriptor.dimension = wgpu::TextureViewDimension::e2DArray;
         mDefaultTextureViewDescriptor.format = kDefaultFormat;
@@ -135,9 +134,9 @@ protected:
                 wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
                     device, data.data(), data.size() * sizeof(RGBA8), wgpu::BufferUsage::CopySrc);
                 wgpu::BufferCopyView bufferCopyView =
-                    utils::CreateBufferCopyView(stagingBuffer, 0, kTextureBytesPerRowAlignment, 0);
+                    utils::CreateBufferCopyView(stagingBuffer, 0, kTextureBytesPerRowAlignment);
                 wgpu::TextureCopyView textureCopyView =
-                    utils::CreateTextureCopyView(mTexture, level, layer, {0, 0, 0});
+                    utils::CreateTextureCopyView(mTexture, level, {0, 0, layer});
                 wgpu::Extent3D copySize = {texWidth, texHeight, 1};
                 encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
             }
@@ -146,10 +145,7 @@ protected:
         queue.Submit(1, &copy);
     }
 
-    void Verify(const wgpu::TextureView& textureView,
-                const char* fragmentShader,
-                int expected) {
-
+    void Verify(const wgpu::TextureView& textureView, const char* fragmentShader, int expected) {
         wgpu::ShaderModule fsModule =
             utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fragmentShader);
 
@@ -177,8 +173,8 @@ protected:
 
         RGBA8 expectedPixel(0, 0, 0, expected);
         EXPECT_PIXEL_RGBA8_EQ(expectedPixel, mRenderPass.color, 0, 0);
-        EXPECT_PIXEL_RGBA8_EQ(
-            expectedPixel, mRenderPass.color, mRenderPass.width - 1, mRenderPass.height - 1);
+        EXPECT_PIXEL_RGBA8_EQ(expectedPixel, mRenderPass.color, mRenderPass.width - 1,
+                              mRenderPass.height - 1);
         // TODO(jiawei.shao@intel.com): add tests for 3D textures once Dawn supports 3D textures
     }
 
@@ -263,13 +259,13 @@ protected:
     std::string CreateFragmentShaderForCubeMapFace(uint32_t layer, bool isCubeMapArray) {
         // Reference: https://en.wikipedia.org/wiki/Cube_mapping
         const std::array<std::string, 6> kCoordsToCubeMapFace = {{
-             " 1.f,   tc,  -sc",  // Positive X
-             "-1.f,   tc,   sc",  // Negative X
-             "  sc,  1.f,  -tc",  // Positive Y
-             "  sc, -1.f,   tc",  // Negative Y
-             "  sc,   tc,  1.f",  // Positive Z
-             " -sc,   tc, -1.f",  // Negative Z
-            }};
+            " 1.f,   tc,  -sc",  // Positive X
+            "-1.f,   tc,   sc",  // Negative X
+            "  sc,  1.f,  -tc",  // Positive Y
+            "  sc, -1.f,   tc",  // Negative Y
+            "  sc,   tc,  1.f",  // Positive Z
+            " -sc,   tc, -1.f",  // Negative Z
+        }};
 
         const std::string textureType = isCubeMapArray ? "textureCubeArray" : "textureCube";
         const std::string samplerType = isCubeMapArray ? "samplerCubeArray" : "samplerCube";
@@ -280,13 +276,15 @@ protected:
         stream << R"(
             #version 450
             layout(set = 0, binding = 0) uniform sampler sampler0;
-            layout(set = 0, binding = 1) uniform )" << textureType << R"( texture0;
+            layout(set = 0, binding = 1) uniform )"
+               << textureType << R"( texture0;
             layout(location = 0) in vec2 texCoord;
             layout(location = 0) out vec4 fragColor;
             void main() {
                 float sc = 2.f * texCoord.x - 1.f;
                 float tc = 2.f * texCoord.y - 1.f;
-                fragColor = texture()" << samplerType << "(texture0, sampler0), ";
+                fragColor = texture()"
+               << samplerType << "(texture0, sampler0), ";
 
         if (isCubeMapArray) {
             stream << "vec4(" << coordToCubeMapFace << ", " << cubeMapArrayIndex;
@@ -322,7 +320,7 @@ protected:
 
         // Check the data in the every face of the cube map (array) texture view.
         for (uint32_t layer = 0; layer < textureViewLayerCount; ++layer) {
-            const std::string &fragmentShader =
+            const std::string& fragmentShader =
                 CreateFragmentShaderForCubeMapFace(layer, isCubeMapArray);
 
             int expected = GenerateTestPixelValue(textureViewBaseLayer + layer, 0);
@@ -363,8 +361,8 @@ TEST_P(TextureViewSamplingTest, Default2DArrayTexture) {
             }
         )";
 
-    const int expected = GenerateTestPixelValue(0, 0) + GenerateTestPixelValue(1, 0) +
-                         GenerateTestPixelValue(2, 0);
+    const int expected =
+        GenerateTestPixelValue(0, 0) + GenerateTestPixelValue(1, 0) + GenerateTestPixelValue(2, 0);
     Verify(textureView, fragmentShader, expected);
 }
 
@@ -428,7 +426,8 @@ TEST_P(TextureViewSamplingTest, TextureCubeMapArrayViewOnPartOfTexture) {
     TextureCubeMapTest(20, 3, 12, true);
 }
 
-// Test sampling from a cube map texture array view that covers the last layer of a 2D array texture.
+// Test sampling from a cube map texture array view that covers the last layer of a 2D array
+// texture.
 TEST_P(TextureViewSamplingTest, TextureCubeMapArrayViewCoveringLastLayer) {
     // Test failing on the GPU FYI Mac Pro (AMD), see
     // https://bugs.chromium.org/p/dawn/issues/detail?id=58
@@ -454,16 +453,16 @@ class TextureViewRenderingTest : public DawnTest {
                                            uint32_t layerCount,
                                            uint32_t levelCount,
                                            uint32_t textureViewBaseLayer,
-                                           uint32_t textureViewBaseLevel) {
+                                           uint32_t textureViewBaseLevel,
+                                           uint32_t textureWidthLevel0,
+                                           uint32_t textureHeightLevel0) {
         ASSERT(dimension == wgpu::TextureViewDimension::e2D ||
                dimension == wgpu::TextureViewDimension::e2DArray);
         ASSERT_LT(textureViewBaseLayer, layerCount);
         ASSERT_LT(textureViewBaseLevel, levelCount);
 
-        const uint32_t textureWidthLevel0 = 1 << levelCount;
-        const uint32_t textureHeightLevel0 = 1 << levelCount;
         constexpr wgpu::TextureUsage kUsage =
-            wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
+            wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
         wgpu::Texture texture = Create2DTexture(device, textureWidthLevel0, textureHeightLevel0,
                                                 layerCount, levelCount, kUsage);
 
@@ -512,17 +511,16 @@ class TextureViewRenderingTest : public DawnTest {
         queue.Submit(1, &commands);
 
         // Check if the right pixels (Green) have been written into the right part of the texture.
-        uint32_t textureViewWidth = textureWidthLevel0 >> textureViewBaseLevel;
-        uint32_t textureViewHeight = textureHeightLevel0 >> textureViewBaseLevel;
+        uint32_t textureViewWidth = std::max(1u, textureWidthLevel0 >> textureViewBaseLevel);
+        uint32_t textureViewHeight = std::max(1u, textureHeightLevel0 >> textureViewBaseLevel);
         uint32_t bytesPerRow =
             Align(kBytesPerTexel * textureWidthLevel0, kTextureBytesPerRowAlignment);
         uint32_t expectedDataSize =
             bytesPerRow / kBytesPerTexel * (textureWidthLevel0 - 1) + textureHeightLevel0;
         constexpr RGBA8 kExpectedPixel(0, 255, 0, 255);
         std::vector<RGBA8> expected(expectedDataSize, kExpectedPixel);
-        EXPECT_TEXTURE_RGBA8_EQ(
-            expected.data(), texture, 0, 0, textureViewWidth, textureViewHeight,
-            textureViewBaseLevel, textureViewBaseLayer);
+        EXPECT_TEXTURE_RGBA8_EQ(expected.data(), texture, 0, 0, textureViewWidth, textureViewHeight,
+                                textureViewBaseLevel, textureViewBaseLayer);
     }
 };
 
@@ -536,14 +534,43 @@ TEST_P(TextureViewRenderingTest, Texture2DViewOnALevelOf2DTextureAsColorAttachme
     {
         constexpr uint32_t kBaseLevel = 0;
         TextureLayerAsColorAttachmentTest(wgpu::TextureViewDimension::e2D, kLayers, kMipLevels,
-                                          kBaseLayer, kBaseLevel);
+                                          kBaseLayer, kBaseLevel, 1 << kMipLevels, 1 << kMipLevels);
     }
 
     // Rendering into the last level
     {
         constexpr uint32_t kBaseLevel = kMipLevels - 1;
         TextureLayerAsColorAttachmentTest(wgpu::TextureViewDimension::e2D, kLayers, kMipLevels,
-                                          kBaseLayer, kBaseLevel);
+                                          kBaseLayer, kBaseLevel, 1 << kMipLevels, 1 << kMipLevels);
+    }
+}
+
+// Test rendering into a 2D texture view created on a mipmap level of a rectangular 2D texture.
+TEST_P(TextureViewRenderingTest, Texture2DViewOnALevelOfRectangular2DTextureAsColorAttachment) {
+    constexpr uint32_t kLayers = 1;
+    constexpr uint32_t kMipLevels = 4;
+    constexpr uint32_t kBaseLayer = 0;
+
+    // Rendering into the first level
+    {
+        constexpr uint32_t kBaseLevel = 0;
+        TextureLayerAsColorAttachmentTest(wgpu::TextureViewDimension::e2D, kLayers, kMipLevels,
+                                          kBaseLayer, kBaseLevel, 1 << kMipLevels,
+                                          1 << (kMipLevels - 2));
+        TextureLayerAsColorAttachmentTest(wgpu::TextureViewDimension::e2D, kLayers, kMipLevels,
+                                          kBaseLayer, kBaseLevel, 1 << (kMipLevels - 2),
+                                          1 << kMipLevels);
+    }
+
+    // Rendering into the last level
+    {
+        constexpr uint32_t kBaseLevel = kMipLevels - 1;
+        TextureLayerAsColorAttachmentTest(wgpu::TextureViewDimension::e2D, kLayers, kMipLevels,
+                                          kBaseLayer, kBaseLevel, 1 << kMipLevels,
+                                          1 << (kMipLevels - 2));
+        TextureLayerAsColorAttachmentTest(wgpu::TextureViewDimension::e2D, kLayers, kMipLevels,
+                                          kBaseLayer, kBaseLevel, 1 << (kMipLevels - 2),
+                                          1 << kMipLevels);
     }
 }
 
@@ -557,16 +584,15 @@ TEST_P(TextureViewRenderingTest, Texture2DViewOnALayerOf2DArrayTextureAsColorAtt
     {
         constexpr uint32_t kBaseLayer = 0;
         TextureLayerAsColorAttachmentTest(wgpu::TextureViewDimension::e2D, kLayers, kMipLevels,
-                                          kBaseLayer, kBaseLevel);
+                                          kBaseLayer, kBaseLevel, 1 << kMipLevels, 1 << kMipLevels);
     }
 
     // Rendering into the last layer
     {
         constexpr uint32_t kBaseLayer = kLayers - 1;
         TextureLayerAsColorAttachmentTest(wgpu::TextureViewDimension::e2D, kLayers, kMipLevels,
-                                          kBaseLayer, kBaseLevel);
+                                          kBaseLayer, kBaseLevel, 1 << kMipLevels, 1 << kMipLevels);
     }
-
 }
 
 // Test rendering into a 1-layer 2D array texture view created on a mipmap level of a 2D texture.
@@ -579,14 +605,14 @@ TEST_P(TextureViewRenderingTest, Texture2DArrayViewOnALevelOf2DTextureAsColorAtt
     {
         constexpr uint32_t kBaseLevel = 0;
         TextureLayerAsColorAttachmentTest(wgpu::TextureViewDimension::e2DArray, kLayers, kMipLevels,
-                                          kBaseLayer, kBaseLevel);
+                                          kBaseLayer, kBaseLevel, 1 << kMipLevels, 1 << kMipLevels);
     }
 
     // Rendering into the last level
     {
         constexpr uint32_t kBaseLevel = kMipLevels - 1;
         TextureLayerAsColorAttachmentTest(wgpu::TextureViewDimension::e2DArray, kLayers, kMipLevels,
-                                          kBaseLayer, kBaseLevel);
+                                          kBaseLayer, kBaseLevel, 1 << kMipLevels, 1 << kMipLevels);
     }
 }
 
@@ -600,17 +626,45 @@ TEST_P(TextureViewRenderingTest, Texture2DArrayViewOnALayerOf2DArrayTextureAsCol
     {
         constexpr uint32_t kBaseLayer = 0;
         TextureLayerAsColorAttachmentTest(wgpu::TextureViewDimension::e2DArray, kLayers, kMipLevels,
-                                          kBaseLayer, kBaseLevel);
+                                          kBaseLayer, kBaseLevel, 1 << kMipLevels, 1 << kMipLevels);
     }
 
     // Rendering into the last layer
     {
         constexpr uint32_t kBaseLayer = kLayers - 1;
         TextureLayerAsColorAttachmentTest(wgpu::TextureViewDimension::e2DArray, kLayers, kMipLevels,
-                                          kBaseLayer, kBaseLevel);
+                                          kBaseLayer, kBaseLevel, 1 << kMipLevels, 1 << kMipLevels);
     }
 }
 
-DAWN_INSTANTIATE_TEST(TextureViewSamplingTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(TextureViewSamplingTest,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend());
 
-DAWN_INSTANTIATE_TEST(TextureViewRenderingTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(TextureViewRenderingTest,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend());
+
+class TextureViewTest : public DawnTest {};
+
+// This is a regression test for crbug.com/dawn/399 where creating a texture view with only copy
+// usage would cause the Vulkan validation layers to warn
+TEST_P(TextureViewTest, OnlyCopySrcDst) {
+    wgpu::TextureDescriptor descriptor;
+    descriptor.size = {4, 4, 1};
+    descriptor.usage = wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
+    descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
+
+    wgpu::Texture texture = device.CreateTexture(&descriptor);
+    wgpu::TextureView view = texture.CreateView();
+}
+
+DAWN_INSTANTIATE_TEST(TextureViewTest,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend());

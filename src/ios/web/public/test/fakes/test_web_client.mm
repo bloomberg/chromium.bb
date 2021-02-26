@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "ios/web/public/test/error_test_util.h"
+#import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/test/test_url_constants.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -66,6 +67,11 @@ NSString* TestWebClient::GetDocumentStartScriptForMainFrame(
   return early_page_script_ ? early_page_script_ : @"";
 }
 
+NSString* TestWebClient::GetDocumentStartScriptForAllFrames(
+    BrowserState* browser_state) const {
+  return web::test::GetPageScript(@"all_frames_web_test_bundle");
+}
+
 void TestWebClient::SetPluginNotSupportedText(const base::string16& text) {
   plugin_not_supported_text_ = text;
 }
@@ -81,15 +87,16 @@ void TestWebClient::AllowCertificateError(
     const GURL& request_url,
     bool overridable,
     int64_t navigation_id,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   last_cert_error_code_ = cert_error;
   last_cert_error_ssl_info_ = ssl_info;
   last_cert_error_request_url_ = request_url;
   last_cert_error_overridable_ = overridable;
 
   // Embedder should consult the user, so reply is asynchronous.
-  base::PostTask(FROM_HERE, {WebThread::UI},
-                 base::BindOnce(callback, allow_certificate_errors_));
+  base::PostTask(
+      FROM_HERE, {WebThread::UI},
+      base::BindOnce(std::move(callback), allow_certificate_errors_));
 }
 
 void TestWebClient::SetAllowCertificateErrors(bool flag) {

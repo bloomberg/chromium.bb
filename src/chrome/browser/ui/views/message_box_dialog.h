@@ -32,8 +32,6 @@ class MessageBoxDialog : public views::DialogDelegate,
 
   // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
-  void DeleteDelegate() override;
-  ui::ModalType GetModalType() const override;
   views::View* GetContentsView() override;
   bool ShouldShowCloseButton() const override;
 
@@ -63,7 +61,6 @@ class MessageBoxDialog : public views::DialogDelegate,
   const chrome::MessageBoxType type_;
   views::MessageBoxView* message_box_view_;
   MessageBoxResultCallback result_callback_;
-  bool is_system_modal_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBoxDialog);
 };

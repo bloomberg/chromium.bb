@@ -6,6 +6,7 @@
 
 #import <Carbon/Carbon.h>
 
+#include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -28,7 +29,7 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point.h"
 
-using blink::WebDragOperationsMask;
+using blink::DragOperationsMask;
 using content::DropData;
 using content::OpenURLParams;
 using content::Referrer;
@@ -161,15 +162,6 @@ void DropCompletionCallback(
   return screenPoint;
 }
 
-// Return YES if the drop site only allows drops that would navigate.  If this
-// is the case, we don't want to pass messages to the renderer because there's
-// really no point (i.e., there's nothing that cares about the mouse position or
-// entering and exiting).  One example is an interstitial page (e.g., safe
-// browsing warning).
-- (BOOL)onlyAllowsNavigation {
-  return _webContents->ShowingInterstitialPage();
-}
-
 // Messages to send during the tracking of a drag, usually upon receiving
 // calls from the view system. Communicates the drag messages to WebCore.
 
@@ -212,17 +204,9 @@ void DropCompletionCallback(
 
   // Give the delegate an opportunity to cancel the drag.
   _canceled = !_webContents->GetDelegate()->CanDragEnter(
-      _webContents,
-      *dropData,
-      static_cast<WebDragOperationsMask>(mask));
+      _webContents, *dropData, static_cast<DragOperationsMask>(mask));
   if (_canceled)
     return NSDragOperationNone;
-
-  if ([self onlyAllowsNavigation]) {
-    if (info->url)
-      return NSDragOperationCopy;
-    return NSDragOperationNone;
-  }
 
   if (_delegate) {
     _delegate->DragInitialize(_webContents);
@@ -233,7 +217,7 @@ void DropCompletionCallback(
 
   _currentRWHForDrag->DragTargetDragEnter(
       *_dropDataFiltered, transformedPt, info->location_in_screen,
-      static_cast<WebDragOperationsMask>(mask), GetModifierFlags());
+      static_cast<DragOperationsMask>(mask), GetModifierFlags());
 
   // We won't know the true operation (whether the drag is allowed) until we
   // hear back from the renderer. For now, be optimistic:
@@ -253,9 +237,6 @@ void DropCompletionCallback(
     return;
 
   if (_canceled)
-    return;
-
-  if ([self onlyAllowsNavigation])
     return;
 
   if (_delegate)
@@ -315,15 +296,9 @@ void DropCompletionCallback(
   if (_canceled)
     return NSDragOperationNone;
 
-  if ([self onlyAllowsNavigation]) {
-    if (info->url)
-      return NSDragOperationCopy;
-    return NSDragOperationNone;
-  }
-
   NSDragOperation mask = info->operation_mask;
   targetRWH->DragTargetDragOver(transformedPt, info->location_in_screen,
-                                static_cast<WebDragOperationsMask>(mask),
+                                static_cast<DragOperationsMask>(mask),
                                 GetModifierFlags());
 
   if (_delegate)
@@ -351,18 +326,6 @@ void DropCompletionCallback(
       _currentRWHForDrag->DragTargetDragLeave(transformedPt,
                                               info->location_in_screen);
     [self draggingEntered:info];
-  }
-
-  // Check if we only allow navigation and navigate to a url on the pasteboard.
-  if ([self onlyAllowsNavigation]) {
-    if (info->url) {
-      _webContents->OpenURL(OpenURLParams(
-          *info->url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
-          ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
-      return YES;
-    } else {
-      return NO;
-    }
   }
 
   _currentRVH = NULL;
@@ -446,21 +409,20 @@ void PopulateDropDataFromPasteboard(content::DropData* data,
 
   // Get plain text.
   if ([types containsObject:NSStringPboardType]) {
-    data->text = base::NullableString16(
-        base::SysNSStringToUTF16([pboard stringForType:NSStringPboardType]),
-        false);
+    data->text =
+        base::SysNSStringToUTF16([pboard stringForType:NSStringPboardType]);
   }
 
   // Get HTML. If there's no HTML, try RTF.
   if ([types containsObject:NSHTMLPboardType]) {
     NSString* html = [pboard stringForType:NSHTMLPboardType];
-    data->html = base::NullableString16(base::SysNSStringToUTF16(html), false);
+    data->html = base::SysNSStringToUTF16(html);
   } else if ([types containsObject:ui::kChromeDragImageHTMLPboardType]) {
     NSString* html = [pboard stringForType:ui::kChromeDragImageHTMLPboardType];
-    data->html = base::NullableString16(base::SysNSStringToUTF16(html), false);
+    data->html = base::SysNSStringToUTF16(html);
   } else if ([types containsObject:NSRTFPboardType]) {
     NSString* html = ui::ClipboardUtil::GetHTMLFromRTFOnPasteboard(pboard);
-    data->html = base::NullableString16(base::SysNSStringToUTF16(html), false);
+    data->html = base::SysNSStringToUTF16(html);
   }
 
   // Get files.

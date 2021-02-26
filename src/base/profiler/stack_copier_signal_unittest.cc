@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/debug/alias.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/stack_copier_signal.h"
@@ -95,14 +96,16 @@ TEST(StackCopierSignalTest, MAYBE_CopyStack) {
   RegisterContext context;
   TestStackCopierDelegate stack_copier_delegate;
 
-  StackCopierSignal copier(std::make_unique<ThreadDelegatePosix>(
-      GetSamplingProfilerCurrentThreadToken()));
+  auto thread_delegate =
+      ThreadDelegatePosix::Create(GetSamplingProfilerCurrentThreadToken());
+  ASSERT_TRUE(thread_delegate);
+  StackCopierSignal copier(std::move(thread_delegate));
 
-  // Copy the sentinel values onto the stack. Volatile to defeat compiler
-  // optimizations.
-  volatile uint32_t sentinels[size(kStackSentinels)];
+  // Copy the sentinel values onto the stack.
+  uint32_t sentinels[size(kStackSentinels)];
   for (size_t i = 0; i < size(kStackSentinels); ++i)
     sentinels[i] = kStackSentinels[i];
+  base::debug::Alias((void*)sentinels);  // Defeat compiler optimizations.
 
   bool result = copier.CopyStack(&stack_buffer, &stack_top, &timestamp,
                                  &context, &stack_copier_delegate);
@@ -132,8 +135,10 @@ TEST(StackCopierSignalTest, MAYBE_CopyStackTimestamp) {
   RegisterContext context;
   TestStackCopierDelegate stack_copier_delegate;
 
-  StackCopierSignal copier(std::make_unique<ThreadDelegatePosix>(
-      GetSamplingProfilerCurrentThreadToken()));
+  auto thread_delegate =
+      ThreadDelegatePosix::Create(GetSamplingProfilerCurrentThreadToken());
+  ASSERT_TRUE(thread_delegate);
+  StackCopierSignal copier(std::move(thread_delegate));
 
   TimeTicks before = TimeTicks::Now();
   bool result = copier.CopyStack(&stack_buffer, &stack_top, &timestamp,
@@ -159,8 +164,10 @@ TEST(StackCopierSignalTest, MAYBE_CopyStackDelegateInvoked) {
   RegisterContext context;
   TestStackCopierDelegate stack_copier_delegate;
 
-  StackCopierSignal copier(std::make_unique<ThreadDelegatePosix>(
-      GetSamplingProfilerCurrentThreadToken()));
+  auto thread_delegate =
+      ThreadDelegatePosix::Create(GetSamplingProfilerCurrentThreadToken());
+  ASSERT_TRUE(thread_delegate);
+  StackCopierSignal copier(std::move(thread_delegate));
 
   bool result = copier.CopyStack(&stack_buffer, &stack_top, &timestamp,
                                  &context, &stack_copier_delegate);
@@ -190,7 +197,9 @@ TEST(StackCopierSignalTest, MAYBE_CopyStackFromOtherThread) {
   const SamplingProfilerThreadToken thread_token =
       target_thread.GetThreadToken();
 
-  StackCopierSignal copier(std::make_unique<ThreadDelegatePosix>(thread_token));
+  auto thread_delegate = ThreadDelegatePosix::Create(thread_token);
+  ASSERT_TRUE(thread_delegate);
+  StackCopierSignal copier(std::move(thread_delegate));
 
   bool result = copier.CopyStack(&stack_buffer, &stack_top, &timestamp,
                                  &context, &stack_copier_delegate);

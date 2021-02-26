@@ -14,7 +14,12 @@ namespace blink {
 class ScriptState;
 class ScriptPromise;
 class ScriptPromiseResolver;
-struct FontEnumerationEntry;
+
+struct FontEnumerationEntry {
+  String postscript_name;
+  String full_name;
+  String family;
+};
 
 class BLINK_EXPORT FontMetadata final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -44,15 +49,13 @@ class BLINK_EXPORT FontMetadata final : public ScriptWrappable {
   String fullName() const { return fullName_; }
   String family() const { return family_; }
 
-  ScriptPromise getTables(ScriptState*);
-  ScriptPromise getTables(ScriptState*, const Vector<String>& tables);
+  ScriptPromise blob(ScriptState*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
-  static void getTablesImpl(ScriptPromiseResolver* resolver,
-                            const String& postscriptName,
-                            const Vector<String>& tables);
+  static void BlobImpl(ScriptPromiseResolver* resolver,
+                       const String& postscriptName);
   String postscriptName_;
   String fullName_;
   String family_;

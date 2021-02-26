@@ -7,6 +7,11 @@ changes required.
 
 ## Code Changes
 
+NOTE: You can land these code changes before requesting to run an origin trial.
+These code changes make it possible to control a feature via an origin trial,
+but don't require an origin trial to be approved. For more on the process, see
+[Running an Origin Trial].
+
 ### Runtime Enabled Features
 
 First, you’ll need to configure [runtime\_enabled\_features.json5]. This is
@@ -186,6 +191,14 @@ To test an origin trial feature during development, follow these steps:
       tools/origin_trials/generate_token.py http://localhost:8000 MyFeature
       ```
 
+   There are additional flags to generate third-party tokens, set the expiry
+   date, and control other options. See the command help for details (`--help`).
+   For example, to generate a third-party token, with [user subset exclusion]:
+
+      ```
+      tools/origin_trials/generate_token.py --is-third-party --usage-restriction=subset http://localhost:8000 MyFeature
+      ```
+
 2. Copy the token from the end of the output and use it in a `<meta>` tag or
    an `Origin-Trial` header as described in the [Developer Guide].
 
@@ -203,6 +216,17 @@ It's also used by Origin Trials unit tests and web tests.
 
 If you cannot set command-line switches (e.g., on Chrome OS), you can also
 directly modify [chrome_origin_trial_policy.cc].
+
+To see additional information about origin trial token parsing (including reasons
+for failures, or token names for successful tokens), you can add these switches:
+
+  `--vmodule=trial_token=2,origin_trial_context=1`
+
+If you are building with `is_debug=false`, then you will also need to add
+`dcheck_always_on=true` to your build options, and add this to the command line:
+
+  `--enable-logging=stderr`
+
 
 ### Web Tests
 When using the \[RuntimeEnabled\] IDL attribute, you should add web tests
@@ -225,4 +249,5 @@ as tests for script-added tokens. For examples, refer to the existing tests in
 [css\_properties.json5]: /third_party/blink/renderer/core/css/css_properties.json5
 [origin-trial-test-property]: https://chromium.googlesource.com/chromium/src/+/ff2ab8b89745602c8300322c2a0158e210178c7e/third_party/blink/renderer/core/css/css_properties.json5#2635
 [CSSStyleDeclaration]: /third_party/blink/renderer/core/css/css_style_declaration.idl
-
+[Running an Origin Trial]: https://www.chromium.org/blink/origin-trials/running-an-origin-trial
+[user subset exclusion]: https://docs.google.com/document/d/1xALH9W7rWmX0FpjudhDeS2TNTEOXuPn4Tlc9VmuPdHA/edit#heading=h.myaz1twlipw

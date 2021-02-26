@@ -10,6 +10,7 @@
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_components/customize_themes/customize_themes.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/shadow.js';
 import '../settings_shared_css.m.js';
@@ -77,6 +78,15 @@ Polymer({
     isProfileShortcutSettingVisible_: Boolean,
 
     /**
+     * True if the 'kNewProfilePicker' feature is enabled.
+     * @private
+     */
+    isNewProfilePicker_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('newProfilePicker')
+    },
+
+    /**
      * TODO(dpapad): Move this back to the HTML file when the Polymer2 version
      * of the code is deleted. Because of "\" being a special character in a JS
      * string, can't satisfy both Polymer2 and Polymer3 at the same time from
@@ -109,20 +119,25 @@ Polymer({
 
   /** @protected */
   currentRouteChanged() {
-    if (Router.getInstance().getCurrentRoute() == routes.MANAGE_PROFILE) {
+    if (Router.getInstance().getCurrentRoute() === routes.MANAGE_PROFILE) {
       if (this.profileName) {
-        this.$.name.value = this.profileName;
+        const profileNameInput =
+            /** @type {CrInputElement} */ (this.$$('#name'));
+        if (profileNameInput) {
+          profileNameInput.value = this.profileName;
+        }
       }
       if (loadTimeData.getBoolean('profileShortcutsEnabled')) {
         this.browserProxy_.getProfileShortcutStatus().then(status => {
-          if (status == ProfileShortcutStatus.PROFILE_SHORTCUT_SETTING_HIDDEN) {
+          if (status ===
+              ProfileShortcutStatus.PROFILE_SHORTCUT_SETTING_HIDDEN) {
             this.isProfileShortcutSettingVisible_ = false;
             return;
           }
 
           this.isProfileShortcutSettingVisible_ = true;
           this.hasProfileShortcut_ =
-              status == ProfileShortcutStatus.PROFILE_SHORTCUT_FOUND;
+              status === ProfileShortcutStatus.PROFILE_SHORTCUT_FOUND;
         });
       }
     }
@@ -147,7 +162,7 @@ Polymer({
    * @private
    */
   onProfileNameKeydown_(event) {
-    if (event.key == 'Escape') {
+    if (event.key === 'Escape') {
       event.target.value = this.profileName;
       event.target.blur();
     }
@@ -161,7 +176,8 @@ Polymer({
     if (this.profileAvatar_.isGaiaAvatar) {
       this.browserProxy_.setProfileIconToGaiaAvatar();
     } else {
-      this.browserProxy_.setProfileIconToDefaultAvatar(this.profileAvatar_.url);
+      this.browserProxy_.setProfileIconToDefaultAvatar(
+          this.profileAvatar_.index);
     }
   },
 

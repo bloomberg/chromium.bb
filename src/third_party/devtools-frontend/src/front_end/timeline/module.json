@@ -245,7 +245,6 @@
     "profiler",
     "mobile_throttling"
   ],
-  "scripts": [],
   "modules": [
     "timeline.js",
     "timeline-legacy.js",
@@ -269,7 +268,9 @@
     "TimelinePaintProfilerView.js",
     "TimelinePanel.js",
     "UIDevtoolsUtils.js",
-    "UIDevtoolsController.js"
+    "UIDevtoolsController.js",
+    "WebVitalsTimeline_bridge.js",
+    "WebVitalsTimelineUtils.js"
   ],
   "resources": [
     "historyToolbarButton.css",

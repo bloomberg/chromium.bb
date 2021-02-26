@@ -4,14 +4,12 @@
 
 #include <cstdint>
 #include <memory>
-#include <vector>
 
 #include "core/fpdfapi/page/cpdf_colorspace.h"
 #include "core/fxcodec/jpx/cjpx_decoder.h"
-#include "core/fxcodec/jpx/jpxmodule.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
-#include "core/fxge/fx_dib.h"
+#include "core/fxge/dib/fx_dib.h"
 
 namespace {
 
@@ -31,7 +29,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < 1)
     return 0;
 
-  std::unique_ptr<CJPX_Decoder> decoder = JpxModule::CreateDecoder(
+  std::unique_ptr<CJPX_Decoder> decoder = CJPX_Decoder::Create(
       {data + 1, size - 1},
       static_cast<CJPX_Decoder::ColorSpaceOption>(data[0] % 3));
   if (!decoder)
@@ -53,14 +51,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   FXDIB_Format format;
   if (image_info.components == 1) {
-    format = FXDIB_8bppRgb;
+    format = FXDIB_Format::k8bppRgb;
   } else if (image_info.components <= 3) {
-    format = FXDIB_Rgb;
+    format = FXDIB_Format::kRgb;
   } else if (image_info.components == 4) {
-    format = FXDIB_Rgb32;
+    format = FXDIB_Format::kRgb32;
   } else {
     image_info.width = (image_info.width * image_info.components + 2) / 3;
-    format = FXDIB_Rgb;
+    format = FXDIB_Format::kRgb;
   }
   auto bitmap = pdfium::MakeRetain<CFX_DIBitmap>();
   if (!bitmap->Create(image_info.width, image_info.height, format))

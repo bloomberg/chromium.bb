@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -29,8 +29,7 @@ class Buffer;
 #if !defined(OS_ANDROID)
 #define CMD_HELPER_PERIODIC_FLUSH_CHECK
 const int kCommandsPerFlushCheck = 100;
-const int kPeriodicFlushDelayInMicroseconds =
-    base::Time::kMicrosecondsPerSecond / (5 * 60);
+const int kPeriodicFlushDelayInMicroseconds = 500;
 #endif
 
 const int kAutoFlushSmall = 16;  // 1/16 of the buffer

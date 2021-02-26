@@ -76,7 +76,7 @@ def _ParseEditsFromStdin(build_directory):
     if not os.path.isfile(path):
       resolved_path = os.path.realpath(os.path.join(build_directory, path))
     else:
-      resolved_path = path
+      resolved_path = os.path.realpath(path)
 
     if not os.path.isfile(resolved_path):
       sys.stderr.write('Edit applies to a non-existent file: %s\n' % path)
@@ -197,12 +197,24 @@ def _InsertNonSystemIncludeHeader(filepath, header_line_to_add, contents):
 
 
 def _ApplyReplacement(filepath, contents, edit, last_edit):
-  if (last_edit is not None and edit.edit_type == last_edit.edit_type
-      and edit.offset == last_edit.offset and edit.length == last_edit.length):
-    raise ValueError(('Conflicting replacement text: ' +
-                      '%s at offset %d, length %d: "%s" != "%s"\n') %
-                     (filepath, edit.offset, edit.length, edit.replacement,
-                      last_edit.replacement))
+  assert (edit.edit_type == 'r')
+  assert ((last_edit is None) or (last_edit.edit_type == 'r'))
+
+  if last_edit is not None:
+    if edit.offset == last_edit.offset and edit.length == last_edit.length:
+      assert (edit.replacement != last_edit.replacement)
+      raise ValueError(('Conflicting replacement text: ' +
+                        '%s at offset %d, length %d: "%s" != "%s"\n') %
+                       (filepath, edit.offset, edit.length, edit.replacement,
+                        last_edit.replacement))
+
+    if edit.offset + edit.length > last_edit.offset:
+      raise ValueError(
+          ('Overlapping replacements: ' +
+           '%s at offset %d, length %d: "%s" and ' +
+           'offset %d, length %d: "%s"\n') %
+          (filepath, edit.offset, edit.length, edit.replacement,
+           last_edit.offset, last_edit.length, last_edit.replacement))
 
   contents[edit.offset:edit.offset + edit.length] = edit.replacement
   if not edit.replacement:

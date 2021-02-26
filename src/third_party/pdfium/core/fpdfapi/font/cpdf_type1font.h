@@ -14,16 +14,14 @@
 
 class CPDF_Type1Font final : public CPDF_SimpleFont {
  public:
-  template <typename T, typename... Args>
-  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
-
+  CONSTRUCT_VIA_MAKE_RETAIN;
   ~CPDF_Type1Font() override;
 
   // CPDF_Font:
   bool IsType1Font() const override;
   const CPDF_Type1Font* AsType1Font() const override;
   CPDF_Type1Font* AsType1Font() override;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   int GlyphFromCharCodeExt(uint32_t charcode) override;
 #endif
 
@@ -41,7 +39,7 @@ class CPDF_Type1Font final : public CPDF_SimpleFont {
   bool IsSymbolicFont() const;
   bool IsFixedFont() const;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void SetExtGID(const char* name, uint32_t charcode);
   void CalcExtGID(uint32_t charcode);
 

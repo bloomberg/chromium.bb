@@ -76,8 +76,7 @@ class SiteSettingsHandler
   // content_settings::Observer:
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,
-                               ContentSettingsType content_type,
-                               const std::string& resource_identifier) override;
+                               ContentSettingsType content_type) override;
 
   // ProfileObserver:
   void OnOffTheRecordProfileCreated(Profile* off_the_record) override;
@@ -128,11 +127,13 @@ class SiteSettingsHandler
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            HandleClearEtldPlus1DataAndCookies);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, CookieControlsManagedState);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, CookieSettingDescription);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleGetFormattedBytes);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            NotificationPermissionRevokeUkm);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExcludeWebUISchemesInLists);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
+                           IncludeWebUISchemesInGetOriginPermissions);
 
   // Creates the CookiesTreeModel if necessary.
   void EnsureCookiesTreeModelCreated();
@@ -171,10 +172,6 @@ class SiteSettingsHandler
   // the front end when fetching finished.
   void HandleGetAllSites(const base::ListValue* args);
 
-  // Returns whether each of the cookie controls is managed and if so what
-  // the source of that management is.
-  void HandleGetCookieControlsManagedState(const base::ListValue* args);
-
   // Returns a string for display describing the current cookie settings.
   void HandleGetCookieSettingDescription(const base::ListValue* args);
 
@@ -209,10 +206,6 @@ class SiteSettingsHandler
   // '*CategoryPermissionForPattern' equivalents below with these methods.
   void HandleGetOriginPermissions(const base::ListValue* args);
   void HandleSetOriginPermissions(const base::ListValue* args);
-
-  // Clears the Flash data setting used to remember if the user has changed the
-  // Flash permission for an origin.
-  void HandleClearFlashPref(const base::ListValue* args);
 
   // Handles setting and resetting an origin permission.
   void HandleResetCategoryPermissionForPattern(const base::ListValue* args);

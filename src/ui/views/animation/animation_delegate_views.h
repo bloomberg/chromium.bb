@@ -14,10 +14,6 @@
 #include "ui/views/view_observer.h"
 #include "ui/views/views_export.h"
 
-namespace ui {
-class AnimationMetricsReporter;
-}
-
 namespace views {
 class CompositorAnimationRunner;
 
@@ -51,20 +47,16 @@ class VIEWS_EXPORT AnimationDelegateViews
   // |set_animation_metrics_reporter()|.
   virtual base::TimeDelta GetAnimationDurationForReporting() const;
 
-  void SetAnimationMetricsReporter(
-      ui::AnimationMetricsReporter* animation_metrics_reporter);
-
   gfx::AnimationContainer* container() { return container_; }
 
  private:
   // Sets CompositorAnimationRunner to |container_| if possible. Otherwise,
   // clears AnimationRunner of |container_|.
   void UpdateAnimationRunner();
+  void ClearAnimationRunner();
 
   View* view_;
   gfx::AnimationContainer* container_ = nullptr;
-
-  ui::AnimationMetricsReporter* animation_metrics_reporter_ = nullptr;
 
   // The animation runner that |container_| uses.
   CompositorAnimationRunner* compositor_animation_runner_ = nullptr;

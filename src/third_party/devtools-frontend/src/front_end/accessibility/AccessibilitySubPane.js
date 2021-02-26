@@ -20,9 +20,10 @@ export class AccessibilitySubPane extends UI.View.SimpleView {
     /**
      * @protected
      * @suppress {accessControls}
+     * @type {?AccessibilityNode}
      */
     this._axNode = null;
-    this.registerRequiredCSS('accessibility/accessibilityProperties.css');
+    this.registerRequiredCSS('accessibility/accessibilityProperties.css', {enableLegacyPatching: true});
   }
 
   /**
@@ -35,7 +36,7 @@ export class AccessibilitySubPane extends UI.View.SimpleView {
    * @return {?SDK.DOMModel.DOMNode}
    */
   node() {
-    return this._node;
+    return this._node || null;
   }
 
   /**
@@ -62,9 +63,9 @@ export class AccessibilitySubPane extends UI.View.SimpleView {
    */
   createTreeOutline() {
     const treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
-    treeOutline.registerRequiredCSS('accessibility/accessibilityNode.css');
-    treeOutline.registerRequiredCSS('accessibility/accessibilityProperties.css');
-    treeOutline.registerRequiredCSS('object_ui/objectValue.css');
+    treeOutline.registerRequiredCSS('accessibility/accessibilityNode.css', {enableLegacyPatching: true});
+    treeOutline.registerRequiredCSS('accessibility/accessibilityProperties.css', {enableLegacyPatching: true});
+    treeOutline.registerRequiredCSS('object_ui/objectValue.css', {enableLegacyPatching: true});
 
     treeOutline.element.classList.add('hidden');
     treeOutline.hideOverflow();

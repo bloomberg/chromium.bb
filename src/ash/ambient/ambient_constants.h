@@ -12,17 +12,59 @@ namespace ash {
 // Duration of the slide show animation. Also used as |delay| in posted task to
 // download images.
 constexpr base::TimeDelta kAnimationDuration =
-    base::TimeDelta::FromMilliseconds(250);
+    base::TimeDelta::FromMilliseconds(500);
 
-// PhotoModel has a local in memory cache of downloaded photos. This is the
-// desired max number of photos stored in cache. If this is an even number,
-// the max number could be one larger.
-constexpr int kImageBufferLength = 5;
+// Topic related numbers.
 
-// The default interval to refresh photos.
-// TODO(b/139953713): Change to a correct time interval.
-constexpr base::TimeDelta kPhotoRefreshInterval =
-    base::TimeDelta::FromSeconds(5);
+// The default interval to fetch Topics.
+constexpr base::TimeDelta kTopicFetchInterval =
+    base::TimeDelta::FromSeconds(30);
+
+// The default interval to fetch backup cache photos.
+constexpr base::TimeDelta kBackupPhotoRefreshDelay =
+    base::TimeDelta::FromMinutes(5);
+
+// The default interval to refresh weather.
+constexpr base::TimeDelta kWeatherRefreshInterval =
+    base::TimeDelta::FromMinutes(5);
+
+// The batch size of topics to fetch in one request.
+constexpr int kTopicsBatchSize = 100;
+
+// Max cached images.
+constexpr int kMaxNumberOfCachedImages = 100;
+
+constexpr int kMaxImageSizeInBytes = 5 * 1024 * 1024;
+
+constexpr int kMaxReservedAvailableDiskSpaceByte = 200 * 1024 * 1024;
+
+// The maximum number of consecutive failures in downloading or reading an image
+// from disk.
+constexpr int kMaxConsecutiveReadPhotoFailures = 3;
+
+constexpr char kPhotoFileExt[] = ".img";
+constexpr char kPhotoDetailsFileExt[] = ".txt";
+constexpr char kRelatedPhotoSuffix[] = "_r";
+
+// Directory name of ambient mode.
+constexpr char kAmbientModeDirectoryName[] = "ambient-mode";
+
+constexpr char kAmbientModeCacheDirectoryName[] = "cache";
+
+constexpr char kAmbientModeBackupCacheDirectoryName[] = "backup";
+
+// The buffer time to use the access token.
+constexpr base::TimeDelta kTokenUsageTimeBuffer =
+    base::TimeDelta::FromMinutes(10);
+
+// PhotoView related constants.
+// Spacing between two portrait images.
+constexpr int kMarginLeftOfRelatedImageDip = 8;
+
+// Media string related.
+constexpr int kMediaStringMaxWidthDip = 280;
+
+constexpr int kMediaStringGradientWidthDip = 20;
 
 }  // namespace ash
 

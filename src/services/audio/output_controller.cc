@@ -12,8 +12,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -150,7 +151,7 @@ OutputController::OutputController(media::AudioManager* audio_manager,
       task_runner_(audio_manager->GetTaskRunner()),
       construction_time_(base::TimeTicks::Now()),
       output_device_id_(output_device_id),
-      stream_(NULL),
+      stream_(nullptr),
       disable_local_output_(false),
       volume_(1.0),
       state_(kEmpty),
@@ -183,7 +184,6 @@ bool OutputController::CreateStream() {
 
 void OutputController::RecreateStreamWithTimingUMA(
     OutputController::RecreateReason reason) {
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CreateTime");
   RecreateStream(reason);
 }
 
@@ -300,7 +300,6 @@ void OutputController::RecreateStream(OutputController::RecreateReason reason) {
 
 void OutputController::Play() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PlayTime");
   TRACE_EVENT0("audio", "OutputController::Play");
   SendLogMessage("%s([state=%s])", __func__, StateToString(state_));
 
@@ -347,7 +346,6 @@ void OutputController::StopStream() {
 
 void OutputController::Pause() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PauseTime");
   TRACE_EVENT0("audio", "OutputController::Pause");
   SendLogMessage("%s([state=%s])", __func__, StateToString(state_));
 
@@ -384,7 +382,6 @@ void OutputController::Flush() {
 void OutputController::Close() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("audio", "OutputController::Close");
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CloseTime");
   SendLogMessage("%s([state=%s])", __func__, StateToString(state_));
 
   if (state_ != kClosed) {
@@ -530,7 +527,7 @@ void OutputController::StopCloseAndClearStream() {
     stream_->Close();
     stats_tracker_.reset();
 
-    stream_ = NULL;
+    stream_ = nullptr;
   }
 
   state_ = kEmpty;
@@ -612,7 +609,6 @@ void OutputController::OnDeviceChange() {
   if (disable_local_output_)
     return;  // No actions need to be taken while local output is disabled.
 
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.DeviceChangeTime");
   SendLogMessage("%s([state=%s])", __func__, StateToString(state_));
 
   // TODO(dalecurtis): Notify the renderer side that a device change has

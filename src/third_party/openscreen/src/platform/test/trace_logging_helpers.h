@@ -7,8 +7,11 @@
 #ifndef PLATFORM_TEST_TRACE_LOGGING_HELPERS_H_
 #define PLATFORM_TEST_TRACE_LOGGING_HELPERS_H_
 
+#include <chrono>
+
 #include "gmock/gmock.h"
 #include "platform/base/trace_logging_activation.h"
+#include "util/chrono_helpers.h"
 #include "util/osp_logging.h"
 
 namespace openscreen {
@@ -60,8 +63,7 @@ void ValidateTraceTimestampDiff(const char* name,
                                 Clock::time_point end_time,
                                 TraceIdHierarchy ids,
                                 Error error) {
-  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-      end_time - start_time);
+  const auto elapsed = to_microseconds(end_time - start_time);
   ASSERT_GE(static_cast<uint64_t>(elapsed.count()), milliseconds);
 }
 

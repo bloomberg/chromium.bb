@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -41,6 +40,8 @@ base::string16 GetUniqueShortcutFilenameForProfile(
 class ShortcutFilenameMatcher {
  public:
   explicit ShortcutFilenameMatcher(const base::string16& profile_name);
+  ShortcutFilenameMatcher(const ShortcutFilenameMatcher&) = delete;
+  ShortcutFilenameMatcher& operator=(const ShortcutFilenameMatcher&) = delete;
 
   // Check that shortcut filename has a name given by us (by
   // GetShortcutFilenameForProfile or GetUniqueShortcutFilenameForProfile).
@@ -50,12 +51,11 @@ class ShortcutFilenameMatcher {
   const base::string16 profile_shortcut_filename_;
   const base::StringPiece16 lnk_ext_;
   base::StringPiece16 profile_shortcut_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShortcutFilenameMatcher);
 };
 
 // Returns the command-line flags to launch Chrome with the given profile.
-base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path);
+base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path,
+                                          const bool incognito = false);
 
 }  // namespace internal
 }  // namespace profiles
@@ -81,9 +81,14 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
   };
 
   explicit ProfileShortcutManagerWin(ProfileManager* manager);
+  ProfileShortcutManagerWin(const ProfileShortcutManagerWin&) = delete;
+  ProfileShortcutManagerWin& operator=(const ProfileShortcutManagerWin&) =
+      delete;
   ~ProfileShortcutManagerWin() override;
 
   // ProfileShortcutManager implementation:
+  void CreateIncognitoProfileShortcut(
+      const base::FilePath& profile_path) override;
   void CreateOrUpdateProfileIcon(const base::FilePath& profile_path) override;
   void CreateProfileShortcut(const base::FilePath& profile_path) override;
   void RemoveProfileShortcuts(const base::FilePath& profile_path) override;
@@ -111,16 +116,15 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
   base::FilePath GetOtherProfilePath(const base::FilePath& profile_path);
 
   // Creates or updates shortcuts for the profile at |profile_path| according
-  // to the specified |create_mode| and |action|. This will always involve
-  // creating or updating the icon file for this profile.
+  // to the specified |create_mode|, |action|, and |incognito|. This will always
+  // involve creating or updating the icon file for this profile.
   void CreateOrUpdateShortcutsForProfileAtPath(
       const base::FilePath& profile_path,
       CreateOrUpdateMode create_mode,
-      NonProfileShortcutAction action);
+      NonProfileShortcutAction action,
+      bool incognito);
 
   ProfileManager* profile_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileShortcutManagerWin);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_WIN_H_

@@ -62,7 +62,6 @@ void DebugInfoEventListener::OnConnectionStatusChange(ConnectionStatus status) {
 }
 
 void DebugInfoEventListener::OnPassphraseRequired(
-    PassphraseRequiredReason reason,
     const KeyDerivationParams& key_derivation_params,
     const sync_pb::EncryptedData& pending_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -103,11 +102,6 @@ void DebugInfoEventListener::OnEncryptedTypesChanged(
   CreateAndAddEvent(sync_pb::SyncEnums::ENCRYPTED_TYPES_CHANGED);
 }
 
-void DebugInfoEventListener::OnEncryptionComplete() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CreateAndAddEvent(sync_pb::SyncEnums::ENCRYPTION_COMPLETE);
-}
-
 void DebugInfoEventListener::OnCryptographerStateChanged(
     Cryptographer* cryptographer,
     bool has_pending_keys) {
@@ -141,20 +135,20 @@ void DebugInfoEventListener::OnNudgeFromDatatype(ModelType datatype) {
   AddEventToQueue(event_info);
 }
 
-void DebugInfoEventListener::GetDebugInfo(sync_pb::DebugInfo* debug_info) {
+sync_pb::DebugInfo DebugInfoEventListener::GetDebugInfo() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LE(events_.size(), kMaxEntries);
 
-  for (DebugEventInfoQueue::const_iterator iter = events_.begin();
-       iter != events_.end(); ++iter) {
-    sync_pb::DebugEventInfo* event_info = debug_info->add_events();
-    event_info->CopyFrom(*iter);
+  sync_pb::DebugInfo debug_info;
+  for (const sync_pb::DebugEventInfo& event : events_) {
+    *debug_info.add_events() = event;
   }
 
-  debug_info->set_events_dropped(events_dropped_);
-  debug_info->set_cryptographer_ready(cryptographer_can_encrypt_);
-  debug_info->set_cryptographer_has_pending_keys(
+  debug_info.set_events_dropped(events_dropped_);
+  debug_info.set_cryptographer_ready(cryptographer_can_encrypt_);
+  debug_info.set_cryptographer_has_pending_keys(
       cryptographer_has_pending_keys_);
+  return debug_info;
 }
 
 void DebugInfoEventListener::ClearDebugInfo() {
@@ -176,43 +170,11 @@ void DebugInfoEventListener::OnDataTypeConfigureComplete(
 
   for (size_t i = 0; i < configuration_stats.size(); ++i) {
     DCHECK(ProtocolTypes().Has(configuration_stats[i].model_type));
-    const DataTypeAssociationStats& association_stats =
-        configuration_stats[i].association_stats;
-
     sync_pb::DebugEventInfo association_event;
     sync_pb::DatatypeAssociationStats* datatype_stats =
         association_event.mutable_datatype_association_stats();
     datatype_stats->set_data_type_id(GetSpecificsFieldNumberFromModelType(
         configuration_stats[i].model_type));
-    datatype_stats->set_num_local_items_before_association(
-        association_stats.num_local_items_before_association);
-    datatype_stats->set_num_sync_items_before_association(
-        association_stats.num_sync_items_before_association);
-    datatype_stats->set_num_local_items_after_association(
-        association_stats.num_local_items_after_association);
-    datatype_stats->set_num_sync_items_after_association(
-        association_stats.num_sync_items_after_association);
-    datatype_stats->set_num_local_items_added(
-        association_stats.num_local_items_added);
-    datatype_stats->set_num_local_items_deleted(
-        association_stats.num_local_items_deleted);
-    datatype_stats->set_num_local_items_modified(
-        association_stats.num_local_items_modified);
-    datatype_stats->set_num_sync_items_added(
-        association_stats.num_sync_items_added);
-    datatype_stats->set_num_sync_items_deleted(
-        association_stats.num_sync_items_deleted);
-    datatype_stats->set_num_sync_items_modified(
-        association_stats.num_sync_items_modified);
-    datatype_stats->set_local_version_pre_association(
-        association_stats.local_version_pre_association);
-    datatype_stats->set_sync_version_pre_association(
-        association_stats.sync_version_pre_association);
-    datatype_stats->set_had_error(association_stats.had_error);
-    datatype_stats->set_association_wait_time_for_same_priority_us(
-        association_stats.association_wait_time.InMicroseconds());
-    datatype_stats->set_association_time_us(
-        association_stats.association_time.InMicroseconds());
     datatype_stats->set_download_wait_time_us(
         configuration_stats[i].download_wait_time.InMicroseconds());
     datatype_stats->set_download_time_us(

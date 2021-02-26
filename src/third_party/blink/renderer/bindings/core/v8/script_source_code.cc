@@ -66,7 +66,7 @@ ScriptSourceCode::ScriptSourceCode(
     const TextPosition& start_position)
     : source_(TreatNullSourceAsEmpty(source)),
       cache_handler_(cache_handler),
-      not_streaming_reason_(ScriptStreamer::kInlineScript),
+      not_streaming_reason_(ScriptStreamer::NotStreamingReason::kInlineScript),
       url_(StripFragmentIdentifier(url)),
       start_position_(start_position),
       source_location_type_(source_location_type) {
@@ -107,14 +107,15 @@ ScriptSourceCode::ScriptSourceCode(const String& source,
                                    const KURL& url)
     : source_(TreatNullSourceAsEmpty(ParkableString(source.Impl()))),
       cache_handler_(cache_handler),
-      not_streaming_reason_(ScriptStreamer::kWorkerTopLevelScript),
+      not_streaming_reason_(
+          ScriptStreamer::NotStreamingReason::kWorkerTopLevelScript),
       url_(url),
       start_position_(TextPosition::MinimumPosition()),
       source_location_type_(ScriptSourceLocationType::kUnknown) {}
 
 ScriptSourceCode::~ScriptSourceCode() = default;
 
-void ScriptSourceCode::Trace(Visitor* visitor) {
+void ScriptSourceCode::Trace(Visitor* visitor) const {
   visitor->Trace(cache_handler_);
   visitor->Trace(streamer_);
 }

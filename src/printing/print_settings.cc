@@ -7,20 +7,18 @@
 #include "base/atomic_sequence_num.h"
 #include "base/lazy_instance.h"
 #include "base/notreached.h"
-#include "printing/print_job_constants.h"
+#include "build/chromeos_buildflags.h"
 #include "printing/units.h"
+
+#if defined(USE_CUPS) && (defined(OS_MAC) || BUILDFLAG(IS_ASH))
+#include <cups/cups.h>
+#endif
 
 namespace printing {
 
 namespace {
 
 base::LazyInstance<std::string>::Leaky g_user_agent;
-
-base::Optional<ColorModel> ColorModeToColorModel(int color_mode) {
-  if (color_mode < UNKNOWN_COLOR_MODEL || color_mode > COLOR_MODEL_LAST)
-    return base::nullopt;
-  return static_cast<ColorModel>(color_mode);
-}
 
 }  // namespace
 
@@ -32,18 +30,25 @@ const std::string& GetAgent() {
   return g_user_agent.Get();
 }
 
+mojom::ColorModel ColorModeToColorModel(int color_mode) {
+  if (color_mode < static_cast<int>(mojom::ColorModel::kUnknownColorModel) ||
+      color_mode > static_cast<int>(mojom::ColorModel::kColorModelLast))
+    return mojom::ColorModel::kUnknownColorModel;
+  return static_cast<mojom::ColorModel>(color_mode);
+}
+
 #if defined(USE_CUPS)
-void GetColorModelForMode(int color_mode,
-                          std::string* color_setting_name,
-                          std::string* color_value) {
-#if defined(OS_MACOSX)
+void GetColorModelForModel(mojom::ColorModel color_model,
+                           std::string* color_setting_name,
+                           std::string* color_value) {
+#if defined(OS_MAC)
   constexpr char kCUPSColorMode[] = "ColorMode";
   constexpr char kCUPSColorModel[] = "ColorModel";
   constexpr char kCUPSPrintoutMode[] = "PrintoutMode";
   constexpr char kCUPSProcessColorModel[] = "ProcessColorModel";
-  constexpr char kCUPSInk[] = "Ink";
   constexpr char kCUPSBrotherMonoColor[] = "BRMonoColor";
   constexpr char kCUPSBrotherPrintQuality[] = "BRPrintQuality";
+  constexpr char kCUPSEpsonInk[] = "Ink";
   constexpr char kCUPSSharpARCMode[] = "ARCMode";
   constexpr char kCUPSXeroxXRXColor[] = "XRXColor";
 #else
@@ -51,131 +56,125 @@ void GetColorModelForMode(int color_mode,
   constexpr char kCUPSColorModel[] = "cups-ColorModel";
   constexpr char kCUPSPrintoutMode[] = "cups-PrintoutMode";
   constexpr char kCUPSProcessColorModel[] = "cups-ProcessColorModel";
-  constexpr char kCUPSInk[] = "cups-Ink";
   constexpr char kCUPSBrotherMonoColor[] = "cups-BRMonoColor";
   constexpr char kCUPSBrotherPrintQuality[] = "cups-BRPrintQuality";
+  constexpr char kCUPSEpsonInk[] = "cups-Ink";
   constexpr char kCUPSSharpARCMode[] = "cups-ARCMode";
   constexpr char kCUPSXeroxXRXColor[] = "cups-XRXColor";
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   *color_setting_name = kCUPSColorModel;
 
-  base::Optional<ColorModel> color_model = ColorModeToColorModel(color_mode);
-  if (!color_model.has_value()) {
-    NOTREACHED();
-    return;
-  }
-
-  switch (color_model.value()) {
-    case UNKNOWN_COLOR_MODEL:
+  switch (color_model) {
+    case mojom::ColorModel::kUnknownColorModel:
       *color_value = kGrayscale;
       break;
-    case GRAY:
+    case mojom::ColorModel::kGray:
       *color_value = kGray;
       break;
-    case COLOR:
+    case mojom::ColorModel::kColor:
       *color_value = kColor;
       break;
-    case CMYK:
+    case mojom::ColorModel::kCMYK:
       *color_value = kCMYK;
       break;
-    case CMY:
+    case mojom::ColorModel::kCMY:
       *color_value = kCMY;
       break;
-    case KCMY:
+    case mojom::ColorModel::kKCMY:
       *color_value = kKCMY;
       break;
-    case CMY_K:
+    case mojom::ColorModel::kCMYPlusK:
       *color_value = kCMY_K;
       break;
-    case BLACK:
+    case mojom::ColorModel::kBlack:
       *color_value = kBlack;
       break;
-    case GRAYSCALE:
+    case mojom::ColorModel::kGrayscale:
       *color_value = kGrayscale;
       break;
-    case RGB:
+    case mojom::ColorModel::kRGB:
       *color_value = kRGB;
       break;
-    case RGB16:
+    case mojom::ColorModel::kRGB16:
       *color_value = kRGB16;
       break;
-    case RGBA:
+    case mojom::ColorModel::kRGBA:
       *color_value = kRGBA;
       break;
-    case COLORMODE_COLOR:
+    case mojom::ColorModel::kColorModeColor:
       *color_setting_name = kCUPSColorMode;
       *color_value = kColor;
       break;
-    case COLORMODE_MONOCHROME:
+    case mojom::ColorModel::kColorModeMonochrome:
       *color_setting_name = kCUPSColorMode;
       *color_value = kMonochrome;
       break;
-    case HP_COLOR_COLOR:
+    case mojom::ColorModel::kHPColorColor:
       *color_setting_name = kColor;
       *color_value = kColor;
       break;
-    case HP_COLOR_BLACK:
+    case mojom::ColorModel::kHPColorBlack:
       *color_setting_name = kColor;
       *color_value = kBlack;
       break;
-    case PRINTOUTMODE_NORMAL:
+    case mojom::ColorModel::kPrintoutModeNormal:
       *color_setting_name = kCUPSPrintoutMode;
       *color_value = kNormal;
       break;
-    case PRINTOUTMODE_NORMAL_GRAY:
+    case mojom::ColorModel::kPrintoutModeNormalGray:
       *color_setting_name = kCUPSPrintoutMode;
       *color_value = kNormalGray;
       break;
-    case PROCESSCOLORMODEL_CMYK:
+    case mojom::ColorModel::kProcessColorModelCMYK:
       *color_setting_name = kCUPSProcessColorModel;
       *color_value = kCMYK;
       break;
-    case PROCESSCOLORMODEL_GREYSCALE:
+    case mojom::ColorModel::kProcessColorModelGreyscale:
       *color_setting_name = kCUPSProcessColorModel;
       *color_value = kGreyscale;
       break;
-    case PROCESSCOLORMODEL_RGB:
+    case mojom::ColorModel::kProcessColorModelRGB:
       *color_setting_name = kCUPSProcessColorModel;
       *color_value = kRGB;
       break;
-    case BROTHER_CUPS_COLOR:
+    case mojom::ColorModel::kBrotherCUPSColor:
       *color_setting_name = kCUPSBrotherMonoColor;
       *color_value = kFullColor;
       break;
-    case BROTHER_CUPS_MONO:
+    case mojom::ColorModel::kBrotherCUPSMono:
       *color_setting_name = kCUPSBrotherMonoColor;
       *color_value = kMono;
       break;
-    case BROTHER_BRSCRIPT3_COLOR:
+    case mojom::ColorModel::kBrotherBRScript3Color:
       *color_setting_name = kCUPSBrotherPrintQuality;
       *color_value = kColor;
       break;
-    case BROTHER_BRSCRIPT3_BLACK:
+    case mojom::ColorModel::kBrotherBRScript3Black:
       *color_setting_name = kCUPSBrotherPrintQuality;
       *color_value = kBlack;
       break;
-    case EPSON_INK_COLOR:
-      *color_setting_name = kCUPSInk;
-      *color_value = kColor;
+    case mojom::ColorModel::kEpsonInkColor:
+      *color_setting_name = kCUPSEpsonInk;
+      *color_value = kEpsonColor;
       break;
-    case EPSON_INK_MONO:
-      *color_setting_name = kCUPSInk;
-      *color_value = kMono;
+    case mojom::ColorModel::kEpsonInkMono:
+      *color_setting_name = kCUPSEpsonInk;
+      *color_value = kEpsonMono;
       break;
-    case SHARP_ARCMODE_CMCOLOR:
+    case mojom::ColorModel::kSharpARCModeCMColor:
       *color_setting_name = kCUPSSharpARCMode;
       *color_value = kSharpCMColor;
       break;
-    case SHARP_ARCMODE_CMBW:
+    case mojom::ColorModel::kSharpARCModeCMBW:
       *color_setting_name = kCUPSSharpARCMode;
       *color_value = kSharpCMBW;
       break;
-    case XEROX_XRXCOLOR_AUTOMATIC:
+    case mojom::ColorModel::kXeroxXRXColorAutomatic:
       *color_setting_name = kCUPSXeroxXRXColor;
       *color_value = kXeroxAutomatic;
       break;
-    case XEROX_XRXCOLOR_BW:
+    case mojom::ColorModel::kXeroxXRXColorBW:
       *color_setting_name = kCUPSXeroxXRXColor;
       *color_value = kXeroxBW;
       break;
@@ -183,49 +182,60 @@ void GetColorModelForMode(int color_mode,
   // The default case is excluded from the above switch statement to ensure that
   // all ColorModel values are determinantly handled.
 }
-#endif  // defined(USE_CUPS)
 
-base::Optional<bool> IsColorModelSelected(int color_mode) {
-  base::Optional<ColorModel> color_model = ColorModeToColorModel(color_mode);
-  if (!color_model.has_value()) {
+#if defined(OS_MAC) || BUILDFLAG(IS_ASH)
+std::string GetIppColorModelForModel(mojom::ColorModel color_model) {
+  // Accept |kUnknownColorModel| for consistency with GetColorModelForModel().
+  if (color_model == mojom::ColorModel::kUnknownColorModel)
+    return CUPS_PRINT_COLOR_MODE_MONOCHROME;
+
+  base::Optional<bool> is_color = IsColorModelSelected(color_model);
+  if (!is_color.has_value()) {
     NOTREACHED();
-    return base::nullopt;
+    return std::string();
   }
 
-  switch (color_model.value()) {
-    case COLOR:
-    case CMYK:
-    case CMY:
-    case KCMY:
-    case CMY_K:
-    case RGB:
-    case RGB16:
-    case RGBA:
-    case COLORMODE_COLOR:
-    case HP_COLOR_COLOR:
-    case PRINTOUTMODE_NORMAL:
-    case PROCESSCOLORMODEL_CMYK:
-    case PROCESSCOLORMODEL_RGB:
-    case BROTHER_CUPS_COLOR:
-    case BROTHER_BRSCRIPT3_COLOR:
-    case EPSON_INK_COLOR:
-    case SHARP_ARCMODE_CMCOLOR:
-    case XEROX_XRXCOLOR_AUTOMATIC:
+  return is_color.value() ? CUPS_PRINT_COLOR_MODE_COLOR
+                          : CUPS_PRINT_COLOR_MODE_MONOCHROME;
+}
+#endif  // defined(OS_MAC) || BUILDFLAG(IS_ASH)
+#endif  // defined(USE_CUPS)
+
+base::Optional<bool> IsColorModelSelected(mojom::ColorModel color_model) {
+  switch (color_model) {
+    case mojom::ColorModel::kColor:
+    case mojom::ColorModel::kCMYK:
+    case mojom::ColorModel::kCMY:
+    case mojom::ColorModel::kKCMY:
+    case mojom::ColorModel::kCMYPlusK:
+    case mojom::ColorModel::kRGB:
+    case mojom::ColorModel::kRGB16:
+    case mojom::ColorModel::kRGBA:
+    case mojom::ColorModel::kColorModeColor:
+    case mojom::ColorModel::kHPColorColor:
+    case mojom::ColorModel::kPrintoutModeNormal:
+    case mojom::ColorModel::kProcessColorModelCMYK:
+    case mojom::ColorModel::kProcessColorModelRGB:
+    case mojom::ColorModel::kBrotherCUPSColor:
+    case mojom::ColorModel::kBrotherBRScript3Color:
+    case mojom::ColorModel::kEpsonInkColor:
+    case mojom::ColorModel::kSharpARCModeCMColor:
+    case mojom::ColorModel::kXeroxXRXColorAutomatic:
       return true;
-    case GRAY:
-    case BLACK:
-    case GRAYSCALE:
-    case COLORMODE_MONOCHROME:
-    case HP_COLOR_BLACK:
-    case PRINTOUTMODE_NORMAL_GRAY:
-    case PROCESSCOLORMODEL_GREYSCALE:
-    case BROTHER_CUPS_MONO:
-    case BROTHER_BRSCRIPT3_BLACK:
-    case EPSON_INK_MONO:
-    case SHARP_ARCMODE_CMBW:
-    case XEROX_XRXCOLOR_BW:
+    case mojom::ColorModel::kGray:
+    case mojom::ColorModel::kBlack:
+    case mojom::ColorModel::kGrayscale:
+    case mojom::ColorModel::kColorModeMonochrome:
+    case mojom::ColorModel::kHPColorBlack:
+    case mojom::ColorModel::kPrintoutModeNormalGray:
+    case mojom::ColorModel::kProcessColorModelGreyscale:
+    case mojom::ColorModel::kBrotherCUPSMono:
+    case mojom::ColorModel::kBrotherBRScript3Black:
+    case mojom::ColorModel::kEpsonInkMono:
+    case mojom::ColorModel::kSharpARCModeCMBW:
+    case mojom::ColorModel::kXeroxXRXColorBW:
       return false;
-    case UNKNOWN_COLOR_MODEL:
+    case mojom::ColorModel::kUnknownColorModel:
       NOTREACHED();
       return base::nullopt;
   }
@@ -245,13 +255,13 @@ PrintSettings::~PrintSettings() = default;
 void PrintSettings::Clear() {
   ranges_.clear();
   selection_only_ = false;
-  margin_type_ = DEFAULT_MARGINS;
+  margin_type_ = mojom::MarginType::kDefaultMargins;
   title_.clear();
   url_.clear();
   display_header_footer_ = false;
   should_print_backgrounds_ = false;
   collate_ = false;
-  color_ = UNKNOWN_COLOR_MODEL;
+  color_ = mojom::ColorModel::kUnknownColorModel;
   copies_ = 0;
   duplex_mode_ = mojom::DuplexMode::kUnknownDuplexMode;
   device_name_.clear();
@@ -268,12 +278,14 @@ void PrintSettings::Clear() {
 #endif
   is_modifiable_ = true;
   pages_per_sheet_ = 1;
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  advanced_settings_.clear();
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
   send_user_info_ = false;
   username_.clear();
   pin_value_.clear();
-  advanced_settings_.clear();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_ASH)
 }
 
 void PrintSettings::SetPrinterPrintableArea(
@@ -291,7 +303,7 @@ void PrintSettings::SetPrinterPrintableArea(
   PageMargins margins;
   bool small_paper_size = false;
   switch (margin_type_) {
-    case DEFAULT_MARGINS: {
+    case mojom::MarginType::kDefaultMargins: {
       // Default margins 1.0cm = ~2/5 of an inch, unless a page dimension is
       // less than 2.54 cm = ~1 inch, in which case set the margins in that
       // dimension to 0.
@@ -319,8 +331,8 @@ void PrintSettings::SetPrinterPrintableArea(
       }
       break;
     }
-    case NO_MARGINS:
-    case PRINTABLE_AREA_MARGINS: {
+    case mojom::MarginType::kNoMargins:
+    case mojom::MarginType::kPrintableAreaMargins: {
       margins.header = 0;
       margins.footer = 0;
       margins.top = 0;
@@ -329,7 +341,7 @@ void PrintSettings::SetPrinterPrintableArea(
       margins.right = 0;
       break;
     }
-    case CUSTOM_MARGINS: {
+    case mojom::MarginType::kCustomMargins: {
       margins.header = 0;
       margins.footer = 0;
       margins.top = ConvertUnitDouble(requested_custom_margins_in_points_.top,
@@ -349,8 +361,8 @@ void PrintSettings::SetPrinterPrintableArea(
     }
   }
 
-  if ((margin_type_ == DEFAULT_MARGINS ||
-       margin_type_ == PRINTABLE_AREA_MARGINS) &&
+  if ((margin_type_ == mojom::MarginType::kDefaultMargins ||
+       margin_type_ == mojom::MarginType::kPrintableAreaMargins) &&
       !small_paper_size) {
     page_setup_device_units_.SetRequestedMargins(margins);
   } else {
@@ -366,7 +378,7 @@ void PrintSettings::SetPrinterPrintableArea(
 void PrintSettings::SetCustomMargins(
     const PageMargins& requested_margins_in_points) {
   requested_custom_margins_in_points_ = requested_margins_in_points;
-  margin_type_ = CUSTOM_MARGINS;
+  margin_type_ = mojom::MarginType::kCustomMargins;
 }
 
 int PrintSettings::NewCookie() {

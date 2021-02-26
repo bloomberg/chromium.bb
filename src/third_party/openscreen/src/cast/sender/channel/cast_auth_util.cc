@@ -7,6 +7,7 @@
 #include <openssl/rand.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "cast/common/certificate/cast_cert_validator.h"
 #include "cast/common/certificate/cast_cert_validator_internal.h"
@@ -29,13 +30,13 @@ namespace {
 #define PARSE_ERROR_PREFIX "Failed to parse auth message: "
 
 // The maximum number of days a cert can live for.
-const int kMaxSelfSignedCertLifetimeInDays = 4;
+constexpr int kMaxSelfSignedCertLifetimeInDays = 4;
 
 // The size of the nonce challenge in bytes.
-const int kNonceSizeInBytes = 16;
+constexpr int kNonceSizeInBytes = 16;
 
 // The number of hours after which a nonce is regenerated.
-long kNonceExpirationTimeInHours = 24;
+constexpr int kNonceExpirationTimeInHours = 24;
 
 // Extracts an embedded DeviceAuthMessage payload from an auth challenge reply
 // message.
@@ -122,6 +123,9 @@ Error MapToOpenscreenError(Error::Code error, bool crl_required) {
     case Error::Code::kErrCertsRestrictions:
       return Error(Error::Code::kCastV2CertNotSignedByTrustedCa,
                    "Failed certificate restrictions.");
+    case Error::Code::kErrCertsVerifyUntrustedCert:
+      return Error(Error::Code::kCastV2CertNotSignedByTrustedCa,
+                   "Failed with untrusted certificate.");
     case Error::Code::kErrCrlInvalid:
       // This error is only encountered if |crl_required| is true.
       OSP_DCHECK(crl_required);

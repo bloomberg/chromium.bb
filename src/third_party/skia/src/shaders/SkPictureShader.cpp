@@ -22,7 +22,8 @@
 #include <atomic>
 
 #if SK_SUPPORT_GPU
-#include "include/private/GrRecordingContext.h"
+#include "include/gpu/GrDirectContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrColorInfo.h"
 #include "src/gpu/GrFragmentProcessor.h"
@@ -113,7 +114,7 @@ uint32_t next_id() {
 
     uint32_t id;
     do {
-        id = nextID++;
+        id = nextID.fetch_add(1, std::memory_order_relaxed);
     } while (id == SK_InvalidGenID);
     return id;
 }
@@ -275,20 +276,24 @@ bool SkPictureShader::onAppendStages(const SkStageRec& rec) const {
 }
 
 skvm::Color SkPictureShader::onProgram(skvm::Builder* p,
-                                       skvm::F32 x, skvm::F32 y, skvm::Color paint,
-                                       const SkMatrix& ctm, const SkMatrix* localM,
+                                       skvm::Coord device, skvm::Coord local, skvm::Color paint,
+                                       const SkMatrixProvider& matrices, const SkMatrix* localM,
                                        SkFilterQuality quality, const SkColorInfo& dst,
                                        skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const {
     auto lm = this->totalLocalMatrix(localM);
 
     // Keep bitmapShader alive by using alloc instead of stack memory
     auto& bitmapShader = *alloc->make<sk_sp<SkShader>>();
-    bitmapShader = this->refBitmapShader(ctm, &lm, dst.colorType(), dst.colorSpace());
+    bitmapShader = this->refBitmapShader(matrices.localToDevice(), &lm,
+                                         dst.colorType(), dst.colorSpace());
     if (!bitmapShader) {
         return {};
     }
 
-    return as_SB(bitmapShader)->program(p, x,y, paint, ctm, lm, quality, dst, uniforms, alloc);
+    return as_SB(bitmapShader)->program(p, device,local, paint,
+                                        matrices,lm,
+                                        quality,dst,
+                                        uniforms,alloc);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -338,8 +343,6 @@ void SkPictureShader::PictureShaderContext::shadeSpan(int x, int y, SkPMColor ds
 }
 
 #if SK_SUPPORT_GPU
-#include "include/gpu/GrContext.h"
-#include "src/gpu/GrContextPriv.h"
 
 std::unique_ptr<GrFragmentProcessor> SkPictureShader::asFragmentProcessor(
         const GrFPArgs& args) const {

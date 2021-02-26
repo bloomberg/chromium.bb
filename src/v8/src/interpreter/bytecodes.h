@@ -100,6 +100,8 @@ namespace interpreter {
     OperandType::kIdx, OperandType::kIdx)                                      \
   V(LdaNamedPropertyNoFeedback, AccumulatorUse::kWrite, OperandType::kReg,     \
     OperandType::kIdx)                                                         \
+  V(LdaNamedPropertyFromSuper, AccumulatorUse::kReadWrite, OperandType::kReg,  \
+    OperandType::kIdx, OperandType::kIdx)                                      \
   V(LdaKeyedProperty, AccumulatorUse::kReadWrite, OperandType::kReg,           \
     OperandType::kIdx)                                                         \
                                                                                \
@@ -343,6 +345,7 @@ namespace interpreter {
   V(ThrowReferenceErrorIfHole, AccumulatorUse::kRead, OperandType::kIdx)       \
   V(ThrowSuperNotCalledIfHole, AccumulatorUse::kRead)                          \
   V(ThrowSuperAlreadyCalledIfNotHole, AccumulatorUse::kRead)                   \
+  V(ThrowIfNotSuperConstructor, AccumulatorUse::kNone, OperandType::kReg)      \
                                                                                \
   /* Generators */                                                             \
   V(SwitchOnGeneratorState, AccumulatorUse::kNone, OperandType::kReg,          \

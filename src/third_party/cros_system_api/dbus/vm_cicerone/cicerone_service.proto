@@ -30,6 +30,17 @@ message NotifyVmStartedRequest {
   uint32 pid = 5;
 }
 
+// Message sent to cicerone when concierge is about to stop a VM.
+// This is just for tracking purposes by cicerone. This may not be
+// sent if the VM stops unexpectedly.
+message NotifyVmStoppingRequest {
+  // Name of the VM.
+  string vm_name = 1;
+
+  // The owner of the VM.
+  string owner_id = 2;
+}
+
 // Message sent to cicerone when a VM stopped or failed to complete startup.
 // This is just for tracking purposes by cicerone.
 message NotifyVmStoppedRequest {
@@ -632,6 +643,21 @@ message StartLxdContainerRequest {
 
   // Full path where drivefs is mounted (/media/fuse/drivefs-<drivefs-hash>).
   string drivefs_mount_path = 5;
+
+  // Represents the privilege level with which a container should be started. If
+  // the container is already running this should take effect on the next boot.
+  enum PrivilegeLevel {
+    // Don't change the privilege level of the container.
+    UNCHANGED = 0;
+
+    // Make the container unprivileged.
+    UNPRIVILEGED = 1;
+
+    // Make the container privileged.
+    PRIVILEGED = 2;
+  }
+
+  PrivilegeLevel privilege_level = 6;
 }
 
 // OsRelease encapsulates a subset of the os-release info as documented
@@ -1379,6 +1405,10 @@ message StartLxdRequest {
 
   // The owner of the VM.
   string owner_id = 2;
+
+  // If true, opt-in to resetting the LXD DB on launch. If false, use whatever
+  // the default behaviour is.
+  bool reset_lxd_db = 3;
 }
 
 message StartLxdResponse {
@@ -1434,4 +1464,143 @@ message StartLxdProgressSignal {
 
   // The failure_reason if LXD could not be started.
   string failure_reason = 4;
+}
+
+// Request to watch files and notify if there are changes. Used by FilesApp.
+message AddFileWatchRequest {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Directory in container relative to $HOME to watch.
+  string path = 4;
+}
+
+message AddFileWatchResponse {
+  enum Status {
+    // The current status is unknown.
+    UNKNOWN = 0;
+
+    // Watch added successfully.
+    SUCCEEDED = 2;
+
+    // Add watch failed.
+    FAILED = 1;
+  }
+
+  // Add watch status.
+  Status status = 1;
+
+  // The failure_reason if the watcher could not be added.
+  string failure_reason = 2;
+}
+
+// Request to stop watching files.
+message RemoveFileWatchRequest {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Directory in container relative to $HOME to stop watching.
+  string path = 4;
+}
+
+message RemoveFileWatchResponse {
+  enum Status {
+    // The current status is unknown.
+    UNKNOWN = 0;
+
+    // Watch removed successfully.
+    SUCCEEDED = 2;
+
+    // Remove watch failed.
+    FAILED = 1;
+  }
+
+  // Remove watch status.
+  Status status = 1;
+
+  // The failure_reason if the watcher could not be removed.
+  string failure_reason = 2;
+}
+
+// Sent by garcon to notify that a file in a watched directory has changed. Used
+// by FilesApp.
+message FileWatchTriggeredSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Path in container relative to $HOME that has changed.
+  string path = 4;
+}
+
+// Sent by vsh to register session information such as the container shell pid,
+// keyed from the host vsh pid. Crostini terminal will look up this info for
+// features such as starting new terminals in the same cwd.
+message RegisterVshSessionRequest {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Process ID of vsh running in host.
+  int32 host_vsh_pid = 4;
+
+  // Process ID of shell spawned from vshd running in container. Set to 0 to
+  // remove mapping.
+  int32 container_shell_pid = 5;
+}
+
+message RegisterVshSessionResponse {
+  // True if pid mapping was completed.
+  bool success = 1;
+
+  // The reason the pid mapping failed.
+  string failure_reason = 2;
+}
+
+// Sent by chrome to query the container shell pid associated with vsh.
+message GetVshSessionRequest {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Process ID of vsh running in host.
+  int32 host_vsh_pid = 4;
+}
+
+message GetVshSessionResponse {
+  // True if container pid was found.
+  bool success = 1;
+
+  // The reason the pid was not found.
+  string failure_reason = 2;
+
+  // Process ID of shell spawned from vshd running in container.
+  int32 container_shell_pid = 3;
 }

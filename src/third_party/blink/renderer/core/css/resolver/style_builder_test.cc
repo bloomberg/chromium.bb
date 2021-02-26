@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/css/scoped_css_value.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -41,34 +42,62 @@ TEST_F(StyleBuilderTest, WritingModeChangeDirtiesFont) {
       state.SetStyle(style);
 
       ASSERT_FALSE(state.GetFontBuilder().FontDirty());
-      StyleBuilder::ApplyProperty(*property, state, *value);
+      StyleBuilder::ApplyProperty(*property, state,
+                                  ScopedCSSValue(*value, &GetDocument()));
       EXPECT_TRUE(state.GetFontBuilder().FontDirty());
     }
   }
 }
 
 TEST_F(StyleBuilderTest, TextOrientationChangeDirtiesFont) {
+  const CSSProperty* properties[] = {
+      &GetCSSPropertyTextOrientation(),
+      &GetCSSPropertyWebkitTextOrientation(),
+  };
+
   HeapVector<Member<const CSSValue>> values = {
       CSSInitialValue::Create(),
       CSSInheritedValue::Create(),
       CSSIdentifierValue::Create(CSSValueID::kMixed),
   };
 
-  for (const CSSValue* value : values) {
-    auto parent_style = ComputedStyle::Create();
-    auto style = ComputedStyle::Create();
-    // This test assumes that initial 'text-orientation' is not 'upright'.
-    ASSERT_NE(ETextOrientation::kUpright, style->GetTextOrientation());
-    style->SetTextOrientation(ETextOrientation::kUpright);
+  for (const CSSProperty* property : properties) {
+    for (const CSSValue* value : values) {
+      auto parent_style = ComputedStyle::Create();
+      auto style = ComputedStyle::Create();
+      // This test assumes that initial 'text-orientation' is not 'upright'.
+      ASSERT_NE(ETextOrientation::kUpright, style->GetTextOrientation());
+      style->SetTextOrientation(ETextOrientation::kUpright);
 
-    StyleResolverState state(GetDocument(), *GetDocument().body(),
-                             parent_style.get(), parent_style.get());
-    state.SetStyle(style);
+      StyleResolverState state(GetDocument(), *GetDocument().body(),
+                               parent_style.get(), parent_style.get());
+      state.SetStyle(style);
 
-    ASSERT_FALSE(state.GetFontBuilder().FontDirty());
-    StyleBuilder::ApplyProperty(GetCSSPropertyTextOrientation(), state, *value);
-    EXPECT_TRUE(state.GetFontBuilder().FontDirty());
+      ASSERT_FALSE(state.GetFontBuilder().FontDirty());
+      StyleBuilder::ApplyProperty(*property, state,
+                                  ScopedCSSValue(*value, &GetDocument()));
+      EXPECT_TRUE(state.GetFontBuilder().FontDirty());
+    }
   }
+}
+
+TEST_F(StyleBuilderTest, HasExplicitInheritance) {
+  auto parent_style = ComputedStyle::Create();
+  auto style = ComputedStyle::Create();
+  StyleResolverState state(GetDocument(), *GetDocument().body(),
+                           parent_style.get(), parent_style.get());
+  state.SetStyle(style);
+  EXPECT_FALSE(style->HasExplicitInheritance());
+
+  ScopedCSSValue inherited(*CSSInheritedValue::Create(), &GetDocument());
+
+  // Flag should not be set for properties which are inherited.
+  StyleBuilder::ApplyProperty(GetCSSPropertyColor(), state, inherited);
+  EXPECT_FALSE(style->HasExplicitInheritance());
+
+  StyleBuilder::ApplyProperty(GetCSSPropertyBackgroundColor(), state,
+                              inherited);
+  EXPECT_TRUE(style->HasExplicitInheritance());
 }
 
 }  // namespace blink

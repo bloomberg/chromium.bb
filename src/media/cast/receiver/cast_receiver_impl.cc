@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
@@ -131,7 +131,7 @@ void CastReceiverImpl::DecodeEncodedVideoFrame(
     return;
   }
 
-  // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
+  // Used by chrome/browser/media/cast_mirroring_performance_browsertest.cc
   TRACE_EVENT_INSTANT1("cast_perf_test", "PullEncodedVideoFrame",
                        TRACE_EVENT_SCOPE_THREAD, "rtp_timestamp",
                        encoded_frame->rtp_timestamp.lower_32_bits());
@@ -145,8 +145,9 @@ void CastReceiverImpl::DecodeEncodedVideoFrame(
   const base::TimeTicks playout_time = encoded_frame->reference_time;
   video_decoder_->DecodeFrame(
       std::move(encoded_frame),
-      base::Bind(&CastReceiverImpl::EmitDecodedVideoFrame, cast_environment_,
-                 callback, frame_id, rtp_timestamp, playout_time));
+      base::BindRepeating(&CastReceiverImpl::EmitDecodedVideoFrame,
+                          cast_environment_, callback, frame_id, rtp_timestamp,
+                          playout_time));
 }
 
 // static
@@ -199,7 +200,7 @@ void CastReceiverImpl::EmitDecodedVideoFrame(
     playout_event->delay_delta = playout_time - playout_event->timestamp;
     cast_environment->logger()->DispatchFrameEvent(std::move(playout_event));
 
-    // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
+    // Used by chrome/browser/media/cast_mirroring_performance_browsertest.cc
     TRACE_EVENT_INSTANT2("cast_perf_test", "VideoFrameDecoded",
                          TRACE_EVENT_SCOPE_THREAD, "rtp_timestamp",
                          rtp_timestamp.lower_32_bits(), "playout_time",

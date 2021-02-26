@@ -29,7 +29,6 @@ class IdleDetector final : public EventTargetWithInlineData,
                            public ActiveScriptWrappable<IdleDetector>,
                            public ExecutionContextClient,
                            public mojom::blink::IdleMonitor {
-  USING_GARBAGE_COLLECTED_MIXIN(IdleDetector);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -51,10 +50,11 @@ class IdleDetector final : public EventTargetWithInlineData,
   // IdleDetector IDL interface.
   String userState() const;
   String screenState() const;
+  static ScriptPromise requestPermission(ScriptState*, ExceptionState&);
   ScriptPromise start(ScriptState*, const IdleOptions*, ExceptionState&);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // mojom::blink::IdleMonitor implementation. Invoked on a state change, and
@@ -62,7 +62,7 @@ class IdleDetector final : public EventTargetWithInlineData,
   void Update(mojom::blink::IdleStatePtr state) override;
 
   void Abort(AbortSignal*);
-  void OnServiceDisconnected();
+  void OnMonitorDisconnected();
   void OnAddMonitor(ScriptPromiseResolver*,
                     mojom::blink::IdleManagerError,
                     mojom::blink::IdleStatePtr);
@@ -79,9 +79,6 @@ class IdleDetector final : public EventTargetWithInlineData,
                    IdleDetector,
                    HeapMojoWrapperMode::kWithoutContextObserver>
       receiver_;
-  HeapMojoRemote<mojom::blink::IdleManager,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      idle_service_;
 };
 
 }  // namespace blink

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_delegation.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -32,11 +33,12 @@ class MODULES_EXPORT PaymentManager final : public ScriptWrappable {
   const String& userHint();
   void setUserHint(const String&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
-  ScriptPromise enableDelegations(ScriptState*,
-                                  const Vector<String>& stringified_delegations,
-                                  ExceptionState&);
+  ScriptPromise enableDelegations(
+      ScriptState*,
+      const Vector<V8PaymentDelegation>& delegations,
+      ExceptionState&);
 
  private:
   void OnServiceConnectionError();

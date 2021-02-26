@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
@@ -123,8 +123,9 @@ IN_PROC_BROWSER_TEST_F(StorageServiceRestartBrowserTest,
                          R"(getSessionStorageValue("foo"))"));
 }
 
-// Flakey on Linux, see crbug.com/1066138
-#if defined(OS_LINUX)
+// Flaky on Linux, Windows, and Mac. See crbug.com/1066138.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+    defined(OS_MAC)
 #define MAYBE_LocalStorageRecovery DISABLED_LocalStorageRecovery
 #else
 #define MAYBE_LocalStorageRecovery LocalStorageRecovery

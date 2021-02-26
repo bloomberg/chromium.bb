@@ -4,6 +4,8 @@
 
 #include "components/viz/service/display/overlay_strategy_fullscreen.h"
 
+#include <vector>
+
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -24,13 +26,14 @@ bool OverlayStrategyFullscreen::Attempt(
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
-    RenderPassList* render_pass_list,
+    AggregatedRenderPassList* render_pass_list,
+    SurfaceDamageRectList* surface_damage_rect_list,
     const PrimaryPlane* primary_plane,
     OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
   // Before we attempt an overlay strategy, the candidate list should be empty.
   DCHECK(candidate_list->empty());
-  RenderPass* render_pass = render_pass_list->back().get();
+  auto* render_pass = render_pass_list->back().get();
   QuadList* quad_list = &render_pass->quad_list;
   // First quad of quad_list is the top most quad.
   auto front = quad_list->begin();
@@ -48,8 +51,9 @@ bool OverlayStrategyFullscreen::Attempt(
     return false;
 
   OverlayCandidate candidate;
-  if (!OverlayCandidate::FromDrawQuad(resource_provider, output_color_matrix,
-                                      quad, &candidate)) {
+  if (!OverlayCandidate::FromDrawQuad(resource_provider,
+                                      surface_damage_rect_list,
+                                      output_color_matrix, quad, &candidate)) {
     return false;
   }
 

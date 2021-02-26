@@ -10,13 +10,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/strings/string_util.h"
+#include "base/task/current_thread.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "remoting/base/auto_thread.h"
@@ -41,7 +41,7 @@ DesktopProcess::DesktopProcess(
       io_task_runner_(io_task_runner),
       daemon_channel_handle_(std::move(daemon_channel_handle)) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
 }
 
 DesktopProcess::~DesktopProcess() {

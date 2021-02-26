@@ -16,6 +16,7 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.Selection;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.ActionMode;
@@ -29,6 +30,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.accessibility.AccessibilityEventCompat;
 import androidx.core.view.inputmethod.EditorInfoCompat;
@@ -198,6 +200,13 @@ public class FindToolbar extends LinearLayout {
 
         mTabObserver = new EmptyTabObserver() {
             @Override
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                if (window == null && getVisibility() == View.VISIBLE) {
+                    deactivate(/* clearSelection= */ true);
+                }
+            }
+
+            @Override
             public void onPageLoadStarted(Tab tab, String url) {
                 deactivate();
             }
@@ -327,6 +336,7 @@ public class FindToolbar extends LinearLayout {
         });
 
         mFindStatus = (TextView) findViewById(R.id.find_status);
+        setStatus("", false);
 
         mFindPrevButton = findViewById(R.id.find_prev_button);
         mFindPrevButton.setOnClickListener(new OnClickListener() {
@@ -761,6 +771,7 @@ public class FindToolbar extends LinearLayout {
         mFindStatus.setText(text);
         mFindStatus.setContentDescription(null);
         mFindStatus.setTextColor(getStatusColor(failed, isIncognito()));
+        mFindStatus.setVisibility(TextUtils.isEmpty(text) ? GONE : VISIBLE);
     }
 
     /**
@@ -770,7 +781,7 @@ public class FindToolbar extends LinearLayout {
      */
     protected int getStatusColor(boolean failed, boolean incognito) {
         int colorResourceId = failed ? R.color.find_in_page_failed_results_status_color
-                                     : R.color.default_text_color_tertiary;
+                                     : R.color.default_text_color_secondary;
         return ApiCompatibilityUtils.getColor(getContext().getResources(), colorResourceId);
     }
 

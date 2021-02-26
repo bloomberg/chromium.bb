@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -16,55 +17,67 @@ namespace content {
 namespace {
 
 url::Origin ParseOrigin(const std::string& message) {
-  base::Optional<SmsParser::Result> result = SmsParser::Parse(message);
-  if (!result)
+  SmsParser::Result result = SmsParser::Parse(message);
+  if (!result.IsValid())
     return url::Origin();
-  return result->origin;
+  return result.origin;
 }
 
 std::string ParseOTP(const std::string& message) {
-  base::Optional<SmsParser::Result> result = SmsParser::Parse(message);
-  if (!result)
+  SmsParser::Result result = SmsParser::Parse(message);
+  if (!result.IsValid())
     return "";
-  return result->one_time_code;
+  return result.one_time_code;
 }
 
 }  // namespace
 
 TEST(SmsParserTest, NoToken) {
-  ASSERT_FALSE(SmsParser::Parse("foo"));
+  ASSERT_FALSE(SmsParser::Parse("foo").IsValid());
 }
 
 TEST(SmsParserTest, WithTokenInvalidUrl) {
-  ASSERT_FALSE(SmsParser::Parse("@foo"));
+  ASSERT_FALSE(SmsParser::Parse("@foo").IsValid());
 }
 
 TEST(SmsParserTest, NoSpace) {
-  ASSERT_FALSE(SmsParser::Parse("@example.com#12345"));
+  ASSERT_FALSE(SmsParser::Parse("@example.com#12345").IsValid());
+}
+
+TEST(SmsParserTest, MultipleSpace) {
+  ASSERT_FALSE(SmsParser::Parse("@example.com  #12345").IsValid());
+}
+
+TEST(SmsParserTest, WhiteSpaceThatIsNotSpace) {
+  ASSERT_FALSE(SmsParser::Parse("@example.com\t#12345").IsValid());
+}
+
+TEST(SmsParserTest, WordInBetween) {
+  ASSERT_FALSE(SmsParser::Parse("@example.com random #12345").IsValid());
 }
 
 TEST(SmsParserTest, InvalidUrl) {
-  ASSERT_FALSE(SmsParser::Parse("@//example.com #123"));
+  ASSERT_FALSE(SmsParser::Parse("@//example.com #123").IsValid());
 }
 
 TEST(SmsParserTest, FtpScheme) {
-  ASSERT_FALSE(SmsParser::Parse("@ftp://example.com #123"));
+  ASSERT_FALSE(SmsParser::Parse("@ftp://example.com #123").IsValid());
 }
 
 TEST(SmsParserTest, Mailto) {
-  ASSERT_FALSE(SmsParser::Parse("@mailto:goto@chromium.org #123"));
+  ASSERT_FALSE(SmsParser::Parse("@mailto:goto@chromium.org #123").IsValid());
 }
 
 TEST(SmsParserTest, MissingOneTimeCodeParameter) {
-  ASSERT_FALSE(SmsParser::Parse("@example.com"));
+  ASSERT_FALSE(SmsParser::Parse("@example.com").IsValid());
 }
 
 TEST(SmsParserTest, Basic) {
   auto result = SmsParser::Parse("@example.com #12345");
 
-  ASSERT_TRUE(result);
-  EXPECT_EQ("12345", result->one_time_code);
-  EXPECT_EQ(url::Origin::Create(GURL("https://example.com")), result->origin);
+  ASSERT_TRUE(result.IsValid());
+  EXPECT_EQ("12345", result.one_time_code);
+  EXPECT_EQ(url::Origin::Create(GURL("https://example.com")), result.origin);
 }
 
 TEST(SmsParserTest, Realistic) {
@@ -79,12 +92,12 @@ TEST(SmsParserTest, OneTimeCode) {
 TEST(SmsParserTest, LocalhostForDevelopment) {
   EXPECT_EQ(url::Origin::Create(GURL("http://localhost")),
             ParseOrigin("@localhost #123"));
-  ASSERT_FALSE(SmsParser::Parse("@localhost:8080 #123"));
-  ASSERT_FALSE(SmsParser::Parse("@localhost"));
+  ASSERT_FALSE(SmsParser::Parse("@localhost:8080 #123").IsValid());
+  ASSERT_FALSE(SmsParser::Parse("@localhost").IsValid());
 }
 
 TEST(SmsParserTest, Paths) {
-  ASSERT_FALSE(SmsParser::Parse("@example.com/foobar #123"));
+  ASSERT_FALSE(SmsParser::Parse("@example.com/foobar #123").IsValid());
 }
 
 TEST(SmsParserTest, Message) {
@@ -102,6 +115,47 @@ TEST(SmsParserTest, Dashes) {
             ParseOrigin("@web-otp-example.com #123"));
 }
 
+TEST(SmsParserTest, CapitalLetters) {
+  EXPECT_EQ(url::Origin::Create(GURL("https://can-contain-CAPITAL.com")),
+            ParseOrigin("@can-contain-CAPITAL.com #123"));
+}
+
+TEST(SmsParserTest, Numbers) {
+  EXPECT_EQ(url::Origin::Create(GURL("https://can-contain-number-9870.com")),
+            ParseOrigin("@can-contain-number-9870.com #123"));
+}
+
+TEST(SmsParserTest, ForbiddenCharacters) {
+  // TODO(majidvp): Domains with unicode characters are valid.
+  // See: https://url.spec.whatwg.org/#concept-domain-to-ascii
+  // EXPECT_EQ(url::Origin::Create(GURL("can-contain-unicode-like-חומוס.com")),
+  //            ParseOrigin("@can-contain-unicode-like-חומוס.com #123"));
+
+  // Forbidden codepoints https://url.spec.whatwg.org/#forbidden-host-code-point
+  const char forbidden_chars[] = {'\x00' /* null */,
+                                  '\x09' /* TAB */,
+                                  '\x0A' /* LF */,
+                                  '\x0D' /* CR */,
+                                  ' ',
+                                  '#',
+                                  '%',
+                                  '/',
+                                  ':',
+                                  '<',
+                                  '>',
+                                  '?',
+                                  '@',
+                                  '[',
+                                  '\\',
+                                  ']',
+                                  '^'};
+  for (char c : forbidden_chars) {
+    ASSERT_FALSE(
+        SmsParser::Parse(base::StringPrintf("@cannot-contain-%c #123456", c))
+            .IsValid());
+  }
+}
+
 TEST(SmsParserTest, Newlines) {
   EXPECT_EQ(url::Origin::Create(GURL("https://example.com")),
             ParseOrigin("hello world\n@example.com #123\n"));
@@ -115,19 +169,19 @@ TEST(SmsParserTest, TwoTokens) {
 }
 
 TEST(SmsParserTest, Ports) {
-  ASSERT_FALSE(SmsParser::Parse("@a.com:8443 #123"));
+  ASSERT_FALSE(SmsParser::Parse("@a.com:8443 #123").IsValid());
 }
 
 TEST(SmsParserTest, Username) {
-  ASSERT_FALSE(SmsParser::Parse("@username@a.com #123"));
+  ASSERT_FALSE(SmsParser::Parse("@username@a.com #123").IsValid());
 }
 
 TEST(SmsParserTest, QueryParams) {
-  ASSERT_FALSE(SmsParser::Parse("@a.com/?foo=123 #123"));
+  ASSERT_FALSE(SmsParser::Parse("@a.com/?foo=123 #123").IsValid());
 }
 
 TEST(SmsParserTest, HarmlessOriginsButInvalid) {
-  ASSERT_FALSE(SmsParser::Parse("@data://123"));
+  ASSERT_FALSE(SmsParser::Parse("@data://123").IsValid());
 }
 
 TEST(SmsParserTest, AppHash) {
@@ -149,7 +203,9 @@ TEST(SmsParserTest, OneTimeCodeCharRanges) {
             ParseOTP("@example.com #human-readable-words-like-sillyface"));
   EXPECT_EQ("can-it-be-super-lengthy-like-a-lot",
             ParseOTP("@example.com #can-it-be-super-lengthy-like-a-lot"));
+  EXPECT_EQ("1", ParseOTP("@example.com #1 can be short"));
   EXPECT_EQ("otp", ParseOTP("@example.com #otp with space"));
+  EXPECT_EQ("otp", ParseOTP("@example.com #otp\twith with tab"));
 }
 
 }  // namespace content

@@ -94,7 +94,7 @@ suite('SiteEntry', function() {
     flush();
     const collapseChild = testElement.$.originList.get();
     flush();
-    assertEquals(3, collapseChild.querySelectorAll('.list-item').length);
+    assertEquals(3, collapseChild.querySelectorAll('.origin-link').length);
   });
 
   test('expands and closes to show more origins', function() {
@@ -136,7 +136,7 @@ suite('SiteEntry', function() {
     flush();
     const collapseChild = testElement.$.originList.get();
     flush();
-    const originList = collapseChild.querySelectorAll('.list-item');
+    const originList = collapseChild.querySelectorAll('.origin-link');
     assertEquals(3, originList.length);
 
     // Test clicking on one of these origins takes the user to Site Details,
@@ -150,25 +150,14 @@ suite('SiteEntry', function() {
         Router.getInstance().getQueryParameters().get('site'));
   });
 
-  test('with single origin does not show overflow menu', function() {
+  test('with single origin, shows overflow menu', function() {
     testElement.siteGroup = TEST_SINGLE_SITE_GROUP;
     flush();
     const overflowMenuButton = testElement.$.overflowMenuButton;
-    assertTrue(overflowMenuButton.closest('.row-aligned').hidden);
+    assertFalse(overflowMenuButton.closest('.row-aligned').hidden);
   });
 
-  test(
-      'with single origin, shows overflow menu if storagePressureUIEnabled',
-      function() {
-        loadTimeData.overrideValues({'enableStoragePressureUI': true});
-        testElement.siteGroup = TEST_SINGLE_SITE_GROUP;
-        flush();
-        const overflowMenuButton = testElement.$.overflowMenuButton;
-        assertFalse(overflowMenuButton.closest('.row-aligned').hidden);
-      });
-
   test('clear data for single origin fires the right method', async function() {
-    loadTimeData.overrideValues({'enableStoragePressureUI': true});
     testElement.siteGroup =
         JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
     flush();
@@ -376,7 +365,7 @@ suite('SiteEntry', function() {
     flush();
     const collapseChild = testElement.$.originList.get();
     flush();
-    const origins = collapseChild.querySelectorAll('.list-item');
+    const origins = collapseChild.querySelectorAll('.origin-link');
     assertEquals(3, origins.length);
     assertEquals(
         'www.example.com',
@@ -406,7 +395,7 @@ suite('SiteEntry', function() {
     flush();
     const collapseChild = testElement.$.originList.get();
     flush();
-    const origins = collapseChild.querySelectorAll('.list-item');
+    const origins = collapseChild.querySelectorAll('.origin-link');
     assertEquals(3, origins.length);
     assertEquals(
         'www.example.com',
@@ -436,7 +425,7 @@ suite('SiteEntry', function() {
     flush();
     const collapseChild = testElement.$.originList.get();
     flush();
-    const origins = collapseChild.querySelectorAll('.list-item');
+    const origins = collapseChild.querySelectorAll('.origin-link');
     assertEquals(3, origins.length);
     assertEquals(
         'example.com',

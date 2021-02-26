@@ -4,17 +4,17 @@
 
 #include "ui/base/ime/mock_input_method.h"
 
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "build/build_config.h"
 #include "ui/base/ime/input_method_delegate.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 
 namespace ui {
 
 MockInputMethod::MockInputMethod(internal::InputMethodDelegate* delegate)
-    : text_input_client_(NULL), delegate_(delegate) {
-}
+    : text_input_client_(nullptr), delegate_(delegate) {}
 
 MockInputMethod::~MockInputMethod() {
   for (InputMethodObserver& observer : observer_list_)
@@ -35,7 +35,7 @@ void MockInputMethod::SetFocusedTextInputClient(TextInputClient* client) {
 
 void MockInputMethod::DetachTextInputClient(TextInputClient* client) {
   if (text_input_client_ == client) {
-    text_input_client_ = NULL;
+    text_input_client_ = nullptr;
   }
 }
 
@@ -45,6 +45,11 @@ TextInputClient* MockInputMethod::GetTextInputClient() const {
 
 ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(
     ui::KeyEvent* event) {
+  if (text_input_client_) {
+    text_input_client_->OnDispatchingKeyEventPostIME(event);
+    if (event->handled())
+      return EventDispatchDetails();
+  }
   return delegate_->DispatchKeyEventPostIME(event);
 }
 
@@ -127,11 +132,6 @@ void MockInputMethod::RemoveObserver(InputMethodObserver* observer) {
 InputMethodKeyboardController*
 MockInputMethod::GetInputMethodKeyboardController() {
   return &keyboard_controller_;
-}
-
-const std::vector<std::unique_ptr<ui::KeyEvent>>&
-MockInputMethod::GetKeyEventsForTesting() {
-  return key_events_for_testing_;
 }
 
 }  // namespace ui

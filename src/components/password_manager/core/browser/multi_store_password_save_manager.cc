@@ -4,15 +4,16 @@
 
 #include "components/password_manager/core/browser/multi_store_password_save_manager.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "components/autofill/core/common/gaia_id_hash.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/password_feature_manager_impl.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
-
-using autofill::PasswordForm;
 
 namespace password_manager {
 
@@ -43,13 +44,11 @@ std::vector<const PasswordForm*> ProfileStoreMatches(
 bool AccountStoreMatchesContainForm(
     const std::vector<const PasswordForm*>& matches,
     const PasswordForm& form) {
-  PasswordForm form_in_account_store(form);
-  form_in_account_store.in_store = PasswordForm::Store::kAccountStore;
-  for (const PasswordForm* match : matches) {
-    if (form_in_account_store == *match)
-      return true;
-  }
-  return false;
+  DCHECK(base::ranges::all_of(matches, &PasswordForm::IsUsingAccountStore));
+  return base::ranges::find_if(matches, [&form](const PasswordForm* match) {
+           return ArePasswordFormUniqueKeysEqual(*match, form) &&
+                  match->password_value == form.password_value;
+         }) != matches.end();
 }
 
 PendingCredentialsState ResolvePendingCredentialsStates(
@@ -90,6 +89,20 @@ PendingCredentialsState ResolvePendingCredentialsStates(
   }
   NOTREACHED();
   return PendingCredentialsState::NONE;
+}
+
+// Returns a PasswordForm that has all fields taken from |update| except
+// date_created, date_synced, times_used and moving_blocked_for_list that are
+// taken from |original_form|.
+PasswordForm UpdateFormPreservingDifferentFieldsAcrossStores(
+    const PasswordForm& original_form,
+    const PasswordForm& update) {
+  PasswordForm result(update);
+  result.date_created = original_form.date_created;
+  result.date_synced = original_form.date_synced;
+  result.times_used = original_form.times_used;
+  result.moving_blocked_for_list = original_form.moving_blocked_for_list;
+  return result;
 }
 
 }  // namespace
@@ -150,11 +163,18 @@ void MultiStorePasswordSaveManager::SavePendingToStoreImpl(
     case PendingCredentialsState::EQUAL_TO_SAVED_MATCH: {
       // If the submitted credentials exists in both stores,
       // |pending_credentials_| might be from the account store (and thus not
-      // have a moving_blocked_for_list). We need to preserve any existing list,
-      // so explicitly copy it over from the profile store match.
-      PasswordForm form_to_update(pending_credentials_);
-      form_to_update.moving_blocked_for_list =
-          states.similar_saved_form_from_profile_store->moving_blocked_for_list;
+      // have a moving_blocked_for_list). We need to preserve any existing list.
+      // Same applies for other fields. Check the comment on
+      // UpdateFormPreservingDifferentFieldsAcrossStores().
+      PasswordForm form_to_update =
+          UpdateFormPreservingDifferentFieldsAcrossStores(
+              *states.similar_saved_form_from_profile_store,
+              pending_credentials_);
+      // For other cases, |pending_credentials_.times_used| is updated in
+      // UpdateMetadataForUsage() invoked from UploadVotesAndMetrics().
+      // UpdateFormPreservingDifferentFieldsAcrossStores() preserved the
+      // original times_used, and hence we should increment it here.
+      form_to_update.times_used++;
       form_saver_->Update(form_to_update, profile_matches,
                           old_profile_password);
     } break;
@@ -177,10 +197,18 @@ void MultiStorePasswordSaveManager::SavePendingToStoreImpl(
       case PendingCredentialsState::EQUAL_TO_SAVED_MATCH: {
         // If the submitted credentials exists in both stores,
         // .|pending_credentials_| might be from the profile store (and thus
-        // has a moving_blocked_for_list). We need to clear it before storing to
-        // the account store.
-        PasswordForm form_to_update(pending_credentials_);
-        form_to_update.moving_blocked_for_list.clear();
+        // has a moving_blocked_for_list). We need to preserve any existing
+        // values. Same applies for other fields. Check the comment on
+        // UpdateFormPreservingDifferentFieldsAcrossStores().
+        PasswordForm form_to_update =
+            UpdateFormPreservingDifferentFieldsAcrossStores(
+                *states.similar_saved_form_from_account_store,
+                pending_credentials_);
+        // For other cases, |pending_credentials_.times_used| is updated in
+        // UpdateMetadataForUsage() invoked from UploadVotesAndMetrics().
+        // UpdateFormPreservingDifferentFieldsAcrossStores() preserved the
+        // original times_used, and hence we should increment it here.
+        form_to_update.times_used++;
         account_store_form_saver_->Update(form_to_update, account_matches,
                                           old_account_password);
       } break;
@@ -220,7 +248,11 @@ std::unique_ptr<PasswordSaveManager> MultiStorePasswordSaveManager::Clone() {
   return result;
 }
 
-void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore() {
+void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore(
+    metrics_util::MoveToAccountStoreTrigger trigger) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.AccountStorage.MoveToAccountStoreFlowAccepted", trigger);
+
   // TODO(crbug.com/1032992): Moving credentials upon an update. FormFetch will
   // have an outdated credentials. Fix it if this turns out to be a product
   // requirement.

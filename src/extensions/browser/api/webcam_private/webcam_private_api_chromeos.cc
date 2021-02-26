@@ -92,10 +92,9 @@ bool WebcamPrivateAPI::OpenSerialWebcam(
   mojo::PendingRemote<device::mojom::SerialPort> port;
   auto* port_manager = api::SerialPortManager::Get(browser_context_);
   DCHECK(port_manager);
-  port_manager->GetPort(device_path, port.InitWithNewPipeAndPassReceiver());
 
   auto visca_webcam = base::MakeRefCounted<ViscaWebcam>();
-  visca_webcam->Open(extension_id, std::move(port),
+  visca_webcam->Open(extension_id, port_manager, device_path,
                      base::Bind(&WebcamPrivateAPI::OnOpenSerialWebcam,
                                 weak_ptr_factory_.GetWeakPtr(), extension_id,
                                 device_path, visca_webcam, callback));
@@ -217,7 +216,7 @@ void WebcamPrivateOpenSerialWebcamFunction::OnOpenWebcam(
     const std::string& webcam_id,
     bool success) {
   if (success) {
-    Respond(OneArgument(std::make_unique<base::Value>(webcam_id)));
+    Respond(OneArgument(base::Value(webcam_id)));
   } else {
     Respond(Error(kOpenSerialWebcamError));
   }
@@ -489,7 +488,7 @@ void WebcamPrivateGetFunction::OnGetWebcamParameters(InquiryType type,
     result.tilt = tilt_;
     result.zoom = zoom_;
     result.focus = focus_;
-    Respond(OneArgument(result.ToValue()));
+    Respond(OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
   }
 }
 

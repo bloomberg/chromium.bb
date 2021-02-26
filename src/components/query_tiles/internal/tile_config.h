@@ -33,7 +33,7 @@ extern const char kIsUnmeteredNetworkRequiredKey[];
 extern const char kImagePrefetchModeKey[];
 
 // Finch parameter key for the minimum interval to next schedule.
-extern const char kNextScheduleMinIntervalKey[];
+extern const char kScheduleIntervalKey[];
 
 // Finch parameter key for random window.
 extern const char kMaxRandomWindowKey[];
@@ -41,10 +41,32 @@ extern const char kMaxRandomWindowKey[];
 // Finch parameter key for one off task window.
 extern const char kOneoffTaskWindowKey[];
 
+// Finch parameter key for Backoff policy initial delay in ms.
+extern const char kBackoffInitDelayInMsKey[];
+
+// Finch parameter key for Backoff policy maximum delay in ms.
+extern const char kBackoffMaxDelayInMsKey[];
+
+// Finch parameter key for lambda in tile score decay calculation.
+extern const char kTileScoreDecayLambdaKey[];
+
+// Finch parameter key representing the minimum scores for new tiles that are in
+// front of others.
+extern const char kMinimumScoreForNewFrontTilesKey[];
+
+// Finch parameter key for number of trending tiles to display.
+extern const char kNumTrendingTilesKey[];
+
+// Finch parameter key for max number of trending tile impressions.
+extern const char kMaxTrendingTileImpressionsKey[];
+
 class TileConfig {
  public:
   // Gets the URL for the Query Tiles server.
   static GURL GetQueryTilesServerUrl();
+
+  // Gets the URL for the Query Tiles server, given the server address.
+  static GURL GetQueryTilesServerUrl(const std::string& base_url);
 
   // Gets whether running the background task requires unmeter network
   // condition.
@@ -75,6 +97,18 @@ class TileConfig {
 
   // Get the max delay (unit:ms) argument for backoff policy.
   static int GetBackoffPolicyArgsMaxDelayInMs();
+
+  // Get the lambda value used for calculating the tile score decay over time.
+  static double GetTileScoreDecayLambda();
+
+  // Get the minimum scrore for newly showing tiles that are in front of others.
+  static double GetMinimumScoreForNewFrontTiles();
+
+  // Get the number of trending tiles to be displayed at the same time.
+  static int GetNumTrendingTilesToDisplay();
+
+  // Get the maximum number of impressions for a trending tile to be displayed.
+  static int GetMaxTrendingTileImpressions();
 };
 
 }  // namespace query_tiles

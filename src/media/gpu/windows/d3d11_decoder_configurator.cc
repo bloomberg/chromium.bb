@@ -9,6 +9,8 @@
 #include "base/feature_list.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/status_codes.h"
+#include "media/base/win/hresult_status_helper.h"
 #include "media/gpu/windows/d3d11_copying_texture_wrapper.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/direct_composition_surface_win.h"
@@ -71,18 +73,23 @@ bool D3D11DecoderConfigurator::SupportsDevice(
   return false;
 }
 
-ComD3D11Texture2D D3D11DecoderConfigurator::CreateOutputTexture(
+StatusOr<ComD3D11Texture2D> D3D11DecoderConfigurator::CreateOutputTexture(
     ComD3D11Device device,
-    gfx::Size size) {
+    gfx::Size size,
+    uint32_t array_size) {
   output_texture_desc_.Width = size.width();
   output_texture_desc_.Height = size.height();
+  output_texture_desc_.ArraySize = array_size;
 
-  ComD3D11Texture2D result;
-  if (!SUCCEEDED(
-          device->CreateTexture2D(&output_texture_desc_, nullptr, &result)))
-    return nullptr;
+  ComD3D11Texture2D texture;
+  HRESULT hr =
+      device->CreateTexture2D(&output_texture_desc_, nullptr, &texture);
+  if (!SUCCEEDED(hr)) {
+    return Status(StatusCode::kCreateDecoderOutputTextureFailed)
+        .AddCause(HresultToStatus(hr));
+  }
 
-  return result;
+  return texture;
 }
 
 // private
@@ -100,7 +107,6 @@ void D3D11DecoderConfigurator::SetUpTextureDescriptor(bool supports_swap_chain,
                                                       bool is_encrypted) {
   output_texture_desc_ = {};
   output_texture_desc_.MipLevels = 1;
-  output_texture_desc_.ArraySize = D3D11DecoderConfigurator::BUFFER_COUNT;
   output_texture_desc_.Format = dxgi_format_;
   output_texture_desc_.SampleDesc.Count = 1;
   output_texture_desc_.Usage = D3D11_USAGE_DEFAULT;
@@ -111,9 +117,9 @@ void D3D11DecoderConfigurator::SetUpTextureDescriptor(bool supports_swap_chain,
   // TODO(sunnyps): Find a workaround for when the decoder moves to its own
   // thread and D3D device.  See https://crbug.com/911847
   // TODO(liberato): This depends on the configuration of the TextureSelector,
-  // to some degree.  If it's copying, then it can be set up to use our device
-  // to make the copy, and this can always be unset.  If it's binding, then it
-  // depends on whether we're on the angle device or not.
+  // to some degree. We should unset the flag only if it's binding and the
+  // decode swap chain is supported, as Intel driver is buggy on Gen9 and older
+  // devices without the flag. See https://crbug.com/1107403
   output_texture_desc_.MiscFlags =
       supports_swap_chain ? 0 : D3D11_RESOURCE_MISC_SHARED;
 

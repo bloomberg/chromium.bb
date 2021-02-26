@@ -20,11 +20,9 @@ namespace password_manager {
 
 PasswordManagerMetricsRecorder::PasswordManagerMetricsRecorder(
     ukm::SourceId source_id,
-    const GURL& main_frame_url,
     std::unique_ptr<NavigationMetricRecorderDelegate>
         navigation_metric_recorder)
-    : main_frame_url_(main_frame_url),
-      ukm_entry_builder_(
+    : ukm_entry_builder_(
           std::make_unique<ukm::builders::PageWithPassword>(source_id)),
       navigation_metric_recorder_(std::move(navigation_metric_recorder)) {}
 
@@ -45,16 +43,14 @@ PasswordManagerMetricsRecorder& PasswordManagerMetricsRecorder::operator=(
 
 void PasswordManagerMetricsRecorder::RecordUserModifiedPasswordField() {
   if (!user_modified_password_field_ && navigation_metric_recorder_) {
-    navigation_metric_recorder_->OnUserModifiedPasswordFieldFirstTime(
-        main_frame_url_);
+    navigation_metric_recorder_->OnUserModifiedPasswordFieldFirstTime();
   }
   user_modified_password_field_ = true;
 }
 
 void PasswordManagerMetricsRecorder::RecordUserFocusedPasswordField() {
   if (!user_focused_password_field_ && navigation_metric_recorder_) {
-    navigation_metric_recorder_->OnUserFocusedPasswordFieldFirstTime(
-        main_frame_url_);
+    navigation_metric_recorder_->OnUserFocusedPasswordFieldFirstTime();
   }
   user_focused_password_field_ = true;
 }
@@ -81,9 +77,6 @@ void PasswordManagerMetricsRecorder::RecordProvisionalSaveFailure(
         break;
       case NO_MATCHING_FORM:
         logger->LogMessage(Logger::STRING_NO_MATCHING_FORM);
-        break;
-      case FORM_BLACKLISTED:
-        logger->LogMessage(Logger::STRING_FORM_BLACKLISTED);
         break;
       case INVALID_FORM:
         logger->LogMessage(Logger::STRING_INVALID_FORM);

@@ -63,7 +63,7 @@ TestInterfaceOrLong::TestInterfaceOrLong(const TestInterfaceOrLong&) = default;
 TestInterfaceOrLong::~TestInterfaceOrLong() = default;
 TestInterfaceOrLong& TestInterfaceOrLong::operator=(const TestInterfaceOrLong&) = default;
 
-void TestInterfaceOrLong::Trace(Visitor* visitor) {
+void TestInterfaceOrLong::Trace(Visitor* visitor) const {
   visitor->Trace(test_interface_);
 }
 
@@ -86,7 +86,7 @@ void V8TestInterfaceOrLong::ToImpl(
   }
 
   if (v8_value->IsNumber()) {
-    int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state);
+    int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetLong(cpp_value);
@@ -94,7 +94,7 @@ void V8TestInterfaceOrLong::ToImpl(
   }
 
   {
-    int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state);
+    int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetLong(cpp_value);

@@ -166,7 +166,7 @@ void GetFileContents(const std::wstring& path, std::string* content) {
   }
 }
 
-class DumpSymsRegressionTest : public testing::TestWithParam<const wchar_t *> {
+class DumpSymsRegressionTest : public testing::TestWithParam<const wchar_t*> {
  public:
   virtual void SetUp() {
     std::wstring self_dir;
@@ -181,7 +181,7 @@ class DumpSymsRegressionTest : public testing::TestWithParam<const wchar_t *> {
   std::wstring testdata_dir;
 };
 
-class DumpSymsPEOnlyRegressionTest : public testing::TestWithParam<const wchar_t *> {
+class DumpSymsPEOnlyRegressionTest : public testing::TestWithParam<const wchar_t*> {
 public:
   virtual void SetUp() {
     std::wstring self_dir;

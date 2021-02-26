@@ -32,8 +32,8 @@ class EffectControlLinearizerTest : public GraphTest {
         simplified_(zone()),
         jsgraph_(isolate(), graph(), common(), &javascript_, &simplified_,
                  &machine_) {
-    source_positions_ = new (zone()) SourcePositionTable(graph());
-    node_origins_ = new (zone()) NodeOriginTable(graph());
+    source_positions_ = zone()->New<SourcePositionTable>(graph());
+    node_origins_ = zone()->New<NodeOriginTable>(graph());
   }
 
   JSGraph* jsgraph() { return &jsgraph_; }
@@ -85,9 +85,10 @@ TEST_F(EffectControlLinearizerTest, SimpleLoad) {
   schedule.AddReturn(start, ret);
 
   // Run the state effect introducer.
-  LinearizeEffectControl(
-      jsgraph(), &schedule, zone(), source_positions(), node_origins(),
-      MaskArrayIndexEnable::kDoNotMaskArrayIndex, MaintainSchedule::kDiscard);
+  LinearizeEffectControl(jsgraph(), &schedule, zone(), source_positions(),
+                         node_origins(),
+                         MaskArrayIndexEnable::kDoNotMaskArrayIndex,
+                         MaintainSchedule::kDiscard, broker());
 
   EXPECT_THAT(load,
               IsLoadField(AccessBuilder::ForHeapNumberValue(), heap_number,
@@ -147,9 +148,10 @@ TEST_F(EffectControlLinearizerTest, DiamondLoad) {
   schedule.AddReturn(mblock, ret);
 
   // Run the state effect introducer.
-  LinearizeEffectControl(
-      jsgraph(), &schedule, zone(), source_positions(), node_origins(),
-      MaskArrayIndexEnable::kDoNotMaskArrayIndex, MaintainSchedule::kDiscard);
+  LinearizeEffectControl(jsgraph(), &schedule, zone(), source_positions(),
+                         node_origins(),
+                         MaskArrayIndexEnable::kDoNotMaskArrayIndex,
+                         MaintainSchedule::kDiscard, broker());
 
   // The effect input to the return should be an effect phi with the
   // newly introduced effectful change operators.
@@ -214,9 +216,10 @@ TEST_F(EffectControlLinearizerTest, LoopLoad) {
   schedule.AddReturn(rblock, ret);
 
   // Run the state effect introducer.
-  LinearizeEffectControl(
-      jsgraph(), &schedule, zone(), source_positions(), node_origins(),
-      MaskArrayIndexEnable::kDoNotMaskArrayIndex, MaintainSchedule::kDiscard);
+  LinearizeEffectControl(jsgraph(), &schedule, zone(), source_positions(),
+                         node_origins(),
+                         MaskArrayIndexEnable::kDoNotMaskArrayIndex,
+                         MaintainSchedule::kDiscard, broker());
 
   ASSERT_THAT(ret, IsReturn(load, load, if_true));
   EXPECT_THAT(load, IsLoadField(AccessBuilder::ForHeapNumberValue(),
@@ -277,9 +280,10 @@ TEST_F(EffectControlLinearizerTest, CloneBranch) {
   schedule.AddNode(mblock, merge);
   schedule.AddNode(mblock, graph()->end());
 
-  LinearizeEffectControl(
-      jsgraph(), &schedule, zone(), source_positions(), node_origins(),
-      MaskArrayIndexEnable::kDoNotMaskArrayIndex, MaintainSchedule::kDiscard);
+  LinearizeEffectControl(jsgraph(), &schedule, zone(), source_positions(),
+                         node_origins(),
+                         MaskArrayIndexEnable::kDoNotMaskArrayIndex,
+                         MaintainSchedule::kDiscard, broker());
 
   Capture<Node *> branch1_capture, branch2_capture;
   EXPECT_THAT(
@@ -335,17 +339,12 @@ TEST_F(EffectControlLinearizerTest, UnreachableThenBranch) {
   ASSERT_THAT(end()->op()->ControlInputCount(), 2);
 
   // Run the state effect linearizer, maintaining the schedule.
-  LinearizeEffectControl(
-      jsgraph(), &schedule, zone(), source_positions(), node_origins(),
-      MaskArrayIndexEnable::kDoNotMaskArrayIndex, MaintainSchedule::kMaintain);
+  LinearizeEffectControl(jsgraph(), &schedule, zone(), source_positions(),
+                         node_origins(),
+                         MaskArrayIndexEnable::kDoNotMaskArrayIndex,
+                         MaintainSchedule::kMaintain, broker());
 
-  // Initial block with the unreachable should be connected directly to end
-  // without any of the subsiquent blocks.
   ASSERT_THAT(end(), IsEnd(IsThrow()));
-  ASSERT_THAT(end()->op()->ControlInputCount(), 1);
-  ASSERT_THAT(schedule.start()->SuccessorCount(), 1);
-  ASSERT_THAT(schedule.end()->PredecessorCount(), 1);
-  ASSERT_THAT(schedule.end()->PredecessorAt(0), start);
 }
 
 TEST_F(EffectControlLinearizerTest, UnreachableThenDiamond) {
@@ -393,17 +392,12 @@ TEST_F(EffectControlLinearizerTest, UnreachableThenDiamond) {
   ASSERT_THAT(end()->op()->ControlInputCount(), 1);
 
   // Run the state effect linearizer, maintaining the schedule.
-  LinearizeEffectControl(
-      jsgraph(), &schedule, zone(), source_positions(), node_origins(),
-      MaskArrayIndexEnable::kDoNotMaskArrayIndex, MaintainSchedule::kMaintain);
+  LinearizeEffectControl(jsgraph(), &schedule, zone(), source_positions(),
+                         node_origins(),
+                         MaskArrayIndexEnable::kDoNotMaskArrayIndex,
+                         MaintainSchedule::kMaintain, broker());
 
-  // Initial block with the unreachable should be connected directly to end
-  // without any of the subsiquent blocks.
   ASSERT_THAT(end(), IsEnd(IsThrow()));
-  ASSERT_THAT(end()->op()->ControlInputCount(), 1);
-  ASSERT_THAT(schedule.start()->SuccessorCount(), 1);
-  ASSERT_THAT(schedule.end()->PredecessorCount(), 1);
-  ASSERT_THAT(schedule.end()->PredecessorAt(0), start);
 }
 
 TEST_F(EffectControlLinearizerTest, UnreachableThenLoop) {
@@ -456,17 +450,12 @@ TEST_F(EffectControlLinearizerTest, UnreachableThenLoop) {
   ASSERT_THAT(end()->op()->ControlInputCount(), 1);
 
   // Run the state effect linearizer, maintaining the schedule.
-  LinearizeEffectControl(
-      jsgraph(), &schedule, zone(), source_positions(), node_origins(),
-      MaskArrayIndexEnable::kDoNotMaskArrayIndex, MaintainSchedule::kMaintain);
+  LinearizeEffectControl(jsgraph(), &schedule, zone(), source_positions(),
+                         node_origins(),
+                         MaskArrayIndexEnable::kDoNotMaskArrayIndex,
+                         MaintainSchedule::kMaintain, broker());
 
-  // Initial block with the unreachable should be connected directly to end
-  // without any of the subsiquent blocks.
   ASSERT_THAT(end(), IsEnd(IsThrow()));
-  ASSERT_THAT(end()->op()->ControlInputCount(), 1);
-  ASSERT_THAT(schedule.start()->SuccessorCount(), 1);
-  ASSERT_THAT(schedule.end()->PredecessorCount(), 1);
-  ASSERT_THAT(schedule.end()->PredecessorAt(0), start);
 }
 
 TEST_F(EffectControlLinearizerTest, UnreachableInChangedBlockThenBranch) {
@@ -515,16 +504,12 @@ TEST_F(EffectControlLinearizerTest, UnreachableInChangedBlockThenBranch) {
   ASSERT_THAT(end()->op()->ControlInputCount(), 2);
 
   // Run the state effect linearizer, maintaining the schedule.
-  LinearizeEffectControl(
-      jsgraph(), &schedule, zone(), source_positions(), node_origins(),
-      MaskArrayIndexEnable::kDoNotMaskArrayIndex, MaintainSchedule::kMaintain);
+  LinearizeEffectControl(jsgraph(), &schedule, zone(), source_positions(),
+                         node_origins(),
+                         MaskArrayIndexEnable::kDoNotMaskArrayIndex,
+                         MaintainSchedule::kMaintain, broker());
 
-  // Start block now branches due to the lowering of TruncateTaggedToWord32, but
-  // then re-merges and the unreachable should be connected directly to end
-  // without any of the subsiquent blocks.
   ASSERT_THAT(end(), IsEnd(IsThrow()));
-  ASSERT_THAT(end()->op()->ControlInputCount(), 1);
-  ASSERT_THAT(schedule.end()->PredecessorCount(), 1);
 }
 
 }  // namespace compiler

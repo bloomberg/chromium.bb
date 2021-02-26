@@ -11,11 +11,14 @@ import android.view.View;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.MathUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.EventOffsetHandler;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
@@ -58,7 +61,26 @@ class BrowserControlsContainerView extends FrameLayout {
 
     private static final long SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS = 500;
 
+    private static final int DEFAULT_LAST_SHOWN_AMOUNT = -1;
+
+    /** Stores the state needed to reconstruct offsets after recreating this class. */
+    /* package */ static class State {
+        private final int mControlsOffset;
+        private final int mContentOffset;
+
+        private State(int controlsOffset, int contentOffset) {
+            mControlsOffset = controlsOffset;
+            mContentOffset = contentOffset;
+        }
+    }
+
+    private final Delegate mDelegate;
     private final boolean mIsTop;
+
+    // The state returned by a previous BrowserControlsContainerView instance's getState() method.
+    // This is saved rather than directly applied because layout needs to occur before we can apply
+    // the offsets.
+    private State mSavedState;
 
     private long mNativeBrowserControlsContainerView;
 
@@ -68,7 +90,7 @@ class BrowserControlsContainerView extends FrameLayout {
     private int mLastWidth;
     private int mLastHeight;
 
-    // view from the client.
+    // View from the client.
     private View mView;
 
     private ContentViewRenderView mContentViewRenderView;
@@ -87,41 +109,75 @@ class BrowserControlsContainerView extends FrameLayout {
     // bottom-controls, the value ranges from 0 (completely shown) to height (completely hidden).
     private int mControlsOffset;
 
+    // Stores how much of the controls in pixels is visible when a view is set. This does NOT get
+    // set to 0 when you remove a view; it always stores the most recent control visibility amount
+    // as of the last time a view was actually set, or a default value. This is used to help mimic
+    // the positioning behavior of the renderer.
+    private int mLastShownAmountWithView = DEFAULT_LAST_SHOWN_AMOUNT;
+
+    // The minimum height that the controls should collapse to. Only used for top controls.
+    private int mMinHeight;
+
+    // Whether the controls should only expand when the page is scrolled to the top. Only used for
+    // top controls.
+    private boolean mOnlyExpandControlsAtPageTop;
+
+    // Set to true if changes to the controls height or offset should be animated.
+    private boolean mShouldAnimate;
+
     // Set to true if |mView| is hidden because the user has scrolled or triggered some action such
     // that mView is not visible. While |mView| is not visible if this is true, the bitmap from
     // |mView| may be partially visible.
     private boolean mInScroll;
+
+    // Set to true while we are animating the controls off the screen after removing them.
+    private boolean mAnimatingOut;
 
     private boolean mIsFullscreen;
 
     // Used to delay processing fullscreen requests.
     private Runnable mSystemUiFullscreenResizeRunnable;
 
-    private final Listener mListener;
-
-    public interface Listener {
-        /**
-         * Called when the browser-controls are either completely showing, or completely hiding.
-         */
-        public void onBrowserControlsCompletelyShownOrHidden();
-    }
-
-    // Used to  delay updating the image for the layer.
+    // Used to delay updating the image for the layer.
     private final Runnable mRefreshResourceIdRunnable = () -> {
-        if (mView == null) return;
+        if (mView == null || mViewResourceAdapter == null) return;
         BrowserControlsContainerViewJni.get().updateControlsResource(
                 mNativeBrowserControlsContainerView);
     };
 
+    // Used to delay hiding the controls.
+    private final Runnable mHideControlsRunnable = this::hideControlsNow;
+
+    // Used to delay showing the controls.
+    private final Runnable mShowControlsRunnable = this::showControlsNow;
+
+    public interface Delegate {
+        /**
+         * Requests that the page height be recalculated due to browser controls height changes.
+         */
+        void refreshPageHeight();
+
+        /**
+         * Requests that the browser controls visibility state be changed.
+         */
+        void setAnimationConstraint(@BrowserControlsState int constraint);
+
+        /**
+         * Called when the offset of the controls changes.
+         */
+        void onOffsetsChanged(boolean isTop, int controlsOffset);
+    }
+
     BrowserControlsContainerView(Context context, ContentViewRenderView contentViewRenderView,
-            Listener listener, boolean isTop) {
+            Delegate delegate, boolean isTop, @Nullable State savedState) {
         super(context);
+        mDelegate = delegate;
         mIsTop = isTop;
+        mSavedState = savedState;
         mContentViewRenderView = contentViewRenderView;
         mNativeBrowserControlsContainerView =
                 BrowserControlsContainerViewJni.get().createBrowserControlsContainerView(
                         this, contentViewRenderView.getNativeHandle(), isTop);
-        mListener = listener;
     }
 
     public void setWebContents(WebContents webContents) {
@@ -135,7 +191,8 @@ class BrowserControlsContainerView extends FrameLayout {
     }
 
     public void destroy() {
-        clearViewAndDestroyResources();
+        if (mIsTop) setAnimationsEnabled(false);
+        setView(null);
         BrowserControlsContainerViewJni.get().deleteBrowserControlsContainerView(
                 mNativeBrowserControlsContainerView);
         cancelDelayedFullscreenRunnable();
@@ -172,7 +229,7 @@ class BrowserControlsContainerView extends FrameLayout {
      */
     public int getContentHeightDelta() {
         if (mView == null) return 0;
-        return mIsTop ? mContentOffset : getHeight() - mControlsOffset;
+        return mIsTop ? mContentOffset : mLastHeight - mControlsOffset;
     }
 
     /**
@@ -180,15 +237,22 @@ class BrowserControlsContainerView extends FrameLayout {
      */
     public boolean isControlVisible() {
         // Don't check the visibility of the View itself as it's hidden while scrolling.
-        return mView != null && Math.abs(mControlsOffset) != getHeight();
+        return mView != null && Math.abs(mControlsOffset) != mLastHeight;
+    }
+
+    public void setAnimationsEnabled(boolean animationsEnabled) {
+        assert mIsTop;
+        mShouldAnimate = animationsEnabled;
     }
 
     /**
-     * Returns true if the controls are completely shown or completely hidden. A return value
-     * of false indicates the controls are being moved.
+     * Returns true if the controls are completely expanded or completely collapsed.
+     * "Completely collapsed" does not necessarily mean hidden; the controls could be at their min
+     * height, in which case this would return true. A return value of false indicates the controls
+     * are being moved.
      */
-    public boolean isCompletelyShownOrHidden() {
-        return mControlsOffset == 0 || Math.abs(mControlsOffset) == getHeight();
+    public boolean isCompletelyExpandedOrCollapsed() {
+        return mControlsOffset == 0 || Math.abs(mControlsOffset) == mLastHeight - mMinHeight;
     }
 
     /**
@@ -196,38 +260,41 @@ class BrowserControlsContainerView extends FrameLayout {
      */
     public void setView(View view) {
         if (mView == view) return;
-        clearViewAndDestroyResources();
+
+        if (mView != null && mView.getParent() == this) removeView(mView);
         mView = view;
+
         if (mView == null) {
-            setControlsOffset(0, 0);
+            // If we're animating out the old view, leave the cc::Layer in place so it's visible
+            // during the animation, and set our visibility to HIDDEN, which will cause
+            // BrowserControlsOffsetManager to start an animation off the screen. getMinHeight()
+            // will return 0 while mAnimatingOut is true, so call reportHeightChange() to tell the
+            // renderer to grab the potentially new height.
+            if (mShouldAnimate && mControlsOffset != -mLastHeight) {
+                assert mIsTop; // mShouldAnimate should only be true for top controls.
+                mAnimatingOut = true;
+                reportHeightChange();
+                mDelegate.setAnimationConstraint(BrowserControlsState.HIDDEN);
+                mDelegate.refreshPageHeight();
+            } else {
+                destroyLayer();
+            }
             return;
         }
+
+        mAnimatingOut = false;
+        destroyLayer();
         addView(view,
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT,
                         FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY));
-        if (getWidth() > 0 && getHeight() > 0) {
-            view.layout(0, 0, getWidth(), getHeight());
-            createAdapterAndLayer();
-        }
-        if (mIsFullscreen) hideControls();
-    }
-
-    /**
-     * Does cleanup necessary when mView is to be removed.
-     * In general prefer calling setView(). This is really an implementation detail of setView()
-     * and destroy().
-     */
-    private void clearViewAndDestroyResources() {
-        if (mView == null) return;
-        if (mView.getParent() == this) removeView(mView);
-        // TODO: need some sort of destroy to drop reference.
-        mViewResourceAdapter = null;
-        BrowserControlsContainerViewJni.get().deleteControlsLayer(
-                mNativeBrowserControlsContainerView);
-        mContentViewRenderView.getResourceManager().getDynamicResourceLoader().unregisterResource(
-                getResourceId());
-        mView = null;
-        mLastWidth = mLastHeight = 0;
+        // The controls will be positioned in onLayout, which will result in showControls or
+        // hideControls being called. hideControls may delay the hide by a frame, resulting in the
+        // View flashing during the current frame. To work around this, we hide the controls here.
+        // showControls will also delay the showing by a frame, but that doesn't cause a flash
+        // because the bitmap will be visible until the setVisibility call completes.
+        hideControlsNow();
+        mContentViewRenderView.removeCallbacks(mShowControlsRunnable);
+        mDelegate.setAnimationConstraint(BrowserControlsState.BOTH);
     }
 
     public View getView() {
@@ -235,17 +302,51 @@ class BrowserControlsContainerView extends FrameLayout {
     }
 
     /**
+     * Sets the minimum height the controls can collapse to.
+     * Only valid for top controls.
+     */
+    public void setMinHeight(int minHeight) {
+        assert mIsTop;
+        if (mMinHeight == minHeight) return;
+        mMinHeight = minHeight;
+        reportHeightChange();
+    }
+
+    /**
+     * Sets whether the controls should only expand at the top of the page contents.
+     * Only valid for top controls.
+     */
+    public void setOnlyExpandControlsAtPageTop(boolean onlyExpandControlsAtPageTop) {
+        mOnlyExpandControlsAtPageTop = onlyExpandControlsAtPageTop;
+    }
+
+    public boolean getOnlyExpandControlsAtPageTop() {
+        return mOnlyExpandControlsAtPageTop;
+    }
+
+    /**
      * Called from ViewAndroidDelegate, see it for details.
      */
     public void onOffsetsChanged(int controlsOffsetY, int contentOffsetY) {
-        if (mView == null) return;
-        if (mIsFullscreen) return;
-        if (controlsOffsetY == 0) {
-            finishScroll(contentOffsetY);
-            return;
+        // Delete the cc::Layer if we reached the end of the animation off the screen.
+        if (mAnimatingOut && controlsOffsetY == -mLastHeight) {
+            mAnimatingOut = false;
+            destroyLayer();
+            reportHeightChange();
+            // Request a layout so onLayout can update the saved dimensions now that the
+            // layer has finished animating.
+            requestLayout();
         }
-        if (!mInScroll) prepareForScroll();
+
+        if (mIsFullscreen) return;
         setControlsOffset(controlsOffsetY, contentOffsetY);
+        if (mControlsOffset == 0
+                || (mIsTop && getMinHeight() > 0
+                        && mControlsOffset == -mLastHeight + getMinHeight())) {
+            finishScroll();
+        } else if (!mInScroll) {
+            prepareForScroll();
+        }
     }
 
     @SuppressLint("NewApi") // Used on O+, invalidateChildInParent used for previous versions.
@@ -264,21 +365,62 @@ class BrowserControlsContainerView extends FrameLayout {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        if (mView == null) return;
+        if (mAnimatingOut) return;
         int width = right - left;
         int height = bottom - top;
-        if (height != mLastHeight || width != mLastWidth) {
-            mLastWidth = width;
-            mLastHeight = height;
-            if (mLastWidth > 0 && mLastHeight > 0) {
-                if (mViewResourceAdapter == null) {
-                    createAdapterAndLayer();
+        boolean heightChanged = height != mLastHeight;
+        if (!heightChanged && width == mLastWidth) return;
+
+        int prevHeight = mLastHeight;
+        mLastWidth = width;
+        mLastHeight = height;
+        if (mLastWidth > 0 && mLastHeight > 0 && mViewResourceAdapter == null) {
+            createAdapterAndLayer();
+            if (mIsFullscreen) {
+                // This calls setControlsOffset() as onOffsetsChanged() does (mostly) nothing when
+                // fullscreen.
+                setControlsOffset(mIsTop ? -mLastHeight : mLastHeight, 0);
+            } else if (mLastShownAmountWithView == DEFAULT_LAST_SHOWN_AMOUNT
+                    && mSavedState != null) {
+                // If there wasn't a View before and we have non-empty saved state from a previous
+                // BrowserControlsContainerView instance, apply those saved offsets now. We can't
+                // rely on BrowserControlsOffsetManager to notify us of the correct location as we
+                // usually do because it only notifies us when offsets change, but it likely didn't
+                // get destroyed when the BrowserFragment got recreated, so it won't notify us
+                // because it thinks we already have the correct offsets.
+                onOffsetsChanged(mSavedState.mControlsOffset, mSavedState.mContentOffset);
+            } else {
+                // Ideally we'd leave the controls hidden and wait for BrowserControlsOffsetManager
+                // to tell us where it wants them, but it communicates with us via frame metadata
+                // that is generated when the renderer's compositor submits a frame to viz, which is
+                // paused during page loads. Because of this, we might not get positioning
+                // information from the renderer for several seconds during page loads, so we need
+                // to attempt to position the controls ourselves here.
+                int targetShownAmount;
+                if (mShouldAnimate) {
+                    // If animations are enabled, leave the amount of visible controls unchanged
+                    // (e.g. hide them if there weren't previously controls or if they were hidden
+                    // before).
+                    targetShownAmount = mIsTop ? (prevHeight + mControlsOffset)
+                                               : (prevHeight - mControlsOffset);
                 } else {
-                    BrowserControlsContainerViewJni.get().setControlsSize(
-                            mNativeBrowserControlsContainerView, mLastWidth, mLastHeight);
+                    // If animations are disabled, restore the positioning the controls had the last
+                    // time they were non-null. This mimics the behavior of
+                    // BrowserControlsOffsetManager in the renderer.
+                    targetShownAmount = (mLastShownAmountWithView == DEFAULT_LAST_SHOWN_AMOUNT)
+                            ? height
+                            : mLastShownAmountWithView;
                 }
+                onOffsetsChanged(
+                        mIsTop ? (targetShownAmount - height) : (height - targetShownAmount),
+                        mIsTop ? targetShownAmount : 0);
             }
+            mSavedState = null;
+        } else if (mViewResourceAdapter != null) {
+            BrowserControlsContainerViewJni.get().setControlsSize(
+                    mNativeBrowserControlsContainerView, mLastWidth, mLastHeight);
         }
+        if (heightChanged) reportHeightChange();
     }
 
     @Override
@@ -287,6 +429,10 @@ class BrowserControlsContainerView extends FrameLayout {
         // Cancel the runnable when detached as calls to removeCallback() after this completes will
         // attempt to remove from the wrong handler.
         cancelDelayedFullscreenRunnable();
+    }
+
+    /* package */ State getState() {
+        return new State(mControlsOffset, mContentOffset);
     }
 
     private void cancelDelayedFullscreenRunnable() {
@@ -319,55 +465,118 @@ class BrowserControlsContainerView extends FrameLayout {
         // the layer is created and actually shown. Chrome for Android does the same thing.
         BrowserControlsContainerViewJni.get().createControlsLayer(
                 mNativeBrowserControlsContainerView, getResourceId());
-        mLastWidth = getWidth();
-        mLastHeight = getHeight();
         BrowserControlsContainerViewJni.get().setControlsSize(
                 mNativeBrowserControlsContainerView, mLastWidth, mLastHeight);
-        if (mIsFullscreen) {
-            setFullscreenControlsOffset();
-        } else {
-            setControlsOffset(0, mLastHeight);
-        }
     }
 
-    private void finishScroll(int contentOffsetY) {
-        mInScroll = false;
-        setControlsOffset(0, contentOffsetY);
-        mContentViewRenderView.postOnAnimation(() -> showControls());
+    /**
+     * Destroys the cc::Layer containing the bitmap copy of the View.
+     */
+    private void destroyLayer() {
+        if (mViewResourceAdapter == null) return;
+        // TODO: need some sort of destroy to drop reference.
+        mViewResourceAdapter = null;
+        BrowserControlsContainerViewJni.get().deleteControlsLayer(
+                mNativeBrowserControlsContainerView);
+        mContentViewRenderView.getResourceManager().getDynamicResourceLoader().unregisterResource(
+                getResourceId());
     }
 
     private void setControlsOffset(int controlsOffsetY, int contentOffsetY) {
         // This function is called asynchronously from the gpu, and may be out of sync with the
         // current values.
         if (mIsTop) {
-            mControlsOffset = MathUtils.clamp(controlsOffsetY, -getHeight(), 0);
+            // Don't snap to min-height because the controls could be animating in from a
+            // previously lower min-height.
+            mControlsOffset = MathUtils.clamp(controlsOffsetY, -mLastHeight, 0);
         } else {
-            mControlsOffset = MathUtils.clamp(controlsOffsetY, 0, getHeight());
+            mControlsOffset = MathUtils.clamp(controlsOffsetY, 0, mLastHeight);
         }
-        mContentOffset = MathUtils.clamp(contentOffsetY, 0, getHeight());
-        if (isCompletelyShownOrHidden()) {
-            mListener.onBrowserControlsCompletelyShownOrHidden();
+        mContentOffset = MathUtils.clamp(contentOffsetY, 0, mLastHeight);
+
+        if (mView != null) {
+            mLastShownAmountWithView =
+                    mIsTop ? (mLastHeight + mControlsOffset) : (mLastHeight - mControlsOffset);
+        }
+        if (isCompletelyExpandedOrCollapsed()) {
+            mDelegate.refreshPageHeight();
         }
         if (mIsTop) {
             BrowserControlsContainerViewJni.get().setTopControlsOffset(
-                    mNativeBrowserControlsContainerView, mControlsOffset, mContentOffset);
+                    mNativeBrowserControlsContainerView, mContentOffset);
         } else {
             BrowserControlsContainerViewJni.get().setBottomControlsOffset(
-                    mNativeBrowserControlsContainerView, mControlsOffset);
+                    mNativeBrowserControlsContainerView);
+        }
+        mDelegate.onOffsetsChanged(mIsTop, mControlsOffset);
+    }
+
+    private void reportHeightChange() {
+        if (mWebContents != null) {
+            mWebContents.notifyBrowserControlsHeightChanged();
         }
     }
 
     private void prepareForScroll() {
         mInScroll = true;
-        mContentViewRenderView.postOnAnimation(() -> hideControls());
+        hideControls();
+    }
+
+    private void finishScroll() {
+        mInScroll = false;
+        showControls();
     }
 
     private void hideControls() {
-        if (mView != null) mView.setVisibility(View.INVISIBLE);
+        if (BrowserControlsContainerViewJni.get().shouldDelayVisibilityChange()) {
+            mContentViewRenderView.postOnAnimation(mHideControlsRunnable);
+        } else {
+            hideControlsNow();
+        }
+    }
+
+    private void hideControlsNow() {
+        if (mView != null) {
+            mView.setVisibility(View.INVISIBLE);
+        }
     }
 
     private void showControls() {
-        if (mView != null) mView.setVisibility(View.VISIBLE);
+        if (BrowserControlsContainerViewJni.get().shouldDelayVisibilityChange()) {
+            mContentViewRenderView.postOnAnimation(mShowControlsRunnable);
+        } else {
+            showControlsNow();
+        }
+    }
+
+    private void showControlsNow() {
+        if (mView != null) {
+            if (mIsTop) {
+                mView.setTranslationY(mControlsOffset);
+            }
+            mView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @CalledByNative
+    /* package */ boolean shouldAnimateBrowserControlsHeightChanges() {
+        return mShouldAnimate;
+    }
+
+    @CalledByNative
+    private int getControlsOffset() {
+        return mControlsOffset;
+    }
+
+    @CalledByNative
+    private int getMinHeight() {
+        if (mAnimatingOut) return 0;
+        return Math.min(mLastHeight, mMinHeight);
+    }
+
+    @CalledByNative
+    private boolean onlyExpandControlsAtPageTop() {
+        return mOnlyExpandControlsAtPageTop;
     }
 
     @CalledByNative
@@ -386,16 +595,16 @@ class BrowserControlsContainerView extends FrameLayout {
         if (mIsFullscreen == isFullscreen) return;
         mIsFullscreen = isFullscreen;
         if (mIsFullscreen) {
+            mAnimatingOut = false;
             hideControls();
-            setFullscreenControlsOffset();
+            moveControlsOffScreen();
         } else {
             showControls();
             setControlsOffset(0, mIsTop ? mLastHeight : 0);
         }
     }
 
-    private void setFullscreenControlsOffset() {
-        assert mIsFullscreen;
+    private void moveControlsOffScreen() {
         setControlsOffset(mIsTop ? -mLastHeight : mLastHeight, 0);
     }
 
@@ -410,11 +619,11 @@ class BrowserControlsContainerView extends FrameLayout {
         void deleteBrowserControlsContainerView(long nativeBrowserControlsContainerView);
         void createControlsLayer(long nativeBrowserControlsContainerView, int id);
         void deleteControlsLayer(long nativeBrowserControlsContainerView);
-        void setTopControlsOffset(
-                long nativeBrowserControlsContainerView, int controlsOffsetY, int contentOffsetY);
-        void setBottomControlsOffset(long nativeBrowserControlsContainerView, int controlsOffsetY);
+        void setTopControlsOffset(long nativeBrowserControlsContainerView, int contentOffsetY);
+        void setBottomControlsOffset(long nativeBrowserControlsContainerView);
         void setControlsSize(long nativeBrowserControlsContainerView, int width, int height);
         void updateControlsResource(long nativeBrowserControlsContainerView);
         void setWebContents(long nativeBrowserControlsContainerView, WebContents webContents);
+        boolean shouldDelayVisibilityChange();
     }
 }

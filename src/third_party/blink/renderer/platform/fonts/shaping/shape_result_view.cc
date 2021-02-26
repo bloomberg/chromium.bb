@@ -194,6 +194,12 @@ void ShapeResultView::CreateViewsForResult(const ShapeResultType* other,
       continue;
     // Compute start/end of the run, or of the part if ShapeResultView.
     unsigned part_start = run->start_index_ + other->StartIndexOffsetForRun();
+    if (other->Rtl()) {
+      // Under RTL and multiple parts, A RunInfoPart may have an
+      // offset_ greater than start_index. In this case, run_start
+      // would result in an invalid negative value.
+      part_start = std::max(part_start, run->OffsetToRunStartIndex());
+    }
     unsigned run_end = part_start + run->num_characters_;
     if (start_index < run_end && end_index > part_start) {
       ShapeResult::RunInfo::GlyphDataRange range;
@@ -203,7 +209,9 @@ void ShapeResultView::CreateViewsForResult(const ShapeResultType* other,
       DCHECK_GE(part_start, run->OffsetToRunStartIndex());
       unsigned run_start = part_start - run->OffsetToRunStartIndex();
       unsigned adjusted_start =
-          start_index > run_start ? start_index - run_start : 0;
+          start_index > run_start
+              ? std::max(start_index, part_start) - run_start
+              : 0;
       unsigned adjusted_end = std::min(end_index, run_end) - run_start;
       DCHECK(adjusted_end > adjusted_start);
       unsigned part_characters = adjusted_end - adjusted_start;
@@ -591,7 +599,7 @@ void ShapeResultView::ComputePartInkBounds(
   auto glyph_offsets = part.GetGlyphOffsets<has_non_zero_glyph_offsets>();
   const SimpleFontData& current_font_data = *part.run_->font_data_;
   unsigned num_glyphs = part.NumGlyphs();
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   Vector<Glyph, 256> glyphs(num_glyphs);
   unsigned i = 0;
   for (const auto& glyph_data : part)
@@ -603,7 +611,7 @@ void ShapeResultView::ComputePartInkBounds(
   GlyphBoundsAccumulator bounds(run_advance);
   for (unsigned j = 0; j < num_glyphs; ++j) {
     const HarfBuzzRunGlyphData& glyph_data = part.GlyphAt(j);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     FloatRect glyph_bounds = current_font_data.BoundsForGlyph(glyph_data.glyph);
 #else
     FloatRect glyph_bounds(bounds_list[j]);

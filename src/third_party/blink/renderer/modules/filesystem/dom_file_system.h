@@ -50,7 +50,6 @@ class MODULES_EXPORT DOMFileSystem final
       public ActiveScriptWrappable<DOMFileSystem>,
       public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(DOMFileSystem);
 
  public:
   // Creates a new isolated file system for the given filesystemId.
@@ -88,7 +87,7 @@ class MODULES_EXPORT DOMFileSystem final
   static void ScheduleCallback(ExecutionContext* execution_context,
                                base::OnceClosure task);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   static String TaskNameForInstrumentation() { return "FileSystem"; }

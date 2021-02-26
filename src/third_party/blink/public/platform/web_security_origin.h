@@ -109,6 +109,18 @@ class WebSecurityOrigin {
   // passwords stored in password manager.
   BLINK_PLATFORM_EXPORT bool CanAccessPasswordManager() const;
 
+  // This method implements HTML's "same origin" check, which verifies equality
+  // of opaque origins, or exact (scheme,host,port) matches. Note that
+  // `document.domain` does not come into play for this comparison.
+  //
+  // This method does not take the "universal access" flag into account. It does
+  // take the "local access" flag into account, considering `file:` origins that
+  // set the flag to be same-origin with all other `file:` origins that set the
+  // flag.
+  //
+  // https://html.spec.whatwg.org/#same-origin
+  BLINK_PLATFORM_EXPORT bool IsSameOriginWith(const WebSecurityOrigin&) const;
+
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebSecurityOrigin(scoped_refptr<const SecurityOrigin>);
   BLINK_PLATFORM_EXPORT WebSecurityOrigin& operator=(
@@ -116,9 +128,6 @@ class WebSecurityOrigin {
   BLINK_PLATFORM_EXPORT operator scoped_refptr<const SecurityOrigin>() const;
   BLINK_PLATFORM_EXPORT const SecurityOrigin* Get() const;
 #endif
-  // TODO(mkwst): A number of properties don't survive a round-trip
-  // ('document.domain', for instance).  We'll need to fix that for OOPI-enabled
-  // embedders, https://crbug.com/490074.
   BLINK_PLATFORM_EXPORT WebSecurityOrigin(const url::Origin&);
   BLINK_PLATFORM_EXPORT operator url::Origin() const;
 

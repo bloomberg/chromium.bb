@@ -133,10 +133,11 @@ enum FetchHandlerExistence {
   DOES_NOT_EXIST,
 };
 
-// The number of seconds for which a 'push' event should be allowed to run.
-// This is not in the spec but for a Chrome-specific timeout. Each
-// event dispatched to service workers has a 5 minute timeout in the Chrome
-// implementation, but this makes the timeout for push events shorter.
+// The number of seconds for which a 'push' and the 'pushsubsciptionchange'
+// event should be allowed to run. This is not in the spec but for a
+// Chrome-specific timeout. Each event dispatched to service workers has a 5
+// minute timeout in the Chrome implementation, but this makes the timeout for
+// push events shorter.
 const int32 kPushEventTimeoutSeconds = 90;
 
 // The default number of seconds for idle timeouts. A service worker requests
@@ -194,8 +195,11 @@ interface ServiceWorker {
 
   // These methods dispatch InstallEvent and ActivateEvent to the
   // ServiceWorkerGlobalScope.
+  // The |fetch_count| return value is the number of network fetches performed
+  // from the service worker context during the event handler.  This is used
+  // for metrics.
   DispatchInstallEvent()
-      => (ServiceWorkerEventStatus status);
+      => (ServiceWorkerEventStatus status, uint32 fetch_count);
   DispatchActivateEvent()
       => (ServiceWorkerEventStatus status);
 
@@ -248,11 +252,18 @@ interface ServiceWorker {
   // content, or null.
   DispatchPushEvent(string? payload)
       => (ServiceWorkerEventStatus status);
-  // Whenever a PushSubscription changes, a change event is generated with (optionally)
-  // the previous subscription and the new subscription.
+  // Whenever a PushSubscription changes, a change event is generated with
+  // (optionally) the previous subscription and the new subscription.
+  // |old_subscription| can be null when there was a partial database corruption
+  // so that the full subscription information about the subscription that is
+  // going to become invalid cannot be found anymore.
+  // |new_subscription| is the subscription that is going to replace the
+  // |old_subscription| and is null when permission is revoked or the
+  // subscription is lost.
+  // Ref: https://w3c.github.io/push-api/#dfn-pushsubscriptionchange
   DispatchPushSubscriptionChangeEvent(
-      PushSubscription old_subscription,
-      PushSubscription new_subscription)
+      PushSubscription? old_subscription,
+      PushSubscription? new_subscription)
       => (ServiceWorkerEventStatus status);
   // Arguments are passed to the event handler as parameters of SyncEvent.
   // Ref: https://wicg.github.io/BackgroundSync/spec/#sync-event

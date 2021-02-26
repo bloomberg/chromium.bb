@@ -6,6 +6,7 @@ package org.chromium.ui;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
@@ -27,6 +28,8 @@ import android.widget.ListAdapter;
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StyleableRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -60,14 +63,14 @@ public class UiUtils {
      * supported. If there is no entry, it means the manufacturer supports theming at the same
      * version Android did.
      */
-    private static final Map<String, Integer> sAndroidUiThemeBlacklist = new HashMap<>();
+    private static final Map<String, Integer> sAndroidUiThemeBlocklist = new HashMap<>();
     static {
         // Xiaomi doesn't support SYSTEM_UI_FLAG_LIGHT_STATUS_BAR until Android N; more info at
         // https://crbug.com/823264.
-        sAndroidUiThemeBlacklist.put("xiaomi", Build.VERSION_CODES.N);
+        sAndroidUiThemeBlocklist.put("xiaomi", Build.VERSION_CODES.N);
         // HTC doesn't respect theming flags on activity restart until Android O; this affects both
         // the system nav and status bar. More info at https://crbug.com/831737.
-        sAndroidUiThemeBlacklist.put("htc", Build.VERSION_CODES.O);
+        sAndroidUiThemeBlocklist.put("htc", Build.VERSION_CODES.O);
     }
 
     /** Whether theming the Android system UI has been disabled. */
@@ -77,156 +80,6 @@ public class UiUtils {
      * Guards this class from being instantiated.
      */
     private UiUtils() {
-    }
-
-    /** A delegate for the photo picker. */
-    private static PhotoPickerDelegate sPhotoPickerDelegate;
-
-    /** A delegate for the contacts picker. */
-    private static ContactsPickerDelegate sContactsPickerDelegate;
-
-    /**
-     * A delegate interface for the contacts picker.
-     */
-    public interface ContactsPickerDelegate {
-        /**
-         * Called to display the contacts picker.
-         * @param context  The context to use.
-         * @param listener The listener that will be notified of the action the user took in the
-         *                 picker.
-         * @param allowMultiple Whether to allow multiple contacts to be picked.
-         * @param includeNames Whether to include names of the contacts shared.
-         * @param includeEmails Whether to include emails of the contacts shared.
-         * @param includeTel Whether to include telephone numbers of the contacts shared.
-         * @param includeAddresses Whether to include addresses of the contacts shared.
-         * @param includeIcons Whether to include addresses of the contacts shared.
-         * @param formattedOrigin The origin the data will be shared with, formatted for display
-         *                        with the scheme omitted.
-         */
-        void showContactsPicker(Context context, ContactsPickerListener listener,
-                boolean allowMultiple, boolean includeNames, boolean includeEmails,
-                boolean includeTel, boolean includeAddresses, boolean includeIcons,
-                String formattedOrigin);
-
-        /**
-         * Called when the contacts picker dialog has been dismissed.
-         */
-        void onContactsPickerDismissed();
-    }
-
-    /**
-     * A delegate interface for the photo picker.
-     */
-    public interface PhotoPickerDelegate {
-        /**
-         * Called to display the photo picker.
-         * @param context  The context to use.
-         * @param listener The listener that will be notified of the action the user took in the
-         *                 picker.
-         * @param allowMultiple Whether the dialog should allow multiple images to be selected.
-         * @param mimeTypes A list of mime types to show in the dialog.
-         */
-        void showPhotoPicker(Context context, PhotoPickerListener listener, boolean allowMultiple,
-                List<String> mimeTypes);
-
-        /**
-         * Called when the photo picker dialog has been dismissed.
-         */
-        void onPhotoPickerDismissed();
-
-        /**
-         * Returns whether video decoding support is supported in the photo picker.
-         */
-        boolean supportsVideos();
-    }
-
-    // ContactsPickerDelegate:
-
-    /**
-     * Allows setting a delegate for an Android contacts picker.
-     * @param delegate A {@link ContactsPickerDelegate} instance.
-     */
-    public static void setContactsPickerDelegate(ContactsPickerDelegate delegate) {
-        sContactsPickerDelegate = delegate;
-    }
-
-    /**
-     * Called to display the contacts picker.
-     * @param context  The context to use.
-     * @param listener The listener that will be notified of the action the user took in the
-     *                 picker.
-     * @param allowMultiple Whether to allow multiple contacts to be selected.
-     * @param includeNames Whether to include names in the contact data returned.
-     * @param includeEmails Whether to include emails in the contact data returned.
-     * @param includeTel Whether to include telephone numbers in the contact data returned.
-     * @param includeAddresses Whether to include addresses of the contacts shared.
-     * @param includeIcons Whether to include icons of the contacts shared.
-     * @param formattedOrigin The origin the data will be shared with.
-     */
-    public static boolean showContactsPicker(Context context, ContactsPickerListener listener,
-            boolean allowMultiple, boolean includeNames, boolean includeEmails, boolean includeTel,
-            boolean includeAddresses, boolean includeIcons, String formattedOrigin) {
-        if (sContactsPickerDelegate == null) return false;
-        sContactsPickerDelegate.showContactsPicker(context, listener, allowMultiple, includeNames,
-                includeEmails, includeTel, includeAddresses, includeIcons, formattedOrigin);
-        return true;
-    }
-
-    /**
-     * Called when the contacts picker dialog has been dismissed.
-     */
-    public static void onContactsPickerDismissed() {
-        if (sContactsPickerDelegate == null) return;
-        sContactsPickerDelegate.onContactsPickerDismissed();
-    }
-
-    // PhotoPickerDelegate:
-
-    /**
-     * Allows setting a delegate to override the default Android stock photo picker.
-     * @param delegate A {@link PhotoPickerDelegate} instance.
-     */
-    public static void setPhotoPickerDelegate(PhotoPickerDelegate delegate) {
-        sPhotoPickerDelegate = delegate;
-    }
-
-    /**
-     * Returns whether a photo picker should be called.
-     */
-    public static boolean shouldShowPhotoPicker() {
-        return sPhotoPickerDelegate != null;
-    }
-
-    /**
-     * Returns whether the photo picker supports showing videos.
-     */
-    public static boolean photoPickerSupportsVideo() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false;
-        if (!shouldShowPhotoPicker()) return false;
-        return sPhotoPickerDelegate.supportsVideos();
-    }
-
-    /**
-     * Called to display the photo picker.
-     * @param context  The context to use.
-     * @param listener The listener that will be notified of the action the user took in the
-     *                 picker.
-     * @param allowMultiple Whether the dialog should allow multiple images to be selected.
-     * @param mimeTypes A list of mime types to show in the dialog.
-     */
-    public static boolean showPhotoPicker(Context context, PhotoPickerListener listener,
-            boolean allowMultiple, List<String> mimeTypes) {
-        if (sPhotoPickerDelegate == null) return false;
-        sPhotoPickerDelegate.showPhotoPicker(context, listener, allowMultiple, mimeTypes);
-        return true;
-    }
-
-    /**
-     * Called when the photo picker dialog has been dismissed.
-     */
-    public static void onPhotoPickerDismissed() {
-        if (sPhotoPickerDelegate == null) return;
-        sPhotoPickerDelegate.onPhotoPickerDismissed();
     }
 
     /**
@@ -419,12 +272,8 @@ public class UiUtils {
      * @return Typeface that can be applied to a View.
      */
     public static Typeface createRobotoMediumTypeface() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Roboto Medium, regular.
-            return Typeface.create("sans-serif-medium", Typeface.NORMAL);
-        } else {
-            return Typeface.create("sans-serif", Typeface.BOLD);
-        }
+        // Roboto Medium, regular.
+        return Typeface.create("sans-serif-medium", Typeface.NORMAL);
     }
 
     /**
@@ -501,6 +350,24 @@ public class UiUtils {
     }
 
     /**
+     * Loads a {@link Drawable} from an attribute.  Uses {@link AppCompatResources} to support all
+     * modern {@link Drawable} types.
+     * @param context The associated context.
+     * @param attrs The attributes from which to load the drawable resource.
+     * @param attrId The attribute id that holds the drawable resource.
+     * @return A new {@link Drawable} or {@code null} if the attribute wasn't set.
+     */
+    public static @Nullable Drawable getDrawable(
+            Context context, @Nullable TypedArray attrs, @StyleableRes int attrId) {
+        if (attrs == null) return null;
+
+        @DrawableRes
+        int resId = attrs.getResourceId(attrId, -1);
+        if (resId == -1) return null;
+        return AppCompatResources.getDrawable(context, resId);
+    }
+
+    /**
      * Gets a drawable from the resources and applies the specified tint to it. Uses Support Library
      * for vector drawables and tinting on older Android versions.
      * @param drawableId The resource id for the drawable.
@@ -523,9 +390,9 @@ public class UiUtils {
     public static boolean isSystemUiThemingDisabled() {
         if (sSystemUiThemingDisabled == null) {
             sSystemUiThemingDisabled = false;
-            if (sAndroidUiThemeBlacklist.containsKey(Build.MANUFACTURER.toLowerCase(Locale.US))) {
+            if (sAndroidUiThemeBlocklist.containsKey(Build.MANUFACTURER.toLowerCase(Locale.US))) {
                 sSystemUiThemingDisabled = Build.VERSION.SDK_INT
-                        < sAndroidUiThemeBlacklist.get(Build.MANUFACTURER.toLowerCase(Locale.US));
+                        < sAndroidUiThemeBlocklist.get(Build.MANUFACTURER.toLowerCase(Locale.US));
             }
         }
         return sSystemUiThemingDisabled;

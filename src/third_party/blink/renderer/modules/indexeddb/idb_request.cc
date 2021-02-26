@@ -145,11 +145,15 @@ IDBRequest::IDBRequest(ScriptState* script_state,
                                            TaskType::kDatabaseAccess)) {}
 
 IDBRequest::~IDBRequest() {
-  DCHECK((ready_state_ == DONE && metrics_.IsEmpty()) ||
-         ready_state_ == kEarlyDeath || !GetExecutionContext());
+  if (!GetExecutionContext())
+    return;
+  if (ready_state_ == DONE)
+    DCHECK(metrics_.IsEmpty()) << metrics_.trace_event_name();
+  else
+    DCHECK_EQ(ready_state_, kEarlyDeath);
 }
 
-void IDBRequest::Trace(Visitor* visitor) {
+void IDBRequest::Trace(Visitor* visitor) const {
   visitor->Trace(transaction_);
   visitor->Trace(source_);
   visitor->Trace(result_);
@@ -341,7 +345,7 @@ void IDBRequest::HandleResponse(int64_t value_or_old_version) {
 }
 
 void IDBRequest::HandleResponse() {
-  DCHECK(transit_blob_handles_.IsEmpty());
+  transit_blob_handles_.clear();
   if (!transaction_ || !transaction_->HasQueuedResults())
     return EnqueueResponse();
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
@@ -405,6 +409,17 @@ void IDBRequest::HandleResponse(std::unique_ptr<IDBKey> key,
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
       this, std::move(key), std::move(primary_key), std::move(value),
       is_wrapped,
+      WTF::Bind(&IDBTransaction::OnResultReady,
+                WrapPersistent(transaction_.Get()))));
+}
+
+void IDBRequest::HandleResponse(
+    bool key_only,
+    mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink> receiver) {
+  DCHECK(transit_blob_handles_.IsEmpty());
+  DCHECK(transaction_);
+  transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
+      this, key_only, std::move(receiver),
       WTF::Bind(&IDBTransaction::OnResultReady,
                 WrapPersistent(transaction_.Get()))));
 }

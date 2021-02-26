@@ -47,6 +47,13 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     // large enough to store.
   };
 
+  // Creates a copy of |other| but uses the "post-layout" fragments to ensure
+  // fragment-tree consistency.
+  static scoped_refptr<const NGLayoutResult> CloneWithPostLayoutFragments(
+      const NGLayoutResult& other,
+      const base::Optional<PhysicalRect> updated_layout_overflow =
+          base::nullopt);
+
   // Create a copy of NGLayoutResult with |BfcBlockOffset| replaced by the given
   // parameter. Note, when |bfc_block_offset| is |nullopt|, |BfcBlockOffset| is
   // still replaced with |nullopt|.
@@ -66,6 +73,24 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   int LinesUntilClamp() const {
     return HasRareData() ? rare_data_->lines_until_clamp : 0;
+  }
+
+  // How much an annotation box overflow from this box.
+  // This is for LayoutNGRubyRun and line boxes.
+  // 0 : No overflow
+  // -N : Overflowing by N px at block-start side
+  //      This happens only for LayoutRubyRun.
+  // N : Overflowing by N px at block-end side
+  LayoutUnit AnnotationOverflow() const {
+    return HasRareData() ? rare_data_->annotation_overflow : LayoutUnit();
+  }
+
+  // The amount of available space for block-start side annotations of the
+  // next box.
+  // This never be negative.
+  LayoutUnit BlockEndAnnotationSpace() const {
+    return HasRareData() ? rare_data_->block_end_annotation_space
+                         : LayoutUnit();
   }
 
   LogicalOffset OutOfFlowPositionedOffset() const {
@@ -145,8 +170,18 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return HasRareData() ? rare_data_->end_margin_strut : NGMarginStrut();
   }
 
+  // Get the intrinsic block-size of the fragment (i.e. the block-size the
+  // fragment would get if no block-size constraints were applied). This is not
+  // supported (and should not be needed [1]) if the node got split into
+  // multiple fragments.
+  //
+  // [1] If a node gets block-fragmented, it means that it has possibly been
+  // constrained and/or stretched by something extrinsic (i.e. the
+  // fragmentainer), so the value returned here wouldn't be useful.
   const LayoutUnit IntrinsicBlockSize() const {
-    DCHECK(physical_fragment_->IsBox());
+#if DCHECK_IS_ON()
+    AssertSoleBoxFragment();
+#endif
     return intrinsic_block_size_;
   }
 
@@ -157,22 +192,15 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   }
 
   LayoutUnit MinimalSpaceShortage() const {
-    if (!HasRareData())
+    if (!HasRareData() || rare_data_->minimal_space_shortage == kIndefiniteSize)
       return LayoutUnit::Max();
-#if DCHECK_IS_ON()
-    // This field shares storage with another field.
-    DCHECK(!rare_data_->has_tallest_unbreakable_block_size);
-#endif
     return rare_data_->minimal_space_shortage;
   }
 
   LayoutUnit TallestUnbreakableBlockSize() const {
-    if (!HasRareData())
+    if (!HasRareData() ||
+        rare_data_->tallest_unbreakable_block_size == kIndefiniteSize)
       return LayoutUnit();
-#if DCHECK_IS_ON()
-    // This field shares storage with another field.
-    DCHECK(rare_data_->has_tallest_unbreakable_block_size);
-#endif
     return rare_data_->tallest_unbreakable_block_size;
   }
 
@@ -186,6 +214,16 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   SerializedScriptValue* CustomLayoutData() const {
     return HasRareData() ? rare_data_->custom_layout_data.get() : nullptr;
+  }
+
+  wtf_size_t TableColumnCount() const {
+    return HasRareData() ? rare_data_->table_column_count_ : 0;
+  }
+
+  LayoutUnit MathItalicCorrection() const {
+    return HasRareData() && rare_data_->math_layout_data_
+               ? rare_data_->math_layout_data_->italic_correction_
+               : LayoutUnit();
   }
 
   // The break-before value on the first child needs to be propagated to the
@@ -312,8 +350,18 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
       scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
       NGLineBoxFragmentBuilder*);
 
+  // See https://mathml-refresh.github.io/mathml-core/#box-model
+  struct MathData {
+    LayoutUnit italic_correction_;
+  };
+
  private:
   friend class MutableForOutOfFlow;
+
+  // Creates a copy of NGLayoutResult with a new (but "identical") fragment.
+  NGLayoutResult(
+      const NGLayoutResult& other,
+      scoped_refptr<const NGPhysicalContainerFragment> physical_fragment);
 
   // We don't need the copy constructor, move constructor, copy
   // assigmnment-operator, or move assignment-operator today.
@@ -368,20 +416,26 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
       // couldn't fit all the content, and we're allowed to stretch columns
       // further, we'll perform another pass with the column block-size
       // increased by this amount.
-      LayoutUnit minimal_space_shortage = LayoutUnit::Max();
+      LayoutUnit minimal_space_shortage = kIndefiniteSize;
     };
     NGExclusionSpace exclusion_space;
     scoped_refptr<SerializedScriptValue> custom_layout_data;
+
     LayoutUnit overflow_block_size = kIndefiniteSize;
-#if DCHECK_IS_ON()
-    bool has_tallest_unbreakable_block_size = false;
-#endif
+    LayoutUnit annotation_overflow;
+    LayoutUnit block_end_annotation_space;
     bool is_single_use = false;
     int lines_until_clamp = 0;
+    wtf_size_t table_column_count_ = 0;
+    base::Optional<MathData> math_layout_data_;
   };
 
   bool HasRareData() const { return bitfields_.has_rare_data; }
   RareData* EnsureRareData();
+
+#if DCHECK_IS_ON()
+  void AssertSoleBoxFragment() const;
+#endif
 
   struct Bitfields {
     DISALLOW_NEW();

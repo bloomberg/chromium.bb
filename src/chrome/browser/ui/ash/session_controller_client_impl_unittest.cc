@@ -21,8 +21,6 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/ash/assistant/assistant_client_impl.h"
 #include "chrome/browser/ui/ash/test_session_controller.h"
 #include "chrome/common/pref_names.h"
@@ -281,9 +279,10 @@ TEST_F(SessionControllerClientImplTest, MultiProfileDisallowedByUserPolicy) {
             SessionControllerClientImpl::GetAddUserSessionPolicy());
 }
 
-// Make sure MultiProfile disabled by primary user policy certificates.
+// Make sure MultiProfile is allowed if the primary user has used
+// policy-provided trust anchors.
 TEST_F(SessionControllerClientImplTest,
-       MultiProfileDisallowedByPolicyCertificates) {
+       MultiProfileAllowedWithPolicyCertificates) {
   InitForMultiProfile();
   user_manager()->AddUser(
       AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
@@ -295,14 +294,15 @@ TEST_F(SessionControllerClientImplTest,
             SessionControllerClientImpl::GetAddUserSessionPolicy());
   policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(
       account_id.GetUserEmail());
-  EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
+  EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClientImpl::GetAddUserSessionPolicy());
 
   // Flush tasks posted to IO.
   base::RunLoop().RunUntilIdle();
 }
 
-// Make sure MultiProfile disabled by primary user certificates in memory.
+// Make sure MultiProfile is allowed if the primary user has policy-provided
+// trust anchors in memory.
 TEST_F(SessionControllerClientImplTest,
        MultiProfileDisallowedByPrimaryUserCertificatesInMemory) {
   TestingProfile* user_profile = InitForMultiProfile();
@@ -327,7 +327,7 @@ TEST_F(SessionControllerClientImplTest,
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem"));
   service->SetPolicyTrustAnchorsForTesting(/*trust_anchors=*/certificates);
   EXPECT_TRUE(service->has_policy_certificates());
-  EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
+  EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClientImpl::GetAddUserSessionPolicy());
 
   // Flush tasks posted to IO.
@@ -466,66 +466,6 @@ TEST_F(SessionControllerClientImplTest, SetUserSessionOrder) {
   EXPECT_EQ(1, session_controller.set_user_session_order_count());
 }
 
-TEST_F(SessionControllerClientImplTest, SupervisedUser) {
-  // Create an object to test and connect it to our test interface.
-  SessionControllerClientImpl client;
-  TestSessionController session_controller;
-  client.Init();
-
-  // Simulate the login screen. No user session yet.
-  session_manager_.SetSessionState(SessionState::LOGIN_PRIMARY);
-  EXPECT_FALSE(session_controller.last_user_session().has_value());
-
-  // Simulate a supervised user logging in.
-  const AccountId account_id(AccountId::FromUserEmail("child@test.com"));
-  const user_manager::User* user =
-      user_manager()->AddSupervisedUser(account_id);
-  ASSERT_TRUE(user);
-
-  // Start session. This logs in the user and sends an active user notification.
-  // The hash must match the one used by FakeChromeUserManager.
-  session_manager_.CreateSession(
-      account_id,
-      chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
-          "child@test.com"),
-      false);
-
-  // Simulate profile creation after login.
-  TestingProfile* user_profile = CreateTestingProfile(user);
-  user_profile->SetSupervisedUserId("child-id");
-
-  // Simulate supervised user custodians.
-  PrefService* prefs = user_profile->GetPrefs();
-  prefs->SetString(prefs::kSupervisedUserCustodianEmail, "parent1@test.com");
-  prefs->SetString(prefs::kSupervisedUserSecondCustodianEmail,
-                   "parent2@test.com");
-
-  // Simulate the notification that the profile is ready.
-  session_manager_.NotifyUserProfileLoaded(account_id);
-
-  // User session could only be made active after user profile is loaded.
-  session_manager_.SetSessionState(SessionState::ACTIVE);
-
-  // The session controller received session info and user session.
-  EXPECT_LT(0u, session_controller.last_user_session()->session_id);
-  EXPECT_EQ(user_manager::USER_TYPE_SUPERVISED,
-            session_controller.last_user_session()->user_info.type);
-
-  // The custodians were sent over the mojo interface.
-  EXPECT_EQ("parent1@test.com",
-            session_controller.last_user_session()->custodian_email);
-  EXPECT_EQ("parent2@test.com",
-            session_controller.last_user_session()->second_custodian_email);
-
-  // Simulate an update to the custodian information.
-  prefs->SetString(prefs::kSupervisedUserCustodianEmail, "parent3@test.com");
-  client.OnCustodianInfoChanged();
-
-  // The updated custodian was sent over the mojo interface.
-  EXPECT_EQ("parent3@test.com",
-            session_controller.last_user_session()->custodian_email);
-}
-
 TEST_F(SessionControllerClientImplTest, UserPrefsChange) {
   // Create an object to test and connect it to our test interface.
   SessionControllerClientImpl client;
@@ -576,7 +516,7 @@ TEST_F(SessionControllerClientImplTest, SessionLengthLimit) {
 
   // Setting a session length limit in local state sends it to ash.
   const base::TimeDelta length_limit = base::TimeDelta::FromHours(1);
-  const base::TimeTicks start_time = base::TimeTicks::Now();
+  const base::Time start_time = base::Time::Now();
   PrefService* local_state = TestingBrowserProcess::GetGlobal()->local_state();
   local_state->SetInteger(prefs::kSessionLengthLimit,
                           length_limit.InMilliseconds());

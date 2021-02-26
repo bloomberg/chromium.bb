@@ -58,6 +58,8 @@ api::audio::DeviceType GetAsAudioApiDeviceType(chromeos::AudioDeviceType type) {
       return api::audio::DEVICE_TYPE_POST_MIX_LOOPBACK;
     case chromeos::AUDIO_TYPE_POST_DSP_LOOPBACK:
       return api::audio::DEVICE_TYPE_POST_DSP_LOOPBACK;
+    case chromeos::AUDIO_TYPE_ALSA_LOOPBACK:
+      return api::audio::DEVICE_TYPE_ALSA_LOOPBACK;
     case chromeos::AUDIO_TYPE_OTHER:
       return api::audio::DEVICE_TYPE_OTHER;
   }
@@ -362,8 +364,8 @@ AudioDeviceInfo AudioServiceImpl::ToAudioDeviceInfo(
   info.is_active = device.active;
   info.level =
       device.is_input
-          ? cras_audio_handler_->GetOutputVolumePercentForDevice(device.id)
-          : cras_audio_handler_->GetInputGainPercentForDevice(device.id);
+          ? cras_audio_handler_->GetInputGainPercentForDevice(device.id)
+          : cras_audio_handler_->GetOutputVolumePercentForDevice(device.id);
   info.stable_device_id = std::make_unique<std::string>(
       id_calculator_->GetStableDeviceId(device.stable_device_id));
 

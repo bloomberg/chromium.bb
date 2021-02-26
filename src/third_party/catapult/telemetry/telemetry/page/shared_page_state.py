@@ -11,7 +11,7 @@ from telemetry.core import platform as platform_module
 from telemetry.internal.backends.chrome import gpu_compositing_checker
 from telemetry.internal.browser import browser_info as browser_info_module
 from telemetry.internal.browser import browser_interval_profiling_controller
-from telemetry.internal.platform.tracing_agent import perfetto_tracing_agent
+from telemetry.internal.platform import android_device
 from telemetry.page import cache_temperature
 from telemetry.page import legacy_page_test
 from telemetry.page import traffic_setting
@@ -38,6 +38,7 @@ class SharedPageState(story_module.SharedState):
       # just collect a trace, then measurements are done after the fact by
       # analysing the trace itself.
       self._page_test = test
+      self._page_test_results = None
 
     if (self._device_type == 'desktop' and
         platform_module.GetHostPlatform().GetOSName() == 'chromeos'):
@@ -60,6 +61,11 @@ class SharedPageState(story_module.SharedState):
       self._page_test.SetOptions(self._finder_options)
 
     self._extra_wpr_args = browser_options.extra_wpr_args
+    if hasattr(finder_options, 'use_local_wpr') and finder_options.use_local_wpr:
+      self._extra_wpr_args.append('--use-local-wpr')
+    if (hasattr(finder_options, 'disable_fuzzy_url_matching') and
+        finder_options.disable_fuzzy_url_matching):
+      self._extra_wpr_args.append('--disable-fuzzy-url-matching')
 
     profiling_mod = browser_interval_profiling_controller
     self._interval_profiling_controller = (
@@ -70,15 +76,13 @@ class SharedPageState(story_module.SharedState):
             frequency=finder_options.interval_profiling_frequency,
             profiler_options=finder_options.interval_profiler_options))
 
-    self.platform.SetFullPerformanceModeEnabled(
-        finder_options.full_performance_mode)
+    self.platform.SetPerformanceMode(finder_options.performance_mode)
+    self._perf_mode_set = (finder_options.performance_mode !=
+                           android_device.KEEP_PERFORMANCE_MODE)
     self.platform.network_controller.Open(self.wpr_mode)
     self.platform.Initialize()
     self._video_recording_enabled = (self._finder_options.capture_screen_video
                                      and self.platform.CanRecordVideo())
-    if finder_options.experimental_system_tracing:
-      perfetto_tracing_agent.PerfettoTracingAgent.SetUpAgent(
-          self.platform._platform_backend)
 
   @property
   def interval_profiling_controller(self):
@@ -295,18 +299,27 @@ class SharedPageState(story_module.SharedState):
     if self._page_test:
       self._page_test.DidNavigateToPage(page, action_runner.tab)
 
+  def RunPageInteractions(self, action_runner, page):
+    # The purpose is similar to NavigateToPage.
+    with self.interval_profiling_controller.SamplePeriod(
+        'interactions', action_runner):
+      page.RunPageInteractions(action_runner)
+      if self._page_test:
+        self._page_test.ValidateAndMeasurePage(
+            page, action_runner.tab, self._page_test_results)
+
   def RunStory(self, results):
     self._PreparePage()
+    self._page_test_results = results
     self._current_page.Run(self)
-    if self._page_test:
-      self._page_test.ValidateAndMeasurePage(
-          self._current_page, self._current_tab, results)
+    self._page_test_results = None
 
   def TearDownState(self):
     self._StopBrowser()
     self.platform.StopAllLocalServers()
     self.platform.network_controller.Close()
-    self.platform.SetFullPerformanceModeEnabled(False)
+    if self._perf_mode_set:
+      self.platform.SetPerformanceMode(android_device.NORMAL_PERFORMANCE_MODE)
 
   def _StopBrowser(self):
     if self._browser:

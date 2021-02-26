@@ -43,8 +43,6 @@
 
 namespace extensions {
 
-using UMAType = MimeHandlerViewUMATypes::Type;
-
 namespace {
 
 base::LazyInstance<mojo::AssociatedRemote<mojom::GuestView>>::Leaky
@@ -101,7 +99,7 @@ class MimeHandlerViewContainer::PluginResourceThrottle
                                  new_client.InitWithNewPipeAndPassReceiver(),
                                  &original_loader, &original_client);
 
-    auto transferrable_loader = content::mojom::TransferrableURLLoader::New();
+    auto transferrable_loader = blink::mojom::TransferrableURLLoader::New();
     transferrable_loader->url_loader = std::move(original_loader);
     transferrable_loader->url_loader_client = std::move(original_client);
 
@@ -138,8 +136,6 @@ MimeHandlerViewContainer::MimeHandlerViewContainer(
               blink::WebSecurityOrigin::Create(original_url))) {
   DCHECK(!mime_type_.empty());
   g_mime_handler_view_container_base_map.Get()[render_frame].insert(this);
-  RecordInteraction(
-      MimeHandlerViewUMATypes::Type::kDidCreateMimeHandlerViewContainerBase);
 }
 
 MimeHandlerViewContainer::~MimeHandlerViewContainer() {
@@ -358,7 +354,7 @@ void MimeHandlerViewContainer::SendResourceRequest() {
 
   blink::WebAssociatedURLLoaderOptions options;
   DCHECK(!loader_);
-  loader_.reset(frame->CreateAssociatedURLLoader(options));
+  loader_ = frame->CreateAssociatedURLLoader(options);
 
   // The embedded plugin is allowed to be cross-origin and we should always
   // send credentials/cookies with the request. So, use the default mode
@@ -379,7 +375,7 @@ void MimeHandlerViewContainer::EmbedderRenderFrameWillBeGone() {
 }
 
 void MimeHandlerViewContainer::SetEmbeddedLoader(
-    content::mojom::TransferrableURLLoaderPtr transferrable_url_loader) {
+    blink::mojom::TransferrableURLLoaderPtr transferrable_url_loader) {
   transferrable_url_loader_ = std::move(transferrable_url_loader);
   transferrable_url_loader_->url = GURL(plugin_path_ + base::GenerateGUID());
   // Warning: It is possible that |this| gets destroyed after this line (when
@@ -402,10 +398,6 @@ void MimeHandlerViewContainer::SetShowBeforeUnloadDialog(
 v8::Local<v8::Object> MimeHandlerViewContainer::GetScriptableObjectInternal(
     v8::Isolate* isolate) {
   return post_message_support()->GetScriptableObject(isolate);
-}
-
-void MimeHandlerViewContainer::RecordInteraction(UMAType uma_type) {
-  base::UmaHistogramEnumeration(MimeHandlerViewUMATypes::kUMAName, uma_type);
 }
 
 }  // namespace extensions

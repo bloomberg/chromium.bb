@@ -20,6 +20,9 @@ class EulaView;
 
 // Representation independent class that controls OOBE screen showing EULA
 // to users.
+//
+// TODO(b/168852740): Clean up the password-related logic with the removal of
+// `TpmGetPassword` D-Bus method.
 class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
  public:
   enum class Result {
@@ -77,9 +80,12 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
+  bool HandleAccelerator(ash::LoginAcceleratorAction action) override;
 
   // TpmPasswordFetcherDelegate implementation:
   void OnPasswordFetched(const std::string& tpm_password) override;
+  void ShowStatsUsageLearnMore();
+  void ShowAdditionalTosDialog();
 
   // URL of the OEM EULA page (on disk).
   GURL oem_eula_page_;

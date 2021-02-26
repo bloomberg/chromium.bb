@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -105,7 +105,7 @@ class AudioDecoder::ImplBase
   DISALLOW_COPY_AND_ASSIGN(ImplBase);
 };
 
-class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
+class AudioDecoder::OpusImpl final : public AudioDecoder::ImplBase {
  public:
   OpusImpl(const scoped_refptr<CastEnvironment>& cast_environment,
            int num_channels,
@@ -174,7 +174,7 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
   DISALLOW_COPY_AND_ASSIGN(OpusImpl);
 };
 
-class AudioDecoder::Pcm16Impl : public AudioDecoder::ImplBase {
+class AudioDecoder::Pcm16Impl final : public AudioDecoder::ImplBase {
  public:
   Pcm16Impl(const scoped_refptr<CastEnvironment>& cast_environment,
             int num_channels,

@@ -32,7 +32,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/pepper_plugin_list.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -68,18 +67,6 @@ void WillLoadPluginsCallback(base::SequenceChecker* sequence_checker) {
 }
 
 }  // namespace
-
-// static
-void PluginServiceImpl::RecordBrokerUsage(int render_process_id,
-                                          int render_frame_id) {
-  RenderFrameHostImpl* rfh =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
-  if (!rfh)
-    return;
-
-  ukm::SourceId source_id = rfh->GetPageUkmSourceId();
-  ukm::builders::Pepper_Broker(source_id).Record(ukm::UkmRecorder::Get());
-}
 
 // static
 PluginService* PluginService::GetInstance() {
@@ -156,16 +143,6 @@ int PluginServiceImpl::CountPpapiPluginProcessesForProfile(
   return count;
 }
 
-PpapiPluginProcessHost* PluginServiceImpl::FindPpapiBrokerProcess(
-    const base::FilePath& broker_path) {
-  for (PpapiBrokerProcessHostIterator iter; !iter.Done(); ++iter) {
-    if (iter->plugin_path() == broker_path)
-      return *iter;
-  }
-
-  return nullptr;
-}
-
 PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     int render_process_id,
     const url::Origin& embedder_origin,
@@ -208,7 +185,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     // https://www.chromium.org/flash-roadmap).
     RenderProcessHostImpl::AddCorbExceptionForPlugin(render_process_id);
   } else if (info->permissions & ppapi::PERMISSION_PDF) {
-    // We want to limit ability to bypass |request_initiator_site_lock| to
+    // We want to limit ability to bypass |request_initiator_origin_lock| to
     // trustworthy renderers.  PDF plugin is okay, because it is always hosted
     // by the PDF extension (mhjfbmdgcfjbbpaeojofohoefgiehjai) or
     // chrome://print, both of which we assume are trustworthy (the extension
@@ -218,8 +195,9 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     // web-controlled content.  This is a defense-in-depth for verifying that
     // ShouldAllowPluginCreation called above is doing the right thing.
     auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-    GURL renderer_lock = policy->GetOriginLock(render_process_id);
-    CHECK(!renderer_lock.SchemeIsHTTPOrHTTPS());
+    ProcessLock renderer_lock = policy->GetProcessLock(render_process_id);
+    CHECK(!renderer_lock.matches_scheme(url::kHttpScheme) &&
+          !renderer_lock.matches_scheme(url::kHttpsScheme));
     CHECK(embedder_origin.scheme() != url::kHttpScheme);
     CHECK(embedder_origin.scheme() != url::kHttpsScheme);
     CHECK(!embedder_origin.opaque());
@@ -267,29 +245,6 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
   return plugin_host;
 }
 
-PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(
-    int render_process_id,
-    const base::FilePath& plugin_path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (filter_ && !filter_->CanLoadPlugin(render_process_id, plugin_path))
-    return nullptr;
-
-  PpapiPluginProcessHost* plugin_host = FindPpapiBrokerProcess(plugin_path);
-  if (plugin_host)
-    return plugin_host;
-
-  // Validate that the plugin is actually registered.
-  const PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
-  if (!info)
-    return nullptr;
-
-  DCHECK(info->is_out_of_process);
-
-  // This broker isn't loaded by any broker process, so create a new process.
-  return PpapiPluginProcessHost::CreateBrokerHost(*info);
-}
-
 void PluginServiceImpl::OpenChannelToPpapiPlugin(
     int render_process_id,
     const url::Origin& embedder_origin,
@@ -300,25 +255,6 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
       render_process_id, embedder_origin, plugin_path, profile_data_directory,
       origin_lock);
-  if (plugin_host) {
-    plugin_host->OpenChannelToPlugin(client);
-  } else {
-    // Send error.
-    client->OnPpapiChannelOpened(IPC::ChannelHandle(), base::kNullProcessId, 0);
-  }
-}
-
-void PluginServiceImpl::OpenChannelToPpapiBroker(
-    int render_process_id,
-    int render_frame_id,
-    const base::FilePath& path,
-    PpapiPluginProcessHost::BrokerClient* client) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PluginServiceImpl::RecordBrokerUsage,
-                                render_process_id, render_frame_id));
-
-  PpapiPluginProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(
-      render_process_id, path);
   if (plugin_host) {
     plugin_host->OpenChannelToPlugin(client);
   } else {
@@ -389,14 +325,14 @@ base::string16 PluginServiceImpl::GetPluginDisplayNameByPath(
   if (PluginService::GetInstance()->GetPluginInfoByPath(path, &info) &&
       !info.name.empty()) {
     plugin_name = info.name;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Many plugins on the Mac have .plugin in the actual name, which looks
     // terrible, so look for that and strip it off if present.
     static const char kPluginExtension[] = ".plugin";
     if (base::EndsWith(plugin_name, base::ASCIIToUTF16(kPluginExtension),
                        base::CompareCase::SENSITIVE))
       plugin_name.erase(plugin_name.length() - strlen(kPluginExtension));
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   }
   return plugin_name;
 }

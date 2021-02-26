@@ -7,9 +7,12 @@
 #include <algorithm>
 #include <chrono>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "osp/impl/presentation/presentation_common.h"
 #include "osp/public/network_service_manager.h"
+#include "util/chrono_helpers.h"
 #include "util/osp_logging.h"
 
 using std::chrono::seconds;
@@ -224,6 +227,7 @@ ErrorOr<uint64_t> UrlAvailabilityRequester::ReceiverRequester::SendRequest(
   cbor_request.request_id = request_id;
   cbor_request.urls = urls;
   cbor_request.watch_id = watch_id;
+  cbor_request.watch_duration = to_microseconds(kWatchDuration).count();
 
   msgs::CborEncodeBuffer buffer;
   if (msgs::EncodePresentationUrlAvailabilityRequest(cbor_request, &buffer)) {

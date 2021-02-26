@@ -24,8 +24,9 @@
 #include "fxjs/cjs_delaydata.h"
 #include "fxjs/cjs_document.h"
 #include "fxjs/cjs_icon.h"
+#include "fxjs/fxv8.h"
 #include "fxjs/js_resources.h"
-#include "third_party/base/ptr_util.h"
+#include "third_party/base/notreached.h"
 
 namespace {
 
@@ -221,17 +222,17 @@ void SetBorderStyle(CPDFSDK_FormFillEnvironment* pFormFillEnv,
                     const ByteString& string) {
   ASSERT(pFormFillEnv);
 
-  BorderStyle nBorderStyle = BorderStyle::SOLID;
+  BorderStyle nBorderStyle = BorderStyle::kSolid;
   if (string == "solid")
-    nBorderStyle = BorderStyle::SOLID;
+    nBorderStyle = BorderStyle::kSolid;
   else if (string == "beveled")
-    nBorderStyle = BorderStyle::BEVELED;
+    nBorderStyle = BorderStyle::kBeveled;
   else if (string == "dashed")
-    nBorderStyle = BorderStyle::DASH;
+    nBorderStyle = BorderStyle::kDash;
   else if (string == "inset")
-    nBorderStyle = BorderStyle::INSET;
+    nBorderStyle = BorderStyle::kInset;
   else if (string == "underline")
-    nBorderStyle = BorderStyle::UNDERLINE;
+    nBorderStyle = BorderStyle::kUnderline;
   else
     return;
 
@@ -586,11 +587,11 @@ const JSMethodSpec CJS_Field::MethodSpecs[] = {
     {"signatureSign", signatureSign_static},
     {"signatureValidate", signatureValidate_static}};
 
-int CJS_Field::ObjDefnID = -1;
+uint32_t CJS_Field::ObjDefnID = 0;
 const char CJS_Field::kName[] = "Field";
 
 // static
-int CJS_Field::GetObjDefnID() {
+uint32_t CJS_Field::GetObjDefnID() {
   return ObjDefnID;
 }
 
@@ -704,15 +705,15 @@ CJS_Result CJS_Field::get_border_style(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   switch (pWidget->GetBorderStyle()) {
-    case BorderStyle::SOLID:
+    case BorderStyle::kSolid:
       return CJS_Result::Success(pRuntime->NewString("solid"));
-    case BorderStyle::DASH:
+    case BorderStyle::kDash:
       return CJS_Result::Success(pRuntime->NewString("dashed"));
-    case BorderStyle::BEVELED:
+    case BorderStyle::kBeveled:
       return CJS_Result::Success(pRuntime->NewString("beveled"));
-    case BorderStyle::INSET:
+    case BorderStyle::kInset:
       return CJS_Result::Success(pRuntime->NewString("inset"));
-    case BorderStyle::UNDERLINE:
+    case BorderStyle::kUnderline:
       return CJS_Result::Success(pRuntime->NewString("underline"));
   }
   return CJS_Result::Success(pRuntime->NewString(""));
@@ -881,21 +882,19 @@ CJS_Result CJS_Field::get_button_scale_when(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   CPDF_IconFit IconFit = pFormControl->GetIconFit();
-  int ScaleM = IconFit.GetScaleMethod();
-  switch (ScaleM) {
-    case CPDF_IconFit::Always:
+  CPDF_IconFit::ScaleMethod scale_method = IconFit.GetScaleMethod();
+  switch (scale_method) {
+    case CPDF_IconFit::ScaleMethod::kAlways:
+    case CPDF_IconFit::ScaleMethod::kBigger:
+    case CPDF_IconFit::ScaleMethod::kNever:
+    case CPDF_IconFit::ScaleMethod::kSmaller:
       return CJS_Result::Success(
-          pRuntime->NewNumber(static_cast<int32_t>(CPDF_IconFit::Always)));
-    case CPDF_IconFit::Bigger:
-      return CJS_Result::Success(
-          pRuntime->NewNumber(static_cast<int32_t>(CPDF_IconFit::Bigger)));
-    case CPDF_IconFit::Never:
-      return CJS_Result::Success(
-          pRuntime->NewNumber(static_cast<int32_t>(CPDF_IconFit::Never)));
-    case CPDF_IconFit::Smaller:
-      return CJS_Result::Success(
-          pRuntime->NewNumber(static_cast<int32_t>(CPDF_IconFit::Smaller)));
+          pRuntime->NewNumber(static_cast<int>(scale_method)));
   }
+
+  // Note this is deliberately not the default case for the switch statement
+  // above, so missing cases trigger compile time errors.
+  NOTREACHED();
   return CJS_Result::Success();
 }
 
@@ -1029,7 +1028,7 @@ CJS_Result CJS_Field::set_current_value_indices(CJS_Runtime* pRuntime,
   std::vector<uint32_t> array;
   if (vp->IsNumber()) {
     array.push_back(pRuntime->ToInt32(vp));
-  } else if (!vp.IsEmpty() && vp->IsArray()) {
+  } else if (fxv8::IsArray(vp)) {
     v8::Local<v8::Array> SelArray = pRuntime->ToArray(vp);
     for (size_t i = 0; i < pRuntime->GetArrayLength(SelArray); i++) {
       array.push_back(
@@ -1255,7 +1254,7 @@ CJS_Result CJS_Field::set_export_values(CJS_Runtime* pRuntime,
   if (!m_bCanSet)
     return CJS_Result::Failure(JSMessage::kReadOnlyError);
 
-  if (vp.IsEmpty() || !vp->IsArray())
+  if (!fxv8::IsArray(vp))
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   return CJS_Result::Success();
@@ -1335,7 +1334,7 @@ CJS_Result CJS_Field::set_fill_color(CJS_Runtime* pRuntime,
     return CJS_Result::Failure(JSMessage::kBadObjectError);
   if (!m_bCanSet)
     return CJS_Result::Failure(JSMessage::kReadOnlyError);
-  if (vp.IsEmpty() || !vp->IsArray())
+  if (!fxv8::IsArray(vp))
     return CJS_Result::Failure(JSMessage::kBadObjectError);
   return CJS_Result::Success();
 }
@@ -1707,7 +1706,7 @@ CJS_Result CJS_Field::get_rect(CJS_Runtime* pRuntime) {
 CJS_Result CJS_Field::set_rect(CJS_Runtime* pRuntime, v8::Local<v8::Value> vp) {
   if (!m_bCanSet)
     return CJS_Result::Failure(JSMessage::kReadOnlyError);
-  if (vp.IsEmpty() || !vp->IsArray())
+  if (!fxv8::IsArray(vp))
     return CJS_Result::Failure(JSMessage::kValueError);
 
   v8::Local<v8::Array> rcArray = pRuntime->ToArray(vp);
@@ -1859,7 +1858,7 @@ CJS_Result CJS_Field::set_stroke_color(CJS_Runtime* pRuntime,
                                        v8::Local<v8::Value> vp) {
   if (!m_bCanSet)
     return CJS_Result::Failure(JSMessage::kReadOnlyError);
-  if (vp.IsEmpty() || !vp->IsArray())
+  if (!fxv8::IsArray(vp))
     return CJS_Result::Failure(JSMessage::kBadObjectError);
   return CJS_Result::Success();
 }
@@ -1960,7 +1959,7 @@ CJS_Result CJS_Field::set_text_color(CJS_Runtime* pRuntime,
                                      v8::Local<v8::Value> vp) {
   if (!m_bCanSet)
     return CJS_Result::Failure(JSMessage::kReadOnlyError);
-  if (vp.IsEmpty() || !vp->IsArray())
+  if (!fxv8::IsArray(vp))
     return CJS_Result::Failure(JSMessage::kBadObjectError);
   return CJS_Result::Success();
 }
@@ -2141,7 +2140,7 @@ CJS_Result CJS_Field::set_value(CJS_Runtime* pRuntime,
     return CJS_Result::Failure(JSMessage::kReadOnlyError);
 
   std::vector<WideString> strArray;
-  if (!vp.IsEmpty() && vp->IsArray()) {
+  if (fxv8::IsArray(vp)) {
     v8::Local<v8::Array> ValueArray = pRuntime->ToArray(vp);
     for (size_t i = 0; i < pRuntime->GetArrayLength(ValueArray); i++) {
       strArray.push_back(
@@ -2376,7 +2375,7 @@ CJS_Result CJS_Field::getArray(
 
   std::vector<std::unique_ptr<WideString>> swSort;
   for (CPDF_FormField* pFormField : FieldArray) {
-    swSort.push_back(pdfium::MakeUnique<WideString>(pFormField->GetFullName()));
+    swSort.push_back(std::make_unique<WideString>(pFormField->GetFullName()));
   }
 
   std::sort(swSort.begin(), swSort.end(),
@@ -2581,28 +2580,28 @@ CJS_Result CJS_Field::signatureValidate(
 
 void CJS_Field::AddDelay_Int(FIELD_PROP prop, int32_t n) {
   auto pNewData =
-      pdfium::MakeUnique<CJS_DelayData>(prop, m_nFormControlIndex, m_FieldName);
+      std::make_unique<CJS_DelayData>(prop, m_nFormControlIndex, m_FieldName);
   pNewData->num = n;
   m_pJSDoc->AddDelayData(std::move(pNewData));
 }
 
 void CJS_Field::AddDelay_Bool(FIELD_PROP prop, bool b) {
   auto pNewData =
-      pdfium::MakeUnique<CJS_DelayData>(prop, m_nFormControlIndex, m_FieldName);
+      std::make_unique<CJS_DelayData>(prop, m_nFormControlIndex, m_FieldName);
   pNewData->b = b;
   m_pJSDoc->AddDelayData(std::move(pNewData));
 }
 
 void CJS_Field::AddDelay_String(FIELD_PROP prop, const ByteString& str) {
   auto pNewData =
-      pdfium::MakeUnique<CJS_DelayData>(prop, m_nFormControlIndex, m_FieldName);
+      std::make_unique<CJS_DelayData>(prop, m_nFormControlIndex, m_FieldName);
   pNewData->bytestring = str;
   m_pJSDoc->AddDelayData(std::move(pNewData));
 }
 
 void CJS_Field::AddDelay_Rect(FIELD_PROP prop, const CFX_FloatRect& rect) {
   auto pNewData =
-      pdfium::MakeUnique<CJS_DelayData>(prop, m_nFormControlIndex, m_FieldName);
+      std::make_unique<CJS_DelayData>(prop, m_nFormControlIndex, m_FieldName);
   pNewData->rect = rect;
   m_pJSDoc->AddDelayData(std::move(pNewData));
 }
@@ -2610,7 +2609,7 @@ void CJS_Field::AddDelay_Rect(FIELD_PROP prop, const CFX_FloatRect& rect) {
 void CJS_Field::AddDelay_WordArray(FIELD_PROP prop,
                                    const std::vector<uint32_t>& array) {
   auto pNewData =
-      pdfium::MakeUnique<CJS_DelayData>(prop, m_nFormControlIndex, m_FieldName);
+      std::make_unique<CJS_DelayData>(prop, m_nFormControlIndex, m_FieldName);
   pNewData->wordarray = array;
   m_pJSDoc->AddDelayData(std::move(pNewData));
 }
@@ -2618,7 +2617,7 @@ void CJS_Field::AddDelay_WordArray(FIELD_PROP prop,
 void CJS_Field::AddDelay_WideStringArray(FIELD_PROP prop,
                                          const std::vector<WideString>& array) {
   auto pNewData =
-      pdfium::MakeUnique<CJS_DelayData>(prop, m_nFormControlIndex, m_FieldName);
+      std::make_unique<CJS_DelayData>(prop, m_nFormControlIndex, m_FieldName);
   pNewData->widestringarray = array;
   m_pJSDoc->AddDelayData(std::move(pNewData));
 }

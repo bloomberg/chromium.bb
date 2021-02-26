@@ -8,4 +8,4 @@ petermarshall@chromium.org
 szuend@chromium.org
 verwaest@chromium.org
 
-# COMPONENT: Blink>JavaScript>Runtime
+per-file futex-emulation.*=marja@chromium.org

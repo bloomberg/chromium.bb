@@ -30,7 +30,6 @@ per-file *_type_converter*.*=set noparent
 per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
 
 per-file network_sandbox_hook_linux.*.cc=file://sandbox/OWNERS
-per-file network_sandbox_win.*=file://sandbox/win/OWNERS
 
 per-file network_quality*=file://net/nqe/OWNERS
 
@@ -40,5 +39,3 @@ per-file BUILD.gn=file://services/network/resource_scheduler/OWNERS
 # Content Security Policy
 per-file content_security_policy*=lfg@chromium.org
 per-file content_security_policy*=nasko@chromium.org
-
-# COMPONENT: Internals>Services>Network

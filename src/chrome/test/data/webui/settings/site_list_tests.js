@@ -6,6 +6,7 @@
 
 // clang-format off
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ContentSetting, ContentSettingsTypes, kControlledByLookup, SITE_EXCEPTION_WILDCARD, SiteException, SiteSettingSource, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrSettingsPrefs,Router} from 'chrome://settings/settings.js';
@@ -32,12 +33,6 @@ let prefsGeolocation;
 let prefsGeolocationEmpty;
 
 /**
- * An example of prefs controlledBy policy.
- * @type {SiteSettingsPref}
- */
-let prefsControlled;
-
-/**
  * An example pref with mixed schemes (present and absent).
  * @type {SiteSettingsPref}
  */
@@ -57,10 +52,10 @@ let prefsMixedProvider;
 let prefsMixedEmbeddingOrigin;
 
 /**
- * An example pref with native file system write
+ * An example pref with file system write
  * @type {SiteSettingsPref}
  */
-let prefsNativeFileSystemWrite;
+let prefsFileSystemWrite;
 
 /**
  * An example pref with multiple categories and multiple allow/block
@@ -100,6 +95,13 @@ let prefsIncognito;
 let prefsChromeExtension;
 
 /**
+ * An example pref with 1 embargoed location item.
+ * @type {SiteSettingsPref}
+ */
+let prefsEmbargo;
+
+
+/**
  * Creates all the test |SiteSettingsPref|s that are needed for the tests in
  * this file. They are populated after test setup in order to access the
  * |settings| constants required.
@@ -120,14 +122,6 @@ function populateTestExceptions() {
         ]),
   ]);
 
-  prefsControlled = createSiteSettingsPrefs(
-      [], [createContentSettingTypeToValuePair(
-              ContentSettingsTypes.PLUGINS,
-              [createRawSiteException('http://foo-block.com', {
-                embeddingOrigin: '',
-                setting: ContentSetting.BLOCK,
-                source: SiteSettingSource.POLICY,
-              })])]);
 
   prefsMixedSchemes = createSiteSettingsPrefs([], [
     createContentSettingTypeToValuePair(
@@ -267,13 +261,107 @@ function populateTestExceptions() {
 
   prefsGeolocationEmpty = createSiteSettingsPrefs([], []);
 
-  prefsNativeFileSystemWrite = createSiteSettingsPrefs(
+  prefsFileSystemWrite = createSiteSettingsPrefs(
       [], [createContentSettingTypeToValuePair(
-              ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
+              ContentSettingsTypes.FILE_SYSTEM_WRITE,
               [createRawSiteException('http://foo.com', {
                 setting: ContentSetting.BLOCK,
               })])]);
+
+  prefsEmbargo = createSiteSettingsPrefs([], [
+    createContentSettingTypeToValuePair(
+        ContentSettingsTypes.GEOLOCATION,
+        [createRawSiteException('https://foo-block.com:443', {
+          embeddingOrigin: '',
+          setting: ContentSetting.BLOCK,
+          isEmbargoed: true,
+        })]),
+  ]);
 }
+
+suite('SiteListProperties', function() {
+  /**
+   * A site list element created before each test.
+   * @type {!SiteListElement}
+   */
+  let testElement;
+
+  /**
+   * The mock proxy object to use during test.
+   * @type {!TestSiteSettingsPrefsBrowserProxy}
+   */
+  let browserProxy;
+
+  suiteSetup(function() {
+    CrSettingsPrefs.setInitialized();
+  });
+
+  suiteTeardown(function() {
+    CrSettingsPrefs.resetForTesting();
+  });
+
+  // Initialize a site-list before each test.
+  setup(function() {
+    populateTestExceptions();
+
+    browserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+    document.body.innerHTML = '';
+    testElement =
+        /** @type {!SiteListElement} */ (document.createElement('site-list'));
+    testElement.searchFilter = '';
+    document.body.appendChild(testElement);
+  });
+
+  teardown(function() {
+    // The code being tested changes the Route. Reset so that state is not
+    // leaked across tests.
+    Router.getInstance().resetRouteForTesting();
+  });
+
+  /**
+   * Configures the test element for a particular category.
+   * @param {ContentSettingsTypes} category The category to set up.
+   * @param {ContentSetting} subtype Type of list to use.
+   * @param {!SiteSettingsPref} prefs The prefs to use.
+   */
+  function setUpCategory(category, subtype, prefs) {
+    browserProxy.setPrefs(prefs);
+    testElement.categorySubtype = subtype;
+    // Some route is needed, but the actual route doesn't matter.
+    testElement.currentRoute = {
+      page: 'dummy',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-location'],
+    };
+    testElement.category = category;
+  }
+
+  test('embaroed origin site description', async function() {
+    const contentType = ContentSettingsTypes.GEOLOCATION;
+    setUpCategory(contentType, ContentSetting.BLOCK, prefsEmbargo);
+    const result = await browserProxy.whenCalled('getExceptionList');
+    flush();
+
+    assertEquals(contentType, result);
+
+    // Validate that the sites gets populated from pre-canned prefs.
+    assertEquals(1, testElement.sites.length);
+    assertEquals(
+        prefsEmbargo.exceptions[contentType][0].origin,
+        testElement.sites[0].origin);
+    assertTrue(testElement.sites[0].isEmbargoed);
+    // Validate that embargoed site has correct subtitle.
+    assertEquals(
+        loadTimeData.getString('siteSettingsSourceEmbargo'),
+        testElement.$$('#listContainer')
+            .querySelectorAll('site-list-entry')[0]
+            .$$('#siteDescription')
+            .innerHTML);
+  });
+});
+
+
 
 suite('SiteList', function() {
   /**
@@ -538,43 +626,6 @@ suite('SiteList', function() {
           assertMenu(['Allow', 'Block', 'Edit', 'Remove']);
 
           assertFalse(testElement.$$('#category').hidden);
-        });
-  });
-
-  test('update lists for incognito', function() {
-    const contentType = ContentSettingsTypes.PLUGINS;
-    const categorySubtype = ContentSetting.BLOCK;
-    setUpCategory(contentType, categorySubtype, prefsControlled);
-    const list = testElement.$$('#listContainer');
-    return browserProxy.whenCalled('getExceptionList')
-        .then(function(actualContentType) {
-          flush();
-          assertEquals(1, list.querySelector('iron-list').items.length);
-          assertFalse(hasAnIncognito(list));
-          browserProxy.resetResolver('getExceptionList');
-          browserProxy.setIncognito(true);
-          return browserProxy.whenCalled('getExceptionList');
-        })
-        .then(function() {
-          flush();
-          assertEquals(2, list.querySelector('iron-list').items.length);
-          assertTrue(hasAnIncognito(list));
-          browserProxy.resetResolver('getExceptionList');
-          browserProxy.setIncognito(false);
-          return browserProxy.whenCalled('getExceptionList');
-        })
-        .then(function() {
-          flush();
-          assertEquals(1, list.querySelector('iron-list').items.length);
-          assertFalse(hasAnIncognito(list));
-          browserProxy.resetResolver('getExceptionList');
-          browserProxy.setIncognito(true);
-          return browserProxy.whenCalled('getExceptionList');
-        })
-        .then(function() {
-          flush();
-          assertEquals(2, list.querySelector('iron-list').items.length);
-          assertTrue(hasAnIncognito(list));
         });
   });
 
@@ -930,7 +981,7 @@ suite('SiteList', function() {
 
       const testsParams = [
         ['a', testElement, new MouseEvent('mouseleave')],
-        ['b', testElement, new MouseEvent('tap')],
+        ['b', testElement, new MouseEvent('click')],
         ['c', testElement, new Event('blur')],
         ['d', tooltip, new MouseEvent('mouseenter')],
       ];
@@ -951,8 +1002,8 @@ suite('SiteList', function() {
       'Add site button is hidden for content settings that don\'t allow it',
       function() {
         setUpCategory(
-            ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE, ContentSetting.ALLOW,
-            prefsNativeFileSystemWrite);
+            ContentSettingsTypes.FILE_SYSTEM_WRITE, ContentSetting.ALLOW,
+            prefsFileSystemWrite);
         return browserProxy.whenCalled('getExceptionList').then(() => {
           flush();
           assertTrue(testElement.$$('#addSite').hidden);
@@ -978,7 +1029,9 @@ suite('EditExceptionDialog', function() {
     cookieException = {
       category: ContentSettingsTypes.COOKIES,
       embeddingOrigin: SITE_EXCEPTION_WILDCARD,
+      isEmbargoed: false,
       incognito: false,
+      isDiscarded: false,
       setting: ContentSetting.BLOCK,
       enforcement: null,
       controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,

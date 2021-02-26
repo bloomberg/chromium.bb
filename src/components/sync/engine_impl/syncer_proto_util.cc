@@ -15,12 +15,9 @@
 #include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/engine_impl/syncer.h"
-#include "components/sync/engine_impl/syncer_types.h"
 #include "components/sync/engine_impl/traffic_logger.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync/protocol/sync_protocol_error.h"
-#include "components/sync/syncable/entry.h"
-#include "components/sync/syncable/syncable_proto_util.h"
 #include "google_apis/google_api_keys.h"
 
 using std::string;
@@ -29,16 +26,6 @@ using sync_pb::ClientToServerMessage;
 using sync_pb::ClientToServerResponse;
 
 namespace syncer {
-
-using syncable::BASE_VERSION;
-using syncable::CTIME;
-using syncable::ID;
-using syncable::IS_DEL;
-using syncable::IS_DIR;
-using syncable::IS_UNSYNCED;
-using syncable::MTIME;
-using syncable::PARENT_ID;
-
 namespace {
 
 // Time to backoff syncing after receiving a throttled response.
@@ -262,7 +249,6 @@ SyncProtocolError ConvertErrorPBToSyncProtocolError(
   sync_protocol_error.error_type =
       PBErrorTypeToSyncProtocolErrorType(error.error_type());
   sync_protocol_error.error_description = error.error_description();
-  sync_protocol_error.url = error.url();
   sync_protocol_error.action = PBActionToClientAction(error.action());
 
   if (error.error_data_type_ids_size() > 0) {
@@ -369,11 +355,11 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
 
   const base::Time start_time = base::Time::Now();
 
+  // Fills in buffer_out.
   std::string buffer_out;
-  HttpResponse http_response = HttpResponse::Uninitialized();
-
-  // Fills in buffer_out and http_response.
-  if (!scm->PostBufferWithCachedAuth(buffer_in, &buffer_out, &http_response)) {
+  HttpResponse http_response =
+      scm->PostBufferWithCachedAuth(buffer_in, &buffer_out);
+  if (http_response.server_status != HttpResponse::SERVER_CONNECTION_OK) {
     LOG(WARNING) << "Error posting from syncer:" << http_response;
     return false;
   }

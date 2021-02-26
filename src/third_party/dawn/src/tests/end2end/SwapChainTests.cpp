@@ -23,13 +23,19 @@
 
 class SwapChainTests : public DawnTest {
   public:
-    void TestSetUp() override {
+    void SetUp() override {
+        DawnTest::SetUp();
         DAWN_SKIP_TEST_IF(UsesWire());
 
         glfwSetErrorCallback([](int code, const char* message) {
             dawn::ErrorLog() << "GLFW error " << code << " " << message;
         });
-        glfwInit();
+
+        // GLFW can fail to start in headless environments, in which SwapChainTests are
+        // inapplicable. Skip this cases without producing a test failure.
+        if (glfwInit() == GLFW_FALSE) {
+            GTEST_SKIP();
+        }
 
         // The SwapChainTests don't create OpenGL contexts so we don't need to call
         // SetupGLFWWindowHintsForBackend. Set GLFW_NO_API anyway to avoid GLFW bringing up a GL
@@ -47,7 +53,7 @@ class SwapChainTests : public DawnTest {
 
         baseDescriptor.width = width;
         baseDescriptor.height = height;
-        baseDescriptor.usage = wgpu::TextureUsage::OutputAttachment;
+        baseDescriptor.usage = wgpu::TextureUsage::RenderAttachment;
         baseDescriptor.format = wgpu::TextureFormat::BGRA8Unorm;
         baseDescriptor.presentMode = wgpu::PresentMode::Mailbox;
     }
@@ -58,6 +64,7 @@ class SwapChainTests : public DawnTest {
         if (window != nullptr) {
             glfwDestroyWindow(window);
         }
+        DawnTest::TearDown();
     }
 
     void ClearTexture(wgpu::TextureView view, wgpu::Color color) {
@@ -129,6 +136,10 @@ TEST_P(SwapChainTests, DestroySurfaceAfterGet) {
 
 // Test switching between present modes.
 TEST_P(SwapChainTests, SwitchPresentMode) {
+    // Fails with "internal drawable creation failed" on the Windows NVIDIA CQ builders but not
+    // locally.
+    DAWN_SKIP_TEST_IF(IsWindows() && IsVulkan() && IsNvidia());
+
     constexpr wgpu::PresentMode kAllPresentModes[] = {
         wgpu::PresentMode::Immediate,
         wgpu::PresentMode::Fifo,
@@ -200,7 +211,12 @@ TEST_P(SwapChainTests, ResizingWindowAndSwapChain) {
 
 // Test switching devices on the same adapter.
 TEST_P(SwapChainTests, SwitchingDevice) {
-    wgpu::Device device2 = GetAdapter().CreateDevice();
+    // The Vulkan Validation Layers incorrectly disallow gracefully passing a swapchain between two
+    // VkDevices using "vkSwapchainCreateInfoKHR::oldSwapchain".
+    // See https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/2256
+    DAWN_SKIP_TEST_IF(IsVulkan() && IsBackendValidationEnabled());
+
+    wgpu::Device device2 = wgpu::Device::Acquire(GetAdapter().CreateDevice());
 
     for (int i = 0; i < 3; i++) {
         wgpu::Device deviceToUse;
@@ -216,4 +232,4 @@ TEST_P(SwapChainTests, SwitchingDevice) {
     }
 }
 
-DAWN_INSTANTIATE_TEST(SwapChainTests, MetalBackend());
+DAWN_INSTANTIATE_TEST(SwapChainTests, MetalBackend(), VulkanBackend());

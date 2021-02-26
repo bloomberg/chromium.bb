@@ -4,12 +4,17 @@
 
 #include "components/viz/service/display/overlay_processor_interface.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
+#include "components/viz/service/display/display_compositor_memory_and_task_controller.h"
+#include "components/viz/service/display/overlay_processor_stub.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "components/viz/service/display/overlay_processor_mac.h"
 #elif defined(OS_WIN)
 #include "components/viz/service/display/overlay_processor_win.h"
@@ -18,10 +23,9 @@
 #include "components/viz/service/display/overlay_processor_surface_control.h"
 #elif defined(USE_OZONE)
 #include "components/viz/service/display/overlay_processor_ozone.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
-#else
-#include "components/viz/service/display/overlay_processor_stub.h"
 #endif
 
 namespace viz {
@@ -31,7 +35,7 @@ namespace {
 enum class UnderlayDamage {
   kZeroDamageRect,
   kNonOccludingDamageOnly,
-  kOccludingDamageOnly,
+  kOccludingDamageOnly,  // deprecated
   kOccludingAndNonOccludingDamages,
   kMaxValue = kOccludingAndNonOccludingDamages,
 };
@@ -49,8 +53,7 @@ enum class UnderlayDamage {
 void OverlayProcessorInterface::RecordOverlayDamageRectHistograms(
     bool is_overlay,
     bool has_occluding_surface_damage,
-    bool zero_damage_rect,
-    bool occluding_damage_equal_to_damage_rect) {
+    bool zero_damage_rect) {
   if (is_overlay) {
     UMA_HISTOGRAM_BOOLEAN("Viz.DisplayCompositor.RootDamageRect.Overlay",
                           !zero_damage_rect);
@@ -60,11 +63,7 @@ void OverlayProcessorInterface::RecordOverlayDamageRectHistograms(
       underlay_damage = UnderlayDamage::kZeroDamageRect;
     } else {
       if (has_occluding_surface_damage) {
-        if (occluding_damage_equal_to_damage_rect) {
-          underlay_damage = UnderlayDamage::kOccludingDamageOnly;
-        } else {
-          underlay_damage = UnderlayDamage::kOccludingAndNonOccludingDamages;
-        }
+        underlay_damage = UnderlayDamage::kOccludingAndNonOccludingDamages;
       } else {
         underlay_damage = UnderlayDamage::kNonOccludingDamageOnly;
       }
@@ -76,52 +75,62 @@ void OverlayProcessorInterface::RecordOverlayDamageRectHistograms(
 
 std::unique_ptr<OverlayProcessorInterface>
 OverlayProcessorInterface::CreateOverlayProcessor(
+    OutputSurface* output_surface,
     gpu::SurfaceHandle surface_handle,
     const OutputSurface::Capabilities& capabilities,
+    DisplayCompositorMemoryAndTaskController* display_controller,
+    gpu::SharedImageInterface* shared_image_interface,
     const RendererSettings& renderer_settings,
-    gpu::SharedImageManager* shared_image_manager,
-    gpu::MemoryTracker* memory_tracker,
-    scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
-    gpu::SharedImageInterface* shared_image_interface) {
-#if defined(OS_MACOSX)
-  bool could_overlay = surface_handle != gpu::kNullSurfaceHandle;
-  could_overlay &= capabilities.supports_surfaceless;
-  bool enable_ca_overlay = could_overlay && renderer_settings.allow_overlays;
+    const DebugRendererSettings* debug_settings) {
+  // If we are offscreen, we don't have overlay support.
+  // TODO(vasilyt): WebView would have a kNullSurfaceHandle. Make sure when
+  // overlay for WebView is enabled, this check still works.
+  if (surface_handle == gpu::kNullSurfaceHandle)
+    return std::make_unique<OverlayProcessorStub>();
 
-  return base::WrapUnique(
-      new OverlayProcessorMac(could_overlay, enable_ca_overlay));
+#if defined(OS_APPLE)
+  DCHECK(capabilities.supports_surfaceless);
+
+  return std::make_unique<OverlayProcessorMac>(
+      renderer_settings.allow_overlays);
 #elif defined(OS_WIN)
-  bool enable_dc_overlay = surface_handle != gpu::kNullSurfaceHandle;
-  enable_dc_overlay &= !capabilities.supports_surfaceless;
-  enable_dc_overlay &= capabilities.supports_dc_layers;
-  return base::WrapUnique(new OverlayProcessorWin(
-      enable_dc_overlay,
-      std::make_unique<DCLayerOverlayProcessor>(renderer_settings)));
+  if (!capabilities.supports_dc_layers)
+    return std::make_unique<OverlayProcessorStub>();
+
+  return std::make_unique<OverlayProcessorWin>(
+      output_surface, std::make_unique<DCLayerOverlayProcessor>(
+                          debug_settings, /*allowed_yuv_overlay_count=*/1));
 #elif defined(USE_OZONE)
-  bool overlay_enabled = surface_handle != gpu::kNullSurfaceHandle;
-  overlay_enabled &= !renderer_settings.overlay_strategies.empty();
+  if (!features::IsUsingOzonePlatform())
+    return std::make_unique<OverlayProcessorStub>();
+
+  // In tests and Ozone/X11, we do not expect surfaceless surface support.
+  if (!capabilities.supports_surfaceless)
+    return std::make_unique<OverlayProcessorStub>();
+
   std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates;
-  if (overlay_enabled) {
+  if (!renderer_settings.overlay_strategies.empty()) {
     auto* overlay_manager =
         ui::OzonePlatform::GetInstance()->GetOverlayManager();
     overlay_candidates =
         overlay_manager->CreateOverlayCandidates(surface_handle);
   }
 
-  if (overlay_enabled && features::ShouldUseRealBuffersForPageFlipTest()) {
+  gpu::SharedImageInterface* sii = nullptr;
+  if (features::ShouldUseRealBuffersForPageFlipTest()) {
+    sii = shared_image_interface;
     CHECK(shared_image_interface);
-  } else {
-    shared_image_interface = nullptr;
   }
 
   return std::make_unique<OverlayProcessorOzone>(
-      overlay_enabled, std::move(overlay_candidates),
-      std::move(renderer_settings.overlay_strategies), shared_image_interface);
+      std::move(overlay_candidates),
+      std::move(renderer_settings.overlay_strategies), sii);
 #elif defined(OS_ANDROID)
-  bool overlay_enabled = surface_handle != gpu::kNullSurfaceHandle;
+  DCHECK(display_controller);
+
   if (capabilities.supports_surfaceless) {
     // This is for Android SurfaceControl case.
-    return std::make_unique<OverlayProcessorSurfaceControl>(overlay_enabled);
+    return std::make_unique<OverlayProcessorSurfaceControl>();
   } else {
     // When SurfaceControl is enabled, any resource backed by
     // an AHardwareBuffer can be marked as an overlay candidate but it requires
@@ -129,10 +138,10 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     // native window backed GLSurface, the overlay processing code will
     // incorrectly assume these resources can be overlaid. So we disable all
     // overlay processing for this OutputSurface.
-    overlay_enabled &= !capabilities.android_surface_control_feature_enabled;
-    return std::make_unique<OverlayProcessorAndroid>(
-        shared_image_manager, memory_tracker, gpu_task_scheduler,
-        overlay_enabled);
+    if (capabilities.android_surface_control_feature_enabled)
+      return std::make_unique<OverlayProcessorStub>();
+
+    return std::make_unique<OverlayProcessorAndroid>(display_controller);
   }
 #else  // Default
   return std::make_unique<OverlayProcessorStub>();

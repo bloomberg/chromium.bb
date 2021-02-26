@@ -10,6 +10,7 @@
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "testing/embedder_test.h"
+#include "third_party/base/check_op.h"
 
 class CPDFSDK_BAAnnotHandlerTest : public EmbedderTest {
  public:
@@ -24,7 +25,7 @@ class CPDFSDK_BAAnnotHandlerTest : public EmbedderTest {
   }
 
   void SetUpBAAnnotHandler() {
-    EXPECT_TRUE(OpenDocument("links_highlights_annots.pdf"));
+    ASSERT_TRUE(OpenDocument("links_highlights_annots.pdf"));
     m_page = LoadPage(0);
     ASSERT_TRUE(m_page);
 

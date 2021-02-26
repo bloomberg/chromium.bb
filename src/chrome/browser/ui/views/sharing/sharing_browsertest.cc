@@ -10,7 +10,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sharing/features.h"
@@ -147,15 +147,14 @@ void SharingBrowserTest::AddDeviceInfo(
               {"testing_device_", base::NumberToString(fake_device_id)}),
           original_device.chrome_version(), original_device.sync_user_agent(),
           original_device.device_type(),
-          original_device.signin_scoped_device_id(),
-          base::SysInfo::HardwareInfo{
-              "Google",
-              base::StrCat({"model", base::NumberToString(fake_device_id)}),
-              "serial_number"},
+          original_device.signin_scoped_device_id(), "Google",
+          base::StrCat({"model", base::NumberToString(fake_device_id)}),
           original_device.last_updated_timestamp(),
           original_device.pulse_interval(),
           original_device.send_tab_to_self_receiving_enabled(),
-          original_device.sharing_info());
+          original_device.sharing_info(),
+          original_device.fcm_registration_token(),
+          original_device.interested_data_types());
   fake_device_info_tracker_.Add(fake_device.get());
   device_infos_.push_back(std::move(fake_device));
 }
@@ -173,7 +172,7 @@ std::unique_ptr<TestRenderViewContextMenu> SharingBrowserTest::InitContextMenu(
   params.link_text = base::ASCIIToUTF16(link_text);
   params.page_url = web_contents_->GetVisibleURL();
   params.source_type = ui::MenuSourceType::MENU_SOURCE_MOUSE;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   params.writing_direction_default = 0;
   params.writing_direction_left_to_right = 0;
   params.writing_direction_right_to_left = 0;

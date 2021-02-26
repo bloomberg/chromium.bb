@@ -133,8 +133,14 @@ class ThreadPool::WorkerThread : public Allocable {
   void Join();
 
  private:
+#if defined(_MSC_VER)
+  static unsigned int __stdcall ThreadBody(void* arg);
+#else
   static void* ThreadBody(void* arg);
+#endif
+
   void SetupName();
+  void Run();
 
   ThreadPool* pool_;
 #if defined(_MSC_VER)
@@ -154,13 +160,8 @@ bool ThreadPool::WorkerThread::Start() {
   // created using CreateThread calls the CRT, the CRT may terminate the
   // process in low-memory conditions."
   uintptr_t handle = _beginthreadex(
-      /*security=*/nullptr, /*stack_size=*/0,
-      static_cast<unsigned int(__stdcall*)(void*)>(
-          [](void* arg) -> unsigned int {
-            ThreadBody(arg);
-            return 0;
-          }),
-      this, /*initflag=*/CREATE_SUSPENDED, /*thrdaddr=*/nullptr);
+      /*security=*/nullptr, /*stack_size=*/0, ThreadBody, this,
+      /*initflag=*/CREATE_SUSPENDED, /*thrdaddr=*/nullptr);
   if (handle == 0) return false;
   handle_ = reinterpret_cast<HANDLE>(handle);
   ResumeThread(handle_);
@@ -170,6 +171,12 @@ bool ThreadPool::WorkerThread::Start() {
 void ThreadPool::WorkerThread::Join() {
   WaitForSingleObject(handle_, INFINITE);
   CloseHandle(handle_);
+}
+
+unsigned int ThreadPool::WorkerThread::ThreadBody(void* arg) {
+  auto* thread = static_cast<WorkerThread*>(arg);
+  thread->Run();
+  return 0;
 }
 
 void ThreadPool::WorkerThread::SetupName() {
@@ -183,6 +190,12 @@ bool ThreadPool::WorkerThread::Start() {
 }
 
 void ThreadPool::WorkerThread::Join() { pthread_join(thread_, nullptr); }
+
+void* ThreadPool::WorkerThread::ThreadBody(void* arg) {
+  auto* thread = static_cast<WorkerThread*>(arg);
+  thread->Run();
+  return nullptr;
+}
 
 void ThreadPool::WorkerThread::SetupName() {
   if (pool_->name_prefix_[0] != '\0') {
@@ -216,11 +229,9 @@ void ThreadPool::WorkerThread::SetupName() {
 
 #endif  // defined(_MSC_VER)
 
-void* ThreadPool::WorkerThread::ThreadBody(void* arg) {
-  auto* thread = static_cast<WorkerThread*>(arg);
-  thread->SetupName();
-  thread->pool_->WorkerFunction();
-  return nullptr;
+void ThreadPool::WorkerThread::Run() {
+  SetupName();
+  pool_->WorkerFunction();
 }
 
 bool ThreadPool::StartWorkers() {

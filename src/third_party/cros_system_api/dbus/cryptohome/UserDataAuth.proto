@@ -79,6 +79,7 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_FINGERPRINT_RETRY_REQUIRED = 43;
   // Fingerprint match failed and maximum retry count reached.
   CRYPTOHOME_ERROR_FINGERPRINT_DENIED = 44;
+  CRYPTOHOME_ERROR_VAULT_UNRECOVERABLE = 45;
 }
 
 // This is used by MountRequest to store details about the mount to create
@@ -367,6 +368,65 @@ message MigrateKeyRequest {
 message MigrateKeyReply {
   // Indicates an error if error is not empty.
   CryptohomeErrorCode error = 1;
+}
+
+// StartFingerprintAuthSession sets BiometricsDaemon and the Fingerprint MCU to
+// match mode. EndFingerprintAuthSession sets them back to non-match mode.
+// A typical call sequence involves one or more other calls that actually wait
+// for fingerprint scan result, between StartFingerprintAuthSession and
+// EndFingerprintAuthSession.
+//
+// Example 1: successful fingerprint match at first attempt.
+// --> StartFingerprintAuthSession
+// --> CheckKey(KEY_TYPE_FINGERPRINT), fingerprint scan success
+// --> EndFingerprintAuthSession
+//
+// Example 2: successful fingerprint match at third attempt.
+// --> StartFingerprintAuthSession
+// --> CheckKey(KEY_TYPE_FINGERPRINT), fingerprint scan no match
+// --> CheckKey(KEY_TYPE_FINGERPRINT), fingerprint scan no match
+// --> CheckKey(KEY_TYPE_FINGERPRINT), fingerprint scan success
+// --> EndFingerprintAuthSession
+//
+// Example 3: client chooses to cancel before success.
+// --> StartFingerprintAuthSession
+// --> CheckKey(KEY_TYPE_FINGERPRINT), fingerprint scan no match
+// --> CheckKey(KEY_TYPE_FINGERPRINT), fingerprint scan no match
+// --> EndFingerprintAuthSession
+
+// Input parameters to StartFingerprintAuthSession()
+message StartFingerprintAuthSessionRequest {
+  // This represents the "single user" that we are will be fingerprint for.
+  cryptohome.AccountIdentifier account_id = 1;
+}
+
+// Output parameters for StartFingerprintAuthSession()
+message StartFingerprintAuthSessionReply {
+  // Indicates an error if |error| is not empty.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to EndFingerprintAuthSession()
+message EndFingerprintAuthSessionRequest {}
+
+// Output parameters for EndFingerprintAuthSession()
+message EndFingerprintAuthSessionReply {
+  // Indicates an error if |error| is not empty.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to GetWebAuthnSecret()
+message GetWebAuthnSecretRequest {
+  // This represents the "single user" that the secret belongs to.
+  cryptohome.AccountIdentifier account_id = 1;
+}
+
+// Output parameters for GetWebAuthnSecret()
+message GetWebAuthnSecretReply {
+  // Indicates an error if |error| is not empty.
+  CryptohomeErrorCode error = 1;
+  // The WebAuthn secret.
+  bytes webauthn_secret = 2;
 }
 
 // TODO(b/126307305): For the messages, below, we'll need to add the documentations

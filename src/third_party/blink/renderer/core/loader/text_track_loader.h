@@ -47,8 +47,6 @@ class TextTrackLoaderClient : public GarbageCollectedMixin {
 class TextTrackLoader final : public GarbageCollected<TextTrackLoader>,
                               public RawResourceClient,
                               private VTTParserClient {
-  USING_GARBAGE_COLLECTED_MIXIN(TextTrackLoader);
-
  public:
   TextTrackLoader(TextTrackLoaderClient&, Document&);
   ~TextTrackLoader() override;
@@ -62,7 +60,7 @@ class TextTrackLoader final : public GarbageCollected<TextTrackLoader>,
   void GetNewCues(HeapVector<Member<TextTrackCue>>& output_cues);
   void GetNewStyleSheets(HeapVector<Member<CSSStyleSheet>>& output_sheets);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // RawResourceClient

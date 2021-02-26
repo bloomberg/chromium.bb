@@ -385,6 +385,13 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
+    public RenderFrameHost getRenderFrameHostFromId(int renderProcessId, int renderFrameId) {
+        checkNotDestroyed();
+        return WebContentsImplJni.get().getRenderFrameHostFromId(
+                mNativeWebContentsAndroid, renderProcessId, renderFrameId);
+    }
+
+    @Override
     public @Nullable RenderWidgetHostViewImpl getRenderWidgetHostView() {
         if (mNativeWebContentsAndroid == 0) return null;
         RenderWidgetHostViewImpl rwhvi = WebContentsImplJni.get().getRenderWidgetHostView(
@@ -559,13 +566,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         checkNotDestroyed();
         WebContentsImplJni.get().setAudioMuted(
                 mNativeWebContentsAndroid, WebContentsImpl.this, mute);
-    }
-
-    @Override
-    public boolean isShowingInterstitialPage() {
-        checkNotDestroyed();
-        return WebContentsImplJni.get().isShowingInterstitialPage(
-                mNativeWebContentsAndroid, WebContentsImpl.this);
     }
 
     @Override
@@ -1059,6 +1059,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
                 long nativeWebContentsAndroid, WebContentsImpl caller, WindowAndroid windowAndroid);
         RenderFrameHost getMainFrame(long nativeWebContentsAndroid, WebContentsImpl caller);
         RenderFrameHost getFocusedFrame(long nativeWebContentsAndroid, WebContentsImpl caller);
+        RenderFrameHost getRenderFrameHostFromId(
+                long nativeWebContentsAndroid, int renderProcessId, int renderFrameId);
         RenderWidgetHostViewImpl getRenderWidgetHostView(
                 long nativeWebContentsAndroid, WebContentsImpl caller);
         WebContentsImpl[] getInnerWebContents(
@@ -1085,7 +1087,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         void setImportance(long nativeWebContentsAndroid, WebContentsImpl caller, int importance);
         void suspendAllMediaPlayers(long nativeWebContentsAndroid, WebContentsImpl caller);
         void setAudioMuted(long nativeWebContentsAndroid, WebContentsImpl caller, boolean mute);
-        boolean isShowingInterstitialPage(long nativeWebContentsAndroid, WebContentsImpl caller);
         boolean focusLocationBarByDefault(long nativeWebContentsAndroid, WebContentsImpl caller);
         boolean isFullscreenForCurrentTab(long nativeWebContentsAndroid, WebContentsImpl caller);
         void exitFullscreen(long nativeWebContentsAndroid, WebContentsImpl caller);

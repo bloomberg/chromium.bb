@@ -51,8 +51,7 @@ HardwareRendererSingleThread::~HardwareRendererSingleThread() {
 
 void HardwareRendererSingleThread::DrawAndSwap(
     HardwareRendererDrawParams* params) {
-  TRACE_EVENT1("android_webview", "HardwareRendererSingleThread::DrawAndSwap",
-               "vulkan", surfaces_->is_using_vulkan());
+  TRACE_EVENT0("android_webview", "HardwareRendererSingleThread::DrawAndSwap");
 
   bool submitted_new_frame = false;
   uint32_t frame_token = 0u;
@@ -140,9 +139,7 @@ void HardwareRendererSingleThread::DrawAndSwap(
 void HardwareRendererSingleThread::AllocateSurface() {
   DCHECK(!child_id_.is_valid());
   parent_local_surface_id_allocator_->GenerateId();
-  child_id_ =
-      parent_local_surface_id_allocator_->GetCurrentLocalSurfaceIdAllocation()
-          .local_surface_id();
+  child_id_ = parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
   surfaces_->AddChildId(viz::SurfaceId(frame_sink_id_, child_id_));
 }
 

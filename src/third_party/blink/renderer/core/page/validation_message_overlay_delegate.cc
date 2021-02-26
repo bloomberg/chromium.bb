@@ -34,7 +34,7 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
                                          LocalFrameView* anchor_view)
       : main_chrome_client_(main_chrome_client), anchor_view_(anchor_view) {}
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(main_chrome_client_);
     visitor->Trace(anchor_view_);
     EmptyChromeClient::Trace(visitor);
@@ -99,7 +99,8 @@ void ValidationMessageOverlayDelegate::PaintFrameOverlay(
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, overlay,
                                                   DisplayItem::kFrameOverlay))
     return;
-  DrawingRecorder recorder(context, overlay, DisplayItem::kFrameOverlay);
+  DrawingRecorder recorder(context, overlay, DisplayItem::kFrameOverlay,
+                           IntRect(IntPoint(), view_size));
 
   const_cast<ValidationMessageOverlayDelegate*>(this)->UpdateFrameViewState(
       overlay, view_size);
@@ -158,10 +159,12 @@ void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
       main_settings.GetMinimumLogicalFontSize());
 
   auto* frame = MakeGarbageCollected<LocalFrame>(
-      MakeGarbageCollected<EmptyLocalFrameClient>(), *page_, nullptr,
-      base::UnguessableToken::Create(), nullptr, nullptr);
+      MakeGarbageCollected<EmptyLocalFrameClient>(), *page_, nullptr, nullptr,
+      nullptr, FrameInsertType::kInsertInConstructor,
+      base::UnguessableToken::Create(), nullptr, nullptr,
+      /* policy_container */ nullptr);
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame, view_size));
-  frame->Init();
+  frame->Init(nullptr);
   frame->View()->SetCanHaveScrollbars(false);
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
   page_->GetVisualViewport().SetSize(view_size);

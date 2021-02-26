@@ -150,7 +150,7 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
   if (is_xsl_ && !RuntimeEnabledFeatures::XSLTEnabled())
     return;
 
-  ResourceLoaderOptions options;
+  ResourceLoaderOptions options(GetExecutionContext()->GetCurrentWorld());
   options.initiator_info.name =
       fetch_initiator_type_names::kProcessinginstruction;
   FetchParameters params(ResourceRequest(GetDocument().CompleteURL(href)),
@@ -292,7 +292,7 @@ void ProcessingInstruction::RemovePendingSheet() {
                                                     style_engine_context_);
 }
 
-void ProcessingInstruction::Trace(Visitor* visitor) {
+void ProcessingInstruction::Trace(Visitor* visitor) const {
   visitor->Trace(sheet_);
   visitor->Trace(listener_for_xslt_);
   CharacterData::Trace(visitor);

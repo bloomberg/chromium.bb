@@ -22,8 +22,6 @@ namespace blink {
 class CORE_EXPORT ParentExecutionContextTaskRunners final
     : public GarbageCollected<ParentExecutionContextTaskRunners>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ParentExecutionContextTaskRunners);
-
  public:
   // Returns task runners associated with a given context. This must be called
   // on the context's context thread, that is, the thread where the context was
@@ -44,7 +42,7 @@ class CORE_EXPORT ParentExecutionContextTaskRunners final
   scoped_refptr<base::SingleThreadTaskRunner> Get(TaskType)
       LOCKS_EXCLUDED(mutex_);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   using TaskRunnerHashMap = HashMap<TaskType,

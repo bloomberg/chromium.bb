@@ -60,7 +60,8 @@ FrameSinkManagerImpl::FrameSinkManagerImpl(const InitParams& params)
       restart_id_(params.restart_id),
       run_all_compositor_stages_before_draw_(
           params.run_all_compositor_stages_before_draw),
-      log_capture_pipeline_in_webrtc_(params.log_capture_pipeline_in_webrtc) {
+      log_capture_pipeline_in_webrtc_(params.log_capture_pipeline_in_webrtc),
+      debug_settings_(params.debug_renderer_settings) {
   surface_manager_.AddObserver(&hit_test_manager_);
   surface_manager_.AddObserver(this);
 }
@@ -170,7 +171,8 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
   // Creating RootCompositorFrameSinkImpl can fail and return null.
   auto root_compositor_frame_sink = RootCompositorFrameSinkImpl::Create(
       std::move(params), this, output_surface_provider_, restart_id_,
-      run_all_compositor_stages_before_draw_);
+      run_all_compositor_stages_before_draw_, &debug_settings_);
+
   if (root_compositor_frame_sink)
     root_sink_map_[frame_sink_id] = std::move(root_compositor_frame_sink);
 }
@@ -619,4 +621,39 @@ void FrameSinkManagerImpl::EvictBackBuffer(uint32_t cache_id,
   std::move(callback).Run();
 }
 
+void FrameSinkManagerImpl::UpdateDebugRendererSettings(
+    const DebugRendererSettings& debug_settings) {
+  debug_settings_ = debug_settings;
+}
+
+void FrameSinkManagerImpl::UpdateThrottlingRecursively(
+    const FrameSinkId& frame_sink_id,
+    base::TimeDelta interval) {
+  auto it = support_map_.find(frame_sink_id);
+  if (it != support_map_.end()) {
+    it->second->ThrottleBeginFrame(interval);
+  }
+  auto children = GetChildrenByParent(frame_sink_id);
+  for (auto& id : children)
+    UpdateThrottlingRecursively(id, interval);
+}
+
+void FrameSinkManagerImpl::StartThrottling(
+    const std::vector<FrameSinkId>& frame_sink_ids,
+    base::TimeDelta interval) {
+  DCHECK_GT(interval, base::TimeDelta());
+  DCHECK(!frame_sinks_throttled_);
+
+  frame_sinks_throttled_ = true;
+  for (auto& frame_sink_id : frame_sink_ids) {
+    UpdateThrottlingRecursively(frame_sink_id, interval);
+  }
+}
+
+void FrameSinkManagerImpl::EndThrottling() {
+  for (auto& support_map_item : support_map_) {
+    support_map_item.second->ThrottleBeginFrame(base::TimeDelta());
+  }
+  frame_sinks_throttled_ = false;
+}
 }  // namespace viz

@@ -8,7 +8,8 @@
 #include <unistd.h>
 
 #include <atomic>
-#include <mutex>  // NOLINT
+#include <mutex>
+#include <vector>
 
 #include "platform/impl/socket_handle_waiter.h"
 

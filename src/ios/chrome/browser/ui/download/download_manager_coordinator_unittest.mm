@@ -21,9 +21,12 @@
 #include "ios/chrome/browser/download/download_manager_metric_names.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/download/external_app_util.h"
+#import "ios/chrome/browser/installation_notifier.h"
 #include "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/alert_overlay.h"
+#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -94,13 +97,15 @@ class DownloadManagerCoordinatorTest : public PlatformTest {
   ~DownloadManagerCoordinatorTest() override {
     // Stop to avoid holding a dangling pointer to destroyed task.
     @autoreleasepool {
-      // task_environment_ has to outlive the coordinator. Dismissing
-      // coordinator retains are autoreleases it.
+      // Calling -stop will retain and autorelease coordinator_.
+      // task_environment_ has to outlive the coordinator, so wrapping -stop
+      // call in @autorelease will ensure that coordinator_ is deallocated.
       [coordinator_ stop];
     }
 
     [document_interaction_controller_class_ stopMocking];
     [application_ stopMocking];
+    [[InstallationNotifier sharedInstance] stopPolling];
   }
 
   web::WebTaskEnvironment task_environment_;
@@ -153,8 +158,9 @@ TEST_F(DownloadManagerCoordinatorTest, Stop) {
   coordinator_.downloadTask = &task;
   [coordinator_ start];
   @autoreleasepool {
-    // task_environment_ has to outlive the coordinator. Dismissing coordinator
-    // retains are autoreleases it.
+    // Calling -stop will retain and autorelease coordinator_. task_environment_
+    // has to outlive the coordinator, so wrapping -stop call in @autorelease
+    // will ensure that coordinator_ is deallocated.
     [coordinator_ stop];
   }
 
@@ -182,7 +188,10 @@ TEST_F(DownloadManagerCoordinatorTest, DestructionDuringDownload) {
       base::ThreadTaskRunnerHandle::Get(), path));
 
   @autoreleasepool {
-    // These calls will retain coordinator, which should outlive thread bundle.
+    // Calling -downloadManagerViewControllerDidStartDownload will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping -downloadManagerViewControllerDidStartDownload
+    // call in @autorelease will ensure that coordinator_ is deallocated.
     [viewController.delegate
         downloadManagerViewControllerDidStartDownload:viewController];
 
@@ -298,8 +307,10 @@ TEST_F(DownloadManagerCoordinatorTest, DelegateHideDownload) {
                        didCreateDownload:task.get()
                        webStateIsVisible:YES];
   @autoreleasepool {
-    // task_environment_ has to outlive the coordinator. Dismissing coordinator
-    // retains are autoreleases it.
+    // Calling -downloadManagerTabHelper:didHideDownload: will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping -downloadManagerTabHelper:didHideDownload:
+    // call in @autorelease will ensure that coordinator_ is deallocated.
     [coordinator_ downloadManagerTabHelper:&tab_helper_
                            didHideDownload:task.get()];
   }
@@ -346,7 +357,10 @@ TEST_F(DownloadManagerCoordinatorTest, Close) {
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
   ASSERT_EQ(0, user_action_tester_.GetActionCount("IOSDownloadClose"));
   @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
+    // Calling -downloadManagerViewControllerDidClose: will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping -downloadManagerViewControllerDidClose:
+    // call in @autorelease will ensure that coordinator_ is deallocated.
     [viewController.delegate
         downloadManagerViewControllerDidClose:viewController];
   }
@@ -386,7 +400,10 @@ TEST_F(DownloadManagerCoordinatorTest, InstallDrive) {
   ASSERT_EQ(
       0, user_action_tester_.GetActionCount("IOSDownloadInstallGoogleDrive"));
   @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
+    // Calling -installDriveForDownloadManagerViewController: will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping -installDriveForDownloadManagerViewController:
+    // call in @autorelease will ensure that coordinator_ is deallocated.
     [viewController.delegate
         installDriveForDownloadManagerViewController:viewController];
   }
@@ -427,13 +444,17 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [view_controller class]);
 
+  id download_view_controller_mock = OCMPartialMock(view_controller);
+  id dispatcher_mock = OCMProtocolMock(@protocol(BrowserCoordinatorCommands));
+  [browser_->GetCommandDispatcher()
+      startDispatchingToTarget:dispatcher_mock
+                   forProtocol:@protocol(BrowserCoordinatorCommands)];
+
   // Start the download.
   base::FilePath path;
   ASSERT_TRUE(base::GetTempDir(&path));
   task->Start(std::make_unique<net::URLFetcherFileWriter>(
       base::ThreadTaskRunnerHandle::Get(), path));
-
-  id download_view_controller_mock = OCMPartialMock(view_controller);
 
   // Stub UIActivityViewController.
   OCMStub([download_view_controller_mock presentViewController:[OCMArg any]
@@ -452,7 +473,11 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
 
   // Present Open In... menu.
   @autoreleasepool {
-    // These calls will retain coordinator, which should outlive thread bundle.
+    // Calling -installDriveForDownloadManagerViewController: and
+    // presentOpenInForDownloadManagerViewController will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping calls in @autorelease will ensure that
+    // coordinator_ is deallocated.
     [view_controller.delegate
         downloadManagerViewControllerDidStartDownload:view_controller];
 
@@ -499,7 +524,10 @@ TEST_F(DownloadManagerCoordinatorTest, DestroyInProgressDownload) {
 
   // Start and the download.
   @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
+    // Calling -downloadManagerViewControllerDidStartDownload: will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping -downloadManagerViewControllerDidStartDownload:
+    // call in @autorelease will ensure that coordinator_ is deallocated.
     [viewController.delegate
         downloadManagerViewControllerDidStartDownload:viewController];
   }
@@ -540,7 +568,10 @@ TEST_F(DownloadManagerCoordinatorTest, QuitDuringInProgressDownload) {
 
   // Start and the download.
   @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
+    // Calling -downloadManagerViewControllerDidStartDownload: will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping -downloadManagerViewControllerDidStartDownload:
+    // call in @autorelease will ensure that coordinator_ is deallocated.
     [viewController.delegate
         downloadManagerViewControllerDidStartDownload:viewController];
   }
@@ -591,7 +622,10 @@ TEST_F(DownloadManagerCoordinatorTest, CloseInProgressDownload) {
       &web_state_, OverlayModality::kWebContentArea);
   ASSERT_EQ(0U, queue->size());
   @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
+    // Calling -downloadManagerViewControllerDidClose: will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping -downloadManagerViewControllerDidClose:
+    // call in @autorelease will ensure that coordinator_ is deallocated.
     [viewController.delegate
         downloadManagerViewControllerDidClose:viewController];
   }
@@ -614,8 +648,9 @@ TEST_F(DownloadManagerCoordinatorTest, CloseInProgressDownload) {
   // Stop to avoid holding a dangling pointer to destroyed task.
   queue->CancelAllRequests();
   @autoreleasepool {
-    // task_environment_ has to outlive the coordinator. Dismissing coordinator
-    // retains are autoreleases it.
+    // Calling -stop will retain and autorelease coordinator_. task_environment_
+    // has to outlive the coordinator, so wrapping -stop call in @autorelease
+    // will ensure that coordinator_ is deallocated.
     [coordinator_ stop];
   }
 
@@ -661,8 +696,53 @@ TEST_F(DownloadManagerCoordinatorTest, DecidePolicyForDownload) {
 
   queue->CancelAllRequests();
   @autoreleasepool {
-    // task_environment_ has to outlive the coordinator. Dismissing coordinator
-    // retains are autoreleases it.
+    // Calling -stop will retain and autorelease coordinator_. task_environment_
+    // has to outlive the coordinator, so wrapping -stop call in @autorelease
+    // will ensure that coordinator_ is deallocated.
+    [coordinator_ stop];
+  }
+
+  EXPECT_EQ(0U, queue->size());
+}
+
+// Tests downloadManagerTabHelper:decidePolicyForDownload:completionHandler:.
+// Coordinator should present the confirmation dialog.
+TEST_F(DownloadManagerCoordinatorTest,
+       DecidePolicyForDownloadFromBackgroundTab) {
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  task.SetWebState(&web_state_);
+  coordinator_.downloadTask = nullptr;  // Current Tab does not have task.
+
+  OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
+      &web_state_, OverlayModality::kWebContentArea);
+  ASSERT_EQ(0U, queue->size());
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                 decidePolicyForDownload:&task
+                       completionHandler:^(NewDownloadPolicy){
+                       }];
+
+  // Verify that confirm request was sent.
+  ASSERT_EQ(1U, queue->size());
+
+  alert_overlays::AlertRequest* config =
+      queue->front_request()->GetConfig<alert_overlays::AlertRequest>();
+  ASSERT_TRUE(config);
+  EXPECT_NSEQ(@"Start New Download?", config->title());
+  EXPECT_NSEQ(@"This will stop all progress for your current download.",
+              config->message());
+  ASSERT_EQ(2U, config->button_configs().size());
+  EXPECT_NSEQ(@"OK", config->button_configs()[0].title);
+  EXPECT_EQ(kDownloadReplaceActionName,
+            config->button_configs()[0].user_action_name);
+  EXPECT_NSEQ(@"Cancel", config->button_configs()[1].title);
+  EXPECT_EQ(kDownloadDoNotReplaceActionName,
+            config->button_configs()[1].user_action_name);
+
+  queue->CancelAllRequests();
+  @autoreleasepool {
+    // Calling -stop will retain and autorelease coordinator_. task_environment_
+    // has to outlive the coordinator, so wrapping -stop call in @autorelease
+    // will ensure that coordinator_ is deallocated.
     [coordinator_ stop];
   }
 
@@ -682,7 +762,10 @@ TEST_F(DownloadManagerCoordinatorTest, StartDownload) {
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
   @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
+    // Calling -downloadManagerViewControllerDidStartDownload: will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping -downloadManagerViewControllerDidStartDownload:
+    // call in @autorelease will ensure that coordinator_ is deallocated.
     [viewController.delegate
         downloadManagerViewControllerDidStartDownload:viewController];
   }
@@ -721,7 +804,10 @@ TEST_F(DownloadManagerCoordinatorTest, RetryingDownload) {
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
   ASSERT_EQ(0, user_action_tester_.GetActionCount("IOSDownloadStartDownload"));
   @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
+    // Calling -downloadManagerViewControllerDidStartDownload: will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping -downloadManagerViewControllerDidStartDownload:
+    // call in @autorelease will ensure that coordinator_ is deallocated.
     [viewController.delegate
         downloadManagerViewControllerDidStartDownload:viewController];
   }
@@ -730,7 +816,10 @@ TEST_F(DownloadManagerCoordinatorTest, RetryingDownload) {
   ASSERT_EQ(1, user_action_tester_.GetActionCount("IOSDownloadStartDownload"));
 
   @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
+    // Calling -downloadManagerViewControllerDidStartDownload: will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping -downloadManagerViewControllerDidStartDownload:
+    // call in @autorelease will ensure that coordinator_ is deallocated.
     [viewController.delegate
         downloadManagerViewControllerDidStartDownload:viewController];
   }
@@ -768,7 +857,10 @@ TEST_F(DownloadManagerCoordinatorTest, FailingInBackground) {
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
   @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
+    // Calling -downloadManagerViewControllerDidStartDownload: will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping -downloadManagerViewControllerDidStartDownload:
+    // call in @autorelease will ensure that coordinator_ is deallocated.
     [viewController.delegate
         downloadManagerViewControllerDidStartDownload:viewController];
   }
@@ -808,7 +900,10 @@ TEST_F(DownloadManagerCoordinatorTest, SucceedingInBackground) {
 
   // Start the download.
   @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
+    // Calling -downloadManagerViewControllerDidStartDownload: will retain and
+    // autorelease coordinator_. task_environment_ has to outlive the
+    // coordinator, so wrapping -downloadManagerViewControllerDidStartDownload:
+    // call in @autorelease will ensure that coordinator_ is deallocated.
     [viewController.delegate
         downloadManagerViewControllerDidStartDownload:viewController];
   }
@@ -841,8 +936,9 @@ TEST_F(DownloadManagerCoordinatorTest, ViewController) {
   EXPECT_NSEQ(viewController, coordinator_.viewController);
 
   @autoreleasepool {
-    // task_environment_ has to outlive the coordinator. Dismissing coordinator
-    // retains are autoreleases it.
+    // Calling -stop will retain and autorelease coordinator_. task_environment_
+    // has to outlive the coordinator, so wrapping -stop call in @autorelease
+    // will ensure that coordinator_ is deallocated.
     [coordinator_ stop];
   }
   EXPECT_FALSE(coordinator_.viewController);

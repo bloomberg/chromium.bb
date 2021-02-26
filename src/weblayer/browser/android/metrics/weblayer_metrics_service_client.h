@@ -18,11 +18,15 @@
 #include "components/metrics/metrics_service_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "weblayer/browser/browser_list_observer.h"
+#include "weblayer/browser/profile_impl.h"
 
 namespace weblayer {
 
 class WebLayerMetricsServiceClient
-    : public ::metrics::AndroidMetricsServiceClient {
+    : public ::metrics::AndroidMetricsServiceClient,
+      public ProfileImpl::ProfileObserver,
+      public BrowserListObserver {
   friend class base::NoDestructor<WebLayerMetricsServiceClient>;
 
  public:
@@ -31,20 +35,40 @@ class WebLayerMetricsServiceClient
   WebLayerMetricsServiceClient();
   ~WebLayerMetricsServiceClient() override;
 
-  void RegisterSyntheticMultiGroupFieldTrial(
-      base::StringPiece trial_name,
-      const std::vector<int>& experiment_ids);
+  void RegisterExternalExperiments(const std::vector<int>& experiment_ids);
 
   // metrics::MetricsServiceClient
   int32_t GetProduct() override;
+  bool IsExternalExperimentAllowlistEnabled() override;
+  bool IsUkmAllowedForAllProfiles() override;
+  std::string GetUploadSigningKey() override;
 
   // metrics::AndroidMetricsServiceClient:
-  int GetSampleRatePerMille() override;
+  int GetSampleRatePerMille() const override;
   void OnMetricsStart() override;
   void OnMetricsNotStarted() override;
   int GetPackageNameLimitRatePerMille() override;
+  void RegisterAdditionalMetricsProviders(
+      metrics::MetricsService* service) override;
+  bool IsOffTheRecordSessionActive() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
  private:
+  friend void JNI_ApplyConsentHelper(bool user_consent, bool app_consent);
+
+  // Called once when consent has been determined.
+  void ApplyConsent(bool user_consent, bool app_consent);
+
+  // Updates the services based on the foreground state.
+  void ApplyForegroundStateToServices();
+
+  // ProfileImpl::ProfileObserver:
+  void ProfileCreated(ProfileImpl* profile) override;
+  void ProfileDestroyed(ProfileImpl* profile) override;
+
+  // BrowserListObserver:
+  void OnHasAtLeastOneResumedBrowserStateChanged(bool new_value) override;
+
   std::vector<base::OnceClosure> post_start_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(WebLayerMetricsServiceClient);

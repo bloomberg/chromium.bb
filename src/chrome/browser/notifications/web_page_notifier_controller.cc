@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/notifier_metadata.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -29,8 +30,7 @@ std::vector<ash::NotifierMetadata> WebPageNotifierController::GetNotifierList(
 
   ContentSettingsForOneType settings;
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
-      ContentSettingsType::NOTIFICATIONS,
-      content_settings::ResourceIdentifier(), &settings);
+      ContentSettingsType::NOTIFICATIONS, &settings);
 
   favicon::FaviconService* const favicon_service =
       FaviconServiceFactory::GetForProfile(profile,
@@ -53,7 +53,7 @@ std::vector<ash::NotifierMetadata> WebPageNotifierController::GetNotifierList(
         NotifierStateTrackerFactory::GetForProfile(profile);
     content_settings::SettingInfo info;
     HostContentSettingsMapFactory::GetForProfile(profile)->GetWebsiteSetting(
-        url, GURL(), ContentSettingsType::NOTIFICATIONS, std::string(), &info);
+        url, GURL(), ContentSettingsType::NOTIFICATIONS, &info);
     notifiers.emplace_back(
         notifier_id, name,
         notifier_state_tracker->IsNotifierEnabled(notifier_id),
@@ -125,8 +125,7 @@ void WebPageNotifierController::SetNotifierEnabled(
       HostContentSettingsMapFactory::GetForProfile(profile)
           ->SetContentSettingCustomScope(
               pattern, ContentSettingsPattern::Wildcard(),
-              ContentSettingsType::NOTIFICATIONS,
-              content_settings::ResourceIdentifier(), CONTENT_SETTING_DEFAULT);
+              ContentSettingsType::NOTIFICATIONS, CONTENT_SETTING_DEFAULT);
     }
   }
 

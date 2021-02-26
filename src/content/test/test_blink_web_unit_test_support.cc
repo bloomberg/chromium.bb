@@ -43,7 +43,7 @@
 #include "third_party/blink/public/web/blink.h"
 #include "v8/include/v8.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
@@ -88,27 +88,6 @@ class DummyTaskRunner : public base::SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(DummyTaskRunner);
 };
 
-// TODO(kinuko,toyoshim): Deprecate this, all Blink tests should not rely
-// on this //content implementation.
-class WebURLLoaderFactoryWithMock : public blink::WebURLLoaderFactory {
- public:
-  explicit WebURLLoaderFactoryWithMock(base::WeakPtr<blink::Platform> platform)
-      : platform_(std::move(platform)) {}
-  ~WebURLLoaderFactoryWithMock() override = default;
-
-  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
-      const blink::WebURLRequest& request,
-      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          task_runner_handle) override {
-    DCHECK(platform_);
-    return platform_->GetURLLoaderMockFactory()->CreateURLLoader();
-  }
-
- private:
-  base::WeakPtr<blink::Platform> platform_;
-  DISALLOW_COPY_AND_ASSIGN(WebURLLoaderFactoryWithMock);
-};
-
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
 constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
@@ -127,11 +106,9 @@ namespace content {
 
 TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
     TestBlinkWebUnitTestSupport::SchedulerType scheduler_type) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
-
-  url_loader_factory_ = blink::WebURLLoaderMockFactory::Create();
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
@@ -187,16 +164,9 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
 }
 
 TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
-  url_loader_factory_.reset();
   if (main_thread_scheduler_)
     main_thread_scheduler_->Shutdown();
   g_test_platform = nullptr;
-}
-
-std::unique_ptr<blink::WebURLLoaderFactory>
-TestBlinkWebUnitTestSupport::CreateDefaultURLLoaderFactory() {
-  return std::make_unique<WebURLLoaderFactoryWithMock>(
-      weak_factory_.GetWeakPtr());
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::UserAgent() {
@@ -271,11 +241,6 @@ scoped_refptr<base::SingleThreadTaskRunner>
 TestBlinkWebUnitTestSupport::GetIOTaskRunner() const {
   return ChildProcess::current() ? ChildProcess::current()->io_task_runner()
                                  : nullptr;
-}
-
-blink::WebURLLoaderMockFactory*
-TestBlinkWebUnitTestSupport::GetURLLoaderMockFactory() {
-  return url_loader_factory_.get();
 }
 
 bool TestBlinkWebUnitTestSupport::IsThreadedAnimationEnabled() {

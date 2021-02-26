@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/random_seed.h"
 #include "libavutil/opt.h"
 #include "vulkan.h"
 #include "internal.h"
@@ -96,6 +97,10 @@ static av_cold int init_filter(AVFilterContext *ctx, AVFrame *in)
 
     if (!sampler)
         return AVERROR_EXTERNAL;
+
+    s->vkctx.queue_family_idx = s->vkctx.hwctx->queue_family_comp_index;
+    s->vkctx.queue_count = GET_QUEUE_COUNT(s->vkctx.hwctx, 0, 1, 0);
+    s->vkctx.cur_queue_idx = av_get_random_seed() % s->vkctx.queue_count;
 
     { /* Create shader for the horizontal pass */
         desc_i[0].updater = s->input_images;
@@ -184,8 +189,7 @@ static av_cold int init_filter(AVFilterContext *ctx, AVFrame *in)
     }
 
     /* Execution context */
-    RET(ff_vk_create_exec_ctx(ctx, &s->exec,
-                              s->vkctx.hwctx->queue_family_comp_index));
+    RET(ff_vk_create_exec_ctx(ctx, &s->exec));
 
     s->initialized = 1;
 
@@ -198,22 +202,30 @@ fail:
 static int process_frames(AVFilterContext *avctx, AVFrame *out_f, AVFrame *tmp_f, AVFrame *in_f)
 {
     int err;
+    VkCommandBuffer cmd_buf;
     AvgBlurVulkanContext *s = avctx->priv;
     AVVkFrame *in = (AVVkFrame *)in_f->data[0];
     AVVkFrame *tmp = (AVVkFrame *)tmp_f->data[0];
     AVVkFrame *out = (AVVkFrame *)out_f->data[0];
     int planes = av_pix_fmt_count_planes(s->vkctx.output_format);
 
+    /* Update descriptors and init the exec context */
+    ff_vk_start_exec_recording(avctx, s->exec);
+    cmd_buf = ff_vk_get_exec_buf(avctx, s->exec);
+
     for (int i = 0; i < planes; i++) {
-        RET(ff_vk_create_imageview(avctx, &s->input_images[i].imageView, in->img[i],
+        RET(ff_vk_create_imageview(avctx, s->exec, &s->input_images[i].imageView,
+                                   in->img[i],
                                    av_vkfmt_from_pixfmt(s->vkctx.input_format)[i],
                                    ff_comp_identity_map));
 
-        RET(ff_vk_create_imageview(avctx, &s->tmp_images[i].imageView, tmp->img[i],
+        RET(ff_vk_create_imageview(avctx, s->exec, &s->tmp_images[i].imageView,
+                                   tmp->img[i],
                                    av_vkfmt_from_pixfmt(s->vkctx.output_format)[i],
                                    ff_comp_identity_map));
 
-        RET(ff_vk_create_imageview(avctx, &s->output_images[i].imageView, out->img[i],
+        RET(ff_vk_create_imageview(avctx, s->exec, &s->output_images[i].imageView,
+                                   out->img[i],
                                    av_vkfmt_from_pixfmt(s->vkctx.output_format)[i],
                                    ff_comp_identity_map));
 
@@ -224,8 +236,6 @@ static int process_frames(AVFilterContext *avctx, AVFrame *out_f, AVFrame *tmp_f
 
     ff_vk_update_descriptor_set(avctx, s->pl_hor, 0);
     ff_vk_update_descriptor_set(avctx, s->pl_ver, 0);
-
-    ff_vk_start_exec_recording(avctx, s->exec);
 
     for (int i = 0; i < planes; i++) {
         VkImageMemoryBarrier bar[] = {
@@ -270,7 +280,7 @@ static int process_frames(AVFilterContext *avctx, AVFrame *out_f, AVFrame *tmp_f
             },
         };
 
-        vkCmdPipelineBarrier(s->exec->buf, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        vkCmdPipelineBarrier(cmd_buf, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                              VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0,
                              0, NULL, 0, NULL, FF_ARRAY_ELEMS(bar), bar);
 
@@ -286,12 +296,12 @@ static int process_frames(AVFilterContext *avctx, AVFrame *out_f, AVFrame *tmp_f
 
     ff_vk_bind_pipeline_exec(avctx, s->exec, s->pl_hor);
 
-    vkCmdDispatch(s->exec->buf, FFALIGN(s->vkctx.output_width, CGS)/CGS,
+    vkCmdDispatch(cmd_buf, FFALIGN(s->vkctx.output_width, CGS)/CGS,
                   s->vkctx.output_height, 1);
 
     ff_vk_bind_pipeline_exec(avctx, s->exec, s->pl_ver);
 
-    vkCmdDispatch(s->exec->buf, s->vkctx.output_width,
+    vkCmdDispatch(cmd_buf, s->vkctx.output_width,
                   FFALIGN(s->vkctx.output_height, CGS)/CGS, 1);
 
     ff_vk_add_exec_dep(avctx, s->exec, in_f, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
@@ -301,14 +311,10 @@ static int process_frames(AVFilterContext *avctx, AVFrame *out_f, AVFrame *tmp_f
     if (err)
         return err;
 
+    return err;
+
 fail:
-
-    for (int i = 0; i < planes; i++) {
-        ff_vk_destroy_imageview(avctx, &s->input_images[i].imageView);
-        ff_vk_destroy_imageview(avctx, &s->tmp_images[i].imageView);
-        ff_vk_destroy_imageview(avctx, &s->output_images[i].imageView);
-    }
-
+    ff_vk_discard_exec_deps(avctx, s->exec);
     return err;
 }
 

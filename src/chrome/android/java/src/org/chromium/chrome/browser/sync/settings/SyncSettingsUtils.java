@@ -14,6 +14,8 @@ import android.provider.Browser;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.fragment.app.Fragment;
 import androidx.preference.Preference;
@@ -29,15 +31,18 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
+import org.chromium.chrome.browser.sync.AndroidSyncSettings;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.components.signin.base.CoreAccountInfo;
-import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.components.sync.KeyRetrievalTriggerForUMA;
 import org.chromium.components.sync.StopSource;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -51,7 +56,8 @@ public class SyncSettingsUtils {
     private static final String TAG = "SyncSettingsUtils";
 
     @IntDef({SyncError.NO_ERROR, SyncError.ANDROID_SYNC_DISABLED, SyncError.AUTH_ERROR,
-            SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE,
+            SyncError.PASSPHRASE_REQUIRED, SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING,
+            SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS, SyncError.CLIENT_OUT_OF_DATE,
             SyncError.SYNC_SETUP_INCOMPLETE, SyncError.OTHER_ERRORS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SyncError {
@@ -71,7 +77,7 @@ public class SyncSettingsUtils {
      */
     @SyncError
     public static int getSyncError() {
-        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
+        if (!AndroidSyncSettings.get().doesMasterSyncSettingAllowChromeSync()) {
             return SyncError.ANDROID_SYNC_DISABLED;
         }
 
@@ -136,9 +142,40 @@ public class SyncSettingsUtils {
                 return context.getString(R.string.hint_passphrase_required);
             case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING:
             case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS:
-                return context.getString(R.string.hint_sync_retrieve_keys);
+                return context.getString(
+                        ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+                                ? R.string.hint_sync_retrieve_keys
+                                : R.string.hint_sync_retrieve_keys_legacy);
             case SyncError.SYNC_SETUP_INCOMPLETE:
-                return context.getString(R.string.hint_sync_settings_not_confirmed_description);
+                return context.getString(
+                        ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+                                ? R.string.hint_sync_settings_not_confirmed_description
+                                : R.string.hint_sync_settings_not_confirmed_description_legacy);
+            case SyncError.NO_ERROR:
+            default:
+                return null;
+        }
+    }
+
+    public static @Nullable String getSyncErrorCardButtonLabel(
+            Context context, @SyncError int error) {
+        switch (error) {
+            case SyncError.ANDROID_SYNC_DISABLED:
+                return context.getString(R.string.android_sync_disabled_error_card_button);
+            case SyncError.AUTH_ERROR:
+            case SyncError.OTHER_ERRORS:
+                // Both these errors should be resolved by signing the user again.
+                return context.getString(R.string.auth_error_card_button);
+            case SyncError.CLIENT_OUT_OF_DATE:
+                return context.getString(R.string.client_out_of_date_error_card_button,
+                        BuildInfo.getInstance().hostPackageLabel);
+            case SyncError.PASSPHRASE_REQUIRED:
+                return context.getString(R.string.passphrase_required_error_card_button);
+            case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING:
+            case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS:
+                return context.getString(R.string.trusted_vault_error_card_button);
+            case SyncError.SYNC_SETUP_INCOMPLETE:
+                return context.getString(R.string.sync_promo_turn_on_sync);
             case SyncError.NO_ERROR:
             default:
                 return null;
@@ -146,18 +183,47 @@ public class SyncSettingsUtils {
     }
 
     /**
+     * Gets the corresponding message id of a given {@link GoogleServiceAuthError.State}.
+     */
+    public static @StringRes int getMessageID(@GoogleServiceAuthError.State int state) {
+        switch (state) {
+            case GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS:
+                return R.string.sync_error_ga;
+            case GoogleServiceAuthError.State.CONNECTION_FAILED:
+                return R.string.sync_error_connection;
+            case GoogleServiceAuthError.State.SERVICE_UNAVAILABLE:
+                return R.string.sync_error_service_unavailable;
+            // case State.NONE:
+            // case State.REQUEST_CANCELED:
+            // case State.UNEXPECTED_SERVICE_RESPONSE:
+            // case State.SERVICE_ERROR:
+            default:
+                return R.string.sync_error_generic;
+        }
+    }
+
+    /**
      * Return a short summary of the current sync status.
+     * TODO(https://crbug.com/1129930): Refactor this method
      */
     public static String getSyncStatusSummary(Context context) {
-        if (!IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) return "";
-
-        ProfileSyncService profileSyncService = ProfileSyncService.get();
         Resources res = context.getResources();
 
-        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
-            return res.getString(R.string.sync_android_master_sync_disabled);
+        if (!IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .hasPrimaryAccount()) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+                // There is no account with sync consent available.
+                return res.getString(R.string.sync_is_disabled);
+            }
+            return "";
         }
 
+        if (!AndroidSyncSettings.get().doesMasterSyncSettingAllowChromeSync()) {
+            return res.getString(R.string.sync_android_system_sync_disabled);
+        }
+
+        ProfileSyncService profileSyncService = ProfileSyncService.get();
         if (profileSyncService == null) {
             return res.getString(R.string.sync_is_disabled);
         }
@@ -167,12 +233,13 @@ public class SyncSettingsUtils {
         }
 
         if (!profileSyncService.isFirstSetupComplete()) {
-            return res.getString(R.string.sync_settings_not_confirmed);
+            return ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+                    ? res.getString(R.string.sync_settings_not_confirmed)
+                    : res.getString(R.string.sync_settings_not_confirmed_legacy);
         }
 
         if (profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE) {
-            return res.getString(
-                    GoogleServiceAuthError.getMessageID(profileSyncService.getAuthError()));
+            return res.getString(getMessageID(profileSyncService.getAuthError()));
         }
 
         if (profileSyncService.requiresClientUpgrade()) {
@@ -182,6 +249,11 @@ public class SyncSettingsUtils {
 
         if (profileSyncService.hasUnrecoverableError()) {
             return res.getString(R.string.sync_error_generic);
+        }
+
+        if (!profileSyncService.isSyncRequested()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+            return res.getString(R.string.sync_data_types_off);
         }
 
         boolean syncEnabled = AndroidSyncSettings.get().isSyncEnabled();
@@ -209,35 +281,40 @@ public class SyncSettingsUtils {
      * Returns an icon that represents the current sync state.
      */
     public static @Nullable Drawable getSyncStatusIcon(Context context) {
-        if (!IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) return null;
+        boolean useNewIcon =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY);
+
+        if (!IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .hasPrimaryAccount()) {
+            return useNewIcon ? AppCompatResources.getDrawable(context, R.drawable.ic_sync_off_48dp)
+                              : null;
+        }
 
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         if (profileSyncService == null || !AndroidSyncSettings.get().isSyncEnabled()) {
-            return UiUtils.getTintedDrawable(
-                    context, R.drawable.ic_sync_green_40dp, R.color.default_icon_color);
+            return useNewIcon
+                    ? AppCompatResources.getDrawable(context, R.drawable.ic_sync_off_48dp)
+                    : UiUtils.getTintedDrawable(context, R.drawable.ic_sync_green_legacy_40dp,
+                            R.color.default_icon_color);
         }
-
         if (profileSyncService.isSyncDisabledByEnterprisePolicy()) {
-            return UiUtils.getTintedDrawable(
-                    context, R.drawable.ic_sync_error_40dp, R.color.default_icon_color);
+            return useNewIcon
+                    ? AppCompatResources.getDrawable(context, R.drawable.ic_sync_off_48dp)
+                    : UiUtils.getTintedDrawable(context, R.drawable.ic_sync_error_legacy_40dp,
+                            R.color.default_icon_color);
         }
 
-        if (!profileSyncService.isFirstSetupComplete()) {
-            return UiUtils.getTintedDrawable(
-                    context, R.drawable.ic_sync_error_40dp, R.color.default_red);
+        if (getSyncError() != SyncError.NO_ERROR) {
+            return useNewIcon
+                    ? AppCompatResources.getDrawable(context, R.drawable.ic_sync_error_48dp)
+                    : UiUtils.getTintedDrawable(
+                            context, R.drawable.ic_sync_error_legacy_40dp, R.color.default_red);
         }
 
-        if (profileSyncService.isEngineInitialized()
-                && (profileSyncService.hasUnrecoverableError()
-                        || profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE
-                        || profileSyncService.isPassphraseRequiredForPreferredDataTypes()
-                        || profileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes())) {
-            return UiUtils.getTintedDrawable(
-                    context, R.drawable.ic_sync_error_40dp, R.color.default_red);
-        }
-
-        return UiUtils.getTintedDrawable(
-                context, R.drawable.ic_sync_green_40dp, R.color.default_green);
+        return useNewIcon ? AppCompatResources.getDrawable(context, R.drawable.ic_sync_on_48dp)
+                          : UiUtils.getTintedDrawable(context, R.drawable.ic_sync_green_legacy_40dp,
+                                  R.color.default_green);
     }
 
     /**
@@ -312,7 +389,9 @@ public class SyncSettingsUtils {
      * @param activity The activity to use for starting the intent.
      */
     public static void openGoogleMyAccount(Activity activity) {
-        assert IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount();
+        assert IdentityServicesProvider.get()
+                .getIdentityManager(Profile.getLastUsedRegularProfile())
+                .hasPrimaryAccount();
         RecordUserAction.record("SyncPreferences_ManageGoogleAccountClicked");
         openCustomTabWithURL(activity, MY_ACCOUNT_URL);
     }
@@ -347,5 +426,16 @@ public class SyncSettingsUtils {
                         (exception) -> {
                             Log.e(TAG, "Error opening key retrieval dialog: ", exception);
                         });
+    }
+
+    /**
+     * Shows a toast indicating that sync is disabled for the account by the system administrator.
+     *
+     * @param context The context where the toast will be shown.
+     */
+    public static void showSyncDisabledByAdministratorToast(Context context) {
+        Toast.makeText(context, context.getString(R.string.sync_is_disabled_by_administrator),
+                     Toast.LENGTH_LONG)
+                .show();
     }
 }

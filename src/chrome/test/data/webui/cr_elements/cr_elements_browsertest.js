@@ -85,23 +85,22 @@ TEST_F('CrElementsSearchFieldTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
-function CrElementsToolbarSearchFieldTest() {}
+function CrElementsToolbarTest() {}
 
-CrElementsToolbarSearchFieldTest.prototype = {
+CrElementsToolbarTest.prototype = {
   __proto__: CrElementsBrowserTest.prototype,
 
   /** @override */
-  browsePreload:
-      'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.html',
+  browsePreload: 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html',
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
     '../test_util.js',
-    'cr_toolbar_search_field_tests.js',
+    'cr_toolbar_tests.js',
   ]),
 };
 
-TEST_F('CrElementsToolbarSearchFieldTest', 'All', function() {
+TEST_F('CrElementsToolbarTest', 'All', function() {
   mocha.run();
 });
 
@@ -124,7 +123,13 @@ CrElementsDrawerTest.prototype = {
   ]),
 };
 
-TEST_F('CrElementsDrawerTest', 'Drawer', function() {
+// https://crbug.com/1096016 - flaky on Mac
+GEN('#if defined(OS_MAC)');
+GEN('#define MAYBE_Drawer DISABLED_Drawer');
+GEN('#else');
+GEN('#define MAYBE_Drawer Drawer');
+GEN('#endif');
+TEST_F('CrElementsDrawerTest', 'MAYBE_Drawer', function() {
   mocha.run();
 });
 
@@ -247,57 +252,6 @@ TEST_F('CrElementsPolicyPrefIndicatorTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if defined(OS_CHROMEOS)');
-/**
- * @constructor
- * @extends {CrElementsBrowserTest}
- */
-function CrPolicyNetworkBehaviorMojoTest() {}
-
-CrPolicyNetworkBehaviorMojoTest.prototype = {
-  __proto__: CrElementsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://os-settings/chromeos/internet_page/internet_page.html',
-
-  /** @override */
-  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    'cr_policy_strings.js',
-    'cr_policy_network_behavior_mojo_tests.js',
-  ]),
-};
-
-TEST_F('CrPolicyNetworkBehaviorMojoTest', 'All', function() {
-  mocha.run();
-});
-
-/**
- * @constructor
- * @extends {CrElementsBrowserTest}
- */
-function CrElementsPolicyNetworkIndicatorMojoTest() {}
-
-CrElementsPolicyNetworkIndicatorMojoTest.prototype = {
-  __proto__: CrElementsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://os-settings/chromeos/internet_page/internet_page.html',
-
-  /** @override */
-  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    'cr_policy_strings.js',
-    'cr_policy_network_indicator_mojo_tests.js',
-  ]),
-};
-
-TEST_F('CrElementsPolicyNetworkIndicatorMojoTest', 'All', function() {
-  mocha.run();
-});
-
-GEN('#endif');
-
 /**
  * @constructor
  * @extends {CrElementsBrowserTest}
@@ -318,12 +272,13 @@ CrElementsFingerprintProgressArcTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../mock_controller.js',
     'cr_fingerprint_progress_arc_tests.js',
   ]),
 };
 
 // https://crbug.com/1044390 - maybe flaky on Mac?
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_Fingerprint DISABLED_Fingerprint');
 GEN('#else');
 GEN('#define MAYBE_Fingerprint Fingerprint');
@@ -453,6 +408,29 @@ TEST_F('CrElementsRadioButtonTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
+function CrElementsCardRadioButtonTest() {}
+
+CrElementsCardRadioButtonTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_radio_button/' +
+      'cr_card_radio_button.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_card_radio_button_test.js',
+  ]),
+};
+
+TEST_F('CrElementsCardRadioButtonTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsRadioGroupTest() {}
 
 CrElementsRadioGroupTest.prototype = {
@@ -565,6 +543,33 @@ TEST_F('CrElementsExpandButtonTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsFindShortcutBehaviorTest() {}
+
+CrElementsFindShortcutBehaviorTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /**
+   * Preload a module that depends on both cr-dialog and FindShortcutBehavior.
+   * cr-dialog is used in the tests.
+   * @override
+   */
+  browsePreload: 'chrome://resources/cr_elements/find_shortcut_behavior.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
+    'find_shortcut_behavior_test.js',
+  ]),
+};
+
+TEST_F('CrElementsFindShortcutBehaviorTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#if defined(OS_CHROMEOS)');
 /**
  * @constructor
@@ -642,6 +647,7 @@ CrElementsLottieTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../mock_controller.js',
     '../test_util.js',
     'cr_lottie_tests.js',
   ]),

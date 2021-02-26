@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -41,6 +41,7 @@ constexpr char kSXGResultCertVerificationError[] =
 constexpr char kSXGResultCertFetchError[] = "sxg.cert_fetch_error";
 constexpr char kSXGResultCertParseError[] = "sxg.cert_parse_error";
 constexpr char kSXGResultVariantMismatch[] = "sxg.variant_mismatch";
+constexpr char kSXGHeaderIntegrityMismatch[] = "sxg.header_integrity_mismatch";
 
 const char* GetResultTypeString(SignedExchangeLoadResult result) {
   switch (result) {
@@ -118,7 +119,8 @@ bool ShouldDowngradeReport(const char* result_string,
 }
 
 void ReportResult(int frame_tree_node_id,
-                  network::mojom::SignedExchangeReportPtr report) {
+                  network::mojom::SignedExchangeReportPtr report,
+                  const net::NetworkIsolationKey& network_isolation_key) {
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   if (!frame_tree_node)
@@ -134,7 +136,8 @@ void ReportResult(int frame_tree_node_id,
   StoragePartition* partition = BrowserContext::GetStoragePartition(
       web_contents->GetBrowserContext(), site_instance);
   DCHECK(partition);
-  partition->GetNetworkContext()->QueueSignedExchangeReport(std::move(report));
+  partition->GetNetworkContext()->QueueSignedExchangeReport(
+      std::move(report), network_isolation_key);
 }
 
 }  // namespace
@@ -144,22 +147,26 @@ std::unique_ptr<SignedExchangeReporter> SignedExchangeReporter::MaybeCreate(
     const GURL& outer_url,
     const std::string& referrer,
     const network::mojom::URLResponseHead& response,
+    const net::NetworkIsolationKey& network_isolation_key,
     int frame_tree_node_id) {
   if (!signed_exchange_utils::
           IsSignedExchangeReportingForDistributorsEnabled()) {
     return nullptr;
   }
-  return base::WrapUnique(new SignedExchangeReporter(
-      outer_url, referrer, response, frame_tree_node_id));
+  return base::WrapUnique(
+      new SignedExchangeReporter(outer_url, referrer, response,
+                                 network_isolation_key, frame_tree_node_id));
 }
 
 SignedExchangeReporter::SignedExchangeReporter(
     const GURL& outer_url,
     const std::string& referrer,
     const network::mojom::URLResponseHead& response,
+    const net::NetworkIsolationKey& network_isolation_key,
     int frame_tree_node_id)
     : report_(network::mojom::SignedExchangeReport::New()),
       request_start_(response.load_timing.request_start),
+      network_isolation_key_(network_isolation_key),
       frame_tree_node_id_(frame_tree_node_id) {
   report_->outer_url = outer_url;
   report_->referrer = referrer;
@@ -191,7 +198,7 @@ void SignedExchangeReporter::set_cert_url(const GURL& cert_url) {
   report_->cert_url = cert_url;
 }
 
-void SignedExchangeReporter::ReportResultAndFinish(
+void SignedExchangeReporter::ReportLoadResultAndFinish(
     SignedExchangeLoadResult result) {
   DCHECK(report_);
 
@@ -211,7 +218,15 @@ void SignedExchangeReporter::ReportResultAndFinish(
     report_->elapsed_time = base::TimeTicks::Now() - request_start_;
   }
 
-  ReportResult(frame_tree_node_id_, std::move(report_));
+  ReportResult(frame_tree_node_id_, std::move(report_), network_isolation_key_);
+}
+
+void SignedExchangeReporter::ReportHeaderIntegrityMismatch() {
+  DCHECK(report_);
+  report_->success = false;
+  report_->type = kSXGHeaderIntegrityMismatch;
+  report_->elapsed_time = base::TimeDelta();
+  ReportResult(frame_tree_node_id_, std::move(report_), network_isolation_key_);
 }
 
 }  // namespace content

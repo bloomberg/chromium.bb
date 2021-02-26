@@ -44,15 +44,15 @@ printer::DuplexType ToCloudDuplexType(printing::mojom::DuplexMode mode) {
 
 #if defined(OS_CHROMEOS)
 printer::TypedValueVendorCapability::ValueType ToCloudValueType(
-    base::Value::Type type) {
+    printing::AdvancedCapability::Type type) {
   switch (type) {
-    case base::Value::Type::BOOLEAN:
+    case printing::AdvancedCapability::Type::kBoolean:
       return printer::TypedValueVendorCapability::ValueType::BOOLEAN;
-    case base::Value::Type::DOUBLE:
+    case printing::AdvancedCapability::Type::kFloat:
       return printer::TypedValueVendorCapability::ValueType::FLOAT;
-    case base::Value::Type::INTEGER:
+    case printing::AdvancedCapability::Type::kInteger:
       return printer::TypedValueVendorCapability::ValueType::INTEGER;
-    case base::Value::Type::STRING:
+    case printing::AdvancedCapability::Type::kString:
       return printer::TypedValueVendorCapability::ValueType::STRING;
     default:
       NOTREACHED();
@@ -205,13 +205,14 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
   printer::ColorCapability color;
   if (semantic_info.color_default || semantic_info.color_changeable) {
     printer::Color standard_color(printer::ColorType::STANDARD_COLOR);
-    standard_color.vendor_id = base::NumberToString(semantic_info.color_model);
+    standard_color.vendor_id =
+        base::NumberToString(static_cast<int>(semantic_info.color_model));
     color.AddDefaultOption(standard_color, semantic_info.color_default);
   }
   if (!semantic_info.color_default || semantic_info.color_changeable) {
     printer::Color standard_monochrome(printer::ColorType::STANDARD_MONOCHROME);
     standard_monochrome.vendor_id =
-        base::NumberToString(semantic_info.bw_model);
+        base::NumberToString(static_cast<int>(semantic_info.bw_model));
     color.AddDefaultOption(standard_monochrome, !semantic_info.color_default);
   }
   color.SaveTo(&description);

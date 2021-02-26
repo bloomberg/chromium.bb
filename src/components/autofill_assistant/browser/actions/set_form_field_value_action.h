@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "components/autofill_assistant/browser/user_data.h"
+#include "components/autofill_assistant/browser/web/element_finder.h"
 
 namespace autofill_assistant {
 
@@ -56,23 +57,28 @@ class SetFormFieldValueAction : public Action {
   void InternalProcessAction(ProcessActionCallback callback) override;
 
   void OnWaitForElement(const ClientStatus& element_status);
+  void OnFindElement(const ClientStatus& element_status,
+                     std::unique_ptr<ElementFinder::Result> element_result);
+  void SetFieldValueSequentially(int field_index, const ClientStatus& status);
+  void OnGetStoredPassword(
+      base::OnceCallback<void(const ClientStatus&)> next_field_callback,
+      bool success,
+      std::string password);
+  void OnSetFieldValueAndCheckFallback(
+      base::OnceCallback<void(const ClientStatus&)> next_field_callback,
+      const std::string& requested_value,
+      const ClientStatus& status);
+  void OnGetFieldValue(
+      base::OnceCallback<void(const ClientStatus&)> next_field_callback,
+      const std::string& requested_value,
+      const ClientStatus& element_status,
+      const std::string& actual_value);
 
-  void OnGetFieldValue(int field_index,
-                       const std::string& requested_value,
-                       const ClientStatus& element_status,
-                       const std::string& actual_value);
-
-  void OnSetFieldValue(int next, const ClientStatus& status);
-
-  void OnSetFieldValueAndCheckFallback(int field_index,
-                                       const std::string& requested_value,
-                                       const ClientStatus& status);
-
-  void OnGetStoredPassword(int field_index, bool success, std::string password);
-
+  void FailAction(const ClientStatus& status, int keypress_index);
   void EndAction(const ClientStatus& status);
 
   Selector selector_;
+  std::unique_ptr<ElementFinder::Result> element_;
   std::vector<FieldInput> field_inputs_;
   ProcessActionCallback process_action_callback_;
   base::WeakPtrFactory<SetFormFieldValueAction> weak_ptr_factory_{this};

@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string_number_conversions.h"
@@ -292,7 +291,7 @@ int FtpNetworkTransaction::Start(
 
     // This may unescape to non-ASCII characters, but we allow that. See the
     // comment for IsValidFTPCommandSubstring.
-    if (!UnescapeBinaryURLComponentSafe(
+    if (!base::UnescapeBinaryURLComponentSafe(
             gurl_path, true /* fail_on_path_separators*/, &unescaped_path_)) {
       return ERR_INVALID_URL;
     }
@@ -680,10 +679,13 @@ int FtpNetworkTransaction::DoCtrlResolveHostComplete(int result) {
 
 int FtpNetworkTransaction::DoCtrlConnect() {
   next_state_ = STATE_CTRL_CONNECT_COMPLETE;
+  // TODO(https://crbug.com/1123197): Pass a non-null NetworkQualityEstimator.
+  NetworkQualityEstimator* network_quality_estimator = nullptr;
+
   DCHECK(resolve_request_ && resolve_request_->GetAddressResults());
   ctrl_socket_ = socket_factory_->CreateTransportClientSocket(
       resolve_request_->GetAddressResults().value(), nullptr,
-      net_log_.net_log(), net_log_.source());
+      network_quality_estimator, net_log_.net_log(), net_log_.source());
   net_log_.AddEventReferencingSource(NetLogEventType::FTP_CONTROL_CONNECTION,
                                      ctrl_socket_->NetLog().source());
   return ctrl_socket_->Connect(io_callback_);
@@ -1235,8 +1237,12 @@ int FtpNetworkTransaction::DoDataConnect() {
     return Stop(rv);
   data_address = AddressList::CreateFromIPAddress(
       ip_endpoint.address(), data_connection_port_);
+  // TODO(https://crbug.com/1123197): Pass a non-null NetworkQualityEstimator.
+  NetworkQualityEstimator* network_quality_estimator = nullptr;
+
   data_socket_ = socket_factory_->CreateTransportClientSocket(
-      data_address, nullptr, net_log_.net_log(), net_log_.source());
+      data_address, nullptr, network_quality_estimator, net_log_.net_log(),
+      net_log_.source());
   net_log_.AddEventReferencingSource(NetLogEventType::FTP_DATA_CONNECTION,
                                      data_socket_->NetLog().source());
   return data_socket_->Connect(io_callback_);

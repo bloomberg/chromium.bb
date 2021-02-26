@@ -42,8 +42,8 @@ const bool PlatformStyle::kTextfieldUsesDragCursorWhenDraggable = false;
 const bool PlatformStyle::kTableViewSupportsKeyboardNavigationByCell = false;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = true;
 const bool PlatformStyle::kUseRipples = false;
-const bool PlatformStyle::kPreferFocusRings = true;
 const bool PlatformStyle::kInactiveWidgetControlsAppearDisabled = true;
+const bool PlatformStyle::kAdjustBubbleIfOffscreen = false;
 
 const Button::KeyClickAction PlatformStyle::kKeyClickActionOnSpace =
     Button::KeyClickAction::kOnKeyPress;
@@ -81,4 +81,10 @@ gfx::Range PlatformStyle::RangeToDeleteBackwards(const base::string16& text,
   return gfx::Range(range_to_delete.location + range_to_delete.length,
                     range_to_delete.location);
 }
+
+// static
+View::FocusBehavior PlatformStyle::DefaultFocusBehavior() {
+  return View::FocusBehavior::ACCESSIBLE_ONLY;
+}
+
 }  // namespace views

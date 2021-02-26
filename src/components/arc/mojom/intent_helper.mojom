@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 37
+// Next MinVersion: 42
 
 module arc.mojom;
 
+import "components/arc/mojom/app.mojom";
 import "components/arc/mojom/bitmap.mojom";
 import "components/arc/mojom/camera_intent.mojom";
 import "components/arc/mojom/intent_common.mojom";
@@ -82,6 +83,13 @@ struct IntentFilter {
   [MinVersion=10] array<PatternMatcher>? data_paths;
   [MinVersion=10] array<PatternMatcher>? deprecated_data_scheme_specific_parts;
   [MinVersion=21] string? package_name; // Package which registered the filter.
+  [MinVersion=38] array<string>? mime_types; // Intent filer mime types.
+
+  // Activity which registered the filter.
+  [MinVersion=39] string? activity_name;
+
+  // The label shown to the user for this activity.
+  [MinVersion=41] string? activity_label;
 };
 
 // Describes a package that can handle an intent.
@@ -103,6 +111,7 @@ struct ActivityIcon {
   uint32 width;  // in px
   uint32 height;  // in px
   array<uint8> icon;  // in BGRA8888 format
+  [MinVersion=40] RawIconPngData? icon_png_data;
 };
 
 // URL associated with its mime type.
@@ -147,7 +156,7 @@ enum ChromePage {
   ABOUTBLANK,
   ABOUTDOWNLOADS,
   ABOUTHISTORY,
-  CROSTINIDISKRESIZE,
+  DEPRECATED_CROSTINIDISKRESIZE,
   ACCESSIBILITY,
   ACCOUNTMANAGER,
   ANDROIDAPPSDETAILS,
@@ -184,9 +193,14 @@ enum ChromePage {
   OSSEARCH,
   OSRESET,
   OSLANGUAGESSMARTINPUTS,
-  DOWNLOADEDCONTENT,
+  DEPRECATED_DOWNLOADEDCONTENT,
+  OSLANGUAGESINPUT,
+  OSLANGUAGESLANGUAGES,
+  OSLANGUAGESEDITDICTIONARY,
+  KERBEROS,
+  KERBEROSACCOUNTSV2,
 
-  LAST = DOWNLOADEDCONTENT
+  LAST = KERBEROSACCOUNTSV2
 };
 
 // Describes an unique chrome app.
@@ -251,11 +265,13 @@ interface IntentHelperHost {
   // which the custom tab should be shown.
   // |top_margin| is the height of the space at the top of the window which
   // needs to be vacant to display the top bar rendered by Android code.
+  // TODO(b/159918677): Remove |surface_id| and |top_margin| since they are no
+  // longer used.
   [MinVersion=25] OnOpenCustomTab@10(string url,
                                      int32 task_id,
                                      int32 surface_id,
                                      int32 top_margin)
-      => (CustomTabSession? session);
+      => (pending_remote<CustomTabSession>? session);
 
   // Opens the wallpaper picker dialog.
   [MinVersion=6] OpenWallpaperPicker@3();
@@ -314,7 +330,8 @@ interface IntentHelperHost {
 };
 
 // Sends intents to ARC on behalf of Chrome.
-// Next method ID: 19
+// Deprecated method ID: 7
+// Next method ID: 20
 interface IntentHelperInstance {
   // Sets the given package as a preferred package. The next time an ACTION_VIEW
   // intent is sent with a URL that requires disambiguation, instead of opening
@@ -348,16 +365,11 @@ interface IntentHelperInstance {
   // most suitable activity for the URL within the package will be started.
   [MinVersion=2] HandleUrl@2(string url, string package_name);
 
-  // DEPRECATED. Use FileSystemInstance.OpenUrlsWithPermission() instead.
-  [MinVersion=5] HandleUrlListDeprecated@7(array<UrlWithMimeType> urls,
-                                           ActivityName activity,
-                                           ActionType action_type);
-
   // DEPRECATED: Please use Init@13 instead.
-  InitDeprecated@0(IntentHelperHost host_ptr);
+  InitDeprecated@0(pending_remote<IntentHelperHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=19] Init@13(IntentHelperHost host_ptr) => ();
+  [MinVersion=19] Init@13(pending_remote<IntentHelperHost> host_remote) => ();
 
   // DEPRECATED. Use FileSystemInstance.OpenFileToRead() instead.
   [MinVersion=15] OpenFileToReadDeprecated@12(string url) => (handle? fd);
@@ -384,8 +396,8 @@ interface IntentHelperInstance {
   // specified.  Data can be sent as extras by including a JSON map string which
   // will be automatically converted to a bundle accessible by the receiver.
   //
-  // Note: Broadcasts can only be sent to whitelisted packages.  Packages can be
-  // added to the whitelist in ArcBridgeService.java in the Android source.
+  // Note: Broadcasts can only be sent to allowlisted packages.  Packages can be
+  // added to the allowlist in ArcBridgeService.java in the Android source.
   [MinVersion=1] SendBroadcast@1(string action,
                                  string package_name,
                                  string cls,
@@ -413,4 +425,8 @@ interface IntentHelperInstance {
                                         CameraIntentAction action,
                                         array<uint8> data)
       => (bool is_success);
+
+  // Request ARC to send the domain verification status update for all packages
+  // to Chrome OS.
+  [MinVersion=37] RequestDomainVerificationStatusUpdate@19();
 };

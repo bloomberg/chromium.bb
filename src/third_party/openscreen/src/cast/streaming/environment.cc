@@ -4,6 +4,8 @@
 
 #include "cast/streaming/environment.h"
 
+#include <utility>
+
 #include "cast/streaming/rtp_defines.h"
 #include "platform/api/task_runner.h"
 #include "util/osp_logging.h"
@@ -12,16 +14,11 @@ namespace openscreen {
 namespace cast {
 
 Environment::Environment(ClockNowFunctionPtr now_function,
-                         TaskRunner* task_runner)
+                         TaskRunner* task_runner,
+                         const IPEndpoint& local_endpoint)
     : now_function_(now_function), task_runner_(task_runner) {
   OSP_DCHECK(now_function_);
   OSP_DCHECK(task_runner_);
-}
-
-Environment::Environment(ClockNowFunctionPtr now_function,
-                         TaskRunner* task_runner,
-                         const IPEndpoint& local_endpoint)
-    : Environment(now_function, task_runner) {
   ErrorOr<std::unique_ptr<UdpSocket>> result =
       UdpSocket::Create(task_runner_, this, local_endpoint);
   const_cast<std::unique_ptr<UdpSocket>&>(socket_) = std::move(result.value());

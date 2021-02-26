@@ -20,10 +20,15 @@ static_assert(IdentifiableSurface::FromMetricHash(
                       .GetType() ==
                   IdentifiableSurface::Type::kReservedInternal,
               "");
+static_assert(IdentifiableSurface::FromMetricHash(
+                  ukm::builders::Identifiability::kGeneratorVersion_926NameHash)
+                      .GetType() ==
+                  IdentifiableSurface::Type::kReservedInternal,
+              "");
 
-TEST(IdentifiableSurfaceTest, FromTypeAndInputIsConstexpr) {
+TEST(IdentifiableSurfaceTest, FromTypeAndTokenIsConstexpr) {
   constexpr uint64_t kTestInputHash = 5u;
-  constexpr auto kSurface = IdentifiableSurface::FromTypeAndInput(
+  constexpr auto kSurface = IdentifiableSurface::FromTypeAndToken(
       IdentifiableSurface::Type::kWebFeature, kTestInputHash);
 
   static_assert(
@@ -50,7 +55,7 @@ TEST(IdentifiableSurfaceTest, FromKeyIsConstexpr) {
 
 TEST(IdentifiableSurfaceTest, AllowsMaxTypeValue) {
   constexpr uint64_t kInputHash = UINT64_C(0x1123456789abcdef);
-  constexpr auto kSurface = IdentifiableSurface::FromTypeAndInput(
+  constexpr auto kSurface = IdentifiableSurface::FromTypeAndToken(
       IdentifiableSurface::Type::kMax, kInputHash);
 
   EXPECT_EQ(UINT64_C(0x23456789abcdefff), kSurface.ToUkmMetricHash());
@@ -66,11 +71,11 @@ TEST(IdentifiableSurfaceTest, IdentifiableSurfaceHash) {
   constexpr uint64_t kTestInputHashB = 3;
 
   // surface2 == surface3 != surface1
-  auto surface1 = IdentifiableSurface::FromTypeAndInput(
+  auto surface1 = IdentifiableSurface::FromTypeAndToken(
       IdentifiableSurface::Type::kWebFeature, kTestInputHashA);
-  auto surface2 = IdentifiableSurface::FromTypeAndInput(
+  auto surface2 = IdentifiableSurface::FromTypeAndToken(
       IdentifiableSurface::Type::kWebFeature, kTestInputHashB);
-  auto surface3 = IdentifiableSurface::FromTypeAndInput(
+  auto surface3 = IdentifiableSurface::FromTypeAndToken(
       IdentifiableSurface::Type::kWebFeature, kTestInputHashB);
 
   IdentifiableSurfaceHash hash_object;
@@ -96,11 +101,11 @@ TEST(IdentifiableSurfaceTest, Comparison) {
   constexpr uint64_t kTestInputHashB = 3;
 
   // surface2 == surface3 != surface1
-  auto surface1 = IdentifiableSurface::FromTypeAndInput(
+  auto surface1 = IdentifiableSurface::FromTypeAndToken(
       IdentifiableSurface::Type::kWebFeature, kTestInputHashA);
-  auto surface2 = IdentifiableSurface::FromTypeAndInput(
+  auto surface2 = IdentifiableSurface::FromTypeAndToken(
       IdentifiableSurface::Type::kWebFeature, kTestInputHashB);
-  auto surface3 = IdentifiableSurface::FromTypeAndInput(
+  auto surface3 = IdentifiableSurface::FromTypeAndToken(
       IdentifiableSurface::Type::kWebFeature, kTestInputHashB);
 
   EXPECT_TRUE(surface2 == surface3);

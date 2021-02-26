@@ -89,7 +89,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
       Widget::MoveLoopEscapeBehavior escape_behavior) override;
   void EndMoveLoop() override;
   void SetVisibilityChangedAnimationsEnabled(bool value) override;
-  NonClientFrameView* CreateNonClientFrameView() override;
+  std::unique_ptr<NonClientFrameView> CreateNonClientFrameView() override;
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;
@@ -117,6 +117,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   void OnClosed() override;
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
   void OnCloseRequest() override;
+  void OnWillDestroyAcceleratedWidget() override;
   void OnActivationChanged(bool active) override;
   base::Optional<gfx::Size> GetMinimumSizeForWindow() override;
   base::Optional<gfx::Size> GetMaximumSizeForWindow() override;

@@ -9,6 +9,7 @@
 #include "base/notreached.h"
 #include "base/time/clock.h"
 #include "chrome/browser/policy/cloud/policy_invalidation_util.h"
+#include "chrome/common/chrome_features.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "components/policy/core/common/remote_commands/remote_commands_service.h"
@@ -23,6 +24,27 @@ const char* GetInvalidationMetricName(PolicyInvalidationScope scope) {
       return kMetricUserRemoteCommandInvalidations;
     case PolicyInvalidationScope::kDevice:
       return kMetricDeviceRemoteCommandInvalidations;
+    case PolicyInvalidationScope::kCBCM:
+      return kMetricCBCMRemoteCommandInvalidations;
+    case PolicyInvalidationScope::kDeviceLocalAccount:
+      NOTREACHED() << "Unexpected instance of remote commands invalidator with "
+                      "device local account scope.";
+      return "";
+  }
+}
+
+std::string ComposeOwnerName(PolicyInvalidationScope scope) {
+  if (!base::FeatureList::IsEnabled(features::kInvalidatorUniqueOwnerName)) {
+    return "RemoteCommands";
+  }
+
+  switch (scope) {
+    case PolicyInvalidationScope::kUser:
+      return "RemoteCommands.User";
+    case PolicyInvalidationScope::kDevice:
+      return "RemoteCommands.Device";
+    case PolicyInvalidationScope::kCBCM:
+      return "RemoteCommands.CBCM";
     case PolicyInvalidationScope::kDeviceLocalAccount:
       NOTREACHED() << "Unexpected instance of remote commands invalidator with "
                       "device local account scope.";
@@ -36,7 +58,10 @@ RemoteCommandsInvalidatorImpl::RemoteCommandsInvalidatorImpl(
     CloudPolicyCore* core,
     base::Clock* clock,
     PolicyInvalidationScope scope)
-    : core_(core), clock_(clock), scope_(scope) {
+    : RemoteCommandsInvalidator(ComposeOwnerName(scope)),
+      core_(core),
+      clock_(clock),
+      scope_(scope) {
   DCHECK(core_);
 }
 
@@ -68,12 +93,10 @@ void RemoteCommandsInvalidatorImpl::DoRemoteCommandsFetch(
   core_->remote_commands_service()->FetchRemoteCommands();
 }
 
-void RemoteCommandsInvalidatorImpl::OnCoreConnected(CloudPolicyCore* core) {
-}
+void RemoteCommandsInvalidatorImpl::OnCoreConnected(CloudPolicyCore* core) {}
 
 void RemoteCommandsInvalidatorImpl::OnRefreshSchedulerStarted(
-    CloudPolicyCore* core) {
-}
+    CloudPolicyCore* core) {}
 
 void RemoteCommandsInvalidatorImpl::OnCoreDisconnecting(CloudPolicyCore* core) {
   Stop();
@@ -88,8 +111,7 @@ void RemoteCommandsInvalidatorImpl::OnStoreLoaded(CloudPolicyStore* core) {
   ReloadPolicyData(core_->store()->policy());
 }
 
-void RemoteCommandsInvalidatorImpl::OnStoreError(CloudPolicyStore* core) {
-}
+void RemoteCommandsInvalidatorImpl::OnStoreError(CloudPolicyStore* core) {}
 
 void RemoteCommandsInvalidatorImpl::RecordInvalidationMetric(
     const syncer::Invalidation& invalidation) const {

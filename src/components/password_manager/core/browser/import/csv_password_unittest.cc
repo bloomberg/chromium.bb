@@ -14,8 +14,6 @@
 
 namespace password_manager {
 
-using ::autofill::PasswordForm;
-
 using Label = CSVPassword::Label;
 using Status = CSVPassword::Status;
 
@@ -32,7 +30,7 @@ TEST(CSVPasswordTest, Construction) {
   const CSVPassword csv_pwd(kColMap, "http://example.com,user,password");
   const PasswordForm result = csv_pwd.ParseValid();
   const GURL expected_origin("http://example.com");
-  EXPECT_EQ(expected_origin, result.origin);
+  EXPECT_EQ(expected_origin, result.url);
   EXPECT_EQ(expected_origin.GetOrigin().spec(), result.signon_realm);
   EXPECT_EQ(base::ASCIIToUTF16("user"), result.username_value);
   EXPECT_EQ(base::ASCIIToUTF16("password"), result.password_value);
@@ -54,7 +52,9 @@ struct TestCase {
 
 class TestCaseBuilder {
  public:
-  TestCaseBuilder(std::string name) { test_case_.name = std::move(name); }
+  explicit TestCaseBuilder(std::string name) {
+    test_case_.name = std::move(name);
+  }
 
   ~TestCaseBuilder() = default;
 
@@ -114,7 +114,7 @@ TEST_P(CSVPasswordTestSuccess, Parse) {
   const PasswordForm result = csv_pwd.ParseValid();
 
   const GURL expected_origin(test_case.origin);
-  EXPECT_EQ(expected_origin, result.origin);
+  EXPECT_EQ(expected_origin, result.url);
   EXPECT_EQ(expected_origin.GetOrigin().spec(), result.signon_realm);
 
   EXPECT_EQ(base::UTF8ToUTF16(test_case.username), result.username_value);

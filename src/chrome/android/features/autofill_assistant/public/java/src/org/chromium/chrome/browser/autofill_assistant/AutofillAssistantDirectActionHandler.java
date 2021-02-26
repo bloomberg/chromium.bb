@@ -12,15 +12,14 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.directactions.DirectActionReporter;
 import org.chromium.chrome.browser.directactions.DirectActionReporter.Definition;
 import org.chromium.chrome.browser.directactions.DirectActionReporter.Type;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.widget.ScrimView;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 
 /**
  * A handler that provides just enough functionality to allow on-demand loading of the module
@@ -37,9 +36,8 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
 
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
-    private final ChromeFullscreenManager mFullscreenManager;
+    private final BrowserControlsStateProvider mBrowserControls;
     private final CompositorViewHolder mCompositorViewHolder;
-    private final ScrimView mScrimView;
     private final ActivityTabProvider mActivityTabProvider;
     private final AutofillAssistantModuleEntryProvider mModuleEntryProvider;
 
@@ -47,13 +45,13 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
     private AutofillAssistantActionHandler mDelegate;
 
     AutofillAssistantDirectActionHandler(Context context,
-            BottomSheetController bottomSheetController, ChromeFullscreenManager fullscreenManager,
-            CompositorViewHolder compositorViewHolder, ActivityTabProvider activityTabProvider,
-            ScrimView scrimView, AutofillAssistantModuleEntryProvider moduleEntryProvider) {
+            BottomSheetController bottomSheetController,
+            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
+            ActivityTabProvider activityTabProvider,
+            AutofillAssistantModuleEntryProvider moduleEntryProvider) {
         mContext = context;
         mBottomSheetController = bottomSheetController;
-        mScrimView = scrimView;
-        mFullscreenManager = fullscreenManager;
+        mBrowserControls = browserControls;
         mCompositorViewHolder = compositorViewHolder;
         mActivityTabProvider = activityTabProvider;
         mModuleEntryProvider = moduleEntryProvider;
@@ -218,7 +216,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
         mModuleEntryProvider.getModuleEntry(tab, (entry) -> {
             mDelegate = createDelegate(entry);
             callback.onResult(mDelegate);
-        });
+        }, /* showUi = */ true);
     }
 
     /** Creates a delegate from the given {@link AutofillAssistantModuleEntry}, if possible. */
@@ -227,7 +225,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
             @Nullable AutofillAssistantModuleEntry entry) {
         if (entry == null) return null;
 
-        return entry.createActionHandler(mContext, mBottomSheetController, mFullscreenManager,
-                mCompositorViewHolder, mActivityTabProvider, mScrimView);
+        return entry.createActionHandler(mContext, mBottomSheetController, mBrowserControls,
+                mCompositorViewHolder, mActivityTabProvider);
     }
 }

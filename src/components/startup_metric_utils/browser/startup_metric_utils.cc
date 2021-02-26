@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
@@ -67,11 +68,11 @@ enum StartupTemperature {
   // The startup type couldn't quite be classified as warm or cold, but rather
   // was somewhere in between.
   LUKEWARM_STARTUP_TEMPERATURE = 2,
+  // Startup temperature wasn't yet determined, or could not be determined.
+  UNDETERMINED_STARTUP_TEMPERATURE = 3,
   // This must be after all meaningful values. All new values should be added
   // above this one.
   STARTUP_TEMPERATURE_COUNT,
-  // Startup temperature wasn't yet determined.
-  UNDETERMINED_STARTUP_TEMPERATURE
 };
 
 StartupTemperature g_startup_temperature = UNDETERMINED_STARTUP_TEMPERATURE;
@@ -126,17 +127,15 @@ struct SYSTEM_PROCESS_INFORMATION_EX {
 typedef NTSTATUS (WINAPI *NtQuerySystemInformationPtr)(
     SYSTEM_INFORMATION_CLASS, PVOID, ULONG, PULONG);
 
-// Gets the hard fault count of the current process through |hard_fault_count|.
-// Returns true on success.
-bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count) {
-  DCHECK(hard_fault_count);
-
+// Returns the hard fault count of the current process, or nullopt if it can't
+// be determined.
+base::Optional<uint32_t> GetHardFaultCountForCurrentProcess() {
   // Get the function pointer.
   static const NtQuerySystemInformationPtr query_sys_info =
       reinterpret_cast<NtQuerySystemInformationPtr>(::GetProcAddress(
           GetModuleHandle(L"ntdll.dll"), "NtQuerySystemInformation"));
   if (query_sys_info == nullptr)
-    return false;
+    return base::nullopt;
 
   // The output of this system call depends on the number of threads and
   // processes on the entire system, and this can change between calls. Retry
@@ -145,19 +144,42 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count) {
   //       and threads running on the system. The initial guess suffices for
   //       ~100s of processes and ~1000s of threads.
   std::vector<uint8_t> buffer(32 * 1024);
-  for (size_t tries = 0; tries < 3; ++tries) {
+  constexpr int kMaxNumBufferResize = 2;
+  int num_buffer_resize = 0;
+  for (;;) {
     ULONG return_length = 0;
     const NTSTATUS status =
         query_sys_info(SystemProcessInformation, buffer.data(),
                        static_cast<ULONG>(buffer.size()), &return_length);
-    // Insufficient space in the buffer.
-    if (return_length > buffer.size()) {
-      buffer.resize(return_length);
-      continue;
-    }
-    if (NT_SUCCESS(status) && return_length <= buffer.size())
+
+    // NtQuerySystemInformation succeeded.
+    if (NT_SUCCESS(status)) {
+      DCHECK_LE(return_length, buffer.size());
       break;
-    return false;
+    }
+
+    // NtQuerySystemInformation failed due to insufficient buffer length.
+    if (return_length > buffer.size()) {
+      // Abort if a large size is required for the buffer. It is undesirable to
+      // fill a large buffer just to record histograms.
+      constexpr ULONG kMaxLength = 512 * 1024;
+      if (return_length >= kMaxLength)
+        return base::nullopt;
+
+      // Resize the buffer and retry, if the buffer hasn't already been resized
+      // too many times.
+      if (num_buffer_resize < kMaxNumBufferResize) {
+        ++num_buffer_resize;
+        buffer.resize(return_length);
+        continue;
+      }
+    }
+
+    // Abort if NtQuerySystemInformation failed for another reason than
+    // insufficient buffer length, or if the buffer was resized too many times.
+    DCHECK(return_length <= buffer.size() ||
+           num_buffer_resize >= kMaxNumBufferResize);
+    return base::nullopt;
   }
 
   // Look for the struct housing information for the current process.
@@ -167,18 +189,16 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count) {
     DCHECK_LE(index + sizeof(SYSTEM_PROCESS_INFORMATION_EX), buffer.size());
     SYSTEM_PROCESS_INFORMATION_EX* proc_info =
         reinterpret_cast<SYSTEM_PROCESS_INFORMATION_EX*>(buffer.data() + index);
-    if (base::win::HandleToUint32(proc_info->UniqueProcessId) == proc_id) {
-      *hard_fault_count = proc_info->HardFaultCount;
-      return true;
-    }
+    if (base::win::HandleToUint32(proc_info->UniqueProcessId) == proc_id)
+      return proc_info->HardFaultCount;
     // The list ends when NextEntryOffset is zero. This also prevents busy
     // looping if the data is in fact invalid.
     if (proc_info->NextEntryOffset <= 0)
-      return false;
+      return base::nullopt;
     index += proc_info->NextEntryOffset;
   }
 
-  return false;
+  return base::nullopt;
 }
 #endif  // defined(OS_WIN)
 
@@ -275,28 +295,31 @@ void UmaHistogramAndTraceWithTemperatureAndMaxPressure(
 // platforms.
 void RecordHardFaultHistogram() {
 #if defined(OS_WIN)
-  uint32_t hard_fault_count = 0;
-
-  // Don't record histograms if unable to get the hard fault count.
-  if (!GetHardFaultCountForCurrentProcess(&hard_fault_count))
-    return;
-
-  // Hard fault counts are expected to be in the thousands range,
-  // corresponding to faulting in ~10s of MBs of code ~10s of KBs at a time.
-  // (Observed to vary from 1000 to 10000 on various test machines and
-  // platforms.)
-  base::UmaHistogramCustomCounts(
-      "Startup.BrowserMessageLoopStartHardFaultCount", hard_fault_count, 1,
-      40000, 50);
-
-  // Determine the startup type based on the number of observed hard faults.
   DCHECK_EQ(UNDETERMINED_STARTUP_TEMPERATURE, g_startup_temperature);
-  if (hard_fault_count < kWarmStartHardFaultCountThreshold) {
-    g_startup_temperature = WARM_STARTUP_TEMPERATURE;
-  } else if (hard_fault_count >= kColdStartHardFaultCountThreshold) {
-    g_startup_temperature = COLD_STARTUP_TEMPERATURE;
+
+  const base::Optional<uint32_t> hard_fault_count =
+      GetHardFaultCountForCurrentProcess();
+
+  if (hard_fault_count.has_value()) {
+    // Hard fault counts are expected to be in the thousands range,
+    // corresponding to faulting in ~10s of MBs of code ~10s of KBs at a time.
+    // (Observed to vary from 1000 to 10000 on various test machines and
+    // platforms.)
+    base::UmaHistogramCustomCounts(
+        "Startup.BrowserMessageLoopStartHardFaultCount",
+        hard_fault_count.value(), 1, 40000, 50);
+
+    // Determine the startup type based on the number of observed hard faults.
+    if (hard_fault_count < kWarmStartHardFaultCountThreshold) {
+      g_startup_temperature = WARM_STARTUP_TEMPERATURE;
+    } else if (hard_fault_count >= kColdStartHardFaultCountThreshold) {
+      g_startup_temperature = COLD_STARTUP_TEMPERATURE;
+    } else {
+      g_startup_temperature = LUKEWARM_STARTUP_TEMPERATURE;
+    }
   } else {
-    g_startup_temperature = LUKEWARM_STARTUP_TEMPERATURE;
+    // |g_startup_temperature| remains UNDETERMINED_STARTUP_TEMPERATURE if the
+    // number of hard faults could not be determined.
   }
 
   // Record the startup 'temperature'.
@@ -320,7 +343,7 @@ base::TimeTicks StartupTimeToTimeTicks(base::Time time) {
 
 // Enabling this logic on OS X causes a significant performance regression.
 // https://crbug.com/601270
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   static bool statics_initialized = false;
 
   base::ThreadPriority previous_priority = base::ThreadPriority::NORMAL;
@@ -334,7 +357,7 @@ base::TimeTicks StartupTimeToTimeTicks(base::Time time) {
   static const base::Time time_base = base::Time::Now();
   static const base::TimeTicks trace_ticks_base = base::TimeTicks::Now();
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   if (!statics_initialized) {
     base::PlatformThread::SetCurrentThreadPriority(previous_priority);
   }
@@ -376,8 +399,12 @@ void SetBackgroundModeEnabled() {
 }
 
 void RecordStartupProcessCreationTime(base::Time time) {
+  RecordStartupProcessCreationTime(StartupTimeToTimeTicks(time));
+}
+
+void RecordStartupProcessCreationTime(base::TimeTicks ticks) {
   DCHECK(g_process_creation_ticks.is_null());
-  g_process_creation_ticks = StartupTimeToTimeTicks(time);
+  g_process_creation_ticks = ticks;
   DCHECK(!g_process_creation_ticks.is_null());
 }
 
@@ -479,12 +506,6 @@ void RecordFirstWebContentsNonEmptyPaint(
   if (!ShouldLogStartupHistogram())
     return;
 
-  if (!g_process_creation_ticks.is_null()) {
-    UmaHistogramAndTraceWithTemperatureAndMaxPressure(
-        &base::UmaHistogramLongTimes100,
-        "Startup.FirstWebContents.NonEmptyPaint2", g_process_creation_ticks,
-        now);
-  }
   UmaHistogramAndTraceWithTemperatureAndMaxPressure(
       &base::UmaHistogramLongTimes100,
       "Startup.FirstWebContents.NonEmptyPaint3", g_application_start_ticks,

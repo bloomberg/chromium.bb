@@ -8,6 +8,7 @@
 import * as Platform from '../platform/platform.js';
 
 import {GlassPane} from './GlassPane.js';
+import {ShortcutRegistry} from './ShortcutRegistry.js';
 import {createShadowRootWithCoreStyles} from './utils/create-shadow-root-with-core-styles.js';
 import {Events as ZoomManagerEvents, ZoomManager} from './ZoomManager.js';
 
@@ -20,13 +21,15 @@ export class Tooltip {
    */
   constructor(doc) {
     this.element = doc.body.createChild('div');
-    this._shadowRoot = createShadowRootWithCoreStyles(this.element, 'ui/tooltip.css');
+    this._shadowRoot = createShadowRootWithCoreStyles(
+        this.element, {cssFile: 'ui/tooltip.css', enableLegacyPatching: true, delegatesFocus: undefined});
 
     this._tooltipElement = this._shadowRoot.createChild('div', 'tooltip');
     doc.addEventListener('mousemove', this._mouseMove.bind(this), true);
     doc.addEventListener('mousedown', this._hide.bind(this, true), true);
     doc.addEventListener('mouseleave', this._hide.bind(this, false), true);
     doc.addEventListener('keydown', this._hide.bind(this, true), true);
+    doc[_symbol] = this;
     ZoomManager.instance().addEventListener(ZoomManagerEvents.ZoomChanged, this._reset, this);
     doc.defaultView.addEventListener('resize', this._reset.bind(this), false);
   }
@@ -50,6 +53,28 @@ export class Tooltip {
       return;
     }
     element[_symbol] = {content: tooltipContent, actionId: actionId, options: options || {}};
+    let timeout;
+    element.addEventListener('focus', event => {
+      const tooltipInstance = element.ownerDocument[_symbol];
+      if (tooltipInstance) {
+        timeout = setTimeout(() => {
+          if (element.matches(':focus-visible')) {
+            tooltipInstance._show(element, event);
+          }
+          timeout = null;
+        }, Timing.OpeningDelay);
+      }
+    });
+    element.addEventListener('blur', () => {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      const tooltipInstance = element.ownerDocument[_symbol];
+      if (tooltipInstance) {
+        tooltipInstance._hide();
+      }
+    });
   }
 
   /**
@@ -108,7 +133,7 @@ export class Tooltip {
     this._tooltipElement.style.maxHeight = '';
     const tooltipWidth = this._tooltipElement.offsetWidth;
     const tooltipHeight = this._tooltipElement.offsetHeight;
-    const anchorTooltipAtElement = this._anchorTooltipAtElement();
+    const anchorTooltipAtElement = this._anchorTooltipAtElement() || event.x === undefined;
     let tooltipX = anchorTooltipAtElement ? anchorBox.x : event.x + cursorOffset;
     tooltipX = Platform.NumberUtilities.clamp(
         tooltipX, containerBox.x + pageMargin, containerBox.x + containerBox.width - tooltipWidth - pageMargin);
@@ -162,7 +187,7 @@ export class Tooltip {
     }
 
     if (tooltip.actionId) {
-      const shortcuts = self.UI.shortcutRegistry.shortcutsForAction(tooltip.actionId);
+      const shortcuts = ShortcutRegistry.instance().shortcutsForAction(tooltip.actionId);
       for (const shortcut of shortcuts) {
         const shortcutElement = this._tooltipElement.createChild('div', 'tooltip-shortcut');
         shortcutElement.textContent = shortcut.title();

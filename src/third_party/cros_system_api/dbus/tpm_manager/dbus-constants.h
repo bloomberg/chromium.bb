@@ -8,12 +8,22 @@
 namespace tpm_manager {
 
 // D-Bus service constants.
+constexpr char kTpmManagerInterface[] = "org.chromium.TpmManager";
 constexpr char kTpmManagerServiceName[] = "org.chromium.TpmManager";
 constexpr char kTpmManagerServicePath[] = "/org/chromium/TpmManager";
 
-// Binder service constants.
-constexpr char kTpmNvramBinderName[] = "android.tpm_manager.ITpmNvram";
-constexpr char kTpmOwnershipBinderName[] = "android.tpm_manager.ITpmOwnership";
+// Methods exported by tpm_manager.
+constexpr char kGetTpmStatus[] = "GetTpmStatus";
+constexpr char kGetTpmNonsensitiveStatus[] = "GetTpmNonsensitiveStatus";
+constexpr char kGetVersionInfo[] = "GetVersionInfo";
+constexpr char kGetDictionaryAttackInfo[] = "GetDictionaryAttackInfo";
+constexpr char kResetDictionaryAttackLock[] = "ResetDictionaryAttackLock";
+constexpr char kTakeOwnership[] = "TakeOwnership";
+constexpr char kRemoveOwnerDependency[] = "RemoveOwnerDependency";
+constexpr char kClearStoredOwnerPassword[] = "ClearStoredOwnerPassword";
+
+// Signal registered by tpm_manager ownership D-Bus interface.
+constexpr char kOwnershipTakenSignal[] = "SignalOwnershipTaken";
 
 // Default dependencies on TPM owner privilege. The TPM owner password will not
 // be destroyed until all of these dependencies have been explicitly removed

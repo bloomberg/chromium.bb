@@ -17,15 +17,17 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoChromeOSDiscovery
     : public FidoDiscoveryBase {
  public:
-  FidoChromeOSDiscovery();
+  explicit FidoChromeOSDiscovery(
+      base::RepeatingCallback<uint32_t()> generate_request_id_callback);
   ~FidoChromeOSDiscovery() override;
 
   // FidoDiscoveryBase:
   void Start() override;
 
  private:
-  void AddAuthenticator();
+  void MaybeAddAuthenticator(bool is_available);
 
+  base::RepeatingCallback<uint32_t()> generate_request_id_callback_;
   std::unique_ptr<ChromeOSAuthenticator> authenticator_;
   base::WeakPtrFactory<FidoChromeOSDiscovery> weak_factory_;
 };

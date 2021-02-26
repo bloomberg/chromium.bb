@@ -9,8 +9,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/format_macros.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/audio/fake_cras_audio_client.h"
@@ -186,6 +187,15 @@ class CrasAudioClientImpl : public CrasAudioClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void GetDeprioritizeBtWbsMic(DBusMethodCallback<bool> callback) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kGetDeprioritizeBtWbsMic);
+    cras_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CrasAudioClientImpl::OnGetDeprioritizeBtWbsMic,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void SetOutputNodeVolume(uint64_t node_id, int32_t volume) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kSetOutputNodeVolume);
@@ -265,16 +275,6 @@ class CrasAudioClientImpl : public CrasAudioClient {
   void SetFixA2dpPacketSize(bool enabled) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kSetFixA2dpPacketSize);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendBool(enabled);
-    cras_proxy_->CallMethod(&method_call,
-                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                            base::DoNothing());
-  }
-
-  void SetNextHandsfreeProfile(bool enabled) override {
-    dbus::MethodCall method_call(cras::kCrasControlInterface,
-                                 cras::kSetNextHandsfreeProfile);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(enabled);
     cras_proxy_->CallMethod(&method_call,
@@ -413,6 +413,14 @@ class CrasAudioClientImpl : public CrasAudioClient {
 
     writer.CloseContainer(&array_writer);
 
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
+  void ResendBluetoothBattery() override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kResendBluetoothBattery);
     cras_proxy_->CallMethod(&method_call,
                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                             base::DoNothing());
@@ -678,6 +686,25 @@ class CrasAudioClientImpl : public CrasAudioClient {
     std::move(callback).Run(num_active_streams);
   }
 
+  void OnGetDeprioritizeBtWbsMic(DBusMethodCallback<bool> callback,
+                                 dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Error calling "
+                 << "GetDeprioritizeBtWbsMic";
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    bool deprioritize_bt_wbs_mic = 0;
+    dbus::MessageReader reader(response);
+    if (!reader.PopBool(&deprioritize_bt_wbs_mic)) {
+      LOG(ERROR) << "Error reading response from cras: "
+                 << response->ToString();
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    std::move(callback).Run(deprioritize_bt_wbs_mic);
+  }
+
   void OnSetHotwordModel(VoidDBusMethodCallback callback,
                          dbus::Response* response) {
     if (!response) {
@@ -737,9 +764,6 @@ class CrasAudioClientImpl : public CrasAudioClient {
       } else if (key == cras::kPluggedTimeProperty) {
         if (!value_reader.PopUint64(&node->plugged_time))
           return false;
-      } else if (key == cras::kMicPositionsProperty) {
-        if (!value_reader.PopString(&node->mic_positions))
-          return false;
       } else if (key == cras::kStableDeviceIdProperty) {
         if (!value_reader.PopUint64(&node->stable_device_id_v1))
           return false;
@@ -747,6 +771,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
         if (!value_reader.PopUint64(&node->stable_device_id_v2))
           return false;
         node->has_v2_stable_device_id = true;
+      } else if (key == cras::kMaxSupportedChannelsProperty) {
+        if (!value_reader.PopUint32(&node->max_supported_channels))
+          return false;
       }
     }
 

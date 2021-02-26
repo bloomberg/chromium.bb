@@ -7,6 +7,7 @@
 #include "base/check.h"
 #include "base/mac/foundation_util.h"
 #include "base/notreached.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/common/credential_provider/archivable_credential.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -74,7 +75,7 @@
         [NSKeyedArchiver archivedDataWithRootObject:self.memoryStorage
                               requiringSecureCoding:YES
                                               error:&error];
-    DCHECK(!error) << error.debugDescription.UTF8String;
+    DCHECK(!error) << base::SysNSStringToUTF8(error.description);
     if (error) {
       executeCompletionIfPresent(error);
       return;
@@ -92,7 +93,7 @@
     }
 
     [data writeToURL:self.fileURL options:NSDataWritingAtomic error:&error];
-    DCHECK(!error) << error.debugDescription.UTF8String;
+    DCHECK(!error) << base::SysNSStringToUTF8(error.description);
     executeCompletionIfPresent(error);
   });
 }
@@ -115,24 +116,24 @@
 }
 
 - (void)updateCredential:(id<Credential>)credential {
-  [self removeCredential:credential];
+  [self removeCredentialWithRecordIdentifier:credential.recordIdentifier];
   [self addCredential:credential];
 }
 
-- (void)removeCredential:(id<Credential>)credential {
-  DCHECK(credential.recordIdentifier)
-      << "credential must have a record identifier";
+- (void)removeCredentialWithRecordIdentifier:(NSString*)recordIdentifier {
+  DCHECK(recordIdentifier.length) << "Invalid |recordIdentifier| was passed.";
   dispatch_barrier_async(self.workingQueue, ^{
-    DCHECK(self.memoryStorage[credential.recordIdentifier])
+    DCHECK(self.memoryStorage[recordIdentifier])
         << "Credential doesn't exist in the storage";
-    self.memoryStorage[credential.recordIdentifier] = nil;
+    self.memoryStorage[recordIdentifier] = nil;
   });
 }
 
-- (id<Credential>)credentialWithIdentifier:(NSString*)identifier {
+- (id<Credential>)credentialWithRecordIdentifier:(NSString*)recordIdentifier {
+  DCHECK(recordIdentifier.length);
   __block id<Credential> credential;
   dispatch_sync(self.workingQueue, ^{
-    credential = self.memoryStorage[identifier];
+    credential = self.memoryStorage[recordIdentifier];
   });
   return credential;
 }
@@ -171,14 +172,14 @@
   NSData* data = [NSData dataWithContentsOfURL:self.fileURL
                                        options:0
                                          error:&error];
-  DCHECK(!error) << error.debugDescription.UTF8String;
+  DCHECK(!error) << base::SysNSStringToUTF8(error.description);
   NSSet* classes = [NSSet setWithObjects:[ArchivableCredential class],
                                          [NSMutableDictionary class], nil];
   NSMutableDictionary<NSString*, ArchivableCredential*>* dictionary =
       [NSKeyedUnarchiver unarchivedObjectOfClasses:classes
                                           fromData:data
                                              error:&error];
-  DCHECK(!error) << error.debugDescription.UTF8String;
+  DCHECK(!error) << base::SysNSStringToUTF8(error.description);
   return dictionary;
 }
 

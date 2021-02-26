@@ -185,6 +185,12 @@ class RealGitTest(fake_repos.FakeReposTestBase):
     self.assertEqual(
         ('origin', 'refs/heads/master'), scm.GIT.FetchUpstreamTuple(self.cwd))
 
+  @mock.patch('scm.GIT.GetRemoteBranches',
+              return_value=['origin/master', 'origin/main'])
+  def testFetchUpstreamTuple_GuessOriginMain(self, _mockGetRemoteBranches):
+    self.assertEqual(('origin', 'refs/heads/main'),
+                     scm.GIT.FetchUpstreamTuple(self.cwd))
+
   def testFetchUpstreamTuple_RietveldUpstreamConfig(self):
     scm.GIT.SetConfig(self.cwd, 'rietveld.upstream-branch', 'rietveld-upstream')
     scm.GIT.SetConfig(self.cwd, 'rietveld.upstream-remote', 'rietveld-remote')

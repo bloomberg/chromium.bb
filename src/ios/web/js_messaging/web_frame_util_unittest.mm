@@ -30,25 +30,24 @@ class WebFrameUtilTest : public PlatformTest {
   FakeWebFramesManager* fake_web_frames_manager_;
 };
 
-// Tests the GetMainWebFrame function.
-TEST_F(WebFrameUtilTest, GetMainWebFrame) {
+// Tests the GetMainFrame function.
+TEST_F(WebFrameUtilTest, GetMainFrame) {
   // Still no main frame.
-  EXPECT_EQ(nullptr, test_web_state_.GetWebFramesManager()->GetMainWebFrame());
+  EXPECT_EQ(nullptr, GetMainFrame(&test_web_state_));
   auto iframe = std::make_unique<FakeChildWebFrame>(GURL::EmptyGURL());
   fake_web_frames_manager_->AddWebFrame(std::move(iframe));
   // Still no main frame.
-  EXPECT_EQ(nullptr, test_web_state_.GetWebFramesManager()->GetMainWebFrame());
+  EXPECT_EQ(nullptr, GetMainFrame(&test_web_state_));
 
   auto main_frame = std::make_unique<FakeMainWebFrame>(GURL::EmptyGURL());
   FakeWebFrame* main_frame_ptr = main_frame.get();
   fake_web_frames_manager_->AddWebFrame(std::move(main_frame));
   // Now there is a main frame.
-  EXPECT_EQ(main_frame_ptr,
-            test_web_state_.GetWebFramesManager()->GetMainWebFrame());
+  EXPECT_EQ(main_frame_ptr, GetMainFrame(&test_web_state_));
 
   fake_web_frames_manager_->RemoveWebFrame(main_frame_ptr->GetFrameId());
   // Now there is no main frame.
-  EXPECT_EQ(nullptr, test_web_state_.GetWebFramesManager()->GetMainWebFrame());
+  EXPECT_EQ(nullptr, GetMainFrame(&test_web_state_));
 }
 
 // Tests the GetMainWebFrameId function.

@@ -7,24 +7,31 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_util.h"
 #include "services/network/cors/cors_url_loader.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/crash_keys.h"
-#include "services/network/cross_origin_read_blocking.h"
+#include "services/network/cross_origin_read_blocking_exception_for_plugin.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/cpp/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/trust_token_operation_authorization.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/url_loader.h"
@@ -34,6 +41,72 @@
 namespace network {
 
 namespace cors {
+
+namespace {
+
+using IsConsistent = ::util::StrongAlias<class IsConsistentTag, bool>;
+
+// Record, for requests with associated Trust Tokens operations of operation
+// types requiring initiators to have the Trust Tokens Feature Policy feature
+// enabled, whether the browser process thinks it's possible for the initiating
+// frame to have the feature enabled. (If the answer is "no," it indicates
+// a misbehaving renderer in theory but, unfortunately, is more likely a false
+// positive due to inconsistent state; see crbug.com/1117458.)
+void HistogramWhetherTrustTokenFeaturePolicyConsistentWithBrowserOpinion(
+    IsConsistent is_consistent) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "Net.TrustTokens.SubresourceOperationRequiringFeaturePolicy."
+      "PolicyIsConsistentWithBrowserOpinion",
+      is_consistent.value());
+}
+
+// Verifies state that should hold for Trust Tokens parameters provided by a
+// functioning renderer:
+// - Trust Tokens should be enabled
+// - the request should come from a trustworthy context
+// - if the request is for redemption or signing, it should be from a context
+// where these operations are permitted (as specified by
+// URLLoaderFactoryParams::trust_token_redemption_policy).
+bool VerifyTrustTokenParamsIntegrityIfPresent(
+    const ResourceRequest& url_request,
+    const NetworkContext* context,
+    mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy) {
+  if (!url_request.trust_token_params)
+    return true;
+
+  if (!context->trust_token_store()) {
+    // Got a request with Trust Tokens parameters with Trust tokens
+    // disabled.
+    //
+    // Here and below, we use concise error messages to make them easier to
+    // search search.
+    mojo::ReportBadMessage(
+        "TrustTokenParamsIntegrity: TrustTokensRequestWithTrustTokensDisabled");
+    return false;
+  }
+
+  if (trust_token_redemption_policy ==
+          mojom::TrustTokenRedemptionPolicy::kForbid &&
+      DoesTrustTokenOperationRequireFeaturePolicy(
+          url_request.trust_token_params->type)) {
+    // Got a request configured for Trust Tokens redemption or signing from
+    // a context in which this operation is prohibited.
+    //
+    // TODO(crbug.com/1118183): Re-add a ReportBadMessage (and false return)
+    // once the false positives in crbug.com/1117458 have been resolved.
+    base::debug::DumpWithoutCrashing();
+    HistogramWhetherTrustTokenFeaturePolicyConsistentWithBrowserOpinion(
+        IsConsistent(false));
+  } else if (DoesTrustTokenOperationRequireFeaturePolicy(
+                 url_request.trust_token_params->type)) {
+    HistogramWhetherTrustTokenFeaturePolicyConsistentWithBrowserOpinion(
+        IsConsistent(true));
+  }
+
+  return true;
+}
+
+}  // namespace
 
 class CorsURLLoaderFactory::FactoryOverride final {
  public:
@@ -112,12 +185,16 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
       is_trusted_(params->is_trusted),
       disable_web_security_(params->disable_web_security),
       process_id_(params->process_id),
-      request_initiator_site_lock_(params->request_initiator_site_lock),
+      request_initiator_origin_lock_(params->request_initiator_origin_lock),
       ignore_isolated_world_origin_(params->ignore_isolated_world_origin),
+      trust_token_redemption_policy_(params->trust_token_redemption_policy),
+      isolation_info_(params->isolation_info),
       origin_access_list_(origin_access_list) {
   DCHECK(context_);
   DCHECK(origin_access_list_);
   DCHECK_NE(mojom::kInvalidProcessId, process_id_);
+  DCHECK_EQ(net::IsolationInfo::RequestType::kOther,
+            params->isolation_info.request_type());
   if (params->automatically_assign_isolation_info) {
     DCHECK(params->isolation_info.IsEmpty());
     // Only the browser process is currently permitted to use automatically
@@ -190,7 +267,7 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
       factory_override_ ? factory_override_->get()
                         : network_loader_factory_.get();
   DCHECK(inner_url_loader_factory);
-  if (context_->IsCorsEnabled() && !disable_web_security_) {
+  if (!disable_web_security_) {
     auto loader = std::make_unique<CorsURLLoader>(
         std::move(receiver), process_id_, routing_id, request_id, options,
         base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
@@ -202,7 +279,7 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
         origin_access_list_, factory_bound_origin_access_list_.get(),
         context_->cors_preflight_controller(),
         context_->cors_exempt_header_list(),
-        GetAllowAnyCorsExemptHeaderForBrowser());
+        GetAllowAnyCorsExemptHeaderForBrowser(), isolation_info_);
     auto* raw_loader = loader.get();
     OnLoaderCreated(std::move(loader));
     raw_loader->Start();
@@ -316,10 +393,11 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
     }
   }
 
-  // Compare |request_initiator| and |request_initiator_site_lock_|.
+  // Compare |request_initiator| and |request_initiator_origin_lock_|.
   InitiatorLockCompatibility initiator_lock_compatibility =
-      VerifyRequestInitiatorLockWithPluginCheck(
-          process_id_, request_initiator_site_lock_, request.request_initiator);
+      VerifyRequestInitiatorLockWithPluginCheck(process_id_,
+                                                request_initiator_origin_lock_,
+                                                request.request_initiator);
   UMA_HISTOGRAM_ENUMERATION(
       "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
       initiator_lock_compatibility);
@@ -331,11 +409,13 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
       break;
 
     case InitiatorLockCompatibility::kNoLock:
-      // TODO(lukasza): https://crbug.com/891872: Browser process should always
-      // specify the request_initiator_site_lock in URLLoaderFactories given to
-      // a renderer process.  Once https://crbug.com/891872 is fixed, the case
-      // below should return |false| (i.e. = bad message).
-      break;
+      // |request_initiator_origin_lock| should always be set in a
+      // URLLoaderFactory vended to a renderer process.  See also
+      // https://crbug.com/1114906.
+      NOTREACHED();
+      mojo::ReportBadMessage(
+          "CorsURLLoaderFactory: no initiator lock in a renderer request");
+      return false;
 
     case InitiatorLockCompatibility::kNoInitiator:
       // Requests from the renderer need to always specify an initiator.
@@ -347,7 +427,15 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
     case InitiatorLockCompatibility::kIncorrectLock:
       // Requests from the renderer need to always specify a correct initiator.
       NOTREACHED();
-      // TODO(lukasza): https://crbug.com/920634: Return false below.
+      if (base::FeatureList::IsEnabled(
+              features::kRequestInitiatorSiteLockEnfocement)) {
+        url::debug::ScopedOriginCrashKey initiator_lock_crash_key(
+            debug::GetRequestInitiatorOriginLockCrashKey(),
+            base::OptionalOrNullptr(request_initiator_origin_lock_));
+        mojo::ReportBadMessage(
+            "CorsURLLoaderFactory: lock VS initiator mismatch");
+        return false;
+      }
       break;
   }
 
@@ -395,6 +483,20 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
     }
   }
 
+  if (!VerifyTrustTokenParamsIntegrityIfPresent(
+          request, context_, trust_token_redemption_policy_)) {
+    // VerifyTrustTokenParamsIntegrityIfPresent will report an appropriate bad
+    // message.
+    return false;
+  }
+
+  if (!net::HttpUtil::IsToken(request.method)) {
+    // Callers are expected to ensure that |method| follows RFC 7230.
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: invalid characters in method");
+    return false;
+  }
+
   // TODO(yhirano): If the request mode is "no-cors", the redirect mode should
   // be "follow".
   return true;
@@ -403,16 +505,17 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
 InitiatorLockCompatibility
 CorsURLLoaderFactory::VerifyRequestInitiatorLockWithPluginCheck(
     uint32_t process_id,
-    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const base::Optional<url::Origin>& request_initiator_origin_lock,
     const base::Optional<url::Origin>& request_initiator) {
   if (process_id == mojom::kBrowserProcessId)
     return InitiatorLockCompatibility::kBrowserProcess;
 
   InitiatorLockCompatibility result = VerifyRequestInitiatorLock(
-      request_initiator_site_lock, request_initiator);
+      request_initiator_origin_lock, request_initiator);
 
   if (result == InitiatorLockCompatibility::kIncorrectLock &&
-      CrossOriginReadBlocking::ShouldAllowForPlugin(process_id)) {
+      CrossOriginReadBlockingExceptionForPlugin::ShouldAllowForPlugin(
+          process_id)) {
     result = InitiatorLockCompatibility::kExcludedCorbForPlugin;
   }
 

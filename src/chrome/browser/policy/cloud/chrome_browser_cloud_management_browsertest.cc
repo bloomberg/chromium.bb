@@ -8,7 +8,7 @@
 #include <tuple>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -28,16 +28,17 @@
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
-#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/fake_browser_dm_token_storage.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
+#include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
+#include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
+#include "components/enterprise/browser/enterprise_switches.h"
 #include "components/policy/core/common/cloud/chrome_browser_cloud_management_metrics.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -60,7 +61,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/widget_test.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/policy/cloud/chrome_browser_cloud_management_browsertest_mac_util.h"
 #endif
 
@@ -102,7 +103,7 @@ class ChromeBrowserCloudManagementControllerObserver
   void OnPolicyRegisterFinished(bool succeeded) override {
     if (!succeeded && should_display_error_message_) {
       EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       PostAppControllerNSNotifications();
 #endif
       // Close the error dialog.
@@ -462,6 +463,7 @@ class ChromeBrowserCloudManagementEnrollmentTest
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl,
                                     test_server_.GetServiceURL().spec());
+    ChromeBrowserPolicyConnector::EnableCommandLineSupportForTesting();
 
     histogram_tester_.ExpectTotalCount(kEnrollmentResultMetrics, 0);
   }
@@ -483,7 +485,7 @@ class ChromeBrowserCloudManagementEnrollmentTest
 
   void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
     static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
-        new ChromeBrowserExtraSetUp(&observer_));
+        std::make_unique<ChromeBrowserExtraSetUp>(&observer_));
   }
 
   void VerifyEnrollmentResult() {
@@ -535,6 +537,7 @@ class ChromeBrowserCloudManagementEnrollmentTest
 #define MAYBE_Test Test
 #endif
 IN_PROC_BROWSER_TEST_P(ChromeBrowserCloudManagementEnrollmentTest, MAYBE_Test) {
+#undef MAYBE_Test
   // Test body is run only if enrollment is succeeded or failed without error
   // message.
   EXPECT_TRUE(is_enrollment_token_valid() || !should_display_error_message());
@@ -542,7 +545,7 @@ IN_PROC_BROWSER_TEST_P(ChromeBrowserCloudManagementEnrollmentTest, MAYBE_Test) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
   VerifyEnrollmentResult();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Verify the last mericis of launch is recorded in
   // applicationDidFinishNotification.
   EXPECT_EQ(1u, histogram_tester_
@@ -601,6 +604,7 @@ class MachineLevelUserCloudPolicyPolicyFetchTest
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl,
                                     test_server_->GetServiceURL().spec());
+    ChromeBrowserPolicyConnector::EnableCommandLineSupportForTesting();
   }
 
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -676,7 +680,7 @@ IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyPolicyFetchTest, Test) {
   const PolicyMap& policy_map = manager->store()->policy_map();
   if (dm_token() != kInvalidDMToken) {
     EXPECT_EQ(1u, policy_map.size());
-    EXPECT_EQ(base::Value(true), *(policy_map.Get("ShowHomeButton")->value));
+    EXPECT_EQ(base::Value(true), *(policy_map.Get("ShowHomeButton")->value()));
 
     // The token in storage should be valid.
     DMToken token = retrieve_dm_token();
@@ -722,7 +726,7 @@ class MachineLevelUserCloudPolicyRobotAuthTest
  public:
   MachineLevelUserCloudPolicyRobotAuthTest() {
     scoped_feature_list_.InitAndEnableFeature(
-        policy::features::kCBCMServiceAccounts);
+        policy::features::kCBCMPolicyInvalidations);
 
     BrowserDMTokenStorage::SetForTesting(&storage_);
     storage_.SetEnrollmentToken(kEnrollmentToken);
@@ -761,6 +765,7 @@ class MachineLevelUserCloudPolicyRobotAuthTest
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl,
                                     test_server_->GetServiceURL().spec());
+    ChromeBrowserPolicyConnector::EnableCommandLineSupportForTesting();
   }
 
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -789,7 +794,13 @@ class MachineLevelUserCloudPolicyRobotAuthTest
   network::TestURLLoaderFactory test_url_loader_factory_;
 };  // namespace policy
 
-IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyRobotAuthTest, Test) {
+// Flaky on linux & win: https://crbug.com/1105167
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
+IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyRobotAuthTest, MAYBE_Test) {
   MachineLevelUserCloudPolicyManager* manager =
       g_browser_process->browser_policy_connector()
           ->machine_level_user_cloud_policy_manager();
@@ -800,7 +811,6 @@ IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyRobotAuthTest, Test) {
     // Listen to store event which is fired after policy validation if token is
     // valid.
     std::unique_ptr<PolicyFetchStoreObserver> store_observer;
-
     store_observer = std::make_unique<PolicyFetchStoreObserver>(
         manager->store(), run_loop.QuitClosure());
 
@@ -815,7 +825,7 @@ IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyRobotAuthTest, Test) {
   const PolicyMap& policy_map = manager->store()->policy_map();
 
   EXPECT_EQ(1u, policy_map.size());
-  EXPECT_EQ(base::Value(true), *(policy_map.Get("ShowHomeButton")->value));
+  EXPECT_EQ(base::Value(true), *(policy_map.Get("ShowHomeButton")->value()));
 
   // The token in storage should be valid.
   DMToken token = retrieve_dm_token();

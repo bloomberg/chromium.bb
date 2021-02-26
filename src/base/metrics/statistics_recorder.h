@@ -39,7 +39,7 @@ class HistogramSnapshotManager;
 //
 // All the public methods are static and act on a global recorder. This global
 // recorder is internally synchronized and all the static methods are thread
-// safe.
+// safe. This is intended to only be run/used in the browser process.
 //
 // StatisticsRecorder doesn't have any public constructor. For testing purpose,
 // you can create a temporary recorder using the factory method
@@ -143,7 +143,10 @@ class BASE_EXPORT StatisticsRecorder {
                             HistogramBase::Flags required_flags,
                             HistogramSnapshotManager* snapshot_manager);
 
-  using OnSampleCallback = base::RepeatingCallback<void(HistogramBase::Sample)>;
+  using OnSampleCallback =
+      base::RepeatingCallback<void(const char* /*=histogram_name*/,
+                                   uint64_t /*=name_hash*/,
+                                   HistogramBase::Sample)>;
 
   // Sets the callback to notify when a new sample is recorded on the histogram
   // referred to by |histogram_name|. Can be called before or after the

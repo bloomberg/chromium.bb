@@ -17,7 +17,6 @@ class SearchResultActionsView;
 
 // Base class for views that observe and display a search result
 class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
-                                             public views::ButtonListener,
                                              public SearchResultObserver {
  public:
   SearchResultBaseView();
@@ -31,19 +30,25 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
   //     handling TAB keyboard key. Ignored if |selected| is false.
   void SetSelected(bool selected, base::Optional<bool> reverse_tab_order);
 
+  // Selects the initial action that should be associated with the result view,
+  // notifying a11y hierarchy of the selection. If the result view does not
+  // support result actions (i.e. does not have actions_view_), this will just
+  // announce the current result view selection.
+  // |reverse_tab_order| - whether the action was selected in reverse tab order.
+  virtual void SelectInitialResultAction(bool reverse_tab_order);
+
   // Selects the next result action for the view, if the result supports
   // non-default actions (see actions_view_).
   // |reverse_tab_order| - whether the action was selected while handling TAB
   // key in reverse tab order.
   //
   // Returns whether the selected result action was changed.
-  bool SelectNextResultAction(bool reverse_tab_order);
+  virtual bool SelectNextResultAction(bool reverse_tab_order);
 
-  // If the search result is currently selected, sends the appropriate
-  // kSelection view accessibility event. For example, if a result action is
-  // selected, the notification will be sent for the selected action button
-  // view.
-  void NotifyA11yResultSelected();
+  // Returns the view that is currently selected - for example, if the result
+  // supports action views and an action view is currently selected, this
+  // should return the action view, otherwise it should return `this`.
+  virtual views::View* GetSelectedView();
 
   SearchResult* result() const { return result_; }
   void SetResult(SearchResult* result);
@@ -101,13 +106,6 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
   }
 
  private:
-  // Selects the initial action that should be associated with the result view,
-  // notifying a11y hierarchy of the selection. If the result view does not
-  // support result actions (i.e. does not have actions_view_), this will just
-  // announce the current result view selection.
-  // |reverse_tab_order| - whether the action was selected in reverse tab order.
-  void SelectInitialResultAction(bool reverse_tab_order);
-
   // If non-default result action was selected, clears the actions_view_'s
   // selection state.
   void ClearSelectedResultAction();

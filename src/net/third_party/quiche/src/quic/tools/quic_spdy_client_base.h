@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_client_push_promise_index.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session.h"
@@ -17,7 +18,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_config.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quiche/src/quic/tools/quic_client_base.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -36,7 +36,7 @@ class QuicSpdyClientBase : public QuicClientBase,
     virtual ~ResponseListener() {}
     virtual void OnCompleteResponse(
         QuicStreamId id,
-        const spdy::SpdyHeaderBlock& response_headers,
+        const spdy::Http2HeaderBlock& response_headers,
         const std::string& response_body) = 0;
   };
 
@@ -46,8 +46,8 @@ class QuicSpdyClientBase : public QuicClientBase,
   class QuicDataToResend {
    public:
     // |headers| may be null, since it's possible to send data without headers.
-    QuicDataToResend(std::unique_ptr<spdy::SpdyHeaderBlock> headers,
-                     quiche::QuicheStringPiece body,
+    QuicDataToResend(std::unique_ptr<spdy::Http2HeaderBlock> headers,
+                     absl::string_view body,
                      bool fin);
     QuicDataToResend(const QuicDataToResend&) = delete;
     QuicDataToResend& operator=(const QuicDataToResend&) = delete;
@@ -59,8 +59,8 @@ class QuicSpdyClientBase : public QuicClientBase,
     virtual void Resend() = 0;
 
    protected:
-    std::unique_ptr<spdy::SpdyHeaderBlock> headers_;
-    quiche::QuicheStringPiece body_;
+    std::unique_ptr<spdy::Http2HeaderBlock> headers_;
+    absl::string_view body_;
     bool fin_;
   };
 
@@ -85,13 +85,13 @@ class QuicSpdyClientBase : public QuicClientBase,
   void InitializeSession() override;
 
   // Sends an HTTP request and does not wait for response before returning.
-  void SendRequest(const spdy::SpdyHeaderBlock& headers,
-                   quiche::QuicheStringPiece body,
+  void SendRequest(const spdy::Http2HeaderBlock& headers,
+                   absl::string_view body,
                    bool fin);
 
   // Sends an HTTP request and waits for response before returning.
-  void SendRequestAndWaitForResponse(const spdy::SpdyHeaderBlock& headers,
-                                     quiche::QuicheStringPiece body,
+  void SendRequestAndWaitForResponse(const spdy::Http2HeaderBlock& headers,
+                                     absl::string_view body,
                                      bool fin);
 
   // Sends a request simple GET for each URL in |url_list|, and then waits for
@@ -104,14 +104,15 @@ class QuicSpdyClientBase : public QuicClientBase,
   // Returns a the session used for this client downcasted to a
   // QuicSpdyClientSession.
   QuicSpdyClientSession* client_session();
+  const QuicSpdyClientSession* client_session() const;
 
   QuicClientPushPromiseIndex* push_promise_index() {
     return &push_promise_index_;
   }
 
-  bool CheckVary(const spdy::SpdyHeaderBlock& client_request,
-                 const spdy::SpdyHeaderBlock& promise_request,
-                 const spdy::SpdyHeaderBlock& promise_response) override;
+  bool CheckVary(const spdy::Http2HeaderBlock& client_request,
+                 const spdy::Http2HeaderBlock& promise_request,
+                 const spdy::Http2HeaderBlock& promise_response) override;
   void OnRendezvousResult(QuicSpdyStream*) override;
 
   // If the crypto handshake has not yet been confirmed, adds the data to the
@@ -125,7 +126,7 @@ class QuicSpdyClientBase : public QuicClientBase,
   int latest_response_code() const;
   const std::string& latest_response_headers() const;
   const std::string& preliminary_response_headers() const;
-  const spdy::SpdyHeaderBlock& latest_response_header_block() const;
+  const spdy::Http2HeaderBlock& latest_response_header_block() const;
   const std::string& latest_response_body() const;
   const std::string& latest_response_trailers() const;
 
@@ -142,6 +143,8 @@ class QuicSpdyClientBase : public QuicClientBase,
   // TODO(b/151641466): Rename this method.
   void SetMaxAllowedPushId(PushId max) { max_allowed_push_id_ = max; }
 
+  // QuicClientBase methods.
+  bool goaway_received() const override;
   bool EarlyDataAccepted() override;
   bool ReceivedInchoateReject() override;
 
@@ -158,8 +161,8 @@ class QuicSpdyClientBase : public QuicClientBase,
 
   void ResendSavedData() override;
 
-  void AddPromiseDataToResend(const spdy::SpdyHeaderBlock& headers,
-                              quiche::QuicheStringPiece body,
+  void AddPromiseDataToResend(const spdy::Http2HeaderBlock& headers,
+                              absl::string_view body,
                               bool fin);
   bool HasActiveRequests() override;
 
@@ -167,8 +170,8 @@ class QuicSpdyClientBase : public QuicClientBase,
   // Specific QuicClient class for storing data to resend.
   class ClientQuicDataToResend : public QuicDataToResend {
    public:
-    ClientQuicDataToResend(std::unique_ptr<spdy::SpdyHeaderBlock> headers,
-                           quiche::QuicheStringPiece body,
+    ClientQuicDataToResend(std::unique_ptr<spdy::Http2HeaderBlock> headers,
+                           absl::string_view body,
                            bool fin,
                            QuicSpdyClientBase* client)
         : QuicDataToResend(std::move(headers), body, fin), client_(client) {
@@ -186,8 +189,8 @@ class QuicSpdyClientBase : public QuicClientBase,
     QuicSpdyClientBase* client_;
   };
 
-  void SendRequestInternal(spdy::SpdyHeaderBlock sanitized_headers,
-                           quiche::QuicheStringPiece body,
+  void SendRequestInternal(spdy::Http2HeaderBlock sanitized_headers,
+                           absl::string_view body,
                            bool fin);
 
   // Index of pending promised streams. Must outlive |session_|.
@@ -202,7 +205,7 @@ class QuicSpdyClientBase : public QuicClientBase,
   // preliminary 100 Continue HTTP/2 headers from most recent response, if any.
   std::string preliminary_response_headers_;
   // HTTP/2 headers from most recent response.
-  spdy::SpdyHeaderBlock latest_response_header_block_;
+  spdy::Http2HeaderBlock latest_response_header_block_;
   // Body of most recent response.
   std::string latest_response_body_;
   // HTTP/2 trailers from most recent response.

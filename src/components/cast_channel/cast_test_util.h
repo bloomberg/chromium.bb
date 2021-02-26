@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cast_channel/cast_message_handler.h"
+#include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/cast_channel/cast_transport.h"
@@ -165,8 +166,11 @@ class MockCastMessageHandler : public CastMessageHandler {
   explicit MockCastMessageHandler(MockCastSocketService* socket_service);
   ~MockCastMessageHandler() override;
 
-  MOCK_METHOD3(EnsureConnection,
-               void(int, const std::string&, const std::string&));
+  MOCK_METHOD4(EnsureConnection,
+               void(int,
+                    const std::string&,
+                    const std::string&,
+                    VirtualConnectionType connection_type));
   MOCK_METHOD3(CloseConnection,
                void(int, const std::string&, const std::string&));
   MOCK_METHOD3(RequestAppAvailability,
@@ -175,15 +179,15 @@ class MockCastMessageHandler : public CastMessageHandler {
                     GetAppAvailabilityCallback callback));
   MOCK_METHOD1(RequestReceiverStatus, void(int channel_id));
   MOCK_METHOD3(SendBroadcastMessage,
-               void(int,
-                    const std::vector<std::string>&,
-                    const BroadcastRequest&));
+               Result(int,
+                      const std::vector<std::string>&,
+                      const BroadcastRequest&));
   MOCK_METHOD6(LaunchSession,
                void(int,
                     const std::string&,
                     base::TimeDelta,
                     const std::vector<std::string>&,
-                    const std::string&,
+                    const base::Optional<base::Value>&,
                     LaunchSessionCallback callback));
   MOCK_METHOD4(StopSession,
                void(int channel_id,
@@ -191,6 +195,8 @@ class MockCastMessageHandler : public CastMessageHandler {
                     const base::Optional<std::string>& client_id,
                     ResultCallback callback));
   MOCK_METHOD2(SendAppMessage,
+               Result(int channel_id, const CastMessage& message));
+  MOCK_METHOD2(SendCastMessage,
                Result(int channel_id, const CastMessage& message));
   MOCK_METHOD4(SendMediaRequest,
                base::Optional<int>(int channel_id,

@@ -31,33 +31,31 @@ namespace enterprise.reportingPrivate {
     DOMString serialNumber;
     SettingValue screenLockSecured;
     SettingValue diskEncrypted;
+    DOMString[] macAddresses;
   };
 
   // Invoked by <code>getDeviceInfo</code> to return device information.
   callback GetDeviceInfoCallback = void(DeviceInfo deviceInfo);
 
   interface Functions {
-
-    // Uploads the status of Chrome browser to the admin console by sending
-    // request to the DMServer. Sets runtime.lastError on failure.
-    static void uploadChromeDesktopReport(
-        object report,
-        optional DoneCallback callback);
-
     // Gets the identity of device that Chrome browser is running on. The ID is
     // retrieved from the local device and used by the Google admin console.
     static void getDeviceId(optional GetDeviceIdCallback callback);
 
     // Gets a randomly generated persistent secret (symmetric key) that
-    // can be used to encrypt the data stored with |setDeviceData|.
-    static void getPersistentSecret(GetPersistentSecretCallback callback);
+    // can be used to encrypt the data stored with |setDeviceData|. If the
+    // optional parameter |forceCreation| is set to true the secret is recreated
+    // in case of any failure to retrieve the currently stored one. Sets
+    // $(ref:runtime.lastError) on failure.
+    static void getPersistentSecret(optional boolean resetSecret,
+        GetPersistentSecretCallback callback);
 
-    // Gets the device data for |id|. Sets runtime.lastError on failure.
+    // Gets the device data for |id|. Sets $(ref:runtime.lastError) on failure.
     static void getDeviceData(DOMString id, GetDeviceDataCallback callback);
 
-    // Sets the device data for |id|. Sets runtime.lastError on failure. If the
-    // |data| parameter is undefined and there is already data associated with
-    // |id| it will be cleared.
+    // Sets the device data for |id|. Sets $(ref:runtime.lastError) on failure.
+    // If the |data| parameter is undefined and there is already data
+    // associated with |id| it will be cleared.
     static void setDeviceData(DOMString id,
              optional ArrayBuffer data,
              optional DoneCallback callback);

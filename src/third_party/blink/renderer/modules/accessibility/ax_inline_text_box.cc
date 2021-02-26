@@ -28,13 +28,21 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_inline_text_box.h"
 
-#include "third_party/blink/renderer/core/dom/range.h"
+#include <utility>
+
+#include "base/numerics/clamped_math.h"
+#include "base/optional.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_position.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
-#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -43,22 +51,8 @@ AXInlineTextBox::AXInlineTextBox(
     AXObjectCacheImpl& ax_object_cache)
     : AXObject(ax_object_cache), inline_text_box_(std::move(inline_text_box)) {}
 
-void AXInlineTextBox::Init() {}
-
-void AXInlineTextBox::Detach() {
-  AXObject::Detach();
-  inline_text_box_ = nullptr;
-}
-
-bool AXInlineTextBox::IsLineBreakingObject() const {
-  if (IsDetached())
-    return AXObject::IsLineBreakingObject();
-
-  // If this object is a forced line break, or the parent is a <br>
-  // element, then this object is line breaking.
-  const AXObject* parent = ParentObject();
-  return inline_text_box_->IsLineBreak() ||
-         (parent && parent->RoleValue() == ax::mojom::Role::kLineBreak);
+ax::mojom::blink::Role AXInlineTextBox::RoleValue() const {
+  return ax::mojom::blink::Role::kInlineTextBox;
 }
 
 void AXInlineTextBox::GetRelativeBounds(AXObject** out_container,
@@ -70,8 +64,9 @@ void AXInlineTextBox::GetRelativeBounds(AXObject** out_container,
   out_container_transform.setIdentity();
 
   if (!inline_text_box_ || !ParentObject() ||
-      !ParentObject()->GetLayoutObject())
+      !ParentObject()->GetLayoutObject()) {
     return;
+  }
 
   *out_container = ParentObject();
   out_bounds_in_container = FloatRect(inline_text_box_->LocalBounds());
@@ -99,17 +94,16 @@ bool AXInlineTextBox::ComputeAccessibilityIsIgnored(
 }
 
 void AXInlineTextBox::TextCharacterOffsets(Vector<int>& offsets) const {
-  if (!inline_text_box_)
+  if (IsDetached())
     return;
 
-  unsigned len = inline_text_box_->Len();
   Vector<float> widths;
   inline_text_box_->CharacterWidths(widths);
-  DCHECK_EQ(widths.size(), len);
-  offsets.resize(len);
+  DCHECK_EQ(int{widths.size()}, TextLength());
+  offsets.resize(TextLength());
 
   float width_so_far = 0;
-  for (unsigned i = 0; i < len; i++) {
+  for (int i = 0; i < TextLength(); i++) {
     width_so_far += widths[i];
     offsets[i] = roundf(width_so_far);
   }
@@ -118,8 +112,9 @@ void AXInlineTextBox::TextCharacterOffsets(Vector<int>& offsets) const {
 void AXInlineTextBox::GetWordBoundaries(Vector<int>& word_starts,
                                         Vector<int>& word_ends) const {
   if (!inline_text_box_ ||
-      inline_text_box_->GetText().ContainsOnlyWhitespaceOrEmpty())
+      inline_text_box_->GetText().ContainsOnlyWhitespaceOrEmpty()) {
     return;
+  }
 
   Vector<AbstractInlineTextBox::WordBoundaries> boundaries;
   inline_text_box_->GetWordBoundaries(boundaries);
@@ -131,19 +126,44 @@ void AXInlineTextBox::GetWordBoundaries(Vector<int>& word_starts,
   }
 }
 
-unsigned AXInlineTextBox::TextOffsetInContainer(unsigned offset) const {
-  if (!inline_text_box_)
+int AXInlineTextBox::TextOffsetInFormattingContext(int offset) const {
+  DCHECK_GE(offset, 0);
+  if (IsDetached())
     return 0;
 
-  return inline_text_box_->TextOffsetInContainer(offset);
+  // Retrieve the text offset from the start of the layout block flow ancestor.
+  return int{inline_text_box_->TextOffsetInFormattingContext(
+      static_cast<unsigned int>(offset))};
 }
 
-String AXInlineTextBox::GetName(ax::mojom::NameFrom& name_from,
+int AXInlineTextBox::TextOffsetInContainer(int offset) const {
+  DCHECK_GE(offset, 0);
+  if (IsDetached())
+    return 0;
+
+  // Retrieve the text offset from the start of the layout block flow ancestor.
+  int offset_in_block_flow_container = TextOffsetInFormattingContext(offset);
+  const AXObject* parent = ParentObject();
+  if (!parent)
+    return offset_in_block_flow_container;
+
+  // If the parent object in the accessibility tree exists, then it is either
+  // a static text object or a line break. In the static text case, it is an
+  // AXLayoutObject associated with an inline text object. Hence the container
+  // is another inline object, not a layout block flow. We need to subtract the
+  // text start offset of the static text parent from the text start offset of
+  // this inline text box.
+  int offset_in_inline_parent = parent->TextOffsetInFormattingContext(0);
+  DCHECK_LE(offset_in_inline_parent, offset_in_block_flow_container);
+  return offset_in_block_flow_container - offset_in_inline_parent;
+}
+
+String AXInlineTextBox::GetName(ax::mojom::blink::NameFrom& name_from,
                                 AXObject::AXObjectVector* name_objects) const {
-  if (!inline_text_box_)
+  if (IsDetached())
     return String();
 
-  name_from = ax::mojom::NameFrom::kContents;
+  name_from = ax::mojom::blink::NameFrom::kContents;
   return inline_text_box_->GetText();
 }
 
@@ -160,32 +180,35 @@ AXObject* AXInlineTextBox::ComputeParent() const {
 
 // In addition to LTR and RTL direction, edit fields also support
 // top to bottom and bottom to top via the CSS writing-mode property.
-ax::mojom::TextDirection AXInlineTextBox::GetTextDirection() const {
-  if (!inline_text_box_)
+ax::mojom::blink::WritingDirection AXInlineTextBox::GetTextDirection() const {
+  if (IsDetached())
     return AXObject::GetTextDirection();
 
   switch (inline_text_box_->GetDirection()) {
     case AbstractInlineTextBox::kLeftToRight:
-      return ax::mojom::TextDirection::kLtr;
+      return ax::mojom::blink::WritingDirection::kLtr;
     case AbstractInlineTextBox::kRightToLeft:
-      return ax::mojom::TextDirection::kRtl;
+      return ax::mojom::blink::WritingDirection::kRtl;
     case AbstractInlineTextBox::kTopToBottom:
-      return ax::mojom::TextDirection::kTtb;
+      return ax::mojom::blink::WritingDirection::kTtb;
     case AbstractInlineTextBox::kBottomToTop:
-      return ax::mojom::TextDirection::kBtt;
+      return ax::mojom::blink::WritingDirection::kBtt;
   }
 
   return AXObject::GetTextDirection();
 }
 
 Node* AXInlineTextBox::GetNode() const {
-  if (!inline_text_box_)
+  if (IsDetached())
     return nullptr;
 
   return inline_text_box_->GetNode();
 }
 
 AXObject* AXInlineTextBox::NextOnLine() const {
+  if (IsDetached())
+    return nullptr;
+
   if (inline_text_box_->IsLast())
     return ParentObject()->NextOnLine();
 
@@ -198,6 +221,9 @@ AXObject* AXInlineTextBox::NextOnLine() const {
 }
 
 AXObject* AXInlineTextBox::PreviousOnLine() const {
+  if (IsDetached())
+    return nullptr;
+
   if (inline_text_box_->IsFirst())
     return ParentObject()->PreviousOnLine();
 
@@ -207,6 +233,128 @@ AXObject* AXInlineTextBox::PreviousOnLine() const {
     return ax_object_cache_->GetOrCreate(previous_on_line.get());
 
   return nullptr;
+}
+
+void AXInlineTextBox::GetDocumentMarkers(
+    Vector<DocumentMarker::MarkerType>* marker_types,
+    Vector<AXRange>* marker_ranges) const {
+  if (!RuntimeEnabledFeatures::
+          AccessibilityUseAXPositionForDocumentMarkersEnabled())
+    return;
+
+  if (IsDetached())
+    return;
+  if (!GetDocument() ||
+      GetDocument()->IsSlotAssignmentOrLegacyDistributionDirty()) {
+    // In order to retrieve the document markers we need access to the flat
+    // tree. If the slot assignments in a shadow DOM subtree are dirty,
+    // accessing the flat tree will cause them to be updated, which could in
+    // turn cause an update to the accessibility tree, potentially causing this
+    // method to be called repeatedly.
+    return;  // Wait until distribution for flat tree traversal has been
+             // updated.
+  }
+
+  int text_length = TextLength();
+  if (!text_length)
+    return;
+  const auto ax_range = AXRange::RangeOfContents(*this);
+
+  // First use ARIA markers for spelling/grammar if available.
+  base::Optional<DocumentMarker::MarkerType> aria_marker_type =
+      GetAriaSpellingOrGrammarMarker();
+  if (aria_marker_type) {
+    marker_types->push_back(aria_marker_type.value());
+    marker_ranges->push_back(ax_range);
+  }
+
+  DocumentMarkerController& marker_controller = GetDocument()->Markers();
+  const Position dom_range_start =
+      ax_range.Start().ToPosition(AXPositionAdjustmentBehavior::kMoveLeft);
+  const Position dom_range_end =
+      ax_range.End().ToPosition(AXPositionAdjustmentBehavior::kMoveRight);
+  if (dom_range_start.IsNull() || dom_range_end.IsNull())
+    return;
+
+  const EphemeralRangeInFlatTree dom_range(
+      ToPositionInFlatTree(dom_range_start),
+      ToPositionInFlatTree(dom_range_end));
+  DCHECK(dom_range.IsNotNull());
+  const DocumentMarker::MarkerTypes markers_used_by_accessibility(
+      DocumentMarker::kSpelling | DocumentMarker::kGrammar |
+      DocumentMarker::kTextMatch | DocumentMarker::kActiveSuggestion |
+      DocumentMarker::kSuggestion | DocumentMarker::kTextFragment);
+  // "MarkersIntersectingRange" performs a binary search through the document
+  // markers list for markers in the given range and of the given types. It
+  // should be of a logarithmic complexity.
+  const VectorOfPairs<const Text, DocumentMarker> node_marker_pairs =
+      marker_controller.MarkersIntersectingRange(dom_range,
+                                                 markers_used_by_accessibility);
+  const int start_text_offset_in_parent = TextOffsetInContainer(0);
+  for (const auto& node_marker_pair : node_marker_pairs) {
+    DCHECK_EQ(GetNode(), node_marker_pair.first);
+    const DocumentMarker* marker = node_marker_pair.second;
+
+    if (aria_marker_type == marker->GetType())
+      continue;
+
+    // The document markers are represented by DOM offsets in this object's
+    // static text parent. We need to translate to text offsets in the
+    // accessibility tree, first in this object's parent and then to local text
+    // offsets.
+    const auto start_position = AXPosition::FromPosition(
+        Position(*GetNode(), marker->StartOffset()), TextAffinity::kDownstream,
+        AXPositionAdjustmentBehavior::kMoveLeft);
+    const auto end_position = AXPosition::FromPosition(
+        Position(*GetNode(), marker->EndOffset()), TextAffinity::kDownstream,
+        AXPositionAdjustmentBehavior::kMoveRight);
+    if (!start_position.IsValid() || !end_position.IsValid())
+      continue;
+
+    const int local_start_offset = base::ClampMax(
+        start_position.TextOffset() - start_text_offset_in_parent, 0);
+    DCHECK_LE(local_start_offset, text_length);
+    const int local_end_offset = base::ClampMin(
+        end_position.TextOffset() - start_text_offset_in_parent, text_length);
+    DCHECK_GE(local_end_offset, 0);
+
+    marker_types->push_back(marker->GetType());
+    marker_ranges->emplace_back(
+        AXPosition::CreatePositionInTextObject(*this, local_start_offset),
+        AXPosition::CreatePositionInTextObject(*this, local_end_offset));
+  }
+}
+
+void AXInlineTextBox::Init() {}
+
+void AXInlineTextBox::Detach() {
+  inline_text_box_ = nullptr;
+  AXObject::Detach();
+}
+
+bool AXInlineTextBox::IsDetached() const {
+  return !inline_text_box_ || AXObject::IsDetached();
+}
+
+bool AXInlineTextBox::IsAXInlineTextBox() const {
+  return true;
+}
+
+bool AXInlineTextBox::IsLineBreakingObject() const {
+  if (IsDetached())
+    return AXObject::IsLineBreakingObject();
+
+  // If this object is a forced line break, or the parent is a <br>
+  // element, then this object is line breaking.
+  const AXObject* parent = ParentObject();
+  return inline_text_box_->IsLineBreak() ||
+         (parent && parent->RoleValue() == ax::mojom::blink::Role::kLineBreak);
+}
+
+int AXInlineTextBox::TextLength() const {
+  if (IsDetached())
+    return 0;
+  return int{inline_text_box_->Len()};
 }
 
 }  // namespace blink

@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-if (is_win || is_mac || is_desktop_linux || is_chromeos) {
+if (is_win || is_mac || is_linux || is_chromeos) {
   mojom("mojo_bindings") {
     sources = [
       "discards.mojom",
@@ -16,5 +16,7 @@ if (is_win || is_mac || is_desktop_linux || is_chromeos) {
       "//mojo/public/mojom/base",
       "//url/mojom:url_mojom_gurl",
     ]
+
+    webui_module_path = "/chrome/browser/ui/webui/discards"
   }
 }

@@ -10,8 +10,9 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/proto/webprotect.pb.h"
 
 namespace base {
 class Value;
@@ -40,16 +41,21 @@ class EventReportValidator {
       const std::string& expected_threat_type,
       const std::string& expected_trigger,
       const std::set<std::string>* expected_mimetypes,
-      int expected_content_size);
+      int expected_content_size,
+      const std::string& expected_result,
+      const std::string& expected_username);
 
   void ExpectSensitiveDataEvent(
       const std::string& expected_url,
       const std::string& expected_filename,
       const std::string& expected_sha256,
       const std::string& expected_trigger,
-      const DlpDeepScanningVerdict& expected_dlp_verdict,
+      const enterprise_connectors::ContentAnalysisResponse::Result&
+          expected_dlp_verdict,
       const std::set<std::string>* expected_mimetypes,
-      int expected_content_size);
+      int expected_content_size,
+      const std::string& expected_result,
+      const std::string& expected_username);
 
   void ExpectDangerousDeepScanningResultAndSensitiveDataEvent(
       const std::string& expected_url,
@@ -57,9 +63,25 @@ class EventReportValidator {
       const std::string& expected_sha256,
       const std::string& expected_threat_type,
       const std::string& expected_trigger,
-      const DlpDeepScanningVerdict& expected_dlp_verdict,
+      const enterprise_connectors::ContentAnalysisResponse::Result&
+          expected_dlp_verdict,
       const std::set<std::string>* expected_mimetypes,
-      int expected_content_size);
+      int expected_content_size,
+      const std::string& expected_result,
+      const std::string& expected_username);
+
+  void ExpectSensitiveDataEventAndDangerousDeepScanningResult(
+      const std::string& expected_url,
+      const std::string& expected_filename,
+      const std::string& expected_sha256,
+      const std::string& expected_threat_type,
+      const std::string& expected_trigger,
+      const enterprise_connectors::ContentAnalysisResponse::Result&
+          expected_dlp_verdict,
+      const std::set<std::string>* expected_mimetypes,
+      int expected_content_size,
+      const std::string& expected_result,
+      const std::string& expected_username);
 
   void ExpectUnscannedFileEvent(const std::string& expected_url,
                                 const std::string& expected_filename,
@@ -67,7 +89,22 @@ class EventReportValidator {
                                 const std::string& expected_trigger,
                                 const std::string& expected_reason,
                                 const std::set<std::string>* expected_mimetypes,
-                                int expected_content_size);
+                                int expected_content_size,
+                                const std::string& expected_result,
+                                const std::string& expected_username);
+
+  void ExpectDangerousDownloadEvent(
+      const std::string& expected_url,
+      const std::string& expected_filename,
+      const std::string& expected_sha256,
+      const std::string& expected_threat_type,
+      const std::string& expected_trigger,
+      const std::set<std::string>* expected_mimetypes,
+      int expected_content_size,
+      const std::string& expected_result,
+      const std::string& expected_username);
+
+  void ExpectNoReport();
 
   // Closure to run once all expected events are validated.
   void SetDoneClosure(base::RepeatingClosure closure);
@@ -76,9 +113,9 @@ class EventReportValidator {
   void ValidateReport(base::Value* report);
   void ValidateMimeType(base::Value* value);
   void ValidateDlpVerdict(base::Value* value);
-  void ValidateDlpRule(
-      base::Value* value,
-      const DlpDeepScanningVerdict::TriggeredRule& expected_rule);
+  void ValidateDlpRule(base::Value* value,
+                       const enterprise_connectors::ContentAnalysisResponse::
+                           Result::TriggeredRule& expected_rule);
   void ValidateField(base::Value* value,
                      const std::string& field_key,
                      const base::Optional<std::string>& expected_value);
@@ -96,36 +133,23 @@ class EventReportValidator {
   std::string filename_;
   std::string sha256_;
   std::string trigger_;
-  base::Optional<DlpDeepScanningVerdict> dlp_verdict_ = base::nullopt;
+  base::Optional<enterprise_connectors::ContentAnalysisResponse::Result>
+      dlp_verdict_ = base::nullopt;
   base::Optional<std::string> threat_type_ = base::nullopt;
-  base::Optional<std::string> reason_ = base::nullopt;
-  base::Optional<bool> clicked_through_ = base::nullopt;
+  base::Optional<std::string> unscanned_reason_ = base::nullopt;
   base::Optional<int> content_size_ = base::nullopt;
   const std::set<std::string>* mimetypes_ = nullptr;
+  base::Optional<std::string> result_ = base::nullopt;
+  std::string username_;
 
   base::RepeatingClosure done_closure_;
 };
 
-// Helper functions that set matching connector policies values from legacy
-// policy values.
-void SetDlpPolicyForConnectors(CheckContentComplianceValues state);
-void SetMalwarePolicyForConnectors(SendFilesForMalwareCheckValues state);
-void SetDelayDeliveryUntilVerdictPolicyForConnectors(
-    DelayDeliveryUntilVerdictValues state);
-void SetAllowPasswordProtectedFilesPolicyForConnectors(
-    AllowPasswordProtectedFilesValues state);
-void SetBlockUnsupportedFileTypesPolicyForConnectors(
-    BlockUnsupportedFiletypesValues state);
-void SetBlockLargeFileTransferPolicyForConnectors(
-    BlockLargeFileTransferValues state);
-void AddUrlsToCheckComplianceOfDownloadsForConnectors(
-    const std::vector<std::string>& urls);
-void AddUrlsToNotCheckComplianceOfUploadsForConnectors(
-    const std::vector<std::string>& urls);
-void AddUrlsToCheckForMalwareOfUploadsForConnectors(
-    const std::vector<std::string>& urls);
-void AddUrlsToNotCheckForMalwareOfDownloadsForConnectors(
-    const std::vector<std::string>& urls);
+// Helper functions that set Connector policies for testing.
+void SetAnalysisConnector(enterprise_connectors::AnalysisConnector connector,
+                          const std::string& pref_value);
+void SetOnSecurityEventReporting(bool enabled);
+void ClearAnalysisConnector(enterprise_connectors::AnalysisConnector connector);
 
 }  // namespace safe_browsing
 

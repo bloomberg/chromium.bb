@@ -6,6 +6,7 @@
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_H_
 
 #include <memory>
+#include <string>
 
 #include "base/component_export.h"
 #include "base/strings/string16.h"
@@ -49,7 +50,7 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindow
   // Sets and gets the bounds of the platform-window. Note that the bounds is in
   // physical pixel coordinates.
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
-  virtual gfx::Rect GetBounds() = 0;
+  virtual gfx::Rect GetBounds() const = 0;
 
   virtual void SetTitle(const base::string16& title) = 0;
 
@@ -140,6 +141,10 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindow
   // Enables or disables platform provided animations of the PlatformWindow.
   // If |enabled| is set to false, animations are disabled.
   virtual void SetVisibilityChangedAnimationsEnabled(bool enabled);
+
+  // Returns a unique ID for the window. The interpretation of the ID is
+  // platform specific. Overriding this method is optional.
+  virtual std::string GetWindowUniqueId() const;
 };
 
 }  // namespace ui

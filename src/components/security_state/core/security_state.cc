@@ -12,9 +12,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/security_state/core/features.h"
-#include "components/security_state/core/security_state_pref_names.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
@@ -26,39 +24,25 @@ namespace {
 // For nonsecure pages, returns a SecurityLevel based on the
 // provided information and the kMarkHttpAsFeature field trial.
 SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
-    bool is_error_page,
     const InsecureInputEventData& input_events) {
   if (base::FeatureList::IsEnabled(features::kMarkHttpAsFeature)) {
     std::string parameter = base::GetFieldTrialParamValueByFeature(
         features::kMarkHttpAsFeature,
         features::kMarkHttpAsFeatureParameterName);
-
     if (parameter == features::kMarkHttpAsParameterDangerous) {
       return DANGEROUS;
     }
-    if (parameter == features::kMarkHttpAsParameterDangerWarning) {
-      return WARNING;
+    if (parameter ==
+        features::kMarkHttpAsParameterWarningAndDangerousOnFormEdits) {
+      return input_events.insecure_field_edited ? DANGEROUS : WARNING;
     }
   }
-
-  // Default to dangerous on editing form fields and otherwise
-  // warning.
-  return input_events.insecure_field_edited ? DANGEROUS : WARNING;
-}
-
-SecurityLevel GetSecurityLevelForDisplayedMixedContent(bool suppress_warning) {
-  if (base::FeatureList::IsEnabled(features::kPassiveMixedContentWarning) &&
-      !suppress_warning) {
-    return kDisplayedInsecureContentWarningLevel;
-  }
-  return kDisplayedInsecureContentLevel;
+  return WARNING;
 }
 
 std::string GetHistogramSuffixForSecurityLevel(
     security_state::SecurityLevel level) {
   switch (level) {
-    case EV_SECURE:
-      return "EV_SECURE";
     case SECURE:
       return "SECURE";
     case NONE:
@@ -100,7 +84,7 @@ std::string GetHistogramSuffixForSafetyTipStatus(
 // Sets |level| to the right value if status should be set.
 bool ShouldSetSecurityLevelFromSafetyTip(security_state::SafetyTipStatus status,
                                          SecurityLevel* level) {
-  if (!base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
+  if (!IsSafetyTipUIFeatureEnabled()) {
     return false;
   }
 
@@ -194,7 +178,6 @@ SecurityLevel GetSecurityLevel(
       }
 #endif  // !defined(OS_ANDROID)
       return GetSecurityLevelForNonSecureFieldTrial(
-          visible_security_state.is_error_page,
           visible_security_state.insecure_input_events);
     }
     return NONE;
@@ -227,11 +210,11 @@ SecurityLevel GetSecurityLevel(
   DCHECK(!visible_security_state.ran_content_with_cert_errors);
 
   if (visible_security_state.displayed_mixed_content) {
-    return GetSecurityLevelForDisplayedMixedContent(
-        visible_security_state.should_suppress_mixed_content_warning);
+    return kDisplayedInsecureContentWarningLevel;
   }
 
-  if (visible_security_state.contained_mixed_form ||
+  if ((visible_security_state.contained_mixed_form &&
+       !visible_security_state.should_treat_displayed_mixed_forms_as_secure) ||
       visible_security_state.displayed_content_with_cert_errors) {
     return kDisplayedInsecureContentLevel;
   }
@@ -247,10 +230,6 @@ SecurityLevel GetSecurityLevel(
     return SECURE_WITH_POLICY_INSTALLED_CERT;
   }
 
-  if ((visible_security_state.cert_status & net::CERT_STATUS_IS_EV) &&
-      visible_security_state.certificate) {
-    return EV_SECURE;
-  }
   return SECURE;
 }
 
@@ -267,11 +246,6 @@ bool HasMajorCertificateError(
       net::IsCertStatusError(visible_security_state.cert_status);
 
   return is_cryptographic_with_certificate && is_major_cert_error;
-}
-
-void RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kStricterMixedContentTreatmentEnabled,
-                                true);
 }
 
 VisibleSecurityState::VisibleSecurityState()
@@ -293,7 +267,7 @@ VisibleSecurityState::VisibleSecurityState()
       is_reader_mode(false),
       connection_used_legacy_tls(false),
       should_suppress_legacy_tls_warning(false),
-      should_suppress_mixed_content_warning(false) {}
+      should_treat_displayed_mixed_forms_as_secure(false) {}
 
 VisibleSecurityState::VisibleSecurityState(const VisibleSecurityState& other) =
     default;
@@ -311,7 +285,7 @@ bool IsOriginLocalhostOrFile(const GURL& url) {
 }
 
 bool IsSslCertificateValid(SecurityLevel security_level) {
-  return security_level == SECURE || security_level == EV_SECURE ||
+  return security_level == SECURE ||
          security_level == SECURE_WITH_POLICY_INSTALLED_CERT;
 }
 
@@ -351,10 +325,14 @@ bool IsSHA1InChain(const VisibleSecurityState& visible_security_state) {
 // TODO(crbug.com/1015626): Clean this up once the experiment is fully
 // launched.
 bool ShouldShowDangerTriangleForWarningLevel() {
-  return base::GetFieldTrialParamValueByFeature(
-             features::kMarkHttpAsFeature,
-             features::kMarkHttpAsFeatureParameterName) ==
-         security_state::features::kMarkHttpAsParameterDangerWarning;
+  return true;
+}
+
+bool IsSafetyTipUIFeatureEnabled() {
+  return base::FeatureList::IsEnabled(features::kSafetyTipUI) ||
+         base::FeatureList::IsEnabled(
+             features::kSafetyTipUIForSimplifiedDomainDisplay) ||
+         base::FeatureList::IsEnabled(features::kSafetyTipUIOnDelayedWarning);
 }
 
 }  // namespace security_state

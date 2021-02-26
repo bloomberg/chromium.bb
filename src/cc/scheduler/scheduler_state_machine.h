@@ -204,9 +204,16 @@ class CC_EXPORT SchedulerStateMachine {
   bool begin_frame_source_paused() const { return begin_frame_source_paused_; }
 
   // Indicates that a redraw is required, either due to the impl tree changing
-  // or the screen being damaged and simply needing redisplay.
+  // or the screen being damaged and simply needing redisplay. Note that if the
+  // changes in the impl tree has not been activated yet, then |needs_redraw()|
+  // can return false. For checking any invalidations, check
+  // |did_invalidate_layer_tree_frame_sink()|.
   void SetNeedsRedraw();
   bool needs_redraw() const { return needs_redraw_; }
+
+  bool did_invalidate_layer_tree_frame_sink() const {
+    return did_invalidate_layer_tree_frame_sink_;
+  }
 
   bool OnlyImplSideUpdatesExpected() const;
 
@@ -344,10 +351,6 @@ class CC_EXPORT SchedulerStateMachine {
     return should_defer_invalidation_for_fast_main_frame_;
   }
 
-  bool main_thread_failed_to_respond_last_deadline() const {
-    return main_thread_failed_to_respond_last_deadline_;
-  }
-
  protected:
   bool BeginFrameRequiredForAction() const;
   bool BeginFrameNeededForVideo() const;
@@ -470,10 +473,6 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates if asychronous paint worklet painting is ongoing for the pending
   // tree. During this time we should not activate the pending tree.
   bool processing_paint_worklets_for_pending_tree_ = false;
-
-  // Set to true if the main thread fails to respond with a commit or abort the
-  // main frame before the draw deadline on the previous impl frame.
-  bool main_thread_failed_to_respond_last_deadline_ = false;
 
   bool previous_pending_tree_was_impl_side_ = false;
   bool current_pending_tree_is_impl_side_ = false;

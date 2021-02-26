@@ -7,7 +7,7 @@
 
 #include <openssl/x509.h>
 
-#include <chrono>  // NOLINT
+#include <chrono>
 #include <string>
 #include <vector>
 

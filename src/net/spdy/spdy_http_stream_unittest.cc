@@ -1174,6 +1174,63 @@ TEST_F(SpdyHttpStreamTest, RequestCallbackCancelsStream) {
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 }
 
+// Regression test for https://crbug.com/1082683.
+// SendRequest() callback should be called as soon as sending is done,
+// even when sending greased frame type is allowed.
+TEST_F(SpdyHttpStreamTest, DownloadWithEmptyDataFrame) {
+  session_deps_.http2_end_stream_with_data_frame = true;
+
+  // HEADERS frame without END_STREAM
+  spdy::Http2HeaderBlock request_headers;
+  request_headers[spdy::kHttp2MethodHeader] = "GET";
+  spdy_util_.AddUrlToHeaderBlock(kDefaultUrl, &request_headers);
+  spdy::SpdySerializedFrame req = spdy_util_.ConstructSpdyHeaders(
+      1, std::move(request_headers), LOWEST, /* fin = */ false);
+
+  // Empty DATA frame with END_STREAM
+  spdy::SpdySerializedFrame empty_body(
+      spdy_util_.ConstructSpdyDataFrame(1, "", /* fin = */ true));
+
+  MockWrite writes[] = {CreateMockWrite(req, 0),
+                        CreateMockWrite(empty_body, 1)};
+
+  // This test only concerns the request,
+  // no need to construct a meaningful response.
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_IO_PENDING, 2),  // Pause reads.
+      MockRead(ASYNC, 0, 3)                // Close connection.
+  };
+
+  InitSession(reads, writes);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestCompletionCallback callback;
+  HttpResponseInfo response;
+  HttpRequestHeaders headers;
+  NetLogWithSource net_log;
+  auto http_stream = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound, net_log.source());
+
+  int rv = http_stream->InitializeStream(&request, true, DEFAULT_PRIORITY,
+                                         net_log, CompletionOnceCallback());
+  EXPECT_THAT(rv, IsOk());
+
+  rv = http_stream->SendRequest(headers, &response, callback.callback());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // The request callback should be called even though response has not been
+  // received yet.
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  sequenced_data_->Resume();
+  base::RunLoop().RunUntilIdle();
+}
+
 // TODO(willchan): Write a longer test for SpdyStream that exercises all
 // methods.
 

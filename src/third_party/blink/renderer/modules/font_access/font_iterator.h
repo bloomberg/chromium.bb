@@ -5,29 +5,50 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FONT_ACCESS_FONT_ITERATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FONT_ACCESS_FONT_ITERATOR_H_
 
+#include "base/memory/read_only_shared_memory_region.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/font_access/font_access.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
+using mojom::blink::FontEnumerationStatus;
+
 class ScriptPromise;
+class ScriptPromiseResolver;
 class ScriptState;
 class FontMetadata;
-struct FontEnumerationEntry;
+class FontIteratorEntry;
 
-class FontIterator final : public ScriptWrappable {
+class FontIterator final : public ScriptWrappable,
+                           public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // Using std::vector, because at the boundary with platform code.
-  explicit FontIterator(const std::vector<FontEnumerationEntry>& entries);
+  using PermissionStatus = mojom::blink::PermissionStatus;
+  explicit FontIterator(ExecutionContext* context);
 
   ScriptPromise next(ScriptState*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
+  FontIteratorEntry* GetNextEntry();
+  void DidGetEnumerationResponse(FontEnumerationStatus,
+                                 base::ReadOnlySharedMemoryRegion);
+  void ContextDestroyed() override;
+  void OnDisconnect();
+
   HeapDeque<Member<FontMetadata>> entries_;
+  Member<ScriptPromiseResolver> pending_resolver_;
+  mojo::Remote<mojom::blink::FontAccessManager> remote_manager_;
+
+  PermissionStatus permission_status_ = PermissionStatus::ASK;
 };
 
 }  // namespace blink

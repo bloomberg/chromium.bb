@@ -8,7 +8,6 @@
 #define XFA_FWL_CFWL_PUSHBUTTON_H_
 
 #include "xfa/fwl/cfwl_widget.h"
-#include "xfa/fwl/cfwl_widgetproperties.h"
 
 #define FWL_STATE_PSB_Hovered (1 << FWL_WGTSTATE_MAX)
 #define FWL_STATE_PSB_Pressed (1 << (FWL_WGTSTATE_MAX + 1))
@@ -19,22 +18,23 @@ class CFWL_Widget;
 
 class CFWL_PushButton final : public CFWL_Widget {
  public:
-  explicit CFWL_PushButton(const CFWL_App*);
+  CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CFWL_PushButton() override;
 
   // CFWL_Widget
   FWL_Type GetClassID() const override;
   void SetStates(uint32_t dwStates) override;
   void Update() override;
-  void DrawWidget(CXFA_Graphics* pGraphics, const CFX_Matrix& matrix) override;
+  void DrawWidget(CFGAS_GEGraphics* pGraphics,
+                  const CFX_Matrix& matrix) override;
   void OnProcessMessage(CFWL_Message* pMessage) override;
-  void OnDrawWidget(CXFA_Graphics* pGraphics,
+  void OnDrawWidget(CFGAS_GEGraphics* pGraphics,
                     const CFX_Matrix& matrix) override;
 
  private:
-  void DrawBkground(CXFA_Graphics* pGraphics,
-                    IFWL_ThemeProvider* pTheme,
-                    const CFX_Matrix* pMatrix);
+  explicit CFWL_PushButton(CFWL_App* pApp);
+
+  void DrawBkground(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
   uint32_t GetPartStates();
   void UpdateTextOutStyles();
   void OnFocusChanged(CFWL_Message* pMsg, bool bSet);

@@ -5,18 +5,22 @@
 #include "chrome/browser/apps/app_service/arc_icon_once_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
+#include "chrome/common/chrome_features.h"
 
 namespace apps {
 
+constexpr size_t kMaxSimultaneousIconRequests = 250;
+
 // A part of an ArcIconOnceLoader, for a specific size_in_dip and
-// icon_compression. This two-level structure (an ArcIconOnceLoader contains
+// icon_type. This two-level structure (an ArcIconOnceLoader contains
 // multiple SizeSpecificLoader instances) is needed because each ArcAppIcon is
-// for a specific size_in_dip and compressed-ness.
+// for a specific size_in_dip and type.
 class ArcIconOnceLoader::SizeSpecificLoader : public ArcAppIcon::Observer {
  public:
   SizeSpecificLoader(Profile* profile,
                      int32_t size_in_dip,
-                     apps::mojom::IconCompression icon_compression);
+                     apps::mojom::IconType icon_type,
+                     ArcIconOnceLoader& host);
   ~SizeSpecificLoader() override;
 
   void LoadIcon(const std::string& app_id,
@@ -26,11 +30,13 @@ class ArcIconOnceLoader::SizeSpecificLoader : public ArcAppIcon::Observer {
 
   // ArcAppIcon::Observer overrides.
   void OnIconUpdated(ArcAppIcon* icon) override;
+  void OnIconFailed(ArcAppIcon* icon) override;
 
  private:
   Profile* const profile_;
   const int32_t size_in_dip_;
-  const apps::mojom::IconCompression icon_compression_;
+  const apps::mojom::IconType icon_type_;
+  ArcIconOnceLoader& host_;
 
   // Maps App IDs to their icon loaders (for a specific size_in_dip and
   // icon_compression).
@@ -45,10 +51,12 @@ class ArcIconOnceLoader::SizeSpecificLoader : public ArcAppIcon::Observer {
 ArcIconOnceLoader::SizeSpecificLoader::SizeSpecificLoader(
     Profile* profile,
     int32_t size_in_dip,
-    apps::mojom::IconCompression icon_compression)
+    apps::mojom::IconType icon_type,
+    ArcIconOnceLoader& host)
     : profile_(profile),
       size_in_dip_(size_in_dip),
-      icon_compression_(icon_compression) {}
+      icon_type_(icon_type),
+      host_(host) {}
 
 ArcIconOnceLoader::SizeSpecificLoader::~SizeSpecificLoader() {
   for (auto& kv_pair : callbacks_) {
@@ -71,19 +79,43 @@ void ArcIconOnceLoader::SizeSpecificLoader::LoadIcon(
   if (iter != icons_.end()) {
     return;
   }
-  bool compressed =
-      icon_compression_ == apps::mojom::IconCompression::kCompressed;
-  iter = icons_
-             .insert(std::make_pair(
-                 app_id, std::make_unique<ArcAppIcon>(
-                             profile_, app_id, size_in_dip_, this, compressed)))
-             .first;
+  ArcAppIcon::IconType icon_type;
+  switch (icon_type_) {
+    case apps::mojom::IconType::kUnknown:
+    case apps::mojom::IconType::kUncompressed:
+      icon_type =
+          base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)
+              ? ArcAppIcon::IconType::kAdaptive
+              : ArcAppIcon::IconType::kUncompressed;
+      break;
+    case apps::mojom::IconType::kCompressed:
+      icon_type =
+          base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)
+              ? ArcAppIcon::IconType::kAdaptive
+              : ArcAppIcon::IconType::kCompressed;
+      break;
+    case apps::mojom::IconType::kStandard:
+      icon_type = ArcAppIcon::IconType::kAdaptive;
+      break;
+  }
+
+  auto arc_app_icon = host_.arc_app_icon_factory()->CreateArcAppIcon(
+      profile_, app_id, size_in_dip_, this, icon_type);
+  iter = icons_.insert(std::make_pair(app_id, std::move(arc_app_icon))).first;
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    host_.MaybeStartIconRequest(iter->second.get(),
+                                ui::ScaleFactor::NUM_SCALE_FACTORS);
+    return;
+  }
   iter->second->LoadSupportedScaleFactors();
 }
 
 void ArcIconOnceLoader::SizeSpecificLoader::Remove(const std::string& app_id) {
   auto iter = icons_.find(app_id);
   if (iter != icons_.end()) {
+    if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+      host_.RemoveArcAppIcon(iter->second.get());
+    }
     icons_.erase(iter);
   }
 }
@@ -93,14 +125,27 @@ void ArcIconOnceLoader::SizeSpecificLoader::Reload(
     ui::ScaleFactor scale_factor) {
   auto iter = icons_.find(app_id);
   if (iter != icons_.end()) {
+    if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+      host_.MaybeStartIconRequest(iter->second.get(), scale_factor);
+      return;
+    }
     iter->second->LoadForScaleFactor(scale_factor);
   }
 }
 
 void ArcIconOnceLoader::SizeSpecificLoader::OnIconUpdated(ArcAppIcon* icon) {
-  if (!icon || !icon->EverySupportedScaleFactorIsLoaded()) {
+  if (!icon) {
     return;
   }
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    host_.RemoveArcAppIcon(icon);
+  }
+
+  if (!icon->EverySupportedScaleFactorIsLoaded()) {
+    return;
+  }
+
   auto range = callbacks_.equal_range(icon->app_id());
   auto count = std::distance(range.first, range.second);
   if (count <= 0) {
@@ -133,14 +178,19 @@ void ArcIconOnceLoader::SizeSpecificLoader::OnIconUpdated(ArcAppIcon* icon) {
   }
 }
 
+void ArcIconOnceLoader::SizeSpecificLoader::OnIconFailed(ArcAppIcon* icon) {
+  OnIconUpdated(icon);
+}
+
 ArcIconOnceLoader::ArcIconOnceLoader(Profile* profile)
     : profile_(profile), stop_observing_called_(false) {
   ArcAppListPrefs::Get(profile)->AddObserver(this);
+  arc_app_icon_factory_ = std::make_unique<arc::ArcAppIconFactory>();
 }
 
 ArcIconOnceLoader::~ArcIconOnceLoader() {
-  // Check that somebody called StopObserving. We can't call StopObserving here
-  // in the destructor, because we need a ArcAppListPrefs* prefs, and for
+  // Check that somebody called StopObserving. We can't call StopObserving
+  // here in the destructor, because we need a ArcAppListPrefs* prefs, and for
   // tests, the prefs pointer for a profile can change over time (e.g. by
   // ArcAppListPrefsFactory::RecreateServiceInstanceForTesting).
   //
@@ -158,15 +208,15 @@ void ArcIconOnceLoader::StopObserving(ArcAppListPrefs* prefs) {
 void ArcIconOnceLoader::LoadIcon(
     const std::string& app_id,
     int32_t size_in_dip,
-    apps::mojom::IconCompression icon_compression,
+    apps::mojom::IconType icon_type,
     base::OnceCallback<void(ArcAppIcon*)> callback) {
-  auto key = std::make_pair(size_in_dip, icon_compression);
+  auto key = std::make_pair(size_in_dip, icon_type);
   auto iter = size_specific_loaders_.find(key);
   if (iter == size_specific_loaders_.end()) {
     iter = size_specific_loaders_
                .insert(std::make_pair(
                    key, std::make_unique<SizeSpecificLoader>(
-                            profile_, size_in_dip, icon_compression)))
+                            profile_, size_in_dip, icon_type, *this)))
                .first;
   }
   iter->second->LoadIcon(app_id, std::move(callback));
@@ -181,14 +231,68 @@ void ArcIconOnceLoader::OnAppRemoved(const std::string& app_id) {
 void ArcIconOnceLoader::OnAppIconUpdated(
     const std::string& app_id,
     const ArcAppIconDescriptor& descriptor) {
-  for (int i = 0; i < 2; i++) {
-    auto icon_compression = i ? apps::mojom::IconCompression::kCompressed
-                              : apps::mojom::IconCompression::kUncompressed;
-    auto iter = size_specific_loaders_.find(
-        std::make_pair(descriptor.dip_size, icon_compression));
+  for (int i = static_cast<int>(apps::mojom::IconType::kUncompressed);
+       i <= static_cast<int>(apps::mojom::IconType::kStandard); ++i) {
+    auto iter = size_specific_loaders_.find(std::make_pair(
+        descriptor.dip_size, static_cast<apps::mojom::IconType>(i)));
     if (iter != size_specific_loaders_.end()) {
       iter->second->Reload(app_id, descriptor.scale_factor);
     }
+  }
+}
+
+void ArcIconOnceLoader::SetArcAppIconFactoryForTesting(
+    std::unique_ptr<arc::ArcAppIconFactory> arc_app_icon_factory) {
+  arc_app_icon_factory_ = std::move(arc_app_icon_factory);
+}
+
+void ArcIconOnceLoader::MaybeStartIconRequest(ArcAppIcon* arc_app_icon,
+                                              ui::ScaleFactor scale_factor) {
+  DCHECK(arc_app_icon);
+  if (in_flight_requests_.size() < kMaxSimultaneousIconRequests) {
+    in_flight_requests_.insert(arc_app_icon);
+    if (scale_factor == ui::ScaleFactor::NUM_SCALE_FACTORS) {
+      arc_app_icon->LoadSupportedScaleFactors();
+    } else {
+      arc_app_icon->LoadForScaleFactor(scale_factor);
+    }
+    return;
+  }
+
+  pending_requests_[arc_app_icon].insert(scale_factor);
+}
+
+void ArcIconOnceLoader::RemoveArcAppIcon(ArcAppIcon* arc_app_icon) {
+  DCHECK(arc_app_icon);
+
+  in_flight_requests_.erase(arc_app_icon);
+  pending_requests_.erase(arc_app_icon);
+
+  MaybeLoadPendingIconRequest();
+}
+
+void ArcIconOnceLoader::MaybeLoadPendingIconRequest() {
+  while (!pending_requests_.empty() &&
+         in_flight_requests_.size() < kMaxSimultaneousIconRequests) {
+    auto it = pending_requests_.begin();
+
+    ArcAppIcon* arc_app_icon = it->first;
+    DCHECK(arc_app_icon);
+
+    std::set<ui::ScaleFactor>& scale_factors = it->second;
+    DCHECK(!scale_factors.empty());
+
+    // Handle all pending icon loading requests for |arc_app_icon|.
+    for (auto scale_factor : scale_factors) {
+      if (scale_factor == ui::ScaleFactor::NUM_SCALE_FACTORS) {
+        arc_app_icon->LoadSupportedScaleFactors();
+      } else {
+        arc_app_icon->LoadForScaleFactor(scale_factor);
+      }
+    }
+    in_flight_requests_.insert(arc_app_icon);
+
+    pending_requests_.erase(it);
   }
 }
 

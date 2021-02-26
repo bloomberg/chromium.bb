@@ -8,15 +8,18 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
+import androidx.core.text.BidiFormatter;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.net.GURLUtils;
 import org.chromium.url.GURL;
 
 import java.util.HashSet;
+import java.util.regex.Pattern;
 
 /**
  * Utilities for working with URIs (and URLs). These methods may be used in security-sensitive
@@ -29,6 +32,10 @@ import java.util.HashSet;
 @JNINamespace("embedder_support")
 public class UrlUtilities {
     private static final String TAG = "UrlUtilities";
+
+    /** Regular expression for prefixes to strip from publisher hostnames. */
+    private static final Pattern HOSTNAME_PREFIX_PATTERN =
+            Pattern.compile("^(www[0-9]*|web|ftp|wap|home|mobile|amp)\\.");
 
     /**
      * URI schemes that are internal to Chrome.
@@ -102,6 +109,15 @@ public class UrlUtilities {
      *
      * @return Whether the URL's scheme is HTTP or HTTPS.
      */
+    public static boolean isHttpOrHttps(@NonNull GURL url) {
+        return isSchemeHttpOrHttps(url.getScheme());
+    }
+
+    /**
+     * @param url A URL.
+     *
+     * @return Whether the URL's scheme is HTTP or HTTPS.
+     */
     public static boolean isHttpOrHttps(@NonNull String url) {
         // URI#getScheme would throw URISyntaxException if the other parts contain invalid
         // characters. For example, "http://foo.bar/has[square].html" has [] in the path, which
@@ -110,7 +126,10 @@ public class UrlUtilities {
         //
         // URL().getProtocol() throws MalformedURLException if the scheme is "invalid",
         // including common ones like "about:", "javascript:", "data:", etc.
-        String scheme = Uri.parse(url).getScheme();
+        return isSchemeHttpOrHttps(Uri.parse(url).getScheme());
+    }
+
+    private static boolean isSchemeHttpOrHttps(String scheme) {
         return UrlConstants.HTTP_SCHEME.equals(scheme) || UrlConstants.HTTPS_SCHEME.equals(scheme);
     }
 
@@ -158,20 +177,17 @@ public class UrlUtilities {
     }
 
     /** Returns whether a URL is within another URL's scope. */
-    @VisibleForTesting
     public static boolean isUrlWithinScope(String url, String scopeUrl) {
         return UrlUtilitiesJni.get().isUrlWithinScope(url, scopeUrl);
     }
 
     /** @return whether two URLs match, ignoring the #fragment. */
-    @VisibleForTesting
     public static boolean urlsMatchIgnoringFragments(String url, String url2) {
         if (TextUtils.equals(url, url2)) return true;
         return UrlUtilitiesJni.get().urlsMatchIgnoringFragments(url, url2);
     }
 
     /** @return whether the #fragmant differs in two URLs. */
-    @VisibleForTesting
     public static boolean urlsFragmentsDiffer(String url, String url2) {
         if (TextUtils.equals(url, url2)) return false;
         return UrlUtilitiesJni.get().urlsFragmentsDiffer(url, url2);
@@ -201,6 +217,39 @@ public class UrlUtilities {
             noScheme = noScheme.substring(7);
         }
         return noScheme;
+    }
+
+    /**
+     * @param gurl The GURL to check whether it is for the NTP.
+     * @return Whether the passed in URL is used to render the NTP.
+     */
+    public static boolean isNTPUrl(GURL gurl) {
+        // TODO(crbug.com/1139437): isNTPUrl(new GURL("about:newtab")) returns false though
+        // it should return true for this legacy URL.
+        if (!gurl.isValid() || !isInternalScheme(gurl)) return false;
+        return UrlConstants.NTP_HOST.equals(gurl.getHost());
+    }
+
+    /**
+     * @param url The URL to check whether it is for the NTP.
+     * @return Whether the passed in URL is used to render the NTP.
+     */
+    public static boolean isNTPUrl(String url) {
+        // Also handle the legacy chrome://newtab and about:newtab URLs since they will redirect to
+        // chrome-native://newtab natively.
+        if (TextUtils.isEmpty(url)) return false;
+        // We need to fixup the URL to handle about: schemes and transform them into the equivalent
+        // chrome:// scheme so that GURL parses the host correctly.
+        GURL gurl = UrlFormatter.fixupUrl(url);
+        return isNTPUrl(gurl);
+    }
+
+    public static String extractPublisherFromPublisherUrl(String publisherUrl) {
+        String publisher =
+                UrlFormatter.formatUrlForDisplayOmitScheme(GURLUtils.getOrigin(publisherUrl));
+
+        String trimmedPublisher = HOSTNAME_PREFIX_PATTERN.matcher(publisher).replaceFirst("");
+        return BidiFormatter.getInstance().unicodeWrap(trimmedPublisher);
     }
 
     @NativeMethods

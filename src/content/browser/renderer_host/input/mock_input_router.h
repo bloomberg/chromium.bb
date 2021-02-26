@@ -11,6 +11,7 @@
 #include "cc/input/touch_action.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/input/event_with_latency_info.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 
 namespace content {
 class InputRouterClient;
@@ -44,13 +45,12 @@ class MockInputRouter : public InputRouter {
   base::Optional<cc::TouchAction> AllowedTouchAction() override;
   base::Optional<cc::TouchAction> ActiveTouchAction() override;
   void SetForceEnableZoom(bool enabled) override {}
-  mojo::PendingRemote<mojom::WidgetInputHandlerHost> BindNewHost() override;
-  mojo::PendingRemote<mojom::WidgetInputHandlerHost> BindNewFrameHost()
+  mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> BindNewHost()
       override;
   void StopFling() override {}
-  void OnSetTouchAction(cc::TouchAction touch_action) override {}
   void ForceSetTouchActionAuto() override {}
-  void OnHasTouchEventHandlers(bool has_handlers) override;
+  void OnHasTouchEventConsumers(
+      blink::mojom::TouchEventConsumersPtr consumers) override;
   void WaitForInputProcessed(base::OnceClosure callback) override {}
   void FlushTouchEventQueue() override {}
 

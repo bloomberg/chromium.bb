@@ -12,6 +12,7 @@
 
 namespace display {
 class Display;
+enum class TabletState;
 
 // Observers for display configuration changes.
 class DISPLAY_EXPORT DisplayObserver : public base::CheckedObserver {
@@ -25,6 +26,8 @@ class DISPLAY_EXPORT DisplayObserver : public base::CheckedObserver {
     DISPLAY_METRIC_PRIMARY = 1 << 4,
     DISPLAY_METRIC_MIRROR_STATE = 1 << 5,
     DISPLAY_METRIC_COLOR_SPACE = 1 << 6,
+    DISPLAY_METRIC_REFRESH_RATE = 1 << 7,
+    DISPLAY_METRIC_INTERLACED = 1 << 8,
   };
 
   // This may be called before other methods to signal changes are about to
@@ -52,6 +55,9 @@ class DISPLAY_EXPORT DisplayObserver : public base::CheckedObserver {
   // Called when the (platform-specific) workspace ID changes to
   // |new_workspace|.
   virtual void OnCurrentWorkspaceChanged(const std::string& new_workspace);
+
+  // Called when display changes between conventional and tablet mode.
+  virtual void OnDisplayTabletStateChanged(TabletState state);
 
  protected:
   ~DisplayObserver() override;

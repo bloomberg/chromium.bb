@@ -9,6 +9,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
@@ -98,7 +99,7 @@ AnchorElementMetricsSender::GetAnchorElements() const {
   return anchor_elements_;
 }
 
-void AnchorElementMetricsSender::Trace(Visitor* visitor) {
+void AnchorElementMetricsSender::Trace(Visitor* visitor) const {
   visitor->Trace(anchor_elements_);
   visitor->Trace(metrics_host_);
   Supplement<Document>::Trace(visitor);
@@ -113,7 +114,7 @@ bool AnchorElementMetricsSender::AssociateInterface() {
   if (!document->GetFrame())
     return false;
 
-  document->GetBrowserInterfaceBroker().GetInterface(
+  document->GetFrame()->GetBrowserInterfaceBroker().GetInterface(
       metrics_host_.BindNewPipeAndPassReceiver(
           document->GetExecutionContext()->GetTaskRunner(
               TaskType::kInternalDefault)));

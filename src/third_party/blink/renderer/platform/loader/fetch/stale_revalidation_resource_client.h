@@ -16,15 +16,13 @@ namespace blink {
 class StaleRevalidationResourceClient
     : public GarbageCollected<StaleRevalidationResourceClient>,
       public RawResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(StaleRevalidationResourceClient);
-
  public:
   explicit StaleRevalidationResourceClient(Resource* stale_resource);
   ~StaleRevalidationResourceClient() override;
 
   // RawResourceClient overloads.
   void NotifyFinished(Resource* resource) override;
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
   String DebugName() const override;
 
  private:

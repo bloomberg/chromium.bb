@@ -51,11 +51,6 @@ MdnsServiceImpl::MdnsServiceImpl(
     OSP_DCHECK(socket.value()->IsIPv4());
 
     socket_v4_ = std::move(socket.value());
-    socket_v4_->SetMulticastOutboundInterface(network_interface);
-    socket_v4_->JoinMulticastGroup(kDefaultMulticastGroupIPv4,
-                                   network_interface);
-    socket_v4_->JoinMulticastGroup(kDefaultSiteLocalGroupIPv4,
-                                   network_interface);
   }
 
   if (supported_address_types & Config::NetworkInfo::kUseIpV6) {
@@ -66,11 +61,6 @@ MdnsServiceImpl::MdnsServiceImpl(
     OSP_DCHECK(socket.value()->IsIPv6());
 
     socket_v6_ = std::move(socket.value());
-    socket_v6_->SetMulticastOutboundInterface(network_interface);
-    socket_v6_->JoinMulticastGroup(kDefaultMulticastGroupIPv6,
-                                   network_interface);
-    socket_v6_->JoinMulticastGroup(kDefaultSiteLocalGroupIPv6,
-                                   network_interface);
   }
 
   // Initialize objects which depend on the above sockets.
@@ -102,9 +92,25 @@ MdnsServiceImpl::MdnsServiceImpl(
   // used for reading on the mDNS v4 and v6 addresses and ports.
   if (socket_v4_.get()) {
     socket_v4_->Bind();
+
+    // This configuration must happen after the socket is bound for
+    // compatibility with chromium.
+    socket_v4_->SetMulticastOutboundInterface(network_interface);
+    socket_v4_->JoinMulticastGroup(kDefaultMulticastGroupIPv4,
+                                   network_interface);
+    socket_v4_->JoinMulticastGroup(kDefaultSiteLocalGroupIPv4,
+                                   network_interface);
   }
   if (socket_v6_.get()) {
     socket_v6_->Bind();
+
+    // This configuration must happen after the socket is bound for
+    // compatibility with chromium.
+    socket_v6_->SetMulticastOutboundInterface(network_interface);
+    socket_v6_->JoinMulticastGroup(kDefaultMulticastGroupIPv6,
+                                   network_interface);
+    socket_v6_->JoinMulticastGroup(kDefaultSiteLocalGroupIPv6,
+                                   network_interface);
   }
 }
 

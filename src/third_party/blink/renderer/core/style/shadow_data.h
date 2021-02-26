@@ -33,7 +33,7 @@
 
 namespace blink {
 
-enum ShadowStyle { kNormal, kInset };
+enum class ShadowStyle { kNormal, kInset };
 
 // This class holds information about shadows for the text-shadow and box-shadow
 // properties, as well as the drop-shadow(...) filter operation.
@@ -55,9 +55,6 @@ class CORE_EXPORT ShadowData {
   bool operator==(const ShadowData&) const;
   bool operator!=(const ShadowData& o) const { return !(*this == o); }
 
-  ShadowData Blend(const ShadowData& from,
-                   double progress,
-                   const Color& current_color) const;
   static ShadowData NeutralValue();
 
   float X() const { return location_.X(); }

@@ -11,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframe_model.h"
-#include "ui/compositor/animation_metrics_recorder.h"
 #include "ui/compositor/float_animation_curve_adapter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_delegate.h"
@@ -24,12 +23,6 @@
 namespace ui {
 
 namespace {
-
-// The factor by which duration is scaled up or down when using
-// ScopedAnimationDurationScaleMode.
-const int kSlowDurationScaleMultiplier = 4;
-const int kFastDurationScaleDivisor = 4;
-const int kNonZeroDurationScaleDivisor = 20;
 
 // Pause -----------------------------------------------------------------------
 class Pause : public LayerAnimationElement {
@@ -603,11 +596,6 @@ void LayerAnimationElement::Start(LayerAnimationDelegate* delegate,
   OnStart(delegate);
   RequestEffectiveStart(delegate);
   first_frame_ = false;
-
-  if (animation_metrics_recorder_ && delegate) {
-    animation_metrics_recorder_->OnAnimationStart(
-        delegate->GetFrameNumber(), effective_start_time_, duration_);
-  }
 }
 
 bool LayerAnimationElement::Progress(base::TimeTicks now,
@@ -628,7 +616,7 @@ bool LayerAnimationElement::Progress(base::TimeTicks now,
 
   base::TimeDelta elapsed = now - effective_start_time_;
   if ((duration_ > base::TimeDelta()) && (elapsed < duration_))
-    t = elapsed.InMillisecondsF() / duration_.InMillisecondsF();
+    t = elapsed / duration_;
   base::WeakPtr<LayerAnimationElement> alive(weak_ptr_factory_.GetWeakPtr());
   need_draw = OnProgress(gfx::Tween::CalculateValue(tween_type_, t), delegate);
   if (!alive)
@@ -665,11 +653,6 @@ bool LayerAnimationElement::ProgressToEnd(LayerAnimationDelegate* delegate) {
   base::WeakPtr<LayerAnimationElement> alive(weak_ptr_factory_.GetWeakPtr());
   bool need_draw = OnProgress(1.0, delegate);
 
-  if (animation_metrics_recorder_ && delegate) {
-    animation_metrics_recorder_->OnAnimationEnd(delegate->GetFrameNumber(),
-                                                delegate->GetRefreshRate());
-  }
-
   if (!alive)
     return need_draw;
   last_progressed_fraction_ = 1.0;
@@ -679,27 +662,6 @@ bool LayerAnimationElement::ProgressToEnd(LayerAnimationDelegate* delegate) {
 
 void LayerAnimationElement::GetTargetValue(TargetValue* target) const {
   OnGetTarget(target);
-}
-
-void LayerAnimationElement::SetAnimationMetricsReporter(
-    AnimationMetricsReporter* reporter) {
-  if (reporter) {
-    animation_metrics_recorder_ =
-        std::make_unique<AnimationMetricsRecorder>(reporter);
-  } else {
-    animation_metrics_recorder_.reset();
-  }
-}
-
-void LayerAnimationElement::OnAnimatorAttached(
-    LayerAnimationDelegate* delegate) {
-  if (animation_metrics_recorder_)
-    animation_metrics_recorder_->OnAnimatorAttached(delegate->GetFrameNumber());
-}
-
-void LayerAnimationElement::OnAnimatorDetached() {
-  if (animation_metrics_recorder_)
-    animation_metrics_recorder_->OnAnimatorDetached();
 }
 
 bool LayerAnimationElement::IsThreaded(LayerAnimationDelegate* delegate) const {
@@ -802,21 +764,10 @@ std::string LayerAnimationElement::AnimatablePropertiesToString(
 // static
 base::TimeDelta LayerAnimationElement::GetEffectiveDuration(
     const base::TimeDelta& duration) {
-  switch (ScopedAnimationDurationScaleMode::duration_scale_mode()) {
-    case ScopedAnimationDurationScaleMode::NORMAL_DURATION:
-      return duration;
-    case ScopedAnimationDurationScaleMode::FAST_DURATION:
-      return duration / kFastDurationScaleDivisor;
-    case ScopedAnimationDurationScaleMode::SLOW_DURATION:
-      return duration * kSlowDurationScaleMultiplier;
-    case ScopedAnimationDurationScaleMode::NON_ZERO_DURATION:
-      return duration / kNonZeroDurationScaleDivisor;
-    case ScopedAnimationDurationScaleMode::ZERO_DURATION:
-      return base::TimeDelta();
-    default:
-      NOTREACHED();
-      return base::TimeDelta();
-  }
+  if (ScopedAnimationDurationScaleMode::duration_multiplier() == 0)
+    return base::TimeDelta();
+
+  return duration * ScopedAnimationDurationScaleMode::duration_multiplier();
 }
 
 // static

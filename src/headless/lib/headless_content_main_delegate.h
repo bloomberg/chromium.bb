@@ -45,7 +45,7 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
   int RunProcess(
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) override;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void PreCreateMainMessageLoop() override;
 #endif
   content::ContentClient* CreateContentClient() override;
@@ -57,7 +57,7 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
 
   HeadlessBrowserImpl* browser() const { return browser_.get(); }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   void ZygoteForked() override;
 #endif
 

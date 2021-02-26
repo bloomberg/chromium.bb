@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "chrome/browser/history/android/bookmark_model_sql_handler.h"
+#include "components/favicon/core/favicon_database.h"
 #include "components/history/core/browser/android/android_time.h"
 #include "components/history/core/browser/android/android_urls_sql_handler.h"
 #include "components/history/core/browser/android/favicon_sql_handler.h"
@@ -17,7 +18,6 @@
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
-#include "components/history/core/browser/thumbnail_database.h"
 
 namespace history {
 
@@ -123,7 +123,7 @@ void RunNotifyURLsModified(HistoryBackendNotifier* notifier,
                            std::unique_ptr<URLRows> rows) {
   // All modifications from the android UI are caused by user action and not by
   // expiration.
-  notifier->NotifyURLsModified(*rows, /*is_from_expiration=*/false);
+  notifier->NotifyURLsModified(*rows, UrlsModifiedReason::kAndroidDb);
 }
 
 void RunNotifyURLsDeleted(HistoryBackendNotifier* notifier,
@@ -137,13 +137,13 @@ void RunNotifyURLsDeleted(HistoryBackendNotifier* notifier,
 
 AndroidProviderBackend::ScopedTransaction::ScopedTransaction(
     HistoryDatabase* history_db,
-    ThumbnailDatabase* thumbnail_db)
+    favicon::FaviconDatabase* favicon_db)
     : history_db_(history_db),
-      thumbnail_db_(thumbnail_db),
+      favicon_db_(favicon_db),
       committed_(false),
       history_transaction_nesting_(history_db_->transaction_nesting()),
-      thumbnail_transaction_nesting_(
-          thumbnail_db_ ? thumbnail_db_->transaction_nesting() : 0) {
+      favicon_transaction_nesting_(
+          favicon_db_ ? favicon_db_->transaction_nesting() : 0) {
   // Commit all existing transactions since the AndroidProviderBackend's
   // transaction is very like to be rolled back when compared with the others.
   // The existing transactions have been scheduled to commit by
@@ -155,40 +155,40 @@ AndroidProviderBackend::ScopedTransaction::ScopedTransaction(
     history_db_->CommitTransaction();
   history_db_->BeginTransaction();
 
-  if (thumbnail_db_) {
-    count = thumbnail_transaction_nesting_;
+  if (favicon_db_) {
+    count = favicon_transaction_nesting_;
     while (count--)
-      thumbnail_db_->CommitTransaction();
-    thumbnail_db_->BeginTransaction();
+      favicon_db_->CommitTransaction();
+    favicon_db_->BeginTransaction();
   }
 }
 
 AndroidProviderBackend::ScopedTransaction::~ScopedTransaction() {
   if (!committed_) {
     history_db_->RollbackTransaction();
-    if (thumbnail_db_)
-      thumbnail_db_->RollbackTransaction();
+    if (favicon_db_)
+      favicon_db_->RollbackTransaction();
   }
   // There is no transaction now.
   DCHECK_EQ(0, history_db_->transaction_nesting());
-  DCHECK(!thumbnail_db_ || 0 == thumbnail_db_->transaction_nesting());
+  DCHECK(!favicon_db_ || 0 == favicon_db_->transaction_nesting());
 
   int count = history_transaction_nesting_;
   while (count--)
     history_db_->BeginTransaction();
 
-  if (thumbnail_db_) {
-    count = thumbnail_transaction_nesting_;
+  if (favicon_db_) {
+    count = favicon_transaction_nesting_;
     while (count--)
-      thumbnail_db_->BeginTransaction();
+      favicon_db_->BeginTransaction();
   }
 }
 
 void AndroidProviderBackend::ScopedTransaction::Commit() {
   DCHECK(!committed_);
   history_db_->CommitTransaction();
-  if (thumbnail_db_)
-    thumbnail_db_->CommitTransaction();
+  if (favicon_db_)
+    favicon_db_->CommitTransaction();
   committed_ = true;
 }
 
@@ -198,13 +198,13 @@ void AndroidProviderBackend::ScopedTransaction::Commit() {
 AndroidProviderBackend::AndroidProviderBackend(
     const base::FilePath& db_name,
     HistoryDatabase* history_db,
-    ThumbnailDatabase* thumbnail_db,
+    favicon::FaviconDatabase* favicon_db,
     HistoryBackendClient* backend_client,
     HistoryBackendNotifier* notifier)
     : android_cache_db_filename_(db_name),
       db_(&history_db->GetDB()),
       history_db_(history_db),
-      thumbnail_db_(thumbnail_db),
+      favicon_db_(favicon_db),
       backend_client_(backend_client),
       initialized_(false),
       notifier_(notifier) {
@@ -233,12 +233,12 @@ AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarks(
     const std::vector<base::string16>& selection_args,
     const std::string& sort_order) {
   if (projections.empty())
-    return NULL;
+    return nullptr;
 
-  ScopedTransaction transaction(history_db_, thumbnail_db_);
+  ScopedTransaction transaction(history_db_, favicon_db_);
 
   if (!EnsureInitializedAndUpdated())
-    return NULL;
+    return nullptr;
 
   transaction.Commit();
 
@@ -253,7 +253,7 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
     int* updated_count) {
   HistoryNotifications notifications;
 
-  ScopedTransaction transaction(history_db_, thumbnail_db_);
+  ScopedTransaction transaction(history_db_, favicon_db_);
 
   if (!UpdateHistoryAndBookmarks(row, selection, selection_args, updated_count,
                                  &notifications))
@@ -268,7 +268,7 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
     const HistoryAndBookmarkRow& values) {
   HistoryNotifications notifications;
 
-  ScopedTransaction transaction(history_db_, thumbnail_db_);
+  ScopedTransaction transaction(history_db_, favicon_db_);
 
   AndroidURLID id = InsertHistoryAndBookmark(values, true, &notifications);
   if (!id)
@@ -285,7 +285,7 @@ bool AndroidProviderBackend::DeleteHistoryAndBookmarks(
     int* deleted_count) {
   HistoryNotifications notifications;
 
-  ScopedTransaction transaction(history_db_, thumbnail_db_);
+  ScopedTransaction transaction(history_db_, favicon_db_);
 
   if (!DeleteHistoryAndBookmarks(selection, selection_args, deleted_count,
                                  &notifications))
@@ -302,7 +302,7 @@ bool AndroidProviderBackend::DeleteHistory(
     int* deleted_count) {
   HistoryNotifications notifications;
 
-  ScopedTransaction transaction(history_db_, thumbnail_db_);
+  ScopedTransaction transaction(history_db_, favicon_db_);
 
   if (!DeleteHistory(selection, selection_args, deleted_count, &notifications))
     return false;
@@ -373,7 +373,7 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
         changed_urls.reset(new URLRows);
       changed_urls->push_back(url_row);
     }
-    if (thumbnail_db_ &&
+    if (favicon_db_ &&
         row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON)) {
       if (!favicon)
         favicon.reset(new std::set<GURL>);
@@ -383,18 +383,16 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
 
   if (changed_urls) {
     DCHECK(!changed_urls->empty());
-    notifications->push_back(
-        base::Bind(&RunNotifyURLsModified,
-                   base::Unretained(notifier_),
-                   base::Passed(&changed_urls)));
+    notifications->push_back(base::BindOnce(&RunNotifyURLsModified,
+                                            base::Unretained(notifier_),
+                                            base::Passed(&changed_urls)));
   }
 
   if (favicon) {
     DCHECK(!favicon->empty());
-    notifications->push_back(
-        base::Bind(&RunNotifyFaviconChanged,
-                   base::Unretained(notifier_),
-                   base::Passed(&favicon)));
+    notifications->push_back(base::BindOnce(&RunNotifyFaviconChanged,
+                                            base::Unretained(notifier_),
+                                            base::Passed(&favicon)));
   }
 
   return true;
@@ -427,24 +425,22 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
   changed_urls->push_back(url_row);
 
   std::unique_ptr<std::set<GURL>> favicon;
-  // No favicon should be changed if the thumbnail_db_ is not available.
+  // No favicon should be changed if the favicon_db_ is not available.
   if (row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON) &&
-      row.favicon_valid() && thumbnail_db_) {
+      row.favicon_valid() && favicon_db_) {
     favicon.reset(new std::set<GURL>);
     favicon->insert(url_row.url());
   }
 
-  notifications->push_back(
-      base::Bind(&RunNotifyURLsModified,
-                 base::Unretained(notifier_),
-                 base::Passed(&changed_urls)));
+  notifications->push_back(base::BindOnce(&RunNotifyURLsModified,
+                                          base::Unretained(notifier_),
+                                          base::Passed(&changed_urls)));
 
   if (favicon) {
     DCHECK(!favicon->empty());
-    notifications->push_back(
-        base::Bind(&RunNotifyFaviconChanged,
-                   base::Unretained(notifier_),
-                   base::Passed(&favicon)));
+    notifications->push_back(base::BindOnce(&RunNotifyFaviconChanged,
+                                            base::Unretained(notifier_),
+                                            base::Passed(&favicon)));
   }
 
   return row.id();
@@ -537,10 +533,10 @@ AndroidStatement* AndroidProviderBackend::QuerySearchTerms(
     const std::vector<base::string16>& selection_args,
     const std::string& sort_order) {
   if (projections.empty())
-    return NULL;
+    return nullptr;
 
   if (!EnsureInitializedAndUpdated())
-    return NULL;
+    return nullptr;
 
   std::string sql;
   sql.append("SELECT ");
@@ -563,7 +559,7 @@ AndroidStatement* AndroidProviderBackend::QuerySearchTerms(
   BindStatement(selection_args, statement.get(), &count);
   if (!statement->is_valid()) {
     LOG(ERROR) << db_->GetErrorMessage();
-    return NULL;
+    return nullptr;
   }
   sql::Statement* result = statement.release();
   return new AndroidStatement(result, -1);
@@ -662,7 +658,7 @@ SearchTermID AndroidProviderBackend::InsertSearchTerm(
   if (!AddSearchTerm(values))
     return 0;
 
-  SearchTermID id = history_db_->GetSearchTerm(values.search_term(), NULL);
+  SearchTermID id = history_db_->GetSearchTerm(values.search_term(), nullptr);
   if (!id)
     // Note the passed in Time() will be changed in UpdateSearchTermTable().
     id = history_db_->AddSearchTerm(values.search_term(), base::Time());
@@ -705,8 +701,8 @@ bool AndroidProviderBackend::Init() {
   urls_handler_.reset(new UrlsSQLHandler(history_db_));
   visit_handler_.reset(new VisitSQLHandler(history_db_, history_db_));
   android_urls_handler_.reset(new AndroidURLsSQLHandler(history_db_));
-  if (thumbnail_db_)
-    favicon_handler_.reset(new FaviconSQLHandler(thumbnail_db_));
+  if (favicon_db_)
+    favicon_handler_.reset(new FaviconSQLHandler(favicon_db_));
   bookmark_model_handler_.reset(new BookmarkModelSQLHandler(history_db_));
   // The urls_handler must be pushed first, because the subsequent handlers
   // depend on its output.
@@ -765,7 +761,7 @@ bool AndroidProviderBackend::UpdateVisitedURLs() {
   }
 
   while (urls_statement.Step()) {
-    if (history_db_->GetAndroidURLRow(urls_statement.ColumnInt64(0), NULL))
+    if (history_db_->GetAndroidURLRow(urls_statement.ColumnInt64(0), nullptr))
       continue;
     if (!history_db_->AddAndroidURLRow(urls_statement.ColumnString(3),
                                        urls_statement.ColumnInt64(0)))
@@ -781,7 +777,7 @@ bool AndroidProviderBackend::UpdateVisitedURLs() {
     // The last_visit_time and the created time should be same when the visit
     // count is 0, this behavior is also required by the Android CTS.
     // The created_time could be set to the last_visit_time only when the type
-    // of the 'created' column is NULL because the left join is used in query
+    // of the 'created' column is nullptr because the left join is used in query
     // and there is no row in the visit table when the visit count is 0.
     base::Time last_visit_time =
         base::Time::FromInternalValue(statement.ColumnInt64(1));
@@ -802,7 +798,7 @@ bool AndroidProviderBackend::UpdateRemovedURLs() {
 }
 
 bool AndroidProviderBackend::UpdateBookmarks() {
-  if (backend_client_ == NULL) {
+  if (!backend_client_) {
     LOG(ERROR) << "HistoryClient is not available";
     return false;
   }
@@ -815,7 +811,7 @@ bool AndroidProviderBackend::UpdateBookmarks() {
   std::vector<URLID> url_ids;
   for (std::vector<URLAndTitle>::const_iterator i = pinned_urls.begin();
        i != pinned_urls.end(); ++i) {
-    URLID url_id = history_db_->GetRowForURL(i->url, NULL);
+    URLID url_id = history_db_->GetRowForURL(i->url, nullptr);
     if (url_id == 0) {
       URLRow url_row(i->url);
       url_row.set_title(i->title);
@@ -841,19 +837,20 @@ bool AndroidProviderBackend::UpdateBookmarks() {
 }
 
 bool AndroidProviderBackend::UpdateFavicon() {
-  ThumbnailDatabase::IconMappingEnumerator enumerator;
-
-  // We want the AndroidProviderBackend run without thumbnail_db_
-  if (!thumbnail_db_)
+  // This class works without a |favicon_db_|, so return true if one is not
+  // available (a return value of false mostly means this class won't do
+  // anything).
+  if (!favicon_db_)
     return true;
 
-  if (!thumbnail_db_->InitIconMappingEnumerator(
-          favicon_base::IconType::kFavicon, &enumerator))
+  favicon::FaviconDatabase::IconMappingEnumerator enumerator;
+  if (!favicon_db_->InitIconMappingEnumerator(favicon_base::IconType::kFavicon,
+                                              &enumerator))
     return false;
 
-  IconMapping icon_mapping;
+  favicon::IconMapping icon_mapping;
   while (enumerator.GetNextIconMapping(&icon_mapping)) {
-    URLID url_id = history_db_->GetRowForURL(icon_mapping.page_url, NULL);
+    URLID url_id = history_db_->GetRowForURL(icon_mapping.page_url, nullptr);
     if (url_id == 0) {
       LOG(ERROR) << "Can not find favicon's page url";
       continue;
@@ -1026,9 +1023,9 @@ bool AndroidProviderBackend::SimulateUpdateURL(
 
   favicon_base::FaviconID favicon_id = statement->statement()->ColumnInt64(4);
   if (favicon_id) {
-    std::vector<FaviconBitmap> favicon_bitmaps;
-    if (!thumbnail_db_ ||
-        !thumbnail_db_->GetFaviconBitmaps(favicon_id, &favicon_bitmaps))
+    std::vector<favicon::FaviconBitmap> favicon_bitmaps;
+    if (!favicon_db_ ||
+        !favicon_db_->GetFaviconBitmaps(favicon_id, &favicon_bitmaps))
       return false;
    scoped_refptr<base::RefCountedMemory> bitmap_data =
        favicon_bitmaps[0].bitmap_data;
@@ -1099,21 +1096,18 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   std::unique_ptr<URLRows> changed_urls(new URLRows);
   changed_urls->push_back(new_url_row);
 
-  notifications->push_back(
-      base::Bind(&RunNotifyURLsDeleted,
-                 base::Unretained(notifier_),
-                 base::Passed(&deleted_rows)));
+  notifications->push_back(base::BindOnce(&RunNotifyURLsDeleted,
+                                          base::Unretained(notifier_),
+                                          base::Passed(&deleted_rows)));
   if (favicons) {
     DCHECK(!favicons->empty());
-    notifications->push_back(
-        base::Bind(&RunNotifyFaviconChanged,
-                   base::Unretained(notifier_),
-                   base::Passed(&favicons)));
+    notifications->push_back(base::BindOnce(&RunNotifyFaviconChanged,
+                                            base::Unretained(notifier_),
+                                            base::Passed(&favicons)));
   }
-  notifications->push_back(
-      base::Bind(&RunNotifyURLsModified,
-                 base::Unretained(notifier_),
-                 base::Passed(&changed_urls)));
+  notifications->push_back(base::BindOnce(&RunNotifyURLsModified,
+                                          base::Unretained(notifier_),
+                                          base::Passed(&changed_urls)));
 
   return true;
 }
@@ -1146,7 +1140,7 @@ AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarksInternal(
   BindStatement(selection_args, statement.get(), &count);
   if (!statement->is_valid()) {
     LOG(ERROR) << db_->GetErrorMessage();
-    return NULL;
+    return nullptr;
   }
   sql::Statement* result = statement.release();
   return new AndroidStatement(result, replaced_index);
@@ -1165,8 +1159,8 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
     if (!deleted_rows)
       deleted_rows.reset(new URLRows);
     deleted_rows->push_back(url_row);
-    if (thumbnail_db_ &&
-        thumbnail_db_->GetIconMappingsForPageURL(url_row.url(), NULL)) {
+    if (favicon_db_ &&
+        favicon_db_->GetIconMappingsForPageURL(url_row.url(), nullptr)) {
       if (!favicons)
         favicons.reset(new std::set<GURL>);
       favicons->insert(url_row.url());
@@ -1182,16 +1176,14 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
         return false;
   }
 
-  notifications->push_back(
-      base::Bind(&RunNotifyURLsDeleted,
-                 base::Unretained(notifier_),
-                 base::Passed(&deleted_rows)));
+  notifications->push_back(base::BindOnce(&RunNotifyURLsDeleted,
+                                          base::Unretained(notifier_),
+                                          base::Passed(&deleted_rows)));
   if (favicons) {
     DCHECK(!favicons->empty());
-    notifications->push_back(
-        base::Bind(&RunNotifyFaviconChanged,
-                   base::Unretained(notifier_),
-                   base::Passed(&favicons)));
+    notifications->push_back(base::BindOnce(&RunNotifyFaviconChanged,
+                                            base::Unretained(notifier_),
+                                            base::Passed(&favicons)));
   }
   return true;
 }
@@ -1199,7 +1191,7 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
 void AndroidProviderBackend::BroadcastNotifications(
     HistoryNotifications* notifications) {
   while (!notifications->empty()) {
-    notifications->back().Run();
+    std::move(notifications->back()).Run();
     notifications->pop_back();
   }
 }
@@ -1229,7 +1221,7 @@ bool AndroidProviderBackend::AddSearchTerm(const SearchRow& values) {
     if (!visit_handler_->Update(bookmark_row, table_id_rows))
       return false;
 
-    if (!history_db_->GetKeywordSearchTermRow(url_row.id(), NULL))
+    if (!history_db_->GetKeywordSearchTermRow(url_row.id(), nullptr))
       if (!history_db_->SetKeywordSearchTermsForURL(url_row.id(),
                values.keyword_id(), values.search_term()))
         return false;

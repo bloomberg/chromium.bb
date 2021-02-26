@@ -8,8 +8,8 @@ import 'chrome://settings/settings.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManagerImpl, CountryDetailManagerImpl} from 'chrome://settings/lazy_load.js';
-import {createAddressEntry, createEmptyAddressEntry, TestAutofillManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {AutofillManagerExpectations, createAddressEntry, createEmptyAddressEntry, TestAutofillManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
+import {eventToPromise, whenAttributeIs} from 'chrome://test/test_util.m.js';
 // clang-format on
 
 /**
@@ -94,6 +94,44 @@ function createAddressDialog(address) {
       resolve(section);
     });
   });
+}
+
+/**
+ * Creates the remove address dialog. Simulate clicking "Remove" button in
+ * autofill section.
+ * @param {!TestAutofillManager} autofillManager
+ * @return {!SettingsAddressRemoveConfirmationDialogElement}
+ */
+function createRemoveAddressDialog(autofillManager) {
+  const address = createAddressEntry();
+
+  // Override the AutofillManagerImpl for testing.
+  autofillManager.data.addresses = [address];
+  AutofillManagerImpl.instance_ = autofillManager;
+
+  document.body.innerHTML = '';
+  const section = document.createElement('settings-autofill-section');
+  document.body.appendChild(section);
+  flush();
+
+  const addressList = section.$.addressList;
+  const row = addressList.children[0];
+  assertTrue(!!row);
+
+  // Simulate clicking the 'Remove' button in the menu.
+  assertTrue(!!section.$$('#addressMenu'));
+  section.$$('#addressMenu').click();
+  flush();
+
+  assertTrue(!!section.$$('#menuRemoveAddress'));
+  assertFalse(!!section.$$('settings-address-remove-confirmation-dialog'));
+  section.$$('#menuRemoveAddress').click();
+  flush();
+
+  assertTrue(!!section.$$('settings-address-remove-confirmation-dialog'));
+  const removeAddressDialog =
+      section.$$('settings-address-remove-confirmation-dialog');
+  return removeAddressDialog;
 }
 
 suite('AutofillSectionUiTest', function() {
@@ -254,6 +292,56 @@ suite('AutofillSectionAddressTests', function() {
       // populated.
       assertFalse(dialog.$.saveButton.disabled);
     });
+  });
+
+  // The first editable element should be focused by default.
+  test('verifyFirstFieldFocused', async function() {
+    const dialog = await createAddressDialog(createEmptyAddressEntry());
+    const currentFocus = dialog.shadowRoot.activeElement;
+    const editableElements =
+        dialog.$.dialog.querySelectorAll('cr-input, select');
+    assertEquals(editableElements[0], currentFocus);
+  });
+
+  test('verifyRemoveAddressDialogConfirmed', async function() {
+    const autofillManager = new TestAutofillManager();
+    const removeAddressDialog = createRemoveAddressDialog(autofillManager);
+
+    // Wait for the dialog to open.
+    await whenAttributeIs(removeAddressDialog.$$('#dialog'), 'open', '');
+
+    assertTrue(!!removeAddressDialog.$$('#remove'));
+    removeAddressDialog.$$('#remove').click();
+
+    // Wait for the dialog to close.
+    await eventToPromise('close', removeAddressDialog);
+
+    assertTrue(removeAddressDialog.wasConfirmed());
+    const expected = new AutofillManagerExpectations();
+    expected.requestedAddresses = 1;
+    expected.listeningAddresses = 1;
+    expected.removeAddress = 1;
+    autofillManager.assertExpectations(expected);
+  });
+
+  test('verifyRemoveAddressDialogCanceled', async function() {
+    const autofillManager = new TestAutofillManager();
+    const removeAddressDialog = createRemoveAddressDialog(autofillManager);
+
+    // Wait for the dialog to open.
+    await whenAttributeIs(removeAddressDialog.$$('#dialog'), 'open', '');
+
+    assertTrue(!!removeAddressDialog.$$('#cancel'));
+    removeAddressDialog.$$('#cancel').click();
+
+    // Wait for the dialog to close.
+    await eventToPromise('close', removeAddressDialog);
+    assertFalse(removeAddressDialog.wasConfirmed());
+    const expected = new AutofillManagerExpectations();
+    expected.requestedAddresses = 1;
+    expected.listeningAddresses = 1;
+    expected.removeAddress = 0;
+    autofillManager.assertExpectations(expected);
   });
 
   test('verifyCountryIsSaved', function() {
@@ -453,8 +541,15 @@ suite('AutofillSectionAddressLocaleTests', function() {
       assertEquals(company_enabled ? 6 : 5, rows.length);
 
       let index = 0;
-      // Name
+      // Country
       let row = rows[index];
+      const countrySelect = row.querySelector('select');
+      assertTrue(!!countrySelect);
+      assertEquals(
+          'United States', countrySelect.selectedOptions[0].textContent.trim());
+      index++;
+      // Name
+      row = rows[index];
       let cols = row.querySelectorAll('.address-column');
       assertEquals(1, cols.length);
       assertEquals(address.fullNames[0], cols[0].value);
@@ -480,13 +575,6 @@ suite('AutofillSectionAddressLocaleTests', function() {
       assertEquals(address.addressLevel2, cols[0].value);
       assertEquals(address.addressLevel1, cols[1].value);
       assertEquals(address.postalCode, cols[2].value);
-      index++;
-      // Country
-      row = rows[index];
-      const countrySelect = row.querySelector('select');
-      assertTrue(!!countrySelect);
-      assertEquals(
-          'United States', countrySelect.selectedOptions[0].textContent.trim());
       index++;
       // Phone, Email
       row = rows[index];
@@ -516,8 +604,16 @@ suite('AutofillSectionAddressLocaleTests', function() {
       assertEquals(company_enabled ? 7 : 6, rows.length);
 
       let index = 0;
-      // Name
+      // Country
       let row = rows[index];
+      const countrySelect = row.querySelector('select');
+      assertTrue(!!countrySelect);
+      assertEquals(
+          'United Kingdom',
+          countrySelect.selectedOptions[0].textContent.trim());
+      index++;
+      // Name
+      row = rows[index];
       let cols = row.querySelectorAll('.address-column');
       assertEquals(1, cols.length);
       assertEquals(address.fullNames[0], cols[0].value);
@@ -548,14 +644,6 @@ suite('AutofillSectionAddressLocaleTests', function() {
       assertEquals(1, cols.length);
       assertEquals(address.postalCode, cols[0].value);
       index++;
-      // Country
-      row = rows[index];
-      const countrySelect = row.querySelector('select');
-      assertTrue(!!countrySelect);
-      assertEquals(
-          'United Kingdom',
-          countrySelect.selectedOptions[0].textContent.trim());
-      index++;
       // Phone, Email
       row = rows[index];
       cols = row.querySelectorAll('.address-column');
@@ -585,14 +673,20 @@ suite('AutofillSectionAddressLocaleTests', function() {
       assertEquals(company_enabled ? 6 : 5, rows.length);
 
       let index = 0;
-      // Name
+      // Country
       let row = rows[index];
+      const countrySelect = row.querySelector('select');
+      assertTrue(!!countrySelect);
+      assertEquals(
+          'Israel', countrySelect.selectedOptions[0].textContent.trim());
+      index++;
+      // Name
+      row = rows[index];
       let cols = row.querySelectorAll('.address-column');
       assertEquals(1, cols.length);
       assertEquals(address.fullNames[0], cols[0].value);
       index++;
       // Organization
-
       if (company_enabled) {
         row = rows[index];
         cols = row.querySelectorAll('.address-column');
@@ -612,13 +706,6 @@ suite('AutofillSectionAddressLocaleTests', function() {
       assertEquals(2, cols.length);
       assertEquals(address.addressLevel2, cols[0].value);
       assertEquals(address.postalCode, cols[1].value);
-      index++;
-      // Country
-      row = rows[index];
-      const countrySelect = row.querySelector('select');
-      assertTrue(!!countrySelect);
-      assertEquals(
-          'Israel', countrySelect.selectedOptions[0].textContent.trim());
       index++;
       // Phone, Email
       row = rows[index];
@@ -651,7 +738,7 @@ suite('AutofillSectionAddressLocaleTests', function() {
                    assertEquals(company_enabled ? 6 : 5, rows.length);
 
                    // City, State, ZIP code
-                   const row = rows[company_enabled ? 3 : 2];
+                   const row = rows[company_enabled ? 4 : 3];
                    const cols = row.querySelectorAll('.address-column');
                    assertEquals(3, cols.length);
                    cols[0].value = city;
@@ -668,7 +755,7 @@ suite('AutofillSectionAddressLocaleTests', function() {
               assertEquals(company_enabled ? 6 : 5, rows.length);
 
               // City, Postal code
-              const row = rows[company_enabled ? 3 : 2];
+              const row = rows[company_enabled ? 4 : 3];
               const cols = row.querySelectorAll('.address-column');
               assertEquals(2, cols.length);
               assertEquals(city, cols[0].value);
@@ -684,7 +771,7 @@ suite('AutofillSectionAddressLocaleTests', function() {
             assertEquals(company_enabled ? 6 : 5, rows.length);
 
             // City, State, ZIP code
-            const row = rows[company_enabled ? 3 : 2];
+            const row = rows[company_enabled ? 4 : 3];
             const cols = row.querySelectorAll('.address-column');
             assertEquals(3, cols.length);
             assertEquals(city, cols[0].value);

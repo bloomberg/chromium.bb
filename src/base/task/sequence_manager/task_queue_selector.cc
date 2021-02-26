@@ -12,7 +12,7 @@
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/threading/thread_checker.h"
-#include "base/trace_event/traced_value.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 namespace sequence_manager {
@@ -167,17 +167,34 @@ bool TaskQueueSelector::CheckContainsQueueForTest(
 }
 #endif
 
-WorkQueue* TaskQueueSelector::SelectWorkQueueToService() {
+WorkQueue* TaskQueueSelector::SelectWorkQueueToService(
+    SelectTaskOption option) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
 
-  if (!active_priority_tracker_.HasActivePriority())
+  auto highest_priority = GetHighestPendingPriority(option);
+  if (!highest_priority.has_value())
     return nullptr;
 
   // Select the priority from which we will select a task. Usually this is
   // the highest priority for which we have work, unless we are starving a lower
   // priority.
-  TaskQueue::QueuePriority priority =
-      active_priority_tracker_.HighestActivePriority();
+  TaskQueue::QueuePriority priority = highest_priority.value();
+
+  // For selecting an immediate queue only, the highest priority can be used as
+  // a starting priority, but it is required to check work at other priorities.
+  // For the case where a delayed task is at a higher priority than an immediate
+  // task, HighestActivePriority(...) returns the priority of the delayed task
+  // but the resulting queue must be the lower one.
+  if (option == SelectTaskOption::kSkipDelayedTask) {
+    WorkQueue* queue =
+#if DCHECK_IS_ON()
+        random_task_selection_
+            ? ChooseImmediateOnlyWithPriority<SetOperationRandom>(priority)
+            :
+#endif
+            ChooseImmediateOnlyWithPriority<SetOperationOldest>(priority);
+    return queue;
+  }
 
   WorkQueue* queue =
 #if DCHECK_IS_ON()
@@ -197,21 +214,37 @@ WorkQueue* TaskQueueSelector::SelectWorkQueueToService() {
   return queue;
 }
 
-void TaskQueueSelector::AsValueInto(trace_event::TracedValue* state) const {
+Value TaskQueueSelector::AsValue() const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  state->SetInteger("immediate_starvation_count", immediate_starvation_count_);
+  Value state(Value::Type::DICTIONARY);
+  state.SetIntKey("immediate_starvation_count", immediate_starvation_count_);
+  return state;
 }
 
 void TaskQueueSelector::SetTaskQueueSelectorObserver(Observer* observer) {
   task_queue_selector_observer_ = observer;
 }
 
-Optional<TaskQueue::QueuePriority>
-TaskQueueSelector::GetHighestPendingPriority() const {
+Optional<TaskQueue::QueuePriority> TaskQueueSelector::GetHighestPendingPriority(
+    SelectTaskOption option) const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (!active_priority_tracker_.HasActivePriority())
     return nullopt;
-  return active_priority_tracker_.HighestActivePriority();
+
+  TaskQueue::QueuePriority highest_priority =
+      active_priority_tracker_.HighestActivePriority();
+  if (option != SelectTaskOption::kSkipDelayedTask)
+    return highest_priority;
+
+  for (; highest_priority != TaskQueue::kQueuePriorityCount;
+       highest_priority = NextPriority(highest_priority)) {
+    if (active_priority_tracker_.IsActive(highest_priority) &&
+        !immediate_work_queue_sets_.IsSetEmpty(highest_priority)) {
+      return highest_priority;
+    }
+  }
+
+  return nullopt;
 }
 
 void TaskQueueSelector::SetImmediateStarvationCountForTest(
@@ -220,7 +253,7 @@ void TaskQueueSelector::SetImmediateStarvationCountForTest(
 }
 
 bool TaskQueueSelector::HasTasksWithPriority(
-    TaskQueue::QueuePriority priority) {
+    TaskQueue::QueuePriority priority) const {
   return !delayed_work_queue_sets_.IsSetEmpty(priority) ||
          !immediate_work_queue_sets_.IsSetEmpty(priority);
 }

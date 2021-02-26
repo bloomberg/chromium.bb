@@ -14,8 +14,7 @@
 #include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cpdfsdk_annot.h"
-#include "fpdfsdk/pwl/cpwl_edit.h"
-#include "fpdfsdk/pwl/cpwl_wnd.h"
+#include "fpdfsdk/pwl/ipwl_fillernotify.h"
 #include "fpdfsdk/pwl/ipwl_systemhandler.h"
 
 class CFFL_FormFiller;
@@ -23,7 +22,7 @@ class CPDFSDK_FormFillEnvironment;
 class CPDFSDK_PageView;
 class CPDFSDK_Widget;
 
-class CFFL_InteractiveFormFiller final : public IPWL_Filler_Notify {
+class CFFL_InteractiveFormFiller final : public IPWL_FillerNotify {
  public:
   explicit CFFL_InteractiveFormFiller(
       CPDFSDK_FormFillEnvironment* pFormFillEnv);
@@ -89,6 +88,7 @@ class CFFL_InteractiveFormFiller final : public IPWL_Filler_Notify {
   WideString GetText(CPDFSDK_Annot* pAnnot);
   WideString GetSelectedText(CPDFSDK_Annot* pAnnot);
   void ReplaceSelection(CPDFSDK_Annot* pAnnot, const WideString& text);
+  bool SelectAllText(CPDFSDK_Annot* pAnnot);
 
   bool CanUndo(CPDFSDK_Annot* pAnnot);
   bool CanRedo(CPDFSDK_Annot* pAnnot);
@@ -124,7 +124,7 @@ class CFFL_InteractiveFormFiller final : public IPWL_Filler_Notify {
   using WidgetToFormFillerMap =
       std::map<CPDFSDK_Annot*, std::unique_ptr<CFFL_FormFiller>>;
 
-  // IPWL_Filler_Notify:
+  // IPWL_FillerNotify:
   void QueryWherePopup(const IPWL_SystemHandler::PerWindowData* pAttached,
                        float fPopupMin,
                        float fPopupMax,
@@ -149,7 +149,7 @@ class CFFL_InteractiveFormFiller final : public IPWL_Filler_Notify {
   bool OnClick(ObservedPtr<CPDFSDK_Annot>* pAnnot,
                CPDFSDK_PageView* pPageView,
                uint32_t nFlag);
-  bool OnFull(ObservedPtr<CPDFSDK_Annot>* pAnnot,
+  bool OnFull(ObservedPtr<CPDFSDK_Widget>* pAnnot,
               CPDFSDK_PageView* pPageView,
               uint32_t nFlag);
   bool OnPreOpen(ObservedPtr<CPDFSDK_Annot>* pAnnot,
@@ -168,23 +168,6 @@ class CFFL_InteractiveFormFiller final : public IPWL_Filler_Notify {
   UnownedPtr<CPDFSDK_FormFillEnvironment> const m_pFormFillEnv;
   WidgetToFormFillerMap m_Map;
   bool m_bNotifying = false;
-};
-
-class CFFL_PrivateData final : public IPWL_SystemHandler::PerWindowData {
- public:
-  CFFL_PrivateData();
-  CFFL_PrivateData(const CFFL_PrivateData& that);
-  ~CFFL_PrivateData() override;
-
-  // CPWL_Wnd::PrivateData:
-  std::unique_ptr<IPWL_SystemHandler::PerWindowData> Clone() const override;
-
-  CPDFSDK_Widget* GetWidget() const { return pWidget.Get(); }
-
-  ObservedPtr<CPDFSDK_Widget> pWidget;
-  CPDFSDK_PageView* pPageView = nullptr;
-  uint32_t nWidgetAppearanceAge = 0;
-  uint32_t nWidgetValueAge = 0;
 };
 
 #endif  // FPDFSDK_FORMFILLER_CFFL_INTERACTIVEFORMFILLER_H_

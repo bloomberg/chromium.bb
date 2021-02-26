@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/util/values/values_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -16,6 +17,9 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 
 namespace web_app {
+
+constexpr const char kDisableManifestUpdateThrottle[] =
+    "disable-manifest-update-throttle";
 
 ManifestUpdateManager::ManifestUpdateManager() = default;
 
@@ -36,17 +40,25 @@ void ManifestUpdateManager::SetSubsystems(
 
 void ManifestUpdateManager::Start() {
   registrar_observer_.Add(registrar_);
+
+  DCHECK(!started_);
+  started_ = true;
 }
 
 void ManifestUpdateManager::Shutdown() {
   registrar_observer_.RemoveAll();
+
+  tasks_.clear();
+  started_ = false;
 }
 
 void ManifestUpdateManager::MaybeUpdate(const GURL& url,
                                         const AppId& app_id,
                                         content::WebContents* web_contents) {
-  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsLocalUpdating))
+  if (!started_ ||
+      !base::FeatureList::IsEnabled(features::kDesktopPWAsLocalUpdating)) {
     return;
+  }
 
   if (app_id.empty() || !registrar_->IsLocallyInstalled(app_id)) {
     NotifyResult(url, ManifestUpdateResult::kNoAppInScope);
@@ -82,6 +94,8 @@ void ManifestUpdateManager::MaybeUpdate(const GURL& url,
 
 // AppRegistrarObserver:
 void ManifestUpdateManager::OnWebAppUninstalled(const AppId& app_id) {
+  DCHECK(started_);
+
   auto it = tasks_.find(app_id);
   if (it != tasks_.end()) {
     NotifyResult(it->second->url(), ManifestUpdateResult::kAppUninstalled);
@@ -93,18 +107,19 @@ void ManifestUpdateManager::OnWebAppUninstalled(const AppId& app_id) {
 
 bool ManifestUpdateManager::MaybeConsumeUpdateCheck(const GURL& origin,
                                                     const AppId& app_id) {
+  constexpr base::TimeDelta kDelayBetweenChecks = base::TimeDelta::FromDays(1);
   base::Optional<base::Time> last_check_time =
       GetLastUpdateCheckTime(origin, app_id);
-  if (!last_check_time)
-    return false;
-
   base::Time now = time_override_for_testing_.value_or(base::Time::Now());
+
   // Throttling updates to at most once per day is consistent with Android.
   // See |UPDATE_INTERVAL| in WebappDataStorage.java.
-  constexpr base::TimeDelta kDelayBetweenChecks = base::TimeDelta::FromDays(1);
-  if (now < *last_check_time + kDelayBetweenChecks)
+  if (last_check_time.has_value() &&
+      now < *last_check_time + kDelayBetweenChecks &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kDisableManifestUpdateThrottle)) {
     return false;
-
+  }
   SetLastUpdateCheckTime(origin, app_id, now);
   return true;
 }
@@ -113,7 +128,8 @@ base::Optional<base::Time> ManifestUpdateManager::GetLastUpdateCheckTime(
     const GURL& origin,
     const AppId& app_id) const {
   auto it = last_update_check_.find(app_id);
-  return it != last_update_check_.end() ? it->second : base::Time();
+  return it != last_update_check_.end() ? base::Optional<base::Time>(it->second)
+                                        : base::nullopt;
 }
 
 void ManifestUpdateManager::SetLastUpdateCheckTime(const GURL& origin,

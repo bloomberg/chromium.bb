@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="crostini_browser_proxy.html">
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
@@ -12,7 +13,7 @@
   <template>
     <style include="settings-shared"></style>
     <div class="settings-box first">
-      <div>
+      <div role="text">
         $i18n{crostiniSharedPathsInstructionsLocate}
         $i18n{crostiniSharedPathsInstructionsAdd}
         <span id="crostiniInstructionsRemove"
@@ -31,22 +32,22 @@
           $i18n{crostiniSharedPathsListHeading}
         </h2>
       </div>
-      <div class="list-frame vertical-list" role="list"
-          aria-labeledby="crostiniListHeading">
-        <template is="dom-repeat" items="[[sharedPaths_]]">
+      <iron-list class="list-frame vertical-list" role="list"
+          aria-labeledby="crostiniListHeading" items="[[sharedPaths_]]">
+        <template>
           <div class="list-item" role="listitem">
             <div class="start" aria-hidden="true"
                 id="[[generatePathDisplayTextId_(index)]]">
               [[item.pathDisplayText]]
             </div>
-            <cr-icon-button class="icon-clear"
+            <cr-icon-button class="icon-clear" tabindex$="[[tabIndex]]"
                 on-click="onRemoveSharedPathTap_"
                 title="$i18n{crostiniSharedPathsRemoveSharing}"
                 aria-labeledby$="[[generatePathDisplayTextId_(index)]]">
             </cr-icon-button>
           </div>
         </template>
-      </div>
+      </iron-list>
     </div>
     <template is="dom-if" if="[[sharedPathWhichFailedRemoval_]]" restamp>
       <cr-dialog id="removeSharedPathFailedDialog" close-text="$i18n{close}">
@@ -58,11 +59,13 @@
         </div>
         <div slot="button-container">
           <cr-button id="cancel" class="cancel-button"
-              on-click="onRemoveFailedDismissTap_">$i18n{ok}</cr-button>
+              on-click="onRemoveFailedDismissTap_">
+            $i18n{ok}
           </cr-button>
           <cr-button id="retry" class="action-button"
               on-click="onRemoveFailedRetryTap_">
-              $i18n{crostiniSharedPathsRemoveFailureTryAgain}
+            $i18n{crostiniSharedPathsRemoveFailureTryAgain}
+          </cr-button>
         </div>
       </cr-dialog>
     </template>

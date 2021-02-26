@@ -14,7 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -136,7 +136,7 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
   GURL source_url_;
 };
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // http://crbug.com/334579
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
   AudioDeviceDescriptions devices;
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
     EXPECT_TRUE(dict->HasKey("sampleRate"));
   }
 }
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
   // Get the list of input devices. We can cheat in the unit test and

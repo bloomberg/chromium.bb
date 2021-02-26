@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/updater/action_handler.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/policy_service.h"
 #include "chrome/updater/util.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/update_client/update_client_errors.h"
@@ -36,7 +37,7 @@ static constexpr base::TaskTraits kTaskTraitsBlockWithSyncPrimitives = {
 // identified by the |app_id|.
 base::FilePath GetAppInstallDir(const std::string& app_id) {
   base::FilePath app_install_dir;
-  if (GetProductDirectory(&app_install_dir)) {
+  if (GetBaseDirectory(&app_install_dir)) {
     app_install_dir = app_install_dir.AppendASCII(kAppsDir);
     app_install_dir = app_install_dir.AppendASCII(app_id);
   }
@@ -63,6 +64,7 @@ update_client::CrxComponent Installer::MakeCrxComponent() {
   const auto pv = persisted_data_->GetProductVersion(app_id_);
   if (pv.IsValid()) {
     pv_ = pv;
+    checker_path_ = persisted_data_->GetExistenceCheckerPath(app_id_);
     fingerprint_ = persisted_data_->GetFingerprint(app_id_);
   } else {
     pv_ = base::Version(kNullVersion);
@@ -78,6 +80,15 @@ update_client::CrxComponent Installer::MakeCrxComponent() {
   component.name = app_id_;
   component.version = pv_;
   component.fingerprint = fingerprint_;
+
+  // In case we fail at getting the target channel, make sure that
+  // |component.channel| is an empty string. Possible failure cases are if the
+  // machine is not managed, the policy was not set or any other unexpected
+  // error.
+  if (!GetUpdaterPolicyService()->GetTargetChannel(app_id_, nullptr,
+                                                   &component.channel)) {
+    component.channel.clear();
+  }
   return component;
 }
 
@@ -99,7 +110,7 @@ void Installer::DeleteOlderInstallPaths() {
     // Mark for deletion any valid versioned directory except the directory
     // for the currently registered app.
     if (version_dir.IsValid() && version_dir.CompareTo(pv_)) {
-      base::DeleteFileRecursively(path);
+      base::DeletePathRecursively(path);
     }
   }
 }
@@ -136,7 +147,7 @@ Installer::Result Installer::InstallHelper(
   const auto versioned_install_dir =
       app_install_dir.AppendASCII(manifest_version.GetString());
   if (base::PathExists(versioned_install_dir)) {
-    if (!base::DeleteFileRecursively(versioned_install_dir))
+    if (!base::DeletePathRecursively(versioned_install_dir))
       return Result(update_client::InstallError::CLEAN_INSTALL_DIR_FAILED);
   }
 
@@ -148,7 +159,7 @@ Installer::Result Installer::InstallHelper(
   // updates is implemented.
   if (!base::Move(unpack_path, versioned_install_dir)) {
     PLOG(ERROR) << "Move failed.";
-    base::DeleteFileRecursively(versioned_install_dir);
+    base::DeletePathRecursively(versioned_install_dir);
     return Result(update_client::InstallError::MOVE_FILES_ERROR);
   }
 
@@ -191,7 +202,7 @@ void Installer::InstallWithSyncPrimitives(
   DeleteOlderInstallPaths();
   const auto result = InstallHelper(unpack_path, std::move(install_params),
                                     std::move(progress_callback));
-  base::DeleteFileRecursively(unpack_path);
+  base::DeletePathRecursively(unpack_path);
   std::move(callback).Run(result);
 }
 
@@ -236,12 +247,12 @@ base::FilePath Installer::GetCurrentInstallDir() const {
   return GetAppInstallDir(app_id_).AppendASCII(pv_.GetString());
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 int Installer::RunApplicationInstaller(const base::FilePath& app_installer,
                                        const std::string& arguments) {
   NOTREACHED();
   return -1;
 }
-#endif  // OS_LINUX
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 }  // namespace updater

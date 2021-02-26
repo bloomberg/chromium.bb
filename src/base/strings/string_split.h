@@ -45,8 +45,7 @@ enum SplitResult {
 // To split on either commas or semicolons, keeping all whitespace:
 //
 //   std::vector<std::string> tokens = base::SplitString(
-//       input, ", WARN_UNUSED_RESULT;", base::KEEP_WHITESPACE,
-//       base::SPLIT_WANT_ALL) WARN_UNUSED_RESULT;
+//       input, ",;", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
 BASE_EXPORT std::vector<std::string> SplitString(StringPiece input,
                                                  StringPiece separators,
                                                  WhitespaceHandling whitespace,
@@ -138,32 +137,10 @@ BASE_EXPORT std::vector<StringPiece> SplitStringPieceUsingSubstr(
     WhitespaceHandling whitespace,
     SplitResult result_type) WARN_UNUSED_RESULT;
 
-#if defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
-BASE_EXPORT std::vector<std::wstring> SplitString(WStringPiece input,
-                                                  WStringPiece separators,
-                                                  WhitespaceHandling whitespace,
-                                                  SplitResult result_type)
-    WARN_UNUSED_RESULT;
-
-BASE_EXPORT std::vector<WStringPiece> SplitStringPiece(
-    WStringPiece input,
-    WStringPiece separators,
-    WhitespaceHandling whitespace,
-    SplitResult result_type) WARN_UNUSED_RESULT;
-
-BASE_EXPORT std::vector<std::wstring> SplitStringUsingSubstr(
-    WStringPiece input,
-    WStringPiece delimiter,
-    WhitespaceHandling whitespace,
-    SplitResult result_type) WARN_UNUSED_RESULT;
-
-BASE_EXPORT std::vector<WStringPiece> SplitStringPieceUsingSubstr(
-    WStringPiece input,
-    WStringPiece delimiter,
-    WhitespaceHandling whitespace,
-    SplitResult result_type) WARN_UNUSED_RESULT;
-#endif
-
 }  // namespace base
+
+#if defined(OS_WIN)
+#include "base/strings/string_split_win.h"
+#endif
 
 #endif  // BASE_STRINGS_STRING_SPLIT_H_

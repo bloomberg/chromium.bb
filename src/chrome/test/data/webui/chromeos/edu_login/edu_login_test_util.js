@@ -29,27 +29,56 @@ export function getFakeParentsList() {
   ];
 }
 
+/** @return {!Array<string>} */
+export function getFakeAccountsList() {
+  return ['test@gmail.com', 'test2@gmail.com', 'test3@gmail.com'];
+}
+
 /** @implements {EduAccountLoginBrowserProxy} */
 export class TestEduAccountLoginBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
+      'isNetworkReady',
       'getParents',
       'parentSignin',
       'loginInitialize',
       'authExtensionReady',
       'switchToFullTab',
       'completeLogin',
+      'getAccounts',
       'dialogClose',
     ]);
 
     /** @private {function} */
     this.parentSigninResponse_ = null;
+    /** @private {function} */
+    this.getParentsResponse_ = null;
+    /** @private {function} */
+    this.isNetworkReadyResponse_ = null;
+  }
+
+  /** @override */
+  isNetworkReady() {
+    this.methodCalled('isNetworkReady');
+    return this.isNetworkReadyResponse_ ? this.isNetworkReadyResponse_() :
+                                          Promise.resolve(true);
+  }
+
+  /** @param {function} isNetworkReadyResponse */
+  setIsNetworkReadyResponse(isNetworkReadyResponse) {
+    this.isNetworkReadyResponse_ = isNetworkReadyResponse;
   }
 
   /** @override */
   getParents() {
     this.methodCalled('getParents');
-    return Promise.resolve(getFakeParentsList());
+    return this.getParentsResponse_ ? this.getParentsResponse_() :
+                                      Promise.resolve(getFakeParentsList());
+  }
+
+  /** @param {function} getParentsResponse */
+  setGetParentsResponse(getParentsResponse) {
+    this.getParentsResponse_ = getParentsResponse;
   }
 
   /** @override */
@@ -81,6 +110,12 @@ export class TestEduAccountLoginBrowserProxy extends TestBrowserProxy {
   /** @override */
   completeLogin(credentials, eduLoginParams) {
     this.methodCalled('completeLogin', [credentials, eduLoginParams]);
+  }
+
+  /** @override */
+  getAccounts() {
+    this.methodCalled('getAccounts');
+    return Promise.resolve(getFakeAccountsList());
   }
 
   /** @override */

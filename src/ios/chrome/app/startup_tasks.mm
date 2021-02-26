@@ -7,11 +7,11 @@
 #import <MediaPlayer/MediaPlayer.h>
 
 #include "base/bind.h"
-#include "components/bookmarks/browser/startup_task_runner_service.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/task/post_task.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #include "ios/chrome/app/intents/SearchInChromeIntent.h"
 #include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #import "ios/chrome/browser/omaha/omaha_service.h"
@@ -79,23 +79,30 @@ NSString* const kStartProfileStartupTaskRunners =
            object:nil];
 }
 
-- (void)donateIntents {
-  SearchInChromeIntent* searchInChromeIntent =
-      [[SearchInChromeIntent alloc] init];
-  searchInChromeIntent.suggestedInvocationPhrase = l10n_util::GetNSString(
-      IDS_IOS_INTENTS_SEARCH_IN_CHROME_INVOCATION_PHRASE);
-  INInteraction* interaction =
-      [[INInteraction alloc] initWithIntent:searchInChromeIntent response:nil];
-  [interaction donateInteractionWithCompletion:^(NSError* _Nullable error){
-  }];
+- (void)logSiriShortcuts {
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(^{
+        [[INVoiceShortcutCenter sharedCenter]
+            getAllVoiceShortcutsWithCompletion:^(
+                NSArray<INVoiceShortcut*>* voiceShortcuts, NSError* error) {
+              if (error || !voiceShortcuts) {
+                return;
+              }
+
+              // The 20 shortcuts cap is arbitrary but seems like a reasonable
+              // limit.
+              base::UmaHistogramExactLinear(
+                  "IOS.SiriShortcuts.Count",
+                  base::saturated_cast<int>([voiceShortcuts count]), 20);
+            }];
+      }));
 }
 
 #pragma mark - Private methods.
 
 + (void)performDeferredInitializationForBrowserState:
     (ChromeBrowserState*)browserState {
-  ios::StartupTaskRunnerServiceFactory::GetForBrowserState(browserState)
-      ->StartDeferredTaskRunners();
   ReadingListDownloadServiceFactory::GetForBrowserState(browserState)
       ->Initialize();
 }

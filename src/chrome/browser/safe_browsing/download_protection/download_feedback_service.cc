@@ -70,9 +70,9 @@ DownloadFeedbackPings* DownloadFeedbackPings::FromDownload(
 }  // namespace
 
 DownloadFeedbackService::DownloadFeedbackService(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    DownloadProtectionService* download_protection_service,
     base::TaskRunner* file_task_runner)
-    : url_loader_factory_(url_loader_factory),
+    : download_protection_service_(download_protection_service),
       file_task_runner_(file_task_runner) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
@@ -123,14 +123,8 @@ bool DownloadFeedbackService::GetPingsForDownloadForTesting(
   return true;
 }
 
-// static
-void DownloadFeedbackService::RecordEligibleDownloadShown(
-    download::DownloadDangerType danger_type) {
-  UMA_HISTOGRAM_ENUMERATION("SBDownloadFeedback.Eligible", danger_type,
-                            download::DOWNLOAD_DANGER_TYPE_MAX);
-}
-
 void DownloadFeedbackService::BeginFeedbackForDownload(
+    Profile* profile,
     download::DownloadItem* download,
     DownloadCommands::Command download_command) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -141,7 +135,7 @@ void DownloadFeedbackService::BeginFeedbackForDownload(
   download->StealDangerousDownload(
       download_command == DownloadCommands::DISCARD,
       base::BindOnce(&DownloadFeedbackService::BeginFeedbackOrDeleteFile,
-                     file_task_runner_, weak_ptr_factory_.GetWeakPtr(),
+                     file_task_runner_, weak_ptr_factory_.GetWeakPtr(), profile,
                      pings->ping_request(), pings->ping_response()));
   if (download_command == DownloadCommands::KEEP) {
     DownloadItemModel model(download);
@@ -153,36 +147,35 @@ void DownloadFeedbackService::BeginFeedbackForDownload(
 void DownloadFeedbackService::BeginFeedbackOrDeleteFile(
     const scoped_refptr<base::TaskRunner>& file_task_runner,
     const base::WeakPtr<DownloadFeedbackService>& service,
+    Profile* profile,
     const std::string& ping_request,
     const std::string& ping_response,
     const base::FilePath& path) {
   if (service) {
     if (path.empty())
       return;
-    service->BeginFeedback(ping_request, ping_response, path);
+    service->BeginFeedback(profile, ping_request, ping_response, path);
   } else {
     file_task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), path, false));
+        FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), path));
   }
 }
 
 void DownloadFeedbackService::StartPendingFeedback() {
   DCHECK(!active_feedback_.empty());
-  active_feedback_.front()->Start(base::Bind(
+  active_feedback_.front()->Start(base::BindOnce(
       &DownloadFeedbackService::FeedbackComplete, base::Unretained(this)));
 }
 
-void DownloadFeedbackService::BeginFeedback(const std::string& ping_request,
+void DownloadFeedbackService::BeginFeedback(Profile* profile,
+                                            const std::string& ping_request,
                                             const std::string& ping_response,
                                             const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::unique_ptr<DownloadFeedback> feedback(
-      DownloadFeedback::Create(url_loader_factory_, file_task_runner_.get(),
-                               path, ping_request, ping_response));
+  std::unique_ptr<DownloadFeedback> feedback(DownloadFeedback::Create(
+      download_protection_service_->GetURLLoaderFactory(profile),
+      file_task_runner_.get(), path, ping_request, ping_response));
   active_feedback_.push(std::move(feedback));
-  UMA_HISTOGRAM_COUNTS_100("SBDownloadFeedback.ActiveFeedbacks",
-                           active_feedback_.size());
 
   if (active_feedback_.size() == 1)
     StartPendingFeedback();

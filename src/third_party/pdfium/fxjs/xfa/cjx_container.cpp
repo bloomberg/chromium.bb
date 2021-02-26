@@ -11,6 +11,7 @@
 #include "fxjs/xfa/cfxjse_class.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cfxjse_value.h"
+#include "v8/include/cppgc/allocation.h"
 #include "xfa/fxfa/parser/cxfa_arraynodelist.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_field.h"
@@ -23,7 +24,7 @@ CJX_Container::CJX_Container(CXFA_Node* node) : CJX_Node(node) {
   DefineMethods(MethodSpecs);
 }
 
-CJX_Container::~CJX_Container() {}
+CJX_Container::~CJX_Container() = default;
 
 bool CJX_Container::DynamicTypeIs(TypeTag eType) const {
   return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
@@ -38,8 +39,11 @@ CJS_Result CJX_Container::getDelta(
 CJS_Result CJX_Container::getDeltas(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
+  CXFA_Document* pDoc = GetDocument();
+  auto* pList = cppgc::MakeGarbageCollected<CXFA_ArrayNodeList>(
+      pDoc->GetHeap()->GetAllocationHandle(), pDoc);
+  pDoc->GetNodeOwner()->PersistList(pList);
+
   auto* pEngine = static_cast<CFXJSE_Engine*>(runtime);
-  return CJS_Result::Success(pEngine->NewXFAObject(
-      new CXFA_ArrayNodeList(GetDocument()),
-      GetDocument()->GetScriptContext()->GetJseNormalClass()->GetTemplate()));
+  return CJS_Result::Success(pEngine->NewNormalXFAObject(pList));
 }

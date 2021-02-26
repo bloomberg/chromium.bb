@@ -10,7 +10,6 @@ import shutil
 from py_utils import exc_util
 
 from telemetry.core import exceptions
-from telemetry.core import util
 from telemetry.internal.platform import android_platform_backend as \
   android_platform_backend_module
 from telemetry.internal.backends.chrome import android_minidump_symbolizer
@@ -30,7 +29,25 @@ class AndroidBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
   DEBUG_ARTIFACT_PREFIX = 'android_debug_info'
 
   def __init__(self, android_platform_backend, browser_options,
-               browser_directory, profile_directory, backend_settings):
+               browser_directory, profile_directory, backend_settings,
+               build_dir=None):
+    """
+    Args:
+      android_platform_backend: The
+          android_platform_backend.AndroidPlatformBackend instance to use.
+      browser_options: The browser_options.BrowserOptions instance to use.
+      browser_directory: A string containing the path to the directory on the
+          device where the browser is installed.
+      profile_directory: A string containing a path to the directory on the
+          device to store browser profile information in.
+      backend_settings: The
+          android_browser_backend_settings.AndroidBrowserBackendSettings
+          instance to use.
+      build_dir: A string containing a path to the directory on the host that
+          the browser was built in, for finding debug artifacts. Can be None if
+          the browser was not locally built, or the directory otherwise cannot
+          be determined.
+    """
     assert isinstance(android_platform_backend,
                       android_platform_backend_module.AndroidPlatformBackend)
     super(AndroidBrowserBackend, self).__init__(
@@ -39,7 +56,8 @@ class AndroidBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
         browser_directory=browser_directory,
         profile_directory=profile_directory,
         supports_extensions=False,
-        supports_tab_control=backend_settings.supports_tab_control)
+        supports_tab_control=backend_settings.supports_tab_control,
+        build_dir=build_dir)
     self._backend_settings = backend_settings
 
     # Initialize fields so that an explosion during init doesn't break in Close.
@@ -48,10 +66,6 @@ class AndroidBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
 
     # Set the debug app if needed.
     self.platform_backend.SetDebugApp(self._backend_settings.package)
-
-    # TODO(https://crbug.com/1026296): Remove this once --chromium-output-dir
-    # has a default value we can use.
-    self._build_dir = util.GetUsedBuildDirectory()
 
   @property
   def log_file_path(self):
@@ -224,16 +238,19 @@ class AndroidBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
       A debug_data.DebugData object containing the collected data.
     """
     # Store additional debug information as artifacts.
+    # We do these in a mixed order so that higher priority ones are done first.
+    # This is so that if an error occurs during debug data collection (e.g.
+    # adb issues), we're more likely to end up with useful debug information.
     suffix = artifact_logger.GetTimestampSuffix()
-    self._StoreUiDumpAsArtifact(suffix)
     self._StoreLogcatAsArtifact(suffix)
+    retval = super(AndroidBrowserBackend, self).CollectDebugData(log_level)
+    self._StoreUiDumpAsArtifact(suffix)
     self._StoreTombstonesAsArtifact(suffix)
-    return super(AndroidBrowserBackend, self).CollectDebugData(
-        log_level)
+    return retval
 
   def SymbolizeMinidump(self, minidump_path):
     dump_symbolizer = android_minidump_symbolizer.AndroidMinidumpSymbolizer(
-        self._dump_finder, self._build_dir)
+        self._dump_finder, self.build_dir)
     stack = dump_symbolizer.SymbolizeMinidump(minidump_path)
     if not stack:
       return (False, 'Failed to symbolize minidump.')
@@ -253,7 +270,8 @@ class AndroidBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     device = self.platform_backend.device
 
     device_dump_path = posixpath.join(
-        self.platform_backend.GetDumpLocation(), 'Crashpad', 'pending')
+        self.platform_backend.GetDumpLocation(self.package),
+        'Crashpad', 'pending')
     if not device.PathExists(device_dump_path):
       logging.warning(
           'Device minidump path %s does not exist - not attempting to pull '

@@ -29,7 +29,6 @@ constexpr CkAttributeType kCkaChromeOsFirstAttribute =
 // This attribute encodes in which contexts the key can be used.
 // The type of the value of this attribute is a byte array (array of CK_BYTEs)
 // representing a serialized KeyPermissions proto message.
-// TODO(https://crbug.com/1069419): Define KeyPermissions proto message.
 constexpr CkAttributeType kCkaChromeOsKeyPermissions =
     kCkaChromeOsFirstAttribute;
 

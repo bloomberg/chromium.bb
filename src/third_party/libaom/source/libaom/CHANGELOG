@@ -1,3 +1,20 @@
+2020-05-07 v2.0.0 "Applejack"
+  First official release of libaom.
+  This release includes new real-time mode and SVC support.
+
+  - Upgrading:
+    AOM_SET_POSTPROC, AOM_CODEC_CAP_POSTPROC and AOM_CODEC_USE_POSTPROC are
+    removed.
+
+    AOM_SET_DBG_* is removed.
+
+    Multi-resolution encoding is removed.
+
+    put_frame and put_slice callbacks are removed.
+
+  - Enhancements:
+    Full-sweep document update for codec controls.
+
 2018-06-28 v1.0.0
   AOMedia Codec Workgroup Approved version 1.0
 

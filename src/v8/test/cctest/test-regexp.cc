@@ -50,32 +50,38 @@
 #include "src/utils/ostreams.h"
 #include "src/zone/zone-list-inl.h"
 #include "test/cctest/cctest.h"
-#include "test/common/wasm/flag-utils.h"
+#include "test/common/flag-utils.h"
 
 namespace v8 {
 namespace internal {
 namespace test_regexp {
 
 static bool CheckParse(const char* input) {
+  Isolate* isolate = CcTest::i_isolate();
+
   v8::HandleScope scope(CcTest::isolate());
-  Zone zone(CcTest::i_isolate()->allocator(), ZONE_NAME);
-  FlatStringReader reader(CcTest::i_isolate(), CStrVector(input));
+  Zone zone(isolate->allocator(), ZONE_NAME);
+  Handle<String> str = isolate->factory()->NewStringFromAsciiChecked(input);
+  FlatStringReader reader(isolate, str);
   RegExpCompileData result;
-  return v8::internal::RegExpParser::ParseRegExp(
-      CcTest::i_isolate(), &zone, &reader, JSRegExp::kNone, &result);
+  return v8::internal::RegExpParser::ParseRegExp(isolate, &zone, &reader,
+                                                 JSRegExp::kNone, &result);
 }
 
 
 static void CheckParseEq(const char* input, const char* expected,
                          bool unicode = false) {
+  Isolate* isolate = CcTest::i_isolate();
+
   v8::HandleScope scope(CcTest::isolate());
-  Zone zone(CcTest::i_isolate()->allocator(), ZONE_NAME);
-  FlatStringReader reader(CcTest::i_isolate(), CStrVector(input));
+  Zone zone(isolate->allocator(), ZONE_NAME);
+  Handle<String> str = isolate->factory()->NewStringFromAsciiChecked(input);
+  FlatStringReader reader(isolate, str);
   RegExpCompileData result;
   JSRegExp::Flags flags = JSRegExp::kNone;
   if (unicode) flags |= JSRegExp::kUnicode;
-  CHECK(v8::internal::RegExpParser::ParseRegExp(CcTest::i_isolate(), &zone,
-                                                &reader, flags, &result));
+  CHECK(v8::internal::RegExpParser::ParseRegExp(isolate, &zone, &reader, flags,
+                                                &result));
   CHECK_NOT_NULL(result.tree);
   CHECK(result.error == RegExpError::kNone);
   std::ostringstream os;
@@ -88,12 +94,15 @@ static void CheckParseEq(const char* input, const char* expected,
 
 
 static bool CheckSimple(const char* input) {
+  Isolate* isolate = CcTest::i_isolate();
+
   v8::HandleScope scope(CcTest::isolate());
-  Zone zone(CcTest::i_isolate()->allocator(), ZONE_NAME);
-  FlatStringReader reader(CcTest::i_isolate(), CStrVector(input));
+  Zone zone(isolate->allocator(), ZONE_NAME);
+  Handle<String> str = isolate->factory()->NewStringFromAsciiChecked(input);
+  FlatStringReader reader(isolate, str);
   RegExpCompileData result;
-  CHECK(v8::internal::RegExpParser::ParseRegExp(
-      CcTest::i_isolate(), &zone, &reader, JSRegExp::kNone, &result));
+  CHECK(v8::internal::RegExpParser::ParseRegExp(isolate, &zone, &reader,
+                                                JSRegExp::kNone, &result));
   CHECK_NOT_NULL(result.tree);
   CHECK(result.error == RegExpError::kNone);
   return result.simple;
@@ -106,12 +115,15 @@ struct MinMaxPair {
 
 
 static MinMaxPair CheckMinMaxMatch(const char* input) {
+  Isolate* isolate = CcTest::i_isolate();
+
   v8::HandleScope scope(CcTest::isolate());
-  Zone zone(CcTest::i_isolate()->allocator(), ZONE_NAME);
-  FlatStringReader reader(CcTest::i_isolate(), CStrVector(input));
+  Zone zone(isolate->allocator(), ZONE_NAME);
+  Handle<String> str = isolate->factory()->NewStringFromAsciiChecked(input);
+  FlatStringReader reader(isolate, str);
   RegExpCompileData result;
-  CHECK(v8::internal::RegExpParser::ParseRegExp(
-      CcTest::i_isolate(), &zone, &reader, JSRegExp::kNone, &result));
+  CHECK(v8::internal::RegExpParser::ParseRegExp(isolate, &zone, &reader,
+                                                JSRegExp::kNone, &result));
   CHECK_NOT_NULL(result.tree);
   CHECK(result.error == RegExpError::kNone);
   int min_match = result.tree->min_match();
@@ -422,7 +434,8 @@ static void ExpectError(const char* input, const char* expected,
 
   v8::HandleScope scope(CcTest::isolate());
   Zone zone(isolate->allocator(), ZONE_NAME);
-  FlatStringReader reader(isolate, CStrVector(input));
+  Handle<String> str = isolate->factory()->NewStringFromAsciiChecked(input);
+  FlatStringReader reader(isolate, str);
   RegExpCompileData result;
   JSRegExp::Flags flags = JSRegExp::kNone;
   if (unicode) flags |= JSRegExp::kUnicode;
@@ -477,38 +490,28 @@ TEST(Errors) {
   ExpectError("\\ka", kInvalidNamedReference, true);
 }
 
+static bool IsDigit(uc32 c) { return ('0' <= c && c <= '9'); }
 
-static bool IsDigit(uc16 c) {
-  return ('0' <= c && c <= '9');
-}
+static bool NotDigit(uc32 c) { return !IsDigit(c); }
 
-
-static bool NotDigit(uc16 c) {
-  return !IsDigit(c);
-}
-
-
-static bool IsWhiteSpaceOrLineTerminator(uc16 c) {
+static bool IsWhiteSpaceOrLineTerminator(uc32 c) {
   // According to ECMA 5.1, 15.10.2.12 the CharacterClassEscape \s includes
   // WhiteSpace (7.2) and LineTerminator (7.3) values.
   return v8::internal::IsWhiteSpaceOrLineTerminator(c);
 }
 
-
-static bool NotWhiteSpaceNorLineTermiantor(uc16 c) {
+static bool NotWhiteSpaceNorLineTermiantor(uc32 c) {
   return !IsWhiteSpaceOrLineTerminator(c);
 }
 
+static bool NotWord(uc32 c) { return !IsRegExpWord(c); }
 
-static bool NotWord(uc16 c) {
-  return !IsRegExpWord(c);
-}
+static bool NotLineTerminator(uc32 c) { return !unibrow::IsLineTerminator(c); }
 
-
-static void TestCharacterClassEscapes(uc16 c, bool (pred)(uc16 c)) {
+static void TestCharacterClassEscapes(uc32 c, bool(pred)(uc32 c)) {
   Zone zone(CcTest::i_isolate()->allocator(), ZONE_NAME);
   ZoneList<CharacterRange>* ranges =
-      new(&zone) ZoneList<CharacterRange>(2, &zone);
+      zone.New<ZoneList<CharacterRange>>(2, &zone);
   CharacterRange::AddClassEscape(c, ranges, &zone);
   for (uc32 i = 0; i < (1 << 16); i++) {
     bool in_class = false;
@@ -520,9 +523,8 @@ static void TestCharacterClassEscapes(uc16 c, bool (pred)(uc16 c)) {
   }
 }
 
-
 TEST(CharacterClassEscapes) {
-  TestCharacterClassEscapes('.', IsRegExpNewline);
+  TestCharacterClassEscapes('.', NotLineTerminator);
   TestCharacterClassEscapes('d', IsDigit);
   TestCharacterClassEscapes('D', NotDigit);
   TestCharacterClassEscapes('s', IsWhiteSpaceOrLineTerminator);
@@ -535,14 +537,15 @@ TEST(CharacterClassEscapes) {
 static RegExpNode* Compile(const char* input, bool multiline, bool unicode,
                            bool is_one_byte, Zone* zone) {
   Isolate* isolate = CcTest::i_isolate();
-  FlatStringReader reader(isolate, CStrVector(input));
+  Handle<String> str = isolate->factory()->NewStringFromAsciiChecked(input);
+  FlatStringReader reader(isolate, str);
   RegExpCompileData compile_data;
   compile_data.compilation_target = RegExpCompilationTarget::kNative;
   JSRegExp::Flags flags = JSRegExp::kNone;
   if (multiline) flags = JSRegExp::kMultiline;
   if (unicode) flags = JSRegExp::kUnicode;
-  if (!v8::internal::RegExpParser::ParseRegExp(CcTest::i_isolate(), zone,
-                                               &reader, flags, &compile_data))
+  if (!v8::internal::RegExpParser::ParseRegExp(isolate, zone, &reader, flags,
+                                               &compile_data))
     return nullptr;
   Handle<String> pattern = isolate->factory()
                                ->NewStringFromUtf8(CStrVector(input))
@@ -642,8 +645,7 @@ static Handle<JSRegExp> CreateJSRegExp(Handle<String> source, Handle<Code> code,
   Handle<JSRegExp> regexp =
       Handle<JSRegExp>::cast(factory->NewJSObject(constructor));
 
-  factory->SetRegExpIrregexpData(regexp, JSRegExp::IRREGEXP, source,
-                                 JSRegExp::kNone, 0,
+  factory->SetRegExpIrregexpData(regexp, source, JSRegExp::kNone, 0,
                                  JSRegExp::kNoBacktrackLimit);
   regexp->SetDataAt(is_unicode ? JSRegExp::kIrregexpUC16CodeIndex
                                : JSRegExp::kIrregexpLatin1CodeIndex,
@@ -1021,16 +1023,16 @@ TEST(MacroAssemblerNativeBackRefNoCase) {
   m.WriteCurrentPositionToRegister(2, 0);
   m.AdvanceCurrentPosition(3);
   m.WriteCurrentPositionToRegister(3, 0);
-  m.CheckNotBackReferenceIgnoreCase(2, false, &fail);  // Match "AbC".
-  m.CheckNotBackReferenceIgnoreCase(2, false, &fail);  // Match "ABC".
+  m.CheckNotBackReferenceIgnoreCase(2, false, false, &fail);  // Match "AbC".
+  m.CheckNotBackReferenceIgnoreCase(2, false, false, &fail);  // Match "ABC".
   Label expected_fail;
-  m.CheckNotBackReferenceIgnoreCase(2, false, &expected_fail);
+  m.CheckNotBackReferenceIgnoreCase(2, false, false, &expected_fail);
   m.BindJumpTarget(&fail);
   m.Fail();
 
   m.Bind(&expected_fail);
   m.AdvanceCurrentPosition(3);  // Skip "xYz"
-  m.CheckNotBackReferenceIgnoreCase(2, false, &succ);
+  m.CheckNotBackReferenceIgnoreCase(2, false, false, &succ);
   m.Fail();
 
   m.Bind(&succ);
@@ -1415,7 +1417,7 @@ static void TestRangeCaseIndependence(Isolate* isolate, CharacterRange input,
   Zone zone(CcTest::i_isolate()->allocator(), ZONE_NAME);
   int count = expected.length();
   ZoneList<CharacterRange>* list =
-      new(&zone) ZoneList<CharacterRange>(count, &zone);
+      zone.New<ZoneList<CharacterRange>>(count, &zone);
   list->Add(input, &zone);
   CharacterRange::AddCaseEquivalents(isolate, &zone, list, false);
   list->Remove(0);  // Remove the input before checking results.
@@ -1486,8 +1488,7 @@ static bool InClass(uc32 c,
 
 TEST(UnicodeRangeSplitter) {
   Zone zone(CcTest::i_isolate()->allocator(), ZONE_NAME);
-  ZoneList<CharacterRange>* base =
-      new(&zone) ZoneList<CharacterRange>(1, &zone);
+  ZoneList<CharacterRange>* base = zone.New<ZoneList<CharacterRange>>(1, &zone);
   base->Add(CharacterRange::Everything(), &zone);
   UnicodeRangeSplitter splitter(base);
   // BMP
@@ -1530,8 +1531,7 @@ TEST(UnicodeRangeSplitter) {
 
 TEST(CanonicalizeCharacterSets) {
   Zone zone(CcTest::i_isolate()->allocator(), ZONE_NAME);
-  ZoneList<CharacterRange>* list =
-      new(&zone) ZoneList<CharacterRange>(4, &zone);
+  ZoneList<CharacterRange>* list = zone.New<ZoneList<CharacterRange>>(4, &zone);
   CharacterSet set(list);
 
   list->Add(CharacterRange::Range(10, 20), &zone);
@@ -2361,7 +2361,7 @@ TEST(UnicodePropertyEscapeCodeSize) {
   } else if (maybe_code.IsCode()) {
     // On x64, excessive inlining produced >360KB.
     CHECK_LT(Code::cast(maybe_code).Size(), kMaxSize);
-    CHECK_EQ(Code::cast(maybe_code).kind(), Code::REGEXP);
+    CHECK_EQ(Code::cast(maybe_code).kind(), CodeKind::REGEXP);
   } else {
     UNREACHABLE();
   }

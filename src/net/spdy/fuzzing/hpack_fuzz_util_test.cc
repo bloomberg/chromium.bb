@@ -32,7 +32,7 @@ TEST(HpackFuzzUtilTest, GeneratorContextInitialization) {
 TEST(HpackFuzzUtil, GeneratorContextExpansion) {
   HpackFuzzUtil::GeneratorContext context;
 
-  SpdyHeaderBlock headers = HpackFuzzUtil::NextGeneratedHeaderSet(&context);
+  Http2HeaderBlock headers = HpackFuzzUtil::NextGeneratedHeaderSet(&context);
 
   // Headers were generated, and the generator context was expanded.
   EXPECT_LT(0u, headers.size());
@@ -71,7 +71,7 @@ TEST(HpackFuzzUtilTest, ParsesSequenceOfHeaderBlocks) {
   HpackFuzzUtil::Input input;
   input.input.assign(fixture, base::size(fixture) - 1);
 
-  quiche::QuicheStringPiece block;
+  absl::string_view block;
 
   EXPECT_TRUE(HpackFuzzUtil::NextHeaderBlock(&input, &block));
   EXPECT_EQ("aaaaa", block);
@@ -108,7 +108,7 @@ TEST(HpackFuzzUtilTest, PassValidInputThroughAllStages) {
   EXPECT_TRUE(
       HpackFuzzUtil::RunHeaderBlockThroughFuzzerStages(&context, input));
 
-  SpdyHeaderBlock expect;
+  Http2HeaderBlock expect;
   expect[":method"] = "GET";
   expect[":scheme"] = "http";
   expect[":path"] = "/";
@@ -132,7 +132,7 @@ TEST(HpackFuzzUtilTest, ValidFuzzExamplesRegressionTest) {
   HpackFuzzUtil::FuzzerContext context;
   HpackFuzzUtil::InitializeFuzzerContext(&context);
 
-  quiche::QuicheStringPiece block;
+  absl::string_view block;
   while (HpackFuzzUtil::NextHeaderBlock(&input, &block)) {
     // As these are valid examples, all fuzz stages should succeed.
     EXPECT_TRUE(

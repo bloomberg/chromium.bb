@@ -41,8 +41,9 @@ class UnwindingWorker : public base::UnixSocket::EventListener {
  public:
   class Delegate {
    public:
-    virtual void PostAllocRecord(AllocRecord) = 0;
-    virtual void PostFreeRecord(FreeRecord) = 0;
+    virtual void PostAllocRecord(std::vector<AllocRecord>) = 0;
+    virtual void PostFreeRecord(std::vector<FreeRecord>) = 0;
+    virtual void PostHeapNameRecord(HeapNameRecord rec) = 0;
     virtual void PostSocketDisconnected(DataSourceInstanceID,
                                         pid_t pid,
                                         SharedRingBuffer::Stats stats) = 0;
@@ -56,6 +57,7 @@ class UnwindingWorker : public base::UnixSocket::EventListener {
     base::ScopedFile mem_fd;
     SharedRingBuffer shmem;
     ClientConfiguration client_config;
+    bool stream_allocations;
   };
 
   UnwindingWorker(Delegate* delegate, base::ThreadTaskRunner thread_task_runner)
@@ -76,10 +78,21 @@ class UnwindingWorker : public base::UnixSocket::EventListener {
   void OnDataAvailable(base::UnixSocket* self) override;
 
  public:
+  // public for testing/fuzzer
+  struct ClientData {
+    DataSourceInstanceID data_source_instance_id;
+    std::unique_ptr<base::UnixSocket> sock;
+    UnwindingMetadata metadata;
+    SharedRingBuffer shmem;
+    ClientConfiguration client_config;
+    bool stream_allocations;
+    std::vector<FreeRecord> free_records;
+    std::vector<AllocRecord> alloc_records;
+  };
+
   // static and public for testing/fuzzing
   static void HandleBuffer(const SharedRingBuffer::Buffer& buf,
-                           UnwindingMetadata* unwinding_metadata,
-                           DataSourceInstanceID data_source_instance_id,
+                           ClientData* client_data,
                            pid_t peer_pid,
                            Delegate* delegate);
 
@@ -87,15 +100,13 @@ class UnwindingWorker : public base::UnixSocket::EventListener {
   void HandleHandoffSocket(HandoffData data);
   void HandleDisconnectSocket(pid_t pid);
 
-  void HandleUnwindBatch(pid_t);
-
-  struct ClientData {
-    DataSourceInstanceID data_source_instance_id;
-    std::unique_ptr<base::UnixSocket> sock;
-    UnwindingMetadata metadata;
-    SharedRingBuffer shmem;
-    ClientConfiguration client_config;
+  enum class ReadAndUnwindBatchResult {
+    kHasMore,
+    kReadSome,
+    kReadNone,
   };
+  ReadAndUnwindBatchResult ReadAndUnwindBatch(ClientData* client_data);
+  void BatchUnwindJob(pid_t);
 
   std::map<pid_t, ClientData> client_data_;
   Delegate* delegate_;

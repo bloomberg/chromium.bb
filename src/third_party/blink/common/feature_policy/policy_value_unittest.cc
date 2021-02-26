@@ -13,8 +13,8 @@ namespace blink {
 class PolicyValueTest : public testing::Test {};
 
 TEST_F(PolicyValueTest, TestCanCreateBoolValues) {
-  PolicyValue false_value(false);
-  PolicyValue true_value(true);
+  PolicyValue false_value = PolicyValue::CreateBool(false);
+  PolicyValue true_value = PolicyValue::CreateBool(true);
   PolicyValue min_value(
       PolicyValue::CreateMinPolicyValue(mojom::PolicyValueType::kBool));
   PolicyValue max_value(
@@ -26,8 +26,8 @@ TEST_F(PolicyValueTest, TestCanCreateBoolValues) {
 }
 
 TEST_F(PolicyValueTest, TestCanModifyBoolValues) {
-  PolicyValue initially_false_value(false);
-  PolicyValue initially_true_value(true);
+  PolicyValue initially_false_value = PolicyValue::CreateBool(false);
+  PolicyValue initially_true_value = PolicyValue::CreateBool(true);
   initially_false_value.SetBoolValue(true);
   initially_true_value.SetBoolValue(false);
   EXPECT_EQ(initially_false_value.BoolValue(), true);
@@ -40,41 +40,29 @@ TEST_F(PolicyValueTest, TestCanModifyBoolValues) {
 }
 
 TEST_F(PolicyValueTest, TestCanCompareBoolValues) {
-  PolicyValue false_value(false);
-  PolicyValue true_value(true);
+  PolicyValue false_value = PolicyValue::CreateBool(false);
+  PolicyValue true_value = PolicyValue::CreateBool(true);
 
-  EXPECT_FALSE(false_value < false_value);
-  EXPECT_TRUE(false_value <= false_value);
   EXPECT_TRUE(false_value == false_value);
   EXPECT_FALSE(false_value != false_value);
-  EXPECT_TRUE(false_value >= false_value);
-  EXPECT_FALSE(false_value > false_value);
+  EXPECT_TRUE(false_value.IsCompatibleWith(false_value));
 
-  EXPECT_TRUE(false_value < true_value);
-  EXPECT_TRUE(false_value <= true_value);
   EXPECT_FALSE(false_value == true_value);
   EXPECT_TRUE(false_value != true_value);
-  EXPECT_FALSE(false_value >= true_value);
-  EXPECT_FALSE(false_value > true_value);
+  EXPECT_TRUE(false_value.IsCompatibleWith(true_value));
 
-  EXPECT_FALSE(true_value < false_value);
-  EXPECT_FALSE(true_value <= false_value);
   EXPECT_FALSE(true_value == false_value);
   EXPECT_TRUE(true_value != false_value);
-  EXPECT_TRUE(true_value >= false_value);
-  EXPECT_TRUE(true_value > false_value);
+  EXPECT_FALSE(true_value.IsCompatibleWith(false_value));
 
-  EXPECT_FALSE(true_value < true_value);
-  EXPECT_TRUE(true_value <= true_value);
   EXPECT_TRUE(true_value == true_value);
   EXPECT_FALSE(true_value != true_value);
-  EXPECT_TRUE(true_value >= true_value);
-  EXPECT_FALSE(true_value > true_value);
+  EXPECT_TRUE(true_value.IsCompatibleWith(true_value));
 }
 
 TEST_F(PolicyValueTest, TestCanCreateDoubleValues) {
-  PolicyValue zero_value(0.0);
-  PolicyValue one_value(1.0);
+  PolicyValue zero_value = PolicyValue::CreateDecDouble(0.0);
+  PolicyValue one_value = PolicyValue::CreateDecDouble(1.0);
   PolicyValue min_value(
       PolicyValue::CreateMinPolicyValue(mojom::PolicyValueType::kDecDouble));
   PolicyValue max_value(
@@ -86,7 +74,7 @@ TEST_F(PolicyValueTest, TestCanCreateDoubleValues) {
 }
 
 TEST_F(PolicyValueTest, TestCanModifyDoubleValues) {
-  PolicyValue initially_zero_value(0.0);
+  PolicyValue initially_zero_value = PolicyValue::CreateDecDouble(0.0);
   initially_zero_value.SetDoubleValue(1.0);
   EXPECT_EQ(initially_zero_value.DoubleValue(), 1.0);
   initially_zero_value.SetToMax();
@@ -97,36 +85,58 @@ TEST_F(PolicyValueTest, TestCanModifyDoubleValues) {
 }
 
 TEST_F(PolicyValueTest, TestCanCompareDoubleValues) {
-  PolicyValue low_value(1.0);
-  PolicyValue high_value(2.0);
+  PolicyValue low_value = PolicyValue::CreateDecDouble(1.0);
+  PolicyValue high_value = PolicyValue::CreateDecDouble(2.0);
 
-  EXPECT_FALSE(low_value < low_value);
-  EXPECT_TRUE(low_value <= low_value);
   EXPECT_TRUE(low_value == low_value);
   EXPECT_FALSE(low_value != low_value);
-  EXPECT_TRUE(low_value >= low_value);
-  EXPECT_FALSE(low_value > low_value);
+  EXPECT_TRUE(low_value.IsCompatibleWith(low_value));
 
-  EXPECT_TRUE(low_value < high_value);
-  EXPECT_TRUE(low_value <= high_value);
   EXPECT_FALSE(low_value == high_value);
   EXPECT_TRUE(low_value != high_value);
-  EXPECT_FALSE(low_value >= high_value);
-  EXPECT_FALSE(low_value > high_value);
+  EXPECT_TRUE(low_value.IsCompatibleWith(high_value));
 
-  EXPECT_FALSE(high_value < low_value);
-  EXPECT_FALSE(high_value <= low_value);
   EXPECT_FALSE(high_value == low_value);
   EXPECT_TRUE(high_value != low_value);
-  EXPECT_TRUE(high_value >= low_value);
-  EXPECT_TRUE(high_value > low_value);
+  EXPECT_FALSE(high_value.IsCompatibleWith(low_value));
 
-  EXPECT_FALSE(high_value < high_value);
-  EXPECT_TRUE(high_value <= high_value);
   EXPECT_TRUE(high_value == high_value);
   EXPECT_FALSE(high_value != high_value);
-  EXPECT_TRUE(high_value >= high_value);
-  EXPECT_FALSE(high_value > high_value);
+  EXPECT_TRUE(high_value.IsCompatibleWith(high_value));
+}
+
+TEST_F(PolicyValueTest, TestCanCreateEnumValues) {
+  PolicyValue enum_value_a = PolicyValue::CreateEnum(1);
+  PolicyValue enum_value_b = PolicyValue::CreateEnum(2);
+  EXPECT_EQ(enum_value_a.IntValue(), 1);
+  EXPECT_EQ(enum_value_b.IntValue(), 2);
+}
+
+TEST_F(PolicyValueTest, TestCanModifyEnumValues) {
+  PolicyValue enum_value_a = PolicyValue::CreateEnum(1);
+  enum_value_a.SetIntValue(2);
+  EXPECT_EQ(enum_value_a.IntValue(), 2);
+}
+
+TEST_F(PolicyValueTest, TestCanCompareEnumValues) {
+  PolicyValue enum_value_a = PolicyValue::CreateEnum(1);
+  PolicyValue enum_value_b = PolicyValue::CreateEnum(2);
+
+  EXPECT_TRUE(enum_value_a == enum_value_a);
+  EXPECT_FALSE(enum_value_a != enum_value_a);
+  EXPECT_TRUE(enum_value_a.IsCompatibleWith(enum_value_a));
+
+  EXPECT_FALSE(enum_value_b == enum_value_a);
+  EXPECT_TRUE(enum_value_b != enum_value_a);
+  EXPECT_FALSE(enum_value_b.IsCompatibleWith(enum_value_a));
+
+  EXPECT_FALSE(enum_value_a == enum_value_b);
+  EXPECT_TRUE(enum_value_a != enum_value_b);
+  EXPECT_FALSE(enum_value_a.IsCompatibleWith(enum_value_b));
+
+  EXPECT_TRUE(enum_value_b == enum_value_b);
+  EXPECT_FALSE(enum_value_b != enum_value_b);
+  EXPECT_TRUE(enum_value_b.IsCompatibleWith(enum_value_b));
 }
 
 }  // namespace blink

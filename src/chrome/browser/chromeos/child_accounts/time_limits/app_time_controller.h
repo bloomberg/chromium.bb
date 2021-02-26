@@ -15,9 +15,9 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 class Profile;
 class PrefRegistrySimple;
@@ -31,14 +31,14 @@ class OneShotTimer;
 
 namespace gfx {
 class ImageSkia;
-} // namespace gfx
+}  // namespace gfx
 
 namespace chromeos {
 namespace app_time {
 
 extern const char kAppsWithTimeLimitMetric[];
 extern const char kBlockedAppsCountMetric[];
-extern const char kPolicyUpdateCountMetric[];
+extern const char kPolicyChangeCountMetric[];
 extern const char kEngagementMetric[];
 
 class AppServiceWrapper;
@@ -78,7 +78,7 @@ class AppTimeController : public SystemClockClient::Observer,
   AppTimeController& operator=(const AppTimeController&) = delete;
   ~AppTimeController() override;
 
-  bool IsExtensionWhitelisted(const std::string& extension_id) const;
+  bool IsExtensionAllowlisted(const std::string& extension_id) const;
 
   // Returns current time limit for the app identified by |app_service_id| and
   // |app_type|.Will return nullopt if there is no limit set or app is not
@@ -132,7 +132,7 @@ class AppTimeController : public SystemClockClient::Observer,
  private:
   void RegisterProfilePrefObservers(PrefService* pref_service);
   void TimeLimitsPolicyUpdated(const std::string& pref_name);
-  void TimeLimitsWhitelistPolicyUpdated(const std::string& pref_name);
+  void TimeLimitsAllowlistPolicyUpdated(const std::string& pref_name);
 
   base::Time GetNextResetTime() const;
 

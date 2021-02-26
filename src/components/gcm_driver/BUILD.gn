@@ -59,7 +59,7 @@ static_library("gcm_driver") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/signin/public/identity_manager",
-    "//components/sync",
+    "//components/sync/base",
     "//components/version_info",
     "//google_apis",
     "//google_apis/gcm",
@@ -81,6 +81,7 @@ static_library("gcm_driver") {
   }
 
   if (use_gcm_from_platform) {
+    assert(is_android)
     sources += [
       "gcm_driver_android.cc",
       "gcm_driver_android.h",
@@ -167,10 +168,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "gcm_delayed_task_controller_unittest.cc",
-    "gcm_stats_recorder_android_unittest.cc",
-  ]
+  sources = [ "gcm_delayed_task_controller_unittest.cc" ]
 
   deps = [
     ":gcm_driver",
@@ -187,6 +185,10 @@ source_set("unit_tests") {
     "//third_party/leveldatabase",
     "//third_party/protobuf:protobuf_lite",
   ]
+
+  if (is_android) {
+    sources += [ "gcm_stats_recorder_android_unittest.cc" ]
+  }
 
   if (!use_gcm_from_platform) {
     sources += [

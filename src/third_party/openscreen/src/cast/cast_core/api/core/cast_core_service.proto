@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package cast.core;
+
+import "google/protobuf/empty.proto";
+import "cast/cast_core/api/common/runtime_metadata.proto";
+import "cast/cast_core/api/common/service_info.proto";
+
+option optimize_for = LITE_RUNTIME;
+
+// CastCore service.
+service CastCoreService {
+  // Registers a Cast Runtime. Usually called by platform.
+  rpc RegisterRuntime(RegisterRuntimeRequest) returns (RegisterRuntimeResponse);
+
+  // Unregisters a Cast Runtime. Usually called by platform.
+  rpc UnregisterRuntime(UnregisterRuntimeRequest)
+      returns (UnregisterRuntimeResponse);
+
+  // Called by the Runtime when it starts up.
+  rpc RuntimeStarted(RuntimeStartedNotification)
+      returns (google.protobuf.Empty);
+
+  // Called when the runtime is shutdown. May be called for an active Cast
+  // session.
+  rpc RuntimeStopped(RuntimeStoppedNotification)
+      returns (google.protobuf.Empty);
+}
+
+message RegisterRuntimeRequest {
+  // Platform-generated runtime ID associated with this runtime. Uniqueness is
+  // guaranteed by the CastCore service.
+  string runtime_id = 1;
+  // Metadata about the runtime.
+  cast.common.RuntimeMetadata runtime_metadata = 2;
+}
+
+message RegisterRuntimeResponse {}
+
+message UnregisterRuntimeRequest {
+  // Runtime ID.
+  string runtime_id = 1;
+}
+
+message UnregisterRuntimeResponse {}
+
+message RuntimeStartedNotification {
+  // Runtime ID.
+  string runtime_id = 1;
+  // Runtime service info.
+  cast.common.ServiceInfo runtime_service_info = 2;
+}
+
+message RuntimeStoppedNotification {
+  // Runtime ID.
+  string runtime_id = 1;
+}

@@ -25,8 +25,6 @@
 #include <io.h>
 #endif
 
-#include "absl/memory/memory.h"
-#include "absl/strings/str_format.h"
 #include "examples/logging.h"
 
 namespace libgav1 {
@@ -72,9 +70,8 @@ std::string GetY4mColorSpaceString(
   if (y4m_parameters.bitdepth > 8) {
     const bool monochrome =
         y4m_parameters.image_format == kImageFormatMonochrome400;
-    color_space_string =
-        absl::StrFormat("%s%s%d", color_space_string, monochrome ? "" : "p",
-                        y4m_parameters.bitdepth);
+    if (!monochrome) color_space_string += "p";
+    color_space_string += std::to_string(y4m_parameters.bitdepth);
   }
 
   return color_space_string;
@@ -85,7 +82,7 @@ std::string GetY4mColorSpaceString(
 FileWriter::~FileWriter() { fclose(file_); }
 
 std::unique_ptr<FileWriter> FileWriter::Open(
-    absl::string_view file_name, FileType file_type,
+    const std::string& file_name, FileType file_type,
     const Y4mParameters* const y4m_parameters) {
   if (file_name.empty() ||
       (file_type == kFileTypeY4m && y4m_parameters == nullptr) ||
@@ -94,13 +91,12 @@ std::unique_ptr<FileWriter> FileWriter::Open(
     return nullptr;
   }
 
-  const std::string fopen_file_name = std::string(file_name);
   FILE* raw_file_ptr;
 
   if (file_name == "-") {
     raw_file_ptr = SetBinaryMode(stdout);
   } else {
-    raw_file_ptr = fopen(fopen_file_name.c_str(), "wb");
+    raw_file_ptr = fopen(file_name.c_str(), "wb");
   }
 
   if (raw_file_ptr == nullptr) {
@@ -108,7 +104,7 @@ std::unique_ptr<FileWriter> FileWriter::Open(
     return nullptr;
   }
 
-  auto file = absl::WrapUnique(new (std::nothrow) FileWriter(raw_file_ptr));
+  std::unique_ptr<FileWriter> file(new (std::nothrow) FileWriter(raw_file_ptr));
   if (file == nullptr) {
     LIBGAV1_EXAMPLES_LOG_ERROR("Out of memory");
     fclose(raw_file_ptr);
@@ -173,11 +169,13 @@ bool FileWriter::WriteFrame(const DecoderBuffer& frame_buffer) {
 //
 // More info here: https://wiki.multimedia.cx/index.php/YUV4MPEG2
 bool FileWriter::WriteY4mFileHeader(const Y4mParameters& y4m_parameters) {
-  std::string y4m_header = absl::StrFormat(
-      "YUV4MPEG2 W%zu H%zu F%zu:%zu Ip C%s\n", y4m_parameters.width,
-      y4m_parameters.height, y4m_parameters.frame_rate_numerator,
-      y4m_parameters.frame_rate_denominator,
-      GetY4mColorSpaceString(y4m_parameters));
+  std::string y4m_header = "YUV4MPEG2";
+  y4m_header += " W" + std::to_string(y4m_parameters.width);
+  y4m_header += " H" + std::to_string(y4m_parameters.height);
+  y4m_header += " F" + std::to_string(y4m_parameters.frame_rate_numerator) +
+                ":" + std::to_string(y4m_parameters.frame_rate_denominator);
+  y4m_header += " Ip C" + GetY4mColorSpaceString(y4m_parameters);
+  y4m_header += "\n";
   return fwrite(y4m_header.c_str(), 1, y4m_header.length(), file_) ==
          y4m_header.length();
 }

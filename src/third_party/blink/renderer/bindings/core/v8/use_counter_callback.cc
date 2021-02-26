@@ -161,13 +161,6 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kWasmSimdOpcodes:
       blink_feature = WebFeature::kV8WasmSimdOpcodes;
       break;
-    case v8::Isolate::kAtomicsNotify:
-      blink_feature = WebFeature::kV8AtomicsNotify;
-      break;
-    case v8::Isolate::kAtomicsWake:
-      blink_feature = WebFeature::kV8AtomicsWake;
-      deprecated = true;
-      break;
     case v8::Isolate::kCollator:
       blink_feature = WebFeature::kCollator;
       break;
@@ -244,7 +237,12 @@ void UseCounterCallback(v8::Isolate* isolate,
       blink_feature = WebFeature::kV8RegExpReplaceCalledOnSlowRegExp;
       break;
     case v8::Isolate::kSharedArrayBufferConstructed:
-      blink_feature = WebFeature::kV8SharedArrayBufferConstructed;
+      if (!CurrentExecutionContext(isolate)->CrossOriginIsolatedCapability()) {
+        blink_feature =
+            WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation;
+      } else {
+        blink_feature = WebFeature::kV8SharedArrayBufferConstructed;
+      }
       break;
     case v8::Isolate::kArrayPrototypeHasElements:
       blink_feature = WebFeature::kV8ArrayPrototypeHasElements;
@@ -326,6 +324,18 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kInvalidatedTypedArraySpeciesLookupChainProtector:
       blink_feature =
           WebFeature::kV8InvalidatedTypedArraySpeciesLookupChainProtector;
+      break;
+    case v8::Isolate::kVarRedeclaredCatchBinding:
+      blink_feature = WebFeature::kV8VarRedeclaredCatchBinding;
+      break;
+    case v8::Isolate::kWasmRefTypes:
+      blink_feature = WebFeature::kV8WasmRefTypes;
+      break;
+    case v8::Isolate::kWasmBulkMemory:
+      blink_feature = WebFeature::kV8WasmBulkMemory;
+      break;
+    case v8::Isolate::kWasmMultiValue:
+      blink_feature = WebFeature::kV8WasmMultiValue;
       break;
 
     default:

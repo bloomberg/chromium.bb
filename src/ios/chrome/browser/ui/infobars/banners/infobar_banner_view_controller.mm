@@ -67,6 +67,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 @property(nonatomic, assign) BOOL presentsModal;
 @property(nonatomic, copy) NSString* titleText;
 @property(nonatomic, copy) NSString* subtitleText;
+@property(nonatomic, assign) BOOL useIconBackgroundTint;
 
 // The original position of this InfobarVC view in the parent's view coordinate
 // system.
@@ -113,6 +114,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
     _metricsRecorder =
         [[InfobarMetricsRecorder alloc] initWithType:infobarType];
     _presentsModal = presentsModal;
+    _useIconBackgroundTint = YES;
   }
   return self;
 }
@@ -146,8 +148,12 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   // Icon setup.
   UIView* iconContainerView = nil;
   if (self.iconImage) {
-    self.iconImage = [self.iconImage
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    // If the icon image requires a background tint, ignore the original color
+    // information and draw the image as a template image.
+    if (self.useIconBackgroundTint) {
+      self.iconImage = [self.iconImage
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    }
     UIImageView* iconImageView =
         [[UIImageView alloc] initWithImage:self.iconImage];
     iconImageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -155,8 +161,10 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 
     UIView* backgroundIconView =
         [[UIView alloc] initWithFrame:iconImageView.frame];
-    backgroundIconView.backgroundColor = [UIColor colorNamed:kBlueHaloColor];
     backgroundIconView.layer.cornerRadius = kIconCornerRadius;
+    if (self.useIconBackgroundTint) {
+      backgroundIconView.backgroundColor = [UIColor colorNamed:kBlueHaloColor];
+    }
     backgroundIconView.translatesAutoresizingMaskIntoConstraints = NO;
 
     iconContainerView = [[UIView alloc] init];
@@ -400,7 +408,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   self.shouldDismissAfterTouchesEnded = YES;
 }
 
-#pragma mark - Getters/Setters
+#pragma mark - Setters
 
 - (void)setTitleText:(NSString*)titleText {
   _titleText = titleText;
@@ -433,6 +441,10 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   // InfobarContainerCoordinator and not Overlays. Once we migrate to Overlays
   // InfobarBannerContainer shouldn't be necessary.
   DCHECK(!IsInfobarOverlayUIEnabled());
+}
+
+- (void)setUseIconBackgroundTint:(BOOL)useIconBackgroundTint {
+  _useIconBackgroundTint = useIconBackgroundTint;
 }
 
 #pragma mark - Private Methods

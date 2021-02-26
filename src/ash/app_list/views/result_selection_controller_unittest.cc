@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "ash/app_list/test/app_list_test_view_delegate.h"
+#include "ash/app_list/test/test_search_result.h"
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/app_list/views/search_result_actions_view_delegate.h"
 #include "ash/app_list/views/search_result_container_view.h"
@@ -21,6 +22,8 @@
 
 namespace ash {
 namespace {
+
+int g_last_created_result_index = -1;
 
 class TestResultViewWithActions;
 
@@ -31,10 +34,6 @@ class TestResultView : public SearchResultBaseView {
 
   virtual TestResultViewWithActions* AsResultViewWithActions() {
     return nullptr;
-  }
-
-  void ButtonPressed(Button* sender, const ui::Event& event) override {
-    // Do nothing for test.
   }
 
  private:
@@ -53,7 +52,7 @@ class TestResultViewWithActions : public TestResultView,
   TestResultViewWithActions* AsResultViewWithActions() override { return this; }
 
   // SearchResultActionsViewDelegate:
-  void OnSearchResultActionActivated(size_t index, int event_flags) override {}
+  void OnSearchResultActionActivated(size_t index) override {}
   bool IsSearchResultHoveredOrSelected() override { return selected(); }
 
   SearchResultActionsView* GetActionsView() {
@@ -110,17 +109,28 @@ class TestContainer : public TestContainerDelegateHarness,
     set_horizontally_traversable(params.horizontal);
 
     for (int i = 0; i < params.result_count; ++i) {
-      if (params.actions_per_result.has_value()) {
-        auto result = std::make_unique<TestResultViewWithActions>();
-        result->GetActionsView()->SetActions(std::vector<SearchResult::Action>(
-            params.actions_per_result.value(),
-            SearchResult::Action(gfx::ImageSkia(), base::string16(), false)));
-        search_result_views_.emplace_back(std::move(result));
-      } else {
-        search_result_views_.emplace_back(std::make_unique<TestResultView>());
-      }
+      std::string result_id =
+          base::StringPrintf("result %d", ++g_last_created_result_index);
+      auto result = std::make_unique<TestSearchResult>();
+      result->set_result_id(result_id);
 
+      if (params.actions_per_result.has_value()) {
+        auto result_view = std::make_unique<TestResultViewWithActions>();
+        result_view->SetResult(result.get());
+        result_view->GetActionsView()->SetActions(
+            std::vector<SearchResult::Action>(
+                params.actions_per_result.value(),
+                SearchResult::Action(gfx::ImageSkia(), base::string16(),
+                                     false)));
+        search_result_views_.emplace_back(std::move(result_view));
+      } else {
+        auto result_view = std::make_unique<TestResultView>();
+        result_view->SetResult(result.get());
+        search_result_views_.emplace_back(std::move(result_view));
+      }
       search_result_views_.back()->set_index_in_container(i);
+
+      results_.emplace(result_id, std::move(result));
     }
 
     Update();
@@ -132,13 +142,11 @@ class TestContainer : public TestContainerDelegateHarness,
     DCHECK_LT(index, search_result_views_.size());
     return search_result_views_[index].get();
   }
-  SearchResultBaseView* GetFirstResultView() override {
-    return GetResultViewAt(0);
-  }
 
  private:
   int DoUpdate() override { return search_result_views_.size(); }
 
+  std::map<std::string, std::unique_ptr<TestSearchResult>> results_;
   std::vector<std::unique_ptr<TestResultView>> search_result_views_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContainer);
@@ -170,6 +178,8 @@ class ResultSelectionTest : public testing::Test,
 
     testing::Test::SetUp();
   }
+
+  void TearDown() override { g_last_created_result_index = -1; }
 
  protected:
   std::vector<std::unique_ptr<SearchResultContainerView>> CreateContainerVector(
@@ -1220,10 +1230,10 @@ TEST_F(ResultSelectionTest, ResetWhileResultActionSelected) {
   // Reset selection.
   TestResultView* pre_reset_selection = GetCurrentSelection();
   result_selection_controller_->ResetSelection(nullptr, false);
-  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
-  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
-  EXPECT_TRUE(CurrentResultActionNotSelected());
-  EXPECT_FALSE(pre_reset_selection->selected());
+  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+  ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionSelected(0));
+  EXPECT_TRUE(pre_reset_selection->selected());
 }
 
 TEST_F(ResultSelectionTest, ActionRemovedWhileSelected) {
@@ -1349,9 +1359,9 @@ TEST_F(ResultSelectionTest, ResetSelectionWithSelectionChangesBlocked) {
   result_selection_controller_->set_block_selection_changes(false);
 
   result_selection_controller_->ResetSelection(nullptr, false);
-  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
+  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
 
-  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(result_selection_controller_->selected_result());
 }
 

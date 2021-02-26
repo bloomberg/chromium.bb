@@ -25,8 +25,6 @@ namespace blink {
 class DOMContentLoadedListener final
     : public NativeEventListener,
       public ProcessingInstruction::DetachableEventListener {
-  USING_GARBAGE_COLLECTED_MIXIN(DOMContentLoadedListener);
-
  public:
   explicit DOMContentLoadedListener(ProcessingInstruction* pi)
       : processing_instruction_(pi) {}
@@ -55,7 +53,7 @@ class DOMContentLoadedListener final
 
   EventListener* ToEventListener() override { return this; }
 
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(processing_instruction_);
     NativeEventListener::Trace(visitor);
     ProcessingInstruction::DetachableEventListener::Trace(visitor);
@@ -69,7 +67,7 @@ class DOMContentLoadedListener final
 };
 
 DocumentXSLT::DocumentXSLT(Document& document)
-    : Supplement<Document>(document), transform_source_document_(nullptr) {}
+    : Supplement<Document>(document) {}
 
 void DocumentXSLT::ApplyXSLTransform(Document& document,
                                      ProcessingInstruction* pi) {
@@ -156,17 +154,13 @@ bool DocumentXSLT::HasTransformSourceDocument(Document& document) {
   return Supplement<Document>::From<DocumentXSLT>(document);
 }
 
-DocumentXSLT& DocumentXSLT::From(Document& document) {
-  DocumentXSLT* supplement = Supplement<Document>::From<DocumentXSLT>(document);
-  if (!supplement) {
-    supplement = MakeGarbageCollected<DocumentXSLT>(document);
-    Supplement<Document>::ProvideTo(document, supplement);
-  }
-  return *supplement;
+void DocumentXSLT::SetHasTransformSource(Document& document) {
+  DCHECK(!HasTransformSourceDocument(document));
+  Supplement<Document>::ProvideTo(document,
+                                  MakeGarbageCollected<DocumentXSLT>(document));
 }
 
-void DocumentXSLT::Trace(Visitor* visitor) {
-  visitor->Trace(transform_source_document_);
+void DocumentXSLT::Trace(Visitor* visitor) const {
   Supplement<Document>::Trace(visitor);
 }
 

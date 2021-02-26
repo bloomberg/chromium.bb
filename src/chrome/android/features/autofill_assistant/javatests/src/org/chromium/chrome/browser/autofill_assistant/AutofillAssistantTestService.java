@@ -9,16 +9,18 @@ import androidx.annotation.Nullable;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import org.hamcrest.Matchers;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionsResponseProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ClientSettingsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportsScriptResponseProto;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -141,13 +143,10 @@ public class AutofillAssistantTestService
      * AutofillAssistantTestService#getProcessedActions}.
      */
     public void waitUntilGetNextActions(int targetNextActionsCount) {
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Timeout while waiting for getNextActions") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mNextActionsCounter >= targetNextActionsCount;
-                    }
-                });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat("Timeout while waiting for getNextActions", mNextActionsCounter,
+                    Matchers.greaterThanOrEqualTo(targetNextActionsCount));
+        });
     }
 
     /** Access to the most recently received list of processed actions. Is initially null. */

@@ -12,16 +12,13 @@
 #include "ui/base/x/x11_display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/event.h"
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_export.h"
 
 namespace views {
 class DesktopScreenX11Test;
-
-namespace test {
-class DesktopScreenX11TestApi;
-}
 
 // Screen implementation that talks to XRandR
 class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
@@ -57,7 +54,7 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   std::string GetCurrentWorkspace() override;
 
   // ui::XEventDispatcher:
-  bool DispatchXEvent(XEvent* event) override;
+  bool DispatchXEvent(x11::Event* event) override;
 
   // DeviceScaleFactorObserver:
   void OnDeviceScaleFactorChanged() override;
@@ -66,12 +63,12 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
 
  private:
   friend class DesktopScreenX11Test;
-  friend class test::DesktopScreenX11TestApi;
 
   // ui::XDisplayManager::Delegate:
   void OnXDisplayListUpdated() override;
   float GetXDisplayScaleFactor() const override;
 
+  display::Screen* const old_screen_ = display::Screen::SetScreenInstance(this);
   std::unique_ptr<ui::XDisplayManager> x11_display_manager_ =
       std::make_unique<ui::XDisplayManager>(this);
   ScopedObserver<LinuxUI,

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/permissions/navigator_permissions.h"
 
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/permissions/permissions.h"
 
@@ -28,12 +29,14 @@ NavigatorPermissions& NavigatorPermissions::From(Navigator& navigator) {
 // static
 Permissions* NavigatorPermissions::permissions(Navigator& navigator) {
   NavigatorPermissions& self = NavigatorPermissions::From(navigator);
-  if (!self.permissions_)
-    self.permissions_ = MakeGarbageCollected<Permissions>();
+  if (!self.permissions_) {
+    self.permissions_ =
+        MakeGarbageCollected<Permissions>(navigator.DomWindow());
+  }
   return self.permissions_.Get();
 }
 
-void NavigatorPermissions::Trace(Visitor* visitor) {
+void NavigatorPermissions::Trace(Visitor* visitor) const {
   visitor->Trace(permissions_);
   Supplement<Navigator>::Trace(visitor);
 }

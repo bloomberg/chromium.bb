@@ -310,8 +310,7 @@ if sys.platform == 'win32':
       elif buf.ReparseTag == IO_REPARSE_TAG_MOUNT_POINT:
         actual = buf.ReparseBuffer.MountPointReparseBuffer
       else:
-        # pylint: disable=undefined-variable
-        raise WindowsError(
+        raise WindowsError(  # pylint: disable=undefined-variable
             u'readlink(%r): succeeded but doesn\'t know how to parse result!' %
             path)
       off = actual.PrintNameOffset / 2

@@ -4,25 +4,11 @@
 
 GEN_INCLUDE(['../switch_access_e2e_test_base.js']);
 
-/**
- * @constructor
- * @extends {SwitchAccessE2ETest}
- */
-function SwitchAccessTabNodeTest() {
-  SwitchAccessE2ETest.call(this);
-}
-
-SwitchAccessTabNodeTest.prototype = {
-  __proto__: SwitchAccessE2ETest.prototype,
-
-  /** @override */
-  setUp() {
-    MenuManager.initialize();
-  },
-};
+/** Test fixture for the tab node type. */
+SwitchAccessTabNodeTest = class extends SwitchAccessE2ETest {};
 
 TEST_F('SwitchAccessTabNodeTest', 'FindCloseButton', function() {
-  this.runWithLoadedTree('', (desktop) => {
+  this.runWithLoadedDesktop((desktop) => {
     const tab = desktop.find({role: chrome.automation.RoleType.TAB});
 
     // To find the close button, Switch Access relies on it being the only
@@ -38,7 +24,7 @@ TEST_F('SwitchAccessTabNodeTest', 'FindCloseButton', function() {
 });
 
 TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
-  this.runWithLoadedTree('', (desktop) => {
+  this.runWithLoadedDesktop((desktop) => {
     NavigationManager.instance.moveTo_(
         desktop.find({role: chrome.automation.RoleType.TAB}));
 
@@ -47,13 +33,16 @@ TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
         chrome.automation.RoleType.TAB, tab.role, 'Tab node is not a tab');
     assertTrue(tab.isGroup(), 'Tab node should be a group');
     assertEquals(
-        0, tab.actions.length, 'Tab as a group should not have actions');
+        1, tab.actions.length, 'Tab as a group should have 1 action (select)');
+    assertEquals(
+        chrome.accessibilityPrivate.SwitchAccessMenuAction.SELECT,
+        tab.actions[0], 'Tab as a group should have the action SELECT');
 
-    NavigationManager.instance.selectCurrentNode();
+    NavigationManager.instance.node_.doDefaultAction();
 
     const tabAsRoot = NavigationManager.instance.group_;
     assertTrue(
-        RectHelper.areEqual(tab.location, tabAsRoot.location),
+        RectUtil.equal(tab.location, tabAsRoot.location),
         'Tab location should not change when treated as root');
     assertEquals(
         3, tabAsRoot.children.length, 'Tab as root should have 3 children');
@@ -65,10 +54,10 @@ TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
     assertFalse(
         tabToSelect.isGroup(), 'Tab node to select should not be a group');
     assertTrue(
-        tabToSelect.hasAction(SAConstants.MenuAction.SELECT),
+        tabToSelect.hasAction(SwitchAccessMenuAction.SELECT),
         'Tab as a group should have a SELECT action');
     assertFalse(
-        RectHelper.areEqual(tabAsRoot.location, tabToSelect.location),
+        RectUtil.equal(tabAsRoot.location, tabToSelect.location),
         'Tab node to select should not have the same location as tab as root');
     assertEquals(
         null, tabToSelect.asRootNode(),
@@ -82,15 +71,14 @@ TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
         'Close button is not a button');
     assertFalse(close.isGroup(), 'Close button should not be a group');
     assertTrue(
-        close.hasAction(SAConstants.MenuAction.SELECT),
+        close.hasAction(SwitchAccessMenuAction.SELECT),
         'Close button should have a SELECT action');
     assertFalse(
-        RectHelper.areEqual(tabAsRoot.location, close.location),
+        RectUtil.equal(tabAsRoot.location, close.location),
         'Close button should not have the same location as tab as root');
-    const overlap =
-        RectHelper.intersection(tabToSelect.location, close.location);
+    const overlap = RectUtil.intersection(tabToSelect.location, close.location);
     assertTrue(
-        RectHelper.areEqual(RectHelper.ZERO_RECT, overlap),
+        RectUtil.equal(RectUtil.ZERO_RECT, overlap),
         'Close button and tab node to select should not overlap');
 
     BackButtonNode

@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/memory/ref_counted_memory.h"
 #include "components/autofill/core/common/renderer_id.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #import "ios/web/public/web_state_observer_bridge.h"
@@ -18,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class PasswordFormHelper;
 
 namespace autofill {
+class FieldDataManager;
 struct FormData;
 struct PasswordFormFillData;
 }  // namespace autofill
@@ -44,6 +46,8 @@ class WebState;
 
 // Handles common form processing logic of password controller for both
 // ios/chrome and ios/web_view.
+// TODO(crbug.com/1097353): Consider folding this class into
+// SharedPasswordController.
 @interface PasswordFormHelper
     : NSObject<FormActivityObserver, CRWWebStateObserver>
 
@@ -53,6 +57,18 @@ class WebState;
 // Last committed URL of current web state.
 // Returns empty URL if current web state is not available.
 @property(nonatomic, readonly) const GURL& lastCommittedURL;
+
+// Maps UniqueFieldId of an input element to the pair of:
+// 1) The most recent text that user typed or PasswordManager autofilled in
+// input elements. Used for storing username/password before JavaScript
+// changes them.
+// 2) Field properties mask, i.e. whether the field was autofilled, modified
+// by user, etc. (see FieldPropertiesMask).
+@property(nonatomic, readonly) scoped_refptr<autofill::FieldDataManager>
+    fieldDataManager;
+
+// The associated delegate.
+@property(nonatomic, nullable, weak) id<PasswordFormHelperDelegate> delegate;
 
 // Uses JavaScript to find password forms. Calls |completionHandler| with the
 // extracted information used for matching and saving passwords. Calls
@@ -84,13 +100,6 @@ class WebState;
 - (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
                    completionHandler:(nullable void (^)(BOOL))completionHandler;
 
-// Finds password forms in the page and fills them with the |username| and
-// |password|. If not nil, |completionHandler| is called once per form filled.
-- (void)findAndFillPasswordFormsWithUserName:(NSString*)username
-                                    password:(NSString*)password
-                           completionHandler:
-                               (nullable void (^)(BOOL))completionHandler;
-
 // Finds the password form with unique ID |formIdentifier| and calls
 // |completionHandler| with the populated |FormData| data structure. |found| is
 // YES if the current form was found successfully, NO otherwise.
@@ -99,12 +108,18 @@ class WebState;
                   (void (^)(BOOL found,
                             const autofill::FormData& form))completionHandler;
 
-- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID;
+// Sets up the next available numeric value for setting unique renderer ids
+// in |frame|.
+- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID
+                                  inFrame:(web::WebFrame*)frame;
 
-// Creates a instance with the given WebState, observer and delegate.
+// Updates the stored field data. In case if there is a presaved credential it
+// updates the presaved credential.
+- (void)updateFieldDataOnUserInput:(autofill::FieldRendererId)field_id
+                        inputValue:(NSString*)field_value;
+
+// Creates a instance with the given |webState|.
 - (instancetype)initWithWebState:(web::WebState*)webState
-                        delegate:
-                            (nullable id<PasswordFormHelperDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

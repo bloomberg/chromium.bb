@@ -11,7 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/browser/browsing_data/counters/site_data_counting_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
+#include "net/cookies/cookie_access_result.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,14 +52,14 @@ class SiteDataCountingHelperTest : public testing::Test {
           net::CanonicalCookie::CreateSanitizedCookie(
               url, "name", "A=1", url.host(), url.path(), creation_time,
               base::Time(), creation_time, url.SchemeIsCryptographic(), false,
-              net::CookieSameSite::NO_RESTRICTION,
-              net::COOKIE_PRIORITY_DEFAULT);
+              net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
+              false);
       net::CookieOptions options;
       options.set_include_httponly();
       cookie_manager->SetCanonicalCookie(
           *cookie, url, options,
           base::BindLambdaForTesting(
-              [&](net::CanonicalCookie::CookieInclusionStatus status) {
+              [&](net::CookieAccessResult access_result) {
                 if (--tasks == 0)
                   run_loop.Quit();
               }));
@@ -84,16 +85,18 @@ class SiteDataCountingHelperTest : public testing::Test {
     }
   }
 
-  int CountEntries(base::Time begin_time) {
+  int CountEntries(base::Time begin_time, base::Time end_time) {
     base::RunLoop run_loop;
     int result = -1;
-    auto* helper = new SiteDataCountingHelper(
-        profile(), begin_time, base::BindLambdaForTesting([&](int count) {
-          // Negative values represent an unexpected error.
-          DCHECK_GE(count, 0);
-          result = count;
-          run_loop.Quit();
-        }));
+    auto* helper =
+        new SiteDataCountingHelper(profile(), begin_time, end_time,
+                                   base::BindLambdaForTesting([&](int count) {
+                                     // Negative values represent an unexpected
+                                     // error.
+                                     DCHECK_GE(count, 0);
+                                     result = count;
+                                     run_loop.Quit();
+                                   }));
     helper->CountAndDestroySelfWhenFinished();
     run_loop.Run();
 
@@ -108,7 +111,7 @@ class SiteDataCountingHelperTest : public testing::Test {
 };
 
 TEST_F(SiteDataCountingHelperTest, CheckEmptyResult) {
-  EXPECT_EQ(0, CountEntries(base::Time()));
+  EXPECT_EQ(0, CountEntries(base::Time(), base::Time::Max()));
 }
 
 TEST_F(SiteDataCountingHelperTest, CountCookies) {
@@ -119,19 +122,32 @@ TEST_F(SiteDataCountingHelperTest, CountCookies) {
   CreateCookies(last_hour, {"https://example.com"});
   CreateCookies(yesterday, {"https://google.com", "https://bing.com"});
 
-  EXPECT_EQ(3, CountEntries(base::Time()));
-  EXPECT_EQ(3, CountEntries(yesterday));
-  EXPECT_EQ(1, CountEntries(last_hour));
-  EXPECT_EQ(0, CountEntries(now));
+  EXPECT_EQ(3, CountEntries(base::Time(), now));
+  EXPECT_EQ(0, CountEntries(base::Time(), yesterday));
+  EXPECT_EQ(2, CountEntries(base::Time(), last_hour));
+  EXPECT_EQ(2, CountEntries(yesterday, last_hour));
+  EXPECT_EQ(3, CountEntries(yesterday, now));
+  EXPECT_EQ(1, CountEntries(last_hour, now));
+  EXPECT_EQ(0, CountEntries(now, now));
+  EXPECT_EQ(0, CountEntries(now, base::Time::Max()));
 }
 
 TEST_F(SiteDataCountingHelperTest, LocalStorage) {
   base::Time now = base::Time::Now();
+  base::Time last_hour = now - base::TimeDelta::FromHours(1);
+  base::Time last_day = now - base::TimeDelta::FromDays(1);
+  base::Time two_days_ago = now - base::TimeDelta::FromDays(2);
+  CreateLocalStorage(last_day,
+                     {FILE_PATH_LITERAL("https_example.com_443.localstorage")});
   CreateLocalStorage(now,
-                     {FILE_PATH_LITERAL("https_example.com_443.localstorage"),
-                      FILE_PATH_LITERAL("https_bing.com_443.localstorage")});
+                     {FILE_PATH_LITERAL("https_bing.com_443.localstorage")});
 
-  EXPECT_EQ(2, CountEntries(base::Time()));
+  EXPECT_EQ(1, CountEntries(base::Time(), last_hour));
+  EXPECT_EQ(1, CountEntries(last_hour, base::Time::Max()));
+  EXPECT_EQ(2, CountEntries(base::Time(), base::Time::Max()));
+  EXPECT_EQ(0, CountEntries(base::Time(), two_days_ago));
+  EXPECT_EQ(1, CountEntries(two_days_ago, last_hour));
+  EXPECT_EQ(2, CountEntries(two_days_ago, base::Time::Max()));
 }
 
 TEST_F(SiteDataCountingHelperTest, CookiesAndLocalStorage) {
@@ -141,7 +157,7 @@ TEST_F(SiteDataCountingHelperTest, CookiesAndLocalStorage) {
                      {FILE_PATH_LITERAL("https_example.com_443.localstorage"),
                       FILE_PATH_LITERAL("https_bing.com_443.localstorage")});
 
-  EXPECT_EQ(3, CountEntries(base::Time()));
+  EXPECT_EQ(3, CountEntries(base::Time(), base::Time::Max()));
 }
 
 TEST_F(SiteDataCountingHelperTest, SameHostDifferentScheme) {
@@ -151,5 +167,5 @@ TEST_F(SiteDataCountingHelperTest, SameHostDifferentScheme) {
                      {FILE_PATH_LITERAL("https_google.com_443.localstorage"),
                       FILE_PATH_LITERAL("http_google.com_80.localstorage")});
 
-  EXPECT_EQ(1, CountEntries(base::Time()));
+  EXPECT_EQ(1, CountEntries(base::Time(), base::Time::Max()));
 }

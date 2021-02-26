@@ -12,9 +12,12 @@
 
 #include "base/auto_reset.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
+#include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/unittest_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/performance_manager/performance_manager_impl.h"
@@ -93,6 +96,8 @@ class LenienMockSiteDataCacheImpl : public SiteDataCacheImpl {
 };
 using MockSiteDataCache = ::testing::StrictMock<LenienMockSiteDataCacheImpl>;
 
+}  // namespace
+
 class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
  public:
   SiteDataCacheFacadeTest() = default;
@@ -100,17 +105,9 @@ class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
 
   void SetUp() override {
     testing::TestWithPerformanceManager::SetUp();
-    PerformanceManagerImpl::CallOnGraphImpl(
-        FROM_HERE,
-        base::BindOnce(
-            [](std::unique_ptr<SiteDataCacheFactory> site_data_cache_factory,
-               performance_manager::GraphImpl* graph) {
-              graph->PassToGraph(std::move(site_data_cache_factory));
-            },
-            std::make_unique<SiteDataCacheFactory>()));
+    profile_ = std::make_unique<TestingProfile>();
     use_in_memory_db_for_testing_ =
         LevelDBSiteDataStore::UseInMemoryDBForTesting();
-    profile_ = std::make_unique<TestingProfile>();
   }
 
   void TearDown() override {
@@ -133,8 +130,10 @@ class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
               std::make_unique<MockSiteDataCache>(browser_context_id);
           mock_cache_raw = mock_cache.get();
 
-          SiteDataCacheFactory::GetInstance()->ReplaceCacheForTesting(
+          SiteDataCacheFactory::GetInstance()->SetCacheForTesting(
               browser_context_id, std::move(mock_cache));
+          SiteDataCacheFactory::GetInstance()->SetCacheInspectorForTesting(
+              browser_context_id, mock_cache_raw);
           std::move(quit_closure).Run();
         }));
     run_loop.Run();
@@ -145,8 +144,6 @@ class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<base::AutoReset<bool>> use_in_memory_db_for_testing_;
 };
-
-}  // namespace
 
 TEST_F(SiteDataCacheFacadeTest, IsDataCacheRecordingForTesting) {
   bool cache_is_recording = false;
@@ -166,7 +163,7 @@ TEST_F(SiteDataCacheFacadeTest, IsDataCacheRecordingForTesting) {
   EXPECT_TRUE(cache_is_recording);
 
   SiteDataCacheFacade off_record_data_cache_facade(
-      profile()->GetOffTheRecordProfile());
+      profile()->GetPrimaryOTRProfile());
   {
     base::RunLoop run_loop;
     auto quit_closure = run_loop.QuitClosure();

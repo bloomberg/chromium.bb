@@ -9,6 +9,7 @@
 
 #include <array>
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
@@ -17,11 +18,9 @@
 #include "base/task_runner.h"
 #include "base/unguessable_token.h"
 #include "components/viz/service/viz_service_export.h"
+#include "ui/gfx/color_space.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
 
 namespace gfx {
 class ColorSpace;
@@ -70,8 +69,8 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   using GLuint = unsigned int;
   using GLenum = unsigned int;
 
-  // |texture_deleter| must outlive this instance.
-  GLRendererCopier(scoped_refptr<ContextProvider> context_provider,
+  // |context_provider| and |texture_deleter| must outlive this instance.
+  GLRendererCopier(ContextProvider* context_provider,
                    TextureDeleter* texture_deleter);
 
   ~GLRendererCopier();
@@ -103,11 +102,6 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // activity is no longer using them. This should be called after a frame has
   // finished drawing (after all copy requests have been executed).
   void FreeUnusedCachedResources();
-
-  void set_async_gl_task_runner(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    async_gl_task_runner_ = task_runner;
-  }
 
  private:
   friend class GLRendererCopierTest;
@@ -150,6 +144,44 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
     DISALLOW_COPY_AND_ASSIGN(ReusableThings);
   };
 
+  // Manages the execution of one asynchronous framebuffer readback and contains
+  // all the relevant state needed to complete a copy request. The constructor
+  // initiates the operation, and the destructor cleans up all the GL objects
+  // created for this workflow. This class is owned by the GLRendererCopier, and
+  // GLRendererCopier is responsible for deleting this either after the workflow
+  // is finished, or when the GLRendererCopier is being destroyed.
+  struct ReadPixelsWorkflow {
+   public:
+    // Saves all revelant state and initiates the GL asynchronous read-pixels
+    // workflow.
+    ReadPixelsWorkflow(std::unique_ptr<CopyOutputRequest> copy_request,
+                       const gfx::Vector2d& readback_offset,
+                       bool flipped_source,
+                       bool swap_red_and_blue,
+                       const gfx::Rect& result_rect,
+                       const gfx::ColorSpace& color_space,
+                       ContextProvider* context_provider,
+                       GLenum readback_format);
+    ReadPixelsWorkflow(const ReadPixelsWorkflow&) = delete;
+
+    // The destructor is by the GLRendererCopier, either called after the
+    // workflow is finished or when GLRendererCopier is being destoryed.
+    ~ReadPixelsWorkflow();
+
+    GLuint query() const { return query_; }
+
+    const std::unique_ptr<CopyOutputRequest> copy_request;
+    const bool flipped_source;
+    const bool swap_red_and_blue;
+    const gfx::Rect result_rect;
+    const gfx::ColorSpace color_space;
+    GLuint transfer_buffer = 0;
+
+   private:
+    ContextProvider* const context_provider_;
+    GLuint query_ = 0;
+  };
+
   // Renders a scaled/transformed copy of a source texture according to the
   // |request| parameters and other source characteristics. |result_texture|
   // must be allocated/sized by the caller. For RGBA_BITMAP requests, the image
@@ -159,12 +191,50 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   void RenderResultTexture(const CopyOutputRequest& request,
                            bool flipped_source,
                            const gfx::ColorSpace& source_color_space,
+                           const gfx::ColorSpace& dest_color_space,
                            GLuint source_texture,
                            const gfx::Size& source_texture_size,
                            const gfx::Rect& sampling_rect,
                            const gfx::Rect& result_rect,
                            GLuint result_texture,
                            ReusableThings* things);
+
+  // Like the ReadPixelsWorkflow, except for I420 planes readback. Because there
+  // are three separate glReadPixels operations that may complete in any order,
+  // a ReadI420PlanesWorkflow will receive notifications from three separate "GL
+  // query" callbacks. It is only after all three operations have completed that
+  // a fully-assembled CopyOutputResult can be sent.
+  //
+  // See class comments for GLI420Converter for an explanation of how
+  // planar data is packed into RGBA textures.
+  struct ReadI420PlanesWorkflow {
+   public:
+    ReadI420PlanesWorkflow(std::unique_ptr<CopyOutputRequest> copy_request,
+                           const gfx::Rect& aligned_rect,
+                           const gfx::Rect& result_rect,
+                           base::WeakPtr<GLRendererCopier> copier_weak_ptr,
+                           ContextProvider* context_provider);
+
+    void BindTransferBuffer();
+    void StartPlaneReadback(int plane, GLenum readback_format);
+    void UnbindTransferBuffer();
+
+    ~ReadI420PlanesWorkflow();
+
+    const std::unique_ptr<CopyOutputRequest> copy_request;
+    const gfx::Rect aligned_rect;
+    const gfx::Rect result_rect;
+    GLuint transfer_buffer;
+    std::array<GLuint, 3> queries;
+
+   private:
+    gfx::Size y_texture_size() const;
+    gfx::Size chroma_texture_size() const;
+
+    base::WeakPtr<GLRendererCopier> copier_weak_ptr_;
+    ContextProvider* const context_provider_;
+    std::array<int, 3> data_offsets_;
+  };
 
   // Similar to RenderResultTexture(), except also transform the image into I420
   // format (a popular video format). Three textures, representing each of the
@@ -215,7 +285,8 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // as the result to the CopyOutputRequest.
   void RenderAndSendTextureResult(std::unique_ptr<CopyOutputRequest> request,
                                   bool flipped_source,
-                                  const gfx::ColorSpace& color_space,
+                                  const gfx::ColorSpace& source_color_space,
+                                  const gfx::ColorSpace& dest_color_space,
                                   GLuint source_texture,
                                   const gfx::Size& source_texture_size,
                                   const gfx::Rect& sampling_rect,
@@ -260,8 +331,11 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // swap does not need to happen on the CPU (non-negligible cost).
   bool ShouldSwapRedAndBlueForBitmapReadback();
 
+  void FinishReadPixelsWorkflow(ReadPixelsWorkflow*);
+  void FinishReadI420PlanesWorkflow(ReadI420PlanesWorkflow*, int plane);
+
   // Injected dependencies.
-  const scoped_refptr<ContextProvider> context_provider_;
+  ContextProvider* const context_provider_;
   TextureDeleter* const texture_deleter_;
 
   // This increments by one for every call to FreeUnusedCachedResources(). It
@@ -288,11 +362,11 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // things to be auto-purged after approx. 1-2 seconds of not being used.
   static constexpr int kKeepalivePeriod = 60;
 
-  // The task runner that is being used to call into GLRendererCopier. This
-  // allows for CopyOutputResults, owned by external entities, to execute
-  // post-destruction clean-up tasks. If null, assume CopyOutputResults are
-  // always destroyed from the same task runner
-  scoped_refptr<base::SingleThreadTaskRunner> async_gl_task_runner_;
+  std::vector<std::unique_ptr<ReadPixelsWorkflow>> read_pixels_workflows_;
+  std::vector<std::unique_ptr<ReadI420PlanesWorkflow>> read_i420_workflows_;
+
+  // Weak ptr to this class.
+  base::WeakPtrFactory<GLRendererCopier> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GLRendererCopier);
 };

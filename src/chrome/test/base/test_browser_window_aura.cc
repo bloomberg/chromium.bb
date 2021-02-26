@@ -4,6 +4,8 @@
 
 #include "chrome/test/base/test_browser_window_aura.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "ui/aura/window.h"
@@ -82,7 +84,7 @@ gfx::Rect TestBrowserWindowAura::GetBounds() const {
 std::unique_ptr<Browser> TestBrowserWindowAura::CreateBrowser(
     Browser::CreateParams* params) {
   params->window = this;
-  browser_ = new Browser(*params);
+  browser_ = Browser::Create(*params);
   return base::WrapUnique(browser_);
 }
 
@@ -129,7 +131,7 @@ std::unique_ptr<Browser> TestBrowserWindowViews::CreateBrowser(
     const Browser::CreateParams& params) {
   Browser::CreateParams params_copy = params;
   params_copy.window = this;
-  std::unique_ptr<Browser> browser = std::make_unique<Browser>(params_copy);
+  std::unique_ptr<Browser> browser(Browser::Create(params_copy));
   browser_ = browser.get();
   return browser;
 }

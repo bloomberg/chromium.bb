@@ -12,6 +12,8 @@
 #include "url/gurl.h"
 
 // A signleton that provides all the URLs that are used for connecting to GAIA.
+//
+// Please update InitializeFromConfig() when adding new URLs.
 class GaiaUrls {
  public:
   static GaiaUrls* GetInstance();
@@ -24,6 +26,8 @@ class GaiaUrls {
   const GURL& client_login_url() const;
   const GURL& service_login_url() const;
   const GURL& embedded_setup_chromeos_url(unsigned version) const;
+  const GURL& embedded_setup_chromeos_kid_signup_url() const;
+  const GURL& embedded_setup_chromeos_kid_signin_url() const;
   const GURL& embedded_setup_windows_url() const;
   const GURL& signin_chrome_sync_dice() const;
   const GURL& signin_chrome_sync_keys_url() const;
@@ -63,15 +67,25 @@ class GaiaUrls {
   ~GaiaUrls();
 
   friend struct base::DefaultSingletonTraits<GaiaUrls>;
+  friend class GaiaUrlsTest;
+
+  void InitializeDefault();
+  void InitializeFromConfig();
 
   GURL google_url_;
   GURL secure_google_url_;
   GURL gaia_url_;
   GURL captcha_base_url_;
 
+  GURL lso_origin_url_;
+  GURL google_apis_origin_url_;
+  GURL oauth_account_manager_origin_url_;
+
   GURL client_login_url_;
   GURL service_login_url_;
   GURL embedded_setup_chromeos_url_v2_;
+  GURL embedded_setup_chromeos_kid_signup_url_;
+  GURL embedded_setup_chromeos_kid_signin_url_;
   GURL embedded_setup_windows_url_;
   GURL signin_chrome_sync_dice_;
   GURL signin_chrome_sync_keys_url_;

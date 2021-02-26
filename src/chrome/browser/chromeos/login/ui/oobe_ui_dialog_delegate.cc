@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -41,9 +42,6 @@ namespace chromeos {
 namespace {
 
 constexpr char kGaiaURL[] = "chrome://oobe/gaia-signin";
-constexpr char kAppLaunchBailout[] = "app_launch_bailout";
-constexpr char kAppLaunchNetworkConfig[] = "app_launch_network_config";
-constexpr char kCancel[] = "cancel";
 
 CoreOobeView::DialogPaddingMode ConvertDialogPaddingMode(
     OobeDialogPaddingMode padding) {
@@ -302,18 +300,25 @@ class CaptivePortalDialogDelegate
 OobeUIDialogDelegate::OobeUIDialogDelegate(
     base::WeakPtr<LoginDisplayHostMojo> controller)
     : controller_(controller) {
+  set_can_resize(false);
   keyboard_observer_.Add(ChromeKeyboardControllerClient::Get());
 
-  accel_map_[ui::Accelerator(
-      ui::VKEY_S, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] = kAppLaunchBailout;
-  accel_map_[ui::Accelerator(ui::VKEY_N,
-                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-      kAppLaunchNetworkConfig;
-  accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, 0)] = kCancel;
+  for (size_t i = 0; i < ash::kLoginAcceleratorDataLength; ++i) {
+    if (ash::kLoginAcceleratorData[i].global)
+      continue;
+    if (!(ash::kLoginAcceleratorData[i].scope &
+          (ash::kScopeLogin | ash::kScopeLock))) {
+      continue;
+    }
+
+    accel_map_[ui::Accelerator(ash::kLoginAcceleratorData[i].keycode,
+                               ash::kLoginAcceleratorData[i].modifiers)] =
+        ash::kLoginAcceleratorData[i].action;
+  }
 
   DCHECK(!dialog_view_ && !widget_);
-  // Life cycle of |dialog_view_| is managed by the widget:
-  // Widget owns a root view which has |dialog_view_| as its child view.
+  // Life cycle of `dialog_view_` is managed by the widget:
+  // Widget owns a root view which has `dialog_view_` as its child view.
   // Before the widget is destroyed, it will clean up the view hierarchy
   // starting from root view.
   dialog_view_ =
@@ -429,6 +434,10 @@ gfx::NativeWindow OobeUIDialogDelegate::GetNativeWindow() const {
   return widget_ ? widget_->GetNativeWindow() : nullptr;
 }
 
+views::View* OobeUIDialogDelegate::GetWebDialogView() {
+  return dialog_view_;
+}
+
 ui::ModalType OobeUIDialogDelegate::GetDialogModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
@@ -446,10 +455,6 @@ void OobeUIDialogDelegate::GetWebUIMessageHandlers(
 
 void OobeUIDialogDelegate::GetDialogSize(gfx::Size* size) const {
   // Dialog will be resized externally by LayoutWidgetDelegateView.
-}
-
-bool OobeUIDialogDelegate::CanResizeDialog() const {
-  return false;
 }
 
 std::string OobeUIDialogDelegate::GetDialogArgs() const {
@@ -490,9 +495,9 @@ bool OobeUIDialogDelegate::AcceleratorPressed(
   auto entry = accel_map_.find(accelerator);
   if (entry == accel_map_.end())
     return false;
-
-  GetOobeUI()->ForwardAccelerator(entry->second);
-  return true;
+  if (controller_)
+    return controller_->HandleAccelerator(entry->second);
+  return false;
 }
 
 void OobeUIDialogDelegate::OnViewBoundsChanged(views::View* observed_view) {

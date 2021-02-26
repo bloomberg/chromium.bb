@@ -51,6 +51,7 @@ void av1_free_ref_frame_buffers(BufferPool *pool) {
   }
 }
 
+#if !CONFIG_REALTIME_ONLY
 // Assumes cm->rst_info[p].restoration_unit_size is already initialized
 void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   const int num_planes = av1_num_planes(cm);
@@ -131,6 +132,7 @@ void av1_free_restoration_buffers(AV1_COMMON *cm) {
 
   aom_free_frame_buffer(&cm->rst_frame);
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 void av1_free_above_context_buffers(CommonContexts *above_contexts) {
   int i;

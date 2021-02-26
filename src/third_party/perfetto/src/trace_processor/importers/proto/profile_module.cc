@@ -28,7 +28,7 @@
 #include "src/trace_processor/trace_sorter.h"
 #include "src/trace_processor/types/trace_processor_context.h"
 
-#include "protos/perfetto/trace/clock_snapshot.pbzero.h"
+#include "protos/perfetto/common/builtin_clock.pbzero.h"
 #include "protos/perfetto/trace/profiling/profile_packet.pbzero.h"
 
 namespace perfetto {
@@ -63,7 +63,8 @@ void ProfileModule::ParsePacket(const TracePacket::Decoder& decoder,
   switch (field_id) {
     case TracePacket::kStreamingProfilePacketFieldNumber:
       PERFETTO_DCHECK(ttp.type == TimestampedTracePiece::Type::kTracePacket);
-      ParseStreamingProfilePacket(ttp.timestamp, ttp.packet_data.sequence_state,
+      ParseStreamingProfilePacket(ttp.timestamp,
+                                  ttp.packet_data.sequence_state.get(),
                                   decoder.streaming_profile_packet());
       return;
   }
@@ -88,7 +89,7 @@ ModuleResult ProfileModule::TokenizeStreamingProfilePacket(
   auto packet_ts =
       sequence_state->IncrementAndGetTrackEventTimeNs(/*delta_ns=*/0);
   auto trace_ts = context_->clock_tracker->ToTraceTime(
-      protos::pbzero::ClockSnapshot::Clock::MONOTONIC, packet_ts);
+      protos::pbzero::BUILTIN_CLOCK_MONOTONIC, packet_ts);
   if (trace_ts)
     packet_ts = *trace_ts;
 
@@ -112,8 +113,8 @@ void ProfileModule::ParseStreamingProfilePacket(
 
   ProcessTracker* procs = context_->process_tracker.get();
   TraceStorage* storage = context_->storage.get();
-  StackProfileTracker& stack_profile_tracker =
-      sequence_state->state()->stack_profile_tracker();
+  SequenceStackProfileTracker& sequence_stack_profile_tracker =
+      sequence_state->state()->sequence_stack_profile_tracker();
   ProfilePacketInternLookup intern_lookup(sequence_state);
 
   uint32_t pid = static_cast<uint32_t>(sequence_state->state()->pid());
@@ -131,11 +132,10 @@ void ProfileModule::ParseStreamingProfilePacket(
       break;
     }
 
-    auto opt_cs_id = stack_profile_tracker.FindOrInsertCallstack(
+    auto opt_cs_id = sequence_stack_profile_tracker.FindOrInsertCallstack(
         *callstack_it, &intern_lookup);
     if (!opt_cs_id) {
       context_->storage->IncrementStats(stats::stackprofile_parser_error);
-      PERFETTO_ELOG("StreamingProfilePacket referencing invalid callstack!");
       continue;
     }
 

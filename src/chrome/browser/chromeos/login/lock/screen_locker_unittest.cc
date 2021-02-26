@@ -9,7 +9,7 @@
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/login_types.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -191,7 +191,7 @@ TEST_F(ScreenLockerUnitTest, VerifyAshIsNotifiedOfScreenLocked) {
   base::RunLoop().RunUntilIdle();
 }
 
-// Tests that |GetUsersToShow()| returns an empty list when the user is a
+// Tests that `GetUsersToShow()` returns an empty list when the user is a
 // Managed Guest Session.
 TEST_F(ScreenLockerUnitTest, GetUsersToShow) {
   CreateSessionForUser(/*is_public_account=*/true);

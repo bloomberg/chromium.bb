@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -22,6 +23,10 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using autofill::FieldRendererId;
+using autofill::FormRendererId;
+using base::SysNSStringToUTF8;
 
 namespace {
 
@@ -72,13 +77,27 @@ class JsAutofillManagerTest : public ChromeWebTest {
   // Loads the given HTML and initializes the Autofill JS scripts.
   void LoadHtml(NSString* html) {
     ChromeWebTest::LoadHtml(html);
-    manager_ = [[JsAutofillManager alloc]
-        initWithReceiver:web_state()->GetJSInjectionReceiver()];
+    manager_ = [[JsAutofillManager alloc] init];
     ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
   }
 
   web::WebFrame* main_web_frame() {
     return web_state()->GetWebFramesManager()->GetMainWebFrame();
+  }
+
+  // Scans the page for forms and fields and sets unique renderer IDs.
+  void RunFormsSearch() {
+    __block BOOL block_was_called = NO;
+    [manager_
+        fetchFormsWithMinimumRequiredFieldsCount:
+            autofill::kMinRequiredFieldsForHeuristics
+                                         inFrame:main_web_frame()
+                               completionHandler:^(NSString* actualResult) {
+                                 block_was_called = YES;
+                               }];
+    base::test::ios::WaitUntilCondition(^bool() {
+      return block_was_called;
+    });
   }
 
   // Testable autofill manager.
@@ -163,7 +182,7 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
   __block BOOL block_was_called = NO;
   __block NSString* result;
   [manager_ fetchFormsWithMinimumRequiredFieldsCount:
-                autofill::MinRequiredFieldsForHeuristics()
+                autofill::kMinRequiredFieldsForHeuristics
                                              inFrame:main_web_frame()
                                    completionHandler:^(NSString* actualResult) {
                                      block_was_called = YES;
@@ -257,7 +276,7 @@ TEST_F(JsAutofillManagerTest, ExtractForms2) {
   __block BOOL block_was_called = NO;
   __block NSString* result;
   [manager_ fetchFormsWithMinimumRequiredFieldsCount:
-                autofill::MinRequiredFieldsForHeuristics()
+                autofill::kMinRequiredFieldsForHeuristics
                                              inFrame:main_web_frame()
                                    completionHandler:^(NSString* actualResult) {
                                      block_was_called = YES;
@@ -294,7 +313,7 @@ TEST_F(JsAutofillManagerTest, ExtractFormlessForms_RestrictToFormlessCheckout) {
   __block BOOL block_was_called = NO;
   __block NSString* result;
   [manager_ fetchFormsWithMinimumRequiredFieldsCount:
-                autofill::MinRequiredFieldsForHeuristics()
+                autofill::kMinRequiredFieldsForHeuristics
                                              inFrame:main_web_frame()
                                    completionHandler:^(NSString* actualResult) {
                                      block_was_called = YES;
@@ -328,7 +347,7 @@ TEST_F(JsAutofillManagerTest, ExtractFormlessForms_AllFormlessForms) {
   __block BOOL block_was_called = NO;
   __block NSString* result;
   [manager_ fetchFormsWithMinimumRequiredFieldsCount:
-                autofill::MinRequiredFieldsForHeuristics()
+                autofill::kMinRequiredFieldsForHeuristics
                                              inFrame:main_web_frame()
                                    completionHandler:^(NSString* actualResult) {
                                      block_was_called = YES;
@@ -353,6 +372,7 @@ TEST_F(JsAutofillManagerTest, FillActiveFormField) {
       @"<html><body><form name='testform' method='post'>"
        "<input type='email' id='email' name='email'/>"
        "</form></body></html>");
+  RunFormsSearch();
 
   NSString* get_element_javascript = @"document.getElementsByName('email')[0]";
   NSString* focus_element_javascript =
@@ -361,17 +381,17 @@ TEST_F(JsAutofillManagerTest, FillActiveFormField) {
   auto data = std::make_unique<base::DictionaryValue>();
   data->SetString("name", "email");
   data->SetString("identifier", "email");
+  data->SetInteger("unique_renderer_id", 1);
   data->SetString("value", "newemail@com");
-  __block BOOL block_was_called = NO;
-  [manager_
-      fillActiveFormField:std::move(data)
-                  inFrame:web_state()->GetWebFramesManager()->GetMainWebFrame()
-        completionHandler:^{
-          block_was_called = YES;
-        }];
+  __block BOOL success = NO;
+  [manager_ fillActiveFormField:std::move(data)
+                        inFrame:main_web_frame()
+              completionHandler:^(BOOL result) {
+                success = result;
+              }];
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForActionTimeout, ^bool() {
-        return block_was_called;
+        return success;
       }));
   NSString* element_value_javascript =
       [NSString stringWithFormat:@"%@.value", get_element_javascript];
@@ -393,7 +413,7 @@ TEST_F(JsAutofillManagerTest, TestExtractedFieldsNames) {
   __block BOOL block_was_called = NO;
   __block NSString* result;
   [manager_ fetchFormsWithMinimumRequiredFieldsCount:
-                autofill::MinRequiredFieldsForHeuristics()
+                autofill::kMinRequiredFieldsForHeuristics
                                              inFrame:main_web_frame()
                                    completionHandler:^(NSString* actualResult) {
                                      block_was_called = YES;
@@ -463,7 +483,7 @@ TEST_F(JsAutofillManagerTest, TestExtractedFieldsIDs) {
   __block BOOL block_was_called = NO;
   __block NSString* result;
   [manager_ fetchFormsWithMinimumRequiredFieldsCount:
-                autofill::MinRequiredFieldsForHeuristics()
+                autofill::kMinRequiredFieldsForHeuristics
                                              inFrame:main_web_frame()
                                    completionHandler:^(NSString* actualResult) {
                                      block_was_called = YES;
@@ -488,6 +508,178 @@ TEST_F(JsAutofillManagerTest, TestExtractedFieldsIDs) {
   EXPECT_EQ([unowned_fields count], [unowned_expected_ids count]);
   for (NSUInteger i = 0; i < [unowned_fields count]; i++) {
     EXPECT_NSEQ(unowned_fields[i][@"identifier"], unowned_expected_ids[i]);
+  }
+}
+
+// Tests form filling (fillForm:forceFillFieldIdentifier:forceFillFieldUniqueID:
+// :inFrame:completionHandler:) method.
+// TODO(crbug/1131038): Remove once using only renderer IDs is launched.
+TEST_F(JsAutofillManagerTest, FillForm) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::vector<base::Feature> disabled_features;
+  disabled_features.push_back(
+      autofill::features::kAutofillUseUniqueRendererIDsOnIOS);
+  scoped_feature_list.InitWithFeatures({}, disabled_features);
+
+  LoadHtml(@"<html><body><form name='testform' method='post'>"
+            "<input type='text' id='firstname' name='firstname'/>"
+            "<input type='email' id='email' name='email'/>"
+            "</form></body></html>");
+  RunFormsSearch();
+
+  auto autofillData = std::make_unique<base::DictionaryValue>();
+  autofillData->SetKey("formName", base::Value("testform"));
+
+  base::Value fieldsData(base::Value::Type::DICTIONARY);
+  base::Value firstFieldData(base::Value::Type::DICTIONARY);
+  firstFieldData.SetStringKey("name", "firstname");
+  firstFieldData.SetStringKey("identifier", "firstname");
+  firstFieldData.SetStringKey("value", "Cool User");
+  fieldsData.SetKey("firstname", std::move(firstFieldData));
+
+  base::Value secondFieldData(base::Value::Type::DICTIONARY);
+  secondFieldData.SetStringKey("name", "email");
+  secondFieldData.SetStringKey("identifier", "email");
+  secondFieldData.SetStringKey("value", "coolemail@com");
+  fieldsData.SetKey("email", std::move(secondFieldData));
+
+  autofillData->SetKey("fields", std::move(fieldsData));
+
+  __block NSString* filling_result = nil;
+  __block BOOL block_was_called = NO;
+  [manager_ fillForm:std::move(autofillData)
+      forceFillFieldIdentifier:@"firstname"
+        forceFillFieldUniqueID:FieldRendererId(1)
+                       inFrame:main_web_frame()
+             completionHandler:^(NSString* result) {
+               filling_result = [result copy];
+               block_was_called = YES;
+             }];
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForActionTimeout, ^bool() {
+        return block_was_called;
+      }));
+  EXPECT_NSEQ(@"{\"1\":\"Cool User\",\"2\":\"coolemail@com\"}", filling_result);
+}
+
+// Tests form filling (fillForm:forceFillFieldIdentifier:forceFillFieldUniqueID:
+// :inFrame:completionHandler:) method.
+TEST_F(JsAutofillManagerTest, FillFormUsingRendererIDs) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::vector<base::Feature> enabled_features;
+  enabled_features.push_back(
+      autofill::features::kAutofillUseUniqueRendererIDsOnIOS);
+  scoped_feature_list.InitWithFeatures(enabled_features, {});
+
+  LoadHtml(@"<html><body><form name='testform' method='post'>"
+            "<input type='text' id='firstname' name='firstname'/>"
+            "<input type='email' id='email' name='email'/>"
+            "</form></body></html>");
+  RunFormsSearch();
+
+  auto autofillData = std::make_unique<base::DictionaryValue>();
+  autofillData->SetKey("formName", base::Value("testform"));
+  autofillData->SetKey("formRendererID", base::Value(0));
+
+  base::Value fieldsData(base::Value::Type::DICTIONARY);
+  base::Value firstFieldData(base::Value::Type::DICTIONARY);
+  firstFieldData.SetStringKey("name", "firstname");
+  firstFieldData.SetStringKey("identifier", "firstname");
+  firstFieldData.SetStringKey("value", "Cool User");
+  fieldsData.SetKey("1", std::move(firstFieldData));
+
+  base::Value secondFieldData(base::Value::Type::DICTIONARY);
+  secondFieldData.SetStringKey("name", "email");
+  secondFieldData.SetStringKey("identifier", "email");
+  secondFieldData.SetStringKey("value", "coolemail@com");
+  fieldsData.SetKey("2", std::move(secondFieldData));
+
+  autofillData->SetKey("fields", std::move(fieldsData));
+
+  __block NSString* filling_result = nil;
+  __block BOOL block_was_called = NO;
+  [manager_ fillForm:std::move(autofillData)
+      forceFillFieldIdentifier:@"firstname"
+        forceFillFieldUniqueID:FieldRendererId(1)
+                       inFrame:main_web_frame()
+             completionHandler:^(NSString* result) {
+               filling_result = [result copy];
+               block_was_called = YES;
+             }];
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForActionTimeout, ^bool() {
+        return block_was_called;
+      }));
+  EXPECT_NSEQ(@"{\"1\":\"Cool User\",\"2\":\"coolemail@com\"}", filling_result);
+}
+
+// Tests form clearing (clearAutofilledFieldsForFormName:formUniqueID:
+// fieldIdentifier:fieldUniqueID:inFrame:completionHandler:) method.
+TEST_F(JsAutofillManagerTest, ClearForm) {
+  for (bool use_renderer_ids : {true, false}) {
+    SCOPED_TRACE(testing::Message()
+                 << "For use_renderer_ids=" << use_renderer_ids);
+    base::test::ScopedFeatureList scoped_feature_list;
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+    if (use_renderer_ids) {
+      enabled_features.push_back(
+          autofill::features::kAutofillUseUniqueRendererIDsOnIOS);
+    } else {
+      disabled_features.push_back(
+          autofill::features::kAutofillUseUniqueRendererIDsOnIOS);
+    }
+    scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
+
+    LoadHtml(@"<html><body><form name='testform' method='post'>"
+              "<input type='text' id='firstname' name='firstname'/>"
+              "<input type='email' id='email' name='email'/>"
+              "</form></body></html>");
+    RunFormsSearch();
+
+    std::vector<std::pair<NSString*, int>> field_ids = {{@"firstname", 1},
+                                                        {@"email", 2}};
+    // Fill form fields.
+    for (auto& field_data : field_ids) {
+      NSString* getFieldScript =
+          [NSString stringWithFormat:@"document.getElementsByName('%@')[0]",
+                                     field_data.first];
+      NSString* focusScript =
+          [NSString stringWithFormat:@"%@.focus()", getFieldScript];
+      ExecuteJavaScript(focusScript);
+      auto data = std::make_unique<base::DictionaryValue>();
+      data->SetString("name", SysNSStringToUTF8(field_data.first));
+      data->SetString("identifier", SysNSStringToUTF8(field_data.first));
+      data->SetInteger("unique_renderer_id", field_data.second);
+      data->SetString("value", "testvalue");
+      __block BOOL success = NO;
+      [manager_ fillActiveFormField:std::move(data)
+                            inFrame:main_web_frame()
+                  completionHandler:^(BOOL result) {
+                    success = result;
+                  }];
+      EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+          base::test::ios::kWaitForActionTimeout, ^bool() {
+            return success;
+          }));
+    }
+
+    __block NSString* clearing_result = nil;
+    __block BOOL block_was_called = NO;
+    [manager_ clearAutofilledFieldsForFormName:@"testform"
+                                  formUniqueID:FormRendererId(0)
+                               fieldIdentifier:@"firstname"
+                                 fieldUniqueID:FieldRendererId(1)
+                                       inFrame:main_web_frame()
+                             completionHandler:^(NSString* result) {
+                               clearing_result = [result copy];
+                               block_was_called = YES;
+                             }];
+    EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForActionTimeout, ^bool() {
+          return block_was_called;
+        }));
+    EXPECT_NSEQ(@"[\"1\",\"2\"]", clearing_result);
   }
 }
 

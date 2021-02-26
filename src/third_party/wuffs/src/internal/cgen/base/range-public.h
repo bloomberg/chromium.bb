@@ -1,4 +1,4 @@
-// After editing this file, run "go generate" in the parent directory.
+// After editing this file, run "go generate" in the ../data directory.
 
 // Copyright 2017 The Wuffs Authors.
 //
@@ -34,6 +34,14 @@ typedef struct wuffs_base__range_ii_u32__struct {
 #endif  // __cplusplus
 
 } wuffs_base__range_ii_u32;
+
+static inline wuffs_base__range_ii_u32  //
+wuffs_base__empty_range_ii_u32() {
+  wuffs_base__range_ii_u32 ret;
+  ret.min_incl = 0;
+  ret.max_incl = 0;
+  return ret;
+}
 
 static inline wuffs_base__range_ii_u32  //
 wuffs_base__make_range_ii_u32(uint32_t min_incl, uint32_t max_incl) {
@@ -146,6 +154,14 @@ typedef struct wuffs_base__range_ie_u32__struct {
 #endif  // __cplusplus
 
 } wuffs_base__range_ie_u32;
+
+static inline wuffs_base__range_ie_u32  //
+wuffs_base__empty_range_ie_u32() {
+  wuffs_base__range_ie_u32 ret;
+  ret.min_incl = 0;
+  ret.max_excl = 0;
+  return ret;
+}
 
 static inline wuffs_base__range_ie_u32  //
 wuffs_base__make_range_ie_u32(uint32_t min_incl, uint32_t max_excl) {
@@ -269,6 +285,14 @@ typedef struct wuffs_base__range_ii_u64__struct {
 } wuffs_base__range_ii_u64;
 
 static inline wuffs_base__range_ii_u64  //
+wuffs_base__empty_range_ii_u64() {
+  wuffs_base__range_ii_u64 ret;
+  ret.min_incl = 0;
+  ret.max_incl = 0;
+  return ret;
+}
+
+static inline wuffs_base__range_ii_u64  //
 wuffs_base__make_range_ii_u64(uint64_t min_incl, uint64_t max_incl) {
   wuffs_base__range_ii_u64 ret;
   ret.min_incl = min_incl;
@@ -379,6 +403,14 @@ typedef struct wuffs_base__range_ie_u64__struct {
 #endif  // __cplusplus
 
 } wuffs_base__range_ie_u64;
+
+static inline wuffs_base__range_ie_u64  //
+wuffs_base__empty_range_ie_u64() {
+  wuffs_base__range_ie_u64 ret;
+  ret.min_incl = 0;
+  ret.max_excl = 0;
+  return ret;
+}
 
 static inline wuffs_base__range_ie_u64  //
 wuffs_base__make_range_ie_u64(uint64_t min_incl, uint64_t max_excl) {
@@ -502,6 +534,16 @@ typedef struct wuffs_base__rect_ii_u32__struct {
 #endif  // __cplusplus
 
 } wuffs_base__rect_ii_u32;
+
+static inline wuffs_base__rect_ii_u32  //
+wuffs_base__empty_rect_ii_u32() {
+  wuffs_base__rect_ii_u32 ret;
+  ret.min_incl_x = 0;
+  ret.min_incl_y = 0;
+  ret.max_incl_x = 0;
+  ret.max_incl_y = 0;
+  return ret;
+}
 
 static inline wuffs_base__rect_ii_u32  //
 wuffs_base__make_rect_ii_u32(uint32_t min_incl_x,
@@ -631,6 +673,16 @@ typedef struct wuffs_base__rect_ie_u32__struct {
 } wuffs_base__rect_ie_u32;
 
 static inline wuffs_base__rect_ie_u32  //
+wuffs_base__empty_rect_ie_u32() {
+  wuffs_base__rect_ie_u32 ret;
+  ret.min_incl_x = 0;
+  ret.min_incl_y = 0;
+  ret.max_excl_x = 0;
+  ret.max_excl_y = 0;
+  return ret;
+}
+
+static inline wuffs_base__rect_ie_u32  //
 wuffs_base__make_rect_ie_u32(uint32_t min_incl_x,
                              uint32_t min_incl_y,
                              uint32_t max_excl_x,
@@ -750,6 +802,143 @@ wuffs_base__rect_ie_u32::width() const {
 inline uint32_t  //
 wuffs_base__rect_ie_u32::height() const {
   return wuffs_base__rect_ie_u32__height(this);
+}
+
+#endif  // __cplusplus
+
+// ---------------- More Information
+
+// wuffs_base__more_information holds additional fields, typically when a Wuffs
+// method returns a [note status](/doc/note/statuses.md).
+//
+// The flavor field follows the base38 namespace
+// convention](/doc/note/base38-and-fourcc.md). The other fields' semantics
+// depends on the flavor.
+typedef struct {
+  uint32_t flavor;
+  uint32_t w;
+  uint64_t x;
+  uint64_t y;
+  uint64_t z;
+
+#ifdef __cplusplus
+  inline void set(uint32_t flavor_arg,
+                  uint32_t w_arg,
+                  uint64_t x_arg,
+                  uint64_t y_arg,
+                  uint64_t z_arg);
+  inline uint32_t io_redirect__fourcc() const;
+  inline wuffs_base__range_ie_u64 io_redirect__range() const;
+  inline uint64_t io_seek__position() const;
+  inline uint32_t metadata__fourcc() const;
+  inline wuffs_base__range_ie_u64 metadata__range() const;
+#endif  // __cplusplus
+
+} wuffs_base__more_information;
+
+#define WUFFS_BASE__MORE_INFORMATION__FLAVOR__IO_REDIRECT 1
+#define WUFFS_BASE__MORE_INFORMATION__FLAVOR__IO_SEEK 2
+#define WUFFS_BASE__MORE_INFORMATION__FLAVOR__METADATA 3
+
+static inline wuffs_base__more_information  //
+wuffs_base__empty_more_information() {
+  wuffs_base__more_information ret;
+  ret.flavor = 0;
+  ret.w = 0;
+  ret.x = 0;
+  ret.y = 0;
+  ret.z = 0;
+  return ret;
+}
+
+static inline void  //
+wuffs_base__more_information__set(wuffs_base__more_information* m,
+                                  uint32_t flavor,
+                                  uint32_t w,
+                                  uint64_t x,
+                                  uint64_t y,
+                                  uint64_t z) {
+  if (!m) {
+    return;
+  }
+  m->flavor = flavor;
+  m->w = w;
+  m->x = x;
+  m->y = y;
+  m->z = z;
+}
+
+static inline uint32_t  //
+wuffs_base__more_information__io_redirect__fourcc(
+    const wuffs_base__more_information* m) {
+  return m->w;
+}
+
+static inline wuffs_base__range_ie_u64  //
+wuffs_base__more_information__io_redirect__range(
+    const wuffs_base__more_information* m) {
+  wuffs_base__range_ie_u64 ret;
+  ret.min_incl = m->y;
+  ret.max_excl = m->z;
+  return ret;
+}
+
+static inline uint64_t  //
+wuffs_base__more_information__io_seek__position(
+    const wuffs_base__more_information* m) {
+  return m->x;
+}
+
+static inline uint32_t  //
+wuffs_base__more_information__metadata__fourcc(
+    const wuffs_base__more_information* m) {
+  return m->w;
+}
+
+static inline wuffs_base__range_ie_u64  //
+wuffs_base__more_information__metadata__range(
+    const wuffs_base__more_information* m) {
+  wuffs_base__range_ie_u64 ret;
+  ret.min_incl = m->y;
+  ret.max_excl = m->z;
+  return ret;
+}
+
+#ifdef __cplusplus
+
+inline void  //
+wuffs_base__more_information::set(uint32_t flavor_arg,
+                                  uint32_t w_arg,
+                                  uint64_t x_arg,
+                                  uint64_t y_arg,
+                                  uint64_t z_arg) {
+  wuffs_base__more_information__set(this, flavor_arg, w_arg, x_arg, y_arg,
+                                    z_arg);
+}
+
+inline uint32_t  //
+wuffs_base__more_information::io_redirect__fourcc() const {
+  return wuffs_base__more_information__io_redirect__fourcc(this);
+}
+
+inline wuffs_base__range_ie_u64  //
+wuffs_base__more_information::io_redirect__range() const {
+  return wuffs_base__more_information__io_redirect__range(this);
+}
+
+inline uint64_t  //
+wuffs_base__more_information::io_seek__position() const {
+  return wuffs_base__more_information__io_seek__position(this);
+}
+
+inline uint32_t  //
+wuffs_base__more_information::metadata__fourcc() const {
+  return wuffs_base__more_information__metadata__fourcc(this);
+}
+
+inline wuffs_base__range_ie_u64  //
+wuffs_base__more_information::metadata__range() const {
+  return wuffs_base__more_information__metadata__range(this);
 }
 
 #endif  // __cplusplus

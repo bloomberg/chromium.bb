@@ -6,16 +6,13 @@
 """A low-level blob storage/retrieval interface to the Isolate server"""
 
 import base64
-import collections
 import hashlib
 import logging
-import os
 import re
 import sys
 import threading
 import time
 import types
-import uuid
 
 from utils import file_path
 from utils import net
@@ -25,18 +22,6 @@ import isolated_format
 # third_party/
 import six
 
-try:
-  import grpc # for error codes
-  from utils import grpc_proxy
-  from proto import bytestream_pb2
-  # If not present, grpc crashes later.
-  import pyasn1_modules
-except ImportError as err:
-  grpc = None
-  grpc_proxy = None
-  bytestream_pb2 = None
-
-
 # Chunk size to use when reading from network stream.
 NET_IO_FILE_CHUNK = 16 * 1024
 
@@ -45,10 +30,6 @@ NET_IO_FILE_CHUNK = 16 * 1024
 # response from the server within this timeout whole download will be aborted.
 DOWNLOAD_READ_TIMEOUT = 60
 
-
-# Stores the gRPC proxy address. Must be set if the storage API class is
-# IsolateServerGrpc (call 'set_grpc_proxy').
-_grpc_proxy = None
 
 
 class ServerRef(object):
@@ -116,9 +97,11 @@ class Item(object):
   the main thread. It is never used concurrently from multiple threads.
   """
 
-  def __init__(
-      self, digest=None, size=None, high_priority=False,
-      compression_level=6):
+  def __init__(self,
+               digest=None,
+               size=None,
+               high_priority=False,
+               compression_level=6):
     self._digest = digest
     self._size = size
     self._high_priority = high_priority
@@ -246,8 +229,7 @@ class _IsolateServerPushState(object):
 def guard_memory_use(server, content, size):
   """Guards a server against using excessive memory while uploading.
 
-  The server needs to contain a _memory_use int and a _lock mutex
-  (both IsolateServer and IsolateServerGrpc qualify); this function
+  The server needs to contain a _memory_use int and a _lock mutex; this function
   then uses those values to track memory usage in a thread-safe way.
 
   If a request would cause the memory usage to exceed a safe maximum,
@@ -405,7 +387,7 @@ class IsolateServer(StorageApi):
     assert item.digest is not None
     assert item.size is not None
     assert isinstance(push_state, _IsolateServerPushState)
-    assert not push_state.finalized
+    assert not push_state.finalized, "push_state is not finalized"
 
     # Default to item.content().
     content = item.content() if content is None else content
@@ -418,8 +400,8 @@ class IsolateServer(StorageApi):
         # PUT file to |upload_url|.
         success = self._do_push(push_state, content)
         if not success:
-          raise IOError('Failed to upload file with hash %s to URL %s' % (
-              item.digest, push_state.upload_url))
+          raise IOError('Failed to upload file with hash %s to URL %s' %
+                        (item.digest, push_state.upload_url))
         push_state.uploaded = True
       else:
         logging.info(
@@ -454,14 +436,13 @@ class IsolateServer(StorageApi):
 
     # Request body is a json encoded list of dicts.
     body = {
-        'items': [
-          {
+        'items': [{
             'digest': item.digest,
             'is_isolated': bool(item.high_priority),
             'size': item.size,
-          } for item in items
-        ],
-        'namespace': self._namespace_dict,
+        } for item in items],
+        'namespace':
+            self._namespace_dict,
     }
 
     query_url = '%s/_ah/api/isolateservice/v1/preupload' % self.server_ref.url
@@ -533,7 +514,7 @@ class IsolateServer(StorageApi):
     if isinstance(content, list) and len(content) == 1:
       content = content[0]
     else:
-      content = ''.join(content)
+      content = b''.join(content)
 
     # DB upload
     if not push_state.finalize_url:
@@ -558,160 +539,16 @@ class IsolateServer(StorageApi):
       return False
     try:
       response.read()
-    except TimeoutError:
+    except net.TimeoutError:
       return False
 
     # Integrity check of uploaded file.
     # https://cloud.google.com/storage/docs/xml-api/reference-headers#xgooghash
     goog_hash = response.headers.get('x-goog-hash')
     assert goog_hash, response.headers
-    md5_x_goog_hash = 'md5=' + base64.b64encode(hashlib.md5(content).digest())
+    md5_x_goog_hash = 'md5=' + six.ensure_str(
+        base64.b64encode(hashlib.md5(content).digest()))
     return md5_x_goog_hash in goog_hash
-
-
-class _IsolateServerGrpcPushState(object):
-  """Empty class, just to present same interface as IsolateServer  """
-
-  def __init__(self):
-    pass
-
-
-class IsolateServerGrpc(StorageApi):
-  """StorageApi implementation that downloads and uploads to a gRPC service.
-
-  Limitations: does not pass on namespace to the server (uses it only for hash
-  algo and compression), and only allows zero offsets while fetching.
-  """
-
-  def __init__(self, server_ref, proxy):
-    super(IsolateServerGrpc, self).__init__()
-    logging.info(
-        'Using gRPC for Isolate with server %s, proxy %s',
-        server_ref.url, proxy)
-    self._server_ref = server_ref
-    self._lock = threading.Lock()
-    self._memory_use = 0
-    self._num_pushes = 0
-    self._already_exists = 0
-    self._proxy = grpc_proxy.Proxy(proxy, bytestream_pb2.ByteStreamStub)
-
-  @property
-  def internal_compression(self):
-    # gRPC natively compresses all messages before transmission.
-    return True
-
-  @property
-  def server_ref(self):
-    """Returns the ServerRef instance that represents the remote server."""
-    return self._server_ref
-
-  def fetch(self, digest, size, offset):
-    # The gRPC APIs only work with an offset of 0
-    assert offset == 0
-    request = bytestream_pb2.ReadRequest()
-    if not size:
-      size = -1
-    request.resource_name = '%s/blobs/%s/%d' % (
-        self._proxy.prefix, digest, size)
-    try:
-      for response in self._proxy.get_stream('Read', request):
-        yield response.data
-    except grpc.RpcError as g:
-      logging.error('gRPC error during fetch: re-throwing as IOError (%s)' % g)
-      raise IOError(g)
-
-  def push(self, item, push_state, content=None):
-    assert isinstance(item, Item)
-    assert item.digest is not None
-    assert item.size is not None
-    assert isinstance(push_state, _IsolateServerGrpcPushState)
-
-    # Default to item.content().
-    content = item.content() if content is None else content
-    guard_memory_use(self, content, item.size)
-    self._num_pushes += 1
-
-    try:
-      def chunker():
-        # Returns one bit of content at a time
-        if (isinstance(content, str)
-            or not isinstance(content, collections.Iterable)):
-          yield content
-        else:
-          for chunk in content:
-            yield chunk
-      def slicer():
-        # Ensures every bit of content is under the gRPC max size; yields
-        # proto messages to send via gRPC.
-        request = bytestream_pb2.WriteRequest()
-        u = uuid.uuid4()
-        request.resource_name = '%s/uploads/%s/blobs/%s/%d' % (
-            self._proxy.prefix, u, item.digest, item.size)
-        request.write_offset = 0
-        for chunk in chunker():
-          # Make sure we send at least one chunk for zero-length blobs
-          has_sent_anything = False
-          while chunk or not has_sent_anything:
-            has_sent_anything = True
-            slice_len = min(len(chunk), NET_IO_FILE_CHUNK)
-            request.data = chunk[:slice_len]
-            if request.write_offset + slice_len == item.size:
-              request.finish_write = True
-            yield request
-            request.write_offset += slice_len
-            chunk = chunk[slice_len:]
-
-      response = None
-      try:
-        response = self._proxy.call_no_retries('Write', slicer())
-      except grpc.RpcError as r:
-        if r.code() == grpc.StatusCode.ALREADY_EXISTS:
-          # This is legit - we didn't check before we pushed so no problem if
-          # it's already there.
-          self._already_exists += 1
-          if self._already_exists % 100 == 0:
-            logging.info('unnecessarily pushed %d/%d blobs (%.1f%%)' % (
-                self._already_exists, self._num_pushes,
-                100.0 * self._already_exists / self._num_pushes))
-        else:
-          logging.error('gRPC error during push: throwing as IOError (%s)' % r)
-          raise IOError(r)
-      except Exception as e:
-        logging.error('error during push: throwing as IOError (%s)' % e)
-        raise IOError(e)
-
-      if response is not None and response.committed_size != item.size:
-        raise IOError('%s/%d: incorrect size written (%d)' % (
-            item.digest, item.size, response.committed_size))
-      elif response is None and item.size > 0:
-        # This happens when the content generator is exhausted and the gRPC call
-        # simply returns None. Throw gRPC error as this is not recoverable.
-        raise grpc.RpcError('None gRPC response on uploading %s' % item.digest)
-
-    finally:
-      with self._lock:
-        self._memory_use -= item.size
-
-  def contains(self, items):
-    """Returns the set of all missing items."""
-    # TODO(aludwin): this isn't supported directly in Bytestream, so for now
-    # assume that nothing is present in the cache.
-    # Ensure all items were initialized with 'prepare' call. Storage does that.
-    assert all(i.digest is not None and i.size is not None for i in items)
-    # Assume all Items are missing, and attach _PushState to them. The gRPC
-    # implementation doesn't actually have a push state, we just attach empty
-    # objects to satisfy the StorageApi interface.
-    missing_items = {}
-    for item in items:
-      missing_items[item] = _IsolateServerGrpcPushState()
-    return missing_items
-
-
-def set_grpc_proxy(proxy):
-  """Sets the StorageApi to use the specified proxy."""
-  global _grpc_proxy
-  assert _grpc_proxy is None
-  _grpc_proxy = proxy
 
 
 def get_storage_api(server_ref):
@@ -730,6 +567,4 @@ def get_storage_api(server_ref):
   # Handle the specific internal use case.
   assert (isinstance(server_ref, ServerRef) or
           type(server_ref).__name__ == 'ServerRef'), repr(server_ref)
-  if _grpc_proxy is not None:
-    return IsolateServerGrpc(server_ref.url, _grpc_proxy)
   return IsolateServer(server_ref)

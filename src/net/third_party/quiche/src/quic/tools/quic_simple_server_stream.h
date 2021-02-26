@@ -5,11 +5,11 @@
 #ifndef QUICHE_QUIC_TOOLS_QUIC_SIMPLE_SERVER_STREAM_H_
 #define QUICHE_QUIC_TOOLS_QUIC_SIMPLE_SERVER_STREAM_H_
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_server_stream_base.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/tools/quic_backend_response.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_server_backend.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 
 namespace quic {
@@ -47,7 +47,7 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
   // Make this stream start from as if it just finished parsing an incoming
   // request whose headers are equivalent to |push_request_headers|.
   // Doing so will trigger this toy stream to fetch response and send it back.
-  virtual void PushResponse(spdy::SpdyHeaderBlock push_request_headers);
+  virtual void PushResponse(spdy::Http2HeaderBlock push_request_headers);
 
   // The response body of error responses.
   static const char* const kErrorResponseBody;
@@ -76,16 +76,16 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
   void SendNotFoundResponse();
 
   // Sends the response header and body, but not the fin.
-  void SendIncompleteResponse(spdy::SpdyHeaderBlock response_headers,
-                              quiche::QuicheStringPiece body);
+  void SendIncompleteResponse(spdy::Http2HeaderBlock response_headers,
+                              absl::string_view body);
 
-  void SendHeadersAndBody(spdy::SpdyHeaderBlock response_headers,
-                          quiche::QuicheStringPiece body);
-  void SendHeadersAndBodyAndTrailers(spdy::SpdyHeaderBlock response_headers,
-                                     quiche::QuicheStringPiece body,
-                                     spdy::SpdyHeaderBlock response_trailers);
+  void SendHeadersAndBody(spdy::Http2HeaderBlock response_headers,
+                          absl::string_view body);
+  void SendHeadersAndBodyAndTrailers(spdy::Http2HeaderBlock response_headers,
+                                     absl::string_view body,
+                                     spdy::Http2HeaderBlock response_trailers);
 
-  spdy::SpdyHeaderBlock* request_headers() { return &request_headers_; }
+  spdy::Http2HeaderBlock* request_headers() { return &request_headers_; }
 
   const std::string& body() { return body_; }
 
@@ -93,7 +93,7 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
   void WriteGeneratedBytes();
 
   // The parsed headers received from the client.
-  spdy::SpdyHeaderBlock request_headers_;
+  spdy::Http2HeaderBlock request_headers_;
   int64_t content_length_;
   std::string body_;
 

@@ -21,7 +21,6 @@ class GURL;
 
 - (instancetype)initWithConsumer:(id<PasswordBreachConsumer>)consumer
                        presenter:(id<PasswordBreachPresenter>)presenter
-                      dispatcher:(id<ApplicationCommands>)dispatcher
                              URL:(const GURL&)URL
                         leakType:(password_manager::CredentialLeakType)leakType;
 

@@ -61,13 +61,9 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
 
     Service::Service(Device* device) : mDevice(device) {
         const VulkanDeviceInfo& deviceInfo = mDevice->GetDeviceInfo();
-        const VulkanGlobalInfo& globalInfo =
-            ToBackend(mDevice->GetAdapter())->GetBackend()->GetGlobalInfo();
 
-        mSupported = globalInfo.getPhysicalDeviceProperties2 &&
-                     globalInfo.externalMemoryCapabilities && deviceInfo.externalMemory &&
-                     deviceInfo.externalMemoryFD && deviceInfo.externalMemoryDmaBuf &&
-                     deviceInfo.imageDrmFormatModifier;
+        mSupported = deviceInfo.HasExt(DeviceExt::ExternalMemoryFD) &&
+                     deviceInfo.HasExt(DeviceExt::ImageDrmFormatModifier);
     }
 
     Service::~Service() = default;
@@ -87,7 +83,7 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
         if (!mSupported) {
             return false;
         }
-        if (descriptor->type != ExternalImageDescriptorType::DmaBuf) {
+        if (descriptor->type != ExternalImageType::DmaBuf) {
             return false;
         }
         const ExternalImageDescriptorDmaBuf* dmaBufDescriptor =
@@ -154,7 +150,7 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
     ResultOrError<MemoryImportParams> Service::GetMemoryImportParams(
         const ExternalImageDescriptor* descriptor,
         VkImage image) {
-        if (descriptor->type != ExternalImageDescriptorType::DmaBuf) {
+        if (descriptor->type != ExternalImageType::DmaBuf) {
             return DAWN_VALIDATION_ERROR("ExternalImageDescriptor is not a dma-buf descriptor");
         }
         const ExternalImageDescriptorDmaBuf* dmaBufDescriptor =
@@ -220,7 +216,7 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
 
     ResultOrError<VkImage> Service::CreateImage(const ExternalImageDescriptor* descriptor,
                                                 const VkImageCreateInfo& baseCreateInfo) {
-        if (descriptor->type != ExternalImageDescriptorType::DmaBuf) {
+        if (descriptor->type != ExternalImageType::DmaBuf) {
             return DAWN_VALIDATION_ERROR("ExternalImageDescriptor is not a dma-buf descriptor");
         }
         const ExternalImageDescriptorDmaBuf* dmaBufDescriptor =

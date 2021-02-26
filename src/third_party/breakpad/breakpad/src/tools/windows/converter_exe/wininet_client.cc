@@ -196,7 +196,7 @@ bool WinInetClient::GetHttpStatusCode(HttpHandle request_handle,
   DWORD http_status_string_size = sizeof(http_status_string);
   if (!::HttpQueryInfo(ToHINTERNET(request_handle),
                        HTTP_QUERY_STATUS_CODE,
-                       static_cast<void *>(&http_status_string),
+                       static_cast<void*>(&http_status_string),
                        &http_status_string_size,
                        0)) {
     return false;
@@ -215,7 +215,7 @@ bool WinInetClient::GetContentLength(HttpHandle request_handle,
   DWORD content_length_string_size = sizeof(content_length_string);
   if (!::HttpQueryInfo(ToHINTERNET(request_handle),
                        HTTP_QUERY_CONTENT_LENGTH,
-                       static_cast<void *>(&content_length_string),
+                       static_cast<void*>(&content_length_string),
                        &content_length_string_size,
                        0)) {
     *content_length = kUnknownContentLength;

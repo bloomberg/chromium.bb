@@ -267,7 +267,7 @@ static int gif_image_write_image(AVCodecContext *avctx,
     int bcid = -1, honor_transparency = (s->flags & GF_TRANSDIFF) && s->last_frame && !palette;
     const uint8_t *ptr;
 
-    if (!s->image && avctx->frame_number && is_image_translucent(avctx, buf, linesize)) {
+    if (!s->image && is_image_translucent(avctx, buf, linesize)) {
         gif_crop_translucent(avctx, buf, linesize, &width, &height, &x_start, &y_start);
         honor_transparency = 0;
         disposal = GCE_DISPOSAL_BACKGROUND;
@@ -344,7 +344,7 @@ static int gif_image_write_image(AVCodecContext *avctx,
     bytestream_put_byte(bytestream, 0x08);
 
     ff_lzw_encode_init(s->lzw, s->buf, s->buf_size,
-                       12, FF_LZW_GIF, put_bits);
+                       12, FF_LZW_GIF, 1);
 
     ptr = buf + y_start*linesize + x_start;
     if (honor_transparency) {
@@ -366,7 +366,7 @@ static int gif_image_write_image(AVCodecContext *avctx,
             ptr += linesize;
         }
     }
-    len += ff_lzw_encode_flush(s->lzw, flush_put_bits);
+    len += ff_lzw_encode_flush(s->lzw);
 
     ptr = s->buf;
     while (len > 0) {
@@ -497,4 +497,5 @@ AVCodec ff_gif_encoder = {
         AV_PIX_FMT_GRAY8, AV_PIX_FMT_PAL8, AV_PIX_FMT_NONE
     },
     .priv_class     = &gif_class,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
 };

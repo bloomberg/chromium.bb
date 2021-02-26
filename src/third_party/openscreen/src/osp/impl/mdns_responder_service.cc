@@ -49,7 +49,7 @@ void MdnsResponderService::SetServiceConfig(
     const std::string& hostname,
     const std::string& instance,
     uint16_t port,
-    const std::vector<NetworkInterfaceIndex> whitelist,
+    const std::vector<NetworkInterfaceIndex> allowlist,
     const std::map<std::string, std::string>& txt_data) {
   OSP_DCHECK(!hostname.empty());
   OSP_DCHECK(!instance.empty());
@@ -57,7 +57,7 @@ void MdnsResponderService::SetServiceConfig(
   service_hostname_ = hostname;
   service_instance_name_ = instance;
   service_port_ = port;
-  interface_index_whitelist_ = whitelist;
+  interface_index_allowlist_ = allowlist;
   service_txt_data_ = txt_data;
 }
 
@@ -298,7 +298,7 @@ void MdnsResponderService::HandleMdnsEvents() {
 }
 
 void MdnsResponderService::StartListening() {
-  // TODO(btolsch): This needs the same |interface_index_whitelist_| logic as
+  // TODO(btolsch): This needs the same |interface_index_allowlist_| logic as
   // StartService, but this can also wait until the network-change TODO is
   // addressed.
   if (bound_interfaces_.empty()) {
@@ -344,18 +344,18 @@ void MdnsResponderService::StopListening() {
 
 void MdnsResponderService::StartService() {
   // TODO(crbug.com/openscreen/45): This should really be a library-wide
-  // whitelist.
-  if (!bound_interfaces_.empty() && !interface_index_whitelist_.empty()) {
+  // allowed list.
+  if (!bound_interfaces_.empty() && !interface_index_allowlist_.empty()) {
     // TODO(btolsch): New interfaces won't be picked up on this path, but this
     // also highlights a larger issue of the interface list being frozen while
     // no state transitions are being made.  There should be another interface
     // on MdnsPlatformService for getting network interface updates.
     std::vector<MdnsPlatformService::BoundInterface> deregistered_interfaces;
     for (auto it = bound_interfaces_.begin(); it != bound_interfaces_.end();) {
-      if (std::find(interface_index_whitelist_.begin(),
-                    interface_index_whitelist_.end(),
+      if (std::find(interface_index_allowlist_.begin(),
+                    interface_index_allowlist_.end(),
                     it->interface_info.index) ==
-          interface_index_whitelist_.end()) {
+          interface_index_allowlist_.end()) {
         mdns_responder_->DeregisterInterface(it->socket);
         deregistered_interfaces.push_back(*it);
         it = bound_interfaces_.erase(it);
@@ -368,7 +368,7 @@ void MdnsResponderService::StartService() {
     mdns_responder_->Init();
     mdns_responder_->SetHostLabel(service_hostname_);
     bound_interfaces_ =
-        platform_->RegisterInterfaces(interface_index_whitelist_);
+        platform_->RegisterInterfaces(interface_index_allowlist_);
     for (auto& interface : bound_interfaces_) {
       mdns_responder_->RegisterInterface(interface.interface_info,
                                          interface.subnet, interface.socket);

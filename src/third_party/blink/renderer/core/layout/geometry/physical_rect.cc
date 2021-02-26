@@ -13,15 +13,6 @@
 
 namespace blink {
 
-LogicalRect PhysicalRect::ConvertToLogical(WritingMode mode,
-                                           TextDirection direction,
-                                           PhysicalSize outer_size,
-                                           PhysicalSize inner_size) const {
-  return LogicalRect(
-      offset.ConvertToLogical(mode, direction, outer_size, inner_size),
-      size.ConvertToLogical(mode));
-}
-
 bool PhysicalRect::Contains(const PhysicalRect& other) const {
   return offset.left <= other.offset.left && offset.top <= other.offset.top &&
          Right() >= other.Right() && Bottom() >= other.Bottom();
@@ -67,8 +58,15 @@ void PhysicalRect::UniteEvenIfEmpty(const PhysicalRect& other) {
   LayoutUnit top = std::min(offset.top, other.offset.top);
   LayoutUnit right = std::max(Right(), other.Right());
   LayoutUnit bottom = std::max(Bottom(), other.Bottom());
-  offset = {left, top};
   size = {right - left, bottom - top};
+
+  // If either width or height are not saturated, right - width == left and
+  // bottom - height == top. If they are saturated, instead of using left/top
+  // directly for the offset, the subtraction results in the united rect to
+  // favor content in the positive directions.
+  // Note that this is just a heuristic as the true rect would normally be
+  // larger than the max LayoutUnit value.
+  offset = {right - size.width, bottom - size.height};
 }
 
 void PhysicalRect::Expand(const NGPhysicalBoxStrut& strut) {

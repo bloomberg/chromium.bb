@@ -257,6 +257,7 @@ def ApplyDirectoryRules(existing_rules, dir_name):
       "File": FileImpl,
       "From": FromImpl,
       "Var": _VarImpl(local_scope).Lookup,
+      "Str": str,
       }
   deps_file = os.path.join(dir_name, "DEPS")
 

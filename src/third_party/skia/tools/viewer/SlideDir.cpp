@@ -10,6 +10,7 @@
 #include "include/core/SkCanvas.h"
 #include "include/core/SkCubicMap.h"
 #include "include/core/SkTypeface.h"
+#include "include/private/SkTPin.h"
 #include "modules/sksg/include/SkSGDraw.h"
 #include "modules/sksg/include/SkSGGroup.h"
 #include "modules/sksg/include/SkSGPaint.h"
@@ -26,7 +27,6 @@
 
 class SlideDir::Animator : public SkRefCnt {
 public:
-    virtual ~Animator() = default;
     Animator(const Animator&) = delete;
     Animator& operator=(const Animator&) = delete;
 
@@ -195,7 +195,7 @@ public:
     }
 
 protected:
-    void onTick(float t) {
+    void onTick(float t) override {
         if (!this->isAnimating())
             return;
 

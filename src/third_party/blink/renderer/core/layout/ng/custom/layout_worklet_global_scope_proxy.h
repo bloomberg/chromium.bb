@@ -20,7 +20,6 @@ class WorkletModuleResponsesMap;
 class CORE_EXPORT LayoutWorkletGlobalScopeProxy
     : public GarbageCollected<LayoutWorkletGlobalScopeProxy>,
       public WorkletGlobalScopeProxy {
-  USING_GARBAGE_COLLECTED_MIXIN(LayoutWorkletGlobalScopeProxy);
 
  public:
   static LayoutWorkletGlobalScopeProxy* From(WorkletGlobalScopeProxy*);
@@ -46,7 +45,7 @@ class CORE_EXPORT LayoutWorkletGlobalScopeProxy
 
   LayoutWorkletGlobalScope* global_scope() const { return global_scope_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   std::unique_ptr<MainThreadWorkletReportingProxy> reporting_proxy_;

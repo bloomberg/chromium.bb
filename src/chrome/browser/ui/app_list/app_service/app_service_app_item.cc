@@ -15,69 +15,11 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
-#include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
-#include "chrome/browser/ui/app_list/extension_app_context_menu.h"
-#include "chrome/browser/ui/app_list/web_app_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_features.h"
 
 // static
 const char AppServiceAppItem::kItemType[] = "AppServiceAppItem";
-
-// static
-std::unique_ptr<app_list::AppContextMenu> AppServiceAppItem::MakeAppContextMenu(
-    apps::mojom::AppType app_type,
-    AppContextMenuDelegate* delegate,
-    Profile* profile,
-    const std::string& app_id,
-    AppListControllerDelegate* controller,
-    bool is_platform_app) {
-  // Terminal System App uses CrostiniAppContextMenu.
-  if (app_id == crostini::GetTerminalId()) {
-    return std::make_unique<CrostiniAppContextMenu>(profile, app_id,
-                                                    controller);
-  }
-
-  switch (app_type) {
-    case apps::mojom::AppType::kUnknown:
-    case apps::mojom::AppType::kBuiltIn:
-    case apps::mojom::AppType::kLacros:
-      return std::make_unique<app_list::AppContextMenu>(delegate, profile,
-                                                        app_id, controller);
-
-    case apps::mojom::AppType::kArc:
-      return std::make_unique<ArcAppContextMenu>(delegate, profile, app_id,
-                                                 controller);
-
-    case apps::mojom::AppType::kCrostini:
-      return std::make_unique<CrostiniAppContextMenu>(profile, app_id,
-                                                      controller);
-
-    case apps::mojom::AppType::kPluginVm:
-      return std::make_unique<app_list::AppContextMenu>(delegate, profile,
-                                                        app_id, controller);
-
-    case apps::mojom::AppType::kWeb:
-      if (base::FeatureList::IsEnabled(
-              features::kDesktopPWAsWithoutExtensions)) {
-        return std::make_unique<app_list::WebAppContextMenu>(
-            delegate, profile, app_id, controller);
-      }
-      // Otherwise deliberately fall through to fallback on Bookmark Apps.
-      FALLTHROUGH;
-
-    case apps::mojom::AppType::kExtension:
-      return std::make_unique<app_list::ExtensionAppContextMenu>(
-          delegate, profile, app_id, controller, is_platform_app);
-
-    case apps::mojom::AppType::kMacNative:
-      NOTREACHED() << "Should not be trying to make a menu for a native app";
-      return nullptr;
-  }
-
-  return nullptr;
-}
 
 AppServiceAppItem::AppServiceAppItem(
     Profile* profile,
@@ -95,7 +37,7 @@ AppServiceAppItem::AppServiceAppItem(
 
     // Crostini apps and the Terminal System App start in the crostini folder.
     if (app_type_ == apps::mojom::AppType::kCrostini ||
-        id() == crostini::GetTerminalId()) {
+        id() == crostini::kCrostiniTerminalSystemAppId) {
       DCHECK(folder_id().empty());
       SetChromeFolderId(crostini::kCrostiniFolderId);
     }
@@ -139,8 +81,7 @@ void AppServiceAppItem::Activate(int event_flags) {
   // when AppService Instance feature is done.
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  if (!proxy)
-    return;
+
   bool is_active_app = false;
   proxy->AppRegistryCache().ForOneApp(
       id(), [&is_active_app](const apps::AppUpdate& update) {
@@ -165,13 +106,8 @@ const char* AppServiceAppItem::GetItemType() const {
 }
 
 void AppServiceAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
-  if (base::FeatureList::IsEnabled(features::kAppServiceContextMenu)) {
-    context_menu_ = std::make_unique<AppServiceContextMenu>(
-        this, profile(), id(), GetController());
-  } else {
-    context_menu_ = MakeAppContextMenu(app_type_, this, profile(), id(),
-                                       GetController(), is_platform_app_);
-  }
+  context_menu_ = std::make_unique<AppServiceContextMenu>(this, profile(), id(),
+                                                          GetController());
 
   context_menu_->GetMenuModel(std::move(callback));
 }
@@ -185,7 +121,8 @@ void AppServiceAppItem::ExecuteLaunchCommand(int event_flags) {
 
   // TODO(crbug.com/826982): drop the if, and call MaybeDismissAppList
   // unconditionally?
-  if (app_type_ == apps::mojom::AppType::kArc) {
+  if (app_type_ == apps::mojom::AppType::kArc ||
+      app_type_ == apps::mojom::AppType::kRemote) {
     MaybeDismissAppList();
   }
 }
@@ -194,28 +131,31 @@ void AppServiceAppItem::Launch(int event_flags,
                                apps::mojom::LaunchSource launch_source) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  if (proxy) {
-    proxy->Launch(id(), event_flags, launch_source,
-                  GetController()->GetAppListDisplayId());
-  }
+  proxy->Launch(id(), event_flags, launch_source,
+                GetController()->GetAppListDisplayId());
 }
 
 void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  if (proxy) {
-    proxy->LoadIcon(app_type_, id(),
-                    apps::mojom::IconCompression::kUncompressed,
-                    ash::AppListConfig::instance().grid_icon_dimension(),
-                    allow_placeholder_icon,
-                    base::BindOnce(&AppServiceAppItem::OnLoadIcon,
-                                   weak_ptr_factory_.GetWeakPtr()));
-  }
+
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  proxy->LoadIcon(app_type_, id(), icon_type,
+                  ash::AppListConfig::instance().grid_icon_dimension(),
+                  allow_placeholder_icon,
+                  base::BindOnce(&AppServiceAppItem::OnLoadIcon,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AppServiceAppItem::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
-  if (icon_value->icon_compression !=
-      apps::mojom::IconCompression::kUncompressed) {
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  if (icon_value->icon_type != icon_type) {
     return;
   }
   SetIcon(icon_value->uncompressed);

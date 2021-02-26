@@ -14,38 +14,39 @@
 #include "discovery/public/dns_sd_service_publisher.h"
 #include "discovery/public/dns_sd_service_watcher.h"
 #include "gtest/gtest.h"
-#include "platform/api/logging.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/interface_info.h"
 #include "platform/impl/network_interface.h"
 #include "platform/impl/platform_client_posix.h"
 #include "platform/impl/task_runner.h"
+#include "testing/util/task_util.h"
+#include "util/chrono_helpers.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {
 namespace {
 
+// Maximum amount of time needed for a query to be received.
+constexpr seconds kMaxQueryDuration{3};
+
 // Total wait time = 4 seconds.
-constexpr std::chrono::milliseconds kWaitLoopSleepTime =
-    std::chrono::milliseconds(500);
+constexpr milliseconds kWaitLoopSleepTime(500);
 constexpr int kMaxWaitLoopIterations = 8;
 
 // Total wait time = 2.5 seconds.
 // NOTE: This must be less than the above wait time.
-constexpr std::chrono::milliseconds kCheckLoopSleepTime =
-    std::chrono::milliseconds(100);
+constexpr milliseconds kCheckLoopSleepTime(100);
 constexpr int kMaxCheckLoopIterations = 25;
-
-}  // namespace
 
 // Publishes new service instances.
 class Publisher : public discovery::DnsSdServicePublisher<ServiceInfo> {
  public:
-  Publisher(discovery::DnsSdService* service)
+  explicit Publisher(discovery::DnsSdService* service)  // NOLINT
       : DnsSdServicePublisher<ServiceInfo>(service,
                                            kCastV2ServiceId,
                                            ServiceInfoToDnsSdInstance) {
-    OSP_LOG << "Initializing Publisher...\n";
+    OSP_LOG_INFO << "Initializing Publisher...\n";
   }
 
   ~Publisher() override = default;
@@ -66,9 +67,9 @@ class Publisher : public discovery::DnsSdServicePublisher<ServiceInfo> {
 };
 
 // Receives incoming services and outputs their results to stdout.
-class Receiver : public discovery::DnsSdServiceWatcher<ServiceInfo> {
+class ServiceReceiver : public discovery::DnsSdServiceWatcher<ServiceInfo> {
  public:
-  Receiver(discovery::DnsSdService* service)
+  explicit ServiceReceiver(discovery::DnsSdService* service)  // NOLINT
       : discovery::DnsSdServiceWatcher<ServiceInfo>(
             service,
             kCastV2ServiceId,
@@ -77,7 +78,7 @@ class Receiver : public discovery::DnsSdServiceWatcher<ServiceInfo> {
                 std::vector<std::reference_wrapper<const ServiceInfo>> infos) {
               ProcessResults(std::move(infos));
             }) {
-    OSP_LOG << "Initializing Receiver...";
+    OSP_LOG_INFO << "Initializing ServiceReceiver...";
   }
 
   bool IsServiceFound(const ServiceInfo& check_service) {
@@ -133,14 +134,14 @@ class DiscoveryE2ETest : public testing::Test {
  public:
   DiscoveryE2ETest() {
     // Sleep to let any packets clear off the network before further tests.
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(milliseconds(500));
 
-    PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50});
+    PlatformClientPosix::Create(milliseconds(50), milliseconds(50));
     task_runner_ = PlatformClientPosix::GetInstance()->GetTaskRunner();
   }
 
   ~DiscoveryE2ETest() {
-    OSP_LOG << "TEST COMPLETE!";
+    OSP_LOG_INFO << "TEST COMPLETE!";
     dnssd_service_.reset();
     PlatformClientPosix::ShutDown();
   }
@@ -161,16 +162,12 @@ class DiscoveryE2ETest : public testing::Test {
     task_runner_->PostTask([this, &config, &done]() {
       dnssd_service_ = discovery::CreateDnsSdService(
           task_runner_, &reporting_client_, config);
-      receiver_ = std::make_unique<Receiver>(dnssd_service_.get());
+      receiver_ = std::make_unique<ServiceReceiver>(dnssd_service_.get());
       publisher_ = std::make_unique<Publisher>(dnssd_service_.get());
       done = true;
     });
-    for (int i = 0; i < kMaxWaitLoopIterations; ++i) {
-      if (done) {
-        break;
-      }
-      std::this_thread::sleep_for(kWaitLoopSleepTime);
-    }
+    WaitForCondition([&done]() { return done.load(); }, kWaitLoopSleepTime,
+                     kMaxWaitLoopIterations);
     OSP_CHECK(done);
   }
 
@@ -225,7 +222,7 @@ class DiscoveryE2ETest : public testing::Test {
       }
 
       if (waiting_on) {
-        OSP_LOG << "\tWaiting on " << waiting_on << "...";
+        OSP_LOG_INFO << "\tWaiting on " << waiting_on << "...";
         std::this_thread::sleep_for(kWaitLoopSleepTime);
         continue;
       }
@@ -253,6 +250,9 @@ class DiscoveryE2ETest : public testing::Test {
         });
   }
 
+  // TODO(issuetracker.google.com/159256503): Change this to use a polling
+  // method to wait until the service disappears rather than immediately failing
+  // if it exists, so waits throughout this file can be removed.
   void CheckNotPublishedService(ServiceInfo service_info,
                                 std::atomic_bool* has_been_seen) {
     OSP_DCHECK(dnssd_service_.get());
@@ -264,7 +264,7 @@ class DiscoveryE2ETest : public testing::Test {
   TaskRunner* task_runner_;
   FailOnErrorReporting reporting_client_;
   SerialDeletePtr<discovery::DnsSdService> dnssd_service_;
-  std::unique_ptr<Receiver> receiver_;
+  std::unique_ptr<ServiceReceiver> receiver_;
   std::unique_ptr<Publisher> publisher_;
 
  private:
@@ -349,7 +349,7 @@ TEST_F(DiscoveryE2ETest, ValidateQueryFlow) {
 
   // Wait until all probe phases complete and all instance ids are claimed. At
   // this point, all records should be published.
-  OSP_LOG << "Service publication in progress...";
+  OSP_LOG_INFO << "Service publication in progress...";
   std::atomic_bool found1{false};
   std::atomic_bool found2{false};
   std::atomic_bool found3{false};
@@ -357,10 +357,10 @@ TEST_F(DiscoveryE2ETest, ValidateQueryFlow) {
   CheckForClaimedIds(instance2, &found2);
   CheckForClaimedIds(instance3, &found3);
   WaitUntilSeen(true, &found1, &found2, &found3);
-  OSP_LOG << "\tAll services successfully published!\n";
+  OSP_LOG_INFO << "\tAll services successfully published!\n";
 
   // Make sure all services are found through discovery.
-  OSP_LOG << "Service discovery in progress...";
+  OSP_LOG_INFO << "Service discovery in progress...";
   found1 = false;
   found2 = false;
   found3 = false;
@@ -395,7 +395,7 @@ TEST_F(DiscoveryE2ETest, ValidateAnnouncementFlow) {
 
   // Wait until all probe phases complete and all instance ids are claimed. At
   // this point, all records should be published.
-  OSP_LOG << "Service publication in progress...";
+  OSP_LOG_INFO << "Service publication in progress...";
   std::atomic_bool found1{false};
   std::atomic_bool found2{false};
   std::atomic_bool found3{false};
@@ -403,10 +403,10 @@ TEST_F(DiscoveryE2ETest, ValidateAnnouncementFlow) {
   CheckForClaimedIds(instance2, &found2);
   CheckForClaimedIds(instance3, &found3);
   WaitUntilSeen(true, &found1, &found2, &found3);
-  OSP_LOG << "\tAll services successfully published and announced!\n";
+  OSP_LOG_INFO << "\tAll services successfully published and announced!\n";
 
   // Make sure all services are found through discovery.
-  OSP_LOG << "Service discovery in progress...";
+  OSP_LOG_INFO << "Service discovery in progress...";
   found1 = false;
   found2 = false;
   found3 = false;
@@ -414,16 +414,16 @@ TEST_F(DiscoveryE2ETest, ValidateAnnouncementFlow) {
   CheckForPublishedService(instance2, &found2);
   CheckForPublishedService(instance3, &found3);
   WaitUntilSeen(true, &found1, &found2, &found3);
-  OSP_LOG << "\tAll services successfully discovered!\n";
+  OSP_LOG_INFO << "\tAll services successfully discovered!\n";
 
   // Deregister all service instances.
-  OSP_LOG << "Deregister all services...";
+  OSP_LOG_INFO << "Deregister all services...";
   task_runner_->PostTask([this]() {
     ErrorOr<int> result = publisher_->DeregisterAll();
     ASSERT_FALSE(result.is_error());
     ASSERT_EQ(result.value(), 3);
   });
-  std::this_thread::sleep_for(std::chrono::seconds(3));
+  std::this_thread::sleep_for(seconds(3));
   found1 = false;
   found2 = false;
   found3 = false;
@@ -455,26 +455,27 @@ TEST_F(DiscoveryE2ETest, ValidateRecordsOnlyReceivedWhenQueryRunning) {
 
   // Wait until all probe phases complete and all instance ids are claimed. At
   // this point, all records should be published.
-  OSP_LOG << "Service publication in progress...";
+  OSP_LOG_INFO << "Service publication in progress...";
   std::atomic_bool found{false};
   CheckForClaimedIds(instance, &found);
   WaitUntilSeen(true, &found);
 
   // And ensure stopped discovery does not find the records.
-  OSP_LOG << "Validating no service discovery occurs when discovery stopped...";
+  OSP_LOG_INFO
+      << "Validating no service discovery occurs when discovery stopped...";
   found = false;
   CheckNotPublishedService(instance, &found);
   WaitUntilSeen(false, &found);
 
   // Make sure all services are found through discovery.
   StartDiscovery();
-  OSP_LOG << "Service discovery in progress...";
+  OSP_LOG_INFO << "Service discovery in progress...";
   found = false;
   CheckForPublishedService(instance, &found);
   WaitUntilSeen(true, &found);
 
   // Update discovery and ensure that the updated service is seen.
-  OSP_LOG << "Updating service and waiting for discovery...";
+  OSP_LOG_INFO << "Updating service and waiting for discovery...";
   auto updated_instance = instance;
   updated_instance.friendly_name = "OtherName";
   found = false;
@@ -488,20 +489,22 @@ TEST_F(DiscoveryE2ETest, ValidateRecordsOnlyReceivedWhenQueryRunning) {
   WaitUntilSeen(false, &found);
 
   // Stop discovery.
-  OSP_LOG << "Stopping discovery...";
+  OSP_LOG_INFO << "Stopping discovery...";
   task_runner_->PostTask([this]() { receiver_->StopDiscovery(); });
 
   // Update discovery and ensure that the updated service is NOT seen.
-  OSP_LOG << "Updating service and validating the change isn't received...";
+  OSP_LOG_INFO
+      << "Updating service and validating the change isn't received...";
   found = false;
   instance.friendly_name = "ThirdName";
   UpdateRecords(instance);
   CheckNotPublishedService(instance, &found);
   WaitUntilSeen(false, &found);
 
-  // Restart discovery and ensure that only the updated record is returned.
   StartDiscovery();
-  OSP_LOG << "Service discovery in progress...";
+  std::this_thread::sleep_for(kMaxQueryDuration);
+
+  OSP_LOG_INFO << "Service discovery in progress...";
   found = false;
   CheckNotPublishedService(updated_instance, &found);
   WaitUntilSeen(false, &found);
@@ -525,7 +528,6 @@ TEST_F(DiscoveryE2ETest, ValidateRefreshFlow) {
   auto discovery_config = GetConfigSettings();
   discovery_config.new_record_announcement_count = 0;
   discovery_config.new_query_announcement_count = 2;
-  constexpr std::chrono::seconds kMaxQueryDuration{3};
   SetUpService(discovery_config);
 
   auto instance = GetInfo(1);
@@ -536,20 +538,20 @@ TEST_F(DiscoveryE2ETest, ValidateRefreshFlow) {
 
   // Wait until all probe phases complete and all instance ids are claimed. At
   // this point, all records should be published.
-  OSP_LOG << "Service publication in progress...";
+  OSP_LOG_INFO << "Service publication in progress...";
   std::atomic_bool found{false};
   CheckForClaimedIds(instance, &found);
   WaitUntilSeen(true, &found);
 
   // Make sure all services are found through discovery.
-  OSP_LOG << "Service discovery in progress...";
+  OSP_LOG_INFO << "Service discovery in progress...";
   found = false;
   CheckForPublishedService(instance, &found);
   WaitUntilSeen(true, &found);
 
   // Force refresh discovery, then ensure that the published service is
   // re-discovered.
-  OSP_LOG << "Force refresh discovery...";
+  OSP_LOG_INFO << "Force refresh discovery...";
   task_runner_->PostTask([this]() { receiver_->EraseReceivedServices(); });
   std::this_thread::sleep_for(kMaxQueryDuration);
   found = false;
@@ -557,14 +559,14 @@ TEST_F(DiscoveryE2ETest, ValidateRefreshFlow) {
   WaitUntilSeen(false, &found);
   task_runner_->PostTask([this]() { receiver_->ForceRefresh(); });
 
-  OSP_LOG << "Ensure that the published service is re-discovered...";
+  OSP_LOG_INFO << "Ensure that the published service is re-discovered...";
   found = false;
   CheckForPublishedService(instance, &found);
   WaitUntilSeen(true, &found);
 
   // Soft refresh discovery, then ensure that the published service is NOT
   // re-discovered.
-  OSP_LOG << "Call DiscoverNow on discovery...";
+  OSP_LOG_INFO << "Call DiscoverNow on discovery...";
   task_runner_->PostTask([this]() { receiver_->EraseReceivedServices(); });
   std::this_thread::sleep_for(kMaxQueryDuration);
   found = false;
@@ -572,11 +574,12 @@ TEST_F(DiscoveryE2ETest, ValidateRefreshFlow) {
   WaitUntilSeen(false, &found);
   task_runner_->PostTask([this]() { receiver_->DiscoverNow(); });
 
-  OSP_LOG << "Ensure that the published service is re-discovered...";
+  OSP_LOG_INFO << "Ensure that the published service is re-discovered...";
   found = false;
   CheckForPublishedService(instance, &found);
   WaitUntilSeen(true, &found);
 }
 
+}  // namespace
 }  // namespace cast
 }  // namespace openscreen

@@ -18,6 +18,7 @@
 #include "common/Constants.h"
 
 #include "dawn_native/AttachmentState.h"
+#include "dawn_native/BindingInfo.h"
 #include "dawn_native/Texture.h"
 
 #include "dawn_native/dawn_platform.h"
@@ -50,6 +51,7 @@ namespace dawn_native {
         InsertDebugMarker,
         PopDebugGroup,
         PushDebugGroup,
+        ResolveQuerySet,
         SetComputePipeline,
         SetRenderPipeline,
         SetStencilReference,
@@ -59,6 +61,7 @@ namespace dawn_native {
         SetBindGroup,
         SetIndexBuffer,
         SetVertexBuffer,
+        WriteTimestamp,
     };
 
     struct BeginComputePassCmd {};
@@ -83,7 +86,8 @@ namespace dawn_native {
 
     struct BeginRenderPassCmd {
         Ref<AttachmentState> attachmentState;
-        RenderPassColorAttachmentInfo colorAttachments[kMaxColorAttachments];
+        ityp::array<ColorAttachmentIndex, RenderPassColorAttachmentInfo, kMaxColorAttachments>
+            colorAttachments;
         RenderPassDepthStencilAttachmentInfo depthStencilAttachment;
 
         // Cache the width and height of all attachments for convenience
@@ -101,8 +105,8 @@ namespace dawn_native {
     struct TextureCopy {
         Ref<TextureBase> texture;
         uint32_t mipLevel;
-        uint32_t arrayLayer;
-        Origin3D origin;  // Texels
+        Origin3D origin;  // Texels / array layer
+        Aspect aspect;
     };
 
     struct CopyBufferToBufferCmd {
@@ -185,6 +189,14 @@ namespace dawn_native {
         uint32_t length;
     };
 
+    struct ResolveQuerySetCmd {
+        Ref<QuerySetBase> querySet;
+        uint32_t firstQuery;
+        uint32_t queryCount;
+        Ref<BufferBase> destination;
+        uint64_t destinationOffset;
+    };
+
     struct SetComputePipelineCmd {
         Ref<ComputePipelineBase> pipeline;
     };
@@ -210,22 +222,28 @@ namespace dawn_native {
     };
 
     struct SetBindGroupCmd {
-        uint32_t index;
+        BindGroupIndex index;
         Ref<BindGroupBase> group;
         uint32_t dynamicOffsetCount;
     };
 
     struct SetIndexBufferCmd {
         Ref<BufferBase> buffer;
+        wgpu::IndexFormat format;
         uint64_t offset;
         uint64_t size;
     };
 
     struct SetVertexBufferCmd {
-        uint32_t slot;
+        VertexBufferSlot slot;
         Ref<BufferBase> buffer;
         uint64_t offset;
         uint64_t size;
+    };
+
+    struct WriteTimestampCmd {
+        Ref<QuerySetBase> querySet;
+        uint32_t queryIndex;
     };
 
     // This needs to be called before the CommandIterator is freed so that the Ref<> present in

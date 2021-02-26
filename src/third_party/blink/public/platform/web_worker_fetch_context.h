@@ -10,9 +10,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/unguessable_token.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-shared.h"
-#include "third_party/blink/public/platform/code_cache_loader.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
+#include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
+#include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -75,12 +78,13 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   // Returns a new WebURLLoaderFactory that wraps the given
   // network::mojom::URLLoaderFactory.
   virtual std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
-      mojo::ScopedMessagePipeHandle url_loader_factory_handle) = 0;
+      CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+          url_loader_factory) = 0;
 
-  // Returns a CodeCacheLoader that fetches data from code caches. If
+  // Returns a WebCodeCacheLoader that fetches data from code caches. If
   // a nullptr is returned then data would not be fetched from the code
   // cache.
-  virtual std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() {
+  virtual std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() {
     return nullptr;
   }
 
@@ -114,15 +118,6 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   // or a service worker this is unset.
   virtual base::Optional<WebSecurityOrigin> TopFrameOrigin() const = 0;
 
-  // Reports the certificate error to the browser process.
-  virtual void DidRunContentWithCertificateErrors() {}
-  virtual void DidDisplayContentWithCertificateErrors() {}
-
-  // Reports that the security origin has run active content from an insecure
-  // source.
-  virtual void DidRunInsecureContent(const WebSecurityOrigin&,
-                                     const WebURL& insecure_url) {}
-
   // Sets the builder object of WebDocumentSubresourceFilter on the main thread
   // which will be used in TakeSubresourceFilter() to create a
   // WebDocumentSubresourceFilter on the worker thread.
@@ -149,15 +144,22 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   // Returns the current list of user prefered languages.
   virtual blink::WebString GetAcceptLanguages() const = 0;
 
-  // Returns mojo::PendingReceiver<blink::mojom::blink::WorkerTimingContainer>
-  // for the blink::ResourceResponse with the given |request_id|. Null if the
+  // Returns the blink::mojom::WorkerTimingContainer receiver for the
+  // blink::ResourceResponse with the given |request_id|. Null if the
   // request has not been intercepted by a service worker.
-  virtual mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
-      int request_id) = 0;
+  virtual CrossVariantMojoReceiver<mojom::WorkerTimingContainerInterfaceBase>
+  TakePendingWorkerTimingReceiver(int request_id) = 0;
 
   // This flag is set to disallow all network accesses in the context. Used for
   // offline capability detection in service workers.
   virtual void SetIsOfflineMode(bool is_offline_mode) = 0;
+
+  // Creates a notifier used to notify loading stats for workers.
+  virtual std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
+  CreateResourceLoadInfoNotifierWrapper() {
+    return std::make_unique<blink::ResourceLoadInfoNotifierWrapper>(
+        /*resource_load_info_notifier=*/nullptr);
+  }
 };
 
 }  // namespace blink

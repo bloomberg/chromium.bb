@@ -5,12 +5,13 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MAC_H_
 #define CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MAC_H_
 
+#include "base/callback.h"
 #include "base/mac/scoped_block.h"
 #include "base/macros.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/common/mac/attributed_string_coder.h"
+#include "ui/base/mojom/attributed_string.mojom-forward.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -73,8 +74,8 @@ class CONTENT_EXPORT TextInputClientMac {
   void SetCharacterIndexAndSignal(uint32_t index);
   void SetFirstRectAndSignal(const gfx::Rect& first_rect);
 
-  typedef base::OnceCallback<
-      void(const mac::AttributedStringCoder::EncodedString&, gfx::Point)>
+  typedef base::OnceCallback<void(ui::mojom::AttributedStringPtr,
+                                  const gfx::Point&)>
       GetStringCallback;
 
   // This async method is invoked from RenderWidgetHostViewCocoa's
@@ -87,12 +88,6 @@ class CONTENT_EXPORT TextInputClientMac {
                         const gfx::Point& point,
                         GetStringCallback callback);
 
-  // This is called on the IO thread when we get the renderer's reply for
-  // GetStringAtPoint.
-  void GetStringAtPointReply(
-      const mac::AttributedStringCoder::EncodedString& string,
-      const gfx::Point& point);
-
   // This async method is invoked when browser tries to retreive the text for
   // certain range and doesn't want to wait for the reply from blink.
   // The reply callback will be invoked from the IO thread; the caller is
@@ -102,12 +97,6 @@ class CONTENT_EXPORT TextInputClientMac {
   void GetStringFromRange(RenderWidgetHost* rwh,
                           const gfx::Range& range,
                           GetStringCallback callback);
-
-  // This is called on the IO thread when we get the renderer's reply for
-  // GetStringFromRange.
-  void GetStringFromRangeReply(
-      const mac::AttributedStringCoder::EncodedString& string,
-      const gfx::Point& point);
 
  private:
   friend struct base::DefaultSingletonTraits<TextInputClientMac>;
@@ -128,12 +117,6 @@ class CONTENT_EXPORT TextInputClientMac {
 
   base::Lock lock_;
   base::ConditionVariable condition_;
-
-  // The callback when received IPC TextInputClientReplyMsg_GotStringAtPoint.
-  GetStringCallback replyForPointHandler_;
-
-  // The callback when received IPC TextInputClientReplyMsg_GotStringForRange.
-  GetStringCallback replyForRangeHandler_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientMac);
 };

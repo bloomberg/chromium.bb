@@ -53,7 +53,7 @@ class FakeCipdServerHandler(httpserver.Handler):
     elif self.path == '/fake_google_storage/cipd_client':
       # The content is not actually used because run_isolated_test.py
       # mocks popen.
-      self.send_octet_stream('#!/usr/sh\n')
+      self.send_octet_stream(b'#!/usr/sh\n')
     else:
       raise NotImplementedError(self.path)
 

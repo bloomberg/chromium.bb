@@ -7,27 +7,26 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <utility>
 
 #include "ash/app_list/app_list_util.h"
-#include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
-#include "ash/app_list/views/assistant/privacy_info_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/privacy_container_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_anchored_dialog.h"
 #include "ash/app_list/views/search_result_tile_item_list_view.h"
+#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/view_shadow.h"
+#include "ash/search_box/search_box_constants.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor_extra/shadow.h"
@@ -43,6 +42,8 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace ash {
@@ -68,34 +69,38 @@ constexpr int kSearchBoxBottomSpacing = 1;
 // Minimum spacing between shelf and bottom of search box.
 constexpr int kSearchResultPageMinimumBottomMargin = 24;
 
-constexpr SkColor kSeparatorColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
-
 // The shadow elevation value for the shadow of the expanded search box.
 constexpr int kSearchBoxSearchResultShadowElevation = 12;
 
 // The amount of time by which notifications to accessibility framework about
 // result page changes are delayed.
 constexpr base::TimeDelta kNotifyA11yDelay =
-    base::TimeDelta::FromMilliseconds(500);
+    base::TimeDelta::FromMilliseconds(1500);
 
 // A container view that ensures the card background and the shadow are painted
 // in the correct order.
 class SearchCardView : public views::View {
  public:
-  explicit SearchCardView(views::View* content_view) {
+  METADATA_HEADER(SearchCardView);
+  explicit SearchCardView(std::unique_ptr<views::View> content_view) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
-    AddChildView(content_view);
+    AddChildView(std::move(content_view));
   }
-
-  // views::View overrides:
-  const char* GetClassName() const override { return "SearchCardView"; }
-
+  SearchCardView(const SearchCardView&) = delete;
+  SearchCardView& operator=(const SearchCardView&) = delete;
   ~SearchCardView() override {}
 };
+
+BEGIN_METADATA(SearchCardView, views::View)
+END_METADATA
 
 class ZeroWidthVerticalScrollBar : public views::OverlayScrollBar {
  public:
   ZeroWidthVerticalScrollBar() : OverlayScrollBar(false) {}
+  ZeroWidthVerticalScrollBar(const ZeroWidthVerticalScrollBar&) = delete;
+  ZeroWidthVerticalScrollBar& operator=(const ZeroWidthVerticalScrollBar&) =
+      delete;
+  ~ZeroWidthVerticalScrollBar() override = default;
 
   // OverlayScrollBar overrides:
   int GetThickness() const override { return 0; }
@@ -105,9 +110,6 @@ class ZeroWidthVerticalScrollBar : public views::OverlayScrollBar {
     // result is focused, it will be set visible in scroll view.
     return false;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ZeroWidthVerticalScrollBar);
 };
 
 class SearchResultPageBackground : public views::Background {
@@ -115,6 +117,9 @@ class SearchResultPageBackground : public views::Background {
   explicit SearchResultPageBackground(SkColor color) {
     SetNativeControlColor(color);
   }
+  SearchResultPageBackground(const SearchResultPageBackground&) = delete;
+  SearchResultPageBackground& operator=(const SearchResultPageBackground&) =
+      delete;
   ~SearchResultPageBackground() override = default;
 
  private:
@@ -127,10 +132,8 @@ class SearchResultPageBackground : public views::Background {
     // Draw a separator between SearchBoxView and SearchResultPageView.
     bounds.set_y(kSearchBoxHeight + kSearchBoxBottomSpacing);
     bounds.set_height(kSeparatorThickness);
-    canvas->FillRect(bounds, kSeparatorColor);
+    canvas->FillRect(bounds, AppListColorProvider::Get()->GetSeparatorColor());
   }
-
-  DISALLOW_COPY_AND_ASSIGN(SearchResultPageBackground);
 };
 
 }  // namespace
@@ -154,7 +157,7 @@ class SearchResultPageView::HorizontalSeparator : public views::View {
 
   void OnPaint(gfx::Canvas* canvas) override {
     gfx::Rect rect = GetContentsBounds();
-    canvas->FillRect(rect, kSeparatorColor);
+    canvas->FillRect(rect, AppListColorProvider::Get()->GetSeparatorColor());
     View::OnPaint(canvas);
   }
 
@@ -164,31 +167,23 @@ class SearchResultPageView::HorizontalSeparator : public views::View {
   DISALLOW_COPY_AND_ASSIGN(HorizontalSeparator);
 };
 
-SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate,
-                                           SearchModel* search_model)
-    : view_delegate_(view_delegate),
-      search_model_(search_model),
-      contents_view_(new views::View) {
+SearchResultPageView::SearchResultPageView(SearchModel* search_model)
+    : search_model_(search_model), contents_view_(new views::View) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
 
-  if (view_delegate_->ShouldShowAssistantPrivacyInfo()) {
-    assistant_privacy_info_view_ = new PrivacyInfoView(view_delegate_, this);
-    contents_view_->AddChildView(assistant_privacy_info_view_);
-  }
-
   view_shadow_ =
       std::make_unique<ViewShadow>(this, kSearchBoxSearchResultShadowElevation);
   view_shadow_->SetRoundedCornerRadius(
-      search_box::kSearchBoxBorderCornerRadiusSearchResult);
+      kSearchBoxBorderCornerRadiusSearchResult);
 
   // Hides this view behind the search box by using the same color and
   // background border corner radius. All child views' background should be
   // set transparent so that the rounded corner is not overwritten.
   SetBackground(std::make_unique<SearchResultPageBackground>(
-      AppListConfig::instance().card_background_color()));
+      AppListColorProvider::Get()->GetSearchBoxCardBackgroundColor()));
   auto scroller = std::make_unique<views::ScrollView>();
   // Leaves a placeholder area for the search box and the separator below it.
   scroller->SetBorder(views::CreateEmptyBorder(gfx::Insets(
@@ -217,17 +212,18 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate,
 
 SearchResultPageView::~SearchResultPageView() = default;
 
-void SearchResultPageView::AddSearchResultContainerView(
-    SearchResultContainerView* result_container) {
+void SearchResultPageView::AddSearchResultContainerViewInternal(
+    std::unique_ptr<SearchResultContainerView> result_container) {
   if (!result_container_views_.empty()) {
-    HorizontalSeparator* separator = new HorizontalSeparator(bounds().width());
-    contents_view_->AddChildView(separator);
-    separators_.push_back(separator);
+    separators_.push_back(contents_view_->AddChildView(
+        std::make_unique<HorizontalSeparator>(bounds().width())));
   }
-  contents_view_->AddChildView(new SearchCardView(result_container));
-  result_container_views_.push_back(result_container);
-  result_container->SetResults(search_model_->results());
-  result_container->set_delegate(this);
+  auto* result_container_ptr = result_container.get();
+  contents_view_->AddChildView(
+      std::make_unique<SearchCardView>(std::move(result_container)));
+  result_container_views_.push_back(result_container_ptr);
+  result_container_ptr->SetResults(search_model_->results());
+  result_container_ptr->set_delegate(this);
 }
 
 bool SearchResultPageView::IsFirstResultTile() const {
@@ -287,14 +283,6 @@ void SearchResultPageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void SearchResultPageView::ReorderSearchResultContainers() {
-  int view_offset = 0;
-  if (assistant_privacy_info_view_) {
-    const bool show_privacy_info =
-        view_delegate_->ShouldShowAssistantPrivacyInfo();
-    view_offset = show_privacy_info ? 1 : 0;
-    assistant_privacy_info_view_->SetVisible(show_privacy_info);
-  }
-
   // Sort the result container views by their score.
   std::sort(result_container_views_.begin(), result_container_views_.end(),
             [](const SearchResultContainerView* a,
@@ -302,29 +290,24 @@ void SearchResultPageView::ReorderSearchResultContainers() {
               return a->container_score() > b->container_score();
             });
 
-  int result_y_index = 0;
   for (size_t i = 0; i < result_container_views_.size(); ++i) {
     SearchResultContainerView* view = result_container_views_[i];
 
     if (i > 0) {
       HorizontalSeparator* separator = separators_[i - 1];
-      // Hides the separator above the container that has no results.
-      if (!view->num_results())
-        separator->SetVisible(false);
-      else
-        separator->SetVisible(true);
+      const bool preceded_by_privacy_container =
+          result_container_views_[i - 1] ==
+          AppListPage::contents_view()->privacy_container_view();
+      // Hides the separator above the container that has no results, and below
+      // the privacy container.
+      separator->SetVisible(view->num_results() &&
+                            !preceded_by_privacy_container);
 
-      contents_view_->ReorderChildView(separator, i * 2 - 1 + view_offset);
-      contents_view_->ReorderChildView(view->parent(), i * 2 + view_offset);
-
-      result_y_index += kSeparatorThickness;
+      contents_view_->ReorderChildView(separator, i * 2 - 1);
+      contents_view_->ReorderChildView(view->parent(), i * 2);
     } else {
-      contents_view_->ReorderChildView(view->parent(), i + view_offset);
+      contents_view_->ReorderChildView(view->parent(), i);
     }
-
-    view->NotifyFirstResultYIndex(result_y_index);
-
-    result_y_index += view->GetYSize();
   }
 
   Layout();
@@ -358,6 +341,7 @@ void SearchResultPageView::SetIgnoreResultChangesForA11y(bool ignore) {
   ignore_result_changes_for_a11y_ = ignore;
 
   GetViewAccessibility().OverrideIsLeaf(ignore);
+  GetViewAccessibility().OverrideIsIgnored(ignore);
   NotifyAccessibilityEvent(ax::mojom::Event::kTreeChanged, true);
 }
 
@@ -387,8 +371,20 @@ void SearchResultPageView::NotifySelectedResultChanged() {
     return;
   }
 
+  SearchBoxView* search_box = AppListPage::contents_view()->GetSearchBoxView();
+  // Ignore result selection change if the focus moved away from the search boc
+  // textfield, for example to the close button.
+  if (!search_box->search_box()->HasFocus())
+    return;
+
+  views::View* selected_view =
+      result_selection_controller_->selected_result()->GetSelectedView();
+  if (!selected_view)
+    return;
+
+  selected_view->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   NotifyAccessibilityEvent(ax::mojom::Event::kSelectedChildrenChanged, true);
-  result_selection_controller_->selected_result()->NotifyA11yResultSelected();
+  search_box->set_a11y_selection_on_search_result(true);
 }
 
 void SearchResultPageView::OnSearchResultContainerResultsChanging() {
@@ -420,18 +416,15 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
   first_result_view_ = result_container_views_[0]->GetFirstResultView();
 
-  // Update SearchBoxView search box autocomplete as necessary based on new
-  // first result view.
-  AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete();
-
   // Reset selection to first when things change. The first result is set as
   // as the default result.
   result_selection_controller_->set_block_selection_changes(false);
   result_selection_controller_->ResetSelection(nullptr /*key_event*/,
                                                true /* default_selection */);
+  // Update SearchBoxView search box autocomplete as necessary based on new
+  // first result view.
+  AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete();
 }
-
-void SearchResultPageView::HintTextChanged() {}
 
 void SearchResultPageView::Update() {
   notify_a11y_results_changed_timer_.Stop();
@@ -440,10 +433,6 @@ void SearchResultPageView::Update() {
 void SearchResultPageView::SearchEngineChanged() {}
 
 void SearchResultPageView::ShowAssistantChanged() {}
-
-void SearchResultPageView::OnAssistantPrivacyInfoViewCloseButtonPressed() {
-  ReorderSearchResultContainers();
-}
 
 void SearchResultPageView::ShowAnchoredDialog(
     std::unique_ptr<views::DialogDelegateView> dialog) {
@@ -499,12 +488,12 @@ void SearchResultPageView::AnimateYPosition(AppListViewState target_view_state,
   if (needs_layout())
     Layout();
 
-  animator.Run(default_offset, layer(), this);
-  animator.Run(default_offset, view_shadow_->shadow()->shadow_layer(), nullptr);
+  animator.Run(default_offset, layer());
+  animator.Run(default_offset, view_shadow_->shadow()->shadow_layer());
   if (anchored_dialog_) {
     const float offset =
         anchored_dialog_->AdjustVerticalTransformOffset(default_offset);
-    animator.Run(offset, anchored_dialog_->widget()->GetLayer(), nullptr);
+    animator.Run(offset, anchored_dialog_->widget()->GetLayer());
   }
 }
 

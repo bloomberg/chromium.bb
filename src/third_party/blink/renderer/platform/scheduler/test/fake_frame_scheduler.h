@@ -18,13 +18,24 @@ class MainThreadTaskQueueForTest : public MainThreadTaskQueue {
  public:
   using MainThreadTaskQueue::SetFrameSchedulerForTest;
 
-  MainThreadTaskQueueForTest(QueueType queue_type)
+  explicit MainThreadTaskQueueForTest(
+      QueueTraits::PrioritisationType prioritisation_type)
+      : MainThreadTaskQueue(
+            nullptr,
+            base::sequence_manager::TaskQueue::Spec(
+                MainThreadTaskQueue::NameForQueueType(
+                    MainThreadTaskQueue::QueueType::kTest)),
+            QueueCreationParams(MainThreadTaskQueue::QueueType::kTest)
+                .SetQueueTraits(
+                    QueueTraits().SetPrioritisationType(prioritisation_type)),
+            nullptr) {}
+  explicit MainThreadTaskQueueForTest(QueueType queue_type)
       : MainThreadTaskQueue(nullptr,
-                            Spec(MainThreadTaskQueue::NameForQueueType(
-                                MainThreadTaskQueue::QueueType::kTest)),
+                            base::sequence_manager::TaskQueue::Spec(
+                                MainThreadTaskQueue::NameForQueueType(
+                                    MainThreadTaskQueue::QueueType::kTest)),
                             QueueCreationParams(queue_type),
                             nullptr) {}
-  ~MainThreadTaskQueueForTest() override = default;
 };
 
 // A dummy FrameScheduler for tests.
@@ -45,7 +56,11 @@ class FakeFrameScheduler : public FrameSchedulerImpl {
                      bool is_cross_origin_to_main_frame,
                      bool is_exempt_from_throttling,
                      FrameScheduler::Delegate* delegate)
-      : FrameSchedulerImpl(nullptr, nullptr, delegate, nullptr, frame_type),
+      : FrameSchedulerImpl(/*main_thread_scheduler=*/nullptr,
+                           /*parent_page_scheduler=*/nullptr,
+                           /*delegate=*/delegate,
+                           /*blame_context=*/nullptr,
+                           /*frame_type=*/frame_type),
         page_scheduler_(page_scheduler),
         is_page_visible_(is_page_visible),
         is_frame_visible_(is_frame_visible),

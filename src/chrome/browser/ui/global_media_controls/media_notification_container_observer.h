@@ -10,8 +10,8 @@
 
 class MediaNotificationContainerObserver : public base::CheckedObserver {
  public:
-  // Called when the container's expanded state changes.
-  virtual void OnContainerExpanded(bool expanded) = 0;
+  // Called when the size of the container has changed.
+  virtual void OnContainerSizeChanged() = 0;
 
   // Called when the metadata displayed in the container changes.
   virtual void OnContainerMetadataChanged() = 0;
@@ -31,6 +31,10 @@ class MediaNotificationContainerObserver : public base::CheckedObserver {
   // Called when the container has been dragged out of a dialog.
   virtual void OnContainerDraggedOut(const std::string& id,
                                      gfx::Rect bounds) = 0;
+
+  // Called when the audio output device for the container should change
+  virtual void OnAudioSinkChosen(const std::string& id,
+                                 const std::string& sink_id) = 0;
 
  protected:
   ~MediaNotificationContainerObserver() override = default;

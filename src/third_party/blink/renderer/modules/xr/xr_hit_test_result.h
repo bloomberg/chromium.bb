@@ -14,9 +14,7 @@ namespace blink {
 
 class ExceptionState;
 class ScriptState;
-class TransformationMatrix;
 class XRPose;
-class XRRigidTransform;
 class XRSession;
 class XRSpace;
 
@@ -30,17 +28,16 @@ class XRHitTestResult : public ScriptWrappable {
   XRPose* getPose(XRSpace* relative_to);
 
   ScriptPromise createAnchor(ScriptState* script_state,
-                             XRRigidTransform* initial_pose,
                              ExceptionState& exception_state);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<XRSession> session_;
 
   // Hit test results do not have origin-offset so mojo_from_this_ contains
   // mojo_from_this with origin-offset (identity) already applied.
-  std::unique_ptr<TransformationMatrix> mojo_from_this_;
+  device::Pose mojo_from_this_;
   base::Optional<uint64_t> plane_id_;
 };
 

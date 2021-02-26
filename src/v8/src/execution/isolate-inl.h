@@ -7,6 +7,7 @@
 
 #include "src/execution/isolate.h"
 #include "src/objects/cell-inl.h"
+#include "src/objects/js-function.h"
 #include "src/objects/objects-inl.h"
 #include "src/objects/oddball.h"
 #include "src/objects/property-cell.h"
@@ -15,10 +16,6 @@
 
 namespace v8 {
 namespace internal {
-
-IsolateAllocationMode Isolate::isolate_allocation_mode() {
-  return isolate_allocator_->mode();
-}
 
 void Isolate::set_context(Context context) {
   DCHECK(context.is_null() || context.IsContext());

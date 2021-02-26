@@ -10,14 +10,14 @@ SkScalar littleRound(SkScalar a) {
     // This rounding is done to match Flutter tests. Must be removed..
     auto val = std::fabs(a);
     if (val < 10000) {
-        return SkScalarRoundToScalar(a * 100.0)/100.0;
+        return SkScalarRoundToScalar(a * 100) * (1.0f/100);
     } else if (val < 100000) {
-        return SkScalarRoundToScalar(a * 10.0)/10.0;
+        return SkScalarRoundToScalar(a *  10) * (1.0f/10);
     } else {
         return SkScalarFloorToScalar(a);
     }
 }
-}
+}  // namespace
 
 // Since we allow cluster clipping when they don't fit
 // we have to work with stretches - parts of clusters
@@ -105,15 +105,14 @@ void TextWrapper::lookAhead(SkScalar maxWidth, Cluster* endOfClusters) {
 
             // It also creates a separate word; it does not count in fMinIntrinsicWidth
             fWords.extend(cluster);
-            continue;
-        }
+        } else {
+            fClusters.extend(cluster);
 
-        fClusters.extend(cluster);
-
-        // Keep adding clusters/words
-        if (fClusters.endOfWord()) {
-            fMinIntrinsicWidth = std::max(fMinIntrinsicWidth, getClustersTrimmedWidth());
-            fWords.extend(fClusters);
+            // Keep adding clusters/words
+            if (fClusters.endOfWord()) {
+                fMinIntrinsicWidth = std::max(fMinIntrinsicWidth, getClustersTrimmedWidth());
+                fWords.extend(fClusters);
+            }
         }
 
         if ((fHardLineBreak = cluster->isHardBreak())) {
@@ -224,11 +223,10 @@ void TextWrapper::breakTextIntoLines(ParagraphImpl* parent,
         return;
     }
     auto maxLines = parent->paragraphStyle().getMaxLines();
-    auto& ellipsisStr = parent->paragraphStyle().getEllipsis();
     auto align = parent->paragraphStyle().effective_align();
     auto unlimitedLines = maxLines == std::numeric_limits<size_t>::max();
     auto endlessLine = !SkScalarIsFinite(maxWidth);
-    auto hasEllipsis = !ellipsisStr.isEmpty();
+    auto hasEllipsis = parent->paragraphStyle().ellipsized();
 
     SkScalar softLineMaxIntrinsicWidth = 0;
     fEndLine = TextStretch(span.begin(), span.begin(), parent->strutForceHeight());

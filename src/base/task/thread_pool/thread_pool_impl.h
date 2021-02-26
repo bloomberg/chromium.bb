@@ -10,8 +10,7 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
-#include "base/logging.h"
-#include "base/macros.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -68,6 +67,8 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   ThreadPoolImpl(StringPiece histogram_label,
                  std::unique_ptr<TaskTrackerImpl> task_tracker);
 
+  ThreadPoolImpl(const ThreadPoolImpl&) = delete;
+  ThreadPoolImpl& operator=(const ThreadPoolImpl&) = delete;
   ~ThreadPoolImpl() override;
 
   // ThreadPoolInstance:
@@ -108,6 +109,8 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   void RemoveJobTaskSource(scoped_refptr<JobTaskSource> task_source) override;
   void UpdatePriority(scoped_refptr<TaskSource> task_source,
                       TaskPriority priority) override;
+  void UpdateJobPriority(scoped_refptr<TaskSource> task_source,
+                         TaskPriority priority) override;
 
   // Returns the TimeTicks of the next task scheduled on ThreadPool (Now() if
   // immediate, nullopt if none). This is thread-safe, i.e., it's safe if tasks
@@ -136,8 +139,6 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // |all_tasks_user_blocking_| is set.
   TaskTraits VerifyAndAjustIncomingTraits(TaskTraits traits) const;
 
-  void ReportHeartbeatMetrics() const;
-
   const ThreadGroup* GetThreadGroupForTraits(const TaskTraits& traits) const;
 
   // ThreadGroup::Delegate:
@@ -151,7 +152,7 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // PooledTaskRunnerDelegate:
   bool PostTaskWithSequence(Task task,
                             scoped_refptr<Sequence> sequence) override;
-  bool ShouldYield(const TaskSource* task_source) const override;
+  bool ShouldYield(const TaskSource* task_source) override;
 
   const std::unique_ptr<TaskTrackerImpl> task_tracker_;
   std::unique_ptr<Thread> service_thread_;
@@ -168,6 +169,10 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
 
   std::unique_ptr<ThreadGroup> foreground_thread_group_;
   std::unique_ptr<ThreadGroupImpl> background_thread_group_;
+
+  bool disable_job_yield_ = false;
+  bool disable_fair_scheduling_ = false;
+  std::atomic<bool> disable_job_update_priority_{false};
 
   // Whether this TaskScheduler was started. Access controlled by
   // |sequence_checker_|.
@@ -196,8 +201,6 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   SEQUENCE_CHECKER(sequence_checker_);
 
   TrackedRefFactory<ThreadGroup::Delegate> tracked_ref_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadPoolImpl);
 };
 
 }  // namespace internal

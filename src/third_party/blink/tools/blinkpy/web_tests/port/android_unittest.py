@@ -48,8 +48,6 @@ sys.path.insert(0, _DEVIL_ROOT)
 from devil.android import device_utils
 from devil.android.sdk import adb_wrapper
 
-_MOCK_ROOT = os.path.join(get_chromium_src_dir(), 'third_party', 'pymock')
-sys.path.insert(0, _MOCK_ROOT)
 import mock
 
 
@@ -132,15 +130,16 @@ class AndroidPortTest(port_testcase.PortTestCase):
 
     def test_weblayer_expectation_tags(self):
         host = MockSystemHost()
-        port = android.AndroidPort(host, apk='apks/WebLayerShell.apk')
+        port = android.AndroidPort(
+            host, product='android_weblayer')
         self.assertEqual(port.get_platform_tags(),
                          set(['android', 'android-weblayer']))
 
-    def test_content_shell_expectation_tags(self):
+    def test_default_no_wpt_product_tag(self):
         host = MockSystemHost()
         port = android.AndroidPort(host)
         self.assertEqual(port.get_platform_tags(),
-                         set(['android', 'android-content-shell']))
+                         set(['android']))
 
     # Test that an HTTP server indeed is required by Android (as we serve all tests over them)
     def test_requires_http_server(self):
@@ -148,16 +147,7 @@ class AndroidPortTest(port_testcase.PortTestCase):
 
     # Tests the default timeouts for Android, which are different than the rest of Chromium.
     def test_default_timeout_ms(self):
-        self.assertEqual(
-            self.make_port(
-                options=optparse.Values({
-                    'configuration': 'Release'
-                })).default_timeout_ms(), 10000)
-        self.assertEqual(
-            self.make_port(
-                options=optparse.Values({
-                    'configuration': 'Debug'
-                })).default_timeout_ms(), 10000)
+        self.assertEqual(self.make_port().timeout_ms(), 10000)
 
     def test_path_to_apache_config_file(self):
         port = self.make_port()

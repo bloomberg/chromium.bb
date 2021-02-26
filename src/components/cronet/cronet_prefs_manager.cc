@@ -70,9 +70,9 @@ void InitializeStorageDirectory(const base::FilePath& dir) {
     return;
   }
   // Delete old directory recursively and create a new directory.
-  // base::DeleteFileRecursively() returns true if the directory does not exist,
+  // base::DeletePathRecursively() returns true if the directory does not exist,
   // so it is fine if there is nothing on disk.
-  if (!(base::DeleteFileRecursively(dir) && base::CreateDirectory(dir))) {
+  if (!(base::DeletePathRecursively(dir) && base::CreateDirectory(dir))) {
     DLOG(WARNING) << "Cannot purge directory.";
     return;
   }
@@ -110,11 +110,11 @@ class PrefServiceAdapter : public net::HttpServerProperties::PrefDelegate {
   ~PrefServiceAdapter() override {}
 
   // PrefDelegate implementation.
-  const base::DictionaryValue* GetServerProperties() const override {
-    return pref_service_->GetDictionary(path_);
+  const base::Value* GetServerProperties() const override {
+    return pref_service_->Get(path_);
   }
 
-  void SetServerProperties(const base::DictionaryValue& value,
+  void SetServerProperties(const base::Value& value,
                            base::OnceClosure callback) override {
     pref_service_->Set(path_, value);
     if (callback)

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/metrics/field_trial.h"
+#include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -206,7 +207,7 @@ bool ChromePermissionMessageProvider::IsAPIOrManifestPrivilegeIncrease(
   // significant difference - e.g., going from two lower warnings to a single
   // scarier warning because of adding a new permission). But let's be overly
   // conservative for now.
-  return !base::STLIncludes(granted_strings, total_strings);
+  return !base::ranges::includes(granted_strings, total_strings);
 }
 
 bool ChromePermissionMessageProvider::IsHostPrivilegeIncrease(
@@ -255,7 +256,7 @@ bool ChromePermissionMessageProvider::IsHostPrivilegeIncrease(
         // because we consider having access to "*.domain.com" as
         // granting access to "domain.com" then compare the string
         // with both the "*" and the "." removed.
-        if (unmatched.ends_with(stripped_granted) ||
+        if (base::EndsWith(unmatched, stripped_granted) ||
             unmatched == stripped_granted.substr(1)) {
           host_matched = true;
           break;

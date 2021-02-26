@@ -232,6 +232,8 @@ def cross_compile_msl(shader, spirv, opt, iterations, paths):
         msl_args.append('--emit-line-directives')
     if '.multiview.' in shader:
         msl_args.append('--msl-multiview')
+    if '.no-layered.' in shader:
+        msl_args.append('--msl-multiview-no-layered-rendering')
     if '.viewfromdev.' in shader:
         msl_args.append('--msl-view-index-from-device-index')
     if '.dispatchbase.' in shader:
@@ -266,6 +268,38 @@ def cross_compile_msl(shader, spirv, opt, iterations, paths):
         msl_args.append('0x000000ca')
     if '.no-user-varying.' in shader:
         msl_args.append('--msl-no-clip-distance-user-varying')
+    if '.shader-inputs.' in shader:
+        # Arbitrary for testing purposes.
+        msl_args.append('--msl-shader-input')
+        msl_args.append('0')
+        msl_args.append('u8')
+        msl_args.append('2')
+        msl_args.append('--msl-shader-input')
+        msl_args.append('1')
+        msl_args.append('u16')
+        msl_args.append('3')
+        msl_args.append('--msl-shader-input')
+        msl_args.append('6')
+        msl_args.append('other')
+        msl_args.append('4')
+    if '.multi-patch.' in shader:
+        msl_args.append('--msl-multi-patch-workgroup')
+        # Arbitrary for testing purposes.
+        msl_args.append('--msl-shader-input')
+        msl_args.append('0')
+        msl_args.append('any32')
+        msl_args.append('3')
+        msl_args.append('--msl-shader-input')
+        msl_args.append('1')
+        msl_args.append('any16')
+        msl_args.append('2')
+    if '.for-tess.' in shader:
+        msl_args.append('--msl-vertex-for-tessellation')
+    if '.fixed-sample-mask.' in shader:
+        msl_args.append('--msl-additional-fixed-sample-mask')
+        msl_args.append('0x00000022')
+    if '.arrayed-subpass.' in shader:
+        msl_args.append('--msl-arrayed-subpass-input')
 
     subprocess.check_call(msl_args)
 
@@ -312,8 +346,13 @@ def validate_shader_hlsl(shader, force_no_external_validation, paths):
     if '.fxconly.' in shader:
         test_glslang = False
 
+    hlsl_args = [paths.glslang, '--amb', '-e', 'main', '-D', '--target-env', 'vulkan1.1', '-V', shader]
+    if '.sm30.' in shader:
+        hlsl_args.append('--hlsl-dx9-compatible')
+
     if test_glslang:
-        subprocess.check_call([paths.glslang, '--amb', '-e', 'main', '-D', '--target-env', 'vulkan1.1', '-V', shader])
+        subprocess.check_call(hlsl_args)
+
     is_no_fxc = '.nofxc.' in shader
     global ignore_fxc
     if (not ignore_fxc) and (not force_no_external_validation) and (not is_no_fxc):
@@ -336,7 +375,9 @@ def validate_shader_hlsl(shader, force_no_external_validation, paths):
             raise RuntimeError('Failed compiling HLSL shader')
 
 def shader_to_sm(shader):
-    if '.sm60.' in shader:
+    if '.sm62.' in shader:
+        return '62'
+    elif '.sm60.' in shader:
         return '60'
     elif '.sm51.' in shader:
         return '51'
@@ -374,6 +415,8 @@ def cross_compile_hlsl(shader, spirv, opt, force_no_external_validation, iterati
         hlsl_args.append('--force-zero-initialized-variables')
     if '.nonwritable-uav-texture.' in shader:
         hlsl_args.append('--hlsl-nonwritable-uav-texture-as-srv')
+    if '.native-16bit.' in shader:
+        hlsl_args.append('--hlsl-enable-16bit-types')
 
     subprocess.check_call(hlsl_args)
 
@@ -462,6 +505,8 @@ def cross_compile(shader, vulkan, spirv, invalid_spirv, eliminate, is_legacy, fl
         extra_args += ['--glsl-remap-ext-framebuffer-fetch', '3', '3']
     if '.zero-initialize.' in shader:
         extra_args += ['--force-zero-initialized-variables']
+    if '.force-flattened-io.' in shader:
+        extra_args += ['--glsl-force-flattened-io-blocks']
 
     spirv_cross_path = paths.spirv_cross
 
@@ -474,7 +519,7 @@ def cross_compile(shader, vulkan, spirv, invalid_spirv, eliminate, is_legacy, fl
         remove_file(glsl_path)
         glsl_path = None
 
-    if vulkan or spirv:
+    if (vulkan or spirv) and (not is_legacy):
         subprocess.check_call([spirv_cross_path, '--entry', 'main', '--vulkan-semantics', '--output', vulkan_glsl_path, spirv_path] + extra_args)
         validate_shader(vulkan_glsl_path, True, paths)
         # SPIR-V shaders might just want to validate Vulkan GLSL output, we don't always care about the output.

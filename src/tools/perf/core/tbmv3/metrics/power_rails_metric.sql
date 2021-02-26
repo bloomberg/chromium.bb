@@ -4,38 +4,7 @@
 -- See go/power-mobile-benchmark for the list of supported devices.
 -- Output values are in Joules (Watt-seconds).
 
--- This is a mapping from counter names on different devices
--- to what subsystems they are measuring.
-CREATE TABLE power_counters (name TEXT, subsystem TEXT);
-
-INSERT INTO power_counters VALUES
-    ('power.VPH_PWR_S5C_S6C_uws', 'cpu_big'),
-    ('power.VPH_PWR_S4C_uws', 'cpu_little'),
-    ('power.VPH_PWR_S2C_S3C_uws', 'soc'),
-    ('power.VPH_PWR_OLED_uws', 'display'),
-    ('power.PPVAR_VPH_PWR_S1A_S9A_S10A_uws', 'soc'),
-    ('power.PPVAR_VPH_PWR_S2A_S3A_uws', 'cpu_big'),
-    ('power.PPVAR_VPH_PWR_S1C_uws', 'cpu_little'),
-    ('power.WCN3998_VDD13 [from PP1304_L2C]_uws', 'wifi'),
-    ('power.PPVAR_VPH_PWR_WLAN_uws', 'wifi'),
-    ('power.PPVAR_VPH_PWR_OLED_uws', 'display'),
-    ('power.PPVAR_VPH_PWR_QTM525_uws', 'cellular'),
-    ('power.PPVAR_VPH_PWR_RF_uws', 'cellular');
-
--- Convert power counter data into table of events, where each event has
--- start timestamp, duration and the average power drain during its duration
--- in Watts.
-CREATE VIEW drain_in_watts AS
-SELECT
-    name,
-    ts,
-    LEAD(ts) OVER (PARTITION BY track_id ORDER BY ts) - ts as dur,
-    (LEAD(value) OVER (PARTITION BY track_id ORDER BY ts) - value) /
-        (LEAD(ts) OVER (PARTITION BY track_id ORDER BY ts) - ts) * 1e3 as drain_w
-FROM counter
-JOIN counter_track ON (counter.track_id = counter_track.id)
-WHERE
-    counter_track.type = 'counter_track' AND name LIKE "power.%";
+SELECT RUN_METRIC('android/power_drain_in_watts.sql');
 
 CREATE VIEW run_story_event AS
 SELECT ts, dur
@@ -89,8 +58,15 @@ SELECT PowerRailsMetric(
       (SELECT drain_j FROM story_drain WHERE subsystem = 'cpu_little'),
   'story_soc_j',
       (SELECT drain_j FROM story_drain WHERE subsystem = 'soc'),
+  'story_cellular_j',
+      (SELECT drain_j FROM story_drain WHERE subsystem = 'cellular'),
+  'story_wifi_j',
+      (SELECT drain_j FROM story_drain WHERE subsystem = 'wifi'),
   'story_display_j',
       (SELECT drain_j FROM story_drain WHERE subsystem = 'display'),
+  'story_cpu_and_system_j',
+      (SELECT sum(drain_j) FROM story_drain WHERE
+          subsystem IN ('cpu_big', 'cpu_little', 'soc')),
   'story_duration_ms',
       (SELECT dur_ms FROM story_drain WHERE subsystem = 'display'),
   'interaction_total_j',
@@ -101,8 +77,15 @@ SELECT PowerRailsMetric(
       (SELECT drain_j FROM interaction_drain WHERE subsystem = 'cpu_little'),
   'interaction_soc_j',
       (SELECT drain_j FROM interaction_drain WHERE subsystem = 'soc'),
+  'interaction_cellular_j',
+      (SELECT drain_j FROM interaction_drain WHERE subsystem = 'cellular'),
+  'interaction_wifi_j',
+      (SELECT drain_j FROM interaction_drain WHERE subsystem = 'wifi'),
   'interaction_display_j',
       (SELECT drain_j FROM interaction_drain WHERE subsystem = 'display'),
+  'interaction_cpu_and_system_j',
+      (SELECT sum(drain_j) FROM interaction_drain WHERE
+          subsystem IN ('cpu_big', 'cpu_little', 'soc')),
   'interaction_duration_ms',
       (SELECT dur_ms FROM interaction_drain WHERE subsystem = 'display')
 );

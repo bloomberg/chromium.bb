@@ -7,7 +7,9 @@ import("//third_party/widevine/cdm/widevine.gni")
 
 static_library("gpu") {
   deps = [
+    "//chrome/common/profiler",
     "//components/metrics:child_call_stack_profile_builder",
+    "//content/public/child",
     "//content/public/common",
     "//content/public/gpu",
     "//third_party/widevine/cdm:buildflags",
@@ -22,6 +24,7 @@ static_library("gpu") {
 
   if (is_chromeos) {
     deps += [
+      "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_gpu",
       "//components/arc/mojom:media",
       "//components/arc/video_accelerator",
       "//gpu/command_buffer/service",

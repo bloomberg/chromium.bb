@@ -18,7 +18,6 @@ const char kStopServerMethod[] = "StopServer";
 const char kSharePathMethod[] = "SharePath";
 const char kUnsharePathMethod[] = "UnsharePath";
 
-
 }  // namespace seneschal
 }  // namespace vm_tools
 

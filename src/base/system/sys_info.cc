@@ -20,6 +20,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace base {
 namespace {
@@ -83,7 +84,8 @@ bool SysInfo::IsLowEndDeviceImpl() {
 }
 #endif
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_APPLE) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && \
+    !BUILDFLAG(IS_LACROS)
 std::string SysInfo::HardwareModelName() {
   return std::string();
 }
@@ -99,10 +101,10 @@ void SysInfo::GetHardwareInfo(base::OnceCallback<void(HardwareInfo)> callback) {
           {TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
           .get(),
       FROM_HERE, base::BindOnce(&GetHardwareInfoSync), std::move(callback));
-#elif defined(OS_ANDROID) || defined(OS_MACOSX)
+#elif defined(OS_ANDROID) || defined(OS_APPLE)
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {}, base::BindOnce(&GetHardwareInfoSync), std::move(callback));
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()}, base::BindOnce(&GetHardwareInfoSync),
       std::move(callback));

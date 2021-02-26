@@ -15,17 +15,18 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.widget.ScrimView;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -39,11 +40,10 @@ import java.util.function.Consumer;
 public class DirectActionInitializer implements NativeInitObserver, Destroyable {
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
-    private final ChromeFullscreenManager mFullscreenManager;
+    private final BrowserControlsStateProvider mBrowserControls;
     private final CompositorViewHolder mCompositorViewHolder;
     private final ActivityTabProvider mActivityTabProvider;
     private final TabModelSelector mTabModelSelector;
-    private final ScrimView mScrim;
 
     @ActivityType
     private int mActivityType;
@@ -66,17 +66,16 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
      * @param tabModelSelector The activity's {@link TabModelSelector}
      * @param findToolbarManager Manager to use for the "find_in_page" action, if it exists
      * @param bottomSheetController Controller for the activity's bottom sheet, if it exists
-     * @param fullscreenManager fullscreen manager of the activity
-     * @param compositorViewHolder compositor view holder of the activity
-     * @param activityTabProvider activity tab provider
-     * @param scrim The activity's scrim view, if it exists
+     * @param browserControls Provider of browser controls of the activity
+     * @param compositorViewHolder Compositor view holder of the activity
+     * @param activityTabProvider Activity tab provider
      */
     public DirectActionInitializer(Context context, @ActivityType int activityType,
             MenuOrKeyboardActionController actionController, Runnable goBackAction,
             TabModelSelector tabModelSelector, @Nullable FindToolbarManager findToolbarManager,
             @Nullable BottomSheetController bottomSheetController,
-            ChromeFullscreenManager fullscreenManager, CompositorViewHolder compositorViewHolder,
-            ActivityTabProvider activityTabProvider, ScrimView scrim) {
+            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
+            ActivityTabProvider activityTabProvider) {
         mContext = context;
         mActivityType = activityType;
         mMenuOrKeyboardActionController = actionController;
@@ -84,10 +83,9 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
         mTabModelSelector = tabModelSelector;
         mFindToolbarManager = findToolbarManager;
         mBottomSheetController = bottomSheetController;
-        mFullscreenManager = fullscreenManager;
+        mBrowserControls = browserControls;
         mCompositorViewHolder = compositorViewHolder;
         mActivityTabProvider = activityTabProvider;
-        mScrim = scrim;
 
         mDirectActionsRegistered = false;
     }
@@ -118,9 +116,9 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
      * @param cancellationSignal Signal used to cancel a direct action from the caller.
      * @param callback Callback to run when the action is done.
      */
-    public void onGetDirectActions(CancellationSignal cancellationSignal, Consumer callback) {
+    public void onGetDirectActions(CancellationSignal cancellationSignal, Consumer<List> callback) {
         if (mCoordinator == null || !mDirectActionsRegistered) {
-            callback.accept(Bundle.EMPTY);
+            callback.accept(Collections.emptyList());
             return;
         }
         mCoordinator.onGetDirectActions(callback);
@@ -137,28 +135,27 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
      * @param tabModelSelector The activity's {@link TabModelSelector}
      * @param findToolbarManager Manager to use for the "find_in_page" action, if it exists
      * @param bottomSheetController Controller for the activity's bottom sheet, if it exists
-     * @param fullscreenManager fullscreen manager of the activity
-     * @param compositorViewHolder compositor view holder of the activity
-     * @param activityTabProvider activity tab provider
-     * @param scrim The activity's scrim view, if it exists
+     * @param browserControls Browser controls manager of the activity
+     * @param compositorViewHolder Compositor view holder of the activity
+     * @param activityTabProvider Activity tab provider
      */
     private void registerCommonChromeActions(Context context, @ActivityType int activityType,
             MenuOrKeyboardActionController actionController, Runnable goBackAction,
             TabModelSelector tabModelSelector, @Nullable FindToolbarManager findToolbarManager,
             @Nullable BottomSheetController bottomSheetController,
-            ChromeFullscreenManager fullscreenManager, CompositorViewHolder compositorViewHolder,
-            ActivityTabProvider activityTabProvider, ScrimView scrim) {
+            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
+            ActivityTabProvider activityTabProvider) {
         mCoordinator.register(new GoBackDirectActionHandler(goBackAction));
         mCoordinator.register(
                 new FindInPageDirectActionHandler(tabModelSelector, findToolbarManager));
 
         registerMenuHandlerIfNecessary(actionController, tabModelSelector)
-                .whitelistActions(R.id.forward_menu_id, R.id.reload_menu_id);
+                .allowlistActions(R.id.forward_menu_id, R.id.reload_menu_id);
 
         if (AutofillAssistantFacade.areDirectActionsAvailable(activityType)) {
             DirectActionHandler handler = AutofillAssistantFacade.createDirectActionHandler(context,
-                    bottomSheetController, fullscreenManager, compositorViewHolder,
-                    activityTabProvider, scrim);
+                    bottomSheetController, browserControls, compositorViewHolder,
+                    activityTabProvider);
             if (handler != null) mCoordinator.register(handler);
         }
     }
@@ -184,7 +181,7 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
     void allowMenuActions(MenuOrKeyboardActionController actionController,
             TabModelSelector tabModelSelector, Integer... itemIds) {
         registerMenuHandlerIfNecessary(actionController, tabModelSelector)
-                .whitelistActions(itemIds);
+                .allowlistActions(itemIds);
     }
 
     // Implements Destroyable
@@ -213,7 +210,7 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
                 AutofillAssistantFacade.areDirectActionsAvailable(mActivityType)
                         ? mBottomSheetController
                         : null,
-                mFullscreenManager, mCompositorViewHolder, mActivityTabProvider, mScrim);
+                mBrowserControls, mCompositorViewHolder, mActivityTabProvider);
 
         if (mActivityType == ActivityType.TABBED) {
             registerTabManipulationActions(mMenuOrKeyboardActionController, mTabModelSelector);

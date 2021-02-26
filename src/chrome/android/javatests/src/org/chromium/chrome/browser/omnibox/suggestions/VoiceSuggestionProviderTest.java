@@ -4,18 +4,17 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.SmallTest;
-import android.support.test.rule.UiThreadTestRule;
 import android.text.TextUtils;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceResult;
@@ -31,8 +30,7 @@ import java.util.List;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class VoiceSuggestionProviderTest {
     @Rule
-    public final RuleChain mChain =
-            RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
+    public final ChromeBrowserTestRule mChromeBrowserTestRule = new ChromeBrowserTestRule();
 
     private static List<OmniboxSuggestion> createDummySuggestions(String... texts) {
         List<OmniboxSuggestion> suggestions = new ArrayList<OmniboxSuggestion>(texts.length);

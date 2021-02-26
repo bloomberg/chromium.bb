@@ -17,8 +17,6 @@
 #include "components/performance_manager/graph/graph_impl.h"
 #include "components/performance_manager/graph/node_type.h"
 #include "components/performance_manager/graph/properties.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace performance_manager {
 
@@ -73,13 +71,10 @@ class NodeBase {
     return graph->GetObservers<Observer>();
   }
 
-  // Joins the |graph|. Assigns |graph_| and invokes OnJoiningGraph() to allow
-  // subclasses to initialize.
+  // Joins the |graph|.
   void JoinGraph(GraphImpl* graph);
 
-  // Leaves the graph that this node is a part of. Invokes
-  // OnBeforeLeavingGraph() to allow subclasses to uninitialize then clears
-  // |graph_|.
+  // Leaves the graph that this node is a part of.
   void LeaveGraph();
 
   // Called as this node is joining |graph_|, a good opportunity to initialize

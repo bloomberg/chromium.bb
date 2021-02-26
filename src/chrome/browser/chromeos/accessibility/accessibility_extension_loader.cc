@@ -16,16 +16,6 @@ namespace chromeos {
 AccessibilityExtensionLoader::AccessibilityExtensionLoader(
     const std::string& extension_id,
     const base::FilePath& extension_path,
-    const base::Closure& unload_callback)
-    : profile_(nullptr),
-      extension_id_(extension_id),
-      extension_path_(extension_path),
-      loaded_(false),
-      unload_callback_(unload_callback) {}
-
-AccessibilityExtensionLoader::AccessibilityExtensionLoader(
-    const std::string& extension_id,
-    const base::FilePath& extension_path,
     const base::FilePath::CharType* manifest_filename,
     const base::FilePath::CharType* guest_manifest_filename,
     const base::Closure& unload_callback)
@@ -37,7 +27,7 @@ AccessibilityExtensionLoader::AccessibilityExtensionLoader(
       loaded_(false),
       unload_callback_(unload_callback) {}
 
-AccessibilityExtensionLoader::~AccessibilityExtensionLoader() {}
+AccessibilityExtensionLoader::~AccessibilityExtensionLoader() = default;
 
 void AccessibilityExtensionLoader::SetProfile(
     Profile* profile,
@@ -48,8 +38,9 @@ void AccessibilityExtensionLoader::SetProfile(
   if (!loaded_)
     return;
 
-  // If the extension was loaded on the previous profile, unload it there.
-  if (prev_profile)
+  // If the extension was loaded on the previous profile (which isn't the
+  // current profile), unload it there.
+  if (prev_profile && prev_profile != profile)
     UnloadExtensionFromProfile(prev_profile);
 
   // If the extension was already enabled, but not for this profile, add it
@@ -98,18 +89,54 @@ void AccessibilityExtensionLoader::UnloadExtensionFromProfile(
 
 void AccessibilityExtensionLoader::LoadExtension(Profile* profile,
                                                  base::Closure done_cb) {
+  // In Kiosk mode, we should reinstall the extension upon first load. This way,
+  // no state from the previous session is preserved.
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+
+  base::Closure closure = done_cb;
+  if (user && user->IsKioskType() && !was_reset_for_kiosk_) {
+    was_reset_for_kiosk_ = true;
+    extensions::ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
+    extension_service->DisableExtension(
+        extension_id_, extensions::disable_reason::DISABLE_REINSTALL);
+    closure = base::BindRepeating(
+        &AccessibilityExtensionLoader::ReinstallExtensionForKiosk,
+        weak_ptr_factory_.GetWeakPtr(), profile, done_cb);
+  }
+
+  LoadExtensionImpl(profile, closure);
+}
+
+void AccessibilityExtensionLoader::LoadExtensionImpl(Profile* profile,
+                                                     base::Closure done_cb) {
+  DCHECK(manifest_filename_);
+  DCHECK(guest_manifest_filename_);
+
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
 
-  if (manifest_filename_ && guest_manifest_filename_) {
-    extension_service->component_loader()
-        ->AddComponentFromDirWithManifestFilename(
-            extension_path_, extension_id_.c_str(), manifest_filename_,
-            guest_manifest_filename_, done_cb);
-  } else {
-    extension_service->component_loader()->AddComponentFromDir(
-        extension_path_, extension_id_.c_str(), done_cb);
-  }
+  extension_service->component_loader()
+      ->AddComponentFromDirWithManifestFilename(
+          extension_path_, extension_id_.c_str(), manifest_filename_,
+          guest_manifest_filename_, done_cb);
+}
+
+void AccessibilityExtensionLoader::ReinstallExtensionForKiosk(
+    Profile* profile,
+    base::Closure done_cb) {
+  DCHECK(was_reset_for_kiosk_);
+
+  auto* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  base::string16 error;
+  extension_service->UninstallExtension(
+      extension_id_, extensions::UninstallReason::UNINSTALL_REASON_REINSTALL,
+      &error);
+  extension_service->component_loader()->Reload(extension_id_);
+
+  if (done_cb)
+    done_cb.Run();
 }
 
 }  // namespace chromeos

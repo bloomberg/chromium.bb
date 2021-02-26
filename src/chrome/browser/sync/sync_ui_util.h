@@ -35,7 +35,7 @@ enum MessageType {
   PASSWORDS_ONLY_SYNC_ERROR,
 };
 
-// The action associated with the sync status.
+// The action associated with the sync status in settings.
 enum ActionType {
   // No action to take.
   NO_ACTION,
@@ -72,6 +72,11 @@ enum AvatarSyncErrorType {
   TRUSTED_VAULT_KEY_MISSING_FOR_EVERYTHING_ERROR,
   // Trusted vault keys missing for always-encrypted datatypes (passwords).
   TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR,
+  // User needs to improve recoverability of the trusted vault (encrypt
+  // everything is enabled).
+  TRUSTED_VAULT_RECOVERABILITY_DEGRADED_FOR_EVERYTHING_ERROR,
+  // User needs to improve recoverability of the trusted vault (passwords).
+  TRUSTED_VAULT_RECOVERABILITY_DEGRADED_FOR_PASSWORDS_ERROR,
   // Sync settings dialog not confirmed yet.
   SETTINGS_UNCONFIRMED_ERROR,
 };
@@ -98,12 +103,9 @@ StatusLabels GetStatusLabels(Profile* profile);
 // actual labels, only in the return value.
 MessageType GetStatus(Profile* profile);
 
-// Gets the error message and button label for the sync errors that should be
-// exposed to the user through the titlebar avatar button.
-AvatarSyncErrorType GetMessagesForAvatarSyncError(
-    Profile* profile,
-    int* content_string_id,
-    int* button_string_id);
+// Gets the error type (if any) that should be exposed to the user through the
+// titlebar avatar button.
+AvatarSyncErrorType GetAvatarSyncErrorType(Profile* profile);
 
 // Whether sync is currently blocked from starting because the sync
 // confirmation dialog hasn't been shown. Note that once the dialog is
@@ -117,6 +119,11 @@ bool ShouldShowPassphraseError(const syncer::SyncService* service);
 // Returns whether missing trusted vault keys is preventing sync from starting
 // up encrypted datatypes.
 bool ShouldShowSyncKeysMissingError(const syncer::SyncService* service);
+
+// Returns whether user action is required to improve the recoverability of the
+// trusted vault.
+bool ShouldShowTrustedVaultDegradedRecoverabilityError(
+    const syncer::SyncService* service);
 
 // Opens a tab to trigger a reauth to retrieve the trusted vault keys.
 void OpenTabForSyncKeyRetrieval(

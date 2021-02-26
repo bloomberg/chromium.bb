@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_token.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -24,17 +26,10 @@ namespace blink {
 class CanvasContextCreationAttributesCore;
 class CanvasResourceProvider;
 class ImageBitmap;
-#if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
-class
-    OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContext;
-typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContext
-    OffscreenRenderingContext;
-#else
 class
     OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext;
 typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext
     OffscreenRenderingContext;
-#endif
 
 class CORE_EXPORT OffscreenCanvas final
     : public EventTargetWithInlineData,
@@ -42,7 +37,6 @@ class CORE_EXPORT OffscreenCanvas final
       public CanvasRenderingContextHost,
       public CanvasResourceDispatcherClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(OffscreenCanvas);
   USING_PRE_FINALIZER(OffscreenCanvas, Dispose);
 
  public:
@@ -67,6 +61,10 @@ class CORE_EXPORT OffscreenCanvas final
 
   // API Methods
   ImageBitmap* transferToImageBitmap(ScriptState*, ExceptionState&);
+
+  ScriptPromise convertToBlob(ScriptState* script_state,
+                              const ImageEncodeOptions* options,
+                              ExceptionState& exception_state);
 
   const IntSize& Size() const override { return size_; }
   void SetSize(const IntSize&);
@@ -124,8 +122,8 @@ class CORE_EXPORT OffscreenCanvas final
   void Commit(scoped_refptr<CanvasResource> bitmap_image,
               const SkIRect& damage_rect) override;
   bool ShouldAccelerate2dContext() const override;
-  unsigned GetMSAASampleCountFor2dContext() const override { return 0; }
   CanvasResourceDispatcher* GetOrCreateResourceDispatcher() override;
+  UkmParameters GetUkmParameters() override;
 
   // Partial CanvasResourceHost implementation
   void NotifyGpuContextLost() override {}
@@ -159,7 +157,6 @@ class CORE_EXPORT OffscreenCanvas final
 
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               AccelerationHint,
                                                const FloatSize&) final;
   bool WouldTaintOrigin() const final { return !origin_clean_; }
   FloatSize ElementSize(const FloatSize& default_object_size,
@@ -179,7 +176,7 @@ class CORE_EXPORT OffscreenCanvas final
 
   FontSelector* GetFontSelector() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   class ScopedInsideWorkerRAF {
     STACK_ALLOCATED();
@@ -234,6 +231,9 @@ class CORE_EXPORT OffscreenCanvas final
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
   static ContextFactoryVector& RenderingContextFactories();
   static CanvasRenderingContextFactory* GetRenderingContextFactory(int);
+
+  void RecordIdentifiabilityMetric(const blink::IdentifiableSurface& surface,
+                                   const IdentifiableToken& token) const;
 
   Member<CanvasRenderingContext> context_;
   WeakMember<ExecutionContext> execution_context_;

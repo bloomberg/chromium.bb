@@ -33,11 +33,11 @@ constexpr base::TimeDelta kTimeout = base::TimeDelta::FromMinutes(1);
 SyncedNetworkUpdaterImpl::SyncedNetworkUpdaterImpl(
     std::unique_ptr<PendingNetworkConfigurationTracker> tracker,
     network_config::mojom::CrosNetworkConfig* cros_network_config,
-    std::unique_ptr<TimerFactory> timer_factory,
+    TimerFactory* timer_factory,
     SyncedNetworkMetricsLogger* metrics_logger)
     : tracker_(std::move(tracker)),
       cros_network_config_(cros_network_config),
-      timer_factory_(std::move(timer_factory)),
+      timer_factory_(timer_factory),
       metrics_logger_(metrics_logger) {
   cros_network_config_->AddObserver(
       cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());
@@ -72,6 +72,10 @@ void SyncedNetworkUpdaterImpl::StartAddOrUpdateOperation(
   if (existing_network) {
     NET_LOG(EVENT) << "Updating existing network "
                    << NetworkGuidId(existing_network->guid);
+    if (network_guid_to_updates_counter_.contains(existing_network->guid))
+      network_guid_to_updates_counter_[existing_network->guid]++;
+    else
+      network_guid_to_updates_counter_[existing_network->guid] = 1;
     cros_network_config_->SetProperties(
         existing_network->guid, std::move(config),
         base::BindOnce(&SyncedNetworkUpdaterImpl::OnSetPropertiesResult,
@@ -109,6 +113,12 @@ void SyncedNetworkUpdaterImpl::StartDeleteOperation(
   cros_network_config_->ForgetNetwork(
       guid, base::BindOnce(&SyncedNetworkUpdaterImpl::OnForgetNetworkResult,
                            weak_ptr_factory_.GetWeakPtr(), change_guid, id));
+}
+
+bool SyncedNetworkUpdaterImpl::IsUpdateInProgress(
+    const std::string& network_guid) {
+  return network_guid_to_updates_counter_.contains(network_guid) &&
+         network_guid_to_updates_counter_[network_guid] > 0;
 }
 
 network_config::mojom::NetworkStatePropertiesPtr
@@ -182,6 +192,8 @@ void SyncedNetworkUpdaterImpl::OnSetPropertiesResult(
     metrics_logger_->RecordApplyNetworkFailureReason(
         ApplyNetworkFailureReason::kFailedToUpdate, error_message);
   }
+  if (network_guid_to_updates_counter_.contains(network_guid))
+    network_guid_to_updates_counter_[network_guid]--;
   HandleShillResult(change_guid, NetworkIdentifier::FromProto(proto),
                     is_success);
 }
@@ -209,7 +221,7 @@ void SyncedNetworkUpdaterImpl::HandleShillResult(const std::string& change_guid,
   if (!tracker_->GetPendingUpdate(change_guid, id)) {
     NET_LOG(EVENT)
         << "Update to network with change_guid " << change_guid
-        << "is no longer pending.  This is likely because the change was"
+        << " is no longer pending.  This is likely because the change was"
            " preempted by another update to the same network.";
     return;
   }

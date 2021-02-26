@@ -70,13 +70,9 @@ class Voidify {
 #define OSP_LOG_FATAL \
   OSP_LAZY_STREAM(OSP_LOG_IS_ON(kFatal), OSP_LOG_STREAM(kFatal))
 
-// TODO(miu): Remove this legacy alias.
-#define OSP_LOG OSP_LOG_INFO
-
 #define OSP_VLOG_IF(condition) !(condition) ? (void)0 : OSP_VLOG
 #define OSP_LOG_IF(level, condition) !(condition) ? (void)0 : OSP_LOG_##level
 
-// TODO(btolsch): Add tests for (D)OSP_CHECK and possibly logging.
 #define OSP_CHECK(condition) \
   OSP_LOG_IF(FATAL, !(condition)) << "OSP_CHECK(" << #condition << ") failed: "
 

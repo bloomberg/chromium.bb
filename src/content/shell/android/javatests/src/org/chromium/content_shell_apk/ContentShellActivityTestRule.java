@@ -4,22 +4,22 @@
 
 package org.chromium.content_shell_apk;
 
-import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.PowerManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
-import android.view.ViewGroup;
+import android.view.View;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
@@ -32,8 +32,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell.Shell;
@@ -72,17 +70,12 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH)
     @SuppressWarnings("deprecation")
     protected void beforeActivityLaunched() {
         PowerManager pm = (PowerManager) InstrumentationRegistry.getInstrumentation()
                                   .getContext()
                                   .getSystemService(Context.POWER_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            Assert.assertTrue("Many tests will fail if the screen is not on.", pm.isInteractive());
-        } else {
-            Assert.assertTrue("Many tests will fail if the screen is not on.", pm.isScreenOn());
-        }
+        Assert.assertTrue("Many tests will fail if the screen is not on.", pm.isInteractive());
     }
 
     /**
@@ -219,7 +212,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     /**
      * Returns the current container view or null if there is no WebContents.
      */
-    public ViewGroup getContainerView() {
+    public View getContainerView() {
         final WebContents webContents = getWebContents();
         try {
             return TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -233,7 +226,11 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     }
 
     public JavascriptInjector getJavascriptInjector() {
-        return JavascriptInjector.fromWebContents(getWebContents());
+        return getJavascriptInjector(false);
+    }
+
+    public JavascriptInjector getJavascriptInjector(boolean useMojo) {
+        return JavascriptInjector.fromWebContents(getWebContents(), useMojo);
     }
 
     /**
@@ -246,9 +243,9 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
         // Wait for the Content Shell to be initialized.
         CriteriaHelper.pollUiThread(() -> {
             Shell shell = getActivity().getActiveShell();
-            Assert.assertNotNull("Shell is null.", shell);
-            Assert.assertFalse("Shell is still loading.", shell.isLoading());
-            Assert.assertThat("Shell's URL is empty or null.",
+            Criteria.checkThat("Shell is null.", shell, Matchers.notNullValue());
+            Criteria.checkThat("Shell is still loading.", shell.isLoading(), Matchers.is(false));
+            Criteria.checkThat("Shell's URL is empty or null.",
                     shell.getWebContents().getLastCommittedUrl(),
                     Matchers.not(Matchers.isEmptyOrNullString()));
         }, WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
@@ -317,13 +314,9 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      */
     public void assertWaitForPageScaleFactorMatch(float expectedScale) {
         final RenderCoordinatesImpl coord = getRenderCoordinates();
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(expectedScale, new Callable<Float>() {
-                    @Override
-                    public Float call() {
-                        return coord.getPageScaleFactor();
-                    }
-                }));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(coord.getPageScaleFactor(), Matchers.is(expectedScale));
+        });
     }
 
     /**

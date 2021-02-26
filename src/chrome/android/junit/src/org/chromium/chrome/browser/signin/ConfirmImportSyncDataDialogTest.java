@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.signin;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -24,6 +25,7 @@ import org.robolectric.shadows.ShadowToast;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /** Tests for {@link ConfirmImportSyncDataDialog}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -37,6 +39,9 @@ public class ConfirmImportSyncDataDialogTest {
     @Mock
     private SigninManager mSigninManagerMock;
 
+    @Mock
+    private Profile mProfile;
+
     private FragmentManager mFragmentManager;
 
     private ConfirmSyncDataStateMachineDelegate mStateMachineDelegate;
@@ -45,7 +50,8 @@ public class ConfirmImportSyncDataDialogTest {
     public void setUp() {
         initMocks(this);
         IdentityServicesProvider.setInstanceForTests(mock(IdentityServicesProvider.class));
-        when(IdentityServicesProvider.get().getSigninManager()).thenReturn(mSigninManagerMock);
+        Profile.setLastUsedProfileForTesting(mProfile);
+        when(IdentityServicesProvider.get().getSigninManager(any())).thenReturn(mSigninManagerMock);
         mFragmentManager =
                 Robolectric.setupActivity(FragmentActivity.class).getSupportFragmentManager();
         mStateMachineDelegate = new ConfirmSyncDataStateMachineDelegate(mFragmentManager);
@@ -62,6 +68,7 @@ public class ConfirmImportSyncDataDialogTest {
     @Test
     public void testPositiveButtonWhenAccountIsNotManaged() {
         AlertDialog alertDialog = getConfirmImportSyncDataDialog();
+        alertDialog.findViewById(R.id.sync_confirm_import_choice).performClick();
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
         verify(mMockListener).onConfirm(false);
     }
@@ -85,6 +92,7 @@ public class ConfirmImportSyncDataDialogTest {
     @Test
     public void testListenerOnCancelNotCalledOnDismissWhenButtonClicked() {
         AlertDialog dialog = getConfirmImportSyncDataDialog();
+        dialog.findViewById(R.id.sync_confirm_import_choice).performClick();
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
         dialog.dismiss();
         verify(mMockListener, never()).onCancel();
@@ -95,8 +103,9 @@ public class ConfirmImportSyncDataDialogTest {
         when(mSigninManagerMock.getManagementDomain()).thenReturn(TEST_DOMAIN);
         AlertDialog dialog = getConfirmImportSyncDataDialog();
         dialog.findViewById(R.id.sync_confirm_import_choice).performClick();
-        Assert.assertEquals(dialog.getContext().getString(R.string.managed_by_your_organization),
-                ShadowToast.getTextOfLatestToast());
+        Assert.assertTrue(ShadowToast.showedCustomToast(
+                dialog.getContext().getString(R.string.managed_by_your_organization),
+                R.id.toast_text));
     }
 
     private AlertDialog getConfirmImportSyncDataDialog() {

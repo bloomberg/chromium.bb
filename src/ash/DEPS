@@ -12,6 +12,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/prefs",
   "+components/quirks",
+  "+components/services/app_service/public",
   "+components/session_manager",
   "+components/strings",
   "+components/sync",
@@ -26,11 +27,11 @@ include_rules = [
   "+gpu/config",
   "+media",
   "+mojo/public",
-  "+services/content/public",
   "+services/device/public",
   "+services/data_decoder/public",
   "+services/media_session/public",
   "+services/network/public",
+  "+services/network/test",
   "+services/preferences/public",
   "+services/viz/public",
   "+skia/ext",
@@ -56,6 +57,8 @@ include_rules = [
   "-chromeos",
   "+chromeos/audio",
   "+chromeos/components/multidevice/logging/logging.h",
+  "+chromeos/components/bloom/public/cpp",
+  "+chromeos/components/phonehub",
   "+chromeos/components/proximity_auth/public/mojom",
   "+chromeos/components/quick_answers",
   "+chromeos/components/security_token_pin",
@@ -82,6 +85,8 @@ include_rules = [
   "+chromeos/settings/timezone_settings.h",
   "+chromeos/strings",
   "+chromeos/system",
+  # Do not eliminate this.
+  "+chromeos/ui",
 
   # ui/base/idle depends on SessionManagerClient so disallow it.
   "-ui/base/idle"

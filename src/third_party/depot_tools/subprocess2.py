@@ -200,6 +200,8 @@ def call(args, **kwargs):
   Automatically convert stdout=PIPE or stderr=PIPE to VOID.
   In no case they can be returned since no code path raises
   subprocess2.CalledProcessError.
+
+  Returns exit code.
   """
   if kwargs.get('stdout') == PIPE:
     kwargs['stdout'] = VOID

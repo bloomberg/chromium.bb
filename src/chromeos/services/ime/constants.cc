@@ -4,6 +4,9 @@
 
 #include "chromeos/services/ime/constants.h"
 
+#include <string.h>
+
+#include "base/files/file_util.h"
 #include "build/branding_buildflags.h"
 
 #define FPL FILE_PATH_LITERAL

@@ -152,9 +152,9 @@
   }
 
   .note {
-    border: 1px dashed #ddd;
+    border-radius: 3px;
+    margin-bottom: 5px;
     background: #f9eeba;
-    margin: var(--record-section-padding);
     padding: 10px;
     font-family: 'Roboto', sans-serif;
     font-size: 14px;
@@ -280,8 +280,86 @@
   }
 
   &.active {
-    display: grid;
+    display: block;
     opacity: 1;
+  }
+
+  .config {
+    &:nth-of-type(2n) {
+      background-color: #e7e7e7;
+    }
+
+    height: auto;
+    width: 100%;
+    padding: 0px;
+    display: flex;
+    align-items: center;
+  }
+
+  .title-config {
+    display: inline-block;
+    margin: var(--record-section-padding);
+    flex-grow: 1;
+    word-break: break-all;
+  }
+
+  .config-button {
+    border-radius: 10px;
+    margin-right: 10px;
+    text-align: center;
+    justify-items: center;
+    font-family: 'Raleway', sans-serif;
+    padding: 7px;
+    width: 75px;
+
+    &:hover {
+      box-shadow: 0 0 4px 0px #999;
+    }
+
+    &.load {
+      background-color: hsl(88, 50%, 67%);
+    }
+
+    &.delete {
+      background-color: hsl(0, 50%, 67%);
+    }
+
+    &.save {
+      width: 160px;
+      background-color: hsl(197, 50%, 67%);
+    }
+  }
+
+  .input-config {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    padding: 0px;
+
+    input {
+      border-radius: 20px;
+      border-color: #0000003d;
+      line-height: 36px;
+      padding: 0 10px;
+      font-size: 18px;
+      font-family: 'Roboto Condensed', sans-serif;
+      font-weight: 300;
+      color: #666;
+      flex-grow: 1;
+      margin-right: 10px;
+      margin-left: 10px;
+
+      background-color: transparent;
+      &:focus {
+        outline: none;
+      }
+      &::placeholder {
+        color: #b4b7ba;
+        font-family: 'Raleway', sans-serif;
+        font-weight: 400;
+      }
+    }
   }
 
   // By default space all section elements by the same amount.
@@ -872,6 +950,22 @@
       }
     }
 
+    .permalinkconfig {
+      margin: var(--record-section-padding);
+      height: 40px;
+      max-width: 200px;
+      border-radius: 10px;
+      text-align: center;
+      justify-items: center;
+      font-family: 'Raleway', sans-serif;
+      padding: 7px;
+      background-color: hsl(88, 50%, 67%);
+
+      &:hover {
+        box-shadow: 0 0 4px 0px #999;
+      }
+    }
+
     progress {
       -webkit-appearance: none;
       appearance: none;
@@ -888,3 +982,28 @@
     }
   }
 }  // record-section
+
+.inline-chip { 
+  @include transition();
+  &:hover, &:active {
+    box-shadow: 0 0 2px 0px #ccc;
+    background-color: #fafafa;
+  }
+
+  >i.material-icons {
+    color: rgb(60, 60, 60);
+    font-size: 14px;
+  }
+
+  line-height: 25px;
+  font-size: smaller;
+  padding: 2px 4px;
+  border: 1px solid #eee;
+  margin: 2px;
+  border-radius: 9px;
+}
+
+a.inline-chip, a.inline-chip:link, a.inline-chip:visited {
+  text-decoration: none;
+  color: var(--record-text-color);
+}

@@ -18,14 +18,13 @@ import androidx.annotation.WorkerThread;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.gms.ChromiumPlayServicesAvailability;
 
 /**
  * Utility class for external authentication tools.
@@ -36,15 +35,6 @@ public class ExternalAuthUtils {
     public static final int FLAG_SHOULD_BE_GOOGLE_SIGNED = 1 << 0;
     public static final int FLAG_SHOULD_BE_SYSTEM = 1 << 1;
     private static final String TAG = "ExternalAuthUtils";
-
-    private static final ExternalAuthUtils sInstance = AppHooks.get().createExternalAuthUtils();
-
-    /**
-     * Returns the singleton instance of ExternalAuthUtils, creating it if needed.
-     */
-    public static ExternalAuthUtils getInstance() {
-        return sInstance;
-    }
 
     /**
      * Gets the calling package names for the current transaction.
@@ -95,6 +85,15 @@ public class ExternalAuthUtils {
      */
     public boolean isGoogleSigned(String packageName) {
         // This is overridden in a subclass.
+        return false;
+    }
+
+    /**
+     * Returns whether the package can bypass TWA verification.
+     * @param packageName The package name to inquire about.
+     * @param origin The origin of the TWA.
+     */
+    public boolean isAllowlistedForTwaVerification(String packageName, Origin origin) {
         return false;
     }
 
@@ -175,11 +174,6 @@ public class ExternalAuthUtils {
      * @return true if and only if Google Play Services can be used
      */
     public boolean canUseGooglePlayServices(final UserRecoverableErrorHandler errorHandler) {
-        if (CommandLine.getInstance().hasSwitch(
-                    ChromeSwitches.DISABLE_GOOGLE_PLAY_SERVICES_FOR_TESTING)) {
-            return false;
-        }
-
         Context context = ContextUtils.getApplicationContext();
         final int resultCode = checkGooglePlayServicesAvailable(context);
         if (resultCode == ConnectionResult.SUCCESS) return true;
@@ -202,8 +196,8 @@ public class ExternalAuthUtils {
      *
      * @return true if and only if Google Play Services can be used
      */
-    public static boolean canUseGooglePlayServices() {
-        return sInstance.canUseGooglePlayServices(new UserRecoverableErrorHandler.Silent());
+    public boolean canUseGooglePlayServices() {
+        return canUseGooglePlayServices(new UserRecoverableErrorHandler.Silent());
     }
 
     /**
@@ -225,10 +219,6 @@ public class ExternalAuthUtils {
     @WorkerThread
     public boolean canUseFirstPartyGooglePlayServices(
             UserRecoverableErrorHandler userRecoverableErrorHandler) {
-        if (CommandLine.getInstance().hasSwitch(
-                    ChromeSwitches.DISABLE_FIRST_PARTY_GOOGLE_PLAY_SERVICES_FOR_TESTING)) {
-            return false;
-        }
         return canUseGooglePlayServices(userRecoverableErrorHandler) && isChromeGoogleSigned();
     }
 
@@ -237,9 +227,8 @@ public class ExternalAuthUtils {
      *
      * @return true if and only if first-party Google Play Services can be used
      */
-    public static boolean canUseFirstPartyGooglePlayServices() {
-        return sInstance.canUseFirstPartyGooglePlayServices(
-                new UserRecoverableErrorHandler.Silent());
+    public boolean canUseFirstPartyGooglePlayServices() {
+        return canUseFirstPartyGooglePlayServices(new UserRecoverableErrorHandler.Silent());
     }
 
     /**
@@ -252,7 +241,7 @@ public class ExternalAuthUtils {
     protected int checkGooglePlayServicesAvailable(final Context context) {
         // TODO(crbug.com/577190): Temporarily allowing disk access until more permanent fix is in.
         try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
-            return GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
+            return ChromiumPlayServicesAvailability.getGooglePlayServicesConnectionResult(context);
         }
     }
 

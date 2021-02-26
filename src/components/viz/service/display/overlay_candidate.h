@@ -10,8 +10,9 @@
 
 #include "base/containers/flat_map.h"
 #include "build/build_config.h"
-#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/resources/resource_id.h"
+#include "components/viz/service/display/aggregated_frame.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/buffer_types.h"
@@ -36,6 +37,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // Returns true and fills in |candidate| if |draw_quad| is of a known quad
   // type and contains an overlayable resource.
   static bool FromDrawQuad(DisplayResourceProvider* resource_provider,
+                           SurfaceDamageRectList* surface_damage_rect_list,
                            const SkMatrix44& output_color_matrix,
                            const DrawQuad* quad,
                            OverlayCandidate* candidate);
@@ -49,13 +51,24 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
                          QuadList::ConstIterator quad_list_begin,
                          QuadList::ConstIterator quad_list_end);
 
+  // Returns an estimate of this |quad|'s actual visible damage area. This
+  // visible damage is computed by combining from input
+  // |surface_damage_rect_list| with the occluding rects in the quad_list.
+  // This is an estimate since the occluded damage area is calculated on a per
+  // quad basis.
+  static int EstimateVisibleDamage(
+      const DrawQuad* quad,
+      SurfaceDamageRectList* surface_damage_rect_list,
+      QuadList::ConstIterator quad_list_begin,
+      QuadList::ConstIterator quad_list_end);
+
   // Returns true if any of the quads in the list given by |quad_list_begin|
   // and |quad_list_end| have a filter associated and occlude |candidate|.
   static bool IsOccludedByFilteredQuad(
       const OverlayCandidate& candidate,
       QuadList::ConstIterator quad_list_begin,
       QuadList::ConstIterator quad_list_end,
-      const base::flat_map<RenderPassId, cc::FilterOperations*>&
+      const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
           render_pass_backdrop_filters);
 
   // Returns true if the |quad| cannot be displayed on the main plane. This is
@@ -106,7 +119,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
 
   // Stacking order of the overlay plane relative to the main surface,
   // which is 0. Signed to allow for "underlays".
-  int plane_z_order;
+  int plane_z_order = 0;
+
   // True if the overlay does not have any visible quads on top of it. Set by
   // the strategy so the OverlayProcessor can consider subtracting damage caused
   // by underlay quads.
@@ -119,19 +133,32 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // Gpu fence to wait for before overlay is ready for display.
   unsigned gpu_fence_id;
 
+  // The total area in square pixels of damage for this candidate's quad. This
+  // is an estimate when 'EstimateOccludedDamage' function is used.
+  int damage_area_estimate = 0;
+
+  // Cached result of call to 'RequiresOverlay' function.
+  bool requires_overlay = false;
+
  private:
-  static bool FromDrawQuadResource(DisplayResourceProvider* resource_provider,
-                                   const DrawQuad* quad,
-                                   ResourceId resource_id,
-                                   bool y_flipped,
-                                   OverlayCandidate* candidate);
+  static bool FromDrawQuadResource(
+      DisplayResourceProvider* resource_provider,
+      SurfaceDamageRectList* surface_damage_rect_list,
+      const DrawQuad* quad,
+      ResourceId resource_id,
+      bool y_flipped,
+      OverlayCandidate* candidate);
   static bool FromTextureQuad(DisplayResourceProvider* resource_provider,
+                              SurfaceDamageRectList* surface_damage_rect_list,
                               const TextureDrawQuad* quad,
                               OverlayCandidate* candidate);
-  static bool FromStreamVideoQuad(DisplayResourceProvider* resource_provider,
-                                  const StreamVideoDrawQuad* quad,
-                                  OverlayCandidate* candidate);
+  static bool FromStreamVideoQuad(
+      DisplayResourceProvider* resource_provider,
+      SurfaceDamageRectList* surface_damage_rect_list,
+      const StreamVideoDrawQuad* quad,
+      OverlayCandidate* candidate);
   static bool FromVideoHoleQuad(DisplayResourceProvider* resource_provider,
+                                SurfaceDamageRectList* surface_damage_rect_list,
                                 const VideoHoleDrawQuad* quad,
                                 OverlayCandidate* candidate);
 };

@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -177,8 +177,7 @@ void DeviceDisablingManagerOOBETest::CheckWhetherDeviceDisabledDuringOOBE() {
 void DeviceDisablingManagerOOBETest::SetDeviceDisabled(bool disabled) {
   DictionaryPrefUpdate dict(&local_state_, prefs::kServerBackedDeviceState);
   if (disabled) {
-    dict->SetString(policy::kDeviceStateMode,
-                    policy::kDeviceStateRestoreModeDisabled);
+    dict->SetString(policy::kDeviceStateMode, policy::kDeviceStateModeDisabled);
   } else {
     dict->Remove(policy::kDeviceStateMode, nullptr);
   }

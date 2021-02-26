@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/gesture_detection/motion_event_buffer.h"
@@ -171,8 +172,8 @@ class MotionEventBufferTest : public testing::Test,
     base::TimeTicks max_event_time =
         event_time + base::TimeDelta::FromSecondsD(0.5f);
     const size_t min_expected_events =
-        static_cast<size_t>((max_event_time - flush_time) /
-                            std::max(event_time_delta, flush_time_delta));
+        base::ClampFloor<size_t>((max_event_time - flush_time) /
+                                 std::max(event_time_delta, flush_time_delta));
 
     MotionEventBuffer buffer(this, true);
 
@@ -719,8 +720,8 @@ TEST_F(MotionEventBufferTest, Interpolation) {
 
   // There should only be one flushed event, with the event interpolated between
   // the two events. The second event should remain buffered.
-  float alpha = (interpolated_time - move0.GetEventTime()).InMillisecondsF() /
-                (move1.GetEventTime() - move0.GetEventTime()).InMillisecondsF();
+  const float alpha = (interpolated_time - move0.GetEventTime()) /
+                      (move1.GetEventTime() - move0.GetEventTime());
   MockMotionEvent interpolated_event(
       MotionEvent::Action::MOVE, interpolated_time,
       move0.GetX(0) + (move1.GetX(0) - move0.GetX(0)) * alpha,
@@ -770,9 +771,8 @@ TEST_F(MotionEventBufferTest, Extrapolation) {
   // determining the extrapolated event.
   base::TimeTicks expected_time =
       move1.GetEventTime() + (move1.GetEventTime() - move0.GetEventTime()) / 2;
-  float expected_alpha =
-      (expected_time - move0.GetEventTime()).InMillisecondsF() /
-      (move1.GetEventTime() - move0.GetEventTime()).InMillisecondsF();
+  const float expected_alpha = (expected_time - move0.GetEventTime()) /
+                               (move1.GetEventTime() - move0.GetEventTime());
   MockMotionEvent extrapolated_event(
       MotionEvent::Action::MOVE, expected_time,
       move0.GetX(0) + (move1.GetX(0) - move0.GetX(0)) * expected_alpha,
@@ -815,9 +815,8 @@ TEST_F(MotionEventBufferTest, ExtrapolationHorizonLimited) {
   // Note that the maximum extrapolation is limited by 8 ms.
   base::TimeTicks expected_time =
       move1.GetEventTime() + base::TimeDelta::FromMilliseconds(8);
-  float expected_alpha =
-      (expected_time - move0.GetEventTime()).InMillisecondsF() /
-      (move1.GetEventTime() - move0.GetEventTime()).InMillisecondsF();
+  const float expected_alpha = (expected_time - move0.GetEventTime()) /
+                               (move1.GetEventTime() - move0.GetEventTime());
   MockMotionEvent extrapolated_event(
       MotionEvent::Action::MOVE, expected_time,
       move0.GetX(0) + (move1.GetX(0) - move0.GetX(0)) * expected_alpha,
@@ -832,48 +831,33 @@ TEST_F(MotionEventBufferTest, ExtrapolationHorizonLimited) {
 }
 
 TEST_F(MotionEventBufferTest, Resampling30to60) {
-  base::TimeDelta flush_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 60.);
-  base::TimeDelta event_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 30.);
-
-  RunResample(flush_time_delta, event_time_delta);
+  constexpr auto kFlushTimeDelta = base::TimeDelta::FromSeconds(1) / 60;
+  constexpr auto kEventTimeDelta = base::TimeDelta::FromSeconds(1) / 30;
+  RunResample(kFlushTimeDelta, kEventTimeDelta);
 }
 
 TEST_F(MotionEventBufferTest, Resampling60to60) {
-  base::TimeDelta flush_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 60.);
-  base::TimeDelta event_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 60.);
-
-  RunResample(flush_time_delta, event_time_delta);
+  constexpr auto kFlushTimeDelta = base::TimeDelta::FromSeconds(1) / 60;
+  constexpr auto kEventTimeDelta = base::TimeDelta::FromSeconds(1) / 60;
+  RunResample(kFlushTimeDelta, kEventTimeDelta);
 }
 
 TEST_F(MotionEventBufferTest, Resampling100to60) {
-  base::TimeDelta flush_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 60.);
-  base::TimeDelta event_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 100.);
-
-  RunResample(flush_time_delta, event_time_delta);
+  constexpr auto kFlushTimeDelta = base::TimeDelta::FromSeconds(1) / 60;
+  constexpr auto kEventTimeDelta = base::TimeDelta::FromSeconds(1) / 100;
+  RunResample(kFlushTimeDelta, kEventTimeDelta);
 }
 
 TEST_F(MotionEventBufferTest, Resampling120to60) {
-  base::TimeDelta flush_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 60.);
-  base::TimeDelta event_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 120.);
-
-  RunResample(flush_time_delta, event_time_delta);
+  constexpr auto kFlushTimeDelta = base::TimeDelta::FromSeconds(1) / 60;
+  constexpr auto kEventTimeDelta = base::TimeDelta::FromSeconds(1) / 120;
+  RunResample(kFlushTimeDelta, kEventTimeDelta);
 }
 
 TEST_F(MotionEventBufferTest, Resampling150to60) {
-  base::TimeDelta flush_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 60.);
-  base::TimeDelta event_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 150.);
-
-  RunResample(flush_time_delta, event_time_delta);
+  constexpr auto kFlushTimeDelta = base::TimeDelta::FromSeconds(1) / 60;
+  constexpr auto kEventTimeDelta = base::TimeDelta::FromSeconds(1) / 150;
+  RunResample(kFlushTimeDelta, kEventTimeDelta);
 }
 
 }  // namespace ui

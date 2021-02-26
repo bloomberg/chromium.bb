@@ -24,6 +24,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/task/common/task_annotator.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -132,9 +133,9 @@ class ChannelAssociatedGroupController
         control_message_proxy_(&control_message_proxy_thunk_) {
     thread_checker_.DetachFromThread();
     control_message_handler_.SetDescription(
-        "IPC::mojom::Bootstrap [master] PipeControlMessageHandler");
+        "IPC::mojom::Bootstrap [primary] PipeControlMessageHandler");
     dispatcher_.SetValidator(std::make_unique<mojo::MessageHeaderValidator>(
-        "IPC::mojom::Bootstrap [master] MessageHeaderValidator"));
+        "IPC::mojom::Bootstrap [primary] MessageHeaderValidator"));
 
     GetMemoryDumpProvider().AddController(this);
   }
@@ -165,15 +166,14 @@ class ChannelAssociatedGroupController
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(task_runner_->BelongsToCurrentThread());
 
-    connector_.reset(new mojo::Connector(
-        std::move(handle), mojo::Connector::SINGLE_THREADED_SEND,
-        task_runner_));
+    connector_ = std::make_unique<mojo::Connector>(
+        std::move(handle), mojo::Connector::SINGLE_THREADED_SEND, task_runner_,
+        "IPC Channel");
     connector_->set_incoming_receiver(&dispatcher_);
     connector_->set_connection_error_handler(
         base::BindOnce(&ChannelAssociatedGroupController::OnPipeError,
                        base::Unretained(this)));
     connector_->set_enforce_errors_from_incoming_receiver(false);
-    connector_->SetWatcherHeapProfilerTag("IPC Channel");
     if (quota_checker_)
       connector_->SetMessageQuotaChecker(quota_checker_);
 
@@ -302,10 +302,10 @@ class ChannelAssociatedGroupController
     if (!mojo::IsValidInterfaceId(id))
       return mojo::ScopedInterfaceEndpointHandle();
 
-    // Unless it is the master ID, |id| is from the remote side and therefore
+    // Unless it is the primary ID, |id| is from the remote side and therefore
     // its namespace bit is supposed to be different than the value that this
     // router would use.
-    if (!mojo::IsMasterInterfaceId(id) &&
+    if (!mojo::IsPrimaryInterfaceId(id) &&
         set_interface_id_namespace_bit_ ==
             mojo::HasInterfaceIdNamespaceBitSet(id)) {
       return mojo::ScopedInterfaceEndpointHandle();
@@ -341,7 +341,7 @@ class ChannelAssociatedGroupController
       MarkClosedAndMaybeRemove(endpoint);
     }
 
-    if (!mojo::IsMasterInterfaceId(id) || reason)
+    if (!mojo::IsPrimaryInterfaceId(id) || reason)
       control_message_proxy_.NotifyPeerEndpointClosed(id, reason);
   }
 
@@ -573,7 +573,7 @@ class ChannelAssociatedGroupController
     bool SyncWatch(const bool* should_stop) override {
       DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-      // It's not legal to make sync calls from the master endpoint's thread,
+      // It's not legal to make sync calls from the primary endpoint's thread,
       // and in fact they must only happen from the proxy task runner.
       DCHECK(!controller_->task_runner_->BelongsToCurrentThread());
       DCHECK(controller_->proxy_task_runner_->BelongsToCurrentThread());
@@ -725,22 +725,18 @@ class ChannelAssociatedGroupController
       }
       return connector_->Accept(message);
     } else {
-      // Do a message size check here so we don't lose valuable stack
-      // information to the task scheduler.
-      CHECK_LE(message->data_num_bytes(), Channel::kMaximumMessageSize);
-
-      // We always post tasks to the master endpoint thread when called from
+      // We always post tasks to the primary endpoint thread when called from
       // other threads in order to simulate IPC::ChannelProxy::Send behavior.
       task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(
-              &ChannelAssociatedGroupController::SendMessageOnMasterThread,
+              &ChannelAssociatedGroupController::SendMessageOnPrimaryThread,
               this, std::move(*message)));
       return true;
     }
   }
 
-  void SendMessageOnMasterThread(mojo::Message message) {
+  void SendMessageOnPrimaryThread(mojo::Message message) {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!SendMessage(&message))
       RaiseError();
@@ -891,28 +887,40 @@ class ChannelAssociatedGroupController
       // in-transit associated endpoints and thus acquire |lock_|. We no longer
       // need the lock to be held now since |proxy_task_runner_| is safe to
       // access unguarded.
-      locker.Release();
-      proxy_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&ChannelAssociatedGroupController::AcceptOnProxyThread,
-                         this, std::move(*message)));
+      {
+        // Grab interface name from |client| before releasing the lock to ensure
+        // that |client| is safe to access.
+        base::TaskAnnotator::ScopedSetIpcHash scoped_set_ipc_hash(
+            client ? client->interface_name() : "unknown interface");
+        locker.Release();
+        proxy_task_runner_->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &ChannelAssociatedGroupController::AcceptOnProxyThread, this,
+                std::move(*message)));
+      }
       return true;
     }
 
-    // We do not expect to receive sync responses on the master endpoint thread.
-    // If it's happening, it's a bug.
+    // We do not expect to receive sync responses on the primary endpoint
+    // thread. If it's happening, it's a bug.
     DCHECK(!message->has_flag(mojo::Message::kFlagIsSync) ||
            !message->has_flag(mojo::Message::kFlagIsResponse));
 
     locker.Release();
+    // It's safe to access |client| here without holding a lock, because this
+    // code runs on a proxy thread and |client| can't be destroyed from any
+    // thread.
     return client->HandleIncomingMessage(message);
   }
 
   void AcceptOnProxyThread(mojo::Message message) {
     DCHECK(proxy_task_runner_->BelongsToCurrentThread());
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mojom"),
+                 "ChannelAssociatedGroupController::AcceptOnProxyThread");
 
     mojo::InterfaceId id = message.interface_id();
-    DCHECK(mojo::IsValidInterfaceId(id) && !mojo::IsMasterInterfaceId(id));
+    DCHECK(mojo::IsValidInterfaceId(id) && !mojo::IsPrimaryInterfaceId(id));
 
     base::AutoLock locker(lock_);
     Endpoint* endpoint = FindEndpoint(id);
@@ -923,6 +931,9 @@ class ChannelAssociatedGroupController
     if (!client)
       return;
 
+    // Using client->interface_name() is safe here because this is a static
+    // string defined for each mojo interface.
+    TRACE_EVENT0("mojom", client->interface_name());
     DCHECK(endpoint->task_runner()->RunsTasksInCurrentSequence());
 
     // Sync messages should never make their way to this method.
@@ -940,6 +951,8 @@ class ChannelAssociatedGroupController
 
   void AcceptSyncMessage(mojo::InterfaceId interface_id, uint32_t message_id) {
     DCHECK(proxy_task_runner_->BelongsToCurrentThread());
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mojom"),
+                 "ChannelAssociatedGroupController::AcceptSyncMessage");
 
     base::AutoLock locker(lock_);
     Endpoint* endpoint = FindEndpoint(interface_id);
@@ -952,6 +965,9 @@ class ChannelAssociatedGroupController
     if (!client)
       return;
 
+    // Using client->interface_name() is safe here because this is a static
+    // string defined for each mojo interface.
+    TRACE_EVENT0("mojom", client->interface_name());
     DCHECK(endpoint->task_runner()->RunsTasksInCurrentSequence());
     MessageWrapper message_wrapper = endpoint->PopSyncMessage(message_id);
 
@@ -996,7 +1012,7 @@ class ChannelAssociatedGroupController
     return false;
   }
 
-  // Checked in places which must be run on the master endpoint's thread.
+  // Checked in places which must be run on the primary endpoint's thread.
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

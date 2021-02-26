@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -19,7 +20,6 @@
 #error "This file requires ARC support."
 #endif
 
-#if defined(CHROME_EARL_GREY_2)
 // TODO(crbug.com/1015113): The EG2 macro is breaking indexing for some reason
 // without the trailing semicolon.  For now, disable the extra semi warning
 // so Xcode indexing works for the egtest.
@@ -27,9 +27,9 @@
 #pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(KeyboardObserverHelperAppInterface);
 #pragma clang diagnostic pop
-#endif  // defined(CHROME_EARL_GREY_2)
 
 using base::TimeDelta;
+using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::SpinRunLoopWithMinDelay;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using chrome_test_util::TapWebElementWithId;
@@ -104,7 +104,7 @@ void TapOnWebElementWithID(const std::string& elementID) {
 
   // Brings up the keyboard by tapping on one of the form's field.
   TapOnWebElementWithID(kFormElementID1);
-  SpinRunLoopWithMinDelay(TimeDelta::FromSeconds(1));
+  SpinRunLoopWithMinDelay(TimeDelta::FromSeconds(kWaitForUIElementTimeout));
 
   // Verifies that the taped element is focused.
   AssertElementIsFocused(kFormElementID1);
@@ -116,7 +116,7 @@ void TapOnWebElementWithID(const std::string& elementID) {
 
   // Tap the "Submit" button, and let the run loop spin.
   TapOnWebElementWithID(kFormElementSubmit);
-  SpinRunLoopWithMinDelay(TimeDelta::FromSeconds(1));
+  SpinRunLoopWithMinDelay(TimeDelta::FromSeconds(kWaitForUIElementTimeout));
 
   // Verify the state changed.
   GREYAssertFalse(observer.keyboardState.isVisible,

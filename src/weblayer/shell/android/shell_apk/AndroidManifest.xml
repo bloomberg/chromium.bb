@@ -9,7 +9,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.chromium.weblayer.shell">
 
-    <application android:label="WebLayer shell">
+    <application android:label="WebLayer shell"
+        android:supportsRtl="true">
         <activity android:name="WebLayerShellActivity"
                   android:launchMode="singleTask"
                   android:theme="@style/ShellTheme"
@@ -27,7 +28,8 @@
                 <data android:scheme="https" />
             </intent-filter>
         </activity>
-        <activity android:name="InstrumentationActivity">
+        <activity android:name="InstrumentationActivity"
+                  android:windowSoftInputMode="adjustResize">
             <!-- Add these intent filters so tests can resolve these intents. -->
             <intent-filter>
                 <action android:name="android.provider.MediaStore.RECORD_SOUND" />
@@ -41,15 +43,24 @@
         <activity android:name="TelemetryActivity"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar">
         </activity>
-          <activity android:name="org.chromium.weblayer.test.ExternalNavigationTest$DummyActivityForSpecialScheme"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:host="weblayertest" android:scheme="weblayer" />
-            </intent-filter>
-        </activity>
+        <activity android:name="org.chromium.weblayer.test.ExternalNavigationTest$DummyActivityForSpecialScheme"
+          android:exported="true" >
+          <intent-filter>
+              <action android:name="android.intent.action.VIEW" />
+              <category android:name="android.intent.category.DEFAULT" />
+              <category android:name="android.intent.category.BROWSABLE" />
+              <data android:host="weblayertest" android:scheme="weblayer" />
+          </intent-filter>
+      </activity>
+
+      <!-- Cast support -->
+      <meta-data
+          android:name="org.chromium.weblayer.ENABLE_REMOTE_MEDIA" android:value="true"/>
+      <meta-data
+          android:name=
+          "com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+          android:value="org.chromium.components.media_router.caf.CastOptionsProvider"/>
+
       {% if weblayer_package is defined %}
             <meta-data android:name="org.chromium.weblayer.WebLayerPackage"
                        android:value="{{ weblayer_package }}"/>

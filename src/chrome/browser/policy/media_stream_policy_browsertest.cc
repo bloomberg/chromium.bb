@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/post_task.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -83,18 +82,17 @@ class MediaStreamDevicesControllerBrowserTest
                           const char* whitelist_policy,
                           const char* allow_rule) {
     policies->Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                  POLICY_SOURCE_CLOUD,
-                  std::make_unique<base::Value>(policy_value_), nullptr);
+                  POLICY_SOURCE_CLOUD, base::Value(policy_value_), nullptr);
 
     if (whitelist_policy) {
       // Add an entry to the whitelist that allows the specified URL regardless
       // of the setting of kAudioCapturedAllowed.
-      std::unique_ptr<base::ListValue> list(new base::ListValue);
+      base::Value list(base::Value::Type::LIST);
       if (allow_rule) {
-        list->AppendString(allow_rule);
+        list.Append(allow_rule);
         request_url_allowed_via_whitelist_ = true;
       } else {
-        list->AppendString(ContentSettingsPattern::Wildcard().ToString());
+        list.Append(ContentSettingsPattern::Wildcard().ToString());
         // We should ignore all wildcard entries in the whitelist, so even
         // though we've added an entry, it should be ignored and our expectation
         // is that the request has not been allowed via the whitelist.
@@ -164,8 +162,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   ConfigurePolicyMap(&policies, key::kAudioCaptureAllowed, nullptr, nullptr);
   UpdateProviderPolicy(policies);
 
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(
           &MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices,
           base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -200,8 +198,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        key::kAudioCaptureAllowedUrls, allow_pattern[i]);
     UpdateProviderPolicy(policies);
 
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(
             &MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices,
             base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -228,8 +226,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   ConfigurePolicyMap(&policies, key::kVideoCaptureAllowed, nullptr, nullptr);
   UpdateProviderPolicy(policies);
 
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(
           &MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices,
           base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -264,8 +262,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        key::kVideoCaptureAllowedUrls, allow_pattern[i]);
     UpdateProviderPolicy(policies);
 
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(
             &MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices,
             base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),

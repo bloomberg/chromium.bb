@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -45,6 +44,7 @@ class WifiDataProviderCommon : public WifiDataProvider {
   void StopDataProvider() override;
   bool DelayedByPolicy() override;
   bool GetData(WifiData* data) override;
+  void ForceRescan() override;
 
  protected:
   ~WifiDataProviderCommon() override;

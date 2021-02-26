@@ -20,9 +20,10 @@ ch-ua-platform
 ch-ua-platform-version
 ch-viewport-width
 ch-width
-conversion-measurement
+clipboard-read
+clipboard-write
+cross-origin-isolated
 document-domain
-document-write
 downloads
 encrypted-media
 execution-while-not-rendered
@@ -30,12 +31,11 @@ execution-while-out-of-viewport
 focus-without-user-activation
 forms
 fullscreen
+gamepad
 geolocation
 gyroscope
 hid
 idle-detection
-lazyload
-loading-frame-default-eager
 magnetometer
 microphone
 midi
@@ -50,7 +50,7 @@ publickey-credentials-get
 screen-wake-lock
 scripts
 serial
-sync-script
+storage-access-api
 sync-xhr
 top-navigation
 trust-token-redemption

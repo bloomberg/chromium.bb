@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/bind.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/navigation_request.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -18,7 +23,14 @@
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "mojo/public/c/system/trap.h"
+#include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/handle_signals_state.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/filename_util.h"
+#include "net/dns/mock_host_resolver.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -35,6 +47,12 @@ class NavigationMhtmlBrowserTest : public ContentBrowserTest {
 
   RenderFrameHostImpl* main_frame_host() {
     return web_contents()->GetFrameTree()->root()->current_frame_host();
+  }
+
+ protected:
+  void SetUpOnMainThread() final {
+    ContentBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 };
 
@@ -119,9 +137,8 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeFound) {
   RenderFrameHostImpl* sub_document =
       main_document->child_at(0)->current_frame_host();
 
-  // |is_mhtml_document| is confusing. It always returns false for subframe.
   EXPECT_TRUE(main_document->is_mhtml_document());
-  EXPECT_FALSE(sub_document->is_mhtml_document());
+  EXPECT_TRUE(sub_document->is_mhtml_document());
 
   // When the iframe's content is loaded from the MHTML archive, a successful
   // commit using the provided URL happens, even if the resource wasn't loaded
@@ -154,15 +171,20 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeNotFound) {
   RenderFrameHostImpl* sub_document =
       main_document->child_at(0)->current_frame_host();
 
-  // |is_mhtml_document| is confusing. It always returns false for subframe.
   EXPECT_TRUE(main_document->is_mhtml_document());
-  EXPECT_FALSE(sub_document->is_mhtml_document());
+  EXPECT_TRUE(sub_document->is_mhtml_document());
 
-  // TODO(arthursonzogni): When the document is not found, the navigation never
-  // commit, even if we wait longer. Find out why.
-  EXPECT_FALSE(iframe_navigation_observer.has_committed());
+  // This should commit as a failed navigation, but the browser side doesn't
+  // have enough information to make that determination. On the renderer side,
+  // there's no existing way to turn `CommitNavigation()` into
+  // `CommitFailedNavigation()`.
+  // TODO(https://crbug.com/1112965): Fix this by implementing a MHTML
+  // URLLoaderFactory; then failure to find the resource can use the standard
+  // error handling path.
+  EXPECT_TRUE(iframe_navigation_observer.has_committed());
   EXPECT_FALSE(iframe_navigation_observer.is_error());
-  EXPECT_EQ(GURL(), sub_document->GetLastCommittedURL());
+  EXPECT_EQ(GURL("http://example.com/not_found.html"),
+            sub_document->GetLastCommittedURL());
 }
 
 // An MHTML document with an iframe using a data-URL. The data-URL is not
@@ -184,6 +206,9 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeDataUrlNotFound) {
       main_document->child_at(0)->current_frame_host();
   EXPECT_EQ(GURL("data:text/html,<iframe></iframe>"),
             sub_document->GetLastCommittedURL());
+
+  EXPECT_TRUE(main_document->is_mhtml_document());
+  EXPECT_FALSE(sub_document->is_mhtml_document());  // Served from data-url.
 
   // Check the iframe is properly loaded. EvalJs("document.body.innerHTML")
   // can't be used, because javascript is disabled. Instead, check it was able
@@ -211,6 +236,9 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeDataUrlFound) {
   EXPECT_EQ(GURL("data:text/html,<iframe></iframe>"),
             sub_document->GetLastCommittedURL());
 
+  EXPECT_TRUE(main_document->is_mhtml_document());
+  EXPECT_FALSE(sub_document->is_mhtml_document());  // Served from data-url.
+
   // Check the iframe is properly loaded. EvalJs("document.body.innerHTML")
   // can't be used, because javascript is disabled. Instead, check it was able
   // to load an iframe.
@@ -232,6 +260,9 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeAboutSrcdocNoFound) {
   RenderFrameHostImpl* sub_document =
       main_document->child_at(0)->current_frame_host();
   EXPECT_TRUE(sub_document->GetLastCommittedURL().IsAboutSrcdoc());
+
+  EXPECT_TRUE(main_document->is_mhtml_document());
+  EXPECT_TRUE(sub_document->is_mhtml_document());
 
   // Check the iframe is properly loaded. EvalJs("document.body.innerHTML")
   // can't be used, because javascript is disabled. Instead, check it was able
@@ -256,6 +287,9 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeAboutSrcdocFound) {
       main_document->child_at(0)->current_frame_host();
   EXPECT_TRUE(sub_document->GetLastCommittedURL().IsAboutSrcdoc());
 
+  EXPECT_TRUE(main_document->is_mhtml_document());
+  EXPECT_TRUE(sub_document->is_mhtml_document());
+
   // Check the iframe is properly loaded. EvalJs("document.body.innerHTML")
   // can't be used, because javascript is disabled. Instead, check it was able
   // to load an iframe.
@@ -268,6 +302,8 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeAboutBlankNotFound) {
   MhtmlArchive mhtml_archive;
   mhtml_archive.AddHtmlDocument(GURL("http://example.com"),
                                 "<iframe src=\"about:blank\"></iframe>"
+                                // Note: this is actually treated as a
+                                // same-document navigation!
                                 "<iframe src=\"about:blank#fragment\"></iframe>"
                                 "<iframe src=\"about:blank?query\"></iframe>");
   GURL mhtml_url = mhtml_archive.Write("index.mhtml");
@@ -280,8 +316,32 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeAboutBlankNotFound) {
         ->current_frame_host()
         ->GetLastCommittedURL();
   };
+
+  // about:blank in MHTML has some very unusual behavior. When navigating to
+  // about:blank in the context of a MHTML archive, the renderer-side MHTML
+  // handler actually attempts to look up the resource for about:blank<...>" in
+  // the MHTML archive.
+  //
+  // Prior to https://crrev.com/c/2335323, failing to find the resource in the
+  // MHTML archive usually led to the commit being silently dropped (see
+  // `IframeNotFound` and `IframeContentIdNotFound`). However, about:blank
+  // behaved differently, due to a special case in frame_loader.cc's
+  // `ShouldNavigate()` for URLs that will load as an empty document.
+  //
+  // However, after https://crrev.com/c/23335323, loading about:blank without a
+  // corresponding resource in the MHTML archive will be treated as loading
+  // static data rather than loading an empty document. This affects the timing
+  // of load completion; loading an empty document synchronously completes
+  // during `CommitNavigation()`, while loading static data (even if the data is
+  // empty) completes "later".
   EXPECT_EQ(iframe_url(0), GURL("about:blank"));
-  EXPECT_EQ(iframe_url(1), GURL());  // TODO(arthursonzogni): Why is this empty?
+  // Note: unlike the other two subframe navigations, this navigation actually
+  // succeeds as a same-document navigation...
+  // Note 2: this same-document navigation is performed asynchronously. Prior to
+  // https://crrev.com/c/23335323, the test would consider the page as loaded
+  // before the fragment navigation completed, resulting in an empty last
+  // committed URL.
+  EXPECT_EQ(iframe_url(1), GURL("about:blank#fragment"));
   EXPECT_EQ(iframe_url(2), GURL("about:blank?query"));
 }
 
@@ -302,6 +362,11 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeAboutBlankFound) {
   ASSERT_EQ(1u, main_document->child_count());
   RenderFrameHostImpl* about_blank_document =
       main_document->child_at(0)->current_frame_host();
+
+  EXPECT_TRUE(main_document->is_mhtml_document());
+  // TODO(arthursonzogni): This should be true here.
+  EXPECT_FALSE(about_blank_document->is_mhtml_document());
+
   // about:blank is loaded from the archive, so it has an iframe.
   // See https://crbug.com/969667
   ASSERT_EQ(1u, about_blank_document->child_count());
@@ -329,6 +394,11 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest,
   ASSERT_EQ(1u, main_document->child_count());
   RenderFrameHostImpl* sub_document =
       main_document->child_at(0)->current_frame_host();
+
+  EXPECT_TRUE(main_document->is_mhtml_document());
+
+  // The |sub_document| is the initial empty document.
+  EXPECT_FALSE(sub_document->is_mhtml_document());
   EXPECT_EQ(GURL(), sub_document->GetLastCommittedURL());
 }
 
@@ -355,6 +425,11 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeJavascriptUrlFound) {
   ASSERT_EQ(1u, main_document->child_count());
   RenderFrameHostImpl* sub_document =
       main_document->child_at(0)->current_frame_host();
+
+  EXPECT_TRUE(main_document->is_mhtml_document());
+
+  // The |sub_document| is the initial empty document.
+  EXPECT_FALSE(sub_document->is_mhtml_document());
   EXPECT_EQ(GURL(), sub_document->GetLastCommittedURL());
 
   EXPECT_EQ(0u, sub_document->child_count());
@@ -378,6 +453,9 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeContentIdFound) {
   ASSERT_EQ(1u, main_document->child_count());
   RenderFrameHostImpl* sub_document =
       main_document->child_at(0)->current_frame_host();
+
+  EXPECT_TRUE(main_document->is_mhtml_document());
+  EXPECT_TRUE(sub_document->is_mhtml_document());
 
   EXPECT_EQ(GURL("cid:iframe"), sub_document->GetLastCommittedURL());
   EXPECT_TRUE(iframe_navigation.has_committed());
@@ -406,8 +484,18 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeContentIdNotFound) {
   RenderFrameHostImpl* sub_document =
       main_document->child_at(0)->current_frame_host();
 
-  EXPECT_EQ(GURL(""), sub_document->GetLastCommittedURL());
-  EXPECT_FALSE(iframe_navigation.has_committed());
+  EXPECT_TRUE(main_document->is_mhtml_document());
+  EXPECT_TRUE(sub_document->is_mhtml_document());
+
+  // This should commit as a failed navigation, but the browser side doesn't
+  // have enough information to make that determination. On the renderer side,
+  // there's no existing way to turn `CommitNavigation()` into
+  // `CommitFailedNavigation()`.
+  // TODO(https://crbug.com/1112965): Fix this by implementing a MHTML
+  // URLLoaderFactory; then failure to find the resource can use the standard
+  // error handling path.
+  EXPECT_EQ(GURL("cid:iframe"), sub_document->GetLastCommittedURL());
+  EXPECT_TRUE(iframe_navigation.has_committed());
   EXPECT_FALSE(iframe_navigation.is_error());
 }
 
@@ -426,16 +514,166 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, CspFrameAncestor) {
 
   EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
 
-  RenderFrameHostImpl* main_frame = main_frame_host();
-  ASSERT_EQ(1u, main_frame->child_count());
-  RenderFrameHostImpl* sub_frame =
-      main_frame->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* main_document = main_frame_host();
+  ASSERT_EQ(1u, main_document->child_count());
+  RenderFrameHostImpl* sub_document =
+      main_document->child_at(0)->current_frame_host();
+
+  EXPECT_TRUE(main_document->is_mhtml_document());
+  EXPECT_TRUE(sub_document->is_mhtml_document());
 
   // Currently, frame-ancestors is not enforced. See https://crbug.com/969711.
   // Check that the iframe is properly loaded. EvalJs("document.body.innerHTML")
   // can't be used, because javascript is disabled. Instead, check it was able
   // to load an iframe.
-  ASSERT_EQ(1u, sub_frame->child_count());
+  ASSERT_EQ(1u, sub_document->child_count());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest,
+                       SameDocumentNavigationWhileLoading) {
+  // Load a MHTML archive normally so there's a renderer process for file://.
+  MhtmlArchive mhtml_archive;
+  mhtml_archive.AddHtmlDocument(GURL("http://example.com/main"),
+                                "<p>Hello world!</p>");
+  const GURL mhtml_url = mhtml_archive.Write("index.mhtml");
+  EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
+
+  const RenderProcessHost* const rph = main_frame_host()->GetProcess();
+
+  // Navigate to another MHTML archive which will reuse the same renderer.
+  MhtmlArchive mhtml_archive2;
+  mhtml_archive2.AddHtmlDocument(GURL("http://example.com/main2"),
+                                 "<p>Hello world again!</p>");
+  const GURL mhtml_url2 = mhtml_archive2.Write("index2.mhtml");
+
+  TestNavigationManager manager(web_contents(), mhtml_url2);
+  shell()->LoadURL(mhtml_url2);
+
+  EXPECT_TRUE(manager.WaitForResponse());
+  // The new navigation should not have committed yet.
+  EXPECT_EQ(mhtml_url, main_frame_host()->GetLastCommittedURL());
+
+  // Make sure it actually picked the same process.
+  NavigationRequest* request =
+      NavigationRequest::From(manager.GetNavigationHandle());
+  EXPECT_EQ(rph, request->GetRenderFrameHost()->GetProcess());
+
+  // Delay the response body from being received by the renderer.
+  mojo::ScopedDataPipeConsumerHandle consumer;
+  mojo::ScopedDataPipeProducerHandle producer;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            mojo::CreateDataPipe(/* options */ nullptr, &producer, &consumer));
+  using std::swap;
+  swap(request->mutable_response_body_for_testing(), consumer);
+
+  // Resume the navigation, which should send a |CommitNavigation()| to the
+  // renderer.
+  manager.ResumeNavigation();
+
+  // Archive loading is split into two phases: first, the entire response body
+  // is read and parsed into an MHTML archive by |MHTMLBodyLoaderClient|, and
+  // then the renderer commits the response. Since the data pipe for the
+  // response body was swapped out above, the renderer should not have committed
+  // a navigation to |mhtml_url2|.
+  // Note: Ideally, this should resume the navigation and wait for a signal that
+  // the renderer is attempting to read the response body. Unfortunately, no
+  // such signal exsts. As-is, this check is imperfect.
+  EXPECT_EQ(mhtml_url, main_frame_host()->GetLastCommittedURL());
+  EXPECT_TRUE(web_contents()->IsLoading());
+
+  // While archive loading is still in progress and nothing has been committed,
+  // trigger a same-document navigation.
+  url::Replacements<char> replacements;
+  replacements.SetRef("fragment", url::Component(0, strlen("fragment")));
+  const GURL mhtml_url_with_fragment =
+      mhtml_url.ReplaceComponents(replacements);
+  // TODO(dcheng): Using NavigateToURL() here seems to cause the test to hang.
+  // Figure out why.
+  shell()->LoadURL(mhtml_url_with_fragment);
+
+  // The same-document navigation should cancel MHTML loading. On the browser
+  // side, this can be observed by waiting for the peer handle to be closed by
+  // the renderer.
+  base::RunLoop run_loop;
+  mojo::SimpleWatcher watcher(FROM_HERE,
+                              mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
+  watcher.Watch(
+      producer.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+      MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+      base::BindLambdaForTesting(
+          [&](MojoResult result, const mojo::HandleSignalsState& state) {
+            EXPECT_EQ(MOJO_RESULT_OK, result);
+            EXPECT_TRUE(state.peer_closed());
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+
+  WaitForLoadStop(web_contents());
+  EXPECT_EQ(mhtml_url_with_fragment, main_frame_host()->GetLastCommittedURL());
+}
+
+// Check RenderFrameHostImpl::is_mhtml_document() stays true after same-document
+// navigation in MHTML document.
+// Regression test for https://crbug.com/1126391
+IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest,
+                       SameDocumentNavigationPreservesMhtmlFlag) {
+  MhtmlArchive mhtml_archive;
+  mhtml_archive.AddHtmlDocument(GURL("http://a.com/a"), "");
+  GURL mhtml_url = mhtml_archive.Write("index.mhtml");
+  EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
+  EXPECT_TRUE(main_frame_host()->is_mhtml_document());
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL(main_frame_host()->GetLastCommittedURL().spec() + "#foo")));
+  EXPECT_TRUE(main_frame_host()->is_mhtml_document());
+}
+
+// Check RenderFrameHostImpl::is_mhtml_document() is correctly set for history
+// navigation to MHTML document. It should continue to work when restored from
+// the BackForwardCache.
+IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest,
+                       BackNavigationPreservesMhtmlFlag) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  MhtmlArchive mhtml_archive;
+  mhtml_archive.AddHtmlDocument(GURL("http://a.com/a"), "");
+  GURL mhtml_url = mhtml_archive.Write("index.mhtml");
+  EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
+  EXPECT_TRUE(main_frame_host()->is_mhtml_document());
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+  EXPECT_FALSE(main_frame_host()->is_mhtml_document());
+  web_contents()->GetController().GoBack();
+  WaitForLoadStop(web_contents());
+  EXPECT_TRUE(main_frame_host()->is_mhtml_document());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, SandboxedIframe) {
+  MhtmlArchive mhtml_archive;
+  mhtml_archive.AddHtmlDocument(GURL("http://a.com"), "", R"(
+    <iframe src="http://a.com/unsandboxed.html"        ></iframe>
+    <iframe src="http://a.com/sandboxed.html"   sandbox></iframe>
+  )");
+  mhtml_archive.AddHtmlDocument(GURL("http://a.com/sandboxed.html"), "");
+  mhtml_archive.AddHtmlDocument(GURL("http://a.com/unsandboxed.html"), "");
+  GURL mhtml_url = mhtml_archive.Write("index.mhtml");
+
+  EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
+
+  RenderFrameHostImpl* rfh_main = main_frame_host();
+  ASSERT_EQ(2u, rfh_main->child_count());
+  RenderFrameHostImpl* rfh_unsandboxed =
+      rfh_main->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_sandboxed =
+      rfh_main->child_at(1)->current_frame_host();
+
+  auto strict_sandbox = network::mojom::WebSandboxFlags::kAll;
+  auto default_mhtml_sandbox =
+      ~network::mojom::WebSandboxFlags::kPopups &
+      ~network::mojom::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts;
+
+  EXPECT_EQ(default_mhtml_sandbox, rfh_main->active_sandbox_flags());
+  EXPECT_EQ(default_mhtml_sandbox, rfh_unsandboxed->active_sandbox_flags());
+  EXPECT_EQ(strict_sandbox, rfh_sandboxed->active_sandbox_flags());
 }
 
 }  // namespace content

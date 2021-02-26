@@ -50,7 +50,8 @@ enum MountCompletedStatus {
   error_invalid_device_path,
   error_unknown_filesystem,
   error_unsupported_filesystem,
-  error_invalid_archive
+  error_invalid_archive,
+  error_need_password
 };
 
 // Filesystem to format to.
@@ -130,7 +131,13 @@ enum DeviceEventType {
   // Rename succeeded.
   rename_success,
   // Rename failed.
-  rename_fail
+  rename_fail,
+  // Partition started.
+  partition_start,
+  // Partition succeeded.
+  partition_success,
+  // Partition failed.
+  partition_fail
 };
 
 // Drive sync error type.
@@ -142,21 +149,30 @@ enum DriveSyncErrorType {
   service_unavailable,
   // There is no server space to sync a file.
   no_server_space,
+  // There is no local space to sync a file.
+  no_local_space,
   // Miscellaneous errors other than listed above.
   misc
 };
 
-// Result of task execution.
+// Result of task execution. If changing, update the strings used in
+// ui/file_manager/file_manager/foreground/js/file_tasks.js
 enum TaskResult {
-  // The task execution succeeded and a new window/tab was opened.
+  // The task execution succeeded and a new window/tab was opened on the current
+  // desktop.
   opened,
   // The task execution succeeded and the message was sent to the proper
-  // extension.
+  // extension or app. This could result in a window being opened on a different
+  // desktop.
   message_sent,
   // The task execution failed.
   failed,
   // No URL is specified.
-  empty
+  empty,
+  // The task was a |plugin_vm| task, and the file was in a unshared directory
+  failed_plugin_vm_task_directory_not_shared,
+  // The task was a |plugin_vm| task, and the file was in an external drive.
+  failed_plugin_vm_task_external_drive
 };
 
 // Drive share type.
@@ -239,6 +255,12 @@ enum CrostiniEventType {
   disable,
   share,
   unshare
+};
+
+enum ProviderSource {
+  file,
+  device,
+  network
 };
 
 // A file task represents an action that the file manager can perform over the
@@ -465,6 +487,10 @@ dictionary VolumeMetadata {
   // Drive label of the volume. Removable partitions that belong to the
   // same physical removable device share the same drive label.
   DOMString? driveLabel;
+
+  // The path on the remote host where this volume is mounted, for crostini this
+  // is the user's homedir (/home/<username>).
+  DOMString? remoteMountPath;
 };
 
 // Payload data for mount event.
@@ -498,7 +524,7 @@ dictionary FileTransferStatus {
   double total;
 
   // Total number of jobs.
-  long num_total_jobs;
+  long numTotalJobs;
 
   // If true, hide when a job is completed when there are zero jobs in
   // progress. Otherwise, hide when one job is in progress.
@@ -632,6 +658,9 @@ dictionary DriveConnectionState {
   // Whether the device has a cellular network access or not. i.e. the |type|
   // can be 'metered' or not.
   boolean hasCellularNetworkAccess;
+
+  // Whether or not hosted files can be pinned.
+  boolean canPinHostedFiles;
 };
 
 // Device event dispatched to listeners of onDeviceChaged.  See also
@@ -666,7 +695,7 @@ dictionary Provider {
   boolean multipleMounts;
 
   // Source of file systems' data.
-  manifestTypes.FileSystemProviderSource source;
+  ProviderSource source;
 };
 
 // Information about a Linux package in response to GetLinuxPackageInfo.
@@ -707,6 +736,61 @@ dictionary AndroidApp {
   IconSet? iconSet;
 };
 
+dictionary StreamInfo {
+  // The stream type e.g., "mp3", "h264", "ogg".
+  DOMString type;
+
+  // An unfiltered string->string dictionary of tags from the stream.
+  object tags;
+};
+
+dictionary AttachedImages {
+  // Data encoded as a dataURL.
+  DOMString data;
+
+  // Data type.
+  DOMString type;
+};
+
+dictionary MediaMetadata {
+  // Content mime type.
+  DOMString mimeType;
+
+  // Defined for video. In pixels.
+  long? height;
+  long? width;
+
+  // Defined for audio and video. In seconds.
+  double? duration;
+
+  // Defined for video. In degrees.
+  long? rotation;
+
+  // Defined for audio and video.
+  DOMString? album;
+  DOMString? artist;
+  DOMString? comment;
+  DOMString? copyright;
+  long? disc;
+  DOMString? genre;
+  DOMString? language;
+  DOMString? title;
+  long? track;
+
+  // All the metadata in the media file. For formats with multiple streams,
+  // stream order is preserved. Container metadata is the first stream.
+  StreamInfo[] rawTags;
+
+  // Raw images embedded in the media file. This is most often audio album
+  // art or video thumbnails.
+  AttachedImages[] attachedImages;
+};
+
+dictionary HoldingSpaceState {
+  // File system URLs of items pinned to the holding space.
+  DOMString[] itemUrls;
+};
+
 // Callback that does not take arguments.
 callback SimpleCallback = void();
 
@@ -721,6 +805,12 @@ callback GetFileTasksCallback = void(FileTask[] tasks);
 
 // |result| Mime type of the file.
 callback GetMimeTypeCallback = void(DOMString result);
+
+// |result| Content sniffed mime type of the file.
+callback GetContentMimeTypeCallback = void(DOMString result);
+
+// |result| Metadata of the Audio or Video file.
+callback GetContentMetadataCallback = void(MediaMetadata result);
 
 // |result| Hash containing the string assets.
 callback GetStringsCallback = void(object result);
@@ -826,12 +916,15 @@ callback InstallLinuxPackageCallback = void(
 // |result| String representing the detected coding system.
 callback DetectCharacterEncodingCallback = void(DOMString result);
 
-// |thumbnailDataUrl| A data URL for the thumbnail as a PNG; |thumbnailDataUrl|
-// is empty if no thumbnail was available.
+// |thumbnailDataUrl| A data URL for the thumbnail; |thumbnailDataUrl| is empty
+// if no thumbnail was available.
 callback GetThumbnailCallback = void(DOMString thumbnailDataUrl);
 
 // |apps| List of Android picker apps.
 callback GetAndroidPickerAppsCallback = void(AndroidApp[] apps);
+
+// |state| Describes the current holding space state.
+callback HoldingSpaceStateCallback = void(HoldingSpaceState state);
 
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
@@ -870,12 +963,31 @@ interface Functions {
   static void getFileTasks([instanceof=Entry] object[] entries,
                            GetFileTasksCallback callback);
 
-  // Gets the MIME type of a file.
-  // |entry| Entry to be checked.
+  // Gets the MIME type of an entry.
+  // |entry| The entry to be checked.
   // |callback|
   [nocompile]
   static void getMimeType([instanceof=Entry] object entry,
                           GetMimeTypeCallback callback);
+
+  // Gets the content sniffed MIME type of a file.
+  // |fileEntry| The file entry to be checked.
+  // |callback|
+  [nocompile]
+  static void getContentMimeType([instanceof=FileEntry] object fileEntry,
+                                 GetContentMimeTypeCallback callback);
+
+  // Gets metadata from an Audio or Video file.
+  // |fileEntry| The file entry to be checked.
+  // |mimeType| Content sniffed mimeType of the file.
+  // |includeImages| False returns metadata tags only. True returns
+  //     metadata tags and metadata (thumbnail) images.
+  // |callback|
+  [nocompile]
+  static void getContentMetadata([instanceof=FileEntry] object fileEntry,
+                                 DOMString mimeType,
+                                 boolean includeImages,
+                                 GetContentMetadataCallback callback);
 
   // Gets localized strings and initialization data.
   // |callback|
@@ -957,11 +1069,13 @@ interface Functions {
       [instanceOf=Entry] object[] entries,
       ResolveEntriesCallback callback);
 
-  // Mount a resource or a file.
-  // |source| Mount point source. For compressed files it is relative file path
-  //     within external file system
-  // |callback|
-  static void addMount(DOMString source, AddMountCallback callback);
+  // Mounts a resource or a file.
+  // |source| Mount point source. For compressed files it is the relative file
+  //     path within the external file system.
+  // |password| Optional password to decrypt the file.
+  // |callback| Callback called with the source path of the mount.
+  static void addMount(DOMString source, optional DOMString password,
+                       AddMountCallback callback);
 
   // Unmounts a mounted resource.
   // |volumeId| An ID of the volume.
@@ -970,6 +1084,12 @@ interface Functions {
   // Get the list of mounted volumes.
   // |callback|
   static void getVolumeMetadataList(GetVolumeMetadataListCallback callback);
+
+  // Copies an image to the system clipboard.
+  // |entry| Entry of the image to copy to the system clipboard.
+  [nocompile]
+  static void copyImageToClipboard([instanceof=Entry] object entry,
+                                   BooleanCallback callback);
 
   // Starts to copy an entry. If the source is a directory, the copy is done
   // recursively.
@@ -998,6 +1118,15 @@ interface Functions {
   // |filesystem| Filesystem type to be formatted to.
   // |volumeLabel| Label of the drive after formatting.
   static void formatVolume(DOMString volumeId,
+                           FormatFileSystemType filesystem,
+                           DOMString volumeLabel);
+
+  // Deletes partitions of removable device, creates a new partition and format
+  // it.
+  // |deviceStoragePath| Storage path of the device to be formatted.
+  // |filesystem| Filesystem type to be formatted to.
+  // |volumeLabel| Label of the drive after formatting.
+  static void singlePartitionFormat(DOMString deviceStoragePath,
                            FormatFileSystemType filesystem,
                            DOMString volumeLabel);
 
@@ -1099,23 +1228,23 @@ interface Functions {
   // Returns list of available providers.
   static void getProviders(GetProvidersCallback callback);
 
-  // Requests adding a new provided file system. If not possible, then an error
-  // via chrome.runtime.lastError is returned.
+  // Requests adding a new provided file system. On failure, sets
+  // $(ref:runtime.lastError).
   static void addProvidedFileSystem(DOMString provider_id,
                                     SimpleCallback callback);
 
-  // Requests configuring an existing volume. If not possible, then returns
-  // an error via chrome.runtime.lastError.
+  // Requests configuring an existing volume. On failure, sets
+  // $(ref:runtime.lastError).
   static void configureVolume(DOMString volumeId, SimpleCallback callback);
 
-  // Requests list of custom actions for the specified entries. If not possible,
-  // then an error via chrome.runtime.lastError is returned.
+  // Requests list of custom actions for the specified entries. On failure, sets
+  // $(ref:runtime.lastError).
   [nocompile]
   static void getCustomActions([instanceof=Entry] object[] entries,
                                GetCustomActionsCallback callback);
 
-  // Executes a custom action for a set of entries. If not possible, then an
-  // error via chrome.runtime.lastError is returned.
+  // Executes a custom action for a set of entries. On failure, sets
+  // $(ref:runtime.lastError).
   [nocompile]
   static void executeCustomAction([instanceof=Entry] object[] entries,
                                   DOMString actionId,
@@ -1185,9 +1314,30 @@ interface Functions {
   // returns a thumbnail appropriate for file list or grid views; otherwise,
   // returns a thumbnail appropriate for quickview.
   [nocompile]
-  static void getThumbnail([instanceOf=FileEntry] object entry,
-                           boolean cropToSquare,
-                           GetThumbnailCallback callback);
+  static void getDriveThumbnail([instanceof=FileEntry] object entry,
+                                boolean cropToSquare,
+                                GetThumbnailCallback callback);
+
+  // For a local PDF file, retrieves its thumbnail with a given |width| and
+  // |height|.
+  [nocompile]
+  static void getPdfThumbnail([instanceof=FileEntry] object entry,
+                              long width,
+                              long height,
+                              GetThumbnailCallback callback);
+
+  // Retrieves a thumbnail of an ARC DocumentsProvider file, closely matching
+  // the hinted size specified by |widthHint| and |heightHint|, but not
+  // necessarily the exact size. |callback| is called with thumbnail data
+  // encoded as a data URL. If the document does not support thumbnails,
+  // |callback| is called with an empty string.
+  // Note: The thumbnail data may originate from third-party application code,
+  // and is untrustworthy (Security).
+  [nocompile]
+  static void getArcDocumentsProviderThumbnail([instanceof=FileEntry] object entry,
+                                               long widthHint,
+                                               long heightHint,
+                                               GetThumbnailCallback callback);
 
   // Returns a guessed character encoding of a hex-encoded string. Every 2
   // characters of |bytes| represent one byte by 2-digit hexadecimal number.
@@ -1205,12 +1355,46 @@ interface Functions {
   // Called when the user selects an Android picker app in file selector.
   static void selectAndroidPickerApp(AndroidApp androidApp,
                                      SimpleCallback callback);
+
+  // Return true if sharesheet contains share targets for entries.
+  // |entries| Array of selected entries
+  // |callback| is called with error in case of failure and with no arguments
+  // if successfully launched the Sharesheet dialog, but before user has
+  // finished the sharing.
+  [nocompile]
+  static void sharesheetHasTargets([instanceof=Entry] object[] entries,
+                           BooleanCallback callback);
+
+  // Invoke Sharesheet for selected files.
+  // |entries| Array of selected entries.
+  // |callback|
+  [nocompile]
+  static void invokeSharesheet([instanceof=Entry] object[] entries,
+                                     SimpleCallback callback);
+
+  // Adds or removes a list of entries to temporary holding space. Any entries
+  // whose current holding space state matches the intended state will be
+  // skipped.
+  // |entries| The list of entries whose holding space needs to be updated.
+  // |add| Whether items should be added or removed from the holding space.
+  // |callback| Completion callback.
+  [nocompile]
+  static void toggleAddedToHoldingSpace([instanceOf=Entry] object[] entries,
+                                        boolean added,
+                                        optional SimpleCallback callback);
+
+  // Retrieves the current holding space state, for example the list of items
+  // the holding space currently contains.
+  // |callback| The result callback.
+  static void getHoldingSpaceState(HoldingSpaceStateCallback callback);
 };
 
 interface Events {
   static void onMountCompleted(MountCompletedEvent event);
 
   static void onFileTransfersUpdated(FileTransferStatus event);
+
+  static void onPinTransfersUpdated(FileTransferStatus event);
 
   static void onCopyProgress(long copyId, CopyProgressStatus status);
 

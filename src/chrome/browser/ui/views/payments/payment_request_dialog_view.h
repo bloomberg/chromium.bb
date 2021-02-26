@@ -93,7 +93,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // be notified of dialog events as they happen (but may be NULL) and should
   // outlive this object.
   static base::WeakPtr<PaymentRequestDialogView> Create(
-      PaymentRequest* request,
+      base::WeakPtr<PaymentRequest> request,
       PaymentRequestDialogView::ObserverForTest* observer);
 
   // views::View
@@ -116,6 +116,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
       const GURL& url,
       PaymentHandlerOpenWindowCallback callback) override;
   void RetryDialog() override;
+  void ConfirmPaymentForTesting() override;
 
   // PaymentRequestSpec::Observer:
   void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override;
@@ -137,11 +138,9 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // |on_added| is called when a new credit card was added (the reference is
   // short-lived; callee should make a copy of the CreditCard object).
   // |back_navigation_type| identifies the type of navigation to execute once
-  // the editor has completed successfully. |next_ui_tag| is the lowest value
-  // that the credit card editor can use to assign to custom controls.
+  // the editor has completed successfully.
   void ShowCreditCardEditor(
       BackNavigationType back_navigation_type,
-      int next_ui_tag,
       base::OnceClosure on_edited,
       base::OnceCallback<void(const autofill::CreditCard&)> on_added,
       autofill::CreditCard* credit_card = nullptr);
@@ -195,7 +194,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // The browsertest validates the calculated dialog size.
   friend class PaymentHandlerWindowSizeTest;
 
-  PaymentRequestDialogView(PaymentRequest* request,
+  PaymentRequestDialogView(base::WeakPtr<PaymentRequest> request,
                            PaymentRequestDialogView::ObserverForTest* observer);
   ~PaymentRequestDialogView() override;
 
@@ -210,11 +209,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
 
-  // Non-owned reference to the PaymentRequest that initiated this dialog. Since
-  // the PaymentRequest object always outlives this one, the pointer should
-  // always be valid even though there is no direct ownership relationship
-  // between the two.
-  PaymentRequest* request_;
+  // The PaymentRequest object that initiated this dialog.
+  base::WeakPtr<PaymentRequest> request_;
   ControllerMap controller_map_;
   ViewStack* view_stack_;
 
@@ -226,8 +222,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // May be null.
   ObserverForTest* observer_for_testing_;
 
-  // Used when the dialog is being closed to avoid re-entrancy into the
-  // controller_map_.
+  // Used when the dialog is being closed to avoid re-entrance into the
+  // controller_map_ or view_stack_.
   bool being_closed_ = false;
 
   // The number of initialization tasks that are not yet initialized.

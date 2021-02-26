@@ -4,7 +4,7 @@
 
 #include "weblayer/test/weblayer_browser_test.h"
 
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/public/test/network_connection_change_simulator.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -12,59 +12,11 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "weblayer/public/navigation.h"
 #include "weblayer/public/navigation_controller.h"
-#include "weblayer/public/navigation_observer.h"
 #include "weblayer/public/tab.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
 namespace weblayer {
-namespace {
-
-class OneShotNavigationObserver : public NavigationObserver {
- public:
-  explicit OneShotNavigationObserver(Shell* shell) : tab_(shell->tab()) {
-    tab_->GetNavigationController()->AddObserver(this);
-  }
-
-  ~OneShotNavigationObserver() override {
-    tab_->GetNavigationController()->RemoveObserver(this);
-  }
-
-  void WaitForNavigation() { run_loop_.Run(); }
-
-  bool completed() { return completed_; }
-  bool is_error_page() { return is_error_page_; }
-  Navigation::LoadError load_error() { return load_error_; }
-  int http_status_code() { return http_status_code_; }
-  NavigationState navigation_state() { return navigation_state_; }
-
- private:
-  // NavigationObserver implementation:
-  void NavigationCompleted(Navigation* navigation) override {
-    completed_ = true;
-    Finish(navigation);
-  }
-
-  void NavigationFailed(Navigation* navigation) override { Finish(navigation); }
-
-  void Finish(Navigation* navigation) {
-    is_error_page_ = navigation->IsErrorPage();
-    load_error_ = navigation->GetLoadError();
-    http_status_code_ = navigation->GetHttpStatusCode();
-    navigation_state_ = navigation->GetState();
-    run_loop_.Quit();
-  }
-
-  base::RunLoop run_loop_;
-  Tab* tab_;
-  bool completed_ = false;
-  bool is_error_page_ = false;
-  Navigation::LoadError load_error_ = Navigation::kNoError;
-  int http_status_code_ = 0;
-  NavigationState navigation_state_ = NavigationState::kWaitingResponse;
-};
-
-}  // namespace
 
 // The purpose of this test is to verify Variations code is correctly wired up
 // for WebLayer. It's not intended to replicate VariationsHttpHeadersBrowserTest
@@ -87,7 +39,7 @@ class WebLayerVariationsHttpBrowserTest : public WebLayerBrowserTest {
 
   void SetUpOnMainThread() override {
     auto* variations_provider =
-        variations::VariationsHttpHeaderProvider::GetInstance();
+        variations::VariationsIdsProvider::GetInstance();
     variations_provider->ForceVariationIds({"12", "456", "t789"}, "");
 
     // The test makes requests to google.com which we want to redirect to the

@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -270,7 +271,7 @@ TEST_F(MultiColumnRenderingTest, SpannerWithSpanner) {
   EXPECT_EQ(flow_thread->ContainingColumnSpannerPlaceholder(
                 GetLayoutObjectByElementId("invalidSpanner")),
             column_box);
-  EXPECT_EQ(ToLayoutMultiColumnSpannerPlaceholder(column_box)
+  EXPECT_EQ(To<LayoutMultiColumnSpannerPlaceholder>(column_box)
                 ->LayoutObjectInFlowThread(),
             GetLayoutObjectByElementId("spanner"));
   EXPECT_EQ(GetLayoutObjectByElementId("spanner")->SpannerPlaceholder(),
@@ -298,7 +299,7 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpanner) {
             column_box);
   EXPECT_EQ(GetLayoutObjectByElementId("spanner")->SpannerPlaceholder(),
             column_box);
-  EXPECT_EQ(ToLayoutMultiColumnSpannerPlaceholder(column_box)
+  EXPECT_EQ(To<LayoutMultiColumnSpannerPlaceholder>(column_box)
                 ->LayoutObjectInFlowThread(),
             GetLayoutObjectByElementId("spanner"));
   EXPECT_EQ(flow_thread->ContainingColumnSpannerPlaceholder(
@@ -326,7 +327,7 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerAfterSpanner) {
   EXPECT_EQ(flow_thread->ContainingColumnSpannerPlaceholder(
                 GetLayoutObjectByElementId("spanner1")),
             column_box);
-  EXPECT_EQ(ToLayoutMultiColumnSpannerPlaceholder(column_box)
+  EXPECT_EQ(To<LayoutMultiColumnSpannerPlaceholder>(column_box)
                 ->LayoutObjectInFlowThread(),
             GetLayoutObjectByElementId("spanner1"));
   EXPECT_EQ(GetLayoutObjectByElementId("spanner1")->SpannerPlaceholder(),
@@ -339,7 +340,7 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerAfterSpanner) {
   EXPECT_EQ(flow_thread->ContainingColumnSpannerPlaceholder(
                 GetLayoutObjectByElementId("spanner2")),
             column_box);
-  EXPECT_EQ(ToLayoutMultiColumnSpannerPlaceholder(column_box)
+  EXPECT_EQ(To<LayoutMultiColumnSpannerPlaceholder>(column_box)
                 ->LayoutObjectInFlowThread(),
             GetLayoutObjectByElementId("spanner2"));
   EXPECT_EQ(GetLayoutObjectByElementId("spanner2")->SpannerPlaceholder(),
@@ -372,7 +373,7 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerBeforeSpanner) {
             column_box);
   EXPECT_EQ(GetLayoutObjectByElementId("spanner1")->SpannerPlaceholder(),
             column_box);
-  EXPECT_EQ(ToLayoutMultiColumnSpannerPlaceholder(column_box)
+  EXPECT_EQ(To<LayoutMultiColumnSpannerPlaceholder>(column_box)
                 ->LayoutObjectInFlowThread(),
             GetLayoutObjectByElementId("spanner1"));
   column_box =
@@ -382,7 +383,7 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerBeforeSpanner) {
             column_box);
   EXPECT_EQ(GetLayoutObjectByElementId("spanner2")->SpannerPlaceholder(),
             column_box);
-  EXPECT_EQ(ToLayoutMultiColumnSpannerPlaceholder(column_box)
+  EXPECT_EQ(To<LayoutMultiColumnSpannerPlaceholder>(column_box)
                 ->LayoutObjectInFlowThread(),
             GetLayoutObjectByElementId("spanner2"));
   EXPECT_EQ(flow_thread->ContainingColumnSpannerPlaceholder(
@@ -564,8 +565,19 @@ TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffsetVerticalLr) {
             third_row);  // overflow
 }
 
-class MultiColumnTreeModifyingTest : public MultiColumnRenderingTest {
+// Some of these tests manipulate layout objects in such a way that we might end
+// up with a mix of legacy and NG objects, and inside block fragmentation, any
+// such mismatch (e.g. an NG layout object inside legacy block fragmentation)
+// will be treated as monolithic content, which isn't what these tests expect.
+// Disable LayoutNG to ensure that we only use one engine.
+//
+// TODO(mstensho): Rather than disabling LayoutNG, we should *enable*
+// LayoutNGBlockFragmentation, but that currently causes failures.
+class MultiColumnTreeModifyingTest : public MultiColumnRenderingTest,
+                                     private ScopedLayoutNGForTest {
  public:
+  MultiColumnTreeModifyingTest() : ScopedLayoutNGForTest(false) {}
+
   void SetMulticolHTML(const char*);
   void ReparentLayoutObject(const char* new_parent_id,
                             const char* child_id,

@@ -11,8 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -40,6 +38,8 @@ class TestingProfileManager {
   explicit TestingProfileManager(TestingBrowserProcess* browser_process);
   TestingProfileManager(TestingBrowserProcess* browser_process,
                         ScopedTestingLocalState* local_state);
+  TestingProfileManager(const TestingProfileManager&) = delete;
+  TestingProfileManager& operator=(const TestingProfileManager&) = delete;
   ~TestingProfileManager();
 
   // This needs to be called in testing::Test::SetUp() to put the object in a
@@ -72,8 +72,11 @@ class TestingProfileManager {
       base::Optional<std::unique_ptr<policy::PolicyService>> policy_service =
           base::nullopt);
 
-  // Small helper for creating testing profiles. Just forwards to above.
+  // Small helpers for creating testing profiles. Just forward to above.
   TestingProfile* CreateTestingProfile(const std::string& name);
+  TestingProfile* CreateTestingProfile(
+      const std::string& name,
+      TestingProfile::TestingFactories testing_factories);
 
   // Creates a new guest TestingProfile whose data lives in the guest profile
   // test environment directory, as specified by the profile manager.
@@ -134,13 +137,8 @@ class TestingProfileManager {
   bool called_set_up_;
 
   // |profiles_path_| is the path under which new directories for the profiles
-  // will be placed. Depending on the way SetUp is invoked, this path might
-  // either be a directory owned by TestingProfileManager, in which case
-  // ownership will be managed by |profiles_dir_|, or the directory will be
-  // owned by the test which has instantiated |this|, and then |profiles_dir_|
-  // will remain empty.
+  // will be placed.
   base::FilePath profiles_path_;
-  base::ScopedTempDir profiles_dir_;
 
   // The user data directory in the path service is overriden because some
   // functions, e.g. GetPathOfHighResAvatarAtIndex, get the user data directory
@@ -162,8 +160,6 @@ class TestingProfileManager {
 
   // Map of profile_name to TestingProfile* from CreateTestingProfile().
   TestingProfilesMap testing_profiles_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingProfileManager);
 };
 
 #endif  // CHROME_TEST_BASE_TESTING_PROFILE_MANAGER_H_

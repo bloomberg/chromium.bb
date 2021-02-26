@@ -26,6 +26,9 @@ def main():
        "hunspell-en_GB-ise-2019.10.06.zip",
        "en_GB.zip"),
       ("https://sourceforge.net/projects/wordlist/files/speller/2019.10.06/"
+       "hunspell-en_GB-ize-2019.10.06.zip",
+       "en_GB_oxendict.zip"),
+      ("https://sourceforge.net/projects/wordlist/files/speller/2019.10.06/"
        "hunspell-en_AU-2019.10.06.zip",
        "en_AU.zip"),
       ("https://github.com/b00f/lilak/releases/latest/download/"
@@ -44,6 +47,8 @@ def main():
     ZipFile(file_name).extractall()
     for name in glob.glob("*en_GB-ise*"):
       os.rename(name, name.replace("-ise", ""))
+    for name in glob.glob("*en_GB-ize*"):
+      os.rename(name, name.replace("-ize", "_oxendict"))
     for name in glob.glob("*fa-IR.*"):
       os.rename(name, name.replace("-", "_"))
     os.remove(file_name)

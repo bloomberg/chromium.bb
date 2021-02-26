@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//testing/test.gni")
 
 source_set("audio") {
@@ -64,6 +65,7 @@ source_set("audio") {
   deps = [
     ":testing_api_support",
     "//build:chromecast_buildflags",
+    "//build:chromeos_buildflags",
   ]
 
   public_deps = [
@@ -71,24 +73,19 @@ source_set("audio") {
     "//media",
     "//media/webrtc",
     "//services/audio/public/mojom",
-    "//services/service_manager/sandbox",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "audio_sandbox_hook_linux.cc",
       "audio_sandbox_hook_linux.h",
     ]
-    public_deps += [ "//sandbox/linux:sandbox_services" ]
+    public_deps += [
+      "//sandbox/linux:sandbox_services",
+      "//sandbox/policy",
+    ]
   }
 
-  if (is_win) {
-    sources += [
-      "audio_sandbox_win.cc",
-      "audio_sandbox_win.h",
-    ]
-    public_deps += [ "//sandbox/win:sandbox" ]
-  }
   configs += [
     "//build/config/compiler:wexit_time_destructors",
     "//media:media_config",
@@ -156,8 +153,8 @@ source_set("tests") {
   deps = [
     ":audio",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//media:test_support",
-    "//mojo/core/embedder",
     "//services/audio/public/cpp",
     "//services/audio/public/cpp:test_support",
     "//services/audio/public/mojom",
@@ -165,7 +162,7 @@ source_set("tests") {
     "//testing/gtest",
   ]
 
-  if (is_chromeos || is_chromecast) {
+  if (is_ash || is_chromecast) {
     sources += [
       "public/cpp/sounds/audio_stream_handler_unittest.cc",
       "public/cpp/sounds/sounds_manager_unittest.cc",

@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.CalledByNative;
@@ -73,6 +74,7 @@ public class TracingControllerAndroidImpl implements TracingControllerAndroid {
 
     private String mFilename;
     private boolean mCompressFile;
+    private boolean mUseProtobuf;
 
     public TracingControllerAndroidImpl(Context context) {
         mContext = context;
@@ -134,8 +136,8 @@ public class TracingControllerAndroidImpl implements TracingControllerAndroid {
             // (Not a huge problem if it isn't unique, we'll just append more data.)
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HHmmss", Locale.US);
             formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-            File dir =
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            Context context = ContextUtils.getApplicationContext();
+            File dir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
             File file = new File(dir, "chrome-profile-results-" + formatter.format(new Date()));
             return file.getPath();
         }
@@ -145,12 +147,13 @@ public class TracingControllerAndroidImpl implements TracingControllerAndroid {
      * Start profiling to a new file in the Downloads directory.
      *
      * Calls #startTracing(String, boolean, String, String, boolean) with a new timestamped
-     * filename. Doesn't compress the file.
+     * filename. Doesn't compress the file or generate protobuf trace data.
      *
-     * @see #startTracing(String, boolean, String, String, boolean)
+     * @see #startTracing(String, boolean, String, String, boolean, boolean)
      */
     public boolean startTracing(boolean showToasts, String categories, String traceOptions) {
-        return startTracing(null, showToasts, categories, traceOptions, false);
+        return startTracing(null, showToasts, categories, traceOptions, /*compressFile=*/false,
+                /*useProtobuf=*/false);
     }
 
     private void initializeNativeControllerIfNeeded() {
@@ -162,7 +165,7 @@ public class TracingControllerAndroidImpl implements TracingControllerAndroid {
 
     @Override
     public boolean startTracing(String filename, boolean showToasts, String categories,
-            String traceOptions, boolean compressFile) {
+            String traceOptions, boolean compressFile, boolean useProtobuf) {
         mShowToasts = showToasts;
 
         if (filename == null) {
@@ -182,7 +185,7 @@ public class TracingControllerAndroidImpl implements TracingControllerAndroid {
         // Lazy initialize the native side, to allow construction before the library is loaded.
         initializeNativeControllerIfNeeded();
         if (!TracingControllerAndroidImplJni.get().startTracing(mNativeTracingControllerAndroid,
-                    TracingControllerAndroidImpl.this, categories, traceOptions)) {
+                    TracingControllerAndroidImpl.this, categories, traceOptions, useProtobuf)) {
             logAndToastError(mContext.getString(R.string.profiler_error_toast));
             return false;
         }
@@ -191,6 +194,7 @@ public class TracingControllerAndroidImpl implements TracingControllerAndroid {
         showToast(mContext.getString(R.string.profiler_started_toast) + ": " + categories);
         mFilename = filename;
         mCompressFile = compressFile;
+        mUseProtobuf = useProtobuf;
         mIsTracing = true;
         return true;
     }
@@ -199,7 +203,8 @@ public class TracingControllerAndroidImpl implements TracingControllerAndroid {
     public void stopTracing(Callback<Void> callback) {
         if (isTracing()) {
             TracingControllerAndroidImplJni.get().stopTracing(mNativeTracingControllerAndroid,
-                    TracingControllerAndroidImpl.this, mFilename, mCompressFile, callback);
+                    TracingControllerAndroidImpl.this, mFilename, mCompressFile, mUseProtobuf,
+                    callback);
         }
     }
 
@@ -323,7 +328,8 @@ public class TracingControllerAndroidImpl implements TracingControllerAndroid {
                         ? "record-until-full" : "record-continuously";
                 String filename = intent.getStringExtra(FILE_EXTRA);
                 if (filename != null) {
-                    startTracing(filename, true, categories, traceOptions, false);
+                    startTracing(filename, true, categories, traceOptions, /*compressFile=*/false,
+                            /*useProtobuf=*/false);
                 } else {
                     startTracing(true, categories, traceOptions);
                 }
@@ -344,9 +350,11 @@ public class TracingControllerAndroidImpl implements TracingControllerAndroid {
         long init(TracingControllerAndroidImpl caller);
         void destroy(long nativeTracingControllerAndroid, TracingControllerAndroidImpl caller);
         boolean startTracing(long nativeTracingControllerAndroid,
-                TracingControllerAndroidImpl caller, String categories, String traceOptions);
+                TracingControllerAndroidImpl caller, String categories, String traceOptions,
+                boolean useProtobuf);
         void stopTracing(long nativeTracingControllerAndroid, TracingControllerAndroidImpl caller,
-                String filename, boolean compressFile, Callback<Void> callback);
+                String filename, boolean compressFile, boolean useProtobuf,
+                Callback<Void> callback);
         boolean getKnownCategoriesAsync(long nativeTracingControllerAndroid,
                 TracingControllerAndroidImpl caller, Callback<String[]> callback);
         String getDefaultCategories(TracingControllerAndroidImpl caller);

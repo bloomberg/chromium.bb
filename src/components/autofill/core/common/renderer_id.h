@@ -12,6 +12,9 @@
 
 namespace autofill {
 
+// A value that can be provided by the renderer in cases when the ID is missing.
+constexpr int kNotSetRendererID = -1;
+
 namespace internal {
 
 using FormRendererIdType = ::util::IdType<class FormRendererIdMarker,
@@ -29,6 +32,8 @@ using FieldRendererIdType =
 // order to avoid having to define out-of-line constructors in all structs that
 // contain renderer IDs.
 
+// The FormRendererId of a synthetic form is_null(). A synthetic form is the
+// collection of form fields outside of the scope of any <form> tag in a page.
 class FormRendererId : public internal::FormRendererIdType {
   using internal::FormRendererIdType::IdType;
 };

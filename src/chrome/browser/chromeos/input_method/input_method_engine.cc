@@ -8,12 +8,15 @@
 #include <memory>
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/input_method/ui/input_method_menu_item.h"
+#include "chrome/browser/chromeos/input_method/ui/input_method_menu_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "ui/aura/window.h"
@@ -21,21 +24,17 @@
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/ime_keymap.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/constants.h"
-#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/chromeos/ime/input_method_menu_item.h"
-#include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-
-using input_method::InputMethodEngineBase;
 
 namespace chromeos {
 
@@ -102,6 +101,11 @@ void InputMethodEngine::CandidateClicked(uint32_t index) {
                                 InputMethodEngineBase::MOUSE_BUTTON_LEFT);
 }
 
+void InputMethodEngine::AssistiveWindowButtonClicked(
+    const ui::ime::AssistiveWindowButton& button) {
+  observer_->OnAssistiveWindowButtonClicked(button);
+}
+
 void InputMethodEngine::SetMirroringEnabled(bool mirroring_enabled) {
   if (mirroring_enabled != is_mirroring_) {
     is_mirroring_ = mirroring_enabled;
@@ -114,6 +118,70 @@ void InputMethodEngine::SetCastingEnabled(bool casting_enabled) {
     is_casting_ = casting_enabled;
     observer_->OnScreenProjectionChanged(is_mirroring_ || is_casting_);
   }
+}
+
+ui::InputMethodKeyboardController*
+InputMethodEngine::GetInputMethodKeyboardController() const {
+  // Callers expect a nullptr when the keyboard is disabled. See
+  // https://crbug.com/850020.
+  if (!keyboard::KeyboardUIController::HasInstance() ||
+      !keyboard::KeyboardUIController::Get()->IsEnabled()) {
+    return nullptr;
+  }
+  return keyboard::KeyboardUIController::Get()
+      ->input_method_keyboard_controller();
+}
+
+void InputMethodEngine::OnSuggestionsChanged(
+    const std::vector<std::string>& suggestions) {
+  observer_->OnSuggestionsChanged(suggestions);
+}
+
+bool InputMethodEngine::SetButtonHighlighted(
+    int context_id,
+    const ui::ime::AssistiveWindowButton& button,
+    bool highlighted,
+    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler)
+    aw_handler->SetButtonHighlighted(button, highlighted);
+  return true;
+}
+
+void InputMethodEngine::ClickButton(
+    const ui::ime::AssistiveWindowButton& button) {
+  observer_->OnAssistiveWindowButtonClicked(button);
+}
+
+bool InputMethodEngine::AcceptSuggestionCandidate(
+    int context_id,
+    const base::string16& suggestion,
+    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  CommitText(context_id, base::UTF16ToUTF8(suggestion).c_str(), error);
+
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler)
+    aw_handler->AcceptSuggestion(suggestion);
+  return true;
 }
 
 const InputMethodEngine::CandidateWindowProperty&
@@ -237,9 +305,7 @@ bool InputMethodEngine::SetCursorPosition(int context_id,
 }
 
 bool InputMethodEngine::SetSuggestion(int context_id,
-                                      const base::string16& text,
-                                      const size_t confirmed_length,
-                                      const bool show_tab,
+                                      const ui::ime::SuggestionDetails& details,
                                       std::string* error) {
   if (!IsActive()) {
     *error = kErrorNotActive;
@@ -253,7 +319,7 @@ bool InputMethodEngine::SetSuggestion(int context_id,
   IMEAssistiveWindowHandlerInterface* aw_handler =
       ui::IMEBridge::Get()->GetAssistiveWindowHandler();
   if (aw_handler)
-    aw_handler->ShowSuggestion(text, confirmed_length, show_tab);
+    aw_handler->ShowSuggestion(details);
   return true;
 }
 
@@ -384,6 +450,44 @@ bool InputMethodEngine::SetCompositionRange(
   if (!input_context)
     return false;
   return input_context->SetCompositionRange(before, after, text_spans);
+}
+
+bool InputMethodEngine::SetComposingRange(
+    uint32_t start,
+    uint32_t end,
+    const std::vector<ui::ImeTextSpan>& text_spans) {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context)
+    return false;
+  return input_context->SetComposingRange(start, end, text_spans);
+}
+
+gfx::Range InputMethodEngine::GetAutocorrectRange() {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context)
+    return gfx::Range();
+  return input_context->GetAutocorrectRange();
+}
+
+gfx::Rect InputMethodEngine::GetAutocorrectCharacterBounds() {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context)
+    return gfx::Rect();
+  return input_context->GetAutocorrectCharacterBounds();
+}
+
+bool InputMethodEngine::SetAutocorrectRange(
+    const base::string16& autocorrect_text,
+    uint32_t start,
+    uint32_t end) {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context)
+    return false;
+  return input_context->SetAutocorrectRange(autocorrect_text, start, end);
 }
 
 bool InputMethodEngine::SetSelectionRange(uint32_t start, uint32_t end) {

@@ -9,11 +9,9 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/default_color_constants.h"
 #include "ash/system/model/locale_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/actionable_view.h"
-#include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/check.h"
 #include "base/i18n/case_conversion.h"
@@ -51,11 +49,10 @@ class LocaleItem : public ActionableView {
     AddChildView(tri_view);
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
+    auto* color_provider = AshColorProvider::Get();
     views::Label* iso_code_label = TrayPopupUtils::CreateDefaultLabel();
-    iso_code_label->SetEnabledColor(
-        AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kTextPrimary,
-            AshColorProvider::AshColorMode::kDark));
+    iso_code_label->SetEnabledColor(color_provider->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextColorPrimary));
     iso_code_label->SetAutoColorReadabilityEnabled(false);
     iso_code_label->SetText(base::i18n::ToUpper(
         base::UTF8ToUTF16(l10n_util::GetLanguage(iso_code))));
@@ -67,10 +64,10 @@ class LocaleItem : public ActionableView {
 
     auto* display_name_view = TrayPopupUtils::CreateDefaultLabel();
     display_name_view->SetText(display_name);
-    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL,
-                             true /* use_unified_theme */);
-    style.SetupLabel(display_name_view);
-
+    display_name_view->SetEnabledColor(color_provider->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextColorPrimary));
+    TrayPopupUtils::SetLabelFontList(
+        display_name_view, TrayPopupUtils::FontStyle::kDetailedViewLabel);
     display_name_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     tri_view->AddView(TriView::Container::CENTER, display_name_view);
 
@@ -78,9 +75,8 @@ class LocaleItem : public ActionableView {
       views::ImageView* checked_image = TrayPopupUtils::CreateMainImageView();
       checked_image->SetImage(gfx::CreateVectorIcon(
           kCheckCircleIcon, kMenuIconSize,
-          AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-              AshColorProvider::ContentLayerType::kProminentIconButton,
-              kProminentIconButtonColor)));
+          color_provider->GetContentLayerColor(
+              AshColorProvider::ContentLayerType::kIconColorProminent)));
       tri_view->AddView(TriView::Container::END, checked_image);
     }
     SetAccessibleName(display_name_view->GetText());

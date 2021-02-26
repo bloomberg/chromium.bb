@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_set_inner_html_options.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -59,8 +61,7 @@ struct SameSizeAsShadowRoot : public DocumentFragment, public TreeScope {
   unsigned flags[1];
 };
 
-static_assert(sizeof(ShadowRoot) == sizeof(SameSizeAsShadowRoot),
-              "ShadowRoot should stay small");
+ASSERT_SIZE(ShadowRoot, SameSizeAsShadowRoot);
 
 ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     : DocumentFragment(nullptr, kCreateShadowRoot),
@@ -116,12 +117,30 @@ String ShadowRoot::innerHTML() const {
   return CreateMarkup(this, kChildrenOnly);
 }
 
-void ShadowRoot::setInnerHTML(const String& markup,
-                              ExceptionState& exception_state) {
+void ShadowRoot::SetInnerHTMLInternal(const String& html,
+                                      const SetInnerHTMLOptions* options,
+                                      ExceptionState& exception_state) {
+  bool allow_shadow_root =
+      options->hasAllowShadowRoot() && options->allowShadowRoot();
   if (DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
-          markup, &host(), kAllowScriptingContent, "innerHTML",
-          exception_state))
+          html, &host(), kAllowScriptingContent, "innerHTML", allow_shadow_root,
+          exception_state)) {
     ReplaceChildrenWithFragment(this, fragment, exception_state);
+  }
+}
+
+void ShadowRoot::setInnerHTML(const String& html,
+                              ExceptionState& exception_state) {
+  const SetInnerHTMLOptions options;
+  SetInnerHTMLInternal(html, &options, exception_state);
+}
+
+void ShadowRoot::setInnerHTMLWithOptions(const String& html,
+                                         const SetInnerHTMLOptions* options,
+                                         ExceptionState& exception_state) {
+  DCHECK(RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled(
+      GetExecutionContext()));
+  SetInnerHTMLInternal(html, options, exception_state);
 }
 
 void ShadowRoot::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
@@ -220,7 +239,7 @@ void ShadowRoot::SetNeedsDistributionRecalc() {
   host().MarkAncestorsWithChildNeedsDistributionRecalc();
 }
 
-void ShadowRoot::Trace(Visitor* visitor) {
+void ShadowRoot::Trace(Visitor* visitor) const {
   visitor->Trace(style_sheet_list_);
   visitor->Trace(slot_assignment_);
   visitor->Trace(shadow_root_v0_);

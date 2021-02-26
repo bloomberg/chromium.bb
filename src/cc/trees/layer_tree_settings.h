@@ -40,8 +40,8 @@ class CC_EXPORT LayerTreeSettings {
   // When |enable_early_damage_check| is true, the early damage check is
   // performed if one of the last |damaged_frame_limit| frames had no damage.
   int damaged_frame_limit = 3;
-  bool enable_impl_latency_recovery = true;
-  bool enable_main_latency_recovery = true;
+  bool enable_impl_latency_recovery = false;
+  bool enable_main_latency_recovery = false;
   bool can_use_lcd_text = true;
   bool gpu_rasterization_disabled = false;
   int gpu_rasterization_msaa_sample_count = -1;
@@ -59,12 +59,10 @@ class CC_EXPORT LayerTreeSettings {
   base::TimeDelta scrollbar_fade_duration;
   base::TimeDelta scrollbar_thinning_duration;
   bool scrollbar_flash_after_any_scroll_update = false;
-  bool scrollbar_flash_when_mouse_enter = false;
   SkColor solid_color_scrollbar_color = SK_ColorWHITE;
   base::TimeDelta scroll_animation_duration_for_testing;
   bool timeout_and_draw_when_animation_checkerboards = true;
   bool layers_always_allowed_lcd_text = false;
-  float minimum_contents_scale = 0.0625f;
   float low_res_contents_scale_factor = 0.25f;
   float top_controls_show_threshold = 0.5f;
   float top_controls_hide_threshold = 0.5f;
@@ -89,7 +87,6 @@ class CC_EXPORT LayerTreeSettings {
   bool use_zero_copy = false;
   bool use_partial_raster = false;
   bool enable_elastic_overscroll = false;
-  bool ignore_root_layer_flings = false;
   size_t scheduled_raster_task_limit = 32;
   bool use_occlusion_for_tile_prioritization = false;
   bool use_layer_lists = false;
@@ -187,10 +184,23 @@ class CC_EXPORT LayerTreeSettings {
   // Whether experimental de-jelly effect is allowed.
   bool allow_de_jelly_effect = false;
 
+  // Whether the compositor should attempt to sync with the scroll handlers
+  // before submitting a frame.
+  bool enable_synchronized_scrolling = true;
+
 #if DCHECK_IS_ON()
   // Whether to check if any double blur exists.
   bool log_on_ui_double_background_blur = false;
 #endif
+
+  // When enabled, enforces new interoperable semantics for 3D transforms.
+  // See crbug.com/1008483.
+  bool enable_transform_interop = false;
+
+  // When enabled, the compositor specifies a frame rate preference that would
+  // allow the display to run at a low refresh rate matching the playback rate
+  // for videos updating onscreen.
+  bool force_preferred_interval_for_video = false;
 };
 
 class CC_EXPORT LayerListSettings : public LayerTreeSettings {

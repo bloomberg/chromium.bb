@@ -4,19 +4,18 @@
 
 package org.chromium.chrome.browser.signin;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.pressBack;
-import static android.support.test.espresso.matcher.RootMatchers.isDialog;
-import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.pressBack;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import android.accounts.Account;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
@@ -26,26 +25,27 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.GAIAServiceType;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -64,15 +64,22 @@ public class SigninSignoutIntegrationTest {
     public final SettingsActivityTestRule<AccountManagementFragment> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(AccountManagementFragment.class);
 
+    private final ChromeTabbedActivityTestRule mActivityTestRule =
+            new ChromeTabbedActivityTestRule();
+
+    private final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
+
+    // Mock sign-in environment needs to be destroyed after ChromeActivity in case there are
+    // observers registered in the AccountManagerFacade mock.
+    @Rule
+    public final RuleChain mRuleChain =
+            RuleChain.outerRule(mAccountManagerTestRule).around(mActivityTestRule);
+
     @Rule
     public final JniMocker mocker = new JniMocker();
 
     @Mock
     private SigninUtils.Natives mSigninUtilsNativeMock;
-
-    @Rule
-    public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
 
     @Mock
     private SigninManager.SignInStateObserver mSignInStateObserverMock;
@@ -85,38 +92,38 @@ public class SigninSignoutIntegrationTest {
     public void setUp() {
         initMocks(this);
         mocker.mock(SigninUtilsJni.TEST_HOOKS, mSigninUtilsNativeMock);
-        SigninTestUtil.setUpAuthForTesting();
         mActivityTestRule.startMainActivityOnBlankPage();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mSigninManager = IdentityServicesProvider.get().getSigninManager(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mSigninManager = IdentityServicesProvider.get().getSigninManager(
+                    Profile.getLastUsedRegularProfile());
+        });
         mSigninManager.addSignInStateObserver(mSignInStateObserverMock);
     }
 
     @After
     public void tearDown() {
         mSigninManager.removeSignInStateObserver(mSignInStateObserverMock);
-        SigninTestUtil.tearDownAuthForTesting();
     }
 
     @Test
     @LargeTest
     public void testSignIn() {
-        Account account = SigninTestUtil.addTestAccount();
-        ActivityUtils.waitForActivity(
+        CoreAccountInfo coreAccountInfo = mAccountManagerTestRule.addAccountAndWaitForSeeding(
+                AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        SigninActivity signinActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
-                    SigninActivityLauncher.get().launchActivity(
+                    SigninActivityLauncherImpl.get().launchActivity(
                             mActivityTestRule.getActivity(), SigninAccessPoint.SETTINGS);
                 });
         assertSignedOut();
-        onView(withId(R.id.positive_button)).perform(click());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { signinActivity.findViewById(R.id.positive_button).performClick(); });
+        CriteriaHelper.pollUiThread(this::assertSignedIn);
         verify(mSignInStateObserverMock).onSignedIn();
         verify(mSignInStateObserverMock, never()).onSignedOut();
-        assertSignedIn();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(account.name,
-                    mSigninManager.getIdentityManager()
-                            .getPrimaryAccountInfo(ConsentLevel.SYNC)
-                            .getEmail());
+            Assert.assertEquals(coreAccountInfo,
+                    mSigninManager.getIdentityManager().getPrimaryAccountInfo(ConsentLevel.SYNC));
         });
     }
 
@@ -206,7 +213,9 @@ public class SigninSignoutIntegrationTest {
             mBookmarkModel = new BookmarkModel(Profile.fromWebContents(
                     mActivityTestRule.getActivity().getActivityTab().getWebContents()));
             mBookmarkModel.loadFakePartnerBookmarkShimForTesting();
-            BookmarkTestUtil.waitForBookmarkModelLoaded();
+        });
+        BookmarkTestUtil.waitForBookmarkModelLoaded();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(0, mBookmarkModel.getChildCount(mBookmarkModel.getDefaultFolder()));
             mBookmarkModel.addBookmark(
                     mBookmarkModel.getDefaultFolder(), 0, "Test Bookmark", "http://google.com");
@@ -215,12 +224,12 @@ public class SigninSignoutIntegrationTest {
     }
 
     private void signIn() {
-        Account account = SigninTestUtil.addTestAccount();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mSigninManager.signIn(SigninAccessPoint.SETTINGS, account, null); });
+        CoreAccountInfo coreAccountInfo = mAccountManagerTestRule.addAccountAndWaitForSeeding(
+                AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mSigninManager.signinAndEnableSync(SigninAccessPoint.SETTINGS, coreAccountInfo, null);
+        });
         assertSignedIn();
-        // TODO(https://crbug.com/1041815): Usage of ChromeSigninController should be removed later
-        Assert.assertTrue(ChromeSigninController.get().isSignedIn());
     }
 
     private void assertSignedIn() {

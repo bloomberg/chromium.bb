@@ -5,7 +5,7 @@
 #include "media/base/video_thumbnail_decoder.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_frame.h"
 
@@ -50,8 +50,8 @@ void VideoThumbnailDecoder::OnVideoDecoderInitialized(Status status) {
                                   weak_factory_.GetWeakPtr()));
 }
 
-void VideoThumbnailDecoder::OnVideoBufferDecoded(DecodeStatus status) {
-  if (status != DecodeStatus::OK) {
+void VideoThumbnailDecoder::OnVideoBufferDecoded(Status status) {
+  if (!status.is_ok()) {
     NotifyComplete(nullptr);
     return;
   }
@@ -62,8 +62,8 @@ void VideoThumbnailDecoder::OnVideoBufferDecoded(DecodeStatus status) {
                                   weak_factory_.GetWeakPtr()));
 }
 
-void VideoThumbnailDecoder::OnEosBufferDecoded(DecodeStatus status) {
-  if (status != DecodeStatus::OK)
+void VideoThumbnailDecoder::OnEosBufferDecoded(Status status) {
+  if (!status.is_ok())
     NotifyComplete(nullptr);
 }
 

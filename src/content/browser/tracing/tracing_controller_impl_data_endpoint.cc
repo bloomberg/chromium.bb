@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/pattern.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
@@ -34,8 +33,8 @@ class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
     trace_.str("");
     trace_.clear();
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(completion_callback_), std::move(str)));
   }
 
@@ -86,16 +85,25 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
   }
 
   bool OpenFileIfNeededOnBlockingThread() {
-    base::ScopedBlockingCall scoped_blocking_call(
-        FROM_HERE, base::BlockingType::MAY_BLOCK);
     if (file_ != nullptr)
       return true;
-    file_ = base::OpenFile(file_path_, "w");
-    if (file_ == nullptr) {
-      LOG(ERROR) << "Failed to open " << file_path_.value();
-      return false;
+
+    // The temporary trace file is produced in the same folder since paths must
+    // be on the same volume.
+    base::File temp_file = CreateAndOpenTemporaryFileInDir(file_path_.DirName(),
+                                                           &pending_file_path_);
+    if (temp_file.IsValid()) {
+      file_ = FileToFILE(std::move(temp_file), "w");
+    } else {
+      LOG(WARNING) << "Unable to use temporary file " << pending_file_path_
+                   << ": "
+                   << base::File::ErrorToString(temp_file.error_details());
+      pending_file_path_.clear();
+      file_ = base::OpenFile(file_path_, "w");
+      LOG_IF(ERROR, file_ == nullptr)
+          << "Failed to open " << file_path_.value();
     }
-    return true;
+    return file_ != nullptr;
   }
 
   void CloseOnBlockingThread() {
@@ -104,14 +112,25 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
       file_ = nullptr;
     }
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    if (!pending_file_path_.empty()) {
+      base::File::Error error;
+      if (!base::ReplaceFile(pending_file_path_, file_path_, &error)) {
+        LOG(ERROR) << "Cannot replace file '" << file_path_
+                   << "' : " << base::File::ErrorToString(error);
+        base::DeleteFile(pending_file_path_);
+        return;
+      }
+    }
+
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&FileTraceDataEndpoint::FinalizeOnUIThread, this));
   }
 
   void FinalizeOnUIThread() { std::move(completion_callback_).Run(); }
 
   base::FilePath file_path_;
+  base::FilePath pending_file_path_;
   base::OnceClosure completion_callback_;
   FILE* file_ = nullptr;
   const scoped_refptr<base::SequencedTaskRunner> may_block_task_runner_;

@@ -31,22 +31,27 @@ bool IsSubdomainOfARegistrableDomain(const std::string& domain) {
 // 3. IsSubdomainOfARegistrableDomain(domain)      - e.g. www.google.com
 // Types 1 and 2 are supported by RegistrableDomainFilterBuilder. Type 3 is not.
 
-
-// True if the domain of |url| is in the whitelist, or isn't in the blacklist.
-// The whitelist or blacklist is represented as |origins|,
+// True if the domain of |url| is in the deletelist, or isn't in the
+// preservelist. The deletelist or preservelist is represented as |origins|,
 // |registerable_domains|, and |mode|.
 bool MatchesOrigin(const std::set<url::Origin>& origins,
                    const std::set<std::string>& registerable_domains,
                    BrowsingDataFilterBuilder::Mode mode,
                    const url::Origin& origin) {
-  std::string registerable_domain =
-      GetDomainAndRegistry(origin, INCLUDE_PRIVATE_REGISTRIES);
-  bool found_domain = base::Contains(
-      registerable_domains,
-      registerable_domain == "" ? origin.host() : registerable_domain);
+  bool is_delete_list = mode == BrowsingDataFilterBuilder::Mode::kDelete;
   bool found_origin = base::Contains(origins, origin);
-  return ((found_domain || found_origin) ==
-          (mode == BrowsingDataFilterBuilder::WHITELIST));
+  if (found_origin)
+    return is_delete_list;
+
+  bool found_domain = false;
+  if (!registerable_domains.empty()) {
+    std::string registerable_domain =
+        GetDomainAndRegistry(origin, INCLUDE_PRIVATE_REGISTRIES);
+    found_domain = base::Contains(
+        registerable_domains,
+        registerable_domain == "" ? origin.host() : registerable_domain);
+  }
+  return found_domain == is_delete_list;
 }
 
 bool MatchesURL(const std::set<url::Origin>& origins,
@@ -57,9 +62,9 @@ bool MatchesURL(const std::set<url::Origin>& origins,
                        url::Origin::Create(url));
 }
 
-// True if none of the supplied domains matches this plugin's |site| and we're
-// a blacklist, or one of them does and we're a whitelist. The whitelist or
-// blacklist is represented by |domains_and_ips| and |mode|.
+// True if none of the supplied domains matches this plugin's |site| and we're a
+// preservelist, or one of them does and we're a deletelist. The deletelist or
+// preservelist is represented by |domains_and_ips| and |mode|.
 bool MatchesPluginSiteForRegisterableDomainsAndIPs(
     const std::set<std::string>& domains_and_ips,
     BrowsingDataFilterBuilder::Mode mode,
@@ -70,8 +75,8 @@ bool MatchesPluginSiteForRegisterableDomainsAndIPs(
   if (domain_or_ip.empty())
     domain_or_ip = site;
 
-  return ((mode == BrowsingDataFilterBuilder::WHITELIST) ==
-      (domains_and_ips.find(domain_or_ip) != domains_and_ips.end()));
+  return ((mode == BrowsingDataFilterBuilder::Mode::kDelete) ==
+          (domains_and_ips.find(domain_or_ip) != domains_and_ips.end()));
 }
 
 }  // namespace
@@ -94,10 +99,6 @@ BrowsingDataFilterBuilderImpl::BrowsingDataFilterBuilderImpl(Mode mode)
 BrowsingDataFilterBuilderImpl::~BrowsingDataFilterBuilderImpl() {}
 
 void BrowsingDataFilterBuilderImpl::AddOrigin(const url::Origin& origin) {
-  // TODO(msramek): Optimize OriginFilterBuilder for larger filters if needed.
-  DCHECK_LE(origins_.size(), 10U) << "OriginFilterBuilder is only suitable "
-                                     "for creating small filters.";
-
   // By limiting the filter to non-unique origins, we can guarantee that
   // origin1 < origin2 && origin1 > origin2 <=> origin1.isSameOrigin(origin2).
   // This means that std::set::find() will use the same semantics for
@@ -120,31 +121,37 @@ void BrowsingDataFilterBuilderImpl::AddRegisterableDomain(
   domains_.insert(domain);
 }
 
-bool BrowsingDataFilterBuilderImpl::IsEmptyBlacklist() {
-  return mode_ == Mode::BLACKLIST && origins_.empty() && domains_.empty();
+bool BrowsingDataFilterBuilderImpl::MatchesAllOriginsAndDomains() {
+  return mode_ == Mode::kPreserve && origins_.empty() && domains_.empty();
 }
 
 base::RepeatingCallback<bool(const GURL&)>
 BrowsingDataFilterBuilderImpl::BuildUrlFilter() {
-  if (IsEmptyBlacklist())
+  if (MatchesAllOriginsAndDomains())
     return base::BindRepeating([](const GURL&) { return true; });
   return base::BindRepeating(&MatchesURL, origins_, domains_, mode_);
 }
 
 base::RepeatingCallback<bool(const url::Origin&)>
 BrowsingDataFilterBuilderImpl::BuildOriginFilter() {
-  if (IsEmptyBlacklist())
+  if (MatchesAllOriginsAndDomains())
     return base::BindRepeating([](const url::Origin&) { return true; });
   return base::BindRepeating(&MatchesOrigin, origins_, domains_, mode_);
 }
 
 network::mojom::ClearDataFilterPtr
 BrowsingDataFilterBuilderImpl::BuildNetworkServiceFilter() {
-  if (IsEmptyBlacklist())
+  // TODO(msramek): Optimize BrowsingDataFilterBuilder for larger filters
+  // if needed.
+  DCHECK_LE(origins_.size(), 10U)
+      << "BrowsingDataFilterBuilder is only suitable for creating "
+         "small network service filters.";
+
+  if (MatchesAllOriginsAndDomains())
     return nullptr;
   network::mojom::ClearDataFilterPtr filter =
       network::mojom::ClearDataFilter::New();
-  filter->type = (mode_ == Mode::WHITELIST)
+  filter->type = (mode_ == Mode::kDelete)
                      ? network::mojom::ClearDataFilter::Type::DELETE_MATCHES
                      : network::mojom::ClearDataFilter::Type::KEEP_MATCHES;
   filter->origins.insert(filter->origins.begin(), origins_.begin(),
@@ -162,11 +169,11 @@ BrowsingDataFilterBuilderImpl::BuildCookieDeletionFilter() {
   auto deletion_filter = network::mojom::CookieDeletionFilter::New();
 
   switch (mode_) {
-    case WHITELIST:
+    case Mode::kDelete:
       deletion_filter->including_domains.emplace(domains_.begin(),
                                                  domains_.end());
       break;
-    case BLACKLIST:
+    case Mode::kPreserve:
       deletion_filter->excluding_domains.emplace(domains_.begin(),
                                                  domains_.end());
       break;

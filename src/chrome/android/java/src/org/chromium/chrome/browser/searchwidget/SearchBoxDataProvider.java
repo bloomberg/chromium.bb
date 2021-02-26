@@ -10,15 +10,16 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
 
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.chrome.browser.toolbar.NewTabPageDelegate;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.metrics.OmniboxEventProtos.OmniboxEventProto.PageClassification;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 
-class SearchBoxDataProvider implements ToolbarDataProvider {
+class SearchBoxDataProvider implements LocationBarDataProvider {
     private final @ColorInt int mPrimaryColor;
     private Tab mTab;
 
@@ -55,11 +56,6 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     }
 
     @Override
-    public boolean shouldShowLocationBarInOverviewMode() {
-        return false;
-    }
-
-    @Override
     public Profile getProfile() {
         return mTab != null ? Profile.fromWebContents(mTab.getWebContents()) : null;
     }
@@ -90,9 +86,20 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     }
 
     @Override
-    public NewTabPage getNewTabPageForCurrentTab() {
-        return null;
+    public NewTabPageDelegate getNewTabPageDelegate() {
+        return NewTabPageDelegate.EMPTY;
     }
+
+    @Override
+    public boolean isLoading() {
+        return false;
+    }
+
+    @Override
+    public void addObserver(Observer observer) {}
+
+    @Override
+    public void removeObserver(Observer observer) {}
 
     @Override
     public String getCurrentUrl() {
@@ -115,12 +122,22 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     }
 
     @Override
+    public int getPageClassification(boolean isFocusedFromFakebox) {
+        return PageClassification.ANDROID_SEARCH_WIDGET_VALUE;
+    }
+
+    @Override
     public int getSecurityIconResource(boolean isTablet) {
         return 0;
     }
 
     @Override
     public @ColorRes int getSecurityIconColorStateList() {
+        return 0;
+    }
+
+    @Override
+    public int getSecurityIconContentDescriptionResourceId() {
         return 0;
     }
 }

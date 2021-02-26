@@ -5,9 +5,10 @@
 #include "fuchsia/engine/browser/frame_permission_controller.h"
 
 #include "base/check_op.h"
+#include "content/public/browser/web_contents.h"
 #include "url/origin.h"
 
-using PermissionState = blink::mojom::PermissionStatus;
+using PermissionStatus = blink::mojom::PermissionStatus;
 using PermissionType = content::PermissionType;
 
 namespace {
@@ -18,59 +19,123 @@ size_t GetPermissionIndex(PermissionType type) {
   return index;
 }
 
+constexpr PermissionStatus kDefaultPerOriginStatus = PermissionStatus::ASK;
+
+// Converts from |url|'s actual origin to the "canonical origin" that should
+// be used for the purpose of requesting permissions.
+const url::Origin& GetCanonicalOrigin(PermissionType permission,
+                                      const url::Origin& requesting_origin,
+                                      const url::Origin& embedding_origin) {
+  // Logic in this function should match the logic in
+  // permissions::PermissionManager::GetCanonicalOrigin(). Currently it always
+  // returns embedding origin, which is correct for all permissions supported by
+  // WebEngine (AUDIO_CAPTURE, VIDEO_CAPTURE, PROTECTED_MEDIA_IDENTIFIER,
+  // DURABLE_STORAGE).
+  //
+  // TODO(crbug.com/1063094): Update this function when other permissions are
+  // added.
+  return embedding_origin;
+}
+
 }  // namespace
 
-FramePermissionController::PermissionSet::PermissionSet() {
-  for (auto& permission : permission_state) {
-    permission = PermissionState::DENIED;
+FramePermissionController::PermissionSet::PermissionSet(
+    PermissionStatus initial_state) {
+  for (auto& permission : permission_states) {
+    permission = initial_state;
   }
 }
 
-FramePermissionController::FramePermissionController() = default;
+FramePermissionController::PermissionSet::PermissionSet(
+    const PermissionSet& other) = default;
+
+FramePermissionController::PermissionSet&
+FramePermissionController::PermissionSet::operator=(
+    const PermissionSet& other) = default;
+
+FramePermissionController::FramePermissionController(
+    content::WebContents* web_contents)
+    : web_contents_(web_contents) {}
+
 FramePermissionController::~FramePermissionController() = default;
 
 void FramePermissionController::SetPermissionState(PermissionType permission,
                                                    const url::Origin& origin,
-                                                   PermissionState state) {
+                                                   PermissionStatus state) {
+  // Currently only the following permissions are supported by WebEngine. Others
+  // may not be handled correctly by this class.
+  //
+  // TODO(crbug.com/1063094): This check is necessary mainly because
+  // GetCanonicalOrigin() may not work correctly for other permission. See
+  // comemnts in GetCanonicalOrigin(). Remove it once that issue is resolved.
+  DCHECK(permission == content::PermissionType::AUDIO_CAPTURE ||
+         permission == content::PermissionType::VIDEO_CAPTURE ||
+         permission == content::PermissionType::PROTECTED_MEDIA_IDENTIFIER ||
+         permission == content::PermissionType::DURABLE_STORAGE);
+
   auto it = per_origin_permissions_.find(origin);
   if (it == per_origin_permissions_.end()) {
-    // All permissions are denied by default.
-    if (state == PermissionState::DENIED)
+    // Don't create a PermissionSet for |origin| if |state| is set to the
+    // per-origin default, since that would have no effect.
+    if (state == kDefaultPerOriginStatus)
       return;
 
-    it = per_origin_permissions_.insert(std::make_pair(origin, PermissionSet()))
+    it = per_origin_permissions_
+             .insert(
+                 std::make_pair(origin, PermissionSet(kDefaultPerOriginStatus)))
              .first;
   }
 
-  it->second.permission_state[GetPermissionIndex(permission)] = state;
+  it->second.permission_states[GetPermissionIndex(permission)] = state;
 }
 
-PermissionState FramePermissionController::GetPermissionState(
+void FramePermissionController::SetDefaultPermissionState(
     PermissionType permission,
-    const url::Origin& origin) {
-  auto it = per_origin_permissions_.find(origin);
-  if (it == per_origin_permissions_.end()) {
-    return PermissionState::DENIED;
-  }
-  return it->second.permission_state[GetPermissionIndex(permission)];
+    PermissionStatus state) {
+  DCHECK(state != PermissionStatus::ASK);
+  default_permissions_.permission_states[GetPermissionIndex(permission)] =
+      state;
+}
+
+PermissionStatus FramePermissionController::GetPermissionState(
+    PermissionType permission,
+    const url::Origin& requesting_origin) {
+  url::Origin embedding_origin =
+      url::Origin::Create(web_contents_->GetLastCommittedURL());
+  const url::Origin& canonical_origin =
+      GetCanonicalOrigin(permission, requesting_origin, embedding_origin);
+
+  PermissionSet effective = GetEffectivePermissionsForOrigin(canonical_origin);
+  return effective.permission_states[GetPermissionIndex(permission)];
 }
 
 void FramePermissionController::RequestPermissions(
     const std::vector<PermissionType>& permissions,
-    const url::Origin& origin,
+    const url::Origin& requesting_origin,
     bool user_gesture,
-    base::OnceCallback<void(const std::vector<PermissionState>&)> callback) {
-  std::vector<PermissionState> result;
+    base::OnceCallback<void(const std::vector<PermissionStatus>&)> callback) {
+  std::vector<PermissionStatus> result;
+  result.reserve(permissions.size());
 
+  for (auto& permission : permissions) {
+    result.push_back(GetPermissionState(permission, requesting_origin));
+  }
+
+  std::move(callback).Run(result);
+}
+
+FramePermissionController::PermissionSet
+FramePermissionController::GetEffectivePermissionsForOrigin(
+    const url::Origin& origin) {
+  PermissionSet result = default_permissions_;
   auto it = per_origin_permissions_.find(origin);
-  if (it == per_origin_permissions_.end()) {
-    result.resize(permissions.size(), PermissionState::DENIED);
-  } else {
-    result.reserve(permissions.size());
-    for (auto& permission : permissions) {
-      result.push_back(
-          it->second.permission_state[GetPermissionIndex(permission)]);
+  if (it != per_origin_permissions_.end()) {
+    // Apply per-origin GRANTED and DENIED states. Permissions with the ASK
+    // state defer to the defaults.
+    for (size_t i = 0; i < it->second.permission_states.size(); ++i) {
+      if (it->second.permission_states[i] != kDefaultPerOriginStatus)
+        result.permission_states[i] = it->second.permission_states[i];
     }
   }
-  std::move(callback).Run(result);
+  return result;
 }

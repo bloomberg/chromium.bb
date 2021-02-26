@@ -9,8 +9,10 @@
 
 #include "android_webview/browser/metrics/aw_stability_metrics_provider.h"
 #include "android_webview/browser_jni_headers/AwMetricsServiceClient_jni.h"
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/no_destructor.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
@@ -74,7 +76,7 @@ int32_t AwMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::ANDROID_WEBVIEW;
 }
 
-int AwMetricsServiceClient::GetSampleRatePerMille() {
+int AwMetricsServiceClient::GetSampleRatePerMille() const {
   // Down-sample unknown channel as a precaution in case it ends up being
   // shipped to Stable users.
   version_info::Channel channel = version_info::android::GetChannel();
@@ -154,6 +156,16 @@ void JNI_AwMetricsServiceClient_SetUploadIntervalForTesting(
     jlong upload_interval_ms) {
   AwMetricsServiceClient::GetInstance()->SetUploadIntervalForTesting(
       base::TimeDelta::FromMilliseconds(upload_interval_ms));
+}
+
+// static
+void JNI_AwMetricsServiceClient_SetOnFinalMetricsCollectedListenerForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& listener) {
+  AwMetricsServiceClient::GetInstance()
+      ->SetOnFinalMetricsCollectedListenerForTesting(base::BindRepeating(
+          base::android::RunRunnableAndroid,
+          base::android::ScopedJavaGlobalRef<jobject>(listener)));
 }
 
 }  // namespace android_webview

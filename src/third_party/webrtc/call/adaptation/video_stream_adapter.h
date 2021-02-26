@@ -12,17 +12,41 @@
 #define CALL_ADAPTATION_VIDEO_STREAM_ADAPTER_H_
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "absl/types/optional.h"
+#include "absl/types/variant.h"
+#include "api/adaptation/resource.h"
 #include "api/rtp_parameters.h"
 #include "api/video/video_adaptation_counters.h"
-#include "call/adaptation/resource.h"
+#include "api/video/video_stream_encoder_observer.h"
+#include "call/adaptation/adaptation_constraint.h"
+#include "call/adaptation/degradation_preference_provider.h"
 #include "call/adaptation/video_source_restrictions.h"
 #include "call/adaptation/video_stream_input_state.h"
+#include "call/adaptation/video_stream_input_state_provider.h"
 #include "modules/video_coding/utility/quality_scaler.h"
 #include "rtc_base/experiments/balanced_degradation_settings.h"
+#include "rtc_base/thread_annotations.h"
 
 namespace webrtc {
+
+// The listener is responsible for carrying out the reconfiguration of the video
+// source such that the VideoSourceRestrictions are fulfilled.
+class VideoSourceRestrictionsListener {
+ public:
+  virtual ~VideoSourceRestrictionsListener();
+
+  // The |restrictions| are filtered by degradation preference but not the
+  // |adaptation_counters|, which are currently only reported for legacy stats
+  // calculation purposes.
+  virtual void OnVideoSourceRestrictionsUpdated(
+      VideoSourceRestrictions restrictions,
+      const VideoAdaptationCounters& adaptation_counters,
+      rtc::scoped_refptr<Resource> reason,
+      const VideoSourceRestrictions& unfiltered_restrictions) = 0;
+};
 
 class VideoStreamAdapter;
 
@@ -32,15 +56,11 @@ VideoSourceRestrictions FilterRestrictionsByDegradationPreference(
     VideoSourceRestrictions source_restrictions,
     DegradationPreference degradation_preference);
 
-VideoAdaptationCounters FilterVideoAdaptationCountersByDegradationPreference(
-    VideoAdaptationCounters counters,
-    DegradationPreference degradation_preference);
-
 int GetHigherResolutionThan(int pixel_count);
 
-// Represents one step that the VideoStreamAdapter can take when adapting the
-// VideoSourceRestrictions up or down. Or, if adaptation is not valid, provides
-// a Status code indicating the reason for not adapting.
+// Either represents the next VideoSourceRestrictions the VideoStreamAdapter
+// will take, or provides a Status code indicating the reason for not adapting
+// if the adaptation is not valid.
 class Adaptation final {
  public:
   enum class Status {
@@ -54,51 +74,42 @@ class Adaptation final {
     // adaptation has not yet been reflected in the input resolution or frame
     // rate; adaptation is refused to avoid "double-adapting".
     kAwaitingPreviousAdaptation,
+    // Not enough input.
+    kInsufficientInput,
+    // Adaptation disabled via degradation preference.
+    kAdaptationDisabled,
+    // Adaptation up was rejected by a VideoAdaptationConstraint.
+    kRejectedByConstraint,
   };
 
-  // The status of this Adaptation. To find out how this Adaptation affects
-  // VideoSourceRestrictions, see VideoStreamAdapter::PeekNextRestrictions().
+  static const char* StatusToString(Status status);
+
   Status status() const;
-  // Used for stats reporting.
-  bool min_pixel_limit_reached() const;
+  const VideoStreamInputState& input_state() const;
+  const VideoSourceRestrictions& restrictions() const;
+  const VideoAdaptationCounters& counters() const;
 
  private:
-  // The adapter needs to know about step type and step target in order to
-  // construct and perform an Adaptation, which is a detail we do not want to
-  // expose to the public interface.
   friend class VideoStreamAdapter;
 
-  enum class StepType {
-    kIncreaseResolution,
-    kDecreaseResolution,
-    kIncreaseFrameRate,
-    kDecreaseFrameRate,
-  };
-
-  struct Step {
-    Step(StepType type, int target);
-    const StepType type;
-    const int target;  // Pixel or frame rate depending on |type|.
-  };
-
-  // Constructs with a valid adaptation Step. Status is kValid.
-  Adaptation(int validation_id, Step step);
-  Adaptation(int validation_id, Step step, bool min_pixel_limit_reached);
+  // Constructs with a valid adaptation. Status is kValid.
+  Adaptation(int validation_id,
+             VideoSourceRestrictions restrictions,
+             VideoAdaptationCounters counters,
+             VideoStreamInputState input_state);
   // Constructor when adaptation is not valid. Status MUST NOT be kValid.
   Adaptation(int validation_id, Status invalid_status);
-  Adaptation(int validation_id,
-             Status invalid_status,
-             bool min_pixel_limit_reached);
-
-  const Step& step() const;  // Only callable if |status_| is kValid.
 
   // An Adaptation can become invalidated if the state of VideoStreamAdapter is
   // modified before the Adaptation is applied. To guard against this, this ID
   // has to match VideoStreamAdapter::adaptation_validation_id_ when applied.
+  // TODO(https://crbug.com/webrtc/11700): Remove the validation_id_.
   const int validation_id_;
   const Status status_;
-  const absl::optional<Step> step_;  // Only present if |status_| is kValid.
-  const bool min_pixel_limit_reached_;
+  // Input state when adaptation was made.
+  const VideoStreamInputState input_state_;
+  const VideoSourceRestrictions restrictions_;
+  const VideoAdaptationCounters counters_;
 };
 
 // Owns the VideoSourceRestriction for a single stream and is responsible for
@@ -109,68 +120,142 @@ class Adaptation final {
 // 3. Modify the stream's restrictions in one of the valid ways.
 class VideoStreamAdapter {
  public:
-  VideoStreamAdapter();
+  VideoStreamAdapter(VideoStreamInputStateProvider* input_state_provider,
+                     VideoStreamEncoderObserver* encoder_stats_observer);
   ~VideoStreamAdapter();
 
   VideoSourceRestrictions source_restrictions() const;
   const VideoAdaptationCounters& adaptation_counters() const;
   void ClearRestrictions();
 
+  void AddRestrictionsListener(
+      VideoSourceRestrictionsListener* restrictions_listener);
+  void RemoveRestrictionsListener(
+      VideoSourceRestrictionsListener* restrictions_listener);
+  void AddAdaptationConstraint(AdaptationConstraint* adaptation_constraint);
+  void RemoveAdaptationConstraint(AdaptationConstraint* adaptation_constraint);
+
   // TODO(hbos): Setting the degradation preference should not clear
   // restrictions! This is not defined in the spec and is unexpected, there is a
   // tiny risk that people would discover and rely on this behavior.
   void SetDegradationPreference(DegradationPreference degradation_preference);
-  // The adaptaiton logic depends on these inputs.
-  void SetInput(VideoStreamInputState input_state);
 
   // Returns an adaptation that we are guaranteed to be able to apply, or a
   // status code indicating the reason why we cannot adapt.
-  Adaptation GetAdaptationUp() const;
-  Adaptation GetAdaptationDown() const;
-  // Returns the restrictions that result from applying the adaptation, without
-  // actually applying it. If the adaptation is not valid, current restrictions
-  // are returned.
-  VideoSourceRestrictions PeekNextRestrictions(
-      const Adaptation& adaptation) const;
-  // Updates source_restrictions() based according to the Adaptation.
-  void ApplyAdaptation(const Adaptation& adaptation);
+  Adaptation GetAdaptationUp();
+  Adaptation GetAdaptationDown();
+  Adaptation GetAdaptationTo(const VideoAdaptationCounters& counters,
+                             const VideoSourceRestrictions& restrictions);
+  // Tries to adapt the resolution one step. This is used for initial frame
+  // dropping. Does nothing if the degradation preference is not BALANCED or
+  // MAINTAIN_FRAMERATE. In the case of BALANCED, it will try twice to reduce
+  // the resolution. If it fails twice it gives up.
+  Adaptation GetAdaptDownResolution();
 
- private:
-  class VideoSourceRestrictor;
+  // Updates source_restrictions() the Adaptation.
+  void ApplyAdaptation(const Adaptation& adaptation,
+                       rtc::scoped_refptr<Resource> resource);
 
-  // The input frame rate and resolution at the time of an adaptation in the
-  // direction described by |mode_| (up or down).
-  // TODO(https://crbug.com/webrtc/11393): Can this be renamed? Can this be
-  // merged with AdaptationTarget?
-  struct AdaptationRequest {
-    // The pixel count produced by the source at the time of the adaptation.
-    int input_pixel_count_;
-    // Framerate received from the source at the time of the adaptation.
-    int framerate_fps_;
-    // Degradation preference for the request.
-    Adaptation::StepType step_type_;
+  struct RestrictionsWithCounters {
+    VideoSourceRestrictions restrictions;
+    VideoAdaptationCounters counters;
   };
 
-  // Owner and modifier of the VideoSourceRestriction of this stream adaptor.
-  const std::unique_ptr<VideoSourceRestrictor> source_restrictor_;
+ private:
+  void BroadcastVideoRestrictionsUpdate(
+      const VideoStreamInputState& input_state,
+      const rtc::scoped_refptr<Resource>& resource);
+
+  bool HasSufficientInputForAdaptation(const VideoStreamInputState& input_state)
+      const RTC_RUN_ON(&sequence_checker_);
+
+  using RestrictionsOrState =
+      absl::variant<RestrictionsWithCounters, Adaptation::Status>;
+  RestrictionsOrState GetAdaptationUpStep(
+      const VideoStreamInputState& input_state) const
+      RTC_RUN_ON(&sequence_checker_);
+  RestrictionsOrState GetAdaptationDownStep(
+      const VideoStreamInputState& input_state,
+      const RestrictionsWithCounters& current_restrictions) const
+      RTC_RUN_ON(&sequence_checker_);
+  RestrictionsOrState GetAdaptDownResolutionStepForBalanced(
+      const VideoStreamInputState& input_state) const
+      RTC_RUN_ON(&sequence_checker_);
+  RestrictionsOrState AdaptIfFpsDiffInsufficient(
+      const VideoStreamInputState& input_state,
+      const RestrictionsWithCounters& restrictions) const
+      RTC_RUN_ON(&sequence_checker_);
+
+  Adaptation GetAdaptationUp(const VideoStreamInputState& input_state) const
+      RTC_RUN_ON(&sequence_checker_);
+  Adaptation GetAdaptationDown(const VideoStreamInputState& input_state) const
+      RTC_RUN_ON(&sequence_checker_);
+
+  static RestrictionsOrState DecreaseResolution(
+      const VideoStreamInputState& input_state,
+      const RestrictionsWithCounters& current_restrictions);
+  static RestrictionsOrState IncreaseResolution(
+      const VideoStreamInputState& input_state,
+      const RestrictionsWithCounters& current_restrictions);
+  // Framerate methods are member functions because they need internal state
+  // if the degradation preference is BALANCED.
+  RestrictionsOrState DecreaseFramerate(
+      const VideoStreamInputState& input_state,
+      const RestrictionsWithCounters& current_restrictions) const
+      RTC_RUN_ON(&sequence_checker_);
+  RestrictionsOrState IncreaseFramerate(
+      const VideoStreamInputState& input_state,
+      const RestrictionsWithCounters& current_restrictions) const
+      RTC_RUN_ON(&sequence_checker_);
+
+  struct RestrictionsOrStateVisitor;
+  Adaptation RestrictionsOrStateToAdaptation(
+      RestrictionsOrState step_or_state,
+      const VideoStreamInputState& input_state) const
+      RTC_RUN_ON(&sequence_checker_);
+
+  SequenceChecker sequence_checker_ RTC_GUARDED_BY(&sequence_checker_);
+  // Gets the input state which is the basis of all adaptations.
+  // Thread safe.
+  VideoStreamInputStateProvider* input_state_provider_;
+  // Used to signal when min pixel limit has been reached.
+  VideoStreamEncoderObserver* const encoder_stats_observer_;
   // Decides the next adaptation target in DegradationPreference::BALANCED.
   const BalancedDegradationSettings balanced_settings_;
   // To guard against applying adaptations that have become invalidated, an
   // Adaptation that is applied has to have a matching validation ID.
-  int adaptation_validation_id_;
+  int adaptation_validation_id_ RTC_GUARDED_BY(&sequence_checker_);
   // When deciding the next target up or down, different strategies are used
   // depending on the DegradationPreference.
   // https://w3c.github.io/mst-content-hint/#dom-rtcdegradationpreference
-  DegradationPreference degradation_preference_;
-  VideoStreamInputState input_state_;
-  // The input frame rate, resolution and adaptation direction of the last
-  // ApplyAdaptationTarget(). Used to avoid adapting twice if a recent
-  // adaptation has not had an effect on the input frame rate or resolution yet.
+  DegradationPreference degradation_preference_
+      RTC_GUARDED_BY(&sequence_checker_);
+  // Used to avoid adapting twice. Stores the resolution at the time of the last
+  // adaptation.
   // TODO(hbos): Can we implement a more general "cooldown" mechanism of
   // resources intead? If we already have adapted it seems like we should wait
   // a while before adapting again, so that we are not acting on usage
   // measurements that are made obsolete/unreliable by an "ongoing" adaptation.
-  absl::optional<AdaptationRequest> last_adaptation_request_;
+  struct AwaitingFrameSizeChange {
+    AwaitingFrameSizeChange(bool pixels_increased, int frame_size);
+    const bool pixels_increased;
+    const int frame_size_pixels;
+  };
+  absl::optional<AwaitingFrameSizeChange> awaiting_frame_size_change_
+      RTC_GUARDED_BY(&sequence_checker_);
+  // The previous restrictions value. Starts as unrestricted.
+  VideoSourceRestrictions last_video_source_restrictions_
+      RTC_GUARDED_BY(&sequence_checker_);
+  VideoSourceRestrictions last_filtered_restrictions_
+      RTC_GUARDED_BY(&sequence_checker_);
+
+  std::vector<VideoSourceRestrictionsListener*> restrictions_listeners_
+      RTC_GUARDED_BY(&sequence_checker_);
+  std::vector<AdaptationConstraint*> adaptation_constraints_
+      RTC_GUARDED_BY(&sequence_checker_);
+
+  RestrictionsWithCounters current_restrictions_
+      RTC_GUARDED_BY(&sequence_checker_);
 };
 
 }  // namespace webrtc

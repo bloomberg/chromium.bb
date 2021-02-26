@@ -32,23 +32,31 @@ import subprocess2
 class CheckCallAndFilterTestCase(unittest.TestCase):
   class ProcessIdMock(object):
     def __init__(self, test_string, return_code=0):
-      self.stdout = io.BytesIO(test_string.encode('utf-8'))
+      self.stdout = test_string.encode('utf-8')
       self.pid = 9284
       self.return_code = return_code
 
     def wait(self):
       return self.return_code
 
+  def PopenMock(self, *args, **kwargs):
+    kid = self.kids.pop(0)
+    stdout = kwargs.get('stdout')
+    os.write(stdout, kid.stdout)
+    return kid
+
   def setUp(self):
     super(CheckCallAndFilterTestCase, self).setUp()
     self.printfn = io.StringIO()
     self.stdout = io.BytesIO()
+    self.kids = []
     if sys.version_info.major == 2:
       mock.patch('sys.stdout', self.stdout).start()
       mock.patch('__builtin__.print', self.printfn.write).start()
     else:
       mock.patch('sys.stdout', mock.Mock()).start()
       mock.patch('sys.stdout.buffer', self.stdout).start()
+      mock.patch('sys.stdout.isatty', return_value=False).start()
       mock.patch('builtins.print', self.printfn.write).start()
     mock.patch('sys.stdout.flush', lambda: None).start()
     self.addCleanup(mock.patch.stopall)
@@ -59,7 +67,8 @@ class CheckCallAndFilterTestCase(unittest.TestCase):
     args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb\n✔'
 
-    mockPopen.return_value = self.ProcessIdMock(test_string)
+    self.kids = [self.ProcessIdMock(test_string)]
+    mockPopen.side_effect = self.PopenMock
 
     line_list = []
     result = gclient_utils.CheckCallAndFilter(
@@ -77,7 +86,7 @@ class CheckCallAndFilterTestCase(unittest.TestCase):
     self.assertEqual(self.stdout.getvalue(), b'')
 
     mockPopen.assert_called_with(
-        args, cwd=cwd, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT,
+        args, cwd=cwd, stdout=mock.ANY, stderr=subprocess2.STDOUT,
         bufsize=0)
 
   @mock.patch('time.sleep')
@@ -87,10 +96,11 @@ class CheckCallAndFilterTestCase(unittest.TestCase):
     args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb\n✔'
 
-    mockPopen.side_effect = [
+    self.kids = [
         self.ProcessIdMock(test_string, 1),
-        self.ProcessIdMock(test_string, 0),
+        self.ProcessIdMock(test_string, 0)
     ]
+    mockPopen.side_effect = self.PopenMock
 
     line_list = []
     result = gclient_utils.CheckCallAndFilter(
@@ -120,10 +130,10 @@ class CheckCallAndFilterTestCase(unittest.TestCase):
         mockPopen.mock_calls,
         [
             mock.call(
-                args, cwd=cwd, stdout=subprocess2.PIPE,
+                args, cwd=cwd, stdout=mock.ANY,
                 stderr=subprocess2.STDOUT, bufsize=0),
             mock.call(
-                args, cwd=cwd, stdout=subprocess2.PIPE,
+                args, cwd=cwd, stdout=mock.ANY,
                 stderr=subprocess2.STDOUT, bufsize=0),
         ])
 
@@ -139,7 +149,8 @@ class CheckCallAndFilterTestCase(unittest.TestCase):
     args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb\n✔'
 
-    mockPopen.return_value = self.ProcessIdMock(test_string)
+    self.kids = [self.ProcessIdMock(test_string)]
+    mockPopen.side_effect = self.PopenMock
 
     result = gclient_utils.CheckCallAndFilter(
         args, cwd=cwd, show_header=True, always_show_header=True,

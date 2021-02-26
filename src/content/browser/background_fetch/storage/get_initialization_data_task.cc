@@ -6,7 +6,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -359,11 +359,12 @@ class FillFromMetadataTask : public InitializationSubTask {
       for (auto purpose : icon.purpose()) {
         switch (purpose) {
           case proto::BackgroundFetchOptions_ImageResource_Purpose_ANY:
-            ir.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
-            break;
-          case proto::BackgroundFetchOptions_ImageResource_Purpose_BADGE:
             ir.purpose.push_back(
-                blink::Manifest::ImageResource::Purpose::BADGE);
+                blink::mojom::ManifestImageResource_Purpose::ANY);
+            break;
+          case proto::BackgroundFetchOptions_ImageResource_Purpose_MONOCHROME:
+            ir.purpose.push_back(
+                blink::mojom::ManifestImageResource_Purpose::MONOCHROME);
             break;
         }
       }

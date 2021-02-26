@@ -73,8 +73,8 @@
 #include "third_party/base/allocator/partition_allocator/spin_lock.h"
 #include "third_party/base/base_export.h"
 #include "third_party/base/bits.h"
+#include "third_party/base/check.h"
 #include "third_party/base/compiler_specific.h"
-#include "third_party/base/logging.h"
 #include "third_party/base/stl_util.h"
 #include "third_party/base/sys_byteorder.h"
 
@@ -85,7 +85,7 @@
 // We use this to make MEMORY_TOOL_REPLACES_ALLOCATOR behave the same for max
 // size as other alloc code.
 #define CHECK_MAX_SIZE_OR_RETURN_NULLPTR(size, flags) \
-  if (size > kGenericMaxDirectMapped) {               \
+  if (size > GenericMaxDirectMapped()) {              \
     if (flags & PartitionAllocReturnNull) {           \
       return nullptr;                                 \
     }                                                 \
@@ -220,7 +220,7 @@ class BASE_EXPORT PartitionStatsDumper {
                                          const PartitionBucketMemoryStats*) = 0;
 };
 
-BASE_EXPORT void PartitionAllocGlobalInit(void (*oom_handling_function)());
+BASE_EXPORT void PartitionAllocGlobalInit(OomFunction on_out_of_memory);
 
 // PartitionAlloc supports setting hooks to observe allocations/frees as they
 // occur as well as 'override' hooks that allow overriding those operations.
@@ -368,7 +368,8 @@ ALWAYS_INLINE void PartitionFree(void* ptr) {
   internal::PartitionPage* page = internal::PartitionPage::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
   DCHECK(internal::PartitionRootBase::IsValidPage(page));
-  page->Free(ptr);
+  internal::DeferredUnmap deferred_unmap = page->Free(ptr);
+  deferred_unmap.Run();
 #endif
 }
 
@@ -462,10 +463,12 @@ ALWAYS_INLINE void PartitionRootGeneric::Free(void* ptr) {
   internal::PartitionPage* page = internal::PartitionPage::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
   DCHECK(IsValidPage(page));
+  internal::DeferredUnmap deferred_unmap;
   {
     subtle::SpinLock::Guard guard(lock);
-    page->Free(ptr);
+    deferred_unmap = page->Free(ptr);
   }
+  deferred_unmap.Run();
 #endif
 }
 
@@ -484,7 +487,7 @@ ALWAYS_INLINE size_t PartitionRootGeneric::ActualSize(size_t size) {
   internal::PartitionBucket* bucket = PartitionGenericSizeToBucket(this, size);
   if (LIKELY(!bucket->is_direct_mapped())) {
     size = bucket->slot_size;
-  } else if (size > kGenericMaxDirectMapped) {
+  } else if (size > GenericMaxDirectMapped()) {
     // Too large to allocate => return the size unchanged.
   } else {
     size = internal::PartitionBucket::get_direct_map_size(size);

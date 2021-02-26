@@ -8,6 +8,7 @@
 #include "modules/particles/include/SkParticleEffect.h"
 
 #include "include/core/SkPaint.h"
+#include "include/private/SkTPin.h"
 #include "modules/particles/include/SkParticleBinding.h"
 #include "modules/particles/include/SkParticleDrawable.h"
 #include "modules/particles/include/SkReflected.h"
@@ -119,20 +120,21 @@ void SkParticleEffectParams::prepare(const skresources::ResourceProvider* resour
     }
 
     auto buildProgram = [this](const SkSL::String& code, Program* p) {
-        SkSL::Compiler compiler;
+        SkSL::Compiler compiler(/*caps=*/nullptr);
         SkSL::Program::Settings settings;
+        settings.fRemoveDeadFunctions = false;
 
-        SkTArray<std::unique_ptr<SkParticleExternalValue>> externalValues;
+        std::vector<std::unique_ptr<SkSL::ExternalValue>> externalValues;
+        externalValues.reserve(fBindings.size());
 
         for (const auto& binding : fBindings) {
             if (binding) {
-                auto value = binding->toValue(compiler);
-                compiler.registerExternalValue(value.get());
-                externalValues.push_back(std::move(value));
+                externalValues.push_back(binding->toValue(compiler));
             }
         }
 
-        auto program = compiler.convertProgram(SkSL::Program::kGeneric_Kind, code, settings);
+        auto program = compiler.convertProgram(SkSL::Program::kGeneric_Kind, code, settings,
+                                               &externalValues);
         if (!program) {
             SkDebugf("%s\n", compiler.errorText().c_str());
             return;
@@ -224,7 +226,7 @@ void SkParticleEffect::runEffectScript(double now, const char* entry) {
     if (const auto& byteCode = fParams->fEffectProgram.fByteCode) {
         if (auto fun = byteCode->getFunction(entry)) {
             for (const auto& value : fParams->fEffectProgram.fExternalValues) {
-                value->setEffect(this);
+                static_cast<SkParticleExternalValue*>(value.get())->setEffect(this);
             }
             SkAssertResult(byteCode->run(fun, &fState.fAge, sizeof(EffectState) / sizeof(float),
                                          nullptr, 0,
@@ -268,7 +270,7 @@ void SkParticleEffect::runParticleScript(double now, const char* entry, int star
                 args[i] = fParticles.fData[i].get() + start;
             }
             for (const auto& value : fParams->fParticleProgram.fExternalValues) {
-                value->setEffect(this);
+                static_cast<SkParticleExternalValue*>(value.get())->setEffect(this);
             }
             memcpy(&fParticleUniforms[1], &fState.fAge, sizeof(EffectState));
             SkAssertResult(byteCode->runStriped(fun, count, args, SkParticles::kNumChannels,

@@ -66,8 +66,7 @@ void FeedInternalsPageHandler::GetGeneralProperties(
     GetGeneralPropertiesCallback callback) {
   auto properties = feed_internals::mojom::Properties::New();
 
-  properties->is_feed_enabled =
-      base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions);
+  properties->is_feed_enabled = true;
   properties->is_feed_visible =
       pref_service_->GetBoolean(feed::prefs::kArticlesListVisible);
   properties->is_feed_allowed = IsFeedAllowed();
@@ -175,7 +174,16 @@ void FeedInternalsPageHandler::GetFeedHistograms(
 }
 
 void FeedInternalsPageHandler::OverrideFeedHost(const GURL& host) {
-  return pref_service_->SetString(
-      feed::prefs::kHostOverrideHost,
-      host.is_valid() ? host.spec() : std::string());
+  pref_service_->SetString(feed::prefs::kHostOverrideHost,
+                           host.is_valid() ? host.spec() : std::string());
+}
+
+void FeedInternalsPageHandler::OverrideActionUploadEndpoint(
+    const GURL& endpoint_url) {
+  // Not implemented for Feed v1.
+}
+
+void FeedInternalsPageHandler::OverrideFeedStreamData(
+    const std::vector<uint8_t>& data) {
+  // Not implemented for Feed v1.
 }

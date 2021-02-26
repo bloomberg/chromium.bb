@@ -5,6 +5,7 @@
 #include "ui/views/examples/examples_main_proc.h"
 
 #include <memory>
+#include <string>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -23,6 +24,7 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -50,6 +52,10 @@
 #include "ui/wm/core/wm_state.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ui/views/examples/examples_views_delegate_chromeos.h"
+#endif
+
 #if BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
@@ -60,6 +66,7 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -81,6 +88,14 @@ ExamplesExitCode ExamplesMainProc(bool under_test) {
   // window to not render. See http://crbug.com/936249.
   command_line->AppendSwitch(switches::kDisableDirectComposition);
 
+  // Disable skia renderer to use GL instead.
+  std::string disabled =
+      command_line->GetSwitchValueASCII(switches::kDisableFeatures);
+  if (!disabled.empty())
+    disabled += ",";
+  disabled += features::kUseSkiaRenderer.name;
+  command_line->AppendSwitchASCII(switches::kDisableFeatures, disabled);
+
   base::FeatureList::InitializeInstance(
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));
@@ -91,9 +106,11 @@ ExamplesExitCode ExamplesMainProc(bool under_test) {
   mojo::core::Init();
 
 #if defined(USE_OZONE)
-  ui::OzonePlatform::InitParams params;
-  params.single_process = true;
-  ui::OzonePlatform::InitializeForGPU(params);
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForGPU(params);
+  }
 #endif
 
   gl::init::InitializeGLOneOff();
@@ -141,14 +158,17 @@ ExamplesExitCode ExamplesMainProc(bool under_test) {
   ExamplesExitCode compare_result = ExamplesExitCode::kSucceeded;
 
   {
+#if defined(OS_CHROMEOS)
+    ExamplesViewsDelegateChromeOS views_delegate;
+#else
     views::DesktopTestViewsDelegate views_delegate;
 #if defined(USE_AURA)
     wm::WMState wm_state;
 #endif
+#endif
 #if BUILDFLAG(ENABLE_DESKTOP_AURA)
     std::unique_ptr<display::Screen> desktop_screen =
         base::WrapUnique(views::CreateDesktopScreen());
-    display::Screen::SetScreenInstance(desktop_screen.get());
 #endif
 
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);

@@ -11,16 +11,10 @@
 
 namespace app_list_features {
 
-const base::Feature kEnableAnswerCard{"EnableAnswerCard",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kEnablePlayStoreAppSearch{
-    "EnablePlayStoreAppSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppDataSearch{"EnableAppDataSearch",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableSettingsShortcutSearch{
     "EnableSettingsShortcutSearch", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableZeroStateSuggestions{
-    "EnableZeroStateSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppListSearchAutocomplete{
     "EnableAppListSearchAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppRanker{"EnableAppRanker",
@@ -40,16 +34,14 @@ const base::Feature kEnableSuggestedFiles{"EnableSuggestedFiles",
 // change it until fully launched. It is used to redirect Launcher search to
 // Assistant search.
 const base::Feature kEnableAssistantSearch{"EnableEmbeddedAssistantUI",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableAppGridGhost{"EnableAppGridGhost",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppListLaunchRecording{
     "EnableAppListLaunchRecording", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableAggregatedMlAppRanking{
-    "EnableAggregatedMlAppRanking", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kLauncherSettingsSearch{"LauncherSettingsSearch",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableFuzzyAppSearch{"EnableFuzzyAppSearch",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableExactMatchForNonLatinLocale{
@@ -58,18 +50,8 @@ const base::Feature kEnableAggregatedMlSearchRanking{
     "EnableAggregatedMlSearchRanking", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kNewDragSpecInLauncher{"NewDragSpecInLauncher",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsAnswerCardEnabled() {
-  // Not using local static variable to allow tests to change this value.
-  // Do not show answer card if Assistant search is enabled.
-  return base::FeatureList::IsEnabled(kEnableAnswerCard) &&
-         !IsAssistantSearchEnabled();
-}
-
-bool IsPlayStoreAppSearchEnabled() {
-  // Not using local static variable to allow tests to change this value.
-  return base::FeatureList::IsEnabled(kEnablePlayStoreAppSearch);
-}
+const base::Feature kEnableOmniboxRichEntities{
+    "EnableOmniboxRichEntities", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAppDataSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppDataSearch);
@@ -77,10 +59,6 @@ bool IsAppDataSearchEnabled() {
 
 bool IsSettingsShortcutSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnableSettingsShortcutSearch);
-}
-
-bool IsZeroStateSuggestionsEnabled() {
-  return base::FeatureList::IsEnabled(kEnableZeroStateSuggestions);
 }
 
 bool IsAppListSearchAutocompleteEnabled() {
@@ -119,10 +97,6 @@ bool IsAppGridGhostEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppGridGhost);
 }
 
-bool IsAggregatedMlAppRankingEnabled() {
-  return base::FeatureList::IsEnabled(kEnableAggregatedMlAppRanking);
-}
-
 bool IsLauncherSettingsSearchEnabled() {
   return base::FeatureList::IsEnabled(kLauncherSettingsSearch);
 }
@@ -143,17 +117,8 @@ bool IsNewDragSpecInLauncherEnabled() {
   return base::FeatureList::IsEnabled(kNewDragSpecInLauncher);
 }
 
-std::string AnswerServerUrl() {
-  const std::string experiment_url =
-      base::GetFieldTrialParamValueByFeature(kEnableAnswerCard, "ServerUrl");
-  if (!experiment_url.empty())
-    return experiment_url;
-  return "https://www.google.com/coac";
-}
-
-std::string AnswerServerQuerySuffix() {
-  return base::GetFieldTrialParamValueByFeature(kEnableAnswerCard,
-                                                "QuerySuffix");
+bool IsOmniboxRichEntitiesEnabled() {
+  return base::FeatureList::IsEnabled(kEnableOmniboxRichEntities);
 }
 
 std::string AppSearchResultRankerPredictorName() {

@@ -14,22 +14,25 @@
 
 namespace safe_browsing {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class DownloadCheckResult {
-  UNKNOWN,
-  SAFE,
-  DANGEROUS,
-  UNCOMMON,
-  DANGEROUS_HOST,
-  POTENTIALLY_UNWANTED,
-  WHITELISTED_BY_POLICY,
-  ASYNC_SCANNING,
-  BLOCKED_PASSWORD_PROTECTED,
-  BLOCKED_TOO_LARGE,
-  SENSITIVE_CONTENT_WARNING,
-  SENSITIVE_CONTENT_BLOCK,
-  DEEP_SCANNED_SAFE,
-  PROMPT_FOR_SCANNING,
-  BLOCKED_UNSUPPORTED_FILE_TYPE,
+  UNKNOWN = 0,
+  SAFE = 1,
+  DANGEROUS = 2,
+  UNCOMMON = 3,
+  DANGEROUS_HOST = 4,
+  POTENTIALLY_UNWANTED = 5,
+  WHITELISTED_BY_POLICY = 6,
+  ASYNC_SCANNING = 7,
+  BLOCKED_PASSWORD_PROTECTED = 8,
+  BLOCKED_TOO_LARGE = 9,
+  SENSITIVE_CONTENT_WARNING = 10,
+  SENSITIVE_CONTENT_BLOCK = 11,
+  DEEP_SCANNED_SAFE = 12,
+  PROMPT_FOR_SCANNING = 13,
+  BLOCKED_UNSUPPORTED_FILE_TYPE = 14,
+  kMaxValue = BLOCKED_UNSUPPORTED_FILE_TYPE,
 };
 
 // Enum to keep track why a particular download verdict was chosen.
@@ -107,47 +110,34 @@ typedef base::OnceCallback<void(DownloadCheckResult)> CheckDownloadCallback;
 typedef base::RepeatingCallback<void(DownloadCheckResult)>
     CheckDownloadRepeatingCallback;
 
-// A type of callback run on the main thread when a ClientDownloadRequest has
+// Callbacks run on the main thread when a ClientDownloadRequest has
 // been formed for a download, or when one has not been formed for a supported
 // download.
-typedef base::RepeatingCallback<void(download::DownloadItem*,
-                                     const ClientDownloadRequest*)>
-    ClientDownloadRequestCallback;
+using ClientDownloadRequestCallbackList =
+    base::RepeatingCallbackList<void(download::DownloadItem*,
+                                     const ClientDownloadRequest*)>;
+using ClientDownloadRequestCallback =
+    ClientDownloadRequestCallbackList::CallbackType;
+using ClientDownloadRequestSubscription =
+    std::unique_ptr<ClientDownloadRequestCallbackList::Subscription>;
 
-// A list of ClientDownloadRequest callbacks.
-typedef base::CallbackList<void(download::DownloadItem*,
-                                const ClientDownloadRequest*)>
-    ClientDownloadRequestCallbackList;
+// Callbacks run on the main thread when a NativeFileSystemWriteRequest has been
+// formed for a write operation.
+using NativeFileSystemWriteRequestCallbackList =
+    base::RepeatingCallbackList<void(const ClientDownloadRequest*)>;
+using NativeFileSystemWriteRequestCallback =
+    NativeFileSystemWriteRequestCallbackList::CallbackType;
+using NativeFileSystemWriteRequestSubscription =
+    std::unique_ptr<NativeFileSystemWriteRequestCallbackList::Subscription>;
 
-// A subscription to a registered ClientDownloadRequest callback.
-typedef std::unique_ptr<ClientDownloadRequestCallbackList::Subscription>
-    ClientDownloadRequestSubscription;
-
-// A type of callback run on the main thread when a NativeFileSystemWriteRequest
-// has been formed for a write operation.
-typedef base::Callback<void(const ClientDownloadRequest*)>
-    NativeFileSystemWriteRequestCallback;
-
-// A list of NativeFileSystemWriteRequest callbacks.
-typedef base::CallbackList<void(const ClientDownloadRequest*)>
-    NativeFileSystemWriteRequestCallbackList;
-
-// A subscription to a registered NativeFileSystemWriteRequest callback.
-typedef std::unique_ptr<NativeFileSystemWriteRequestCallbackList::Subscription>
-    NativeFileSystemWriteRequestSubscription;
-
-// A type of callback run on the main thread when a PPAPI
-// ClientDownloadRequest has been formed for a download.
-typedef base::RepeatingCallback<void(const ClientDownloadRequest*)>
-    PPAPIDownloadRequestCallback;
-
-// A list of PPAPI ClientDownloadRequest callbacks.
-typedef base::CallbackList<void(const ClientDownloadRequest*)>
-    PPAPIDownloadRequestCallbackList;
-
-// A subscription to a registered PPAPI ClientDownloadRequest callback.
-typedef std::unique_ptr<PPAPIDownloadRequestCallbackList::Subscription>
-    PPAPIDownloadRequestSubscription;
+// Callbacks run on the main thread when a PPAPI ClientDownloadRequest has been
+// formed for a download.
+using PPAPIDownloadRequestCallbackList =
+    base::RepeatingCallbackList<void(const ClientDownloadRequest*)>;
+using PPAPIDownloadRequestCallback =
+    PPAPIDownloadRequestCallbackList::CallbackType;
+using PPAPIDownloadRequestSubscription =
+    std::unique_ptr<PPAPIDownloadRequestCallbackList::Subscription>;
 
 void RecordCountOfWhitelistedDownload(WhitelistType type);
 

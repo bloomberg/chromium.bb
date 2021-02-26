@@ -8,7 +8,7 @@
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/macros.h"
@@ -49,6 +49,7 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
   void Initialize() override;
   void ClickedOutsideBubble() override;
   base::string16 GetAccessibleNameForTray() override;
+  void HandleLocaleChange() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
 
   // views::View:

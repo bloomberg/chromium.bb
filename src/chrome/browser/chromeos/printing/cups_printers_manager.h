@@ -8,11 +8,15 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/printing/print_servers_policy_provider.h"
 #include "chrome/browser/chromeos/printing/printer_installation_manager.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "chromeos/printing/uri.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class PrefRegistrySimple;
 class PrefService;
 class Profile;
 
@@ -32,7 +36,7 @@ class SyncedPrintersManager;
 class UsbPrinterNotificationController;
 
 // Returns true if |printer_uri| is an IPP uri.
-bool IsIppUri(base::StringPiece printer_uri);
+bool IsIppUri(const Uri& printer_uri);
 
 // Top level manager of available CUPS printers in ChromeOS.  All functions
 // in this class must be called from a sequenced context.
@@ -69,13 +73,17 @@ class CupsPrintersManager : public PrinterInstallationManager,
       std::unique_ptr<PrinterConfigurer> printer_configurer,
       std::unique_ptr<UsbPrinterNotificationController>
           usb_notification_controller,
-      ServerPrintersProvider* server_printers_provider,
+      std::unique_ptr<ServerPrintersProvider> server_printers_provider,
+      std::unique_ptr<PrintServersPolicyProvider> print_servers_provider,
       std::unique_ptr<EnterprisePrintersProvider> enterprise_printers_provider,
       PrinterEventTracker* event_tracker,
       PrefService* pref_service);
 
-  // Register the printing preferences with the |registry|.
+  // Register the profile printing preferences with the |registry|.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Register the printing preferences with the |registry|.
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   ~CupsPrintersManager() override = default;
 
@@ -119,6 +127,18 @@ class CupsPrintersManager : public PrinterInstallationManager,
   // Passes retrieved printer status to the callbacks.
   virtual void FetchPrinterStatus(const std::string& printer_id,
                                   PrinterStatusCallback cb) = 0;
+
+  // Records the total number of detected network printers and the
+  // number of detected network printers that have not been saved.
+  virtual void RecordNearbyNetworkPrinterCounts() const = 0;
+
+  // Selects a print server from all the available print servers. Returns true on
+  // successfully selecting the requested print server.
+  virtual bool ChoosePrintServer(
+      const base::Optional<std::string>& selected_print_server_id) = 0;
+
+  // Returns the current fetching mode strategy for print servers.
+  virtual ServerPrintersFetchingMode GetServerPrintersFetchingMode() const = 0;
 };
 
 }  // namespace chromeos

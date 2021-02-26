@@ -11,10 +11,11 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -26,7 +27,7 @@ using chrome_test_util::SystemSelectionCallout;
 using chrome_test_util::SystemSelectionCalloutCopyButton;
 
 // Toolbar integration tests for Chrome.
-@interface ToolbarTestCase : ChromeTestCase
+@interface ToolbarTestCase : WebHttpServerChromeTestCase
 @end
 
 @implementation ToolbarTestCase
@@ -36,9 +37,8 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 // Verifies that entering a URL in the omnibox navigates to the correct URL and
 // displays content.
 - (void)testEnterURL {
-  web::test::SetUpFileBasedHttpServer();
-  const GURL URL = web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/destination.html");
+  GREYAssertTrue(self.testServer->Start(), @"Server did not start.");
+  const GURL URL = self.testServer->GetURL("/destination.html");
   [ChromeEarlGrey loadURL:URL];
   [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
       assertWithMatcher:grey_notNil()];

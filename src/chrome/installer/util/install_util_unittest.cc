@@ -128,11 +128,12 @@ TEST_F(InstallUtilTest, ComposeCommandLine) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
 
   std::pair<std::wstring, std::wstring> params[] = {
-    std::make_pair(std::wstring(L""), std::wstring(L"")),
-    std::make_pair(std::wstring(L""), std::wstring(L"--do-something --silly")),
-    std::make_pair(std::wstring(L"spam.exe"), std::wstring(L"")),
-    std::make_pair(std::wstring(L"spam.exe"),
-                   std::wstring(L"--do-something --silly")),
+      std::make_pair(std::wstring(L""), std::wstring(L"")),
+      std::make_pair(std::wstring(L""),
+                     std::wstring(L"--do-something --silly")),
+      std::make_pair(std::wstring(L"spam.exe"), std::wstring(L"")),
+      std::make_pair(std::wstring(L"spam.exe"),
+                     std::wstring(L"--do-something --silly")),
   };
   for (std::pair<std::wstring, std::wstring>& param : params) {
     InstallUtil::ComposeCommandLine(param.first, param.second, &command_line);
@@ -250,10 +251,11 @@ TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
 
     EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
     ASSERT_EQ(ERROR_SUCCESS, RegKey(root, child_key_path.c_str(), KEY_SET_VALUE)
-                                 .WriteValue(NULL, value));
-    EXPECT_EQ(InstallUtil::DELETED, InstallUtil::DeleteRegistryKeyIf(
-                                        root, parent_key_path, child_key_path,
-                                        WorkItem::kWow64Default, NULL, pred));
+                                 .WriteValue(nullptr, value));
+    EXPECT_EQ(InstallUtil::DELETED,
+              InstallUtil::DeleteRegistryKeyIf(
+                  root, parent_key_path, child_key_path,
+                  WorkItem::kWow64Default, nullptr, pred));
     EXPECT_FALSE(
         RegKey(root, parent_key_path.c_str(), KEY_QUERY_VALUE).Valid());
   }
@@ -298,16 +300,15 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
       MockRegistryValuePredicate pred;
 
       EXPECT_CALL(pred, Evaluate(StrEq(L"foosball!"))).WillOnce(Return(false));
-      ASSERT_EQ(ERROR_SUCCESS,
-                RegKey(root, key_path.c_str(),
-                       KEY_SET_VALUE).WriteValue(value_name, L"foosball!"));
+      ASSERT_EQ(ERROR_SUCCESS, RegKey(root, key_path.c_str(), KEY_SET_VALUE)
+                                   .WriteValue(value_name, L"foosball!"));
       EXPECT_EQ(InstallUtil::NOT_FOUND,
                 InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(),
                                                    WorkItem::kWow64Default,
                                                    value_name, pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
-      EXPECT_TRUE(RegKey(root, key_path.c_str(),
-                         KEY_QUERY_VALUE).HasValue(value_name));
+      EXPECT_TRUE(
+          RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).HasValue(value_name));
     }
 
     // Value exists, and matches: delete.
@@ -315,16 +316,15 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
       MockRegistryValuePredicate pred;
 
       EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
-      ASSERT_EQ(ERROR_SUCCESS,
-                RegKey(root, key_path.c_str(),
-                       KEY_SET_VALUE).WriteValue(value_name, value));
+      ASSERT_EQ(ERROR_SUCCESS, RegKey(root, key_path.c_str(), KEY_SET_VALUE)
+                                   .WriteValue(value_name, value));
       EXPECT_EQ(InstallUtil::DELETED,
                 InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(),
                                                    WorkItem::kWow64Default,
                                                    value_name, pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
-      EXPECT_FALSE(RegKey(root, key_path.c_str(),
-                          KEY_QUERY_VALUE).HasValue(value_name));
+      EXPECT_FALSE(
+          RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).HasValue(value_name));
     }
   }
 
@@ -335,36 +335,35 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
       MockRegistryValuePredicate pred;
 
       EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
-      ASSERT_EQ(ERROR_SUCCESS,
-                RegKey(root, key_path.c_str(),
-                       KEY_SET_VALUE).WriteValue(L"", value));
-      EXPECT_EQ(InstallUtil::DELETED,
-                InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(),
-                                                   WorkItem::kWow64Default, L"",
-                                                   pred));
+      ASSERT_EQ(
+          ERROR_SUCCESS,
+          RegKey(root, key_path.c_str(), KEY_SET_VALUE).WriteValue(L"", value));
+      EXPECT_EQ(InstallUtil::DELETED, InstallUtil::DeleteRegistryValueIf(
+                                          root, key_path.c_str(),
+                                          WorkItem::kWow64Default, L"", pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
-      EXPECT_FALSE(RegKey(root, key_path.c_str(),
-                          KEY_QUERY_VALUE).HasValue(L""));
+      EXPECT_FALSE(
+          RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).HasValue(L""));
     }
   }
 
   {
     ASSERT_NO_FATAL_FAILURE(ResetRegistryOverrides());
-    // Default value matches: delete using NULL.
+    // Default value matches: delete using nullptr.
     {
       MockRegistryValuePredicate pred;
 
       EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
-      ASSERT_EQ(ERROR_SUCCESS,
-                RegKey(root, key_path.c_str(),
-                       KEY_SET_VALUE).WriteValue(L"", value));
-      EXPECT_EQ(InstallUtil::DELETED,
-                InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(),
-                                                   WorkItem::kWow64Default,
-                                                   NULL, pred));
+      ASSERT_EQ(
+          ERROR_SUCCESS,
+          RegKey(root, key_path.c_str(), KEY_SET_VALUE).WriteValue(L"", value));
+      EXPECT_EQ(
+          InstallUtil::DELETED,
+          InstallUtil::DeleteRegistryValueIf(
+              root, key_path.c_str(), WorkItem::kWow64Default, nullptr, pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
-      EXPECT_FALSE(RegKey(root, key_path.c_str(),
-                          KEY_QUERY_VALUE).HasValue(L""));
+      EXPECT_FALSE(
+          RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).HasValue(L""));
     }
   }
 }
@@ -422,15 +421,18 @@ TEST_F(InstallUtilTest, ProgramCompare) {
 
   // Test where strings don't match, but the same file is indicated.
   std::wstring short_expect;
-  DWORD short_len = GetShortPathName(expect.value().c_str(),
-                                     base::WriteInto(&short_expect, MAX_PATH),
-                                     MAX_PATH);
+  DWORD short_len =
+      GetShortPathName(expect.value().c_str(),
+                       base::WriteInto(&short_expect, MAX_PATH), MAX_PATH);
   ASSERT_NE(static_cast<DWORD>(0), short_len);
   ASSERT_GT(static_cast<DWORD>(MAX_PATH), short_len);
   short_expect.resize(short_len);
-  ASSERT_THAT(short_expect, Not(EqPathIgnoreCase(expect)));
-  EXPECT_TRUE(InstallUtil::ProgramCompare(expect).Evaluate(
-      L"\"" + short_expect + L"\""));
+  // GetShortPathName may return the original path in case there is no short
+  // form. Only perform the last expectation if the short form was found.
+  if (!base::FilePath::CompareEqualIgnoreCase(expect.value(), short_expect)) {
+    EXPECT_TRUE(InstallUtil::ProgramCompare(expect).Evaluate(
+        L"\"" + short_expect + L"\""));
+  }
 }
 
 TEST_F(InstallUtilTest, AddDowngradeVersion) {
@@ -449,21 +451,21 @@ TEST_F(InstallUtilTest, AddDowngradeVersion) {
 
   // Upgrade should not create the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, current_version,
                                              higer_new_version, list.get());
   ASSERT_TRUE(list->Do());
   ASSERT_FALSE(InstallUtil::GetDowngradeVersion());
 
   // Downgrade should create the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, current_version,
                                              lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
   EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
 
   // Multiple downgrades should not change the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_1,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, lower_new_version_1,
                                              lower_new_version_2, list.get());
   ASSERT_TRUE(list->Do());
   EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
@@ -482,7 +484,7 @@ TEST_F(InstallUtilTest, DeleteDowngradeVersion) {
   base::Version lower_new_version_2("1.1.0.0");
 
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, current_version,
                                              lower_new_version_2, list.get());
   ASSERT_TRUE(list->Do());
   EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
@@ -490,33 +492,33 @@ TEST_F(InstallUtilTest, DeleteDowngradeVersion) {
   // Upgrade should not delete the value if it still lower than the version that
   // downgrade from.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_2,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, lower_new_version_2,
                                              lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
   EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
 
   // Repair should not delete the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_1,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, lower_new_version_1,
                                              lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
   EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
 
   // Fully upgrade should delete the value.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_1,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, lower_new_version_1,
                                              higer_new_version, list.get());
   ASSERT_TRUE(list->Do());
   ASSERT_FALSE(InstallUtil::GetDowngradeVersion());
 
   // Fresh install should delete the value if it exists.
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, current_version,
                                              lower_new_version_2, list.get());
   ASSERT_TRUE(list->Do());
   EXPECT_EQ(current_version, InstallUtil::GetDowngradeVersion());
   list.reset(WorkItem::CreateWorkItemList());
-  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, nullptr,
+  InstallUtil::AddUpdateDowngradeVersionItem(kRoot, base::Version(),
                                              lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
   ASSERT_FALSE(InstallUtil::GetDowngradeVersion());

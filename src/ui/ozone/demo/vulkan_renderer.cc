@@ -10,13 +10,13 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/vulkan/init/vulkan_factory.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
-#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_surface.h"
@@ -238,34 +238,35 @@ void VulkanRenderer::RenderFrame() {
 
     {
       gpu::ScopedSingleUseCommandBufferRecorder recorder(command_buffer);
-      VkImageLayout old_layout = scoped_write.image_layout();
-      VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-      VkImageMemoryBarrier image_memory_barrier = {
-          .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-          .pNext = nullptr,
-          .srcAccessMask = GetAccessMask(old_layout),
-          .dstAccessMask = GetAccessMask(layout),
-          .oldLayout = old_layout,
-          .newLayout = layout,
-          .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-          .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-          .image = scoped_write.image(),
-          .subresourceRange =
-              {
-                  .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                  .baseMipLevel = 0,
-                  .levelCount = 1,
-                  .baseArrayLayer = 0,
-                  .layerCount = 1,
-              },
-      };
-      vkCmdPipelineBarrier(
-          recorder.handle(), GetPipelineStageFlags(old_layout),
-          GetPipelineStageFlags(layout), 0 /* dependencyFlags */,
-          0 /* memoryBarrierCount */, nullptr /* pMemoryBarriers */,
-          0 /* bufferMemoryBarrierCount */, nullptr /* pBufferMemoryBarriers */,
-          1, &image_memory_barrier);
-      scoped_write.set_image_layout(layout);
+      {
+        VkImageLayout old_layout = scoped_write.image_layout();
+        VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        VkImageMemoryBarrier image_memory_barrier = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+            .pNext = nullptr,
+            .srcAccessMask = GetAccessMask(old_layout),
+            .dstAccessMask = GetAccessMask(layout),
+            .oldLayout = old_layout,
+            .newLayout = layout,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image = scoped_write.image(),
+            .subresourceRange =
+                {
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .baseMipLevel = 0,
+                    .levelCount = 1,
+                    .baseArrayLayer = 0,
+                    .layerCount = 1,
+                },
+        };
+        vkCmdPipelineBarrier(
+            recorder.handle(), GetPipelineStageFlags(old_layout),
+            GetPipelineStageFlags(layout), 0 /* dependencyFlags */,
+            0 /* memoryBarrierCount */, nullptr /* pMemoryBarriers */,
+            0 /* bufferMemoryBarrierCount */,
+            nullptr /* pBufferMemoryBarriers */, 1, &image_memory_barrier);
+      }
 
       VkRenderPassBeginInfo begin_info = {
           /* .sType = */ VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -292,12 +293,42 @@ void VulkanRenderer::RenderFrame() {
                            VK_SUBPASS_CONTENTS_INLINE);
 
       vkCmdEndRenderPass(recorder.handle());
+
+      // Transfer image layout back to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for
+      // presenting.
+      {
+        VkImageLayout old_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        VkImageLayout layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        VkImageMemoryBarrier image_memory_barrier = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+            .pNext = nullptr,
+            .srcAccessMask = GetAccessMask(old_layout),
+            .dstAccessMask = GetAccessMask(layout),
+            .oldLayout = old_layout,
+            .newLayout = layout,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image = scoped_write.image(),
+            .subresourceRange =
+                {
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .baseMipLevel = 0,
+                    .levelCount = 1,
+                    .baseArrayLayer = 0,
+                    .layerCount = 1,
+                },
+        };
+        vkCmdPipelineBarrier(
+            recorder.handle(), GetPipelineStageFlags(old_layout),
+            GetPipelineStageFlags(layout), 0 /* dependencyFlags */,
+            0 /* memoryBarrierCount */, nullptr /* pMemoryBarriers */,
+            0 /* bufferMemoryBarrierCount */,
+            nullptr /* pBufferMemoryBarriers */, 1, &image_memory_barrier);
+      }
     }
-    VkSemaphore begin_semaphore = scoped_write.TakeBeginSemaphore();
-    VkSemaphore end_semaphore = scoped_write.GetEndSemaphore();
+    VkSemaphore begin_semaphore = scoped_write.begin_semaphore();
+    VkSemaphore end_semaphore = scoped_write.end_semaphore();
     CHECK(command_buffer.Submit(1, &begin_semaphore, 1, &end_semaphore));
-    device_queue_->GetFenceHelper()->EnqueueSemaphoreCleanupForSubmittedWork(
-        begin_semaphore);
   }
   vulkan_surface_->SwapBuffers();
 

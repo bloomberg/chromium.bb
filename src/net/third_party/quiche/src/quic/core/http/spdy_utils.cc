@@ -8,12 +8,14 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/numbers.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
@@ -29,12 +31,13 @@ bool SpdyUtils::ExtractContentLengthFromHeaders(int64_t* content_length,
     return false;
   } else {
     // Check whether multiple values are consistent.
-    quiche::QuicheStringPiece content_length_header = it->second;
-    std::vector<quiche::QuicheStringPiece> values =
-        quiche::QuicheTextUtils::Split(content_length_header, '\0');
-    for (const quiche::QuicheStringPiece& value : values) {
+    absl::string_view content_length_header = it->second;
+    std::vector<absl::string_view> values =
+        absl::StrSplit(content_length_header, '\0');
+    for (const absl::string_view& value : values) {
       uint64_t new_value;
-      if (!quiche::QuicheTextUtils::StringToUint64(value, &new_value)) {
+      if (!absl::SimpleAtoi(value, &new_value) ||
+          !quiche::QuicheTextUtils::IsAllDigits(value)) {
         QUIC_DLOG(ERROR)
             << "Content length was either unparseable or negative.";
         return false;
@@ -95,7 +98,7 @@ bool SpdyUtils::CopyAndValidateTrailers(const QuicHeaderList& header_list,
     // response body bytes expected.
     if (expect_final_byte_offset && !found_final_byte_offset &&
         name == kFinalOffsetHeaderKey &&
-        quiche::QuicheTextUtils::StringToSizeT(p.second, final_byte_offset)) {
+        absl::SimpleAtoi(p.second, final_byte_offset)) {
       found_final_byte_offset = true;
       continue;
     }
@@ -159,7 +162,7 @@ std::string SpdyUtils::H3SettingsToString(
     Http3AndQpackSettingsIdentifiers identifier) {
   switch (identifier) {
     RETURN_STRING_LITERAL(SETTINGS_QPACK_MAX_TABLE_CAPACITY);
-    RETURN_STRING_LITERAL(SETTINGS_MAX_HEADER_LIST_SIZE);
+    RETURN_STRING_LITERAL(SETTINGS_MAX_FIELD_SECTION_SIZE);
     RETURN_STRING_LITERAL(SETTINGS_QPACK_BLOCKED_STREAMS);
   }
   return quiche::QuicheStrCat("UNSUPPORTED_SETTINGS_TYPE(", identifier, ")");

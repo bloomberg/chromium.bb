@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory.h"
+#include "gpu/command_buffer/service/shared_image_backing_gl_common.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gfx/buffer_types.h"
@@ -20,6 +21,10 @@ namespace gfx {
 class Size;
 class ColorSpace;
 }  // namespace gfx
+
+namespace gl {
+class ProgressReporter;
+}  // namespace gl
 
 namespace gpu {
 class SharedImageBacking;
@@ -37,18 +42,13 @@ class ImageFactory;
 class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
     : public SharedImageBackingFactory {
  public:
-  struct UnpackStateAttribs {
-    bool es3_capable = false;
-    bool desktop_gl = false;
-    bool supports_unpack_subimage = false;
-  };
-
   SharedImageBackingFactoryGLTexture(
       const GpuPreferences& gpu_preferences,
       const GpuDriverBugWorkarounds& workarounds,
       const GpuFeatureInfo& gpu_feature_info,
       ImageFactory* image_factory,
-      SharedImageBatchAccessManager* batch_access_manager);
+      SharedImageBatchAccessManager* batch_access_manager,
+      gl::ProgressReporter* progress_reporter);
   ~SharedImageBackingFactoryGLTexture() override;
 
   // SharedImageBackingFactory implementation.
@@ -58,6 +58,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       bool is_thread_safe) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -65,6 +67,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       base::span<const uint8_t> pixel_data) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -75,6 +79,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage) override;
   bool CanImportGpuMemoryBuffer(
       gfx::GpuMemoryBufferType memory_buffer_type) override;
@@ -94,24 +100,6 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
                                          gfx::BufferFormat format,
                                          SurfaceHandle surface_handle,
                                          const gfx::Size& size);
-  static std::unique_ptr<SharedImageBacking> MakeBacking(
-      bool passthrough,
-      const Mailbox& mailbox,
-      GLenum target,
-      GLuint service_id,
-      scoped_refptr<gl::GLImage> image,
-      gles2::Texture::ImageState image_state,
-      GLuint internal_format,
-      GLuint gl_format,
-      GLuint gl_type,
-      const gles2::Texture::CompatibilitySwizzle* swizzle,
-      bool is_cleared,
-      bool has_immutable_storage,
-      viz::ResourceFormat format,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage,
-      const UnpackStateAttribs& attribs);
 
   // This is meant to be used only on Android. Return nullptr for other
   // platforms.
@@ -120,6 +108,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage);
 
   std::unique_ptr<SharedImageBacking> CreateSharedImageInternal(
@@ -128,6 +118,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       base::span<const uint8_t> pixel_data);
 
@@ -180,8 +172,12 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
   GpuMemoryBufferFormatSet gpu_memory_buffer_formats_;
   int32_t max_texture_size_ = 0;
   bool texture_usage_angle_ = false;
-  UnpackStateAttribs attribs;
+  SharedImageBackingGLCommon::UnpackStateAttribs attribs;
   GpuDriverBugWorkarounds workarounds_;
+
+  // Used to notify the watchdog before a buffer allocation in case it takes
+  // long.
+  gl::ProgressReporter* const progress_reporter_ = nullptr;
 
 #if defined(OS_ANDROID)
   SharedImageBatchAccessManager* batch_access_manager_ = nullptr;

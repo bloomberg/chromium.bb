@@ -47,11 +47,9 @@ bool IsValidPVRTCSize(GLint level, GLsizei size) {
 }
 
 bool IsValidS3TCSizeForWebGLAndANGLE(GLint level, GLsizei size) {
-  // WebGL and ANGLE only allow multiple-of-4 sizes, except for levels > 0 where
-  // it also allows 1 or 2. See WEBGL_compressed_texture_s3tc and
-  // ANGLE_compressed_texture_dxt*
-  return (level && size == 1) || (level && size == 2) ||
-         !(size % kS3TCBlockWidth);
+  // WebGL and ANGLE only allow multiple-of-4 sizes for the base level. See
+  // WEBGL_compressed_texture_s3tc and ANGLE_compressed_texture_dxt*
+  return (level > 0) || (size % kS3TCBlockWidth == 0);
 }
 
 const char* GetDebugSourceString(GLenum source) {
@@ -729,18 +727,23 @@ bool ValidateCompressedTexSubDimensions(GLenum target,
     case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
     case GL_COMPRESSED_RGBA8_ETC2_EAC:
     case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
-    case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT:
-    case GL_COMPRESSED_RGBA_BPTC_UNORM_EXT:
-    case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT:
-    case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT:
     case GL_COMPRESSED_RED_RGTC1_EXT:
     case GL_COMPRESSED_SIGNED_RED_RGTC1_EXT:
     case GL_COMPRESSED_RED_GREEN_RGTC2_EXT:
     case GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT: {
+      if (target == GL_TEXTURE_3D) {
+        *error_message = "target == GL_TEXTURE_3D is not allowed";
+        return false;
+      }
+      FALLTHROUGH;
+    }
+    case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT:
+    case GL_COMPRESSED_RGBA_BPTC_UNORM_EXT:
+    case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT:
+    case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT: {
       const int kBlockSize = 4;
       GLsizei tex_width, tex_height;
-      if (target == GL_TEXTURE_3D ||
-          !texture->GetLevelSize(target, level, &tex_width, &tex_height,
+      if (!texture->GetLevelSize(target, level, &tex_width, &tex_height,
                                  nullptr) ||
           (xoffset % kBlockSize) || (yoffset % kBlockSize) ||
           ((width % kBlockSize) && xoffset + width != tex_width) ||
@@ -854,7 +857,8 @@ bool ValidateCompressedTexDimensions(GLenum target,
         *error_message = "width, height, or depth invalid";
         return false;
       }
-      if (!(width % kBPTCBlockWidth == 0 && height % kBPTCBlockHeight == 0)) {
+      if (level == 0 &&
+          !(width % kBPTCBlockWidth == 0 && height % kBPTCBlockHeight == 0)) {
         *error_message = "width or height is not a multiple of four";
         return false;
       }
@@ -867,7 +871,8 @@ bool ValidateCompressedTexDimensions(GLenum target,
         *error_message = "width, height, or depth invalid";
         return false;
       }
-      if (!(width % kRGTCBlockWidth == 0 && height % kRGTCBlockHeight == 0)) {
+      if (level == 0 &&
+          !(width % kRGTCBlockWidth == 0 && height % kRGTCBlockHeight == 0)) {
         *error_message = "width or height is not a multiple of four";
         return false;
       }
@@ -885,6 +890,15 @@ bool ValidateCopyTexFormatHelper(const FeatureInfo* feature_info,
   DCHECK(output_error_msg);
   if (read_format == 0) {
     *output_error_msg = std::string("no valid color image");
+    return false;
+  }
+  // YUV formats are not valid for CopyTex[Sub]Image.
+  if (internal_format == GL_RGB_YCRCB_420_CHROMIUM ||
+      internal_format == GL_RGB_YCBCR_420V_CHROMIUM ||
+      internal_format == GL_RGB_YCBCR_P010_CHROMIUM ||
+      read_format == GL_RGB_YCRCB_420_CHROMIUM ||
+      read_format == GL_RGB_YCBCR_420V_CHROMIUM ||
+      read_format == GL_RGB_YCBCR_P010_CHROMIUM) {
     return false;
   }
   // Check we have compatible formats.
@@ -962,7 +976,7 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
   std::string output_error_msg;
 
   switch (dest_internal_format) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // RGB5_A1 is not color-renderable on NVIDIA Mac, see
     // https://crbug.com/676209.
     case GL_RGB5_A1:

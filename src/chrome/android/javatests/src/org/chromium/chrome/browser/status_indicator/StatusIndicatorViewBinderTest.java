@@ -15,19 +15,18 @@ import android.graphics.Color;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.view.View;
 
 import androidx.core.content.res.ResourcesCompat;
+import androidx.test.filters.SmallTest;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.MathUtils;
+import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
@@ -64,22 +63,23 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainer = getActivity().findViewById(R.id.status_indicator);
             mStatusTextView = mContainer.findViewById(R.id.status_text);
+
+            mSceneLayer = new MockStatusIndicatorSceneLayer();
+            mModel = new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
+                             .with(StatusIndicatorProperties.STATUS_TEXT, "")
+                             .with(StatusIndicatorProperties.STATUS_ICON, null)
+                             .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
+                             .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
+                             .build();
+            mMCP = PropertyModelChangeProcessor.create(mModel,
+                    new StatusIndicatorViewBinder.ViewHolder(mContainer, mSceneLayer),
+                    StatusIndicatorViewBinder::bind);
         });
-        mSceneLayer = new MockStatusIndicatorSceneLayer(mContainer);
-        mModel = new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
-                         .with(StatusIndicatorProperties.STATUS_TEXT, "")
-                         .with(StatusIndicatorProperties.STATUS_ICON, null)
-                         .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
-                         .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
-                         .build();
-        mMCP = PropertyModelChangeProcessor.create(mModel,
-                new StatusIndicatorViewBinder.ViewHolder(mContainer, mSceneLayer),
-                StatusIndicatorViewBinder::bind);
     }
 
     @Override
     public void tearDownTest() throws Exception {
-        mMCP.destroy();
+        TestThreadUtils.runOnUiThreadBlocking(mMCP::destroy);
         super.tearDownTest();
     }
 
@@ -156,15 +156,9 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
         assertEquals("Wrong background color.", Color.BLUE,
                 ((ColorDrawable) mContainer.getBackground()).getColor());
         assertEquals("Wrong text color.", Color.RED, mStatusTextView.getCurrentTextColor());
-
-        // There is no way to get the color filter below L. We could technically modify
-        // TextViewWithCompoundDrawables to cache it, but it's not worth the effort. Once the min
-        // apk is L, we won't be using color filters anyway.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            assertEquals("Wrong compound drawables tint",
-                    new PorterDuffColorFilter(Color.GREEN, SRC_IN),
-                    mStatusTextView.getCompoundDrawablesRelative()[0].getColorFilter());
-        }
+        assertEquals("Wrong compound drawables tint",
+                new PorterDuffColorFilter(Color.GREEN, SRC_IN),
+                mStatusTextView.getCompoundDrawablesRelative()[0].getColorFilter());
     }
 
     @Test
@@ -203,8 +197,8 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
 
     /** Mock {@link StatusIndicatorSceneLayer} class to avoid native initialization. */
     private class MockStatusIndicatorSceneLayer extends StatusIndicatorSceneLayer {
-        MockStatusIndicatorSceneLayer(ViewResourceFrameLayout statusIndicator) {
-            super(statusIndicator, null);
+        MockStatusIndicatorSceneLayer() {
+            super(null);
         }
 
         @Override

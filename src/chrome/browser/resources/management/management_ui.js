@@ -72,6 +72,18 @@ Polymer({
     /** @private */
     managementOverview_: String,
 
+    /** @private */
+    pluginVmDataCollectionEnabled_: Boolean,
+
+    /** @private */
+    eolAdminMessage_: String,
+
+    /** @private */
+    eolMessage_: String,
+
+    /** @private */
+    showProxyServerPrivacyDisclosure_: Boolean,
+
     // </if>
 
     /** @private */
@@ -107,6 +119,10 @@ Polymer({
         'browser-reporting-info-updated',
         reportingInfo => this.onBrowserReportingInfoReceived_(reportingInfo));
 
+    this.addWebUIListener(
+        'plugin-vm-data-collection-updated',
+        enabled => this.pluginVmDataCollectionEnabled_ = enabled);
+
     this.addWebUIListener('managed_data_changed', () => {
       this.updateManagedFields_();
     });
@@ -118,6 +134,7 @@ Polymer({
     this.getExtensions_();
     // <if expr="chromeos">
     this.getDeviceReportingInfo_();
+    this.getPluginVmDataCollectionStatus_();
     this.getLocalTrustRootsInfo_();
     // </if>
   },
@@ -196,12 +213,30 @@ Polymer({
     });
   },
 
+  /** @private */
+  getPluginVmDataCollectionStatus_() {
+    this.browserProxy_.getPluginVmDataCollectionStatus().then(
+        pluginVmDataCollectionEnabled => {
+          this.pluginVmDataCollectionEnabled_ = pluginVmDataCollectionEnabled;
+        });
+  },
+
   /**
    * @return {boolean} True of there are device reporting info to show.
    * @private
    */
   showDeviceReportingInfo_() {
     return !!this.deviceReportingInfo_ && this.deviceReportingInfo_.length > 0;
+  },
+
+  /**
+   * @param {string} eolAdminMessage The device return instructions
+   * @return {boolean} Whether there are device return instructions from the
+   *     admin in case an update is required after reaching end of life.
+   * @private
+   */
+  isEmpty_(eolAdminMessage) {
+    return !eolAdminMessage || eolAdminMessage.trim().length === 0;
   },
 
   /**
@@ -221,6 +256,8 @@ Polymer({
         return 'cr:computer';
       case DeviceReportingType.CRASH_REPORT:
         return 'management:crash';
+      case DeviceReportingType.APP_INFO_AND_ACTIVITY:
+        return 'management:timelapse';
       case DeviceReportingType.LOGS:
         return 'management:report';
       case DeviceReportingType.PRINT:
@@ -233,8 +270,6 @@ Polymer({
         return 'cr:extension';
       case DeviceReportingType.ANDROID_APPLICATION:
         return 'management:play-store';
-      case DeviceReportingType.PROXY_SERVER:
-        return 'management:vpn-lock';
       default:
         return 'cr:computer';
     }
@@ -311,6 +346,17 @@ Polymer({
       // <if expr="chromeos">
       this.customerLogo_ = data.customerLogo;
       this.managementOverview_ = data.overview;
+      this.eolMessage_ = data.eolMessage;
+      this.showProxyServerPrivacyDisclosure_ =
+          data.showProxyServerPrivacyDisclosure;
+      try {
+        // Sanitizing the message could throw an error if it contains non
+        // supported markup.
+        this.eolAdminMessage_ =
+            loadTimeData.sanitizeInnerHtml(data.eolAdminMessage);
+      } catch (e) {
+        this.eolAdminMessage_ = '';
+      }
       // </if>
       // <if expr="not chromeos">
       this.managementNoticeHtml_ = data.browserManagementNotice;

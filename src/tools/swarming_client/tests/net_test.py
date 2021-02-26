@@ -132,6 +132,8 @@ class HttpServiceTest(RetryLoopMockedTest):
         return login(allow_user_interaction) if login else False
 
     class MockedRequestEngine(object):
+
+      @net.maybe_inject_user_agent
       def perform_request(self, request):
         return perform_request(request) if perform_request else None
 
@@ -379,6 +381,21 @@ class HttpServiceTest(RetryLoopMockedTest):
     self.assertEqual(
         False, net.url_retrieve('filepath', 'https://localhost/test'))
     self.assertEqual(['filepath'], removed)
+
+  def test_request_has_user_agent(self):
+
+    def mock_perform_request(request):
+      return request
+
+    service = self.mocked_http_service(perform_request=mock_perform_request)
+    user_agent = 'Py/Foo'
+    net.set_user_agent(user_agent)
+    request_headers = service.request('/', data={}).headers
+    self.assertEqual(request_headers['User-Agent'], user_agent)
+
+    net.set_user_agent(None)
+    request_headers = service.request('/', data={}).headers
+    self.assertNotIn('User-Agent', request_headers)
 
 
 class TestNetFunctions(auto_stub.TestCase):

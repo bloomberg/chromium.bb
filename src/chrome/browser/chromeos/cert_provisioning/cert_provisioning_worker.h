@@ -7,11 +7,13 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/attestation/tpm_challenge_key_subtle.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "net/base/backoff_entry.h"
@@ -27,6 +29,8 @@ namespace cert_provisioning {
 
 class CertProvisioningInvalidator;
 
+// A OnceCallback that is invoked when the CertProvisioningWorker is done and
+// has a result (which could be success or failure).
 using CertProvisioningWorkerCallback =
     base::OnceCallback<void(const CertProfile& profile,
                             CertProvisioningWorkerState state)>;
@@ -46,7 +50,8 @@ class CertProvisioningWorkerFactory {
       const CertProfile& cert_profile,
       policy::CloudPolicyClient* cloud_policy_client,
       std::unique_ptr<CertProvisioningInvalidator> invalidator,
-      CertProvisioningWorkerCallback callback);
+      base::RepeatingClosure state_change_callback,
+      CertProvisioningWorkerCallback result_callback);
 
   virtual std::unique_ptr<CertProvisioningWorker> Deserialize(
       CertScope cert_scope,
@@ -55,7 +60,8 @@ class CertProvisioningWorkerFactory {
       const base::Value& saved_worker,
       policy::CloudPolicyClient* cloud_policy_client,
       std::unique_ptr<CertProvisioningInvalidator> invalidator,
-      CertProvisioningWorkerCallback callback);
+      base::RepeatingClosure state_change_callback,
+      CertProvisioningWorkerCallback result_callback);
 
   // Doesn't take ownership.
   static void SetFactoryForTesting(CertProvisioningWorkerFactory* test_factory);
@@ -107,7 +113,8 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
       const CertProfile& cert_profile,
       policy::CloudPolicyClient* cloud_policy_client,
       std::unique_ptr<CertProvisioningInvalidator> invalidator,
-      CertProvisioningWorkerCallback callback);
+      base::RepeatingClosure state_change_callback,
+      CertProvisioningWorkerCallback result_callback);
   ~CertProvisioningWorkerImpl() override;
 
   // CertProvisioningWorker
@@ -125,8 +132,14 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   friend class CertProvisioningSerializer;
 
   void GenerateKey();
-  void OnGenerateKeyDone(base::TimeTicks start_time,
-                         const attestation::TpmChallengeKeyResult& result);
+
+  void GenerateRegularKey();
+  void OnGenerateRegularKeyDone(const std::string& public_key_spki_der,
+                                platform_keys::Status status);
+
+  void GenerateKeyForVa();
+  void OnGenerateKeyForVaDone(base::TimeTicks start_time,
+                              const attestation::TpmChallengeKeyResult& result);
 
   void StartCsr();
   void OnStartCsrDone(policy::DeviceManagementStatus status,
@@ -137,6 +150,8 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
                       enterprise_management::HashingAlgorithm hashing_algorithm,
                       const std::string& data_to_sign);
 
+  void ProcessStartCsrResponse();
+
   void BuildVaChallengeResponse();
   void OnBuildVaChallengeResponseDone(
       base::TimeTicks start_time,
@@ -146,12 +161,12 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   void OnRegisterKeyDone(const attestation::TpmChallengeKeyResult& result);
 
   void MarkKey();
-  void OnMarkKeyDone(const std::string& error_message);
+  void OnMarkKeyDone(platform_keys::Status status);
 
   void SignCsr();
   void OnSignCsrDone(base::TimeTicks start_time,
                      const std::string& signature,
-                     const std::string& error_message);
+                     platform_keys::Status status);
 
   void FinishCsr();
   void OnFinishCsrDone(policy::DeviceManagementStatus status,
@@ -166,7 +181,7 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
       const std::string& pem_encoded_certificate);
 
   void ImportCert(const std::string& pem_encoded_certificate);
-  void OnImportCertDone(const std::string& error_message);
+  void OnImportCertDone(platform_keys::Status status);
 
   void ScheduleNextStep(base::TimeDelta delay);
   void CancelScheduledTasks();
@@ -196,8 +211,8 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   void InitAfterDeserialization();
 
   void CleanUpAndRunCallback();
-  void OnDeleteVaKeyDone(base::Optional<bool> delete_result);
-  void OnRemoveKeyDone(const std::string& error_message);
+  void OnDeleteVaKeyDone(bool delete_result);
+  void OnRemoveKeyDone(platform_keys::Status status);
   void OnCleanUpDone();
 
   // Returns true if there are no errors and the flow can be continued.
@@ -210,7 +225,8 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   Profile* profile_ = nullptr;
   PrefService* pref_service_ = nullptr;
   CertProfile cert_profile_;
-  CertProvisioningWorkerCallback callback_;
+  base::RepeatingClosure state_change_callback_;
+  CertProvisioningWorkerCallback result_callback_;
 
   // This field should be updated only via |UpdateState| function. It will
   // trigger update of the serialized data.
@@ -246,6 +262,10 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   // because of it).
   static constexpr int kVersion = 1;
 
+  // Unowned PlatformKeysService. Note that the CertProvisioningWorker does not
+  // observe the PlatformKeysService for shutdown events. Instead, it relies on
+  // the CertProvisioningScheduler to destroy all CertProvisioningWorker
+  // instances when the corresponding PlatformKeysService is shutting down.
   platform_keys::PlatformKeysService* platform_keys_service_ = nullptr;
   std::unique_ptr<attestation::TpmChallengeKeySubtle>
       tpm_challenge_key_subtle_impl_;

@@ -21,11 +21,6 @@
 namespace {
 
 TEST(EncodeAPI, InvalidParams) {
-  static aom_codec_iface_t *kCodecs[] = {
-#if CONFIG_AV1_ENCODER
-    aom_codec_av1_cx(),
-#endif
-  };
   uint8_t buf[1] = { 0 };
   aom_image_t img;
   aom_codec_ctx_t enc;
@@ -44,31 +39,35 @@ TEST(EncodeAPI, InvalidParams) {
             aom_codec_enc_config_default(NULL, &cfg, 0));
   EXPECT_TRUE(aom_codec_error(NULL) != NULL);
 
-  for (aom_codec_iface_t *iface : kCodecs) {
-    SCOPED_TRACE(aom_codec_iface_name(iface));
-    EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
-              aom_codec_enc_init(NULL, iface, NULL, 0));
-    EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
-              aom_codec_enc_init(&enc, iface, NULL, 0));
-    EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
-              aom_codec_enc_config_default(iface, &cfg, 2));
+  aom_codec_iface_t *iface = aom_codec_av1_cx();
+  SCOPED_TRACE(aom_codec_iface_name(iface));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_enc_init(NULL, iface, NULL, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_enc_init(&enc, iface, NULL, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
+            aom_codec_enc_config_default(iface, &cfg, 2));
+  EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(iface, &cfg, 0));
+  EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_init(&enc, iface, &cfg, 0));
+  EXPECT_EQ(NULL, aom_codec_get_global_headers(NULL));
 
-    EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(iface, &cfg, 0));
-    EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_init(&enc, iface, &cfg, 0));
-
-    EXPECT_EQ(NULL, aom_codec_get_global_headers(NULL));
-
-    aom_fixed_buf_t *glob_headers = aom_codec_get_global_headers(&enc);
-    EXPECT_TRUE(glob_headers->buf != NULL);
-    if (glob_headers) {
-      free(glob_headers->buf);
-      free(glob_headers);
-    }
-
-    EXPECT_EQ(AOM_CODEC_OK, aom_codec_encode(&enc, NULL, 0, 0, 0));
-
-    EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&enc));
+  aom_fixed_buf_t *glob_headers = aom_codec_get_global_headers(&enc);
+  EXPECT_TRUE(glob_headers->buf != NULL);
+  if (glob_headers) {
+    free(glob_headers->buf);
+    free(glob_headers);
   }
+  EXPECT_EQ(AOM_CODEC_OK, aom_codec_encode(&enc, NULL, 0, 0, 0));
+  EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&enc));
+}
+
+TEST(EncodeAPI, InvalidControlId) {
+  aom_codec_iface_t *iface = aom_codec_av1_cx();
+  aom_codec_ctx_t enc;
+  aom_codec_enc_cfg_t cfg;
+  EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(iface, &cfg, 0));
+  EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_init(&enc, iface, &cfg, 0));
+  EXPECT_EQ(AOM_CODEC_ERROR, aom_codec_control(&enc, -1, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_control(&enc, 0, 0));
+  EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&enc));
 }
 
 }  // namespace

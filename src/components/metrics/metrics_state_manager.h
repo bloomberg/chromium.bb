@@ -57,6 +57,9 @@ class MetricsStateManager final {
   // not opted in to metrics reporting.
   const std::string& client_id() const { return client_id_; }
 
+  // Returns the low entropy source for this client.
+  int GetLowEntropySource();
+
   // The CleanExitBeacon, used to determine whether the previous Chrome browser
   // session terminated gracefully.
   CleanExitBeacon* clean_exit_beacon() { return &clean_exit_beacon_; }
@@ -102,8 +105,8 @@ class MetricsStateManager final {
       PrefService* local_state,
       EnabledStateProvider* enabled_state_provider,
       const base::string16& backup_registry_key,
-      const StoreClientInfoCallback& store_client_info,
-      const LoadClientInfoCallback& load_client_info);
+      StoreClientInfoCallback store_client_info,
+      LoadClientInfoCallback load_client_info);
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -138,8 +141,8 @@ class MetricsStateManager final {
   MetricsStateManager(PrefService* local_state,
                       EnabledStateProvider* enabled_state_provider,
                       const base::string16& backup_registry_key,
-                      const StoreClientInfoCallback& store_client_info,
-                      const LoadClientInfoCallback& load_client_info);
+                      StoreClientInfoCallback store_client_info,
+                      LoadClientInfoCallback load_client_info);
 
   // Backs up the current client info via |store_client_info_|.
   void BackUpCurrentClientInfo();
@@ -152,9 +155,6 @@ class MetricsStateManager final {
   // each install. UMA must be enabled (and |client_id_| must be set) or
   // |provisional_client_id_| must be set before calling this.
   std::string GetHighEntropySource();
-
-  // Returns the low entropy source for this client.
-  int GetLowEntropySource();
 
   // Returns the old low entropy source for this client.
   int GetOldLowEntropySource();

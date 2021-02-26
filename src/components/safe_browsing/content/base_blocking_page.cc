@@ -15,6 +15,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/content/settings_page_helper.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/safe_browsing_loud_error_ui.h"
@@ -85,6 +86,8 @@ BaseBlockingPage::CreateDefaultDisplayOptions(
       false,                 // kSafeBrowsingProceedAnywayDisabled
       false,                 // should_open_links_in_new_tab
       true,                  // always_show_back_to_safety
+      false,                 // is_enhanced_protection_message_enabled
+      false,                 // is_safe_browsing_managed
       "cpn_safe_browsing");  // help_center_article_link
 }
 
@@ -129,17 +132,9 @@ void BaseBlockingPage::CommandReceived(const std::string& page_cmd) {
   sb_error_ui_->HandleCommand(interstitial_command);
 }
 
-bool BaseBlockingPage::ShouldCreateNewNavigation() const {
-  return sb_error_ui_->is_main_frame_load_blocked();
-}
-
 void BaseBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
   sb_error_ui_->PopulateStringsForHtml(load_time_data);
-}
-
-void BaseBlockingPage::OnInterstitialClosing() {
-  UpdateMetricsAfterSecurityInterstitial();
 }
 
 void BaseBlockingPage::FinishThreatDetails(const base::TimeDelta& delay,
@@ -200,6 +195,8 @@ std::string BaseBlockingPage::GetExtraMetricsSuffix(
       return "from_client_side_detection";
     case safe_browsing::ThreatSource::PASSWORD_PROTECTION_SERVICE:
       return "from_password_protection_service";
+    case safe_browsing::ThreatSource::REAL_TIME_CHECK:
+      return "from_real_time_check";
     case safe_browsing::ThreatSource::UNKNOWN:
       break;
   }
@@ -285,7 +282,9 @@ BaseBlockingPage::CreateControllerClient(
     content::WebContents* web_contents,
     const UnsafeResourceList& unsafe_resources,
     BaseUIManager* ui_manager,
-    PrefService* pref_service) {
+    PrefService* pref_service,
+    std::unique_ptr<security_interstitials::SettingsPageHelper>
+        settings_page_helper) {
   history::HistoryService* history_service =
       ui_manager->history_service(web_contents);
 
@@ -296,7 +295,8 @@ BaseBlockingPage::CreateControllerClient(
 
   return std::make_unique<SafeBrowsingControllerClient>(
       web_contents, std::move(metrics_helper), pref_service,
-      ui_manager->app_locale(), ui_manager->default_safe_page());
+      ui_manager->app_locale(), ui_manager->default_safe_page(),
+      std::move(settings_page_helper));
 }
 
 int BaseBlockingPage::GetHTMLTemplateId() {

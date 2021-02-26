@@ -57,10 +57,6 @@ void OneClickSigninDialogView::Hide() {
     dialog_view_->GetWidget()->Close();
 }
 
-base::string16 OneClickSigninDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW);
-}
-
 ui::ModalType OneClickSigninDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
@@ -108,7 +104,7 @@ OneClickSigninDialogView::OneClickSigninDialogView(
 
   auto learn_more_link =
       std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  learn_more_link->set_callback(
+  learn_more_link->SetCallback(
       base::BindRepeating(&OneClickSigninLinksDelegate::OnLearnMoreLinkClicked,
                           std::move(delegate), true));
   learn_more_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -117,7 +113,7 @@ OneClickSigninDialogView::OneClickSigninDialogView(
 
   auto advanced_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_ADVANCED));
-  advanced_link->set_callback(base::BindRepeating(
+  advanced_link->SetCallback(base::BindRepeating(
       [](OneClickSigninDialogView* view) {
         if (view->Accept())
           Hide();
@@ -132,6 +128,7 @@ OneClickSigninDialogView::OneClickSigninDialogView(
   SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_UNDO_BUTTON));
+  SetTitle(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW);
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));

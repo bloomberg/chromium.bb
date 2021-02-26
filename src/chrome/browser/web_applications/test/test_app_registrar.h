@@ -5,16 +5,25 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_APP_REGISTRAR_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_APP_REGISTRAR_H_
 
+#include <map>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "url/gurl.h"
+
+namespace base {
+class Time;
+}
 
 namespace web_app {
 
+// Deprecated. Please use TestWebAppRegistryController instead.
 class TestAppRegistrar : public AppRegistrar {
  public:
   struct AppInfo {
@@ -48,14 +57,29 @@ class TestAppRegistrar : public AppRegistrar {
   std::string GetAppShortName(const AppId& app_id) const override;
   std::string GetAppDescription(const AppId& app_id) const override;
   base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
-  const GURL& GetAppLaunchURL(const AppId& app_id) const override;
+  base::Optional<SkColor> GetAppBackgroundColor(
+      const AppId& app_id) const override;
+  const GURL& GetAppStartUrl(const AppId& app_id) const override;
+  const std::string* GetAppLaunchQueryParams(
+      const AppId& app_id) const override;
+  const apps::ShareTarget* GetAppShareTarget(
+      const AppId& app_id) const override;
   base::Optional<GURL> GetAppScopeInternal(const AppId& app_id) const override;
   DisplayMode GetAppDisplayMode(const AppId& app_id) const override;
   DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
+  std::vector<DisplayMode> GetAppDisplayModeOverride(
+      const AppId& app_id) const override;
+  base::Time GetAppLastLaunchTime(const web_app::AppId& app_id) const override;
+  base::Time GetAppInstallTime(const web_app::AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const AppId& app_id) const override;
-  std::vector<SquareSizePx> GetAppDownloadedIconSizes(
+  SortedSizesPx GetAppDownloadedIconSizesAny(
       const AppId& app_id) const override;
+  std::vector<WebApplicationShortcutsMenuItemInfo> GetAppShortcutsMenuItemInfos(
+      const AppId& app_id) const override;
+  std::vector<std::vector<SquareSizePx>>
+  GetAppDownloadedShortcutsMenuIconsSizes(const AppId& app_id) const override;
+  RunOnOsLoginMode GetAppRunOnOsLoginMode(const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
   WebAppRegistrar* AsWebAppRegistrar() override;
 

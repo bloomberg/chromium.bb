@@ -49,6 +49,7 @@
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/cpp/media_position.h"
+#include "third_party/blink/public/common/media/display_type.h"
 #include "third_party/blink/public/platform/media/webmediaplayer_delegate.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_result.h"
@@ -62,12 +63,13 @@ class WebAudioSourceProviderImpl;
 class WebLocalFrame;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
-}
+class WatchTimeReporter;
+}  // namespace blink
 
 namespace base {
 class SingleThreadTaskRunner;
 class TaskRunner;
-}
+}  // namespace base
 
 namespace cc {
 class VideoLayer;
@@ -77,7 +79,7 @@ namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 }
-}
+}  // namespace gpu
 
 namespace media {
 class CdmContextRef;
@@ -87,7 +89,6 @@ class MediaLog;
 class MemoryDumpProviderProxy;
 class UrlIndex;
 class VideoFrameCompositor;
-class WatchTimeReporter;
 
 // The canonical implementation of blink::WebMediaPlayer that's backed by
 // Pipeline. Handles normal resource loading, Media Source, and
@@ -130,7 +131,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void SetRate(double rate) override;
   void SetVolume(double volume) override;
   void SetLatencyHint(double seconds) override;
+  void SetPreservesPitch(bool preserves_pitch) override;
   void OnRequestPictureInPicture() override;
+  void OnTimeUpdate() override;
   void SetSinkId(
       const blink::WebString& sink_id,
       blink::WebSetSinkIdCompleteCallback completion_callback) override;
@@ -147,6 +150,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
              cc::PaintFlags& flags,
              int already_uploaded_id,
              VideoFrameUploadMetadata* out_metadata) override;
+  scoped_refptr<VideoFrame> GetCurrentFrame() override;
 
   // True if the loaded media has a playable video/audio track.
   bool HasVideo() const override;
@@ -236,7 +240,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void SetIsEffectivelyFullscreen(
       blink::WebFullscreenVideoStatus fullscreen_video_status) override;
   void OnHasNativeControlsChanged(bool) override;
-  void OnDisplayTypeChanged(WebMediaPlayer::DisplayType display_type) override;
+  void OnDisplayTypeChanged(blink::DisplayType display_type) override;
 
   // blink::WebMediaPlayerDelegate::Observer implementation.
   void OnFrameHidden() override;
@@ -250,6 +254,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnSeekBackward(double seconds) override;
   void OnEnterPictureInPicture() override;
   void OnExitPictureInPicture() override;
+  void OnSetAudioSink(const std::string& sink_id) override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
   void OnPowerExperimentState(bool state) override;
@@ -296,6 +301,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void RequestVideoFrameCallback() override;
   std::unique_ptr<blink::WebMediaPlayer::VideoFramePresentationMetadata>
   GetVideoFramePresentationMetadata() override;
+  void UpdateFrameIfStale() override;
 
   base::WeakPtr<blink::WebMediaPlayer> AsWeakPtr() override;
 
@@ -380,6 +386,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Called after asynchronous initialization of a data source completed.
   void DataSourceInitialized(bool success);
 
+  // Called if the |MultiBufferDataSource| is redirected.
+  void OnDataSourceRedirected();
+
   // Called when the data source is downloading or paused.
   void NotifyDownloading(bool is_downloading);
 
@@ -447,21 +456,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   //   - pending_suspend_resume_cycle_,
   //   - enter_pip_callback_,
   void UpdatePlayState();
-
-  // Calculates the current position state for the media element and notifies
-  // |delegate_| if it has changed.
-  //
-  // Spec: https://wicg.github.io/mediasession/#position-state
-  //
-  // This method should be called any time its dependent values change. These
-  // are:
-  //   - pipeline_controller_->GetMediaDuration()
-  //   - pipeline_media_duration_for_test_
-  //   - pipeline_controller_->GetMediaTime()
-  //   - playback_rate_
-  //   - Seeking() / seek_time_
-  //   - paused_, paused_time_
-  void UpdateMediaPositionState();
 
   // Methods internal to UpdatePlayState().
   PlayState UpdatePlayState_ComputePlayState(bool is_flinging,
@@ -655,13 +649,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   std::unique_ptr<learning::LearningTaskController> GetLearningTaskController(
       const char* task_name);
 
-  blink::WebLocalFrame* const frame_;
+  // Returns whether the player has an audio track and whether it should be
+  // allowed to play it.
+  bool HasUnmutedAudio() const;
 
-  // The playback state last reported to |delegate_|, to avoid setting duplicate
-  // states.
-  // TODO(sandersd): The delegate should be implementing deduplication.
-  DelegateState delegate_state_ = DelegateState::GONE;
-  bool delegate_has_audio_ = false;
+  blink::WebLocalFrame* const frame_;
 
   blink::WebMediaPlayer::NetworkState network_state_ =
       WebMediaPlayer::kNetworkStateEmpty;
@@ -758,8 +750,14 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Document::shutdown() is called before the frame detaches (and before the
   // frame is destroyed). RenderFrameImpl owns |delegate_| and is guaranteed
   // to outlive |this|; thus it is safe to store |delegate_| as a raw pointer.
-  blink::WebMediaPlayerDelegate* const delegate_;
+  blink::WebMediaPlayerDelegate* delegate_;
   int delegate_id_ = 0;
+
+  // The playback state last reported to |delegate_|, to avoid setting duplicate
+  // states.
+  // TODO(sandersd): The delegate should be implementing deduplication.
+  DelegateState delegate_state_ = DelegateState::GONE;
+  bool delegate_has_audio_ = false;
 
   WebMediaPlayerParams::DeferLoadCB defer_load_cb_;
 
@@ -848,7 +846,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   std::unique_ptr<RendererFactorySelector> renderer_factory_selector_;
 
   // For canceling AndroidOverlay routing token requests.
-  base::CancelableCallback<void(const base::UnguessableToken&)>
+  base::CancelableOnceCallback<void(const base::UnguessableToken&)>
       token_available_cb_;
 
   // If overlay info is requested before we have it, then the request is saved
@@ -886,8 +884,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool allow_media_player_renderer_credentials_ = false;
 #endif
 
-  // Stores the current position state of the media. See
-  // |UpdateMediaPositionState| for more details.
+  // Stores the current position state of the media.
   media_session::MediaPosition media_position_state_;
 
   // Set whenever the demuxer encounters an HLS file.
@@ -900,7 +897,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   base::OneShotTimer background_pause_timer_;
 
   // Monitors the watch time of the played content.
-  std::unique_ptr<WatchTimeReporter> watch_time_reporter_;
+  std::unique_ptr<blink::WatchTimeReporter> watch_time_reporter_;
   std::string audio_decoder_name_;
   std::string video_decoder_name_;
 
@@ -930,8 +927,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Monitors the player events.
   base::WeakPtr<MediaObserver> observer_;
 
-  // Owns the weblayer and obtains/maintains SurfaceIds for
-  // kUseSurfaceLayerForVideo feature.
+  // Owns the weblayer and obtains/maintains SurfaceIds.
   std::unique_ptr<blink::WebSurfaceLayerBridge> bridge_;
 
   // The maximum video keyframe distance that allows triggering background
@@ -1035,15 +1031,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported_ = true;
-
-  // Whether the media in this frame is a remoting media.
-  //
-  // Remoting media is a special media that has the media streams are delivered
-  // to the browser directly from somewhere without any URL request
-  // (http, file, ...)
-  // When setting to true, a remoting renderer will be created as the remoting
-  // target in the client.
-  bool is_remoting_renderer_enabled_ = false;
 
   base::CancelableOnceClosure have_enough_after_lazy_load_cb_;
 

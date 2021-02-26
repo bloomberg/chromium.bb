@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
-#include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/session_hierarchy_match_checker.h"
+#include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_disabled_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
@@ -23,6 +24,7 @@
 using bookmarks::BookmarkNode;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::SetTitle;
+using sessions_helper::OpenTab;
 using syncer::ProfileSyncService;
 
 namespace {
@@ -54,6 +56,43 @@ class TypeDisabledChecker : public SingleClientStatusChangeChecker {
 
  private:
   syncer::ModelType type_;
+};
+
+bool HasSessionURLInEntity(const sync_pb::SyncEntity& entity, const GURL& url) {
+  for (const sync_pb::TabNavigation& navigation :
+       entity.specifics().session().tab().navigation()) {
+    if (navigation.virtual_url() == url.spec()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+class LastSessionsCommitChecker : public SingleClientStatusChangeChecker {
+ public:
+  LastSessionsCommitChecker(ProfileSyncService* service,
+                            fake_server::FakeServer* fake_server,
+                            const GURL& expected_url)
+      : SingleClientStatusChangeChecker(service),
+        fake_server_(fake_server),
+        expected_url_(expected_url) {}
+
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for sessions url " << expected_url_ << " to be committed";
+
+    sync_pb::ClientToServerMessage message;
+    fake_server_->GetLastCommitMessage(&message);
+    for (const sync_pb::SyncEntity& entity : message.commit().entries()) {
+      if (HasSessionURLInEntity(entity, expected_url_)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+ private:
+  fake_server::FakeServer* const fake_server_ = nullptr;
+  const GURL expected_url_;
 };
 
 class SyncErrorTest : public SyncTest {
@@ -122,11 +161,12 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
   // Wait until an actionable error is encountered.
   ASSERT_TRUE(ActionableErrorChecker(GetSyncService(0)).Wait());
 
+  // UPGRADE_CLIENT gets mapped to an unrecoverable error, so Sync will *not*
+  // start up again in transport-only mode (which would clear the cached error).
   syncer::SyncStatus status;
   GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
   ASSERT_EQ(status.sync_protocol_error.error_type, syncer::TRANSIENT_ERROR);
   ASSERT_EQ(status.sync_protocol_error.action, syncer::UPGRADE_CLIENT);
-  ASSERT_EQ(status.sync_protocol_error.url, url);
   ASSERT_EQ(status.sync_protocol_error.error_description, description);
 }
 
@@ -165,16 +205,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, MAYBE_ErrorWhileSettingUp) {
 #endif
 }
 
-#if defined(OS_WIN)
-// TODO(crbug.com/1045619) Flaky test on Windows.
-#define MAYBE_BirthdayErrorUsingActionableErrorTest \
-  DISABLED_BirthdayErrorUsingActionableErrorTest
-#else
-#define MAYBE_BirthdayErrorUsingActionableErrorTest \
-  BirthdayErrorUsingActionableErrorTest
-#endif
-IN_PROC_BROWSER_TEST_F(SyncErrorTest,
-                       MAYBE_BirthdayErrorUsingActionableErrorTest) {
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
@@ -191,14 +222,14 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
   SetTitle(0, node2, "new_title2");
-  EXPECT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
-  syncer::SyncStatus status;
-  GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
 
-  // Note: If SyncStandaloneTransport is enabled, then on receiving the error,
-  // the SyncService will immediately start up again in transport mode, which
-  // resets the status. So query the status that the checker recorded at the
-  // time Sync was off.
+  SyncDisabledChecker sync_disabled(GetSyncService(0));
+  sync_disabled.Wait();
+
+  // On receiving the error, the SyncService will immediately start up again
+  // in transport mode, which resets the status. So check the status that the
+  // checker recorded at the time Sync was off.
+  syncer::SyncStatus status = sync_disabled.status_on_sync_disabled();
   EXPECT_EQ(status.sync_protocol_error.error_type, syncer::NOT_MY_BIRTHDAY);
   EXPECT_EQ(status.sync_protocol_error.action, syncer::DISABLE_SYNC_ON_CLIENT);
 }
@@ -252,14 +283,14 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, EncryptionObsoleteErrorTest) {
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
   SetTitle(0, node2, "new_title2");
-  EXPECT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
 
-  // Note: If SyncStandaloneTransport is enabled, then on receiving the error,
-  // the SyncService will immediately start up again in transport mode, which
-  // resets the status. So query the status that the checker recorded at the
-  // time Sync was off.
-  syncer::SyncStatus status;
-  GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
+  SyncDisabledChecker sync_disabled(GetSyncService(0));
+  sync_disabled.Wait();
+
+  // On receiving the error, the SyncService will immediately start up again
+  // in transport mode, which resets the status. So check the status that the
+  // checker recorded at the time Sync was off.
+  syncer::SyncStatus status = sync_disabled.status_on_sync_disabled();
   EXPECT_EQ(status.sync_protocol_error.error_type, syncer::ENCRYPTION_OBSOLETE);
   EXPECT_EQ(status.sync_protocol_error.action, syncer::DISABLE_SYNC_ON_CLIENT);
 }
@@ -282,6 +313,33 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, DisableDatatypeWhileRunning) {
   SetTitle(0, node1, "new_title1");
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   // TODO(lipalani): Verify initial sync ended for typed url is false.
+}
+
+// Tests that the unsynced entity will be eventually committed even after failed
+// commit request.
+IN_PROC_BROWSER_TEST_F(SyncErrorTest,
+                       ShouldResendUncommittedEntitiesOnCommitFailure) {
+  const GURL kURL{"data:text/html,<html><title>Test</title></html>"};
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  GetFakeServer()->SetHttpError(net::HTTP_INTERNAL_SERVER_ERROR);
+  ASSERT_TRUE(OpenTab(0, kURL));
+
+  ASSERT_TRUE(
+      LastSessionsCommitChecker(GetSyncService(0), GetFakeServer(), kURL)
+          .Wait());
+
+  // Check that the server doesn't have this session yet.
+  for (const sync_pb::SyncEntity& entity :
+       GetFakeServer()->GetSyncEntitiesByModelType(syncer::SESSIONS)) {
+    ASSERT_FALSE(HasSessionURLInEntity(entity, kURL));
+  }
+
+  GetFakeServer()->ClearHttpError();
+  EXPECT_TRUE(SessionHierarchyMatchChecker({{kURL.spec()}}, GetSyncService(0),
+                                           GetFakeServer())
+                  .Wait());
 }
 
 }  // namespace

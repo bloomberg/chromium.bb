@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/file_system.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -140,7 +141,7 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
       ui::SelectFileDialog::FileTypeInfo* file_type_info,
       const base::FilePath::StringType& suggested_extension,
       const AcceptOptions* accepts,
-      const bool* acceptsAllTypes);
+      const bool* accepts_all_types);
   static void BuildSuggestion(const std::string* opt_name,
                               base::FilePath* suggested_name,
                               base::FilePath::StringType* suggested_extension);
@@ -216,7 +217,7 @@ class FileSystemRestoreEntryFunction : public FileSystemEntryFunction {
   ResponseAction Run() override;
 };
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 // Stub for non Chrome OS operating systems.
 class FileSystemRequestFileSystemFunction : public ExtensionFunction {
  public:

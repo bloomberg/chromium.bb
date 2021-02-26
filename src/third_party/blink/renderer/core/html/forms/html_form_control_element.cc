@@ -53,7 +53,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
 
 HTMLFormControlElement::~HTMLFormControlElement() = default;
 
-void HTMLFormControlElement::Trace(Visitor* visitor) {
+void HTMLFormControlElement::Trace(Visitor* visitor) const {
   ListedElement::Trace(visitor);
   HTMLElement::Trace(visitor);
 }
@@ -127,8 +127,7 @@ void HTMLFormControlElement::ParseAttribute(
       UpdateWillValidateCache();
       PseudoStateChanged(CSSSelector::kPseudoReadOnly);
       PseudoStateChanged(CSSSelector::kPseudoReadWrite);
-      if (LayoutObject* o = GetLayoutObject())
-        o->InvalidateIfControlStateChanged(kReadOnlyControlState);
+      InvalidateIfHasEffectiveAppearance();
     }
   } else if (name == html_names::kRequiredAttr) {
     if (params.old_value.IsNull() != params.new_value.IsNull())
@@ -148,8 +147,7 @@ void HTMLFormControlElement::DisabledAttributeChanged() {
   EventDispatchForbiddenScope event_forbidden;
 
   ListedElement::DisabledAttributeChanged();
-  if (LayoutObject* o = GetLayoutObject())
-    o->InvalidateIfControlStateChanged(kEnabledControlState);
+  InvalidateIfHasEffectiveAppearance();
 
   // TODO(dmazzoni): http://crbug.com/699438.
   // Replace |CheckedStateChanged| with a generic tree changed event.
@@ -323,8 +321,18 @@ void HTMLFormControlElement::AssociateWith(HTMLFormElement* form) {
 }
 
 int32_t HTMLFormControlElement::GetAxId() const {
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+  Document& document = GetDocument();
+  if (!document.IsActive() || !document.View())
+    return 0;
+  if (AXObjectCache* cache = document.ExistingAXObjectCache()) {
+    if (document.NeedsLayoutTreeUpdate() || document.View()->NeedsLayout() ||
+        document.Lifecycle().GetState() <
+            DocumentLifecycle::kCompositingAssignmentsClean) {
+      document.View()->UpdateLifecycleToCompositingCleanPlusScrolling(
+          DocumentUpdateReason::kAccessibility);
+    }
     return cache->GetAXID(const_cast<HTMLFormControlElement*>(this));
+  }
 
   return 0;
 }

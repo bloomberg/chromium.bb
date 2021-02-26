@@ -9,41 +9,12 @@
 
 /**
  * @typedef {{
- *   enableDebuggingAllowed: (boolean|undefined),
- *   enterDemoModeAllowed: (boolean|undefined),
- *   noAnimatedTransition: (boolean|undefined),
- *   postponeEnrollmentAllowed: (boolean|undefined),
  *   resetAllowed: (boolean|undefined),
  *   startEnrollmentAllowed: (boolean|undefined),
  *   toggleKioskAllowed: (boolean|undefined),
- *   changeRequisitonProhibited: (boolean|undefined),
  * }}
  */
 var DisplayManagerScreenAttributes = {};
-
-/**
- * True if showing "enable debugging" is allowed for the screen.
- * @type {boolean|undefined}
- */
-DisplayManagerScreenAttributes.enableDebuggingAllowed;
-
-/**
- * True if enabling demo mode is allowed for the screen.
- * @type {boolean|undefined}
- */
-DisplayManagerScreenAttributes.enterDemoModeAllowed;
-
-/**
- * True if screen does not use left-current-right animation.
- * @type {boolean|undefined}
- */
-DisplayManagerScreenAttributes.noAnimatedTransition;
-
-/**
- * True if enrollment accelerator should schedule postponed enrollment.
- * @type {boolean|undefined}
- */
-DisplayManagerScreenAttributes.postponeEnrollmentAllowed;
 
 /**
  * True if device reset is allowed on the screen.
@@ -62,12 +33,6 @@ DisplayManagerScreenAttributes.startEnrollmentAllowed;
  * @type {boolean|undefined}
  */
 DisplayManagerScreenAttributes.toggleKioskAllowed;
-
-/**
- * True if "enroll hangouts meet" accelerator is prohibited.
- * @type {boolean|undefined}
- */
-DisplayManagerScreenAttributes.changeRequisitonProhibited;
 
 /**
  * Possible types of UI.
@@ -104,4 +69,5 @@ var OOBE_UI_STATE = {
   BLOCKING: 10,
   KIOSK: 11,
   MIGRATION: 12,
+  USER_CREATION: 15,
 };

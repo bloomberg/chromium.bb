@@ -7,14 +7,13 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "components/storage_monitor/mock_removable_storage_observer.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "components/storage_monitor/storage_info.h"
@@ -60,8 +59,8 @@ class StorageMonitorMacTest : public testing::Test {
   }
 
   void UpdateDisk(StorageInfo info, StorageMonitorMac::UpdateType update_type) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&StorageMonitorMac::UpdateDisk,
                        base::Unretained(monitor_.get()), update_type,
                        base::Owned(new std::string("dummy_bsd_name")), info));

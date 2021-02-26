@@ -8,11 +8,15 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "storage/browser/quota/quota_client_type.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace storage {
@@ -36,18 +40,23 @@ void DidGetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
 
 }  // namespace
 
-void QuotaManagerProxy::RegisterClient(scoped_refptr<QuotaClient> client) {
-  if (!io_thread_->BelongsToCurrentThread() &&
-      io_thread_->PostTask(
-          FROM_HERE, base::BindOnce(&QuotaManagerProxy::RegisterClient, this,
-                                    std::move(client)))) {
+void QuotaManagerProxy::RegisterClient(
+    scoped_refptr<QuotaClient> client,
+    QuotaClientType client_type,
+    const std::vector<blink::mojom::StorageType>& storage_types) {
+  if (!io_thread_->BelongsToCurrentThread()) {
+    io_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&QuotaManagerProxy::RegisterClient, this,
+                       std::move(client), client_type, storage_types));
     return;
   }
 
-  if (manager_)
-    manager_->RegisterClient(std::move(client));
-  else
+  if (manager_) {
+    manager_->RegisterClient(std::move(client), client_type, storage_types);
+  } else {
     client->OnQuotaManagerDestroyed();
+  }
 }
 
 void QuotaManagerProxy::NotifyStorageAccessed(const url::Origin& origin,
@@ -151,6 +160,30 @@ void QuotaManagerProxy::GetUsageAndQuota(
                      std::move(callback)));
 }
 
+std::unique_ptr<QuotaOverrideHandle>
+QuotaManagerProxy::GetQuotaOverrideHandle() {
+  return std::make_unique<QuotaOverrideHandle>(this);
+}
+
+void QuotaManagerProxy::OverrideQuotaForOrigin(
+    int handle_id,
+    url::Origin origin,
+    base::Optional<int64_t> quota_size,
+    base::OnceClosure callback) {
+  io_thread_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&QuotaManager::OverrideQuotaForOrigin,
+                     base::RetainedRef(manager_), handle_id, origin,
+                     quota_size),
+      std::move(callback));
+}
+
+void QuotaManagerProxy::WithdrawOverridesForHandle(int handle_id) {
+  io_thread_->PostTask(FROM_HERE,
+                       base::BindOnce(&QuotaManager::WithdrawOverridesForHandle,
+                                      base::RetainedRef(manager_), handle_id));
+}
+
 QuotaManager* QuotaManagerProxy::quota_manager() const {
   DCHECK(!io_thread_.get() || io_thread_->BelongsToCurrentThread());
   return manager_;
@@ -162,5 +195,14 @@ QuotaManagerProxy::QuotaManagerProxy(
     : manager_(manager), io_thread_(std::move(io_thread)) {}
 
 QuotaManagerProxy::~QuotaManagerProxy() = default;
+
+void QuotaManagerProxy::GetOverrideHandleId(
+    base::OnceCallback<void(int)> callback) {
+  io_thread_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&QuotaManager::GetOverrideHandleId,
+                     base::RetainedRef(manager_)),
+      std::move(callback));
+}
 
 }  // namespace storage

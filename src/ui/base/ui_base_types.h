@@ -5,7 +5,7 @@
 #ifndef UI_BASE_UI_BASE_TYPES_H_
 #define UI_BASE_UI_BASE_TYPES_H_
 
-#include "ui/base/ui_base_export.h"
+#include "base/component_export.h"
 
 namespace ui {
 
@@ -78,6 +78,7 @@ enum class ZOrderLevel {
 // These are used in histograms, do not remove/renumber entries. Only add at the
 // end just before MENU_SOURCE_TYPE_LAST. Also remember to update the
 // MenuSourceType enum listing in tools/metrics/histograms/enums.xml.
+// Lastly, any new type here needs to be synced with ui_base_types.mojom.
 enum MenuSourceType {
   MENU_SOURCE_NONE = 0,
   MENU_SOURCE_MOUSE = 1,
@@ -93,7 +94,8 @@ enum MenuSourceType {
   MENU_SOURCE_TYPE_LAST = MENU_SOURCE_ADJUST_SELECTION_RESET
 };
 
-UI_BASE_EXPORT MenuSourceType GetMenuSourceTypeForEvent(const ui::Event& event);
+COMPONENT_EXPORT(UI_BASE)
+MenuSourceType GetMenuSourceTypeForEvent(const ui::Event& event);
 
 }  // namespace ui
 

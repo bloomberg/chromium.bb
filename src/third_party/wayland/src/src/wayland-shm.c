@@ -30,6 +30,8 @@
 
 #define _GNU_SOURCE
 
+#include "config.h"
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,6 +42,8 @@
 #include <assert.h>
 #include <signal.h>
 #include <pthread.h>
+#include <errno.h>
+#include <fcntl.h>
 
 #include "wayland-util.h"
 #include "wayland-private.h"
@@ -59,6 +63,7 @@ struct wl_shm_pool {
 	char *data;
 	int32_t size;
 	int32_t new_size;
+	bool sigbus_is_impossible;
 };
 
 struct wl_shm_buffer {
@@ -258,6 +263,7 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 		uint32_t id, int fd, int32_t size)
 {
 	struct wl_shm_pool *pool;
+	int seals;
 
 	if (size <= 0) {
 		wl_resource_post_error(resource,
@@ -272,6 +278,15 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 		goto err_close;
 	}
 
+#ifdef HAVE_MEMFD_CREATE
+	seals = fcntl(fd, F_GET_SEALS);
+	if (seals == -1)
+		seals = 0;
+	pool->sigbus_is_impossible = (seals & F_SEAL_SHRINK) ? true : false;
+#else
+	pool->sigbus_is_impossible = false;
+#endif
+
 	pool->internal_refcount = 1;
 	pool->external_refcount = 0;
 	pool->size = size;
@@ -281,7 +296,8 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 	if (pool->data == MAP_FAILED) {
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_FD,
-				       "failed mmap fd %d: %m", fd);
+				       "failed mmap fd %d: %s", fd,
+				       strerror(errno));
 		goto err_free;
 	}
 	close(fd);
@@ -569,6 +585,9 @@ wl_shm_buffer_begin_access(struct wl_shm_buffer *buffer)
 	struct wl_shm_pool *pool = buffer->pool;
 	struct wl_shm_sigbus_data *sigbus_data;
 
+	if (pool->sigbus_is_impossible)
+		return;
+
 	pthread_once(&wl_shm_sigbus_once, init_sigbus_data_key);
 
 	sigbus_data = pthread_getspecific(wl_shm_sigbus_data_key);
@@ -601,9 +620,13 @@ wl_shm_buffer_begin_access(struct wl_shm_buffer *buffer)
 WL_EXPORT void
 wl_shm_buffer_end_access(struct wl_shm_buffer *buffer)
 {
-	struct wl_shm_sigbus_data *sigbus_data =
-		pthread_getspecific(wl_shm_sigbus_data_key);
+	struct wl_shm_pool *pool = buffer->pool;
+	struct wl_shm_sigbus_data *sigbus_data;
 
+	if (pool->sigbus_is_impossible)
+		return;
+
+	sigbus_data = pthread_getspecific(wl_shm_sigbus_data_key);
 	assert(sigbus_data && sigbus_data->access_count >= 1);
 
 	if (--sigbus_data->access_count == 0) {

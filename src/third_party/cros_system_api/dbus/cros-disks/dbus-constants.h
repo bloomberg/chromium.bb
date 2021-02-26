@@ -16,6 +16,7 @@ const char kEnumerateAutoMountableDevices[] = "EnumerateAutoMountableDevices";
 const char kEnumerateDevices[] = "EnumerateDevices";
 const char kEnumerateMountEntries[] = "EnumerateMountEntries";
 const char kFormat[] = "Format";
+const char kSinglePartitionFormat[] = "SinglePartitionFormat";
 const char kGetDeviceProperties[] = "GetDeviceProperties";
 const char kMount[] = "Mount";
 const char kRename[] = "Rename";
@@ -55,6 +56,8 @@ const char kVendorId[] = "VendorId";
 const char kVendorName[] = "VendorName";
 const char kProductId[] = "ProductId";
 const char kProductName[] = "ProductName";
+const char kBusNumber[] = "BusNumber";
+const char kDeviceNumber[] = "DeviceNumber";
 const char kStorageDevicePath[] = "StorageDevicePath";
 const char kFileSystemType[] = "FileSystemType";
 
@@ -108,6 +111,7 @@ enum MountErrorType {
   MOUNT_ERROR_INSUFFICIENT_PERMISSIONS = 10,
   MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND = 11,
   MOUNT_ERROR_MOUNT_PROGRAM_FAILED = 12,
+  MOUNT_ERROR_NEED_PASSWORD = 13,
   MOUNT_ERROR_INVALID_DEVICE_PATH = 100,
   MOUNT_ERROR_UNKNOWN_FILESYSTEM = 101,
   MOUNT_ERROR_UNSUPPORTED_FILESYSTEM = 102,
@@ -122,6 +126,17 @@ enum MountSourceType {
   MOUNT_SOURCE_REMOVABLE_DEVICE = 1,
   MOUNT_SOURCE_ARCHIVE = 2,
   MOUNT_SOURCE_NETWORK_STORAGE = 3,
+};
+
+enum PartitionErrorType {
+  PARTITION_ERROR_NONE = 0,
+  PARTITION_ERROR_UNKNOWN = 1,
+  PARTITION_ERROR_INTERNAL = 2,
+  PARTITION_ERROR_INVALID_DEVICE_PATH = 3,
+  PARTITION_ERROR_DEVICE_BEING_PARTITIONED = 4,
+  PARTITION_ERROR_PROGRAM_NOT_FOUND = 5,
+  PARTITION_ERROR_PROGRAM_FAILED = 6,
+  PARTITION_ERROR_DEVICE_NOT_ALLOWED = 7,
 };
 
 enum RenameErrorType {

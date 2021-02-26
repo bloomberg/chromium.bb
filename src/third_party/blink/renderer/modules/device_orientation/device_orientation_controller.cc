@@ -74,7 +74,7 @@ void DeviceOrientationController::DidAddEventListener(
     if (!CheckPolicyFeatures(
             {mojom::blink::FeaturePolicyFeature::kAccelerometer,
              mojom::blink::FeaturePolicyFeature::kGyroscope})) {
-      LogToConsolePolicyFeaturesDisabled(GetWindow().GetFrame(),
+      LogToConsolePolicyFeaturesDisabled(*GetWindow().GetFrame(),
                                          EventTypeName());
       return;
     }
@@ -132,7 +132,7 @@ void DeviceOrientationController::ClearOverride() {
     DidUpdateData();
 }
 
-void DeviceOrientationController::Trace(Visitor* visitor) {
+void DeviceOrientationController::Trace(Visitor* visitor) const {
   visitor->Trace(override_orientation_data_);
   visitor->Trace(orientation_event_pump_);
   DeviceSingleWindowEventController::Trace(visitor);
@@ -141,26 +141,17 @@ void DeviceOrientationController::Trace(Visitor* visitor) {
 
 void DeviceOrientationController::RegisterWithOrientationEventPump(
     bool absolute) {
-  // The window's frame may be null if the window was already shut down.
-  LocalFrame* frame = GetWindow().GetFrame();
   if (!orientation_event_pump_) {
-    if (!frame)
-      return;
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        frame->GetTaskRunner(TaskType::kSensor);
-    orientation_event_pump_ =
-        MakeGarbageCollected<DeviceOrientationEventPump>(task_runner, absolute);
+    orientation_event_pump_ = MakeGarbageCollected<DeviceOrientationEventPump>(
+        *GetWindow().GetFrame(), absolute);
   }
-  // TODO(crbug.com/850619): Ensure a valid frame is passed.
   orientation_event_pump_->SetController(this);
 }
 
 // static
 void DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
-    LocalFrame* frame,
+    LocalFrame& frame,
     const AtomicString& event_name) {
-  if (!frame)
-    return;
   const String& message = String::Format(
       "The %s events are blocked by feature policy. "
       "See "
@@ -170,7 +161,7 @@ void DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
   auto* console_message = MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kJavaScript,
       mojom::ConsoleMessageLevel::kWarning, std::move(message));
-  frame->Console().AddMessage(console_message);
+  frame.Console().AddMessage(console_message);
 }
 
 }  // namespace blink

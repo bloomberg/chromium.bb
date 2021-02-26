@@ -9,6 +9,7 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "components/pdf/renderer/pdf_ax_action_target.h"
@@ -230,12 +231,17 @@ bool BreakParagraph(
 ui::AXNode* GetStaticTextNodeFromNode(ui::AXNode* node) {
   // Returns the appropriate static text node given |node|'s type.
   // Returns nullptr if there is no appropriate static text node.
+  if (!node)
+    return nullptr;
   ui::AXNode* static_node = node;
   // Get the static text from the link node.
-  if (node &&
-      (node->data().role == ax::mojom::Role::kLink ||
-       node->data().role == ax::mojom::Role::kPdfActionableHighlight) &&
+  if (node->data().role == ax::mojom::Role::kLink &&
       node->children().size() == 1) {
+    static_node = node->children()[0];
+  }
+  // Get the static text from the highlight node.
+  if (node->data().role == ax::mojom::Role::kPdfActionableHighlight &&
+      !node->children().empty()) {
     static_node = node->children()[0];
   }
   // If it's static text node, then it holds text.
@@ -313,6 +319,816 @@ bool IsTextRenderModeStroke(const PP_TextRenderingMode& mode) {
   }
 }
 
+ui::AXNodeData* CreateNode(
+    ax::mojom::Role role,
+    ax::mojom::Restriction restriction,
+    content::RenderAccessibility* render_accessibility,
+    std::vector<std::unique_ptr<ui::AXNodeData>>* nodes) {
+  DCHECK(render_accessibility);
+
+  auto node = std::make_unique<ui::AXNodeData>();
+  node->id = render_accessibility->GenerateAXID();
+  node->role = role;
+  node->SetRestriction(restriction);
+
+  // All nodes other than the first one have coordinates relative to
+  // the first node.
+  if (!nodes->empty())
+    node->relative_bounds.offset_container_id = (*nodes)[0]->id;
+
+  ui::AXNodeData* node_ptr = node.get();
+  nodes->push_back(std::move(node));
+
+  return node_ptr;
+}
+
+ax::mojom::Role GetRoleForButtonType(PP_PrivateButtonType button_type) {
+  switch (button_type) {
+    case PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON:
+      return ax::mojom::Role::kRadioButton;
+    case PP_PrivateButtonType::PP_PRIVATEBUTTON_CHECKBOX:
+      return ax::mojom::Role::kCheckBox;
+    case PP_PrivateButtonType::PP_PRIVATEBUTTON_PUSHBUTTON:
+      return ax::mojom::Role::kButton;
+    default:
+      NOTREACHED();
+      return ax::mojom::Role::kNone;
+  }
+}
+
+class PdfAccessibilityTreeBuilder {
+ public:
+  explicit PdfAccessibilityTreeBuilder(
+      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      const ppapi::PdfAccessibilityPageObjects& page_objects,
+      const gfx::RectF& page_bounds,
+      uint32_t page_index,
+      ui::AXNodeData* page_node,
+      content::RenderAccessibility* render_accessibility,
+      std::vector<std::unique_ptr<ui::AXNodeData>>* nodes,
+      std::map<int32_t, PP_PdfPageCharacterIndex>* node_id_to_page_char_index,
+      std::map<int32_t, PdfAccessibilityTree::AnnotationInfo>*
+          node_id_to_annotation_info)
+      : text_runs_(text_runs),
+        chars_(chars),
+        links_(page_objects.links),
+        images_(page_objects.images),
+        highlights_(page_objects.highlights),
+        text_fields_(page_objects.form_fields.text_fields),
+        buttons_(page_objects.form_fields.buttons),
+        choice_fields_(page_objects.form_fields.choice_fields),
+        page_bounds_(page_bounds),
+        page_index_(page_index),
+        page_node_(page_node),
+        render_accessibility_(render_accessibility),
+        nodes_(nodes),
+        node_id_to_page_char_index_(node_id_to_page_char_index),
+        node_id_to_annotation_info_(node_id_to_annotation_info) {
+    if (!text_runs.empty()) {
+      text_run_start_indices_.reserve(text_runs.size());
+      text_run_start_indices_.push_back(0);
+      for (size_t i = 0; i < text_runs.size() - 1; ++i) {
+        text_run_start_indices_.push_back(text_run_start_indices_[i] +
+                                          text_runs[i].len);
+      }
+    }
+  }
+
+  void BuildPageTree() {
+    ComputeParagraphAndHeadingThresholds(text_runs_,
+                                         &heading_font_size_threshold_,
+                                         &paragraph_spacing_threshold_);
+
+    ui::AXNodeData* para_node = nullptr;
+    ui::AXNodeData* static_text_node = nullptr;
+    ui::AXNodeData* previous_on_line_node = nullptr;
+    std::string static_text;
+    LineHelper line_helper(text_runs_);
+    bool pdf_forms_enabled =
+        base::FeatureList::IsEnabled(chrome_pdf::features::kAccessiblePDFForm);
+
+    for (size_t text_run_index = 0; text_run_index < text_runs_.size();
+         ++text_run_index) {
+      // If we don't have a paragraph, create one.
+      if (!para_node) {
+        para_node =
+            CreateParagraphNode(text_runs_[text_run_index].style.font_size);
+        page_node_->child_ids.push_back(para_node->id);
+      }
+
+      // If the |text_run_index| is less than or equal to the link's
+      // text_run_index, then push the link node in the paragraph.
+      if (IsObjectInTextRun(links_, current_link_index_, text_run_index)) {
+        FinishStaticNode(&static_text_node, &static_text);
+        const ppapi::PdfAccessibilityLinkInfo& link =
+            links_[current_link_index_++];
+        AddLinkToParaNode(link, para_node, &previous_on_line_node,
+                          &text_run_index);
+
+        if (link.text_run_count == 0)
+          continue;
+
+      } else if (IsObjectInTextRun(images_, current_image_index_,
+                                   text_run_index)) {
+        FinishStaticNode(&static_text_node, &static_text);
+        AddImageToParaNode(images_[current_image_index_++], para_node,
+                           &text_run_index);
+        continue;
+      } else if (IsObjectInTextRun(highlights_, current_highlight_index_,
+                                   text_run_index)) {
+        FinishStaticNode(&static_text_node, &static_text);
+        AddHighlightToParaNode(highlights_[current_highlight_index_++],
+                               para_node, &previous_on_line_node,
+                               &text_run_index);
+      } else if (IsObjectInTextRun(text_fields_, current_text_field_index_,
+                                   text_run_index) &&
+                 pdf_forms_enabled) {
+        FinishStaticNode(&static_text_node, &static_text);
+        AddTextFieldToParaNode(text_fields_[current_text_field_index_++],
+                               para_node, &text_run_index);
+        continue;
+      } else if (IsObjectInTextRun(buttons_, current_button_index_,
+                                   text_run_index) &&
+                 pdf_forms_enabled) {
+        FinishStaticNode(&static_text_node, &static_text);
+        AddButtonToParaNode(buttons_[current_button_index_++], para_node,
+                            &text_run_index);
+        continue;
+      } else if (IsObjectInTextRun(choice_fields_, current_choice_field_index_,
+                                   text_run_index) &&
+                 pdf_forms_enabled) {
+        FinishStaticNode(&static_text_node, &static_text);
+        AddChoiceFieldToParaNode(choice_fields_[current_choice_field_index_++],
+                                 para_node, &text_run_index);
+        continue;
+      } else {
+        PP_PdfPageCharacterIndex page_char_index = {
+            page_index_, text_run_start_indices_[text_run_index]};
+
+        // This node is for the text inside the paragraph, it includes
+        // the text of all of the text runs.
+        if (!static_text_node) {
+          static_text_node = CreateStaticTextNode(page_char_index);
+          para_node->child_ids.push_back(static_text_node->id);
+        }
+
+        const ppapi::PdfAccessibilityTextRunInfo& text_run =
+            text_runs_[text_run_index];
+        // Add this text run to the current static text node.
+        ui::AXNodeData* inline_text_box_node =
+            CreateInlineTextBoxNode(text_run, page_char_index);
+        static_text_node->child_ids.push_back(inline_text_box_node->id);
+
+        static_text += inline_text_box_node->GetStringAttribute(
+            ax::mojom::StringAttribute::kName);
+
+        para_node->relative_bounds.bounds.Union(
+            inline_text_box_node->relative_bounds.bounds);
+        static_text_node->relative_bounds.bounds.Union(
+            inline_text_box_node->relative_bounds.bounds);
+
+        if (previous_on_line_node) {
+          ConnectPreviousAndNextOnLine(previous_on_line_node,
+                                       inline_text_box_node);
+        } else {
+          line_helper.StartNewLine(text_run_index);
+        }
+        line_helper.ProcessNextRun(text_run_index);
+
+        if (text_run_index < text_runs_.size() - 1) {
+          if (line_helper.IsRunOnSameLine(text_run_index + 1)) {
+            // The next run is on the same line.
+            previous_on_line_node = inline_text_box_node;
+          } else {
+            // The next run is on a new line.
+            previous_on_line_node = nullptr;
+          }
+        }
+      }
+
+      if (text_run_index == text_runs_.size() - 1) {
+        FinishStaticNode(&static_text_node, &static_text);
+        break;
+      }
+
+      if (!previous_on_line_node) {
+        if (BreakParagraph(text_runs_, text_run_index,
+                           paragraph_spacing_threshold_)) {
+          FinishStaticNode(&static_text_node, &static_text);
+          para_node = nullptr;
+        }
+      }
+    }
+
+    AddRemainingAnnotations(para_node);
+  }
+
+ private:
+  void AddWordStartsAndEnds(ui::AXNodeData* inline_text_box) {
+    base::string16 text = inline_text_box->GetString16Attribute(
+        ax::mojom::StringAttribute::kName);
+    base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);
+    if (!iter.Init())
+      return;
+
+    std::vector<int32_t> word_starts;
+    std::vector<int32_t> word_ends;
+    while (iter.Advance()) {
+      if (iter.IsWord()) {
+        word_starts.push_back(iter.prev());
+        word_ends.push_back(iter.pos());
+      }
+    }
+    inline_text_box->AddIntListAttribute(
+        ax::mojom::IntListAttribute::kWordStarts, word_starts);
+    inline_text_box->AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                         word_ends);
+  }
+
+  ui::AXNodeData* CreateParagraphNode(float font_size) {
+    ui::AXNodeData* para_node = CreateNode(ax::mojom::Role::kParagraph,
+                                           ax::mojom::Restriction::kReadOnly,
+                                           render_accessibility_, nodes_);
+    para_node->AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                                true);
+
+    // If font size exceeds the |heading_font_size_threshold_|, then classify
+    // it as a Heading.
+    if (heading_font_size_threshold_ > 0 &&
+        font_size > heading_font_size_threshold_) {
+      para_node->role = ax::mojom::Role::kHeading;
+      para_node->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
+                                 2);
+      para_node->AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, "h2");
+    }
+
+    return para_node;
+  }
+
+  ui::AXNodeData* CreateStaticTextNode(
+      const PP_PdfPageCharacterIndex& page_char_index) {
+    ui::AXNodeData* static_text_node = CreateNode(
+        ax::mojom::Role::kStaticText, ax::mojom::Restriction::kReadOnly,
+        render_accessibility_, nodes_);
+    static_text_node->SetNameFrom(ax::mojom::NameFrom::kContents);
+    node_id_to_page_char_index_->emplace(static_text_node->id, page_char_index);
+    return static_text_node;
+  }
+
+  ui::AXNodeData* CreateInlineTextBoxNode(
+      const ppapi::PdfAccessibilityTextRunInfo& text_run,
+      const PP_PdfPageCharacterIndex& page_char_index) {
+    ui::AXNodeData* inline_text_box_node = CreateNode(
+        ax::mojom::Role::kInlineTextBox, ax::mojom::Restriction::kReadOnly,
+        render_accessibility_, nodes_);
+    inline_text_box_node->SetNameFrom(ax::mojom::NameFrom::kContents);
+
+    std::string chars__utf8 =
+        GetTextRunCharsAsUTF8(text_run, chars_, page_char_index.char_index);
+    inline_text_box_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                             chars__utf8);
+    inline_text_box_node->AddIntAttribute(
+        ax::mojom::IntAttribute::kTextDirection, text_run.direction);
+    inline_text_box_node->AddStringAttribute(
+        ax::mojom::StringAttribute::kFontFamily, text_run.style.font_name);
+    inline_text_box_node->AddFloatAttribute(
+        ax::mojom::FloatAttribute::kFontSize, text_run.style.font_size);
+    inline_text_box_node->AddFloatAttribute(
+        ax::mojom::FloatAttribute::kFontWeight, text_run.style.font_weight);
+    if (text_run.style.is_italic)
+      inline_text_box_node->AddTextStyle(ax::mojom::TextStyle::kItalic);
+    if (text_run.style.is_bold)
+      inline_text_box_node->AddTextStyle(ax::mojom::TextStyle::kBold);
+    if (IsTextRenderModeFill(text_run.style.render_mode)) {
+      inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kColor,
+                                            text_run.style.fill_color);
+    } else if (IsTextRenderModeStroke(text_run.style.render_mode)) {
+      inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kColor,
+                                            text_run.style.stroke_color);
+    }
+
+    inline_text_box_node->relative_bounds.bounds =
+        PpFloatRectToGfxRectF(text_run.bounds) +
+        page_bounds_.OffsetFromOrigin();
+    std::vector<int32_t> char_offsets =
+        GetTextRunCharOffsets(text_run, chars_, page_char_index.char_index);
+    inline_text_box_node->AddIntListAttribute(
+        ax::mojom::IntListAttribute::kCharacterOffsets, char_offsets);
+    AddWordStartsAndEnds(inline_text_box_node);
+    node_id_to_page_char_index_->emplace(inline_text_box_node->id,
+                                         page_char_index);
+    return inline_text_box_node;
+  }
+
+  ui::AXNodeData* CreateLinkNode(const ppapi::PdfAccessibilityLinkInfo& link) {
+    ui::AXNodeData* link_node =
+        CreateNode(ax::mojom::Role::kLink, ax::mojom::Restriction::kReadOnly,
+                   render_accessibility_, nodes_);
+
+    link_node->AddStringAttribute(ax::mojom::StringAttribute::kUrl, link.url);
+    link_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                  std::string());
+    link_node->relative_bounds.bounds = PpFloatRectToGfxRectF(link.bounds);
+    node_id_to_annotation_info_->emplace(
+        link_node->id,
+        PdfAccessibilityTree::AnnotationInfo(page_index_, link.index_in_page));
+
+    return link_node;
+  }
+
+  ui::AXNodeData* CreateImageNode(
+      const ppapi::PdfAccessibilityImageInfo& image) {
+    ui::AXNodeData* image_node =
+        CreateNode(ax::mojom::Role::kImage, ax::mojom::Restriction::kReadOnly,
+                   render_accessibility_, nodes_);
+
+    if (image.alt_text.empty()) {
+      image_node->AddStringAttribute(
+          ax::mojom::StringAttribute::kName,
+          l10n_util::GetStringUTF8(IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION));
+    } else {
+      image_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                     image.alt_text);
+    }
+    image_node->relative_bounds.bounds = PpFloatRectToGfxRectF(image.bounds);
+    return image_node;
+  }
+
+  ui::AXNodeData* CreateHighlightNode(
+      const ppapi::PdfAccessibilityHighlightInfo& highlight) {
+    ui::AXNodeData* highlight_node = CreateNode(
+        ax::mojom::Role::kPdfActionableHighlight,
+        ax::mojom::Restriction::kReadOnly, render_accessibility_, nodes_);
+
+    highlight_node->AddStringAttribute(
+        ax::mojom::StringAttribute::kRoleDescription,
+        l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_HIGHLIGHT));
+    highlight_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                       std::string());
+    highlight_node->relative_bounds.bounds =
+        PpFloatRectToGfxRectF(highlight.bounds);
+    highlight_node->AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                                    highlight.color);
+
+    return highlight_node;
+  }
+
+  ui::AXNodeData* CreatePopupNoteNode(
+      const ppapi::PdfAccessibilityHighlightInfo& highlight) {
+    ui::AXNodeData* popup_note_node =
+        CreateNode(ax::mojom::Role::kNote, ax::mojom::Restriction::kReadOnly,
+                   render_accessibility_, nodes_);
+
+    popup_note_node->AddStringAttribute(
+        ax::mojom::StringAttribute::kRoleDescription,
+        l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_POPUP_NOTE));
+    popup_note_node->relative_bounds.bounds =
+        PpFloatRectToGfxRectF(highlight.bounds);
+
+    ui::AXNodeData* static_popup_note_text_node = CreateNode(
+        ax::mojom::Role::kStaticText, ax::mojom::Restriction::kReadOnly,
+        render_accessibility_, nodes_);
+
+    static_popup_note_text_node->SetNameFrom(ax::mojom::NameFrom::kContents);
+    static_popup_note_text_node->AddStringAttribute(
+        ax::mojom::StringAttribute::kName, highlight.note_text);
+    static_popup_note_text_node->relative_bounds.bounds =
+        PpFloatRectToGfxRectF(highlight.bounds);
+
+    popup_note_node->child_ids.push_back(static_popup_note_text_node->id);
+
+    return popup_note_node;
+  }
+
+  ui::AXNodeData* CreateTextFieldNode(
+      const ppapi::PdfAccessibilityTextFieldInfo& text_field) {
+    ax::mojom::Restriction restriction = text_field.is_read_only
+                                             ? ax::mojom::Restriction::kReadOnly
+                                             : ax::mojom::Restriction::kNone;
+    ui::AXNodeData* text_field_node =
+        CreateNode(ax::mojom::Role::kTextField, restriction,
+                   render_accessibility_, nodes_);
+
+    text_field_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                        text_field.name);
+    text_field_node->AddStringAttribute(ax::mojom::StringAttribute::kValue,
+                                        text_field.value);
+    text_field_node->AddState(ax::mojom::State::kFocusable);
+    if (text_field.is_required)
+      text_field_node->AddState(ax::mojom::State::kRequired);
+    if (text_field.is_password)
+      text_field_node->AddState(ax::mojom::State::kProtected);
+    text_field_node->relative_bounds.bounds =
+        PpFloatRectToGfxRectF(text_field.bounds);
+    return text_field_node;
+  }
+
+  ui::AXNodeData* CreateButtonNode(
+      const ppapi::PdfAccessibilityButtonInfo& button) {
+    ax::mojom::Restriction restriction = button.is_read_only
+                                             ? ax::mojom::Restriction::kReadOnly
+                                             : ax::mojom::Restriction::kNone;
+    ui::AXNodeData* button_node =
+        CreateNode(GetRoleForButtonType(button.type), restriction,
+                   render_accessibility_, nodes_);
+    button_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                    button.name);
+    button_node->AddState(ax::mojom::State::kFocusable);
+
+    if (button.type == PP_PRIVATEBUTTON_RADIOBUTTON ||
+        button.type == PP_PRIVATEBUTTON_CHECKBOX) {
+      ax::mojom::CheckedState checkedState =
+          button.is_checked ? ax::mojom::CheckedState::kTrue
+                            : ax::mojom::CheckedState::kNone;
+      button_node->SetCheckedState(checkedState);
+      button_node->AddStringAttribute(ax::mojom::StringAttribute::kValue,
+                                      button.value);
+      button_node->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
+                                   button.control_count);
+      button_node->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
+                                   button.control_index + 1);
+    }
+
+    button_node->relative_bounds.bounds = PpFloatRectToGfxRectF(button.bounds);
+    return button_node;
+  }
+
+  ui::AXNodeData* CreateListboxOptionNode(
+      const ppapi::PdfAccessibilityChoiceFieldOptionInfo& choice_field_option,
+      ax::mojom::Restriction restriction) {
+    ui::AXNodeData* listbox_option_node =
+        CreateNode(ax::mojom::Role::kListBoxOption, restriction,
+                   render_accessibility_, nodes_);
+
+    listbox_option_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                            choice_field_option.name);
+    listbox_option_node->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                                          choice_field_option.is_selected);
+    listbox_option_node->AddState(ax::mojom::State::kFocusable);
+    return listbox_option_node;
+  }
+
+  ui::AXNodeData* CreateListboxNode(
+      const ppapi::PdfAccessibilityChoiceFieldInfo& choice_field,
+      ui::AXNodeData* control_node) {
+    ax::mojom::Restriction restriction = choice_field.is_read_only
+                                             ? ax::mojom::Restriction::kReadOnly
+                                             : ax::mojom::Restriction::kNone;
+    ui::AXNodeData* listbox_node = CreateNode(
+        ax::mojom::Role::kListBox, restriction, render_accessibility_, nodes_);
+
+    if (choice_field.type != PP_PRIVATECHOICEFIELD_COMBOBOX) {
+      listbox_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                       choice_field.name);
+    }
+
+    ui::AXNodeData* first_selected_option = nullptr;
+    for (const ppapi::PdfAccessibilityChoiceFieldOptionInfo& option :
+         choice_field.options) {
+      ui::AXNodeData* listbox_option_node =
+          CreateListboxOptionNode(option, restriction);
+      if (!first_selected_option && listbox_option_node->GetBoolAttribute(
+                                        ax::mojom::BoolAttribute::kSelected)) {
+        first_selected_option = listbox_option_node;
+      }
+      // TODO(bug 1030242): add |listbox_option_node| specific bounds here.
+      listbox_option_node->relative_bounds.bounds =
+          PpFloatRectToGfxRectF(choice_field.bounds);
+      listbox_node->child_ids.push_back(listbox_option_node->id);
+    }
+
+    if (control_node && first_selected_option) {
+      control_node->AddIntAttribute(
+          ax::mojom::IntAttribute::kActivedescendantId,
+          first_selected_option->id);
+    }
+
+    if (choice_field.is_multi_select)
+      listbox_node->AddState(ax::mojom::State::kMultiselectable);
+    listbox_node->AddState(ax::mojom::State::kFocusable);
+    listbox_node->relative_bounds.bounds =
+        PpFloatRectToGfxRectF(choice_field.bounds);
+    return listbox_node;
+  }
+
+  ui::AXNodeData* CreateComboboxInputNode(
+      const ppapi::PdfAccessibilityChoiceFieldInfo& choice_field,
+      ax::mojom::Restriction restriction) {
+    ax::mojom::Role input_role = choice_field.has_editable_text_box
+                                     ? ax::mojom::Role::kTextFieldWithComboBox
+                                     : ax::mojom::Role::kComboBoxMenuButton;
+    ui::AXNodeData* combobox_input_node =
+        CreateNode(input_role, restriction, render_accessibility_, nodes_);
+    combobox_input_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                            choice_field.name);
+    for (const ppapi::PdfAccessibilityChoiceFieldOptionInfo& option :
+         choice_field.options) {
+      if (option.is_selected) {
+        combobox_input_node->AddStringAttribute(
+            ax::mojom::StringAttribute::kValue, option.name);
+        break;
+      }
+    }
+
+    combobox_input_node->AddState(ax::mojom::State::kFocusable);
+    combobox_input_node->relative_bounds.bounds =
+        PpFloatRectToGfxRectF(choice_field.bounds);
+    return combobox_input_node;
+  }
+
+  ui::AXNodeData* CreateComboboxNode(
+      const ppapi::PdfAccessibilityChoiceFieldInfo& choice_field) {
+    ax::mojom::Restriction restriction = choice_field.is_read_only
+                                             ? ax::mojom::Restriction::kReadOnly
+                                             : ax::mojom::Restriction::kNone;
+    ui::AXNodeData* combobox_node =
+        CreateNode(ax::mojom::Role::kComboBoxGrouping, restriction,
+                   render_accessibility_, nodes_);
+    ui::AXNodeData* input_element =
+        CreateComboboxInputNode(choice_field, restriction);
+    ui::AXNodeData* list_element =
+        CreateListboxNode(choice_field, input_element);
+    input_element->AddIntListAttribute(
+        ax::mojom::IntListAttribute::kControlsIds,
+        std::vector<int32_t>{list_element->id});
+    combobox_node->child_ids.push_back(input_element->id);
+    combobox_node->child_ids.push_back(list_element->id);
+    combobox_node->AddState(ax::mojom::State::kFocusable);
+    combobox_node->relative_bounds.bounds =
+        PpFloatRectToGfxRectF(choice_field.bounds);
+    return combobox_node;
+  }
+
+  ui::AXNodeData* CreateChoiceFieldNode(
+      const ppapi::PdfAccessibilityChoiceFieldInfo& choice_field) {
+    if (choice_field.type == PP_PRIVATECHOICEFIELD_LISTBOX)
+      return CreateListboxNode(choice_field, nullptr);
+
+    return CreateComboboxNode(choice_field);
+  }
+
+  void AddTextToAXNode(uint32_t start_text_run_index,
+                       uint32_t end_text_run_index,
+                       ui::AXNodeData* ax_node,
+                       ui::AXNodeData** previous_on_line_node) {
+    PP_PdfPageCharacterIndex page_char_index = {
+        page_index_, text_run_start_indices_[start_text_run_index]};
+    ui::AXNodeData* ax_static_text_node = CreateStaticTextNode(page_char_index);
+    ax_node->child_ids.push_back(ax_static_text_node->id);
+    // Accumulate the text of the node.
+    std::string ax_name;
+    LineHelper line_helper(text_runs_);
+
+    for (size_t text_run_index = start_text_run_index;
+         text_run_index <= end_text_run_index; ++text_run_index) {
+      const ppapi::PdfAccessibilityTextRunInfo& text_run =
+          text_runs_[text_run_index];
+      page_char_index.char_index = text_run_start_indices_[text_run_index];
+      // Add this text run to the current static text node.
+      ui::AXNodeData* inline_text_box_node =
+          CreateInlineTextBoxNode(text_run, page_char_index);
+      ax_static_text_node->child_ids.push_back(inline_text_box_node->id);
+
+      ax_static_text_node->relative_bounds.bounds.Union(
+          inline_text_box_node->relative_bounds.bounds);
+      ax_name += inline_text_box_node->GetStringAttribute(
+          ax::mojom::StringAttribute::kName);
+
+      if (*previous_on_line_node) {
+        ConnectPreviousAndNextOnLine(*previous_on_line_node,
+                                     inline_text_box_node);
+      } else {
+        line_helper.StartNewLine(text_run_index);
+      }
+      line_helper.ProcessNextRun(text_run_index);
+
+      if (text_run_index < text_runs_.size() - 1) {
+        if (line_helper.IsRunOnSameLine(text_run_index + 1)) {
+          // The next run is on the same line.
+          *previous_on_line_node = inline_text_box_node;
+        } else {
+          // The next run is on a new line.
+          *previous_on_line_node = nullptr;
+        }
+      }
+    }
+
+    ax_node->AddStringAttribute(ax::mojom::StringAttribute::kName, ax_name);
+    ax_static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                            ax_name);
+  }
+
+  void AddTextToObjectNode(uint32_t object_text_run_index,
+                           uint32_t object_text_run_count,
+                           ui::AXNodeData* object_node,
+                           ui::AXNodeData* para_node,
+                           ui::AXNodeData** previous_on_line_node,
+                           size_t* text_run_index) {
+    // Annotation objects can overlap in PDF. There can be two overlapping
+    // scenarios: Partial overlap and Complete overlap.
+    // Partial overlap
+    //
+    // Link A starts      Link B starts     Link A ends            Link B ends
+    //      |a1                |b1               |a2                    |b2
+    // -----------------------------------------------------------------------
+    //                                    Text
+    //
+    // Complete overlap
+    // Link A starts      Link B starts     Link B ends            Link A ends
+    //      |a1                |b1               |b2                    |a2
+    // -----------------------------------------------------------------------
+    //                                    Text
+    //
+    // For overlapping annotations, both annotations would store the full
+    // text data and nothing will get truncated. For partial overlap, link `A`
+    // would contain text between a1 and a2 while link `B` would contain text
+    // between b1 and b2. For complete overlap as well, link `A` would contain
+    // text between a1 and a2 and link `B` would contain text between b1 and
+    // b2. The links would appear in the tree in the order of which they are
+    // present. In the tree for both overlapping scenarios, link `A` would
+    // appear first in the tree and link `B` after it.
+
+    // If |object_text_run_count| > 0, then the object is part of the page text.
+    // Make the text runs contained by the object children of the object node.
+    size_t end_text_run_index = object_text_run_index + object_text_run_count;
+    uint32_t object_end_text_run_index =
+        std::min(end_text_run_index, text_runs_.size()) - 1;
+    AddTextToAXNode(object_text_run_index, object_end_text_run_index,
+                    object_node, previous_on_line_node);
+
+    para_node->relative_bounds.bounds.Union(
+        object_node->relative_bounds.bounds);
+
+    *text_run_index =
+        NormalizeTextRunIndex(object_end_text_run_index, *text_run_index);
+  }
+
+  void AddLinkToParaNode(const ppapi::PdfAccessibilityLinkInfo& link,
+                         ui::AXNodeData* para_node,
+                         ui::AXNodeData** previous_on_line_node,
+                         size_t* text_run_index) {
+    ui::AXNodeData* link_node = CreateLinkNode(link);
+    para_node->child_ids.push_back(link_node->id);
+
+    // If |link.text_run_count| == 0, then the link is not part of the page
+    // text. Push it ahead of the current text run.
+    if (link.text_run_count == 0) {
+      --(*text_run_index);
+      return;
+    }
+
+    // Make the text runs contained by the link children of
+    // the link node.
+    AddTextToObjectNode(link.text_run_index, link.text_run_count, link_node,
+                        para_node, previous_on_line_node, text_run_index);
+  }
+
+  void AddImageToParaNode(const ppapi::PdfAccessibilityImageInfo& image,
+                          ui::AXNodeData* para_node,
+                          size_t* text_run_index) {
+    // If the |text_run_index| is less than or equal to the image's text run
+    // index, then push the image ahead of the current text run.
+    ui::AXNodeData* image_node = CreateImageNode(image);
+    para_node->child_ids.push_back(image_node->id);
+    --(*text_run_index);
+  }
+
+  void AddHighlightToParaNode(
+      const ppapi::PdfAccessibilityHighlightInfo& highlight,
+      ui::AXNodeData* para_node,
+      ui::AXNodeData** previous_on_line_node,
+      size_t* text_run_index) {
+    ui::AXNodeData* highlight_node = CreateHighlightNode(highlight);
+    para_node->child_ids.push_back(highlight_node->id);
+
+    // Make the text runs contained by the highlight children of
+    // the highlight node.
+    AddTextToObjectNode(highlight.text_run_index, highlight.text_run_count,
+                        highlight_node, para_node, previous_on_line_node,
+                        text_run_index);
+
+    if (!highlight.note_text.empty()) {
+      ui::AXNodeData* popup_note_node = CreatePopupNoteNode(highlight);
+      highlight_node->child_ids.push_back(popup_note_node->id);
+    }
+  }
+
+  void AddTextFieldToParaNode(
+      const ppapi::PdfAccessibilityTextFieldInfo& text_field,
+      ui::AXNodeData* para_node,
+      size_t* text_run_index) {
+    // If the |text_run_index| is less than or equal to the text_field's text
+    // run index, then push the text_field ahead of the current text run.
+    ui::AXNodeData* text_field_node = CreateTextFieldNode(text_field);
+    para_node->child_ids.push_back(text_field_node->id);
+    --(*text_run_index);
+  }
+
+  void AddButtonToParaNode(const ppapi::PdfAccessibilityButtonInfo& button,
+                           ui::AXNodeData* para_node,
+                           size_t* text_run_index) {
+    // If the |text_run_index| is less than or equal to the button's text
+    // run index, then push the button ahead of the current text run.
+    ui::AXNodeData* button_node = CreateButtonNode(button);
+    para_node->child_ids.push_back(button_node->id);
+    --(*text_run_index);
+  }
+
+  void AddChoiceFieldToParaNode(
+      const ppapi::PdfAccessibilityChoiceFieldInfo& choice_field,
+      ui::AXNodeData* para_node,
+      size_t* text_run_index) {
+    // If the |text_run_index| is less than or equal to the choice_field's text
+    // run index, then push the choice_field ahead of the current text run.
+    ui::AXNodeData* choice_field_node = CreateChoiceFieldNode(choice_field);
+    para_node->child_ids.push_back(choice_field_node->id);
+    --(*text_run_index);
+  }
+
+  void AddRemainingAnnotations(ui::AXNodeData* para_node) {
+    // If we don't have additional links, images or form fields to insert in the
+    // tree, then return.
+    if (current_link_index_ >= links_.size() &&
+        current_image_index_ >= images_.size() &&
+        current_text_field_index_ >= text_fields_.size() &&
+        current_button_index_ >= buttons_.size() &&
+        current_choice_field_index_ >= choice_fields_.size()) {
+      return;
+    }
+
+    // If we don't have a paragraph node, create a new one.
+    if (!para_node) {
+      para_node = CreateNode(ax::mojom::Role::kParagraph,
+                             ax::mojom::Restriction::kReadOnly,
+                             render_accessibility_, nodes_);
+      page_node_->child_ids.push_back(para_node->id);
+    }
+    // Push all the links not anchored to any text run to the last paragraph.
+    for (size_t i = current_link_index_; i < links_.size(); i++) {
+      ui::AXNodeData* link_node = CreateLinkNode(links_[i]);
+      para_node->child_ids.push_back(link_node->id);
+    }
+    // Push all the images not anchored to any text run to the last paragraph.
+    for (size_t i = current_image_index_; i < images_.size(); i++) {
+      ui::AXNodeData* image_node = CreateImageNode(images_[i]);
+      para_node->child_ids.push_back(image_node->id);
+    }
+
+    if (base::FeatureList::IsEnabled(
+            chrome_pdf::features::kAccessiblePDFForm)) {
+      // Push all the text fields not anchored to any text run to the last
+      // paragraph.
+      for (size_t i = current_text_field_index_; i < text_fields_.size(); i++) {
+        ui::AXNodeData* text_field_node = CreateTextFieldNode(text_fields_[i]);
+        para_node->child_ids.push_back(text_field_node->id);
+      }
+
+      // Push all the buttons not anchored to any text run to the last
+      // paragraph.
+      for (size_t i = current_button_index_; i < buttons_.size(); i++) {
+        ui::AXNodeData* button_node = CreateButtonNode(buttons_[i]);
+        para_node->child_ids.push_back(button_node->id);
+      }
+
+      // Push all the choice fields not anchored to any text run to the last
+      // paragraph.
+      for (size_t i = current_choice_field_index_; i < choice_fields_.size();
+           i++) {
+        ui::AXNodeData* choice_field_node =
+            CreateChoiceFieldNode(choice_fields_[i]);
+        para_node->child_ids.push_back(choice_field_node->id);
+      }
+    }
+  }
+
+  std::vector<uint32_t> text_run_start_indices_;
+  const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs_;
+  const std::vector<PP_PrivateAccessibilityCharInfo>& chars_;
+  const std::vector<ppapi::PdfAccessibilityLinkInfo>& links_;
+  uint32_t current_link_index_ = 0;
+  const std::vector<ppapi::PdfAccessibilityImageInfo>& images_;
+  uint32_t current_image_index_ = 0;
+  const std::vector<ppapi::PdfAccessibilityHighlightInfo>& highlights_;
+  uint32_t current_highlight_index_ = 0;
+  const std::vector<ppapi::PdfAccessibilityTextFieldInfo>& text_fields_;
+  uint32_t current_text_field_index_ = 0;
+  const std::vector<ppapi::PdfAccessibilityButtonInfo>& buttons_;
+  uint32_t current_button_index_ = 0;
+  const std::vector<ppapi::PdfAccessibilityChoiceFieldInfo>& choice_fields_;
+  uint32_t current_choice_field_index_ = 0;
+  const gfx::RectF& page_bounds_;
+  uint32_t page_index_;
+  ui::AXNodeData* page_node_;
+  content::RenderAccessibility* render_accessibility_;
+  std::vector<std::unique_ptr<ui::AXNodeData>>* nodes_;
+  std::map<int32_t, PP_PdfPageCharacterIndex>* node_id_to_page_char_index_;
+  std::map<int32_t, PdfAccessibilityTree::AnnotationInfo>*
+      node_id_to_annotation_info_;
+  float heading_font_size_threshold_ = 0;
+  float paragraph_spacing_threshold_ = 0;
+};
+
 }  // namespace
 
 PdfAccessibilityTree::PdfAccessibilityTree(content::RendererPpapiHost* host,
@@ -347,11 +1163,15 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
   // |text_runs|. The index denotes the position of the link relative to the
   // text runs. The index value equal to the size of |text_runs| indicates that
   // the link should be after the last text run.
+  // |index_in_page| of every |link| should be with in the range of total number
+  // of links, which is size of |links|.
   for (const ppapi::PdfAccessibilityLinkInfo& link : links) {
     base::CheckedNumeric<uint32_t> index = link.text_run_index;
     index += link.text_run_count;
-    if (!index.IsValid() || index.ValueOrDie() > text_runs.size())
+    if (!index.IsValid() || index.ValueOrDie() > text_runs.size() ||
+        link.index_in_page >= links.size()) {
       return false;
+    }
   }
 
   const std::vector<ppapi::PdfAccessibilityImageInfo>& images =
@@ -376,11 +1196,76 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
 
   // Since highlights also span across text runs similar to links, the
   // validation method is the same.
+  // |index_in_page| of a |highlight| follows the same index validation rules
+  // as of links.
   for (const auto& highlight : highlights) {
     base::CheckedNumeric<uint32_t> index = highlight.text_run_index;
     index += highlight.text_run_count;
-    if (!index.IsValid() || index.ValueOrDie() > text_runs.size())
+    if (!index.IsValid() || index.ValueOrDie() > text_runs.size() ||
+        highlight.index_in_page >= highlights.size()) {
       return false;
+    }
+  }
+
+  const std::vector<ppapi::PdfAccessibilityTextFieldInfo>& text_fields =
+      page_objects.form_fields.text_fields;
+  if (!std::is_sorted(text_fields.begin(), text_fields.end(),
+                      CompareTextRuns<ppapi::PdfAccessibilityTextFieldInfo>)) {
+    return false;
+  }
+  // Text run index of an |text_field| works on the same logic as the text run
+  // index of a |link| as mentioned above.
+  // |index_in_page| of a |text_field| follows the same index validation rules
+  // as of links.
+  for (const ppapi::PdfAccessibilityTextFieldInfo& text_field : text_fields) {
+    if (text_field.text_run_index > text_runs.size() ||
+        text_field.index_in_page >= text_fields.size()) {
+      return false;
+    }
+  }
+
+  const std::vector<ppapi::PdfAccessibilityChoiceFieldInfo>& choice_fields =
+      page_objects.form_fields.choice_fields;
+  if (!std::is_sorted(
+          choice_fields.begin(), choice_fields.end(),
+          CompareTextRuns<ppapi::PdfAccessibilityChoiceFieldInfo>)) {
+    return false;
+  }
+  // Text run index of an |choice_field| works on the same logic as the text run
+  // index of a |link| as mentioned above.
+  // |index_in_page| of a |choice_field| follows the same index validation rules
+  // as of links.
+  for (const auto& choice_field : choice_fields) {
+    if (choice_field.text_run_index > text_runs.size() ||
+        choice_field.index_in_page >= choice_fields.size()) {
+      return false;
+    }
+  }
+
+  const std::vector<ppapi::PdfAccessibilityButtonInfo>& buttons =
+      page_objects.form_fields.buttons;
+  if (!std::is_sorted(
+          buttons.begin(), buttons.end(),
+          CompareTextRuns<ppapi::PdfAccessibilityButtonInfo>)) {
+    return false;
+  }
+  for (const ppapi::PdfAccessibilityButtonInfo& button :
+       buttons) {
+    // Text run index of an |button| works on the same logic as the text run
+    // index of a |link| as mentioned above.
+    // |index_in_page| of a |button| follows the same index validation rules as
+    // of links.
+    if (button.text_run_index > text_runs.size() ||
+        button.index_in_page >= buttons.size()) {
+      return false;
+    }
+    // For radio button or checkbox, value of |button.control_index| should
+    // always be less than |button.control_count|.
+    if ((button.type == PP_PrivateButtonType::PP_PRIVATEBUTTON_CHECKBOX ||
+         button.type == PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON) &&
+        (button.control_index >= button.control_count)) {
+      return false;
+    }
   }
 
   return true;
@@ -413,12 +1298,14 @@ void PdfAccessibilityTree::SetAccessibilityViewportInfo(
 
 void PdfAccessibilityTree::SetAccessibilityDocInfo(
     const PP_PrivateAccessibilityDocInfo& doc_info) {
-  if (!GetRenderAccessibility())
+  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  if (!render_accessibility)
     return;
 
   doc_info_ = doc_info;
   doc_node_ =
-      CreateNode(ax::mojom::Role::kDocument, ax::mojom::Restriction::kReadOnly);
+      CreateNode(ax::mojom::Role::kDocument, ax::mojom::Restriction::kReadOnly,
+                 render_accessibility, &nodes_);
   doc_node_->AddStringAttribute(
       ax::mojom::StringAttribute::kName,
       l10n_util::GetPluralStringFUTF8(IDS_PDF_DOCUMENT_PAGE_COUNT,
@@ -454,7 +1341,8 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   CHECK_LT(page_index, doc_info_.page_count);
 
   ui::AXNodeData* page_node =
-      CreateNode(ax::mojom::Role::kRegion, ax::mojom::Restriction::kReadOnly);
+      CreateNode(ax::mojom::Role::kRegion, ax::mojom::Restriction::kReadOnly,
+                 render_accessibility, &nodes_);
   page_node->AddStringAttribute(
       ax::mojom::StringAttribute::kName,
       l10n_util::GetPluralStringFUTF8(IDS_PDF_PAGE_INDEX, page_index + 1));
@@ -467,7 +1355,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   doc_node_->child_ids.push_back(page_node->id);
 
   AddPageContent(page_node, page_bounds, page_index, text_runs, chars,
-                 page_objects);
+                 page_objects, render_accessibility);
 
   if (page_index == doc_info_.page_count - 1)
     Finish();
@@ -479,256 +1367,14 @@ void PdfAccessibilityTree::AddPageContent(
     uint32_t page_index,
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const ppapi::PdfAccessibilityPageObjects& page_objects) {
+    const ppapi::PdfAccessibilityPageObjects& page_objects,
+    content::RenderAccessibility* render_accessibility) {
   DCHECK(page_node);
-  float heading_font_size_threshold = 0;
-  float paragraph_spacing_threshold = 0;
-  ComputeParagraphAndHeadingThresholds(text_runs, &heading_font_size_threshold,
-                                       &paragraph_spacing_threshold);
-
-  std::vector<uint32_t> text_run_start_indices;
-  if (!text_runs.empty()) {
-    text_run_start_indices.reserve(text_runs.size());
-    text_run_start_indices.push_back(0);
-    for (size_t i = 0; i < text_runs.size() - 1; ++i) {
-      text_run_start_indices.push_back(text_run_start_indices[i] +
-                                       text_runs[i].len);
-    }
-  }
-  ui::AXNodeData* para_node = nullptr;
-  ui::AXNodeData* static_text_node = nullptr;
-  ui::AXNodeData* previous_on_line_node = nullptr;
-  std::string static_text;
-  uint32_t current_link_index = 0;
-  uint32_t current_image_index = 0;
-  uint32_t current_highlight_index = 0;
-  uint32_t current_text_field_index = 0;
-  LineHelper line_helper(text_runs);
-  const std::vector<ppapi::PdfAccessibilityLinkInfo>& links =
-      page_objects.links;
-  const std::vector<ppapi::PdfAccessibilityImageInfo>& images =
-      page_objects.images;
-  const std::vector<ppapi::PdfAccessibilityHighlightInfo>& highlights =
-      page_objects.highlights;
-  const std::vector<ppapi::PdfAccessibilityTextFieldInfo>& text_fields =
-      page_objects.text_fields;
-
-  for (size_t text_run_index = 0; text_run_index < text_runs.size();
-       ++text_run_index) {
-    // If we don't have a paragraph, create one.
-    if (!para_node) {
-      para_node = CreateParagraphNode(text_runs[text_run_index].style.font_size,
-                                      heading_font_size_threshold);
-      page_node->child_ids.push_back(para_node->id);
-    }
-
-    // If the |text_run_index| is less than or equal to the link's
-    // text_run_index, then push the link node in the paragraph.
-    if (IsObjectInTextRun(links, current_link_index, text_run_index)) {
-      FinishStaticNode(&static_text_node, &static_text);
-      const ppapi::PdfAccessibilityLinkInfo& link = links[current_link_index++];
-      ui::AXNodeData* link_node = CreateLinkNode(link, page_index);
-      para_node->child_ids.push_back(link_node->id);
-
-      // If |link.text_run_count| == 0, then the link is not part of the page
-      // text. Push it ahead of the current text run.
-      if (link.text_run_count == 0) {
-        --text_run_index;
-        continue;
-      }
-
-      // Annotations can overlap in PDF. There can be two overlapping scenarios:
-      // Partial overlap and Complete overlap.
-      // Partial overlap
-      //
-      // Link A starts      Link B starts     Link A ends            Link B ends
-      //      |a1                |b1               |a2                    |b2
-      // -----------------------------------------------------------------------
-      //                                    Text
-      //
-      // Complete overlap
-      // Link A starts      Link B starts     Link B ends            Link A ends
-      //      |a1                |b1               |b2                    |a2
-      // -----------------------------------------------------------------------
-      //                                    Text
-      //
-      // For overlapping annotations, both annotations would store the full
-      // text data and nothing will get truncated. For partial overlap, link `A`
-      // would contain text between a1 and a2 while link `B` would contain text
-      // between b1 and b2. For complete overlap as well, link `A` would contain
-      // text between a1 and a2 and link `B` would contain text between b1 and
-      // b2. The links would appear in the tree in the order of which they are
-      // present. In the tree for both overlapping scenarios, link `A` would
-      // appear first in the tree and link `B` after it.
-
-      // If |link.text_run_count| > 0, then the link is part of the page text.
-      // Make the text runs contained by the link children of the link node.
-      size_t end_text_run_index = link.text_run_index + link.text_run_count;
-      uint32_t link_end_text_run_index =
-          std::min(end_text_run_index, text_runs.size()) - 1;
-      AddTextToAXNode(link.text_run_index, link_end_text_run_index, text_runs,
-                      chars, page_bounds, page_index, text_run_start_indices,
-                      link_node, &previous_on_line_node);
-
-      para_node->relative_bounds.bounds.Union(
-          link_node->relative_bounds.bounds);
-
-      text_run_index =
-          NormalizeTextRunIndex(link_end_text_run_index, text_run_index);
-    } else if (IsObjectInTextRun(images, current_image_index, text_run_index)) {
-      FinishStaticNode(&static_text_node, &static_text);
-      // If the |text_run_index| is less than or equal to the image's text run
-      // index, then push the image ahead of the current text run.
-      ui::AXNodeData* image_node = CreateImageNode(images[current_image_index]);
-      para_node->child_ids.push_back(image_node->id);
-      ++current_image_index;
-      --text_run_index;
-      continue;
-    } else if (IsObjectInTextRun(highlights, current_highlight_index,
-                                 text_run_index) &&
-               base::FeatureList::IsEnabled(
-                   chrome_pdf::features::kAccessiblePDFHighlight)) {
-      FinishStaticNode(&static_text_node, &static_text);
-
-      const ppapi::PdfAccessibilityHighlightInfo& highlight =
-          highlights[current_highlight_index++];
-
-      ui::AXNodeData* highlight_node = CreateHighlightNode(highlight);
-      para_node->child_ids.push_back(highlight_node->id);
-
-      // Make the text runs contained by the highlight children of
-      // the highlight node.
-      size_t end_text_run_index =
-          highlight.text_run_index + highlight.text_run_count;
-      uint32_t highlight_end_text_run_index =
-          std::min(end_text_run_index, text_runs.size()) - 1;
-      AddTextToAXNode(highlight.text_run_index, highlight_end_text_run_index,
-                      text_runs, chars, page_bounds, page_index,
-                      text_run_start_indices, highlight_node,
-                      &previous_on_line_node);
-
-      para_node->relative_bounds.bounds.Union(
-          highlight_node->relative_bounds.bounds);
-
-      text_run_index =
-          NormalizeTextRunIndex(highlight_end_text_run_index, text_run_index);
-    } else if (IsObjectInTextRun(text_fields, current_text_field_index,
-                                 text_run_index) &&
-               base::FeatureList::IsEnabled(
-                   chrome_pdf::features::kAccessiblePDFForm)) {
-      FinishStaticNode(&static_text_node, &static_text);
-      // If the |text_run_index| is less than or equal to the text_field's text
-      // run index, then push the text_field ahead of the current text run.
-      ui::AXNodeData* text_field_node =
-          CreateTextFieldNode(text_fields[current_text_field_index]);
-      para_node->child_ids.push_back(text_field_node->id);
-      ++current_text_field_index;
-      --text_run_index;
-      continue;
-    } else {
-      PP_PdfPageCharacterIndex page_char_index = {
-          page_index, text_run_start_indices[text_run_index]};
-
-      // This node is for the text inside the paragraph, it includes
-      // the text of all of the text runs.
-      if (!static_text_node) {
-        static_text_node = CreateStaticTextNode(page_char_index);
-        para_node->child_ids.push_back(static_text_node->id);
-      }
-
-      const ppapi::PdfAccessibilityTextRunInfo& text_run =
-          text_runs[text_run_index];
-      // Add this text run to the current static text node.
-      ui::AXNodeData* inline_text_box_node = CreateInlineTextBoxNode(
-          text_run, chars, page_char_index, page_bounds);
-      static_text_node->child_ids.push_back(inline_text_box_node->id);
-
-      static_text += inline_text_box_node->GetStringAttribute(
-          ax::mojom::StringAttribute::kName);
-
-      para_node->relative_bounds.bounds.Union(
-          inline_text_box_node->relative_bounds.bounds);
-      static_text_node->relative_bounds.bounds.Union(
-          inline_text_box_node->relative_bounds.bounds);
-
-      if (previous_on_line_node) {
-        ConnectPreviousAndNextOnLine(previous_on_line_node,
-                                     inline_text_box_node);
-      } else {
-        line_helper.StartNewLine(text_run_index);
-      }
-      line_helper.ProcessNextRun(text_run_index);
-
-      if (text_run_index < text_runs.size() - 1) {
-        if (line_helper.IsRunOnSameLine(text_run_index + 1)) {
-          // The next run is on the same line.
-          previous_on_line_node = inline_text_box_node;
-        } else {
-          // The next run is on a new line.
-          previous_on_line_node = nullptr;
-        }
-      }
-    }
-
-    if (text_run_index == text_runs.size() - 1) {
-      FinishStaticNode(&static_text_node, &static_text);
-      break;
-    }
-
-    if (!previous_on_line_node) {
-      if (BreakParagraph(text_runs, text_run_index,
-                         paragraph_spacing_threshold)) {
-        FinishStaticNode(&static_text_node, &static_text);
-        para_node = nullptr;
-      }
-    }
-  }
-
-  base::span<const ppapi::PdfAccessibilityLinkInfo> remaining_links =
-      base::make_span(links).subspan(current_link_index);
-  base::span<const ppapi::PdfAccessibilityImageInfo> remaining_images =
-      base::make_span(images).subspan(current_image_index);
-  base::span<const ppapi::PdfAccessibilityTextFieldInfo> remaining_text_fields =
-      base::make_span(text_fields).subspan(current_text_field_index);
-  AddRemainingAnnotations(page_node, page_bounds, page_index, remaining_links,
-                          remaining_images, remaining_text_fields, para_node);
-}
-
-void PdfAccessibilityTree::AddRemainingAnnotations(
-    ui::AXNodeData* page_node,
-    const gfx::RectF& page_bounds,
-    uint32_t page_index,
-    base::span<const ppapi::PdfAccessibilityLinkInfo> links,
-    base::span<const ppapi::PdfAccessibilityImageInfo> images,
-    base::span<const ppapi::PdfAccessibilityTextFieldInfo> text_fields,
-    ui::AXNodeData* para_node) {
-  // If we have additional links, images or text fields to insert in the tree,
-  // and we don't have a paragraph node, create a new one.
-  if (!para_node &&
-      (!links.empty() || !images.empty() || !text_fields.empty())) {
-    para_node = CreateNode(ax::mojom::Role::kParagraph,
-                           ax::mojom::Restriction::kReadOnly);
-    page_node->child_ids.push_back(para_node->id);
-  }
-  // Push all the links not anchored to any text run to the last paragraph.
-  for (const ppapi::PdfAccessibilityLinkInfo& link : links) {
-    ui::AXNodeData* link_node = CreateLinkNode(link, page_index);
-    para_node->child_ids.push_back(link_node->id);
-  }
-  // Push all the images not anchored to any text run to the last paragraph.
-  for (const ppapi::PdfAccessibilityImageInfo& image : images) {
-    ui::AXNodeData* image_node = CreateImageNode(image);
-    para_node->child_ids.push_back(image_node->id);
-  }
-
-  if (base::FeatureList::IsEnabled(chrome_pdf::features::kAccessiblePDFForm)) {
-    // Push all the text fields not anchored to any text run to the last
-    // paragraph.
-    for (const ppapi::PdfAccessibilityTextFieldInfo& text_field : text_fields) {
-      ui::AXNodeData* text_field_node = CreateTextFieldNode(text_field);
-      para_node->child_ids.push_back(text_field_node->id);
-    }
-  }
+  PdfAccessibilityTreeBuilder tree_builder(
+      text_runs, chars, page_objects, page_bounds, page_index, page_node,
+      render_accessibility, &nodes_, &node_id_to_page_char_index_,
+      &node_id_to_annotation_info_);
+  tree_builder.BuildPageTree();
 }
 
 void PdfAccessibilityTree::Finish() {
@@ -814,231 +1460,6 @@ bool PdfAccessibilityTree::FindCharacterOffset(
   return true;
 }
 
-ui::AXNodeData* PdfAccessibilityTree::CreateNode(
-    ax::mojom::Role role,
-    ax::mojom::Restriction restriction) {
-  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
-  DCHECK(render_accessibility);
-
-  auto node = std::make_unique<ui::AXNodeData>();
-  node->id = render_accessibility->GenerateAXID();
-  node->role = role;
-  node->SetRestriction(restriction);
-
-  // All nodes other than the first one have coordinates relative to
-  // the first node.
-  if (!nodes_.empty())
-    node->relative_bounds.offset_container_id = nodes_[0]->id;
-
-  ui::AXNodeData* node_ptr = node.get();
-  nodes_.push_back(std::move(node));
-
-  return node_ptr;
-}
-
-ui::AXNodeData* PdfAccessibilityTree::CreateParagraphNode(
-    float font_size,
-    float heading_font_size_threshold) {
-  ui::AXNodeData* para_node = CreateNode(ax::mojom::Role::kParagraph,
-                                         ax::mojom::Restriction::kReadOnly);
-  para_node->AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
-                              true);
-
-  // If font size exceeds the |heading_font_size_threshold|, then classify
-  // it as a Heading.
-  if (heading_font_size_threshold > 0 &&
-      font_size > heading_font_size_threshold) {
-    para_node->role = ax::mojom::Role::kHeading;
-    para_node->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel, 2);
-    para_node->AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, "h2");
-  }
-
-  return para_node;
-}
-
-ui::AXNodeData* PdfAccessibilityTree::CreateStaticTextNode(
-    const PP_PdfPageCharacterIndex& page_char_index) {
-  ui::AXNodeData* static_text_node = CreateNode(
-      ax::mojom::Role::kStaticText, ax::mojom::Restriction::kReadOnly);
-  node_id_to_page_char_index_.emplace(static_text_node->id, page_char_index);
-  return static_text_node;
-}
-
-ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
-    const ppapi::PdfAccessibilityTextRunInfo& text_run,
-    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const PP_PdfPageCharacterIndex& page_char_index,
-    const gfx::RectF& page_bounds) {
-  ui::AXNodeData* inline_text_box_node = CreateNode(
-      ax::mojom::Role::kInlineTextBox, ax::mojom::Restriction::kReadOnly);
-
-  std::string chars_utf8 =
-      GetTextRunCharsAsUTF8(text_run, chars, page_char_index.char_index);
-  inline_text_box_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                           chars_utf8);
-  inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
-                                        text_run.direction);
-  inline_text_box_node->AddStringAttribute(
-      ax::mojom::StringAttribute::kFontFamily, text_run.style.font_name);
-  inline_text_box_node->AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
-                                          text_run.style.font_size);
-  inline_text_box_node->AddFloatAttribute(
-      ax::mojom::FloatAttribute::kFontWeight, text_run.style.font_weight);
-  if (text_run.style.is_italic)
-    inline_text_box_node->AddTextStyle(ax::mojom::TextStyle::kItalic);
-  if (text_run.style.is_bold)
-    inline_text_box_node->AddTextStyle(ax::mojom::TextStyle::kBold);
-  if (IsTextRenderModeFill(text_run.style.render_mode)) {
-    inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kColor,
-                                          text_run.style.fill_color);
-  } else if (IsTextRenderModeStroke(text_run.style.render_mode)) {
-    inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kColor,
-                                          text_run.style.stroke_color);
-  }
-
-  inline_text_box_node->relative_bounds.bounds =
-      PpFloatRectToGfxRectF(text_run.bounds) + page_bounds.OffsetFromOrigin();
-  std::vector<int32_t> char_offsets =
-      GetTextRunCharOffsets(text_run, chars, page_char_index.char_index);
-  inline_text_box_node->AddIntListAttribute(
-      ax::mojom::IntListAttribute::kCharacterOffsets, char_offsets);
-  AddWordStartsAndEnds(inline_text_box_node);
-  node_id_to_page_char_index_.emplace(inline_text_box_node->id,
-                                      page_char_index);
-  return inline_text_box_node;
-}
-
-ui::AXNodeData* PdfAccessibilityTree::CreateLinkNode(
-    const ppapi::PdfAccessibilityLinkInfo& link,
-    uint32_t page_index) {
-  ui::AXNodeData* link_node =
-      CreateNode(ax::mojom::Role::kLink, ax::mojom::Restriction::kReadOnly);
-
-  link_node->AddStringAttribute(ax::mojom::StringAttribute::kUrl, link.url);
-  link_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                std::string());
-  link_node->relative_bounds.bounds = PpFloatRectToGfxRectF(link.bounds);
-  node_id_to_annotation_info_.emplace(
-      link_node->id, AnnotationInfo(page_index, link.index_in_page));
-
-  return link_node;
-}
-
-ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
-    const ppapi::PdfAccessibilityImageInfo& image) {
-  ui::AXNodeData* image_node =
-      CreateNode(ax::mojom::Role::kImage, ax::mojom::Restriction::kReadOnly);
-
-  if (image.alt_text.empty()) {
-    image_node->AddStringAttribute(
-        ax::mojom::StringAttribute::kName,
-        l10n_util::GetStringUTF8(IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION));
-  } else {
-    image_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                   image.alt_text);
-  }
-  image_node->relative_bounds.bounds = PpFloatRectToGfxRectF(image.bounds);
-  return image_node;
-}
-
-ui::AXNodeData* PdfAccessibilityTree::CreateHighlightNode(
-    const ppapi::PdfAccessibilityHighlightInfo& highlight) {
-  ui::AXNodeData* highlight_node =
-      CreateNode(ax::mojom::Role::kPdfActionableHighlight,
-                 ax::mojom::Restriction::kReadOnly);
-
-  highlight_node->AddStringAttribute(
-      ax::mojom::StringAttribute::kRoleDescription,
-      l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_HIGHLIGHT));
-  highlight_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                     std::string());
-  highlight_node->relative_bounds.bounds =
-      PpFloatRectToGfxRectF(highlight.bounds);
-  highlight_node->AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
-                                  highlight.color);
-
-  return highlight_node;
-}
-
-ui::AXNodeData* PdfAccessibilityTree::CreateTextFieldNode(
-    const ppapi::PdfAccessibilityTextFieldInfo& text_field) {
-  ax::mojom::Restriction restriction = text_field.is_read_only
-                                           ? ax::mojom::Restriction::kReadOnly
-                                           : ax::mojom::Restriction::kNone;
-  ui::AXNodeData* text_field_node =
-      CreateNode(ax::mojom::Role::kTextField, restriction);
-
-  text_field_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                      text_field.name);
-  text_field_node->AddStringAttribute(ax::mojom::StringAttribute::kValue,
-                                      text_field.value);
-  text_field_node->AddState(ax::mojom::State::kFocusable);
-  if (text_field.is_required)
-    text_field_node->AddState(ax::mojom::State::kRequired);
-  if (text_field.is_password)
-    text_field_node->AddState(ax::mojom::State::kProtected);
-  text_field_node->relative_bounds.bounds =
-      PpFloatRectToGfxRectF(text_field.bounds);
-  return text_field_node;
-}
-
-void PdfAccessibilityTree::AddTextToAXNode(
-    uint32_t start_text_run_index,
-    uint32_t end_text_run_index,
-    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const gfx::RectF& page_bounds,
-    uint32_t page_index,
-    const std::vector<uint32_t>& text_run_start_indices,
-    ui::AXNodeData* ax_node,
-    ui::AXNodeData** previous_on_line_node) {
-  PP_PdfPageCharacterIndex page_char_index = {
-      page_index, text_run_start_indices[start_text_run_index]};
-  ui::AXNodeData* ax_static_text_node = CreateStaticTextNode(page_char_index);
-  ax_node->child_ids.push_back(ax_static_text_node->id);
-  // Accumulate the text of the node.
-  std::string ax_name;
-  LineHelper line_helper(text_runs);
-
-  for (size_t text_run_index = start_text_run_index;
-       text_run_index <= end_text_run_index; ++text_run_index) {
-    const ppapi::PdfAccessibilityTextRunInfo& text_run =
-        text_runs[text_run_index];
-    page_char_index.char_index = text_run_start_indices[text_run_index];
-    // Add this text run to the current static text node.
-    ui::AXNodeData* inline_text_box_node =
-        CreateInlineTextBoxNode(text_run, chars, page_char_index, page_bounds);
-    ax_static_text_node->child_ids.push_back(inline_text_box_node->id);
-
-    ax_static_text_node->relative_bounds.bounds.Union(
-        inline_text_box_node->relative_bounds.bounds);
-    ax_name += inline_text_box_node->GetStringAttribute(
-        ax::mojom::StringAttribute::kName);
-
-    if (*previous_on_line_node) {
-      ConnectPreviousAndNextOnLine(*previous_on_line_node,
-                                   inline_text_box_node);
-    } else {
-      line_helper.StartNewLine(text_run_index);
-    }
-    line_helper.ProcessNextRun(text_run_index);
-
-    if (text_run_index < text_runs.size() - 1) {
-      if (line_helper.IsRunOnSameLine(text_run_index + 1)) {
-        // The next run is on the same line.
-        *previous_on_line_node = inline_text_box_node;
-      } else {
-        // The next run is on a new line.
-        *previous_on_line_node = nullptr;
-      }
-    }
-  }
-
-  ax_node->AddStringAttribute(ax::mojom::StringAttribute::kName, ax_name);
-  ax_static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                          ax_name);
-}
-
 content::RenderAccessibility* PdfAccessibilityTree::GetRenderAccessibility() {
   content::RenderFrame* render_frame =
       host_->GetRenderFrameForInstance(instance_);
@@ -1063,36 +1484,14 @@ PdfAccessibilityTree::MakeTransformFromViewInfo() const {
   double applicable_scale_factor =
       content::RenderThread::Get()->IsUseZoomForDSF() ? scale_ : 1;
   auto transform = std::make_unique<gfx::Transform>();
-  // |scroll_| represents the x offset from which PDF content starts. It is the
-  // width of the PDF toolbar in pixels. Size of PDF toolbar does not change
-  // with zoom.
+  // |scroll_| represents the offset from which PDF content starts. It is the
+  // height of the PDF toolbar and the width of sidenav in pixels if it is open.
+  // Sizes of PDF toolbar and sidenav do not change with zoom.
   transform->Scale(applicable_scale_factor, applicable_scale_factor);
   transform->Translate(-scroll_);
   transform->Scale(zoom_, zoom_);
   transform->Translate(offset_);
   return transform;
-}
-
-void PdfAccessibilityTree::AddWordStartsAndEnds(
-    ui::AXNodeData* inline_text_box) {
-  base::string16 text =
-      inline_text_box->GetString16Attribute(ax::mojom::StringAttribute::kName);
-  base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);
-  if (!iter.Init())
-    return;
-
-  std::vector<int32_t> word_starts;
-  std::vector<int32_t> word_ends;
-  while (iter.Advance()) {
-    if (iter.IsWord()) {
-      word_starts.push_back(iter.prev());
-      word_ends.push_back(iter.pos());
-    }
-  }
-  inline_text_box->AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
-                                       word_starts);
-  inline_text_box->AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
-                                       word_ends);
 }
 
 PdfAccessibilityTree::AnnotationInfo::AnnotationInfo(uint32_t page_index,
@@ -1165,6 +1564,15 @@ void PdfAccessibilityTree::SerializeNode(
 std::unique_ptr<ui::AXActionTarget> PdfAccessibilityTree::CreateActionTarget(
     const ui::AXNode& target_node) {
   return std::make_unique<PdfAXActionTarget>(target_node, this);
+}
+
+bool PdfAccessibilityTree::ShowContextMenu() {
+  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  if (!render_accessibility)
+    return false;
+
+  render_accessibility->ShowPluginContextMenu();
+  return true;
 }
 
 void PdfAccessibilityTree::HandleAction(

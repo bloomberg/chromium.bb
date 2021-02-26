@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORD_CHECK_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORD_CHECK_DELEGATE_H_
 
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #include "chrome/common/extensions/api/passwords_private.h"
@@ -18,15 +19,11 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/ui/bulk_leak_check_service_adapter.h"
-#include "components/password_manager/core/browser/ui/compromised_credentials_provider.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
+#include "components/password_manager/core/browser/ui/insecure_credentials_manager.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 
 class Profile;
-
-namespace password_manager {
-class PasswordStore;
-}
 
 namespace extensions {
 
@@ -38,18 +35,14 @@ class PasswordCheckProgress;
 // with the bulk password check feature.
 class PasswordCheckDelegate
     : public password_manager::SavedPasswordsPresenter::Observer,
-      public password_manager::CompromisedCredentialsProvider::Observer,
-      public password_manager::BulkLeakCheckService::Observer {
+      public password_manager::InsecureCredentialsManager::Observer,
+      public password_manager::BulkLeakCheckServiceInterface::Observer {
  public:
   using StartPasswordCheckCallback =
       PasswordsPrivateDelegate::StartPasswordCheckCallback;
 
-  using CredentialPasswordsMap =
-      std::map<password_manager::CredentialWithPassword,
-               std::vector<autofill::PasswordForm>,
-               password_manager::PasswordCredentialLess>;
-
-  explicit PasswordCheckDelegate(Profile* profile);
+  PasswordCheckDelegate(Profile* profile,
+                        password_manager::SavedPasswordsPresenter* presenter);
   PasswordCheckDelegate(const PasswordCheckDelegate&) = delete;
   PasswordCheckDelegate& operator=(const PasswordCheckDelegate&) = delete;
   ~PasswordCheckDelegate() override;
@@ -57,36 +50,44 @@ class PasswordCheckDelegate
   // Obtains information about compromised credentials. This includes the last
   // time a check was run, as well as all compromised credentials that are
   // present in the password store.
-  std::vector<api::passwords_private::CompromisedCredential>
+  std::vector<api::passwords_private::InsecureCredential>
   GetCompromisedCredentials();
+
+  // Obtains information about weak credentials.
+  std::vector<api::passwords_private::InsecureCredential> GetWeakCredentials();
 
   // Requests the plaintext password for |credential|. If successful, this
   // returns |credential| with its |password| member set. This can fail if no
-  // matching compromised credential can be found in the password store.
-  base::Optional<api::passwords_private::CompromisedCredential>
-  GetPlaintextCompromisedPassword(
-      api::passwords_private::CompromisedCredential credential) const;
+  // matching insecure credential can be found in the password store.
+  base::Optional<api::passwords_private::InsecureCredential>
+  GetPlaintextInsecurePassword(
+      api::passwords_private::InsecureCredential credential) const;
 
   // Attempts to change the stored password of |credential| to |new_password|.
   // Returns whether the change succeeded.
-  bool ChangeCompromisedCredential(
-      const api::passwords_private::CompromisedCredential& credential,
+  bool ChangeInsecureCredential(
+      const api::passwords_private::InsecureCredential& credential,
       base::StringPiece new_password);
 
   // Attempts to remove |credential| from the password store. Returns whether
   // the remove succeeded.
-  bool RemoveCompromisedCredential(
-      const api::passwords_private::CompromisedCredential& credential);
+  bool RemoveInsecureCredential(
+      const api::passwords_private::InsecureCredential& credential);
 
-  // Requests to start a check for compromised passwords. Invokes |callback|
-  // once a check is running or the request was stopped via StopPasswordCheck().
+  // Requests to start a check for insecure passwords. Invokes |callback| once a
+  // check is running or the request was stopped via StopPasswordCheck().
   void StartPasswordCheck(
       StartPasswordCheckCallback callback = base::DoNothing());
-  // Stops checking for compromised passwords.
+  // Stops checking for insecure passwords.
   void StopPasswordCheck();
 
   // Returns the current status of the password check.
   api::passwords_private::PasswordCheckStatus GetPasswordCheckStatus() const;
+
+  // Returns a pointer to the current instance of InsecureCredentialsManager.
+  // Needed to get notified when compromised credentials are written out to
+  // disk, since BulkLeakCheckService does not know about that step.
+  password_manager::InsecureCredentialsManager* GetInsecureCredentialsManager();
 
  private:
   // password_manager::SavedPasswordsPresenter::Observer:
@@ -94,12 +95,17 @@ class PasswordCheckDelegate
       password_manager::SavedPasswordsPresenter::SavedPasswordsView passwords)
       override;
 
-  // password_manager::CompromisedCredentialsProvider::Observer:
+  // password_manager::InsecureCredentialsManager::Observer:
   // Invokes PasswordsPrivateEventRouter::OnCompromisedCredentialsChanged if
   // a valid pointer can be obtained.
   void OnCompromisedCredentialsChanged(
-      password_manager::CompromisedCredentialsProvider::CredentialsView
-          credentials) override;
+      password_manager::InsecureCredentialsManager::CredentialsView credentials)
+      override;
+
+  // password_manager::InsecureCredentialsManager::Observer:
+  // Invokes PasswordsPrivateEventRouter::OnWeakCredentialsChanged if a valid
+  // pointer can be obtained.
+  void OnWeakCredentialsChanged() override;
 
   // password_manager::BulkLeakCheckService::Observer:
   void OnStateChanged(
@@ -108,34 +114,42 @@ class PasswordCheckDelegate
                         password_manager::IsLeaked is_leaked) override;
 
   // Tries to find the matching CredentialWithPassword for |credential|. It
-  // performs a look-up in |compromised_credential_id_generator_| using
+  // performs a look-up in |insecure_credential_id_generator_| using
   // |credential.id|. If a matching value exists it also verifies that signon
   // realm, username and when possible password match.
   // Returns a pointer to the matching CredentialWithPassword on success or
   // nullptr otherwise.
   const password_manager::CredentialWithPassword*
-  FindMatchingCompromisedCredential(
-      const api::passwords_private::CompromisedCredential& credential) const;
+  FindMatchingInsecureCredential(
+      const api::passwords_private::InsecureCredential& credential) const;
+
+  // Invoked when a compromised password check completes. Records the current
+  // timestamp in `kLastTimePasswordCheckCompleted` pref.
+  void RecordAndNotifyAboutCompletedCompromisedPasswordCheck();
+
+  // Invoked when a weak password check completes. Records the current timestamp
+  // in `last_completed_weak_check_`.
+  void RecordAndNotifyAboutCompletedWeakPasswordCheck();
 
   // Tries to notify the PasswordsPrivateEventRouter that the password check
   // status has changed. Invoked after OnSavedPasswordsChanged and
   // OnStateChanged.
   void NotifyPasswordCheckStatusChanged();
 
+  // Constructs |InsecureCredential| from |CredentialWithPassword|.
+  api::passwords_private::InsecureCredential ConstructInsecureCredential(
+      const password_manager::CredentialWithPassword& credential);
+
   // Raw pointer to the underlying profile. Needs to outlive this instance.
   Profile* profile_ = nullptr;
 
-  // Handle to the password store, powering both |saved_passwords_presenter_|
-  // and |compromised_credentials_provider_|.
-  scoped_refptr<password_manager::PasswordStore> password_store_;
-
-  // Used by |compromised_credentials_provider_| to obtain the list of saved
+  // Used by |insecure_credentials_manager_| to obtain the list of saved
   // passwords.
-  password_manager::SavedPasswordsPresenter saved_passwords_presenter_;
+  password_manager::SavedPasswordsPresenter* saved_passwords_presenter_ =
+      nullptr;
 
-  // Used to obtain the list of compromised credentials.
-  password_manager::CompromisedCredentialsProvider
-      compromised_credentials_provider_;
+  // Used to obtain the list of insecure credentials.
+  password_manager::InsecureCredentialsManager insecure_credentials_manager_;
 
   // Adapter used to start, monitor and stop a bulk leak check.
   password_manager::BulkLeakCheckServiceAdapter
@@ -157,34 +171,31 @@ class PasswordCheckDelegate
   // Remembers whether a password check is running right now.
   bool is_check_running_ = false;
 
+  // Store when the last weak check was completed.
+  base::Time last_completed_weak_check_;
+
   // A scoped observer for |saved_passwords_presenter_|.
   ScopedObserver<password_manager::SavedPasswordsPresenter,
                  password_manager::SavedPasswordsPresenter::Observer>
       observed_saved_passwords_presenter_{this};
 
-  // A scoped observer for |compromised_credentials_provider_|.
-  ScopedObserver<password_manager::CompromisedCredentialsProvider,
-                 password_manager::CompromisedCredentialsProvider::Observer>
-      observed_compromised_credentials_provider_{this};
+  // A scoped observer for |insecure_credentials_manager_|.
+  ScopedObserver<password_manager::InsecureCredentialsManager,
+                 password_manager::InsecureCredentialsManager::Observer>
+      observed_insecure_credentials_manager_{this};
 
   // A scoped observer for the BulkLeakCheckService.
-  ScopedObserver<password_manager::BulkLeakCheckService,
-                 password_manager::BulkLeakCheckService::Observer>
+  ScopedObserver<password_manager::BulkLeakCheckServiceInterface,
+                 password_manager::BulkLeakCheckServiceInterface::Observer>
       observed_bulk_leak_check_service_{this};
 
-  // A map that matches CredentialWithPasswords to corresponding PasswordForms.
-  // This is required to inject affiliation information into Android
-  // credentials, as well as being able to reflect edits and removals of
-  // compromised credentials in the underlying password store.
-  CredentialPasswordsMap credentials_to_forms_;
-
-  // An id generator for compromised credentials. Required to match
-  // api::passwords_private::CompromisedCredential instances passed to the UI
+  // An id generator for insecure credentials. Required to match
+  // api::passwords_private::InsecureCredential instances passed to the UI
   // with the underlying CredentialWithPassword they are based on.
   IdGenerator<password_manager::CredentialWithPassword,
               int,
               password_manager::PasswordCredentialLess>
-      compromised_credential_id_generator_;
+      insecure_credential_id_generator_;
 
   base::WeakPtrFactory<PasswordCheckDelegate> weak_ptr_factory_{this};
 };

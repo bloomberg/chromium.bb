@@ -17,7 +17,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -47,7 +46,7 @@
 #include "media/gpu/v4l2/v4l2_vda_helpers.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator_legacy.h"
-#include "media/gpu/v4l2/v4l2_vp9_accelerator.h"
+#include "media/gpu/v4l2/v4l2_vp9_accelerator_legacy.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -85,6 +84,9 @@ namespace media {
 const uint32_t V4L2SliceVideoDecodeAccelerator::supported_input_fourccs_[] = {
     V4L2_PIX_FMT_H264_SLICE, V4L2_PIX_FMT_VP8_FRAME, V4L2_PIX_FMT_VP9_FRAME,
 };
+
+// static
+base::AtomicRefCount V4L2SliceVideoDecodeAccelerator::num_instances_(0);
 
 V4L2SliceVideoDecodeAccelerator::OutputRecord::OutputRecord()
     : picture_id(-1),
@@ -146,7 +148,8 @@ V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
     EGLDisplay egl_display,
     const BindGLImageCallback& bind_image_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb)
-    : output_planes_count_(0),
+    : can_use_decoder_(num_instances_.Increment() < kMaxNumOfInstances),
+      output_planes_count_(0),
       child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       device_(std::move(device)),
       decoder_thread_("V4L2SliceVideoDecodeAcceleratorThread"),
@@ -174,6 +177,8 @@ V4L2SliceVideoDecodeAccelerator::~V4L2SliceVideoDecodeAccelerator() {
 
   DCHECK(requests_.empty());
   DCHECK(output_buffer_map_.empty());
+
+  num_instances_.Decrement();
 }
 
 void V4L2SliceVideoDecodeAccelerator::NotifyError(Error error) {
@@ -197,6 +202,11 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
   VLOGF(2) << "profile: " << config.profile;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kUninitialized);
+
+  if (!can_use_decoder_) {
+    VLOGF(1) << "Reached the maximum number of decoder instances";
+    return false;
+  }
 
   if (config.is_encrypted()) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
@@ -284,28 +294,28 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
 
   if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
     if (supports_requests_) {
-      decoder_.reset(new H264Decoder(
+      decoder_ = std::make_unique<H264Decoder>(
           std::make_unique<V4L2H264Accelerator>(this, device_.get()),
-          video_profile_));
+          video_profile_);
     } else {
-      decoder_.reset(new H264Decoder(
+      decoder_ = std::make_unique<H264Decoder>(
           std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get()),
-          video_profile_));
+          video_profile_);
     }
   } else if (video_profile_ >= VP8PROFILE_MIN &&
              video_profile_ <= VP8PROFILE_MAX) {
     if (supports_requests_) {
-      decoder_.reset(new VP8Decoder(
-          std::make_unique<V4L2VP8Accelerator>(this, device_.get())));
+      decoder_ = std::make_unique<VP8Decoder>(
+          std::make_unique<V4L2VP8Accelerator>(this, device_.get()));
     } else {
-      decoder_.reset(new VP8Decoder(
-          std::make_unique<V4L2LegacyVP8Accelerator>(this, device_.get())));
+      decoder_ = std::make_unique<VP8Decoder>(
+          std::make_unique<V4L2LegacyVP8Accelerator>(this, device_.get()));
     }
   } else if (video_profile_ >= VP9PROFILE_MIN &&
              video_profile_ <= VP9PROFILE_MAX) {
-    decoder_.reset(new VP9Decoder(
-        std::make_unique<V4L2VP9Accelerator>(this, device_.get()),
-        video_profile_));
+    decoder_ = std::make_unique<VP9Decoder>(
+        std::make_unique<V4L2LegacyVP9Accelerator>(this, device_.get()),
+        video_profile_);
   } else {
     NOTREACHED() << "Unsupported profile " << GetProfileName(video_profile_);
     return false;
@@ -592,8 +602,8 @@ bool V4L2SliceVideoDecodeAccelerator::CreateImageProcessor() {
   image_processor_ = v4l2_vda_helpers::CreateImageProcessor(
       *output_format_fourcc_, *gl_image_format_fourcc_, coded_size_,
       gl_image_size_, GetRectSizeFromOrigin(decoder_->GetVisibleRect()),
-      output_buffer_map_.size(), image_processor_device_,
-      image_processor_output_mode,
+      VideoFrame::StorageType::STORAGE_DMABUFS, output_buffer_map_.size(),
+      image_processor_device_, image_processor_output_mode,
       // Unretained(this) is safe for ErrorCB because |decoder_thread_| is owned
       // by this V4L2VideoDecodeAccelerator and |this| must be valid when
       // ErrorCB is executed.
@@ -1289,7 +1299,8 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
              pic_size_expected_from_client != pic_size_received_from_client) {
     // If a client allocates a different frame size, S_FMT should be called with
     // the size.
-    v4l2_format format = {};
+    v4l2_format format;
+    memset(&format, 0, sizeof(format));
     format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     format.fmt.pix_mp.width = pic_size_received_from_client.width();
     format.fmt.pix_mp.height = pic_size_received_from_client.height();
@@ -2332,8 +2343,10 @@ bool V4L2SliceVideoDecodeAccelerator::OnMemoryDump(
     // Call QUERY_BUF here because the length of buffers on VIDIOC_CATURE queue
     // are not recorded nowhere in V4L2VideoDecodeAccelerator.
     for (uint32_t index = 0; index < output_buffer_map_.size(); ++index) {
-      struct v4l2_buffer v4l2_buffer = {};
+      struct v4l2_buffer v4l2_buffer;
+      memset(&v4l2_buffer, 0, sizeof(v4l2_buffer));
       struct v4l2_plane v4l2_planes[VIDEO_MAX_PLANES];
+      memset(v4l2_planes, 0, sizeof(v4l2_planes));
       DCHECK_LT(output_planes_count_, base::size(v4l2_planes));
       v4l2_buffer.m.planes = v4l2_planes;
       v4l2_buffer.length =

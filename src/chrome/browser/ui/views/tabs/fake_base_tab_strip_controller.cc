@@ -21,6 +21,8 @@ FakeBaseTabStripController::~FakeBaseTabStripController() {
 
 void FakeBaseTabStripController::AddTab(int index, bool is_active) {
   num_tabs_++;
+  tab_groups_.insert(tab_groups_.begin() + index, base::nullopt);
+
   tab_strip_->AddTabAt(index, TabRendererData(), is_active);
   if (is_active) {
     SelectTab(index,
@@ -30,30 +32,38 @@ void FakeBaseTabStripController::AddTab(int index, bool is_active) {
 }
 
 void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
+  num_tabs_++;
+  tab_groups_.insert(tab_groups_.begin() + index, base::nullopt);
+
   TabRendererData data;
   data.pinned = true;
-  num_tabs_++;
   tab_strip_->AddTabAt(index, std::move(data), is_active);
   if (is_active)
     active_index_ = index;
 }
 
 void FakeBaseTabStripController::MoveTab(int from_index, int to_index) {
-  base::Optional<tab_groups::TabGroupId> prev_group;
-  if (from_index < int{tab_groups_.size()}) {
-    prev_group = tab_groups_[from_index];
-    tab_groups_.erase(tab_groups_.begin() + from_index);
-  }
-  if (to_index >= int{tab_groups_.size()})
-    tab_groups_.resize(to_index + 1);
+  base::Optional<tab_groups::TabGroupId> prev_group = tab_groups_[from_index];
+  tab_groups_.erase(tab_groups_.begin() + from_index);
   tab_groups_.insert(tab_groups_.begin() + to_index, prev_group);
   tab_strip_->MoveTab(from_index, to_index, TabRendererData());
 }
 void FakeBaseTabStripController::MoveGroup(const tab_groups::TabGroupId& group,
                                            int to_index) {}
 
+bool FakeBaseTabStripController::ToggleTabGroupCollapsedState(
+    const tab_groups::TabGroupId group,
+    ToggleTabGroupCollapsedStateOrigin origin) {
+  fake_group_data_ = tab_groups::TabGroupVisualData(
+      fake_group_data_.title(), fake_group_data_.color(),
+      !fake_group_data_.is_collapsed());
+  return true;
+}
+
 void FakeBaseTabStripController::RemoveTab(int index) {
   num_tabs_--;
+  tab_groups_.erase(tab_groups_.begin() + index);
+
   // RemoveTabAt() expects the controller state to have been updated already.
   const bool was_active = index == active_index_;
   if (was_active) {
@@ -82,6 +92,11 @@ tab_groups::TabGroupColorId FakeBaseTabStripController::GetGroupColorId(
   return fake_group_data_.color();
 }
 
+bool FakeBaseTabStripController::IsGroupCollapsed(
+    const tab_groups::TabGroupId& group) const {
+  return fake_group_data_.is_collapsed();
+}
+
 void FakeBaseTabStripController::SetVisualDataForGroup(
     const tab_groups::TabGroupId& group,
     const tab_groups::TabGroupVisualData& visual_data) {
@@ -102,11 +117,7 @@ void FakeBaseTabStripController::MoveTabIntoGroup(
     int index,
     base::Optional<tab_groups::TabGroupId> new_group) {
   bool group_exists = base::Contains(tab_groups_, new_group);
-  base::Optional<tab_groups::TabGroupId> old_group;
-  if (index >= int{tab_groups_.size()})
-    tab_groups_.resize(index + 1);
-  else
-    old_group = tab_groups_[index];
+  base::Optional<tab_groups::TabGroupId> old_group = tab_groups_[index];
 
   tab_groups_[index] = new_group;
 

@@ -44,6 +44,7 @@ TEST_CONFIGS = [
   'recipes_py',
   'recipes_py_bare',
   'slave_deps',
+  'tint',
   'wasm_llvm',
   'webports',
   'with_branch_heads',
@@ -55,7 +56,7 @@ def RunSteps(api):
   for config_name in TEST_CONFIGS:
     api.gclient.make_config(config_name)
 
-  src_cfg = api.gclient.make_config(CACHE_DIR='[ROOT]/git_cache')
+  src_cfg = api.gclient.make_config(CACHE_DIR=api.path['cache'].join('git'))
   soln = src_cfg.solutions.add()
   soln.name = 'src'
   soln.url = 'https://chromium.googlesource.com/chromium/src.git'
@@ -88,8 +89,6 @@ def RunSteps(api):
 
 def GenTests(api):
   yield api.test('basic')
-
-  yield api.test('buildbot') + api.properties(path_config='buildbot')
 
   yield api.test('revision') + api.buildbucket.ci_build(revision='abc')
 

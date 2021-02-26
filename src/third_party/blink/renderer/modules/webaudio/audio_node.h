@@ -328,13 +328,12 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
 class MODULES_EXPORT AudioNode : public EventTargetWithInlineData,
                                  public InspectorHelperMixin {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(AudioNode);
   USING_PRE_FINALIZER(AudioNode, Dispose);
 
  public:
   ~AudioNode() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   AudioHandler& Handler() const;
 
   void HandleChannelOptions(const AudioNodeOptions*, ExceptionState&);

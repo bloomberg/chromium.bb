@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/controls/button/button.h"
 
 namespace views {
 class Button;
@@ -35,7 +34,10 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
  public:
   ExtensionsMenuView(views::View* anchor_view,
                      Browser* browser,
-                     ExtensionsContainer* extensions_container);
+                     ExtensionsContainer* extensions_container,
+                     bool allow_pinning);
+  ExtensionsMenuView(const ExtensionsMenuView&) = delete;
+  ExtensionsMenuView& operator=(const ExtensionsMenuView&) = delete;
   ~ExtensionsMenuView() override;
 
   // Displays the ExtensionsMenu under |anchor_view|, attached to |browser|, and
@@ -43,7 +45,8 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   // Only one menu is allowed to be shown at a time (outside of tests).
   static views::Widget* ShowBubble(views::View* anchor_view,
                                    Browser* browser,
-                                   ExtensionsContainer* extensions_container);
+                                   ExtensionsContainer* extensions_container,
+                                   bool allow_pinning);
 
   // Returns true if there is currently an ExtensionsMenuView showing (across
   // all browsers and profiles).
@@ -54,14 +57,6 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
 
   // Returns the currently-showing ExtensionsMenuView, if any exists.
   static ExtensionsMenuView* GetExtensionsMenuViewForTesting();
-
-  // views::BubbleDialogDelegateView:
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
-  // TODO(crbug.com/1003072): This override is copied from PasswordItemsView to
-  // contrain the width. It would be nice to have a unified way of getting the
-  // preferred size to not duplicate the code.
-  gfx::Size CalculatePreferredSize() const override;
 
   // TabStripModelObserver:
   void TabChangedAt(content::WebContents* contents,
@@ -103,17 +98,6 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   static base::AutoReset<bool> AllowInstancesForTesting();
 
  private:
-  class ButtonListener : public views::ButtonListener {
-   public:
-    explicit ButtonListener(Browser* browser);
-
-    // views::ButtonListener:
-    void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-   private:
-    Browser* const browser_;
-  };
-
   // A "section" within the menu, based on the extension's current access to
   // the page.
   struct Section {
@@ -172,10 +156,10 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
 
   Browser* const browser_;
   ExtensionsContainer* const extensions_container_;
+  bool allow_pinning_;
   ToolbarActionsModel* const toolbar_model_;
   ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
       toolbar_model_observer_;
-  ButtonListener button_listener_;
   std::vector<ExtensionsMenuItemView*> extensions_menu_items_;
 
   views::Button* manage_extensions_button_for_testing_ = nullptr;
@@ -184,8 +168,6 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   Section cant_access_;
   Section wants_access_;
   Section has_access_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_VIEW_H_

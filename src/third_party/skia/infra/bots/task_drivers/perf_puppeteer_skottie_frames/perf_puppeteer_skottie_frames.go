@@ -26,6 +26,8 @@ import (
 	"go.skia.org/infra/task_driver/go/td"
 )
 
+const perfKeyWebGLVersion = "webgl_version"
+
 func main() {
 	var (
 		// Required properties for this task.
@@ -42,6 +44,7 @@ func main() {
 		modelTrace         = flag.String("model_trace", "", "Description of host machine.")
 		cpuOrGPUTrace      = flag.String("cpu_or_gpu_trace", "", "If this is a CPU or GPU configuration.")
 		cpuOrGPUValueTrace = flag.String("cpu_or_gpu_value_trace", "", "The hardware of this CPU/GPU")
+		webGLVersion       = flag.String("webgl_version", "", "Major WebGl version to use when creating gl drawing context. 1 or 2")
 
 		// Flags that may be required for certain configs
 		canvaskitBinPath = flag.String("canvaskit_bin_path", "", "The location of a canvaskit.js and canvaskit.wasm")
@@ -57,10 +60,11 @@ func main() {
 	defer td.EndRun(ctx)
 
 	keys := map[string]string{
-		"os":               *osTrace,
-		"model":            *modelTrace,
-		perfKeyCpuOrGPU:    *cpuOrGPUTrace,
-		"cpu_or_gpu_value": *cpuOrGPUValueTrace,
+		"os":                *osTrace,
+		"model":             *modelTrace,
+		perfKeyCpuOrGPU:     *cpuOrGPUTrace,
+		"cpu_or_gpu_value":  *cpuOrGPUValueTrace,
+		perfKeyWebGLVersion: *webGLVersion,
 	}
 
 	outputWithoutResults, err := makePerfObj(*gitHash, *taskID, os.Getenv("SWARMING_BOT_ID"), keys)
@@ -68,13 +72,12 @@ func main() {
 		td.Fatal(ctx, skerr.Wrap(err))
 	}
 	// Absolute paths work more consistently than relative paths.
-	nodeBinAbsPath := getAbsoluteOfRequiredFlag(ctx, *nodeBinPath, "node_bin_path")
-	benchmarkAbsPath := getAbsoluteOfRequiredFlag(ctx, *benchmarkPath, "benchmark_path")
-	canvaskitBinAbsPath := getAbsoluteOfRequiredFlag(ctx, *canvaskitBinPath, "canvaskit_bin_path")
-	lottiesAbsPath := getAbsoluteOfRequiredFlag(ctx, *lottiesPath, "lotties_path")
-	outputAbsPath := getAbsoluteOfRequiredFlag(ctx, *outputPath, "output_path")
+	nodeBinAbsPath := td.MustGetAbsolutePathOfFlag(ctx, *nodeBinPath, "node_bin_path")
+	benchmarkAbsPath := td.MustGetAbsolutePathOfFlag(ctx, *benchmarkPath, "benchmark_path")
+	canvaskitBinAbsPath := td.MustGetAbsolutePathOfFlag(ctx, *canvaskitBinPath, "canvaskit_bin_path")
+	lottiesAbsPath := td.MustGetAbsolutePathOfFlag(ctx, *lottiesPath, "lotties_path")
+	outputAbsPath := td.MustGetAbsolutePathOfFlag(ctx, *outputPath, "output_path")
 
-	// Run the infra tests.
 	if err := setup(ctx, benchmarkAbsPath, nodeBinAbsPath); err != nil {
 		td.Fatal(ctx, skerr.Wrap(err))
 	}
@@ -89,17 +92,6 @@ func main() {
 	if err := processSkottieFramesData(ctx, outputWithoutResults, benchmarkAbsPath, outputFile); err != nil {
 		td.Fatal(ctx, skerr.Wrap(err))
 	}
-}
-
-func getAbsoluteOfRequiredFlag(ctx context.Context, nonEmptyPath, flag string) string {
-	if nonEmptyPath == "" {
-		td.Fatalf(ctx, "--%s must be specified", flag)
-	}
-	absPath, err := filepath.Abs(nonEmptyPath)
-	if err != nil {
-		td.Fatal(ctx, skerr.Wrap(err))
-	}
-	return absPath
 }
 
 const perfKeyCpuOrGPU = "cpu_or_gpu"
@@ -189,7 +181,11 @@ func benchSkottieFrames(ctx context.Context, perf perfJSONFormat, benchmarkPath,
 			}
 			if perf.Key[perfKeyCpuOrGPU] != "CPU" {
 				args = append(args, "--use_gpu")
+				if perf.Key[perfKeyWebGLVersion] == "1" {
+					args = append(args, "--query_params webgl1")
+				}
 			}
+
 			_, err := exec.RunCwd(ctx, benchmarkPath, args...)
 			if err != nil {
 				return skerr.Wrap(err)
@@ -244,6 +240,9 @@ func processSkottieFramesData(ctx context.Context, perf perfJSONFormat, benchmar
 			config := "software"
 			if perf.Key[perfKeyCpuOrGPU] != "CPU" {
 				config = "webgl2"
+				if perf.Key[perfKeyWebGLVersion] == "1" {
+					config = "webgl1"
+				}
 			}
 			b, err := os_steps.ReadFile(ctx, lottie)
 			if err != nil {
@@ -284,9 +283,10 @@ func processSkottieFramesData(ctx context.Context, perf perfJSONFormat, benchmar
 }
 
 type skottieFramesJSONFormat struct {
-	FramesMS   []float32 `json:"frames_ms"`
-	SeeksMS    []float32 `json:"seeks_ms"`
-	JSONLoadMS float32   `json:"json_load_ms"`
+	WithoutFlushMS []float32 `json:"without_flush_ms"`
+	WithFlushMS    []float32 `json:"with_flush_ms"`
+	TotalFrameMS   []float32 `json:"total_frame_ms"`
+	JSONLoadMS     float32   `json:"json_load_ms"`
 }
 
 func parseSkottieFramesMetrics(b []byte) (map[string]float32, error) {
@@ -296,39 +296,46 @@ func parseSkottieFramesMetrics(b []byte) (map[string]float32, error) {
 	}
 
 	getNthFrame := func(n int) float32 {
-		if n >= len(metrics.FramesMS) {
+		if n >= len(metrics.TotalFrameMS) {
 			return 0
 		}
-		return metrics.FramesMS[n]
+		return metrics.TotalFrameMS[n]
 	}
 
 	avgFirstFive := float32(0)
-	if len(metrics.FramesMS) >= 5 {
-		avgFirstFive = computeAverage(metrics.FramesMS[:5])
+	if len(metrics.TotalFrameMS) >= 5 {
+		avgFirstFive = computeAverage(metrics.TotalFrameMS[:5])
 	}
 
-	avgFrame, medFrame, stdFrame, p90Frame, p95Frame, p99Frame := summarize(metrics.FramesMS)
-	avgSeek, medSeek, stdSeek, _, _, _ := summarize(metrics.SeeksMS)
+	avgWithoutFlushMS, medianWithoutFlushMS, stddevWithoutFlushMS, _, _, _ := summarize(metrics.WithoutFlushMS)
+	avgWithFlushMS, medianWithFlushMS, stddevWithFlushMS, _, _, _ := summarize(metrics.WithFlushMS)
+	avgFrame, medFrame, stdFrame, p90Frame, p95Frame, p99Frame := summarize(metrics.TotalFrameMS)
 
 	rv := map[string]float32{
-		"json_load_ms":             metrics.JSONLoadMS,
-		"1st_frame_to_flush_ms":    getNthFrame(0),
-		"2nd_frame_to_flush_ms":    getNthFrame(1),
-		"3rd_frame_to_flush_ms":    getNthFrame(2),
-		"4th_frame_to_flush_ms":    getNthFrame(3),
-		"5th_frame_to_flush_ms":    getNthFrame(4),
+		"json_load_ms": metrics.JSONLoadMS,
+
+		"avg_render_without_flush_ms":    avgWithoutFlushMS,
+		"median_render_without_flush_ms": medianWithoutFlushMS,
+		"stddev_render_without_flush_ms": stddevWithoutFlushMS,
+
+		"avg_render_with_flush_ms":    avgWithFlushMS,
+		"median_render_with_flush_ms": medianWithFlushMS,
+		"stddev_render_with_flush_ms": stddevWithFlushMS,
+
+		"avg_render_frame_ms":    avgFrame,
+		"median_render_frame_ms": medFrame,
+		"stddev_render_frame_ms": stdFrame,
+
+		// more detailed statistics on total frame times
+		"1st_frame_ms":             getNthFrame(0),
+		"2nd_frame_ms":             getNthFrame(1),
+		"3rd_frame_ms":             getNthFrame(2),
+		"4th_frame_ms":             getNthFrame(3),
+		"5th_frame_ms":             getNthFrame(4),
 		"avg_first_five_frames_ms": avgFirstFive,
-
-		"avg_frame_to_flush_ms":             avgFrame,
-		"median_frame_to_flush_ms":          medFrame,
-		"stddev_frame_to_flush_ms":          stdFrame,
-		"90th_percentile_frame_to_flush_ms": p90Frame,
-		"95th_percentile_frame_to_flush_ms": p95Frame,
-		"99th_percentile_frame_to_flush_ms": p99Frame,
-
-		"avg_seek_ms":    avgSeek,
-		"median_seek_ms": medSeek,
-		"stddev_seek_ms": stdSeek,
+		"90th_percentile_frame_ms": p90Frame,
+		"95th_percentile_frame_ms": p95Frame,
+		"99th_percentile_frame_ms": p99Frame,
 	}
 	return rv, nil
 }

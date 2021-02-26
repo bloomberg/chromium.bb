@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <signal.h>
+#include <string.h>
 #include <sys/time.h>
 
 #include "wayland-private.h"
@@ -229,18 +230,33 @@ timer_callback(void *data)
 TEST(event_loop_timer)
 {
 	struct wl_event_loop *loop = wl_event_loop_create();
-	struct wl_event_source *source;
+	struct wl_event_source *source1, *source2;
 	int got_it = 0;
 
-	source = wl_event_loop_add_timer(loop, timer_callback, &got_it);
-	assert(source);
-	wl_event_source_timer_update(source, 10);
-	wl_event_loop_dispatch(loop, 0);
-	assert(!got_it);
-	wl_event_loop_dispatch(loop, 20);
-	assert(got_it == 1);
+	source1 = wl_event_loop_add_timer(loop, timer_callback, &got_it);
+	assert(source1);
+	wl_event_source_timer_update(source1, 20);
 
-	wl_event_source_remove(source);
+	source2 = wl_event_loop_add_timer(loop, timer_callback, &got_it);
+	assert(source2);
+	wl_event_source_timer_update(source2, 100);
+
+	/* Check that the timer marked for 20 msec from now fires within 30
+	 * msec, and that the timer marked for 100 msec is expected to fire
+	 * within an additional 90 msec. (Some extra wait time is provided to
+	 * account for reasonable code execution / thread preemption delays.) */
+
+	wl_event_loop_dispatch(loop, 0);
+	assert(got_it == 0);
+	wl_event_loop_dispatch(loop, 30);
+	assert(got_it == 1);
+	wl_event_loop_dispatch(loop, 0);
+	assert(got_it == 1);
+	wl_event_loop_dispatch(loop, 90);
+	assert(got_it == 2);
+
+	wl_event_source_remove(source1);
+	wl_event_source_remove(source2);
 	wl_event_loop_destroy(loop);
 }
 
@@ -330,6 +346,138 @@ TEST(event_loop_timer_updates)
 	wl_event_loop_destroy(loop);
 }
 
+struct timer_order_data {
+	struct wl_event_source *source;
+	int *last_number;
+	int number;
+};
+
+static int
+timer_order_callback(void *data)
+{
+	struct timer_order_data *tod = data;
+
+	/* Check that the timers have the correct sequence */
+	assert(tod->number == *tod->last_number + 2);
+	*tod->last_number = tod->number;
+	return 0;
+}
+
+TEST(event_loop_timer_order)
+{
+	struct wl_event_loop *loop = wl_event_loop_create();
+	struct timer_order_data order[20];
+	int i, j;
+	int last = -1;
+
+	/* Configure a set of timers so that only timers 1, 3, 5, ..., 19
+	 * (in that order) will be dispatched when the event loop is run */
+
+	for (i = 0; i < 20; i++) {
+		order[i].number = i;
+		order[i].last_number = &last;
+		order[i].source =
+			wl_event_loop_add_timer(loop, timer_order_callback,
+						&order[i]);
+		assert(order[i].source);
+		assert(wl_event_source_timer_update(order[i].source, 10) == 0);
+	}
+
+	for (i = 0; i < 20; i++) {
+		/* Permute the order in which timers are updated, so as to
+		 * more exhaustively test the underlying priority queue code */
+		j = ((i + 3) * 17) % 20;
+		assert(wl_event_source_timer_update(order[j].source, j) == 0);
+	}
+	for (i = 0; i < 20; i += 2) {
+		assert(wl_event_source_timer_update(order[i].source, 0) == 0);
+	}
+
+	/* Wait until all timers are due */
+	usleep(MSEC_TO_USEC(21));
+	wl_event_loop_dispatch(loop, 0);
+	assert(last == 19);
+
+	for (i = 0; i < 20; i++) {
+		wl_event_source_remove(order[i].source);
+	}
+	wl_event_loop_destroy(loop);
+}
+
+struct timer_cancel_context {
+	struct wl_event_source *timers[4];
+	struct timer_cancel_context *back_refs[4];
+	int order[4];
+	int called, first;
+};
+
+static int
+timer_cancel_callback(void *data) {
+	struct timer_cancel_context **context_ref = data;
+	struct timer_cancel_context *context = *context_ref;
+	int i = (int)(context_ref - context->back_refs);
+
+	context->called++;
+	context->order[i] = context->called;
+
+	if (context->called == 1) {
+		context->first = i;
+		/* Removing a timer always prevents its callback from
+		 * being called ... */
+		wl_event_source_remove(context->timers[(i + 1) % 4]);
+		/* ... but disarming or rescheduling a timer does not,
+		 * (in the case where the modified timers had already expired
+		 * as of when `wl_event_loop_dispatch` was called.) */
+		assert(wl_event_source_timer_update(context->timers[(i + 2) % 4],
+						    0) == 0);
+		assert(wl_event_source_timer_update(context->timers[(i + 3) % 4],
+						    2000000000) == 0);
+	}
+
+	return 0;
+}
+
+TEST(event_loop_timer_cancellation)
+{
+	struct wl_event_loop *loop = wl_event_loop_create();
+	struct timer_cancel_context context;
+	int i;
+
+	memset(&context, 0, sizeof(context));
+
+	/* Test that when multiple timers are dispatched in a single call
+	 * of `wl_event_loop_dispatch`, that having some timers run code
+	 * to modify the other timers only actually prevents the other timers
+	 * from running their callbacks when the those timers are removed, not
+	 * when they are disarmed or rescheduled. */
+
+	for (i = 0; i < 4; i++) {
+		context.back_refs[i] = &context;
+		context.timers[i] =
+			wl_event_loop_add_timer(loop, timer_cancel_callback,
+						&context.back_refs[i]);
+		assert(context.timers[i]);
+
+		assert(wl_event_source_timer_update(context.timers[i], 1) == 0);
+	}
+
+	usleep(MSEC_TO_USEC(2));
+	assert(wl_event_loop_dispatch(loop, 0) == 0);
+
+	/* Tracking which timer was first makes this test independent of the
+	 * actual timer dispatch order, which is not guaranteed by the docs */
+	assert(context.order[context.first] == 1);
+	assert(context.order[(context.first + 1) % 4] == 0);
+	assert(context.order[(context.first + 2) % 4] > 1);
+	assert(context.order[(context.first + 3) % 4] > 1);
+
+	wl_event_source_remove(context.timers[context.first]);
+	wl_event_source_remove(context.timers[(context.first + 2) % 4]);
+	wl_event_source_remove(context.timers[(context.first + 3) % 4]);
+
+	wl_event_loop_destroy(loop);
+}
+
 struct event_loop_destroy_listener {
 	struct wl_listener listener;
 	int done;
@@ -339,7 +487,7 @@ static void
 event_loop_destroy_notify(struct wl_listener *l, void *data)
 {
 	struct event_loop_destroy_listener *listener =
-		container_of(l, struct event_loop_destroy_listener, listener);
+		wl_container_of(l, listener, listener);
 
 	listener->done = 1;
 }

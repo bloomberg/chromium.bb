@@ -69,6 +69,7 @@ class Globals {
         // asynchronously, so this instance will be fully constructed by the
         // time it is called.
         memory_pressure_listener_(
+            FROM_HERE,
             base::BindRepeating(&Globals::OnMemoryPressure,
                                 base::Unretained(this))) {}
 
@@ -352,7 +353,7 @@ leveldb::Status DeleteDB(const base::FilePath& db_path,
 
   // TODO(cmumford): To be fully safe this implementation should acquire a lock
   // as there is some daylight in between DestroyDB and DeleteFile.
-  if (!base::DeleteFile(db_path, true)) {
+  if (!base::DeletePathRecursively(db_path)) {
     // Only delete the directory when when DestroyDB is successful. This is
     // because DestroyDB checks for database locks, and will fail if in use.
     return leveldb::Status::IOError(db_path.AsUTF8Unsafe(), "Error deleting");

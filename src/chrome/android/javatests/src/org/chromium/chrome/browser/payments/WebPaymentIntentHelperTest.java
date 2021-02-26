@@ -10,7 +10,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -110,8 +111,8 @@ public class WebPaymentIntentHelperTest {
                 /*requestPayerPhone=*/true, /*requestShipping=*/true, /*shippingType=*/"delivery");
 
         List<PaymentShippingOption> shippingOptions = new ArrayList<PaymentShippingOption>();
-        shippingOptions.add(new PaymentShippingOption(
-                "shippingId", "Free shipping", "USD", "0", /*selected=*/true));
+        shippingOptions.add(new PaymentShippingOption("shippingId", "Free shipping",
+                new PaymentCurrencyAmount("USD", "0"), /*selected=*/true));
 
         Intent intent = WebPaymentIntentHelper.createPayIntent("package.name", "activity.name",
                 "payment.request.id", "merchant.name", "schemeless.origin",
@@ -158,25 +159,34 @@ public class WebPaymentIntentHelperTest {
         Assert.assertEquals("{\"currency\":\"CAD\",\"value\":\"200\"}",
                 bundle.get(WebPaymentIntentHelper.EXTRA_TOTAL));
 
-        Assert.assertEquals(bundle.getStringArrayList(WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS),
-                paymentOptions.asStringArrayList());
+        Bundle expectedPaymentOptions =
+                bundle.getBundle(WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS);
+        Assert.assertTrue(expectedPaymentOptions.getBoolean(
+                WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS_REQUEST_PAYER_NAME));
+        Assert.assertTrue(expectedPaymentOptions.getBoolean(
+                WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS_REQUEST_PAYER_EMAIL));
+        Assert.assertTrue(expectedPaymentOptions.getBoolean(
+                WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS_REQUEST_PAYER_PHONE));
+        Assert.assertTrue(expectedPaymentOptions.getBoolean(
+                WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS_REQUEST_SHIPPING));
+        Assert.assertEquals("delivery",
+                expectedPaymentOptions.getString(
+                        WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS_SHIPPING_TYPE));
 
         Parcelable[] expectedShippingOptions =
                 bundle.getParcelableArray(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTIONS);
         Assert.assertEquals(1, expectedShippingOptions.length);
         Bundle shippingOption = (Bundle) expectedShippingOptions[0];
         Assert.assertEquals("shippingId",
-                shippingOption.getString(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_ID));
+                shippingOption.getString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_ID));
         Assert.assertEquals("Free shipping",
-                shippingOption.getString(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_LABEL));
-        Assert.assertEquals("USD",
-                shippingOption.getString(
-                        WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY));
-        Assert.assertEquals("0",
-                shippingOption.getString(
-                        WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_AMOUNT_VALUE));
+                shippingOption.getString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_LABEL));
+        Bundle amount =
+                shippingOption.getBundle(PaymentShippingOption.EXTRA_SHIPPING_OPTION_AMOUNT);
+        Assert.assertEquals("USD", amount.getString(PaymentCurrencyAmount.EXTRA_CURRENCY));
+        Assert.assertEquals("0", amount.getString(PaymentCurrencyAmount.EXTRA_VALUE));
         Assert.assertTrue(
-                shippingOption.getBoolean(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_SELECTED));
+                shippingOption.getBoolean(PaymentShippingOption.EXTRA_SHIPPING_OPTION_SELECTED));
     }
 
     // Test the happy path of createPayIntent and verify the deprecated extras.

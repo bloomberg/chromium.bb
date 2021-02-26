@@ -396,18 +396,18 @@ const char kInfobarOverflowBadgeShownUserAction[] =
   if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
     DCHECK(self.webState);
     InfoBarIOS* infobar = [self infobarWithType:infobarType];
-    DCHECK(infobar);
-    InfobarOverlayRequestInserter::CreateForWebState(self.webState);
-    InsertParams params(infobar);
-    params.overlay_type = InfobarOverlayType::kModal;
-    params.insertion_index = OverlayRequestQueue::FromWebState(
-                                 self.webState, OverlayModality::kInfobarModal)
-                                 ->size();
-    params.source = InfobarOverlayInsertionSource::kBadge;
-    InfobarOverlayRequestInserter::FromWebState(self.webState)
-        ->InsertOverlayRequest(params);
-    // TODO(crbug.com/1071914): Add a placeholder request to the banner queue
-    // to prevent banners from displaying during the modal presentation.
+    if (infobar) {
+      InfobarOverlayRequestInserter::CreateForWebState(self.webState);
+      InsertParams params(infobar);
+      params.overlay_type = InfobarOverlayType::kModal;
+      params.insertion_index =
+          OverlayRequestQueue::FromWebState(self.webState,
+                                            OverlayModality::kInfobarModal)
+              ->size();
+      params.source = InfobarOverlayInsertionSource::kBadge;
+      InfobarOverlayRequestInserter::FromWebState(self.webState)
+          ->InsertOverlayRequest(params);
+    }
   } else {
     [self.dispatcher displayModalInfobar:infobarType];
   }

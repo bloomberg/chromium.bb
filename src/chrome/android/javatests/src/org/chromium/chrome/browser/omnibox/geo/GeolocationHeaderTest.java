@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.omnibox.geo;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.SystemClock;
-import android.support.test.filters.SmallTest;
 import android.util.Base64;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,14 +19,14 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.site_settings.PermissionInfo;
 import org.chromium.components.content_settings.ContentSettingValues;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -35,8 +36,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class GeolocationHeaderTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private static final String SEARCH_URL_1 = "https://www.google.com/search?q=potatoes";
     private static final String SEARCH_URL_2 = "https://www.google.co.jp/webhp?#q=dinosaurs";
@@ -151,7 +151,7 @@ public class GeolocationHeaderTest {
             final long locationTime, final boolean shouldBeNull) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PermissionInfo infoHttps =
-                    new PermissionInfo(PermissionInfo.Type.GEOLOCATION, SEARCH_URL_1, null, false);
+                    new PermissionInfo(ContentSettingsType.GEOLOCATION, SEARCH_URL_1, null, false);
             infoHttps.setContentSetting(Profile.getLastUsedRegularProfile(), httpsPermission);
             String header = GeolocationHeader.getGeoHeader(
                     SEARCH_URL_1, mActivityTestRule.getActivity().getActivityTab());

@@ -1,19 +1,19 @@
-# v-0006 -  This fails because `fn Foo()` returns `struct goo`, which does not 
+# v-0006 -  This fails because `fn Foo()` returns `struct goo`, which does not
 # have a member `s.z`.
 
-type goo = struct {
+struct goo {
   s : vec2<i32>;
-}
+};
 
-fn Foo() -> type goo {
-  var a : type goo;
+fn Foo() -> goo {
+  var a : goo;
   a.s.x = 2;
   a.s.y = 3;
   return a;
 }
 
+[[stage(vertex)]]
 fn main() -> void {
   var r : i32 = Foo().s.z;
   return;
 }
-entry_point fragment = main;

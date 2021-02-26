@@ -9,21 +9,20 @@
 
 #include "chrome/browser/chromeos/input_method/emoji_suggester.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/chromeos/input_method/personal_info_suggester.h"
 #include "chrome/browser/chromeos/input_method/suggester.h"
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
-#include "chrome/browser/ui/input_method/input_method_engine_base.h"
 
 namespace chromeos {
-
-// Check if any assistive feature is enabled.
-bool IsAssistiveFeatureEnabled();
 
 // An agent to suggest assistive information when the user types, and adopt or
 // dismiss the suggestion according to the user action.
 class AssistiveSuggester {
  public:
   AssistiveSuggester(InputMethodEngine* engine, Profile* profile);
+
+  bool IsAssistiveFeatureEnabled();
 
   // Called when a text field gains focus, and suggester starts working.
   void OnFocus(int context_id);
@@ -33,9 +32,9 @@ class AssistiveSuggester {
 
   // Checks the text before cursor, emits metric if any assistive prefix is
   // matched.
-  void RecordAssistiveCoverageMetrics(const base::string16& text,
-                                      int cursor_pos,
-                                      int anchor_pos);
+  void RecordAssistiveMatchMetrics(const base::string16& text,
+                                   int cursor_pos,
+                                   int anchor_pos);
 
   // Called when a surrounding text is changed.
   // Returns true if it changes the surrounding text, e.g. a suggestion is
@@ -46,8 +45,14 @@ class AssistiveSuggester {
 
   // Called when the user pressed a key.
   // Returns true if suggester handles the event and it should stop propagate.
-  bool OnKeyEvent(
-      const ::input_method::InputMethodEngineBase::KeyboardEvent& event);
+  bool OnKeyEvent(const InputMethodEngineBase::KeyboardEvent& event);
+
+  // Accepts the suggestion at a given index if a suggester is currently active.
+  void AcceptSuggestion(size_t index);
+
+  EmojiSuggester* get_emoji_suggester_for_testing() {
+    return &emoji_suggester_;
+  }
 
  private:
   // Returns if any suggestion text should be displayed according to the
@@ -59,6 +64,21 @@ class AssistiveSuggester {
   // Check if suggestion is being shown.
   bool IsSuggestionShown();
 
+  bool IsAssistPersonalInfoEnabled();
+
+  bool IsEmojiSuggestAdditionEnabled();
+
+  void RecordAssistiveMatchMetricsForAction(AssistiveType action);
+
+  // Only the first applicable reason in DisabledReason enum is returned.
+  DisabledReason GetDisabledReasonForEmoji();
+
+  // Only the first applicable reason in DisabledReason enum is returned.
+  DisabledReason GetDisabledReasonForPersonalInfo();
+
+  bool IsActionEnabled(AssistiveType action);
+
+  Profile* profile_;
   PersonalInfoSuggester personal_info_suggester_;
   EmojiSuggester emoji_suggester_;
 

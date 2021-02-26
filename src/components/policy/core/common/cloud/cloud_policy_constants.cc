@@ -37,6 +37,7 @@ const char kEnrollmentTokenAuthHeaderPrefix[] = "GoogleEnrollmentToken token=";
 const char kValueAppType[] = "Chrome";
 const char kValueDeviceType[] = "2";
 const char kValueRequestAutoEnrollment[] = "enterprise_check";
+const char kValueRequestPsmHasDeviceState[] = "enterprise_psm_check";
 const char kValueRequestPolicy[] = "policy";
 const char kValueRequestRegister[] = "register";
 const char kValueRequestApiAuthorization[] = "api_authorization";
@@ -82,6 +83,8 @@ const char kChromeSigninExtensionPolicyType[] =
     "google/chromeos/signinextension";
 const char kChromeMachineLevelUserCloudPolicyType[] =
     "google/chrome/machine-level-user";
+const char kChromeMachineLevelUserCloudPolicyIOSType[] =
+    "google/chrome/machine-level-user-ios";
 const char kChromeMachineLevelExtensionCloudPolicyType[] =
     "google/chrome/machine-level-extension";
 const char kChromeRemoteCommandPolicyType[] = "google/chromeos/remotecommand";

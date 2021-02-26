@@ -19,7 +19,11 @@
 function waitForCompositorCommit() {
   return new Promise((resolve) => {
     if (window.testRunner) {
-      testRunner.capturePixelsAsyncThen(resolve);
+      // After doing the composite, we also allow any async tasks to run before
+      // resolving, via setTimeout().
+      testRunner.updateAllLifecyclePhasesAndCompositeThen(() => {
+        window.setTimeout(resolve, 0);
+      });
     } else {
       // Fall back to just rAF twice.
       window.requestAnimationFrame(() => {
@@ -130,7 +134,7 @@ function waitForAnimationEndTimeBased(getValue) {
       }
 
       if (cur_time - START_TIME > TIMEOUT_MS) {
-        reject();
+        reject(new Error("Timeout waiting for animation to end"));
         return;
       }
 
@@ -176,7 +180,7 @@ const GestureSourceType = (function() {
 })();
 
 // Enums used as input to the |modifier_keys| parameters of methods in this
-// file like smoothScroll and wheelTick.
+// file like smoothScrollWithXY and wheelTick.
 const Modifiers = (function() {
   return {
     ALT: "Alt",
@@ -189,6 +193,18 @@ const Modifiers = (function() {
   }
 })();
 
+// Enums used as input to the |modifier_buttons| parameters of methods in this
+// file like smoothScrollWithXY and wheelTick.
+const Buttons = (function() {
+  return {
+    LEFT: "Left",
+    MIDDLE: "Middle",
+    RIGHT: "Right",
+    BACK: "Back",
+    FORWARD: "Forward",
+  }
+})();
+
 // Use this for speed to make gestures (effectively) instant. That is, finish
 // entirely within one Begin|Update|End triplet. This is in physical
 // pixels/second.
@@ -198,9 +214,7 @@ const Modifiers = (function() {
 // https://crbug.com/893608
 const SPEED_INSTANT = 400000;
 
-// modifier_keys means the keys pressed while doing the mouse wheel scroll, it
-// should be one of the values in the |Modifiers| or a comma separated string
-// to specify multiple values.
+// This will be replaced by smoothScrollWithXY.
 function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type,
                       direction, speed_in_pixels_s, precise_scrolling_deltas,
                       scroll_by_page, cursor_visible, scroll_by_percentage,
@@ -248,10 +262,14 @@ function percentScroll(percent_to_scroll_x, percent_to_scroll_y, start_x, start_
 // modifier_keys means the keys pressed while doing the mouse wheel scroll, it
 // should be one of the values in the |Modifiers| or a comma separated string
 // to specify multiple values.
+// modifier_buttons means the mouse buttons pressed while doing the mouse wheel
+// scroll, it should be one of the values in the |Buttons| or a comma separated
+// string to specify multiple values.
 function smoothScrollWithXY(pixels_to_scroll_x, pixels_to_scroll_y, start_x,
                             start_y, gesture_source_type, speed_in_pixels_s,
                             precise_scrolling_deltas, scroll_by_page,
-                            cursor_visible, scroll_by_percentage, modifier_keys) {
+                            cursor_visible, scroll_by_percentage, modifier_keys,
+                            modifier_buttons) {
   return new Promise((resolve, reject) => {
     if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.smoothScrollByXY(pixels_to_scroll_x,
@@ -265,7 +283,8 @@ function smoothScrollWithXY(pixels_to_scroll_x, pixels_to_scroll_y, start_x,
                                               scroll_by_page,
                                               cursor_visible,
                                               scroll_by_percentage,
-                                              modifier_keys);
+                                              modifier_keys,
+                                              modifier_buttons);
     } else {
       reject('This test requires chrome.gpuBenchmarking');
     }
@@ -275,7 +294,11 @@ function smoothScrollWithXY(pixels_to_scroll_x, pixels_to_scroll_y, start_x,
 // modifier_keys means the keys pressed while doing the mouse wheel scroll, it
 // should be one of the values in the |Modifiers| or a comma separated string
 // to specify multiple values.
-function wheelTick(scroll_tick_x, scroll_tick_y, center, speed_in_pixels_s, modifier_keys) {
+// modifier_buttons means the mouse buttons pressed while doing the mouse wheel
+// scroll, it should be one of the values in the |Buttons| or a comma separated
+// string to specify multiple values.
+function wheelTick(scroll_tick_x, scroll_tick_y, center, speed_in_pixels_s,
+                   modifier_keys, modifier_buttons) {
   if (typeof(speed_in_pixels_s) == "undefined")
     speed_in_pixels_s = SPEED_INSTANT;
   // Do not allow precise scrolling deltas for tick wheel scroll.
@@ -284,7 +307,8 @@ function wheelTick(scroll_tick_x, scroll_tick_y, center, speed_in_pixels_s, modi
                             center.x, center.y, GestureSourceType.MOUSE_INPUT,
                             speed_in_pixels_s, false /* precise_scrolling_deltas */,
                             false /* scroll_by_page */, true /* cursor_visible */,
-                            false /* precise_scrolling_deltas */, modifier_keys);
+                            false /* scroll_by_percentage */, modifier_keys,
+                            modifier_buttons);
 }
 
 const LEGACY_MOUSE_WHEEL_TICK_MULTIPLIER = 120;
@@ -512,6 +536,25 @@ function touchTapOn(xPosition, yPosition) {
          actions: [
             { name: 'pointerDown', x: xPosition, y: yPosition },
             { name: 'pointerUp' }
+        ]}], resolve);
+    } else {
+      reject();
+    }
+  });
+}
+
+function touchDragTo(drag) {
+  const PREVENT_FLING_PAUSE = 40;
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      chrome.gpuBenchmarking.pointerActionSequence( [
+        {source: 'touch',
+         actions: [
+            { name: 'pointerDown', x: drag.start_x, y: drag.start_y },
+            { name: 'pause', duration: PREVENT_FLING_PAUSE },
+            { name: 'pointerMove', x: drag.end_x, y: drag.end_y},
+            { name: 'pause', duration: PREVENT_FLING_PAUSE },
+            { name: 'pointerUp', x: drag.end_x, y: drag.end_y }
         ]}], resolve);
     } else {
       reject();

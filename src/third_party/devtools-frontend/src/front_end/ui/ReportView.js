@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as ARIAUtils from './ARIAUtils.js';
 import {Toolbar} from './Toolbar.js';
 import {VBox} from './Widget.js';
@@ -18,12 +15,14 @@ export class ReportView extends VBox {
    */
   constructor(title) {
     super(true);
-    this.registerRequiredCSS('ui/reportView.css');
+    this.registerRequiredCSS('ui/reportView.css', {enableLegacyPatching: true});
 
     this._contentBox = this.contentElement.createChild('div', 'report-content-box');
     this._headerElement = this._contentBox.createChild('div', 'report-header vbox');
     this._titleElement = this._headerElement.createChild('div', 'report-title');
-    this._titleElement.textContent = title;
+    if (title) {
+      this._titleElement.textContent = title;
+    }
     ARIAUtils.markAsHeading(this._titleElement, 1);
 
     this._sectionList = this._contentBox.createChild('div', 'vbox');
@@ -117,9 +116,7 @@ export class ReportView extends VBox {
   }
 }
 
-/**
- * @unrestricted
- */
+
 export class Section extends VBox {
   /**
    * @param {string} title
@@ -144,16 +141,18 @@ export class Section extends VBox {
    * @return {string}
    */
   title() {
-    return this._titleElement.textContent;
+    return this._titleElement.textContent || '';
   }
 
   /**
    * @param {string} title
+   * @param {string=} tooltip
    */
-  setTitle(title) {
+  setTitle(title, tooltip) {
     if (this._titleElement.textContent !== title) {
       this._titleElement.textContent = title;
     }
+    this._titleElement.title = tooltip || '';
     this._titleElement.classList.toggle('hidden', !this._titleElement.textContent);
   }
 
@@ -178,7 +177,7 @@ export class Section extends VBox {
   /**
    * @param {string} title
    * @param {string=} textValue
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   appendField(title, textValue) {
     let row = this._fieldMap.get(title);
@@ -188,10 +187,10 @@ export class Section extends VBox {
       this._fieldMap.set(title, row);
       row.createChild('div', 'report-field-value');
     }
-    if (textValue) {
+    if (textValue && row.lastElementChild) {
       row.lastElementChild.textContent = textValue;
     }
-    return /** @type {!Element} */ (row.lastElementChild);
+    return /** @type {!HTMLElement} */ (row.lastElementChild);
   }
 
   /**
@@ -237,17 +236,17 @@ export class Section extends VBox {
   }
 
   /**
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   appendRow() {
-    return this._fieldList.createChild('div', 'report-row');
+    return /** @type {!HTMLElement} */ (this._fieldList.createChild('div', 'report-row'));
   }
 
   /**
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   appendSelectableRow() {
-    return this._fieldList.createChild('div', 'report-row report-row-selectable');
+    return /** @type {!HTMLElement} */ (this._fieldList.createChild('div', 'report-row report-row-selectable'));
   }
 
   clearContent() {

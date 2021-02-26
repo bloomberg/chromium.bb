@@ -4,7 +4,9 @@
 
 #include "cast/common/channel/connection_namespace_handler.h"
 
+#include <string>
 #include <type_traits>
+#include <utility>
 
 #include "absl/types/optional.h"
 #include "cast/common/channel/message_util.h"
@@ -138,7 +140,7 @@ void ConnectionNamespaceHandler::HandleConnect(VirtualConnectionRouter* router,
 
   VirtualConnection virtual_conn{std::move(message.destination_id()),
                                  std::move(message.source_id()),
-                                 socket->socket_id()};
+                                 ToCastSocketId(socket)};
   if (!vc_policy_->IsConnectionAllowed(virtual_conn)) {
     SendClose(router, std::move(virtual_conn));
     return;
@@ -187,7 +189,11 @@ void ConnectionNamespaceHandler::HandleConnect(VirtualConnectionRouter* router,
     data.max_protocol_version = VirtualConnection::ProtocolVersion::kV2_1_0;
   }
 
-  data.ip_fragment = socket->GetSanitizedIpAddress();
+  if (socket) {
+    data.ip_fragment = socket->GetSanitizedIpAddress();
+  } else {
+    data.ip_fragment = {};
+  }
 
   OSP_DVLOG << "Connection opened: " << virtual_conn.local_id << ", "
             << virtual_conn.peer_id << ", " << virtual_conn.socket_id;
@@ -208,7 +214,7 @@ void ConnectionNamespaceHandler::HandleClose(VirtualConnectionRouter* router,
                                              Json::Value parsed_message) {
   VirtualConnection virtual_conn{std::move(message.destination_id()),
                                  std::move(message.source_id()),
-                                 socket->socket_id()};
+                                 ToCastSocketId(socket)};
   if (!vc_manager_->GetConnectionData(virtual_conn)) {
     return;
   }

@@ -17,6 +17,7 @@ import {Actions} from '../common/actions';
 import {Engine} from '../common/engine';
 import {rawQueryResultColumns, rawQueryResultIter, Row} from '../common/protos';
 import {QueryResponse} from '../common/queries';
+import {slowlyCountRows} from '../common/query_iterator';
 
 import {Controller} from './controller';
 import {globals} from './globals';
@@ -55,7 +56,7 @@ export class QueryController extends Controller<'init'|'querying'> {
 
   private async runQuery(sqlQuery: string) {
     const startMs = performance.now();
-    const rawResult = await this.args.engine.query(sqlQuery, true);
+    const rawResult = await this.args.engine.uncheckedQuery(sqlQuery);
     const durationMs = performance.now() - startMs;
     const columns = rawQueryResultColumns(rawResult);
     const rows =
@@ -65,7 +66,7 @@ export class QueryController extends Controller<'init'|'querying'> {
       query: sqlQuery,
       durationMs,
       error: rawResult.error,
-      totalRowCount: +rawResult.numRecords,
+      totalRowCount: slowlyCountRows(rawResult),
       columns,
       rows,
     };

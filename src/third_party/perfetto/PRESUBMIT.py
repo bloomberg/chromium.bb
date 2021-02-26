@@ -22,10 +22,10 @@ def CheckChange(input, output):
   def long_line_sources(x):
     return input.FilterSourceFile(
         x,
-        white_list=".*",
-        black_list=[
+        allow_list=".*",
+        block_list=[
             'Android[.]bp', '.*[.]json$', '.*[.]sql$', '.*[.]out$',
-            'test/trace_processor/index$', '.*\bBUILD$', 'WORKSPACE',
+            'test/trace_processor/.*/index$', '.*\bBUILD$', 'WORKSPACE',
             '.*/Makefile$', '/perfetto_build_flags.h$'
         ])
 
@@ -39,11 +39,12 @@ def CheckChange(input, output):
   results += input.canned_checks.CheckGNFormatted(input, output)
   results += CheckIncludeGuards(input, output)
   results += CheckIncludeViolations(input, output)
+  results += CheckProtoComments(input, output)
   results += CheckBuild(input, output)
   results += CheckAndroidBlueprint(input, output)
   results += CheckBinaryDescriptors(input, output)
   results += CheckMergedTraceConfigProto(input, output)
-  results += CheckWhitelist(input, output)
+  results += CheckProtoEventList(input, output)
   results += CheckBannedCpp(input, output)
   return results
 
@@ -62,7 +63,7 @@ def CheckBuild(input_api, output_api):
   # If no GN files were modified, bail out.
   def build_file_filter(x):
     return input_api.FilterSourceFile(
-        x, white_list=('.*BUILD[.]gn$', '.*[.]gni$', 'BUILD\.extras', tool))
+        x, allow_list=('.*BUILD[.]gn$', '.*[.]gni$', 'BUILD\.extras', tool))
 
   if not input_api.AffectedSourceFiles(build_file_filter):
     return []
@@ -80,7 +81,7 @@ def CheckAndroidBlueprint(input_api, output_api):
   # If no GN files were modified, bail out.
   def build_file_filter(x):
     return input_api.FilterSourceFile(
-        x, white_list=('.*BUILD[.]gn$', '.*[.]gni$', tool))
+        x, allow_list=('.*BUILD[.]gn$', '.*[.]gni$', tool))
 
   if not input_api.AffectedSourceFiles(build_file_filter):
     return []
@@ -97,7 +98,7 @@ def CheckIncludeGuards(input_api, output_api):
 
   def file_filter(x):
     return input_api.FilterSourceFile(
-        x, white_list=['.*[.]cc$', '.*[.]h$', tool])
+        x, allow_list=['.*[.]cc$', '.*[.]h$', tool])
 
   if not input_api.AffectedSourceFiles(file_filter):
     return []
@@ -111,7 +112,6 @@ def CheckIncludeGuards(input_api, output_api):
 
 def CheckBannedCpp(input_api, output_api):
   bad_cpp = [
-      (r'\bNULL\b', 'New code should not use NULL prefer nullptr'),
       (r'\bstd::stoi\b',
        'std::stoi throws exceptions prefer base::StringToInt32()'),
       (r'\bstd::stol\b',
@@ -134,7 +134,7 @@ def CheckBannedCpp(input_api, output_api):
   ]
 
   def file_filter(x):
-    return input_api.FilterSourceFile(x, white_list=[r'.*\.h$', r'.*\.cc$'])
+    return input_api.FilterSourceFile(x, allow_list=[r'.*\.h$', r'.*\.cc$'])
 
   errors = []
   for f in input_api.AffectedSourceFiles(file_filter):
@@ -151,7 +151,7 @@ def CheckIncludeViolations(input_api, output_api):
   tool = 'tools/check_include_violations'
 
   def file_filter(x):
-    return input_api.FilterSourceFile(x, white_list=['include/.*[.]h$', tool])
+    return input_api.FilterSourceFile(x, allow_list=['include/.*[.]h$', tool])
 
   if not input_api.AffectedSourceFiles(file_filter):
     return []
@@ -165,7 +165,7 @@ def CheckBinaryDescriptors(input_api, output_api):
 
   def file_filter(x):
     return input_api.FilterSourceFile(
-        x, white_list=['protos/perfetto/.*[.]proto$', '.*[.]h', tool])
+        x, allow_list=['protos/perfetto/.*[.]proto$', '.*[.]h', tool])
 
   if not input_api.AffectedSourceFiles(file_filter):
     return []
@@ -182,7 +182,7 @@ def CheckMergedTraceConfigProto(input_api, output_api):
 
   def build_file_filter(x):
     return input_api.FilterSourceFile(
-        x, white_list=['protos/perfetto/.*[.]proto$', tool])
+        x, allow_list=['protos/perfetto/.*[.]proto$', tool])
 
   if not input_api.AffectedSourceFiles(build_file_filter):
     return []
@@ -195,17 +195,31 @@ def CheckMergedTraceConfigProto(input_api, output_api):
   return []
 
 
-# Prevent removing or changing lines in event_whitelist.
-def CheckWhitelist(input_api, output_api):
+# Prevent removing or changing lines in event_list.
+def CheckProtoEventList(input_api, output_api):
   for f in input_api.AffectedFiles():
-    if f.LocalPath() != 'tools/ftrace_proto_gen/event_whitelist':
+    if f.LocalPath() != 'tools/ftrace_proto_gen/event_list':
       continue
     if any((not new_line.startswith('removed')) and new_line != old_line
            for old_line, new_line in itertools.izip(f.OldContents(),
                                                     f.NewContents())):
       return [
           output_api.PresubmitError(
-              'event_whitelist only has two supported changes: '
+              'event_list only has two supported changes: '
               'appending a new line, and replacing a line with removed.')
       ]
+  return []
+
+
+def CheckProtoComments(input_api, output_api):
+  tool = 'tools/check_proto_comments'
+
+  def file_filter(x):
+    return input_api.FilterSourceFile(
+        x, allow_list=['protos/perfetto/.*[.]proto$', tool])
+
+  if not input_api.AffectedSourceFiles(file_filter):
+    return []
+  if subprocess.call([tool]):
+    return [output_api.PresubmitError(tool + ' failed')]
   return []

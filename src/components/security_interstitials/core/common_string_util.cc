@@ -37,6 +37,12 @@ void PopulateSSLLayoutStrings(int cert_error,
   // interstitials as needed.
   load_time_data->SetString("recurrentErrorParagraph", "");
   load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
+  load_time_data->SetString(
+      "optInLink",
+      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE));
+  load_time_data->SetString(
+      "enhancedProtectionMessage",
+      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_ENHANCED_PROTECTION_MESSAGE));
 }
 
 void PopulateSSLDebuggingStrings(const net::SSLInfo ssl_info,
@@ -62,6 +68,26 @@ void PopulateSSLDebuggingStrings(const net::SSLInfo ssl_info,
   std::vector<std::string> encoded_chain;
   ssl_info.cert->GetPEMEncodedChain(&encoded_chain);
   load_time_data->SetString("pem", base::StrCat(encoded_chain));
+}
+
+void PopulateLegacyTLSStrings(base::DictionaryValue* load_time_data,
+                              const base::string16& hostname) {
+  load_time_data->SetString("tabTitle",
+                            l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));
+  load_time_data->SetString("heading",
+                            l10n_util::GetStringUTF16(IDS_LEGACY_TLS_HEADING));
+  load_time_data->SetString(
+      "primaryButtonText",
+      l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_SAFETY_BUTTON));
+  load_time_data->SetString(
+      "primaryParagraph",
+      l10n_util::GetStringUTF16(IDS_LEGACY_TLS_PRIMARY_PARAGRAPH));
+  load_time_data->SetString(
+      "explanationParagraph",
+      l10n_util::GetStringUTF16(IDS_LEGACY_TLS_EXPLANATION));
+  load_time_data->SetString(
+      "finalParagraph", l10n_util::GetStringFUTF16(
+                            IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH, hostname));
 }
 
 }  // namespace common_string_util

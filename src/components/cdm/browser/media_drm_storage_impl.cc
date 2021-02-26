@@ -14,7 +14,7 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -147,7 +147,7 @@ class OriginData {
   base::Value ToDictValue() const {
     base::Value dict(base::Value::Type::DICTIONARY);
 
-    dict.SetKey(kOriginId, base::CreateUnguessableTokenValue(origin_id_));
+    dict.SetKey(kOriginId, util::UnguessableTokenToValue(origin_id_));
     dict.SetKey(kCreationTime, base::Value(provision_time_.ToDoubleT()));
 
     return dict;
@@ -165,15 +165,16 @@ class OriginData {
     if (!origin_id_value)
       return nullptr;
 
-    base::UnguessableToken origin_id;
-    if (!base::GetValueAsUnguessableToken(*origin_id_value, &origin_id))
+    base::Optional<base::UnguessableToken> origin_id =
+        util::ValueToUnguessableToken(*origin_id_value);
+    if (!origin_id)
       return nullptr;
 
     base::Time time;
     if (!GetCreationTimeFromDict(origin_dict, &time))
       return nullptr;
 
-    return base::WrapUnique(new OriginData(origin_id, time));
+    return base::WrapUnique(new OriginData(*origin_id, time));
   }
 
  private:
@@ -431,9 +432,11 @@ void ClearMediaDrmLicensesBlocking(
 #endif  // defined(OS_ANDROID)
 
 // Returns true if any session in |sessions_dict| has been modified more
-// recently than |modified_since|, and otherwise returns false.
-bool SessionsModifiedSince(const base::Value* sessions_dict,
-                           base::Time modified_since) {
+// recently than |start| and before |end|, and otherwise
+// returns false.
+bool SessionsModifiedBetween(const base::Value* sessions_dict,
+                             base::Time start,
+                             base::Time end) {
   DCHECK(sessions_dict->is_dict());
   for (const auto& key_value : sessions_dict->DictItems()) {
     const base::Value* session_dict = &key_value.second;
@@ -445,11 +448,11 @@ bool SessionsModifiedSince(const base::Value* sessions_dict,
     if (!session_data)
       continue;
 
-    if (session_data->creation_time() >= modified_since)
+    if (session_data->creation_time() >= start &&
+        session_data->creation_time() < end)
       return true;
   }
 
-  // No session creation time >= |modified_since|.
   return false;
 }
 
@@ -619,9 +622,10 @@ std::set<GURL> MediaDrmStorageImpl::GetAllOrigins(
 }
 
 // static
-std::vector<GURL> MediaDrmStorageImpl::GetOriginsModifiedSince(
+std::vector<GURL> MediaDrmStorageImpl::GetOriginsModifiedBetween(
     const PrefService* pref_service,
-    base::Time modified_since) {
+    base::Time start,
+    base::Time end) {
   DCHECK(pref_service);
 
   const base::DictionaryValue* storage_dict =
@@ -629,8 +633,9 @@ std::vector<GURL> MediaDrmStorageImpl::GetOriginsModifiedSince(
   if (!storage_dict)
     return {};
 
-  // Check each origin to see if it has been modified since |modified_since|.
-  // If there are any errors in prefs::kMediaDrmStorage, ignore them.
+  // Check each origin to see if it has been modified after |start| and
+  // before |end|. If there are any errors in prefs::kMediaDrmStorage,
+  // ignore them.
   std::vector<GURL> matching_origins;
   for (const auto& key_value : storage_dict->DictItems()) {
     GURL origin(key_value.first);
@@ -647,8 +652,8 @@ std::vector<GURL> MediaDrmStorageImpl::GetOriginsModifiedSince(
       continue;
 
     // There is no need to check the sessions if the origin was provisioned
-    // after |modified_since|.
-    if (origin_data->provision_time() < modified_since) {
+    // after |start|.
+    if (origin_data->provision_time() < start) {
       // See if any session created recently.
       const base::Value* sessions =
           origin_dict->FindKeyOfType(kSessions, base::Value::Type::DICTIONARY);
@@ -656,12 +661,15 @@ std::vector<GURL> MediaDrmStorageImpl::GetOriginsModifiedSince(
         continue;
 
       // If no sessions modified recently, move on to the next origin.
-      if (!SessionsModifiedSince(sessions, modified_since))
+      if (!SessionsModifiedBetween(sessions, start, end))
         continue;
     }
 
-    // Either the origin has been provisioned after |modified_since| or there
-    // are sessions created after |modified_since|, so add the origin to the
+    if (origin_data->provision_time() >= end)
+      continue;
+
+    // Either the origin has been provisioned after |start| or there
+    // are sessions created after |start|, so add the origin to the
     // list returned.
     matching_origins.push_back(origin);
   }

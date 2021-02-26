@@ -119,16 +119,20 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
 }  // namespace
 
 OrderSummaryViewController::OrderSummaryViewController(
-    PaymentRequestSpec* spec,
-    PaymentRequestState* state,
-    PaymentRequestDialogView* dialog)
-    : PaymentRequestSheetController(spec, state, dialog), pay_button_(nullptr) {
+    base::WeakPtr<PaymentRequestSpec> spec,
+    base::WeakPtr<PaymentRequestState> state,
+    base::WeakPtr<PaymentRequestDialogView> dialog)
+    : PaymentRequestSheetController(spec, state, dialog) {
+  DCHECK(spec);
+  DCHECK(state);
   spec->AddObserver(this);
   state->AddObserver(this);
 }
 
 OrderSummaryViewController::~OrderSummaryViewController() {
-  spec()->RemoveObserver(this);
+  if (spec())
+    spec()->RemoveObserver(this);
+
   state()->RemoveObserver(this);
 }
 
@@ -137,22 +141,7 @@ void OrderSummaryViewController::OnSpecUpdated() {
 }
 
 void OrderSummaryViewController::OnSelectedInformationChanged() {
-  UpdatePayButtonState(state()->is_ready_to_pay());
-}
-
-std::unique_ptr<views::Button>
-OrderSummaryViewController::CreatePrimaryButton() {
-  auto button = views::MdTextButton::Create(
-      this, state()->selected_app() && state()->selected_app()->type() !=
-                                           PaymentApp::Type::AUTOFILL
-                ? l10n_util::GetStringUTF16(IDS_PAYMENTS_CONTINUE_BUTTON)
-                : l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON));
-  button->SetProminent(true);
-  button->set_tag(static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG));
-  button->SetID(static_cast<int>(DialogViewID::PAY_BUTTON));
-  pay_button_ = button.get();
-  UpdatePayButtonState(state()->is_ready_to_pay());
-  return button;
+  primary_button()->SetEnabled(GetPrimaryButtonEnabled());
 }
 
 bool OrderSummaryViewController::ShouldShowSecondaryButton() {
@@ -164,6 +153,9 @@ base::string16 OrderSummaryViewController::GetSheetTitle() {
 }
 
 void OrderSummaryViewController::FillContentView(views::View* content_view) {
+  if (!spec())
+    return;
+
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
@@ -211,10 +203,6 @@ void OrderSummaryViewController::FillContentView(views::View* content_view) {
           true, DialogViewID::ORDER_SUMMARY_TOTAL_CURRENCY_LABEL,
           DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL)
           .release());
-}
-
-void OrderSummaryViewController::UpdatePayButtonState(bool enabled) {
-  pay_button_->SetEnabled(enabled);
 }
 
 }  // namespace payments

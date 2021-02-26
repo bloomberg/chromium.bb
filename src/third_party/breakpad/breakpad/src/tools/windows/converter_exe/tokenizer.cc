@@ -33,8 +33,8 @@
 namespace crash {
 
 // static
-void Tokenizer::Tokenize(const string &delimiters, const string &input,
-                        vector<string> *output) {
+void Tokenizer::Tokenize(const string& delimiters, const string& input,
+                        vector<string>* output) {
   assert(output);
   output->clear();
 

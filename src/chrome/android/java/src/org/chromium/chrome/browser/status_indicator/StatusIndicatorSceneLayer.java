@@ -8,15 +8,12 @@ import android.graphics.RectF;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.compositor.LayerTitleCache;
-import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
-import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
-import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
-import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
-import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
-import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.layouts.EventFilter;
+import org.chromium.chrome.browser.layouts.SceneOverlay;
+import org.chromium.chrome.browser.layouts.components.VirtualView;
+import org.chromium.chrome.browser.layouts.scene_layer.SceneLayer;
+import org.chromium.chrome.browser.layouts.scene_layer.SceneOverlayLayer;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.util.List;
@@ -33,23 +30,18 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
     /** The resource ID used to reference the view bitmap in native. */
     private int mResourceId;
 
-    /** The {@link ViewResourceFrameLayout} that this scene layer represents. */
-    private ViewResourceFrameLayout mStatusIndicator;
-
-    /** A {@link Supplier} for accessing the {@link BrowserControlsStateProvider}. */
-    private Supplier<BrowserControlsStateProvider> mBrowserControlsStateProviderSupplier;
+    /** The {@link BrowserControlsStateProvider} to access browser controls offsets. */
+    private BrowserControlsStateProvider mBrowserControlsStateProvider;
 
     private boolean mIsVisible;
 
     /**
      * Build a composited status view layer.
-     * @param statusIndicator The view used to generate the composited version.
+     * @param browserControlsStateProvider {@link BrowserControlsStateProvider} to access browser
+     *                                     controls offsets.
      */
-    public StatusIndicatorSceneLayer(ViewResourceFrameLayout statusIndicator,
-            Supplier<BrowserControlsStateProvider> browserControlsStateProviderSupplier) {
-        mStatusIndicator = statusIndicator;
-        mResourceId = mStatusIndicator.getId();
-        mBrowserControlsStateProviderSupplier = browserControlsStateProviderSupplier;
+    StatusIndicatorSceneLayer(BrowserControlsStateProvider browserControlsStateProvider) {
+        mBrowserControlsStateProvider = browserControlsStateProvider;
     }
 
     /**
@@ -58,6 +50,14 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
      */
     public void setIsVisible(boolean visible) {
         mIsVisible = visible;
+    }
+
+    /**
+     * Set the resource ID.
+     * @param id Resource view ID.
+     */
+    public void setResourceId(int id) {
+        mResourceId = id;
     }
 
     @Override
@@ -75,13 +75,9 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
     }
 
     @Override
-    public SceneOverlayLayer getUpdatedSceneOverlayTree(RectF viewport, RectF visibleViewport,
-            LayerTitleCache layerTitleCache, ResourceManager resourceManager, float yOffset) {
-        final BrowserControlsStateProvider browserControlsStateProvider =
-                mBrowserControlsStateProviderSupplier.get();
-        final int offset = browserControlsStateProvider != null
-                ? browserControlsStateProvider.getTopControlsMinHeightOffset()
-                : 0;
+    public SceneOverlayLayer getUpdatedSceneOverlayTree(
+            RectF viewport, RectF visibleViewport, ResourceManager resourceManager, float yOffset) {
+        final int offset = mBrowserControlsStateProvider.getTopControlsMinHeightOffset();
         StatusIndicatorSceneLayerJni.get().updateStatusIndicatorLayer(
                 mNativePtr, StatusIndicatorSceneLayer.this, resourceManager, mResourceId, offset);
         return this;
@@ -123,21 +119,6 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
 
     @Override
     public void getVirtualViews(List<VirtualView> views) {}
-
-    @Override
-    public void onHideLayout() {}
-
-    @Override
-    public void tabTitleChanged(int tabId, String title) {}
-
-    @Override
-    public void tabStateInitialized() {}
-
-    @Override
-    public void tabModelSwitched(boolean incognito) {}
-
-    @Override
-    public void tabCreated(long time, boolean incognito, int id, int prevId, boolean selected) {}
 
     @NativeMethods
     interface Natives {

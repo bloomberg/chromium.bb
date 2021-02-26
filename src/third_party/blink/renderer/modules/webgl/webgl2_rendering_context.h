@@ -15,11 +15,13 @@ namespace blink {
 
 class CanvasContextCreationAttributesCore;
 class EXTColorBufferFloat;
+class EXTColorBufferHalfFloat;
 class EXTFloatBlend;
 class EXTTextureCompressionBPTC;
 class EXTTextureCompressionRGTC;
 class EXTTextureFilterAnisotropic;
 class EXTTextureNorm16;
+class OESDrawBuffersIndexed;
 class OESTextureFloatLinear;
 class OVRMultiview2;
 class WebGLDebugRendererInfo;
@@ -66,10 +68,11 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   void SetCanvasGetContextResult(RenderingContext&) final;
   void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   Member<EXTColorBufferFloat> ext_color_buffer_float_;
+  Member<EXTColorBufferHalfFloat> ext_color_buffer_half_float_;
   Member<EXTDisjointTimerQueryWebGL2> ext_disjoint_timer_query_web_gl2_;
   Member<EXTFloatBlend> ext_float_blend_;
   Member<EXTTextureCompressionBPTC> ext_texture_compression_bptc_;
@@ -77,6 +80,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;
   Member<EXTTextureNorm16> ext_texture_norm16_;
   Member<KHRParallelShaderCompile> khr_parallel_shader_compile_;
+  Member<OESDrawBuffersIndexed> oes_draw_buffers_indexed_;
   Member<OESTextureFloatLinear> oes_texture_float_linear_;
   Member<OVRMultiview2> ovr_multiview2_;
   Member<WebGLCompressedTextureASTC> webgl_compressed_texture_astc_;

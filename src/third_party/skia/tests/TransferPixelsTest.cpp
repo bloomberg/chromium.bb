@@ -10,7 +10,8 @@
 #include "include/core/SkTypes.h"
 
 #include "include/core/SkSurface.h"
-#include "src/gpu/GrContextPriv.h"
+#include "include/gpu/GrDirectContext.h"
+#include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrResourceProvider.h"
@@ -93,21 +94,23 @@ bool read_pixels_from_texture(GrTexture* texture, GrColorType colorType, char* d
     return gpu->readPixels(texture, 0, 0, w, h, colorType, supportedRead.fColorType, dst, rowBytes);
 }
 
-void basic_transfer_to_test(skiatest::Reporter* reporter, GrContext* context, GrColorType colorType,
+void basic_transfer_to_test(skiatest::Reporter* reporter,
+                            GrDirectContext* dContext,
+                            GrColorType colorType,
                             GrRenderable renderable) {
-    if (GrCaps::kNone_MapFlags == context->priv().caps()->mapBufferFlags()) {
+    if (GrCaps::kNone_MapFlags == dContext->priv().caps()->mapBufferFlags()) {
         return;
     }
 
-    auto* caps = context->priv().caps();
+    auto* caps = dContext->priv().caps();
 
     auto backendFormat = caps->getDefaultBackendFormat(colorType, renderable);
     if (!backendFormat.isValid()) {
         return;
     }
 
-    auto resourceProvider = context->priv().resourceProvider();
-    GrGpu* gpu = context->priv().getGpu();
+    auto resourceProvider = dContext->priv().resourceProvider();
+    GrGpu* gpu = dContext->priv().getGpu();
 
     static constexpr SkISize kTexDims = {16, 16};
     int srcBufferWidth = caps->writePixelsRowBytesSupport() ? 20 : 16;
@@ -115,7 +118,7 @@ void basic_transfer_to_test(skiatest::Reporter* reporter, GrContext* context, Gr
 
     sk_sp<GrTexture> tex =
             resourceProvider->createTexture(kTexDims, backendFormat, renderable, 1,
-                                            GrMipMapped::kNo, SkBudgeted::kNo, GrProtected::kNo);
+                                            GrMipmapped::kNo, SkBudgeted::kNo, GrProtected::kNo);
     if (!tex) {
         ERRORF(reporter, "Could not create texture");
         return;
@@ -245,7 +248,7 @@ void basic_transfer_to_test(skiatest::Reporter* reporter, GrContext* context, Gr
 
 void basic_transfer_from_test(skiatest::Reporter* reporter, const sk_gpu_test::ContextInfo& ctxInfo,
                               GrColorType colorType, GrRenderable renderable) {
-    auto context = ctxInfo.grContext();
+    auto context = ctxInfo.directContext();
     auto caps = context->priv().caps();
     if (GrCaps::kNone_MapFlags == caps->mapBufferFlags()) {
         return;
@@ -400,7 +403,7 @@ void basic_transfer_from_test(skiatest::Reporter* reporter, const sk_gpu_test::C
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(TransferPixelsToTextureTest, reporter, ctxInfo) {
-    if (!ctxInfo.grContext()->priv().caps()->transferFromBufferToTextureSupport()) {
+    if (!ctxInfo.directContext()->priv().caps()->transferFromBufferToTextureSupport()) {
         return;
     }
     for (auto renderable : {GrRenderable::kNo, GrRenderable::kYes}) {
@@ -425,14 +428,14 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(TransferPixelsToTextureTest, reporter, ctxInf
                      GrColorType::kRGBA_16161616,
                      GrColorType::kRG_F16,
              }) {
-            basic_transfer_to_test(reporter, ctxInfo.grContext(), colorType, renderable);
+            basic_transfer_to_test(reporter, ctxInfo.directContext(), colorType, renderable);
         }
     }
 }
 
 // TODO(bsalomon): Metal
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(TransferPixelsFromTextureTest, reporter, ctxInfo) {
-    if (!ctxInfo.grContext()->priv().caps()->transferFromSurfaceToBufferSupport()) {
+    if (!ctxInfo.directContext()->priv().caps()->transferFromSurfaceToBufferSupport()) {
         return;
     }
     for (auto renderable : {GrRenderable::kNo, GrRenderable::kYes}) {

@@ -19,14 +19,25 @@
 #include "perfetto/base/logging.h"
 #include "perfetto/ext/base/unix_socket.h"
 #include "perfetto/ext/base/utils.h"
+#include "src/profiling/memory/shared_ring_buffer.h"
 
 #include <sys/socket.h>
 #include <sys/types.h>
+
+#if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
+#include <bionic/mte.h>
+#else
+struct ScopedDisableMTE {
+  // Silence unused variable warnings in non-Android builds.
+  ScopedDisableMTE() {}
+};
+#endif
 
 namespace perfetto {
 namespace profiling {
 
 namespace {
+
 template <typename T>
 bool ViewAndAdvance(char** ptr, T** out, const char* end) {
   if (end - sizeof(T) < *ptr)
@@ -39,72 +50,77 @@ bool ViewAndAdvance(char** ptr, T** out, const char* end) {
 // We need this to prevent crashes due to FORTIFY_SOURCE.
 void UnsafeMemcpy(char* dest, const char* src, size_t n)
     __attribute__((no_sanitize("address", "hwaddress"))) {
+  ScopedDisableMTE m;
   for (size_t i = 0; i < n; ++i) {
     dest[i] = src[i];
   }
 }
-}  // namespace
 
-bool SendWireMessage(SharedRingBuffer* shmem, const WireMessage& msg) {
-  uint64_t total_size;
-  struct iovec iovecs[3] = {};
-  // TODO(fmayer): Maye pack these two.
-  iovecs[0].iov_base = const_cast<RecordType*>(&msg.record_type);
-  iovecs[0].iov_len = sizeof(msg.record_type);
-  if (msg.alloc_header) {
-    PERFETTO_DCHECK(msg.record_type == RecordType::Malloc);
-    iovecs[1].iov_base = msg.alloc_header;
-    iovecs[1].iov_len = sizeof(*msg.alloc_header);
-  } else if (msg.free_header) {
-    PERFETTO_DCHECK(msg.record_type == RecordType::Free);
-    iovecs[1].iov_base = msg.free_header;
-    iovecs[1].iov_len = sizeof(*msg.free_header);
-  } else {
-    PERFETTO_DFATAL_OR_ELOG("Neither alloc_header nor free_header set.");
-    errno = EINVAL;
-    return false;
-  }
-
-  iovecs[2].iov_base = msg.payload;
-  iovecs[2].iov_len = msg.payload_size;
-
-  struct msghdr hdr = {};
-  hdr.msg_iov = iovecs;
-  if (msg.payload) {
-    hdr.msg_iovlen = base::ArraySize(iovecs);
-    total_size = iovecs[0].iov_len + iovecs[1].iov_len + iovecs[2].iov_len;
-  } else {
-    // If we are not sending payload, just ignore that iovec.
-    hdr.msg_iovlen = base::ArraySize(iovecs) - 1;
-    total_size = iovecs[0].iov_len + iovecs[1].iov_len;
-  }
-
+template <typename F>
+int64_t WithBuffer(SharedRingBuffer* shmem, size_t total_size, F fn) {
   SharedRingBuffer::Buffer buf;
   {
     ScopedSpinlock lock = shmem->AcquireLock(ScopedSpinlock::Mode::Try);
     if (!lock.locked()) {
       PERFETTO_DLOG("Failed to acquire spinlock.");
       errno = EAGAIN;
-      return false;
+      return -1;
     }
-    buf = shmem->BeginWrite(lock, static_cast<size_t>(total_size));
+    buf = shmem->BeginWrite(lock, total_size);
   }
   if (!buf) {
     PERFETTO_DLOG("Buffer overflow.");
     shmem->EndWrite(std::move(buf));
     errno = EAGAIN;
-    return false;
+    return -1;
   }
 
-  size_t offset = 0;
-  for (size_t i = 0; i < hdr.msg_iovlen; ++i) {
-    UnsafeMemcpy(reinterpret_cast<char*>(buf.data + offset),
-                 reinterpret_cast<const char*>(hdr.msg_iov[i].iov_base),
-                 hdr.msg_iov[i].iov_len);
-    offset += hdr.msg_iov[i].iov_len;
-  }
+  fn(&buf);
+
+  auto bytes_free = buf.bytes_free;
   shmem->EndWrite(std::move(buf));
-  return true;
+  return static_cast<int64_t>(bytes_free);
+}
+
+}  // namespace
+
+int64_t SendWireMessage(SharedRingBuffer* shmem, const WireMessage& msg) {
+  switch (msg.record_type) {
+    case RecordType::Malloc: {
+      size_t total_size = sizeof(msg.record_type) + sizeof(*msg.alloc_header) +
+                          msg.payload_size;
+      return WithBuffer(
+          shmem, total_size, [msg](SharedRingBuffer::Buffer* buf) {
+            memcpy(buf->data, &msg.record_type, sizeof(msg.record_type));
+            memcpy(buf->data + sizeof(msg.record_type), msg.alloc_header,
+                   sizeof(*msg.alloc_header));
+            UnsafeMemcpy(reinterpret_cast<char*>(buf->data) +
+                             sizeof(msg.record_type) +
+                             sizeof(*msg.alloc_header),
+                         msg.payload, msg.payload_size);
+          });
+    }
+    case RecordType::Free: {
+      constexpr size_t total_size =
+          sizeof(msg.record_type) + sizeof(*msg.free_header);
+      return WithBuffer(
+          shmem, total_size, [msg](SharedRingBuffer::Buffer* buf) {
+            memcpy(buf->data, &msg.record_type, sizeof(msg.record_type));
+            memcpy(buf->data + sizeof(msg.record_type), msg.free_header,
+                   sizeof(*msg.free_header));
+          });
+    }
+    case RecordType::HeapName: {
+      constexpr size_t total_size =
+          sizeof(msg.record_type) + sizeof(*msg.heap_name_header);
+      return WithBuffer(
+          shmem, total_size, [msg](SharedRingBuffer::Buffer* buf) {
+            memcpy(buf->data, &msg.record_type, sizeof(msg.record_type));
+            memcpy(buf->data + sizeof(msg.record_type), msg.heap_name_header,
+                   sizeof(*msg.heap_name_header));
+          });
+    }
+  }
 }
 
 bool ReceiveWireMessage(char* buf, size_t size, WireMessage* out) {
@@ -131,7 +147,12 @@ bool ReceiveWireMessage(char* buf, size_t size, WireMessage* out) {
     }
     out->payload_size = static_cast<size_t>(end - buf);
   } else if (*record_type == RecordType::Free) {
-    if (!ViewAndAdvance<FreeBatch>(&buf, &out->free_header, end)) {
+    if (!ViewAndAdvance<FreeEntry>(&buf, &out->free_header, end)) {
+      PERFETTO_DFATAL_OR_ELOG("Cannot read free header.");
+      return false;
+    }
+  } else if (*record_type == RecordType::HeapName) {
+    if (!ViewAndAdvance<HeapName>(&buf, &out->heap_name_header, end)) {
       PERFETTO_DFATAL_OR_ELOG("Cannot read free header.");
       return false;
     }
@@ -140,6 +161,22 @@ bool ReceiveWireMessage(char* buf, size_t size, WireMessage* out) {
     return false;
   }
   return true;
+}
+
+uint64_t GetHeapSamplingInterval(const ClientConfiguration& cli_config,
+                                 const char* heap_name) {
+  for (uint32_t i = 0; i < cli_config.num_heaps; ++i) {
+    const ClientConfigurationHeap& heap = cli_config.heaps[i];
+    static_assert(sizeof(heap.name) == HEAPPROFD_HEAP_NAME_SZ,
+                  "correct heap name size");
+    if (strncmp(&heap.name[0], heap_name, HEAPPROFD_HEAP_NAME_SZ) == 0) {
+      return heap.interval;
+    }
+  }
+  if (cli_config.all_heaps) {
+    return cli_config.default_interval;
+  }
+  return 0;
 }
 
 }  // namespace profiling

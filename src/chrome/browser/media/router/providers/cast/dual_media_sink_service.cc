@@ -14,6 +14,7 @@
 #include "chrome/browser/media/router/providers/cast/chrome_cast_message_handler.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media_router {
 
@@ -88,9 +89,11 @@ DualMediaSinkService::DualMediaSinkService() {
 
 DualMediaSinkService::DualMediaSinkService(
     std::unique_ptr<CastMediaSinkService> cast_media_sink_service,
-    std::unique_ptr<DialMediaSinkService> dial_media_sink_service)
+    std::unique_ptr<DialMediaSinkService> dial_media_sink_service,
+    std::unique_ptr<CastAppDiscoveryService> cast_app_discovery_service)
     : dial_media_sink_service_(std::move(dial_media_sink_service)),
-      cast_media_sink_service_(std::move(cast_media_sink_service)) {}
+      cast_media_sink_service_(std::move(cast_media_sink_service)),
+      cast_app_discovery_service_(std::move(cast_app_discovery_service)) {}
 
 DualMediaSinkService::~DualMediaSinkService() = default;
 
@@ -102,6 +105,29 @@ void DualMediaSinkService::OnSinksDiscovered(
   auto& sinks_for_provider = current_sinks_[provider_name];
   sinks_for_provider = std::move(sinks);
   sinks_discovered_callbacks_.Notify(provider_name, sinks_for_provider);
+}
+
+void DualMediaSinkService::BindLogger(LoggerImpl* logger_impl) {
+  if (logger_is_bound_)
+    return;
+  logger_is_bound_ = true;
+  mojo::PendingRemote<mojom::Logger> cast_pending_remote;
+  logger_impl->Bind(cast_pending_remote.InitWithNewPipeAndPassReceiver());
+  cast_media_sink_service_->BindLogger(std::move(cast_pending_remote));
+
+  mojo::PendingRemote<mojom::Logger> dial_pending_remote;
+  logger_impl->Bind(dial_pending_remote.InitWithNewPipeAndPassReceiver());
+  dial_media_sink_service_->BindLogger(std::move(dial_pending_remote));
+  if (!CastMediaRouteProviderEnabled())
+    return;
+  mojo::PendingRemote<mojom::Logger> cast_discovery_pending_remote;
+  logger_impl->Bind(
+      cast_discovery_pending_remote.InitWithNewPipeAndPassReceiver());
+  cast_app_discovery_service_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CastAppDiscoveryService::BindLogger,
+                     base::Unretained(cast_app_discovery_service_.get()),
+                     std::move(cast_discovery_pending_remote)));
 }
 
 }  // namespace media_router

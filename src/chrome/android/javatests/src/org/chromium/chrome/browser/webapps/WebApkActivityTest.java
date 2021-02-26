@@ -4,34 +4,37 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static org.junit.Assert.assertEquals;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
+import android.support.test.runner.lifecycle.Stage;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.webapps.WebApkIntentDataProviderBuilder;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /** Tests for WebAPK {@link WebappActivity}. */
@@ -69,7 +72,8 @@ public final class WebApkActivityTest {
         WebappActivity webApkActivity =
                 mActivityTestRule.startWebApkActivity(createIntentDataProvider(
                         getTestServerUrl("scope_a/page_1.html"), getTestServerUrl("scope_a/")));
-        WebappActivityTestRule.assertToolbarShowState(webApkActivity, false);
+        assertEquals(BrowserControlsState.HIDDEN,
+                WebappActivityTestRule.getToolbarShowState(webApkActivity));
 
         // We navigate outside scope and expect CCT toolbar to show on top of WebAPK Activity.
         String outOfScopeUrl = getTestServerUrl("manifest_test_page.html");
@@ -77,7 +81,7 @@ public final class WebApkActivityTest {
                 "window.top.location = '" + outOfScopeUrl + "'");
 
         ChromeTabUtils.waitForTabPageLoaded(webApkActivity.getActivityTab(), outOfScopeUrl);
-        WebappActivityTestRule.assertToolbarShowState(webApkActivity, true);
+        WebappActivityTestRule.assertToolbarShownMaybeHideable(webApkActivity);
     }
 
     /**
@@ -96,12 +100,11 @@ public final class WebApkActivityTest {
 
         // Move WebAPK to the background by launching Chrome.
         Intent intent = new Intent(InstrumentationRegistry.getTargetContext(), mainClass);
-        intent.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         InstrumentationRegistry.getTargetContext().startActivity(intent);
         ChromeActivityTestRule.waitFor(mainClass);
 
-        ApplicationTestUtils.waitForActivityState(webApkActivity, ActivityState.STOPPED);
+        ApplicationTestUtils.waitForActivityState(webApkActivity, Stage.STOPPED);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TabWebContentsDelegateAndroid tabDelegate =

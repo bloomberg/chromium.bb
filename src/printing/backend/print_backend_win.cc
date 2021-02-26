@@ -296,8 +296,8 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   // http://msdn.microsoft.com/en-us/library/windows/desktop/dd183552(v=vs.85).aspx
   caps.color_changeable =
       (DeviceCapabilities(name, port, DC_COLORDEVICE, nullptr, nullptr) == 1);
-  caps.color_model = printing::COLOR;
-  caps.bw_model = printing::GRAY;
+  caps.color_model = mojom::ColorModel::kColor;
+  caps.bw_model = mojom::ColorModel::kGray;
 
   caps.duplex_modes.push_back(mojom::DuplexMode::kSimplex);
   if (DeviceCapabilities(name, port, DC_DUPLEX, nullptr, nullptr) == 1) {
@@ -337,8 +337,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
 
   {
     Microsoft::WRL::ComPtr<IStream> print_capabilities_stream;
-    hr = CreateStreamOnHGlobal(nullptr, TRUE,
-                               print_capabilities_stream.GetAddressOf());
+    hr = CreateStreamOnHGlobal(nullptr, TRUE, &print_capabilities_stream);
     DCHECK(SUCCEEDED(hr));
     if (print_capabilities_stream.Get()) {
       base::win::ScopedBstr error;
@@ -360,8 +359,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
       if (!devmode_out)
         return false;
       Microsoft::WRL::ComPtr<IStream> printer_defaults_stream;
-      hr = CreateStreamOnHGlobal(nullptr, TRUE,
-                                 printer_defaults_stream.GetAddressOf());
+      hr = CreateStreamOnHGlobal(nullptr, TRUE, &printer_defaults_stream);
       DCHECK(SUCCEEDED(hr));
       if (printer_defaults_stream.Get()) {
         DWORD dm_size = devmode_out->dmSize + devmode_out->dmDriverExtra;

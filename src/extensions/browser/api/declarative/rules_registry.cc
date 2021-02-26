@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -22,6 +21,7 @@
 #include "extensions/browser/api/declarative/rules_cache_delegate.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/state_store.h"
@@ -312,6 +312,14 @@ void RulesRegistry::DeserializeAndAddRules(const std::string& extension_id,
                                            std::unique_ptr<base::Value> rules) {
   DCHECK_CURRENTLY_ON(owner_thread());
 
+  // Since this is called in response to asynchronously loading rules from
+  // storage, the extension may have been unloaded by the time this is called.
+  if (!ExtensionRegistry::Get(browser_context())
+           ->enabled_extensions()
+           .Contains(extension_id)) {
+    return;
+  }
+
   std::string error = AddRulesNoFill(extension_id, RulesFromValue(rules.get()),
                                      &rules_, nullptr);
   if (!error.empty())
@@ -348,8 +356,8 @@ void RulesRegistry::ProcessChangedRules(const std::string& extension_id) {
 
   std::vector<const api::events::Rule*> new_rules;
   GetRules(extension_id, &rules_, &new_rules);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&RulesCacheDelegate::UpdateRules, cache_delegate_,
                      extension_id, RulesToValue(new_rules)));
 }

@@ -7,13 +7,13 @@
 
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "base/base_export.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
@@ -55,6 +55,9 @@ class BASE_EXPORT ObserverListThreadSafeBase
     : public RefCountedThreadSafe<ObserverListThreadSafeBase> {
  public:
   ObserverListThreadSafeBase() = default;
+  ObserverListThreadSafeBase(const ObserverListThreadSafeBase&) = delete;
+  ObserverListThreadSafeBase& operator=(const ObserverListThreadSafeBase&) =
+      delete;
 
  protected:
   template <typename ObserverType, typename Method>
@@ -84,8 +87,6 @@ class BASE_EXPORT ObserverListThreadSafeBase
 
  private:
   friend class RefCountedThreadSafe<ObserverListThreadSafeBase>;
-
-  DISALLOW_COPY_AND_ASSIGN(ObserverListThreadSafeBase);
 };
 
 }  // namespace internal
@@ -96,13 +97,18 @@ class ObserverListThreadSafe : public internal::ObserverListThreadSafeBase {
   ObserverListThreadSafe() = default;
   explicit ObserverListThreadSafe(ObserverListPolicy policy)
       : policy_(policy) {}
+  ObserverListThreadSafe(const ObserverListThreadSafe&) = delete;
+  ObserverListThreadSafe& operator=(const ObserverListThreadSafe&) = delete;
 
   // Adds |observer| to the list. |observer| must not already be in the list.
   void AddObserver(ObserverType* observer) {
-    // TODO(fdoray): Change this to a DCHECK once all call sites have a
-    // SequencedTaskRunnerHandle.
-    if (!SequencedTaskRunnerHandle::IsSet())
-      return;
+    DCHECK(SequencedTaskRunnerHandle::IsSet())
+        << "An observer can only be registered when SequencedTaskRunnerHandle "
+           "is set. If this is in a unit test, you're likely merely missing a "
+           "base::test::(SingleThread)TaskEnvironment in your fixture. "
+           "Otherwise, try running this code on a named thread (main/UI/IO) or "
+           "from a task posted to a base::SequencedTaskRunner or "
+           "base::SingleThreadTaskRunner.";
 
     AutoLock auto_lock(lock_);
 
@@ -251,15 +257,12 @@ class ObserverListThreadSafe : public internal::ObserverListThreadSafeBase {
 
   const ObserverListPolicy policy_ = ObserverListPolicy::ALL;
 
-  // Synchronizes access to |observers_|.
   mutable Lock lock_;
 
   // Keys are observers. Values are the SequencedTaskRunners on which they must
   // be notified.
   std::unordered_map<ObserverType*, scoped_refptr<SequencedTaskRunner>>
-      observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(ObserverListThreadSafe);
+      observers_ GUARDED_BY(lock_);
 };
 
 }  // namespace base

@@ -4,15 +4,13 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
-import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/js/action_link.js';
 import 'chrome://resources/cr_elements/action_link_css.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import './icons.js';
 import '../print_preview_utils.js';
 import './destination_list.js';
 import './print_preview_search_box.js';
@@ -26,6 +24,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Destination} from '../data/destination.js';
@@ -33,7 +32,7 @@ import {DestinationStore} from '../data/destination_store.js';
 import {Invitation} from '../data/invitation.js';
 import {InvitationStore} from '../data/invitation_store.js';
 import {Metrics, MetricsContext} from '../metrics.js';
-import {NativeLayer} from '../native_layer.js';
+import {NativeLayerImpl} from '../native_layer.js';
 
 Polymer({
   is: 'print-preview-destination-dialog',
@@ -71,14 +70,6 @@ Polymer({
       value: null,
     },
 
-    cloudPrintDisabled: Boolean,
-
-    /** @private */
-    cloudPrintPromoDismissed_: {
-      type: Boolean,
-      value: false,
-    },
-
     /** @private {!Array<!Destination>} */
     destinations_: {
       type: Array,
@@ -97,13 +88,16 @@ Polymer({
       value: null,
     },
 
-    /** @private {boolean} */
-    shouldShowCloudPrintPromo_: {
+    // <if expr="chromeos">
+    /** @private */
+    saveToDriveFlagEnabled_: {
       type: Boolean,
-      computed: 'computeShouldShowCloudPrintPromo_(' +
-          'cloudPrintDisabled, activeUser, cloudPrintPromoDismissed_)',
-      observer: 'onShouldShowCloudPrintPromoChanged_',
+      value() {
+        return loadTimeData.getBoolean('printSaveToDrive');
+      },
+      readOnly: true,
     },
+    // </if>
   },
 
   listeners: {
@@ -123,26 +117,6 @@ Polymer({
 
   /** @private {boolean} */
   initialized_: false,
-
-  /** @override */
-  ready() {
-    this.$$('.promo-text').innerHTML =
-        this.i18nAdvanced('cloudPrintPromotion', {
-          substitutions: ['<a is="action-link" class="sign-in">', '</a>'],
-          attrs: {
-            'is': (node, v) => v === 'action-link',
-            'class': (node, v) => v === 'sign-in',
-            'tabindex': (node, v) => v === '0',
-            'role': (node, v) => v === 'link',
-          },
-        });
-  },
-
-  /** @override */
-  attached() {
-    this.tracker_.add(
-        assert(this.$$('.sign-in')), 'click', this.onSignInClick_.bind(this));
-  },
 
   /** @override */
   detached() {
@@ -216,10 +190,30 @@ Polymer({
 
     this.updateList(
         'destinations_', destination => destination.key,
-        this.destinationStore.destinations(this.activeUser));
+        this.getDestinationList_());
 
     this.loadingDestinations_ =
         this.destinationStore.isPrintDestinationSearchInProgress;
+  },
+
+  /**
+   * @return {!Array<!Destination>}
+   * @private
+   */
+  getDestinationList_() {
+    const destinations = this.destinationStore.destinations(this.activeUser);
+    // <if expr="chromeos">
+    // When |saveToDriveFlagEnabled_| is true, we don't want to show a
+    // 'Save to Drive' option in the destination dialog.
+    if (this.saveToDriveFlagEnabled_) {
+      return destinations.filter(
+          destination => destination.id !== Destination.GooglePromotedId.DOCS &&
+              destination.id !==
+                  Destination.GooglePromotedId.SAVE_TO_DRIVE_CROS);
+    }
+    // </if>
+
+    return destinations;
   },
 
   /** @private */
@@ -337,17 +331,6 @@ Polymer({
     return this.$.dialog.hasAttribute('open');
   },
 
-  /** @private */
-  onSignInClick_() {
-    this.metrics_.record(Metrics.DestinationSearchBucket.SIGNIN_TRIGGERED);
-    NativeLayer.getInstance().signIn(false);
-  },
-
-  /** @private */
-  onCloudPrintPromoDismissed_() {
-    this.cloudPrintPromoDismissed_ = true;
-  },
-
   /**
    * Updates printer sharing invitations UI.
    * @private
@@ -426,43 +409,15 @@ Polymer({
       this.metrics_.record(Metrics.DestinationSearchBucket.ACCOUNT_CHANGED);
     } else {
       select.value = this.activeUser;
-      NativeLayer.getInstance().signIn(true);
+      NativeLayerImpl.getInstance().signIn();
       this.metrics_.record(
           Metrics.DestinationSearchBucket.ADD_ACCOUNT_SELECTED);
     }
   },
 
-  /**
-   * @return {boolean} Whether to show the cloud print promo.
-   * @private
-   */
-  computeShouldShowCloudPrintPromo_() {
-    return !this.activeUser && !this.cloudPrintDisabled &&
-        !this.cloudPrintPromoDismissed_;
-  },
-
   /** @private */
-  onShouldShowCloudPrintPromoChanged_() {
-    if (this.shouldShowCloudPrintPromo_) {
-      this.metrics_.record(Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
-    } else {
-      // Since the sign in link/dismiss promo button is disappearing, focus the
-      // search box.
-      this.$.searchBox.focus();
-    }
-  },
-
-  /**
-   * @return {boolean} Whether to show the footer.
-   * @private
-   */
-  shouldShowFooter_() {
-    return this.shouldShowCloudPrintPromo_ || !!this.invitation_;
-  },
-
-  /** @private */
-  onOpenSettingsPrintPage_() {
+  onManageButtonClick_() {
     this.metrics_.record(Metrics.DestinationSearchBucket.MANAGE_BUTTON_CLICKED);
-    NativeLayer.getInstance().openSettingsPrintPage();
+    NativeLayerImpl.getInstance().managePrinters();
   },
 });

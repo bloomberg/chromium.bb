@@ -16,14 +16,14 @@ GrBlockAllocator::GrBlockAllocator(GrowthPolicy policy, size_t blockIncrementByt
         : fTail(&fHead)
         // Round up to the nearest max-aligned value, and then divide so that fBlockSizeIncrement
         // can effectively fit higher byte counts in its 16 bits of storage
-        , fBlockIncrement(SkTo<uint16_t>(GrAlignTo(blockIncrementBytes, kBlockIncrementUnits)
-                                                / kBlockIncrementUnits))
+        , fBlockIncrement(SkTo<uint16_t>(GrAlignTo(blockIncrementBytes, kAddressAlign)
+                                                / kAddressAlign))
         , fGrowthPolicy(static_cast<uint64_t>(policy))
         , fN0((policy == GrowthPolicy::kLinear || policy == GrowthPolicy::kExponential) ? 1 : 0)
         , fN1(1)
-        // The head block always fills remaiing space from GrBlockAllocator's size, because it's
+        // The head block always fills remaining space from GrBlockAllocator's size, because it's
         // inline, but can take over the specified number of bytes immediately after it.
-        , fHead(nullptr, additionalPreallocBytes + BaseHeadBlockSize()) {
+        , fHead(/*prev=*/nullptr, additionalPreallocBytes + BaseHeadBlockSize()) {
     SkASSERT(fBlockIncrement >= 1);
     SkASSERT(additionalPreallocBytes <= kMaxAllocationSize);
 }
@@ -33,19 +33,24 @@ GrBlockAllocator::Block::Block(Block* prev, int allocationSize)
          , fPrev(prev)
          , fSize(allocationSize)
          , fCursor(kDataStart)
-         , fMetadata(0) {
+         , fMetadata(0)
+         , fAllocatorMetadata(0) {
     SkASSERT(allocationSize >= (int) sizeof(Block));
     SkDEBUGCODE(fSentinel = kAssignedMarker;)
+
+    this->poisonRange(kDataStart, fSize);
 }
 
 GrBlockAllocator::Block::~Block() {
+    this->unpoisonRange(kDataStart, fSize);
+
     SkASSERT(fSentinel == kAssignedMarker);
     SkDEBUGCODE(fSentinel = kFreedMarker;) // FWIW
 }
 
 size_t GrBlockAllocator::totalSize() const {
     // Use size_t since the sum across all blocks could exceed 'int', even though each block won't
-    size_t size = offsetof(GrBlockAllocator, fHead);
+    size_t size = offsetof(GrBlockAllocator, fHead) + this->scratchBlockSize();
     for (const Block* b : this->blocks()) {
         size += b->fSize;
     }
@@ -54,7 +59,10 @@ size_t GrBlockAllocator::totalSize() const {
 }
 
 size_t GrBlockAllocator::totalUsableSpace() const {
-    size_t size = 0;
+    size_t size = this->scratchBlockSize();
+    if (size > 0) {
+        size -= kDataStart; // scratchBlockSize reports total block size, not usable size
+    }
     for (const Block* b : this->blocks()) {
         size += (b->fSize - kDataStart);
     }
@@ -86,9 +94,15 @@ GrBlockAllocator::Block* GrBlockAllocator::findOwningBlock(const void* p) {
 }
 
 void GrBlockAllocator::releaseBlock(Block* block) {
-    if (block->fPrev) {
-        // Unlink block from the double-linked list of blocks
-        SkASSERT(block != &fHead);
+     if (block == &fHead) {
+        // Reset the cursor of the head block so that it can be reused if it becomes the new tail
+        block->fCursor = kDataStart;
+        block->fMetadata = 0;
+        block->poisonRange(kDataStart, block->fSize);
+        // Unlike in reset(), we don't set the head's next block to null because there are
+        // potentially heap-allocated blocks that are still connected to it.
+    } else {
+        SkASSERT(block->fPrev);
         block->fPrev->fNext = block->fNext;
         if (block->fNext) {
             SkASSERT(fTail != block);
@@ -98,14 +112,17 @@ void GrBlockAllocator::releaseBlock(Block* block) {
             fTail = block->fPrev;
         }
 
-        delete block;
-    } else {
-        // Reset the cursor of the head block so that it can be reused
-        SkASSERT(block == &fHead);
-        block->fCursor = kDataStart;
-        block->fMetadata = 0;
-        // Unlike in reset(), we don't set the head's next block to null because there are
-        // potentially heap-allocated blocks that are still connected to it.
+        // The released block becomes the new scratch block (if it's bigger), or delete it
+        if (this->scratchBlockSize() < block->fSize) {
+            SkASSERT(block != fHead.fPrev); // shouldn't already be the scratch block
+            if (fHead.fPrev) {
+                delete fHead.fPrev;
+            }
+            block->markAsScratch();
+            fHead.fPrev = block;
+        } else {
+            delete block;
+        }
     }
 
     // Decrement growth policy (opposite of addBlock()'s increment operations)
@@ -130,29 +147,51 @@ void GrBlockAllocator::releaseBlock(Block* block) {
     SkASSERT(fN1 >= 1 && fN0 >= 0);
 }
 
-void GrBlockAllocator::reset() {
-    // We can't use the RBlocks for-range since we're destroying the linked list as we go
-    Block* toFree = fTail;
-    while(toFree) {
-        Block* prev = toFree->fPrev;
-        if (prev) {
-            SkASSERT(toFree != &fHead);
-            delete toFree;
-        } else {
-            SkASSERT(toFree == &fHead);
-            fTail = toFree;
-            // the head block's prev is already null, it's next block was deleted last iteration
-            fTail->fNext = nullptr;
-            fTail->fCursor = kDataStart;
-            fTail->fMetadata = 0;
-        }
+void GrBlockAllocator::stealHeapBlocks(GrBlockAllocator* other) {
+    Block* toSteal = other->fHead.fNext;
+    if (toSteal) {
+        // The other's next block connects back to this allocator's current tail, and its new tail
+        // becomes the end of other's block linked list.
+        SkASSERT(other->fTail != &other->fHead);
+        toSteal->fPrev = fTail;
+        fTail->fNext = toSteal;
+        fTail = other->fTail;
+        // The other allocator becomes just its inline head block
+        other->fTail = &other->fHead;
+        other->fHead.fNext = nullptr;
+    } // else no block to steal
+}
 
-        toFree = prev;
+void GrBlockAllocator::reset() {
+    for (Block* b : this->rblocks()) {
+        if (b == &fHead) {
+            // Reset metadata and cursor, tail points to the head block again
+            fTail = b;
+            b->fNext = nullptr;
+            b->fCursor = kDataStart;
+            b->fMetadata = 0;
+            // For reset(), but NOT releaseBlock(), the head allocatorMetadata and scratch block
+            // are reset/destroyed.
+            b->fAllocatorMetadata = 0;
+            b->poisonRange(kDataStart, b->fSize);
+            this->resetScratchSpace();
+        } else {
+            delete b;
+        }
     }
+    SkASSERT(fTail == &fHead && fHead.fNext == nullptr && fHead.fPrev == nullptr &&
+             fHead.metadata() == 0 && fHead.fCursor == kDataStart);
 
     GrowthPolicy gp = static_cast<GrowthPolicy>(fGrowthPolicy);
     fN0 = (gp == GrowthPolicy::kLinear || gp == GrowthPolicy::kExponential) ? 1 : 0;
     fN1 = 1;
+}
+
+void GrBlockAllocator::resetScratchSpace() {
+    if (fHead.fPrev) {
+        delete fHead.fPrev;
+        fHead.fPrev = nullptr;
+    }
 }
 
 void GrBlockAllocator::addBlock(int minimumSize, int maxSize) {
@@ -162,40 +201,59 @@ void GrBlockAllocator::addBlock(int minimumSize, int maxSize) {
     static constexpr int kMaxN = (1 << 23) - 1;
     static_assert(2 * kMaxN <= std::numeric_limits<int32_t>::max()); // Growth policy won't overflow
 
-    // Calculate the 'next' size per growth policy sequence
-    GrowthPolicy gp = static_cast<GrowthPolicy>(fGrowthPolicy);
-    int nextN1 = fN0 + fN1;
-    int nextN0;
-    if (gp == GrowthPolicy::kFixed || gp == GrowthPolicy::kLinear) {
-        nextN0 = fN0;
-    } else if (gp == GrowthPolicy::kFibonacci) {
-        nextN0 = fN1;
-    } else {
-        SkASSERT(gp == GrowthPolicy::kExponential);
-        nextN0 = nextN1;
-    }
-    fN0 = std::min(kMaxN, nextN0);
-    fN1 = std::min(kMaxN, nextN1);
-
-    // However, must guard against overflow here, since all the size-based asserts prevented
-    // alignment/addition overflows, while multiplication requires 2x bits instead of x+1.
-    int sizeIncrement = fBlockIncrement * kBlockIncrementUnits;
-    int allocSize;
-    if (maxSize / sizeIncrement < nextN1) {
-        // The growth policy would overflow, so use the max. We've already confirmed that maxSize
-        // will be sufficient for the requested minimumSize
-        allocSize = maxSize;
-    } else {
-        allocSize = std::max(minimumSize, sizeIncrement * nextN1);
-        // Then round to a nice boundary since the block isn't maxing out:
+    auto alignAllocSize = [](int size) {
+        // Round to a nice boundary since the block isn't maxing out:
         //   if allocSize > 32K, aligns on 4K boundary otherwise aligns on max_align_t, to play
         //   nicely with jeMalloc (from SkArenaAlloc).
-        int mask = allocSize > (1 << 15) ? ((1 << 12) - 1) : (kBlockIncrementUnits - 1);
-        allocSize = std::min((allocSize + mask) & ~mask, maxSize);
+        int mask = size > (1 << 15) ? ((1 << 12) - 1) : (kAddressAlign - 1);
+        return (size + mask) & ~mask;
+    };
+
+    int allocSize;
+    void* mem = nullptr;
+    if (this->scratchBlockSize() >= minimumSize) {
+        // Activate the scratch block instead of making a new block
+        SkASSERT(fHead.fPrev->isScratch());
+        allocSize = fHead.fPrev->fSize;
+        mem = fHead.fPrev;
+        fHead.fPrev = nullptr;
+    } else if (minimumSize < maxSize) {
+        // Calculate the 'next' size per growth policy sequence
+        GrowthPolicy gp = static_cast<GrowthPolicy>(fGrowthPolicy);
+        int nextN1 = fN0 + fN1;
+        int nextN0;
+        if (gp == GrowthPolicy::kFixed || gp == GrowthPolicy::kLinear) {
+            nextN0 = fN0;
+        } else if (gp == GrowthPolicy::kFibonacci) {
+            nextN0 = fN1;
+        } else {
+            SkASSERT(gp == GrowthPolicy::kExponential);
+            nextN0 = nextN1;
+        }
+        fN0 = std::min(kMaxN, nextN0);
+        fN1 = std::min(kMaxN, nextN1);
+
+        // However, must guard against overflow here, since all the size-based asserts prevented
+        // alignment/addition overflows, while multiplication requires 2x bits instead of x+1.
+        int sizeIncrement = fBlockIncrement * kAddressAlign;
+        if (maxSize / sizeIncrement < nextN1) {
+            // The growth policy would overflow, so use the max. We've already confirmed that
+            // maxSize will be sufficient for the requested minimumSize
+            allocSize = maxSize;
+        } else {
+            allocSize = std::min(alignAllocSize(std::max(minimumSize, sizeIncrement * nextN1)),
+                                 maxSize);
+        }
+    } else {
+        SkASSERT(minimumSize == maxSize);
+        // Still align on a nice boundary, no max clamping since that would just undo the alignment
+        allocSize = alignAllocSize(minimumSize);
     }
 
     // Create new block and append to the linked list of blocks in this allocator
-    void* mem = operator new(allocSize);
+    if (!mem) {
+        mem = operator new(allocSize);
+    }
     fTail->fNext = new (mem) Block(fTail, allocSize);
     fTail = fTail->fNext;
 }
@@ -208,7 +266,13 @@ void GrBlockAllocator::validate() const {
         blocks.push_back(block);
 
         SkASSERT(kAssignedMarker == block->fSentinel);
-        SkASSERT(prev == block->fPrev);
+        if (block == &fHead) {
+            // The head blocks' fPrev may be non-null if it holds a scratch block, but that's not
+            // considered part of the linked list
+            SkASSERT(!prev && (!fHead.fPrev || fHead.fPrev->isScratch()));
+        } else {
+            SkASSERT(prev == block->fPrev);
+        }
         if (prev) {
             SkASSERT(prev->fNext == block);
         }

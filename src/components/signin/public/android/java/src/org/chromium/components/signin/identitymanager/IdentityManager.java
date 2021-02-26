@@ -14,6 +14,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountInfo;
 
 /**
@@ -31,14 +32,25 @@ public class IdentityManager {
          * Called when an account becomes the user's primary account.
          * This method is not called during a reauth.
          */
-        void onPrimaryAccountSet(CoreAccountInfo account);
+        default void onPrimaryAccountSet(CoreAccountInfo account) {}
 
         /**
          * Called when the user moves from having a primary account to no longer having a primary
          * account (note that the user may still have an *unconsented* primary account after this
          * event).
          */
-        void onPrimaryAccountCleared(CoreAccountInfo account);
+        default void onPrimaryAccountCleared(CoreAccountInfo account) {}
+
+        /**
+         * Called when the Gaia cookie has been deleted explicitly by a user action, e.g. from
+         * the settings.
+         */
+        default void onAccountsCookieDeletedByUserAction() {}
+
+        /**
+         * Called after an account is updated.
+         */
+        default void onExtendedAccountInfoUpdated(AccountInfo accountInfo) {}
     }
     /**
      * A simple callback for getAccessToken.
@@ -111,6 +123,25 @@ public class IdentityManager {
         }
     }
 
+    @CalledByNative
+    @VisibleForTesting
+    public void onAccountsCookieDeletedByUserAction() {
+        for (Observer observer : mObservers) {
+            observer.onAccountsCookieDeletedByUserAction();
+        }
+    }
+
+    /**
+     * Called after an account is updated.
+     */
+    @CalledByNative
+    @VisibleForTesting
+    public void onExtendedAccountInfoUpdated(AccountInfo accountInfo) {
+        for (Observer observer : mObservers) {
+            observer.onExtendedAccountInfoUpdated(accountInfo);
+        }
+    }
+
     /**
      * Returns whether the user's primary account is available.
      */
@@ -146,11 +177,11 @@ public class IdentityManager {
     }
 
     /**
-     * Looks up and returns information for account with given |email_address|. If the account
+     * Looks up and returns information for account with given |email|. If the account
      * cannot be found, return a null value.
      */
-    public @Nullable CoreAccountInfo
-    findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(String email) {
+    public @Nullable AccountInfo findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+            String email) {
         return IdentityManagerJni.get()
                 .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
                         mNativeIdentityManager, email);
@@ -228,7 +259,7 @@ public class IdentityManager {
         @Nullable
         CoreAccountInfo getPrimaryAccountInfo(long nativeIdentityManager, int consentLevel);
         @Nullable
-        CoreAccountInfo findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+        AccountInfo findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
                 long nativeIdentityManager, String email);
         CoreAccountInfo[] getAccountsWithRefreshTokens(long nativeIdentityManager);
     }

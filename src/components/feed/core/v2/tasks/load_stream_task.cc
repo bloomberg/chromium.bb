@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
@@ -18,6 +18,7 @@
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_stream.h"
+#include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/proto_util.h"
 #include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/stream_model.h"
@@ -42,19 +43,22 @@ feedwire::FeedQuery::RequestReason GetRequestReason(LoadType load_type) {
 Result::Result() = default;
 Result::Result(LoadStreamStatus status) : final_status(status) {}
 Result::~Result() = default;
-Result::Result(const Result&) = default;
-Result& Result::operator=(const Result&) = default;
+Result::Result(Result&&) = default;
+Result& Result::operator=(Result&&) = default;
 
 LoadStreamTask::LoadStreamTask(LoadType load_type,
                                FeedStream* stream,
                                base::OnceCallback<void(Result)> done_callback)
     : load_type_(load_type),
       stream_(stream),
-      done_callback_(std::move(done_callback)) {}
+      done_callback_(std::move(done_callback)) {
+  latencies_ = std::make_unique<LoadLatencyTimes>();
+}
 
 LoadStreamTask::~LoadStreamTask() = default;
 
 void LoadStreamTask::Run() {
+  latencies_->StepComplete(LoadLatencyTimes::kTaskExecution);
   // Phase 1: Try to load from persistent storage.
 
   // TODO(harringtond): We're checking ShouldAttemptLoad() here and before the
@@ -83,6 +87,8 @@ void LoadStreamTask::Run() {
 void LoadStreamTask::LoadFromStoreComplete(
     LoadStreamFromStoreTask::Result result) {
   load_from_store_status_ = result.status;
+  latencies_->StepComplete(LoadLatencyTimes::kLoadFromStore);
+
   // Phase 2.
   //  - If loading from store works, update the model.
   //  - Otherwise, try to load from the network.
@@ -110,38 +116,60 @@ void LoadStreamTask::LoadFromStoreComplete(
 }
 
 void LoadStreamTask::UploadActionsComplete(UploadActionsTask::Result result) {
+  bool force_signed_out_request =
+      stream_->ShouldForceSignedOutFeedQueryRequest();
+  upload_actions_result_ =
+      std::make_unique<UploadActionsTask::Result>(std::move(result));
+  latencies_->StepComplete(LoadLatencyTimes::kUploadActions);
   stream_->GetNetwork()->SendQueryRequest(
       CreateFeedQueryRefreshRequest(
-          GetRequestReason(load_type_), stream_->GetRequestMetadata(),
+          GetRequestReason(load_type_),
+          stream_->GetRequestMetadata(/*is_for_next_page=*/false),
           stream_->GetMetadata()->GetConsistencyToken()),
+      force_signed_out_request,
       base::BindOnce(&LoadStreamTask::QueryRequestComplete, GetWeakPtr()));
 }
 
 void LoadStreamTask::QueryRequestComplete(
     FeedNetwork::QueryRequestResult result) {
+  latencies_->StepComplete(LoadLatencyTimes::kQueryRequest);
+
   DCHECK(!stream_->GetModel());
 
   network_response_info_ = result.response_info;
 
+  if (result.response_info.status_code != 200)
+    return Done(LoadStreamStatus::kNetworkFetchFailed);
+
   if (!result.response_body) {
-    Done(LoadStreamStatus::kNoResponseBody);
-    return;
+    if (result.response_info.response_body_bytes > 0)
+      return Done(LoadStreamStatus::kCannotParseNetworkResponseBody);
+    else
+      return Done(LoadStreamStatus::kNoResponseBody);
   }
 
   RefreshResponseData response_data =
       stream_->GetWireResponseTranslator()->TranslateWireResponse(
           *result.response_body,
           StreamModelUpdateRequest::Source::kNetworkUpdate,
-          stream_->GetClock()->Now());
-  if (!response_data.model_update_request) {
-    Done(LoadStreamStatus::kProtoTranslationFailed);
-    return;
-  }
+          result.response_info.was_signed_in, stream_->GetClock()->Now());
+  if (!response_data.model_update_request)
+    return Done(LoadStreamStatus::kProtoTranslationFailed);
+
+  loaded_new_content_from_network_ = true;
 
   stream_->GetStore()->OverwriteStream(
       std::make_unique<StreamModelUpdateRequest>(
           *response_data.model_update_request),
       base::DoNothing());
+
+  bool isNoticeCardFulfilled = response_data.model_update_request->stream_data
+                                   .privacy_notice_fulfilled();
+  stream_->SetLastStreamLoadHadNoticeCard(isNoticeCardFulfilled);
+  MetricsReporter::NoticeCardFulfilled(isNoticeCardFulfilled);
+
+  stream_->GetMetadata()->MaybeUpdateSessionId(response_data.session_id,
+                                               stream_->GetClock());
 
   if (load_type_ != LoadType::kBackgroundRefresh) {
     auto model = std::make_unique<StreamModel>();
@@ -161,7 +189,10 @@ void LoadStreamTask::Done(LoadStreamStatus status) {
   result.final_status = status;
   result.load_type = load_type_;
   result.network_response_info = network_response_info_;
-  std::move(done_callback_).Run(result);
+  result.loaded_new_content_from_network = loaded_new_content_from_network_;
+  result.latencies = std::move(latencies_);
+  result.upload_actions_result = std::move(upload_actions_result_);
+  std::move(done_callback_).Run(std::move(result));
   TaskComplete();
 }
 

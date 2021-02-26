@@ -9,6 +9,7 @@
 
 #include "base/containers/id_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/services/cellular_setup/cellular_setup_base.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
@@ -23,10 +24,19 @@ class OtaActivator;
 // pointer back to the client.
 class CellularSetupImpl : public CellularSetupBase {
  public:
-  CellularSetupImpl();
+  // Creates an instance with a lifetime that is bound to the connection
+  // that is supplying |receiver|.
+  static void CreateAndBindToReciever(
+      mojo::PendingReceiver<mojom::CellularSetup> receiver);
+
   ~CellularSetupImpl() override;
 
  private:
+  friend class CellularSetupImplTest;
+
+  // For unit tests.
+  CellularSetupImpl();
+
   // mojom::CellularSetup:
   void StartActivation(mojo::PendingRemote<mojom::ActivationDelegate> delegate,
                        StartActivationCallback callback) override;
@@ -35,6 +45,7 @@ class CellularSetupImpl : public CellularSetupBase {
 
   size_t next_request_id_ = 0u;
   base::IDMap<std::unique_ptr<OtaActivator>, size_t> ota_activator_map_;
+  base::WeakPtrFactory<CellularSetupImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CellularSetupImpl);
 };

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/logging.h"
 #include "third_party/blink/renderer/modules/webtransport/quic_transport.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -40,13 +39,16 @@ void BidirectionalStream::Init() {
 
 void BidirectionalStream::OnIncomingStreamClosed(bool fin_received) {
   incoming_stream_->OnIncomingStreamClosed(fin_received);
-  // TODO(ricea): Review this behaviour when adding detail to the specification.
-  if (!sent_fin_) {
-    outgoing_stream_->Reset();
+  if (outgoing_stream_->GetState() == OutgoingStream::State::kSentFin) {
+    return;
   }
+
+  ScriptState::Scope scope(outgoing_stream_->GetScriptState());
+  outgoing_stream_->Reset();
 }
 
 void BidirectionalStream::Reset() {
+  ScriptState::Scope scope(outgoing_stream_->GetScriptState());
   outgoing_stream_->Reset();
   incoming_stream_->Reset();
 }
@@ -58,17 +60,18 @@ void BidirectionalStream::ContextDestroyed() {
 
 void BidirectionalStream::SendFin() {
   quic_transport_->SendFin(stream_id_);
-  sent_fin_ = true;
   // The IncomingStream will be closed on the network service side.
 }
 
 void BidirectionalStream::OnOutgoingStreamAbort() {
-  DCHECK(!sent_fin_);
+  quic_transport_->AbortStream(stream_id_);
   quic_transport_->ForgetStream(stream_id_);
-  incoming_stream_->Reset();
+  if (incoming_stream_->GetState() == IncomingStream::State::kOpen) {
+    incoming_stream_->Reset();
+  }
 }
 
-void BidirectionalStream::Trace(Visitor* visitor) {
+void BidirectionalStream::Trace(Visitor* visitor) const {
   visitor->Trace(outgoing_stream_);
   visitor->Trace(incoming_stream_);
   visitor->Trace(quic_transport_);
@@ -79,6 +82,10 @@ void BidirectionalStream::Trace(Visitor* visitor) {
 
 void BidirectionalStream::OnIncomingStreamAbort() {
   quic_transport_->ForgetStream(stream_id_);
+  if (outgoing_stream_->GetState() == OutgoingStream::State::kAborted) {
+    return;
+  }
+  ScriptState::Scope scope(outgoing_stream_->GetScriptState());
   outgoing_stream_->Reset();
 }
 

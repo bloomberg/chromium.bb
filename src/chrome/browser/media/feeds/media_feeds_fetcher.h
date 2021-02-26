@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_MEDIA_FEEDS_MEDIA_FEEDS_FETCHER_H_
 
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/media/feeds/media_feeds_converter.h"
+#include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "components/schema_org/common/improved_metadata.mojom.h"
 #include "components/schema_org/extractor.h"
 #include "url/gurl.h"
@@ -30,10 +32,8 @@ class MediaFeedsFetcher {
     kGone,
   };
 
-  using MediaFeedCallback =
-      base::OnceCallback<void(const schema_org::improved::mojom::EntityPtr&,
-                              Status,
-                              /*was_fetched_via_cache=*/bool)>;
+  using MediaFeedCallback = base::OnceCallback<void(
+      media_history::MediaHistoryKeyedService::MediaFeedFetchResult)>;
   explicit MediaFeedsFetcher(
       scoped_refptr<::network::SharedURLLoaderFactory> url_loader_factory);
   ~MediaFeedsFetcher();
@@ -46,12 +46,10 @@ class MediaFeedsFetcher {
   // Called when fetch request completes. Parses the received media feed
   // data and dispatches them to callbacks stored in queue.
   void OnURLFetchComplete(const GURL& original_url,
-                          MediaFeedCallback callback,
                           std::unique_ptr<std::string> feed_data);
 
   // Called when parsing and extraction of the schema.org JSON is complete.
-  void OnParseComplete(MediaFeedCallback callback,
-                       const bool was_fetched_via_cache,
+  void OnParseComplete(const bool was_fetched_via_cache,
                        schema_org::improved::mojom::EntityPtr parsed_entity);
 
   const scoped_refptr<::network::SharedURLLoaderFactory> url_loader_factory_;
@@ -59,6 +57,14 @@ class MediaFeedsFetcher {
   // Contains the current fetch request. Will only have a value while a request
   // is pending, and will be reset by |OnURLFetchComplete| or if cancelled.
   std::unique_ptr<::network::SimpleURLLoader> pending_request_;
+
+  MediaFeedsConverter media_feeds_converter_;
+
+  url::Origin feed_origin_;
+  bool bypass_cache_ = false;
+  std::unique_ptr<media_history::MediaHistoryKeyedService::MediaFeedFetchResult>
+      pending_result_;
+  MediaFeedCallback pending_callback_;
 
   schema_org::Extractor extractor_;
 

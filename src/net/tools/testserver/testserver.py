@@ -55,16 +55,13 @@ import pyftpdlib.ftpserver
 import tlslite
 import tlslite.api
 
-import echo_message
 import testserver_base
 
 SERVER_HTTP = 0
 SERVER_FTP = 1
-SERVER_TCP_ECHO = 2
-SERVER_UDP_ECHO = 3
-SERVER_BASIC_AUTH_PROXY = 4
-SERVER_WEBSOCKET = 5
-SERVER_PROXY = 6
+SERVER_BASIC_AUTH_PROXY = 2
+SERVER_WEBSOCKET = 3
+SERVER_PROXY = 4
 
 # Default request queue size for WebSocketServer.
 _DEFAULT_REQUEST_QUEUE_SIZE = 128
@@ -260,46 +257,6 @@ class FTPServer(testserver_base.ClientRestrictingServerMixIn,
   pass
 
 
-class TCPEchoServer(testserver_base.ClientRestrictingServerMixIn,
-                    SocketServer.TCPServer):
-  """A TCP echo server that echoes back what it has received."""
-
-  def server_bind(self):
-    """Override server_bind to store the server name."""
-
-    SocketServer.TCPServer.server_bind(self)
-    host, port = self.socket.getsockname()[:2]
-    self.server_name = socket.getfqdn(host)
-    self.server_port = port
-
-  def serve_forever(self):
-    self.stop = False
-    self.nonce_time = None
-    while not self.stop:
-      self.handle_request()
-    self.socket.close()
-
-
-class UDPEchoServer(testserver_base.ClientRestrictingServerMixIn,
-                    SocketServer.UDPServer):
-  """A UDP echo server that echoes back what it has received."""
-
-  def server_bind(self):
-    """Override server_bind to store the server name."""
-
-    SocketServer.UDPServer.server_bind(self)
-    host, port = self.socket.getsockname()[:2]
-    self.server_name = socket.getfqdn(host)
-    self.server_port = port
-
-  def serve_forever(self):
-    self.stop = False
-    self.nonce_time = None
-    while not self.stop:
-      self.handle_request()
-    self.socket.close()
-
-
 class TestPageHandler(testserver_base.BasePageHandler):
   # Class variables to allow for persistence state between page handler
   # invocations
@@ -338,7 +295,6 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.AuthBasicHandler,
       self.AuthDigestHandler,
       self.SlowServerHandler,
-      self.ChunkedServerHandler,
       self.NoContentHandler,
       self.ServerRedirectHandler,
       self.CrossSiteRedirectHandler,
@@ -1323,48 +1279,6 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.wfile.write("waited %.1f seconds" % wait_sec)
     return True
 
-  def ChunkedServerHandler(self):
-    """Send chunked response. Allows to specify chunks parameters:
-     - waitBeforeHeaders - ms to wait before sending headers
-     - waitBetweenChunks - ms to wait between chunks
-     - chunkSize - size of each chunk in bytes
-     - chunksNumber - number of chunks
-    Example: /chunked?waitBeforeHeaders=1000&chunkSize=5&chunksNumber=5
-    waits one second, then sends headers and five chunks five bytes each."""
-
-    if not self._ShouldHandleRequest("/chunked"):
-      return False
-    query_char = self.path.find('?')
-    chunkedSettings = {'waitBeforeHeaders' : 0,
-                       'waitBetweenChunks' : 0,
-                       'chunkSize' : 5,
-                       'chunksNumber' : 5}
-    if query_char >= 0:
-      params = self.path[query_char + 1:].split('&')
-      for param in params:
-        keyValue = param.split('=')
-        if len(keyValue) == 2:
-          try:
-            chunkedSettings[keyValue[0]] = int(keyValue[1])
-          except ValueError:
-            pass
-    time.sleep(0.001 * chunkedSettings['waitBeforeHeaders'])
-    self.protocol_version = 'HTTP/1.1' # Needed for chunked encoding
-    self.send_response(200)
-    self.send_header('Content-Type', 'text/plain')
-    self.send_header('Connection', 'close')
-    self.send_header('Transfer-Encoding', 'chunked')
-    self.end_headers()
-    # Chunked encoding: sending all chunks, then final zero-length chunk and
-    # then final CRLF.
-    for i in range(0, chunkedSettings['chunksNumber']):
-      if i > 0:
-        time.sleep(0.001 * chunkedSettings['waitBetweenChunks'])
-      self.sendChunkHelp('*' * chunkedSettings['chunkSize'])
-      self.wfile.flush() # Keep in mind that we start flushing only after 1kb.
-    self.sendChunkHelp('')
-    return True
-
   def NoContentHandler(self):
     """Returns a 204 No Content response."""
 
@@ -1657,52 +1571,6 @@ class OCSPHandler(testserver_base.BasePageHandler):
     self.end_headers()
 
     self.wfile.write(self.ca_issuers_response)
-
-
-class TCPEchoHandler(SocketServer.BaseRequestHandler):
-  """The RequestHandler class for TCP echo server.
-
-  It is instantiated once per connection to the server, and overrides the
-  handle() method to implement communication to the client.
-  """
-
-  def handle(self):
-    """Handles the request from the client and constructs a response."""
-
-    data = self.request.recv(65536).strip()
-    # Verify the "echo request" message received from the client. Send back
-    # "echo response" message if "echo request" message is valid.
-    try:
-      return_data = echo_message.GetEchoResponseData(data)
-      if not return_data:
-        return
-    except ValueError:
-      return
-
-    self.request.send(return_data)
-
-
-class UDPEchoHandler(SocketServer.BaseRequestHandler):
-  """The RequestHandler class for UDP echo server.
-
-  It is instantiated once per connection to the server, and overrides the
-  handle() method to implement communication to the client.
-  """
-
-  def handle(self):
-    """Handles the request from the client and constructs a response."""
-
-    data = self.request[0].strip()
-    request_socket = self.request[1]
-    # Verify the "echo request" message received from the client. Send back
-    # "echo response" message if "echo request" message is valid.
-    try:
-      return_data = echo_message.GetEchoResponseData(data)
-      if not return_data:
-        return
-    except ValueError:
-      return
-    request_socket.sendto(return_data, self.client_address)
 
 
 class ProxyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -2108,20 +1976,6 @@ class ServerRunner(testserver_base.TestServerRunner):
           (scheme, host, server.server_port)
       server_data['port'] = server.server_port
       websocket_options.use_basic_auth = self.options.ws_basic_auth
-    elif self.options.server_type == SERVER_TCP_ECHO:
-      # Used for generating the key (randomly) that encodes the "echo request"
-      # message.
-      random.seed()
-      server = TCPEchoServer((host, port), TCPEchoHandler)
-      print 'Echo TCP server started on port %d...' % server.server_port
-      server_data['port'] = server.server_port
-    elif self.options.server_type == SERVER_UDP_ECHO:
-      # Used for generating the key (randomly) that encodes the "echo request"
-      # message.
-      random.seed()
-      server = UDPEchoServer((host, port), UDPEchoHandler)
-      print 'Echo UDP server started on port %d...' % server.server_port
-      server_data['port'] = server.server_port
     elif self.options.server_type == SERVER_PROXY:
       ProxyRequestHandler.redirect_connect_to_localhost = \
           self.options.redirect_connect_to_localhost
@@ -2180,14 +2034,6 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   const=SERVER_FTP, default=SERVER_HTTP,
                                   dest='server_type',
                                   help='start up an FTP server.')
-    self.option_parser.add_option('--tcp-echo', action='store_const',
-                                  const=SERVER_TCP_ECHO, default=SERVER_HTTP,
-                                  dest='server_type',
-                                  help='start up a tcp echo server.')
-    self.option_parser.add_option('--udp-echo', action='store_const',
-                                  const=SERVER_UDP_ECHO, default=SERVER_HTTP,
-                                  dest='server_type',
-                                  help='start up a udp echo server.')
     self.option_parser.add_option('--proxy', action='store_const',
                                   const=SERVER_PROXY,
                                   default=SERVER_HTTP, dest='server_type',

@@ -12,7 +12,7 @@
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "core/fxge/fx_dib.h"
+#include "core/fxge/dib/fx_dib.h"
 
 class CFX_DIBBase;
 class CFX_DIBitmap;
@@ -24,10 +24,11 @@ class CFX_PathData;
 class CPDF_ShadingPattern;
 class PauseIndicatorIface;
 class TextCharPos;
+struct CFX_FillRenderOptions;
+struct CFX_TextRenderOptions;
 struct FX_RECT;
 
-enum class DeviceType : uint8_t {
-  kUnknown,
+enum class DeviceType : bool {
   kDisplay,
   kPrinter,
 };
@@ -39,15 +40,13 @@ class RenderDeviceDriverIface {
   virtual DeviceType GetDeviceType() const = 0;
   virtual int GetDeviceCaps(int caps_id) const = 0;
 
-  virtual bool StartRendering();
-  virtual void EndRendering();
   virtual void SaveState() = 0;
   virtual void RestoreState(bool bKeepSaved) = 0;
 
   virtual void SetBaseClip(const FX_RECT& rect);
   virtual bool SetClip_PathFill(const CFX_PathData* pPathData,
                                 const CFX_Matrix* pObject2Device,
-                                int fill_mode) = 0;
+                                const CFX_FillRenderOptions& fill_options) = 0;
   virtual bool SetClip_PathStroke(const CFX_PathData* pPathData,
                                   const CFX_Matrix* pObject2Device,
                                   const CFX_GraphStateData* pGraphState);
@@ -56,9 +55,8 @@ class RenderDeviceDriverIface {
                         const CFX_GraphStateData* pGraphState,
                         uint32_t fill_color,
                         uint32_t stroke_color,
-                        int fill_mode,
+                        const CFX_FillRenderOptions& fill_options,
                         BlendMode blend_type) = 0;
-  virtual bool SetPixel(int x, int y, uint32_t color);
   virtual bool FillRectWithBlend(const FX_RECT& rect,
                                  uint32_t fill_color,
                                  BlendMode blend_type);
@@ -101,21 +99,23 @@ class RenderDeviceDriverIface {
                               CFX_Font* pFont,
                               const CFX_Matrix& mtObject2Device,
                               float font_size,
-                              uint32_t color);
+                              uint32_t color,
+                              const CFX_TextRenderOptions& options);
   virtual int GetDriverType() const;
-  virtual void ClearDriver();
   virtual bool DrawShading(const CPDF_ShadingPattern* pPattern,
                            const CFX_Matrix* pMatrix,
                            const FX_RECT& clip_rect,
                            int alpha,
                            bool bAlphaMode);
+#if defined(_SKIA_SUPPORT_)
   virtual bool SetBitsWithMask(const RetainPtr<CFX_DIBBase>& pBitmap,
                                const RetainPtr<CFX_DIBBase>& pMask,
                                int left,
                                int top,
                                int bitmap_alpha,
                                BlendMode blend_type);
-#if defined _SKIA_SUPPORT_ || defined _SKIA_SUPPORT_PATHS_
+#endif
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
   virtual void Flush();
 #endif
 };

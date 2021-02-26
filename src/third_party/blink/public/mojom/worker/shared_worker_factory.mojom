@@ -11,7 +11,8 @@ import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/renderer_preference_watcher.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
-import "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker_container.mojom";
+import "third_party/blink/public/mojom/tokens/tokens.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker_host.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker_info.mojom";
@@ -36,6 +37,11 @@ interface SharedWorkerFactory {
   CreateSharedWorker(
       SharedWorkerInfo info,
 
+      // The token that uniquely identifies this worker. Generated in the
+      // browser, and communicated to the worker in the renderer. This token
+      // should not be shared with any renderer except that hosting the worker.
+      SharedWorkerToken token,
+
       // The origin of the page where `new SharedWorker()` is called.
       // This origin must be able to access shared workers.
       // (see blink::SecurityOrigin::CanAccessSharedWorkers())
@@ -50,13 +56,13 @@ interface SharedWorkerFactory {
       pending_receiver<RendererPreferenceWatcher> preference_watcher_receiver,
       pending_remote<WorkerContentSettingsProxy> content_settings,
 
-      // The info about the service worker provider in the browser process that
-      // provides support for this worker to be a service worker client.
+      // The info about the service worker container host in the browser process
+      // that provides support for this worker to be a service worker client.
       //
       // This is null if the shared worker cannot be a service
       // worker client, because for example, the worker's URL is
       // not http(s) or another service worker supported scheme.
-      ServiceWorkerProviderInfoForClient? service_worker_provider_info,
+      ServiceWorkerContainerInfoForClient? service_worker_container_info,
 
       // The ID of the AppCacheHost in the browser process that serves resources
       // for this shared worker. This is not specified when AppCache doesn't
@@ -80,5 +86,9 @@ interface SharedWorkerFactory {
 
       // BrowserInterfaceBroker for providing browser interfaces.
       pending_remote<blink.mojom.BrowserInterfaceBroker>
-          browser_interface_broker);
+          browser_interface_broker,
+
+      // The UKM SourceId associated with the SharedWorkerHost. This is distinct
+      // from the IDs that are associated with the connected clients.
+      int64 ukm_source_id);
 };

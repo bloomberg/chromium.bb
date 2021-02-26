@@ -46,6 +46,7 @@ import "device/bluetooth/public/mojom/uuid.mojom";
 enum WebBluetoothResult {
   SUCCESS,
   // AbortError:
+  WATCH_ADVERTISEMENTS_ABORTED,
   // InvalidModificationError:
   GATT_INVALID_ATTRIBUTE_LENGTH,
   // InvalidStateError:
@@ -109,6 +110,7 @@ struct WebBluetoothLeScanFilter {
 struct WebBluetoothRequestDeviceOptions {
   array<WebBluetoothLeScanFilter>? filters;
   array<bluetooth.mojom.UUID> optional_services;
+  array<uint16> optional_manufacturer_data;
   bool accept_all_devices;
 };
 
@@ -160,12 +162,19 @@ struct WebBluetoothAdvertisingEvent {
   bool rssi_is_set;
   uint8 rssi;
   map<uint16, array<uint8>> manufacturer_data;
-  map<string, array<uint8>> service_data;
+  map<bluetooth.mojom.UUID, array<uint8>> service_data;
 };
 
 struct WebBluetoothRemoteGATTDescriptor {
   string instance_id; // See Instance ID Note above.
   bluetooth.mojom.UUID uuid;
+};
+
+// Parameter for WebBluetoothService.RemoteCharacteristicWriteValue
+enum WebBluetoothWriteType {
+  kWriteDefaultDeprecated,
+  kWriteWithResponse,
+  kWriteWithoutResponse,
 };
 
 // Web Bluetooth Interface that Blink can use to perform
@@ -243,7 +252,8 @@ interface WebBluetoothService {
   // written.
   RemoteCharacteristicWriteValue(
     string characteristic_instance_id,
-    array<uint8> value) => (WebBluetoothResult result);
+    array<uint8> value,
+    WebBluetoothWriteType write_type) => (WebBluetoothResult result);
 
   // Starts notifications for the characteristic identified by
   // |characteristic_instance_id|.
@@ -294,6 +304,15 @@ interface WebBluetoothService {
     pending_associated_remote<WebBluetoothAdvertisementClient> client,
     WebBluetoothRequestLEScanOptions options) => (
     WebBluetoothResult result);
+
+  // Starts scanning for advertisements packets from the device associated with
+  // |device_id|. |client| will be notified when advertisement packets are
+  // detected for the device. The scan will be terminated if |client| is
+  // disconnected.
+  WatchAdvertisementsForDevice(
+    WebBluetoothDeviceId device_id,
+    pending_associated_remote<WebBluetoothAdvertisementClient> client)
+    => (WebBluetoothResult result);
 };
 
 // Classes that implement this interface will be notified of device events.

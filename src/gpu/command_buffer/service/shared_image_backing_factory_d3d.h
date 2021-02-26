@@ -56,6 +56,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
                                     viz::ResourceFormat format,
                                     const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
+                                    GrSurfaceOrigin surface_origin,
+                                    SkAlphaType alpha_type,
                                     uint32_t usage);
 
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -64,6 +66,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       bool is_thread_safe) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -71,6 +75,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       base::span<const uint8_t> pixel_data) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -81,6 +87,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage) override;
 
   // Returns true if the specified GpuMemoryBufferType can be imported using
@@ -88,15 +96,22 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
   bool CanImportGpuMemoryBuffer(
       gfx::GpuMemoryBufferType memory_buffer_type) override;
 
+  Microsoft::WRL::ComPtr<ID3D11Device> GetDeviceForTesting() const {
+    return d3d11_device_;
+  }
+
  private:
   // Wraps the optional swap chain buffer (front buffer/back buffer) and texture
-  // into GLimage and creates a GL texture and stores it as gles2::Texture or as
-  // gles2::TexturePassthrough in the backing that is created.
+  // into GLimage and gles2::TexturePassthrough in the backing that is created.
+  // The backing isn't assumed to be cleared so it's the caller's responsibility
+  // to mark the backing as cleared using SetCleared()/SetClearedRect().
   std::unique_ptr<SharedImageBacking> MakeBacking(
       const Mailbox& mailbox,
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain,
       size_t buffer_index,

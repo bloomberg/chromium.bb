@@ -151,7 +151,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   virtual void SetSuggestedValue(const String& value);
   const String& SuggestedValue() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
   ETextOverflow ValueForTextOverflow() const;
 
@@ -233,6 +233,8 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   String value_before_set_suggested_value_;
 
   FRIEND_TEST_ALL_PREFIXES(TextControlElementTest, IndexForPosition);
+  FRIEND_TEST_ALL_PREFIXES(HTMLTextAreaElementTest, ValueWithHardLineBreaks);
+  FRIEND_TEST_ALL_PREFIXES(HTMLTextAreaElementTest, ValueWithHardLineBreaksRtl);
 };
 
 inline bool IsTextControl(const Node& node) {
@@ -268,6 +270,14 @@ DEFINE_TEXT_CONTROL_CASTS(TextControlElement, Node);
 DEFINE_TEXT_CONTROL_CASTS(const TextControlElement, const Node);
 
 #undef DEFINE_TEXT_CONTROL_CASTS
+
+template <>
+struct DowncastTraits<TextControlElement> {
+  static bool AllowFrom(const Node& node) {
+    return node.HasTagName(html_names::kInputTag) ||
+           node.HasTagName(html_names::kTextareaTag);
+  }
+};
 
 TextControlElement* EnclosingTextControl(const Position&);
 TextControlElement* EnclosingTextControl(const PositionInFlatTree&);

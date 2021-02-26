@@ -226,7 +226,11 @@ class GIT(object):
       return remote, upstream_branch
 
     # Else, try to guess the origin remote.
-    if 'origin/master' in GIT.GetRemoteBranches(cwd):
+    remote_branches = GIT.GetRemoteBranches(cwd)
+    if 'origin/main' in remote_branches:
+      # Fall back on origin/main if it exits.
+      return 'origin', 'refs/heads/main'
+    elif 'origin/master' in remote_branches:
       # Fall back on origin/master if it exits.
       return 'origin', 'refs/heads/master'
 

@@ -5,9 +5,12 @@
 #include "chrome/browser/profiles/profiles_state.h"
 
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,8 +18,10 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
@@ -40,6 +45,10 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #endif
 
+#if BUILDFLAG(IS_LACROS)
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#endif
+
 namespace profiles {
 
 bool IsMultipleProfilesEnabled() {
@@ -60,6 +69,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   // Preferences about global profile information.
   registry->RegisterStringPref(prefs::kProfileLastUsed, std::string());
   registry->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
+  registry->RegisterIntegerPref(prefs::kGuestProfilesNumCreated, 1);
   registry->RegisterListPref(prefs::kProfilesLastActive);
   registry->RegisterListPref(prefs::kProfilesDeleted);
 
@@ -68,6 +78,11 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kBrowserGuestModeEnforced, false);
   registry->RegisterBooleanPref(prefs::kBrowserAddPersonEnabled, true);
   registry->RegisterBooleanPref(prefs::kForceBrowserSignin, false);
+  registry->RegisterBooleanPref(prefs::kBrowserShowProfilePickerOnStartup,
+                                true);
+  registry->RegisterIntegerPref(
+      prefs::kBrowserProfilePickerAvailabilityOnStartup,
+      static_cast<int>(ProfilePicker::AvailabilityOnStartup::kEnabled));
 }
 
 void SetLastUsedProfile(const std::string& profile_dir) {
@@ -157,7 +172,30 @@ void UpdateProfileName(Profile* profile,
 
 bool IsRegularOrGuestSession(Browser* browser) {
   Profile* profile = browser->profile();
-  return profile->IsRegularProfile() || profile->IsGuestSession();
+  return profile->IsRegularProfile() || profile->IsGuestSession() ||
+         profile->IsEphemeralGuestProfile();
+}
+
+bool IsGuestModeRequested(const base::CommandLine& command_line,
+                          PrefService* local_state,
+                          bool show_warning) {
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+    defined(OS_MAC)
+  DCHECK(local_state);
+
+  // Check if guest mode enforcement commandline switch or policy are provided.
+  if (command_line.HasSwitch(switches::kGuest) ||
+      local_state->GetBoolean(prefs::kBrowserGuestModeEnforced)) {
+    // Check if guest mode is allowed by policy.
+    if (local_state->GetBoolean(prefs::kBrowserGuestModeEnabled))
+      return true;
+    if (show_warning) {
+      LOG(WARNING) << "Guest mode disabled by policy, launching a normal "
+                   << "browser session.";
+    }
+  }
+#endif
+  return false;
 }
 
 bool IsProfileLocked(const base::FilePath& profile_path) {
@@ -227,7 +265,7 @@ void RemoveBrowsingDataForProfile(const base::FilePath& profile_path) {
 
   // For guest profiles the browsing data is in the OTR profile.
   if (profile->IsGuestSession())
-    profile = profile->GetOffTheRecordProfile();
+    profile = profile->GetPrimaryOTRProfile();
 
   profile->Wipe();
 }
@@ -260,6 +298,11 @@ bool IsPublicSession() {
   if (chromeos::LoginState::IsInitialized()) {
     return chromeos::LoginState::Get()->IsPublicSessionUser();
   }
+#elif BUILDFLAG(IS_LACROS)
+  DCHECK(chromeos::LacrosChromeServiceImpl::Get());
+  return chromeos::LacrosChromeServiceImpl::Get()
+             ->init_params()
+             ->session_type == crosapi::mojom::SessionType::kPublicSession;
 #endif
   return false;
 }
@@ -272,6 +315,20 @@ bool ArePublicSessionRestrictionsEnabled() {
 #endif
   return false;
 }
+
+#if !defined(OS_CHROMEOS)
+base::string16 GetDefaultNameForNewSignedInProfile(
+    const AccountInfo& account_info) {
+  DCHECK(account_info.IsValid());
+  bool is_consumer = account_info.hosted_domain.empty() ||
+                     account_info.hosted_domain == kNoHostedDomainFound;
+  if (is_consumer)
+    return base::UTF8ToUTF16(account_info.given_name);
+  return l10n_util::GetStringUTF16(
+      IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_PROFILE_NAME);
+}
+#endif  // !defined(OS_CHROMEOS)
+
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace profiles

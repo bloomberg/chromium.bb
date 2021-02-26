@@ -75,12 +75,6 @@ class AudioInputTest : public testing::Test {
         audio_manager_(AudioManager::CreateForTesting(
             std::make_unique<TestAudioThread>())),
         audio_input_stream_(nullptr) {
-#if defined(OS_LINUX)
-    // Due to problems with PulseAudio failing to start, use a fake audio
-    // stream. https://crbug.com/1047655#c70
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableAudioOutput);
-#endif
     base::RunLoop().RunUntilIdle();
   }
 
@@ -93,6 +87,10 @@ class AudioInputTest : public testing::Test {
     // not implemented. Audio input is implemented in
     // FuchsiaAudioCapturerStream. It implements AudioCapturerStream interface
     // and runs in the renderer process.
+    return false;
+#elif defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+    // TODO(crbug.com/1128458): macOS on ARM64 says it has devices, but won't
+    // let any of them be opened or listed.
     return false;
 #else
     return AudioDeviceInfoAccessorForTests(audio_manager_.get())
@@ -108,7 +106,7 @@ class AudioInputTest : public testing::Test {
   void CloseAudioInputStreamOnAudioThread() {
     RunOnAudioThread(base::BindOnce(&AudioInputStream::Close,
                                     base::Unretained(audio_input_stream_)));
-    audio_input_stream_ = NULL;
+    audio_input_stream_ = nullptr;
   }
 
   void OpenAndCloseAudioInputStreamOnAudioThread() {
@@ -141,35 +139,39 @@ class AudioInputTest : public testing::Test {
         params, AudioDeviceDescription::kDefaultDeviceId,
         base::BindRepeating(&AudioInputTest::OnLogMessage,
                             base::Unretained(this)));
-    EXPECT_TRUE(audio_input_stream_);
+    ASSERT_TRUE(audio_input_stream_);
   }
 
   void OpenAndClose() {
     DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+    ASSERT_TRUE(audio_input_stream_);
     EXPECT_TRUE(audio_input_stream_->Open());
     audio_input_stream_->Close();
-    audio_input_stream_ = NULL;
+    audio_input_stream_ = nullptr;
   }
 
   void OpenAndStart(AudioInputStream::AudioInputCallback* sink) {
     DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+    ASSERT_TRUE(audio_input_stream_);
     EXPECT_TRUE(audio_input_stream_->Open());
     audio_input_stream_->Start(sink);
   }
 
   void OpenStopAndClose() {
     DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+    ASSERT_TRUE(audio_input_stream_);
     EXPECT_TRUE(audio_input_stream_->Open());
     audio_input_stream_->Stop();
     audio_input_stream_->Close();
-    audio_input_stream_ = NULL;
+    audio_input_stream_ = nullptr;
   }
 
   void StopAndClose() {
     DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+    ASSERT_TRUE(audio_input_stream_);
     audio_input_stream_->Stop();
     audio_input_stream_->Close();
-    audio_input_stream_ = NULL;
+    audio_input_stream_ = nullptr;
   }
 
   // Synchronously runs the provided callback/closure on the audio thread.

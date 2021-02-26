@@ -14,8 +14,8 @@
 #include "fxjs/xfa/cfxjse_class.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cfxjse_value.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
+#include "v8/include/cppgc/allocation.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/layout/cxfa_contentlayoutitem.h"
 #include "xfa/fxfa/layout/cxfa_layoutitem.h"
@@ -56,13 +56,14 @@ CJX_LayoutPseudoModel::CJX_LayoutPseudoModel(CScript_LayoutPseudoModel* model)
   DefineMethods(MethodSpecs);
 }
 
-CJX_LayoutPseudoModel::~CJX_LayoutPseudoModel() {}
+CJX_LayoutPseudoModel::~CJX_LayoutPseudoModel() = default;
 
 bool CJX_LayoutPseudoModel::DynamicTypeIs(TypeTag eType) const {
   return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
 }
 
-void CJX_LayoutPseudoModel::ready(CFXJSE_Value* pValue,
+void CJX_LayoutPseudoModel::ready(v8::Isolate* pIsolate,
+                                  CFXJSE_Value* pValue,
                                   bool bSetting,
                                   XFA_Attribute eAttribute) {
   CXFA_FFNotify* pNotify = GetDocument()->GetNotify();
@@ -74,7 +75,7 @@ void CJX_LayoutPseudoModel::ready(CFXJSE_Value* pValue,
   }
 
   int32_t iStatus = pNotify->GetLayoutStatus();
-  pValue->SetBoolean(iStatus >= 2);
+  pValue->SetBoolean(pIsolate, iStatus >= 2);
 }
 
 CJS_Result CJX_LayoutPseudoModel::HWXY(
@@ -261,7 +262,7 @@ std::vector<CXFA_Node*> CJX_LayoutPseudoModel::GetObjArray(
                 eType != XFA_Element::Subform && eType != XFA_Element::Area) {
               continue;
             }
-            if (pdfium::ContainsValue(formItems, pItemChild->GetFormNode()))
+            if (pdfium::Contains(formItems, pItemChild->GetFormNode()))
               continue;
 
             formItems.insert(pItemChild->GetFormNode());
@@ -282,7 +283,7 @@ std::vector<CXFA_Node*> CJX_LayoutPseudoModel::GetObjArray(
                 eType != XFA_Element::Subform && eType != XFA_Element::Area) {
               continue;
             }
-            if (pdfium::ContainsValue(formItems, pItemChild->GetFormNode()))
+            if (pdfium::Contains(formItems, pItemChild->GetFormNode()))
               continue;
 
             formItems.insert(pItemChild->GetFormNode());
@@ -317,7 +318,7 @@ std::vector<CXFA_Node*> CJX_LayoutPseudoModel::GetObjArray(
               continue;
             if (pItemChild->GetFormNode()->GetElementType() != eType)
               continue;
-            if (pdfium::ContainsValue(formItems, pItemChild->GetFormNode()))
+            if (pdfium::Contains(formItems, pItemChild->GetFormNode()))
               continue;
 
             formItems.insert(pItemChild->GetFormNode());
@@ -334,7 +335,7 @@ std::vector<CXFA_Node*> CJX_LayoutPseudoModel::GetObjArray(
               continue;
             if (pItemChild->GetFormNode()->GetElementType() != eType)
               continue;
-            if (pdfium::ContainsValue(formItems, pItemChild->GetFormNode()))
+            if (pdfium::Contains(formItems, pItemChild->GetFormNode()))
               continue;
 
             formItems.insert(pItemChild->GetFormNode());
@@ -369,15 +370,16 @@ CJS_Result CJX_LayoutPseudoModel::pageContent(
   if (!pNotify)
     return CJS_Result::Success();
 
-  auto* pDocLayout = CXFA_LayoutProcessor::FromDocument(GetDocument());
-  auto pArrayNodeList = pdfium::MakeUnique<CXFA_ArrayNodeList>(GetDocument());
+  CXFA_Document* pDoc = GetDocument();
+  auto* pDocLayout = CXFA_LayoutProcessor::FromDocument(pDoc);
+  auto* pArrayNodeList = cppgc::MakeGarbageCollected<CXFA_ArrayNodeList>(
+      pDoc->GetHeap()->GetAllocationHandle(), pDoc);
+  pDoc->GetNodeOwner()->PersistList(pArrayNodeList);
   pArrayNodeList->SetArrayNodeList(
       GetObjArray(pDocLayout, iIndex, wsType, bOnPageArea));
 
-  // TODO(dsinclair): Who owns the array once we release it? Won't this leak?
-  return CJS_Result::Success(static_cast<CFXJSE_Engine*>(runtime)->NewXFAObject(
-      pArrayNodeList.release(),
-      GetDocument()->GetScriptContext()->GetJseNormalClass()->GetTemplate()));
+  CFXJSE_Engine* pEngine = static_cast<CFXJSE_Engine*>(runtime);
+  return CJS_Result::Success(pEngine->NewNormalXFAObject(pArrayNodeList));
 }
 
 CJS_Result CJX_LayoutPseudoModel::absPageCount(

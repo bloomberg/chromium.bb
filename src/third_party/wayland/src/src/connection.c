@@ -644,8 +644,12 @@ wl_closure_marshal(struct wl_object *sender, uint32_t opcode,
 		case 'h':
 			fd = args[i].h;
 			dup_fd = wl_os_dupfd_cloexec(fd, 0);
-			if (dup_fd < 0)
-				wl_abort("dup failed: %s\n", strerror(errno));
+			if (dup_fd < 0) {
+				wl_closure_destroy(closure);
+				wl_log("error marshalling arguments for %s: dup failed: %s\n",
+				       message->name, strerror(errno));
+				return NULL;
+			}
 			closure->args[i].h = dup_fd;
 			break;
 		default:

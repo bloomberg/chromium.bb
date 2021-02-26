@@ -166,6 +166,18 @@ ChromeOSVersionInfo& GetChromeOSVersionInfo() {
 }  // namespace
 
 // static
+std::string SysInfo::HardwareModelName() {
+  std::string board = GetLsbReleaseBoard();
+  // GetLsbReleaseBoard() may be suffixed with a "-signed-" and other extra
+  // info. Strip it.
+  const size_t index = board.find("-signed-");
+  if (index != std::string::npos)
+    board.resize(index);
+
+  return base::ToUpperASCII(board);
+}
+
+// static
 void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
                                             int32_t* minor_version,
                                             int32_t* bugfix_version) {
@@ -221,6 +233,23 @@ void SysInfo::SetChromeOSVersionInfoForTest(const std::string& lsb_release,
   env->SetVar(kLsbReleaseKey, lsb_release);
   env->SetVar(kLsbReleaseTimeKey, NumberToString(lsb_release_time.ToDoubleT()));
   g_chrome_os_version_info.Get().Parse();
+}
+
+// static
+void SysInfo::CrashIfChromeOSNonTestImage() {
+  if (!IsRunningOnChromeOS())
+    return;
+
+  // On the test images etc/lsb-release has a line:
+  // CHROMEOS_RELEASE_TRACK=testimage-channel.
+  const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
+  const char kTestImageRelease[] = "testimage-channel";
+
+  std::string track;
+  CHECK(SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &track));
+
+  // Crash if can't find test-image marker in the release track.
+  CHECK_NE(track.find(kTestImageRelease), std::string::npos);
 }
 
 }  // namespace base

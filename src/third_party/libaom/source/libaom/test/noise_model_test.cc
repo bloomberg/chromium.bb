@@ -1153,7 +1153,7 @@ TEST(NoiseModelGetGrainParameters, GetGrainParametersReal) {
 template <typename T>
 class WienerDenoiseTest : public ::testing::Test, public T {
  public:
-  static void SetUpTestCase() { aom_dsp_rtcd(); }
+  static void SetUpTestSuite() { aom_dsp_rtcd(); }
 
  protected:
   void SetUp() {

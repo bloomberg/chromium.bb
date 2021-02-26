@@ -18,9 +18,7 @@
 #include <cstdint>
 
 static constexpr uint32_t kMaxBindGroups = 4u;
-// TODO(cwallez@chromium.org): investigate bindgroup limits
-static constexpr uint32_t kMaxBindingsPerGroup = 16u;
-static constexpr uint32_t kMaxVertexAttributes = 16u;
+static constexpr uint8_t kMaxVertexAttributes = 16u;
 // Vulkan has a standalone limit named maxVertexInputAttributeOffset (2047u at least) for vertex
 // attribute offset. The limit might be meaningless because Vulkan has another limit named
 // maxVertexInputBindingStride (2048u at least). We use maxVertexAttributeEnd (2048u) here to
@@ -28,20 +26,28 @@ static constexpr uint32_t kMaxVertexAttributes = 16u;
 // (char). We may use maxVertexInputBindingStride (maxVertexBufferStride below) instead to replace
 // maxVertexAttributeEnd in future.
 static constexpr uint32_t kMaxVertexAttributeEnd = 2048u;
-static constexpr uint32_t kMaxVertexBuffers = 16u;
+static constexpr uint8_t kMaxVertexBuffers = 16u;
 static constexpr uint32_t kMaxVertexBufferStride = 2048u;
 static constexpr uint32_t kNumStages = 3;
-static constexpr uint32_t kMaxColorAttachments = 4u;
+static constexpr uint8_t kMaxColorAttachments = 4u;
 static constexpr uint32_t kTextureBytesPerRowAlignment = 256u;
 // Dynamic buffer offsets require offset to be divisible by 256
 static constexpr uint64_t kMinDynamicBufferOffsetAlignment = 256u;
-// Max numbers of dynamic uniform buffers
-static constexpr uint32_t kMaxDynamicUniformBufferCount = 8u;
-// Max numbers of dynamic storage buffers
-static constexpr uint32_t kMaxDynamicStorageBufferCount = 4u;
-// Max numbers of dynamic buffers
-static constexpr uint32_t kMaxDynamicBufferCount =
-    kMaxDynamicUniformBufferCount + kMaxDynamicStorageBufferCount;
+
+// Per stage limits
+static constexpr uint32_t kMaxSampledTexturesPerShaderStage = 16;
+static constexpr uint32_t kMaxSamplersPerShaderStage = 16;
+static constexpr uint32_t kMaxStorageBuffersPerShaderStage = 6;
+static constexpr uint32_t kMaxStorageTexturesPerShaderStage = 4;
+static constexpr uint32_t kMaxUniformBuffersPerShaderStage = 12;
+
+// Per pipeline layout limits
+static constexpr uint32_t kMaxDynamicUniformBuffersPerPipelineLayout = 8u;
+static constexpr uint32_t kMaxDynamicStorageBuffersPerPipelineLayout = 4u;
+
+// Max size of uniform buffer binding
+static constexpr uint64_t kMaxUniformBufferBindingSize = 16384u;
+
 // Indirect command sizes
 static constexpr uint64_t kDispatchIndirectSize = 3 * sizeof(uint32_t);
 static constexpr uint64_t kDrawIndirectSize = 4 * sizeof(uint32_t);
@@ -57,5 +63,9 @@ static constexpr uint32_t kMaxTexture2DArrayLayers = 256u;
 static constexpr uint32_t kMaxTexture2DMipLevels = 14u;
 static_assert(1 << (kMaxTexture2DMipLevels - 1) == kMaxTextureSize,
               "kMaxTexture2DMipLevels and kMaxTextureSize size mismatch");
+
+// Offset alignment for CopyB2B. Strictly speaking this alignment is required only
+// on macOS, but we decide to do it on all platforms.
+static constexpr uint64_t kCopyBufferToBufferOffsetAlignment = 4u;
 
 #endif  // COMMON_CONSTANTS_H_

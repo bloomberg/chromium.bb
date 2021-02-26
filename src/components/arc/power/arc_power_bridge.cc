@@ -134,6 +134,14 @@ ArcPowerBridge::~ArcPowerBridge() {
   arc_bridge_service_->power()->SetHost(nullptr);
 }
 
+void ArcPowerBridge::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ArcPowerBridge::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void ArcPowerBridge::SetUserIdHash(const std::string& user_id_hash) {
   user_id_hash_ = user_id_hash;
 }
@@ -151,7 +159,7 @@ void ArcPowerBridge::FlushWakeLocksForTesting() {
 }
 
 void ArcPowerBridge::OnConnectionReady() {
-  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
+  // ash::Shell may not exist in tests.
   if (ash::Shell::HasInstance())
     ash::Shell::Get()->display_configurator()->AddObserver(this);
   chromeos::PowerManagerClient::Get()->AddObserver(this);
@@ -161,7 +169,7 @@ void ArcPowerBridge::OnConnectionReady() {
 }
 
 void ArcPowerBridge::OnConnectionClosed() {
-  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
+  // ash::Shell may not exist in tests.
   if (ash::Shell::HasInstance())
     ash::Shell::Get()->display_configurator()->RemoveObserver(this);
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
@@ -357,6 +365,11 @@ void ArcPowerBridge::OnGetScreenBrightnessPercent(
     return;
   }
   UpdateAndroidScreenBrightness(percent.value());
+}
+
+void ArcPowerBridge::OnWakefulnessChanged(mojom::WakefulnessMode mode) {
+  for (auto& observer : observer_list_)
+    observer.OnWakefulnessChanged(mode);
 }
 
 void ArcPowerBridge::UpdateAndroidScreenBrightness(double percent) {

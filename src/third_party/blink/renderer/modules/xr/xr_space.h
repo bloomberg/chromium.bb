@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/optional.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/modules/xr/xr_native_origin_information.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -42,7 +42,7 @@ class XRSpace : public EventTargetWithInlineData {
   // Convenience method to try to get the inverse of the above. This will return
   // the pose of the mojo origin in this space's native origin.
   // Returns nullopt if computing a transform is not possible.
-  virtual base::Optional<TransformationMatrix> NativeFromMojo() = 0;
+  base::Optional<TransformationMatrix> NativeFromMojo();
 
   // Gets the viewer pose in the native coordinates of this space, corresponding
   // to a transform from viewer coordinates to this space's native coordinates.
@@ -90,17 +90,17 @@ class XRSpace : public EventTargetWithInlineData {
 
   XRSession* session() const { return session_; }
 
+  // ToString() helper, used for debugging.
+  virtual std::string ToString() const = 0;
+
   // EventTarget overrides.
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
-  virtual base::Optional<XRNativeOriginInformation> NativeOrigin() const = 0;
+  virtual base::Optional<device::mojom::blink::XRNativeOriginInformation>
+  NativeOrigin() const = 0;
 
-  void Trace(Visitor* visitor) override;
-
- protected:
-  static base::Optional<TransformationMatrix> TryInvert(
-      const base::Optional<TransformationMatrix>& matrix);
+  void Trace(Visitor* visitor) const override;
 
  private:
   const Member<XRSession> session_;

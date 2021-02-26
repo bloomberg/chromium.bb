@@ -207,12 +207,13 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void SetMutationUpdate(
       std::unique_ptr<MutatorOutputState> output_state) override;
 
-  size_t CompositedAnimationsCount() const override;
   size_t MainThreadAnimationsCount() const override;
   bool HasCustomPropertyAnimations() const override;
   bool CurrentFrameHadRAF() const override;
   bool NextFrameHasPendingRAF() const override;
   PendingThroughputTrackerInfos TakePendingThroughputTrackerInfos() override;
+  bool HasCanvasInvalidation() const override;
+  bool HasJSAnimation() const override;
 
   // Starts/stops throughput tracking represented by |sequence_id|.
   void StartThroughputTracking(TrackedAnimationSequenceId sequence_id);
@@ -221,6 +222,9 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void SetAnimationCounts(size_t total_animations_count,
                           bool current_frame_had_raf,
                           bool next_frame_has_pending_raf);
+
+  void SetHasCanvasInvalidation(bool has_canvas_invalidation);
+  void SetHasInlineStyleMutation(bool has_inline_style_mutation);
 
  private:
   explicit AnimationHost(ThreadInstance thread_instance);
@@ -273,6 +277,8 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   size_t main_thread_animations_count_ = 0;
   bool current_frame_had_raf_ = false;
   bool next_frame_has_pending_raf_ = false;
+  bool has_canvas_invalidation_ = false;
+  bool has_inline_style_mutation_ = false;
 
   PendingThroughputTrackerInfos pending_throughput_tracker_infos_;
 

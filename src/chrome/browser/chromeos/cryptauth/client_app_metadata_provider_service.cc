@@ -40,6 +40,7 @@ namespace chromeos {
 namespace {
 
 const char kInstanceIdScope[] = "GCM";
+const char kDefaultModelName[] = "Chromebook";
 
 const cryptauthv2::FeatureMetadata& GenerateFeatureMetadata() {
   static const base::NoDestructor<cryptauthv2::FeatureMetadata>
@@ -63,6 +64,21 @@ const cryptauthv2::FeatureMetadata& GenerateFeatureMetadata() {
           inner_metadata.add_supported_features(
               cryptauthv2::
                   BetterTogetherFeatureMetadata_FeatureName_MAGIC_TETHER_CLIENT);
+        }
+
+        // Phone Hub is only supported if the associated flag is enabled.
+        if (features::IsPhoneHubEnabled()) {
+          inner_metadata.add_supported_features(
+              cryptauthv2::
+                  BetterTogetherFeatureMetadata_FeatureName_PHONE_HUB_CLIENT);
+        }
+
+        // Wifi Sync Android is only supported if the associated flag is
+        // enabled.
+        if (features::IsWifiSyncAndroidEnabled()) {
+          inner_metadata.add_supported_features(
+              cryptauthv2::
+                  BetterTogetherFeatureMetadata_FeatureName_WIFI_SYNC_CLIENT);
         }
 
         // Note: |inner_metadata|'s enabled_features field is deprecated and
@@ -304,7 +320,13 @@ void ClientAppMetadataProviderService::OnInstanceIdTokenFetched(
   // device_display_diagonal_mils is unused because it only applies to
   // phones/tablets.
   metadata.set_device_display_diagonal_mils(0);
-  metadata.set_device_model(hardware_info.model);
+
+  base::UmaHistogramBoolean("CryptAuth.ClientAppMetadata.IsModelEmpty",
+                            hardware_info.model.empty());
+  metadata.set_device_model(hardware_info.model.empty() ? kDefaultModelName
+                                                        : hardware_info.model);
+  base::UmaHistogramBoolean("CryptAuth.ClientAppMetadata.IsManufacturerEmpty",
+                            hardware_info.manufacturer.empty());
   metadata.set_device_manufacturer(hardware_info.manufacturer);
   metadata.set_device_type(cryptauthv2::ClientAppMetadata_DeviceType_CHROME);
 

@@ -17,34 +17,75 @@
 #include "perfetto/ext/tracing/ipc/default_socket.h"
 
 #include "perfetto/base/build_config.h"
+#include "perfetto/base/logging.h"
+#include "perfetto/ext/base/utils.h"
 #include "perfetto/ext/ipc/basic_types.h"
 #include "perfetto/ext/tracing/core/basic_types.h"
 
 #include <stdlib.h>
+#include <unistd.h>
 
 namespace perfetto {
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
+// On non-Android platforms, check /run/perfetto/ before using /tmp/ as the
+// socket base directory.
+namespace {
+const char* kRunPerfettoBaseDir = "/run/perfetto/";
+
+bool UseRunPerfettoBaseDir() {
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) ||   \
+    PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) || \
+    PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
+  // Note that the trailing / in |kRunPerfettoBaseDir| ensures we are checking
+  // against a directory, not a file.
+  int res = PERFETTO_EINTR(access(kRunPerfettoBaseDir, X_OK));
+  if (!res)
+    return true;
+
+  // If the path doesn't exist (ENOENT), fail silently to the caller. Otherwise,
+  // fail with an explicit error message.
+  if (errno != ENOENT) {
+    PERFETTO_PLOG("%s exists but cannot be accessed. Falling back on /tmp/ ",
+                  kRunPerfettoBaseDir);
+  }
+  return false;
+#else
+  return false;
+#endif
+}
+
+}  // anonymous namespace
+#endif  // !PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
 
 static_assert(kInvalidUid == ipc::kInvalidUid, "kInvalidUid mismatching");
 
 const char* GetProducerSocket() {
-  static const char* name = getenv("PERFETTO_PRODUCER_SOCK_NAME");
+  const char* name = getenv("PERFETTO_PRODUCER_SOCK_NAME");
   if (name == nullptr) {
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
     name = "/dev/socket/traced_producer";
 #else
-    name = "/tmp/perfetto-producer";
+    // Use /run/perfetto if it exists. Then fallback to /tmp.
+    static const char* producer_socket =
+        UseRunPerfettoBaseDir() ? "/run/perfetto/traced-producer.sock"
+                                : "/tmp/perfetto-producer";
+    name = producer_socket;
 #endif
   }
   return name;
 }
 
 const char* GetConsumerSocket() {
-  static const char* name = getenv("PERFETTO_CONSUMER_SOCK_NAME");
+  const char* name = getenv("PERFETTO_CONSUMER_SOCK_NAME");
   if (name == nullptr) {
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
     name = "/dev/socket/traced_consumer";
 #else
-    name = "/tmp/perfetto-consumer";
+    // Use /run/perfetto if it exists. Then fallback to /tmp.
+    static const char* consumer_socket =
+        UseRunPerfettoBaseDir() ? "/run/perfetto/traced-consumer.sock"
+                                : "/tmp/perfetto-consumer";
+    name = consumer_socket;
 #endif
   }
   return name;

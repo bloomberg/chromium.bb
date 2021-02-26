@@ -11,10 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/service.pb.h"
-#include "components/autofill_assistant/browser/trigger_context.h"
+#include "components/autofill_assistant/browser/trigger_scripts/trigger_script.h"
 
 class GURL;
 
@@ -26,9 +27,8 @@ class ProtocolUtils {
   // |url|.
   static std::string CreateGetScriptsRequest(
       const GURL& url,
-      const TriggerContext& trigger_context,
       const ClientContextProto& client_context,
-      const std::string& client_account);
+      const std::map<std::string, std::string>& script_parameters);
 
   // Convert |script_proto| to a script struct and if the script is valid, add
   // it to |scripts|.
@@ -42,20 +42,28 @@ class ProtocolUtils {
   static std::string CreateInitialScriptActionsRequest(
       const std::string& script_path,
       const GURL& url,
-      const TriggerContext& trigger_context,
       const std::string& global_payload,
       const std::string& script_payload,
       const ClientContextProto& client_context,
-      const std::string& client_account);
+      const std::map<std::string, std::string>& script_parameters);
 
   // Create request to get next sequence of actions for a script.
   static std::string CreateNextScriptActionsRequest(
-      const TriggerContext& trigger_context,
       const std::string& global_payload,
       const std::string& script_payload,
       const std::vector<ProcessedActionProto>& processed_actions,
+      const RoundtripTimingStats& timing_stats,
+      const ClientContextProto& client_context);
+
+  // Create request to get the available trigger scripts for |url|.
+  static std::string CreateGetTriggerScriptsRequest(
+      const GURL& url,
       const ClientContextProto& client_context,
-      const std::string& client_account);
+      const std::map<std::string, std::string>& script_parameters);
+
+  // Create an action from the |action|.
+  static std::unique_ptr<Action> CreateAction(ActionDelegate* delegate,
+                                              const ActionProto& action);
 
   // Parse actions from the given |response|, which can be an empty string.
   //
@@ -73,6 +81,15 @@ class ProtocolUtils {
                            std::vector<std::unique_ptr<Action>>* actions,
                            std::vector<std::unique_ptr<Script>>* scripts,
                            bool* should_update_scripts);
+
+  // Parse trigger scripts from the given |response| and insert them into
+  // |trigger_scripts|. Returns false if parsing failed, else true.
+  static bool ParseTriggerScripts(
+      const std::string& response,
+      std::vector<std::unique_ptr<TriggerScript>>* trigger_scripts,
+      std::vector<std::string>* additional_allowed_domains,
+      int* trigger_condition_check_interval_ms,
+      base::Optional<int>* timeout_ms);
 
  private:
   // To avoid instantiate this class by accident.

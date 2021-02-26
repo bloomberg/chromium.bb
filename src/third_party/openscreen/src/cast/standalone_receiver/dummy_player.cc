@@ -8,9 +8,8 @@
 
 #include "absl/types/span.h"
 #include "cast/streaming/encoded_frame.h"
+#include "util/chrono_helpers.h"
 #include "util/osp_logging.h"
-
-using std::chrono::microseconds;
 
 namespace openscreen {
 namespace cast {
@@ -33,7 +32,7 @@ void DummyPlayer::OnFramesReady(int buffer_size) {
   // Convert the RTP timestamp to a human-readable timestamp (in µs) and log
   // some short information about the frame.
   const auto media_timestamp =
-      frame.rtp_timestamp.ToTimeSinceOrigin<microseconds>(
+      frame.rtp_timestamp.ToTimeSinceOrigin<std::chrono::microseconds>(
           receiver_->rtp_timebase());
   OSP_LOG_INFO << "[SSRC " << receiver_->ssrc() << "] "
                << (frame.dependency == EncodedFrame::KEY_FRAME ? "KEY " : "")

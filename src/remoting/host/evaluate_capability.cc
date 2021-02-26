@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -50,7 +51,7 @@ base::FilePath BuildHostBinaryPath() {
   }
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   if (path.BaseName().value() ==
       FILE_PATH_LITERAL("chrome-remote-desktop-host")) {
     return path;
@@ -60,7 +61,7 @@ base::FilePath BuildHostBinaryPath() {
   }
 
   return directory.Append(FILE_PATH_LITERAL("remoting_me2me_host"));
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   if (path.BaseName().value() == FILE_PATH_LITERAL("remoting_me2me_host")) {
     return path;
   }

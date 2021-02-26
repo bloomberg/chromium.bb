@@ -47,7 +47,7 @@ namespace blink {
 
 void V8DevToolsHost::PlatformMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   V8SetReturnValue(info, V8AtomicString(info.GetIsolate(), "mac"));
 #elif defined(OS_WIN)
   V8SetReturnValue(info, V8AtomicString(info.GetIsolate(), "windows"));
@@ -153,9 +153,8 @@ void V8DevToolsHost::ShowContextMenuAtPointMethodCustom(
   if (info.Length() >= 4 && info[3]->IsObject()) {
     document = V8HTMLDocument::ToImplWithTypeCheck(isolate, info[3]);
   } else {
-    DOMWindow* window = V8Window::ToImplWithTypeCheck(
-        isolate, isolate->GetEnteredOrMicrotaskContext()->Global());
-    document = window ? To<LocalDOMWindow>(window)->document() : nullptr;
+    LocalDOMWindow* window = EnteredDOMWindow(isolate);
+    document = window ? window->document() : nullptr;
   }
   if (!document || !document->GetFrame())
     return;

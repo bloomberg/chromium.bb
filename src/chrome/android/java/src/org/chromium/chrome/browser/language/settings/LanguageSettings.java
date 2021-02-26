@@ -8,17 +8,21 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /**
  * Settings fragment that displays information about Chrome languages, which allow users to
@@ -35,23 +39,35 @@ public class LanguageSettings
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.language_settings);
-        SettingsUtils.addPreferencesFromResource(this, R.xml.languages_preferences);
 
-        LanguageListPreference mLanguageListPref =
-                (LanguageListPreference) findPreference(PREFERRED_LANGUAGES_KEY);
+        // Show the detailed language settings if DETAILED_LANGUAGE_SETTINGS feature is enabled
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DETAILED_LANGUAGE_SETTINGS)) {
+            createDetailedPreferences(savedInstanceState, rootKey);
+        } else {
+            createBasicPreferences(savedInstanceState, rootKey);
+        }
+
+        LanguagesManager.recordImpression(LanguagesManager.LanguageSettingsPageType.PAGE_MAIN);
+    }
+
+    public void createDetailedPreferences(Bundle savedInstanceState, String rootKey) {
+        SettingsUtils.addPreferencesFromResource(this, R.xml.languages_detailed_preferences);
+
+        DetailedLanguageListPreference mLanguageListPref =
+                (DetailedLanguageListPreference) findPreference(PREFERRED_LANGUAGES_KEY);
+
         mLanguageListPref.registerActivityLauncher(this);
 
         ChromeSwitchPreference translateSwitch =
                 (ChromeSwitchPreference) findPreference(TRANSLATE_SWITCH_KEY);
-        boolean isTranslateEnabled =
-                PrefServiceBridge.getInstance().getBoolean(Pref.OFFER_TRANSLATE_ENABLED);
+        boolean isTranslateEnabled = getPrefService().getBoolean(Pref.OFFER_TRANSLATE_ENABLED);
         translateSwitch.setChecked(isTranslateEnabled);
 
         translateSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 boolean enabled = (boolean) newValue;
-                PrefServiceBridge.getInstance().setBoolean(Pref.OFFER_TRANSLATE_ENABLED, enabled);
+                getPrefService().setBoolean(Pref.OFFER_TRANSLATE_ENABLED, enabled);
                 mLanguageListPref.notifyPrefChanged();
                 LanguagesManager.recordAction(enabled ? LanguagesManager.LanguageSettingsActionType
                                                                 .ENABLE_TRANSLATE_GLOBALLY
@@ -61,9 +77,37 @@ public class LanguageSettings
             }
         });
         translateSwitch.setManagedPreferenceDelegate((ChromeManagedPreferenceDelegate) preference
-                -> PrefServiceBridge.getInstance().isManagedPreference(
-                        Pref.OFFER_TRANSLATE_ENABLED));
-        LanguagesManager.recordImpression(LanguagesManager.LanguageSettingsPageType.PAGE_MAIN);
+                -> getPrefService().isManagedPreference(Pref.OFFER_TRANSLATE_ENABLED));
+    }
+
+    public void createBasicPreferences(Bundle savedInstanceState, String rootKey) {
+        SettingsUtils.addPreferencesFromResource(this, R.xml.languages_preferences);
+
+        LanguageListPreference mLanguageListPref =
+                (LanguageListPreference) findPreference(PREFERRED_LANGUAGES_KEY);
+
+        mLanguageListPref.registerActivityLauncher(this);
+
+        ChromeSwitchPreference translateSwitch =
+                (ChromeSwitchPreference) findPreference(TRANSLATE_SWITCH_KEY);
+        boolean isTranslateEnabled = getPrefService().getBoolean(Pref.OFFER_TRANSLATE_ENABLED);
+        translateSwitch.setChecked(isTranslateEnabled);
+
+        translateSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                boolean enabled = (boolean) newValue;
+                getPrefService().setBoolean(Pref.OFFER_TRANSLATE_ENABLED, enabled);
+                mLanguageListPref.notifyPrefChanged();
+                LanguagesManager.recordAction(enabled ? LanguagesManager.LanguageSettingsActionType
+                                                                .ENABLE_TRANSLATE_GLOBALLY
+                                                      : LanguagesManager.LanguageSettingsActionType
+                                                                .DISABLE_TRANSLATE_GLOBALLY);
+                return true;
+            }
+        });
+        translateSwitch.setManagedPreferenceDelegate((ChromeManagedPreferenceDelegate) preference
+                -> getPrefService().isManagedPreference(Pref.OFFER_TRANSLATE_ENABLED));
     }
 
     @Override
@@ -90,5 +134,10 @@ public class LanguageSettings
         Intent intent = settingsLauncher.createSettingsActivityIntent(
                 getActivity(), AddLanguageFragment.class.getName());
         startActivityForResult(intent, REQUEST_CODE_ADD_LANGUAGES);
+    }
+
+    @VisibleForTesting
+    static PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 }

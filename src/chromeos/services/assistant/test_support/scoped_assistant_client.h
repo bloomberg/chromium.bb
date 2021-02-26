@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/cpp/assistant_client.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
@@ -24,15 +24,6 @@ class ScopedAssistantClient : AssistantClient {
 
   // AssistantClient implementation:
   void OnAssistantStatusChanged(AssistantStatus status) override {}
-  void RequestAssistantAlarmTimerController(
-      mojo::PendingReceiver<ash::mojom::AssistantAlarmTimerController> receiver)
-      override {}
-  void RequestAssistantNotificationController(
-      mojo::PendingReceiver<ash::mojom::AssistantNotificationController>
-          receiver) override {}
-  void RequestAssistantScreenContextController(
-      mojo::PendingReceiver<ash::mojom::AssistantScreenContextController>
-          receiver) override {}
   void RequestAssistantVolumeControl(
       mojo::PendingReceiver<ash::mojom::AssistantVolumeControl> receiver)
       override {}

@@ -21,10 +21,12 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
+#include "ui/resources/grit/webui_generated_resources.h"
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -46,6 +48,7 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"done", IDS_CROSTINI_UPGRADER_DONE_BUTTON},
       {"restore", IDS_CROSTINI_UPGRADER_RESTORE_BUTTON},
       {"learnMore", IDS_LEARN_MORE},
+      {"notNow", IDS_CROSTINI_UPGRADER_NOT_NOW},
 
       {"promptTitle", IDS_CROSTINI_UPGRADER_TITLE},
       {"backingUpTitle", IDS_CROSTINI_UPGRADER_BACKING_UP_TITLE},
@@ -97,8 +100,10 @@ CrostiniUpgraderUI::CrostiniUpgraderUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI{web_ui} {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUICrostiniUpgraderHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
+  source->DisableTrustedTypesCSP();
   AddStringResources(source);
 
   source->AddResourcePath("images/linux_illustration.png",
@@ -112,8 +117,8 @@ CrostiniUpgraderUI::CrostiniUpgraderUI(content::WebUI* web_ui)
                           IDR_CROSTINI_UPGRADER_BROWSER_PROXY_JS);
   source->AddResourcePath("crostini_upgrader.mojom-lite.js",
                           IDR_CROSTINI_UPGRADER_MOJO_LITE_JS);
-  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
+  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
   source->SetDefaultResource(IDR_CROSTINI_UPGRADER_INDEX_HTML);
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
@@ -121,6 +126,15 @@ CrostiniUpgraderUI::CrostiniUpgraderUI(content::WebUI* web_ui)
 }
 
 CrostiniUpgraderUI::~CrostiniUpgraderUI() = default;
+
+bool CrostiniUpgraderUI::RequestClosePage() {
+  if (page_closed_ || !page_handler_) {
+    return true;
+  }
+
+  page_handler_->RequestClosePage();
+  return false;
+}
 
 void CrostiniUpgraderUI::BindInterface(
     mojo::PendingReceiver<
@@ -145,13 +159,12 @@ void CrostiniUpgraderUI::CreatePageHandler(
       std::move(pending_page_handler), std::move(pending_page),
       // Using Unretained(this) because |page_handler_| will not out-live
       // |this|.
-      base::BindOnce(&CrostiniUpgraderUI::OnWebUICloseDialog,
-                     base::Unretained(this)),
+      base::BindOnce(&CrostiniUpgraderUI::OnPageClosed, base::Unretained(this)),
       std::move(launch_callback_));
 }
 
-void CrostiniUpgraderUI::OnWebUICloseDialog() {
-  can_close_ = true;
+void CrostiniUpgraderUI::OnPageClosed() {
+  page_closed_ = true;
   // CloseDialog() is a no-op if we are not in a dialog (e.g. user
   // access the page using the URL directly, which is not supported).
   ui::MojoWebDialogUI::CloseDialog(nullptr);

@@ -86,16 +86,16 @@ class ContainedRangeMap {
   // grandchildren of this ContainedRangeMap.  Returns false for a
   // parameter error, or if the ContainedRangeMap hierarchy guarantees
   // would be violated.
-  bool StoreRange(const AddressType &base,
-                  const AddressType &size,
-                  const EntryType &entry);
+  bool StoreRange(const AddressType& base,
+                  const AddressType& size,
+                  const EntryType& entry);
 
   // Retrieves the most specific (smallest) descendant range encompassing
   // the specified address.  This method will only return entries held by
   // child ranges, and not the entry contained by |this|.  This is necessary
   // to support a sparsely-populated root range.  If no descendant range
   // encompasses the address, returns false.
-  bool RetrieveRange(const AddressType &address, EntryType *entry) const;
+  bool RetrieveRange(const AddressType& address, EntryType* entry) const;
 
   // Removes all children.  Note that Clear only removes descendants,
   // leaving the node on which it is called intact.  Because the only
@@ -110,7 +110,7 @@ class ContainedRangeMap {
 
   // AddressToRangeMap stores pointers.  This makes reparenting simpler in
   // StoreRange, because it doesn't need to copy entire objects.
-  typedef std::map<AddressType, ContainedRangeMap *> AddressToRangeMap;
+  typedef std::map<AddressType, ContainedRangeMap*> AddressToRangeMap;
   typedef typename AddressToRangeMap::const_iterator MapConstIterator;
   typedef typename AddressToRangeMap::iterator MapIterator;
   typedef typename AddressToRangeMap::value_type MapValue;
@@ -118,8 +118,8 @@ class ContainedRangeMap {
   // Creates a new ContainedRangeMap with the specified base address, entry,
   // and initial child map, which may be NULL.  This is only used internally
   // by ContainedRangeMap when it creates a new child.
-  ContainedRangeMap(const AddressType &base, const EntryType &entry,
-                    AddressToRangeMap *map)
+  ContainedRangeMap(const AddressType& base, const EntryType& entry,
+                    AddressToRangeMap* map)
       : base_(base), entry_(entry), map_(map) {}
 
   // The base address of this range.  The high address does not need to
@@ -140,7 +140,7 @@ class ContainedRangeMap {
   // The map containing child ranges, keyed by each child range's high
   // address.  This is a pointer to avoid allocating map structures for
   // leaf nodes, where they are not needed.
-  AddressToRangeMap *map_;
+  AddressToRangeMap* map_;
 };
 
 

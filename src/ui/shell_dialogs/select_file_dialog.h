@@ -135,18 +135,31 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
     std::vector<base::string16> extension_description_overrides;
 
     // Specifies whether there will be a filter added for all files (i.e. *.*).
-    bool include_all_files;
+    bool include_all_files = false;
 
-    // Specifies which type of paths the caller can handle. If it is
-    // NATIVE_PATH, the dialog creates a native replica of the non-native file
-    // and returns its path, so that the caller can use it without any
-    // difference than when it were local.
+    // Some implementations by default hide the extension of a file, in
+    // particular in a save file dialog. If this is set to true, where
+    // supported, the save file dialog will instead keep the file extension
+    // visible.
+    bool keep_extension_visible = false;
+
+    // Specifies which type of paths the caller can handle.
     enum AllowedPaths {
+      // Any type of path, whether on a local/native volume or a remote/virtual
+      // volume. Excludes files that can only be opened by URL; for those use
+      // ANY_PATH_OR_URL below.
       ANY_PATH,
+      // Set when the caller cannot handle virtual volumes (e.g. File System
+      // Provider [FSP] volumes like "File System for Dropbox"). When opening
+      // files, the dialog will create a native replica of the file and return
+      // its path. When saving files, the dialog will hide virtual volumes.
       NATIVE_PATH,
+      // Set when the caller can open files via URL. For example, when opening a
+      // .gdoc file from Google Drive the file is opened by navigating to a
+      // docs.google.com URL.
       ANY_PATH_OR_URL
     };
-    AllowedPaths allowed_paths;
+    AllowedPaths allowed_paths = NATIVE_PATH;
   };
 
   // Returns a file path with a base name at most 255 characters long. This

@@ -4,7 +4,10 @@
     "console",
     "console_counters"
   ],
-  "scripts": [
-    "ConsoleTestRunner.js"
+  "modules": [
+    "console_test_runner.js"
+  ],
+  "skip_compilation": [
+    "console_test_runner.js"
   ]
 }

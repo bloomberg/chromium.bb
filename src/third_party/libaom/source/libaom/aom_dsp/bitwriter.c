@@ -29,3 +29,8 @@ int aom_stop_encode(aom_writer *w) {
   od_ec_enc_clear(&w->ec);
   return nb_bits;
 }
+
+int aom_tell_size(aom_writer *w) {
+  const int nb_bits = od_ec_enc_tell(&w->ec);
+  return nb_bits;
+}

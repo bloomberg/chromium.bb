@@ -20,8 +20,10 @@ from dashboard.pinpoint.models import compare
 from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models import exploration
 
-
-_REPEAT_COUNT_INCREASE = 10
+# We start with 10 attempts at a given change and double until we reach 160
+# attempts max (that's 4 iterations).
+MIN_ATTEMPTS = 10
+MAX_ATTEMPTS = 160
 _DEFAULT_SPECULATION_LEVELS = 2
 
 FUNCTIONAL = 'functional'
@@ -39,8 +41,11 @@ class JobState(object):
   We lose the ability to index and query the fields, but it's all internal
   anyway. Everything queryable should be on the Job object."""
 
-  def __init__(self, quests, comparison_mode=None,
-               comparison_magnitude=None, pin=None):
+  def __init__(self,
+               quests,
+               comparison_mode=None,
+               comparison_magnitude=None,
+               pin=None):
     """Create a JobState.
 
     Args:
@@ -94,9 +99,15 @@ class JobState(object):
     else:
       change_with_pin = change
 
-    for _ in range(_REPEAT_COUNT_INCREASE):
+    # This algorithm will double the number of attempts, to allow us to get
+    # more attempts sooner and getting to better statistical decisions with
+    # less iterations.
+    current_attempt_count = max(len(self._attempts[change]), MIN_ATTEMPTS)
+    it = 0
+    while it != current_attempt_count:
       attempt = attempt_module.Attempt(self._quests, change_with_pin)
       self._attempts[change].append(attempt)
+      it += 1
 
   def AddChange(self, change, index=None):
     if index:
@@ -132,11 +143,20 @@ class JobState(object):
         return None
       return comparison == compare.DIFFERENT
 
-    changes_to_refine = []
+    changes_to_refine = set()
+
     def CollectChangesToRefine(change_a, change_b):
-      changes_to_refine.append(
-          change_a if len(self._attempts[change_a]
-                         ) <= len(self._attempts[change_b]) else change_b)
+      # We will return the changes which has less than or equal number of
+      # attempts but also doesn't have the maximum number of attempts.
+      change_a_attempts = len(self._attempts[change_a])
+      change_b_attempts = len(self._attempts[change_b])
+
+      if (change_a_attempts <= change_b_attempts
+          and change_a_attempts < MAX_ATTEMPTS):
+        changes_to_refine.add(change_a)
+      if (change_b_attempts <= change_a_attempts
+          and change_b_attempts < MAX_ATTEMPTS):
+        changes_to_refine.add(change_b)
 
     def FindMidpoint(change_a, change_b):
       try:
@@ -190,8 +210,7 @@ class JobState(object):
 
     exception, exception_count = most_common_exceptions[0]
     attempt_count = sum(counter.values())
-    raise errors.AllRunsFailed(
-        exception_count, attempt_count, exception)
+    raise errors.AllRunsFailed(exception_count, attempt_count, exception)
 
   def Differences(self):
     """Compares every pair of Changes and yields ones with different results.
@@ -204,16 +223,19 @@ class JobState(object):
       A list of tuples: [(Change_before, Change_after), ...]
     """
     differences = []
+
     def Comparison(a, b):
       if not a:
         return b
       if self._Compare(a, b) == compare.DIFFERENT:
         differences.append((a, b))
       return b
+
     functools.reduce(Comparison, self._changes, None)
     return differences
 
   def AsDict(self):
+
     def Transform(change):
       return ({
           'attempts': [attempt.AsDict() for attempt in self._attempts[change]],
@@ -298,8 +320,9 @@ class JobState(object):
         comparison, p_value, low_threshold, high_threshold = compare.Compare(
             exceptions_a, exceptions_b, attempt_count, FUNCTIONAL,
             comparison_magnitude)
-        logging.debug('p-value = %.4f (low = %.4f, high = %.4f)', p_value,
-                      low_threshold, high_threshold)
+        logging.debug(
+            'p-value = %.4f (low = %.4f, high = %.4f), comparison = %s',
+            p_value, low_threshold, high_threshold, comparison)
         if comparison == compare.DIFFERENT:
           return compare.DIFFERENT
         elif comparison == compare.UNKNOWN:
@@ -329,8 +352,9 @@ class JobState(object):
         comparison, p_value, low_threshold, high_threshold = compare.Compare(
             all_a_values, all_b_values, sample_count, PERFORMANCE,
             comparison_magnitude)
-        logging.debug('p-value = %.4f (low = %.4f, high = %.4f)', p_value,
-                      low_threshold, high_threshold)
+        logging.debug(
+            'p-value = %.4f (low = %.4f, high = %.4f), comparison = %s',
+            p_value, low_threshold, high_threshold, comparison)
         if comparison == compare.DIFFERENT:
           return compare.DIFFERENT
         elif comparison == compare.UNKNOWN:
@@ -362,6 +386,22 @@ class JobState(object):
 
   def ChangesExamined(self):
     return len(self._changes)
+
+  def FirstOrLastChangeFailed(self):
+    """Did all attempts complete and fail for the first or last change?"""
+    if not self._changes:
+      # No changes, so technically they didn't fail.
+      return False
+
+    attempts_a = self._attempts.get(self._changes[0], [])
+    attempts_b = self._attempts.get(self._changes[-1], [])
+
+    if attempts_a and all(a.failed for a in attempts_a):
+      return True
+    if attempts_b and all(a.failed for a in attempts_b):
+      return True
+
+    return False
 
 
 def _ExecutionsPerQuest(attempts):

@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -34,11 +35,9 @@ using autofill::FieldSignature;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormStructure;
-using autofill::PasswordForm;
 using autofill::RandomizedEncoder;
 using autofill::ServerFieldType;
 using autofill::ServerFieldTypeSet;
-using autofill::ValueElementPair;
 using password_manager_util::FindFormByUsername;
 
 using Logger = autofill::SavePasswordProgressLogger;
@@ -523,7 +522,7 @@ void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
   DCHECK(form_structure);
   DCHECK(generation_popup_was_shown_);
 
-  if (generation_element_.empty())
+  if (!generation_element_)
     return;
 
   AutofillUploadContents::Field::PasswordGenerationType type =
@@ -551,7 +550,7 @@ void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
 
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     AutofillField* field = form_structure->field(i);
-    if (field->name == generation_element_) {
+    if (field->unique_renderer_id == generation_element_) {
       field->set_generation_type(type);
       if (has_generated_password_) {
         field->set_generated_password_changed(generated_password_changed_);
@@ -656,8 +655,7 @@ void VotesUploader::GeneratePasswordAttributesVote(
   bool respond_randomly = base::RandGenerator(2);
   bool randomized_value_for_character_class =
       respond_randomly ? base::RandGenerator(2)
-                       : std::any_of(password_value.begin(),
-                                     password_value.end(), predicate);
+                       : base::ranges::any_of(password_value, predicate);
   form_structure->set_password_attributes_vote(std::make_pair(
       character_class_attribute, randomized_value_for_character_class));
 

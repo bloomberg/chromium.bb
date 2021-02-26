@@ -54,16 +54,16 @@
 namespace google_breakpad {
 
 struct FastSourceLineResolver::Line : public SourceLineResolverBase::Line {
-  void CopyFrom(const Line *line_ptr) {
-    const char *raw = reinterpret_cast<const char*>(line_ptr);
+  void CopyFrom(const Line* line_ptr) {
+    const char* raw = reinterpret_cast<const char*>(line_ptr);
     CopyFrom(raw);
   }
 
   // De-serialize the memory data of a Line.
-  void CopyFrom(const char *raw) {
+  void CopyFrom(const char* raw) {
     address = *(reinterpret_cast<const MemAddr*>(raw));
     size = *(reinterpret_cast<const MemAddr*>(raw + sizeof(address)));
-    source_file_id = *(reinterpret_cast<const int32_t *>(
+    source_file_id = *(reinterpret_cast<const int32_t*>(
         raw + 2 * sizeof(address)));
     line = *(reinterpret_cast<const int32_t*>(
         raw + 2 * sizeof(address) + sizeof(source_file_id)));
@@ -72,13 +72,13 @@ struct FastSourceLineResolver::Line : public SourceLineResolverBase::Line {
 
 struct FastSourceLineResolver::Function :
 public SourceLineResolverBase::Function {
-  void CopyFrom(const Function *func_ptr) {
-    const char *raw = reinterpret_cast<const char*>(func_ptr);
+  void CopyFrom(const Function* func_ptr) {
+    const char* raw = reinterpret_cast<const char*>(func_ptr);
     CopyFrom(raw);
   }
 
   // De-serialize the memory data of a Function.
-  void CopyFrom(const char *raw) {
+  void CopyFrom(const char* raw) {
     size_t name_size = strlen(raw) + 1;
     name = raw;
     address = *(reinterpret_cast<const MemAddr*>(raw + name_size));
@@ -95,13 +95,13 @@ public SourceLineResolverBase::Function {
 
 struct FastSourceLineResolver::PublicSymbol :
 public SourceLineResolverBase::PublicSymbol {
-  void CopyFrom(const PublicSymbol *public_symbol_ptr) {
-    const char *raw = reinterpret_cast<const char*>(public_symbol_ptr);
+  void CopyFrom(const PublicSymbol* public_symbol_ptr) {
+    const char* raw = reinterpret_cast<const char*>(public_symbol_ptr);
     CopyFrom(raw);
   }
 
   // De-serialize the memory data of a PublicSymbol.
-  void CopyFrom(const char *raw) {
+  void CopyFrom(const char* raw) {
     size_t name_size = strlen(raw) + 1;
     name = raw;
     address = *(reinterpret_cast<const MemAddr*>(raw + name_size));
@@ -112,15 +112,15 @@ public SourceLineResolverBase::PublicSymbol {
 
 class FastSourceLineResolver::Module: public SourceLineResolverBase::Module {
  public:
-  explicit Module(const string &name) : name_(name), is_corrupt_(false) { }
+  explicit Module(const string& name) : name_(name), is_corrupt_(false) { }
   virtual ~Module() { }
 
   // Looks up the given relative address, and fills the StackFrame struct
   // with the result.
-  virtual void LookupAddress(StackFrame *frame) const;
+  virtual void LookupAddress(StackFrame* frame) const;
 
   // Loads a map from the given buffer in char* type.
-  virtual bool LoadMapFromMemory(char *memory_buffer,
+  virtual bool LoadMapFromMemory(char* memory_buffer,
                                  size_t memory_buffer_size);
 
   // Tells whether the loaded symbol data is corrupt.  Return value is
@@ -132,13 +132,13 @@ class FastSourceLineResolver::Module: public SourceLineResolverBase::Module {
   // is not available, returns NULL. A NULL return value does not indicate
   // an error. The caller takes ownership of any returned WindowsFrameInfo
   // object.
-  virtual WindowsFrameInfo *FindWindowsFrameInfo(const StackFrame *frame) const;
+  virtual WindowsFrameInfo* FindWindowsFrameInfo(const StackFrame* frame) const;
 
   // If CFI stack walking information is available covering ADDRESS,
   // return a CFIFrameInfo structure describing it. If the information
   // is not available, return NULL. The caller takes ownership of any
   // returned CFIFrameInfo object.
-  virtual CFIFrameInfo *FindCFIFrameInfo(const StackFrame *frame) const;
+  virtual CFIFrameInfo* FindCFIFrameInfo(const StackFrame* frame) const;
 
   // Number of serialized map components of Module.
   static const int kNumberMaps_ = 5 + WindowsFrameInfo::STACK_INFO_LAST;

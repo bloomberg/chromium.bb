@@ -32,6 +32,9 @@ namespace {
 const uint64_t kInternalSpeakerId = 10001;
 const uint64_t kInternalMicId = 20001;
 
+const uint32_t kInputMaxSupportedChannels = 1;
+const uint32_t kOutputMaxSupportedChannels = 2;
+
 const AudioNode kInternalSpeaker(false,
                                  kInternalSpeakerId,
                                  false /* has_v2_stable_device_id */,
@@ -41,7 +44,8 @@ const AudioNode kInternalSpeaker(false,
                                  "INTERNAL_SPEAKER",
                                  "Speaker",
                                  false,
-                                 0);
+                                 0,
+                                 kOutputMaxSupportedChannels);
 
 const AudioNode kInternalMic(true,
                              kInternalMicId,
@@ -52,7 +56,8 @@ const AudioNode kInternalMic(true,
                              "INTERNAL_MIC",
                              "Internal Mic",
                              false,
-                             0);
+                             0,
+                             kInputMaxSupportedChannels);
 
 const AudioNode kInternalSpeakerV2(
     false,
@@ -66,7 +71,8 @@ const AudioNode kInternalSpeakerV2(
     "INTERNAL_SPEAKER",
     "Speaker",
     false,
-    0);
+    0,
+    kOutputMaxSupportedChannels);
 
 const AudioNode kInternalMicV2(true,
                                kInternalMicId,
@@ -79,7 +85,8 @@ const AudioNode kInternalMicV2(true,
                                "INTERNAL_MIC",
                                "Internal Mic",
                                false,
-                               0);
+                               0,
+                               kInputMaxSupportedChannels);
 
 // A mock CrasAudioClient Observer.
 class MockObserver : public CrasAudioClient::Observer {
@@ -268,11 +275,6 @@ void WriteNodesToResponse(const AudioNodeList& node_list,
     sub_writer.CloseContainer(&entry_writer);
 
     sub_writer.OpenDictEntry(&entry_writer);
-    entry_writer.AppendString(cras::kMicPositionsProperty);
-    entry_writer.AppendVariantOfString(node_list[i].mic_positions);
-    sub_writer.CloseContainer(&entry_writer);
-
-    sub_writer.OpenDictEntry(&entry_writer);
     entry_writer.AppendString(cras::kStableDeviceIdProperty);
     entry_writer.AppendVariantOfUint64(node_list[i].stable_device_id_v1);
     sub_writer.CloseContainer(&entry_writer);
@@ -306,7 +308,6 @@ void ExpectAudioNodeListResult(bool* called,
     EXPECT_EQ(expected_node_list[i].device_name, node_list[i].device_name);
     EXPECT_EQ(expected_node_list[i].type, node_list[i].type);
     EXPECT_EQ(expected_node_list[i].name, node_list[i].name);
-    EXPECT_EQ(expected_node_list[i].mic_positions, node_list[i].mic_positions);
     EXPECT_EQ(expected_node_list[i].active, node_list[i].active);
     EXPECT_EQ(expected_node_list[i].plugged_time, node_list[i].plugged_time);
     EXPECT_EQ(expected_node_list[i].StableDeviceIdVersion(),
@@ -1257,6 +1258,20 @@ TEST_F(CrasAudioClientTest, SetPlayerMetadata) {
 
   // Call method.
   client()->SetPlayerMetadata(kMetadata);
+  // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, ResendBluetoothBattery) {
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kResendBluetoothBattery,
+                       base::BindRepeating(&ExpectNoArgument), response.get());
+
+  // Call method.
+  client()->ResendBluetoothBattery();
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
 }

@@ -25,13 +25,13 @@
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
 #include "components/policy/core/common/schema_registry.h"
-#include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_change_processor.h"
-#include "components/sync/model/sync_change_processor_wrapper_for_test.h"
 #include "components/sync/model/sync_error_factory.h"
-#include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/model/syncable_service.h"
+#include "components/sync/test/model/fake_sync_change_processor.h"
+#include "components/sync/test/model/sync_change_processor_wrapper_for_test.h"
+#include "components/sync/test/model/sync_error_factory_mock.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SplitModeIncognito) {
   ResultCatcher catcher, catcher_incognito;
   catcher.RestrictToBrowserContext(browser()->profile());
   catcher_incognito.RestrictToBrowserContext(
-      browser()->profile()->GetOffTheRecordProfile());
+      browser()->profile()->GetPrimaryOTRProfile());
 
   LoadAndReplyWhenSatisfied(SYNC,
       "assertEmpty", "assertEmpty", "split_incognito");
@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   ResultCatcher catcher, catcher_incognito;
   catcher.RestrictToBrowserContext(browser()->profile());
   catcher_incognito.RestrictToBrowserContext(
-      browser()->profile()->GetOffTheRecordProfile());
+      browser()->profile()->GetPrimaryOTRProfile());
 
   LoadAndReplyWhenSatisfied(SYNC,
       "assertNoNotifications", "assertNoNotifications", "split_incognito");
@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   ResultCatcher catcher, catcher_incognito;
   catcher.RestrictToBrowserContext(browser()->profile());
   catcher_incognito.RestrictToBrowserContext(
-      browser()->profile()->GetOffTheRecordProfile());
+      browser()->profile()->GetPrimaryOTRProfile());
 
   LoadAndReplyWhenSatisfied(SYNC,
       "assertNoNotifications", "assertNoNotifications", "split_incognito");
@@ -339,15 +339,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
 }
 
-// Disabled, see crbug.com/101110
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
-    DISABLED_OnChangedNotificationsFromSync) {
+                       OnChangedNotificationsFromSync) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
   catcher.RestrictToBrowserContext(browser()->profile());
   catcher_incognito.RestrictToBrowserContext(
-      browser()->profile()->GetOffTheRecordProfile());
+      browser()->profile()->GetPrimaryOTRProfile());
 
   const Extension* extension =
       LoadAndReplyWhenSatisfied(SYNC,
@@ -381,18 +380,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
 }
 
-// Disabled, see crbug.com/101110
-//
 // TODO: boring test, already done in the unit tests.  What we really should be
 // be testing is that the areas don't overlap.
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
-    DISABLED_OnChangedNotificationsFromSyncNotSentToLocal) {
+                       OnChangedNotificationsFromSyncNotSentToLocal) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
   catcher.RestrictToBrowserContext(browser()->profile());
   catcher_incognito.RestrictToBrowserContext(
-      browser()->profile()->GetOffTheRecordProfile());
+      browser()->profile()->GetPrimaryOTRProfile());
 
   const Extension* extension =
       LoadAndReplyWhenSatisfied(LOCAL,
@@ -517,6 +514,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
       extensions::DictionaryBuilder()
           .Set("string-policy", "value")
           .Set("string-enum-policy", "value-1")
+          .Set("another-string-policy", 123)  // Test invalid policy value.
           .Set("int-policy", -123)
           .Set("int-enum-policy", 1)
           .Set("double-policy", 456e7)
@@ -544,8 +542,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
   ASSERT_TRUE(RunExtensionTest("settings/managed_storage")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
-                       DISABLED_PRE_ManagedStorageEvents) {
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, PRE_ManagedStorageEvents) {
   ResultCatcher catcher;
 
   // This test starts without any test extensions installed.
@@ -579,8 +576,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
-                       DISABLED_ManagedStorageEvents) {
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageEvents) {
   // This test runs after PRE_ManagedStorageEvents without having deleted the
   // profile, so the extension is still around. While the browser restarted the
   // policy went back to the empty default, and so the extension should receive

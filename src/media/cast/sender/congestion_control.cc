@@ -20,13 +20,15 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/ranges.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/cast/constants.h"
 
 namespace media {
 namespace cast {
 
-class AdaptiveCongestionControl : public CongestionControl {
+class AdaptiveCongestionControl final : public CongestionControl {
  public:
   AdaptiveCongestionControl(const base::TickClock* clock,
                             int max_bitrate_configured,
@@ -102,7 +104,7 @@ class AdaptiveCongestionControl : public CongestionControl {
   DISALLOW_COPY_AND_ASSIGN(AdaptiveCongestionControl);
 };
 
-class FixedCongestionControl : public CongestionControl {
+class FixedCongestionControl final : public CongestionControl {
  public:
   explicit FixedCongestionControl(int bitrate) : bitrate_(bitrate) {}
   ~FixedCongestionControl() final = default;
@@ -190,8 +192,7 @@ void AdaptiveCongestionControl::UpdateRtt(base::TimeDelta rtt) {
 void AdaptiveCongestionControl::UpdateTargetPlayoutDelay(
     base::TimeDelta delay) {
   const int max_unacked_frames = std::min<int>(
-      kMaxUnackedFrames, 1 + static_cast<int>(delay * max_frame_rate_ /
-                                              base::TimeDelta::FromSeconds(1)));
+      kMaxUnackedFrames, 1 + (delay * max_frame_rate_).InSeconds());
   DCHECK_GT(max_unacked_frames, 0);
   history_size_ = max_unacked_frames + kHistorySize;
   PruneFrameStats();
@@ -209,15 +210,15 @@ base::TimeDelta AdaptiveCongestionControl::DeadTime(const FrameStats& a,
 
 double AdaptiveCongestionControl::CalculateSafeBitrate() {
   DCHECK(!frame_stats_.empty());
-  const double transmit_time =
-      (GetFrameStats(last_checkpoint_frame_)->ack_time -
-       frame_stats_.front().enqueue_time - dead_time_in_history_)
-          .InSecondsF();
+  base::TimeDelta transmit_time =
+      GetFrameStats(last_checkpoint_frame_)->ack_time -
+      frame_stats_.front().enqueue_time - dead_time_in_history_;
 
-  if (acked_bits_in_history_ == 0 || transmit_time <= 0.0) {
+  if (acked_bits_in_history_ == 0 || transmit_time <= base::TimeDelta()) {
     return min_bitrate_configured_;
   }
-  return acked_bits_in_history_ / std::max(transmit_time, 1E-3);
+  transmit_time = std::max(transmit_time, base::TimeDelta::FromMilliseconds(1));
+  return acked_bits_in_history_ / transmit_time.InSecondsF();
 }
 
 AdaptiveCongestionControl::FrameStats* AdaptiveCongestionControl::GetFrameStats(
@@ -262,7 +263,7 @@ void AdaptiveCongestionControl::PruneFrameStats() {
     dead_time_in_history_ -= DeadTime(frame_stats_[0], frame_stats_[1]);
     DCHECK_GE(acked_bits_in_history_, 0UL);
     VLOG(2) << "DT: " << dead_time_in_history_.InSecondsF();
-    DCHECK_GE(dead_time_in_history_.InSecondsF(), 0.0);
+    DCHECK_GE(dead_time_in_history_, base::TimeDelta());
     frame_stats_.pop_front();
   }
 }
@@ -404,28 +405,26 @@ base::TimeTicks AdaptiveCongestionControl::EstimatedSendingTime(
 
 int AdaptiveCongestionControl::GetBitrate(base::TimeTicks playout_time,
                                           base::TimeDelta playout_delay) {
-  double safe_bitrate = CalculateSafeBitrate();
+  const double safe_bitrate = CalculateSafeBitrate();
   // Estimate when we might start sending the next frame.
-  base::TimeDelta time_to_catch_up =
+  const base::TimeDelta time_to_catch_up =
       playout_time -
       EstimatedSendingTime(last_enqueued_frame_ + 1, safe_bitrate);
 
-  double empty_buffer_fraction =
-      time_to_catch_up.InSecondsF() / playout_delay.InSecondsF();
+  double empty_buffer_fraction = time_to_catch_up / playout_delay;
   empty_buffer_fraction = std::min(empty_buffer_fraction, 1.0);
   empty_buffer_fraction = std::max(empty_buffer_fraction, 0.0);
 
-  int bits_per_second = static_cast<int>(
-      safe_bitrate * empty_buffer_fraction / kTargetEmptyBufferFraction);
+  const int bits_per_second = base::ClampRound(
+      safe_bitrate * (empty_buffer_fraction / kTargetEmptyBufferFraction));
   VLOG(3) << " FBR:" << (bits_per_second / 1E6)
           << " EBF:" << empty_buffer_fraction
           << " SBR:" << (safe_bitrate / 1E6);
   TRACE_COUNTER_ID1("cast.stream", "Empty Buffer Fraction", this,
                     empty_buffer_fraction);
-  bits_per_second = std::max(bits_per_second, min_bitrate_configured_);
-  bits_per_second = std::min(bits_per_second, max_bitrate_configured_);
 
-  return bits_per_second;
+  return base::ClampToRange(bits_per_second, min_bitrate_configured_,
+                            max_bitrate_configured_);
 }
 
 }  // namespace cast

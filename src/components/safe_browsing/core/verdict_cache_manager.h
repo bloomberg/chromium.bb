@@ -8,8 +8,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/browser/history_service.h"
@@ -96,7 +97,14 @@ class VerdictCacheManager : public history::HistoryServiceObserver,
   void HistoryServiceBeingDeleted(
       history::HistoryService* history_service) override;
 
+  // Returns true if an artificial unsafe URL has been provided using the
+  // command-line flag "mark_as_real_time_phishing".
+  static bool has_artificial_unsafe_url();
+
+  void StopCleanUpTimerForTesting();
+
  private:
+  friend class SafeBrowsingBlockingPageRealTimeUrlCheckTest;
   FRIEND_TEST_ALL_PREFIXES(VerdictCacheManagerTest, TestCleanUpExpiredVerdict);
   FRIEND_TEST_ALL_PREFIXES(VerdictCacheManagerTest,
                            TestCleanUpExpiredVerdictWithInvalidEntry);
@@ -105,6 +113,10 @@ class VerdictCacheManager : public history::HistoryServiceObserver,
   FRIEND_TEST_ALL_PREFIXES(
       VerdictCacheManagerTest,
       TestRemoveRealTimeUrlCheckCachedVerdictOnURLsDeleted);
+  FRIEND_TEST_ALL_PREFIXES(VerdictCacheManagerTest,
+                           TestCleanUpExpiredVerdictInBackground);
+
+  void ScheduleNextCleanUpAfterInterval(base::TimeDelta interval);
 
   // Removes all the expired verdicts from cache.
   void CleanUpExpiredVerdicts();
@@ -118,20 +130,21 @@ class VerdictCacheManager : public history::HistoryServiceObserver,
                                           const history::URLRows& deleted_rows);
   bool RemoveExpiredPhishGuardVerdicts(
       LoginReputationClientRequest::TriggerType trigger_type,
-      base::DictionaryValue* cache_dictionary);
-  bool RemoveExpiredRealTimeUrlCheckVerdicts(
-      base::DictionaryValue* cache_dictionary);
+      base::Value* cache_dictionary);
+  bool RemoveExpiredRealTimeUrlCheckVerdicts(base::Value* cache_dictionary);
 
   size_t GetPhishGuardVerdictCountForURL(
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type);
   // This method is only used for testing.
   size_t GetRealTimeUrlCheckVerdictCountForURL(const GURL& url);
+  // Gets the total number of RealTimeUrlCheck verdicts we cached
+  // for this profile. This counts both expired and active verdicts.
+  size_t GetStoredRealTimeUrlCheckVerdictCount();
 
-  // This method is only used for testing.
-  int GetStoredRealTimeUrlCheckVerdictCount() {
-    return stored_verdict_count_real_time_url_check_;
-  }
+  // This adds a cached verdict for a URL that has artificially been marked as
+  // unsafe using the command line flag "mark_as_real_time_phishing".
+  void CacheArtificialVerdict();
 
   // Number of verdict stored for this profile for password on focus pings.
   base::Optional<size_t> stored_verdict_count_password_on_focus_;
@@ -141,16 +154,20 @@ class VerdictCacheManager : public history::HistoryServiceObserver,
   base::Optional<size_t> stored_verdict_count_password_entry_;
 
   // Number of verdict stored for this profile for real time url check pings.
-  // This is only used for testing.
-  int stored_verdict_count_real_time_url_check_ = 0;
+  base::Optional<size_t> stored_verdict_count_real_time_url_check_;
 
-  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_{this};
+  base::ScopedObservation<history::HistoryService,
+                          history::HistoryServiceObserver>
+      history_service_observation_{this};
 
   // Content settings maps associated with this instance.
   scoped_refptr<HostContentSettingsMap> content_settings_;
 
+  base::OneShotTimer cleanup_timer_;
+
   base::WeakPtrFactory<VerdictCacheManager> weak_factory_{this};
+
+  static bool has_artificial_unsafe_url_;
 };
 
 }  // namespace safe_browsing

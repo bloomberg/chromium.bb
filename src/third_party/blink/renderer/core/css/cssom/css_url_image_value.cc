@@ -34,7 +34,6 @@ ResourceStatus CSSURLImageValue::Status() const {
 
 scoped_refptr<Image> CSSURLImageValue::GetSourceImageForCanvas(
     SourceImageStatus*,
-    AccelerationHint,
     const FloatSize&) {
   return GetImage();
 }
@@ -59,7 +58,7 @@ const CSSValue* CSSURLImageValue::ToCSSValue() const {
   return value_;
 }
 
-void CSSURLImageValue::Trace(Visitor* visitor) {
+void CSSURLImageValue::Trace(Visitor* visitor) const {
   visitor->Trace(value_);
   CSSStyleImageValue::Trace(visitor);
 }

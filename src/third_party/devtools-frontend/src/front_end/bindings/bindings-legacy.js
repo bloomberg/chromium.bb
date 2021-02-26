@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+
 import * as BindingsModule from './bindings.js';
 
 self.Bindings = self.Bindings || {};
@@ -78,9 +80,6 @@ Bindings.PresentationConsoleMessage = BindingsModule.PresentationConsoleMessageH
 /** @constructor */
 Bindings.ResourceMapping = BindingsModule.ResourceMapping.ResourceMapping;
 
-Bindings.ResourceMapping._symbol = BindingsModule.ResourceMapping.symbol;
-Bindings.ResourceMapping._offsetSymbol = BindingsModule.ResourceMapping.offsetSymbol;
-
 /** @constructor */
 Bindings.ResourceScriptFile = BindingsModule.ResourceScriptMapping.ResourceScriptFile;
 
@@ -101,19 +100,3 @@ Bindings.TempFile = BindingsModule.TempFile.TempFile;
 
 /** @constructor */
 Bindings.TempFileBackingStorage = BindingsModule.TempFile.TempFileBackingStorage;
-
-/** @type {!BindingsModule.BlackboxManager.BlackboxManager} */
-self.Bindings.blackboxManager;
-
-/** @type {!BindingsModule.BreakpointManager.BreakpointManager} */
-self.Bindings.breakpointManager;
-
-/**
- * @type {!BindingsModule.CSSWorkspaceBinding.CSSWorkspaceBinding}
- */
-self.Bindings.cssWorkspaceBinding;
-
-/**
- * @type {!BindingsModule.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding}
- */
-self.Bindings.debuggerWorkspaceBinding;

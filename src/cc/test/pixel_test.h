@@ -13,11 +13,13 @@
 #include "base/memory/shared_memory_mapping.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/client/client_resource_provider.h"
-#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/resources/shared_bitmap.h"
+#include "components/viz/service/display/aggregated_frame.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/skia_renderer.h"
@@ -32,16 +34,12 @@ namespace viz {
 class CopyOutputResult;
 class DirectRenderer;
 class DisplayResourceProvider;
-class GLRenderer;
 class GpuServiceImpl;
 class TestSharedBitmapManager;
 }
 
 namespace cc {
-class DawnSkiaRenderer;
 class FakeOutputSurfaceClient;
-class OutputSurface;
-class VulkanSkiaRenderer;
 
 class PixelTest : public testing::Test {
  protected:
@@ -61,24 +59,25 @@ class PixelTest : public testing::Test {
   explicit PixelTest(GraphicsBackend backend = kDefault);
   ~PixelTest() override;
 
-  bool RunPixelTest(viz::RenderPassList* pass_list,
+  bool RunPixelTest(viz::AggregatedRenderPassList* pass_list,
                     const base::FilePath& ref_file,
                     const PixelComparator& comparator);
 
-  bool RunPixelTest(viz::RenderPassList* pass_list,
+  bool RunPixelTest(viz::AggregatedRenderPassList* pass_list,
                     std::vector<SkColor>* ref_pixels,
                     const PixelComparator& comparator);
 
-  bool RunPixelTestWithReadbackTarget(viz::RenderPassList* pass_list,
-                                      viz::RenderPass* target,
+  bool RunPixelTestWithReadbackTarget(viz::AggregatedRenderPassList* pass_list,
+                                      viz::AggregatedRenderPass* target,
                                       const base::FilePath& ref_file,
                                       const PixelComparator& comparator);
 
-  bool RunPixelTestWithReadbackTargetAndArea(viz::RenderPassList* pass_list,
-                                             viz::RenderPass* target,
-                                             const base::FilePath& ref_file,
-                                             const PixelComparator& comparator,
-                                             const gfx::Rect* copy_rect);
+  bool RunPixelTestWithReadbackTargetAndArea(
+      viz::AggregatedRenderPassList* pass_list,
+      viz::AggregatedRenderPass* target,
+      const base::FilePath& ref_file,
+      const PixelComparator& comparator,
+      const gfx::Rect* copy_rect);
 
   viz::ContextProvider* context_provider() const {
     return output_surface_->context_provider();
@@ -112,9 +111,13 @@ class PixelTest : public testing::Test {
   viz::TestGpuServiceHolder* gpu_service_holder_ = nullptr;
 
   viz::RendererSettings renderer_settings_;
+  viz::DebugRendererSettings debug_settings_;
   gfx::Size device_viewport_size_;
   gfx::DisplayColorSpaces display_color_spaces_;
+  viz::SurfaceDamageRectList surface_damage_rect_list_;
   bool disable_picture_quad_image_filtering_;
+  std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
+      display_controller_;
   std::unique_ptr<FakeOutputSurfaceClient> output_surface_client_;
   std::unique_ptr<viz::OutputSurface> output_surface_;
   std::unique_ptr<viz::TestSharedBitmapManager> shared_bitmap_manager_;
@@ -143,99 +146,6 @@ class PixelTest : public testing::Test {
 
   std::unique_ptr<gl::DisableNullDrawGLBindings> enable_pixel_output_;
 };
-
-template<typename RendererType>
-class RendererPixelTest : public PixelTest {
- public:
-  RendererPixelTest() : PixelTest(backend()) {}
-
-  RendererType* renderer() {
-    return static_cast<RendererType*>(renderer_.get());
-  }
-
-  // Text string for graphics backend of the RendererType. Suitable for
-  // generating separate base line file paths.
-  const char* renderer_type() {
-    if (std::is_base_of<viz::GLRenderer, RendererType>::value)
-      return "gl";
-    if (std::is_base_of<DawnSkiaRenderer, RendererType>::value)
-      return "dawn";
-    if (std::is_base_of<viz::SkiaRenderer, RendererType>::value)
-      return "skia";
-    if (std::is_base_of<viz::SoftwareRenderer, RendererType>::value)
-      return "software";
-    return "unknown";
-  }
-
-  bool use_gpu() const { return !!child_context_provider_; }
-  GraphicsBackend backend() const {
-    if (std::is_base_of<VulkanSkiaRenderer, RendererType>::value)
-      return kSkiaVulkan;
-    if (std::is_base_of<DawnSkiaRenderer, RendererType>::value)
-      return kSkiaDawn;
-    return kDefault;
-  }
-
- protected:
-  void SetUp() override;
-};
-
-// Types used with gtest typed tests to specify additional behaviour, eg.
-// should it be a flipped surface or what Skia backend to use.
-class GLRendererWithFlippedSurface : public viz::GLRenderer {};
-class SkiaRendererWithFlippedSurface : public viz::SkiaRenderer {};
-class VulkanSkiaRenderer : public viz::SkiaRenderer {};
-class VulkanSkiaRendererWithFlippedSurface : public VulkanSkiaRenderer {};
-class DawnSkiaRenderer : public viz::SkiaRenderer {};
-class DawnSkiaRendererWithFlippedSurface : public DawnSkiaRenderer {};
-
-template <>
-inline void RendererPixelTest<viz::GLRenderer>::SetUp() {
-  SetUpGLRenderer(gfx::SurfaceOrigin::kBottomLeft);
-}
-
-template <>
-inline void RendererPixelTest<GLRendererWithFlippedSurface>::SetUp() {
-  SetUpGLRenderer(gfx::SurfaceOrigin::kTopLeft);
-}
-
-template <>
-inline void RendererPixelTest<viz::SoftwareRenderer>::SetUp() {
-  SetUpSoftwareRenderer();
-}
-
-template <>
-inline void RendererPixelTest<viz::SkiaRenderer>::SetUp() {
-  SetUpSkiaRenderer(gfx::SurfaceOrigin::kBottomLeft);
-}
-
-template <>
-inline void RendererPixelTest<SkiaRendererWithFlippedSurface>::SetUp() {
-  SetUpSkiaRenderer(gfx::SurfaceOrigin::kTopLeft);
-}
-
-template <>
-inline void RendererPixelTest<VulkanSkiaRenderer>::SetUp() {
-  SetUpSkiaRenderer(gfx::SurfaceOrigin::kBottomLeft);
-}
-
-template <>
-inline void RendererPixelTest<VulkanSkiaRendererWithFlippedSurface>::SetUp() {
-  SetUpSkiaRenderer(gfx::SurfaceOrigin::kTopLeft);
-}
-
-template <>
-inline void RendererPixelTest<DawnSkiaRenderer>::SetUp() {
-  SetUpSkiaRenderer(gfx::SurfaceOrigin::kBottomLeft);
-}
-
-template <>
-inline void RendererPixelTest<DawnSkiaRendererWithFlippedSurface>::SetUp() {
-  SetUpSkiaRenderer(gfx::SurfaceOrigin::kTopLeft);
-}
-
-typedef RendererPixelTest<viz::GLRenderer> GLRendererPixelTest;
-typedef RendererPixelTest<viz::SoftwareRenderer> SoftwareRendererPixelTest;
 
 }  // namespace cc
 

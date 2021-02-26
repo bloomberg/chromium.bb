@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -23,6 +24,7 @@
 using blink::WebString;
 using blink::WebURL;
 using content::BrowserContext;
+using content::GlobalFrameRoutingId;
 using content::OpenURLParams;
 using content::RenderFrameHost;
 using content::RenderViewHost;
@@ -207,17 +209,8 @@ void RenderViewContextMenuBase::AddMenuItem(int command_id,
 void RenderViewContextMenuBase::AddMenuItemWithIcon(
     int command_id,
     const base::string16& title,
-    const gfx::ImageSkia& image) {
-  menu_model_.AddItemWithIcon(command_id, title,
-                              ui::ImageModel::FromImageSkia(image));
-}
-
-void RenderViewContextMenuBase::AddMenuItemWithIcon(
-    int command_id,
-    const base::string16& title,
-    const gfx::VectorIcon& icon) {
-  menu_model_.AddItemWithIcon(command_id, title,
-                              ui::ImageModel::FromVectorIcon(icon));
+    const ui::ImageModel& icon) {
+  menu_model_.AddItemWithIcon(command_id, title, icon);
 }
 
 void RenderViewContextMenuBase::AddCheckItem(int command_id,
@@ -239,18 +232,9 @@ void RenderViewContextMenuBase::AddSubMenuWithStringIdAndIcon(
     int command_id,
     int message_id,
     ui::MenuModel* model,
-    const gfx::ImageSkia& image) {
-  menu_model_.AddSubMenuWithStringIdAndIcon(
-      command_id, message_id, model, ui::ImageModel::FromImageSkia(image));
-}
-
-void RenderViewContextMenuBase::AddSubMenuWithStringIdAndIcon(
-    int command_id,
-    int message_id,
-    ui::MenuModel* model,
-    const gfx::VectorIcon& icon) {
-  menu_model_.AddSubMenuWithStringIdAndIcon(
-      command_id, message_id, model, ui::ImageModel::FromVectorIcon(icon));
+    const ui::ImageModel& icon) {
+  menu_model_.AddSubMenuWithStringIdAndIcon(command_id, message_id, model,
+                                            icon);
 }
 
 void RenderViewContextMenuBase::UpdateMenuItem(int command_id,
@@ -269,12 +253,12 @@ void RenderViewContextMenuBase::UpdateMenuItem(int command_id,
 }
 
 void RenderViewContextMenuBase::UpdateMenuIcon(int command_id,
-                                               const gfx::Image& image) {
+                                               const ui::ImageModel& icon) {
   int index = menu_model_.GetIndexOfCommandId(command_id);
   if (index == -1)
     return;
 
-  menu_model_.SetIcon(index, ui::ImageModel::FromImage(image));
+  menu_model_.SetIcon(index, icon);
 #if defined(OS_CHROMEOS)
   if (toolkit_delegate_)
     toolkit_delegate_->RebuildMenu();
@@ -311,7 +295,7 @@ void RenderViewContextMenuBase::RemoveAdjacentSeparators() {
 }
 
 RenderViewHost* RenderViewContextMenuBase::GetRenderViewHost() const {
-  return source_web_contents_->GetRenderViewHost();
+  return source_web_contents_->GetMainFrame()->GetRenderViewHost();
 }
 
 WebContents* RenderViewContextMenuBase::GetWebContents() const {
@@ -426,7 +410,7 @@ void RenderViewContextMenuBase::MenuClosed(ui::SimpleMenuModel* source) {
   }
 }
 
-RenderFrameHost* RenderViewContextMenuBase::GetRenderFrameHost() {
+RenderFrameHost* RenderViewContextMenuBase::GetRenderFrameHost() const {
   return RenderFrameHost::FromID(render_process_id_, render_frame_id_);
 }
 
@@ -464,6 +448,12 @@ void RenderViewContextMenuBase::OpenURLWithExtraHeaders(
 
   open_url_params.source_render_process_id = render_process_id_;
   open_url_params.source_render_frame_id = render_frame_id_;
+
+  open_url_params.initiator_routing_id =
+      GlobalFrameRoutingId(render_process_id_, render_frame_id_);
+
+  if (disposition != WindowOpenDisposition::OFF_THE_RECORD)
+    open_url_params.impression = params_.impression;
 
   source_web_contents_->OpenURL(open_url_params);
 }

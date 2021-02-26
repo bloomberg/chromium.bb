@@ -5,16 +5,16 @@
 #include "chrome/chrome_cleaner/engines/controllers/elevating_facade.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -52,9 +52,9 @@ bool IsChromeWindow(HWND window) {
     return false;
 
   return base::EqualsCaseInsensitiveASCII(
-      base::StringPiece16(window_class_prefix, class_name_length),
-      base::StringPiece16(kChromeWindowClassPrefix,
-                          base::size(kChromeWindowClassPrefix) - 1));
+      base::WStringPiece(window_class_prefix, class_name_length),
+      base::WStringPiece(kChromeWindowClassPrefix,
+                         base::size(kChromeWindowClassPrefix) - 1));
 }
 
 // Returns a handle to the foreground window if it is a Chrome window, otherwise

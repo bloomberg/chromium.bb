@@ -15,12 +15,13 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "components/search_provider_logos/features.h"
+#include "components/google/core/common/google_util.h"
 #include "components/search_provider_logos/switches.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_constants.h"
@@ -31,46 +32,6 @@ namespace {
 
 const int kDefaultIframeWidthPx = 500;
 const int kDefaultIframeHeightPx = 200;
-
-// Appends the provided |value| to the "async" query param, according to the
-// format used by the Google doodle servers: "async=param:value,other:foo"
-// Derived from net::AppendOrReplaceQueryParameter, that can't be used because
-// it escapes ":" to "%3A", but the server requires the colon not to be escaped.
-// See: http://crbug.com/413845
-GURL AppendToAsyncQueryparam(const GURL& url, const std::string& value) {
-  const std::string param_name = "async";
-  bool replaced = false;
-  const std::string input = url.query();
-  url::Component cursor(0, input.size());
-  std::string output;
-  url::Component key_range, value_range;
-  while (url::ExtractQueryKeyValue(input.data(), &cursor, &key_range,
-                                   &value_range)) {
-    const base::StringPiece key(input.data() + key_range.begin, key_range.len);
-    std::string key_value_pair(input, key_range.begin,
-                               value_range.end() - key_range.begin);
-    if (!replaced && key == param_name) {
-      // Check |replaced| as only the first match should be replaced.
-      replaced = true;
-      key_value_pair += "," + value;
-    }
-    if (!output.empty()) {
-      output += "&";
-    }
-
-    output += key_value_pair;
-  }
-  if (!replaced) {
-    if (!output.empty()) {
-      output += "&";
-    }
-
-    output += (param_name + "=" + value);
-  }
-  GURL::Replacements replacements;
-  replacements.SetQueryStr(output);
-  return url.ReplaceComponents(replacements);
-}
 
 }  // namespace
 
@@ -98,18 +59,18 @@ GURL AppendFingerprintParamToDoodleURL(const GURL& logo_url,
     return logo_url;
   }
 
-  return AppendToAsyncQueryparam(logo_url, "es_dfp:" + fingerprint);
+  return google_util::AppendToAsyncQueryParam(logo_url, "es_dfp", fingerprint);
 }
 
 GURL AppendPreliminaryParamsToDoodleURL(bool gray_background,
                                         bool for_webui_ntp,
                                         const GURL& logo_url) {
-  std::string api_params = for_webui_ntp ? "ntp:2" : "ntp:1";
+  auto url = google_util::AppendToAsyncQueryParam(logo_url, "ntp",
+                                                  for_webui_ntp ? "2" : "1");
   if (gray_background) {
-    api_params += ",graybg:1";
+    url = google_util::AppendToAsyncQueryParam(url, "graybg", "1");
   }
-
-  return AppendToAsyncQueryparam(logo_url, api_params);
+  return url;
 }
 
 namespace {
@@ -183,26 +144,22 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
     bool* parsing_failed) {
   // The response may start with )]}'. Ignore this.
   base::StringPiece response_sp(*response);
-  if (response_sp.starts_with(kResponsePreamble))
+  if (base::StartsWith(response_sp, kResponsePreamble))
     response_sp.remove_prefix(strlen(kResponsePreamble));
 
   // Default parsing failure to be true.
   *parsing_failed = true;
 
-  int error_code;
-  std::string error_string;
-  int error_line;
-  int error_col;
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          response_sp, 0, &error_code, &error_string, &error_line, &error_col);
-  if (!value) {
-    LOG(WARNING) << error_string << " at " << error_line << ":" << error_col;
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(response_sp);
+  if (!parsed_json.value) {
+    LOG(WARNING) << parsed_json.error_message << " at "
+                 << parsed_json.error_line << ":" << parsed_json.error_column;
     return nullptr;
   }
 
-  std::unique_ptr<base::DictionaryValue> config =
-      base::DictionaryValue::From(std::move(value));
+  std::unique_ptr<base::DictionaryValue> config = base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(*parsed_json.value)));
   if (!config)
     return nullptr;
 
@@ -251,11 +208,17 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
 
   if (is_simple || is_animated) {
     const base::DictionaryValue* image = nullptr;
-    std::string bg_color;
-    if (ddljson->GetDictionary("dark_large_image", &image)) {
-      image->GetString("background_color", &bg_color);
+    if (ddljson->GetDictionary("large_image", &image)) {
+      image->GetInteger("width", &logo->metadata.width_px);
+      image->GetInteger("height", &logo->metadata.height_px);
     }
-    logo->metadata.dark_background_color = bg_color;
+    const base::DictionaryValue* dark_image = nullptr;
+    if (ddljson->GetDictionary("dark_large_image", &dark_image)) {
+      dark_image->GetString("background_color",
+                            &logo->metadata.dark_background_color);
+      dark_image->GetInteger("width", &logo->metadata.dark_width_px);
+      dark_image->GetInteger("height", &logo->metadata.dark_height_px);
+    }
   }
 
   const bool is_eligible_for_share_button =
@@ -333,10 +296,11 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
   logo->metadata.on_click_url = ParseUrl(*ddljson, "target_url", base_url);
   ddljson->GetString("alt_text", &logo->metadata.alt_text);
 
-  if (base::FeatureList::IsEnabled(features::kDoodleLogging)) {
-    logo->metadata.cta_log_url = ParseUrl(*ddljson, "cta_log_url", base_url);
-    logo->metadata.log_url = ParseUrl(*ddljson, "log_url", base_url);
-  }
+  logo->metadata.cta_log_url = ParseUrl(*ddljson, "cta_log_url", base_url);
+  logo->metadata.dark_cta_log_url =
+      ParseUrl(*ddljson, "dark_cta_log_url", base_url);
+  logo->metadata.log_url = ParseUrl(*ddljson, "log_url", base_url);
+  logo->metadata.dark_log_url = ParseUrl(*ddljson, "dark_log_url", base_url);
 
   ddljson->GetString("fingerprint", &logo->metadata.fingerprint);
 

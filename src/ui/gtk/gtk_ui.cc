@@ -29,7 +29,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "ui/base/cursor/cursor_theme_manager_linux_observer.h"
+#include "ui/base/cursor/cursor_theme_manager_observer.h"
 #include "ui/base/ime/linux/fake_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
@@ -51,8 +51,8 @@
 #include "ui/gtk/input_method_context_impl_gtk.h"
 #include "ui/gtk/native_theme_gtk.h"
 #include "ui/gtk/nav_button_provider_gtk.h"
-#include "ui/gtk/print_dialog_gtk.h"
-#include "ui/gtk/printing_gtk_util.h"
+#include "ui/gtk/printing/print_dialog_gtk.h"
+#include "ui/gtk/printing/printing_gtk_util.h"
 #include "ui/gtk/select_file_dialog_impl.h"
 #include "ui/gtk/settings_provider_gtk.h"
 #include "ui/native_theme/native_theme.h"
@@ -70,6 +70,7 @@
 
 #if defined(USE_OZONE)
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -404,10 +405,11 @@ void GtkUi::Initialize() {
   // instance instead of using GtkUi context factory. This step is made upon
   // CreateInputMethod call. If the factory is not set, use the GtkUi context
   // factory.
-  if (!ui::OzonePlatform::GetInstance()->CreateInputMethod(
+  if (!features::IsUsingOzonePlatform() ||
+      !ui::OzonePlatform::GetInstance()->CreateInputMethod(
           nullptr, gfx::kNullAcceleratedWidget)) {
-    DCHECK(!ui::LinuxInputMethodContextFactory::instance());
-    ui::LinuxInputMethodContextFactory::SetInstance(this);
+    if (!ui::LinuxInputMethodContextFactory::instance())
+      ui::LinuxInputMethodContextFactory::SetInstance(this);
   }
 #endif
 
@@ -518,7 +520,7 @@ base::TimeDelta GtkUi::GetCursorBlinkInterval() const {
 
   // Dividing GTK's cursor blink cycle time (in milliseconds) by this value
   // yields an appropriate value for
-  // blink::mojom::RendererPreferences::caret_blink_interval.
+  // blink::RendererPreferences::caret_blink_interval.
   static const double kGtkCursorBlinkCycleFactor = 2000.0;
 
   gint cursor_blink_time = kGtkDefaultCursorBlinkTime;

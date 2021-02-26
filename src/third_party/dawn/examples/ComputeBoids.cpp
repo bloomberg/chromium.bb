@@ -67,7 +67,7 @@ void initBuffers() {
     modelBuffer =
         utils::CreateBufferFromData(device, model, sizeof(model), wgpu::BufferUsage::Vertex);
 
-    SimParams params = { 0.04f, 0.1f, 0.025f, 0.025f, 0.02f, 0.05f, 0.005f, kNumParticles };
+    SimParams params = {0.04f, 0.1f, 0.025f, 0.025f, 0.02f, 0.05f, 0.005f, kNumParticles};
     updateParams =
         utils::CreateBufferFromData(device, &params, sizeof(params), wgpu::BufferUsage::Uniform);
 
@@ -75,8 +75,7 @@ void initBuffers() {
     {
         std::mt19937 generator;
         std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
-        for (auto& p : initialParticles)
-        {
+        for (auto& p : initialParticles) {
             p.pos = glm::vec2(dist(generator), dist(generator));
             p.vel = glm::vec2(dist(generator), dist(generator)) * 0.1f;
         }
@@ -89,9 +88,9 @@ void initBuffers() {
             wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex | wgpu::BufferUsage::Storage;
         particleBuffers[i] = device.CreateBuffer(&descriptor);
 
-        particleBuffers[i].SetSubData(0,
-            sizeof(Particle) * kNumParticles,
-            reinterpret_cast<uint8_t*>(initialParticles.data()));
+        queue.WriteBuffer(particleBuffers[i], 0,
+                          reinterpret_cast<uint8_t*>(initialParticles.data()),
+                          sizeof(Particle) * kNumParticles);
     }
 }
 
@@ -253,11 +252,13 @@ void initSim() {
     updatePipeline = device.CreateComputePipeline(&csDesc);
 
     for (uint32_t i = 0; i < 2; ++i) {
-        updateBGs[i] = utils::MakeBindGroup(device, bgl, {
-            {0, updateParams, 0, sizeof(SimParams)},
-            {1, particleBuffers[i], 0, kNumParticles * sizeof(Particle)},
-            {2, particleBuffers[(i + 1) % 2], 0, kNumParticles * sizeof(Particle)},
-        });
+        updateBGs[i] = utils::MakeBindGroup(
+            device, bgl,
+            {
+                {0, updateParams, 0, sizeof(SimParams)},
+                {1, particleBuffers[i], 0, kNumParticles * sizeof(Particle)},
+                {2, particleBuffers[(i + 1) % 2], 0, kNumParticles * sizeof(Particle)},
+            });
     }
 }
 
@@ -291,7 +292,7 @@ void init() {
 
     queue = device.GetDefaultQueue();
     swapchain = GetSwapChain(device);
-    swapchain.Configure(GetPreferredSwapChainTextureFormat(), wgpu::TextureUsage::OutputAttachment,
+    swapchain.Configure(GetPreferredSwapChainTextureFormat(), wgpu::TextureUsage::RenderAttachment,
                         640, 480);
 
     initBuffers();

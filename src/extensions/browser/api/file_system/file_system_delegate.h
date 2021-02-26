@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "extensions/common/api/file_system.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -36,13 +37,13 @@ class SavedFilesServiceInterface;
 // Delegate class for embedder-specific file system access.
 class FileSystemDelegate {
  public:
-  using ErrorCallback = base::Callback<void(const std::string&)>;
+  using ErrorCallback = base::OnceCallback<void(const std::string&)>;
   using FileSystemCallback =
-      base::Callback<void(const std::string& id, const std::string& path)>;
+      base::OnceCallback<void(const std::string& id, const std::string& path)>;
   using FilesSelectedCallback =
       base::OnceCallback<void(const std::vector<base::FilePath>& paths)>;
   using VolumeListCallback =
-      base::Callback<void(const std::vector<api::file_system::Volume>&)>;
+      base::OnceCallback<void(const std::vector<api::file_system::Volume>&)>;
 
   enum GrantVolumesMode { kGrantAll, kGrantNone, kGrantPerVolume };
 
@@ -73,7 +74,7 @@ class FileSystemDelegate {
   // string ID is found.
   virtual int GetDescriptionIdForAcceptType(const std::string& accept_type) = 0;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Checks whether the extension can be granted access.
   virtual GrantVolumesMode GetGrantVolumesMode(
       content::BrowserContext* browser_context,
@@ -87,14 +88,14 @@ class FileSystemDelegate {
                                  const Extension& extension,
                                  std::string volume_id,
                                  bool writable,
-                                 const FileSystemCallback& success_callback,
-                                 const ErrorCallback& error_callback) = 0;
+                                 FileSystemCallback success_callback,
+                                 ErrorCallback error_callback) = 0;
 
   // Immediately calls VolumeListCallback or ErrorCallback.
   virtual void GetVolumeList(content::BrowserContext* browser_context,
                              const Extension& extension,
-                             const VolumeListCallback& success_callback,
-                             const ErrorCallback& error_callback) = 0;
+                             VolumeListCallback success_callback,
+                             ErrorCallback error_callback) = 0;
 #endif
 
   virtual SavedFilesServiceInterface* GetSavedFilesService(

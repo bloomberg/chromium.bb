@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "build/chromeos_buildflags.h"
 #include "extensions/browser/api/clipboard/clipboard_api.h"
 #include "extensions/browser/api/declarative_content/content_rules_registry.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
@@ -55,7 +56,7 @@ class NetworkingCastPrivateDelegate;
 class NonNativeFileSystemDelegate;
 class RulesCacheDelegate;
 class SettingsObserver;
-class SupervisedUserServiceDelegate;
+class SupervisedUserExtensionsDelegate;
 class ValueStoreCache;
 class ValueStoreFactory;
 class VirtualKeyboardDelegate;
@@ -170,8 +171,8 @@ class ExtensionsAPIClient {
 
   // Creates a delegate for calling into the SupervisedUserService from the
   // Management API.
-  virtual std::unique_ptr<SupervisedUserServiceDelegate>
-  CreateSupervisedUserServiceDelegate() const;
+  virtual std::unique_ptr<SupervisedUserExtensionsDelegate>
+  CreateSupervisedUserExtensionsDelegate() const;
 
   // Creates and returns the DisplayInfoProvider used by the
   // chrome.system.display extension API.
@@ -194,7 +195,7 @@ class ExtensionsAPIClient {
   // Returns a delegate for the chrome.feedbackPrivate API.
   virtual FeedbackPrivateDelegate* GetFeedbackPrivateDelegate();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // If supported by the embedder, returns a delegate for querying non-native
   // file systems.
   virtual NonNativeFileSystemDelegate* GetNonNativeFileSystemDelegate();
@@ -208,8 +209,8 @@ class ExtensionsAPIClient {
       const std::vector<char>& image_data,
       api::clipboard::ImageType type,
       AdditionalDataItemList additional_items,
-      const base::Closure& success_callback,
-      const base::Callback<void(const std::string&)>& error_callback);
+      base::OnceClosure success_callback,
+      base::OnceCallback<void(const std::string&)> error_callback);
 #endif
 
   virtual AutomationInternalApiDelegate* GetAutomationInternalApiDelegate();

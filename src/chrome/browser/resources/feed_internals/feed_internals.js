@@ -25,6 +25,7 @@ function updatePageWithProperties() {
     $('is-prefetching-enabled').textContent = properties.isPrefetchingEnabled;
     $('load-stream-status').textContent = properties.loadStreamStatus;
     $('feed-fetch-url').textContent = properties.feedFetchUrl.url;
+    $('feed-actions-url').textContent = properties.feedActionsUrl.url;
   });
 }
 
@@ -54,6 +55,10 @@ function updatePageWithLastFetchProperties() {
     $('refresh-suppress-time').textContent =
         toDateString(properties.refreshSuppressTime);
     $('last-fetch-bless-nonce').textContent = properties.lastBlessNonce;
+    $('last-action-upload-status').textContent =
+        properties.lastActionUploadStatus;
+    $('last-action-upload-time').textContent =
+        toDateString(properties.lastActionUploadTime);
   });
 }
 
@@ -106,9 +111,9 @@ function setLinkNode(node, url) {
  * @return {string}
  */
 function toDateString(timeSinceEpoch) {
-  return timeSinceEpoch.microseconds === 0 ?
-      '' :
-      new Date(timeSinceEpoch.microseconds / 1000).toLocaleString();
+  const microseconds = Number(timeSinceEpoch.microseconds);
+  return microseconds === 0 ? '' :
+                              new Date(microseconds / 1000).toLocaleString();
 }
 
 /**
@@ -144,6 +149,22 @@ function setupEventListeners() {
 
   $('feed-host-override-apply').addEventListener('click', function() {
     pageHandler.overrideFeedHost({url: $('feed-host-override').value});
+  });
+
+  $('actions-endpoint-override-apply').addEventListener('click', function() {
+    pageHandler.overrideFeedHost({url: $('actions-endpoint-override').value});
+  });
+
+  $('feed-stream-data-override').addEventListener('click', function() {
+    const file = $('feed-stream-data-file').files[0];
+    if (file && typeof pageHandler.overrideFeedStreamData == 'function') {
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(file);
+      reader.onload = function(e) {
+        const typedArray = new Uint8Array(e.target.result);
+        pageHandler.overrideFeedStreamData([...typedArray]);
+      };
+    }
   });
 }
 

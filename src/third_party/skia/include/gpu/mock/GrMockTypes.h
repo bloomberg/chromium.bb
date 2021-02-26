@@ -108,14 +108,15 @@ struct GrMockOptions {
     };
 
     // GrCaps options.
-    bool fMipMapSupport = false;
+    bool fMipmapSupport = false;
     bool fDrawInstancedSupport = false;
-    bool fTessellationSupport = false;
     bool fHalfFloatVertexAttributeSupport = false;
     uint32_t fMapBufferFlags = 0;
     int fMaxTextureSize = 2048;
     int fMaxRenderTargetSize = 2048;
+    int fMaxWindowRectangles = 0;
     int fMaxVertexAttributes = 16;
+    int fMaxTessellationSegments = 0;
     ConfigOptions fConfigOptions[kGrColorTypeCnt];
     ConfigOptions fCompressedOptions[SkImage::kCompressionTypeCount];
 

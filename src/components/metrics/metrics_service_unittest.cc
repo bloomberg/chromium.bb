@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
@@ -23,6 +24,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/environment_recorder.h"
+#include "components/metrics/log_decoder.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -31,7 +33,10 @@
 #include "components/metrics/test/test_metrics_provider.h"
 #include "components/metrics/test/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/variations/active_field_trials.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 #include "third_party/zlib/google/compression_utils.h"
 
 namespace metrics {
@@ -50,16 +55,28 @@ std::unique_ptr<ClientInfo> ReturnNoBackup() {
   return nullptr;
 }
 
+// Returns true if |id| is present in |proto|'s collection of FieldTrials.
+bool IsFieldTrialPresent(const SystemProfileProto& proto,
+                         const std::string& trial_name,
+                         const std::string& group_name) {
+  const variations::ActiveGroupId id =
+      variations::MakeActiveGroupId(trial_name, group_name);
+
+  for (const auto& trial : proto.field_trial()) {
+    if (trial.name_id() == id.name && trial.group_id() == id.group)
+      return true;
+  }
+  return false;
+}
+
 class TestMetricsService : public MetricsService {
  public:
   TestMetricsService(MetricsStateManager* state_manager,
                      MetricsServiceClient* client,
                      PrefService* local_state)
       : MetricsService(state_manager, client, local_state) {}
-  ~TestMetricsService() override {}
+  ~TestMetricsService() override = default;
 
-  using MetricsService::log_manager;
-  using MetricsService::log_store;
   using MetricsService::RecordCurrentEnvironmentHelper;
 
   // MetricsService:
@@ -170,6 +187,33 @@ class MetricsServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceTest);
 };
 
+class ExperimentTestMetricsProvider : public TestMetricsProvider {
+ public:
+  explicit ExperimentTestMetricsProvider(
+      base::FieldTrial* profile_metrics_trial,
+      base::FieldTrial* session_data_trial)
+      : profile_metrics_trial_(profile_metrics_trial),
+        session_data_trial_(session_data_trial) {}
+
+  ~ExperimentTestMetricsProvider() override = default;
+
+  void ProvideSystemProfileMetrics(
+      SystemProfileProto* system_profile_proto) override {
+    TestMetricsProvider::ProvideSystemProfileMetrics(system_profile_proto);
+    profile_metrics_trial_->group();
+  }
+
+  void ProvideCurrentSessionData(
+      ChromeUserMetricsExtension* uma_proto) override {
+    TestMetricsProvider::ProvideCurrentSessionData(uma_proto);
+    session_data_trial_->group();
+  }
+
+ private:
+  base::FieldTrial* profile_metrics_trial_;
+  base::FieldTrial* session_data_trial_;
+};
+
 }  // namespace
 
 TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
@@ -231,9 +275,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   service.InitializeMetricsRecordingState();
 
   // The initial stability log should be generated and persisted in unsent logs.
-  MetricsLogStore* log_store = service.log_store();
-  EXPECT_TRUE(log_store->has_unsent_logs());
-  EXPECT_FALSE(log_store->has_staged_log());
+  MetricsLogStore* test_log_store = service.LogStoreForTest();
+  EXPECT_TRUE(test_log_store->has_unsent_logs());
+  EXPECT_FALSE(test_log_store->has_staged_log());
 
   // Ensure that HasPreviousSessionData() is always called on providers,
   // for consistency, even if other conditions already indicate their presence.
@@ -245,15 +289,11 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   EXPECT_TRUE(test_provider->provide_stability_metrics_called());
 
   // Stage the log and retrieve it.
-  log_store->StageNextLog();
-  EXPECT_TRUE(log_store->has_staged_log());
-
-  std::string uncompressed_log;
-  EXPECT_TRUE(
-      compression::GzipUncompress(log_store->staged_log(), &uncompressed_log));
+  test_log_store->StageNextLog();
+  EXPECT_TRUE(test_log_store->has_staged_log());
 
   ChromeUserMetricsExtension uma_log;
-  EXPECT_TRUE(uma_log.ParseFromString(uncompressed_log));
+  EXPECT_TRUE(DecodeLogDataToProto(test_log_store->staged_log(), &uma_log));
 
   EXPECT_TRUE(uma_log.has_client_id());
   EXPECT_TRUE(uma_log.has_session_id());
@@ -298,9 +338,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   service.InitializeMetricsRecordingState();
 
   // The initial stability log should be generated and persisted in unsent logs.
-  MetricsLogStore* log_store = service.log_store();
-  EXPECT_TRUE(log_store->has_unsent_logs());
-  EXPECT_FALSE(log_store->has_staged_log());
+  MetricsLogStore* test_log_store = service.LogStoreForTest();
+  EXPECT_TRUE(test_log_store->has_unsent_logs());
+  EXPECT_FALSE(test_log_store->has_staged_log());
 
   // Ensure that HasPreviousSessionData() is always called on providers,
   // for consistency, even if other conditions already indicate their presence.
@@ -312,15 +352,11 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EXPECT_TRUE(test_provider->provide_stability_metrics_called());
 
   // Stage the log and retrieve it.
-  log_store->StageNextLog();
-  EXPECT_TRUE(log_store->has_staged_log());
-
-  std::string uncompressed_log;
-  EXPECT_TRUE(
-      compression::GzipUncompress(log_store->staged_log(), &uncompressed_log));
+  test_log_store->StageNextLog();
+  EXPECT_TRUE(test_log_store->has_staged_log());
 
   ChromeUserMetricsExtension uma_log;
-  EXPECT_TRUE(uma_log.ParseFromString(uncompressed_log));
+  EXPECT_TRUE(DecodeLogDataToProto(test_log_store->staged_log(), &uma_log));
 
   EXPECT_TRUE(uma_log.has_client_id());
   EXPECT_TRUE(uma_log.has_session_id());
@@ -361,6 +397,44 @@ TEST_F(MetricsServiceTest, MetricsProvidersInitialized) {
   service.InitializeMetricsRecordingState();
 
   EXPECT_TRUE(test_provider->init_called());
+}
+
+// Verify that FieldTrials activated by a MetricsProvider are reported by the
+// FieldTrialsProvider.
+TEST_F(MetricsServiceTest, ActiveFieldTrialsReported) {
+  EnableMetricsReporting();
+  TestMetricsServiceClient client;
+  TestMetricsService service(GetMetricsStateManager(), &client,
+                             GetLocalState());
+
+  // Set up FieldTrials.
+  const std::string trial_name1 = "CoffeeExperiment";
+  const std::string group_name1 = "Free";
+  base::FieldTrial* trial1 =
+      base::FieldTrialList::CreateFieldTrial(trial_name1, group_name1);
+
+  const std::string trial_name2 = "DonutExperiment";
+  const std::string group_name2 = "MapleBacon";
+  base::FieldTrial* trial2 =
+      base::FieldTrialList::CreateFieldTrial(trial_name2, group_name2);
+
+  service.RegisterMetricsProvider(
+      std::make_unique<ExperimentTestMetricsProvider>(trial1, trial2));
+
+  service.InitializeMetricsRecordingState();
+  service.Start();
+  service.StageCurrentLogForTest();
+
+  MetricsLogStore* test_log_store = service.LogStoreForTest();
+  ChromeUserMetricsExtension uma_log;
+  EXPECT_TRUE(DecodeLogDataToProto(test_log_store->staged_log(), &uma_log));
+
+  // Verify that the reported FieldTrial IDs are for the trial set up by this
+  // test.
+  EXPECT_TRUE(
+      IsFieldTrialPresent(uma_log.system_profile(), trial_name1, group_name1));
+  EXPECT_TRUE(
+      IsFieldTrialPresent(uma_log.system_profile(), trial_name2, group_name2));
 }
 
 TEST_F(MetricsServiceTest, SystemProfileDataProvidedOnEnableRecording) {
@@ -424,15 +498,6 @@ TEST_F(MetricsServiceTest, SplitRotation) {
   EXPECT_FALSE(client.uploader()->is_uploading());
   EXPECT_EQ(3U, task_runner_->NumPendingTasks());
   // Upload should start, and rotation loop should idle out.
-  task_runner_->RunPendingTasks();
-  EXPECT_TRUE(client.uploader()->is_uploading());
-  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
-  // Uploader should reschedule when there is another log available.
-  service.PushExternalLog("Blah");
-  client.uploader()->CompleteUpload(200);
-  EXPECT_FALSE(client.uploader()->is_uploading());
-  EXPECT_EQ(2U, task_runner_->NumPendingTasks());
-  // Upload should start.
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client.uploader()->is_uploading());
   EXPECT_EQ(1U, task_runner_->NumPendingTasks());

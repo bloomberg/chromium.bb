@@ -13,15 +13,15 @@ Are you a Google employee? See
 ## System requirements
 
 *   A 64-bit Mac running 10.14+.
-*   [Xcode](https://developer.apple.com/xcode) 11+
-*   The OS X 10.15 SDK. Run
+*   [Xcode](https://developer.apple.com/xcode) 11.2+
+*   The OS X 10.15.1 SDK. Run
 
     ```shell
     $ ls `xcode-select -p`/Platforms/MacOSX.platform/Developer/SDKs
     ```
 
     to check whether you have it.  Building with a newer SDK works too, but
-    the releases currently use the 10.15 SDK.
+    the releases [currently use Xcode 11.2.1](https://source.chromium.org/search?q=MAC_BINARIES_LABEL&ss=chromium).
 
 ## Install `depot_tools`
 
@@ -104,6 +104,7 @@ $ gn gen out/Default
   operating system and CPU.
 * For more info on GN, run `gn help` on the command line or read the
   [quick start guide](https://gn.googlesource.com/gn/+/master/docs/quick_start.md).
+* Building Chromium for arm Macs requires [additional setup](mac_arm64.md).
 
 
 ### Faster builds
@@ -168,6 +169,14 @@ Once it is built, you can simply run the browser:
 $ out/Default/Chromium.app/Contents/MacOS/Chromium
 ```
 
+## Avoiding the "incoming network connections" dialog
+
+Every time you start a new developer build of Chrome you get a system dialog
+asking "Do you want the application Chromium.app to accept incoming
+network connections?" - to avoid this, run with this command-line flag:
+
+--disable-features="MediaRouter"
+
 ## Running test targets
 
 You can run the tests in the same way. You can also limit which tests are
@@ -226,7 +235,7 @@ build in the Terminal and write code with a text editor, though.
 
 With hybrid builds, compilation is still handled by Ninja, and can be run from
 the command line (e.g. `autoninja -C out/gn chrome`) or by choosing the `chrome`
-target in the hybrid workspace and choosing Build.
+target in the hybrid project and choosing Build.
 
 To use Xcode-Ninja Hybrid pass `--ide=xcode` to `gn gen`:
 
@@ -237,7 +246,7 @@ $ gn gen out/gn --ide=xcode
 Open it:
 
 ```shell
-$ open out/gn/ninja/all.xcworkspace
+$ open out/gn/all.xcodeproj
 ```
 
 You may run into a problem where http://YES is opened as a new tab every time

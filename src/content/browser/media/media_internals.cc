@@ -20,27 +20,29 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_log_record.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "services/service_manager/sandbox/features.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
+#include "sandbox/policy/features.h"
+#include "sandbox/policy/sandbox_type.h"
 
 #if !defined(OS_ANDROID)
 #include "media/filters/decrypting_video_decoder.h"
@@ -291,8 +293,8 @@ void MediaInternals::AudioLogImpl::SendWebContentsTitleHelper(
     int render_frame_id) {
   // Page title information can only be retrieved from the UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SendWebContentsTitleHelper, cache_key, std::move(dict),
                        render_process_id, render_frame_id));
     return;
@@ -500,8 +502,9 @@ void MediaInternals::SendGeneralAudioInformation() {
                          base::Value(feature_value_string));
 
   set_feature_data(features::kAudioServiceLaunchOnStartup);
-  set_explicit_feature_data(service_manager::features::kAudioServiceSandbox,
-                            service_manager::IsAudioSandboxEnabled());
+  set_explicit_feature_data(
+      features::kAudioServiceSandbox,
+      GetContentClient()->browser()->ShouldSandboxAudioService());
   base::string16 audio_info_update =
       SerializeUpdate("media.updateGeneralAudioInformation", &audio_info_data);
   SendUpdate(audio_info_update);
@@ -539,6 +542,7 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
   video_capture_capabilities_cached_data_.Clear();
 
   for (const auto& device_format_pair : descriptors_and_formats) {
+    auto control_support = std::make_unique<base::ListValue>();
     auto format_list = std::make_unique<base::ListValue>();
     // TODO(nisse): Representing format information as a string, to be
     // parsed by the javascript handler, is brittle. Consider passing
@@ -548,6 +552,12 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
         std::get<0>(device_format_pair);
     const media::VideoCaptureFormats& supported_formats =
         std::get<1>(device_format_pair);
+    if (descriptor.control_support().pan)
+      control_support->AppendString("pan");
+    if (descriptor.control_support().tilt)
+      control_support->AppendString("tilt");
+    if (descriptor.control_support().zoom)
+      control_support->AppendString("zoom");
     for (const auto& format : supported_formats)
       format_list->AppendString(media::VideoCaptureFormat::ToString(format));
 
@@ -555,6 +565,7 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
         new base::DictionaryValue());
     device_dict->SetString("id", descriptor.device_id);
     device_dict->SetString("name", descriptor.GetNameAndModel());
+    device_dict->Set("controlSupport", std::move(control_support));
     device_dict->Set("formats", std::move(format_list));
     device_dict->SetString("captureApi", descriptor.GetCaptureApiTypeString());
     video_capture_capabilities_cached_data_.Append(std::move(device_dict));
@@ -618,8 +629,8 @@ MediaInternals::CreateAudioLogImpl(
 void MediaInternals::SendUpdate(const base::string16& update) {
   // SendUpdate() may be called from any thread, but must run on the UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&MediaInternals::SendUpdate,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&MediaInternals::SendUpdate,
                                   base::Unretained(this), update));
     return;
   }
@@ -631,19 +642,9 @@ void MediaInternals::SendUpdate(const base::string16& update) {
 void MediaInternals::SaveEvent(int process_id,
                                const media::MediaLogRecord& event) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-// Save the event and limit the total number per renderer. At the time of
-// writing, 512 events of the kind: { "property": value } together consume
-// ~88kb of memory on linux.
-#if defined(OS_ANDROID)
-  const size_t kEventLimit = 128;
-#else
-  const size_t kEventLimit = 512;
-#endif
-
   auto& saved_events = saved_events_by_process_[process_id];
   saved_events.push_back(event);
-  if (saved_events.size() > kEventLimit) {
+  if (saved_events.size() > media::MediaLog::kLogLimit) {
     // Remove all events for a given player as soon as we have to remove a
     // single event for that player to avoid showing incomplete players.
     const int id_to_remove = saved_events.front().id;

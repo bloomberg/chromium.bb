@@ -6,8 +6,6 @@
 
 #include "core/fpdfapi/page/cpdf_streamparser.h"
 
-#include <limits.h>
-
 #include <algorithm>
 #include <memory>
 #include <sstream>
@@ -31,7 +29,6 @@
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_safe_types.h"
-#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -91,10 +88,9 @@ uint32_t DecodeInlineStream(pdfium::span<const uint8_t> src_span,
                             &ignored_size);
   }
   if (decoder == "DCTDecode") {
-    std::unique_ptr<ScanlineDecoder> pDecoder =
-        fxcodec::ModuleMgr::GetInstance()->GetJpegModule()->CreateDecoder(
-            src_span, width, height, 0,
-            !pParam || pParam->GetIntegerFor("ColorTransform", 1));
+    std::unique_ptr<ScanlineDecoder> pDecoder = JpegModule::CreateDecoder(
+        src_span, width, height, 0,
+        !pParam || pParam->GetIntegerFor("ColorTransform", 1));
     return DecodeAllScanlines(std::move(pDecoder));
   }
   if (decoder == "CCITTFaxDecode") {
@@ -122,7 +118,7 @@ CPDF_StreamParser::CPDF_StreamParser(pdfium::span<const uint8_t> span,
                                      const WeakPtr<ByteStringPool>& pPool)
     : m_pPool(pPool), m_pBuf(span) {}
 
-CPDF_StreamParser::~CPDF_StreamParser() {}
+CPDF_StreamParser::~CPDF_StreamParser() = default;
 
 RetainPtr<CPDF_Stream> CPDF_StreamParser::ReadInlineStream(
     CPDF_Document* pDoc,

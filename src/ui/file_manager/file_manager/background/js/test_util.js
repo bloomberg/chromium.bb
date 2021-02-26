@@ -399,8 +399,8 @@ test.util.sync.overrideTasks = (contentWindow, taskList) => {
     }, 0);
   };
 
-  const executeTask = (taskId, entry) => {
-    test.util.executedTasks_.push(taskId);
+  const executeTask = (taskId, entries, callback) => {
+    test.util.executedTasks_.push({taskId, entries, callback});
   };
 
   const setDefaultTask = taskId => {
@@ -426,7 +426,26 @@ test.util.sync.getExecutedTasks = contentWindow => {
     console.error('Please call overrideTasks() first.');
     return null;
   }
-  return test.util.executedTasks_;
+  return test.util.executedTasks_.map(task => task.taskId);
+};
+
+/**
+ * Invokes an executed task with |responseArgs|.
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} taskId the task to be replied to.
+ * @param {Array<Object>} responseArgs the arguments to inoke the callback with.
+ */
+test.util.sync.replyExecutedTask = (contentWindow, taskId, responseArgs) => {
+  if (!test.util.executedTasks_) {
+    console.error('Please call overrideTasks() first.');
+    return null;
+  }
+  const found = test.util.executedTasks_.find(task => task.taskId === taskId);
+  if (!found) {
+    console.error(`No task with id ${taskId}`);
+    return null;
+  }
+  found.callback(...responseArgs);
 };
 
 /**
@@ -466,6 +485,10 @@ test.util.sync.unload = contentWindow => {
 test.util.sync.getBreadcrumbPath = contentWindow => {
   const breadcrumb =
       contentWindow.document.querySelector('#location-breadcrumbs');
+  if (!breadcrumb) {
+    return '';
+  }
+
   let path = '';
 
   if (util.isFilesNg()) {
@@ -530,9 +553,17 @@ test.util.async.renderWindowTextDirectionRTL = (contentWindow, callback) => {
  * Maps the path to the replaced attribute to the PrepareFake instance that
  * replaced it, to be able to restore the original value.
  *
- * @private {Object<string, test.util.PrepareFake}
+ * @private {Object<string, test.util.PrepareFake>}
  */
 test.util.backgroundReplacedObjects_ = {};
+
+/**
+ * Map the appId to a map of all fakes applied in the foreground window e.g.:
+ *  {'files#0': {'chrome.bla.api': FAKE}
+ *
+ * @private {Object<string, Object<string, test.util.PrepareFake>>}
+ */
+test.util.foregroundReplacedObjects_ = {};
 
 /**
  * @param {string} attrName
@@ -541,14 +572,16 @@ test.util.backgroundReplacedObjects_ = {};
  */
 test.util.staticFakeFactory = (attrName, staticValue) => {
   const fake = (...args) => {
-    console.warn(`staticFake for ${staticValue}`);
-    // Find the first callback.
-    for (const arg of args) {
-      if (arg instanceof Function) {
-        return arg(staticValue);
+    setTimeout(() => {
+      // Find the first callback.
+      for (const arg of args) {
+        if (typeof arg === 'function') {
+          console.warn(`staticFake for ${attrName} value: ${staticValue}`);
+          return arg(staticValue);
+        }
       }
-    }
-    throw new Error(`Couldn't find callback for ${attrName}`);
+      throw new Error(`Couldn't find callback for ${attrName}`);
+    }, 0);
   };
   return fake;
 };
@@ -561,6 +594,14 @@ test.util.staticFakeFactory = (attrName, staticValue) => {
  */
 test.util.fakes_ = {
   'static_fake': test.util.staticFakeFactory,
+};
+
+/**
+ * @enum {string}
+ */
+test.util.FakeType = {
+  FOREGROUND_FAKE: 'FOREGROUND_FAKE',
+  BACKGROUND_FAKE: 'BACKGROUND_FAKE',
 };
 
 /**
@@ -633,6 +674,12 @@ test.util.PrepareFake = class {
      * @private {boolean}
      */
     this.prepared_ = false;
+
+    /**
+     * Counter to record the number of times the static fake is called.
+     * @private {number}
+     */
+    this.callCounter_ = 0;
   }
 
   /**
@@ -648,8 +695,10 @@ test.util.PrepareFake = class {
   /**
    * Replaces the original implementation with the fake.
    * NOTE: It requires prepare() to have been called.
+   * @param {test.util.FakeType} fakeType Foreground or background fake.
+   * @param {Window} contentWindow Window to be tested.
    */
-  replace() {
+  replace(fakeType, contentWindow) {
     const suffix = `for ${this.attrName_} ${this.fakeId_}`;
     if (!this.prepared_) {
       throw new Error(`PrepareFake prepare() not called ${suffix}`);
@@ -664,8 +713,11 @@ test.util.PrepareFake = class {
       throw new Error(`Missing leafAttrName_ ${suffix}`);
     }
 
-    this.saveOriginal_();
-    this.parentObject_[this.leafAttrName_] = this.fake_;
+    this.saveOriginal_(fakeType, contentWindow);
+    this.parentObject_[this.leafAttrName_] = (...args) => {
+      this.fake_(...args);
+      this.callCounter_++;
+    };
   }
 
   /**
@@ -682,13 +734,31 @@ test.util.PrepareFake = class {
 
   /**
    * Saves the original implementation to be able restore it later.
+   * @param {test.util.FakeType} fakeType Foreground or background fake.
+   * @param {Window} contentWindow Window to be tested.
    */
-  saveOriginal_() {
-    // Only save once, otherwise it can save an object that is already fake.
-    if (!test.util.backgroundReplacedObjects_[this.attrName_]) {
-      const original = this.parentObject_[this.leafAttrName_];
-      this.original_ = original;
-      test.util.backgroundReplacedObjects_[this.attrName_] = this;
+  saveOriginal_(fakeType, contentWindow) {
+    if (fakeType === test.util.FakeType.FOREGROUND_FAKE) {
+      const windowFakes =
+          test.util.foregroundReplacedObjects_[contentWindow.appID] || {};
+      test.util.foregroundReplacedObjects_[contentWindow.appID] = windowFakes;
+
+      // Only save once, otherwise it can save an object that is already fake.
+      if (!windowFakes[this.attrName_]) {
+        const original = this.parentObject_[this.leafAttrName_];
+        this.original_ = original;
+        windowFakes[this.attrName_] = this;
+      }
+      return;
+    }
+
+    if (fakeType === test.util.FakeType.BACKGROUND_FAKE) {
+      // Only save once, otherwise it can save an object that is already fake.
+      if (!test.util.backgroundReplacedObjects_[this.attrName_]) {
+        const original = this.parentObject_[this.leafAttrName_];
+        this.original_ = original;
+        test.util.backgroundReplacedObjects_[this.attrName_] = this;
+      }
     }
   }
 
@@ -751,7 +821,7 @@ test.util.sync.backgroundFake = (fakeData) => {
 
     const fake = new test.util.PrepareFake(path, fakeId, window, ...fakeArgs);
     fake.prepare();
-    fake.replace();
+    fake.replace(test.util.FakeType.BACKGROUND_FAKE, window);
   }
 };
 
@@ -768,6 +838,90 @@ test.util.sync.removeAllBackgroundFakes = () => {
 
   return removedCount;
 };
+
+/**
+ * Replaces implementations in the foreground page with fakes.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {Object{<string, Array>}} fakeData An object mapping the path to the
+ * object to be replaced and the value is the Array with fake id and additinal
+ * arguments for the fake constructor, e.g.:
+ *   fakeData = {
+ *     'chrome.app.window.create' : [
+ *       'static_fake',
+ *       ['some static value', 'other arg'],
+ *     ]
+ *   }
+ *
+ *  This will replace the API 'chrome.app.window.create' with a static fake,
+ *  providing the additional data to static fake: ['some static value', 'other
+ *  value'].
+ */
+test.util.sync.foregroundFake = (contentWindow, fakeData) => {
+  for (const [path, mockValue] of Object.entries(fakeData)) {
+    const fakeId = mockValue[0];
+    const fakeArgs = mockValue[1] || [];
+    const fake =
+        new test.util.PrepareFake(path, fakeId, contentWindow, ...fakeArgs);
+    fake.prepare();
+    fake.replace(test.util.FakeType.FOREGROUND_FAKE, contentWindow);
+  }
+};
+
+/**
+ * Removes all fakes that were applied to the foreground page.
+ * @param {Window} contentWindow Window to be tested.
+ */
+test.util.sync.removeAllForegroundFakes = (contentWindow) => {
+  const savedFakes =
+      Object.entries(test.util.foregroundReplacedObjects_[contentWindow.appID]);
+  let removedCount = 0;
+  for (const [path, fake] of savedFakes) {
+    fake.restore();
+    removedCount++;
+  }
+
+  return removedCount;
+};
+
+/**
+ * Obtains the number of times the static fake api is called.
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} fakedApi Path of the method that is faked.
+ * @return {number} Number of times the fake api called.
+ */
+test.util.sync.staticFakeCounter = (contentWindow, fakedApi) => {
+  const fake =
+      test.util.foregroundReplacedObjects_[contentWindow.appID][fakedApi];
+  return fake.callCounter_;
+};
+
+/**
+ * Send progress item to Foreground page to display.
+ * @param {string} id Progress item id.
+ * @param {ProgressItemType} type Type of progress item.
+ * @param {ProgressItemState} state State of the progress item.
+ * @param {string} message Message of the progress item.
+ * @param {number} remainingTime The remaining time of the progress in second.
+ * @param {number} progressMax Max value of the progress.
+ * @param {number} progressValue Current value of the progress.
+ * @param {number} count Number of items being processed.
+ */
+test.util.sync.sendProgressItem =
+    (id, type, state, message, remainingTime, progressMax = 1,
+     progressValue = 0, count = 1) => {
+      const item = new ProgressCenterItem();
+      item.id = id;
+      item.type = type;
+      item.state = state;
+      item.message = message;
+      item.remainingTime = remainingTime;
+      item.progressMax = progressMax;
+      item.progressValue = progressValue;
+      item.itemCount = count;
+
+      background.progressCenter.updateItem(item);
+    };
 
 // Register the test utils.
 test.util.registerRemoteTestUtils();

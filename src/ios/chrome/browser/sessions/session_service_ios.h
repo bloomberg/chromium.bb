@@ -13,6 +13,10 @@
 @class SessionIOS;
 @class SessionIOSFactory;
 
+namespace session_constants {
+NSString* const kSessionsDirectory = @"Sessions";
+}
+
 // A singleton service for saving the current session. Can either save on a
 // delay or immediately. Saving is always performed on a separate thread.
 @interface SessionServiceIOS : NSObject
@@ -43,9 +47,20 @@
 // of errors.
 - (SessionIOS*)loadSessionFromPath:(NSString*)sessionPath;
 
-// Schedules deletion of the file containing the last session in |directory|.
-- (void)deleteLastSessionFileInDirectory:(NSString*)directory
-                              completion:(base::OnceClosure)callback;
+// Schedules deletion of the all session files from a specific browser state
+// |directory|.
+- (void)deleteAllSessionFilesInBrowserStateDirectory:(NSString*)directory
+                                          completion:
+                                              (base::OnceClosure)callback;
+
+// Schedule deletion of session directories with |sessionIDs| which resides in
+// a specific browser state |directory|.
+- (void)deleteSessions:(NSArray<NSString*>*)sessionIDs
+    fromBrowserStateDirectory:(NSString*)directory;
+
+// Returns the path of the session with |sessionID| within a |directory|.
++ (NSString*)sessionPathForSessionID:(NSString*)sessionID
+                           directory:(NSString*)directory;
 
 // Returns the path of the session file for |directory|.
 + (NSString*)sessionPathForDirectory:(NSString*)directory;

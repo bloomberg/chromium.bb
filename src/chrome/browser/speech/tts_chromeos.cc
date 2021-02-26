@@ -11,14 +11,18 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tts_platform.h"
 
-TtsPlatformImplChromeOs::TtsPlatformImplChromeOs() {}
-TtsPlatformImplChromeOs::~TtsPlatformImplChromeOs() {}
+TtsPlatformImplChromeOs::TtsPlatformImplChromeOs() = default;
 
-bool TtsPlatformImplChromeOs::PlatformImplAvailable() {
+bool TtsPlatformImplChromeOs::PlatformImplSupported() {
+  // TODO(1133813): Chrome OS Platform should support background initialisation.
   return arc::ArcServiceManager::Get() && arc::ArcServiceManager::Get()
                                               ->arc_bridge_service()
                                               ->tts()
                                               ->IsConnected();
+}
+
+bool TtsPlatformImplChromeOs::PlatformImplInitialized() {
+  return true;
 }
 
 bool TtsPlatformImplChromeOs::LoadBuiltInTtsEngine(
@@ -42,7 +46,7 @@ void TtsPlatformImplChromeOs::Speak(
   // Parse SSML and process speech.
   content::TtsController::GetInstance()->StripSSML(
       utterance, base::BindOnce(&TtsPlatformImplChromeOs::ProcessSpeech,
-                                weak_factory_.GetWeakPtr(), utterance_id, lang,
+                                base::Unretained(this), utterance_id, lang,
                                 voice, params, std::move(on_speak_finished)));
 }
 
@@ -117,5 +121,6 @@ bool TtsPlatformImplChromeOs::IsSpeaking() {
 // static
 TtsPlatformImplChromeOs*
 TtsPlatformImplChromeOs::GetInstance() {
-  return base::Singleton<TtsPlatformImplChromeOs>::get();
+  static base::NoDestructor<TtsPlatformImplChromeOs> tts_platform;
+  return tts_platform.get();
 }

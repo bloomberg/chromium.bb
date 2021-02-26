@@ -9,12 +9,13 @@
 
 #include "media/base/video_facing.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_sets.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -69,7 +70,10 @@ class MODULES_EXPORT VideoCaptureSettings {
                        base::Optional<bool> noise_reduction_,
                        const VideoTrackAdapterSettings& track_adapter_settings,
                        base::Optional<double> min_frame_rate,
-                       base::Optional<double> max_frame_rate);
+                       base::Optional<double> max_frame_rate,
+                       base::Optional<double> pan = base::nullopt,
+                       base::Optional<double> tilt = base::nullopt,
+                       base::Optional<double> zoom = base::nullopt);
 
   VideoCaptureSettings(const VideoCaptureSettings& other);
   VideoCaptureSettings& operator=(const VideoCaptureSettings& other);
@@ -127,6 +131,18 @@ class MODULES_EXPORT VideoCaptureSettings {
     DCHECK(HasValue());
     return max_frame_rate_;
   }
+  const base::Optional<double>& pan() const {
+    DCHECK(HasValue());
+    return pan_;
+  }
+  const base::Optional<double>& tilt() const {
+    DCHECK(HasValue());
+    return tilt_;
+  }
+  const base::Optional<double>& zoom() const {
+    DCHECK(HasValue());
+    return zoom_;
+  }
 
  private:
   const char* failed_constraint_name_;
@@ -136,6 +152,9 @@ class MODULES_EXPORT VideoCaptureSettings {
   VideoTrackAdapterSettings track_adapter_settings_;
   base::Optional<double> min_frame_rate_;
   base::Optional<double> max_frame_rate_;
+  base::Optional<double> pan_;
+  base::Optional<double> tilt_;
+  base::Optional<double> zoom_;
 };
 
 // This class represents the output the SelectSettings algorithm for audio
@@ -316,9 +335,9 @@ double StringConstraintFitnessDistance(
 
 // This method computes capabilities for a video source based on the given
 // |formats|. |facing_mode| is valid only in case of video device capture.
-MODULES_EXPORT blink::WebMediaStreamSource::Capabilities
+MODULES_EXPORT MediaStreamSource::Capabilities
 ComputeCapabilitiesForVideoSource(
-    const blink::WebString& device_id,
+    const String& device_id,
     const media::VideoCaptureFormats& formats,
     media::VideoFacingMode facing_mode,
     bool is_device_capture,

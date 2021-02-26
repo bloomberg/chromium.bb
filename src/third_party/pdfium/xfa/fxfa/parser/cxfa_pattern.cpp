@@ -6,11 +6,10 @@
 
 #include "xfa/fxfa/parser/cxfa_pattern.h"
 
-#include "core/fxge/render_defines.h"
 #include "fxjs/xfa/cjx_node.h"
-#include "third_party/base/ptr_util.h"
+#include "xfa/fgas/graphics/cfgas_gepattern.h"
 #include "xfa/fxfa/parser/cxfa_color.h"
-#include "xfa/fxgraphics/cxfa_gepattern.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
 namespace {
 
@@ -37,7 +36,9 @@ CXFA_Pattern::CXFA_Pattern(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Pattern,
                 kPatternPropertyData,
                 kPatternAttributeData,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Pattern::~CXFA_Pattern() = default;
 
@@ -49,8 +50,8 @@ XFA_AttributeValue CXFA_Pattern::GetType() {
   return JSObject()->GetEnum(XFA_Attribute::Type);
 }
 
-void CXFA_Pattern::Draw(CXFA_Graphics* pGS,
-                        CXFA_GEPath* fillPath,
+void CXFA_Pattern::Draw(CFGAS_GEGraphics* pGS,
+                        CFGAS_GEPath* fillPath,
                         FX_ARGB crStart,
                         const CFX_RectF& rtFill,
                         const CFX_Matrix& matrix) {
@@ -78,10 +79,10 @@ void CXFA_Pattern::Draw(CXFA_Graphics* pGS,
       break;
   }
 
-  CXFA_GEPattern pattern(iHatch, crEnd, crStart);
+  CFGAS_GEPattern pattern(iHatch, crEnd, crStart);
 
   pGS->SaveGraphState();
-  pGS->SetFillColor(CXFA_GEColor(&pattern, 0x0));
-  pGS->FillPath(fillPath, FXFILL_WINDING, &matrix);
+  pGS->SetFillColor(CFGAS_GEColor(&pattern, 0x0));
+  pGS->FillPath(fillPath, CFX_FillRenderOptions::FillType::kWinding, &matrix);
   pGS->RestoreGraphState();
 }

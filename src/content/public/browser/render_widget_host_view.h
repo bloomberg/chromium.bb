@@ -12,7 +12,9 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
+#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom-forward.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -39,7 +41,6 @@ namespace content {
 
 class RenderWidgetHost;
 class TouchSelectionControllerClientManager;
-struct ScreenInfo;
 
 // RenderWidgetHostView is an interface implemented by an object that acts as
 // the "View" portion of a RenderWidgetHost. The RenderWidgetHost and its
@@ -79,9 +80,6 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Tells the View to size and move itself to the specified size and point in
   // screen space.
   virtual void SetBounds(const gfx::Rect& rect) = 0;
-
-  // Indicates whether the scroll offset of the view is at top.
-  virtual bool IsScrollOffsetAtTop() = 0;
 
   // Sets a flag that indicates if it is in virtual reality mode.
   virtual void SetIsInVR(bool is_in_vr) = 0;
@@ -238,12 +236,12 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // This method returns the ScreenInfo used by the view to render. If the
   // information is not knowable (e.g, because the view is not attached to a
   // screen yet), then a default best-guess will be used.
-  virtual void GetScreenInfo(ScreenInfo* screen_info) = 0;
+  virtual void GetScreenInfo(blink::ScreenInfo* screen_info) = 0;
 
   // This must always return the same device scale factor as GetScreenInfo.
   virtual float GetDeviceScaleFactor() = 0;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Set the view's active state (i.e., tint state of controls).
   virtual void SetActive(bool active) = 0;
 
@@ -252,7 +250,11 @@ class CONTENT_EXPORT RenderWidgetHostView {
 
   // Tells the view to speak the currently selected text.
   virtual void SpeakSelection() = 0;
-#endif  // defined(OS_MACOSX)
+
+  // Allows to update the widget's screen rects when it is not attached to
+  // a window (e.g. in headless mode).
+  virtual void SetWindowFrameInScreen(const gfx::Rect& rect) = 0;
+#endif  // defined(OS_MAC)
 
   // Indicates that this view should show the contents of |view| if it doesn't
   // have anything to show.
@@ -267,9 +269,6 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // |destination_is_loaded| is true when
   //   ResourceCoordinatorTabHelper::IsLoaded() is true for the new tab
   //   contents.
-  // |destination_is_frozen| is true when
-  //   ResourceCoordinatorTabHelper::IsFrozen() is true for the new tab
-  //   contents.
   // |show_reason_tab_switching| is true when tab switch event should be
   //   reported.
   // |show_reason_unoccluded| is true when "unoccluded" event should be
@@ -278,8 +277,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // should be reported.
   virtual void SetRecordContentToVisibleTimeRequest(
       base::TimeTicks start_time,
-      base::Optional<bool> destination_is_loaded,
-      base::Optional<bool> destination_is_frozen,
+      bool destination_is_loaded,
       bool show_reason_tab_switching,
       bool show_reason_unoccluded,
       bool show_reason_bfcache_restore) = 0;

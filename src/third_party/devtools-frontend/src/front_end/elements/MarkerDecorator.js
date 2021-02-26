@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
-import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+import * as Root from '../root/root.js';  // eslint-disable-line no-unused-vars
+import * as SDK from '../sdk/sdk.js';     // eslint-disable-line no-unused-vars
 
 /**
  * @interface
@@ -13,7 +14,9 @@ export class MarkerDecorator {
    * @param {!SDK.DOMModel.DOMNode} node
    * @return {?{title: string, color: string}}
    */
-  decorate(node) {}
+  decorate(node) {
+    throw new Error('Not implemented yet');
+  }
 }
 
 /**
@@ -26,7 +29,7 @@ export class GenericDecorator {
    */
   constructor(extension) {
     this._title = Common.UIString.UIString(extension.title());
-    this._color = extension.descriptor()['color'];
+    this._color = /** @type {string} */ (extension.descriptor()['color']);
   }
 
   /**

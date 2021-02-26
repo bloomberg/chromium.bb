@@ -5,7 +5,7 @@
 #include "content/public/test/test_navigation_observer.h"
 
 #include "base/bind.h"
-#include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -25,10 +25,6 @@ class TestNavigationObserver::TestWebContentsObserver
   void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) override {
     parent_->OnNavigationEntryCommitted(this, web_contents(), load_details);
-  }
-
-  void DidAttachInterstitialPage() override {
-    parent_->OnDidAttachInterstitialPage(web_contents());
   }
 
   void WebContentsDestroyed() override {
@@ -177,15 +173,6 @@ void TestNavigationObserver::OnNavigationEntryCommitted(
     TestWebContentsObserver* observer,
     WebContents* web_contents,
     const LoadCommittedDetails& load_details) {
-  WebContentsState* web_contents_state = GetWebContentsState(web_contents);
-  web_contents_state->navigation_started = true;
-  web_contents_state->last_navigation_matches_filter = false;
-}
-
-void TestNavigationObserver::OnDidAttachInterstitialPage(
-    WebContents* web_contents) {
-  // Going to an interstitial page does not trigger NavigationEntryCommitted,
-  // but has the same meaning for us here.
   WebContentsState* web_contents_state = GetWebContentsState(web_contents);
   web_contents_state->navigation_started = true;
   web_contents_state->last_navigation_matches_filter = false;

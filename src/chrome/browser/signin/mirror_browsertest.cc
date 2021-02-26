@@ -9,13 +9,13 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/google/core/common/google_util.h"
+#include "components/google/core/common/google_switches.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/dice_header_helper.h"
@@ -123,16 +123,16 @@ class MirrorBrowserTest : public InProcessBrowserTest {
     // The test makes requests to google.com and other domains which we want to
     // redirect to the test server.
     host_resolver()->AddRule("*", "127.0.0.1");
-
-    // The production code only allows known ports (80 for http and 443 for
-    // https), but the test server runs on a random port.
-    google_util::IgnorePortNumbersForGoogleURLChecksForTesting();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // HTTPS server only serves a valid cert for localhost, so this is needed to
     // load pages from "www.google.com" without an interstitial.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+
+    // The production code only allows known ports (80 for http and 443 for
+    // https), but the test server runs on a random port.
+    command_line->AppendSwitch(switches::kIgnoreGooglePortNumbers);
   }
 };
 
@@ -235,19 +235,19 @@ IN_PROC_BROWSER_TEST_F(MirrorBrowserTest, MirrorRequestHeader) {
     // Check if header exists and X-Chrome-Connected is correctly provided.
     ASSERT_EQ(1u, header_map.count(test_case.original_url.path()));
     if (test_case.original_url_expects_header) {
-      ASSERT_TRUE(!!header_map[test_case.original_url.path()].count(
+      ASSERT_TRUE(header_map[test_case.original_url.path()].count(
           signin::kChromeConnectedHeader));
     } else {
-      ASSERT_FALSE(!!header_map[test_case.original_url.path()].count(
+      ASSERT_FALSE(header_map[test_case.original_url.path()].count(
           signin::kChromeConnectedHeader));
     }
 
     ASSERT_EQ(1u, header_map.count(test_case.redirected_to_path));
     if (test_case.redirected_to_url_expects_header) {
-      ASSERT_TRUE(!!header_map[test_case.redirected_to_path].count(
+      ASSERT_TRUE(header_map[test_case.redirected_to_path].count(
           signin::kChromeConnectedHeader));
     } else {
-      ASSERT_FALSE(!!header_map[test_case.redirected_to_path].count(
+      ASSERT_FALSE(header_map[test_case.redirected_to_path].count(
           signin::kChromeConnectedHeader));
     }
 

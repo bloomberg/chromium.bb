@@ -8,12 +8,15 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/keyboard_util.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_affordance.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_contextual_nudge_controller_impl.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -24,6 +27,7 @@
 #include "ash/wm/wm_event.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/user_metrics.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -42,6 +46,25 @@ constexpr int kDistanceForSplitViewResize = 49;
 bool CanStartGoingBackFromSplitViewDivider(const gfx::Point& screen_location) {
   if (!IsCurrentScreenOrientationLandscape())
     return false;
+
+  // If virtual keyboard is visible when we swipe from the splitview divider
+  // area, do not allow go back if the location is inside of the virtual
+  // keyboard bounds.
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+  if (keyboard_controller->IsEnabled() &&
+      keyboard_controller->GetVisualBoundsInScreen().Contains(
+          screen_location)) {
+    return false;
+  }
+  // Same thing for ARC virtual keyboard as well.
+  SystemTrayModel* system_tray_model = Shell::Get()->system_tray_model();
+  if (system_tray_model) {
+    auto* arc_keyboard = system_tray_model->virtual_keyboard();
+    if (arc_keyboard->visible() &&
+        arc_keyboard->arc_keyboard_bounds().Contains(screen_location)) {
+      return false;
+    }
+  }
 
   auto* root_window = window_util::GetRootWindowAt(screen_location);
   auto* split_view_controller = SplitViewController::Get(root_window);
@@ -173,6 +196,12 @@ void BackGestureEventHandler::OnDisplayMetricsChanged(
 }
 
 void BackGestureEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+  // Do not handle gesture events that are not generated from |first_touch_id_|.
+  if (base::Contains(other_touch_event_ids_list_,
+                     event->unique_touch_event_id())) {
+    return;
+  }
+
   if (should_wait_for_touch_ack_) {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     gfx::Point screen_location = event->location();
@@ -195,14 +224,23 @@ void BackGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
     return;
   }
 
-  if (first_touch_id_ == ui::kPointerIdUnknown)
+  // Update |first_touch_id_| on first ET_TOUCH_PRESSED only. ET_TOUCH_PRESSED
+  // type check is needed because there could be ET_TOUCH_CANCELLED after
+  // ET_TOUCH_RELEASED event.
+  if (first_touch_id_ == ui::kPointerIdUnknown &&
+      event->type() == ui::ET_TOUCH_PRESSED) {
     first_touch_id_ = event->pointer_details().id;
+  }
 
-  if (event->pointer_details().id != first_touch_id_)
+  if (event->pointer_details().id != first_touch_id_) {
+    other_touch_event_ids_list_.insert(event->unique_event_id());
     return;
+  }
 
-  if (event->type() == ui::ET_TOUCH_RELEASED)
+  if (event->type() == ui::ET_TOUCH_RELEASED) {
     first_touch_id_ = ui::kPointerIdUnknown;
+    other_touch_event_ids_list_.clear();
+  }
 
   if (event->type() == ui::ET_TOUCH_PRESSED) {
     x_drag_amount_ = y_drag_amount_ = 0;
@@ -247,7 +285,7 @@ void BackGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
 
     gesture_provider_.OnTouchEventAck(
         touch_event_copy.unique_event_id(), /*event_consumed=*/false,
-        /*is_source_touch_event_set_non_blocking=*/false);
+        /*is_source_touch_event_set_blocking=*/false);
 
     std::vector<std::unique_ptr<ui::GestureEvent>> gestures =
         gesture_provider_.GetAndResetPendingGestures();
@@ -267,7 +305,6 @@ void BackGestureEventHandler::OnGestureEvent(GestureConsumer* consumer,
 bool BackGestureEventHandler::MaybeHandleBackGesture(
     ui::GestureEvent* event,
     const gfx::Point& screen_location) {
-  DCHECK(features::IsSwipingFromLeftEdgeToGoBackEnabled());
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       going_back_started_ = CanStartGoingBack(screen_location);
@@ -278,6 +315,9 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(
       if (features::AreContextualNudgesEnabled()) {
         // Cancel the in-waiting or in-progress back nudge animation.
         nudge_controller_->OnBackGestureStarted();
+        contextual_tooltip::HandleGesturePerformed(
+            Shell::Get()->session_controller()->GetActivePrefService(),
+            contextual_tooltip::TooltipType::kBackGesture);
       }
       return true;
     case ui::ET_GESTURE_SCROLL_BEGIN:
@@ -298,7 +338,8 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(
                                        during_reverse_dragging_);
       return true;
     case ui::ET_GESTURE_SCROLL_END:
-    case ui::ET_SCROLL_FLING_START: {
+    case ui::ET_SCROLL_FLING_START:
+    case ui::ET_GESTURE_END: {
       if (!going_back_started_)
         break;
       DCHECK(back_gesture_affordance_);
@@ -356,11 +397,6 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(
           }
         }
         back_gesture_affordance_->Complete();
-        if (features::AreContextualNudgesEnabled()) {
-          contextual_tooltip::HandleGesturePerformed(
-              Shell::Get()->session_controller()->GetActivePrefService(),
-              contextual_tooltip::TooltipType::kBackGesture);
-        }
       } else {
         back_gesture_affordance_->Abort();
         RecordEndScenarioType(GetEndScenarioType(
@@ -368,12 +404,11 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(
       }
       RecordUnderneathWindowType(
           GetUnderneathWindowType(back_gesture_start_scenario_type_));
-      return true;
-    }
-    case ui::ET_GESTURE_END:
       going_back_started_ = false;
       dragged_from_splitview_divider_ = false;
-      break;
+
+      return true;
+    } break;
     default:
       break;
   }
@@ -383,8 +418,6 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(
 
 bool BackGestureEventHandler::CanStartGoingBack(
     const gfx::Point& screen_location) {
-  DCHECK(features::IsSwipingFromLeftEdgeToGoBackEnabled());
-
   Shell* shell = Shell::Get();
   if (!shell->tablet_mode_controller()->InTabletMode())
     return false;
@@ -457,7 +490,7 @@ bool BackGestureEventHandler::ShouldWaitForTouchPressAck(
     return false;
 
   aura::Window* top_window = window_util::GetTopWindow();
-  return !top_window->GetProperty(kIsShowingInOverviewKey) &&
+  return !top_window->GetProperty(chromeos::kIsShowingInOverviewKey) &&
          Shell::Get()->shell_delegate()->ShouldWaitForTouchPressAck(top_window);
 }
 

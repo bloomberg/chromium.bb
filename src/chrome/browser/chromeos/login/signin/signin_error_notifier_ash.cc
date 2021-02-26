@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
-#include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -32,14 +30,18 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/chromeos/account_manager_welcome_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/account_manager/account_manager_welcome_dialog.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
+#include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/account_id/account_id.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -54,20 +56,38 @@ namespace {
 constexpr char kProfileSigninNotificationId[] = "chrome://settings/signin/";
 constexpr char kSecondaryAccountNotificationIdSuffix[] = "/secondary-account";
 
+bool g_ignore_sync_errors_for_test_ = false;
+
 void HandleDeviceAccountReauthNotificationClick(
     base::Optional<int> button_index) {
   chrome::AttemptUserExit();
 }
 
 bool AreAllAccountsMigrated(
-    const chromeos::AccountManager* const account_manager,
-    const std::vector<chromeos::AccountManager::Account>& accounts) {
-  for (const auto& account : accounts) {
-    if (account_manager->HasDummyGaiaToken(account.key)) {
+    const std::vector<std::pair<account_manager::Account, bool>>&
+        account_dummy_token_list) {
+  for (const auto& account : account_dummy_token_list) {
+    if (account.second) {
+      // Account has a dummy Gaia token.
       return false;
     }
   }
   return true;
+}
+
+// Returns true if the child user has migrated at least one of their
+// secondary edu accounts to ARC++.
+bool IsSecondaryEduAccountMigratedForChildUser(Profile* profile,
+                                               int accounts_size) {
+  // If the profile is not a child then there is no migration required.
+  // If the profile is child but has only one account on device, then there is
+  // no migration required; i.e. there is no secondary edu account to migrate.
+  if (!profile->IsChild() || accounts_size < 2) {
+    return true;
+  }
+
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kEduCoexistenceArcMigrationCompleted);
 }
 
 }  // namespace
@@ -90,7 +110,8 @@ SigninErrorNotifier::SigninErrorNotifier(SigninErrorController* controller,
   error_controller_->AddObserver(this);
   const AccountId account_id =
       multi_user_util::GetAccountIdFromProfile(profile_);
-  if (TokenHandleUtil::HasToken(account_id)) {
+  if (TokenHandleUtil::HasToken(account_id) &&
+      !TokenHandleUtil::IsRecentlyChecked(account_id)) {
     token_handle_util_ = std::make_unique<TokenHandleUtil>();
     token_handle_util_->CheckToken(
         account_id, profile->GetURLLoaderFactory(),
@@ -114,12 +135,28 @@ SigninErrorNotifier::~SigninErrorNotifier() {
       << "SigninErrorNotifier::Shutdown() was not called";
 }
 
+// static
+std::unique_ptr<base::AutoReset<bool>>
+SigninErrorNotifier::IgnoreSyncErrorsForTesting() {
+  return std::make_unique<base::AutoReset<bool>>(
+      &g_ignore_sync_errors_for_test_, true);
+}
+
+// static
+void SigninErrorNotifier::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kEduCoexistenceArcMigrationCompleted,
+                                false);
+}
+
 void SigninErrorNotifier::Shutdown() {
   error_controller_->RemoveObserver(this);
   error_controller_ = nullptr;
 }
 
 void SigninErrorNotifier::OnErrorChanged() {
+  if (g_ignore_sync_errors_for_test_)
+    return;
+
   if (!error_controller_->HasError()) {
     NotificationDisplayService::GetForProfile(profile_)->Close(
         NotificationHandler::Type::TRANSIENT, device_account_notification_id_);
@@ -127,17 +164,6 @@ void SigninErrorNotifier::OnErrorChanged() {
         NotificationHandler::Type::TRANSIENT,
         secondary_account_notification_id_);
     return;
-  }
-
-  if (user_manager::UserManager::IsInitialized()) {
-    chromeos::UserFlow* user_flow =
-        chromeos::ChromeUserManager::Get()->GetCurrentUserFlow();
-
-    // Check whether Chrome OS user flow allows launching browser.
-    // Example: Supervised user creation flow which handles token invalidation
-    // itself and notifications should be suppressed. http://crbug.com/359045
-    if (!user_flow->ShouldLaunchBrowser())
-      return;
   }
 
   const AccountId account_id =
@@ -164,7 +190,7 @@ void SigninErrorNotifier::OnErrorChanged() {
 
 void SigninErrorNotifier::HandleDeviceAccountError() {
   // If this error has occurred because a user's account has just been converted
-  // to a Family Link Supervised account, then suppress the notificaiton.
+  // to a Family Link Supervised account, then suppress the notification.
   SupervisedUserService* service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
   if (service->signout_required_after_supervision_enabled())
@@ -178,10 +204,6 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
   user_manager::UserManager::Get()->SaveForceOnlineSignin(
       account_id, true /* force_online_signin */);
 
-  // We need to remove the handle so it won't be checked next time session is
-  // started.
-  TokenHandleUtil::DeleteHandle(account_id);
-
   // Add an accept button to sign the user out.
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(
@@ -191,7 +213,7 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
       message_center::NotifierType::SYSTEM_COMPONENT,
       kProfileSigninNotificationId);
 
-  // Set |profile_id| for multi-user notification blocker.
+  // Set `profile_id` for multi-user notification blocker.
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
@@ -205,7 +227,7 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
           GURL(device_account_notification_id_), notifier_id, data,
           new message_center::HandleNotificationClickDelegate(
               base::BindRepeating(&HandleDeviceAccountReauthNotificationClick)),
-          ash::kNotificationWarningIcon,
+          chromeos::kNotificationWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
   notification->SetSystemPriority();
 
@@ -217,23 +239,28 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
 
 void SigninErrorNotifier::HandleSecondaryAccountError(
     const CoreAccountId& account_id) {
-  account_manager_->GetAccounts(base::BindOnce(
-      &SigninErrorNotifier::OnGetAccounts, weak_factory_.GetWeakPtr()));
+  account_manager_->CheckDummyGaiaTokenForAllAccounts(
+      base::BindOnce(&SigninErrorNotifier::OnCheckDummyGaiaTokenForAllAccounts,
+                     weak_factory_.GetWeakPtr()));
 }
 
-void SigninErrorNotifier::OnGetAccounts(
-    const std::vector<chromeos::AccountManager::Account>& accounts) {
+void SigninErrorNotifier::OnCheckDummyGaiaTokenForAllAccounts(
+    const std::vector<std::pair<account_manager::Account, bool>>&
+        account_dummy_token_list) {
   message_center::NotifierId notifier_id(
       message_center::NotifierType::SYSTEM_COMPONENT,
       kProfileSigninNotificationId);
-  // Set |profile_id| for multi-user notification blocker. Note the primary user
+  // Set `profile_id` for multi-user notification blocker. Note the primary user
   // account id is used to identify the profile for the blocker so it is used
   // instead of the secondary user account id.
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
   const bool are_all_accounts_migrated =
-      AreAllAccountsMigrated(account_manager_, accounts);
+      AreAllAccountsMigrated(account_dummy_token_list) &&
+      IsSecondaryEduAccountMigratedForChildUser(
+          profile_, account_dummy_token_list.size());
+
   const base::string16 message_title =
       are_all_accounts_migrated
           ? l10n_util::GetStringUTF16(
@@ -271,6 +298,16 @@ void SigninErrorNotifier::OnGetAccounts(
 
 void SigninErrorNotifier::HandleSecondaryAccountReauthNotificationClick(
     base::Optional<int> button_index) {
+  if (profile_->IsChild() && !profile_->GetPrefs()->GetBoolean(
+                                 prefs::kEduCoexistenceArcMigrationCompleted)) {
+    if (!chromeos::AccountManagerWelcomeDialog::
+            ShowIfRequiredForEduCoexistence()) {
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          profile_, chromeos::settings::mojom::kMyAccountsSubpagePath);
+    }
+    return;
+  }
+
   if (!chromeos::AccountManagerWelcomeDialog::ShowIfRequired()) {
     // The welcome dialog was not shown (because it has been shown too many
     // times already). Take users to Account Manager UI directly.

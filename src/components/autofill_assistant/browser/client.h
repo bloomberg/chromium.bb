@@ -15,10 +15,6 @@ namespace autofill {
 class PersonalDataManager;
 }  // namespace autofill
 
-namespace password_manager {
-class PasswordManagerClient;
-}  // namespace password_manager
-
 namespace version_info {
 enum class Channel;
 }  // namespace version_info
@@ -60,10 +56,6 @@ class Client {
   // Returns the current active personal data manager.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() const = 0;
 
-  // Return the password manager client for the current WebContents.
-  virtual password_manager::PasswordManagerClient* GetPasswordManagerClient()
-      const = 0;
-
   // Returns the currently active login fetcher.
   virtual WebsiteLoginManager* GetWebsiteLoginManager() const = 0;
 
@@ -76,12 +68,23 @@ class Client {
   // Returns details about the device.
   virtual DeviceContext GetDeviceContext() const = 0;
 
+  // Returns whether a11y (talkback and touch exploration) is enabled or not.
+  virtual bool IsAccessibilityEnabled() const = 0;
+
   // Returns current WebContents.
   virtual content::WebContents* GetWebContents() const = 0;
 
   // Stops autofill assistant for the current WebContents, both controller
   // and UI.
+  // The reason is ignored if RecordDropOut has been previously called.
   virtual void Shutdown(Metrics::DropOutReason reason) = 0;
+
+  // Records the reason of the drop out. Any subsequent reason for the current
+  // run will be ignored.
+  virtual void RecordDropOut(Metrics::DropOutReason reason) = 0;
+
+  // Whether this client has had an UI.
+  virtual bool HasHadUI() const = 0;
 
  protected:
   Client() = default;

@@ -81,8 +81,23 @@ const uint16_t kSgrScaleParameter[16][2] = {
 
 const uint8_t kCdefPrimaryTaps[2][2] = {{4, 2}, {3, 3}};
 
-const int8_t kCdefDirections[8][2][2] = {
-    {{-1, 1}, {-2, 2}}, {{0, 1}, {-1, 2}}, {{0, 1}, {0, 2}}, {{0, 1}, {1, 2}},
-    {{1, 1}, {2, 2}},   {{1, 0}, {2, 1}},  {{1, 0}, {2, 0}}, {{1, 0}, {2, -1}}};
+// This is Cdef_Directions (section 7.15.3) with 2 padding entries at the
+// beginning and end of the table. The cdef direction range is [0, 7] and the
+// first index is offset +/-2. This removes the need to constrain the first
+// index to the same range using e.g., & 7.
+const int8_t kCdefDirectionsPadded[12][2][2] = {
+    {{1, 0}, {2, 0}},    // Padding: Cdef_Directions[6]
+    {{1, 0}, {2, -1}},   // Padding: Cdef_Directions[7]
+    {{-1, 1}, {-2, 2}},  // Begin Cdef_Directions
+    {{0, 1}, {-1, 2}},   //
+    {{0, 1}, {0, 2}},    //
+    {{0, 1}, {1, 2}},    //
+    {{1, 1}, {2, 2}},    //
+    {{1, 0}, {2, 1}},    //
+    {{1, 0}, {2, 0}},    //
+    {{1, 0}, {2, -1}},   // End Cdef_Directions
+    {{-1, 1}, {-2, 2}},  // Padding: Cdef_Directions[0]
+    {{0, 1}, {-1, 2}},   // Padding: Cdef_Directions[1]
+};
 
 }  // namespace libgav1

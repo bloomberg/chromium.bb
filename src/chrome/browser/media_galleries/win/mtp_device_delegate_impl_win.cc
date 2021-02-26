@@ -247,8 +247,7 @@ base::File::Error GetFileStreamOnBlockingPoolThread(
   Microsoft::WRL::ComPtr<IStream> file_stream;
   if (file_info.size > 0) {
     HRESULT hr = media_transfer_protocol::GetFileStreamForObject(
-        device, file_object_id, file_stream.GetAddressOf(),
-        &optimal_transfer_size);
+        device, file_object_id, &file_stream, &optimal_transfer_size);
     if (hr != S_OK)
       return base::File::FILE_ERROR_FAILED;
   }
@@ -321,8 +320,8 @@ void CreateMTPDeviceAsyncDelegate(
   DCHECK(!device_location.empty());
   base::string16* pnp_device_id = new base::string16;
   base::string16* storage_object_id = new base::string16;
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&GetStorageInfoOnUIThread, device_location,
                      base::Unretained(pnp_device_id),
                      base::Unretained(storage_object_id)),

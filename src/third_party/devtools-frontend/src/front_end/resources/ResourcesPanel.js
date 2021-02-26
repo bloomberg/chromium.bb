@@ -7,7 +7,7 @@ import * as SDK from '../sdk/sdk.js';
 import * as SourceFrame from '../source_frame/source_frame.js';
 import * as UI from '../ui/ui.js';
 
-import {ApplicationPanelSidebar, StorageCategoryView} from './ApplicationPanelSidebar.js';
+import {ApplicationPanelSidebar, CookieTreeElement, StorageCategoryView} from './ApplicationPanelSidebar.js';  // eslint-disable-line no-unused-vars
 import {CookieItemsView} from './CookieItemsView.js';
 import {DatabaseQueryView} from './DatabaseQueryView.js';
 import {DatabaseTableView} from './DatabaseTableView.js';
@@ -15,10 +15,16 @@ import {DOMStorageItemsView} from './DOMStorageItemsView.js';
 import {DOMStorage} from './DOMStorageModel.js';  // eslint-disable-line no-unused-vars
 import {StorageItemsView} from './StorageItemsView.js';
 
+/** @type {!ResourcesPanel} */
+let resourcesPanelInstance;
+
 export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
+  /**
+   * @private
+   */
   constructor() {
     super('resources');
-    this.registerRequiredCSS('resources/resourcesPanel.css');
+    this.registerRequiredCSS('resources/resourcesPanel.css', {enableLegacyPatching: true});
 
     this._resourcesLastSelectedItemSetting =
         Common.Settings.Settings.instance().createSetting('resourcesLastSelectedElementPath', []);
@@ -51,10 +57,22 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
   }
 
   /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!resourcesPanelInstance || forceNew) {
+      resourcesPanelInstance = new ResourcesPanel();
+    }
+
+    return resourcesPanelInstance;
+  }
+
+  /**
    * @return {!ResourcesPanel}
    */
   static _instance() {
-    return /** @type {!ResourcesPanel} */ (self.runtime.sharedInstance(ResourcesPanel));
+    return ResourcesPanel.instance();
   }
 
   /**
@@ -188,11 +206,11 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
    * @param {string} cookieDomain
    */
   clearCookies(target, cookieDomain) {
-    const model = target.model(SDK.CookieModel.CookieModel);
+    const model = /** @type {?SDK.CookieModel.CookieModel} */ (target.model(SDK.CookieModel.CookieModel));
     if (!model) {
       return;
     }
-    model.clear(cookieDomain, () => {
+    model.clear(cookieDomain).then(() => {
       if (this._cookieView) {
         this._cookieView.refreshItems();
       }
@@ -207,7 +225,7 @@ export class ResourceRevealer {
   /**
    * @override
    * @param {!Object} resource
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async reveal(resource) {
     if (!(resource instanceof SDK.Resource.Resource)) {
@@ -226,7 +244,7 @@ export class CookieReferenceRevealer {
   /**
    * @override
    * @param {!Object} cookie
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async reveal(cookie) {
     if (!(cookie instanceof SDK.Cookie.CookieReference)) {
@@ -252,7 +270,8 @@ export class CookieReferenceRevealer {
    * @returns {!Promise<boolean>}
    */
   async _revealByDomain(sidebar, domain) {
-    const item = sidebar.cookieListTreeElement.children().find(c => c._cookieDomain.endsWith(domain));
+    const item = sidebar.cookieListTreeElement.children().find(
+        c => /** @type {!CookieTreeElement} */ (c).cookieDomain().endsWith(domain));
     if (item) {
       await item.revealAndSelect();
       return true;

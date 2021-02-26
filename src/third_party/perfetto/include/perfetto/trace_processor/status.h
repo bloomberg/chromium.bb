@@ -17,67 +17,20 @@
 #ifndef INCLUDE_PERFETTO_TRACE_PROCESSOR_STATUS_H_
 #define INCLUDE_PERFETTO_TRACE_PROCESSOR_STATUS_H_
 
-#include <stdarg.h>
-#include <string>
+#include "perfetto/base/status.h"
 
-#include "perfetto/base/export.h"
+// Once upon a time Status used to live in perfetto::trace_processor. At some
+// point it has been moved up to base. This forwarding header stayed here
+// because of out-of-repo users.
 
 namespace perfetto {
 namespace trace_processor {
-
-// Status and related methods are inside util for consistency with embedders of
-// trace processor.
 namespace util {
 
-// Represents either the success or the failure message of a function.
-// This can used as the return type of functions which would usually return an
-// bool for success or int for errno but also wants to add some string context
-// (ususally for logging).
-class PERFETTO_EXPORT Status {
- public:
-  Status() : ok_(true) {}
-  explicit Status(std::string error) : ok_(false), message_(std::move(error)) {}
+using Status = ::perfetto::base::Status;
 
-  // Copy operations.
-  Status(const Status&) = default;
-  Status& operator=(const Status&) = default;
-
-  // Move operations. The moved-from state is valid but unspecified.
-  Status(Status&&) noexcept = default;
-  Status& operator=(Status&&) = default;
-
-  bool ok() const { return ok_; }
-
-  // Only valid to call when this message has an Err status (i.e. ok() returned
-  // false or operator bool() returned true).
-  const std::string& message() const { return message_; }
-
-  // Only valid to call when this message has an Err status (i.e. ok() returned
-  // false or operator bool() returned true).
-  const char* c_message() const { return message_.c_str(); }
-
- private:
-  bool ok_ = false;
-  std::string message_;
-};
-
-// Returns a status object which represents the Ok status.
-inline Status OkStatus() {
-  return Status();
-}
-
-// Returns a status object which represents an error with the given message
-// formatted using printf.
-__attribute__((__format__(__printf__, 1, 2))) inline Status ErrStatus(
-    const char* format,
-    ...) {
-  va_list ap;
-  va_start(ap, format);
-
-  char buffer[1024];
-  vsnprintf(buffer, sizeof(buffer), format, ap);
-  return Status(std::string(buffer));
-}
+constexpr auto OkStatus = ::perfetto::base::OkStatus;
+constexpr auto ErrStatus = ::perfetto::base::ErrStatus;
 
 }  // namespace util
 }  // namespace trace_processor

@@ -17,7 +17,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/metrics/test/demographic_metrics_test_utils.h"
+#include "components/metrics/demographics/demographic_metrics_test_utils.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -79,6 +79,10 @@ std::unique_ptr<syncer::LoopbackServerEntity> CreateBookmarkServerEntity(
 
 namespace chrome_test_util {
 
+bool IsFakeSyncServerSetUp() {
+  return gSyncFakeServer;
+}
+
 void SetUpFakeSyncServer() {
   DCHECK(!gSyncFakeServer);
   gSyncFakeServer = new fake_server::FakeServer();
@@ -100,6 +104,10 @@ void StartSync() {
   SyncSetupService* sync_setup_service =
       SyncSetupServiceFactory::GetForBrowserState(browser_state);
   sync_setup_service->SetSyncEnabled(true);
+  syncer::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
+          browser_state);
+  sync_service->TriggerPoliciesLoadedForTest();
 }
 
 void StopSync() {
@@ -290,7 +298,7 @@ void AddTypedURLToClient(const GURL& url) {
 
   historyService->AddPage(url, base::Time::Now(), nullptr, 1, GURL(),
                           history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
-                          history::SOURCE_BROWSED, false);
+                          history::SOURCE_BROWSED, false, false);
 }
 
 void AddTypedURLToFakeSyncServer(const std::string& url) {

@@ -17,7 +17,7 @@ import git_common as git
 
 FOOTER_PATTERN = re.compile(r'^\s*([\w-]+): *(.*)$')
 CHROME_COMMIT_POSITION_PATTERN = re.compile(r'^([\w/\-\.]+)@{#(\d+)}$')
-FOOTER_KEY_BLACKLIST = set(['http', 'https'])
+FOOTER_KEY_BLOCKLIST = set(['http', 'https'])
 
 
 def normalize_name(header):
@@ -27,7 +27,7 @@ def normalize_name(header):
 def parse_footer(line):
   """Returns footer's (key, value) if footer is valid, else None."""
   match = FOOTER_PATTERN.match(line)
-  if match and match.group(1) not in FOOTER_KEY_BLACKLIST:
+  if match and match.group(1) not in FOOTER_KEY_BLOCKLIST:
     return (match.group(1), match.group(2))
   return None
 
@@ -65,7 +65,7 @@ def split_footers(message):
       There could be fewer parsed_footers than footer lines if some lines in
       last paragraph are malformed.
   """
-  message_lines = list(message.splitlines())
+  message_lines = list(message.rstrip().splitlines())
   footer_lines = []
   maybe_footer_lines = []
   for line in reversed(message_lines):

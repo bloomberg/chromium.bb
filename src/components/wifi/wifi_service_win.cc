@@ -19,6 +19,7 @@
 #include "base/base_paths_win.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -933,7 +934,7 @@ void WiFiServiceImpl::WaitForNetworkConnect(const std::string& network_guid,
     if (error != ERROR_SUCCESS)
       LOG(ERROR) << error;
     // There is no need to keep created profile as network is connected.
-    created_profiles_.RemoveWithoutPathExpansion(network_guid, nullptr);
+    created_profiles_.RemoveKey(network_guid);
     // Restore previously suppressed notifications.
     enable_notify_network_changed_ = true;
     RestoreNwCategoryWizard();
@@ -1137,7 +1138,7 @@ DWORD WiFiServiceImpl::ResetDHCP() {
 DWORD WiFiServiceImpl::FindAdapterIndexMapByGUID(
     const GUID& interface_guid,
     IP_ADAPTER_INDEX_MAP* adapter_index_map) {
-  const auto guid_string = base::win::String16FromGUID(interface_guid);
+  const auto guid_string = base::win::WStringFromGUID(interface_guid);
 
   ULONG buffer_length = 0;
   DWORD error = ::GetInterfaceInfo(nullptr, &buffer_length);
@@ -1697,7 +1698,7 @@ DWORD WiFiServiceImpl::DeleteCreatedProfile(const std::string& network_guid) {
     base::string16 profile_name = ProfileNameFromGUID(network_guid);
     error_code = WlanDeleteProfile_function_(client_, &interface_guid_,
                                              profile_name.c_str(), nullptr);
-    created_profiles_.RemoveWithoutPathExpansion(network_guid, nullptr);
+    created_profiles_.RemoveKey(network_guid);
   }
   return error_code;
 }

@@ -107,7 +107,8 @@ void VP9RateControlRTC::UpdateRateControl(
   }
   vp9_set_rc_buffer_sizes(cpi_);
   vp9_new_framerate(cpi_, cpi_->framerate);
-  if (cpi_->svc.number_temporal_layers > 1) {
+  if (cpi_->svc.number_temporal_layers > 1 ||
+      cpi_->svc.number_spatial_layers > 1) {
     if (cm->current_video_frame == 0) vp9_init_layer_context(cpi_);
     vp9_update_layer_context_change_config(cpi_,
                                            (int)cpi_->oxcf.target_bandwidth);
@@ -158,7 +159,7 @@ int VP9RateControlRTC::GetQP() const { return cpi_->common.base_qindex; }
 
 int VP9RateControlRTC::GetLoopfilterLevel() const {
   struct loopfilter *const lf = &cpi_->common.lf;
-  vp9_pick_filter_level(NULL, cpi_, LPF_PICK_FROM_Q);
+  vp9_pick_filter_level(nullptr, cpi_, LPF_PICK_FROM_Q);
   return lf->filter_level;
 }
 

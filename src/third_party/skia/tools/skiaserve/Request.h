@@ -21,7 +21,7 @@
 
 namespace sk_gpu_test {
 class GrContextFactory;
-}
+}  // namespace sk_gpu_test
 struct MHD_Connection;
 struct MHD_PostProcessor;
 
@@ -68,7 +68,7 @@ private:
     SkSurface* createCPUSurface();
     SkSurface* createGPUSurface();
     SkIRect getBounds();
-    GrContext* getContext();
+    GrDirectContext* directContext();
 
     sk_sp<SkPicture> fPicture;
     sk_gpu_test::GrContextFactory* fContextFactory;

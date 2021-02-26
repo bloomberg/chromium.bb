@@ -7,18 +7,22 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "pdf/paint_aggregator.h"
-#include "ppapi/cpp/graphics_2d.h"
-#include "ppapi/utility/completion_callback_factory.h"
+#include "ui/gfx/geometry/size.h"
 
-namespace pp {
-class Graphics2D;
-class Instance;
+namespace gfx {
 class Point;
 class Rect;
-}  // namespace pp
+class Vector2d;
+}  // namespace gfx
+
+namespace chrome_pdf {
+
+class Graphics;
 
 // Custom PaintManager for the PDF plugin.  This is branched from the Pepper
 // version.  The difference is that this supports progressive rendering of dirty
@@ -29,30 +33,17 @@ class Rect;
 // The client's OnPaint
 class PaintManager {
  public:
-  // Like PaintAggregator's version, but allows the plugin to tell us whether
-  // it should be flushed to the screen immediately or when the rest of the
-  // plugin viewport is ready.
-  struct ReadyRect {
-    ReadyRect();
-    ReadyRect(const pp::Rect& r, const pp::ImageData& i, bool f);
-    ReadyRect(const ReadyRect& that);
-
-    operator PaintAggregator::ReadyRect() const {
-      PaintAggregator::ReadyRect rv;
-      rv.offset = offset;
-      rv.rect = rect;
-      rv.image_data = image_data;
-      return rv;
-    }
-
-    pp::Point offset;
-    pp::Rect rect;
-    pp::ImageData image_data;
-    bool flush_now;
-  };
-
   class Client {
    public:
+    // Creates a new, unbound `Graphics` for the paint manager, with the given
+    // |size| and always-opaque rendering.
+    virtual std::unique_ptr<Graphics> CreatePaintGraphics(
+        const gfx::Size& size) = 0;
+
+    // Binds a `Graphics` created by `CreatePaintGraphics()`, returning `true`
+    // if binding was successful.
+    virtual bool BindPaintGraphics(Graphics& graphics) = 0;
+
     // Paints the given invalid area of the plugin to the given graphics
     // device. Returns true if anything was painted.
     //
@@ -71,40 +62,21 @@ class PaintManager {
     // PaintManager needs to handle the callback.
     //
     // Calling Invalidate/Scroll is not allowed while inside an OnPaint
-    virtual void OnPaint(const std::vector<pp::Rect>& paint_rects,
-                         std::vector<ReadyRect>* ready,
-                         std::vector<pp::Rect>* pending) = 0;
+    virtual void OnPaint(const std::vector<gfx::Rect>& paint_rects,
+                         std::vector<PaintReadyRect>* ready,
+                         std::vector<gfx::Rect>* pending) = 0;
 
    protected:
     // You shouldn't be doing deleting through this interface.
-    virtual ~Client() {}
+    ~Client() = default;
   };
 
-  // The instance is the plugin instance using this paint manager to do its
-  // painting. Painting will automatically go to this instance and you don't
-  // have to manually bind any device context (this is all handled by the
-  // paint manager).
-  //
   // The Client is a non-owning pointer and must remain valid (normally the
   // object implementing the Client interface will own the paint manager).
   //
-  // The is_always_opaque flag will be passed to the device contexts that this
-  // class creates. Set this to true if your plugin always draws an opaque
-  // image to the device. This is used as a hint to the browser that it does
-  // not need to do alpha blending, which speeds up painting. If you generate
-  // non-opqaue pixels or aren't sure, set this to false for more general
-  // blending.
-  //
-  // If you set is_always_opaque, your alpha channel should always be set to
-  // 0xFF or there may be painting artifacts. Being opaque will allow the
-  // browser to do a memcpy rather than a blend to paint the plugin, and this
-  // means your alpha values will get set on the page backing store. If these
-  // values are incorrect, it could mess up future blending. If you aren't
-  // sure, it is always correct to specify that it it not opaque.
-  //
   // You will need to call SetSize before this class will do anything. Normally
   // you do this from the ViewChanged method of your plugin instance.
-  PaintManager(pp::Instance* instance, Client* client, bool is_always_opaque);
+  explicit PaintManager(Client* client);
   PaintManager(const PaintManager&) = delete;
   PaintManager& operator=(const PaintManager&) = delete;
   ~PaintManager();
@@ -113,8 +85,8 @@ class PaintManager {
   // size. We may allocated a slightly larger buffer than required so that we
   // don't have to resize the context when scrollbars appear/dissapear due to
   // zooming (which can result in flickering).
-  static pp::Size GetNewContextSize(const pp::Size& current_context_size,
-                                    const pp::Size& plugin_size);
+  static gfx::Size GetNewContextSize(const gfx::Size& current_context_size,
+                                     const gfx::Size& plugin_size);
 
   // Sets the size of the plugin. If the size is the same as the previous call,
   // this will be a NOP. If the size has changed, a new device will be
@@ -125,22 +97,22 @@ class PaintManager {
   // changes, you can always call this function without worrying about whether
   // the size changed or ViewChanged is called for another reason (like the
   // position changed).
-  void SetSize(const pp::Size& new_size, float new_device_scale);
+  void SetSize(const gfx::Size& new_size, float new_device_scale);
 
   // Invalidate the entire plugin.
   void Invalidate();
 
   // Invalidate the given rect.
-  void InvalidateRect(const pp::Rect& rect);
+  void InvalidateRect(const gfx::Rect& rect);
 
   // The given rect should be scrolled by the given amounts.
-  void ScrollRect(const pp::Rect& clip_rect, const pp::Point& amount);
+  void ScrollRect(const gfx::Rect& clip_rect, const gfx::Vector2d& amount);
 
   // Returns the size of the graphics context for the next paint operation.
   // This is the pending size if a resize is pending (the plugin has called
   // SetSize but we haven't actually painted it yet), or the current size of
   // no resize is pending.
-  pp::Size GetEffectiveSize() const;
+  gfx::Size GetEffectiveSize() const;
   float GetEffectiveDeviceScale() const;
 
   // Set the transform for the graphics layer.
@@ -148,8 +120,8 @@ class PaintManager {
   // this change. If |schedule_flush| is false, then the change will not take
   // effect until another change causes a flush.
   void SetTransform(float scale,
-                    const pp::Point& origin,
-                    const pp::Point& translate,
+                    const gfx::Point& origin,
+                    const gfx::Vector2d& translate,
                     bool schedule_flush);
   // Resets any transform for the graphics layer.
   // This does not schedule a flush.
@@ -175,18 +147,11 @@ class PaintManager {
   // pending.
   void OnManualCallbackComplete(int32_t);
 
-  pp::Instance* const instance_;
-
   // Non-owning pointer. See the constructor.
   Client* const client_;
 
-  const bool is_always_opaque_;
-
-  pp::CompletionCallbackFactory<PaintManager> callback_factory_;
-
-  // This graphics device will be is_null() if no graphics has been manually
-  // set yet.
-  pp::Graphics2D graphics_;
+  // This graphics device will be null if no graphics has been set yet.
+  std::unique_ptr<Graphics> graphics_;
 
   PaintAggregator aggregator_;
 
@@ -200,8 +165,8 @@ class PaintManager {
   // paint operation. When true, the new size is in pending_size_.
   bool has_pending_resize_ = false;
   bool graphics_need_to_be_bound_ = false;
-  pp::Size pending_size_;
-  pp::Size plugin_size_;
+  gfx::Size pending_size_;
+  gfx::Size plugin_size_;
   float pending_device_scale_ = 1.0f;
   float device_scale_ = 1.0f;
 
@@ -213,6 +178,10 @@ class PaintManager {
 
   // True when the view size just changed and we're waiting for a paint.
   bool view_size_changed_waiting_for_paint_ = false;
+
+  base::WeakPtrFactory<PaintManager> weak_factory_{this};
 };
+
+}  // namespace chrome_pdf
 
 #endif  // PDF_PAINT_MANAGER_H_

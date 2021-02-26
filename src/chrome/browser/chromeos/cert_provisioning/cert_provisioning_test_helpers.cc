@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_test_helpers.h"
 
+#include "base/optional.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "net/test/cert_builder.h"
@@ -54,24 +56,22 @@ CertificateHelperForTesting::CertificateHelperForTesting(
 CertificateHelperForTesting::~CertificateHelperForTesting() = default;
 
 void CertificateHelperForTesting::GetCertificates(
-    const std::string& token_id,
-    const platform_keys::GetCertificatesCallback& callback) {
+    platform_keys::TokenId token_id,
+    platform_keys::GetCertificatesCallback callback) {
   auto result = std::make_unique<net::CertificateList>();
   *result = cert_list_;
-  std::move(callback).Run(std::move(result), "");
+  std::move(callback).Run(std::move(result), platform_keys::Status::kSuccess);
 }
 
-void CertificateHelperForTesting::AddCert(
+scoped_refptr<net::X509Certificate> CertificateHelperForTesting::AddCert(
     CertScope cert_scope,
-    const CertProfileId& cert_profile_id) {
-  AddCert(cert_scope, cert_profile_id, /*error_message=*/"");
-}
-
-void CertificateHelperForTesting::AddCert(CertScope cert_scope,
-                                          const CertProfileId& cert_profile_id,
-                                          const std::string& error_message) {
+    const base::Optional<CertProfileId>& cert_profile_id,
+    platform_keys::Status status,
+    base::Time not_valid_before,
+    base::Time not_valid_after) {
   net::CertBuilder cert_builder(template_cert_->cert_buffer(),
                                 /*issuer=*/nullptr);
+  cert_builder.SetValidity(not_valid_before, not_valid_after);
   auto cert = cert_builder.GetX509Certificate();
 
   EXPECT_CALL(
@@ -79,10 +79,34 @@ void CertificateHelperForTesting::AddCert(CertScope cert_scope,
       GetAttributeForKey(
           GetPlatformKeysTokenId(cert_scope),
           platform_keys::GetSubjectPublicKeyInfo(cert),
-          platform_keys::KeyAttributeType::CertificateProvisioningId, _))
-      .WillRepeatedly(RunOnceCallback<3>(cert_profile_id, error_message));
+          platform_keys::KeyAttributeType::kCertificateProvisioningId, _))
+      .WillRepeatedly(RunOnceCallback<3>(cert_profile_id, status));
 
   cert_list_.push_back(cert);
+  return cert;
+}
+
+scoped_refptr<net::X509Certificate> CertificateHelperForTesting::AddCert(
+    CertScope cert_scope,
+    const base::Optional<CertProfileId>& cert_profile_id) {
+  base::Time not_valid_before =
+      base::Time::Now() - base::TimeDelta::FromDays(1);
+  base::Time not_valid_after =
+      base::Time::Now() + base::TimeDelta::FromDays(365);
+  return AddCert(cert_scope, cert_profile_id, platform_keys::Status::kSuccess,
+                 not_valid_before, not_valid_after);
+}
+
+scoped_refptr<net::X509Certificate> CertificateHelperForTesting::AddCert(
+    CertScope cert_scope,
+    const base::Optional<CertProfileId>& cert_profile_id,
+    platform_keys::Status status) {
+  base::Time not_valid_before =
+      base::Time::Now() - base::TimeDelta::FromDays(1);
+  base::Time not_valid_after =
+      base::Time::Now() + base::TimeDelta::FromDays(365);
+  return AddCert(cert_scope, cert_profile_id, status, not_valid_before,
+                 not_valid_after);
 }
 
 void CertificateHelperForTesting::ClearCerts() {
@@ -101,13 +125,16 @@ const char kTestUserGaiaId[] = "test_gaia_id";
 }  // namespace
 
 ProfileHelperForTesting::ProfileHelperForTesting()
+    : ProfileHelperForTesting(/*user_is_affiilated=*/false) {}
+
+ProfileHelperForTesting::ProfileHelperForTesting(bool user_is_affiliated)
     : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {
-  Init();
+  Init(user_is_affiliated);
 }
 
 ProfileHelperForTesting::~ProfileHelperForTesting() = default;
 
-void ProfileHelperForTesting::Init() {
+void ProfileHelperForTesting::Init(bool user_is_affiliated) {
   ASSERT_TRUE(testing_profile_manager_.SetUp());
 
   testing_profile_ =
@@ -116,7 +143,8 @@ void ProfileHelperForTesting::Init() {
 
   auto test_account =
       AccountId::FromUserEmailGaiaId(kTestUserEmail, kTestUserGaiaId);
-  fake_user_manager_.AddUser(test_account);
+  user_ = fake_user_manager_.AddUserWithAffiliation(test_account,
+                                                    user_is_affiliated);
 
   ProfileHelper::Get()->SetUserToProfileMappingForTesting(
       fake_user_manager_.GetPrimaryUser(), testing_profile_);
@@ -126,29 +154,8 @@ Profile* ProfileHelperForTesting::GetProfile() const {
   return testing_profile_;
 }
 
-//================ SpyingFakeCryptohomeClient ==================================
-
-SpyingFakeCryptohomeClient::SpyingFakeCryptohomeClient() = default;
-SpyingFakeCryptohomeClient::~SpyingFakeCryptohomeClient() = default;
-
-void SpyingFakeCryptohomeClient::TpmAttestationDeleteKey(
-    attestation::AttestationKeyType key_type,
-    const cryptohome::AccountIdentifier& cryptohome_id,
-    const std::string& key_prefix,
-    DBusMethodCallback<bool> callback) {
-  OnTpmAttestationDeleteKey(key_type, key_prefix);
-  FakeCryptohomeClient::TpmAttestationDeleteKey(
-      key_type, cryptohome_id, key_prefix, std::move(callback));
-}
-
-void SpyingFakeCryptohomeClient::TpmAttestationDeleteKeysByPrefix(
-    attestation::AttestationKeyType key_type,
-    const cryptohome::AccountIdentifier& cryptohome_id,
-    const std::string& key_prefix,
-    DBusMethodCallback<bool> callback) {
-  OnTpmAttestationDeleteKeysByPrefix(key_type, key_prefix);
-  FakeCryptohomeClient::TpmAttestationDeleteKeysByPrefix(
-      key_type, cryptohome_id, key_prefix, std::move(callback));
+user_manager::User* ProfileHelperForTesting::GetUser() const {
+  return user_;
 }
 
 }  // namespace cert_provisioning

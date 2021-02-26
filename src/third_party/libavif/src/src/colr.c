@@ -52,7 +52,7 @@ static avifBool primariesMatch(const float p1[8], const float p2[8])
            matchesTo3RoundedPlaces(p1[5], p2[5]) && matchesTo3RoundedPlaces(p1[6], p2[6]) && matchesTo3RoundedPlaces(p1[7], p2[7]);
 }
 
-avifColorPrimaries avifColorPrimariesFind(float inPrimaries[8], const char ** outName)
+avifColorPrimaries avifColorPrimariesFind(const float inPrimaries[8], const char ** outName)
 {
     if (outName) {
         *outName = NULL;
@@ -83,18 +83,18 @@ static const struct avifMatrixCoefficientsTable matrixCoefficientsTables[] = {
     { AVIF_MATRIX_COEFFICIENTS_BT709, "BT.709", 0.2126f, 0.0722f },
     { AVIF_MATRIX_COEFFICIENTS_FCC, "FCC USFC 73.682", 0.30f, 0.11f },
     { AVIF_MATRIX_COEFFICIENTS_BT470BG, "BT.470-6 System BG", 0.299f, 0.114f },
-    { AVIF_MATRIX_COEFFICIENTS_BT601, "BT.601", 0.299f, 0.144f },
+    { AVIF_MATRIX_COEFFICIENTS_BT601, "BT.601", 0.299f, 0.114f },
     { AVIF_MATRIX_COEFFICIENTS_SMPTE240, "SMPTE ST 240", 0.212f, 0.087f },
     { AVIF_MATRIX_COEFFICIENTS_BT2020_NCL, "BT.2020 (non-constant luminance)", 0.2627f, 0.0593f },
     //{ AVIF_MATRIX_COEFFICIENTS_BT2020_CL, "BT.2020 (constant luminance)", 0.2627f, 0.0593f }, // FIXME: It is not an linear transformation.
-    //{ AVIF_MATRIX_COEFFICIENTS_ST2085, "ST 2085", 0.0f, 0.0f }, // FIXME: ST2085 can't represent using Kr and Kb.
+    //{ AVIF_MATRIX_COEFFICIENTS_SMPTE2085, "ST 2085", 0.0f, 0.0f }, // FIXME: ST2085 can't represent using Kr and Kb.
     //{ AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_CL, "Chromaticity-derived constant luminance system", 0.0f, 0.0f } // FIXME: It is not an linear transformation.
     //{ AVIF_MATRIX_COEFFICIENTS_ICTCP, "BT.2100-0 ICtCp", 0.0f, 0.0f }, // FIXME: This can't represent using Kr and Kb.
 };
 
 static const int avifMatrixCoefficientsTableSize = sizeof(matrixCoefficientsTables) / sizeof(matrixCoefficientsTables[0]);
 
-static avifBool calcYUVInfoFromCICP(avifImage * image, float coeffs[3])
+static avifBool calcYUVInfoFromCICP(const avifImage * image, float coeffs[3])
 {
     if (image->matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL) {
         float primaries[8];
@@ -135,16 +135,26 @@ static avifBool calcYUVInfoFromCICP(avifImage * image, float coeffs[3])
     return AVIF_FALSE;
 }
 
-void avifCalcYUVCoefficients(avifImage * image, float * outR, float * outG, float * outB)
+void avifCalcYUVCoefficients(const avifImage * image, float * outR, float * outG, float * outB)
 {
-    // sRGB (BT.709) defaults, as explained here:
+    // (As of ISO/IEC 23000-22:2019 Amendment 2)
+    // MIAF Section 7.3.6.4 "Colour information property":
     //
-    // https://github.com/AOMediaCodec/av1-avif/issues/83
+    // If a coded image has no associated colour property, the default property is defined as having
+    // colour_type equal to 'nclx' with properties as follows:
+    // –   colour_primaries equal to 1,
+    // –   transfer_characteristics equal to 13,
+    // –   matrix_coefficients equal to 5 or 6 (which are functionally identical), and
+    // –   full_range_flag equal to 1.
+    // Only if the colour information property of the image matches these default values, the colour
+    // property may be omitted; all other images shall have an explicitly declared colour space via
+    // association with a property of this type.
     //
-    // MIAF (ISO/IEC FDIS 23000-22) Section 7.3.6.4 states that matrix_coefficients should be assumed
-    // to be 1 (BT.709) if there is no associated colour property.
-    float kr = 0.2126f;
-    float kb = 0.0722f;
+    // See here for the discussion: https://github.com/AOMediaCodec/av1-avif/issues/77#issuecomment-676526097
+
+    // matrix_coefficients of [5,6] == BT.601:
+    float kr = 0.299f;
+    float kb = 0.114f;
     float kg = 1.0f - kr - kb;
 
     float coeffs[3];

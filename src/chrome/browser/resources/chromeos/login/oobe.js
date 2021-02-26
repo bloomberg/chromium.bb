@@ -21,38 +21,15 @@
 // src="../../../../../ui/login/account_picker/chromeos_user_pod_row.js">
 // <include src="cr_ui.js">
 // <include src="oobe_screen_autolaunch.js">
-// <include src="oobe_screen_supervision_transition.js">
-// <include src="oobe_screen_assistant_optin_flow.js">
 // <include src="oobe_select.js">
 
-// <include src="screen_app_launch_splash.js">
 // <include src="screen_arc_terms_of_service.js">
 // <include src="screen_error_message.js">
-// <include src="screen_password_changed.js">
-// <include src="screen_tpm_error.js">
-// <include src="screen_wrong_hwid.js">
-// <include src="screen_confirm_password.js">
-// <include src="screen_fatal_error.js">
-// <include src="screen_device_disabled.js">
-// <include src="screen_active_directory_password_change.js">
-// <include src="screen_encryption_migration.js">
-// <include src="screen_update_required.js">
-// <include src="screen_sync_consent.js">
-// <include src="screen_fingerprint_setup.js">
-// <include src="screen_recommend_apps.js">
-// <include src="screen_app_downloading.js">
 // <include src="screen_discover.js">
 // <include src="screen_multidevice_setup.js">
 
 // <include src="../../gaia_auth_host/authenticator.js">
 // <include src="oobe_screen_auto_enrollment_check.js">
-// <include src="oobe_screen_demo_setup.js">
-// <include src="oobe_screen_demo_preferences.js">
-// <include src="oobe_screen_enable_debugging.js">
-// <include src="oobe_screen_eula.js">
-// <include src="oobe_screen_network.js">
-// <include src="oobe_screen_oauth_enrollment.js">
-// <include src="oobe_screen_update.js">
 // <include src="multi_tap_detector.js">
 // <include src="web_view_helper.js">
 
@@ -64,35 +41,13 @@ cr.define('cr.ui.Oobe', function() {
      */
     initialize() {
       cr.ui.login.DisplayManager.initialize();
-      login.WrongHWIDScreen.register();
-      login.NetworkScreen.register();
-      login.EulaScreen.register();
-      login.UpdateScreen.register();
       login.AutoEnrollmentCheckScreen.register();
-      login.EnableDebuggingScreen.register();
       login.AutolaunchScreen.register();
       login.AccountPickerScreen.register();
-      login.OAuthEnrollmentScreen.register();
       login.ErrorMessageScreen.register();
-      login.TPMErrorMessageScreen.register();
-      login.PasswordChangedScreen.register();
-      login.SyncConsentScreen.register();
-      login.FingerprintSetupScreen.register();
       login.ArcTermsOfServiceScreen.register();
-      login.RecommendAppsScreen.register();
-      login.AppDownloadingScreen.register();
-      login.AppLaunchSplashScreen.register();
-      login.ConfirmPasswordScreen.register();
-      login.FatalErrorScreen.register();
-      login.DeviceDisabledScreen.register();
-      login.ActiveDirectoryPasswordChangeScreen.register(/* lazyInit= */ true);
-      login.SupervisionTransitionScreen.register();
-      login.DemoSetupScreen.register();
-      login.DemoPreferencesScreen.register();
       login.DiscoverScreen.register();
-      login.AssistantOptInFlowScreen.register();
       login.MultiDeviceSetupScreen.register();
-      login.UpdateRequiredScreen.register();
 
       cr.ui.Bubble.decorate($('bubble-persistent'));
       $('bubble-persistent').persistent = true;
@@ -100,33 +55,7 @@ cr.define('cr.ui.Oobe', function() {
 
       cr.ui.Bubble.decorate($('bubble'));
 
-      // TODO(crbug.com/1082670): Remove excessive logging after investigation.
-      console.warn('oobe : Initialize');
       chrome.send('screenStateInitialize');
-    },
-
-    /**
-     * Sets usage statistics checkbox.
-     * @param {boolean} checked Is the checkbox checked?
-     */
-    setUsageStats(checked) {
-      $('oobe-eula-md').usageStatsChecked = checked;
-    },
-
-    /**
-     * Sets TPM password.
-     * @param {text} password TPM password to be shown.
-     */
-    setTpmPassword(password) {
-      $('eula').setTpmPassword(password);
-    },
-
-    /**
-     * Refreshes a11y menu state.
-     * @param {!Object} data New dictionary with a11y features state.
-     */
-    refreshA11yInfo(data) {
-      $('connect').a11yStatus = data;
     },
 
     /**

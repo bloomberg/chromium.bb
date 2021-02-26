@@ -75,6 +75,15 @@ scoped_refptr<ElementAnimations> Animation::element_animations() const {
 }
 
 void Animation::AttachElement(ElementId element_id) {
+  DCHECK_NE(element_id.GetStableId(), ElementId::kReservedElementId);
+  AttachElementInternal(element_id);
+}
+
+void Animation::AttachNoElement() {
+  AttachElementInternal(ElementId(ElementId::kReservedElementId));
+}
+
+void Animation::AttachElementInternal(ElementId element_id) {
   keyframe_effect_->AttachElement(element_id);
   // Register animation only if layer AND host attached.
   if (animation_host_)
@@ -127,18 +136,13 @@ void Animation::Tick(base::TimeTicks tick_time) {
     // time and then ticks it which side-steps the start time altogether. See
     // crbug.com/1076012 for alternative design choices considered for future
     // improvement.
-    TickWithLocalTime(tick_time - base::TimeTicks());
+    keyframe_effect_->Pause(tick_time - base::TimeTicks(),
+                            PauseCondition::kAfterStart);
+    keyframe_effect_->Tick(base::TimeTicks());
   } else {
     DCHECK(!tick_time.is_null());
     keyframe_effect_->Tick(tick_time);
   }
-}
-
-void Animation::TickWithLocalTime(base::TimeDelta local_time) {
-  // TODO(yigu): KeyframeEffect should support ticking KeyframeModel
-  // directly without using Pause(). https://crbug.com/1076012.
-  keyframe_effect_->Pause(local_time);
-  keyframe_effect_->Tick(base::TimeTicks());
 }
 
 bool Animation::IsScrollLinkedAnimation() const {
@@ -211,10 +215,6 @@ void Animation::DelegateAnimationEvent(const AnimationEvent& event) {
   }
 }
 
-size_t Animation::TickingKeyframeModelsCount() const {
-  return keyframe_effect_->TickingKeyframeModelsCount();
-}
-
 bool Animation::AffectsCustomProperty() const {
   return keyframe_effect_->AffectsCustomProperty();
 }
@@ -285,14 +285,6 @@ void Animation::NotifyKeyframeModelFinishedForTesting(
                        {timeline_id, id(), keyframe_model_id}, group_id,
                        target_property, base::TimeTicks());
   DispatchAndDelegateAnimationEvent(event);
-}
-
-void Animation::UpdateScrollTimeline(base::Optional<ElementId> scroller_id,
-                                     base::Optional<double> start_scroll_offset,
-                                     base::Optional<double> end_scroll_offset) {
-  ToScrollTimeline(animation_timeline_)
-      ->UpdateScrollerIdAndScrollOffsets(scroller_id, start_scroll_offset,
-                                         end_scroll_offset);
 }
 
 }  // namespace cc

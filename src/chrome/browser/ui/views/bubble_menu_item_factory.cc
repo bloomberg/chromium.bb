@@ -26,7 +26,7 @@ void ConfigureBubbleMenuItem(views::Button* button, int button_id) {
   button->GetInkDrop()->SetShowHighlightOnFocus(true);
   button->GetInkDrop()->SetHoverHighlightFadeDuration(base::TimeDelta());
   views::InstallRectHighlightPathGenerator(button);
-  button->set_ink_drop_base_color(HoverButton::GetInkDropColor(button));
+  button->SetInkDropBaseColor(HoverButton::GetInkDropColor(button));
   button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   button->SetID(button_id);
 }
@@ -34,14 +34,14 @@ void ConfigureBubbleMenuItem(views::Button* button, int button_id) {
 std::unique_ptr<views::LabelButton> CreateBubbleMenuItem(
     int button_id,
     const base::string16& name,
-    views::ButtonListener* listener) {
+    views::Button::PressedCallback callback) {
   auto button = std::make_unique<views::LabelButton>(
-      listener, name, views::style::CONTEXT_BUTTON);
+      callback, name, views::style::CONTEXT_BUTTON);
 
   ConfigureBubbleMenuItem(button.get(), button_id);
 
   button->SetButtonController(std::make_unique<HoverButtonController>(
-      button.get(), listener,
+      button.get(), std::move(callback),
       std::make_unique<views::Button::DefaultButtonControllerDelegate>(
           button.get())));
   button->SetBorder(views::CreateEmptyBorder(kDefaultBorderInsets));
@@ -51,8 +51,8 @@ std::unique_ptr<views::LabelButton> CreateBubbleMenuItem(
 
 std::unique_ptr<views::ImageButton> CreateBubbleMenuItem(
     int button_id,
-    views::ButtonListener* listener) {
-  auto button = views::CreateVectorImageButton(listener);
+    views::Button::PressedCallback callback) {
+  auto button = views::CreateVectorImageButton(std::move(callback));
   ConfigureBubbleMenuItem(button.get(), button_id);
   return button;
 }

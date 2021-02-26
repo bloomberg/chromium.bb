@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
@@ -24,9 +23,9 @@ namespace web_app {
 enum class InstallResultCode;
 
 class AppRegistrar;
-class AppShortcutManager;
-class FileHandlerManager;
+class OsIntegrationManager;
 class InstallFinalizer;
+class InstallManager;
 class WebAppUiManager;
 
 enum class RegistrationResultCode { kSuccess, kAlreadyRegistered, kTimeout };
@@ -54,13 +53,15 @@ class PendingAppManager {
                               std::map<GURL, bool> uninstall_results)>;
 
   PendingAppManager();
+  PendingAppManager(const PendingAppManager&) = delete;
+  PendingAppManager& operator=(const PendingAppManager&) = delete;
   virtual ~PendingAppManager();
 
   void SetSubsystems(AppRegistrar* registrar,
-                     AppShortcutManager* shortcut_manager,
-                     FileHandlerManager* file_handler_manager,
+                     OsIntegrationManager* os_integration_manager,
                      WebAppUiManager* ui_manager,
-                     InstallFinalizer* finalizer);
+                     InstallFinalizer* finalizer,
+                     InstallManager* install_manager);
 
   // Queues an installation operation with the highest priority. Essentially
   // installing the app immediately if there are no ongoing operations or
@@ -112,22 +113,30 @@ class PendingAppManager {
 
   void SetRegistrationCallbackForTesting(RegistrationCallback callback);
   void ClearRegistrationCallbackForTesting();
+  void SetRegistrationsCompleteCallbackForTesting(base::OnceClosure callback);
+  void ClearSynchronizeRequestsForTesting();
 
   virtual void Shutdown() = 0;
 
  protected:
   AppRegistrar* registrar() { return registrar_; }
-  AppShortcutManager* shortcut_manager() { return shortcut_manager_; }
-  FileHandlerManager* file_handler_manager() { return file_handler_manager_; }
+  OsIntegrationManager* os_integration_manager() {
+    return os_integration_manager_;
+  }
   WebAppUiManager* ui_manager() { return ui_manager_; }
   InstallFinalizer* finalizer() { return finalizer_; }
+  InstallManager* install_manager() { return install_manager_; }
 
   virtual void OnRegistrationFinished(const GURL& launch_url,
                                       RegistrationResultCode result);
 
+  base::OnceClosure registrations_complete_callback_;
+
  private:
   struct SynchronizeRequest {
     SynchronizeRequest(SynchronizeCallback callback, int remaining_requests);
+    SynchronizeRequest(const SynchronizeRequest&) = delete;
+    SynchronizeRequest& operator=(const SynchronizeRequest&) = delete;
     ~SynchronizeRequest();
 
     SynchronizeRequest& operator=(SynchronizeRequest&&);
@@ -138,8 +147,6 @@ class PendingAppManager {
     std::map<GURL, InstallResultCode> install_results;
     std::map<GURL, bool> uninstall_results;
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(SynchronizeRequest);
   };
 
   void InstallForSynchronizeCallback(ExternalInstallSource source,
@@ -151,10 +158,10 @@ class PendingAppManager {
   void OnAppSynchronized(ExternalInstallSource source, const GURL& app_url);
 
   AppRegistrar* registrar_ = nullptr;
-  AppShortcutManager* shortcut_manager_ = nullptr;
-  FileHandlerManager* file_handler_manager_ = nullptr;
+  OsIntegrationManager* os_integration_manager_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
   InstallFinalizer* finalizer_ = nullptr;
+  InstallManager* install_manager_ = nullptr;
 
   base::flat_map<ExternalInstallSource, SynchronizeRequest>
       synchronize_requests_;
@@ -163,7 +170,6 @@ class PendingAppManager {
 
   base::WeakPtrFactory<PendingAppManager> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(PendingAppManager);
 };
 
 }  // namespace web_app

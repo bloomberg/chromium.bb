@@ -20,10 +20,12 @@
 #include <limits>
 #include <random>
 #include <thread>  // NOLINT(build/c++11)
+#include <type_traits>
 #include <vector>
 
 #include "gtest/gtest.h"
 #include "absl/base/attributes.h"
+#include "absl/base/config.h"
 #include "absl/base/internal/low_level_scheduling.h"
 #include "absl/base/internal/scheduling_mode.h"
 #include "absl/base/internal/spinlock.h"
@@ -102,6 +104,10 @@ static void ThreadedTest(SpinLock* spinlock) {
     EXPECT_EQ(values[0], values[i]);
   }
 }
+
+#ifndef ABSL_HAVE_THREAD_SANITIZER
+static_assert(std::is_trivially_destructible<SpinLock>(), "");
+#endif
 
 TEST(SpinLock, StackNonCooperativeDisablesScheduling) {
   SpinLock spinlock(base_internal::SCHEDULE_KERNEL_ONLY);

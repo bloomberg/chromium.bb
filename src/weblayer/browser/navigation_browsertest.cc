@@ -6,20 +6,26 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/test/bind_test_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
+#include "build/build_config.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "weblayer/browser/tab_impl.h"
+#include "weblayer/public/browser.h"
 #include "weblayer/public/navigation.h"
 #include "weblayer/public/navigation_controller.h"
 #include "weblayer/public/navigation_observer.h"
-#include "weblayer/public/tab.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/interstitial_utils.h"
+#include "weblayer/test/test_navigation_observer.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
 namespace weblayer {
@@ -68,8 +74,11 @@ class NavigationObserverImpl : public NavigationObserver {
       completed_callback_.Run(navigation);
   }
   void NavigationFailed(Navigation* navigation) override {
-    if (failed_callback_)
-      failed_callback_.Run(navigation);
+    // As |this| may be deleted when running the callback, the callback must be
+    // copied before running. To do otherwise results in use-after-free.
+    auto callback = failed_callback_;
+    if (callback)
+      callback.Run(navigation);
   }
 
  private:
@@ -78,56 +87,6 @@ class NavigationObserverImpl : public NavigationObserver {
   Callback redirected_callback_;
   Callback completed_callback_;
   Callback failed_callback_;
-};
-
-class OneShotNavigationObserver : public NavigationObserver {
- public:
-  explicit OneShotNavigationObserver(Shell* shell) : tab_(shell->tab()) {
-    tab_->GetNavigationController()->AddObserver(this);
-  }
-
-  ~OneShotNavigationObserver() override {
-    tab_->GetNavigationController()->RemoveObserver(this);
-  }
-
-  void WaitForNavigation() { run_loop_.Run(); }
-
-  bool completed() { return completed_; }
-  bool is_error_page() { return is_error_page_; }
-  bool is_download() { return is_download_; }
-  bool was_stop_called() { return was_stop_called_; }
-  Navigation::LoadError load_error() { return load_error_; }
-  int http_status_code() { return http_status_code_; }
-  NavigationState navigation_state() { return navigation_state_; }
-
- private:
-  // NavigationObserver implementation:
-  void NavigationCompleted(Navigation* navigation) override {
-    completed_ = true;
-    Finish(navigation);
-  }
-
-  void NavigationFailed(Navigation* navigation) override { Finish(navigation); }
-
-  void Finish(Navigation* navigation) {
-    is_error_page_ = navigation->IsErrorPage();
-    is_download_ = navigation->IsDownload();
-    was_stop_called_ = navigation->WasStopCalled();
-    load_error_ = navigation->GetLoadError();
-    http_status_code_ = navigation->GetHttpStatusCode();
-    navigation_state_ = navigation->GetState();
-    run_loop_.Quit();
-  }
-
-  base::RunLoop run_loop_;
-  Tab* tab_;
-  bool completed_ = false;
-  bool is_error_page_ = false;
-  bool is_download_ = false;
-  bool was_stop_called_ = false;
-  Navigation::LoadError load_error_ = Navigation::kNoError;
-  int http_status_code_ = 0;
-  NavigationState navigation_state_ = NavigationState::kWaitingResponse;
 };
 
 }  // namespace
@@ -150,6 +109,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, NoError) {
   EXPECT_TRUE(observer.completed());
   EXPECT_FALSE(observer.is_error_page());
   EXPECT_FALSE(observer.is_download());
+  EXPECT_FALSE(observer.is_reload());
   EXPECT_FALSE(observer.was_stop_called());
   EXPECT_EQ(observer.load_error(), Navigation::kNoError);
   EXPECT_EQ(observer.http_status_code(), 200);
@@ -164,11 +124,11 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpClientError) {
       embedded_test_server()->GetURL("/non_existent.html"));
 
   observer.WaitForNavigation();
-  EXPECT_TRUE(observer.completed());
-  EXPECT_FALSE(observer.is_error_page());
+  EXPECT_FALSE(observer.completed());
+  EXPECT_TRUE(observer.is_error_page());
   EXPECT_EQ(observer.load_error(), Navigation::kHttpClientError);
   EXPECT_EQ(observer.http_status_code(), 404);
-  EXPECT_EQ(observer.navigation_state(), NavigationState::kComplete);
+  EXPECT_EQ(observer.navigation_state(), NavigationState::kFailed);
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpServerError) {
@@ -251,6 +211,25 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, StopInOnStart) {
       }));
   GetNavigationController()->Navigate(
       embedded_test_server()->GetURL("/simple_page.html"));
+
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, DestroyTabInNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  Tab* new_tab = shell()->browser()->CreateTab();
+  base::RunLoop run_loop;
+  std::unique_ptr<NavigationObserverImpl> observer =
+      std::make_unique<NavigationObserverImpl>(
+          new_tab->GetNavigationController());
+  observer->SetFailedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        observer.reset();
+        shell()->browser()->DestroyTab(new_tab);
+        run_loop.Quit();
+      }));
+  new_tab->GetNavigationController()->Navigate(
+      embedded_test_server()->GetURL("/simple_pageX.html"));
 
   run_loop.Run();
 }
@@ -361,6 +340,28 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeader) {
   EXPECT_EQ(header_value, response_2.http_request()->headers.at(header_name));
 }
 
+// Verifies setting the 'referer' via SetRequestHeader() works as expected.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeaderWithReferer) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string header_name = "Referer";
+  const std::string header_value = "http://request.com";
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetRequestHeader(header_name, header_value);
+      }));
+
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
+  response.WaitForRequest();
+
+  // Verify 'referer' matches expected value.
+  EXPECT_EQ(GURL(header_value),
+            GURL(response.http_request()->headers.at(header_name)));
+}
+
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeaderInRedirect) {
   net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
                                                         "", true);
@@ -414,6 +415,22 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, PageSeesUserAgentString) {
         run_loop.Quit();
       }));
   run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, Reload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  OneShotNavigationObserver observer(shell());
+  GetNavigationController()->Navigate(
+      embedded_test_server()->GetURL("/simple_page.html"));
+  observer.WaitForNavigation();
+
+  OneShotNavigationObserver observer2(shell());
+  shell()->tab()->ExecuteScript(base::ASCIIToUTF16("location.reload();"), false,
+                                base::DoNothing());
+  observer2.WaitForNavigation();
+  EXPECT_TRUE(observer2.completed());
+  EXPECT_TRUE(observer2.is_reload());
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetUserAgentString) {
@@ -576,6 +593,63 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_EQ(custom_ua, new_ua);
 }
 
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, AutoPlayDefault) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(embedded_test_server()->GetURL("/autoplay.html"));
+  auto* tab = static_cast<TabImpl*>(shell()->tab());
+  NavigateAndWaitForCompletion(url, tab);
+
+  auto* web_contents = tab->web_contents();
+  bool playing = false;
+  // There's no notification to watch that would signal video wasn't autoplayed,
+  // so instead check once through javascript.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents,
+      "window.domAutomationController.send(!document.getElementById('vid')."
+      "paused)",
+      &playing));
+  ASSERT_FALSE(playing);
+}
+
+namespace {
+
+class WaitForMediaPlaying : public content::WebContentsObserver {
+ public:
+  explicit WaitForMediaPlaying(content::WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  // WebContentsObserver override.
+  void MediaStartedPlaying(const MediaPlayerInfo& info,
+                           const content::MediaPlayerId&) final {
+    run_loop_.Quit();
+    CHECK(info.has_audio);
+    CHECK(info.has_video);
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaitForMediaPlaying);
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, AutoPlayEnabled) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(embedded_test_server()->GetURL("/autoplay.html"));
+  NavigationController::NavigateParams params;
+  params.enable_auto_play = true;
+  GetNavigationController()->Navigate(url, params);
+
+  auto* tab = static_cast<TabImpl*>(shell()->tab());
+  WaitForMediaPlaying wait_for_media(tab->web_contents());
+  wait_for_media.Wait();
+}
+
 class NavigationBrowserTest2 : public NavigationBrowserTest {
  public:
   void SetUp() override {
@@ -596,7 +670,7 @@ class NavigationBrowserTest2 : public NavigationBrowserTest {
 
     // Forces variations code to set the header.
     auto* variations_provider =
-        variations::VariationsHttpHeaderProvider::GetInstance();
+        variations::VariationsIdsProvider::GetInstance();
     variations_provider->ForceVariationIds({"12", "456", "t789"}, "");
   }
 
@@ -719,5 +793,28 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest2, SetXClientDataHeaderInRedirect) {
   run_loop->Run();
   EXPECT_EQ(header_value, last_header_value);
 }
+
+#if defined(OS_ANDROID)
+// Verifies setting the 'referer' to an android-app url works.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, AndroidAppReferer) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string header_name = "Referer";
+  const std::string header_value = "android-app://google.com/";
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetRequestHeader(header_name, header_value);
+      }));
+
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
+  response.WaitForRequest();
+
+  // Verify 'referer' matches expected value.
+  EXPECT_EQ(header_value, response.http_request()->headers.at(header_name));
+}
+#endif
 
 }  // namespace weblayer

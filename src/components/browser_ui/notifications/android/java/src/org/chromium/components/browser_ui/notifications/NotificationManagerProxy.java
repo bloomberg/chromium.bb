@@ -21,7 +21,6 @@ import java.util.List;
  */
 public interface NotificationManagerProxy {
     // Implemented by NotificationManagerCompat and thus available on all API levels.
-    // Note that on < Kitkat, this always returns true.
     boolean areNotificationsEnabled();
 
     void cancel(int id);
@@ -45,7 +44,7 @@ public interface NotificationManagerProxy {
     @Deprecated
     void notify(String tag, int id, Notification notification);
 
-    void notify(ChromeNotification notification);
+    void notify(NotificationWrapper notification);
 
     @TargetApi(Build.VERSION_CODES.O)
     NotificationChannel getNotificationChannel(String channelId);

@@ -117,9 +117,11 @@ on an alert, or clicks on a "triage" button on the alerts page. It allows the
 
     <div id="toasts" hidden>
       <div id="jobsubmitted">
-        Bug <a href="http://crbug.com/{{lastSubmittedBugId}}"
-               target="_blank">{{lastSubmittedBugId}}</a> created/updated.
-        <template is="dom-if" if="{{!!lastSubmittedTryJobId}}">
+        Bug <a href="http://crbug.com/{{lastSubmittedProjectId}}/{{lastSubmittedBugId}}"
+               target="_blank">
+               {{lastSubmittedProjectId}}:{{lastSubmittedBugId}}
+            </a> created/updated.
+        <template is="dom-if" if="{{lastSubmittedTryJobId}}">
           Bisect job <a href="{{lastSubmittedTryJobUrl}}"
                         target="_blank">{{lastSubmittedTryJobId}}</a> started.
         </template>
@@ -151,9 +153,13 @@ Polymer({
       type: Number,
       value: 0
     },
+    lastSubmittedProjectId: {
+      type: String,
+      value: ''
+    },
     lastSubmittedTryJobId: {
-      type: Number,
-      value: 0
+      type: String,
+      value: ''
     },
     lastSubmittedTryJobUrl: {
       type: String,
@@ -197,7 +203,8 @@ Polymer({
         this.close();
         this.fire('triaged', {
           'alerts': this.alerts,
-          'bugid': data.bug_id
+          'bugid': data.bug_id,
+          'projectid': data.project_id
         });
         e.preventDefault();
         e.stopPropagation();
@@ -213,6 +220,7 @@ Polymer({
     */
   showCreatedBugResult(data) {
     this.lastSubmittedBugId = data.bug_id;
+    this.lastSubmittedProjectId = data.project_id;
     this.lastSubmittedTryJobId = data.issue_id;
     this.lastSubmittedTryJobUrl = data.issue_url;
     this.lastSubmittedTryJobError = data.bisect_error;
@@ -293,7 +301,8 @@ Polymer({
         function() {
           this.fire('triaged', {
             'alerts': this.alerts,
-            'bugid': this.bugid
+            'bugid': this.bugid,
+            'projectid': null
           });
           this.loading = false;
           if (successMessage) {

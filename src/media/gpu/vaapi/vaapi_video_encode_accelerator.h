@@ -35,7 +35,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   ~VaapiVideoEncodeAccelerator() override;
 
   // VideoEncodeAccelerator implementation.
-  VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
+  SupportedProfiles GetSupportedProfiles() override;
   bool Initialize(const Config& config, Client* client) override;
   void Encode(scoped_refptr<VideoFrame> frame, bool force_keyframe) override;
   void UseOutputBitstreamBuffer(BitstreamBuffer buffer) override;
@@ -49,6 +49,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   bool IsFlushSupported() override;
 
  private:
+  friend class VaapiVideoEncodeAcceleratorTest;
   class H264Accelerator;
   class VP8Accelerator;
   class VP9Accelerator;
@@ -148,6 +149,17 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // Submits a H264BitstreamBuffer |buffer| to the driver.
   void SubmitH264BitstreamBuffer(scoped_refptr<H264BitstreamBuffer> buffer);
 
+  // Gets the encoded chunk size whose id is |buffer_id| and notifies |encoder_|
+  // the size.
+  void NotifyEncodedChunkSize(VABufferID buffer_id,
+                              VASurfaceID sync_surface_id);
+
+  bool IsConfiguredForTesting() const {
+    return !supported_profiles_for_testing_.empty();
+  }
+
+  static CodecPicture* GetPictureFromJobForTesting(VaapiEncodeJob* job);
+
   // The unchanged values are filled upon the construction. The varied values
   // (e.g. ScalingSettings) are filled properly during encoding.
   VideoEncoderInfo encoder_info_;
@@ -162,6 +174,9 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // The expected coded size of incoming video frames when |native_input_mode_|
   // is false.
   gfx::Size expected_input_coded_size_;
+
+  // The codec of the stream to be produced. Set during initialization.
+  VideoCodec output_codec_ = kUnknownVideoCodec;
 
   // The visible rect to be encoded.
   gfx::Rect visible_rect_;
@@ -239,6 +254,9 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
 
   // The completion callback of the Flush() function.
   FlushCallback flush_callback_;
+
+  // Supported profiles that are filled if and only if in a unit test.
+  SupportedProfiles supported_profiles_for_testing_;
 
   // WeakPtr of this, bound to |child_task_runner_|.
   base::WeakPtr<VaapiVideoEncodeAccelerator> child_weak_this_;

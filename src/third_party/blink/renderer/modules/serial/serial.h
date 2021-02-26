@@ -29,7 +29,6 @@ class Serial final : public EventTargetWithInlineData,
                      public ExecutionContextLifecycleObserver,
                      public mojom::blink::SerialServiceClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Serial);
 
  public:
   explicit Serial(ExecutionContext&);
@@ -53,10 +52,12 @@ class Serial final : public EventTargetWithInlineData,
                             const SerialPortRequestOptions*,
                             ExceptionState&);
 
-  void GetPort(
+  void OpenPort(
       const base::UnguessableToken& token,
-      mojo::PendingReceiver<device::mojom::blink::SerialPort> receiver);
-  void Trace(Visitor*) override;
+      device::mojom::blink::SerialConnectionOptionsPtr options,
+      mojo::PendingRemote<device::mojom::blink::SerialPortClient> client,
+      mojom::blink::SerialService::OpenPortCallback callback);
+  void Trace(Visitor*) const override;
 
  protected:
   // EventTarget

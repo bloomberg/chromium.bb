@@ -42,11 +42,9 @@ base::LazyThreadPoolSequencedTaskRunner g_sequenced_task_runner =
 
 }  // namespace
 
-NetworkingPrivateServiceClient::ServiceCallbacks::ServiceCallbacks() {
-}
+NetworkingPrivateServiceClient::ServiceCallbacks::ServiceCallbacks() {}
 
-NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {
-}
+NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {}
 
 NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
     std::unique_ptr<WiFiService> wifi_service)
@@ -62,12 +60,12 @@ NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
           &WiFiService::SetEventObservers,
           base::Unretained(wifi_service_.get()),
           base::ThreadTaskRunnerHandle::Get(),
-          base::Bind(
+          base::BindRepeating(
               &NetworkingPrivateServiceClient::OnNetworksChangedEventOnUIThread,
               weak_factory_.GetWeakPtr()),
-          base::Bind(&NetworkingPrivateServiceClient::
-                         OnNetworkListChangedEventOnUIThread,
-                     weak_factory_.GetWeakPtr())));
+          base::BindRepeating(&NetworkingPrivateServiceClient::
+                                  OnNetworkListChangedEventOnUIThread,
+                              weak_factory_.GetWeakPtr())));
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
 }
 
@@ -123,12 +121,7 @@ void NetworkingPrivateServiceClient::RemoveServiceCallbacks(
 
 void NetworkingPrivateServiceClient::GetProperties(
     const std::string& guid,
-    const DictionaryCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->get_properties_callback = success_callback;
-
+    PropertiesCallback callback) {
   std::unique_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
@@ -139,18 +132,13 @@ void NetworkingPrivateServiceClient::GetProperties(
                      base::Unretained(wifi_service_.get()), guid,
                      properties_ptr, error),
       base::BindOnce(&NetworkingPrivateServiceClient::AfterGetProperties,
-                     weak_factory_.GetWeakPtr(), service_callbacks->id, guid,
+                     weak_factory_.GetWeakPtr(), std::move(callback), guid,
                      base::Passed(&properties), base::Owned(error)));
 }
 
 void NetworkingPrivateServiceClient::GetManagedProperties(
     const std::string& guid,
-    const DictionaryCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->get_properties_callback = success_callback;
-
+    PropertiesCallback callback) {
   std::unique_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
@@ -161,17 +149,17 @@ void NetworkingPrivateServiceClient::GetManagedProperties(
                      base::Unretained(wifi_service_.get()), guid,
                      properties_ptr, error),
       base::BindOnce(&NetworkingPrivateServiceClient::AfterGetProperties,
-                     weak_factory_.GetWeakPtr(), service_callbacks->id, guid,
+                     weak_factory_.GetWeakPtr(), std::move(callback), guid,
                      base::Passed(&properties), base::Owned(error)));
 }
 
 void NetworkingPrivateServiceClient::GetState(
     const std::string& guid,
-    const DictionaryCallback& success_callback,
-    const FailureCallback& failure_callback) {
+    DictionaryCallback success_callback,
+    FailureCallback failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->get_properties_callback = success_callback;
+  service_callbacks->failure_callback = std::move(failure_callback);
+  service_callbacks->get_properties_callback = std::move(success_callback);
 
   std::unique_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
@@ -182,7 +170,7 @@ void NetworkingPrivateServiceClient::GetState(
       base::BindOnce(&WiFiService::GetState,
                      base::Unretained(wifi_service_.get()), guid,
                      properties_ptr, error),
-      base::BindOnce(&NetworkingPrivateServiceClient::AfterGetProperties,
+      base::BindOnce(&NetworkingPrivateServiceClient::AfterGetState,
                      weak_factory_.GetWeakPtr(), service_callbacks->id, guid,
                      base::Passed(&properties), base::Owned(error)));
 }
@@ -191,13 +179,13 @@ void NetworkingPrivateServiceClient::SetProperties(
     const std::string& guid,
     std::unique_ptr<base::DictionaryValue> properties,
     bool allow_set_shared_config,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
+    VoidCallback success_callback,
+    FailureCallback failure_callback) {
   CHECK(allow_set_shared_config);
 
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->set_properties_callback = success_callback;
+  service_callbacks->failure_callback = std::move(failure_callback);
+  service_callbacks->set_properties_callback = std::move(success_callback);
 
   std::string* error = new std::string;
 
@@ -214,11 +202,11 @@ void NetworkingPrivateServiceClient::SetProperties(
 void NetworkingPrivateServiceClient::CreateNetwork(
     bool shared,
     std::unique_ptr<base::DictionaryValue> properties,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
+    StringCallback success_callback,
+    FailureCallback failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->create_network_callback = success_callback;
+  service_callbacks->failure_callback = std::move(failure_callback);
+  service_callbacks->create_network_callback = std::move(success_callback);
 
   std::string* network_guid = new std::string;
   std::string* error = new std::string;
@@ -236,10 +224,10 @@ void NetworkingPrivateServiceClient::CreateNetwork(
 void NetworkingPrivateServiceClient::ForgetNetwork(
     const std::string& guid,
     bool allow_forget_shared_config,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
+    VoidCallback success_callback,
+    FailureCallback failure_callback) {
   // TODO(mef): Implement for Win/Mac
-  failure_callback.Run(networking_private::kErrorNotSupported);
+  std::move(failure_callback).Run(networking_private::kErrorNotSupported);
 }
 
 void NetworkingPrivateServiceClient::GetNetworks(
@@ -247,11 +235,12 @@ void NetworkingPrivateServiceClient::GetNetworks(
     bool configured_only,
     bool visible_only,
     int limit,
-    const NetworkListCallback& success_callback,
-    const FailureCallback& failure_callback) {
+    NetworkListCallback success_callback,
+    FailureCallback failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->get_visible_networks_callback = success_callback;
+  service_callbacks->failure_callback = std::move(failure_callback);
+  service_callbacks->get_visible_networks_callback =
+      std::move(success_callback);
 
   std::unique_ptr<base::ListValue> networks(new base::ListValue);
 
@@ -270,11 +259,11 @@ void NetworkingPrivateServiceClient::GetNetworks(
 
 void NetworkingPrivateServiceClient::StartConnect(
     const std::string& guid,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
+    VoidCallback success_callback,
+    FailureCallback failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->start_connect_callback = success_callback;
+  service_callbacks->failure_callback = std::move(failure_callback);
+  service_callbacks->start_connect_callback = std::move(success_callback);
 
   std::string* error = new std::string;
 
@@ -289,11 +278,11 @@ void NetworkingPrivateServiceClient::StartConnect(
 
 void NetworkingPrivateServiceClient::StartDisconnect(
     const std::string& guid,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
+    VoidCallback success_callback,
+    FailureCallback failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->start_disconnect_callback = success_callback;
+  service_callbacks->failure_callback = std::move(failure_callback);
+  service_callbacks->start_disconnect_callback = std::move(success_callback);
 
   std::string* error = new std::string;
 
@@ -306,35 +295,20 @@ void NetworkingPrivateServiceClient::StartDisconnect(
                      base::Owned(error)));
 }
 
-void NetworkingPrivateServiceClient::SetWifiTDLSEnabledState(
-    const std::string& ip_or_mac_address,
-    bool enabled,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  failure_callback.Run(networking_private::kErrorNotSupported);
-}
-
-void NetworkingPrivateServiceClient::GetWifiTDLSStatus(
-    const std::string& ip_or_mac_address,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  failure_callback.Run(networking_private::kErrorNotSupported);
-}
-
 void NetworkingPrivateServiceClient::GetCaptivePortalStatus(
     const std::string& guid,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  failure_callback.Run(networking_private::kErrorNotSupported);
+    StringCallback success_callback,
+    FailureCallback failure_callback) {
+  std::move(failure_callback).Run(networking_private::kErrorNotSupported);
 }
 
 void NetworkingPrivateServiceClient::UnlockCellularSim(
     const std::string& guid,
     const std::string& pin,
     const std::string& puk,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  failure_callback.Run(networking_private::kErrorNotSupported);
+    VoidCallback success_callback,
+    FailureCallback failure_callback) {
+  std::move(failure_callback).Run(networking_private::kErrorNotSupported);
 }
 
 void NetworkingPrivateServiceClient::SetCellularSimState(
@@ -342,17 +316,17 @@ void NetworkingPrivateServiceClient::SetCellularSimState(
     bool require_pin,
     const std::string& current_pin,
     const std::string& new_pin,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  failure_callback.Run(networking_private::kErrorNotSupported);
+    VoidCallback success_callback,
+    FailureCallback failure_callback) {
+  std::move(failure_callback).Run(networking_private::kErrorNotSupported);
 }
 
 void NetworkingPrivateServiceClient::SelectCellularMobileNetwork(
     const std::string& guid,
     const std::string& network_id,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  failure_callback.Run(networking_private::kErrorNotSupported);
+    VoidCallback success_callback,
+    FailureCallback failure_callback) {
+  std::move(failure_callback).Run(networking_private::kErrorNotSupported);
 }
 
 std::unique_ptr<base::ListValue>
@@ -404,6 +378,18 @@ bool NetworkingPrivateServiceClient::RequestScan(
 ////////////////////////////////////////////////////////////////////////////////
 
 void NetworkingPrivateServiceClient::AfterGetProperties(
+    PropertiesCallback callback,
+    const std::string& network_guid,
+    std::unique_ptr<base::DictionaryValue> properties,
+    const std::string* error) {
+  if (!error->empty()) {
+    std::move(callback).Run(base::nullopt, *error);
+    return;
+  }
+  std::move(callback).Run(std::move(*properties), base::nullopt);
+}
+
+void NetworkingPrivateServiceClient::AfterGetState(
     ServiceCallbacksID callback_id,
     const std::string& network_guid,
     std::unique_ptr<base::DictionaryValue> properties,
@@ -412,10 +398,11 @@ void NetworkingPrivateServiceClient::AfterGetProperties(
   DCHECK(service_callbacks);
   if (!error->empty()) {
     DCHECK(!service_callbacks->failure_callback.is_null());
-    service_callbacks->failure_callback.Run(*error);
+    std::move(service_callbacks->failure_callback).Run(*error);
   } else {
     DCHECK(!service_callbacks->get_properties_callback.is_null());
-    service_callbacks->get_properties_callback.Run(std::move(properties));
+    std::move(service_callbacks->get_properties_callback)
+        .Run(std::move(properties));
   }
   RemoveServiceCallbacks(callback_id);
 }
@@ -426,7 +413,8 @@ void NetworkingPrivateServiceClient::AfterGetVisibleNetworks(
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   DCHECK(!service_callbacks->get_visible_networks_callback.is_null());
-  service_callbacks->get_visible_networks_callback.Run(std::move(networks));
+  std::move(service_callbacks->get_visible_networks_callback)
+      .Run(std::move(networks));
   RemoveServiceCallbacks(callback_id);
 }
 
@@ -437,10 +425,10 @@ void NetworkingPrivateServiceClient::AfterSetProperties(
   DCHECK(service_callbacks);
   if (!error->empty()) {
     DCHECK(!service_callbacks->failure_callback.is_null());
-    service_callbacks->failure_callback.Run(*error);
+    std::move(service_callbacks->failure_callback).Run(*error);
   } else {
     DCHECK(!service_callbacks->set_properties_callback.is_null());
-    service_callbacks->set_properties_callback.Run();
+    std::move(service_callbacks->set_properties_callback).Run();
   }
   RemoveServiceCallbacks(callback_id);
 }
@@ -453,10 +441,10 @@ void NetworkingPrivateServiceClient::AfterCreateNetwork(
   DCHECK(service_callbacks);
   if (!error->empty()) {
     DCHECK(!service_callbacks->failure_callback.is_null());
-    service_callbacks->failure_callback.Run(*error);
+    std::move(service_callbacks->failure_callback).Run(*error);
   } else {
     DCHECK(!service_callbacks->create_network_callback.is_null());
-    service_callbacks->create_network_callback.Run(*network_guid);
+    std::move(service_callbacks->create_network_callback).Run(*network_guid);
   }
   RemoveServiceCallbacks(callback_id);
 }
@@ -468,10 +456,10 @@ void NetworkingPrivateServiceClient::AfterStartConnect(
   DCHECK(service_callbacks);
   if (!error->empty()) {
     DCHECK(!service_callbacks->failure_callback.is_null());
-    service_callbacks->failure_callback.Run(*error);
+    std::move(service_callbacks->failure_callback).Run(*error);
   } else {
     DCHECK(!service_callbacks->start_connect_callback.is_null());
-    service_callbacks->start_connect_callback.Run();
+    std::move(service_callbacks->start_connect_callback).Run();
   }
   RemoveServiceCallbacks(callback_id);
 }
@@ -483,10 +471,10 @@ void NetworkingPrivateServiceClient::AfterStartDisconnect(
   DCHECK(service_callbacks);
   if (!error->empty()) {
     DCHECK(!service_callbacks->failure_callback.is_null());
-    service_callbacks->failure_callback.Run(*error);
+    std::move(service_callbacks->failure_callback).Run(*error);
   } else {
     DCHECK(!service_callbacks->start_disconnect_callback.is_null());
-    service_callbacks->start_disconnect_callback.Run();
+    std::move(service_callbacks->start_disconnect_callback).Run();
   }
   RemoveServiceCallbacks(callback_id);
 }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/apps/app_dialog/app_uninstall_dialog_view.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/strings/string16.h"
@@ -43,6 +44,36 @@ namespace {
 
 AppUninstallDialogView* g_app_uninstall_dialog_view = nullptr;
 
+#if defined(OS_CHROMEOS)
+bool IsArcShortcutApp(Profile* profile, const std::string& app_id) {
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
+  DCHECK(arc_prefs);
+
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(app_id);
+  DCHECK(app_info);
+  return app_info->shortcut;
+}
+#endif
+
+base::string16 GetWindowTitleForApp(Profile* profile,
+                                    apps::mojom::AppType app_type,
+                                    const std::string& app_id,
+                                    const std::string& app_name) {
+  using apps::mojom::AppType;
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, all app types exist, but Arc shortcut apps get the regular
+  // extension uninstall title.
+  if (app_type == AppType::kArc && IsArcShortcutApp(profile, app_id))
+    return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
+#else
+  // On non-ChromeOS, only extension and web app types meaningfully exist.
+  DCHECK(app_type != AppType::kExtension && app_type != AppType::kWeb);
+#endif
+  return l10n_util::GetStringFUTF16(IDS_PROMPT_APP_UNINSTALL_TITLE,
+                                    base::UTF8ToUTF16(app_name));
+}
+
 }  // namespace
 
 // static
@@ -69,9 +100,10 @@ AppUninstallDialogView::AppUninstallDialogView(
     gfx::ImageSkia image,
     apps::UninstallDialog* uninstall_dialog)
     : apps::UninstallDialog::UiBase(uninstall_dialog),
-      AppDialogView(app_name, image),
-      profile_(profile),
-      app_type_(app_type) {
+      AppDialogView(image),
+      profile_(profile) {
+  SetTitle(GetWindowTitleForApp(profile, app_type, app_id, app_name));
+
   SetCloseCallback(base::BindOnce(&AppUninstallDialogView::OnDialogCancelled,
                                   base::Unretained(this)));
   SetCancelCallback(base::BindOnce(&AppUninstallDialogView::OnDialogCancelled,
@@ -79,7 +111,7 @@ AppUninstallDialogView::AppUninstallDialogView(
   SetAcceptCallback(base::BindOnce(&AppUninstallDialogView::OnDialogAccepted,
                                    base::Unretained(this)));
 
-  InitializeView(profile, app_type, app_id);
+  InitializeView(profile, app_type, app_id, app_name);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::APP_UNINSTALL);
 
@@ -99,43 +131,10 @@ ui::ModalType AppUninstallDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-base::string16 AppUninstallDialogView::GetWindowTitle() const {
-  switch (app_type_) {
-    case apps::mojom::AppType::kUnknown:
-    case apps::mojom::AppType::kBuiltIn:
-    case apps::mojom::AppType::kMacNative:
-    case apps::mojom::AppType::kLacros:
-      NOTREACHED();
-      return base::string16();
-    case apps::mojom::AppType::kArc:
-#if defined(OS_CHROMEOS)
-      if (shortcut_)
-        return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
-
-      // Otherwise fallback to Uninstall + app name.
-      FALLTHROUGH;
-#else
-      NOTREACHED();
-      return base::string16();
-#endif
-    case apps::mojom::AppType::kCrostini:
-    case apps::mojom::AppType::kPluginVm:
-#if defined(OS_CHROMEOS)
-      FALLTHROUGH;
-#else
-      NOTREACHED();
-      return base::string16();
-#endif
-    case apps::mojom::AppType::kExtension:
-    case apps::mojom::AppType::kWeb:
-      return l10n_util::GetStringFUTF16(IDS_PROMPT_APP_UNINSTALL_TITLE,
-                                        base::UTF8ToUTF16(app_name()));
-  }
-}
-
 void AppUninstallDialogView::InitializeView(Profile* profile,
                                             apps::mojom::AppType app_type,
-                                            const std::string& app_id) {
+                                            const std::string& app_id,
+                                            const std::string& app_name) {
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON));
@@ -145,11 +144,13 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  switch (app_type_) {
+  switch (app_type) {
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:
-    case apps::mojom::AppType::kMacNative:
+    case apps::mojom::AppType::kMacOs:
     case apps::mojom::AppType::kLacros:
+    case apps::mojom::AppType::kRemote:
+    case apps::mojom::AppType::kBorealis:
       NOTREACHED();
       break;
     case apps::mojom::AppType::kArc:
@@ -162,7 +163,7 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
     case apps::mojom::AppType::kPluginVm:
 #if defined(OS_CHROMEOS)
       InitializeViewWithMessage(l10n_util::GetStringFUTF16(
-          IDS_PLUGIN_VM_UNINSTALL_PROMPT_BODY, base::UTF8ToUTF16(app_name())));
+          IDS_PLUGIN_VM_UNINSTALL_PROMPT_BODY, base::UTF8ToUTF16(app_name)));
 #else
       NOTREACHED();
 #endif
@@ -190,51 +191,47 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
   }
 }
 
-void AppUninstallDialogView::InitializeCheckbox(const GURL& app_launch_url) {
-  std::unique_ptr<views::StyledLabel> checkbox_label;
+void AppUninstallDialogView::InitializeCheckbox(const GURL& app_start_url) {
   std::vector<base::string16> replacements;
-  size_t offset;
-  base::string16 learn_more_text =
-      l10n_util::GetStringUTF16(IDS_APP_UNINSTALL_PROMPT_LEARN_MORE);
-
   replacements.push_back(url_formatter::FormatUrlForSecurityDisplay(
-      app_launch_url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+      app_start_url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 
-  if (google_util::IsGoogleHostname(app_launch_url.host_piece(),
-                                    google_util::ALLOW_SUBDOMAIN)) {
-    replacements.push_back(learn_more_text);
-
-    std::vector<size_t> offsets;
-    checkbox_label = std::make_unique<views::StyledLabel>(
-        l10n_util::GetStringFUTF16(
-            IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_GOOGLE,
-            replacements, &offsets),
-        this);
-    DCHECK_EQ(replacements.size(), offsets.size());
-    offset = offsets[offsets.size() - 1];
-  } else {
+  const bool is_google = google_util::IsGoogleHostname(
+      app_start_url.host_piece(), google_util::ALLOW_SUBDOMAIN);
+  if (!is_google) {
     auto domain = net::registry_controlled_domains::GetDomainAndRegistry(
-        app_launch_url,
+        app_start_url,
         net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-    DCHECK(!domain.empty());
-    domain[0] = base::ToUpperASCII(domain[0]);
+    if (!domain.empty())
+      domain[0] = base::ToUpperASCII(domain[0]);
 
     replacements.push_back(base::ASCIIToUTF16(domain));
-    replacements.push_back(learn_more_text);
-
-    std::vector<size_t> offsets;
-    checkbox_label = std::make_unique<views::StyledLabel>(
-        l10n_util::GetStringFUTF16(
-            IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_NON_GOOGLE,
-            replacements, &offsets),
-        this);
-    DCHECK_EQ(replacements.size(), offsets.size());
-    offset = offsets[offsets.size() - 1];
   }
+
+  base::string16 learn_more_text =
+      l10n_util::GetStringUTF16(IDS_APP_UNINSTALL_PROMPT_LEARN_MORE);
+  replacements.push_back(learn_more_text);
+
+  auto checkbox_label = std::make_unique<views::StyledLabel>();
+  std::vector<size_t> offsets;
+  checkbox_label->SetText(l10n_util::GetStringFUTF16(
+      is_google ? IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_GOOGLE
+                : IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_NON_GOOGLE,
+      replacements, &offsets));
+  DCHECK_EQ(replacements.size(), offsets.size());
+  const size_t offset = offsets.back();
 
   checkbox_label->AddStyleRange(
       gfx::Range(offset, offset + learn_more_text.length()),
-      views::StyledLabel::RangeStyleInfo::CreateForLink());
+      views::StyledLabel::RangeStyleInfo::CreateForLink(base::BindRepeating(
+          [](Profile* profile) {
+            NavigateParams params(
+                profile,
+                GURL("https://support.google.com/chromebook/?p=uninstallpwa"),
+                ui::PAGE_TRANSITION_LINK);
+            Navigate(&params);
+          },
+          profile_)));
   views::StyledLabel::RangeStyleInfo checkbox_style;
   checkbox_style.text_style = views::style::STYLE_PRIMARY;
   gfx::Range before_link_range(0, offset);
@@ -294,26 +291,17 @@ void AppUninstallDialogView::InitializeViewForWebApp(
   auto* provider = web_app::WebAppProvider::Get(profile);
   DCHECK(provider);
 
-  GURL app_launch_url = provider->registrar().GetAppLaunchURL(app_id);
-  DCHECK(app_launch_url.is_valid());
+  GURL app_start_url = provider->registrar().GetAppStartUrl(app_id);
+  DCHECK(app_start_url.is_valid());
 
-  InitializeCheckbox(app_launch_url);
+  InitializeCheckbox(app_start_url);
 }
 
 #if defined(OS_CHROMEOS)
 void AppUninstallDialogView::InitializeViewForArcApp(
     Profile* profile,
     const std::string& app_id) {
-  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
-  DCHECK(arc_prefs);
-
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      arc_prefs->GetApp(app_id);
-  DCHECK(app_info);
-
-  shortcut_ = app_info->shortcut;
-
-  if (shortcut_) {
+  if (IsArcShortcutApp(profile, app_id)) {
     SetButtonLabel(
         ui::DIALOG_BUTTON_OK,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
@@ -331,15 +319,6 @@ void AppUninstallDialogView::InitializeViewWithMessage(
   label->SetAllowCharacterBreak(true);
 }
 #endif
-
-void AppUninstallDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                                    const gfx::Range& range,
-                                                    int event_flags) {
-  NavigateParams params(
-      profile_, GURL("https://support.google.com/chromebook/?p=uninstallpwa"),
-      ui::PAGE_TRANSITION_LINK);
-  Navigate(&params);
-}
 
 void AppUninstallDialogView::OnDialogCancelled() {
   uninstall_dialog()->OnDialogClosed(false /* uninstall */,

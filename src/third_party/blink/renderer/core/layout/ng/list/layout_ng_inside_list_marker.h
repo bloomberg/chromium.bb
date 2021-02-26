@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
-#include "third_party/blink/renderer/core/layout/ng/list/list_marker.h"
+#include "third_party/blink/renderer/core/layout/list_marker.h"
 
 namespace blink {
 
@@ -16,13 +16,23 @@ class CORE_EXPORT LayoutNGInsideListMarker final : public LayoutInline {
  public:
   explicit LayoutNGInsideListMarker(Element*);
 
-  const char* GetName() const override { return "LayoutNGInsideListMarker"; }
+  const char* GetName() const override {
+    NOT_DESTROYED();
+    return "LayoutNGInsideListMarker";
+  }
 
-  const ListMarker& Marker() const { return list_marker_; }
-  ListMarker& Marker() { return list_marker_; }
+  const ListMarker& Marker() const {
+    NOT_DESTROYED();
+    return list_marker_;
+  }
+  ListMarker& Marker() {
+    NOT_DESTROYED();
+    return list_marker_;
+  }
 
 #if DCHECK_IS_ON()
   void AddChild(LayoutObject* new_child, LayoutObject* before_child) override {
+    NOT_DESTROYED();
     // List markers with 'content: normal' should have at most one child.
     DCHECK(!StyleRef().ContentBehavesAsNormal() || !FirstChild());
     LayoutInline::AddChild(new_child, before_child);
@@ -36,8 +46,12 @@ class CORE_EXPORT LayoutNGInsideListMarker final : public LayoutInline {
   ListMarker list_marker_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGInsideListMarker,
-                                IsLayoutNGInsideListMarker());
+template <>
+struct DowncastTraits<LayoutNGInsideListMarker> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsLayoutNGInsideListMarker();
+  }
+};
 
 }  // namespace blink
 

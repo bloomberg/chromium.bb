@@ -185,6 +185,8 @@ class WebStateImpl : public WebState,
   bool IsWebUsageEnabled() const override;
   void SetWebUsageEnabled(bool enabled) override;
   UIView* GetView() override;
+  void DidCoverWebContent() override;
+  void DidRevealWebContent() override;
   void WasShown() override;
   void WasHidden() override;
   void SetKeepRenderProcessAlive(bool keep_alive) override;
@@ -229,9 +231,23 @@ class WebStateImpl : public WebState,
   void SetHasOpener(bool has_opener) override;
   bool CanTakeSnapshot() const override;
   void TakeSnapshot(const gfx::RectF& rect, SnapshotCallback callback) override;
+  void CreateFullPagePdf(base::OnceCallback<void(NSData*)> callback) override;
   void AddObserver(WebStateObserver* observer) override;
   void RemoveObserver(WebStateObserver* observer) override;
   void CloseWebState() override;
+
+  // Returns the UserAgent that should be used to load the |url| if it is a new
+  // navigation. This will be Mobile or Desktop.
+  UserAgentType GetUserAgentForNextNavigation(const GURL& url);
+  // Returns the UserAgent type actually used by this WebState, mostly use for
+  // restoration.
+  UserAgentType GetUserAgentForSessionRestoration() const;
+  // Sets the UserAgent type that should be used by the WebState. If
+  // |user_agent| is AUTOMATIC, GetUserAgentForNextNavigation() will return
+  // MOBILE or DESKTOP based on the size class of the WebView. Otherwise, it
+  // will return |user_agent|.
+  // GetUserAgentForSessionRestoration() will always return |user_agent|.
+  void SetUserAgent(UserAgentType user_agent);
 
   // Adds |interstitial|'s view to the web controller's content view.
   void ShowWebInterstitial(WebInterstitialImpl* interstitial);
@@ -263,7 +279,7 @@ class WebStateImpl : public WebState,
   // and is unable to respond using cached credentials.
   void OnAuthRequired(NSURLProtectionSpace* protection_space,
                       NSURLCredential* proposed_credential,
-                      const WebStateDelegate::AuthCallback& callback);
+                      WebStateDelegate::AuthCallback callback);
 
   // Cancels all dialogs associated with this web_state.
   void CancelDialogs();
@@ -280,6 +296,7 @@ class WebStateImpl : public WebState,
   void OnNavigationItemCommitted(NavigationItem* item) override;
 
   WebState* GetWebState() override;
+  void SetWebStateUserAgent(UserAgentType user_agent_type) override;
   id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override;
   void GoToBackForwardListItem(WKBackForwardListItem* wk_item,
                                NavigationItem* item,
@@ -365,7 +382,8 @@ class WebStateImpl : public WebState,
   base::string16 empty_string16_;
 
   // Callbacks associated to command prefixes.
-  std::map<std::string, base::CallbackList<ScriptCommandCallbackSignature>>
+  std::map<std::string,
+           base::RepeatingCallbackList<ScriptCommandCallbackSignature>>
       script_command_callbacks_;
 
   // Whether this WebState has an opener.  See
@@ -388,6 +406,8 @@ class WebStateImpl : public WebState,
   // The InterfaceBinder exposed by WebStateImpl. Used to handle Mojo interface
   // requests from the main frame.
   InterfaceBinder interface_binder_{this};
+
+  UserAgentType user_agent_type_;
 
   base::WeakPtrFactory<WebStateImpl> weak_factory_;
 

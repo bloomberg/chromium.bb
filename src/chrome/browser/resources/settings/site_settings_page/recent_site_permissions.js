@@ -16,7 +16,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {routes} from '../route.js';
 import {Route, RouteObserverBehavior, Router} from '../router.m.js';
-import {AllSitesAction, ContentSetting, ContentSettingsTypes, SiteSettingSource} from '../site_settings/constants.js';
+import {AllSitesAction2, ContentSetting, ContentSettingsTypes, SiteSettingSource} from '../site_settings/constants.js';
 import {SiteSettingsBehavior} from '../site_settings/site_settings_behavior.js';
 import {RawSiteException, RecentSitePermissions} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
@@ -81,9 +81,12 @@ Polymer({
     // only fire once.
     assert(!oldConfig);
 
-    this.focusConfig.set(routes.SITE_SETTINGS_SITE_DETAILS.path, () => {
-      this.shouldFocusAfterPopulation_ = true;
-    });
+    this.focusConfig.set(
+        routes.SITE_SETTINGS_SITE_DETAILS.path + '_' +
+            routes.SITE_SETTINGS.path,
+        () => {
+          this.shouldFocusAfterPopulation_ = true;
+        });
   },
 
   /**
@@ -93,7 +96,7 @@ Polymer({
    * @protected
    */
   currentRouteChanged(currentRoute) {
-    if (currentRoute.path == routes.SITE_SETTINGS.path) {
+    if (currentRoute.path === routes.SITE_SETTINGS.path) {
       this.populateList_();
     }
   },
@@ -133,8 +136,6 @@ Polymer({
         return this.i18n('siteSettingsCamera');
       case ContentSettingsTypes.PROTOCOL_HANDLERS:
         return this.i18n('siteSettingsHandlers');
-      case ContentSettingsTypes.UNSANDBOXED_PLUGINS:
-        return this.i18n('siteSettingsUnsandboxedPlugins');
       case ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
         return this.i18n('siteSettingsAutomaticDownloads');
       case ContentSettingsTypes.BACKGROUND_SYNC:
@@ -163,8 +164,8 @@ Polymer({
         return this.i18n('siteSettingsInsecureContent');
       case ContentSettingsTypes.BLUETOOTH_SCANNING:
         return this.i18n('siteSettingsBluetoothScanning');
-      case ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE:
-        return this.i18n('siteSettingsNativeFileSystemWrite');
+      case ContentSettingsTypes.FILE_SYSTEM_WRITE:
+        return this.i18n('siteSettingsFileSystemWrite');
       case ContentSettingsTypes.HID_DEVICES:
         return this.i18n('siteSettingsHidDevices');
       case ContentSettingsTypes.AR:
@@ -173,6 +174,10 @@ Polymer({
         return this.i18n('siteSettingsVr');
       case ContentSettingsTypes.WINDOW_PLACEMENT:
         return this.i18n('siteSettingsWindowPlacement');
+      case ContentSettingsTypes.FONT_ACCESS:
+        return this.i18n('fonts');
+      case ContentSettingsTypes.IDLE_DETECTION:
+        return this.i18n('siteSettingsIdleDetection');
       default:
         return '';
     }
@@ -299,7 +304,7 @@ Polymer({
     const origin = this.recentSitePermissionsList_[e.model.index].origin;
     Router.getInstance().navigateTo(
         routes.SITE_SETTINGS_SITE_DETAILS, new URLSearchParams({site: origin}));
-    this.browserProxy.recordAction(AllSitesAction.ENTER_SITE_DETAILS);
+    this.browserProxy.recordAction(AllSitesAction2.ENTER_SITE_DETAILS);
     this.lastSelected_ = {
       index: e.model.index,
       origin: e.model.item.origin,
@@ -322,12 +327,12 @@ Polymer({
       /** @type {{hide: Function}} */ (tooltip).hide();
       target.removeEventListener('mouseleave', hide);
       target.removeEventListener('blur', hide);
-      target.removeEventListener('tap', hide);
+      target.removeEventListener('click', hide);
       tooltip.removeEventListener('mouseenter', hide);
     };
     target.addEventListener('mouseleave', hide);
     target.addEventListener('blur', hide);
-    target.addEventListener('tap', hide);
+    target.addEventListener('click', hide);
     tooltip.addEventListener('mouseenter', hide);
 
     tooltip.show();

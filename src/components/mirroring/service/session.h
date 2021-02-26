@@ -16,10 +16,11 @@
 #include "components/mirroring/service/media_remoter.h"
 #include "components/mirroring/service/message_dispatcher.h"
 #include "components/mirroring/service/mirror_settings.h"
+#include "components/mirroring/service/receiver_setup_querier.h"
 #include "components/mirroring/service/rtp_stream.h"
-#include "components/mirroring/service/session_monitor.h"
 #include "components/mirroring/service/wifi_status_monitor.h"
 #include "gpu/config/gpu_info.h"
+#include "media/base/video_frame_feedback.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
@@ -45,9 +46,9 @@ class Gpu;
 
 namespace mirroring {
 
-struct ReceiverResponse;
+class ReceiverResponse;
 class VideoCaptureClient;
-class SessionMonitor;
+class ReceiverSetupQuerier;
 
 // Controls a mirroring session, including audio/video capturing, Cast
 // Streaming, and the switching to/from media remoting. When constructed, it
@@ -85,6 +86,11 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   void OnLoggingEventsReceived(
       std::unique_ptr<std::vector<media::cast::FrameEvent>> frame_events,
       std::unique_ptr<std::vector<media::cast::PacketEvent>> packet_events);
+
+  // Helper method for setting constraints from the ANSWER response.
+  void SetConstraints(const openscreen::cast::Answer& answer,
+                      media::cast::FrameSenderConfig* audio_config,
+                      media::cast::FrameSenderConfig* video_config);
 
   // Callback for ANSWER response. If the ANSWER is invalid, |observer_| will
   // get notified with error, and session is stopped. Otherwise, capturing and
@@ -136,6 +142,9 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   // Callback by media::cast::VideoSender to set a new target playout delay.
   void SetTargetPlayoutDelay(base::TimeDelta playout_delay);
 
+  // Callback by media::cast::VideoSender to report resource utilization.
+  void ProcessFeedback(const media::VideoFrameFeedback& feedback);
+
   media::VideoEncodeAccelerator::SupportedProfiles GetSupportedVeaProfiles();
 
   // Create and send OFFER message.
@@ -165,7 +174,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
 
   mojo::Remote<network::mojom::NetworkContext> network_context_;
 
-  base::Optional<SessionMonitor> session_monitor_;
+  std::unique_ptr<ReceiverSetupQuerier> setup_querier_;
 
   // Created after OFFER/ANSWER exchange succeeds.
   std::unique_ptr<AudioRtpStream> audio_stream_;

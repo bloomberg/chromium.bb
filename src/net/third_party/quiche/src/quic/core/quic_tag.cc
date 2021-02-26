@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <string>
 
+#include "absl/base/macros.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_split.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace quic {
@@ -43,10 +45,10 @@ std::string QuicTagToString(QuicTag tag) {
   bool ascii = true;
   const QuicTag orig_tag = tag;
 
-  for (size_t i = 0; i < QUICHE_ARRAYSIZE(chars); i++) {
+  for (size_t i = 0; i < ABSL_ARRAYSIZE(chars); i++) {
     chars[i] = static_cast<char>(tag);
     if ((chars[i] == 0 || chars[i] == '\xff') &&
-        i == QUICHE_ARRAYSIZE(chars) - 1) {
+        i == ABSL_ARRAYSIZE(chars) - 1) {
       chars[i] = ' ';
     }
     if (!isprint(static_cast<unsigned char>(chars[i]))) {
@@ -60,8 +62,8 @@ std::string QuicTagToString(QuicTag tag) {
     return std::string(chars, sizeof(chars));
   }
 
-  return quiche::QuicheTextUtils::HexEncode(
-      reinterpret_cast<const char*>(&orig_tag), sizeof(orig_tag));
+  return absl::BytesToHexString(absl::string_view(
+      reinterpret_cast<const char*>(&orig_tag), sizeof(orig_tag)));
 }
 
 uint32_t MakeQuicTag(char a, char b, char c, char d) {
@@ -72,6 +74,37 @@ uint32_t MakeQuicTag(char a, char b, char c, char d) {
 bool ContainsQuicTag(const QuicTagVector& tag_vector, QuicTag tag) {
   return std::find(tag_vector.begin(), tag_vector.end(), tag) !=
          tag_vector.end();
+}
+
+QuicTag ParseQuicTag(absl::string_view tag_string) {
+  quiche::QuicheTextUtils::RemoveLeadingAndTrailingWhitespace(&tag_string);
+  std::string tag_bytes;
+  if (tag_string.length() == 8) {
+    tag_bytes = absl::HexStringToBytes(tag_string);
+    tag_string = tag_bytes;
+  }
+  QuicTag tag = 0;
+  // Iterate over every character from right to left.
+  for (auto it = tag_string.rbegin(); it != tag_string.rend(); ++it) {
+    // The cast here is required on platforms where char is signed.
+    unsigned char token_char = static_cast<unsigned char>(*it);
+    tag <<= 8;
+    tag |= token_char;
+  }
+  return tag;
+}
+
+QuicTagVector ParseQuicTagVector(absl::string_view tags_string) {
+  QuicTagVector tag_vector;
+  quiche::QuicheTextUtils::RemoveLeadingAndTrailingWhitespace(&tags_string);
+  if (!tags_string.empty()) {
+    std::vector<absl::string_view> tag_strings =
+        absl::StrSplit(tags_string, ',');
+    for (absl::string_view tag_string : tag_strings) {
+      tag_vector.push_back(ParseQuicTag(tag_string));
+    }
+  }
+  return tag_vector;
 }
 
 }  // namespace quic

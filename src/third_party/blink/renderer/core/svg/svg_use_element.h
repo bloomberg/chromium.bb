@@ -24,7 +24,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_external_document_cache.h"
 #include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
 #include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
@@ -33,11 +32,12 @@
 
 namespace blink {
 
+class SVGAnimatedLength;
+
 class SVGUseElement final : public SVGGraphicsElement,
                             public SVGURIReference,
                             public SVGExternalDocumentCache::Client {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGUseElement);
 
  public:
   explicit SVGUseElement(Document&);
@@ -61,7 +61,7 @@ class SVGUseElement final : public SVGGraphicsElement,
   void DispatchPendingEvent();
   Path ToClipPath() const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   FloatRect GetBBox() override;

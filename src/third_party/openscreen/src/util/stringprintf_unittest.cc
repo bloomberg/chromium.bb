@@ -9,6 +9,15 @@
 namespace openscreen {
 namespace {
 
+TEST(StringPrintf, ProducesFormattedStrings) {
+  EXPECT_EQ("no args", StringPrintf("no args"));
+  EXPECT_EQ("", StringPrintf("%s", ""));
+  EXPECT_EQ("42", StringPrintf("%d", 42));
+  EXPECT_EQ(
+      "The result of foo(1, 2) looks good!",
+      StringPrintf("The result of foo(%d, %d) looks %s%c", 1, 2, "good", '!'));
+}
+
 TEST(HexEncode, ProducesEmptyStringFromEmptyByteArray) {
   const uint8_t kSomeMemoryLocation = 0;
   EXPECT_EQ("", HexEncode(absl::Span<const uint8_t>(&kSomeMemoryLocation, 0)));

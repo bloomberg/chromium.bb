@@ -26,9 +26,9 @@
 #include "third_party/crashpad/crashpad/snapshot/process_snapshot.h"
 #include "third_party/crashpad/crashpad/util/process/process_memory.h"
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include <signal.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <mach/exception_types.h>
 #elif defined(OS_WIN)
 #include <windows.h>
@@ -81,10 +81,10 @@ bool CrashAnalyzer::GetExceptionInfo(
 
 crashpad::VMAddress CrashAnalyzer::GetAccessAddress(
     const crashpad::ExceptionSnapshot& exception) {
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   if (exception.Exception() == SIGSEGV || exception.Exception() == SIGBUS)
     return exception.ExceptionAddress();
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   if (exception.Exception() == EXC_BAD_ACCESS)
     return exception.ExceptionAddress();
 #elif defined(OS_WIN)

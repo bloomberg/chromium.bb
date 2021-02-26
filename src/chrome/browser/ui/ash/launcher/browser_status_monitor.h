@@ -12,7 +12,7 @@
 #include <set>
 #include <string>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_instance_registry_helper.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -86,7 +86,8 @@ class BrowserStatusMonitor : public BrowserListObserver,
   void OnTabReplaced(TabStripModel* tab_strip_model,
                      content::WebContents* old_contents,
                      content::WebContents* new_contents);
-  void OnTabInserted(content::WebContents* contents);
+  void OnTabInserted(TabStripModel* tab_strip_model,
+                     content::WebContents* contents);
   void OnTabClosing(content::WebContents* contents);
 
   // Create LocalWebContentsObserver for |contents|.

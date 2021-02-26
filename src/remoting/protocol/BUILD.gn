@@ -131,6 +131,7 @@ static_library("protocol") {
     "pairing_host_authenticator.h",
     "pairing_registry.cc",
     "pairing_registry.h",
+    "peer_connection_controls.h",
     "performance_tracker.cc",
     "performance_tracker.h",
     "port_allocator.cc",
@@ -202,6 +203,8 @@ static_library("protocol") {
     "webrtc_data_stream_adapter.h",
     "webrtc_dummy_video_encoder.cc",
     "webrtc_dummy_video_encoder.h",
+    "webrtc_event_log_data.cc",
+    "webrtc_event_log_data.h",
     "webrtc_transport.cc",
     "webrtc_transport.h",
     "webrtc_video_renderer_adapter.cc",
@@ -225,7 +228,6 @@ static_library("protocol") {
     "//net",
     "//remoting/base",
     "//remoting/codec:decoder",
-    "//remoting/proto/remoting/v1:network_traversal_grpc_library",
     "//remoting/proto/remoting/v1:network_traversal_proto",
     "//remoting/signaling",
     "//third_party/boringssl",
@@ -237,7 +239,7 @@ static_library("protocol") {
   defines = []
 
   # Must match condition in //remoting/codec/BUILD.gn
-  if (is_win || is_linux) {
+  if (is_win || is_linux || is_chromeos) {
     defines += [ "USE_H264_ENCODER" ]
     deps += [
       "//media",
@@ -356,6 +358,7 @@ source_set("unit_tests") {
     "third_party_authenticator_unittest.cc",
     "v2_authenticator_unittest.cc",
     "validating_authenticator_unittest.cc",
+    "webrtc_event_log_data_unittest.cc",
     "webrtc_transport_unittest.cc",
   ]
 
@@ -373,7 +376,7 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//net:test_support",
-    "//remoting/proto/remoting/v1:network_traversal_grpc_library",
+    "//remoting/proto/remoting/v1:network_traversal_proto",
     "//testing/gmock",
     "//testing/gtest",
   ]

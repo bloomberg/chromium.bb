@@ -145,16 +145,9 @@ void TableSectionPainter::PaintCollapsedSectionBorders(
 
   CellSpan dirtied_rows;
   CellSpan dirtied_columns;
-  if (UNLIKELY(
-          layout_table_section_.Table()->ShouldPaintAllCollapsedBorders())) {
-    // Ignore paint cull rect to simplify paint invalidation in such rare case.
-    dirtied_rows = layout_table_section_.FullSectionRowSpan();
-    dirtied_columns = layout_table_section_.FullTableEffectiveColumnSpan();
-  } else {
-    layout_table_section_.DirtiedRowsAndEffectiveColumns(
-        TableAlignedRect(local_paint_info, paint_offset), dirtied_rows,
-        dirtied_columns);
-  }
+  layout_table_section_.DirtiedRowsAndEffectiveColumns(
+      TableAlignedRect(local_paint_info, paint_offset), dirtied_rows,
+      dirtied_columns);
 
   if (dirtied_columns.Start() >= dirtied_columns.End())
     return;
@@ -292,8 +285,9 @@ void TableSectionPainter::PaintBoxDecorationBackground(
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  DrawingRecorder recorder(paint_info.context, layout_table_section_,
-                           DisplayItem::kBoxDecorationBackground);
+  BoxDrawingRecorder recorder(paint_info.context, layout_table_section_,
+                              DisplayItem::kBoxDecorationBackground,
+                              paint_offset);
   PhysicalRect paint_rect(paint_offset, layout_table_section_.Size());
 
   if (has_box_shadow) {
@@ -304,11 +298,22 @@ void TableSectionPainter::PaintBoxDecorationBackground(
   if (may_have_background) {
     PaintInfo paint_info_for_cells = paint_info.ForDescendants();
     for (auto r = dirtied_rows.Start(); r < dirtied_rows.End(); r++) {
+      base::Optional<ScopedPaintState> row_paint_state;
       for (auto c = dirtied_columns.Start(); c < dirtied_columns.End(); c++) {
-        if (const auto* cell = layout_table_section_.OriginatingCellAt(r, c))
-          PaintBackgroundsBehindCell(*cell, paint_info_for_cells);
+        if (const auto* cell = layout_table_section_.OriginatingCellAt(r, c)) {
+          if (!row_paint_state)
+            row_paint_state.emplace(*cell->Row(), paint_info_for_cells);
+          PaintBackgroundsBehindCell(*cell, row_paint_state->GetPaintInfo());
+        }
       }
     }
+    uint64_t paint_area = base::saturated_cast<uint64_t>(
+        paint_rect.Width().ToUnsigned() * paint_rect.Height().ToUnsigned());
+    paint_info.context.GetPaintController().SetPossibleBackgroundColor(
+        layout_table_section_,
+        layout_table_section_.ResolveColor(GetCSSPropertyBackgroundColor())
+            .Rgb(),
+        paint_area);
   }
 
   if (has_box_shadow) {

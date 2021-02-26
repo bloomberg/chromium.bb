@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
-import {Suggestions} from './SuggestBox.js';  // eslint-disable-line no-unused-vars
+import {Suggestion, Suggestions} from './SuggestBox.js';  // eslint-disable-line no-unused-vars
 
 export class FilterSuggestionBuilder {
   /**
@@ -37,12 +34,13 @@ export class FilterSuggestionBuilder {
     const modifier = negative ? '-' : '';
     const valueDelimiterIndex = prefix.indexOf(':');
 
+    /** @type {!Suggestions} */
     const suggestions = [];
     if (valueDelimiterIndex === -1) {
       const matcher = new RegExp('^' + prefix.escapeForRegExp(), 'i');
       for (const key of this._keys) {
         if (matcher.test(key)) {
-          suggestions.push({text: modifier + key + ':'});
+          suggestions.push(/** @type {!Suggestion} */ ({text: modifier + key + ':'}));
         }
       }
     } else {
@@ -53,7 +51,7 @@ export class FilterSuggestionBuilder {
       this._valueSorter(key, values);
       for (const item of values) {
         if (matcher.test(item) && (item !== value)) {
-          suggestions.push({text: modifier + key + ':' + item});
+          suggestions.push(/** @type {!Suggestion} */ ({text: modifier + key + ':' + item}));
         }
       }
     }
@@ -69,10 +67,12 @@ export class FilterSuggestionBuilder {
       return;
     }
 
-    if (!this._valuesMap.get(key)) {
-      this._valuesMap.set(key, /** @type {!Set<string>} */ (new Set()));
+    let set = this._valuesMap.get(key);
+    if (!set) {
+      set = /** @type {!Set<string>} */ (new Set());
+      this._valuesMap.set(key, set);
     }
-    this._valuesMap.get(key).add(value);
+    set.add(value);
   }
 
   clear() {

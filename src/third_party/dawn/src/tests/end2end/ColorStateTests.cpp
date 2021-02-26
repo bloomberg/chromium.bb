@@ -26,8 +26,8 @@ constexpr static unsigned int kRTSize = 64;
 
 class ColorStateTest : public DawnTest {
   protected:
-    void TestSetUp() override {
-        DawnTest::TestSetUp();
+    void SetUp() override {
+        DawnTest::SetUp();
 
         vsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
                 #version 450
@@ -748,19 +748,18 @@ TEST_P(ColorStateTest, IndependentColorState) {
     descriptor.size.width = kRTSize;
     descriptor.size.height = kRTSize;
     descriptor.size.depth = 1;
-    descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
     descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
+    descriptor.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
 
     for (uint32_t i = 0; i < 4; ++i) {
         renderTargets[i] = device.CreateTexture(&descriptor);
         renderTargetViews[i] = renderTargets[i].CreateView();
     }
 
-    utils::ComboRenderPassDescriptor renderPass({renderTargetViews[0], renderTargetViews[1],
-                                                renderTargetViews[2], renderTargetViews[3]});
+    utils::ComboRenderPassDescriptor renderPass(
+        {renderTargetViews[0], renderTargetViews[1], renderTargetViews[2], renderTargetViews[3]});
 
     wgpu::ShaderModule fsModule =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
@@ -1048,4 +1047,8 @@ TEST_P(ColorStateTest, ColorWriteMaskDoesNotAffectRenderPassLoadOpClear) {
     EXPECT_PIXEL_RGBA8_EQ(expected, renderPass.color, kRTSize / 2, kRTSize / 2);
 }
 
-DAWN_INSTANTIATE_TEST(ColorStateTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(ColorStateTest,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend());

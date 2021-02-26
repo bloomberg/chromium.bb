@@ -16,7 +16,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -24,7 +23,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/session/connection_observer.h"
@@ -65,7 +64,7 @@ class ArcAppShortcutsSearchProviderTest;
 class ArcAppListPrefs : public KeyedService,
                         public arc::mojom::AppHost,
                         public arc::ConnectionObserver<arc::mojom::AppInstance>,
-                        public arc::ArcSessionManager::Observer,
+                        public arc::ArcSessionManagerObserver,
                         public arc::ArcPolicyBridge::Observer {
  public:
   struct AppInfo {
@@ -180,10 +179,10 @@ class ArcAppListPrefs : public KeyedService,
                                const std::string& activity,
                                const std::string& intent) {}
     // Notifies that task description has been updated.
-    virtual void OnTaskDescriptionUpdated(
+    virtual void OnTaskDescriptionChanged(
         int32_t task_id,
         const std::string& label,
-        const std::vector<uint8_t>& icon_png_data) {}
+        const arc::mojom::RawIconPngData& icon) {}
     // Notifies that task has been destroyed.
     virtual void OnTaskDestroyed(int32_t task_id) {}
     // Notifies that task has been activated and moved to the front.
@@ -250,6 +249,8 @@ class ArcAppListPrefs : public KeyedService,
 
   static void UprevCurrentIconsVersionForTesting();
 
+  ArcAppListPrefs(const ArcAppListPrefs&) = delete;
+  ArcAppListPrefs& operator=(const ArcAppListPrefs&) = delete;
   ~ArcAppListPrefs() override;
 
   // Returns a list of all app ids, including ready and non-ready apps.
@@ -267,15 +268,34 @@ class ArcAppListPrefs : public KeyedService,
   std::unique_ptr<PackageInfo> GetPackage(
       const std::string& package_name) const;
 
+  // Returns true if a package with |package_name| is installed.
+  bool IsPackageInstalled(const std::string& package_name) const;
+
   // Constructs path to app local data.
   base::FilePath GetAppPath(const std::string& app_id) const;
 
   // Constructs path to app icon for specific scale factor.
   base::FilePath GetIconPath(const std::string& app_id,
                              const ArcAppIconDescriptor& descriptor);
+  // Constructs path to the app foreground icon for specific scale factor.
+  base::FilePath GetForegroundIconPath(const std::string& app_id,
+                                       const ArcAppIconDescriptor& descriptor);
+  // Constructs path to the app background icon for specific scale factor.
+  base::FilePath GetBackgroundIconPath(const std::string& app_id,
+                                       const ArcAppIconDescriptor& descriptor);
   // Constructs path to default app icon for specific scale factor. This path
   // is used to resolve icon if no icon is available at |GetIconPath|.
   base::FilePath MaybeGetIconPathForDefaultApp(
+      const std::string& app_id,
+      const ArcAppIconDescriptor& descriptor) const;
+  // Constructs path to default app foreground icon for specific scale factor.
+  // This path is used to resolve icon if no icon is available.
+  base::FilePath MaybeGetForegroundIconPathForDefaultApp(
+      const std::string& app_id,
+      const ArcAppIconDescriptor& descriptor) const;
+  // Constructs path to default app background icon for specific scale factor.
+  // This path is used to resolve icon if no icon is available.
+  base::FilePath MaybeGetBackgroundIconPathForDefaultApp(
       const std::string& app_id,
       const ArcAppIconDescriptor& descriptor) const;
 
@@ -310,7 +330,7 @@ class ArcAppListPrefs : public KeyedService,
   base::RepeatingCallback<std::string(const std::string&)>
   GetAppIdByPackageNameCallback();
 
-  // arc::ArcSessionManager::Observer:
+  // arc::ArcSessionManagerObserver:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   // arc::ArcPolicyBridge::Observer:
@@ -359,8 +379,6 @@ class ArcAppListPrefs : public KeyedService,
   friend class ChromeLauncherControllerTest;
   friend class ArcAppModelBuilderTest;
   friend class app_list::ArcAppShortcutsSearchProviderTest;
-  // To support deprecated mojom icon requests.
-  class ResizeRequest;
 
   // See the Create methods.
   ArcAppListPrefs(
@@ -384,16 +402,24 @@ class ArcAppListPrefs : public KeyedService,
   void OnPackageRemoved(const std::string& package_name) override;
   void OnIcon(const std::string& app_id,
               const ArcAppIconDescriptor& descriptor,
-              const std::vector<uint8_t>& icon_png_data);
+              arc::mojom::RawIconPngDataPtr icon);
+  void OnIconLoaded(const std::string& app_id,
+                    const ArcAppIconDescriptor& descriptor,
+                    arc::mojom::RawIconPngDataPtr icon);
   void OnTaskCreated(int32_t task_id,
                      const std::string& package_name,
                      const std::string& activity,
                      const base::Optional<std::string>& name,
                      const base::Optional<std::string>& intent) override;
+  // This interface is deprecated and will soon be replaced by
+  // OnTaskDescriptionChanged().
   void OnTaskDescriptionUpdated(
       int32_t task_id,
       const std::string& label,
       const std::vector<uint8_t>& icon_png_data) override;
+  void OnTaskDescriptionChanged(int32_t task_id,
+                                const std::string& label,
+                                arc::mojom::RawIconPngDataPtr icon) override;
   void OnTaskDestroyed(int32_t task_id) override;
   void OnTaskSetActive(int32_t task_id) override;
   void OnNotificationsEnabledChanged(const std::string& package_name,
@@ -459,7 +485,7 @@ class ArcAppListPrefs : public KeyedService,
   // directory.
   void InstallIcon(const std::string& app_id,
                    const ArcAppIconDescriptor& descriptor,
-                   const std::vector<uint8_t>& contentPng);
+                   arc::mojom::RawIconPngDataPtr icon);
   void OnIconInstalled(const std::string& app_id,
                        const ArcAppIconDescriptor& descriptor,
                        bool install_succeed);
@@ -516,16 +542,6 @@ class ArcAppListPrefs : public KeyedService,
 
   // Schedules deletion of app folder with icons on file thread.
   void ScheduleAppFolderDeletion(const std::string& app_id);
-
-  // TODO(b/112035954): Remove following block of 2 methods that supports icon
-  // using deprecated mojom. Once Android side change is propagated in builds we
-  // can safely remove this. Sends icon request view mojom using old protocol.
-  // In this protocol only icons of 48 pixels are supported. This requires
-  // resizing icon to the requested size.
-  void OnIconResized(const std::string& app_id,
-                     const ArcAppIconDescriptor& descriptor,
-                     const std::vector<uint8_t>& icon_png_data);
-  void DiscardResizeRequest(ResizeRequest* request);
 
   // Callback called once default apps are ready.
   void OnDefaultAppsReady();
@@ -591,12 +607,7 @@ class ArcAppListPrefs : public KeyedService,
   // TODO (b/70566216): Remove this once fixed.
   base::OnceClosure app_list_refreshed_callback_;
 
-  // Keeps all pending resize requests used to support legacy icons.
-  std::vector<std::unique_ptr<ResizeRequest>> resize_requests_;
-
   base::WeakPtrFactory<ArcAppListPrefs> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcAppListPrefs);
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_LIST_PREFS_H_

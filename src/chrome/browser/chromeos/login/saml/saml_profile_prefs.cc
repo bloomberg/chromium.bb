@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/login/saml/saml_profile_prefs.h"
 
-#include "chrome/common/pref_names.h"
+#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chromeos/login/auth/saml_password_attributes.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 
 namespace {
 
@@ -16,20 +16,30 @@ const int kDefaultSAMLOfflineSigninTimeLimit = 14 * 24 * 60 * 60;  // 14 days.
 const bool kDefaultSamlInSessionPasswordChangeEnabled = false;
 const int kDefaultSamlPasswordExpirationAdvanceWarningDays = 14;
 
+// Online reauthentication on the lock screen.
+const bool kDefaultSamlLockScreenReauthenticationEnabled = false;
+
 }  // namespace
 
 namespace chromeos {
 
-void RegisterSamlProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+void RegisterSamlProfilePrefs(PrefRegistrySimple* registry) {
+  // All SAML prefs are not syncable by default. In order to make a new pref
+  // syncable across user devices SYNCABLE_PREF must be set in the optional
+  // flags argument of RegisterPref.
   registry->RegisterIntegerPref(prefs::kSAMLOfflineSigninTimeLimit,
                                 kDefaultSAMLOfflineSigninTimeLimit);
-  registry->RegisterInt64Pref(prefs::kSAMLLastGAIASignInTime, 0);
+  registry->RegisterTimePref(prefs::kSAMLLastGAIASignInTime, base::Time());
 
   registry->RegisterBooleanPref(prefs::kSamlInSessionPasswordChangeEnabled,
                                 kDefaultSamlInSessionPasswordChangeEnabled);
   registry->RegisterIntegerPref(
       prefs::kSamlPasswordExpirationAdvanceWarningDays,
       kDefaultSamlPasswordExpirationAdvanceWarningDays);
+
+  registry->RegisterBooleanPref(prefs::kSamlLockScreenReauthenticationEnabled,
+                                kDefaultSamlLockScreenReauthenticationEnabled);
+  registry->RegisterStringPref(prefs::kSamlPasswordSyncToken, std::string());
 
   SamlPasswordAttributes::RegisterProfilePrefs(registry);
 }

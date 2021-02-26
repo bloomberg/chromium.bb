@@ -26,7 +26,6 @@ class DOMStorageContext;
 class NativeFileSystemEntryFactory;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
-class IdleManager;
 
 #if !defined(OS_ANDROID)
 class HostZoomLevelContext;
@@ -101,8 +100,6 @@ class TestStoragePartition : public StoragePartition {
   }
   DOMStorageContext* GetDOMStorageContext() override;
 
-  IdleManager* GetIdleManager() override;
-
   storage::mojom::IndexedDBControl& GetIndexedDBControl() override;
 
   NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() override;
@@ -144,6 +141,8 @@ class TestStoragePartition : public StoragePartition {
   leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProvider() override;
   void SetProtoDatabaseProvider(
       std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> proto_db_provider)
+      override;
+  leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProviderForTesting()
       override;
 
   void set_content_index_context(ContentIndexContext* context) {
@@ -196,6 +195,10 @@ class TestStoragePartition : public StoragePartition {
 
   void ResetURLLoaderFactories() override;
 
+  void AddObserver(DataRemovalObserver* observer) override;
+  void RemoveObserver(DataRemovalObserver* observer) override;
+  int GetDataRemovalObserverCount();
+
   void ClearBluetoothAllowedDevicesMapForTesting() override;
   void FlushNetworkInterfaceForTesting() override;
   void WaitForDeletionTasksForTesting() override;
@@ -230,6 +233,7 @@ class TestStoragePartition : public StoragePartition {
   HostZoomLevelContext* host_zoom_level_context_ = nullptr;
   ZoomLevelDelegate* zoom_level_delegate_ = nullptr;
 #endif  // !defined(OS_ANDROID)
+  int data_removal_observer_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestStoragePartition);
 };

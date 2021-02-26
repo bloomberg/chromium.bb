@@ -17,9 +17,9 @@
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "chrome/browser/media/router/discovery/discovery_network_monitor.h"
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
-#include "chrome/common/media_router/discovery/media_sink_service_base.h"
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_socket.h"
+#include "components/media_router/common/discovery/media_sink_service_base.h"
 #include "net/base/backoff_entry.h"
 #include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
@@ -92,6 +92,8 @@ class CastMediaSinkServiceImpl : public MediaSinkServiceBase,
 
   // Called by CastMediaSinkService to set |allow_all_ips_|.
   void SetCastAllowAllIPs(bool allow_all_ips);
+
+  void BindLogger(mojo::PendingRemote<mojom::Logger> pending_remote);
 
  private:
   friend class CastMediaSinkServiceImplTest;
@@ -324,6 +326,11 @@ class CastMediaSinkServiceImpl : public MediaSinkServiceBase,
   // Non-owned pointer to DIAL MediaSinkService. Observed by |this| for dual
   // discovery.
   MediaSinkServiceBase* const dial_media_sink_service_;
+
+  // Mojo Remote to the logger owned by the Media Router. The Remote is not
+  // bound until |BindLogger()| is called. Always check if |logger_.is_bound()|
+  // is true before using.
+  mojo::Remote<mojom::Logger> logger_;
 
   // The SequencedTaskRunner on which methods are run. This shares the
   // same SequencedTaskRunner as the one used by |cast_socket_service_|.

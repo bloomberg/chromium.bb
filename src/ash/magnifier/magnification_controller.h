@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/ime/ime_bridge_observer.h"
+#include "ui/base/ime/chromeos/ime_bridge_observer.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event_handler.h"
@@ -109,6 +109,15 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
   void HandleFocusedNodeChanged(bool is_editable_node,
                                 const gfx::Rect& node_bounds_in_screen);
 
+  // Move |rect_in_screen| within the magnifier viewport. If |rect_in_screen| is
+  // already completely within the viewport, do nothing. If any edge of
+  // |rect_in_screen| is outside the viewport (e.g. if rect is larger than or
+  // extends partially beyond the viewport), center the overflowing dimensions
+  // of the viewport on center of |rect_in_screen| (e.g. center viewport
+  // vertically if |rect| extends beyond bottom of screen). Called from
+  // Accessibility Common extension. Called from Accessibility Common extension.
+  void HandleMoveMagnifierToRect(const gfx::Rect& rect_in_screen);
+
   // Switch the magnified root window to |new_root_window|. This does following:
   //  - Unzoom the current root_window.
   //  - Zoom the given new root_window |new_root_window|.
@@ -172,7 +181,7 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
   // given scale. Returns true if the window is changed; otherwise, false.
   // These methods should be called internally just after the scale and/or
   // the position are changed to redraw the window.
-  bool Redraw(const gfx::PointF& position, float scale, bool animate);
+  bool Redraw(const gfx::PointF& position_in_pixels, float scale, bool animate);
 
   // Redraws the magnification window with the given origin position in dip and
   // the given scale. Returns true if the window is changed; otherwise, false.
@@ -312,6 +321,10 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
   // Flag for disabling moving magnifier delay. It can only be true in testing
   // mode.
   bool disable_move_magnifier_delay_ = false;
+
+  // Last move magnifier to rect time - used for ignoring caret updates for a
+  // few milliseconds after the last move magnifier to rect call.
+  base::TimeTicks last_move_magnifier_to_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(MagnificationController);
 };

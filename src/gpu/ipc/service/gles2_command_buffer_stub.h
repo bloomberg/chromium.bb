@@ -37,7 +37,7 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
       CommandBufferStub* share_group,
       const GPUCreateCommandBufferConfig& init_params,
       base::UnsafeSharedMemoryRegion shared_state_shm) override;
-  MemoryTracker* GetMemoryTracker() const override;
+  MemoryTracker* GetContextGroupMemoryTracker() const override;
 
   // DecoderClient implementation.
   void OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) override;
@@ -60,7 +60,7 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
   void OnTakeFrontBuffer(const Mailbox& mailbox);
   void OnReturnFrontBuffer(const Mailbox& mailbox, bool is_lost);
   void OnCreateGpuFenceFromHandle(uint32_t gpu_fence_id,
-                                  const gfx::GpuFenceHandle& handle);
+                                  gfx::GpuFenceHandle handle);
   void OnGetGpuFenceHandle(uint32_t gpu_fence_id);
   void OnCreateImage(GpuCommandBufferMsg_CreateImage_Params params);
   void OnDestroyImage(int32_t id);

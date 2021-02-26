@@ -100,6 +100,23 @@ bool AreDefaultSiteInstancesEnabled();
 // the test; the flag will be read on the first real navigation.
 void IsolateAllSitesForTesting(base::CommandLine* command_line);
 
+// Whether same-site navigations might result in a change of RenderFrameHosts -
+// this will happen when ProactivelySwapBrowsingInstance, RenderDocument or
+// back-forward cache is enabled on same-site main frame navigations.
+bool CanSameSiteMainFrameNavigationsChangeRenderFrameHosts();
+
+// Whether same-site navigations might result in a change of SiteInstances -
+// this will happen when ProactivelySwapBrowsingInstance or back-forward cache
+// is enabled on same-site main frame navigations.
+// Note that unlike CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()
+// above, this will not be true when RenderDocument for main-frame is enabled.
+bool CanSameSiteMainFrameNavigationsChangeSiteInstances();
+
+// Makes sure that navigations that start in |rfh| won't result in a proactive
+// BrowsingInstance swap (note they might still result in a normal
+// BrowsingInstance swap, e.g. in the case of cross-site navigations).
+void DisableProactiveBrowsingInstanceSwapFor(RenderFrameHost* rfh);
+
 // Returns a GURL constructed from the WebUI scheme and the given host.
 GURL GetWebUIURL(const std::string& host);
 
@@ -294,8 +311,8 @@ class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
   DISALLOW_COPY_AND_ASSIGN(InProcessUtilityThreadHelper);
 };
 
-// This observer keeps track of the last deleted RenderFrame to avoid
-// accessing it and causing use-after-free condition.
+// This observer keeps tracks of whether a given RenderFrameHost is deleted or
+// not to avoid accessing it and causing use-after-free condition.
 class RenderFrameDeletedObserver : public WebContentsObserver {
  public:
   RenderFrameDeletedObserver(RenderFrameHost* rfh);
@@ -358,13 +375,20 @@ class TestPageScaleObserver : public WebContentsObserver {
 };
 
 // A custom ContentBrowserClient that simulates GetEffectiveURL() translation
-// for a single URL.
+// for one or more URL pairs.  |requires_dedicated_process| indicates whether
+// the client should indicate that each registered URL requires a dedicated
+// process.  Passing |false| for it will rely on default behavior computed in
+// SiteInstanceImpl::DoesSiteRequireDedicatedProcess().
 class EffectiveURLContentBrowserClient : public ContentBrowserClient {
  public:
+  explicit EffectiveURLContentBrowserClient(bool requires_dedicated_process);
   EffectiveURLContentBrowserClient(const GURL& url_to_modify,
                                    const GURL& url_to_return,
                                    bool requires_dedicated_process);
   ~EffectiveURLContentBrowserClient() override;
+
+  // Adds effective URL translation from |url_to_modify| to |url_to_return|.
+  void AddTranslation(const GURL& url_to_modify, const GURL& url_to_return);
 
  private:
   GURL GetEffectiveURL(BrowserContext* browser_context,
@@ -372,8 +396,9 @@ class EffectiveURLContentBrowserClient : public ContentBrowserClient {
   bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
                                        const GURL& effective_site_url) override;
 
-  GURL url_to_modify_;
-  GURL url_to_return_;
+  // A map of original URLs to effective URLs.
+  std::map<GURL, GURL> urls_to_modify_;
+
   bool requires_dedicated_process_;
 
   DISALLOW_COPY_AND_ASSIGN(EffectiveURLContentBrowserClient);

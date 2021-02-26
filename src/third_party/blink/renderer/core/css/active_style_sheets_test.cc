@@ -24,12 +24,12 @@ namespace blink {
 
 class ActiveStyleSheetsTest : public PageTestBase {
  protected:
-  static CSSStyleSheet* CreateSheet(const String& css_text = String()) {
+  CSSStyleSheet* CreateSheet(const String& css_text = String()) {
     auto* contents = MakeGarbageCollected<StyleSheetContents>(
         MakeGarbageCollected<CSSParserContext>(
             kHTMLStandardMode, SecureContextMode::kInsecureContext));
     contents->ParseString(css_text);
-    contents->EnsureRuleSet(MediaQueryEvaluator(),
+    contents->EnsureRuleSet(MediaQueryEvaluator(GetDocument().GetFrame()),
                             kRuleHasDocumentSecurityOrigin);
     return MakeGarbageCollected<CSSStyleSheet>(contents);
   }
@@ -123,8 +123,9 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_Mutated) {
       std::make_pair(sheet3, &sheet3->Contents()->GetRuleSet()));
 
   sheet2->Contents()->ClearRuleSet();
-  sheet2->Contents()->EnsureRuleSet(MediaQueryEvaluator(),
-                                    kRuleHasDocumentSecurityOrigin);
+  sheet2->Contents()->EnsureRuleSet(
+      MediaQueryEvaluator(GetDocument().GetFrame()),
+      kRuleHasDocumentSecurityOrigin);
 
   EXPECT_NE(old_sheets[1].second, &sheet2->Contents()->GetRuleSet());
 
@@ -404,7 +405,7 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AddRemoveNonMatchingMQ) {
   scoped_refptr<MediaQuerySet> mq =
       MediaQueryParser::ParseMediaQuerySet("(min-width: 9000px)", nullptr);
   sheet1->SetMediaQueries(mq);
-  sheet1->MatchesMediaQueries(MediaQueryEvaluator());
+  sheet1->MatchesMediaQueries(MediaQueryEvaluator(GetDocument().GetFrame()));
 
   new_sheets.push_back(std::make_pair(sheet1, nullptr));
 
@@ -470,12 +471,8 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToDocument) {
   GetStyleEngine().ApplyRuleSetChanges(GetDocument(), ActiveStyleSheetVector(),
                                        new_style_sheets);
 
-  StyleChangeType expected =
-      RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()
-          ? kNoStyleChange
-          : kSubtreeStyleChange;
-
-  EXPECT_EQ(expected, GetDocument().documentElement()->GetStyleChangeType());
+  EXPECT_EQ(kNoStyleChange,
+            GetDocument().documentElement()->GetStyleChangeType());
 }
 
 TEST_F(ApplyRulesetsTest, AddFontFaceRuleToShadowTree) {

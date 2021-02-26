@@ -129,6 +129,8 @@ static_library("sandbox") {
     "src/signed_interception.h",
     "src/signed_policy.cc",
     "src/signed_policy.h",
+    "src/startup_information_helper.cc",
+    "src/startup_information_helper.h",
     "src/sync_dispatcher.cc",
     "src/sync_dispatcher.h",
     "src/sync_interception.cc",
@@ -226,11 +228,11 @@ test("sbox_integration_tests") {
   deps = [
     ":sandbox",
     "//base/test:test_support",
+    "//sandbox/policy:tests",
     "//testing/gtest",
   ]
 
   data_deps = [
-    ":cfi_unittest_exe",
     ":sbox_integration_test_hijack_dll",
     ":sbox_integration_test_hijack_shim_dll",
     ":sbox_integration_test_hooking_dll",
@@ -238,14 +240,6 @@ test("sbox_integration_tests") {
   ]
 
   libs = [ "dxva2.lib" ]
-}
-
-executable("cfi_unittest_exe") {
-  sources = [ "tests/integration_tests/cfi_unittest_exe.cc" ]
-  deps = [
-    "//base",
-    "//build/win:default_exe_manifest",
-  ]
 }
 
 shared_library("sbox_integration_test_hijack_dll") {
@@ -371,10 +365,9 @@ shared_library("pocdll") {
   defines = [ "POCDLL_EXPORTS" ]
 }
 
-# This fuzzer will only work on Windows, add fuzz targets which could run on Linux
-# to //sandbox/ directly.
+# This fuzzer will only work on Windows, add fuzz targets which could run on
+# Linux to //sandbox/ directly.
 fuzzer_test("sandbox_policy_rule_fuzzer") {
-  set_sources_assignment_filter([])
   sources = [
     "fuzzer/fuzzer_types.h",
     "fuzzer/sandbox_policy_rule_fuzzer.cc",

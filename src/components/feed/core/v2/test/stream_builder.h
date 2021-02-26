@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/proto_util.h"
+#include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/types.h"
 
 // Functions that help build a feedstore::StreamStructure for testing.
@@ -43,6 +44,25 @@ feedstore::Record MakeRecord(
 feedstore::Record MakeRecord(feedstore::StreamSharedState shared_state);
 feedstore::Record MakeRecord(feedstore::StreamData stream_data);
 
+// Helper structure to configure and return RefreshResponseData and
+// StreamModelUpdateRequest objects denoting typical initial and next page
+// refresh response payloads.
+struct StreamModelUpdateRequestGenerator {
+  base::Time last_added_time = kTestTimeEpoch;
+  bool signed_in = true;
+  bool logging_enabled = true;
+  bool privacy_notice_fulfilled = true;
+
+  StreamModelUpdateRequestGenerator();
+  ~StreamModelUpdateRequestGenerator();
+
+  std::unique_ptr<StreamModelUpdateRequest> MakeFirstPage(
+      int first_cluster_id = 0) const;
+
+  std::unique_ptr<StreamModelUpdateRequest> MakeNextPage(
+      int page_number = 2) const;
+};
+
 // Returns data operations to create a typical stream:
 // Root
 // |-Cluster 0
@@ -52,7 +72,10 @@ feedstore::Record MakeRecord(feedstore::StreamData stream_data);
 std::vector<feedstore::DataOperation> MakeTypicalStreamOperations();
 std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState(
     int first_cluster_id = 0,
-    base::Time last_added_time = kTestTimeEpoch);
+    base::Time last_added_time = kTestTimeEpoch,
+    bool signed_in = true,
+    bool logging_enabled = true,
+    bool privacy_notice_fulfilled = true);
 // Root
 // |-Cluster 2
 // |  |-Content 2
@@ -60,7 +83,10 @@ std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState(
 //    |-Content 3
 std::unique_ptr<StreamModelUpdateRequest> MakeTypicalNextPageState(
     int page_number = 2,
-    base::Time last_added_time = kTestTimeEpoch);
+    base::Time last_added_time = kTestTimeEpoch,
+    bool signed_in = true,
+    bool logging_enabled = true,
+    bool privacy_notice_fulfilled = true);
 }  // namespace feed
 
 #endif  // COMPONENTS_FEED_CORE_V2_TEST_STREAM_BUILDER_H_

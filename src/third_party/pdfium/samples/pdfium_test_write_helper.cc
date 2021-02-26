@@ -18,7 +18,7 @@
 #include "public/fpdf_thumbnail.h"
 #include "testing/fx_string_testhelpers.h"
 #include "testing/image_diff/image_diff_png.h"
-#include "third_party/base/logging.h"
+#include "third_party/base/notreached.h"
 
 namespace {
 
@@ -222,7 +222,7 @@ std::string WritePpm(const char* pdf_name,
   return std::string(filename);
 }
 
-void WriteText(FPDF_PAGE page, const char* pdf_name, int num) {
+void WriteText(FPDF_TEXTPAGE textpage, const char* pdf_name, int num) {
   char filename[256];
   int chars_formatted =
       snprintf(filename, sizeof(filename), "%s.%d.txt", pdf_name, num);
@@ -246,9 +246,8 @@ void WriteText(FPDF_PAGE page, const char* pdf_name, int num) {
     return;
   }
 
-  ScopedFPDFTextPage textpage(FPDFText_LoadPage(page));
-  for (int i = 0; i < FPDFText_CountChars(textpage.get()); i++) {
-    uint32_t c = FPDFText_GetUnicode(textpage.get(), i);
+  for (int i = 0; i < FPDFText_CountChars(textpage); i++) {
+    uint32_t c = FPDFText_GetUnicode(textpage, i);
     if (fwrite(&c, sizeof(c), 1, fp) != 1) {
       fprintf(stderr, "Failed to write to %s\n", filename);
       break;
@@ -635,20 +634,25 @@ void WriteAttachments(FPDF_DOCUMENT doc, const std::string& name) {
     }
 
     // Retrieve the attachment.
-    length_bytes = FPDFAttachment_GetFile(attachment, nullptr, 0);
-    std::vector<char> data_buf(length_bytes);
-    if (length_bytes) {
-      unsigned long actual_length_bytes =
-          FPDFAttachment_GetFile(attachment, data_buf.data(), length_bytes);
-      if (actual_length_bytes != length_bytes)
-        data_buf.clear();
-    }
-    if (data_buf.empty()) {
-      fprintf(stderr, "Attachment \"%s\" is empty.\n", attachment_name.c_str());
+    if (!FPDFAttachment_GetFile(attachment, nullptr, 0, &length_bytes)) {
+      fprintf(stderr, "Failed to retrieve attachment \"%s\".\n",
+              attachment_name.c_str());
       continue;
     }
 
-    // Write the attachment file.
+    std::vector<char> data_buf(length_bytes);
+    if (length_bytes) {
+      unsigned long actual_length_bytes;
+      if (!FPDFAttachment_GetFile(attachment, data_buf.data(), length_bytes,
+                                  &actual_length_bytes)) {
+        fprintf(stderr, "Failed to retrieve attachment \"%s\".\n",
+                attachment_name.c_str());
+        continue;
+      }
+    }
+
+    // Write the attachment file. Since a PDF document could have 0-byte files
+    // as attachments, we should allow saving the 0-byte attachments to files.
     WriteBufferToFile(data_buf.data(), length_bytes, save_name, "attachment");
   }
 }
@@ -660,6 +664,44 @@ void WriteImages(FPDF_PAGE page, const char* pdf_name, int page_num) {
       continue;
 
     ScopedFPDFBitmap bitmap(FPDFImageObj_GetBitmap(obj));
+    if (!bitmap) {
+      fprintf(stderr, "Image object #%d on page #%d has an empty bitmap.\n",
+              i + 1, page_num + 1);
+      continue;
+    }
+
+    char filename[256];
+    int chars_formatted = snprintf(filename, sizeof(filename), "%s.%d.%d.png",
+                                   pdf_name, page_num, i);
+    if (chars_formatted < 0 ||
+        static_cast<size_t>(chars_formatted) >= sizeof(filename)) {
+      fprintf(stderr, "Filename %s for saving image is too long.\n", filename);
+      continue;
+    }
+
+    std::vector<uint8_t> png_encoding = EncodeBitmapToPng(std::move(bitmap));
+    if (png_encoding.empty()) {
+      fprintf(stderr,
+              "Failed to convert image object #%d, on page #%d to png.\n",
+              i + 1, page_num + 1);
+      continue;
+    }
+
+    WriteBufferToFile(&png_encoding.front(), png_encoding.size(), filename,
+                      "image");
+  }
+}
+
+void WriteRenderedImages(FPDF_DOCUMENT doc,
+                         FPDF_PAGE page,
+                         const char* pdf_name,
+                         int page_num) {
+  for (int i = 0; i < FPDFPage_CountObjects(page); ++i) {
+    FPDF_PAGEOBJECT obj = FPDFPage_GetObject(page, i);
+    if (FPDFPageObj_GetType(obj) != FPDF_PAGEOBJ_IMAGE)
+      continue;
+
+    ScopedFPDFBitmap bitmap(FPDFImageObj_GetRenderedBitmap(doc, page, obj));
     if (!bitmap) {
       fprintf(stderr, "Image object #%d on page #%d has an empty bitmap.\n",
               i + 1, page_num + 1);

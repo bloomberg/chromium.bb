@@ -67,6 +67,11 @@ class DeviceHandler extends cr.EventTarget {
       case 'format_fail':
         this.handleFormatEvent_(event);
         break;
+      case 'partition_start':
+      case 'partition_success':
+      case 'partition_fail':
+        this.handlePartitionEvent_(event);
+        break;
       case 'rename_fail':
         DeviceHandler.Notification.RENAME_FAIL.show(event.devicePath);
         break;
@@ -110,6 +115,46 @@ class DeviceHandler extends cr.EventTarget {
         break;
       default:
         console.error('Unknown format event type: ' + event.type);
+        break;
+    }
+
+    this.progressCenter_.updateItem(item);
+
+    requestIdleCallback(
+        () => metrics.recordEnum(
+            'Notification.Show', notificationType,
+            DeviceHandler.Notification.TypesForUMA));
+  }
+
+  /**
+   * Handles partition events and displays a notification in the progress
+   * center. As the partitioning is the first part of SinglePartitionFormat
+   * operation, just show errors that would stop the operation. Other part
+   * handled in format event flow.
+   * @param {chrome.fileManagerPrivate.DeviceEvent} event Device event.
+   * @private
+   */
+  handlePartitionEvent_(event) {
+    const item = new ProgressCenterItem();
+    item.id = 'partition:' + event.devicePath;
+    item.type = ProgressItemType.PARTITION;
+    item.itemCount = 1;
+    item.progressMax = 1;
+
+    let notificationType;
+    switch (event.type) {
+      case 'partition_start':
+      case 'partition_success':
+        // No op for start/success.
+        return;
+      case 'partition_fail':
+        item.state = ProgressItemState.ERROR;
+        item.message = strf('FORMAT_FAILURE_MESSAGE', event.deviceLabel);
+        item.progressValue = 0;
+        notificationType = DeviceHandler.Notification.Type.PARTITION_FAIL;
+        break;
+      default:
+        console.error('Unknown partition event type: ' + event.type);
         break;
     }
 
@@ -387,7 +432,7 @@ class DeviceHandler extends cr.EventTarget {
         metrics.recordEnum(
             'Notification.UserAction',
             DeviceHandler.Notification.UserAction
-                .OPEN_EXTERNAL_STORAGE_PREFRENCES,
+                .OPEN_EXTERNAL_STORAGE_PREFERENCES,
             DeviceHandler.Notification.UserActionsForUMA);
       } else {
         this.openMediaDirectory_(null, devicePath, null);
@@ -632,6 +677,9 @@ DeviceHandler.Notification.Type = {
   FORMAT_SUCCESS: 'format_success',
   FORMAT_FAIL: 'format_fail',
   RENAME_FAIL: 'rename_fail',
+  PARTITION_START: 'partition_start',
+  PARTITION_SUCCESS: 'partition_success',
+  PARTITION_FAIL: 'partition_fail',
 };
 
 /**
@@ -656,6 +704,9 @@ DeviceHandler.Notification.TypesForUMA = Object.freeze([
   DeviceHandler.Notification.Type.FORMAT_SUCCESS,
   DeviceHandler.Notification.Type.FORMAT_FAIL,
   DeviceHandler.Notification.Type.RENAME_FAIL,
+  DeviceHandler.Notification.Type.PARTITION_START,
+  DeviceHandler.Notification.Type.PARTITION_SUCCESS,
+  DeviceHandler.Notification.Type.PARTITION_FAIL,
 ]);
 console.assert(
     Object.keys(DeviceHandler.Notification.Type).length ===
@@ -668,7 +719,7 @@ console.assert(
  * @const
  */
 DeviceHandler.Notification.UserAction = {
-  OPEN_EXTERNAL_STORAGE_PREFRENCES: 'open_external_storage_preferences',
+  OPEN_EXTERNAL_STORAGE_PREFERENCES: 'open_external_storage_preferences',
   OPEM_MEDIA_DEVICE_NAVIGATION: 'open_media_device_navigation',
   OPEN_MEDIA_DEVICE_NAVIGATION_ARC: 'open_media_device_navigation_arc',
   OPEN_MEDIA_DEVICE_FAIL: 'open_media_device_fail',
@@ -683,7 +734,7 @@ DeviceHandler.Notification.UserAction = {
  * @const
  */
 DeviceHandler.Notification.UserActionsForUMA = Object.freeze([
-  DeviceHandler.Notification.UserAction.OPEN_EXTERNAL_STORAGE_PREFRENCES,
+  DeviceHandler.Notification.UserAction.OPEN_EXTERNAL_STORAGE_PREFERENCES,
   DeviceHandler.Notification.UserAction.OPEM_MEDIA_DEVICE_NAVIGATION,
   DeviceHandler.Notification.UserAction.OPEN_MEDIA_DEVICE_NAVIGATION_ARC,
   DeviceHandler.Notification.UserAction.OPEN_MEDIA_DEVICE_FAIL,

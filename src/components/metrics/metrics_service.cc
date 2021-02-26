@@ -219,7 +219,9 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
       test_mode_active_(false),
       state_(INITIALIZED),
       idle_since_last_transmission_(false),
-      session_id_(-1) {
+      session_id_(-1),
+      synthetic_trial_registry_(
+          client->IsExternalExperimentAllowlistEnabled()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_manager_);
   DCHECK(client_);
@@ -229,9 +231,6 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
       std::make_unique<StabilityMetricsProvider>(local_state_));
 
   RegisterMetricsProvider(state_manager_->GetProvider());
-
-  RegisterMetricsProvider(std::make_unique<variations::FieldTrialsProvider>(
-      &synthetic_trial_registry_, base::StringPiece()));
 }
 
 MetricsService::~MetricsService() {
@@ -239,6 +238,12 @@ MetricsService::~MetricsService() {
 }
 
 void MetricsService::InitializeMetricsRecordingState() {
+  // The FieldTrialsProvider should be registered last. This ensures that
+  // studies whose features are checked when providers add their information to
+  // the log appear in the active field trials.
+  RegisterMetricsProvider(std::make_unique<variations::FieldTrialsProvider>(
+      &synthetic_trial_registry_, base::StringPiece()));
+
   reporting_service_.Initialize();
   InitializeMetricsState();
 
@@ -294,7 +299,7 @@ void MetricsService::DisableReporting() {
   reporting_service_.DisableReporting();
 }
 
-std::string MetricsService::GetClientId() {
+std::string MetricsService::GetClientId() const {
   return state_manager_->client_id();
 }
 
@@ -391,6 +396,7 @@ void MetricsService::RecordCompletedSessionEnd() {
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 void MetricsService::OnAppEnterBackground(bool keep_recording_in_background) {
+  is_in_foreground_ = false;
   if (!keep_recording_in_background) {
     rotation_scheduler_->Stop();
     reporting_service_.Stop();
@@ -417,6 +423,7 @@ void MetricsService::OnAppEnterBackground(bool keep_recording_in_background) {
 }
 
 void MetricsService::OnAppEnterForeground(bool force_open_new_log) {
+  is_in_foreground_ = true;
   state_manager_->clean_exit_beacon()->WriteBeaconValue(false);
   StartSchedulerIfNecessary();
 
@@ -447,10 +454,6 @@ void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
 
 void MetricsService::ClearSavedStabilityMetrics() {
   delegating_provider_.ClearSavedStabilityMetrics();
-}
-
-void MetricsService::PushExternalLog(const std::string& log) {
-  log_store()->StoreLog(log, MetricsLog::ONGOING_LOG);
 }
 
 bool MetricsService::StageCurrentLogForTest() {
@@ -508,8 +511,6 @@ void MetricsService::InitializeMetricsState() {
     // provided UMA is enabled.
     if (state_manager_->IsMetricsReportingEnabled()) {
       has_initial_stability_log = PrepareInitialStabilityLog(previous_version);
-      if (!has_initial_stability_log)
-        provider.LogStabilityLogDeferred();
     }
   }
 
@@ -519,10 +520,8 @@ void MetricsService::InitializeMetricsState() {
   // number of different edge cases, such as if the last version crashed before
   // it could save off a system profile or if UMA reporting is disabled (which
   // normally results in stats being accumulated).
-  if (version_changed && !has_initial_stability_log) {
+  if (version_changed && !has_initial_stability_log)
     ClearSavedStabilityMetrics();
-    provider.LogStabilityDataDiscarded();
-  }
 
   // If the version changed, the system profile is obsolete and needs to be
   // cleared. This is to avoid the stability data misattribution that could
@@ -539,6 +538,7 @@ void MetricsService::InitializeMetricsState() {
   local_state_->SetInteger(prefs::kMetricsSessionID, session_id_);
 
   // Notify stability metrics providers about the launch.
+  UMA_HISTOGRAM_BOOLEAN("UMA.MetricsService.Initialize", true);
   provider.LogLaunch();
   provider.CheckLastSessionEndCompleted();
 
@@ -662,7 +662,7 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
     return;  // We didn't and still don't have time to get plugin list etc.
 
   CloseCurrentLog();
-  log_store()->PersistUnsentLogs();
+  log_store()->TrimAndPersistUnsentLogs();
 }
 
 //------------------------------------------------------------------------------
@@ -752,8 +752,6 @@ bool MetricsService::PrepareInitialStabilityLog(
           local_state_, &system_profile_app_version)) {
     return false;
   }
-  if (system_profile_app_version != prefs_previous_version)
-    StabilityMetricsProvider(local_state_).LogStabilityVersionMismatch();
 
   log_manager_.PauseCurrentLog();
   log_manager_.BeginLoggingWithLog(std::move(initial_stability_log));
@@ -769,7 +767,7 @@ bool MetricsService::PrepareInitialStabilityLog(
 
   // Store unsent logs, including the stability log that was just saved, so
   // that they're not lost in case of a crash before upload time.
-  log_store()->PersistUnsentLogs();
+  log_store()->TrimAndPersistUnsentLogs();
 
   return true;
 }
@@ -799,7 +797,7 @@ void MetricsService::PrepareInitialMetricsLog() {
 
   // Store unsent logs, including the initial log that was just saved, so
   // that they're not lost in case of a crash before upload time.
-  log_store()->PersistUnsentLogs();
+  log_store()->TrimAndPersistUnsentLogs();
 
   state_ = SENDING_LOGS;
 }

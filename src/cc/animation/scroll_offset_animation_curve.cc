@@ -6,12 +6,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "cc/animation/timing_function.h"
-#include "cc/base/time_util.h"
 #include "ui/gfx/animation/tween.h"
 
 const double kConstantDuration = 9.0;
@@ -294,19 +294,15 @@ void ScrollOffsetAnimationCurve::ApplyAdjustment(
 
 gfx::ScrollOffset ScrollOffsetAnimationCurve::GetValue(
     base::TimeDelta t) const {
-  base::TimeDelta duration = total_animation_duration_ - last_retarget_;
+  const base::TimeDelta duration = total_animation_duration_ - last_retarget_;
   t -= last_retarget_;
 
-  if (duration.is_zero())
+  if (duration.is_zero() || (t >= duration))
     return target_value_;
-
   if (t <= base::TimeDelta())
     return initial_value_;
 
-  if (t >= duration)
-    return target_value_;
-
-  double progress = timing_function_->GetValue(TimeUtil::Divide(t, duration));
+  const double progress = timing_function_->GetValue(t / duration);
   return gfx::ScrollOffset(
       gfx::Tween::FloatValueBetween(progress, initial_value_.x(),
                                     target_value_.x()),
@@ -347,8 +343,8 @@ void ScrollOffsetAnimationCurve::SetAnimationDurationForTesting(
 
 double ScrollOffsetAnimationCurve::CalculateVelocity(base::TimeDelta t) {
   base::TimeDelta duration = total_animation_duration_ - last_retarget_;
-  double slope = timing_function_->Velocity(
-      ((t - last_retarget_).InSecondsF()) / duration.InSecondsF());
+  const double slope =
+      timing_function_->Velocity((t - last_retarget_) / duration);
 
   gfx::Vector2dF delta = target_value_.DeltaFrom(initial_value_);
 

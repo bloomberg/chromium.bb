@@ -39,6 +39,8 @@ source_set("video") {
     "video_decode_accelerator.h",
     "video_encode_accelerator.cc",
     "video_encode_accelerator.h",
+    "video_encode_accelerator_adapter.cc",
+    "video_encode_accelerator_adapter.h",
     "video_encoder_info.cc",
     "video_encoder_info.h",
   ]
@@ -73,6 +75,14 @@ source_set("video") {
       "vpx_video_encoder.h",
     ]
     deps += [ "//third_party/libvpx" ]
+  }
+
+  if (proprietary_codecs && media_use_openh264) {
+    sources += [
+      "openh264_video_encoder.cc",
+      "openh264_video_encoder.h",
+    ]
+    deps += [ "//third_party/openh264:encoder" ]
   }
 }
 
@@ -143,4 +153,14 @@ fuzzer_test("media_h264_parser_fuzzer") {
     "//media",
     "//ui/gfx/geometry",
   ]
+}
+
+if (proprietary_codecs && enable_platform_hevc) {
+  fuzzer_test("media_h265_parser_fuzzer") {
+    sources = [ "h265_parser_fuzzertest.cc" ]
+    deps = [
+      "//base",
+      "//media",
+    ]
+  }
 }

@@ -5,7 +5,7 @@
 #include "base/task/thread_pool/service_thread.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/debug/alias.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -23,14 +23,8 @@ TimeDelta g_heartbeat_for_testing = TimeDelta();
 
 }  // namespace
 
-ServiceThread::ServiceThread(const TaskTracker* task_tracker,
-                             RepeatingClosure report_heartbeat_metrics_callback)
-    : Thread("ThreadPoolServiceThread"),
-      task_tracker_(task_tracker),
-      report_heartbeat_metrics_callback_(
-          std::move(report_heartbeat_metrics_callback)) {}
-
-ServiceThread::~ServiceThread() = default;
+ServiceThread::ServiceThread(const TaskTracker* task_tracker)
+    : Thread("ThreadPoolServiceThread"), task_tracker_(task_tracker) {}
 
 // static
 void ServiceThread::SetHeartbeatIntervalForTesting(TimeDelta heartbeat) {
@@ -51,7 +45,7 @@ void ServiceThread::Init() {
         FROM_HERE,
         g_heartbeat_for_testing.is_zero() ? kHeartbeat
                                           : g_heartbeat_for_testing,
-        BindRepeating(&ServiceThread::ReportHeartbeatMetrics,
+        BindRepeating(&ServiceThread::PerformHeartbeatLatencyReport,
                       Unretained(this)));
   }
 }
@@ -61,11 +55,6 @@ NOINLINE void ServiceThread::Run(RunLoop* run_loop) {
   // Inhibit tail calls of Run and inhibit code folding.
   const int line_number = __LINE__;
   base::debug::Alias(&line_number);
-}
-
-void ServiceThread::ReportHeartbeatMetrics() const {
-  report_heartbeat_metrics_callback_.Run();
-  PerformHeartbeatLatencyReport();
 }
 
 void ServiceThread::PerformHeartbeatLatencyReport() const {
@@ -90,10 +79,8 @@ void ServiceThread::PerformHeartbeatLatencyReport() const {
   // reported latency.
   ThreadPool::PostTask(
       FROM_HERE, {profiled_priority},
-      BindOnce(
-          &TaskTracker::RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms,
-          Unretained(task_tracker_), profiled_priority, TimeTicks::Now(),
-          task_tracker_->GetNumTasksRun()));
+      BindOnce(&TaskTracker::RecordHeartbeatLatencyHistogram,
+               Unretained(task_tracker_), profiled_priority, TimeTicks::Now()));
 }
 
 }  // namespace internal

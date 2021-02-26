@@ -9,8 +9,10 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/common/chrome_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -84,13 +86,36 @@ ArcAppDataSearchResult::ArcAppDataSearchResult(
   set_id(kAppDataSearchPrefix + launch_intent_uri());
   if (data_->type == arc::mojom::AppDataResultType::PERSON) {
     SetDisplayType(ash::SearchResultDisplayType::kTile);
+    SetMetricsType(ash::APP_DATA_RESULT_PERSON);
   } else if (data_->type == arc::mojom::AppDataResultType::NOTE_DOCUMENT) {
     SetDetails(base::UTF8ToUTF16(data_->text));
     SetDisplayType(ash::SearchResultDisplayType::kList);
+    SetMetricsType(ash::APP_DATA_RESULT_NOTE_DOCUMENT);
+  } else {
+    NOTREACHED();
+    SetMetricsType(ash::SEARCH_RESULT_TYPE_BOUNDARY);
   }
 
   // TODO(warx): set default images when icon_png_data() is not available.
-  if (!icon_png_data()) {
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    if (!data_->icon) {
+      SetIcon(gfx::ImageSkia());
+      return;
+    }
+
+    apps::ArcRawIconPngDataToImageSkia(
+        std::move(data_->icon),
+        ash::AppListConfig::instance().search_tile_icon_dimension(),
+        base::BindOnce(&ArcAppDataSearchResult::ApplyIcon,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  // TODO(crbug.com/1083331): Remove the checking !data_->icon_png_data, when
+  // the ARC change is rolled in Chrome OS.
+  if ((!data_->icon || !data_->icon->icon_png_data ||
+       data_->icon->icon_png_data->empty()) &&
+      !data_->icon_png_data) {
     SetIcon(gfx::ImageSkia());
     return;
   }
@@ -122,18 +147,6 @@ void ArcAppDataSearchResult::ApplyIcon(const gfx::ImageSkia& icon) {
     return;
   }
   SetIcon(icon);
-}
-
-ash::SearchResultType ArcAppDataSearchResult::GetSearchResultType() const {
-  switch (data_->type) {
-    case arc::mojom::AppDataResultType::PERSON:
-      return ash::APP_DATA_RESULT_PERSON;
-    case arc::mojom::AppDataResultType::NOTE_DOCUMENT:
-      return ash::APP_DATA_RESULT_NOTE_DOCUMENT;
-    default:
-      NOTREACHED();
-      return ash::SEARCH_RESULT_TYPE_BOUNDARY;
-  }
 }
 
 }  // namespace app_list

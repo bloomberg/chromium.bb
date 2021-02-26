@@ -8,10 +8,8 @@
 #include "base/location.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
@@ -27,8 +25,9 @@
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/media_router/media_sink.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/media_router/browser/media_router_metrics.h"
+#include "components/media_router/common/media_sink.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -43,23 +42,6 @@
 #include "ui/views/view.h"
 
 namespace media_router {
-
-namespace {
-
-// This value is negative so that it doesn't overlap with a sink index.
-constexpr int kAlternativeSourceButtonId = -1;
-
-std::unique_ptr<views::Button> CreateSourcesButton(
-    views::ButtonListener* listener) {
-  auto sources_button = std::make_unique<views::MdTextButtonWithDownArrow>(
-      listener,
-      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON));
-  sources_button->SetID(kAlternativeSourceButtonId);
-  sources_button->SetEnabled(false);
-  return sources_button;
-}
-
-}  // namespace
 
 // static
 void CastDialogView::ShowDialogWithToolbarAction(
@@ -123,10 +105,6 @@ views::Widget* CastDialogView::GetCurrentDialogWidget() {
   return instance_ ? instance_->GetWidget() : nullptr;
 }
 
-bool CastDialogView::ShouldShowCloseButton() const {
-  return true;
-}
-
 base::string16 CastDialogView::GetWindowTitle() const {
   switch (selected_source_) {
     case SourceType::kTab:
@@ -174,26 +152,6 @@ void CastDialogView::OnControllerInvalidated() {
   // We don't call HideDialog() here because if the invalidation was caused by
   // activating the toolbar icon in order to close the dialog, then it would
   // cause the dialog to immediately open again.
-}
-
-void CastDialogView::ButtonPressed(views::Button* sender,
-                                   const ui::Event& event) {
-  if (sender->tag() == kAlternativeSourceButtonId) {
-    ShowSourcesMenu();
-  } else {
-    // SinkPressed() invokes a refresh of the sink list, which deletes the
-    // sink button. So we must call this after the button is done handling the
-    // press event.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&CastDialogView::SinkPressed,
-                                  weak_factory_.GetWeakPtr(), sender->tag()));
-  }
-}
-
-gfx::Size CastDialogView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_BUBBLE_PREFERRED_WIDTH);
-  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void CastDialogView::OnPaint(gfx::Canvas* canvas) {
@@ -265,8 +223,17 @@ CastDialogView::CastDialogView(views::View* anchor_view,
       controller_(controller),
       profile_(profile),
       metrics_(start_time, activation_location, profile) {
+  SetShowCloseButton(true);
   SetButtons(ui::DIALOG_BUTTON_NONE);
-  sources_button_ = SetExtraView(CreateSourcesButton(this));
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
+  sources_button_ =
+      SetExtraView(std::make_unique<views::MdTextButtonWithDownArrow>(
+          base::BindRepeating(&CastDialogView::ShowSourcesMenu,
+                              base::Unretained(this)),
+          l10n_util::GetStringUTF16(
+              IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON)));
+  sources_button_->SetEnabled(false);
   ShowNoSinksView();
 }
 
@@ -352,11 +319,11 @@ void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
   sink_list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   for (size_t i = 0; i < sinks.size(); i++) {
-    const UIMediaSink& sink = sinks.at(i);
-    CastDialogSinkButton* sink_button =
-        new CastDialogSinkButton(this, sink, /** button_tag */ i);
-    sink_buttons_.push_back(sink_button);
-    sink_list_view->AddChildView(sink_button);
+    sink_buttons_.push_back(
+        sink_list_view->AddChildView(std::make_unique<CastDialogSinkButton>(
+            base::BindRepeating(&CastDialogView::SinkPressed,
+                                base::Unretained(this), i),
+            sinks.at(i))));
   }
   scroll_view_->SetContents(std::move(sink_list_view));
 
@@ -467,10 +434,11 @@ void CastDialogView::DisableUnsupportedSinks() {
 void CastDialogView::RecordSinkCountWithDelay() {
   // Record the number of sinks after three seconds. This is consistent with the
   // WebUI dialog.
-  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                        base::BindOnce(&CastDialogView::RecordSinkCount,
-                                       weak_factory_.GetWeakPtr()),
-                        base::TimeDelta::FromSeconds(3));
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&CastDialogView::RecordSinkCount,
+                     weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(3));
 }
 
 void CastDialogView::RecordSinkCount() {

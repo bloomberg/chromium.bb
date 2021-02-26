@@ -21,8 +21,6 @@ class ScriptPromiseResolver;
 
 class KeyboardLock final : public GarbageCollected<KeyboardLock>,
                            public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(KeyboardLock);
-
  public:
   explicit KeyboardLock(ExecutionContext*);
   ~KeyboardLock();
@@ -30,7 +28,7 @@ class KeyboardLock final : public GarbageCollected<KeyboardLock>,
   ScriptPromise lock(ScriptState*, const Vector<String>&, ExceptionState&);
   void unlock(ScriptState*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   // Returns true if the local frame is attached to the renderer.

@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
@@ -93,7 +93,7 @@ class IdleManagerTest : public testing::Test {
   void SetPermissionStatus(const GURL& origin,
                            blink::mojom::PermissionStatus permission_status) {
     ON_CALL(*permission_manager_,
-            GetPermissionStatus(PermissionType::NOTIFICATIONS, origin, origin))
+            GetPermissionStatus(PermissionType::IDLE_DETECTION, origin, origin))
         .WillByDefault(Return(permission_status));
   }
 
@@ -368,7 +368,7 @@ TEST_F(IdleManagerTest, InvalidThreshold) {
             bad_message_observer.WaitForBadMessage());
 }
 
-TEST_F(IdleManagerTest, NotificationPermissionDisabled) {
+TEST_F(IdleManagerTest, PermissionDenied) {
   SetPermissionStatus(url(), blink::mojom::PermissionStatus::DENIED);
 
   MockIdleMonitor monitor;
@@ -390,4 +390,22 @@ TEST_F(IdleManagerTest, NotificationPermissionDisabled) {
   loop.Run();
 }
 
+TEST_F(IdleManagerTest, SetAndClearOverrides) {
+  SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+
+  // Verify initial state without overrides.
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
+            AddMonitorRequest(kThreshold));
+
+  // Set overrides and verify overriden values returned.
+  auto* impl = GetIdleManager();
+  impl->SetIdleOverride(UserIdleState::kIdle, ScreenIdleState::kLocked);
+  EXPECT_EQ(std::make_tuple(UserIdleState::kIdle, ScreenIdleState::kLocked),
+            GetIdleStatus());
+
+  // Clear overrides and verify initial values returned.
+  impl->ClearIdleOverride();
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
+            GetIdleStatus());
+}
 }  // namespace content

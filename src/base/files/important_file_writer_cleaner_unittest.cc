@@ -4,16 +4,15 @@
 
 #include "base/files/important_file_writer_cleaner.h"
 
+#include "base/check.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/optional.h"
-#include "base/process/process.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_waitable_event.h"
@@ -27,6 +26,12 @@ using ::testing::ElementsAre;
 namespace base {
 
 class ImportantFileWriterCleanerTest : public ::testing::Test {
+ public:
+  ImportantFileWriterCleanerTest()
+      : old_file_time_(ImportantFileWriterCleaner::GetInstance()
+                           .GetUpperBoundTimeForTest() -
+                       TimeDelta::FromMilliseconds(1)) {}
+
  protected:
   // Initializes and Starts the global cleaner at construction and Stops it
   // at destruction. ("Lifetime" refers to its activity rather than existence.)
@@ -66,17 +71,21 @@ class ImportantFileWriterCleanerTest : public ::testing::Test {
     cleaner_lifetime_.reset();
   }
 
-  void CreateNewFile(const FilePath& path) {
-    File file(path, File::FLAG_CREATE | File::FLAG_WRITE);
+  void CreateNewFileInDir(const FilePath& dir, FilePath& path) {
+    File file = CreateAndOpenTemporaryFileInDir(dir, &path);
     ASSERT_TRUE(file.IsValid());
   }
 
+  void CreateOldFileInDir(const FilePath& dir, FilePath& path) {
+    File file = CreateAndOpenTemporaryFileInDir(dir, &path);
+    ASSERT_TRUE(file.IsValid());
+    ASSERT_TRUE(file.SetTimes(Time::Now(), old_file_time_));
+  }
+
   void CreateOldFile(const FilePath& path) {
-    const Time old_time =
-        Process::Current().CreationTime() - TimeDelta::FromSeconds(1);
     File file(path, File::FLAG_CREATE | File::FLAG_WRITE);
     ASSERT_TRUE(file.IsValid());
-    ASSERT_TRUE(file.SetTimes(Time::Now(), old_time));
+    ASSERT_TRUE(file.SetTimes(Time::Now(), old_file_time_));
   }
 
   ScopedTempDir temp_dir_;
@@ -84,6 +93,7 @@ class ImportantFileWriterCleanerTest : public ::testing::Test {
   HistogramTester histogram_tester_;
 
  private:
+  const Time old_file_time_;
   FilePath dir_1_;
   FilePath dir_2_;
   FilePath dir_1_file_new_;
@@ -105,20 +115,16 @@ void ImportantFileWriterCleanerTest::SetUp() {
   ASSERT_TRUE(CreateDirectory(dir_2_));
 
   // Create some old and new files in each dir.
-  dir_1_file_new_ = dir_1_.Append(FILE_PATH_LITERAL("new.tmp"));
-  ASSERT_NO_FATAL_FAILURE(CreateNewFile(dir_1_file_new_));
+  ASSERT_NO_FATAL_FAILURE(CreateNewFileInDir(dir_1_, dir_1_file_new_));
 
-  dir_1_file_old_ = dir_1_.Append(FILE_PATH_LITERAL("old.tmp"));
-  ASSERT_NO_FATAL_FAILURE(CreateOldFile(dir_1_file_old_));
+  ASSERT_NO_FATAL_FAILURE(CreateOldFileInDir(dir_1_, dir_1_file_old_));
 
   dir_1_file_other_ = dir_1_.Append(FILE_PATH_LITERAL("other.nottmp"));
   ASSERT_NO_FATAL_FAILURE(CreateOldFile(dir_1_file_other_));
 
-  dir_2_file_new_ = dir_2_.Append(FILE_PATH_LITERAL("new.tmp"));
-  ASSERT_NO_FATAL_FAILURE(CreateNewFile(dir_2_file_new_));
+  ASSERT_NO_FATAL_FAILURE(CreateNewFileInDir(dir_2_, dir_2_file_new_));
 
-  dir_2_file_old_ = dir_2_.Append(FILE_PATH_LITERAL("old.tmp"));
-  ASSERT_NO_FATAL_FAILURE(CreateOldFile(dir_2_file_old_));
+  ASSERT_NO_FATAL_FAILURE(CreateOldFileInDir(dir_2_, dir_2_file_old_));
 
   dir_2_file_other_ = dir_2_.Append(FILE_PATH_LITERAL("other.nottmp"));
   ASSERT_NO_FATAL_FAILURE(CreateOldFile(dir_2_file_other_));
@@ -330,8 +336,8 @@ TEST_F(ImportantFileWriterCleanerTest, StopWhileRunning) {
 
   // Create a great many old files in dir1.
   for (int i = 0; i < 100; ++i) {
-    CreateOldFile(
-        dir_1().Append(StringPrintf(FILE_PATH_LITERAL("oldie%d.tmp"), i)));
+    FilePath path;
+    CreateOldFileInDir(dir_1(), path);
   }
 
   ImportantFileWriterCleaner::AddDirectory(dir_1());

@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------- *
  *
- *   Copyright 1996-2018 The NASM Authors - All Rights Reserved
+ *   Copyright 1996-2020 The NASM Authors - All Rights Reserved
  *   See the file AUTHORS included with the NASM distribution for
  *   the specific copyright holders.
  *
@@ -37,44 +37,33 @@
 
 #include "compiler.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <string.h>
-#include <ctype.h>
+#include "nctype.h"
 
 #include "nasm.h"
 #include "nasmlib.h"
 #include "error.h"
+#include "strlist.h"
 #include "listing.h"
 
-#define LIST_MAX_LEN 216        /* something sensible */
+#define LIST_MAX_LEN 1024       /* something sensible */
 #define LIST_INDENT  40
 #define LIST_HEXBIT  18
 
-typedef struct MacroInhibit MacroInhibit;
-
-static struct MacroInhibit {
-    MacroInhibit *next;
-    int level;
-    int inhibiting;
-} *mistack;
-
-static char xdigit[] = "0123456789ABCDEF";
+static const char xdigit[] = "0123456789ABCDEF";
 
 #define HEX(a,b) (*(a)=xdigit[((b)>>4)&15],(a)[1]=xdigit[(b)&15]);
+
+uint64_t list_options, active_list_options;
 
 static char listline[LIST_MAX_LEN];
 static bool listlinep;
 
-static char listerror[LIST_MAX_LEN];
+static struct strlist *list_errors;
 
 static char listdata[2 * LIST_INDENT];  /* we need less than that actually */
 static int32_t listoffset;
 
 static int32_t listlineno;
-
-static int32_t listp;
 
 static int suppress;            /* for INCBIN & TIMES special cases */
 
@@ -85,86 +74,90 @@ static FILE *listfp;
 static void list_emit(void)
 {
     int i;
+    const struct strlist_entry *e;
 
-    if (!listlinep && !listdata[0])
+    if (listlinep || *listdata) {
+        fprintf(listfp, "%6"PRId32" ", listlineno);
+
+        if (listdata[0])
+            fprintf(listfp, "%08"PRIX32" %-*s", listoffset, LIST_HEXBIT + 1,
+                    listdata);
+        else
+            fprintf(listfp, "%*s", LIST_HEXBIT + 10, "");
+
+        if (listlevel_e)
+            fprintf(listfp, "%s<%d>", (listlevel < 10 ? " " : ""),
+                    listlevel_e);
+        else if (listlinep)
+            fprintf(listfp, "    ");
+
+        if (listlinep)
+            fprintf(listfp, " %s", listline);
+
+        putc('\n', listfp);
+        listlinep = false;
+        listdata[0] = '\0';
+    }
+
+    if (list_errors) {
+        static const char fillchars[] = " --***XX";
+        char fillchar;
+
+        strlist_for_each(e, list_errors) {
+            fprintf(listfp, "%6"PRId32"          ", listlineno);
+            fillchar = fillchars[e->pvt.u & ERR_MASK];
+            for (i = 0; i < LIST_HEXBIT; i++)
+                putc(fillchar, listfp);
+
+            if (listlevel_e)
+                fprintf(listfp, " %s<%d>", (listlevel < 10 ? " " : ""),
+                        listlevel_e);
+            else
+                fprintf(listfp, "     ");
+
+            fprintf(listfp, "  %s\n", e->str);
+        }
+
+        strlist_free(&list_errors);
+    }
+}
+
+static void list_cleanup(void)
+{
+    if (!listfp)
         return;
 
-    fprintf(listfp, "%6"PRId32" ", listlineno);
-
-    if (listdata[0])
-        fprintf(listfp, "%08"PRIX32" %-*s", listoffset, LIST_HEXBIT + 1,
-                listdata);
-    else
-        fprintf(listfp, "%*s", LIST_HEXBIT + 10, "");
-
-    if (listlevel_e)
-        fprintf(listfp, "%s<%d>", (listlevel < 10 ? " " : ""),
-                listlevel_e);
-    else if (listlinep)
-        fprintf(listfp, "    ");
-
-    if (listlinep)
-        fprintf(listfp, " %s", listline);
-
-    putc('\n', listfp);
-    listlinep = false;
-    listdata[0] = '\0';
-
-    if (listerror[0]) {
-	fprintf(listfp, "%6"PRId32"          ", listlineno);
-	for (i = 0; i < LIST_HEXBIT; i++)
-	    putc('*', listfp);
-
-	if (listlevel_e)
-	    fprintf(listfp, " %s<%d>", (listlevel < 10 ? " " : ""),
-		    listlevel_e);
-	else
-	    fprintf(listfp, "     ");
-
-	fprintf(listfp, "  %s\n", listerror);
-	listerror[0] = '\0';
-    }
+    list_emit();
+    fclose(listfp);
+    listfp = NULL;
 }
 
 static void list_init(const char *fname)
 {
+    enum file_flags flags = NF_TEXT;
+
+    if (listfp)
+        list_cleanup();
+
     if (!fname || fname[0] == '\0') {
 	listfp = NULL;
 	return;
     }
 
-    listfp = nasm_open_write(fname, NF_TEXT);
+    if (list_option('w'))
+        flags |= NF_IOLBF;
+
+    listfp = nasm_open_write(fname, flags);
     if (!listfp) {
-	nasm_error(ERR_NONFATAL, "unable to open listing file `%s'",
-		   fname);
+        nasm_nonfatal("unable to open listing file `%s'", fname);
         return;
     }
 
     *listline = '\0';
     listlineno = 0;
-    *listerror = '\0';
-    listp = true;
+    list_errors = NULL;
     listlevel = 0;
     suppress = 0;
-    mistack = nasm_malloc(sizeof(MacroInhibit));
-    mistack->next = NULL;
-    mistack->level = 0;
-    mistack->inhibiting = true;
-}
-
-static void list_cleanup(void)
-{
-    if (!listp)
-        return;
-
-    while (mistack) {
-        MacroInhibit *temp = mistack;
-        mistack = temp->next;
-        nasm_free(temp);
-    }
-
-    list_emit();
-    fclose(listfp);
 }
 
 static void list_out(int64_t offset, char *str)
@@ -197,6 +190,20 @@ static void list_address(int64_t offset, const char *brackets,
     list_out(offset, q);
 }
 
+static void list_size(int64_t offset, const char *tag, uint64_t size)
+{
+    char buf[64];
+    const char *fmt;
+
+    if (list_option('d'))
+        fmt = "<%s %"PRIu64">";
+    else
+        fmt = "<%s %"PRIX64"h>";
+
+    snprintf(buf, sizeof buf, fmt, tag, size);
+    list_out(offset, buf);
+}
+
 static void list_output(const struct out_data *data)
 {
     char q[24];
@@ -205,14 +212,13 @@ static void list_output(const struct out_data *data)
     const uint8_t *p = data->data;
 
 
-    if (!listp || suppress || user_nolist)
+    if (!listfp || suppress || user_nolist)
         return;
 
     switch (data->type) {
     case OUT_ZERODATA:
         if (size > 16) {
-            snprintf(q, sizeof(q), "<zero %08"PRIX64">", size);
-            list_out(offset, q);
+            list_size(offset, "zero", size);
             break;
         } else {
             p = zero_buffer;
@@ -220,13 +226,19 @@ static void list_output(const struct out_data *data)
         /* fall through */
     case OUT_RAWDATA:
     {
-	if (size == 0 && !listdata[0])
-	    listoffset = data->offset;
-        while (size--) {
-            HEX(q, *p);
-            q[2] = '\0';
-            list_out(offset++, q);
-            p++;
+	if (size == 0) {
+            if (!listdata[0])
+                listoffset = data->offset;
+        } else if (p) {
+            while (size--) {
+                HEX(q, *p);
+                q[2] = '\0';
+                list_out(offset++, q);
+                p++;
+            }
+        } else {
+            /* Used for listing on non-code generation passes with -Lp */
+            list_size(offset, "len", size);
         }
 	break;
     }
@@ -246,8 +258,13 @@ static void list_output(const struct out_data *data)
 	break;
     case OUT_RESERVE:
     {
-        snprintf(q, sizeof(q), "<res %08"PRIX64">", size);
-        list_out(offset, q);
+        if (size > 8) {
+            list_size(offset, "res", size);
+        } else {
+            memset(q, '?', size << 1);
+            q[size << 1] = '\0';
+            list_out(offset, q);
+        }
 	break;
     }
     default:
@@ -255,82 +272,85 @@ static void list_output(const struct out_data *data)
     }
 }
 
-static void list_line(int type, char *line)
+static void list_line(int type, int32_t lineno, const char *line)
 {
-    if (!listp)
+    (void)type;
+
+    if (!listfp)
         return;
 
     if (user_nolist)
       return;
 
-    if (mistack && mistack->inhibiting) {
-        if (type == LIST_MACRO)
-            return;
-        else {                  /* pop the m i stack */
-            MacroInhibit *temp = mistack;
-            mistack = temp->next;
-            nasm_free(temp);
-        }
-    }
     list_emit();
-    listlineno = src_get_linnum();
+    if (lineno >= 0)
+        listlineno = lineno;
     listlinep = true;
-    strncpy(listline, line, LIST_MAX_LEN - 1);
-    listline[LIST_MAX_LEN - 1] = '\0';
+    strlcpy(listline, line, LIST_MAX_LEN-3);
+    memcpy(listline + LIST_MAX_LEN-4, "...", 4);
     listlevel_e = listlevel;
 }
 
-static void list_uplevel(int type)
+static void list_uplevel(int type, int64_t size)
 {
-    if (!listp)
+    if (!listfp)
         return;
-    if (type == LIST_INCBIN || type == LIST_TIMES) {
-        suppress |= (type == LIST_INCBIN ? 1 : 2);
-        list_out(listoffset, type == LIST_INCBIN ? "<incbin>" : "<rept>");
-        return;
-    }
 
-    listlevel++;
+    switch (type) {
+    case LIST_INCBIN:
+        suppress |= 1;
+        list_size(listoffset, "bin", size);
+        break;
 
-    if (mistack && mistack->inhibiting && type == LIST_INCLUDE) {
-        MacroInhibit *temp = nasm_malloc(sizeof(MacroInhibit));
-        temp->next = mistack;
-        temp->level = listlevel;
-        temp->inhibiting = false;
-        mistack = temp;
-    } else if (type == LIST_MACRO_NOLIST) {
-        MacroInhibit *temp = nasm_malloc(sizeof(MacroInhibit));
-        temp->next = mistack;
-        temp->level = listlevel;
-        temp->inhibiting = true;
-        mistack = temp;
+    case LIST_TIMES:
+        suppress |= 2;
+        list_size(listoffset, "rep", size);
+        break;
+
+    case LIST_INCLUDE:
+        listlevel++;
+        break;
+
+    default:
+        listlevel++;
+        break;
     }
 }
 
 static void list_downlevel(int type)
 {
-    if (!listp)
+    if (!listfp)
         return;
 
-    if (type == LIST_INCBIN || type == LIST_TIMES) {
-        suppress &= ~(type == LIST_INCBIN ? 1 : 2);
-        return;
-    }
+    switch (type) {
+    case LIST_INCBIN:
+        suppress &= ~1;
+        break;
 
-    listlevel--;
-    while (mistack && mistack->level > listlevel) {
-        MacroInhibit *temp = mistack;
-        mistack = temp->next;
-        nasm_free(temp);
+    case LIST_TIMES:
+        suppress &= ~2;
+        break;
+
+    default:
+        listlevel--;
+        break;
     }
 }
 
-static void list_error(int severity, const char *pfx, const char *msg)
+static void list_error(errflags severity, const char *fmt, ...)
 {
+    va_list ap;
+
     if (!listfp)
 	return;
 
-    snprintf(listerror, sizeof listerror, "%s%s", pfx, msg);
+    if (!list_errors)
+        list_errors = strlist_alloc(false);
+
+    va_start(ap, fmt);
+    strlist_vprintf(list_errors, fmt, ap);
+    va_end(ap);
+    strlist_tail(list_errors)->pvt.u = severity;
 
     if ((severity & ERR_MASK) >= ERR_FATAL)
 	list_emit();
@@ -339,6 +359,43 @@ static void list_error(int severity, const char *pfx, const char *msg)
 static void list_set_offset(uint64_t offset)
 {
     listoffset = offset;
+}
+
+static void list_update_options(const char *str)
+{
+    bool state = true;
+    unsigned char c;
+    uint64_t mask;
+
+    while ((c = *str++)) {
+        switch (c) {
+        case '+':
+            state = true;
+            break;
+        case '-':
+            state = false;
+            break;
+        default:
+            mask = list_option_mask(c);
+            if (state)
+                list_options |= mask;
+            else
+                list_options &= ~mask;
+            break;
+        }
+    }
+}
+
+enum directive_result list_pragma(const struct pragma *pragma)
+{
+    switch (pragma->opcode) {
+    case D_OPTIONS:
+        list_update_options(pragma->tail);
+        return DIRR_OK;
+
+    default:
+        return DIRR_UNKNOWN;
+    }
 }
 
 static const struct lfmt nasm_list = {

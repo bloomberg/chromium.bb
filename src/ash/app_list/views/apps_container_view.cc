@@ -22,9 +22,9 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/search_box/search_box_constants.h"
 #include "base/command_line.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
@@ -165,7 +165,7 @@ void AppsContainerView::UpdateControlVisibility(AppListViewState app_list_state,
   if (app_list_state == AppListViewState::kClosed)
     return;
 
-  set_can_process_events_within_subtree(
+  SetCanProcessEventsWithinSubtree(
       app_list_state == AppListViewState::kFullscreenAllApps ||
       app_list_state == AppListViewState::kPeeking);
 
@@ -223,16 +223,15 @@ void AppsContainerView::AnimateYPosition(AppListViewState target_view_state,
   const int offset = current_suggestion_chip_y - target_suggestion_chip_y;
 
   suggestion_chip_container_view_->SetY(target_suggestion_chip_y);
-  animator.Run(offset, suggestion_chip_container_view_->layer(),
-               suggestion_chip_container_view_);
+  animator.Run(offset, suggestion_chip_container_view_->layer());
 
   apps_grid_view_->SetY(suggestion_chip_container_view_->y() +
                         chip_grid_y_distance_);
-  animator.Run(offset, apps_grid_view_->layer(), apps_grid_view_);
+  animator.Run(offset, apps_grid_view_->layer());
 
   page_switcher_->SetY(suggestion_chip_container_view_->y() +
                        chip_grid_y_distance_);
-  animator.Run(offset, page_switcher_->layer(), page_switcher_);
+  animator.Run(offset, page_switcher_->layer());
 }
 
 void AppsContainerView::OnTabletModeChanged(bool started) {
@@ -578,7 +577,7 @@ void AppsContainerView::SetShowState(ShowState show_state,
 
   switch (show_state_) {
     case SHOW_APPS:
-      page_switcher_->set_can_process_events_within_subtree(true);
+      page_switcher_->SetCanProcessEventsWithinSubtree(true);
       folder_background_view_->SetVisible(false);
       apps_grid_view_->ResetForShowApps();
       app_list_folder_view_->ResetItemsGridForClose();
@@ -588,12 +587,12 @@ void AppsContainerView::SetShowState(ShowState show_state,
         app_list_folder_view_->HideViewImmediately();
       break;
     case SHOW_ACTIVE_FOLDER:
-      page_switcher_->set_can_process_events_within_subtree(false);
+      page_switcher_->SetCanProcessEventsWithinSubtree(false);
       folder_background_view_->SetVisible(true);
       app_list_folder_view_->ScheduleShowHideAnimation(true, false);
       break;
     case SHOW_ITEM_REPARENT:
-      page_switcher_->set_can_process_events_within_subtree(true);
+      page_switcher_->SetCanProcessEventsWithinSubtree(true);
       folder_background_view_->SetVisible(false);
       app_list_folder_view_->ScheduleShowHideAnimation(false, true);
       break;

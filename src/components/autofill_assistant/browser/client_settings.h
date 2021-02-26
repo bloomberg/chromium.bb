@@ -23,6 +23,8 @@ struct ClientSettings {
   ClientSettings();
   ~ClientSettings();
 
+  void UpdateFromProto(const ClientSettingsProto& proto);
+
   // Time between two periodic script precondition checks.
   base::TimeDelta periodic_script_check_interval =
       base::TimeDelta::FromSeconds(1);
@@ -54,14 +56,10 @@ struct ClientSettings {
   // become stable.
   int box_model_check_count = 50;
 
-  // Time to wait between two checks of the document state, when waiting for the
+  // Time to wait while checking the document state, when waiting for the
   // document to become ready.
-  base::TimeDelta document_ready_check_interval =
-      base::TimeDelta::FromMilliseconds(200);
-
-  // Maximum number of checks to run while waiting for the document to become
-  // ready.
-  int document_ready_check_count = 50;
+  base::TimeDelta document_ready_check_timeout =
+      base::TimeDelta::FromSeconds(10);
 
   // How much time to give users to tap undo when they tap a cancel button.
   base::TimeDelta cancel_delay = base::TimeDelta::FromSeconds(5);
@@ -82,12 +80,14 @@ struct ClientSettings {
   base::Optional<OverlayImageProto> overlay_image;
 
   // Optional settings intended for integration tests.
-  base::Optional<ClientSettingsProto_IntegrationTestSettings>
+  base::Optional<ClientSettingsProto::IntegrationTestSettings>
       integration_test_settings;
 
-  void UpdateFromProto(const ClientSettingsProto& proto);
-
   float talkback_sheet_size_fraction = 0.5f;
+
+  // Optional settings to enable back button error in BottomSheet instead of
+  // Snackbar.
+  base::Optional<ClientSettingsProto::BackButtonSettings> back_button_settings;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientSettings);

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child_client.h"
@@ -42,8 +43,8 @@
 
 namespace blink {
 
-HTMLImportsController::HTMLImportsController(Document& master)
-    : root_(MakeGarbageCollected<HTMLImportTreeRoot>(&master)) {}
+HTMLImportsController::HTMLImportsController(Document& tree_root)
+    : root_(MakeGarbageCollected<HTMLImportTreeRoot>(&tree_root)) {}
 
 void HTMLImportsController::Dispose() {
   // TODO(tkent): We copy loaders_ before iteration to avoid crashes.
@@ -117,7 +118,7 @@ HTMLImportChild* HTMLImportsController::Load(const Document& parent_document,
   }
 
   scoped_refptr<const SecurityOrigin> security_origin =
-      Master()->GetSecurityOrigin();
+      TreeRoot()->GetExecutionContext()->GetSecurityOrigin();
   ResourceFetcher* fetcher = parent->GetDocument()->Fetcher();
 
   if (parent->GetDocument()->ImportsController()) {
@@ -137,7 +138,7 @@ HTMLImportChild* HTMLImportsController::Load(const Document& parent_document,
   return child;
 }
 
-Document* HTMLImportsController::Master() const {
+Document* HTMLImportsController::TreeRoot() const {
   return root_ ? root_->GetDocument() : nullptr;
 }
 
@@ -159,7 +160,7 @@ HTMLImportLoader* HTMLImportsController::LoaderFor(
   return nullptr;
 }
 
-void HTMLImportsController::Trace(Visitor* visitor) {
+void HTMLImportsController::Trace(Visitor* visitor) const {
   visitor->Trace(root_);
   visitor->Trace(loaders_);
 }

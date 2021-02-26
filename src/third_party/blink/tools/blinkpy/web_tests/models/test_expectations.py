@@ -29,13 +29,11 @@
 
 import copy
 import logging
-import itertools
 import re
 
 from collections import defaultdict
 from collections import OrderedDict
 
-from blinkpy.common import path_finder
 from blinkpy.common.memoized import memoized
 from blinkpy.web_tests.models import typ_types
 
@@ -46,8 +44,7 @@ _log = logging.getLogger(__name__)
 SPECIAL_PREFIXES = ('# tags:', '# results:', '# conflicts_allowed:')
 
 _PLATFORM_TOKENS_LIST = [
-    'Android', 'Fuchsia', 'IOS', 'IOS12.2', 'IOS13.0', 'Linux', 'Mac',
-    'Mac10.10', 'Mac10.11', 'Retina', 'Mac10.12', 'Mac10.13', 'Mac10.14',
+    'Android', 'Fuchsia', 'Linux', 'Mac', 'Mac10.12', 'Mac10.13', 'Mac10.14',
     'Win', 'Win7', 'Win10'
 ]
 
@@ -151,6 +148,11 @@ class TestExpectations(object):
             raise ParseError(expectation_errors)
         self._add_expectations_from_bot()
 
+    def set_system_condition_tags(self, tags):
+        for test_exps in self._expectations:
+            test_exps.set_tags(tags)
+        self._system_condition_tags = tags
+
     @staticmethod
     def _maybe_remove_comments_and_whitespace(lines):
         """If the last expectation in a block is deleted, then remove all associated
@@ -217,16 +219,26 @@ class TestExpectations(object):
                 lines.extend(lineno_to_exps[lineno])
                 lineno_to_exps.pop(lineno)
 
-        # Add new expectations that were not part of the file before
+        # Handle Expectation instances with line numbers outside of the
+        # [1, total file line count] range. There are two cases for
+        # Expectation instances with line numbers outside the valid range.
+        #
+        # 1, If line number is 0 then the Expectation instance will be appended
+        #    to the file.
+        # 2, If the line number is greater than the total number of lines then
+        #    an exception will be raised.
         if lineno_to_exps:
             lines.append(_NotExpectation('', len(content_lines) + 1))
 
-        extra_line_count = len(content_lines) + 1
-        for lineno, extras in lineno_to_exps.items():
-            for line in extras:
+            for line in sorted(
+                    reduce(lambda x,y: x+y, lineno_to_exps.values()),
+                    key=lambda e: e.test):
+                if line.lineno:
+                    raise ValueError(
+                        "Expectation '%s' was given a line number that "
+                        "is greater than the total line count of file %s."
+                        % (line.to_string(), path))
                 lines.append(line)
-                extra_line_count += 1
-                lines[-1].lineno = extra_line_count
 
         self._expectation_file_linenos[path] = {
             line.lineno for line in lines
@@ -290,7 +302,7 @@ class TestExpectations(object):
         test_expectations.parse_tagged_list(content)
         self._expectations.append(test_expectations)
 
-    def _get_expectations(self, expectations, test, fallback_for_test=None):
+    def _get_expectations(self, expectations, test, original_test=None):
         results = set()
         reasons = set()
         is_slow_test = False
@@ -313,7 +325,7 @@ class TestExpectations(object):
 
         # If the results set is empty then the Expectation constructor
         # will set the expected result to Pass.
-        return typ_types.Expectation(test=fallback_for_test or test,
+        return typ_types.Expectation(test=original_test or test,
                                      results=results,
                                      is_slow_test=is_slow_test,
                                      reason=' '.join(reasons),
@@ -332,26 +344,37 @@ class TestExpectations(object):
         override.is_slow_test |= fallback.is_slow_test
         return override
 
-    def get_expectations(self, test, fallback_for_test=None):
-        expectations = self._override_or_fallback_expectations(
-            self._get_expectations(self._flag_expectations, test,
-                                   fallback_for_test),
-            self._get_expectations(self._expectations, test,
-                                   fallback_for_test))
+    def _get_expectations_with_fallback(self,
+                                        expectations,
+                                        fallback_expectations,
+                                        test,
+                                        original_test=None):
+        exp = self._override_or_fallback_expectations(
+            self._get_expectations(expectations, test, original_test),
+            self._get_expectations(fallback_expectations, test, original_test))
         base_test = self.port.lookup_virtual_test_base(test)
         if base_test:
             return self._override_or_fallback_expectations(
-                expectations, self.get_expectations(base_test, test))
-        return expectations
+                exp,
+                self._get_expectations_with_fallback(expectations,
+                                                     fallback_expectations,
+                                                     base_test, test))
+        return exp
+
+    def get_expectations(self, test):
+        return self._get_expectations_with_fallback(self._flag_expectations,
+                                                    self._expectations, test)
 
     def get_flag_expectations(self, test):
-        exp = self._get_expectations(self._flag_expectations, test)
+        exp = self._get_expectations_with_fallback(self._flag_expectations, [],
+                                                   test)
         if exp.is_default_pass:
             return None
         return exp
 
     def get_base_expectations(self, test):
-        return self._get_expectations(self._base_expectations, test)
+        return self._get_expectations_with_fallback(self._base_expectations,
+                                                    [], test)
 
     def get_tests_with_expected_result(self, result):
         """This method will return a list of tests and directories which
@@ -411,7 +434,7 @@ class TestExpectations(object):
             if not pattern_to_exps[exp.test]:
                 pattern_to_exps.pop(exp.test)
 
-    def add_expectations(self, path, exps, lineno=0):
+    def add_expectations(self, path, exps, lineno=0, append_to_end_of_file=False):
         """This method adds Expectation instances to an expectations file. It will
         add the new instances after the line number passed through the lineno parameter.
         If the lineno is set to a value outside the range of line numbers in the file
@@ -425,6 +448,14 @@ class TestExpectations(object):
         idx = self._expectations_dict.keys().index(path)
         typ_expectations = self._expectations[idx]
         added_glob = False
+
+        if lineno < 0:
+            raise ValueError('lineno cannot be negative.')
+        if (append_to_end_of_file and lineno or
+                not append_to_end_of_file and not lineno):
+            raise ValueError('If append_to_end_of_file is set then lineno '
+                             'must be 0. Also if lineno is 0 then '
+                             'append_to_end_of_file must be set to True.')
 
         for exp in exps:
             exp.lineno = lineno

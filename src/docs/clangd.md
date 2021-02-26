@@ -13,8 +13,14 @@ See [instructions](https://clang.llvm.org/extra/clangd/Installation.html#install
 **Googlers:** clangd has been installed on your glinux by default, just use
 `/usr/bin/clangd`.
 
-Alternative: use the following command to build clangd from LLVM source, and you
-will get the binary at
+Alternative: download clangd from the official [Releases](https://github.com/clangd/clangd/releases)
+page.
+
+Note: clangd 10.0.0 does not work with Chromium; use one of the more recent
+pre-release versions of 11 or later on the Releases page.
+
+If you prefer to build clangd locally, use the following command to build from
+LLVM source, and you will get the binary at
 `out/Release/tools/clang/third_party/llvm/build/bin/clangd`.
 
 ```
@@ -36,8 +42,9 @@ source file.
 tools/clang/scripts/generate_compdb.py -p out/Release > compile_commands.json
 ```
 
-Note: the compilation database is not re-generated automatically, you'd need to
-regenerate it manually when you have new files checked in.
+Note: the compilation database is not regenerated automatically. You need to
+regenerate it manually whenever build rules change, e.g., when you have new files
+checked in or when you sync to head.
 
 If using Windows PowerShell, use the following command instead to set the
 output's encoding to UTF-8 (otherwise Clangd will hit "YAML:1:4: error: Got

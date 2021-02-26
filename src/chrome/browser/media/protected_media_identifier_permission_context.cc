@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/permissions/permission_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,6 +29,8 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/permissions/permission_request_impl.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ui/views/widget/widget.h"
@@ -87,7 +89,8 @@ void ProtectedMediaIdentifierPermissionContext::DecidePermission(
       base::BindOnce(&ProtectedMediaIdentifierPermissionContext::
                          OnPlatformVerificationConsentResponse,
                      weak_factory_.GetWeakPtr(), web_contents, id,
-                     requesting_origin, embedding_origin, repeating_callback));
+                     requesting_origin, embedding_origin, user_gesture,
+                     repeating_callback));
 
   // This could happen when the permission is requested from an extension. See
   // http://crbug.com/728534
@@ -125,23 +128,23 @@ ProtectedMediaIdentifierPermissionContext::GetPermissionStatusInternal(
   // requires user intervention is problematic. If the domain has been
   // whitelisted as safe - suppress the request and allow.
   if (content_setting == CONTENT_SETTING_ASK &&
-      IsOriginWhitelisted(requesting_origin)) {
+      IsOriginAllowed(requesting_origin)) {
     content_setting = CONTENT_SETTING_ALLOW;
   }
 
   return content_setting;
 }
 
-bool ProtectedMediaIdentifierPermissionContext::IsOriginWhitelisted(
+bool ProtectedMediaIdentifierPermissionContext::IsOriginAllowed(
     const GURL& origin) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  const std::string whitelist = command_line.GetSwitchValueASCII(
+  const std::string allowlist = command_line.GetSwitchValueASCII(
       switches::kUnsafelyAllowProtectedMediaIdentifierForDomain);
 
   for (const std::string& domain : base::SplitString(
-           whitelist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+           allowlist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     if (origin.DomainIs(domain)) {
       return true;
     }
@@ -157,8 +160,8 @@ void ProtectedMediaIdentifierPermissionContext::UpdateTabContext(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // WebContents may have gone away.
-  content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::GetForFrame(
+  content_settings::PageSpecificContentSettings* content_settings =
+      content_settings::PageSpecificContentSettings::GetForFrame(
           id.render_process_id(), id.render_frame_id());
   if (content_settings) {
     content_settings->OnProtectedMediaIdentifierPermissionSet(
@@ -212,25 +215,39 @@ bool ProtectedMediaIdentifierPermissionContext::
 
 #if defined(OS_CHROMEOS)
 
-static void ReportPermissionActionUMA(permissions::PermissionAction action) {
-  UMA_HISTOGRAM_ENUMERATION("Permissions.Action.ProtectedMedia", action,
-                            permissions::PermissionAction::NUM);
-}
-
 void ProtectedMediaIdentifierPermissionContext::
     OnPlatformVerificationConsentResponse(
         content::WebContents* web_contents,
         const permissions::PermissionRequestID& id,
         const GURL& requesting_origin,
         const GURL& embedding_origin,
+        bool user_gesture,
         permissions::BrowserPermissionCallback callback,
         PlatformVerificationDialog::ConsentResponse response) {
+  // Prepare function to report metrics.
+  auto report_metrics_func = [&](auto permission_action) {
+    // Use base::DoNothing() because we create a PermissionRequest only
+    // so that we can call PermissionUmaUtil::PermissionPromptResolved() below.
+    auto permission_request =
+        std::make_unique<permissions::PermissionRequestImpl>(
+            requesting_origin, ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
+            user_gesture,
+            /*permission_decided_callback=*/base::DoNothing(),
+            /*delete_callback=*/base::DoNothing());
+
+    permissions::PermissionUmaUtil::PermissionPromptResolved(
+        {permission_request.get()}, web_contents, permission_action,
+        permissions::PermissionPromptDisposition::CUSTOM_MODAL_DIALOG,
+        /*ui_reason=*/base::nullopt,
+        /*predicted_grant_likelihood=*/base::nullopt);
+  };
+
   // The request may have been canceled. Drop the callback in that case.
   // This can happen if the tab is closed.
   PendingRequestMap::iterator request = pending_requests_.find(web_contents);
   if (request == pending_requests_.end()) {
     VLOG(1) << "Platform verification ignored by user.";
-    ReportPermissionActionUMA(permissions::PermissionAction::IGNORED);
+    report_metrics_func(permissions::PermissionAction::IGNORED);
     return;
   }
 
@@ -244,7 +261,7 @@ void ProtectedMediaIdentifierPermissionContext::
       // This can happen if user clicked "x", or pressed "Esc", or navigated
       // away without closing the tab.
       VLOG(1) << "Platform verification dismissed by user.";
-      ReportPermissionActionUMA(permissions::PermissionAction::DISMISSED);
+      report_metrics_func(permissions::PermissionAction::DISMISSED);
       content_setting = CONTENT_SETTING_ASK;
       persist = false;
       break;
@@ -252,7 +269,7 @@ void ProtectedMediaIdentifierPermissionContext::
       VLOG(1) << "Platform verification accepted by user.";
       base::RecordAction(
           base::UserMetricsAction("PlatformVerificationAccepted"));
-      ReportPermissionActionUMA(permissions::PermissionAction::GRANTED);
+      report_metrics_func(permissions::PermissionAction::GRANTED);
       content_setting = CONTENT_SETTING_ALLOW;
       persist = true;
       break;
@@ -260,13 +277,14 @@ void ProtectedMediaIdentifierPermissionContext::
       VLOG(1) << "Platform verification denied by user.";
       base::RecordAction(
           base::UserMetricsAction("PlatformVerificationRejected"));
-      ReportPermissionActionUMA(permissions::PermissionAction::DENIED);
+      report_metrics_func(permissions::PermissionAction::DENIED);
       content_setting = CONTENT_SETTING_BLOCK;
       persist = true;
       break;
   }
 
   NotifyPermissionSet(id, requesting_origin, embedding_origin,
-                      std::move(callback), persist, content_setting);
+                      std::move(callback), persist, content_setting,
+                      /*is_one_time=*/false);
 }
 #endif

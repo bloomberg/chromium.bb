@@ -28,7 +28,7 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/default_clock.h"
 #include "components/services/storage/indexed_db/scopes/disjoint_range_lock_manager.h"
@@ -75,6 +75,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
       std::unique_ptr<TransactionalLevelDBDatabase> db,
       storage::mojom::BlobStorageContext* blob_storage_context,
       storage::mojom::NativeFileSystemContext* native_file_system_context,
+      std::unique_ptr<storage::FilesystemProxy> filesystem_proxy,
       BlobFilesCleanedCallback blob_files_cleaned,
       ReportOutstandingBlobsCallback report_outstanding_blobs,
       scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
@@ -86,6 +87,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
                               std::move(db),
                               blob_storage_context,
                               native_file_system_context,
+                              std::move(filesystem_proxy),
                               std::move(blob_files_cleaned),
                               std::move(report_outstanding_blobs),
                               std::move(idb_task_runner),
@@ -137,6 +139,7 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
       std::unique_ptr<TransactionalLevelDBDatabase> db,
       storage::mojom::BlobStorageContext*,
       storage::mojom::NativeFileSystemContext*,
+      std::unique_ptr<storage::FilesystemProxy> filesystem_proxy,
       IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
       IndexedDBBackingStore::ReportOutstandingBlobsCallback
           report_outstanding_blobs,
@@ -148,8 +151,9 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
     return std::make_unique<TestableIndexedDBBackingStore>(
         backing_store_mode, leveldb_factory, origin, blob_path, std::move(db),
         blob_storage_context_, native_file_system_context_,
-        std::move(blob_files_cleaned), std::move(report_outstanding_blobs),
-        std::move(idb_task_runner), std::move(io_task_runner));
+        std::move(filesystem_proxy), std::move(blob_files_cleaned),
+        std::move(report_outstanding_blobs), std::move(idb_task_runner),
+        std::move(io_task_runner));
   }
 
  private:
@@ -199,6 +203,13 @@ class MockBlobStorageContext : public ::storage::mojom::BlobStorageContext {
                        base::Optional<base::Time> last_modified,
                        WriteBlobToFileCallback callback) override {
     writes_.emplace_back(std::move(blob), path);
+
+    if (write_files_to_disk_) {
+      auto filesystem_proxy = std::make_unique<storage::FilesystemProxy>(
+          storage::FilesystemProxy::UNRESTRICTED, base::FilePath());
+      filesystem_proxy->WriteFileAtomically(path, "fake contents");
+    }
+
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
@@ -208,8 +219,13 @@ class MockBlobStorageContext : public ::storage::mojom::BlobStorageContext {
   const std::vector<BlobWrite>& writes() { return writes_; }
   void ClearWrites() { writes_.clear(); }
 
+  // If true, writes a fake file for each blob file to disk.
+  // The contents are bogus, but the files will exist.
+  void SetWriteFilesToDisk(bool write) { write_files_to_disk_ = write; }
+
  private:
   std::vector<BlobWrite> writes_;
+  bool write_files_to_disk_ = false;
 };
 
 class FakeNativeFileSystemTransferToken
@@ -271,14 +287,11 @@ class MockNativeFileSystemContext
 class IndexedDBBackingStoreTest : public testing::Test {
  public:
   IndexedDBBackingStoreTest()
-      : special_storage_policy_(
-            base::MakeRefCounted<storage::MockSpecialStoragePolicy>()),
-        quota_manager_proxy_(
+      : quota_manager_proxy_(
             base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr,
                                                                  nullptr)) {}
 
   void SetUp() override {
-    special_storage_policy_->SetAllUnlimited(true);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     blob_context_ = std::make_unique<MockBlobStorageContext>();
@@ -286,7 +299,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
         std::make_unique<MockNativeFileSystemContext>();
 
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        temp_dir_.GetPath(), special_storage_policy_, quota_manager_proxy_,
+        temp_dir_.GetPath(), quota_manager_proxy_,
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*native_file_system_context=*/mojo::NullRemote(),
@@ -423,7 +436,6 @@ class IndexedDBBackingStoreTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<MockBlobStorageContext> blob_context_;
   std::unique_ptr<MockNativeFileSystemContext> native_file_system_context_;
-  scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   std::unique_ptr<TestIDBFactory> idb_factory_;
@@ -636,14 +648,25 @@ class IndexedDBBackingStoreTestWithExternalObjects
   bool CheckBlobWrites() {
     DCHECK(idb_context_->IDBTaskRunner()->RunsTasksInCurrentSequence());
 
-    if (blob_context_->writes().size() +
-            native_file_system_context_->writes().size() !=
-        external_objects_.size()) {
+    size_t num_empty_blobs = 0;
+    for (const auto& info : external_objects_) {
+      if (info.object_type() == IndexedDBExternalObject::ObjectType::kFile &&
+          !info.size()) {
+        num_empty_blobs++;
+      }
+    }
+
+    size_t num_written = blob_context_->writes().size() +
+                         native_file_system_context_->writes().size();
+    if (num_written != external_objects_.size() - num_empty_blobs) {
       return false;
     }
     for (size_t i = 0; i < blob_context_->writes().size(); ++i) {
       const BlobWrite& desc = blob_context_->writes()[i];
       const IndexedDBExternalObject& info = external_objects_[i];
+      if (!info.size())
+        continue;
+
       base::RunLoop uuid_loop;
       std::string uuid_out;
       DCHECK(desc.blob.is_bound());
@@ -891,6 +914,68 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, PutGetConsistency) {
   // Clean up on the IDB sequence.
   transaction1.reset();
   transaction3.reset();
+  task_environment_.RunUntilIdle();
+}
+
+// http://crbug.com/1131151
+// Validate that recovery journal cleanup during a transaction does
+// not delete blobs that were just written.
+TEST_P(IndexedDBBackingStoreTestWithExternalObjects, BlobWriteCleanup) {
+  const std::vector<IndexedDBKey> keys = {
+      IndexedDBKey(ASCIIToUTF16("key0")), IndexedDBKey(ASCIIToUTF16("key1")),
+      IndexedDBKey(ASCIIToUTF16("key2")), IndexedDBKey(ASCIIToUTF16("key3"))};
+
+  const int64_t database_id = 1;
+  const int64_t object_store_id = 1;
+
+  external_objects().clear();
+  for (size_t j = 0; j < 4; ++j) {
+    std::string type = "type " + base::NumberToString(j);
+    external_objects().push_back(CreateBlobInfo(base::UTF8ToUTF16(type), 1));
+  }
+
+  std::vector<IndexedDBValue> values = {
+      IndexedDBValue("value0", {external_objects()[0]}),
+      IndexedDBValue("value1", {external_objects()[1]}),
+      IndexedDBValue("value2", {external_objects()[2]}),
+      IndexedDBValue("value3", {external_objects()[3]}),
+  };
+  ASSERT_GE(keys.size(), values.size());
+
+  // Validate that cleaning up after writing blobs does not delete those
+  // blobs.
+  backing_store()->SetExecuteJournalCleaningOnNoTransactionsForTesting();
+
+  std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1 =
+      std::make_unique<IndexedDBBackingStore::Transaction>(
+          backing_store()->AsWeakPtr(),
+          blink::mojom::IDBTransactionDurability::Relaxed,
+          blink::mojom::IDBTransactionMode::ReadWrite);
+  transaction1->Begin(CreateDummyLock());
+  IndexedDBBackingStore::RecordIdentifier record;
+  for (size_t i = 0; i < values.size(); ++i) {
+    EXPECT_TRUE(backing_store()
+                    ->PutRecord(transaction1.get(), database_id,
+                                object_store_id, keys[i], &values[i], &record)
+                    .ok());
+  }
+
+  // Start committing transaction1.
+  bool succeeded = false;
+  EXPECT_TRUE(
+      transaction1->CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(CheckBlobWrites());
+
+  // Finish committing transaction1.
+  EXPECT_TRUE(succeeded);
+  EXPECT_TRUE(transaction1->CommitPhaseTwo().ok());
+
+  // Verify lack of blob removals.
+  ASSERT_EQ(0UL, backing_store()->removals().size());
+
+  // Clean up on the IDB sequence.
+  transaction1.reset();
   task_environment_.RunUntilIdle();
 }
 
@@ -1184,9 +1269,10 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, ActiveBlobJournal) {
   EXPECT_EQ(value3_.bits, read_result_value.bits);
   EXPECT_TRUE(CheckBlobInfoMatches(read_result_value.external_objects));
   EXPECT_TRUE(CheckBlobReadsMatchWrites(read_result_value.external_objects));
-  for (size_t i = 0; i < read_result_value.external_objects.size(); ++i) {
-    if (read_result_value.external_objects[i].mark_used_callback())
-      read_result_value.external_objects[i].mark_used_callback().Run();
+  for (const IndexedDBExternalObject& external_object :
+       read_result_value.external_objects) {
+    if (external_object.mark_used_callback())
+      external_object.mark_used_callback().Run();
   }
 
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction3 =
@@ -1207,9 +1293,10 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, ActiveBlobJournal) {
   EXPECT_TRUE(succeeded);
   EXPECT_TRUE(transaction3->CommitPhaseTwo().ok());
   EXPECT_EQ(0U, backing_store()->removals().size());
-  for (size_t i = 0; i < read_result_value.external_objects.size(); ++i) {
-    if (read_result_value.external_objects[i].release_callback())
-      read_result_value.external_objects[i].release_callback().Run();
+  for (const IndexedDBExternalObject& external_object :
+       read_result_value.external_objects) {
+    if (external_object.release_callback())
+      external_object.release_callback().Run();
   }
   task_environment_.RunUntilIdle();
 
@@ -1527,9 +1614,13 @@ TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
 }
 
 TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
+  auto filesystem_proxy = std::make_unique<storage::FilesystemProxy>(
+      storage::FilesystemProxy::UNRESTRICTED, base::FilePath());
+
   // No |path_base|.
-  EXPECT_TRUE(
-      indexed_db::ReadCorruptionInfo(base::FilePath(), Origin()).empty());
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(),
+                                             base::FilePath(), Origin())
+                  .empty());
 
   const base::FilePath path_base = temp_dir_.GetPath();
   const Origin origin = Origin::Create(GURL("http://www.google.com/"));
@@ -1537,7 +1628,9 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
   ASSERT_TRUE(PathIsWritable(path_base));
 
   // File not found.
-  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
+  EXPECT_TRUE(
+      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
+          .empty());
 
   const base::FilePath info_path =
       path_base.AppendASCII("http_www.google.com_0.indexeddb.leveldb")
@@ -1547,45 +1640,59 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
   // Empty file.
   std::string dummy_data;
   ASSERT_TRUE(base::WriteFile(info_path, dummy_data));
-  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
+  EXPECT_TRUE(
+      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
+          .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // File size > 4 KB.
   dummy_data.resize(5000, 'c');
   ASSERT_TRUE(base::WriteFile(info_path, dummy_data));
-  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
+  EXPECT_TRUE(
+      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
+          .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Random string.
   ASSERT_TRUE(base::WriteFile(info_path, "foo bar"));
-  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
+  EXPECT_TRUE(
+      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
+          .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Not a dictionary.
   ASSERT_TRUE(base::WriteFile(info_path, "[]"));
-  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
+  EXPECT_TRUE(
+      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
+          .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Empty dictionary.
   ASSERT_TRUE(base::WriteFile(info_path, "{}"));
-  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
+  EXPECT_TRUE(
+      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
+          .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Dictionary, no message key.
   ASSERT_TRUE(base::WriteFile(info_path, "{\"foo\":\"bar\"}"));
-  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
+  EXPECT_TRUE(
+      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
+          .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Dictionary, message key.
   ASSERT_TRUE(base::WriteFile(info_path, "{\"message\":\"bar\"}"));
-  std::string message = indexed_db::ReadCorruptionInfo(path_base, origin);
+  std::string message =
+      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin);
   EXPECT_FALSE(message.empty());
   EXPECT_FALSE(PathExists(info_path));
   EXPECT_EQ("bar", message);
 
   // Dictionary, message key and more.
   ASSERT_TRUE(base::WriteFile(info_path, "{\"message\":\"foo\",\"bar\":5}"));
-  message = indexed_db::ReadCorruptionInfo(path_base, origin);
+  message =
+      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin);
   EXPECT_FALSE(message.empty());
   EXPECT_FALSE(PathExists(info_path));
   EXPECT_EQ("foo", message);
@@ -1694,7 +1801,7 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
   ASSERT_TRUE(success);
 
   EXPECT_TRUE(found);
-  EXPECT_EQ(4, found_int);
+  EXPECT_EQ(indexed_db::kLatestKnownSchemaVersion, found_int);
   task_environment_.RunUntilIdle();
 }
 
@@ -1967,6 +2074,140 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
   EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
   EXPECT_EQ(value3_.bits, result_value.bits);
   EXPECT_TRUE(CheckBlobInfoMatches(result_value.external_objects));
+}
+
+TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV4ToV5) {
+  int64_t database_id;
+  const int64_t object_store_id = 99;
+
+  const base::string16 database_name(ASCIIToUTF16("db1"));
+  const int64_t version = 9;
+
+  const base::string16 object_store_name(ASCIIToUTF16("object_store1"));
+  const bool auto_increment = true;
+  const IndexedDBKeyPath object_store_key_path(
+      ASCIIToUTF16("object_store_key"));
+
+  // Add an empty blob here to test with.  Empty blobs are not written
+  // to disk, so it's important to verify that a database with empty blobs
+  // should be considered still valid.
+  external_objects().push_back(CreateBlobInfo(base::UTF8ToUTF16("empty blob"),
+                                              base::UTF8ToUTF16("file type"),
+                                              base::Time::Now(), 0u));
+  // The V5 migration checks files on disk, so make sure our fake blob
+  // context writes something there to check.
+  blob_context_->SetWriteFilesToDisk(true);
+
+  IndexedDBMetadataCoding metadata_coding;
+
+  {
+    IndexedDBDatabaseMetadata database;
+    leveldb::Status s = metadata_coding.CreateDatabase(
+        backing_store()->db(), backing_store()->origin_identifier(),
+        database_name, version, &database);
+    EXPECT_TRUE(s.ok());
+    EXPECT_GT(database.id, 0);
+    database_id = database.id;
+
+    IndexedDBBackingStore::Transaction transaction(
+        backing_store()->AsWeakPtr(),
+        blink::mojom::IDBTransactionDurability::Relaxed,
+        blink::mojom::IDBTransactionMode::ReadWrite);
+    transaction.Begin(CreateDummyLock());
+
+    IndexedDBObjectStoreMetadata object_store;
+    s = metadata_coding.CreateObjectStore(
+        transaction.transaction(), database.id, object_store_id,
+        object_store_name, object_store_key_path, auto_increment,
+        &object_store);
+    EXPECT_TRUE(s.ok());
+
+    bool succeeded = false;
+    EXPECT_TRUE(
+        transaction.CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
+    EXPECT_TRUE(succeeded);
+    EXPECT_TRUE(transaction.CommitPhaseTwo().ok());
+  }
+  task_environment_.RunUntilIdle();
+
+  // Initiate transaction - writing blobs.
+  std::unique_ptr<IndexedDBBackingStore::Transaction> transaction =
+      std::make_unique<IndexedDBBackingStore::Transaction>(
+          backing_store()->AsWeakPtr(),
+          blink::mojom::IDBTransactionDurability::Relaxed,
+          blink::mojom::IDBTransactionMode::ReadWrite);
+  transaction->Begin(CreateDummyLock());
+  IndexedDBBackingStore::RecordIdentifier record;
+
+  IndexedDBKey key = IndexedDBKey(ASCIIToUTF16("key"));
+  IndexedDBValue value = IndexedDBValue("value3", external_objects());
+
+  EXPECT_TRUE(backing_store()
+                  ->PutRecord(transaction.get(), database_id, object_store_id,
+                              key, &value, &record)
+                  .ok());
+  bool succeeded = false;
+  base::RunLoop write_blobs_loop;
+  EXPECT_TRUE(transaction
+                  ->CommitPhaseOne(CreateBlobWriteCallback(
+                      &succeeded, write_blobs_loop.QuitClosure()))
+                  .ok());
+  write_blobs_loop.Run();
+  task_environment_.RunUntilIdle();
+
+  // Finish up transaction, verifying blob writes.
+  EXPECT_TRUE(succeeded);
+  EXPECT_TRUE(CheckBlobWrites());
+  ASSERT_TRUE(transaction->CommitPhaseTwo().ok());
+  transaction.reset();
+
+  task_environment_.RunUntilIdle();
+  ASSERT_EQ(blob_context_->writes().size(), 3u);
+
+  // Verify V4 to V5 conversion with all blobs intact has no data loss.
+  {
+    // Change the schema to be v4.
+    const int64_t old_version = 4;
+    std::unique_ptr<LevelDBWriteBatch> write_batch =
+        LevelDBWriteBatch::Create();
+    const std::string schema_version_key = SchemaVersionKey::Encode();
+    ASSERT_TRUE(
+        indexed_db::PutInt(write_batch.get(), schema_version_key, old_version)
+            .ok());
+    ASSERT_TRUE(backing_store()->db()->Write(write_batch.get()).ok());
+
+    DestroyFactoryAndBackingStore();
+    CreateFactoryAndBackingStore();
+
+    // There should be no corruption here.
+    ASSERT_EQ(data_loss_info_.status, blink::mojom::IDBDataLoss::None);
+  }
+
+  // Verify V4 to V5 conversion with missing blobs has data loss.
+  {
+    // Change the schema to be v4.
+    const int64_t old_version = 4;
+    std::unique_ptr<LevelDBWriteBatch> write_batch =
+        LevelDBWriteBatch::Create();
+    const std::string schema_version_key = SchemaVersionKey::Encode();
+    ASSERT_TRUE(
+        indexed_db::PutInt(write_batch.get(), schema_version_key, old_version)
+            .ok());
+    ASSERT_TRUE(backing_store()->db()->Write(write_batch.get()).ok());
+
+    // Pick a blob we wrote arbitrarily and delete it.
+    auto path = blob_context_->writes()[1].path;
+    auto filesystem_proxy = std::make_unique<storage::FilesystemProxy>(
+        storage::FilesystemProxy::UNRESTRICTED, base::FilePath());
+    filesystem_proxy->DeleteFile(path);
+
+    DestroyFactoryAndBackingStore();
+    CreateFactoryAndBackingStore();
+
+    // This should be corrupted.
+    ASSERT_NE(data_loss_info_.status, blink::mojom::IDBDataLoss::None);
+    DestroyFactoryAndBackingStore();
+  }
 }
 
 // This tests that external objects are deleted when ClearObjectStore is called.

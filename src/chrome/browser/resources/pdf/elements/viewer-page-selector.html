@@ -1,41 +1,43 @@
     <style>
       :host {
+        align-items: center;
         color: #fff;
         display: flex;
         font-size: 0.81rem;
+        text-align: center;
+
+        --page-selector-spacing: 4px;
       }
 
-      :host ::selection {
-        background: rgba(255, 255, 255, 0.3);
+      #pageselector::selection {
+        background-color: var(--viewer-text-input-selection-color);
       }
 
-      #pageselector::part(input),
+      input,
       #pagelength {
-        box-sizing: content-box;
-        padding: 0 3px;
         /* --page-length-digits is set through JavaScript. 1px is added because
          * the unit 'ch' does not provide exact whole number pixels, and
          * therefore seems to have 1px-off bugginess. */
-        width: calc(var(--page-length-digits) * 1ch + 1px);
+        width: calc(max(2, var(--page-length-digits)) * 1ch + 1px);
       }
 
-      #pageselector {
-        --cr-input-background-color: transparent;
-        --cr-input-border-radius: 0;
-        --cr-input-color: white;
-        --cr-input-error-display: none;
-        --cr-input-focus-color: transparent;
-      }
-
-      #pageselector::part(input) {
+      input {
         background: rgba(0, 0, 0, 0.5);
-        caret-color: var(--cr-input-color);
-        text-align: end;
+        border: none;
+        color: white;
+        font-family: inherit;
+        line-height: inherit;
+        outline: none;
+        padding: 0 var(--page-selector-spacing);
+        text-align: center;
+      }
+
+      #divider {
+        margin: 0 var(--page-selector-spacing);
       }
     </style>
-    <cr-input id="pageselector" value="[[pageNo]]" on-mouseup="select"
-        on-value-changed="onInputValueChange_" on-change="pageNoCommitted"
-        aria-label$="{{strings.labelPageNumber}}">
-    </cr-input>
-    /
-    <span id="pagelength">{{docLength}}</span>
+    <input type="text" id="pageselector" value="[[pageNo]]"
+        on-pointerup="select" on-input="onInput_" on-change="pageNoCommitted"
+        aria-label="$i18n{labelPageNumber}">
+    <span id="divider">/</span>
+    <span id="pagelength">[[docLength]]</span>

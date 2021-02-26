@@ -9,14 +9,14 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
-#include "content/common/text_input_client_messages.h"
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/common/web_preferences.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 
@@ -24,7 +24,6 @@
 #include <Cocoa/Cocoa.h>
 
 using blink::WebFrameContentDumper;
-using blink::WebImeTextSpan;
 
 namespace content {
 
@@ -80,13 +79,15 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
       "  }"
       "</script>";
 
-  WebPreferences prefs;
+  blink::web_pref::WebPreferences prefs;
   prefs.enable_scroll_animator = false;
 
   RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
   RenderWidget* widget = view->GetMainRenderFrame()->GetLocalRootRenderWidget();
+  blink::WebFrameWidget* blink_widget =
+      static_cast<blink::WebFrameWidget*>(widget->GetWebWidget());
 
-  view->OnUpdateWebPreferences(prefs);
+  view->SetBlinkPreferences(prefs);
 
   const int kMaxOutputCharacters = 1024;
   std::string output;
@@ -100,12 +101,8 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   render_thread_->sink().ClearMessages();
 
   const char* kArrowDownScrollDown = "40,false,false,true,false\n9844";
-  auto arrow_down_scroll_down_command =
-      std::vector<blink::mojom::EditCommandPtr>();
-  arrow_down_scroll_down_command.push_back(
-      blink::mojom::EditCommand::New("moveToEndOfDocument", ""));
-  widget->OnSetEditCommandsForNextKeyEvent(
-      std::move(arrow_down_scroll_down_command));
+  blink_widget->AddEditCommandForNextKeyEvent(
+      blink::WebString::FromLatin1("moveToEndOfDocument"), blink::WebString());
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
   base::RunLoop().RunUntilIdle();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
@@ -115,11 +112,9 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   EXPECT_EQ(kArrowDownScrollDown, output);
 
   const char* kArrowUpScrollUp = "38,false,false,true,false\n0";
-  auto arrow_up_scroll_up_command = std::vector<blink::mojom::EditCommandPtr>();
-  arrow_up_scroll_up_command.push_back(
-      blink::mojom::EditCommand::New("moveToBeginningOfDocument", ""));
-  widget->OnSetEditCommandsForNextKeyEvent(
-      std::move(arrow_up_scroll_up_command));
+  blink_widget->AddEditCommandForNextKeyEvent(
+      blink::WebString::FromLatin1("moveToBeginningOfDocument"),
+      blink::WebString());
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
   base::RunLoop().RunUntilIdle();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
@@ -134,12 +129,8 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   ExecuteJavaScriptForTests("allowKeyEvents = false; window.scrollTo(0, 100)");
 
   const char* kArrowDownNoScroll = "40,false,false,true,false\n100";
-  auto arrow_down_no_scroll_command =
-      std::vector<blink::mojom::EditCommandPtr>();
-  arrow_down_no_scroll_command.push_back(
-      blink::mojom::EditCommand::New("moveToEndOfDocument", ""));
-  widget->OnSetEditCommandsForNextKeyEvent(
-      std::move(arrow_down_no_scroll_command));
+  blink_widget->AddEditCommandForNextKeyEvent(
+      blink::WebString::FromLatin1("moveToEndOfDocument"), blink::WebString());
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
   base::RunLoop().RunUntilIdle();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
@@ -149,11 +140,9 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   EXPECT_EQ(kArrowDownNoScroll, output);
 
   const char* kArrowUpNoScroll = "38,false,false,true,false\n100";
-  auto arrow_up_no_scroll_command = std::vector<blink::mojom::EditCommandPtr>();
-  arrow_down_no_scroll_command.push_back(
-      blink::mojom::EditCommand::New("moveToBeginningOfDocument", ""));
-  widget->OnSetEditCommandsForNextKeyEvent(
-      std::move(arrow_down_no_scroll_command));
+  blink_widget->AddEditCommandForNextKeyEvent(
+      blink::WebString::FromLatin1("moveToBeginningOfDocument"),
+      blink::WebString());
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
   base::RunLoop().RunUntilIdle();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");

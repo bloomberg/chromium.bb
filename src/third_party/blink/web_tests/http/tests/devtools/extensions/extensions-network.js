@@ -16,7 +16,7 @@
         result.entries.sort(compareEntries);
 
         for (var i = 0; i < result.entries.length; ++i)
-            output("resource: " + result.entries[i].request.url);
+          output('resource: ' + result.entries[i].request.url);
       }
       extension_doXHR(function() {
         webInspector.network.getHAR(callbackAndNextTest(onHAR, nextTest));

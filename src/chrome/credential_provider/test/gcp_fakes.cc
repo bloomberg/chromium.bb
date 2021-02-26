@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include <lm.h>
+#include <process.h>
 #include <sddl.h>
 
 #include <atlcomcli.h>
@@ -19,9 +20,11 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/extension/extension_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
@@ -389,6 +392,12 @@ HRESULT FakeOSUserManager::ModifyUserAccessWithLogonHours(
   return S_OK;
 }
 
+HRESULT FakeOSUserManager::SetDefaultPasswordChangePolicies(
+    const wchar_t* domain,
+    const wchar_t* username) {
+  return S_OK;
+}
+
 FakeOSUserManager::UserInfo::UserInfo(const wchar_t* domain,
                                       const wchar_t* password,
                                       const wchar_t* fullname,
@@ -592,9 +601,8 @@ HRESULT FakeScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
   base::string16 token_handle;
   base::string16 last_successful_online_login_millis;
 
-  HRESULT hr = ExtractAssociationInformation(
-      properties, &sid, &id, &email, &token_handle,
-      &last_successful_online_login_millis);
+  HRESULT hr = ExtractAssociationInformation(properties, &sid, &id, &email,
+                                             &token_handle);
   if (FAILED(hr))
     return hr;
 
@@ -638,12 +646,18 @@ FakeWinHttpUrlFetcherFactory::Response::~Response() = default;
 
 FakeWinHttpUrlFetcherFactory::FakeWinHttpUrlFetcherFactory()
     : original_creator_(*WinHttpUrlFetcher::GetCreatorFunctionStorage()) {
-  *WinHttpUrlFetcher::GetCreatorFunctionStorage() = base::BindRepeating(
-      &FakeWinHttpUrlFetcherFactory::Create, base::Unretained(this));
+  fake_creator_ = base::BindRepeating(&FakeWinHttpUrlFetcherFactory::Create,
+                                      base::Unretained(this));
+  *WinHttpUrlFetcher::GetCreatorFunctionStorage() = fake_creator_;
 }
 
 FakeWinHttpUrlFetcherFactory::~FakeWinHttpUrlFetcherFactory() {
   *WinHttpUrlFetcher::GetCreatorFunctionStorage() = original_creator_;
+}
+
+WinHttpUrlFetcher::CreatorCallback
+FakeWinHttpUrlFetcherFactory::GetCreatorCallback() {
+  return fake_creator_;
 }
 
 void FakeWinHttpUrlFetcherFactory::SetFakeResponse(
@@ -1153,6 +1167,283 @@ HRESULT FakeEventLogsUploadManager::GetUploadStatus() {
 
 uint64_t FakeEventLogsUploadManager::GetNumLogsUploaded() {
   return num_event_logs_uploaded_;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+FakeUserPoliciesManager::FakeUserPoliciesManager()
+    : original_manager_(*GetInstanceStorage()) {
+  *GetInstanceStorage() = this;
+}
+
+FakeUserPoliciesManager::FakeUserPoliciesManager(bool cloud_policies_enabled)
+    : original_manager_(*GetInstanceStorage()) {
+  *GetInstanceStorage() = this;
+  SetCloudPoliciesEnabledForTesting(cloud_policies_enabled);
+}
+
+FakeUserPoliciesManager::~FakeUserPoliciesManager() {
+  *GetInstanceStorage() = original_manager_;
+}
+
+HRESULT FakeUserPoliciesManager::FetchAndStoreCloudUserPolicies(
+    const base::string16& sid,
+    const std::string& access_token) {
+  ++num_times_fetch_called_;
+  fetch_status_ =
+      original_manager_->FetchAndStoreCloudUserPolicies(sid, access_token);
+  return fetch_status_;
+}
+
+void FakeUserPoliciesManager::SetUserPolicies(const base::string16& sid,
+                                              const UserPolicies& policies) {
+  user_policies_[sid] = policies;
+  user_policies_stale_[sid] = false;
+}
+
+bool FakeUserPoliciesManager::GetUserPolicies(const base::string16& sid,
+                                              UserPolicies* policies) const {
+  if (user_policies_.find(sid) != user_policies_.end()) {
+    *policies = user_policies_.at(sid);
+    return true;
+  }
+
+  return false;
+}
+
+void FakeUserPoliciesManager::SetUserPolicyStaleOrMissing(
+    const base::string16& sid,
+    bool status) {
+  user_policies_stale_[sid] = status;
+}
+
+bool FakeUserPoliciesManager::IsUserPolicyStaleOrMissing(
+    const base::string16& sid) const {
+  if (user_policies_stale_.find(sid) != user_policies_stale_.end())
+    return user_policies_stale_.at(sid);
+
+  return true;
+}
+
+int FakeUserPoliciesManager::GetNumTimesFetchAndStoreCalled() const {
+  return num_times_fetch_called_;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+FakeDevicePoliciesManager::FakeDevicePoliciesManager(
+    bool cloud_policies_enabled)
+    : original_manager_(*GetInstanceStorage()) {
+  *GetInstanceStorage() = this;
+  UserPoliciesManager::Get()->SetCloudPoliciesEnabledForTesting(
+      cloud_policies_enabled);
+}
+
+FakeDevicePoliciesManager::~FakeDevicePoliciesManager() {
+  *GetInstanceStorage() = original_manager_;
+}
+
+void FakeDevicePoliciesManager::SetDevicePolicies(
+    const DevicePolicies& policies) {
+  device_policies_ = policies;
+}
+
+void FakeDevicePoliciesManager::GetDevicePolicies(
+    DevicePolicies* device_policies) {
+  *device_policies = device_policies_;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+FakeGCPWFiles::FakeGCPWFiles() : original_files(*GetInstanceStorage()) {
+  *GetInstanceStorage() = this;
+}
+
+FakeGCPWFiles::~FakeGCPWFiles() {
+  *GetInstanceStorage() = original_files;
+}
+
+// Installable files are sanitized for testing due to
+// differences between build artifacts file location and the way they are being
+// packaged. When tests are running, they are checking the build artifacts which
+// doesn't reflect foldering structure within 7zip archive.
+std::vector<base::FilePath::StringType>
+FakeGCPWFiles::GetEffectiveInstallFiles() {
+  auto effective_files = original_files->GetEffectiveInstallFiles();
+
+  std::vector<base::FilePath::StringType> sanitized_files;
+  for (auto& install_file : effective_files) {
+    size_t found = install_file.find_last_of('\\');
+    if (found != base::string16::npos) {
+      sanitized_files.push_back(install_file.substr(found + 1));
+    } else {
+      sanitized_files.push_back(install_file);
+    }
+  }
+
+  return sanitized_files;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+FakeOSServiceManager::FakeOSServiceManager()
+    : os_service_manager_(*GetInstanceStorage()) {
+  *GetInstanceStorage() = this;
+}
+
+FakeOSServiceManager::~FakeOSServiceManager() {
+  *GetInstanceStorage() = os_service_manager_;
+}
+
+unsigned __stdcall ServiceLauncher(void* service_main) {
+  LPSERVICE_MAIN_FUNCTION sm = (LPSERVICE_MAIN_FUNCTION)service_main;
+  DWORD flags = 0;
+  (*sm)(flags, nullptr);
+  return 0;
+}
+
+DWORD FakeOSServiceManager::StartServiceCtrlDispatcher(
+    LPSERVICE_MAIN_FUNCTION service_main) {
+  if (service_lookup_from_name_.find(extension::kGCPWExtensionServiceName) ==
+      service_lookup_from_name_.end()) {
+    return ERROR_INVALID_DATA;
+  }
+  LOGFN(INFO);
+
+  uintptr_t wait_thread =
+      _beginthreadex(0, 0, ServiceLauncher, (void*)service_main, 0, 0);
+
+  while (true) {
+    // Service looks for control requests so that it calls the service's control
+    // handler.
+    DWORD control_request = GetControlRequestForTesting();
+    LOGFN(INFO) << "Received control: " << control_request;
+
+    // This is a custom control to end the service process main when service is
+    // supposed to stop.
+    if (control_request == 100)
+      break;
+
+    service_lookup_from_name_[extension::kGCPWExtensionServiceName]
+        .control_handler_cb_(control_request);
+  }
+  ::CloseHandle(reinterpret_cast<HANDLE>(wait_thread));
+
+  return ERROR_SUCCESS;
+}
+
+DWORD FakeOSServiceManager::RegisterCtrlHandler(
+    LPHANDLER_FUNCTION handler_proc,
+    SERVICE_STATUS_HANDLE* service_status_handle) {
+  if (service_lookup_from_name_.find(extension::kGCPWExtensionServiceName) ==
+      service_lookup_from_name_.end()) {
+    return ERROR_SERVICE_DOES_NOT_EXIST;
+  }
+
+  service_lookup_from_name_[extension::kGCPWExtensionServiceName]
+      .control_handler_cb_ = handler_proc;
+  // Set some random integer here. Not needed in the tests.
+  *service_status_handle = (SERVICE_STATUS_HANDLE)1;
+
+  return ERROR_SUCCESS;
+}
+
+DWORD FakeOSServiceManager::SetServiceStatus(
+    SERVICE_STATUS_HANDLE service_status_handle,
+    SERVICE_STATUS service) {
+  LOGFN(INFO) << "Service state: " << service.dwCurrentState;
+  if (service_lookup_from_name_.find(extension::kGCPWExtensionServiceName) ==
+      service_lookup_from_name_.end()) {
+    return ERROR_SERVICE_DOES_NOT_EXIST;
+  }
+  service_lookup_from_name_[extension::kGCPWExtensionServiceName]
+      .service_status_ = service;
+
+  if (service.dwCurrentState == SERVICE_STOPPED)
+    SendControlRequestForTesting(100);
+  return ERROR_SUCCESS;
+}
+
+DWORD FakeOSServiceManager::InstallService(
+    const base::FilePath& service_binary_path,
+    extension::ScopedScHandle* sc_handle) {
+  LOGFN(INFO);
+
+  service_lookup_from_name_[extension::kGCPWExtensionServiceName]
+      .service_status_.dwCurrentState = SERVICE_STOPPED;
+  return ERROR_SUCCESS;
+}
+
+DWORD FakeOSServiceManager::GetServiceStatus(SERVICE_STATUS* service_status) {
+  LOGFN(INFO);
+  if (service_lookup_from_name_.find(extension::kGCPWExtensionServiceName) ==
+      service_lookup_from_name_.end()) {
+    return ERROR_SERVICE_DOES_NOT_EXIST;
+  }
+  *service_status =
+      service_lookup_from_name_[extension::kGCPWExtensionServiceName]
+          .service_status_;
+  return ERROR_SUCCESS;
+}
+
+DWORD FakeOSServiceManager::DeleteService() {
+  service_lookup_from_name_.erase(extension::kGCPWExtensionServiceName);
+  return ERROR_SUCCESS;
+}
+
+DWORD FakeOSServiceManager::ChangeServiceConfig(DWORD dwServiceType,
+                                                DWORD dwStartType,
+                                                DWORD dwErrorControl) {
+  return ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+FakeTaskManager::FakeTaskManager()
+    : task_manager_(*GetInstanceStorage()), num_of_times_executed_(0) {
+  *GetInstanceStorage() = this;
+}
+
+FakeTaskManager::~FakeTaskManager() {
+  *GetInstanceStorage() = task_manager_;
+}
+
+void FakeTaskManager::RunTasksInternal() {
+  if (start_time_.is_null()) {
+    start_time_ = base::Time::Now();
+  }
+
+  int64_t start_hour = start_time_.ToDeltaSinceWindowsEpoch().InHours();
+  num_of_times_executed_++;
+
+  int64_t current = base::Time::Now().ToDeltaSinceWindowsEpoch().InHours();
+
+  ASSERT_EQ(current - start_hour, (num_of_times_executed_ - 1) * 1)
+      << (current - start_hour) << " hours since first run";
+
+  TaskManager::RunTasksInternal();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+FakeTokenGenerator::FakeTokenGenerator()
+    : token_generator_(*GetInstanceStorage()) {
+  *GetInstanceStorage() = this;
+}
+
+FakeTokenGenerator::~FakeTokenGenerator() {
+  *GetInstanceStorage() = token_generator_;
+}
+
+std::string FakeTokenGenerator::GenerateToken() {
+  auto token = test_tokens_.front();
+  test_tokens_.erase(test_tokens_.begin());
+  return token;
+}
+
+void FakeTokenGenerator::SetTokensForTesting(
+    const std::vector<std::string>& test_tokens) {
+  test_tokens_ = test_tokens;
 }
 
 }  // namespace credential_provider

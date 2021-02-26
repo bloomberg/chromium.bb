@@ -15,7 +15,6 @@
 #ifndef DAWNNATIVE_VULKAN_COMMANDBUFFERVK_H_
 #define DAWNNATIVE_VULKAN_COMMANDBUFFERVK_H_
 
-#include "dawn_native/CommandAllocator.h"
 #include "dawn_native/CommandBuffer.h"
 #include "dawn_native/Error.h"
 
@@ -40,17 +39,14 @@ namespace dawn_native { namespace vulkan {
 
       private:
         CommandBuffer(CommandEncoder* encoder, const CommandBufferDescriptor* descriptor);
-        ~CommandBuffer() override;
 
-        void RecordComputePass(CommandRecordingContext* recordingContext);
+        MaybeError RecordComputePass(CommandRecordingContext* recordingContext);
         MaybeError RecordRenderPass(CommandRecordingContext* recordingContext,
                                     BeginRenderPassCmd* renderPass);
         void RecordCopyImageWithTemporaryBuffer(CommandRecordingContext* recordingContext,
                                                 const TextureCopy& srcCopy,
                                                 const TextureCopy& dstCopy,
                                                 const Extent3D& copySize);
-
-        CommandIterator mCommands;
     };
 
 }}  // namespace dawn_native::vulkan

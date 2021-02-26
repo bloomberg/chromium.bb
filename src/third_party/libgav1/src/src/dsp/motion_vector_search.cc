@@ -47,9 +47,10 @@ void MvProjectionCompoundLowPrecision_C(
     for (int i = 0; i < 2; ++i) {
       // |offsets| non-zero check usually equals true and could be ignored.
       if (offsets[i] != 0) {
-        GetMvProjection(temporal_mvs[index], offsets[i],
-                        temporal_reference_offsets[index],
-                        &candidate_mvs[index].mv[i]);
+        GetMvProjection(
+            temporal_mvs[index], offsets[i],
+            kProjectionMvDivisionLookup[temporal_reference_offsets[index]],
+            &candidate_mvs[index].mv[i]);
         for (auto& mv : candidate_mvs[index].mv[i].mv) {
           // The next line is equivalent to:
           // if ((mv & 1) != 0) mv += (mv > 0) ? -1 : 1;
@@ -73,9 +74,10 @@ void MvProjectionCompoundForceInteger_C(
     for (int i = 0; i < 2; ++i) {
       // |offsets| non-zero check usually equals true and could be ignored.
       if (offsets[i] != 0) {
-        GetMvProjection(temporal_mvs[index], offsets[i],
-                        temporal_reference_offsets[index],
-                        &candidate_mvs[index].mv[i]);
+        GetMvProjection(
+            temporal_mvs[index], offsets[i],
+            kProjectionMvDivisionLookup[temporal_reference_offsets[index]],
+            &candidate_mvs[index].mv[i]);
         for (auto& mv : candidate_mvs[index].mv[i].mv) {
           // The next line is equivalent to:
           // const int value = (std::abs(static_cast<int>(mv)) + 3) & ~7;
@@ -101,9 +103,10 @@ void MvProjectionCompoundHighPrecision_C(
     for (int i = 0; i < 2; ++i) {
       // |offsets| non-zero check usually equals true and could be ignored.
       if (offsets[i] != 0) {
-        GetMvProjection(temporal_mvs[index], offsets[i],
-                        temporal_reference_offsets[index],
-                        &candidate_mvs[index].mv[i]);
+        GetMvProjection(
+            temporal_mvs[index], offsets[i],
+            kProjectionMvDivisionLookup[temporal_reference_offsets[index]],
+            &candidate_mvs[index].mv[i]);
       }
     }
   } while (++index < count);
@@ -115,8 +118,10 @@ void MvProjectionSingleLowPrecision_C(
     const int count, MotionVector* const candidate_mvs) {
   int index = 0;
   do {
-    GetMvProjection(temporal_mvs[index], reference_offset,
-                    temporal_reference_offsets[index], &candidate_mvs[index]);
+    GetMvProjection(
+        temporal_mvs[index], reference_offset,
+        kProjectionMvDivisionLookup[temporal_reference_offsets[index]],
+        &candidate_mvs[index]);
     for (auto& mv : candidate_mvs[index].mv) {
       // The next line is equivalent to:
       // if ((mv & 1) != 0) mv += (mv > 0) ? -1 : 1;
@@ -131,8 +136,10 @@ void MvProjectionSingleForceInteger_C(
     const int count, MotionVector* const candidate_mvs) {
   int index = 0;
   do {
-    GetMvProjection(temporal_mvs[index], reference_offset,
-                    temporal_reference_offsets[index], &candidate_mvs[index]);
+    GetMvProjection(
+        temporal_mvs[index], reference_offset,
+        kProjectionMvDivisionLookup[temporal_reference_offsets[index]],
+        &candidate_mvs[index]);
     for (auto& mv : candidate_mvs[index].mv) {
       // The next line is equivalent to:
       // const int value = (std::abs(static_cast<int>(mv)) + 3) & ~7;
@@ -149,8 +156,10 @@ void MvProjectionSingleHighPrecision_C(
     const int count, MotionVector* const candidate_mvs) {
   int index = 0;
   do {
-    GetMvProjection(temporal_mvs[index], reference_offset,
-                    temporal_reference_offsets[index], &candidate_mvs[index]);
+    GetMvProjection(
+        temporal_mvs[index], reference_offset,
+        kProjectionMvDivisionLookup[temporal_reference_offsets[index]],
+        &candidate_mvs[index]);
   } while (++index < count);
 }
 

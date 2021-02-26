@@ -44,11 +44,9 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   ScrollTimeline(Document*,
                  Element*,
                  ScrollDirection,
-                 ScrollTimelineOffset*,
-                 ScrollTimelineOffset*,
-                 double);
+                 HeapVector<Member<ScrollTimelineOffset>>*,
+                 base::Optional<double>);
 
-  // AnimationTimeline implementation.
   bool IsScrollTimeline() const override { return true; }
   // ScrollTimeline is not active if scrollSource is null, does not currently
   // have a CSS layout box, or if its layout box is not a scroll container.
@@ -61,12 +59,17 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   void ScheduleNextService() override;
 
   // IDL API implementation.
-  Element* scrollSource();
+  Element* scrollSource() const;
   String orientation();
-  void startScrollOffset(
-      StringOrScrollTimelineElementBasedOffset& result) const;
-  void endScrollOffset(StringOrScrollTimelineElementBasedOffset& result) const;
+  // TODO(crbug.com/1094014): scrollOffsets will replace start and end
+  // offsets once spec decision on multiple scroll offsets is finalized.
+  // https://github.com/w3c/csswg-drafts/issues/4912
+  void startScrollOffset(ScrollTimelineOffsetValue& result) const;
+  void endScrollOffset(ScrollTimelineOffsetValue& result) const;
+  const HeapVector<ScrollTimelineOffsetValue> scrollOffsets() const;
 
+  void currentTime(CSSNumberish&) override;
+  void duration(CSSNumberish&) override;
   void timeRange(DoubleOrScrollTimelineAutoKeyword&);
 
   // Returns the Node that should actually have the ScrollableArea (if one
@@ -75,17 +78,9 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // removed before the ScrollTimeline was created.
   Node* ResolvedScrollSource() const { return resolved_scroll_source_; }
 
-  // Return the latest resolved start scroll offset. This will be nullopt when
+  // Return the latest resolved scroll offsets. This will be empty when
   // timeline is inactive.
-  base::Optional<double> GetResolvedStartScrollOffset() const {
-    return timeline_state_snapshotted_.start_offset;
-  }
-
-  // Return the latest resolved end scroll offset. This will be nullopt when
-  // timeline is inactive.
-  base::Optional<double> GetResolvedEndScrollOffset() const {
-    return timeline_state_snapshotted_.end_offset;
-  }
+  const std::vector<double> GetResolvedScrollOffsets() const;
 
   ScrollDirection GetOrientation() const { return orientation_; }
 
@@ -96,7 +91,13 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // This may lead the timeline to request a new animation frame.
   virtual void Invalidate();
 
+  // Mark every effect target of every Animation attached to this timeline
+  // for style recalc.
+  void InvalidateEffectTargetStyle();
+
   CompositorAnimationTimeline* EnsureCompositorTimeline() override;
+  void UpdateCompositorTimeline() override;
+
   // TODO(crbug.com/896249): These methods are temporary and currently required
   // to support worklet animations. Once worklet animations become animations
   // these methods will not be longer needed. They are used to keep track of
@@ -105,7 +106,10 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   void WorkletAnimationAttached();
   void WorkletAnimationDetached();
 
-  void Trace(Visitor*) override;
+  void AnimationAttached(Animation*) override;
+  void AnimationDetached(Animation*) override;
+
+  void Trace(Visitor*) const override;
 
   static bool HasActiveScrollTimeline(Node* node);
   // Invalidates scroll timelines with a given scroller node.
@@ -116,6 +120,10 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
 
  protected:
   PhaseAndTime CurrentPhaseAndTime() override;
+  double GetTimeRange() const { return time_range_ ? time_range_.value() : 0; }
+  bool ScrollOffsetsEqual(
+      const HeapVector<Member<ScrollTimelineOffset>>& other) const;
+  size_t AttachedAnimationsCount() const { return scroll_animations_.size(); }
 
  private:
   // https://wicg.github.io/scroll-animations/#avoiding-cycles
@@ -130,40 +138,46 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // element-based values it computes the corresponding length value that maps
   // to the particular element intersection. See
   // |ScrollTimelineOffset::ResolveOffset()| for more details.
-  void ResolveScrollOffsets(double* start_offset, double* end_offset) const;
+  bool ResolveScrollOffsets(WTF::Vector<double>& resolved_offsets) const;
 
   struct TimelineState {
     TimelinePhase phase;
     base::Optional<base::TimeDelta> current_time;
-    // The resolved version of start and end offset. These values are nullopts
+    // The resolved version of scroll offset. The vector is empty
     // when timeline is inactive (e.g., when source does not overflow).
-    base::Optional<double> start_offset;
-    base::Optional<double> end_offset;
+    WTF::Vector<double> scroll_offsets;
 
     bool operator==(const TimelineState& other) const {
       return phase == other.phase && current_time == other.current_time &&
-             start_offset == other.start_offset &&
-             end_offset == other.end_offset;
+             scroll_offsets == other.scroll_offsets;
     }
   };
 
   TimelineState ComputeTimelineState() const;
+  ScrollTimelineOffset* StartScrollOffset() const;
+  ScrollTimelineOffset* EndScrollOffset() const;
+
+  // Use time_check true to request next service if time has changed.
+  // false - regardless of time change.
+  void ScheduleNextServiceInternal(bool time_check);
 
   // Use |scroll_source_| only to implement the web-exposed API but use
   // resolved_scroll_source_ to actually access the scroll related properties.
   Member<Element> scroll_source_;
   Member<Node> resolved_scroll_source_;
   ScrollDirection orientation_;
+  Member<HeapVector<Member<ScrollTimelineOffset>>> scroll_offsets_;
 
-  // These define the total range of the scroller that the ScrollTimeline is
-  // active within.
-  Member<ScrollTimelineOffset> start_scroll_offset_;
-  Member<ScrollTimelineOffset> end_scroll_offset_;
-
-  double time_range_;
+  base::Optional<double> time_range_;
 
   // Snapshotted value produced by the last SnapshotState call.
   TimelineState timeline_state_snapshotted_;
+
+  // The only purpose of scroll_animations_ is keeping strong references to
+  // attached animations. This is required to keep attached animations alive
+  // as long as the timeline is alive. Scroll timeline is alive as long as its
+  // scroller is alive.
+  HeapHashSet<Member<Animation>> scroll_animations_;
 };
 
 template <>

@@ -4,6 +4,7 @@
 
 #include "discovery/mdns/testing/mdns_test_util.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -23,31 +24,37 @@ MdnsRecord GetFakePtrRecord(const DomainName& target,
   DomainName name(++target.labels().begin(), target.labels().end());
   PtrRecordRdata rdata(target);
   return MdnsRecord(std::move(name), DnsType::kPTR, DnsClass::kIN,
-                    RecordType::kShared, ttl, rdata);
+                    RecordType::kShared, ttl, std::move(rdata));
 }
 
 MdnsRecord GetFakeSrvRecord(const DomainName& name, std::chrono::seconds ttl) {
-  SrvRecordRdata rdata(0, 0, 80, name);
+  return GetFakeSrvRecord(name, name, ttl);
+}
+
+MdnsRecord GetFakeSrvRecord(const DomainName& name,
+                            const DomainName& target,
+                            std::chrono::seconds ttl) {
+  SrvRecordRdata rdata(0, 0, kFakeSrvRecordPort, target);
   return MdnsRecord(name, DnsType::kSRV, DnsClass::kIN, RecordType::kUnique,
-                    ttl, rdata);
+                    ttl, std::move(rdata));
 }
 
 MdnsRecord GetFakeTxtRecord(const DomainName& name, std::chrono::seconds ttl) {
   TxtRecordRdata rdata;
   return MdnsRecord(name, DnsType::kTXT, DnsClass::kIN, RecordType::kUnique,
-                    ttl, rdata);
+                    ttl, std::move(rdata));
 }
 
 MdnsRecord GetFakeARecord(const DomainName& name, std::chrono::seconds ttl) {
-  ARecordRdata rdata(IPAddress(192, 168, 0, 0));
+  ARecordRdata rdata(kFakeARecordAddress);
   return MdnsRecord(name, DnsType::kA, DnsClass::kIN, RecordType::kUnique, ttl,
-                    rdata);
+                    std::move(rdata));
 }
 
 MdnsRecord GetFakeAAAARecord(const DomainName& name, std::chrono::seconds ttl) {
-  AAAARecordRdata rdata(IPAddress(1, 2, 3, 4, 5, 6, 7, 8));
+  AAAARecordRdata rdata(kFakeAAAARecordAddress);
   return MdnsRecord(name, DnsType::kAAAA, DnsClass::kIN, RecordType::kUnique,
-                    ttl, rdata);
+                    ttl, std::move(rdata));
 }
 
 }  // namespace discovery

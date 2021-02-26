@@ -240,11 +240,22 @@ class TimePicker extends HTMLElement {
     this.hasSecond_ = config.hasSecond;
     this.hasMillisecond_ = config.hasMillisecond;
     this.hasAMPM_ = config.hasAMPM;
+    this.initialFocusedFieldIndex_ = config.focusedFieldIndex || 0;
   };
 
   onWindowResize_ = (event) => {
     this.timeColumns_.scrollColumnsToSelectedCells();
-    this.timeColumns_.firstChild.focus();
+    if (!this.focusOnFieldIndex(this.initialFocusedFieldIndex_))
+      this.timeColumns_.firstChild.focus();
+  };
+
+  /** Focus on given index if valid. Return true if so. */
+  focusOnFieldIndex = (index) => {
+    if (index >= 0 && index < this.timeColumns_.children.length) {
+      this.timeColumns_.children[index].focus();
+      return true;
+    }
+    return false
   };
 
   onKeyDown_ = (event) => {
@@ -271,6 +282,8 @@ class TimePicker extends HTMLElement {
         break;
       case 'Home':
       case 'End':
+        window.pagePopupController.setValue(this.selectedValue);
+        event.stopPropagation();
         // Prevent an attempt to scroll to the end of
         // of an infinitely looping column.
         event.preventDefault();
@@ -686,6 +699,14 @@ class TimeColumn extends HTMLUListElement {
           nextTimeColumn.focus();
         }
         break;
+      case 'Home':
+        this.setToMinValue();
+        this.scrollToSelectedCell();
+        break;
+      case 'End':
+        this.setToMaxValue();
+        this.scrollToSelectedCell();
+        break;
     }
   };
 
@@ -716,6 +737,38 @@ class TimeColumn extends HTMLUListElement {
       this.selectedTimeCell = this.firstChild;
     } else {
       this.selectedTimeCell = this.initialTimeCell_;
+    }
+  };
+
+  setToMinValue = () => {
+    if (this.columnType_ == TimeColumnType.AMPM) {
+      this.selectedTimeCell = this.firstChild;
+      const isAM = this.selectedTimeCell.textContent ==
+          global.params.ampmLabels[Label.AM];
+      if (!isAM)
+        this.selectedTimeCell = this.lastChild;
+    } else {
+      this.selectedTimeCell = this.firstChild;
+      for (let timeCell of this.children) {
+        if (timeCell.value < this.selectedTimeCell.value)
+          this.selectedTimeCell = timeCell;
+      }
+    }
+  };
+
+  setToMaxValue = () => {
+    if (this.columnType_ == TimeColumnType.AMPM) {
+      this.selectedTimeCell = this.firstChild;
+      const isAM = this.selectedTimeCell.textContent ==
+          global.params.ampmLabels[Label.AM];
+      if (isAM)
+        this.selectedTimeCell = this.lastChild;
+    } else {
+      this.selectedTimeCell = this.lastChild;
+      for (let timeCell of this.children) {
+        if (timeCell.value > this.selectedTimeCell.value)
+          this.selectedTimeCell = timeCell;
+      }
     }
   };
 

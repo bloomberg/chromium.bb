@@ -31,10 +31,10 @@
 #include "chrome/browser/downgrade/downgrade_utils.h"
 #include "chrome/browser/downgrade/snapshot_manager.h"
 #include "chrome/browser/downgrade/user_data_downgrade.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
@@ -89,8 +89,7 @@ base::Optional<int> MoveUserData(const base::FilePath& source,
       *result += 1;
     // Attempt to delete Last Version if all else failed so that Chrome does not
     // continually attempt to perform a migration.
-    base::DeleteFile(source.Append(kDowngradeLastVersionFile),
-                     false /* recursive */);
+    base::DeleteFile(source.Append(kDowngradeLastVersionFile));
     // Inform system administrators that things have gone awry.
     SYSLOG(ERROR) << "Failed to perform User Data migration following a Chrome "
                      "version downgrade. Chrome will run with User Data from a "
@@ -143,7 +142,7 @@ void DeleteAllRenamedUserDirectories(const base::FilePath& dir,
                                   pattern);
   for (base::FilePath to_delete = enumerator.Next(); !to_delete.empty();
        to_delete = enumerator.Next()) {
-    base::DeleteFileRecursively(to_delete);
+    base::DeletePathRecursively(to_delete);
   }
 }
 
@@ -172,7 +171,7 @@ bool UserDataSnapshotEnabled() {
   if (g_snapshots_enabled_for_testing)
     return true;
   bool is_enterprise_managed =
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
       base::IsMachineExternallyManaged() ||
 #endif
       policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().is_valid();

@@ -15,7 +15,7 @@ import * as UI from '../ui/ui.js';
 export class AppManifestView extends UI.Widget.VBox {
   constructor() {
     super(true);
-    this.registerRequiredCSS('resources/appManifestView.css');
+    this.registerRequiredCSS('resources/appManifestView.css', {enableLegacyPatching: true});
 
     Common.Settings.Settings.instance()
         .moduleSetting('colorFormat')
@@ -29,6 +29,7 @@ export class AppManifestView extends UI.Widget.VBox {
     this._emptyView.hideWidget();
 
     this._reportView = new UI.ReportView.ReportView(Common.UIString.UIString('App Manifest'));
+    this._reportView.registerRequiredCSS('resources/appManifestView.css', {enableLegacyPatching: true});
     this._reportView.show(this.contentElement);
     this._reportView.hideWidget();
 
@@ -38,6 +39,7 @@ export class AppManifestView extends UI.Widget.VBox {
 
     this._presentationSection = this._reportView.appendSection(Common.UIString.UIString('Presentation'));
     this._iconsSection = this._reportView.appendSection(Common.UIString.UIString('Icons'), 'report-section-icons');
+    /** @type {!Array<!UI.ReportView.Section>} */
     this._shortcutSections = [];
 
     this._nameField = this._identitySection.appendField(Common.UIString.UIString('Name'));
@@ -46,11 +48,11 @@ export class AppManifestView extends UI.Widget.VBox {
     this._startURLField = this._presentationSection.appendField(Common.UIString.UIString('Start URL'));
 
     const themeColorField = this._presentationSection.appendField(Common.UIString.UIString('Theme color'));
-    this._themeColorSwatch = InlineEditor.ColorSwatch.ColorSwatch.create();
+    this._themeColorSwatch = InlineEditor.ColorSwatch.createColorSwatch();
     themeColorField.appendChild(this._themeColorSwatch);
 
     const backgroundColorField = this._presentationSection.appendField(Common.UIString.UIString('Background color'));
-    this._backgroundColorSwatch = InlineEditor.ColorSwatch.ColorSwatch.create();
+    this._backgroundColorSwatch = InlineEditor.ColorSwatch.createColorSwatch();
     backgroundColorField.appendChild(this._backgroundColorSwatch);
 
     this._orientationField = this._presentationSection.appendField(Common.UIString.UIString('Orientation'));
@@ -58,6 +60,8 @@ export class AppManifestView extends UI.Widget.VBox {
 
     this._throttler = new Common.Throttler.Throttler(1000);
     SDK.SDKModel.TargetManager.instance().observeTargets(this);
+    /** @type {!Array<!Common.EventTarget.EventDescriptor>} */
+    this._registeredListeners = [];
   }
 
   /**
@@ -111,6 +115,9 @@ export class AppManifestView extends UI.Widget.VBox {
    * @param {boolean} immediately
    */
   async _updateManifest(immediately) {
+    if (!this._resourceTreeModel) {
+      return;
+    }
     const {url, data, errors} = await this._resourceTreeModel.fetchAppManifest();
     const installabilityErrors = await this._resourceTreeModel.getInstallabilityErrors();
     const manifestIcons = await this._resourceTreeModel.getManifestIcons();
@@ -124,6 +131,7 @@ export class AppManifestView extends UI.Widget.VBox {
    * @param {?string} data
    * @param {!Array<!Protocol.Page.AppManifestError>} errors
    * @param {!Array<!Protocol.Page.InstallabilityError>} installabilityErrors
+   * @param {!{primaryIcon: ?string}} manifestIcons
    */
   async _renderManifest(url, data, errors, installabilityErrors, manifestIcons) {
     if (!data && !errors.length) {
@@ -160,7 +168,8 @@ export class AppManifestView extends UI.Widget.VBox {
     const startURL = stringProperty('start_url');
     if (startURL) {
       const completeURL = /** @type {string} */ (Common.ParsedURL.ParsedURL.completeURL(url, startURL));
-      const link = Components.Linkifier.Linkifier.linkifyURL(completeURL, {text: startURL});
+      const link = Components.Linkifier.Linkifier.linkifyURL(
+          completeURL, /** @type {!Components.Linkifier.LinkifyURLOptions} */ ({text: startURL}));
       link.tabIndex = 0;
       this._startURLField.appendChild(link);
     }
@@ -168,13 +177,15 @@ export class AppManifestView extends UI.Widget.VBox {
     this._themeColorSwatch.classList.toggle('hidden', !stringProperty('theme_color'));
     const themeColor =
         Common.Color.Color.parse(stringProperty('theme_color') || 'white') || Common.Color.Color.parse('white');
-    this._themeColorSwatch.setColor(/** @type {!Common.Color.Color} */ (themeColor));
-    this._themeColorSwatch.setFormat(Common.Settings.detectColorFormat(this._themeColorSwatch.color()));
+    if (themeColor) {
+      this._themeColorSwatch.renderColor(themeColor, true);
+    }
     this._backgroundColorSwatch.classList.toggle('hidden', !stringProperty('background_color'));
     const backgroundColor =
         Common.Color.Color.parse(stringProperty('background_color') || 'white') || Common.Color.Color.parse('white');
-    this._backgroundColorSwatch.setColor(/** @type {!Common.Color.Color} */ (backgroundColor));
-    this._backgroundColorSwatch.setFormat(Common.Settings.detectColorFormat(this._backgroundColorSwatch.color()));
+    if (backgroundColor) {
+      this._backgroundColorSwatch.renderColor(backgroundColor, true);
+    }
 
     this._orientationField.textContent = stringProperty('orientation');
     const displayType = stringProperty('display');
@@ -203,9 +214,9 @@ export class AppManifestView extends UI.Widget.VBox {
         UI.UIUtils.formatLocalized('Need help? Read our %s.', [documentationLink]));
 
     if (manifestIcons && manifestIcons.primaryIcon) {
-      const wrapper = createElement('div');
+      const wrapper = document.createElement('div');
       wrapper.classList.add('image-wrapper');
-      const image = createElement('img');
+      const image = document.createElement('img');
       image.style.maxWidth = '200px';
       image.style.maxHeight = '200px';
       image.src = 'data:image/png;base64,' + manifestIcons.primaryIcon;
@@ -235,14 +246,27 @@ export class AppManifestView extends UI.Widget.VBox {
       }
       const urlField = shortcutSection.appendFlexedField('URL');
       const shortcutUrl = /** @type {string} */ (Common.ParsedURL.ParsedURL.completeURL(url, shortcut.url));
-      const link = Components.Linkifier.Linkifier.linkifyURL(shortcutUrl, {text: shortcut.url});
+      const link = Components.Linkifier.Linkifier.linkifyURL(
+          shortcutUrl, /** @type {!Components.Linkifier.LinkifyURLOptions} */ ({text: shortcut.url}));
       link.tabIndex = 0;
       urlField.appendChild(link);
 
       const shortcutIcons = shortcut.icons || [];
+      let hasShorcutIconLargeEnough = false;
       for (const shortcutIcon of shortcutIcons) {
         const shortcutIconErrors = await this._appendIconResourceToSection(url, shortcutIcon, shortcutSection);
-        imageErrors.push(...shortcutIconErrors);
+        if (shortcutIconErrors.length > 0) {
+          imageErrors.push(...shortcutIconErrors);
+        }
+        if (!hasShorcutIconLargeEnough && shortcutIcon.sizes) {
+          const shortcutIconSize = shortcutIcon.sizes.match(/^(\d+)x(\d+)$/);
+          if (shortcutIconSize && shortcutIconSize[1] >= 96 && shortcutIconSize[2] >= 96) {
+            hasShorcutIconLargeEnough = true;
+          }
+        }
+      }
+      if (!hasShorcutIconLargeEnough) {
+        imageErrors.push(ls`Shortcut #${shortcutIndex} should include a 96x96 pixel icon`);
       }
       shortcutIndex++;
     }
@@ -358,11 +382,19 @@ export class AppManifestView extends UI.Widget.VBox {
         case 'prefer-related-applications':
           errorMessage = ls`Manifest specifies prefer_related_applications: true`;
           break;
+        case 'prefer-related-applications-only-beta-stable':
+          errorMessage =
+              ls`prefer_related_applications is only supported on Chrome Beta and Stable channels on Android.`;
+          break;
+        case 'manifest-display-override-not-supported':
+          errorMessage =
+              ls`Manifest contains 'display_override' field, and the first supported display mode must be one of 'standalone', 'fullscreen', or 'minimal-ui'`;
+          break;
         default:
           console.error(`Installability error id '${installabilityError.errorId}' is not recognized`);
           break;
       }
-      if (errorMessages) {
+      if (errorMessage) {
         errorMessages.push(errorMessage);
       }
     }
@@ -370,13 +402,13 @@ export class AppManifestView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {?string} url
-   * @return {!Promise<?{image: !Element, wrapper: !Element}>}
+   * @param {string} url
+   * @return {!Promise<?{image: !HTMLImageElement, wrapper: !Element}>}
    */
   async _loadImage(url) {
-    const wrapper = createElement('div');
+    const wrapper = document.createElement('div');
     wrapper.classList.add('image-wrapper');
-    const image = createElement('img');
+    const image = /** @type {!HTMLImageElement} */ (document.createElement('img'));
     const result = new Promise((resolve, reject) => {
       image.onload = resolve;
       image.onerror = reject;
@@ -400,7 +432,15 @@ export class AppManifestView extends UI.Widget.VBox {
    */
   async _appendIconResourceToSection(baseUrl, icon, section) {
     const iconErrors = [];
+    if (!icon.src) {
+      iconErrors.push(ls`Icon src is not set`);
+      return iconErrors;
+    }
     const iconUrl = Common.ParsedURL.ParsedURL.completeURL(baseUrl, icon['src']);
+    if (!iconUrl) {
+      iconErrors.push(ls`Icon URL '${icon['src']}' failed to parse`);
+      return iconErrors;
+    }
     const result = await this._loadImage(iconUrl);
     if (!result) {
       iconErrors.push(ls`Icon ${iconUrl} failed to load`);
@@ -415,8 +455,10 @@ export class AppManifestView extends UI.Widget.VBox {
     } else if (!/^\d+x\d+$/.test(icon.sizes)) {
       iconErrors.push(ls`Icon ${iconUrl} should specify its size as \`{width}x{height}\``);
     } else {
-      const [width, height] = icon.sizes.split('x').map(x => parseInt(x, 10));
-      if (image.naturalWidth !== width && image.naturalHeight !== height) {
+      const [width, height] = icon.sizes.split('x').map(/** @param {*} x*/ x => parseInt(x, 10));
+      if (width !== height) {
+        iconErrors.push(ls`Icon ${iconUrl} dimensions should be square`);
+      } else if (image.naturalWidth !== width && image.naturalHeight !== height) {
         iconErrors.push(ls`Actual size (${image.naturalWidth}×${image.naturalHeight})px of icon ${
             iconUrl} does not match specified size (${width}×${height}px)`);
       } else if (image.naturalWidth !== width) {

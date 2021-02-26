@@ -50,7 +50,7 @@ export const CustomConditions = {
   description: Common.UIString.UIString('Check Network and Performance panels'),
 };
 
-/** @type {!Array.<!Conditions>} */
+/** @type {!Array.<(!Conditions|!PlaceholderConditions)>} */
 export const mobilePresets = [MidTierMobileConditions, LowEndMobileConditions, CustomConditions];
 
 /** @type {!Array.<!Conditions>} */
@@ -80,15 +80,19 @@ export const cpuThrottlingPresets = [
   *   cpuThrottlingRate: !CPUThrottlingRates
   * }}
   **/
+// @ts-ignore typedef
 export let Conditions;
 
 /** @typedef {!{title: string, items: !Array<!SDK.NetworkManager.Conditions>}} */
+// @ts-ignore typedef
 export let NetworkThrottlingConditionsGroup;
 
 /** @typedef {!{title: string, items: !Array<!Conditions|!PlaceholderConditions>}} */
+// @ts-ignore typedef
 export let MobileThrottlingConditionsGroup;
 
 /** @typedef {!Array<?Conditions|!PlaceholderConditions>} */
+// @ts-ignore typedef
 export let ConditionsList;
 
 /**
@@ -97,4 +101,5 @@ export let ConditionsList;
   *   description: string
   * }}
   **/
+// @ts-ignore typedef
 export let PlaceholderConditions;

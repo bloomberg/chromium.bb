@@ -18,8 +18,8 @@
 #include "media/base/key_systems.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "url/origin.h"
 
 namespace media {
 
@@ -32,11 +32,32 @@ using NewSessionMojoCdmPromise =
     MojoCdmPromise<void(mojom::CdmPromiseResultPtr, const std::string&),
                    std::string>;
 
+// static
+void MojoCdmService::Create(CdmFactory* cdm_factory,
+                            MojoCdmServiceContext* context,
+                            const std::string& key_system,
+                            const CdmConfig& cdm_config,
+                            CdmServiceCreatedCB callback) {
+  std::unique_ptr<MojoCdmService> mojo_cdm_service(
+      new MojoCdmService(cdm_factory, context));
+  auto weak_this = mojo_cdm_service->weak_factory_.GetWeakPtr();
+  cdm_factory->Create(
+      key_system, cdm_config,
+      base::BindRepeating(&MojoCdmService::OnSessionMessage, weak_this),
+      base::BindRepeating(&MojoCdmService::OnSessionClosed, weak_this),
+      base::BindRepeating(&MojoCdmService::OnSessionKeysChange, weak_this),
+      base::BindRepeating(&MojoCdmService::OnSessionExpirationUpdate,
+                          weak_this),
+      base::BindOnce(&MojoCdmService::OnCdmCreated, weak_this,
+                     std::move(mojo_cdm_service),
+                     mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+                         std::move(callback), nullptr, mojo::NullRemote(),
+                         "Mojo CDM Service creation failure")));
+}
+
 MojoCdmService::MojoCdmService(CdmFactory* cdm_factory,
                                MojoCdmServiceContext* context)
-    : cdm_factory_(cdm_factory),
-      context_(context),
-      cdm_id_(CdmContext::kInvalidCdmId) {
+    : cdm_factory_(cdm_factory), context_(context) {
   DVLOG(1) << __func__;
   DCHECK(cdm_factory_);
   // |context_| can be null.
@@ -45,36 +66,16 @@ MojoCdmService::MojoCdmService(CdmFactory* cdm_factory,
 MojoCdmService::~MojoCdmService() {
   DVLOG(1) << __func__;
 
-  if (!context_ || cdm_id_ == CdmContext::kInvalidCdmId)
+  if (!context_ || !cdm_id_)
     return;
 
-  context_->UnregisterCdm(cdm_id_);
+  context_->UnregisterCdm(cdm_id_.value());
 }
 
 void MojoCdmService::SetClient(
     mojo::PendingAssociatedRemote<mojom::ContentDecryptionModuleClient>
         client) {
   client_.Bind(std::move(client));
-}
-
-void MojoCdmService::Initialize(const std::string& key_system,
-                                const url::Origin& security_origin,
-                                const CdmConfig& cdm_config,
-                                InitializeCallback callback) {
-  DVLOG(1) << __func__ << ": " << key_system;
-
-  CHECK(!has_initialize_been_called_) << "Initialize should only happen once";
-  has_initialize_been_called_ = true;
-
-  auto weak_this = weak_factory_.GetWeakPtr();
-  cdm_factory_->Create(
-      key_system, security_origin, cdm_config,
-      base::Bind(&MojoCdmService::OnSessionMessage, weak_this),
-      base::Bind(&MojoCdmService::OnSessionClosed, weak_this),
-      base::Bind(&MojoCdmService::OnSessionKeysChange, weak_this),
-      base::Bind(&MojoCdmService::OnSessionExpirationUpdate, weak_this),
-      base::BindOnce(&MojoCdmService::OnCdmCreated, weak_this,
-                     std::move(callback)));
 }
 
 void MojoCdmService::SetServerCertificate(
@@ -118,9 +119,9 @@ void MojoCdmService::UpdateSession(const std::string& session_id,
                                    const std::vector<uint8_t>& response,
                                    UpdateSessionCallback callback) {
   DVLOG(2) << __func__;
-  cdm_->UpdateSession(session_id, response,
-                      std::unique_ptr<SimpleCdmPromise>(
-                          new SimpleMojoCdmPromise(std::move(callback))));
+  cdm_->UpdateSession(
+      session_id, response,
+      std::make_unique<SimpleMojoCdmPromise>(std::move(callback)));
 }
 
 void MojoCdmService::CloseSession(const std::string& session_id,
@@ -142,31 +143,28 @@ scoped_refptr<ContentDecryptionModule> MojoCdmService::GetCdm() {
 }
 
 void MojoCdmService::OnCdmCreated(
-    InitializeCallback callback,
+    std::unique_ptr<MojoCdmService> mojo_cdm_service,
+    CdmServiceCreatedCB callback,
     const scoped_refptr<::media::ContentDecryptionModule>& cdm,
     const std::string& error_message) {
   DVLOG(2) << __func__ << ": error_message=" << error_message;
-  mojom::CdmPromiseResultPtr cdm_promise_result(mojom::CdmPromiseResult::New());
 
   // TODO(xhwang): This should not happen when KeySystemInfo is properly
   // populated. See http://crbug.com/469366
   if (!cdm) {
-    cdm_promise_result->success = false;
-    cdm_promise_result->exception = CdmPromise::Exception::NOT_SUPPORTED_ERROR;
-    cdm_promise_result->system_code = 0;
-    cdm_promise_result->error_message = error_message;
-    mojo::PendingRemote<mojom::Decryptor> decryptor;
-    std::move(callback).Run(std::move(cdm_promise_result), 0,
-                            std::move(decryptor));
+    // Make sure the error string is non-empty on failure.
+    std::move(callback).Run(
+        nullptr, mojo::NullRemote(),
+        error_message.empty() ? "CDM initialization failed" : error_message);
     return;
   }
 
-  CHECK(!cdm_) << "CDM should only be created once.";
   cdm_ = cdm;
 
   if (context_) {
     cdm_id_ = context_->RegisterCdm(this);
-    DVLOG(1) << __func__ << ": CDM successfully registered with ID " << cdm_id_;
+    DVLOG(1) << __func__ << ": CDM successfully registered with ID "
+             << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id_));
   }
 
   // If |cdm| has a decryptor, create the MojoDecryptorService
@@ -188,16 +186,17 @@ void MojoCdmService::OnCdmCreated(
         &MojoCdmService::OnDecryptorConnectionError, base::Unretained(this)));
   }
 
-  cdm_promise_result->success = true;
-  std::move(callback).Run(std::move(cdm_promise_result), cdm_id_,
-                          std::move(decryptor_remote));
+  std::move(callback).Run(std::move(mojo_cdm_service),
+                          std::move(decryptor_remote), "");
 }
 
 void MojoCdmService::OnSessionMessage(const std::string& session_id,
                                       ::media::CdmMessageType message_type,
                                       const std::vector<uint8_t>& message) {
   DVLOG(2) << __func__;
-  client_->OnSessionMessage(session_id, message_type, message);
+  if (client_) {
+    client_->OnSessionMessage(session_id, message_type, message);
+  }
 }
 
 void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
@@ -205,21 +204,26 @@ void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
                                          CdmKeysInfo keys_info) {
   DVLOG(2) << __func__
            << " has_additional_usable_key = " << has_additional_usable_key;
-
-  client_->OnSessionKeysChange(session_id, has_additional_usable_key,
-                               std::move(keys_info));
+  if (client_) {
+    client_->OnSessionKeysChange(session_id, has_additional_usable_key,
+                                 std::move(keys_info));
+  }
 }
 
 void MojoCdmService::OnSessionExpirationUpdate(const std::string& session_id,
                                                base::Time new_expiry_time_sec) {
   DVLOG(2) << __func__ << " expiry = " << new_expiry_time_sec;
-  client_->OnSessionExpirationUpdate(session_id,
-                                     new_expiry_time_sec.ToDoubleT());
+  if (client_) {
+    client_->OnSessionExpirationUpdate(session_id,
+                                       new_expiry_time_sec.ToDoubleT());
+  }
 }
 
 void MojoCdmService::OnSessionClosed(const std::string& session_id) {
   DVLOG(2) << __func__;
-  client_->OnSessionClosed(session_id);
+  if (client_) {
+    client_->OnSessionClosed(session_id);
+  }
 }
 
 void MojoCdmService::OnDecryptorConnectionError() {

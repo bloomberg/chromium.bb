@@ -14,7 +14,7 @@
 #include <utility>
 
 #include "core/fxcrt/unowned_ptr.h"
-#include "third_party/base/logging.h"
+#include "third_party/base/check.h"
 
 namespace pdfium {
 
@@ -247,6 +247,17 @@ class span {
     CHECK(index < size_);
     return data_.Get()[index];
   }
+
+  constexpr T& front() const noexcept {
+    CHECK(!empty());
+    return *data();
+  }
+
+  constexpr T& back() const noexcept {
+    CHECK(!empty());
+    return *(data() + size() - 1);
+  }
+
   constexpr T* data() const noexcept { return data_.Get(); }
 
   // [span.iter], span iterator support

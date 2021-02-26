@@ -17,6 +17,10 @@ const runFixtureTestAndAssertMatch = (fixtureName: string) => {
 
   const {output} = parseTypeScriptComponent(sourcePath);
 
+  if (!output) {
+    assert.fail(`Generating bridge for ${fixtureName} unexpectedly generated nothing.`);
+  }
+
   const actualCode = fs.readFileSync(output, {encoding: 'utf8'});
   const expectedCode = fs.readFileSync(expectedPath, {encoding: 'utf8'});
 
@@ -42,7 +46,38 @@ describe('bridges CLI fixture tests', () => {
     runFixtureTestAndAssertMatch('getters-setters-component');
   });
 
-  it('can handle setters with object literal data parameter', () => {
-    runFixtureTestAndAssertMatch('setters-object-literal');
+  it('correctly parses TypeScript enums', () => {
+    runFixtureTestAndAssertMatch('enums');
+  });
+
+  it('correctly parses TypeScript enum members used as types', () => {
+    runFixtureTestAndAssertMatch('enum-members');
+  });
+
+  it('correctly parses interfaces wrapped in Readonly or ReadonlyArray', () => {
+    runFixtureTestAndAssertMatch('setters-readonly');
+  });
+
+  it('correctly parses multiple interfaces that are imported', () => {
+    runFixtureTestAndAssertMatch('multiple-interfaces');
+  });
+
+  it('understands complex union types and types extending other types', () => {
+    runFixtureTestAndAssertMatch('complex-union-types-extending-types');
+  });
+
+  it('finds complex types and nested types from imports', () => {
+    runFixtureTestAndAssertMatch('complex-types-imported');
+  });
+
+  it('deals with Common.X interface references', () => {
+    runFixtureTestAndAssertMatch('common-interface');
+  });
+
+  it('will refuse to regenerate a bridge with a MANUALLY_EDITED_BRIDGE comment', () => {
+    const fixtureName = 'manually-edited-bridge-component';
+    const sourcePath = pathForFixture(`${fixtureName}.ts`);
+    const {output} = parseTypeScriptComponent(sourcePath);
+    assert.isUndefined(output, 'The bridge regeneration incorectly overwrote a manually edited bridge.');
   });
 });

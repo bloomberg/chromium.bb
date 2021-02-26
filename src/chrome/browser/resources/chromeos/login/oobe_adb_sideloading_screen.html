@@ -2,7 +2,12 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<dom-module id="oobe-adb-sideloading-screen">
+<link rel="import" href="chrome://resources/html/action_link.html">
+
+<link rel="import" href="/components/common_styles.html">
+<link rel="import" href="/components/hd_iron_icon.html">
+
+<dom-module id="oobe-adb-sideloading-element">
   <template>
     <link rel="stylesheet" href="chrome://resources/css/throbber.css">
     <style include="oobe-dialog-host">
@@ -13,17 +18,17 @@
 
     <!-- Dialog for normal confirmation -->
     <oobe-dialog id="enableAdbSideloadDialog" role="dialog" has-buttons
-        footer-shrinkable
+        for-step="setup" footer-shrinkable
         title-key="enableAdbSideloadingSetupTitle"
-        aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]"
-        hidden="[[!isState_(uiState_, 'setup')]]">
+        aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:alert" icon2x="oobe-64:alert">
       </hd-iron-icon>
       <div slot="subtitle">
         <div>
           [[i18nDynamic(locale, 'enableAdbSideloadingSetupMessage')]]
-          <a href="#" on-tap="onLearnMoreTap_" class="oobe-local-link">
+          <a on-click="onLearnMoreTap_" class="oobe-local-link"
+              is="action-link">
             [[i18nDynamic(locale, 'enableAdbSideloadingLearnMore')]]
           </a>
         </div>
@@ -37,10 +42,10 @@
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
-        <oobe-text-button border on-tap="onCancelTap_"
+        <oobe-text-button border on-click="onCancelTap_"
             text-key="enableAdbSideloadingCancelButton"
             id="enable-adb-sideloading-cancel-button"></oobe-text-button>
-        <oobe-text-button inverse on-tap="onEnableTap_" class="focus-on-show"
+        <oobe-text-button inverse on-click="onEnableTap_" class="focus-on-show"
             text-key="enableAdbSideloadingConfirmButton"
             id="enable-adb-sideloading-ok-button"></oobe-text-button>
       </div>
@@ -48,16 +53,15 @@
 
     <!-- Dialog for error -->
     <oobe-dialog id="enableAdbSideloadErrorDialog" role="dialog" has-buttons
-        footer-shrinkable
+        for-step="error" footer-shrinkable
         title-key="enableAdbSideloadingErrorTitle"
-        aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]"
-        hidden="[[!isState_(uiState_, 'error')]]">
+        aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:alert" icon2x="oobe-64:alert">
       </hd-iron-icon>
       <div slot="subtitle">
         [[i18nDynamic(locale, 'enableAdbSideloadingErrorMessage')]]
-        <a href="#" on-tap="onLearnMoreTap_" class="oobe-local-link">
+        <a on-click="onLearnMoreTap_" class="oobe-local-link" is="action-link">
           [[i18nDynamic(locale, 'enableAdbSideloadingLearnMore')]]
         </a>
       </div>
@@ -70,7 +74,7 @@
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
-        <oobe-text-button inverse on-tap="onCancelTap_" class="focus-on-show"
+        <oobe-text-button inverse on-click="onCancelTap_" class="focus-on-show"
             text-key="enableAdbSideloadingOkButton"></oobe-text-button>
       </div>
     </oobe-dialog>

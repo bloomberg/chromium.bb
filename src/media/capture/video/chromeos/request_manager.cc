@@ -13,13 +13,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
-#include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
+#include "media/capture/video/chromeos/video_capture_features_chromeos.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -42,7 +42,8 @@ RequestManager::RequestManager(
     std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
     BlobifyCallback blobify_callback,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
-    CameraAppDeviceImpl* camera_app_device)
+    CameraAppDeviceImpl* camera_app_device,
+    ClientType client_type)
     : callback_ops_(this, std::move(callback_ops_receiver)),
       capture_interface_(std::move(capture_interface)),
       device_context_(device_context),
@@ -51,13 +52,15 @@ RequestManager::RequestManager(
       stream_buffer_manager_(
           new StreamBufferManager(device_context_,
                                   video_capture_use_gmb_,
-                                  std::move(camera_buffer_factory))),
+                                  std::move(camera_buffer_factory),
+                                  client_type)),
       blobify_callback_(std::move(blobify_callback)),
       ipc_task_runner_(std::move(ipc_task_runner)),
       capturing_(false),
       partial_result_count_(1),
       first_frame_shutter_time_(base::TimeTicks()),
-      camera_app_device_(std::move(camera_app_device)) {
+      camera_app_device_(std::move(camera_app_device)),
+      client_type_(client_type) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK(callback_ops_.is_bound());
   DCHECK(device_context_);
@@ -318,7 +321,7 @@ void RequestManager::PrepareCaptureRequest() {
   pending_result.input_buffer_id = input_buffer_id;
   pending_result.reprocess_effect = reprocess_effect;
   pending_result.still_capture_callback = std::move(callback);
-  pending_result.orientation = device_context_->GetCameraFrameOrientation();
+  pending_result.orientation = device_context_->GetCameraFrameRotation();
 
   // For reprocess supported devices, bind the ReprocessTaskQueue with this
   // frame number. Once the shot result is returned, we will rebind the
@@ -440,7 +443,7 @@ bool RequestManager::TryPrepareOneShotRequest(
     take_photo_callback_queue_.pop();
 
     *settings = std::move(take_photo_settings_queue_.front());
-    SetJpegOrientation(settings, device_context_->GetCameraFrameOrientation());
+    SetJpegOrientation(settings, device_context_->GetCameraFrameRotation());
   }
   SetZeroShutterLag(settings, true);
   take_photo_settings_queue_.pop();
@@ -753,7 +756,7 @@ void RequestManager::SubmitCaptureResult(
   DVLOG(2) << "Submit capture result of frame " << frame_number
            << " for stream " << static_cast<int>(stream_type);
   for (auto* observer : result_metadata_observers_) {
-    observer->OnResultMetadataAvailable(pending_result.metadata);
+    observer->OnResultMetadataAvailable(frame_number, pending_result.metadata);
   }
 
   if (camera_app_device_) {
@@ -831,12 +834,40 @@ void RequestManager::SubmitCapturedPreviewBuffer(uint32_t frame_number,
     VideoCaptureFormat format;
     base::Optional<VideoCaptureDevice::Client::Buffer> buffer =
         stream_buffer_manager_->AcquireBufferForClientById(
-            StreamType::kPreviewOutput, buffer_ipc_id,
-            device_context_->GetCameraFrameOrientation(), &format);
+            StreamType::kPreviewOutput, buffer_ipc_id, &format);
     CHECK(buffer);
+
+    // TODO: Figure out the right color space for the camera frame.  We may need
+    // to populate the camera metadata with the color space reported by the V4L2
+    // device.
+    VideoFrameMetadata metadata;
+    if (base::FeatureList::IsEnabled(
+            features::kDisableCameraFrameRotationAtSource)) {
+      // Camera frame rotation at source is disabled, so we record the intended
+      // video frame rotation in the metadata.  The consumer of the video frame
+      // is responsible for taking care of the frame rotation.
+      auto translate_rotation = [](const int rotation) -> VideoRotation {
+        switch (rotation) {
+          case 0:
+            return VideoRotation::VIDEO_ROTATION_0;
+          case 90:
+            return VideoRotation::VIDEO_ROTATION_90;
+          case 180:
+            return VideoRotation::VIDEO_ROTATION_180;
+          case 270:
+            return VideoRotation::VIDEO_ROTATION_270;
+        }
+        return VideoRotation::VIDEO_ROTATION_0;
+      };
+      metadata.rotation =
+          translate_rotation(device_context_->GetRotationForDisplay());
+    } else {
+      // All frames are pre-rotated to the display orientation.
+      metadata.rotation = VideoRotation::VIDEO_ROTATION_0;
+    }
     device_context_->SubmitCapturedVideoCaptureBuffer(
-        std::move(*buffer), format, pending_result.reference_time,
-        pending_result.timestamp);
+        client_type_, std::move(*buffer), format, pending_result.reference_time,
+        pending_result.timestamp, metadata);
     // |buffer| ownership is transferred to client, so we need to reserve a
     // new video buffer.
     stream_buffer_manager_->ReserveBuffer(StreamType::kPreviewOutput);
@@ -845,7 +876,7 @@ void RequestManager::SubmitCapturedPreviewBuffer(uint32_t frame_number,
         StreamType::kPreviewOutput, buffer_ipc_id);
     CHECK(gmb);
     device_context_->SubmitCapturedGpuMemoryBuffer(
-        gmb,
+        client_type_, gmb,
         stream_buffer_manager_->GetStreamCaptureFormat(
             StreamType::kPreviewOutput),
         pending_result.reference_time, pending_result.timestamp);

@@ -47,7 +47,7 @@ SVGStaticStringList::SVGStaticStringList(SVGElement* context_element,
 
 SVGStaticStringList::~SVGStaticStringList() = default;
 
-void SVGStaticStringList::Trace(Visitor* visitor) {
+void SVGStaticStringList::Trace(Visitor* visitor) const {
   visitor->Trace(value_);
   visitor->Trace(tear_off_);
   SVGAnimatedPropertyBase::Trace(visitor);
@@ -75,10 +75,8 @@ void SVGStaticStringList::AnimationEnded() {
 }
 
 SVGStringListTearOff* SVGStaticStringList::TearOff() {
-  if (!tear_off_) {
-    tear_off_ = MakeGarbageCollected<SVGStringListTearOff>(
-        value_, this, kPropertyIsNotAnimVal);
-  }
+  if (!tear_off_)
+    tear_off_ = MakeGarbageCollected<SVGStringListTearOff>(value_, this);
   return tear_off_.Get();
 }
 

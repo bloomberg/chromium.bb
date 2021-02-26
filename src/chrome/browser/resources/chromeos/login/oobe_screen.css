@@ -12,30 +12,15 @@
 .step {
   box-sizing: border-box;
   position: absolute;
-}
-
-.step.animated:not(.faded) {
-  transition: transform 200ms ease-in-out,
-              opacity 200ms ease-in-out,
-              visibility 200ms ease-in-out;
+  user-select: none;
 }
 
 .step.hidden {
   visibility: hidden;
 }
 
-.faded,
-.left,
-.right {
+.faded {
   opacity: 0;
-}
-
-.step.right {
-  transform: translateX(50px);
-}
-
-.step.left {
-  transform: translateX(-50px)
 }
 
 .step.fullscreen {

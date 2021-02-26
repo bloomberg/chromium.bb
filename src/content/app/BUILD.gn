@@ -23,7 +23,6 @@ content_app_deps = [
   "//crypto",
   "//mojo/core/embedder",
   "//ppapi/buildflags",
-  "//services/service_manager/embedder",
   "//services/service_manager/public/mojom",
   "//services/tracing/public/cpp",
   "//ui/base",
@@ -82,6 +81,7 @@ source_set("content_main_runner_app") {
            "//content/public/utility:utility_sources",
            "//content/renderer",
            "//content/utility",
+           "//content/zygote",
          ]
 }
 
@@ -91,8 +91,7 @@ source_set("app") {
   check_includes = false
 
   sources = [
-    "content_service_manager_main_delegate.cc",
-    "content_service_manager_main_delegate.h",
+    "content_main.cc",
     "mojo/mojo_init.cc",
     "mojo/mojo_init.h",
     "service_manager_environment.cc",
@@ -100,11 +99,9 @@ source_set("app") {
   ]
 
   configs += extra_configs
-  deps = content_app_deps + [
-           ":content_main_runner_app",
-           "//ipc",
-           "//services/service_manager/embedder",
-         ]
+  deps = content_app_deps + [ "//ipc" ]
+
+  public_deps = [ ":content_main_runner_app" ]
 
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
@@ -117,7 +114,7 @@ source_set("app") {
     sources += [
       "android/content_child_process_service_delegate.cc",
       "android/content_jni_onload.cc",
-      "android/content_main.cc",
+      "android/content_main_android.cc",
       "android/library_loader_hooks.cc",
       "android/library_loader_hooks.h",
     ]
@@ -125,8 +122,15 @@ source_set("app") {
       "//mojo/public/java/system:native_support",
       "//ui/gl",
     ]
-  } else {
-    sources += [ "content_main.cc" ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "mac_init.h",
+      "mac_init.mm",
+    ]
+
+    frameworks = [ "Foundation.framework" ]
   }
 }
 

@@ -104,17 +104,14 @@ class Target:
 
     def DescribeTargets(self):
         """Returns a printable string that summarizes the targets."""
-        if len(self.targets) == 1:
-          return self.targets[0]
         # Some build steps generate dozens of outputs - handle them sanely.
-        # It's a bit odd that if there are three targets we return all three
-        # but if there are more than three we just return two, but this works
-        # well in practice.
-        elif len(self.targets) > 3:
-          return '(%d items) ' % len(self.targets) + (
-                 ', '.join(self.targets[:2]) + ', ...')
-        else:
-          return ', '.join(self.targets)
+        # The max_length was chosen so that it can fit most of the long
+        # single-target names, while minimizing word wrapping.
+        result = ', '.join(self.targets)
+        max_length = 65
+        if len(result) > max_length:
+          result = result[:max_length] + '...'
+        return result
 
 
 # Copied with some modifications from ninjatracing
@@ -161,7 +158,7 @@ def ReadTargets(log, show_all):
           targets_dict[cmdhash] = target = Target(start, end)
         last_end_seen = end
         target.targets.append(name)
-    return targets_dict.values()
+    return list(targets_dict.values())
 
 
 def GetExtension(target, extra_patterns):
@@ -236,7 +233,8 @@ def SummarizeEntries(entries, extra_step_types):
     length = latest - earliest
     weighted_total = 0.0
 
-    task_start_stop_times.sort()
+    # Sort by the time/type records and ignore |target|
+    task_start_stop_times.sort(key=lambda times: times[:2])
     # Now we have all task start/stop times sorted by when they happen. If a
     # task starts and stops on the same time stamp then the start will come
     # first because of the alphabet, which is important for making this work
@@ -271,7 +269,8 @@ def SummarizeEntries(entries, extra_step_types):
 
     # Warn if the sum of weighted times is off by more than half a second.
     if abs(length - weighted_total) > 500:
-      print('Discrepancy!!! Length = %.3f, weighted total = %.3f' % (
+      print('Warning: Possible corrupt ninja log, results may be '
+            'untrustworthy. Length = %.3f, weighted total = %.3f' % (
             length, weighted_total))
 
     # Print the slowest build steps (by weighted time).

@@ -31,25 +31,38 @@ class TestShellDelegate : public ShellDelegate {
 
   // Overridden from ShellDelegate:
   bool CanShowWindowForUser(const aura::Window* window) const override;
+  std::unique_ptr<CaptureModeDelegate> CreateCaptureModeDelegate()
+      const override;
   std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<BackGestureContextualNudgeDelegate>
   CreateBackGestureContextualNudgeDelegate(
       BackGestureContextualNudgeController* controller) override;
   bool CanGoBack(gfx::NativeWindow window) const override;
-  void BindNavigableContentsFactory(
-      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
-      override;
+  void SetTabScrubberEnabled(bool enabled) override;
+  bool ShouldWaitForTouchPressAck(gfx::NativeWindow window) override;
   void BindMultiDeviceSetup(
       mojo::PendingReceiver<
           chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver)
       override;
+  std::unique_ptr<NearbyShareDelegate> CreateNearbyShareDelegate(
+      NearbyShareController* controller) const override;
 
   void SetCanGoBack(bool can_go_back);
+  void SetShouldWaitForTouchAck(bool should_wait_for_touch_ack);
 
  private:
-  // True if the current top window can back.
+  // True if the current top window can go back.
   bool can_go_back_ = true;
+
+  // True if the tab scrubber is enabled.
+  bool tab_scrubber_enabled_ = true;
+
+  // True if when performing back gesture on the top window, we should handle
+  // the event after the touch ack is received. Please refer to
+  // |BackGestureEventHandler::should_wait_for_touch_ack_| for detailed
+  // description.
+  bool should_wait_for_touch_ack_ = false;
 
   MultiDeviceSetupBinder multidevice_setup_binder_;
 

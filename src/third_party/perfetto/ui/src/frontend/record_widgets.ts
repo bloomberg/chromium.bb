@@ -27,6 +27,24 @@ declare type Setter<T> = (draft: Draft<RecordConfig>, val: T) => void;
 declare type Getter<T> = (cfg: RecordConfig) => T;
 
 // +---------------------------------------------------------------------------+
+// | Docs link with 'i' in circle icon.                                        |
+// +---------------------------------------------------------------------------+
+
+interface DocsChipAttrs {
+  href: string;
+}
+
+class DocsChip implements m.ClassComponent<DocsChipAttrs> {
+  view({attrs}: m.CVnode<DocsChipAttrs>) {
+    return m(
+        'a.inline-chip',
+        {href: attrs.href, title: 'Open docs in new tab', target: '_blank'},
+        m('i.material-icons', 'info'),
+        ' Docs');
+  }
+}
+
+// +---------------------------------------------------------------------------+
 // | Probe: the rectangular box on the right-hand-side with a toggle box.      |
 // +---------------------------------------------------------------------------+
 
@@ -56,8 +74,12 @@ export class Probe implements m.ClassComponent<ProbeAttrs> {
           onclick: () => onToggle(!enabled),
         }),
         m('label',
-          m(`input[type=checkbox]`,
-            {checked: enabled, oninput: m.withAttr('checked', onToggle)}),
+          m(`input[type=checkbox]`, {
+            checked: enabled,
+            oninput: (e: InputEvent) => {
+              onToggle((e.target as HTMLInputElement).checked);
+            },
+          }),
           m('span', attrs.title)),
         m('div', m('div', attrs.descr), m('.probe-config', children)));
   }
@@ -122,13 +144,17 @@ export class Slider implements m.ClassComponent<SliderAttrs> {
         type: 'text',
         pattern: '(0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}',  // hh:mm:ss
         value: new Date(val).toISOString().substr(11, 8),
-        oninput: m.withAttr('value', v => this.onTimeValueChange(attrs, v))
+        oninput: (e: InputEvent) => {
+          this.onTimeValueChange(attrs, (e.target as HTMLInputElement).value);
+        },
       };
     } else {
       spinnerCfg = {
         type: 'number',
         value: val,
-        oninput: m.withAttr('value', v => this.onValueChange(attrs, v))
+        oninput: (e: InputEvent) => {
+          this.onTimeValueChange(attrs, (e.target as HTMLInputElement).value);
+        },
       };
     }
     return m(
@@ -138,7 +164,11 @@ export class Slider implements m.ClassComponent<SliderAttrs> {
         attrs.icon !== undefined ? m('i.material-icons', attrs.icon) : [],
         m(`input[id="${id}"][type=range][min=0][max=${maxIdx}][value=${idx}]
         ${disabled ? '[disabled]' : ''}`,
-          {oninput: m.withAttr('value', v => this.onSliderChange(attrs, v))}),
+          {
+            oninput: (e: InputEvent) => {
+              this.onSliderChange(attrs, +(e.target as HTMLInputElement).value);
+            },
+          }),
         m(`input.spinner[min=${min !== undefined ? min : 1}][for=${id}]`,
           spinnerCfg),
         m('.unit', attrs.unit));
@@ -213,6 +243,7 @@ export class Dropdown implements m.ClassComponent<DropdownAttrs> {
 
 export interface TextareaAttrs {
   placeholder: string;
+  docsLink?: string;
   cssClass?: string;
   get: Getter<string>;
   set: Setter<string>;
@@ -230,7 +261,9 @@ export class Textarea implements m.ClassComponent<TextareaAttrs> {
   view({attrs}: m.CVnode<TextareaAttrs>) {
     return m(
         '.textarea-holder',
-        m('header', attrs.title),
+        m('header',
+          attrs.title,
+          attrs.docsLink && [' ', m(DocsChip, {href: attrs.docsLink})]),
         m(`textarea.extra-input${attrs.cssClass || ''}`, {
           onchange: (e: Event) =>
               this.onChange(attrs, e.target as HTMLTextAreaElement),

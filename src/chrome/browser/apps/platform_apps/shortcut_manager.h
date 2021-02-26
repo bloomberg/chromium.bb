@@ -51,14 +51,16 @@ class AppShortcutManager : public KeyedService,
   // ProfileAttributesStorage::Observer.
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
 
+  static void SuppressShortcutsForTesting();
+
  private:
   void UpdateShortcutsForAllAppsNow();
   void SetCurrentAppShortcutsVersion();
   void DeleteApplicationShortcuts(const extensions::Extension* extension);
 
   Profile* profile_;
-  bool is_profile_attributes_storage_observer_;
-
+  ScopedObserver<ProfileAttributesStorage, ProfileAttributesStorage::Observer>
+      profile_storage_observer_{this};
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_{this};

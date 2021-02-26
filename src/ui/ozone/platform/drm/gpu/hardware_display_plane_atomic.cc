@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
 
+#include "base/logging.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 
@@ -37,7 +38,8 @@ uint32_t OverlayTransformToDrmRotationPropertyValue(
 // TODO(https://crbug/880464): Remove this.
 bool IsRotationTransformSupported(gfx::OverlayTransform transform) {
   if ((transform == gfx::OVERLAY_TRANSFORM_ROTATE_90) ||
-      (transform == gfx::OVERLAY_TRANSFORM_ROTATE_270)) {
+      (transform == gfx::OVERLAY_TRANSFORM_ROTATE_270) ||
+      (transform == gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL)) {
     return false;
   }
 
@@ -63,11 +65,16 @@ bool HardwareDisplayPlaneAtomic::Initialize(DrmDevice* drm) {
              properties_.src_w.id && properties_.src_h.id;
   LOG_IF(ERROR, !ret) << "Failed to find all required properties for plane="
                       << id_;
+
+  ret &= (properties_.plane_color_encoding.id == 0) ==
+         (properties_.plane_color_range.id == 0);
+  LOG_IF(ERROR, !ret) << "Inconsistent color management properties for plane="
+                      << id_;
+
   return ret;
 }
 
-bool HardwareDisplayPlaneAtomic::SetPlaneData(
-    drmModeAtomicReq* property_set,
+bool HardwareDisplayPlaneAtomic::AssignPlaneProps(
     uint32_t crtc_id,
     uint32_t framebuffer,
     const gfx::Rect& crtc_rect,
@@ -80,42 +87,65 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
   if (!IsRotationTransformSupported(transform))
     return false;
 
-  properties_.crtc_id.value = crtc_id;
-  properties_.crtc_x.value = crtc_rect.x();
-  properties_.crtc_y.value = crtc_rect.y();
-  properties_.crtc_w.value = crtc_rect.width();
-  properties_.crtc_h.value = crtc_rect.height();
-  properties_.fb_id.value = framebuffer;
-  properties_.src_x.value = src_rect.x();
-  properties_.src_y.value = src_rect.y();
-  properties_.src_w.value = src_rect.width();
-  properties_.src_h.value = src_rect.height();
+  // Make a copy of properties to get the props IDs for the new intermediate
+  // values.
+  assigned_props_ = properties_;
 
-  bool plane_set_succeeded =
-      AddPropertyIfValid(property_set, id_, properties_.crtc_id) &&
-      AddPropertyIfValid(property_set, id_, properties_.crtc_x) &&
-      AddPropertyIfValid(property_set, id_, properties_.crtc_y) &&
-      AddPropertyIfValid(property_set, id_, properties_.crtc_w) &&
-      AddPropertyIfValid(property_set, id_, properties_.crtc_h) &&
-      AddPropertyIfValid(property_set, id_, properties_.fb_id) &&
-      AddPropertyIfValid(property_set, id_, properties_.src_x) &&
-      AddPropertyIfValid(property_set, id_, properties_.src_y) &&
-      AddPropertyIfValid(property_set, id_, properties_.src_w) &&
-      AddPropertyIfValid(property_set, id_, properties_.src_h);
+  assigned_props_.crtc_id.value = crtc_id;
+  assigned_props_.crtc_x.value = crtc_rect.x();
+  assigned_props_.crtc_y.value = crtc_rect.y();
+  assigned_props_.crtc_w.value = crtc_rect.width();
+  assigned_props_.crtc_h.value = crtc_rect.height();
+  assigned_props_.fb_id.value = framebuffer;
+  assigned_props_.src_x.value = src_rect.x();
+  assigned_props_.src_y.value = src_rect.y();
+  assigned_props_.src_w.value = src_rect.width();
+  assigned_props_.src_h.value = src_rect.height();
 
-  if (properties_.rotation.id) {
-    properties_.rotation.value =
+  if (assigned_props_.rotation.id) {
+    assigned_props_.rotation.value =
         OverlayTransformToDrmRotationPropertyValue(transform);
-    plane_set_succeeded =
-        plane_set_succeeded &&
-        AddPropertyIfValid(property_set, id_, properties_.rotation);
   }
 
-  if (properties_.in_fence_fd.id && in_fence_fd >= 0) {
-    properties_.in_fence_fd.value = in_fence_fd;
-    plane_set_succeeded =
-        plane_set_succeeded &&
-        AddPropertyIfValid(property_set, id_, properties_.in_fence_fd);
+  if (assigned_props_.in_fence_fd.id)
+    assigned_props_.in_fence_fd.value = static_cast<uint64_t>(in_fence_fd);
+
+  return true;
+}
+
+bool HardwareDisplayPlaneAtomic::SetPlaneProps(drmModeAtomicReq* property_set) {
+  bool plane_set_succeeded =
+      AddPropertyIfValid(property_set, id_, assigned_props_.crtc_id) &&
+      AddPropertyIfValid(property_set, id_, assigned_props_.crtc_x) &&
+      AddPropertyIfValid(property_set, id_, assigned_props_.crtc_y) &&
+      AddPropertyIfValid(property_set, id_, assigned_props_.crtc_w) &&
+      AddPropertyIfValid(property_set, id_, assigned_props_.crtc_h) &&
+      AddPropertyIfValid(property_set, id_, assigned_props_.fb_id) &&
+      AddPropertyIfValid(property_set, id_, assigned_props_.src_x) &&
+      AddPropertyIfValid(property_set, id_, assigned_props_.src_y) &&
+      AddPropertyIfValid(property_set, id_, assigned_props_.src_w) &&
+      AddPropertyIfValid(property_set, id_, assigned_props_.src_h);
+
+  if (assigned_props_.rotation.id) {
+    plane_set_succeeded &=
+        AddPropertyIfValid(property_set, id_, assigned_props_.rotation);
+  }
+
+  if (assigned_props_.in_fence_fd.id) {
+    plane_set_succeeded &=
+        AddPropertyIfValid(property_set, id_, assigned_props_.in_fence_fd);
+  }
+
+  if (assigned_props_.plane_color_encoding.id) {
+    // TODO(markyacoub): |color_encoding_bt601_| and |color_range_limited_| are
+    // only set in Initialize(). The properties could be set once in there and
+    // these member variables could be removed.
+    assigned_props_.plane_color_encoding.value = color_encoding_bt601_;
+    assigned_props_.plane_color_range.value = color_range_limited_;
+    plane_set_succeeded &= AddPropertyIfValid(
+        property_set, id_, assigned_props_.plane_color_encoding);
+    plane_set_succeeded &= AddPropertyIfValid(
+        property_set, id_, assigned_props_.plane_color_range);
   }
 
   if (!plane_set_succeeded) {
@@ -123,7 +153,8 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
     return false;
   }
 
-  crtc_id_ = crtc_id;
+  // Update properties_ if the setting the props succeeded.
+  properties_ = assigned_props_;
   return true;
 }
 
@@ -134,6 +165,10 @@ bool HardwareDisplayPlaneAtomic::SetPlaneCtm(drmModeAtomicReq* property_set,
 
   properties_.plane_ctm.value = ctm_blob_id;
   return AddPropertyIfValid(property_set, id_, properties_.plane_ctm);
+}
+
+uint32_t HardwareDisplayPlaneAtomic::AssignedCrtcId() const {
+  return assigned_props_.crtc_id.value;
 }
 
 }  // namespace ui

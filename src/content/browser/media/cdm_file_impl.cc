@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/bind_to_current_loop.h"
@@ -454,10 +453,11 @@ void CdmFileImpl::Read(ReadCallback callback) {
   // the IO thread. Use of base::Unretained() is OK as the reader is owned by
   // |this|, and if |this| is destructed it will destroy the file reader on the
   // IO thread.
-  file_reader_ = base::SequenceBound<FileReader>(
-      base::CreateSequencedTaskRunner({BrowserThread::IO}));
-  file_reader_.Post(FROM_HERE, &FileReader::Read, file_system_context_,
-                    CreateFileSystemURL(file_name_), std::move(read_done_cb));
+  file_reader_ = base::SequenceBound<FileReader>(GetIOThreadTaskRunner({}));
+  // TODO(dcheng): Migrate this to use Then()?
+  file_reader_.AsyncCall(&FileReader::Read)
+      .WithArgs(file_system_context_, CreateFileSystemURL(file_name_),
+                std::move(read_done_cb));
 }
 
 void CdmFileImpl::ReadDone(bool success, std::vector<uint8_t> data) {
@@ -602,11 +602,11 @@ void CdmFileImpl::OnTempFileIsEmpty(scoped_refptr<net::IOBuffer> buffer,
   // on the IO thread to write |buffer| into the temporary file. Use of
   // base::Unretained() is OK as |file_writer_| is owned by |this|, and if
   // |this| is destructed it will destroy |file_writer_| on the IO thread.
-  file_writer_ = base::SequenceBound<FileWriter>(
-      base::CreateSequencedTaskRunner({BrowserThread::IO}));
-  file_writer_.Post(FROM_HERE, &FileWriter::Write, file_system_context_,
-                    CreateFileSystemURL(temp_file_name_), std::move(buffer),
-                    bytes_to_write, std::move(write_done_cb));
+  file_writer_ = base::SequenceBound<FileWriter>(GetIOThreadTaskRunner({}));
+  // TODO(dcheng): Migrate this to use Then()?
+  file_writer_.AsyncCall(&FileWriter::Write)
+      .WithArgs(file_system_context_, CreateFileSystemURL(temp_file_name_),
+                std::move(buffer), bytes_to_write, std::move(write_done_cb));
 }
 
 void CdmFileImpl::WriteDone(bool success) {

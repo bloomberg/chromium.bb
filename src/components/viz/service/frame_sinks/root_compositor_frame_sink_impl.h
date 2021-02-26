@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_ROOT_COMPOSITOR_FRAME_SINK_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -44,7 +45,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       FrameSinkManagerImpl* frame_sink_manager,
       OutputSurfaceProvider* output_surface_provider,
       uint32_t restart_id,
-      bool run_all_compositor_stages_before_draw);
+      bool run_all_compositor_stages_before_draw,
+      const DebugRendererSettings* debug_settings);
 
   ~RootCompositorFrameSinkImpl() override;
 
@@ -69,6 +71,10 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
 #endif
   void AddVSyncParameterObserver(
       mojo::PendingRemote<mojom::VSyncParameterObserver> observer) override;
+
+  void SetDelegatedInkPointRenderer(
+      mojo::PendingReceiver<mojom::DelegatedInkPointRenderer> receiver)
+      override;
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
@@ -112,7 +118,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   // DisplayClient:
   void DisplayOutputSurfaceLost() override;
   void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              RenderPassList* render_passes) override;
+                              AggregatedRenderPassList* render_passes) override;
   void DisplayDidDrawAndSwap() override;
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;

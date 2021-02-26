@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <video src="../tulip2.webm" />
+  </body>
+
+  <script>
+    const video = document.querySelector('video');
+
+    function addPictureInPictureEventListeners() {
+      video.addEventListener('enterpictureinpicture', () => {
+        document.title = 'enterpictureinpicture';
+      });
+      video.addEventListener('leavepictureinpicture', () => {
+        document.title = 'leavepictureinpicture';
+      });
+    }
+
+    function play() {
+      video.play()
+          .then(_ => window.domAutomationController.send(true))
+          .catch(e => window.domAutomationController.send(false));
+    }
+
+    function enterPictureInPictureAndGetResult() {
+      video.requestPictureInPicture()
+          .then(_ => window.domAutomationController.send(true))
+          .catch(e => window.domAutomationController.send(false));
+    }
+
+    function enterFullscreenAndGetResult() {
+      video.requestFullscreen()
+          .then(_ => window.domAutomationController.send(true))
+          .catch(e => window.domAutomationController.send(false));
+    }
+
+    function addPlayEventListener() {
+      video.addEventListener('play', () => {
+        document.title = 'play';
+      }, { once: true });
+    }
+
+    function addPauseEventListener() {
+      video.addEventListener('pause', () => {
+        document.title = 'pause';
+      }, { once: true });
+    }
+
+    function setMediaSessionPlayActionHandler() {
+      navigator.mediaSession.setActionHandler("play", _ => {
+        video.play();
+      });
+    }
+
+    function setMediaSessionPauseActionHandler() {
+      navigator.mediaSession.setActionHandler("pause", _ => {
+        video.pause();
+      });
+    }
+  </script>
+</html>

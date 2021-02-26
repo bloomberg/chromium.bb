@@ -54,7 +54,8 @@ SyncInternalsWebUITest.prototype = {
       for (let j = 0; j < details[i].data.length; ++j) {
         const obj = details[i].data[j];
         if (obj.stat_name === key) {
-          return obj.is_valid === isValid && obj.stat_value === value;
+          return (obj.stat_status !== 'uninitialized') === isValid &&
+              obj.stat_value === value;
         }
       }
     }
@@ -163,22 +164,22 @@ const HARD_CODED_ALL_NODES = [{
 HARD_CODED_ABOUT_INFO = {
   'actionable_error': [
     {
-      'is_valid': false,
+      'stat_status': 'uninitialized',
       'stat_name': 'Error Type',
       'stat_value': 'Uninitialized'
     },
     {
-      'is_valid': false,
+      'stat_status': 'uninitialized',
       'stat_name': 'Action',
       'stat_value': 'Uninitialized'
     },
     {
-      'is_valid': false,
+      'stat_status': 'uninitialized',
       'stat_name': 'URL',
       'stat_value': 'Uninitialized'
     },
     {
-      'is_valid': false,
+      'stat_status': 'uninitialized',
       'stat_name': 'Error Description',
       'stat_value': 'Uninitialized'
     }
@@ -188,7 +189,7 @@ HARD_CODED_ABOUT_INFO = {
     {
       'data': [
         {
-          'is_valid': true,
+          'stat_status': '',
           'stat_name': 'Summary',
           'stat_value': 'Sync service initialized'
         }
@@ -205,7 +206,6 @@ HARD_CODED_ABOUT_INFO = {
       'num_live': 'Live Entries',
       'message': 'Message',
       'state': 'State',
-      'group_type': 'Group Type',
     },
     {
       'status': 'ok',
@@ -214,7 +214,6 @@ HARD_CODED_ABOUT_INFO = {
       'num_live': 2793,
       'message': '',
       'state': 'Running',
-      'group_type': 'Group UI',
     },
   ],
   'unrecoverable_error_detected': false
@@ -243,7 +242,13 @@ GEN('#if defined(OS_CHROMEOS)');
 // Sync should be disabled if there was no primary account set.
 TEST_F('SyncInternalsWebUITest', 'SyncDisabledByDefaultChromeOS', function() {
   expectTrue(this.hasInDetails(true, 'Transport State', 'Disabled'));
-  expectTrue(this.hasInDetails(true, 'Disable Reasons', 'Not signed in'));
+  // We don't check 'Disable Reasons' here because the string depends on the
+  // flag SplitSettingsSync. There's not a good way to check a C++ flag value
+  // in the middle of a JS test, nor is there a simple way to enable or disable
+  // platform-specific flags in a cross-platform JS test suite.
+  // TODO(crbug.com/1087165): When SplitSettingsSync is the default, delete this
+  // test and use SyncInternalsWebUITest.SyncDisabledByDefault on all
+  // platforms.
   expectTrue(this.hasInDetails(true, 'Username', ''));
 });
 

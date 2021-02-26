@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static org.chromium.components.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
+import static org.chromium.webapk.lib.common.WebApkConstants.EXTRA_RELAUNCH;
+import static org.chromium.webapk.lib.common.WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK;
+import static org.chromium.webapk.lib.common.WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -32,8 +37,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
-import org.chromium.webapk.lib.client.WebApkValidator;
-import org.chromium.webapk.lib.common.WebApkConstants;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
 
 import java.lang.ref.WeakReference;
 
@@ -89,8 +93,7 @@ public class WebappLauncherActivity extends Activity {
             Intent sourceIntent, @NonNull String webApkPackageName, @NonNull String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         intent.setPackage(webApkPackageName);
-        intent.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         Bundle extras = sourceIntent.getExtras();
         if (extras != null) {
             intent.putExtras(extras);
@@ -104,7 +107,7 @@ public class WebappLauncherActivity extends Activity {
      * @return True if a live WebappActivity was found, false otherwise.
      */
     public static boolean bringWebappToFront(int tabId) {
-        WeakReference<BaseCustomTabActivity<?>> customTabActivity =
+        WeakReference<BaseCustomTabActivity> customTabActivity =
                 WebappLocator.findWebappActivityWithTabId(tabId);
         if (customTabActivity == null || customTabActivity.get() == null) return false;
         customTabActivity.get().getWebContentsDelegate().activateContents();
@@ -154,7 +157,7 @@ public class WebappLauncherActivity extends Activity {
 
             // This is not a valid WebAPK. Modify the intent so that WebApkInfo#create() (in the
             // first run logic) returns null.
-            intent.removeExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
+            intent.removeExtra(EXTRA_WEBAPK_PACKAGE_NAME);
         }
 
         if (shouldRelaunchWebApk(intent, launchData)) {
@@ -182,11 +185,13 @@ public class WebappLauncherActivity extends Activity {
      */
     private static LaunchData extractLaunchData(Intent intent) {
         String webApkPackageName = WebappIntentUtils.getWebApkPackageName(intent);
-        boolean isSplashProvidedByWebApk = !TextUtils.isEmpty(webApkPackageName)
-                && IntentUtils.safeGetBooleanExtra(
-                        intent, WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, false);
-        return new LaunchData(WebappIntentUtils.getId(intent), WebappIntentUtils.getUrl(intent),
-                webApkPackageName, isSplashProvidedByWebApk);
+        boolean isForWebApk = !TextUtils.isEmpty(webApkPackageName);
+        boolean isSplashProvidedByWebApk = isForWebApk
+                && IntentUtils.safeGetBooleanExtra(intent, EXTRA_SPLASH_PROVIDED_BY_WEBAPK, false);
+        String id = isForWebApk ? WebappIntentUtils.getIdForWebApkPackage(webApkPackageName)
+                                : WebappIntentUtils.getIdForHomescreenShortcut(intent);
+        return new LaunchData(
+                id, WebappIntentUtils.getUrl(intent), webApkPackageName, isSplashProvidedByWebApk);
     }
 
     /**
@@ -196,7 +201,7 @@ public class WebappLauncherActivity extends Activity {
     private static boolean shouldPreferLightweightFre(LaunchData launchData) {
         // Use lightweight FRE for unbound WebAPKs.
         return launchData != null && launchData.webApkPackageName != null
-                && !launchData.webApkPackageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
+                && !launchData.webApkPackageName.startsWith(WEBAPK_PACKAGE_PREFIX);
     }
 
     private static boolean shouldLaunchWebapp(Intent intent, LaunchData launchData) {
@@ -249,7 +254,7 @@ public class WebappLauncherActivity extends Activity {
      */
     private static boolean shouldRelaunchWebApk(Intent sourceIntent, LaunchData launchData) {
         return launchData != null && launchData.isForWebApk
-                && sourceIntent.hasExtra(WebApkConstants.EXTRA_RELAUNCH);
+                && sourceIntent.hasExtra(EXTRA_RELAUNCH);
     }
 
     /** Relaunches WebAPK. */
@@ -276,8 +281,7 @@ public class WebappLauncherActivity extends Activity {
                 appContext.getPackageName(), ChromeLauncherActivity.class.getName());
         launchIntent.putExtra(ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
         launchIntent.putExtra(ShortcutHelper.EXTRA_SOURCE, webappSource);
-        launchIntent.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
+        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
 
         Log.e(TAG, "Shortcut (%s) opened in Chrome.", webappUrl);
 
@@ -344,8 +348,7 @@ public class WebappLauncherActivity extends Activity {
             launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION
                     | Intent.FLAG_ACTIVITY_FORWARD_RESULT);
         } else {
-            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | ApiCompatibilityUtils.getActivityNewDocumentFlag()
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT
                     | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         }
 

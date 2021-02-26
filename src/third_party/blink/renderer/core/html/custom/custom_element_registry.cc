@@ -87,7 +87,7 @@ CustomElementRegistry::CustomElementRegistry(const LocalDOMWindow* owner)
     Entangle(v0);
 }
 
-void CustomElementRegistry::Trace(Visitor* visitor) {
+void CustomElementRegistry::Trace(Visitor* visitor) const {
   visitor->Trace(definitions_);
   visitor->Trace(owner_);
   visitor->Trace(v0_);
@@ -211,6 +211,11 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
   definitions_.emplace_back(definition);
   NameIdMap::AddResult result = name_id_map_.insert(descriptor.GetName(), id);
   CHECK(result.is_new_entry);
+
+  if (definition->IsFormAssociated()) {
+    if (Document* document = owner_->document())
+      UseCounter::Count(*document, WebFeature::kFormAssociatedCustomElement);
+  }
 
   HeapVector<Member<Element>> candidates;
   CollectCandidates(descriptor, &candidates);

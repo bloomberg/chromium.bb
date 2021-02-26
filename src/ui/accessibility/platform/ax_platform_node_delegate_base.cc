@@ -31,6 +31,53 @@ const AXTreeData& AXPlatformNodeDelegateBase::GetTreeData() const {
   return *empty_data;
 }
 
+base::string16 AXPlatformNodeDelegateBase::GetInnerText() const {
+  // Unlike in web content The "kValue" attribute always takes precedence,
+  // because we assume that users of this base class, such as Views controls,
+  // are carefully crafted by hand, in contrast to HTML pages, where any content
+  // that might be present in the shadow DOM (AKA in the internal accessibility
+  // tree) is actually used by the renderer when assigning the "kValue"
+  // attribute, including any redundant white space.
+  base::string16 value =
+      GetData().GetString16Attribute(ax::mojom::StringAttribute::kValue);
+  if (!value.empty())
+    return value;
+
+  // TODO(https://crbug.com/1030703): The check for IsInvisibleOrIgnored()
+  // should not be needed. ChildAtIndex() and GetChildCount() are already
+  // supposed to skip over nodes that are invisible or ignored, but
+  // ViewAXPlatformNodeDelegate does not currently implement this behavior.
+  if (IsLeaf() && !GetData().IsInvisibleOrIgnored())
+    return GetData().GetString16Attribute(ax::mojom::StringAttribute::kName);
+
+  base::string16 inner_text;
+  for (int i = 0; i < GetChildCount(); ++i) {
+    // TODO(nektar): Add const to all tree traversal methods and remove
+    // const_cast.
+    const AXPlatformNode* child = AXPlatformNode::FromNativeViewAccessible(
+        const_cast<AXPlatformNodeDelegateBase*>(this)->ChildAtIndex(i));
+    if (!child || !child->GetDelegate())
+      continue;
+    inner_text += child->GetDelegate()->GetInnerText();
+  }
+  return inner_text;
+}
+
+base::string16 AXPlatformNodeDelegateBase::GetValueForControl() const {
+  if (!IsControl(GetData().role) && !GetData().IsRangeValueSupported())
+    return base::string16();
+
+  base::string16 value =
+      GetData().GetString16Attribute(ax::mojom::StringAttribute::kValue);
+  float numeric_value;
+  if (GetData().IsRangeValueSupported() && value.empty() &&
+      GetData().GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
+                                  &numeric_value)) {
+    value = base::NumberToString16(numeric_value);
+  }
+  return value;
+}
+
 const AXTree::Selection AXPlatformNodeDelegateBase::GetUnignoredSelection()
     const {
   return AXTree::Selection{-1, -1, -1, ax::mojom::TextAffinity::kDownstream};
@@ -60,6 +107,10 @@ int AXPlatformNodeDelegateBase::GetChildCount() const {
 
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::ChildAtIndex(int index) {
   return nullptr;
+}
+
+bool AXPlatformNodeDelegateBase::HasModalDialog() const {
+  return false;
 }
 
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetFirstChild() {
@@ -95,6 +146,25 @@ gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetPreviousSibling() {
 }
 
 bool AXPlatformNodeDelegateBase::IsChildOfLeaf() const {
+  // TODO(nektar): Make all tree traversal methods const and remove const_cast.
+  const AXPlatformNodeDelegate* parent =
+      const_cast<AXPlatformNodeDelegateBase*>(this)->GetParentDelegate();
+  if (!parent)
+    return false;
+  if (parent->IsLeaf())
+    return true;
+  return parent->IsChildOfLeaf();
+}
+
+bool AXPlatformNodeDelegateBase::IsLeaf() const {
+  return !GetChildCount();
+}
+
+bool AXPlatformNodeDelegateBase::IsToplevelBrowserWindow() {
+  return false;
+}
+
+bool AXPlatformNodeDelegateBase::IsDescendantOfPlainTextField() const {
   return false;
 }
 
@@ -198,10 +268,6 @@ bool AXPlatformNodeDelegateBase::SetHypertextSelection(int start_offset,
   action_data.anchor_offset = start_offset;
   action_data.focus_offset = end_offset;
   return AccessibilityPerformAction(action_data);
-}
-
-base::string16 AXPlatformNodeDelegateBase::GetInnerText() const {
-  return base::string16();
 }
 
 gfx::Rect AXPlatformNodeDelegateBase::GetBoundsRect(
@@ -478,6 +544,10 @@ bool AXPlatformNodeDelegateBase::IsMinimized() const {
   return false;
 }
 
+bool AXPlatformNodeDelegateBase::IsText() const {
+  return ui::IsText(GetData().role);
+}
+
 bool AXPlatformNodeDelegateBase::IsWebContent() const {
   return false;
 }
@@ -533,6 +603,11 @@ AXPlatformNodeDelegateBase::GetTargetNodesForRelation(
 
 std::set<AXPlatformNode*> AXPlatformNodeDelegateBase::GetReverseRelations(
     ax::mojom::IntAttribute attr) {
+  // TODO(accessibility) Implement these if views ever use relations more
+  // widely. The use so far has been for the Omnibox to the suggestion popup.
+  // If this is ever implemented, then the "popup for" to "controlled by"
+  // mapping in AXPlatformRelationWin can be removed, as it would be
+  // redundant with setting the controls relationship.
   return std::set<AXPlatformNode*>();
 }
 

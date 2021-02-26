@@ -32,15 +32,13 @@ class ChromeContentSettingsAgentDelegate
 #endif
 
   bool IsPluginTemporarilyAllowed(const std::string& identifier);
+  void AllowPluginTemporarily(const std::string& identifier);
 
   // content_settings::ContentSettingsAgentImpl::Delegate:
-  bool IsSchemeWhitelisted(const std::string& scheme) override;
+  bool IsSchemeAllowlisted(const std::string& scheme) override;
   base::Optional<bool> AllowReadFromClipboard() override;
   base::Optional<bool> AllowWriteToClipboard() override;
   base::Optional<bool> AllowMutationEvents() override;
-  base::Optional<bool> AllowRunningInsecureContent(
-      bool allowed_per_settings,
-      const blink::WebURL& resource_url) override;
   void PassiveInsecureContentFound(const blink::WebURL&) override;
 
  private:
@@ -48,12 +46,8 @@ class ChromeContentSettingsAgentDelegate
                            PluginsTemporarilyAllowed);
 
   // RenderFrameObserver:
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void OnDestruct() override;
-
-  void OnLoadBlockedPlugins(const std::string& identifier);
 
   // Whether the observed RenderFrame is for a platform app.
   bool IsPlatformApp();

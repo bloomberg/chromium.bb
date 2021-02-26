@@ -74,12 +74,24 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // the list of its parent's children, or its parent doesn't have children.
   virtual base::Optional<int> GetIndexInParent();
 
+  // Returns a stack of ancestors of this node. The node at the top of the stack
+  // is the top most ancestor.
+  base::stack<gfx::NativeViewAccessible> GetAncestors();
+
+  // Returns an optional integer indicating the logical order of this node
+  // compared to another node or returns an empty optional if the nodes
+  // are not comparable.
+  //    0: if this position is logically equivalent to the other node
+  //   <0: if this position is logically less than (before) the other node
+  //   >0: if this position is logically greater than (after) the other node
+  base::Optional<int> CompareTo(AXPlatformNodeBase& other);
+
   // AXPlatformNode.
   void Destroy() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void AnnounceText(const base::string16& text) override;
 #endif
 
@@ -216,19 +228,13 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Optionally accepts an unignored selection to avoid redundant computation.
   bool HasCaret(const AXTree::Selection* unignored_selection = nullptr);
 
-  // Returns true if an ancestor of this node (not including itself) is a
-  // leaf node, meaning that this node is not actually exposed to the
-  // platform.
+  // See AXPlatformNodeDelegate::IsChildOfLeaf().
   bool IsChildOfLeaf() const;
 
-  // Returns true if this is a leaf node on this platform, meaning any
-  // children should not be exposed to this platform's native accessibility
-  // layer. Each platform subclass should implement this itself.
-  // The definition of a leaf may vary depending on the platform,
-  // but a leaf node should never have children that are focusable or
-  // that might send notifications.
+  // See AXPlatformNodeDelegate::IsLeaf().
   bool IsLeaf() const;
 
+  // See AXPlatformNodeDelegate::IsInvisibleOrIgnored().
   bool IsInvisibleOrIgnored() const;
 
   // Returns true if this node can be scrolled either in the horizontal or the
@@ -241,37 +247,48 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Returns true if this node can be scrolled in the vertical direction.
   bool IsVerticallyScrollable() const;
 
-  // Returns true if this node has role of StaticText, LineBreak, or
-  // InlineTextBox
-  bool IsTextOnlyObject() const;
-
-  // A text field is any widget in which the user should be able to enter and
-  // edit text.
-  //
-  // Examples include <input type="text">, <input type="password">, <textarea>,
-  // <div contenteditable="true">, <div role="textbox">, <div role="searchbox">
-  // and <div role="combobox">. Note that when an ARIA role that indicates that
-  // the widget is editable is used, such as "role=textbox", the element doesn't
-  // need to be contenteditable for this method to return true, as in theory
-  // JavaScript could be used to implement editing functionality. In practice,
-  // this situation should be rare.
+  // See AXNodeData::IsTextField().
   bool IsTextField() const;
 
-  // Returns true if the node is an editable text field.
+  // See AXNodeData::IsPlainTextField().
   bool IsPlainTextField() const;
+
+  // See AXNodeData::IsRichTextField().
+  bool IsRichTextField() const;
+
+  // See AXNode::IsText().
+  bool IsText() const;
+
+  // Determines whether an element should be exposed with checkable state, and
+  // possibly the checked state. Examples are check box and radio button.
+  // Objects that are exposed as toggle buttons use the platform pressed state
+  // in some platform APIs, and should not be exposed as checkable. They don't
+  // expose the platform equivalent of the internal checked state.
+  virtual bool IsPlatformCheckable() const;
 
   bool HasFocus();
 
-  // If this node is a leaf, returns the text of this node, otherwise represents
-  // each child node with a special "embedded object" character. This is how
-  // text is represented in ATK and IA2 APIs.
+  // If this node is a leaf, returns the visible accessible name of this node.
+  // Otherwise represents every non-leaf child node with a special "embedded
+  // object character", and every leaf child node with its visible accessible
+  // name. This is how displayed text and embedded objects are represented in
+  // ATK and IA2 APIs.
   base::string16 GetHypertext() const;
 
   // Returns the text of this node and all descendant nodes; including text
   // found in embedded objects.
+  //
+  // Only text displayed on screen is included. Text from ARIA and HTML
+  // attributes that is either not displayed on screen, or outside this node,
+  // e.g. aria-label and HTML title, is not returned.
   base::string16 GetInnerText() const;
 
-  virtual base::string16 GetValue() const;
+  // Returns the value of a control such as a text field, a slider, a <select>
+  // element, a date picker or an ARIA combo box. In order to minimize
+  // cross-process communication between the renderer and the browser, may
+  // compute the value from the control's inner text in the case of a text
+  // field.
+  base::string16 GetValueForControl() const;
 
   // Represents a non-static text node in IAccessibleHypertext (and ATK in the
   // future). This character is embedded in the response to
@@ -344,17 +361,12 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   //
   // Delegate.  This is a weak reference which owns |this|.
   //
-  AXPlatformNodeDelegate* delegate_;
+  AXPlatformNodeDelegate* delegate_ = nullptr;
+
+  bool IsDocument() const;
 
  protected:
-  bool IsDocument() const;
-  bool IsRichTextField() const;
   bool IsSelectionItemSupported() const;
-
-  // Get the range value text, which might come from aria-valuetext or
-  // a floating-point value. This is different from the value string
-  // attribute used in input controls such as text boxes and combo boxes.
-  base::string16 GetRangeValueText() const;
 
   // Get the role description from the node data or from the image annotation
   // status.
@@ -491,7 +503,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   mutable AXHypertext hypertext_;
 
  private:
-  // Return true if the index represents a text character.
+  // Returns true if the index represents a text character.
   bool IsText(const base::string16& text,
               size_t index,
               bool is_indexed_from_end = false);

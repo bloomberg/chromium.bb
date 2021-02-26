@@ -21,11 +21,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LINEAR_GRADIENT_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LINEAR_GRADIENT_ELEMENT_H_
 
-#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_gradient_element.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
+
+class SVGAnimatedLength;
 
 struct LinearGradientAttributes;
 
@@ -42,7 +43,7 @@ class SVGLinearGradientElement final : public SVGGradientElement {
   SVGAnimatedLength* x2() const { return x2_.Get(); }
   SVGAnimatedLength* y2() const { return y2_.Get(); }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void SvgAttributeChanged(const QualifiedName&) override;

@@ -32,7 +32,7 @@ def GenTests(api):
   yield api.test(
       'automatic_version',
       api.platform.name('mac'),
-      api.platform.mac_release('10.14.5'),
+      api.platform.mac_release('10.15.6'),
   )
 
   yield api.test(

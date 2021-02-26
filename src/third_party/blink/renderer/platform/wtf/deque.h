@@ -613,7 +613,7 @@ inline void Deque<T, inlineCapacity, Allocator>::erase(wtf_size_t position) {
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline DequeIteratorBase<T, inlineCapacity, Allocator>::DequeIteratorBase()
-    : deque_(0) {}
+    : deque_(nullptr) {}
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline DequeIteratorBase<T, inlineCapacity, Allocator>::DequeIteratorBase(
@@ -686,22 +686,12 @@ template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
-  // Bail out for concurrent marking.
-  if (!VectorTraits<T>::kCanTraceConcurrently) {
-    if (visitor->DeferredTraceIfConcurrent(
-            {this, [](blink::Visitor* visitor, const void* object) {
-               reinterpret_cast<const Deque<T, inlineCapacity, Allocator>*>(
-                   object)
-                   ->Trace(visitor);
-             }}))
-      return;
-  }
-
   static_assert(inlineCapacity == 0,
                 "Heap allocated Deque should not use inline buffer");
   static_assert(Allocator::kIsGarbageCollected,
                 "Garbage collector must be enabled.");
   const T* buffer = buffer_.BufferSafe();
+
   DCHECK(!buffer || buffer_.IsOutOfLineBuffer(buffer));
   Allocator::TraceVectorBacking(visitor, buffer, buffer_.BufferSlot());
 }

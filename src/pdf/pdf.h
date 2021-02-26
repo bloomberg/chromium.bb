@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -25,16 +26,17 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
 namespace gfx {
 class Rect;
 class Size;
-}
+class SizeF;
+}  // namespace gfx
 
 namespace chrome_pdf {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH)
 // Create a flattened PDF document from an existing PDF document.
 // |input_buffer| is the buffer that contains the entire PDF document to be
 // flattened.
 std::vector<uint8_t> CreateFlattenedPdf(base::span<const uint8_t> input_buffer);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_ASH)
 
 #if defined(OS_WIN)
 // Printing modes - type to convert PDF to for printing. See PDFium's
@@ -103,7 +105,7 @@ void SetPDFUsePrintMode(int mode);
 // Returns false if the document is not valid.
 bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                    int* page_count,
-                   double* max_page_width);
+                   float* max_page_width);
 
 // Whether the PDF is Tagged (see 10.7 "Tagged PDF" in PDF Reference 1.7).
 // Returns true if it's a tagged (accessible) PDF, false if it's a valid
@@ -120,35 +122,46 @@ base::Value GetPDFStructTreeForPage(base::span<const uint8_t> pdf_buffer,
 //     rendered.
 // |page_number| is the page number that the function will get the dimensions
 //     of.
-// |width| is the output for the width of the page in points.
-// |height| is the output for the height of the page in points.
-// Returns false if the document or the page number are not valid.
-bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,
-                           int page_number,
-                           double* width,
-                           double* height);
+// Returns the size of the page in points, or nullopt if the document or the
+// page number are not valid.
+base::Optional<gfx::SizeF> GetPDFPageSizeByIndex(
+    base::span<const uint8_t> pdf_buffer,
+    int page_number);
+
+enum class RenderDeviceType {
+  kDisplay,
+  kPrinter,
+};
+
+struct RenderOptions {
+  // Whether the output should be stretched to fit the supplied bitmap.
+  bool stretch_to_bounds;
+  // If any scaling is needed, whether the original aspect ratio of the page is
+  // preserved while scaling.
+  bool keep_aspect_ratio;
+  // Whether the final image should be rotated to match the output bound.
+  bool autorotate;
+  // Specifies color or grayscale.
+  bool use_color;
+  // What type of device to render for.
+  RenderDeviceType render_device_type;
+};
 
 // Renders PDF page into 4-byte per pixel BGRA color bitmap.
 // |pdf_buffer| is the buffer that contains the entire PDF document to be
 //     rendered.
 // |page_number| is the 0-based index of the page to be rendered.
 // |bitmap_buffer| is the output buffer for bitmap.
-// |bitmap_width| is the width of the output bitmap.
-// |bitmap_height| is the height of the output bitmap.
-// |dpi_x| and |dpi_y| is the resolution.
-// |autorotate| specifies whether the final image should be rotated to match
-//     the output bound.
-// |use_color| specifies color or grayscale.
+// |bitmap_size| is the size of the output bitmap.
+// |dpi| is the 2D resolution.
+// |options| is the options to render with.
 // Returns false if the document or the page number are not valid.
 bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
                            int page_number,
                            void* bitmap_buffer,
-                           int bitmap_width,
-                           int bitmap_height,
-                           int dpi_x,
-                           int dpi_y,
-                           bool autorotate,
-                           bool use_color);
+                           const gfx::Size& bitmap_size,
+                           const gfx::Size& dpi,
+                           const RenderOptions& options);
 
 // Convert multiple PDF pages into a N-up PDF.
 // |input_buffers| is the vector of buffers with each buffer contains a PDF.

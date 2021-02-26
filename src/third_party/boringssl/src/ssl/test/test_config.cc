@@ -152,6 +152,7 @@ const Flag<bool> kBoolFlags[] = {
      &TestConfig::expect_delegated_credential_used},
     {"-expect-hrr", &TestConfig::expect_hrr},
     {"-expect-no-hrr", &TestConfig::expect_no_hrr},
+    {"-wait-for-debugger", &TestConfig::wait_for_debugger},
 };
 
 const Flag<std::string> kStringFlags[] = {
@@ -182,6 +183,13 @@ const Flag<std::string> kStringFlags[] = {
     {"-handshaker-path", &TestConfig::handshaker_path},
     {"-delegated-credential", &TestConfig::delegated_credential},
     {"-expect-early-data-reason", &TestConfig::expect_early_data_reason},
+};
+
+// TODO(davidben): When we can depend on C++17 or Abseil, switch this to
+// std::optional or absl::optional.
+const Flag<std::unique_ptr<std::string>> kOptionalStringFlags[] = {
+    {"-expect-peer-application-settings",
+     &TestConfig::expect_peer_application_settings},
 };
 
 const Flag<std::string> kBase64Flags[] = {
@@ -216,6 +224,7 @@ const Flag<int> kIntFlags[] = {
     {"-max-cert-list", &TestConfig::max_cert_list},
     {"-expect-cipher-aes", &TestConfig::expect_cipher_aes},
     {"-expect-cipher-no-aes", &TestConfig::expect_cipher_no_aes},
+    {"-expect-cipher", &TestConfig::expect_cipher},
     {"-resumption-delay", &TestConfig::resumption_delay},
     {"-max-send-fragment", &TestConfig::max_send_fragment},
     {"-read-size", &TestConfig::read_size},
@@ -227,6 +236,11 @@ const Flag<std::vector<int>> kIntVectorFlags[] = {
     {"-verify-prefs", &TestConfig::verify_prefs},
     {"-expect-peer-verify-pref", &TestConfig::expect_peer_verify_prefs},
     {"-curves", &TestConfig::curves},
+};
+
+const Flag<std::vector<std::pair<std::string, std::string>>>
+    kStringPairVectorFlags[] = {
+        {"-application-settings", &TestConfig::application_settings},
 };
 
 bool ParseFlag(char *flag, int argc, char **argv, int *i,
@@ -248,6 +262,20 @@ bool ParseFlag(char *flag, int argc, char **argv, int *i,
     }
     if (!skip) {
       string_field->assign(argv[*i]);
+    }
+    return true;
+  }
+
+  std::unique_ptr<std::string> *optional_string_field =
+      FindField(out_config, kOptionalStringFlags, flag);
+  if (optional_string_field != NULL) {
+    *i = *i + 1;
+    if (*i >= argc) {
+      fprintf(stderr, "Missing parameter.\n");
+      return false;
+    }
+    if (!skip) {
+      optional_string_field->reset(new std::string(argv[*i]));
     }
     return true;
   }
@@ -307,9 +335,25 @@ bool ParseFlag(char *flag, int argc, char **argv, int *i,
     return true;
   }
 
-  if (strcmp(flag, "-enable-ed25519") == 0) {
-    // Old argument; ignored for split-handshake compat testing.
-    // Remove after 2020-06-01.
+  std::vector<std::pair<std::string, std::string>> *string_pair_vector_field =
+      FindField(out_config, kStringPairVectorFlags, flag);
+  if (string_pair_vector_field) {
+    *i = *i + 1;
+    if (*i >= argc) {
+      fprintf(stderr, "Missing parameter.\n");
+      return false;
+    }
+    const char *comma = strchr(argv[*i], ',');
+    if (!comma) {
+      fprintf(stderr,
+              "Parameter should be a pair of comma-separated strings.\n");
+      return false;
+    }
+    // Each instance of the flag adds to the list.
+    if (!skip) {
+      string_pair_vector_field->push_back(std::make_pair(
+          std::string(argv[*i], comma - argv[*i]), std::string(comma + 1)));
+    }
     return true;
   }
 
@@ -1559,9 +1603,19 @@ bssl::UniquePtr<SSL> TestConfig::NewSSL(
     return nullptr;
   }
   if (!advertise_alpn.empty() &&
-      SSL_set_alpn_protos(ssl.get(), (const uint8_t *)advertise_alpn.data(),
-                          advertise_alpn.size()) != 0) {
+      SSL_set_alpn_protos(
+          ssl.get(), reinterpret_cast<const uint8_t *>(advertise_alpn.data()),
+          advertise_alpn.size()) != 0) {
     return nullptr;
+  }
+  for (const auto &pair : application_settings) {
+    if (!SSL_add_application_settings(
+            ssl.get(), reinterpret_cast<const uint8_t *>(pair.first.data()),
+            pair.first.size(),
+            reinterpret_cast<const uint8_t *>(pair.second.data()),
+            pair.second.size())) {
+      return nullptr;
+    }
   }
   if (!psk.empty()) {
     SSL_set_psk_client_callback(ssl.get(), PskClientCallback);

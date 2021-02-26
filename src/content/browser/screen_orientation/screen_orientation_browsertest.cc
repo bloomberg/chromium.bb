@@ -8,12 +8,10 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/frame_tree.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/frame_tree.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/page_messages.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -46,22 +44,18 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
     RenderWidgetHostImpl* main_frame_rwh = static_cast<RenderWidgetHostImpl*>(
         web_contents()->GetMainFrame()->GetRenderWidgetHost());
 
-    ScreenOrientationValues type = SCREEN_ORIENTATION_VALUES_DEFAULT;
+    blink::mojom::ScreenOrientation type =
+        blink::mojom::ScreenOrientation::kUndefined;
     if (str_type == "portrait-primary") {
-      type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+      type = blink::mojom::ScreenOrientation::kPortraitPrimary;
     } else if (str_type == "portrait-secondary") {
-      type = SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
+      type = blink::mojom::ScreenOrientation::kPortraitSecondary;
     } else if (str_type == "landscape-primary") {
-      type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
+      type = blink::mojom::ScreenOrientation::kLandscapePrimary;
     } else if (str_type == "landscape-secondary") {
-      type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
+      type = blink::mojom::ScreenOrientation::kLandscapeSecondary;
     }
-    ASSERT_NE(SCREEN_ORIENTATION_VALUES_DEFAULT, type);
-
-    ScreenInfo screen_info;
-    main_frame_rwh->GetScreenInfo(&screen_info);
-    screen_info.orientation_angle = angle;
-    screen_info.orientation_type = type;
+    ASSERT_NE(blink::mojom::ScreenOrientation::kUndefined, type);
 
     std::set<RenderWidgetHost*> rwhs;
     for (RenderFrameHost* rfh : web_contents()->GetAllFrames()) {
@@ -143,7 +137,7 @@ class ScreenOrientationOOPIFBrowserTest : public ScreenOrientationBrowserTest {
 };
 
 // This test doesn't work on MacOS X but the reason is mostly because it is not
-// used Aura. It could be set as !defined(OS_MACOSX) but the rule below will
+// used Aura. It could be set as !defined(OS_MAC) but the rule below will
 // actually support MacOS X if and when it switches to Aura.
 #if defined(USE_AURA) || defined(OS_ANDROID)
 // Flaky on Chrome OS: http://crbug.com/468259
@@ -345,9 +339,9 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest, ScreenOrientation) {
 // Regression test for triggering a screen orientation change for a pending
 // main frame RenderFrameHost.  See https://crbug.com/764202.  In the bug, this
 // was triggered via the DevTools audit panel and
-// WidgetMsg_EnableDeviceEmulation, which calls RenderWidget::Resize on the
-// renderer side.  The test fakes this by directly sending the resize message
-// to the widget.
+// blink::mojom::FrameWidget::EnableDeviceEmulation, which calls
+// RenderWidget::Resize on the renderer side.  The test fakes this by directly
+// sending the resize message to the widget.
 IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest,
                        ScreenOrientationInPendingMainFrame) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -359,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest,
   // Set up a fake Resize message with a screen orientation change.
   RenderWidgetHost* main_frame_rwh =
       web_contents()->GetMainFrame()->GetRenderWidgetHost();
-  ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   main_frame_rwh->GetScreenInfo(&screen_info);
   int expected_angle = (screen_info.orientation_angle + 90) % 360;
 

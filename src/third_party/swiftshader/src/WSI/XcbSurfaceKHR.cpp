@@ -151,7 +151,7 @@ void XcbSurfaceKHR::detachImage(PresentImage *image)
 	if(it != graphicsContexts.end())
 	{
 		libXcb->xcb_free_gc(connection, it->second);
-		graphicsContexts.erase(image);
+		graphicsContexts.erase(it);
 	}
 }
 
@@ -161,7 +161,7 @@ VkResult XcbSurfaceKHR::present(PresentImage *image)
 	if(it != graphicsContexts.end())
 	{
 		VkExtent2D windowExtent = getWindowSize(connection, window);
-		VkExtent3D extent = image->getImage()->getMipLevelExtent(VK_IMAGE_ASPECT_COLOR_BIT, 0);
+		const VkExtent3D &extent = image->getImage()->getExtent();
 
 		if(windowExtent.width != extent.width || windowExtent.height != extent.height)
 		{

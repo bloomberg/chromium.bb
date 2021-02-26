@@ -10,11 +10,12 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
@@ -24,6 +25,9 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
@@ -31,12 +35,13 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
-#include "chrome/browser/ui/ash/launcher/arc_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/extension_shelf_context_menu.h"
-#include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -49,8 +54,17 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/views/widget/widget.h"
+#include "url/gurl.h"
+
+using crostini::CrostiniTestHelper;
 
 namespace {
+
+ash::ShelfItemDelegate::AppMenuItems GetAppMenuItems(
+    ash::ShelfItemDelegate* delegate,
+    int event_flags) {
+  return delegate->GetAppMenuItems(event_flags, base::NullCallback());
+}
 
 bool IsItemPresentInMenu(ui::MenuModel* menu, int command_id) {
   ui::MenuModel* model = menu;
@@ -77,13 +91,29 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
   ~ShelfContextMenuTest() override = default;
 
   void SetUp() override {
+    ChromeAshTestBase::SetUp();
+
+    extensions::TestExtensionSystem* extension_system(
+        static_cast<extensions::TestExtensionSystem*>(
+            extensions::ExtensionSystem::Get(&profile_)));
+    extension_service_ = extension_system->CreateExtensionService(
+        base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
+    extension_service_->Init();
+
+    ConfigureWebAppProvider();
+    web_app::TestWebAppProvider::Get(&profile_)->Start();
+
+    crostini_helper_ = std::make_unique<CrostiniTestHelper>(profile());
+    crostini_helper_->ReInitializeAppServiceIntegration();
+
     app_service_test_.SetUp(&profile_);
     arc_test_.SetUp(&profile_);
+
     session_manager_ = std::make_unique<session_manager::SessionManager>();
-    ChromeAshTestBase::SetUp();
     model_ = std::make_unique<ash::ShelfModel>();
     launcher_controller_ =
         std::make_unique<ChromeLauncherController>(&profile_, model_.get());
+    launcher_controller_->Init();
 
     // Disable safe icon decoding to ensure ArcAppShortcutRequests returns in
     // the test environment.
@@ -142,6 +172,11 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
 
   void TearDown() override {
     launcher_controller_.reset();
+
+    arc_test_.TearDown();
+
+    crostini_helper_.reset();
+
     ChromeAshTestBase::TearDown();
   }
 
@@ -150,6 +185,8 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
   apps::AppServiceTest& app_service_test() { return app_service_test_; }
 
   TestingProfile* profile() { return &profile_; }
+
+  CrostiniTestHelper* crostini_helper() { return crostini_helper_.get(); }
 
   ChromeLauncherController* controller() { return launcher_controller_.get(); }
 
@@ -172,12 +209,23 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
   }
 
  private:
+  void ConfigureWebAppProvider() {
+    auto system_web_app_manager =
+        std::make_unique<web_app::TestSystemWebAppManager>(&profile_);
+
+    auto* provider = web_app::TestWebAppProvider::Get(&profile_);
+    provider->SetSystemWebAppManager(std::move(system_web_app_manager));
+    provider->SetRunSubsystemStartupTasks(true);
+  }
+
   TestingProfile profile_;
+  std::unique_ptr<CrostiniTestHelper> crostini_helper_;
   ArcAppTest arc_test_;
   apps::AppServiceTest app_service_test_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<ash::ShelfModel> model_;
   std::unique_ptr<ChromeLauncherController> launcher_controller_;
+  extensions::ExtensionService* extension_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfContextMenuTest);
 };
@@ -257,7 +305,7 @@ TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
   ash::ShelfItemDelegate* item_delegate =
       model()->GetShelfItemDelegate(shelf_id);
   ASSERT_TRUE(item_delegate);
-  EXPECT_TRUE(item_delegate->GetAppMenuItems(0 /* event_flags */).empty());
+  EXPECT_TRUE(GetAppMenuItems(item_delegate, 0 /* event_flags */).empty());
 
   const int64_t display_id = GetPrimaryDisplay().id();
   std::unique_ptr<ui::MenuModel> menu =
@@ -280,9 +328,9 @@ TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
 
   item_delegate = model()->GetShelfItemDelegate(shelf_id);
   ASSERT_TRUE(item_delegate);
-  auto menu_list = item_delegate->GetAppMenuItems(0 /* event_flags */);
+  auto menu_list = GetAppMenuItems(item_delegate, 0 /* event_flags */);
   ASSERT_EQ(1U, menu_list.size());
-  EXPECT_EQ(base::UTF8ToUTF16(app_name), menu_list[0].first);
+  EXPECT_EQ(base::UTF8ToUTF16(app_name), menu_list[0].title);
 
   menu = GetContextMenu(item_delegate, display_id);
   ASSERT_TRUE(menu);
@@ -309,9 +357,9 @@ TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
       model()->GetShelfItemDelegate(shelf_id2);
   ASSERT_TRUE(item_delegate2);
 
-  menu_list = item_delegate2->GetAppMenuItems(0 /* event_flags */);
+  menu_list = GetAppMenuItems(item_delegate2, 0 /* event_flags */);
   ASSERT_EQ(1U, menu_list.size());
-  EXPECT_EQ(base::UTF8ToUTF16(app_name2), menu_list[0].first);
+  EXPECT_EQ(base::UTF8ToUTF16(app_name2), menu_list[0].title);
 
   menu = GetContextMenu(item_delegate2, display_id);
   ASSERT_TRUE(menu);
@@ -367,14 +415,14 @@ TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
     EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
     EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 
-    menu_list = item_delegate3->GetAppMenuItems(0 /* event_flags */);
+    menu_list = GetAppMenuItems(item_delegate3, 0 /* event_flags */);
     ASSERT_EQ(i + 1, menu_list.size());
 
     // Ensure custom names are set in the app menu items. Note, they are
     // in reverse order, based on activation order.
     for (uint32_t j = 0; j <= i; ++j) {
       EXPECT_EQ(base::UTF8ToUTF16(GetAppNameInShelfGroup(3 + j)),
-                menu_list[i - j].first);
+                menu_list[i - j].title);
     }
   }
 }
@@ -393,7 +441,7 @@ TEST_F(ShelfContextMenuTest, ArcLauncherSuspendAppMenu) {
   ash::ShelfItemDelegate* item_delegate =
       model()->GetShelfItemDelegate(shelf_id);
   ASSERT_TRUE(item_delegate);
-  EXPECT_TRUE(item_delegate->GetAppMenuItems(0 /* event_flags */).empty());
+  EXPECT_TRUE(GetAppMenuItems(item_delegate, 0 /* event_flags */).empty());
 
   const int64_t display_id = GetPrimaryDisplay().id();
   std::unique_ptr<ui::MenuModel> menu =
@@ -552,9 +600,7 @@ TEST_F(ShelfContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
 // Checks some properties for crostini's terminal app's context menu,
 // specifically that every menu item has an icon.
 TEST_F(ShelfContextMenuTest, CrostiniTerminalApp) {
-  crostini::CrostiniTestHelper crostini_helper(profile());
-  crostini_helper.ReInitializeAppServiceIntegration();
-  const std::string app_id = crostini::GetTerminalId();
+  const std::string app_id = crostini::kCrostiniTerminalSystemAppId;
   crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       crostini::kCrostiniDefaultVmName);
 
@@ -581,11 +627,8 @@ TEST_F(ShelfContextMenuTest, CrostiniTerminalApp) {
 // Checks the context menu for a "normal" crostini app (i.e. a registered one).
 // Particularly, we ensure that the density changing option exists.
 TEST_F(ShelfContextMenuTest, CrostiniNormalApp) {
-  crostini::CrostiniTestHelper crostini_helper(profile());
-  crostini_helper.ReInitializeAppServiceIntegration();
-
   const std::string app_name = "foo";
-  crostini_helper.AddApp(crostini::CrostiniTestHelper::BasicApp(app_name));
+  crostini_helper()->AddApp(crostini::CrostiniTestHelper::BasicApp(app_name));
   app_service_test().FlushMojoCalls();
   const std::string app_id =
       crostini::CrostiniTestHelper::GenerateAppId(app_name);
@@ -624,9 +667,6 @@ TEST_F(ShelfContextMenuTest, CrostiniNormalApp) {
 // Confirms the menu items for unregistered crostini apps (i.e. apps that do not
 // have an associated .desktop file, and therefore can only be closed).
 TEST_F(ShelfContextMenuTest, CrostiniUnregisteredApps) {
-  crostini::CrostiniTestHelper crostini_helper(profile());
-  crostini_helper.ReInitializeAppServiceIntegration();
-
   const std::string fake_window_app_id = "foo";
   const std::string fake_window_startup_id = "bar";
   const std::string app_id = crostini::GetCrostiniShelfAppId(
@@ -644,6 +684,34 @@ TEST_F(ShelfContextMenuTest, CrostiniUnregisteredApps) {
 
   EXPECT_EQ(menu->GetItemCount(), 1);
   EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::MENU_NEW_WINDOW));
+}
+
+TEST_F(ShelfContextMenuTest, WebApp) {
+  constexpr char kWebAppUrl[] = "https://webappone.com/";
+  constexpr char kWebAppName[] = "WebApp1";
+
+  app_service_test().FlushMojoCalls();
+  const web_app::AppId app_id =
+      web_app::InstallDummyWebApp(profile(), kWebAppName, GURL(kWebAppUrl));
+
+  controller()->PinAppWithID(app_id);
+  const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));
+  ASSERT_TRUE(item);
+
+  ash::ShelfItemDelegate* item_delegate =
+      model()->GetShelfItemDelegate(ash::ShelfID(app_id));
+  ASSERT_TRUE(item_delegate);
+  int64_t primary_id = GetPrimaryDisplay().id();
+  std::unique_ptr<ui::MenuModel> menu =
+      GetContextMenu(item_delegate, primary_id);
+
+  // Check that every menu item has an icon
+  for (int i = 0; i < menu->GetItemCount(); ++i)
+    EXPECT_FALSE(menu->GetIconAt(i).IsEmpty());
+
+  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
+  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
+  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 }
 
 }  // namespace

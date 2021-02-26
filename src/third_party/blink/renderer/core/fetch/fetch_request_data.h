@@ -40,10 +40,10 @@ class CORE_EXPORT FetchRequestData final
   enum class ForServiceWorkerFetchEvent { kFalse, kTrue };
 
   static FetchRequestData* Create(ScriptState*,
-                                  const mojom::blink::FetchAPIRequest&,
+                                  mojom::blink::FetchAPIRequestPtr,
                                   ForServiceWorkerFetchEvent);
   FetchRequestData* Clone(ScriptState*, ExceptionState&);
-  FetchRequestData* Pass(ScriptState*, ExceptionState&);
+  FetchRequestData* Pass(ScriptState*);
 
   explicit FetchRequestData(ExecutionContext* execution_context);
   ~FetchRequestData();
@@ -52,8 +52,6 @@ class CORE_EXPORT FetchRequestData final
   const AtomicString& Method() const { return method_; }
   void SetURL(const KURL& url) { url_ = url; }
   const KURL& Url() const { return url_; }
-  mojom::RequestContextType Context() const { return context_; }
-  void SetContext(mojom::RequestContextType context) { context_ = context; }
   network::mojom::RequestDestination Destination() const {
     return destination_;
   }
@@ -138,7 +136,14 @@ class CORE_EXPORT FetchRequestData final
     trust_token_params_ = std::move(trust_token_params);
   }
 
-  void Trace(Visitor*);
+  void SetAllowHTTP1ForStreamingUpload(bool allow) {
+    allow_http1_for_streaming_upload_ = allow;
+  }
+  bool AllowHTTP1ForStreamingUpload() const {
+    return allow_http1_for_streaming_upload_;
+  }
+
+  void Trace(Visitor*) const;
 
  private:
   FetchRequestData* CloneExceptBody();
@@ -147,7 +152,6 @@ class CORE_EXPORT FetchRequestData final
   KURL url_;
   Member<FetchHeaderList> header_list_;
   // FIXME: Support m_skipServiceWorkerFlag;
-  mojom::RequestContextType context_;
   network::mojom::RequestDestination destination_;
   scoped_refptr<const SecurityOrigin> origin_;
   scoped_refptr<const SecurityOrigin> isolated_world_origin_;
@@ -183,6 +187,7 @@ class CORE_EXPORT FetchRequestData final
       url_loader_factory_;
   base::UnguessableToken window_id_;
   Member<ExecutionContext> execution_context_;
+  bool allow_http1_for_streaming_upload_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FetchRequestData);
 };

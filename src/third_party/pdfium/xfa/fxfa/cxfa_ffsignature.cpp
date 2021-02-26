@@ -6,6 +6,7 @@
 
 #include "xfa/fxfa/cxfa_ffsignature.h"
 
+#include "third_party/base/check.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_fffield.h"
 #include "xfa/fxfa/cxfa_ffpageview.h"
@@ -17,15 +18,11 @@ CXFA_FFSignature::CXFA_FFSignature(CXFA_Node* pNode) : CXFA_FFField(pNode) {}
 CXFA_FFSignature::~CXFA_FFSignature() = default;
 
 bool CXFA_FFSignature::LoadWidget() {
-  ASSERT(!IsLoaded());
-
-  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
-  RetainPtr<CXFA_ContentLayoutItem> retain_layout(m_pLayoutItem.Get());
-
+  DCHECK(!IsLoaded());
   return CXFA_FFField::LoadWidget();
 }
 
-void CXFA_FFSignature::RenderWidget(CXFA_Graphics* pGS,
+void CXFA_FFSignature::RenderWidget(CFGAS_GEGraphics* pGS,
                                     const CFX_Matrix& matrix,
                                     HighlightOption highlight) {
   if (!HasVisibleStatus())

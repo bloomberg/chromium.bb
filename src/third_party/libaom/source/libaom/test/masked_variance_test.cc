@@ -56,6 +56,7 @@ class MaskedSubPixelVarianceTest
   MaskedSubPixelVarianceFunc opt_func_;
   MaskedSubPixelVarianceFunc ref_func_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MaskedSubPixelVarianceTest);
 
 TEST_P(MaskedSubPixelVarianceTest, OperationCheck) {
   unsigned int ref_ret, opt_ret;
@@ -193,6 +194,7 @@ class HighbdMaskedSubPixelVarianceTest
   MaskedSubPixelVarianceFunc ref_func_;
   aom_bit_depth_t bit_depth_;
 };
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(HighbdMaskedSubPixelVarianceTest);
 
 TEST_P(HighbdMaskedSubPixelVarianceTest, OperationCheck) {
   unsigned int ref_ret, opt_ret;

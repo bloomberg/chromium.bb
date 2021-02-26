@@ -6,6 +6,99 @@
 
 namespace mojo {
 
+#define UI_TO_MOJO_ACTION_CASE(name) \
+  case ui::TextInputAction::name:    \
+    return ui::mojom::TextInputAction::name
+
+// static
+ui::mojom::TextInputAction
+EnumTraits<ui::mojom::TextInputAction, ui::TextInputAction>::ToMojom(
+    ui::TextInputAction text_input_action) {
+  switch (text_input_action) {
+    UI_TO_MOJO_ACTION_CASE(kDefault);
+    UI_TO_MOJO_ACTION_CASE(kEnter);
+    UI_TO_MOJO_ACTION_CASE(kDone);
+    UI_TO_MOJO_ACTION_CASE(kGo);
+    UI_TO_MOJO_ACTION_CASE(kNext);
+    UI_TO_MOJO_ACTION_CASE(kPrevious);
+    UI_TO_MOJO_ACTION_CASE(kSearch);
+    UI_TO_MOJO_ACTION_CASE(kSend);
+  }
+}
+
+#undef UI_TO_MOJO_ACTION_CASE
+
+#define MOJO_TO_UI_ACTION_CASE(name)     \
+  case ui::mojom::TextInputAction::name: \
+    *out = ui::TextInputAction::name;    \
+    return true;
+
+// static
+bool EnumTraits<ui::mojom::TextInputAction, ui::TextInputAction>::FromMojom(
+    ui::mojom::TextInputAction input,
+    ui::TextInputAction* out) {
+  switch (input) {
+    MOJO_TO_UI_ACTION_CASE(kDefault);
+    MOJO_TO_UI_ACTION_CASE(kEnter);
+    MOJO_TO_UI_ACTION_CASE(kDone);
+    MOJO_TO_UI_ACTION_CASE(kGo);
+    MOJO_TO_UI_ACTION_CASE(kNext);
+    MOJO_TO_UI_ACTION_CASE(kPrevious);
+    MOJO_TO_UI_ACTION_CASE(kSearch);
+    MOJO_TO_UI_ACTION_CASE(kSend);
+  }
+  return false;
+}
+
+#undef MOJO_TO_UI_ACTION_CASE
+
+#define UI_TO_MOJO_MODE_CASE(name, mojo_name)     \
+  case ui::TextInputMode::TEXT_INPUT_MODE_##name: \
+    return ui::mojom::TextInputMode::mojo_name
+
+// static
+ui::mojom::TextInputMode
+EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode>::ToMojom(
+    ui::TextInputMode text_input_mode) {
+  switch (text_input_mode) {
+    UI_TO_MOJO_MODE_CASE(DEFAULT, kDefault);
+    UI_TO_MOJO_MODE_CASE(NONE, kNone);
+    UI_TO_MOJO_MODE_CASE(TEXT, kText);
+    UI_TO_MOJO_MODE_CASE(TEL, kTel);
+    UI_TO_MOJO_MODE_CASE(URL, kUrl);
+    UI_TO_MOJO_MODE_CASE(EMAIL, kEmail);
+    UI_TO_MOJO_MODE_CASE(NUMERIC, kNumeric);
+    UI_TO_MOJO_MODE_CASE(DECIMAL, kDecimal);
+    UI_TO_MOJO_MODE_CASE(SEARCH, kSearch);
+  }
+}
+
+#undef UI_TO_MOJO_MODE_CASE
+
+#define MOJO_TO_UI_MODE_CASE(name, mojo_name)         \
+  case ui::mojom::TextInputMode::mojo_name:           \
+    *out = ui::TextInputMode::TEXT_INPUT_MODE_##name; \
+    return true;
+
+// static
+bool EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode>::FromMojom(
+    ui::mojom::TextInputMode input,
+    ui::TextInputMode* out) {
+  switch (input) {
+    MOJO_TO_UI_MODE_CASE(DEFAULT, kDefault);
+    MOJO_TO_UI_MODE_CASE(NONE, kNone);
+    MOJO_TO_UI_MODE_CASE(TEXT, kText);
+    MOJO_TO_UI_MODE_CASE(TEL, kTel);
+    MOJO_TO_UI_MODE_CASE(URL, kUrl);
+    MOJO_TO_UI_MODE_CASE(EMAIL, kEmail);
+    MOJO_TO_UI_MODE_CASE(NUMERIC, kNumeric);
+    MOJO_TO_UI_MODE_CASE(DECIMAL, kDecimal);
+    MOJO_TO_UI_MODE_CASE(SEARCH, kSearch);
+  }
+}
+
+#undef MOJO_TO_UI_MODE_CASE
+
 #define UI_TO_MOJO_TYPE_CASE(name) \
   case ui::TEXT_INPUT_TYPE_##name: \
     return ui::mojom::TextInputType::name
@@ -97,6 +190,7 @@ bool StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan>::Read(
   out->background_color = data.background_color();
   out->suggestion_highlight_color = data.suggestion_highlight_color();
   out->remove_on_finish_composing = data.remove_on_finish_composing();
+  out->interim_char_selection = data.interim_char_selection();
   if (!data.ReadSuggestions(&out->suggestions))
     return false;
   return true;
@@ -113,6 +207,8 @@ EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::ToMojom(
       return ui::mojom::ImeTextSpanType::kSuggestion;
     case ui::ImeTextSpan::Type::kMisspellingSuggestion:
       return ui::mojom::ImeTextSpanType::kMisspellingSuggestion;
+    case ui::ImeTextSpan::Type::kAutocorrect:
+      return ui::mojom::ImeTextSpanType::kAutocorrect;
   }
 
   NOTREACHED();
@@ -132,6 +228,9 @@ bool EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::FromMojom(
       return true;
     case ui::mojom::ImeTextSpanType::kMisspellingSuggestion:
       *out = ui::ImeTextSpan::Type::kMisspellingSuggestion;
+      return true;
+    case ui::mojom::ImeTextSpanType::kAutocorrect:
+      *out = ui::ImeTextSpan::Type::kAutocorrect;
       return true;
   }
 

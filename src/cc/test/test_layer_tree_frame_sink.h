@@ -5,6 +5,10 @@
 #ifndef CC_TEST_TEST_LAYER_TREE_FRAME_SINK_H_
 #define CC_TEST_TEST_LAYER_TREE_FRAME_SINK_H_
 
+#include <memory>
+#include <set>
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -32,8 +36,11 @@ class TestLayerTreeFrameSinkClient {
  public:
   virtual ~TestLayerTreeFrameSinkClient() {}
 
+  virtual std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
+  CreateDisplayController() = 0;
   virtual std::unique_ptr<viz::SkiaOutputSurface>
-  CreateDisplaySkiaOutputSurface() = 0;
+  CreateDisplaySkiaOutputSurface(
+      viz::DisplayCompositorMemoryAndTaskController*) = 0;
 
   // This passes the ContextProvider being used by LayerTreeHostImpl which
   // can be used for the OutputSurface optionally.
@@ -44,8 +51,9 @@ class TestLayerTreeFrameSinkClient {
       const viz::LocalSurfaceId& local_surface_id) = 0;
   virtual void DisplayReceivedCompositorFrame(
       const viz::CompositorFrame& frame) = 0;
-  virtual void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                                      viz::RenderPassList* render_passes) = 0;
+  virtual void DisplayWillDrawAndSwap(
+      bool will_draw_and_swap,
+      viz::AggregatedRenderPassList* render_passes) = 0;
   virtual void DisplayDidDrawAndSwap() = 0;
 };
 
@@ -64,6 +72,7 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const viz::RendererSettings& renderer_settings,
+      const viz::DebugRendererSettings* debug_settings,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       bool synchronous_composite,
       bool disable_display_vsync,
@@ -108,8 +117,9 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
 
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;
-  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              viz::RenderPassList* render_passes) override;
+  void DisplayWillDrawAndSwap(
+      bool will_draw_and_swap,
+      viz::AggregatedRenderPassList* render_passes) override;
   void DisplayDidDrawAndSwap() override;
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
@@ -133,6 +143,7 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
   const bool synchronous_composite_;
   const bool disable_display_vsync_;
   const viz::RendererSettings renderer_settings_;
+  const viz::DebugRendererSettings* const debug_settings_;
   const double refresh_rate_;
 
   viz::FrameSinkId frame_sink_id_;

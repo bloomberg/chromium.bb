@@ -16,16 +16,16 @@
 #include <iosfwd>
 #include <string>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 #if defined(OS_WIN)
 typedef struct tagRECT RECT;
-#elif defined(OS_MACOSX) || defined(OS_IOS)
+#elif defined(OS_APPLE)
 typedef struct CGRect CGRect;
 #endif
 
@@ -48,14 +48,14 @@ class GEOMETRY_EXPORT Rect {
 
 #if defined(OS_WIN)
   explicit Rect(const RECT& r);
-#elif defined(OS_MACOSX) || defined(OS_IOS)
+#elif defined(OS_APPLE)
   explicit Rect(const CGRect& r);
 #endif
 
 #if defined(OS_WIN)
   // Construct an equivalent Win32 RECT object.
   RECT ToRECT() const;
-#elif defined(OS_MACOSX) || defined(OS_IOS)
+#elif defined(OS_APPLE)
   // Construct an equivalent CoreGraphics object.
   CGRect ToCGRect() const;
 #endif
@@ -285,8 +285,8 @@ inline Rect ScaleToEnclosingRect(const Rect& rect,
                                  float y_scale) {
   if (x_scale == 1.f && y_scale == 1.f)
     return rect;
-  // These next functions cast instead of using e.g. ToFlooredInt() because we
-  // haven't checked to ensure that the clamping behavior of the helper
+  // These next functions cast instead of using e.g. base::ClampFloor() because
+  // we haven't checked to ensure that the clamping behavior of the helper
   // functions doesn't degrade performance, and callers shouldn't be passing
   // values that cause overflow anyway.
   DCHECK(base::IsValueInRangeForNumericType<int>(
@@ -312,15 +312,17 @@ inline Rect ScaleToEnclosingRect(const Rect& rect, float scale) {
 
 // ScaleToEnclosingRect but clamping instead of asserting if the resulting rect
 // would overflow.
+// TODO(pkasting): Attempt to switch ScaleTo...Rect() to this construction and
+// check performance.
 inline Rect ScaleToEnclosingRectSafe(const Rect& rect,
                                      float x_scale,
                                      float y_scale) {
   if (x_scale == 1.f && y_scale == 1.f)
     return rect;
-  int x = base::saturated_cast<int>(std::floor(rect.x() * x_scale));
-  int y = base::saturated_cast<int>(std::floor(rect.y() * y_scale));
-  int w = base::saturated_cast<int>(std::ceil(rect.width() * x_scale));
-  int h = base::saturated_cast<int>(std::ceil(rect.height() * y_scale));
+  int x = base::ClampFloor(rect.x() * x_scale);
+  int y = base::ClampFloor(rect.y() * y_scale);
+  int w = base::ClampCeil(rect.width() * x_scale);
+  int h = base::ClampCeil(rect.height() * y_scale);
   return Rect(x, y, w, h);
 }
 

@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/strings/stringprintf.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
+#include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
@@ -18,40 +18,11 @@ namespace {
 
 using network::mojom::URLLoaderFactory;
 
-constexpr char kDictionaryQueryRewriteTemplate[] = "Define:%s";
-constexpr char kTranslationQueryRewriteTemplate[] = "Translate:%s";
-
 QuickAnswersClient::ResultLoaderFactoryCallback*
     g_testing_result_factory_callback = nullptr;
 
 QuickAnswersClient::IntentGeneratorFactoryCallback*
     g_testing_intent_generator_factory_callback = nullptr;
-
-const PreprocessedOutput PreprocessRequest(const QuickAnswersRequest& request,
-                                           const std::string& intent_text,
-                                           IntentType intent_type) {
-  PreprocessedOutput processed_output;
-  processed_output.intent_text = intent_text;
-  processed_output.query = intent_text;
-  processed_output.intent_type = intent_type;
-
-  switch (intent_type) {
-    case IntentType::kUnit:
-      break;
-    case IntentType::kDictionary:
-      processed_output.query = base::StringPrintf(
-          kDictionaryQueryRewriteTemplate, intent_text.c_str());
-      break;
-    case IntentType::kTranslation:
-      processed_output.query = base::StringPrintf(
-          kTranslationQueryRewriteTemplate, intent_text.c_str());
-      break;
-    case IntentType::kUnknown:
-      // TODO(llin): Update to NOTREACHED after integrating with TCLib.
-      break;
-  }
-  return processed_output;
-}
 
 }  // namespace
 
@@ -64,6 +35,18 @@ void QuickAnswersClient::SetResultLoaderFactoryForTesting(
 void QuickAnswersClient::SetIntentGeneratorFactoryForTesting(
     IntentGeneratorFactoryCallback* factory) {
   g_testing_intent_generator_factory_callback = factory;
+}
+
+bool QuickAnswersClient::IsQuickAnswersAllowedForLocale(
+    const std::string& locale,
+    const std::string& runtime_locale) {
+  // String literals used in some cases in the array because their
+  // constant equivalents don't exist in:
+  // third_party/icu/source/common/unicode/uloc.h
+  const std::string kAllowedLocales[] = {ULOC_CANADA, ULOC_UK, ULOC_US,
+                                         "en_AU",     "en_IN", "en_NZ"};
+  return base::Contains(kAllowedLocales, locale) ||
+         base::Contains(kAllowedLocales, runtime_locale);
 }
 
 QuickAnswersClient::QuickAnswersClient(URLLoaderFactory* url_loader_factory,
@@ -106,15 +89,8 @@ void QuickAnswersClient::OnAssistantQuickAnswersEnabled(bool enabled) {
 }
 
 void QuickAnswersClient::OnLocaleChanged(const std::string& locale) {
-  // String literals used in some cases in the array because their
-  // constant equivalents don't exist in:
-  // third_party/icu/source/common/unicode/uloc.h
-  const std::string kAllowedLocales[] = {ULOC_CANADA, ULOC_UK, ULOC_US,
-                                         "en_AU",     "en_IN", "en_NZ"};
-
-  const std::string kRuntimeLocale = icu::Locale::getDefault().getName();
-  locale_supported_ = (base::Contains(kAllowedLocales, locale) ||
-                       base::Contains(kAllowedLocales, kRuntimeLocale));
+  locale_supported_ = IsQuickAnswersAllowedForLocale(
+      locale, icu::Locale::getDefault().getName());
   NotifyEligibilityChanged();
 }
 
@@ -122,13 +98,24 @@ void QuickAnswersClient::OnAssistantStateDestroyed() {
   assistant_state_ = nullptr;
 }
 
+void QuickAnswersClient::SendRequestForPreprocessing(
+    const QuickAnswersRequest& quick_answers_request) {
+  SendRequestInternal(quick_answers_request, /*skip_fetch=*/true);
+}
+
+void QuickAnswersClient::FetchQuickAnswers(
+    const QuickAnswersRequest& preprocessed_request) {
+  DCHECK(!preprocessed_request.preprocessed_output.query.empty());
+
+  result_loader_ = CreateResultLoader(
+      preprocessed_request.preprocessed_output.intent_info.intent_type);
+  // Load and parse search result.
+  result_loader_->Fetch(preprocessed_request.preprocessed_output);
+}
+
 void QuickAnswersClient::SendRequest(
     const QuickAnswersRequest& quick_answers_request) {
-  RecordSelectedTextLength(quick_answers_request.selected_text.length());
-
-  // Generate intent from |quick_answers_request|.
-  intent_generator_ = CreateIntentGenerator(quick_answers_request);
-  intent_generator_->GenerateIntent(quick_answers_request);
+  SendRequestInternal(quick_answers_request, /*skip_fetch=*/false);
 }
 
 void QuickAnswersClient::OnQuickAnswerClick(ResultType result_type) {
@@ -147,7 +134,6 @@ void QuickAnswersClient::NotifyEligibilityChanged() {
   bool is_eligible =
       (chromeos::features::IsQuickAnswersEnabled() && assistant_state_ &&
        assistant_enabled_ && locale_supported_ && assistant_context_enabled_ &&
-       quick_answers_settings_enabled_ &&
        assistant_allowed_state_ ==
            chromeos::assistant::AssistantAllowedState::ALLOWED);
 
@@ -165,12 +151,13 @@ std::unique_ptr<ResultLoader> QuickAnswersClient::CreateResultLoader(
 }
 
 std::unique_ptr<IntentGenerator> QuickAnswersClient::CreateIntentGenerator(
-    const QuickAnswersRequest& request) {
+    const QuickAnswersRequest& request,
+    bool skip_fetch) {
   if (g_testing_intent_generator_factory_callback)
     return g_testing_intent_generator_factory_callback->Run();
   return std::make_unique<IntentGenerator>(
       base::BindOnce(&QuickAnswersClient::IntentGeneratorCallback,
-                     weak_factory_.GetWeakPtr(), request));
+                     weak_factory_.GetWeakPtr(), request, skip_fetch));
 }
 
 void QuickAnswersClient::OnNetworkError() {
@@ -185,29 +172,38 @@ void QuickAnswersClient::OnQuickAnswerReceived(
   delegate_->OnQuickAnswerReceived(std::move(quick_answer));
 }
 
+void QuickAnswersClient::SendRequestInternal(
+    const QuickAnswersRequest& quick_answers_request,
+    bool skip_fetch) {
+  RecordSelectedTextLength(quick_answers_request.selected_text.length());
+
+  // Generate intent from |quick_answers_request|.
+  intent_generator_ = CreateIntentGenerator(quick_answers_request, skip_fetch);
+  intent_generator_->GenerateIntent(quick_answers_request);
+}
+
 void QuickAnswersClient::IntentGeneratorCallback(
     const QuickAnswersRequest& quick_answers_request,
-    const std::string& intent_text,
-    IntentType intent_type) {
+    bool skip_fetch,
+    const IntentInfo& intent_info) {
   DCHECK(delegate_);
 
   // Preprocess the request.
   QuickAnswersRequest processed_request = quick_answers_request;
-  processed_request.preprocessed_output =
-      PreprocessRequest(quick_answers_request, intent_text, intent_type);
+  processed_request.preprocessed_output = PreprocessRequest(intent_info);
 
   delegate_->OnRequestPreprocessFinished(processed_request);
 
-  if (features::IsQuickAnswersTextAnnotatorEnabled() &&
-      processed_request.preprocessed_output.intent_type ==
-          IntentType::kUnknown) {
-    // Don't fetch answer if no intent is generated.
-    return;
+  if (features::IsQuickAnswersTextAnnotatorEnabled()) {
+    RecordIntentType(intent_info.intent_type);
+    if (intent_info.intent_type == IntentType::kUnknown) {
+      // Don't fetch answer if no intent is generated.
+      return;
+    }
   }
 
-  result_loader_ = CreateResultLoader(intent_type);
-  // Load and parse search result.
-  result_loader_->Fetch(processed_request.preprocessed_output.query);
+  if (!skip_fetch)
+    FetchQuickAnswers(processed_request);
 }
 
 base::TimeDelta QuickAnswersClient::GetImpressionDuration() const {

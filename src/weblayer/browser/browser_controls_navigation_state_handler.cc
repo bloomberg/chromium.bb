@@ -18,11 +18,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "weblayer/browser/browser_controls_navigation_state_handler_delegate.h"
+#include "weblayer/browser/controls_visibility_reason.h"
+#include "weblayer/browser/weblayer_features.h"
 
 namespace weblayer {
 namespace {
-const base::Feature kImmediatelyHideBrowserControlsForTest{
-    "ImmediatelyHideBrowserControlsForTest", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The time that must elapse after a navigation before the browser controls can
 // be hidden. This value matches what chrome has in
@@ -62,8 +62,10 @@ void BrowserControlsNavigationStateHandler::DidStartNavigation(
 void BrowserControlsNavigationStateHandler::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame()) {
-    if (navigation_handle->HasCommitted())
-      is_showing_error_page_ = navigation_handle->IsErrorPage();
+    if (!navigation_handle->HasCommitted()) {
+      // There will be no DidFinishLoad or DidFailLoad, so hide the topview
+      ScheduleStopDelayedForceShow();
+    }
     delegate_->OnUpdateBrowserControlsStateBecauseOfProcessSwitch(
         navigation_handle->HasCommitted());
   }
@@ -82,6 +84,10 @@ void BrowserControlsNavigationStateHandler::DidFailLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     int error_code) {
+  const bool is_main_frame =
+      render_frame_host->GetMainFrame() == render_frame_host;
+  if (is_main_frame)
+    ScheduleStopDelayedForceShow();
   if (render_frame_host->IsCurrent() &&
       (render_frame_host == web_contents()->GetMainFrame())) {
     UpdateState();
@@ -92,26 +98,15 @@ void BrowserControlsNavigationStateHandler::DidChangeVisibleSecurityState() {
   UpdateState();
 }
 
-void BrowserControlsNavigationStateHandler::DidAttachInterstitialPage() {
-  UpdateState();
-}
-
-void BrowserControlsNavigationStateHandler::DidDetachInterstitialPage() {
-  UpdateState();
-}
-
 void BrowserControlsNavigationStateHandler::RenderProcessGone(
     base::TerminationStatus status) {
   is_crashed_ = true;
   UpdateState();
-  delegate_->OnForceBrowserControlsShown();
 }
 
 void BrowserControlsNavigationStateHandler::OnRendererUnresponsive(
     content::RenderProcessHost* render_process_host) {
   UpdateState();
-  if (IsRendererHungOrCrashed())
-    delegate_->OnForceBrowserControlsShown();
 }
 
 void BrowserControlsNavigationStateHandler::OnRendererResponsive(
@@ -136,25 +131,41 @@ void BrowserControlsNavigationStateHandler::ScheduleStopDelayedForceShow() {
 }
 
 void BrowserControlsNavigationStateHandler::UpdateState() {
-  const content::BrowserControlsState current_state = CalculateCurrentState();
-  if (current_state == last_state_)
-    return;
-  last_state_ = current_state;
-  delegate_->OnBrowserControlsStateStateChanged(*last_state_);
+  const content::BrowserControlsState renderer_availability_state =
+      CalculateStateForReasonRendererAvailability();
+  if (renderer_availability_state != last_renderer_availability_state_) {
+    last_renderer_availability_state_ = renderer_availability_state;
+    delegate_->OnBrowserControlsStateStateChanged(
+        ControlsVisibilityReason::kRendererUnavailable,
+        last_renderer_availability_state_);
+  }
+
+  const content::BrowserControlsState other_state =
+      CalculateStateForReasonOther();
+  if (other_state != last_other_state_) {
+    last_other_state_ = other_state;
+    delegate_->OnBrowserControlsStateStateChanged(
+        ControlsVisibilityReason::kOther, last_other_state_);
+  }
+}
+
+content::BrowserControlsState BrowserControlsNavigationStateHandler::
+    CalculateStateForReasonRendererAvailability() {
+  if (!IsRendererControllingOffsets() || web_contents()->IsBeingDestroyed() ||
+      web_contents()->IsCrashed()) {
+    return content::BROWSER_CONTROLS_STATE_SHOWN;
+  }
+
+  return content::BROWSER_CONTROLS_STATE_BOTH;
 }
 
 content::BrowserControlsState
-BrowserControlsNavigationStateHandler::CalculateCurrentState() {
+BrowserControlsNavigationStateHandler::CalculateStateForReasonOther() {
   // TODO(sky): this needs to force SHOWN if a11y enabled, see
   // AccessibilityUtil.isAccessibilityEnabled().
 
-  if (!IsRendererControllingOffsets())
-    return content::BROWSER_CONTROLS_STATE_SHOWN;
-
   if (force_show_during_load_ || web_contents()->IsFullscreen() ||
-      web_contents()->IsFocusedElementEditable() ||
-      web_contents()->ShowingInterstitialPage() ||
-      web_contents()->IsBeingDestroyed() || web_contents()->IsCrashed()) {
+      web_contents()->IsFocusedElementEditable()) {
     return content::BROWSER_CONTROLS_STATE_SHOWN;
   }
 
@@ -176,7 +187,6 @@ BrowserControlsNavigationStateHandler::CalculateCurrentState() {
       return content::BROWSER_CONTROLS_STATE_SHOWN;
 
     case security_state::NONE:
-    case security_state::EV_SECURE:
     case security_state::SECURE:
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
     case security_state::SECURITY_LEVEL_COUNT:

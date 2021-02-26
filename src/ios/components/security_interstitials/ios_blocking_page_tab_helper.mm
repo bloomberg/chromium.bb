@@ -4,6 +4,7 @@
 
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 
+#include "base/logging.h"
 #include "base/values.h"
 #include "ios/components/security_interstitials/ios_security_interstitial_page.h"
 #import "ios/web/public/navigation/navigation_context.h"
@@ -28,8 +29,8 @@ const char kCommandPrefix[] = "blockingPage";
 IOSBlockingPageTabHelper::IOSBlockingPageTabHelper(web::WebState* web_state)
     : subscription_(nullptr), navigation_id_listener_(web_state, this) {
   auto command_callback =
-      base::Bind(&IOSBlockingPageTabHelper::OnBlockingPageCommand,
-                 weak_factory_.GetWeakPtr());
+      base::BindRepeating(&IOSBlockingPageTabHelper::OnBlockingPageCommand,
+                          weak_factory_.GetWeakPtr());
   subscription_ =
       web_state->AddScriptCommandCallback(command_callback, kCommandPrefix);
 }
@@ -45,6 +46,10 @@ void IOSBlockingPageTabHelper::AssociateBlockingPage(
   } else {
     blocking_pages_for_navigations_[navigation_id] = std::move(blocking_page);
   }
+}
+
+bool IOSBlockingPageTabHelper::ShouldDisplayURL() const {
+  return blocking_page_for_currently_committed_navigation_->ShouldDisplayURL();
 }
 
 IOSSecurityInterstitialPage* IOSBlockingPageTabHelper::GetCurrentBlockingPage()

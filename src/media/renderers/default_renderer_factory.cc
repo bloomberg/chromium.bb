@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "media/base/audio_buffer.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_factory.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/renderer_impl.h"
@@ -92,9 +91,11 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
       // finishes.
       base::BindRepeating(&DefaultRendererFactory::CreateAudioDecoders,
                           base::Unretained(this), media_task_runner),
-      media_log_,
-      BindToCurrentLoop(base::BindRepeating(
-          &DefaultRendererFactory::TranscribeAudio, base::Unretained(this)))));
+#if defined(OS_ANDROID)
+      media_log_));
+#else
+      media_log_, speech_recognition_client_.get()));
+#endif
 
   GpuVideoAcceleratorFactories* gpu_factories = nullptr;
   if (get_gpu_factories_cb_)
@@ -104,8 +105,7 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
   if (gpu_factories && gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames(
                            false /* for_media_stream */)) {
     gmb_pool = std::make_unique<GpuMemoryBufferVideoFramePool>(
-        std::move(media_task_runner), std::move(worker_task_runner),
-        gpu_factories);
+        media_task_runner, std::move(worker_task_runner), gpu_factories);
   }
 
   std::unique_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
@@ -124,16 +124,6 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
 
   return std::make_unique<RendererImpl>(
       media_task_runner, std::move(audio_renderer), std::move(video_renderer));
-}
-
-void DefaultRendererFactory::TranscribeAudio(
-    scoped_refptr<media::AudioBuffer> buffer) {
-#if !defined(OS_ANDROID)
-  if (speech_recognition_client_ &&
-      speech_recognition_client_->IsSpeechRecognitionAvailable()) {
-    speech_recognition_client_->AddAudio(std::move(buffer));
-  }
-#endif
 }
 
 }  // namespace media

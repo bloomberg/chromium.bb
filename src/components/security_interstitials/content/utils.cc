@@ -31,7 +31,7 @@ void LaunchDateAndTimeSettings() {
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DateAndTimeSettingsHelper_openDateAndTimeSettings(env);
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   struct ClockCommand {
     const char* const pathname;
     const char* const argument;
@@ -71,7 +71,7 @@ void LaunchDateAndTimeSettings() {
   options.allow_new_privs = true;
   base::LaunchProcess(command, options);
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   base::CommandLine command(base::FilePath("/usr/bin/open"));
   command.AppendArg("/System/Library/PreferencePanes/DateAndTime.prefPane");
 

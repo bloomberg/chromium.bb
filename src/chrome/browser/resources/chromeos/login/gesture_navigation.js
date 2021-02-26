@@ -16,7 +16,7 @@ const GesturePage = {
 };
 
 Polymer({
-  is: 'gesture-navigation',
+  is: 'gesture-navigation-element',
 
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
@@ -38,10 +38,6 @@ Polymer({
    */
   onBeforeShow() {
     this.currentPage_ = GesturePage.INTRO;
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
   },
 
   focus() {

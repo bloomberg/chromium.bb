@@ -7,31 +7,32 @@ package org.chromium.chrome.browser.browsing_data;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
-
-import android.support.test.filters.SmallTest;
+import static org.mockito.Mockito.when;
 
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.PreferenceScreen;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragment.DialogOption;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
+import org.chromium.chrome.browser.sync.AndroidSyncSettings;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
-import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.HashSet;
@@ -44,27 +45,33 @@ import java.util.Set;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ClearBrowsingDataFragmentBasicTest {
     @Rule
-    public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public final ChromeTabbedActivityTestRule mActivityTestRule =
+            new ChromeTabbedActivityTestRule();
     @Rule
     public final SettingsActivityTestRule<ClearBrowsingDataFragmentBasic>
             mSettingsActivityTestRule =
                     new SettingsActivityTestRule<>(ClearBrowsingDataFragmentBasic.class);
 
+    @Rule
+    public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
+
+    @Rule
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule();
+
     private static final String GOOGLE_ACCOUNT = "Google Account";
     private static final String OTHER_ACTIVITY = "other forms of browsing history";
     private static final String SIGNED_IN_DEVICES = "signed-in devices";
+    @Mock
+    private AndroidSyncSettings mAndroidSyncSettings;
 
     @Before
     public void setUp() throws InterruptedException {
-        SigninTestUtil.setUpAuthForTesting();
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @After
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
-        SigninTestUtil.tearDownAuthForTesting();
     }
 
     private static class StubProfileSyncService extends ProfileSyncService {
@@ -83,16 +90,10 @@ public class ClearBrowsingDataFragmentBasicTest {
     }
 
     private void setSyncable(final boolean syncable) {
-        MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
-        delegate.setMasterSyncAutomatically(syncable);
-        AndroidSyncSettings.overrideForTests(delegate, null);
-        if (syncable) {
-            AndroidSyncSettings.get().enableChromeSync();
-        } else {
-            AndroidSyncSettings.get().disableChromeSync();
-        }
-
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            when(mAndroidSyncSettings.isSyncEnabled()).thenReturn(syncable);
+            AndroidSyncSettings.overrideForTests(mAndroidSyncSettings);
+
             ProfileSyncService.overrideForTests(new StubProfileSyncService(syncable));
         });
     }
@@ -134,7 +135,7 @@ public class ClearBrowsingDataFragmentBasicTest {
     @Test
     @SmallTest
     public void testCheckBoxTextSigned() {
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         setSyncable(false);
 
         mSettingsActivityTestRule.startSettingsActivity();
@@ -163,7 +164,7 @@ public class ClearBrowsingDataFragmentBasicTest {
     @Test
     @SmallTest
     public void testCheckBoxTextSignedAndSynced() {
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         setSyncable(true);
 
         mSettingsActivityTestRule.startSettingsActivity();

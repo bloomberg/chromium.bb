@@ -18,6 +18,7 @@ import logging
 import os
 import posixpath
 import re
+import struct
 import sys
 import tempfile
 import zipfile
@@ -35,14 +36,17 @@ _AAPT_PATH = lazy.WeakConstant(lambda: build_tools.GetPath('aapt'))
 _BUILD_UTILS_PATH = os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'gyp')
 
+with host_paths.SysPath(os.path.join(host_paths.DIR_SOURCE_ROOT, 'build')):
+  import gn_helpers  # pylint: disable=import-error
+
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
-  import perf_tests_results_helper # pylint: disable=import-error
+  import perf_tests_results_helper  # pylint: disable=import-error
 
 with host_paths.SysPath(host_paths.TRACING_PATH):
-  from tracing.value import convert_chart_json # pylint: disable=import-error
+  from tracing.value import convert_chart_json  # pylint: disable=import-error
 
 with host_paths.SysPath(_BUILD_UTILS_PATH, 0):
-  from util import build_utils # pylint: disable=import-error
+  from util import build_utils  # pylint: disable=import-error
   from util import zipalign  # pylint: disable=import-error
 
 
@@ -61,7 +65,7 @@ _BASE_CHART = {
     'charts': {}
 }
 # Macro definitions look like (something, 123) when
-# enable_resource_whitelist_generation=true.
+# enable_resource_allowlist_generation=true.
 _RC_HEADER_RE = re.compile(r'^#define (?P<name>\w+).* (?P<id>\d+)\)?$')
 _RE_NON_LANGUAGE_PAK = re.compile(r'^assets/.*(resources|percent)\.pak$')
 _READELF_SIZES_METRICS = {
@@ -89,6 +93,41 @@ def _PercentageDifference(a, b):
   if a == 0:
     return 0
   return float(b - a) / a
+
+
+def _ReadZipInfoExtraFieldLength(zip_file, zip_info):
+  """Reads the value of |extraLength| from |zip_info|'s local file header.
+
+  |zip_info| has an |extra| field, but it's read from the central directory.
+  Android's zipalign tool sets the extra field only in local file headers.
+  """
+  # Refer to https://en.wikipedia.org/wiki/Zip_(file_format)#File_headers
+  zip_file.fp.seek(zip_info.header_offset + 28)
+  return struct.unpack('<H', zip_file.fp.read(2))[0]
+
+
+def _MeasureApkSignatureBlock(zip_file):
+  """Measures the size of the v2 / v3 signing block.
+
+  Refer to: https://source.android.com/security/apksigning/v2
+  """
+  # Seek to "end of central directory" struct.
+  eocd_offset_from_end = -22 - len(zip_file.comment)
+  zip_file.fp.seek(eocd_offset_from_end, os.SEEK_END)
+  assert zip_file.fp.read(4) == b'PK\005\006', (
+      'failed to find end-of-central-directory')
+
+  # Read out the "start of central directory" offset.
+  zip_file.fp.seek(eocd_offset_from_end + 16, os.SEEK_END)
+  start_of_central_directory = struct.unpack('<I', zip_file.fp.read(4))[0]
+
+  # Compute the offset after the last zip entry.
+  last_info = zip_file.infolist()[-1]
+  last_header_size = (30 + len(last_info.filename) +
+                      _ReadZipInfoExtraFieldLength(zip_file, last_info))
+  end_of_last_file = (last_info.header_offset + last_header_size +
+                      last_info.compress_size)
+  return start_of_central_directory - end_of_last_file
 
 
 def _RunReadelf(so_path, options, tool_prefix=''):
@@ -300,6 +339,14 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
 
   with zipfile.ZipFile(apk_filename, 'r') as apk:
     apk_contents = apk.infolist()
+    # Account for zipalign overhead that exists in local file header.
+    zipalign_overhead = sum(
+        _ReadZipInfoExtraFieldLength(apk, i) for i in apk_contents)
+    # Account for zipalign overhead that exists in central directory header.
+    # Happens when python aligns entries in apkbuilder.py, but does not
+    # exist when using Android's zipalign. E.g. for bundle .apks files.
+    zipalign_overhead += sum(len(i.extra) for i in apk_contents)
+    signing_block_size = _MeasureApkSignatureBlock(apk)
 
   sdk_version, skip_extract_lib = _ParseManifestAttributes(apk_filename)
 
@@ -466,12 +513,22 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
   # Use a constant compression factor to account for fluctuations.
   normalized_apk_size -= java_code.ComputeZippedSize()
   normalized_apk_size += java_code.ComputeUncompressedSize()
+  # Don't include zipalign overhead in normalized size, since it effectively
+  # causes size changes files that proceed aligned files to be rounded.
+  # For APKs where classes.dex directly proceeds libchrome.so (the normal case),
+  # this causes small dex size changes to disappear into libchrome.so alignment.
+  normalized_apk_size -= zipalign_overhead
+  # Don't include the size of the apk's signing block because it can fluctuate
+  # by up to 4kb (from my non-scientific observations), presumably based on hash
+  # sizes.
+  normalized_apk_size -= signing_block_size
+
   # Unaligned size should be ~= uncompressed size or something is wrong.
   # As of now, padding_fraction ~= .007
   padding_fraction = -_PercentageDifference(
       native_code.ComputeUncompressedSize(), native_code_unaligned_size)
   # Ignore this check for small / no native code
-  if native_code.ComputeUncompressedSize() > 100000:
+  if native_code.ComputeUncompressedSize() > 1000000:
     assert 0 <= padding_fraction < .02, (
         'Padding was: {} (file_size={}, sections_sum={})'.format(
             padding_fraction, native_code.ComputeUncompressedSize(),
@@ -573,8 +630,7 @@ def _ConfigOutDirAndToolsPrefix(out_dir):
       out_dir = constants.GetOutDirectory()
     except Exception:  # pylint: disable=broad-except
       return out_dir, ''
-  build_vars = build_utils.ReadBuildVars(
-      os.path.join(out_dir, "build_vars.txt"))
+  build_vars = gn_helpers.ReadBuildVars(out_dir)
   tool_prefix = os.path.join(out_dir, build_vars['android_tool_prefix'])
   return out_dir, tool_prefix
 

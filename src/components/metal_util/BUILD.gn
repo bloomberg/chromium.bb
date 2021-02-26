@@ -2,16 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
+assert(is_mac)
 
-config("metal_weak_framework") {
-  ldflags = [
-    "-weak_framework",
-    "Metal",
-    "-weak_framework",
-    "MetalKit",
-  ]
-}
+import("//testing/test.gni")
 
 component("metal_util") {
   output_name = "metal"
@@ -26,6 +19,8 @@ component("metal_util") {
     "hdr_copier_layer.h",
     "hdr_copier_layer.mm",
     "metal_util_export.h",
+    "switches.cc",
+    "switches.h",
     "test_shader.h",
     "test_shader.mm",
     "types.h",
@@ -34,13 +29,28 @@ component("metal_util") {
   deps = [
     "//base",
     "//components/crash/core/common:crash_key",
+    "//skia:skcms",
+    "//ui/gfx",
   ]
 
-  libs = [
+  frameworks = [
     "Cocoa.framework",
     "IOSurface.framework",
     "QuartzCore.framework",
   ]
 
-  configs += [ ":metal_weak_framework" ]
+  weak_frameworks = [
+    "Metal.framework",
+    "MetalKit.framework",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "test_shader_unittest.cc" ]
+  deps = [
+    ":metal_util",
+    "//base",
+    "//testing/gtest",
+  ]
 }

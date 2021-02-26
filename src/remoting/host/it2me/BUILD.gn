@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/ui.gni")
 import("//remoting/remoting_locales.gni")
 import("//remoting/remoting_options.gni")
 import("//remoting/remoting_version.gni")
@@ -14,28 +15,32 @@ if (is_mac) {
   import("//build/config/mac/rules.gni")
   import("//third_party/icu/config.gni")
 }
-if (is_chromeos) {
-  import("//ui/ozone/ozone.gni")
-}
 
 source_set("common") {
   sources = [
     "it2me_confirmation_dialog.h",
-    "it2me_confirmation_dialog_linux.cc",
-    "it2me_confirmation_dialog_mac.mm",
     "it2me_confirmation_dialog_proxy.cc",
     "it2me_confirmation_dialog_proxy.h",
-    "it2me_confirmation_dialog_win.cc",
     "it2me_host.cc",
     "it2me_host.h",
     "it2me_native_messaging_host.cc",
     "it2me_native_messaging_host.h",
   ]
 
+  if (is_linux && !is_chromeos) {
+    sources += [ "it2me_confirmation_dialog_linux.cc" ]
+  }
+
   if (is_chromeos) {
     sources += [ "it2me_confirmation_dialog_chromeos.cc" ]
+  }
 
-    sources -= [ "it2me_confirmation_dialog_linux.cc" ]
+  if (is_mac) {
+    sources += [ "it2me_confirmation_dialog_mac.mm" ]
+  }
+
+  if (is_win) {
+    sources += [ "it2me_confirmation_dialog_win.cc" ]
   }
 
   configs += [
@@ -53,7 +58,7 @@ source_set("common") {
     "//remoting/resources",
     "//remoting/signaling",
   ]
-  if (is_desktop_linux) {
+  if (is_linux) {
     deps += [
       "//build/config/linux/gtk",
 
@@ -229,7 +234,7 @@ if (!is_chromeos && enable_remoting_host) {
         }
       }
 
-      if (is_desktop_linux) {
+      if (is_linux) {
         deps += [ "//build/config/linux/gtk" ]
       }
     }

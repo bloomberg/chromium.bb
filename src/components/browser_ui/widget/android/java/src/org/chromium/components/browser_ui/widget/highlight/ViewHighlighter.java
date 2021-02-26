@@ -11,7 +11,8 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.view.View;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import androidx.annotation.Px;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.components.browser_ui.widget.R;
 
@@ -55,22 +56,46 @@ public class ViewHighlighter {
 
         PulseDrawable pulseDrawable = circular
                 ? createCircle(view.getContext(), new NumberPulser(view, numPulses))
-                : PulseDrawable.createHighlight(
-                        view.getContext(), new NumberPulser(view, numPulses));
+                : PulseDrawable.createRoundedRectangle(
+                        view.getContext(), 0 /*cornerRadius*/, new NumberPulser(view, numPulses));
 
         attachViewAsHighlight(view, pulseDrawable);
     }
 
     /**
-     * Create a highlight layer over the view.
+     * Create a circular highlight layer over the view.
      * @param view The view to be highlighted.
-     * @param circular Whether the highlight should be a circle or rectangle.
      */
-    public static void turnOnHighlight(View view, boolean circular) {
+    public static void turnOnCircularHighlight(View view) {
         if (view == null) return;
 
-        PulseDrawable pulseDrawable = circular ? PulseDrawable.createCircle(view.getContext())
-                                               : PulseDrawable.createHighlight(view.getContext());
+        PulseDrawable pulseDrawable = PulseDrawable.createCircle(view.getContext());
+
+        attachViewAsHighlight(view, pulseDrawable);
+    }
+
+    /**
+     * Create a rectangular highlight layer over the view.
+     * @param view The view to be highlighted.
+     */
+    public static void turnOnRectangularHighlight(View view) {
+        if (view == null) return;
+
+        PulseDrawable pulseDrawable = PulseDrawable.createRectangle(view.getContext());
+
+        attachViewAsHighlight(view, pulseDrawable);
+    }
+
+    /**
+     * Create a rectangular highlight layer over the view.
+     * @param view The view to be highlighted.
+     * @param cornerRadius The corner radius in pixels of the rectangle.
+     */
+    public static void turnOnRectangularHighlight(View view, @Px int cornerRadius) {
+        if (view == null) return;
+
+        PulseDrawable pulseDrawable =
+                PulseDrawable.createRoundedRectangle(view.getContext(), cornerRadius);
 
         attachViewAsHighlight(view, pulseDrawable);
     }
@@ -92,12 +117,12 @@ public class ViewHighlighter {
         Resources resources = view.getContext().getResources();
         Drawable background = view.getBackground();
         if (background != null) {
-            background = background.getConstantState().newDrawable(resources);
+            background = background.getConstantState().newDrawable();
         }
 
-        LayerDrawable drawable = ApiCompatibilityUtils.createLayerDrawable(background == null
-                        ? new Drawable[] {pulseDrawable}
-                        : new Drawable[] {background, pulseDrawable});
+        Drawable[] layers = background == null ? new Drawable[] {pulseDrawable}
+                                               : new Drawable[] {background, pulseDrawable};
+        LayerDrawable drawable = new LayerDrawable(layers);
         view.setBackground(drawable);
         view.setTag(R.id.highlight_state, true);
 

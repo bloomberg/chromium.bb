@@ -37,9 +37,15 @@ For Googlers, more information available at [go/chrome-apk-size](https://goto.go
  * Computed as:
    * The size of an APK
    * With all native code as the sum of section sizes (except .bss), uncompressed.
+     * Why: Removes effects of ELF section alignment.
    * With all dex code as if it were stored uncompressed.
+     * Why: Dex is stored uncompressed on newer Android versions.
+   * With all zipalign padding removed.
+     * Why: Removes effects of file alignment (esp. relevant because native libraries are 4k-aligned).
+   * With size of apk signature block removed.
+     * Why: Size fluctuates by several KB based on how hash values turn out.
    * With all translations as if they were not missing (estimates size of missing translations based on size of english strings).
-     * Without translation-normalization, translation dumps cause jumps.
+     * Why: Without translation-normalization, translation dumps cause jumps.
      * Translation-normalization applies only to apks (not to Android App Bundles).
 
 ### Native Code Size Metrics
@@ -87,3 +93,8 @@ For Googlers, more information available at [go/chrome-apk-size](https://goto.go
  * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=33f59871f4e9fa3d155be3c13a068d35e6e621bcc98d9b7b103e0c8485e21097)
  * Uncompressed size of classes.dex, locale .pak files, etc
  * Reported only for things that are compressed within the .apk
+
+## Metrics for LaCrOS
+
+ * Sizes are collected by
+   [//build/lacros/lacros_resource_sizes.py](https://cs.chromium.org/chromium/src/build/lacros/lacros_resource_sizes.py).

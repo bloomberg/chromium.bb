@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -294,7 +295,7 @@ void DrawSolidBorderRect(GraphicsContext& context,
                          float border_width,
                          const Color& color) {
   FloatRect stroke_rect(border_rect);
-  border_width = roundf(border_width);
+  border_width = floorf(border_width);
   stroke_rect.Inflate(-border_width / 2);
 
   bool was_antialias = context.ShouldAntialias();
@@ -411,13 +412,13 @@ struct OpacityGroup {
 void ClipQuad(GraphicsContext& context,
               const FloatPoint quad[],
               bool antialiased) {
-  SkPath path;
+  SkPathBuilder path;
   path.moveTo(FloatPointToSkPoint(quad[0]));
   path.lineTo(FloatPointToSkPoint(quad[1]));
   path.lineTo(FloatPointToSkPoint(quad[2]));
   path.lineTo(FloatPointToSkPoint(quad[3]));
 
-  context.ClipPath(path, antialiased ? kAntiAliased : kNotAntiAliased);
+  context.ClipPath(path.detach(), antialiased ? kAntiAliased : kNotAntiAliased);
 }
 
 }  // anonymous namespace
@@ -517,9 +518,9 @@ void BoxBorderPainter::DrawDoubleBorder(GraphicsContext& context,
   // outer stripe
   const LayoutRectOutsets outer_third_insets =
       DoubleStripeInsets(edges_, BorderEdge::kDoubleBorderStripeOuter);
-  FloatRoundedRect outer_third_rect = style_.GetRoundedInnerBorderFor(
-      border_rect.ToLayoutRect(), outer_third_insets,
-      include_logical_left_edge_, include_logical_right_edge_);
+  FloatRoundedRect outer_third_rect =
+      RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
+          style_, border_rect, outer_third_insets, sides_to_include_);
   if (force_rectangular)
     outer_third_rect.SetRadii(FloatRoundedRect::Radii());
   DrawBleedAdjustedDRRect(context, bleed_avoidance_, outer_, outer_third_rect,
@@ -528,9 +529,9 @@ void BoxBorderPainter::DrawDoubleBorder(GraphicsContext& context,
   // inner stripe
   const LayoutRectOutsets inner_third_insets =
       DoubleStripeInsets(edges_, BorderEdge::kDoubleBorderStripeInner);
-  FloatRoundedRect inner_third_rect = style_.GetRoundedInnerBorderFor(
-      border_rect.ToLayoutRect(), inner_third_insets,
-      include_logical_left_edge_, include_logical_right_edge_);
+  FloatRoundedRect inner_third_rect =
+      RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
+          style_, border_rect, inner_third_insets, sides_to_include_);
   if (force_rectangular)
     inner_third_rect.SetRadii(FloatRoundedRect::Radii());
   context.FillDRRect(inner_third_rect, inner_, color);
@@ -593,12 +594,10 @@ bool BoxBorderPainter::PaintBorderFastPath(
 BoxBorderPainter::BoxBorderPainter(const PhysicalRect& border_rect,
                                    const ComputedStyle& style,
                                    BackgroundBleedAvoidance bleed_avoidance,
-                                   bool include_logical_left_edge,
-                                   bool include_logical_right_edge)
+                                   PhysicalBoxSides sides_to_include)
     : style_(style),
       bleed_avoidance_(bleed_avoidance),
-      include_logical_left_edge_(include_logical_left_edge),
-      include_logical_right_edge_(include_logical_right_edge),
+      sides_to_include_(sides_to_include),
       visible_edge_count_(0),
       first_visible_edge_(0),
       visible_edge_set_(0),
@@ -607,20 +606,17 @@ BoxBorderPainter::BoxBorderPainter(const PhysicalRect& border_rect,
       is_uniform_color_(true),
       is_rounded_(false),
       has_alpha_(false) {
-  style.GetBorderEdgeInfo(edges_, include_logical_left_edge,
-                          include_logical_right_edge);
+  style.GetBorderEdgeInfo(edges_, sides_to_include);
   ComputeBorderProperties();
 
   // No need to compute the rrects if we don't have any borders to draw.
   if (!visible_edge_set_)
     return;
 
-  outer_ = style_.GetRoundedBorderFor(border_rect.ToLayoutRect(),
-                                      include_logical_left_edge,
-                                      include_logical_right_edge);
-  inner_ = style_.GetRoundedInnerBorderFor(border_rect.ToLayoutRect(),
-                                           include_logical_left_edge,
-                                           include_logical_right_edge);
+  outer_ = RoundedBorderGeometry::PixelSnappedRoundedBorder(style_, border_rect,
+                                                            sides_to_include);
+  inner_ = RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
+      style_, border_rect, sides_to_include);
 
   // Make sure that the border width isn't larger than the border box, which
   // can pixel snap smaller.
@@ -640,8 +636,7 @@ BoxBorderPainter::BoxBorderPainter(const ComputedStyle& style,
                                    const BorderEdge& uniform_edge_info)
     : style_(style),
       bleed_avoidance_(kBackgroundBleedNone),
-      include_logical_left_edge_(true),
-      include_logical_right_edge_(true),
+      sides_to_include_(PhysicalBoxSides()),
       outer_(FloatRect(outer)),
       inner_(FloatRect(inner)),
       visible_edge_count_(0),
@@ -846,7 +841,7 @@ void BoxBorderPainter::PaintSide(GraphicsContext& context,
       if (use_path)
         path = &border_info.rounded_border_path;
       else
-        side_rect.SetHeight(roundf(edge.Width()));
+        side_rect.SetHeight(floorf(edge.Width()));
 
       PaintOneBorderSide(context, side_rect, BoxSide::kTop, BoxSide::kLeft,
                          BoxSide::kRight, path, border_info.anti_alias, color,
@@ -861,7 +856,7 @@ void BoxBorderPainter::PaintSide(GraphicsContext& context,
       if (use_path)
         path = &border_info.rounded_border_path;
       else
-        side_rect.ShiftYEdgeTo(side_rect.MaxY() - roundf(edge.Width()));
+        side_rect.ShiftYEdgeTo(side_rect.MaxY() - floorf(edge.Width()));
 
       PaintOneBorderSide(context, side_rect, BoxSide::kBottom, BoxSide::kLeft,
                          BoxSide::kRight, path, border_info.anti_alias, color,
@@ -876,7 +871,7 @@ void BoxBorderPainter::PaintSide(GraphicsContext& context,
       if (use_path)
         path = &border_info.rounded_border_path;
       else
-        side_rect.SetWidth(roundf(edge.Width()));
+        side_rect.SetWidth(floorf(edge.Width()));
 
       PaintOneBorderSide(context, side_rect, BoxSide::kLeft, BoxSide::kTop,
                          BoxSide::kBottom, path, border_info.anti_alias, color,
@@ -891,7 +886,7 @@ void BoxBorderPainter::PaintSide(GraphicsContext& context,
       if (use_path)
         path = &border_info.rounded_border_path;
       else
-        side_rect.ShiftXEdgeTo(side_rect.MaxX() - roundf(edge.Width()));
+        side_rect.ShiftXEdgeTo(side_rect.MaxX() - floorf(edge.Width()));
 
       PaintOneBorderSide(context, side_rect, BoxSide::kRight, BoxSide::kTop,
                          BoxSide::kBottom, path, border_info.anti_alias, color,
@@ -1009,8 +1004,8 @@ void BoxBorderPainter::PaintOneBorderSide(
     ObjectPainter::DrawLineForBoxSide(
         graphics_context, side_rect.X(), side_rect.Y(), side_rect.MaxX(),
         side_rect.MaxY(), side, color, edge_to_render.BorderStyle(),
-        miter1 != kNoMiter ? roundf(adjacent_edge1.Width()) : 0,
-        miter2 != kNoMiter ? roundf(adjacent_edge2.Width()) : 0, antialias);
+        miter1 != kNoMiter ? floorf(adjacent_edge1.Width()) : 0,
+        miter2 != kNoMiter ? floorf(adjacent_edge2.Width()) : 0, antialias);
   }
 }
 
@@ -1083,9 +1078,9 @@ void BoxBorderPainter::DrawDashedDottedBoxSideFromPath(
       -edges_[static_cast<unsigned>(BoxSide::kBottom)].UsedWidth() * 0.5,
       -edges_[static_cast<unsigned>(BoxSide::kLeft)].UsedWidth() * 0.5);
   Path centerline_path;
-  centerline_path.AddRoundedRect(style_.GetRoundedInnerBorderFor(
-      border_rect.ToLayoutRect(), center_offsets, include_logical_left_edge_,
-      include_logical_right_edge_));
+  centerline_path.AddRoundedRect(
+      RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
+          style_, border_rect, center_offsets, sides_to_include_));
 
   graphics_context.SetStrokeColor(color);
 
@@ -1140,9 +1135,9 @@ void BoxBorderPainter::DrawDoubleBoxSideFromPath(
     GraphicsContextStateSaver state_saver(graphics_context);
     const LayoutRectOutsets inner_insets =
         DoubleStripeInsets(edges_, BorderEdge::kDoubleBorderStripeInner);
-    FloatRoundedRect inner_clip = style_.GetRoundedInnerBorderFor(
-        border_rect.ToLayoutRect(), inner_insets, include_logical_left_edge_,
-        include_logical_right_edge_);
+    FloatRoundedRect inner_clip =
+        RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
+            style_, border_rect, inner_insets, sides_to_include_);
 
     graphics_context.ClipRoundedRect(inner_clip);
     DrawBoxSideFromPath(graphics_context, border_rect, border_path,
@@ -1165,9 +1160,9 @@ void BoxBorderPainter::DrawDoubleBoxSideFromPath(
       outer_insets.SetLeft(outer_insets.Left() - 1);
     }
 
-    FloatRoundedRect outer_clip = style_.GetRoundedInnerBorderFor(
-        outer_rect.ToLayoutRect(), outer_insets, include_logical_left_edge_,
-        include_logical_right_edge_);
+    FloatRoundedRect outer_clip =
+        RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
+            style_, outer_rect, outer_insets, sides_to_include_);
     graphics_context.ClipOutRoundedRect(outer_clip);
     DrawBoxSideFromPath(graphics_context, border_rect, border_path,
                         border_thickness, stroke_thickness, side, color,
@@ -1208,10 +1203,12 @@ void BoxBorderPainter::DrawRidgeGrooveBoxSideFromPath(
   int right_width =
       edges_[static_cast<unsigned>(BoxSide::kRight)].UsedWidth() / 2;
 
-  FloatRoundedRect clip_rect = style_.GetRoundedInnerBorderFor(
-      border_rect.ToLayoutRect(),
-      LayoutRectOutsets(-top_width, -right_width, -bottom_width, -left_width),
-      include_logical_left_edge_, include_logical_right_edge_);
+  FloatRoundedRect clip_rect =
+      RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
+          style_, border_rect,
+          LayoutRectOutsets(-top_width, -right_width, -bottom_width,
+                            -left_width),
+          sides_to_include_);
 
   graphics_context.ClipRoundedRect(clip_rect);
   DrawBoxSideFromPath(graphics_context, border_rect, border_path,

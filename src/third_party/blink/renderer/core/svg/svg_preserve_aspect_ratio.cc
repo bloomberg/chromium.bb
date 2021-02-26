@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -163,14 +164,9 @@ SVGParsingError SVGPreserveAspectRatio::SetValueAsString(const String& string) {
   if (string.IsEmpty())
     return SVGParseStatus::kNoError;
 
-  if (string.Is8Bit()) {
-    const LChar* ptr = string.Characters8();
-    const LChar* end = ptr + string.length();
-    return ParseInternal(ptr, end, true);
-  }
-  const UChar* ptr = string.Characters16();
-  const UChar* end = ptr + string.length();
-  return ParseInternal(ptr, end, true);
+  return WTF::VisitCharacters(string, [&](const auto* chars, unsigned length) {
+    return ParseInternal(chars, chars + length, true);
+  });
 }
 
 bool SVGPreserveAspectRatio::Parse(const LChar*& ptr,
@@ -288,30 +284,20 @@ void SVGPreserveAspectRatio::TransformRect(FloatRect& dest_rect,
 }
 
 AffineTransform SVGPreserveAspectRatio::ComputeTransform(
-    float logical_x,
-    float logical_y,
-    float logical_width,
-    float logical_height,
-    float physical_width,
-    float physical_height) const {
-  DCHECK(logical_width);
-  DCHECK(logical_height);
-  DCHECK(physical_width);
-  DCHECK(physical_height);
+    const FloatRect& view_box,
+    const FloatSize& viewport_size) const {
+  DCHECK(!view_box.IsEmpty());
+  DCHECK(!viewport_size.IsEmpty());
+  DCHECK_NE(align_, kSvgPreserveaspectratioUnknown);
+
+  double extended_logical_x = view_box.X();
+  double extended_logical_y = view_box.Y();
+  double extended_logical_width = view_box.Width();
+  double extended_logical_height = view_box.Height();
+  double extended_physical_width = viewport_size.Width();
+  double extended_physical_height = viewport_size.Height();
 
   AffineTransform transform;
-  if (align_ == kSvgPreserveaspectratioUnknown)
-    return transform;
-
-  double extended_logical_x = logical_x;
-  double extended_logical_y = logical_y;
-  double extended_logical_width = logical_width;
-  double extended_logical_height = logical_height;
-  double extended_physical_width = physical_width;
-  double extended_physical_height = physical_height;
-  double logical_ratio = extended_logical_width / extended_logical_height;
-  double physical_ratio = extended_physical_width / extended_physical_height;
-
   if (align_ == kSvgPreserveaspectratioNone) {
     transform.ScaleNonUniform(
         extended_physical_width / extended_logical_width,
@@ -320,6 +306,8 @@ AffineTransform SVGPreserveAspectRatio::ComputeTransform(
     return transform;
   }
 
+  double logical_ratio = extended_logical_width / extended_logical_height;
+  double physical_ratio = extended_physical_width / extended_physical_height;
   if ((logical_ratio < physical_ratio &&
        (meet_or_slice_ == kSvgMeetorsliceMeet)) ||
       (logical_ratio >= physical_ratio &&
@@ -434,23 +422,25 @@ String SVGPreserveAspectRatio::ValueAsString() const {
   return builder.ToString();
 }
 
-void SVGPreserveAspectRatio::Add(SVGPropertyBase* other, SVGElement*) {
+void SVGPreserveAspectRatio::Add(const SVGPropertyBase* other,
+                                 const SVGElement*) {
   NOTREACHED();
 }
 
 void SVGPreserveAspectRatio::CalculateAnimatedValue(
-    const SVGAnimateElement& animation_element,
+    const SMILAnimationEffectParameters&,
     float percentage,
     unsigned repeat_count,
-    SVGPropertyBase* from_value,
-    SVGPropertyBase* to_value,
-    SVGPropertyBase*,
-    SVGElement*) {
+    const SVGPropertyBase* from_value,
+    const SVGPropertyBase* to_value,
+    const SVGPropertyBase*,
+    const SVGElement*) {
   NOTREACHED();
 }
 
-float SVGPreserveAspectRatio::CalculateDistance(SVGPropertyBase* to_value,
-                                                SVGElement* context_element) {
+float SVGPreserveAspectRatio::CalculateDistance(
+    const SVGPropertyBase* to_value,
+    const SVGElement* context_element) const {
   // No paced animations for SVGPreserveAspectRatio.
   return -1;
 }

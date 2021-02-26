@@ -6,6 +6,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/mock/GrMockTypes.h"
@@ -72,7 +73,9 @@ class TestSharedImageRepresentationSkia : public SharedImageRepresentationSkia {
     if (!static_cast<TestSharedImageBacking*>(backing())->can_access()) {
       return nullptr;
     }
-    return SkSurface::MakeRasterN32Premul(size().width(), size().height());
+    SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
+    return SkSurface::MakeRasterN32Premul(size().width(), size().height(),
+                                          &props);
   }
   void EndWriteAccess(sk_sp<SkSurface> surface) override {}
   sk_sp<SkPromiseImageTexture> BeginReadAccess(
@@ -115,7 +118,10 @@ class TestSharedImageRepresentationOverlay
                                        MemoryTypeTracker* tracker)
       : SharedImageRepresentationOverlay(manager, backing, tracker) {}
 
-  bool BeginReadAccess() override { return true; }
+  bool BeginReadAccess(std::vector<gfx::GpuFence>* acquire_fences,
+                       std::vector<gfx::GpuFence>* release_fences) override {
+    return true;
+  }
   void EndReadAccess() override {}
   gl::GLImage* GetGLImage() override { return nullptr; }
 
@@ -132,6 +138,8 @@ TestSharedImageBacking::TestSharedImageBacking(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     size_t estimated_size,
     GLuint texture_id)
@@ -139,6 +147,8 @@ TestSharedImageBacking::TestSharedImageBacking(
                          format,
                          size,
                          color_space,
+                         surface_origin,
+                         alpha_type,
                          usage,
                          estimated_size,
                          false /* is_thread_safe */),
@@ -146,10 +156,10 @@ TestSharedImageBacking::TestSharedImageBacking(
   texture_ = new gles2::Texture(service_id_);
   texture_->SetLightweightRef();
   texture_->SetTarget(GL_TEXTURE_2D, 1);
-  texture_->sampler_state_.min_filter = GL_LINEAR;
-  texture_->sampler_state_.mag_filter = GL_LINEAR;
-  texture_->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
-  texture_->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
+  texture_->set_min_filter(GL_LINEAR);
+  texture_->set_mag_filter(GL_LINEAR);
+  texture_->set_wrap_t(GL_CLAMP_TO_EDGE);
+  texture_->set_wrap_s(GL_CLAMP_TO_EDGE);
   texture_->SetLevelInfo(GL_TEXTURE_2D, 0, GLInternalFormat(format),
                          size.width(), size.height(), 1, 0,
                          GLDataFormat(format), GLDataType(format), gfx::Rect());
@@ -163,12 +173,16 @@ TestSharedImageBacking::TestSharedImageBacking(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     size_t estimated_size)
     : TestSharedImageBacking(mailbox,
                              format,
                              size,
                              color_space,
+                             surface_origin,
+                             alpha_type,
                              usage,
                              estimated_size,
                              203 /* texture_id */) {

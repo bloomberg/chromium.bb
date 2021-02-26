@@ -35,9 +35,22 @@ namespace autotestPrivate {
     Crostini,
     Extension,
     Web,
-    MacNative,
+    MacOS,
     PluginVm,
-    Lacros
+    Lacros,
+    Remote,
+    Borealis
+  };
+
+  // A mapping of apps::mojom::InstallSource
+  enum AppInstallSource {
+    Unknown,
+    System,
+    Policy,
+    Oem,
+    Default,
+    Sync,
+    User
   };
 
   // A mapping of apps::mojom::Readiness
@@ -75,6 +88,9 @@ namespace autotestPrivate {
 
   // Display orientation type.
   enum RotationType {
+    // RotateAny is the auto-rotation status (not locked to a rotation) for
+    // tablet mode. Not working in clamshell mode.
+    RotateAny,
     Rotate0,
     Rotate90,
     Rotate180,
@@ -303,10 +319,16 @@ namespace autotestPrivate {
     DOMString name;
     DOMString shortName;
     AppType? type;
+    AppInstallSource? installSource;
     AppReadiness? readiness;
     DOMString[] additionalSearchTerms;
     boolean? showInLauncher;
     boolean? showInSearch;
+  };
+
+  dictionary SystemApp {
+    DOMString internalName;
+    DOMString url;
   };
 
   callback GetAllInstalledAppsCallback = void (App[] apps);
@@ -329,7 +351,8 @@ namespace autotestPrivate {
     ArcApp,
     CrostiniApp,
     SystemApp,
-    ExtensionApp
+    ExtensionApp,
+    Lacros
   };
 
   // A mapping of HotseatState in ash/public/cpp/shelf_types.h.
@@ -535,9 +558,32 @@ namespace autotestPrivate {
   };
   callback WindowBoundsCallback = void (SetWindowBoundsResult result);
 
+  // Collected ui::ThroughputTracker data for one animation. It is based on
+  // cc::FrameSequenceMetrics::ThroughputData.
+  dictionary ThroughputTrackerAnimationData {
+    // Number of frames expected to be shown for this animation.
+    long framesExpected;
+    // Number of frames actually shown for this animation.
+    long framesProduced;
+    // Number of janks during this animation. A jank is counted when the current
+    // frame latency is larger than previous ones.
+    long jankCount;
+  };
+
   // Callback invoked to report the smoothness after StopSmoothnessTracking is
-  // called. |smoothness| is a percentage number between 0 to 100.
-  callback StopSmoothnessTrackingCallback = void (long smoothness);
+  // called.
+  callback StopSmoothnessTrackingCallback = void
+      (ThroughputTrackerAnimationData data);
+
+  // Callback invoked to report the collection ui::ThroughputTracker data
+  // after stopThroughputTrackerDataCollection is called.
+  callback StopThroughputTrackerDataCollectionCallback = void
+      (ThroughputTrackerAnimationData[] data);
+
+  // Callback invoked to report the number of system web apps that should be
+  // installed.
+  callback GetRegisteredSystemWebAppsCallback = void
+      (SystemApp[] systemApps);
 
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
@@ -610,6 +656,9 @@ namespace autotestPrivate {
     // Get visible notifications on the system.
     static void getVisibleNotifications(NotificationArrayCallback callback);
 
+    // Remove all notifications.
+    static void removeAllNotifications(VoidCallback callback);
+
     // Get ARC start time.
     static void getArcStartTime(ArcStartTimeCallback callback);
 
@@ -636,6 +685,13 @@ namespace autotestPrivate {
     static void getArcPackage(DOMString packageName,
                               GetArcPackageCallback callback);
 
+    // Waits for system web apps to complete the installation.
+    static void waitForSystemWebAppsInstall(VoidCallback callback);
+
+    // Returns the number of system web apps that should be installed.
+    static void getRegisteredSystemWebApps(
+        GetRegisteredSystemWebAppsCallback callback);
+
     // Launches ARC app with optional intent. Returns true if ARC is active,
     // app exists and launch request is passed to Android.
     static void launchArcApp(DOMString appId, DOMString intent,
@@ -643,6 +699,11 @@ namespace autotestPrivate {
 
     // Launches an application from the launcher with the given appId.
     static void launchApp(DOMString appId, VoidCallback callback);
+
+    // Launches an system web app from the launcher with the given app name and
+    // url.
+    static void launchSystemWebApp(DOMString appName, DOMString url,
+                                   VoidCallback callback);
 
     // Closes an application the given appId in case it was running.
     static void closeApp(DOMString appId, VoidCallback callback);
@@ -692,15 +753,16 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void importCrostini(DOMString path, VoidCallback callback);
 
-    // Installs Plugin VM via the installer and then launches the VM.
+    // Sets mock Plugin VM policy.
     // |imageUrl|: URL to the image to install.
     // |imageHash|: Hash for the provided image.
     // |licenseKey|: License key for Plugin VM.
-    // |callback|: Called when the operation has completed.
-    static void installPluginVM(DOMString imageUrl,
-                                DOMString imageHash,
-                                DOMString licenseKey,
-                                VoidCallback callback);
+    static void setPluginVMPolicy(DOMString imageUrl,
+                                  DOMString imageHash,
+                                  DOMString licenseKey);
+
+    // Shows the Plugin VM installer. Does not start installation.
+    static void showPluginVMInstaller();
 
     // Register a component with CrOSComponentManager.
     // |name|: The name of the component.
@@ -928,6 +990,14 @@ namespace autotestPrivate {
     // cannot be removed.
     static void removeActiveDesk(DesksCallback callback);
 
+    // Activates the desk at the given |index| by chaining multiple
+    // activate-desk animations.
+    // |index|: the zero-based index of the desk desired to be activated.
+    // |callback|: called indicating success when the animation completes, or
+    // failure when the desk at |index| is already the active desk.
+    static void activateAdjacentDesksToTargetIndex(long index,
+                                                   DesksCallback callback);
+
     // Create mouse events to cause a mouse click.
     // |button|: the mouse button for the click event.
     // |callback|: called after the mouse click finishes.
@@ -1012,6 +1082,33 @@ namespace autotestPrivate {
     // the display specified by the display id is used.
     static void stopSmoothnessTracking(optional DOMString displayId,
                                        StopSmoothnessTrackingCallback callback);
+
+    // When neccesary, disables showing the dialog when Switch Access is disabled.
+    static void disableSwitchAccessDialog();
+
+    // Waits for the completion of photo transition animation in ambient mode.
+    // |numCompletions|: number of completions of the animation.
+    // |timeout|: the timeout in seconds.
+    // |callback|: Called when the operation has completed.
+    static void waitForAmbientPhotoAnimation(
+        long numCompletions,
+        long timeout,
+        VoidCallback callback);
+
+    // Disables the automation feature. Note that the event handlers and caches
+    // of automation nodes still remain in the test extension and so the next
+    // automation.getDesktop will miss initialization. The caller should ensure
+    // invalidation of those information (i.e. reloading the entire background
+    // page).
+    static void disableAutomation(VoidCallback callback);
+
+    // Starts to ui::ThroughputTracker data collection for tracked animations.
+    static void startThroughputTrackerDataCollection(VoidCallback callback);
+
+    // Stops ui::ThroughputTracker data collection and reports the collected
+    // data since the start.
+    static void stopThroughputTrackerDataCollection(
+        StopThroughputTrackerDataCollectionCallback callback);
   };
 
   interface Events {

@@ -5,8 +5,12 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_SOFTWARE_RENDERER_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_SOFTWARE_RENDERER_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/latency/latency_info.h"
@@ -16,7 +20,7 @@ class DebugBorderDrawQuad;
 class DisplayResourceProvider;
 class OutputSurface;
 class PictureDrawQuad;
-class RenderPassDrawQuad;
+class AggregatedRenderPassDrawQuad;
 class SoftwareOutputDevice;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
@@ -25,6 +29,7 @@ class TileDrawQuad;
 class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
  public:
   SoftwareRenderer(const RendererSettings* settings,
+                   const DebugRendererSettings* debug_settings,
                    OutputSurface* output_surface,
                    DisplayResourceProvider* resource_provider,
                    OverlayProcessorInterface* overlay_processor);
@@ -40,18 +45,19 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
  protected:
   bool CanPartialSwap() override;
   void UpdateRenderPassTextures(
-      const RenderPassList& render_passes_in_draw_order,
-      const base::flat_map<RenderPassId, RenderPassRequirements>&
+      const AggregatedRenderPassList& render_passes_in_draw_order,
+      const base::flat_map<AggregatedRenderPassId, RenderPassRequirements>&
           render_passes_in_frame) override;
   void AllocateRenderPassResourceIfNeeded(
-      const RenderPassId& render_pass_id,
+      const AggregatedRenderPassId& render_pass_id,
       const RenderPassRequirements& requirements) override;
   bool IsRenderPassResourceAllocated(
-      const RenderPassId& render_pass_id) const override;
+      const AggregatedRenderPassId& render_pass_id) const override;
   gfx::Size GetRenderPassBackingPixelSize(
-      const RenderPassId& render_pass_id) override;
+      const AggregatedRenderPassId& render_pass_id) override;
   void BindFramebufferToOutputSurface() override;
-  void BindFramebufferToTexture(const RenderPassId render_pass_id) override;
+  void BindFramebufferToTexture(
+      const AggregatedRenderPassId render_pass_id) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
   void PrepareSurfaceForPass(SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
@@ -63,9 +69,6 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   void EnsureScissorTestDisabled() override;
   void CopyDrawnRenderPass(const copy_output::RenderPassGeometry& geometry,
                            std::unique_ptr<CopyOutputRequest> request) override;
-#if defined(OS_WIN)
-  void SetEnableDCLayers(bool enable) override;
-#endif
   void DidChangeVisibility() override;
   void GenerateMipmap() override;
 
@@ -78,20 +81,21 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
 
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad);
   void DrawPictureQuad(const PictureDrawQuad* quad);
-  void DrawRenderPassQuad(const RenderPassDrawQuad* quad);
+  void DrawRenderPassQuad(const AggregatedRenderPassDrawQuad* quad);
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad);
   void DrawTextureQuad(const TextureDrawQuad* quad);
   void DrawTileQuad(const TileDrawQuad* quad);
   void DrawUnsupportedQuad(const DrawQuad* quad);
-  bool ShouldApplyBackdropFilters(const cc::FilterOperations* backdrop_filters,
-                                  const RenderPassDrawQuad* quad) const;
+  bool ShouldApplyBackdropFilters(
+      const cc::FilterOperations* backdrop_filters,
+      const AggregatedRenderPassDrawQuad* quad) const;
   sk_sp<SkImage> ApplyImageFilter(SkImageFilter* filter,
-                                  const RenderPassDrawQuad* quad,
+                                  const AggregatedRenderPassDrawQuad* quad,
                                   const SkBitmap& to_filter,
                                   bool offset_expanded_bounds,
                                   SkIRect* auto_bounds) const;
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
-      const RenderPassDrawQuad* quad,
+      const AggregatedRenderPassDrawQuad* quad,
       const cc::FilterOperations* backdrop_filters,
       base::Optional<gfx::RRectF> backdrop_filter_bounds_input,
       gfx::Transform contents_device_transform,
@@ -100,11 +104,12 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
       gfx::Rect* unclipped_rect) const;
 
   SkBitmap GetBackdropBitmap(const gfx::Rect& bounding_rect) const;
-  sk_sp<SkShader> GetBackdropFilterShader(const RenderPassDrawQuad* quad,
-                                          SkTileMode content_tile_mode) const;
+  sk_sp<SkShader> GetBackdropFilterShader(
+      const AggregatedRenderPassDrawQuad* quad,
+      SkTileMode content_tile_mode) const;
 
   // A map from RenderPass id to the bitmap used to draw the RenderPass from.
-  base::flat_map<RenderPassId, SkBitmap> render_pass_bitmaps_;
+  base::flat_map<AggregatedRenderPassId, SkBitmap> render_pass_bitmaps_;
 
   bool disable_picture_quad_image_filtering_ = false;
 

@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
@@ -29,6 +30,8 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace fast_ink {
@@ -101,11 +104,10 @@ class FastInkHost::LayerTreeFrameSinkHolder
                           viz::BeginFrameArgs::kStartingFrameNumber);
     frame.metadata.begin_frame_ack.has_damage = true;
     frame.metadata.device_scale_factor = last_frame_device_scale_factor_;
-    frame.metadata.local_surface_id_allocation_time =
-        last_local_surface_id_allocation_time_;
     frame.metadata.frame_token = ++next_frame_token_;
-    std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
-    pass->SetNew(1, gfx::Rect(last_frame_size_in_pixels_),
+    auto pass = viz::CompositorRenderPass::Create();
+    pass->SetNew(viz::CompositorRenderPassId{1},
+                 gfx::Rect(last_frame_size_in_pixels_),
                  gfx::Rect(last_frame_size_in_pixels_), gfx::Transform());
     frame.render_pass_list.push_back(std::move(pass));
     frame_sink_->SubmitCompositorFrame(std::move(frame),
@@ -138,8 +140,6 @@ class FastInkHost::LayerTreeFrameSinkHolder
     exported_resources_[resource_id] = std::move(resource);
     last_frame_size_in_pixels_ = frame.size_in_pixels();
     last_frame_device_scale_factor_ = frame.metadata.device_scale_factor;
-    last_local_surface_id_allocation_time_ =
-        frame.metadata.local_surface_id_allocation_time;
     frame.metadata.frame_token = ++next_frame_token_;
     frame_sink_->SubmitCompositorFrame(std::move(frame),
                                        /*hit_test_data_changed=*/true,
@@ -221,7 +221,6 @@ class FastInkHost::LayerTreeFrameSinkHolder
   viz::FrameTokenGenerator next_frame_token_;
   gfx::Size last_frame_size_in_pixels_;
   float last_frame_device_scale_factor_ = 1.0f;
-  base::TimeTicks last_local_surface_id_allocation_time_;
   aura::Window* root_window_ = nullptr;
   bool delete_pending_ = false;
 };
@@ -259,6 +258,21 @@ FastInkHost::FastInkHost(aura::Window* host_window,
                                   gpu::kNullSurfaceHandle);
   LOG_IF(ERROR, !gpu_memory_buffer_) << "Failed to create GPU memory buffer";
 
+  if (ash::switches::ShouldClearFastInkBuffer()) {
+    bool map_result = gpu_memory_buffer_->Map();
+    LOG_IF(ERROR, !map_result) << "Failed to map gpu buffer";
+    uint8_t* memory = static_cast<uint8_t*>(gpu_memory_buffer_->memory(0));
+    if (memory != nullptr) {
+      gfx::Size size = gpu_memory_buffer_->GetSize();
+      int stride = gpu_memory_buffer_->stride(0);
+      // Clear the buffer before usage, since it may be uninitialized.
+      // (http://b/168735625)
+      for (int i = 0; i < size.height(); ++i)
+        memset(memory + i * stride, 0, size.width() * 4);
+    }
+    gpu_memory_buffer_->Unmap();
+  }
+
   frame_sink_holder_ = std::make_unique<LayerTreeFrameSinkHolder>(
       this, host_window_->CreateLayerTreeFrameSink());
 }
@@ -291,8 +305,12 @@ void FastInkHost::SubmitCompositorFrame() {
                damage_rect_.ToString());
 
   float device_scale_factor = host_window_->layer()->device_scale_factor();
-  gfx::Rect output_rect(gfx::ConvertSizeToPixel(
-      device_scale_factor, host_window_->GetBoundsInScreen().size()));
+
+  gfx::Size window_size_in_dip = host_window_->GetBoundsInScreen().size();
+  // TODO(crbug.com/1131619): Should this be ceil? Why do we choose floor?
+  gfx::Size window_size_in_pixel = gfx::ToFlooredSize(
+      gfx::ConvertSizeToPixels(window_size_in_dip, device_scale_factor));
+  gfx::Rect output_rect(window_size_in_pixel);
 
   gfx::Rect quad_rect;
   gfx::Rect damage_rect;
@@ -306,7 +324,8 @@ void FastInkHost::SubmitCompositorFrame() {
     // Use minimal quad and damage rectangles when auto-refresh mode is off.
     quad_rect = BufferRectFromWindowRect(window_to_buffer_transform_,
                                          buffer_size_, content_rect_);
-    damage_rect = gfx::ConvertRectToPixel(device_scale_factor, damage_rect_);
+    damage_rect = gfx::ToEnclosingRect(
+        gfx::ConvertRectToPixels(damage_rect_, device_scale_factor));
     damage_rect.Intersect(output_rect);
     pending_compositor_frame_ = false;
   }
@@ -350,7 +369,8 @@ void FastInkHost::SubmitCompositorFrame() {
               ->context_factory()
               ->GetGpuMemoryBufferManager();
       resource->mailbox = sii->CreateSharedImage(
-          gpu_memory_buffer_.get(), gmb_manager, gfx::ColorSpace(), usage);
+          gpu_memory_buffer_.get(), gmb_manager, gfx::ColorSpace(),
+          kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage);
     } else {
       sii->UpdateSharedImage(resource->sync_token, resource->mailbox);
     }
@@ -377,8 +397,8 @@ void FastInkHost::SubmitCompositorFrame() {
   bool rv = target_to_buffer_transform.GetInverse(&buffer_to_target_transform);
   DCHECK(rv);
 
-  const int kRenderPassId = 1;
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  const viz::CompositorRenderPassId kRenderPassId{1};
+  auto render_pass = viz::CompositorRenderPass::Create();
   render_pass->SetNew(kRenderPassId, output_rect, damage_rect,
                       buffer_to_target_transform);
 
@@ -388,7 +408,7 @@ void FastInkHost::SubmitCompositorFrame() {
       buffer_to_target_transform,
       /*quad_layer_rect=*/output_rect,
       /*visible_quad_layer_rect=*/output_rect,
-      /*rounded_corner_bounds=*/gfx::RRectF(),
+      /*mask_filter_info=*/gfx::MaskFilterInfo(),
       /*clip_rect=*/gfx::Rect(),
       /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
       /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
@@ -399,8 +419,6 @@ void FastInkHost::SubmitCompositorFrame() {
   frame.metadata.begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.device_scale_factor = device_scale_factor;
-  frame.metadata.local_surface_id_allocation_time =
-      host_window_->GetLocalSurfaceIdAllocation().allocation_time();
 
   viz::TextureDrawQuad* texture_quad =
       render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();

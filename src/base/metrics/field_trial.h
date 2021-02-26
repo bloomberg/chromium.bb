@@ -59,7 +59,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -68,7 +67,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory_mapping.h"
@@ -80,7 +78,7 @@
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "base/mac/mach_port_rendezvous.h"
 #endif
 
@@ -185,6 +183,9 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // A return value to indicate that a given instance has not yet had a group
   // assignment (and hence is not yet participating in the trial).
   static const int kNotFinalized;
+
+  FieldTrial(const FieldTrial&) = delete;
+  FieldTrial& operator=(const FieldTrial&) = delete;
 
   // Disables this trial, meaning it always determines the default group
   // has been selected. May be called immediately after construction, or
@@ -291,6 +292,7 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
              Probability total_probability,
              const std::string& default_group_name,
              double entropy_value);
+
   virtual ~FieldTrial();
 
   // Return the default group name of the FieldTrial.
@@ -381,8 +383,6 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // When benchmarking is enabled, field trials all revert to the 'default'
   // group.
   static bool enable_benchmarking_;
-
-  DISALLOW_COPY_AND_ASSIGN(FieldTrial);
 };
 
 //------------------------------------------------------------------------------
@@ -417,6 +417,8 @@ class BASE_EXPORT FieldTrialList {
   // |entropy_provider|.
   explicit FieldTrialList(
       std::unique_ptr<const FieldTrial::EntropyProvider> entropy_provider);
+  FieldTrialList(const FieldTrialList&) = delete;
+  FieldTrialList& operator=(const FieldTrialList&) = delete;
 
   // Destructor Release()'s references to all registered FieldTrial instances.
   ~FieldTrialList();
@@ -543,11 +545,8 @@ class BASE_EXPORT FieldTrialList {
   // browser process into this non-browser process, but could also be invoked
   // through a command line argument to the browser process. Created field
   // trials will be marked "used" for the purposes of active trial reporting
-  // if they are prefixed with |kActivationMarker|. Trial names in
-  // |ignored_trial_names| are ignored when parsing |trials_string|.
-  static bool CreateTrialsFromString(
-      const std::string& trials_string,
-      const std::set<std::string>& ignored_trial_names);
+  // if they are prefixed with |kActivationMarker|.
+  static bool CreateTrialsFromString(const std::string& trials_string);
 
   // Achieves the same thing as CreateTrialsFromString, except wraps the logic
   // by taking in the trials from the command line, either via shared memory
@@ -575,7 +574,7 @@ class BASE_EXPORT FieldTrialList {
   static void AppendFieldTrialHandleIfNeeded(HandlesToInheritVector* handles);
 #elif defined(OS_FUCHSIA)
   // TODO(fuchsia): Implement shared-memory configuration (crbug.com/752368).
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   // On Mac, the field trial shared memory is accessed via a Mach server, which
   // the child looks up directly.
   static void InsertFieldTrialHandleIfNeeded(
@@ -693,8 +692,7 @@ class BASE_EXPORT FieldTrialList {
   // underlying OS resource - that must be done by the Process launcher.
   static std::string SerializeSharedMemoryRegionMetadata(
       const ReadOnlySharedMemoryRegion& shm);
-#if defined(OS_WIN) || defined(OS_FUCHSIA) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_FUCHSIA) || defined(OS_MAC)
   static ReadOnlySharedMemoryRegion DeserializeSharedMemoryRegionMetadata(
       const std::string& switch_value);
 #elif defined(OS_POSIX) && !defined(OS_NACL)
@@ -703,8 +701,7 @@ class BASE_EXPORT FieldTrialList {
       const std::string& switch_value);
 #endif
 
-#if defined(OS_WIN) || defined(OS_FUCHSIA) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_FUCHSIA) || defined(OS_MAC)
   // Takes in |handle_switch| from the command line which represents the shared
   // memory handle for field trials, parses it, and creates the field trials.
   // Returns true on success, false on failure.
@@ -802,8 +799,6 @@ class BASE_EXPORT FieldTrialList {
 
   // Tracks whether CreateTrialsFromCommandLine() has been called.
   bool create_trials_from_command_line_called_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FieldTrialList);
 };
 
 }  // namespace base

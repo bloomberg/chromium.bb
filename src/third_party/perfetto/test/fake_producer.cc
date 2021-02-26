@@ -21,7 +21,6 @@
 #include "perfetto/base/logging.h"
 #include "perfetto/base/time.h"
 #include "perfetto/ext/base/utils.h"
-#include "perfetto/ext/traced/traced.h"
 #include "perfetto/ext/tracing/core/commit_data_request.h"
 #include "perfetto/ext/tracing/core/shared_memory_arbiter.h"
 #include "perfetto/ext/tracing/core/trace_packet.h"
@@ -54,7 +53,7 @@ void FakeProducer::Connect(const char* socket_name,
       socket_name, this, "android.perfetto.FakeProducer", task_runner_,
       TracingService::ProducerSMBScrapingMode::kDefault,
       /*shared_memory_size_hint_bytes=*/0,
-      /*shared_memory_page_size_hint_bytes=*/base::kPageSize, std::move(shm),
+      /*shared_memory_page_size_hint_bytes=*/4096, std::move(shm),
       std::move(shm_arbiter));
   on_connect_ = std::move(on_connect);
   on_setup_data_source_instance_ = std::move(on_setup_data_source_instance);

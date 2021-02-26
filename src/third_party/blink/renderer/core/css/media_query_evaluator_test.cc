@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/media_values_initial_viewport.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/parser/media_query_parser.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
@@ -70,8 +71,6 @@ MediaQueryEvaluatorTestCase g_screen_test_cases[] = {
     {"(display-mode: @browser)", 0},
     {"(display-mode: 'browser')", 0},
     {"(display-mode: @junk browser)", 0},
-    {"(shape: rect)", 1},
-    {"(shape: round)", 0},
     {"(max-device-aspect-ratio: 4294967295/1)", 1},
     {"(min-device-aspect-ratio: 1/4294967296)", 1},
     {nullptr, 0}  // Do not remove the terminator line.
@@ -188,6 +187,60 @@ MediaQueryEvaluatorTestCase g_forcedcolors_none_cases[] = {
     {nullptr, 0}  // Do not remove the terminator line.
 };
 
+MediaQueryEvaluatorTestCase g_preferscontrast_nopreference_cases[] = {
+    {"(prefers-contrast)", 0},
+    {"(prefers-contrast: more)", 0},
+    {"(prefers-contrast: less)", 0},
+    {"(prefers-contrast: forced)", 0},
+    {"(prefers-contrast: no-preference)", 1},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_preferscontrast_more_cases[] = {
+    {"(prefers-contrast)", 1},
+    {"(prefers-contrast: more)", 1},
+    {"(prefers-contrast: less)", 0},
+    {"(prefers-contrast: forced)", 0},
+    {"(prefers-contrast: no-preference)", 0},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_preferscontrast_less_cases[] = {
+    {"(prefers-contrast)", 1},
+    {"(prefers-contrast: more)", 0},
+    {"(prefers-contrast: less)", 1},
+    {"(prefers-contrast: forced)", 0},
+    {"(prefers-contrast: no-preference)", 0},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_preferscontrast_forced_cases[] = {
+    {"(prefers-contrast)", 1},
+    {"(prefers-contrast: more)", 0},
+    {"(prefers-contrast: less)", 0},
+    {"(prefers-contrast: forced)", 1},
+    {"(prefers-contrast: no-preference)", 0},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_preferscontrast_forced_more_cases[] = {
+    {"(prefers-contrast)", 1},
+    {"(prefers-contrast: more)", 1},
+    {"(prefers-contrast: less)", 0},
+    {"(prefers-contrast: forced)", 1},
+    {"(prefers-contrast: no-preference)", 0},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_preferscontrast_forced_less_cases[] = {
+    {"(prefers-contrast)", 1},
+    {"(prefers-contrast: more)", 0},
+    {"(prefers-contrast: less)", 1},
+    {"(prefers-contrast: forced)", 1},
+    {"(prefers-contrast: no-preference)", 0},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
 MediaQueryEvaluatorTestCase g_navigationcontrols_back_button_cases[] = {
     {"(navigation-controls: back-button)", 1},
     {"(navigation-controls: none)", 0},
@@ -258,14 +311,13 @@ TEST(MediaQueryEvaluatorTest, Cached) {
   data.device_pixel_ratio = 2.0;
   data.color_bits_per_component = 24;
   data.monochrome_bits_per_component = 0;
-  data.primary_pointer_type = kPointerTypeFine;
-  data.primary_hover_type = kHoverTypeHover;
+  data.primary_pointer_type = ui::POINTER_TYPE_FINE;
+  data.primary_hover_type = ui::HOVER_TYPE_HOVER;
   data.default_font_size = 16;
   data.three_d_enabled = true;
   data.media_type = media_type_names::kScreen;
   data.strict_mode = true;
   data.display_mode = blink::mojom::DisplayMode::kBrowser;
-  data.display_shape = kDisplayShapeRect;
   data.immersive_mode = false;
 
   // Default values.
@@ -397,6 +449,61 @@ TEST(MediaQueryEvaluatorTest, CachedForcedColors) {
     MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(*media_values);
     TestMQEvaluator(g_forcedcolors_active_cases, media_query_evaluator);
+  }
+}
+
+TEST(MediaQueryEvaluatorTest, CachedPrefersContrast) {
+  ScopedForcedColorsForTest forced_scoped_feature(true);
+  ScopedPrefersContrastForTest contrast_scoped_feature(true);
+
+  MediaValuesCached::MediaValuesCachedData data;
+  data.forced_colors = ForcedColors::kNone;
+  data.preferred_contrast = mojom::blink::PreferredContrast::kNoPreference;
+  MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+
+  // Prefers-contrast - no-preference.
+  MediaQueryEvaluator media_query_evaluator(*media_values);
+  TestMQEvaluator(g_preferscontrast_nopreference_cases, media_query_evaluator);
+
+  // Prefers-contrast - more.
+  {
+    data.preferred_contrast = mojom::blink::PreferredContrast::kMore;
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_preferscontrast_more_cases, media_query_evaluator);
+  }
+
+  // Prefers-contrast - less.
+  {
+    data.preferred_contrast = mojom::blink::PreferredContrast::kLess;
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_preferscontrast_less_cases, media_query_evaluator);
+  }
+
+  // Prefers-contrast - forced.
+  {
+    data.preferred_contrast = mojom::blink::PreferredContrast::kNoPreference;
+    data.forced_colors = ForcedColors::kActive;
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_preferscontrast_forced_cases, media_query_evaluator);
+  }
+
+  // Prefers-contrast - forced and more.
+  {
+    data.preferred_contrast = mojom::blink::PreferredContrast::kMore;
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_preferscontrast_forced_more_cases, media_query_evaluator);
+  }
+
+  // Prefers-contrast - forced and less.
+  {
+    data.preferred_contrast = mojom::blink::PreferredContrast::kLess;
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_preferscontrast_forced_less_cases, media_query_evaluator);
   }
 }
 

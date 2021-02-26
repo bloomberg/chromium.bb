@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
@@ -163,7 +162,8 @@ TEST_F(ArcSettingsServiceTest,
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcInitialSettingsPending));
 
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                {});
 
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcInitialSettingsPending));
@@ -201,7 +201,8 @@ TEST_F(ArcSettingsServiceTest,
                   ->GetBroadcastsForAction(kActionLocaionEnabled)
                   .empty());
 
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                {});
 
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcInitialSettingsPending));

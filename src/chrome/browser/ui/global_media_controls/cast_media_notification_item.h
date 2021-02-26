@@ -8,9 +8,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_session_controller.h"
-#include "chrome/common/media_router/media_route.h"
-#include "chrome/common/media_router/mojom/media_status.mojom.h"
 #include "components/media_message_center/media_notification_item.h"
+#include "components/media_router/common/media_route.h"
+#include "components/media_router/common/mojom/media_status.mojom.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 
 class Profile;
@@ -52,6 +52,7 @@ class CastMediaNotificationItem
   void OnMediaSessionActionButtonPressed(
       media_session::mojom::MediaSessionAction action) override;
   void Dismiss() override;
+  media_message_center::SourceType SourceType() override;
 
   // media_router::mojom::MediaStatusObserver:
   void OnMediaStatusUpdated(
@@ -63,6 +64,9 @@ class CastMediaNotificationItem
   // than once per instance.
   mojo::PendingRemote<media_router::mojom::MediaStatusObserver>
   GetObserverPendingRemote();
+
+  const media_router::MediaRoute::Id route_id() { return media_route_id_; }
+  Profile* profile() { return profile_; }
 
   base::WeakPtr<CastMediaNotificationItem> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -127,6 +131,7 @@ class CastMediaNotificationItem
   media_session::mojom::MediaSessionInfoPtr session_info_;
   mojo::Receiver<media_router::mojom::MediaStatusObserver> observer_receiver_{
       this};
+  Profile* profile_;
   base::WeakPtrFactory<CastMediaNotificationItem> weak_ptr_factory_{this};
 };
 

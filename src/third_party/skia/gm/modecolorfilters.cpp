@@ -162,11 +162,11 @@ protected:
 
 private:
     sk_sp<SkShader> fBmpShader;
-    typedef GM INHERITED;
+    using INHERITED = GM;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 DEF_GM( return new ModeColorFilterGM; )
 
-}
+}  // namespace skiagm

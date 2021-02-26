@@ -46,7 +46,9 @@ ConsumerIPCClientImpl::ConsumerIPCClientImpl(const char* service_sock_name,
                                              Consumer* consumer,
                                              base::TaskRunner* task_runner)
     : consumer_(consumer),
-      ipc_channel_(ipc::Client::CreateInstance(service_sock_name, task_runner)),
+      ipc_channel_(ipc::Client::CreateInstance(service_sock_name,
+                                               /*retry=*/false,
+                                               task_runner)),
       consumer_port_(this /* event_listener */),
       weak_ptr_factory_(this) {
   ipc_channel_->BindService(consumer_port_.GetWeakPtr());
@@ -63,7 +65,7 @@ void ConsumerIPCClientImpl::OnConnect() {
 void ConsumerIPCClientImpl::OnDisconnect() {
   PERFETTO_DLOG("Tracing service connection failure");
   connected_ = false;
-  consumer_->OnDisconnect();
+  consumer_->OnDisconnect();  // Note: may delete |this|.
 }
 
 void ConsumerIPCClientImpl::EnableTracing(const TraceConfig& trace_config,
@@ -179,8 +181,18 @@ void ConsumerIPCClientImpl::OnReadBuffersResponse(
 
 void ConsumerIPCClientImpl::OnEnableTracingResponse(
     ipc::AsyncResult<protos::gen::EnableTracingResponse> response) {
+  std::string error;
+  // |response| might be empty when the request gets rejected (if the connection
+  // with the service is dropped all outstanding requests are auto-rejected).
+  if (!response) {
+    error =
+        "EnableTracing IPC request rejected. This is likely due to a loss of "
+        "the traced connection";
+  } else {
+    error = response->error();
+  }
   if (!response || response->disabled())
-    consumer_->OnTracingDisabled();
+    consumer_->OnTracingDisabled(error);
 }
 
 void ConsumerIPCClientImpl::FreeBuffers() {
@@ -322,7 +334,7 @@ void ConsumerIPCClientImpl::ObserveEvents(uint32_t enabled_event_types) {
       [this](ipc::AsyncResult<protos::gen::ObserveEventsResponse> response) {
         // Skip empty response, which the service sends to close the stream.
         if (!response.has_more()) {
-          PERFETTO_DCHECK(!response->events().instance_state_changes().size());
+          PERFETTO_DCHECK(!response.success());
           return;
         }
         consumer_->OnObservableEvents(response->events());

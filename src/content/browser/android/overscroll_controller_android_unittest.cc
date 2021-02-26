@@ -19,14 +19,14 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/did_overscroll_params.h"
 
-using ui::EdgeEffectBase;
-using ui::ResourceManager;
+using ::testing::_;
+using ::testing::Return;
+using ui::EdgeEffect;
 using ui::OverscrollGlow;
 using ui::OverscrollGlowClient;
 using ui::OverscrollRefresh;
+using ui::ResourceManager;
 using ui::WindowAndroidCompositor;
-using ::testing::_;
-using ::testing::Return;
 
 namespace content {
 
@@ -52,7 +52,7 @@ class MockCompositor : public WindowAndroidCompositor {
 
 class MockGlowClient : public OverscrollGlowClient {
  public:
-  MOCK_METHOD0(CreateEdgeEffect, std::unique_ptr<EdgeEffectBase>());
+  MOCK_METHOD0(CreateEdgeEffect, std::unique_ptr<EdgeEffect>());
 };
 
 class MockGlow : public OverscrollGlow {
@@ -115,8 +115,7 @@ class OverscrollControllerAndroidUnitTest : public testing::Test {
 TEST_F(OverscrollControllerAndroidUnitTest,
        OverscrollBehaviorYAutoAllowsRefresh) {
   ui::DidOverscrollParams params = CreateVerticalOverscrollParams();
-  params.overscroll_behavior.y = cc::OverscrollBehavior::
-      OverscrollBehaviorType::kOverscrollBehaviorTypeAuto;
+  params.overscroll_behavior.y = cc::OverscrollBehavior::Type::kAuto;
 
   // Test that refresh is activated but glow is not rendered.
   EXPECT_CALL(*refresh_, IsActive()).WillOnce(Return(true));
@@ -130,8 +129,7 @@ TEST_F(OverscrollControllerAndroidUnitTest,
 TEST_F(OverscrollControllerAndroidUnitTest,
        OverscrollBehaviorYContainAllowsGlowOnly) {
   ui::DidOverscrollParams params = CreateVerticalOverscrollParams();
-  params.overscroll_behavior.y = cc::OverscrollBehavior::
-      OverscrollBehaviorType::kOverscrollBehaviorTypeContain;
+  params.overscroll_behavior.y = cc::OverscrollBehavior::Type::kContain;
 
   EXPECT_CALL(*refresh_, IsActive()).WillOnce(Return(false));
   EXPECT_CALL(*refresh_, IsAwaitingScrollUpdateAck()).WillOnce(Return(false));
@@ -144,10 +142,8 @@ TEST_F(OverscrollControllerAndroidUnitTest,
   testing::Mock::VerifyAndClearExpectations(glow_);
 
   // Test that the "contain" set on x-axis would not affect navigation.
-  params.overscroll_behavior.y = cc::OverscrollBehavior::
-      OverscrollBehaviorType::kOverscrollBehaviorTypeAuto;
-  params.overscroll_behavior.x = cc::OverscrollBehavior::
-      OverscrollBehaviorType::kOverscrollBehaviorTypeContain;
+  params.overscroll_behavior.y = cc::OverscrollBehavior::Type::kAuto;
+  params.overscroll_behavior.x = cc::OverscrollBehavior::Type::kContain;
 
   EXPECT_CALL(*refresh_, IsActive()).WillOnce(Return(true));
   EXPECT_CALL(*refresh_, IsAwaitingScrollUpdateAck()).Times(0);
@@ -161,8 +157,7 @@ TEST_F(OverscrollControllerAndroidUnitTest,
 TEST_F(OverscrollControllerAndroidUnitTest,
        OverscrollBehaviorYNonePreventsGlowAndRefresh) {
   ui::DidOverscrollParams params = CreateVerticalOverscrollParams();
-  params.overscroll_behavior.y = cc::OverscrollBehavior::
-      OverscrollBehaviorType::kOverscrollBehaviorTypeNone;
+  params.overscroll_behavior.y = cc::OverscrollBehavior::Type::kNone;
 
   EXPECT_CALL(*refresh_, IsActive()).WillOnce(Return(false));
   EXPECT_CALL(*refresh_, IsAwaitingScrollUpdateAck()).WillOnce(Return(false));
@@ -197,8 +192,7 @@ TEST_F(OverscrollControllerAndroidUnitTest,
 TEST_F(OverscrollControllerAndroidUnitTest,
        ConsumedUpdateDoesNotResetEnabledRefresh) {
   ui::DidOverscrollParams params = CreateVerticalOverscrollParams();
-  params.overscroll_behavior.y = cc::OverscrollBehavior::
-      OverscrollBehaviorType::kOverscrollBehaviorTypeAuto;
+  params.overscroll_behavior.y = cc::OverscrollBehavior::Type::kAuto;
 
   EXPECT_CALL(*refresh_, IsActive()).WillOnce(Return(true));
   EXPECT_CALL(*refresh_, IsAwaitingScrollUpdateAck()).WillOnce(Return(false));

@@ -7,10 +7,13 @@
 
 #include "src/gpu/gl/GrGLOpsRenderPass.h"
 
-#include "src/gpu/GrContextPriv.h"
-#include "src/gpu/GrFixedClip.h"
 #include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/GrRenderTargetPriv.h"
+#include "src/gpu/GrRenderTarget.h"
+
+#ifdef SK_DEBUG
+#include "include/gpu/GrDirectContext.h"
+#include "src/gpu/GrDirectContextPriv.h"
+#endif
 
 #define GL_CALL(X) GR_GL_CALL(fGpu->glInterface(), X)
 
@@ -55,41 +58,49 @@ bool GrGLOpsRenderPass::onBindTextures(const GrPrimitiveProcessor& primProc,
     return true;
 }
 
-void GrGLOpsRenderPass::onBindBuffers(const GrBuffer* indexBuffer, const GrBuffer* instanceBuffer,
-                                      const GrBuffer* vertexBuffer,
+void GrGLOpsRenderPass::onBindBuffers(sk_sp<const GrBuffer> indexBuffer,
+                                      sk_sp<const GrBuffer> instanceBuffer,
+                                      sk_sp<const GrBuffer> vertexBuffer,
                                       GrPrimitiveRestart primitiveRestart) {
     SkASSERT((primitiveRestart == GrPrimitiveRestart::kNo) || indexBuffer);
     GrGLProgram* program = fGpu->currentProgram();
     SkASSERT(program);
 
+#ifdef SK_DEBUG
+    fDidBindInstanceBuffer = false;
+    fDidBindVertexBuffer = false;
+#endif
+
     int numAttribs = program->numVertexAttributes() + program->numInstanceAttributes();
-    fAttribArrayState = fGpu->bindInternalVertexArray(indexBuffer, numAttribs, primitiveRestart);
+    fAttribArrayState = fGpu->bindInternalVertexArray(indexBuffer.get(), numAttribs,
+                                                      primitiveRestart);
 
     if (indexBuffer) {
         if (indexBuffer->isCpuBuffer()) {
-            auto* cpuIndexBuffer = static_cast<const GrCpuBuffer*>(indexBuffer);
+            auto* cpuIndexBuffer = static_cast<const GrCpuBuffer*>(indexBuffer.get());
             fIndexPointer = reinterpret_cast<const uint16_t*>(cpuIndexBuffer->data());
         } else {
             fIndexPointer = nullptr;
         }
     }
 
-    if (!fGpu->glCaps().baseVertexBaseInstanceSupport()) {
-        // This platform does not support baseInstance. Defer binding of the instance buffer.
-        fActiveInstanceBuffer = sk_ref_sp(instanceBuffer);
-    } else {
-        this->bindInstanceBuffer(instanceBuffer, 0);
+    // If this platform does not support baseInstance, defer binding of the instance buffer.
+    if (fGpu->glCaps().baseVertexBaseInstanceSupport()) {
+        this->bindInstanceBuffer(instanceBuffer.get(), 0);
+        SkDEBUGCODE(fDidBindInstanceBuffer = true;)
     }
-    if (!indexBuffer && fGpu->glCaps().drawArraysBaseVertexIsBroken()) {
-        // There is a driver bug affecting glDrawArrays. Defer binding of the vertex buffer.
-        fActiveVertexBuffer = sk_ref_sp(vertexBuffer);
-    } else if (indexBuffer && !fGpu->glCaps().baseVertexBaseInstanceSupport()) {
-        // This platform does not support baseVertex with indexed draws. Defer binding of the
-        // vertex buffer.
-        fActiveVertexBuffer = sk_ref_sp(vertexBuffer);
-    } else {
-        this->bindVertexBuffer(vertexBuffer, 0);
+    fActiveInstanceBuffer = std::move(instanceBuffer);
+
+    // We differ binding the vertex buffer for one of two situations:
+    // 1) This platform does not support baseVertex with indexed draws.
+    // 2) There is a driver bug affecting glDrawArrays.
+    if ((indexBuffer && fGpu->glCaps().baseVertexBaseInstanceSupport()) ||
+        (!indexBuffer && !fGpu->glCaps().drawArraysBaseVertexIsBroken())) {
+            this->bindVertexBuffer(vertexBuffer.get(), 0);
+            SkDEBUGCODE(fDidBindVertexBuffer = true;)
     }
+    fActiveVertexBuffer = std::move(vertexBuffer);
+    fActiveIndexBuffer = std::move(indexBuffer);
 }
 
 void GrGLOpsRenderPass::bindInstanceBuffer(const GrBuffer* instanceBuffer, int baseInstance) {
@@ -130,7 +141,7 @@ void GrGLOpsRenderPass::bindVertexBuffer(const GrBuffer* vertexBuffer, int baseV
 }
 
 void GrGLOpsRenderPass::onDraw(int vertexCount, int baseVertex) {
-    SkASSERT(!fActiveVertexBuffer || fGpu->glCaps().drawArraysBaseVertexIsBroken());
+    SkASSERT(fDidBindVertexBuffer || fGpu->glCaps().drawArraysBaseVertexIsBroken());
     GrGLenum glPrimType = fGpu->prepareToDraw(fPrimitiveType);
     if (fGpu->glCaps().drawArraysBaseVertexIsBroken()) {
         this->bindVertexBuffer(fActiveVertexBuffer.get(), baseVertex);
@@ -144,7 +155,7 @@ void GrGLOpsRenderPass::onDrawIndexed(int indexCount, int baseIndex, uint16_t mi
     GrGLenum glPrimType = fGpu->prepareToDraw(fPrimitiveType);
     if (fGpu->glCaps().baseVertexBaseInstanceSupport()) {
         SkASSERT(fGpu->glCaps().drawInstancedSupport());
-        SkASSERT(!fActiveVertexBuffer);
+        SkASSERT(fDidBindVertexBuffer);
         if (baseVertex != 0) {
             GL_CALL(DrawElementsInstancedBaseVertexBaseInstance(
                     glPrimType, indexCount, GR_GL_UNSIGNED_SHORT,
@@ -166,7 +177,7 @@ void GrGLOpsRenderPass::onDrawIndexed(int indexCount, int baseIndex, uint16_t mi
 
 void GrGLOpsRenderPass::onDrawInstanced(int instanceCount, int baseInstance, int vertexCount,
                                         int baseVertex) {
-    SkASSERT(!fActiveVertexBuffer || fGpu->glCaps().drawArraysBaseVertexIsBroken());
+    SkASSERT(fDidBindVertexBuffer || fGpu->glCaps().drawArraysBaseVertexIsBroken());
     if (fGpu->glCaps().drawArraysBaseVertexIsBroken()) {
         // We weren't able to bind the vertex buffer during onBindBuffers because of a driver bug
         // affecting glDrawArrays.
@@ -178,7 +189,7 @@ void GrGLOpsRenderPass::onDrawInstanced(int instanceCount, int baseInstance, int
         int instanceCountForDraw = std::min(instanceCount - i, maxInstances);
         int baseInstanceForDraw = baseInstance + i;
         if (fGpu->glCaps().baseVertexBaseInstanceSupport()) {
-            SkASSERT(!fActiveInstanceBuffer);
+            SkASSERT(fDidBindInstanceBuffer);
             GL_CALL(DrawArraysInstancedBaseInstance(glPrimType, baseVertex, vertexCount,
                                                     instanceCountForDraw, baseInstanceForDraw));
         } else {
@@ -196,8 +207,8 @@ void GrGLOpsRenderPass::onDrawIndexedInstanced(int indexCount, int baseIndex, in
         int instanceCountForDraw = std::min(instanceCount - i, maxInstances);
         int baseInstanceForDraw = baseInstance + i;
         if (fGpu->glCaps().baseVertexBaseInstanceSupport()) {
-            SkASSERT(!fActiveInstanceBuffer);
-            SkASSERT(!fActiveVertexBuffer);
+            SkASSERT(fDidBindInstanceBuffer);
+            SkASSERT(fDidBindVertexBuffer);
             GL_CALL(DrawElementsInstancedBaseVertexBaseInstance(
                     glPrimType, indexCount, GR_GL_UNSIGNED_SHORT,
                     this->offsetForBaseIndex(baseIndex), instanceCountForDraw, baseVertex,
@@ -221,9 +232,27 @@ static const void* buffer_offset_to_gl_address(const GrBuffer* drawIndirectBuffe
 
 void GrGLOpsRenderPass::onDrawIndirect(const GrBuffer* drawIndirectBuffer, size_t offset,
                                        int drawCount) {
+    using MultiDrawType = GrGLCaps::MultiDrawType;
+
+    SkASSERT(fGpu->caps()->nativeDrawIndirectSupport());
+    SkASSERT(fGpu->glCaps().baseVertexBaseInstanceSupport());
+    SkASSERT(fDidBindVertexBuffer || fGpu->glCaps().drawArraysBaseVertexIsBroken());
+
+    if (fGpu->glCaps().drawArraysBaseVertexIsBroken()) {
+        // We weren't able to bind the vertex buffer during onBindBuffers because of a driver bug
+        // affecting glDrawArrays.
+        this->bindVertexBuffer(fActiveVertexBuffer.get(), 0);
+    }
+
+    if (fGpu->glCaps().multiDrawType() == MultiDrawType::kANGLEOrWebGL) {
+        // ANGLE and WebGL don't support glDrawElementsIndirect. We draw everything as a multi draw.
+        this->multiDrawArraysANGLEOrWebGL(drawIndirectBuffer, offset, drawCount);
+        return;
+    }
+
     fGpu->bindBuffer(GrGpuBufferType::kDrawIndirect, drawIndirectBuffer);
 
-    if (fGpu->glCaps().multiDrawIndirectSupport() && drawCount > 1) {
+    if (drawCount > 1 && fGpu->glCaps().multiDrawType() == MultiDrawType::kMultiDrawIndirect) {
         GrGLenum glPrimType = fGpu->prepareToDraw(fPrimitiveType);
         GL_CALL(MultiDrawArraysIndirect(glPrimType,
                                         buffer_offset_to_gl_address(drawIndirectBuffer, offset),
@@ -239,11 +268,63 @@ void GrGLOpsRenderPass::onDrawIndirect(const GrBuffer* drawIndirectBuffer, size_
     }
 }
 
+void GrGLOpsRenderPass::multiDrawArraysANGLEOrWebGL(const GrBuffer* drawIndirectBuffer,
+                                                    size_t offset, int drawCount) {
+    SkASSERT(fGpu->glCaps().multiDrawType() == GrGLCaps::MultiDrawType::kANGLEOrWebGL);
+    SkASSERT(drawIndirectBuffer->isCpuBuffer());
+
+    constexpr static int kMaxDrawCountPerBatch = 128;
+    GrGLint fFirsts[kMaxDrawCountPerBatch];
+    GrGLsizei fCounts[kMaxDrawCountPerBatch];
+    GrGLsizei fInstanceCounts[kMaxDrawCountPerBatch];
+    GrGLuint fBaseInstances[kMaxDrawCountPerBatch];
+
+    GrGLenum glPrimType = fGpu->prepareToDraw(fPrimitiveType);
+    auto* cpuBuffer = static_cast<const GrCpuBuffer*>(drawIndirectBuffer);
+    auto* cmds = reinterpret_cast<const GrDrawIndirectCommand*>(cpuBuffer->data() + offset);
+
+    while (drawCount) {
+        int countInBatch = std::min(drawCount, kMaxDrawCountPerBatch);
+        for (int i = 0; i < countInBatch; ++i) {
+            const auto& cmd = cmds[i];
+            fFirsts[i] = cmd.fBaseVertex;
+            fCounts[i] = cmd.fVertexCount;
+            fInstanceCounts[i] = cmd.fInstanceCount;
+            fBaseInstances[i] = cmd.fBaseInstance;
+        }
+        if (countInBatch == 1) {
+            GL_CALL(DrawArraysInstancedBaseInstance(glPrimType, fFirsts[0], fCounts[0],
+                                                    fInstanceCounts[0], fBaseInstances[0]));
+        } else {
+            GL_CALL(MultiDrawArraysInstancedBaseInstance(glPrimType, fFirsts, fCounts,
+                                                         fInstanceCounts, fBaseInstances,
+                                                         countInBatch));
+        }
+        drawCount -= countInBatch;
+        cmds += countInBatch;
+    }
+}
+
 void GrGLOpsRenderPass::onDrawIndexedIndirect(const GrBuffer* drawIndirectBuffer, size_t offset,
                                               int drawCount) {
+    using MultiDrawType = GrGLCaps::MultiDrawType;
+
+    SkASSERT(fGpu->caps()->nativeDrawIndirectSupport());
+    SkASSERT(!fGpu->caps()->nativeDrawIndexedIndirectIsBroken());
+    SkASSERT(fGpu->glCaps().baseVertexBaseInstanceSupport());
+    // The vertex buffer should have already gotten bound (as opposed us stashing it away during
+    // onBindBuffers and not expecting to bind it until this point).
+    SkASSERT(fDidBindVertexBuffer);
+
+    if (fGpu->glCaps().multiDrawType() == MultiDrawType::kANGLEOrWebGL) {
+        // ANGLE and WebGL don't support glDrawElementsIndirect. We draw everything as a multi draw.
+        this->multiDrawElementsANGLEOrWebGL(drawIndirectBuffer, offset, drawCount);
+        return;
+    }
+
     fGpu->bindBuffer(GrGpuBufferType::kDrawIndirect, drawIndirectBuffer);
 
-    if (fGpu->glCaps().multiDrawIndirectSupport() && drawCount > 1) {
+    if (drawCount > 1 && fGpu->glCaps().multiDrawType() == MultiDrawType::kMultiDrawIndirect) {
         GrGLenum glPrimType = fGpu->prepareToDraw(fPrimitiveType);
         GL_CALL(MultiDrawElementsIndirect(glPrimType, GR_GL_UNSIGNED_SHORT,
                                           buffer_offset_to_gl_address(drawIndirectBuffer, offset),
@@ -259,12 +340,53 @@ void GrGLOpsRenderPass::onDrawIndexedIndirect(const GrBuffer* drawIndirectBuffer
     }
 }
 
-void GrGLOpsRenderPass::onClear(const GrFixedClip& clip, const SkPMColor4f& color) {
-    fGpu->clear(clip, color, fRenderTarget, fOrigin);
+void GrGLOpsRenderPass::multiDrawElementsANGLEOrWebGL(const GrBuffer* drawIndirectBuffer,
+                                                      size_t offset, int drawCount) {
+    SkASSERT(fGpu->glCaps().multiDrawType() == GrGLCaps::MultiDrawType::kANGLEOrWebGL);
+    SkASSERT(drawIndirectBuffer->isCpuBuffer());
+
+    constexpr static int kMaxDrawCountPerBatch = 128;
+    GrGLint fCounts[kMaxDrawCountPerBatch];
+    const void* fIndices[kMaxDrawCountPerBatch];
+    GrGLsizei fInstanceCounts[kMaxDrawCountPerBatch];
+    GrGLint fBaseVertices[kMaxDrawCountPerBatch];
+    GrGLuint fBaseInstances[kMaxDrawCountPerBatch];
+
+    GrGLenum glPrimType = fGpu->prepareToDraw(fPrimitiveType);
+    auto* cpuBuffer = static_cast<const GrCpuBuffer*>(drawIndirectBuffer);
+    auto* cmds = reinterpret_cast<const GrDrawIndexedIndirectCommand*>(cpuBuffer->data() + offset);
+
+    while (drawCount) {
+        int countInBatch = std::min(drawCount, kMaxDrawCountPerBatch);
+        for (int i = 0; i < countInBatch; ++i) {
+            const auto& cmd = cmds[i];
+            fCounts[i] = cmd.fIndexCount;
+            fIndices[i] = this->offsetForBaseIndex(cmd.fBaseIndex);
+            fInstanceCounts[i] = cmd.fInstanceCount;
+            fBaseVertices[i] = cmd.fBaseVertex;
+            fBaseInstances[i] = cmd.fBaseInstance;
+        }
+        if (countInBatch == 1) {
+            GL_CALL(DrawElementsInstancedBaseVertexBaseInstance(glPrimType, fCounts[0],
+                                                                GR_GL_UNSIGNED_SHORT, fIndices[0],
+                                                                fInstanceCounts[0],
+                                                                fBaseVertices[0],
+                                                                fBaseInstances[0]));
+        } else {
+            GL_CALL(MultiDrawElementsInstancedBaseVertexBaseInstance(glPrimType, fCounts,
+                                                                     GR_GL_UNSIGNED_SHORT, fIndices,
+                                                                     fInstanceCounts, fBaseVertices,
+                                                                     fBaseInstances, countInBatch));
+        }
+        drawCount -= countInBatch;
+        cmds += countInBatch;
+    }
 }
 
-void GrGLOpsRenderPass::onClearStencilClip(const GrFixedClip& clip,
-                                           bool insideStencilMask) {
-    fGpu->clearStencilClip(clip, insideStencilMask, fRenderTarget, fOrigin);
+void GrGLOpsRenderPass::onClear(const GrScissorState& scissor, const SkPMColor4f& color) {
+    fGpu->clear(scissor, color, fRenderTarget, fOrigin);
 }
 
+void GrGLOpsRenderPass::onClearStencilClip(const GrScissorState& scissor, bool insideStencilMask) {
+    fGpu->clearStencilClip(scissor, insideStencilMask, fRenderTarget, fOrigin);
+}

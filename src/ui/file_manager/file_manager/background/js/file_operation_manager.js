@@ -43,6 +43,12 @@ class FileOperationManagerImpl {
      * @const
      */
     this.eventRouter_ = new fileOperationUtil.EventRouter();
+
+    /**
+     * @private {!Trash}
+     * @const
+     */
+    this.trash_ = new Trash();
   }
 
   /**
@@ -110,7 +116,7 @@ class FileOperationManagerImpl {
    * @return {Object} Status object with optional volume information.
    */
   getTaskStatus(task) {
-    let status = task.getStatus();
+    const status = task.getStatus();
     // If there's no target directory name, use the volume name for UI display.
     if (status['targetDirEntryName'] === '' && task.targetDirEntry) {
       const entry = /** {Entry} */ (task.targetDirEntry);
@@ -129,7 +135,7 @@ class FileOperationManagerImpl {
     let task = null;
 
     // If the task is not on progress, remove it immediately.
-    for (var i = 0; i < this.pendingCopyTasks_.length; i++) {
+    for (let i = 0; i < this.pendingCopyTasks_.length; i++) {
       task = this.pendingCopyTasks_[i];
       if (task.taskId !== taskId) {
         continue;
@@ -148,7 +154,7 @@ class FileOperationManagerImpl {
       }
     }
 
-    for (var i = 0; i < this.deleteTasks_.length; i++) {
+    for (let i = 0; i < this.deleteTasks_.length; i++) {
       task = this.deleteTasks_[i];
       if (task.taskId !== taskId) {
         continue;
@@ -171,26 +177,16 @@ class FileOperationManagerImpl {
    *     target directory.
    * @param {boolean} isMove True if the operation is "move", otherwise (i.e.
    *     if the operation is "copy") false.
-   * @return {Promise} Promise fulfilled with the filtered entry. This is not
-   *     rejected.
+   * @return {!Promise<Array<Entry>>} Promise fulfilled with the filtered entry.
+   *     This is not rejected.
    */
-  filterSameDirectoryEntry(sourceEntries, targetEntry, isMove) {
+  async filterSameDirectoryEntry(sourceEntries, targetEntry, isMove) {
     if (!isMove) {
-      return Promise.resolve(sourceEntries);
+      return sourceEntries;
     }
-    // Utility function to concat arrays.
-    const compactArrays = arrays => {
-      return arrays.filter(element => {
-        return !!element;
-      });
-    };
-    // Call processEntry for each item of entries.
-    const processEntries = entries => {
-      const promises = entries.map(processFileOrDirectoryEntries);
-      return Promise.all(promises).then(compactArrays);
-    };
+
     // Check all file entries and keeps only those need sharing operation.
-    var processFileOrDirectoryEntries = entry => {
+    const processEntry = entry => {
       return new Promise(resolve => {
         entry.getParent(
             inParentEntry => {
@@ -206,7 +202,12 @@ class FileOperationManagerImpl {
             });
       });
     };
-    return processEntries(sourceEntries);
+
+    // Call processEntry for each item of sourceEntries.
+    const result = await Promise.all(sourceEntries.map(processEntry));
+
+    // Remove null entries.
+    return result.filter(entry => !!entry);
   }
 
   /**
@@ -387,9 +388,21 @@ class FileOperationManagerImpl {
   }
 
   /**
+   * Returns true if all entries will use trash for delete.
+   *
+   * @param {!VolumeManager} volumeManager
+   * @param {!Array<!Entry>} entries The entries.
+   * @return {boolean}
+   */
+  willUseTrash(volumeManager, entries) {
+    return entries.every(
+        entry => this.trash_.shouldMoveToTrash(volumeManager, entry));
+  }
+
+  /**
    * Schedules the files deletion.
    *
-   * @param {Array<Entry>} entries The entries.
+   * @param {!Array<!Entry>} entries The entries.
    */
   deleteEntries(entries) {
     const task =
@@ -399,7 +412,8 @@ class FileOperationManagerImpl {
           entrySize: {},
           totalBytes: 0,
           processedBytes: 0,
-          cancelRequested: false
+          cancelRequested: false,
+          trashedItems: [],
         }));
 
     // Obtains entry size and sum them up.
@@ -441,6 +455,14 @@ class FileOperationManagerImpl {
    * @private
    */
   serviceAllDeleteTasks_() {
+    if (!this.volumeManager_) {
+      volumeManagerFactory.getInstance().then(volumeManager => {
+        this.volumeManager_ = volumeManager;
+        this.serviceAllDeleteTasks_();
+      });
+      return;
+    }
+
     this.serviceDeleteTask_(this.deleteTasks_[0], () => {
       this.deleteTasks_.shift();
       if (this.deleteTasks_.length) {
@@ -468,16 +490,21 @@ class FileOperationManagerImpl {
       }
       this.eventRouter_.sendDeleteEvent(
           fileOperationUtil.EventRouter.EventType.PROGRESS, task);
-      util.removeFileOrDirectory(
-          task.entries[0],
-          () => {
+      this.trash_
+          .removeFileOrDirectory(
+              assert(this.volumeManager_), task.entries[0],
+              /*permanentlyDelete=*/ false)
+          .then(trashItem => {
+            if (trashItem) {
+              task.trashedItems.push(trashItem);
+            }
             this.eventRouter_.sendEntryChangedEvent(
                 util.EntryChangedKind.DELETED, task.entries[0]);
             task.processedBytes += task.entrySize[task.entries[0].toURL()];
             task.entries.shift();
             deleteOneEntry(inCallback);
-          },
-          inError => {
+          })
+          .catch(inError => {
             error = inError;
             inCallback();
           });
@@ -502,6 +529,23 @@ class FileOperationManagerImpl {
   }
 
   /**
+   * Restores files from trash.
+   *
+   * @param {Array<!fileOperationUtil.TrashItem>} trashItems The trash items.
+   */
+  restoreDeleted(trashItems) {
+    const volumeManager = assert(this.volumeManager_);
+    while (trashItems.length) {
+      this.trash_
+          .restore(
+              volumeManager,
+              /** @type {!TrashItem} */ (trashItems.pop()))
+          .catch(e => console.error('Error restoring deleted file', e));
+    }
+  }
+
+  /**
+   * TODO(crbug.com/912236) Remove dead code.
    * Creates a zip file for the selection of files.
    *
    * @param {!Array<!Entry>} selectionEntries The selected entries.

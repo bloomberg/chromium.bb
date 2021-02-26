@@ -44,7 +44,7 @@ One example is validating in the browser process whether an incoming IPC can
 legitimately claim authority over a given origin (e.g. by checking via
 `CanAccessDataForOrigin` if the process lock matches).
 Another example is making sure that capabilities handed over to renderer
-processes are origin-bound (e.g. by setting `request_initiator_site_lock`
+processes are origin-bound (e.g. by setting `request_initiator_origin_lock`
 on a `URLLoaderFactory` given to renderer processes).
 Yet another example is making security decisions based on trustworthy knowledge,
 calculated within the privileged browser process (e.g. using
@@ -87,12 +87,12 @@ Protection techniques:
   `network::mojom::URLLoaderFactory` objects that handle HTTP requests.
   This lets the browser process carefully control security-sensitive
   `network::mojom::URLLoaderFactoryParams` of such factories (such as
-  `request_initiator_site_lock`, `is_corb_enabled`, `disable_web_security` or
+  `request_initiator_origin_lock`, `is_corb_enabled`, `disable_web_security` or
   `isolation_info`).
   This also lets the CORB implementation in the NetworkService process
   prevent spoofing of `network::ResourceRequest::request_initiator`
   by using `network::GetTrustworthyInitiator` for comparison with
-  the trustworthy `request_initiator_site_lock`.
+  the trustworthy `request_initiator_origin_lock`.
 
 **Known gaps in protection**:
 - Content types for which CORB does not apply
@@ -214,9 +214,6 @@ Protection techniques:
   information in `RenderFrameHost::GetLastCommittedOrigin()`
   (e.g. see `RenderFrameHostImpl::CreateIDBFactory`).
 
-**Known gaps in protection**:
-- https://crbug.com/917457: FileSystem API (deprecated, Chrome-only).
-
 
 ## Messaging
 
@@ -245,9 +242,13 @@ Compromised renderers shouldn't be able to poison the JavaScript code cache
 used by scripts executed in cross-site execution contexts.
 
 Protection techniques:
-- Partitioning the code cache by Network Isolation Key (NIK).
-- Using `CanAccessDataForOrigin` in
+- Validating origins sent in IPCs from a renderer process by using
+  `CanAccessDataForOrigin` in
   `CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage`.
+- Using trustworthy, browser-side origin lock while writing to and fetching from
+  the code cache by using `ChildProcessSecurityPolicyImpl::GetOriginLock` in
+  `GetSecondaryKeyForCodeCache` in
+  `//content/browser/renderer_host/code_cache_host_impl.cc`
 
 
 ## Cross-Origin-Resource-Policy response header
@@ -262,7 +263,7 @@ Protection techniques:
   (i.e. before the HTTP response is handed out to the renderer process).
 - Preventing spoofing of `network::ResourceRequest::request_initiator`
   by using `network::GetTrustworthyInitiator` which enforces
-  browser-controlled `request_initiator_site_lock`.
+  browser-controlled `request_initiator_origin_lock`.
 
 
 ## Frame-ancestors CSP and X-Frame-Options response headers
@@ -296,16 +297,17 @@ Protection techniques:
 - `Sec-Fetch-Site` is robust against spoofing of
   `network::ResourceRequest::request_initiator` by using
   `network::GetTrustworthyInitiator` which enforces browser-controlled
-  `request_initiator_site_lock`.
+  `request_initiator_origin_lock`.
 
 **Known gaps in protection**:
 - `Origin` header.  Tracked by
   https://crbug.com/920634 (making
   `network::ResourceRequest::request_initiator` unspoofable without
   having to go through `GetTrustworthyInitiator`) and
-  https://crbug.com/920638 (making
-  `network::ResourceRequest::isolated_world_origin` irrelevant for
-  security decisions).
+  https://crbug.com/1098410 (removing
+  `network::ResourceRequest::isolated_world_origin` which is used
+  in some security decisions instead of `request_initiator` to support
+  an allowlist of extensions that need to bypass CORB/CORS).
 
 
 ## (WIP) SameSite cookies
@@ -380,7 +382,24 @@ below.
   Some web storage protections depend on `CanAccessDataForOrigin` calls
   on the IO thread.
   See also https://crbug.com/764958.
-- `request_initiator_site_lock` may be missing in unlocked renderer
-  processes on Android (for example affecting protections of CORB, CORP,
-  Sec-Fetch-Site and in the future SameSite cookies and Origin
-  protections).  See also https://crbug.com/891872.
+
+
+## Renderer processes hosting DevTools frontend
+
+If an attacker could take control over the DevTools frontend then the attacker
+would gain access to all the cookies, storage, etc. of any origin within the
+page and would be able to execute arbitrary scripts in any frame of the page.
+This means that treating the DevTools renderer as untrustworthy wouldn't in
+practice offer additional protection for the same-origin-policy.
+
+Because of the above:
+
+- Chrome ensures that the DevTools frontend is always hosted in a renderer
+  process separate from renderers hosting web origins.
+- Chrome assumes that the DevTools frontend is always trustworthy
+  (i.e. never compromised, or under direct control of an attacker).
+  For example, when the DevTools process asks to initiate a HTTP request on
+  behalf of https://example.com, the browser process trusts the DevTools
+  renderer to claim authority to initiate requests of behalf of this origin
+  (e.g. attach SameSite cookies, send appropriate Sec-Fetch-Site request header,
+  etc.).

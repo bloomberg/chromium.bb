@@ -225,7 +225,11 @@
       /* A settings-box is a horizontal row of text or controls within a
        * setting section (page or subpage). */
       .settings-box {
-        @apply --cr-section;
+        align-items: center;
+        border-top: var(--cr-separator-line);
+        display: flex;
+        min-height: var(--cr-section-min-height);
+        padding: 0 var(--cr-section-padding);
       }
 
       .settings-box.no-padding {
@@ -296,8 +300,8 @@
       }
 
       /* The |:empty| CSS selector only works when there is no whitespace.
-       * E.g. <div>[[foo]]</div> will be |:empty| when foo == ""; and
-       * <div> [[foo]] </div> will not be |:empty| when foo == "". Ensure there
+       * E.g. <div>[[foo]]</div> will be |:empty| when foo === ""; and
+       * <div> [[foo]] </div> will not be |:empty| when foo === "". Ensure there
        * is no extra whitespace when the contents of .secondary may be "".
        */
       .secondary:empty {

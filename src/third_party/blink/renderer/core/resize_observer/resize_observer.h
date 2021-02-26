@@ -29,7 +29,6 @@ class CORE_EXPORT ResizeObserver final
     : public ScriptWrappable,
       public ActiveScriptWrappable<ResizeObserver>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ResizeObserver);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -39,7 +38,7 @@ class CORE_EXPORT ResizeObserver final
     virtual ~Delegate() = default;
     virtual void OnResize(
         const HeapVector<Member<ResizeObserverEntry>>& entries) = 0;
-    virtual void Trace(Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) const {}
   };
 
   static ResizeObserver* Create(ScriptState*, V8ResizeObserverCallback*);
@@ -66,7 +65,7 @@ class CORE_EXPORT ResizeObserver final
   // ScriptWrappable override:
   bool HasPendingActivity() const override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   void observeInternal(Element* target, ResizeObserverBoxOptions box_option);

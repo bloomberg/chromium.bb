@@ -26,40 +26,63 @@ class ClipboardX11 : public Clipboard {
   void OnPreShutdown() override;
   uint64_t GetSequenceNumber(ClipboardBuffer buffer) const override;
   bool IsFormatAvailable(const ClipboardFormatType& format,
-                         ClipboardBuffer buffer) const override;
+                         ClipboardBuffer buffer,
+                         const DataTransferEndpoint* data_dst) const override;
   void Clear(ClipboardBuffer buffer) override;
   void ReadAvailableTypes(ClipboardBuffer buffer,
+                          const DataTransferEndpoint* data_dst,
                           std::vector<base::string16>* types) const override;
   std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(
-      ClipboardBuffer buffer) const override;
-  void ReadText(ClipboardBuffer buffer, base::string16* result) const override;
+      ClipboardBuffer buffer,
+      const DataTransferEndpoint* data_dst) const override;
+  void ReadText(ClipboardBuffer buffer,
+                const DataTransferEndpoint* data_dst,
+                base::string16* result) const override;
   void ReadAsciiText(ClipboardBuffer buffer,
+                     const DataTransferEndpoint* data_dst,
                      std::string* result) const override;
   void ReadHTML(ClipboardBuffer buffer,
+                const DataTransferEndpoint* data_dst,
                 base::string16* markup,
                 std::string* src_url,
                 uint32_t* fragment_start,
                 uint32_t* fragment_end) const override;
-  void ReadRTF(ClipboardBuffer buffer, std::string* result) const override;
+  void ReadSvg(ClipboardBuffer buffer,
+               const DataTransferEndpoint* data_dst,
+               base::string16* result) const override;
+  void ReadRTF(ClipboardBuffer buffer,
+               const DataTransferEndpoint* data_dst,
+               std::string* result) const override;
   void ReadImage(ClipboardBuffer buffer,
+                 const DataTransferEndpoint* data_dst,
                  ReadImageCallback callback) const override;
   void ReadCustomData(ClipboardBuffer buffer,
                       const base::string16& type,
+                      const DataTransferEndpoint* data_dst,
                       base::string16* result) const override;
-  void ReadBookmark(base::string16* title, std::string* url) const override;
+  void ReadBookmark(const DataTransferEndpoint* data_dst,
+                    base::string16* title,
+                    std::string* url) const override;
   void ReadData(const ClipboardFormatType& format,
+                const DataTransferEndpoint* data_dst,
                 std::string* result) const override;
-  void WritePortableRepresentations(ClipboardBuffer buffer,
-                                    const ObjectMap& objects) override;
+#if defined(USE_OZONE)
+  bool IsSelectionBufferAvailable() const override;
+#endif  // defined(USE_OZONE)
+  void WritePortableRepresentations(
+      ClipboardBuffer buffer,
+      const ObjectMap& objects,
+      std::unique_ptr<DataTransferEndpoint> data_src) override;
   void WritePlatformRepresentations(
       ClipboardBuffer buffer,
-      std::vector<Clipboard::PlatformRepresentation> platform_representations)
-      override;
+      std::vector<Clipboard::PlatformRepresentation> platform_representations,
+      std::unique_ptr<DataTransferEndpoint> data_src) override;
   void WriteText(const char* text_data, size_t text_len) override;
   void WriteHTML(const char* markup_data,
                  size_t markup_len,
                  const char* url_data,
                  size_t url_len) override;
+  void WriteSvg(const char* markup_data, size_t markup_len) override;
   void WriteRTF(const char* rtf_data, size_t data_len) override;
   void WriteBookmark(const char* title_data,
                      size_t title_len,

@@ -84,7 +84,8 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
       const GPUCreateCommandBufferConfig& init_params,
       base::UnsafeSharedMemoryRegion shared_state_shm) = 0;
 
-  virtual MemoryTracker* GetMemoryTracker() const = 0;
+  MemoryTracker* GetMemoryTracker() const;
+  virtual MemoryTracker* GetContextGroupMemoryTracker() const = 0;
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -106,8 +107,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   void HandleReturnData(base::span<const uint8_t> data) override;
 
   using MemoryTrackerFactory =
-      base::RepeatingCallback<std::unique_ptr<MemoryTracker>(
-          const GPUCreateCommandBufferConfig&)>;
+      base::RepeatingCallback<std::unique_ptr<MemoryTracker>()>;
 
   // Overrides the way CreateMemoryTracker() uses to create a MemoryTracker.
   // This is intended for mocking the MemoryTracker in tests.
@@ -146,8 +146,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
  protected:
   virtual bool HandleMessage(const IPC::Message& message) = 0;
 
-  std::unique_ptr<MemoryTracker> CreateMemoryTracker(
-      const GPUCreateCommandBufferConfig& init_params) const;
+  std::unique_ptr<MemoryTracker> CreateMemoryTracker() const;
 
   // Must be called during Initialize(). Takes ownership to co-ordinate
   // teardown in Destroy().
@@ -172,6 +171,12 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   bool use_virtualized_gl_context_;
 
   std::unique_ptr<CommandBufferService> command_buffer_;
+
+  // Have an ownership of the memory tracker used in children class. This is to
+  // ensure that the memory tracker outlives the objects that uses it, for
+  // example the ContextGroup referenced both in the Decoder and the
+  // CommandBufferStub.
+  std::unique_ptr<gpu::MemoryTracker> memory_tracker_;
 
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<SyncPointClientState> sync_point_client_state_;

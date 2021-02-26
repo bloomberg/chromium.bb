@@ -4,6 +4,7 @@
 
 #include "media/audio/audio_features.h"
 #include "base/feature_list.h"
+#include "build/chromeos_buildflags.h"
 
 namespace features {
 
@@ -11,7 +12,8 @@ namespace features {
 // detected. It will be restarted when needed.
 const base::Feature kAudioServiceOutOfProcessKillAtHang{
   "AudioServiceOutOfProcessKillAtHang",
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -27,17 +29,17 @@ const base::Feature kDumpOnAudioServiceHang{"DumpOnAudioServiceHang",
 // Enables loading and using AAudio instead of OpenSLES on compatible devices,
 // for audio output streams.
 const base::Feature kUseAAudioDriver{"UseAAudioDriver",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ASH) || BUILDFLAG(IS_LACROS)
 const base::Feature kCrOSSystemAEC{"CrOSSystemAEC",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kCrOSSystemAECDeactivatedGroups{
     "CrOSSystemAECDeactivatedGroups", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MAC) || BUILDFLAG(IS_ASH)
 const base::Feature kForceEnableSystemAec{"ForceEnableSystemAec",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif

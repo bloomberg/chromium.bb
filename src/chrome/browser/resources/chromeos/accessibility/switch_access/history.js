@@ -17,6 +17,11 @@ class FocusData {
 
   /** @return {boolean} */
   isValid() {
+    if (this.group.isValidGroup()) {
+      // Ensure it is still valid. Some nodes may have been added
+      // or removed since this was last used.
+      this.group.refreshChildren();
+    }
     return this.group.isValidGroup();
   }
 }
@@ -32,9 +37,15 @@ class FocusHistory {
    * Creates the restore data to get from the desktop node to the specified
    * automation node.
    * Erases the current history and replaces with the new data.
-   * @param {!chrome.automation.AutomationNode} node
+   * @param {!AutomationNode} node
+   * @return {boolean} Whether the history was rebuilt from the given node.
    */
   buildFromAutomationNode(node) {
+    if (!node.parent) {
+      // No ancestors, cannot create stack.
+      return false;
+    }
+    const cache = new SACache();
     // Create a list of ancestors.
     const ancestorStack = [node];
     while (node.parent) {
@@ -42,12 +53,18 @@ class FocusHistory {
       node = node.parent;
     }
 
-    this.dataStack_ = [];
-    let group = DesktopNode.build(NavigationManager.desktopNode);
+    let group = DesktopNode.build(ancestorStack.pop());
+    const firstAncestor = ancestorStack[ancestorStack.length - 1];
+    if (!SwitchAccessPredicate.isInterestingSubtree(firstAncestor, cache)) {
+      // If the topmost ancestor (other than the desktop) is entirely
+      // uninteresting, we leave the history as is.
+      return false;
+    }
+
+    const newDataStack = [];
     while (ancestorStack.length > 0) {
       const candidate = ancestorStack.pop();
-      if (candidate.role === chrome.automation.RoleType.DESKTOP ||
-          !SwitchAccessPredicate.isInteresting(candidate, group)) {
+      if (!SwitchAccessPredicate.isInteresting(candidate, group, cache)) {
         continue;
       }
 
@@ -55,13 +72,19 @@ class FocusHistory {
       if (!focus) {
         continue;
       }
-      this.dataStack_.push(new FocusData(group, focus));
+      newDataStack.push(new FocusData(group, focus));
 
       group = focus.asRootNode();
       if (!group) {
         break;
       }
     }
+
+    if (newDataStack.length === 0) {
+      return false;
+    }
+    this.dataStack_ = newDataStack;
+    return true;
   }
 
   /**

@@ -14,7 +14,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
+
+namespace chromeos {
+class FrameCaptionButtonContainerView;
+class ImmersiveFullscreenController;
+}
 
 namespace views {
 class Widget;
@@ -22,8 +28,6 @@ class Widget;
 
 namespace ash {
 
-class FrameCaptionButtonContainerView;
-class ImmersiveFullscreenController;
 class NonClientFrameViewAshImmersiveHelper;
 
 // A NonClientFrameView used for packaged apps, dialogs and other non-browser
@@ -47,14 +51,15 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   static NonClientFrameViewAsh* Get(aura::Window* window);
 
   // Sets the caption button modeland updates the caption buttons.
-  void SetCaptionButtonModel(std::unique_ptr<CaptionButtonModel> model);
+  void SetCaptionButtonModel(
+      std::unique_ptr<chromeos::CaptionButtonModel> model);
 
   // Inits |immersive_fullscreen_controller| so that the controller reveals
   // and hides |header_view_| in immersive fullscreen.
   // NonClientFrameViewAsh does not take ownership of
   // |immersive_fullscreen_controller|.
   void InitImmersiveFullscreenControllerForView(
-      ImmersiveFullscreenController* immersive_fullscreen_controller);
+      chromeos::ImmersiveFullscreenController* immersive_fullscreen_controller);
 
   // Sets the active and inactive frame colors. Note the inactive frame color
   // will have some transparency added when the frame is drawn.
@@ -77,7 +82,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
-  void PaintAsActiveChanged(bool active) override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -94,6 +98,10 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
 
   // Height from top of window to top of client area.
   int NonClientTopBorderHeight() const;
+
+  // Expected height from top of window to top of client area when non client
+  // view is visible.
+  int NonClientTopBorderPreferredHeight() const;
 
   const views::View* GetAvatarIconViewForTest() const;
 
@@ -118,10 +126,14 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
 
   // Returns the container for the minimize/maximize/close buttons that is
   // held by the HeaderView. Used in testing.
-  FrameCaptionButtonContainerView* GetFrameCaptionButtonContainerViewForTest();
+  chromeos::FrameCaptionButtonContainerView*
+  GetFrameCaptionButtonContainerViewForTest();
+
+  // Called when |frame_|'s "paint as active" state has changed.
+  void PaintAsActiveChanged();
 
   // Not owned.
-  views::Widget* frame_;
+  views::Widget* const frame_;
 
   // View which contains the title and window controls.
   HeaderView* header_view_ = nullptr;
@@ -129,6 +141,12 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   OverlayView* overlay_view_ = nullptr;
 
   std::unique_ptr<NonClientFrameViewAshImmersiveHelper> immersive_helper_;
+
+  std::unique_ptr<views::Widget::PaintAsActiveCallbackList::Subscription>
+      paint_as_active_subscription_ =
+          frame_->RegisterPaintAsActiveChangedCallback(
+              base::BindRepeating(&NonClientFrameViewAsh::PaintAsActiveChanged,
+                                  base::Unretained(this)));
 
   base::WeakPtrFactory<NonClientFrameViewAsh> weak_factory_{this};
 

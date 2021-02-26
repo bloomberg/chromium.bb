@@ -51,8 +51,8 @@ void SetupMotionField(
     const ObuFrameHeader& frame_header, const RefCountedBuffer& current_frame,
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
-    unsigned int order_hint_shift_bits, int row4x4_start, int row4x4_end,
-    int column4x4_start, int column4x4_end, TemporalMotionField* motion_field);
+    int row4x4_start, int row4x4_end, int column4x4_start, int column4x4_end,
+    TemporalMotionField* motion_field);
 
 }  // namespace libgav1
 

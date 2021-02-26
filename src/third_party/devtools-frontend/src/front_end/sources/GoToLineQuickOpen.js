@@ -4,6 +4,7 @@
 
 import * as Common from '../common/common.js';
 import * as QuickOpen from '../quick_open/quick_open.js';
+import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
 
 import {SourcesView} from './SourcesView.js';
@@ -62,7 +63,7 @@ export class GoToLineQuickOpen extends QuickOpen.FilteredListWidget.Provider {
       return null;
     }
     const line = parseInt(parts[1], 10);
-    let column;
+    let column = 0;
     if (parts[2]) {
       column = parseInt(parts[2].substring(1), 10);
     }
@@ -73,7 +74,7 @@ export class GoToLineQuickOpen extends QuickOpen.FilteredListWidget.Provider {
    * @return {?Workspace.UISourceCode.UISourceCode}
    */
   _currentUISourceCode() {
-    const sourcesView = self.UI.context.flavor(SourcesView);
+    const sourcesView = UI.Context.Context.instance().flavor(SourcesView);
     if (!sourcesView) {
       return null;
     }
@@ -84,7 +85,7 @@ export class GoToLineQuickOpen extends QuickOpen.FilteredListWidget.Provider {
    * @return {?UISourceCodeFrame}
    */
   _currentSourceFrame() {
-    const sourcesView = self.UI.context.flavor(SourcesView);
+    const sourcesView = UI.Context.Context.instance().flavor(SourcesView);
     if (!sourcesView) {
       return null;
     }

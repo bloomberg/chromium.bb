@@ -19,6 +19,14 @@ bool MenuModel::IsVisibleAt(int index) const {
   return true;
 }
 
+bool MenuModel::IsAlertedAt(int index) const {
+  return false;
+}
+
+bool MenuModel::IsNewFeatureAt(int index) const {
+  return false;
+}
+
 // static
 bool MenuModel::GetModelAndIndexForCommandId(int command_id,
                                              MenuModel** model,
@@ -49,6 +57,10 @@ bool MenuModel::GetModelAndIndexForCommandId(int command_id,
 }
 
 base::string16 MenuModel::GetMinorTextAt(int index) const {
+  return base::string16();
+}
+
+base::string16 MenuModel::GetSecondaryLabelAt(int index) const {
   return base::string16();
 }
 

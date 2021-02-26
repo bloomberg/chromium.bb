@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -22,7 +22,7 @@ namespace device {
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const uint64_t kTestDeviceIds[] = {0, 1, 2};
 #elif defined(OS_WIN)
 const wchar_t* const kTestDeviceIds[] = {L"0", L"1", L"2"};

@@ -22,6 +22,7 @@ class FrameTracker;
 struct Geoposition;
 class JavaScriptDialogManager;
 struct KeyEvent;
+class MobileEmulationOverrideManager;
 struct MouseEvent;
 struct NetworkConditions;
 class Status;
@@ -40,6 +41,9 @@ class WebView {
 
   // Make DevToolsCient connect to DevTools if it is disconnected.
   virtual Status ConnectIfNecessary() = 0;
+
+  // Make DevToolsCient set up DevTools.
+  virtual Status SetUpDevTools() = 0;
 
   // Handles events that have been received but not yet handled.
   virtual Status HandleReceivedEvents() = 0;
@@ -194,13 +198,16 @@ class WebView {
                                            const Timeout& timeout,
                                            bool stop_load_on_timeout) = 0;
 
-  // Returns whether the frame is pending navigation.
-  virtual Status IsPendingNavigation(const std::string& frame_id,
-                                     const Timeout* timeout,
+  // Returns whether the current frame is pending navigation.
+  virtual Status IsPendingNavigation(const Timeout* timeout,
                                      bool* is_pending) const = 0;
 
   // Returns the JavaScriptDialogManager. Never null.
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager() = 0;
+
+  // Returns the MobileEmulationOverrideManager.
+  virtual MobileEmulationOverrideManager* GetMobileEmulationOverrideManager()
+      const = 0;
 
   // Overrides normal geolocation with a given geoposition.
   virtual Status OverrideGeolocation(const Geoposition& geoposition) = 0;
@@ -217,6 +224,9 @@ class WebView {
   virtual Status CaptureScreenshot(
       std::string* screenshot,
       const base::DictionaryValue& params) = 0;
+
+  virtual Status PrintToPDF(const base::DictionaryValue& params,
+                            std::string* pdf) = 0;
 
   // Set files in a file input element.
   // |element| is the WebElement JSON Object of the input element.
@@ -259,7 +269,11 @@ class WebView {
 
   virtual std::unique_ptr<base::Value> GetCastIssueMessage() = 0;
 
-  virtual void ClearNavigationState(const std::string& new_frame_id) = 0;
+  virtual void SetFrame(const std::string& new_frame_id) = 0;
+
+  virtual Status GetNodeIdByElement(const std::string& frame,
+                                    const base::DictionaryValue& element,
+                                    int* node_id) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_H_

@@ -11,20 +11,23 @@
 
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/accelerometer/accelerometer_types.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_wallpaper_controller.h"
@@ -40,14 +43,16 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/test_utils.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -59,6 +64,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/message_center/message_center.h"
+#include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -110,7 +116,6 @@ class TabletModeControllerTest : public MultiDisplayOverviewAndSplitViewTest {
     MultiDisplayOverviewAndSplitViewTest::SetUp();
     AccelerometerReader::GetInstance()->RemoveObserver(
         tablet_mode_controller());
-    FpsCounter::SetForceReportZeroAnimationForTest(true);
 
     // Set the first display to be the internal display for the accelerometer
     // screen rotation tests.
@@ -128,7 +133,6 @@ class TabletModeControllerTest : public MultiDisplayOverviewAndSplitViewTest {
   }
 
   void TearDown() override {
-    FpsCounter::SetForceReportZeroAnimationForTest(false);
     AccelerometerReader::GetInstance()->AddObserver(tablet_mode_controller());
     MultiDisplayOverviewAndSplitViewTest::TearDown();
   }
@@ -211,6 +215,23 @@ class TabletModeControllerTest : public MultiDisplayOverviewAndSplitViewTest {
     WMEvent snap_to_right(WM_EVENT_CYCLE_SNAP_RIGHT);
     WindowState::Get(window.get())->OnWMEvent(&snap_to_right);
     return window;
+  }
+
+  // Waits for |window|'s animation to finish.
+  void WaitForWindowAnimation(aura::Window* window) {
+    auto* compositor = window->layer()->GetCompositor();
+
+    while (window->layer()->GetAnimator()->is_animating())
+      EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+  }
+
+  // Wait one more frame presented for the metrics to get recorded.
+  // ignore_result() and timeout is because the frame could already be
+  // presented.
+  void WaitForSmoothnessMetrics() {
+    ignore_result(ui::WaitForNextFrameToBePresented(
+        Shell::GetPrimaryRootWindow()->layer()->GetCompositor(),
+        base::TimeDelta::FromMilliseconds(100)));
   }
 
  private:
@@ -707,6 +728,20 @@ TEST_P(TabletModeControllerTest, VerticalHingeUnstableAnglesTest) {
   }
 }
 
+// Verify that the Alert Message will be triggered when switching between tablet
+// mode and laptop mode.
+TEST_P(TabletModeControllerTest, AlertInAndOutTabletMode) {
+  TestAccessibilityControllerClient client;
+
+  SetTabletMode(true);
+  EXPECT_TRUE(l10n_util::GetStringUTF8(IDS_ASH_SWITCH_TO_TABLET_MODE) ==
+              client.last_alert_message());
+
+  SetTabletMode(false);
+  EXPECT_TRUE(l10n_util::GetStringUTF8(IDS_ASH_SWITCH_TO_LAPTOP_MODE) ==
+              client.last_alert_message());
+}
+
 // Tests that when a TabletModeController is created that cached tablet mode
 // state will trigger a mode update.
 class TabletModeControllerInitedFromPowerManagerClientTest
@@ -1032,6 +1067,19 @@ TEST_P(TabletModeControllerTest, InternalKeyboardMouseInDockedModeTest) {
       .SetFirstDisplayAsInternalDisplay();
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
+}
+
+// Test that the mouse cursor is hidden when entering tablet mode, and shown
+// when exiting tablet mode.
+TEST_P(TabletModeControllerTest, ShowAndHideMouseCursorTest) {
+  wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+
+  tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
+
+  tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
 }
 
 class TabletModeControllerForceTabletModeTest
@@ -1516,45 +1564,21 @@ TEST_P(TabletModeControllerTest, DoNotObserverInputDeviceChangeDuringSuspend) {
   EXPECT_FALSE(IsTabletModeStarted());
 }
 
+// Tests that we get no animation smoothness histograms when entering or
+// exiting tablet mode with no windows.
 TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsNotLogged) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   base::HistogramTester histogram_tester;
 
-  // Tests that we get no animation smoothness histograms when entering or
-  // exiting tablet mode with no windows.
-  {
-    SCOPED_TRACE("No window");
-    histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
-    histogram_tester.ExpectTotalCount(kExitHistogram, 0);
-    tablet_mode_controller()->SetEnabledForTest(true);
-    tablet_mode_controller()->SetEnabledForTest(false);
-    histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
-    histogram_tester.ExpectTotalCount(kExitHistogram, 0);
-  }
-
-  // The workspace size changes when going between clamshell and tablet mode.
-  // This means there will be an animation during the transition.
-  if (chromeos::switches::ShouldShowShelfHotseat())
-    return;
-
-  // Test that we get no animation smoothness histograms when entering or
-  // exiting tablet mode with a maximized window as no animation will take
-  // place.
-  auto window = CreateTestWindow(gfx::Rect(200, 200));
-  {
-    SCOPED_TRACE("Window is maximized");
-    WindowState::Get(window.get())->Maximize();
-    window->layer()->GetAnimator()->StopAnimating();
-    tablet_mode_controller()->SetEnabledForTest(true);
-    EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
-    histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
-    histogram_tester.ExpectTotalCount(kExitHistogram, 0);
-    tablet_mode_controller()->SetEnabledForTest(false);
-    EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
-    histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
-    histogram_tester.ExpectTotalCount(kExitHistogram, 0);
-  }
+  SCOPED_TRACE("No window");
+  histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
+  histogram_tester.ExpectTotalCount(kExitHistogram, 0);
+  tablet_mode_controller()->SetEnabledForTest(true);
+  tablet_mode_controller()->SetEnabledForTest(false);
+  WaitForSmoothnessMetrics();
+  histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
+  histogram_tester.ExpectTotalCount(kExitHistogram, 0);
 }
 
 TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
@@ -1572,8 +1596,9 @@ TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(window->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
-  layer->GetAnimator()->StopAnimating();
-  layer2->GetAnimator()->StopAnimating();
+  WaitForWindowAnimation(window.get());
+  WaitForWindowAnimation(window2.get());
+  WaitForSmoothnessMetrics();
   histogram_tester.ExpectTotalCount(kEnterHistogram, 1);
   histogram_tester.ExpectTotalCount(kExitHistogram, 0);
 
@@ -1582,8 +1607,8 @@ TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
   tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(layer->GetAnimator()->is_animating());
   EXPECT_TRUE(layer2->GetAnimator()->is_animating());
-  layer->GetAnimator()->StopAnimating();
-  layer2->GetAnimator()->StopAnimating();
+  WaitForWindowAnimation(window2.get());
+  WaitForSmoothnessMetrics();
   histogram_tester.ExpectTotalCount(kEnterHistogram, 1);
   histogram_tester.ExpectTotalCount(kExitHistogram, 1);
 }
@@ -1603,6 +1628,7 @@ TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsSnappedWindows) {
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
+  WaitForSmoothnessMetrics();
   histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
   histogram_tester.ExpectTotalCount(kExitHistogram, 0);
 }
@@ -1711,13 +1737,6 @@ TEST_P(TabletModeControllerScreenshotTest, NoAnimationNoScreenshot) {
   waiter.Wait();
   EXPECT_FALSE(IsScreenshotShown());
   EXPECT_TRUE(IsShelfOpaque());
-
-  // The window will animate if the hotseat is enabled because the workspace
-  // area will change. As long as a screenshot is not shown, this is ok.
-  if (chromeos::switches::ShouldShowShelfHotseat())
-    return;
-  EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
-  EXPECT_TRUE(IsShelfOpaque());
 }
 
 // Regression test for screenshot staying visible when entering tablet mode when
@@ -1736,14 +1755,12 @@ TEST_P(TabletModeControllerScreenshotTest, FromOverviewNoScreenshot) {
   ShellTestApi().WaitForOverviewAnimationState(
       OverviewAnimationState::kEnterAnimationComplete);
 
-  // Enter tablet mode. This triggers an overview exit, so |window2| will be
-  // animating from the overview exit animation. Therefore, we do not show the
-  // screenshot.
+  // Enter tablet mode while in overview. There should be no screenshot at any
+  // time.
   TabletMode::Waiter waiter(/*enable=*/true);
   SetTabletMode(true);
   EXPECT_FALSE(IsScreenshotShown());
   EXPECT_TRUE(IsShelfOpaque());
-  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
 
   waiter.Wait();
   EXPECT_FALSE(IsScreenshotShown());
@@ -1774,12 +1791,39 @@ TEST_P(TabletModeControllerScreenshotTest, EnterTabletModeWhileAnimating) {
   EXPECT_TRUE(IsShelfOpaque());
 }
 
+namespace {
+
+class LayerStartAnimationWaiter : public ui::LayerAnimationObserver {
+ public:
+  explicit LayerStartAnimationWaiter(ui::LayerAnimator* animator)
+      : animator_(animator) {
+    animator_->AddObserver(this);
+    run_loop_.Run();
+  }
+  LayerStartAnimationWaiter(const LayerStartAnimationWaiter&) = delete;
+  LayerStartAnimationWaiter& operator=(const LayerStartAnimationWaiter&) =
+      delete;
+  ~LayerStartAnimationWaiter() override { animator_->RemoveObserver(this); }
+
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override {
+    run_loop_.Quit();
+  }
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+
+ private:
+  ui::LayerAnimator* animator_;
+  base::RunLoop run_loop_;
+};
+
+}  // namespace
+
 // Tests that the screenshot is visible when a window animation happens when
 // entering tablet mode.
-// TODO(http://crbug.com/1035356): This test fails on bots but not locally so
-// suspected to be a timing issue. Possible that the screenshot is deleted
-// before the waiter is done waiting.
-TEST_P(TabletModeControllerScreenshotTest, DISABLED_ScreenshotVisibility) {
+TEST_P(TabletModeControllerScreenshotTest, ScreenshotVisibility) {
   auto window = CreateTestWindow(gfx::Rect(200, 200));
   auto window2 = CreateTestWindow(gfx::Rect(300, 200));
 
@@ -1788,19 +1832,23 @@ TEST_P(TabletModeControllerScreenshotTest, DISABLED_ScreenshotVisibility) {
   ASSERT_FALSE(IsScreenshotShown());
   EXPECT_TRUE(IsShelfOpaque());
 
-  TabletMode::Waiter waiter(/*enable=*/true);
   SetTabletMode(true);
   EXPECT_FALSE(IsScreenshotShown());
   EXPECT_FALSE(IsShelfOpaque());
 
-  // Tests that after waiting for the async tablet mode entry, the screenshot is
-  // shown.
-  waiter.Wait();
+  // The layer we observe is actually the windows layer before starting the
+  // animation. The animation performed is a cross-fade animation which
+  // copies the window layer to another layer host. So cache them here for
+  // later use. Wait until the animation has started, at this point the
+  // screenshot should be visible.
+  ui::LayerAnimator* old_animator = window2->layer()->GetAnimator();
+  ASSERT_FALSE(old_animator->is_animating());
+  { LayerStartAnimationWaiter waiter(old_animator); }
   EXPECT_TRUE(IsScreenshotShown());
-  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(IsShelfOpaque());
 
   // Tests that the screenshot is destroyed after the window is done animating.
+  old_animator->StopAnimating();
   window2->layer()->GetAnimator()->StopAnimating();
   EXPECT_FALSE(IsScreenshotShown());
   EXPECT_TRUE(IsShelfOpaque());
@@ -1824,6 +1872,27 @@ TEST_P(TabletModeControllerScreenshotTest, NoCrashWhenExitingWithoutWaiting) {
   SetTabletMode(true);
   EXPECT_FALSE(IsScreenshotShown());
   EXPECT_FALSE(IsShelfOpaque());
+}
+
+// Tests that the screenshot gets deleted after transition with a transient
+// child as the top window that is not resizeable but positionable. Note that
+// creating such windows is not desirable, but is possible so we need this
+// regression test. See https://crbug.com/1096128.
+TEST_P(TabletModeControllerScreenshotTest, TransientChildTypeWindow) {
+  // Create a window with a transient child that is of WINDOW_TYPE_POPUP.
+  auto window = CreateTestWindow(gfx::Rect(200, 200));
+  auto child = CreateTestWindow(gfx::Rect(200, 200));
+  child->SetProperty(aura::client::kResizeBehaviorKey,
+                     aura::client::kResizeBehaviorCanResize);
+  ::wm::AddTransientChild(window.get(), child.get());
+
+  window->layer()->GetAnimator()->StopAnimating();
+  child->layer()->GetAnimator()->StopAnimating();
+
+  SetTabletMode(true);
+  ShellTestApi().WaitForWindowFinishAnimating(child.get());
+  EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_TRUE(IsShelfOpaque());
 }
 
 INSTANTIATE_TEST_SUITE_P(All, TabletModeControllerTest, testing::Bool());

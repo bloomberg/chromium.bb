@@ -44,7 +44,9 @@
       "bindings": [
         {
           "shortcut": "F8",
-          "keybindSets": ["devToolsDefault"]
+          "keybindSets": [
+            "devToolsDefault"
+          ]
         },
         {
           "platform": "windows,linux",
@@ -52,11 +54,15 @@
         },
         {
           "shortcut": "F5",
-          "keybindSets": ["vsCode"]
+          "keybindSets": [
+            "vsCode"
+          ]
         },
         {
           "shortcut": "Shift+F5",
-          "keybindSets": ["vsCode"]
+          "keybindSets": [
+            "vsCode"
+          ]
         },
         {
           "platform": "mac",
@@ -77,7 +83,10 @@
       "bindings": [
         {
           "shortcut": "F10",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "windows,linux",
@@ -102,7 +111,10 @@
       "bindings": [
         {
           "shortcut": "F11",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "windows,linux",
@@ -127,7 +139,9 @@
       "bindings": [
         {
           "shortcut": "F9",
-          "keybindSets": ["devToolsDefault"]
+          "keybindSets": [
+            "devToolsDefault"
+          ]
         }
       ]
     },
@@ -144,7 +158,10 @@
       "bindings": [
         {
           "shortcut": "Shift+F11",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "windows,linux",
@@ -183,7 +200,6 @@
       "actionId": "debugger.toggle-breakpoints-active",
       "iconClass": "largeicon-deactivate-breakpoints",
       "toggleable": true,
-      "toggledIconClass": "largeicon-activate-breakpoints",
       "className": "Sources.SourcesPanel.DebuggingActionDelegate",
       "contextTypes": [
         "Sources.SourcesView"
@@ -688,11 +704,16 @@
         },
         {
           "shortcut": "Ctrl+W",
-          "keybindSets": ["vsCode"]
+          "keybindSets": [
+            "vsCode"
+          ]
         },
         {
+          "platform": "windows",
           "shortcut": "Ctrl+F4",
-          "keybindSets": ["vsCode"]
+          "keybindSets": [
+            "vsCode"
+          ]
         }
       ]
     },
@@ -708,7 +729,10 @@
       "bindings": [
         {
           "shortcut": "Ctrl+g",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         }
       ]
     },
@@ -725,20 +749,38 @@
         {
           "platform": "windows,linux",
           "shortcut": "Ctrl+Shift+o",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "mac",
           "shortcut": "Meta+Shift+o",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
+          "platform": "mac",
+          "shortcut": "Meta+T",
+          "keybindSets": [
+            "vsCode"
+          ]
+        },
+        {
+          "platform": "windows,linux",
           "shortcut": "Ctrl+T",
-          "keybindSets": ["vsCode"]
+          "keybindSets": [
+            "vsCode"
+          ]
         },
         {
           "shortcut": "F12",
-          "keybindSets": ["vsCode"]
+          "keybindSets": [
+            "vsCode"
+          ]
         }
       ]
     },
@@ -758,7 +800,9 @@
         },
         {
           "shortcut": "F9",
-          "keybindSets": ["vsCode"]
+          "keybindSets": [
+            "vsCode"
+          ]
         }
       ]
     },
@@ -807,12 +851,18 @@
         {
           "platform": "windows,linux",
           "shortcut": "Ctrl+s",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
           "platform": "mac",
           "shortcut": "Meta+s",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         }
       ]
     },
@@ -835,8 +885,18 @@
           "shortcut": "Meta+Alt+s"
         },
         {
+          "platform": "windows,linux",
           "shortcut": "Ctrl+K S",
-          "keybindSets": ["vsCode"]
+          "keybindSets": [
+            "vsCode"
+          ]
+        },
+        {
+          "platform": "mac",
+          "shortcut": "Meta+Alt+S",
+          "keybindSets": [
+            "vsCode"
+          ]
         }
       ]
     },
@@ -977,16 +1037,39 @@
       "bindings": [
         {
           "platform": "mac",
-          "shortcut": "Meta+Alt+F"
+          "shortcut": "Meta+Alt+F",
+          "keybindSets": [
+            "devToolsDefault"
+          ]
         },
         {
           "platform": "windows,linux",
           "shortcut": "Ctrl+Shift+F",
-          "keybindSets": ["devToolsDefault", "vsCode"]
+          "keybindSets": [
+            "devToolsDefault",
+            "vsCode"
+          ]
         },
         {
+          "platform": "windows,linux",
           "shortcut": "Ctrl+Shift+J",
-          "keybindSets": ["vsCode"]
+          "keybindSets": [
+            "vsCode"
+          ]
+        },
+        {
+          "platform": "mac",
+          "shortcut": "Meta+Shift+F",
+          "keybindSets": [
+            "vsCode"
+          ]
+        },
+        {
+          "platform": "mac",
+          "shortcut": "Meta+Shift+J",
+          "keybindSets": [
+            "vsCode"
+          ]
         }
       ]
     },
@@ -994,6 +1077,50 @@
       "type": "context-menu-item",
       "location": "mainMenu/default",
       "actionId": "sources.search"
+    },
+    {
+      "type": "action",
+      "actionId": "sources.increment-css",
+      "category": "Sources",
+      "title": "Increment CSS unit by 1",
+      "bindings": [
+        {
+          "shortcut": "Alt+Up"
+        }
+      ]
+    },
+    {
+      "type": "action",
+      "actionId": "sources.increment-css-by-ten",
+      "title": "Increment CSS unit by 10",
+      "category": "Sources",
+      "bindings": [
+        {
+          "shortcut": "Alt+PageUp"
+        }
+      ]
+    },
+    {
+      "type": "action",
+      "actionId": "sources.decrement-css",
+      "category": "Sources",
+      "title": "Decrement CSS unit by 1",
+      "bindings": [
+        {
+          "shortcut": "Alt+Down"
+        }
+      ]
+    },
+    {
+      "type": "action",
+      "actionId": "sources.decrement-css-by-ten",
+      "category": "Sources",
+      "title": "Decrement CSS unit by 10",
+      "bindings": [
+        {
+          "shortcut": "Alt+PageDown"
+        }
+      ]
     }
   ],
   "dependencies": [
@@ -1011,7 +1138,6 @@
     "formatter",
     "coverage"
   ],
-  "scripts": [],
   "modules": [
     "sources.js",
     "sources-legacy.js",
@@ -1019,7 +1145,6 @@
     "BreakpointEditDialog.js",
     "CallStackSidebarPane.js",
     "DebuggerPausedMessage.js",
-    "SimpleHistoryManager.js",
     "EditingLocationHistoryManager.js",
     "FilePathScoreFunction.js",
     "FilteredUISourceCodeListProvider.js",

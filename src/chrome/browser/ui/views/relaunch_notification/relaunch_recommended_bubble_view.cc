@@ -37,9 +37,9 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/platform_util.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 // static
 views::Widget* RelaunchRecommendedBubbleView::ShowBubble(
@@ -91,16 +91,12 @@ gfx::ImageSkia RelaunchRecommendedBubbleView::GetWindowIcon() {
                            gfx::kChromeIconGrey));
 }
 
-bool RelaunchRecommendedBubbleView::ShouldShowWindowIcon() const {
-  return true;
-}
-
 void RelaunchRecommendedBubbleView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   auto label = std::make_unique<views::Label>(
       l10n_util::GetPluralStringFUTF16(IDS_RELAUNCH_RECOMMENDED_BODY,
                                        BrowserList::GetIncognitoBrowserCount()),
-      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
+      views::style::CONTEXT_DIALOG_BODY_TEXT);
 
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -119,13 +115,6 @@ void RelaunchRecommendedBubbleView::Init() {
   AddChildView(std::move(label));
 
   base::RecordAction(base::UserMetricsAction("RelaunchRecommendedShown"));
-}
-
-gfx::Size RelaunchRecommendedBubbleView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        DISTANCE_BUBBLE_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void RelaunchRecommendedBubbleView::VisibilityChanged(
@@ -152,14 +141,18 @@ RelaunchRecommendedBubbleView::RelaunchRecommendedBubbleView(
   SetButtons(ui::DIALOG_BUTTON_OK);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(IDS_RELAUNCH_ACCEPT_BUTTON));
+  SetShowIcon(true);
 
   SetCloseCallback(
       base::BindOnce(&base::RecordAction,
                      base::UserMetricsAction("RelaunchRecommended_Close")));
 
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::RELAUNCH_RECOMMENDED);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
+
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::RELAUNCH_RECOMMENDED);
 }
 
 void RelaunchRecommendedBubbleView::UpdateWindowTitle() {

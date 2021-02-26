@@ -13,13 +13,13 @@
 #include <cstdint>
 #include <memory>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_listener.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_tables.h"
 #include "net/third_party/quiche/src/http2/hpack/hpack_string.h"
 #include "net/third_party/quiche/src/http2/hpack/http2_hpack_constants.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_header_table.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_headers_handler_interface.h"
@@ -88,6 +88,8 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderAdapter {
   // Error code if an error has occurred, Error::kOk otherwise.
   http2::HpackDecodingError error() const { return error_; }
 
+  std::string detailed_error() const { return detailed_error_; }
+
  private:
   class QUICHE_EXPORT_PRIVATE ListenerAdapter
       : public http2::HpackDecoderListener,
@@ -111,8 +113,7 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderAdapter {
     void OnHeader(const http2::HpackString& name,
                   const http2::HpackString& value) override;
     void OnHeaderListEnd() override;
-    void OnHeaderErrorDetected(
-        quiche::QuicheStringPiece error_message) override;
+    void OnHeaderErrorDetected(absl::string_view error_message) override;
 
     // Override the HpackDecoderTablesDebugListener methods:
     int64_t OnEntryInserted(const http2::HpackStringPair& entry,
@@ -164,6 +165,7 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderAdapter {
 
   // Error code if an error has occurred, Error::kOk otherwise.
   http2::HpackDecodingError error_;
+  std::string detailed_error_;
 };
 
 }  // namespace spdy

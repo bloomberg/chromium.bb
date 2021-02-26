@@ -45,8 +45,9 @@ Attr* NamedNodeMap::getNamedItemNS(const AtomicString& namespace_uri,
 
 Attr* NamedNodeMap::removeNamedItem(const AtomicString& name,
                                     ExceptionState& exception_state) {
-  wtf_size_t index =
-      element_->Attributes().FindIndex(element_->LowercaseIfNecessary(name));
+  WTF::AtomicStringTable::WeakResult hint =
+      element_->WeakLowercaseIfNecessary(name);
+  wtf_size_t index = element_->Attributes().FindIndexHinted(name, hint);
   if (index == kNotFound) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotFoundError,
@@ -127,7 +128,7 @@ bool NamedNodeMap::NamedPropertyQuery(const AtomicString& name,
   return properties.Contains(name);
 }
 
-void NamedNodeMap::Trace(Visitor* visitor) {
+void NamedNodeMap::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   ScriptWrappable::Trace(visitor);
 }

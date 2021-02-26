@@ -127,7 +127,7 @@ public class PageViewObserver {
 
     /** Notify PageViewObserver that {@code fqdn} was just suspended or un-suspended. */
     public void notifySiteSuspensionChanged(String fqdn, boolean isSuspended) {
-        if (mCurrentTab != null && !mCurrentTab.isInitialized()) return;
+        if (mCurrentTab == null || !mCurrentTab.isInitialized()) return;
         SuspendedTab suspendedTab = SuspendedTab.from(mCurrentTab);
         if (fqdn.equals(mLastFqdn) || fqdn.equals(suspendedTab.getFqdn())) {
             if (checkSuspendedTabState(isSuspended, fqdn)) {
@@ -148,14 +148,14 @@ public class PageViewObserver {
         boolean isSameDomain = newFqdn.equals(mLastFqdn);
         boolean isValidProtocol = URLUtil.isHttpUrl(newUrl) || URLUtil.isHttpsUrl(newUrl);
 
-        boolean didSuspend =
-                checkSuspendedTabState(mSuspensionTracker.isWebsiteSuspended(newFqdn), newFqdn);
+        boolean isSuspended = mSuspensionTracker.isWebsiteSuspended(newFqdn);
+        boolean didSuspend = checkSuspendedTabState(isSuspended, newFqdn);
 
         if (mLastFqdn != null && (didSuspend || !isSameDomain)) {
             reportStop();
         }
 
-        if (isValidProtocol && !didSuspend && !isSameDomain) {
+        if (isValidProtocol && !isSuspended && !isSameDomain) {
             mLastFqdn = newFqdn;
             mEventTracker.addWebsiteEvent(new WebsiteEvent(
                     System.currentTimeMillis(), mLastFqdn, WebsiteEvent.EventType.START));

@@ -43,6 +43,7 @@ static void check_hflip(int step, const char * report_name){
 
     declare_func(void, const uint8_t *src, uint8_t *dst, int w);
 
+    s.bayer_plus1 = 1;
     memset(src,     0, WIDTH_PADDED);
     memset(dst_ref, 0, WIDTH_PADDED);
     memset(dst_new, 0, WIDTH_PADDED);

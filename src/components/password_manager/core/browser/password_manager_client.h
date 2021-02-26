@@ -15,12 +15,13 @@
 #include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
-#include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -49,15 +50,18 @@ class IdentityManager;
 
 namespace signin_metrics {
 enum class AccessPoint;
+enum class ReauthAccessPoint;
+}  // namespace signin_metrics
+
+namespace url {
+class Origin;
 }
 
 class GURL;
 
-#if defined(ON_FOCUS_PING_ENABLED)
 namespace safe_browsing {
 class PasswordProtectionService;
 }
-#endif
 
 namespace password_manager {
 
@@ -65,12 +69,12 @@ class FieldInfoManager;
 class PasswordFeatureManager;
 class BiometricAuthenticator;
 class PasswordFormManagerForUI;
-class PasswordManager;
 class PasswordManagerDriver;
 class PasswordManagerMetricsRecorder;
 class HttpAuthManager;
 class PasswordRequirementsService;
 class PasswordStore;
+struct PasswordForm;
 
 enum SyncState {
   NOT_SYNCING,
@@ -85,8 +89,7 @@ enum SyncState {
 // environment.
 class PasswordManagerClient {
  public:
-  using CredentialsCallback =
-      base::Callback<void(const autofill::PasswordForm*)>;
+  using CredentialsCallback = base::OnceCallback<void(const PasswordForm*)>;
   using ReauthSucceeded = util::StrongAlias<class ReauthSucceededTag, bool>;
 
   PasswordManagerClient() {}
@@ -110,12 +113,6 @@ class PasswordManagerClient {
   // Checks if manual filling fallback is enabled for the page that has |url|
   // address.
   virtual bool IsFillingFallbackEnabled(const GURL& url) const;
-
-  // Checks asynchronously whether HTTP Strict Transport Security (HSTS) is
-  // active for the host of the given origin. Notifies |callback| with the
-  // result on the calling thread.
-  virtual void PostHSTSQueryForHost(const GURL& origin,
-                                    HSTSCallback callback) const;
 
   // Informs the embedder of a password form that can be saved or updated in
   // password store if the user allows it. The embedder is not required to
@@ -142,12 +139,6 @@ class PasswordManagerClient {
   virtual void PromptUserToMovePasswordToAccount(
       std::unique_ptr<PasswordFormManagerForUI> form_to_move) = 0;
 
-  // Informs the embedder that the onboarding experience should be shown.
-  // This will also offer the ability to actually save the password.
-  // Returns true if both the onboarding and the saving prompt were displayed.
-  virtual bool ShowOnboarding(
-      std::unique_ptr<PasswordFormManagerForUI> form_to_save) = 0;
-
   // Informs the embedder that the user started typing a password and a password
   // prompt should be available on click on the omnibox icon.
   virtual void ShowManualFallbackForSaving(
@@ -170,34 +161,43 @@ class PasswordManagerClient {
   // displayed, returns false and does not call |callback|.
   // |callback| should be invoked with the chosen form.
   virtual bool PromptUserToChooseCredentials(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin,
-      const CredentialsCallback& callback) = 0;
+      std::vector<std::unique_ptr<PasswordForm>> local_forms,
+      const url::Origin& origin,
+      CredentialsCallback callback) = 0;
+
+  // Indicates if re-auth with the device is needed before filling passwords.
+  // Currently only used by iOS.
+  virtual bool RequiresReauthToFill();
 
   // Instructs the client to show the Touch To Fill UI.
   virtual void ShowTouchToFill(PasswordManagerDriver* driver);
+
+  // Informs `PasswordReuseDetectionManager` about reused passwords selected
+  // from the AllPasswordsBottomSheet.
+  virtual void OnPasswordSelected(const base::string16& text);
 
   // Returns a pointer to a BiometricAuthenticator. Might be null if
   // BiometricAuthentication is not available for a given platform.
   virtual BiometricAuthenticator* GetBiometricAuthenticator();
 
-  // Informs the embedder that the user has manually requested to generate a
+  // Informs the embedder that the user has requested to generate a
   // password in the focused password field.
-  virtual void GeneratePassword();
+  virtual void GeneratePassword(
+      autofill::password_generation::PasswordGenerationType type);
 
   // Informs the embedder that automatic signing in just happened. The form
   // returned to the site is |local_forms[0]|. |local_forms| contains all the
   // local credentials for the site. |origin| is a URL of the site the user was
   // auto signed in to.
   virtual void NotifyUserAutoSignin(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
-      const GURL& origin) = 0;
+      std::vector<std::unique_ptr<PasswordForm>> local_forms,
+      const url::Origin& origin) = 0;
 
   // Inform the embedder that automatic signin would have happened if the user
   // had been through the first-run experience to ensure their opt-in. |form|
   // contains the PasswordForm that would have been delivered.
   virtual void NotifyUserCouldBeAutoSignedIn(
-      std::unique_ptr<autofill::PasswordForm> form) = 0;
+      std::unique_ptr<PasswordForm> form) = 0;
 
   // Inform the embedder that the user signed in with a saved credential.
   // |submitted_manager| contains the form used and allows to move credentials.
@@ -211,8 +211,8 @@ class PasswordManagerClient {
   // Update the CredentialCache used to display fetched credentials in the UI.
   // Currently only implemented on Android.
   virtual void UpdateCredentialCache(
-      const GURL& origin,
-      const std::vector<const autofill::PasswordForm*>& best_matches,
+      const url::Origin& origin,
+      const std::vector<const PasswordForm*>& best_matches,
       bool is_blacklisted);
 
   // Called when a password is saved in an automated fashion. Embedder may
@@ -228,23 +228,28 @@ class PasswordManagerClient {
   // They are never filled, but might be needed in the UI, for example. Default
   // implementation is a noop.
   virtual void PasswordWasAutofilled(
-      const std::vector<const autofill::PasswordForm*>& best_matches,
-      const GURL& origin,
-      const std::vector<const autofill::PasswordForm*>* federated_matches);
+      const std::vector<const PasswordForm*>& best_matches,
+      const url::Origin& origin,
+      const std::vector<const PasswordForm*>* federated_matches);
 
   // Sends username/password from |preferred_match| for filling in the http auth
   // prompt.
-  virtual void AutofillHttpAuth(const autofill::PasswordForm& preferred_match,
+  virtual void AutofillHttpAuth(const PasswordForm& preferred_match,
                                 const PasswordFormManagerForUI* form_manager);
 
   // Informs the embedder that user credentials were leaked.
-  virtual void NotifyUserCredentialsWereLeaked(CredentialLeakType leak_type,
-                                               const GURL& origin,
-                                               const base::string16& username);
+  virtual void NotifyUserCredentialsWereLeaked(
+      CredentialLeakType leak_type,
+      CompromisedSitesCount saved_sites,
+      const GURL& origin,
+      const base::string16& username);
 
-  // Requests a reauth for the primary account and triggers the
-  // |reauth_callback| with ReauthSucceeded(true) if reauthentication succeeded.
+  // Requests a reauth for the primary account with |access_point| representing
+  // where the reauth was triggered.
+  // Triggers the |reauth_callback| with ReauthSucceeded(true) if
+  // reauthentication succeeded.
   virtual void TriggerReauthForPrimaryAccount(
+      signin_metrics::ReauthAccessPoint access_point,
       base::OnceCallback<void(ReauthSucceeded)> reauth_callback);
 
   // Redirects the user to a sign-in in a new tab. |access_point| is used for
@@ -268,8 +273,9 @@ class PasswordManagerClient {
   virtual bool WasLastNavigationHTTPError() const;
 
   // Returns true if a credential leak dialog was shown. Used by Autofill
-  // Assistance to verify a password change intent. TODO(b/151391231): Remove
-  // when proper intent signing is implemented.
+  // Assistance to verify a password change intent. TODO(b/151391231): At the
+  // moment, password change scripts don't need validation, but it may change.
+  // If it doesn't change, remove this method and related code.
   virtual bool WasCredentialLeakDialogShown() const;
 
   // Obtains the cert status for the main frame.
@@ -298,13 +304,14 @@ class PasswordManagerClient {
   // Returns the AutofillDownloadManager for votes uploading.
   virtual autofill::AutofillDownloadManager* GetAutofillDownloadManager();
 
-  // Returns the main frame URL.
-  virtual const GURL& GetMainFrameURL() const;
-
   // Returns true if the main frame URL has a secure origin.
-  virtual bool IsMainFrameSecure() const;
+  virtual bool IsCommittedMainFrameSecure() const;
 
-  virtual const GURL& GetLastCommittedEntryURL() const = 0;
+  // Returns the committed main frame URL.
+  virtual const GURL& GetLastCommittedURL() const = 0;
+
+  // Returns last committed origin of the main frame.
+  virtual url::Origin GetLastCommittedOrigin() const = 0;
 
   // Use this to filter credentials before handling them in password manager.
   virtual const CredentialsFilter* GetStoreResultFilter() const = 0;
@@ -318,12 +325,9 @@ class PasswordManagerClient {
   // Returns the current best guess as to the page's display language.
   virtual std::string GetPageLanguage() const;
 
-#if defined(ON_FOCUS_PING_ENABLED) || \
-    defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Return the PasswordProtectionService associated with this instance.
   virtual safe_browsing::PasswordProtectionService*
   GetPasswordProtectionService() const = 0;
-#endif
 
 #if defined(ON_FOCUS_PING_ENABLED)
   // Checks the safe browsing reputation of the webpage when the
@@ -333,7 +337,6 @@ class PasswordManagerClient {
                                            const GURL& frame_url) = 0;
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Checks the safe browsing reputation of the webpage where password reuse
   // happens. This is called by the PasswordReuseDetectionManager when a
   // protected password is typed on the wrong domain. This may trigger a
@@ -346,9 +349,8 @@ class PasswordManagerClient {
       const std::string& username,
       const std::vector<MatchingReusedCredential>& matching_reused_credentials,
       bool password_field_exists) = 0;
-#endif
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+#if defined(PASSWORD_REUSE_WARNING_ENABLED)
   // Records a Chrome Sync event that GAIA password reuse was detected.
   virtual void LogPasswordReuseDetectedEvent() = 0;
 #endif
@@ -381,6 +383,10 @@ class PasswordManagerClient {
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
 
+  // Returns a pointer to the NetworkContext owned by the storage partition of
+  // the current profile.
+  virtual network::mojom::NetworkContext* GetNetworkContext() const;
+
   // Whether the primary account of the current profile is under Advanced
   // Protection - a type of Google Account that helps protect our most at-risk
   // users.
@@ -401,6 +407,9 @@ class PasswordManagerClient {
 
   // Returns a FieldInfoManager associated with the current profile.
   virtual FieldInfoManager* GetFieldInfoManager() const = 0;
+
+  // Returns if the Autofill Assistant UI is shown.
+  virtual bool IsAutofillAssistantUIVisible() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

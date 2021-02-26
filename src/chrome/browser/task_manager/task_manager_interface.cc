@@ -14,9 +14,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/child_process_host.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/browser_dialogs.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 namespace task_manager {
 
@@ -146,10 +146,9 @@ void TaskManagerInterface::SetEnabledResourceFlags(int64_t flags) {
 }
 
 void TaskManagerInterface::ScheduleRefresh(base::TimeDelta refresh_time) {
-  refresh_timer_->Start(FROM_HERE,
-                        refresh_time,
-                        base::Bind(&TaskManagerInterface::Refresh,
-                                   base::Unretained(this)));
+  refresh_timer_->Start(FROM_HERE, refresh_time,
+                        base::BindRepeating(&TaskManagerInterface::Refresh,
+                                            base::Unretained(this)));
 }
 
 }  // namespace task_manager

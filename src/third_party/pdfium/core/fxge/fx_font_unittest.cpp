@@ -6,10 +6,21 @@
 
 #include "core/fxge/cfx_folderfontinfo.h"
 #include "core/fxge/cfx_fontmapper.h"
+#include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/fx_font.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/utils/path_service.h"
+
+TEST(FXFontTest, PDF_UnicodeFromAdobeName) {
+  EXPECT_EQ(static_cast<wchar_t>(0x0000), PDF_UnicodeFromAdobeName("nonesuch"));
+  EXPECT_EQ(static_cast<wchar_t>(0x0000), PDF_UnicodeFromAdobeName(""));
+  EXPECT_EQ(static_cast<wchar_t>(0x00b6),
+            PDF_UnicodeFromAdobeName("paragraph"));
+  EXPECT_EQ(static_cast<wchar_t>(0x00d3), PDF_UnicodeFromAdobeName("Oacute"));
+  EXPECT_EQ(static_cast<wchar_t>(0x00fe), PDF_UnicodeFromAdobeName("thorn"));
+  EXPECT_EQ(static_cast<wchar_t>(0x0384), PDF_UnicodeFromAdobeName("tonos"));
+  EXPECT_EQ(static_cast<wchar_t>(0x2022), PDF_UnicodeFromAdobeName("bullet"));
+}
 
 TEST(FXFontTest, PDF_AdobeNameFromUnicode) {
   EXPECT_STREQ("", PDF_AdobeNameFromUnicode(0x0000).c_str());
@@ -35,7 +46,8 @@ TEST(FXFontTest, ReadFontNameFromMicrosoftEntries) {
     folder_font_info.AddPath(
         (test_data_dir + PATH_SEPARATOR + "font_tests").c_str());
 
-    font_mapper.SetSystemFontInfo(SystemFontInfoIface::CreateDefault(nullptr));
+    font_mapper.SetSystemFontInfo(
+        CFX_GEModule::Get()->GetPlatform()->CreateDefaultSystemFontInfo());
     ASSERT_TRUE(folder_font_info.EnumFontList(&font_mapper));
   }
 

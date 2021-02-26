@@ -29,6 +29,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/omnibox_focus_type.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -47,7 +48,7 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
   TRACE_EVENT0("omnibox", "HistoryQuickProvider::Start");
   matches_.clear();
-  if (disabled_ || input.from_omnibox_focus())
+  if (disabled_ || input.focus_type() != OmniboxFocusType::DEFAULT)
     return;
 
   // Don't bother with INVALID.
@@ -269,13 +270,13 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
       ACMatchClassification::NONE);
 
   // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
-  if (inline_autocomplete_offset != base::string16::npos) {
+  if (match.TryRichAutocompletion(match.contents, match.description,
+                                  autocomplete_input_)) {
+    // If rich autocompletion applies, we skip trying the alternatives below.
+  } else if (inline_autocomplete_offset != base::string16::npos) {
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
     match.SetAllowedToBeDefault(autocomplete_input_);
-  } else {
-    auto title = match.description + base::UTF8ToUTF16(" - ") + match.contents;
-    match.TryAutocompleteWithTitle(title, autocomplete_input_);
   }
 
   match.RecordAdditionalInfo("typed count", info.typed_count());

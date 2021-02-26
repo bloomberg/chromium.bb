@@ -33,6 +33,7 @@
 
 namespace webrtc {
 class RtpPacket;
+class RtpPacketToSend;
 namespace rtcp {
 class TransportFeedback;
 }
@@ -64,8 +65,8 @@ enum RTPExtensionType : int {
   kRtpExtensionTransportSequenceNumber02,
   kRtpExtensionPlayoutDelay,
   kRtpExtensionVideoContentType,
+  kRtpExtensionVideoLayersAllocation,
   kRtpExtensionVideoTiming,
-  kRtpExtensionFrameMarking,
   kRtpExtensionRtpStreamId,
   kRtpExtensionRepairedRtpStreamId,
   kRtpExtensionMid,
@@ -91,7 +92,6 @@ enum RTCPPacketType : uint32_t {
   kRtcpTmmbr = 0x0100,
   kRtcpTmmbn = 0x0200,
   kRtcpSrReq = 0x0400,
-  kRtcpApp = 0x1000,
   kRtcpLossNotification = 0x2000,
   kRtcpRemb = 0x10000,
   kRtcpTransmissionTimeOffset = 0x20000,
@@ -158,14 +158,12 @@ struct RtpState {
         timestamp(0),
         capture_time_ms(-1),
         last_timestamp_time_ms(-1),
-        media_has_been_sent(false),
         ssrc_has_acked(false) {}
   uint16_t sequence_number;
   uint32_t start_timestamp;
   uint32_t timestamp;
   int64_t capture_time_ms;
   int64_t last_timestamp_time_ms;
-  bool media_has_been_sent;
   bool ssrc_has_acked;
 };
 
@@ -298,6 +296,8 @@ class RtcpRttStats {
 struct RtpPacketCounter {
   RtpPacketCounter()
       : header_bytes(0), payload_bytes(0), padding_bytes(0), packets(0) {}
+
+  explicit RtpPacketCounter(const RtpPacket& packet);
 
   void Add(const RtpPacketCounter& other) {
     header_bytes += other.header_bytes;
@@ -467,6 +467,16 @@ class SendPacketObserver {
   virtual void OnSendPacket(uint16_t packet_id,
                             int64_t capture_time_ms,
                             uint32_t ssrc) = 0;
+};
+
+// Interface for a class that can assign RTP sequence numbers for a packet
+// to be sent.
+class SequenceNumberAssigner {
+ public:
+  SequenceNumberAssigner() = default;
+  virtual ~SequenceNumberAssigner() = default;
+
+  virtual void AssignSequenceNumber(RtpPacketToSend* packet) = 0;
 };
 }  // namespace webrtc
 #endif  // MODULES_RTP_RTCP_INCLUDE_RTP_RTCP_DEFINES_H_

@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -82,6 +82,8 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
         std::make_unique<BluetoothAdvertisement::UUIDList>());
     data->set_service_data(
         std::make_unique<BluetoothAdvertisement::ServiceData>());
+    data->set_scan_response_data(
+        std::make_unique<BluetoothAdvertisement::ScanResponseData>());
     return data;
   }
 
@@ -92,10 +94,11 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
 
     adapter_->RegisterAdvertisement(
         CreateAdvertisementData(),
-        base::Bind(&BluetoothAdvertisementBlueZTest::RegisterCallback,
-                   base::Unretained(this)),
-        base::Bind(&BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&BluetoothAdvertisementBlueZTest::RegisterCallback,
+                       base::Unretained(this)),
+        base::BindOnce(
+            &BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
+            base::Unretained(this)));
 
     base::RunLoop().RunUntilIdle();
     return advertisement_;
@@ -104,10 +107,11 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
   void UnregisterAdvertisement(
       scoped_refptr<BluetoothAdvertisement> advertisement) {
     advertisement->Unregister(
-        base::Bind(&BluetoothAdvertisementBlueZTest::Callback,
-                   base::Unretained(this)),
-        base::Bind(&BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&BluetoothAdvertisementBlueZTest::Callback,
+                       base::Unretained(this)),
+        base::BindOnce(
+            &BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
+            base::Unretained(this)));
 
     base::RunLoop().RunUntilIdle();
   }
@@ -270,10 +274,11 @@ TEST_F(BluetoothAdvertisementBlueZTest, ResetAdvertising) {
   EXPECT_EQ(2, adv_client->currently_registered());
 
   adapter_->ResetAdvertising(
-      base::Bind(&BluetoothAdvertisementBlueZTest::Callback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothAdvertisementBlueZTest::Callback,
+                     base::Unretained(this)),
+      base::BindOnce(
+          &BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
+          base::Unretained(this)));
   ExpectSuccess();
 
   // Checks that the advertisements have been cleared after ResetAdvertising.

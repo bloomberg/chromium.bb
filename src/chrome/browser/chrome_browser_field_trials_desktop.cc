@@ -11,13 +11,11 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
-#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/metrics/persistent_system_profile.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/common/content_switches.h"
-
 
 namespace chrome {
 
@@ -45,7 +43,6 @@ void SetupStunProbeTrial() {
 }  // namespace
 
 void SetupDesktopFieldTrials() {
-  prerender::ConfigureNoStatePrefetch();
   SetupStunProbeTrial();
 }
 

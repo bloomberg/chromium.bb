@@ -433,7 +433,7 @@ TEST_P(LogFileWriterTest, WriteDoesNotCrashIfFileRemovedExternally) {
   auto writer = CreateWriter(kMaxRemoteLogFileSizeBytes);
   ASSERT_TRUE(writer);
 
-  ASSERT_TRUE(base::DeleteFile(path_, /*recursive=*/false));
+  ASSERT_TRUE(base::DeleteFile(path_));
   ASSERT_FALSE(base::PathExists(path_));  // Sanity on the test itself.
 
   // It's up to the OS whether this will succeed or fail, but it must not crash.
@@ -446,7 +446,7 @@ TEST_P(LogFileWriterTest, CloseDoesNotCrashIfFileRemovedExternally) {
   auto writer = CreateWriter(kMaxRemoteLogFileSizeBytes);
   ASSERT_TRUE(writer);
 
-  ASSERT_TRUE(base::DeleteFile(path_, /*recursive=*/false));
+  ASSERT_TRUE(base::DeleteFile(path_));
   ASSERT_FALSE(base::PathExists(path_));  // Sanity on the test itself.
 
   // It's up to the OS whether this will succeed or fail, but it must not crash.
@@ -459,7 +459,7 @@ TEST_P(LogFileWriterTest, DeleteDoesNotCrashIfFileRemovedExternally) {
   auto writer = CreateWriter(kMaxRemoteLogFileSizeBytes);
   ASSERT_TRUE(writer);
 
-  ASSERT_TRUE(base::DeleteFile(path_, /*recursive=*/false));
+  ASSERT_TRUE(base::DeleteFile(path_));
   ASSERT_FALSE(base::PathExists(path_));  // Sanity on the test itself.
 
   // It's up to the OS whether this will succeed or fail, but it must not crash.
@@ -701,9 +701,6 @@ TEST_P(DoesProfileDefaultToLoggingEnabledForUserTypeParametrizedTest,
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
       fake_user_manager_->AddPublicAccountUser(account_id);
       break;
-    case user_manager::USER_TYPE_SUPERVISED:
-      fake_user_manager_->AddSupervisedUser(account_id);
-      break;
     case user_manager::USER_TYPE_KIOSK_APP:
       fake_user_manager_->AddKioskAppUser(account_id);
       break;
@@ -740,7 +737,6 @@ INSTANTIATE_TEST_CASE_P(
             {user_manager::USER_TYPE_REGULAR, true},
             {user_manager::USER_TYPE_GUEST, false},
             {user_manager::USER_TYPE_PUBLIC_ACCOUNT, false},
-            {user_manager::USER_TYPE_SUPERVISED, false},
             {user_manager::USER_TYPE_KIOSK_APP, false},
             {user_manager::USER_TYPE_CHILD, false},
             {user_manager::USER_TYPE_ARC_KIOSK_APP, false},

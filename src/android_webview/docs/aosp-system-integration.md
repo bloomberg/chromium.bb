@@ -148,7 +148,7 @@ master branch. Chromium's master branch is covered by a large number of
 automated build and test systems that ensure it is sufficiently stable for
 development purposes at almost all times.
 
-### Building WebView for a new or in-development version of Android
+### Building WebView for a new or in-development version of Android {#pre-release}
 
 If you want to build WebView for a version of Android which was recently
 released or currently in development, you may find that the current stable
@@ -188,6 +188,10 @@ target_cpu = "arm64"       # or "arm", "x86", or "x64"; see below
 is_debug = false
 is_official_build = true
 
+# Use the default production settings for field trials, instead of the testing
+# defaults.
+fieldtrial_testing_like_official_build = true
+
 # WebView's efficient native library loading mechanism is not compatible with
 # component builds of Chromium.
 is_component_build = false
@@ -195,6 +199,10 @@ is_component_build = false
 # Disable Google-specific branding/features
 is_chrome_branded = false
 use_official_google_api_keys = false
+
+# May disable some experimental (unstable) features. Hides WebView DevTools
+# (a debugging tool most users won't need to access).
+android_channel = "stable"
 ```
 
 The `target_cpu` option must be set to

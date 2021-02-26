@@ -23,7 +23,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_GRAPHICS_ELEMENT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/svg/svg_animated_transform_list.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_tests.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -31,12 +30,13 @@
 namespace blink {
 
 class AffineTransform;
+class FloatRect;
+class SVGAnimatedTransformList;
 class SVGMatrixTearOff;
 class SVGRectTearOff;
 
 class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGGraphicsElement);
 
  public:
   ~SVGGraphicsElement() override;
@@ -47,9 +47,7 @@ class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
   SVGElement* nearestViewportElement() const;
   SVGElement* farthestViewportElement() const;
 
-  AffineTransform LocalCoordinateSpaceTransform(CTMScope) const override {
-    return CalculateTransform(kIncludeMotionTransform);
-  }
+  AffineTransform LocalCoordinateSpaceTransform(CTMScope) const override;
   AffineTransform* AnimateMotionTransform() override;
 
   virtual FloatRect GetBBox();
@@ -64,7 +62,7 @@ class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
       CTMScope mode,
       const SVGGraphicsElement* ancestor = nullptr) const;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  protected:
   SVGGraphicsElement(const QualifiedName&,

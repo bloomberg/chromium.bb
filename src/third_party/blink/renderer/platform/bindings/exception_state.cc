@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 
@@ -210,6 +211,12 @@ String ExceptionState::AddExceptionContext(const String& message) const {
         return ExceptionMessages::FailedToSetIndexed(i, m);
       case kIndexedDeletionContext:
         return ExceptionMessages::FailedToDeleteIndexed(i, m);
+      case kNamedGetterContext:
+        return ExceptionMessages::FailedToGetNamed(i, m);
+      case kNamedSetterContext:
+        return ExceptionMessages::FailedToSetNamed(i, m);
+      case kNamedDeletionContext:
+        return ExceptionMessages::FailedToDeleteNamed(i, m);
       case kUnknownContext:
         break;
     }
@@ -237,6 +244,12 @@ String ExceptionState::AddExceptionContext(const String& message) const {
         return ExceptionMessages::FailedToSetIndexed(i, m);
       case kIndexedDeletionContext:
         return ExceptionMessages::FailedToDeleteIndexed(i, m);
+      case kNamedGetterContext:
+        return ExceptionMessages::FailedToGetNamed(i, m);
+      case kNamedSetterContext:
+        return ExceptionMessages::FailedToSetNamed(i, m);
+      case kNamedDeletionContext:
+        return ExceptionMessages::FailedToDeleteNamed(i, m);
       case kUnknownContext:
         break;
     }

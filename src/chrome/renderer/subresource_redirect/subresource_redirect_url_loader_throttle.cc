@@ -7,18 +7,20 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "chrome/renderer/previews/resource_loading_hints_agent.h"
+#include "chrome/renderer/subresource_redirect/public_image_hints_url_loader_throttle.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/platform/web_network_state_notifier.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -35,15 +37,6 @@ bool IsCompressionServerOrigin(const GURL& url) {
          (url.scheme() == compression_server.scheme());
 }
 
-// Should the subresource be redirected to its compressed version. This returns
-// false if only coverage metrics need to be recorded and actual redirection
-// should not happen.
-bool ShouldCompressionServerRedirectSubresource() {
-  return base::GetFieldTrialParamByFeatureAsBool(
-      blink::features::kSubresourceRedirect,
-      "enable_subresource_server_redirect", false);
-}
-
 }  // namespace
 
 // static
@@ -51,7 +44,7 @@ std::unique_ptr<SubresourceRedirectURLLoaderThrottle>
 SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
     const blink::WebURLRequest& request,
     int render_frame_id) {
-  if (base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
+  if (IsPublicImageHintsBasedCompressionEnabled() &&
       request.GetRequestDestination() ==
           network::mojom::RequestDestination::kImage &&
       request.Url().ProtocolIs(url::kHttpsScheme) &&
@@ -59,23 +52,16 @@ SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
       request.GetRequestContext() !=
           blink::mojom::RequestContextType::FAVICON) {
     return base::WrapUnique<SubresourceRedirectURLLoaderThrottle>(
-        new SubresourceRedirectURLLoaderThrottle(
+        new PublicImageHintsURLLoaderThrottle(
             render_frame_id, request.GetPreviewsState() &
-                                 blink::WebURLRequest::kSubresourceRedirectOn));
+                                 blink::PreviewsTypes::kSubresourceRedirectOn));
   }
   return nullptr;
 }
 
 SubresourceRedirectURLLoaderThrottle::SubresourceRedirectURLLoaderThrottle(
-    int render_frame_id,
-    bool allowed_to_redirect)
-    : render_frame_id_(render_frame_id) {
-  redirect_result_ =
-      allowed_to_redirect
-          ? SubresourceRedirectHintsAgent::RedirectResult::kRedirectable
-          : SubresourceRedirectHintsAgent::RedirectResult::
-                kIneligibleOtherImage;
-}
+    int render_frame_id)
+    : render_frame_id_(render_frame_id) {}
 
 SubresourceRedirectURLLoaderThrottle::~SubresourceRedirectURLLoaderThrottle() =
     default;
@@ -83,52 +69,30 @@ SubresourceRedirectURLLoaderThrottle::~SubresourceRedirectURLLoaderThrottle() =
 void SubresourceRedirectURLLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect));
+  DCHECK(IsPublicImageHintsBasedCompressionEnabled());
   DCHECK_EQ(request->destination, network::mojom::RequestDestination::kImage);
-  DCHECK(
-      request->previews_state &
-          content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON ||
-      redirect_result_ ==
-          SubresourceRedirectHintsAgent::RedirectResult::kIneligibleOtherImage);
   DCHECK(request->url.SchemeIs(url::kHttpsScheme));
 
   // Do not redirect if its already a litepage subresource.
   if (IsCompressionServerOrigin(request->url))
     return;
 
-  if (redirect_result_ !=
-      SubresourceRedirectHintsAgent::RedirectResult::kRedirectable) {
-    return;
-  }
-
-  auto* subresource_redirect_hints_agent = GetSubresourceRedirectHintsAgent();
-  if (!subresource_redirect_hints_agent)
+  if (!ShouldRedirectImage(request->url))
     return;
 
-  redirect_result_ =
-      subresource_redirect_hints_agent->ShouldRedirectImage(request->url);
-  if (redirect_result_ !=
-      SubresourceRedirectHintsAgent::RedirectResult::kRedirectable) {
-    return;
-  }
   if (!ShouldCompressionServerRedirectSubresource())
     return;
 
   request->url = GetSubresourceURLForURL(request->url);
   did_redirect_compressed_origin_ = true;
   *defer = false;
-}
 
-SubresourceRedirectHintsAgent*
-SubresourceRedirectURLLoaderThrottle::GetSubresourceRedirectHintsAgent() {
-  if (content::RenderFrame* render_frame =
-          content::RenderFrame::FromRoutingID(render_frame_id_)) {
-    if (auto* resource_loading_hints_agent =
-            previews::ResourceLoadingHintsAgent::Get(render_frame)) {
-      return &resource_loading_hints_agent->subresource_redirect_hints_agent();
-    }
-  }
-  return nullptr;
+  DCHECK(!redirect_timeout_timer_);
+  redirect_timeout_timer_ = std::make_unique<base::OneShotTimer>();
+  redirect_timeout_timer_->Start(
+      FROM_HERE, GetCompressionRedirectTimeout(),
+      base::BindOnce(&SubresourceRedirectURLLoaderThrottle::OnRedirectTimeout,
+                     base::Unretained(this)));
 }
 
 void SubresourceRedirectURLLoaderThrottle::WillRedirectRequest(
@@ -138,6 +102,12 @@ void SubresourceRedirectURLLoaderThrottle::WillRedirectRequest(
     std::vector<std::string>* to_be_removed_request_headers,
     net::HttpRequestHeaders* modified_request_headers,
     net::HttpRequestHeaders* modified_cors_exempt_request_headers) {
+  if (did_redirect_compressed_origin_ && redirect_timeout_timer_) {
+    redirect_timeout_timer_->Start(
+        FROM_HERE, GetCompressionRedirectTimeout(),
+        base::BindOnce(&SubresourceRedirectURLLoaderThrottle::OnRedirectTimeout,
+                       base::Unretained(this)));
+  }
   UMA_HISTOGRAM_ENUMERATION(
       "SubresourceRedirect.CompressionAttempt.ResponseCode",
       static_cast<net::HttpStatusCode>(response_head.headers->response_code()),
@@ -160,6 +130,7 @@ void SubresourceRedirectURLLoaderThrottle::BeforeWillProcessResponse(
       "SubresourceRedirect.CompressionAttempt.ResponseCode",
       static_cast<net::HttpStatusCode>(response_head.headers->response_code()),
       net::HTTP_VERSION_NOT_SUPPORTED);
+  redirect_timeout_timer_.reset();
 
   // Do nothing with 2XX responses, as these requests were handled
   // correctly by the compression server.
@@ -168,8 +139,26 @@ void SubresourceRedirectURLLoaderThrottle::BeforeWillProcessResponse(
       response_head.headers->response_code() == 304) {
     return;
   }
-  redirect_result_ =
-      SubresourceRedirectHintsAgent::RedirectResult::kIneligibleOtherImage;
+  OnRedirectedLoadCompleteWithError();
+
+  // 503 response code indicates loadshed from the compression server. Notify
+  // the browser process which will bypass subresource redirect for subsequent
+  // page loads. Retry-After response header may mention the bypass duration,
+  // otherwise the browser will choose a random duration.
+  if (response_head.headers->response_code() == 503) {
+    std::string retry_after_string;
+    base::TimeDelta retry_after;
+    if (response_head.headers->EnumerateHeader(nullptr, "Retry-After",
+                                               &retry_after_string)) {
+      net::HttpUtil::ParseRetryAfterHeader(retry_after_string,
+                                           base::Time::Now(), &retry_after);
+    }
+    if (auto* subresource_redirect_hints_agent =
+            SubresourceRedirectHintsAgent::Get(GetRenderFrame())) {
+      subresource_redirect_hints_agent->NotifyHttpsImageCompressionFetchFailed(
+          retry_after);
+    }
+  }
 
   // Non 2XX responses from the compression server need to have unaltered
   // requests sent to the original resource.
@@ -190,11 +179,7 @@ void SubresourceRedirectURLLoaderThrottle::WillProcessResponse(
   if (content_length < 0)
     return;
 
-  auto* subresource_redirect_hints_agent = GetSubresourceRedirectHintsAgent();
-  if (subresource_redirect_hints_agent) {
-    subresource_redirect_hints_agent->RecordMetricsOnLoadFinished(
-        response_url, content_length, redirect_result_);
-  }
+  RecordMetricsOnLoadFinished(response_url, content_length);
 
   if (!did_redirect_compressed_origin_)
     return;
@@ -230,15 +215,27 @@ void SubresourceRedirectURLLoaderThrottle::WillOnCompleteWithError(
   if (!did_redirect_compressed_origin_)
     return;
   DCHECK(ShouldCompressionServerRedirectSubresource());
-  redirect_result_ =
-      SubresourceRedirectHintsAgent::RedirectResult::kIneligibleOtherImage;
+  OnRedirectedLoadCompleteWithError();
 
   // If the server fails, restart the request to the original resource, and
   // record it.
   did_redirect_compressed_origin_ = false;
+  redirect_timeout_timer_.reset();
   delegate_->RestartWithURLResetAndFlags(net::LOAD_NORMAL);
   UMA_HISTOGRAM_BOOLEAN(
       "SubresourceRedirect.CompressionAttempt.ServerResponded", false);
+}
+
+void SubresourceRedirectURLLoaderThrottle::OnRedirectTimeout() {
+  DCHECK(did_redirect_compressed_origin_);
+  did_redirect_compressed_origin_ = false;
+  delegate_->RestartWithURLResetAndFlagsNow(net::LOAD_NORMAL);
+  if (auto* subresource_redirect_hints_agent =
+          SubresourceRedirectHintsAgent::Get(GetRenderFrame())) {
+    subresource_redirect_hints_agent->NotifyHttpsImageCompressionFetchFailed(
+        base::TimeDelta());
+  }
+  UMA_HISTOGRAM_BOOLEAN("SubresourceRedirect.CompressionFetchTimeout", true);
 }
 
 void SubresourceRedirectURLLoaderThrottle::DetachFromCurrentSequence() {}

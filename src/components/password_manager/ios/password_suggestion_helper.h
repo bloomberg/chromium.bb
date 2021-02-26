@@ -40,13 +40,12 @@ class WebState;
 
 // Provides common logic of password autofill suggestions for both ios/chrome
 // and ios/web_view.
+// TODO(crbug.com/1097353): Consider folding this class into
+// SharedPasswordController.
 @interface PasswordSuggestionHelper : NSObject
 
-// Creates an instance with the given delegate.
-- (instancetype)initWithDelegate:(id<PasswordSuggestionHelperDelegate>)delegate
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
+// Delegate to receive callbacks.
+@property(nonatomic, weak) id<PasswordSuggestionHelperDelegate> delegate;
 
 // Retrieves suggestions as username and realm pairs
 // (defined in |password_manager::UsernameAndRealm|) and converts
@@ -73,7 +72,7 @@ class WebState;
 // Retrieves password form fill data for |username| for use in
 // |PasswordFormHelper|'s
 // -fillPasswordFormWithFillData:completionHandler:.
-- (std::unique_ptr<password_manager::FillData>)getFillDataForUsername:
+- (std::unique_ptr<password_manager::FillData>)passwordFillDataForUsername:
     (NSString*)username;
 
 // The following methods should be called to maintain the correct state along

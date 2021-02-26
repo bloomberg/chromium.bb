@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.SystemClock;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -15,9 +16,11 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestion.TabSuggestionAction;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,6 +46,8 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
     private static final int MIN_CLOSE_SUGGESTIONS_THRESHOLD = 3;
     private static final String SHARED_PREFERENCES_ID = "TabsuggestionsPreferences";
 
+    private static final int MIN_TIME_BETWEEN_PREFETCHES_DEFAULT_MS = 5000;
+
     protected TabContextObserver mTabContextObserver;
     protected TabSuggestionFeedback mTabSuggestionFeedback;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
@@ -53,6 +58,8 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
     private TabModelSelector mTabModelSelector;
     private ObserverList<TabSuggestionsObserver> mTabSuggestionsObservers;
     private int mRemainingFetchers;
+    private long mNextPrefetchTime;
+    private int mMinTimeBetweenPrefetchesMs = MIN_TIME_BETWEEN_PREFETCHES_DEFAULT_MS;
 
     public TabSuggestionsOrchestrator(
             TabModelSelector selector, ActivityLifecycleDispatcher activityLifecycleDispatcher) {
@@ -68,6 +75,7 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
         mTabModelSelector = selector;
         mTabSuggestionsFetchers = new LinkedList<>();
         mTabSuggestionsFetchers.add(new TabSuggestionsClientFetcher());
+        mTabSuggestionsFetchers.add(new TabSuggestionsServerFetcher());
         mTabSuggestionsObservers = new ObserverList<>();
         mTabContextObserver = new TabContextObserver(selector) {
             @Override
@@ -88,15 +96,15 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
         mSharedPreferences = sharedPreferences;
     }
 
-    protected void setUseBaselineTabSuggestionsForTesting() {
-        for (TabSuggestionsFetcher fetcher : mTabSuggestionsFetchers) {
-            if (fetcher instanceof TabSuggestionsClientFetcher) {
-                ((TabSuggestionsClientFetcher) fetcher).setUseBaselineTabSuggestionsForTesting();
-            }
-        }
+    protected void setFetchersForTesting() {
+        mTabSuggestionsFetchers = new LinkedList<>();
+        TabSuggestionsClientFetcher testingFetcher = new TabSuggestionsClientFetcher();
+        testingFetcher.setUseBaselineTabSuggestionsForTesting();
+        mTabSuggestionsFetchers.add(testingFetcher);
     }
 
-    private List<TabSuggestion> aggregateResults(List<TabSuggestion> tabSuggestions) {
+    @VisibleForTesting
+    protected static List<TabSuggestion> aggregateResults(List<TabSuggestion> tabSuggestions) {
         List<TabSuggestion> aggregated = new LinkedList<>();
         for (TabSuggestion tabSuggestion : tabSuggestions) {
             switch (tabSuggestion.getAction()) {
@@ -116,7 +124,8 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
                     break;
             }
         }
-        Collections.shuffle(aggregated);
+        // TODO(crbug.com/1085452): Sort the suggestion based on priority.
+        Collections.sort(aggregated, (t1, t2) -> Integer.compare(t1.getAction(), t2.getAction()));
         return aggregated;
     }
 
@@ -134,6 +143,19 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
         if (isBackoffEnabled()) {
             return;
         }
+        long time = SystemClock.elapsedRealtime();
+        if (time < mNextPrefetchTime) {
+            return;
+        }
+        mNextPrefetchTime = time
+                + ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                        ChromeFeatureList.CLOSE_TAB_SUGGESTIONS, "min_time_between_prefetches",
+                        mMinTimeBetweenPrefetchesMs);
+        performPrefetch();
+    }
+
+    @VisibleForTesting
+    protected void performPrefetch() {
         TabContext tabContext = TabContext.createCurrentContext(mTabModelSelector);
         synchronized (mPrefetchedResults) {
             mRemainingFetchers = 0;
@@ -146,6 +168,16 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
                 }
             }
         }
+    }
+
+    @VisibleForTesting
+    protected void setMinTimeBetweenPreFetchesForTesting(int minTimeBetweenPrefetchesMs) {
+        mMinTimeBetweenPrefetchesMs = minTimeBetweenPrefetchesMs;
+    }
+
+    @VisibleForTesting
+    protected void restoreMinTimeBetweenPrefetchesForTesting() {
+        mMinTimeBetweenPrefetchesMs = MIN_TIME_BETWEEN_PREFETCHES_DEFAULT_MS;
     }
 
     private boolean isBackoffEnabled() {
@@ -223,23 +255,35 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
             Log.e(TAG, "TabSuggestionFeedback is null");
             return;
         }
+
+        String suffix = "";
+        switch (tabSuggestionFeedback.tabSuggestion.getAction()) {
+            case TabSuggestionAction.CLOSE:
+                suffix = "Closing";
+                break;
+            case TabSuggestionAction.GROUP:
+                suffix = "Grouping";
+                break;
+            default:
+                assert false : "Unknown TabSuggestion action";
+        }
+
         // Record TabSuggestionFeedback for testing purposes
         mTabSuggestionFeedback = tabSuggestionFeedback;
 
-        if (tabSuggestionFeedback.tabSuggestionResponse
-                == TabSuggestionFeedback.TabSuggestionResponse.NOT_CONSIDERED) {
-            RecordUserAction.record("TabsSuggestions.Close.SuggestionsReview.Dismissed");
-            recordDismissalBackoff();
-            return;
-        } else {
-            RecordUserAction.record("TabsSuggestions.Close.SuggestionsReview.Accepted");
-            if (tabSuggestionFeedback.tabSuggestionResponse
-                    == TabSuggestionFeedback.TabSuggestionResponse.ACCEPTED) {
-                RecordUserAction.record("TabsSuggestions.Close.Accepted");
-            } else {
-                RecordUserAction.record("TabsSuggestions.Close.Dismissed");
+        switch (tabSuggestionFeedback.tabSuggestionResponse) {
+            case TabSuggestionFeedback.TabSuggestionResponse.NOT_CONSIDERED:
+                RecordUserAction.record("TabsSuggestions.NotConsidered." + suffix);
+                recordDismissalBackoff();
                 return;
-            }
+            case TabSuggestionFeedback.TabSuggestionResponse.ACCEPTED:
+                RecordUserAction.record("TabsSuggestions.Considered.Accepted." + suffix);
+                break;
+            case TabSuggestionFeedback.TabSuggestionResponse.DISMISSED:
+                RecordUserAction.record("TabsSuggestions.Considered.Dismissed." + suffix);
+                return;
+            default:
+                assert false : "Unknown TabSuggestionResponse";
         }
 
         Set<Integer> suggestedTabIds = new HashSet<>();
@@ -258,8 +302,8 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
         }
         int numChanged = tabSuggestionFeedback.tabSuggestion.getTabsInfo().size()
                 - numSelectFromSuggestion + numSelectOutsideSuggestion;
-        // This was previously TabsSuggestions.Close.NumSuggestionsChanged
+        // This was previously TabsSuggestions.Close.NumSuggestionsChanged.
         RecordHistogram.recordCount100Histogram(
-                "Tabs.Suggestions.Close.NumSuggestionsChanged", numChanged);
+                "Tabs.Suggestions.NumSuggestionsChanged." + suffix, numChanged);
     }
 }

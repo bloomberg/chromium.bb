@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/activity_services/data/share_to_data.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/sys_string_conversions.h"
 #import "net/base/mac/url_conversions.h"
 
@@ -26,6 +26,7 @@
 - (id)initWithShareURL:(const GURL&)shareURL
             visibleURL:(const GURL&)visibleURL
                  title:(NSString*)title
+        additionalText:(NSString*)additionalText
        isOriginalTitle:(BOOL)isOriginalTitle
        isPagePrintable:(BOOL)isPagePrintable
       isPageSearchable:(BOOL)isPageSearchable
@@ -41,6 +42,7 @@
     _shareURL = shareURL;
     _visibleURL = visibleURL;
     _title = [title copy];
+    _additionalText = [additionalText copy];
     _isOriginalTitle = isOriginalTitle;
     _isPagePrintable = isPagePrintable;
     _isPageSearchable = isPageSearchable;

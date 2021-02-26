@@ -17,9 +17,10 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/environment_internal.h"
+#include "base/stl_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 
 extern "C" {
 // Changes the current thread's directory to a path or directory file
@@ -258,6 +259,14 @@ Process LaunchProcess(const std::vector<std::string>& argv,
                                     ? options.real_path.value().c_str()
                                     : argv_cstr[0];
 
+#if defined(ARCH_CPU_ARM64)
+  if (options.launch_x86_64) {
+    cpu_type_t cpu_types[] = {CPU_TYPE_X86_64};
+    DPSXCHECK(posix_spawnattr_setbinpref_np(attr.get(), base::size(cpu_types),
+                                            cpu_types, nullptr));
+  }
+#endif  // ARCH_CPU_ARM64
+
   if (!options.current_directory.empty()) {
     const char* chdir_str = options.current_directory.value().c_str();
     if (__builtin_available(macOS 10.15, *)) {
@@ -292,9 +301,10 @@ Process LaunchProcess(const std::vector<std::string>& argv,
                       &argv_cstr[0], new_environ);
 
     if (has_mach_ports_for_rendezvous) {
-      auto* rendezvous = MachPortRendezvousServer::GetInstance();
       if (rv == 0) {
-        rendezvous->RegisterPortsForPid(pid, options.mach_ports_for_rendezvous);
+        MachPortRendezvousServer::GetInstance()->GetLock().AssertAcquired();
+        MachPortRendezvousServer::GetInstance()->RegisterPortsForPid(
+            pid, options.mach_ports_for_rendezvous);
       } else {
         // Because |options| is const-ref, the collection has to be copied here.
         // The caller expects to relinquish ownership of any strong rights if

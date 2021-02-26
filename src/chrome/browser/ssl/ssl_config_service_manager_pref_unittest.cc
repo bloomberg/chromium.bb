@@ -9,14 +9,13 @@
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
-#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
+#include "content/public/browser/network_service_instance.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cert/cert_verifier.h"
 #include "net/ssl/ssl_config.h"
@@ -46,6 +45,9 @@ class SSLConfigServiceManagerPrefTest : public testing::Test,
     // steal the only two params that the |config_manager| populates.
     network::mojom::NetworkContextParamsPtr network_context_params =
         network::mojom::NetworkContextParams::New();
+    network_context_params->cert_verifier_params =
+        content::GetCertVerifierParams(
+            network::mojom::CertVerifierCreationParams::New());
     config_manager->AddToNetworkContextParams(network_context_params.get());
     EXPECT_TRUE(network_context_params->initial_ssl_config);
     initial_config_ = std::move(network_context_params->initial_ssl_config);
@@ -88,7 +90,7 @@ class SSLConfigServiceManagerPrefTest : public testing::Test,
   }
 
  protected:
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_;
 
   TestingPrefServiceSimple local_state_;
 
@@ -300,58 +302,4 @@ TEST_F(SSLConfigServiceManagerPrefTest,
   ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
 
   EXPECT_TRUE(observed_configs_[0]->rev_checking_required_local_anchors);
-}
-
-// Tests that the TLS 1.3 hardening pref correctly interacts with the feature
-// flag.
-TEST_F(SSLConfigServiceManagerPrefTest, TLS13HardeningForLocalAnchorsDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kTLS13HardeningForLocalAnchors);
-
-  TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
-
-  std::unique_ptr<SSLConfigServiceManager> config_manager =
-      SetUpConfigServiceManager(&local_state);
-
-  // With the feature disabled, the hardening is disabled by default.
-  EXPECT_FALSE(initial_config_->tls13_hardening_for_local_anchors_enabled);
-
-  // It can be enabled via preference.
-  local_state.SetUserPref(prefs::kTLS13HardeningForLocalAnchorsEnabled,
-                          std::make_unique<base::Value>(true));
-  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
-  EXPECT_TRUE(observed_configs_[0]->tls13_hardening_for_local_anchors_enabled);
-
-  // It can then be disabled again.
-  local_state.SetUserPref(prefs::kTLS13HardeningForLocalAnchorsEnabled,
-                          std::make_unique<base::Value>(false));
-  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
-  EXPECT_FALSE(observed_configs_[1]->tls13_hardening_for_local_anchors_enabled);
-}
-
-// Tests that the TLS 1.3 hardening pref correctly sets the corresponding value
-// in SSL configs.
-TEST_F(SSLConfigServiceManagerPrefTest,
-       TLS13HardeningForLocalAnchorsFeatureEnabled) {
-  TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
-
-  std::unique_ptr<SSLConfigServiceManager> config_manager =
-      SetUpConfigServiceManager(&local_state);
-
-  // The hardening is enabled by default.
-  EXPECT_TRUE(initial_config_->tls13_hardening_for_local_anchors_enabled);
-
-  // It can be disabled via preferences.
-  local_state.SetUserPref(prefs::kTLS13HardeningForLocalAnchorsEnabled,
-                          std::make_unique<base::Value>(false));
-  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
-  EXPECT_FALSE(observed_configs_[0]->tls13_hardening_for_local_anchors_enabled);
-
-  // It can then be enabled again.
-  local_state.SetUserPref(prefs::kTLS13HardeningForLocalAnchorsEnabled,
-                          std::make_unique<base::Value>(true));
-  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
-  EXPECT_TRUE(observed_configs_[1]->tls13_hardening_for_local_anchors_enabled);
 }

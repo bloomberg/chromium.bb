@@ -104,13 +104,6 @@ enum CertificateType {
   kUserCert,
 };
 
-struct CaptivePortalProvider {
-  // Id used to identify the captive portal provider (i.e. an extension id).
-  string id;
-  // Display name for the captive portal provider (i.e. extension name).
-  string name;
-};
-
 // The SIM card lock status for Cellular networks.
 struct SIMLockStatus {
   // The status of SIM lock. Possible values are 'sim-pin', 'sim-puk' or empty.
@@ -182,7 +175,6 @@ union NetworkTypeStateProperties {
 };
 
 struct NetworkStateProperties {
-  CaptivePortalProvider? captive_portal_provider;
   // True if the network is configured and may be connectable.
   bool connectable = false;
   // True if an explicit connect was requested. The network state may not be
@@ -195,6 +187,8 @@ struct NetworkStateProperties {
   string guid;
   // The human readable name of the network, e.g. WiFi SSID or network type.
   string name;
+  // The captive portal state when connectionState == kPortal.
+  PortalState portal_state = kUnknown;
   // The relative priority of the network. Larger values have higher priority.
   int32 priority;
   // The proxy mode affecting this network. Includes any settings that affect
@@ -483,8 +477,13 @@ struct ManagedOpenVPNProperties {
 
 struct ManagedCellularProperties {
   ManagedBoolean? auto_connect;
-  ManagedApnProperties? apn;
+  // The current user selected APN. This corresponds to APN field
+  // in ONC.
+  ManagedApnProperties? selected_apn;
   ManagedApnList? apn_list;
+  // List of user-entered custom APN entries. Note: This field is not
+  // part of ONC spec.
+  array<ApnProperties>? custom_apn_list;
   ActivationStateType activation_state;
   bool allow_roaming = false;
   string? esn;
@@ -536,7 +535,6 @@ struct ManagedWiFiProperties {
   ManagedEAPProperties? eap;
   int32 frequency = 0;
   array<int32>? frequency_list;
-  ManagedBoolean? ft_enabled;
   ManagedString? hex_ssid;
   ManagedBoolean? hidden_ssid;
   // Note: |passphrase| contains a placeholder if set to avoid leaking secrets.
@@ -547,6 +545,9 @@ struct ManagedWiFiProperties {
   string? tethering_state;
   // Indicates whether the network is eligible to be included in Chrome Sync.
   bool is_syncable;
+  // True for unshared networks and for shared networks configured by the
+  // active user.  Updated whenever the passphrase is modified.
+  bool is_configured_by_active_user;
 };
 
 union NetworkTypeManagedProperties {
@@ -569,13 +570,14 @@ struct ManagedProperties {
   bool connectable = false;
   string? error_state;
   string guid;
-  ManagedString? ip_address_config_type;
+  ManagedString ip_address_config_type;
   array<IPConfigProperties>? ip_configs;
+  ManagedBoolean? metered;
   ManagedString? name;
-  ManagedString? name_servers_config_type;
+  ManagedString name_servers_config_type;
   ManagedInt32? priority;
   ManagedProxySettings? proxy_settings;
-  bool restricted_connectivity = false;
+  PortalState portal_state = kUnknown;
   ManagedIPConfigProperties? static_ip_config;
   IPConfigProperties? saved_ip_config;
   // |type| is explicitly provided here to simplify UI code and will always
@@ -593,6 +595,11 @@ struct ManagedProperties {
 
 // Wrapper to allow optional auto_connect configuration.
 struct AutoConnectConfig {
+  bool value;
+};
+
+// Wrapper to allow optional metered configuration.
+struct MeteredConfig {
   bool value;
 };
 
@@ -722,6 +729,7 @@ struct ConfigProperties {
   // preserve the existing guid.
   string? guid;
   string? ip_address_config_type;
+  MeteredConfig? metered;
   // Name is only required for new configurations.
   string? name;
   string? name_servers_config_type;
@@ -883,6 +891,9 @@ interface CrosNetworkConfig {
 
   // Requests a scan for new networks. If the list updates,
   // CrosNetworkConfigObserver::OnNetworkStateListChanged() will be signaled.
+  // Note: If |type| is Cellular, a mobile network scan will be requested
+  // if supported. This is disruptive and should only be triggered by an
+  // explicit user action.
   RequestNetworkScan(NetworkType type);
 
   // Returns the global policy properties. These properties are not expected to

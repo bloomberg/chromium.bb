@@ -15,8 +15,12 @@ namespace features {
 // feature in the user's country. Must be checked in addition to any other flag.
 extern const base::Feature kQueryTilesGeoFilter;
 
-// Main feature flag for the query tiles feature.
+// Main feature flag for the query tiles feature. All other flags are
+// effective only when this flag is enabled.
 extern const base::Feature kQueryTiles;
+
+// Feature flag to determine whether query tiles should be shown on NTP.
+extern const base::Feature kQueryTilesInNTP;
 
 // Feature flag to determine whether query tiles should be shown on omnibox.
 extern const base::Feature kQueryTilesInOmnibox;
@@ -25,6 +29,14 @@ extern const base::Feature kQueryTilesInOmnibox;
 // query before in the omnibox sumbitting the search. In this mode only one
 // level of tiles will be displayed.
 extern const base::Feature kQueryTilesEnableQueryEditing;
+
+// Feature flag to determine whether query tiles should be displayed in an order
+// based on local user interactions.
+extern const base::Feature kQueryTilesLocalOrdering;
+
+// Feature flag to determine whether trending tiles should disapear after
+// some time of inactivity.
+extern const base::Feature kQueryTilesRemoveTrendingTilesAfterInactivity;
 
 // Helper function to determine whether query tiles should be shown on omnibox.
 bool IsEnabledQueryTilesInOmnibox();
@@ -42,6 +54,9 @@ extern const char kQueryTilesCountryCode[];
 
 // If set, the background task will be started after a short period.
 extern const char kQueryTilesInstantBackgroundTask[];
+
+// If set, server will return trending tiles along with curated tiles.
+extern const char kQueryTilesEnableTrending[];
 
 }  // namespace switches
 }  // namespace query_tiles

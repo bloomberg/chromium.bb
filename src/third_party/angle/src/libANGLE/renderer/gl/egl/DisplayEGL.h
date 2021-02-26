@@ -11,6 +11,7 @@
 
 #include <map>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "libANGLE/renderer/gl/DisplayGL.h"
@@ -80,7 +81,8 @@ class DisplayEGL : public DisplayGL
     egl::Error waitClient(const gl::Context *context) override;
     egl::Error waitNative(const gl::Context *context, EGLint engine) override;
 
-    egl::Error makeCurrent(egl::Surface *drawSurface,
+    egl::Error makeCurrent(egl::Display *display,
+                           egl::Surface *drawSurface,
                            egl::Surface *readSurface,
                            gl::Context *context) override;
 
@@ -128,10 +130,20 @@ class DisplayEGL : public DisplayGL
     egl::AttributeMap mDisplayAttributes;
     std::vector<EGLint> mConfigAttribList;
 
+    struct CurrentNativeContext
+    {
+        EGLSurface surface = EGL_NO_SURFACE;
+        EGLContext context = EGL_NO_CONTEXT;
+    };
+    std::unordered_map<std::thread::id, CurrentNativeContext> mCurrentNativeContexts;
+
   private:
     void generateCaps(egl::Caps *outCaps) const override;
 
     std::map<EGLint, EGLint> mConfigIds;
+
+    bool mHasEXTCreateContextRobustness;
+    bool mHasNVRobustnessVideoMemoryPurge;
 };
 
 }  // namespace rx

@@ -15,7 +15,12 @@
 import * as m from 'mithril';
 
 import {Actions} from '../common/actions';
-import {AggregateData, Column} from '../common/aggregation_data';
+import {
+  AggregateData,
+  Column,
+  ThreadStateExtra
+} from '../common/aggregation_data';
+import {colorForState, textColorForState} from '../common/colorizer';
 import {translateState} from '../common/thread_state';
 
 import {globals} from './globals';
@@ -31,10 +36,19 @@ export class AggregationPanel extends Panel<AggregationPanelAttrs> {
     return m(
         '.details-panel',
         m('.details-panel-heading.aggregation',
+          attrs.data.extra !== undefined &&
+                  attrs.data.extra.kind === 'THREAD_STATE' ?
+              this.showStateSummary(attrs.data.extra) :
+              null,
+          this.showTimeRange(),
           m('table',
             m('tr',
               attrs.data.columns.map(
-                  col => this.formatColumnHeading(col, attrs.kind))))),
+                  col => this.formatColumnHeading(col, attrs.kind))),
+            m('tr.sum', attrs.data.columnSums.map(sum => {
+              const sumClass = sum === '' ? 'td' : 'td.sum-data';
+              return m(sumClass, sum);
+            })))),
         m(
             '.details-table.aggregation',
             m('table', this.getRows(attrs.data)),
@@ -76,16 +90,51 @@ export class AggregationPanel extends Panel<AggregationPanelAttrs> {
   getFormattedData(data: AggregateData, rowIndex: number, columnIndex: number) {
     switch (data.columns[columnIndex].kind) {
       case 'STRING':
-        return `${data.strings[data.columns[columnIndex].data[rowIndex]]}`;
+        return data.strings[data.columns[columnIndex].data[rowIndex]];
       case 'TIMESTAMP_NS':
         return `${data.columns[columnIndex].data[rowIndex] / 1000000}`;
-      case 'STATE':
-        return translateState(
-            `${data.strings[data.columns[columnIndex].data[rowIndex]]}`);
+      case 'STATE': {
+        const concatState =
+            data.strings[data.columns[columnIndex].data[rowIndex]];
+        const split = concatState.split(',');
+        const ioWait =
+            split[1] === 'NULL' ? undefined : !!Number.parseInt(split[1], 10);
+        return translateState(split[0], ioWait);
+      }
       case 'NUMBER':
       default:
-        return `${data.columns[columnIndex].data[rowIndex]}`;
+        return data.columns[columnIndex].data[rowIndex];
     }
+  }
+
+  showTimeRange() {
+    const selection = globals.state.currentSelection;
+    if (selection === null || selection.kind !== 'AREA') return undefined;
+    const selectedArea = globals.state.areas[selection.areaId];
+    const rangeDurationMs = (selectedArea.endSec - selectedArea.startSec) * 1e3;
+    return m('.time-range', `Selected range: ${rangeDurationMs.toFixed(6)} ms`);
+  }
+
+  // Thread state aggregation panel only
+  showStateSummary(data: ThreadStateExtra) {
+    if (data === undefined) return undefined;
+    const states = [];
+    for (let i = 0; i < data.states.length; i++) {
+      const color = colorForState(data.states[i]);
+      const textColor = textColorForState(data.states[i]);
+      const width = data.values[i] / data.totalMs * 100;
+      states.push(
+          m('.state',
+            {
+              style: {
+                background: `hsl(${color.h},${color.s}%,${color.l}%)`,
+                color: `${textColor}`,
+                width: `${width}%`
+              }
+            },
+            `${data.states[i]}: ${data.values[i]} ms`));
+    }
+    return m('.states', states);
   }
 
   renderCanvas() {}

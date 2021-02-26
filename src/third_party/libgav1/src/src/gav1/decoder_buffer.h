@@ -148,6 +148,11 @@ typedef struct Libgav1DecoderBuffer {
   int stride[3];
   uint8_t* plane[3];
 
+  // Spatial id of this frame.
+  int spatial_id;
+  // Temporal id of this frame.
+  int temporal_id;
+
   // The |user_private_data| argument passed to Decoder::EnqueueFrame().
   int64_t user_private_data;
   // The |private_data| field of FrameBuffer. Set by the get frame buffer

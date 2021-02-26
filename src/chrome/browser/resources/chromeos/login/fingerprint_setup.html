@@ -9,38 +9,19 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lottie/cr_lottie.html">
 
-<dom-module id="fingerprint-setup">
+<link rel="import" href="/components/common_styles.html">
+<link rel="import" href="/components/hd_iron_icon.html">
+<link rel="import" href="/components/oobe_i18n_behavior.html">
+
+<dom-module id="fingerprint-setup-element">
   <template>
     <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="fingerprint_setup.css">
-    <oobe-dialog id="setupFingerprint" role="dialog" has-buttons
-        footer-shrinkable
+    <oobe-dialog id="setupFingerprint" role="dialog" for-step="start"
+        has-buttons footer-shrinkable
         title-key="setupFingerprintScreenTitle"
         subtitle-key="setupFingerprintScreenDescription"
-        aria-label$="[[i18nDynamic(locale, 'setupFingerprintScreenTitle')]]"
-        hidden>
-      <hd-iron-icon slot="oobe-icon"
-          icon1x="oobe-32:fingerprint" icon2x="oobe-64:fingerprint">
-      </hd-iron-icon>
-      <div slot="footer" class="flex layout vertical center center-justified">
-        <img class="oobe-illustration"
-            srcset="images/1x/finger_unlock.svg 1x,
-                    images/2x/finger_unlock.svg 2x">
-      </div>
-      <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button id="skipFingerprintSetup"
-            text-key="skipFingerprintSetup" on-tap="onFingerprintSetupSkipped_">
-        </oobe-text-button>
-        <oobe-next-button id="showSensorLocationButton"
-            on-tap="onContinueToSensorLocationScreen_" class="focus-on-show"
-            text-key="fingerprintSetupNext" inverse></oobe-next-button>
-      </div>
-    </oobe-dialog>
-    <oobe-dialog id="placeFinger" role="dialog" has-buttons footer-shrinkable
-        title-key="placeFingerScreenTitle"
-        subtitle-key="setupFingerprintScreenDescription"
-        aria-label$="[[i18nDynamic(locale, 'placeFingerScreenTitle')]]"
-        hidden>
+        aria-label$="[[i18nDynamic(locale, 'setupFingerprintScreenAriaLabel')]]">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:fingerprint" icon2x="oobe-64:fingerprint">
       </hd-iron-icon>
@@ -55,28 +36,30 @@
             <div id="sensorLocation"></div>
           </template>
         </div>
+        <div id="footer-text" class="content self-stretch" >
+          [[i18nDynamic(locale, 'setupFingerprintScreenFooter')]]
+        </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button id="setupFingerprintLater"
-            text-key="fingerprintSetupLater"
-            on-tap="onFingerprintSetupSkipped_" class="focus-on-show">
+        <oobe-text-button id="skipStart"
+            text-key="skipFingerprintSetup"
+            on-click="onSkip_" class="focus-on-show">
         </oobe-text-button>
       </div>
     </oobe-dialog>
-    <oobe-dialog id="startFingerprintEnroll" role="dialog" has-buttons
-        footer-shrinkable
-        aria-label$="[[i18nDynamic(locale, 'enrollmentProgressScreenTitle')]]"
-        hidden>
+    <oobe-dialog id="startFingerprintEnroll" role="dialog" for-step="progress"
+        has-buttons footer-shrinkable
+        aria-label$="[[i18nDynamic(locale, 'enrollmentProgressScreenTitle')]]">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:fingerprint" icon2x="oobe-64:fingerprint">
       </hd-iron-icon>
-      <h1 slot="title" hidden="[[!enrollInProgress_(percentComplete_)]]">
+      <h1 slot="title" hidden="[[complete_]]">
         [[i18nDynamic(locale, 'enrollmentProgressScreenTitle')]]
       </h1>
-      <h1 slot="title" hidden="[[enrollInProgress_(percentComplete_)]]">
+      <h1 slot="title" hidden="[[!complete_]]">
         [[i18nDynamic(locale, 'setupFingerprintEnrollmentSuccessTitle')]]
       </h1>
-      <div slot="subtitle" hidden="[[enrollInProgress_(percentComplete_)]]">
+      <div slot="subtitle" hidden="[[!complete_]]">
         [[i18nDynamic(locale, 'setupFingerprintEnrollmentSuccessDescription')]]
       </div>
       <div slot="subtitle" hidden="[[!isProblemImmobile_(scanResult_)]]">
@@ -90,21 +73,21 @@
         </cr-fingerprint-progress-arc>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button id="skipFingerprintEnroll"
-            on-tap="onFingerprintSetupSkipped_" class="focus-on-show"
+        <oobe-text-button id="skipProgress"
+            on-click="onSkip_" class="focus-on-show"
             text-key="skipFingerprintSetup"
-            hidden="[[!enrollInProgress_(percentComplete_)]]">
+            hidden="[[complete_]]">
         </oobe-text-button>
-        <oobe-text-button id="fingerprintAddAnother"
+        <oobe-text-button id="addAnotherFinger"
             text-key="fingerprintSetupAddAnother"
             hidden="[[!isAnotherButtonVisible_(percentComplete_,
                 canAddFinger)]]"
-            on-tap="onFingerprintAddAnother_">
+            on-click="onAddAnother_">
         </oobe-text-button>
-        <oobe-text-button id="fingerprintEnrollDone"
-            hidden="[[enrollInProgress_(percentComplete_)]]"
+        <oobe-text-button id="done"
+            hidden="[[!complete_]]"
             text-key="fingerprintSetupDone"
-            on-tap="onFingerprintSetupDone_" class="focus-on-show" inverse>
+            on-click="onDone_" class="focus-on-show" inverse>
         </oobe-text-button>
       </div>
     </oobe-dialog>

@@ -35,6 +35,11 @@ import * as Workspace from '../workspace/workspace.js';
 import {ContentProviderBasedProject} from './ContentProviderBasedProject.js';
 import {DebuggerSourceMapping, DebuggerWorkspaceBinding} from './DebuggerWorkspaceBinding.js';  // eslint-disable-line no-unused-vars
 
+/** @type {!WeakMap<!Workspace.UISourceCode.UISourceCode, !Set<!SDK.Script.Script>>} */
+const uiSourceCodeToScriptsMap = new WeakMap();
+/** @type {!WeakMap<!SDK.Script.Script, !Workspace.UISourceCode.UISourceCode>} */
+const scriptToUISourceCodeMap = new WeakMap();
+
 /**
  * @implements {DebuggerSourceMapping}
  * @unrestricted
@@ -57,7 +62,8 @@ export class DefaultScriptMapping {
       debuggerModel.addEventListener(
           SDK.DebuggerModel.Events.DiscardedAnonymousScriptSource, this._discardedScriptSource, this)
     ];
-    this._scriptSymbol = Symbol('symbol');
+    /** @type {!WeakMap<!Workspace.UISourceCode.UISourceCode, !SDK.Script.Script>} */
+    this._uiSourceCodeToScriptsMap = new WeakMap();
   }
 
   /**
@@ -65,7 +71,7 @@ export class DefaultScriptMapping {
    * @return {?SDK.Script.Script}
    */
   static scriptForUISourceCode(uiSourceCode) {
-    const scripts = uiSourceCode[_scriptsSymbol];
+    const scripts = uiSourceCodeToScriptsMap.get(uiSourceCode);
     return scripts ? scripts.values().next().value : null;
   }
 
@@ -79,7 +85,10 @@ export class DefaultScriptMapping {
     if (!script) {
       return null;
     }
-    const uiSourceCode = script[_uiSourceCodeSymbol];
+    const uiSourceCode = scriptToUISourceCodeMap.get(script);
+    if (!uiSourceCode) {
+      return null;
+    }
     const lineNumber = rawLocation.lineNumber - (script.isInlineScriptWithSourceURL() ? script.lineOffset : 0);
     let columnNumber = rawLocation.columnNumber || 0;
     if (script.isInlineScriptWithSourceURL() && !lineNumber && columnNumber) {
@@ -96,7 +105,7 @@ export class DefaultScriptMapping {
    * @return {!Array<!SDK.DebuggerModel.Location>}
    */
   uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber) {
-    const script = uiSourceCode[this._scriptSymbol];
+    const script = this._uiSourceCodeToScriptsMap.get(uiSourceCode);
     if (!script) {
       return [];
     }
@@ -116,13 +125,14 @@ export class DefaultScriptMapping {
     const url = 'debugger:///VM' + script.scriptId + (name ? ' ' + name : '');
 
     const uiSourceCode = this._project.createUISourceCode(url, Common.ResourceType.resourceTypes.Script);
-    uiSourceCode[this._scriptSymbol] = script;
-    if (!uiSourceCode[_scriptsSymbol]) {
-      uiSourceCode[_scriptsSymbol] = new Set([script]);
+    this._uiSourceCodeToScriptsMap.set(uiSourceCode, script);
+    const scriptSet = uiSourceCodeToScriptsMap.get(uiSourceCode);
+    if (!scriptSet) {
+      uiSourceCodeToScriptsMap.set(uiSourceCode, new Set([script]));
     } else {
-      uiSourceCode[_scriptsSymbol].add(script);
+      scriptSet.add(script);
     }
-    script[_uiSourceCodeSymbol] = uiSourceCode;
+    scriptToUISourceCodeMap.set(script, uiSourceCode);
     this._project.addUISourceCodeWithProvider(uiSourceCode, script, null, 'text/javascript');
     this._debuggerWorkspaceBinding.updateLocations(script);
   }
@@ -132,15 +142,18 @@ export class DefaultScriptMapping {
    */
   _discardedScriptSource(event) {
     const script = /** @type {!SDK.Script.Script} */ (event.data);
-    const uiSourceCode = script[_uiSourceCodeSymbol];
+    const uiSourceCode = scriptToUISourceCodeMap.get(script);
     if (!uiSourceCode) {
       return;
     }
-    delete script[_uiSourceCodeSymbol];
-    delete uiSourceCode[this._scriptSymbol];
-    uiSourceCode[_scriptsSymbol].delete(script);
-    if (!uiSourceCode[_scriptsSymbol].size) {
-      delete uiSourceCode[_scriptsSymbol];
+    scriptToUISourceCodeMap.delete(script);
+    this._uiSourceCodeToScriptsMap.delete(uiSourceCode);
+    const scripts = uiSourceCodeToScriptsMap.get(uiSourceCode);
+    if (scripts) {
+      scripts.delete(script);
+      if (!scripts.size) {
+        uiSourceCodeToScriptsMap.delete(uiSourceCode);
+      }
     }
     this._project.removeUISourceCode(uiSourceCode.url());
   }
@@ -155,6 +168,3 @@ export class DefaultScriptMapping {
     this._project.dispose();
   }
 }
-
-const _scriptsSymbol = Symbol('symbol');
-const _uiSourceCodeSymbol = Symbol('uiSourceCodeSymbol');

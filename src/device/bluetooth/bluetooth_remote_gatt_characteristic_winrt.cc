@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -45,6 +44,8 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCommunicationStatus_Success;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattReadResult;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattWriteOption;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattWriteOption_WriteWithoutResponse;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
@@ -203,17 +204,9 @@ void BluetoothRemoteGattCharacteristicWinrt::ReadRemoteCharacteristic(
 
 void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
+    WriteType write_type,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
-  if (!(GetProperties() & PROPERTY_WRITE) &&
-      !(GetProperties() & PROPERTY_WRITE_WITHOUT_RESPONSE)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(error_callback),
-                       BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED));
-    return;
-  }
-
   if (pending_read_callbacks_ || pending_write_callbacks_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -246,13 +239,19 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
     return;
   }
 
+  GattWriteOption write_option;
+  switch (write_type) {
+    case WriteType::kWithResponse:
+      write_option = GattWriteOption_WriteWithResponse;
+      break;
+    case WriteType::kWithoutResponse:
+      write_option = GattWriteOption_WriteWithoutResponse;
+      break;
+  }
+
   ComPtr<IAsyncOperation<GattWriteResult*>> write_value_op;
   hr = characteristic_3->WriteValueWithResultAndOptionAsync(
-      buffer.Get(),
-      (GetProperties() & PROPERTY_WRITE) ? GattWriteOption_WriteWithResponse
-                                         : GattWriteOption_WriteWithoutResponse,
-
-      &write_value_op);
+      buffer.Get(), write_option, &write_value_op);
   if (FAILED(hr)) {
     BLUETOOTH_LOG(DEBUG)
         << "GattCharacteristic::WriteValueWithResultAndOptionAsync failed: "
@@ -284,6 +283,27 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
       std::move(callback), std::move(error_callback));
 }
 
+void BluetoothRemoteGattCharacteristicWinrt::
+    DeprecatedWriteRemoteCharacteristic(const std::vector<uint8_t>& value,
+                                        base::OnceClosure callback,
+                                        ErrorCallback error_callback) {
+  if (!(GetProperties() & PROPERTY_WRITE) &&
+      !(GetProperties() & PROPERTY_WRITE_WITHOUT_RESPONSE)) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(error_callback),
+                       BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED));
+    return;
+  }
+
+  WriteType write_type = (GetProperties() & PROPERTY_WRITE)
+                             ? WriteType::kWithResponse
+                             : WriteType::kWithoutResponse;
+
+  WriteRemoteCharacteristic(value, write_type, std::move(callback),
+                            std::move(error_callback));
+}
+
 void BluetoothRemoteGattCharacteristicWinrt::UpdateDescriptors(
     BluetoothGattDiscovererWinrt* gatt_discoverer) {
   const auto* gatt_descriptors =
@@ -309,56 +329,6 @@ void BluetoothRemoteGattCharacteristicWinrt::UpdateDescriptors(
   }
 
   std::swap(descriptors, descriptors_);
-}
-
-bool BluetoothRemoteGattCharacteristicWinrt::WriteWithoutResponse(
-    base::span<const uint8_t> value) {
-  if (!(GetProperties() & PROPERTY_WRITE_WITHOUT_RESPONSE))
-    return false;
-
-  if (pending_read_callbacks_ || pending_write_callbacks_)
-    return false;
-
-  ComPtr<IGattCharacteristic3> characteristic_3;
-  HRESULT hr = characteristic_.As(&characteristic_3);
-  if (FAILED(hr)) {
-    BLUETOOTH_LOG(DEBUG) << "As IGattCharacteristic3 failed: "
-                         << logging::SystemErrorCodeToString(hr);
-    return false;
-  }
-
-  ComPtr<IBuffer> buffer;
-  hr = base::win::CreateIBufferFromData(value.data(), value.size(), &buffer);
-  if (FAILED(hr)) {
-    BLUETOOTH_LOG(DEBUG) << "base::win::CreateIBufferFromData failed: "
-                         << logging::SystemErrorCodeToString(hr);
-    return false;
-  }
-
-  ComPtr<IAsyncOperation<GattWriteResult*>> write_value_op;
-  // Note: As we are ignoring the result WriteValueWithOptionAsync() would work
-  // as well, but re-using WriteValueWithResultAndOptionAsync() does simplify
-  // the testing code and there is no difference in production.
-  hr = characteristic_3->WriteValueWithResultAndOptionAsync(
-      buffer.Get(), GattWriteOption_WriteWithoutResponse, &write_value_op);
-  if (FAILED(hr)) {
-    BLUETOOTH_LOG(DEBUG)
-        << "GattCharacteristic::WriteValueWithResultAndOptionAsync failed: "
-        << logging::SystemErrorCodeToString(hr);
-    return false;
-  }
-
-  // While we are ignoring the response, we still post the async_op in order to
-  // extend its lifetime until the operation has completed.
-  hr =
-      base::win::PostAsyncResults(std::move(write_value_op), base::DoNothing());
-  if (FAILED(hr)) {
-    BLUETOOTH_LOG(DEBUG) << "PostAsyncResults failed: "
-                         << logging::SystemErrorCodeToString(hr);
-    return false;
-  }
-
-  return true;
 }
 
 IGattCharacteristic*

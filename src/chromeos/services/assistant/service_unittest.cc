@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/assistant/test_support/mock_assistant_controller.h"
 #include "base/check.h"
 #include "base/macros.h"
@@ -20,10 +21,10 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/test_support/fully_initialized_assistant_state.h"
 #include "chromeos/services/assistant/test_support/scoped_assistant_client.h"
 #include "chromeos/services/assistant/test_support/scoped_device_actions.h"
@@ -76,7 +77,7 @@ class AssistantServiceTest : public testing::Test {
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kAmbientModeFeature);
+        chromeos::assistant::features::kEnableAmbientAssistant);
 
     chromeos::CrasAudioHandler::InitializeForTesting();
 
@@ -155,7 +156,7 @@ class AssistantServiceTest : public testing::Test {
 
   base::test::TaskEnvironment* task_environment() { return &task_environment_; }
 
-  ash::AmbientModeState* ambient_mode_state() { return &ambient_mode_state_; }
+  ash::AmbientUiModel* ambient_ui_model() { return &ambient_ui_model_; }
 
  private:
   base::test::TaskEnvironment task_environment_{
@@ -175,7 +176,7 @@ class AssistantServiceTest : public testing::Test {
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
-  ash::AmbientModeState ambient_mode_state_;
+  ash::AmbientUiModel ambient_ui_model_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantServiceTest);
 };
@@ -291,12 +292,14 @@ TEST_F(AssistantServiceTest, ShouldSetClientStatusToNotReadyWhenStarting) {
   EXPECT_EQ(client()->status(), AssistantStatus::NOT_READY);
 }
 
-TEST_F(AssistantServiceTest, ShouldSetClientStatusToReadyWhenStarted) {
+TEST_F(AssistantServiceTest, ShouldKeepClientStatusNotReadyWhenStarted) {
+  // Note: even though we've started, we are not ready to handle the queries
+  // until LibAssistant tells us we are.
   assistant_manager()->SetStateAndInformObservers(
       AssistantManagerService::State::STARTED);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(client()->status(), AssistantStatus::READY);
+  EXPECT_EQ(client()->status(), AssistantStatus::NOT_READY);
 }
 
 TEST_F(AssistantServiceTest, ShouldSetClientStatusToNewReadyWhenRunning) {
@@ -304,7 +307,7 @@ TEST_F(AssistantServiceTest, ShouldSetClientStatusToNewReadyWhenRunning) {
       AssistantManagerService::State::RUNNING);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(client()->status(), AssistantStatus::NEW_READY);
+  EXPECT_EQ(client()->status(), AssistantStatus::READY);
 }
 
 TEST_F(AssistantServiceTest, ShouldSetClientStatusToNotReadyWhenStopped) {
@@ -325,13 +328,13 @@ TEST_F(AssistantServiceTest,
   ASSERT_TRUE(assistant_manager()->access_token().has_value());
   ASSERT_EQ(assistant_manager()->access_token().value(), kAccessToken);
 
-  ambient_mode_state()->SetAmbientModeEnabled(true);
+  ambient_ui_model()->SetUiVisibility(ash::AmbientUiVisibility::kShown);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
   ASSERT_FALSE(assistant_manager()->access_token().has_value());
 
   // Disabling ambient mode requests a new token.
-  ambient_mode_state()->SetAmbientModeEnabled(false);
+  ambient_ui_model()->SetUiVisibility(ash::AmbientUiVisibility::kClosed);
   EXPECT_TRUE(identity_test_env()->IsAccessTokenRequestPending());
 
   // Assistant manager receives the new token.

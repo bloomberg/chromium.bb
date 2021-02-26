@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -17,11 +18,11 @@
 #include "base/one_shot_event.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -58,13 +59,38 @@ namespace extensions {
 
 namespace {
 
-// The time to delay between an extension becoming idle and
-// sending a ShouldSuspend message.
-unsigned g_event_page_idle_time_msec = 10000;
+// Feature to control the delay between an extension becoming idle and sending a
+// ShouldSuspend message.
+const base::Feature kChangeExtensionEventPageSuspendDelay{
+    "ChangeExtensionEventPageSuspendDelay", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// The delay between an extension becoming idle and sending a ShouldSuspend
+// message. The default value is used when the
+// |kChangeExtensionEventPageSuspendDelay| feature is disabled.
+//
+// TODO(crbug.com/1144166): Cleanup the feature param after experiments with a
+// longer delay are complete.
+const base::FeatureParam<int> kEventPageSuspendDelayMs{
+    &kChangeExtensionEventPageSuspendDelay, "event-page-suspend-delay-ms",
+    10000};
+
+// Overrides |kEventPageSuspendDelayMs| if not -1. For testing.
+constexpr int kInvalidSuspendDelay = -1;
+int g_event_page_suspend_delay_ms_for_testing = kInvalidSuspendDelay;
 
 // The time to delay between sending a ShouldSuspend message and
 // sending a Suspend message.
 unsigned g_event_page_suspending_time_msec = 5000;
+
+// Returns the delay between an extension becoming idle and sending a
+// ShouldSuspend message, taking into account experiments and testing overrides.
+base::TimeDelta GetEventPageSuspendDelay() {
+  if (g_event_page_suspend_delay_ms_for_testing != kInvalidSuspendDelay) {
+    return base::TimeDelta::FromMilliseconds(
+        g_event_page_suspend_delay_ms_for_testing);
+  }
+  return base::TimeDelta::FromMilliseconds(kEventPageSuspendDelayMs.Get());
+}
 
 std::string GetExtensionIdForSiteInstance(
     content::SiteInstance* site_instance) {
@@ -256,8 +282,7 @@ ProcessManager::ProcessManager(BrowserContext* context,
     : extension_registry_(extension_registry),
       site_instance_(content::SiteInstance::Create(context)),
       browser_context_(context),
-      worker_task_runner_(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})),
+      worker_task_runner_(content::GetIOThreadTaskRunner({})),
       startup_background_hosts_created_(false),
       last_background_close_sequence_id_(0) {
   // ExtensionRegistry is shared between incognito and regular contexts.
@@ -627,7 +652,7 @@ void ProcessManager::CloseBackgroundHosts() {
 // static
 void ProcessManager::SetEventPageIdleTimeForTesting(unsigned idle_time_msec) {
   CHECK_GT(idle_time_msec, 0u);
-  g_event_page_idle_time_msec = idle_time_msec;
+  g_event_page_suspend_delay_ms_for_testing = idle_time_msec;
 }
 
 // static
@@ -817,7 +842,7 @@ void ProcessManager::DecrementLazyKeepaliveCount(
           base::BindOnce(&ProcessManager::OnLazyBackgroundPageIdle,
                          weak_ptr_factory_.GetWeakPtr(), extension_id,
                          last_background_close_sequence_id_),
-          base::TimeDelta::FromMilliseconds(g_event_page_idle_time_msec));
+          GetEventPageSuspendDelay());
     }
   }
 }
@@ -986,6 +1011,8 @@ void ProcessManager::RegisterServiceWorker(const WorkerId& worker_id) {
       // These will be cleaned up in RenderProcessExited().
       process_observer_.Add(render_process_host);
     }
+    for (auto& observer : observer_list_)
+      observer.OnServiceWorkerRegistered(worker_id);
   }
 }
 
@@ -1039,6 +1066,11 @@ std::vector<WorkerId> ProcessManager::GetServiceWorkers(
     int render_process_id) const {
   return all_extension_workers_.GetAllForExtension(extension_id,
                                                    render_process_id);
+}
+
+std::vector<WorkerId> ProcessManager::GetServiceWorkersForExtension(
+    const ExtensionId& extension_id) const {
+  return all_extension_workers_.GetAllForExtension(extension_id);
 }
 
 std::vector<WorkerId> ProcessManager::GetAllWorkersIdsForTesting() {

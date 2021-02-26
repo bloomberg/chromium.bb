@@ -30,7 +30,6 @@
 
 #include "base/base_export.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 
 struct IPropertyStore;
@@ -199,7 +198,7 @@ BASE_EXPORT bool IsProcessPerMonitorDpiAware();
 BASE_EXPORT void EnableHighDPISupport();
 
 // Returns a string representation of |rguid|.
-BASE_EXPORT string16 String16FromGUID(REFGUID rguid);
+BASE_EXPORT std::wstring WStringFromGUID(REFGUID rguid);
 
 // Attempts to pin user32.dll to ensure it remains loaded. If it isn't loaded
 // yet, the module will first be loaded and then the pin will be attempted. If
@@ -231,7 +230,7 @@ BASE_EXPORT bool IsCurrentSessionRemote();
 // The original state is restored upon destruction.
 class BASE_EXPORT ScopedDomainStateForTesting {
  public:
-  ScopedDomainStateForTesting(bool state);
+  explicit ScopedDomainStateForTesting(bool state);
   ~ScopedDomainStateForTesting();
 
  private:
@@ -243,7 +242,7 @@ class BASE_EXPORT ScopedDomainStateForTesting {
 // object.  The original state is restored upon destruction.
 class BASE_EXPORT ScopedDeviceRegisteredWithManagementForTesting {
  public:
-  ScopedDeviceRegisteredWithManagementForTesting(bool state);
+  explicit ScopedDeviceRegisteredWithManagementForTesting(bool state);
   ~ScopedDeviceRegisteredWithManagementForTesting();
 
  private:

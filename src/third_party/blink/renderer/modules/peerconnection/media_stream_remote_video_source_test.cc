@@ -18,11 +18,12 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/webrtc/track_observer.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -76,9 +77,6 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
             /*supports_encoded_output=*/true)),
         webrtc_video_track_(
             blink::MockWebRtcVideoTrack::Create("test", webrtc_video_source_)),
-        remote_source_(nullptr),
-        number_of_successful_track_starts_(0),
-        number_of_failed_track_starts_(0),
         time_diff_(base::TimeTicks::Now() - base::TimeTicks() -
                    base::TimeDelta::FromMicroseconds(rtc::TimeMicros())) {}
 
@@ -109,16 +107,15 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
 
     remote_source_ =
         new MediaStreamRemoteVideoSourceUnderTest(std::move(track_observer));
-    web_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
-                           blink::WebMediaStreamSource::kTypeVideo,
-                           blink::WebString::FromASCII("dummy_source_name"),
-                           true /* remote */);
-    web_source_.SetPlatformSource(base::WrapUnique(remote_source_));
+    source_ = MakeGarbageCollected<MediaStreamSource>(
+        "dummy_source_id", MediaStreamSource::kTypeVideo, "dummy_source_name",
+        true /* remote */);
+    source_->SetPlatformSource(base::WrapUnique(remote_source_));
   }
 
   void TearDown() override {
     remote_source_->OnSourceTerminated();
-    web_source_.Reset();
+    source_ = nullptr;
     blink::WebHeap::CollectAllGarbageForTesting();
   }
 
@@ -160,9 +157,7 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
     waitable_event.Wait();
   }
 
-  const blink::WebMediaStreamSource& webkit_source() const {
-    return web_source_;
-  }
+  MediaStreamSource* Source() const { return source_.Get(); }
 
   const base::TimeDelta& time_diff() const { return time_diff_; }
 
@@ -181,11 +176,11 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
   std::unique_ptr<blink::MockPeerConnectionDependencyFactory> mock_factory_;
   scoped_refptr<webrtc::VideoTrackSourceInterface> webrtc_video_source_;
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_video_track_;
-  // |remote_source_| is owned by |web_source_|.
-  MediaStreamRemoteVideoSourceUnderTest* remote_source_;
-  blink::WebMediaStreamSource web_source_;
-  int number_of_successful_track_starts_;
-  int number_of_failed_track_starts_;
+  // |remote_source_| is owned by |source_|.
+  MediaStreamRemoteVideoSourceUnderTest* remote_source_ = nullptr;
+  Persistent<MediaStreamSource> source_;
+  int number_of_successful_track_starts_ = 0;
+  int number_of_failed_track_starts_ = 0;
   // WebRTC Chromium timestamp diff
   const base::TimeDelta time_diff_;
 };
@@ -247,12 +242,10 @@ TEST_F(MediaStreamRemoteVideoSourceTest, SurvivesSourceTermination) {
   blink::MockMediaStreamVideoSink sink;
   track->AddSink(&sink, sink.GetDeliverFrameCB(), false);
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive, sink.state());
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
-            webkit_source().GetReadyState());
+  EXPECT_EQ(MediaStreamSource::kReadyStateLive, Source()->GetReadyState());
   StopWebRtcTrack();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
-            webkit_source().GetReadyState());
+  EXPECT_EQ(MediaStreamSource::kReadyStateEnded, Source()->GetReadyState());
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded, sink.state());
 
   track->RemoveSink(&sink);
@@ -367,27 +360,20 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
   scoped_refptr<media::VideoFrame> output_frame = sink.last_frame();
   EXPECT_TRUE(output_frame);
 
-  base::TimeDelta elapsed;
-  EXPECT_TRUE(output_frame->metadata()->GetTimeDelta(
-      media::VideoFrameMetadata::PROCESSING_TIME, &elapsed));
-  EXPECT_FLOAT_EQ(elapsed.InSecondsF(), kProcessingTime);
+  EXPECT_FLOAT_EQ(output_frame->metadata()->processing_time->InSecondsF(),
+                  kProcessingTime);
 
-  base::TimeTicks capture_time;
-  EXPECT_TRUE(output_frame->metadata()->GetTimeTicks(
-      media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &capture_time));
-  EXPECT_NEAR((capture_time - kExpectedCaptureTime).InMillisecondsF(), 0.0f,
-              kChromiumWebRtcMaxTimeDiffMs);
+  EXPECT_NEAR(
+      (*output_frame->metadata()->capture_begin_time - kExpectedCaptureTime)
+          .InMillisecondsF(),
+      0.0f, kChromiumWebRtcMaxTimeDiffMs);
 
-  base::TimeTicks receive_time;
-  EXPECT_TRUE(output_frame->metadata()->GetTimeTicks(
-      media::VideoFrameMetadata::RECEIVE_TIME, &receive_time));
-  EXPECT_NEAR((receive_time - kExpectedReceiveTime).InMillisecondsF(), 0.0f,
-              kChromiumWebRtcMaxTimeDiffMs);
+  EXPECT_NEAR((*output_frame->metadata()->receive_time - kExpectedReceiveTime)
+                  .InMillisecondsF(),
+              0.0f, kChromiumWebRtcMaxTimeDiffMs);
 
-  double rtp_timestamp;
-  EXPECT_TRUE(output_frame->metadata()->GetDouble(
-      media::VideoFrameMetadata::RTP_TIMESTAMP, &rtp_timestamp));
-  EXPECT_EQ(static_cast<uint32_t>(rtp_timestamp), kRtpTimestamp);
+  EXPECT_EQ(static_cast<uint32_t>(*output_frame->metadata()->rtp_timestamp),
+            kRtpTimestamp);
 
   track->RemoveSink(&sink);
 }
@@ -416,10 +402,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, MAYBE_ReferenceTimeEqualsTimestampUs) {
   scoped_refptr<media::VideoFrame> output_frame = sink.last_frame();
   EXPECT_TRUE(output_frame);
 
-  base::TimeTicks reference_time;
-  EXPECT_TRUE(output_frame->metadata()->GetTimeTicks(
-      media::VideoFrameMetadata::REFERENCE_TIME, &reference_time));
-  EXPECT_NEAR((reference_time -
+  EXPECT_NEAR((*output_frame->metadata()->reference_time -
                (base::TimeTicks() +
                 base::TimeDelta::FromMicroseconds(kTimestampUs) + time_diff()))
                   .InMillisecondsF(),
@@ -449,9 +432,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, NoTimestampUsMeansNoReferenceTime) {
   scoped_refptr<media::VideoFrame> output_frame = sink.last_frame();
   EXPECT_TRUE(output_frame);
 
-  base::TimeTicks reference_time;
-  EXPECT_FALSE(output_frame->metadata()->GetTimeTicks(
-      media::VideoFrameMetadata::REFERENCE_TIME, &reference_time));
+  EXPECT_FALSE(output_frame->metadata()->reference_time.has_value());
 
   track->RemoveSink(&sink);
 }

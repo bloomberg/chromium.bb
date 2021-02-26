@@ -13,7 +13,6 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
-#include "ash/system/unified/unified_system_tray_view.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -22,7 +21,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -45,21 +43,15 @@ constexpr int kInkDropRadius = 3 * kUnifiedPageIndicatorButtonRadius;
 
 // Button internally used in PageIndicatorView. Each button
 // stores a page number which it switches to if pressed.
-class PageIndicatorView::PageIndicatorButton : public views::Button,
-                                               public views::ButtonListener {
+class PageIndicatorView::PageIndicatorButton : public views::Button {
  public:
-  explicit PageIndicatorButton(UnifiedSystemTrayController* controller,
-                               int page)
-      : views::Button(this), controller_(controller), page_number_(page) {
+  PageIndicatorButton(UnifiedSystemTrayController* controller, int page)
+      : views::Button(base::BindRepeating(
+            &UnifiedSystemTrayController::HandlePageSwitchAction,
+            base::Unretained(controller),
+            page)) {
+    SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
     SetInkDropMode(InkDropMode::ON);
-
-    const AshColorProvider::RippleAttributes ripple_attributes =
-        AshColorProvider::Get()->GetRippleAttributes(
-            UnifiedSystemTrayView::GetBackgroundColor());
-    ripple_base_color_ = ripple_attributes.base_color;
-    highlight_opacity_ = ripple_attributes.highlight_opacity;
-    inkdrop_opacity_ = ripple_attributes.inkdrop_opacity;
-
     views::InstallFixedSizeCircleHighlightPathGenerator(this, kInkDropRadius);
   }
 
@@ -89,8 +81,7 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
 
     const SkColor selected_color =
         AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kIconPrimary,
-            AshColorProvider::AshColorMode::kDark);
+            AshColorProvider::ContentLayerType::kIconColorPrimary);
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setStyle(cc::PaintFlags::kFill_Style);
@@ -101,10 +92,14 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
                        flags);
   }
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    DCHECK(controller_);
-    controller_->HandlePageSwitchAction(page_number_);
+  // views::Button:
+  void OnThemeChanged() override {
+    views::Button::OnThemeChanged();
+    auto ripple_attributes = AshColorProvider::Get()->GetRippleAttributes();
+    ripple_base_color_ = ripple_attributes.base_color;
+    highlight_opacity_ = ripple_attributes.highlight_opacity;
+    inkdrop_opacity_ = ripple_attributes.inkdrop_opacity;
+    SchedulePaint();
   }
 
   bool selected() { return selected_; }
@@ -142,8 +137,6 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
 
  private:
   bool selected_ = false;
-  UnifiedSystemTrayController* const controller_;
-  const int page_number_ = 0;
 
   SkColor ripple_base_color_ = gfx::kPlaceholderColor;
   float highlight_opacity_ = 0.f;
@@ -178,9 +171,7 @@ PageIndicatorView::~PageIndicatorView() {
 }
 
 gfx::Size PageIndicatorView::CalculatePreferredSize() const {
-  gfx::Size size = buttons_container_->GetPreferredSize();
-  size.set_height(size.height() * expanded_amount_);
-  return size;
+  return gfx::Size(kTrayMenuWidth, kPageIndicatorViewMaxHeight);
 }
 
 void PageIndicatorView::Layout() {

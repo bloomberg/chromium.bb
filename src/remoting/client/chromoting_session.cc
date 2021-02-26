@@ -19,7 +19,6 @@
 #include "base/timer/timer.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
-#include "remoting/base/chromium_url_request.h"
 #include "remoting/base/chromoting_event.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/client/audio/audio_player.h"
@@ -529,7 +528,7 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
       session_context_->audio_player_weak_factory->GetWeakPtr()));
 
   signaling_ = std::make_unique<FtlSignalStrategy>(
-      runtime_->CreateOAuthTokenGetter(),
+      runtime_->CreateOAuthTokenGetter(), runtime_->url_loader_factory(),
       std::make_unique<FtlClientUuidDeviceIdProvider>());
   logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::FTL);
 
@@ -538,8 +537,7 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
           std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
-          std::make_unique<ChromiumUrlRequestFactory>(
-              runtime_->url_loader_factory()),
+          runtime_->url_loader_factory(),
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT);

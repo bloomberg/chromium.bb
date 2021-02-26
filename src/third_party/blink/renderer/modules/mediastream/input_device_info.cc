@@ -9,36 +9,16 @@
 #include "build/build_config.h"
 #include "media/base/sample_format.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_double_range.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_long_range.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 
 namespace blink {
-
-namespace {
-
-// TODO(c.padhi): Merge this method with ToWebFacingMode() in
-// media_stream_constraints_util_video_device.h, see https://crbug.com/821668.
-WebMediaStreamTrack::FacingMode ToWebFacingMode(
-    media::VideoFacingMode facing_mode) {
-  switch (facing_mode) {
-    case media::MEDIA_VIDEO_FACING_NONE:
-      return WebMediaStreamTrack::FacingMode::kNone;
-    case media::MEDIA_VIDEO_FACING_USER:
-      return WebMediaStreamTrack::FacingMode::kUser;
-    case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
-      return WebMediaStreamTrack::FacingMode::kEnvironment;
-    default:
-      NOTREACHED();
-      return WebMediaStreamTrack::FacingMode::kNone;
-  }
-}
-
-}  // namespace
 
 InputDeviceInfo::InputDeviceInfo(const String& device_id,
                                  const String& label,
@@ -53,7 +33,7 @@ void InputDeviceInfo::SetVideoInputCapabilities(
   // ComputeCapabilitiesForVideoSource() in media_stream_constraints_util.h, see
   // https://crbug.com/821668.
   platform_capabilities_.facing_mode =
-      ToWebFacingMode(video_input_capabilities->facing_mode);
+      ToPlatformFacingMode(video_input_capabilities->facing_mode);
   if (!video_input_capabilities->formats.IsEmpty()) {
     int max_width = 1;
     int max_height = 1;
@@ -117,21 +97,21 @@ MediaTrackCapabilities* InputDeviceInfo::getCapabilities() const {
         media::SampleFormatToBitsPerChannel(media::kSampleFormatS16));
     capabilities->setSampleSize(sample_size);
     // Channel count.
-    if (!platform_capabilities_.channel_count.empty()) {
+    if (!platform_capabilities_.channel_count.IsEmpty()) {
       LongRange* channel_count = LongRange::Create();
       channel_count->setMin(platform_capabilities_.channel_count[0]);
       channel_count->setMax(platform_capabilities_.channel_count[1]);
       capabilities->setChannelCount(channel_count);
     }
     // Sample rate.
-    if (!platform_capabilities_.sample_rate.empty()) {
+    if (!platform_capabilities_.sample_rate.IsEmpty()) {
       LongRange* sample_rate = LongRange::Create();
       sample_rate->setMin(platform_capabilities_.sample_rate[0]);
       sample_rate->setMax(platform_capabilities_.sample_rate[1]);
       capabilities->setSampleRate(sample_rate);
     }
     // Latency.
-    if (!platform_capabilities_.latency.empty()) {
+    if (!platform_capabilities_.latency.IsEmpty()) {
       DoubleRange* latency = DoubleRange::Create();
       latency->setMin(platform_capabilities_.latency[0]);
       latency->setMax(platform_capabilities_.latency[1]);
@@ -140,25 +120,25 @@ MediaTrackCapabilities* InputDeviceInfo::getCapabilities() const {
   }
 
   if (DeviceType() == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT) {
-    if (!platform_capabilities_.width.empty()) {
+    if (!platform_capabilities_.width.IsEmpty()) {
       LongRange* width = LongRange::Create();
       width->setMin(platform_capabilities_.width[0]);
       width->setMax(platform_capabilities_.width[1]);
       capabilities->setWidth(width);
     }
-    if (!platform_capabilities_.height.empty()) {
+    if (!platform_capabilities_.height.IsEmpty()) {
       LongRange* height = LongRange::Create();
       height->setMin(platform_capabilities_.height[0]);
       height->setMax(platform_capabilities_.height[1]);
       capabilities->setHeight(height);
     }
-    if (!platform_capabilities_.aspect_ratio.empty()) {
+    if (!platform_capabilities_.aspect_ratio.IsEmpty()) {
       DoubleRange* aspect_ratio = DoubleRange::Create();
       aspect_ratio->setMin(platform_capabilities_.aspect_ratio[0]);
       aspect_ratio->setMax(platform_capabilities_.aspect_ratio[1]);
       capabilities->setAspectRatio(aspect_ratio);
     }
-    if (!platform_capabilities_.frame_rate.empty()) {
+    if (!platform_capabilities_.frame_rate.IsEmpty()) {
       DoubleRange* frame_rate = DoubleRange::Create();
       frame_rate->setMin(platform_capabilities_.frame_rate[0]);
       frame_rate->setMax(platform_capabilities_.frame_rate[1]);
@@ -166,19 +146,19 @@ MediaTrackCapabilities* InputDeviceInfo::getCapabilities() const {
     }
     Vector<String> facing_mode;
     switch (platform_capabilities_.facing_mode) {
-      case WebMediaStreamTrack::FacingMode::kUser:
+      case MediaStreamTrackPlatform::FacingMode::kUser:
         facing_mode.push_back("user");
         break;
-      case WebMediaStreamTrack::FacingMode::kEnvironment:
+      case MediaStreamTrackPlatform::FacingMode::kEnvironment:
         facing_mode.push_back("environment");
         break;
-      case WebMediaStreamTrack::FacingMode::kLeft:
+      case MediaStreamTrackPlatform::FacingMode::kLeft:
         facing_mode.push_back("left");
         break;
-      case WebMediaStreamTrack::FacingMode::kRight:
+      case MediaStreamTrackPlatform::FacingMode::kRight:
         facing_mode.push_back("right");
         break;
-      case WebMediaStreamTrack::FacingMode::kNone:
+      case MediaStreamTrackPlatform::FacingMode::kNone:
         break;
     }
     capabilities->setFacingMode(facing_mode);

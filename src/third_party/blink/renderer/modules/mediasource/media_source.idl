@@ -36,7 +36,6 @@ enum EndOfStreamError {
 };
 
 [
-    ImplementedAs=MediaSourceImpl,
     ActiveScriptWrappable,
     Exposed(Window MediaSourceStable, DedicatedWorker MediaSourceInWorkers)
 ] interface MediaSource : EventTarget {
@@ -59,5 +58,13 @@ enum EndOfStreamError {
     [RaisesException] void setLiveSeekableRange(double start, double end);
     [RaisesException] void clearLiveSeekableRange();
 
-    static boolean isTypeSupported (DOMString type);
+    [CallWith=ExecutionContext] static boolean isTypeSupported (DOMString type);
+
+    // Enables proactive feature-detection of MSE-in-Workers support from the
+    // main thread (or anywhere this interface is exposed.) If the attribute is
+    // available, and if it is true, then the implementation claims it can
+    // support usage of the MSE API from dedicated worker contexts. See also
+    // https://github.com/w3c/media-source/issues/175 and
+    // https://crbug.com/878133.
+    [RuntimeEnabled=MediaSourceInWorkers] static readonly attribute boolean canConstructInDedicatedWorker;
 };

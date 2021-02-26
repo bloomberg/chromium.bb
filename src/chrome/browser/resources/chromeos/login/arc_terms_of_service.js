@@ -8,7 +8,7 @@
  */
 
 Polymer({
-  is: 'arc-tos-root',
+  is: 'arc-tos-element',
 
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
@@ -161,10 +161,6 @@ Polymer({
 
   /** Called when dialog is shown */
   onBeforeShow() {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
     this.is_shown_ = true;
     window.setTimeout(this.applyOobeConfiguration_.bind(this), 0);
   },
@@ -242,6 +238,7 @@ Polymer({
    * @private
    */
   onAccept_() {
+    chrome.send('login.ArcTermsOfServiceScreen.userActed', ['accept']);
     this.screen.onAccept();
   },
 
@@ -251,6 +248,7 @@ Polymer({
    * @private
    */
   onNext_() {
+    chrome.send('login.ArcTermsOfServiceScreen.userActed', ['next']);
     this.showFullDialog = true;
     this.$.arcTosDialog.scrollToBottom();
     this.$.arcTosAcceptButton.focus();
@@ -262,6 +260,7 @@ Polymer({
    * @private
    */
   onRetry_() {
+    chrome.send('login.ArcTermsOfServiceScreen.userActed', ['retry']);
     this.screen.reloadPlayStoreToS();
   },
 
@@ -279,6 +278,8 @@ Polymer({
    * @private
    */
   onMetricsLearnMoreTap_() {
+    chrome.send(
+        'login.ArcTermsOfServiceScreen.userActed', ['metrics-learn-more']);
     this.lastFocusedElement_ = this.shadowRoot.activeElement;
     this.$.arcMetricsPopup.showDialog();
   },
@@ -288,6 +289,9 @@ Polymer({
    * @private
    */
   onBackupRestoreLearnMoreTap_() {
+    chrome.send(
+        'login.ArcTermsOfServiceScreen.userActed',
+        ['backup-restore-learn-more']);
     this.lastFocusedElement_ = this.shadowRoot.activeElement;
     if (this.isChild) {
       this.$.arcBackupRestoreChildPopup.showDialog();
@@ -301,6 +305,9 @@ Polymer({
    * @private
    */
   onLocationServiceLearnMoreTap_() {
+    chrome.send(
+        'login.ArcTermsOfServiceScreen.userActed',
+        ['location-service-learn-more']);
     this.lastFocusedElement_ = this.shadowRoot.activeElement;
     this.$.arcLocationServicePopup.showDialog();
   },
@@ -310,6 +317,9 @@ Polymer({
    * @private
    */
   onPaiLearnMoreTap_() {
+    chrome.send(
+        'login.ArcTermsOfServiceScreen.userActed',
+        ['play-auto-install-learn-more']);
     this.lastFocusedElement_ = this.shadowRoot.activeElement;
     this.$.arcPaiPopup.showDialog();
   },

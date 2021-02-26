@@ -11,14 +11,12 @@
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
-#include "components/exo/client_controlled_shell_surface.h"
-#include "components/exo/display.h"
 #include "components/exo/permission.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/sub_surface.h"
@@ -27,6 +25,7 @@
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -36,6 +35,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
@@ -53,11 +53,11 @@ bool HasBackdrop() {
 
 uint32_t ConfigureFullscreen(uint32_t serial,
                              const gfx::Size& size,
-                             ash::WindowStateType state_type,
+                             chromeos::WindowStateType state_type,
                              bool resizing,
                              bool activated,
                              const gfx::Vector2d& origin_offset) {
-  EXPECT_EQ(ash::WindowStateType::kFullscreen, state_type);
+  EXPECT_EQ(chromeos::WindowStateType::kFullscreen, state_type);
   return serial;
 }
 
@@ -198,6 +198,42 @@ TEST_F(ShellSurfaceTest, Maximize) {
   ash::WindowState::Get(window)->OnWMEvent(&maximize_event);
   EXPECT_TRUE(shell_surface->GetWidget()->IsMaximized());
   EXPECT_FALSE(HasBackdrop());
+}
+
+TEST_F(ShellSurfaceTest, CanMaximizeResizableWindow) {
+  gfx::Size buffer_size(400, 300);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  // Make sure we've created a resizable window.
+  EXPECT_TRUE(shell_surface->CanResize());
+
+  // Assert: Resizable windows can be maximized.
+  EXPECT_TRUE(shell_surface->CanMaximize());
+}
+
+TEST_F(ShellSurfaceTest, CannotMaximizeNonResizableWindow) {
+  gfx::Size buffer_size(400, 300);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  shell_surface->SetMinimumSize(buffer_size);
+  shell_surface->SetMaximumSize(buffer_size);
+  surface->Commit();
+
+  // Make sure we've created a non-resizable window.
+  EXPECT_FALSE(shell_surface->CanResize());
+
+  // Assert: Non-resizable windows cannot be maximized.
+  EXPECT_FALSE(shell_surface->CanMaximize());
 }
 
 TEST_F(ShellSurfaceTest, Minimize) {
@@ -608,11 +644,11 @@ TEST_F(ShellSurfaceTest, ForceClose) {
 }
 
 uint32_t Configure(gfx::Size* suggested_size,
-                   ash::WindowStateType* has_state_type,
+                   chromeos::WindowStateType* has_state_type,
                    bool* is_resizing,
                    bool* is_active,
                    const gfx::Size& size,
-                   ash::WindowStateType state_type,
+                   chromeos::WindowStateType state_type,
                    bool resizing,
                    bool activated,
                    const gfx::Vector2d& origin_offset) {
@@ -627,7 +663,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   // Must be before shell_surface so it outlives it, for shell_surface's
   // destructor calls Configure() referencing these 4 variables.
   gfx::Size suggested_size;
-  ash::WindowStateType has_state_type = ash::WindowStateType::kNormal;
+  chromeos::WindowStateType has_state_type = chromeos::WindowStateType::kNormal;
   bool is_resizing = false;
   bool is_active = false;
 
@@ -656,7 +692,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
 
   EXPECT_FALSE(shell_surface->GetWidget());
   EXPECT_TRUE(suggested_size.IsEmpty());
-  EXPECT_EQ(ash::WindowStateType::kNormal, has_state_type);
+  EXPECT_EQ(chromeos::WindowStateType::kNormal, has_state_type);
 
   gfx::Size buffer_size(64, 64);
   std::unique_ptr<Buffer> buffer(
@@ -668,7 +704,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   EXPECT_TRUE(shell_surface->GetWidget());
   EXPECT_EQ(maximized_bounds.size(), suggested_size);
-  EXPECT_EQ(ash::WindowStateType::kMaximized, has_state_type);
+  EXPECT_EQ(chromeos::WindowStateType::kMaximized, has_state_type);
   shell_surface->Restore();
   shell_surface->AcknowledgeConfigure(0);
   // It should be restored to the original geometry size.
@@ -678,7 +714,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_EQ(GetContext()->bounds().size().ToString(),
             suggested_size.ToString());
-  EXPECT_EQ(ash::WindowStateType::kFullscreen, has_state_type);
+  EXPECT_EQ(chromeos::WindowStateType::kFullscreen, has_state_type);
   shell_surface->SetFullscreen(false);
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_EQ(geometry.size(), shell_surface->CalculatePreferredSize());
@@ -864,41 +900,135 @@ TEST_F(ShellSurfaceTest, Popup) {
   sub_popup_surface->Commit();
   ASSERT_EQ(gfx::Rect(100, 50, 256, 256),
             sub_popup_shell_surface->GetWidget()->GetWindowBoundsInScreen());
-
+  aura::Window* target =
+      sub_popup_shell_surface->GetWidget()->GetNativeWindow();
   // The capture should be on sub_popup_shell_surface.
   EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
-            sub_popup_shell_surface->GetWidget()->GetNativeWindow());
-  EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP,
-            sub_popup_shell_surface->GetWidget()->GetNativeWindow()->type());
+            target);
+  EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP, target->type());
 
   {
     // Mouse is on the top most popup.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                          gfx::Point(100, 50), ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(sub_popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
   {
     // Move the mouse to the parent popup.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, 0),
                          gfx::Point(75, 50), ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
   {
     // Move the mouse to the main window.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, -25),
                          gfx::Point(75, 25), ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
 
   // Removing top most popup moves the grab to parent popup.
   sub_popup_shell_surface.reset();
+  target = popup_shell_surface->GetWidget()->GetNativeWindow();
   EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
-            popup_shell_surface->GetWidget()->GetNativeWindow());
+            target);
   {
     // Targetting should still work.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                          gfx::Point(50, 50), ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
+  }
+}
+
+TEST_F(ShellSurfaceTest, PopupWithInputRegion) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->SetInputRegion(cc::Region());
+
+  std::unique_ptr<Buffer> child_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> child_surface(new Surface);
+  child_surface->Attach(child_buffer.get());
+
+  auto subsurface =
+      std::make_unique<SubSurface>(child_surface.get(), surface.get());
+  subsurface->SetPosition(gfx::Point(10, 10));
+  child_surface->SetInputRegion(cc::Region(gfx::Rect(0, 0, 256, 2560)));
+  child_surface->Commit();
+  surface->Commit();
+  shell_surface->GetWidget()->SetBounds(gfx::Rect(0, 0, 256, 256));
+
+  std::unique_ptr<Buffer> popup_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> popup_surface(new Surface);
+  popup_surface->Attach(popup_buffer.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface(CreatePopupShellSurface(
+      popup_surface.get(), shell_surface.get(), gfx::Point(50, 50)));
+  popup_shell_surface->Grab();
+  popup_surface->Commit();
+  ASSERT_EQ(gfx::Rect(50, 50, 256, 256),
+            popup_shell_surface->GetWidget()->GetWindowBoundsInScreen());
+
+  // Verify that created shell surface is popup and has capture.
+  EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP,
+            popup_shell_surface->GetWidget()->GetNativeWindow()->type());
+  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
+            popup_shell_surface->GetWidget()->GetNativeWindow());
+
+  // Setting frame type on popup should have no effect.
+  popup_surface->SetFrame(SurfaceFrameType::NORMAL);
+  EXPECT_FALSE(popup_shell_surface->frame_enabled());
+
+  aura::Window* target = popup_shell_surface->GetWidget()->GetNativeWindow();
+
+  {
+    // Mouse is on the popup.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
+                         gfx::Point(50, 50), ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(target);
+    EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
+  }
+
+  {
+    // If it matches the parent's sub surface, use it.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, 0),
+                         gfx::Point(25, 50), ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(target);
+    EXPECT_EQ(child_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
+  }
+  {
+    // If it didnt't match any surface in the parent, fallback to
+    // the popup's surface.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-50, 0),
+                         gfx::Point(0, 50), ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(target);
+    EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
+  }
+  popup_surface.reset();
+  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
+            nullptr);
+
+  auto window = std::make_unique<aura::Window>(nullptr);
+  window->Init(ui::LAYER_TEXTURED);
+  window->SetBounds(gfx::Rect(0, 0, 256, 256));
+  shell_surface->GetWidget()->GetNativeWindow()->AddChild(window.get());
+  window->Show();
+
+  {
+    // If non surface window covers the window,
+    /// GetTargetSurfaceForLocatedEvent should return nullptr.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
+                         gfx::Point(50, 50), ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(window.get());
+    EXPECT_EQ(nullptr, GetTargetSurfaceForLocatedEvent(&event));
   }
 }
 
@@ -914,13 +1044,15 @@ TEST_F(ShellSurfaceTest, Caption) {
   surface->Commit();
   shell_surface->GetWidget()->SetBounds(gfx::Rect(0, 0, 256, 256));
 
-  shell_surface->GetWidget()->GetNativeWindow()->SetCapture();
+  aura::Window* target = shell_surface->GetWidget()->GetNativeWindow();
+  target->SetCapture();
   EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
             shell_surface->GetWidget()->GetNativeWindow());
   {
     // Move the mouse at the caption of the captured window.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(5, 5), gfx::Point(5, 5),
                          ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(nullptr, GetTargetSurfaceForLocatedEvent(&event));
   }
 
@@ -930,6 +1062,7 @@ TEST_F(ShellSurfaceTest, Caption) {
     gfx::Point center = bounds.CenterPoint();
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, center - bounds.OffsetFromOrigin(),
                          center, ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
 }
@@ -954,13 +1087,14 @@ TEST_F(ShellSurfaceTest, CaptionWithPopup) {
       popup_surface.get(), shell_surface.get(), gfx::Point(50, 50)));
   popup_shell_surface->Grab();
   popup_surface->Commit();
-
+  aura::Window* target = popup_shell_surface->GetWidget()->GetNativeWindow();
   EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
-            popup_shell_surface->GetWidget()->GetNativeWindow());
+            target);
   {
     // Move the mouse at the popup window.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(5, 5),
                          gfx::Point(55, 55), ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
 
@@ -968,6 +1102,7 @@ TEST_F(ShellSurfaceTest, CaptionWithPopup) {
     // Move the mouse at the caption of the main window.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-45, -45),
                          gfx::Point(5, 5), ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(nullptr, GetTargetSurfaceForLocatedEvent(&event));
   }
 
@@ -975,8 +1110,88 @@ TEST_F(ShellSurfaceTest, CaptionWithPopup) {
     // Move the mouse in the main window.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, 0),
                          gfx::Point(25, 50), ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
+}
+
+TEST_F(ShellSurfaceTest, SkipImeProcessingPropagateToSurface) {
+  gfx::Size buffer_size(256, 256);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->GetWidget()->SetBounds(gfx::Rect(0, 0, 256, 256));
+  shell_surface->OnSetFrame(SurfaceFrameType::NORMAL);
+
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  ASSERT_FALSE(window->GetProperty(aura::client::kSkipImeProcessing));
+  ASSERT_FALSE(
+      surface->window()->GetProperty(aura::client::kSkipImeProcessing));
+
+  window->SetProperty(aura::client::kSkipImeProcessing, true);
+  EXPECT_TRUE(window->GetProperty(aura::client::kSkipImeProcessing));
+  EXPECT_TRUE(surface->window()->GetProperty(aura::client::kSkipImeProcessing));
+}
+
+TEST_F(ShellSurfaceTest, NotifyLeaveEnter) {
+  gfx::Size buffer_size(256, 256);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+
+  auto func = [](int64_t* old_display_id, int64_t* new_display_id,
+                 int64_t old_id, int64_t new_id) {
+    DCHECK_EQ(0, *old_display_id);
+    DCHECK_EQ(0, *new_display_id);
+    *old_display_id = old_id;
+    *new_display_id = new_id;
+  };
+
+  int64_t old_display_id = 0, new_display_id = 0;
+
+  surface->set_leave_enter_callback(
+      base::BindRepeating(func, &old_display_id, &new_display_id));
+  ;
+  // Creating a new shell surface should notify on which display
+  // it is created.
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_EQ(display::kInvalidDisplayId, old_display_id);
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+            new_display_id);
+
+  // Attaching a 2nd display should not change where the surface
+  // is located.
+  old_display_id = 0;
+  new_display_id = 0;
+  UpdateDisplay("800x600, 800x600");
+  EXPECT_EQ(0, old_display_id);
+  EXPECT_EQ(0, new_display_id);
+
+  // Move the window to 2nd display.
+  shell_surface->GetWidget()->SetBounds(gfx::Rect(1000, 0, 256, 256));
+
+  int64_t secondary_id =
+      display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
+          .GetSecondaryDisplay()
+          .id();
+
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+            old_display_id);
+  EXPECT_EQ(secondary_id, new_display_id);
+
+  // Disconnect the display the surface is currently on.
+  old_display_id = 0;
+  new_display_id = 0;
+  UpdateDisplay("800x600");
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+            new_display_id);
+  EXPECT_EQ(secondary_id, old_display_id);
 }
 
 }  // namespace exo

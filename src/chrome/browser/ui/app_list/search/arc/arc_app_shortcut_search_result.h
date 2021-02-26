@@ -38,7 +38,6 @@ class ArcAppShortcutSearchResult : public ChromeSearchResult,
 
   // ChromeSearchResult:
   void Open(int event_flags) override;
-  ash::SearchResultType GetSearchResultType() const override;
 
  private:
   // AppIconLoaderDelegate:
@@ -58,6 +57,8 @@ class ArcAppShortcutSearchResult : public ChromeSearchResult,
 
   Profile* const profile_;                            // Owned by ProfileInfo.
   AppListControllerDelegate* const list_controller_;  // Owned by AppListClient.
+
+  base::WeakPtrFactory<ArcAppShortcutSearchResult> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppShortcutSearchResult);
 };

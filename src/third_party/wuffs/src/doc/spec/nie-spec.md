@@ -1,6 +1,9 @@
 # Naïve Image Formats: NIE, NII, NIA
 
-Status: Draft (as of August 2019). There is no compatibility guarantee yet.
+Status: Draft (as of May 2020). There is no compatibility guarantee yet.
+
+A companion document has further discussion of [NIE related
+work](/doc/spec/nie-related-work.md).
 
 
 ## NIE: Still Images
@@ -60,27 +63,19 @@ may be static files (possibly with systematic filenames such as
 `frame000000.png`, `frame000001.png`, etc.) or dynamically generated. That is
 for each application to decide, and out of scope of this specification.
 
-A NII file consists of a 24 byte header, a variable sized payload and an 8 byte
+A NII file consists of a 16 byte header, a variable sized payload and an 8 byte
 footer.
 
 
 ### NII Header
 
-The 24 byte NII header:
+The 16 byte NII header:
 
 - 4 bytes of 'magic': \[0x6E, 0xC3, 0xAF, 0x49\]. The final byte differs from
   NIE: an ASCII 'I' instead of an ASCII 'E'.
 - 4 bytes of version-and-padding, all 0xFF.
 - 4 bytes little-endian `uint32` width.
 - 4 bytes little-endian `uint32` height.
-- 1 byte, either 0x00 or 0x01. 0x01 means that the animation has no frames.
-- 7 bytes all 0x00.
-
-The final 8 bytes represent that the start of the animation has a CDD (see
-below) of zero. For example, performing a binary search for the frame to show
-at a given point in time does not have to make an exception for the first or
-last frame, as every frame's start and end times are explicitly written in the
-file format.
 
 
 ### NII Payload
@@ -88,11 +83,10 @@ file format.
 The payload is a sequence of 0 or more frames, exactly 8 bytes (a little-endian
 `uint64`) per frame:
 
-- The least significant bit is 1 if and only if this frame is the final frame.
-- The second least significant bit must be zero.
-- The high 62 bits are the cumulative display duration (CDD). This is the
-  amount of time, relative to the start of the animation, at which display
-  should proceed to the next frame.
+- The most significant bit is 0.
+- The low 63 bits are the cumulative display duration (CDD). This is the amount
+  of time, relative to the start of the animation, at which display should
+  proceed to the next frame.
 
 Every frame's CDD must be greater than or equal to the previous frame's CDD (or
 for the first frame, greater than or equal to zero, which will always be true).
@@ -108,16 +102,7 @@ the CDDs (in decimal and then hexadecimal) are:
 - 705\_600\_000 × 3.0 = 2\_116\_800\_000 = 0x0000\_0000\_7E2B\_CE00.
 - 705\_600\_000 × 7.5 = 5\_292\_000\_000 = 0x0000\_0001\_3B6D\_8300.
 
-Shifting each of these left by two bits, and setting the least significant bit
-of the final value to 1, gives the overall `uint64` values, written
-little-endian:
-
-- 0x0000\_0000\_A83A\_6800.
-- 0x0000\_0001\_F8AF\_3800.
-- 0x0000\_0001\_F8AF\_3800.
-- 0x0000\_0004\_EDB6\_0C01.
-
-Animations lasting `(1<<62)` or more flicks, more than 200 years, are not
+Animations lasting `(1<<63)` or more flicks, more than 400 years, are not
 representable in the NII format.
 
 
@@ -125,11 +110,8 @@ representable in the NII format.
 
 The 8 byte NII footer:
 
-- 4 bytes of 'magic': \[0x6E, 0xC3, 0xAF, 0x5A\], the UTF-8 encoding of "nïZ".
 - 4 bytes little-endian `uint32` LoopCount.
-
-The second least significant bit of the first byte (`0x6E`) is one, so that the
-8 byte footer is never a valid payload value.
+- 4 bytes: \[0x00, 0x00, 0x00, 0x80\].
 
 A zero LoopCount means that the animation loops forever. Non-zero means that
 the animation is played LoopCount times and then stops. This is the
@@ -147,8 +129,8 @@ for 1 second. The next frame is shown for (3 - 1) seconds (i.e., 2 seconds).
 The actual pixel data per frame is stored elsewhere.
 
     00000000  6e c3 af 49 ff ff ff ff  03 00 00 00 02 00 00 00  |n..I............|
-    00000010  00 00 00 00 00 00 00 00  00 68 3a a8 00 00 00 00  |.........h:.....|
-    00000020  01 38 af f8 01 00 00 00  6e c3 af 5a 0a 00 00 00  |.8......n..Z....|
+    00000010  00 9a 0e 2a 00 00 00 00  00 ce 2b 7e 00 00 00 00  |...*......+~....|
+    00000020  0a 00 00 00 00 00 00 80                           |........|
 
 
 ## NIA: Animated Images, In-band Frames
@@ -156,7 +138,7 @@ The actual pixel data per frame is stored elsewhere.
 NIA is like a NII file where the per-frame still images are NIE files
 interleaved between the NII payload values.
 
-The NIA header is the same as the 24 byte NII header, except that the 4 byte
+The NIA header is the same as the 16 byte NII header, except that the 4 byte
 'magic' ends in an ASCII 'A' instead of an ASCII 'I', and the 5th to 8th bytes
 are version-and-configuration (the same as for NIE), instead of NII's
 version-and-padding. The range of valid version-and-configuration bytes is the
@@ -166,6 +148,8 @@ The NIA footer is the same as the 8 byte NII footer.
 
 The payload is a sequence of 0 or more frames. Each frame is:
 
+- 8 bytes little-endian `uint64` value, the same meaning and constraints as a
+  NII payload value.
 - A complete NIE image: header and payload. The outer NIA and inner NIE
   must have the same 12 bytes of version-and-configuration, width and height.
 - Either 0 or 4 bytes of padding. If present, it must be all zeroes. The
@@ -174,8 +158,6 @@ The payload is a sequence of 0 or more frames. Each frame is:
   if there are 4 (not 8) bytes per pixel and both the width and height are odd.
   A C programming language expression for its presence is `((bytes_per_pixel ==
   4) && (width & height & 1))`.
-- 8 bytes little-endian `uint64` value, the same meaning and constraints as a
-  NII payload value.
 
 
 ### Example NIA File
@@ -188,13 +170,13 @@ second. The next frame is a crude approximation to the Italian flag (green,
 white and red) and is shown for (3 - 1) seconds (i.e., 2 seconds).
 
     00000000  6e c3 af 41 ff 62 6e 34  03 00 00 00 02 00 00 00  |n..A.bn4........|
-    00000010  00 00 00 00 00 00 00 00  6e c3 af 45 ff 62 6e 34  |........n..E.bn4|
+    00000010  00 9a 0e 2a 00 00 00 00  6e c3 af 45 ff 62 6e 34  |...*....n..E.bn4|
     00000020  03 00 00 00 02 00 00 00  ff 00 00 ff ff ff ff ff  |................|
     00000030  00 00 ff ff ff 00 00 ff  ff ff ff ff 00 00 ff ff  |................|
-    00000040  00 68 3a a8 00 00 00 00  6e c3 af 45 ff 62 6e 34  |.h:.....n..E.bn4|
+    00000040  00 ce 2b 7e 00 00 00 00  6e c3 af 45 ff 62 6e 34  |..+~....n..E.bn4|
     00000050  03 00 00 00 02 00 00 00  00 ff 00 ff ff ff ff ff  |................|
     00000060  00 00 ff ff 00 ff 00 ff  ff ff ff ff 00 00 ff ff  |................|
-    00000070  01 38 af f8 01 00 00 00  6e c3 af 5a 0a 00 00 00  |.8......n..Z....|
+    00000070  0a 00 00 00 00 00 00 80                           |........|
 
 
 # Commentary
@@ -217,10 +199,11 @@ programs, each component reading, transforming and then writing a NIE/NIA
 image. Such filters can be written in simple programming languages and
 connected with Unix-style pipes.
 
-Another example is storing 'golden images' for codec development. Given a
-corpus of test images in a compressed format (e.g. a corpus of PNG files), it
-is useful to store their expected decodings for comparison, but those golden
-test files should be encoded in an alternative format, such as NIE/NIA.
+Another example is storing 'golden images' (or their hashes) for codec
+development. Given a corpus of test images in a compressed format (e.g. a
+corpus of PNG files), it is useful to store their expected decodings for
+comparison, but those golden test files should be encoded in an alternative
+format, such as NIE/NIA.
 
 
 ## Magic
@@ -254,6 +237,15 @@ The roundup8 function rounds its argument up to the nearest multiple of 8.
 
 This is random access by frame index (the "_i_" in "the _i_'th frame"), not by
 time, as different frames can have different display durations.
+
+
+## Degenerate Animations
+
+A still image is, in some sense, an animated image with a single frame, albeit
+without an explicit display duration or looping behavior. Some animated image
+formats also support zero frames, just like the empty string being a valid
+string. For these degenerate (0 or 1 frame) cases, when converting to NII or
+NIA, the convention (but not requirement) is a zero CDD and a zero LoopCount.
 
 
 ## Cumulative Display Duration
@@ -373,65 +365,10 @@ engine. Instead, you can think of `.nie` as derived from the word "naïve".
 
 ## Pronunciation
 
-I pronounce "NIE", "NII" and "NIA" as "naɪ'i", "naɪ'aɪ"  and "naɪ'eɪ", ending
+I pronounce "NIE", "NII" and "NIA" as /naɪˈiː/, /naɪˈaɪ/  and /naɪˈeɪ/, ending
 in a long "E", "I" or "A" sound. It's definitely a hard "N", not a soft one.
-
-
-# Related Work
-
-In general, being uncompressed, NIE/NIA is not intended for long term storage
-or for delivery over a network. Alternative lossless image formats like
-[PNG](https://www.w3.org/TR/2003/REC-PNG-20031110/) or [WebP
-Lossless](https://developers.google.com/speed/webp/docs/riff_container) are far
-more suitable.
-
-Amongst uncompressed formats, [Farbfeld](https://tools.suckless.org/farbfeld/)
-is a very similar design. The main difference is that NIE is little-endian (the
-same as the vast majority of CPUs) where Farbfeld is big-endian. NIE/NII/NIA
-also allows animated images, not just still images, and is also configurable
-with respect to BGRA versus RGBA order, non-premultiplied versus premultiplied
-alpha, and 8 versus 16 bit channels. Configurability is admittedly a trade-off:
-one person's configuration parameter is another person's unnecessary bloat.
-We're not saying that Farbfeld is a bad design, just a different design that
-has chosen different trade-offs.
-
-[PAM](http://netpbm.sourceforge.net/doc/pam.html) (Portable Arbitrary Map) and
-its related formats (PBM, PGM, PPM) are also very similar. The main difference
-is that their headers are ASCII text and of variable length. Such headers are
-easier for humans to read but harder for computers to parse. Again, NIE/NII/NIA
-also allows animated images. Some programs process concatenated streams of PAM
-images as an animation, but that doesn't contain explicit timing information.
-
-[VIPS](https://jcupitt.github.io/libvips/API/current/file-format.html) is the
-intermediate format for the [libvips](https://libvips.github.io/libvips/) image
-processing library. Pixel data is stored in a straightforward fashion, but
-metadata is stored as XML, which is not simple, and is a potential security
-concern.
-
-Amongst flexible formats,
-[BMP](https://www.fileformat.info/format/bmp/egff.htm),
-[PNG](https://www.w3.org/TR/2003/REC-PNG-20031110/) and its animated variant
-[APNG](https://wiki.mozilla.org/APNG_Specification),
-[Targa](http://tfc.duke.free.fr/coding/tga_specs.pdf) and
-[TIFF](http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf) all have
-their built-in compression being optional. Some of those uncompressed forms
-have been used as simple interchange formats. Compared to those, NIE has fewer
-features, which is obviously unfavorable if you want such features, but can be
-favorable if you prefer simplicity and code auditability. A NIE file is still
-simpler than an uncompressed BMP file and a NIA file is still simpler than an
-uncompressed APNG file.
-
-For example, when using a sandboxed worker process to convert to an
-intermediate format, we don't want to use "all possible valid TIFF images" as
-the intermediate format, because a compromised worker process could generate a
-malicious intermediate image that provoked a security bug in an unsandboxed
-TIFF decoder. Instead, we would want only a very simple subset of TIFF, but it
-can be easier (in terms of implementation and in terms of a code audit) to
-write an (almost trivial) NIE parser from scratch instead of whittling down a
-full-featured TIFF library and hoping that you've eliminated all the potential
-security vulnerabilities.
 
 
 ---
 
-Updated on August 2019.
+Updated on May 2020.

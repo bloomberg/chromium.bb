@@ -41,7 +41,7 @@ CrashReporterClient* GetCrashReporterClient() {
 CrashReporterClient::CrashReporterClient() {}
 CrashReporterClient::~CrashReporterClient() {}
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(OS_ANDROID)
+#if !defined(OS_APPLE) && !defined(OS_WIN) && !defined(OS_ANDROID)
 void CrashReporterClient::SetCrashReporterClientIdFromGUID(
     const std::string& client_guid) {}
 #endif
@@ -88,7 +88,7 @@ int CrashReporterClient::GetResultCodeRespawnFailed() {
 }
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_POSIX) && !defined(OS_MAC)
 void CrashReporterClient::GetProductNameAndVersion(const char** product_name,
                                                    const char** version) {
 }
@@ -121,14 +121,6 @@ bool CrashReporterClient::GetCrashMetricsLocation(base::string16* crash_dir) {
 bool CrashReporterClient::GetCrashMetricsLocation(base::FilePath* crash_dir) {
 #endif
   return false;
-}
-
-bool CrashReporterClient::UseCrashKeysWhiteList() {
-  return false;
-}
-
-const char* const* CrashReporterClient::GetCrashKeyWhiteList() {
-  return nullptr;
 }
 
 bool CrashReporterClient::IsRunningUnattended() {
@@ -185,12 +177,12 @@ bool CrashReporterClient::ShouldWriteMinidumpToLog() {
 
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 void CrashReporterClient::GetSanitizationInformation(
-    const char* const** annotations_whitelist,
+    const char* const** allowed_annotations,
     void** target_module,
     bool* sanitize_stacks) {
-  *annotations_whitelist = nullptr;
+  *allowed_annotations = nullptr;
   *target_module = nullptr;
   *sanitize_stacks = false;
 }

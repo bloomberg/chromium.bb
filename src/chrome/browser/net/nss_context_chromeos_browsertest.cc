@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -39,8 +38,8 @@ class DBTester {
   // Returns true if the database was retrieved successfully.
   bool DoGetDBTests() {
     base::RunLoop run_loop;
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DBTester::GetDBAndDoTestsOnIOThread,
                        base::Unretained(this), profile_->GetResourceContext(),
                        run_loop.QuitClosure()));
@@ -51,8 +50,8 @@ class DBTester {
   // Test retrieving the database again, should be called after DoGetDBTests.
   void DoGetDBAgainTests() {
     base::RunLoop run_loop;
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DBTester::DoGetDBAgainTestsOnIOThread,
                        base::Unretained(this), profile_->GetResourceContext(),
                        run_loop.QuitClosure()));
@@ -68,12 +67,10 @@ class DBTester {
 
  private:
   void GetDBAndDoTestsOnIOThread(content::ResourceContext* context,
-                                 const base::Closure& done_callback) {
+                                 const base::RepeatingClosure& done_callback) {
     net::NSSCertDatabase* db = GetNSSCertDatabaseForResourceContext(
-        context,
-        base::Bind(&DBTester::DoTestsOnIOThread,
-                   base::Unretained(this),
-                   done_callback));
+        context, base::BindOnce(&DBTester::DoTestsOnIOThread,
+                                base::Unretained(this), done_callback));
     if (db) {
       DVLOG(1) << "got db synchronously";
       DoTestsOnIOThread(done_callback, db);
@@ -82,7 +79,7 @@ class DBTester {
     }
   }
 
-  void DoTestsOnIOThread(const base::Closure& done_callback,
+  void DoTestsOnIOThread(base::OnceClosure done_callback,
                          net::NSSCertDatabase* db) {
     db_ = db;
     EXPECT_TRUE(db);
@@ -92,19 +89,21 @@ class DBTester {
       EXPECT_EQ(db->GetPublicSlot().get(), db->GetPrivateSlot().get());
     }
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, done_callback);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(done_callback));
   }
 
   void DoGetDBAgainTestsOnIOThread(content::ResourceContext* context,
-                                   const base::Closure& done_callback) {
+                                   base::OnceClosure done_callback) {
     net::NSSCertDatabase* db = GetNSSCertDatabaseForResourceContext(
-        context, base::Bind(&NotCalledDbCallback));
+        context, base::BindOnce(&NotCalledDbCallback));
     // Should always be synchronous now.
     EXPECT_TRUE(db);
     // Should return the same db as before.
     EXPECT_EQ(db_, db);
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, done_callback);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(done_callback));
   }
 
   Profile* profile_;
@@ -137,7 +136,7 @@ class UserAddingFinishObserver : public chromeos::UserAddingScreen::Observer {
       run_loop_->Quit();
   }
 
-  void OnUserAddingStarted() override {
+  void OnBeforeUserAddingScreenStarted() override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     finished_ = false;
   }

@@ -16,8 +16,8 @@
 #include "core/fxcodec/scanlinedecoder.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
+#include "third_party/base/notreached.h"
 #include "third_party/base/numerics/safe_conversions.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/span.h"
 
 #if defined(USE_SYSTEM_ZLIB)
@@ -793,10 +793,10 @@ std::unique_ptr<ScanlineDecoder> FlateModule::CreateDecoder(
     int Columns) {
   PredictorType predictor_type = GetPredictor(predictor);
   if (predictor_type == PredictorType::kNone) {
-    return pdfium::MakeUnique<FlateScanlineDecoder>(src_span, width, height,
-                                                    nComps, bpc);
+    return std::make_unique<FlateScanlineDecoder>(src_span, width, height,
+                                                  nComps, bpc);
   }
-  return pdfium::MakeUnique<FlatePredictorScanlineDecoder>(
+  return std::make_unique<FlatePredictorScanlineDecoder>(
       src_span, width, height, nComps, bpc, predictor_type, Colors,
       BitsPerComponent, Columns);
 }
@@ -818,7 +818,7 @@ uint32_t FlateModule::FlateOrLZWDecode(
   PredictorType predictor_type = GetPredictor(predictor);
 
   if (bLZW) {
-    auto decoder = pdfium::MakeUnique<CLZWDecoder>(src_span, bEarlyChange);
+    auto decoder = std::make_unique<CLZWDecoder>(src_span, bEarlyChange);
     if (!decoder->Decode())
       return FX_INVALID_OFFSET;
 

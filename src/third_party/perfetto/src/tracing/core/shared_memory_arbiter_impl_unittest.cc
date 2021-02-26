@@ -35,8 +35,9 @@
 
 namespace perfetto {
 
-using testing::Invoke;
 using testing::_;
+using testing::Invoke;
+using testing::Mock;
 
 class MockProducerEndpoint : public TracingService::ProducerEndpoint {
  public:
@@ -146,6 +147,83 @@ TEST_P(SharedMemoryArbiterImplTest, GetAndReturnChunks) {
   task_runner_->RunUntilCheckpoint("on_commit_2");
 }
 
+TEST_P(SharedMemoryArbiterImplTest, BatchCommits) {
+  SharedMemoryArbiterImpl::set_default_layout_for_testing(
+      SharedMemoryABI::PageLayout::kPageDiv1);
+
+  // Batching period is 0s - chunks are being committed as soon as they are
+  // returned.
+  SharedMemoryABI::Chunk chunk =
+      arbiter_->GetNewChunk({}, BufferExhaustedPolicy::kDefault);
+  ASSERT_TRUE(chunk.is_valid());
+  EXPECT_CALL(mock_producer_endpoint_, CommitData(_, _)).Times(1);
+  PatchList ignored;
+  arbiter_->ReturnCompletedChunk(std::move(chunk), 0, &ignored);
+  task_runner_->RunUntilIdle();
+  ASSERT_TRUE(Mock::VerifyAndClearExpectations(&mock_producer_endpoint_));
+
+  // Since we cannot explicitly control the passage of time in task_runner_, to
+  // simulate a non-zero batching period and a commit at the end of it, set the
+  // batching duration to a very large value and call
+  // FlushPendingCommitDataRequests to manually trigger the commit.
+  arbiter_->SetDirectSMBPatchingSupportedByService();
+  ASSERT_TRUE(arbiter_->EnableDirectSMBPatching());
+  arbiter_->SetBatchCommitsDuration(UINT32_MAX);
+
+  // First chunk that will be batched. CommitData should not be called
+  // immediately this time.
+  chunk = arbiter_->GetNewChunk({}, BufferExhaustedPolicy::kDefault);
+  ASSERT_TRUE(chunk.is_valid());
+  EXPECT_CALL(mock_producer_endpoint_, CommitData(_, _)).Times(0);
+  // We'll pretend that the chunk needs patching. This is done in order to
+  // verify that chunks that need patching are not marked as complete (i.e. they
+  // are kept in state kChunkBeingWritten) before the batching period ends - in
+  // case a patch for them arrives during the batching period.
+  chunk.SetFlag(SharedMemoryABI::ChunkHeader::kChunkNeedsPatching);
+  arbiter_->ReturnCompletedChunk(std::move(chunk), 1, &ignored);
+  task_runner_->RunUntilIdle();
+  ASSERT_TRUE(Mock::VerifyAndClearExpectations(&mock_producer_endpoint_));
+  ASSERT_EQ(SharedMemoryABI::kChunkBeingWritten,
+            arbiter_->shmem_abi_for_testing()->GetChunkState(1u, 0u));
+
+  // Add a second chunk to the batch. This should also not trigger an immediate
+  // call to CommitData.
+  chunk = arbiter_->GetNewChunk({}, BufferExhaustedPolicy::kDefault);
+  ASSERT_TRUE(chunk.is_valid());
+  EXPECT_CALL(mock_producer_endpoint_, CommitData(_, _)).Times(0);
+  arbiter_->ReturnCompletedChunk(std::move(chunk), 2, &ignored);
+  task_runner_->RunUntilIdle();
+  ASSERT_TRUE(Mock::VerifyAndClearExpectations(&mock_producer_endpoint_));
+  // This chunk does not need patching, so it should be marked as complete even
+  // before the end of the batching period - to allow the service to read it in
+  // full.
+  ASSERT_EQ(SharedMemoryABI::kChunkComplete,
+            arbiter_->shmem_abi_for_testing()->GetChunkState(2u, 0u));
+
+  // Make sure that CommitData gets called once (should happen at the end
+  // of the batching period), with the two chunks in the batch.
+  EXPECT_CALL(mock_producer_endpoint_, CommitData(_, _))
+      .WillOnce(Invoke([](const CommitDataRequest& req,
+                          MockProducerEndpoint::CommitDataCallback) {
+        ASSERT_EQ(2, req.chunks_to_move_size());
+
+        // Verify that this is the first chunk that we expect to have been
+        // batched.
+        ASSERT_EQ(1u, req.chunks_to_move()[0].page());
+        ASSERT_EQ(0u, req.chunks_to_move()[0].chunk());
+        ASSERT_EQ(1u, req.chunks_to_move()[0].target_buffer());
+
+        // Verify that this is the second chunk that we expect to have been
+        // batched.
+        ASSERT_EQ(2u, req.chunks_to_move()[1].page());
+        ASSERT_EQ(0u, req.chunks_to_move()[1].chunk());
+        ASSERT_EQ(2u, req.chunks_to_move()[1].target_buffer());
+      }));
+
+  // Pretend we've reached the end of the batching period.
+  arbiter_->FlushPendingCommitDataRequests();
+}
+
 // Helper for verifying trace writer id allocations.
 class TraceWriterIdChecker : public FakeProducerEndpoint {
  public:
@@ -210,6 +288,22 @@ TEST_P(SharedMemoryArbiterImplTest, WriterIDsAllocation) {
 
   EXPECT_TRUE(id_checking_endpoint.registered_ids_.all());
   EXPECT_TRUE(id_checking_endpoint.unregistered_ids_.all());
+}
+
+TEST_P(SharedMemoryArbiterImplTest, Shutdown) {
+  std::unique_ptr<TraceWriter> writer = arbiter_->CreateTraceWriter(1);
+  EXPECT_TRUE(writer);
+  EXPECT_FALSE(arbiter_->TryShutdown());
+
+  // We still get a valid trace writer after shutdown, but it's a null one
+  // that's not connected to the arbiter.
+  std::unique_ptr<TraceWriter> writer2 = arbiter_->CreateTraceWriter(2);
+  EXPECT_TRUE(writer2);
+  EXPECT_EQ(writer2->writer_id(), 0);
+
+  // Shutdown will succeed once the only non-null writer goes away.
+  writer.reset();
+  EXPECT_TRUE(arbiter_->TryShutdown());
 }
 
 // Verify that getting a new chunk doesn't stall when kDrop policy is chosen.

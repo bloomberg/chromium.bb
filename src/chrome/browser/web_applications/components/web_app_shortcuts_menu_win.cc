@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -20,12 +21,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/win/jumplist_updater.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/web_application_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
@@ -81,7 +83,7 @@ void RecordUnregistration(UnregistrationResult result) {
 base::FilePath GetShortcutsMenuIconsDirectory(
     const base::FilePath& shortcut_data_dir) {
   static constexpr base::FilePath::CharType kShortcutsMenuIconsDirectoryName[] =
-      FILE_PATH_LITERAL("Shortcut Icons");
+      FILE_PATH_LITERAL("Shortcuts Menu Icons");
   return shortcut_data_dir.Append(kShortcutsMenuIconsDirectoryName);
 }
 
@@ -94,22 +96,21 @@ base::FilePath GetShortcutIconPath(const base::FilePath& shortcut_data_dir,
 // Writes .ico file to disk.
 bool WriteShortcutsMenuIconsToIcoFiles(
     const base::FilePath& shortcut_data_dir,
-    const std::vector<WebApplicationShortcutInfo>& shortcuts) {
+    const ShortcutsMenuIconsBitmaps& shortcut_icons) {
   if (!base::CreateDirectory(
           GetShortcutsMenuIconsDirectory(shortcut_data_dir))) {
     return false;
   }
   int icon_index = -1;
-  for (const auto& shortcut_item : shortcuts) {
+  for (const auto& shortcut_icon : shortcut_icons) {
     ++icon_index;
-    auto size_map = shortcut_item.shortcut_icon_bitmaps;
-    if (size_map.empty())
+    if (shortcut_icon.empty())
       continue;
 
     base::FilePath icon_file =
         GetShortcutIconPath(shortcut_data_dir, icon_index);
     gfx::ImageFamily image_family;
-    for (const auto& item : size_map) {
+    for (const auto& item : shortcut_icon) {
       DCHECK_NE(item.second.colorType(), kUnknown_SkColorType);
       image_family.Add(gfx::Image::CreateFrom1xBitmap(item.second));
     }
@@ -124,7 +125,7 @@ base::string16 GenerateAppUserModelId(const base::FilePath& profile_path,
                                       const web_app::AppId& app_id) {
   base::string16 app_name =
       base::UTF8ToUTF16(web_app::GenerateApplicationNameFromAppId(app_id));
-  return shell_integration::win::GetAppModelIdForProfile(app_name,
+  return shell_integration::win::GetAppUserModelIdForApp(app_name,
                                                          profile_path);
 }
 
@@ -135,15 +136,18 @@ bool ShouldRegisterShortcutsMenuWithOs() {
 }
 
 void RegisterShortcutsMenuWithOsTask(
-    const base::FilePath& shortcut_data_dir,
     const AppId& app_id,
     const base::FilePath& profile_path,
-    const std::vector<WebApplicationShortcutInfo>& shortcuts) {
+    const base::FilePath& shortcut_data_dir,
+    const std::vector<WebApplicationShortcutsMenuItemInfo>&
+        shortcuts_menu_item_infos,
+    const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps) {
   // Each entry in the ShortcutsMenu (JumpList on Windows) needs an icon in .ico
   // format. This helper writes these icon files to disk as a series of
   // <index>.ico files, where index is a particular shortcut's index in the
   // shortcuts vector.
-  if (!WriteShortcutsMenuIconsToIcoFiles(shortcut_data_dir, shortcuts)) {
+  if (!WriteShortcutsMenuIconsToIcoFiles(shortcut_data_dir,
+                                         shortcuts_menu_icons_bitmaps)) {
     RecordRegistration(RegistrationResult::kFailedToWriteIcoFilesToDisk);
     return;
   }
@@ -159,8 +163,8 @@ void RegisterShortcutsMenuWithOsTask(
   ShellLinkItemList shortcut_list;
 
   // Limit JumpList entries.
-  int num_entries =
-      std::min(static_cast<int>(shortcuts.size()), kMaxJumpListItems);
+  int num_entries = std::min(static_cast<int>(shortcuts_menu_item_infos.size()),
+                             kMaxJumpListItems);
   for (int i = 0; i < num_entries; i++) {
     scoped_refptr<ShellLinkItem> shortcut_link =
         base::MakeRefCounted<ShellLinkItem>();
@@ -168,13 +172,15 @@ void RegisterShortcutsMenuWithOsTask(
     // Set switches to launch shortcut items in the specified app.
     shortcut_link->GetCommandLine()->AppendSwitchASCII(switches::kAppId,
                                                        app_id);
-    shortcut_link->GetCommandLine()->AppendArgNative(
-        base::UTF8ToUTF16(shortcuts[i].url.spec()));
+
+    shortcut_link->GetCommandLine()->AppendSwitchASCII(
+        switches::kAppLaunchUrlForShortcutsMenuItem,
+        shortcuts_menu_item_infos[i].url.spec());
 
     // Set JumpList Item title and icon. The icon needs to be a .ico file.
-    // We downloaded these in a shortcuts folder alongside the app's top level
-    // Icons folder.
-    shortcut_link->set_title(shortcuts[i].name);
+    // We downloaded these in a shortcut icons folder in the OS integration
+    // resources directory for this app.
+    shortcut_link->set_title(shortcuts_menu_item_infos[i].name);
     base::FilePath shortcut_icon_path =
         GetShortcutIconPath(shortcut_data_dir, i);
     shortcut_link->set_icon(shortcut_icon_path.value(), 0);
@@ -194,34 +200,36 @@ void RegisterShortcutsMenuWithOsTask(
 }
 
 void RegisterShortcutsMenuWithOs(
-    const base::FilePath& shortcut_data_dir,
     const AppId& app_id,
     const base::FilePath& profile_path,
-    const std::vector<WebApplicationShortcutInfo>& shortcuts) {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&RegisterShortcutsMenuWithOsTask, shortcut_data_dir,
-                     app_id, profile_path, shortcuts));
+    const base::FilePath& shortcut_data_dir,
+    const std::vector<WebApplicationShortcutsMenuItemInfo>&
+        shortcuts_menu_item_infos,
+    const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps) {
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(&RegisterShortcutsMenuWithOsTask, app_id, profile_path,
+                     shortcut_data_dir, shortcuts_menu_item_infos,
+                     shortcuts_menu_icons_bitmaps));
 }
 
-void UnregisterShortcutsMenuWithOs(const AppId& app_id,
+bool UnregisterShortcutsMenuWithOs(const AppId& app_id,
                                    const base::FilePath& profile_path) {
   if (!JumpListUpdater::DeleteJumpList(
           GenerateAppUserModelId(profile_path, app_id))) {
     RecordUnregistration(UnregistrationResult::kFailedToDeleteJumpList);
-    return;
+    return false;
   }
   RecordUnregistration(UnregistrationResult::kSuccess);
+  return true;
 }
 
 namespace internals {
 
-void DeleteShortcutsMenuIcons(const base::FilePath& shortcut_data_dir) {
+bool DeleteShortcutsMenuIcons(const base::FilePath& shortcut_data_dir) {
   base::FilePath shortcuts_menu_icons_path =
       GetShortcutsMenuIconsDirectory(shortcut_data_dir);
-  base::DeleteFileRecursively(shortcuts_menu_icons_path);
+  return base::DeletePathRecursively(shortcuts_menu_icons_path);
 }
 
 }  // namespace internals

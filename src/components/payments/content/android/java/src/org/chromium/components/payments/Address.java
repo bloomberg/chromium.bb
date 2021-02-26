@@ -8,11 +8,21 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
+import java.util.regex.Pattern;
+
 /**
  * An immutable class that mirrors org.chromium.payments.mojom.PaymentAddress.
  * https://w3c.github.io/payment-request/#paymentaddress-interface
  */
 public class Address {
+    /**
+     * The pattern for a valid country code:
+     * https://w3c.github.io/payment-request/#internal-constructor
+     */
+    private static final String COUNTRY_CODE_PATTERN = "^[A-Z]{2}$";
+    @Nullable
+    private static Pattern sCountryCodePattern;
+
     public final String country;
     public final String[] addressLine;
     public final String region;
@@ -69,7 +79,7 @@ public class Address {
     }
 
     // Keys in shipping address bundle.
-    public static final String EXTRA_ADDRESS_COUNTRY = "country";
+    public static final String EXTRA_ADDRESS_COUNTRY = "countryCode";
     public static final String EXTRA_ADDRESS_LINES = "addressLines";
     public static final String EXTRA_ADDRESS_REGION = "region";
     public static final String EXTRA_ADDRESS_CITY = "city";
@@ -101,5 +111,12 @@ public class Address {
 
     private static String getStringOrEmpty(Bundle bundle, String key) {
         return bundle.getString(key, /*defaultValue =*/"");
+    }
+
+    public boolean isValid() {
+        if (sCountryCodePattern == null) {
+            sCountryCodePattern = Pattern.compile(COUNTRY_CODE_PATTERN);
+        }
+        return sCountryCodePattern.matcher(country).matches();
     }
 }

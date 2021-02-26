@@ -5,14 +5,14 @@
 
 : # cmake and ninja must be in your PATH.
 
-: # If you're running this on Windows, be sure you've already run this (from your VC2017 install dir):
-: #     "C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Auxiliary\Build\vcvars64.bat"
+: # If you're running this on Windows, be sure you've already run this (from your VC2019 install dir):
+: #     "C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvars64.bat"
 
 git clone --single-branch https://chromium.googlesource.com/codecs/libgav1
 
 cd libgav1
 git checkout 45a1d76
-git clone https://github.com/abseil/abseil-cpp.git third_party/abseil-cpp
+git clone -b 20200225.2 --depth 1 https://github.com/abseil/abseil-cpp.git third_party/abseil-cpp
 mkdir build
 cd build
 

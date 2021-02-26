@@ -10,7 +10,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/memory/singleton.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/android/content_jni_headers/InterfaceRegistrarImpl_jni.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -26,7 +26,7 @@ class JavaInterfaceProviderHolder {
   JavaInterfaceProviderHolder() {
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider> provider;
     JNIEnv* env = base::android::AttachCurrentThread();
-    Java_InterfaceRegistrarImpl_createInterfaceRegistryForContext(
+    Java_InterfaceRegistrarImpl_createInterfaceRegistry(
         env,
         provider.InitWithNewPipeAndPassReceiver().PassPipe().release().value());
     interface_provider_.Bind(std::move(provider));
@@ -42,7 +42,8 @@ class JavaInterfaceProviderHolder {
   }
 
  private:
-  service_manager::InterfaceProvider interface_provider_;
+  service_manager::InterfaceProvider interface_provider_{
+      base::ThreadTaskRunnerHandle::Get()};
 };
 
 }  // namespace

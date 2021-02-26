@@ -21,9 +21,11 @@
 
 namespace media {
 
-static const int64_t kMaxCheckTimeInSeconds = 5;
+namespace {
 
-static void OnMediaFileCheckerError(bool* called) {
+constexpr int64_t kMaxCheckTimeInSeconds = 5;
+
+void OnMediaFileCheckerError(bool* called) {
   *called = false;
 }
 
@@ -31,6 +33,8 @@ struct Decoder {
   std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> context;
   std::unique_ptr<FFmpegDecodingLoop> loop;
 };
+
+}  // namespace
 
 MediaFileChecker::MediaFileChecker(base::File file) : file_(std::move(file)) {}
 
@@ -43,7 +47,7 @@ bool MediaFileChecker::Start(base::TimeDelta check_time) {
 
   bool read_ok = true;
   media::BlockingUrlProtocol protocol(
-      &source, base::Bind(&OnMediaFileCheckerError, &read_ok));
+      &source, base::BindRepeating(&OnMediaFileCheckerError, &read_ok));
   media::FFmpegGlue glue(&protocol);
   AVFormatContext* format_context = glue.format_context();
 

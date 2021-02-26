@@ -86,6 +86,18 @@ void IdleManagerImpl::CreateService(
   receivers_.Add(this, std::move(receiver), origin);
 }
 
+void IdleManagerImpl::SetIdleOverride(
+    blink::mojom::UserIdleState user_state,
+    blink::mojom::ScreenIdleState screen_state) {
+  state_override_ = IdleState::New(user_state, screen_state);
+  UpdateIdleState();
+}
+
+void IdleManagerImpl::ClearIdleOverride() {
+  state_override_ = nullptr;
+  UpdateIdleState();
+}
+
 void IdleManagerImpl::AddMonitor(
     base::TimeDelta threshold,
     mojo::PendingRemote<blink::mojom::IdleMonitor> monitor_remote,
@@ -125,7 +137,7 @@ bool IdleManagerImpl::HasPermission(const url::Origin& origin) {
       BrowserContext::GetPermissionController(browser_context_);
   DCHECK(permission_controller);
   PermissionStatus status = permission_controller->GetPermissionStatus(
-      PermissionType::NOTIFICATIONS, origin.GetURL(), origin.GetURL());
+      PermissionType::IDLE_DETECTION, origin.GetURL(), origin.GetURL());
   return status == PermissionStatus::GRANTED;
 }
 
@@ -167,6 +179,9 @@ void IdleManagerImpl::StopPolling() {
 
 blink::mojom::IdleStatePtr IdleManagerImpl::CheckIdleState(
     base::TimeDelta threshold) {
+  if (state_override_) {
+    return state_override_->Clone();
+  }
   base::TimeDelta idle_time = idle_time_provider_->CalculateIdleTime();
   bool locked = idle_time_provider_->CheckIdleStateIsLocked();
 

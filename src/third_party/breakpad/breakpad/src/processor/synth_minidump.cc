@@ -37,7 +37,7 @@ namespace google_breakpad {
 
 namespace SynthMinidump {
 
-Section::Section(const Dump &dump)
+Section::Section(const Dump& dump)
   : test_assembler::Section(dump.endianness()) { }
 
 void Section::CiteLocationIn(test_assembler::Section *section) const {
@@ -49,9 +49,9 @@ void Stream::CiteStreamIn(test_assembler::Section *section) const {
   CiteLocationIn(section);
 }
 
-SystemInfo::SystemInfo(const Dump &dump,
-                       const MDRawSystemInfo &system_info,
-                       const String &csd_version)
+SystemInfo::SystemInfo(const Dump& dump,
+                       const MDRawSystemInfo& system_info,
+                       const String& csd_version)
     : Stream(dump, MD_SYSTEM_INFO_STREAM) {
   D16(system_info.processor_architecture);
   D16(system_info.processor_level);
@@ -108,7 +108,7 @@ const MDRawSystemInfo SystemInfo::windows_x86 = {
 
 const string SystemInfo::windows_x86_csd_version = "Service Pack 2";
 
-String::String(const Dump &dump, const string &contents) : Section(dump) {
+String::String(const Dump& dump, const string& contents) : Section(dump) {
   D32(contents.size() * 2);
   for (string::const_iterator i = contents.begin(); i != contents.end(); i++)
     D16(*i);
@@ -123,7 +123,7 @@ void Memory::CiteMemoryIn(test_assembler::Section *section) const {
   CiteLocationIn(section);
 }
 
-Context::Context(const Dump &dump, const MDRawContextX86 &context)
+Context::Context(const Dump& dump, const MDRawContextX86& context)
   : Section(dump) {
   // The caller should have properly set the CPU type flag.
   // The high 24 bits identify the CPU.  Note that context records with no CPU
@@ -173,7 +173,7 @@ Context::Context(const Dump &dump, const MDRawContextX86 &context)
   assert(Size() == sizeof(MDRawContextX86));
 }
 
-Context::Context(const Dump &dump, const MDRawContextARM &context)
+Context::Context(const Dump& dump, const MDRawContextARM& context)
   : Section(dump) {
   // The caller should have properly set the CPU type flag.
   assert((context.context_flags & MD_CONTEXT_ARM) ||
@@ -192,7 +192,7 @@ Context::Context(const Dump &dump, const MDRawContextARM &context)
   assert(Size() == sizeof(MDRawContextARM));
 }
 
-Context::Context(const Dump &dump, const MDRawContextMIPS &context)
+Context::Context(const Dump& dump, const MDRawContextMIPS& context)
     : Section(dump) {
   // The caller should have properly set the CPU type flag.
   assert(context.context_flags & MD_CONTEXT_MIPS);
@@ -228,8 +228,8 @@ Context::Context(const Dump &dump, const MDRawContextMIPS &context)
   assert(Size() == sizeof(MDRawContextMIPS));
 }
 
-Thread::Thread(const Dump &dump,
-               uint32_t thread_id, const Memory &stack, const Context &context,
+Thread::Thread(const Dump& dump,
+               uint32_t thread_id, const Memory& stack, const Context& context,
                uint32_t suspend_count, uint32_t priority_class,
                uint32_t priority, uint64_t teb) : Section(dump) {
   D32(thread_id);
@@ -242,13 +242,13 @@ Thread::Thread(const Dump &dump,
   assert(Size() == sizeof(MDRawThread));
 }
 
-Module::Module(const Dump &dump,
+Module::Module(const Dump& dump,
                uint64_t base_of_image,
                uint32_t size_of_image,
-               const String &name,
+               const String& name,
                uint32_t time_date_stamp,
                uint32_t checksum,
-               const MDVSFixedFileInfo &version_info,
+               const MDVSFixedFileInfo& version_info,
                const Section *cv_record,
                const Section *misc_record) : Section(dump) {
   D64(base_of_image);
@@ -297,10 +297,10 @@ const MDVSFixedFileInfo Module::stock_version_info = {
   0                                     // file_date_lo
 };
 
-UnloadedModule::UnloadedModule(const Dump &dump,
+UnloadedModule::UnloadedModule(const Dump& dump,
                                uint64_t base_of_image,
                                uint32_t size_of_image,
-                               const String &name,
+                               const String& name,
                                uint32_t checksum,
                                uint32_t time_date_stamp) : Section(dump) {
   D64(base_of_image);
@@ -310,15 +310,15 @@ UnloadedModule::UnloadedModule(const Dump &dump,
   name.CiteStringIn(this);
 }
 
-UnloadedModuleList::UnloadedModuleList(const Dump &dump, uint32_t type)
+UnloadedModuleList::UnloadedModuleList(const Dump& dump, uint32_t type)
   : List<UnloadedModule>(dump, type, false) {
   D32(sizeof(MDRawUnloadedModuleList));
   D32(sizeof(MDRawUnloadedModule));
   D32(count_label_);
 }
 
-Exception::Exception(const Dump &dump,
-                     const Context &context,
+Exception::Exception(const Dump& dump,
+                     const Context& context,
                      uint32_t thread_id,
                      uint32_t exception_code,
                      uint32_t exception_flags,
@@ -361,22 +361,22 @@ Dump::Dump(uint64_t flags,
   assert(Size() == sizeof(MDRawHeader));
 }
 
-Dump &Dump::Add(SynthMinidump::Section *section) {
+Dump& Dump::Add(SynthMinidump::Section *section) {
   section->Finish(file_start_ + Size());
   Append(*section);
   return *this;
 }
 
-Dump &Dump::Add(Stream *stream) {
-  Add(static_cast<SynthMinidump::Section *>(stream));
+Dump& Dump::Add(Stream *stream) {
+  Add(static_cast<SynthMinidump::Section*>(stream));
   stream->CiteStreamIn(&stream_directory_);
   stream_count_++;
   return *this;
 }
 
-Dump &Dump::Add(Memory *memory) {
+Dump& Dump::Add(Memory *memory) {
   // Add the memory contents themselves to the file.
-  Add(static_cast<SynthMinidump::Section *>(memory));
+  Add(static_cast<SynthMinidump::Section*>(memory));
 
   // The memory list is a list of MDMemoryDescriptors, not of actual
   // memory elements. Produce a descriptor, and add that to the list.
@@ -386,17 +386,17 @@ Dump &Dump::Add(Memory *memory) {
   return *this;
 }
 
-Dump &Dump::Add(Thread *thread) {
+Dump& Dump::Add(Thread *thread) {
   thread_list_.Add(thread);
   return *this;
 }
 
-Dump &Dump::Add(Module *module) {
+Dump& Dump::Add(Module *module) {
   module_list_.Add(module);
   return *this;
 }
 
-Dump &Dump::Add(UnloadedModule *unloaded_module) {
+Dump& Dump::Add(UnloadedModule *unloaded_module) {
   unloaded_module_list_.Add(unloaded_module);
   return *this;
 }
@@ -413,7 +413,7 @@ void Dump::Finish() {
   // has the stream count and MDRVA.
   stream_count_label_ = stream_count_;
   stream_directory_rva_ = file_start_ + Size();
-  Append(static_cast<test_assembler::Section &>(stream_directory_));
+  Append(static_cast<test_assembler::Section& >(stream_directory_));
 }
 
 } // namespace SynthMinidump

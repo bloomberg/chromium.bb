@@ -16,6 +16,7 @@ source_set("extensions") {
     "bookmark_app_icon_manager.h",
     "bookmark_app_install_finalizer.cc",
     "bookmark_app_install_finalizer.h",
+    "bookmark_app_provider.cc",
     "bookmark_app_registrar.cc",
     "bookmark_app_registrar.h",
     "bookmark_app_registry_controller.cc",
@@ -24,18 +25,25 @@ source_set("extensions") {
     "bookmark_app_shortcut_manager.h",
     "bookmark_app_util.cc",
     "bookmark_app_util.h",
+    "extension_status_utils.cc",
     "web_app_extension_shortcut.cc",
     "web_app_extension_shortcut.h",
-    "web_app_extension_shortcut_mac.h",
-    "web_app_extension_shortcut_mac.mm",
   ]
+  if (is_mac) {
+    sources += [
+      "web_app_extension_shortcut_mac.h",
+      "web_app_extension_shortcut_mac.mm",
+    ]
+  }
 
   deps = [
     "//base",
+    "//chrome/browser/web_applications",
     "//chrome/browser/web_applications:web_app_group",
     "//chrome/browser/web_applications/components",
     "//chrome/common",
     "//components/pref_registry",
+    "//components/sync:rest_of_sync",
     "//content/public/browser",
     "//extensions/browser",
     "//skia",
@@ -49,9 +57,7 @@ source_set("unit_tests") {
     "bookmark_app_install_finalizer_unittest.cc",
     "bookmark_app_util_unittest.cc",
     "externally_installed_web_app_prefs_unittest.cc",
-    "install_manager_bookmark_app_unittest.cc",
     "pending_app_install_task_unittest.cc",
-    "system_web_app_manager_unittest.cc",
     "web_app_policy_manager_unittest.cc",
     "web_app_provider_unittest.cc",
   ]
@@ -59,7 +65,6 @@ source_set("unit_tests") {
   deps = [
     ":extensions",
     "//chrome/browser",
-    "//chrome/browser/web_applications:common",
     "//chrome/browser/web_applications:web_app_test_group",
     "//chrome/browser/web_applications:web_applications",
     "//chrome/browser/web_applications:web_applications_on_extensions",

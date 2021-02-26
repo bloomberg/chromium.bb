@@ -18,6 +18,7 @@
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/util/display_util.h"
@@ -210,7 +211,7 @@ display::PanelOrientation GetPanelOrientation(int fd,
   int index = GetDrmProperty(fd, connector, "panel orientation", &property);
   if (index < 0)
     return display::PanelOrientation::kNormal;
-  DCHECK_LT(connector->prop_values[index], display::PanelOrientation::kLast);
+  DCHECK_LE(connector->prop_values[index], display::PanelOrientation::kLast);
   return static_cast<display::PanelOrientation>(connector->prop_values[index]);
 }
 
@@ -468,6 +469,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
                             !!edid_blob);
   std::vector<uint8_t> edid;
   if (edid_blob) {
+    DCHECK(edid_blob->length);
     edid.assign(static_cast<uint8_t*>(edid_blob->data),
                 static_cast<uint8_t*>(edid_blob->data) + edid_blob->length);
 
@@ -494,6 +496,14 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   const display::DisplayMode* native_mode = nullptr;
   display::DisplaySnapshot::DisplayModeList modes =
       ExtractDisplayModes(info, active_pixel_size, &current_mode, &native_mode);
+
+  // TODO(https://crbug.com/1105919): Needed for investigating an issue where
+  // non-supporting devices broadcast privacy screen support on certain
+  // displays.
+  VLOG(1) << "DisplaySnapshot created: display_id=" << display_id
+          << " type=" << type << " current_mode="
+          << (current_mode ? current_mode->ToString() : "nullptr")
+          << " privacy_screen_state=" << privacy_screen_state;
 
   return std::make_unique<display::DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
@@ -529,6 +539,17 @@ int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format) {
       NOTREACHED();
       return 0;
   }
+}
+
+uint64_t GetEnumValueForName(int fd, int property_id, const char* str) {
+  ScopedDrmPropertyPtr res(drmModeGetProperty(fd, property_id));
+  for (int i = 0; i < res->count_enums; ++i) {
+    if (strcmp(res->enums[i].name, str) == 0) {
+      return res->enums[i].value;
+    }
+  }
+  NOTREACHED();
+  return 0;
 }
 
 }  // namespace ui

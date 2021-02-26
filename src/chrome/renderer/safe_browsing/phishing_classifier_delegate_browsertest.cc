@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
+#include "components/safe_browsing/content/renderer/phishing_classifier/phishing_classifier_delegate.h"
 
 #include <memory>
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/renderer/safe_browsing/features.h"
-#include "chrome/renderer/safe_browsing/phishing_classifier.h"
-#include "chrome/renderer/safe_browsing/scorer.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
+#include "components/safe_browsing/content/renderer/phishing_classifier/features.h"
+#include "components/safe_browsing/content/renderer/phishing_classifier/phishing_classifier.h"
+#include "components/safe_browsing/content/renderer/phishing_classifier/scorer.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -37,7 +37,7 @@ namespace {
 class MockPhishingClassifier : public PhishingClassifier {
  public:
   explicit MockPhishingClassifier(content::RenderFrame* render_frame)
-      : PhishingClassifier(render_frame, NULL /* clock */) {}
+      : PhishingClassifier(render_frame) {}
 
   ~MockPhishingClassifier() override {}
 
@@ -224,6 +224,25 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   EXPECT_CALL(*classifier_, CancelPendingClassification());
   delegate_->PageCaptured(&page_text, false);
   Mock::VerifyAndClearExpectations(classifier_);
+
+  // The delegate will cancel pending classification on destruction.
+  EXPECT_CALL(*classifier_, CancelPendingClassification());
+}
+
+TEST_F(PhishingClassifierDelegateTest, NoPhishingModel) {
+  ASSERT_FALSE(classifier_->is_ready());
+  delegate_->SetPhishingModel("");
+  // The scorer is nullptr so the classifier should still not be ready.
+  ASSERT_FALSE(classifier_->is_ready());
+}
+
+TEST_F(PhishingClassifierDelegateTest, HasPhishingModel) {
+  ASSERT_FALSE(classifier_->is_ready());
+
+  ClientSideModel model;
+  model.set_max_words_per_term(1);
+  delegate_->SetPhishingModel(model.SerializeAsString());
+  ASSERT_TRUE(classifier_->is_ready());
 
   // The delegate will cancel pending classification on destruction.
   EXPECT_CALL(*classifier_, CancelPendingClassification());

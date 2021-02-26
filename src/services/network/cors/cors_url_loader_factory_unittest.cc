@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
@@ -21,6 +20,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -49,11 +49,13 @@ class CorsURLLoaderFactoryTest : public testing::Test {
  protected:
   // testing::Test implementation.
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(features::kOutOfBlinkCors);
-
     network_service_ = NetworkService::CreateForTesting();
 
     auto context_params = mojom::NetworkContextParams::New();
+    // Use a dummy CertVerifier that always passes cert verification, since
+    // these unittests don't need to test CertVerifier behavior.
+    context_params->cert_verifier_params =
+        FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
     // Use a fixed proxy config, to avoid dependencies on local network
     // configuration.
     context_params->initial_proxy_config =
@@ -65,6 +67,8 @@ class CorsURLLoaderFactoryTest : public testing::Test {
 
     auto factory_params = network::mojom::URLLoaderFactoryParams::New();
     factory_params->process_id = kProcessId;
+    factory_params->request_initiator_origin_lock =
+        url::Origin::Create(GURL("http://localhost"));
     auto resource_scheduler_client =
         base::MakeRefCounted<ResourceSchedulerClient>(
             kProcessId, kRouteId, &resource_scheduler_,
@@ -87,9 +91,6 @@ class CorsURLLoaderFactoryTest : public testing::Test {
   void ResetFactory() { cors_url_loader_factory_.reset(); }
 
  private:
-  // Testing instance to enable kOutOfBlinkCors feature.
-  base::test::ScopedFeatureList feature_list_;
-
   // Test environment.
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;

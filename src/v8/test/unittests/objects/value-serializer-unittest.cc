@@ -26,6 +26,10 @@ using ::testing::Invoke;
 using ::testing::Return;
 
 class ValueSerializerTest : public TestWithIsolate {
+ public:
+  ValueSerializerTest(const ValueSerializerTest&) = delete;
+  ValueSerializerTest& operator=(const ValueSerializerTest&) = delete;
+
  protected:
   ValueSerializerTest()
       : serialization_context_(Context::New(isolate())),
@@ -266,8 +270,6 @@ class ValueSerializerTest : public TestWithIsolate {
   Local<Context> deserialization_context_;
   Local<FunctionTemplate> host_object_constructor_template_;
   i::Isolate* isolate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ValueSerializerTest);
 };
 
 TEST_F(ValueSerializerTest, DecodeInvalid) {
@@ -1487,7 +1489,26 @@ TEST_F(ValueSerializerTest, DecodeRegExpDotAll) {
   ExpectScriptTrue("result.toString() === '/foo/gimsuy'");
 
   InvalidDecodeTest(
-      {0xFF, 0x09, 0x3F, 0x00, 0x52, 0x03, 0x66, 0x6F, 0x6F, 0x7F});
+      {0xFF, 0x09, 0x3F, 0x00, 0x52, 0x03, 0x66, 0x6F, 0x6F, 0xFF});
+}
+
+TEST_F(ValueSerializerTest, DecodeLinearRegExp) {
+  bool flag_was_enabled = i::FLAG_enable_experimental_regexp_engine;
+
+  // The last byte encodes the regexp flags.
+  std::vector<uint8_t> regexp_encoding = {0xFF, 0x09, 0x3F, 0x00, 0x52,
+                                          0x03, 0x66, 0x6F, 0x6F, 0x6D};
+
+  i::FLAG_enable_experimental_regexp_engine = true;
+  Local<Value> value = DecodeTest(regexp_encoding);
+  ASSERT_TRUE(value->IsRegExp());
+  ExpectScriptTrue("Object.getPrototypeOf(result) === RegExp.prototype");
+  ExpectScriptTrue("result.toString() === '/foo/glmsy'");
+
+  i::FLAG_enable_experimental_regexp_engine = false;
+  InvalidDecodeTest(regexp_encoding);
+
+  i::FLAG_enable_experimental_regexp_engine = flag_was_enabled;
 }
 
 TEST_F(ValueSerializerTest, RoundTripMap) {
@@ -2054,11 +2075,11 @@ class ValueSerializerTestWithSharedArrayBufferClone
     explicit SerializerDelegate(
         ValueSerializerTestWithSharedArrayBufferClone* test)
         : test_(test) {}
-    MOCK_METHOD2(GetSharedArrayBufferId,
-                 Maybe<uint32_t>(Isolate* isolate,
-                                 Local<SharedArrayBuffer> shared_array_buffer));
-    MOCK_METHOD2(GetSharedArrayBufferFromId,
-                 MaybeLocal<SharedArrayBuffer>(Isolate* isolate, uint32_t id));
+    MOCK_METHOD(Maybe<uint32_t>, GetSharedArrayBufferId,
+                (Isolate*, Local<SharedArrayBuffer> shared_array_buffer),
+                (override));
+    MOCK_METHOD(MaybeLocal<SharedArrayBuffer>, GetSharedArrayBufferFromId,
+                (Isolate*, uint32_t id));
     void ThrowDataCloneError(Local<String> message) override {
       test_->isolate()->ThrowException(Exception::Error(message));
     }
@@ -2071,8 +2092,8 @@ class ValueSerializerTestWithSharedArrayBufferClone
    public:
     explicit DeserializerDelegate(
         ValueSerializerTestWithSharedArrayBufferClone* test) {}
-    MOCK_METHOD2(GetSharedArrayBufferFromId,
-                 MaybeLocal<SharedArrayBuffer>(Isolate* isolate, uint32_t id));
+    MOCK_METHOD(MaybeLocal<SharedArrayBuffer>, GetSharedArrayBufferFromId,
+                (Isolate*, uint32_t id), (override));
   };
 
 #if __clang__
@@ -2197,8 +2218,8 @@ class ValueSerializerTestWithHostObject : public ValueSerializerTest {
    public:
     explicit SerializerDelegate(ValueSerializerTestWithHostObject* test)
         : test_(test) {}
-    MOCK_METHOD2(WriteHostObject,
-                 Maybe<bool>(Isolate* isolate, Local<Object> object));
+    MOCK_METHOD(Maybe<bool>, WriteHostObject, (Isolate*, Local<Object> object),
+                (override));
     void ThrowDataCloneError(Local<String> message) override {
       test_->isolate()->ThrowException(Exception::Error(message));
     }
@@ -2209,7 +2230,7 @@ class ValueSerializerTestWithHostObject : public ValueSerializerTest {
 
   class DeserializerDelegate : public ValueDeserializer::Delegate {
    public:
-    MOCK_METHOD1(ReadHostObject, MaybeLocal<Object>(Isolate* isolate));
+    MOCK_METHOD(MaybeLocal<Object>, ReadHostObject, (Isolate*), (override));
   };
 
 #if __clang__
@@ -2728,8 +2749,8 @@ class ValueSerializerTestWithLimitedMemory : public ValueSerializerTest {
       test_->isolate()->ThrowException(Exception::Error(message));
     }
 
-    MOCK_METHOD2(WriteHostObject,
-                 Maybe<bool>(Isolate* isolate, Local<Object> object));
+    MOCK_METHOD(Maybe<bool>, WriteHostObject, (Isolate*, Local<Object> object),
+                (override));
 
    private:
     ValueSerializerTestWithLimitedMemory* test_;

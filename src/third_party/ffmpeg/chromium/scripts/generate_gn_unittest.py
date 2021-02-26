@@ -209,7 +209,7 @@ class SourceSetUnittest(unittest.TestCase):
     # our generate_gn.py
     bad_condition = ('(current_cpu == "x86" || current_cpu == "x64")'
                      ' && (ffmpeg_branding == "c")'
-                     ' && (is_win || is_linux)')
+                     ' && (is_win || is_linux || is_chromeos)')
 
     # Expect only a single set since the two original sets have the same source
     # list.

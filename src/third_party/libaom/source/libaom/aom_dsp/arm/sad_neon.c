@@ -10,13 +10,12 @@
  */
 
 #include <arm_neon.h>
-
 #include "config/aom_config.h"
-
+#include "config/aom_dsp_rtcd.h"
 #include "aom/aom_integer.h"
 
-unsigned int aom_sad8x16_neon(unsigned char *src_ptr, int src_stride,
-                              unsigned char *ref_ptr, int ref_stride) {
+unsigned int aom_sad8x16_neon(const uint8_t *src_ptr, int src_stride,
+                              const uint8_t *ref_ptr, int ref_stride) {
   uint8x8_t d0, d8;
   uint16x8_t q12;
   uint32x4_t q1;
@@ -46,8 +45,8 @@ unsigned int aom_sad8x16_neon(unsigned char *src_ptr, int src_stride,
   return vget_lane_u32(d5, 0);
 }
 
-unsigned int aom_sad4x4_neon(unsigned char *src_ptr, int src_stride,
-                             unsigned char *ref_ptr, int ref_stride) {
+unsigned int aom_sad4x4_neon(const uint8_t *src_ptr, int src_stride,
+                             const uint8_t *ref_ptr, int ref_stride) {
   uint8x8_t d0, d8;
   uint16x8_t q12;
   uint32x2_t d1;
@@ -74,8 +73,8 @@ unsigned int aom_sad4x4_neon(unsigned char *src_ptr, int src_stride,
   return vget_lane_u32(vreinterpret_u32_u64(d3), 0);
 }
 
-unsigned int aom_sad16x8_neon(unsigned char *src_ptr, int src_stride,
-                              unsigned char *ref_ptr, int ref_stride) {
+unsigned int aom_sad16x8_neon(const uint8_t *src_ptr, int src_stride,
+                              const uint8_t *ref_ptr, int ref_stride) {
   uint8x16_t q0, q4;
   uint16x8_t q12, q13;
   uint32x4_t q1;
@@ -293,3 +292,266 @@ unsigned int aom_sad8x8_neon(const uint8_t *src, int src_stride,
   }
   return horizontal_add_16x8(vec_accum);
 }
+
+static INLINE unsigned int sad128xh_neon(const uint8_t *src_ptr, int src_stride,
+                                         const uint8_t *ref_ptr, int ref_stride,
+                                         int h) {
+  int sum = 0;
+  for (int i = 0; i < h; i++) {
+    uint16x8_t q3 = vdupq_n_u16(0);
+
+    uint8x16_t q0 = vld1q_u8(src_ptr);
+    uint8x16_t q1 = vld1q_u8(ref_ptr);
+    uint8x16_t q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    q0 = vld1q_u8(src_ptr + 16);
+    q1 = vld1q_u8(ref_ptr + 16);
+    q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    q0 = vld1q_u8(src_ptr + 32);
+    q1 = vld1q_u8(ref_ptr + 32);
+    q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    q0 = vld1q_u8(src_ptr + 48);
+    q1 = vld1q_u8(ref_ptr + 48);
+    q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    q0 = vld1q_u8(src_ptr + 64);
+    q1 = vld1q_u8(ref_ptr + 64);
+    q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    q0 = vld1q_u8(src_ptr + 80);
+    q1 = vld1q_u8(ref_ptr + 80);
+    q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    q0 = vld1q_u8(src_ptr + 96);
+    q1 = vld1q_u8(ref_ptr + 96);
+    q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    q0 = vld1q_u8(src_ptr + 112);
+    q1 = vld1q_u8(ref_ptr + 112);
+    q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    src_ptr += src_stride;
+    ref_ptr += ref_stride;
+
+    sum += horizontal_add_16x8(q3);
+  }
+
+  return sum;
+}
+
+static INLINE unsigned int sad64xh_neon(const uint8_t *src_ptr, int src_stride,
+                                        const uint8_t *ref_ptr, int ref_stride,
+                                        int h) {
+  int sum = 0;
+  for (int i = 0; i < h; i++) {
+    uint16x8_t q3 = vdupq_n_u16(0);
+
+    uint8x16_t q0 = vld1q_u8(src_ptr);
+    uint8x16_t q1 = vld1q_u8(ref_ptr);
+    uint8x16_t q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    q0 = vld1q_u8(src_ptr + 16);
+    q1 = vld1q_u8(ref_ptr + 16);
+    q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    q0 = vld1q_u8(src_ptr + 32);
+    q1 = vld1q_u8(ref_ptr + 32);
+    q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    q0 = vld1q_u8(src_ptr + 48);
+    q1 = vld1q_u8(ref_ptr + 48);
+    q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    src_ptr += src_stride;
+    ref_ptr += ref_stride;
+
+    sum += horizontal_add_16x8(q3);
+  }
+
+  return sum;
+}
+
+static INLINE unsigned int sad32xh_neon(const uint8_t *src_ptr, int src_stride,
+                                        const uint8_t *ref_ptr, int ref_stride,
+                                        int h) {
+  int sum = 0;
+  for (int i = 0; i < h; i++) {
+    uint16x8_t q3 = vdupq_n_u16(0);
+
+    uint8x16_t q0 = vld1q_u8(src_ptr);
+    uint8x16_t q1 = vld1q_u8(ref_ptr);
+    uint8x16_t q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    q0 = vld1q_u8(src_ptr + 16);
+    q1 = vld1q_u8(ref_ptr + 16);
+    q2 = vabdq_u8(q0, q1);
+    q3 = vpadalq_u8(q3, q2);
+
+    sum += horizontal_add_16x8(q3);
+
+    src_ptr += src_stride;
+    ref_ptr += ref_stride;
+  }
+
+  return sum;
+}
+
+static INLINE unsigned int sad16xh_neon(const uint8_t *src_ptr, int src_stride,
+                                        const uint8_t *ref_ptr, int ref_stride,
+                                        int h) {
+  int sum = 0;
+  for (int i = 0; i < h; i++) {
+    uint8x8_t q0 = vld1_u8(src_ptr);
+    uint8x8_t q1 = vld1_u8(ref_ptr);
+    sum += vget_lane_u16(vpaddl_u8(vabd_u8(q0, q1)), 0);
+    sum += vget_lane_u16(vpaddl_u8(vabd_u8(q0, q1)), 1);
+    sum += vget_lane_u16(vpaddl_u8(vabd_u8(q0, q1)), 2);
+    sum += vget_lane_u16(vpaddl_u8(vabd_u8(q0, q1)), 3);
+    q0 = vld1_u8(src_ptr + 8);
+    q1 = vld1_u8(ref_ptr + 8);
+    sum += vget_lane_u16(vpaddl_u8(vabd_u8(q0, q1)), 0);
+    sum += vget_lane_u16(vpaddl_u8(vabd_u8(q0, q1)), 1);
+    sum += vget_lane_u16(vpaddl_u8(vabd_u8(q0, q1)), 2);
+    sum += vget_lane_u16(vpaddl_u8(vabd_u8(q0, q1)), 3);
+
+    src_ptr += src_stride;
+    ref_ptr += ref_stride;
+  }
+
+  return sum;
+}
+
+static INLINE unsigned int sad8xh_neon(const uint8_t *src_ptr, int src_stride,
+                                       const uint8_t *ref_ptr, int ref_stride,
+                                       int h) {
+  uint16x8_t q3 = vdupq_n_u16(0);
+  for (int y = 0; y < h; y++) {
+    uint8x8_t q0 = vld1_u8(src_ptr);
+    uint8x8_t q1 = vld1_u8(ref_ptr);
+    src_ptr += src_stride;
+    ref_ptr += ref_stride;
+    q3 = vabal_u8(q3, q0, q1);
+  }
+  return horizontal_add_16x8(q3);
+}
+
+static INLINE unsigned int sad4xh_neon(const uint8_t *src_ptr, int src_stride,
+                                       const uint8_t *ref_ptr, int ref_stride,
+                                       int h) {
+  uint16x8_t q3 = vdupq_n_u16(0);
+  uint32x2_t q0 = vdup_n_u32(0);
+  uint32x2_t q1 = vdup_n_u32(0);
+  uint32_t src4, ref4;
+  for (int y = 0; y < h / 2; y++) {
+    memcpy(&src4, src_ptr, 4);
+    memcpy(&ref4, ref_ptr, 4);
+    src_ptr += src_stride;
+    ref_ptr += ref_stride;
+    q0 = vset_lane_u32(src4, q0, 0);
+    q1 = vset_lane_u32(ref4, q1, 0);
+
+    memcpy(&src4, src_ptr, 4);
+    memcpy(&ref4, ref_ptr, 4);
+    src_ptr += src_stride;
+    ref_ptr += ref_stride;
+    q0 = vset_lane_u32(src4, q0, 1);
+    q1 = vset_lane_u32(ref4, q1, 1);
+
+    q3 = vabal_u8(q3, vreinterpret_u8_u32(q0), vreinterpret_u8_u32(q1));
+  }
+  return horizontal_add_16x8(q3);
+}
+
+#define FSADS128_H(h)                                                    \
+  unsigned int aom_sad_skip_128x##h##_neon(                              \
+      const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr,    \
+      int ref_stride) {                                                  \
+    const uint32_t sum = sad128xh_neon(src_ptr, 2 * src_stride, ref_ptr, \
+                                       2 * ref_stride, h / 2);           \
+    return 2 * sum;                                                      \
+  }
+FSADS128_H(128);
+FSADS128_H(64);
+#undef FSADS128_H
+
+#define FSADS64_H(h)                                                          \
+  unsigned int aom_sad_skip_64x##h##_neon(                                    \
+      const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr,         \
+      int ref_stride) {                                                       \
+    return 2 * sad64xh_neon(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, \
+                            h / 2);                                           \
+  }
+
+FSADS64_H(128);
+FSADS64_H(64);
+FSADS64_H(32);
+FSADS64_H(16);
+#undef FSADS64_H
+
+#define FSADS32_H(h)                                                          \
+  unsigned int aom_sad_skip_32x##h##_neon(                                    \
+      const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr,         \
+      int ref_stride) {                                                       \
+    return 2 * sad32xh_neon(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, \
+                            h / 2);                                           \
+  }
+
+FSADS32_H(64);
+FSADS32_H(32);
+FSADS32_H(16);
+FSADS32_H(8);
+#undef FSADS32_H
+
+#define FSADS16_H(h)                                                          \
+  unsigned int aom_sad_skip_16x##h##_neon(                                    \
+      const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr,         \
+      int ref_stride) {                                                       \
+    return 2 * sad16xh_neon(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, \
+                            h / 2);                                           \
+  }
+
+FSADS16_H(64);
+FSADS16_H(32);
+FSADS16_H(16);
+FSADS16_H(8);
+#undef FSADS16_H
+
+#define FSADS8_H(h)                                                          \
+  unsigned int aom_sad_skip_8x##h##_neon(                                    \
+      const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr,        \
+      int ref_stride) {                                                      \
+    return 2 * sad8xh_neon(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, \
+                           h / 2);                                           \
+  }
+
+FSADS8_H(32);
+FSADS8_H(16);
+FSADS8_H(8);
+#undef FSADS8_H
+
+#define FSADS4_H(h)                                                          \
+  unsigned int aom_sad_skip_4x##h##_neon(                                    \
+      const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr,        \
+      int ref_stride) {                                                      \
+    return 2 * sad4xh_neon(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, \
+                           h / 2);                                           \
+  }
+
+FSADS4_H(16);
+FSADS4_H(8);
+#undef FSADS4_H

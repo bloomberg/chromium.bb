@@ -13,6 +13,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/events/event_handler.h"
 #include "ui/views/accessibility/ax_event_observer.h"
 
 class PrefChangeRegistrar;
@@ -35,6 +36,7 @@ class MagnificationManager
     : public content::NotificationObserver,
       public user_manager::UserManager::UserSessionStateObserver,
       public ProfileObserver,
+      public ui::EventHandler,
       public views::AXEventObserver {
  public:
   // Creates an instance of MagnificationManager. This should be called once.
@@ -64,8 +66,18 @@ class MagnificationManager
   // Loads the Fullscreen magnifier scale from the pref.
   double GetSavedScreenMagnifierScale() const;
 
+  // Updates for a new focus rect (eg, from ARC++) if a magnifier is enabled.
+  void HandleFocusedRectChangedIfEnabled(const gfx::Rect& bounds_in_screen,
+                                         bool is_editable);
+
+  // Move magnifier to ensure rect is within viewport if a magnifier is enabled.
+  void HandleMoveMagnifierToRectIfEnabled(const gfx::Rect& rect);
+
   // ProfileObserver:
   void OnProfileWillBeDestroyed(Profile* profile) override;
+
+  // ui::EventHandler overrides:
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // views::AXEventObserver:
   void OnViewEvent(views::View* view, ax::mojom::Event event_type) override;
@@ -101,6 +113,10 @@ class MagnificationManager
 
   Profile* profile_ = nullptr;
   ScopedObserver<Profile, ProfileObserver> profile_observer_{this};
+
+  // Last mouse event time - used for ignoring focus changes for a few
+  // milliseconds after the last mouse event.
+  base::TimeTicks last_mouse_event_;
 
   bool fullscreen_magnifier_enabled_ = false;
   bool keep_focus_centered_ = false;

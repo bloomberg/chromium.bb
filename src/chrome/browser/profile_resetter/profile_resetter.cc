@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/synchronization/atomic_flag.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -70,6 +69,9 @@ void ResetShortcutsOnBlockingThread() {
     ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
         static_cast<ShellUtil::ShortcutLocation>(location),
         ShellUtil::CURRENT_USER, chrome_exe, true, nullptr, nullptr);
+    ShellUtil::ResetShortcutFileAttributes(
+        static_cast<ShellUtil::ShortcutLocation>(location),
+        ShellUtil::CURRENT_USER, chrome_exe);
   }
 }
 
@@ -95,7 +97,7 @@ ProfileResetter::~ProfileResetter() {
 void ProfileResetter::Reset(
     ProfileResetter::ResettableFlags resettable_flags,
     std::unique_ptr<BrandcodedDefaultSettings> master_settings,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(master_settings);
 
@@ -106,12 +108,13 @@ void ProfileResetter::Reset(
   CHECK_EQ(static_cast<ResettableFlags>(0), pending_reset_flags_);
 
   if (!resettable_flags) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(callback));
     return;
   }
 
   master_settings_.swap(master_settings);
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   // These flags are set to false by the individual reset functions.
   pending_reset_flags_ = resettable_flags;
@@ -157,8 +160,8 @@ void ProfileResetter::MarkAsDone(Resettable resettable) {
   pending_reset_flags_ &= ~resettable;
 
   if (!pending_reset_flags_) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback_);
-    callback_.Reset();
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(callback_));
     master_settings_.reset();
     template_url_service_sub_.reset();
   }
@@ -187,10 +190,9 @@ void ProfileResetter::ResetDefaultSearchEngine() {
 
     MarkAsDone(DEFAULT_SEARCH_ENGINE);
   } else {
-    template_url_service_sub_ =
-        template_url_service_->RegisterOnLoadedCallback(
-            base::Bind(&ProfileResetter::OnTemplateURLServiceLoaded,
-                       weak_ptr_factory_.GetWeakPtr()));
+    template_url_service_sub_ = template_url_service_->RegisterOnLoadedCallback(
+        base::BindRepeating(&ProfileResetter::OnTemplateURLServiceLoaded,
+                            weak_ptr_factory_.GetWeakPtr()));
     template_url_service_->Load();
   }
 }
@@ -243,8 +245,9 @@ void ProfileResetter::ResetCookiesAndSiteData() {
 
   cookies_remover_ = content::BrowserContext::GetBrowsingDataRemover(profile_);
   cookies_remover_->AddObserver(this);
-  int remove_mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
-                    content::BrowsingDataRemover::DATA_TYPE_CACHE;
+  uint64_t remove_mask =
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
+      content::BrowsingDataRemover::DATA_TYPE_CACHE;
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
 
@@ -363,7 +366,7 @@ void ProfileResetter::OnTemplateURLServiceLoaded() {
     ResetDefaultSearchEngine();
 }
 
-void ProfileResetter::OnBrowsingDataRemoverDone() {
+void ProfileResetter::OnBrowsingDataRemoverDone(uint64_t failed_data_types) {
   cookies_remover_->RemoveObserver(this);
   cookies_remover_ = nullptr;
   MarkAsDone(COOKIES_AND_SITE_DATA);

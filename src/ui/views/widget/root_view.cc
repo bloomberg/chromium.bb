@@ -13,7 +13,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -22,6 +22,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/root_view_targeter.h"
 #include "ui/views/widget/widget.h"
@@ -101,7 +102,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
     if (owner_->GetFocusManager())  // Can be NULL in unittests.
       v = owner_->GetFocusManager()->GetFocusedView();
 // macOS doesn't have keyboard-triggered context menus.
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
     // Special case to handle keyboard-triggered context menus.
     if (v && v->GetEnabled() &&
         ((event->key_code() == ui::VKEY_APPS) ||
@@ -149,7 +150,7 @@ class PostEventDispatchHandler : public ui::EventHandler {
          target->drag_controller()->CanStartDragForView(target, location,
                                                         location))) {
       if (target->DoDrag(*event, location,
-                         ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)) {
+                         ui::mojom::DragEventSource::kTouch)) {
         event->StopPropagation();
         return;
       }
@@ -261,7 +262,7 @@ void RootView::DeviceScaleFactorChanged(float old_device_scale_factor,
 // Accessibility ---------------------------------------------------------------
 
 void RootView::AnnounceText(const base::string16& text) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // MacOSX has its own API for making announcements; see AnnounceText()
   // override in ax_platform_node_mac.[h|mm]
   NOTREACHED();
@@ -506,7 +507,7 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
   if (v && v != this) {
     if (v != mouse_move_handler_) {
       if (mouse_move_handler_ != nullptr &&
-          (!mouse_move_handler_->notify_enter_exit_on_child() ||
+          (!mouse_move_handler_->GetNotifyEnterExitOnChild() ||
            !mouse_move_handler_->Contains(v))) {
         MouseEnterExitEvent exit(event, ui::ET_MOUSE_EXITED);
         exit.ConvertLocationToTarget(static_cast<View*>(this),
@@ -531,7 +532,7 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
       }
       View* old_handler = mouse_move_handler_;
       mouse_move_handler_ = v;
-      if (!mouse_move_handler_->notify_enter_exit_on_child() ||
+      if (!mouse_move_handler_->GetNotifyEnterExitOnChild() ||
           !mouse_move_handler_->Contains(old_handler)) {
         MouseEnterExitEvent entered(event, ui::ET_MOUSE_ENTERED);
         entered.ConvertLocationToTarget(static_cast<View*>(this),
@@ -728,7 +729,7 @@ ui::EventDispatchDetails RootView::NotifyEnterExitOfDescendant(
     View* view,
     View* sibling) {
   for (View* p = view->parent(); p; p = p->parent()) {
-    if (!p->notify_enter_exit_on_child())
+    if (!p->GetNotifyEnterExitOnChild())
       continue;
     if (sibling && p->Contains(sibling))
       break;
@@ -795,8 +796,7 @@ ui::EventDispatchDetails RootView::PostDispatchEvent(ui::EventTarget* target,
   return details;
 }
 
-BEGIN_METADATA(RootView)
-METADATA_PARENT_CLASS(View)
-END_METADATA()
+BEGIN_METADATA(RootView, View)
+END_METADATA
 }  // namespace internal
 }  // namespace views

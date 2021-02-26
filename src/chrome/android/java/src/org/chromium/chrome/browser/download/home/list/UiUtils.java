@@ -18,6 +18,8 @@ import org.chromium.chrome.browser.download.StringUtils;
 import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.list.view.CircularProgressView;
 import org.chromium.chrome.browser.download.home.list.view.CircularProgressView.UiState;
+import org.chromium.components.browser_ui.util.date.CalendarFactory;
+import org.chromium.components.browser_ui.util.date.CalendarUtils;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
@@ -69,37 +71,6 @@ public final class UiUtils {
     }
 
     /**
-     * Converts {@code date} into a string meant to be used as a list header.
-     * @param date The {@link Date} to convert.
-     * @return     The {@link CharSequence} representing the header.
-     */
-    public static CharSequence dateToHeaderString(Date date) {
-        Context context = ContextUtils.getApplicationContext();
-
-        Calendar calendar1 = CalendarFactory.get();
-        Calendar calendar2 = CalendarFactory.get();
-
-        calendar1.setTimeInMillis(System.currentTimeMillis());
-        calendar2.setTime(date);
-
-        StringBuilder builder = new StringBuilder();
-        if (CalendarUtils.isSameDay(calendar1, calendar2)) {
-            builder.append(context.getString(R.string.today)).append(" - ");
-        } else {
-            calendar1.add(Calendar.DATE, -1);
-            if (CalendarUtils.isSameDay(calendar1, calendar2)) {
-                builder.append(context.getString(R.string.yesterday)).append(" - ");
-            }
-        }
-
-        builder.append(DateUtils.formatDateTime(context, date.getTime(),
-                DateUtils.FORMAT_ABBREV_WEEKDAY | DateUtils.FORMAT_ABBREV_MONTH
-                        | DateUtils.FORMAT_SHOW_YEAR));
-
-        return builder;
-    }
-
-    /**
      * Converts {@code date} to a string meant to be used as a prefetched item timestamp.
      * @param date The {@link Date} to convert.
      * @return     The {@link CharSequence} representing the timestamp.
@@ -134,7 +105,7 @@ public final class UiUtils {
         Context context = ContextUtils.getApplicationContext();
         String displaySize = Formatter.formatFileSize(context, item.totalSizeBytes);
         String displayUrl = UrlFormatter.formatUrlForSecurityDisplay(
-                item.pageUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
+                item.originalUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
         return context.getString(
                 R.string.download_manager_prefetch_caption, displayUrl, displaySize);
     }
@@ -379,8 +350,9 @@ public final class UiUtils {
 
     /** @return Whether the given {@link OfflineItem} can be shared. */
     public static boolean canShare(OfflineItem item) {
-        return LegacyHelpers.isLegacyDownload(item.id)
-                || LegacyHelpers.isLegacyOfflinePage(item.id);
+        return (item.state == OfflineItemState.COMPLETE)
+                && (LegacyHelpers.isLegacyDownload(item.id)
+                        || LegacyHelpers.isLegacyOfflinePage(item.id));
     }
 
     /** @return The domain associated with the given {@link OfflineItem}. */

@@ -76,10 +76,10 @@ BrailleDisplayManager = class {
     }.bind(this));
 
     chrome.storage.onChanged.addListener(function(changes, area) {
-      if (area == 'local' && 'brailleWordWrap' in changes) {
+      if (area === 'local' && 'brailleWordWrap' in changes) {
         this.updatePanStrategy_(changes.brailleWordWrap.newValue);
       }
-      if (area == 'local' &&
+      if (area === 'local' &&
           ('virtualBrailleRows' in changes ||
            'virtualBrailleColumns' in changes)) {
         this.onCaptionsStateChanged_();
@@ -235,7 +235,7 @@ BrailleDisplayManager = class {
       const newColumnCount = displayState.textColumnCount || 0;
       const newRowCount = displayState.textRowCount || 0;
 
-      if (oldColumnCount != newColumnCount || oldRowCount != newRowCount) {
+      if (oldColumnCount !== newColumnCount || oldRowCount !== newRowCount) {
         this.panStrategy_.setDisplaySize(newRowCount, newColumnCount);
       }
       this.refresh_();
@@ -279,7 +279,7 @@ BrailleDisplayManager = class {
 
     // If there's no cursor, don't schedule blinking.
     const cursor = this.panStrategy_.getCursor();
-    const hideCursor = cursor.start == -1 || cursor.end == -1;
+    const hideCursor = cursor.start === -1 || cursor.end === -1;
 
     this.refreshInternal_(!hideCursor);
     if (hideCursor) {
@@ -382,17 +382,14 @@ BrailleDisplayManager = class {
   onKeyEvent_(event) {
     switch (event.command) {
       case BrailleKeyCommand.PAN_LEFT:
-        this.panLeft_();
+        this.panLeft();
         break;
       case BrailleKeyCommand.PAN_RIGHT:
-        this.panRight_();
+        this.panRight();
         break;
       case BrailleKeyCommand.ROUTING:
-        event.displayPosition = this.brailleToTextPosition_(
-            event.displayPosition +
-            this.panStrategy_.viewPort.firstRow *
-                this.panStrategy_.displaySize.columns);
-      // fall through
+        this.route(event.displayPosition);
+        break;
       default:
         this.commandListener_(event, this.content_);
         break;
@@ -403,9 +400,8 @@ BrailleDisplayManager = class {
    * Shift the display by one full display size and refresh the content.
    * Sends the appropriate command if the display is already at the leftmost
    * position.
-   * @private
    */
-  panLeft_() {
+  panLeft() {
     if (this.panStrategy_.previous()) {
       this.refresh_();
     } else {
@@ -418,15 +414,32 @@ BrailleDisplayManager = class {
    * Shifts the display position to the right by one full display size and
    * refreshes the content.  Sends the appropriate command if the display is
    * already at its rightmost position.
-   * @private
    */
-  panRight_() {
+  panRight() {
     if (this.panStrategy_.next()) {
       this.refresh_();
     } else {
       this.commandListener_(
           {command: BrailleKeyCommand.PAN_RIGHT}, this.content_);
     }
+  }
+
+  /**
+   * Moves the cursor to the given braille position.
+   * @param {number|undefined} braillePosition The 0-based position relative to
+   *     the start of the currently displayed text. The position is given in
+   *     braille cells, not text cells.
+   */
+  route(braillePosition) {
+    if (braillePosition === undefined) {
+      return;
+    }
+    const displayPosition = this.brailleToTextPosition_(
+        braillePosition +
+        this.panStrategy_.viewPort.firstRow *
+            this.panStrategy_.displaySize.columns);
+    this.commandListener_(
+        {command: BrailleKeyCommand.ROUTING, displayPosition}, this.content_);
   }
 
   /**
@@ -442,7 +455,7 @@ BrailleDisplayManager = class {
       this.panStrategy_.setCursor(-1, -1);
       return;
     }
-    if (startIndex == endIndex) {
+    if (startIndex === endIndex) {
       endIndex = startIndex + 1;
     }
     this.panStrategy_.setCursor(startIndex, endIndex);

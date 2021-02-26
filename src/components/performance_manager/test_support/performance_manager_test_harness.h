@@ -13,9 +13,28 @@ namespace performance_manager {
 // A test harness that initializes PerformanceManagerImpl, plus the entire
 // RenderViewHost harness. Allows for creating full WebContents, and their
 // accompanying structures in the graph. The task environment is accessed
-// via content::RenderViewHostTestHarness::task_environment(). RenderFrameHosts
-// and such are not created, so this is suitable for unittests but not
-// browsertests.
+// via content::RenderViewHostTestHarness::task_environment().
+//
+// Meant to be used from components_unittests, but not from unit_tests or
+// browser tests. unit_tests should use PerformanceManagerTestHarnessHelper.
+//
+// To set the active WebContents for the test use:
+//
+//   SetContents(CreateTestWebContents());
+//
+// This will create a PageNode, but nothing else. To create FrameNodes and
+// ProcessNodes for the test WebContents, simulate a committed navigation with:
+//
+//  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+//      GURL("https://www.foo.com/"));
+//
+// This will create nodes backed by thin test stubs (TestWebContents,
+// TestRenderFrameHost, etc). If you want full process trees and live
+// RenderFrameHosts, use PerformanceManagerBrowserTestHarness.
+//
+// If you just want to test how code interacts with the graph it's better to
+// use GraphTestHarness, which has a rich set of methods for directly creating
+// graph nodes.
 class PerformanceManagerTestHarness
     : public content::RenderViewHostTestHarness {
  public:
@@ -27,8 +46,9 @@ class PerformanceManagerTestHarness
   // initialize its BrowserTaskEnvironment.
   template <typename... TaskEnvironmentTraits>
   explicit PerformanceManagerTestHarness(TaskEnvironmentTraits&&... traits)
-      : RenderViewHostTestHarness(
-            std::forward<TaskEnvironmentTraits>(traits)...) {}
+      : Super(std::forward<TaskEnvironmentTraits>(traits)...) {
+    helper_ = std::make_unique<PerformanceManagerTestHarnessHelper>();
+  }
 
   PerformanceManagerTestHarness(const PerformanceManagerTestHarness&) = delete;
   PerformanceManagerTestHarness& operator=(
@@ -42,6 +62,10 @@ class PerformanceManagerTestHarness
   // attached. This is a test web contents that can be interacted with
   // via WebContentsTester.
   std::unique_ptr<content::WebContents> CreateTestWebContents();
+
+  // Allows a test to cause the PM to be torn down early, so it can explicitly
+  // test TearDown logic. This may only be called once.
+  void TearDownNow();
 
  private:
   std::unique_ptr<PerformanceManagerTestHarnessHelper> helper_;

@@ -4,16 +4,16 @@
 
 #include "cast/streaming/packet_receive_stats_tracker.h"
 
+#include <chrono>
 #include <limits>
 
 #include "cast/streaming/constants.h"
 #include "gtest/gtest.h"
+#include "util/chrono_helpers.h"
 
 namespace openscreen {
 namespace cast {
 namespace {
-
-constexpr int kSomeRtpTimebase = static_cast<int>(kVideoTimebase::den);
 
 // Returns a RtcpReportBlock with all fields set to known values to see how the
 // fields are modified by functions called during the tests.
@@ -64,7 +64,7 @@ RtcpReportBlock GetSentinel() {
   } while (false)
 
 TEST(PacketReceiveStatsTrackerTest, DoesNotPopulateReportWithoutData) {
-  PacketReceiveStatsTracker tracker(kSomeRtpTimebase);
+  PacketReceiveStatsTracker tracker(kRtpVideoTimebase);
   RtcpReportBlock report = GetSentinel();
   tracker.PopulateNextReport(&report);
   EXPECT_FIELDS_NOT_POPULATED(report);
@@ -74,10 +74,9 @@ TEST(PacketReceiveStatsTrackerTest, PopulatesReportWithOnePacketTracked) {
   constexpr uint16_t kSequenceNumber = 1234;
   constexpr RtpTimeTicks kRtpTimestamp =
       RtpTimeTicks() + RtpTimeDelta::FromTicks(42);
-  constexpr auto kArrivalTime =
-      Clock::time_point() + std::chrono::seconds(3600);
+  constexpr auto kArrivalTime = Clock::time_point() + seconds(3600);
 
-  PacketReceiveStatsTracker tracker(kSomeRtpTimebase);
+  PacketReceiveStatsTracker tracker(kRtpVideoTimebase);
   tracker.OnReceivedValidRtpPacket(kSequenceNumber, kRtpTimestamp,
                                    kArrivalTime);
 
@@ -96,18 +95,17 @@ TEST(PacketReceiveStatsTrackerTest, WhenReceivingAllPackets) {
       std::numeric_limits<uint16_t>::max() - 2;
   constexpr RtpTimeTicks kFirstRtpTimestamp =
       RtpTimeTicks() + RtpTimeDelta::FromTicks(42);
-  constexpr auto kFirstArrivalTime =
-      Clock::time_point() + std::chrono::seconds(3600);
+  constexpr auto kFirstArrivalTime = Clock::time_point() + seconds(3600);
 
-  PacketReceiveStatsTracker tracker(kSomeRtpTimebase);
+  PacketReceiveStatsTracker tracker(kRtpVideoTimebase);
 
   // Record 10 packets arrived exactly one second apart with media timestamps
   // also exactly one second apart.
   for (int i = 0; i < 10; ++i) {
     tracker.OnReceivedValidRtpPacket(
         kFirstSequenceNumber + i,
-        kFirstRtpTimestamp + RtpTimeDelta::FromTicks(kSomeRtpTimebase) * i,
-        kFirstArrivalTime + std::chrono::seconds(i));
+        kFirstRtpTimestamp + RtpTimeDelta::FromTicks(kRtpVideoTimebase) * i,
+        kFirstArrivalTime + seconds(i));
   }
 
   RtcpReportBlock report = GetSentinel();
@@ -131,10 +129,9 @@ TEST(PacketReceiveStatsTrackerTest, WhenReceivingAboutHalfThePackets) {
   constexpr uint16_t kFirstSequenceNumber = 3;
   constexpr RtpTimeTicks kFirstRtpTimestamp =
       RtpTimeTicks() + RtpTimeDelta::FromTicks(99);
-  constexpr auto kFirstArrivalTime =
-      Clock::time_point() + std::chrono::seconds(8888);
+  constexpr auto kFirstArrivalTime = Clock::time_point() + seconds(8888);
 
-  PacketReceiveStatsTracker tracker(kSomeRtpTimebase);
+  PacketReceiveStatsTracker tracker(kRtpVideoTimebase);
 
   // Record 10 packet arrivals whose sequence numbers step by 2, which should
   // indicate half of the packets didn't arrive.
@@ -144,8 +141,8 @@ TEST(PacketReceiveStatsTrackerTest, WhenReceivingAboutHalfThePackets) {
   for (int i = 0; i < 10; ++i) {
     tracker.OnReceivedValidRtpPacket(
         kFirstSequenceNumber + (i * 2 + 1),
-        kFirstRtpTimestamp + RtpTimeDelta::FromTicks(kSomeRtpTimebase) * i,
-        kFirstArrivalTime + std::chrono::seconds(i));
+        kFirstRtpTimestamp + RtpTimeDelta::FromTicks(kRtpVideoTimebase) * i,
+        kFirstArrivalTime + seconds(i));
   }
 
   RtcpReportBlock report = GetSentinel();
@@ -163,29 +160,27 @@ TEST(PacketReceiveStatsTrackerTest, ComputesJitterCorrectly) {
   constexpr uint16_t kFirstSequenceNumber = 3;
   constexpr RtpTimeTicks kFirstRtpTimestamp =
       RtpTimeTicks() + RtpTimeDelta::FromTicks(99);
-  constexpr auto kFirstArrivalTime =
-      Clock::time_point() + std::chrono::seconds(8888);
+  constexpr auto kFirstArrivalTime = Clock::time_point() + seconds(8888);
 
   // Record 100 packet arrivals, one second apart, where each packet's RTP
   // timestamps are progressing 2 seconds forward. Thus, the jitter calculation
   // should gradually converge towards a difference of one second.
-  constexpr auto kTrueJitter =
-      std::chrono::duration_cast<Clock::duration>(std::chrono::seconds(1));
-  PacketReceiveStatsTracker tracker(kSomeRtpTimebase);
+  constexpr auto kTrueJitter = Clock::to_duration(seconds(1));
+  PacketReceiveStatsTracker tracker(kRtpVideoTimebase);
   Clock::duration last_diff = Clock::duration::max();
   for (int i = 0; i < 100; ++i) {
     tracker.OnReceivedValidRtpPacket(
         kFirstSequenceNumber + i,
         kFirstRtpTimestamp +
-            RtpTimeDelta::FromTicks(kSomeRtpTimebase) * (i * 2),
-        kFirstArrivalTime + std::chrono::seconds(i));
+            RtpTimeDelta::FromTicks(kRtpVideoTimebase) * (i * 2),
+        kFirstArrivalTime + seconds(i));
 
     // Expect that the jitter is becoming closer to the actual value in each
     // iteration.
     RtcpReportBlock report;
     tracker.PopulateNextReport(&report);
     const auto diff = kTrueJitter - report.jitter.ToDuration<Clock::duration>(
-                                        kSomeRtpTimebase);
+                                        kRtpVideoTimebase);
     EXPECT_LT(diff, last_diff);
     last_diff = diff;
   }
@@ -196,10 +191,9 @@ TEST(PacketReceiveStatsTrackerTest, ComputesJitterCorrectly) {
   // to that value.
   RtcpReportBlock report;
   tracker.PopulateNextReport(&report);
-  const auto diff =
-      kTrueJitter - report.jitter.ToDuration<Clock::duration>(kSomeRtpTimebase);
-  constexpr auto kMaxDiffAtEnd =
-      std::chrono::duration_cast<Clock::duration>(std::chrono::milliseconds(2));
+  const auto diff = kTrueJitter - report.jitter.ToDuration<Clock::duration>(
+                                      kRtpVideoTimebase);
+  constexpr auto kMaxDiffAtEnd = Clock::to_duration(milliseconds(2));
   EXPECT_NEAR(0, diff.count(), kMaxDiffAtEnd.count());
 }
 

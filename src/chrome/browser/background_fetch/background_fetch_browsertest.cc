@@ -135,7 +135,8 @@ class WaitableDownloadLoggerObserver : public download::Logger::Observer {
 
 // Observes the offline item collection's content provider and then invokes the
 // associated test callbacks when one has been provided.
-class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
+class OfflineContentProviderObserver final
+    : public OfflineContentProvider::Observer {
  public:
   using ItemsAddedCallback =
       base::OnceCallback<void(const std::vector<OfflineItem>&)>;
@@ -434,8 +435,8 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
         ContentSettingsPattern::FromURL(https_server_->base_url());
 
     settings_map->SetContentSettingCustomScope(
-        host_pattern, host_pattern, content_type,
-        std::string() /* resource_identifier */, setting);
+        host_pattern, ContentSettingsPattern::Wildcard(), content_type,
+        setting);
   }
 
   void DidUpdateItem(base::OnceClosure quit_closure,

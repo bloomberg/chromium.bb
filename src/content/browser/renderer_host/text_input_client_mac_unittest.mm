@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/common/text_input_client_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_task_environment.h"
@@ -74,7 +74,7 @@ class TextInputClientMacTest : public content::RenderViewHostTestHarness {
     content::RenderViewHostTestHarness::SetUp();
     local_frame_ = std::make_unique<TextInputClientLocalFrame>(web_contents());
     RenderViewHostTester::For(rvh())->CreateTestRenderView(
-        base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
+        base::nullopt, MSG_ROUTING_NONE, false);
     widget_ = rvh()->GetWidget();
     FocusWebContentsOnMainFrame();
   }

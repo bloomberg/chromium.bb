@@ -22,6 +22,7 @@
 #include "core/fpdfdoc/cpdf_formfield.h"
 #include "core/fpdfdoc/cpdf_iconfit.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
+#include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_graphstatedata.h"
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_renderdevice.h"
@@ -32,6 +33,7 @@
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/pwl/cpwl_edit.h"
+#include "third_party/base/notreached.h"
 
 #ifdef PDF_ENABLE_XFA
 #include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
@@ -98,13 +100,9 @@ CXFA_FFWidgetHandler* CPDFSDK_Widget::GetXFAWidgetHandler() const {
   if (!pContext || !pContext->ContainsExtensionForegroundForm())
     return nullptr;
 
-  if (!m_pWidgetHandler) {
-    CXFA_FFDocView* pDocView =
-        static_cast<CPDFXFA_Context*>(pContext)->GetXFADocView();
-    if (pDocView)
-      m_pWidgetHandler = pDocView->GetWidgetHandler();
-  }
-  return m_pWidgetHandler.Get();
+  CXFA_FFDocView* pDocView =
+      static_cast<CPDFXFA_Context*>(pContext)->GetXFADocView();
+  return pDocView ? pDocView->GetWidgetHandler() : nullptr;
 }
 
 static XFA_EVENTTYPE GetXFAEventType(PDFSDK_XFAAActionType eXFAAAT) {
@@ -183,7 +181,7 @@ static XFA_EVENTTYPE GetXFAEventType(CPDF_AAction::AActionType eAAT,
 }
 
 bool CPDFSDK_Widget::HasXFAAAction(PDFSDK_XFAAActionType eXFAAAT) const {
-  ObservedPtr<CXFA_FFWidget> pWidget(GetMixXFAWidget());
+  CXFA_FFWidget* pWidget = GetMixXFAWidget();
   if (!pWidget)
     return false;
 
@@ -201,9 +199,7 @@ bool CPDFSDK_Widget::HasXFAAAction(PDFSDK_XFAAActionType eXFAAAT) const {
     }
   }
 
-  // Check |pWidget| again because JS may have destroyed it in the block above.
-  return pWidget &&
-         pWidget->HasEventUnderHandler(eEventType, pXFAWidgetHandler);
+  return pWidget->HasEventUnderHandler(eEventType, pXFAWidgetHandler);
 }
 
 bool CPDFSDK_Widget::OnXFAAAction(PDFSDK_XFAAActionType eXFAAAT,
@@ -214,7 +210,7 @@ bool CPDFSDK_Widget::OnXFAAAction(PDFSDK_XFAAActionType eXFAAAT,
   if (!pContext)
     return false;
 
-  ObservedPtr<CXFA_FFWidget> pWidget(GetMixXFAWidget());
+  CXFA_FFWidget* pWidget = GetMixXFAWidget();
   if (!pWidget)
     return false;
 
@@ -246,12 +242,9 @@ bool CPDFSDK_Widget::OnXFAAAction(PDFSDK_XFAAActionType eXFAAAT,
     }
   }
 
-  // Check |pWidget| again because JS may have destroyed it in the block above.
-  if (!pWidget)
-    return false;
-
   bool ret = pWidget->ProcessEventUnderHandler(&param, pXFAWidgetHandler);
-  if (CXFA_FFDocView* pDocView = pContext->GetXFADocView())
+  CXFA_FFDocView* pDocView = pContext->GetXFADocView();
+  if (pDocView)
     pDocView->UpdateDocView();
 
   return ret;
@@ -464,6 +457,11 @@ WideString CPDFSDK_Widget::GetDefaultValue() const {
   return pFormField->GetDefaultValue();
 }
 
+WideString CPDFSDK_Widget::GetExportValue() const {
+  CPDF_FormControl* pFormCtrl = GetFormControl();
+  return pFormCtrl->GetExportValue();
+}
+
 WideString CPDFSDK_Widget::GetOptionLabel(int nIndex) const {
   CPDF_FormField* pFormField = GetFormField();
   return pFormField->GetOptionLabel(nIndex);
@@ -652,7 +650,7 @@ void CPDFSDK_Widget::DrawAppearance(CFX_RenderDevice* pDevice,
     CFX_PathData pathData;
     pathData.AppendFloatRect(GetRect());
     pDevice->DrawPath(&pathData, &mtUser2Device, &gsd, 0, 0xFFAAAAAA,
-                      FXFILL_ALTERNATE);
+                      CFX_FillRenderOptions::EvenOddOptions());
   } else {
     CPDFSDK_BAAnnot::DrawAppearance(pDevice, mtUser2Device, mode, pOptions);
   }
@@ -693,8 +691,8 @@ CFX_FloatRect CPDFSDK_Widget::GetClientRect() const {
   CFX_FloatRect rcWindow = GetRotatedRect();
   float fBorderWidth = GetBorderWidth();
   switch (GetBorderStyle()) {
-    case BorderStyle::BEVELED:
-    case BorderStyle::INSET:
+    case BorderStyle::kBeveled:
+    case BorderStyle::kInset:
       fBorderWidth *= 2.0f;
       break;
     default:

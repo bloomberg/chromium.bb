@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "content/browser/frame_host/render_frame_host_factory.h"
+#include "content/browser/renderer_host/render_frame_host_factory.h"
 
 namespace content {
 
@@ -35,7 +35,8 @@ class TestRenderFrameHostFactory : public RenderFrameHostFactory {
       FrameTreeNode* frame_tree_node,
       int32_t routing_id,
       const base::UnguessableToken& frame_token,
-      bool renderer_initiated_creation) override;
+      bool renderer_initiated_creation,
+      RenderFrameHostImpl::LifecycleState lifecycle_state) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrameHostFactory);

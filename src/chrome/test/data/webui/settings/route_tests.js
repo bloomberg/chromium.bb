@@ -189,11 +189,11 @@ suite('route', function() {
 
     // Path with a slash.
     assertEquals(
-        routes.SITE_SETTINGS_COOKIES,
-        Router.getInstance().getRouteForPath('/content/cookies'));
+        routes.SITE_SETTINGS_SITE_DETAILS,
+        Router.getInstance().getRouteForPath('/content/siteDetails/'));
     assertEquals(
-        routes.SITE_SETTINGS_COOKIES,
-        Router.getInstance().getRouteForPath('/content/cookies/'));
+        routes.SITE_SETTINGS_SITE_DETAILS,
+        Router.getInstance().getRouteForPath('/content/siteDetails'));
   });
 
   test('isNavigableDialog', function() {
@@ -238,8 +238,7 @@ suite('route', function() {
         // correct path.
         window.location.href = 'https://example.com/path/to/page.html';
         assertEquals(
-            'chrome://settings/cloudPrinters',
-            routes.CLOUD_PRINTERS.getAbsolutePath());
+            'chrome://settings/cookies', routes.COOKIES.getAbsolutePath());
 
         // Check getting the absolute path while inside settings returns the
         // correct path for the current route and a different route.

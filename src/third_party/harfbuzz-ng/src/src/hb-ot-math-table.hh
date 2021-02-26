@@ -78,7 +78,7 @@ struct MathConstants
   }
 
   hb_position_t get_value (hb_ot_math_constant_t constant,
-				  hb_font_t *font) const
+			   hb_font_t *font) const
   {
     switch (constant) {
 
@@ -515,10 +515,9 @@ struct MathGlyphAssembly
     if (parts_count)
     {
       int64_t mult = font->dir_mult (direction);
-      hb_array_t<const MathGlyphPartRecord> arr = partRecords.sub_array (start_offset, parts_count);
-      unsigned int count = arr.length;
-      for (unsigned int i = 0; i < count; i++)
-	arr[i].extract (parts[i], mult, font);
+      for (auto _ : hb_zip (partRecords.sub_array (start_offset, parts_count),
+			    hb_array (parts, *parts_count)))
+	_.first.extract (_.second, mult, font);
     }
 
     if (italics_correction)
@@ -563,13 +562,9 @@ struct MathGlyphConstruction
     if (variants_count)
     {
       int64_t mult = font->dir_mult (direction);
-      hb_array_t<const MathGlyphVariantRecord> arr = mathGlyphVariantRecord.sub_array (start_offset, variants_count);
-      unsigned int count = arr.length;
-      for (unsigned int i = 0; i < count; i++)
-      {
-	variants[i].glyph = arr[i].variantGlyph;
-	variants[i].advance = font->em_mult (arr[i].advanceMeasurement, mult);
-      }
+      for (auto _ : hb_zip (mathGlyphVariantRecord.sub_array (start_offset, variants_count),
+			    hb_array (variants, *variants_count)))
+	_.second = {_.first.variantGlyph, font->em_mult (_.first.advanceMeasurement, mult)};
     }
     return mathGlyphVariantRecord.len;
   }
@@ -621,12 +616,12 @@ struct MathVariants
 	   .get_variants (direction, font, start_offset, variants_count, variants); }
 
   unsigned int get_glyph_parts (hb_codepoint_t glyph,
-				       hb_direction_t direction,
-				       hb_font_t *font,
-				       unsigned int start_offset,
-				       unsigned int *parts_count, /* IN/OUT */
-				       hb_ot_math_glyph_part_t *parts /* OUT */,
-				       hb_position_t *italics_correction /* OUT */) const
+				hb_direction_t direction,
+				hb_font_t *font,
+				unsigned int start_offset,
+				unsigned int *parts_count, /* IN/OUT */
+				hb_ot_math_glyph_part_t *parts /* OUT */,
+				hb_position_t *italics_correction /* OUT */) const
   { return get_glyph_construction (glyph, direction, font)
 	   .get_assembly ()
 	   .get_parts (direction, font,
@@ -706,7 +701,7 @@ struct MATH
   }
 
   hb_position_t get_constant (hb_ot_math_constant_t  constant,
-				     hb_font_t		   *font) const
+			      hb_font_t		   *font) const
   { return (this+mathConstants).get_value (constant, font); }
 
   const MathGlyphInfo &get_glyph_info () const { return this+mathGlyphInfo; }

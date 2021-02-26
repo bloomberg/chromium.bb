@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/component_loader.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,8 +22,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
-#include "chrome/browser/ui/ui_features.h"
-#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/content/session_tab_helper.h"
@@ -33,10 +30,11 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/javascript_test_observer.h"
 #include "extensions/browser/extension_action.h"
+#include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_event_router_observer.h"
+#include "extensions/common/api/extension_action/action_info_test_util.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -61,21 +59,20 @@ const char kAltShiftG[] = "Alt+Shift+G";
 // Name of the command for the "basics" test extension.
 const char kBasicsShortcutCommandName[] = "toggle-feature";
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const char kBookmarkKeybinding[] = "Command+D";
 #else
 const char kBookmarkKeybinding[] = "Ctrl+D";
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 bool SendBookmarkKeyPressSync(Browser* browser) {
-  return ui_test_utils::SendKeyPressSync(
-      browser, ui::VKEY_D,
-#if defined(OS_MACOSX)
-      false, false, false, true
+  return ui_test_utils::SendKeyPressSync(browser, ui::VKEY_D,
+#if defined(OS_MAC)
+                                         false, false, false, true
 #else
       true, false, false, false
 #endif
-      );
+  );
 }
 
 // Named command for media key overwrite test.
@@ -235,7 +232,7 @@ class CommandsApiTest : public ExtensionApiTest {
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // ExtensionKeybindingRegistryViews doesn't get registered until BrowserView
     // is activated at least once.
     // TODO(crbug.com/839469): Registry creation should happen independent of
@@ -384,9 +381,9 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, InactivePageActionDoesntTrigger) {
                        "pageAction.onClicked", expect_dispatch);
 }
 
-// Tests that a page action that is overflowed will still properly trigger when
-// the keybinding is used.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverflowedPageActionTriggers) {
+// Tests that a page action that is unpinned and only shown within the
+// extensions menu will still properly trigger when the keybinding is used.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, UnpinnedPageActionTriggers) {
   base::AutoReset<bool> disable_toolbar_animations(
       &ToolbarActionsBar::disable_animations_for_testing_, true);
 
@@ -395,12 +392,6 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverflowedPageActionTriggers) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  // With the old toolbar, we need to explicitly overflow the extension.
-  if (!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    ToolbarActionsModel* toolbar_actions_model =
-        ToolbarActionsModel::Get(profile());
-    toolbar_actions_model->SetVisibleIconCount(0);
-  }
   std::unique_ptr<ExtensionActionTestHelper> test_helper =
       ExtensionActionTestHelper::Create(browser());
   RunScheduledLayouts();
@@ -445,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionOverrideChromeShortcut) {
 
   CommandService* command_service = CommandService::Get(browser()->profile());
 // Simulate the user setting the keybinding to override the print shortcut.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::string print_shortcut = "Command+P";
 #else
   std::string print_shortcut = "Ctrl+P";
@@ -466,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionOverrideChromeShortcut) {
   // fit into SendKeyPressToAction(); do it manually.
   bool control_is_modifier = false;
   bool command_is_modifier = false;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   command_is_modifier = true;
 #else
   control_is_modifier = true;
@@ -1008,6 +999,23 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, AddRemoveAddComponentExtension) {
   ASSERT_TRUE(RunComponentExtensionTest("keybinding/component")) << message_;
 }
 
+// Validate parameters sent along with an extension event, in response to
+// command being triggered.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, TabParameter) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(RunExtensionTest("keybinding/tab_parameter")) << message_;
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+  ResultCatcher catcher;
+  EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents()));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_Y, true, true,
+                                              false, false));  // Ctrl+Shift+Y
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 // Test Keybinding in incognito mode.
 IN_PROC_BROWSER_TEST_P(IncognitoCommandsApiTest, IncognitoMode) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1055,8 +1063,6 @@ IN_PROC_BROWSER_TEST_P(ActionCommandsApiTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const ActionInfo::Type action_type = GetParam();
-  std::unique_ptr<ScopedCurrentChannel> override_channel =
-      GetOverrideChannelForActionType(GetParam());
 
   // Load a test extension that has a command that invokes the action, and sends
   // a message when the action is invoked.
@@ -1116,8 +1122,6 @@ IN_PROC_BROWSER_TEST_P(ActionCommandsApiTest, TriggeringCommandTriggersPopup) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const ActionInfo::Type action_type = GetParam();
-  std::unique_ptr<ScopedCurrentChannel> override_channel =
-      GetOverrideChannelForActionType(GetParam());
 
   // Load an extension that specifies a command to invoke the action, and has
   // a default popup.

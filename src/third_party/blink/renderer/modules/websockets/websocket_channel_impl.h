@@ -115,6 +115,9 @@ class MODULES_EXPORT WebSocketChannelImpl final
   // network::mojom::blink::WebSocketHandshakeClient methods:
   void OnOpeningHandshakeStarted(
       network::mojom::blink::WebSocketHandshakeRequestPtr) override;
+  void OnFailure(const WTF::String& message,
+                 int net_error,
+                 int response_code) override;
   void OnConnectionEstablished(
       mojo::PendingRemote<network::mojom::blink::WebSocket> websocket,
       mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
@@ -127,13 +130,12 @@ class MODULES_EXPORT WebSocketChannelImpl final
   void OnDataFrame(bool fin,
                    network::mojom::blink::WebSocketMessageType,
                    uint64_t data_length) override;
-  void AddSendFlowControlQuota(int64_t quota) override;
   void OnDropChannel(bool was_clean,
                      uint16_t code,
                      const String& reason) override;
   void OnClosingHandshake() override;
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   struct DataFrame final {
@@ -173,6 +175,74 @@ class MODULES_EXPORT WebSocketChannelImpl final
     Vector<char> data;
   };
 
+  class Message final {
+    DISALLOW_NEW();
+
+   public:
+    using DidCallSendMessage =
+        util::StrongAlias<class DidCallSendMessageTag, bool>;
+
+    // Initializes message as a string
+    Message(const std::string&,
+            base::OnceClosure completion_callback,
+            DidCallSendMessage did_call_send_message);
+
+    // Initializes message as a blob
+    explicit Message(scoped_refptr<BlobDataHandle>);
+
+    // Initializes message as a ArrayBuffer
+    Message(base::span<const char> message,
+            base::OnceClosure completion_callback,
+            DidCallSendMessage did_call_send_message);
+
+    // Initializes a Blank message
+    Message(MessageType type,
+            base::span<const char> message,
+            base::OnceClosure completion_callback);
+
+    // Close message
+    Message(uint16_t code, const String& reason);
+
+    Message(const Message&) = delete;
+    Message& operator=(const Message&) = delete;
+
+    Message(Message&&);
+    Message& operator=(Message&&);
+
+    MessageType Type() const;
+    scoped_refptr<BlobDataHandle> GetBlobDataHandle();
+    DidCallSendMessage GetDidCallSendMessage() const;
+    uint16_t Code() const;
+    String Reason() const;
+    base::OnceClosure CompletionCallback();
+
+    // Returns a mutable |pending_payload_|. Since calling code always mutates
+    // the value, |pending_payload_| only has a mutable getter.
+    base::span<const char>& MutablePendingPayload();
+
+    void SetDidCallSendMessage(DidCallSendMessage did_call_send_message);
+
+   private:
+    struct MessageDataDeleter {
+      void operator()(char* p) const { WTF::Partitions::FastFree(p); }
+    };
+    using MessageData = std::unique_ptr<char[], MessageDataDeleter>;
+    static MessageData CreateMessageData(std::size_t message_size) {
+      return MessageData(static_cast<char*>(WTF::Partitions::FastMalloc(
+          message_size, "blink::WebSockChannelImpl::Message::MessageData")));
+    }
+
+    MessageData message_data_;
+    MessageType type_;
+
+    scoped_refptr<BlobDataHandle> blob_data_handle_;
+    base::span<const char> pending_payload_;
+    DidCallSendMessage did_call_send_message_ = DidCallSendMessage(false);
+    uint16_t code_ = 0;
+    String reason_;
+    base::OnceClosure completion_callback_;
+  };
+
   // The state is defined to see the conceptual state more clearly than checking
   // various members (for DCHECKs for example). This is only used internally.
   enum class State {
@@ -189,17 +259,10 @@ class MODULES_EXPORT WebSocketChannelImpl final
   };
   State GetState() const;
 
-  void SendInternal(network::mojom::blink::WebSocketMessageType,
-                    const char* data,
-                    size_t total_size,
-                    uint64_t* consumed_buffered_amount);
-  void SendAndAdjustQuota(bool final,
-                          network::mojom::blink::WebSocketMessageType,
-                          base::span<const char>,
-                          uint64_t* consumed_buffered_amount);
   bool MaybeSendSynchronously(network::mojom::blink::WebSocketMessageType,
-                              base::span<const char>);
+                              base::span<const char>* data);
   void ProcessSendQueue();
+  bool SendMessageData(base::span<const char>* data);
   void FailAsError(const String& reason) {
     Fail(reason, mojom::ConsoleMessageLevel::kError,
          location_at_construction_->Clone());
@@ -226,6 +289,10 @@ class MODULES_EXPORT WebSocketChannelImpl final
                         network::mojom::blink::WebSocketMessageType type,
                         const char* data,
                         size_t data_size);
+  // Called when |writable_| becomes writable.
+  void OnWritable(MojoResult result, const mojo::HandleSignalsState& state);
+  MojoResult ProduceData(base::span<const char>* data,
+                         uint64_t* consumed_buffered_amount);
   String GetTextMessage(const Vector<base::span<const char>>& chunks,
                         wtf_size_t size);
   void OnConnectionError(const base::Location& set_from,
@@ -237,7 +304,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
   KURL url_;
   uint64_t identifier_;
   Member<BlobLoader> blob_loader_;
-  HeapDeque<Member<Message>> messages_;
+  WTF::Deque<Message> messages_;
   WebSocketMessageChunkAccumulator message_chunks_;
   const Member<ExecutionContext> execution_context_;
 
@@ -246,7 +313,6 @@ class MODULES_EXPORT WebSocketChannelImpl final
   bool received_text_is_all_ascii_ = true;
   bool throttle_passed_ = false;
   bool has_initiated_opening_handshake_ = false;
-  uint64_t sending_quota_ = 0;
   size_t sent_size_of_top_message_ = 0;
   FrameScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
@@ -275,6 +341,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
   WTF::Deque<DataFrame> pending_data_frames_;
 
   mojo::ScopedDataPipeProducerHandle writable_;
+  mojo::SimpleWatcher writable_watcher_;
+  bool wait_for_writable_ = false;
 
   const scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 };

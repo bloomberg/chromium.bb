@@ -16,8 +16,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/containers/span.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -613,6 +613,16 @@ class SocketDataProviderArray {
     return data_providers_[next_index_++];
   }
 
+  // Like GetNext(), but returns nullptr when the end of the array is reached,
+  // instead of DCHECKing. GetNext() should generally be preferred, unless
+  // having no remaining elements is expected in some cases and is handled
+  // safely.
+  T* GetNextWithoutAsserting() {
+    if (next_index_ == data_providers_.size())
+      return nullptr;
+    return data_providers_[next_index_++];
+  }
+
   void Add(T* data_provider) {
     DCHECK(data_provider);
     data_providers_.push_back(data_provider);
@@ -645,7 +655,17 @@ class MockClientSocketFactory : public ClientSocketFactory {
   MockClientSocketFactory();
   ~MockClientSocketFactory() override;
 
+  // Adds a SocketDataProvider that can be used to served either TCP or UDP
+  // connection requests. Sockets are returned in FIFO order.
   void AddSocketDataProvider(SocketDataProvider* socket);
+
+  // Like AddSocketDataProvider(), except sockets will only be used to service
+  // TCP connection requests. Sockets added with this method are used first,
+  // before sockets added with AddSocketDataProvider(). Particularly useful for
+  // QUIC tests with multiple sockets, where TCP connections may or may not be
+  // made, and have no guaranteed order, relative to UDP connections.
+  void AddTcpSocketDataProvider(SocketDataProvider* socket);
+
   void AddSSLSocketDataProvider(SSLSocketDataProvider* socket);
   void AddProxyClientSocketDataProvider(ProxyClientSocketDataProvider* socket);
   void ResetNextMockIndexes();
@@ -669,6 +689,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
   std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+      NetworkQualityEstimator* network_quality_estimator,
       NetLog* net_log,
       const NetLogSource& source) override;
   std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
@@ -693,6 +714,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
 
  private:
   SocketDataProviderArray<SocketDataProvider> mock_data_;
+  SocketDataProviderArray<SocketDataProvider> mock_tcp_data_;
   SocketDataProviderArray<SSLSocketDataProvider> mock_ssl_data_;
   SocketDataProviderArray<ProxyClientSocketDataProvider> mock_proxy_data_;
   std::vector<uint16_t> udp_client_socket_ports_;
@@ -1382,6 +1404,7 @@ class MockTaggingClientSocketFactory : public MockClientSocketFactory {
   std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+      NetworkQualityEstimator* network_quality_estimator,
       NetLog* net_log,
       const NetLogSource& source) override;
 

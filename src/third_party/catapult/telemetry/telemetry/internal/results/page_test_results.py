@@ -195,6 +195,9 @@ class PageTestResults(object):
       self._progress_reporter.DidRunStory(self._current_story_run)
       self._all_story_runs.append(self._current_story_run)
       self._current_story_run = None
+      # Clear the artifact implementation so that other tests don't
+      # accidentally use a stale artifact instance.
+      artifact_logger.RegisterArtifactImplementation(None)
 
   def InterruptBenchmark(self, reason):
     """Mark the benchmark as interrupted.
@@ -247,7 +250,8 @@ class PageTestResults(object):
                            architecture=None,
                            device_id=None,
                            os_name=None,
-                           os_version=None):
+                           os_version=None,
+                           info_blurb=None):
     """Save diagnostics to intermediate results."""
     diag_values = [
         (reserved_infos.OWNERS, owners),
@@ -257,6 +261,7 @@ class PageTestResults(object):
         (reserved_infos.DEVICE_IDS, device_id),
         (reserved_infos.OS_NAMES, os_name),
         (reserved_infos.OS_VERSIONS, os_version),
+        (reserved_infos.INFO_BLURB, info_blurb),
     ]
     for info, value in diag_values:
       if value is None or value == []:

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -72,13 +73,12 @@ class VIEWS_EXPORT PlatformStyle {
   static const float kFocusHaloThickness;
   static const float kFocusHaloInset;
 
-  // Whether "button-like" (for example, buttons in the top chrome or Omnibox
-  // decorations) UI elements should use a focus ring, rather than show
-  // hover state on focus.
-  static const bool kPreferFocusRings;
-
   // Whether controls in inactive widgets appear disabled.
   static const bool kInactiveWidgetControlsAppearDisabled;
+
+  // Default setting at bubble creation time for whether arrow will be adjusted
+  // for bubbles going off-screen to bring more bubble area into view.
+  static const bool kAdjustBubbleIfOffscreen;
 
   // Creates the default scrollbar for the given orientation.
   static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
@@ -98,6 +98,9 @@ class VIEWS_EXPORT PlatformStyle {
   // pairs on other platforms.
   static gfx::Range RangeToDeleteBackwards(const base::string16& text,
                                            size_t cursor_position);
+
+  // Returns the default focus behavior based on the platform.
+  static View::FocusBehavior DefaultFocusBehavior();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PlatformStyle);

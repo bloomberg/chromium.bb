@@ -24,9 +24,9 @@ import '../prefs/prefs.m.js';
 import '../settings_vars_css.m.js';
 
 import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
+import {FindShortcutBehavior} from 'chrome://resources/cr_elements/find_shortcut_behavior.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-import {FindShortcutBehavior} from 'chrome://resources/js/find_shortcut_behavior.m.js';
 import {listenOnce} from 'chrome://resources/js/util.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -205,7 +205,7 @@ Polymer({
   currentRouteChanged(route) {
     const urlSearchQuery =
         Router.getInstance().getQueryParameters().get('search') || '';
-    if (urlSearchQuery == this.lastSearchQuery_) {
+    if (urlSearchQuery === this.lastSearchQuery_) {
       return;
     }
 
@@ -217,7 +217,7 @@ Polymer({
 
     // If the search was initiated by directly entering a search URL, need to
     // sync the URL parameter to the textbox.
-    if (urlSearchQuery != searchField.getValue()) {
+    if (urlSearchQuery !== searchField.getValue()) {
       // Setting the search box value without triggering a 'search-changed'
       // event, to prevent an unnecessary duplicate entry in |window.history|.
       searchField.setValue(urlSearchQuery, true /* noEvent */);
@@ -321,4 +321,20 @@ Polymer({
       this.$.drawer.close();
     }
   },
+
+  /**
+   * Only used in tests.
+   * @return {boolean}
+   */
+  getAdvancedOpenedInMainForTest() {
+    return this.advancedOpenedInMain_;
+  },
+
+  /**
+   * Only used in tests.
+   * @return {boolean}
+   */
+  getAdvancedOpenedInMenuForTest() {
+    return this.advancedOpenedInMenu_;
+  }
 });

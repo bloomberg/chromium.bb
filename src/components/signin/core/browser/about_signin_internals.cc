@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
@@ -206,11 +207,21 @@ std::string GetAccountConsistencyDescription(
 AboutSigninInternals::AboutSigninInternals(
     signin::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
-    signin::AccountConsistencyMethod account_consistency)
+    signin::AccountConsistencyMethod account_consistency,
+    SigninClient* client,
+    AccountReconcilor* account_reconcilor)
     : identity_manager_(identity_manager),
-      client_(nullptr),
+      client_(client),
       signin_error_controller_(signin_error_controller),
-      account_consistency_(account_consistency) {}
+      account_reconcilor_(account_reconcilor),
+      account_consistency_(account_consistency) {
+  RefreshSigninPrefs();
+  client_->AddContentSettingsObserver(this);
+  signin_error_controller_->AddObserver(this);
+  identity_manager_->AddObserver(this);
+  identity_manager_->AddDiagnosticsObserver(this);
+  account_reconcilor_->AddObserver(this);
+}
 
 AboutSigninInternals::~AboutSigninInternals() {}
 
@@ -308,30 +319,18 @@ void AboutSigninInternals::RefreshSigninPrefs() {
   NotifyObservers();
 }
 
-void AboutSigninInternals::Initialize(SigninClient* client) {
-  DCHECK(!client_);
-  client_ = client;
-
-  RefreshSigninPrefs();
-
-  client_->AddContentSettingsObserver(this);
-  signin_error_controller_->AddObserver(this);
-  identity_manager_->AddObserver(this);
-  identity_manager_->AddDiagnosticsObserver(this);
-}
-
 void AboutSigninInternals::Shutdown() {
   client_->RemoveContentSettingsObserver(this);
   signin_error_controller_->RemoveObserver(this);
   identity_manager_->RemoveObserver(this);
   identity_manager_->RemoveDiagnosticsObserver(this);
+  account_reconcilor_->RemoveObserver(this);
 }
 
 void AboutSigninInternals::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier) {
+    ContentSettingsType content_type) {
   // If this is not a change to cookie settings, just ignore.
   if (content_type != ContentSettingsType::COOKIES)
     return;
@@ -345,7 +344,8 @@ void AboutSigninInternals::NotifyObservers() {
 
   std::unique_ptr<base::DictionaryValue> signin_status_value =
       signin_status_.ToValue(identity_manager_, signin_error_controller_,
-                             client_, account_consistency_);
+                             client_, account_consistency_,
+                             account_reconcilor_);
 
   for (auto& observer : signin_observers_)
     observer.OnSigninStateChanged(signin_status_value.get());
@@ -353,7 +353,8 @@ void AboutSigninInternals::NotifyObservers() {
 
 std::unique_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
   return signin_status_.ToValue(identity_manager_, signin_error_controller_,
-                                client_, account_consistency_);
+                                client_, account_consistency_,
+                                account_reconcilor_);
 }
 
 void AboutSigninInternals::OnAccessTokenRequested(
@@ -452,6 +453,14 @@ void AboutSigninInternals::OnErrorChanged() {
   NotifyObservers();
 }
 
+void AboutSigninInternals::OnBlockReconcile() {
+  NotifyObservers();
+}
+
+void AboutSigninInternals::OnUnblockReconcile() {
+  NotifyObservers();
+}
+
 void AboutSigninInternals::OnPrimaryAccountSet(
     const CoreAccountInfo& primary_account_info) {
   NotifyObservers();
@@ -516,7 +525,7 @@ AboutSigninInternals::TokenInfo::ToValue() const {
 
   std::string scopes_str;
   for (auto it = scopes.begin(); it != scopes.end(); ++it) {
-    scopes_str += *it + "<br/>";
+    scopes_str += *it + "\n";
   }
   token_info->SetString("scopes", scopes_str);
   token_info->SetString("request_time", base::TimeToISO8601(request_time));
@@ -532,13 +541,16 @@ AboutSigninInternals::TokenInfo::ToValue() const {
         expiration_time_string = "Expiration time not available";
       }
       std::string status_str;
+      std::string expire_string = "Expire";
       if (token_expired)
-        status_str = "<p style=\"color: #ffffff; background-color: #ff0000\">";
-      base::StringAppendF(&status_str, "Received token at %s. Expire at %s",
+        expire_string = "Expired";
+      base::StringAppendF(&status_str, "Received token at %s. %s at %s",
                           base::TimeToISO8601(receive_time).c_str(),
+                          expire_string.c_str(),
                           expiration_time_string.c_str());
-      if (token_expired)
-        base::StringAppendF(&status_str, "</p>");
+      // JS code looks for `Expired at` string in order to mark
+      // specific status row red color. Changing `Exired at` status
+      // requires a change in JS code too.
       token_info->SetString("status", status_str);
     } else {
       token_info->SetString(
@@ -597,7 +609,8 @@ AboutSigninInternals::SigninStatus::ToValue(
     signin::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
     SigninClient* signin_client,
-    signin::AccountConsistencyMethod account_consistency) {
+    signin::AccountConsistencyMethod account_consistency,
+    AccountReconcilor* account_reconcilor) {
   auto signin_status = std::make_unique<base::DictionaryValue>();
   auto signin_info = std::make_unique<base::ListValue>();
 
@@ -653,11 +666,13 @@ AboutSigninInternals::SigninStatus::ToValue(
     }
   }
 
+  AddSectionEntry(basic_info, "Account Reconcilor blocked",
+                  account_reconcilor->IsReconcileBlocked() ? "True" : "False");
+
 #if !defined(OS_CHROMEOS)
   // Time and status information of the possible sign in types.
   base::ListValue* detailed_info =
       AddSection(signin_info.get(), "Last Signin Details");
-  signin_status->Set("signin_info", std::move(signin_info));
   for (signin_internals_util::TimedSigninStatusField i =
            signin_internals_util::TIMED_FIELDS_BEGIN;
        i < signin_internals_util::TIMED_FIELDS_END; ++i) {
@@ -692,8 +707,8 @@ AboutSigninInternals::SigninStatus::ToValue(
     AddSectionEntry(detailed_info, "Token Service Next Retry",
                     base::TimeToISO8601(next_retry_time), "");
   }
-
 #endif  // !defined(OS_CHROMEOS)
+  signin_status->Set("signin_info", std::move(signin_info));
 
   // Token information for all services.
   auto token_info = std::make_unique<base::ListValue>();

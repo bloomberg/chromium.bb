@@ -400,6 +400,11 @@ TEST(DisasmX64) {
     __ movdqa(Operand(rsp, 12), xmm0);
     __ movdqu(xmm0, Operand(rsp, 12));
     __ movdqu(Operand(rsp, 12), xmm0);
+    __ movdqu(xmm1, xmm0);
+    __ movlps(xmm8, Operand(rbx, rcx, times_4, 10000));
+    __ movlps(Operand(rbx, rcx, times_4, 10000), xmm9);
+    __ movhps(xmm8, Operand(rbx, rcx, times_4, 10000));
+    __ movhps(Operand(rbx, rcx, times_4, 10000), xmm9);
     __ shufps(xmm0, xmm9, 0x0);
 
     __ ucomiss(xmm0, xmm1);
@@ -585,9 +590,15 @@ TEST(DisasmX64) {
       __ cvtps2dq(xmm5, Operand(rdx, 4));
       __ cvtdq2ps(xmm5, xmm1);
       __ cvtdq2ps(xmm5, Operand(rdx, 4));
+
+      __ pblendvb(xmm5, xmm1);
+      __ blendvps(xmm5, xmm1);
+      __ blendvps(xmm5, Operand(rdx, 4));
       __ blendvpd(xmm5, xmm1);
       __ blendvpd(xmm5, Operand(rdx, 4));
 
+      __ roundps(xmm8, xmm3, kRoundUp);
+      __ roundpd(xmm8, xmm3, kRoundToNearest);
       __ roundss(xmm8, xmm3, kRoundDown);
       __ roundsd(xmm8, xmm3, kRoundDown);
 
@@ -648,6 +659,13 @@ TEST(DisasmX64) {
       __ vmovdqu(xmm9, Operand(rbx, rcx, times_4, 10000));
       __ vmovdqu(Operand(rbx, rcx, times_4, 10000), xmm0);
 
+      __ vmovlps(xmm8, xmm9, Operand(rbx, rcx, times_4, 10000));
+      __ vmovlps(Operand(rbx, rcx, times_4, 10000), xmm9);
+      __ vmovhps(xmm8, xmm9, Operand(rbx, rcx, times_4, 10000));
+      __ vmovhps(Operand(rbx, rcx, times_4, 10000), xmm12);
+
+      __ vroundps(xmm9, xmm2, kRoundUp);
+      __ vroundpd(xmm9, xmm2, kRoundToNearest);
       __ vroundss(xmm9, xmm1, xmm2, kRoundDown);
       __ vroundsd(xmm8, xmm3, xmm0, kRoundDown);
       __ vucomisd(xmm9, xmm1);
@@ -813,7 +831,10 @@ TEST(DisasmX64) {
       __ vpblendw(xmm1, xmm2, xmm3, 23);
       __ vpblendw(xmm1, xmm2, Operand(rbx, rcx, times_4, 10000), 23);
       __ vpalignr(xmm1, xmm2, xmm3, 4);
+      __ vpalignr(xmm1, xmm2, Operand(rbx, rcx, times_4, 10000), 4);
 
+      __ vpblendvb(xmm1, xmm2, xmm3, xmm4);
+      __ vblendvps(xmm1, xmm2, xmm3, xmm4);
       __ vblendvpd(xmm1, xmm2, xmm3, xmm4);
 
       __ vmovddup(xmm1, xmm2);
@@ -978,7 +999,8 @@ TEST(DisasmX64) {
 
   CodeDesc desc;
   assm.GetCode(isolate, &desc);
-  Handle<Code> code = Factory::CodeBuilder(isolate, desc, Code::STUB).Build();
+  Handle<Code> code =
+      Factory::CodeBuilder(isolate, desc, CodeKind::FOR_TESTING).Build();
   USE(code);
 #ifdef OBJECT_PRINT
   StdoutStream os;

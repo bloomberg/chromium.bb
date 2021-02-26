@@ -11,7 +11,6 @@ source_set("fxcodec") {
     "basic/basicmodule.h",
     "cfx_codec_memory.cpp",
     "cfx_codec_memory.h",
-    "codec_module_iface.h",
     "fax/faxmodule.cpp",
     "fax/faxmodule.h",
     "flate/flatemodule.cpp",
@@ -57,16 +56,16 @@ source_set("fxcodec") {
     "jbig2/JBig2_SymbolDict.h",
     "jbig2/JBig2_TrdProc.cpp",
     "jbig2/JBig2_TrdProc.h",
-    "jbig2/jbig2module.cpp",
-    "jbig2/jbig2module.h",
+    "jbig2/jbig2_decoder.cpp",
+    "jbig2/jbig2_decoder.h",
+    "jpeg/jpeg_common.cpp",
+    "jpeg/jpeg_common.h",
     "jpeg/jpegmodule.cpp",
     "jpeg/jpegmodule.h",
     "jpx/cjpx_decoder.cpp",
     "jpx/cjpx_decoder.h",
     "jpx/jpx_decode_utils.cpp",
     "jpx/jpx_decode_utils.h",
-    "jpx/jpxmodule.cpp",
-    "jpx/jpxmodule.h",
     "scanlinedecoder.cpp",
     "scanlinedecoder.h",
   ]
@@ -83,13 +82,18 @@ source_set("fxcodec") {
 
   if (pdf_enable_xfa) {
     sources += [
-      "progressivedecoder.cpp",
-      "progressivedecoder.h",
+      "jpeg/jpeg_progressive_decoder.cpp",
+      "jpeg/jpeg_progressive_decoder.h",
+      "progressive_decoder.cpp",
+      "progressive_decoder.h",
+      "progressive_decoder_iface.h",
     ]
     if (pdf_enable_xfa_bmp) {
       sources += [
-        "bmp/bmpmodule.cpp",
-        "bmp/bmpmodule.h",
+        "bmp/bmp_decoder.cpp",
+        "bmp/bmp_decoder.h",
+        "bmp/bmp_progressive_decoder.cpp",
+        "bmp/bmp_progressive_decoder.h",
         "bmp/cfx_bmpcontext.cpp",
         "bmp/cfx_bmpcontext.h",
         "bmp/cfx_bmpdecompressor.cpp",
@@ -105,21 +109,23 @@ source_set("fxcodec") {
         "gif/cfx_gifcontext.h",
         "gif/cfx_lzwdecompressor.cpp",
         "gif/cfx_lzwdecompressor.h",
-        "gif/gifmodule.cpp",
-        "gif/gifmodule.h",
+        "gif/gif_decoder.cpp",
+        "gif/gif_decoder.h",
+        "gif/gif_progressive_decoder.cpp",
+        "gif/gif_progressive_decoder.h",
       ]
     }
     if (pdf_enable_xfa_png) {
       sources += [
-        "png/pngmodule.cpp",
-        "png/pngmodule.h",
+        "png/png_decoder.cpp",
+        "png/png_decoder.h",
       ]
       deps += [ "../../third_party:png" ]
     }
     if (pdf_enable_xfa_tiff) {
       sources += [
-        "tiff/tiffmodule.cpp",
-        "tiff/tiffmodule.h",
+        "tiff/tiff_decoder.cpp",
+        "tiff/tiff_decoder.h",
       ]
       deps += [ "../../third_party:fx_tiff" ]
     }
@@ -138,12 +144,13 @@ pdfium_unittest_source_set("unittests") {
   ]
   deps = [
     ":fxcodec",
+    "../../third_party:libopenjpeg2",
     "../fpdfapi/parser",
   ]
   pdfium_root_dir = "../../"
 
   if (pdf_enable_xfa) {
-    sources += [ "progressivedecoder_unittest.cpp" ]
+    sources += [ "progressive_decoder_unittest.cpp" ]
     deps += [ "../fxge" ]
     if (pdf_enable_xfa_gif) {
       sources += [

@@ -17,6 +17,7 @@
 @implementation AppStartupParameters {
   GURL _externalURL;
   GURL _completeURL;
+  std::vector<GURL> _URLs;
 }
 
 @synthesize externalURLParams = _externalURLParams;
@@ -44,15 +45,20 @@
   return self;
 }
 
-// TODO(crbug.com/1021752): Remove this stub since |universalLink| is unused.
-- (instancetype)initWithUniversalLink:(const GURL&)universalLink {
-  // If a new tab with |_externalURL| needs to be opened after the App
-  // was launched as the result of a Universal Link navigation, the only
-  // supported possibility at this time is the New Tab Page.
-  self = [self initWithExternalURL:GURL(kChromeUINewTabURL)
-                       completeURL:GURL(kChromeUINewTabURL)];
+- (instancetype)initWithURLs:(const std::vector<GURL>&)URLs {
+  if (URLs.empty()) {
+    self = [self initWithExternalURL:GURL(kChromeUINewTabURL)
+                         completeURL:GURL(kChromeUINewTabURL)];
+  } else {
+    self = [self initWithExternalURL:URLs.front() completeURL:URLs.front()];
+  }
+
+  if (self) {
+    _URLs = URLs;
+  }
   return self;
 }
+
 
 - (NSString*)description {
   NSMutableString* description =
@@ -81,6 +87,11 @@
   }
 
   return description;
+}
+
+- (ApplicationModeForTabOpening)applicationMode {
+  return self.launchInIncognito ? ApplicationModeForTabOpening::INCOGNITO
+                                : ApplicationModeForTabOpening::NORMAL;
 }
 
 @end

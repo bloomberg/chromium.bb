@@ -1,3 +1,0 @@
-per-file chrome_chromeos_lkgm*=file:/OWNERS.chrome
-per-file deploy_chrome*=file:/OWNERS.chrome
-per-file cros_update*=file:/OWNERS.au

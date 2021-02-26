@@ -33,6 +33,25 @@ class AutofillClient;
 class AutofillProvider;
 class LogManager;
 
+// Use <Phone><WebOTP><OTC> as the bit pattern to identify the metrics state.
+enum class PhoneCollectionMetricState {
+  kNone = 0,    // Site did not collect phone, not use OTC, not use WebOTP
+  kOTC = 1,     // Site used OTC only
+  kWebOTP = 2,  // Site used WebOTP only
+  kWebOTPPlusOTC = 3,  // Site used WebOTP and OTC
+  kPhone = 4,          // Site collected phone, not used neither WebOTP nor OTC
+  kPhonePlusOTC = 5,   // Site collected phone number and used OTC
+  kPhonePlusWebOTP = 6,         // Site collected phone number and used WebOTP
+  kPhonePlusWebOTPPlusOTC = 7,  // Site collected phone number and used both
+  kMaxValue = kPhonePlusWebOTPPlusOTC,
+};
+
+namespace phone_collection_metric {
+constexpr uint32_t kOTCUsed = 1 << 0;
+constexpr uint32_t kWebOTPUsed = 1 << 1;
+constexpr uint32_t kPhoneCollected = 1 << 2;
+}  // namespace phone_collection_metric
+
 // Class that drives autofill flow in the browser process based on
 // communication from the renderer and from the external world. There is one
 // instance per RenderFrameHost.
@@ -68,7 +87,7 @@ class ContentAutofillDriver : public AutofillDriver,
                               const FormData& data) override;
   void PropagateAutofillPredictions(
       const std::vector<autofill::FormStructure*>& forms) override;
-  void HandleParsedForms(const std::vector<FormStructure*>& forms) override;
+  void HandleParsedForms(const std::vector<const FormData*>& forms) override;
   void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) override;
   void RendererShouldAcceptDataListSuggestion(
@@ -86,6 +105,8 @@ class ContentAutofillDriver : public AutofillDriver,
   net::IsolationInfo IsolationInfo() override;
 
   // mojom::AutofillDriver:
+  void SetFormToBeProbablySubmitted(
+      const base::Optional<FormData>& form) override;
   void FormsSeen(const std::vector<FormData>& forms,
                  base::TimeTicks timestamp) override;
   void FormSubmitted(const FormData& form,
@@ -107,7 +128,7 @@ class ContentAutofillDriver : public AutofillDriver,
                               const gfx::RectF& bounding_box,
                               bool autoselect_first_suggestion) override;
   void HidePopup() override;
-  void FocusNoLongerOnForm() override;
+  void FocusNoLongerOnForm(bool had_interacted_form) override;
   void FocusOnFormField(const FormData& form,
                         const FormFieldData& field,
                         const gfx::RectF& bounding_box) override;
@@ -115,13 +136,13 @@ class ContentAutofillDriver : public AutofillDriver,
                                base::TimeTicks timestamp) override;
   void DidPreviewAutofillFormData() override;
   void DidEndTextFieldEditing() override;
-  void SetDataList(const std::vector<base::string16>& values,
-                   const std::vector<base::string16>& labels) override;
   void SelectFieldOptionsDidChange(const FormData& form) override;
 
-  // Called when the main frame has navigated. Explicitely will not trigger for
-  // subframe navigations. See navigation_handle.h for details.
-  void DidNavigateMainFrame(content::NavigationHandle* navigation_handle);
+  void ProbablyFormSubmitted();
+
+  // DidNavigateFrame() is called on the frame's driver, respectively, when a
+  // navigation occurs in that specific frame.
+  void DidNavigateFrame(content::NavigationHandle* navigation_handle);
 
   AutofillManager* autofill_manager() { return autofill_manager_; }
   AutofillHandler* autofill_handler() { return autofill_handler_.get(); }
@@ -136,10 +157,23 @@ class ContentAutofillDriver : public AutofillDriver,
 
   void SetAutofillProviderForTesting(AutofillProvider* provider);
 
- protected:
   // Sets the manager to |manager| and sets |manager|'s external delegate
   // to |autofill_external_delegate_|. Takes ownership of |manager|.
   void SetAutofillManager(std::unique_ptr<AutofillManager> manager);
+
+  // Reports whether a document collects phone numbers, uses one time code, uses
+  // WebOTP. There are cases that the reporting is not expected:
+  //   1. some unit tests do not set necessary members, |autofill_manager_|
+  //   2. there is no form and WebOTP is not used
+  // |MaybeReportAutofillWebOTPMetrics| is to exclude the cases above.
+  // |ReportAutofillWebOTPMetrics| is visible for unit tests where the
+  // |render_frame_host_| is not set.
+  void MaybeReportAutofillWebOTPMetrics();
+  void ReportAutofillWebOTPMetrics(bool document_used_webotp);
+
+ protected:
+  // Constructor for tests.
+  ContentAutofillDriver();
 
  private:
   // KeyPressHandlerManager::Delegate:
@@ -150,9 +184,22 @@ class ContentAutofillDriver : public AutofillDriver,
 
   void SetAutofillProvider(AutofillProvider* provider);
 
+  // Returns whether navigator.credentials.get({otp: {transport:"sms"}}) has
+  // been used.
+  bool DocumentUsedWebOTP() const;
+
   // Weak ref to the RenderFrameHost the driver is associated with. Should
   // always be non-NULL and valid for lifetime of |this|.
   content::RenderFrameHost* const render_frame_host_;
+
+  // The form pushed from the AutofillAgent to the AutofillDriver. When the
+  // ProbablyFormSubmitted() event is fired, this form is considered the
+  // submitted one.
+  base::Optional<FormData> potentially_submitted_form_;
+
+  // Keeps track of the forms for which FormSubmitted() event has been triggered
+  // to avoid duplicates fired by AutofillAgent.
+  std::set<FormRendererId> submitted_forms_;
 
   // AutofillHandler instance via which this object drives the shared Autofill
   // code.
@@ -177,6 +224,18 @@ class ContentAutofillDriver : public AutofillDriver,
   mojo::AssociatedReceiver<mojom::AutofillDriver> receiver_{this};
 
   mojo::AssociatedRemote<mojom::AutofillAgent> autofill_agent_;
+
+  // Helps with measuring whether phone number is collected and whether it is in
+  // conjunction with WebOTP or OneTimeCode (OTC).
+  // value="0" label="Phone Not Collected, WebOTP Not Used, OTC Not Used"
+  // value="1" label="Phone Not Collected, WebOTP Not Used, OTC Used"
+  // value="2" label="Phone Not Collected, WebOTP Used, OTC Not Used"
+  // value="3" label="Phone Not Collected, WebOTP Used, OTC Used"
+  // value="4" label="Phone Collected, WebOTP Not Used, OTC Not Used"
+  // value="5" label="Phone Collected, WebOTP Not Used, OTC Used"
+  // value="6" label="Phone Collected, WebOTP Used, OTC Not Used"
+  // value="7" label="Phone Collected, WebOTP Used, OTC Used"
+  uint32_t phone_collection_metric_state_ = 0;
 };
 
 }  // namespace autofill

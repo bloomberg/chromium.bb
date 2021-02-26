@@ -82,10 +82,10 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
     return std::move(last_injected_filter_);
   }
 
-  void SetParentActivationState(mojom::ActivationLevel level) {
+  void SetInheritedActivationStateForNewDocument(mojom::ActivationLevel level) {
     mojom::ActivationState state;
     state.activation_level = level;
-    parent_activation_state_ = state;
+    inherited_activation_state_for_new_document_ = state;
   }
 
   void SimulateNonInitialLoad() { SetFirstDocument(false); }
@@ -93,15 +93,15 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   using SubresourceFilterAgent::ActivateForNextCommittedLoad;
 
  private:
-  mojom::ActivationState GetParentActivationState(
-      content::RenderFrame*) override {
-    return parent_activation_state_;
+  const mojom::ActivationState GetInheritedActivationStateForNewDocument()
+      override {
+    return inherited_activation_state_for_new_document_;
   }
 
   std::unique_ptr<blink::WebDocumentSubresourceFilter> last_injected_filter_;
   bool is_ad_subframe_ = false;
   bool is_main_frame_ = true;
-  mojom::ActivationState parent_activation_state_;
+  mojom::ActivationState inherited_activation_state_for_new_document_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgentUnderTest);
 };
@@ -478,8 +478,7 @@ TEST_F(SubresourceFilterAgentTest,
   agent_as_rfo()->DidFailProvisionalLoad();
   agent_as_rfo()->DidStartNavigation(GURL(), base::nullopt);
   agent_as_rfo()->ReadyToCommitNavigation(nullptr);
-  agent_as_rfo()->DidCommitProvisionalLoad(
-      false /* is_same_document_navigation */, ui::PAGE_TRANSITION_LINK);
+  agent_as_rfo()->DidCommitProvisionalLoad(ui::PAGE_TRANSITION_LINK);
   FinishLoad();
 }
 
@@ -569,9 +568,27 @@ TEST_F(SubresourceFilterAgentTest,
       SetTestRulesetToDisallowURLsWithPathSuffix("somethingNotMatched"));
 
   agent()->SetIsMainFrame(false);
-  agent()->SetParentActivationState(mojom::ActivationLevel::kEnabled);
+  agent()->SetInheritedActivationStateForNewDocument(
+      mojom::ActivationLevel::kEnabled);
 
-  // ExpectSubresourceFilterGetsInjected();
+  EXPECT_CALL(*agent(), GetDocumentURL())
+      .WillOnce(::testing::Return(GURL("about:blank")));
+  EXPECT_CALL(*agent(), OnSetSubresourceFilterForCurrentDocumentCalled());
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled);
+
+  ExpectNoSubresourceFilterGetsInjected();
+  agent_as_rfo()->DidFailProvisionalLoad();
+}
+
+TEST_F(SubresourceFilterAgentTest,
+       FailedInitialMainFrameLoad_FilterInjectedOnInitialDocumentCreation) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetTestRulesetToDisallowURLsWithPathSuffix("somethingNotMatched"));
+
+  agent()->SetIsMainFrame(true);
+  agent()->SetInheritedActivationStateForNewDocument(
+      mojom::ActivationLevel::kEnabled);
+
   EXPECT_CALL(*agent(), GetDocumentURL())
       .WillOnce(::testing::Return(GURL("about:blank")));
   EXPECT_CALL(*agent(), OnSetSubresourceFilterForCurrentDocumentCalled());
@@ -615,6 +632,7 @@ TEST_F(SubresourceFilterAgentTest, DryRun_FrameAlreadyTaggedAsAd) {
 
 TEST_F(SubresourceFilterAgentTest, DryRun_SendsFrameIsAdSubframe) {
   agent()->SetIsAdSubframe();
+  agent()->SetIsMainFrame(false);
   ExpectSendFrameIsAdSubframe();
 
   // Call DidCreateNewDocument twice and verify that SendFrameIsAdSubframe is

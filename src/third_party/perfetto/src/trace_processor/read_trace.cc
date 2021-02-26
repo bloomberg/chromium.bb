@@ -16,17 +16,23 @@
 
 #include "perfetto/trace_processor/read_trace.h"
 
+#include "perfetto/base/logging.h"
 #include "perfetto/ext/base/scoped_file.h"
 #include "perfetto/ext/base/utils.h"
+#include "perfetto/protozero/proto_utils.h"
 #include "perfetto/trace_processor/trace_processor.h"
 
+#include "src/trace_processor/forwarding_trace_parser.h"
+#include "src/trace_processor/importers/gzip/gzip_trace_parser.h"
 #include "src/trace_processor/importers/gzip/gzip_utils.h"
+#include "src/trace_processor/importers/proto/proto_trace_tokenizer.h"
+#include "src/trace_processor/util/status_macros.h"
 
 #include "protos/perfetto/trace/trace.pbzero.h"
 #include "protos/perfetto/trace/trace_packet.pbzero.h"
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) || \
-    PERFETTO_BUILDFLAG(PERFETTO_OS_MACOSX)
+    PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
 #define PERFETTO_HAS_AIO_H() 1
 #else
 #define PERFETTO_HAS_AIO_H() 0
@@ -38,6 +44,70 @@
 
 namespace perfetto {
 namespace trace_processor {
+namespace {
+
+// 1MB chunk size seems the best tradeoff on a MacBook Pro 2013 - i7 2.8 GHz.
+constexpr size_t kChunkSize = 1024 * 1024;
+
+util::Status ReadTraceUsingRead(
+    TraceProcessor* tp,
+    int fd,
+    uint64_t* file_size,
+    const std::function<void(uint64_t parsed_size)>& progress_callback) {
+  // Load the trace in chunks using ordinary read().
+  for (int i = 0;; i++) {
+    if (progress_callback && i % 128 == 0)
+      progress_callback(*file_size);
+
+    std::unique_ptr<uint8_t[]> buf(new uint8_t[kChunkSize]);
+    auto rsize = read(fd, buf.get(), kChunkSize);
+    if (rsize == 0)
+      break;
+
+    if (rsize < 0) {
+      return util::ErrStatus("Reading trace file failed (errno: %d, %s)", errno,
+                             strerror(errno));
+    }
+
+    *file_size += static_cast<uint64_t>(rsize);
+
+    RETURN_IF_ERROR(tp->Parse(std::move(buf), static_cast<size_t>(rsize)));
+  }
+  return util::OkStatus();
+}
+
+class SerializingProtoTraceReader : public ChunkedTraceReader {
+ public:
+  SerializingProtoTraceReader(std::vector<uint8_t>* output) : output_(output) {}
+
+  util::Status Parse(std::unique_ptr<uint8_t[]> data, size_t size) override {
+    return tokenizer_.Tokenize(
+        std::move(data), size, [this](TraceBlobView packet) {
+          uint8_t buffer[protozero::proto_utils::kMaxSimpleFieldEncodedSize];
+
+          uint8_t* pos = buffer;
+          pos = protozero::proto_utils::WriteVarInt(kTracePacketTag, pos);
+          pos = protozero::proto_utils::WriteVarInt(packet.length(), pos);
+          output_->insert(output_->end(), buffer, pos);
+
+          output_->insert(output_->end(), packet.data(),
+                          packet.data() + packet.length());
+          return util::OkStatus();
+        });
+  }
+
+  void NotifyEndOfFile() override {}
+
+ private:
+  static constexpr uint8_t kTracePacketTag =
+      protozero::proto_utils::MakeTagLengthDelimited(
+          protos::pbzero::Trace::kPacketFieldNumber);
+
+  ProtoTraceTokenizer tokenizer_;
+  std::vector<uint8_t>* output_;
+};
+
+}  // namespace
 
 util::Status ReadTrace(
     TraceProcessor* tp,
@@ -47,8 +117,6 @@ util::Status ReadTrace(
   if (!fd)
     return util::ErrStatus("Could not open trace file (path: %s)", filename);
 
-  // 1MB chunk size seems the best tradeoff on a MacBook Pro 2013 - i7 2.8 GHz.
-  constexpr size_t kChunkSize = 1024 * 1024;
   uint64_t file_size = 0;
 
 #if PERFETTO_HAS_AIO_H()
@@ -95,27 +163,17 @@ util::Status ReadTrace(
     PERFETTO_CHECK(aio_read(&cb) == 0);
 
     // Parse the completed buffer while the async read is in-flight.
-    util::Status status = tp->Parse(std::move(buf), static_cast<size_t>(rsize));
-    if (PERFETTO_UNLIKELY(!status.ok()))
-      return status;
+    RETURN_IF_ERROR(tp->Parse(std::move(buf), static_cast<size_t>(rsize)));
+  }
+
+  if (file_size == 0) {
+    PERFETTO_ILOG(
+        "Failed to read any data using AIO. This is expected and not an error "
+        "on WSL. Falling back to read()");
+    RETURN_IF_ERROR(ReadTraceUsingRead(tp, *fd, &file_size, progress_callback));
   }
 #else   // PERFETTO_HAS_AIO_H()
-  // Load the trace in chunks using ordinary read().
-  // This version is used on Windows, since there's no aio library.
-  for (int i = 0;; i++) {
-    if (progress_callback && i % 128 == 0)
-      progress_callback(file_size);
-
-    std::unique_ptr<uint8_t[]> buf(new uint8_t[kChunkSize]);
-    auto rsize = read(*fd, buf.get(), kChunkSize);
-    if (rsize <= 0)
-      break;
-    file_size += static_cast<uint64_t>(rsize);
-
-    util::Status status = tp->Parse(std::move(buf), static_cast<size_t>(rsize));
-    if (PERFETTO_UNLIKELY(!status.ok()))
-      return status;
-  }
+  RETURN_IF_ERROR(ReadTraceUsingRead(tp, *fd, &file_size, progress_callback));
 #endif  // PERFETTO_HAS_AIO_H()
 
   tp->NotifyEndOfFile();
@@ -129,13 +187,32 @@ util::Status ReadTrace(
 util::Status DecompressTrace(const uint8_t* data,
                              size_t size,
                              std::vector<uint8_t>* output) {
-  if (!gzip::IsGzipSupported()) {
+  TraceType type = GuessTraceType(data, size);
+  if (type != TraceType::kGzipTraceType && type != TraceType::kProtoTraceType) {
     return util::ErrStatus(
-        "Cannot decompress trace in build where zlib is disabled");
+        "Only GZIP and proto trace types are supported by DecompressTrace");
   }
+
+  if (type == TraceType::kGzipTraceType) {
+    std::unique_ptr<ChunkedTraceReader> reader(
+        new SerializingProtoTraceReader(output));
+    GzipTraceParser parser(std::move(reader));
+
+    RETURN_IF_ERROR(parser.ParseUnowned(data, size));
+    if (parser.needs_more_input())
+      return util::ErrStatus("Cannot decompress partial trace file");
+
+    parser.NotifyEndOfFile();
+    return util::OkStatus();
+  }
+
+  PERFETTO_CHECK(type == TraceType::kProtoTraceType);
 
   protos::pbzero::Trace::Decoder decoder(data, size);
   GzipDecompressor decompressor;
+  if (size > 0 && !decoder.packet()) {
+    return util::ErrStatus("Trace does not contain valid packets");
+  }
   for (auto it = decoder.packet(); it; ++it) {
     protos::pbzero::TracePacket::Decoder packet(*it);
     if (!packet.has_compressed_packets()) {

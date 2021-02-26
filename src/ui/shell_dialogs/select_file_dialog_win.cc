@@ -41,9 +41,10 @@ bool GetRegistryDescriptionFromExtension(const base::string16& file_ext,
   DCHECK(reg_description);
   base::win::RegKey reg_ext(HKEY_CLASSES_ROOT, file_ext.c_str(), KEY_READ);
   base::string16 reg_app;
-  if (reg_ext.ReadValue(NULL, &reg_app) == ERROR_SUCCESS && !reg_app.empty()) {
+  if (reg_ext.ReadValue(nullptr, &reg_app) == ERROR_SUCCESS &&
+      !reg_app.empty()) {
     base::win::RegKey reg_link(HKEY_CLASSES_ROOT, reg_app.c_str(), KEY_READ);
-    if (reg_link.ReadValue(NULL, reg_description) == ERROR_SUCCESS)
+    if (reg_link.ReadValue(nullptr, reg_description) == ERROR_SUCCESS)
       return true;
   }
   return false;
@@ -62,7 +63,8 @@ bool GetRegistryDescriptionFromExtension(const base::string16& file_ext,
 std::vector<FileFilterSpec> FormatFilterForExtensions(
     const std::vector<base::string16>& file_ext,
     const std::vector<base::string16>& ext_desc,
-    bool include_all_files) {
+    bool include_all_files,
+    bool keep_extension_visible) {
   const base::string16 all_ext = L"*.*";
   const base::string16 all_desc =
       l10n_util::GetStringUTF16(IDS_APP_SAVEAS_ALL_FILES);
@@ -111,6 +113,11 @@ std::vector<FileFilterSpec> FormatFilterForExtensions(
       }
       if (desc.empty())
         desc = L"*." + ext_name;
+    } else if (keep_extension_visible) {
+      // Having '*' in the description could cause the windows file dialog to
+      // not include the file extension in the file dialog. So strip out any '*'
+      // characters if `keep_extension_visible` is set.
+      base::ReplaceChars(desc, L"*", L"", &desc);
     }
 
     result.push_back({desc, ext});
@@ -234,7 +241,7 @@ void SelectFileDialogImpl::SelectFileImpl(
   std::vector<FileFilterSpec> filter = GetFilterForFileTypes(file_types);
   HWND owner = owning_window && owning_window->GetRootWindow()
                    ? owning_window->GetHost()->GetAcceleratedWidget()
-                   : NULL;
+                   : nullptr;
 
   std::unique_ptr<RunState> run_state = BeginRun(owner);
 
@@ -264,7 +271,7 @@ bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow owning_window) const {
 void SelectFileDialogImpl::ListenerDestroyed() {
   // Our associated listener has gone away, so we shouldn't call back to it if
   // our worker thread returns after the listener is dead.
-  listener_ = NULL;
+  listener_ = nullptr;
 }
 
 void SelectFileDialogImpl::OnSelectFileExecuted(
@@ -317,9 +324,9 @@ std::vector<FileFilterSpec> SelectFileDialogImpl::GetFilterForFileTypes(
     }
     exts.push_back(ext_string);
   }
-  return FormatFilterForExtensions(exts,
-                                   file_types->extension_description_overrides,
-                                   file_types->include_all_files);
+  return FormatFilterForExtensions(
+      exts, file_types->extension_description_overrides,
+      file_types->include_all_files, file_types->keep_extension_visible);
 }
 
 }  // namespace

@@ -1,6 +1,8 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
@@ -55,7 +57,7 @@ export class TimelineController {
    * @return {!Promise<!Object>}
    */
   async startRecording(options, providers) {
-    this._extensionTraceProviders = self.Extensions.extensionServer.traceProviders().slice();
+    this._extensionTraceProviders = Extensions.ExtensionServer.ExtensionServer.instance().traceProviders().slice();
 
     /**
      * @param {string} category
@@ -85,9 +87,6 @@ export class TimelineController {
     }
     if (!Root.Runtime.queryParam('timelineTracingJSProfileDisabled') && options.enableJSSampling) {
       categoriesArray.push(disabledByDefault('v8.cpu_profiler'));
-      if (Common.Settings.Settings.instance().moduleSetting('highResolutionCpuProfiling').get()) {
-        categoriesArray.push(disabledByDefault('v8.cpu_profiler.hires'));
-      }
     }
     categoriesArray.push(disabledByDefault('devtools.timeline.stack'));
     if (Root.Runtime.experiments.isEnabled('timelineInvalidationTracking')) {
@@ -135,7 +134,9 @@ export class TimelineController {
   _waitForTracingToStop(awaitTracingCompleteCallback) {
     const tracingStoppedPromises = [];
     if (this._tracingManager && awaitTracingCompleteCallback) {
-      tracingStoppedPromises.push(new Promise(resolve => this._tracingCompleteCallback = resolve));
+      tracingStoppedPromises.push(new Promise(resolve => {
+        this._tracingCompleteCallback = resolve;
+      }));
     }
     tracingStoppedPromises.push(this._stopProfilingOnAllModels());
 

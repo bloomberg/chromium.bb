@@ -35,7 +35,7 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
   ServiceWorkerInstalledScriptLoader(
       uint32_t options,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-      std::unique_ptr<ServiceWorkerResponseReader> response_reader,
+      mojo::Remote<storage::mojom::ServiceWorkerResourceReader> resource_reader,
       scoped_refptr<ServiceWorkerVersion>
           version_for_main_script_http_response_info,
       const GURL& request_url);
@@ -43,7 +43,7 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
 
   // ServiceWorkerInstalledScriptReader::Client overrides:
   void OnStarted(network::mojom::URLResponseHeadPtr response_head,
-                 scoped_refptr<net::IOBufferWithSize> metadata,
+                 base::Optional<mojo_base::BigBuffer> metadata,
                  mojo::ScopedDataPipeConsumerHandle body_handle,
                  mojo::ScopedDataPipeConsumerHandle meta_data_handle) override;
   void OnFinished(

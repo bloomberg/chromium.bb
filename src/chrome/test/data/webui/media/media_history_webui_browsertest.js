@@ -57,6 +57,9 @@ TEST_F('MediaHistoryStatsWebUIBrowserTest', 'MAYBE_All', function() {
 
     assertDeepEquals(
         [
+          ['kaleidoscopeData', '0'],
+          ['mediaFeed', '0'],
+          ['mediaFeedItem', '0'],
           ['mediaImage', '0'],
           ['meta', '3'],
           ['origin', '0'],

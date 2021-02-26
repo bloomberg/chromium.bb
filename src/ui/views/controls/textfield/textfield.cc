@@ -8,13 +8,16 @@
 #include <set>
 #include <string>
 #include <utility>
+#include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/events/gesture_event_details.h"
 
 #if defined(OS_WIN)
 #include <vector>
 #endif
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -52,6 +55,7 @@
 #include "ui/views/controls/views_text_services_context_menu.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
@@ -70,7 +74,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/base/x/x11_util_internal.h"  // nogncheck
+#include "ui/base/x/x11_util.h"  // nogncheck
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -78,9 +82,15 @@
 #include "ui/wm/core/ime_util_chromeos.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "ui/base/cocoa/defaults_utils.h"
 #include "ui/base/cocoa/secure_password_input.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_gl_egl_utility.h"
 #endif
 
 namespace views {
@@ -100,7 +110,7 @@ enum TextfieldPropertyKey {
   kTextfieldSelectedRange,
 };
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 constexpr gfx::SelectionBehavior kLineSelectionBehavior = gfx::SELECTION_EXTEND;
 constexpr gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_CARET;
 constexpr gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
@@ -185,14 +195,14 @@ ui::TextEditCommand GetCommandForKeyEvent(const ui::KeyEvent& event) {
 #endif
         return ui::TextEditCommand::DELETE_BACKWARD;
       }
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
       // Only erase by line break on Linux and ChromeOS.
       if (shift)
         return ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE;
 #endif
       return ui::TextEditCommand::DELETE_WORD_BACKWARD;
     case ui::VKEY_DELETE:
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
       // Only erase by line break on Linux and ChromeOS.
       if (shift && control)
         return ui::TextEditCommand::DELETE_TO_END_OF_LINE;
@@ -260,7 +270,7 @@ bool IsControlKeyModifier(int flags) {
 // Control-modified key combination, but we cannot extend it to other platforms
 // as Control has different meanings and behaviors.
 // https://crrev.com/2580483002/#msg46
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   return flags & ui::EF_CONTROL_DOWN;
 #else
   return false;
@@ -270,6 +280,24 @@ bool IsControlKeyModifier(int flags) {
 bool IsValidCharToInsert(const base::char16& ch) {
   // Filter out all control characters, including tab and new line characters.
   return (ch >= 0x20 && ch < 0x7F) || ch > 0x9F;
+}
+
+bool CanUseTransparentBackgroundForDragImage() {
+#if defined(USE_OZONE)
+  if (::features::IsUsingOzonePlatform()) {
+    const auto* const egl_utility =
+        ui::OzonePlatform::GetInstance()->GetPlatformGLEGLUtility();
+    return egl_utility ? egl_utility->IsTransparentBackgroundSupported()
+                       : false;
+  }
+#endif
+#if defined(USE_X11)
+  // Fallback on the background color if the system doesn't support compositing.
+  return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
+#else
+  // Other platforms allow this.
+  return true;
+#endif
 }
 
 }  // namespace
@@ -283,7 +311,7 @@ base::TimeDelta Textfield::GetCaretBlinkInterval() {
                ? base::TimeDelta()
                : base::TimeDelta::FromMilliseconds(system_value);
   }
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   base::TimeDelta system_value;
   if (ui::TextInsertionCaretBlinkPeriod(&system_value))
     return system_value;
@@ -315,7 +343,7 @@ Textfield::Textfield()
   if (use_focus_ring_)
     focus_ring_ = FocusRing::Install(this);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   // Do not map accelerators on Mac. E.g. They might not reflect custom
   // keybindings that a user has set. But also on Mac, these commands dispatch
   // via the "responder chain" when the OS searches through menu items in the
@@ -330,6 +358,12 @@ Textfield::Textfield()
   AddAccelerator(ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN));
   AddAccelerator(ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN));
 #endif
+
+  // Sometimes there are additional ignored views, such as the View representing
+  // the cursor, inside the text field. These should always be ignored by
+  // accessibility since a plain text field should always be a leaf node in the
+  // accessibility trees of all the platforms we support.
+  GetViewAccessibility().OverrideIsLeaf(true);
 }
 
 Textfield::~Textfield() {
@@ -349,6 +383,10 @@ void Textfield::SetAssociatedLabel(View* labelling_view) {
   // associated label changes.
   SetAccessibleName(
       node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+}
+
+void Textfield::SetController(TextfieldController* controller) {
+  controller_ = controller;
 }
 
 bool Textfield::GetReadOnly() const {
@@ -376,8 +414,8 @@ void Textfield::SetTextInputType(ui::TextInputType type) {
   text_input_type_ = type;
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
-  OnCaretBoundsChanged();
   UpdateCursorViewPosition();
+  OnCaretBoundsChanged();
   OnPropertyChanged(&text_input_type_, kPropertyEffectsPaint);
 }
 
@@ -394,33 +432,38 @@ const base::string16& Textfield::GetText() const {
 }
 
 void Textfield::SetText(const base::string16& new_text) {
-  SetText(new_text, new_text.length());
+  SetTextWithoutCaretBoundsChangeNotification(new_text, new_text.length());
+  // The above call already notified for the text change; fire notifications
+  // etc. for the cursor changes as well.
+  UpdateAfterChange(TextChangeType::kNone, true);
 }
 
-void Textfield::SetText(const base::string16& new_text,
-                        size_t cursor_position) {
-  model_->SetText(new_text, cursor_position);
-  OnCaretBoundsChanged();
-  UpdateCursorViewPosition();
-  UpdateCursorVisibility();
-  SchedulePaint();
-  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
+void Textfield::SetTextWithoutCaretBoundsChangeNotification(
+    const base::string16& text,
+    size_t cursor_position) {
+  model_->SetText(text, cursor_position);
+  UpdateAfterChange(TextChangeType::kInternal, false, false);
+}
+
+void Textfield::Scroll(const std::vector<size_t>& positions) {
+  for (const auto position : positions) {
+    model_->MoveCursorTo(position);
+    GetRenderText()->GetUpdatedCursorBounds();
+  }
 }
 
 void Textfield::AppendText(const base::string16& new_text) {
   if (new_text.empty())
     return;
   model_->Append(new_text);
-  OnCaretBoundsChanged();
-  SchedulePaint();
-  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
+  UpdateAfterChange(TextChangeType::kInternal, false);
 }
 
 void Textfield::InsertOrReplaceText(const base::string16& new_text) {
   if (new_text.empty())
     return;
   model_->InsertText(new_text);
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
 }
 
 base::string16 Textfield::GetSelectedText() const {
@@ -431,18 +474,18 @@ void Textfield::SelectAll(bool reversed) {
   model_->SelectAll(reversed);
   if (HasSelection() && performing_user_action_)
     UpdateSelectionClipboard();
-  UpdateAfterChange(false, true);
+  UpdateAfterChange(TextChangeType::kNone, true);
 }
 
 void Textfield::SelectWordAt(const gfx::Point& point) {
   model_->MoveCursorTo(point, false);
   model_->SelectWord();
-  UpdateAfterChange(false, true);
+  UpdateAfterChange(TextChangeType::kNone, true);
 }
 
 void Textfield::ClearSelection() {
   model_->ClearSelection();
-  UpdateAfterChange(false, true);
+  UpdateAfterChange(TextChangeType::kNone, true);
 }
 
 bool Textfield::HasSelection(bool primary_only) const {
@@ -500,8 +543,7 @@ void Textfield::SetCursorEnabled(bool enabled) {
     return;
 
   GetRenderText()->SetCursorEnabled(enabled);
-  UpdateCursorViewPosition();
-  UpdateCursorVisibility();
+  UpdateAfterChange(TextChangeType::kNone, true, false);
   OnPropertyChanged(&model_ + kTextfieldCursorEnabled, kPropertyEffectsPaint);
 }
 
@@ -562,15 +604,13 @@ const gfx::Range& Textfield::GetSelectedRange() const {
 }
 
 void Textfield::SetSelectedRange(const gfx::Range& range) {
-  SetSelectedRange(range, true);
+  model_->SelectRange(range);
+  UpdateAfterChange(TextChangeType::kNone, true);
+  OnPropertyChanged(&model_ + kTextfieldSelectedRange, kPropertyEffectsPaint);
 }
 
-void Textfield::SetSelectedRange(const gfx::Range& range, bool primary) {
-  model_->SelectRange(range, primary);
-  if (primary)
-    UpdateAfterChange(false, true);
-  else
-    SchedulePaint();
+void Textfield::AddSecondarySelectedRange(const gfx::Range& range) {
+  model_->SelectRange(range, false);
   OnPropertyChanged(&model_ + kTextfieldSelectedRange, kPropertyEffectsPaint);
 }
 
@@ -580,7 +620,7 @@ const gfx::SelectionModel& Textfield::GetSelectionModel() const {
 
 void Textfield::SelectSelectionModel(const gfx::SelectionModel& sel) {
   model_->SelectSelectionModel(sel);
-  UpdateAfterChange(false, true);
+  UpdateAfterChange(TextChangeType::kNone, true);
 }
 
 size_t Textfield::GetCursorPosition() const {
@@ -638,6 +678,7 @@ void Textfield::SetAccessibleName(const base::string16& name) {
 
   accessible_name_ = name;
   OnPropertyChanged(&accessible_name_, kPropertyEffectsNone);
+  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 void Textfield::SetObscuredGlyphSpacing(int spacing) {
@@ -647,6 +688,22 @@ void Textfield::SetObscuredGlyphSpacing(int spacing) {
 void Textfield::SetExtraInsets(const gfx::Insets& insets) {
   extra_insets_ = insets;
   UpdateBorder();
+}
+
+void Textfield::FitToLocalBounds() {
+  // Textfield insets include a reasonable amount of whitespace on all sides of
+  // the default font list. Fallback fonts with larger heights may paint over
+  // the vertical whitespace as needed. Alternate solutions involve undesirable
+  // behavior like changing the default font size, shrinking some fallback fonts
+  // beyond their legibility, or enlarging controls dynamically with content.
+  gfx::Rect bounds = GetLocalBounds();
+  const gfx::Insets insets = GetInsets();
+  // The text will draw with the correct vertical alignment if we don't apply
+  // the vertical insets.
+  bounds.Inset(insets.left(), 0, insets.right(), 0);
+  bounds.set_x(GetMirroredXForRect(bounds));
+  GetRenderText()->SetDisplayRect(bounds);
+  UpdateAfterChange(TextChangeType::kNone, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -659,8 +716,7 @@ int Textfield::GetBaseline() const {
 gfx::Size Textfield::CalculatePreferredSize() const {
   DCHECK_GE(default_width_in_chars_, minimum_width_in_chars_);
   return gfx::Size(
-      GetFontList().GetExpectedTextWidth(default_width_in_chars_) +
-          GetInsets().width(),
+      CharsToDips(default_width_in_chars_),
       LayoutProvider::GetControlHeightForFont(style::CONTEXT_TEXTFIELD,
                                               GetTextStyle(), GetFontList()));
 }
@@ -669,16 +725,16 @@ gfx::Size Textfield::GetMinimumSize() const {
   DCHECK_LE(minimum_width_in_chars_, default_width_in_chars_);
   gfx::Size minimum_size = View::GetMinimumSize();
   if (minimum_width_in_chars_ >= 0)
-    minimum_size.set_width(
-        GetFontList().GetExpectedTextWidth(minimum_width_in_chars_) +
-        GetInsets().width());
+    minimum_size.set_width(CharsToDips(minimum_width_in_chars_));
   return minimum_size;
 }
 
 void Textfield::SetBorder(std::unique_ptr<Border> b) {
   use_focus_ring_ = false;
-  if (focus_ring_)
-    focus_ring_.reset();
+  if (focus_ring_) {
+    RemoveChildViewT(focus_ring_);
+    focus_ring_ = nullptr;
+  }
   View::SetBorder(std::move(b));
 }
 
@@ -716,8 +772,9 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
 
   return selection_controller_.OnMousePressed(
       event, handled,
-      had_focus ? SelectionController::FOCUSED
-                : SelectionController::UNFOCUSED);
+      had_focus
+          ? SelectionController::InitialFocusStateOnMousePress::kFocused
+          : SelectionController::InitialFocusStateOnMousePress::kUnFocused);
 }
 
 bool Textfield::OnMouseDragged(const ui::MouseEvent& event) {
@@ -769,6 +826,8 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
     return handled;
   }
 #endif
+
+  base::AutoReset<bool> show_rejection_ui(&show_rejection_ui_if_any_, true);
 
   if (edit_command == ui::TextEditCommand::INVALID_COMMAND)
     edit_command = GetCommandForKeyEvent(event);
@@ -1013,7 +1072,7 @@ int Textfield::OnPerformDrop(const ui::DropTargetEvent& event) {
     model_->InsertText(new_text);
   }
   skip_input_method_cancel_composition_ = false;
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
   return move ? ui::DragDropTypes::DRAG_MOVE : ui::DragDropTypes::DRAG_COPY;
 }
@@ -1025,6 +1084,7 @@ void Textfield::OnDragDone() {
 
 void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTextField;
+
   if (label_ax_id_) {
     node_data->AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
                                    {label_ax_id_});
@@ -1081,21 +1141,7 @@ bool Textfield::HandleAccessibleAction(const ui::AXActionData& action_data) {
 }
 
 void Textfield::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // Textfield insets include a reasonable amount of whitespace on all sides of
-  // the default font list. Fallback fonts with larger heights may paint over
-  // the vertical whitespace as needed. Alternate solutions involve undesirable
-  // behavior like changing the default font size, shrinking some fallback fonts
-  // beyond their legibility, or enlarging controls dynamically with content.
-  gfx::Rect bounds = GetLocalBounds();
-  const gfx::Insets insets = GetInsets();
-  // The text will draw with the correct vertical alignment if we don't apply
-  // the vertical insets.
-  bounds.Inset(insets.left(), 0, insets.right(), 0);
-  bounds.set_x(GetMirroredXForRect(bounds));
-  GetRenderText()->SetDisplayRect(bounds);
-  OnCaretBoundsChanged();
-  UpdateCursorViewPosition();
-  UpdateCursorVisibility();
+  FitToLocalBounds();
 }
 
 bool Textfield::GetNeedsNotificationWhenVisibleBoundsChange() const {
@@ -1118,23 +1164,16 @@ void Textfield::OnFocus() {
   if (focus_reason_ == ui::TextInputClient::FOCUS_REASON_NONE)
     focus_reason_ = ui::TextInputClient::FOCUS_REASON_OTHER;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
     password_input_enabler_ =
         std::make_unique<ui::ScopedPasswordInputEnabler>();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   GetRenderText()->set_focused(true);
-  if (ShouldShowCursor()) {
-    UpdateCursorViewPosition();
-    cursor_view_->SetVisible(true);
-  }
   if (GetInputMethod())
     GetInputMethod()->SetFocusedTextInputClient(this);
-  OnCaretBoundsChanged();
-  if (ShouldBlinkCursor())
-    StartBlinkingCursor();
-  SchedulePaint();
+  UpdateAfterChange(TextChangeType::kNone, true);
   View::OnFocus();
 }
 
@@ -1163,9 +1202,9 @@ void Textfield::OnBlur() {
   SchedulePaint();
   View::OnBlur();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   password_input_enabler_.reset();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 }
 
 gfx::Point Textfield::GetKeyboardContextMenuLocation() {
@@ -1228,12 +1267,9 @@ void Textfield::WriteDragDataForView(View* sender,
 
   SkBitmap bitmap;
   float raster_scale = ScaleFactorForDragFromWidget(GetWidget());
-  SkColor color = SK_ColorTRANSPARENT;
-#if defined(USE_X11)
-  // Fallback on the background color if the system doesn't support compositing.
-  if (!ui::XVisualManager::GetInstance()->ArgbVisualAvailable())
-    color = GetBackgroundColor();
-#endif
+  SkColor color = CanUseTransparentBackgroundForDragImage()
+                      ? SK_ColorTRANSPARENT
+                      : GetBackgroundColor();
   label.Paint(PaintInfo::CreateRootPaintInfo(
       ui::CanvasPainter(&bitmap, label.size(), raster_scale, color,
                         GetWidget()->GetCompositor()->is_pixel_canvas())
@@ -1427,7 +1463,7 @@ bool Textfield::GetAcceleratorForCommandId(int command_id,
 void Textfield::ExecuteCommand(int command_id, int event_flags) {
   if (text_services_context_menu_ &&
       text_services_context_menu_->SupportsCommand(command_id)) {
-    text_services_context_menu_->ExecuteCommand(command_id);
+    text_services_context_menu_->ExecuteCommand(command_id, event_flags);
     return;
   }
 
@@ -1446,25 +1482,25 @@ void Textfield::SetCompositionText(const ui::CompositionText& composition) {
   skip_input_method_cancel_composition_ = true;
   model_->SetCompositionText(composition);
   skip_input_method_cancel_composition_ = false;
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
 }
 
-void Textfield::ConfirmCompositionText(bool keep_selection) {
+uint32_t Textfield::ConfirmCompositionText(bool keep_selection) {
   // TODO(b/134473433) Modify this function so that when keep_selection is
   // true, the selection is not changed when text committed
   if (keep_selection) {
     NOTIMPLEMENTED_LOG_ONCE();
   }
   if (!model_->HasCompositionText())
-    return;
-
+    return 0;
   OnBeforeUserAction();
   skip_input_method_cancel_composition_ = true;
-  model_->ConfirmCompositionText();
+  const uint32_t confirmed_text_length = model_->ConfirmCompositionText();
   skip_input_method_cancel_composition_ = false;
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
+  return confirmed_text_length;
 }
 
 void Textfield::ClearCompositionText() {
@@ -1475,7 +1511,7 @@ void Textfield::ClearCompositionText() {
   skip_input_method_cancel_composition_ = true;
   model_->CancelCompositionText();
   skip_input_method_cancel_composition_ = false;
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
 }
 
@@ -1492,7 +1528,7 @@ void Textfield::InsertText(const base::string16& new_text) {
   skip_input_method_cancel_composition_ = true;
   model_->InsertText(filtered_new_text);
   skip_input_method_cancel_composition_ = false;
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
 }
 
@@ -1627,7 +1663,7 @@ bool Textfield::DeleteRange(const gfx::Range& range) {
   model_->SelectRange(range);
   if (model_->HasSelection()) {
     model_->DeleteSelection();
-    UpdateAfterChange(true, true);
+    UpdateAfterChange(TextChangeType::kUserTriggered, true);
   }
   OnAfterUserAction();
   return true;
@@ -1738,9 +1774,12 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
       return editable && readable && HasSelection();
     case ui::TextEditCommand::COPY:
       return readable && HasSelection();
-    case ui::TextEditCommand::PASTE:
+    case ui::TextEditCommand::PASTE: {
+      ui::DataTransferEndpoint data_dst(ui::EndpointType::kDefault,
+                                        show_rejection_ui_if_any_);
       ui::Clipboard::GetForCurrentThread()->ReadText(
-          ui::ClipboardBuffer::kCopyPaste, &result);
+          ui::ClipboardBuffer::kCopyPaste, &data_dst, &result);
+    }
       return editable && !result.empty();
     case ui::TextEditCommand::SELECT_ALL:
       return !GetText().empty() &&
@@ -1759,7 +1798,7 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
     case ui::TextEditCommand::MOVE_UP_AND_MODIFY_SELECTION:
 // On Mac, the textfield should respond to Up/Down arrows keys and
 // PageUp/PageDown.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       return true;
 #else
       return false;
@@ -1786,8 +1825,11 @@ ukm::SourceId Textfield::GetClientSourceForMetrics() const {
 }
 
 bool Textfield::ShouldDoLearning() {
-  // TODO(https://crbug.com/311180): Implement this method.
-  NOTIMPLEMENTED_LOG_ONCE();
+  if (should_do_learning_.has_value())
+    return should_do_learning_.value();
+
+  NOTIMPLEMENTED_LOG_ONCE() << "A Textfield does not support ShouldDoLearning";
+  DVLOG(1) << "This Textfield instance does not support ShouldDoLearning";
   return false;
 }
 
@@ -1799,10 +1841,42 @@ bool Textfield::SetCompositionFromExistingText(
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
   // TODO(https://crbug.com/952355): Support custom text spans.
   DCHECK(!model_->HasCompositionText());
+  OnBeforeUserAction();
   model_->SetCompositionFromExistingText(range);
   SchedulePaint();
   OnAfterUserAction();
   return true;
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+gfx::Range Textfield::GetAutocorrectRange() const {
+  return model_->autocorrect_range();
+}
+
+gfx::Rect Textfield::GetAutocorrectCharacterBounds() const {
+  gfx::Range autocorrect_range = model_->autocorrect_range();
+  if (autocorrect_range.is_empty())
+    return gfx::Rect();
+
+  gfx::RenderText* render_text = GetRenderText();
+  const gfx::SelectionModel caret(autocorrect_range, gfx::CURSOR_BACKWARD);
+  gfx::Rect rect;
+  rect = render_text->GetCursorBounds(caret, false);
+
+  ConvertRectToScreen(this, &rect);
+  return rect;
+}
+
+bool Textfield::SetAutocorrectRange(const base::string16& autocorrect_text,
+                                    const gfx::Range& range) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.Autocorrect.Count",
+                                TextInputClient::SubClass::kTextField);
+  return model_->SetAutocorrectRange(autocorrect_text, range);
+}
+
+void Textfield::ClearAutocorrectRange() {
+  model_->SetAutocorrectRange(base::string16(), gfx::Range());
 }
 #endif
 
@@ -1828,7 +1902,7 @@ void Textfield::DoInsertChar(base::char16 ch) {
   model_->InsertChar(ch);
   skip_input_method_cancel_composition_ = false;
 
-  UpdateAfterChange(true, true);
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
 }
 
@@ -1843,7 +1917,8 @@ gfx::Point Textfield::GetLastClickRootLocation() const {
 base::string16 Textfield::GetSelectionClipboardText() const {
   base::string16 selection_clipboard_text;
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kSelection, &selection_clipboard_text);
+      ui::ClipboardBuffer::kSelection, /* data_dst = */ nullptr,
+      &selection_clipboard_text);
   return selection_clipboard_text;
 }
 
@@ -1851,6 +1926,8 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
   DestroyTouchSelection();
 
   bool add_to_kill_buffer = false;
+
+  base::AutoReset<bool> show_rejection_ui(&show_rejection_ui_if_any_, true);
 
   // Some codepaths may bypass GetCommandForKeyEvent, so any selection-dependent
   // modifications of the command should happen here.
@@ -1875,8 +1952,7 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
   if (!IsTextEditCommandEnabled(command))
     return;
 
-  bool text_changed = false;
-  bool cursor_changed = false;
+  bool changed = false;
   bool rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
   gfx::VisualCursorDirection begin = rtl ? gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT;
   gfx::VisualCursorDirection end = rtl ? gfx::CURSOR_LEFT : gfx::CURSOR_RIGHT;
@@ -1885,34 +1961,34 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
   OnBeforeUserAction();
   switch (command) {
     case ui::TextEditCommand::DELETE_BACKWARD:
-      text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
+      changed = model_->Backspace(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_FORWARD:
-      text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
+      changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE:
       model_->MoveCursor(gfx::LINE_BREAK, begin, gfx::SELECTION_RETAIN);
-      text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
+      changed = model_->Backspace(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_PARAGRAPH:
       model_->MoveCursor(gfx::FIELD_BREAK, begin, gfx::SELECTION_RETAIN);
-      text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
+      changed = model_->Backspace(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_TO_END_OF_LINE:
       model_->MoveCursor(gfx::LINE_BREAK, end, gfx::SELECTION_RETAIN);
-      text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
+      changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_TO_END_OF_PARAGRAPH:
       model_->MoveCursor(gfx::FIELD_BREAK, end, gfx::SELECTION_RETAIN);
-      text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
+      changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_WORD_BACKWARD:
       model_->MoveCursor(gfx::WORD_BREAK, begin, gfx::SELECTION_RETAIN);
-      text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
+      changed = model_->Backspace(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_WORD_FORWARD:
       model_->MoveCursor(gfx::WORD_BREAK, end, gfx::SELECTION_RETAIN);
-      text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
+      changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::MOVE_BACKWARD:
       model_->MoveCursor(gfx::CHARACTER_BREAK, begin, gfx::SELECTION_NONE);
@@ -2021,28 +2097,28 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
                          kWordSelectionBehavior);
       break;
     case ui::TextEditCommand::UNDO:
-      text_changed = cursor_changed = model_->Undo();
+      changed = model_->Undo();
       break;
     case ui::TextEditCommand::REDO:
-      text_changed = cursor_changed = model_->Redo();
+      changed = model_->Redo();
       break;
     case ui::TextEditCommand::CUT:
-      text_changed = cursor_changed = Cut();
+      changed = Cut();
       break;
     case ui::TextEditCommand::COPY:
       Copy();
       break;
     case ui::TextEditCommand::PASTE:
-      text_changed = cursor_changed = Paste();
+      changed = Paste();
       break;
     case ui::TextEditCommand::SELECT_ALL:
       SelectAll(false);
       break;
     case ui::TextEditCommand::TRANSPOSE:
-      text_changed = cursor_changed = model_->Transpose();
+      changed = model_->Transpose();
       break;
     case ui::TextEditCommand::YANK:
-      text_changed = cursor_changed = model_->Yank();
+      changed = model_->Yank();
       break;
     case ui::TextEditCommand::INSERT_TEXT:
     case ui::TextEditCommand::SET_MARK:
@@ -2052,10 +2128,13 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
       break;
   }
 
-  cursor_changed |= GetSelectionModel() != selection_model;
+  const auto text_change_type =
+      changed ? TextChangeType::kUserTriggered : TextChangeType::kNone;
+  const bool cursor_changed =
+      changed || (GetSelectionModel() != selection_model);
   if (cursor_changed && HasSelection())
     UpdateSelectionClipboard();
-  UpdateAfterChange(text_changed, cursor_changed);
+  UpdateAfterChange(text_change_type, cursor_changed);
   OnAfterUserAction();
 }
 
@@ -2143,19 +2222,12 @@ int Textfield::GetViewWidth() const {
 }
 
 int Textfield::GetDragSelectionDelay() const {
-  switch (ui::ScopedAnimationDurationScaleMode::duration_scale_mode()) {
-    case ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION:
-      return 100;
-    case ui::ScopedAnimationDurationScaleMode::FAST_DURATION:
-      return 25;
-    case ui::ScopedAnimationDurationScaleMode::SLOW_DURATION:
-      return 400;
-    case ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION:
-      return 1;
-    case ui::ScopedAnimationDurationScaleMode::ZERO_DURATION:
-      return 0;
+  if (ui::ScopedAnimationDurationScaleMode::duration_multiplier() ==
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION) {
+    // NON_ZERO_DURATION is 1/20 by default, but we want 1/100 here.
+    return 1;
   }
-  return 100;
+  return ui::ScopedAnimationDurationScaleMode::duration_multiplier() * 100;
 }
 
 void Textfield::OnBeforePointerAction() {
@@ -2167,7 +2239,9 @@ void Textfield::OnBeforePointerAction() {
 void Textfield::OnAfterPointerAction(bool text_changed,
                                      bool selection_changed) {
   OnAfterUserAction();
-  UpdateAfterChange(text_changed, selection_changed);
+  const auto text_change_type =
+      text_changed ? TextChangeType::kUserTriggered : TextChangeType::kNone;
+  UpdateAfterChange(text_change_type, selection_changed);
 }
 
 bool Textfield::PasteSelectionClipboard() {
@@ -2235,9 +2309,12 @@ void Textfield::UpdateSelectionBackgroundColor() {
                     kPropertyEffectsPaint);
 }
 
-void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
-  if (text_changed) {
-    if (controller_)
+void Textfield::UpdateAfterChange(
+    TextChangeType text_change_type,
+    bool cursor_changed,
+    base::Optional<bool> notify_caret_bounds_changed) {
+  if (text_change_type != TextChangeType::kNone) {
+    if ((text_change_type == TextChangeType::kUserTriggered) && controller_)
       controller_->ContentsChanged(this, GetText());
     NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
   }
@@ -2245,10 +2322,12 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
     UpdateCursorViewPosition();
     UpdateCursorVisibility();
   }
-  if (text_changed || cursor_changed) {
+  const bool anything_changed =
+      (text_change_type != TextChangeType::kNone) || cursor_changed;
+  if (notify_caret_bounds_changed.value_or(anything_changed))
     OnCaretBoundsChanged();
+  if (anything_changed)
     SchedulePaint();
-  }
 }
 
 void Textfield::UpdateCursorVisibility() {
@@ -2311,7 +2390,7 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
 
 void Textfield::MoveCursorTo(const gfx::Point& point, bool select) {
   if (model_->MoveCursorTo(point, select))
-    UpdateAfterChange(false, true);
+    UpdateAfterChange(TextChangeType::kNone, true);
 }
 
 void Textfield::OnCaretBoundsChanged() {
@@ -2439,6 +2518,16 @@ bool Textfield::ShouldShowCursor() const {
          !drop_cursor_visible_ && GetRenderText()->cursor_enabled();
 }
 
+int Textfield::CharsToDips(int width_in_chars) const {
+  // Use a subset of the conditions in ShouldShowCursor() that are unlikely to
+  // change dynamically.  Dynamic changes can result in glitchy-looking visual
+  // effects like find boxes on different tabs being 1 DIP different width.
+  const int cursor_width =
+      (!GetReadOnly() && GetRenderText()->cursor_enabled()) ? 1 : 0;
+  return GetFontList().GetExpectedTextWidth(width_in_chars) + cursor_width +
+         GetInsets().width();
+}
+
 bool Textfield::ShouldBlinkCursor() const {
   return ShouldShowCursor() && !Textfield::GetCaretBlinkInterval().is_zero();
 }
@@ -2464,22 +2553,21 @@ void Textfield::OnEnabledChanged() {
     GetInputMethod()->OnTextInputTypeChanged(this);
 }
 
-BEGIN_METADATA(Textfield)
-METADATA_PARENT_CLASS(View)
-ADD_PROPERTY_METADATA(Textfield, bool, ReadOnly)
-ADD_PROPERTY_METADATA(Textfield, base::string16, Text)
-ADD_PROPERTY_METADATA(Textfield, ui::TextInputType, TextInputType)
-ADD_PROPERTY_METADATA(Textfield, int, TextInputFlags)
-ADD_PROPERTY_METADATA(Textfield, SkColor, TextColor)
-ADD_PROPERTY_METADATA(Textfield, SkColor, SelectionTextColor)
-ADD_PROPERTY_METADATA(Textfield, SkColor, BackgroundColor)
-ADD_PROPERTY_METADATA(Textfield, SkColor, SelectionBackgroundColor)
-ADD_PROPERTY_METADATA(Textfield, bool, CursorEnabled)
-ADD_PROPERTY_METADATA(Textfield, base::string16, PlaceholderText)
-ADD_PROPERTY_METADATA(Textfield, bool, Invalid)
-ADD_PROPERTY_METADATA(Textfield, gfx::HorizontalAlignment, HorizontalAlignment)
-ADD_PROPERTY_METADATA(Textfield, gfx::Range, SelectedRange)
-ADD_PROPERTY_METADATA(Textfield, base::string16, AccessibleName)
-END_METADATA()
+BEGIN_METADATA(Textfield, View)
+ADD_PROPERTY_METADATA(bool, ReadOnly)
+ADD_PROPERTY_METADATA(base::string16, Text)
+ADD_PROPERTY_METADATA(ui::TextInputType, TextInputType)
+ADD_PROPERTY_METADATA(int, TextInputFlags)
+ADD_PROPERTY_METADATA(SkColor, TextColor)
+ADD_PROPERTY_METADATA(SkColor, SelectionTextColor)
+ADD_PROPERTY_METADATA(SkColor, BackgroundColor)
+ADD_PROPERTY_METADATA(SkColor, SelectionBackgroundColor)
+ADD_PROPERTY_METADATA(bool, CursorEnabled)
+ADD_PROPERTY_METADATA(base::string16, PlaceholderText)
+ADD_PROPERTY_METADATA(bool, Invalid)
+ADD_PROPERTY_METADATA(gfx::HorizontalAlignment, HorizontalAlignment)
+ADD_PROPERTY_METADATA(gfx::Range, SelectedRange)
+ADD_PROPERTY_METADATA(base::string16, AccessibleName)
+END_METADATA
 
 }  // namespace views

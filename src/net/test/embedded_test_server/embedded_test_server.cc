@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
@@ -19,9 +18,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/current_thread.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task_runner_util.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "crypto/rsa_private_key.h"
@@ -219,6 +219,28 @@ bool MaybeCreateOCSPResponse(CertBuilder* target,
 
 }  // namespace
 
+EmbeddedTestServerHandle::EmbeddedTestServerHandle(
+    EmbeddedTestServerHandle&& other) {
+  operator=(std::move(other));
+}
+
+EmbeddedTestServerHandle& EmbeddedTestServerHandle::operator=(
+    EmbeddedTestServerHandle&& other) {
+  EmbeddedTestServerHandle temporary;
+  std::swap(other.test_server_, temporary.test_server_);
+  std::swap(temporary.test_server_, test_server_);
+  return *this;
+}
+
+EmbeddedTestServerHandle::EmbeddedTestServerHandle(
+    EmbeddedTestServer* test_server)
+    : test_server_(test_server) {}
+
+EmbeddedTestServerHandle::~EmbeddedTestServerHandle() {
+  if (test_server_)
+    CHECK(test_server_->ShutdownAndWaitUntilComplete());
+}
+
 EmbeddedTestServer::OCSPConfig::OCSPConfig() = default;
 EmbeddedTestServer::OCSPConfig::OCSPConfig(ResponseType response_type)
     : response_type(response_type) {}
@@ -268,9 +290,8 @@ EmbeddedTestServer::EmbeddedTestServer(Type type)
 EmbeddedTestServer::~EmbeddedTestServer() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (Started() && !ShutdownAndWaitUntilComplete()) {
-    LOG(ERROR) << "EmbeddedTestServer failed to shut down.";
-  }
+  if (Started())
+    CHECK(ShutdownAndWaitUntilComplete());
 
   {
     base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait_for_thread_join;
@@ -288,23 +309,21 @@ void EmbeddedTestServer::RegisterTestCerts() {
 
 void EmbeddedTestServer::SetConnectionListener(
     EmbeddedTestServerConnectionListener* listener) {
-  DCHECK(!io_thread_.get())
+  DCHECK(!io_thread_)
       << "ConnectionListener must be set before starting the server.";
   connection_listener_ = listener;
 }
 
 EmbeddedTestServerHandle EmbeddedTestServer::StartAndReturnHandle(int port) {
-  if (!Start(port))
-    return EmbeddedTestServerHandle();
-  return EmbeddedTestServerHandle(this);
+  bool result = Start(port);
+  return result ? EmbeddedTestServerHandle(this) : EmbeddedTestServerHandle();
 }
 
 bool EmbeddedTestServer::Start(int port) {
   bool success = InitializeAndListen(port);
-  if (!success)
-    return false;
-  StartAcceptingConnections();
-  return true;
+  if (success)
+    StartAcceptingConnections();
+  return success;
 }
 
 bool EmbeddedTestServer::InitializeAndListen(int port) {
@@ -543,7 +562,7 @@ bool EmbeddedTestServer::GenerateCertAndKey() {
   // StartAcceptingConnections so that this server and the AIA server start at
   // the same time. (If the test only called InitializeAndListen they expect no
   // threads to be created yet.)
-  if (io_thread_.get())
+  if (io_thread_)
     aia_http_server_->StartAcceptingConnections();
 
   return true;
@@ -562,10 +581,14 @@ bool EmbeddedTestServer::InitializeSSLServerContext() {
   return true;
 }
 
+EmbeddedTestServerHandle
+EmbeddedTestServer::StartAcceptingConnectionsAndReturnHandle() {
+  return EmbeddedTestServerHandle(this);
+}
+
 void EmbeddedTestServer::StartAcceptingConnections() {
   DCHECK(Started());
-  DCHECK(!io_thread_.get())
-      << "Server must not be started while server is running";
+  DCHECK(!io_thread_) << "Server must not be started while server is running";
 
   if (aia_http_server_)
     aia_http_server_->StartAcceptingConnections();
@@ -584,8 +607,18 @@ void EmbeddedTestServer::StartAcceptingConnections() {
 bool EmbeddedTestServer::ShutdownAndWaitUntilComplete() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return PostTaskToIOThreadAndWait(base::BindOnce(
-      &EmbeddedTestServer::ShutdownOnIOThread, base::Unretained(this)));
+  // Ensure that the AIA HTTP server is no longer Started().
+  bool aia_http_server_not_started = true;
+  if (aia_http_server_ && aia_http_server_->Started()) {
+    aia_http_server_not_started =
+        aia_http_server_->ShutdownAndWaitUntilComplete();
+  }
+
+  // Return false if either this or the AIA HTTP server are still Started().
+  return PostTaskToIOThreadAndWait(
+             base::BindOnce(&EmbeddedTestServer::ShutdownOnIOThread,
+                            base::Unretained(this))) &&
+         aia_http_server_not_started;
 }
 
 // static
@@ -642,7 +675,8 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
       base::BindRepeating(&HttpConnection::SendResponseBytes,
                           connection->GetWeakPtr()),
       base::BindOnce(&EmbeddedTestServer::OnResponseCompleted,
-                     weak_factory_.GetWeakPtr(), connection));
+                     weak_factory_.GetWeakPtr(), connection,
+                     std::move(response)));
 }
 
 GURL EmbeddedTestServer::GetURL(const std::string& relative_url) const {
@@ -744,6 +778,10 @@ std::string EmbeddedTestServer::GetCertificateName() const {
       return "bad_validity.pem";
     case CERT_TEST_NAMES:
       return "test_names.pem";
+    case CERT_KEY_USAGE_RSA_ENCIPHERMENT:
+      return "key_usage_rsa_keyencipherment.pem";
+    case CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE:
+      return "key_usage_rsa_digitalsignature.pem";
     case CERT_AUTO:
       return std::string();
   }
@@ -781,33 +819,42 @@ void EmbeddedTestServer::ServeFilesFromSourceDirectory(
 
 void EmbeddedTestServer::ServeFilesFromSourceDirectory(
     const base::FilePath& relative) {
-  base::FilePath test_data_dir;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
-  ServeFilesFromDirectory(test_data_dir.Append(relative));
+  ServeFilesFromDirectory(GetFullPathFromSourceDirectory(relative));
 }
 
 void EmbeddedTestServer::AddDefaultHandlers(const base::FilePath& directory) {
   ServeFilesFromSourceDirectory(directory);
+  AddDefaultHandlers();
+}
+
+void EmbeddedTestServer::AddDefaultHandlers() {
   RegisterDefaultHandlers(this);
+}
+
+base::FilePath EmbeddedTestServer::GetFullPathFromSourceDirectory(
+    const base::FilePath& relative) {
+  base::FilePath test_data_dir;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+  return test_data_dir.Append(relative);
 }
 
 void EmbeddedTestServer::RegisterRequestHandler(
     const HandleRequestCallback& callback) {
-  DCHECK(!io_thread_.get())
+  DCHECK(!io_thread_)
       << "Handlers must be registered before starting the server.";
   request_handlers_.push_back(callback);
 }
 
 void EmbeddedTestServer::RegisterRequestMonitor(
     const MonitorRequestCallback& callback) {
-  DCHECK(!io_thread_.get())
+  DCHECK(!io_thread_)
       << "Monitors must be registered before starting the server.";
   request_monitors_.push_back(callback);
 }
 
 void EmbeddedTestServer::RegisterDefaultHandler(
     const HandleRequestCallback& callback) {
-  DCHECK(!io_thread_.get())
+  DCHECK(!io_thread_)
       << "Handlers must be registered before starting the server.";
   default_request_handlers_.push_back(callback);
 }
@@ -916,7 +963,9 @@ bool EmbeddedTestServer::HandleReadResult(HttpConnection* connection, int rv) {
   return true;
 }
 
-void EmbeddedTestServer::OnResponseCompleted(HttpConnection* connection) {
+void EmbeddedTestServer::OnResponseCompleted(
+    HttpConnection* connection,
+    std::unique_ptr<HttpResponse> response) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
   DCHECK(connection);
   DCHECK_EQ(1u, connections_.count(connection->socket_.get()));
@@ -963,7 +1012,7 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWait(base::OnceClosure closure) {
   // TODO(mattm): Is this still necessary/desirable? Try removing this and see
   // if anything breaks.
   std::unique_ptr<base::SingleThreadTaskExecutor> temporary_loop;
-  if (!base::MessageLoopCurrent::Get())
+  if (!base::CurrentThread::Get())
     temporary_loop = std::make_unique<base::SingleThreadTaskExecutor>();
 
   base::RunLoop run_loop;
@@ -990,7 +1039,7 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWaitWithResult(
   // TODO(mattm): Is this still necessary/desirable? Try removing this and see
   // if anything breaks.
   std::unique_ptr<base::SingleThreadTaskExecutor> temporary_loop;
-  if (!base::MessageLoopCurrent::Get())
+  if (!base::CurrentThread::Get())
     temporary_loop = std::make_unique<base::SingleThreadTaskExecutor>();
 
   base::RunLoop run_loop;
@@ -1006,28 +1055,6 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWaitWithResult(
   run_loop.Run();
 
   return task_result;
-}
-
-EmbeddedTestServerHandle::EmbeddedTestServerHandle(
-    EmbeddedTestServerHandle&& other) {
-  operator=(std::move(other));
-}
-
-EmbeddedTestServerHandle& EmbeddedTestServerHandle::operator=(
-    EmbeddedTestServerHandle&& other) {
-  EmbeddedTestServerHandle temporary;
-  std::swap(other.test_server_, temporary.test_server_);
-  std::swap(temporary.test_server_, test_server_);
-  return *this;
-}
-
-EmbeddedTestServerHandle::EmbeddedTestServerHandle(
-    EmbeddedTestServer* test_server)
-    : test_server_(test_server) {}
-
-EmbeddedTestServerHandle::~EmbeddedTestServerHandle() {
-  if (test_server_)
-    EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
 }
 
 }  // namespace test_server

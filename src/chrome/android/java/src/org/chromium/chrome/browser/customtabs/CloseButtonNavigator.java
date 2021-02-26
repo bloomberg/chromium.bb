@@ -7,11 +7,12 @@ package org.chromium.chrome.browser.customtabs;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
@@ -38,12 +39,12 @@ import javax.inject.Inject;
 @ActivityScope
 public class CloseButtonNavigator {
     @Nullable private PageCriteria mLandingPageCriteria;
-    private final BrowserServicesActivityTabController mTabController;
+    private final CustomTabActivityTabController mTabController;
     private final CustomTabActivityTabProvider mTabProvider;
     private final boolean mButtonClosesChildTab;
 
     @Inject
-    public CloseButtonNavigator(BrowserServicesActivityTabController tabController,
+    public CloseButtonNavigator(CustomTabActivityTabController tabController,
             CustomTabActivityTabProvider tabProvider,
             BrowserServicesIntentDataProvider intentDataProvider) {
         mTabController = tabController;
@@ -75,8 +76,8 @@ public class CloseButtonNavigator {
     public void navigateOnClose() {
         // If the tab is a child tab and |mButtonClosesChildTab| == true, close the child tab.
         Tab currentTab = mTabProvider.getTab();
-        boolean isFromChildTab =
-                (currentTab != null && currentTab.getParentId() != Tab.INVALID_TAB_ID);
+        boolean isFromChildTab = (currentTab != null
+                && CriticalPersistedTabData.from(currentTab).getParentId() != Tab.INVALID_TAB_ID);
         if (isFromChildTab && mButtonClosesChildTab) {
             mTabController.closeTab();
             return;

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
-#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_mojom_traits.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
@@ -50,20 +49,30 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
   TruncatedString16 string;
   if (!data.ReadName(&string))
     return false;
-  out->name = base::NullableString16(std::move(string.string));
+  out->name = std::move(string.string);
 
   if (!data.ReadShortName(&string))
     return false;
-  out->short_name = base::NullableString16(std::move(string.string));
+  out->short_name = std::move(string.string);
+
+  if (!data.ReadDescription(&string))
+    return false;
+  out->description = std::move(string.string);
+
+  if (!data.ReadCategories(&out->categories))
+    return false;
 
   if (!data.ReadGcmSenderId(&string))
     return false;
-  out->gcm_sender_id = base::NullableString16(std::move(string.string));
+  out->gcm_sender_id = std::move(string.string);
 
   if (!data.ReadStartUrl(&out->start_url))
     return false;
 
   if (!data.ReadIcons(&out->icons))
+    return false;
+
+  if (!data.ReadScreenshots(&out->screenshots))
     return false;
 
   if (!data.ReadShortcuts(&out->shortcuts))
@@ -73,6 +82,12 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
     return false;
 
   if (!data.ReadFileHandlers(&out->file_handlers))
+    return false;
+
+  if (!data.ReadProtocolHandlers(&out->protocol_handlers))
+    return false;
+
+  if (!data.ReadUrlHandlers(&out->url_handlers))
     return false;
 
   if (!data.ReadRelatedApplications(&out->related_applications))
@@ -87,6 +102,9 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
     out->background_color = data.background_color();
 
   if (!data.ReadDisplay(&out->display))
+    return false;
+
+  if (!data.ReadDisplayOverride(&out->display_override))
     return false;
 
   if (!data.ReadOrientation(&out->orientation))
@@ -133,11 +151,11 @@ bool StructTraits<blink::mojom::ManifestShortcutItemDataView,
   TruncatedString16 string;
   if (!data.ReadShortName(&string))
     return false;
-  out->short_name = base::NullableString16(std::move(string.string));
+  out->short_name = std::move(string.string);
 
   if (!data.ReadDescription(&string))
     return false;
-  out->description = base::NullableString16(std::move(string.string));
+  out->description = std::move(string.string);
 
   if (!data.ReadUrl(&out->url))
     return false;
@@ -155,16 +173,18 @@ bool StructTraits<blink::mojom::ManifestRelatedApplicationDataView,
   TruncatedString16 string;
   if (!data.ReadPlatform(&string))
     return false;
-  out->platform = base::NullableString16(std::move(string.string));
+  out->platform = std::move(string.string);
 
-  if (!data.ReadUrl(&out->url))
+  base::Optional<GURL> url;
+  if (!data.ReadUrl(&url))
     return false;
+  out->url = std::move(url).value_or(GURL());
 
   if (!data.ReadId(&string))
     return false;
-  out->id = base::NullableString16(std::move(string.string));
+  out->id = std::move(string.string);
 
-  return !(out->url.is_empty() && out->id.is_null());
+  return !out->url.is_empty() || out->id;
 }
 
 bool StructTraits<blink::mojom::ManifestFileFilterDataView,
@@ -186,6 +206,16 @@ bool StructTraits<blink::mojom::ManifestFileFilterDataView,
   return true;
 }
 
+bool StructTraits<blink::mojom::ManifestUrlHandlerDataView,
+                  ::blink::Manifest::UrlHandler>::
+    Read(blink::mojom::ManifestUrlHandlerDataView data,
+         ::blink::Manifest::UrlHandler* out) {
+  if (!data.ReadOrigin(&out->origin))
+    return false;
+
+  return true;
+}
+
 bool StructTraits<blink::mojom::ManifestShareTargetParamsDataView,
                   ::blink::Manifest::ShareTargetParams>::
     Read(blink::mojom::ManifestShareTargetParamsDataView data,
@@ -193,15 +223,15 @@ bool StructTraits<blink::mojom::ManifestShareTargetParamsDataView,
   TruncatedString16 string;
   if (!data.ReadText(&string))
     return false;
-  out->text = base::NullableString16(std::move(string.string));
+  out->text = std::move(string.string);
 
   if (!data.ReadTitle(&string))
     return false;
-  out->title = base::NullableString16(std::move(string.string));
+  out->title = std::move(string.string);
 
   if (!data.ReadUrl(&string))
     return false;
-  out->url = base::NullableString16(std::move(string.string));
+  out->url = std::move(string.string);
 
   if (!data.ReadFiles(&out->files))
     return false;
@@ -236,6 +266,19 @@ bool StructTraits<blink::mojom::ManifestFileHandlerDataView,
     return false;
 
   if (!data.ReadAccept(&out->accept))
+    return false;
+
+  return true;
+}
+
+bool StructTraits<blink::mojom::ManifestProtocolHandlerDataView,
+                  ::blink::Manifest::ProtocolHandler>::
+    Read(blink::mojom::ManifestProtocolHandlerDataView data,
+         ::blink::Manifest::ProtocolHandler* out) {
+  if (!data.ReadProtocol(&out->protocol))
+    return false;
+
+  if (!data.ReadUrl(&out->url))
     return false;
 
   return true;

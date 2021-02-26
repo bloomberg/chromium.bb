@@ -25,6 +25,7 @@
 
 #include <cstring>
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -56,6 +57,7 @@ class PLATFORM_EXPORT Length {
     kFixed,
     kMinContent,
     kMaxContent,
+    kMinIntrinsic,
     kFillAvailable,
     kFitContent,
     kCalculated,
@@ -144,6 +146,7 @@ class PLATFORM_EXPORT Length {
   static Length FillAvailable() { return Length(kFillAvailable); }
   static Length MinContent() { return Length(kMinContent); }
   static Length MaxContent() { return Length(kMaxContent); }
+  static Length MinIntrinsic() { return Length(kMinIntrinsic); }
   static Length ExtendToZoom() { return Length(kExtendToZoom); }
   static Length DeviceWidth() { return Length(kDeviceWidth); }
   static Length DeviceHeight() { return Length(kDeviceHeight); }
@@ -222,25 +225,35 @@ class PLATFORM_EXPORT Length {
   }
 
   // For the layout purposes, if this |Length| is a block-axis size, see
-  // |IsIntrinsicOrAuto()|, it is usually a better choice.
+  // |IsAutoOrContentOrIntrinsic()|, it is usually a better choice.
   bool IsAuto() const { return GetType() == kAuto; }
   bool IsFixed() const { return GetType() == kFixed; }
+
   // For the block axis, intrinsic sizes such as `min-content` behave the same
   // as `auto`. https://www.w3.org/TR/css-sizing-3/#valdef-width-min-content
-  bool IsIntrinsicOrAuto() const { return GetType() == kAuto || IsIntrinsic(); }
-  bool IsIntrinsic() const {
+  bool IsContentOrIntrinsic() const {
     return GetType() == kMinContent || GetType() == kMaxContent ||
-           GetType() == kFillAvailable || GetType() == kFitContent;
+           GetType() == kFitContent || GetType() == kMinIntrinsic;
   }
+  bool IsAutoOrContentOrIntrinsic() const {
+    return GetType() == kAuto || IsContentOrIntrinsic();
+  }
+
+  // NOTE: This shouldn't be use in NG code.
+  bool IsContentOrIntrinsicOrFillAvailable() const {
+    return IsContentOrIntrinsic() || GetType() == kFillAvailable;
+  }
+
   bool IsSpecified() const {
     return GetType() == kFixed || GetType() == kPercent ||
            GetType() == kCalculated;
   }
-  bool IsSpecifiedOrIntrinsic() const { return IsSpecified() || IsIntrinsic(); }
+
   bool IsCalculated() const { return GetType() == kCalculated; }
   bool IsCalculatedEqual(const Length&) const;
   bool IsMinContent() const { return GetType() == kMinContent; }
   bool IsMaxContent() const { return GetType() == kMaxContent; }
+  bool IsMinIntrinsic() const { return GetType() == kMinIntrinsic; }
   bool IsFillAvailable() const { return GetType() == kFillAvailable; }
   bool IsFitContent() const { return GetType() == kFitContent; }
   bool IsPercent() const { return GetType() == kPercent; }

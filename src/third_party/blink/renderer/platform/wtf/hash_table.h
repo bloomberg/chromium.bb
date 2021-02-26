@@ -219,11 +219,6 @@ template <typename Key,
           typename KeyTraits,
           typename Allocator>
 class HashTableConstIterator;
-template <typename Value,
-          typename HashFunctions,
-          typename HashTraits,
-          typename Allocator>
-class LinkedHashSet;
 template <WeakHandlingFlag x,
           typename T,
           typename U,
@@ -668,14 +663,12 @@ struct HashTableHelper {
   static bool IsDeletedBucket(const Key& key) {
     return KeyTraits::IsDeletedValue(key);
   }
-  static bool IsEmptyOrDeletedBucket(const Value& value) {
-    const Key& key = Extractor::Extract(value);
+  static bool IsEmptyOrDeletedBucketForKey(const Key& key) {
     return IsEmptyBucket(key) || IsDeletedBucket(key);
   }
-  static bool IsEmptyOrDeletedBucketSafe(const Value& value) {
-    alignas(std::max(alignof(Key), sizeof(size_t))) char buf[sizeof(Key)];
-    const Key& key = Extractor::ExtractSafe(value, &buf);
-    return IsEmptyBucket(key) || IsDeletedBucket(key);
+  static bool IsEmptyOrDeletedBucket(const Value& value) {
+    const Key& key = Extractor::Extract(value);
+    return IsEmptyOrDeletedBucketForKey(key);
   }
 };
 
@@ -882,6 +875,12 @@ class HashTable final
   ALWAYS_INLINE void CheckModifications(int64_t mods) const {}
 #endif
 
+ protected:
+  template <typename VisitorDispatcher, typename A = Allocator>
+  std::enable_if_t<A::kIsGarbageCollected> TraceTable(
+      VisitorDispatcher,
+      const ValueType* table) const;
+
  private:
   static ValueType* AllocateTable(unsigned size);
   static void DeleteAllBucketsAndDeallocate(ValueType* table, unsigned size);
@@ -1014,8 +1013,8 @@ class HashTable final
             typename Y,
             typename Z>
   friend struct WeakProcessingHashTableHelper;
-  template <typename T, typename U, typename V, typename W>
-  friend class LinkedHashSet;
+  template <typename T, size_t, typename U, typename V>
+  friend class ListHashSet;
 };
 
 template <typename Key,
@@ -1787,7 +1786,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     }
   }
   table_ = temporary_table;
-  Allocator::template BackingWriteBarrierForHashTable<HashTable>(&table_);
+  Allocator::template BackingWriteBarrier(&table_);
 
   if (Traits::kEmptyValueIsZero) {
     memset(original_table, 0, new_table_size * sizeof(ValueType));
@@ -1845,7 +1844,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   // This swaps the newly allocated buffer with the current one. The store to
   // the current table has to be atomic to prevent races with concurrent marker.
   AsAtomicPtr(&table_)->store(new_hash_table.table_, std::memory_order_relaxed);
-  Allocator::template BackingWriteBarrierForHashTable<HashTable>(&table_);
+  Allocator::template BackingWriteBarrier(&table_);
   table_size_ = new_table_size;
 
   new_hash_table.table_ = old_table;
@@ -2013,8 +2012,8 @@ void HashTable<Key,
   // on the mutator thread, which is also the only one that writes to them, so
   // there is *no* risk of data races when reading.
   AtomicWriteSwap(table_, other.table_);
-  Allocator::template BackingWriteBarrierForHashTable<HashTable>(&table_);
-  Allocator::template BackingWriteBarrierForHashTable<HashTable>(&other.table_);
+  Allocator::template BackingWriteBarrier(&table_);
+  Allocator::template BackingWriteBarrier(&other.table_);
   if (IsWeak<ValueType>::value) {
     // Weak processing is omitted when no backing store is present. In case such
     // an empty table is later on used it needs to be strongified.
@@ -2149,23 +2148,23 @@ template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     Trace(VisitorDispatcher visitor) const {
-  // bail out for concurrent marking
-  if (!Traits::kCanTraceConcurrently) {
-    if (visitor->DeferredTraceIfConcurrent(
-            {this, [](blink::Visitor* visitor, const void* object) {
-               reinterpret_cast<
-                   const HashTable<Key, Value, Extractor, HashFunctions, Traits,
-                                   KeyTraits, Allocator>*>(object)
-                   ->Trace(visitor);
-             }}))
-      return;
-  }
-
   static_assert(WTF::IsWeak<ValueType>::value ||
                     IsTraceableInCollectionTrait<Traits>::value,
                 "Value should not be traced");
-  const ValueType* table =
-      AsAtomicPtr(&table_)->load(std::memory_order_relaxed);
+  TraceTable(visitor, AsAtomicPtr(&table_)->load(std::memory_order_relaxed));
+}
+
+template <typename Key,
+          typename Value,
+          typename Extractor,
+          typename HashFunctions,
+          typename Traits,
+          typename KeyTraits,
+          typename Allocator>
+template <typename VisitorDispatcher, typename A>
+std::enable_if_t<A::kIsGarbageCollected>
+HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
+    TraceTable(VisitorDispatcher visitor, const ValueType* table) const {
   if (!WTF::IsWeak<ValueType>::value) {
     // Strong HashTable.
     Allocator::template TraceHashTableBackingStrongly<ValueType, HashTable>(

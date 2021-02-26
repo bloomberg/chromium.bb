@@ -5,28 +5,37 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CAPTIONS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CAPTIONS_HANDLER_H_
 
-#include "base/macros.h"
-#include "build/build_config.h"
+#include "chrome/browser/accessibility/soda_installer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+
+class PrefService;
 
 namespace settings {
 
-// UI handler for Chrome caption settings subpage on operating systems other
-// than Chrome OS and Linux.
-class CaptionsHandler : public SettingsPageUIHandler {
+// Settings handler for the captions settings subpage.
+class CaptionsHandler : public SettingsPageUIHandler,
+                        public speech::SODAInstaller::Observer {
  public:
-  CaptionsHandler();
+  explicit CaptionsHandler(PrefService* prefs);
   ~CaptionsHandler() override;
+  CaptionsHandler(const CaptionsHandler&) = delete;
+  CaptionsHandler& operator=(const CaptionsHandler&) = delete;
 
-  // SettingsPageUIHandler overrides:
+  // SettingsPageUIHandler overrides.
   void RegisterMessages() override;
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
  private:
+  void HandleCaptionsSubpageReady(const base::ListValue* args);
   void HandleOpenSystemCaptionsDialog(const base::ListValue* args);
 
-  DISALLOW_COPY_AND_ASSIGN(CaptionsHandler);
+  // SODAInstaller::Observer overrides:
+  void OnSODAInstalled() override;
+  void OnSODAError() override;
+  void OnSODAProgress(int progress) override;
+
+  PrefService* prefs_;
 };
 
 }  // namespace settings

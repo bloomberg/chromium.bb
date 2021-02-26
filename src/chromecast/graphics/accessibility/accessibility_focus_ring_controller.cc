@@ -435,10 +435,8 @@ void AccessibilityFocusRingController::AnimateFocusRings(
       return;
     }
 
-    double fraction = delta.InSecondsF() / transition_time.InSecondsF();
-
     // Ease-in effect.
-    fraction = pow(fraction, 0.3);
+    const double fraction = pow(delta / transition_time, 0.3);
 
     // Handle corner case where we're animating but we don't have previous
     // rings.
@@ -474,17 +472,13 @@ void AccessibilityFocusRingController::ComputeOpacity(
   }
 
   float opacity;
-  if (start_delta < fade_in_time) {
-    opacity = start_delta.InSecondsF() / fade_in_time.InSecondsF();
-  } else {
-    opacity = 1.0 - (change_delta.InSecondsF() /
-                     (fade_in_time + fade_out_time).InSecondsF());
-  }
+  if (start_delta < fade_in_time)
+    opacity = start_delta / fade_in_time;
+  else
+    opacity = 1.0 - (change_delta / (fade_in_time + fade_out_time));
 
   // Layer::SetOpacity will throw an error if we're not within 0...1.
-  opacity = base::ClampToRange(opacity, 0.0f, 1.0f);
-
-  animation_info->opacity = opacity;
+  animation_info->opacity = base::ClampToRange(opacity, 0.0f, 1.0f);
 }
 
 void AccessibilityFocusRingController::AnimateCaretRing(

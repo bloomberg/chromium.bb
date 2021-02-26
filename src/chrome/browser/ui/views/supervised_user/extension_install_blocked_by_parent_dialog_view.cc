@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/i18n/message_formatter.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -15,6 +14,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,10 +39,15 @@ void ShowExtensionInstallBlockedByParentDialog(
     base::OnceClosure done_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto dialog = std::make_unique<ExtensionInstallBlockedByParentDialogView>(
-      action, extension, web_contents->GetTopLevelNativeWindow(),
-      std::move(done_callback));
-  constrained_window::ShowWebModalDialogViews(dialog.release(), web_contents)
-      ->Show();
+      action, extension, std::move(done_callback));
+  gfx::NativeWindow parent_window =
+      web_contents ? web_contents->GetTopLevelNativeWindow() : nullptr;
+  views::Widget* widget =
+      parent_window ? constrained_window::CreateBrowserModalDialogViews(
+                          dialog.release(), parent_window)
+                    : views::DialogDelegate::CreateDialogWidget(
+                          dialog.release(), nullptr, nullptr);
+  widget->Show();
 }
 
 }  // namespace chrome
@@ -51,7 +56,6 @@ ExtensionInstallBlockedByParentDialogView::
     ExtensionInstallBlockedByParentDialogView(
         chrome::ExtensionInstalledBlockedByParentDialogAction action,
         const extensions::Extension* extension,
-        gfx::NativeWindow window,
         base::OnceClosure done_callback)
     : extension_(extension),
       action_(action),
@@ -61,7 +65,11 @@ ExtensionInstallBlockedByParentDialogView::
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, l10n_util::GetStringUTF16(IDS_OK));
   set_draggable(true);
 
-  SetIcon(gfx::CreateVectorIcon(ash::kNotificationSupervisedUserIcon,
+  SetModalType(ui::MODAL_TYPE_WINDOW);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
+
+  SetIcon(gfx::CreateVectorIcon(chromeos::kNotificationSupervisedUserIcon,
                                 SK_ColorDKGRAY));
   SetShowIcon(true);
   ConfigureTitle();
@@ -72,18 +80,6 @@ ExtensionInstallBlockedByParentDialogView::
     ~ExtensionInstallBlockedByParentDialogView() {
   if (done_callback_)
     std::move(done_callback_).Run();
-}
-
-gfx::Size ExtensionInstallBlockedByParentDialogView::CalculatePreferredSize()
-    const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
-}
-
-ui::ModalType ExtensionInstallBlockedByParentDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
 }
 
 void ExtensionInstallBlockedByParentDialogView::ConfigureTitle() {
@@ -124,7 +120,7 @@ void ExtensionInstallBlockedByParentDialogView::CreateContents() {
       break;
   }
 
-  icon_ = gfx::CreateVectorIcon(ash::kNotificationSupervisedUserIcon,
+  icon_ = gfx::CreateVectorIcon(chromeos::kNotificationSupervisedUserIcon,
                                 SK_ColorDKGRAY);
 
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
@@ -134,8 +130,8 @@ void ExtensionInstallBlockedByParentDialogView::CreateContents() {
   set_margins(gfx::Insets(content_insets.top(), content_insets.left(),
                           content_insets.bottom(), content_insets.right()));
 
-  auto* message_body_label = AddChildView(
-      std::make_unique<views::Label>(body_string, CONTEXT_BODY_TEXT_LARGE));
+  auto* message_body_label = AddChildView(std::make_unique<views::Label>(
+      body_string, views::style::CONTEXT_DIALOG_BODY_TEXT));
   message_body_label->SetMultiLine(true);
   message_body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 }

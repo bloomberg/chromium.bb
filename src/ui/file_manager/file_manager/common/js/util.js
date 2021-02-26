@@ -6,7 +6,21 @@
  * @fileoverview This file should contain utility functions used only by the
  * files app. Other shared utility functions can be found in base/*_util.js,
  * which allows finer-grained control over introducing dependencies.
+ * @suppress {uselessCode} Temporary suppress because of the line exporting.
  */
+
+// clang-format off
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import * as wrappedVolumeManagerCommon from '../../../base/js/volume_manager_types.m.js'; const {VolumeManagerCommon} = wrappedVolumeManagerCommon;
+// #import {decorate} from 'chrome://resources/js/cr/ui.m.js';
+// #import {FilesAppEntry, FakeEntry} from '../../../externs/files_app_entry_interfaces.m.js';
+// #import {EntryList} from './files_app_entry_types.m.js';
+// #import {VolumeInfo} from '../../../externs/volume_info.m.js';
+// #import {EntryLocation} from '../../../externs/entry_location.m.js';
+// #import {VolumeManager} from '../../../externs/volume_manager.m.js';
+// clang-format on
 
 /**
  * Namespace for utility functions.
@@ -375,7 +389,7 @@ util.queryDecoratedElement = (query, type) => {
  * @param {string} id The id of the string to return.
  * @return {string} The translated string.
  */
-function str(id) {
+/* #export */ function str(id) {
   return loadTimeData.getString(id);
 }
 
@@ -389,7 +403,7 @@ function str(id) {
  * @param {...*} var_args The values to replace into the string.
  * @return {string} The translated string with replaced values.
  */
-function strf(id, var_args) {
+/* #export */ function strf(id, var_args) {
   return loadTimeData.getStringF.apply(loadTimeData, arguments);
 }
 
@@ -1187,14 +1201,17 @@ util.getEntryLabel = (locationInfo, entry) => {
     }
   }
 
-  // Special case for MyFiles/Downloads and MyFiles/PvmDefault.
+  // Special case for MyFiles/Downloads, MyFiles/PvmDefault and MyFiles/Camera.
   if (locationInfo &&
       locationInfo.rootType == VolumeManagerCommon.RootType.DOWNLOADS) {
     if (entry.fullPath == '/Downloads') {
       return str('DOWNLOADS_DIRECTORY_LABEL');
     }
-    if (util.isPluginVmEnabled() && entry.fullPath == '/PvmDefault') {
+    if (entry.fullPath == '/PvmDefault') {
       return str('PLUGIN_VM_DIRECTORY_LABEL');
+    }
+    if (util.isFilesCameraFolderEnabled() && entry.fullPath == '/Camera') {
+      return str('CAMERA_DIRECTORY_LABEL');
     }
   }
 
@@ -1203,8 +1220,8 @@ util.getEntryLabel = (locationInfo, entry) => {
 
 /**
  * Returns true if specified entry is a special entry such as MyFiles/Downloads,
- * MyFiles/PvmDefault or Linux files root which cannot be modified such as
- * deleted/cut or renamed.
+ * MyFiles/PvmDefault, MyFiles/Camera or Linux files root which cannot be
+ * modified such as deleted/cut or renamed.
  *
  * @param {!VolumeManager} volumeManager
  * @param {(Entry|FakeEntry)} entry Entry or a fake entry.
@@ -1233,6 +1250,9 @@ util.isNonModifiable = (volumeManager, entry) => {
       return true;
     }
     if (util.isPluginVmEnabled() && entry.fullPath === '/PvmDefault') {
+      return true;
+    }
+    if (util.isFilesCameraFolderEnabled() && entry.fullPath === '/Camera') {
       return true;
     }
   }
@@ -1393,6 +1413,14 @@ util.timeoutPromise = (promise, ms, opt_message) => {
 };
 
 /**
+ * Returns true when FilesCameraFolder is enabled.
+ * @return {boolean}
+ */
+util.isFilesCameraFolderEnabled = () => {
+  return loadTimeData.getBoolean('FILES_CAMERA_FOLDER_ENABLED');
+};
+
+/**
  * Returns true when FilesNG is enabled.
  * @return {boolean}
  */
@@ -1401,11 +1429,70 @@ util.isFilesNg = () => {
 };
 
 /**
+ * Returns true when copy image to clipboard is enabled.
+ * @return {boolean}
+ */
+util.isCopyImageEnabled = () => {
+  return loadTimeData.getBoolean('COPY_IMAGE_ENABLED');
+};
+
+/**
  * Returns true if the unified media view is enabled.
  * @return {boolean}
  */
 util.isUnifiedMediaViewEnabled = () => {
   return loadTimeData.getBoolean('UNIFIED_MEDIA_VIEW_ENABLED');
+};
+
+/**
+ * Returns true if filters in Recents view is enabled.
+ * @return {boolean}
+ */
+util.isRecentsFilterEnabled = () => {
+  return loadTimeData.getBoolean('FILTERS_IN_RECENTS_ENABLED');
+};
+
+/**
+ * Returns true when FilesZipMount feature is enabled.
+ * TODO(crbug.com/912236) Remove once transition to new ZIP system is finished.
+ * @return {boolean}
+ */
+util.isZipMountEnabled = () => {
+  return loadTimeData.getBoolean('ZIP_MOUNT');
+};
+
+/**
+ * Returns true when FilesZipPack feature is enabled.
+ * TODO(crbug.com/912236) Remove once transition to new ZIP system is finished.
+ * @return {boolean}
+ */
+util.isZipPackEnabled = () => {
+  return loadTimeData.getBoolean('ZIP_PACK');
+};
+
+/**
+ * Returns true when FilesZipUnpack feature is enabled.
+ * TODO(crbug.com/912236) Remove once transition to new ZIP system is finished.
+ * @return {boolean}
+ */
+util.isZipUnpackEnabled = () => {
+  return loadTimeData.getBoolean('ZIP_UNPACK');
+};
+
+/**
+ * Returns true if transfer details flag is enabled.
+ * @return {boolean}
+ */
+util.isTransferDetailsEnabled = () => {
+  return loadTimeData.getBoolean('FILES_TRANSFER_DETAILS_ENABLED');
+};
+
+/**
+ * Returns true if FilesSinglePartitionFormat flag is enabled.
+ * @return {boolean}
+ */
+util.isSinglePartitionFormatEnabled = () => {
+  return loadTimeData.getBoolean('FILES_SINGLE_PARTITION_FORMAT_ENABLED');
 };
 
 /**
@@ -1641,3 +1728,52 @@ util.isSameVolume = (entries, volumeManager) => {
 
   return true;
 };
+
+/**
+ * Sets line clamp properties on elements to limit element's text to specified
+ * number of lines and add ellipsis.
+ *
+ * @param {!Element} element Element to clamp.
+ * @param {string} lines Maximum number of lines in element.
+ * @return {!Element}
+ */
+util.setClampLine = (element, lines) => {
+  element.style.overflow = 'hidden';
+  element.style.textOverflow = 'ellipsis';
+  element.style.webkitBoxOrient = 'vertical';
+  element.style.display = '-webkit-box';
+  element.style.webkitLineClamp = lines;
+
+  return element;
+};
+
+/**
+ * Returns true if the element's content has overflowed.
+ *
+ * @param {!Element} element The element to check.
+ * @returns {boolean}
+ */
+util.hasOverflow = (element) => {
+  return element.clientWidth < element.scrollWidth ||
+      element.clientHeight < element.scrollHeight;
+};
+
+/** @return {boolean} */
+util.isSharesheetEnabled = () => {
+  return loadTimeData.valueExists('SHARESHEET_ENABLED') &&
+      loadTimeData.getBoolean('SHARESHEET_ENABLED');
+};
+
+/** @return {boolean} */
+util.isHoldingSpaceEnabled = () => {
+  return loadTimeData.valueExists('HOLDING_SPACE_ENABLED') &&
+      loadTimeData.getBoolean('HOLDING_SPACE_ENABLED');
+};
+
+util.isDriveDssPinEnabled = () => {
+  return loadTimeData.valueExists('DRIVE_DSS_PIN_ENABLED') &&
+      loadTimeData.getBoolean('DRIVE_DSS_PIN_ENABLED');
+};
+
+// eslint-disable-next-line semi,no-extra-semi
+/* #export */ {util};

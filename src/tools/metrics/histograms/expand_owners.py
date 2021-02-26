@@ -5,7 +5,10 @@
 """Functions for extracting emails and components from OWNERS files."""
 
 import extract_histograms
+import json
 import os
+import subprocess
+import sys
 import re
 
 _EMAIL_PATTERN = r'^[\w\-\+\%\.]+\@[\w\-\+\%\.]+$'
@@ -34,31 +37,52 @@ def _AddTextNodeWithNewLineAndIndent(histogram, node_to_insert_before):
       node_to_insert_before)
 
 
-def _IsEmailOrPlaceholder(is_first_owner, owner_tag_text, histogram_name):
-  """Returns true if |owner_tag_text| is an email or the placeholder text.
+def _IsValidPrimaryOwnerEmail(owner_tag_text):
+  """Returns true if |owner_tag_text| is a valid primary owner.
 
-  Also, verifies that a histogram's first owner tag contains either an email
-  address, e.g. 'ali@chromium.org' or the placeholder text.
+  A valid primary owner is an individual (not a team) with a Chromium or Google
+  email address.
+
+  Args:
+    owner_tag_text: The text in an owner tag
+  """
+  if '-' in owner_tag_text:  # Check whether it's a team email address.
+    return False
+
+  return (owner_tag_text.endswith('@chromium.org')
+          or owner_tag_text.endswith('@google.com'))
+
+
+def _IsEmailOrPlaceholder(is_first_owner, owner_tag_text, histogram_name,
+                          is_obsolete):
+  """Returns true if owner_tag_text is an email or the placeholder text.
+
+  Also, for histograms that are not obsolete, verifies that a histogram's first
+  owner tag contains a valid primary owner.
 
   Args:
     is_first_owner: True if a histogram's first owner tag is being checked.
     owner_tag_text: The text of the owner tag being checked, e.g.
       'julie@google.com' or 'src/ios/net/cookies/OWNERS'.
     histogram_name: The string name of the histogram.
+    is_obsolete: True if the histogram is obsolete.
 
   Raises:
-    Error: Raised if (A) the text is from the first owner tag and (B) the text
-      is not a primary owner.
+    Error: Raised if (A) the text is from the first owner tag, (B) the histogram
+    is not obsolete, and (C) the text is not a valid primary owner.
   """
-  is_email_or_placeholder = (re.match(_EMAIL_PATTERN, owner_tag_text) or
-      owner_tag_text == extract_histograms.OWNER_PLACEHOLDER)
+  is_email = re.match(_EMAIL_PATTERN, owner_tag_text)
+  is_placeholder = owner_tag_text == extract_histograms.OWNER_PLACEHOLDER
+  should_check_owner_email = (is_first_owner and not is_obsolete
+                              and not is_placeholder)
 
-  if is_first_owner and not is_email_or_placeholder:
-    raise Error('The histogram {} must have a valid first owner, i.e. an '
-                'individual\'s email address.'
-                .format(histogram_name))
+  if should_check_owner_email and not _IsValidPrimaryOwnerEmail(owner_tag_text):
+    raise Error(
+        'The histogram {} must have a valid primary owner, i.e. a '
+        'Googler with an @google.com or @chromium.org email address.'.format(
+            histogram_name))
 
-  return is_email_or_placeholder
+  return is_email or is_placeholder
 
 
 def _IsWellFormattedFilePath(path):
@@ -118,10 +142,10 @@ def _GetOwnersFilePath(path):
 
     return os.path.abspath(
         os.path.join(*(_DIR_ABOVE_TOOLS + path_without_src.split(os.sep))))
-  else:
-    raise Error('The given path {} is not well-formatted.'
-                'Well-formatted paths begin with "src/" and end with "OWNERS"'
-                .format(path))
+
+  raise Error(
+      'The given path {} is not well-formatted. Well-formatted paths begin '
+      'with "src/" and end with "OWNERS"'.format(path))
 
 
 def _ExtractEmailAddressesFromOWNERS(path, depth=0):
@@ -172,6 +196,71 @@ def _ExtractEmailAddressesFromOWNERS(path, depth=0):
   return extracted_emails
 
 
+def _ComponentFromDirmd(json_data, subpath):
+  """Returns the component for a subpath based on dirmd output.
+
+  Returns an empty string if no component can be extracted
+
+  Args:
+    json_data: json object output from dirmd.
+    subpath: The subpath for the directory being queried, e.g. src/storage'.
+  """
+  # If no component exists for the directory, or if METADATA migration is
+  # incomplete there will be no component information.
+  return json_data.get('dirs', {}).get(subpath,
+                                       {}).get('monorail',
+                                               {}).get('component', '')
+
+
+# Memoize decorator from: https://stackoverflow.com/a/1988826
+# TODO(asvitkine): Replace with @functools.cache once we're on Python 3.9+.
+class Memoize:
+  def __init__(self, f):
+    self.f = f
+    self.memo = {}
+
+  def __call__(self, *args):
+    if not args in self.memo:
+      self.memo[args] = self.f(*args)
+    return self.memo[args]
+
+
+@Memoize
+def _ExtractComponentViaDirmd(path):
+  """Returns the component for monorail issues at the given path.
+
+  Examples are 'Blink>Storage>FileAPI' and 'UI'.
+
+  Uses dirmd in third_party/depot_tools to parse metadata and walk parent
+  directories up to the top level of the repo.
+
+  Returns an empty string if no component can be extracted.
+
+  Args:
+    path: The path to a directory to query, e.g. 'src/storage'.
+  """
+  # Verify that the paths are absolute and the root is a parent of the
+  # passed in path.
+  root_path = os.path.abspath(os.path.join(*_DIR_ABOVE_TOOLS))
+  path = os.path.abspath(path)
+  if not path.startswith(root_path):
+    raise Error('Path {} is not a subpath of the root path {}.'.format(
+        path, root_path))
+  subpath = path[len(root_path) + 1:] or '.'  # E.g. content/public.
+  dirmd_exe = 'dirmd'
+  if sys.platform == 'win32':
+    dirmd_exe = 'dirmd.bat'
+  dirmd_path = os.path.join(*(_DIR_ABOVE_TOOLS +
+                              ['third_party', 'depot_tools', dirmd_exe]))
+  dirmd = subprocess.Popen([dirmd_path, 'compute', '--root', root_path, path],
+                           stdout=subprocess.PIPE)
+  if dirmd.wait() != 0:
+    raise Error('dirmd failed.')
+  json_out = json.load(dirmd.stdout)
+  return _ComponentFromDirmd(json_out, subpath)
+
+
+# TODO(crbug/1102997): remove once metadata migration is complete
 def _ExtractComponentFromOWNERS(path):
   """Returns the string component associated with the file at the given path.
 
@@ -322,9 +411,11 @@ def ExpandHistogramsOWNERS(histograms):
       for component in iter_matches(histogram, 'component', 1)])
 
     for index, owner in enumerate(owners):
-      owner_text = owner.childNodes[0].data
+      owner_text = owner.childNodes[0].data.strip()
       name = histogram.getAttribute('name')
-      if _IsEmailOrPlaceholder(index == 0, owner_text, name):
+      obsolete_tags = [tag for tag in iter_matches(histogram, 'obsolete', 1)]
+      is_obsolete = len(obsolete_tags) > 0
+      if _IsEmailOrPlaceholder(index == 0, owner_text, name, is_obsolete):
         continue
 
       path = _GetOwnersFilePath(owner_text)
@@ -338,7 +429,9 @@ def ExpandHistogramsOWNERS(histograms):
 
       _UpdateHistogramOwners(histogram, owner, owners_to_add)
 
-      component = _ExtractComponentFromOWNERS(path)
+      component = _ExtractComponentViaDirmd(os.path.dirname(path))
+      if not component:
+        component = _ExtractComponentFromOWNERS(path)
       if component and component not in components_with_dom_elements:
         components_with_dom_elements.add(component)
         _AddHistogramComponent(histogram, component)

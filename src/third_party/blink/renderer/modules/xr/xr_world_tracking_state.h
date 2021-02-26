@@ -12,20 +12,18 @@
 namespace blink {
 
 class XRPlaneDetectionState;
-class XRWorldTrackingStateInit;
 
 class XRWorldTrackingState : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRWorldTrackingState(
-      XRWorldTrackingStateInit* world_tracking_state_init = nullptr);
+  explicit XRWorldTrackingState(bool plane_detection_enabled);
 
   XRPlaneDetectionState* planeDetectionState() const {
     return plane_detection_state_;
   }
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
  private:
   Member<XRPlaneDetectionState> plane_detection_state_;

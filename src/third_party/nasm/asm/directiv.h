@@ -28,6 +28,7 @@ enum directive {
     D_WARNING,
     D_SECTALIGN,
     D_PRAGMA,
+    D_REQUIRED,
     D_EXPORT,
     D_GROUP,
     D_IMPORT,
@@ -45,6 +46,7 @@ enum directive {
     D_LPREFIX,
     D_LSUFFIX,
     D_LIMIT,
+    D_OPTIONS,
     D_SUBSECTIONS_VIA_SYMBOLS,
     D_NO_DEAD_STRIP,
     D_MAXDUMP,
@@ -53,7 +55,7 @@ enum directive {
 };
 
 extern const struct perfect_hash directive_hash;
-extern const char * const directive_tbl[38];
+extern const char * const directive_tbl[40];
 
 static inline enum directive directive_find(const char *str)
 {
@@ -63,7 +65,7 @@ static inline enum directive directive_find(const char *str)
 static inline const char * directive_name(enum directive x)
 {
     size_t ix = (size_t)x - (3);
-    if (ix >= 38)
+    if (ix >= 40)
         return NULL;
     return directive_tbl[ix];
 }

@@ -14,21 +14,16 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chromeos/dbus/attestation/interface.pb.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 class AccountId;
 
-namespace cryptohome {
-
-class AsyncMethodCaller;
-
-}  // namespace cryptohome
-
 namespace chromeos {
 
-class CryptohomeClient;
+class AttestationClient;
 
 namespace attestation {
 
@@ -49,9 +44,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) ServerProxy {
 // consists of coordinating messages between the Chrome OS attestation service
 // and the Chrome OS Privacy CA server.  Sample usage:
 //
-//    AttestationFlow flow(AsyncMethodCaller::GetInstance(),
-//                         CryptohomeClient::Get(),
-//                         std::move(my_server_proxy));
+//    AttestationFlow flow(std::move(my_server_proxy));
 //    AttestationFlow::CertificateCallback callback = base::Bind(&MyCallback);
 //    flow.GetCertificate(ENTERPRISE_USER_CERTIFICATE, false, callback);
 //
@@ -69,22 +62,10 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   static AttestationKeyType GetKeyTypeForProfile(
       AttestationCertificateProfile certificate_profile);
 
-  // Returns the name of the key for a given certificate profile. The
-  // |request_origin| parameter is for PROFILE_CONTENT_PROTECTION_CERTIFICATE
-  // profiles and is ignored for other profiles.
-  //
-  // Parameters
-  //   certificate_profile - Specifies what kind of certificate the key is for.
-  //   request_origin - For content protection profiles, certificate requests
-  //                    are origin-specific.  This string must uniquely identify
-  //                    the origin of the request.
-  static std::string GetKeyNameForProfile(
-      AttestationCertificateProfile certificate_profile,
-      const std::string& request_origin);
+  explicit AttestationFlow(std::unique_ptr<ServerProxy> server_proxy);
+  AttestationFlow(std::unique_ptr<ServerProxy> server_proxy,
+                  ::attestation::KeyType crypto_key_type);
 
-  AttestationFlow(cryptohome::AsyncMethodCaller* async_caller,
-                  CryptohomeClient* cryptohome_client,
-                  std::unique_ptr<ServerProxy> server_proxy);
   virtual ~AttestationFlow();
 
   // Sets the timeout for attestation to be ready.
@@ -120,7 +101,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //                   already exists for the profile.  The new key will replace
   //                   the existing key on success.
   //   key_name - The name of the key. If left empty, a default name derived
-  //              from the |certiifcate_profile| and |account_id| will be used.
+  //              from the |certificate_profile| and |account_id| will be used.
   //   callback - A callback which will be called when the operation completes.
   //              On success |result| will be true and |data| will contain the
   //              PCA-issued certificate chain in PEM format.
@@ -132,14 +113,14 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
                               CertificateCallback callback);
 
  private:
-  // Handles the result of a call to TpmAttestationIsEnrolled. Reports success
-  // if enrollment is complete and otherwise starts the process.
+  // Handles the result of a call to `GetStatus()` for enrollment status.
+  // Reports success if enrollment is complete and otherwise starts the process.
   //
   // Parameters
   //   callback - Called with the success or failure of the enrollment.
-  //   result - Result of TpmAttestationIsEnrolled().
+  //   result - Result of `GetStatus()`, which contains `enrolled` field.
   void OnEnrollmentCheckComplete(base::OnceCallback<void(bool)> callback,
-                                 base::Optional<bool> result);
+                                 const ::attestation::GetStatusReply& reply);
 
   // Asynchronously waits for attestation to be ready and start enrollment once
   // it is. If attestation is not ready by the time the flow's timeout is
@@ -151,16 +132,17 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   void WaitForAttestationPrepared(base::TimeTicks end_time,
                                   base::OnceCallback<void(bool)> callback);
 
-  // Handles the result of a call to TpmAttestationIsPrepared. Starts enrollment
-  // on success and retries after |retry_delay_| if not.
+  // Handles the result of a call to GetEnrollmentPreparations. Starts
+  // enrollment on success and retries after |retry_delay_| if not.
   //
   // Parameters
   //   end_time - Time after which preparation should time out.
   //   callback - Called with the success or failure of the enrollment.
-  //   result - Result of TpmAttestationIsPrepared().
-  void OnPreparedCheckComplete(base::TimeTicks end_time,
-                               base::OnceCallback<void(bool)> callback,
-                               base::Optional<bool> result);
+  //   reply - Reply from the attestation service.
+  void OnPreparedCheckComplete(
+      base::TimeTicks end_time,
+      base::OnceCallback<void(bool)> callback,
+      const ::attestation::GetEnrollmentPreparationsReply& reply);
 
   // Called when the attestation daemon has finished creating an enrollment
   // request for the Privacy CA.  The request is asynchronously forwarded as-is
@@ -168,11 +150,10 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //
   // Parameters
   //   callback - Called with the success or failure of the enrollment.
-  //   success - The status of request creation.
-  //   data - The request data for the Privacy CA.
-  void SendEnrollRequestToPCA(base::OnceCallback<void(bool)> callback,
-                              bool success,
-                              const std::string& data);
+  //   reply - The reply of `CreateEnrollRequest()`.
+  void SendEnrollRequestToPCA(
+      base::OnceCallback<void(bool)> callback,
+      const ::attestation::CreateEnrollRequestReply& reply);
 
   // Called when the Privacy CA responds to an enrollment request.  The response
   // is asynchronously forwarded as-is to the attestation daemon in order to
@@ -191,11 +172,9 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //
   // Parameters
   //   callback - Called with the success or failure of the enrollment.
-  //   success - The status of the enrollment operation.
-  //   not_used - An artifact of the cryptohome D-Bus interface; ignored.
+  //   reply - The reply of `FinishEnroll()`.
   void OnEnrollComplete(base::OnceCallback<void(bool)> callback,
-                        bool success,
-                        cryptohome::MountError not_used);
+                        const ::attestation::FinishEnrollReply& reply);
 
   // Asynchronously initiates the certificate request flow.  Attestation
   // enrollment must complete successfully before this operation can succeed.
@@ -207,7 +186,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //   request_origin - An identifier for the origin of this request.
   //   generate_new_key - If set to true a new key is generated.
   //   key_name - The name of the key. If left empty, a default name derived
-  //              from the |certiifcate_profile| and |account_id| will be used.
+  //              from the |certificate_profile| and |account_id| will be used.
   //   callback - Called when the operation completes.
   //   enrolled - Success or failure of the enrollment phase.
   void StartCertificateRequest(
@@ -219,9 +198,8 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
       CertificateCallback callback,
       bool enrolled);
 
-  // Called with the result of TpmAttestationDoesKeyExist(). Will query the
-  // existing certificate if it exists and otherwise start a new certificate
-  // request.
+  // Called with the reply to `GetKeyInfo()`. Will query the existing
+  // certificate if it exists and otherwise start a new certificate request.
   //
   // Parameters
   //   certificate_profile - Specifies what kind of certificate should be
@@ -230,17 +208,16 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //   request_origin - An identifier for the origin of this request.
   //   generate_new_key - If set to true a new key is generated.
   //   key_name - The name of the key. If left empty, a default name derived
-  //              from the |certiifcate_profile| and |account_id| will be used.
+  //              from the |certificate_profile| and |account_id| will be used.
   //   callback - Called when the operation completes.
-  //   result - Result of TpmAttestationDoesKeyExist().
-  void OnKeyExistCheckComplete(
-      AttestationCertificateProfile certificate_profile,
-      const AccountId& account_id,
-      const std::string& request_origin,
-      const std::string& key_name,
-      AttestationKeyType key_type,
-      CertificateCallback callback,
-      base::Optional<bool> result);
+  //   reply - The reply of `GetKeyInfo()`.
+  void OnGetKeyInfoComplete(AttestationCertificateProfile certificate_profile,
+                            const AccountId& account_id,
+                            const std::string& request_origin,
+                            const std::string& key_name,
+                            AttestationKeyType key_type,
+                            CertificateCallback callback,
+                            const ::attestation::GetKeyInfoReply& reply);
 
   // Called when the attestation daemon has finished creating a certificate
   // request for the Privacy CA.  The request is asynchronously forwarded as-is
@@ -251,14 +228,13 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //   account_id - Identifies the active user.
   //   key_name - The name of the key for which a certificate is requested.
   //   callback - Called when the operation completes.
-  //   success - The status of request creation.
-  //   data - The request data for the Privacy CA.
-  void SendCertificateRequestToPCA(AttestationKeyType key_type,
-                                   const AccountId& account_id,
-                                   const std::string& key_name,
-                                   CertificateCallback callback,
-                                   bool success,
-                                   const std::string& data);
+  //   reply - the result returned by |AttestationClient|.
+  void SendCertificateRequestToPCA(
+      AttestationKeyType key_type,
+      const AccountId& account_id,
+      const std::string& key_name,
+      CertificateCallback callback,
+      const ::attestation::CreateCertificateRequestReply& reply);
 
   // Called when the Privacy CA responds to a certificate request.  The response
   // is asynchronously forwarded as-is to the attestation daemon in order to
@@ -278,31 +254,21 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
                                        bool success,
                                        const std::string& data);
 
-  // Called after cryptohome finishes processing of a certificate request.
+  // Called after attestation service finishes processing of a certificate
+  // request.
   //
   // Parameters
   //   callback - Called when the operation completes.
-  //   success - The status of request finishing.
-  //   data - The certificate data in PEM format.
-  void OnCertRequestFinished(CertificateCallback callback,
-                             bool success,
-                             const std::string& data);
+  //   reply - The reply of `FinishCertificateRequest()`.
+  void OnCertRequestFinished(
+      CertificateCallback callback,
+      const ::attestation::FinishCertificateRequestReply& reply);
 
-  // Gets an existing certificate from the attestation daemon.
-  //
-  // Parameters
-  //   key_type - The type of the key for which a certificate is requested.
-  //   account_id - Identifies the active user.
-  //   key_name - The name of the key for which a certificate is requested.
-  //   callback - Called when the operation completes.
-  void GetExistingCertificate(AttestationKeyType key_type,
-                              const AccountId& account_id,
-                              const std::string& key_name,
-                              CertificateCallback callback);
-
-  cryptohome::AsyncMethodCaller* async_caller_;
-  CryptohomeClient* cryptohome_client_;
+  AttestationClient* attestation_client_;
   std::unique_ptr<ServerProxy> server_proxy_;
+
+  // The key type that asks attestation service to create with.
+  const ::attestation::KeyType crypto_key_type_;
 
   base::TimeDelta ready_timeout_;
   base::TimeDelta retry_delay_;

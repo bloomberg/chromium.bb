@@ -20,10 +20,6 @@
 
 class PrefRegistrySimple;
 
-namespace policy {
-class DeviceCloudPolicyManagerChromeOS;
-}
-
 namespace chromeos {
 
 class DemoResources;
@@ -116,6 +112,8 @@ class DemoSetupController
       kDMTokenStoreError,
       // Unexpected/fatal error.
       kUnexpectedError,
+      // Too many requests error.
+      kTooManyRequestsError,
     };
 
     // Type of recommended recovery from the setup error.
@@ -171,10 +169,8 @@ class DemoSetupController
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
-  // Clears demo device enrollment requisition on the given |policy_manager| if
-  // it is set.
-  static void ClearDemoRequisition(
-      policy::DeviceCloudPolicyManagerChromeOS* policy_manager);
+  // Clears demo device enrollment requisition if it is set.
+  static void ClearDemoRequisition();
 
   // Utility method that returns whether demo mode is allowed on the device.
   static bool IsDemoModeAllowed();
@@ -207,11 +203,11 @@ class DemoSetupController
   bool IsOfflineEnrollment() const;
 
   // Initiates enrollment that sets up the device in the demo mode domain. The
-  // |enrollment_type_| determines whether online or offline setup will be
+  // `enrollment_type_` determines whether online or offline setup will be
   // performed and it should be set with set_enrollment_type() before calling
-  // Enroll(). |on_setup_success| will be called when enrollment finishes
-  // successfully. |on_setup_error| will be called when enrollment finishes with
-  // an error. |set_current_setup_step| will be called when an enrollment step
+  // Enroll(). `on_setup_success` will be called when enrollment finishes
+  // successfully. `on_setup_error` will be called when enrollment finishes with
+  // an error. `set_current_setup_step` will be called when an enrollment step
   // completes.
   void Enroll(OnSetupSuccess on_setup_success,
               OnSetupError on_setup_error,

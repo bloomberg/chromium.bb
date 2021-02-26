@@ -114,32 +114,33 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       $('error-message-back-button')
           .addEventListener('click', this.cancel.bind(this));
 
-      $('error-message-md-reboot-button').addEventListener('tap', function(e) {
-        self.send(login.Screen.CALLBACK_USER_ACTED, USER_ACTION_REBOOT);
-        e.stopPropagation();
-      });
+      $('error-message-md-reboot-button')
+          .addEventListener('click', function(e) {
+            self.send(login.Screen.CALLBACK_USER_ACTED, USER_ACTION_REBOOT);
+            e.stopPropagation();
+          });
       $('error-message-md-diagnose-button')
-          .addEventListener('tap', function(e) {
+          .addEventListener('click', function(e) {
             self.send(login.Screen.CALLBACK_USER_ACTED, USER_ACTION_DIAGNOSE);
             e.stopPropagation();
           });
       $('error-message-md-configure-certs-button')
-          .addEventListener('tap', function(e) {
+          .addEventListener('click', function(e) {
             self.send(
                 login.Screen.CALLBACK_USER_ACTED, USER_ACTION_CONFIGURE_CERTS);
             e.stopPropagation();
           });
       $('error-message-md-continue-button')
-          .addEventListener('tap', function(e) {
+          .addEventListener('click', function(e) {
             chrome.send('continueAppLaunch');
             e.stopPropagation();
           });
-      $('error-message-md-ok-button').addEventListener('tap', function(e) {
+      $('error-message-md-ok-button').addEventListener('click', function(e) {
         chrome.send('login.ResetScreen.userActed', ['cancel-reset']);
         e.stopPropagation();
       });
       $('error-message-md-powerwash-button')
-          .addEventListener('tap', function(e) {
+          .addEventListener('click', function(e) {
             self.send(
                 login.Screen.CALLBACK_USER_ACTED,
                 USER_ACTION_LOCAL_STATE_POWERWASH);
@@ -163,8 +164,8 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
               'autoEnrollmentOfflineMessageBody',
               loadTimeData.getString('deviceType'),
               '<b class="' + CURRENT_NETWORK_NAME_CLASS + '"></b>',
-              '<a id="auto-enrollment-learn-more" class="signin-link" ' +
-                  '"href="#">',
+              '<a id="auto-enrollment-learn-more" class="oobe-local-link" ' +
+                  '"is="action-link">',
               '</a>');
       $('auto-enrollment-learn-more').onclick = function() {
         chrome.send('launchHelpApp', [HELP_TOPIC_AUTO_ENROLLMENT]);
@@ -173,7 +174,8 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       $('captive-portal-message-text').innerHTML = loadTimeData.getStringF(
           'captivePortalMessage',
           '<b class="' + CURRENT_NETWORK_NAME_CLASS + '"></b>',
-          '<a id="' + FIX_CAPTIVE_PORTAL_ID + '" class="signin-link" href="#">',
+          '<a id="' + FIX_CAPTIVE_PORTAL_ID + '" class="oobe-local-link" ' +
+              'is="action-link">',
           '</a>');
       $(FIX_CAPTIVE_PORTAL_ID).onclick = function() {
         self.send(
@@ -184,23 +186,26 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
           loadTimeData.getStringF(
               'captivePortalProxyMessage',
               '<a id="' + FIX_PROXY_SETTINGS_ID +
-                  '" class="signin-link" href="#">',
+                  '" class="oobe-local-link" is="action-link">',
               '</a>');
       $(FIX_PROXY_SETTINGS_ID).onclick = function() {
         chrome.send('openInternetDetailDialog');
       };
       $('update-proxy-message-text').innerHTML = loadTimeData.getStringF(
           'updateProxyMessageText',
-          '<a id="update-proxy-error-fix-proxy" class="signin-link" href="#">',
+          '<a id="update-proxy-error-fix-proxy" class="oobe-local-link" ' +
+              'is="action-link">',
           '</a>');
       $('update-proxy-error-fix-proxy').onclick = function() {
         chrome.send('openInternetDetailDialog');
       };
       $('signin-proxy-message-text').innerHTML = loadTimeData.getStringF(
           'signinProxyMessageText',
-          '<a id="' + RELOAD_PAGE_ID + '" class="signin-link" href="#">',
+          '<a id="' + RELOAD_PAGE_ID +
+              '" class="oobe-local-link" is="action-link">',
           '</a>',
-          '<a id="signin-proxy-error-fix-proxy" class="signin-link" href="#">',
+          '<a id="signin-proxy-error-fix-proxy" class="oobe-local-link" ' +
+              'is="action-link">',
           '</a>');
       $(RELOAD_PAGE_ID).onclick = function() {
         var gaiaScreen = $(SCREEN_GAIA_SIGNIN);
@@ -213,22 +218,24 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
 
       $('error-guest-signin').innerHTML = loadTimeData.getStringF(
           'guestSignin',
-          '<a id="error-guest-signin-link" class="signin-link" href="#">',
+          '<a id="error-guest-signin-link" class="oobe-local-link" ' +
+              'is="action-link">',
           '</a>');
       $('error-guest-signin-link')
           .addEventListener('click', this.launchGuestSession_.bind(this));
 
       $('error-guest-signin-fix-network').innerHTML = loadTimeData.getStringF(
           'guestSigninFixNetwork',
-          '<a id="error-guest-fix-network-signin-link" class="signin-link" ' +
-              'href="#">',
+          '<a id="error-guest-fix-network-signin-link" ' +
+              'class="oobe-local-link" is="action-link">',
           '</a>');
       $('error-guest-fix-network-signin-link')
           .addEventListener('click', this.launchGuestSession_.bind(this));
 
       $('error-offline-login').innerHTML = loadTimeData.getStringF(
           'offlineLogin',
-          '<a id="error-offline-login-link" class="signin-link" href="#">',
+          '<a id="error-offline-login-link" class="oobe-local-link" ' +
+              'is="action-link">',
           '</a>');
       $('error-offline-login-link').onclick = function() {
         chrome.send('offlineLogin');
@@ -256,7 +263,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      */
     onBeforeShow(data) {
       cr.ui.Oobe.clearErrors();
-      $('error-message-md').onBeforeShow();
+      cr.ui.login.invokePolymerMethod($('error-message-md'), 'onBeforeShow');
       $('error-message-back-button').disabled = !this.closable;
     },
 

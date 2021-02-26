@@ -63,6 +63,10 @@ class ForwardingNotificationDelegate
   ForwardingNotificationDelegate(const std::string& notification_id,
                                  NotificationPlatformBridgeDelegate* delegate)
       : notification_id_(notification_id), delegate_(delegate) {}
+  ForwardingNotificationDelegate(const ForwardingNotificationDelegate&) =
+      delete;
+  ForwardingNotificationDelegate& operator=(
+      const ForwardingNotificationDelegate&) = delete;
 
   // message_center::NotificationDelegate:
   void Close(bool by_user) override {
@@ -94,8 +98,6 @@ class ForwardingNotificationDelegate
   const std::string notification_id_;
 
   NotificationPlatformBridgeDelegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ForwardingNotificationDelegate);
 };
 
 }  // namespace
@@ -125,7 +127,10 @@ ChromeAshMessageCenterClient::~ChromeAshMessageCenterClient() {
 }
 
 void ChromeAshMessageCenterClient::Display(
-    const message_center::Notification& notification) {
+    NotificationHandler::Type notification_type,
+    Profile* profile,
+    const message_center::Notification& notification,
+    std::unique_ptr<NotificationCommon::Metadata> metadata) {
   auto message_center_notification =
       std::make_unique<message_center::Notification>(
           base::WrapRefCounted(
@@ -134,13 +139,33 @@ void ChromeAshMessageCenterClient::Display(
   MessageCenter::Get()->AddNotification(std::move(message_center_notification));
 }
 
-void ChromeAshMessageCenterClient::Close(const std::string& notification_id) {
+void ChromeAshMessageCenterClient::Close(Profile* profile,
+                                         const std::string& notification_id) {
   // During shutdown, Ash is destroyed before |this|, taking the MessageCenter
   // with it.
   if (MessageCenter::Get()) {
     MessageCenter::Get()->RemoveNotification(notification_id,
                                              false /* by_user */);
   }
+}
+
+void ChromeAshMessageCenterClient::GetDisplayed(
+    Profile* profile,
+    GetDisplayedNotificationsCallback callback) const {
+  message_center::NotificationList::Notifications notifications =
+      MessageCenter::Get()->GetNotifications();
+
+  std::set<std::string> notification_ids;
+  for (message_center::Notification* notification : notifications)
+    notification_ids.insert(notification->id());
+
+  std::move(callback).Run(std::move(notification_ids), /*supports_sync=*/true);
+}
+
+void ChromeAshMessageCenterClient::SetReadyCallback(
+    NotificationBridgeReadyCallback callback) {
+  // Ash is always available in-process, so report the client is ready.
+  std::move(callback).Run(true);
 }
 
 void ChromeAshMessageCenterClient::GetNotifiers() {

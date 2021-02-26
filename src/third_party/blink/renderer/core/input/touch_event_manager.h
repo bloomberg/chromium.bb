@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_TOUCH_EVENT_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_TOUCH_EVENT_MANAGER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
@@ -31,7 +30,10 @@ class CORE_EXPORT TouchEventManager final
  public:
 
   explicit TouchEventManager(LocalFrame&);
-  void Trace(Visitor*);
+  TouchEventManager(const TouchEventManager&) = delete;
+  TouchEventManager& operator=(const TouchEventManager&) = delete;
+
+  void Trace(Visitor*) const;
 
   void HandleTouchPoint(const WebPointerEvent&,
                         const Vector<WebPointerEvent>&,
@@ -51,7 +53,7 @@ class CORE_EXPORT TouchEventManager final
   class TouchPointAttributes final
       : public GarbageCollected<TouchPointAttributes> {
    public:
-    void Trace(Visitor* visitor) { visitor->Trace(target_); }
+    void Trace(Visitor* visitor) const { visitor->Trace(target_); }
 
     TouchPointAttributes() = default;
     explicit TouchPointAttributes(WebPointerEvent event)
@@ -134,8 +136,6 @@ class CORE_EXPORT TouchEventManager final
   // intersection of all the previously calculated effective touch action values
   // during the sequence.
   base::Optional<TouchAction> delayed_effective_touch_action_;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchEventManager);
 };
 
 }  // namespace blink

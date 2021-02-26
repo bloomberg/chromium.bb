@@ -15,21 +15,6 @@
 #include "url/gurl.h"
 
 namespace payments {
-namespace {
-
-// Returns the security level of |web_contents|. The |web_contents| parameter
-// should not be null.
-security_state::SecurityLevel GetSecurityLevel(
-    content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  SecurityStateTabHelper::CreateForWebContents(web_contents);
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(web_contents);
-  DCHECK(helper);
-  return helper->GetSecurityLevel();
-}
-
-}  // namespace
 
 // static std::string
 std::string SslValidityChecker::GetInvalidSslCertificateErrorMessage(
@@ -42,7 +27,6 @@ std::string SslValidityChecker::GetInvalidSslCertificateErrorMessage(
   switch (security_level) {
     // Indicate valid SSL with an empty string.
     case security_state::SECURE:
-    case security_state::EV_SECURE:
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return "";
 
@@ -88,7 +72,6 @@ bool SslValidityChecker::IsValidPageInPaymentHandlerWindow(
     security_state::SecurityLevel security_level =
         GetSecurityLevel(web_contents);
     return security_level == security_state::SECURE ||
-           security_level == security_state::EV_SECURE ||
            security_level ==
                security_state::SECURE_WITH_POLICY_INSTALLED_CERT ||
            // No early return, so the other code is exercised in tests, too.
@@ -97,6 +80,17 @@ bool SslValidityChecker::IsValidPageInPaymentHandlerWindow(
   }
 
   return true;
+}
+
+// static
+security_state::SecurityLevel SslValidityChecker::GetSecurityLevel(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  SecurityStateTabHelper::CreateForWebContents(web_contents);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents);
+  DCHECK(helper);
+  return helper->GetSecurityLevel();
 }
 
 }  // namespace payments

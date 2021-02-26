@@ -1,0 +1,12 @@
+include_rules = [
+  "+ui/aura",
+  "+ui/base",
+  "+ui/compositor",
+  "+ui/display",
+  "+ui/events",
+  "+ui/gfx",
+  "+ui/strings/grit/ui_strings.h",
+  "+ui/views",
+  "+ui/wm/public",
+  "+third_party/skia",
+]

@@ -17,33 +17,18 @@
 #include "src/core/SkWriteBuffer.h"
 #if SK_SUPPORT_GPU
 #include "include/effects/SkRuntimeEffect.h"
-#include "include/private/GrRecordingContext.h"
-#include "src/gpu/GrClip.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "src/gpu/GrColorSpaceXform.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGr.h"
-#include "src/gpu/effects/GrSkSLFP.h"
+#include "src/gpu/effects/generated/GrArithmeticProcessor.h"
 #include "src/gpu/effects/generated/GrConstColorProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
-
-GR_FP_SRC_STRING SKSL_ARITHMETIC_SRC = R"(
-uniform float4 k;
-in bool enforcePMColor;
-in fragmentProcessor child;
-
-void main(float2 p, inout half4 color) {
-    half4 dst = sample(child, p);
-    color = saturate(half(k.x) * color * dst + half(k.y) * color + half(k.z) * dst + half(k.w));
-    @if (enforcePMColor) {
-        color.rgb = min(color.rgb, color.a);
-    }
-}
-)";
 #endif
 
 namespace {
@@ -81,7 +66,7 @@ private:
 
     ArithmeticFPInputs fInputs;
 
-    typedef SkImageFilter_Base INHERITED;
+    using INHERITED = SkImageFilter_Base;
 };
 
 }; // end namespace
@@ -354,56 +339,46 @@ sk_sp<SkSpecialImage> ArithmeticImageFilterImpl::filterImageGPU(
 
     if (background) {
         SkRect bgSubset = SkRect::Make(background->subset());
-        SkMatrix backgroundMatrix = SkMatrix::MakeTrans(
+        SkMatrix backgroundMatrix = SkMatrix::Translate(
                 SkIntToScalar(bgSubset.left() - backgroundOffset.fX),
                 SkIntToScalar(bgSubset.top()  - backgroundOffset.fY));
         bgFP = GrTextureEffect::MakeSubset(std::move(backgroundView), background->alphaType(),
                                            backgroundMatrix, sampler, bgSubset, caps);
-        bgFP = GrColorSpaceXformEffect::Make(std::move(bgFP), background->getColorSpace(),
-                                             background->alphaType(),
-                                             ctx.colorSpace());
+        bgFP = GrColorSpaceXformEffect::Make(std::move(bgFP),
+                                             background->getColorSpace(), background->alphaType(),
+                                             ctx.colorSpace(), kPremul_SkAlphaType);
     } else {
-        bgFP = GrConstColorProcessor::Make(SK_PMColor4fTRANSPARENT,
-                                           GrConstColorProcessor::InputMode::kIgnore);
+        bgFP = GrConstColorProcessor::Make(SK_PMColor4fTRANSPARENT);
     }
 
     if (foreground) {
         SkRect fgSubset = SkRect::Make(foreground->subset());
-        SkMatrix foregroundMatrix = SkMatrix::MakeTrans(
+        SkMatrix foregroundMatrix = SkMatrix::Translate(
                 SkIntToScalar(fgSubset.left() - foregroundOffset.fX),
                 SkIntToScalar(fgSubset.top()  - foregroundOffset.fY));
         auto fgFP = GrTextureEffect::MakeSubset(std::move(foregroundView), foreground->alphaType(),
                                                 foregroundMatrix, sampler, fgSubset, caps);
         fgFP = GrColorSpaceXformEffect::Make(std::move(fgFP),
-                                             foreground->getColorSpace(),
-                                             foreground->alphaType(),
-                                             ctx.colorSpace());
-        paint.addColorFragmentProcessor(std::move(fgFP));
-
-        static auto effect = std::get<0>(SkRuntimeEffect::Make(SkString(SKSL_ARITHMETIC_SRC)));
-        SkASSERT(effect->inputSize() == sizeof(fInputs));
-        std::unique_ptr<GrFragmentProcessor> xferFP = GrSkSLFP::Make(
-                context, effect, "Arithmetic", SkData::MakeWithCopy(&fInputs, sizeof(fInputs)));
-        if (xferFP) {
-            ((GrSkSLFP&) *xferFP).addChild(std::move(bgFP));
-            paint.addColorFragmentProcessor(std::move(xferFP));
-        }
+                                             foreground->getColorSpace(), foreground->alphaType(),
+                                             ctx.colorSpace(), kPremul_SkAlphaType);
+        paint.setColorFragmentProcessor(
+                GrArithmeticProcessor::Make(std::move(fgFP), std::move(bgFP), fInputs));
     } else {
-        paint.addColorFragmentProcessor(std::move(bgFP));
+        paint.setColorFragmentProcessor(std::move(bgFP));
     }
 
     paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
 
     auto renderTargetContext = GrRenderTargetContext::Make(
             context, ctx.grColorType(), ctx.refColorSpace(), SkBackingFit::kApprox, bounds.size(),
-            1, GrMipMapped::kNo, isProtected, kBottomLeft_GrSurfaceOrigin);
+            1, GrMipmapped::kNo, isProtected, kBottomLeft_GrSurfaceOrigin);
     if (!renderTargetContext) {
         return nullptr;
     }
 
     SkMatrix matrix;
     matrix.setTranslate(SkIntToScalar(-bounds.left()), SkIntToScalar(-bounds.top()));
-    renderTargetContext->drawRect(GrNoClip(), std::move(paint), GrAA::kNo, matrix,
+    renderTargetContext->drawRect(nullptr, std::move(paint), GrAA::kNo, matrix,
                                   SkRect::Make(bounds));
 
     return SkSpecialImage::MakeDeferredFromGpu(context,

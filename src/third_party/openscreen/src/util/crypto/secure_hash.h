@@ -21,7 +21,7 @@ namespace openscreen {
 // same as if we have the full input in advance.
 class SecureHash {
  public:
-  SecureHash(const EVP_MD* type);
+  explicit SecureHash(const EVP_MD* type);
   SecureHash(const SecureHash& other);
   SecureHash(SecureHash&& other);
   SecureHash& operator=(const SecureHash& other);

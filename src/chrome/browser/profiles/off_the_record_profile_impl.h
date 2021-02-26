@@ -7,13 +7,12 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data_handle.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "content/public/browser/content_browser_client.h"
 
@@ -39,20 +38,17 @@ class OffTheRecordProfileImpl : public Profile {
  public:
   OffTheRecordProfileImpl(Profile* real_profile,
                           const OTRProfileID& otr_profile_id);
+  OffTheRecordProfileImpl(const OffTheRecordProfileImpl&) = delete;
+  OffTheRecordProfileImpl& operator=(const OffTheRecordProfileImpl&) = delete;
   ~OffTheRecordProfileImpl() override;
   void Init();
 
   // Profile implementation.
   std::string GetProfileUserName() const override;
-  ProfileType GetProfileType() const override;
-  // TODO(https://crbug.com/1033903): Remove the default value.
-  Profile* GetOffTheRecordProfile(
-      const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;
+  Profile* GetOffTheRecordProfile(const OTRProfileID& otr_profile_id) override;
   std::vector<Profile*> GetAllOffTheRecordProfiles() override;
   void DestroyOffTheRecordProfile(Profile* otr_profile) override;
-  // TODO(https://crbug.com/1033903): Remove the default value.
-  bool HasOffTheRecordProfile(
-      const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;
+  bool HasOffTheRecordProfile(const OTRProfileID& otr_profile_id) override;
   bool HasAnyOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
   const Profile* GetOriginalProfile() const override;
@@ -74,7 +70,7 @@ class OffTheRecordProfileImpl : public Profile {
   policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
 #endif  // defined(OS_CHROMEOS)
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
-  bool IsSameProfile(Profile* profile) override;
+  bool IsSameOrParent(Profile* profile) override;
   base::Time GetStartTime() const override;
   ProfileKey* GetProfileKey() const override;
   policy::ProfilePolicyConnector* GetProfilePolicyConnector() override;
@@ -84,7 +80,7 @@ class OffTheRecordProfileImpl : public Profile {
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
   void SetExitType(ExitType exit_type) override;
-  ExitType GetLastSessionExitType() override;
+  ExitType GetLastSessionExitType() const override;
 
 #if defined(OS_CHROMEOS)
   void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia) override;
@@ -129,9 +125,9 @@ class OffTheRecordProfileImpl : public Profile {
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure) override;
   content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList() override;
-  bool ShouldEnableOutOfBlinkCors() override;
   content::NativeFileSystemPermissionContext*
   GetNativeFileSystemPermissionContext() override;
+  void RecordMainFrameNavigation() override;
 
  private:
 #if !defined(OS_ANDROID)
@@ -169,7 +165,8 @@ class OffTheRecordProfileImpl : public Profile {
 
   base::FilePath last_selected_directory_;
 
-  DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
+  // Number of main frame navigations done by this profile.
+  unsigned int main_frame_navigations_ = 0;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_OFF_THE_RECORD_PROFILE_IMPL_H_

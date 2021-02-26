@@ -7,9 +7,6 @@
  * in a list. This also supports editing fields inline for fields listed in
  * editFieldTypes.
  */
-(function() {
-'use strict';
-
 Polymer({
   is: 'network-property-list-mojo',
 
@@ -117,6 +114,8 @@ Polymer({
         result += 'OTP';
       } else if (subKey === 'ssid') {
         result += 'SSID';
+      } else if (subKey === 'bssid') {
+        result += 'BSSID';
       } else if (subKey === 'serverCa') {
         result += 'ServerCA';
       } else if (subKey === 'vpn') {
@@ -304,6 +303,9 @@ Polymer({
         valueStr = OncMojo.getActivationStateTypeString(
             /** @type{!chromeos.networkConfig.mojom.ActivationStateType}*/ (
                 value));
+      } else if (key === 'portalState') {
+        valueStr = OncMojo.getPortalStateString(
+            /** @type{!chromeos.networkConfig.mojom.PortalState}*/ (value));
       } else if (key === 'vpn.type') {
         valueStr = OncMojo.getVpnTypeString(
             /** @type{!chromeos.networkConfig.mojom.VpnType}*/ (value));
@@ -380,4 +382,3 @@ Polymer({
     return '';
   },
 });
-})();

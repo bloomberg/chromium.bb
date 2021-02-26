@@ -102,11 +102,10 @@ PositionTemplate<Strategy> StartOfParagraphAlgorithm(
       break;
 
     if (layout_object->IsText() &&
-        ToLayoutText(previous_node_iterator->GetLayoutObject())
+        To<LayoutText>(previous_node_iterator->GetLayoutObject())
             ->ResolvedTextLength()) {
       if (style.PreserveNewline()) {
-        LayoutText* text =
-            ToLayoutText(previous_node_iterator->GetLayoutObject());
+        auto* text = To<LayoutText>(previous_node_iterator->GetLayoutObject());
         int index = text->TextLength();
         if (previous_node_iterator == start_node && candidate_offset < index)
           index = max(0, candidate_offset);
@@ -147,8 +146,10 @@ VisiblePositionTemplate<Strategy> StartOfParagraphAlgorithm(
     const VisiblePositionTemplate<Strategy>& visible_position,
     EditingBoundaryCrossingRule boundary_crossing_rule) {
   DCHECK(visible_position.IsValid()) << visible_position;
-  return CreateVisiblePosition(StartOfParagraphAlgorithm(
-      visible_position.DeepEquivalent(), boundary_crossing_rule));
+  return CreateVisiblePosition(
+      StartOfParagraphAlgorithm(visible_position.DeepEquivalent(),
+                                boundary_crossing_rule),
+      TextAffinity::kDownstream);
 }
 
 template <typename Strategy>
@@ -205,10 +206,10 @@ PositionTemplate<Strategy> EndOfParagraphAlgorithm(
     // TODO(editing-dev): We avoid returning a position where the layoutObject
     // can't accept the caret.
     if (layout_object->IsText() &&
-        ToLayoutText(layout_object)->ResolvedTextLength()) {
-      LayoutText* const text = ToLayoutText(layout_object);
+        To<LayoutText>(layout_object)->ResolvedTextLength()) {
+      auto* const text = To<LayoutText>(layout_object);
       if (style.PreserveNewline()) {
-        const int length = ToLayoutText(layout_object)->TextLength();
+        const int length = text->TextLength();
         for (int i = (next_node_iterator == start_node ? candidate_offset : 0);
              i < length; ++i) {
           if ((*text)[i] == '\n') {
@@ -245,8 +246,10 @@ VisiblePositionTemplate<Strategy> EndOfParagraphAlgorithm(
     const VisiblePositionTemplate<Strategy>& visible_position,
     EditingBoundaryCrossingRule boundary_crossing_rule) {
   DCHECK(visible_position.IsValid()) << visible_position;
-  return CreateVisiblePosition(EndOfParagraphAlgorithm(
-      visible_position.DeepEquivalent(), boundary_crossing_rule));
+  return CreateVisiblePosition(
+      EndOfParagraphAlgorithm(visible_position.DeepEquivalent(),
+                              boundary_crossing_rule),
+      TextAffinity::kUpstream);
 }
 
 template <typename Strategy>

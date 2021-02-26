@@ -8,6 +8,7 @@
 #include <array>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -19,31 +20,37 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/native_theme_delegate.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
 class InkDropContainerView;
 class LabelButtonBorder;
 
-// LabelButton is a button with text and an icon, it's not focusable by default.
+// LabelButton is a button with text and an icon.
 class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
  public:
   METADATA_HEADER(LabelButton);
 
-  // Creates a LabelButton with ButtonPressed() events sent to |listener| and
-  // label |text|. |button_context| is a value from views::style::TextContext
-  // and determines the appearance of |text|.
-  LabelButton(ButtonListener* listener,
-              const base::string16& text,
-              int button_context = style::CONTEXT_BUTTON);
+  // Creates a LabelButton with pressed events sent to |callback| and label
+  // |text|. |button_context| is a value from views::style::TextContext and
+  // determines the appearance of |text|.
+  explicit LabelButton(PressedCallback callback = PressedCallback(),
+                       const base::string16& text = base::string16(),
+                       int button_context = style::CONTEXT_BUTTON);
+  LabelButton(const LabelButton&) = delete;
+  LabelButton& operator=(const LabelButton&) = delete;
   ~LabelButton() override;
 
   // Gets or sets the image shown for the specified button state.
   // GetImage returns the image for STATE_NORMAL if the state's image is empty.
   virtual gfx::ImageSkia GetImage(ButtonState for_state) const;
+  // TODO(http://crbug.com/1100034) prefer SetImageModel over SetImage().
   void SetImage(ButtonState for_state, const gfx::ImageSkia& image);
+  void SetImageModel(ButtonState for_state, const ui::ImageModel& image_model);
 
   // Gets or sets the text shown on the button.
   const base::string16& GetText() const;
@@ -63,6 +70,9 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
 
   // Sets the text colors shown for the non-disabled states to |color|.
   virtual void SetEnabledTextColors(base::Optional<SkColor> color);
+
+  // Gets the current state text color.
+  SkColor GetCurrentTextColor() const;
 
   // Sets drop shadows underneath the text.
   void SetTextShadows(const gfx::ShadowValues& shadows);
@@ -108,7 +118,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   gfx::Size GetMinimumSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;
-  void EnableCanvasFlippingForRTLUI(bool flip) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void AddLayerBeneathView(ui::Layer* new_layer) override;
   void RemoveLayerBeneathView(ui::Layer* old_layer) override;
@@ -145,9 +154,13 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Updates the image view to contain the appropriate button state image.
   void UpdateImage();
 
-  // Updates the border as per the NativeTheme, unless a different border was
-  // set with SetBorder.
-  void UpdateThemedBorder();
+  // Updates the background color, if the background color is state-sensitive.
+  virtual void UpdateBackgroundColor() {}
+
+  // Returns the current visual appearance of the button. This takes into
+  // account both the button's underlying state, the state of the containing
+  // widget, and the parent of the containing widget.
+  ButtonState GetVisualState() const;
 
   // Fills |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
@@ -158,7 +171,8 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
 
   // Button:
   void ChildPreferredSizeChanged(View* child) override;
-  void PreferredSizeChanged() override;
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
   void OnFocus() override;
   void OnBlur() override;
   void OnThemeChanged() override;
@@ -169,9 +183,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
 
   void ClearTextIfShrunkDown();
 
-  // Resets |cached_preferred_size_|.
-  void ResetCachedPreferredSize();
-
   // Gets the preferred size (without respecting min_size_ or max_size_), but
   // does not account for the label. This is shared between GetHeightForWidth
   // and CalculatePreferredSize. GetHeightForWidth will subtract the width
@@ -181,6 +192,10 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // height as total height, and clamp to min/max sizes as appropriate.
   gfx::Size GetUnclampedSizeWithoutLabel() const;
 
+  // Updates the portions of the object that might change in response to a
+  // change in the value returned by GetVisualState().
+  void VisualStateChanged();
+
   // Resets colors from the NativeTheme, explicitly set colors are unchanged.
   void ResetColorsFromNativeTheme();
 
@@ -189,9 +204,15 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // correct for the current background.
   void ResetLabelEnabledColor();
 
+  // Returns the state whose image is shown for |for_state|, by falling back to
+  // STATE_NORMAL when |for_state|'s image is empty.
+  ButtonState ImageStateForState(ButtonState for_state) const;
+
+  void FlipCanvasOnPaintForRTLUIChanged();
+
   // The image and label shown in the button.
   ImageView* image_;
-  LabelButtonLabel* label_;
+  internal::LabelButtonLabel* label_;
 
   // A separate view is necessary to hold the ink drop layer so that it can
   // be stacked below |image_| and on top of |label_|, without resorting to
@@ -203,8 +224,8 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   gfx::FontList cached_normal_font_list_;
   gfx::FontList cached_default_button_font_list_;
 
-  // The images and colors for each button state.
-  gfx::ImageSkia button_state_images_[STATE_COUNT] = {};
+  // The image models and colors for each button state.
+  ui::ImageModel button_state_image_models_[STATE_COUNT] = {};
   SkColor button_state_colors_[STATE_COUNT] = {};
 
   // Used to track whether SetTextColor() has been invoked.
@@ -213,9 +234,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // |min_size_| and |max_size_| may be set to clamp the preferred size.
   gfx::Size min_size_;
   gfx::Size max_size_;
-
-  // Cache the last computed preferred size.
-  mutable base::Optional<gfx::Size> cached_preferred_size_;
 
   // A flag indicating that this button should not include the label in its
   // desired size. Furthermore, once the bounds of the button adapt to this
@@ -245,9 +263,27 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // UI direction).
   gfx::HorizontalAlignment horizontal_alignment_ = gfx::ALIGN_LEFT;
 
-  DISALLOW_COPY_AND_ASSIGN(LabelButton);
+  std::unique_ptr<Widget::PaintAsActiveCallbackList::Subscription>
+      paint_as_active_subscription_;
+
+  PropertyChangedSubscription flip_canvas_on_paint_subscription_ =
+      AddFlipCanvasOnPaintForRTLUIChangedCallback(
+          base::BindRepeating(&LabelButton::FlipCanvasOnPaintForRTLUIChanged,
+                              base::Unretained(this)));
 };
 
+BEGIN_VIEW_BUILDER(VIEWS_EXPORT, LabelButton, Button)
+VIEW_BUILDER_PROPERTY(base::string16, Text)
+VIEW_BUILDER_PROPERTY(gfx::HorizontalAlignment, HorizontalAlignment)
+VIEW_BUILDER_PROPERTY(gfx::Size, MinSize)
+VIEW_BUILDER_PROPERTY(gfx::Size, MaxSize)
+VIEW_BUILDER_PROPERTY(bool, IsDefault)
+VIEW_BUILDER_PROPERTY(int, ImageLabelSpacing)
+VIEW_BUILDER_PROPERTY(bool, ImageCentered)
+END_VIEW_BUILDER
+
 }  // namespace views
+
+DEFINE_VIEW_BUILDER(VIEWS_EXPORT, LabelButton)
 
 #endif  // UI_VIEWS_CONTROLS_BUTTON_LABEL_BUTTON_H_

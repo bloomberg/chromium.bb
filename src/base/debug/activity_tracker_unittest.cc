@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
@@ -83,6 +83,7 @@ class ActivityTrackerTest : public testing::Test {
   }
 
   size_t GetGlobalUserDataMemoryCacheUsed() {
+    AutoLock autolock(GlobalActivityTracker::Get()->user_data_allocator_lock_);
     return GlobalActivityTracker::Get()->user_data_allocator_.cache_used();
   }
 

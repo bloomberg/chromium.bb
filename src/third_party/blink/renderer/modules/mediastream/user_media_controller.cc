@@ -42,7 +42,7 @@ UserMediaController::UserMediaController(LocalDOMWindow* window)
     : Supplement<LocalDOMWindow>(*window),
       ExecutionContextLifecycleObserver(window) {}
 
-void UserMediaController::Trace(Visitor* visitor) {
+void UserMediaController::Trace(Visitor* visitor) const {
   Supplement<LocalDOMWindow>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(client_);
@@ -51,6 +51,7 @@ void UserMediaController::Trace(Visitor* visitor) {
 UserMediaClient* UserMediaController::Client() {
   auto* window = To<LocalDOMWindow>(GetExecutionContext());
   if (!client_ && window) {
+    DCHECK(window->GetFrame());
     client_ = MakeGarbageCollected<UserMediaClient>(
         window->GetFrame(), window->GetTaskRunner(TaskType::kInternalMedia));
   }

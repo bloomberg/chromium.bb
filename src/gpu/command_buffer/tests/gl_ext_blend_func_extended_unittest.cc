@@ -405,6 +405,7 @@ TEST_P(EXTBlendFuncExtendedES3DrawTest, ESSL3BindArrayAsArray) {
 TEST_P(EXTBlendFuncExtendedES3DrawTest, ES3Getters) {
   if (!IsApplicable())
     return;
+
   // clang-format off
   static const char* kFragColorShader =
       "#version 300 es\n"

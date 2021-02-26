@@ -12,8 +12,8 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,7 +25,7 @@
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/audio/cras_audio_handler.h"
 #endif
 
@@ -33,7 +33,7 @@ namespace content {
 
 namespace {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void SetKeyboardMicStreamActiveOnUIThread(bool active) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   chromeos::CrasAudioHandler::Get()->SetKeyboardMicActive(active);
@@ -89,7 +89,7 @@ std::string GetOpenLogString(const base::UnguessableToken& session_id,
 AudioInputDeviceManager::AudioInputDeviceManager(
     media::AudioSystem* audio_system)
     :
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       keyboard_mic_streams_count_(0),
 #endif
       audio_system_(audio_system) {
@@ -136,7 +136,6 @@ base::UnguessableToken AudioInputDeviceManager::Open(
     audio_system_->GetAssociatedOutputDeviceID(
         device.id, base::BindOnce(&AudioInputDeviceManager::OpenedOnIOThread,
                                   base::Unretained(this), session_id, device,
-                                  base::TimeTicks::Now(),
                                   base::Optional<media::AudioParameters>()));
   } else {
     // TODO(tommi): As is, we hit this code path when device.type is
@@ -152,8 +151,7 @@ base::UnguessableToken AudioInputDeviceManager::Open(
 
     audio_system_->GetInputDeviceInfo(
         device.id, base::BindOnce(&AudioInputDeviceManager::OpenedOnIOThread,
-                                  base::Unretained(this), session_id, device,
-                                  base::TimeTicks::Now()));
+                                  base::Unretained(this), session_id, device));
   }
 
   return session_id;
@@ -170,12 +168,12 @@ void AudioInputDeviceManager::Close(const base::UnguessableToken& session_id) {
 
   // Post a callback through the listener on IO thread since
   // MediaStreamManager is expecting the callback asynchronously.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&AudioInputDeviceManager::ClosedOnIOThread,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&AudioInputDeviceManager::ClosedOnIOThread,
                                 this, stream_type, session_id));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 AudioInputDeviceManager::KeyboardMicRegistration::KeyboardMicRegistration(
     KeyboardMicRegistration&& other)
     : shared_registration_count_(other.shared_registration_count_) {
@@ -200,8 +198,8 @@ void AudioInputDeviceManager::KeyboardMicRegistration::DeregisterIfNeeded() {
     --*shared_registration_count_;
     DCHECK_GE(*shared_registration_count_, 0);
     if (*shared_registration_count_ == 0) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&SetKeyboardMicStreamActiveOnUIThread, false));
     }
   }
@@ -217,9 +215,8 @@ void AudioInputDeviceManager::RegisterKeyboardMicStream(
 
   ++keyboard_mic_streams_count_;
   if (keyboard_mic_streams_count_ == 1) {
-    base::PostTaskAndReply(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&SetKeyboardMicStreamActiveOnUIThread, true),
+    GetUIThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE, base::BindOnce(&SetKeyboardMicStreamActiveOnUIThread, true),
         base::BindOnce(std::move(callback),
                        KeyboardMicRegistration(&keyboard_mic_streams_count_)));
   } else {
@@ -232,7 +229,6 @@ void AudioInputDeviceManager::RegisterKeyboardMicStream(
 void AudioInputDeviceManager::OpenedOnIOThread(
     const base::UnguessableToken& session_id,
     const blink::MediaStreamDevice& device,
-    base::TimeTicks start_time,
     const base::Optional<media::AudioParameters>& input_params,
     const base::Optional<std::string>& matched_output_device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -240,10 +236,7 @@ void AudioInputDeviceManager::OpenedOnIOThread(
   DCHECK(!input_params || input_params->IsValid());
   DCHECK(!matched_output_device_id || !matched_output_device_id->empty());
 
-  UMA_HISTOGRAM_TIMES("Media.AudioInputDeviceManager.OpenOnDeviceThreadTime",
-                      base::TimeTicks::Now() - start_time);
   SendAudioLogMessage("Opened({session_id=" + session_id.ToString() + "})");
-
   blink::MediaStreamDevice media_stream_device(device.type, device.id,
                                                device.name);
   media_stream_device.set_session_id(session_id);

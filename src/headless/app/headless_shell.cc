@@ -47,6 +47,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/gfx/geometry/size.h"
 
 #if defined(OS_WIN)
@@ -55,7 +56,7 @@
 #include "sandbox/win/src/sandbox_types.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "components/os_crypt/os_crypt_switches.h"
 #endif
 
@@ -675,7 +676,7 @@ int HeadlessShellMain(int argc, const char** argv) {
   builder.SetCrashDumpsDir(dumps_path);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
 #endif
 
@@ -687,11 +688,11 @@ int HeadlessShellMain(int argc, const char** argv) {
     command_line.AppendSwitch(::switches::kDisableNewContentRenderingTimeout);
     // Ensure that image animations don't resync their animation timestamps when
     // looping back around.
-    command_line.AppendSwitch(::switches::kDisableImageAnimationResync);
+    command_line.AppendSwitch(blink::switches::kDisableImageAnimationResync);
 
     // Renderer flags
     command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
-    command_line.AppendSwitch(::switches::kDisableThreadedScrolling);
+    command_line.AppendSwitch(blink::switches::kDisableThreadedScrolling);
     command_line.AppendSwitch(cc::switches::kDisableCheckerImaging);
   }
 
@@ -714,7 +715,7 @@ int HeadlessShellMain(int argc, const char** argv) {
       address =
           command_line.GetSwitchValueASCII(switches::kRemoteDebuggingAddress);
       net::IPAddress parsed_address;
-      if (!net::ParseURLHostnameToAddress(address, &parsed_address)) {
+      if (!parsed_address.AssignFromIPLiteral(address)) {
         LOG(ERROR) << "Invalid devtools server address";
         return EXIT_FAILURE;
       }
@@ -771,7 +772,7 @@ int HeadlessShellMain(int argc, const char** argv) {
 
   if (command_line.HasSwitch(switches::kHideScrollbars)) {
     builder.SetOverrideWebPreferencesCallback(
-        base::BindRepeating([](WebPreferences* preferences) {
+        base::BindRepeating([](blink::web_pref::WebPreferences* preferences) {
           preferences->hide_scrollbars = true;
         }));
   }

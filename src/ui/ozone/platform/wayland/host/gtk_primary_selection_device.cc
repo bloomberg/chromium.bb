@@ -8,6 +8,7 @@
 
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_offer.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 
 namespace ui {
 
@@ -25,6 +26,14 @@ GtkPrimarySelectionDevice::GtkPrimarySelectionDevice(
 
 GtkPrimarySelectionDevice::~GtkPrimarySelectionDevice() = default;
 
+void GtkPrimarySelectionDevice::SetSelectionSource(
+    GtkPrimarySelectionSource* source) {
+  DCHECK(source);
+  gtk_primary_selection_device_set_selection(
+      data_device_.get(), source->data_source(), connection()->serial());
+  connection()->ScheduleFlush();
+}
+
 // static
 void GtkPrimarySelectionDevice::OnDataOffer(
     void* data,
@@ -34,7 +43,7 @@ void GtkPrimarySelectionDevice::OnDataOffer(
   DCHECK(self);
 
   self->connection()->clipboard()->UpdateSequenceNumber(
-      ClipboardBuffer::kCopyPaste);
+      ClipboardBuffer::kSelection);
 
   self->set_data_offer(std::make_unique<GtkPrimarySelectionOffer>(offer));
 }

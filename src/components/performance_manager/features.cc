@@ -24,6 +24,9 @@ const base::FeatureParam<int> kMinimumThrottleTimeoutMilliseconds = {
 const base::FeatureParam<int> kMaximumThrottleTimeoutMilliseconds = {
     &kTabLoadingFrameNavigationThrottles, "MaximumThrottleTimeoutMilliseconds",
     40000};
+// This defaults to 3 since 3 * 99th%ile FCP ~= 99th%ile LCP.
+const base::FeatureParam<double> kFCPMultiple = {
+    &kTabLoadingFrameNavigationThrottles, "FCPMultiple", 3.0};
 
 TabLoadingFrameNavigationThrottlesParams::
     TabLoadingFrameNavigationThrottlesParams() = default;
@@ -39,8 +42,12 @@ TabLoadingFrameNavigationThrottlesParams::GetParams() {
       kMinimumThrottleTimeoutMilliseconds.Get());
   params.maximum_throttle_timeout = base::TimeDelta::FromMilliseconds(
       kMaximumThrottleTimeoutMilliseconds.Get());
+  params.fcp_multiple = kFCPMultiple.Get();
   return params;
 }
+
+const base::Feature kServiceWorkerRelationshipsInGraph{
+    "ServiceWorkerRelationshipsInGraph", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace performance_manager

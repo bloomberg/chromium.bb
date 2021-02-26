@@ -7,15 +7,19 @@
 #include <aclapi.h>
 #include <shlobj.h>
 #include <windows.h>
+#include <wtsapi32.h>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "base/process/process_iterator.h"
+#include "base/scoped_native_library.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/win/constants.h"
 #include "chrome/updater/win/user_info.h"
@@ -310,6 +314,77 @@ base::string16 GetRegistryKeyClientsUpdater() {
 
 base::string16 GetRegistryKeyClientStateUpdater() {
   return base::ASCIIToUTF16(base::StrCat({CLIENT_STATE_KEY, kUpdaterAppId}));
+}
+
+int GetDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes) {
+  if (downloaded_bytes == -1 || total_bytes == -1 || total_bytes == 0)
+    return -1;
+  DCHECK_LE(downloaded_bytes, total_bytes);
+  return 100 *
+         base::ClampToRange(double{downloaded_bytes} / total_bytes, 0.0, 1.0);
+}
+
+// Reads the installer progress from the registry value at:
+// {HKLM|HKCU}\Software\Google\Update\ClientState\<appid>\InstallerProgress.
+int GetInstallerProgress(const std::string& app_id) {
+  base::string16 subkey;
+  if (!base::UTF8ToUTF16(app_id.c_str(), app_id.size(), &subkey)) {
+    return -1;
+  }
+  constexpr REGSAM kRegSam = KEY_READ | KEY_WOW64_32KEY;
+  base::win::RegKey key(HKEY_CURRENT_USER,
+                        base::ASCIIToUTF16(CLIENT_STATE_KEY).c_str(), kRegSam);
+  if (key.OpenKey(subkey.c_str(), kRegSam) != ERROR_SUCCESS) {
+    return -1;
+  }
+  DWORD progress = 0;
+  if (key.ReadValueDW(kRegistryValueInstallerProgress, &progress) !=
+      ERROR_SUCCESS) {
+    return -1;
+  }
+  return base::ClampToRange(progress, DWORD{0}, DWORD{100});
+}
+
+bool DeleteInstallerProgress(const std::string& app_id) {
+  base::string16 subkey;
+  if (!base::UTF8ToUTF16(app_id.c_str(), app_id.size(), &subkey)) {
+    return false;
+  }
+  constexpr REGSAM kRegSam = KEY_SET_VALUE | KEY_WOW64_32KEY;
+  base::win::RegKey key(HKEY_CURRENT_USER,
+                        base::ASCIIToUTF16(CLIENT_STATE_KEY).c_str(), kRegSam);
+  if (key.OpenKey(subkey.c_str(), kRegSam) != ERROR_SUCCESS) {
+    return false;
+  }
+
+  return key.DeleteValue(kRegistryValueInstallerProgress) == ERROR_SUCCESS;
+}
+
+base::win::ScopedHandle GetUserTokenFromCurrentSessionId() {
+  base::win::ScopedHandle token_handle;
+
+  DWORD bytes_returned = 0;
+  DWORD* session_id_ptr = nullptr;
+  if (!::WTSQuerySessionInformation(
+          WTS_CURRENT_SERVER_HANDLE, WTS_CURRENT_SESSION, WTSSessionId,
+          reinterpret_cast<LPTSTR*>(&session_id_ptr), &bytes_returned)) {
+    PLOG(ERROR) << "WTSQuerySessionInformation failed.";
+    return token_handle;
+  }
+
+  DCHECK_EQ(bytes_returned, sizeof(*session_id_ptr));
+  DWORD session_id = *session_id_ptr;
+  ::WTSFreeMemory(session_id_ptr);
+  DVLOG(1) << "::WTSQuerySessionInformation session id: " << session_id;
+
+  HANDLE token_handle_raw = nullptr;
+  if (!::WTSQueryUserToken(session_id, &token_handle_raw)) {
+    PLOG(ERROR) << "WTSQueryUserToken failed";
+    return token_handle;
+  }
+
+  token_handle.Set(token_handle_raw);
+  return token_handle;
 }
 
 }  // namespace updater

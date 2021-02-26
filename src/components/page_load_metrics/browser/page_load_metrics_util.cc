@@ -109,6 +109,19 @@ bool WasStartedInForegroundOptionalEventInForeground(
           event.value() <= delegate.GetFirstBackgroundTime().value());
 }
 
+bool WasStartedInForegroundOptionalEventInForegroundAfterBackForwardCacheRestore(
+    const base::Optional<base::TimeDelta>& event,
+    const PageLoadMetricsObserverDelegate& delegate,
+    size_t index) {
+  const auto& back_forward_cache_restore =
+      delegate.GetBackForwardCacheRestore(index);
+  base::Optional<base::TimeDelta> first_background_time =
+      back_forward_cache_restore.first_background_time;
+  return back_forward_cache_restore.was_in_foreground && event &&
+         (!first_background_time ||
+          event.value() <= first_background_time.value());
+}
+
 bool WasStartedInBackgroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
     const PageLoadMetricsObserverDelegate& delegate) {
@@ -117,6 +130,10 @@ bool WasStartedInBackgroundOptionalEventInForeground(
          delegate.GetFirstForegroundTime().value() <= event.value() &&
          (!delegate.GetFirstBackgroundTime() ||
           event.value() <= delegate.GetFirstBackgroundTime().value());
+}
+
+bool WasInForeground(const PageLoadMetricsObserverDelegate& delegate) {
+  return delegate.StartedInForeground() || delegate.GetFirstForegroundTime();
 }
 
 PageAbortInfo GetPageAbortInfo(
@@ -221,6 +238,16 @@ bool QueryContainsComponent(const base::StringPiece query,
 bool QueryContainsComponentPrefix(const base::StringPiece query,
                                   const base::StringPiece component) {
   return QueryContainsComponentHelper(query, component, true);
+}
+
+int64_t LayoutShiftUkmValue(float shift_score) {
+  // Report (shift_score * 100) as an int in the range [0, 1000].
+  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 100.0f));
+}
+
+int32_t LayoutShiftUmaValue(float shift_score) {
+  // Report (shift_score * 10) as an int in the range [0, 100].
+  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 10.0f));
 }
 
 }  // namespace page_load_metrics

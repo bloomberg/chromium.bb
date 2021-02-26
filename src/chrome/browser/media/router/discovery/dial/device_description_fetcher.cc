@@ -40,7 +40,7 @@ void DeviceDescriptionFetcher::Start() {
       base::BindOnce(&DeviceDescriptionFetcher::ReportError,
                      base::Unretained(this)));
 
-  fetcher_->Get(device_description_url_);
+  fetcher_->Get(device_description_url_, false /** set_origin_header **/);
 }
 
 void DeviceDescriptionFetcher::ProcessResponse(const std::string& response) {
@@ -80,7 +80,6 @@ void DeviceDescriptionFetcher::ProcessResponse(const std::string& response) {
 
   // Remove trailing slash if there is any.
   if (app_url.ExtractFileName().empty()) {
-    DVLOG(2) << "App url has trailing slash: " << app_url_header;
     app_url = GURL(app_url_header.substr(0, app_url_header.length() - 1));
   }
 

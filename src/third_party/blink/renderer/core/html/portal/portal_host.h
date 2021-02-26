@@ -23,12 +23,11 @@ class WindowPostMessageOptions;
 class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
                                public Supplement<LocalDOMWindow> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PortalHost);
 
  public:
   explicit PortalHost(LocalDOMWindow& window);
 
-  void Trace(Visitor* visitor) override;
+  void Trace(Visitor* visitor) const override;
 
   static const char kSupplementName[];
   static PortalHost& From(LocalDOMWindow& window);
@@ -57,8 +56,7 @@ class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
   void setOnmessageerror(EventListener* listener);
 
   void ReceiveMessage(BlinkTransferableMessage message,
-                      scoped_refptr<const SecurityOrigin> source_origin,
-                      scoped_refptr<const SecurityOrigin> target_origin);
+                      scoped_refptr<const SecurityOrigin> source_origin);
 
  private:
   mojom::blink::PortalHost& GetPortalHostInterface();

@@ -33,8 +33,9 @@
 #include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_focus_options.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/email_input_type.h"
 #include "third_party/blink/renderer/core/html/forms/file_input_type.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
@@ -69,7 +71,8 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -85,13 +88,19 @@
 
 namespace blink {
 
+namespace {
+
+const unsigned kMaxEmailFieldLength = 254;
+
+}  // namespace
+
 using ValueMode = InputType::ValueMode;
 
 class ListAttributeTargetObserver : public IdTargetObserver {
  public:
   ListAttributeTargetObserver(const AtomicString& id, HTMLInputElement*);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
   void IdTargetChanged() override;
 
  private:
@@ -135,7 +144,7 @@ HTMLInputElement::HTMLInputElement(Document& document,
   }
 }
 
-void HTMLInputElement::Trace(Visitor* visitor) {
+void HTMLInputElement::Trace(Visitor* visitor) const {
   visitor->Trace(input_type_);
   visitor->Trace(input_type_view_);
   visitor->Trace(list_attribute_target_observer_);
@@ -350,6 +359,8 @@ void HTMLInputElement::EndEditing() {
   LocalFrame* frame = GetDocument().GetFrame();
   frame->GetSpellChecker().DidEndEditingOnTextField(this);
   frame->GetPage()->GetChromeClient().DidEndEditingOnTextField(*this);
+
+  MaybeReportPiiMetrics();
 }
 
 void HTMLInputElement::DispatchFocusInEvent(
@@ -437,6 +448,9 @@ void HTMLInputElement::UpdateType() {
     PseudoStateChanged(CSSSelector::kPseudoInRange);
     PseudoStateChanged(CSSSelector::kPseudoOutOfRange);
   }
+  if (input_type_->ShouldRespectListAttribute() !=
+      new_type->ShouldRespectListAttribute())
+    PseudoStateChanged(CSSSelector::kPseudoHasDatalist);
 
   bool placeholder_changed =
       input_type_->SupportsPlaceholder() != new_type->SupportsPlaceholder();
@@ -447,6 +461,7 @@ void HTMLInputElement::UpdateType() {
   // to the element, and false otherwise.
   const bool previously_selectable = input_type_->SupportsSelectionAPI();
 
+  input_type_view_->WillBeDestroyed();
   input_type_ = new_type;
   input_type_view_ = input_type_->CreateView();
   if (input_type_view_->NeedsShadowSubtree()) {
@@ -699,6 +714,22 @@ void HTMLInputElement::setSelectionRangeForBinding(
   TextControlElement::setSelectionRangeForBinding(start, end, direction);
 }
 
+// This function can be used to allow tests to set the selection
+// range for Number inputs, which do not support the ordinary
+// selection API.
+void HTMLInputElement::SetSelectionRangeForTesting(
+    unsigned start,
+    unsigned end,
+    ExceptionState& exception_state) {
+  if (FormControlType() != input_type_names::kNumber) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The input element's type ('" +
+                                          input_type_->FormControlType() +
+                                          "') is not a number input.");
+  }
+  TextControlElement::setSelectionRangeForBinding(start, end);
+}
+
 void HTMLInputElement::AccessKeyAction(bool send_mouse_events) {
   input_type_view_->AccessKeyAction(send_mouse_events);
 }
@@ -775,8 +806,8 @@ void HTMLInputElement::ParseAttribute(
       SetNeedsStyleRecalc(
           kSubtreeStyleChange,
           StyleChangeReasonForTracing::FromAttribute(html_names::kValueAttr));
+      needs_to_update_view_value_ = true;
     }
-    needs_to_update_view_value_ = true;
     SetNeedsValidityCheck();
     input_type_->WarnIfValueIsInvalidAndElementIsVisible(value);
     input_type_->InRangeChanged();
@@ -821,7 +852,8 @@ void HTMLInputElement::ParseAttribute(
     // Search field and slider attributes all just cause updateFromElement to be
     // called through style recalcing.
     SetAttributeEventListener(event_type_names::kSearch,
-                              CreateAttributeEventListener(this, name, value));
+                              JSEventHandlerForContentAttribute::Create(
+                                  GetExecutionContext(), name, value));
   } else if (name == html_names::kIncrementalAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kIncrementalAttribute);
   } else if (name == html_names::kMinAttr) {
@@ -855,6 +887,7 @@ void HTMLInputElement::ParseAttribute(
       ResetListAttributeTargetObserver();
       ListAttributeTargetChanged();
     }
+    PseudoStateChanged(CSSSelector::kPseudoHasDatalist);
     UseCounter::Count(GetDocument(), WebFeature::kListAttribute);
   } else if (name == html_names::kWebkitdirectoryAttr) {
     TextControlElement::ParseAttribute(params);
@@ -998,8 +1031,7 @@ void HTMLInputElement::setChecked(bool now_checked,
 
   if (RadioButtonGroupScope* scope = GetRadioButtonGroupScope())
     scope->UpdateCheckedState(this);
-  if (LayoutObject* o = GetLayoutObject())
-    o->InvalidateIfControlStateChanged(kCheckedControlState);
+  InvalidateIfHasEffectiveAppearance();
   SetNeedsValidityCheck();
 
   // Ideally we'd do this from the layout tree (matching
@@ -1033,8 +1065,10 @@ void HTMLInputElement::setIndeterminate(bool new_value) {
 
   PseudoStateChanged(CSSSelector::kPseudoIndeterminate);
 
-  if (LayoutObject* o = GetLayoutObject())
-    o->InvalidateIfControlStateChanged(kCheckedControlState);
+  InvalidateIfHasEffectiveAppearance();
+
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    cache->CheckedStateChanged(this);
 }
 
 unsigned HTMLInputElement::size() const {
@@ -1078,10 +1112,6 @@ String HTMLInputElement::value() const {
   }
   NOTREACHED();
   return g_empty_string;
-}
-
-String HTMLInputElement::rawValue() const {
-  return input_type_view_->RawValue();
 }
 
 String HTMLInputElement::ValueOrDefaultLabel() const {
@@ -1163,8 +1193,12 @@ void HTMLInputElement::setValue(const String& value,
                         selection);
   input_type_view_->DidSetValue(sanitized_value, value_changed);
 
-  if (value_changed)
+  if (value_changed) {
     NotifyFormStateChanged();
+    if (value.IsEmpty() && HasBeenPasswordField() && GetDocument().GetPage()) {
+      GetDocument().GetPage()->GetChromeClient().PasswordFieldReset(*this);
+    }
+  }
 }
 
 void HTMLInputElement::SetNonAttributeValue(const String& sanitized_value) {
@@ -1234,6 +1268,14 @@ void HTMLInputElement::setValueAsNumber(double new_value,
     return;
   }
   input_type_->SetValueAsDouble(new_value, event_behavior, exception_state);
+}
+
+Decimal HTMLInputElement::RatioValue() const {
+  DCHECK_EQ(type(), input_type_names::kRange);
+  const StepRange step_range(CreateStepRange(kRejectAny));
+  const Decimal old_value =
+      ParseToDecimalForNumberType(value(), step_range.DefaultValue());
+  return step_range.ProportionFromValue(step_range.ClampValue(old_value));
 }
 
 void HTMLInputElement::SetValueFromRenderer(const String& value) {
@@ -1724,6 +1766,7 @@ void HTMLInputElement::ResetListAttributeTargetObserver() {
 
 void HTMLInputElement::ListAttributeTargetChanged() {
   input_type_view_->ListAttributeTargetChanged();
+  PseudoStateChanged(CSSSelector::kPseudoHasDatalist);
 }
 
 bool HTMLInputElement::IsSteppable() const {
@@ -1744,6 +1787,53 @@ bool HTMLInputElement::IsLabelable() const {
 
 bool HTMLInputElement::MatchesDefaultPseudoClass() const {
   return input_type_->MatchesDefaultPseudoClass();
+}
+
+int HTMLInputElement::scrollWidth() {
+  if (!IsTextField())
+    return TextControlElement::scrollWidth();
+  // If in preview state, fake the scroll width to prevent that any information
+  // about the suggested content can be derived from the size.
+  if (!SuggestedValue().IsEmpty())
+    return clientWidth();
+
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
+  const auto* editor = InnerEditorElement();
+  const auto* editor_box = editor ? editor->GetLayoutBox() : nullptr;
+  const auto* box = GetLayoutBox();
+  if (!editor_box || !box)
+    return TextControlElement::scrollWidth();
+  // Adjust scrollWidth to include input element horizontal paddings and
+  // decoration width.
+  LayoutUnit adjustment = box->ClientWidth() - editor_box->ClientWidth();
+  return AdjustForAbsoluteZoom::AdjustLayoutUnit(
+             editor_box->ScrollWidth() + adjustment, box->StyleRef())
+      .Round();
+}
+
+int HTMLInputElement::scrollHeight() {
+  if (!IsTextField())
+    return TextControlElement::scrollHeight();
+
+  // If in preview state, fake the scroll height to prevent that any information
+  // about the suggested content can be derived from the size.
+  if (!SuggestedValue().IsEmpty())
+    return clientHeight();
+
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
+  const auto* editor = InnerEditorElement();
+  const auto* editor_box = editor ? editor->GetLayoutBox() : nullptr;
+  const auto* box = GetLayoutBox();
+  if (!editor_box || !box)
+    return TextControlElement::scrollHeight();
+  // Adjust scrollHeight to include input element vertical paddings and
+  // decoration height.
+  LayoutUnit adjustment = box->ClientHeight() - editor_box->ClientHeight();
+  return AdjustForAbsoluteZoom::AdjustLayoutUnit(
+             editor_box->ScrollHeight() + adjustment, box->StyleRef())
+      .Round();
 }
 
 bool HTMLInputElement::ShouldAppearChecked() const {
@@ -1833,7 +1923,7 @@ ListAttributeTargetObserver::ListAttributeTargetObserver(
                        id),
       element_(element) {}
 
-void ListAttributeTargetObserver::Trace(Visitor* visitor) {
+void ListAttributeTargetObserver::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   IdTargetObserver::Trace(visitor);
 }
@@ -1901,6 +1991,7 @@ bool HTMLInputElement::SetupDateTimeChooserParameters(
   parameters.anchor_rect_in_screen =
       GetDocument().View()->FrameToScreen(PixelSnappedBoundingBox());
   parameters.double_value = input_type_->ValueAsDouble();
+  parameters.focused_field_index = input_type_view_->FocusedFieldIndex();
   parameters.is_anchor_element_rtl =
       input_type_view_->ComputedTextDirection() == TextDirection::kRtl;
   if (HTMLDataListElement* data_list = DataList()) {
@@ -1926,6 +2017,14 @@ bool HTMLInputElement::SetupDateTimeChooserParameters(
 
 bool HTMLInputElement::SupportsInputModeAttribute() const {
   return input_type_->SupportsInputModeAttribute();
+}
+
+void HTMLInputElement::CapsLockStateMayHaveChanged() {
+  input_type_view_->CapsLockStateMayHaveChanged();
+}
+
+bool HTMLInputElement::ShouldDrawCapsLockIndicator() const {
+  return input_type_view_->ShouldDrawCapsLockIndicator();
 }
 
 void HTMLInputElement::SetShouldRevealPassword(bool value) {
@@ -1988,17 +2087,47 @@ void HTMLInputElement::ChildrenChanged(const ChildrenChange& change) {
   ContainerNode::ChildrenChanged(change);
 }
 
-PaintLayerScrollableArea* HTMLInputElement::GetScrollableArea() const {
-  // If it's LayoutTextControlSingleLine, return InnerEditorElement's scrollable
-  // area.
+LayoutBox* HTMLInputElement::GetLayoutBoxForScrolling() const {
+  // If it's LayoutTextControlSingleLine, return InnerEditorElement's LayoutBox.
   if (IsTextField() && InnerEditorElement())
-    return InnerEditorElement()->GetScrollableArea();
-
-  return Element::GetScrollableArea();
+    return InnerEditorElement()->GetLayoutBox();
+  return Element::GetLayoutBoxForScrolling();
 }
 
 bool HTMLInputElement::IsDraggedSlider() const {
   return input_type_view_->IsDraggedSlider();
+}
+
+void HTMLInputElement::MaybeReportPiiMetrics() {
+  // Don't report metrics if the field is empty.
+  if (value().IsEmpty())
+    return;
+
+  // Report the PII types derived from autofill field semantic type prediction.
+  if (GetFormElementPiiType() != FormElementPiiType::kUnknown) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kAnyPiiFieldDetected_PredictedTypeMatch);
+
+    if (GetFormElementPiiType() == FormElementPiiType::kEmail) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kEmailFieldDetected_PredictedTypeMatch);
+    } else if (GetFormElementPiiType() == FormElementPiiType::kPhone) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kPhoneFieldDetected_PredictedTypeMatch);
+    }
+  }
+
+  // Report the PII types derived by matching the field value with patterns.
+
+  // For Email, we add a length limitation (based on
+  // https://www.rfc-editor.org/errata_search.php?rfc=3696) in addition to
+  // matching with the pattern given by the HTML standard.
+  if (value().length() <= kMaxEmailFieldLength &&
+      EmailInputType::IsValidEmailAddress(GetDocument().EnsureEmailRegexp(),
+                                          value())) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kEmailFieldDetected_PatternMatch);
+  }
 }
 
 }  // namespace blink

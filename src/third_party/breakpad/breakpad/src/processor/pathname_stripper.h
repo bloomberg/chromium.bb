@@ -45,7 +45,7 @@ class PathnameStripper {
   // Given path, a pathname with components separated by slashes (/) or
   // backslashes (\), returns the trailing component, without any separator.
   // If path ends in a separator character, returns an empty string.
-  static string File(const string &path);
+  static string File(const string& path);
 };
 
 }  // namespace google_breakpad

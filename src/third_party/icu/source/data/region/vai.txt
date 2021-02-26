@@ -1,5 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+// License & terms of use: http://www.unicode.org/copyright.html
+// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
 vai{
     Countries{
         AC{"ꗻꗡ ꕒꕡꕌ ꗏ ꔳꘋꗣ"}
@@ -257,5 +258,4 @@ vai{
         ZM{"ꕤꔭꕩ"}
         ZW{"ꔽꕓꖜꔃ"}
     }
-    Version{"37"}
 }

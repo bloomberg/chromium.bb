@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "cc/paint/paint_canvas.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -43,8 +44,6 @@
 namespace blink {
 
 class Frame;
-class OpenedFrameTracker;
-class Visitor;
 class WebLocalFrame;
 class WebRemoteFrame;
 class WebSecurityOrigin;
@@ -72,6 +71,10 @@ class BLINK_EXPORT WebFrame {
 
   // Returns the number of live WebFrame objects, used for leak checking.
   static int InstanceCount();
+
+  // TODO(crbug.com/1096617): Remove the UnguessableToken version of this.
+  static WebFrame* FromFrameToken(const base::UnguessableToken&);
+  static WebFrame* FromFrameToken(const FrameToken&);
 
   virtual bool IsWebLocalFrame() const = 0;
   virtual WebLocalFrame* ToWebLocalFrame() = 0;
@@ -108,9 +111,6 @@ class BLINK_EXPORT WebFrame {
   // Returns the frame that opened this frame or 0 if there is none.
   WebFrame* Opener() const;
 
-  // Sets the frame that opened this one or 0 if there is none.
-  void SetOpener(WebFrame*);
-
   // Reset the frame that opened this frame to 0.
   // This is executed between web tests runs
   void ClearOpener();
@@ -127,8 +127,14 @@ class BLINK_EXPORT WebFrame {
   // Returns the first child frame.
   WebFrame* FirstChild() const;
 
+  // Returns the last child frame.
+  WebFrame* LastChild() const;
+
   // Returns the next sibling frame.
   WebFrame* NextSibling() const;
+
+  // Returns the previous sibling frame.
+  WebFrame* PreviousSibling() const;
 
   // Returns the next frame in "frame traversal order".
   WebFrame* TraverseNext() const;
@@ -157,6 +163,7 @@ class BLINK_EXPORT WebFrame {
   // This identifier represents the stable identifier between a
   // LocalFrame  <--> RenderFrameHostImpl or a
   // RemoteFrame <--> RenderFrameProxyHost in the browser process.
+  // TODO(crbug.com/1096617): Make this return a FrameToken instead.
   const base::UnguessableToken& GetFrameToken() const { return frame_token_; }
 
 #if INSIDE_BLINK
@@ -165,42 +172,14 @@ class BLINK_EXPORT WebFrame {
   static Frame* ToCoreFrame(const WebFrame&);
 
   bool InShadowTree() const { return scope_ == mojom::TreeScopeType::kShadow; }
-
-  static void TraceFrames(Visitor*, const WebFrame*);
-
-  // Detaches a frame from its parent frame if it has one.
-  void DetachFromParent();
 #endif
 
  protected:
   explicit WebFrame(mojom::TreeScopeType,
                     const base::UnguessableToken& frame_token);
-  virtual ~WebFrame();
-
-  // Sets the parent WITHOUT fulling adding it to the frame tree.
-  // Used to lie to a local frame that is replacing a remote frame,
-  // so it can properly start a navigation but wait to swap until
-  // commit-time.
-  void SetParent(WebFrame*);
-
-  // Inserts the given frame as a child of this frame, so that it is the next
-  // child after |previousSibling|, or first child if |previousSibling| is null.
-  void InsertAfter(WebFrame* child, WebFrame* previous_sibling);
-
-  // Adds the given frame as a child of this frame.
-  void AppendChild(WebFrame*);
+  virtual ~WebFrame() = default;
 
  private:
-#if INSIDE_BLINK
-  friend class OpenedFrameTracker;
-  friend class WebFrameTest;
-
-  static void TraceFrame(Visitor*, const WebFrame*);
-#endif
-
-  // Removes the given child from this frame.
-  void RemoveChild(WebFrame*);
-
   const mojom::TreeScopeType scope_;
 
   // See blink::Frame::frame_token_ for comments.
@@ -208,15 +187,6 @@ class BLINK_EXPORT WebFrame {
   // because a WebRemote's core frame is created inside the bowels of the Swap
   // call.
   const base::UnguessableToken frame_token_;
-
-  WebFrame* parent_;
-  WebFrame* previous_sibling_;
-  WebFrame* next_sibling_;
-  WebFrame* first_child_;
-  WebFrame* last_child_;
-
-  WebFrame* opener_;
-  std::unique_ptr<OpenedFrameTracker> opened_frame_tracker_;
 };
 
 }  // namespace blink

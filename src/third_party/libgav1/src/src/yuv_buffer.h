@@ -111,7 +111,7 @@ class YuvBuffer {
   int bottom_border(int plane) const { return bottom_border_[plane]; }
 
   // Returns the alignment of frame buffer row in bytes.
-  int alignment() const { return 16; }
+  int alignment() const { return kFrameBufferRowAlignment; }
 
   // Backup the current set of warnings and disable -Warray-bounds for the
   // following three functions as the compiler cannot, in all cases, determine
@@ -145,6 +145,7 @@ class YuvBuffer {
 #endif
 
  private:
+  static constexpr int kFrameBufferRowAlignment = 16;
   int bitdepth_ = 0;
   bool is_monochrome_ = false;
 

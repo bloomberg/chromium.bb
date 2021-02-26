@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/signin/chrome_signin_client.h"
-
 #include <memory>
 #include <utility>
 
@@ -245,6 +244,13 @@ bool IsSignoutDisallowedByPolicy(
     case signin_metrics::ProfileSignout::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST:
       // Allow signout for tests that want to force it.
       return false;
+    case signin_metrics::ProfileSignout::USER_DELETED_ACCOUNT_COOKIES:
+    case signin_metrics::ProfileSignout::MOBILE_IDENTITY_CONSISTENCY_ROLLBACK:
+      // There's no special-casing for these in ChromeSigninClient, as they only
+      // happen when there's no sync account and policies aren't enforced.
+      // PrimaryAccountManager won't actually invoke PreSignOut in this case,
+      // thus it is fine for ChromeSigninClient to not have any special-casing.
+      return true;
     case signin_metrics::ProfileSignout::NUM_PROFILE_SIGNOUT_METRICS:
       NOTREACHED();
       return false;
@@ -273,7 +279,8 @@ TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutAllowed) {
   PreSignOut(signout_source, delete_metric);
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_MAC)
 TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutDisallowed) {
   signin_metrics::ProfileSignout signout_source = GetParam();
 
@@ -316,6 +323,8 @@ const signin_metrics::ProfileSignout kSignoutSources[] = {
     signin_metrics::ProfileSignout::ACCOUNT_REMOVED_FROM_DEVICE,
     signin_metrics::ProfileSignout::SIGNIN_NOT_ALLOWED_ON_PROFILE_INIT,
     signin_metrics::ProfileSignout::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
+    signin_metrics::ProfileSignout::USER_DELETED_ACCOUNT_COOKIES,
+    signin_metrics::ProfileSignout::MOBILE_IDENTITY_CONSISTENCY_ROLLBACK,
 };
 static_assert(base::size(kSignoutSources) ==
                   signin_metrics::ProfileSignout::NUM_PROFILE_SIGNOUT_METRICS,

@@ -1,42 +1,22 @@
 /**
-* AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
-**/
-
-// Takes a stack trace, and extracts only the first continuous range of lines
-// containing '/(webgpu|unittests)/', which should provide only the useful part
-// of the stack to the caller (for logging).
-export function getStackTrace(e) {
+ * AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
+ **/ // Returns the stack trace of an Error, but without the extra boilerplate at the bottom
+// (e.g. RunCaseSpecific, processTicksAndRejections, etc.), for logging.
+export function extractImportantStackTrace(e) {
   if (!e.stack) {
     return '';
   }
-
-  const parts = e.stack.split('\n');
-  const stack = [];
-  const moreStack = [];
-  let found = false;
-  const commonRegex = /[\/\\](webgpu|unittests)[\/\\]/;
-
-  for (let i = 0; i < parts.length; ++i) {
-    const part = parts[i].trim();
-    const isSuites = commonRegex.test(part); // approximate
-
-    if (found && !isSuites) {
-      moreStack.push(part);
-    }
-
-    if (isSuites) {
-      if (moreStack.length) {
-        stack.push(...moreStack);
-        moreStack.length = 0;
-      }
-
-      stack.push(part);
-      found = true;
+  const lines = e.stack.split('\n');
+  for (let i = lines.length - 1; i >= 0; --i) {
+    const line = lines[i];
+    if (line.indexOf('.spec.') !== -1) {
+      return lines.slice(0, i + 1).join('\n');
     }
   }
+  return e.stack;
+}
 
-  return stack.join('\n');
-} // *** Examples ***
+// *** Examples ***
 //
 // Node fail()
 // > Error:
@@ -96,4 +76,3 @@ export function getStackTrace(e) {
 // x     at async RunCaseSpecific.run (http://localhost:8080/out/framework/test_group.js:119:7)
 // x     at async runCase (http://localhost:8080/out/runtime/standalone.js:37:17)
 // x     at async http://localhost:8080/out/runtime/standalone.js:102:7
-//# sourceMappingURL=stack.js.map

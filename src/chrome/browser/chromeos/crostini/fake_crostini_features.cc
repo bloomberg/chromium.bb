@@ -23,6 +23,7 @@ void FakeCrostiniFeatures::SetAll(bool flag) {
   root_access_allowed_ = flag;
   container_upgrade_ui_allowed_ = flag;
   can_change_adb_sideloading_ = flag;
+  port_forwarding_allowed_ = flag;
 }
 
 void FakeCrostiniFeatures::ClearAll() {
@@ -33,6 +34,7 @@ void FakeCrostiniFeatures::ClearAll() {
   root_access_allowed_ = base::nullopt;
   container_upgrade_ui_allowed_ = base::nullopt;
   can_change_adb_sideloading_ = base::nullopt;
+  port_forwarding_allowed_ = base::nullopt;
 }
 
 bool FakeCrostiniFeatures::IsAllowed(Profile* profile) {
@@ -71,10 +73,20 @@ bool FakeCrostiniFeatures::IsContainerUpgradeUIAllowed(Profile* profile) {
   return original_features_->IsContainerUpgradeUIAllowed(profile);
 }
 
-bool FakeCrostiniFeatures::CanChangeAdbSideloading(Profile* profile) {
-  if (can_change_adb_sideloading_.has_value())
-    return *can_change_adb_sideloading_;
-  return original_features_->CanChangeAdbSideloading(profile);
+void FakeCrostiniFeatures::CanChangeAdbSideloading(
+    Profile* profile,
+    CanChangeAdbSideloadingCallback callback) {
+  if (can_change_adb_sideloading_.has_value()) {
+    std::move(callback).Run(*can_change_adb_sideloading_);
+    return;
+  }
+  original_features_->CanChangeAdbSideloading(profile, std::move(callback));
+}
+
+bool FakeCrostiniFeatures::IsPortForwardingAllowed(Profile* profile) {
+  if (port_forwarding_allowed_.has_value())
+    return *port_forwarding_allowed_;
+  return original_features_->IsPortForwardingAllowed(profile);
 }
 
 }  // namespace crostini

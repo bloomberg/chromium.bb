@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
-#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -28,13 +27,11 @@ class ShareData;
 class MODULES_EXPORT NavigatorShare final
     : public GarbageCollected<NavigatorShare>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorShare);
-
  public:
   static const char kSupplementName[];
 
-  NavigatorShare();
-  ~NavigatorShare();
+  NavigatorShare() = default;
+  ~NavigatorShare() = default;
 
   // Gets, or creates, NavigatorShare supplement on Navigator.
   // See platform/Supplementable.h
@@ -49,18 +46,18 @@ class MODULES_EXPORT NavigatorShare final
                              const ShareData*,
                              ExceptionState&);
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class ShareClientImpl;
 
   void OnConnectionError();
 
-  HeapMojoRemote<blink::mojom::blink::ShareService,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      service_remote_;
+  // |NavigatorShare| is not ExecutionContext-associated.
+  HeapMojoRemote<blink::mojom::blink::ShareService> service_remote_{nullptr};
 
-  HeapHashSet<Member<ShareClientImpl>> clients_;
+  // Represents a user's current intent to share some data.
+  Member<ShareClientImpl> client_ = nullptr;
 };
 
 }  // namespace blink

@@ -7,9 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
@@ -19,7 +18,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_switches.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "components/prefs/pref_service.h"
 
@@ -73,6 +71,10 @@ bool CloudPolicyManager::IsInitializationComplete(PolicyDomain domain) const {
     return component_policy_service_->is_initialized();
   }
   return true;
+}
+
+bool CloudPolicyManager::IsFirstPolicyLoadComplete(PolicyDomain domain) const {
+  return store()->first_policies_loaded();
 }
 
 void CloudPolicyManager::RefreshPolicies() {
@@ -133,11 +135,8 @@ void CloudPolicyManager::CreateComponentCloudPolicyService(
   // See the comments on ComponentCloudPolicyService for the details.
   CHECK(!core()->client());
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableComponentCloudPolicy) ||
-      policy_cache_path.empty()) {
+  if (policy_cache_path.empty())
     return;
-  }
 
   // TODO(emaxx, 729082): Make ComponentCloudPolicyStore (and other
   // implementation details of it) not use the blocking task runner whenever

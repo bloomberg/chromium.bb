@@ -87,17 +87,10 @@ class CanvasResourceDispatcherTest
 
   void CreateCanvasResourceDispatcher() {
     dispatcher_ = std::make_unique<MockCanvasResourceDispatcher>();
-    // TODO(crbug/1035589) Previously a call to the more generic function
-    // `CanvasResourceProvider::Create` was used but due to `presentationMode =
-    // kDefaultPresentationMode` created a sharedBitmap 100% of the time.
-    // Investigate study if the Bitmap fallback makes sense or not.
     resource_provider_ = CanvasResourceProvider::CreateSharedBitmapProvider(
-        IntSize(kWidth, kHeight), nullptr /* context_provider_wrapper */,
-        kLow_SkFilterQuality, CanvasColorParams(), dispatcher_->GetWeakPtr());
-    if (!resource_provider_) {
-      resource_provider_ = CanvasResourceProvider::CreateBitmapProvider(
-          IntSize(kWidth, kHeight), kLow_SkFilterQuality, CanvasColorParams());
-    }
+        IntSize(kWidth, kHeight), kLow_SkFilterQuality, CanvasColorParams(),
+        CanvasResourceProvider::ShouldInitialize::kCallClear,
+        dispatcher_->GetWeakPtr());
   }
 
   MockCanvasResourceDispatcher* Dispatcher() { return dispatcher_.get(); }
@@ -243,7 +236,7 @@ TEST_P(CanvasResourceDispatcherTest, DispatchFrame) {
               SubmitCompositorFrame_(_))
       .WillOnce(::testing::WithArg<0>(
           ::testing::Invoke([context_alpha](const viz::CompositorFrame* frame) {
-            const viz::RenderPass* render_pass =
+            const viz::CompositorRenderPass* render_pass =
                 frame->render_pass_list[0].get();
 
             EXPECT_EQ(render_pass->transform_to_root_target, gfx::Transform());

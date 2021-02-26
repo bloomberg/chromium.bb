@@ -26,6 +26,7 @@
 #include "base/task/post_task.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/crx_file/crx_verifier.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,6 +35,7 @@
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
+#include "extensions/browser/install_stage.h"
 #include "extensions/browser/zipfile_installer.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/constants.h"
@@ -76,7 +78,7 @@ bool VerifyJunctionFreeLocation(base::FilePath* temp_dir) {
   // If you change the exit points of this function please make sure all
   // exit points delete this temp file!
   if (base::WriteFile(temp_file, ".", 1) != 1) {
-    base::DeleteFile(temp_file, false);
+    base::DeleteFile(temp_file);
     return false;
   }
 
@@ -91,7 +93,7 @@ bool VerifyJunctionFreeLocation(base::FilePath* temp_dir) {
   }
 
   // Clean up the temp file.
-  base::DeleteFile(temp_file, false);
+  base::DeleteFile(temp_file);
 
   return normalized;
 }
@@ -107,7 +109,7 @@ bool FindWritableTempLocation(const base::FilePath& extensions_dir,
 // On ChromeOS, we will only attempt to unpack extension in cryptohome (profile)
 // directory to provide additional security/privacy and speed up the rest of
 // the extension install process.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   base::PathService::Get(base::DIR_TEMP, temp_dir);
   if (VerifyJunctionFreeLocation(temp_dir))
     return true;
@@ -156,7 +158,7 @@ base::Optional<crx_file::VerifierFormat> g_verifier_format_override_for_test;
 
 SandboxedUnpackerClient::SandboxedUnpackerClient()
     : RefCountedDeleteOnSequence<SandboxedUnpackerClient>(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})) {
+          content::GetUIThreadTaskRunner({})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -222,7 +224,7 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
   // We assume that we are started on the thread that the client wants us
   // to do file IO on.
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
-
+  client_->OnStageChanged(InstallationStage::kVerification);
   std::string expected_hash;
   if (!crx_info.expected_hash.empty() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -242,6 +244,7 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
                              crx_info.required_format)))
     return;  // ValidateSignature() already reported the error.
 
+  client_->OnStageChanged(InstallationStage::kCopying);
   // Copy the crx file into our working directory.
   base::FilePath temp_crx_path =
       temp_dir_.GetPath().Append(crx_info.path.BaseName());
@@ -271,7 +274,7 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
         l10n_util::GetStringUTF16(IDS_EXTENSION_UNPACK_FAILED));
     return;
   }
-
+  client_->OnStageChanged(InstallationStage::kUnpacking);
   // Make sure to create the directory where the extension will be unzipped, as
   // the unzipper service requires it.
   base::FilePath unzipped_dir =
@@ -339,7 +342,8 @@ void SandboxedUnpacker::Unzip(const base::FilePath& crx_path,
 
   DCHECK(crx_path.DirName() == temp_dir_.GetPath());
 
-  ZipFileInstaller::Create(base::BindOnce(&SandboxedUnpacker::UnzipDone, this))
+  ZipFileInstaller::Create(unpacker_io_task_runner_,
+                           base::BindOnce(&SandboxedUnpacker::UnzipDone, this))
       ->LoadFromZipFileInDir(crx_path, unzipped_dir);
 }
 
@@ -470,7 +474,8 @@ void SandboxedUnpacker::UnpackExtensionSucceeded(base::Value manifest) {
   image_sanitizer_ = ImageSanitizer::CreateAndStart(
       &data_decoder_, extension_root_, image_paths,
       base::BindRepeating(&SandboxedUnpacker::ImageSanitizerDecodedImage, this),
-      base::BindOnce(&SandboxedUnpacker::ImageSanitizationDone, this));
+      base::BindOnce(&SandboxedUnpacker::ImageSanitizationDone, this),
+      unpacker_io_task_runner_);
 }
 
 void SandboxedUnpacker::ImageSanitizerDecodedImage(const base::FilePath& path,
@@ -564,7 +569,8 @@ void SandboxedUnpacker::SanitizeMessageCatalogs(
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   json_file_sanitizer_ = JsonFileSanitizer::CreateAndStart(
       &data_decoder_, message_catalog_paths,
-      base::BindOnce(&SandboxedUnpacker::MessageCatalogsSanitized, this));
+      base::BindOnce(&SandboxedUnpacker::MessageCatalogsSanitized, this),
+      unpacker_io_task_runner_);
 }
 
 void SandboxedUnpacker::MessageCatalogsSanitized(
@@ -629,7 +635,7 @@ void SandboxedUnpacker::OnJSONRulesetsIndexed(
   if (!result.warnings.empty())
     extension_->AddInstallWarnings(std::move(result.warnings));
 
-  ruleset_checksums_ = std::move(result.ruleset_checksums);
+  ruleset_install_prefs_ = std::move(result.ruleset_install_prefs);
 
   CheckComputeHashes();
 }
@@ -889,11 +895,11 @@ void SandboxedUnpacker::ReportSuccess() {
       temp_dir_.Take(), extension_root_,
       base::DictionaryValue::From(
           base::Value::ToUniquePtrValue(std::move(manifest_.value()))),
-      extension_.get(), install_icon_, std::move(ruleset_checksums_));
+      extension_.get(), install_icon_, std::move(ruleset_install_prefs_));
 
   // Interestingly, the C++ standard doesn't guarantee that a moved-from vector
   // is empty.
-  ruleset_checksums_.clear();
+  ruleset_install_prefs_.clear();
 
   extension_.reset();
 

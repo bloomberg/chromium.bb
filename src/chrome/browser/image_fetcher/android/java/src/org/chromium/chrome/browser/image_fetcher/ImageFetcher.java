@@ -24,10 +24,13 @@ public abstract class ImageFetcher {
     public static final String ANSWER_SUGGESTIONS_UMA_CLIENT_NAME = "AnswerSuggestions";
     public static final String ASSISTANT_DETAILS_UMA_CLIENT_NAME = "AssistantDetails";
     public static final String ASSISTANT_INFO_BOX_UMA_CLIENT_NAME = "AssistantInfoBox";
+    public static final String CRYPTIDS_UMA_CLIENT_NAME = "Cryptids";
     public static final String ENTITY_SUGGESTIONS_UMA_CLIENT_NAME = "EntitySuggestions";
     public static final String FEED_UMA_CLIENT_NAME = "Feed";
     public static final String NTP_ANIMATED_LOGO_UMA_CLIENT_NAME = "NewTabPageAnimatedLogo";
     public static final String QUERY_TILE_UMA_CLIENT_NAME = "QueryTiles";
+    public static final String VIDEO_TUTORIALS_IPH_UMA_CLIENT_NAME = "VideoTutorialsIPH";
+    public static final String VIDEO_TUTORIALS_LIST_UMA_CLIENT_NAME = "VideoTutorialsList";
 
     /**
      * Encapsulates image fetching customization options. Supports a subset of the native
@@ -192,40 +195,13 @@ public abstract class ImageFetcher {
     /**
      * Fetch the gif for the given url.
      *
-     * @param url The url to fetch the image from.
-     * @param clientName The UMA client name to report the metrics to. If using CachedImageFetcher
-     *         to fetch images and gifs, use separate clientNames for them.
+     * @param params The parameters to specify image fetching details. If using CachedImageFetcher
+     *         to fetch images and gifs, use separate {@link Params#clientName} for them.
      * @param callback The function which will be called when the image is ready; will be called
      *         with null result if fetching fails.
      */
-    public abstract void fetchGif(String url, String clientName, Callback<BaseGifImage> callback);
-
-    /**
-     * Fetches the image at url with the desired size. Image is null if not found or fails decoding.
-     *
-     * @param url The url to fetch the image from.
-     * @param clientName Name of the cached image fetcher client to report UMA metrics for.
-     * @param width The new bitmap's desired width (in pixels). If the given value is <= 0, the
-     *         image won't be scaled.
-     * @param height The new bitmap's desired height (in pixels). If the given value is <= 0, the
-     *         image won't be scaled.
-     * @param callback The function which will be called when the image is ready; will be called
-     *         with null result if fetching fails;
-     */
-    public abstract void fetchImage(
-            String url, String clientName, int width, int height, Callback<Bitmap> callback);
-
-    /**
-     * Alias of fetchImage that ignores scaling.
-     *
-     * @param url The url to fetch the image from.
-     * @param clientName Name of the cached image fetcher client to report UMA metrics for.
-     * @param callback The function which will be called when the image is ready; will be called
-     *         with null result if fetching fails;
-     */
-    public void fetchImage(String url, String clientName, Callback<Bitmap> callback) {
-        fetchImage(ImageFetcher.Params.create(url, clientName), callback);
-    }
+    public abstract void fetchGif(
+            final ImageFetcher.Params params, Callback<BaseGifImage> callback);
 
     /**
      * Fetches the image based on customized parameters specified.

@@ -4,6 +4,7 @@
 #
 # This file houses the build configuration for the ANGLE Vulkan back-end.
 
+import("//build/config/dcheck_always_on.gni")
 import("//build_overrides/swiftshader.gni")
 import("../../../../gni/angle.gni")
 
@@ -20,10 +21,14 @@ declare_args() {
 _vulkan_backend_sources = [
   "BufferVk.cpp",
   "BufferVk.h",
+  "CommandProcessor.cpp",
+  "CommandProcessor.h",
   "CompilerVk.cpp",
   "CompilerVk.h",
   "ContextVk.cpp",
   "ContextVk.h",
+  "DebugAnnotatorVk.cpp",
+  "DebugAnnotatorVk.h",
   "DeviceVk.cpp",
   "DeviceVk.h",
   "DisplayVk.cpp",
@@ -83,7 +88,6 @@ _vulkan_backend_sources = [
   "vk_cache_utils.h",
   "vk_caps_utils.cpp",
   "vk_caps_utils.h",
-  "vk_ext_provoking_vertex.h",
   "vk_format_table_autogen.cpp",
   "vk_format_utils.cpp",
   "vk_format_utils.h",
@@ -96,6 +100,15 @@ _vulkan_backend_sources = [
   "vk_utils.h",
   "vk_wrapper.h",
 ]
+
+if (is_linux) {
+  _vulkan_backend_sources += [
+    "display/DisplayVkSimple.cpp",
+    "display/DisplayVkSimple.h",
+    "display/WindowSurfaceVkSimple.cpp",
+    "display/WindowSurfaceVkSimple.h",
+  ]
+}
 
 if (is_android) {
   _vulkan_backend_sources += [
@@ -155,47 +168,6 @@ if (is_mac) {
   ]
 }
 
-config("angle_vulkan_lib_android") {
-  if (is_android) {
-    libs = [ "vulkan" ]
-  }
-}
-
-config("angle_vulkan_headers_config") {
-  if (angle_shared_libvulkan) {
-    defines = [ "ANGLE_SHARED_LIBVULKAN=1" ]
-  }
-}
-
-angle_source_set("angle_vulkan_headers") {
-  sources = [ "vk_headers.h" ]
-  if (angle_shared_libvulkan) {
-    public_deps = [ "$angle_root/src/third_party/volk:volk" ]
-  } else {
-    public_deps =
-        [ "$angle_root/third_party/vulkan-headers/src:vulkan_headers" ]
-  }
-  public_configs = [ ":angle_vulkan_headers_config" ]
-}
-
-group("angle_vulkan_entry_points") {
-  public_configs = [ ":angle_vulkan_lib_android" ]
-  public_deps = [ ":angle_vulkan_headers" ]
-  if (is_fuchsia) {
-    public_deps += [
-      "$angle_root/src/common/fuchsia_egl",
-      "//third_party/fuchsia-sdk:vulkan_base",
-      "//third_party/fuchsia-sdk/sdk/pkg/vulkan",
-    ]
-  } else if (!is_android && !is_ggp) {
-    if (angle_shared_libvulkan) {
-      data_deps = [ "$angle_root/third_party/vulkan-loader/src:libvulkan" ]
-    } else {
-      deps = [ "$angle_root/third_party/vulkan-loader/src:libvulkan" ]
-    }
-  }
-}
-
 config("angle_vulkan_backend_config") {
   defines = [ "ANGLE_ENABLE_VULKAN" ]
   if (angle_enable_swiftshader) {
@@ -207,13 +179,17 @@ config("angle_vulkan_backend_config") {
   if (angle_enable_vulkan_gpu_trace_events) {
     defines += [ "ANGLE_ENABLE_VULKAN_GPU_TRACE_EVENTS=1" ]
   }
+  if (angle_enable_vulkan_validation_layers) {
+    defines += [ "ANGLE_ENABLE_VULKAN_VALIDATION_LAYERS" ]
+  }
 }
 
 angle_source_set("angle_vk_mem_alloc_wrapper") {
   deps = [
-    ":angle_vulkan_headers",
+    "$angle_root/src/common/vulkan:angle_vulkan_headers",
     "$angle_vulkan_memory_allocator_dir",
   ]
+  configs += [ "$angle_root:angle_no_cfi_unrelated_cast" ]
   sources = [
     "vk_mem_alloc_wrapper.cpp",
     "vk_mem_alloc_wrapper.h",
@@ -223,6 +199,8 @@ angle_source_set("angle_vk_mem_alloc_wrapper") {
     cflags_cc = [
       "-Wno-extra-semi-stmt",
       "-Wno-missing-field-initializers",
+      "-Wno-suggest-destructor-override",
+      "-Wno-suggest-override",
     ]
   }
 }
@@ -232,23 +210,40 @@ angle_source_set("angle_vulkan_backend") {
   libs = []
   deps = [
     ":angle_vk_mem_alloc_wrapper",
-    ":angle_vulkan_entry_points",
-    ":angle_vulkan_headers",
+    "$angle_root:angle_abseil",
+    "$angle_root:angle_compression",
     "$angle_root:angle_gpu_info_util",
     "$angle_root:angle_image_util",
-    "$angle_spirv_tools_dir:spvtools_val",
   ]
+
+  if (dcheck_always_on || is_debug) {
+    deps += [ "$angle_spirv_tools_dir:spvtools_val" ]
+  }
+
   public_deps = [
     "$angle_root:angle_glslang_wrapper",
     "$angle_root:libANGLE_headers",
     "$angle_root/src/common/vulkan",
+    "$angle_root/src/common/vulkan:angle_vulkan_entry_points",
+    "$angle_root/src/common/vulkan:angle_vulkan_headers",
   ]
   public_configs = [ ":angle_vulkan_backend_config" ]
 
   data_deps = []
 
+  defines = []
+
+  if (angle_enable_vulkan_validation_layers) {
+    defines += [ "ANGLE_ENABLE_VULKAN_VALIDATION_LAYERS_BY_DEFAULT" ]
+    data_deps += [ "$angle_root/src/common/vulkan:vulkan_validation_layers" ]
+  }
+
   if (is_android) {
     libs += [ "vulkan" ]
+  }
+
+  if (is_fuchsia) {
+    public_deps += [ "$angle_root/src/common/fuchsia_egl:backend" ]
   }
 
   # Include generated shaders.

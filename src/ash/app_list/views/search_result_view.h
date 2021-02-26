@@ -67,7 +67,7 @@ class APP_LIST_EXPORT SearchResultView
   void CreateDetailsRenderText();
 
   // Callback for query suggstion removal confirmation.
-  void OnQueryRemovalAccepted(int event_flags, bool accepted);
+  void OnQueryRemovalAccepted(bool accepted);
 
   // views::View overrides:
   const char* GetClassName() const override;
@@ -83,9 +83,6 @@ class APP_LIST_EXPORT SearchResultView
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // views::ButtonListener overrides:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   // views::ContextMenuController overrides:
   void ShowContextMenuForViewImpl(views::View* source,
                                   const gfx::Point& point,
@@ -100,12 +97,14 @@ class APP_LIST_EXPORT SearchResultView
   // SearchResultObserver overrides:
   void OnMetadataChanged() override;
 
+  void OnButtonPressed(const ui::Event& event);
+
   void SetIconImage(const gfx::ImageSkia& source,
                     views::ImageView* const icon,
                     const int icon_dimension);
 
   // SearchResultActionsViewDelegate overrides:
-  void OnSearchResultActionActivated(size_t index, int event_flags) override;
+  void OnSearchResultActionActivated(size_t index) override;
   bool IsSearchResultHoveredOrSelected() override;
 
   // Invoked when the context menu closes.

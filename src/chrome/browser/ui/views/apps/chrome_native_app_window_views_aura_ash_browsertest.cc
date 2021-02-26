@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura_ash.h"
 
-#include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "ash/public/cpp/window_properties.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
@@ -17,11 +15,16 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
+#include "chromeos/ui/base/window_properties.h"
+#include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/views/view_observer.h"
 #include "ui/wm/core/window_util.h"
 
@@ -63,12 +66,53 @@ class ChromeNativeAppWindowViewsAuraAshBrowserTest
 
   bool IsImmersiveActive() {
     return window()->widget()->GetNativeWindow()->GetProperty(
-        ash::kImmersiveIsActive);
+        chromeos::kImmersiveIsActive);
   }
 
   ChromeNativeAppWindowViewsAuraAsh* window() {
     return static_cast<ChromeNativeAppWindowViewsAuraAsh*>(
         GetFirstAppWindow()->GetBaseWindow());
+  }
+
+  std::unique_ptr<ExtensionTestMessageListener>
+  LaunchPlatformAppWithFocusedWindow() {
+    std::unique_ptr<ExtensionTestMessageListener> launched_listener =
+        std::make_unique<ExtensionTestMessageListener>("Launched", true);
+    LoadAndLaunchPlatformApp("leave_fullscreen", launched_listener.get());
+
+    // We start by making sure the window is actually focused.
+    EXPECT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+        GetFirstAppWindow()->GetNativeWindow()));
+    return launched_listener;
+  }
+
+  // When receiving the reply, the application will try to go fullscreen using
+  // the Window API but there is no synchronous way to know if that actually
+  // succeeded. Also, failure will not be notified. A failure case will only be
+  // known with a timeout.
+  void WaitFullscreenChange(ExtensionTestMessageListener* launched_listener) {
+    FullscreenChangeWaiter fullscreen_changed(
+        GetFirstAppWindow()->GetBaseWindow());
+    launched_listener->Reply("window");
+    fullscreen_changed.Wait();
+  }
+
+  // Because the DOM way to go fullscreen requires user gesture, we simulate a
+  // key event to get the window to enter fullscreen mode. The reply will
+  // make the window listen for the key event. The reply will be sent to the
+  // renderer process before the keypress and should be received in that order.
+  // When receiving the key event, the application will try to go fullscreen
+  // using the Window API but there is no synchronous way to know if that
+  // actually succeeded. Also, failure will not be notified. A failure case will
+  // only be known with a timeout.
+  void WaitFullscreenChangeUntilKeyFocus(
+      ExtensionTestMessageListener* launched_listener) {
+    launched_listener->Reply("dom");
+
+    FullscreenChangeWaiter fs_changed(GetFirstAppWindow()->GetBaseWindow());
+    WaitUntilKeyFocus();
+    ASSERT_TRUE(SimulateKeyPress(ui::VKEY_A));
+    fs_changed.Wait();
   }
 
   extensions::AppWindow* app_window_ = nullptr;
@@ -178,10 +222,10 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   EXPECT_FALSE(IsImmersiveActive());
 }
 
-// Make sure a normal window is not in immersive mode, and uses
-// immersive in fullscreen.
+// Verify that immersive mode stays disabled in the public session, no matter
+// that the app is in a normal window or fullscreen mode.
 IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
-                       PublicSessionImmersiveMode) {
+                       PublicSessionNoImmersiveModeWhenFullscreen) {
   chromeos::ScopedTestPublicSessionLoginState login_state;
 
   InitWindow();
@@ -191,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   app_window_->SetFullscreen(extensions::AppWindow::FULLSCREEN_TYPE_HTML_API,
                              true);
 
-  EXPECT_TRUE(IsImmersiveActive());
+  EXPECT_FALSE(IsImmersiveActive());
 }
 
 // Verifies that apps in clamshell mode with immersive fullscreen enabled will
@@ -231,118 +275,115 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   CloseAppWindow(app_window_);
 }
 
+// Ensures that JS-activated fullscreen doesn't trigger the immersive mode or
+// show a bubble except the public session. (Window API)
 IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                        NoImmersiveOrBubbleOutsidePublicSessionWindow) {
-  ExtensionTestMessageListener launched_listener("Launched", true);
-  LoadAndLaunchPlatformApp("leave_fullscreen", &launched_listener);
-
-  // We start by making sure the window is actually focused.
-  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
-      GetFirstAppWindow()->GetNativeWindow()));
-
-  // When receiving the reply, the application will try to go fullscreen using
-  // the Window API but there is no synchronous way to know if that actually
-  // succeeded. Also, failure will not be notified. A failure case will only be
-  // known with a timeout.
-  {
-    FullscreenChangeWaiter fs_changed(GetFirstAppWindow()->GetBaseWindow());
-
-    launched_listener.Reply("window");
-
-    fs_changed.Wait();
-  }
+  std::unique_ptr<ExtensionTestMessageListener> launched_listener =
+      LaunchPlatformAppWithFocusedWindow();
+  WaitFullscreenChange(launched_listener.get());
 
   EXPECT_FALSE(window()->IsImmersiveModeEnabled());
   EXPECT_FALSE(window()->exclusive_access_bubble_);
 }
 
+// Ensures that JS-activated fullscreen doesn't trigger the immersive mode or
+// show a bubble except the public session. (DOM)
 IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                        NoImmersiveOrBubbleOutsidePublicSessionDom) {
-  ExtensionTestMessageListener launched_listener("Launched", true);
-  LoadAndLaunchPlatformApp("leave_fullscreen", &launched_listener);
-
-  // We start by making sure the window is actually focused.
-  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
-      GetFirstAppWindow()->GetNativeWindow()));
-
-  launched_listener.Reply("dom");
-
-  // Because the DOM way to go fullscreen requires user gesture, we simulate a
-  // key event to get the window entering in fullscreen mode. The reply will
-  // make the window listen for the key event. The reply will be sent to the
-  // renderer process before the keypress and should be received in that order.
-  // When receiving the key event, the application will try to go fullscreen
-  // using the Window API but there is no synchronous way to know if that
-  // actually succeeded. Also, failure will not be notified. A failure case will
-  // only be known with a timeout.
-  {
-    FullscreenChangeWaiter fs_changed(GetFirstAppWindow()->GetBaseWindow());
-
-    WaitUntilKeyFocus();
-    ASSERT_TRUE(SimulateKeyPress(ui::VKEY_A));
-
-    fs_changed.Wait();
-  }
+  std::unique_ptr<ExtensionTestMessageListener> launched_listener =
+      LaunchPlatformAppWithFocusedWindow();
+  WaitFullscreenChangeUntilKeyFocus(launched_listener.get());
 
   EXPECT_FALSE(window()->IsImmersiveModeEnabled());
   EXPECT_FALSE(window()->exclusive_access_bubble_);
 }
 
+// Ensures that JS-activated fullscreen in the Public session doesn't trigger
+// the immersive mode, but shows a bubble to guide users how to exit the
+// fullscreen mode under different conditions. (Window API)
 IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
-                       ImmersiveAndBubbleInsidePublicSessionWindow) {
+                       BubbleInsidePublicSessionWindow) {
   chromeos::ScopedTestPublicSessionLoginState state;
-  ExtensionTestMessageListener launched_listener("Launched", true);
-  LoadAndLaunchPlatformApp("leave_fullscreen", &launched_listener);
+  std::unique_ptr<ExtensionTestMessageListener> launched_listener =
+      LaunchPlatformAppWithFocusedWindow();
+  WaitFullscreenChange(launched_listener.get());
 
-  // We start by making sure the window is actually focused.
-  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
-      GetFirstAppWindow()->GetNativeWindow()));
-
-  // When receiving the reply, the application will try to go fullscreen using
-  // the Window API but there is no synchronous way to know if that actually
-  // succeeded. Also, failure will not be notified. A failure case will only be
-  // known with a timeout.
-  {
-    FullscreenChangeWaiter fs_changed(GetFirstAppWindow()->GetBaseWindow());
-
-    launched_listener.Reply("window");
-
-    fs_changed.Wait();
-  }
-
-  EXPECT_TRUE(window()->IsImmersiveModeEnabled());
+  EXPECT_FALSE(window()->IsImmersiveModeEnabled());
   EXPECT_TRUE(window()->exclusive_access_bubble_);
 }
 
+// Ensures that JS-activated fullscreen in the Public session doesn't trigger
+// the immersive mode, but shows a bubble to guide users how to exit the
+// fullscreen mode under different conditions. (DOM)
 IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
-                       ImmersiveAndBubbleInsidePublicSessionDom) {
+                       BubbleInsidePublicSessionDom) {
   chromeos::ScopedTestPublicSessionLoginState state;
-  ExtensionTestMessageListener launched_listener("Launched", true);
-  LoadAndLaunchPlatformApp("leave_fullscreen", &launched_listener);
+  std::unique_ptr<ExtensionTestMessageListener> launched_listener =
+      LaunchPlatformAppWithFocusedWindow();
+  WaitFullscreenChangeUntilKeyFocus(launched_listener.get());
 
-  // We start by making sure the window is actually focused.
-  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
-      GetFirstAppWindow()->GetNativeWindow()));
-
-  launched_listener.Reply("dom");
-
-  // Because the DOM way to go fullscreen requires user gesture, we simulate a
-  // key event to get the window entering in fullscreen mode. The reply will
-  // make the window listen for the key event. The reply will be sent to the
-  // renderer process before the keypress and should be received in that order.
-  // When receiving the key event, the application will try to go fullscreen
-  // using the Window API but there is no synchronous way to know if that
-  // actually succeeded. Also, failure will not be notified. A failure case will
-  // only be known with a timeout.
-  {
-    FullscreenChangeWaiter fs_changed(GetFirstAppWindow()->GetBaseWindow());
-
-    WaitUntilKeyFocus();
-    ASSERT_TRUE(SimulateKeyPress(ui::VKEY_A));
-
-    fs_changed.Wait();
-  }
-
-  EXPECT_TRUE(window()->IsImmersiveModeEnabled());
+  EXPECT_FALSE(window()->IsImmersiveModeEnabled());
   EXPECT_TRUE(window()->exclusive_access_bubble_);
+}
+
+// Tests the auto positioning logic of created windows does not apply to apps
+// which specify their own positions.
+IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
+                       UserGivenBoundsAreRespected) {
+  display::DisplayManager* display_manager =
+      ash::ShellTestApi().display_manager();
+  display::test::DisplayManagerTestApi(display_manager)
+      .UpdateDisplay("800x800");
+
+  const extensions::Extension* extension =
+      LoadAndLaunchPlatformApp("launch", "Launched");
+
+  // This is the default size apps are if no window or content specifications
+  // are given.
+  const gfx::Size default_size(512, 384);
+
+  // Create an app with no window or content specifications. Use no frame for
+  // simpler calculations.
+  extensions::AppWindow::CreateParams params;
+  params.frame = extensions::AppWindow::FRAME_NONE;
+  extensions::AppWindow* app_window =
+      CreateAppWindowFromParams(browser()->profile(), extension, params);
+
+  // Test that the window is centered within the work area.
+  gfx::Rect expected_bounds = display_manager->GetDisplayAt(0).work_area();
+  expected_bounds.ClampToCenteredSize(default_size);
+  EXPECT_EQ(expected_bounds,
+            app_window->GetNativeWindow()->GetBoundsInScreen());
+  CloseAppWindow(app_window);
+
+  // Create an app with content specifications. The window is placed where the
+  // user specified.
+  {
+    const gfx::Rect specified_bounds(10, 10, 600, 400);
+    extensions::AppWindow::BoundsSpecification content_spec;
+    content_spec.bounds = specified_bounds;
+    params.content_spec = content_spec;
+    app_window =
+        CreateAppWindowFromParams(browser()->profile(), extension, params);
+    EXPECT_EQ(specified_bounds,
+              app_window->GetNativeWindow()->GetBoundsInScreen());
+  }
+  CloseAppWindow(app_window);
+
+  // Create an app with content specifications on the secondary display. The
+  // window is placed where the user specified.
+  display::test::DisplayManagerTestApi(display_manager)
+      .UpdateDisplay("800x800,800+0-800x800");
+  {
+    const gfx::Rect specified_bounds(810, 10, 600, 400);
+    extensions::AppWindow::BoundsSpecification content_spec;
+    content_spec.bounds = specified_bounds;
+    params.content_spec = content_spec;
+    app_window =
+        CreateAppWindowFromParams(browser()->profile(), extension, params);
+    EXPECT_EQ(specified_bounds,
+              app_window->GetNativeWindow()->GetBoundsInScreen());
+  }
+  CloseAppWindow(app_window);
 }

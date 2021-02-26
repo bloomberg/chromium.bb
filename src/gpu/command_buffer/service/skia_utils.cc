@@ -4,11 +4,13 @@
 
 #include "gpu/command_buffer/service/skia_utils.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/config/skia_limits.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -61,7 +63,7 @@ void DeleteSkObject(SharedContextState* context_state, sk_sp<T> sk_object) {
   auto* fence_helper =
       context_state->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
   fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
-      [](const sk_sp<GrContext>& gr_context, sk_sp<T> sk_object,
+      [](const sk_sp<GrDirectContext>& gr_context, sk_sp<T> sk_object,
          gpu::VulkanDeviceQueue* device_queue, bool is_lost) {},
       sk_ref_sp(context_state->gr_context()), std::move(sk_object)));
 #endif
@@ -86,6 +88,11 @@ GrContextOptions GetDefaultGrContextOptions(GrContextType type) {
   options.fInternalMultisampleCount = 0;
   if (type == GrContextType::kMetal)
     options.fRuntimeProgramCacheSize = 1024;
+
+  options.fSuppressMipmapSupport =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMipmapGeneration);
+
   return options;
 }
 
@@ -170,6 +177,7 @@ void DeleteGrBackendTexture(SharedContextState* context_state,
   DCHECK(!context_state->gr_context()->abandoned());
 
   if (!context_state->GrContextIsVulkan()) {
+    DCHECK(context_state->gr_context());
     context_state->gr_context()->deleteBackendTexture(
         std::move(*backend_texture));
     return;
@@ -179,8 +187,9 @@ void DeleteGrBackendTexture(SharedContextState* context_state,
   auto* fence_helper =
       context_state->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
   fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
-      [](const sk_sp<GrContext>& gr_context, GrBackendTexture backend_texture,
-         gpu::VulkanDeviceQueue* device_queue, bool is_lost) {
+      [](const sk_sp<GrDirectContext>& gr_context,
+         GrBackendTexture backend_texture, gpu::VulkanDeviceQueue* device_queue,
+         bool is_lost) {
         if (!gr_context->abandoned())
           gr_context->deleteBackendTexture(std::move(backend_texture));
       },
@@ -204,13 +213,27 @@ GrVkImageInfo CreateGrVkImageInfo(VulkanImage* image) {
       image->device_queue()->GetVulkanPhysicalDevice();
   GrVkYcbcrConversionInfo gr_ycbcr_info = CreateGrVkYcbcrConversionInfo(
       physical_device, image->image_tiling(), image->ycbcr_info());
-  GrVkAlloc alloc(image->device_memory(), /*offset=*/0, image->device_size(),
-                  /*flags=*/0);
+  GrVkAlloc alloc;
+  alloc.fMemory = image->device_memory();
+  alloc.fOffset = 0;
+  alloc.fSize = image->device_size();
+  alloc.fFlags = 0;
+
   bool is_protected = image->flags() & VK_IMAGE_CREATE_PROTECTED_BIT;
-  return GrVkImageInfo(
-      image->image(), alloc, image->image_tiling(), image->image_layout(),
-      image->format(), /*levelCount=*/1, image->queue_family_index(),
-      is_protected ? GrProtected::kYes : GrProtected::kNo, gr_ycbcr_info);
+  GrVkImageInfo image_info;
+  image_info.fImage = image->image();
+  image_info.fAlloc = alloc;
+  image_info.fImageTiling = image->image_tiling();
+  image_info.fImageLayout = image->image_layout();
+  image_info.fFormat = image->format();
+  image_info.fImageUsageFlags = image->usage();
+  image_info.fSampleCount = 1;
+  image_info.fLevelCount = 1;
+  image_info.fCurrentQueueFamily = image->queue_family_index();
+  image_info.fProtected = is_protected ? GrProtected::kYes : GrProtected::kNo;
+  image_info.fYcbcrConversionInfo = gr_ycbcr_info;
+
+  return image_info;
 }
 
 GrVkYcbcrConversionInfo CreateGrVkYcbcrConversionInfo(
@@ -250,17 +273,42 @@ GrVkYcbcrConversionInfo CreateGrVkYcbcrConversionInfo(
           ? VK_FILTER_LINEAR
           : VK_FILTER_NEAREST;
 
-  return GrVkYcbcrConversionInfo(
-      vk_format, ycbcr_info->external_format,
-      static_cast<VkSamplerYcbcrModelConversion>(
-          ycbcr_info->suggested_ycbcr_model),
-      static_cast<VkSamplerYcbcrRange>(ycbcr_info->suggested_ycbcr_range),
+  GrVkYcbcrConversionInfo gr_ycbcr_info;
+  gr_ycbcr_info.fFormat = vk_format;
+  gr_ycbcr_info.fExternalFormat = ycbcr_info->external_format;
+  gr_ycbcr_info.fYcbcrModel = static_cast<VkSamplerYcbcrModelConversion>(
+      ycbcr_info->suggested_ycbcr_model);
+  gr_ycbcr_info.fYcbcrRange =
+      static_cast<VkSamplerYcbcrRange>(ycbcr_info->suggested_ycbcr_range);
+  gr_ycbcr_info.fXChromaOffset =
       static_cast<VkChromaLocation>(ycbcr_info->suggested_xchroma_offset),
+  gr_ycbcr_info.fYChromaOffset =
       static_cast<VkChromaLocation>(ycbcr_info->suggested_ychroma_offset),
-      chroma_filter,
-      /*forceExplicitReconstruction=*/false, format_features);
+  gr_ycbcr_info.fChromaFilter = chroma_filter;
+  gr_ycbcr_info.fForceExplicitReconstruction = false;
+  gr_ycbcr_info.fFormatFeatures = format_features;
+
+  return gr_ycbcr_info;
 }
 
 #endif  // BUILDFLAG(ENABLE_VULKAN)
+
+bool ShouldVulkanSyncCpuForSkiaSubmit(
+    viz::VulkanContextProvider* context_provider) {
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (context_provider) {
+    const base::Optional<uint32_t>& sync_cpu_memory_limit =
+        context_provider->GetSyncCpuMemoryLimit();
+    if (sync_cpu_memory_limit.has_value()) {
+      uint64_t total_allocated_bytes = gpu::vma::GetTotalAllocatedMemory(
+          context_provider->GetDeviceQueue()->vma_allocator());
+      if (total_allocated_bytes > sync_cpu_memory_limit.value()) {
+        return true;
+      }
+    }
+  }
+#endif
+  return false;
+}
 
 }  // namespace gpu

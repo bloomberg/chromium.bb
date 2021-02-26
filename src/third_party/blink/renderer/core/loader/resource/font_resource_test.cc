@@ -10,6 +10,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/css/css_font_face_src_value.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/loader/resource/mock_font_resource_client.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
@@ -25,6 +26,7 @@
 #include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/mock_context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -64,14 +66,17 @@ TEST_F(FontResourceTest,
 
   MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
-  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(properties->MakeDetachable(), context,
-                          base::MakeRefCounted<scheduler::FakeTaskRunner>(),
-                          MakeGarbageCollected<TestLoaderFactory>()));
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+      properties->MakeDetachable(), context,
+      base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+      base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+      MakeGarbageCollected<TestLoaderFactory>(),
+      MakeGarbageCollected<MockContextLifecycleNotifier>()));
 
   // Fetch to cache a resource.
   ResourceRequest request1(url);
-  FetchParameters fetch_params1(std::move(request1));
+  FetchParameters fetch_params1 =
+      FetchParameters::CreateForTest(std::move(request1));
   Resource* resource1 = FontResource::Fetch(fetch_params1, fetcher, nullptr);
   ASSERT_FALSE(resource1->ErrorOccurred());
   fetcher->StartLoad(resource1);
@@ -85,7 +90,8 @@ TEST_F(FontResourceTest,
   // Revalidate the resource.
   ResourceRequest request2(url);
   request2.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
-  FetchParameters fetch_params2(std::move(request2));
+  FetchParameters fetch_params2 =
+      FetchParameters::CreateForTest(std::move(request2));
   Resource* resource2 = FontResource::Fetch(fetch_params2, fetcher, nullptr);
   ASSERT_FALSE(resource2->ErrorOccurred());
   EXPECT_EQ(resource1, resource2);
@@ -95,7 +101,8 @@ TEST_F(FontResourceTest,
   // Fetch the same resource again before actual load operation starts.
   ResourceRequest request3(url);
   request3.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
-  FetchParameters fetch_params3(std::move(request3));
+  FetchParameters fetch_params3 =
+      FetchParameters::CreateForTest(std::move(request3));
   Resource* resource3 = FontResource::Fetch(fetch_params3, fetcher, nullptr);
   ASSERT_FALSE(resource3->ErrorOccurred());
   EXPECT_EQ(resource2, resource3);
@@ -130,8 +137,7 @@ TEST_F(CacheAwareFontResourceTest, CacheAwareFontLoading) {
   CSSFontFaceSrcValue* src_value = CSSFontFaceSrcValue::Create(
       url.GetString(), url.GetString(),
       Referrer(document.Url(), document.GetReferrerPolicy()),
-      network::mojom::CSPDisposition::DO_NOT_CHECK, OriginClean::kTrue,
-      false /* is_ad_related */);
+      nullptr /* world */, OriginClean::kTrue, false /* is_ad_related */);
 
   // Route font requests in this test through CSSFontFaceSrcValue::Fetch
   // instead of calling FontResource::Fetch directly. CSSFontFaceSrcValue

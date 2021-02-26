@@ -92,7 +92,7 @@ class StubGpuMemoryBufferManager : public TestGpuMemoryBufferManager {
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       gpu::SurfaceHandle surface_handle) override {
-    if (!surface_handle) {
+    if (surface_handle == gpu::kNullSurfaceHandle) {
       return TestGpuMemoryBufferManager::CreateGpuMemoryBuffer(
           size, format, usage, surface_handle);
     }
@@ -224,14 +224,16 @@ const gfx::Rect overlapping_damage = gfx::Rect(gfx::Size(5, 20));
 class MockedSharedImageInterface : public TestSharedImageInterface {
  public:
   MockedSharedImageInterface() {
-    ON_CALL(*this, CreateSharedImage(_, _, _, _, _))
+    ON_CALL(*this, CreateSharedImage(_, _, _, _, _, _, _))
         .WillByDefault(Return(gpu::Mailbox()));
     // this, &MockedSharedImageInterface::TestCreateSharedImage));
   }
-  MOCK_METHOD5(CreateSharedImage,
+  MOCK_METHOD7(CreateSharedImage,
                gpu::Mailbox(ResourceFormat format,
                             const gfx::Size& size,
                             const gfx::ColorSpace& color_space,
+                            GrSurfaceOrigin surface_origin,
+                            SkAlphaType alpha_type,
                             uint32_t usage,
                             gpu::SurfaceHandle surface_handle));
   MOCK_METHOD2(UpdateSharedImage,
@@ -244,10 +246,13 @@ class MockedSharedImageInterface : public TestSharedImageInterface {
   gpu::Mailbox TestCreateSharedImage(ResourceFormat format,
                                      const gfx::Size& size,
                                      const gfx::ColorSpace& color_space,
+                                     GrSurfaceOrigin surface_origin,
+                                     SkAlphaType alpha_type,
                                      uint32_t usage,
                                      gpu::SurfaceHandle surface_handle) {
     return TestSharedImageInterface::CreateSharedImage(
-        format, size, color_space, usage, surface_handle);
+        format, size, color_space, surface_origin, alpha_type, usage,
+        surface_handle);
   }
 };
 
@@ -299,7 +304,7 @@ TEST(BufferQueueStandaloneTest, BufferCreationAndDestruction) {
   {
     testing::InSequence dummy;
     EXPECT_CALL(*sii, CreateSharedImage(
-                          _, _, _,
+                          _, _, _, _, _,
                           gpu::SHARED_IMAGE_USAGE_SCANOUT |
                               gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT,
                           _))
@@ -598,7 +603,7 @@ TEST_F(BufferQueueMockedSharedImageInterfaceTest, AllocateFails) {
   EXPECT_TRUE(output_surface_->Reshape(screen_size, kBufferQueueColorSpace,
                                        kBufferQueueFormat));
   EXPECT_CALL(*sii_, CreateSharedImage(
-                         _, _, _,
+                         _, _, _, _, _,
                          gpu::SHARED_IMAGE_USAGE_SCANOUT |
                              gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT,
                          _))

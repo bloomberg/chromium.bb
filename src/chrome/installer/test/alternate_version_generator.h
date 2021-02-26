@@ -15,17 +15,14 @@ class FilePath;
 
 namespace upgrade_test {
 
-enum Direction {
-  PREVIOUS_VERSION,
-  NEXT_VERSION
-};
+enum Direction { PREVIOUS_VERSION, NEXT_VERSION };
 
 // Generates an alternate mini_installer.exe using the one indicated by
 // |original_installer_path|, giving the new one a lower or higher version than
 // the original and placing it in |target_path|.  Any previous file at
 // |target_path| is clobbered.  Returns true on success.  |original_version| and
-// |new_version|, when non-NULL, are given the original and new version numbers
-// on success.
+// |new_version|, when non-nullptr, are given the original and new version
+// numbers on success.
 bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
                               const base::FilePath& target_path,
                               Direction direction,

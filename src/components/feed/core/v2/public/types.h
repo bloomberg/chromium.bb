@@ -32,8 +32,14 @@ struct DisplayMetrics {
 // A unique ID for an ephemeral change.
 using EphemeralChangeId = util::IdTypeU32<class EphemeralChangeIdClass>;
 using SurfaceId = util::IdTypeU32<class SurfaceIdClass>;
+using ImageFetchId = util::IdTypeU32<class ImageFetchIdClass>;
 
 struct NetworkResponseInfo {
+  NetworkResponseInfo();
+  ~NetworkResponseInfo();
+  NetworkResponseInfo(const NetworkResponseInfo&);
+  NetworkResponseInfo& operator=(const NetworkResponseInfo&);
+
   // A union of net::Error (if the request failed) and the http
   // status code(if the request succeeded in reaching the server).
   int32_t status_code = 0;
@@ -41,6 +47,19 @@ struct NetworkResponseInfo {
   base::Time fetch_time;
   std::string bless_nonce;
   GURL base_request_url;
+  size_t response_body_bytes = 0;
+  bool was_signed_in = false;
+};
+
+struct NetworkResponse {
+  // HTTP response body.
+  std::string response_bytes;
+  // HTTP status code if available, or net::Error otherwise.
+  int status_code;
+
+  NetworkResponse() = default;
+  NetworkResponse(NetworkResponse&& other) = default;
+  NetworkResponse& operator=(NetworkResponse&& other) = default;
 };
 
 // For the snippets-internals page.
@@ -53,6 +72,7 @@ struct DebugStreamData {
   DebugStreamData& operator=(const DebugStreamData&);
 
   base::Optional<NetworkResponseInfo> fetch_info;
+  base::Optional<NetworkResponseInfo> upload_info;
   std::string load_stream_status;
 };
 

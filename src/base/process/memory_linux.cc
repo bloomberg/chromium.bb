@@ -130,13 +130,29 @@ bool AdjustOOMScore(ProcessId process, int score) {
 
 bool UncheckedMalloc(size_t size, void** result) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  *result = allocator::UncheckedAlloc(size);
-#elif defined(MEMORY_TOOL_REPLACES_ALLOCATOR) || \
-    (!defined(LIBC_GLIBC) && !defined(USE_TCMALLOC))
+  // TODO(tasak): Confirm whether |UncheckedAlloc| with PartitionAlloc works on
+  // Android or not. If it works, change the following condition to be
+  // !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(OS_ANDROID).
+#if defined(OS_ANDROID)
+  // There is a reason for not calling |UncheckedAlloc()| with
+  // PartitionAlloc:
+  //
+  // TODO(crbug.com/1111332) On Android, not all callers of UncheckedMalloc()
+  //   have the proper wrapping of symbols. As a consequence, using
+  //   UncheckedAlloc() leads to allocating and freeing with different
+  //   allocators. Deferring to malloc() makes sure that the same allocator is
+  //   used.
   *result = malloc(size);
-#elif defined(LIBC_GLIBC) && !defined(USE_TCMALLOC)
+#else
+  *result = allocator::UncheckedAlloc(size);
+#endif
+
+#elif defined(MEMORY_TOOL_REPLACES_ALLOCATOR) || \
+    (!defined(LIBC_GLIBC) && !BUILDFLAG(USE_TCMALLOC))
+  *result = malloc(size);
+#elif defined(LIBC_GLIBC) && !BUILDFLAG(USE_TCMALLOC)
   *result = __libc_malloc(size);
-#elif defined(USE_TCMALLOC)
+#elif BUILDFLAG(USE_TCMALLOC)
   *result = tc_malloc_skip_new_handler(size);
 #endif
   return *result != nullptr;

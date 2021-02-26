@@ -5,10 +5,10 @@
 #include "core/fpdfapi/parser/cpdf_cross_ref_table.h"
 
 #include <utility>
-#include <vector>
 
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_parser.h"
+#include "third_party/base/notreached.h"
 #include "third_party/base/stl_util.h"
 
 // static
@@ -112,7 +112,7 @@ void CPDF_CrossRefTable::ShrinkObjectMap(uint32_t objnum) {
 
   objects_info_.erase(objects_info_.lower_bound(objnum), objects_info_.end());
 
-  if (!pdfium::ContainsKey(objects_info_, objnum - 1))
+  if (!pdfium::Contains(objects_info_, objnum - 1))
     objects_info_[objnum - 1].pos = 0;
 }
 

@@ -1,5 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+// License & terms of use: http://www.unicode.org/copyright.html
+// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
 sl{
     Countries{
         001{"svet"}
@@ -74,7 +75,7 @@ sl{
         CA{"Kanada"}
         CC{"Kokosovi otoki"}
         CD{"Demokratična republika Kongo"}
-        CF{"Centralnoafriška republika"}
+        CF{"Srednjeafriška republika"}
         CG{"Kongo - Brazzaville"}
         CH{"Švica"}
         CI{"Slonokoščena obala"}
@@ -187,7 +188,7 @@ sl{
         ML{"Mali"}
         MM{"Mjanmar (Burma)"}
         MN{"Mongolija"}
-        MO{"Posebno administrativno območje LR Kitajske Macao"}
+        MO{"Macao"}
         MP{"Severni Marianski otoki"}
         MQ{"Martinik"}
         MR{"Mavretanija"}
@@ -310,5 +311,4 @@ sl{
         SZ{"Svazi"}
         TL{"Vzhodni Timor"}
     }
-    Version{"37"}
 }

@@ -28,7 +28,7 @@ inline bool EqualImmutableValues(Object obj1, Object obj2) {
 MapUpdater::MapUpdater(Isolate* isolate, Handle<Map> old_map)
     : isolate_(isolate),
       old_map_(old_map),
-      old_descriptors_(old_map->instance_descriptors(), isolate_),
+      old_descriptors_(old_map->instance_descriptors(kRelaxedLoad), isolate_),
       old_nof_(old_map_->NumberOfOwnDescriptors()),
       new_elements_kind_(old_map_->elements_kind()),
       is_transitionable_fast_elements_kind_(
@@ -197,8 +197,9 @@ void MapUpdater::GeneralizeField(Handle<Map> map, InternalIndex modify_index,
   Map::GeneralizeField(isolate_, map, modify_index, new_constness,
                        new_representation, new_field_type);
 
-  DCHECK(*old_descriptors_ == old_map_->instance_descriptors() ||
-         *old_descriptors_ == integrity_source_map_->instance_descriptors());
+  DCHECK(*old_descriptors_ == old_map_->instance_descriptors(kRelaxedLoad) ||
+         *old_descriptors_ ==
+             integrity_source_map_->instance_descriptors(kRelaxedLoad));
 }
 
 MapUpdater::State MapUpdater::Normalize(const char* reason) {
@@ -232,10 +233,7 @@ MapUpdater::State MapUpdater::TryReconfigureToDataFieldInplace() {
         handle(old_descriptors_->GetFieldType(modified_descriptor_), isolate_),
         MaybeHandle<Object>(), new_field_type_, MaybeHandle<Object>());
   }
-  Handle<Map> field_owner(
-      old_map_->FindFieldOwner(isolate_, modified_descriptor_), isolate_);
-
-  GeneralizeField(field_owner, modified_descriptor_, new_constness_,
+  GeneralizeField(old_map_, modified_descriptor_, new_constness_,
                   new_representation_, new_field_type_);
   // Check that the descriptor array was updated.
   DCHECK(old_descriptors_->GetDetails(modified_descriptor_)
@@ -287,8 +285,8 @@ bool MapUpdater::TrySaveIntegrityLevelTransitions() {
            integrity_source_map_->NumberOfOwnDescriptors());
 
   has_integrity_level_transition_ = true;
-  old_descriptors_ =
-      handle(integrity_source_map_->instance_descriptors(), isolate_);
+  old_descriptors_ = handle(
+      integrity_source_map_->instance_descriptors(kRelaxedLoad), isolate_);
   return true;
 }
 
@@ -383,8 +381,8 @@ MapUpdater::State MapUpdater::FindTargetMap() {
     if (transition.is_null()) break;
     Handle<Map> tmp_map(transition, isolate_);
 
-    Handle<DescriptorArray> tmp_descriptors(tmp_map->instance_descriptors(),
-                                            isolate_);
+    Handle<DescriptorArray> tmp_descriptors(
+        tmp_map->instance_descriptors(kRelaxedLoad), isolate_);
 
     // Check if target map is incompatible.
     PropertyDetails tmp_details = tmp_descriptors->GetDetails(i);
@@ -401,7 +399,13 @@ MapUpdater::State MapUpdater::FindTargetMap() {
     }
     Representation tmp_representation = tmp_details.representation();
     if (!old_details.representation().fits_into(tmp_representation)) {
-      break;
+      // Try updating the field in-place to a generalized type.
+      Representation generalized =
+          tmp_representation.generalize(old_details.representation());
+      if (!tmp_representation.CanBeInPlaceChangedTo(generalized)) {
+        break;
+      }
+      tmp_representation = generalized;
     }
 
     if (tmp_details.location() == kField) {
@@ -425,7 +429,8 @@ MapUpdater::State MapUpdater::FindTargetMap() {
   if (target_nof == old_nof_) {
 #ifdef DEBUG
     if (modified_descriptor_.is_found()) {
-      DescriptorArray target_descriptors = target_map_->instance_descriptors();
+      DescriptorArray target_descriptors =
+          target_map_->instance_descriptors(kRelaxedLoad);
       PropertyDetails details =
           target_descriptors.GetDetails(modified_descriptor_);
       DCHECK_EQ(new_kind_, details.kind());
@@ -473,8 +478,8 @@ MapUpdater::State MapUpdater::FindTargetMap() {
                                            old_details.attributes());
     if (transition.is_null()) break;
     Handle<Map> tmp_map(transition, isolate_);
-    Handle<DescriptorArray> tmp_descriptors(tmp_map->instance_descriptors(),
-                                            isolate_);
+    Handle<DescriptorArray> tmp_descriptors(
+        tmp_map->instance_descriptors(kRelaxedLoad), isolate_);
 #ifdef DEBUG
     // Check that target map is compatible.
     PropertyDetails tmp_details = tmp_descriptors->GetDetails(i);
@@ -498,7 +503,7 @@ Handle<DescriptorArray> MapUpdater::BuildDescriptorArray() {
   InstanceType instance_type = old_map_->instance_type();
   int target_nof = target_map_->NumberOfOwnDescriptors();
   Handle<DescriptorArray> target_descriptors(
-      target_map_->instance_descriptors(), isolate_);
+      target_map_->instance_descriptors(kRelaxedLoad), isolate_);
 
   // Allocate a new descriptor array large enough to hold the required
   // descriptors, with minimally the exact same size as the old descriptor
@@ -673,7 +678,7 @@ Handle<Map> MapUpdater::FindSplitMap(Handle<DescriptorArray> descriptors) {
         TransitionsAccessor(isolate_, current, &no_allocation)
             .SearchTransition(name, details.kind(), details.attributes());
     if (next.is_null()) break;
-    DescriptorArray next_descriptors = next.instance_descriptors();
+    DescriptorArray next_descriptors = next.instance_descriptors(kRelaxedLoad);
 
     PropertyDetails next_details = next_descriptors.GetDetails(i);
     DCHECK_EQ(details.kind(), next_details.kind());
@@ -713,16 +718,18 @@ MapUpdater::State MapUpdater::ConstructNewMap() {
   TransitionsAccessor transitions(isolate_, split_map);
 
   // Invalidate a transition target at |key|.
-  Map maybe_transition = transitions.SearchTransition(
-      GetKey(split_index), split_details.kind(), split_details.attributes());
-  if (!maybe_transition.is_null()) {
-    maybe_transition.DeprecateTransitionTree(isolate_);
+  Handle<Map> maybe_transition(
+      transitions.SearchTransition(GetKey(split_index), split_details.kind(),
+                                   split_details.attributes()),
+      isolate_);
+  if (!maybe_transition->is_null()) {
+    maybe_transition->DeprecateTransitionTree(isolate_);
   }
 
   // If |maybe_transition| is not nullptr then the transition array already
   // contains entry for given descriptor. This means that the transition
   // could be inserted regardless of whether transitions array is full or not.
-  if (maybe_transition.is_null() && !transitions.CanHaveMoreTransitions()) {
+  if (maybe_transition->is_null() && !transitions.CanHaveMoreTransitions()) {
     return Normalize("Normalize_CantHaveMoreTransitions");
   }
 

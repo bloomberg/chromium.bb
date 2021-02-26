@@ -101,6 +101,9 @@ class TabModel {
     // User-originated switch to existing tab or selection of main tab on app
     // startup.
     FROM_USER,
+    // User-originated switch to existing tab from Omnibox tab switch
+    // suggestions.
+    FROM_OMNIBOX,
     // Must be last.
     SIZE
   };
@@ -137,7 +140,7 @@ class TabModel {
 
   // Return true if this class is the currently selected in the correspond
   // tab model selector.
-  virtual bool IsCurrentModel() const = 0;
+  virtual bool IsActiveModel() const = 0;
 
   // Adds an observer to this TabModel.
   virtual void AddObserver(TabModelObserver* observer) = 0;

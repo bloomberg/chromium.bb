@@ -59,6 +59,14 @@ Polymer({
 
     categoryHeader: String,
 
+    /** @private */
+    enableContentSettingsRedesign_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('enableContentSettingsRedesign');
+      }
+    },
+
     /**
      * The site serving as the model for the currently open action menu.
      * @private {?SiteException}
@@ -152,6 +160,16 @@ Polymer({
     tooltipText_: String,
 
     searchFilter: String,
+
+    /**
+     * Boolean which keeps a track if any of the list has discarded content
+     * setting patterns.
+     */
+    hasDiscardedExceptions: {
+      type: Boolean,
+      computed: 'computeHasDiscardedExceptions_(sites.*)',
+      notify: true,
+    }
   },
 
   // <if expr="chromeos">
@@ -194,7 +212,7 @@ Polymer({
    * @private
    */
   siteWithinCategoryChanged_(category, site) {
-    if (category == this.category) {
+    if (category === this.category) {
       this.configureWidget_();
     }
   },
@@ -210,7 +228,7 @@ Polymer({
 
     // The SESSION_ONLY list won't have any incognito exceptions. (Minor
     // optimization, not required).
-    if (this.categorySubtype == ContentSetting.SESSION_ONLY) {
+    if (this.categorySubtype === ContentSetting.SESSION_ONLY) {
       return;
     }
 
@@ -224,7 +242,7 @@ Polymer({
    * @private
    */
   configureWidget_() {
-    if (this.category == undefined) {
+    if (this.category === undefined) {
       return;
     }
 
@@ -245,8 +263,8 @@ Polymer({
     // </if>
 
     // The Session permissions are only for cookies.
-    if (this.categorySubtype == ContentSetting.SESSION_ONLY) {
-      this.$.category.hidden = this.category != ContentSettingsTypes.COOKIES;
+    if (this.categorySubtype === ContentSetting.SESSION_ONLY) {
+      this.$.category.hidden = this.category !== ContentSettingsTypes.COOKIES;
     }
   },
 
@@ -268,8 +286,8 @@ Polymer({
   computeShowAddSiteButton_() {
     return !(
         this.readOnlyList ||
-        (this.category == ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE &&
-         this.categorySubtype == ContentSetting.ALLOW));
+        (this.category === ContentSettingsTypes.FILE_SYSTEM_WRITE &&
+         this.categorySubtype === ContentSetting.ALLOW));
   },
 
   /**
@@ -277,7 +295,7 @@ Polymer({
    * @private
    */
   showNoSearchResults_() {
-    return this.sites.length > 0 && this.getFilteredSites_().length == 0;
+    return this.sites.length > 0 && this.getFilteredSites_().length === 0;
   },
 
   /**
@@ -314,12 +332,12 @@ Polymer({
       this.$.tooltip.hide();
       target.removeEventListener('mouseleave', hide);
       target.removeEventListener('blur', hide);
-      target.removeEventListener('tap', hide);
+      target.removeEventListener('click', hide);
       this.$.tooltip.removeEventListener('mouseenter', hide);
     };
     target.addEventListener('mouseleave', hide);
     target.addEventListener('blur', hide);
-    target.addEventListener('tap', hide);
+    target.addEventListener('click', hide);
     this.$.tooltip.addEventListener('mouseenter', hide);
     this.$.tooltip.show();
   },
@@ -384,8 +402,8 @@ Polymer({
   processExceptions_(exceptionList) {
     let sites = exceptionList
                     .filter(
-                        site => site.setting != ContentSetting.DEFAULT &&
-                            site.setting == this.categorySubtype)
+                        site => site.setting !== ContentSetting.DEFAULT &&
+                            site.setting === this.categorySubtype)
                     .map(site => this.expandSiteException(site));
 
     // <if expr="chromeos">
@@ -399,11 +417,11 @@ Polymer({
    * @private
    */
   setUpActionMenu_() {
-    this.showAllowAction_ = this.categorySubtype != ContentSetting.ALLOW;
-    this.showBlockAction_ = this.categorySubtype != ContentSetting.BLOCK;
+    this.showAllowAction_ = this.categorySubtype !== ContentSetting.ALLOW;
+    this.showBlockAction_ = this.categorySubtype !== ContentSetting.BLOCK;
     this.showSessionOnlyAction_ =
-        this.categorySubtype != ContentSetting.SESSION_ONLY &&
-        this.category == ContentSettingsTypes.COOKIES;
+        this.categorySubtype !== ContentSetting.SESSION_ONLY &&
+        this.category === ContentSettingsTypes.COOKIES;
   },
 
   /**
@@ -518,4 +536,22 @@ Polymer({
         site => propNames.some(
             propName => site[propName].toLowerCase().includes(searchFilter)));
   },
+
+  /**
+   * Iterates through the sites list and returns true if one of those sites is
+   * a discarded content setting pattern.
+   * @return {boolean}
+   * @private
+   */
+  computeHasDiscardedExceptions_() {
+    return this.sites.some(exception => exception.isDiscarded);
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getCssClass_() {
+    return this.enableContentSettingsRedesign_ ? 'secondary' : '';
+  }
 });

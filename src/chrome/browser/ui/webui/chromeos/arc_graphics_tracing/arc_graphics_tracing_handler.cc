@@ -18,7 +18,9 @@
 #include "base/process/process_iterator.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
@@ -30,7 +32,6 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/exo/shell_surface_util.h"
@@ -146,7 +147,7 @@ bool ReadNameFromStatus(pid_t pid, pid_t tid, std::string* out_name) {
   base::StringTokenizer tokenizer(status, "\n");
   while (tokenizer.GetNext()) {
     base::StringPiece value_str(tokenizer.token_piece());
-    if (!value_str.starts_with("Name:"))
+    if (!base::StartsWith(value_str, "Name:"))
       continue;
     std::vector<base::StringPiece> split_value_str = base::SplitStringPiece(
         value_str, "\t", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -279,6 +280,7 @@ base::trace_event::TraceConfig GetTracingConfig(ArcGraphicsTracingMode mode) {
       // predefined set of events in each category. Limit events to what we
       // actually analyze in ArcTracingModel.
       config.EnableSystraceEvent("i915:intel_gpu_freq_change");
+      config.EnableSystraceEvent("drm_msm_gpu:msm_gpu_freq_change");
       config.EnableSystraceEvent("power:cpu_idle");
       config.EnableSystraceEvent("sched:sched_wakeup");
       config.EnableSystraceEvent("sched:sched_switch");
@@ -289,6 +291,7 @@ base::trace_event::TraceConfig GetTracingConfig(ArcGraphicsTracingMode mode) {
           "-*,exo,viz,toplevel,gpu", base::trace_event::RECORD_CONTINUOUSLY);
       config.EnableSystrace();
       config.EnableSystraceEvent("i915:intel_gpu_freq_change");
+      config.EnableSystraceEvent("drm_msm_gpu:msm_gpu_freq_change");
       return config;
     }
   }

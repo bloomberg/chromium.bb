@@ -11,7 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/bind.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
 #include "components/performance_manager/public/graph/node_data_describer.h"
@@ -19,7 +19,6 @@
 #include "components/performance_manager/test_support/graph_impl.h"
 #include "components/performance_manager/test_support/mock_graphs.h"
 #include "content/public/test/browser_task_environment.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -212,8 +211,9 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
 
   task_environment.RunUntilIdle();
 
-  // Validate that the initial graph state dump is complete.
-  EXPECT_EQ(0u, change_stream.num_changes());
+  // Validate that the initial graph state dump is complete. Note that there is
+  // an update for each node as part of the initial state dump.
+  EXPECT_EQ(8u, change_stream.num_changes());
   EXPECT_EQ(8u, change_stream.id_set().size());
 
   EXPECT_EQ(2u, change_stream.process_map().size());
@@ -277,7 +277,7 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
   task_environment.RunUntilIdle();
 
   // Main frame navigation results in a notification for the url.
-  EXPECT_EQ(1u, change_stream.num_changes());
+  EXPECT_EQ(9u, change_stream.num_changes());
   EXPECT_FALSE(base::Contains(change_stream.id_set(), child_frame_id));
 
   const auto main_page_it = change_stream.page_map().find(

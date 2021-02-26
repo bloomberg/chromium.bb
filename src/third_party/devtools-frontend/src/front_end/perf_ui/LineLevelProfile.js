@@ -5,15 +5,32 @@
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
-import * as Profiler from '../profiler/profiler.js';  // eslint-disable-line no-unused-vars
 import * as SDK from '../sdk/sdk.js';
 import * as SourceFrame from '../source_frame/source_frame.js';  // eslint-disable-line no-unused-vars
 import * as TextEditor from '../text_editor/text_editor.js';     // eslint-disable-line no-unused-vars
 import * as Workspace from '../workspace/workspace.js';          // eslint-disable-line no-unused-vars
 
+/** @type {!Performance} */
+let performanceInstance;
+
 export class Performance {
+  /**
+   * @private
+   */
   constructor() {
     this._helper = new Helper('performance');
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!performanceInstance || forceNew) {
+      performanceInstance = new Performance();
+    }
+
+    return performanceInstance;
   }
 
   reset() {
@@ -25,10 +42,14 @@ export class Performance {
    */
   _appendLegacyCPUProfile(profile) {
     const target = profile.target();
+
+    /** @type {!Array.<!SDK.CPUProfileDataModel.CPUProfileNode>} */
     const nodesToGo = [profile.profileHead];
     const sampleDuration = (profile.profileEndTime - profile.profileStartTime) / profile.totalHitCount;
     while (nodesToGo.length) {
-      const nodes = nodesToGo.pop().children;
+      /** @type {!Array.<!SDK.CPUProfileDataModel.CPUProfileNode>} */
+      const nodes =
+          /** @type {*} */ (nodesToGo.pop()).children;  // Cast to any because runtime checks assert the props.
       for (let i = 0; i < nodes.length; ++i) {
         const node = nodes[i];
         nodesToGo.push(node);
@@ -55,12 +76,19 @@ export class Performance {
       return;
     }
     const target = profile.target();
+    if (!profile.samples) {
+      return;
+    }
+
     for (let i = 1; i < profile.samples.length; ++i) {
       const line = profile.lines[i];
       if (!line) {
         continue;
       }
       const node = profile.nodeByIndex(i);
+      if (!node) {
+        continue;
+      }
       const scriptIdOrUrl = node.scriptId || node.url;
       if (!scriptIdOrUrl) {
         continue;
@@ -72,9 +100,27 @@ export class Performance {
   }
 }
 
+/** @type {!Memory} */
+let memoryInstance;
+
 export class Memory {
+  /**
+   * @private
+   */
   constructor() {
     this._helper = new Helper('memory');
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!memoryInstance || forceNew) {
+      memoryInstance = new Memory();
+    }
+
+    return memoryInstance;
   }
 
   reset() {
@@ -117,6 +163,9 @@ export class Helper {
     this._locationPool = new Bindings.LiveLocation.LiveLocationPool();
     this._updateTimer = null;
     this.reset();
+
+    /** @type {!Map<?SDK.SDKModel.Target, !Map<string|number, !Map<number, number>>>} */
+    this._lineData;
   }
 
   reset() {
@@ -182,11 +231,13 @@ export class Helper {
             uiSourceCode.addLineDecoration(line, this._type, data);
             continue;
           }
-          const rawLocation = typeof scriptIdOrUrl === 'string' ?
-              debuggerModel.createRawLocationByURL(scriptIdOrUrl, line, 0) :
-              debuggerModel.createRawLocationByScriptId(String(scriptIdOrUrl), line, 0);
-          if (rawLocation) {
-            new Presentation(rawLocation, this._type, data, this._locationPool);
+          if (debuggerModel) {
+            const rawLocation = typeof scriptIdOrUrl === 'string' ?
+                debuggerModel.createRawLocationByURL(scriptIdOrUrl, line, 0) :
+                debuggerModel.createRawLocationByScriptId(String(scriptIdOrUrl), line, 0);
+            if (rawLocation) {
+              new Presentation(rawLocation, this._type, data, this._locationPool);
+            }
           }
         }
       }
@@ -230,7 +281,7 @@ export class LineDecorator {
   /**
    * @override
    * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
-   * @param {!TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor} textEditor
+   * @param {!SourceFrame.SourcesTextEditor.SourcesTextEditor} textEditor
    * @param {string} type
    */
   decorate(uiSourceCode, textEditor, type) {
@@ -272,7 +323,7 @@ export class LineDecorator {
         value /= 1e3;
         fractionDigits = value >= 20 ? 0 : 1;
       } else {
-        units = ls`KB`;
+        units = ls`kB`;
         fractionDigits = 0;
       }
       element.textContent = Common.UIString.UIString(`%.${fractionDigits}f`, value);

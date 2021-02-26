@@ -165,12 +165,11 @@ LocalFrame* SubframeForTargetNode(Node* node, bool* is_remote_frame) {
   if (!node)
     return nullptr;
 
-  LayoutObject* layout_object = node->GetLayoutObject();
-  if (!layout_object || !layout_object->IsLayoutEmbeddedContent())
+  auto* embedded = DynamicTo<LayoutEmbeddedContent>(node->GetLayoutObject());
+  if (!embedded)
     return nullptr;
 
-  FrameView* frame_view =
-      ToLayoutEmbeddedContent(layout_object)->ChildFrameView();
+  FrameView* frame_view = embedded->ChildFrameView();
   if (!frame_view)
     return nullptr;
   auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view);
@@ -187,16 +186,15 @@ LocalFrame* GetTargetSubframe(
     const MouseEventWithHitTestResults& hit_test_result,
     Node* capturing_node,
     bool* is_remote_frame) {
-  if (!RuntimeEnabledFeatures::UnifiedPointerCaptureInBlinkEnabled() &&
-      capturing_node) {
-    return event_handling_util::SubframeForTargetNode(capturing_node,
-                                                      is_remote_frame);
-  }
-
   if (!hit_test_result.IsOverEmbeddedContentView())
     return nullptr;
 
   return SubframeForTargetNode(hit_test_result.InnerNode(), is_remote_frame);
+}
+
+void PointerEventTarget::Trace(Visitor* visitor) const {
+  visitor->Trace(target_element);
+  visitor->Trace(target_frame);
 }
 
 }  // namespace event_handling_util

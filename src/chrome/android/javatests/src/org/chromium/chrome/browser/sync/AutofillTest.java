@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.support.test.filters.LargeTest;
 import android.util.Pair;
 
+import androidx.test.filters.LargeTest;
+
+import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -16,6 +18,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -23,12 +28,9 @@ import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.protocol.AutofillProfileSpecifics;
 import org.chromium.components.sync.protocol.EntitySpecifics;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * Test suite for the autofill profile sync data type.
@@ -74,7 +76,7 @@ public class AutofillTest {
 
     @Before
     public void setUp() throws Exception {
-        mSyncTestRule.setUpAccountAndSignInForTesting();
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         // Make sure the initial state is clean.
         assertClientAutofillProfileCount(0);
         assertServerAutofillProfileCountWithName(0, STREET);
@@ -118,7 +120,7 @@ public class AutofillTest {
         mSyncTestRule.pollInstrumentationThread(() -> {
             try {
                 Autofill modifiedAutofill = getClientAutofillProfiles().get(0);
-                Assert.assertEquals(MODIFIED_CITY, modifiedAutofill.city);
+                Criteria.checkThat(modifiedAutofill.city, Matchers.is(MODIFIED_CITY));
             } catch (JSONException ex) {
                 throw new RuntimeException(ex);
             }
@@ -208,12 +210,15 @@ public class AutofillTest {
     }
 
     private void waitForClientAutofillProfileCount(int count) {
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(count, new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), AUTOFILL_TYPE)
-                        .size();
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(
+                        SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), AUTOFILL_TYPE)
+                                .size(),
+                        Matchers.is(count));
+            } catch (JSONException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
             }
-        }), SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 }

@@ -81,8 +81,8 @@ namespace dawn_native {
                 return DAWN_VALIDATION_ERROR("Format must (currently) be BGRA8Unorm");
             }
 
-            if (descriptor->usage != wgpu::TextureUsage::OutputAttachment) {
-                return DAWN_VALIDATION_ERROR("Usage must (currently) be OutputAttachment");
+            if (descriptor->usage != wgpu::TextureUsage::RenderAttachment) {
+                return DAWN_VALIDATION_ERROR("Usage must (currently) be RenderAttachment");
             }
 
             if (descriptor->width == 0 || descriptor->height == 0) {
@@ -102,7 +102,6 @@ namespace dawn_native {
         desc.usage = swapChain->GetUsage();
         desc.dimension = wgpu::TextureDimension::e2D;
         desc.size = {swapChain->GetWidth(), swapChain->GetHeight(), 1};
-        desc.arrayLayerCount = 1;
         desc.format = swapChain->GetFormat();
         desc.mipLevelCount = 1;
         desc.sampleCount = 1;
@@ -181,7 +180,6 @@ namespace dawn_native {
         descriptor.size.width = mWidth;
         descriptor.size.height = mHeight;
         descriptor.size.depth = 1;
-        descriptor.arrayLayerCount = 1;
         descriptor.sampleCount = 1;
         descriptor.format = mFormat;
         descriptor.mipLevelCount = 1;
@@ -201,7 +199,7 @@ namespace dawn_native {
         }
         ASSERT(!IsError());
 
-        if (GetDevice()->ConsumedError(OnBeforePresent(mCurrentTexture.Get()))) {
+        if (GetDevice()->ConsumedError(OnBeforePresent(mCurrentTextureView.Get()))) {
             return;
         }
 
@@ -263,7 +261,7 @@ namespace dawn_native {
                                        Surface* surface,
                                        const SwapChainDescriptor* descriptor)
         : SwapChainBase(device),
-          mAttached(true),
+          mAttached(false),
           mWidth(descriptor->width),
           mHeight(descriptor->height),
           mFormat(descriptor->format),
@@ -279,16 +277,18 @@ namespace dawn_native {
         }
 
         ASSERT(!mAttached);
-        ASSERT(mSurface == nullptr);
     }
 
     void NewSwapChainBase::DetachFromSurface() {
         if (mAttached) {
             DetachFromSurfaceImpl();
-            GetSurface()->SetAttachedSwapChain(nullptr);
             mSurface = nullptr;
             mAttached = false;
         }
+    }
+
+    void NewSwapChainBase::SetIsAttached() {
+        mAttached = true;
     }
 
     void NewSwapChainBase::Configure(wgpu::TextureFormat format,
@@ -318,7 +318,7 @@ namespace dawn_native {
 
         // Check that the return texture view matches exactly what was given for this descriptor.
         ASSERT(view->GetTexture()->GetFormat().format == mFormat);
-        ASSERT((view->GetTexture()->GetUsage() & mUsage) == mUsage);
+        ASSERT(IsSubset(mUsage, view->GetTexture()->GetUsage()));
         ASSERT(view->GetLevelCount() == 1);
         ASSERT(view->GetLayerCount() == 1);
         ASSERT(view->GetDimension() == wgpu::TextureViewDimension::e2D);

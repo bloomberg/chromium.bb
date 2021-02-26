@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/profiler/stack_sampling_profiler.h"
@@ -132,7 +133,8 @@ class ThreadProfiler {
   // Creates a new periodic profiler and initiates a collection with it.
   void StartPeriodicSamplingCollection();
 
-  metrics::CallStackProfileParams::Thread thread_;
+  const metrics::CallStackProfileParams::Process process_;
+  const metrics::CallStackProfileParams::Thread thread_;
 
   scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;
 

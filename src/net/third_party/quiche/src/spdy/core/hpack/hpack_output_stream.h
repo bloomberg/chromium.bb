@@ -9,8 +9,8 @@
 #include <map>
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_constants.h"
 
 // All section references below are to
@@ -37,7 +37,7 @@ class QUICHE_EXPORT_PRIVATE HpackOutputStream {
   void AppendPrefix(HpackPrefix prefix);
 
   // Directly appends |buffer|.
-  void AppendBytes(quiche::QuicheStringPiece buffer);
+  void AppendBytes(absl::string_view buffer);
 
   // Appends the given integer using the representation described in
   // 6.1. If the internal buffer ends on a byte boundary, the prefix
@@ -47,6 +47,9 @@ class QUICHE_EXPORT_PRIVATE HpackOutputStream {
   // It is guaranteed that the internal buffer will end on a byte
   // boundary after this function is called.
   void AppendUint32(uint32_t I);
+
+  // Return pointer to internal buffer.  |bit_offset_| needs to be zero.
+  std::string* MutableString();
 
   // Swaps the internal buffer with |output|, then resets state.
   void TakeString(std::string* output);

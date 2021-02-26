@@ -12,13 +12,16 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/language/core/browser/language_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/renderer_preferences_util.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
-#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_features.h"
@@ -27,7 +30,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/base/cocoa/defaults_utils.h"
 #endif
 
@@ -91,28 +94,30 @@ std::vector<std::string> GetLocalIpsAllowedUrls(
 
 namespace renderer_preferences_util {
 
-void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
+void UpdateFromSystemSettings(blink::RendererPreferences* prefs,
                               Profile* profile) {
   const PrefService* pref_service = profile->GetPrefs();
-  prefs->accept_languages =
-      pref_service->GetString(language::prefs::kAcceptLanguages);
+  if (profile->IsOffTheRecord()) {
+    // In incognito mode return only the first language.
+    prefs->accept_languages = language::GetFirstLanguage(
+        pref_service->GetString(language::prefs::kAcceptLanguages));
+  } else {
+    prefs->accept_languages =
+        pref_service->GetString(language::prefs::kAcceptLanguages);
+  }
   prefs->enable_referrers = pref_service->GetBoolean(prefs::kEnableReferrers);
   prefs->enable_do_not_track =
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);
   prefs->enable_encrypted_media =
       pref_service->GetBoolean(prefs::kEnableEncryptedMedia);
   prefs->webrtc_ip_handling_policy = std::string();
-  // Handling the backward compatibility of previous boolean verions of policy
-  // controls.
-  if (!pref_service->HasPrefPath(prefs::kWebRTCIPHandlingPolicy)) {
-    if (!pref_service->GetBoolean(prefs::kWebRTCNonProxiedUdpEnabled)) {
-      prefs->webrtc_ip_handling_policy =
-          blink::kWebRTCIPHandlingDisableNonProxiedUdp;
-    } else if (!pref_service->GetBoolean(prefs::kWebRTCMultipleRoutesEnabled)) {
-      prefs->webrtc_ip_handling_policy =
-          blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly;
-    }
-  }
+#if !defined(OS_ANDROID)
+  prefs->caret_browsing_enabled =
+      pref_service->GetBoolean(prefs::kCaretBrowsingEnabled);
+  content::BrowserAccessibilityState::GetInstance()->SetCaretBrowsingState(
+      prefs->caret_browsing_enabled);
+#endif
+
   if (prefs->webrtc_ip_handling_policy.empty()) {
     prefs->webrtc_ip_handling_policy =
         pref_service->GetString(prefs::kWebRTCIPHandlingPolicy);
@@ -125,6 +130,8 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   const base::ListValue* allowed_urls =
       pref_service->GetList(prefs::kWebRtcLocalIpsAllowedUrls);
   prefs->webrtc_local_ips_allowed_urls = GetLocalIpsAllowedUrls(allowed_urls);
+  prefs->webrtc_allow_legacy_tls_protocols =
+      pref_service->GetBoolean(prefs::kWebRTCAllowLegacyTLSProtocols);
 #if defined(USE_AURA)
   prefs->focus_ring_color = SkColorSetRGB(0x4D, 0x90, 0xFE);
 #if defined(OS_CHROMEOS)
@@ -140,7 +147,7 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   prefs->caret_blink_interval = views::Textfield::GetCaretBlinkInterval();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::TimeDelta interval;
   if (ui::TextInsertionCaretBlinkPeriod(&interval))
     prefs->caret_blink_interval = interval;
@@ -165,11 +172,12 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   }
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+    defined(OS_WIN)
   content::UpdateFontRendererPreferencesFromSystemSettings(prefs);
 #endif
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   prefs->plugin_fullscreen_allowed =
       pref_service->GetBoolean(prefs::kFullscreenAllowed);
 #endif
@@ -181,7 +189,7 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   }
 
   if (::features::IsFormControlsRefreshEnabled()) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     prefs->focus_ring_color = SkColorSetRGB(0x00, 0x5F, 0xCC);
 #else
     prefs->focus_ring_color = SkColorSetRGB(0x10, 0x10, 0x10);

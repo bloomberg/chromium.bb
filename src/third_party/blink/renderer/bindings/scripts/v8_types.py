@@ -85,8 +85,8 @@ ARRAY_BUFFER_AND_VIEW_TYPES = TYPED_ARRAY_TYPES.union(
         'SharedArrayBuffer',
     ]))
 # We have an unfortunate hack that treats types whose name ends with
-# 'Constructor' as aliases to IDL interface object. This white list is used to
-# disable the hack.
+# 'Constructor' as aliases to IDL interface object. This list is used to disable
+# the hack.
 _CALLBACK_CONSTRUCTORS = frozenset((
     'AnimatorConstructor',
     'BlinkAudioWorkletProcessorConstructor',
@@ -552,6 +552,11 @@ def impl_includes_for_type(idl_type, interfaces_info):
     base_idl_type = idl_type.base_type
     if idl_type.is_string_type:
         includes_for_type.add('platform/wtf/text/wtf_string.h')
+    if idl_type.is_record_type:
+        includes_for_type.update(impl_includes_for_type(idl_type.key_type,
+                                                        interfaces_info))
+        includes_for_type.update(impl_includes_for_type(idl_type.value_type,
+                                                        interfaces_info))
     if idl_type.is_callback_function:
         component = IdlType.callback_functions[base_idl_type]['component_dir']
         return set([
@@ -588,7 +593,8 @@ def impl_forward_declaration_name(idl_type):
     if element_type:
         return element_type.impl_forward_declaration_name
 
-    if ((idl_type.is_wrapper_type and not idl_type.is_typed_array)
+    if ((idl_type.is_wrapper_type
+         and not idl_type.is_array_buffer_view_or_typed_array)
             or idl_type.is_dictionary):
         return idl_type.implemented_as
     return None

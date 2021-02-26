@@ -80,14 +80,17 @@ struct HashAndTime {
 };
 
 std::unique_ptr<sync_pb::DataTypeProgressMarker>
-RemoveWalletProgressMarkerIfExists(sync_pb::ClientToServerMessage* message) {
+RemoveFullUpdateTypeProgressMarkerIfExists(
+    ModelType model_type,
+    sync_pb::ClientToServerMessage* message) {
+  DCHECK(model_type == syncer::AUTOFILL_WALLET_DATA ||
+         model_type == syncer::AUTOFILL_WALLET_OFFER);
   google::protobuf::RepeatedPtrField<sync_pb::DataTypeProgressMarker>*
       progress_markers =
           message->mutable_get_updates()->mutable_from_progress_marker();
   for (int index = 0; index < progress_markers->size(); ++index) {
     if (syncer::GetModelTypeFromSpecificsFieldNumber(
-            progress_markers->Get(index).data_type_id()) ==
-        syncer::AUTOFILL_WALLET_DATA) {
+            progress_markers->Get(index).data_type_id()) == model_type) {
       auto result = std::make_unique<sync_pb::DataTypeProgressMarker>(
           progress_markers->Get(index));
       progress_markers->erase(progress_markers->begin() + index);
@@ -97,20 +100,22 @@ RemoveWalletProgressMarkerIfExists(sync_pb::ClientToServerMessage* message) {
   return nullptr;
 }
 
-void VerifyNoWalletDataProgressMarkerExists(
+void VerifyNoProgressMarkerExistsInResponseForFullUpdateType(
     sync_pb::GetUpdatesResponse* gu_response) {
   for (const sync_pb::DataTypeProgressMarker& marker :
        gu_response->new_progress_marker()) {
-    DCHECK_NE(
-        syncer::GetModelTypeFromSpecificsFieldNumber(marker.data_type_id()),
-        syncer::AUTOFILL_WALLET_DATA);
+    ModelType type =
+        syncer::GetModelTypeFromSpecificsFieldNumber(marker.data_type_id());
+    // Verified there is no progress marker for the full sync type we cared
+    // about.
+    DCHECK(type != syncer::AUTOFILL_WALLET_DATA &&
+           type != syncer::AUTOFILL_WALLET_OFFER);
   }
 }
 
 // Returns a hash representing |entities| including each entity's ID and
 // version, in a way that the order of the entities is irrelevant.
-uint64_t ComputeWalletEntitiesHash(
-    const std::vector<sync_pb::SyncEntity>& entities) {
+uint64_t ComputeEntitiesHash(const std::vector<sync_pb::SyncEntity>& entities) {
   // Make sure to pick a token that will be consistent across clients when
   // receiving the same data. We sum up the hashes which has the nice side
   // effect of being independent of the order.
@@ -124,14 +129,14 @@ uint64_t ComputeWalletEntitiesHash(
 
 // Encodes a hash and timestamp in a string that is meant to be used as progress
 // marker token.
-std::string PackWalletProgressMarkerToken(const HashAndTime& hash_and_time) {
+std::string PackProgressMarkerToken(const HashAndTime& hash_and_time) {
   return base::NumberToString(hash_and_time.hash) + " " +
          base::NumberToString(
              hash_and_time.time.ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
-// Reverse for PackWalletProgressMarkerToken.
-HashAndTime UnpackWalletProgressMarkerToken(const std::string& token) {
+// Reverse for PackProgressMarkerToken.
+HashAndTime UnpackProgressMarkerToken(const std::string& token) {
   // The hash is stored as a first piece of the string (space delimited), the
   // second piece is the timestamp.
   HashAndTime hash_and_time;
@@ -152,31 +157,25 @@ HashAndTime UnpackWalletProgressMarkerToken(const std::string& token) {
   return hash_and_time;
 }
 
-void PopulateWalletResults(
+void PopulateFullUpdateTypeResults(
     const std::vector<sync_pb::SyncEntity>& entities,
-    const sync_pb::DataTypeProgressMarker& old_wallet_marker,
+    const sync_pb::DataTypeProgressMarker& old_marker,
     sync_pb::GetUpdatesResponse* gu_response) {
-  // The response from the loopback server should never have an existing
-  // progress marker for wallet data (because FakeServer removes it from the
-  // request).
-  VerifyNoWalletDataProgressMarkerExists(gu_response);
-  sync_pb::DataTypeProgressMarker* new_wallet_marker =
+  sync_pb::DataTypeProgressMarker* new_marker =
       gu_response->add_new_progress_marker();
-  new_wallet_marker->set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(syncer::AUTOFILL_WALLET_DATA));
+  new_marker->set_data_type_id(old_marker.data_type_id());
 
-  uint64_t hash = ComputeWalletEntitiesHash(entities);
+  uint64_t hash = ComputeEntitiesHash(entities);
 
   // We also include information about the fetch time in the token. This is
   // in-line with the server behavior and -- as it keeps changing -- allows
   // integration tests to wait for a GetUpdates call to finish, even if they
   // don't contain data updates.
-  new_wallet_marker->set_token(
-      PackWalletProgressMarkerToken({hash, base::Time::Now()}));
+  new_marker->set_token(PackProgressMarkerToken({hash, base::Time::Now()}));
 
-  if (!old_wallet_marker.has_token() ||
-      !AreWalletDataProgressMarkersEquivalent(old_wallet_marker,
-                                              *new_wallet_marker)) {
+  if (!old_marker.has_token() ||
+      !AreFullUpdateTypeDataProgressMarkersEquivalent(old_marker,
+                                                      *new_marker)) {
     // New data available; include new elements and tell the client to drop all
     // previous data.
     int64_t version =
@@ -188,10 +187,9 @@ void PopulateWalletResults(
     }
 
     // Set the GC directive to implement non-incremental reads.
-    new_wallet_marker->mutable_gc_directive()->set_type(
+    new_marker->mutable_gc_directive()->set_type(
         sync_pb::GarbageCollectionDirective::VERSION_WATERMARK);
-    new_wallet_marker->mutable_gc_directive()->set_version_watermark(version -
-                                                                     1);
+    new_marker->mutable_gc_directive()->set_version_watermark(version - 1);
   }
 }
 
@@ -204,11 +202,11 @@ std::string PrettyPrintValue(std::unique_ptr<base::DictionaryValue> value) {
 
 }  // namespace
 
-bool AreWalletDataProgressMarkersEquivalent(
+bool AreFullUpdateTypeDataProgressMarkersEquivalent(
     const sync_pb::DataTypeProgressMarker& marker1,
     const sync_pb::DataTypeProgressMarker& marker2) {
-  return UnpackWalletProgressMarkerToken(marker1.token()).hash ==
-         UnpackWalletProgressMarkerToken(marker2.token()).hash;
+  return UnpackProgressMarkerToken(marker1.token()).hash ==
+         UnpackProgressMarkerToken(marker2.token()).hash;
 }
 
 net::HttpStatusCode FakeServer::HandleCommand(const std::string& request,
@@ -217,10 +215,6 @@ net::HttpStatusCode FakeServer::HandleCommand(const std::string& request,
   response->clear();
 
   request_counter_++;
-
-  if (http_error_status_code_) {
-    return *http_error_status_code_;
-  }
 
   sync_pb::ClientToServerMessage message;
   bool parsed = message.ParseFromString(request);
@@ -249,6 +243,23 @@ net::HttpStatusCode FakeServer::HandleParsedCommand(
   DCHECK(response);
   response->Clear();
 
+  // Store last message from the client in any case.
+  switch (message.message_contents()) {
+    case sync_pb::ClientToServerMessage::GET_UPDATES:
+      last_getupdates_message_ = message;
+      break;
+    case sync_pb::ClientToServerMessage::COMMIT:
+      last_commit_message_ = message;
+      break;
+    default:
+      // Don't care.
+      break;
+  }
+
+  if (http_error_status_code_) {
+    return *http_error_status_code_;
+  }
+
   if (message.message_contents() == sync_pb::ClientToServerMessage::COMMIT &&
       commit_error_type_ != sync_pb::SyncEnums::SUCCESS &&
       ShouldSendTriggeredError()) {
@@ -270,39 +281,43 @@ net::HttpStatusCode FakeServer::HandleParsedCommand(
     return net::HTTP_OK;
   }
 
-  switch (message.message_contents()) {
-    case sync_pb::ClientToServerMessage::GET_UPDATES:
-      last_getupdates_message_ = message;
-      break;
-    case sync_pb::ClientToServerMessage::COMMIT:
-      last_commit_message_ = message;
-      break;
-    default:
-      break;
-      // Don't care.
-  }
-
-  // The loopback server does not know how to handle Wallet requests -- and
-  // should not. The FakeServer is handling those instead. The loopback server
-  // has a strong expectations about how progress tokens are structured. To
-  // not interfere with this, we remove wallet progress markers before passing
-  // the request to the loopback server.
-  sync_pb::ClientToServerMessage message_without_wallet = message;
+  // The loopback server does not know how to handle Wallet or Offer requests
+  // -- and should not. The FakeServer is handling those instead. The
+  // loopback server has a strong expectations about how progress tokens are
+  // structured. To not interfere with this, we remove progress markers for
+  // full-update types before passing the request to the loopback server.
+  sync_pb::ClientToServerMessage message_without_full_update_type = message;
   std::unique_ptr<sync_pb::DataTypeProgressMarker> wallet_marker =
-      RemoveWalletProgressMarkerIfExists(&message_without_wallet);
-
+      RemoveFullUpdateTypeProgressMarkerIfExists(
+          syncer::AUTOFILL_WALLET_DATA, &message_without_full_update_type);
+  std::unique_ptr<sync_pb::DataTypeProgressMarker> offer_marker =
+      RemoveFullUpdateTypeProgressMarkerIfExists(
+          syncer::AUTOFILL_WALLET_OFFER, &message_without_full_update_type);
   net::HttpStatusCode http_status_code =
-      SendToLoopbackServer(message_without_wallet, response);
+      SendToLoopbackServer(message_without_full_update_type, response);
 
   if (response->has_get_updates() && disallow_sending_encryption_keys_) {
     response->mutable_get_updates()->clear_encryption_keys();
   }
 
-  if (wallet_marker != nullptr && http_status_code == net::HTTP_OK &&
+  if (http_status_code == net::HTTP_OK &&
       message.message_contents() ==
           sync_pb::ClientToServerMessage::GET_UPDATES) {
-    PopulateWalletResults(wallet_entities_, *wallet_marker,
-                          response->mutable_get_updates());
+    // The response from the loopback server should never have an existing
+    // progress marker for full-update types (because FakeServer removes it from
+    // the request).
+    VerifyNoProgressMarkerExistsInResponseForFullUpdateType(
+        response->mutable_get_updates());
+
+    if (wallet_marker != nullptr) {
+      PopulateFullUpdateTypeResults(wallet_entities_, *wallet_marker,
+                                    response->mutable_get_updates());
+    }
+
+    if (offer_marker != nullptr) {
+      PopulateFullUpdateTypeResults(offer_entities_, *offer_marker,
+                                    response->mutable_get_updates());
+    }
   }
 
   if (http_status_code == net::HTTP_OK &&
@@ -360,12 +375,6 @@ FakeServer::GetPermanentSyncEntitiesByModelType(ModelType model_type) {
   return loopback_server_->GetPermanentSyncEntitiesByModelType(model_type);
 }
 
-std::string FakeServer::GetTopLevelPermanentItemId(
-    syncer::ModelType model_type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return loopback_server_->GetTopLevelPermanentItemId(model_type);
-}
-
 const std::vector<std::vector<uint8_t>>& FakeServer::GetKeystoreKeys() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return loopback_server_->GetKeystoreKeysForTesting();
@@ -379,55 +388,86 @@ void FakeServer::TriggerKeystoreKeyRotation() {
       loopback_server_->GetPermanentSyncEntitiesByModelType(syncer::NIGORI);
 
   DCHECK_EQ(nigori_entities.size(), 1U);
-  bool success = ModifyEntitySpecifics(
-      loopback_server_->GetTopLevelPermanentItemId(syncer::NIGORI),
-      nigori_entities[0].specifics());
+  bool success =
+      ModifyEntitySpecifics(LoopbackServerEntity::GetTopLevelId(syncer::NIGORI),
+                            nigori_entities[0].specifics());
   DCHECK(success);
 }
 
 void FakeServer::InjectEntity(std::unique_ptr<LoopbackServerEntity> entity) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(entity->GetModelType() != syncer::AUTOFILL_WALLET_DATA)
-      << "Wallet data must be injected via SetWalletData()";
+  DCHECK(entity->GetModelType() != syncer::AUTOFILL_WALLET_DATA &&
+         entity->GetModelType() != syncer::AUTOFILL_WALLET_OFFER)
+      << "Wallet/Offer data must be injected via "
+         "SetWalletData()/SetOfferData().";
 
   const ModelType model_type = entity->GetModelType();
 
   loopback_server_->SaveEntity(std::move(entity));
 
   // Notify observers so invalidations are mimic-ed.
-  OnCommit(/*committer_id=*/std::string(),
+  OnCommit(/*committer_invalidator_client_id=*/std::string(),
            /*committed_model_types=*/{model_type});
 }
 
 base::Time FakeServer::SetWalletData(
     const std::vector<sync_pb::SyncEntity>& wallet_entities) {
+  DCHECK(!wallet_entities.empty());
+  ModelType model_type =
+      GetModelTypeFromSpecifics(wallet_entities[0].specifics());
+  DCHECK(model_type == syncer::AUTOFILL_WALLET_DATA);
   wallet_entities_ = wallet_entities;
 
   const base::Time now = base::Time::Now();
   const int64_t version = (now - base::Time::UnixEpoch()).InMilliseconds();
 
   for (sync_pb::SyncEntity& entity : wallet_entities_) {
-    DCHECK_EQ(GetModelTypeFromSpecifics(entity.specifics()),
-              syncer::AUTOFILL_WALLET_DATA);
     DCHECK(!entity.has_client_defined_unique_tag())
-        << "The sync server doesn not provide a client tag for wallet entries";
+        << "The sync server doesn not provide a client tag for wallet entries.";
     DCHECK(!entity.id_string().empty()) << "server id required!";
 
-    // The version is overriden during serving of the entities, but is useful
+    // The version is overridden during serving of the entities, but is useful
     // here to influence the entities' hash.
     entity.set_version(version);
   }
 
-  OnCommit(/*committer_id=*/std::string(),
+  OnCommit(/*committer_invalidator_client_id=*/std::string(),
            /*committed_model_types=*/{syncer::AUTOFILL_WALLET_DATA});
 
   return now;
 }
 
+base::Time FakeServer::SetOfferData(
+    const std::vector<sync_pb::SyncEntity>& offer_entities) {
+  DCHECK(!offer_entities.empty());
+  ModelType model_type =
+      GetModelTypeFromSpecifics(offer_entities[0].specifics());
+  DCHECK(model_type == syncer::AUTOFILL_WALLET_OFFER);
+  offer_entities_ = offer_entities;
+
+  const base::Time now = base::Time::Now();
+  const int64_t version = (now - base::Time::UnixEpoch()).InMilliseconds();
+
+  for (sync_pb::SyncEntity& entity : offer_entities_) {
+    DCHECK(!entity.has_client_defined_unique_tag())
+        << "The sync server doesn not provide a client tag for offer entries.";
+    DCHECK(!entity.id_string().empty()) << "server id required!";
+
+    // The version is overridden during serving of the entities, but is useful
+    // here to influence the entities' hash.
+    entity.set_version(version);
+  }
+
+  OnCommit(/*committer_id=*/std::string(),
+           /*committed_model_types=*/{syncer::AUTOFILL_WALLET_OFFER});
+
+  return now;
+}
+
 // static
-base::Time FakeServer::GetWalletProgressMarkerTimestamp(
+base::Time FakeServer::GetProgressMarkerTimestamp(
     const sync_pb::DataTypeProgressMarker& progress_marker) {
-  return UnpackWalletProgressMarkerToken(progress_marker.token()).time;
+  return UnpackProgressMarkerToken(progress_marker.token()).time;
 }
 
 bool FakeServer::ModifyEntitySpecifics(
@@ -438,8 +478,9 @@ bool FakeServer::ModifyEntitySpecifics(
   }
 
   // Notify observers so invalidations are mimic-ed.
-  OnCommit(/*committer_id=*/std::string(), /*committed_model_types=*/{
-               GetModelTypeFromSpecifics(updated_specifics)});
+  OnCommit(
+      /*committer_invalidator_client_id=*/std::string(),
+      /*committed_model_types=*/{GetModelTypeFromSpecifics(updated_specifics)});
 
   return true;
 }
@@ -454,7 +495,7 @@ bool FakeServer::ModifyBookmarkEntity(
   }
 
   // Notify observers so invalidations are mimic-ed.
-  OnCommit(/*committer_id=*/std::string(),
+  OnCommit(/*committer_invalidator_client_id=*/std::string(),
            /*committed_model_types=*/{syncer::BOOKMARKS});
 
   return true;
@@ -510,7 +551,6 @@ void FakeServer::TriggerActionableError(
       new sync_pb::ClientToServerResponse_Error();
   error->set_error_type(error_type);
   error->set_error_description(description);
-  error->set_url(url);
   error->set_action(action);
   triggered_actionable_error_.reset(error);
 }
@@ -535,6 +575,10 @@ bool FakeServer::EnableAlternatingTriggeredErrors() {
 
 void FakeServer::DisallowSendingEncryptionKeys() {
   disallow_sending_encryption_keys_ = true;
+}
+
+void FakeServer::SetThrottledTypes(syncer::ModelTypeSet types) {
+  loopback_server_->SetThrottledTypesForTesting(types);
 }
 
 bool FakeServer::ShouldSendTriggeredError() const {
@@ -562,10 +606,10 @@ void FakeServer::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FakeServer::OnCommit(const std::string& committer_id,
+void FakeServer::OnCommit(const std::string& committer_invalidator_client_id,
                           syncer::ModelTypeSet committed_model_types) {
   for (auto& observer : observers_)
-    observer.OnCommit(committer_id, committed_model_types);
+    observer.OnCommit(committer_invalidator_client_id, committed_model_types);
 }
 
 void FakeServer::OnHistoryCommit(const std::string& url) {

@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/mojom/page/display_cutout.mojom-blink.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
@@ -29,7 +30,7 @@ class DisplayCutoutMockChromeClient : public EmptyChromeClient {
   // ChromeClient overrides:
   void EnterFullscreen(LocalFrame& frame,
                        const FullscreenOptions*,
-                       bool for_cross_process_descendant) override {
+                       FullscreenRequestType) override {
     Fullscreen::DidResolveEnterFullscreenRequest(*frame.GetDocument(),
                                                  true /* granted */);
   }
@@ -61,7 +62,9 @@ class MediaControlsDisplayCutoutDelegateTest
 
   void SimulateEnterFullscreen() {
     {
-      LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+      LocalFrame::NotifyUserActivation(
+          GetDocument().GetFrame(),
+          mojom::UserActivationNotificationType::kTest);
       Fullscreen::RequestFullscreen(GetVideoElement());
     }
 
@@ -289,7 +292,11 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, SingleTouchGesture_Noop) {
   // Simulate a single touch gesture and make sure it had no effect.
   SimulateEnterFullscreen();
   SimulateSingleTouchGesture();
-  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
+  mojom::ViewportFit expected =
+      RuntimeEnabledFeatures::MediaControlsUseCutOutByDefaultEnabled()
+          ? mojom::ViewportFit::kCoverForcedByUserAgent
+          : mojom::ViewportFit::kAuto;
+  EXPECT_EQ(expected, CurrentViewportFit());
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchCancelShouldClearState) {
@@ -304,7 +311,11 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchCancelShouldClearState) {
   list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
   SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchcancel, list));
   EXPECT_FALSE(HasGestureState());
-  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
+  mojom::ViewportFit expected =
+      RuntimeEnabledFeatures::MediaControlsUseCutOutByDefaultEnabled()
+          ? mojom::ViewportFit::kCoverForcedByUserAgent
+          : mojom::ViewportFit::kAuto;
+  EXPECT_EQ(expected, CurrentViewportFit());
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchEndShouldClearState) {
@@ -319,7 +330,12 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchEndShouldClearState) {
   list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
   SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchend, list));
   EXPECT_FALSE(HasGestureState());
-  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
+
+  mojom::ViewportFit expected =
+      RuntimeEnabledFeatures::MediaControlsUseCutOutByDefaultEnabled()
+          ? mojom::ViewportFit::kCoverForcedByUserAgent
+          : mojom::ViewportFit::kAuto;
+  EXPECT_EQ(expected, CurrentViewportFit());
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, DefaultExpand) {

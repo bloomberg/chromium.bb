@@ -8,7 +8,12 @@
     Exposed=Window,
     RuntimeEnabled=WebCodecs
 ] interface VideoTrackReader {
-  [CallWith=ScriptState, RaisesException]
+  [CallWith=ScriptState, RaisesException, MeasureAs=WebCodecsVideoTrackReader]
   constructor(MediaStreamTrack track);
-  readonly attribute ReadableStream readable; // of VideoFrame
+
+  [RaisesException]
+  void start(VideoFrameOutputCallback callback);
+
+  [RaisesException]
+  void stop();
 };

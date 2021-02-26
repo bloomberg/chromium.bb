@@ -23,8 +23,7 @@ class UrlCheckerDelegateImpl : public safe_browsing::UrlCheckerDelegate {
   UrlCheckerDelegateImpl(
       scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
           database_manager,
-      scoped_refptr<SafeBrowsingUIManager> ui_manager,
-      bool disabled);
+      scoped_refptr<SafeBrowsingUIManager> ui_manager);
 
   void SetSafeBrowsingDisabled(bool disabled);
 
@@ -43,7 +42,7 @@ class UrlCheckerDelegateImpl : public safe_browsing::UrlCheckerDelegate {
   void StartObservingInteractionsForDelayedBlockingPageHelper(
       const security_interstitials::UnsafeResource& resource,
       bool is_main_frame) override;
-  bool IsUrlWhitelisted(const GURL& url) override;
+  bool IsUrlAllowlisted(const GURL& url) override;
   bool ShouldSkipRequestCheck(const GURL& original_url,
                               int frame_tree_node_id,
                               int render_process_id,
@@ -61,7 +60,6 @@ class UrlCheckerDelegateImpl : public safe_browsing::UrlCheckerDelegate {
 
   scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
-  bool safe_browsing_disabled_;
   safe_browsing::SBThreatTypeSet threat_types_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlCheckerDelegateImpl);

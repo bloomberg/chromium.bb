@@ -18,16 +18,15 @@ import (
 	"fmt"
 
 	"github.com/google/wuffs/lang/builtin"
-	"github.com/google/wuffs/lang/parse"
 
 	a "github.com/google/wuffs/lang/ast"
 	t "github.com/google/wuffs/lang/token"
 )
 
 var (
-	exprArgs    = a.NewExpr(0, 0, 0, t.IDArgs, nil, nil, nil, nil)
-	exprNullptr = a.NewExpr(0, 0, 0, t.IDNullptr, nil, nil, nil, nil)
-	exprThis    = a.NewExpr(0, 0, 0, t.IDThis, nil, nil, nil, nil)
+	exprArgs    = a.NewExpr(0, 0, t.IDArgs, nil, nil, nil, nil)
+	exprNullptr = a.NewExpr(0, 0, t.IDNullptr, nil, nil, nil, nil)
+	exprThis    = a.NewExpr(0, 0, t.IDThis, nil, nil, nil, nil)
 )
 
 var (
@@ -36,6 +35,7 @@ var (
 	typeExprIdeal       = a.NewTypeExpr(0, t.IDBase, t.IDQIdeal, nil, nil, nil)
 	typeExprList        = a.NewTypeExpr(0, t.IDBase, t.IDComma, nil, nil, nil)
 	typeExprNullptr     = a.NewTypeExpr(0, t.IDBase, t.IDQNullptr, nil, nil, nil)
+	typeExprPackage     = a.NewTypeExpr(0, t.IDBase, t.IDQPackage, nil, nil, nil)
 	typeExprPlaceholder = a.NewTypeExpr(0, t.IDBase, t.IDQPlaceholder, nil, nil, nil)
 	typeExprTypeExpr    = a.NewTypeExpr(0, t.IDBase, t.IDQTypeExpr, nil, nil, nil)
 
@@ -55,14 +55,21 @@ var (
 	typeExprRectIEU32  = a.NewTypeExpr(0, t.IDBase, t.IDRectIEU32, nil, nil, nil)
 	typeExprRectIIU32  = a.NewTypeExpr(0, t.IDBase, t.IDRectIIU32, nil, nil, nil)
 
-	typeExprIOReader = a.NewTypeExpr(0, t.IDBase, t.IDIOReader, nil, nil, nil)
-	typeExprIOWriter = a.NewTypeExpr(0, t.IDBase, t.IDIOWriter, nil, nil, nil)
-	typeExprStatus   = a.NewTypeExpr(0, t.IDBase, t.IDStatus, nil, nil, nil)
+	typeExprMoreInformation = a.NewTypeExpr(0, t.IDBase, t.IDMoreInformation, nil, nil, nil)
+
+	typeExprStatus = a.NewTypeExpr(0, t.IDBase, t.IDStatus, nil, nil, nil)
+
+	typeExprIOReader    = a.NewTypeExpr(0, t.IDBase, t.IDIOReader, nil, nil, nil)
+	typeExprIOWriter    = a.NewTypeExpr(0, t.IDBase, t.IDIOWriter, nil, nil, nil)
+	typeExprTokenReader = a.NewTypeExpr(0, t.IDBase, t.IDTokenReader, nil, nil, nil)
+	typeExprTokenWriter = a.NewTypeExpr(0, t.IDBase, t.IDTokenWriter, nil, nil, nil)
 
 	typeExprFrameConfig   = a.NewTypeExpr(0, t.IDBase, t.IDFrameConfig, nil, nil, nil)
 	typeExprImageConfig   = a.NewTypeExpr(0, t.IDBase, t.IDImageConfig, nil, nil, nil)
+	typeExprPixelBlend    = a.NewTypeExpr(0, t.IDBase, t.IDPixelBlend, nil, nil, nil)
 	typeExprPixelBuffer   = a.NewTypeExpr(0, t.IDBase, t.IDPixelBuffer, nil, nil, nil)
 	typeExprPixelConfig   = a.NewTypeExpr(0, t.IDBase, t.IDPixelConfig, nil, nil, nil)
+	typeExprPixelFormat   = a.NewTypeExpr(0, t.IDBase, t.IDPixelFormat, nil, nil, nil)
 	typeExprPixelSwizzler = a.NewTypeExpr(0, t.IDBase, t.IDPixelSwizzler, nil, nil, nil)
 
 	typeExprDecodeFrameOptions = a.NewTypeExpr(0, t.IDBase, t.IDDecodeFrameOptions, nil, nil, nil)
@@ -96,68 +103,36 @@ var builtInTypeMap = typeMap{
 	t.IDRectIEU32:  typeExprRectIEU32,
 	t.IDRectIIU32:  typeExprRectIIU32,
 
-	t.IDIOReader: typeExprIOReader,
-	t.IDIOWriter: typeExprIOWriter,
-	t.IDStatus:   typeExprStatus,
+	t.IDMoreInformation: typeExprMoreInformation,
+
+	t.IDStatus: typeExprStatus,
+
+	t.IDIOReader:    typeExprIOReader,
+	t.IDIOWriter:    typeExprIOWriter,
+	t.IDTokenReader: typeExprTokenReader,
+	t.IDTokenWriter: typeExprTokenWriter,
 
 	t.IDFrameConfig:   typeExprFrameConfig,
 	t.IDImageConfig:   typeExprImageConfig,
+	t.IDPixelBlend:    typeExprPixelBlend,
 	t.IDPixelBuffer:   typeExprPixelBuffer,
 	t.IDPixelConfig:   typeExprPixelConfig,
+	t.IDPixelFormat:   typeExprPixelFormat,
 	t.IDPixelSwizzler: typeExprPixelSwizzler,
 
 	t.IDDecodeFrameOptions: typeExprDecodeFrameOptions,
 }
 
-func (c *Checker) parseBuiltInFuncs(ss []string, generic bool) (map[t.QQID]*a.Func, error) {
-	m := map[t.QQID]*a.Func(nil)
-	if generic {
-		m = map[t.QQID]*a.Func{}
-	}
-
-	buf := []byte(nil)
-	for _, s := range ss {
-		buf = buf[:0]
-		buf = append(buf, "pub func "...)
-		buf = append(buf, s...)
-		buf = append(buf, "{}\n"...)
-
-		const filename = "builtin.wuffs"
-		tokens, _, err := t.Tokenize(c.tm, filename, buf)
-		if err != nil {
-			return nil, fmt.Errorf("check: parsing %q: could not tokenize built-in funcs: %v", s, err)
-		}
-		if generic {
-			for i := range tokens {
-				if tokens[i].ID == builtin.GenericOldName1 {
-					tokens[i].ID = builtin.GenericNewName1
-				} else if tokens[i].ID == builtin.GenericOldName2 {
-					tokens[i].ID = builtin.GenericNewName2
-				}
-			}
-		}
-		file, err := parse.Parse(c.tm, filename, tokens, &parse.Options{
-			AllowBuiltInNames: true,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("check: parsing %q: could not parse built-in funcs: %v", s, err)
-		}
-
-		tlds := file.TopLevelDecls()
-		if len(tlds) != 1 || tlds[0].Kind() != a.KFunc {
-			return nil, fmt.Errorf("check: parsing %q: got %d top level decls, want %d", s, len(tlds), 1)
-		}
-		f := tlds[0].AsFunc()
-		f.AsNode().AsRaw().SetPackage(c.tm, t.IDBase)
+func (c *Checker) parseBuiltInFuncs(m map[t.QQID]*a.Func, ss []string) error {
+	return builtin.ParseFuncs(c.tm, ss, func(f *a.Func) error {
 		if err := c.checkFuncSignature(f.AsNode()); err != nil {
-			return nil, err
+			return err
 		}
-
 		if m != nil {
 			m[f.QQID()] = f
 		}
-	}
-	return m, nil
+		return nil
+	})
 }
 
 func (c *Checker) resolveFunc(typ *a.TypeExpr) (*a.Func, error) {

@@ -2,8 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import re
 from recipe_engine import recipe_api
 
+class DepsDiffException(Exception):
+  pass
 
 class RevisionResolver(object):
   """Resolves the revision based on build properties."""
@@ -13,12 +16,14 @@ class RevisionResolver(object):
 
 
 class RevisionFallbackChain(RevisionResolver):
-  """Specify that a given project's sync revision follows the fallback chain."""
+  """Specify that a given project's sync revision follows the fallback
+  chain."""
+
   def __init__(self, default=None):
     self._default = default
 
   def resolve(self, properties):
-    """Resolve the revision via the revision fallback chain.
+    """Resolves the revision via the revision fallback chain.
 
     If the given revision was set using the revision_fallback_chain() function,
     this function will follow the chain, looking at relevant build properties
@@ -33,7 +38,7 @@ class RevisionFallbackChain(RevisionResolver):
 
 
 def jsonish_to_python(spec, is_top=False):
-  """Turn a json spec into a python parsable object.
+  """Turns a json spec into a python parsable object.
 
   This exists because Gclient specs, while resembling json, is actually
   ingested using a python "eval()".  Therefore a bit of plumming is required
@@ -114,7 +119,7 @@ class GclientApi(recipe_api.RecipeApi):
   def get_config_defaults(self):
     return {
       'USE_MIRROR': self.use_mirror,
-      'CACHE_DIR': self.m.infra_paths.default_git_cache_dir,
+      'CACHE_DIR': self.m.path['cache'].join('git'),
     }
 
   @staticmethod
@@ -358,3 +363,64 @@ class GclientApi(recipe_api.RecipeApi):
     path, revision = cfg.repo_path_map.get(repo_url, (None, None))
     if path and revision and path not in cfg.revisions:
       cfg.revisions[path] = revision
+
+  def diff_deps(self, cwd):
+    with self.m.context(cwd=cwd):
+      step_result = self.m.git(
+          '-c',
+          'core.quotePath=false',
+          'checkout',
+          'HEAD~',
+          '--',
+          'DEPS',
+          name='checkout the previous DEPS',
+          stdout=self.m.raw_io.output()
+      )
+
+      try:
+        cfg = self.c
+
+        step_result = self(
+            'recursively git diff all DEPS',
+            ['recurse', 'python', self.resource('diff_deps.py')],
+            stdout=self.m.raw_io.output_text(add_output_log=True),
+        )
+
+        paths = []
+        # gclient recurse prepends a number and a > to each line
+        # Let's take that out
+        for line in step_result.stdout.strip().splitlines():
+          if 'fatal: bad object' in line:
+            msg = "Couldn't checkout previous ref: %s" % line
+            step_result.presentation.logs['DepsDiffException'] = msg
+            raise self.DepsDiffException(msg)
+          elif re.match('\d+>', line):
+            paths.append(line[line.index('>') + 1:])
+
+
+        # Normalize paths
+        if self.m.platform.is_win:
+          # Looks like "analyze" wants POSIX slashes even on Windows (since git
+          # uses that format even on Windows).
+          paths = [path.replace('\\', '/') for path in paths]
+
+        if len(paths) > 0:
+          return paths
+        else:
+          msg = 'Unexpected result: autoroll diff found 0 files changed'
+          step_result.presentation.logs['DepsDiffException'] = msg
+          raise self.DepsDiffException(msg)
+
+      finally:
+        self.m.git(
+            '-c',
+            'core.quotePath=false',
+            'checkout',
+            'HEAD',
+            '--',
+            'DEPS',
+            name="checkout the original DEPS")
+
+  @property
+  def DepsDiffException(self):
+    return DepsDiffException

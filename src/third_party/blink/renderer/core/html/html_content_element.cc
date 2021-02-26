@@ -48,7 +48,7 @@ HTMLContentElement::HTMLContentElement(Document& document)
 
 HTMLContentElement::~HTMLContentElement() = default;
 
-void HTMLContentElement::Trace(Visitor* visitor) {
+void HTMLContentElement::Trace(Visitor* visitor) const {
   V0InsertionPoint::Trace(visitor);
 }
 
@@ -114,8 +114,7 @@ bool HTMLContentElement::MatchSelector(Element& element) const {
   SelectorChecker::Init init;
   init.mode = SelectorChecker::kQueryingRules;
   SelectorChecker checker(init);
-  SelectorChecker::SelectorCheckingContext context(
-      &element, SelectorChecker::kVisitedMatchDisabled);
+  SelectorChecker::SelectorCheckingContext context(&element);
   for (const CSSSelector* selector = SelectorList().First(); selector;
        selector = CSSSelectorList::Next(*selector)) {
     context.selector = selector;

@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_tree.h"
@@ -150,7 +151,7 @@ void AXLanguageInfoStats::ReportMetrics() {
 
   int percentage_detected =
       count_detection_results_ * 100 / count_detection_attempted_;
-  base::UmaHistogramPercentage(
+  base::UmaHistogramPercentageObsoleteDoNotUse(
       "Accessibility.LanguageDetection.PercentageLanguageDetected",
       percentage_detected);
 
@@ -164,12 +165,12 @@ void AXLanguageInfoStats::ReportMetrics() {
   if (count_labelled_) {
     int percentage_top =
         count_labelled_with_top_result_ * 100 / count_labelled_;
-    base::UmaHistogramPercentage(
+    base::UmaHistogramPercentageObsoleteDoNotUse(
         "Accessibility.LanguageDetection.PercentageLabelledWithTop",
         percentage_top);
 
     int percentage_overridden = count_overridden_ * 100 / count_labelled_;
-    base::UmaHistogramPercentage(
+    base::UmaHistogramPercentageObsoleteDoNotUse(
         "Accessibility.LanguageDetection.PercentageOverridden",
         percentage_overridden);
   }
@@ -208,10 +209,28 @@ AXLanguageDetectionManager::AXLanguageDetectionManager(AXTree* tree)
 
 AXLanguageDetectionManager::~AXLanguageDetectionManager() = default;
 
+bool AXLanguageDetectionManager::IsStaticLanguageDetectionEnabled() {
+  // Static language detection can be enabled by either:
+  //  1) The general language detection feature flag which gates both static and
+  //     dynamic language detection (feature flag for experiment), or
+  //  2) The Static specific flag (user controlled switch).
+  return features::IsAccessibilityLanguageDetectionEnabled() ||
+         ::switches::IsExperimentalAccessibilityLanguageDetectionEnabled();
+}
+
+bool AXLanguageDetectionManager::IsDynamicLanguageDetectionEnabled() {
+  // Dynamic language detection can be enabled by either:
+  //  1) The general language detection feature flag which gates both static and
+  //     dynamic language detection (feature flag for experiment), or
+  //  2) The Dynamic specific flag (user controlled switch).
+  return features::IsAccessibilityLanguageDetectionEnabled() ||
+         ::switches::
+             IsExperimentalAccessibilityLanguageDetectionDynamicEnabled();
+}
+
 void AXLanguageDetectionManager::RegisterLanguageDetectionObserver() {
-  // If the dynamic feature flag is not enabled then do nothing.
-  if (!::switches::
-          IsExperimentalAccessibilityLanguageDetectionDynamicEnabled()) {
+  // Do not perform dynamic language detection unless explicitly enabled.
+  if (!IsDynamicLanguageDetectionEnabled()) {
     return;
   }
 
@@ -223,7 +242,8 @@ void AXLanguageDetectionManager::RegisterLanguageDetectionObserver() {
 // Detect languages for each node.
 void AXLanguageDetectionManager::DetectLanguages() {
   TRACE_EVENT0("accessibility", "AXLanguageInfo::DetectLanguages");
-  if (!::switches::IsExperimentalAccessibilityLanguageDetectionEnabled()) {
+
+  if (!IsStaticLanguageDetectionEnabled()) {
     return;
   }
 
@@ -234,9 +254,9 @@ void AXLanguageDetectionManager::DetectLanguages() {
 // Will not check feature flag.
 void AXLanguageDetectionManager::DetectLanguagesForSubtree(
     AXNode* subtree_root) {
-  // Only perform detection for kStaticText(s).
+  // Only perform detection for kStaticText nodes.
   //
-  // Do not visit the children of kStaticText(s) as they don't have
+  // Do not visit the children of kStaticText nodes as they don't have
   // interesting children for language detection.
   //
   // Since kInlineTextBox(es) contain text from their parent, any detection on
@@ -308,7 +328,7 @@ void AXLanguageDetectionManager::DetectLanguagesForNode(AXNode* node) {
 void AXLanguageDetectionManager::LabelLanguages() {
   TRACE_EVENT0("accessibility", "AXLanguageInfo::LabelLanguages");
 
-  if (!::switches::IsExperimentalAccessibilityLanguageDetectionEnabled()) {
+  if (!IsStaticLanguageDetectionEnabled()) {
     return;
   }
 
@@ -443,8 +463,7 @@ AXLanguageDetectionObserver::AXLanguageDetectionObserver(AXTree* tree)
   // We expect the feature flag to have be checked before this Observer is
   // constructed, this should have been checked by
   // RegisterLanguageDetectionObserver.
-  DCHECK(
-      ::switches::IsExperimentalAccessibilityLanguageDetectionDynamicEnabled());
+  DCHECK(AXLanguageDetectionManager::IsDynamicLanguageDetectionEnabled());
 
   tree_->AddObserver(this);
 }
@@ -473,7 +492,7 @@ void AXLanguageDetectionObserver::OnAtomicUpdateFinished(
   DCHECK(tree->language_detection_manager);
 
   // Perform Detect and Label for each node changed or created.
-  // We currently only consider kStaticText for detection.
+  // We currently only consider nodes with a role of kStaticText for detection.
   //
   // Note that language inheritance is now handled by AXNode::GetLanguage.
   //

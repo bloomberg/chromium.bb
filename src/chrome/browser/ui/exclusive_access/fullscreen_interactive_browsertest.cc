@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -67,6 +68,8 @@ class FullscreenInteractiveBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(FullscreenInteractiveBrowserTest);
 };
 
+// TODO(jonross): Investigate the flakiness on Linux and Mac. Sheriff if this
+// fails update (https://crbug.com/1087875).
 IN_PROC_BROWSER_TEST_F(FullscreenInteractiveBrowserTest,
                        NotifyFullscreenAcquired) {
   content::WebContents* web_contents =

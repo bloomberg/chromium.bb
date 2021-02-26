@@ -119,7 +119,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   use_virtualized_gl_context_ =
       shared_context_state->use_virtualized_gl_contexts();
 
-  memory_tracker_ = CreateMemoryTracker(init_params);
+  memory_tracker_ = CreateMemoryTracker();
 
   command_buffer_ =
       std::make_unique<CommandBufferService>(this, memory_tracker_.get());
@@ -177,8 +177,8 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   return gpu::ContextResult::kSuccess;
 }
 
-MemoryTracker* RasterCommandBufferStub::GetMemoryTracker() const {
-  return memory_tracker_.get();
+MemoryTracker* RasterCommandBufferStub::GetContextGroupMemoryTracker() const {
+  return nullptr;
 }
 
 bool RasterCommandBufferStub::HandleMessage(const IPC::Message& message) {

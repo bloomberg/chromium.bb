@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as Host from '../host/host.js';
@@ -102,7 +105,8 @@ export class FocusDebuggeeActionDelegate {
 export class NodeIndicator {
   constructor() {
     const element = createElement('div');
-    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(element, 'inspector_main/nodeIcon.css');
+    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
+        element, {cssFile: 'inspector_main/nodeIcon.css', enableLegacyPatching: true, delegatesFocus: undefined});
     this._element = shadowRoot.createChild('div', 'node-icon');
     element.addEventListener(
         'click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openNodeFrontend(), false);
@@ -152,7 +156,7 @@ export class SourcesPanelIndicator {
         icon = UI.Icon.Icon.create('smallicon-warning');
         icon.title = Common.UIString.UIString('JavaScript is disabled');
       }
-      self.UI.inspectorView.setPanelIcon('sources', icon);
+      UI.InspectorView.InspectorView.instance().setPanelIcon('sources', icon);
     }
   }
 }

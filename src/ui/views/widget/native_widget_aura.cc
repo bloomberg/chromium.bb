@@ -64,7 +64,8 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #endif
 
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) && defined(OS_LINUX)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) && \
+    (defined(OS_LINUX) || defined(OS_CHROMEOS))
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #endif
@@ -269,7 +270,8 @@ void NativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
 
 void NativeWidgetAura::OnWidgetInitDone() {}
 
-NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
+std::unique_ptr<NonClientFrameView>
+NativeWidgetAura::CreateNonClientFrameView() {
   return nullptr;
 }
 
@@ -470,6 +472,21 @@ gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
     if (restore_bounds)
       return *restore_bounds;
   }
+
+  // Prefer getting the window bounds and converting them to screen bounds since
+  // Window::GetBoundsInScreen takes into the account the window transform.
+  auto* screen_position_client =
+      aura::client::GetScreenPositionClient(window_->GetRootWindow());
+  if (screen_position_client) {
+    // |window_|'s bounds are in parent's coordinate system so use that when
+    // converting.
+    gfx::Rect bounds = window_->bounds();
+    gfx::Point origin = bounds.origin();
+    screen_position_client->ConvertPointToScreenIgnoringTransforms(
+        window_->parent(), &origin);
+    return gfx::Rect(origin, bounds.size());
+  }
+
   return window_->GetBoundsInScreen();
 }
 
@@ -699,7 +716,7 @@ void NativeWidgetAura::RunShellDrag(View* view,
                                     std::unique_ptr<ui::OSExchangeData> data,
                                     const gfx::Point& location,
                                     int operation,
-                                    ui::DragDropTypes::DragEventSource source) {
+                                    ui::mojom::DragEventSource source) {
   if (window_)
     views::RunShellDrag(window_, std::move(data), location, operation, source);
 }
@@ -1072,7 +1089,8 @@ void NativeWidgetAura::SetInitialFocus(ui::WindowShowState show_state) {
 // Widget, public:
 
 namespace {
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) && (defined(OS_WIN) || defined(OS_LINUX))
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) && \
+    (defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS))
 void CloseWindow(aura::Window* window) {
   if (window) {
     Widget* widget = Widget::GetWidgetForNativeView(window);
@@ -1102,13 +1120,15 @@ void Widget::CloseAllSecondaryWidgets() {
   EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, 0);
 #endif
 
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) && defined(OS_LINUX)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) && \
+    (defined(OS_LINUX) || defined(OS_CHROMEOS))
   DesktopWindowTreeHostLinux::CleanUpWindowList(CloseWindow);
 #endif
 }
 
 const ui::NativeTheme* Widget::GetNativeTheme() const {
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) && defined(OS_LINUX)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) && \
+    (defined(OS_LINUX) || defined(OS_CHROMEOS))
   const LinuxUI* linux_ui = LinuxUI::instance();
   if (linux_ui) {
     ui::NativeTheme* native_theme =

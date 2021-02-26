@@ -16,6 +16,7 @@
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/data_type_error_handler_impl.h"
+#include "components/sync/model/type_entities_count.h"
 
 namespace syncer {
 namespace {
@@ -61,7 +62,7 @@ ModelTypeController::ModelTypeController(
                           std::move(delegate_for_transport_mode));
 }
 
-ModelTypeController::~ModelTypeController() {}
+ModelTypeController::~ModelTypeController() = default;
 
 void ModelTypeController::InitModelTypeController(
     std::unique_ptr<ModelTypeControllerDelegate> delegate_for_full_sync_mode,
@@ -82,7 +83,6 @@ ModelTypeController::ActivateManuallyForNigori() {
   DCHECK_EQ(MODEL_LOADED, state_);
   DCHECK(activation_response_);
   state_ = RUNNING;
-  activated_ = true;  // Not relevant, but for consistency.
   return std::move(activation_response_);
 }
 
@@ -121,8 +121,8 @@ void ModelTypeController::LoadModels(
                               base::AsWeakPtr(this)));
 }
 
-DataTypeController::RegisterWithBackendResult
-ModelTypeController::RegisterWithBackend(ModelTypeConfigurer* configurer) {
+DataTypeController::ActivateDataTypeResult
+ModelTypeController::ActivateDataType(ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   DCHECK(configurer);
   DCHECK(activation_response_);
@@ -132,8 +132,7 @@ ModelTypeController::RegisterWithBackend(ModelTypeConfigurer* configurer) {
       activation_response_->model_type_state.initial_sync_done();
   // Pass activation context to ModelTypeRegistry, where ModelTypeWorker gets
   // created and connected with the delegate (processor).
-  configurer->ActivateNonBlockingDataType(type(),
-                                          std::move(activation_response_));
+  configurer->ActivateDataType(type(), std::move(activation_response_));
 
   state_ = RUNNING;
   DVLOG(1) << "Sync running for " << ModelTypeToString(type());
@@ -145,7 +144,7 @@ void ModelTypeController::DeactivateDataType(ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   DCHECK(configurer);
   if (state_ == RUNNING) {
-    configurer->DeactivateNonBlockingDataType(type());
+    configurer->DeactivateDataType(type());
     state_ = MODEL_LOADED;
   }
 }
@@ -210,14 +209,26 @@ DataTypeController::State ModelTypeController::state() const {
   return state_;
 }
 
+bool ModelTypeController::ShouldRunInTransportOnlyMode() const {
+  // By default, running in transport-only mode is enabled if the corresponding
+  // delegate exists, i.e. the controller is aware of transport-only mode and
+  // supports it in principle. Subclass can still override this with more
+  // specific logic.
+  return delegate_map_.count(SyncMode::kTransportOnly) != 0;
+}
+
 void ModelTypeController::GetAllNodes(AllNodesCallback callback) {
   DCHECK(delegate_);
   delegate_->GetAllNodesForDebugging(std::move(callback));
 }
 
-void ModelTypeController::GetStatusCounters(StatusCountersCallback callback) {
-  DCHECK(delegate_);
-  delegate_->GetStatusCountersForDebugging(std::move(callback));
+void ModelTypeController::GetTypeEntitiesCount(
+    base::OnceCallback<void(const TypeEntitiesCount&)> callback) const {
+  if (delegate_) {
+    delegate_->GetTypeEntitiesCountForDebugging(std::move(callback));
+  } else {
+    std::move(callback).Run(TypeEntitiesCount(type()));
+  }
 }
 
 void ModelTypeController::RecordMemoryUsageAndCountsHistograms() {

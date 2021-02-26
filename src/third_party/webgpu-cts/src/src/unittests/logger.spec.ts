@@ -5,139 +5,143 @@ Also serves as a larger test of async test functions, and of the logging system.
 `;
 
 import { SkipTestCase } from '../common/framework/fixture.js';
-import { Logger } from '../common/framework/logger.js';
-import { paramsEquals } from '../common/framework/params_utils.js';
-import { TestGroup } from '../common/framework/test_group.js';
+import { Logger } from '../common/framework/logging/logger.js';
+import { makeTestGroup } from '../common/framework/test_group.js';
+import { assert } from '../common/framework/util/util.js';
 
 import { UnitTest } from './unit_test.js';
 
-export const g = new TestGroup(UnitTest);
+export const g = makeTestGroup(UnitTest);
 
-g.test('construct', t => {
-  const mylog = new Logger();
-  const [testrec, testres] = mylog.record({ suite: 'a', path: 'foo/bar' });
-  const [, res1] = testrec.record('baz', null);
-  const params2 = {};
-  const [, res2] = testrec.record('qux', params2);
+g.test('construct').fn(t => {
+  const mylog = new Logger(true);
+  const [, res1] = mylog.record('one');
+  const [, res2] = mylog.record('two');
 
-  t.expect(testres.spec === 'a:foo/bar:');
-  t.expect(testres.cases.length === 2);
-  t.expect(testres.cases[0] === res1);
-  t.expect(testres.cases[1] === res2);
-  t.expect(res1.test === 'baz');
-  t.expect(res1.params === null);
+  t.expect(mylog.results.get('one') === res1);
+  t.expect(mylog.results.get('two') === res2);
   t.expect(res1.logs === undefined);
   t.expect(res1.status === 'running');
   t.expect(res1.timems < 0);
-  t.expect(res2.test === 'qux');
-  t.expect(paramsEquals(res2.params, params2));
   t.expect(res2.logs === undefined);
   t.expect(res2.status === 'running');
   t.expect(res2.timems < 0);
 });
 
-g.test('private params', t => {
-  const mylog = new Logger();
-  const [testrec] = mylog.record({ suite: 'a', path: 'foo/bar' });
-  const [, res] = testrec.record('baz', { a: 1, _b: 2 });
-
-  t.expect(paramsEquals(res.params, { a: 1 }));
-});
-
-g.test('empty', t => {
-  const mylog = new Logger();
-  const [testrec] = mylog.record({ suite: '', path: '' });
-  const [rec, res] = testrec.record('baz', null);
+g.test('empty').fn(t => {
+  const mylog = new Logger(true);
+  const [rec, res] = mylog.record('one');
 
   rec.start();
   t.expect(res.status === 'running');
   rec.finish();
+
   t.expect(res.status === 'pass');
   t.expect(res.timems >= 0);
 });
 
-g.test('pass', t => {
-  const mylog = new Logger();
-  const [testrec] = mylog.record({ suite: '', path: '' });
-  const [rec, res] = testrec.record('baz', null);
+g.test('pass').fn(t => {
+  const mylog = new Logger(true);
+  const [rec, res] = mylog.record('one');
 
   rec.start();
   rec.debug(new Error('hello'));
   t.expect(res.status === 'running');
   rec.finish();
+
   t.expect(res.status === 'pass');
   t.expect(res.timems >= 0);
 });
 
-g.test('skip', t => {
-  const mylog = new Logger();
-  const [testrec] = mylog.record({ suite: '', path: '' });
-  const [rec, res] = testrec.record('baz', null);
+g.test('skip').fn(t => {
+  const mylog = new Logger(true);
+  const [rec, res] = mylog.record('one');
 
   rec.start();
-  t.expect(res.status === 'running');
-
   rec.skipped(new SkipTestCase());
   rec.debug(new Error('hello'));
-
-  t.expect(res.status === 'running');
   rec.finish();
 
   t.expect(res.status === 'skip');
   t.expect(res.timems >= 0);
 });
 
-g.test('warn', t => {
-  const mylog = new Logger();
-  const [testrec] = mylog.record({ suite: '', path: '' });
-  const [rec, res] = testrec.record('baz', null);
+g.test('warn').fn(t => {
+  const mylog = new Logger(true);
+  const [rec, res] = mylog.record('one');
 
   rec.start();
-  t.expect(res.status === 'running');
-
-  rec.warn(new Error());
+  rec.warn(new Error('hello'));
   rec.skipped(new SkipTestCase());
-
-  t.expect(res.status === 'running');
   rec.finish();
 
   t.expect(res.status === 'warn');
   t.expect(res.timems >= 0);
 });
 
-g.test('fail', t => {
-  const mylog = new Logger();
-  const [testrec] = mylog.record({ suite: '', path: '' });
-  const [rec, res] = testrec.record('baz', null);
+g.test('fail,expectationFailed').fn(t => {
+  const mylog = new Logger(true);
+  const [rec, res] = mylog.record('one');
 
   rec.start();
-  t.expect(res.status === 'running');
-
-  rec.fail(new Error('bye'));
+  rec.expectationFailed(new Error('bye'));
   rec.warn(new Error());
   rec.skipped(new SkipTestCase());
-
-  t.expect(res.status === 'running');
   rec.finish();
 
   t.expect(res.status === 'fail');
   t.expect(res.timems >= 0);
 });
 
-g.test('debug', t => {
-  const { debug, _logsCount } = t.params;
+g.test('fail,validationFailed').fn(t => {
+  const mylog = new Logger(true);
+  const [rec, res] = mylog.record('one');
 
-  const mylog = new Logger();
-  const [testrec] = mylog.record({ suite: '', path: '' });
-  const [rec, res] = testrec.record('baz', null);
-
-  rec.start(debug);
-  rec.debug(new Error('hello'));
+  rec.start();
+  rec.validationFailed(new Error('bye'));
+  rec.warn(new Error());
+  rec.skipped(new SkipTestCase());
   rec.finish();
-  t.expect(res.status === 'pass');
+
+  t.expect(res.status === 'fail');
   t.expect(res.timems >= 0);
-  t.expect(res.logs!.length === _logsCount);
-}).params([
-  { debug: true, _logsCount: 1 }, //
-  { debug: false, _logsCount: 0 },
-]);
+});
+
+g.test('fail,threw').fn(t => {
+  const mylog = new Logger(true);
+  const [rec, res] = mylog.record('one');
+
+  rec.start();
+  rec.threw(new Error('bye'));
+  rec.warn(new Error());
+  rec.skipped(new SkipTestCase());
+  rec.finish();
+
+  t.expect(res.status === 'fail');
+  t.expect(res.timems >= 0);
+});
+
+g.test('debug')
+  .params([
+    { debug: true, _logsCount: 5 }, //
+    { debug: false, _logsCount: 3 },
+  ])
+  .fn(t => {
+    const { debug, _logsCount } = t.params;
+
+    const mylog = new Logger(debug);
+    const [rec, res] = mylog.record('one');
+
+    rec.start();
+    rec.debug(new Error('hello'));
+    rec.expectationFailed(new Error('bye'));
+    rec.warn(new Error());
+    rec.skipped(new SkipTestCase());
+    rec.debug(new Error('foo'));
+    rec.finish();
+
+    t.expect(res.status === 'fail');
+    t.expect(res.timems >= 0);
+    assert(res.logs !== undefined);
+    t.expect(res.logs.length === _logsCount);
+  });

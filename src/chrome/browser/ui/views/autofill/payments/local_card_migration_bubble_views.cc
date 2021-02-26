@@ -15,6 +15,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/payments/dialog_view_ids.h"
+#include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/autofill/core/browser/ui/payments/local_card_migration_bubble_controller.h"
@@ -59,6 +60,10 @@ LocalCardMigrationBubbleViews::LocalCardMigrationBubbleViews(
   SetAcceptCallback(
       base::BindOnce(&LocalCardMigrationBubbleViews::OnDialogAccepted,
                      base::Unretained(this)));
+
+  SetShowCloseButton(true);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
 }
 
 void LocalCardMigrationBubbleViews::Show(DisplayReason reason) {
@@ -88,13 +93,6 @@ void LocalCardMigrationBubbleViews::OnDialogCancelled() {
   // TODO(https://crbug.com/1046793): Maybe delete this.
   if (controller_)
     controller_->OnCancelButtonClicked();
-}
-
-gfx::Size LocalCardMigrationBubbleViews::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        DISTANCE_BUBBLE_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void LocalCardMigrationBubbleViews::AddedToWidget() {
@@ -138,10 +136,6 @@ void LocalCardMigrationBubbleViews::AddedToWidget() {
   GetBubbleFrameView()->SetTitleView(std::move(title_container));
 }
 
-bool LocalCardMigrationBubbleViews::ShouldShowCloseButton() const {
-  return true;
-}
-
 base::string16 LocalCardMigrationBubbleViews::GetWindowTitle() const {
   return controller_ ? l10n_util::GetStringUTF16(
                            IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE)
@@ -157,34 +151,20 @@ void LocalCardMigrationBubbleViews::WindowClosing() {
 
 void LocalCardMigrationBubbleViews::OnWidgetClosing(views::Widget* widget) {
   LocationBarBubbleDelegateView::OnWidgetDestroying(widget);
-  switch (widget->closed_reason()) {
-    case views::Widget::ClosedReason::kUnspecified:
-      closed_reason_ = PaymentsBubbleClosedReason::kNotInteracted;
-      return;
-    case views::Widget::ClosedReason::kEscKeyPressed:
-    case views::Widget::ClosedReason::kCloseButtonClicked:
-      closed_reason_ = PaymentsBubbleClosedReason::kClosed;
-      return;
-    case views::Widget::ClosedReason::kLostFocus:
-      closed_reason_ = PaymentsBubbleClosedReason::kLostFocus;
-      return;
-    case views::Widget::ClosedReason::kAcceptButtonClicked:
-      closed_reason_ = PaymentsBubbleClosedReason::kAccepted;
-      return;
-    case views::Widget::ClosedReason::kCancelButtonClicked:
-      NOTREACHED();
-      return;
-  }
+  DCHECK_NE(widget->closed_reason(),
+            views::Widget::ClosedReason::kCancelButtonClicked);
+  closed_reason_ = GetPaymentsBubbleClosedReasonFromWidgetClosedReason(
+      widget->closed_reason());
 }
 
 LocalCardMigrationBubbleViews::~LocalCardMigrationBubbleViews() = default;
 
 void LocalCardMigrationBubbleViews::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  auto* explanatory_message =
-      new views::Label(l10n_util::GetStringUTF16(
-                           IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BODY_TEXT),
-                       CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
+  auto* explanatory_message = new views::Label(
+      l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BODY_TEXT),
+      views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_SECONDARY);
   explanatory_message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   explanatory_message->SetMultiLine(true);
   AddChildView(explanatory_message);

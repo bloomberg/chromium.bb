@@ -18,12 +18,15 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/language_usage_metrics/language_usage_metrics.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
@@ -48,6 +51,11 @@ enum FieldTypeGroupForMetrics {
   GROUP_ADDRESS_STATE,
   GROUP_ADDRESS_ZIP,
   GROUP_ADDRESS_COUNTRY,
+  GROUP_ADDRESS_HOME_STREET_NAME,
+  GROUP_ADDRESS_HOME_DEPENDENT_STREET_NAME,
+  GROUP_ADDRESS_HOME_HOUSE_NUMBER,
+  GROUP_ADDRESS_HOME_PREMISE_NAME,
+  GROUP_ADDRESS_HOME_SUBPREMISE,
   GROUP_PHONE,
   GROUP_FAX,  // Deprecated.
   GROUP_EMAIL,
@@ -110,8 +118,9 @@ std::string PreviousSaveCreditCardPromptUserDecisionToString(
 // accessed from the unit test file. It is not exposed in the header file,
 // however, because it is not intended for consumption outside of the metrics
 // implementation.
-int GetFieldTypeGroupMetric(ServerFieldType field_type,
-                            AutofillMetrics::FieldTypeQualityMetric metric) {
+int GetFieldTypeGroupPredictionQualityMetric(
+    ServerFieldType field_type,
+    AutofillMetrics::FieldTypeQualityMetric metric) {
   DCHECK_LT(metric, AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
 
   FieldTypeGroupForMetrics group = GROUP_AMBIGUOUS;
@@ -155,6 +164,21 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
           break;
         case ADDRESS_HOME_COUNTRY:
           group = GROUP_ADDRESS_COUNTRY;
+          break;
+        case ADDRESS_HOME_STREET_NAME:
+          group = GROUP_ADDRESS_HOME_STREET_NAME;
+          break;
+        case ADDRESS_HOME_DEPENDENT_STREET_NAME:
+          group = GROUP_ADDRESS_HOME_DEPENDENT_STREET_NAME;
+          break;
+        case ADDRESS_HOME_HOUSE_NUMBER:
+          group = GROUP_ADDRESS_HOME_HOUSE_NUMBER;
+          break;
+        case ADDRESS_HOME_PREMISE_NAME:
+          group = GROUP_ADDRESS_HOME_PREMISE_NAME;
+          break;
+        case ADDRESS_HOME_SUBPREMISE:
+          group = GROUP_ADDRESS_HOME_SUBPREMISE;
           break;
         default:
           NOTREACHED() << field_type << " has no group assigned (ambiguous)";
@@ -225,6 +249,26 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
   static_assert(NUM_FIELD_TYPE_GROUPS_FOR_METRICS <= UINT8_MAX,
                 "number of field type groups must fit into 8 bits");
   return (group << 8) | metric;
+}
+
+// This function encodes the integer value of a |ServerFieldType| and the
+// metric value of an |AutofilledFieldUserEdtingStatus| into a 16 bit integer.
+// The lower four bits are used to encode the editing status and the higher
+// 12 bits are used to encode the field type.
+int GetFieldTypeUserEditStatusMetric(
+    ServerFieldType server_type,
+    AutofillMetrics::AutofilledFieldUserEditingStatusMetric metric) {
+  static_assert(ServerFieldType::MAX_VALID_FIELD_TYPE <= (UINT16_MAX >> 4),
+                "Autofill::ServerTypes value needs more than 12 bits.");
+
+  static_assert(
+      static_cast<int>(
+          AutofillMetrics::AutofilledFieldUserEditingStatusMetric::kMaxValue) <=
+          (UINT16_MAX >> 12),
+      "AutofillMetrics::AutofilledFieldUserEditingStatusMetric value needs "
+      "more than 4 bits");
+
+  return (server_type << 4) | static_cast<int>(metric);
 }
 
 namespace {
@@ -355,9 +399,9 @@ void LogPredictionQualityMetricsForFieldsOnlyFilledWhenFocused(
     DVLOG(2) << "TRUE POSITIVE";
     base::UmaHistogramSparse(aggregate_histogram,
                              AutofillMetrics::TRUE_POSITIVE);
-    base::UmaHistogramSparse(
-        type_specific_histogram,
-        GetFieldTypeGroupMetric(actual_type, AutofillMetrics::TRUE_POSITIVE));
+    base::UmaHistogramSparse(type_specific_histogram,
+                             GetFieldTypeGroupPredictionQualityMetric(
+                                 actual_type, AutofillMetrics::TRUE_POSITIVE));
     if (log_rationalization_metrics) {
       bool duplicated_filling = DuplicatedFilling(form, field);
       base::UmaHistogramSparse(
@@ -378,8 +422,8 @@ void LogPredictionQualityMetricsForFieldsOnlyFilledWhenFocused(
   if (predicted_type != UNKNOWN_TYPE)
     base::UmaHistogramSparse(
         type_specific_histogram,
-        GetFieldTypeGroupMetric(predicted_type,
-                                AutofillMetrics::FALSE_NEGATIVE_MISMATCH));
+        GetFieldTypeGroupPredictionQualityMetric(
+            predicted_type, AutofillMetrics::FALSE_NEGATIVE_MISMATCH));
   if (log_rationalization_metrics) {
     // Logging RATIONALIZATION_OK despite of type mismatch here because autofill
     // would have got it wrong with or without rationalization. Rationalization
@@ -418,9 +462,9 @@ void LogPredictionQualityMetricsForCommonFields(
     // predict that type with which the field was filled.
     base::UmaHistogramSparse(aggregate_histogram,
                              AutofillMetrics::TRUE_POSITIVE);
-    base::UmaHistogramSparse(
-        type_specific_histogram,
-        GetFieldTypeGroupMetric(actual_type, AutofillMetrics::TRUE_POSITIVE));
+    base::UmaHistogramSparse(type_specific_histogram,
+                             GetFieldTypeGroupPredictionQualityMetric(
+                                 actual_type, AutofillMetrics::TRUE_POSITIVE));
     return;
   }
 
@@ -435,8 +479,9 @@ void LogPredictionQualityMetricsForCommonFields(
                   : (is_ambiguous ? AutofillMetrics::FALSE_POSITIVE_AMBIGUOUS
                                   : AutofillMetrics::FALSE_POSITIVE_UNKNOWN));
     base::UmaHistogramSparse(aggregate_histogram, metric);
-    base::UmaHistogramSparse(type_specific_histogram,
-                             GetFieldTypeGroupMetric(predicted_type, metric));
+    base::UmaHistogramSparse(
+        type_specific_histogram,
+        GetFieldTypeGroupPredictionQualityMetric(predicted_type, metric));
     return;
   }
 
@@ -449,8 +494,8 @@ void LogPredictionQualityMetricsForCommonFields(
                              AutofillMetrics::FALSE_NEGATIVE_UNKNOWN);
     base::UmaHistogramSparse(
         type_specific_histogram,
-        GetFieldTypeGroupMetric(actual_type,
-                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN));
+        GetFieldTypeGroupPredictionQualityMetric(
+            actual_type, AutofillMetrics::FALSE_NEGATIVE_UNKNOWN));
     return;
   }
 
@@ -465,12 +510,12 @@ void LogPredictionQualityMetricsForCommonFields(
                            AutofillMetrics::FALSE_NEGATIVE_MISMATCH);
   base::UmaHistogramSparse(
       type_specific_histogram,
-      GetFieldTypeGroupMetric(actual_type,
-                              AutofillMetrics::FALSE_NEGATIVE_MISMATCH));
+      GetFieldTypeGroupPredictionQualityMetric(
+          actual_type, AutofillMetrics::FALSE_NEGATIVE_MISMATCH));
   base::UmaHistogramSparse(
       type_specific_histogram,
-      GetFieldTypeGroupMetric(predicted_type,
-                              AutofillMetrics::FALSE_POSITIVE_MISMATCH));
+      GetFieldTypeGroupPredictionQualityMetric(
+          predicted_type, AutofillMetrics::FALSE_POSITIVE_MISMATCH));
 }
 
 // Logs field type prediction quality metrics.  The primary histogram name is
@@ -690,6 +735,121 @@ void AutofillMetrics::LogSaveCardRequestExpirationDateReasonMetric(
 }
 
 // static
+void AutofillMetrics::LogSaveCardPromptOfferMetric(
+    SaveCardPromptOfferMetric metric,
+    bool is_uploading,
+    bool is_reshow,
+    AutofillClient::SaveCreditCardOptions options,
+    int previous_save_credit_card_prompt_user_decision,
+    security_state::SecurityLevel security_level,
+    AutofillSyncSigninState sync_state) {
+  DCHECK_LT(metric, NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+  std::string base_histogram_name = "Autofill.SaveCreditCardPromptOffer";
+  std::string destination = is_uploading ? ".Upload" : ".Local";
+  std::string show = is_reshow ? ".Reshows" : ".FirstShow";
+  std::string metric_with_destination_and_show =
+      base_histogram_name + destination + show;
+  base::UmaHistogramEnumeration(metric_with_destination_and_show, metric,
+                                NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+
+  base::UmaHistogramEnumeration(
+      metric_with_destination_and_show + GetMetricsSyncStateSuffix(sync_state),
+      metric, NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+
+  if (options.should_request_name_from_user) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".RequestingCardholderName", metric,
+        NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+  }
+  if (options.should_request_expiration_date_from_user) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".RequestingExpirationDate", metric,
+        NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+  }
+  if (options.has_non_focusable_field) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".FromNonFocusableForm", metric,
+        NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+  }
+  if (options.from_dynamic_change_form) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".FromDynamicChangeForm", metric,
+        NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+  }
+
+  base::UmaHistogramEnumeration(
+      metric_with_destination_and_show +
+          PreviousSaveCreditCardPromptUserDecisionToString(
+              previous_save_credit_card_prompt_user_decision),
+      metric, NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+
+  if (security_level != security_state::SecurityLevel::SECURITY_LEVEL_COUNT) {
+    base::UmaHistogramEnumeration(
+        security_state::GetSecurityLevelHistogramName(
+            base_histogram_name + destination, security_level),
+        metric, NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+  }
+}
+
+// static
+void AutofillMetrics::LogSaveCardPromptResultMetric(
+    SaveCardPromptResultMetric metric,
+    bool is_uploading,
+    bool is_reshow,
+    AutofillClient::SaveCreditCardOptions options,
+    int previous_save_credit_card_prompt_user_decision,
+    security_state::SecurityLevel security_level,
+    AutofillSyncSigninState sync_state) {
+  DCHECK_LT(metric, NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+  std::string base_histogram_name = "Autofill.SaveCreditCardPromptResult";
+  std::string destination = is_uploading ? ".Upload" : ".Local";
+  std::string show = is_reshow ? ".Reshows" : ".FirstShow";
+  std::string metric_with_destination_and_show =
+      base_histogram_name + destination + show;
+
+  base::UmaHistogramEnumeration(metric_with_destination_and_show, metric,
+                                NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+
+  base::UmaHistogramEnumeration(
+      metric_with_destination_and_show + GetMetricsSyncStateSuffix(sync_state),
+      metric, NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+
+  if (options.should_request_name_from_user) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".RequestingCardholderName", metric,
+        NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+  }
+  if (options.should_request_expiration_date_from_user) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".RequestingExpirationDate", metric,
+        NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+  }
+  if (options.has_non_focusable_field) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".FromNonFocusableForm", metric,
+        NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+  }
+  if (options.from_dynamic_change_form) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".FromDynamicChangeForm", metric,
+        NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+  }
+
+  base::UmaHistogramEnumeration(
+      metric_with_destination_and_show +
+          PreviousSaveCreditCardPromptUserDecisionToString(
+              previous_save_credit_card_prompt_user_decision),
+      metric, NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+
+  if (security_level != security_state::SecurityLevel::SECURITY_LEVEL_COUNT) {
+    base::UmaHistogramEnumeration(
+        security_state::GetSecurityLevelHistogramName(
+            base_histogram_name + destination, security_level),
+        metric, NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+  }
+}
+
+// static
 void AutofillMetrics::LogSaveCardPromptMetric(
     SaveCardPromptMetric metric,
     bool is_uploading,
@@ -758,6 +918,12 @@ void AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
   base::UmaHistogramEnumeration(security_state::GetSecurityLevelHistogramName(
                                     histogram_name, security_level),
                                 metric, NUM_SAVE_CARD_PROMPT_METRICS);
+}
+
+// static
+void AutofillMetrics::LogCreditCardUploadLegalMessageLinkClicked() {
+  base::RecordAction(base::UserMetricsAction(
+      "Autofill_CreditCardUpload_LegalMessageLinkClicked"));
 }
 
 // static
@@ -1262,6 +1428,49 @@ void AutofillMetrics::LogOverallPredictionQualityMetrics(
       true /*log_rationalization_metrics*/);
 }
 
+void AutofillMetrics::LogEditedAutofilledFieldAtSubmission(
+    FormInteractionsUkmLogger* form_interactions_ukm_logger,
+    const FormStructure& form,
+    const AutofillField& field) {
+  const std::string aggregate_histogram =
+      "Autofill.EditedAutofilledFieldAtSubmission.Aggregate";
+  const std::string type_specific_histogram =
+      "Autofill.EditedAutofilledFieldAtSubmission.ByFieldType";
+
+  AutofilledFieldUserEditingStatusMetric editing_metric =
+      field.previously_autofilled()
+          ? AutofilledFieldUserEditingStatusMetric::AUTOFILLED_FIELD_WAS_EDITED
+          : AutofilledFieldUserEditingStatusMetric::
+                AUTOFILLED_FIELD_WAS_NOT_EDITED;
+
+  // Record the aggregated UMA statistics.
+  base::UmaHistogramEnumeration(aggregate_histogram, editing_metric);
+
+  // Record the type specific UMA statistics.
+  base::UmaHistogramSparse(type_specific_histogram,
+                           GetFieldTypeUserEditStatusMetric(
+                               field.Type().GetStorableType(), editing_metric));
+
+  // Record the UMA statistics spliced by the autocomplete attribute value.
+  FormType form_type =
+      FormTypes::FieldTypeGroupToFormType(field.Type().group());
+  if (form_type == ADDRESS_FORM || form_type == CREDIT_CARD_FORM) {
+    bool autocomplete_off = field.autocomplete_attribute == "off";
+    const std::string autocomplete_histogram = base::StrCat(
+        {"Autofill.Autocomplete.", autocomplete_off ? "Off" : "NotOff",
+         ".EditedAutofilledFieldAtSubmission.",
+         form_type == ADDRESS_FORM ? "Address" : "CreditCard"});
+    base::UmaHistogramEnumeration(autocomplete_histogram, editing_metric);
+  }
+
+  // If the field was edited, record the event to UKM.
+  if (editing_metric ==
+      AutofilledFieldUserEditingStatusMetric::AUTOFILLED_FIELD_WAS_EDITED) {
+    form_interactions_ukm_logger->LogEditedAutofilledFieldAtSubmission(form,
+                                                                       field);
+  }
+}
+
 // static
 void AutofillMetrics::LogServerQueryMetric(ServerQueryMetric metric) {
   DCHECK_LT(metric, NUM_SERVER_QUERY_METRICS);
@@ -1481,7 +1690,9 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
     const std::vector<std::unique_ptr<CreditCard>>& server_cards,
     base::TimeDelta disused_data_threshold) {
   size_t num_local_cards = 0;
+  size_t num_local_cards_with_nickname = 0;
   size_t num_masked_cards = 0;
+  size_t num_masked_cards_with_nickname = 0;
   size_t num_unmasked_cards = 0;
   size_t num_disused_local_cards = 0;
   size_t num_disused_masked_cards = 0;
@@ -1513,6 +1724,8 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
             days_since_last_use);
         num_local_cards += 1;
         num_disused_local_cards += disused_delta;
+        if (card->HasNonEmptyValidNickname())
+          num_local_cards_with_nickname += 1;
         break;
       case CreditCard::MASKED_SERVER_CARD:
         UMA_HISTOGRAM_COUNTS_1000(
@@ -1523,6 +1736,8 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
             days_since_last_use);
         num_masked_cards += 1;
         num_disused_masked_cards += disused_delta;
+        if (card->HasNonEmptyValidNickname())
+          num_masked_cards_with_nickname += 1;
         break;
       case CreditCard::FULL_SERVER_CARD:
         UMA_HISTOGRAM_COUNTS_1000(
@@ -1549,10 +1764,15 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount", num_cards);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Local",
                             num_local_cards);
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Local.WithNickname",
+                            num_local_cards_with_nickname);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Server",
                             num_server_cards);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Server.Masked",
                             num_masked_cards);
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Autofill.StoredCreditCardCount.Server.Masked.WithNickname",
+      num_masked_cards_with_nickname);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Server.Unmasked",
                             num_unmasked_cards);
 
@@ -1579,6 +1799,26 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
         "Autofill.StoredCreditCardDisusedCount.Server.Unmasked",
         num_disused_unmasked_cards);
   }
+}
+
+// static
+void AutofillMetrics::LogStoredOfferMetrics(
+    const std::vector<std::unique_ptr<AutofillOfferData>>& offers) {
+  base::UmaHistogramCounts1000("Autofill.Offer.StoredOfferCount",
+                               offers.size());
+
+  for (const std::unique_ptr<AutofillOfferData>& offer : offers) {
+    base::UmaHistogramCounts1000(
+        "Autofill.Offer.StoredOfferRelatedMerchantCount",
+        offer->merchant_domain.size());
+    base::UmaHistogramCounts1000("Autofill.Offer.StoredOfferRelatedCardCount",
+                                 offer->eligible_instrument_id.size());
+  }
+}
+
+// static
+void AutofillMetrics::LogSyncedOfferDataBeingValid(bool valid) {
+  base::UmaHistogramBoolean("Autofill.Offer.SyncedOfferDataBeingValid", valid);
 }
 
 // static
@@ -1953,6 +2193,19 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
       .Record(ukm_recorder_);
 }
 
+void AutofillMetrics::FormInteractionsUkmLogger::
+    LogEditedAutofilledFieldAtSubmission(const FormStructure& form,
+                                         const AutofillField& field) {
+  if (!CanLog())
+    return;
+
+  ukm::builders::Autofill_EditedAutofilledFieldAtSubmission(source_id_)
+      .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
+      .SetFormSignature(HashFormSignature(form.form_signature()))
+      .SetOverallType(static_cast<int64_t>(field.Type().GetStorableType()))
+      .Record(ukm_recorder_);
+}
+
 void AutofillMetrics::FormInteractionsUkmLogger::LogTextFieldDidChange(
     const FormStructure& form,
     const AutofillField& field) {
@@ -2209,6 +2462,40 @@ void AutofillMetrics::
       (is_city_missing ? 0b100 : 0) | (is_line1_missing ? 0b1000 : 0));
   base::UmaHistogramEnumeration(
       "Autofill.AddressProfileImportCountrySpecificFieldRequirements", metric);
+}
+
+// static
+void AutofillMetrics::LogAddressFormImportStatustMetric(
+    AutofillMetrics::AddressProfileImportStatusMetric metric) {
+  base::UmaHistogramEnumeration("Autofill.AddressProfileImportStatus", metric);
+}
+
+// static
+void AutofillMetrics::LogFieldParsingPageTranslationStatusMetric(bool metric) {
+  base::UmaHistogramBoolean("Autofill.ParsedFieldTypesWasPageTranslated",
+                            metric);
+}
+
+// static
+void AutofillMetrics::LogFieldParsingTranslatedFormLanguageMetric(
+    base::StringPiece locale) {
+  base::UmaHistogramSparse(
+      "Autofill.ParsedFieldTypesUsingTranslatedPageLanguage",
+      language_usage_metrics::LanguageUsageMetrics::ToLanguageCode(locale));
+}
+
+// static
+void AutofillMetrics::LogWebOTPPhoneCollectionMetricStateUkm(
+    ukm::UkmRecorder* recorder,
+    ukm::SourceId source_id,
+    uint32_t phone_collection_metric_state) {
+  // UKM recording is not supported for WebViews.
+  if (!recorder || source_id == ukm::kInvalidSourceId)
+    return;
+
+  ukm::builders::WebOTPImpact builder(source_id);
+  builder.SetPhoneCollection(phone_collection_metric_state);
+  builder.Record(recorder);
 }
 
 }  // namespace autofill

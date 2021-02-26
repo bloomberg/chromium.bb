@@ -66,8 +66,6 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void AddTrustedVaultDecryptionKeys(
       const std::vector<std::vector<uint8_t>>& keys) override;
-  void EnableEncryptEverything() override;
-  bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
   KeystoreKeysHandler* GetKeystoreKeysHandler() override;
 
@@ -147,8 +145,9 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // just won't be updated.
   void MaybeNotifyBootstrapTokenUpdated() const;
 
-  // Queues keystore rotation if current state assume it should happen.
-  void MaybeTriggerKeystoreKeyRotation();
+  // Queues keystore rotation or full keystore migration if current state
+  // assumes it should happen.
+  void MaybeTriggerKeystoreReencryption();
 
   // Prior to USS keystore keys were stored in preferences. To avoid redundant
   // requests to the server and make USS implementation more robust against
@@ -173,6 +172,11 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // found (if any). If such applicable commit is found, the corresponding Put()
   // call is issued.
   void PutNextApplicablePendingLocalCommit();
+
+  // Populates keystore keys into |cryptographer| in case it doesn't contain
+  // them already and |passphrase_type| isn't KEYSTORE_PASSPHRASE. This
+  // function only updates local state and doesn't trigger a commit.
+  void MaybePopulateKeystoreKeysIntoCryptographer();
 
   const Encryptor* const encryptor_;
 

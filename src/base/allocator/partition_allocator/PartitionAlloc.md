@@ -27,12 +27,6 @@ example, if a partition has 3 buckets for 64 bytes, 256 bytes, and 1024 bytes,
 then PartitionAlloc will satisfy an allocation request for 128 bytes by rounding
 it up to 256 bytes and allocating from the second bucket.
 
-The special allocator class `template <size_t N> class
-SizeSpecificPartitionAllocator` will satisfy allocations only of size
-`kMaxAllocation = N - kAllocationGranularity` or less, and contains buckets for
-all `n * kAllocationGranularity` (n = 1, 2, ..., `kMaxAllocation`). Attempts to
-allocate more than `kMaxAllocation` will fail.
-
 ## Performance
 
 The current implementation is optimized for the main thread use-case. For
@@ -46,22 +40,22 @@ possibility of inlining.
 For an example of how to use partitions to get good performance and good safety,
 see Blink's usage, as described in `wtf/allocator/Allocator.md`.
 
-Large allocations (> kGenericMaxBucketed == 960KB) are realized by direct
+Large allocations (> kMaxBucketed == 960KB) are realized by direct
 memory mmapping. This size makes sense because 960KB = 0xF0000. The next larger
 bucket size is 1MB = 0x100000 which is greater than 1/2 the available space in
 a SuperPage meaning it would not be possible to pack even 2 sequential
 allocations in a SuperPage.
 
-`PartitionRootGeneric::Alloc()` acquires a lock for thread safety. (The current
-implementation uses a spin lock on the assumption that thread contention will be
-rare in its callers. The original caller was Blink, where this is generally
-true. Spin locks also have the benefit of simplicity.)
+`PartitionRoot<internal::ThreadSafe>::Alloc()` acquires a lock for thread
+safety. (The current implementation uses a spin lock on the assumption that
+thread contention will be rare in its callers. The original caller was Blink,
+where this is generally true. Spin locks also have the benefit of simplicity.)
 
 Callers can get thread-unsafe performance using a
-`SizeSpecificPartitionAllocator` or otherwise using `PartitionAlloc` (instead of
-`PartitionRootGeneric::Alloc()`). Callers can also arrange for low contention,
-such as by using a dedicated partition for single-threaded, latency-critical
-allocations.
+`PartitionRoot<internal::NotThreadSafe>::Alloc()` or otherwise using
+`PartitionAlloc<internal::NotThreadSafe>`. Callers can also arrange for low
+contention, such as by using a dedicated partition for single-threaded,
+latency-critical allocations.
 
 Because PartitionAlloc guarantees that address space regions used for one
 partition are never reused for other partitions, partitions can eat a large
@@ -100,3 +94,20 @@ hence at different addresses. One page can contain only similar-sized objects.
 * Partial pointer overwrite of freelist pointer should fault.
 
 * Large allocations have guard pages at the beginning and end.
+
+## Alignment
+
+PartitionAlloc doesn't have explicit support for a `posix_memalign()` type call,
+however it provides some guarantees on the alignment of returned pointers.
+
+All pointers are aligned on the smallest allocation granularity, namely
+`sizeof(void*)`. Additionally, for power-of-two sized allocations, the behavior
+depends on the compilation flags:
+
+* With `DCHECK_IS_ON()`, returned pointers are never guaranteed to be aligned on
+  more than 16 bytes.
+
+* Otherwise, the returned pointer is guaranteed to be aligned on
+  `min(allocation_size, system page size)`.
+
+See the tests in `partition_alloc_unittest.cc` for more details.

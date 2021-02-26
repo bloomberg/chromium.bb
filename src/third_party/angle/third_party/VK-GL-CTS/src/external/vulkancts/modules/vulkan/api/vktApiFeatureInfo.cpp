@@ -298,7 +298,7 @@ bool validateFeatureLimits(VkPhysicalDeviceProperties* properties, VkPhysicalDev
 		{ LIMIT(subPixelInterpolationOffsetBits),					FEATURE(sampleRateShading),				0, 0, 0, 0.0f },
 		{ LIMIT(storageImageSampleCounts),							FEATURE(shaderStorageImageMultisample),	VK_SAMPLE_COUNT_1_BIT, 0, 0, 0.0f },
 		{ LIMIT(maxClipDistances),									FEATURE(shaderClipDistance),			0, 0, 0, 0.0f },
-		{ LIMIT(maxCullDistances),									FEATURE(shaderClipDistance),			0, 0, 0, 0.0f },
+		{ LIMIT(maxCullDistances),									FEATURE(shaderCullDistance),			0, 0, 0, 0.0f },
 		{ LIMIT(maxCombinedClipAndCullDistances),					FEATURE(shaderClipDistance),			0, 0, 0, 0.0f },
 		{ LIMIT(pointSizeRange[0]),									FEATURE(largePoints),					0, 0, 0, 1.0f },
 		{ LIMIT(pointSizeRange[1]),									FEATURE(largePoints),					0, 0, 0, 1.0f },
@@ -820,7 +820,7 @@ tcu::TestStatus validateLimits12 (Context& context)
 		{ PN(checkAlways),								PN(limits.timestampComputeAndGraphics),															LIM_NONE_UINT32 },
 		{ PN(checkAlways),								PN(limits.timestampPeriod),																		LIM_NONE_UINT32 },
 		{ PN(features.shaderClipDistance),				PN(limits.maxClipDistances),																	LIM_MIN_UINT32(8) },
-		{ PN(features.shaderClipDistance),				PN(limits.maxCullDistances),																	LIM_MIN_UINT32(8) },
+		{ PN(features.shaderCullDistance),				PN(limits.maxCullDistances),																	LIM_MIN_UINT32(8) },
 		{ PN(features.shaderClipDistance),				PN(limits.maxCombinedClipAndCullDistances),														LIM_MIN_UINT32(8) },
 		{ PN(checkAlways),								PN(limits.discreteQueuePriorities),																LIM_MIN_UINT32(2) },
 		{ PN(features.largePoints),						PN(limits.pointSizeRange[0]),																	LIM_MIN_FLOAT(0.0f) },
@@ -2845,7 +2845,7 @@ namespace
 
 tcu::TestStatus deviceMandatoryFeatures(Context& context)
 {
-	if( checkMandatoryFeatures(context) )
+	if ( checkMandatoryFeatures(context) )
 		return tcu::TestStatus::pass("Passed");
 	return tcu::TestStatus::fail("Not all mandatory features are supported ( see: vkspec.html#features-requirements )");
 }
@@ -2986,6 +2986,68 @@ VkFormatFeatureFlags getRequiredOptimalExtendedTilingFeatures (Context& context,
 			}
 		}
 	}
+
+	// VK_EXT_filter_cubic:
+	// If cubic filtering is supported, VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT must be supported for the following image view types:
+	// VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D_ARRAY
+	static const VkFormat s_requiredSampledImageFilterCubicFormats[] =
+	{
+		VK_FORMAT_R4G4_UNORM_PACK8,
+		VK_FORMAT_R4G4B4A4_UNORM_PACK16,
+		VK_FORMAT_B4G4R4A4_UNORM_PACK16,
+		VK_FORMAT_R5G6B5_UNORM_PACK16,
+		VK_FORMAT_B5G6R5_UNORM_PACK16,
+		VK_FORMAT_R5G5B5A1_UNORM_PACK16,
+		VK_FORMAT_B5G5R5A1_UNORM_PACK16,
+		VK_FORMAT_A1R5G5B5_UNORM_PACK16,
+		VK_FORMAT_R8_UNORM,
+		VK_FORMAT_R8_SNORM,
+		VK_FORMAT_R8_SRGB,
+		VK_FORMAT_R8G8_UNORM,
+		VK_FORMAT_R8G8_SNORM,
+		VK_FORMAT_R8G8_SRGB,
+		VK_FORMAT_R8G8B8_UNORM,
+		VK_FORMAT_R8G8B8_SNORM,
+		VK_FORMAT_R8G8B8_SRGB,
+		VK_FORMAT_B8G8R8_UNORM,
+		VK_FORMAT_B8G8R8_SNORM,
+		VK_FORMAT_B8G8R8_SRGB,
+		VK_FORMAT_R8G8B8A8_UNORM,
+		VK_FORMAT_R8G8B8A8_SNORM,
+		VK_FORMAT_R8G8B8A8_SRGB,
+		VK_FORMAT_B8G8R8A8_UNORM,
+		VK_FORMAT_B8G8R8A8_SNORM,
+		VK_FORMAT_B8G8R8A8_SRGB,
+		VK_FORMAT_A8B8G8R8_UNORM_PACK32,
+		VK_FORMAT_A8B8G8R8_SNORM_PACK32,
+		VK_FORMAT_A8B8G8R8_SRGB_PACK32
+	};
+
+	static const VkFormat s_requiredSampledImageFilterCubicFormatsETC2[] =
+	{
+		VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK,
+		VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK,
+		VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK,
+		VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK,
+		VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK,
+		VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK
+	};
+
+	if ( (queriedFlags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0 && de::contains(context.getDeviceExtensions().begin(), context.getDeviceExtensions().end(), "VK_EXT_filter_cubic") )
+	{
+		if ( de::contains(DE_ARRAY_BEGIN(s_requiredSampledImageFilterCubicFormats), DE_ARRAY_END(s_requiredSampledImageFilterCubicFormats), format) )
+			flags |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT;
+
+		VkPhysicalDeviceFeatures2						coreFeatures;
+		deMemset(&coreFeatures, 0, sizeof(coreFeatures));
+
+		coreFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		coreFeatures.pNext = DE_NULL;
+		context.getInstanceInterface().getPhysicalDeviceFeatures2(context.getPhysicalDevice(), &coreFeatures);
+		if ( coreFeatures.features.textureCompressionETC2 && de::contains(DE_ARRAY_BEGIN(s_requiredSampledImageFilterCubicFormatsETC2), DE_ARRAY_END(s_requiredSampledImageFilterCubicFormatsETC2), format) )
+			flags |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT;
+	}
+
 	return flags;
 }
 
@@ -3801,8 +3863,8 @@ struct ImageFormatPropertyCase
 	ImageFormatPropertyCase (void)
 		: testFunction	((Function)DE_NULL)
 		, format		(VK_FORMAT_UNDEFINED)
-		, imageType		(VK_IMAGE_TYPE_LAST)
-		, tiling		(VK_IMAGE_TILING_MAX_ENUM)
+		, imageType		(VK_CORE_IMAGE_TYPE_LAST)
+		, tiling		(VK_CORE_IMAGE_TILING_LAST)
 	{}
 };
 
@@ -3882,9 +3944,9 @@ tcu::TestStatus imageFormatProperties (Context& context, const VkFormat format, 
 
 			if (queryResult == VK_SUCCESS)
 			{
-				const deUint32	fullMipPyramidSize	= de::max(de::max(deLog2Ceil32(properties.maxExtent.width),
-																	  deLog2Ceil32(properties.maxExtent.height)),
-															  deLog2Ceil32(properties.maxExtent.depth)) + 1;
+				const deUint32	fullMipPyramidSize	= de::max(de::max(deLog2Floor32(properties.maxExtent.width),
+																	  deLog2Floor32(properties.maxExtent.height)),
+															  deLog2Floor32(properties.maxExtent.depth)) + 1;
 
 				log << TestLog::Message << properties << "\n" << TestLog::EndMessage;
 
@@ -4199,6 +4261,17 @@ tcu::TestStatus deviceProperties2 (Context& context)
 		(maintenance3Properties[0].maxPerSetDescriptors		!= maintenance3Properties[1].maxPerSetDescriptors ||
 		 maintenance3Properties[0].maxMemoryAllocationSize	!= maintenance3Properties[1].maxMemoryAllocationSize))
 	{
+		if (protectedMemoryPropertiesKHR[0].protectedNoFault != protectedMemoryPropertiesKHR[1].protectedNoFault)
+		{
+			TCU_FAIL("Mismatch between VkPhysicalDeviceProtectedMemoryProperties");
+		}
+		if ((subgroupProperties[0].subgroupSize					!= subgroupProperties[1].subgroupSize) ||
+			(subgroupProperties[0].supportedStages				!= subgroupProperties[1].supportedStages) ||
+			(subgroupProperties[0].supportedOperations			!= subgroupProperties[1].supportedOperations) ||
+			(subgroupProperties[0].quadOperationsInAllStages	!= subgroupProperties[1].quadOperationsInAllStages))
+		{
+			TCU_FAIL("Mismatch between VkPhysicalDeviceSubgroupProperties");
+		}
 		TCU_FAIL("Mismatch between VkPhysicalDeviceMaintenance3Properties");
 	}
 	if (khr_depth_stencil_resolve &&
@@ -5337,8 +5410,8 @@ tcu::TestStatus sparseImageFormatProperties2 (Context& context, const VkFormat f
 				tiling,
 			};
 
-			deUint32										numCoreProperties	= ~0u;
-			deUint32										numExtProperties	= ~0u;
+			deUint32	numCoreProperties	= 0u;
+			deUint32	numExtProperties	= 0u;
 
 			// Query count
 			vki.getPhysicalDeviceSparseImageFormatProperties(physicalDevice, imageFormatInfo.format, imageFormatInfo.type, imageFormatInfo.samples, imageFormatInfo.usage, imageFormatInfo.tiling, &numCoreProperties, DE_NULL);
@@ -5452,7 +5525,7 @@ void createImageFormatTypeTilingTests (tcu::TestCaseGroup* testGroup, ImageForma
 
 void createImageFormatTypeTests (tcu::TestCaseGroup* testGroup, ImageFormatPropertyCase params)
 {
-	DE_ASSERT(params.tiling == VK_IMAGE_TILING_MAX_ENUM);
+	DE_ASSERT(params.tiling == VK_CORE_IMAGE_TILING_LAST);
 
 	testGroup->addChild(createTestGroup(testGroup->getTestContext(), "optimal",	"",	createImageFormatTypeTilingTests, ImageFormatPropertyCase(params.testFunction, VK_FORMAT_UNDEFINED, params.imageType, VK_IMAGE_TILING_OPTIMAL)));
 	testGroup->addChild(createTestGroup(testGroup->getTestContext(), "linear",	"",	createImageFormatTypeTilingTests, ImageFormatPropertyCase(params.testFunction, VK_FORMAT_UNDEFINED, params.imageType, VK_IMAGE_TILING_LINEAR)));
@@ -5460,9 +5533,9 @@ void createImageFormatTypeTests (tcu::TestCaseGroup* testGroup, ImageFormatPrope
 
 void createImageFormatTests (tcu::TestCaseGroup* testGroup, ImageFormatPropertyCase::Function testFunction)
 {
-	testGroup->addChild(createTestGroup(testGroup->getTestContext(), "1d", "", createImageFormatTypeTests, ImageFormatPropertyCase(testFunction, VK_FORMAT_UNDEFINED, VK_IMAGE_TYPE_1D, VK_IMAGE_TILING_MAX_ENUM)));
-	testGroup->addChild(createTestGroup(testGroup->getTestContext(), "2d", "", createImageFormatTypeTests, ImageFormatPropertyCase(testFunction, VK_FORMAT_UNDEFINED, VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_MAX_ENUM)));
-	testGroup->addChild(createTestGroup(testGroup->getTestContext(), "3d", "", createImageFormatTypeTests, ImageFormatPropertyCase(testFunction, VK_FORMAT_UNDEFINED, VK_IMAGE_TYPE_3D, VK_IMAGE_TILING_MAX_ENUM)));
+	testGroup->addChild(createTestGroup(testGroup->getTestContext(), "1d", "", createImageFormatTypeTests, ImageFormatPropertyCase(testFunction, VK_FORMAT_UNDEFINED, VK_IMAGE_TYPE_1D, VK_CORE_IMAGE_TILING_LAST)));
+	testGroup->addChild(createTestGroup(testGroup->getTestContext(), "2d", "", createImageFormatTypeTests, ImageFormatPropertyCase(testFunction, VK_FORMAT_UNDEFINED, VK_IMAGE_TYPE_2D, VK_CORE_IMAGE_TILING_LAST)));
+	testGroup->addChild(createTestGroup(testGroup->getTestContext(), "3d", "", createImageFormatTypeTests, ImageFormatPropertyCase(testFunction, VK_FORMAT_UNDEFINED, VK_IMAGE_TYPE_3D, VK_CORE_IMAGE_TILING_LAST)));
 }
 
 
@@ -5569,7 +5642,7 @@ tcu::TestStatus testMandatoryExtensions (Context& context)
 			"VK_KHR_get_physical_device_properties2",
 		};
 
-		for (const auto ext : mandatoryExtensions)
+		for (const auto &ext : mandatoryExtensions)
 		{
 			if (!context.isInstanceFunctionalitySupported(ext))
 				results.fail(ext + " is not supported");
@@ -5583,7 +5656,7 @@ tcu::TestStatus testMandatoryExtensions (Context& context)
 			"VK_KHR_maintenance1",
 		};
 
-		for (const auto ext : mandatoryExtensions)
+		for (const auto &ext : mandatoryExtensions)
 		{
 			if (!context.isDeviceFunctionalitySupported(ext))
 				results.fail(ext + " is not supported");

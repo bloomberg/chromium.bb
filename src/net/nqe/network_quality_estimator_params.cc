@@ -124,6 +124,8 @@ const char* GetNameForConnectionTypeInternal(
       return "3G";
     case NetworkChangeNotifier::CONNECTION_4G:
       return "4G";
+    case NetworkChangeNotifier::CONNECTION_5G:
+      return "5G";
     case NetworkChangeNotifier::CONNECTION_NONE:
       return "None";
     case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
@@ -514,6 +516,12 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               params_,
               "get_signal_strength_and_detailed_network_id",
               "false") == "true"),
+      // Default 30 minutes.
+      wifi_signal_strength_query_interval_(
+          base::TimeDelta::FromSeconds(GetValueForVariationParam(
+              params_,
+              "wifi_signal_strength_query_interval_seconds",
+              30 * 60))),
       use_small_responses_(false) {
   DCHECK(hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ == -1 ||
          hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ > 0);

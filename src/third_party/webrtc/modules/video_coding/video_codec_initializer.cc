@@ -68,9 +68,10 @@ VideoCodec VideoCodecInitializer::VideoEncoderConfigToVideoCodec(
       break;
   }
 
-  // TODO(nisse): The plType field should be deleted. Luckily, our
-  // callers don't need it.
-  video_codec.plType = 0;
+  video_codec.legacy_conference_mode =
+      config.content_type == VideoEncoderConfig::ContentType::kScreen &&
+      config.legacy_conference_mode;
+
   video_codec.numberOfSimulcastStreams =
       static_cast<unsigned char>(streams.size());
   video_codec.minBitrate = streams[0].min_bitrate_bps / 1000;
@@ -94,7 +95,7 @@ VideoCodec VideoCodecInitializer::VideoEncoderConfigToVideoCodec(
   int max_framerate = 0;
 
   for (size_t i = 0; i < streams.size(); ++i) {
-    SimulcastStream* sim_stream = &video_codec.simulcastStream[i];
+    SpatialLayer* sim_stream = &video_codec.simulcastStream[i];
     RTC_DCHECK_GT(streams[i].width, 0);
     RTC_DCHECK_GT(streams[i].height, 0);
     RTC_DCHECK_GT(streams[i].max_framerate, 0);
@@ -209,7 +210,7 @@ VideoCodec VideoCodecInitializer::VideoEncoderConfigToVideoCodec(
 
         for (size_t spatial_idx = first_active_layer;
              spatial_idx < config.simulcast_layers.size() &&
-             spatial_idx < spatial_layers.size();
+             spatial_idx < spatial_layers.size() + first_active_layer;
              ++spatial_idx) {
           spatial_layers[spatial_idx - first_active_layer].active =
               config.simulcast_layers[spatial_idx].active;

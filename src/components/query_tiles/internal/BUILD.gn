@@ -9,6 +9,8 @@ if (is_android) {
 
 source_set("internal") {
   sources = [
+    "black_hole_log_sink.cc",
+    "black_hole_log_sink.h",
     "cached_image_loader.cc",
     "cached_image_loader.h",
     "image_loader.h",
@@ -16,6 +18,10 @@ source_set("internal") {
     "image_prefetcher.h",
     "init_aware_tile_service.cc",
     "init_aware_tile_service.h",
+    "log_sink.h",
+    "log_source.h",
+    "logger_impl.cc",
+    "logger_impl.h",
     "proto_conversion.cc",
     "proto_conversion.h",
     "stats.cc",
@@ -33,11 +39,16 @@ source_set("internal") {
     "tile_manager.h",
     "tile_service_impl.cc",
     "tile_service_impl.h",
-    "tile_service_scheduler.cc",
     "tile_service_scheduler.h",
+    "tile_service_scheduler_impl.cc",
+    "tile_service_scheduler_impl.h",
     "tile_store.cc",
     "tile_store.h",
     "tile_types.h",
+    "tile_utils.cc",
+    "tile_utils.h",
+    "trending_tile_handler.cc",
+    "trending_tile_handler.h",
   ]
 
   public_deps = [ "//components/image_fetcher/core" ]
@@ -73,6 +84,7 @@ source_set("unit_tests") {
     "tile_service_impl_unittest.cc",
     "tile_service_scheduler_unittest.cc",
     "tile_store_unittest.cc",
+    "tile_utils_unittest.cc",
   ]
 
   deps = [
@@ -86,6 +98,7 @@ source_set("unit_tests") {
     "//components/query_tiles:public",
     "//components/query_tiles/proto",
     "//components/query_tiles/test:test_lib",
+    "//components/query_tiles/test:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

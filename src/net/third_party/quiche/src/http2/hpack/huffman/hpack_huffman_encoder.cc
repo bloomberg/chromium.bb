@@ -7,11 +7,9 @@
 #include "net/third_party/quiche/src/http2/hpack/huffman/huffman_spec_tables.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
 
-// TODO(jamessynge): Remove use of binary literals, that is a C++ 14 feature.
-
 namespace http2 {
 
-size_t ExactHuffmanSize(quiche::QuicheStringPiece plain) {
+size_t HuffmanSize(absl::string_view plain) {
   size_t bits = 0;
   for (const uint8_t c : plain) {
     bits += HuffmanSpecTables::kCodeLengths[c];
@@ -19,51 +17,11 @@ size_t ExactHuffmanSize(quiche::QuicheStringPiece plain) {
   return (bits + 7) / 8;
 }
 
-size_t BoundedHuffmanSize(quiche::QuicheStringPiece plain) {
-  // TODO(jamessynge): Determine whether we should set the min size for Huffman
-  // encoding much higher (i.e. if less than N, then the savings isn't worth
-  // the cost of encoding and decoding). Of course, we need to decide on a
-  // value function, which might be throughput on a full load test, or a
-  // microbenchmark of the time to encode and then decode a HEADERS frame,
-  // possibly with the cost of crypto included (i.e. crypto is going to have
-  // a fairly constant per-byte cost, so reducing the number of bytes in-transit
-  // reduces the number that must be encrypted and later decrypted).
-  if (plain.size() < 3) {
-    // Huffman encoded string can't be smaller than the plain size for very
-    // short strings.
-    return plain.size();
-  }
-  // TODO(jamessynge): Measure whether this can be done more efficiently with
-  // nested loops (e.g. make exact measurement of 8 bytes, then check if min
-  // remaining is too long).
-  // Compute the number of bits in an encoding that is shorter than the plain
-  // string (i.e. the number of bits in a string 1 byte shorter than plain),
-  // and use this as the limit of the size of the encoding.
-  const size_t limit_bits = (plain.size() - 1) * 8;
-  // The shortest code length in the Huffman table of the HPACK spec has 5 bits
-  // (e.g. for 0, 1, a and e).
-  const size_t min_code_length = 5;
-  // We can therefore say that all plain text bytes whose code length we've not
-  // yet looked up will take at least 5 bits.
-  size_t min_bits_remaining = plain.size() * min_code_length;
-  size_t bits = 0;
-  for (const uint8_t c : plain) {
-    bits += HuffmanSpecTables::kCodeLengths[c];
-    min_bits_remaining -= min_code_length;
-    // If our minimum estimate of the total number of bits won't yield an
-    // encoding shorter the plain text, let's bail.
-    const size_t minimum_bits_total = bits + min_bits_remaining;
-    if (minimum_bits_total > limit_bits) {
-      bits += min_bits_remaining;
-      break;
-    }
-  }
-  return (bits + 7) / 8;
-}
-
-void HuffmanEncode(quiche::QuicheStringPiece plain, std::string* huffman) {
+void HuffmanEncode(absl::string_view plain,
+                   size_t encoded_size,
+                   std::string* huffman) {
   DCHECK(huffman != nullptr);
-  huffman->clear();         // Note that this doesn't release memory.
+  huffman->reserve(huffman->size() + encoded_size);
   uint64_t bit_buffer = 0;  // High-bit is next bit to output. Not clear if that
                             // is more performant than having the low-bit be the
                             // last to be output.
@@ -105,6 +63,67 @@ void HuffmanEncode(quiche::QuicheStringPiece plain, std::string* huffman) {
     char h = static_cast<char>(bit_buffer >> 56);
     huffman->push_back(h);
   }
+}
+
+void HuffmanEncodeFast(absl::string_view input,
+                       size_t encoded_size,
+                       std::string* output) {
+  const size_t original_size = output->size();
+  const size_t final_size = original_size + encoded_size;
+  // Reserve an extra four bytes to avoid accessing unallocated memory (even
+  // though it would only be OR'd with zeros and thus not modified).
+  output->resize(final_size + 4, 0);
+
+  // Pointer to first appended byte.
+  char* const first = &*output->begin() + original_size;
+  size_t bit_counter = 0;
+  for (uint8_t c : input) {
+    // Align the Huffman code to byte boundaries as it needs to be written.
+    // The longest Huffman code is 30 bits long, and it can be shifted by up to
+    // 7 bits, requiring 37 bits in total.  The most significant 25 bits and
+    // least significant 2 bits of |code| are always zero.
+    uint64_t code = static_cast<uint64_t>(HuffmanSpecTables::kLeftCodes[c])
+                    << (8 - (bit_counter % 8));
+    // The byte where the first bit of |code| needs to be written.
+    char* const current = first + (bit_counter / 8);
+
+    bit_counter += HuffmanSpecTables::kCodeLengths[c];
+
+    *current |= code >> 32;
+
+    // Do not check if this write is zero before executing it, because with
+    // uniformly random shifts and an ideal random input distribution
+    // corresponding to the Huffman tree it would only be zero in 29% of the
+    // cases.
+    *(current + 1) |= (code >> 24) & 0xff;
+
+    // Continue to next input character if there is nothing else to write.
+    // (If next byte is zero, then rest must also be zero.)
+    if ((code & 0xff0000) == 0) {
+      continue;
+    }
+    *(current + 2) |= (code >> 16) & 0xff;
+
+    // Continue to next input character if there is nothing else to write.
+    // (If next byte is zero, then rest must also be zero.)
+    if ((code & 0xff00) == 0) {
+      continue;
+    }
+    *(current + 3) |= (code >> 8) & 0xff;
+
+    // Do not check if this write is zero, because the check would probably be
+    // as expensive as the write.
+    *(current + 4) |= code & 0xff;
+  }
+
+  DCHECK_EQ(encoded_size, (bit_counter + 7) / 8);
+
+  // EOF
+  if (bit_counter % 8 != 0) {
+    *(first + encoded_size - 1) |= 0xff >> (bit_counter & 7);
+  }
+
+  output->resize(final_size);
 }
 
 }  // namespace http2

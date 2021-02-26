@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
 
@@ -23,7 +20,7 @@ export class PlatformFileSystem {
    * @return {!Promise<?{modificationTime: !Date, size: number}>}
    */
   getMetadata(path) {
-    return Promise.resolve(/** @type ?{modificationTime: !Date, size: number} */ (null));
+    return Promise.resolve(null);
   }
 
   /**
@@ -92,7 +89,7 @@ export class PlatformFileSystem {
    * @returns {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   async requestFileContent(path) {
-    return {error: ls`Unable to read files with this implementation.`, isEncoded: false};
+    return {content: null, error: ls`Unable to read files with this implementation.`, isEncoded: false};
   }
 
   /**

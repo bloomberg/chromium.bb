@@ -16,7 +16,7 @@ const char kFlashMainFirmware[] = "flash_main_fw";
 const char kFlashCarrierFirmware[] = "flash_carrier_fw";
 const char kFlashModeCheck[] = "flash_mode_check";
 const char kReboot[] = "reboot";
-
+const char kClearAttachAPN[] = "clear_attach_apn";
 const char kFwVersion[] = "fw_version";
 
 }  // namespace modemfwd

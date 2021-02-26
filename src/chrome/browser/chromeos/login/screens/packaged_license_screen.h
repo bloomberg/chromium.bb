@@ -24,7 +24,7 @@ class PackagedLicenseScreen : public BaseScreen {
     DONT_ENROLL,
     // Show enterprise enrollment screen
     ENROLL,
-    // No information about license in the |enrollment_config_|
+    // No information about license in the `enrollment_config_`
     NOT_APPLICABLE
   };
 
@@ -48,7 +48,7 @@ class PackagedLicenseScreen : public BaseScreen {
   }
 
   // BaseScreen
-  bool MaybeSkip() override;
+  bool MaybeSkip(WizardContext* context) override;
 
  protected:
   // BaseScreen

@@ -21,7 +21,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_VALUE_SET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_VALUE_SET_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
@@ -49,6 +48,9 @@ class CORE_EXPORT CSSPropertyValueSet
   friend class PropertyReference;
 
  public:
+  CSSPropertyValueSet(const CSSPropertyValueSet&) = delete;
+  CSSPropertyValueSet& operator=(const CSSPropertyValueSet&) = delete;
+
   void FinalizeGarbageCollectedObject();
 
   class PropertyReference {
@@ -59,21 +61,20 @@ class CORE_EXPORT CSSPropertyValueSet
         : property_set_(&property_set), index_(index) {}
 
     CSSPropertyID Id() const {
-      return static_cast<CSSPropertyID>(
-          PropertyMetadata().Property().PropertyID());
-    }
-    const CSSProperty& Property() const {
-      return PropertyMetadata().Property();
+      return static_cast<CSSPropertyID>(PropertyMetadata().PropertyID());
     }
     CSSPropertyID ShorthandID() const {
       return PropertyMetadata().ShorthandID();
     }
 
-    CSSPropertyName Name() const;
+    CSSPropertyName Name() const { return PropertyMetadata().Name(); }
 
     bool IsImportant() const { return PropertyMetadata().important_; }
-    bool IsInherited() const { return PropertyMetadata().inherited_; }
     bool IsImplicit() const { return PropertyMetadata().implicit_; }
+    bool IsAffectedByAll() const {
+      return Id() != CSSPropertyID::kVariable &&
+             CSSProperty::Get(Id()).IsAffectedByAll();
+    }
 
     const CSSValue& Value() const { return PropertyValue(); }
 
@@ -138,7 +139,7 @@ class CORE_EXPORT CSSPropertyValueSet
 
   bool PropertyMatches(CSSPropertyID, const CSSValue&) const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) const;
   void TraceAfterDispatch(blink::Visitor* visitor) const {}
 
  protected:
@@ -162,17 +163,17 @@ class CORE_EXPORT CSSPropertyValueSet
   const uint32_t is_mutable_ : 1;
 
   friend class PropertySetCSSStyleDeclaration;
-  DISALLOW_COPY_AND_ASSIGN(CSSPropertyValueSet);
 };
 
 // Used for lazily parsing properties.
 class CSSLazyPropertyParser : public GarbageCollected<CSSLazyPropertyParser> {
  public:
   CSSLazyPropertyParser() = default;
+  CSSLazyPropertyParser(const CSSLazyPropertyParser&) = delete;
+  CSSLazyPropertyParser& operator=(const CSSLazyPropertyParser&) = delete;
   virtual ~CSSLazyPropertyParser() = default;
   virtual CSSPropertyValueSet* ParseProperties() = 0;
-  virtual void Trace(Visitor*);
-  DISALLOW_COPY_AND_ASSIGN(CSSLazyPropertyParser);
+  virtual void Trace(Visitor*) const;
 };
 
 class CORE_EXPORT ALIGNAS(alignof(Member<const CSSValue>))

@@ -79,6 +79,8 @@ class GLHelperBenchmark : public testing::Test {
         attributes, SharedMemoryLimits(),
         nullptr, /* gpu_memory_buffer_manager */
         nullptr, /* image_factory */
+        nullptr, /* gpu_task_helper */
+        nullptr, /* display_compositor_memory_and_task_controller */
         base::ThreadTaskRunnerHandle::Get());
     DCHECK_EQ(result, ContextResult::kSuccess);
     gl_ = context_->GetImplementation();
@@ -189,7 +191,7 @@ TEST_F(GLHelperBenchmark, ScaleBenchmark) {
           if (iterations > 2000) {
             break;
           }
-          if ((end_time - start_time).InMillisecondsF() > 1000) {
+          if ((end_time - start_time) > base::TimeDelta::FromSeconds(1)) {
             break;
           }
         }

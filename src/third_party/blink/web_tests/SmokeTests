@@ -107,7 +107,6 @@ editing/selection/select_all/select_all_overflow_hidden_table.html
 editing/selection/selection-forces-unrooted-repaint.html
 editing/selection/set_base_and_extent/set_base_and_extent_uneditable_table.html
 editing/shadow/505092-fieldset-is-not-ua-shadow-crash.html
-editing/shadow/delete-characters-in-distributed-node-crash.html
 editing/shadow/getRangeAt-end-of-text-node.html
 editing/style/apply-style-atomic.html
 editing/style/block-styles-007.html
@@ -399,14 +398,11 @@ fast/box-sizing/css-table-collapse.html
 fast/box-sizing/table-no-collapse.html
 fast/canvas/alpha.html
 fast/canvas/canvas-set-font-with-updated-style.html
-fast/canvas/bug535171.html
 fast/canvas/canvas-hides-fallback.html
 fast/canvas/color-space/imageData-colorSpace.html
 fast/canvas/feimage-with-foreignobject-taint-canvas-2.html
 fast/canvas/imagebitmap/transferFromImageBitmap-drawImage.html
 fast/canvas/script-inside-canvas-fallback.html
-fast/canvas-api/unclosed-canvas-1.html
-fast/canvas-api/unclosed-canvas-2.html
 fast/constructors/blob-sparse-array-assertion-failure.html
 fast/constructors/constructor-as-function-crash.html
 fast/cpu/hardware-concurrency.html
@@ -566,7 +562,6 @@ fast/forms/url/url-sanitize-user-input.html
 fast/forms/week-multiple-fields/week-multiple-fields-no-shadow-event.html
 fast/forms/week/ValidityState-rangeOverflow-week.html
 fast/forms/week/week-setrangetext.html
-fast/frames/viewsource/viewsource-5.html
 fast/gradients/crash-on-tr.html
 fast/harness/check-layout-error-no-attributes.html
 fast/harness/override-preferences-2.html
@@ -707,7 +702,6 @@ fast/replaced/selection-rect-transform.html
 fast/ruby/add-text-to-block-ruby-with-after-pseudo-crash.html
 fast/ruby/before-block-doesnt-crash.html
 fast/ruby/parse-rp.html
-fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html
 fast/scrolling/scroll-without-document-element-renderer.html
 fast/scrolling/scrollable-area-overflow-auto-display-none.html
 fast/scrolling/scrollable-area-overflow-auto-display-none-in-parent.html
@@ -861,11 +855,6 @@ security/lazy-event-listener.html
 security/set-form-autocomplete-attribute.html
 shadow-dom/crashes/slots-nested-in-document-tree-crash.html
 shadow-dom/css-cascade-outer-scope2.html
-shadow-dom/slotted-pseudo-element-in-v0-tree-crash.html
-shadow-dom/v0/event-composed-path-closed-shadowroot2.html
-shadow-dom/v0/get-destination-insertion-points.html
-shadow-dom/v0/pointer-lock-in-shadow3.html
-shadow-dom/v0/slots-api-in-v0.html
 storage/domstorage/localstorage/delete-removal.html
 storage/domstorage/localstorage/simple-usage.html
 storage/domstorage/localstorage/string-conversion.html
@@ -988,7 +977,6 @@ webaudio/PeriodicWave/periodicwave-exceptions.html
 webaudio/ScriptProcessor/scriptprocessornode-0-output-channels.html
 webaudio/ScriptProcessor/scriptprocessornode-downmix8-2channel-input.html
 webaudio/WaveShaper/waveshaper-364379.html
-webexposed/custom-elements.html
 webexposed/internal-properties-should-not-be-exposed.html
 webexposed/permissions-attribute.html
 webexposed/web-animations-api.html

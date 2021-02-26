@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -153,7 +153,8 @@ GraphImpl::GraphImpl() {
 GraphImpl::~GraphImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // All graph registered objects should have been unregistered.
+  // All graph registered and owned objects should have been cleaned up.
+  DCHECK(graph_owned_.empty());
   DCHECK(registered_objects_.empty());
 
   // At this point, all typed observers should be empty.
@@ -180,8 +181,7 @@ void GraphImpl::TearDown() {
 
   // Clean up graph owned objects. This causes their TakeFromGraph callbacks to
   // be invoked, and ideally they clean up any observers they may have, etc.
-  while (!graph_owned_.empty())
-    auto object = TakeFromGraph(graph_owned_.begin()->first);
+  graph_owned_.ReleaseObjects(this);
 
   // At this point, all typed observers should be empty.
   DCHECK(graph_observers_.empty());
@@ -256,41 +256,24 @@ void GraphImpl::RemoveWorkerNodeObserver(WorkerNodeObserver* observer) {
   RemoveObserverImpl(&worker_node_observers_, observer);
 }
 
-void GraphImpl::PassToGraph(std::unique_ptr<GraphOwned> graph_owned) {
+void GraphImpl::PassToGraphImpl(std::unique_ptr<GraphOwned> graph_owned) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto* raw = graph_owned.get();
-  DCHECK(!base::Contains(graph_owned_, raw));
-  graph_owned_.insert(std::make_pair(raw, std::move(graph_owned)));
-  raw->OnPassedToGraph(this);
+  graph_owned_.PassObject(std::move(graph_owned), this);
 }
 
 std::unique_ptr<GraphOwned> GraphImpl::TakeFromGraph(GraphOwned* graph_owned) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::unique_ptr<GraphOwned> object;
-  auto it = graph_owned_.find(graph_owned);
-  if (it != graph_owned_.end()) {
-    DCHECK_EQ(graph_owned, it->first);
-    DCHECK_EQ(graph_owned, it->second.get());
-    object = std::move(it->second);
-    graph_owned_.erase(it);
-    object->OnTakenFromGraph(this);
-  }
-  return object;
+  return graph_owned_.TakeObject(graph_owned, this);
 }
 
 void GraphImpl::RegisterObject(GraphRegistered* object) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(nullptr, GetRegisteredObject(object->GetTypeId()));
-  registered_objects_.insert(object);
-  // If there are ever so many registered objects we should consider changing
-  // data structures.
-  DCHECK_GT(100u, registered_objects_.size());
+  registered_objects_.RegisterObject(object);
 }
 
 void GraphImpl::UnregisterObject(GraphRegistered* object) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(object, GetRegisteredObject(object->GetTypeId()));
-  registered_objects_.erase(object);
+  registered_objects_.UnregisterObject(object);
 }
 
 const SystemNode* GraphImpl::FindOrCreateSystemNode() {
@@ -342,13 +325,15 @@ const void* GraphImpl::GetImpl() const {
   return this;
 }
 
+#if DCHECK_IS_ON()
+bool GraphImpl::IsOnGraphSequence() const {
+  return sequence_checker_.CalledOnValidSequence();
+}
+#endif
+
 GraphRegistered* GraphImpl::GetRegisteredObject(uintptr_t type_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto it = registered_objects_.find(type_id);
-  if (it == registered_objects_.end())
-    return nullptr;
-  DCHECK_EQ((*it)->GetTypeId(), type_id);
-  return *it;
+  return registered_objects_.GetRegisteredObject(type_id);
 }
 
 // static
@@ -395,6 +380,10 @@ void GraphImpl::OnNodeAdded(NodeBase* node) {
 
 void GraphImpl::OnBeforeNodeRemoved(NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Clear any node-specific state and issue the relevant notifications before
+  // sending the last-gasp removal notification for this node.
+  node->OnBeforeLeavingGraph();
 
   // This handles the strongly typed observer notifications.
   switch (node->type()) {
@@ -464,8 +453,9 @@ ProcessNodeImpl* GraphImpl::GetProcessNodeByPid(base::ProcessId pid) const {
   return it->second;
 }
 
-FrameNodeImpl* GraphImpl::GetFrameNodeById(int render_process_id,
-                                           int render_frame_id) const {
+FrameNodeImpl* GraphImpl::GetFrameNodeById(
+    RenderProcessHostId render_process_id,
+    int render_frame_id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it =
       frames_by_id_.find(ProcessAndFrameId(render_process_id, render_frame_id));
@@ -509,8 +499,9 @@ size_t GraphImpl::GetNodeAttachedDataCountForTesting(const Node* node,
   return count;
 }
 
-GraphImpl::ProcessAndFrameId::ProcessAndFrameId(int render_process_id,
-                                                int render_frame_id)
+GraphImpl::ProcessAndFrameId::ProcessAndFrameId(
+    RenderProcessHostId render_process_id,
+    int render_frame_id)
     : render_process_id(render_process_id), render_frame_id(render_frame_id) {}
 
 bool GraphImpl::ProcessAndFrameId::operator<(
@@ -524,8 +515,9 @@ void GraphImpl::AddNewNode(NodeBase* new_node) {
   auto it = nodes_.insert(new_node);
   DCHECK(it.second);  // Inserted successfully
 
-  // Allow the node to initialize itself now that it's been added.
+  // Add the node to the graph and allow it to initialize itself.
   new_node->JoinGraph(this);
+  new_node->OnJoiningGraph();
 
   // Then notify observers.
   OnNodeAdded(new_node);
@@ -565,7 +557,7 @@ void GraphImpl::BeforeProcessPidChange(ProcessNodeImpl* process,
     processes_by_pid_[new_pid] = process;
 }
 
-void GraphImpl::RegisterFrameNodeForId(int render_process_id,
+void GraphImpl::RegisterFrameNodeForId(RenderProcessHostId render_process_id,
                                        int render_frame_id,
                                        FrameNodeImpl* frame_node) {
   auto insert_result = frames_by_id_.insert(
@@ -573,7 +565,7 @@ void GraphImpl::RegisterFrameNodeForId(int render_process_id,
   DCHECK(insert_result.second);
 }
 
-void GraphImpl::UnregisterFrameNodeForId(int render_process_id,
+void GraphImpl::UnregisterFrameNodeForId(RenderProcessHostId render_process_id,
                                          int render_frame_id,
                                          FrameNodeImpl* frame_node) {
   const ProcessAndFrameId process_and_frame_id(render_process_id,
@@ -625,5 +617,13 @@ template <>
 const std::vector<WorkerNodeObserver*>& GraphImpl::GetObservers() const {
   return worker_node_observers_;
 }
+
+GraphImpl::ProcessAndFrameId::~ProcessAndFrameId() = default;
+
+GraphImpl::ProcessAndFrameId::ProcessAndFrameId(
+    const GraphImpl::ProcessAndFrameId& other) = default;
+
+GraphImpl::ProcessAndFrameId& GraphImpl::ProcessAndFrameId::operator=(
+    const GraphImpl::ProcessAndFrameId& other) = default;
 
 }  // namespace performance_manager

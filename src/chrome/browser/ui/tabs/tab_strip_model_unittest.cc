@@ -21,11 +21,19 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/read_later/read_later_test_utils.h"
+#include "chrome/browser/ui/read_later/reading_list_model_factory.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/reading_list/core/reading_list_model.h"
+#include "components/reading_list/core/reading_list_model_observer.h"
+#include "components/reading_list/features/reading_list_switches.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -59,6 +67,9 @@ class TabStripModelTestIDUserData : public base::SupportsUserData::Data {
 class MockTabStripModelObserver : public TabStripModelObserver {
  public:
   MockTabStripModelObserver() = default;
+  MockTabStripModelObserver(const MockTabStripModelObserver&) = delete;
+  MockTabStripModelObserver& operator=(const MockTabStripModelObserver&) =
+      delete;
   ~MockTabStripModelObserver() override = default;
 
   enum TabStripModelObserverAction {
@@ -282,6 +293,9 @@ class MockTabStripModelObserver : public TabStripModelObserver {
         group_updates_[change.group] = TabGroupUpdate();
         break;
       }
+      case TabGroupChange::kEditorOpened: {
+        break;
+      }
       case TabGroupChange::kContentsChanged: {
         group_updates_[change.group].contents_update_count++;
         break;
@@ -330,8 +344,6 @@ class MockTabStripModelObserver : public TabStripModelObserver {
  private:
   std::vector<State> states_;
   std::map<tab_groups::TabGroupId, TabGroupUpdate> group_updates_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTabStripModelObserver);
 };
 
 const char* const MockTabStripModelObserver::State::kActionNames[]{
@@ -355,6 +367,8 @@ const char* const MockTabStripModelObserver::State::kActionNames[]{
 class TabStripModelTest : public testing::Test {
  public:
   TabStripModelTest() : profile_(new TestingProfile) {}
+  TabStripModelTest(const TabStripModelTest&) = delete;
+  TabStripModelTest& operator=(const TabStripModelTest&) = delete;
 
   TestingProfile* profile() { return profile_.get(); }
 
@@ -366,7 +380,8 @@ class TabStripModelTest : public testing::Test {
   std::unique_ptr<WebContents> CreateWebContentsWithSharedRPH(
       WebContents* web_contents) {
     WebContents::CreateParams create_params(
-        profile(), web_contents->GetRenderViewHost()->GetSiteInstance());
+        profile(),
+        web_contents->GetMainFrame()->GetRenderViewHost()->GetSiteInstance());
     std::unique_ptr<WebContents> retval = WebContents::Create(create_params);
     EXPECT_EQ(retval->GetMainFrame()->GetProcess(),
               web_contents->GetMainFrame()->GetProcess());
@@ -441,8 +456,6 @@ class TabStripModelTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   content::RenderViewHostTestEnabler rvh_test_enabler_;
   const std::unique_ptr<TestingProfile> profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabStripModelTest);
 };
 
 TEST_F(TabStripModelTest, TestBasicAPI) {
@@ -1091,6 +1104,87 @@ TEST_F(TabStripModelTest, CloseGroupedTabShiftsSelectionWithinGroup) {
   EXPECT_EQ(0, tabstrip.active_index());
   tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
+
+  tabstrip.CloseAllTabs();
+  ASSERT_TRUE(tabstrip.empty());
+}
+
+// Tests that the active selection will change to another non collapsed tab when
+// the active index is in the collapsing group.
+TEST_F(TabStripModelTest, CollapseGroupShiftsSelection_SuccessNextTab) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
+
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  tabstrip.AppendWebContents(std::move(opener), true);
+  InsertWebContentses(&tabstrip, CreateWebContents(), CreateWebContents(),
+                      CreateWebContents());
+  ASSERT_EQ(0, tabstrip.active_index());
+
+  tabstrip.ForgetAllOpeners();
+  tab_groups::TabGroupId group = tabstrip.AddToNewGroup({0, 1});
+  tabstrip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
+  ASSERT_EQ(1, tabstrip.active_index());
+
+  base::Optional<int> next_active =
+      tabstrip.GetNextExpandedActiveTab(tabstrip.active_index(), group);
+
+  EXPECT_EQ(2, next_active);
+
+  tabstrip.CloseAllTabs();
+  ASSERT_TRUE(tabstrip.empty());
+}
+
+// Tests that the active selection will change to another non collapsed tab when
+// the active index is in the collapsing group.
+TEST_F(TabStripModelTest, CollapseGroupShiftsSelection_SuccessPreviousTab) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
+
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  tabstrip.AppendWebContents(std::move(opener), true);
+  InsertWebContentses(&tabstrip, CreateWebContents(), CreateWebContents(),
+                      CreateWebContents());
+  ASSERT_EQ(0, tabstrip.active_index());
+
+  tabstrip.ForgetAllOpeners();
+  tab_groups::TabGroupId group = tabstrip.AddToNewGroup({2, 3});
+  tabstrip.ActivateTabAt(2, {TabStripModel::GestureType::kOther});
+  ASSERT_EQ(2, tabstrip.active_index());
+
+  base::Optional<int> next_active =
+      tabstrip.GetNextExpandedActiveTab(tabstrip.active_index(), group);
+
+  EXPECT_EQ(1, next_active);
+
+  tabstrip.CloseAllTabs();
+  ASSERT_TRUE(tabstrip.empty());
+}
+
+// Tests that there is no valid selection to shift to when the active tab is in
+// the group that will be collapsed.
+TEST_F(TabStripModelTest, CollapseGroupShiftsSelection_NoAvailableTabs) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
+
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  tabstrip.AppendWebContents(std::move(opener), true);
+  InsertWebContentses(&tabstrip, CreateWebContents(), CreateWebContents(),
+                      CreateWebContents());
+  ASSERT_EQ(0, tabstrip.active_index());
+
+  tabstrip.ForgetAllOpeners();
+  tab_groups::TabGroupId group = tabstrip.AddToNewGroup({0, 1, 2, 3});
+  tabstrip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
+  ASSERT_EQ(1, tabstrip.active_index());
+
+  base::Optional<int> next_active =
+      tabstrip.GetNextExpandedActiveTab(tabstrip.active_index(), group);
+
+  EXPECT_EQ(base::nullopt, next_active);
 
   tabstrip.CloseAllTabs();
   ASSERT_TRUE(tabstrip.empty());
@@ -2075,8 +2169,12 @@ namespace {
 
 class UnloadListenerTabStripModelDelegate : public TestTabStripModelDelegate {
  public:
-  UnloadListenerTabStripModelDelegate() : run_unload_(false) {}
-  ~UnloadListenerTabStripModelDelegate() override {}
+  UnloadListenerTabStripModelDelegate() = default;
+  UnloadListenerTabStripModelDelegate(
+      const UnloadListenerTabStripModelDelegate&) = delete;
+  UnloadListenerTabStripModelDelegate& operator=(
+      const UnloadListenerTabStripModelDelegate&) = delete;
+  ~UnloadListenerTabStripModelDelegate() override = default;
 
   void set_run_unload_listener(bool value) { run_unload_ = value; }
 
@@ -2086,9 +2184,7 @@ class UnloadListenerTabStripModelDelegate : public TestTabStripModelDelegate {
 
  private:
   // Whether to report that we need to run an unload listener before closing.
-  bool run_unload_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnloadListenerTabStripModelDelegate);
+  bool run_unload_ = false;
 };
 
 }  // namespace
@@ -2439,6 +2535,34 @@ TEST_F(TabStripModelTest, MoveTabNext_Pinned) {
   strip.CloseAllTabs();
 }
 
+TEST_F(TabStripModelTest, MoveTabNext_Group) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(&strip, 4, 0, "0"));
+  EXPECT_EQ("0 1 2 3", GetTabStripStateString(strip));
+
+  tab_groups::TabGroupId group = strip.AddToNewGroup({1, 2});
+  EXPECT_EQ(strip.GetTabGroupForTab(0), base::nullopt);
+
+  strip.MoveTabNext();
+  EXPECT_EQ("0 1 2 3", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(0), group);
+
+  strip.MoveTabNext();
+  EXPECT_EQ("1 0 2 3", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(1), group);
+
+  strip.MoveTabNext();
+  EXPECT_EQ("1 2 0 3", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(2), group);
+
+  strip.MoveTabNext();
+  EXPECT_EQ("1 2 0 3", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(2), base::nullopt);
+
+  strip.CloseAllTabs();
+}
+
 TEST_F(TabStripModelTest, MoveTabPrevious) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
@@ -2471,6 +2595,34 @@ TEST_F(TabStripModelTest, MoveTabPrevious_Pinned) {
 
   strip.MoveTabPrevious();
   EXPECT_EQ("2p 0p 1p 3 4 5", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, MoveTabPrevious_Group) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(&strip, 4, 0, "3"));
+  EXPECT_EQ("0 1 2 3", GetTabStripStateString(strip));
+
+  tab_groups::TabGroupId group = strip.AddToNewGroup({1, 2});
+  EXPECT_EQ(strip.GetTabGroupForTab(3), base::nullopt);
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("0 1 2 3", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(3), group);
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("0 1 3 2", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(2), group);
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("0 3 1 2", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(1), group);
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("0 3 1 2", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(1), base::nullopt);
 
   strip.CloseAllTabs();
 }
@@ -2751,7 +2903,9 @@ class TabBlockedStateTestBrowser
       : tab_strip_model_(tab_strip_model) {
     tab_strip_model_->AddObserver(this);
   }
-
+  TabBlockedStateTestBrowser(const TabBlockedStateTestBrowser&) = delete;
+  TabBlockedStateTestBrowser& operator=(const TabBlockedStateTestBrowser&) =
+      delete;
   ~TabBlockedStateTestBrowser() override {
     tab_strip_model_->RemoveObserver(this);
   }
@@ -2789,8 +2943,6 @@ class TabBlockedStateTestBrowser
   }
 
   TabStripModel* tab_strip_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabBlockedStateTestBrowser);
 };
 
 class DummySingleWebContentsDialogManager
@@ -2800,7 +2952,11 @@ class DummySingleWebContentsDialogManager
       gfx::NativeWindow dialog,
       web_modal::SingleWebContentsDialogManagerDelegate* delegate)
       : delegate_(delegate), dialog_(dialog) {}
-  ~DummySingleWebContentsDialogManager() override {}
+  DummySingleWebContentsDialogManager(
+      const DummySingleWebContentsDialogManager&) = delete;
+  DummySingleWebContentsDialogManager& operator=(
+      const DummySingleWebContentsDialogManager&) = delete;
+  ~DummySingleWebContentsDialogManager() override = default;
 
   void Show() override {}
   void Hide() override {}
@@ -2813,8 +2969,6 @@ class DummySingleWebContentsDialogManager
  private:
   web_modal::SingleWebContentsDialogManagerDelegate* delegate_;
   gfx::NativeWindow dialog_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummySingleWebContentsDialogManager);
 };
 
 }  // namespace
@@ -3967,4 +4121,78 @@ TEST_F(TabStripModelTest, MoveTabsToNewWindow) {
   EXPECT_EQ(delegate.move_calls().back(), 0);
 
   strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, SurroundingGroupAtIndex) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  PrepareTabs(&strip, 4);
+
+  auto group1 = strip.AddToNewGroup({1, 2});
+  strip.AddToNewGroup({3});
+
+  EXPECT_EQ(base::nullopt, strip.GetSurroundingTabGroup(0));
+  EXPECT_EQ(base::nullopt, strip.GetSurroundingTabGroup(1));
+  EXPECT_EQ(group1, strip.GetSurroundingTabGroup(2));
+  EXPECT_EQ(base::nullopt, strip.GetSurroundingTabGroup(3));
+  EXPECT_EQ(base::nullopt, strip.GetSurroundingTabGroup(4));
+
+  strip.CloseAllTabs();
+}
+
+class TabStripModelTestWithReadLaterEnabled : public BrowserWithTestWindowTest {
+ public:
+  TabStripModelTestWithReadLaterEnabled() {
+    feature_list_.InitAndEnableFeature(reading_list::switches::kReadLater);
+  }
+  TabStripModelTestWithReadLaterEnabled(
+      const TabStripModelTestWithReadLaterEnabled&) = delete;
+  TabStripModelTestWithReadLaterEnabled& operator=(
+      const TabStripModelTestWithReadLaterEnabled&) = delete;
+  ~TabStripModelTestWithReadLaterEnabled() override = default;
+
+  void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
+    BrowserList::SetLastActive(browser());
+    AddTabWithTitle(browser(), GURL("http://foo/1"), "Tab 1");
+    AddTabWithTitle(browser(), GURL("http://foo/2"), "Tab 2");
+  }
+
+  void TearDown() override {
+    browser()->tab_strip_model()->CloseAllTabs();
+    BrowserWithTestWindowTest::TearDown();
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{ReadingListModelFactory::GetInstance(),
+             ReadingListModelFactory::GetDefaultFactoryForTesting()}};
+  }
+
+ protected:
+  void AddTabWithTitle(Browser* browser,
+                       const GURL url,
+                       const std::string title) {
+    AddTab(browser, url);
+    NavigateAndCommitActiveTabWithTitle(browser, url,
+                                        base::ASCIIToUTF16(title));
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(TabStripModelTestWithReadLaterEnabled, AddToReadLater) {
+  ReadingListModel* reading_list_model =
+      ReadingListModelFactory::GetForBrowserContext(profile());
+  test::ReadingListLoadObserver(reading_list_model).Wait();
+
+  TabStripModel* tabstrip = browser()->tab_strip_model();
+  EXPECT_EQ(tabstrip->count(), 2);
+
+  // Add first tab to Read Later and verify it has been added.
+  GURL expected_url = tabstrip->GetWebContentsAt(0)->GetURL();
+  tabstrip->AddToReadLater({0});
+  EXPECT_EQ(reading_list_model->size(), 1u);
+  EXPECT_NE(reading_list_model->GetEntryByURL(expected_url), nullptr);
+  EXPECT_EQ(tabstrip->count(), 2);
 }

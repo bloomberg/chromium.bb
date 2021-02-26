@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.vr;
 import static org.chromium.chrome.browser.vr.WebXrArTestFramework.PAGE_LOAD_TIMEOUT_S;
 
 import android.os.Build;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -65,12 +66,59 @@ public class WebXrArHitTestTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    @ArPlaybackFile("chrome/test/data/xr/ar_playback_datasets/floor_short_start_with_plane.mp4")
+    @ArPlaybackFile("chrome/test/data/xr/ar_playback_datasets/floor_session_12s_30fps.mp4")
     public void testHitTestSucceedsWithPlane() {
         mWebXrArTestFramework.loadFileAndAwaitInitialization(
                 "webxr_test_basic_hittest", PAGE_LOAD_TIMEOUT_S);
         mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
         mWebXrArTestFramework.executeStepAndWait("stepStartHitTesting()");
-        mWebXrArTestFramework.assertNoJavaScriptErrors();
+        mWebXrArTestFramework.endTest();
+    }
+
+    /**
+     * Tests that hit test results are available in the subsequent frame after hit
+     * test source was returned.
+     */
+    @Test
+    @MediumTest
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    @ArPlaybackFile("chrome/test/data/xr/ar_playback_datasets/floor_session_12s_30fps.mp4")
+    public void testHitTestResultsAvailableInSubsequentFrame() {
+        mWebXrArTestFramework.loadFileAndAwaitInitialization(
+                "webxr_test_basic_hittest_results_availability", PAGE_LOAD_TIMEOUT_S);
+        mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
+        mWebXrArTestFramework.executeStepAndWait("stepStartHitTesting()");
+        mWebXrArTestFramework.endTest();
+    }
+
+    /**
+     * Tests that hit test cancellation works for hit test sources when the session has ended.
+     */
+    @Test
+    @MediumTest
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    @ArPlaybackFile("chrome/test/data/xr/ar_playback_datasets/floor_session_12s_30fps.mp4")
+    public void testHitTestCancellationWorks() {
+        mWebXrArTestFramework.loadFileAndAwaitInitialization(
+                "webxr_test_basic_hittest_cancellation", PAGE_LOAD_TIMEOUT_S);
+        mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
+        mWebXrArTestFramework.executeStepAndWait("stepStartHitTesting(false)");
+        mWebXrArTestFramework.endTest();
+    }
+
+    /**
+     * Tests that hit test cancellation works for transient input hit tests when the session has
+     * ended.
+     */
+    @Test
+    @MediumTest
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    @ArPlaybackFile("chrome/test/data/xr/ar_playback_datasets/floor_session_12s_30fps.mp4")
+    public void testHitTestForTransientInputCancellationWorks() {
+        mWebXrArTestFramework.loadFileAndAwaitInitialization(
+                "webxr_test_basic_hittest_cancellation", PAGE_LOAD_TIMEOUT_S);
+        mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
+        mWebXrArTestFramework.executeStepAndWait("stepStartHitTesting(true)");
+        mWebXrArTestFramework.endTest();
     }
 }

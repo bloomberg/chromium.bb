@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 
+#include "base/callback.h"
+#include "base/logging.h"
 #include "chromeos/network/network_state.h"
 
 namespace chromeos {
@@ -30,20 +32,22 @@ void NetworkPortalDetectorTestImpl::SetDefaultNetworkForTesting(
 
 void NetworkPortalDetectorTestImpl::SetDetectionResultsForTesting(
     const std::string& guid,
-    const CaptivePortalState& state) {
+    CaptivePortalStatus status,
+    int response_code) {
   DVLOG(1) << "SetDetectionResultsForTesting: " << guid << " = "
-           << NetworkPortalDetector::CaptivePortalStatusString(state.status);
+           << NetworkPortalDetector::CaptivePortalStatusString(status);
   if (!guid.empty())
-    portal_state_map_[guid] = state;
+    portal_status_map_[guid] = status;
 }
 
 void NetworkPortalDetectorTestImpl::NotifyObserversForTesting() {
-  CaptivePortalState state;
-  if (default_network_ && portal_state_map_.count(default_network_->guid()))
-    state = portal_state_map_[default_network_->guid()];
+  const std::string& guid = default_network_->guid();
+  CaptivePortalStatus status = CAPTIVE_PORTAL_STATUS_UNKNOWN;
+  if (default_network_ && portal_status_map_.count(guid))
+    status = portal_status_map_[guid];
   portal_detection_in_progress_ = false;
   for (auto& observer : observers_)
-    observer.OnPortalDetectionCompleted(default_network_.get(), state);
+    observer.OnPortalDetectionCompleted(default_network_.get(), status);
 }
 
 std::string NetworkPortalDetectorTestImpl::GetDefaultNetworkGuid() const {
@@ -67,12 +71,13 @@ void NetworkPortalDetectorTestImpl::AddAndFireObserver(Observer* observer) {
   AddObserver(observer);
   if (!observer)
     return;
-  if (!default_network_ || !portal_state_map_.count(default_network_->guid())) {
+  if (!default_network_ ||
+      !portal_status_map_.count(default_network_->guid())) {
     observer->OnPortalDetectionCompleted(default_network_.get(),
-                                         CaptivePortalState());
+                                         CAPTIVE_PORTAL_STATUS_UNKNOWN);
   } else {
     observer->OnPortalDetectionCompleted(
-        default_network_.get(), portal_state_map_[default_network_->guid()]);
+        default_network_.get(), portal_status_map_[default_network_->guid()]);
   }
 }
 
@@ -81,16 +86,13 @@ void NetworkPortalDetectorTestImpl::RemoveObserver(Observer* observer) {
     observers_.RemoveObserver(observer);
 }
 
-NetworkPortalDetector::CaptivePortalState
-NetworkPortalDetectorTestImpl::GetCaptivePortalState(
-    const std::string& guid) {
-  CaptivePortalStateMap::iterator it = portal_state_map_.find(guid);
-  if (it == portal_state_map_.end()) {
-    DVLOG(2) << "GetCaptivePortalState Not found: " << guid;
-    return CaptivePortalState();
-  }
-  DVLOG(2) << "GetCaptivePortalState: " << guid << " = "
-           << CaptivePortalStatusString(it->second.status);
+NetworkPortalDetector::CaptivePortalStatus
+NetworkPortalDetectorTestImpl::GetCaptivePortalStatus() {
+  if (!default_network_)
+    return CAPTIVE_PORTAL_STATUS_UNKNOWN;
+  auto it = portal_status_map_.find(default_network_->guid());
+  if (it == portal_status_map_.end())
+    return CAPTIVE_PORTAL_STATUS_UNKNOWN;
   return it->second;
 }
 
@@ -101,9 +103,9 @@ bool NetworkPortalDetectorTestImpl::IsEnabled() {
 void NetworkPortalDetectorTestImpl::Enable(bool start_detection) {
 }
 
-bool NetworkPortalDetectorTestImpl::StartPortalDetection(bool force) {
-  if (portal_detection_in_progress_ && !force)
-    return false;
+void NetworkPortalDetectorTestImpl::StartPortalDetection() {
+  if (portal_detection_in_progress_)
+    return;
 
   portal_detection_in_progress_ = true;
   std::vector<base::OnceClosure> callbacks =
@@ -111,7 +113,7 @@ bool NetworkPortalDetectorTestImpl::StartPortalDetection(bool force) {
   for (auto& callback : callbacks)
     std::move(callback).Run();
 
-  return true;
+  return;
 }
 
 void NetworkPortalDetectorTestImpl::SetStrategy(

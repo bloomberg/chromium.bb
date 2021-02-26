@@ -22,10 +22,10 @@ class ScriptState;
 
 // This class is a BytesConsumer pulling bytes from a ReadableStream.
 // The stream will be immediately locked by the consumer and will never be
-// released.
+// released. The stream must not be locked before this object is created.
 class CORE_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
  public:
-  ReadableStreamBytesConsumer(ScriptState*, ReadableStream*, ExceptionState&);
+  ReadableStreamBytesConsumer(ScriptState*, ReadableStream*);
   ~ReadableStreamBytesConsumer() override;
 
   Result BeginRead(const char** buffer, size_t* available) override;
@@ -38,7 +38,7 @@ class CORE_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
   Error GetError() const override;
   String DebugName() const override { return "ReadableStreamBytesConsumer"; }
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   class OnFulfilled;

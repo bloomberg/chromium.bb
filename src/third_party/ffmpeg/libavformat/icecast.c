@@ -43,6 +43,7 @@ typedef struct IcecastContext {
     int public;
     char *url;
     char *user_agent;
+    int tls;
 } IcecastContext;
 
 #define DEFAULT_ICE_USER "source"
@@ -62,6 +63,7 @@ static const AVOption options[] = {
     { "password", "set password", OFFSET(pass), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, E },
     { "content_type", "set content-type, MUST be set if not audio/mpeg", OFFSET(content_type), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, E },
     { "legacy_icecast", "use legacy SOURCE method, for Icecast < v2.4", OFFSET(legacy_icecast), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, E },
+    { "tls", "use a TLS connection", OFFSET(tls), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, E },
     { NULL }
 };
 
@@ -75,8 +77,7 @@ static void cat_header(AVBPrint *bp, const char key[], const char value[])
 static int icecast_close(URLContext *h)
 {
     IcecastContext *s = h->priv_data;
-    if (s->hd)
-        ffurl_close(s->hd);
+    ffurl_closep(&s->hd);
     return 0;
 }
 
@@ -163,7 +164,9 @@ static int icecast_open(URLContext *h, const char *uri, int flags)
     }
 
     // Build new URI for passing to http protocol
-    ff_url_join(h_url, sizeof(h_url), "http", auth, host, port, "%s", path);
+    ff_url_join(h_url, sizeof(h_url),
+                s->tls ? "https" : "http",
+                auth, host, port, "%s", path);
     // Finally open http proto handler
     ret = ffurl_open_whitelist(&s->hd, h_url, AVIO_FLAG_READ_WRITE, NULL,
                                &opt_dict, h->protocol_whitelist, h->protocol_blacklist, h);

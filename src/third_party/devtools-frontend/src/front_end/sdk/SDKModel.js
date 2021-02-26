@@ -10,9 +10,7 @@ import * as ProtocolClient from '../protocol_client/protocol_client.js';
 /** @type {!Map<function(new:SDKModel, !Target), !{capabilities: number, autostart: boolean}>} */
 const _registeredModels = new Map();
 
-/**
- * @unrestricted
- */
+
 export class SDKModel extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {!Target} target
@@ -106,7 +104,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
       case Type.Frame:
         this._capabilitiesMask = Capability.Browser | Capability.Storage | Capability.DOM | Capability.JS |
             Capability.Log | Capability.Network | Capability.Target | Capability.Tracing | Capability.Emulation |
-            Capability.Input | Capability.Inspector | Capability.Audits;
+            Capability.Input | Capability.Inspector | Capability.Audits | Capability.WebAuthn | Capability.IO;
         if (!parentTarget) {
           // This matches backend exposing certain capabilities only for the main frame.
           this._capabilitiesMask |=
@@ -116,20 +114,21 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
         }
         break;
       case Type.ServiceWorker:
-        this._capabilitiesMask =
-            Capability.JS | Capability.Log | Capability.Network | Capability.Target | Capability.Inspector;
+        this._capabilitiesMask = Capability.JS | Capability.Log | Capability.Network | Capability.Target |
+            Capability.Inspector | Capability.IO;
         if (!parentTarget) {
           this._capabilitiesMask |= Capability.Browser;
         }
         break;
       case Type.Worker:
-        this._capabilitiesMask = Capability.JS | Capability.Log | Capability.Network | Capability.Target;
+        this._capabilitiesMask =
+            Capability.JS | Capability.Log | Capability.Network | Capability.Target | Capability.IO;
         break;
       case Type.Node:
         this._capabilitiesMask = Capability.JS;
         break;
       case Type.Browser:
-        this._capabilitiesMask = Capability.Target;
+        this._capabilitiesMask = Capability.Target | Capability.IO;
         break;
     }
     this._type = type;
@@ -233,9 +232,9 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
   }
 
   /**
-   * @param {function(new:SDKModel, !Target)} modelClass
+   * @param {function(new:T, !Target)} modelClass
    * @return {?T}
-   * @template T
+   * @template {!SDKModel} T
    */
   model(modelClass) {
     if (!this._modelByConstructor.get(modelClass)) {
@@ -339,6 +338,8 @@ export const Capability = {
   Storage: 1 << 13,
   ServiceWorker: 1 << 14,
   Audits: 1 << 15,
+  WebAuthn: 1 << 16,
+  IO: 1 << 17,
 
   None: 0,
 };
@@ -355,7 +356,7 @@ export const Type = {
 };
 
 /**
- * @type {!TargetManager}
+ * @type {!TargetManager|undefined}
  */
 let targetManagerInstance;
 
@@ -371,7 +372,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     this._observers = new Set();
     /** @type {!Platform.Multimap<symbol, !{modelClass: function(new:SDKModel, !Target), thisObject: (!Object|undefined), listener: function(!Common.EventTarget.EventTargetEvent):void}>} */
     this._modelListeners = new Platform.Multimap();
-    /** @type {!Platform.Multimap<function(new:SDKModel, !Target), !SDKModelObserver<*>>} */
+    /** @type {!Platform.Multimap<function(new:SDKModel, !Target), !SDKModelObserver<?>>} */
     this._modelObservers = new Platform.Multimap();
     this._isSuspended = false;
   }
@@ -385,6 +386,10 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     }
 
     return targetManagerInstance;
+  }
+
+  static removeInstance() {
+    targetManagerInstance = undefined;
   }
 
   /**
@@ -422,9 +427,9 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {function(new:SDKModel,!Target)} modelClass
+   * @param {function(new:T,!Target)} modelClass
    * @return {!Array<!T>}
-   * @template T
+   * @template {!SDKModel} T
    */
   models(modelClass) {
     const result = [];
@@ -446,9 +451,9 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {function(new:SDKModel,!Target)} modelClass
-   * @param {!SDKModelObserver<T>} observer
-   * @template T
+   * @param {function(new:T,!Target)} modelClass
+   * @param {!SDKModelObserver<?>} observer
+   * @template {!SDKModel} T
    */
   observeModels(modelClass, observer) {
     const models = this.models(modelClass);
